@@ -1,0 +1,429 @@
+<footer id="site-footer" class="site-footer-fixed" aria-label="Website Footer">
+  <!-- Minimized Footer (Default State) -->
+  <div class="footer-minimized">
+    <div class="footer-minimal-content">
+      <!-- Copyright -->
+      <span class="footer-copyright-text">
+        ©
+        <span class="current-year">2025</span>
+        <a href="https://abdulkerimsesli.de" class="footer-brand-link" title="Zur Startseite">Abdulkerim Sesli</a>
+      </span>
+
+      <!-- Cookie Consent Banner (Inline) -->
+      <div id="cookie-consent-banner" class="cookie-banner-inline hidden">
+        <span class="cookie-text">
+          🍪
+          <span class="cookie-text-full">Wir nutzen Google Analytics.</span>
+          <span class="cookie-text-short">Analytics</span>
+        </span>
+        <button id="accept-cookies-btn" type="button" class="cookie-accept-btn" aria-label="Alle akzeptieren">
+          <span class="btn-text-full">OK</span>
+          <span class="btn-text-short">✓</span>
+        </button>
+        <button id="reject-cookies-btn" type="button" class="cookie-reject-btn" aria-label="Ablehnen">
+          <span class="btn-text-full">Nein</span>
+          <span class="btn-text-short">✗</span>
+        </button>
+      </div>
+
+      <!-- Quick Navigation -->
+      <nav class="footer-minimal-nav" aria-label="Footer Kurz-Navigation">
+        <button
+          id="footer-cookies-link"
+          type="button"
+          class="footer-nav-link footer-cookies-link"
+          aria-label="Cookie-Einstellungen öffnen"
+          aria-controls="footer-cookie-view"
+          aria-expanded="false"
+          data-cookie-trigger>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"></circle>
+            <circle cx="8" cy="10" r="1.5" fill="currentColor"></circle>
+            <circle cx="16" cy="11" r="1.5" fill="currentColor"></circle>
+            <circle cx="10" cy="15" r="1.5" fill="currentColor"></circle>
+          </svg>
+          <span>Cookies</span>
+        </button>
+        <a href="/impressum/" class="footer-nav-link" aria-label="Impressum öffnen">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+          </svg>
+          <span>Legal</span>
+        </a>
+        <a href="/datenschutz/" class="footer-nav-link" aria-label="Datenschutzerklärung öffnen">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+          <span>Privacy</span>
+        </a>
+      </nav>
+    </div>
+  </div>
+
+  <!-- Maximized Footer (Expanded State) -->
+  <div class="footer-maximized footer-hidden">
+    <!-- Cookie Settings View -->
+    <div
+      class="footer-cookie-settings hidden"
+      id="footer-cookie-view"
+      role="dialog"
+      aria-labelledby="cookie-settings-title"
+      aria-modal="true">
+      <div class="cookie-settings-container">
+        <div class="cookie-settings-header">
+          <h2 id="cookie-settings-title">🍪 Cookies</h2>
+          <button type="button" class="cookie-settings-close" id="close-cookie-footer" aria-label="Schließen">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
+        <div class="cookie-settings-content">
+          <p class="cookie-settings-intro">Wir nutzen notwendige Cookies und optionale Analyse.</p>
+
+          <!-- Erforderlich -->
+          <div class="cookie-category">
+            <div class="cookie-category-header">
+              <h3>Erforderlich</h3>
+              <span class="cookie-status cookie-status-required" role="status">Aktiv</span>
+            </div>
+            <p class="cookie-category-description">Für Grundfunktionen dieser Seite.</p>
+            <div class="cookie-details">
+              <div class="cookie-item">
+                <strong>cookie_consent</strong>
+                <p>Merkt sich Ihre Auswahl.</p>
+                <span class="cookie-duration">365 Tage</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Analyse -->
+          <div class="cookie-category">
+            <div class="cookie-category-header">
+              <h3>Analyse</h3>
+              <label class="cookie-toggle">
+                <span class="visually-hidden">Analyse-Cookies aktivieren</span>
+                <input type="checkbox" id="footer-analytics-toggle" checked />
+                <span class="cookie-toggle-slider" aria-hidden="true"></span>
+              </label>
+            </div>
+            <p class="cookie-category-description">Hilft uns, Inhalte zu verbessern.</p>
+            <div class="cookie-details">
+              <div class="cookie-item">
+                <strong>Google Analytics</strong>
+                <p>Anonymisierte Nutzungsstatistik.</p>
+                <span class="cookie-duration">2 Jahre</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cookie-settings-footer">
+          <button id="footer-reject-all" type="button" class="cookie-settings-btn cookie-settings-btn-secondary">Nur nötig</button>
+          <button id="footer-accept-selected" type="button" class="cookie-settings-btn cookie-settings-btn-primary">Speichern</button>
+          <button id="footer-accept-all" type="button" class="cookie-settings-btn cookie-settings-btn-primary">Alle</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Content Footer (Cards) -->
+    <div class="footer-normal-content" id="footer-normal-content">
+      <!-- Theme Toggle -->
+      <div class="theme-control-floating">
+        <button
+          type="button"
+          class="day-night-artwork"
+          id="dayNightToggle"
+          aria-label="Design wechseln"
+          title="Tag/Nacht Modus"
+          aria-pressed="false">
+          <span class="sky-canvas" aria-hidden="true">
+            <span class="sun">
+              <span class="sun-rays">
+                <span class="ray ray-1"></span>
+                <span class="ray ray-2"></span>
+                <span class="ray ray-3"></span>
+                <span class="ray ray-4"></span>
+                <span class="ray ray-5"></span>
+                <span class="ray ray-6"></span>
+                <span class="ray ray-7"></span>
+                <span class="ray ray-8"></span>
+              </span>
+            </span>
+            <span class="moon">
+              <span class="moon-craters">
+                <span class="crater crater-1"></span>
+                <span class="crater crater-2"></span>
+                <span class="crater crater-3"></span>
+                <span class="crater crater-4"></span>
+              </span>
+            </span>
+            <span class="stars">
+              <span class="star star-1"></span>
+              <span class="star star-2"></span>
+              <span class="star star-3"></span>
+              <span class="star star-4"></span>
+              <span class="star star-5"></span>
+              <span class="star star-6"></span>
+              <span class="star star-7"></span>
+              <span class="star star-8"></span>
+            </span>
+            <span class="clouds">
+              <span class="cloud cloud-1">
+                <span class="cloud-part part-1"></span>
+                <span class="cloud-part part-2"></span>
+                <span class="cloud-part part-3"></span>
+              </span>
+              <span class="cloud-2">
+                <span class="cloud-part part-1"></span>
+                <span class="cloud-part part-2"></span>
+              </span>
+            </span>
+            <span class="landscape">
+              <span class="mountains">
+                <span class="mountain mountain-1"></span>
+                <span class="mountain mountain-2"></span>
+                <span class="mountain mountain-3"></span>
+              </span>
+              <span class="trees">
+                <span class="tree tree-1">
+                  <span class="trunk"></span>
+                  <span class="leaves"></span>
+                </span>
+                <span class="tree tree-2">
+                  <span class="trunk"></span>
+                  <span class="leaves"></span>
+                </span>
+              </span>
+            </span>
+          </span>
+          <span class="atmosphere" aria-hidden="true">
+            <span class="mist"></span>
+            <span class="light-rays"></span>
+          </span>
+        </button>
+      </div>
+
+      <div class="footer-maximized-viewport">
+        <div class="footer-enhanced-content">
+          <div class="footer-cards-grid">
+            <!-- About Card -->
+            <article class="footer-card">
+              <div class="footer-card-header">
+                <h3 class="footer-card-title">About</h3>
+                <div class="footer-card-accent" aria-hidden="true"></div>
+              </div>
+              <div class="footer-card-content">
+                <p class="footer-profile-name">Abdulkerim Sesli</p>
+                <p class="footer-profile-role">Developer • Photographer</p>
+                <a href="mailto:hello@abdulkerimsesli.de" class="footer-contact-cta" aria-label="E-Mail senden">E-Mail</a>
+              </div>
+            </article>
+
+            <!-- Work Card -->
+            <article class="footer-card">
+              <div class="footer-card-header">
+                <h3 class="footer-card-title">Work</h3>
+                <div class="footer-card-accent" aria-hidden="true"></div>
+              </div>
+              <div class="footer-card-content">
+                <nav class="footer-work-nav" aria-label="Projekte Navigation">
+                  <a href="#features" class="footer-work-link">Portfolio</a>
+                  <a href="/projekte/" class="footer-work-link">Alle Projekte</a>
+                  <a href="https://github.com/aKs030" target="_blank" rel="noopener noreferrer" class="footer-work-link">GitHub Lab</a>
+                </nav>
+              </div>
+            </article>
+
+            <!-- Newsletter Card -->
+            <article class="footer-card footer-card-newsletter">
+              <div class="footer-card-header">
+                <h3 class="footer-card-title" id="newsletter-title">Newsletter</h3>
+                <div class="footer-card-accent" aria-hidden="true"></div>
+              </div>
+              <div class="footer-card-content">
+                <form class="newsletter-form-enhanced" aria-labelledby="newsletter-title">
+                  <div class="newsletter-input-wrapper">
+                    <label for="newsletter-email" class="visually-hidden">E-Mail</label>
+                <input
+                      id="newsletter-email"
+                      name="newsletterEmail"
+                      type="email"
+                      class="newsletter-input-enhanced"
+                      placeholder="mail@abdulkerimsesli.de"
+                      required
+                      autocomplete="email"
+                      aria-label="E-Mail für Newsletter" />
+                    <button type="submit" class="newsletter-submit-enhanced">Abonnieren</button>
+                  </div>
+                </form>
+              </div>
+            </article>
+            <!-- FAQ Card (visible on all pages) -->
+            <article class="footer-card footer-card-faq">
+              <div class="footer-card-header">
+                <h3 class="footer-card-title">FAQ</h3>
+                <div class="footer-card-accent" aria-hidden="true"></div>
+              </div>
+              <div class="footer-card-content footer-faq-list">
+                <details class="faq-item">
+                  <summary>Was für Webentwicklungs-Services bietet Abdulkerim an?</summary>
+                  <p>
+                    Abdulkerim ist spezialisiert auf moderne Frontend-Entwicklung mit JavaScript, HTML/CSS, Node.js und responsive
+                    Webdesign. Er erstellt professionelle Websites und digitale Projekte.
+                  </p>
+                </details>
+                <details class="faq-item">
+                  <summary>Wo ist Abdulkerim als Webentwickler tätig?</summary>
+                  <p>
+                    Abdulkerim arbeitet als Freelance-Webentwickler und Fotograf in Berlin, Deutschland und bietet seine Services
+                    deutschlandweit an.
+                  </p>
+                </details>
+                <details class="faq-item">
+                  <summary>Welche Technologien verwendet Abdulkerim für Webentwicklung?</summary>
+                  <p>
+                    Er arbeitet hauptsächlich mit JavaScript, HTML/CSS, Node.js, Frontend Development und modernen Webtechnologien.
+                    Zusätzlich bietet er auch professionelle Fotografie-Services an.
+                  </p>
+                </details>
+              </div>
+            </article>
+          </div>
+
+          <!-- Footer Status Bar -->
+          <div class="footer-status-bar">
+            <div class="footer-status-content">
+              <div class="footer-copyright-enhanced">
+                <span>
+                  ©
+                  <span class="current-year">2025</span>
+                </span>
+                <a href="https://abdulkerimsesli.de" class="footer-brand-link-enhanced">Abdulkerim Sesli</a>
+              </div>
+
+              <!-- Social Media Buttons -->
+              <nav class="footer-social-links" aria-label="Social Media">
+                <a
+                  href="https://github.com/aKs030"
+                  class="footer-social-btn github"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="GitHub"
+                  title="GitHub">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path
+                      d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+                  </svg>
+                  <span class="label">GitHub</span>
+                </a>
+                <a
+                  href="https://linkedin.com/in/abdulkerim-s"
+                  class="footer-social-btn linkedin"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="LinkedIn"
+                  title="LinkedIn">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+                    <rect x="2" y="9" width="4" height="12"></rect>
+                    <circle cx="4" cy="4" r="2"></circle>
+                  </svg>
+                  <span class="label">LinkedIn</span>
+                </a>
+
+                <a
+                  href="https://x.com/kRm_030"
+                  class="footer-social-btn x"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="X"
+                  title="X">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                  </svg>
+                  <span class="label">X</span>
+                </a>
+
+                <a
+                  href="https://instagram.com/abdul.codes"
+                  class="footer-social-btn instagram"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Instagram"
+                  title="Instagram">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                    <path d="m16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                  </svg>
+                  <span class="label">Instagram</span>
+                </a>
+
+                <a
+                  href="https://www.youtube.com/@aks.030"
+                  class="footer-social-btn youtube"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="YouTube"
+                  title="YouTube">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path
+                      d="M22.54 6.42a2.76 2.76 0 0 0-1.94-1.95C18.19 4 12 4 12 4s-6.19 0-8.6.47A2.76 2.76 0 0 0 1.46 6.42 28.91 28.91 0 0 0 1 12a28.91 28.91 0 0 0 .46 5.58 2.76 2.76 0 0 0 1.94 1.95C5.81 20 12 20 12 20s6.19 0 8.6-.47a2.76 2.76 0 0 0 1.94-1.95A28.91 28.91 0 0 0 23 12a28.91 28.91 0 0 0-.46-5.58z"></path>
+                    <polygon points="10 8 16 12 10 16 10 8"></polygon>
+                  </svg>
+                  <span class="label">YouTube</span>
+                </a>
+
+                <a
+                  href="https://de.wikipedia.org/wiki/Benutzer:Abdulkerim_sesli"
+                  class="footer-social-btn wikipedia"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Wikipedia"
+                  title="Wikipedia">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+                    <path d="M5 19s1.5-6 2-8c.5-1.5 1-3 1-3s1 3 1.5 4 1.5 4 1.5 4" stroke="currentColor" fill="none"></path>
+                    <path d="M3 6h18" stroke="currentColor" fill="none"></path>
+                    <path d="M6 8l3.5 10L13 8l3.5 10L20 8" stroke="currentColor" fill="none"></path>
+                  </svg>
+                  <span class="label">Wikipedia</span>
+                </a>
+              </nav>
+
+              <nav class="footer-legal-nav" aria-label="Rechtliche Links">
+                <a href="/impressum/" class="footer-legal-link-enhanced" aria-label="Impressum öffnen">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                  </svg>
+                  Legal
+                </a>
+                <a href="/datenschutz/" class="footer-legal-link-enhanced" aria-label="Datenschutzerklärung öffnen">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                  </svg>
+                  Privacy
+                </a>
+                <button type="button" class="footer-cookie-btn" aria-label="Cookie-Einstellungen öffnen" data-cookie-trigger>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path
+                      d="M21.95 10.99c-1.79-.03-3.7-1.95-2.68-4.22-2.97 1-5.78-1.59-5.19-4.56C7.11.02 2 6.27 2 12c0 5.52 4.48 10 10 10 5.89 0 10.54-5.08 9.95-11.01z"
+                      fill="currentColor" />
+                  </svg>
+                  Cookies
+                </button>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>

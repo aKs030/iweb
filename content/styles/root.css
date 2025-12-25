@@ -1,0 +1,530 @@
+/* =============================================
+   Self-Hosted Fonts (Inter)
+  Note: @font-face is declared inline in content/head/head.html (centralized)
+   to ensure the font preload is used immediately across all pages.
+============================================= */
+
+/* =======================
+   Global CSS Variables - Dark & Light Mode System
+======================= */
+
+/* Default: Dark Mode */
+:root {
+  --theme-mode: 'dark';
+
+  /* Brand Colors - Safari UI inspired */
+  --primary-color: #007aff;
+  --primary-dark: #0051d5;
+  --primary-light: #34aadc;
+
+  /* Semantic Colors */
+  --success-color: #2d9e47;
+
+  /* ===== DARK MODE (Standard) ===== */
+  --bg-primary: #0a0a0a;
+  --bg-secondary: #161616;
+  --bg-tertiary: #262626;
+  --bg-interactive: #404040;
+
+  /* Text Colors - Optimized for Dark Mode */
+  --text-primary: #f5f5f5;
+  --text-secondary: #d4d4d4;
+  --text-muted: #a3a3a3;
+  --text-faded: #737373;
+
+  /* Particle System - Dark Mode */
+  --particle-color: rgb(9 139 255 / 80%);
+
+  /* Borders */
+  --border-color: #2a2a2a;
+
+  /* ======================= */
+
+  /* LAYOUT & DESIGN TOKENS  */
+
+  /* ======================= */
+
+  /* Spacing */
+  --spacing-xxs: 0.1rem;
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 2rem;
+  --spacing-xl: 3rem;
+  --spacing-2xl: 5rem;
+
+  /* Fonts - Inter als primäre Schriftart für gesamte Website */
+  --font-primary: 'Inter', -apple-system, blinkmacsystemfont, 'Segoe UI', roboto, sans-serif;
+  --font-mono: 'SF Mono', monaco, 'Cascadia Code', 'Roboto Mono', monospace;
+  --font-inter: 'Inter', -apple-system, blinkmacsystemfont, 'Segoe UI', roboto, sans-serif;
+  --critical-font-stack: 'Inter', -apple-system, blinkmacsystemfont, 'Segoe UI', roboto, sans-serif;
+  --font-script: 'Inter', -apple-system, blinkmacsystemfont, 'Segoe UI', roboto, sans-serif;
+
+  /* Typography tokens */
+  --font-family-main: var(--font-primary);
+  --font-size-p: 1.08rem;
+  --line-height-base: 1.7;
+  --font-size-h2: 1.5rem;
+
+  /* Typographic design system (headline & body tokens)
+      - Keep headline tokens here so all major headings stay consistent
+      - Adjust these tokens to change typography across the site
+    */
+  --headline-fs: clamp(3rem, 6vw, 4.5rem);
+  --headline-lh: 1.03;
+  --headline-weight: 900;
+  --headline-letter: -0.02em;
+  --lead-fs: 1.125rem; /* used for descriptions/lead text */
+  --body-fs: var(--font-size-p);
+  --body-lh: var(--line-height-base);
+  --muted-fs: 0.95rem;
+
+  /* Project & card text sizes */
+  --project-title-fs: 1.25rem;
+  --project-desc-fs: var(--body-fs);
+
+  /* Animation & Transitions - Optimized */
+  --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-smooth: 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --transition-slow: 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --transition-bounce: 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --transition-elastic: 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+  /* Transform Standards */
+  --transform-none: translateY(0);
+  --transform-lift-sm: translateY(-2px);
+  --transform-lift-md: translateY(-4px);
+  --transform-lift-lg: translateY(-8px);
+  --transform-lift-xl: translateY(-20px);
+  --transform-down-sm: translateY(18px);
+  --transform-down-full: translateY(100%);
+  --transform-scale-sm: scale(1.02);
+  --transform-scale-md: scale(1.05);
+  --transform-scale-lg: scale(1.08);
+  --transform-scale-none: scale(1);
+  --transform-scale-fade: scale(0.98);
+
+  /* Complex Transform Combinations */
+  --transform-hover-logo: scale(1.08) translateY(-1px);
+  --transform-hover-card: translateY(-8px) scale(1.02);
+  --transform-hover-card-smooth: translateY(-6px) scale(1.025);
+  --transform-hover-card-subtle: translateY(-3px) scale(1.015);
+  --transform-rotate-slight: rotate(2deg);
+  --transform-rotate-hover: rotate(-1deg) translateY(-4px);
+
+  /* Animation Easings */
+  --ease-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.6, 1);
+  --ease-spring: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+  /* Shadows */
+  --shadow-sm: 0 2px 4px rgb(0 0 0 / 10%);
+  --shadow-md: 0 4px 12px rgb(0 0 0 / 15%);
+  --shadow-lg: 0 8px 24px rgb(0 0 0 / 20%);
+  --shadow-xl: 0 16px 48px rgb(0 0 0 / 30%);
+
+  /* Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  /* Particle */
+  --particle-opacity: 0.4;
+
+  /* Greeting variables (derived from headline tokens) */
+
+  /* Greeting size is derived from the headline size; allows consistent headings across pages */
+  --greet-fs: var(--headline-fs);
+  --greet-lh: var(--headline-lh);
+
+  /* slightly lighter than the page headline for distinction */
+  --greet-weight: 800;
+  --greet-letter: var(--headline-letter);
+
+  /* Greeting headline width: tighter on mobile to avoid long lines when font is enlarged */
+  --greet-max: clamp(18ch, 44vw, 30ch);
+
+  /* Minimum inline size for greeting hero text - used to control wrapping on small viewports */
+  --greet-min-inline: clamp(18ch, 32vw, 42ch);
+
+  /* Responsive tweaks: slightly smaller headings on very small viewports to avoid oversizing */
+  @media (width <= 420px) {
+    :root {
+      --headline-fs: clamp(2.2rem, 8vw, 3rem);
+      --greet-fs: var(--headline-fs);
+      --greet-min-inline: clamp(14ch, 36vw, 28ch);
+      --greet-max: clamp(14ch, 100vw, 26ch);
+    }
+  }
+
+  --greet-grad: linear-gradient(90deg, #2563eb, #06b6d4, #10b981, #6366f1);
+  --greet-anim-grad-dur: 28s;
+  --greet-anim-pulse-dur: 13.2s;
+
+  /* Link & semantic colors */
+  --color-link: var(--primary-color);
+  --color-text-main: var(--text-primary);
+  --color-text-muted: var(--text-muted);
+  --color-bg: var(--bg-secondary);
+  --color-bg-secondary: var(--bg-tertiary);
+
+  /* Cards / Features */
+  --card-pad: clamp(0.75rem, 3vw, 2rem);
+  --card-min-width: 280px; /* centralized component min width for cards */
+  --card-min-height: 180px;
+  --pad-x: clamp(1rem, 4vw, 2rem);
+  --gap: clamp(0.75rem, 3vw, 1.5rem);
+
+  /* Card-specific tokens */
+  --card-transition-base: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --card-transition-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --card-blur-base: 24px;
+  --card-blur-hover: 28px;
+  --card-shadow-base: 0 10px 40px rgb(0 0 0 / 25%), 0 2px 8px rgb(0 0 0 / 15%);
+  --card-shadow-hover: 0 20px 60px rgb(0 0 0 / 35%), 0 0 40px rgb(7 161 255 / 20%);
+  --card-glow-color: rgb(7 161 255 / 40%);
+
+  /* Safe-area */
+  --safe-top: env(safe-area-inset-top, 0);
+  --safe-bottom: env(safe-area-inset-bottom, 0);
+
+  /* ===== TypeWriter Custom Properties ===== */
+  --typing-target: 28ch;
+  --typing-steps: 28;
+
+  /* Animation Delays for Hero Floating Icons */
+  --delay-0: 0s;
+  --delay-1: 1s;
+  --delay-2: 2s;
+  --delay-3: 3s;
+  --scroll-progress: 0;
+
+  /* ===== OPTIMIZED: Unified Component Variables ===== */
+
+  /* Used by both Menu & Footer - DRY principle */
+  --component-header-bg: rgb(28 28 30 / 72%);
+  --component-blur-radius: 20px;
+  --component-pill-radius: 24px;
+  --component-card-radius: 16px;
+  --component-micro-radius: 8px;
+  --component-shadow-depth-2: 0 4px 12px rgb(0 0 0 / 15%), 0 2px 4px rgb(0 0 0 / 12%);
+  --component-shadow-depth-3: 0 8px 32px rgb(0 0 0 / 18%), 0 4px 8px rgb(0 0 0 / 15%);
+  --component-spring-bounce: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  --component-spring-smooth: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --component-spring-quick: cubic-bezier(0.4, 0, 0.2, 1);
+  --component-accent-blue: #007aff;
+  --component-accent-blue-hover: #0056cc;
+  --component-label-primary: rgb(255 255 255 / 95%);
+  --component-label-secondary: rgb(255 255 255 / 70%);
+  --component-label-tertiary: rgb(255 255 255 / 50%);
+  --component-separator: rgb(255 255 255 / 15%);
+  --component-fill-primary: rgb(255 255 255 / 10%);
+  --component-fill-secondary: rgb(255 255 255 / 5%);
+  --component-font-family: 'Inter', -apple-system, 'SF Pro Display', 'SF Pro Text', system-ui, sans-serif;
+  --component-text-primary: 17px;
+  --component-text-secondary: 15px;
+  --component-text-small: 13px;
+  --component-font-weight-medium: 510;
+  --component-font-weight-regular: 450;
+
+  /* ===== OPTIMIZED: Aliases for backwards compatibility ===== */
+
+  /* Menu aliases */
+  --dynamic-menu-header-bg: var(--component-header-bg);
+  --dynamic-menu-blur-radius: var(--component-blur-radius);
+  --dynamic-menu-pill-radius: var(--component-pill-radius);
+  --dynamic-menu-card-radius: var(--component-card-radius);
+  --dynamic-menu-micro-radius: var(--component-micro-radius);
+  --dynamic-menu-shadow-depth-2: var(--component-shadow-depth-2);
+  --dynamic-menu-shadow-depth-3: var(--component-shadow-depth-3);
+  --dynamic-menu-spring-bounce: var(--component-spring-bounce);
+  --dynamic-menu-spring-smooth: var(--component-spring-smooth);
+  --dynamic-menu-spring-quick: var(--component-spring-quick);
+  --dynamic-menu-accent-blue: var(--component-accent-blue);
+  --dynamic-menu-accent-blue-hover: var(--component-accent-blue-hover);
+  --dynamic-menu-label-primary: var(--component-label-primary);
+  --dynamic-menu-label-secondary: var(--component-label-secondary);
+  --dynamic-menu-separator: var(--component-separator);
+  --dynamic-menu-fill-primary: var(--component-fill-primary);
+  --dynamic-menu-fill-secondary: var(--component-fill-secondary);
+
+  /* Footer aliases */
+  --dynamic-footer-header-bg: var(--component-header-bg);
+  --dynamic-footer-blur-radius: var(--component-blur-radius);
+  --dynamic-footer-pill-radius: var(--component-pill-radius);
+  --dynamic-footer-card-radius: var(--component-card-radius);
+  --dynamic-footer-micro-radius: var(--component-micro-radius);
+  --dynamic-footer-shadow-depth-2: var(--component-shadow-depth-2);
+  --dynamic-footer-shadow-depth-3: var(--component-shadow-depth-3);
+  --dynamic-footer-spring-bounce: var(--component-spring-bounce);
+  --dynamic-footer-spring-smooth: var(--component-spring-smooth);
+  --dynamic-footer-spring-quick: var(--component-spring-quick);
+  --dynamic-footer-accent-blue: var(--component-accent-blue);
+  --dynamic-footer-accent-blue-hover: var(--component-accent-blue-hover);
+  --dynamic-footer-label-primary: var(--component-label-primary);
+  --dynamic-footer-label-secondary: var(--component-label-secondary);
+  --dynamic-footer-label-tertiary: var(--component-label-tertiary);
+  --dynamic-footer-separator: var(--component-separator);
+  --dynamic-footer-fill-primary: var(--component-fill-primary);
+  --dynamic-footer-fill-secondary: var(--component-fill-secondary);
+  --dynamic-footer-font-family: var(--component-font-family);
+  --dynamic-footer-text-primary: var(--component-text-primary);
+  --dynamic-footer-text-secondary: var(--component-text-secondary);
+  --dynamic-footer-font-weight-medium: var(--component-font-weight-medium);
+  --dynamic-footer-font-weight-regular: var(--component-font-weight-regular);
+}
+
+/* Global responsive media elements */
+img,
+svg,
+picture,
+video,
+iframe {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Mobile: allow cards to shrink */
+@media (width <= 420px) {
+  :root {
+    --card-min-width: 0; /* allow cards to shrink on small devices */
+  }
+}
+
+/* =======================
+   LIGHT MODE OVERRIDE (Blue Theme)
+======================= */
+:root[data-theme='light'] {
+  --theme-mode: 'light';
+
+  /* Blue Light Mode Background */
+  --bg-primary: #1e3a8a;
+  --bg-secondary: #1e40af;
+  --bg-tertiary: #2563eb;
+  --bg-interactive: #3b82f6;
+
+  /* Text Colors - Optimized for blue background */
+  --text-primary: #f8fafc;
+  --text-secondary: #e2e8f0;
+  --text-muted: #cbd5e1;
+  --text-faded: #94a3b8;
+
+  /* Particle System - Light Mode */
+  --particle-color: rgb(248 250 252 / 80%);
+
+  /* Adjusted Brand Colors for Light Mode */
+  --primary-color: #60a5fa;
+  --primary-hover: #93c5fd;
+  --accent-color: #34d399;
+  --accent-secondary: #f87171;
+
+  /* Status Colors for Light Mode */
+  --success-color: #10b981;
+  --warning-color: #f59e0b;
+  --error-color: #ef4444;
+  --info-color: #3b82f6;
+
+  /* Borders and UI Elements */
+  --border-color: #3b82f6;
+  --border-subtle: #1e40af;
+
+  /* Shadows for Light Mode */
+  --shadow-sm: 0 2px 4px rgb(0 0 0 / 20%);
+  --shadow-md: 0 4px 12px rgb(0 0 0 / 25%);
+  --shadow-lg: 0 8px 24px rgb(0 0 0 / 30%);
+  --shadow-xl: 0 16px 48px rgb(0 0 0 / 35%);
+}
+
+/* =======================
+   AUTO LIGHT MODE (Browser Preference)
+======================= */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme]) {
+    /* Reuse light mode variables */
+    --theme-mode: 'light';
+    --bg-primary: #1e3a8a;
+    --bg-secondary: #1e40af;
+    --bg-tertiary: #2563eb;
+    --bg-interactive: #3b82f6;
+    --text-primary: #f8fafc;
+    --text-secondary: #e2e8f0;
+    --text-muted: #cbd5e1;
+    --text-faded: #94a3b8;
+    --particle-color: rgb(248 250 252 / 80%);
+    --primary-color: #60a5fa;
+    --primary-hover: #93c5fd;
+    --accent-color: #34d399;
+    --accent-secondary: #f87171;
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --error-color: #ef4444;
+    --info-color: #3b82f6;
+    --border-color: #3b82f6;
+    --border-subtle: #1e40af;
+    --shadow-sm: 0 2px 4px rgb(0 0 0 / 20%);
+    --shadow-md: 0 4px 12px rgb(0 0 0 / 25%);
+    --shadow-lg: 0 8px 24px rgb(0 0 0 / 30%);
+    --shadow-xl: 0 16px 48px rgb(0 0 0 / 35%);
+  }
+}
+
+/* Focus Indicator for all interactive elements */
+button:focus-visible,
+a:focus-visible,
+[tabindex]:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary-color) 55%, transparent);
+  background: rgb(0 119 255 / 12%);
+  border-radius: 6px;
+  transition:
+    box-shadow 0.15s,
+    outline-color 0.15s;
+}
+
+/* Hide scrollbars on mobile while keeping scroll intact */
+@media (width <= 768px) {
+  html,
+  body {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  * {
+    scrollbar-width: none;
+  }
+
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar,
+  *::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    background: transparent;
+  }
+}
+
+/* Accessibility Helper Classes */
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip-path: inset(50%) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* Global Loading Screen */
+.loading-screen {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  transition: opacity var(--transition-slow);
+}
+
+.loading-screen.hide {
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.loader {
+  width: 60px;
+  height: 60px;
+  border: 3px solid rgb(255 255 255 / 10%);
+  border-top-color: var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Utility class used throughout site */
+.hidden {
+  display: none !important;
+}
+
+/* Button Styles */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+  min-width: 160px;
+  text-align: center;
+}
+
+/* Loading UI consolidated — using global spinner only */
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+  color: #fff;
+  box-shadow: 0 0 12px rgb(9 139 255 / 30%);
+}
+
+.btn-primary:hover {
+  box-shadow: 0 0 18px rgb(9 139 255 / 55%);
+  transform: var(--transform-lift-sm);
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: rgb(255 255 255 / 20%);
+  transition: left var(--transition-slow);
+}
+
+.btn-primary:hover::before {
+  left: 100%;
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--text-primary);
+  border: 2px solid var(--primary-color);
+}
+
+.btn-secondary:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+@media (width <= 480px) {
+  /* Smaller button minimum width */
+  .btn,
+  .btn-primary,
+  .btn-secondary,
+  .btn-outline {
+    min-width: 120px;
+  }
+}
