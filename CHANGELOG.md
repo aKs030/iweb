@@ -21,7 +21,6 @@ All notable changes to this project will be documented in this file.
 - Added ARIA announcements for cookie actions and newsletter submissions using the accessibility manager (screen reader friendly). ✅
 - Added client-side validation to the newsletter form and appropriate a11y feedback. ✅
 - Small responsive/touch-target improvements for mobile (larger hit areas, adjusted footer width). ✅
-- Adjusted footer scroll thresholds on desktop (expand: 0.01, collapse: 0.005) to reduce accidental triggers while keeping sensitivity. ✅
 - Added Playwright E2E tests for cookie interactions (`tests/footer.spec.js`) and verified they pass. ✅
 
 ### 2025-12-20 — Videos page finalization
