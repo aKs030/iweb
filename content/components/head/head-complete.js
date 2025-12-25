@@ -365,7 +365,7 @@
 
         // Limit length to prevent JSON bloat (max 5000 chars is plenty for context)
         return text.length > 5000 ? text.substring(0, 5000) + '...' : text
-      } catch (e) {
+      } catch {
         return ''
       }
     }

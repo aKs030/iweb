@@ -1,8 +1,8 @@
 // ===== TypeWriter (Final Optimiert) =====
-import {createLogger, getElementById, shuffle, TimerManager, setLegacyGlobal} from '../../utils/shared-utilities.js'
+import {createLogger, getElementById, shuffle, TimerManager} from '../../utils/shared-utilities.js'
 
 const log = createLogger('TypeWriter')
-export let typeWriterInstance = null
+
 
 // Helper: CSS Variables setzen
 const setCSSVars = (el, vars) => Object.entries(vars).forEach(([k, v]) => el.style.setProperty(k, v))
@@ -377,12 +377,8 @@ export async function initHeroSubtitle(options = {}) {
 
       // Expose instance for imports (preferred) and keep debug window hook for quick manual debugging
       typeWriterInstance = tw
-      // Expose instance for imports (preferred) and keep debug window hook only via helper (respects clean mode)
-      typeWriterInstance = tw
-      setLegacyGlobal('__typeWriter', tw, {
-        debugOnly: true,
-        note: 'Use import { typeWriterInstance } from "../../content/components/typewriter/TypeWriter.js" instead (window global is deprecated)'
-      })
+      // Instance assigned internally for module usage; external access via exports if needed.
+      // (No global debug exposure)
     }
 
     ;(document.fonts?.ready ?? Promise.resolve()).then(start)

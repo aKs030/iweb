@@ -19,18 +19,18 @@ npm run dev
 ```
 
 - Static site: http://127.0.0.1:8081
-- WebSocket test server (echo): ws://127.0.0.1:3001
+- WebSocket test server (echo): ws://127.0.0.1:8081
 
 ## Debugging & Tests
 
 Use the query string `?debug` on any page to enable the development reconnecting WebSocket inside the app:
 
-You should see console logs about the reconnecting WebSocket attempting to open a connection to `ws://127.0.0.1:3001`.
+You should see console logs about the reconnecting WebSocket attempting to open a connection to `ws://127.0.0.1:8081`.
 
 ### Test WebSocket with wscat (optional)
 
 ```bash
-npx wscat -c ws://127.0.0.1:3001
+npx wscat -c ws://127.0.0.1:8081
 # Type some text and you should see the server echo back 'echo:...'
 ```
 
@@ -69,7 +69,7 @@ Siehe `SECURITY-CSP.md` für Content Security Policy Empfehlungen.
 
 ## Notes
 
-The reconnecting WebSocket helper is in `content/shared/reconnecting-websocket.js`. It listens to `visibilitychange` and `online` events to avoid aggressive reconnection when the page is suspended by the browser. Use this class for persistent WebSocket connections in dev or production, but ensure you adjust heartbeat/ping strategy for real-world servers.
+(Dev note: Reconnecting WebSocket helper removed)
 
 ## Code Quality
 
