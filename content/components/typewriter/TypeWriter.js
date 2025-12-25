@@ -3,8 +3,21 @@ import {createLogger, getElementById, shuffle, TimerManager} from '../../utils/s
 
 const log = createLogger('TypeWriter')
 
-// Exported instance reference for external control or debugging
-export let typeWriterInstance = null
+// Internal instance reference and public helpers
+let typeWriterInstance = null
+export function getTypeWriterInstance() {
+  return typeWriterInstance
+}
+export function stopHeroSubtitle() {
+  if (!typeWriterInstance) return false
+  try {
+    typeWriterInstance.destroy()
+  } catch {
+    /* ignore */
+  }
+  typeWriterInstance = null
+  return true
+}
 
 
 // Helper: CSS Variables setzen
@@ -174,7 +187,7 @@ export class TypeWriter {
   destroy() {
     this.timerManager.clearAll()
     document.body.classList.remove('has-typingjs')
-    // Clear exported instance if this is the active one
+    // Clear internal instance if this is the active one
     try {
       if (typeWriterInstance === this) typeWriterInstance = null
     } catch {
@@ -390,8 +403,9 @@ export async function initHeroSubtitle(options = {}) {
       // (No global debug exposure)
     }
 
-    ;(document.fonts?.ready ?? Promise.resolve()).then(start)
-    return true
+    await (document.fonts?.ready ?? Promise.resolve())
+    start()
+    return typeWriterInstance
   } catch (e) {
     log.error('Init failed', e)
     return false
