@@ -300,12 +300,7 @@ body.footer-expanded {
   align-items: center;
 }
 
-/* Position theme control at the right so it doesn't shift other content */
-.theme-control-floating {
-  display: flex;
-  margin-left: auto;
-  align-items: center;
-}
+
 
 .footer-legal-link-enhanced,
 .footer-brand-link-enhanced {
@@ -968,11 +963,6 @@ body.footer-expanded {
     flex-wrap: nowrap;
   }
 
-  .theme-control-floating {
-    order: 4;
-    margin-left: 0;
-    flex-shrink: 0;
-  }
 
   .newsletter-form-enhanced,
   .newsletter-input-wrapper {
