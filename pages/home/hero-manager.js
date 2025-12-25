@@ -110,8 +110,8 @@ const HeroManager = (() => {
     heroTimers.clearAll()
     isInitialized = false
     try {
-      stopHeroSubtitle()
-      currentTypeWriter = null
+      if (typeof stopHeroSubtitle === 'function') stopHeroSubtitle()
+      _currentTypeWriter = null
     } catch (err) {
       logger.warn('HeroManager: stopHeroSubtitle failed', err)
     }
