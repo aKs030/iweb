@@ -674,6 +674,9 @@ class ScrollHandler {
   constructor() {
     this.expanded = false
     this.observer = null
+    this._resizeHandler = null
+    this.expandThreshold = 0.05
+    this.collapseThreshold = 0.02
     window.footerScrollHandler = this
   }
 
@@ -688,6 +691,12 @@ class ScrollHandler {
 
     if (!footer || !trigger) return
 
+    // Determine thresholds based on viewport - desktop uses a slightly larger sensitivity
+    const isDesktop = window.matchMedia && window.matchMedia('(min-width: 769px)').matches
+    // On desktop we want a quick maximize on minimal scroll, but avoid accidental flapping
+    this.expandThreshold = isDesktop ? 0.01 : 0.05
+    this.collapseThreshold = isDesktop ? 0.005 : 0.02
+
     this.observer = new IntersectionObserver(
       entries => {
         const entry = entries[0]
@@ -695,14 +704,26 @@ class ScrollHandler {
 
         if (!entry.isIntersecting && ProgrammaticScroll.hasActive()) return
 
-        const threshold = this.expanded ? 0.02 : 0.05
+        const threshold = this.expanded ? this.collapseThreshold : this.expandThreshold
         const shouldExpand = entry.isIntersecting && entry.intersectionRatio >= threshold
         this.toggleExpansion(shouldExpand)
       },
-      {rootMargin: '0px 0px -10% 0px', threshold: [0.02, 0.05]}
+      {rootMargin: '0px 0px -10% 0px', threshold: [this.collapseThreshold, this.expandThreshold]}
     )
 
     this.observer.observe(trigger)
+
+    // Re-init observer on resize/orientation changes to adapt thresholds
+    this._resizeHandler = debounce(() => {
+      try {
+        this.observer?.disconnect()
+        this.init()
+      } catch {
+        /* ignore */
+      }
+    }, 150)
+
+    window.addEventListener('resize', this._resizeHandler, {passive: true})
   }
 
   toggleExpansion(shouldExpand) {
@@ -732,6 +753,7 @@ class ScrollHandler {
 
   cleanup() {
     this.observer?.disconnect()
+    if (this._resizeHandler) window.removeEventListener('resize', this._resizeHandler)
   }
 }
 
