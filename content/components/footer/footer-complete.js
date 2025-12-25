@@ -691,14 +691,26 @@ class ScrollHandler {
 
     if (!footer || !trigger) return
 
-    // Determine thresholds based on viewport - make desktop more sensitive (smaller intersection required)
+    // Determine thresholds: prefer explicit per-page trigger dataset values if provided
     const isDesktop = window.matchMedia && window.matchMedia('(min-width: 769px)').matches
-    // Desktop: open already on minimal visibility (0.01), close only when nearly gone (0.005)
-    this.expandThreshold = isDesktop ? 0.01 : 0.05
-    this.collapseThreshold = isDesktop ? 0.005 : 0.02
 
-    // Optional debug mode via URL param: ?footerDebug=1 or ?footerDebug
-    const debug = !!(new URLSearchParams(window.location.search).get('footerDebug') === '1' || new URLSearchParams(window.location.search).has('footerDebug'))
+    // Defaults based on device type
+    const defaultExpand = isDesktop ? 0.005 : 0.05
+    const defaultCollapse = isDesktop ? 0.002 : 0.02
+
+    // If page author provided dataset attributes on trigger, those override defaults
+    try {
+      const expandAttr = trigger.dataset && trigger.dataset.expandThreshold
+      const collapseAttr = trigger.dataset && trigger.dataset.collapseThreshold
+      const parsedExpand = expandAttr ? parseFloat(expandAttr) : NaN
+      const parsedCollapse = collapseAttr ? parseFloat(collapseAttr) : NaN
+
+      this.expandThreshold = !Number.isNaN(parsedExpand) && parsedExpand >= 0 && parsedExpand <= 1 ? parsedExpand : defaultExpand
+      this.collapseThreshold = !Number.isNaN(parsedCollapse) && parsedCollapse >= 0 && parsedCollapse <= 1 ? parsedCollapse : defaultCollapse
+    } catch {
+      this.expandThreshold = defaultExpand
+      this.collapseThreshold = defaultCollapse
+    }
 
     this.observer = new IntersectionObserver(
       entries => {
@@ -709,39 +721,6 @@ class ScrollHandler {
 
         const threshold = this.expanded ? this.collapseThreshold : this.expandThreshold
         const shouldExpand = entry.isIntersecting && entry.intersectionRatio >= threshold
-
-        // Debug: show live ratio and decision
-        if (debug) {
-          try {
-            const badgeText = `ratio=${entry.intersectionRatio.toFixed(3)} isIntersect=${entry.isIntersecting} thr=${threshold} -> ${shouldExpand ? 'EXPAND' : 'COLLAPSE'}`
-            if (!this._debugBadge) {
-              // inject debug styles
-              if (!document.getElementById('footer-debug-style')) {
-                const s = document.createElement('style')
-                s.id = 'footer-debug-style'
-                s.textContent = `
-                  .footer-trigger-zone { outline: 2px dashed hotpink !important; }
-                  #footer-debug-badge { position: fixed; right: 12px; bottom: 12px; z-index: 20000; background: rgba(0,0,0,0.75); color: #fff; font-size: 12px; padding: 6px 8px; border-radius: 6px; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial; }
-                `
-                document.head.appendChild(s)
-              }
-
-              const badge = document.createElement('div')
-              badge.id = 'footer-debug-badge'
-              badge.setAttribute('aria-hidden', 'true')
-              badge.textContent = badgeText
-              document.body.appendChild(badge)
-              this._debugBadge = badge
-            } else {
-              this._debugBadge.textContent = badgeText
-            }
-
-            console.log('FooterDebug:', badgeText)
-          } catch (e) {
-            /* ignore debug failures */
-          }
-        }
-
         this.toggleExpansion(shouldExpand)
       },
       {rootMargin: '0px 0px -10% 0px', threshold: [this.collapseThreshold, this.expandThreshold]}
@@ -790,16 +769,6 @@ class ScrollHandler {
   cleanup() {
     this.observer?.disconnect()
     if (this._resizeHandler) window.removeEventListener('resize', this._resizeHandler)
-
-    // Remove debug artifacts if present
-    try {
-      if (this._debugBadge && this._debugBadge.parentNode) this._debugBadge.parentNode.removeChild(this._debugBadge)
-      const style = document.getElementById('footer-debug-style')
-      if (style && style.parentNode) style.parentNode.removeChild(style)
-      this._debugBadge = null
-    } catch {
-      /* ignore */
-    }
   }
 }
 
