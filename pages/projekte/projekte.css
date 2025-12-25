@@ -297,11 +297,37 @@ body {
   background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.3));
   overflow: hidden;
 }
+
+/* subtle background pattern */
 .mockup-bg-pattern {
   position: absolute;
   inset: 0;
   opacity: 0.03;
   background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9IiNmZmZmZmYiLz48L3N2Zz4=');
+}
+
+/* iframe wrapper: inset by padding amount so iframe appears inside the content area */
+.mockup-iframe-wrapper {
+  position: absolute;
+  inset: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  z-index: 1;
+}
+
+/* iframe has a defined natural size and is scaled down via transform to fit the wrapper. The wrapper
+   centers the iframe and clips overflow so no internal scrolling appears. */
+.mockup-iframe {
+  width: 1024px;
+  height: 768px;
+  border: none;
+  display: block;
+  transform-origin: center center;
+  will-change: transform;
+  -webkit-transform-origin: center center;
+  -webkit-font-smoothing: antialiased;
 }
 .mockup-icon {
   position: absolute;

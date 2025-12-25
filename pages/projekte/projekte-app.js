@@ -347,14 +347,81 @@ function App() {
     } catch {}
   }
 
-  React.useEffect(() => {
-    if (!modalOpen) return
-    const onKey = e => {
-      if (e.key === 'Escape') closeAppModal()
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [modalOpen])
+  // Project mockup component: tries to resolve an embed-friendly URL (raw.githack/jsDelivr/appPath)
+  // and renders an iframe scaled to fit the mockup box (no internal scroll). Falls back to the
+  // project's existing `previewContent` when no embed URL is available.
+  const ProjectMockup = ({project}) => {
+    const wrapperRef = React.useRef(null)
+    const iframeRef = React.useRef(null)
+    const [previewUrl, setPreviewUrl] = React.useState(null)
+
+    React.useEffect(() => {
+      let canceled = false
+      ;(async () => {
+        try {
+          const gh = project.githubPath || ''
+          const candidates = []
+          if (gh) {
+            const raw = toRawGithackUrl(gh)
+            const js = toJsDelivrUrl(gh)
+            if (raw) candidates.push(raw)
+            if (js) candidates.push(js)
+          }
+          if (project.appPath) candidates.push(project.appPath.endsWith('/') ? project.appPath + 'index.html' : project.appPath)
+
+          for (const url of candidates) {
+            if (!url) continue
+            if (await testUrl(url, 2500)) {
+              if (!canceled) setPreviewUrl(url)
+              return
+            }
+          }
+        } catch (e) {
+          // ignore
+        }
+      })()
+      return () => {
+        canceled = true
+      }
+    }, [project])
+
+    // Scale iframe to fit wrapper while keeping aspect ratio
+    React.useEffect(() => {
+      if (!previewUrl) return
+      const wrapper = wrapperRef.current
+      const iframe = iframeRef.current
+      if (!wrapper || !iframe) return
+      const baseW = 1024
+      const baseH = 768
+      const apply = () => {
+        const w = wrapper.clientWidth
+        const h = wrapper.clientHeight
+        const scale = Math.min(1, w / baseW, h / baseH)
+        iframe.style.transform = `scale(${scale})`
+      }
+      apply()
+      const ro = new ResizeObserver(apply)
+      ro.observe(wrapper)
+      return () => ro.disconnect()
+    }, [previewUrl])
+
+    return html`
+      <div className="mockup-iframe-wrapper" ref=${wrapperRef}>
+        ${previewUrl
+          ? html`
+              <iframe
+                className="mockup-iframe"
+                ref=${iframeRef}
+                src=${previewUrl}
+                scrolling="no"
+                sandbox="allow-scripts allow-same-origin allow-forms"
+                frameborder="0"
+                title=${project.title}></iframe>
+            `
+          : project.previewContent}
+      </div>
+    `
+  }
 
   // Cleanup toast timer on unmount
   React.useEffect(() => {
@@ -411,7 +478,7 @@ function App() {
                 <div className="window-mockup">
                   <div className="mockup-content">
                     <div className="mockup-bg-pattern"></div>
-                    ${project.previewContent}
+                    <${ProjectMockup} project=${project} />
                     <div className="mockup-icon">${project.icon}</div>
                   </div>
                 </div>
