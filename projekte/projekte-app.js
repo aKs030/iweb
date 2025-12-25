@@ -312,7 +312,9 @@ function App() {
         const basePattern = 20
         const patternSize = Math.round(Math.max(8, Math.min(120, basePattern * dpr * scale)))
         try {
-          wrapper.style.setProperty('--mockup-pattern-size', `${patternSize}px`)
+          // set the CSS variable on the host (.mockup-content) so the sibling .mockup-bg-pattern inherits it
+          const host = wrapper && wrapper.parentElement ? wrapper.parentElement : wrapper
+          host.style.setProperty('--mockup-pattern-size', `${patternSize}px`)
         } catch (e) {
           /* ignore if style cannot be set */
         }
