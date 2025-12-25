@@ -787,13 +787,20 @@ class ScrollHandler {
         if (!window._footerGestureCloseHandler) {
           window._footerGestureCloseHandler = () => {
             try {
-              if (ProgrammaticScroll.hasActive()) return
-              closeFooter()
-              if (window._footerGestureCloseHandler) {
-                window.removeEventListener('touchmove', window._footerGestureCloseHandler)
-                window.removeEventListener('wheel', window._footerGestureCloseHandler)
-                delete window._footerGestureCloseHandler
-              }
+              // Defer the actual close check slightly so ProgrammaticScroll locks can expire
+              setTimeout(() => {
+                try {
+                  if (ProgrammaticScroll.hasActive && ProgrammaticScroll.hasActive()) return
+                  closeFooter()
+                  if (window._footerGestureCloseHandler) {
+                    window.removeEventListener('touchmove', window._footerGestureCloseHandler)
+                    window.removeEventListener('wheel', window._footerGestureCloseHandler)
+                    delete window._footerGestureCloseHandler
+                  }
+                } catch {
+                  /* ignore */
+                }
+              }, 200)
             } catch {
               /* ignore */
             }
