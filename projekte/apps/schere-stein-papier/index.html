@@ -18,7 +18,7 @@
     <script type="module">
       import htm from 'https://cdn.jsdelivr.net/npm/htm@3.1.1/dist/htm.module.js'
       const html = htm.bind(React.createElement)
-      const {useState} = React
+      const {useState, useRef, useLayoutEffect} = React
 
       function RockPaperScissors() {
         const [playerChoice, setPlayerChoice] = useState(null)
@@ -26,6 +26,11 @@
         const [result, setResult] = useState('')
         const [score, setScore] = useState({player: 0, computer: 0, draws: 0})
         const [isAnimating, setIsAnimating] = useState(false)
+
+        // Skalierung: refs + state
+        const containerRef = useRef(null)     // sichtbarer iframe-Bereich
+        const contentRef = useRef(null)       // unge-scalter Inhalt zum Messen
+        const [scale, setScale] = useState(1)
 
         const choices = [
           {name: 'rock', emoji: '🪨', label: 'Stein'},
@@ -66,15 +71,58 @@
           setResult('')
         }
 
+        // Anpassungsfunktion: misst natürliche Größe & berechnet scale
+        useLayoutEffect(() => {
+          if (!contentRef.current || !containerRef.current) return
+          let resizeTimer = null
+
+          const adjust = () => {
+            const cont = containerRef.current
+            const content = contentRef.current
+            if (!cont || !content) return
+            // Entferne vorherige transform für die Messung
+            content.style.transform = 'none'
+            const contentW = Math.max(content.scrollWidth, content.offsetWidth)
+            const contentH = Math.max(content.scrollHeight, content.offsetHeight)
+            const availW = cont.clientWidth
+            const availH = cont.clientHeight
+            const s = Math.min(1, availW / (contentW || 1), availH / (contentH || 1))
+            // leichte Debounce, damit nicht zu oft gerendert wird
+            if (resizeTimer) clearTimeout(resizeTimer)
+            resizeTimer = setTimeout(() => setScale(s), 10)
+          }
+
+          const roContent = new ResizeObserver(adjust)
+          const roContainer = new ResizeObserver(adjust)
+          roContent.observe(contentRef.current)
+          roContainer.observe(containerRef.current)
+          window.addEventListener('resize', adjust)
+
+          // initial
+          requestAnimationFrame(adjust)
+
+          return () => {
+            roContent.disconnect()
+            roContainer.disconnect()
+            window.removeEventListener('resize', adjust)
+            if (resizeTimer) clearTimeout(resizeTimer)
+          }
+        }, [])
+
         return html`
-          <div
-            className="flex flex-col items-center justify-center h-full bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 p-2 overflow-hidden">
-            <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-4 max-w-full w-full border border-white/20 overflow-hidden">
+          <div ref=${containerRef} className="flex items-center justify-center h-full w-full p-2 bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900" style=${{overflow: 'hidden'}}>
+            <div
+              ref=${contentRef}
+              className="bg-white/10 backdrop-blur-lg rounded-3xl p-4 max-w-full w-full border border-white/20 overflow-hidden"
+              style=${{
+                transform: `scale(${scale})`,
+                transformOrigin: 'top center',
+                transition: 'transform 120ms linear',
+              }}>
+
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-2xl font-bold text-white">Schere Stein Papier</h2>
-                <a href="/projekte/" className="px-2 py-1 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors text-sm">
-                  ← Zurück
-                </a>
+                <a href="/projekte/" className="px-2 py-1 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors text-sm">← Zurück</a>
               </div>
 
               <p className="text-purple-200 text-center mb-4 text-sm">Wähle deine Waffe!</p>
