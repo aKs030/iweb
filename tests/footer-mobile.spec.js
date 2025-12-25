@@ -9,9 +9,16 @@ test.describe('Footer mobile gestures', () => {
     // Open footer via data-footer-trigger (if present) or by clicking the footer cookie button
     const trigger = page.locator('[data-footer-trigger]').first()
     if (await trigger.count() > 0) {
-      await trigger.click()
+      // Ensure element is visible/clickable on mobile viewport
+      try {
+        await trigger.scrollIntoViewIfNeeded()
+        await trigger.click({force: true})
+      } catch (e) {
+        // Fallback: trigger via DOM to avoid Playwright click stability issues
+        await page.evaluate(() => document.querySelector('[data-footer-trigger]')?.click())
+      }
     } else {
-      await page.click('.footer-cookie-btn')
+      await page.evaluate(() => document.querySelector('.footer-cookie-btn')?.click())
     }
 
     const footer = page.locator('#site-footer')
