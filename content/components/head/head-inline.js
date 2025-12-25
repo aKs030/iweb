@@ -58,7 +58,7 @@ gtag('config', 'AW-1036079663')
           trigger.setAttribute('role', 'presentation')
           trigger.style.pointerEvents = 'none'
           // Slightly larger minHeight to make intersection detection more robust on first scroll
-          trigger.style.minHeight = '52px'
+          trigger.style.minHeight = '96px'
           trigger.style.width = '100%'
 
           // Default thresholds (can be overridden per page by setting data attributes)
