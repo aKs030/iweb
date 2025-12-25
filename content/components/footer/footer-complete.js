@@ -611,24 +611,13 @@ class ScrollHandler {
   init() {
     const footer = domCache.get('#site-footer')
     
-    // CRITICAL FIX: Trigger Injection
-    // Check if trigger zone exists, if not, inject it at the end of body/content
-    let trigger = domCache.get('#footer-trigger-zone')
-    if (!trigger) {
-        trigger = document.createElement('div')
-        trigger.id = 'footer-trigger-zone'
-        trigger.className = 'footer-trigger-zone'
-        // Insert before footer container if exists, else append to body
-        const container = domCache.get('#footer-container')
-        if (container) {
-            container.parentNode.insertBefore(trigger, container)
-        } else {
-            document.body.appendChild(trigger)
-        }
-        domCache.invalidate('#footer-trigger-zone')
+    // The trigger is injected by head-inline.js at document start; prefer cached lookup and fallback to DOM.
+    const trigger = domCache.get('#footer-trigger-zone') || document.getElementById('footer-trigger-zone')
+    if (!footer || !trigger) {
+      // If trigger missing, log a warning and abort handler setup — head-inline should provide the trigger.
+      try { log.warn('ScrollHandler: #footer-trigger-zone not found; ensure head-inline injects trigger') } catch {}
+      return
     }
-
-    if (!footer || !trigger) return
 
     // Initial State Check
     footer.querySelector('.footer-minimized')?.classList.remove('footer-hidden')
