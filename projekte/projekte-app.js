@@ -120,6 +120,17 @@ const Check = props => html`
 `
 
 // --- DATA ---
+function hexToRgba(hex, alpha = 1) {
+  if (!hex) return `rgba(0,0,0,${alpha})`
+  const h = hex.replace('#', '')
+  const full = h.length === 3 ? h.split('').map(c => c + c).join('') : h
+  const int = parseInt(full, 16)
+  const r = (int >> 16) & 255
+  const g = (int >> 8) & 255
+  const b = int & 255
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`
+}
+
 const projects = [
   {
     id: 1,
@@ -320,7 +331,15 @@ function App() {
                 <div className="back-glow" style=${{backgroundColor: project.glowColor}}></div>
                 <div className="window-mockup">
                   <div className="mockup-content">
-                    <div className="mockup-bg-pattern"></div>
+                    <div
+                      className="mockup-bg-pattern"
+                      style=${{
+                        backgroundImage: `radial-gradient(circle at 20% 20%, ${hexToRgba(project.glowColor, 0.12)} 0%, transparent 30%), radial-gradient(circle at 80% 80%, ${hexToRgba(project.glowColor, 0.06)} 0%, transparent 35%)`,
+                        opacity: 1,
+                        mixBlendMode: 'overlay'
+                      }}
+                      aria-hidden="true"
+                    ></div>
                     ${project.previewContent}
                     <div className="mockup-icon">${project.icon}</div>
                   </div>
