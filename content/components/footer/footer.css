@@ -664,7 +664,7 @@ body.footer-expanded {
 .footer-trigger-zone {
   display: block;
   width: 100%;
-  min-height: 4px; /* slightly larger to improve early intersection detection */
+  min-height: 16px; /* increased to improve first-scroll intersection detection */
   pointer-events: none;
   visibility: hidden; /* ensure it doesn't affect layout visually */
 } 
