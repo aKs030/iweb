@@ -120,17 +120,6 @@ const Check = props => html`
 `
 
 // --- DATA ---
-function hexToRgba(hex, alpha = 1) {
-  if (!hex) return `rgba(0,0,0,${alpha})`
-  const h = hex.replace('#', '')
-  const full = h.length === 3 ? h.split('').map(c => c + c).join('') : h
-  const int = parseInt(full, 16)
-  const r = (int >> 16) & 255
-  const g = (int >> 8) & 255
-  const b = int & 255
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`
-}
-
 const projects = [
   {
     id: 1,
@@ -150,8 +139,10 @@ const projects = [
       <${Gamepad2} style=${{color: '#c084fc', width: '32px', height: '32px'}} />
     `,
     previewContent: html`
-      <div className="mockup-iframe-container">
-        <iframe src="/projekte/apps/schere-stein-papier/" title="Schere Stein Papier Preview" loading="lazy"></iframe>
+      <div className="preview-container-vs">
+        <div style=${{fontSize: '3rem'}}>🪨</div>
+        <div style=${{fontSize: '1.5rem', opacity: 0.5}}>VS</div>
+        <div style=${{fontSize: '3rem'}}>✂️</div>
       </div>
     `
   },
@@ -284,6 +275,54 @@ function App() {
     }
   }, [])
 
+  // ProjectMockup: scales embedded iframes to fit the mockup while considering devicePixelRatio
+  const ProjectMockup = ({project}) => {
+    const wrapperRef = React.useRef(null)
+    const iframeRef = React.useRef(null)
+    const iframeSrc = project.appPath ? (project.appPath.endsWith('/') ? project.appPath + 'index.html' : project.appPath) : null
+
+    React.useEffect(() => {
+      if (!iframeSrc) return
+      const wrapper = wrapperRef.current
+      const iframe = iframeRef.current
+      if (!wrapper || !iframe) return
+
+      const baseW = 1024
+      const baseH = 768
+      const maxScale = 1.5
+
+      const apply = () => {
+        const w = wrapper.clientWidth
+        const h = wrapper.clientHeight
+        const dpr = Math.max(1, (window.devicePixelRatio || 1))
+        const effW = baseW / dpr
+        const effH = baseH / dpr
+        const scale = Math.min(maxScale, w / (effW || 1), h / (effH || 1))
+        iframe.style.transform = `scale(${scale})`
+        // keep the iframe at base pixel size for crisp rendering on HiDPI
+        iframe.style.width = `${baseW}px`
+        iframe.style.height = `${baseH}px`
+      }
+
+      apply()
+      const ro = new ResizeObserver(apply)
+      ro.observe(wrapper)
+      window.addEventListener('resize', apply)
+      return () => {
+        ro.disconnect()
+        window.removeEventListener('resize', apply)
+      }
+    }, [iframeSrc])
+
+    return html`
+      <div className="mockup-iframe-container" ref=${wrapperRef}>
+        ${iframeSrc
+          ? html`<iframe ref=${iframeRef} src=${iframeSrc} scrolling="no" sandbox="allow-same-origin allow-scripts allow-forms" title=${project.title}></iframe>`
+          : project.previewContent}
+      </div>
+    `
+  }
+
   return html`
     <${React.Fragment}>
       <!-- Hero Section -->
@@ -331,16 +370,8 @@ function App() {
                 <div className="back-glow" style=${{backgroundColor: project.glowColor}}></div>
                 <div className="window-mockup">
                   <div className="mockup-content">
-                    <div
-                      className="mockup-bg-pattern"
-                      style=${{
-                        backgroundImage: `radial-gradient(circle at 20% 20%, ${hexToRgba(project.glowColor, 0.12)} 0%, transparent 30%), radial-gradient(circle at 80% 80%, ${hexToRgba(project.glowColor, 0.06)} 0%, transparent 35%)`,
-                        opacity: 1,
-                        mixBlendMode: 'overlay'
-                      }}
-                      aria-hidden="true"
-                    ></div>
-                    ${project.previewContent}
+                    <div className="mockup-bg-pattern"></div>
+                    <${ProjectMockup} project=${project} />
                     <div className="mockup-icon">${project.icon}</div>
                   </div>
                 </div>
