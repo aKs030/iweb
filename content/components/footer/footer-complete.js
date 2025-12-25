@@ -391,56 +391,6 @@ const CookieSettings = (() => {
 
 GlobalClose.setCloseHandler(() => CookieSettings.close())
 
-// ===== Theme System (Optimized) =====
-class ThemeSystem {
-  constructor() {
-    this.currentTheme = this.getStoredTheme()
-    this.ripplePool = []
-  }
-
-  getStoredTheme() {
-    return localStorage.getItem('preferred-theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
-  }
-
-  applyTheme(theme) {
-    document.documentElement.setAttribute('data-theme', theme)
-    this.currentTheme = theme
-    localStorage.setItem('preferred-theme', theme)
-  }
-
-  toggleTheme() {
-    performance.mark('theme-toggle-start')
-    this.applyTheme(this.currentTheme === 'light' ? 'dark' : 'light')
-    performance.mark('theme-toggle-end')
-    performance.measure('theme-toggle', 'theme-toggle-start', 'theme-toggle-end')
-  }
-
-  createRipple(button, x, y) {
-    const ripple = this.ripplePool.pop() || document.createElement('div')
-    ripple.className = 'artwork-ripple'
-    ripple.style.left = `${x}px`
-    ripple.style.top = `${y}px`
-    button.appendChild(ripple)
-
-    setTimeout(() => {
-      ripple.remove()
-      this.ripplePool.push(ripple)
-    }, CONSTANTS.ANIMATION_DURATION)
-  }
-
-  init() {
-    this.applyTheme(this.currentTheme)
-    const toggle = domCache.get('#dayNightToggle')
-
-    if (toggle) {
-      toggle.addEventListener('click', e => {
-        const rect = toggle.getBoundingClientRect()
-        this.createRipple(toggle, e.clientX - rect.left, e.clientY - rect.top)
-        this.toggleTheme()
-      })
-    }
-  }
-}
 
 // ===== Footer Loader (Optimized) =====
 class FooterLoader {
@@ -475,7 +425,6 @@ class FooterLoader {
       this.setupInteractions()
 
       new ConsentBanner().init()
-      new ThemeSystem().init()
       new ScrollHandler().init()
       new FooterResizer().init()
 
