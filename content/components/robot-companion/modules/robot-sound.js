@@ -49,7 +49,7 @@ export class RobotSound {
       osc.frequency.setValueAtTime(freq, this.ctx.currentTime)
     } catch (e) {
       // If setting fails because context not ready, abort
-      log.warn('[RobotSound] Cannot set frequency, audio context not ready', e)
+      log.warn('Cannot set frequency, audio context not ready', e)
       return
     }
 
@@ -67,7 +67,7 @@ export class RobotSound {
       osc.start()
       osc.stop(this.ctx.currentTime + duration)
     } catch (e) {
-      log.warn('[RobotSound] Oscillator start failed (likely due to autoplay restrictions)', e)
+      log.warn('Oscillator start failed (likely due to autoplay restrictions)', e)
     }
   }
 
