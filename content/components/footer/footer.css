@@ -69,7 +69,6 @@
   animation: footerEntrance 0.8s var(--dynamic-footer-spring-bounce) forwards;
   opacity: 0;
   will-change: transform, opacity; /* Performance hint */
-  backface-visibility: hidden;
 
   /* Compact scale for footer variables (desktop-optimized) */
   --footer-text-xs: 9px;
@@ -661,20 +660,14 @@ body.footer-expanded {
   transform: translateZ(0);
 }
 
-/* ===== Trigger Zone (Essential for ScrollHandler) ===== */
+/* Trigger zone: invisible, non-interactive element used by IntersectionObserver. Keep a minimal height so it is detectable across browsers. */
 .footer-trigger-zone {
   display: block;
   width: 100%;
-  height: 10px; /* Minimal height to be caught by observer */
-  min-height: 4px;
+  min-height: 4px; /* slightly larger to improve early intersection detection */
   pointer-events: none;
-  visibility: hidden;
-  position: relative;
-  z-index: -1;
-  /* Ensure it doesn't cause layout shift */
-  margin-top: -10px;
-  top: -60px; /* Offset to trigger slightly before actual bottom */
-}  
+  visibility: hidden; /* ensure it doesn't affect layout visually */
+} 
 
 .footer-cookie-settings.hidden {
   display: none;
