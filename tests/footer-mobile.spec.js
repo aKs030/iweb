@@ -25,9 +25,10 @@ test.describe('Footer mobile gestures', () => {
     await expect(footer).toHaveClass(/footer-expanded/, {timeout: 3000})
 
     // Small scroll down should trigger collapse on mobile
-    await page.mouse.wheel(0, 30)
+    // Small scroll UP should trigger collapse on mobile (we are at page bottom after opening)
+    await page.mouse.wheel(0, -30)
     // wait a short while for debounce/close to run
-    await page.waitForTimeout(800)
+    await page.waitForTimeout(1000)
 
     await expect(footer).not.toHaveClass(/footer-expanded/)
   })
