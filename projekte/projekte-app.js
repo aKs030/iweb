@@ -15,6 +15,32 @@ import htm from 'https://cdn.jsdelivr.net/npm/htm@3.1.1/dist/htm.module.js'
 // Bind htm to React's createElement function
 const html = htm.bind(React.createElement)
 
+// Inject runtime CSS for mockup fill & pattern variables
+;(function injectMockupFillStyles(){
+  try {
+    if (typeof document === 'undefined' || document.getElementById('projects-mockup-fill-styles')) return
+    const s = document.createElement('style')
+    s.id = 'projects-mockup-fill-styles'
+    s.textContent = `
+.mockup-bg-pattern {
+  position: absolute;
+  inset: 0;
+  background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9IiNmZmZmZmYiLz48L3N2Zz4=');
+  background-size: var(--mockup-pattern-size, 20px) var(--mockup-pattern-size, 20px);
+  background-repeat: repeat;
+  opacity: var(--mockup-pattern-opacity, 0.035);
+  pointer-events: none;
+  z-index: 0;
+}
+.mockup-iframe-container { position: absolute; inset: 2rem; display: flex; align-items: center; justify-content: center; overflow: hidden; z-index: 1; }
+.mockup-iframe-container iframe { width: 1024px; height: 768px; border: none; transform-origin: center center; will-change: transform; }
+`
+    document.head && document.head.appendChild(s)
+  } catch (e) {
+    /* ignore */
+  }
+})()
+
 // --- Components ---
 
 // Base Icon Component
@@ -312,9 +338,10 @@ function App() {
         const basePattern = 20
         const patternSize = Math.round(Math.max(8, Math.min(120, basePattern * dpr * scale)))
         try {
-          // set the CSS variable on the host (.mockup-content) so the sibling .mockup-bg-pattern inherits it
-          const host = wrapper && wrapper.parentElement ? wrapper.parentElement : wrapper
-          host.style.setProperty('--mockup-pattern-size', `${patternSize}px`)
+          const contentEl = wrapper.parentElement || wrapper
+          contentEl.style.setProperty('--mockup-pattern-size', `${patternSize}px`)
+          const patternOpacity = Math.max(0.01, Math.min(0.12, 0.035 * scale * dpr))
+          contentEl.style.setProperty('--mockup-pattern-opacity', patternOpacity.toFixed(3))
         } catch (e) {
           /* ignore if style cannot be set */
         }
