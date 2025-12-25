@@ -691,9 +691,9 @@ class ScrollHandler {
 
     if (!footer || !trigger) return
 
-    // Determine thresholds based on viewport - desktop uses a slightly larger sensitivity
+    // Determine thresholds based on viewport - make desktop more sensitive (smaller intersection required)
     const isDesktop = window.matchMedia && window.matchMedia('(min-width: 769px)').matches
-    // On desktop we want a quick maximize on minimal scroll, but avoid accidental flapping
+    // Desktop: open already on minimal visibility (0.01), close only when nearly gone (0.005)
     this.expandThreshold = isDesktop ? 0.01 : 0.05
     this.collapseThreshold = isDesktop ? 0.005 : 0.02
 
