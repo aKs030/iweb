@@ -412,10 +412,11 @@ body.footer-expanded {
     border-radius: 8px;
   }
 
+  /* Keep the footer centered on narrow viewports while keeping small side gaps */
   .site-footer-fixed {
-    left: 12px;
-    transform: none;
-    width: calc(100% - 24px);
+    left: 50%;
+    transform: translateX(-50%) translateZ(0);
+    width: calc(100% - (var(--footer-horizontal-margin) * 2));
     border-radius: 12px;
   }
 
