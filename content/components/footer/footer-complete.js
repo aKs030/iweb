@@ -299,7 +299,10 @@ class ConsentBanner {
   accept() {
     this.elements.banner.classList.add('hidden')
     CookieManager.set('cookie_consent', 'accepted')
-    window.dataLayer = window.dataLayer || []; window.dataLayer.push({'event': 'consentGranted'});
+
+    window.dataLayer = window.dataLayer || []
+    window.dataLayer.push({'event': 'consentGranted'})
+
     GoogleAnalytics.load()
     try { a11y?.announce('Cookie-Präferenz: Alle Cookies akzeptiert', {priority: 'polite'}) } catch {}
   }
@@ -343,7 +346,10 @@ const CookieSettings = (() => {
       acceptSelectedBtn: () => {
         if (elements.analyticsToggle?.checked) {
           CookieManager.set('cookie_consent', 'accepted')
-          window.dataLayer = window.dataLayer || []; window.dataLayer.push({'event': 'consentGranted'});
+
+          window.dataLayer = window.dataLayer || []
+          window.dataLayer.push({'event': 'consentGranted'})
+
           GoogleAnalytics.load()
           try { a11y?.announce('Cookie-Einstellungen gespeichert: Analyse aktiviert', {priority: 'polite'}) } catch {}
         } else {
@@ -356,7 +362,10 @@ const CookieSettings = (() => {
       },
       acceptAllBtn: () => {
         CookieManager.set('cookie_consent', 'accepted')
-        window.dataLayer = window.dataLayer || []; window.dataLayer.push({'event': 'consentGranted'});
+
+        window.dataLayer = window.dataLayer || []
+        window.dataLayer.push({'event': 'consentGranted'})
+
         GoogleAnalytics.load()
         try { a11y?.announce('Cookie-Einstellungen: Alle Cookies aktiviert', {priority: 'polite'}) } catch {}
         close()
