@@ -4,10 +4,33 @@ const log = createLogger('head-inline')
 
 // Head inline helpers moved to external file to comply with CSP
 // 1) gtag configuration (kept separate from gtag.js external loader)
-//    NOTE: GTM and GA4 configuration values set from project settings. Edit below to change containers.
-const GTM_ID = 'GTM-N5ZZT3' // primary GTM container (set by user)
-const GTM_LEGACY = 'GT-PHW3GDDL' // legacy/secondary tag (reference)
-const GA4_MEASUREMENT_ID = 'G-PRCQ2397M4' // GA4 Measurement ID
+//    NOTE: Host-based GTM/GA4 mapping. Update HOST_GTM_MAP below to add or change site-specific containers.
+const HOST_GTM_MAP = {
+  // Primary site - updated to new container per request
+  'abdulkerimsesli.de': { gtm: 'GTM-5F5ZSTTL', ga4: 'G-757KWG0PG4' },
+  'www.abdulkerimsesli.de': { gtm: 'GTM-5F5ZSTTL', ga4: 'G-757KWG0PG4' },
+  // Fallback / other site (Meine Webseite)
+  'default': { gtm: 'GT-TQTFN4NN', ga4: 'G-S0587RQ4CN' }
+}
+
+const detectHostConfig = (host) => {
+  try {
+    const h = (host || (typeof window !== 'undefined' && window.location && window.location.hostname) || '').toLowerCase()
+    if (!h) return HOST_GTM_MAP.default
+    // exact match or strip www.
+    if (HOST_GTM_MAP[h]) return HOST_GTM_MAP[h]
+    const stripped = h.replace(/^www\./, '')
+    if (HOST_GTM_MAP[stripped]) return HOST_GTM_MAP[stripped]
+    return HOST_GTM_MAP.default
+  } catch (e) {
+    return HOST_GTM_MAP.default
+  }
+}
+
+// Expose for tests/debug
+window.__getGtmConfigForHost = detectHostConfig
+
+const { gtm: GTM_ID, ga4: GA4_MEASUREMENT_ID } = detectHostConfig()
 const GA4_PROPERTY = '360386802' // numeric GA property id (for reference)
 
 window.dataLayer = window.dataLayer || []
