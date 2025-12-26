@@ -1,10 +1,12 @@
 /**
  * Dynamic Head Loader - Ultimate Modern SEO & Schema Graph (@graph approach)
- * Version: 2025.3.2 (FAQ Strict Mode & Scope Fix)
+ * Version: 2025.3.4 (Identity Disambiguation & Abdul Berlin)
  * * Features:
  * - [GELB] Icon Fix: Re-Integration von 'Organization' für Logo-Support
  * - [ROT] Snippet Fill: Maximierte Descriptions & Knowledge-Injection
  * - [BLAU] FAQ Booster: Strict Mode + Whitespace Cleaner (gegen "Unbenanntes Element")
+ * - [GRÜN] Geo Update: Explizite GeoCoordinates & HomeLocation
+ * - [LILA] Identity Fix: Disambiguating Description & Alternate Names (Abdul Berlin)
  */
 
 import {createLogger} from '../../utils/shared-utilities.js'
@@ -21,35 +23,37 @@ const log = createLogger('HeadLoader')
   const BRAND_DATA = {
     name: 'Abdulkerim Sesli',
     legalName: 'Abdulkerim Sesli — Creative Digital Services',
+    alternateName: ['Abdul Sesli', 'Abdul Berlin', 'Abdulkerim Berlin'],
     logo: `${BASE_URL}/content/assets/img/icons/icon-512.png`, // [GELB] Das Icon für Google
-    jobTitle: 'Fotograf & Fullstack Webentwickler',
+    jobTitle: ['Web Developer', 'Photographer'],
     email: 'kontakt@abdulkerimsesli.de',
     areaServed: 'Berlin, Deutschland',
     address: {
       '@type': 'PostalAddress',
-      'streetAddress': 'Reinickendorf',
       'addressLocality': 'Berlin',
       'postalCode': '13507',
       'addressCountry': 'DE'
+    },
+    geo: {
+      '@type': 'GeoCoordinates',
+      'latitude': '52.5733',
+      'longitude': '13.2911'
     },
     sameAs: [
       'https://github.com/aKs030',
       'https://linkedin.com/in/abdulkerimsesli',
       'https://twitter.com/abdulkerimsesli',
       'https://www.instagram.com/abdulkerimsesli',
-      'https://www.youtube.com/@aks.030',
-      'https://de.wikipedia.org/wiki/Abdulkerim_Sesli',
-      'https://www.wikidata.org/wiki/Q137477910'
-    ]
+      'https://www.youtube.com/@aks.030'    ]
   }
 
   // B. INHALTS-STEUERUNG (Snippet Text Füllung)
   // [ROT] Hier füllen wir den Text-Bereich maximal auf (~160 Zeichen + Keywords)
   const ROUTES = {
     'default': {
-      title: 'Abdulkerim Sesli | Digitale Visitenkarte & Portfolio Berlin',
+      title: 'Abdulkerim Sesli | Webentwicklung & Fotografie Berlin | Abdul Berlin',
       description:
-        'Offizielles Portfolio von Abdulkerim Sesli. Professionelle Webentwicklung (React, Three.js) und Urban Photography aus Berlin. Jetzt Referenzen ansehen & kontaktieren.',
+        'Offizielles Portfolio von Abdulkerim Sesli (Abdul Berlin). Webentwickler (React, Three.js) und Fotograf aus Berlin. Nicht zu verwechseln mit Hörbuch-Verlagen.',
       type: 'ProfilePage',
       image: `${BASE_URL}/content/assets/img/og/og-home.png`
     },
@@ -90,7 +94,6 @@ const log = createLogger('HeadLoader')
     }
   }
 
-  // C. FAQ GENERATOR (Der "Blaue Bereich")
   // [BLAU] Diese Fragen tauchen direkt in der Google-Suche auf
   const BUSINESS_FAQS = [
     {
@@ -403,7 +406,8 @@ const log = createLogger('HeadLoader')
         '@type': 'PostalAddress',
         'addressLocality': 'Berlin',
         'addressCountry': 'DE'
-      }
+      },
+      'geo': BRAND_DATA.geo
     })
 
     // 2. PERSON (Die Haupt-Entität)
@@ -411,6 +415,7 @@ const log = createLogger('HeadLoader')
       '@type': ['Person', 'Photographer'],
       '@id': ID.person,
       'name': BRAND_DATA.name,
+      'alternateName': BRAND_DATA.alternateName,
       'jobTitle': BRAND_DATA.jobTitle,
       'worksFor': {'@id': ID.org},
       'url': BASE_URL,
@@ -421,13 +426,22 @@ const log = createLogger('HeadLoader')
         'caption': BRAND_DATA.name
       },
       'description': pageData.description,
+      // Identity Disambiguation
+      'disambiguatingDescription': 'Webentwickler (React, Three.js) und Fotograf aus Berlin, nicht zu verwechseln mit \'Sesli Kitap\' oder Hörbuch-Verlagen.',
       'sameAs': BRAND_DATA.sameAs,
+      'homeLocation': {
+        '@type': 'Place',
+        'name': 'Berlin',
+        'address': BRAND_DATA.address,
+        'geo': BRAND_DATA.geo
+      },
       'knowsAbout': [
         {'@type': 'Thing', 'name': 'Web Development', 'sameAs': 'https://www.wikidata.org/wiki/Q386275'},
         {'@type': 'Thing', 'name': 'React', 'sameAs': 'https://www.wikidata.org/wiki/Q19399674'},
         {'@type': 'Thing', 'name': 'Three.js', 'sameAs': 'https://www.wikidata.org/wiki/Q28135934'},
         {'@type': 'Thing', 'name': 'JavaScript', 'sameAs': 'https://www.wikidata.org/wiki/Q28865'},
         {'@type': 'Thing', 'name': 'Photography', 'sameAs': 'https://www.wikidata.org/wiki/Q11633'},
+        {'@type': 'Thing', 'name': 'Urban Photography'},
         {'@type': 'Place', 'name': 'Berlin', 'sameAs': 'https://www.wikidata.org/wiki/Q64'}
       ]
     })
