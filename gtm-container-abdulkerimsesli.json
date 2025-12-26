@@ -1,0 +1,28 @@
+{
+  "exportFormatVersion": 2,
+  "containerVersion": {
+    "container": {
+      "publicId": "GTM-5F5ZSTTL",
+      "name": "abdulkerimsesli.de - GA4 + Ads (GTM-5F5ZSTTL)"
+    },
+    "tag": [
+      {
+        "name": "GA4 - Configuration",
+        "type": "ua",
+        "parameter": [
+          { "key": "measurementId", "type": "TEMPLATE", "value": "G-757KWG0PG4" },
+          { "key": "send_page_view", "type": "BOOLEAN", "value": "false" }
+        ],
+        "firingTriggerId": ["2147479550"]
+      }
+    ],
+    "trigger": [
+      { "triggerId": "2147479550", "name": "All Pages", "type": "PAGEVIEW", "filter": [] }
+    ],
+    "variable": [
+      { "name": "GA4_MEASUREMENT_ID", "type": "constant", "parameter": [ { "key": "value", "type": "TEMPLATE", "value": "G-757KWG0PG4" } ] },
+      { "name": "AW_CONVERSION_ID", "type": "constant", "parameter": [ { "key": "value", "type": "TEMPLATE", "value": "AW-1036079663" } ] }
+    ],
+    "usageContext": ["WEB"]
+  }
+}
