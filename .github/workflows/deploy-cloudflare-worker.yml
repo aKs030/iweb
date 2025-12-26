@@ -1,0 +1,25 @@
+name: Deploy Cloudflare Worker
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  publish-worker:
+    name: Publish Cloudflare Worker
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install wrangler
+        run: npm install -g wrangler
+
+      - name: Publish Worker
+        env:
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+        run: |
+          cd cloudflare/workers
+          # update wrangler.toml account_id via env variable (simple templating)
+          if [ -n "$CF_ACCOUNT_ID" ]; then sed -i "s/account_id = \"YOUR_ACCOUNT_ID\"/account_id = \"$CF_ACCOUNT_ID\"/" wrangler.toml ; fi
+          wrangler publish

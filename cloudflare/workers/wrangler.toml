@@ -1,0 +1,8 @@
+name = "iweb-security-headers"
+main = "./headers.js"
+compatibility_date = "2025-12-26"
+# Fill in your Cloudflare account ID when deploying
+account_id = "YOUR_ACCOUNT_ID"
+
+[build]
+  command = "" # no build step for this simple worker
