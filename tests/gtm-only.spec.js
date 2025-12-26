@@ -21,9 +21,10 @@ test('When GTM is configured, no direct gtag.js for GA4 is loaded and IDs are in
   // Check dataLayer contains the identifiers for GTM to consume
   const dl = await page.evaluate(() => window.dataLayer || [])
   const hasGtmFlag = dl.some(i => i && i.gtm_autoconfig === true)
-  const hasGtmId = dl.some(i => i && i.gtm_id === 'GTM-N5ZZT3')
-  const hasGa4 = dl.some(i => i && i.ga4_measurement_id === 'G-PRCQ2397M4')
-  const hasAds = dl.some(i => i && i.ads_conversion_id === 'AW-1036079663')
+  const hasGtmId = dl.some(i => i && i.gtm_id === 'GT-TQTFN4NN')
+  const hasGa4 = dl.some(i => i && i.ga4_measurement_id === 'G-S0587RQ4CN')
+  // default mapping now points to AW-17819941793 for the local/default host
+  const hasAds = dl.some(i => i && i.ads_conversion_id === 'AW-17819941793')
 
   expect(hasGtmFlag).toBeTruthy()
   expect(hasGtmId).toBeTruthy()

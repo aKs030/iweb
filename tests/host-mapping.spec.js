@@ -16,4 +16,6 @@ test('host mapping returns correct GTM/GA4 ids for known hosts', async ({ page }
   expect(mapDefault).toBeTruthy()
   expect(mapDefault.gtm).toBe('GT-TQTFN4NN')
   expect(mapDefault.ga4).toBe('G-S0587RQ4CN')
+  // default should carry the correct AW conversion id
+  expect(mapDefault.aw).toBe('AW-17819941793')
 })

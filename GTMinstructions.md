@@ -25,10 +25,11 @@ const HOST_GTM_MAP = {
   - `gtm-container-abdulkerimsesli.json` (vorkonfiguriert für abdulkerimsesli.de → GT: `GTM-5F5ZSTTL`, GA4: `G-757KWG0PG4`)
     - Enthält vorkonfigurierte Tags: **GA4 Configuration (send_page_view:false, nur nach Consent)**, **GA4 Page View (feuert auf `pageMetadataReady`)**, **Google Ads Conversion (AW-1036079663)**, sowie Trigger **Consent Granted** (`consentGranted`) und **Page Metadata Ready** (`pageMetadataReady`). Ersetze `AW-CONV-LABEL` durch dein Conversion Label und passe Triggertypen an.
   - `gtm-container-meine-webseite.json` (vorkonfiguriert für deine andere Seite → GT: `GT-TQTFN4NN`, GA4: `G-S0587RQ4CN`)
+    - Enthält vorkonfigurierte Tags: **GA4 Configuration (send_page_view:false, nur nach Consent)**, **GA4 Page View (feuert auf `pageMetadataReady`)**, **Google Ads Conversion (AW-17819941793)**, sowie Trigger **Consent Granted** (`consentGranted`) und **Page Metadata Ready** (`pageMetadataReady`). Ersetze `AW-CONV-LABEL` durch dein Conversion Label und passe Triggertypen an.
 
 ## 3) GTM Container konfigurieren
 - Im GTM UI: Erstelle einen **GA4 Configuration Tag** mit deiner Measurement-ID (`G-PRCQ2397M4`) und setze Trigger **All Pages**. Deaktiviere in der Tag-Konfiguration die Option "Send a page view event when this configuration loads" falls du Pageviews manuell oder deduplizierend verwalten willst.
-- Erstelle zusätzlich einen **Google Ads Conversion/Remarketing Tag** und verwende die Conversion‑ID `AW-1036079663` (oder importiere vorhandene Conversions). Verwende Trigger und Consent‑Settings, um das Tag nur nach Zustimmung feuern zu lassen.
+- Erstelle zusätzlich einen **Google Ads Conversion/Remarketing Tag** und verwende die Conversion‑ID, die zu deinem Host gehört (z. B. `AW-17819941793` für die "Meine Webseite"-Konfiguration oder `AW-1036079663` für das ältere Setup). Verwende Trigger und Consent‑Settings, um das Tag nur nach Zustimmung feuern zu lassen.
 - WICHTIG: Entferne direkte `gtag('config', ...)`-Aufrufe aus dem Code, damit Tracking nur noch über GTM erfolgt. In diesem Projekt wurde das bereits vorbereitet: `head-inline.js` stellt die IDs über `dataLayer` bereit, GTM sollte diese als Variablen lesen.
 
 ## 4) Consent & Datenschutz
