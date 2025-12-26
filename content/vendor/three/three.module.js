@@ -301,6 +301,32 @@ const RAD2DEG = 180 / Math.PI;
 // http://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in-javascript/21963136#21963136
 function generateUUID() {
 
+	// Prefer native, cryptographically secure implementations when available.
+	if ( typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function' ) {
+		// Modern browsers & Node (v14.17+) provide crypto.randomUUID()
+		return crypto.randomUUID();
+	}
+
+	// Browser fallback: use crypto.getRandomValues to create RFC4122 v4 UUID
+	if ( typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function' ) {
+		const buffer = new Uint8Array( 16 );
+		crypto.getRandomValues( buffer );
+
+		// Per RFC4122, set the version and variant bits
+		buffer[ 6 ] = ( buffer[ 6 ] & 0x0f ) | 0x40; // version 4
+		buffer[ 8 ] = ( buffer[ 8 ] & 0x3f ) | 0x80; // variant 10
+
+		let i = 0;
+		let uuid = '';
+		for ( ; i < 16; i ++ ) {
+			uuid += _lut[ buffer[ i ] ];
+			if ( i === 3 || i === 5 || i === 7 || i === 9 ) uuid += '-';
+		}
+
+		return uuid.toLowerCase();
+	}
+
+	// Fallback: original Math.random-based implementation (non-cryptographic)
 	const d0 = Math.random() * 0xffffffff | 0;
 	const d1 = Math.random() * 0xffffffff | 0;
 	const d2 = Math.random() * 0xffffffff | 0;
