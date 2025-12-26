@@ -7,21 +7,109 @@
     },
     "tag": [
       {
-        "name": "GA4 - Configuration",
-        "type": "ua",
+        "name": "GA4 - Configuration (protected by consent)",
+        "type": "html",
         "parameter": [
-          { "key": "measurementId", "type": "TEMPLATE", "value": "G-757KWG0PG4" },
-          { "key": "send_page_view", "type": "BOOLEAN", "value": "false" }
+          {
+            "key": "html",
+            "type": "TEMPLATE",
+            "value": "<script async src=\"https://www.googletagmanager.com/gtag/js?id={{GA4_MEASUREMENT_ID}}\"></script>\n<script>window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config', '{{GA4_MEASUREMENT_ID}}', { 'send_page_view': false });</script>"
+          }
         ],
-        "firingTriggerId": ["2147479550"]
+        "firingTriggerId": ["1002"]
+      },
+      {
+        "name": "GA4 - Page View (on pageMetadataReady)",
+        "type": "html",
+        "parameter": [
+          {
+            "key": "html",
+            "type": "TEMPLATE",
+            "value": "<script>try{const pm = window.dataLayer && window.dataLayer.filter(i=>i && i.event==='pageMetadataReady').pop(); if(pm){gtag('event','page_view', { 'page_title': pm.page_meta?.page_title || document.title, 'page_path': pm.page_meta?.page_path || location.pathname });}}catch(e){};</script>"
+          }
+        ],
+        "firingTriggerId": ["1003"]
+      },
+      {
+        "name": "Google Ads - Conversion (AW)",
+        "type": "html",
+        "parameter": [
+          {
+            "key": "html",
+            "type": "TEMPLATE",
+            "value": "<script>window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('event','conversion', { 'send_to': '{{AW_CONVERSION_ID}}/{{AW_CONVERSION_LABEL}}' });</script>"
+          }
+        ],
+        "firingTriggerId": ["1004"],
+        "blockingTriggerId": []
       }
     ],
     "trigger": [
-      { "triggerId": "2147479550", "name": "All Pages", "type": "PAGEVIEW", "filter": [] }
+      {
+        "triggerId": "2147479550",
+        "name": "All Pages",
+        "type": "PAGEVIEW",
+        "filter": []
+      },
+      {
+        "triggerId": "1002",
+        "name": "Consent Granted",
+        "type": "CUSTOM_EVENT",
+        "filter": [
+          {
+            "type": "equals",
+            "parameter": [
+              { "key": "arg0", "type": "TEMPLATE", "value": "event" },
+              { "key": "arg1", "type": "TEMPLATE", "value": "consentGranted" }
+            ]
+          }
+        ]
+      },
+      {
+        "triggerId": "1003",
+        "name": "Page Metadata Ready",
+        "type": "CUSTOM_EVENT",
+        "filter": [
+          {
+            "type": "equals",
+            "parameter": [
+              { "key": "arg0", "type": "TEMPLATE", "value": "event" },
+              { "key": "arg1", "type": "TEMPLATE", "value": "pageMetadataReady" }
+            ]
+          }
+        ]
+      },
+      {
+        "triggerId": "1004",
+        "name": "Conversion Event (placeholder)",
+        "type": "CUSTOM_EVENT",
+        "filter": [
+          {
+            "type": "equals",
+            "parameter": [
+              { "key": "arg0", "type": "TEMPLATE", "value": "event" },
+              { "key": "arg1", "type": "TEMPLATE", "value": "conversionEvent" }
+            ]
+          }
+        ]
+      }
     ],
     "variable": [
-      { "name": "GA4_MEASUREMENT_ID", "type": "constant", "parameter": [ { "key": "value", "type": "TEMPLATE", "value": "G-757KWG0PG4" } ] },
-      { "name": "AW_CONVERSION_ID", "type": "constant", "parameter": [ { "key": "value", "type": "TEMPLATE", "value": "AW-1036079663" } ] }
+      {
+        "name": "GA4_MEASUREMENT_ID",
+        "type": "constant",
+        "parameter": [ { "key": "value", "type": "TEMPLATE", "value": "G-757KWG0PG4" } ]
+      },
+      {
+        "name": "AW_CONVERSION_ID",
+        "type": "constant",
+        "parameter": [ { "key": "value", "type": "TEMPLATE", "value": "AW-1036079663" } ]
+      },
+      {
+        "name": "AW_CONVERSION_LABEL",
+        "type": "constant",
+        "parameter": [ { "key": "value", "type": "TEMPLATE", "value": "AW-CONV-LABEL" } ]
+      }
     ],
     "usageContext": ["WEB"]
   }
