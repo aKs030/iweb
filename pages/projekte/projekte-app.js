@@ -238,38 +238,73 @@ function App() {
   }
 
   const getDirectUrl = project => {
-    // Avoid substring-based trust checks; rely on the stricter regex to validate GitHub path
+    // Prefer strict validation: if githubPath is an absolute URL, parse and ensure hostname === 'github.com'
     if (project.githubPath) {
-      const m = project.githubPath.match(/github\.com\/([^\/]+)\/([^\/]+)\/tree\/([^\/]+)\/(.+)$/)
-      if (m) {
-        const [, owner, repo, branch, path] = m
-        return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}/index.html`
+      try {
+        const url = new URL(project.githubPath)
+        if (url.hostname === 'github.com') {
+          const m = url.pathname.match(/\/?([^\/]+)\/([^\/]+)\/tree\/([^\/]+)\/(.+)$/)
+          if (m) {
+            const [, owner, repo, branch, path] = m
+            return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}/index.html`
+          }
+        }
+      } catch (e) {
+        // If not an absolute URL (relative path), fall back to the old regex-based approach
+        const m = project.githubPath.match(/github\.com\/([^\/]+)\/([^\/]+)\/tree\/([^\/]+)\/(.+)$/)
+        if (m) {
+          const [, owner, repo, branch, path] = m
+          return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}/index.html`
+        }
       }
     }
+
     // fallback
     if (project.appPath) return project.appPath.endsWith('/') ? project.appPath + 'index.html' : project.appPath
     return project.githubPath || ''
   }
 
   const toRawGithackUrl = ghUrl => {
+    if (!ghUrl) return ''
     try {
+      const url = new URL(ghUrl)
+      if (url.hostname === 'github.com') {
+        const m = url.pathname.match(/\/?([^\/]+)\/([^\/]+)\/tree\/([^\/]+)\/(.+)$/)
+        if (m) {
+          const [, owner, repo, branch, path] = m
+          return `https://raw.githack.com/${owner}/${repo}/${branch}/${path}/index.html`
+        }
+      }
+    } catch (e) {
+      // fallback to string-based regex for relative or non-absolute ghUrl
       const m = ghUrl.match(/github\.com\/([^\/]+)\/([^\/]+)\/tree\/([^\/]+)\/(.+)$/)
       if (m) {
         const [, owner, repo, branch, path] = m
         return `https://raw.githack.com/${owner}/${repo}/${branch}/${path}/index.html`
       }
-    } catch {}
+    }
     return ''
   }
 
   const toJsDelivrUrl = ghUrl => {
+    if (!ghUrl) return ''
     try {
+      const url = new URL(ghUrl)
+      if (url.hostname === 'github.com') {
+        const m = url.pathname.match(/\/?([^\/]+)\/([^\/]+)\/tree\/([^\/]+)\/(.+)$/)
+        if (m) {
+          const [, owner, repo, branch, path] = m
+          return `https://cdn.jsdelivr.net/gh/${owner}/${repo}@${branch}/${path}/index.html`
+        }
+      }
+    } catch (e) {
+      // fallback to string-based regex for relative or non-absolute ghUrl
       const m = ghUrl.match(/github\.com\/([^\/]+)\/([^\/]+)\/tree\/([^\/]+)\/(.+)$/)
       if (m) {
         const [, owner, repo, branch, path] = m
         return `https://cdn.jsdelivr.net/gh/${owner}/${repo}@${branch}/${path}/index.html`
       }
-    } catch {}
+    }
     return ''
   }
 
