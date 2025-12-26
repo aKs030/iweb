@@ -18,7 +18,8 @@
     "prepare": "husky install",
     "lint:js": "eslint . --ext .js,.ts",
     "lint": "npm run lint:js",
-    "prepare:build": "npm run build:og-images"
+    "prepare:build": "npm run build:og-images",
+    "fetch-three": "bash ./scripts/fetch_three.sh"
   },
   "devDependencies": {
     "@playwright/test": "^1.57.0",

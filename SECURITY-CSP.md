@@ -11,17 +11,24 @@ Content Security Policy ist ein wichtiger Sicherheitsmechanismus, der Cross-Site
 ```
 Content-Security-Policy:
   default-src 'self';
-  script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com;
+  script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://cdn.jsdelivr.net https://*.cloudflareinsights.com;
   style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
   font-src 'self' https://fonts.gstatic.com data:;
   img-src 'self' data: https: blob:;
-  connect-src 'self' https://www.google-analytics.com https://www.googletagmanager.com;
+  connect-src 'self' https://www.google-analytics.com https://www.googletagmanager.com https://cdn.jsdelivr.net https://*.cloudflareinsights.com;
   media-src 'self';
   object-src 'none';
   frame-ancestors 'none';
   base-uri 'self';
   form-action 'self';
   upgrade-insecure-requests;
+
+
+> Hinweis: If you prefer a stricter policy that avoids CDN host entries, use the local Three.js fallback:
+>
+> - Run `scripts/fetch_three.sh` to download `three.module.js` into `content/vendor/three/` and optionally commit it.
+> - In that case you can keep `script-src 'self'` and avoid adding `https://cdn.jsdelivr.net` to your CSP.
+> - Cloudflare Insights (beacon scripts) still require `https://*.cloudflareinsights.com` in `script-src` and `connect-src` unless you disable the integration.
 ```
 
 ### Development CSP (Weniger streng)
