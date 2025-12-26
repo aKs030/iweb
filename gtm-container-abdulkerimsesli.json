@@ -97,13 +97,13 @@
     "variable": [
       {
         "name": "GA4_MEASUREMENT_ID",
-        "type": "constant",
-        "parameter": [ { "key": "value", "type": "TEMPLATE", "value": "G-757KWG0PG4" } ]
+        "type": "dataLayer",
+        "parameter": [ { "key": "name", "type": "TEMPLATE", "value": "ga4_measurement_id" } ]
       },
       {
         "name": "AW_CONVERSION_ID",
-        "type": "constant",
-        "parameter": [ { "key": "value", "type": "TEMPLATE", "value": "AW-1036079663" } ]
+        "type": "dataLayer",
+        "parameter": [ { "key": "name", "type": "TEMPLATE", "value": "ads_conversion_id" } ]
       },
       {
         "name": "AW_CONVERSION_LABEL",
