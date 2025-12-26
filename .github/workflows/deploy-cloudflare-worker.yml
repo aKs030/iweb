@@ -16,10 +16,13 @@ jobs:
 
       - name: Publish Worker
         env:
+          # Use the recommended variable name for wrangler (CLOUDFLARE_API_TOKEN). Keep legacy CF_API_TOKEN for compatibility.
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
         run: |
           cd cloudflare/workers
           # update wrangler.toml account_id via env variable (simple templating)
           if [ -n "$CF_ACCOUNT_ID" ]; then sed -i "s/account_id = \"YOUR_ACCOUNT_ID\"/account_id = \"$CF_ACCOUNT_ID\"/" wrangler.toml ; fi
-          wrangler publish
+          # Use modern wrangler deploy command
+          wrangler deploy
