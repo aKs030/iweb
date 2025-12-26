@@ -10,10 +10,13 @@ Diese Anleitung ergänzt die Implementierung in `content/components/head/head-in
 - Öffne `content/components/head/head-inline.js` und ersetze den Platzhalter:
 
 ```js
-const GTM_ID = 'GTM-N5ZZT3' // primary GTM container
-const GTM_LEGACY = 'GT-PHW3GDDL' // legacy/secondary tag (reference)
-const GA4_MEASUREMENT_ID = 'G-PRCQ2397M4'
-const GA4_PROPERTY = '360386802'
+// Host-based mapping is used in `head-inline.js`. Edit the map to add/change sites.
+const HOST_GTM_MAP = {
+  'abdulkerimsesli.de': { gtm: 'GTM-5F5ZSTTL', ga4: 'G-757KWG0PG4' },
+  'www.abdulkerimsesli.de': { gtm: 'GTM-5F5ZSTTL', ga4: 'G-757KWG0PG4' },
+  // default / other site
+  'default': { gtm: 'GT-TQTFN4NN', ga4: 'G-S0587RQ4CN' }
+}
 ```
 
 - Wenn `GTM-XXXXXXX` belassen wird, lädt GTM nicht.
