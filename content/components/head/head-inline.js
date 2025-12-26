@@ -6,10 +6,10 @@ const log = createLogger('head-inline')
 // 1) gtag configuration (kept separate from gtag.js external loader)
 //    NOTE: Host-based GTM/GA4 mapping. Update HOST_GTM_MAP below to add or change site-specific containers.
 const HOST_GTM_MAP = {
-  // Primary site mapping (production)
-  'abdulkerimsesli.de': { gtm: 'GTM-5F5ZSTTL', ga4: 'G-757KWG0PG4', aw: null },
-  'www.abdulkerimsesli.de': { gtm: 'GTM-5F5ZSTTL', ga4: 'G-757KWG0PG4', aw: null },
-  // Meine Webseite mapping (default)
+  // Production
+  'abdulkerimsesli.de': { gtm: 'GTM-5F5ZSTTL', ga4: 'G-757KWG0PG4', aw: 'AW-1036079663' },
+  'www.abdulkerimsesli.de': { gtm: 'GTM-5F5ZSTTL', ga4: 'G-757KWG0PG4', aw: 'AW-1036079663' },
+  // Development
   'meine-webseite.local': { gtm: 'GT-TQTFN4NN', ga4: 'G-S0587RQ4CN', aw: 'AW-17819941793' },
   'default': { gtm: 'GT-TQTFN4NN', ga4: 'G-S0587RQ4CN', aw: 'AW-17819941793' }
 }
