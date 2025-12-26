@@ -67,6 +67,11 @@ function _shareChannel() {
     btn.dataset.loaded = '1'
   }
 
+  // Utility: escape HTML for safe injection (declared early so it's available everywhere)
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'})[c])
+  }
+
   // Attach handlers for any static thumbnails (works even if API fetch doesn't run)
   function attachStaticThumbsStandalone() {
     try {
@@ -88,6 +93,25 @@ function _shareChannel() {
 
   // Run asap so static page thumbnails are interactive even without API
   attachStaticThumbsStandalone()
+
+  // Attach handlers for static thumbnails already in the DOM (available early)
+  function initStaticThumbs() {
+    document.querySelectorAll('.video-thumb').forEach(b => {
+      if (b.dataset.bound) return
+      b.addEventListener('click', () => activateThumb(b))
+      b.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          activateThumb(b)
+        }
+      })
+      b.dataset.bound = '1'
+    })
+  }
+
+  // Ensure static thumbs are bound and return early
+  initStaticThumbs()
+  setStatus('')
 
   // Stable testing: if mock mode is active and no API key is present, render demo videos
   if (!apiKey && window.YOUTUBE_USE_MOCK) {
@@ -320,23 +344,7 @@ function _shareChannel() {
       })
     })
 
-    // Attach handlers for static thumbnails already in the DOM
-    function initStaticThumbs() {
-      document.querySelectorAll('.video-thumb').forEach(b => {
-        if (b.dataset.bound) return
-        b.addEventListener('click', () => activateThumb(b))
-        b.addEventListener('keydown', e => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault()
-            activateThumb(b)
-          }
-        })
-        b.dataset.bound = '1'
-      })
-    }
 
-    // Ensure static thumbs work even if API fetch replaced content
-    initStaticThumbs()
     setStatus('')
 
     function escapeHtml(s) {

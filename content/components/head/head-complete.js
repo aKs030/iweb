@@ -117,6 +117,8 @@ const log = createLogger('HeadLoader')
   try {
     const {createLogger} = await import('../../utils/shared-utilities.js')
     const _log = createLogger('HeadLoader')
+    // Known production hosts - used in canonical & JSON-LD decisions
+    const PROD_HOSTS = ['abdulkerimsesli.de', 'www.abdulkerimsesli.de']
 
     const _escapeHTML = str =>
       String(str).replace(/[&<>"']/g, m => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'})[m])
@@ -172,38 +174,73 @@ const log = createLogger('HeadLoader')
     upsertMeta('og:locale', 'de_DE', true)
     if (pageData.image) upsertMeta('og:image', pageData.image, true)
 
+    // Social URLs - ensure shares show the current page URL
+    upsertMeta('og:url', pageUrl, true)
+    upsertMeta('twitter:url', pageUrl)
+
+    // Improve social image metadata: alt text (accessibility) and recommended dimensions
+    const imageAlt = pageData.title || pageData.description || ''
+    if (imageAlt) upsertMeta('twitter:image:alt', imageAlt)
+    if (pageData.image) {
+      // Try to find real image dimensions from the generated JSON file
+      try {
+        fetch('/content/utils/og-image-dimensions.json')
+          .then(r => (r.ok ? r.json() : null))
+          .then(map => {
+            if (!map) {
+              upsertMeta('og:image:width', '1200', true)
+              upsertMeta('og:image:height', '630', true)
+              return
+            }
+            // image path may be absolute URL or relative path; normalize to web path
+            const imgPath = pageData.image.startsWith('/') ? pageData.image : pageData.image
+            const dims = map[imgPath] || map[pageData.image] || null
+            if (dims) {
+              upsertMeta('og:image:width', String(dims.width), true)
+              upsertMeta('og:image:height', String(dims.height), true)
+            } else {
+              upsertMeta('og:image:width', '1200', true)
+              upsertMeta('og:image:height', '630', true)
+            }
+          })
+          .catch(() => {
+            upsertMeta('og:image:width', '1200', true)
+            upsertMeta('og:image:height', '630', true)
+          })
+      } catch {
+        upsertMeta('og:image:width', '1200', true)
+        upsertMeta('og:image:height', '630', true)
+      }
+    }
+
     // Canonical: prefer fixed production origin for known hosts, else use runtime pageUrl
     try {
-      const PROD_HOSTS = ['abdulkerimsesli.de', 'www.abdulkerimsesli.de']
+      // PROD_HOSTS is defined above (shared); determine hostname for env checks
       const hostname = window.location.hostname.toLowerCase()
-      const ensureTrailingSlash = p => (p.endsWith('/') ? p : p + '/')
+      const _ensureTrailingSlash = p => (p.endsWith('/') ? p : p + '/')
       // Force Canonical to Production host when true. Set to false to allow dev/staging canonical behavior.
       // Recommended: automatically use production for known hosts, otherwise allow opt-in via data attribute
       const forceProdFlag = PROD_HOSTS.includes(hostname) ||
         document.documentElement.getAttribute('data-force-prod-canonical') === 'true'
 
-      // Normalize path for robust matching (handle //, .html, index.html etc.)
-      const rawPath = window.location.pathname || '/'
-      let pathForMatch = rawPath.replace(/\/\/+/g, '/')             // dedupe slashes
-      pathForMatch = pathForMatch.replace(/\/index\.html$/i, '/')   // strip index.html
-      pathForMatch = pathForMatch.replace(/\.html$/i, '/')          // strip .html
-      pathForMatch = pathForMatch.replace(/\/\/+/g, '/')           // final dedupe
-      if (!pathForMatch.startsWith('/')) pathForMatch = '/' + pathForMatch
-      // Ensure trailing slash for reliable startsWith matching
-      pathForMatch = pathForMatch.endsWith('/') ? pathForMatch : pathForMatch + '/'
-
-      // Find matching route key (case-insensitive). ROUTES keys are canonical (e.g. '/projekte/')
-      const lowerMatch = pathForMatch.toLowerCase()
-      let routeKey = Object.keys(ROUTES).find(k => k !== 'default' && lowerMatch.startsWith(k))
-      // Fallback: match if our cleaned path *contains* a route key (handles cases like /pages/projekte/)
-      if (!routeKey) routeKey = Object.keys(ROUTES).find(k => k !== 'default' && lowerMatch.includes(k))
-
-      // If we found a known route, prefer that canonical path; otherwise fall back to cleaned path
+      // Compute cleanPath using shared canonical util
       let cleanPath
-      if (routeKey) {
-        cleanPath = ensureTrailingSlash(routeKey)
-      } else {
-        cleanPath = pathForMatch
+      try {
+        const {getCanonicalPathFromRoutes} = await import('../../utils/canonical-utils.js')
+        cleanPath = getCanonicalPathFromRoutes(window.location.pathname, ROUTES)
+      } catch {
+        // Fallback to previous inline behavior if import fails
+        const rawPath = window.location.pathname || '/'
+        let pathForMatch = rawPath.replace(/\/\/+/g, '/')
+        pathForMatch = pathForMatch.replace(/\/index\.html$/i, '/')
+        pathForMatch = pathForMatch.replace(/\.html$/i, '/')
+        pathForMatch = pathForMatch.replace(/\/\/+/g, '/')
+        if (!pathForMatch.startsWith('/')) pathForMatch = '/' + pathForMatch
+        pathForMatch = pathForMatch.endsWith('/') ? pathForMatch : pathForMatch + '/'
+        const lowerMatch = pathForMatch.toLowerCase()
+        let routeKey = Object.keys(ROUTES).find(k => k !== 'default' && lowerMatch.startsWith(k))
+        if (!routeKey) routeKey = Object.keys(ROUTES).find(k => k !== 'default' && lowerMatch.includes(k))
+        cleanPath = routeKey ? (routeKey.endsWith('/') ? routeKey : routeKey + '/') : pathForMatch
       }
 
       const canonicalHref = forceProdFlag
@@ -224,6 +261,24 @@ const log = createLogger('HeadLoader')
       const canonicalEl = document.head.querySelector('link[rel="canonical"]')
       if (canonicalEl) canonicalEl.setAttribute('href', effectiveCanonical)
       else upsertLink('canonical', effectiveCanonical)
+
+      // Add basic hreflang alternates (German and x-default) to improve language discovery
+      const upsertAlternate = (lang, href) => {
+        if (!href) return
+        let el = document.head.querySelector(`link[rel="alternate"][hreflang="${lang}"]`)
+        if (el) el.setAttribute('href', href)
+        else {
+          el = document.createElement('link')
+          el.setAttribute('rel', 'alternate')
+          el.setAttribute('hreflang', lang)
+          el.setAttribute('href', href)
+          document.head.appendChild(el)
+        }
+      }
+
+      const canonicalOrigin = forceProdFlag ? BASE_URL : window.location.origin
+      upsertAlternate('de', `${canonicalOrigin}${cleanPath}`)
+      upsertAlternate('x-default', `${canonicalOrigin}${cleanPath}`)
     } catch (err) {
       // Safe fallback log
       log.warn('canonical detection failed', err)
@@ -290,10 +345,16 @@ const log = createLogger('HeadLoader')
 
   // --- 3. SCHEMA GRAPH GENERATION ---
   const generateSchema = () => {
+    // Use canonical origin (prod or runtime origin) so JSON-LD stays consistent in local/dev
+    const canonicalOrigin = (document.documentElement.getAttribute('data-force-prod-canonical') === 'true') ||
+      ['abdulkerimsesli.de', 'www.abdulkerimsesli.de'].includes(window.location.hostname.toLowerCase())
+      ? BASE_URL
+      : window.location.origin
+
     const ID = {
-      person: `${BASE_URL}/#person`,
-      org: `${BASE_URL}/#organization`,
-      website: `${BASE_URL}/#website`,
+      person: `${canonicalOrigin}/#person`,
+      org: `${canonicalOrigin}/#organization`,
+      website: `${canonicalOrigin}/#website`,
       webpage: `${pageUrl}#webpage`,
       breadcrumb: `${pageUrl}#breadcrumb`
     }
@@ -489,7 +550,7 @@ const log = createLogger('HeadLoader')
         'item': {'@id': BASE_URL, 'name': 'Home'}
       }
     ]
-    let pathAcc = BASE_URL
+    let pathAcc = canonicalOrigin
     segments.forEach((seg, i) => {
       pathAcc += `/${seg}`
       const name = seg.charAt(0).toUpperCase() + seg.slice(1)
