@@ -40,6 +40,17 @@ Hinweis: Der Service Worker (`sw.js`) wurde entfernt. Ein einmaliger Cleanup lä
 
 > Tipp: Wenn du lokal Registrierungen manuell prüfen möchtest, kannst du weiterhin `navigator.serviceWorker.getRegistrations()` in der Console ausführen.
 
+### Three.js local fallback
+
+Um CSP-Einträge für CDNs zu vermeiden, kannst du Three.js lokal vorhalten. Ein Hilfsskript ist verfügbar:
+
+```bash
+# lädt three.module.js in content/vendor/three/ (Version siehe config)
+./scripts/fetch_three.sh
+```
+
+Nach dem Download kannst du die Datei `content/vendor/three/three.module.js` committen oder in deinem CI-Build-Prozess herunterladen.
+
 ## Recent Optimizations (2025-12-04)
 
 ### ✅ Console-Logs durch Logger ersetzt
