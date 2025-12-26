@@ -113,6 +113,24 @@ const log = createLogger('HeadLoader')
   const pageData = matchedKey ? ROUTES[matchedKey] : ROUTES.default
   const pageUrl = window.location.href.split('#')[0]
 
+  // --- Push stable page metadata to dataLayer for GTM (no PII) ---
+  try {
+    window.dataLayer = window.dataLayer || []
+    const page_meta = {
+      page_title: pageData.title || document.title || '',
+      page_path: window.location.pathname || '/',
+      page_url: pageUrl,
+      page_type: pageData.type || 'WebPage',
+      page_image: pageData.image || '',
+      page_lang: 'de-DE'
+    }
+
+    // push a named event so GTM can use it as trigger (and to avoid premature reads)
+    window.dataLayer.push({ event: 'pageMetadataReady', page_meta })
+  } catch (e) {
+    log && log.warn && log.warn('head-complete: pushing page metadata failed', e)
+  }
+
   // --- 2. HTML HEAD UPDATES (lightweight, no heavy DOM replacement) ---
   try {
     const {createLogger} = await import('../../utils/shared-utilities.js')
