@@ -8,7 +8,7 @@ const fs = require('fs')
 const path = require('path')
 
 const PORT = process.env.PORT || 8081
-const ROOT = process.cwd()
+const ROOT = path.resolve(process.cwd())
 
 const mime = (p) => {
   const ext = path.extname(p).toLowerCase()
@@ -40,10 +40,37 @@ const tryFile = (urlPath) => {
   // Normalize and prevent directory traversal
   let safePath = path.normalize(urlPath).replace(/^\/+/, '')
   safePath = safePath.split('?')[0].split('#')[0]
-  const full = path.join(ROOT, safePath)
+  const candidate = path.join(ROOT, safePath)
+
+  // Resolve symlinks and ensure the path is within ROOT
+  let full
+  try {
+    const resolved = fs.realpathSync(candidate)
+    if (resolved === ROOT || resolved.startsWith(ROOT + path.sep)) {
+      full = resolved
+    } else {
+      return null
+    }
+  } catch {
+    return null
+  }
+
   if (fileExists(full)) return full
+
   // If it's a directory or no extension, try index.html
-  const asIndex = path.join(full, 'index.html')
+  const indexCandidate = path.join(full, 'index.html')
+  let asIndex
+  try {
+    const resolvedIndex = fs.realpathSync(indexCandidate)
+    if (resolvedIndex === ROOT || resolvedIndex.startsWith(ROOT + path.sep)) {
+      asIndex = resolvedIndex
+    } else {
+      return null
+    }
+  } catch {
+    return null
+  }
+
   if (fileExists(asIndex)) return asIndex
   return null
 }
