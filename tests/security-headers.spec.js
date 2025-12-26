@@ -2,7 +2,12 @@ const { test, expect } = require('@playwright/test')
 
 const BASE = process.env.TEST_BASE_URL || 'http://localhost:8081'
 
+// Skip these tests when running against the local dev server (no Cloudflare worker applied)
+const isRemote = !BASE.includes('localhost') && !BASE.includes('127.0.0.1') && BASE.startsWith('http')
+
 test('security headers are present and sane for HTML pages', async ({ page }) => {
+  test.skip(!isRemote, 'Security header assertions only run against staging/production behind Cloudflare')
+
   const res = await page.goto(`${BASE}/`, { waitUntil: 'networkidle' })
   const headers = res.headers()
 
