@@ -13,9 +13,10 @@
 */
 
 async function loadConfig() {
+  let log
   try {
     const {createLogger} = await import('../utils/shared-utilities.js')
-    const log = createLogger('VideosConfig')
+    log = createLogger('VideosConfig')
     let partA = ''
     let partB = ''
 
@@ -69,8 +70,9 @@ async function loadConfig() {
     }
   } catch (e) {
     // Non-fatal — videos.js will handle absence of key gracefully
-    // keep e here because we log it
-    log.warn('[videos-config-loader] Could not load split parts:', e)
+    // use console as fallback when `log` isn't available
+    if (typeof log !== 'undefined' && typeof log.warn === 'function') log.warn('[videos-config-loader] Could not load split parts:', e)
+    else console.warn('[videos-config-loader] Could not load split parts:', e)
   }
 }
 

@@ -7,12 +7,18 @@
   "scripts": {
     "serve": "http-server ./ -p 8081",
     "serve:dev": "node ./scripts/dev-serve.js",
+    "test:canonical": "node ./scripts/test-canonical.mjs",
+    "check:canonical-static": "bash ./scripts/check-canonical-static.sh",
+    "build:og-images": "node ./scripts/build-og-images.mjs",
+    "validate:ldjson": "node ./scripts/validate-ldjson.mjs",
+    "test:playwright": "npx playwright test",
     "dev": "npm run serve",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "prepare": "husky install",
     "lint:js": "eslint . --ext .js,.ts",
-    "lint": "npm run lint:js"
+    "lint": "npm run lint:js",
+    "prepare:build": "npm run build:og-images"
   },
   "devDependencies": {
     "@playwright/test": "^1.57.0",
@@ -20,7 +26,9 @@
     "http-server": "^14.1.1",
     "husky": "^8.0.0",
     "lint-staged": "^14.0.0",
-    "prettier": "^3.7.4"
+    "prettier": "^3.7.4",
+    "glob": "^10.3.3",
+    "image-size": "^1.1.1"
   },
   "lint-staged": {
     "*.{js,ts}": [

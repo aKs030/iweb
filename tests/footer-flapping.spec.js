@@ -27,7 +27,7 @@ test.describe('Footer flapping behaviour', () => {
     if (!details.exists) throw new Error('Trigger not found')
 
     // Calculate scroll so that intersection ratio will be slightly above the threshold
-    const targetScroll = Math.max(0, Math.floor(details.pageY - page.viewportSize.height + Math.ceil(details.height * (details.expandThreshold + 0.15))))
+    const _targetScroll = Math.max(0, Math.floor(details.pageY - page.viewportSize.height + Math.ceil(details.height * (details.expandThreshold + 0.15))))
 
     // Attach debug IO to observe entries (helps diagnose flapping in CI)
     await page.evaluate(() => {

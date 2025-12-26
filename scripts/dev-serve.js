@@ -31,7 +31,7 @@ const fileExists = (p) => {
   try {
     const s = fs.statSync(p)
     return s.isFile()
-  } catch (e) {
+  } catch {
     return false
   }
 }
@@ -51,30 +51,30 @@ const tryFile = (urlPath) => {
 const server = http.createServer((req, res) => {
   const urlPath = decodeURIComponent(req.url || '/')
   // First try the path as-is
-  console.log('Request for', urlPath)
+  console.warn('Request for', urlPath)
   let f = tryFile(urlPath)
-  console.log(' tryFile(urlPath) ->', f)
+  console.warn(' tryFile(urlPath) ->', f)
   if (!f) {
     // Try within /pages/<path>
     const candidate = path.posix.join('pages', urlPath)
-    console.log(' trying candidate', candidate)
+    console.warn(' trying candidate', candidate)
     f = tryFile(candidate)
-    console.log(' tryFile(candidate) ->', f)
+    console.warn(' tryFile(candidate) ->', f)
   }
 
   if (f) {
     const stream = fs.createReadStream(f)
-    console.log('Serving file', f)
+    console.warn('Serving file', f)
     res.writeHead(200, { 'Content-Type': mime(f) })
     stream.pipe(res)
   } else {
-    console.log('No matching file for', urlPath)
+    console.warn('No matching file for', urlPath)
     res.writeHead(404, { 'Content-Type': 'text/plain' })
     res.end('Not found')
   }
 })
 
 server.listen(PORT, () => {
-  console.log(`Dev server listening on http://127.0.0.1:${PORT}`)
-  console.log('Serving from:', ROOT)
+  console.warn(`Dev server listening on http://127.0.0.1:${PORT}`)
+  console.warn('Serving from:', ROOT)
 })
