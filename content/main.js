@@ -140,13 +140,16 @@ const SectionLoader = (() => {
     dispatchEvent('section:will-load', section, {url})
 
     try {
-      // Try extensionless URL first to avoid server redirects (some hosts redirect .html -> no-ext)
+      // Robust candidate selection: prefer sensible variant order to reduce noisy 404s.
+      // For inlined page fragments under /pages/, try the explicit .html path first to avoid an initial 404
       let response
-      // Robust candidate selection: always try both extensionless and .html variants
       let fetchCandidates
       if (url && url.endsWith('.html')) {
         // If .html explicitly provided, try without extension first to avoid redirects
         fetchCandidates = [url.replace(/\.html$/, ''), url]
+      } else if (url && url.startsWith('/pages/')) {
+        // For internal includes, try the .html variant first (dev servers commonly store it this way)
+        fetchCandidates = [(url || '') + '.html', url]
       } else {
         // Otherwise try the provided value first, then the .html variant
         fetchCandidates = [url, (url || '') + '.html']
