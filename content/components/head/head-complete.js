@@ -1,10 +1,11 @@
 /**
  * Dynamic Head Loader - Ultimate Modern SEO & Schema Graph (@graph approach)
- * Version: 2025.3.2 (FAQ Strict Mode & Scope Fix)
+ * Version: 2025.3.3 (Geo Schema & Refined Address)
  * * Features:
  * - [GELB] Icon Fix: Re-Integration von 'Organization' für Logo-Support
  * - [ROT] Snippet Fill: Maximierte Descriptions & Knowledge-Injection
  * - [BLAU] FAQ Booster: Strict Mode + Whitespace Cleaner (gegen "Unbenanntes Element")
+ * - [GRÜN] Geo Update: Explizite GeoCoordinates & HomeLocation
  */
 
 import {createLogger} from '../../utils/shared-utilities.js'
@@ -27,10 +28,14 @@ const log = createLogger('HeadLoader')
     areaServed: 'Berlin, Deutschland',
     address: {
       '@type': 'PostalAddress',
-      'streetAddress': 'Reinickendorf',
       'addressLocality': 'Berlin',
       'postalCode': '13507',
       'addressCountry': 'DE'
+    },
+    geo: {
+      '@type': 'GeoCoordinates',
+      'latitude': '52.5733',
+      'longitude': '13.2911'
     },
     sameAs: [
       'https://github.com/aKs030',
@@ -403,7 +408,8 @@ const log = createLogger('HeadLoader')
         '@type': 'PostalAddress',
         'addressLocality': 'Berlin',
         'addressCountry': 'DE'
-      }
+      },
+      'geo': BRAND_DATA.geo
     })
 
     // 2. PERSON (Die Haupt-Entität)
@@ -422,6 +428,12 @@ const log = createLogger('HeadLoader')
       },
       'description': pageData.description,
       'sameAs': BRAND_DATA.sameAs,
+      'homeLocation': {
+        '@type': 'Place',
+        'name': 'Berlin',
+        'address': BRAND_DATA.address,
+        'geo': BRAND_DATA.geo
+      },
       'knowsAbout': [
         {'@type': 'Thing', 'name': 'Web Development', 'sameAs': 'https://www.wikidata.org/wiki/Q386275'},
         {'@type': 'Thing', 'name': 'React', 'sameAs': 'https://www.wikidata.org/wiki/Q19399674'},
