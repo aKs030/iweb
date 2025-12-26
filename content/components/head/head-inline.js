@@ -6,11 +6,12 @@ const log = createLogger('head-inline')
 // 1) gtag configuration (kept separate from gtag.js external loader)
 //    NOTE: Host-based GTM/GA4 mapping. Update HOST_GTM_MAP below to add or change site-specific containers.
 const HOST_GTM_MAP = {
-  // Primary site - updated to new container per request
-  'abdulkerimsesli.de': { gtm: 'GTM-5F5ZSTTL', ga4: 'G-757KWG0PG4' },
-  'www.abdulkerimsesli.de': { gtm: 'GTM-5F5ZSTTL', ga4: 'G-757KWG0PG4' },
-  // Fallback / other site (Meine Webseite)
-  'default': { gtm: 'GT-TQTFN4NN', ga4: 'G-S0587RQ4CN' }
+  // Primary site mapping (production)
+  'abdulkerimsesli.de': { gtm: 'GTM-5F5ZSTTL', ga4: 'G-757KWG0PG4', aw: null },
+  'www.abdulkerimsesli.de': { gtm: 'GTM-5F5ZSTTL', ga4: 'G-757KWG0PG4', aw: null },
+  // Meine Webseite mapping (default)
+  'meine-webseite.local': { gtm: 'GT-TQTFN4NN', ga4: 'G-S0587RQ4CN', aw: 'AW-17819941793' },
+  'default': { gtm: 'GT-TQTFN4NN', ga4: 'G-S0587RQ4CN', aw: 'AW-17819941793' }
 }
 
 const detectHostConfig = (host) => {
@@ -41,7 +42,9 @@ gtag('js', new Date())
 // ===== Migration note =====
 // Move all GA4 and Google Ads tags into Google Tag Manager (GTM) to avoid double-tracking.
 // Expose IDs to the dataLayer so GTM can read them and configure tags/variables centrally.
-const ADS_CONVERSION_ID = 'AW-1036079663' // legacy ads conversion id — configure in GTM
+// Ads conversion ID is host-dependent; use the mapping above.
+const hostCfg = detectHostConfig()
+const ADS_CONVERSION_ID = hostCfg && hostCfg.aw ? hostCfg.aw : null
 dataLayer.push({
   'gtm_autoconfig': true,
   'ads_conversion_id': ADS_CONVERSION_ID,
