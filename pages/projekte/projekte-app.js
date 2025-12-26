@@ -238,7 +238,8 @@ function App() {
   }
 
   const getDirectUrl = project => {
-    if (project.githubPath && project.githubPath.includes('github.com')) {
+    // Avoid substring-based trust checks; rely on the stricter regex to validate GitHub path
+    if (project.githubPath) {
       const m = project.githubPath.match(/github\.com\/([^\/]+)\/([^\/]+)\/tree\/([^\/]+)\/(.+)$/)
       if (m) {
         const [, owner, repo, branch, path] = m
