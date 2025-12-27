@@ -28,6 +28,11 @@ const mime = (p) => {
 }
 
 const fileExists = (p) => {
+  // Ensure p is within ROOT for security
+  const resolved = fs.realpathSync(p)
+  if (!resolved.startsWith(ROOT + path.sep) && resolved !== ROOT) {
+    return false
+  }
   try {
     const s = fs.statSync(p)
     return s.isFile()
@@ -90,6 +95,15 @@ const server = http.createServer((req, res) => {
   }
 
   if (f) {
+    // Additional security check: ensure f is within ROOT
+    const resolvedF = fs.realpathSync(f)
+    if (!resolvedF.startsWith(ROOT + path.sep) && resolvedF !== ROOT) {
+      console.warn('Security violation: attempted access outside ROOT', f)
+      res.writeHead(403, { 'Content-Type': 'text/plain' })
+      res.end('Forbidden')
+      return
+    }
+
     const stream = fs.createReadStream(f)
     console.warn('Serving file', f)
     res.writeHead(200, { 'Content-Type': mime(f) })
