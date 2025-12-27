@@ -3,13 +3,9 @@
 
 # -------------------------------
 # 1) Domain + protocol canonicalization
-# Place this near the top to avoid unnecessary double-redirects.
-# Force www -> non-www explicitly (ensure root and wildcard are handled before other rules)
-https://www.abdulkerimsesli.de/        https://abdulkerimsesli.de/          301
-http://www.abdulkerimsesli.de/         https://abdulkerimsesli.de/          301
-https://www.abdulkerimsesli.de/*       https://abdulkerimsesli.de/:splat    301
-http://www.abdulkerimsesli.de/*        https://abdulkerimsesli.de/:splat    301
-http://abdulkerimsesli.de/*            https://abdulkerimsesli.de/:splat    301
+# NOTE: Cloudflare Pages doesn't support absolute URLs in _redirects.
+# Domain redirects should be handled via DNS/page rules or removed if handled elsewhere.
+# Removed absolute URL redirects as they're not supported by Cloudflare Pages.
 
 # -------------------------------
 # 2) Specific 301 redirects (keep these before any generic rules)
@@ -50,18 +46,12 @@ http://abdulkerimsesli.de/*            https://abdulkerimsesli.de/:splat    301
 # -------------------------------
 # 4) Rewrites to serve content from the physical /pages/ folders
 # These are 200 rewrites so clean URLs map to their actual files under /pages/.
+# Removed root redirects that were causing infinite loops - the wildcard rules handle everything
 /gallery/*      /pages/gallery/:splat     200
 /projekte/*     /pages/projekte/:splat    200
 /videos/*       /pages/videos/:splat      200
 /blog/*         /pages/blog/:splat        200
 /about/*        /pages/about/:splat       200
-
-# Fallbacks for the root of these sections
-/gallery/       /pages/gallery/index.html  200
-/projekte/      /pages/projekte/index.html 200
-/videos/        /pages/videos/index.html   200
-/blog/          /pages/blog/index.html     200
-/about/         /pages/about/index.html    200
 
 # -------------------------------
 # Notes / rationale:
@@ -70,6 +60,8 @@ http://abdulkerimsesli.de/*            https://abdulkerimsesli.de/:splat    301
 #   This covers both top-level pages like /about.html -> /about/ and deeper paths.
 # - We also add short redirects so requests to e.g. /about (no slash) get a canonical
 #   trailing-slash URL to match how directories are served.
+# - Removed absolute URL redirects as Cloudflare Pages doesn't support them.
+# - Removed root 200 rewrites that were causing infinite loops with .html removal rules.
 # - Test after deploy: check a sample of old URLs, ".html" URLs and domain variants to
 #   ensure there are no redirect loops and that final destinations return 200.
 
