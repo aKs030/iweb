@@ -1,0 +1,121 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - generic:
+        - link "Zum Hauptinhalt springen" [ref=e4] [cursor=pointer]:
+          - /url: "#main-content"
+        - link "Zur Navigation springen" [ref=e5] [cursor=pointer]:
+          - /url: "#navigation"
+      - link "Startseite":
+        - /url: /
+        - generic [ref=e7] [cursor=pointer]: Startseite
+      - navigation [ref=e8]:
+        - list [ref=e9]:
+          - listitem [ref=e10]:
+            - link [ref=e11] [cursor=pointer]:
+              - /url: /
+              - img [ref=e12]
+              - generic [ref=e14]: Startseite
+          - listitem [ref=e15]:
+            - link [ref=e16] [cursor=pointer]:
+              - /url: /projekte/
+              - img [ref=e17]
+              - generic [ref=e19]: Projekte
+          - listitem [ref=e20]:
+            - link [ref=e21] [cursor=pointer]:
+              - /url: /gallery/
+              - img [ref=e22]
+              - generic [ref=e24]: Fotos
+          - listitem [ref=e25]:
+            - link [ref=e26] [cursor=pointer]:
+              - /url: /videos/
+              - img [ref=e27]
+              - generic [ref=e29]: Videos
+          - listitem [ref=e30]:
+            - link [ref=e31] [cursor=pointer]:
+              - /url: "#section3"
+              - img [ref=e32]
+              - generic [ref=e34]: Über mich
+          - listitem [ref=e35]:
+            - link [ref=e36] [cursor=pointer]:
+              - /url: "#site-footer"
+              - img [ref=e37]
+              - generic [ref=e39]: Kontakt
+  - generic [ref=e41]: Eine interaktive 3D-Darstellung der Erde mit realistischen Texturen und Animationen. Verwenden Sie die Steuerungstasten zum Zoomen und Wechseln zwischen Kamera-Modi.
+  - generic [ref=e42]: "Zitat vollständig: Es ist der Geist, der sich den Körper baut."
+  - paragraph:
+    - generic: Epiktet
+    - generic:
+      - generic: Es sind nicht die Dinge selbst, die
+  - main [ref=e44]:
+    - region "Abdulkerim — Digital Creator Portfolio" [ref=e45]:
+      - generic [ref=e48]:
+        - generic:
+          - generic: Genieße den Abend und viel Spaß auf meiner Seite!
+        - generic:
+          - generic: ⭐️
+          - generic: ✨
+          - generic: 🌟
+          - generic: ✨
+      - generic [ref=e49]:
+        - link "Zu Features-Sektion scrollen" [ref=e50] [cursor=pointer]:
+          - /url: "#features"
+          - text: Weiter
+        - link "Kontakt" [ref=e51] [cursor=pointer]:
+          - /url: "#footer"
+    - region "Features und Leistungen" [ref=e52]:
+      - list [ref=e54]:
+        - listitem [ref=e55]:
+          - 'link "ÜBER MICH Über mich Kurz & knapp: Wer ich bin, was mich antreibt und meine Vision." [ref=e56] [cursor=pointer]':
+            - /url: /about/
+            - generic [ref=e58]: 👨‍💻
+            - heading "ÜBER MICH Über mich" [level=3] [ref=e59]
+            - paragraph [ref=e60]: "Kurz & knapp: Wer ich bin, was mich antreibt und meine Vision."
+        - listitem [ref=e61]:
+          - link "PROJEKTE Projekte Auswahl an Projekten Konzept, Umsetzung und Ergebnis." [ref=e62] [cursor=pointer]:
+            - /url: /projekte/#project-1
+            - generic [ref=e64]: 🚀
+            - heading "PROJEKTE Projekte" [level=3] [ref=e65]
+            - paragraph [ref=e66]: Auswahl an Projekten Konzept, Umsetzung und Ergebnis.
+        - listitem [ref=e67]:
+          - 'link "FOTOS Fotos Kurz gefasst: Ausschnitte aus meiner Sicht der Welt." [ref=e68] [cursor=pointer]':
+            - /url: /gallery/
+            - generic [ref=e70]: 📸
+            - heading "FOTOS Fotos" [level=3] [ref=e71]
+            - paragraph [ref=e72]: "Kurz gefasst: Ausschnitte aus meiner Sicht der Welt."
+    - region [ref=e73]
+  - contentinfo "Website Footer" [ref=e74]:
+    - generic [ref=e76]:
+      - generic [ref=e77]:
+        - text: ©
+        - generic [ref=e78]: "2025"
+        - link "Abdulkerim Sesli" [ref=e79] [cursor=pointer]:
+          - /url: https://abdulkerimsesli.de
+      - generic [ref=e80]:
+        - generic [ref=e81]: 🍪 Wir nutzen Google Analytics. Analytics
+        - button "Alle akzeptieren" [ref=e82]: OK ✓
+        - button "Ablehnen" [ref=e83]: Nein ✗
+      - navigation "Footer Kurz-Navigation" [ref=e84]:
+        - button "Cookie-Einstellungen öffnen" [ref=e85]:
+          - img [ref=e86]
+          - generic [ref=e91]: Cookies
+        - link "Impressum öffnen" [ref=e92] [cursor=pointer]:
+          - /url: /impressum/
+          - img [ref=e93]
+          - generic [ref=e96]: Legal
+        - link "Datenschutzerklärung öffnen" [ref=e97] [cursor=pointer]:
+          - /url: /datenschutz/
+          - img [ref=e98]
+          - generic [ref=e101]: Privacy
+  - generic:
+    - generic:
+      - generic [ref=e102]:
+        - text: Brauchst du Hilfe?
+        - generic [ref=e103] [cursor=pointer]: ×
+      - button "Chat öffnen" [ref=e104] [cursor=pointer]:
+        - img [ref=e105]:
+          - generic [ref=e128]: "?"
+```

@@ -229,6 +229,16 @@ body.three-earth-active #features .features-cards {
   height: 100vh;
 }
 
+/* Ensure clicks fall through the section container to the 3D canvas */
+body.three-earth-active #features {
+  pointer-events: none;
+}
+
+/* But keep interactive elements (like section title if visible) clickable if needed, though they might overlap 3D */
+body.three-earth-active #features .section-header {
+  pointer-events: auto;
+}
+
 body.three-earth-active .features-content::before {
   display: none;
 }
