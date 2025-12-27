@@ -10,7 +10,7 @@
     "test:canonical": "node ./scripts/test-canonical.mjs",
     "check:canonical-static": "bash ./scripts/check-canonical-static.sh",
     "build:og-images": "node ./scripts/build-og-images.mjs",
-    "validate:ldjson": "node ./scripts/validate-ldjson.mjs",
+    "update:sitemap": "node ./scripts/update-sitemap-lastmod.mjs",
     "test:playwright": "npx playwright test",
     "dev": "npm run serve",
     "format": "prettier --write .",
