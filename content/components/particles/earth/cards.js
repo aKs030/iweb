@@ -29,6 +29,26 @@ export class CardManager {
     this.cardGroup = new THREE.Group()
     this.scene.add(this.cardGroup)
     this.cardGroup.visible = false
+
+    // Texture cache to reuse generated canvases / textures when card content is identical
+    // Map<key, {texture: CanvasTexture, count: number}>
+    this._textureCache = new Map()
+
+    // Profiling counters (useful for optional profiling/debugging)
+    this._profile = {
+      texturesCreated: 0,
+      texturesDisposed: 0,
+      cacheHits: 0,
+      cacheMisses: 0
+    }
+
+    // Pointer/touch handling state
+    this._lastPointerPos = {x: 0, y: 0}
+    this._pointerDown = false
+    this._pointerDownPos = null
+    this._boundPointerMove = null
+    this._boundPointerDown = null
+    this._boundPointerUp = null
   }
 
   initFromDOM(sectionElement) {
@@ -198,12 +218,42 @@ export class CardManager {
     const W = 512 * S
     const H = 700 * S
 
+    // Create a stable cache key from relevant content (limit text length to avoid huge keys)
+    const keyObj = {
+      title: (data.title || '').slice(0, 256),
+      subtitle: (data.subtitle || '').slice(0, 128),
+      text: (data.text || '').slice(0, 512),
+      iconChar: data.iconChar || '',
+      color: data.color || '#ffffff',
+      DPR: Math.round(DPR * 100) // quantize a bit
+    }
+    const key = JSON.stringify(keyObj)
+
+    // Use cache if available
+    const cached = this._textureCache.get(key)
+    if (cached && cached.texture) {
+      cached.count++
+      this._profile.cacheHits++
+      return cached.texture
+    }
+
+    // Miss - create a new canvas texture
+    this._profile.cacheMisses++
+
     const canvas = typeof OffscreenCanvas !== 'undefined' ? new OffscreenCanvas(W, H) : document.createElement('canvas')
     if (typeof OffscreenCanvas === 'undefined') {
       canvas.width = W
       canvas.height = H
     }
     const ctx = canvas.getContext('2d')
+    if (!ctx) {
+      // Defensive: Some environments may not provide a 2D context; return a minimal texture
+      log.warn('CardManager: 2D canvas context unavailable; returning empty texture')
+      const texture = new this.THREE.CanvasTexture(canvas)
+      texture.needsUpdate = true
+      // don't add to cache (no meaningful content)
+      return texture
+    }
 
     // 1. Background (Glass effect simulation)
     const gradient = ctx.createLinearGradient(0, 0, W, H)
@@ -231,9 +281,9 @@ export class CardManager {
     ctx.lineWidth = 2 * S
     ctx.stroke()
 
-    // 4. Icon Text (Emoji/Char)
+    // 4. Icon Text (Emoji/Char) - use emoji-capable font stack as fallback
     ctx.fillStyle = '#ffffff'
-    ctx.font = `${60 * S}px Arial`
+    ctx.font = `${60 * S}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", Arial, sans-serif`
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
     ctx.fillText(data.iconChar, iconCenterX, iconY + 5 * S)
@@ -241,21 +291,21 @@ export class CardManager {
     // 5. Subtitle (fit to width)
     ctx.fillStyle = data.color
     const subtitleText = (data.subtitle || '').trim()
-    const subtitleSize = this.fitTextToWidth(ctx, subtitleText, 420 * S, 'bold', 24 * S, 12 * S)
-    ctx.font = `bold ${subtitleSize}px Arial`
+    const subtitleSize = this.fitTextToWidth(ctx, subtitleText, 420 * S, 'bold', 24 * S, 12 * S, 'Arial, "Helvetica Neue", sans-serif')
+    ctx.font = `bold ${subtitleSize}px Arial, "Helvetica Neue", sans-serif`
     ctx.fillText(subtitleText, iconCenterX, 280 * S)
 
     // 6. Title (fit to width, prefer single line)
     ctx.fillStyle = '#ffffff'
     const titleText = (data.title || '').trim()
-    const titleSize = this.fitTextToWidth(ctx, titleText, 420 * S, 'bold', 48 * S, 20 * S)
-    ctx.font = `bold ${titleSize}px Arial`
+    const titleSize = this.fitTextToWidth(ctx, titleText, 420 * S, 'bold', 48 * S, 20 * S, 'Arial, "Helvetica Neue", sans-serif')
+    ctx.font = `bold ${titleSize}px Arial, "Helvetica Neue", sans-serif`
     ctx.fillText(titleText, iconCenterX, 350 * S)
 
     // 7. Text (Wrapped) - reduce size slightly for long text
     ctx.fillStyle = '#cccccc'
     const baseTextSize = data.text && data.text.length > 160 ? Math.max(18 * S, 22 * S) : 30 * S
-    ctx.font = `${baseTextSize}px Arial`
+    ctx.font = `${baseTextSize}px Arial, "Helvetica Neue", sans-serif`
     this.wrapText(ctx, data.text, iconCenterX, 450 * S, 400 * S, Math.round(40 * S))
 
     const texture = new this.THREE.CanvasTexture(canvas)
@@ -263,8 +313,16 @@ export class CardManager {
     texture.generateMipmaps = true
     texture.minFilter = this.THREE.LinearMipmapLinearFilter
     texture.magFilter = this.THREE.LinearFilter
-    texture.anisotropy = this.renderer.capabilities.getMaxAnisotropy()
+    texture.anisotropy =
+      this.renderer && this.renderer.capabilities && typeof this.renderer.capabilities.getMaxAnisotropy === 'function'
+        ? this.renderer.capabilities.getMaxAnisotropy()
+        : 0
     texture.needsUpdate = true
+
+    // Store in cache with reference count
+    this._textureCache.set(key, {texture, count: 1})
+    this._profile.texturesCreated++
+
     return texture
   }
 
@@ -277,6 +335,12 @@ export class CardManager {
       canvas.height = size
     }
     const ctx = canvas.getContext('2d')
+    if (!ctx) {
+      log.warn('CardManager: 2D canvas context unavailable for glow; returning empty texture')
+      const tex = new this.THREE.CanvasTexture(canvas)
+      tex.needsUpdate = true
+      return tex
+    }
 
     const cx = size / 2
     const cy = size / 2
@@ -383,13 +447,13 @@ export class CardManager {
     ctx.fillText(line, x, y)
   }
 
-  fitTextToWidth(ctx, text, maxWidth, fontWeight = 'normal', initialSize = 24, minSize = 12) {
+  fitTextToWidth(ctx, text, maxWidth, fontWeight = 'normal', initialSize = 24, minSize = 12, fontFamily = 'Arial, sans-serif') {
     if (!text) return initialSize
     let size = initialSize
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
     while (size >= minSize) {
-      ctx.font = `${fontWeight} ${Math.round(size)}px Arial`
+      ctx.font = `${fontWeight} ${Math.round(size)}px ${fontFamily}`
       const w = ctx.measureText(text).width
       if (w <= maxWidth) break
       size -= 1
@@ -404,7 +468,7 @@ export class CardManager {
   }
 
   setProgress(progress) {
-    const p = Math.max(0, Math.min(1, progress || 0))
+    const p = Math.max(0, Math.min(1, typeof progress === 'number' && !isNaN(progress) ? progress : 0))
     const wasVisible = this.cardGroup.visible
     this.cardGroup.visible = p > 0.01
 
@@ -443,7 +507,8 @@ export class CardManager {
     if (!this.cardGroup.visible) return
 
     // Use new screen-based hover detection instead of raycaster
-    const candidate = this.getHoveredCardFromScreen(mousePos)
+    const pos = mousePos || this._lastPointerPos || {x: 0, y: 0}
+    const candidate = this.getHoveredCardFromScreen(pos)
 
     // Debounce hover to prevent flickering from rapid mouse movements
     if (candidate === this._hoverCandidate) {
@@ -486,8 +551,8 @@ export class CardManager {
 
       // Parallax tilt based on mouse position when hovered
       const parallax = card.userData.parallaxStrength || 0.12
-      const targetTiltX = -mousePos.y * parallax * card.userData.hoverProgress
-      const targetTiltY = mousePos.x * parallax * card.userData.hoverProgress * 0.8
+      const targetTiltX = -pos.y * parallax * card.userData.hoverProgress
+      const targetTiltY = pos.x * parallax * card.userData.hoverProgress * 0.8
 
       // Smoothly update tilt state (Euler angles)
       card.userData.currentTiltX += (targetTiltX - card.userData.currentTiltX) * 0.04
@@ -540,17 +605,83 @@ export class CardManager {
   }
 
   handleClick(mousePos) {
+    const pos = mousePos || this._lastPointerPos || {x: 0, y: 0}
     // Only respond when cards are actually visible in the scene
     if (!this.cardGroup.visible) return
 
     // Use the same screen-based detection as hover
-    const clickedCard = this.getHoveredCardFromScreen(mousePos)
+    const clickedCard = this.getHoveredCardFromScreen(pos)
 
     if (clickedCard) {
       const link = clickedCard.userData.link
       // Ignore placeholder or empty links
       if (!link || link === '#') return
       window.location.href = link
+    }
+  }
+
+  // Pointer handling helpers: attach/detach pointer handlers to a DOM element
+  attachPointerHandlers(domElement) {
+    const el = domElement || (this.renderer && this.renderer.domElement) || window
+
+    // Remove existing handlers if present
+    if (this._boundPointerMove) this.detachPointerHandlers()
+
+    this._boundPointerMove = e => {
+      const rect = el.getBoundingClientRect ? el.getBoundingClientRect() : {left: 0, top: 0, width: window.innerWidth, height: window.innerHeight}
+      const x = ((e.clientX - rect.left) / rect.width) * 2 - 1
+      const y = -((e.clientY - rect.top) / rect.height) * 2 + 1
+      this._lastPointerPos.x = x
+      this._lastPointerPos.y = y
+    }
+
+    this._boundPointerDown = e => {
+      this._pointerDown = true
+      this._pointerDownPos = {...this._lastPointerPos}
+    }
+
+    this._boundPointerUp = e => {
+      if (!this._pointerDown) return
+      this._pointerDown = false
+      if (!this._pointerDownPos) return
+      const dx = this._lastPointerPos.x - this._pointerDownPos.x
+      const dy = this._lastPointerPos.y - this._pointerDownPos.y
+      const dist = Math.sqrt(dx * dx + dy * dy)
+      // Consider it a click/tap if finger didn't move much
+      if (dist < 0.04) {
+        this.handleClick(this._lastPointerPos)
+      }
+      this._pointerDownPos = null
+    }
+
+    el.addEventListener('pointermove', this._boundPointerMove)
+    el.addEventListener('pointerdown', this._boundPointerDown)
+    el.addEventListener('pointerup', this._boundPointerUp)
+
+    this._pointerElement = el
+  }
+
+  detachPointerHandlers() {
+    const el = this._pointerElement || (this.renderer && this.renderer.domElement) || window
+    if (!el) return
+    if (this._boundPointerMove) el.removeEventListener('pointermove', this._boundPointerMove)
+    if (this._boundPointerDown) el.removeEventListener('pointerdown', this._boundPointerDown)
+    if (this._boundPointerUp) el.removeEventListener('pointerup', this._boundPointerUp)
+
+    this._pointerElement = null
+    this._boundPointerMove = null
+    this._boundPointerDown = null
+    this._boundPointerUp = null
+  }
+
+  // Return simple profiling data for debugging or reporting
+  getProfilingData() {
+    return {
+      texturesCreated: this._profile.texturesCreated,
+      texturesDisposed: this._profile.texturesDisposed,
+      cacheHits: this._profile.cacheHits,
+      cacheMisses: this._profile.cacheMisses,
+      cachedTextures: this._textureCache.size
     }
   }
 
@@ -572,19 +703,51 @@ export class CardManager {
     this.scene.remove(this.cardGroup)
 
     // Dispose each card's resources (geometry, textures, materials, glow)
+    // NOTE: some resources are shared across cards (geometry, glow texture). Avoid
+    // disposing those per-card to prevent double-disposal and use-after-dispose errors.
     this.cards.forEach(card => {
       try {
-        if (card.geometry && card.geometry.dispose) card.geometry.dispose()
+        // Only dispose geometry if it's not the shared geometry
+        if (card.geometry && card.geometry.dispose && card.geometry !== this._sharedGeometry) {
+          card.geometry.dispose()
+        }
 
         if (card.material) {
-          if (card.material.map && card.material.map.dispose) card.material.map.dispose()
+          // If the material map is a cached texture, decrement its refcount and only
+          // dispose when no references remain. Otherwise dispose it directly.
+          if (card.material.map) {
+            let foundKey = null
+            for (const [k, v] of this._textureCache.entries()) {
+              if (v.texture === card.material.map) {
+                foundKey = k
+                v.count--
+                if (v.count <= 0) {
+                  if (v.texture && typeof v.texture.dispose === 'function') {
+                    v.texture.dispose()
+                    this._profile.texturesDisposed++
+                  }
+                  this._textureCache.delete(k)
+                }
+                break
+              }
+            }
+
+            if (!foundKey && card.material.map && card.material.map.dispose) {
+              // Not cached, safe to dispose directly
+              card.material.map.dispose()
+            }
+          }
+
           card.material.map = null
           if (card.material.dispose) card.material.dispose()
         }
 
         const glow = card.userData && card.userData.glow
         if (glow && glow.material) {
-          if (glow.material.map && glow.material.map.dispose) glow.material.map.dispose()
+          // Avoid disposing the shared glow texture here; it will be disposed below.
+          if (glow.material.map && glow.material.map.dispose && glow.material.map !== this._sharedGlowTexture) {
+            glow.material.map.dispose()
+          }
           if (glow.material.dispose) glow.material.dispose()
         }
       } catch (err) {
@@ -605,6 +768,26 @@ export class CardManager {
 
     // Clear card references
     this.cards = []
+
+    // Dispose any remaining cached textures
+    for (const [k, v] of this._textureCache.entries()) {
+      try {
+        if (v.texture && typeof v.texture.dispose === 'function') {
+          v.texture.dispose()
+          this._profile.texturesDisposed++
+        }
+      } catch (err) {
+        log.warn('EarthCards: error disposing cached texture', err)
+      }
+    }
+    this._textureCache.clear()
+
+    // Remove pointer handlers if attached
+    try {
+      this.detachPointerHandlers()
+    } catch (err) {
+      // ignore
+    }
 
     if (typeof window !== 'undefined' && this._onResize) {
       window.removeEventListener('resize', this._onResize)
