@@ -27,6 +27,15 @@ const mime = (p) => {
   return map[ext] || 'application/octet-stream'
 }
 
+const sanitizePath = (input) => {
+  // Decode and validate to prevent path traversal
+  const decoded = decodeURIComponent(input)
+  if (decoded.includes('..') || decoded.includes('\\') || path.isAbsolute(decoded)) {
+    throw new Error('Invalid path')
+  }
+  return decoded
+}
+
 const fileExists = (p) => {
   // Ensure p is within ROOT for security
   const resolved = fs.realpathSync(p)
@@ -87,10 +96,10 @@ const tryFile = (urlPath) => {
 }
 
 const server = http.createServer((req, res) => {
-  const urlPath = decodeURIComponent(req.url || '/')
-  
-  // Prevent directory traversal attacks
-  if (urlPath.includes('..') || urlPath.includes('\\') || path.isAbsolute(urlPath)) {
+  let urlPath
+  try {
+    urlPath = sanitizePath(req.url || '/')
+  } catch (e) {
     res.writeHead(400, { 'Content-Type': 'text/plain' })
     res.end('Bad Request')
     return
