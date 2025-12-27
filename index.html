@@ -31,6 +31,22 @@
     <link rel="apple-touch-icon" sizes="180x180" href="https://abdulkerimsesli.de/content/assets/img/icons/apple-touch-icon.png" />
     <meta name="theme-color" content="#0d0d0d" />
 
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://abdulkerimsesli.de/" />
+    <meta property="og:title" content="Abdulkerim — Digital Creator Portfolio" />
+    <meta property="og:description" content="Offizielles Portfolio von Abdulkerim Sesli. Professionelle Webentwicklung (React, Three.js) und Urban Photography aus Berlin. Jetzt Referenzen ansehen &amp; kontaktieren." />
+    <meta property="og:image" content="https://abdulkerimsesli.de/content/assets/img/og/og-home.png" />
+    <meta property="og:locale" content="de_DE" />
+    <meta property="og:site_name" content="Abdulkerim — Digital Creator Portfolio" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://abdulkerimsesli.de/" />
+    <meta property="twitter:title" content="Abdulkerim — Digital Creator Portfolio" />
+    <meta property="twitter:description" content="Offizielles Portfolio von Abdulkerim Sesli. Professionelle Webentwicklung (React, Three.js) und Urban Photography aus Berlin." />
+    <meta property="twitter:image" content="https://abdulkerimsesli.de/content/assets/img/og/og-home.png" />
+
     <!-- Server-side FAQ JSON-LD (ensures Search Console sees a named FAQPage) -->
     <script id="head-complete-ldjson" type="application/ld+json">
       {
@@ -71,6 +87,44 @@
         ]
       }
     </script>
+
+    <!-- Additional Structured Data for Person/Organization -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "name": "Abdulkerim Sesli",
+      "jobTitle": "Webentwickler & Fotograf",
+      "url": "https://abdulkerimsesli.de",
+      "sameAs": [
+        "https://github.com/aKs030"
+      ],
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Berlin",
+        "addressCountry": "DE"
+      },
+      "knowsAbout": [
+        "Webentwicklung",
+        "JavaScript",
+        "React",
+        "Three.js",
+        "Node.js",
+        "HTML/CSS",
+        "Urban Photography",
+        "Frontend Development"
+      ],
+      "hasOccupation": {
+        "@type": "Occupation",
+        "name": "Webentwickler",
+        "occupationLocation": {
+          "@type": "City",
+          "name": "Berlin"
+        }
+      }
+    }
+    </script>
+
     <script type="module" src="/content/components/head/head-inline.js"></script>
 
     <script src="/content/components/head/head-complete.js" type="module"></script>
