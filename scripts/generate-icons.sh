@@ -38,7 +38,7 @@ if command -v cwebp >/dev/null 2>&1; then
   has_cwebp=true
 fi
 
-sizes=(16 32 48 64 96 120 128 152 167 180 192 256 384 512 1024)
+sizes=(16 32 48 64 96 120 128 144 152 167 180 192 256 384 512 1024)
 
 echo "Generating icons in $OUT_DIR"
 
