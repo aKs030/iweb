@@ -388,6 +388,12 @@ const ThreeEarthManager = (() => {
     isSystemActive = false
     log.info('Cleaning up Earth system')
 
+    // Remove interaction listeners first
+    try {
+      window.removeEventListener('mousemove', onMove)
+      window.removeEventListener('click', onClick)
+    } catch { /* ignore */ }
+
     // Clear any pending showcase timers and revert temporary config if needed
     if (showcaseTimeoutId) {
       try {
@@ -724,23 +730,34 @@ function startAnimationLoop() {
   if (document.visibilityState === 'visible') animate()
 }
 
+// Interaction handlers need to be persistent for attach/detach
+let onMove, onClick
+
 function setupInteraction() {
   window.lastMousePos = new THREE_INSTANCE.Vector2(-999, -999) // Default off-screen
 
-  const onMove = event => {
-    if (!isSystemActive) return
-    window.lastMousePos.x = (event.clientX / window.innerWidth) * 2 - 1
-    window.lastMousePos.y = -(event.clientY / window.innerHeight) * 2 + 1
+  if (!onMove) {
+    onMove = event => {
+      if (!isSystemActive) return
+      window.lastMousePos.x = (event.clientX / window.innerWidth) * 2 - 1
+      window.lastMousePos.y = -(event.clientY / window.innerHeight) * 2 + 1
+    }
   }
 
-  const onClick = event => {
-    if (!isSystemActive || !cardManager) return
-    const mouse = new THREE_INSTANCE.Vector2()
-    mouse.x = (event.clientX / window.innerWidth) * 2 - 1
-    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1
-    cardManager.handleClick(mouse)
+  if (!onClick) {
+    onClick = event => {
+      if (!isSystemActive || !cardManager) return
+      const mouse = new THREE_INSTANCE.Vector2()
+      mouse.x = (event.clientX / window.innerWidth) * 2 - 1
+      mouse.y = -(event.clientY / window.innerHeight) * 2 + 1
+      cardManager.handleClick(mouse)
+    }
   }
 
+  // Ensure fresh binding
+  window.removeEventListener('mousemove', onMove)
+  window.removeEventListener('click', onClick)
+  
   window.addEventListener('mousemove', onMove)
   window.addEventListener('click', onClick)
 
