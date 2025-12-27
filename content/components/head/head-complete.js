@@ -317,7 +317,7 @@ const log = createLogger('HeadLoader')
     }
     // Ensure PWA manifest & Apple mobile settings
     try {
-      upsertLink('manifest', `${BASE_URL}/manifest.json`)
+      upsertLink('manifest', '/manifest.json')
       const addIcon = (href, sizes, type) => {
         if (!href) return
         let el = document.head.querySelector(`link[rel="icon"][sizes="${sizes}"]`)
