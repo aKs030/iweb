@@ -45,6 +45,12 @@ const tryFile = (urlPath) => {
   // Normalize and prevent directory traversal
   let safePath = path.normalize(urlPath).replace(/^\/+/, '')
   safePath = safePath.split('?')[0].split('#')[0]
+  
+  // Reject paths with directory traversal attempts
+  if (safePath.includes('..') || safePath.includes('\\') || path.isAbsolute(safePath)) {
+    return null
+  }
+  
   const candidate = path.join(ROOT, safePath)
 
   // Resolve symlinks and ensure the path is within ROOT
@@ -82,6 +88,14 @@ const tryFile = (urlPath) => {
 
 const server = http.createServer((req, res) => {
   const urlPath = decodeURIComponent(req.url || '/')
+  
+  // Prevent directory traversal attacks
+  if (urlPath.includes('..') || urlPath.includes('\\') || path.isAbsolute(urlPath)) {
+    res.writeHead(400, { 'Content-Type': 'text/plain' })
+    res.end('Bad Request')
+    return
+  }
+  
   // First try the path as-is
   console.warn('Request for', urlPath)
   let f = tryFile(urlPath)
