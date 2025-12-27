@@ -238,11 +238,19 @@ function App() {
   }
 
   const getDirectUrl = project => {
-    if (project.githubPath && project.githubPath.includes('github.com')) {
-      const m = project.githubPath.match(/github\.com\/([^\/]+)\/([^\/]+)\/tree\/([^\/]+)\/(.+)$/)
-      if (m) {
-        const [, owner, repo, branch, path] = m
-        return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}/index.html`
+    if (project.githubPath) {
+      try {
+        const url = new URL(project.githubPath)
+        if (url.host === 'github.com') {
+          const pathname = url.pathname
+          const m = pathname.match(/^\/([^\/]+)\/([^\/]+)\/tree\/([^\/]+)\/(.+)$/)
+          if (m) {
+            const [, owner, repo, branch, path] = m
+            return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}/index.html`
+          }
+        }
+      } catch (e) {
+        // Invalid URL, fall through
       }
     }
     // fallback
