@@ -1,6 +1,7 @@
 const {defineConfig} = require('@playwright/test')
 module.exports = defineConfig({
-  testDir: './tests',
+  testDir: './scripts/tests',
+  outputDir: './scripts/test-results',
   webServer: {
     command: 'npm run serve:dev',
     port: 8081,
