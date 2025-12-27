@@ -659,4 +659,26 @@ document.addEventListener(
     // Dev-only ReconnectingWebSocket helper removed (was used for ?ws-test / local debug).
   },
   {once: true}
-) 
+)
+
+// ===== BFCache / Back Button Handling =====
+// Ensure Three.js system is resilient when navigating back
+window.addEventListener('pageshow', (event) => {
+  if (event.persisted) {
+    log.info('Page restored from bfcache')
+    // If we have a cleanup function, it means it was running.
+    // If the browser froze the state, it might just resume.
+    // However, we want to ensure interactions are active.
+    
+    // Force a resize event to re-calibrate camera/renderer
+    window.dispatchEvent(new Event('resize'))
+    
+    // Re-check visibility
+    if (!document.hidden && window.threeEarthSystem && window.threeEarthSystem.animate) {
+        // If system exposed an animate function, we could call it, but the loop usually uses rAF
+        // which might have been paused.
+        // The visibilitychange handler should pick this up, but let's trigger it.
+        document.dispatchEvent(new Event('visibilitychange'))
+    }
+  }
+})
