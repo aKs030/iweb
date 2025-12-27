@@ -424,34 +424,19 @@ export class CardManager {
     })
   }
 
-  // New robust hover detection based on projected screen rectangles
+  // Robust hover detection using Raycaster (replacing custom projection math)
   getHoveredCardFromScreen(mousePos) {
-    let closestCard = null
-    let minDistance = Infinity
+    if (!this.raycaster || !this.camera) return null
 
-    this.cards.forEach(card => {
-      // Project card position to screen space
-      const screenPos = card.position.clone()
-      screenPos.project(this.camera)
+    this.raycaster.setFromCamera(mousePos, this.camera)
+    const intersects = this.raycaster.intersectObjects(this.cards, false)
 
-      // Calculate dynamic card dimensions based on distance
-      const distance = this.camera.position.distanceTo(card.position)
-      const fovRad = (this.camera.fov * Math.PI) / 180
-      const projectedWidth = (2.2 / distance) * Math.tan(fovRad / 2) * 2 * 1.2 // Base width with buffer
-      const projectedHeight = (2.8 / distance) * Math.tan(fovRad / 2) * 2 * 1.2 // Base height with buffer
+    if (intersects.length > 0) {
+      // Raycaster automatically sorts by distance, so the first hit is the closest
+      return intersects[0].object
+    }
 
-      // Check if mouse is within card rectangle
-      if (Math.abs(mousePos.x - screenPos.x) < projectedWidth / 2 && Math.abs(mousePos.y - screenPos.y) < projectedHeight / 2) {
-        // Calculate distance from center
-        const distanceToMouse = Math.sqrt((mousePos.x - screenPos.x) ** 2 + (mousePos.y - screenPos.y) ** 2)
-        if (distanceToMouse < minDistance) {
-          minDistance = distanceToMouse
-          closestCard = card
-        }
-      }
-    })
-
-    return closestCard
+    return null
   }
 
   update(time, mousePos) {
@@ -555,16 +540,17 @@ export class CardManager {
   }
 
   handleClick(mousePos) {
-    if (!this.isVisible) return
+    // Only respond when cards are actually visible in the scene
+    if (!this.cardGroup.visible) return
 
     // Use the same screen-based detection as hover
     const clickedCard = this.getHoveredCardFromScreen(mousePos)
 
     if (clickedCard) {
       const link = clickedCard.userData.link
-      if (link) {
-        window.location.href = link
-      }
+      // Ignore placeholder or empty links
+      if (!link || link === '#') return
+      window.location.href = link
     }
   }
 
