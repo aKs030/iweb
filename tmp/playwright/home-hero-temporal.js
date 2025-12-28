@@ -1,3 +1,5 @@
+/* global require, console, process, document, window */
+/* eslint-disable no-console */
 const { chromium } = require('playwright');
 const fs = require('fs');
 const pixelmatch = require('pixelmatch').default || require('pixelmatch');
@@ -31,8 +33,8 @@ const { PNG } = require('pngjs');
       await page.waitForSelector('#hero', { timeout: 5000 });
       try { await page.addStyleTag({ content: '* { animation: none !important; transition: none !important; }' }); } catch { /* ignore */ }
       await page.waitForTimeout(t);
-      const heroP = await page.$('#hero');
-      const rectP = await heroP.boundingBox();
+      // ensure container present
+      await page.waitForSelector('#hero', { timeout: 5000 });
       const purgedPath = `tmp/screenshots/hero-temporal/home-purged-${t}.png`;
       await page.screenshot({ path: purgedPath, clip });
 
