@@ -7,7 +7,7 @@
  * @last-modified 2025-11-29
  */
 
-import {initHeroFeatureBundle} from '../pages/home/hero-manager.js'
+import { initHeroFeatureBundle } from "../pages/home/hero-manager.js";
 import {
   createLazyLoadObserver,
   createLogger,
@@ -17,210 +17,216 @@ import {
   getElementById,
   schedulePersistentStorageRequest,
   AppLoadManager,
-  SectionTracker
-} from './utils/shared-utilities.js'
+  SectionTracker,
+} from "./utils/shared-utilities.js";
 // initHeroSubtitle is imported where needed (hero manager); legacy global exposure removed
-import {a11y} from './utils/accessibility-manager.js'
+import { a11y } from "./utils/accessibility-manager.js";
 // Accessibility manager initializes itself and exposes a11y as needed (avoid duplicate global writes here)
 
-import './components/menu/menu.js'
+import "./components/menu/menu.js";
 
-const log = createLogger('main')
+const log = createLogger("main");
 
 // Debug / Dev hooks (exported for test & debug tooling)
-let __threeEarthCleanup = null
+let __threeEarthCleanup = null;
 
 // ===== Configuration & Environment =====
 const ENV = {
   isTest:
-    new URLSearchParams(window.location.search).has('test') ||
-    navigator.userAgent.includes('HeadlessChrome') ||
-    (window.location.hostname === 'localhost' && window.navigator.webdriver),
-  debug: new URLSearchParams(window.location.search).has('debug')
+    new URLSearchParams(window.location.search).has("test") ||
+    navigator.userAgent.includes("HeadlessChrome") ||
+    (window.location.hostname === "localhost" && window.navigator.webdriver),
+  debug: new URLSearchParams(window.location.search).has("debug"),
   // Service Worker removed — cleanup runs once on page load to unregister previous registrations and clear caches.
   // (Property `useServiceWorker` removed)
-}
+};
 
 // ===== Performance Tracking =====
 const perfMarks = {
   start: performance.now(),
   domReady: 0,
   modulesReady: 0,
-  windowLoaded: 0
-}
+  windowLoaded: 0,
+};
 
 // ===== Accessibility Announcements =====
 const announce = (() => {
-  const cache = new Map()
+  const cache = new Map();
 
-  return (message, {assertive = false, dedupe = false} = {}) => {
-    if (!message) return
+  return (message, { assertive = false, dedupe = false } = {}) => {
+    if (!message) return;
 
-    if (dedupe && cache.has(message)) return
+    if (dedupe && cache.has(message)) return;
     if (dedupe) {
-      cache.set(message, true)
-      setTimeout(() => cache.delete(message), 3000)
+      cache.set(message, true);
+      setTimeout(() => cache.delete(message), 3000);
     }
 
     try {
-      const id = assertive ? 'live-region-assertive' : 'live-region-status'
-      const region = getElementById(id)
-      if (!region) return
+      const id = assertive ? "live-region-assertive" : "live-region-status";
+      const region = getElementById(id);
+      if (!region) return;
 
-      region.textContent = ''
+      region.textContent = "";
       requestAnimationFrame(() => {
-        region.textContent = message
-      })
+        region.textContent = message;
+      });
     } catch (error) {
-      log.debug('Announcement failed:', error)
+      log.debug("Announcement failed:", error);
     }
-  }
-})()
+  };
+})();
 
 // Export for other modules if needed, but avoid window global if possible.
 // Legacy support for inline scripts or external dependencies:
-window.announce = announce
+window.announce = announce;
 
 // ===== Section Tracker =====
-const sectionTracker = new SectionTracker()
-sectionTracker.init()
+const sectionTracker = new SectionTracker();
+sectionTracker.init();
 // Kept for debugging/external access if strictly needed, but marked for review
-if (ENV.debug) window.sectionTracker = sectionTracker
+if (ENV.debug) window.sectionTracker = sectionTracker;
 
 // ===== Section Loader =====
 const SectionLoader = (() => {
   // Check if already initialized to prevent double execution
-  if (window.SectionLoader) return window.SectionLoader
+  if (window.SectionLoader) return window.SectionLoader;
 
-  const SELECTOR = 'section[data-section-src]'
-  const loadedSections = new WeakSet()
-  const retryAttempts = new WeakMap()
-  const MAX_RETRIES = 2
+  const SELECTOR = "section[data-section-src]";
+  const loadedSections = new WeakSet();
+  const retryAttempts = new WeakMap();
+  const MAX_RETRIES = 2;
 
   function dispatchEvent(type, section, detail = {}) {
     try {
       document.dispatchEvent(
         new CustomEvent(type, {
-          detail: {id: section?.id, section, ...detail}
-        })
-      )
+          detail: { id: section?.id, section, ...detail },
+        }),
+      );
     } catch (error) {
-      log.debug(`Event dispatch failed: ${type}`, error)
+      log.debug(`Event dispatch failed: ${type}`, error);
     }
   }
 
   // getSectionName inlined into loadSection; removed to avoid small helper function proliferation
 
   async function loadSection(section) {
-    if (loadedSections.has(section)) return
+    if (loadedSections.has(section)) return;
 
-    const url = section.getAttribute('data-section-src')
+    const url = section.getAttribute("data-section-src");
     if (!url) {
-      section.removeAttribute('aria-busy')
-      return
+      section.removeAttribute("aria-busy");
+      return;
     }
 
-    loadedSections.add(section)
+    loadedSections.add(section);
     // Inline getSectionName: avoid small helper function footprint
     const sectionName = (() => {
-      const labelId = section.getAttribute('aria-labelledby')
+      const labelId = section.getAttribute("aria-labelledby");
       if (labelId) {
-        const label = getElementById(labelId)
-        const text = label?.textContent?.trim()
-        if (text) return text
+        const label = getElementById(labelId);
+        const text = label?.textContent?.trim();
+        if (text) return text;
       }
-      return section.id || 'Abschnitt'
-    })()
-    const attempts = retryAttempts.get(section) || 0
+      return section.id || "Abschnitt";
+    })();
+    const attempts = retryAttempts.get(section) || 0;
 
-    section.setAttribute('aria-busy', 'true')
-    section.dataset.state = 'loading'
+    section.setAttribute("aria-busy", "true");
+    section.dataset.state = "loading";
 
-    announce(`Lade ${sectionName}…`, {dedupe: true})
-    dispatchEvent('section:will-load', section, {url})
+    announce(`Lade ${sectionName}…`, { dedupe: true });
+    dispatchEvent("section:will-load", section, { url });
 
     try {
       // Robust candidate selection: prefer sensible variant order to reduce noisy 404s.
       // For inlined page fragments under /pages/, try the explicit .html path first to avoid an initial 404
-      let response
-      let fetchCandidates
-      if (url && url.endsWith('.html')) {
+      let response;
+      let fetchCandidates;
+      if (url && url.endsWith(".html")) {
         // If .html explicitly provided, try without extension first to avoid redirects
-        fetchCandidates = [url.replace(/\.html$/, ''), url]
-      } else if (url && url.startsWith('/pages/')) {
+        fetchCandidates = [url.replace(/\.html$/, ""), url];
+      } else if (url && url.startsWith("/pages/")) {
         // For internal includes, try the .html variant first (dev servers commonly store it this way)
-        fetchCandidates = [(url || '') + '.html', url]
+        fetchCandidates = [(url || "") + ".html", url];
       } else {
         // Otherwise try the provided value first, then the .html variant
-        fetchCandidates = [url, (url || '') + '.html']
+        fetchCandidates = [url, (url || "") + ".html"];
       }
 
       for (const candidate of fetchCandidates) {
         try {
-          response = await fetchWithTimeout(candidate)
-          if (response && response.ok) break
+          response = await fetchWithTimeout(candidate);
+          if (response && response.ok) break;
         } catch {
-          response = null
+          response = null;
         }
       }
 
       if (!response || !response.ok) {
-        throw new Error(`HTTP ${response ? response.status : 'NO_RESPONSE'}: ${response ? response.statusText : 'no response'}`)
+        throw new Error(
+          `HTTP ${response ? response.status : "NO_RESPONSE"}: ${response ? response.statusText : "no response"}`,
+        );
       }
 
-      const html = await response.text()
-      section.insertAdjacentHTML('beforeend', html)
+      const html = await response.text();
+      section.insertAdjacentHTML("beforeend", html);
 
-      const template = section.querySelector('template')
+      const template = section.querySelector("template");
       if (template) {
-        section.appendChild(template.content.cloneNode(true))
+        section.appendChild(template.content.cloneNode(true));
       }
 
-      section.querySelectorAll('.section-skeleton').forEach(el => el.remove())
+      section
+        .querySelectorAll(".section-skeleton")
+        .forEach((el) => el.remove());
 
-      section.dataset.state = 'loaded'
-      section.removeAttribute('aria-busy')
+      section.dataset.state = "loaded";
+      section.removeAttribute("aria-busy");
 
-      announce(`${sectionName} geladen`, {dedupe: true})
-      dispatchEvent('section:loaded', section, {state: 'loaded'})
+      announce(`${sectionName} geladen`, { dedupe: true });
+      dispatchEvent("section:loaded", section, { state: "loaded" });
 
-      if (section.id === 'hero') {
-        fire(EVENTS.HERO_LOADED)
+      if (section.id === "hero") {
+        fire(EVENTS.HERO_LOADED);
       }
     } catch (error) {
-      log.warn(`Section load failed: ${sectionName}`, error)
+      log.warn(`Section load failed: ${sectionName}`, error);
 
-      const isTransient = /5\d\d/.test(String(error)) || !navigator.onLine
-      const shouldRetry = isTransient && attempts < MAX_RETRIES
+      const isTransient = /5\d\d/.test(String(error)) || !navigator.onLine;
+      const shouldRetry = isTransient && attempts < MAX_RETRIES;
 
       if (shouldRetry) {
-        retryAttempts.set(section, attempts + 1)
-        loadedSections.delete(section)
+        retryAttempts.set(section, attempts + 1);
+        loadedSections.delete(section);
 
-        const delay = 300 * Math.pow(2, attempts)
-        await new Promise(resolve => setTimeout(resolve, delay))
+        const delay = 300 * Math.pow(2, attempts);
+        await new Promise((resolve) => setTimeout(resolve, delay));
 
-        return loadSection(section)
+        return loadSection(section);
       }
 
-      section.dataset.state = 'error'
-      section.removeAttribute('aria-busy')
+      section.dataset.state = "error";
+      section.removeAttribute("aria-busy");
 
-      announce(`Fehler beim Laden von ${sectionName}`, {assertive: true})
-      dispatchEvent('section:error', section, {state: 'error'})
+      announce(`Fehler beim Laden von ${sectionName}`, { assertive: true });
+      dispatchEvent("section:error", section, { state: "error" });
 
       // Inline injectRetryUI: inject a small retry UI directly
-      if (!section.querySelector('.section-retry')) {
-        const button = document.createElement('button')
-        button.type = 'button'
-        button.className = 'section-retry'
-        button.textContent = 'Erneut laden'
-        button.addEventListener('click', () => retrySection(section), {once: true})
+      if (!section.querySelector(".section-retry")) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "section-retry";
+        button.textContent = "Erneut laden";
+        button.addEventListener("click", () => retrySection(section), {
+          once: true,
+        });
 
-        const wrapper = document.createElement('div')
-        wrapper.className = 'section-error-box'
-        wrapper.appendChild(button)
-        section.appendChild(wrapper)
+        const wrapper = document.createElement("div");
+        wrapper.className = "section-error-box";
+        wrapper.appendChild(button);
+        section.appendChild(wrapper);
       }
     }
   }
@@ -228,457 +234,514 @@ const SectionLoader = (() => {
   // injectRetryUI removed; kept inline in loadSection() to avoid small helper function
 
   async function retrySection(section) {
-    section.querySelectorAll('.section-error-box').forEach(el => el.remove())
-    section.dataset.state = ''
-    loadedSections.delete(section)
-    retryAttempts.delete(section)
-    await loadSection(section)
+    section.querySelectorAll(".section-error-box").forEach((el) => el.remove());
+    section.dataset.state = "";
+    loadedSections.delete(section);
+    retryAttempts.delete(section);
+    await loadSection(section);
   }
 
   function init() {
-    if (init._initialized) return
-    init._initialized = true
+    if (init._initialized) return;
+    init._initialized = true;
 
-    const sections = Array.from(document.querySelectorAll(SELECTOR))
-    const eagerSections = []
-    const lazySections = []
+    const sections = Array.from(document.querySelectorAll(SELECTOR));
+    const eagerSections = [];
+    const lazySections = [];
 
-    sections.forEach(section => {
-      if (section.hasAttribute('data-eager')) {
-        eagerSections.push(section)
+    sections.forEach((section) => {
+      if (section.hasAttribute("data-eager")) {
+        eagerSections.push(section);
       } else {
-        lazySections.push(section)
+        lazySections.push(section);
       }
-    })
+    });
 
-    eagerSections.forEach(loadSection)
+    eagerSections.forEach(loadSection);
 
     if (lazySections.length) {
-      const observer = createLazyLoadObserver(loadSection)
-      lazySections.forEach(section => observer.observe(section))
+      const observer = createLazyLoadObserver(loadSection);
+      lazySections.forEach((section) => observer.observe(section));
     }
   }
 
   function reinit() {
-    init._initialized = false
-    init()
+    init._initialized = false;
+    init();
   }
 
-  const api = {init, reinit, loadSection, retrySection}
+  const api = { init, reinit, loadSection, retrySection };
   // Export to window for compatibility with inline handlers if any, but prefer ES import
-  window.SectionLoader = api
-  return api
-})()
+  window.SectionLoader = api;
+  return api;
+})();
 
 function _initApp() {
-  SectionLoader.init()
+  SectionLoader.init();
   // Ensure accessibility preferences applied right away
   try {
-    a11y?.updateAnimations?.()
-    a11y?.updateContrast?.()
+    a11y?.updateAnimations?.();
+    a11y?.updateContrast?.();
   } catch {
     /* ignored */
   }
 }
 
-if (document.readyState !== 'loading') {
-  _initApp()
+if (document.readyState !== "loading") {
+  _initApp();
 } else {
-  document.addEventListener(EVENTS.DOM_READY, _initApp, {once: true})
+  document.addEventListener(EVENTS.DOM_READY, _initApp, { once: true });
 }
 
 // ===== Scroll Snapping =====
 const ScrollSnapping = (() => {
-  let snapTimer = null
-  const snapContainer = document.querySelector('.snap-container') || document.documentElement
+  let snapTimer = null;
+  const snapContainer =
+    document.querySelector(".snap-container") || document.documentElement;
 
-  const disableSnap = () => snapContainer.classList.add('no-snap')
-  const enableSnap = () => snapContainer.classList.remove('no-snap')
+  const disableSnap = () => snapContainer.classList.add("no-snap");
+  const enableSnap = () => snapContainer.classList.remove("no-snap");
 
   function handleScroll() {
-    disableSnap()
-    clearTimeout(snapTimer)
-    snapTimer = setTimeout(enableSnap, 180)
+    disableSnap();
+    clearTimeout(snapTimer);
+    snapTimer = setTimeout(enableSnap, 180);
   }
 
   function handleKey(event) {
-    const scrollKeys = ['PageDown', 'PageUp', 'Home', 'End', 'ArrowDown', 'ArrowUp', 'Space']
+    const scrollKeys = [
+      "PageDown",
+      "PageUp",
+      "Home",
+      "End",
+      "ArrowDown",
+      "ArrowUp",
+      "Space",
+    ];
     if (scrollKeys.includes(event.key)) {
-      handleScroll()
+      handleScroll();
     }
   }
 
   function init() {
-    window.addEventListener('wheel', handleScroll, {passive: true})
-    window.addEventListener('touchmove', handleScroll, {passive: true})
-    window.addEventListener('keydown', handleKey, {passive: true})
+    window.addEventListener("wheel", handleScroll, { passive: true });
+    window.addEventListener("touchmove", handleScroll, { passive: true });
+    window.addEventListener("keydown", handleKey, { passive: true });
   }
 
-  return {init}
-})()
+  return { init };
+})();
 
-ScrollSnapping.init()
+ScrollSnapping.init();
 
 // ===== Loading Screen Manager =====
 const LoadingScreenManager = (() => {
-  const MIN_DISPLAY_TIME = 600
-  let startTime = 0
+  const MIN_DISPLAY_TIME = 600;
+  let startTime = 0;
 
   function hide() {
-    const loadingScreen = getElementById('loadingScreen')
-    if (!loadingScreen) return
+    const loadingScreen = getElementById("loadingScreen");
+    if (!loadingScreen) return;
 
-    const elapsed = performance.now() - startTime
-    const delay = Math.max(0, MIN_DISPLAY_TIME - elapsed)
+    const elapsed = performance.now() - startTime;
+    const delay = Math.max(0, MIN_DISPLAY_TIME - elapsed);
 
     setTimeout(() => {
-      loadingScreen.classList.add('hide')
-      loadingScreen.setAttribute('aria-hidden', 'true')
+      loadingScreen.classList.add("hide");
+      loadingScreen.setAttribute("aria-hidden", "true");
 
       Object.assign(loadingScreen.style, {
-        opacity: '0',
-        pointerEvents: 'none',
-        visibility: 'hidden'
-      })
+        opacity: "0",
+        pointerEvents: "none",
+        visibility: "hidden",
+      });
 
       const cleanup = () => {
-        loadingScreen.style.display = 'none'
-        loadingScreen.removeEventListener('transitionend', cleanup)
-      }
+        loadingScreen.style.display = "none";
+        loadingScreen.removeEventListener("transitionend", cleanup);
+      };
 
-      loadingScreen.addEventListener('transitionend', cleanup)
-      setTimeout(cleanup, 700)
+      loadingScreen.addEventListener("transitionend", cleanup);
+      setTimeout(cleanup, 700);
 
-      announce('Anwendung geladen', {dedupe: true})
+      announce("Anwendung geladen", { dedupe: true });
 
       try {
-        document.body.classList.remove('global-loading-visible')
+        document.body.classList.remove("global-loading-visible");
       } catch {
         /* ignore */
       }
 
-      perfMarks.loadingHidden = performance.now()
-      log.info(`Loading screen hidden after ${Math.round(elapsed)}ms`)
-    }, delay)
+      perfMarks.loadingHidden = performance.now();
+      log.info(`Loading screen hidden after ${Math.round(elapsed)}ms`);
+    }, delay);
   }
 
   function init() {
-    startTime = performance.now()
+    startTime = performance.now();
   }
 
-  return {init, hide}
-})()
+  return { init, hide };
+})();
 
 // ===== Three.js Earth System Loader =====
 const ThreeEarthLoader = (() => {
-  let cleanupFn = null
-  let isLoading = false
+  let cleanupFn = null;
+  let isLoading = false;
 
   async function load() {
-    if (isLoading || cleanupFn) return
+    if (isLoading || cleanupFn) return;
 
     // Explicitly check env for testing to skip heavy WebGL
     // ALLOW for specific verification script if requested via global override
     if (ENV.isTest && !window.__FORCE_THREE_EARTH) {
-      log.info('Test environment detected - skipping Three.js Earth system for performance')
-      return
+      log.info(
+        "Test environment detected - skipping Three.js Earth system for performance",
+      );
+      return;
     }
 
-    const container = getElementById('threeEarthContainer')
+    const container = getElementById("threeEarthContainer");
     if (!container) {
-      log.debug('Earth container not found')
-      return
+      log.debug("Earth container not found");
+      return;
     }
 
-    isLoading = true
+    isLoading = true;
 
     try {
-      log.info('Loading Three.js Earth system...')
-      const module = await import('./components/particles/three-earth-system.js')
-      const ThreeEarthManager = module.default
+      log.info("Loading Three.js Earth system...");
+      const module =
+        await import("./components/particles/three-earth-system.js");
+      const ThreeEarthManager = module.default;
 
-      cleanupFn = await ThreeEarthManager.initThreeEarth()
+      cleanupFn = await ThreeEarthManager.initThreeEarth();
 
-      if (typeof cleanupFn === 'function') {
+      if (typeof cleanupFn === "function") {
         // Export the cleanup function for programmatic control
-        __threeEarthCleanup = cleanupFn
+        __threeEarthCleanup = cleanupFn;
         // Optionally expose in debug mode for backwards compatibility
-        if (ENV.debug) window.__threeEarthCleanup = cleanupFn
+        if (ENV.debug) window.__threeEarthCleanup = cleanupFn;
 
-        log.info('Three.js Earth system initialized')
-        perfMarks.threeJsLoaded = performance.now()
+        log.info("Three.js Earth system initialized");
+        perfMarks.threeJsLoaded = performance.now();
       }
     } catch (error) {
-      log.warn('Three.js failed, using CSS fallback:', error)
+      log.warn("Three.js failed, using CSS fallback:", error);
     } finally {
-      isLoading = false
+      isLoading = false;
     }
   }
 
   function init() {
-    const container = getElementById('threeEarthContainer')
-    if (!container) return
+    const container = getElementById("threeEarthContainer");
+    if (!container) return;
 
     const observer = new IntersectionObserver(
-      entries => {
+      (entries) => {
         for (const entry of entries) {
           if (entry.isIntersecting) {
-            observer.disconnect()
-            load()
+            observer.disconnect();
+            load();
           }
         }
       },
-      {rootMargin: '300px', threshold: 0.01}
-    )
+      { rootMargin: "300px", threshold: 0.01 },
+    );
 
-    observer.observe(container)
+    observer.observe(container);
   }
 
   function initDelayed() {
     if (window.requestIdleCallback) {
-      requestIdleCallback(init, {timeout: 2000})
+      requestIdleCallback(init, { timeout: 2000 });
     } else {
-      setTimeout(init, 1000)
+      setTimeout(init, 1000);
     }
   }
 
-  return {initDelayed}
-})()
+  return { initDelayed };
+})();
 
 // ===== Application Bootstrap =====
 document.addEventListener(
-  'DOMContentLoaded',
+  "DOMContentLoaded",
   async () => {
-    perfMarks.domReady = performance.now()
-    LoadingScreenManager.init()
+    perfMarks.domReady = performance.now();
+    LoadingScreenManager.init();
 
-    fire(EVENTS.DOM_READY)
+    fire(EVENTS.DOM_READY);
 
     // Simplified TypeWriter Export — legacy global exposure removed; prefer importing initHeroSubtitle where needed.
 
-    let modulesReady = false
-    let windowLoaded = false
+    let modulesReady = false;
+    let windowLoaded = false;
 
     const checkReady = () => {
-      if (!modulesReady || !windowLoaded) return
-      LoadingScreenManager.hide()
-    }
+      if (!modulesReady || !windowLoaded) return;
+      LoadingScreenManager.hide();
+    };
 
     window.addEventListener(
-      'load',
+      "load",
       () => {
-        perfMarks.windowLoaded = performance.now()
-        windowLoaded = true
-        checkReady()
+        perfMarks.windowLoaded = performance.now();
+        windowLoaded = true;
+        checkReady();
       },
-      {once: true}
-    )
+      { once: true },
+    );
 
-    fire(EVENTS.CORE_INITIALIZED)
+    fire(EVENTS.CORE_INITIALIZED);
 
-    fire(EVENTS.HERO_INIT_READY)
-    initHeroFeatureBundle()
+    fire(EVENTS.HERO_INIT_READY);
+    initHeroFeatureBundle();
 
-    ThreeEarthLoader.initDelayed()
+    ThreeEarthLoader.initDelayed();
 
-    modulesReady = true
-    perfMarks.modulesReady = performance.now()
-    fire(EVENTS.MODULES_READY)
-    checkReady()
-    ;(function scheduleSmartForceHide(attempt = 1) {
-      const INITIAL_DELAY = 5000
-      const RETRY_DELAY = 5000
-      const MAX_ATTEMPTS = 3
+    modulesReady = true;
+    perfMarks.modulesReady = performance.now();
+    fire(EVENTS.MODULES_READY);
+    checkReady();
+    (function scheduleSmartForceHide(attempt = 1) {
+      const INITIAL_DELAY = 5000;
+      const RETRY_DELAY = 5000;
+      const MAX_ATTEMPTS = 3;
 
       setTimeout(
         () => {
-          if (windowLoaded) return
+          if (windowLoaded) return;
 
           // If other modules registered as blocking, defer forced hide and retry
           try {
-            if (AppLoadManager && typeof AppLoadManager.isBlocked === 'function' && AppLoadManager.isBlocked()) {
+            // Ensure AppLoadManager exists and is callable before using it (some environments may not register it)
+            if (
+              typeof AppLoadManager !== "undefined" &&
+              typeof AppLoadManager.isBlocked === "function" &&
+              AppLoadManager.isBlocked?.()
+            ) {
+              const pending =
+                typeof AppLoadManager.getPending === "function"
+                  ? AppLoadManager.getPending()
+                  : [];
               log.warn(
-                `Deferring forced loading screen hide (attempt ${attempt}): blocking modules=${AppLoadManager.getPending().join(', ')}`
-              )
+                `Deferring forced loading screen hide (attempt ${attempt}): blocking modules=${Array.isArray(pending) ? pending.join(", ") : String(pending)}`,
+              );
 
               if (attempt < MAX_ATTEMPTS) {
-                scheduleSmartForceHide(attempt + 1)
-                return
+                scheduleSmartForceHide(attempt + 1);
+                return;
               }
-              log.warn('Max attempts reached - forcing hide despite blocking modules')
+              log.warn(
+                "Max attempts reached - forcing hide despite blocking modules",
+              );
             }
           } catch (e) {
-            log.debug('AppLoadManager check failed:', e)
+            log.debug(
+              "AppLoadManager not available or check failed (expected in some environments)",
+              e,
+            );
           }
 
-          log.warn('Forcing loading screen hide after timeout')
+          log.warn("Forcing loading screen hide after timeout");
           // Force-hide now
-          LoadingScreenManager.hide()
+          LoadingScreenManager.hide();
         },
-        attempt === 1 ? INITIAL_DELAY : RETRY_DELAY
-      )
-    })()
+        attempt === 1 ? INITIAL_DELAY : RETRY_DELAY,
+      );
+    })();
 
-    schedulePersistentStorageRequest(2200)
+    schedulePersistentStorageRequest(2200);
 
     // Activate deferred styles that were marked with data-defer="1"
     const activateDeferredStyles = () => {
       try {
-        const links = document.querySelectorAll('link[rel="stylesheet"][data-defer="1"]')
-        links.forEach(link => {
+        const links = document.querySelectorAll(
+          'link[rel="stylesheet"][data-defer="1"]',
+        );
+        links.forEach((link) => {
           try {
-            link.media = 'all'
-            link.removeAttribute('data-defer')
+            link.media = "all";
+            link.removeAttribute("data-defer");
           } catch {
             /* ignore individual link errors */
           }
-        })
+        });
       } catch {
         /* ignore */
       }
-    }
+    };
 
     try {
       // Try activating now (covers case where links are already in DOM)
-      activateDeferredStyles()
+      activateDeferredStyles();
 
       // Ensure activation after DOM is parsed and on full load
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', activateDeferredStyles, {once: true})
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", activateDeferredStyles, {
+          once: true,
+        });
       } else {
         // In case script executed after parsing, ensure microtask activation
-        setTimeout(activateDeferredStyles, 0)
+        setTimeout(activateDeferredStyles, 0);
       }
-      window.addEventListener('load', activateDeferredStyles)
+      window.addEventListener("load", activateDeferredStyles);
 
       // Observe head for dynamically inserted deferred link elements
-      const headObserver = new MutationObserver(mutations => {
+      const headObserver = new MutationObserver((mutations) => {
         for (const m of mutations) {
           for (const node of m.addedNodes) {
             try {
-              if (node.nodeType === 1 && node.matches && node.matches('link[rel="stylesheet"][data-defer="1"]')) {
-                node.media = 'all'
-                node.removeAttribute('data-defer')
+              if (
+                node.nodeType === 1 &&
+                node.matches &&
+                node.matches('link[rel="stylesheet"][data-defer="1"]')
+              ) {
+                node.media = "all";
+                node.removeAttribute("data-defer");
               }
             } catch {
               /* ignore per-node errors */
             }
           }
         }
-      })
-      headObserver.observe(document.head || document.documentElement, {childList: true, subtree: true})
+      });
+      headObserver.observe(document.head || document.documentElement, {
+        childList: true,
+        subtree: true,
+      });
       // Disconnect after full load to avoid long-running observers
-      window.addEventListener('load', () => headObserver.disconnect(), {once: true})
+      window.addEventListener("load", () => headObserver.disconnect(), {
+        once: true,
+      });
     } catch {
       /* ignore overall activation errors */
     }
 
     // Delegated handlers for retry and share buttons to avoid inline handlers (CSP-compliant)
-    document.addEventListener('click', event => {
-      const target = event.target
-      if (!target) return
+    document.addEventListener("click", (event) => {
+      const target = event.target;
+      if (!target) return;
 
       // Retry / reload buttons (class-based)
-      const retry = target.closest && target.closest('.retry-btn')
+      const retry = target.closest && target.closest(".retry-btn");
       if (retry) {
-        event.preventDefault()
+        event.preventDefault();
         try {
-          window.location.reload()
+          window.location.reload();
         } catch {
           // fallback
-          location.href = location.href
+          location.href = location.href;
         }
-        return
+        return;
       }
 
       // Share button (degraded to clipboard if navigator.share not available)
-      const share = target.closest && target.closest('.btn-share')
+      const share = target.closest && target.closest(".btn-share");
       if (share) {
-        event.preventDefault()
-        const shareUrl = share.getAttribute('data-share-url') || 'https://www.youtube.com/@aks.030'
+        event.preventDefault();
+        const shareUrl =
+          share.getAttribute("data-share-url") ||
+          "https://www.youtube.com/@aks.030";
         const shareData = {
           title: document.title,
-          text: 'Schau dir diesen Kanal an',
-          url: shareUrl
-        }
+          text: "Schau dir diesen Kanal an",
+          url: shareUrl,
+        };
 
         if (navigator.share) {
-          navigator.share(shareData).catch(err => log.warn('share failed', err))
+          navigator
+            .share(shareData)
+            .catch((err) => log.warn("share failed", err));
         } else if (navigator.clipboard) {
           navigator.clipboard.writeText(shareUrl).then(() => {
             try {
-              announce('Link kopiert', {dedupe: true})
+              announce("Link kopiert", { dedupe: true });
             } catch (err) {
-              log.warn('announce failed', err)
+              log.warn("announce failed", err);
             }
-          })
+          });
         } else {
           try {
-            window.prompt('Link kopieren', shareUrl)
+            window.prompt("Link kopieren", shareUrl);
           } catch (err) {
-            log.warn('prompt failed', err)
+            log.warn("prompt failed", err);
           }
         }
-        return
+        return;
       }
-    })
+    });
 
     // ===== Service Worker Cleanup (one-time) =====
     // This will unregister any previously installed service workers and clear all caches.
     // Keep as a one-time cleanup to ensure clients no longer use the old SW code.
-    if ('serviceWorker' in navigator && !ENV.isTest) {
+    if ("serviceWorker" in navigator && !ENV.isTest) {
       window.addEventListener(
-        'load',
+        "load",
         async () => {
           try {
-            const regs = await navigator.serviceWorker.getRegistrations()
-            await Promise.all(regs.map(r => r.unregister().catch(err => log.warn('ServiceWorker unregister failed', err))))
+            const regs = await navigator.serviceWorker.getRegistrations();
+            await Promise.all(
+              regs.map((r) =>
+                r
+                  .unregister()
+                  .catch((err) =>
+                    log.warn("ServiceWorker unregister failed", err),
+                  ),
+              ),
+            );
 
-            if ('caches' in window) {
-              const keys = await caches.keys()
-              await Promise.all(keys.map(k => caches.delete(k)))
+            if ("caches" in window) {
+              const keys = await caches.keys();
+              await Promise.all(keys.map((k) => caches.delete(k)));
             }
 
-            log.info('Service Workers unregistered and caches cleared (cleanup).')
+            log.info(
+              "Service Workers unregistered and caches cleared (cleanup).",
+            );
           } catch (e) {
-            log.debug('Service Worker cleanup failed:', e)
+            log.debug("Service Worker cleanup failed:", e);
           }
         },
-        {once: true}
-      )
+        { once: true },
+      );
     } else {
-      log.info('Service Worker cleanup skipped: not supported or test env')
+      log.info("Service Worker cleanup skipped: not supported or test env");
     }
 
-    log.info('Performance:', {
+    log.info("Performance:", {
       domReady: Math.round(perfMarks.domReady - perfMarks.start),
       modulesReady: Math.round(perfMarks.modulesReady - perfMarks.start),
-      windowLoaded: Math.round(perfMarks.windowLoaded - perfMarks.start)
-    })
+      windowLoaded: Math.round(perfMarks.windowLoaded - perfMarks.start),
+    });
 
     // Dev-only ReconnectingWebSocket helper removed (was used for ?ws-test / local debug).
   },
-  {once: true}
-)
+  { once: true },
+);
 
 // ===== BFCache / Back Button Handling =====
 // Ensure Three.js system is resilient when navigating back
-window.addEventListener('pageshow', (event) => {
+window.addEventListener("pageshow", (event) => {
   if (event.persisted) {
-    log.info('Page restored from bfcache')
+    log.info("Page restored from bfcache");
     // If we have a cleanup function, it means it was running.
     // If the browser froze the state, it might just resume.
     // However, we want to ensure interactions are active.
-    
+
     // Force a resize event to re-calibrate camera/renderer
-    window.dispatchEvent(new Event('resize'))
-    
+    window.dispatchEvent(new CustomEvent("resize"));
+
     // Re-check visibility
-    if (!document.hidden && window.threeEarthSystem && window.threeEarthSystem.animate) {
-        // If system exposed an animate function, we could call it, but the loop usually uses rAF
-        // which might have been paused.
-        // The visibilitychange handler should pick this up, but let's trigger it.
-        document.dispatchEvent(new Event('visibilitychange'))
+    if (
+      !document.hidden &&
+      window.threeEarthSystem &&
+      window.threeEarthSystem.animate
+    ) {
+      // If system exposed an animate function, we could call it, but the loop usually uses rAF
+      // which might have been paused.
+      // The visibilitychange handler should pick this up, but let's trigger it.
+      document.dispatchEvent(new CustomEvent("visibilitychange"));
     }
   }
-})
+});
