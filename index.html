@@ -245,16 +245,8 @@
     />
     <noscript><link rel="stylesheet" href="/pages/about/about.css" /></noscript>
 
-    <!-- Cards (componentized) - lazy load below-the-fold -->
-    <link
-      rel="stylesheet"
-      href="/content/styles/cards.css"
-      media="print"
-      data-defer="1"
-    />
-    <noscript
-      ><link rel="stylesheet" href="/content/styles/cards.css"
-    /></noscript>
+    <!-- Cards (componentized) - load normally to avoid FOUC for above-the-fold cards -->
+    <link rel="stylesheet" href="/content/styles/cards.css" />
 
     <!-- Footer styles: deferred to keep initial render light -->
     <link
