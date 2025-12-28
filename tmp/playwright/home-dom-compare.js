@@ -1,3 +1,5 @@
+/* global require, console, process, document, window */
+/* eslint-disable no-console */
 const { chromium } = require('playwright');
 (async () => {
   const browser = await chromium.launch();
