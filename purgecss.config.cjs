@@ -22,10 +22,19 @@ module.exports = {
       'footer',
       'typewriter-title',
       'typed-text',
-      'snap-container'
+      'snap-container',
+      /* Added to fix home diff: dynamic hero/three/typewriter classes */
+      'three-earth-container',
+      'is-dragging',
+      'hero-title',
+      'fade',
+      'typewriter-title',
+      'typed-quote'
     ],
     deep: [
-      /robot-/, /site-menu__/, /footer-/, /three-earth-/, /typewriter-/
+      /robot-/, /site-menu__/, /footer-/, /three-earth-/, /typewriter-/,
+      /* also allow dynamic modifiers */
+      /is-dragging/, /\.fade\b/, /typed-quote/
     ],
     greedy: [/^is-/, /^has-/, /^active/, /^open/]
   },
