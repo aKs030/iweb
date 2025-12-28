@@ -16,6 +16,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "prepare": "husky install",
+    "build": "npm run prepare:build",
+    "build:prod": "npm run prepare:build",
     "lint:js": "eslint . --ext .js,.ts",
     "lint": "npm run lint:js",
     "prepare:build": "npm run build:og-images",

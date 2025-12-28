@@ -244,6 +244,12 @@
   z-index: 1;
 }
 
+/* Ensure HTML cards are visible when the section reports loaded */
+#features[data-state="loaded"] .card {
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
 /* 3D Cards Mode - Hide HTML Cards when WebGL is active */
 body.three-earth-active #features .features-cards {
   opacity: 0;
