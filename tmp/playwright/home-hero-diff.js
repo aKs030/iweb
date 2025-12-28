@@ -1,3 +1,5 @@
+/* global require, console, process, document, window */
+/* eslint-disable no-console */
 const { chromium } = require('playwright');
 const fs = require('fs');
 const pixelmatch = require('pixelmatch').default || require('pixelmatch');
