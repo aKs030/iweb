@@ -1,0 +1,345 @@
+/**
+ * Dynamic Footer System - Ultra Optimized
+ * ✅ Reduzierte Redundanzen
+ * ✅ Bessere CSS Custom Properties
+ * ✅ Hardware-Acceleration
+ * ✅ Zusammengefasste Media Queries
+ * @version 8.0.0 OPTIMIZED
+ */
+
+/* ===== CSS Variables (Optimiert) ===== */
+:root {
+  /* Base Unit System */
+  --footer-unit: 2px;
+  --footer-spacing-xs: calc(var(--footer-unit) * 3);
+  --footer-spacing-sm: calc(var(--footer-unit) * 5);
+  --footer-spacing-md: calc(var(--footer-unit) * 7);
+
+  /* Typography Scale */
+  --footer-text-xs: 10px;
+  --footer-text-sm: 12px;
+  --footer-text-base: 13px;
+
+  /* Layout */
+  --footer-horizontal-margin: clamp(8px, 2vw, 32px);
+  --footer-card-gap: 16px;
+  /* Social brand colors */
+  --youtube-red: #ff0000;
+  --x-color: #1da1f2;
+  --github-color: #24292e;
+  --linkedin-blue: #0077b5;
+  --instagram-start: #f58529;
+  --instagram-end: #dd2a7b;
+
+  /* Transitions */
+  --footer-transition-quick: 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  --footer-transition-smooth: 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Heights */
+  --footer-max-height: calc(100dvh - 24px - env(safe-area-inset-bottom));
+  --footer-actual-height: var(--footer-max-height);
+
+  /* Z-Index Scale */
+  --z-footer: 1000;
+  --z-cookie-modal: 10000;
+
+  /* Icon sizing */
+  --footer-icon-size-sm: 12px;
+  --footer-icon-size-md: 14px;
+  --footer-icon-gap: 6px;
+}
+
+/* ===== Base Footer Container ===== */
+
+/* Compact scale inside footer (desktop-first) */
+/* Compact scale for footer variables merged into base block to avoid duplicate selector */
+
+@keyframes footerEntrance {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px) scale(0.95);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+}
+
+/* ===== Body Padding ===== */
+
+body {
+  padding-bottom: calc(70px + env(safe-area-inset-bottom));
+  transition: padding-bottom var(--footer-transition-smooth);
+}
+
+body.footer-expanded {
+  padding-bottom: calc(70vh + env(safe-area-inset-bottom));
+}
+
+/* ===== Hidden State ===== */
+
+/* ===== Minimized Footer ===== */
+.footer-minimized {
+  padding: 4px var(--footer-spacing-sm);
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  opacity: 1;
+  transform: translateY(0) translateZ(0);
+  transition: all 0.25s var(--dynamic-footer-spring-quick);
+}
+
+/* Shared Link Styles (DRY) */
+
+/* Consistent icon sizing and alignment */
+
+.footer-cookies-link svg {
+  width: var(--footer-icon-size-sm);
+  height: var(--footer-icon-size-sm);
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* Ensure icons use currentColor so hover color changes apply */
+
+.footer-cookies-link svg * {
+  stroke: currentcolor;
+  fill: currentcolor;
+}
+
+/* Slightly increase gap between icon and text */
+
+/* ===== Maximized Footer ===== */
+.footer-maximized {
+  opacity: 0;
+  transform: translateY(20px) translateZ(0);
+  max-height: 0;
+  overflow: hidden;
+  pointer-events: none;
+  transition: all var(--footer-transition-smooth);
+  position: relative;
+}
+
+.footer-enhanced-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: var(--footer-spacing-md);
+  display: flex;
+  flex-direction: column;
+  min-height: min-content;
+  align-items: center;
+}
+
+/* ===== Three Showcase Control ===== */
+
+@keyframes threeShowcaseActive {
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(8deg) scale(1.06); }
+  100% { transform: rotate(0deg) scale(1); }
+}
+
+/* ===== Footer Status Bar - Desktop Layout Fix ===== */
+
+/* Prevent footer status from breaking into two lines on mid-sized desktops
+   - Hide social label text at <= 1200px and keep status row on a single line
+   - Keep a11y intact via existing aria-labels */
+
+/* ===== Mobile touch target improvements ===== */
+@media (max-width: 480px) {
+  
+  .cookie-settings-close,
+  .footer-cookies-link {
+    min-height: 44px;
+    padding: 10px 12px;
+    border-radius: 8px;
+  }
+
+  /* Keep the footer centered on narrow viewports while keeping small side gaps */
+}
+
+/* ===== Card Grid ===== */
+/* Card Grid - improved sizing & performance */
+
+:root {
+  --footer-card-min-height: 140px;
+}
+
+/* Make footer cards visually consistent with a small footer-action footer area */
+
+/* ===== Profile Card ===== */
+
+/* ===== Work Navigation ===== */
+
+/* ===== Newsletter Card ===== */
+
+.newsletter-form-enhanced {
+  display: flex;
+  flex-direction: row;
+  gap: var(--footer-spacing-xs);
+  margin-top: auto;
+  align-items: center; /* ensure vertical alignment inside card */
+}
+
+/* ===== Cookie Settings (Kompakter) ===== */
+.footer-cookie-settings {
+  position: relative;
+  width: 100%;
+  background: var(--dynamic-footer-bg-card);
+  border-radius: var(--dynamic-footer-radius-large);
+  z-index: 100;
+  overflow: hidden;
+  animation: slideUpFade 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translateZ(0);
+}
+
+/* Trigger zone: invisible, non-interactive element used by IntersectionObserver. Keep a minimal height so it is detectable across browsers. */
+.footer-trigger-zone {
+  display: block;
+  width: 100%;
+  min-height: 16px; /* increased to improve first-scroll intersection detection */
+  pointer-events: none;
+  visibility: hidden; /* ensure it doesn't affect layout visually */
+} 
+
+.footer-cookie-settings.hidden {
+  display: none;
+}
+
+/* Cookie settings layout center and constrain width */
+
+/* Compact header + actions */
+
+.cookie-settings-close {
+  background: transparent;
+  border: none;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--dynamic-footer-micro-radius);
+  color: var(--dynamic-footer-label-secondary);
+}
+
+.cookie-settings-close:hover {
+  background: var(--dynamic-footer-fill-primary);
+  color: var(--dynamic-footer-label-primary);
+}
+
+/* Make cookie sections compact within footer view */
+
+/* Compact intro */
+
+/* Smaller status chip */
+
+/* Smaller toggle within footer cookie view */
+
+/* Footer actions (buttons) */
+
+/* Keep mobile targets comfortable */
+
+@keyframes slideUpFade {
+  from {
+    opacity: 0;
+    transform: translateY(20px) translateZ(0);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) translateZ(0);
+  }
+}
+
+/* ===== Social Media Links in Status Bar ===== */
+
+/* ===== Footer States ===== */
+.footer-expanded .footer-minimized {
+  opacity: 0;
+  transform: translateY(-10px) translateZ(0);
+  pointer-events: none;
+}
+
+.footer-expanded .footer-maximized {
+  opacity: 1;
+  transform: translateY(0) translateZ(0);
+  max-height: none;
+  height: auto;
+  overflow: visible;
+  padding-bottom: var(--footer-spacing-md);
+  pointer-events: auto;
+}
+
+/* ===== Responsive Design (Konsolidiert) ===== */
+
+/* Tablet (landscape and portrait) */
+@media (width <= 1024px) {
+  :root {
+    --footer-card-gap: 12px;
+    --footer-spacing-md: 10px;
+  }
+}
+
+/* Mobile and small tablets */
+@media (width <= 768px) {
+  :root {
+    --footer-card-gap: 8px;
+    --footer-spacing-md: 8px;
+    --footer-max-height: calc(80dvh - 24px - env(safe-area-inset-bottom));
+  }
+
+  .footer-enhanced-content {
+    padding: 8px;
+  }
+
+  /* Hide social button text labels on mobile/small tablets to prevent layout shifts */
+
+  /* Make icon buttons compact and square on mobile */
+
+  /* Hide the Three Showcase control on small viewports to avoid overlap */
+
+  /* Mobile: keep newsletter input and submit on a single row */
+  .newsletter-form-enhanced {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* Input grows, button keeps intrinsic size */
+
+  body.footer-expanded {
+    padding-bottom: var(--footer-actual-height, var(--footer-max-height));
+  }
+
+  /* Prevent iOS zoom on focus */
+}
+
+/* Small mobile devices */
+@media (width <= 480px) {
+  :root {
+    --footer-card-gap: var(--footer-spacing-xs);
+    --footer-spacing-sm: var(--footer-spacing-xs);
+  }
+
+  body.footer-expanded {
+    padding-bottom: var(--footer-actual-height, var(--footer-max-height));
+  }
+}
+
+/* Extra small devices */
+
+/* ===== Accessibility ===== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ===== Print ===== */
