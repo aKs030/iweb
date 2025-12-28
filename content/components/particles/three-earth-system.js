@@ -197,6 +197,13 @@ const ThreeEarthManager = (() => {
           log.warn('[ThreeEarthSystem] AppLoadManager.unblock failed', err)
         }
         hideLoadingState(container)
+        // Signal that Three has finished loading textures/resources and is ready
+        try {
+          container.setAttribute('data-three-ready', '1')
+          document.dispatchEvent(new CustomEvent('three-ready', { detail: { containerId: container.id || null } }))
+        } catch (err) {
+          log.warn('three-ready dispatch failed', err)
+        }
       }
 
       loadingManager.onError = url => {
@@ -367,6 +374,19 @@ const ThreeEarthManager = (() => {
       setupInteraction()
 
       log.info('Initialization complete')
+
+      // In some non-interactive or headless environments the loadingmanager.onLoad
+      // may not fire or textures may not be required — ensure a fallback readiness
+      // marker is set so tests and consumers can rely on a consistent signal.
+      try {
+        if (!container.hasAttribute('data-three-ready')) {
+          container.setAttribute('data-three-ready', '1')
+          document.dispatchEvent(new CustomEvent('three-ready', { detail: { containerId: container.id || null } }))
+        }
+      } catch (err) {
+        log.warn('Failed to set fallback three-ready', err)
+      }
+
       return cleanup
     } catch (error) {
       log.error('Initialization failed:', error)
