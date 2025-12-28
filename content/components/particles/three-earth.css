@@ -37,6 +37,7 @@
   text-align: center;
   color: rgb(255 255 255 / 90%);
   font-family: var(--font-inter);
+  -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
   padding: 24px;
   border-radius: 12px;
