@@ -26,12 +26,14 @@
   "devDependencies": {
     "@playwright/test": "^1.57.0",
     "eslint": "^9.17.0",
+    "glob": "^10.3.3",
     "http-server": "^14.1.1",
     "husky": "^8.0.3",
+    "image-size": "^1.1.1",
     "lint-staged": "^14.0.0",
-    "prettier": "^3.7.4",
-    "glob": "^10.3.3",
-    "image-size": "^1.1.1"
+    "pixelmatch": "^7.1.0",
+    "pngjs": "^7.0.0",
+    "prettier": "^3.7.4"
   },
   "lint-staged": {
     "*.{js,ts}": [
