@@ -41,9 +41,9 @@ body {
   font-kerning: normal;
   font-variant-ligatures: common-ligatures contextual;
   font-feature-settings:
-    'kern' 1,
-    'liga' 1,
-    'calt' 1;
+    "kern" 1,
+    "liga" 1,
+    "calt" 1;
 }
 
 body {
@@ -71,7 +71,10 @@ body {
   width: 100%;
   max-width: 900px;
   margin-inline: auto;
-  padding-inline: max(clamp(0.5rem, 4vw, 1.5rem), env(safe-area-inset-left, 0px));
+  padding-inline: max(
+    clamp(0.5rem, 4vw, 1.5rem),
+    env(safe-area-inset-left, 0px)
+  );
   box-sizing: border-box;
 }
 
@@ -117,14 +120,19 @@ body {
 }
 
 .section-title::after {
-  content: '';
+  content: "";
   position: absolute;
   bottom: -10px;
   left: 50%;
   transform: translateX(-50%);
   width: clamp(50px, 8vw, 70px);
   height: 3px;
-  background: linear-gradient(90deg, var(--primary-color) 0%, var(--primary-light) 50%, var(--primary-color) 100%);
+  background: linear-gradient(
+    90deg,
+    var(--primary-color) 0%,
+    var(--primary-light) 50%,
+    var(--primary-color) 100%
+  );
   border-radius: var(--radius-full);
   box-shadow: 0 0 15px rgb(7 161 255 / 50%);
 }
@@ -344,7 +352,8 @@ a:hover {
 *:focus-visible {
   outline: 2px solid #fff;
   outline-offset: 3px;
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary-color) 55%, transparent);
+  box-shadow: 0 0 0 4px
+    color-mix(in srgb, var(--primary-color) 55%, transparent);
   transition:
     box-shadow 0.15s ease,
     outline-color 0.15s ease;
@@ -373,12 +382,7 @@ a:hover {
   color: white;
 }
 
-/* Hide Scrollbar */
-::-webkit-scrollbar {
-  width: 0;
-  height: 0;
-  background: transparent;
-}
+/* Scrollbar styling consolidated in content/styles/root.css (mobile-focused) */
 
 html {
   @supports (scrollbar-width: none) {
