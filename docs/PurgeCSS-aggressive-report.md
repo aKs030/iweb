@@ -3,6 +3,7 @@
 Date: 2025-12-28
 
 ## Summary
+
 I ran an aggressive PurgeCSS pass (expanded content globs + safelist) and performed a full visual smoke test across key pages. Outputs are in `tmp/purged-aggressive/` and visual diffs in `tmp/screenshots/aggressive/`.
 
 ## Size Changes (original -> purged-aggressive)
@@ -27,6 +28,7 @@ videos.css: 0 -> 7458 bytes
 Net size change: some files reduced in size; some new per-page styles were generated (pages with standalone CSS now have purged outputs in the directory).
 
 ## Visual Regression Results
+
 Test pages: `/`, `/about/`, `/projekte/`, `/gallery/`, `/videos/`, `/blog/`.
 
 - home: mismatched pixels = 11555 (see `tmp/screenshots/aggressive/home-diff.png`) — requires review. May be due to layout shifts or dynamic content differences on the home page (Three.js or hero CSS interplay).
@@ -37,19 +39,23 @@ Test pages: `/`, `/about/`, `/projekte/`, `/gallery/`, `/videos/`, `/blog/`.
 - blog: mismatched pixels = 0
 
 Screenshots saved under `tmp/screenshots/aggressive/`:
+
 - `home-base.png`, `home-purged.png`, `home-diff.png` (and similar for other pages)
 
 ## Observations & Next Steps
-- The *home* page shows non-zero pixel differences; inspect `home-diff.png` to determine if differences are acceptable (minor anti-aliasing / shift) or require safelisting additional selectors (likely related to hero/Three.js / typewriter). I can do a pixel-level heatmap to see which areas differ, or run a headless DOM snapshot comparison.
+
+- The _home_ page shows non-zero pixel differences; inspect `home-diff.png` to determine if differences are acceptable (minor anti-aliasing / shift) or require safelisting additional selectors (likely related to hero/Three.js / typewriter). I can do a pixel-level heatmap to see which areas differ, or run a headless DOM snapshot comparison.
 - Many rejected selectors are from dynamic components (robot-companion, menu, footer). They were covered by the safelist, but some selectors still got flagged (check `tmp/purged-aggressive/*` and `--rejected` outputs if needed).
 
 ## Recommendation
+
 - Manual review of `home` diff to decide whether to whitelist more selectors or accept the visual change.
 - If accepted: prepare a PR that replaces the canonical CSS files with the purged outputs (or integrate a build step to produce purified CSS during build). If not accepted: add more safelist entries and re-run PurgeCSS.
 
 ---
 
 If you want, I can:
+
 - A) Investigate the `home` diff in detail and propose a small safelist to fix it, then re-run and re-test. (Recommended)
 - B) Prepare a PR with the current purged outputs + docs for review.
 - C) Automate Purge+Visual checks in CI and open a PR template.

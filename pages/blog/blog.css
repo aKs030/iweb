@@ -12,7 +12,7 @@ body {
   color: var(--blog-text);
   margin: 0;
   font-family:
-    'Inter',
+    "Inter",
     system-ui,
     -apple-system,
     sans-serif;

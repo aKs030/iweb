@@ -74,7 +74,11 @@
             "type": "equals",
             "parameter": [
               { "key": "arg0", "type": "TEMPLATE", "value": "event" },
-              { "key": "arg1", "type": "TEMPLATE", "value": "pageMetadataReady" }
+              {
+                "key": "arg1",
+                "type": "TEMPLATE",
+                "value": "pageMetadataReady"
+              }
             ]
           }
         ]
@@ -98,17 +102,23 @@
       {
         "name": "GA4_MEASUREMENT_ID",
         "type": "dataLayer",
-        "parameter": [ { "key": "name", "type": "TEMPLATE", "value": "ga4_measurement_id" } ]
+        "parameter": [
+          { "key": "name", "type": "TEMPLATE", "value": "ga4_measurement_id" }
+        ]
       },
       {
         "name": "AW_CONVERSION_ID",
         "type": "dataLayer",
-        "parameter": [ { "key": "name", "type": "TEMPLATE", "value": "ads_conversion_id" } ]
+        "parameter": [
+          { "key": "name", "type": "TEMPLATE", "value": "ads_conversion_id" }
+        ]
       },
       {
         "name": "AW_CONVERSION_LABEL",
         "type": "constant",
-        "parameter": [ { "key": "value", "type": "TEMPLATE", "value": "AW-CONV-LABEL" } ]
+        "parameter": [
+          { "key": "value", "type": "TEMPLATE", "value": "AW-CONV-LABEL" }
+        ]
       }
     ],
     "usageContext": ["WEB"]
