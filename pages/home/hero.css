@@ -296,6 +296,26 @@
   display: block;
 }
 
+/* Ensure consistent visuals until the Three.js canvas is fully ready */
+.three-earth-container canvas {
+  opacity: 0;
+  transition: opacity 320ms ease;
+}
+
+/* Once resources are loaded explicitly mark the container as ready */
+.three-earth-container[data-three-ready="1"] canvas {
+  opacity: 1;
+}
+
+/* If a canvas exists, prefer canvas and hide the fallback */
+.three-earth-container:has(canvas) .three-earth-fallback {
+  display: none;
+}
+
+.three-earth-container:has(canvas) canvas {
+  opacity: 1;
+}
+
 .three-earth-fallback__inner img {
   width: 100%;
   height: auto;

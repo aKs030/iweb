@@ -25,6 +25,14 @@ export function setupScene(THREE, container) {
 
   container.appendChild(renderer.domElement)
 
+  // Mark that the renderer DOM element has been attached so tests or other code can detect presence
+  try {
+    container.setAttribute('data-three-attached', '1')
+    document.dispatchEvent(new CustomEvent('three-attached', { detail: { containerId: container.id || null } }))
+  } catch (e) {
+    /* ignore */
+  }
+
   return {scene, camera, renderer}
 }
 
