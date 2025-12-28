@@ -13,7 +13,7 @@ body {
     Inter,
     -apple-system,
     BlinkMacSystemFont,
-    'Segoe UI',
+    "Segoe UI",
     Roboto,
     sans-serif;
   background: transparent;
@@ -338,19 +338,39 @@ img {
 
 /* Backgrounds & gradients */
 .bg-gradient-to-br {
-  background-image: linear-gradient(to bottom right, var(--from-color), var(--via-color, transparent), var(--to-color));
+  background-image: linear-gradient(
+    to bottom right,
+    var(--from-color),
+    var(--via-color, transparent),
+    var(--to-color)
+  );
 }
 
 .bg-gradient-to-r {
-  background-image: linear-gradient(to right, var(--from-color), var(--via-color, transparent), var(--to-color));
+  background-image: linear-gradient(
+    to right,
+    var(--from-color),
+    var(--via-color, transparent),
+    var(--to-color)
+  );
 }
 
 .bg-gradient-to-t {
-  background-image: linear-gradient(to top, var(--from-color), var(--via-color, transparent), var(--to-color));
+  background-image: linear-gradient(
+    to top,
+    var(--from-color),
+    var(--via-color, transparent),
+    var(--to-color)
+  );
 }
 
 .bg-gradient-to-b {
-  background-image: linear-gradient(to bottom, var(--from-color), var(--via-color, transparent), var(--to-color));
+  background-image: linear-gradient(
+    to bottom,
+    var(--from-color),
+    var(--via-color, transparent),
+    var(--to-color)
+  );
 }
 
 .from-slate-950 {
@@ -442,7 +462,12 @@ img {
 }
 
 .bg-gradient-overlay {
-  background: linear-gradient(to top, rgb(0 0 0 / 90%), rgb(0 0 0 / 40%), transparent);
+  background: linear-gradient(
+    to top,
+    rgb(0 0 0 / 90%),
+    rgb(0 0 0 / 40%),
+    transparent
+  );
 }
 
 /* Borders & Radius */
@@ -965,7 +990,9 @@ img {
 }
 
 /* Backdrop blur fallback */
-@supports not ((backdrop-filter: blur(8px)) or (-webkit-backdrop-filter: blur(8px))) {
+@supports not (
+  (backdrop-filter: blur(8px)) or (-webkit-backdrop-filter: blur(8px))
+) {
   .backdrop-blur-sm,
   .backdrop-blur-md,
   .backdrop-blur-xl {

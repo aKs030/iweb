@@ -15,6 +15,7 @@
 ## 📋 Weitere Empfehlungen
 
 ### Google Search Console einrichten:
+
 1. Gehe zu https://search.google.com/search-console
 2. Property hinzufügen: abdulkerimsesli.de
 3. Sitemap einreichen: https://abdulkerimsesli.de/sitemap.xml
@@ -22,16 +23,19 @@
 5. Indexierung anfordern
 
 ### Google My Business (optional):
+
 1. YouTube-Videos zum GMB-Profil hinzufügen
 2. Videos auf Google Posts teilen
 3. Regelmäßige Updates posten
 
 ### Performance:
+
 - ✅ Lazy-Loading für Videos (bereits implementiert)
 - ✅ YouTube-Thumbnails als Vorschau
 - ✅ Click-to-Play (verbessert Ladezeit)
 
 ### Social Sharing:
+
 - Video-Links auf LinkedIn teilen
 - In XING-Profil verlinken
 - Auf Twitter/X posten mit #webdev #3d

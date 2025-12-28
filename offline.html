@@ -1,24 +1,36 @@
 <!doctype html>
 <html lang="de">
   <head>
-          <script>
-            window.dataLayer = window.dataLayer || [];
-            window.dataLayer.push({
-              'ga4_measurement_id': 'G-757KWG0PG4',
-              'ads_conversion_id': 'AW-1036079663'
-            });
-          </script>
-          <!-- Google Tag Manager -->
-          <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start': new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0], j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-5F5ZSTTL');</script>
-          <!-- End Google Tag Manager -->
-      <meta name="mobile-web-app-capable" content="yes" />
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push({
+        ga4_measurement_id: "G-757KWG0PG4",
+        ads_conversion_id: "AW-1036079663",
+      });
+    </script>
+    <!-- Google Tag Manager -->
+    <script>
+      (function (w, d, s, l, i) {
+        w[l] = w[l] || [];
+        w[l].push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
+        var f = d.getElementsByTagName(s)[0],
+          j = d.createElement(s),
+          dl = l != "dataLayer" ? "&l=" + l : "";
+        j.async = true;
+        j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
+        f.parentNode.insertBefore(j, f);
+      })(window, document, "script", "dataLayer", "GTM-5F5ZSTTL");
+    </script>
+    <!-- End Google Tag Manager -->
+    <meta name="mobile-web-app-capable" content="yes" />
     <link rel="canonical" href="https://abdulkerimsesli.de/offline/" />
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Offline - Abdul aus Berlin</title>
     <meta
       name="description"
-      content="Offline-Seite: Keine Verbindung verfügbar. Prüfe deine Internetverbindung, um die Website vollständig zu laden." />
+      content="Offline-Seite: Keine Verbindung verfügbar. Prüfe deine Internetverbindung, um die Website vollständig zu laden."
+    />
     <meta name="robots" content="noindex, nofollow" />
     <meta name="googlebot" content="noindex, nofollow" />
     <style>
@@ -34,10 +46,10 @@
       }
       body {
         font-family:
-          'Inter',
+          "Inter",
           -apple-system,
           BlinkMacSystemFont,
-          'Segoe UI',
+          "Segoe UI",
           Roboto,
           sans-serif;
         background: var(--bg-primary);
@@ -99,13 +111,23 @@
     </style>
   </head>
   <body>
-      <!-- Google Tag Manager (noscript) -->
-      <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5F5ZSTTL" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-      <!-- End Google Tag Manager (noscript) -->
+    <!-- Google Tag Manager (noscript) -->
+    <noscript
+      ><iframe
+        src="https://www.googletagmanager.com/ns.html?id=GTM-5F5ZSTTL"
+        height="0"
+        width="0"
+        style="display: none; visibility: hidden"
+      ></iframe
+    ></noscript>
+    <!-- End Google Tag Manager (noscript) -->
     <div class="offline-container">
       <div class="offline-icon" aria-hidden="true">📡</div>
       <h1>Du bist offline</h1>
-      <p>Es scheint, als hättest du keine Internetverbindung. Bitte überprüfe deine Verbindung und versuche es erneut.</p>
+      <p>
+        Es scheint, als hättest du keine Internetverbindung. Bitte überprüfe
+        deine Verbindung und versuche es erneut.
+      </p>
       <button class="retry-btn">Erneut versuchen</button>
     </div>
   </body>

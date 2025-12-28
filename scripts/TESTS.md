@@ -15,6 +15,7 @@ Die Tests sind in `./scripts/tests/` organisiert und prüfen die Funktionalität
 ## Verfügbare Tests
 
 ### Homepage Test
+
 - **Datei**: `scripts/tests/homepage.spec.js`
 - **Beschreibung**: Prüft, ob die Homepage lädt und wichtige Elemente anzeigt.
 - **Assertions**:
@@ -24,6 +25,7 @@ Die Tests sind in `./scripts/tests/` organisiert und prüfen die Funktionalität
   - Keine JavaScript-Fehler
 
 ### Navigation Test
+
 - **Datei**: `scripts/tests/homepage.spec.js`
 - **Beschreibung**: Testet die Navigation zur Gallery-Seite.
 - **Assertions**:
@@ -35,11 +37,13 @@ Die Tests sind in `./scripts/tests/` organisiert und prüfen die Funktionalität
 ## Ausführung
 
 ### Lokal
+
 ```bash
 npm run test:playwright
 ```
 
 ### CI (GitHub Actions)
+
 - Workflow: `.github/workflows/playwright.yml`
 - Ausführung: Manuell über GitHub UI
 - Befehl: `npm run test:playwright`
@@ -47,6 +51,7 @@ npm run test:playwright
 ## Konfiguration
 
 In `playwright.config.js`:
+
 ```javascript
 testDir: './scripts/tests',
 outputDir: './scripts/test-results',

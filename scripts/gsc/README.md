@@ -3,24 +3,25 @@
 This folder contains a small script to submit your sitemap to Google Search Console using a Service Account and the Webmasters API.
 
 Important notes
+
 - You must own or have full permissions for the Search Console property (https://search.google.com/search-console).
 - Google has deprecated the simple `https://www.google.com/ping?sitemap=...` ping; use Search Console UI or the API.
 
 Steps
 
-1) Enable APIs & create Service Account
+1. Enable APIs & create Service Account
 
 - Open Google Cloud Console and create/select a project.
 - Enable the **Search Console API** (also known as Webmasters API).
 - Create a Service Account and generate a JSON key. Download the key file.
 
-2) Grant access to the Service Account
+2. Grant access to the Service Account
 
 - Go to Search Console → Settings → Users and permissions.
 - Add the service account's email (from the JSON) as a user with **Owner** or **Full** permissions.
   - If you cannot add the service account as Owner, add the account as a user with full permissions.
 
-3) Run the script
+3. Run the script
 
 Install dependencies (recommended in virtualenv):
 
@@ -43,7 +44,7 @@ Or explicitly:
 python3 scripts/gsc/submit_sitemap.py --service-account /path/to/service-account.json --site https://abdulkerimsesli.de --sitemap /sitemap.xml
 ```
 
-4) Optional: list sitemaps
+4. Optional: list sitemaps
 
 ```bash
 python3 scripts/gsc/submit_sitemap.py --service-account /path/to/service-account.json --site https://abdulkerimsesli.de --list

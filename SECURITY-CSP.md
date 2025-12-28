@@ -96,7 +96,8 @@ Füge im `<head>` Bereich jeder HTML-Seite hinzu:
 ```html
 <meta
   http-equiv="Content-Security-Policy"
-  content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:;" />
+  content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:;"
+/>
 ```
 
 **Hinweis:** Meta-Tags unterstützen nicht alle CSP-Direktiven (z.B. `frame-ancestors`, `report-uri`).
@@ -210,10 +211,10 @@ connect-src 'self' ws://localhost:* ws://127.0.0.1:*;
 
 ```javascript
 // Test CSP violations in console
-console.log('CSP Test: Inline script executed')
+console.log("CSP Test: Inline script executed");
 
 // Dies sollte blockiert werden bei strikter CSP:
-eval('console.log("eval test")')
+eval('console.log("eval test")');
 ```
 
 ## Best Practices

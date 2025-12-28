@@ -6,12 +6,12 @@ export const CONFIG = {
     BUMP_SCALE: 0.008,
     EMISSIVE_INTENSITY: 0.2,
     EMISSIVE_PULSE_SPEED: 0.3,
-    EMISSIVE_PULSE_AMPLITUDE: 0.08
+    EMISSIVE_PULSE_AMPLITUDE: 0.08,
   },
   CLOUDS: {
     ALTITUDE: 0.03,
     ROTATION_SPEED: 0.0008,
-    OPACITY: 0.3
+    OPACITY: 0.3,
   },
   ATMOSPHERE: {
     SCALE: 1.015,
@@ -22,29 +22,29 @@ export const CONFIG = {
     MIE_COLOR: 0xffbb66,
     RAYLEIGH_INTENSITY: 0.08,
     MIE_INTENSITY: 0.04,
-    SCATTERING_STRENGTH: 0.18
+    SCATTERING_STRENGTH: 0.18,
   },
   OCEAN: {
     SHININESS: 100.0,
     SPECULAR_INTENSITY: 0.5,
-    SPECULAR_COLOR: 0xffffff
+    SPECULAR_COLOR: 0xffffff,
   },
   SUN: {
     RADIUS: 15,
     HEIGHT: 3.0,
-    INTENSITY: 1.8
+    INTENSITY: 1.8,
   },
   LIGHTING: {
     DAY: {
       AMBIENT_INTENSITY: 1.4,
       AMBIENT_COLOR: 0x606060,
-      SUN_INTENSITY: 1.8
+      SUN_INTENSITY: 1.8,
     },
     NIGHT: {
       AMBIENT_INTENSITY: 0.3,
       AMBIENT_COLOR: 0x202845,
-      SUN_INTENSITY: 0.35
-    }
+      SUN_INTENSITY: 0.35,
+    },
   },
   STARS: {
     COUNT: 3000,
@@ -57,15 +57,15 @@ export const CONFIG = {
       CARD_FADE_END: 0.95,
       SPREAD_XY: 0.02, // Extrem fein für exakte Rand-Linien
       SPREAD_Z: 0.01, // Minimale Tiefe
-      LERP_FACTOR: 0.08
-    }
+      LERP_FACTOR: 0.08,
+    },
   },
   MOON: {
     RADIUS: 0.95,
     DISTANCE: 25,
     ORBIT_SPEED: 0.00025,
     SEGMENTS: 48,
-    BUMP_SCALE: 0.015
+    BUMP_SCALE: 0.015,
   },
   CAMERA: {
     FOV: 45,
@@ -79,35 +79,35 @@ export const CONFIG = {
         x: -6.5,
         y: 4.8,
         z: 10.5,
-        lookAt: {x: 0, y: -0.5, z: 0}
+        lookAt: { x: 0, y: -0.5, z: 0 },
       },
       features: {
         x: 7.0,
         y: 5.5,
         z: 7.5,
-        lookAt: {x: 0, y: 0.5, z: 0}
+        lookAt: { x: 0, y: 0.5, z: 0 },
       },
       about: {
         x: -3.2,
         y: 3.0,
         z: 9.5,
-        lookAt: {x: 0, y: 0, z: 0}
+        lookAt: { x: 0, y: 0, z: 0 },
       },
       contact: {
         x: -0.5,
         y: 3.0,
         z: 9.5,
-        lookAt: {x: 0, y: 0, z: 0}
-      }
+        lookAt: { x: 0, y: 0, z: 0 },
+      },
     },
-    TRANSITION_DURATION: 1.8
+    TRANSITION_DURATION: 1.8,
   },
   SHOOTING_STARS: {
     BASE_FREQUENCY: 0.003,
     SHOWER_FREQUENCY: 0.02,
     SHOWER_DURATION: 180,
     SHOWER_COOLDOWN: 1200,
-    MAX_SIMULTANEOUS: 3
+    MAX_SIMULTANEOUS: 3,
   },
   PERFORMANCE: {
     // Cap pixel ratio conservatively to avoid GPU stalls on some drivers/devices
@@ -115,7 +115,7 @@ export const CONFIG = {
     PIXEL_RATIO: Math.min(window.devicePixelRatio || 1, 1.5),
     TARGET_FPS: 50,
     DRS_DOWN_THRESHOLD: 46,
-    DRS_UP_THRESHOLD: 56
+    DRS_UP_THRESHOLD: 56,
   },
   QUALITY_LEVELS: {
     HIGH: {
@@ -123,32 +123,32 @@ export const CONFIG = {
       multiLayerAtmosphere: true,
       oceanReflections: true,
       cloudLayer: true,
-      meteorShowers: true
+      meteorShowers: true,
     },
     MEDIUM: {
       minFPS: 28,
       multiLayerAtmosphere: false,
       oceanReflections: true,
       cloudLayer: true,
-      meteorShowers: true
+      meteorShowers: true,
     },
     LOW: {
       minFPS: 0,
       multiLayerAtmosphere: false,
       oceanReflections: false,
       cloudLayer: false,
-      meteorShowers: false
-    }
+      meteorShowers: false,
+    },
   },
   PATHS: {
     TEXTURES: {
-      DAY: '/content/assets/img/earth/textures/earth_day.webp',
-      NIGHT: '/content/assets/img/earth/textures/earth_night.webp',
-      NORMAL: '/content/assets/img/earth/textures/earth_normal.webp',
-      BUMP: '/content/assets/img/earth/textures/earth_bump.webp',
-      CLOUDS: '/content/assets/img/earth/textures/earth_clouds_1024.png',
-      MOON: '/content/assets/img/earth/textures/moon_texture.webp',
-      MOON_BUMP: '/content/assets/img/earth/textures/moon_bump.webp'
-    }
-  }
-}
+      DAY: "/content/assets/img/earth/textures/earth_day.webp",
+      NIGHT: "/content/assets/img/earth/textures/earth_night.webp",
+      NORMAL: "/content/assets/img/earth/textures/earth_normal.webp",
+      BUMP: "/content/assets/img/earth/textures/earth_bump.webp",
+      CLOUDS: "/content/assets/img/earth/textures/earth_clouds_1024.png",
+      MOON: "/content/assets/img/earth/textures/moon_texture.webp",
+      MOON_BUMP: "/content/assets/img/earth/textures/moon_bump.webp",
+    },
+  },
+};

@@ -1,15 +1,15 @@
-const {defineConfig} = require('@playwright/test')
+const { defineConfig } = require("@playwright/test");
 module.exports = defineConfig({
-  testDir: './scripts/tests',
-  outputDir: './scripts/test-results',
+  testDir: "./scripts/tests",
+  outputDir: "./scripts/test-results",
   webServer: {
-    command: 'npm run serve:dev',
+    command: "npm run serve:dev",
     port: 8081,
     reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000
+    timeout: 120 * 1000,
   },
   use: {
     headless: true,
-    viewport: {width: 1280, height: 720}
-  }
-})
+    viewport: { width: 1280, height: 720 },
+  },
+});
