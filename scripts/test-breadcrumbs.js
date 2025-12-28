@@ -1,95 +1,120 @@
-import {createLogger} from '../content/utils/shared-utilities.js'
+import { createLogger } from "../content/utils/shared-utilities.js";
 
-const log = createLogger('test-breadcrumbs')
+const log = createLogger("test-breadcrumbs");
 
-const fs = require('fs')
-const path = require('path')
+const fs = require("fs");
+const path = require("path");
 
-const siteBase = 'https://abdulkerimsesli.de'
+const siteBase = "https://abdulkerimsesli.de";
 const sections = {
-  '/projekte/': 'Projekte',
-  '/blog/': 'Blog',
-  '/videos/': 'Videos',
-  '/gallery/': 'Galerie',
-  '/about/': 'Über'
-}
+  "/projekte/": "Projekte",
+  "/blog/": "Blog",
+  "/videos/": "Videos",
+  "/gallery/": "Galerie",
+  "/about/": "Über",
+};
 
 function makeTrail(currentPath, safePageTitle) {
-  const pathNormalized = currentPath.endsWith('/') ? currentPath : currentPath + '/'
-  const pathKey = pathNormalized
-  const trail = [{name: 'Startseite', url: siteBase + '/'}]
+  const pathNormalized = currentPath.endsWith("/")
+    ? currentPath
+    : currentPath + "/";
+  const pathKey = pathNormalized;
+  const trail = [{ name: "Startseite", url: siteBase + "/" }];
 
   const sectionKey =
-    Object.keys(sections).find(k => pathKey === k || pathKey.startsWith(k)) || Object.keys(sections).find(k => pathKey.includes(k))
+    Object.keys(sections).find((k) => pathKey === k || pathKey.startsWith(k)) ||
+    Object.keys(sections).find((k) => pathKey.includes(k));
 
-  if (pathKey !== '/') {
-    const sectionUrl = sectionKey ? siteBase + sectionKey : null
-    const pageUrl = siteBase + pathKey
+  if (pathKey !== "/") {
+    const sectionUrl = sectionKey ? siteBase + sectionKey : null;
+    const pageUrl = siteBase + pathKey;
 
     if (sectionKey) {
-      trail.push({name: sections[sectionKey], url: sectionUrl})
+      trail.push({ name: sections[sectionKey], url: sectionUrl });
     }
 
-    const lastUrls = trail.map(t => t.url)
-    if (!lastUrls.includes(pageUrl) && !trail.some(t => t.name === safePageTitle)) {
-      trail.push({name: safePageTitle, url: pageUrl})
+    const lastUrls = trail.map((t) => t.url);
+    if (
+      !lastUrls.includes(pageUrl) &&
+      !trail.some((t) => t.name === safePageTitle)
+    ) {
+      trail.push({ name: safePageTitle, url: pageUrl });
     }
   }
 
   return {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    'itemListElement': trail.map((t, i) => ({'@type': 'ListItem', 'position': i + 1, 'name': t.name, 'item': t.url}))
-  }
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: trail.map((t, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: t.name,
+      item: t.url,
+    })),
+  };
 }
 
 // Test cases
 const tests = [
-  {path: '/', title: 'Abdulkerim — Digital Creator Portfolio'},
-  {path: '/videos/', title: 'Video-Tutorials & Demos | Abdulkerim Sesli'},
-  {path: '/projekte/', title: 'Webentwicklung & Coding Projekte | Abdulkerim Sesli'}
-]
+  { path: "/", title: "Abdulkerim — Digital Creator Portfolio" },
+  { path: "/videos/", title: "Video-Tutorials & Demos | Abdulkerim Sesli" },
+  {
+    path: "/projekte/",
+    title: "Webentwicklung & Coding Projekte | Abdulkerim Sesli",
+  },
+];
 
 for (const t of tests) {
-  log.warn('===', t.path, '===')
-  log.warn(JSON.stringify(makeTrail(t.path, t.title), null, 2))
+  log.warn("===", t.path, "===");
+  log.warn(JSON.stringify(makeTrail(t.path, t.title), null, 2));
 }
 
 // Scan actual HTML files for BreadcrumbList JSON-LD and report duplicates
-const scanFiles = ['pages/videos/index.html', 'pages/projekte/index.html', 'index.html']
+const scanFiles = [
+  "pages/videos/index.html",
+  "pages/projekte/index.html",
+  "index.html",
+];
 
 function extractJsonLd(content) {
-  const scripts = []
-  const regex = /<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi
-  let m
+  const scripts = [];
+  const regex =
+    /<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
+  let m;
   while ((m = regex.exec(content))) {
-    scripts.push(m[1].trim())
+    scripts.push(m[1].trim());
   }
-  return scripts
+  return scripts;
 }
 
 for (const f of scanFiles) {
   try {
-    const c = fs.readFileSync(path.join(process.cwd(), f), 'utf8')
-    const scripts = extractJsonLd(c)
+    const c = fs.readFileSync(path.join(process.cwd(), f), "utf8");
+    const scripts = extractJsonLd(c);
     for (const s of scripts) {
       try {
-        const j = JSON.parse(s)
-        if (j['@type'] === 'BreadcrumbList' || (Array.isArray(j) && j.some(x => x && x['@type'] === 'BreadcrumbList'))) {
-          const list = Array.isArray(j) ? j.find(x => x['@type'] === 'BreadcrumbList') : j
-          const items = list.itemListElement || []
-          const urls = items.map(it => it.item)
-          const dup = urls.filter((u, i) => urls.indexOf(u) !== i)
-          log.warn('\nFile:', f)
-          log.warn('Breadcrumb items:', urls)
-          if (dup.length) log.warn('Duplicate URLs found:', [...new Set(dup)])
-          else log.warn('No duplicate URLs')
+        const j = JSON.parse(s);
+        if (
+          j["@type"] === "BreadcrumbList" ||
+          (Array.isArray(j) &&
+            j.some((x) => x && x["@type"] === "BreadcrumbList"))
+        ) {
+          const list = Array.isArray(j)
+            ? j.find((x) => x["@type"] === "BreadcrumbList")
+            : j;
+          const items = list.itemListElement || [];
+          const urls = items.map((it) => it.item);
+          const dup = urls.filter((u, i) => urls.indexOf(u) !== i);
+          log.warn("\nFile:", f);
+          log.warn("Breadcrumb items:", urls);
+          if (dup.length) log.warn("Duplicate URLs found:", [...new Set(dup)]);
+          else log.warn("No duplicate URLs");
         }
       } catch (err) {
-        log.warn('test-breadcrumbs: JSON parse failed', err)
+        log.warn("test-breadcrumbs: JSON parse failed", err);
       }
     }
   } catch (err) {
-    log.warn('test-breadcrumbs: file read failed', err)
+    log.warn("test-breadcrumbs: file read failed", err);
   }
 }

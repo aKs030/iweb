@@ -33,7 +33,7 @@
 
   /* keep reasonable vertical space for multi-line hero headings while avoiding excessive height */
   min-height: 2.2em;
-  font-variation-settings: 'opsz' 18;
+  font-variation-settings: "opsz" 18;
   font-optical-sizing: auto;
   text-shadow:
     0 0 18px rgb(37 99 235 / 35%),
@@ -364,7 +364,7 @@ body:not(.hero-active) .floating-icon {
 }
 
 .spotlight-bg::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
   border-radius: inherit; /* match pill shape */
@@ -436,12 +436,16 @@ body:not(.hero-active) .hero-title {
   }
 
   .hero-title {
-    font-size: clamp(1.05rem, 4.8vw, 1.6rem) !important; /* force smaller type on mobile */
+    font-size: clamp(
+      1.05rem,
+      4.8vw,
+      1.6rem
+    ) !important; /* force smaller type on mobile */
     min-inline-size: clamp(10ch, 26vw, 22ch);
     max-width: 100%;
     padding: 6px 8px; /* keep the pill visually compact */
     line-height: 1.05;
-    font-variation-settings: 'opsz' 14;
+    font-variation-settings: "opsz" 14;
     filter: none !important;
     will-change: text-shadow;
     overflow-wrap: break-word;
@@ -473,12 +477,16 @@ body:not(.hero-active) .hero-title {
   }
 
   .hero-title {
-    font-size: clamp(0.95rem, 4.2vw, 1.2rem) !important; /* further reduce type on 360px */
+    font-size: clamp(
+      0.95rem,
+      4.2vw,
+      1.2rem
+    ) !important; /* further reduce type on 360px */
     min-inline-size: clamp(8ch, 22vw, 18ch);
     max-width: 100%;
     padding: 4px 6px;
     line-height: 1.02;
-    font-variation-settings: 'opsz' 12;
+    font-variation-settings: "opsz" 12;
     filter: none !important;
     will-change: text-shadow;
     white-space: normal; /* allow wrapping on tiny screens */

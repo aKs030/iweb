@@ -259,12 +259,12 @@
 }
 
 /* ===== THEME DATA ATTRIBUTE SUPPORT ===== */
-[data-theme='light'] .cookie-banner-inline {
+[data-theme="light"] .cookie-banner-inline {
   background: transparent;
   border: none;
 }
 
-[data-theme='light'] .cookie-text {
+[data-theme="light"] .cookie-text {
   color: #1d1d1f;
 }
 
@@ -309,7 +309,11 @@
 
 .cookie-modal-content {
   position: relative;
-  background: linear-gradient(135deg, rgb(26 26 46 / 98%) 0%, rgb(22 33 62 / 98%) 100%);
+  background: linear-gradient(
+    135deg,
+    rgb(26 26 46 / 98%) 0%,
+    rgb(22 33 62 / 98%) 100%
+  );
   border: 1px solid rgb(255 255 255 / 10%);
   border-radius: 16px;
   box-shadow: 0 20px 60px rgb(0 0 0 / 50%);
@@ -457,7 +461,7 @@
 
 .cookie-toggle-slider::before {
   position: absolute;
-  content: '';
+  content: "";
   height: 18px;
   width: 18px;
   left: 3px;
