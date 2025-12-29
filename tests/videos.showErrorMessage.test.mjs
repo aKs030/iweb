@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { showErrorMessage } from "../pages/videos/videos.js";
+import { showErrorMessage, showInfoMessage } from "../pages/videos/videos.js";
 
 console.log("Running showErrorMessage tests...");
 
@@ -34,6 +34,19 @@ container.nodes = [];
 showErrorMessage({ status: 403, body: 'API_KEY_HTTP_REFERRER_BLOCKED' });
 assert.ok(container.nodes.length === 1, 'error node inserted for 403');
 assert.ok(container.nodes[0].textContent.includes('API-Zugriff verweigert'), '403 message included');
+
+// 3) 400 invalid API key
+container.nodes = [];
+showErrorMessage({ status: 400, body: 'API_KEY_INVALID' });
+assert.ok(container.nodes.length === 1, 'error node inserted for 400');
+assert.ok(container.nodes[0].textContent.includes('API-Key'), '400 message hint included');
+
+// 4) Info message
+container.nodes = [];
+showInfoMessage('Keine Uploads');
+assert.ok(container.nodes.length === 1, 'info node inserted');
+assert.ok(container.nodes[0].className === 'video-note', 'note class used');
+assert.strictEqual(statusEl.textContent, 'Keine Uploads');
 
 // restore
 globalThis.document = origDocument;
