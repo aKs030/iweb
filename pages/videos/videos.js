@@ -30,7 +30,7 @@ function activateThumb(btn) {
   const iframe = document.createElement("iframe");
   iframe.width = "560";
   iframe.height = "315";
-  iframe.src = `https://www.youtube.com/embed/${vid}?autoplay=1&rel=0`;
+  iframe.src = `https://www.youtube-nocookie.com/embed/${vid}?autoplay=1&rel=0`;
   iframe.title = title;
   iframe.setAttribute("frameborder", "0");
   iframe.setAttribute(
@@ -224,7 +224,7 @@ export function renderVideoCard(grid, it, detailsMap) {
     thumbnailUrl: thumb,
     uploadDate: pub,
     contentUrl: `https://youtu.be/${vid}`,
-    embedUrl: `https://www.youtube.com/embed/${vid}`,
+    embedUrl: `https://www.youtube-nocookie.com/embed/${vid}`,
     isFamilyFriendly: true,
     publisher: {
       "@type": "Organization",

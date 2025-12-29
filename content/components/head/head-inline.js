@@ -311,3 +311,105 @@ dataLayer.push({
     log?.warn?.("head-inline: injectCoreAssets failed", err);
   }
 })();
+
+// === Hide branding (site name) from human users (keep it in server-rendered <title> for SEO/bots)
+(function hideBrandingFromUsers() {
+  try {
+    const ua = (navigator.userAgent || "").toLowerCase();
+    const isBot = /(bot|googlebot|bingbot|slurp|duckduckgo|baiduspider|yandex|facebookexternalhit|embedly|twitterbot)/i.test(ua);
+
+    const BRAND_REGEX = /\s*(?:[—–-]\s*Abdulkerim Sesli|\|\s*Abdulkerim Sesli|Abdulkerim\s*—\s*Digital Creator Portfolio)\s*$/i;
+    const sanitize = (s) => (String(s || "").replace(BRAND_REGEX, "")).trim();
+
+    // Small page→emoji mapping for concise tab titles
+    const SHORT_MAP = {
+      videos: 'Videos 🎬',
+      video: 'Videos 🎬',
+      projekte: 'Projekte 💼',
+      projekt: 'Projekte 💼',
+      blog: 'Blog ✍️',
+      start: 'Startseite 🏠',
+      startseite: 'Startseite 🏠',
+      kontakt: 'Kontakt ✉️',
+      impressum: 'Impressum ℹ️',
+      datenschutz: 'Datenschutz 🔒',
+      home: 'Startseite 🏠',
+    };
+
+    const makeShortTitle = (s) => {
+      try {
+        if (!s) return '';
+        const low = s.toLowerCase();
+        // prefer exact/contains matches from mapping
+        for (const k of Object.keys(SHORT_MAP)) {
+          if (low.includes(k)) return SHORT_MAP[k];
+        }
+        // fallback: first word with globe emoji
+        const first = String(s).split(/[—–\-|:]/)[0].trim().split(/\s+/)[0] || '';
+        if (!first) return '';
+        return first.charAt(0).toUpperCase() + first.slice(1) + ' 🌐';
+      } catch (e) {
+        return '';
+      }
+    };
+
+    // Sanitize existing title immediately (if not bot)
+    if (!isBot) {
+      try {
+        const cleaned = sanitize(document.title);
+        document.title = cleaned;
+        // Also set a short tab-friendly title (one word + emoji)
+        const short = makeShortTitle(cleaned);
+        if (short) document.title = short;
+      } catch (e) {}
+    }
+
+    // Observe <title> changes and sanitize for humans; also map to short tab title
+    try {
+      const titleEl = document.querySelector('title');
+      if (titleEl && !isBot) {
+        new MutationObserver(() => {
+          try {
+            const t = document.title;
+            const s = sanitize(t);
+            const short = makeShortTitle(s);
+            const newTitle = short || s;
+            if (newTitle !== t) document.title = newTitle;
+          } catch (e) {}
+        }).observe(titleEl, { childList: true, characterData: true, subtree: true });
+      }
+    } catch (e) {
+      /* ignore */
+    }
+
+    // Sanitize visible headings on page and watch for added nodes
+    const sanitizeHeadings = () => {
+      try {
+        document.querySelectorAll('h1,h2,.section-title,.section-header,.page-title,.site-title').forEach((el) => {
+          if (!el || !el.textContent) return;
+          const cleaned = sanitize(el.textContent);
+          if (cleaned !== el.textContent) el.textContent = cleaned;
+        });
+      } catch (e) {}
+    };
+
+    sanitizeHeadings();
+
+    // Watch for DOM additions and sanitize newly inserted headings
+    try {
+      const mo = new MutationObserver((mutations) => {
+        let changed = false;
+        for (const m of mutations) {
+          if (m.addedNodes && m.addedNodes.length) {
+            changed = true;
+            break;
+          }
+        }
+        if (changed) sanitizeHeadings();
+      });
+      mo.observe(document.documentElement || document.body, { childList: true, subtree: true });
+    } catch (e) {}
+  } catch (err) {
+    log?.warn?.('hideBrandingFromUsers failed', err);
+  }
+})();

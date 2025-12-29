@@ -197,7 +197,7 @@ def build_video_xml(entry, details_map, channel_id, category_map=None):
     xml.append(f'      <video:title>{esc(title_to_use)}</video:title>')
     xml.append(f'      <video:description>{esc(desc_trimmed)}</video:description>')
     xml.append(f'      <video:content_loc>https://youtu.be/{vid}</video:content_loc>')
-    xml.append(f'      <video:player_loc>https://www.youtube.com/embed/{vid}</video:player_loc>')
+    xml.append(f'      <video:player_loc>https://www.youtube-nocookie.com/embed/{vid}</video:player_loc>')
     if dur != '':
         xml.append(f'      <video:duration>{dur}</video:duration>')
     if category_name:
