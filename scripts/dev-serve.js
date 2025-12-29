@@ -80,23 +80,17 @@ const tryFile = (urlPath) => {
   return null;
 };
 
-const server = http.createServer(async (req, res) => {
-  const urlPath = decodeURIComponent(req.url || "/");
-
-  // Quick server-side API proxy to avoid exposing API keys and bypass CSP limits in browser
+async function handleApiGemini(req, res, urlPath) {
   if (req.method === "POST" && urlPath.startsWith("/api/gemini")) {
     try {
-      // Read body
       let raw = "";
       for await (const chunk of req) raw += chunk;
       const json = raw ? JSON.parse(raw) : {};
 
-      // Lazy import config to avoid loading secrets when not needed
       const { config } = await import("../content/components/robot-companion/config.js");
       const model = config.model || "gemini-flash-latest";
       const remoteUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${config.getGeminiApiKey()}`;
 
-      // Build body for remote API (if caller already provided payload, forward it)
       const payload = json.payload || {
         contents: [{ parts: [{ text: json.prompt || "" }] }],
         systemInstruction: { parts: [{ text: json.systemInstruction || "Du bist ein hilfreicher Roboter-Begleiter." }] },
@@ -112,21 +106,28 @@ const server = http.createServer(async (req, res) => {
         const err = await r.text();
         res.writeHead(r.status, { "Content-Type": "text/plain" });
         res.end(err);
-        return;
+        return true;
       }
 
       const data = await r.json();
       const text = data.candidates?.[0]?.content?.parts?.[0]?.text || null;
       res.writeHead(200, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ text, raw: data }));
-      return;
+      return true;
     } catch (e) {
       console.warn("Proxy /api/gemini failed", e);
       res.writeHead(502, { "Content-Type": "text/plain" });
       res.end("Bad Gateway");
-      return;
+      return true;
     }
   }
+  return false;
+}
+
+const server = http.createServer(async (req, res) => {
+  const urlPath = decodeURIComponent(req.url || "/");
+
+  if (await handleApiGemini(req, res, urlPath)) return;
 
   // First try the path as-is
   console.warn("Request for", urlPath);
