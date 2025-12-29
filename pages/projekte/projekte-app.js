@@ -268,15 +268,13 @@ function App() {
         const url = new URL(project.githubPath);
         if (url.host === "github.com") {
           const pathname = url.pathname;
-          const m = pathname.match(
-            /^\/([^\/]+)\/([^\/]+)\/tree\/([^\/]+)\/(.+)$/,
-          );
+          const m = /^\/([^/]+)\/([^/]+)\/tree\/([^/]+)\/(.+)$/.exec(pathname);
           if (m) {
             const [, owner, repo, branch, path] = m;
             return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}/index.html`;
           }
         }
-      } catch (e) {
+      } catch {
         // Invalid URL, fall through
       }
     }
@@ -290,9 +288,7 @@ function App() {
 
   const toRawGithackUrl = (ghUrl) => {
     try {
-      const m = ghUrl.match(
-        /github\.com\/([^\/]+)\/([^\/]+)\/tree\/([^\/]+)\/(.+)$/,
-      );
+      const m = /github\.com\/([^/]+)\/([^/]+)\/tree\/([^/]+)\/(.+)$/.exec(ghUrl);
       if (m) {
         const [, owner, repo, branch, path] = m;
         return `https://raw.githack.com/${owner}/${repo}/${branch}/${path}/index.html`;
@@ -303,9 +299,7 @@ function App() {
 
   const toJsDelivrUrl = (ghUrl) => {
     try {
-      const m = ghUrl.match(
-        /github\.com\/([^\/]+)\/([^\/]+)\/tree\/([^\/]+)\/(.+)$/,
-      );
+      const m = /github\.com\/([^/]+)\/([^/]+)\/tree\/([^/]+)\/(.+)$/.exec(ghUrl);
       if (m) {
         const [, owner, repo, branch, path] = m;
         return `https://cdn.jsdelivr.net/gh/${owner}/${repo}@${branch}/${path}/index.html`;
@@ -325,7 +319,7 @@ function App() {
         signal: controller.signal,
       });
       clearTimeout(id);
-      return res && res.ok;
+      return res?.ok;
     } catch {
       return false;
     }
@@ -376,15 +370,6 @@ function App() {
     }
   };
 
-  const _openAppModal = (project) => {
-    setModalUrl(project.appPath || project.githubPath || "");
-    setModalTitle(project.title);
-    setIframeLoading(true);
-    setModalOpen(true);
-    try {
-      document.body.style.overflow = "hidden";
-    } catch {}
-  };
   const closeAppModal = () => {
     setModalOpen(false);
     setModalUrl("");

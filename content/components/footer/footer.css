@@ -23,6 +23,7 @@
   /* Layout */
   --footer-horizontal-margin: clamp(8px, 2vw, 32px);
   --footer-card-gap: 16px;
+  --footer-card-min-height: 140px;
   /* Social brand colors */
   --youtube-red: #ff0000;
   --x-color: #1da1f2;
@@ -59,6 +60,7 @@
   min-width: 320px;
   box-sizing: border-box;
   background: var(--dynamic-footer-header-bg);
+  -webkit-backdrop-filter: blur(var(--dynamic-footer-blur-radius));
   backdrop-filter: blur(var(--dynamic-footer-blur-radius));
   border-radius: var(--dynamic-footer-pill-radius);
   border: 1px solid var(--dynamic-footer-separator);
@@ -251,9 +253,12 @@ body.footer-expanded {
   max-height: var(--footer-actual-height, 75vh);
   overflow: hidden auto;
   position: relative;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
+  /* -webkit-overflow-scrolling: touch; deprecated — removed to avoid unsupported warnings */
   -ms-overflow-style: none;
+  /* apply scrollbar-width only when supported */
+  @supports (scrollbar-width: none) {
+    scrollbar-width: none;
+  }
 }
 
 .footer-maximized-viewport::-webkit-scrollbar {
@@ -468,10 +473,6 @@ body.footer-expanded {
   grid-auto-rows: 1fr;
   align-items: start;
   justify-items: stretch;
-}
-
-:root {
-  --footer-card-min-height: 140px;
 }
 
 .footer-card {
@@ -1056,7 +1057,10 @@ body.footer-expanded {
     gap: 4px;
     overflow: auto hidden;
     -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
+    /* apply scrollbar-width only when supported */
+    @supports (scrollbar-width: none) {
+      scrollbar-width: none;
+    }
   }
 
   .footer-minimal-content::-webkit-scrollbar {
@@ -1172,6 +1176,7 @@ body.footer-expanded {
     flex: 1 1 auto;
     min-width: 0; /* allow shrinking properly in flex */
     width: auto;
+    font-size: 16px; /* Prevent iOS zoom on focus */
   }
 
   .newsletter-submit-enhanced {
@@ -1184,11 +1189,6 @@ body.footer-expanded {
 
   body.footer-expanded {
     padding-bottom: var(--footer-actual-height, var(--footer-max-height));
-  }
-
-  /* Prevent iOS zoom on focus */
-  .newsletter-input-enhanced {
-    font-size: 16px;
   }
 }
 

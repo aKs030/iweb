@@ -38,7 +38,7 @@ export async function createEarthSystem(
     bumpMap: bumpTexture,
     bumpScale: CONFIG.EARTH.BUMP_SCALE,
     roughness: 0.7,
-    metalness: 0.0,
+    metalness: 0,
   });
 
   const nightMaterial = new THREE.MeshStandardMaterial({
@@ -47,10 +47,10 @@ export async function createEarthSystem(
     bumpMap: bumpTexture,
     bumpScale: CONFIG.EARTH.BUMP_SCALE,
     roughness: 0.7,
-    metalness: 0.0,
+    metalness: 0,
     emissive: 0xffcc66,
     emissiveMap: nightTexture,
-    emissiveIntensity: CONFIG.EARTH.EMISSIVE_INTENSITY * 4.0,
+    emissiveIntensity: CONFIG.EARTH.EMISSIVE_INTENSITY * 4,
   });
 
   // OPTIMIZATION: Reduce segments on mobile
@@ -64,10 +64,10 @@ export async function createEarthSystem(
     segments,
   );
   const earthMesh = new THREE.Mesh(earthGeometry, dayMaterial);
-  earthMesh.position.set(0, -6.0, 0);
+  earthMesh.position.set(0, -6, 0);
   earthMesh.scale.set(1.5, 1.5, 1.5);
   earthMesh.userData.currentMode = "day";
-  earthMesh.userData.targetPosition = new THREE.Vector3(0, -6.0, 0);
+  earthMesh.userData.targetPosition = new THREE.Vector3(0, -6, 0);
   earthMesh.userData.targetScale = 1.5;
   earthMesh.userData.targetRotation = 0;
 
@@ -101,7 +101,7 @@ export async function createMoonSystem(
     bumpMap: moonBumpTexture,
     bumpScale: CONFIG.MOON.BUMP_SCALE,
     roughness: 0.9,
-    metalness: 0.0,
+    metalness: 0,
     color: moonTexture ? 0xffffff : 0xaaaaaa,
   });
 
@@ -129,7 +129,7 @@ export async function createMoonSystem(
     2,
     -10,
   );
-  moonLOD.userData.targetScale = 1.0;
+  moonLOD.userData.targetScale = 1;
 
   scene.add(moonLOD);
   return moonLOD;

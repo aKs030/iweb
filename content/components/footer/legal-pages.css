@@ -90,7 +90,7 @@ a:focus-visible {
 }
 
 .contact-box {
-  background: rgb(255 255 255 / 5%);
+  background: rgb(255 255 255 / 12%);
   padding: 1.5rem;
   border-radius: 8px;
   margin: 2rem 0;
@@ -119,8 +119,8 @@ a:focus-visible {
   margin-top: 2rem;
   padding: 0.75rem 1.5rem;
   min-height: 44px;
-  background: linear-gradient(135deg, #0a84ff 0%, #06c 100%);
-  color: white;
+  background: linear-gradient(135deg, #0058d8 0%, #004c99 100%);
+  color: #fff;
   border-radius: 6px;
   font-weight: 600;
   text-decoration: none;

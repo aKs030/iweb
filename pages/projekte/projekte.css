@@ -140,15 +140,16 @@ body {
   gap: 0.5rem;
   padding: 0.25rem 0.75rem;
   border-radius: 9999px;
-  background-color: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #93c5fd;
+  background-color: rgba(0,0,0,0.62);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: #fff;
   font-size: 0.75rem;
   font-weight: 500;
   margin-bottom: 2rem;
+  -webkit-backdrop-filter: blur(24px);
   backdrop-filter: blur(24px);
   cursor: default;
-}
+} 
 .badge-dot-container {
   position: relative;
   display: flex;
@@ -240,6 +241,7 @@ body {
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.2);
   color: white;
+  -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
 }
 .btn-outline:hover {
@@ -270,6 +272,7 @@ body {
   border-radius: 1.5rem;
   background-color: rgba(15, 17, 25, 0.85);
   border: 1px solid rgba(255, 255, 255, 0.1);
+  -webkit-backdrop-filter: blur(24px);
   backdrop-filter: blur(24px);
   overflow: hidden;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
@@ -324,9 +327,9 @@ body {
   height: 768px;
   border: none;
   display: block;
+  -webkit-transform-origin: center center;
   transform-origin: center center;
   will-change: transform;
-  -webkit-transform-origin: center center;
   -webkit-font-smoothing: antialiased;
 }
 .mockup-icon {
@@ -336,6 +339,7 @@ body {
   padding: 0.75rem;
   border-radius: 1rem;
   background-color: rgba(255, 255, 255, 0.1);
+  -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
@@ -375,12 +379,12 @@ body {
   font-weight: 500;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: #60a5fa;
-  background-color: rgba(59, 130, 246, 0.1);
+  color: #fff;
+  background-color: rgba(0,0,0,0.56);
   padding: 0.25rem 0.75rem;
   border-radius: 9999px;
-  border: 1px solid rgba(59, 130, 246, 0.2);
-}
+  border: 1px solid rgba(255,255,255,0.12);
+} 
 
 .project-desc {
   color: var(--text-muted);
@@ -396,12 +400,12 @@ body {
 }
 .tag {
   font-size: 0.875rem;
-  color: #e5e7eb;
-  background-color: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  background-color: rgba(0,0,0,0.56);
   padding: 0.375rem 0.75rem;
   border-radius: 0.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
+  border: 1px solid rgba(255,255,255,0.12);
+} 
 .project-actions {
   display: flex;
   flex-wrap: wrap;
@@ -428,6 +432,7 @@ body {
   border-radius: 9999px;
   background-color: rgba(37, 99, 235, 0.1);
   border: 1px solid rgba(59, 130, 246, 0.3);
+  -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
   margin-bottom: 2rem;
   display: inline-block;
