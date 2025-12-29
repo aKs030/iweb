@@ -110,3 +110,8 @@ npx eslint .
 code --install-extension esbenp.prettier-vscode
 code --install-extension dbaeumer.vscode-eslint
 ```
+
+## YouTube Channel configuration
+
+- Die Seite ist standardmäßig auf den Kanal **Abdulkerim Berlin** konfiguriert (Channel ID: `UCTGRherjM4iuIn86xxubuPg`).
+- Wenn du lokal einen anderen Kanal verwenden möchtest, setze `window.YOUTUBE_CHANNEL_ID` (z. B. in deiner Browser-Console oder in einer lokalen Konfigurationsdatei). Alternativ kannst du `window.YOUTUBE_CHANNEL_HANDLE` setzen (z. B. `@aks.030`), aber eine explizite `YOUTUBE_CHANNEL_ID` hat Vorrang.

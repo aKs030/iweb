@@ -4,8 +4,10 @@ const log = createLogger("videos");
 
 // Share function for YouTube channel
 function _shareChannel() {
-  const url = "https://www.youtube.com/@aks.030";
-  const title = "Abdulkerim Sesli - YouTube Kanal";
+  const channelId = globalThis.YOUTUBE_CHANNEL_ID;
+  const handle = (globalThis.YOUTUBE_CHANNEL_HANDLE || "aks.030").replace(/^@/, "");
+  const url = channelId ? `https://www.youtube.com/channel/${channelId}` : `https://www.youtube.com/@${handle}`;
+  const title = channelId ? "Abdulkerim Berlin - YouTube Kanal" : "Abdulkerim Sesli - YouTube Kanal";
   if (navigator.share) {
     navigator.share({ title, url });
     return;
@@ -88,9 +90,36 @@ async function fetchJson(url) {
 }
 
 async function fetchChannelId(apiKey, handle) {
-  const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=channel&q=${encodeURIComponent(handle)}&maxResults=1&key=${apiKey}`;
+  // Prefer explicit channel id when set
+  if (globalThis.YOUTUBE_CHANNEL_ID) return String(globalThis.YOUTUBE_CHANNEL_ID).trim();
+
+  // If handle looks like a channel id already (starts with UC), return it
+  if (/^UC[0-9A-Za-z_-]{22,}$/.test(String(handle || ''))) return String(handle).trim();
+
+  // Try searching for the handle (allow up to 5 results to disambiguate)
+  const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=channel&q=${encodeURIComponent(handle)}&maxResults=5&key=${apiKey}`;
   const json = await fetchJson(url);
-  return json?.items?.[0]?.snippet?.channelId || json?.items?.[0]?.id?.channelId;
+  const items = json?.items || [];
+  if (!items.length) return null;
+
+  // Collect candidate channelIds
+  const ids = items.map((i) => i?.id?.channelId || i?.snippet?.channelId).filter(Boolean);
+  if (!ids.length) return null;
+  if (ids.length === 1) return ids[0];
+
+  // If multiple candidates, fetch their statistics and prefer one with videoCount > 0
+  try {
+    const chUrl = `https://www.googleapis.com/youtube/v3/channels?part=statistics,contentDetails&id=${ids.join(',')}&key=${apiKey}`;
+    const chJson = await fetchJson(chUrl);
+    const chItems = chJson?.items || [];
+    const preferred = chItems.find((c) => Number(c?.statistics?.videoCount) > 0);
+    if (preferred && preferred.id) return preferred.id;
+  } catch (e) {
+    log.warn('Could not disambiguate channel via statistics: ' + (e?.message || e));
+    // fall back to first id
+  }
+
+  return ids[0];
 }
 
 async function fetchUploadsPlaylist(apiKey, channelId) {
@@ -104,11 +133,41 @@ async function fetchPlaylistItems(apiKey, uploads, maxResults = 50) {
   let pageToken = '';
   do {
     const url = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${uploads}&maxResults=${maxResults}&key=${apiKey}${pageToken ? `&pageToken=${pageToken}` : ''}`;
-    const json = await fetchJson(url);
-    allItems.push(...(json.items || []));
-    pageToken = json.nextPageToken;
+    try {
+      const json = await fetchJson(url);
+      allItems.push(...(json.items || []));
+      pageToken = json.nextPageToken;
+    } catch (e) {
+      // If the uploads playlist cannot be found (e.g., private or empty), treat as no videos
+      if (e?.status === 404 && /playlistNotFound|playlistId/.test(e?.body || '')) {
+        log.warn(`Uploads playlist not found or inaccessible: ${uploads}`);
+        return [];
+      }
+      throw e;
+    }
   } while (pageToken);
   return allItems;
+}
+
+// Fallback: search for recent videos from a channel when playlist is missing/empty
+async function searchChannelVideos(apiKey, channelId, maxResults = 50) {
+  const items = [];
+  let pageToken = '';
+  do {
+    const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${channelId}&order=date&type=video&maxResults=${maxResults}${pageToken ? `&pageToken=${pageToken}` : ''}&key=${apiKey}`;
+    try {
+      const json = await fetchJson(url);
+      (json.items || []).forEach((it) => {
+        // Normalize to playlistItem-like shape used elsewhere
+        if (it && it.id && it.id.videoId) items.push({ snippet: { resourceId: { videoId: it.id.videoId }, title: it.snippet.title, description: it.snippet.description, thumbnails: it.snippet.thumbnails, publishedAt: it.snippet.publishedAt } });
+      });
+      pageToken = json.nextPageToken;
+    } catch (e) {
+      log.warn('searchChannelVideos failed: ' + (e?.message || e));
+      return items;
+    }
+  } while (pageToken);
+  return items;
 }
 
 async function fetchVideoDetailsMap(apiKey, vidIds) {
@@ -126,9 +185,10 @@ async function fetchVideoDetailsMap(apiKey, vidIds) {
   return map;
 }
 
-function renderVideoCard(grid, it, detailsMap) {
+export function renderVideoCard(grid, it, detailsMap) {
   const vid = it.snippet.resourceId.videoId;
-  const title = it.snippet.title;
+  const rawTitle = it.snippet.title;
+  const title = cleanTitle(rawTitle);
   const desc = it.snippet?.description?.trim() ? it.snippet.description : `${title} — Video von Abdulkerim Sesli`;
   const thumb = it.snippet?.thumbnails?.high?.url || it.snippet?.thumbnails?.default?.url;
   const pub = it.snippet.publishedAt || new Date().toISOString();
@@ -140,13 +200,13 @@ function renderVideoCard(grid, it, detailsMap) {
   const article = document.createElement("article");
   article.className = "video-card";
   article.innerHTML = `
-    <h2>${escapeHtml(title)} — Abdulkerim Sesli</h2>
+    <h2>${escapeHtml(title)}</h2>
     <p class="video-desc">${escapeHtml(desc)}</p>
   `;
 
   const thumbBtn = document.createElement("button");
   thumbBtn.className = "video-thumb";
-  thumbBtn.setAttribute("aria-label", `Play ${title} — Abdulkerim`);
+  thumbBtn.setAttribute("aria-label", `Play ${title}`);
   thumbBtn.dataset.videoId = vid;
   thumbBtn.dataset.thumb = thumb;
   thumbBtn.innerHTML = '<span class="play-button" aria-hidden="true"><svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><polygon points="70,55 70,145 145,100"/></svg></span>';
@@ -155,10 +215,11 @@ function renderVideoCard(grid, it, detailsMap) {
   meta.className = "video-meta";
   meta.innerHTML = `<div class="video-info"><small class="pub-date">${pub}</small></div><div class="video-actions"><a href="https://youtu.be/${vid}" target="_blank" rel="noopener">Auf YouTube öffnen</a></div>`;
 
+  const publisherName = (globalThis.YOUTUBE_CHANNEL_ID === "UCTGRherjM4iuIn86xxubuPg") ? 'Abdulkerim Berlin' : 'Abdulkerim Sesli';
   const ldObj = {
     "@context": "https://schema.org",
     "@type": "VideoObject",
-    name: title + " – Abdulkerim Sesli",
+    name: rawTitle + ` — ${publisherName}`,
     description: desc,
     thumbnailUrl: thumb,
     uploadDate: pub,
@@ -168,7 +229,7 @@ function renderVideoCard(grid, it, detailsMap) {
     publisher: {
       "@type": "Organization",
       "@id": "https://abdulkerimsesli.de/#organization",
-      name: "Abdulkerim — Digital Creator Portfolio",
+      name: "Abdulkerim Berlin",
       logo: {
         "@type": "ImageObject",
         url: "https://abdulkerimsesli.de/content/assets/img/icons/icon-512.png",
@@ -242,6 +303,8 @@ async function loadLatestVideos() {
     const { items, detailsMap } = await loadFromApi(apiKey, handle);
     if (!items.length) {
       log.warn("Keine Videos gefunden");
+      // Show a friendly informational message and keep any static entries on the page
+      showInfoMessage("Keine öffentlichen Uploads auf YouTube gefunden — es werden die statisch eingebetteten Videos angezeigt.");
       setStatus("");
       return;
     }
@@ -268,6 +331,13 @@ function escapeHtml(s) {
     .replaceAll("'", '&#39;');
 }
 
+// Helper: clean titles for display (remove trailing channel suffixes like "- Abdulkerim Sesli" or "— Abdulkerim Berlin")
+function cleanTitle(s) {
+  if (!s) return s;
+  // Remove trailing separator and channel name starting with Abdulkerim
+  return String(s).replace(/\s*([\-–—|])\s*(Abdulkerim[\s\S]*)$/i, '').trim();
+}
+
 // Helper: show friendly error message in page
 export function showErrorMessage(err) {
   try {
@@ -275,7 +345,12 @@ export function showErrorMessage(err) {
     const el = document.createElement("aside");
     el.className = "video-error";
     let message = "Fehler beim Laden der Videos.";
-    if (err?.status === 403) {
+    if (err?.status === 400) {
+      message += " API-Key ungültig (400). Prüfe in der Google Cloud Console, ob der Key aktiv ist und die YouTube Data API v3 freigeschaltet ist.";
+      if (/API_KEY_INVALID|API key not valid/.test((err?.body || '') + ' ' + (err?.message || ''))) {
+        message += " Hinweis: Der API-Key scheint ungültig zu sein.";
+      }
+    } else if (err?.status === 403) {
       message += " API-Zugriff verweigert (403). Prüfe deine API-Key Referrer-Einschränkungen oder teste über http://localhost:8000.";
       if (/API_KEY_HTTP_REFERRER_BLOCKED|Requests from referer/.test(err?.body || "")) {
         message += " Hinweis: Requests mit leerem Referer werden geblockt.";
@@ -303,15 +378,63 @@ export function showErrorMessage(err) {
   }
 }
 
+// Helper: show non-error informational message in page
+export function showInfoMessage(msg) {
+  try {
+    const container = document.querySelector(".videos-main .container") || document.body;
+    const el = document.createElement("aside");
+    el.className = "video-note";
+    el.textContent = msg;
+    container.insertBefore(el, container.firstChild);
+    try {
+      const setStatus = (m) => {
+        try {
+          const el2 = document.getElementById("videos-status");
+          if (el2) el2.textContent = m || "";
+        } catch {
+          // ignore
+        }
+      };
+      setStatus(msg);
+    } catch {
+      /* ignore */
+    }
+  } catch {
+    // ignore UI errors
+  }
+}
+
 // Extracted API loader (top-level to reduce nested complexity)
 export async function loadFromApi(apiKey, handle) {
   const channelId = await fetchChannelId(apiKey, handle);
   if (!channelId) return { items: [], detailsMap: {} };
 
   const uploads = await fetchUploadsPlaylist(apiKey, channelId);
-  if (!uploads) return { items: [], detailsMap: {} };
+  let items = [];
 
-  const items = await fetchPlaylistItems(apiKey, uploads);
+  if (uploads) {
+    items = await fetchPlaylistItems(apiKey, uploads);
+    if (items.length === 0) {
+      log.warn('Uploads playlist returned no items — falling back to search');
+      // Inform the user in the UI when running in a browser
+      try {
+        if (typeof window !== 'undefined' && document) showInfoMessage('Uploads playlist leer — lade Videos per Suche als Fallback.');
+      } catch (e) {
+        /* ignore */
+      }
+      // Attempt search fallback when playlist is empty
+      items = await searchChannelVideos(apiKey, channelId);
+    }
+  } else {
+    log.warn('No uploads playlist available — falling back to search');
+    try {
+      if (typeof window !== 'undefined' && document) showInfoMessage('Uploads playlist nicht vorhanden — lade Videos per Suche als Fallback.');
+    } catch (e) {
+      /* ignore */
+    }
+    items = await searchChannelVideos(apiKey, channelId);
+  }
+
   if (!items.length) return { items: [], detailsMap: {} };
 
   const vidIds = items.map((it) => it.snippet.resourceId.videoId).filter(Boolean);

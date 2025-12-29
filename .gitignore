@@ -1,2 +1,6 @@
 node_modules
 tmp/
+
+# Local YouTube API key parts (do NOT commit)
+/content/config/videos-part-a.js
+/content/config/videos-part-b.js
