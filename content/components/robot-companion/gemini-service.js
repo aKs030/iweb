@@ -25,7 +25,7 @@ export async function getGeminiResponse(prompt, systemInstruction = "Du bist ein
 
     for (let i = 0; i < maxRetries; i++) {
         try {
-            const response = await fetch(BASE_URL, {
+            const response = await fetch(getBaseUrl(), {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload)
