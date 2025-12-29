@@ -114,58 +114,7 @@ export class CardManager {
         position: positions[index] || { x: 0, y: 0, z: 0 },
       };
 
-      const texture = this.createCardTexture(data);
-      const material = new this.THREE.MeshBasicMaterial({
-        map: texture,
-        transparent: true,
-        side: this.THREE.DoubleSide,
-        opacity: 0, // Animate in
-        depthWrite: false, // For transparency sorting issues
-      });
-
-      const mesh = new this.THREE.Mesh(this._sharedGeometry, material);
-      // Start slightly lower for entrance animation
-      mesh.position.set(
-        data.position.x,
-        data.position.y - 0.8,
-        data.position.z,
-      );
-
-      // Initial scale adjustment for small viewports
-      const viewportScale = Math.min(1, (globalThis.window?.innerWidth || 1200) / 1200);
-      // Increased minimum scale from 0.7 to 0.85 for better legibility on mobile
-      mesh.scale.setScalar(0.95 * Math.max(0.85, viewportScale));
-
-      mesh.userData = {
-        isCard: true,
-        link: data.link,
-        originalY: data.position.y,
-        hoverY: data.position.y + 0.5,
-        targetOpacity: 1,
-        id: data.id,
-        entranceDelay: index * 80, // ms
-        entranceProgress: 0,
-        hoverProgress: 0,
-        parallaxStrength: 0.14,
-        // Rotation State for smooth composition
-        currentTiltX: 0,
-        currentTiltY: 0,
-      };
-
-      // Glow sprite with shared texture, tinted per card
-      const glowMat = new this.THREE.SpriteMaterial({
-        map: this._sharedGlowTexture,
-        color: data.color,
-        transparent: true,
-        blending: this.THREE.AdditiveBlending,
-        depthWrite: false,
-      });
-      const glow = new this.THREE.Sprite(glowMat);
-      glow.scale.set(baseW * 0.95, baseH * 0.45, 1);
-      glow.position.set(0, -0.12, -0.01);
-      mesh.add(glow);
-      mesh.userData.glow = glow;
-
+      const mesh = this._createMeshFromData(data, index, baseW, baseH);
       this.cardGroup.add(mesh);
       this.cards.push(mesh);
     });
@@ -594,94 +543,10 @@ export class CardManager {
     this.camera.getWorldPosition(this._tmpVec);
 
     this.cards.forEach((card) => {
-      // Entrance progress (staggered)
-      const targetEntrance =
-        typeof card.userData.entranceTarget === "number"
-          ? card.userData.entranceTarget
-          : this.isVisible
-            ? 1
-            : 0;
-      card.userData.entranceProgress +=
-        (targetEntrance - card.userData.entranceProgress) * 0.02;
-
-      // 1. Opacity Animation influenced by entrance progress
-      const baseOpacity = card.userData.targetOpacity || 1;
-      card.material.opacity =
-        baseOpacity * (0.05 + 0.95 * card.userData.entranceProgress);
-
-      // 2. Float Animation (reduced when hovered to prevent interference)
-      const floatY =
-        Math.sin(time * 0.001 + card.userData.id) *
-        0.06 *
-        (1 - card.userData.hoverProgress * 0.7);
-
-      // Hover progress smoothing with hysteresis to prevent flickering
-      const isHovered = card === hoveredCard;
-      let hoverTarget = isHovered ? 1 : 0;
-      if (!isHovered && card.userData.hoverProgress > 0.5) {
-        hoverTarget = card.userData.hoverProgress; // Maintain current progress to avoid sudden drops
-      }
-      card.userData.hoverProgress +=
-        (hoverTarget - card.userData.hoverProgress) * 0.04;
-
-      // Parallax tilt based on mouse position when hovered
-      const parallax = card.userData.parallaxStrength || 0.12;
-      const targetTiltX = -pos.y * parallax * card.userData.hoverProgress;
-      const targetTiltY = pos.x * parallax * card.userData.hoverProgress * 0.8;
-
-      // Smoothly update tilt state (Euler angles)
-      card.userData.currentTiltX +=
-        (targetTiltX - card.userData.currentTiltX) * 0.04;
-      card.userData.currentTiltY +=
-        (targetTiltY - card.userData.currentTiltY) * 0.04;
-
-      // Compute target values for Position/Scale
-      let targetY = card.userData.originalY;
-      let targetScale = 1;
-      if (card === hoveredCard) {
-        targetY = card.userData.hoverY;
-        targetScale = 1.05;
-      }
-
-      // Apply position and scale easing
-      card.position.y += (targetY + floatY - card.position.y) * 0.04;
-      card.scale.setScalar(card.scale.x + (targetScale - card.scale.x) * 0.04);
-
-      // --- Orientation Logic ---
-
-      // 1. Calculate Base Rotation (Upright / Billboard on Y-axis)
-      // Project camera position to the card's horizontal plane
-      this._orientDummy.position.copy(card.position);
-      // Look at camera x/z but same y as card to stay vertical
-      this._orientDummy.lookAt(this._tmpVec.x, card.position.y, this._tmpVec.z);
-      // Reuse this._tmpQuat for the base rotation
-      this._tmpQuat.copy(this._orientDummy.quaternion);
-
-      // 2. Calculate Tilt Rotation (Local perturbation from mouse)
-      // Use re-usable Euler and Quaternion to avoid garbage
-      this._tmpEuler.set(
-        card.userData.currentTiltX,
-        card.userData.currentTiltY,
-        0,
-        "XYZ",
-      );
-      this._tmpQuat2.setFromEuler(this._tmpEuler);
-
-      // 3. Combine: Base * Tilt
-      this._tmpQuat.multiply(this._tmpQuat2);
-
-      // 4. Smoothly interpolate current quaternion to target
-      card.quaternion.slerp(this._tmpQuat, 0.04);
-
-      // Glow pulsing
-      if (card.userData?.glow?.material) {
-        const glow = card.userData.glow;
-        glow.material.opacity =
-          Math.max(
-            0.06,
-            0.6 * (0.5 + 0.5 * Math.sin(time * 0.002 + card.userData.id)),
-          ) * card.userData.entranceProgress;
-      }
+      this._updateCardEntranceAndOpacity(card);
+      this._updateCardHoverTiltAndMotion(card, pos, hoveredCard, time);
+      this._applyOrientation(card);
+      this._updateCardGlow(card, time);
     });
 
     if (
@@ -693,10 +558,87 @@ export class CardManager {
     }
   }
 
+  _updateCardEntranceAndOpacity(card) {
+    let targetEntrance;
+    if (typeof card.userData.entranceTarget === "number") {
+      targetEntrance = card.userData.entranceTarget;
+    } else {
+      targetEntrance = this.isVisible ? 1 : 0;
+    }
+    card.userData.entranceProgress +=
+      (targetEntrance - card.userData.entranceProgress) * 0.02;
+
+    const baseOpacity = card.userData.targetOpacity || 1;
+    card.material.opacity =
+      baseOpacity * (0.05 + 0.95 * card.userData.entranceProgress);
+  }
+
+  _updateCardHoverTiltAndMotion(card, pos, hoveredCard, time) {
+    const floatY =
+      Math.sin(time * 0.001 + card.userData.id) *
+      0.06 *
+      (1 - card.userData.hoverProgress * 0.7);
+
+    const isHovered = card === hoveredCard;
+    let hoverTarget = isHovered ? 1 : 0;
+    if (!isHovered && card.userData.hoverProgress > 0.5) {
+      hoverTarget = card.userData.hoverProgress;
+    }
+    card.userData.hoverProgress +=
+      (hoverTarget - card.userData.hoverProgress) * 0.04;
+
+    const parallax = card.userData.parallaxStrength || 0.12;
+    const targetTiltX = -pos.y * parallax * card.userData.hoverProgress;
+    const targetTiltY = pos.x * parallax * card.userData.hoverProgress * 0.8;
+
+    card.userData.currentTiltX +=
+      (targetTiltX - card.userData.currentTiltX) * 0.04;
+    card.userData.currentTiltY +=
+      (targetTiltY - card.userData.currentTiltY) * 0.04;
+
+    let targetY = card.userData.originalY;
+    let targetScale = 1;
+    if (card === hoveredCard) {
+      targetY = card.userData.hoverY;
+      targetScale = 1.05;
+    }
+
+    card.position.y += (targetY + floatY - card.position.y) * 0.04;
+    card.scale.setScalar(card.scale.x + (targetScale - card.scale.x) * 0.04);
+  }
+
+  _applyOrientation(card) {
+    this._orientDummy.position.copy(card.position);
+    this._orientDummy.lookAt(this._tmpVec.x, card.position.y, this._tmpVec.z);
+    this._tmpQuat.copy(this._orientDummy.quaternion);
+
+    this._tmpEuler.set(
+      card.userData.currentTiltX,
+      card.userData.currentTiltY,
+      0,
+      "XYZ",
+    );
+    this._tmpQuat2.setFromEuler(this._tmpEuler);
+
+    this._tmpQuat.multiply(this._tmpQuat2);
+    card.quaternion.slerp(this._tmpQuat, 0.04);
+  }
+
+  _updateCardGlow(card, time) {
+    if (card.userData?.glow?.material) {
+      const glow = card.userData.glow;
+      glow.material.opacity =
+        Math.max(
+          0.06,
+          0.6 * (0.5 + 0.5 * Math.sin(time * 0.002 + card.userData.id)),
+        ) * card.userData.entranceProgress;
+    }
+  }
+
   handleClick(mousePos) {
     const pos = mousePos || this._lastPointerPos || { x: 0, y: 0 };
     // Only respond when cards are actually visible in the scene
-    if (!this.cardGroup.visible) return;
+    if (!this.cardGroup.visible) return; 
 
     // Use the same screen-based detection as hover
     const clickedCard = this.getHoveredCardFromScreen(pos);
@@ -718,14 +660,9 @@ export class CardManager {
     if (this._boundPointerMove) this.detachPointerHandlers();
 
     this._boundPointerMove = (e) => {
-      const rect = el.getBoundingClientRect
-        ? el.getBoundingClientRect()
-        : {
-            left: 0,
-            top: 0,
-            width: window.innerWidth,
-            height: window.innerHeight,
-          };
+      const rect =
+        el.getBoundingClientRect?.() ??
+        { left: 0, top: 0, width: globalThis.innerWidth, height: globalThis.innerHeight }; 
       const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
       const y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
       this._lastPointerPos.x = x;
@@ -807,58 +744,7 @@ export class CardManager {
     // Dispose each card's resources (geometry, textures, materials, glow)
     // NOTE: some resources are shared across cards (geometry, glow texture). Avoid
     // disposing those per-card to prevent double-disposal and use-after-dispose errors.
-    this.cards.forEach((card) => {
-      try {
-        // Only dispose geometry if it's not the shared geometry
-        if (card.geometry?.dispose && card.geometry !== this._sharedGeometry) {
-          card.geometry.dispose();
-        }
-
-        if (card.material) {
-          // If the material map is a cached texture, decrement its refcount and only
-          // dispose when no references remain. Otherwise dispose it directly.
-          if (card.material.map) {
-            let foundKey = null;
-            for (const [k, v] of this._textureCache.entries()) {
-              if (v.texture === card.material.map) {
-                foundKey = k;
-                v.count--;
-                if (v.count <= 0) {
-                  if (v.texture && typeof v.texture.dispose === "function") {
-                    v.texture.dispose();
-                    this._profile.texturesDisposed++;
-                  }
-                  this._textureCache.delete(k);
-                }
-                break;
-              }
-            }
-
-            if (!foundKey && card.material.map?.dispose) {
-              // Not cached, safe to dispose directly
-              card.material.map.dispose();
-            }
-          }
-
-          card.material.map = null;
-          if (card.material.dispose) card.material.dispose();
-        }
-
-        const glow = card.userData?.glow;
-        if (glow?.material) {
-          // Avoid disposing the shared glow texture here; it will be disposed below.
-          if (
-            glow.material.map?.dispose &&
-            glow.material.map !== this._sharedGlowTexture
-          ) {
-            glow.material.map.dispose();
-          }
-          if (glow.material?.dispose) glow.material.dispose();
-        }
-      } catch (err) {
-        log.warn("EarthCards: disposal error", err);
-      }
-    });
+    this.cards.forEach((card) => this._disposeCardResources(card));
 
     // Dispose shared geometry and textures
     if (this._sharedGeometry) {
@@ -875,17 +761,7 @@ export class CardManager {
     this.cards = [];
 
     // Dispose any remaining cached textures
-    for (const [, v] of this._textureCache.entries()) {
-      try {
-        if (typeof v.texture?.dispose === "function") {
-          v.texture.dispose();
-          this._profile.texturesDisposed++;
-        }
-      } catch (err) {
-        log.warn("EarthCards: error disposing cached texture", err);
-      }
-    }
-    this._textureCache.clear();
+    this._disposeCachedTextures();
 
     // Remove pointer handlers if attached
     try {
@@ -894,13 +770,145 @@ export class CardManager {
       // ignore
     }
 
-    if (globalThis.window && this._onResize) {
-      globalThis.window.removeEventListener("resize", this._onResize);
-      this._onResize = null;
+    // Remove resize handler / cancel RAF
+    this._removeResizeHandler();
+  }
+
+  // Helper: dispose resources for a single card
+  _disposeCardResources(card) {
+    try {
+      // Only dispose geometry if it's not the shared geometry
+      if (card.geometry?.dispose && card.geometry !== this._sharedGeometry) {
+        card.geometry.dispose();
+      }
+
+      if (card.material) {
+        this._releaseTextureFromCache(card.material.map);
+        card.material.map = null;
+        card.material.dispose?.();
+      }
+
+      const glow = card.userData?.glow;
+      if (glow?.material) {
+        this._disposeGlowMaterial(glow);
+      }
+    } catch (err) {
+      log.warn("EarthCards: disposal error", err);
     }
+  }
+
+  _disposeCachedTextures() {
+    for (const [, v] of this._textureCache.entries()) {
+      try {
+        if (v.texture?.dispose) {
+          v.texture.dispose();
+          this._profile.texturesDisposed++;
+        }
+      } catch (err) {
+        log.warn("EarthCards: error disposing cached texture", err);
+      }
+    }
+    this._textureCache.clear();
+  }
+
+  _releaseTextureFromCache(map) {
+    if (!map) return;
+    try {
+      let foundKey = null;
+      for (const [k, v] of this._textureCache.entries()) {
+        if (v.texture === map) {
+          foundKey = k;
+          v.count--;
+          if (v.count <= 0) {
+            if (v.texture?.dispose) {
+              v.texture.dispose();
+              this._profile.texturesDisposed++;
+            }
+            this._textureCache.delete(k);
+          }
+          break;
+        }
+      }
+
+      if (!foundKey && map?.dispose) {
+        map.dispose();
+      }
+    } catch (err) {
+      log.warn("EarthCards: releaseTextureFromCache failed", err);
+    }
+  }
+
+  _disposeGlowMaterial(glow) {
+    try {
+      if (
+        glow.material.map?.dispose &&
+        glow.material.map !== this._sharedGlowTexture
+      ) {
+        glow.material.map.dispose();
+      }
+      glow.material.dispose?.();
+    } catch (err) {
+      log.warn("EarthCards: glow dispose failed", err);
+    }
+  }
+
+  _removeResizeHandler() {
+    try {
+      globalThis.removeEventListener("resize", this._onResize);
+    } catch {}
+    this._onResize = null;
     if (this._resizeRAF) {
       cancelAnimationFrame(this._resizeRAF);
       this._resizeRAF = null;
     }
+  }
+
+  // Create mesh and related resources for a card from its data payload
+  _createMeshFromData(data, index, baseW, baseH) {
+    const texture = this.createCardTexture(data);
+    const material = new this.THREE.MeshBasicMaterial({
+      map: texture,
+      transparent: true,
+      side: this.THREE.DoubleSide,
+      opacity: 0,
+      depthWrite: false,
+    });
+
+    const mesh = new this.THREE.Mesh(this._sharedGeometry, material);
+    mesh.position.set(data.position.x, data.position.y - 0.8, data.position.z);
+
+    const viewportScale = Math.min(1, (globalThis.innerWidth || 1200) / 1200);
+    mesh.scale.setScalar(0.95 * Math.max(0.85, viewportScale));
+
+    mesh.userData = {
+      isCard: true,
+      link: data.link,
+      originalY: data.position.y,
+      hoverY: data.position.y + 0.5,
+      targetOpacity: 1,
+      id: data.id,
+      entranceDelay: index * 80,
+      entranceProgress: 0,
+      hoverProgress: 0,
+      parallaxStrength: 0.14,
+      currentTiltX: 0,
+      currentTiltY: 0,
+    };
+
+    const glowMat = new this.THREE.SpriteMaterial({
+      map: this._sharedGlowTexture,
+      color: data.color,
+      transparent: true,
+      blending: this.THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+
+    const glow = new this.THREE.Sprite(glowMat);
+    glow.scale.set(baseW * 0.95, baseH * 0.45, 1);
+    glow.position.set(0, -0.12, -0.01);
+    mesh.add(glow);
+    mesh.userData.glow = glow;
+
+    return mesh;
   }
 }

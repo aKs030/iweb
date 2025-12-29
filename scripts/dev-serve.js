@@ -3,6 +3,7 @@
 // - If /foo/ requested and not found, tries /pages/foo/index.html
 // - Adds basic content-type headers
 
+/* global fetch */
 import http from "node:http";
 import fs from "node:fs";
 import path from "node:path";

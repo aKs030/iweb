@@ -189,17 +189,20 @@
     <script
       type="module"
       src="/content/components/head/head-inline.js"
+      crossorigin="anonymous"
     ></script>
 
     <script
       src="/content/components/head/head-complete.js"
       type="module"
+      crossorigin="anonymous"
     ></script>
 
     <!-- Preload critical resources to improve LCP -->
     <link rel="preload" href="/content/styles/root.css" as="style" />
     <link rel="preload" href="/pages/home/hero.css" as="style" />
-    <link rel="preload" href="/content/main.js" as="script" />
+    <!-- Use modulepreload so module scripts (type=module) reuse the preload correctly -->
+    <link rel="modulepreload" href="/content/main.js" crossorigin="anonymous" />
 
     <link rel="stylesheet" href="/content/styles/root.css" />
     <link
@@ -223,7 +226,7 @@
     <link rel="stylesheet" href="/content/components/particles/three-earth.css" />
 
     <!-- Main application script (early load for hero/3D init) -->
-    <script type="module" src="/content/main.js"></script>
+    <script type="module" src="/content/main.js" crossorigin="anonymous"></script>
 
     <!-- Deferred Styles (Below-the-Fold) -->
     <link
@@ -251,6 +254,7 @@
     <script
       src="/content/components/robot-companion/robot-companion.js"
       type="module"
+      crossorigin="anonymous"
     ></script>
   </head>
   <body>
@@ -392,6 +396,7 @@
     <script
       src="/content/components/footer/footer-complete.js"
       type="module"
+      crossorigin="anonymous"
     ></script>
   </body>
 </html>

@@ -244,7 +244,7 @@ dataLayer.push({
     ];
 
     const SCRIPTS = [
-      { src: "/content/main.js", module: true },
+      { src: "/content/main.js", module: true, preload: true },
       { src: "/content/components/menu/menu.js", module: true },
       {
         src: "/content/components/robot-companion/robot-companion.js",
@@ -272,6 +272,8 @@ dataLayer.push({
         const l = document.createElement("link");
         l.rel = "modulepreload";
         l.href = href;
+        // ensure crossorigin matches module script fetch mode to avoid credential-mode mismatch
+        l.crossOrigin = "anonymous";
         l.dataset.injectedBy = "head-inline";
         document.head.appendChild(l);
       }
@@ -281,8 +283,10 @@ dataLayer.push({
       if (!document.head.querySelector(`script[src="${src}"]`)) {
         const s = document.createElement("script");
         s.src = src;
-        if (module) s.type = "module";
-        else s.defer = true;
+        if (module) {
+          s.type = "module";
+          s.crossOrigin = "anonymous";
+        } else s.defer = true;
         s.dataset.injectedBy = "head-inline";
         document.head.appendChild(s);
       }
