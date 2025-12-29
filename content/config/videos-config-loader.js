@@ -55,6 +55,12 @@ async function loadConfig() {
       window.YOUTUBE_CHANNEL_HANDLE = "aks.030";
     }
 
+    // Default to the 'Abdulkerim Berlin' channel ID to ensure we resolve the correct channel
+    // This can be overridden locally by setting YOUTUBE_CHANNEL_ID in dev environment.
+    if (!window.YOUTUBE_CHANNEL_ID) {
+      window.YOUTUBE_CHANNEL_ID = "UCTGRherjM4iuIn86xxubuPg";
+    }
+
     // If no API key found, enable mock mode for stable local testing (localhost or file:).
     // Also allow forcing mock mode via ?mockVideos=1
     if (!window.YOUTUBE_API_KEY) {

@@ -189,6 +189,14 @@ h1 {
   color: #fca5a5;
   border-radius: var(--card-radius);
 }
+.video-note {
+  margin: 2rem 0;
+  padding: 1.25rem;
+  background: #162022;
+  border-left: 4px solid #ffd93d;
+  color: var(--text-secondary);
+  border-radius: var(--card-radius);
+}
 .video-thumb {
   position: relative;
   display: block;
