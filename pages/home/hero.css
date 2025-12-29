@@ -19,6 +19,7 @@
   -webkit-text-fill-color: transparent;
   color: transparent;
   opacity: 1;
+  -webkit-user-select: none;
   user-select: none;
   white-space: normal;
   overflow-wrap: anywhere;

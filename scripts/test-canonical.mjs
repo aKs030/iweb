@@ -28,10 +28,12 @@ const tests = [
 console.log("Testing canonical normalization (path only):");
 
 const expect = (got, want, msg) => {
-  if (got !== want) {
-    console.error(`❌ ${msg}: got '${got}' want '${want}'`);
-    process.exitCode = 2;
-  } else console.log(`✅ ${msg}`);
+  if (got === want) {
+    console.log(`✅ ${msg}`);
+    return;
+  }
+  console.error(`❌ ${msg}: got '${got}' want '${want}'`);
+  process.exitCode = 2;
 };
 
 tests.forEach(([inp, want], i) => {
@@ -40,4 +42,4 @@ tests.forEach(([inp, want], i) => {
   expect(got, want, `test #${i + 1}`);
 });
 
-if (!process.exitCode) console.log("\nAll quick checks passed");
+if (process.exitCode === 0 || process.exitCode === undefined) console.log("\nAll quick checks passed");

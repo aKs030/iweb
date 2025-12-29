@@ -438,6 +438,7 @@
     opacity 0.3s ease,
     transform 0.3s ease;
   pointer-events: auto;
+  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
   position: absolute; /* avoid affecting document flow */
   right: 0;
@@ -542,6 +543,7 @@
   transform-origin: bottom right;
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   pointer-events: auto;
+  -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
   visibility: hidden;
 }
@@ -629,7 +631,7 @@
   color: #e2e8f0;
   align-self: flex-start;
   border-bottom-left-radius: 2px;
-  border: 1px solid rgb(255 255 255 / 5%);
+  border: 1px solid rgb(255 255 255 / 12%);
 }
 
 .message.user {
@@ -648,7 +650,7 @@
   border-radius: 12px;
   border-bottom-left-radius: 2px;
   align-self: flex-start;
-  border: 1px solid rgb(255 255 255 / 5%);
+  border: 1px solid rgb(255 255 255 / 12%);
   margin-bottom: 5px;
   animation: messageFadeIn 0.3s ease-out;
 }
@@ -691,6 +693,7 @@
   font-size: 0.85rem;
   cursor: pointer;
   transition: all 0.2s;
+  -webkit-user-select: none;
   user-select: none;
 }
 

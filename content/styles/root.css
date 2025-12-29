@@ -229,7 +229,7 @@
   --component-label-tertiary: rgb(255 255 255 / 50%);
   --component-separator: rgb(255 255 255 / 15%);
   --component-fill-primary: rgb(255 255 255 / 10%);
-  --component-fill-secondary: rgb(255 255 255 / 5%);
+  --component-fill-secondary: rgb(255 255 255 / 12%);
   --component-font-family:
     "Inter", -apple-system, "SF Pro Display", "SF Pro Text", system-ui,
     sans-serif;
@@ -403,12 +403,16 @@ textarea:focus-visible {
 @media (width <= 768px) {
   html,
   body {
-    scrollbar-width: none;
     -ms-overflow-style: none;
   }
 
-  * {
-    scrollbar-width: none;
+  /* Apply scrollbar-width only when supported */
+  @supports (scrollbar-width: none) {
+    html,
+    body,
+    * {
+      scrollbar-width: none;
+    }
   }
 
   /* Canonical/centralized scrollbar hide for small viewports (keep here) */

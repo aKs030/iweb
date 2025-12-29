@@ -7,35 +7,201 @@ function _shareChannel() {
   const url = "https://www.youtube.com/@aks.030";
   const title = "Abdulkerim Sesli - YouTube Kanal";
   if (navigator.share) {
-    navigator.share({
-      title: title,
-      url: url,
-    });
-  } else {
-    // Fallback: copy to clipboard
-    navigator.clipboard
-      .writeText(url)
-      .then(() => {
-        alert("Link kopiert: " + url);
-      })
-      .catch(() => {
-        // Fallback: open share dialog or just alert
-        window.open(
-          `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
-          "_blank",
-        );
-      });
+    navigator.share({ title, url });
+    return;
   }
+  // Fallback: copy to clipboard, then fallback to opening share dialog
+  navigator.clipboard?.writeText(url).then(() => {
+    alert("Link kopiert: " + url);
+  }).catch(() => {
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, "_blank");
+  });
+}
+
+// Helper: replace a thumbnail button with an autoplaying iframe
+function activateThumb(btn) {
+  if (!btn || btn.dataset.loaded) return;
+  const vid = btn.dataset.videoId;
+  const title = btn.getAttribute("aria-label") || "";
+  const wrapper = document.createElement("div");
+  wrapper.className = "embed";
+  const iframe = document.createElement("iframe");
+  iframe.width = "560";
+  iframe.height = "315";
+  iframe.src = `https://www.youtube.com/embed/${vid}?autoplay=1&rel=0`;
+  iframe.title = title;
+  iframe.setAttribute("frameborder", "0");
+  iframe.setAttribute(
+    "allow",
+    "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture",
+  );
+  iframe.setAttribute("allowfullscreen", "");
+  wrapper.appendChild(iframe);
+  btn.replaceWith(wrapper);
+  try {
+    iframe.focus();
+  } catch {
+    /* ignore */
+  }
+  btn.dataset.loaded = "1";
+}
+
+// Bind event handlers and accessible label for a thumb button
+function bindThumb(btn) {
+  if (btn.dataset.bound) return;
+  if (btn.dataset.thumb) btn.style.backgroundImage = `url('${btn.dataset.thumb}')`;
+  if (btn.getAttribute('aria-label') && !btn.querySelector('.visually-hidden')) {
+    const span = document.createElement('span');
+    span.className = 'visually-hidden';
+    span.textContent = btn.getAttribute('aria-label');
+    btn.appendChild(span);
+  }
+  btn.addEventListener("click", () => activateThumb(btn));
+  btn.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      activateThumb(btn);
+    }
+  });
+  btn.dataset.bound = "1";
+}
+
+// Helper to fetch JSON and surface HTTP errors
+async function fetchJson(url) {
+  const safeUrl = url.replaceAll(/([?&]key=)[^&]+/g, "$1[REDACTED]");
+  log.warn(`Fetching ${safeUrl}`);
+  const res = await fetch(url, { credentials: "omit", mode: "cors" });
+  if (!res.ok) {
+    let text = "";
+    try {
+      text = await res.text();
+    } catch {
+      /* noop */
+    }
+    const err = new Error(`Fetch failed: ${res.status} ${res.statusText} — ${text.slice(0, 200)}`);
+    err.status = res.status;
+    err.statusText = res.statusText;
+    err.body = text;
+    throw err;
+  }
+  return await res.json();
+}
+
+async function fetchChannelId(apiKey, handle) {
+  const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=channel&q=${encodeURIComponent(handle)}&maxResults=1&key=${apiKey}`;
+  const json = await fetchJson(url);
+  return json?.items?.[0]?.snippet?.channelId || json?.items?.[0]?.id?.channelId;
+}
+
+async function fetchUploadsPlaylist(apiKey, channelId) {
+  const url = `https://www.googleapis.com/youtube/v3/channels?part=contentDetails&id=${channelId}&key=${apiKey}`;
+  const json = await fetchJson(url);
+  return json?.items?.[0]?.contentDetails?.relatedPlaylists?.uploads;
+}
+
+async function fetchPlaylistItems(apiKey, uploads, maxResults = 2) {
+  const url = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${uploads}&maxResults=${maxResults}&key=${apiKey}`;
+  const json = await fetchJson(url);
+  return json.items || [];
+}
+
+async function fetchVideoDetailsMap(apiKey, vidIds) {
+  const map = {};
+  if (!vidIds.length) return map;
+  const url = `https://www.googleapis.com/youtube/v3/videos?part=contentDetails,statistics&id=${vidIds.join(",")}&key=${apiKey}`;
+  try {
+    const json = await fetchJson(url);
+    (json.items || []).forEach((v) => {
+      map[v.id] = v;
+    });
+  } catch (e) {
+    log.warn("Could not fetch video details: " + e.message);
+  }
+  return map;
+}
+
+function renderVideoCard(grid, it, detailsMap) {
+  const vid = it.snippet.resourceId.videoId;
+  const title = it.snippet.title;
+  const desc = it.snippet?.description?.trim() ? it.snippet.description : `${title} — Video von Abdulkerim Sesli`;
+  const thumb = it.snippet?.thumbnails?.high?.url || it.snippet?.thumbnails?.default?.url;
+  const pub = it.snippet.publishedAt || new Date().toISOString();
+
+  const videoDetail = detailsMap[vid];
+  const duration = videoDetail?.contentDetails?.duration;
+  const viewCount = videoDetail?.statistics?.viewCount ? Number(videoDetail.statistics.viewCount) : undefined;
+
+  const article = document.createElement("article");
+  article.className = "video-card";
+  article.innerHTML = `
+    <h2>${escapeHtml(title)} — Abdulkerim Sesli</h2>
+    <p class="video-desc">${escapeHtml(desc)}</p>
+  `;
+
+  const thumbBtn = document.createElement("button");
+  thumbBtn.className = "video-thumb";
+  thumbBtn.setAttribute("aria-label", `Play ${title} — Abdulkerim`);
+  thumbBtn.dataset.videoId = vid;
+  thumbBtn.dataset.thumb = thumb;
+  thumbBtn.innerHTML = '<span class="play-button" aria-hidden="true"><svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><polygon points="70,55 70,145 145,100"/></svg></span>';
+
+  const meta = document.createElement("div");
+  meta.className = "video-meta";
+  meta.innerHTML = `<div class="video-info"><small class="pub-date">${pub}</small></div><div class="video-actions"><a href="https://youtu.be/${vid}" target="_blank" rel="noopener">Auf YouTube öffnen</a></div>`;
+
+  const ldObj = {
+    "@context": "https://schema.org",
+    "@type": "VideoObject",
+    name: title + " – Abdulkerim Sesli",
+    description: desc,
+    thumbnailUrl: thumb,
+    uploadDate: pub,
+    contentUrl: `https://youtu.be/${vid}`,
+    embedUrl: `https://www.youtube.com/embed/${vid}`,
+    isFamilyFriendly: true,
+    publisher: {
+      "@type": "Organization",
+      "@id": "https://abdulkerimsesli.de/#organization",
+      name: "Abdulkerim — Digital Creator Portfolio",
+      logo: {
+        "@type": "ImageObject",
+        url: "https://abdulkerimsesli.de/content/assets/img/icons/icon-512.png",
+      },
+    },
+  };
+
+  if (duration) ldObj.duration = duration;
+  if (viewCount !== undefined) {
+    ldObj.interactionStatistic = {
+      "@type": "InteractionCounter",
+      interactionType: "http://schema.org/WatchAction",
+      userInteractionCount: viewCount,
+    };
+  }
+
+  const ld = document.createElement("script");
+  ld.type = "application/ld+json";
+  ld.textContent = JSON.stringify(ldObj);
+
+  grid.appendChild(article);
+  article.appendChild(thumbBtn);
+  article.appendChild(meta);
+  article.appendChild(ld);
+
+  bindThumb(thumbBtn);
+}
+
+async function renderDemoVideos(grid, demo) {
+  grid.innerHTML = "";
+  demo.forEach((it) => renderVideoCard(grid, it, {}));
 }
 
 // Videos page loader (moved from inline to avoid HTML parsing issues)
-(async function loadLatestVideos() {
-  const apiKey = window.YOUTUBE_API_KEY;
-  const handle = (window.YOUTUBE_CHANNEL_HANDLE || "aks.030").replace(/^@/, "");
+async function loadLatestVideos() {
+  const apiKey = globalThis.YOUTUBE_API_KEY;
+  const handle = (globalThis.YOUTUBE_CHANNEL_HANDLE || "aks.030").replace(/^@/, "");
   if (!apiKey) return;
 
-  // Use the structured logger `log` created above. Helper for warnings if needed:
-  const _warn = (msg) => log.warn(msg);
   const setStatus = (msg) => {
     try {
       const el = document.getElementById("videos-status");
@@ -45,92 +211,16 @@ function _shareChannel() {
     }
   };
 
-  // Replace a thumbnail button with an autoplaying iframe (available globally so static thumbs work)
-  function activateThumb(btn) {
-    if (!btn || btn.dataset.loaded) return;
-    const vid = btn.dataset.videoId;
-    const title = btn.getAttribute("aria-label") || "";
-    const wrapper = document.createElement("div");
-    wrapper.className = "embed";
-    const iframe = document.createElement("iframe");
-    iframe.width = "560";
-    iframe.height = "315";
-    iframe.src = `https://www.youtube.com/embed/${vid}?autoplay=1&rel=0`;
-    iframe.title = title;
-    iframe.setAttribute("frameborder", "0");
-    iframe.setAttribute(
-      "allow",
-      "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture",
-    );
-    iframe.setAttribute("allowfullscreen", "");
-    wrapper.appendChild(iframe);
-    btn.replaceWith(wrapper);
-    try {
-      iframe.focus();
-    } catch {
-      /* ignore */
-    }
-    btn.dataset.loaded = "1";
+  // Bind any existing static thumbnails and exit early
+  try {
+    document.querySelectorAll('.video-thumb').forEach(bindThumb);
+  } catch {
+    /* ignore */
   }
-
-  // Utility: escape HTML for safe injection (declared early so it's available everywhere)
-  function escapeHtml(s) {
-    return String(s).replace(
-      /[&<>"']/g,
-      (c) =>
-        ({
-          "&": "&amp;",
-          "<": "&lt;",
-          ">": "&gt;",
-          '"': "&quot;",
-          "'": "&#39;",
-        })[c],
-    );
-  }
-
-  // Attach handlers for any static thumbnails (works even if API fetch doesn't run)
-  function attachStaticThumbsStandalone() {
-    try {
-      document.querySelectorAll(".video-thumb").forEach((b) => {
-        if (b.dataset.bound) return;
-        b.addEventListener("click", () => activateThumb(b));
-        b.addEventListener("keydown", (e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            activateThumb(b);
-          }
-        });
-        b.dataset.bound = "1";
-      });
-    } catch {
-      /* ignore */
-    }
-  }
-
-  // Run asap so static page thumbnails are interactive even without API
-  attachStaticThumbsStandalone();
-
-  // Attach handlers for static thumbnails already in the DOM (available early)
-  function initStaticThumbs() {
-    document.querySelectorAll(".video-thumb").forEach((b) => {
-      if (b.dataset.bound) return;
-      b.addEventListener("click", () => activateThumb(b));
-      b.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          activateThumb(b);
-        }
-      });
-      b.dataset.bound = "1";
-    });
-  }
-
-  // Ensure static thumbs are bound and return early
-  initStaticThumbs();
   setStatus("");
 
-  // Stable testing: if mock mode is active and no API key is present, render demo videos
-  if (!apiKey && window.YOUTUBE_USE_MOCK) {
+  // Stable testing: demo mode
+  if (!apiKey && globalThis.YOUTUBE_USE_MOCK) {
     setStatus("Lädt Demo‑Videos (Mock‑Modus)");
     const demo = [
       {
@@ -148,283 +238,104 @@ function _shareChannel() {
         pub: "2021-02-02T00:00:00+00:00",
       },
     ];
-
-    const grid = document.querySelector(".video-grid");
-    if (grid) {
-      grid.innerHTML = "";
-      demo.forEach((it) => {
-        const article = document.createElement("article");
-        article.className = "video-card";
-        article.innerHTML = `
-          <h2>${escapeHtml(it.title)} — Abdulkerim Sesli</h2>
-          <p class="video-desc">${escapeHtml(it.desc)}</p>
-        `;
-
-        const thumbBtn = document.createElement("button");
-        thumbBtn.className = "video-thumb";
-        thumbBtn.setAttribute("aria-label", `Play ${it.title} — Abdulkerim`);
-        thumbBtn.dataset.videoId = it.videoId;
-        thumbBtn.style.backgroundImage = `url('${it.thumb}')`;
-        thumbBtn.innerHTML =
-          '<span class="play-button" aria-hidden="true"><svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><polygon points="70,55 70,145 145,100"/></svg></span>';
-
-        const meta = document.createElement("div");
-        meta.className = "video-meta";
-        meta.innerHTML = `<div class="video-info"><small class="pub-date">${it.pub}</small></div><div class="video-actions"><a href="https://youtu.be/${it.videoId}" target="_blank" rel="noopener">Auf YouTube öffnen</a></div>`;
-
-        const ld = document.createElement("script");
-        ld.type = "application/ld+json";
-        ld.textContent = JSON.stringify({
-          "@context": "https://schema.org",
-          "@type": "VideoObject",
-          name: it.title + " – Abdulkerim Sesli",
-          description: it.desc,
-          thumbnailUrl: it.thumb,
-          uploadDate: it.pub || new Date().toISOString(),
-          contentUrl: `https://youtu.be/${it.videoId}`,
-          embedUrl: `https://www.youtube.com/embed/${it.videoId}`,
-          publisher: { "@type": "Person", name: "Abdulkerim Sesli" },
-        });
-
-        grid.appendChild(article);
-        article.appendChild(thumbBtn);
-        article.appendChild(meta);
-        article.appendChild(ld);
-
-        thumbBtn.addEventListener("click", () => activateThumb(thumbBtn));
-        thumbBtn.addEventListener("keydown", (e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            activateThumb(thumbBtn);
-          }
-        });
-      });
-    }
-
-    // Ensure static thumbs are bound and return early
-    initStaticThumbs();
+    const grid = document.querySelector('.video-grid');
+    if (grid) await renderDemoVideos(grid, demo);
     setStatus("");
     return;
   }
 
   try {
-    if (location.protocol === "file:") {
+    if (globalThis.location?.protocol === "file:") {
       log.warn(
         "Running from file:// — network requests may be blocked. Serve site via http://localhost for proper API requests.",
       );
       return;
     }
 
-    // Helper to fetch JSON and surface HTTP errors
-    async function fetchJson(url) {
-      const safeUrl = url.replace(/([?&]key=)[^&]+/, "$1[REDACTED]");
-      log.warn(`Fetching ${safeUrl}`);
-      const res = await fetch(url, { credentials: "omit", mode: "cors" });
-      if (!res.ok) {
-        let text = "";
-        try {
-          text = await res.text();
-        } catch {
-          /* noop */
-        }
-        const err = new Error(
-          `Fetch failed: ${res.status} ${res.statusText} — ${text.slice(0, 200)}`,
-        );
-        err.status = res.status;
-        err.statusText = res.statusText;
-        err.body = text;
-        throw err;
-      }
-      return await res.json();
-    }
-
-    // Resolve channelId via search
     setStatus("Videos werden geladen…");
-    const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=channel&q=${encodeURIComponent(handle)}&maxResults=1&key=${apiKey}`;
-    const searchJson = await fetchJson(searchUrl);
-    const channelId =
-      searchJson?.items?.[0]?.snippet?.channelId ||
-      searchJson?.items?.[0]?.id?.channelId;
-    if (!channelId) {
-      log.warn("Channel ID not found");
-      return;
-    }
 
-    // Get uploads playlist
-    const chUrl = `https://www.googleapis.com/youtube/v3/channels?part=contentDetails&id=${channelId}&key=${apiKey}`;
-    const chJson = await fetchJson(chUrl);
-    const uploads =
-      chJson?.items?.[0]?.contentDetails?.relatedPlaylists?.uploads;
-    if (!uploads) {
-      log.warn("Uploads playlist not found");
-      return;
-    }
+    const grid = document.querySelector('.video-grid');
+    if (!grid) return;
 
-    // Get latest 2 videos
-    const plUrl = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${uploads}&maxResults=2&key=${apiKey}`;
-    const plJson = await fetchJson(plUrl);
-    const items = plJson.items || [];
+    const { items, detailsMap } = await loadFromApi(apiKey, handle);
     if (!items.length) {
       log.warn("Keine Videos gefunden");
+      setStatus("");
       return;
     }
 
-    const grid = document.querySelector(".video-grid");
-    if (!grid) return;
     grid.innerHTML = "";
-
-    // Collect all video IDs and fetch details (duration, stats)
-    const vidIds = items
-      .map((it) => it.snippet.resourceId.videoId)
-      .filter(Boolean);
-    const detailsMap = {};
-    try {
-      if (vidIds.length) {
-        const videosUrl = `https://www.googleapis.com/youtube/v3/videos?part=contentDetails,statistics&id=${vidIds.join(",")}&key=${apiKey}`;
-        const videosJson = await fetchJson(videosUrl)(
-          videosJson.items || [],
-        ).forEach((v) => {
-          detailsMap[v.id] = v;
-        });
-      }
-    } catch (e) {
-      log.warn("Could not fetch video details: " + e.message);
-    }
-
-    items.forEach((it) => {
-      const vid = it.snippet.resourceId.videoId;
-      const title = it.snippet.title;
-      const desc =
-        it.snippet.description && it.snippet.description.trim()
-          ? it.snippet.description
-          : `${title} — Video von Abdulkerim Sesli`;
-      const thumb =
-        it.snippet.thumbnails?.high?.url || it.snippet.thumbnails?.default?.url;
-      const pub = it.snippet.publishedAt || new Date().toISOString();
-
-      const videoDetail = detailsMap[vid];
-      const duration = videoDetail?.contentDetails?.duration; // ISO 8601
-      const viewCount = videoDetail?.statistics?.viewCount
-        ? Number(videoDetail.statistics.viewCount)
-        : undefined;
-
-      const article = document.createElement("article");
-      article.className = "video-card";
-      article.innerHTML = `
-        <h2>${escapeHtml(title)} — Abdulkerim Sesli</h2>
-        <p class="video-desc">${escapeHtml(desc)}</p>
-      `;
-
-      // Create thumbnail placeholder (click to load iframe)
-      const thumbBtn = document.createElement("button");
-      thumbBtn.className = "video-thumb";
-      thumbBtn.setAttribute("aria-label", `Play ${title} — Abdulkerim`);
-      thumbBtn.dataset.videoId = vid;
-      thumbBtn.style.backgroundImage = `url('${thumb}')`;
-      thumbBtn.innerHTML =
-        '<span class="play-button" aria-hidden="true"><svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><polygon points="70,55 70,145 145,100"/></svg></span>';
-
-      // Meta row
-      const meta = document.createElement("div");
-      meta.className = "video-meta";
-      meta.innerHTML = `<div class="video-info"><small class="pub-date">${pub}</small></div><div class="video-actions"><a href="https://youtu.be/${vid}" target="_blank" rel="noopener">Auf YouTube öffnen</a></div>`;
-
-      // JSON-LD script
-      const ldObj = {
-        "@context": "https://schema.org",
-        "@type": "VideoObject",
-        name: title + " – Abdulkerim Sesli",
-        description: desc,
-        thumbnailUrl: thumb,
-        uploadDate: pub,
-        contentUrl: `https://youtu.be/${vid}`,
-        embedUrl: `https://www.youtube.com/embed/${vid}`,
-        isFamilyFriendly: true,
-        publisher: {
-          "@type": "Organization",
-          "@id": "https://abdulkerimsesli.de/#organization",
-          name: "Abdulkerim — Digital Creator Portfolio",
-          logo: {
-            "@type": "ImageObject",
-            url: "https://abdulkerimsesli.de/content/assets/img/icons/icon-512.png",
-          },
-        },
-      };
-
-      if (duration) ldObj.duration = duration;
-      if (typeof viewCount !== "undefined") {
-        ldObj.interactionStatistic = {
-          "@type": "InteractionCounter",
-          interactionType: "http://schema.org/WatchAction",
-          userInteractionCount: viewCount,
-        };
-      }
-
-      const ld = document.createElement("script");
-      ld.type = "application/ld+json";
-      ld.textContent = JSON.stringify(ldObj);
-
-      grid.appendChild(article);
-      article.appendChild(thumbBtn);
-      article.appendChild(meta);
-      article.appendChild(ld);
-
-      // Activate thumb handlers
-      thumbBtn.addEventListener("click", () => activateThumb(thumbBtn));
-      thumbBtn.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          activateThumb(thumbBtn);
-        }
-      });
-    });
+    items.forEach((it) => renderVideoCard(grid, it, detailsMap));
 
     setStatus("");
-
-    function escapeHtml(s) {
-      return String(s).replace(
-        /[&<>"']/g,
-        (c) =>
-          ({
-            "&": "&amp;",
-            "<": "&lt;",
-            ">": "&gt;",
-            '"': "&quot;",
-            "'": "&#39;",
-          })[c],
-      );
-    }
   } catch (err) {
     log.error("Fehler beim Laden der Videos", err);
-
-    // Friendly message in page
-    try {
-      const container =
-        document.querySelector(".videos-main .container") || document.body;
-      const el = document.createElement("aside");
-      el.className = "video-error";
-      let message = "Fehler beim Laden der Videos.";
-      if (err && err.status === 403) {
-        message +=
-          " API-Zugriff verweigert (403). Prüfe deine API-Key Referrer-Einschränkungen oder teste über http://localhost:8000.";
-        if (
-          err.body &&
-          /API_KEY_HTTP_REFERRER_BLOCKED|Requests from referer/.test(err.body)
-        ) {
-          message += " Hinweis: Requests mit leerem Referer werden geblockt.";
-        }
-      } else if (err && err.message) {
-        message += " " + String(err.message).slice(0, 200);
-      }
-      el.textContent = message;
-      container.insertBefore(el, container.firstChild);
-      try {
-        setStatus(el.textContent);
-      } catch {
-        /* ignore */
-      }
-    } catch {
-      // ignore UI errors
-    }
+    showErrorMessage(err);
   }
-})();
+
+
+}
+
+// Top-level escapeHtml helper (shared)
+function escapeHtml(s) {
+  return String(s)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+}
+
+// Helper: show friendly error message in page
+export function showErrorMessage(err) {
+  try {
+    const container = document.querySelector(".videos-main .container") || document.body;
+    const el = document.createElement("aside");
+    el.className = "video-error";
+    let message = "Fehler beim Laden der Videos.";
+    if (err?.status === 403) {
+      message += " API-Zugriff verweigert (403). Prüfe deine API-Key Referrer-Einschränkungen oder teste über http://localhost:8000.";
+      if (/API_KEY_HTTP_REFERRER_BLOCKED|Requests from referer/.test(err?.body || "")) {
+        message += " Hinweis: Requests mit leerem Referer werden geblockt.";
+      }
+    } else if (err?.message) {
+      message += " " + String(err.message).slice(0, 200);
+    }
+    el.textContent = message;
+    container.insertBefore(el, container.firstChild);
+    try {
+      const setStatus = (msg) => {
+        try {
+          const el2 = document.getElementById("videos-status");
+          if (el2) el2.textContent = msg || "";
+        } catch {
+          // ignore
+        }
+      };
+      setStatus(el.textContent);
+    } catch {
+      /* ignore */
+    }
+  } catch {
+    // ignore UI errors
+  }
+}
+
+// Extracted API loader (top-level to reduce nested complexity)
+export async function loadFromApi(apiKey, handle) {
+  const channelId = await fetchChannelId(apiKey, handle);
+  if (!channelId) return { items: [], detailsMap: {} };
+
+  const uploads = await fetchUploadsPlaylist(apiKey, channelId);
+  if (!uploads) return { items: [], detailsMap: {} };
+
+  const items = await fetchPlaylistItems(apiKey, uploads, 2);
+  if (!items.length) return { items: [], detailsMap: {} };
+
+  const vidIds = items.map((it) => it.snippet.resourceId.videoId).filter(Boolean);
+  const detailsMap = await fetchVideoDetailsMap(apiKey, vidIds);
+  return { items, detailsMap };
+}
+
+// Run
+await loadLatestVideos();

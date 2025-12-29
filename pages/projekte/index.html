@@ -2,8 +2,8 @@
 <html lang="de">
   <head>
     <script>
-      window.dataLayer = window.dataLayer || [];
-      window.dataLayer.push({
+      globalThis.dataLayer = globalThis.dataLayer || [];
+      globalThis.dataLayer.push({
         ga4_measurement_id: "G-757KWG0PG4",
         ads_conversion_id: "AW-1036079663",
       });
@@ -12,14 +12,14 @@
     <script>
       (function (w, d, s, l, i) {
         w[l] = w[l] || [];
-        w[l].push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
+        w[l].push({ "gtm.start": Date.now(), event: "gtm.js" });
         var f = d.getElementsByTagName(s)[0],
           j = d.createElement(s),
-          dl = l != "dataLayer" ? "&l=" + l : "";
+          dl = l === "dataLayer" ? "" : "&l=" + l;
         j.async = true;
         j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
         f.parentNode.insertBefore(j, f);
-      })(window, document, "script", "dataLayer", "GTM-5F5ZSTTL");
+      })(globalThis, document, "script", "dataLayer", "GTM-5F5ZSTTL");
     </script>
     <!-- End Google Tag Manager -->
     <meta name="mobile-web-app-capable" content="yes" />
@@ -49,7 +49,6 @@
       sizes="180x180"
       href="https://abdulkerimsesli.de/content/assets/img/icons/icon-192.png"
     />
-    <meta name="theme-color" content="#000000" />
     <title>Referenzen & Code-Projekte | Abdulkerim Sesli</title>
     <meta
       name="description"
@@ -239,7 +238,7 @@
   <body>
     <!-- Google Tag Manager (noscript) -->
     <noscript
-      ><iframe
+      ><iframe title="Google Tag Manager (noscript)"
         src="https://www.googletagmanager.com/ns.html?id=GTM-5F5ZSTTL"
         height="0"
         width="0"
@@ -266,14 +265,14 @@
     <!-- Logic Script -->
     <script type="module">
       import { initProjectsApp } from "./projekte-app.js";
-      import { createLogger } from "/content/utils/shared-utilities.js";
+      import { createLogger } from "../../content/utils/shared-utilities.js";
       const log = createLogger("ProjektePage");
 
       // Load styles for Three Earth (Progressive Enhancement)
       async function ensureThreeEarthStyles() {
         const href = "/content/components/particles/three-earth.css";
         if (document.querySelector(`link[href="${href}"]`))
-          return Promise.resolve();
+          return;
         return new Promise((resolve, reject) => {
           const link = document.createElement("link");
           link.rel = "stylesheet";
@@ -284,6 +283,7 @@
               link.media = "all";
               resolve();
             } catch (e) {
+              log.warn("Failed to set link.media", e);
               resolve();
             }
           };
@@ -292,7 +292,7 @@
         });
       }
 
-      window.addEventListener("DOMContentLoaded", async () => {
+      globalThis.addEventListener("DOMContentLoaded", async () => {
         // 1. React App starten
         initProjectsApp();
 
@@ -300,11 +300,11 @@
         const threeContainer = document.getElementById("threeEarthContainer");
 
         const loadThreeEarth = async () => {
-          if (window.__threeEarthLoaded) return;
-          window.__threeEarthLoaded = true;
+          if (globalThis.__threeEarthLoaded) return;
+          globalThis.__threeEarthLoaded = true;
           try {
             const mod =
-              await import("/content/components/particles/three-earth-system.js");
+              await import("../../content/components/particles/three-earth-system.js");
 
             // Allow module to expose API and adjust presets before init
             try {
@@ -313,10 +313,7 @@
                 config?.CAMERA?.PRESETS?.features ||
                 config?.CAMERA?.PRESETS?.hero;
               if (basePreset) {
-                const baseRadius =
-                  Math.sqrt(
-                    (basePreset.x || 0) ** 2 + (basePreset.z || 0) ** 2,
-                  ) || 12;
+                const baseRadius = Math.hypot(basePreset.x || 0, basePreset.z || 0) || 12;
                 for (let i = 1; i <= 10; i++) {
                   const angle = i * 0.8;
                   config.CAMERA.PRESETS[`project-${i}`] = {
@@ -349,7 +346,7 @@
         };
 
         // If IntersectionObserver is available, init when container gets close to viewport
-        if ("IntersectionObserver" in window && threeContainer) {
+        if ("IntersectionObserver" in globalThis && threeContainer) {
           const io = new IntersectionObserver(
             (entries, obs) => {
               for (const entry of entries) {
@@ -371,13 +368,13 @@
         // Also trigger on first user interaction to prioritise UX
         const userTrigger = () => {
           loadThreeEarth();
-          window.removeEventListener("scroll", userTrigger);
-          window.removeEventListener("touchstart", userTrigger);
-          window.removeEventListener("pointerdown", userTrigger);
+          globalThis.removeEventListener("scroll", userTrigger);
+          globalThis.removeEventListener("touchstart", userTrigger);
+          globalThis.removeEventListener("pointerdown", userTrigger);
         };
-        window.addEventListener("scroll", userTrigger, { passive: true });
-        window.addEventListener("touchstart", userTrigger, { passive: true });
-        window.addEventListener("pointerdown", userTrigger, { passive: true });
+        globalThis.addEventListener("scroll", userTrigger, { passive: true });
+        globalThis.addEventListener("touchstart", userTrigger, { passive: true });
+        globalThis.addEventListener("pointerdown", userTrigger, { passive: true });
       });
     </script>
   </body>

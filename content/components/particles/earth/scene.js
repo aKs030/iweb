@@ -19,8 +19,8 @@ export function setupScene(THREE, container) {
   });
 
   // Allow a higher pixel ratio on large screens to improve texture/sharpness
-  const maxAllowedPR = container.clientWidth > 1200 ? 3.0 : 2.0;
-  const pixelRatio = Math.min(window.devicePixelRatio || 1, maxAllowedPR);
+  const maxAllowedPR = container.clientWidth > 1200 ? 3 : 2;
+  const pixelRatio = Math.min(globalThis.devicePixelRatio || 1, maxAllowedPR);
   renderer.setPixelRatio(pixelRatio);
   renderer.setSize(container.clientWidth, container.clientHeight);
   renderer.setClearColor(0x000000, 0);
@@ -32,13 +32,13 @@ export function setupScene(THREE, container) {
 
   // Mark that the renderer DOM element has been attached so tests or other code can detect presence
   try {
-    container.setAttribute("data-three-attached", "1");
+    container.dataset.threeAttached = "1";
     document.dispatchEvent(
       new CustomEvent("three-attached", {
         detail: { containerId: container.id || null },
       }),
     );
-  } catch (e) {
+  } catch {
     /* ignore */
   }
 

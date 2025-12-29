@@ -169,6 +169,7 @@ body {
 
   /* Dynamic Menu Glassmorphismus */
   background: var(--dynamic-menu-header-bg);
+  -webkit-backdrop-filter: blur(var(--dynamic-menu-blur-radius));
   backdrop-filter: blur(var(--dynamic-menu-blur-radius));
 
   /* Dynamic Island Shape */
@@ -325,6 +326,7 @@ body {
   touch-action: manipulation;
   transition: all 0.2s var(--dynamic-menu-spring-quick);
   -webkit-tap-highlight-color: rgb(0 122 255 / 10%);
+  -webkit-user-select: none;
   user-select: none;
   white-space: nowrap;
   cursor: pointer;
@@ -409,6 +411,7 @@ button.submenu-toggle:focus .icon-fallback {
   position: absolute;
   right: 24px;
   transition: all 0.2s var(--dynamic-menu-spring-quick);
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
 }
 
@@ -468,6 +471,7 @@ button.submenu-toggle:focus .icon-fallback {
 
   /* Dynamic Menu Card Design */
   background: var(--dynamic-menu-header-bg);
+  -webkit-backdrop-filter: blur(var(--dynamic-menu-blur-radius));
   backdrop-filter: blur(var(--dynamic-menu-blur-radius));
   min-width: 200px;
   border-radius: var(--dynamic-menu-card-radius);
@@ -573,6 +577,7 @@ main {
 
     /* Dynamic Menu Card Design */
     background: var(--dynamic-menu-header-bg);
+    -webkit-backdrop-filter: blur(var(--dynamic-menu-blur-radius));
     backdrop-filter: blur(var(--dynamic-menu-blur-radius));
     border: 1px solid var(--dynamic-menu-separator);
     border-radius: var(--dynamic-menu-card-radius);
