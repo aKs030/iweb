@@ -29,7 +29,7 @@ export class RobotChat {
         this.handleAction("start");
 
       // Focus Trap
-      if (window.a11y) window.a11y.trapFocus(this.robot.dom.window);
+      if (typeof globalThis !== "undefined" && globalThis.a11y) globalThis.a11y.trapFocus(this.robot.dom.window);
     } else {
       this.robot.dom.window.classList.remove("open");
       this.isOpen = false;
@@ -37,7 +37,7 @@ export class RobotChat {
       this.robot.animationModule.startBlinkLoop();
 
       // Release Focus
-      if (window.a11y) window.a11y.releaseFocus();
+      if (typeof globalThis !== "undefined" && globalThis.a11y) globalThis.a11y.releaseFocus();
     }
   }
 
@@ -67,8 +67,7 @@ export class RobotChat {
 
     // Check for trivia answer
     if (text.startsWith("triviaAnswer_")) {
-      const answerIdx = parseInt(text.split("_")[1]);
-      this.robot.gameModule.handleTriviaAnswer(answerIdx);
+      const answerIdx = Number.parseInt(text.split("_")[1], 10);
       return;
     }
 
@@ -168,7 +167,7 @@ export class RobotChat {
         this.addMessage(opt.label, "user");
         setTimeout(() => {
           if (opt.url) {
-            window.open(opt.url, opt.target || "_self");
+            if (typeof globalThis !== "undefined" && typeof globalThis.open === "function") globalThis.open(opt.url, opt.target || "_self");
             if (opt.target === "_blank") this.handleAction("start");
           } else if (opt.action) {
             if (opt.action.startsWith("triviaAnswer_")) {

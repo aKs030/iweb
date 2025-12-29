@@ -13,7 +13,7 @@ export class RobotSound {
 
     // Lazy create audio context only on user interaction or when allowed
     if (!this.ctx) {
-      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      const AudioContext = (typeof globalThis !== "undefined" ? (globalThis.AudioContext || globalThis.webkitAudioContext) : undefined);
       if (AudioContext) {
         try {
           this.ctx = new AudioContext();
@@ -122,7 +122,7 @@ export class RobotSound {
     const resume = async () => {
       try {
         if (!this.ctx) {
-          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          const AudioContext = (typeof globalThis !== "undefined" ? (globalThis.AudioContext || globalThis.webkitAudioContext) : undefined);
           if (AudioContext) this.ctx = new AudioContext();
         }
         if (this.ctx && this.ctx.state === "suspended") await this.ctx.resume();
