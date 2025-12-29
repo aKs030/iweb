@@ -114,7 +114,7 @@ export class RobotAnimation {
 
     const twRect = typeWriter.getBoundingClientRect();
     const robotWidth = 80;
-    const windowWidth = window.innerWidth;
+    const windowWidth = (typeof globalThis !== "undefined" ? globalThis.innerWidth : 0);
 
     const initialLeft = windowWidth - 30 - robotWidth;
     const gap = 24;
@@ -320,7 +320,7 @@ export class RobotAnimation {
     }
 
     const robotWidth = 80;
-    const initialLeft = window.innerWidth - 30 - robotWidth;
+    const initialLeft = (typeof globalThis !== "undefined" ? globalThis.innerWidth : 0) - 30 - robotWidth;
     let maxLeft = initialLeft - 20;
 
     let twRect = null;

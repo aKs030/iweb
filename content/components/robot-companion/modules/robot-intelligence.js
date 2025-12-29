@@ -80,7 +80,7 @@ export class RobotIntelligence {
     const dt = now - this.lastScrollTime;
 
     if (dt > 100) {
-      const scrollY = window.scrollY;
+      const scrollY = typeof globalThis !== "undefined" ? globalThis.scrollY : 0;
       const dist = Math.abs(scrollY - this.scroll.lastY);
       const speed = dist / dt;
 

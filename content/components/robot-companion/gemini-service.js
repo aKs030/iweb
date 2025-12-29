@@ -21,7 +21,7 @@ export async function getGeminiResponse(prompt, systemInstruction = "Du bist ein
     const maxRetries = 5;
     let delay = 1000; // Start mit 1 Sekunde
 
-    const isRunningInBrowser = () => typeof globalThis !== "undefined" && typeof globalThis.window !== "undefined" && typeof globalThis.fetch === "function";
+    const isRunningInBrowser = () => (globalThis !== undefined && globalThis.window !== undefined && typeof globalThis.fetch === "function");
 
     const doBrowserRequest = async (promptArg, systemArg) => {
         const r = await fetch("/api/gemini", {

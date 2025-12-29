@@ -15,9 +15,11 @@ import { createLogger } from "../../utils/shared-utilities.js";
 const log = createLogger("RobotCompanion");
 
 class RobotCompanion {
+  containerId = "robot-companion-container";
+  texts = {};
+
   constructor() {
-    this.containerId = "robot-companion-container";
-    this.texts = (window && window.robotCompanionTexts) || {};
+    this.texts = (typeof globalThis !== "undefined" && globalThis.robotCompanionTexts) || this.texts || {};
 
     this.gemini = new GeminiService();
     this.gameModule = new RobotGames(this);
@@ -34,7 +36,7 @@ class RobotCompanion {
     this.isKeyboardAdjustmentActive = false;
 
     // Store initial layout height for detecting keyboard even when layout viewport shrinks
-    this.initialLayoutHeight = window.innerHeight;
+    this.initialLayoutHeight = typeof globalThis !== "undefined" ? globalThis.innerHeight : 0;
 
     // Context greeting dedupe & observed section tracking
     this.currentObservedContext = null;
@@ -42,9 +44,9 @@ class RobotCompanion {
 
     // Mood & Analytics System
     this.analytics = {
-      sessions: parseInt(localStorage.getItem("robot-sessions") || "0") + 1,
+      sessions: Number.parseInt(localStorage.getItem("robot-sessions") || "0", 10) + 1,
       sectionsVisited: [],
-      interactions: parseInt(localStorage.getItem("robot-interactions") || "0"),
+      interactions: Number.parseInt(localStorage.getItem("robot-interactions") || "0", 10),
       lastVisit:
         localStorage.getItem("robot-last-visit") || new Date().toISOString(),
     };
@@ -62,23 +64,10 @@ class RobotCompanion {
 
     this._sectionCheckInterval = null;
     this._scrollListener = null;
-
-    this.loadTexts().then(() => {
-      this.applyTexts();
-      if (!this.dom.container) this.init();
-    });
-
-    if (window.robotCompanionTexts) {
-      this.init();
-    } else {
-      setTimeout(() => {
-        if (!this.dom.container) this.init();
-      }, 500);
-    }
   }
 
   applyTexts() {
-    const src = (window && window.robotCompanionTexts) || this.texts || {};
+    const src = (typeof globalThis !== "undefined" && globalThis.robotCompanionTexts) || this.texts || {};
     const chat = this.chatModule;
 
     chat.knowledgeBase = src.knowledgeBase ||
@@ -105,8 +94,8 @@ class RobotCompanion {
 
   loadTexts() {
     return new Promise((resolve) => {
-      if (window && window.robotCompanionTexts) {
-        this.texts = window.robotCompanionTexts;
+      if (typeof globalThis !== "undefined" && globalThis.robotCompanionTexts) {
+        this.texts = globalThis.robotCompanionTexts;
         resolve();
         return;
       }
@@ -119,7 +108,7 @@ class RobotCompanion {
         "/content/components/robot-companion/robot-companion-texts.js";
       script.async = true;
       script.onload = () => {
-        this.texts = (window && window.robotCompanionTexts) || {};
+        this.texts = (typeof globalThis !== "undefined" && globalThis.robotCompanionTexts) || this.texts || {};
         resolve();
       };
       script.onerror = () => resolve();
@@ -167,14 +156,16 @@ class RobotCompanion {
       }
     };
 
-    window.addEventListener("scroll", requestTick, { passive: true });
-    window.addEventListener("resize", requestTick, { passive: true });
+    if (typeof globalThis !== "undefined") {
+      globalThis.addEventListener("scroll", requestTick, { passive: true });
+      globalThis.addEventListener("resize", requestTick, { passive: true });
+    }
     requestAnimationFrame(checkOverlap);
     setInterval(requestTick, 1000);
   }
 
   setupMobileViewportHandler() {
-    if (!window.visualViewport) return;
+    if (typeof globalThis === "undefined" || !globalThis.visualViewport) return;
 
     const handleResize = () => {
       if (!this.dom.window || !this.dom.container) return;
@@ -190,8 +181,8 @@ class RobotCompanion {
       }
 
       // Use initialLayoutHeight if available to detect shrink-resize behaviors
-      const referenceHeight = this.initialLayoutHeight || window.innerHeight;
-      const visualHeight = window.visualViewport.height;
+      const referenceHeight = this.initialLayoutHeight || (typeof globalThis !== "undefined" ? globalThis.innerHeight : 0);
+      const visualHeight = typeof globalThis !== "undefined" && globalThis.visualViewport ? globalThis.visualViewport.height : referenceHeight;
       const heightDiff = referenceHeight - visualHeight;
       const isInputFocused = document.activeElement === this.dom.input;
 
@@ -267,8 +258,10 @@ class RobotCompanion {
       }
     };
 
-    window.visualViewport.addEventListener("resize", handleResize);
-    window.visualViewport.addEventListener("scroll", handleResize);
+    if (typeof globalThis !== "undefined" && globalThis.visualViewport) {
+      globalThis.visualViewport.addEventListener("resize", handleResize);
+      globalThis.visualViewport.addEventListener("scroll", handleResize);
+    }
 
     if (this.dom.input) {
       this.dom.input.addEventListener("focus", handleResize);
@@ -334,10 +327,10 @@ class RobotCompanion {
     this._onHeroTypingEnd = (_ev) => {
       try {
         const typeWriter = document.querySelector(".typewriter-title");
-        if (!typeWriter || !this.dom || !this.dom.container) return;
+        if (!typeWriter || !this.dom?.container) return;
         const twRect = typeWriter.getBoundingClientRect();
         const robotWidth = 80;
-        const initialLeft = window.innerWidth - 30 - robotWidth;
+        const initialLeft = (typeof globalThis !== "undefined" ? globalThis.innerWidth : 0) - 30 - robotWidth;
         const maxLeft = initialLeft - 20;
         this.collisionModule.checkForTypewriterCollision(twRect, maxLeft);
       } catch (err) {
@@ -381,7 +374,7 @@ class RobotCompanion {
           if (tw && this.dom.container) {
             const twRect = tw.getBoundingClientRect();
             const robotWidth = 80;
-            const initialLeft = window.innerWidth - 30 - robotWidth;
+            const initialLeft = (typeof globalThis !== "undefined" ? globalThis.innerWidth : 0) - 30 - robotWidth;
             const maxLeft = initialLeft - 20;
             this.collisionModule.checkForTypewriterCollision(twRect, maxLeft);
           }
@@ -393,7 +386,7 @@ class RobotCompanion {
         }
       }, 500);
     };
-    window.addEventListener("scroll", this._scrollListener, { passive: true });
+    if (typeof globalThis !== "undefined") globalThis.addEventListener("scroll", this._scrollListener, { passive: true });
     this._sectionCheckInterval = setInterval(checkContextChange, 3000);
   }
 
@@ -406,7 +399,7 @@ class RobotCompanion {
       this._sectionObserver = null;
     }
     if (this._scrollListener) {
-      window.removeEventListener("scroll", this._scrollListener);
+      if (typeof globalThis !== "undefined") globalThis.removeEventListener("scroll", this._scrollListener);
       this._scrollListener = null;
     }
     if (this._onHeroTypingEnd) {
@@ -418,7 +411,7 @@ class RobotCompanion {
       this._sectionCheckInterval = null;
     }
     if (this.dom.container && this.dom.container.parentNode) {
-      this.dom.container.parentNode.removeChild(this.dom.container);
+      this.dom.container?.remove();
     }
   }
 
@@ -437,8 +430,7 @@ class RobotCompanion {
   getMoodGreeting() {
     const greetings =
       this.chatModule.moodGreetings ||
-      (window.robotCompanionTexts &&
-        window.robotCompanionTexts.moodGreetings) ||
+      (typeof globalThis !== "undefined" && globalThis.robotCompanionTexts && globalThis.robotCompanionTexts.moodGreetings) ||
       {};
     const moodGreets = greetings[this.mood] ||
       greetings["normal"] || ["Hey! Wie kann ich helfen?"];
@@ -808,10 +800,21 @@ class RobotCompanion {
   clearBubbleSequence() {
     return this.chatModule.clearBubbleSequence();
   }
+
+  // Async init moved out of constructor to keep constructor sync and testable
+  async initialize() {
+    await this.loadTexts();
+    this.applyTexts();
+    if (!this.dom.container) this.init();
+  }
 }
 
 if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", () => new RobotCompanion());
+  document.addEventListener("DOMContentLoaded", () => {
+    const robot = new RobotCompanion();
+    robot.initialize().catch((e) => console.error("RobotCompanion init failed", e));
+  });
 } else {
-  new RobotCompanion();
+  const robot = new RobotCompanion();
+  robot.initialize().catch((e) => console.error("RobotCompanion init failed", e));
 }
