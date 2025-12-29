@@ -23,4 +23,18 @@ else
   echo "OK: likes absent"
 fi
 
-echo "Dry-run checks passed"
+# Validate the written sitemaps (if present). Prefer generated files in repo, otherwise use dry-run output.
+SITEMAP_VID="sitemap-videos.xml"
+if [ -f "$SITEMAP_VID" ]; then
+  echo "Validating $SITEMAP_VID"
+  python3 tests/validate_sitemaps.py "$SITEMAP_VID"
+  echo "Passed XML validation"
+else
+  echo "No $SITEMAP_VID file to validate; using dry-run output"
+  # Save dry-run to temporary file and validate
+  cp /tmp/sitemap-dryrun.txt /tmp/sitemap-dryrun.xml
+  python3 tests/validate_sitemaps.py /tmp/sitemap-dryrun.xml
+  echo "Passed dry-run XML validation"
+fi
+
+echo "All checks passed"
