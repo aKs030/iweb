@@ -206,6 +206,13 @@ async function renderDemoVideos(grid, demo) {
 async function loadLatestVideos() {
   const apiKey = globalThis.YOUTUBE_API_KEY;
   const handle = (globalThis.YOUTUBE_CHANNEL_HANDLE || "aks.030").replace(/^@/, "");
+
+  // Bind any existing static thumbnails (works without API key)
+  try {
+    document.querySelectorAll('.video-thumb').forEach(bindThumb);
+  } catch {
+    /* ignore */
+  }
   if (!apiKey) return;
 
   const setStatus = (msg) => {
@@ -217,12 +224,6 @@ async function loadLatestVideos() {
     }
   };
 
-  // Bind any existing static thumbnails and exit early
-  try {
-    document.querySelectorAll('.video-thumb').forEach(bindThumb);
-  } catch {
-    /* ignore */
-  }
   setStatus("");
 
   try {
