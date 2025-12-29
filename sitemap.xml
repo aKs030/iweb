@@ -126,50 +126,142 @@
   <!-- ========== VIDEOS ========== -->
   <url>
     <loc>https://abdulkerimsesli.de/videos/</loc>
-    <lastmod>2025-12-27</lastmod>
+    <lastmod>2025-12-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
 
-    <!-- Video 1: Interaktive Erde -->
+    <video:video>
+      <video:thumbnail_loc>https://i.ytimg.com/vi/tImMPQKiQVk/hqdefault.jpg</video:thumbnail_loc>
+      <video:title>Logo Animation (Software Style) - Abdulkerim Berlin</video:title>
+      <video:description>Clean UI-style logo animation designed like a professional desktop program. Vector layers, keyframes and motion design — created for modern digital branding. 🌐 www.abdulkerimsesli.de #logoanimation #motiondesign #uidesign #branding #softwarestyle #shorts #abdulkerim #abdulberlin #aks #abdul</video:description>
+      <video:content_loc>https://youtu.be/tImMPQKiQVk</video:content_loc>
+      <video:player_loc>https://www.youtube.com/embed/tImMPQKiQVk</video:player_loc>
+      <video:duration>5</video:duration>
+      <video:category>Film &amp; Animation</video:category>
+      <video:view_count>4</video:view_count>
+      <video:publication_date>2025-12-28T19:14:37Z</video:publication_date>
+      <video:family_friendly>yes</video:family_friendly>
+      <video:requires_subscription>no</video:requires_subscription>
+      <video:uploader info="https://www.youtube.com/channel/UCTGRherjM4iuIn86xxubuPg">Abdulkerim Berlin</video:uploader>
+      <video:live>no</video:live>
+    </video:video>
+
+    <video:video>
+      <video:thumbnail_loc>https://i.ytimg.com/vi/z8W9UJbUSo4/hqdefault.jpg</video:thumbnail_loc>
+      <video:title>#Mond #Moon #Astrofotografie #LunarSurface #NightSky #Abdulkerim #Berlin #Abdulkerim #Abdulberlin — Abdulkerim Berlin</video:title>
+      <video:description></video:description>
+      <video:content_loc>https://youtu.be/z8W9UJbUSo4</video:content_loc>
+      <video:player_loc>https://www.youtube.com/embed/z8W9UJbUSo4</video:player_loc>
+      <video:duration>9</video:duration>
+      <video:category>Film &amp; Animation</video:category>
+      <video:view_count>659</video:view_count>
+      <video:publication_date>2025-12-27T08:44:03Z</video:publication_date>
+      <video:family_friendly>yes</video:family_friendly>
+      <video:requires_subscription>no</video:requires_subscription>
+      <video:uploader info="https://www.youtube.com/channel/UCTGRherjM4iuIn86xxubuPg">Abdulkerim Berlin</video:uploader>
+      <video:live>no</video:live>
+    </video:video>
+
+    <video:video>
+      <video:thumbnail_loc>https://i.ytimg.com/vi/clbOHUT4w5o/hqdefault.jpg</video:thumbnail_loc>
+      <video:title>Future Bot Animation by Abdulkerim #🤖✨Besuche meine Webseite🌍 — Abdulkerim Berlin</video:title>
+      <video:description></video:description>
+      <video:content_loc>https://youtu.be/clbOHUT4w5o</video:content_loc>
+      <video:player_loc>https://www.youtube.com/embed/clbOHUT4w5o</video:player_loc>
+      <video:duration>9</video:duration>
+      <video:category>Film &amp; Animation</video:category>
+      <video:view_count>135</video:view_count>
+      <video:publication_date>2025-12-21T13:19:18Z</video:publication_date>
+      <video:family_friendly>yes</video:family_friendly>
+      <video:requires_subscription>no</video:requires_subscription>
+      <video:uploader info="https://www.youtube.com/channel/UCTGRherjM4iuIn86xxubuPg">Abdulkerim Berlin</video:uploader>
+      <video:live>no</video:live>
+    </video:video>
+
+    <video:video>
+      <video:thumbnail_loc>https://i.ytimg.com/vi/UorHOTKWtK4/hqdefault.jpg</video:thumbnail_loc>
+      <video:title>Neon Robot Animation | Abdulkerim (AKS Motion Design) #abdulkerim #abdulberlin — Abdulkerim Berlin</video:title>
+      <video:description>In diesem Video zeige ich eine aktuelle Motion-Design-Studie: Eine stilisierte Roboter-Animation mit dynamischen Neon-Effekten und einer abschließenden Logo-Integration meiner Website. Dieses Projekt ist Teil meines digitalen Portfolios und demonstriert die Kombination aus Character-Animation und visuellem Branding. Projektdetails: Animation &amp; Design: Abdulkerim Stil: Neon Sci-Fi / Motion Graphics Branding: AKS Digital Art Über diesen Kanal: Auf diesem Kanal dokumentiere ich meine kreative Entwicklung und teile persönliche Projekte im Bereich Design und Technologie in Berlin.</video:description>
+      <video:content_loc>https://youtu.be/UorHOTKWtK4</video:content_loc>
+      <video:player_loc>https://www.youtube.com/embed/UorHOTKWtK4</video:player_loc>
+      <video:duration>3</video:duration>
+      <video:category>Film &amp; Animation</video:category>
+      <video:tag>Abdulkerim</video:tag>
+      <video:tag>AKS</video:tag>
+      <video:tag>Abdulkerim Sesli</video:tag>
+      <video:tag>AKS Projekt</video:tag>
+      <video:tag>Robot Animation</video:tag>
+      <video:tag>Neon Design</video:tag>
+      <video:tag>Motion Graphics</video:tag>
+      <video:tag>After Effects</video:tag>
+      <video:tag>Digital Portfolio</video:tag>
+      <video:tag>Berlin Artist</video:tag>
+      <video:view_count>8</video:view_count>
+      <video:publication_date>2025-12-20T22:21:30Z</video:publication_date>
+      <video:family_friendly>yes</video:family_friendly>
+      <video:requires_subscription>no</video:requires_subscription>
+      <video:uploader info="https://www.youtube.com/channel/UCTGRherjM4iuIn86xxubuPg">Abdulkerim Berlin</video:uploader>
+      <video:live>no</video:live>
+    </video:video>
+
     <video:video>
       <video:thumbnail_loc>https://i.ytimg.com/vi/1bL8bZd6cpY/hqdefault.jpg</video:thumbnail_loc>
-      <video:title>Projektvorstellung: Interaktive Erde – Abdulkerim Sesli</video:title>
-      <video:description>Projektvorstellung: Interaktive 3D-Erde mit WebGL und Partikelsystemen. Ein vollständiger Einblick in die Entwicklung mit Three.js, React und modernen Webtechnologien.</video:description>
+      <video:title>Motion Design: Neon Bot Experiment | Abdulkerim #abdulkerim #Abdul Berlin #aKs — Abdulkerim Berlin</video:title>
+      <video:description>In diesem Video zeige ich ein aktuelles Motion-Design-Projekt: Eine stilisierte Roboter-Animation mit leuchtenden Neon-Effekten und Partikel-Animationen. Dieses Werk ist Teil meines digitalen Portfolios und ein Experiment im Bereich Character-Design und visuelle Effekte. Es zeigt meine Weiterentwicklung im Bereich digitaler Animationen. Details zum Projekt: Design &amp; Animation: Abdulkerim Stil: Neon Motion Graphics / Sci-Fi Art Projektname: Neon-Bot AKS</video:description>
       <video:content_loc>https://youtu.be/1bL8bZd6cpY</video:content_loc>
       <video:player_loc>https://www.youtube.com/embed/1bL8bZd6cpY</video:player_loc>
       <video:duration>9</video:duration>
-      <video:publication_date>2025-12-20T00:00:00+01:00</video:publication_date>
+      <video:category>Film &amp; Animation</video:category>
+      <video:view_count>21</video:view_count>
+      <video:publication_date>2025-12-20T19:43:34Z</video:publication_date>
       <video:family_friendly>yes</video:family_friendly>
       <video:requires_subscription>no</video:requires_subscription>
-      <video:uploader info="https://www.youtube.com/@aks.030">Abdulkerim Sesli</video:uploader>
+      <video:uploader info="https://www.youtube.com/channel/UCTGRherjM4iuIn86xxubuPg">Abdulkerim Berlin</video:uploader>
       <video:live>no</video:live>
-      <video:tag>Three.js</video:tag>
-      <video:tag>WebGL</video:tag>
-      <video:tag>React</video:tag>
-      <video:tag>3D</video:tag>
-      <video:tag>Webentwicklung</video:tag>
-      <video:category>Technology</video:category>
     </video:video>
 
-    <!-- Video 2: Fotoshooting Making-of -->
+    <video:video>
+      <video:thumbnail_loc>https://i.ytimg.com/vi/lpictttLoEk/hqdefault.jpg</video:thumbnail_loc>
+      <video:title>Motion Graphics Test | Abdulkerim (AKS) — Abdulkerim Berlin</video:title>
+      <video:description>in kleiner Einblick in meine Anfänge und Tests mit After Effects CS4. In diesem Projekt „2-AKS“ ging es mir primär um das Zusammenspiel von Texteffekten und Animationen. Es ist eines meiner frühen Experimente im Bereich Motion Design und dient zur Dokumentation meiner technischen Entwicklung. 🎥 Kanal: Abdulkerim</video:description>
+      <video:content_loc>https://youtu.be/lpictttLoEk</video:content_loc>
+      <video:player_loc>https://www.youtube.com/embed/lpictttLoEk</video:player_loc>
+      <video:duration>11</video:duration>
+      <video:category>Film &amp; Animation</video:category>
+      <video:tag>Abdulkerim</video:tag>
+      <video:tag>AKS</video:tag>
+      <video:tag>Abdulkerim Sesli</video:tag>
+      <video:tag>Abdul aus Berlin</video:tag>
+      <video:view_count>133</video:view_count>
+      <video:publication_date>2011-01-20T14:50:50Z</video:publication_date>
+      <video:family_friendly>yes</video:family_friendly>
+      <video:requires_subscription>no</video:requires_subscription>
+      <video:uploader info="https://www.youtube.com/channel/UCTGRherjM4iuIn86xxubuPg">Abdulkerim Berlin</video:uploader>
+      <video:live>no</video:live>
+    </video:video>
+
     <video:video>
       <video:thumbnail_loc>https://i.ytimg.com/vi/rXMLVt9vhxQ/hqdefault.jpg</video:thumbnail_loc>
-      <video:title>Making-of: Fotoshooting – Abdulkerim Sesli</video:title>
-      <video:description>Making-of eines professionellen Fotoshootings. Einblicke in Bildkomposition, Beleuchtung und Nachbearbeitung.</video:description>
+      <video:title>Logo Animation Test 1 | Abdulkerim (AKS) #edit #After Effects Design #AKS Logo-Test #Abdulkerim — Abdulkerim Berlin</video:title>
+      <video:description>Dies ist mein erster technischer Test in After Effects CS4. In diesem Projekt „1-AKS“ habe ich die Interaktion von Typografie und Hintergrundebenen (Ziegelwand-Textur) exploriert. Es markiert den Beginn meiner Auseinandersetzung mit Motion Graphics und dient heute als Dokumentation meiner frühen kreativen Arbeiten. Projekt-Details: Künstler: Abdulkerim Software: Adobe After Effects CS4 Konzept: AKS Logo-Animation 🎥 Weitere Tests auf diesem Kanal.</video:description>
       <video:content_loc>https://youtu.be/rXMLVt9vhxQ</video:content_loc>
       <video:player_loc>https://www.youtube.com/embed/rXMLVt9vhxQ</video:player_loc>
       <video:duration>11</video:duration>
-      <video:publication_date>2011-01-18T00:00:00+01:00</video:publication_date>
+      <video:category>Film &amp; Animation</video:category>
+      <video:tag>After</video:tag>
+      <video:tag>Effects</video:tag>
+      <video:tag>CS4</video:tag>
+      <video:tag>Test</video:tag>
+      <video:tag>1-AKS-</video:tag>
+      <video:tag>defence</video:tag>
+      <video:view_count>62</video:view_count>
+      <video:publication_date>2011-01-18T22:08:54Z</video:publication_date>
       <video:family_friendly>yes</video:family_friendly>
       <video:requires_subscription>no</video:requires_subscription>
-      <video:uploader info="https://www.youtube.com/@aks.030">Abdulkerim Sesli</video:uploader>
+      <video:uploader info="https://www.youtube.com/channel/UCTGRherjM4iuIn86xxubuPg">Abdulkerim Berlin</video:uploader>
       <video:live>no</video:live>
-      <video:tag>Fotografie</video:tag>
-      <video:tag>Making-of</video:tag>
-      <video:tag>Photography</video:tag>
-      <video:tag>Behind the Scenes</video:tag>
-      <video:category>People &amp; Blogs</video:category>
     </video:video>
+
   </url>
 
   <!-- ========== GALLERY ========== -->
