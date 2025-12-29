@@ -88,7 +88,8 @@ const server = http.createServer((req, res) => {
   console.warn(" tryFile(urlPath) ->", f);
   if (!f) {
     // Try within /pages/<path>
-    const candidate = path.posix.join("pages", urlPath);
+    // FIX: Remove leading slash from urlPath to ensure it appends to 'pages'
+    const candidate = path.posix.join("pages", urlPath.replace(/^\//, ""));
     console.warn(" trying candidate", candidate);
     f = tryFile(candidate);
     console.warn(" tryFile(candidate) ->", f);
