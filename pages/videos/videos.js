@@ -99,10 +99,16 @@ async function fetchUploadsPlaylist(apiKey, channelId) {
   return json?.items?.[0]?.contentDetails?.relatedPlaylists?.uploads;
 }
 
-async function fetchPlaylistItems(apiKey, uploads, maxResults = 2) {
-  const url = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${uploads}&maxResults=${maxResults}&key=${apiKey}`;
-  const json = await fetchJson(url);
-  return json.items || [];
+async function fetchPlaylistItems(apiKey, uploads, maxResults = 50) {
+  const allItems = [];
+  let pageToken = '';
+  do {
+    const url = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${uploads}&maxResults=${maxResults}&key=${apiKey}${pageToken ? `&pageToken=${pageToken}` : ''}`;
+    const json = await fetchJson(url);
+    allItems.push(...(json.items || []));
+    pageToken = json.nextPageToken;
+  } while (pageToken);
+  return allItems;
 }
 
 async function fetchVideoDetailsMap(apiKey, vidIds) {
@@ -219,31 +225,6 @@ async function loadLatestVideos() {
   }
   setStatus("");
 
-  // Stable testing: demo mode
-  if (!apiKey && globalThis.YOUTUBE_USE_MOCK) {
-    setStatus("Lädt Demo‑Videos (Mock‑Modus)");
-    const demo = [
-      {
-        videoId: "dQw4w9WgXcQ",
-        title: "Demo Video 1 — Beispiel",
-        desc: "Beispielbeschreibung für Demo Video 1",
-        thumb: "https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg",
-        pub: "2020-01-01T00:00:00+00:00",
-      },
-      {
-        videoId: "J---aiyznGQ",
-        title: "Demo Video 2 — Beispiel",
-        desc: "Beispielbeschreibung für Demo Video 2",
-        thumb: "https://i.ytimg.com/vi/J---aiyznGQ/hqdefault.jpg",
-        pub: "2021-02-02T00:00:00+00:00",
-      },
-    ];
-    const grid = document.querySelector('.video-grid');
-    if (grid) await renderDemoVideos(grid, demo);
-    setStatus("");
-    return;
-  }
-
   try {
     if (globalThis.location?.protocol === "file:") {
       log.warn(
@@ -329,7 +310,7 @@ export async function loadFromApi(apiKey, handle) {
   const uploads = await fetchUploadsPlaylist(apiKey, channelId);
   if (!uploads) return { items: [], detailsMap: {} };
 
-  const items = await fetchPlaylistItems(apiKey, uploads, 2);
+  const items = await fetchPlaylistItems(apiKey, uploads);
   if (!items.length) return { items: [], detailsMap: {} };
 
   const vidIds = items.map((it) => it.snippet.resourceId.videoId).filter(Boolean);
