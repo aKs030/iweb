@@ -1,5 +1,5 @@
-const { defineConfig } = require("@playwright/test");
-module.exports = defineConfig({
+import { defineConfig } from "@playwright/test";
+export default defineConfig({
   testDir: "./scripts/tests",
   outputDir: "./scripts/test-results",
   webServer: {
