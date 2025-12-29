@@ -57,7 +57,7 @@ Füge den CSP-Header in deiner Server-Konfiguration hinzu:
 **Nginx:**
 
 ```nginx
-add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';" always;
+add_header Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; frame-src 'self' https://www.youtube-nocookie.com;" always;
 ```
 
 **Apache (.htaccess):**
@@ -190,6 +190,20 @@ script-src 'self' 'unsafe-eval';  /* Three.js benötigt eval für Shader */
 
 ```
 script-src 'self' 'unsafe-eval';  /* React DevTools benötigt eval */
+```
+
+### YouTube / iFrame Embeds
+
+Wenn du YouTube-Videos per `<iframe>` einbettest, füge zur CSP eine `frame-src`-Direktive hinzu, die die Domains von YouTube erlaubt:
+
+```
+frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com;
+```
+
+Für ältere Browser oder zur Abwärtskompatibilität kannst du zusätzlich `child-src` setzen:
+
+```
+child-src https://www.youtube.com https://www.youtube-nocookie.com;
 ```
 
 ### WebSockets (Development)

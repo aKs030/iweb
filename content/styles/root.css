@@ -52,6 +52,7 @@
   --spacing-lg: 2rem;
   --spacing-xl: 3rem;
   --spacing-2xl: 5rem;
+  --container-width: 1600px;
 
   /* Fonts - Inter als primäre Schriftart für gesamte Website */
   --font-primary:
@@ -195,6 +196,12 @@
   /* Safe-area */
   --safe-top: env(safe-area-inset-top, 0);
   --safe-bottom: env(safe-area-inset-bottom, 0);
+
+  @media (min-width: 1600px) {
+    :root {
+      --container-width: 1800px;
+    }
+  }
 
   /* ===== TypeWriter Custom Properties ===== */
   --typing-target: 28ch;
