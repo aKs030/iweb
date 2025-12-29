@@ -44,6 +44,8 @@ Content-Security-Policy:
   media-src 'self';
   object-src 'none';
   base-uri 'self';
+
+> Tipp: Nutze einen lokalen Server-Proxy (z. B. `/api/gemini`) — so kann `connect-src 'self'` bleiben und API-Schlüssel werden nicht im Browser exponiert. Wenn du die API dennoch direkt vom Client erreichst, musst du `https://generativelanguage.googleapis.com` in `connect-src` hinzufügen.
 ```
 
 ## Implementation

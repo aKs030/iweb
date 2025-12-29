@@ -3,10 +3,8 @@
  * Implementiert Exponential Backoff und striktes Error-Handling.
  */
 
-import { config } from "./config.js";
-
 const MODEL_NAME = "gemini-2.5-flash-preview-09-2025";
-const getBaseUrl = () => `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${config.getGeminiApiKey()}`;
+const getBaseUrl = (apiKey) => `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${apiKey || ""}`; // server-only: pass API key when calling from server side
 
 /**
  * Sendet eine Anfrage an die Gemini API mit Exponential Backoff.
@@ -25,11 +23,22 @@ export async function getGeminiResponse(prompt, systemInstruction = "Du bist ein
 
     for (let i = 0; i < maxRetries; i++) {
         try {
-            const response = await fetch(getBaseUrl(), {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
-            });
+            // In browser contexts, call a same-origin proxy to avoid exposing API keys and CSP issues
+            const isBrowser = typeof window !== "undefined" && typeof window.fetch === "function";
+            let response;
+            if (isBrowser) {
+                response = await fetch("/api/gemini", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ prompt, systemInstruction }),
+                });
+            } else {
+                response = await fetch(getBaseUrl(), {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload),
+                });
+            }
 
             if (!response.ok) {
                 if (response.status === 429 || response.status >= 500) {
@@ -40,7 +49,8 @@ export async function getGeminiResponse(prompt, systemInstruction = "Du bist ein
             }
 
             const result = await response.json();
-            const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+            // If proxied, server returns { text }
+            const text = result.text || result.candidates?.[0]?.content?.parts?.[0]?.text;
             
             if (!text) throw new Error("Keine Antwort vom Modell erhalten.");
             return text;
