@@ -21,7 +21,7 @@ export async function getGeminiResponse(prompt, systemInstruction = "Du bist ein
     const maxRetries = 5;
     let delay = 1000; // Start mit 1 Sekunde
 
-    const isRunningInBrowser = () => (globalThis !== undefined && globalThis.window !== undefined && typeof globalThis.fetch === "function");
+    const isRunningInBrowser = () => globalThis.fetch !== undefined && globalThis.window !== undefined;
 
     const doBrowserRequest = async (promptArg, systemArg) => {
         const r = await fetch("/api/gemini", {
@@ -77,8 +77,8 @@ export async function getGeminiResponse(prompt, systemInstruction = "Du bist ein
 
 // Provide a thin class wrapper so callers can use `new GeminiService()` in the app
 export class GeminiService {
-  async generateResponse(prompt, history = []) {
-    // history is available to craft system instructions later if needed
+  async generateResponse(prompt, _history = []) {
+    // _history is available to craft system instructions later if needed
     const system = "Du bist ein hilfreicher Roboter-Begleiter.";
     return await getGeminiResponse(prompt, system);
   }

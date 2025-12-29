@@ -15,7 +15,7 @@ export class RobotChat {
   }
 
   toggleChat(forceState) {
-    const newState = forceState !== undefined ? forceState : !this.isOpen;
+    const newState = forceState ?? !this.isOpen;
     if (newState) {
       this.robot.dom.window.classList.add("open");
       this.isOpen = true;
@@ -29,7 +29,7 @@ export class RobotChat {
         this.handleAction("start");
 
       // Focus Trap
-      if (typeof globalThis !== "undefined" && globalThis.a11y) globalThis.a11y.trapFocus(this.robot.dom.window);
+      globalThis?.a11y?.trapFocus(this.robot.dom.window);
     } else {
       this.robot.dom.window.classList.remove("open");
       this.isOpen = false;
@@ -37,7 +37,7 @@ export class RobotChat {
       this.robot.animationModule.startBlinkLoop();
 
       // Release Focus
-      if (typeof globalThis !== "undefined" && globalThis.a11y) globalThis.a11y.releaseFocus();
+      globalThis?.a11y?.releaseFocus();
     }
   }
 
@@ -66,10 +66,7 @@ export class RobotChat {
     }
 
     // Check for trivia answer
-    if (text.startsWith("triviaAnswer_")) {
-      const answerIdx = Number.parseInt(text.split("_")[1], 10);
-      return;
-    }
+    if (text.startsWith("triviaAnswer_")) return;
 
     this.showTyping();
     this.robot.animationModule.startThinking();
@@ -149,7 +146,7 @@ export class RobotChat {
       text: String(text || ""),
     });
     if (this.history.length > 20) {
-      this.history = this.history.slice(this.history.length - 20);
+      this.history = this.history.slice(-20);
     }
   }
 
@@ -167,11 +164,11 @@ export class RobotChat {
         this.addMessage(opt.label, "user");
         setTimeout(() => {
           if (opt.url) {
-            if (typeof globalThis !== "undefined" && typeof globalThis.open === "function") globalThis.open(opt.url, opt.target || "_self");
+            globalThis?.open?.(opt.url, opt.target || "_self");
             if (opt.target === "_blank") this.handleAction("start");
           } else if (opt.action) {
             if (opt.action.startsWith("triviaAnswer_")) {
-              const answerIdx = parseInt(opt.action.split("_")[1]);
+              const answerIdx = Number.parseInt(opt.action.split("_")[1], 10);
               this.robot.gameModule.handleTriviaAnswer(answerIdx);
             } else {
               this.handleAction(opt.action);
@@ -222,7 +219,7 @@ export class RobotChat {
       return;
     }
 
-    const data = this.knowledgeBase && this.knowledgeBase[actionKey];
+    const data = this.knowledgeBase?.[actionKey];
     if (!data) return;
 
     this.showTyping();
@@ -237,10 +234,7 @@ export class RobotChat {
       responseText = this.robot.getMoodGreeting();
     } else if (actionKey === "start") {
       const ctx = this.robot.getPageContext();
-      const suffix =
-        this.startMessageSuffix && this.startMessageSuffix[ctx]
-          ? String(this.startMessageSuffix[ctx]).trim()
-          : "";
+      const suffix = String(this.startMessageSuffix?.[ctx] ?? "").trim();
       if (suffix)
         responseText = `${String(responseText || "").trim()} ${suffix}`.trim();
     }
@@ -279,27 +273,11 @@ export class RobotChat {
     return pick;
   }
 
-  startInitialBubbleSequence() {
-    this.clearBubbleSequence();
-    const ctx = this.robot.getPageContext();
-    const ctxArr = (this.contextGreetings && this.contextGreetings[ctx]) || [];
-    const pools = this.initialBubblePools || [];
-    const maxSteps =
-      (this.initialBubbleSequenceConfig &&
-        this.initialBubbleSequenceConfig.steps) ||
-      3;
-
-    if (
-      !Array.isArray(this.initialBubblePoolCursor) ||
-      this.initialBubblePoolCursor.length !== pools.length
-    ) {
-      this.initialBubblePoolCursor = new Array(pools.length).fill(0);
-    }
-
+  _computeInitialPicks(ctx, ctxArr, pools, maxSteps) {
     const picks = [];
 
     const nextFromPool = (poolIdx) => {
-      if (!pools.length) return null;
+      if (!pools?.length) return null;
       const idx = poolIdx % pools.length;
       const pool = pools[idx];
       if (!pool || pool.length === 0) return null;
@@ -345,16 +323,27 @@ export class RobotChat {
       picks.push(String(fallback || "").trim());
     }
 
+    return picks;
+  }
+  startInitialBubbleSequence() {
+    this.clearBubbleSequence();
+    const ctx = this.robot.getPageContext();
+    const ctxArr = this.contextGreetings?.[ctx] || [];
+    const pools = this.initialBubblePools || [];
+    const maxSteps = this.initialBubbleSequenceConfig?.steps ?? 3;
+
+    if (
+      !Array.isArray(this.initialBubblePoolCursor) ||
+      this.initialBubblePoolCursor.length !== pools.length
+    ) {
+      this.initialBubblePoolCursor = new Array(pools.length).fill(0);
+    }
+
+    const picks = this._computeInitialPicks(ctx, ctxArr, pools, maxSteps); 
     if (picks.length === 0) return;
 
-    const showMs =
-      (this.initialBubbleSequenceConfig &&
-        this.initialBubbleSequenceConfig.displayDuration) ||
-      8000;
-    const pauses =
-      (this.initialBubbleSequenceConfig &&
-        this.initialBubbleSequenceConfig.pausesAfter) ||
-      [];
+    const showMs = this.initialBubbleSequenceConfig?.displayDuration ?? 8000;
+    const pauses = this.initialBubbleSequenceConfig?.pausesAfter || [];
 
     const schedule = (index) => {
       if (this.isOpen) return;
