@@ -21,7 +21,9 @@
   align-items: center;
   padding: var(--spacing-md, 2rem) var(--spacing-sm, 1rem);
   width: 100%;
-  min-height: auto;
+  /* provide compatible fallback for older UAs that don't implement `min-height: auto` */
+  min-height: 0;
+  /* min-height: auto; removed for broader compatibility — fallback 'min-height: 0' used */
   box-sizing: border-box;
 }
 

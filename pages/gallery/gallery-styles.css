@@ -434,7 +434,7 @@ img {
 }
 
 .bg-white\/5 {
-  background-color: rgb(255 255 255 / 5%);
+  background-color: rgb(255 255 255 / 12%);
 }
 
 .bg-white\/10 {
@@ -703,14 +703,17 @@ img {
 /* ring/focus utilities moved to the 'Shadows & Effects' section above */
 
 .backdrop-blur-sm {
+  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
 }
 
 .backdrop-blur-md {
+  -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
 }
 
 .backdrop-blur-xl {
+  -webkit-backdrop-filter: blur(24px);
   backdrop-filter: blur(24px);
 }
 
@@ -820,21 +823,25 @@ img {
 .btn-base {
   border: 1px solid rgb(255 255 255 / 20%);
   border-radius: 0.75rem;
+  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
 }
 
 .btn-ghost {
-  background: rgb(255 255 255 / 10%);
+  background: rgb(11 13 17 / 40%);
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.6);
 }
 
 .btn-ghost:hover {
-  background: rgb(255 255 255 / 20%);
+  background: rgb(11 13 17 / 48%);
 }
 
 .btn-primary {
-  background: linear-gradient(90deg, #a855f7, #ec4899);
+  background: linear-gradient(90deg, #6f21a6, #9b185f);
   color: #fff;
-  box-shadow: 0 15px 35px rgb(168 85 247 / 40%);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  box-shadow: 0 15px 35px rgb(0 0 0 / 40%);
 }
 
 .btn-primary:hover {
@@ -857,13 +864,15 @@ img {
 .input-base {
   width: 100%;
   padding: 1rem 1rem 1rem 3rem;
-  background: rgb(255 255 255 / 10%);
-  color: white;
+  background: rgb(11 13 17 / 40%);
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.6);
   border: 1px solid rgb(255 255 255 / 20%);
   border-radius: 1rem;
+  -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
   transition: all 150ms ease;
-}
+} 
 
 .input-base::placeholder {
   color: #a5b4fc;
@@ -965,15 +974,16 @@ img {
   height: 1px;
 }
 
-.badge {
+..badge {
   padding: 0.25rem 0.75rem;
-  background: rgb(255 255 255 / 20%);
-  border: 1px solid rgb(255 255 255 / 30%);
+  background: rgb(11 13 17 / 36%);
+  border: 1px solid rgb(255 255 255 / 12%);
   border-radius: 9999px;
   color: #fff;
   font-size: 0.75rem;
+  -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
-}
+} 
 
 .card-grid {
   display: grid;

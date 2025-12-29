@@ -2,6 +2,7 @@
   "name": "iweb",
   "version": "0.2.2",
   "private": true,
+  "type": "module",
   "description": "Static site for Abdulkerim with test tooling",
   "license": "MIT",
   "scripts": {
@@ -20,6 +21,13 @@
     "build:prod": "npm run prepare:build",
     "lint:js": "eslint . --ext .js,.ts",
     "lint": "npm run lint:js",
+    "test:head": "node ./tests/computeEffectiveCanonical.test.mjs",
+    "test:pwa": "node ./tests/pwa.test.mjs",
+    "test:meta": "node ./tests/pageMeta.test.mjs",
+    "test:canonical": "node ./tests/canonical.test.mjs",
+    "test:apply-canonical": "node ./tests/applyCanonical.test.mjs",
+    "test:schedule": "node ./tests/scheduleSchema.test.mjs",
+    "test:upsert": "node ./tests/upsert.test.mjs",
     "prepare:build": "npm run build:og-images",
     "fetch-three": "bash ./scripts/fetch_three.sh"
   },

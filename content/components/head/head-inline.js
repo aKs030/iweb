@@ -28,41 +28,35 @@ const HOST_GTM_MAP = {
 
 const detectHostConfig = (host) => {
   try {
-    const h = (
-      host ||
-      (typeof window !== "undefined" &&
-        window.location &&
-        window.location.hostname) ||
-      ""
-    ).toLowerCase();
+    const h = (host || (globalThis?.location?.hostname) || "").toLowerCase();
     if (!h) return HOST_GTM_MAP.default;
     // exact match or strip www.
     if (HOST_GTM_MAP[h]) return HOST_GTM_MAP[h];
     const stripped = h.replace(/^www\./, "");
     if (HOST_GTM_MAP[stripped]) return HOST_GTM_MAP[stripped];
     return HOST_GTM_MAP.default;
-  } catch (e) {
+  } catch {
     return HOST_GTM_MAP.default;
   }
 };
 
 // Expose for tests/debug
-window.__getGtmConfigForHost = detectHostConfig;
+globalThis.__getGtmConfigForHost = detectHostConfig;
 
 const { gtm: GTM_ID, ga4: GA4_MEASUREMENT_ID } = detectHostConfig();
-const GA4_PROPERTY = "360386802"; // numeric GA property id (for reference)
 
-window.dataLayer = window.dataLayer || [];
+
+const dataLayer = (globalThis.dataLayer = globalThis.dataLayer || []);
 function gtag() {
   dataLayer.push(arguments);
 }
-gtag("js", new Date());
+gtag("js", Date.now());
 // ===== Migration note =====
 // Move all GA4 and Google Ads tags into Google Tag Manager (GTM) to avoid double-tracking.
 // Expose IDs to the dataLayer so GTM can read them and configure tags/variables centrally.
 // Ads conversion ID is host-dependent; use the mapping above.
 const hostCfg = detectHostConfig();
-const ADS_CONVERSION_ID = hostCfg && hostCfg.aw ? hostCfg.aw : null;
+const ADS_CONVERSION_ID = hostCfg?.aw ?? null;
 dataLayer.push({
   gtm_autoconfig: true,
   ads_conversion_id: ADS_CONVERSION_ID,
@@ -79,10 +73,7 @@ dataLayer.push({
     if (!GA4_MEASUREMENT_ID || GA4_MEASUREMENT_ID.indexOf("G-") !== 0) return;
     // If GTM is configured, prefer GTM for GA4 (avoid double-tracking)
     if (GTM_ID && GTM_ID !== "GTM-XXXXXXX") {
-      if (log && log.info)
-        log.info(
-          "GTM present — configure GA4 inside GTM instead of direct gtag load",
-        );
+      log?.info?.("GTM present — configure GA4 inside GTM instead of direct gtag load");
       return;
     }
 
@@ -99,7 +90,7 @@ dataLayer.push({
 
     gtag("config", GA4_MEASUREMENT_ID);
   } catch (err) {
-    if (log && log.warn) log.warn("head-inline: GA4 fallback failed", err);
+    log?.warn?.("head-inline: GA4 fallback failed", err);
   }
 })();
 
@@ -108,22 +99,21 @@ dataLayer.push({
 (function injectGTM() {
   try {
     if (!GTM_ID || GTM_ID === "GTM-XXXXXXX") {
-      if (log && log.info)
-        log.info("GTM not configured — set GTM_ID in head-inline.js to enable");
+      log?.info?.("GTM not configured — set GTM_ID in head-inline.js to enable");
       return;
     }
 
     (function (w, d, s, l, i) {
       w[l] = w[l] || [];
-      w[l].push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
-      var f = d.getElementsByTagName(s)[0];
-      var j = d.createElement(s);
+      w[l].push({ "gtm.start": Date.now(), event: "gtm.js" });
+      const f = d.getElementsByTagName(s)[0];
+      const j = d.createElement(s);
       j.async = true;
       j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + "&l=" + l;
       f.parentNode.insertBefore(j, f);
-    })(window, document, "script", "dataLayer", GTM_ID);
+    })(globalThis, document, "script", "dataLayer", GTM_ID);
   } catch (err) {
-    if (log && log.warn) log.warn("head-inline: GTM injection failed", err);
+    log?.warn?.("head-inline: GTM injection failed", err);
   }
 })();
 
@@ -136,15 +126,14 @@ dataLayer.push({
         if (document.getElementById("gtm-noscript")) return;
         const ns = document.createElement("noscript");
         ns.id = "gtm-noscript";
-        ns.innerHTML = `<iframe src="https://www.googletagmanager.com/ns.html?id=${GTM_ID}" height="0" width="0" style="display:none;visibility:hidden"></iframe>`;
-        if (document.body && document.body.firstChild) {
+        ns.innerHTML = `<iframe title="Google Tag Manager (noscript)" src="https://www.googletagmanager.com/ns.html?id=${GTM_ID}" height="0" width="0" style="display:none;visibility:hidden"></iframe>`;
+        if (document.body?.firstChild) {
           document.body.insertBefore(ns, document.body.firstChild);
         } else if (document.body) {
           document.body.appendChild(ns);
         }
       } catch (err) {
-        if (log && log.warn)
-          log.warn("head-inline: insert noscript failed", err);
+        log?.warn?.("head-inline: insert noscript failed", err);
       }
     };
 
@@ -154,8 +143,7 @@ dataLayer.push({
       insert();
     }
   } catch (err) {
-    if (log && log.warn)
-      log.warn("head-inline: GTM noscript setup failed", err);
+    log?.warn?.("head-inline: GTM noscript setup failed", err);
   }
 })();
 
@@ -175,7 +163,7 @@ dataLayer.push({
         }
         menuContainer = document.createElement("div");
         menuContainer.id = "menu-container";
-        menuContainer.setAttribute("data-injected-by", "head-inline");
+        menuContainer.dataset.injectedBy = "head-inline";
         headerEl.appendChild(menuContainer);
       }
 
@@ -191,10 +179,7 @@ dataLayer.push({
       if (!footerContainer) {
         footerContainer = document.createElement("div");
         footerContainer.id = "footer-container";
-        footerContainer.setAttribute(
-          "data-footer-src",
-          "/content/components/footer/footer",
-        );
+        footerContainer.dataset.footerSrc = "/content/components/footer/footer";
         // Not hidden: the loaded footer will control visibility
         footerContainer.setAttribute("aria-hidden", "false");
         document.body.appendChild(footerContainer);
@@ -228,7 +213,7 @@ dataLayer.push({
         trigger.dataset.collapseDebounceMs =
           trigger.dataset.collapseDebounceMs || "250";
 
-        if (footerContainer && footerContainer.parentNode) {
+        if (footerContainer?.parentNode) {
           footerContainer.parentNode.insertBefore(trigger, footerContainer);
         } else {
           document.body.appendChild(trigger);
@@ -243,7 +228,7 @@ dataLayer.push({
       setTimeout(run, 0);
     }
   } catch (err) {
-    log.warn("head-inline: ensure footer/trigger setup failed", err);
+    log?.warn?.("head-inline: ensure footer/trigger setup failed", err);
   }
 })();
 
@@ -273,7 +258,7 @@ dataLayer.push({
         const l = document.createElement("link");
         l.rel = "stylesheet";
         l.href = href;
-        l.setAttribute("data-injected-by", "head-inline");
+        l.dataset.injectedBy = "head-inline";
         document.head.appendChild(l);
       }
     };
@@ -287,7 +272,7 @@ dataLayer.push({
         const l = document.createElement("link");
         l.rel = "modulepreload";
         l.href = href;
-        l.setAttribute("data-injected-by", "head-inline");
+        l.dataset.injectedBy = "head-inline";
         document.head.appendChild(l);
       }
     };
@@ -298,7 +283,7 @@ dataLayer.push({
         s.src = src;
         if (module) s.type = "module";
         else s.defer = true;
-        s.setAttribute("data-injected-by", "head-inline");
+        s.dataset.injectedBy = "head-inline";
         document.head.appendChild(s);
       }
     };
@@ -319,6 +304,6 @@ dataLayer.push({
       performInjection();
     }
   } catch (err) {
-    log.warn("head-inline: injectCoreAssets failed", err);
+    log?.warn?.("head-inline: injectCoreAssets failed", err);
   }
 })();

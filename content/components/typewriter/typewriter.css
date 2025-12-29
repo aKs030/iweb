@@ -135,6 +135,7 @@ body:not(.has-typingjs) .typewriter-title .typed-text {
 /* Locked state for TypeWriter */
 .is-locked {
   pointer-events: none;
+  -webkit-user-select: none;
   user-select: none;
 }
 

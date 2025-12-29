@@ -6,9 +6,9 @@
    This implementation avoids external dependencies by reading PNG/JPEG/SVG headers directly.
    Usage: node scripts/build-og-images.mjs
 */
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -77,23 +77,23 @@ for (const f of files) {
       const hMatch = text.match(/height\s*=\s*"([0-9.]+)"/i);
       if (wMatch && hMatch) {
         dims = {
-          width: Math.round(parseFloat(wMatch[1])),
-          height: Math.round(parseFloat(hMatch[1])),
+          width: Math.round(Number.parseFloat(wMatch[1])),
+          height: Math.round(Number.parseFloat(hMatch[1])),
         };
       } else {
         const vb = text.match(/viewBox\s*=\s*"([0-9.\s]+)"/i);
         if (vb) {
           const parts = vb[1].trim().split(/\s+/);
           if (parts.length === 4) {
-            const width = Math.round(parseFloat(parts[2]));
-            const height = Math.round(parseFloat(parts[3]));
+            const width = Math.round(Number.parseFloat(parts[2]));
+            const height = Math.round(Number.parseFloat(parts[3]));
             dims = { width, height };
           }
         }
       }
     }
 
-    if (dims && dims.width && dims.height) {
+    if (dims?.width && dims?.height) {
       const webPath =
         "/" + path.posix.join(path.relative(ROOT, f)).replaceAll("\\", "/");
       results[webPath] = { width: dims.width, height: dims.height };

@@ -91,12 +91,12 @@ export class CardManager {
       const rawTitle =
         cardEl.querySelector(".card-title")?.innerText || "Title";
       const rawSubtitle =
-        cardEl.querySelector(".card-title")?.getAttribute("data-eyebrow") ||
+        cardEl.querySelector(".card-title")?.dataset?.eyebrow ||
         "INFO";
       const rawText = cardEl.querySelector(".card-text")?.innerText || "";
-      const title = rawTitle.replace(/\s+/g, " ").trim();
-      const subtitle = rawSubtitle.replace(/\s+/g, " ").trim();
-      const text = rawText.replace(/\s+/g, " ").trim();
+      const title = rawTitle.replaceAll(/\s+/g, " ").trim();
+      const subtitle = rawSubtitle.replaceAll(/\s+/g, " ").trim();
+      const text = rawText.replaceAll(/\s+/g, " ").trim();
       const link =
         cardEl.querySelector(".card-link")?.getAttribute("href") || "#";
       const iconChar = (
@@ -132,10 +132,7 @@ export class CardManager {
       );
 
       // Initial scale adjustment for small viewports
-      const viewportScale = Math.min(
-        1,
-        (typeof window !== "undefined" ? window.innerWidth : 1200) / 1200,
-      );
+      const viewportScale = Math.min(1, (globalThis.window?.innerWidth || 1200) / 1200);
       // Increased minimum scale from 0.7 to 0.85 for better legibility on mobile
       mesh.scale.setScalar(0.95 * Math.max(0.85, viewportScale));
 
@@ -222,7 +219,7 @@ export class CardManager {
       });
     };
 
-    if (typeof window !== "undefined") {
+    if (globalThis.window !== undefined) {
       window.addEventListener("resize", this._onResize);
       // Force initial layout
       this._onResize();
@@ -231,10 +228,7 @@ export class CardManager {
 
   createCardTexture(data) {
     // Determine a scaling factor based on device pixel ratio to keep text crisp
-    const DPR =
-      typeof window !== "undefined" && window.devicePixelRatio
-        ? window.devicePixelRatio
-        : 1;
+    const DPR = globalThis.window?.devicePixelRatio ? globalThis.window.devicePixelRatio : 1;
     // Scale aggressively on high-DPI displays for crisper text, clamped for performance
     const S = Math.min(Math.max(Math.ceil(DPR * 2), 2), 4);
     const W = 512 * S;
@@ -253,7 +247,7 @@ export class CardManager {
 
     // Use cache if available
     const cached = this._textureCache.get(key);
-    if (cached && cached.texture) {
+    if (cached?.texture) {
       cached.count++;
       this._profile.cacheHits++;
       return cached.texture;
@@ -263,9 +257,9 @@ export class CardManager {
     this._profile.cacheMisses++;
 
     const canvas =
-      typeof OffscreenCanvas !== "undefined"
-        ? new OffscreenCanvas(W, H)
-        : document.createElement("canvas");
+      typeof OffscreenCanvas === "undefined"
+        ? document.createElement("canvas")
+        : new OffscreenCanvas(W, H);
     if (typeof OffscreenCanvas === "undefined") {
       canvas.width = W;
       canvas.height = H;
@@ -293,7 +287,7 @@ export class CardManager {
     ctx.fill();
 
     // 2. Star Border (Fine line + Dots)
-    this.drawStarBorder(ctx, 0, 0, W, H, R, data.color, S);
+    this.drawStarBorder(ctx, 0, 0, W, H, R, S);
 
     // 3. Icon Circle
     const iconY = 150 * S;
@@ -364,12 +358,7 @@ export class CardManager {
     texture.generateMipmaps = true;
     texture.minFilter = this.THREE.LinearMipmapLinearFilter;
     texture.magFilter = this.THREE.LinearFilter;
-    texture.anisotropy =
-      this.renderer &&
-      this.renderer.capabilities &&
-      typeof this.renderer.capabilities.getMaxAnisotropy === "function"
-        ? this.renderer.capabilities.getMaxAnisotropy()
-        : 0;
+    texture.anisotropy = this.renderer?.capabilities?.getMaxAnisotropy?.() ?? 0;
     texture.needsUpdate = true;
 
     // Store in cache with reference count
@@ -380,15 +369,12 @@ export class CardManager {
   }
 
   createGlowTexture() {
-    const DPR =
-      typeof window !== "undefined" && window.devicePixelRatio
-        ? Math.min(window.devicePixelRatio, 2)
-        : 1;
+    const DPR = globalThis.devicePixelRatio ? Math.min(globalThis.devicePixelRatio, 2) : 1;
     const size = Math.floor(128 * DPR);
     const canvas =
-      typeof OffscreenCanvas !== "undefined"
-        ? new OffscreenCanvas(size, size)
-        : document.createElement("canvas");
+      typeof OffscreenCanvas === "undefined"
+        ? document.createElement("canvas")
+        : new OffscreenCanvas(size, size);
     if (typeof OffscreenCanvas === "undefined") {
       canvas.width = size;
       canvas.height = size;
@@ -436,7 +422,7 @@ export class CardManager {
     ctx.closePath();
   }
 
-  drawStarBorder(ctx, x, y, w, h, r, color, scale) {
+  drawStarBorder(ctx, x, y, w, h, r, scale) {
     // Fine line - keeping it thin relative to the scaled size to appear "finer"
     // Using 1.5 * scale would be proportional. Using just 1.5 or 2 makes it very thin on high res.
     // Let's go with 1.5 pixels absolute thickness on the scaled canvas.
@@ -473,7 +459,7 @@ export class CardManager {
       // Let's try 0.5 to 2.0 pixels on the 2x canvas (0.25 to 1.0 effective).
       const size = Math.random() * 1.5 + 0.5;
 
-      ctx.fillStyle = Math.random() > 0.7 ? color : "#ffffff";
+      ctx.fillStyle = Math.random() > 0.7 ? ctx.strokeStyle : "#ffffff";
       ctx.globalAlpha = Math.random() * 0.8 + 0.2;
       ctx.beginPath();
       ctx.arc(px, py, size, 0, Math.PI * 2);
@@ -541,7 +527,7 @@ export class CardManager {
       0,
       Math.min(
         1,
-        typeof progress === "number" && !isNaN(progress) ? progress : 0,
+        typeof progress === "number" && !Number.isNaN(progress) ? progress : 0,
       ),
     );
     const wasVisible = this.cardGroup.visible;
@@ -651,7 +637,7 @@ export class CardManager {
 
       // Compute target values for Position/Scale
       let targetY = card.userData.originalY;
-      let targetScale = 1.0;
+      let targetScale = 1;
       if (card === hoveredCard) {
         targetY = card.userData.hoverY;
         targetScale = 1.05;
@@ -688,7 +674,7 @@ export class CardManager {
       card.quaternion.slerp(this._tmpQuat, 0.04);
 
       // Glow pulsing
-      if (card.userData.glow && card.userData.glow.material) {
+      if (card.userData?.glow?.material) {
         const glow = card.userData.glow;
         glow.material.opacity =
           Math.max(
@@ -719,14 +705,14 @@ export class CardManager {
       const link = clickedCard.userData.link;
       // Ignore placeholder or empty links
       if (!link || link === "#") return;
-      window.location.href = link;
+      globalThis.location.href = link;
     }
   }
 
   // Pointer handling helpers: attach/detach pointer handlers to a DOM element
   attachPointerHandlers(domElement) {
     const el =
-      domElement || (this.renderer && this.renderer.domElement) || window;
+      domElement || this.renderer?.domElement || globalThis;
 
     // Remove existing handlers if present
     if (this._boundPointerMove) this.detachPointerHandlers();
@@ -746,18 +732,18 @@ export class CardManager {
       this._lastPointerPos.y = y;
     };
 
-    this._boundPointerDown = (e) => {
+    this._boundPointerDown = (_e) => {
       this._pointerDown = true;
       this._pointerDownPos = { ...this._lastPointerPos };
     };
 
-    this._boundPointerUp = (e) => {
+    this._boundPointerUp = (_e) => {
       if (!this._pointerDown) return;
       this._pointerDown = false;
       if (!this._pointerDownPos) return;
       const dx = this._lastPointerPos.x - this._pointerDownPos.x;
       const dy = this._lastPointerPos.y - this._pointerDownPos.y;
-      const dist = Math.sqrt(dx * dx + dy * dy);
+      const dist = Math.hypot(dx, dy);
       // Consider it a click/tap if finger didn't move much
       if (dist < 0.04) {
         this.handleClick(this._lastPointerPos);
@@ -775,8 +761,7 @@ export class CardManager {
   detachPointerHandlers() {
     const el =
       this._pointerElement ||
-      (this.renderer && this.renderer.domElement) ||
-      window;
+      this.renderer?.domElement || globalThis;
     if (!el) return;
     if (this._boundPointerMove)
       el.removeEventListener("pointermove", this._boundPointerMove);
@@ -825,11 +810,7 @@ export class CardManager {
     this.cards.forEach((card) => {
       try {
         // Only dispose geometry if it's not the shared geometry
-        if (
-          card.geometry &&
-          card.geometry.dispose &&
-          card.geometry !== this._sharedGeometry
-        ) {
+        if (card.geometry?.dispose && card.geometry !== this._sharedGeometry) {
           card.geometry.dispose();
         }
 
@@ -853,7 +834,7 @@ export class CardManager {
               }
             }
 
-            if (!foundKey && card.material.map && card.material.map.dispose) {
+            if (!foundKey && card.material.map?.dispose) {
               // Not cached, safe to dispose directly
               card.material.map.dispose();
             }
@@ -863,17 +844,16 @@ export class CardManager {
           if (card.material.dispose) card.material.dispose();
         }
 
-        const glow = card.userData && card.userData.glow;
-        if (glow && glow.material) {
+        const glow = card.userData?.glow;
+        if (glow?.material) {
           // Avoid disposing the shared glow texture here; it will be disposed below.
           if (
-            glow.material.map &&
-            glow.material.map.dispose &&
+            glow.material.map?.dispose &&
             glow.material.map !== this._sharedGlowTexture
           ) {
             glow.material.map.dispose();
           }
-          if (glow.material.dispose) glow.material.dispose();
+          if (glow.material?.dispose) glow.material.dispose();
         }
       } catch (err) {
         log.warn("EarthCards: disposal error", err);
@@ -886,7 +866,7 @@ export class CardManager {
       this._sharedGeometry = null;
     }
 
-    if (this._sharedGlowTexture && this._sharedGlowTexture.dispose) {
+    if (this._sharedGlowTexture?.dispose) {
       this._sharedGlowTexture.dispose();
       this._sharedGlowTexture = null;
     }
@@ -895,9 +875,9 @@ export class CardManager {
     this.cards = [];
 
     // Dispose any remaining cached textures
-    for (const [k, v] of this._textureCache.entries()) {
+    for (const [, v] of this._textureCache.entries()) {
       try {
-        if (v.texture && typeof v.texture.dispose === "function") {
+        if (typeof v.texture?.dispose === "function") {
           v.texture.dispose();
           this._profile.texturesDisposed++;
         }
@@ -910,12 +890,12 @@ export class CardManager {
     // Remove pointer handlers if attached
     try {
       this.detachPointerHandlers();
-    } catch (err) {
+    } catch {
       // ignore
     }
 
-    if (typeof window !== "undefined" && this._onResize) {
-      window.removeEventListener("resize", this._onResize);
+    if (globalThis.window && this._onResize) {
+      globalThis.window.removeEventListener("resize", this._onResize);
       this._onResize = null;
     }
     if (this._resizeRAF) {

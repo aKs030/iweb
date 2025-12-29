@@ -2,8 +2,8 @@
 <html lang="de">
   <head>
     <script>
-      window.dataLayer = window.dataLayer || [];
-      window.dataLayer.push({
+      globalThis.dataLayer = globalThis.dataLayer || [];
+      globalThis.dataLayer.push({
         ga4_measurement_id: "G-757KWG0PG4",
         ads_conversion_id: "AW-1036079663",
       });
@@ -12,16 +12,17 @@
     <script>
       (function (w, d, s, l, i) {
         w[l] = w[l] || [];
-        w[l].push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
+        w[l].push({ "gtm.start": Date.now(), event: "gtm.js" });
         var f = d.getElementsByTagName(s)[0],
           j = d.createElement(s),
-          dl = l != "dataLayer" ? "&l=" + l : "";
+          dl = l === "dataLayer" ? "" : "&l=" + l;
         j.async = true;
         j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
         f.parentNode.insertBefore(j, f);
-      })(window, document, "script", "dataLayer", "GTM-5F5ZSTTL");
+      })(globalThis, document, "script", "dataLayer", "GTM-5F5ZSTTL");
     </script>
     <!-- End Google Tag Manager -->
+    <meta charset="utf-8" />
     <meta
       http-equiv="Content-Security-Policy"
       content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://cdn.jsdelivr.net https://*.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https: blob:; connect-src 'self' https://www.google-analytics.com https://www.googletagmanager.com https://cdn.jsdelivr.net https://*.cloudflareinsights.com; media-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';"
@@ -71,7 +72,6 @@
       sizes="180x180"
       href="https://abdulkerimsesli.de/content/assets/img/icons/apple-touch-icon.png"
     />
-    <meta name="theme-color" content="#0d0d0d" />
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
@@ -220,18 +220,7 @@
     />
     <link rel="stylesheet" href="/content/components/menu/menu.css" />
 
-    <!-- Load three-earth.css non-blocking with media="print" pattern to avoid unused-preload warnings -->
-    <link
-      rel="stylesheet"
-      href="/content/components/particles/three-earth.css"
-      media="print"
-      data-defer="1"
-    />
-    <noscript
-      ><link
-        rel="stylesheet"
-        href="/content/components/particles/three-earth.css"
-    /></noscript>
+    <link rel="stylesheet" href="/content/components/particles/three-earth.css" />
 
     <!-- Main application script (early load for hero/3D init) -->
     <script type="module" src="/content/main.js"></script>
@@ -267,8 +256,7 @@
   <body>
     <!-- Google Tag Manager (noscript) -->
     <noscript
-      ><iframe
-        src="https://www.googletagmanager.com/ns.html?id=GTM-5F5ZSTTL"
+      ><iframe        title="Google Tag Manager (noscript)"        src="https://www.googletagmanager.com/ns.html?id=GTM-5F5ZSTTL"
         height="0"
         width="0"
         style="display: none; visibility: hidden"
@@ -281,15 +269,14 @@
     </header>
 
     <!-- Global Loading Screen (minimal static fallback for initial paint) -->
-    <div
+    <output
       class="loading-screen"
       id="loadingScreen"
       aria-hidden="true"
       aria-label="Seite wird geladen"
-      role="status"
     >
       <div class="loader" aria-hidden="true"></div>
-    </div>
+    </output>
 
     <!-- Advanced Three.js Earth System -->
     <div

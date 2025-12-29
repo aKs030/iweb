@@ -3,9 +3,9 @@
 // - If /foo/ requested and not found, tries /pages/foo/index.html
 // - Adds basic content-type headers
 
-const http = require("http");
-const fs = require("fs");
-const path = require("path");
+import http from "node:http";
+import fs from "node:fs";
+import path from "node:path";
 
 const PORT = process.env.PORT || 8081;
 const ROOT = path.resolve(process.cwd());
