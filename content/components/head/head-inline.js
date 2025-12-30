@@ -27,17 +27,13 @@ const HOST_GTM_MAP = {
 };
 
 const detectHostConfig = (host) => {
-  try {
-    const h = (host || (globalThis?.location?.hostname) || "").toLowerCase();
-    if (!h) return HOST_GTM_MAP.default;
-    // exact match or strip www.
-    if (HOST_GTM_MAP[h]) return HOST_GTM_MAP[h];
-    const stripped = h.replace(/^www\./, "");
-    if (HOST_GTM_MAP[stripped]) return HOST_GTM_MAP[stripped];
-    return HOST_GTM_MAP.default;
-  } catch {
-    return HOST_GTM_MAP.default;
-  }
+  const h = (host || (globalThis?.location?.hostname) || "").toLowerCase();
+  if (!h) return HOST_GTM_MAP.default;
+  // exact match or strip www.
+  if (HOST_GTM_MAP[h]) return HOST_GTM_MAP[h];
+  const stripped = h.replace(/^www\./, "");
+  if (HOST_GTM_MAP[stripped]) return HOST_GTM_MAP[stripped];
+  return HOST_GTM_MAP.default;
 };
 
 // Expose for tests/debug
@@ -355,13 +351,11 @@ dataLayer.push({
 
     // Sanitize existing title immediately (if not bot)
     if (!isBot) {
-      try {
-        const cleaned = sanitize(document.title);
-        document.title = cleaned;
-        // Also set a short tab-friendly title (one word + emoji)
-        const short = makeShortTitle(cleaned);
-        if (short) document.title = short;
-      } catch (e) {}
+      const cleaned = sanitize(document.title);
+      document.title = cleaned;
+      // Also set a short tab-friendly title (one word + emoji)
+      const short = makeShortTitle(cleaned);
+      if (short) document.title = short;
     }
 
     // Observe <title> changes and sanitize for humans; also map to short tab title
@@ -369,47 +363,36 @@ dataLayer.push({
       const titleEl = document.querySelector('title');
       if (titleEl && !isBot) {
         new MutationObserver(() => {
-          try {
-            const t = document.title;
-            const s = sanitize(t);
-            const short = makeShortTitle(s);
-            const newTitle = short || s;
-            if (newTitle !== t) document.title = newTitle;
-          } catch (e) {}
+          const t = document.title;
+          const s = sanitize(t);
+          const short = makeShortTitle(s);
+          const newTitle = short || s;
+          if (newTitle !== t) document.title = newTitle;
         }).observe(titleEl, { childList: true, characterData: true, subtree: true });
       }
-    } catch (e) {
-      /* ignore */
-    }
 
     // Sanitize visible headings on page and watch for added nodes
     const sanitizeHeadings = () => {
-      try {
-        document.querySelectorAll('h1,h2,.section-title,.section-header,.page-title,.site-title').forEach((el) => {
-          if (!el || !el.textContent) return;
-          const cleaned = sanitize(el.textContent);
-          if (cleaned !== el.textContent) el.textContent = cleaned;
-        });
-      } catch (e) {}
+      document.querySelectorAll('h1,h2,.section-title,.section-header,.page-title,.site-title').forEach((el) => {
+        if (!el || !el.textContent) return;
+        const cleaned = sanitize(el.textContent);
+        if (cleaned !== el.textContent) el.textContent = cleaned;
+      });
     };
 
     sanitizeHeadings();
 
     // Watch for DOM additions and sanitize newly inserted headings
-    try {
-      const mo = new MutationObserver((mutations) => {
-        let changed = false;
-        for (const m of mutations) {
-          if (m.addedNodes && m.addedNodes.length) {
-            changed = true;
-            break;
-          }
+    const mo = new MutationObserver((mutations) => {
+      let changed = false;
+      for (const m of mutations) {
+        if (m.addedNodes && m.addedNodes.length) {
+          changed = true;
+          break;
         }
-        if (changed) sanitizeHeadings();
-      });
-      mo.observe(document.documentElement || document.body, { childList: true, subtree: true });
-    } catch (e) {}
-  } catch (err) {
-    log?.warn?.('hideBrandingFromUsers failed', err);
+      }
+      if (changed) sanitizeHeadings();
+    });
+    mo.observe(document.documentElement || document.body, { childList: true, subtree: true });
   }
 })();

@@ -288,34 +288,26 @@ export function buildPageMeta(pageData, pageUrl, locationPath) {
   };
 }
 
-export function upsertMeta(doc = typeof document === 'undefined' ? null : document, nameOrProperty, content, isProperty = false) {
+export function upsertMeta(nameOrProperty, content, isProperty = false, doc = typeof document === 'undefined' ? null : document) {
   if (!doc || !doc.head || !content) return;
   const selector = isProperty ? `meta[property="${nameOrProperty}"]` : `meta[name="${nameOrProperty}"]`;
-  let el = doc.head.querySelector(selector);
+  let el = doc?.head?.querySelector(selector);
   if (el) {
-    if (typeof el.setAttribute === 'function') {
-      el.setAttribute(isProperty ? "property" : "name", nameOrProperty);
-      el.setAttribute("content", content);
-    } else {
-      if (isProperty) el.property = nameOrProperty;
-      else el.name = nameOrProperty;
-      el.content = content;
-    }
+    el.setAttribute(isProperty ? "property" : "name", nameOrProperty);
+    el.setAttribute("content", content);
   } else {
     el = doc.createElement("meta");
-    if (isProperty) el.setAttribute("property", nameOrProperty);
-    else el.setAttribute("name", nameOrProperty);
+    el.setAttribute(isProperty ? "property" : "name", nameOrProperty);
     el.setAttribute("content", content);
     doc.head.appendChild(el);
   }
 }
 
-export function upsertLink(doc = typeof document === 'undefined' ? null : document, rel, href) {
+export function upsertLink(rel, href, doc = typeof document === 'undefined' ? null : document) {
   if (!doc || !doc.head || !href) return;
-  let el = doc.head.querySelector(`link[rel="${rel}"]`);
+  let el = doc?.head?.querySelector(`link[rel="${rel}"]`);
   if (el) {
-    if (typeof el.setAttribute === 'function') el.setAttribute("href", href);
-    else el.href = href;
+    el.setAttribute("href", href);
   } else {
     el = doc.createElement("link");
     el.setAttribute("rel", rel);
@@ -445,15 +437,6 @@ async function loadSharedHead() {
     telephone: "+49-30-12345678",
     paymentAccepted: "Invoice",
     currenciesAccepted: "EUR",
-    contactPoint: [
-      {
-        "@type": "ContactPoint",
-        "contactType": "customer service",
-        "email": "kontakt@abdulkerimsesli.de",
-        "url": `${BASE_URL}/#kontakt`
-      }
-    ],
-    telephone: "+49-30-12345678", // optional: update with real number or remove
 
   };
 
@@ -545,10 +528,11 @@ async function loadSharedHead() {
   // --- i18n: Choose localized title/description when available ---
   const preferredLang = (document?.documentElement?.lang || globalThis.navigator?.language || "de").toLowerCase();
   const isEnglish = preferredLang.startsWith("en");
-  const pageData = Object.assign({}, rawPageData, {
+  const pageData = {
+    ...rawPageData,
     title: isEnglish && rawPageData.title_en ? rawPageData.title_en : rawPageData.title,
     description: isEnglish && rawPageData.description_en ? rawPageData.description_en : rawPageData.description,
-  });
+  };
 
   // --- Push stable page metadata to dataLayer for GTM (no PII) ---
   try {
@@ -615,8 +599,7 @@ async function loadSharedHead() {
     if (imageAlt) upsertMeta("twitter:image:alt", imageAlt);
     if (pageData.image) {
       // Try to find real image dimensions from the generated JSON file
-      try {
-        fetch("/content/utils/og-image-dimensions.json")
+      fetch("/content/utils/og-image-dimensions.json")
           .then((r) => (r.ok ? r.json() : null))
           .then((map) => {
             if (!map) {
@@ -639,10 +622,6 @@ async function loadSharedHead() {
             upsertMeta("og:image:width", "1200", true);
             upsertMeta("og:image:height", "630", true);
           });
-      } catch {
-        upsertMeta("og:image:width", "1200", true);
-        upsertMeta("og:image:height", "630", true);
-      }
     }
 
     // Canonical: prefer fixed production origin for known hosts, else use runtime pageUrl
@@ -685,10 +664,11 @@ async function loadSharedHead() {
             (k) => k !== "default" && lowerMatch.includes(k),
           );
         cleanPath = routeKey
-          ? routeKey.endsWith("/")
-            ? routeKey
-            : routeKey + "/"
+          ? routeKey
           : pathForMatch;
+        if (routeKey && !routeKey.endsWith("/")) {
+          cleanPath = routeKey + "/";
+        }
       }
 
       // Build canonical links and alternates
@@ -1013,7 +993,7 @@ export function orchestrateHead(doc = typeof document === 'undefined' ? null : d
   globalThis.dataLayer.push({ event: "pageMetadataReady", page_meta });
 
   // 2) core metas
-  upsertMeta(doc, "description", pageData.description);
+  upsertMeta(doc, "description", pageData?.description);
   upsertMeta(doc, "robots", "index, follow, max-image-preview:large");
   upsertMeta(doc, "viewport", "width=device-width, initial-scale=1");
   upsertMeta(doc, "language", "de-DE");
@@ -1040,8 +1020,7 @@ export function orchestrateHead(doc = typeof document === 'undefined' ? null : d
       // upsert link[rel="icon"][sizes="..."]
       let el = doc.head.querySelector(`link[rel="icon"][sizes="${ic.sizes}"]`);
       if (el) {
-        if (typeof el.setAttribute === 'function') el.setAttribute('href', ic.href);
-        else el.href = ic.href;
+        el.setAttribute('href', ic.href);
       } else {
         el = doc.createElement('link');
         el.setAttribute('rel', 'icon');
@@ -1053,8 +1032,7 @@ export function orchestrateHead(doc = typeof document === 'undefined' ? null : d
     } else if (ic.rel === 'shortcut icon') {
       let el = doc.head.querySelector('link[rel="shortcut icon"]');
       if (el) {
-        if (typeof el.setAttribute === 'function') el.setAttribute('href', ic.href);
-        else el.href = ic.href;
+        el.setAttribute('href', ic.href);
       } else {
         el = doc.createElement('link');
         el.setAttribute('rel', 'shortcut icon');
@@ -1064,8 +1042,7 @@ export function orchestrateHead(doc = typeof document === 'undefined' ? null : d
     } else if (ic.rel === 'apple-touch-icon') {
       let el = doc.head.querySelector('link[rel="apple-touch-icon"]');
       if (el) {
-        if (typeof el.setAttribute === 'function') el.setAttribute('href', ic.href);
-        else el.href = ic.href;
+        el.setAttribute('href', ic.href);
       } else {
         el = doc.createElement('link');
         el.setAttribute('rel', 'apple-touch-icon');
