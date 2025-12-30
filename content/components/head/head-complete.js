@@ -256,7 +256,10 @@ export function buildCanonicalLinks(
 }
 
 export function buildPwaAssets(BASE_URL, BRAND_DATA) {
-  const links = [{ rel: "manifest", href: "/manifest.json" }];
+  const links = [
+    { rel: "manifest", href: "/manifest.json" },
+    { rel: "mask-icon", href: `${BASE_URL}/content/assets/img/icons/safari-pinned-tab.svg`, color: "#0d0d0d" }
+  ];
   const iconLinks = [
     { rel: "icon", sizes: "32x32", href: `${BASE_URL}/content/assets/img/icons/icon-32.png`, type: "image/png" },
     { rel: "icon", sizes: "16x16", href: `${BASE_URL}/content/assets/img/icons/icon-16.png`, type: "image/png" },
@@ -430,6 +433,18 @@ async function loadSharedHead() {
       "https://www.behance.net/abdulkerimsesli",
       "https://dribbble.com/abdulkerimsesli"
     ],
+    openingHours: ["Mo-Fr 09:00-18:00"],
+    contactPoint: [
+      {
+        "@type": "ContactPoint",
+        "contactType": "customer service",
+        "email": "kontakt@abdulkerimsesli.de",
+        "url": `${BASE_URL}/#kontakt`
+      }
+    ],
+    telephone: "+49-30-12345678",
+    paymentAccepted: "Invoice",
+    currenciesAccepted: "EUR",
     contactPoint: [
       {
         "@type": "ContactPoint",
