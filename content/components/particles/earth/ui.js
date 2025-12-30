@@ -26,17 +26,16 @@ export function showLoadingState(container) {
   // Prefer the global page loader when available
   const globals = getGlobalLoaderElements();
   if (globals && globals.screen) {
-    globals.screen.classList.remove("hidden");
-    globals.screen.classList.remove("hide");
-    globals.screen.removeAttribute("aria-hidden");
-    Object.assign(globals.screen.style, {
+    globals.screen?.classList.remove("hidden", "hide");
+    globals.screen?.removeAttribute("aria-hidden");
+    Object.assign(globals.screen?.style, {
       display: "flex",
       opacity: "1",
       pointerEvents: "auto",
       visibility: "visible",
     });
     // Optionally set an aria message
-    globals.screen.setAttribute("aria-live", "polite");
+    globals.screen?.setAttribute("aria-live", "polite");
     try {
       document.body.classList.add("global-loading-visible");
     } catch (err) {
@@ -53,10 +52,10 @@ export function hideLoadingState(container) {
   const globals = getGlobalLoaderElements();
   if (globals && globals.screen) {
     // Hide the global loader using the same pattern as the rest of the app
-    globals.screen.classList.add("hide");
-    globals.screen.setAttribute("aria-hidden", "true");
-    globals.screen.removeAttribute("aria-live");
-    Object.assign(globals.screen.style, {
+    globals.screen?.classList.add("hide");
+    globals.screen?.setAttribute("aria-hidden", "true");
+    globals.screen?.removeAttribute("aria-live");
+    Object.assign(globals.screen?.style, {
       opacity: "0",
       pointerEvents: "none",
       visibility: "hidden",
@@ -81,7 +80,7 @@ export function showErrorState(container, error, retryCallback) {
   // Hide global loader to reveal page error/fallback
   const globals = getGlobalLoaderElements();
   if (globals && globals.screen) {
-    globals.screen.classList.add("hidden");
+    globals.screen?.classList.add("hidden");
   }
 
   container.classList.add("error");

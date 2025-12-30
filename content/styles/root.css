@@ -1,9 +1,3 @@
-/* =============================================
-   Self-Hosted Fonts (Inter)
-  Note: @font-face is declared inline in content/head/head.html (centralized)
-   to ensure the font preload is used immediately across all pages.
-============================================= */
-
 /* =======================
    Global CSS Variables - Dark & Light Mode System
 ======================= */
@@ -54,16 +48,16 @@
   --spacing-2xl: 5rem;
   --container-width: 1600px;
 
-  /* Fonts - Inter als primäre Schriftart für gesamte Website */
+  /* Fonts - System fonts als primäre Schriftart für gesamte Website */
   --font-primary:
-    "Inter", -apple-system, blinkmacsystemfont, "Segoe UI", roboto, sans-serif;
+    -apple-system, blinkmacsystemfont, "Segoe UI", roboto, sans-serif;
   --font-mono: "SF Mono", monaco, "Cascadia Code", "Roboto Mono", monospace;
   --font-inter:
-    "Inter", -apple-system, blinkmacsystemfont, "Segoe UI", roboto, sans-serif;
+    -apple-system, blinkmacsystemfont, "Segoe UI", roboto, sans-serif;
   --critical-font-stack:
-    "Inter", -apple-system, blinkmacsystemfont, "Segoe UI", roboto, sans-serif;
+    -apple-system, blinkmacsystemfont, "Segoe UI", roboto, sans-serif;
   --font-script:
-    "Inter", -apple-system, blinkmacsystemfont, "Segoe UI", roboto, sans-serif;
+    -apple-system, blinkmacsystemfont, "Segoe UI", roboto, sans-serif;
 
   /* Typography tokens */
   --font-family-main: var(--font-primary);

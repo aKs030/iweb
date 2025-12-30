@@ -8,12 +8,11 @@ Content Security Policy ist ein wichtiger Sicherheitsmechanismus, der Cross-Site
 
 ### Production CSP (Streng)
 
-```
+```text
 Content-Security-Policy:
   default-src 'self';
   script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://cdn.jsdelivr.net https://*.cloudflareinsights.com;
   style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-  font-src 'self' https://fonts.gstatic.com data:;
   img-src 'self' data: https: blob:;
   connect-src 'self' https://www.google-analytics.com https://www.googletagmanager.com https://cdn.jsdelivr.net https://*.cloudflareinsights.com;
   media-src 'self';
@@ -33,7 +32,7 @@ Content-Security-Policy:
 
 ### Development CSP (Weniger streng)
 
-```
+```text
 Content-Security-Policy:
   default-src 'self';
   script-src 'self' 'unsafe-inline' 'unsafe-eval' ws://localhost:* ws://127.0.0.1:*;
@@ -121,13 +120,13 @@ Standardregel: Erlaube nur Ressourcen von der eigenen Domain.
 - Erlaube CSS von eigener Domain und inline Styles
 - Notwendig für critical CSS und dynamische Styles
 
-### img-src 'self' data: https:
+### img-src 'self' data: https
 
 - Erlaube Bilder von eigener Domain
 - `data:`: Base64-kodierte Bilder
 - `https:`: Bilder von beliebigen HTTPS-Quellen
 
-### font-src 'self' data:
+### font-src 'self' data
 
 - Erlaube Schriftarten von eigener Domain und Base64-kodierte Fonts
 

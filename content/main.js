@@ -33,10 +33,10 @@ let __threeEarthCleanup = null;
 // ===== Configuration & Environment =====
 const ENV = {
   isTest:
-    new URLSearchParams(window.location.search).has("test") ||
+    new URLSearchParams(globalThis.location.search).has("test") ||
     navigator.userAgent.includes("HeadlessChrome") ||
-    (window.location.hostname === "localhost" && window.navigator.webdriver),
-  debug: new URLSearchParams(window.location.search).has("debug"),
+    (globalThis.location.hostname === "localhost" && globalThis.navigator.webdriver),
+  debug: new URLSearchParams(globalThis.location.search).has("debug"),
   // Service Worker removed — cleanup runs once on page load to unregister previous registrations and clear caches.
   // (Property `useServiceWorker` removed)
 };
@@ -79,18 +79,18 @@ const announce = (() => {
 
 // Export for other modules if needed, but avoid window global if possible.
 // Legacy support for inline scripts or external dependencies:
-window.announce = announce;
+globalThis.announce = announce;
 
 // ===== Section Tracker =====
 const sectionTracker = new SectionTracker();
 sectionTracker.init();
 // Kept for debugging/external access if strictly needed, but marked for review
-if (ENV.debug) window.sectionTracker = sectionTracker;
+if (ENV.debug) globalThis.sectionTracker = sectionTracker;
 
 // ===== Section Loader =====
 const SectionLoader = (() => {
   // Check if already initialized to prevent double execution
-  if (window.SectionLoader) return window.SectionLoader;
+  if (globalThis.SectionLoader) return globalThis.SectionLoader;
 
   const SELECTOR = "section[data-section-src]";
   const loadedSections = new WeakSet();
@@ -109,28 +109,56 @@ const SectionLoader = (() => {
     }
   }
 
-  // getSectionName inlined into loadSection; removed to avoid small helper function proliferation
+  function getSectionName(section) {
+    const labelId = section.getAttribute("aria-labelledby");
+    if (labelId) {
+      const label = getElementById(labelId);
+      const text = label?.textContent?.trim();
+      if (text) return text;
+    }
+    return section.id || "Abschnitt";
+  }
+
+  function getFetchCandidates(url) {
+    if (url?.endsWith(".html")) {
+      return [url.replace(/\.html$/, ""), url];
+    } else if (url?.startsWith("/pages/")) {
+      return [(url || "") + ".html", url];
+    } else {
+      return [url, (url || "") + ".html"];
+    }
+  }
+
+  async function fetchSectionContent(url) {
+    let response;
+    const fetchCandidates = getFetchCandidates(url);
+    for (const candidate of fetchCandidates) {
+      try {
+        response = await fetchWithTimeout(candidate);
+        if (response && response.ok) break;
+      } catch {
+        response = null;
+      }
+    }
+    if (!response || !response.ok) {
+      throw new Error(
+        `HTTP ${response ? response.status : "NO_RESPONSE"}: ${response ? response.statusText : "no response"}`,
+      );
+    }
+    return await response.text();
+  }
 
   async function loadSection(section) {
     if (loadedSections.has(section)) return;
 
-    const url = section.getAttribute("data-section-src");
+    const url = section.dataset.sectionSrc;
     if (!url) {
       section.removeAttribute("aria-busy");
       return;
     }
 
     loadedSections.add(section);
-    // Inline getSectionName: avoid small helper function footprint
-    const sectionName = (() => {
-      const labelId = section.getAttribute("aria-labelledby");
-      if (labelId) {
-        const label = getElementById(labelId);
-        const text = label?.textContent?.trim();
-        if (text) return text;
-      }
-      return section.id || "Abschnitt";
-    })();
+    const sectionName = getSectionName(section);
     const attempts = retryAttempts.get(section) || 0;
 
     section.setAttribute("aria-busy", "true");
@@ -140,37 +168,7 @@ const SectionLoader = (() => {
     dispatchEvent("section:will-load", section, { url });
 
     try {
-      // Robust candidate selection: prefer sensible variant order to reduce noisy 404s.
-      // For inlined page fragments under /pages/, try the explicit .html path first to avoid an initial 404
-      let response;
-      let fetchCandidates;
-      if (url && url.endsWith(".html")) {
-        // If .html explicitly provided, try without extension first to avoid redirects
-        fetchCandidates = [url.replace(/\.html$/, ""), url];
-      } else if (url && url.startsWith("/pages/")) {
-        // For internal includes, try the .html variant first (dev servers commonly store it this way)
-        fetchCandidates = [(url || "") + ".html", url];
-      } else {
-        // Otherwise try the provided value first, then the .html variant
-        fetchCandidates = [url, (url || "") + ".html"];
-      }
-
-      for (const candidate of fetchCandidates) {
-        try {
-          response = await fetchWithTimeout(candidate);
-          if (response && response.ok) break;
-        } catch {
-          response = null;
-        }
-      }
-
-      if (!response || !response.ok) {
-        throw new Error(
-          `HTTP ${response ? response.status : "NO_RESPONSE"}: ${response ? response.statusText : "no response"}`,
-        );
-      }
-
-      const html = await response.text();
+      const html = await fetchSectionContent(url);
       section.insertAdjacentHTML("beforeend", html);
 
       const template = section.querySelector("template");
@@ -250,7 +248,7 @@ const SectionLoader = (() => {
     const lazySections = [];
 
     sections.forEach((section) => {
-      if (section.hasAttribute("data-eager")) {
+      if (section.dataset.eager !== undefined) {
         eagerSections.push(section);
       } else {
         lazySections.push(section);
@@ -271,8 +269,8 @@ const SectionLoader = (() => {
   }
 
   const api = { init, reinit, loadSection, retrySection };
-  // Export to window for compatibility with inline handlers if any, but prefer ES import
-  window.SectionLoader = api;
+  // Export to globalThis for compatibility with inline handlers if any, but prefer ES import
+  globalThis.SectionLoader = api;
   return api;
 })();
 
@@ -324,9 +322,9 @@ const ScrollSnapping = (() => {
   }
 
   function init() {
-    window.addEventListener("wheel", handleScroll, { passive: true });
-    window.addEventListener("touchmove", handleScroll, { passive: true });
-    window.addEventListener("keydown", handleKey, { passive: true });
+    globalThis.addEventListener("wheel", handleScroll, { passive: true });
+    globalThis.addEventListener("touchmove", handleScroll, { passive: true });
+    globalThis.addEventListener("keydown", handleKey, { passive: true });
   }
 
   return { init };
@@ -394,7 +392,7 @@ const ThreeEarthLoader = (() => {
 
     // Explicitly check env for testing to skip heavy WebGL
     // ALLOW for specific verification script if requested via global override
-    if (ENV.isTest && !window.__FORCE_THREE_EARTH) {
+    if (ENV.isTest && !globalThis.__FORCE_THREE_EARTH) {
       log.info(
         "Test environment detected - skipping Three.js Earth system for performance",
       );
@@ -421,7 +419,7 @@ const ThreeEarthLoader = (() => {
         // Export the cleanup function for programmatic control
         __threeEarthCleanup = cleanupFn;
         // Optionally expose in debug mode for backwards compatibility
-        if (ENV.debug) window.__threeEarthCleanup = cleanupFn;
+        if (ENV.debug) globalThis.__threeEarthCleanup = cleanupFn;
 
         log.info("Three.js Earth system initialized");
         perfMarks.threeJsLoaded = performance.now();
@@ -453,7 +451,7 @@ const ThreeEarthLoader = (() => {
   }
 
   function initDelayed() {
-    if (window.requestIdleCallback) {
+    if (globalThis.requestIdleCallback) {
       requestIdleCallback(init, { timeout: 2000 });
     } else {
       setTimeout(init, 1000);
@@ -482,7 +480,7 @@ document.addEventListener(
       LoadingScreenManager.hide();
     };
 
-    window.addEventListener(
+    globalThis.addEventListener(
       "load",
       () => {
         perfMarks.windowLoaded = performance.now();
@@ -516,7 +514,7 @@ document.addEventListener(
           try {
             // Ensure AppLoadManager exists and is callable before using it (some environments may not register it)
             if (
-              typeof AppLoadManager !== "undefined" &&
+              AppLoadManager !== undefined &&
               typeof AppLoadManager.isBlocked === "function" &&
               AppLoadManager.isBlocked?.()
             ) {
@@ -562,7 +560,7 @@ document.addEventListener(
         links.forEach((link) => {
           try {
             link.media = "all";
-            link.removeAttribute("data-defer");
+            delete link.dataset.defer;
           } catch {
             /* ignore individual link errors */
           }
@@ -585,7 +583,7 @@ document.addEventListener(
         // In case script executed after parsing, ensure microtask activation
         setTimeout(activateDeferredStyles, 0);
       }
-      window.addEventListener("load", activateDeferredStyles);
+      globalThis.addEventListener("load", activateDeferredStyles);
 
       // Observe head for dynamically inserted deferred link elements
       const headObserver = new MutationObserver((mutations) => {
@@ -594,11 +592,10 @@ document.addEventListener(
             try {
               if (
                 node.nodeType === 1 &&
-                node.matches &&
-                node.matches('link[rel="stylesheet"][data-defer="1"]')
+                node.matches?.('link[rel="stylesheet"][data-defer="1"]')
               ) {
                 node.media = "all";
-                node.removeAttribute("data-defer");
+                delete node.dataset.defer;
               }
             } catch {
               /* ignore per-node errors */
@@ -611,7 +608,7 @@ document.addEventListener(
         subtree: true,
       });
       // Disconnect after full load to avoid long-running observers
-      window.addEventListener("load", () => headObserver.disconnect(), {
+      globalThis.addEventListener("load", () => headObserver.disconnect(), {
         once: true,
       });
     } catch {
@@ -624,24 +621,23 @@ document.addEventListener(
       if (!target) return;
 
       // Retry / reload buttons (class-based)
-      const retry = target.closest && target.closest(".retry-btn");
+      const retry = target?.closest(".retry-btn");
       if (retry) {
         event.preventDefault();
         try {
-          window.location.reload();
+          globalThis.location.reload();
         } catch {
-          // fallback
-          location.href = location.href;
+          // fallback - do nothing, reload failed
         }
         return;
       }
 
       // Share button (degraded to clipboard if navigator.share not available)
-      const share = target.closest && target.closest(".btn-share");
+      const share = target?.closest(".btn-share");
       if (share) {
         event.preventDefault();
         const shareUrl =
-          share.getAttribute("data-share-url") ||
+          share.dataset.shareUrl ||
           "https://www.youtube.com/@aks.030";
         const shareData = {
           title: document.title,
@@ -663,12 +659,11 @@ document.addEventListener(
           });
         } else {
           try {
-            window.prompt("Link kopieren", shareUrl);
+            globalThis.prompt("Link kopieren", shareUrl);
           } catch (err) {
             log.warn("prompt failed", err);
           }
         }
-        return;
       }
     });
 
@@ -676,7 +671,7 @@ document.addEventListener(
     // This will unregister any previously installed service workers and clear all caches.
     // Keep as a one-time cleanup to ensure clients no longer use the old SW code.
     if ("serviceWorker" in navigator && !ENV.isTest) {
-      window.addEventListener(
+      globalThis.addEventListener(
         "load",
         async () => {
           try {
@@ -722,7 +717,7 @@ document.addEventListener(
 
 // ===== BFCache / Back Button Handling =====
 // Ensure Three.js system is resilient when navigating back
-window.addEventListener("pageshow", (event) => {
+globalThis.addEventListener("pageshow", (event) => {
   if (event.persisted) {
     log.info("Page restored from bfcache");
     // If we have a cleanup function, it means it was running.
@@ -730,13 +725,13 @@ window.addEventListener("pageshow", (event) => {
     // However, we want to ensure interactions are active.
 
     // Force a resize event to re-calibrate camera/renderer
-    window.dispatchEvent(new CustomEvent("resize"));
+    globalThis.dispatchEvent(new CustomEvent("resize"));
 
     // Re-check visibility
     if (
       !document.hidden &&
-      window.threeEarthSystem &&
-      window.threeEarthSystem.animate
+      globalThis.threeEarthSystem &&
+      globalThis.threeEarthSystem.animate
     ) {
       // If system exposed an animate function, we could call it, but the loop usually uses rAF
       // which might have been paused.

@@ -13,9 +13,10 @@ export function setupScene(THREE, container) {
 
   const renderer = new THREE.WebGLRenderer({
     canvas: container.querySelector("canvas") || undefined,
-    antialias: true,
+    antialias: false,
     alpha: true,
     powerPreference: "high-performance",
+    preserveDrawingBuffer: false,
   });
 
   // Allow a higher pixel ratio on large screens to improve texture/sharpness
