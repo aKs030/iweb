@@ -344,7 +344,7 @@ dataLayer.push({
         const first = String(s).split(/[—–\-|:]/)[0].trim().split(/\s+/)[0] || '';
         if (!first) return '';
         return first.charAt(0).toUpperCase() + first.slice(1) + ' 🌐';
-      } catch (e) {
+      } catch {
         return '';
       }
     };
@@ -370,11 +370,14 @@ dataLayer.push({
           if (newTitle !== t) document.title = newTitle;
         }).observe(titleEl, { childList: true, characterData: true, subtree: true });
       }
+    } catch {
+      // ignore errors in title observer
+    }
 
     // Sanitize visible headings on page and watch for added nodes
     const sanitizeHeadings = () => {
       document.querySelectorAll('h1,h2,.section-title,.section-header,.page-title,.site-title').forEach((el) => {
-        if (!el || !el.textContent) return;
+        if (!el?.textContent) return;
         const cleaned = sanitize(el.textContent);
         if (cleaned !== el.textContent) el.textContent = cleaned;
       });
@@ -386,7 +389,7 @@ dataLayer.push({
     const mo = new MutationObserver((mutations) => {
       let changed = false;
       for (const m of mutations) {
-        if (m.addedNodes && m.addedNodes.length) {
+        if (m.addedNodes?.length) {
           changed = true;
           break;
         }
@@ -394,5 +397,7 @@ dataLayer.push({
       if (changed) sanitizeHeadings();
     });
     mo.observe(document.documentElement || document.body, { childList: true, subtree: true });
+  } catch {
+    // ignore errors in hideBrandingFromUsers
   }
 })();
