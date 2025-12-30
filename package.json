@@ -8,9 +8,10 @@
   "scripts": {
     "serve": "http-server ./ -p 8081",
     "serve:dev": "node ./scripts/dev-serve.js",
-    "test:canonical": "node ./scripts/test-canonical.mjs",
+    "test:canonical": "node ./tests/canonical.test.mjs",
     "check:canonical-static": "bash ./scripts/check-canonical-static.sh",
     "build:og-images": "node ./scripts/build-og-images.mjs",
+    "convert:og": "node ./scripts/convert-og-images.mjs",
     "update:sitemap": "node ./scripts/update-sitemap-lastmod.mjs",
     "test:playwright": "npx playwright test",
     "dev": "npm run serve",
@@ -24,11 +25,11 @@
     "test:head": "node ./tests/computeEffectiveCanonical.test.mjs",
     "test:pwa": "node ./tests/pwa.test.mjs",
     "test:meta": "node ./tests/pageMeta.test.mjs",
-    "test:canonical": "node ./tests/canonical.test.mjs",
     "test:apply-canonical": "node ./tests/applyCanonical.test.mjs",
     "test:schedule": "node ./tests/scheduleSchema.test.mjs",
     "test:upsert": "node ./tests/upsert.test.mjs",
     "prepare:build": "npm run build:og-images",
+    "lh:run": "npx -y lighthouse http://127.0.0.1:8081 --output=json --output-path=./reports/lighthouse-$(date +%s).json --chrome-flags='--headless --no-sandbox' --quiet",
     "fetch-three": "bash ./scripts/fetch_three.sh"
   },
   "devDependencies": {
@@ -41,7 +42,8 @@
     "lint-staged": "^14.0.0",
     "pixelmatch": "^7.1.0",
     "pngjs": "^7.0.0",
-    "prettier": "^3.7.4"
+    "prettier": "^3.7.4",
+    "sharp": "^0.32.6"
   },
   "lint-staged": {
     "*.{js,ts}": [

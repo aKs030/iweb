@@ -469,6 +469,8 @@ async function loadSharedHead() {
       description_en: "Abdulkerim Sesli — Web Developer & Photographer in Berlin. Specialist in React, Three.js and urban photography. Portfolio, references & contact.",
       type: "ProfilePage",
       image: `${BASE_URL}/content/assets/img/og/og-home.png`,
+      // Modern LCP image: keep PNG for social-card/OG but use AVIF for site delivery/preload
+      imageAvif: `${BASE_URL}/content/assets/img/og/og-home.avif`,
     },
     "/projekte/": {
       title: "Referenzen & Code-Projekte | Abdulkerim Sesli",
