@@ -67,6 +67,9 @@
     />
     <link rel="manifest" href="/manifest.json" />
     <link rel="icon" href="/content/assets/img/icons/favicon.ico" />
+    <link rel="mask-icon" href="/content/assets/img/icons/safari-pinned-tab.svg" color="#0d0d0d" />
+    <meta name="msapplication-TileColor" content="#0d0d0d" />
+    <meta name="msapplication-TileImage" content="/content/assets/img/icons/favicon-192x192.png" />
     <link
       rel="apple-touch-icon"
       sizes="180x180"
@@ -195,7 +198,9 @@
         "description": "Web Developer & Photographer in Berlin — Modern frontend development (React, Three.js) and urban photography services.",
         "url": "https://abdulkerimsesli.de",
         "sameAs": ["https://github.com/aKs030", "https://linkedin.com/in/abdulkerimsesli", "https://x.com/kRm_030"],
-        "areaServed": "Berlin",
+        "serviceArea": { "@type": "Place", "address": { "@type": "PostalAddress", "addressLocality": "Berlin", "addressCountry": "DE" } },
+        "paymentAccepted": "Invoice",
+        "currenciesAccepted": "EUR",
         "address": {
           "@type": "PostalAddress",
           "addressLocality": "Berlin",
@@ -207,9 +212,11 @@
           {
             "@type": "ContactPoint",
             "contactType": "customer service",
+            "email": "kontakt@abdulkerimsesli.de",
             "url": "https://abdulkerimsesli.de/#kontakt"
           }
-        ]
+        ],
+        "openingHours": ["Mo-Fr 09:00-18:00"]
       }
     </script>
 
