@@ -1,8 +1,8 @@
 export const CONFIG = {
   EARTH: {
     RADIUS: 3.5,
-    SEGMENTS: 64,
-    SEGMENTS_MOBILE: 32, // Reduced geometry for mobile
+    SEGMENTS: 32,
+    SEGMENTS_MOBILE: 16, // Reduced geometry for mobile
     BUMP_SCALE: 0.008,
     EMISSIVE_INTENSITY: 0.2,
     EMISSIVE_PULSE_SPEED: 0.3,
@@ -47,7 +47,7 @@ export const CONFIG = {
     },
   },
   STARS: {
-    COUNT: 3000,
+    COUNT: 1000,
     TWINKLE_SPEED: 0.2, // Reduziert für subtileren Effekt
     ANIMATION: {
       DURATION: 2800, // Schnellere Animation
