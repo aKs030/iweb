@@ -1,6 +1,45 @@
-node_modules
+# Node dependencies
+node_modules/
+
+# Temporary folders
 tmp/
+/.cache/
+dist/
 
 # Local YouTube API key parts (do NOT commit)
 /content/config/videos-part-a.js
 /content/config/videos-part-b.js
+
+# Local dev server / npm local files
+dev-server.js
+dev-server.log
+.live-server.json
+package.json
+package-lock.json
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment files
+.env
+.env.*
+
+# macOS
+.DS_Store
+
+# Editors / IDEs
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# Testing / coverage
+coverage/
+.nyc_output/
+
+# Misc
+Thumbs.db
+.sass-cache
