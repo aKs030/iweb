@@ -17,7 +17,6 @@ export function setupScene(THREE, container) {
     alpha: true,
     powerPreference: "low-power",
     preserveDrawingBuffer: false,
-    failIfMajorPerformanceCaveat: true,
   });
 
   // Allow a moderate pixel ratio for low power consumption
