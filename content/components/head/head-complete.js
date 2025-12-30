@@ -257,6 +257,8 @@ export function buildPwaAssets(BASE_URL, BRAND_DATA) {
   const iconLinks = [
     { rel: "icon", sizes: "32x32", href: `${BASE_URL}/content/assets/img/icons/icon-32.png`, type: "image/png" },
     { rel: "icon", sizes: "16x16", href: `${BASE_URL}/content/assets/img/icons/icon-16.png`, type: "image/png" },
+    { rel: "icon", sizes: "192x192", href: `${BASE_URL}/content/assets/img/icons/icon-192.png`, type: "image/png" },
+    { rel: "icon", sizes: "512x512", href: `${BASE_URL}/content/assets/img/icons/icon-512-manifest.png`, type: "image/png" },
     { rel: "shortcut icon", href: `${BASE_URL}/content/assets/img/icons/favicon.ico` },
     { rel: "apple-touch-icon", sizes: "180x180", href: `${BASE_URL}/content/assets/img/icons/apple-touch-icon.png` },
   ];
