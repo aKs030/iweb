@@ -113,20 +113,20 @@ export const CONFIG = {
     // Cap pixel ratio conservatively to avoid GPU stalls on some drivers/devices
     // Dynamically adjusted by PerformanceMonitor during runtime
     PIXEL_RATIO: Math.min(window.devicePixelRatio || 1, 1.5),
-    TARGET_FPS: 50,
-    DRS_DOWN_THRESHOLD: 46,
-    DRS_UP_THRESHOLD: 56,
+    TARGET_FPS: 30,
+    DRS_DOWN_THRESHOLD: 25,
+    DRS_UP_THRESHOLD: 35,
   },
   QUALITY_LEVELS: {
     HIGH: {
-      minFPS: 48,
+      minFPS: 28,
       multiLayerAtmosphere: true,
       oceanReflections: true,
       cloudLayer: true,
       meteorShowers: true,
     },
     MEDIUM: {
-      minFPS: 28,
+      minFPS: 18,
       multiLayerAtmosphere: false,
       oceanReflections: true,
       cloudLayer: true,
