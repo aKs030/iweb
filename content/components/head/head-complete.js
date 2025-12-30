@@ -424,6 +424,7 @@ async function loadSharedHead() {
       "https://github.com/aKs030",
       "https://linkedin.com/in/abdulkerimsesli",
       "https://twitter.com/abdulkerimsesli",
+      "https://x.com/kRm_030",
       "https://www.instagram.com/abdulkerimsesli",
       "https://www.youtube.com/@aks.030",
       "https://www.behance.net/abdulkerimsesli",
