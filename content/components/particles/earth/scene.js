@@ -15,12 +15,13 @@ export function setupScene(THREE, container) {
     canvas: container.querySelector("canvas") || undefined,
     antialias: false,
     alpha: true,
-    powerPreference: "high-performance",
+    powerPreference: "low-power",
     preserveDrawingBuffer: false,
+    failIfMajorPerformanceCaveat: true,
   });
 
-  // Allow a higher pixel ratio on large screens to improve texture/sharpness
-  const maxAllowedPR = container.clientWidth > 1200 ? 3 : 2;
+  // Allow a moderate pixel ratio for low power consumption
+  const maxAllowedPR = container.clientWidth > 1200 ? 1.5 : 1;
   const pixelRatio = Math.min(globalThis.devicePixelRatio || 1, maxAllowedPR);
   renderer.setPixelRatio(pixelRatio);
   renderer.setSize(container.clientWidth, container.clientHeight);
