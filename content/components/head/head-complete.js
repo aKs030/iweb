@@ -36,7 +36,7 @@ export function generateSchemaGraph(pageData, pageUrl, BASE_URL, BRAND_DATA, BUS
 
   graph.push(
     {
-      "@type": "ProfessionalService",
+      "@type": "Organization",
       "@id": ID.org,
       name: BRAND_DATA.legalName,
       url: BASE_URL,
@@ -60,6 +60,7 @@ export function generateSchemaGraph(pageData, pageUrl, BASE_URL, BRAND_DATA, BUS
         addressCountry: "DE",
       },
       geo: BRAND_DATA.geo,
+      founder: { "@id": ID.person },
     },
     {
       "@type": ["Person", "Photographer"],
@@ -257,8 +258,8 @@ export function buildPwaAssets(BASE_URL, BRAND_DATA) {
   const iconLinks = [
     { rel: "icon", sizes: "32x32", href: `${BASE_URL}/content/assets/img/icons/icon-32.png`, type: "image/png" },
     { rel: "icon", sizes: "16x16", href: `${BASE_URL}/content/assets/img/icons/icon-16.png`, type: "image/png" },
-    { rel: "icon", sizes: "192x192", href: `${BASE_URL}/content/assets/img/icons/icon-192.png`, type: "image/png" },
-    { rel: "icon", sizes: "512x512", href: `${BASE_URL}/content/assets/img/icons/icon-512-manifest.png`, type: "image/png" },
+    { rel: "icon", sizes: "192x192", href: `${BASE_URL}/content/assets/img/icons/favicon-192x192.png`, type: "image/png" },
+    { rel: "icon", sizes: "512x512", href: `${BASE_URL}/content/assets/img/icons/favicon-512x512.png`, type: "image/png" },
     { rel: "shortcut icon", href: `${BASE_URL}/content/assets/img/icons/favicon.ico` },
     { rel: "apple-touch-icon", sizes: "180x180", href: `${BASE_URL}/content/assets/img/icons/apple-touch-icon.png` },
   ];
@@ -746,10 +747,10 @@ iconLinks.filter((l) => l.rel === "icon" && l.sizes).forEach((l) => addIcon(l.hr
   };
 
   const graph = [];
-    // 1. ORGANIZATION (ProfessionalService for Local SEO) + 2. PERSON (Die Haupt-Entität)
+    // 1. ORGANIZATION (Organization for Local SEO) + 2. PERSON (Die Haupt-Entität)
     graph.push(
       {
-        "@type": "ProfessionalService",
+        "@type": "Organization",
         "@id": ID.org,
         name: BRAND_DATA.legalName,
         url: BASE_URL,
@@ -759,6 +760,7 @@ iconLinks.filter((l) => l.rel === "icon" && l.sizes).forEach((l) => addIcon(l.hr
           width: 512,
           height: 512,
         },
+        founder: { "@id": ID.person },
         image: {
           "@type": "ImageObject",
           url: pageData?.image || BRAND_DATA.logo,
