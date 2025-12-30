@@ -313,6 +313,8 @@ dataLayer.push({
 })();
 
 // === Hide branding (site name) from human users (keep it in server-rendered <title> for SEO/bots)
+// DISABLED: User requested full professional titles for all users.
+/*
 (function hideBrandingFromUsers() {
   try {
     const ua = (navigator.userAgent || "").toLowerCase();
@@ -379,7 +381,6 @@ dataLayer.push({
         }).observe(titleEl, { childList: true, characterData: true, subtree: true });
       }
     } catch (e) {
-      /* ignore */
     }
 
     // Sanitize visible headings on page and watch for added nodes
@@ -413,3 +414,4 @@ dataLayer.push({
     log?.warn?.('hideBrandingFromUsers failed', err);
   }
 })();
+*/

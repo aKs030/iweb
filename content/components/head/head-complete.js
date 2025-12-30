@@ -429,9 +429,9 @@ async function loadSharedHead() {
   const ROUTES = {
     default: {
       title:
-        "Abdulkerim Sesli | Webentwicklung & Fotografie Berlin | Abdul Berlin",
+        "Abdulkerim Sesli | Web Developer & Photographer in Berlin",
       description:
-        "Offizielles Portfolio von Abdulkerim Sesli (Abdul Berlin). Webentwickler (React, Three.js) und Fotograf aus Berlin. Nicht zu verwechseln mit Hörbuch-Verlagen.",
+        "Abdulkerim Sesli - Web Developer & Photographer in Berlin. Spezialisiert auf React, Three.js und moderne Webentwicklung. Professionelle Fotografie und Fullstack-Lösungen.",
       type: "ProfilePage",
       image: `${BASE_URL}/content/assets/img/og/og-home.png`,
     },
