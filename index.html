@@ -27,7 +27,7 @@
       http-equiv="Content-Security-Policy"
       content="default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://cdn.jsdelivr.net https://*.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https: blob:; connect-src 'self' https://www.google-analytics.com https://www.googletagmanager.com https://cdn.jsdelivr.net https://*.cloudflareinsights.com; frame-src 'self' https://www.youtube-nocookie.com; media-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self';"
     />
-    <title>Abdulkerim — Digital Creator Portfolio</title>
+    <title>Abdulkerim Sesli — Web Developer & Photographer in Berlin</title>
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1, viewport-fit=cover"
@@ -35,7 +35,7 @@
     <!-- Static description fallback for crawlers -->
     <meta
       name="description"
-      content="Offizielles Portfolio von Abdulkerim Sesli. Professionelle Webentwicklung (React, Three.js) und Urban Photography aus Berlin. Jetzt Referenzen ansehen &amp; kontaktieren."
+      content="Abdulkerim Sesli — Web Developer & Photographer in Berlin. Spezialisiert auf React, Three.js und Urban Photography. Portfolio, Referenzen & Kontakt."
     />
     <!-- Description and keywords are provided centrally in content/components/head/head.html -->
     <!-- Canonical is injected dynamically by content/components/head/head-complete.js -->
@@ -45,7 +45,7 @@
       rel="icon"
       type="image/png"
       sizes="192x192"
-      href="/content/assets/img/icons/icon-192.png"
+      href="/content/assets/img/icons/favicon-192x192.png"
     />
     <link
       rel="icon"
@@ -183,6 +183,33 @@
             "name": "Berlin"
           }
         }
+      }
+    </script>
+
+    <!-- Organization JSON-LD: helps Google understand the organization/business -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "Abdulkerim Sesli",
+        "description": "Web Developer & Photographer in Berlin — Modern frontend development (React, Three.js) and urban photography services.",
+        "url": "https://abdulkerimsesli.de",
+        "sameAs": ["https://github.com/aKs030", "https://linkedin.com/in/abdulkerimsesli", "https://x.com/kRm_030"],
+        "areaServed": "Berlin",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Berlin",
+          "addressCountry": "DE"
+        },
+        "logo": "https://abdulkerimsesli.de/content/assets/img/og/og-home.png",
+        "founder": { "@type": "Person", "name": "Abdulkerim Sesli" },
+        "contactPoint": [
+          {
+            "@type": "ContactPoint",
+            "contactType": "customer service",
+            "url": "https://abdulkerimsesli.de/#kontakt"
+          }
+        ]
       }
     </script>
 

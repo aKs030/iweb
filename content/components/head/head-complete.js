@@ -36,7 +36,7 @@ export function generateSchemaGraph(pageData, pageUrl, BASE_URL, BRAND_DATA, BUS
 
   graph.push(
     {
-      "@type": "ProfessionalService",
+      "@type": "Organization",
       "@id": ID.org,
       name: BRAND_DATA.legalName,
       url: BASE_URL,
@@ -54,12 +54,15 @@ export function generateSchemaGraph(pageData, pageUrl, BASE_URL, BRAND_DATA, BUS
       },
       email: BRAND_DATA.email,
       sameAs: BRAND_DATA.sameAs,
+      contactPoint: BRAND_DATA.contactPoint,
+      telephone: BRAND_DATA.telephone,
       address: BRAND_DATA.address || {
         "@type": "PostalAddress",
         addressLocality: "Berlin",
         addressCountry: "DE",
       },
       geo: BRAND_DATA.geo,
+      founder: { "@id": ID.person },
     },
     {
       "@type": ["Person", "Photographer"],
@@ -257,6 +260,8 @@ export function buildPwaAssets(BASE_URL, BRAND_DATA) {
   const iconLinks = [
     { rel: "icon", sizes: "32x32", href: `${BASE_URL}/content/assets/img/icons/icon-32.png`, type: "image/png" },
     { rel: "icon", sizes: "16x16", href: `${BASE_URL}/content/assets/img/icons/icon-16.png`, type: "image/png" },
+    { rel: "icon", sizes: "192x192", href: `${BASE_URL}/content/assets/img/icons/favicon-192x192.png`, type: "image/png" },
+    { rel: "icon", sizes: "512x512", href: `${BASE_URL}/content/assets/img/icons/favicon-512x512.png`, type: "image/png" },
     { rel: "shortcut icon", href: `${BASE_URL}/content/assets/img/icons/favicon.ico` },
     { rel: "apple-touch-icon", sizes: "180x180", href: `${BASE_URL}/content/assets/img/icons/apple-touch-icon.png` },
   ];
@@ -419,9 +424,22 @@ async function loadSharedHead() {
       "https://github.com/aKs030",
       "https://linkedin.com/in/abdulkerimsesli",
       "https://twitter.com/abdulkerimsesli",
+      "https://x.com/kRm_030",
       "https://www.instagram.com/abdulkerimsesli",
       "https://www.youtube.com/@aks.030",
+      "https://www.behance.net/abdulkerimsesli",
+      "https://dribbble.com/abdulkerimsesli"
     ],
+    contactPoint: [
+      {
+        "@type": "ContactPoint",
+        "contactType": "customer service",
+        "email": "kontakt@abdulkerimsesli.de",
+        "url": `${BASE_URL}/#kontakt`
+      }
+    ],
+    telephone: "+49-30-12345678", // optional: update with real number or remove
+
   };
 
   // B. INHALTS-STEUERUNG (Snippet Text Füllung)
@@ -432,6 +450,8 @@ async function loadSharedHead() {
         "Abdulkerim Sesli | Webentwicklung & Fotografie Berlin | Abdul Berlin",
       description:
         "Offizielles Portfolio von Abdulkerim Sesli (Abdul Berlin). Webentwickler (React, Three.js) und Fotograf aus Berlin. Nicht zu verwechseln mit Hörbuch-Verlagen.",
+      title_en: "Abdulkerim Sesli — Web Developer & Photographer in Berlin",
+      description_en: "Abdulkerim Sesli — Web Developer & Photographer in Berlin. Specialist in React, Three.js and urban photography. Portfolio, references & contact.",
       type: "ProfilePage",
       image: `${BASE_URL}/content/assets/img/og/og-home.png`,
     },
@@ -439,6 +459,8 @@ async function loadSharedHead() {
       title: "Referenzen & Code-Projekte | Abdulkerim Sesli",
       description:
         "Entdecke interaktive Web-Experimente aus Berlin (13507). Spezialisiert auf performante React-Lösungen, 3D-Web (Three.js) und modernes UI/UX Design.",
+      title_en: "References & Code Projects | Abdulkerim Sesli",
+      description_en: "Explore interactive web experiments and business apps. Specialist in performant React solutions, 3D web (Three.js) and modern UI/UX.",
       type: "CollectionPage",
       image: `${BASE_URL}/content/assets/img/og/og-projects.png`,
     },
@@ -446,6 +468,8 @@ async function loadSharedHead() {
       title: "Tech-Blog & Tutorials | Webentwicklung Berlin",
       description:
         "Expertenwissen zu JavaScript, CSS und Web-Architektur. Praxisnahe Tutorials und Einblicke in den Workflow eines Berliner Fullstack-Entwicklers.",
+      title_en: "Tech Blog & Tutorials | Web Development Berlin",
+      description_en: "Practical articles on JavaScript, CSS and web architecture. Hands-on tutorials and insights from a Berlin-based developer.",
       type: "Blog",
       image: `${BASE_URL}/content/assets/img/og/og-blog.png`,
     },
@@ -453,6 +477,8 @@ async function loadSharedHead() {
       title: "Videos — Abdulkerim Sesli",
       description:
         "Eine Auswahl meiner Arbeiten, kurzen Vorstellungen und Behind-the-Scenes.",
+      title_en: "Videos — Abdulkerim Sesli",
+      description_en: "A selection of my work, brief presentations and behind-the-scenes.",
       type: "CollectionPage",
       // NOTE: currently uses og-home.png as a fallback.
       image: `${BASE_URL}/content/assets/img/og/og-home.png`,
@@ -461,6 +487,8 @@ async function loadSharedHead() {
       title: "Fotografie Portfolio | Urban & Portrait Berlin",
       description:
         "Visuelle Ästhetik aus der Hauptstadt. Kuratierte Galerie mit Fokus auf Street Photography, Architektur und atmosphärische Portraits aus Berlin und Umgebung.",
+      title_en: "Photography Portfolio | Urban & Portraits Berlin",
+      description_en: "Visual aesthetics from the capital. Curated gallery focused on street photography, architecture and atmospheric portraits from Berlin.",
       type: "ImageGallery",
       image: `${BASE_URL}/content/assets/img/og/og-gallery.png`,
     },
@@ -494,8 +522,16 @@ async function loadSharedHead() {
   const matchedKey = Object.keys(ROUTES).find(
     (key) => key !== "default" && currentPath.includes(key),
   );
-  const pageData = matchedKey ? ROUTES[matchedKey] : ROUTES.default;
+  const rawPageData = matchedKey ? ROUTES[matchedKey] : ROUTES.default;
   const pageUrl = globalThis.location.href.split("#")[0];
+
+  // --- i18n: Choose localized title/description when available ---
+  const preferredLang = (document?.documentElement?.lang || globalThis.navigator?.language || "de").toLowerCase();
+  const isEnglish = preferredLang.startsWith("en");
+  const pageData = Object.assign({}, rawPageData, {
+    title: isEnglish && rawPageData.title_en ? rawPageData.title_en : rawPageData.title,
+    description: isEnglish && rawPageData.description_en ? rawPageData.description_en : rawPageData.description,
+  });
 
   // --- Push stable page metadata to dataLayer for GTM (no PII) ---
   try {
@@ -744,10 +780,10 @@ iconLinks.filter((l) => l.rel === "icon" && l.sizes).forEach((l) => addIcon(l.hr
   };
 
   const graph = [];
-    // 1. ORGANIZATION (ProfessionalService for Local SEO) + 2. PERSON (Die Haupt-Entität)
+    // 1. ORGANIZATION (Organization for Local SEO) + 2. PERSON (Die Haupt-Entität)
     graph.push(
       {
-        "@type": "ProfessionalService",
+        "@type": "Organization",
         "@id": ID.org,
         name: BRAND_DATA.legalName,
         url: BASE_URL,
@@ -757,6 +793,7 @@ iconLinks.filter((l) => l.rel === "icon" && l.sizes).forEach((l) => addIcon(l.hr
           width: 512,
           height: 512,
         },
+        founder: { "@id": ID.person },
         image: {
           "@type": "ImageObject",
           url: pageData?.image || BRAND_DATA.logo,

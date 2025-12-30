@@ -1,5 +1,5 @@
 {
-  "name": "Abdulkerim Sesli Portfolio",
+  "name": "Abdulkerim Sesli - Web Dev",
   "short_name": "Abdulkerim",
   "description": "Portfolio von Abdulkerim Sesli — Webentwicklung & Fotografie",
   "lang": "de-DE",
@@ -28,12 +28,12 @@
       "type": "image/png"
     },
     {
-      "src": "https://abdulkerimsesli.de/content/assets/img/icons/icon-192.png",
+      "src": "https://abdulkerimsesli.de/content/assets/img/icons/favicon-192x192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "https://abdulkerimsesli.de/content/assets/img/icons/icon-512-manifest.png",
+      "src": "https://abdulkerimsesli.de/content/assets/img/icons/favicon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
