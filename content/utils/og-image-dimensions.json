@@ -27,15 +27,15 @@
     "width": 180,
     "height": 180
   },
-  "/content/assets/img/icons/icon-192.png": {
+  "/content/assets/img/icons/favicon-192x192.png": {
     "width": 192,
     "height": 192
   },
-  "/content/assets/img/icons/icon-32.png": {
-    "width": 32,
-    "height": 32
+  "/content/assets/img/icons/favicon-192x192.png": {
+    "width": 192,
+    "height": 192
   },
-  "/content/assets/img/icons/icon-512-manifest.png": {
+  "/content/assets/img/icons/favicon-512x512.png": {
     "width": 512,
     "height": 512
   },
