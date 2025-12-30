@@ -34,6 +34,10 @@
 # 3) Generic cleanups
 # Remove any remaining ".html" endings and canonicalize to trailing-slash roots.
 # Keep this after specific redirects so we don't accidentally override them.
+
+# Don't redirect .html in /pages/ as they are loaded dynamically
+/pages/*.html   /pages/:splat.html   200
+
 /*.html   /:splat/   301
 
 # Ensure root section names without trailing slash are redirected to the slash version
