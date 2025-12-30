@@ -13,6 +13,126 @@ import { createLogger } from "../../utils/shared-utilities.js";
 
 const log = createLogger("HeadLoader");
 
+// Static configuration data
+const BASE_URL = "https://abdulkerimsesli.de";
+
+const BRAND_DATA = {
+  name: "Abdulkerim Sesli",
+  legalName: "Abdulkerim Sesli — Creative Digital Services",
+  alternateName: ["Abdul Sesli", "Abdul Berlin", "Abdulkerim Berlin"],
+  logo: `${BASE_URL}/content/assets/img/icons/icon-512.png`, // [GELB] Das Icon für Google
+  jobTitle: ["Web Developer", "Photographer"],
+  email: "kontakt@abdulkerimsesli.de",
+  areaServed: "Berlin, Deutschland",
+  address: {
+    "@type": "PostalAddress",
+    addressLocality: "Berlin",
+    postalCode: "13507",
+    addressCountry: "DE",
+  },
+  geo: {
+    "@type": "GeoCoordinates",
+    latitude: "52.5733",
+    longitude: "13.2911",
+  },
+  sameAs: [
+    "https://github.com/aKs030",
+    "https://linkedin.com/in/abdulkerimsesli",
+    "https://twitter.com/abdulkerimsesli",
+    "https://x.com/kRm_030",
+    "https://www.instagram.com/abdulkerimsesli",
+    "https://www.youtube.com/@aks.030",
+    "https://www.behance.net/abdulkerimsesli",
+    "https://dribbble.com/abdulkerimsesli"
+  ],
+  openingHours: ["Mo-Fr 09:00-18:00"],
+  contactPoint: [
+    {
+      "@type": "ContactPoint",
+      "contactType": "customer service",
+      "email": "kontakt@abdulkerimsesli.de",
+      "url": `${BASE_URL}/#kontakt`
+    }
+  ],
+  telephone: "+49-30-12345678",
+  paymentAccepted: "Invoice",
+  currenciesAccepted: "EUR",
+};
+
+const ROUTES = {
+  default: {
+    title:
+      "Abdulkerim Sesli | Webentwicklung & Fotografie Berlin | Abdul Berlin",
+    description:
+      "Offizielles Portfolio von Abdulkerim Sesli (Abdul Berlin). Webentwickler (React, Three.js) und Fotograf aus Berlin. Nicht zu verwechseln mit Hörbuch-Verlagen.",
+    title_en: "Abdulkerim Sesli — Web Developer & Photographer in Berlin",
+    description_en: "Abdulkerim Sesli — Web Developer & Photographer in Berlin. Specialist in React, Three.js and urban photography. Portfolio, references & contact.",
+    type: "ProfilePage",
+    image: `${BASE_URL}/content/assets/img/og/og-home.png`,
+    // Modern LCP image: keep PNG for social-card/OG but use AVIF for site delivery/preload
+    imageAvif: `${BASE_URL}/content/assets/img/og/og-home.avif`,
+  },
+  "/projekte/": {
+    title: "Referenzen & Code-Projekte | Abdulkerim Sesli",
+    description:
+      "Entdecke interaktive Web-Experimente aus Berlin (13507). Spezialisiert auf performante React-Lösungen, 3D-Web (Three.js) und modernes UI/UX Design.",
+    title_en: "References & Code Projects | Abdulkerim Sesli",
+    description_en: "Explore interactive web experiments and business apps. Specialist in performant React solutions, 3D web (Three.js) and modern UI/UX.",
+    type: "CollectionPage",
+    image: `${BASE_URL}/content/assets/img/og/og-projects.png`,
+  },
+  "/blog/": {
+    title: "Tech-Blog & Tutorials | Webentwicklung Berlin",
+    description:
+      "Expertenwissen zu JavaScript, CSS und Web-Architektur. Praxisnahe Tutorials und Einblicke in den Workflow eines Berliner Fullstack-Entwicklers.",
+    title_en: "Tech Blog & Tutorials | Web Development Berlin",
+    description_en: "Practical articles on JavaScript, CSS and web architecture. Hands-on tutorials and insights from a Berlin-based developer.",
+    type: "Blog",
+    image: `${BASE_URL}/content/assets/img/og/og-blog.png`,
+  },
+  "/videos/": {
+    title: "Videos — Abdulkerim Sesli",
+    description:
+      "Eine Auswahl meiner Arbeiten, kurzen Vorstellungen und Behind-the-Scenes.",
+    title_en: "Videos — Abdulkerim Sesli",
+    description_en: "A selection of my work, brief presentations and behind-the-scenes.",
+    type: "CollectionPage",
+    // NOTE: currently uses og-home.png as a fallback.
+    image: `${BASE_URL}/content/assets/img/og/og-home.png`,
+  },
+  "/gallery/": {
+    title: "Fotografie Portfolio | Urban & Portrait Berlin",
+    description:
+      "Visuelle Ästhetik aus der Hauptstadt. Kuratierte Galerie mit Fokus auf Street Photography, Architektur und atmosphärische Portraits aus Berlin und Umgebung.",
+    title_en: "Photography Portfolio | Urban & Portraits Berlin",
+    description_en: "Visual aesthetics from the capital. Curated gallery focused on street photography, architecture and atmospheric portraits from Berlin.",
+    type: "ImageGallery",
+    image: `${BASE_URL}/content/assets/img/og/og-gallery.png`,
+  },
+  "/about/": {
+    title: "Kontakt & Profil | Abdulkerim Sesli",
+    description:
+      "Der Mensch hinter dem Code. Detaillierter Lebenslauf, Tech-Stack Übersicht und direkte Kontaktmöglichkeiten für Projektanfragen und Kooperationen.",
+    type: "AboutPage",
+    image: `${BASE_URL}/content/assets/img/og/og-about.png`,
+  },
+};
+
+const BUSINESS_FAQS = [
+  {
+    q: "Welche Dienstleistungen bietest du an?",
+    a: "Ich biete professionelle Webentwicklung (Frontend & Fullstack mit React/Node.js) sowie hochwertige Fotografie-Dienstleistungen (Portrait, Urban, Event) im Raum Berlin an.",
+  },
+  {
+    q: "Welchen Tech-Stack verwendest du?",
+    a: "Mein Fokus liegt auf modernen JavaScript-Frameworks wie React, Next.js und Vue. Für 3D-Visualisierungen im Web nutze ich Three.js und WebGL.",
+  },
+  {
+    q: "Bist du für Freelance-Projekte verfügbar?",
+    a: "Ja, ich bin offen für spannende Projektanfragen und Kooperationen. Kontaktieren Sie mich gerne direkt über meine Webseite oder LinkedIn.",
+  },
+];
+
 // Extracted helper: generate schema graph for a given page context. Returns an array of graph nodes.
 export function generateSchemaGraph(pageData, pageUrl, BASE_URL, BRAND_DATA, BUSINESS_FAQS, doc = typeof document === 'undefined' ? null : document) {
   // Use canonical origin (prod or runtime origin) so JSON-LD stays consistent in local/dev
@@ -289,7 +409,7 @@ export function buildPageMeta(pageData, pageUrl, locationPath) {
 }
 
 export function upsertMeta(nameOrProperty, content, isProperty = false, doc = typeof document === 'undefined' ? null : document) {
-  if (!doc || !doc.head || !content) return;
+  if (!doc?.head || !content) return;
   const selector = isProperty ? `meta[property="${nameOrProperty}"]` : `meta[name="${nameOrProperty}"]`;
   let el = doc?.head?.querySelector(selector);
   if (el) {
@@ -304,7 +424,7 @@ export function upsertMeta(nameOrProperty, content, isProperty = false, doc = ty
 }
 
 export function upsertLink(rel, href, doc = typeof document === 'undefined' ? null : document) {
-  if (!doc || !doc.head || !href) return;
+  if (!doc?.head || !href) return;
   let el = doc?.head?.querySelector(`link[rel="${rel}"]`);
   if (el) {
     el.setAttribute("href", href);
@@ -317,7 +437,7 @@ export function upsertLink(rel, href, doc = typeof document === 'undefined' ? nu
 }
 
 export function applyCanonicalLinks(doc = typeof document === 'undefined' ? null : document, alternates = [], effectiveCanonical = "") {
-  if (!doc || !doc.head) return;
+  if (!doc?.head) return;
 
   // Upsert canonical
   const canonicalEl = doc.head.querySelector('link[rel="canonical"]');
@@ -363,8 +483,8 @@ export function scheduleSchemaInjection(callback, idleTimeout = 1500, fallbackDe
 }
 
 // Top-level injector: insert LD+JSON for given page context (testable)
-export function injectSchema(doc = typeof document === 'undefined' ? null : document, pageDataLocal, pageUrlLocal, BASE_URL_LOCAL, BRAND_DATA_LOCAL, BUSINESS_FAQS_LOCAL) {
-  if (!doc || !doc.head) return;
+export function injectSchema(pageDataLocal, pageUrlLocal, BASE_URL_LOCAL, BRAND_DATA_LOCAL, BUSINESS_FAQS_LOCAL, doc = typeof document === 'undefined' ? null : document) {
+  if (!doc?.head) return;
   try {
     const graph = generateSchemaGraph(pageDataLocal, pageUrlLocal, BASE_URL_LOCAL, BRAND_DATA_LOCAL, BUSINESS_FAQS_LOCAL, doc);
     const ldId = "head-complete-ldjson";
@@ -385,7 +505,7 @@ export function injectSchema(doc = typeof document === 'undefined' ? null : docu
 
 async function loadSharedHead() {
   // Skip all DOM mutations when running in non-browser environments (e.g. Node imports during CI/tests)
-  if (typeof document === "undefined" || typeof globalThis.location === "undefined") {
+  if (document === undefined || globalThis.location === undefined) {
     log?.info?.("head-complete: running in non-browser environment; skipping loadSharedHead");
     return;
   }
@@ -393,129 +513,9 @@ async function loadSharedHead() {
   if (globalThis.SHARED_HEAD_LOADED) return;
 
   // --- 1. GLOBALE DATEN & KONFIGURATION ---
-  const BASE_URL = "https://abdulkerimsesli.de";
-
-  // A. VISUELLE STEUERUNG (Icons & Business Data)
-  const BRAND_DATA = {
-    name: "Abdulkerim Sesli",
-    legalName: "Abdulkerim Sesli — Creative Digital Services",
-    alternateName: ["Abdul Sesli", "Abdul Berlin", "Abdulkerim Berlin"],
-    logo: `${BASE_URL}/content/assets/img/icons/icon-512.png`, // [GELB] Das Icon für Google
-    jobTitle: ["Web Developer", "Photographer"],
-    email: "kontakt@abdulkerimsesli.de",
-    areaServed: "Berlin, Deutschland",
-    address: {
-      "@type": "PostalAddress",
-      addressLocality: "Berlin",
-      postalCode: "13507",
-      addressCountry: "DE",
-    },
-    geo: {
-      "@type": "GeoCoordinates",
-      latitude: "52.5733",
-      longitude: "13.2911",
-    },
-    sameAs: [
-      "https://github.com/aKs030",
-      "https://linkedin.com/in/abdulkerimsesli",
-      "https://twitter.com/abdulkerimsesli",
-      "https://x.com/kRm_030",
-      "https://www.instagram.com/abdulkerimsesli",
-      "https://www.youtube.com/@aks.030",
-      "https://www.behance.net/abdulkerimsesli",
-      "https://dribbble.com/abdulkerimsesli"
-    ],
-    openingHours: ["Mo-Fr 09:00-18:00"],
-    contactPoint: [
-      {
-        "@type": "ContactPoint",
-        "contactType": "customer service",
-        "email": "kontakt@abdulkerimsesli.de",
-        "url": `${BASE_URL}/#kontakt`
-      }
-    ],
-    telephone: "+49-30-12345678",
-    paymentAccepted: "Invoice",
-    currenciesAccepted: "EUR",
-
-  };
 
   // B. INHALTS-STEUERUNG (Snippet Text Füllung)
   // [ROT] Hier füllen wir den Text-Bereich maximal auf (~160 Zeichen + Keywords)
-  const ROUTES = {
-    default: {
-      title:
-        "Abdulkerim Sesli | Webentwicklung & Fotografie Berlin | Abdul Berlin",
-      description:
-        "Offizielles Portfolio von Abdulkerim Sesli (Abdul Berlin). Webentwickler (React, Three.js) und Fotograf aus Berlin. Nicht zu verwechseln mit Hörbuch-Verlagen.",
-      title_en: "Abdulkerim Sesli — Web Developer & Photographer in Berlin",
-      description_en: "Abdulkerim Sesli — Web Developer & Photographer in Berlin. Specialist in React, Three.js and urban photography. Portfolio, references & contact.",
-      type: "ProfilePage",
-      image: `${BASE_URL}/content/assets/img/og/og-home.png`,
-      // Modern LCP image: keep PNG for social-card/OG but use AVIF for site delivery/preload
-      imageAvif: `${BASE_URL}/content/assets/img/og/og-home.avif`,
-    },
-    "/projekte/": {
-      title: "Referenzen & Code-Projekte | Abdulkerim Sesli",
-      description:
-        "Entdecke interaktive Web-Experimente aus Berlin (13507). Spezialisiert auf performante React-Lösungen, 3D-Web (Three.js) und modernes UI/UX Design.",
-      title_en: "References & Code Projects | Abdulkerim Sesli",
-      description_en: "Explore interactive web experiments and business apps. Specialist in performant React solutions, 3D web (Three.js) and modern UI/UX.",
-      type: "CollectionPage",
-      image: `${BASE_URL}/content/assets/img/og/og-projects.png`,
-    },
-    "/blog/": {
-      title: "Tech-Blog & Tutorials | Webentwicklung Berlin",
-      description:
-        "Expertenwissen zu JavaScript, CSS und Web-Architektur. Praxisnahe Tutorials und Einblicke in den Workflow eines Berliner Fullstack-Entwicklers.",
-      title_en: "Tech Blog & Tutorials | Web Development Berlin",
-      description_en: "Practical articles on JavaScript, CSS and web architecture. Hands-on tutorials and insights from a Berlin-based developer.",
-      type: "Blog",
-      image: `${BASE_URL}/content/assets/img/og/og-blog.png`,
-    },
-    "/videos/": {
-      title: "Videos — Abdulkerim Sesli",
-      description:
-        "Eine Auswahl meiner Arbeiten, kurzen Vorstellungen und Behind-the-Scenes.",
-      title_en: "Videos — Abdulkerim Sesli",
-      description_en: "A selection of my work, brief presentations and behind-the-scenes.",
-      type: "CollectionPage",
-      // NOTE: currently uses og-home.png as a fallback.
-      image: `${BASE_URL}/content/assets/img/og/og-home.png`,
-    },
-    "/gallery/": {
-      title: "Fotografie Portfolio | Urban & Portrait Berlin",
-      description:
-        "Visuelle Ästhetik aus der Hauptstadt. Kuratierte Galerie mit Fokus auf Street Photography, Architektur und atmosphärische Portraits aus Berlin und Umgebung.",
-      title_en: "Photography Portfolio | Urban & Portraits Berlin",
-      description_en: "Visual aesthetics from the capital. Curated gallery focused on street photography, architecture and atmospheric portraits from Berlin.",
-      type: "ImageGallery",
-      image: `${BASE_URL}/content/assets/img/og/og-gallery.png`,
-    },
-    "/about/": {
-      title: "Kontakt & Profil | Abdulkerim Sesli",
-      description:
-        "Der Mensch hinter dem Code. Detaillierter Lebenslauf, Tech-Stack Übersicht und direkte Kontaktmöglichkeiten für Projektanfragen und Kooperationen.",
-      type: "AboutPage",
-      image: `${BASE_URL}/content/assets/img/og/og-about.png`,
-    },
-  };
-
-  // [BLAU] Diese Fragen tauchen direkt in der Google-Suche auf
-  const BUSINESS_FAQS = [
-    {
-      q: "Welche Dienstleistungen bietest du an?",
-      a: "Ich biete professionelle Webentwicklung (Frontend & Fullstack mit React/Node.js) sowie hochwertige Fotografie-Dienstleistungen (Portrait, Urban, Event) im Raum Berlin an.",
-    },
-    {
-      q: "Welchen Tech-Stack verwendest du?",
-      a: "Mein Fokus liegt auf modernen JavaScript-Frameworks wie React, Next.js und Vue. Für 3D-Visualisierungen im Web nutze ich Three.js und WebGL.",
-    },
-    {
-      q: "Bist du für Freelance-Projekte verfügbar?",
-      a: "Ja, ich bin offen für spannende Projektanfragen und Kooperationen. Kontaktieren Sie mich gerne direkt über meine Webseite oder LinkedIn.",
-    },
-  ];
 
   // Pfad-Logik
   const currentPath = globalThis.location.pathname.toLowerCase();
@@ -565,7 +565,7 @@ async function loadSharedHead() {
     // These helpers are pure DOM mutators and are testable via unit tests.
 
     // Title: only override if we have a non-empty title
-    if (pageData.title && pageData.title.trim())
+    if (pageData.title?.trim())
       document.title = pageData.title;
 
     // Meta descriptions and core tags
@@ -663,9 +663,7 @@ async function loadSharedHead() {
           routeKey = Object.keys(ROUTES).find(
             (k) => k !== "default" && lowerMatch.includes(k),
           );
-        cleanPath = routeKey
-          ? routeKey
-          : pathForMatch;
+        cleanPath = routeKey || pathForMatch;
         if (routeKey && !routeKey.endsWith("/")) {
           cleanPath = routeKey + "/";
         }
@@ -955,7 +953,7 @@ iconLinks.filter((l) => l.rel === "icon" && l.sizes).forEach((l) => addIcon(l.hr
 
 
     // Trigger schema generation via the exported scheduler (testable)
-    const scheduleSchema = () => scheduleSchemaInjection(() => injectSchema(document, pageData, pageUrl, BASE_URL, BRAND_DATA, BUSINESS_FAQS), 1500, 1200);
+    const scheduleSchema = () => scheduleSchemaInjection(() => injectSchema(pageData, pageUrl, BASE_URL, BRAND_DATA, BUSINESS_FAQS, document), 1500, 1200);
 
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", scheduleSchema);
     else scheduleSchema();
@@ -973,9 +971,53 @@ iconLinks.filter((l) => l.rel === "icon" && l.sizes).forEach((l) => addIcon(l.hr
   globalThis.SHARED_HEAD_LOADED = true;
 }
 
+// Helper to apply a single icon link to the document
+function applyIconLink(doc, ic) {
+  if (!ic?.rel) return;
+  if (ic.rel === 'icon' && ic.sizes) {
+    // upsert link[rel="icon"][sizes="..."]
+    let el = doc.head.querySelector(`link[rel="icon"][sizes="${ic.sizes}"]`);
+    if (el) {
+      el.setAttribute('href', ic.href);
+    } else {
+      el = doc.createElement('link');
+      el.setAttribute('rel', 'icon');
+      el.setAttribute('sizes', ic.sizes);
+      if (ic.type) el.setAttribute('type', ic.type);
+      el.setAttribute('href', ic.href);
+      doc.head.appendChild(el);
+    }
+  } else if (ic.rel === 'shortcut icon') {
+    // upsert link[rel="shortcut icon"]
+    let el = doc.head.querySelector('link[rel="shortcut icon"]');
+    if (el) {
+      el.setAttribute('href', ic.href);
+    } else {
+      el = doc.createElement('link');
+      el.setAttribute('rel', 'shortcut icon');
+      if (ic.type) el.setAttribute('type', ic.type);
+      el.setAttribute('href', ic.href);
+      doc.head.appendChild(el);
+    }
+  } else {
+    // upsert other rels (e.g. apple-touch-icon)
+    let el = doc.head.querySelector(`link[rel="${ic.rel}"]`);
+    if (el) {
+      el.setAttribute('href', ic.href);
+    } else {
+      el = doc.createElement('link');
+      el.setAttribute('rel', ic.rel);
+      if (ic.sizes) el.setAttribute('sizes', ic.sizes);
+      if (ic.type) el.setAttribute('type', ic.type);
+      el.setAttribute('href', ic.href);
+      doc.head.appendChild(el);
+    }
+  }
+}
+
 // Orchestrator helper: performs high-level head initialization using the exported helpers.
 export function orchestrateHead(doc = typeof document === 'undefined' ? null : document, options = {}) {
-  if (!doc || !doc.head) return null;
+  if (!doc?.head) return null;
 
   const BASE_URL = options.BASE_URL || "https://abdulkerimsesli.de";
   const BRAND_DATA = options.BRAND_DATA || {};
@@ -1014,50 +1056,13 @@ export function orchestrateHead(doc = typeof document === 'undefined' ? null : d
   metas.forEach((m) => upsertMeta(doc, m.name, m.content));
 
   // Ensure icon links (icons, shortcut, apple-touch-icon) are applied
-  iconLinks.forEach((ic) => {
-    if (!ic || !ic.rel) return;
-    if (ic.rel === 'icon' && ic.sizes) {
-      // upsert link[rel="icon"][sizes="..."]
-      let el = doc.head.querySelector(`link[rel="icon"][sizes="${ic.sizes}"]`);
-      if (el) {
-        el.setAttribute('href', ic.href);
-      } else {
-        el = doc.createElement('link');
-        el.setAttribute('rel', 'icon');
-        el.setAttribute('sizes', ic.sizes);
-        if (ic.type) el.setAttribute('type', ic.type);
-        el.setAttribute('href', ic.href);
-        doc.head.appendChild(el);
-      }
-    } else if (ic.rel === 'shortcut icon') {
-      let el = doc.head.querySelector('link[rel="shortcut icon"]');
-      if (el) {
-        el.setAttribute('href', ic.href);
-      } else {
-        el = doc.createElement('link');
-        el.setAttribute('rel', 'shortcut icon');
-        el.setAttribute('href', ic.href);
-        doc.head.appendChild(el);
-      }
-    } else if (ic.rel === 'apple-touch-icon') {
-      let el = doc.head.querySelector('link[rel="apple-touch-icon"]');
-      if (el) {
-        el.setAttribute('href', ic.href);
-      } else {
-        el = doc.createElement('link');
-        el.setAttribute('rel', 'apple-touch-icon');
-        if (ic.sizes) el.setAttribute('sizes', ic.sizes);
-        el.setAttribute('href', ic.href);
-        doc.head.appendChild(el);
-      }
-    }
-  });
+  iconLinks.forEach((ic) => applyIconLink(doc, ic));
 
   // 5) canonical + alternates
   const { effectiveCanonical, alternates } = buildCanonicalLinks(
     ROUTES.forceProdFlag || false,
     globalThis.location.hostname.toLowerCase(),
-    (typeof options.cleanPath !== 'undefined' ? options.cleanPath : globalThis.location.pathname),
+    (options.cleanPath ?? globalThis.location.pathname),
     pageUrl,
     BASE_URL,
     globalThis.location.pathname,
@@ -1066,10 +1071,13 @@ export function orchestrateHead(doc = typeof document === 'undefined' ? null : d
   applyCanonicalLinks(doc, alternates, effectiveCanonical);
 
   // 6) schedule schema injection
-  scheduleSchemaInjection(() => injectSchema(doc, pageData, pageUrl, BASE_URL, BRAND_DATA, BUSINESS_FAQS), 1500, 1200);
+  scheduleSchemaInjection(() => injectSchema(pageData, pageUrl, BASE_URL, BRAND_DATA, BUSINESS_FAQS, doc), 1500, 1200);
 
   return { pageData, pageUrl, effectiveCanonical, alternates };
 }
 
-loadSharedHead().catch((e) => log?.warn?.("head-complete: loadSharedHead failed", e));
-loadSharedHead().catch((e) => log?.warn?.("head-complete: loadSharedHead failed", e));
+try {
+  await loadSharedHead();
+} catch (e) {
+  log?.warn?.("head-complete: loadSharedHead failed", e);
+}
