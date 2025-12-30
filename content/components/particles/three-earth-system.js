@@ -527,7 +527,11 @@ function _ensureWebGLOrFallback(container, forceThree) {
           );
           fallback.innerHTML = `
             <div class="three-earth-fallback__inner">
-              <img src="/content/assets/img/og/og-home.png" alt="Abdulkerim — Digital Creator Portfolio" />
+              <picture>
+                <source type="image/avif" srcset="/content/assets/img/og/og-home@1600.avif 1600w, /content/assets/img/og/og-home@1200.avif 1200w, /content/assets/img/og/og-home@800.avif 800w, /content/assets/img/og/og-home@400.avif 400w" sizes="(max-width:1200px) 100vw, 1200px" />
+                <source type="image/webp" srcset="/content/assets/img/og/og-home@1600.webp 1600w, /content/assets/img/og/og-home@1200.webp 1200w, /content/assets/img/og/og-home@800.webp 800w, /content/assets/img/og/og-home@400.webp 400w" sizes="(max-width:1200px) 100vw, 1200px" />
+                <img src="/content/assets/img/og/og-home@1200.avif" srcset="/content/assets/img/og/og-home@1600.avif 1600w, /content/assets/img/og/og-home@1200.avif 1200w, /content/assets/img/og/og-home@800.avif 800w" sizes="(max-width:1200px) 100vw, 1200px" alt="Abdulkerim — Digital Creator Portfolio" width="1200" height="630" decoding="async" loading="eager" fetchpriority="high" />
+              </picture>
               <p class="three-earth-fallback__text">Interaktive 3D‑Ansicht wird von Ihrem Gerät nicht unterstützt. Hier eine Vorschau.</p>
             </div>
           `;

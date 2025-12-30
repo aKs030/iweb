@@ -446,7 +446,7 @@ const ThreeEarthLoader = (() => {
           }
         }
       },
-      { rootMargin: "300px", threshold: 0.01 },
+      { rootMargin: "100px", threshold: 0.01 },
     );
 
     observer.observe(container);

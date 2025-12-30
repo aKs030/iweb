@@ -244,7 +244,7 @@ dataLayer.push({
     ];
 
     const SCRIPTS = [
-      { src: "/content/main.js", module: true, preload: true },
+      { src: "/content/main.js", module: true, preload: false },
       { src: "/content/components/menu/menu.js", module: true },
       {
         src: "/content/components/robot-companion/robot-companion.js",
