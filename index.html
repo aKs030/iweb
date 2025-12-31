@@ -258,7 +258,6 @@
       rel="stylesheet"
       href="/content/components/typewriter/typewriter.css"
     />
-    <link rel="stylesheet" href="/content/components/menu/menu.css" />
 
     <link
       rel="stylesheet"
@@ -286,23 +285,6 @@
 
     <!-- Cards (componentized) - load normally to avoid FOUC for above-the-fold cards -->
     <link rel="stylesheet" href="/content/styles/cards.css" />
-
-    <!-- Footer styles: deferred to keep initial render light -->
-    <link
-      rel="stylesheet"
-      href="/content/components/footer/footer.css"
-      media="print"
-      data-defer="1"
-    />
-    <noscript
-      ><link rel="stylesheet" href="/content/components/footer/footer.css"
-    /></noscript>
-
-    <script
-      src="/content/components/robot-companion/robot-companion.js"
-      type="module"
-      crossorigin="anonymous"
-    ></script>
   </head>
   <body>
     <!-- Google Tag Manager (noscript) -->
@@ -442,10 +424,5 @@
       id="footer-container"
       data-footer-src="/content/components/footer/footer"
     ></div>
-    <script
-      src="/content/components/footer/footer-complete.js"
-      type="module"
-      crossorigin="anonymous"
-    ></script>
   </body>
 </html>
