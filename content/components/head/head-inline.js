@@ -347,7 +347,7 @@ dataLayer.push({
     const css = `
 /***** Critical Hero CSS (inlined) *****/
 .hero{display:flex;align-items:center;justify-content:center;min-height:100dvh;padding:0 .5rem;box-sizing:border-box}
-.hero-title{position:relative;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:clamp(3rem,6vw,4.5rem);line-height:1.03;font-weight:800;text-align:center;margin:0;padding:8px 12px;white-space:normal;max-width:30ch;color:var(--color-text-main,#fff)}
+.hero-title{font:800 clamp(3rem,6vw,4.5rem)/1.03 var(--font-inter);margin:0;padding:8px 12px;max-width:30ch;color:var(--color-text-main,#fff);text-align:center;white-space:normal}
 .hero-visual{animation:none}
 .three-earth-fallback{display:block}
 `;
