@@ -20,6 +20,8 @@
       name="description"
       content="Abdulkerim Sesli — Web Developer & Photographer in Berlin. Spezialisiert auf React, Three.js und Urban Photography. Portfolio, Referenzen & Kontakt."
     />
+    <!-- Date created (ISO 8601) - used by schema generation -->
+    <meta name="dateCreated" content="2025-12-31T12:00:00Z" />
     <!-- Description and keywords are provided centrally in content/components/head/head.html -->
     <!-- Canonical is injected dynamically by content/components/head/head-complete.js -->
     <!-- Server-side favicons for crawlers and browsers (reduces reliance on client-side injection) -->
@@ -150,6 +152,7 @@
         "@context": "https://schema.org",
         "@type": "Person",
         "name": "Abdulkerim Sesli",
+        "identifier": "https://abdulkerimsesli.de/#person",
         "jobTitle": "Webentwickler & Fotograf",
         "url": "https://abdulkerimsesli.de",
         "email": "mailto:kontakt@abdulkerimsesli.de",
@@ -158,6 +161,23 @@
           "https://linkedin.com/in/abdulkerimsesli",
           "https://x.com/kRm_030"
         ],
+        "interactionStatistic": [
+          {
+            "@type": "InteractionCounter",
+            "interactionType": "https://schema.org/FollowAction",
+            "userInteractionCount": 5400
+          },
+          {
+            "@type": "InteractionCounter",
+            "interactionType": "https://schema.org/LikeAction",
+            "userInteractionCount": 12000
+          }
+        ],
+        "agentInteractionStatistic": {
+          "@type": "InteractionCounter",
+          "interactionType": "https://schema.org/WriteAction",
+          "userInteractionCount": 234
+        },
         "address": {
           "@type": "PostalAddress",
           "streetAddress": "Sterkrader Str. 59",
