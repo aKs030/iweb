@@ -27,6 +27,41 @@
   box-sizing: border-box;
 }
 
+/* Skip Link */
+.skip-link {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: #fff;
+  color: #000;
+  padding: 0.45rem 0.7rem;
+  border-radius: 6px;
+  z-index: 9999;
+  transform: translateY(-200%);
+  transition: transform 0.15s ease;
+  text-decoration: none;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 12%);
+}
+.skip-link:focus,
+.skip-link:focus-visible {
+  transform: translateY(0);
+  outline: none;
+}
+
+/* CV link */
+.cv-link {
+  color: var(--link, #07a1ff);
+  text-decoration: underline;
+  font-size: 0.9rem;
+}
+.cv-link:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary-color) 55%, transparent);
+  border-radius: 6px;
+}
+
 /* Container */
 .about__container {
   max-width: var(--about-max-width);
@@ -99,6 +134,13 @@
 
   .about__container {
     padding: clamp(2.1rem, 6.5vw, 2.8rem) clamp(1rem, 5vw, 1.5rem);
+  }
+
+  .about__meta {
+    flex-direction: row;
+    gap: 0.8rem;
+    align-items: center;
+    justify-content: flex-start;
   }
 }
 
@@ -237,40 +279,72 @@
   text-align: center;
 }
 
-/* Author card styles */
-.about__meta {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-  justify-content: flex-start;
+/* Skills Section */
+.about__skills {
+  margin-top: 2rem;
+}
+
+.about__skills h2 {
+  font-size: clamp(1.1rem, 2vw, 1.3rem);
   margin-bottom: 1rem;
+  color: #fff;
 }
 
-.about__figure img {
-  border-radius: 12px;
-  width: 120px;
-  height: 120px;
-  object-fit: cover;
-  display: block;
+.skills-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1rem;
 }
 
-.about__card-body .about__role {
-  font-weight: 600;
+.skill-category h3 {
+  font-size: 1rem;
+  color: #7fc8ff;
+  margin-bottom: 0.5rem;
+}
+
+.skill-category ul {
+  list-style: none;
+  padding: 0;
+}
+
+.skill-category li {
+  margin-bottom: 0.25rem;
+  color: rgb(240 240 240 / 85%);
+}
+
+/* Experience Section */
+.about__experience {
+  margin-top: 2rem;
+}
+
+.about__experience h2 {
+  font-size: clamp(1.1rem, 2vw, 1.3rem);
+  margin-bottom: 1rem;
+  color: #fff;
+}
+
+.experience-item {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  border-left: 4px solid #7fc8ff;
+}
+
+.experience-item h3 {
+  font-size: 1rem;
   color: #fff;
   margin-bottom: 0.25rem;
 }
 
-.about__card-body .about__links a {
-  margin-right: 0.6rem;
-  color: var(--link, #07a1ff);
-  text-decoration: none;
+.experience-date {
+  font-size: 0.85rem;
+  color: #7fc8ff;
+  margin-bottom: 0.5rem;
 }
 
-@media (max-width: 768px) {
-  .about__meta {
-    flex-direction: row;
-    gap: 0.8rem;
-    align-items: center;
-    justify-content: flex-start;
-  }
+.experience-item p {
+  color: rgb(240 240 240 / 85%);
+  line-height: 1.4;
 }

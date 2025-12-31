@@ -85,13 +85,15 @@
         "@type": "Person",
         "name": "Abdulkerim Sesli",
         "jobTitle": "Webentwickler & Fotograf",
+        "description": "Webentwickler aus Berlin — spezialisiert auf performante, barrierearme Webanwendungen, interaktive Visualisierungen und Fotografie.",
         "url": "https://abdulkerimsesli.de/about/",
         "email": "mailto:kontakt@abdulkerimsesli.de",
         "sameAs": [
           "https://github.com/aKs030",
           "https://linkedin.com/in/abdulkerimsesli",
           "https://x.com/kRm_030"
-        ]
+        ],
+        "knowsAbout": ["Webentwicklung","Frontend","Backend","Performance","SEO","Three.js","Fotografie"]
       }
     </script>
     <script
@@ -119,6 +121,7 @@
     </style>
   </head>
   <body>
+    <a class="skip-link" href="#main-content">Zum Inhalt springen</a>
     <!-- Google Tag Manager (noscript) -->
     <noscript
       ><iframe
@@ -133,13 +136,16 @@
     <main id="main-content">
       <div class="standalone-about section about">
         <div class="about__container">
-          <aside class="about__meta" aria-label="Kurzinfo zum Autor">
+          <aside class="about__meta" aria-label="Kurzinfo zum Autor" role="complementary">
             <figure class="about__figure">
               <img
                 src="/content/assets/img/icons/icon-512.png"
                 alt="Porträt von Abdulkerim Sesli"
                 width="160"
                 height="160"
+                loading="lazy"
+                decoding="async"
+                fetchpriority="low"
               />
             </figure>
             <div class="about__card-body">
@@ -168,56 +174,45 @@
                 >
                 <br />
                 Geboren 1991, Berlin • Sprachen: Deutsch, Englisch
+                <br />
+                <a href="/content/assets/Abdulkerim_Sesli_CV_DE.pdf" download class="cv-link" aria-label="Lebenslauf herunterladen (PDF)">Lebenslauf (PDF)</a>
               </p>
             </div>
           </aside>
           <article class="about__content">
             <div class="about__text" data-parallax-speed="0.1">
-              <h1 id="about-heading">Danke für Ihren Besuch!</h1>
+              <h1 id="about-heading">Hi — ich bin Abdulkerim</h1>
 
               <p>
-                Es freut mich sehr, dass Sie sich die Zeit genommen haben, meine
-                Website zu erkunden. Mein Name ist
-                <strong>Abdulkerim</strong>
-                und ich bin ein leidenschaftlicher Webentwickler aus Berlin, der
-                es liebt, digitale Träume in die Realität umzusetzen.
+                Ich gestalte und entwickle performante, barrierearme
+                Webanwendungen und visuelle Erlebnisse. Als Full‑Stack
+                Webentwickler aus Berlin verbinde ich moderne Technologien mit
+                einem klaren Fokus auf Usability, Performance und Design.
               </p>
 
               <p>
-                Hinter jedem Projekt steckt eine Geschichte, hinter jedem Code
-                eine Vision. Ich glaube fest daran, dass großartige Websites
-                mehr sind als nur funktionale Tools – sie sind digitale
-                Erlebnisse, die Menschen bewegen und inspirieren.
+                Meine Leistungen reichen von Konzeption und Prototyping über
+                Frontend‑ und Backend‑Entwicklung bis hin zu interaktiven
+                3D‑Visualisierungen (Three.js) und Fotografie für Web &amp;
+                Social Media.
               </p>
 
               <p>
-                Meine Mission ist es, das Web zu einem schöneren und
-                zugänglicheren Ort zu machen. Dabei verbinde ich moderne
-                Technologien mit kreativem Design und stelle den Menschen stets
-                in den Mittelpunkt meiner Arbeit.
+                Ich arbeite eng mit Auftraggebern zusammen — von der Idee bis
+                zum Launch — und lege Wert auf sauberen, wartbaren Code sowie
+                messbare Ergebnisse.
               </p>
 
-              <p>
-                <em
-                  >Jede Zeile Code, die ich schreibe, trägt ein Stück meiner
-                  Leidenschaft in sich.</em
-                >
-                <br />
-                Von der ersten Idee bis zum finalen Launch begleite ich Sie auf
-                Ihrer digitalen Reise.
-              </p>
+              <ul class="about__services" aria-label="Kompetenzen">
+                <li>Modernes JavaScript (ES6+), React &amp; Frameworks</li>
+                <li>Node.js, Express, REST APIs</li>
+                <li>Three.js &amp; interaktive Visualisierungen</li>
+                <li>SEO, Barrierefreiheit &amp; Performance</li>
+              </ul>
 
-              <p>
-                Ich hoffe, meine Arbeit konnte Sie inspirieren und Ihnen einen
-                Einblick in meine Welt der Webentwicklung geben. Es war mir eine
-                wahre Freude, Sie hier zu haben.
-              </p>
-
-              <p class="about__farewell">
-                <strong
-                  >Herzlichen Dank für Ihr Interesse und besuchen Sie mich gerne
-                  wieder!</strong
-                >
+              <p class="about__cta-text">
+                Interesse an Zusammenarbeit oder Fragen? <a href="mailto:kontakt@abdulkerimsesli.de">kontakt@abdulkerimsesli.de</a>
+                • <a href="/content/assets/Abdulkerim_Sesli_CV_DE.pdf" download class="cv-link">Lebenslauf (PDF)</a>
               </p>
 
               <nav class="about__cta" aria-label="Navigationsoptionen">
@@ -227,7 +222,7 @@
                   aria-label="Zurück zur Startseite"
                   >Zur Startseite</a
                 >
-                <a href="/#site-footer" class="btn btn-secondary">
+                <a href="/content/assets/Abdulkerim_Sesli_CV_DE.pdf" class="btn btn-secondary" download aria-label="Lebenslauf herunterladen (PDF)">
                   <span class="visually-hidden">Lebenslauf herunterladen</span>
                   <svg
                     width="20"
@@ -257,6 +252,53 @@
                   <li><a href="/projekte/#project-2">Zahlen Raten</a></li>
                   <li><a href="/projekte/#project-3">Color Changer</a></li>
                 </ul>
+              </section>
+
+              <section class="about__skills" aria-labelledby="skills-heading">
+                <h2 id="skills-heading">Fähigkeiten & Technologien</h2>
+                <div class="skills-grid">
+                  <div class="skill-category">
+                    <h3>Frontend</h3>
+                    <ul>
+                      <li>HTML5 & CSS3</li>
+                      <li>JavaScript (ES6+)</li>
+                      <li>React & Vue.js</li>
+                      <li>Three.js für 3D</li>
+                    </ul>
+                  </div>
+                  <div class="skill-category">
+                    <h3>Backend</h3>
+                    <ul>
+                      <li>Node.js</li>
+                      <li>Express.js</li>
+                      <li>RESTful APIs</li>
+                      <li>Datenbanken (MongoDB, SQL)</li>
+                    </ul>
+                  </div>
+                  <div class="skill-category">
+                    <h3>Tools & Andere</h3>
+                    <ul>
+                      <li>Git & GitHub</li>
+                      <li>Webpack & Vite</li>
+                      <li>SEO & Performance</li>
+                      <li>UI/UX Design</li>
+                    </ul>
+                  </div>
+                </div>
+              </section>
+
+              <section class="about__experience" aria-labelledby="experience-heading">
+                <h2 id="experience-heading">Berufserfahrung</h2>
+                <div class="experience-item">
+                  <h3>Freiberuflicher Webentwickler</h3>
+                  <p class="experience-date">2020 - Heute</p>
+                  <p>Entwicklung maßgeschneiderter Websites und Webanwendungen für verschiedene Kunden. Fokus auf moderne Technologien und benutzerfreundliche Designs.</p>
+                </div>
+                <div class="experience-item">
+                  <h3>Junior Developer bei TechStartup</h3>
+                  <p class="experience-date">2018 - 2020</p>
+                  <p>Mitarbeit an der Entwicklung von SaaS-Produkten. Verantwortlich für Frontend-Komponenten und API-Integrationen.</p>
+                </div>
               </section>
             </div>
           </article>
