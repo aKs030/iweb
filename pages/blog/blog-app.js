@@ -82,11 +82,11 @@ function BlogApp() {
     if (!currentPostId) {
       // remove temp article JSON-LD and restore description/title if present
       const t = document.querySelector(
-        'script[type="application/ld+json"][data-temp-article]',
+        'script[type="application/ld+json"][data-temp-article]'
       );
       if (t) t.remove();
       const meta = document.querySelector(
-        'meta[name="description"][data-temp]',
+        'meta[name="description"][data-temp]'
       );
       if (meta) {
         const orig = meta.getAttribute("data-orig");
@@ -117,7 +117,7 @@ function BlogApp() {
     try {
       if (
         !document.querySelector(
-          'script[type="application/ld+json"][data-temp-article]',
+          'script[type="application/ld+json"][data-temp-article]'
         )
       ) {
         const ld = {
@@ -151,11 +151,11 @@ function BlogApp() {
             },
             address: {
               "@type": "PostalAddress",
-              "streetAddress": "Sterkrader Str. 59",
-              "postalCode": "13507",
-              "addressLocality": "Berlin",
-              "addressCountry": "DE"
-            }
+              streetAddress: "Sterkrader Str. 59",
+              postalCode: "13507",
+              addressLocality: "Berlin",
+              addressCountry: "DE",
+            },
           },
           articleBody: post.content,
         };
@@ -192,7 +192,7 @@ function BlogApp() {
             >
               ${cat}
             </button>
-          `,
+          `
         )}
       </div>
 
@@ -261,7 +261,7 @@ function BlogApp() {
                       </button>
                     </div>
                   </article>
-                `,
+                `
               )}
             </div>
           `}

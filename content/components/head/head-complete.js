@@ -177,7 +177,7 @@ export function generateSchemaGraph(
         height: 512,
         creditText: `Logo: ${BRAND_DATA.name}`,
         copyrightNotice: `© ${new Date().getFullYear()} ${BRAND_DATA.name}`,
-        acquireLicensePage: `${BASE_URL}/#image-license`
+        acquireLicensePage: `${BASE_URL}/#image-license`,
       },
       image: {
         "@type": "ImageObject",
@@ -186,7 +186,7 @@ export function generateSchemaGraph(
         height: 630,
         creditText: pageData.imageCredit || `Photo: ${BRAND_DATA.name}`,
         copyrightNotice: `© ${new Date().getFullYear()} ${BRAND_DATA.name}`,
-        acquireLicensePage: `${BASE_URL}/#image-license`
+        acquireLicensePage: `${BASE_URL}/#image-license`,
       },
 
       email: BRAND_DATA.email,
@@ -1027,7 +1027,7 @@ async function loadSharedHead() {
         height: 512,
         creditText: `Logo: ${BRAND_DATA.name}`,
         copyrightNotice: `© ${new Date().getFullYear()} ${BRAND_DATA.name}`,
-        acquireLicensePage: `${BASE_URL}/#image-license`
+        acquireLicensePage: `${BASE_URL}/#image-license`,
       },
       founder: { "@id": ID.person },
       image: {
@@ -1037,7 +1037,7 @@ async function loadSharedHead() {
         height: 630,
         creditText: pageData.imageCredit || `Photo: ${BRAND_DATA.name}`,
         copyrightNotice: `© ${new Date().getFullYear()} ${BRAND_DATA.name}`,
-        acquireLicensePage: `${BASE_URL}/#image-license`
+        acquireLicensePage: `${BASE_URL}/#image-license`,
       },
       email: BRAND_DATA.email,
       sameAs: BRAND_DATA.sameAs,
