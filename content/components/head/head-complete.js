@@ -43,16 +43,16 @@ const BRAND_DATA = {
     "https://www.instagram.com/abdulkerimsesli",
     "https://www.youtube.com/@aks.030",
     "https://www.behance.net/abdulkerimsesli",
-    "https://dribbble.com/abdulkerimsesli"
+    "https://dribbble.com/abdulkerimsesli",
   ],
   openingHours: ["Mo-Fr 09:00-18:00"],
   contactPoint: [
     {
       "@type": "ContactPoint",
-      "contactType": "customer service",
-      "email": "kontakt@abdulkerimsesli.de",
-      "url": `${BASE_URL}/#kontakt`
-    }
+      contactType: "customer service",
+      email: "kontakt@abdulkerimsesli.de",
+      url: `${BASE_URL}/#kontakt`,
+    },
   ],
   telephone: "+49-30-12345678",
   paymentAccepted: "Invoice",
@@ -66,7 +66,8 @@ const ROUTES = {
     description:
       "Offizielles Portfolio von Abdulkerim Sesli (Abdul Berlin). Webentwickler (React, Three.js) und Fotograf aus Berlin. Nicht zu verwechseln mit Hörbuch-Verlagen.",
     title_en: "Abdulkerim Sesli — Web Developer & Photographer in Berlin",
-    description_en: "Abdulkerim Sesli — Web Developer & Photographer in Berlin. Specialist in React, Three.js and urban photography. Portfolio, references & contact.",
+    description_en:
+      "Abdulkerim Sesli — Web Developer & Photographer in Berlin. Specialist in React, Three.js and urban photography. Portfolio, references & contact.",
     type: "ProfilePage",
     image: `${BASE_URL}/content/assets/img/og/og-home.png`,
     // Modern LCP image: keep PNG for social-card/OG but use AVIF for site delivery/preload
@@ -77,7 +78,8 @@ const ROUTES = {
     description:
       "Entdecke interaktive Web-Experimente aus Berlin (13507). Spezialisiert auf performante React-Lösungen, 3D-Web (Three.js) und modernes UI/UX Design.",
     title_en: "References & Code Projects | Abdulkerim Sesli",
-    description_en: "Explore interactive web experiments and business apps. Specialist in performant React solutions, 3D web (Three.js) and modern UI/UX.",
+    description_en:
+      "Explore interactive web experiments and business apps. Specialist in performant React solutions, 3D web (Three.js) and modern UI/UX.",
     type: "CollectionPage",
     image: `${BASE_URL}/content/assets/img/og/og-projects.png`,
   },
@@ -86,7 +88,8 @@ const ROUTES = {
     description:
       "Expertenwissen zu JavaScript, CSS und Web-Architektur. Praxisnahe Tutorials und Einblicke in den Workflow eines Berliner Fullstack-Entwicklers.",
     title_en: "Tech Blog & Tutorials | Web Development Berlin",
-    description_en: "Practical articles on JavaScript, CSS and web architecture. Hands-on tutorials and insights from a Berlin-based developer.",
+    description_en:
+      "Practical articles on JavaScript, CSS and web architecture. Hands-on tutorials and insights from a Berlin-based developer.",
     type: "Blog",
     image: `${BASE_URL}/content/assets/img/og/og-blog.png`,
   },
@@ -95,7 +98,8 @@ const ROUTES = {
     description:
       "Eine Auswahl meiner Arbeiten, kurzen Vorstellungen und Behind-the-Scenes.",
     title_en: "Videos — Abdulkerim Sesli",
-    description_en: "A selection of my work, brief presentations and behind-the-scenes.",
+    description_en:
+      "A selection of my work, brief presentations and behind-the-scenes.",
     type: "CollectionPage",
     // NOTE: currently uses og-home.png as a fallback.
     image: `${BASE_URL}/content/assets/img/og/og-home.png`,
@@ -105,7 +109,8 @@ const ROUTES = {
     description:
       "Visuelle Ästhetik aus der Hauptstadt. Kuratierte Galerie mit Fokus auf Street Photography, Architektur und atmosphärische Portraits aus Berlin und Umgebung.",
     title_en: "Photography Portfolio | Urban & Portraits Berlin",
-    description_en: "Visual aesthetics from the capital. Curated gallery focused on street photography, architecture and atmospheric portraits from Berlin.",
+    description_en:
+      "Visual aesthetics from the capital. Curated gallery focused on street photography, architecture and atmospheric portraits from Berlin.",
     type: "ImageGallery",
     image: `${BASE_URL}/content/assets/img/og/og-gallery.png`,
   },
@@ -134,10 +139,17 @@ const BUSINESS_FAQS = [
 ];
 
 // Extracted helper: generate schema graph for a given page context. Returns an array of graph nodes.
-export function generateSchemaGraph(pageData, pageUrl, BASE_URL, BRAND_DATA, BUSINESS_FAQS, doc = typeof document === 'undefined' ? null : document) {
+export function generateSchemaGraph(
+  pageData,
+  pageUrl,
+  BASE_URL,
+  BRAND_DATA,
+  BUSINESS_FAQS,
+  doc = typeof document === "undefined" ? null : document
+) {
   // Use canonical origin (prod or runtime origin) so JSON-LD stays consistent in local/dev
   const canonicalOrigin =
-    (doc?.documentElement?.dataset?.forceProdCanonical === "true")
+    doc?.documentElement?.dataset?.forceProdCanonical === "true"
       ? BASE_URL
       : globalThis.location.origin;
 
@@ -206,30 +218,71 @@ export function generateSchemaGraph(pageData, pageUrl, BASE_URL, BRAND_DATA, BUS
         geo: BRAND_DATA.geo,
       },
       knowsAbout: [
-        { "@type": "Thing", name: "Web Development", sameAs: "https://www.wikidata.org/wiki/Q386275" },
-        { "@type": "Thing", name: "React", sameAs: "https://www.wikidata.org/wiki/Q19399674" },
-        { "@type": "Thing", name: "Three.js", sameAs: "https://www.wikidata.org/wiki/Q28135934" },
-        { "@type": "Thing", name: "JavaScript", sameAs: "https://www.wikidata.org/wiki/Q28865" },
-        { "@type": "Thing", name: "Photography", sameAs: "https://www.wikidata.org/wiki/Q11633" },
+        {
+          "@type": "Thing",
+          name: "Web Development",
+          sameAs: "https://www.wikidata.org/wiki/Q386275",
+        },
+        {
+          "@type": "Thing",
+          name: "React",
+          sameAs: "https://www.wikidata.org/wiki/Q19399674",
+        },
+        {
+          "@type": "Thing",
+          name: "Three.js",
+          sameAs: "https://www.wikidata.org/wiki/Q28135934",
+        },
+        {
+          "@type": "Thing",
+          name: "JavaScript",
+          sameAs: "https://www.wikidata.org/wiki/Q28865",
+        },
+        {
+          "@type": "Thing",
+          name: "Photography",
+          sameAs: "https://www.wikidata.org/wiki/Q11633",
+        },
         { "@type": "Thing", name: "Urban Photography" },
-        { "@type": "Place", name: "Berlin", sameAs: "https://www.wikidata.org/wiki/Q64" },
+        {
+          "@type": "Place",
+          name: "Berlin",
+          sameAs: "https://www.wikidata.org/wiki/Q64",
+        },
       ],
-    },
+    }
   );
 
   // Skills/ItemList
-  if (pageUrl.includes("/about") || pageUrl === BASE_URL || pageUrl === `${BASE_URL}/`) {
+  if (
+    pageUrl.includes("/about") ||
+    pageUrl === BASE_URL ||
+    pageUrl === `${BASE_URL}/`
+  ) {
     graph.push({
       "@type": "ItemList",
       "@id": `${BASE_URL}/#skills`,
       name: "Technische Skills & Kompetenzen",
-      description: "Kernkompetenzen in der Fullstack-Webentwicklung und Fotografie",
+      description:
+        "Kernkompetenzen in der Fullstack-Webentwicklung und Fotografie",
       itemListElement: [
         { "@type": "ListItem", position: 1, name: "React & Next.js Ecosystem" },
-        { "@type": "ListItem", position: 2, name: "Three.js & WebGL 3D-Visualisierung" },
-        { "@type": "ListItem", position: 3, name: "Node.js & Backend Architecture" },
+        {
+          "@type": "ListItem",
+          position: 2,
+          name: "Three.js & WebGL 3D-Visualisierung",
+        },
+        {
+          "@type": "ListItem",
+          position: 3,
+          name: "Node.js & Backend Architecture",
+        },
         { "@type": "ListItem", position: 4, name: "UI/UX Design & Animation" },
-        { "@type": "ListItem", position: 5, name: "Urban & Portrait Photography" },
+        {
+          "@type": "ListItem",
+          position: 5,
+          name: "Urban & Portrait Photography",
+        },
       ],
     });
   }
@@ -237,11 +290,26 @@ export function generateSchemaGraph(pageData, pageUrl, BASE_URL, BRAND_DATA, BUS
   // Extract page content safely
   const extractPageContent = () => {
     try {
-      const contentNode = document.querySelector("main") || document.querySelector("article") || document.body;
+      const contentNode =
+        document.querySelector("main") ||
+        document.querySelector("article") ||
+        document.body;
       if (!contentNode) return "";
       const clone = contentNode.cloneNode(true);
-      const noiseSelectors = ["nav", "footer", "script", "style", "noscript", "iframe", ".cookie-banner", ".no-ai", '[aria-hidden="true"]'];
-      noiseSelectors.forEach((sel) => clone.querySelectorAll(sel).forEach((el) => el.remove()));
+      const noiseSelectors = [
+        "nav",
+        "footer",
+        "script",
+        "style",
+        "noscript",
+        "iframe",
+        ".cookie-banner",
+        ".no-ai",
+        '[aria-hidden="true"]',
+      ];
+      noiseSelectors.forEach((sel) =>
+        clone.querySelectorAll(sel).forEach((el) => el.remove())
+      );
       let text = clone.innerText || clone.textContent || "";
       text = text.replaceAll(/\s+/g, " ").trim();
       return text.length > 5000 ? text.substring(0, 5000) + "..." : text;
@@ -253,60 +321,114 @@ export function generateSchemaGraph(pageData, pageUrl, BASE_URL, BRAND_DATA, BUS
   const aiReadyText = extractPageContent();
 
   // Webpage + Website
-  graph.push({
-    "@type": pageData.type || "WebPage",
-    "@id": ID.webpage,
-    url: pageUrl,
-    name: pageData.title,
-    description: pageData.description,
-    text: aiReadyText,
-    isPartOf: { "@id": ID.website },
-    mainEntity: { "@id": ID.person },
-    publisher: { "@id": ID.org },
-    inLanguage: "de-DE",
-    dateModified: new Date().toISOString(),
-  }, {
-    "@type": "WebSite",
-    "@id": ID.website,
-    url: BASE_URL,
-    name: "Abdulkerim Sesli Portfolio",
-    publisher: { "@id": ID.org },
-    potentialAction: { "@type": "SearchAction", target: `${BASE_URL}/?s={search_term_string}`, "query-input": "required name=search_term_string" },
-  });
+  graph.push(
+    {
+      "@type": pageData.type || "WebPage",
+      "@id": ID.webpage,
+      url: pageUrl,
+      name: pageData.title,
+      description: pageData.description,
+      text: aiReadyText,
+      isPartOf: { "@id": ID.website },
+      mainEntity: { "@id": ID.person },
+      publisher: { "@id": ID.org },
+      inLanguage: "de-DE",
+      dateModified: new Date().toISOString(),
+    },
+    {
+      "@type": "WebSite",
+      "@id": ID.website,
+      url: BASE_URL,
+      name: "Abdulkerim Sesli Portfolio",
+      publisher: { "@id": ID.org },
+      potentialAction: {
+        "@type": "SearchAction",
+        target: `${BASE_URL}/?s={search_term_string}`,
+        "query-input": "required name=search_term_string",
+      },
+    }
+  );
 
   // FAQ handling
-  const faqNodes = Array.from((doc?.querySelectorAll?.(".faq-item") || [])).map((el, i) => {
-    const rawQ = el.querySelector(".question, h3, summary")?.textContent;
-    const rawA = el.querySelector(".answer, p, div")?.textContent;
-    const q = rawQ ? String(rawQ).replaceAll(/\s+/g, " ").trim() : "";
-    const a = rawA ? String(rawA).replaceAll(/\s+/g, " ").trim() : "";
-    if (!q || q.length < 2) return null;
-    return { "@type": "Question", "@id": `${pageUrl}#faq-q${i + 1}`, name: q, acceptedAnswer: { "@type": "Answer", text: a || "Details ansehen" } };
-  }).filter(Boolean);
+  const faqNodes = Array.from(doc?.querySelectorAll?.(".faq-item") || [])
+    .map((el, i) => {
+      const rawQ = el.querySelector(".question, h3, summary")?.textContent;
+      const rawA = el.querySelector(".answer, p, div")?.textContent;
+      const q = rawQ ? String(rawQ).replaceAll(/\s+/g, " ").trim() : "";
+      const a = rawA ? String(rawA).replaceAll(/\s+/g, " ").trim() : "";
+      if (!q || q.length < 2) return null;
+      return {
+        "@type": "Question",
+        "@id": `${pageUrl}#faq-q${i + 1}`,
+        name: q,
+        acceptedAnswer: { "@type": "Answer", text: a || "Details ansehen" },
+      };
+    })
+    .filter(Boolean);
 
   let faqEntities = faqNodes;
   if (faqEntities.length === 0) {
-    const isHomepage = globalThis.location.pathname === "/" || globalThis.location.pathname === "";
-    const hasBusinessFaqFlag = !!(doc?.querySelector?.("[data-inject-business-faq]") || false);
+    const isHomepage =
+      globalThis.location.pathname === "/" ||
+      globalThis.location.pathname === "";
+    const hasBusinessFaqFlag = !!(
+      doc?.querySelector?.("[data-inject-business-faq]") || false
+    );
     if (isHomepage || hasBusinessFaqFlag) {
-      const fallbackFaqNodes = BUSINESS_FAQS.map((item, i) => ({ "@type": "Question", "@id": `${pageUrl}#faq-q${i + 1}`, name: String(item.q).replaceAll(/\s+/g, " ").trim(), acceptedAnswer: { "@type": "Answer", text: String(item.a).replaceAll(/\s+/g, " ").trim() } }));
+      const fallbackFaqNodes = BUSINESS_FAQS.map((item, i) => ({
+        "@type": "Question",
+        "@id": `${pageUrl}#faq-q${i + 1}`,
+        name: String(item.q).replaceAll(/\s+/g, " ").trim(),
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: String(item.a).replaceAll(/\s+/g, " ").trim(),
+        },
+      }));
       faqEntities = fallbackFaqNodes;
     }
   }
 
   if (faqEntities.length > 0) {
-    graph.push({ "@type": "FAQPage", "@id": `${pageUrl}#faq`, name: pageData?.title ? `${pageData.title} — FAQ` : "Häufig gestellte Fragen", mainEntity: faqEntities, isPartOf: { "@id": ID.webpage } });
+    graph.push({
+      "@type": "FAQPage",
+      "@id": `${pageUrl}#faq`,
+      name: pageData?.title
+        ? `${pageData.title} — FAQ`
+        : "Häufig gestellte Fragen",
+      mainEntity: faqEntities,
+      isPartOf: { "@id": ID.webpage },
+    });
   }
   // Breadcrumbs
-  const segments = globalThis.location.pathname.replace(/\/$/, "").split("/").filter(Boolean);
-  const crumbs = [{ "@type": "ListItem", position: 1, name: "Home", item: { "@id": BASE_URL, name: "Home" } }];
+  const segments = globalThis.location.pathname
+    .replace(/\/$/, "")
+    .split("/")
+    .filter(Boolean);
+  const crumbs = [
+    {
+      "@type": "ListItem",
+      position: 1,
+      name: "Home",
+      item: { "@id": BASE_URL, name: "Home" },
+    },
+  ];
   let pathAcc = canonicalOrigin;
   segments.forEach((seg, i) => {
     pathAcc += `/${seg}`;
     const name = seg.charAt(0).toUpperCase() + seg.slice(1);
-    crumbs.push({ "@type": "ListItem", position: i + 2, name: name, item: { "@id": pathAcc, name: name } });
+    crumbs.push({
+      "@type": "ListItem",
+      position: i + 2,
+      name: name,
+      item: { "@id": pathAcc, name: name },
+    });
   });
-  graph.push({ "@type": "BreadcrumbList", "@id": ID.breadcrumb, name: pageData?.title || document.title || "Navigationspfad", itemListElement: crumbs });
+  graph.push({
+    "@type": "BreadcrumbList",
+    "@id": ID.breadcrumb,
+    name: pageData?.title || document.title || "Navigationspfad",
+    itemListElement: crumbs,
+  });
 
   return graph;
 }
@@ -320,14 +442,15 @@ export function computeEffectiveCanonical(
   pageUrl,
   BASE_URL,
   locationPath = globalThis.location?.pathname || "",
-  locationOrigin = globalThis.location?.origin || "",
+  locationOrigin = globalThis.location?.origin || ""
 ) {
   // Determine canonicalHref and effectiveCanonical.
   // Removed host-based PROD_HOSTS detection per request — only `forceProdFlag`
   // (explicit) controls whether production canonical is used.
   const canonicalHref = forceProdFlag ? `${BASE_URL}${cleanPath}` : pageUrl;
 
-  const isDirtyPath = /^\/pages\//i.exec(locationPath) || /\/index\.html$/i.exec(locationPath);
+  const isDirtyPath =
+    /^\/pages\//i.exec(locationPath) || /\/index\.html$/i.exec(locationPath);
 
   let effectiveCanonical;
   if (forceProdFlag) {
@@ -349,7 +472,7 @@ export function buildCanonicalLinks(
   pageUrl,
   BASE_URL,
   locationPath = globalThis.location?.pathname || "",
-  locationOrigin = globalThis.location?.origin || "",
+  locationOrigin = globalThis.location?.origin || ""
 ) {
   const { canonicalHref, effectiveCanonical } = computeEffectiveCanonical(
     forceProdFlag,
@@ -358,7 +481,7 @@ export function buildCanonicalLinks(
     pageUrl,
     BASE_URL,
     locationPath,
-    locationOrigin,
+    locationOrigin
   );
 
   const canonicalOrigin = forceProdFlag ? BASE_URL : locationOrigin;
@@ -373,15 +496,46 @@ export function buildCanonicalLinks(
 export function buildPwaAssets(BASE_URL, BRAND_DATA) {
   const links = [
     { rel: "manifest", href: "/manifest.json" },
-    { rel: "mask-icon", href: `${BASE_URL}/content/assets/img/icons/safari-pinned-tab.svg`, color: "#0d0d0d" }
+    {
+      rel: "mask-icon",
+      href: `${BASE_URL}/content/assets/img/icons/safari-pinned-tab.svg`,
+      color: "#0d0d0d",
+    },
   ];
   const iconLinks = [
-    { rel: "icon", sizes: "32x32", href: `${BASE_URL}/content/assets/img/icons/icon-32.png`, type: "image/png" },
-    { rel: "icon", sizes: "16x16", href: `${BASE_URL}/content/assets/img/icons/icon-16.png`, type: "image/png" },
-    { rel: "icon", sizes: "192x192", href: `${BASE_URL}/content/assets/img/icons/favicon-192x192.png`, type: "image/png" },
-    { rel: "icon", sizes: "512x512", href: `${BASE_URL}/content/assets/img/icons/favicon-512x512.png`, type: "image/png" },
-    { rel: "shortcut icon", href: `${BASE_URL}/content/assets/img/icons/favicon.ico` },
-    { rel: "apple-touch-icon", sizes: "180x180", href: `${BASE_URL}/content/assets/img/icons/apple-touch-icon.png` },
+    {
+      rel: "icon",
+      sizes: "32x32",
+      href: `${BASE_URL}/content/assets/img/icons/icon-32.png`,
+      type: "image/png",
+    },
+    {
+      rel: "icon",
+      sizes: "16x16",
+      href: `${BASE_URL}/content/assets/img/icons/icon-16.png`,
+      type: "image/png",
+    },
+    {
+      rel: "icon",
+      sizes: "192x192",
+      href: `${BASE_URL}/content/assets/img/icons/favicon-192x192.png`,
+      type: "image/png",
+    },
+    {
+      rel: "icon",
+      sizes: "512x512",
+      href: `${BASE_URL}/content/assets/img/icons/favicon-512x512.png`,
+      type: "image/png",
+    },
+    {
+      rel: "shortcut icon",
+      href: `${BASE_URL}/content/assets/img/icons/favicon.ico`,
+    },
+    {
+      rel: "apple-touch-icon",
+      sizes: "180x180",
+      href: `${BASE_URL}/content/assets/img/icons/apple-touch-icon.png`,
+    },
   ];
   const metas = [
     { name: "theme-color", content: "#0d0d0d" },
@@ -403,9 +557,16 @@ export function buildPageMeta(pageData, pageUrl, locationPath) {
   };
 }
 
-export function upsertMeta(nameOrProperty, content, isProperty = false, doc = typeof document === 'undefined' ? null : document) {
+export function upsertMeta(
+  nameOrProperty,
+  content,
+  isProperty = false,
+  doc = typeof document === "undefined" ? null : document
+) {
   if (!doc?.head || !content) return;
-  const selector = isProperty ? `meta[property="${nameOrProperty}"]` : `meta[name="${nameOrProperty}"]`;
+  const selector = isProperty
+    ? `meta[property="${nameOrProperty}"]`
+    : `meta[name="${nameOrProperty}"]`;
   let el = doc?.head?.querySelector(selector);
   if (el) {
     el.setAttribute(isProperty ? "property" : "name", nameOrProperty);
@@ -418,7 +579,11 @@ export function upsertMeta(nameOrProperty, content, isProperty = false, doc = ty
   }
 }
 
-export function upsertLink(rel, href, doc = typeof document === 'undefined' ? null : document) {
+export function upsertLink(
+  rel,
+  href,
+  doc = typeof document === "undefined" ? null : document
+) {
   if (!doc?.head || !href) return;
   let el = doc?.head?.querySelector(`link[rel="${rel}"]`);
   if (el) {
@@ -431,18 +596,23 @@ export function upsertLink(rel, href, doc = typeof document === 'undefined' ? nu
   }
 }
 
-export function applyCanonicalLinks(doc = typeof document === 'undefined' ? null : document, alternates = [], effectiveCanonical = "") {
+export function applyCanonicalLinks(
+  doc = typeof document === "undefined" ? null : document,
+  alternates = [],
+  effectiveCanonical = ""
+) {
   if (!doc?.head) return;
 
   // Upsert canonical
   const canonicalEl = doc.head.querySelector('link[rel="canonical"]');
   if (canonicalEl) {
-    if (typeof canonicalEl.setAttribute === 'function') canonicalEl.setAttribute('href', effectiveCanonical);
+    if (typeof canonicalEl.setAttribute === "function")
+      canonicalEl.setAttribute("href", effectiveCanonical);
     else canonicalEl.href = effectiveCanonical;
   } else {
-    const el = doc.createElement('link');
-    el.setAttribute('rel', 'canonical');
-    el.setAttribute('href', effectiveCanonical);
+    const el = doc.createElement("link");
+    el.setAttribute("rel", "canonical");
+    el.setAttribute("href", effectiveCanonical);
     doc.head.appendChild(el);
   }
 
@@ -452,21 +622,25 @@ export function applyCanonicalLinks(doc = typeof document === 'undefined' ? null
     const selector = `link[rel="alternate"][hreflang="${lang}"]`;
     let el = doc.head.querySelector(selector);
     if (el) {
-      if (typeof el.setAttribute === 'function') el.setAttribute('href', href);
+      if (typeof el.setAttribute === "function") el.setAttribute("href", href);
       else el.href = href;
     } else {
-      el = doc.createElement('link');
-      el.setAttribute('rel', 'alternate');
-      el.setAttribute('hreflang', lang);
-      el.setAttribute('href', href);
+      el = doc.createElement("link");
+      el.setAttribute("rel", "alternate");
+      el.setAttribute("hreflang", lang);
+      el.setAttribute("href", href);
       doc.head.appendChild(el);
     }
   });
 }
 
 // Schedule schema injection using requestIdleCallback when available, otherwise fallback to setTimeout.
-export function scheduleSchemaInjection(callback, idleTimeout = 1500, fallbackDelay = 1200) {
-  if (typeof globalThis.requestIdleCallback === 'function') {
+export function scheduleSchemaInjection(
+  callback,
+  idleTimeout = 1500,
+  fallbackDelay = 1200
+) {
+  if (typeof globalThis.requestIdleCallback === "function") {
     try {
       return globalThis.requestIdleCallback(callback, { timeout: idleTimeout });
     } catch {
@@ -478,13 +652,30 @@ export function scheduleSchemaInjection(callback, idleTimeout = 1500, fallbackDe
 }
 
 // Top-level injector: insert LD+JSON for given page context (testable)
-export function injectSchema(pageDataLocal, pageUrlLocal, BASE_URL_LOCAL, BRAND_DATA_LOCAL, BUSINESS_FAQS_LOCAL, doc = typeof document === 'undefined' ? null : document) {
+export function injectSchema(
+  pageDataLocal,
+  pageUrlLocal,
+  BASE_URL_LOCAL,
+  BRAND_DATA_LOCAL,
+  BUSINESS_FAQS_LOCAL,
+  doc = typeof document === "undefined" ? null : document
+) {
   if (!doc?.head) return;
   try {
-    const graph = generateSchemaGraph(pageDataLocal, pageUrlLocal, BASE_URL_LOCAL, BRAND_DATA_LOCAL, BUSINESS_FAQS_LOCAL, doc);
+    const graph = generateSchemaGraph(
+      pageDataLocal,
+      pageUrlLocal,
+      BASE_URL_LOCAL,
+      BRAND_DATA_LOCAL,
+      BUSINESS_FAQS_LOCAL,
+      doc
+    );
     const ldId = "head-complete-ldjson";
     let script = doc.getElementById(ldId);
-    const payload = JSON.stringify({ "@context": "https://schema.org", "@graph": graph });
+    const payload = JSON.stringify({
+      "@context": "https://schema.org",
+      "@graph": graph,
+    });
     if (script) script.textContent = payload;
     else {
       script = doc.createElement("script");
@@ -501,7 +692,9 @@ export function injectSchema(pageDataLocal, pageUrlLocal, BASE_URL_LOCAL, BRAND_
 async function loadSharedHead() {
   // Skip all DOM mutations when running in non-browser environments (e.g. Node imports during CI/tests)
   if (document === undefined || globalThis.location === undefined) {
-    log?.info?.("head-complete: running in non-browser environment; skipping loadSharedHead");
+    log?.info?.(
+      "head-complete: running in non-browser environment; skipping loadSharedHead"
+    );
     return;
   }
 
@@ -515,32 +708,44 @@ async function loadSharedHead() {
   // Pfad-Logik
   const currentPath = globalThis.location.pathname.toLowerCase();
   const matchedKey = Object.keys(ROUTES).find(
-    (key) => key !== "default" && currentPath.includes(key),
+    (key) => key !== "default" && currentPath.includes(key)
   );
   const rawPageData = matchedKey ? ROUTES[matchedKey] : ROUTES.default;
   const pageUrl = globalThis.location.href.split("#")[0];
 
   // --- i18n: Choose localized title/description when available ---
-  const preferredLang = (document?.documentElement?.lang || globalThis.navigator?.language || "de").toLowerCase();
+  const preferredLang = (
+    document?.documentElement?.lang ||
+    globalThis.navigator?.language ||
+    "de"
+  ).toLowerCase();
   const isEnglish = preferredLang.startsWith("en");
   const pageData = {
     ...rawPageData,
-    title: isEnglish && rawPageData.title_en ? rawPageData.title_en : rawPageData.title,
-    description: isEnglish && rawPageData.description_en ? rawPageData.description_en : rawPageData.description,
+    title:
+      isEnglish && rawPageData.title_en
+        ? rawPageData.title_en
+        : rawPageData.title,
+    description:
+      isEnglish && rawPageData.description_en
+        ? rawPageData.description_en
+        : rawPageData.description,
   };
 
   // --- Push stable page metadata to dataLayer for GTM (no PII) ---
   try {
     globalThis.dataLayer = globalThis.dataLayer || [];
-    const page_meta = buildPageMeta(pageData, pageUrl, globalThis.location.pathname || "/");
+    const page_meta = buildPageMeta(
+      pageData,
+      pageUrl,
+      globalThis.location.pathname || "/"
+    );
 
     // push a named event so GTM can use it as trigger (and to avoid premature reads)
     globalThis.dataLayer.push({ event: "pageMetadataReady", page_meta });
   } catch (e) {
     log?.warn?.("head-complete: pushing page metadata failed", e);
   }
-
-
 
   // --- 2. HTML HEAD UPDATES (lightweight, no heavy DOM replacement) ---
   try {
@@ -560,8 +765,7 @@ async function loadSharedHead() {
     // These helpers are pure DOM mutators and are testable via unit tests.
 
     // Title: only override if we have a non-empty title
-    if (pageData.title?.trim())
-      document.title = pageData.title;
+    if (pageData.title?.trim()) document.title = pageData.title;
 
     // Meta descriptions and core tags
     upsertMeta("description", pageData.description);
@@ -595,28 +799,28 @@ async function loadSharedHead() {
     if (pageData.image) {
       // Try to find real image dimensions from the generated JSON file
       fetch("/content/utils/og-image-dimensions.json")
-          .then((r) => (r.ok ? r.json() : null))
-          .then((map) => {
-            if (!map) {
-              upsertMeta("og:image:width", "1200", true);
-              upsertMeta("og:image:height", "630", true);
-              return;
-            }
-            // image path may be absolute URL or relative path; normalize to web path
-            const imgPath = pageData.image;
-            const dims = map[imgPath] || map[pageData.image] || null;
-            if (dims) {
-              upsertMeta("og:image:width", String(dims.width), true);
-              upsertMeta("og:image:height", String(dims.height), true);
-            } else {
-              upsertMeta("og:image:width", "1200", true);
-              upsertMeta("og:image:height", "630", true);
-            }
-          })
-          .catch(() => {
+        .then((r) => (r.ok ? r.json() : null))
+        .then((map) => {
+          if (!map) {
             upsertMeta("og:image:width", "1200", true);
             upsertMeta("og:image:height", "630", true);
-          });
+            return;
+          }
+          // image path may be absolute URL or relative path; normalize to web path
+          const imgPath = pageData.image;
+          const dims = map[imgPath] || map[pageData.image] || null;
+          if (dims) {
+            upsertMeta("og:image:width", String(dims.width), true);
+            upsertMeta("og:image:height", String(dims.height), true);
+          } else {
+            upsertMeta("og:image:width", "1200", true);
+            upsertMeta("og:image:height", "630", true);
+          }
+        })
+        .catch(() => {
+          upsertMeta("og:image:width", "1200", true);
+          upsertMeta("og:image:height", "630", true);
+        });
     }
 
     // Canonical: compute and apply canonical and alternate links
@@ -626,16 +830,18 @@ async function loadSharedHead() {
 
       // Force Canonical to Production host when true. Set to false to allow dev/staging canonical behavior.
       // Only honor an explicit opt-in via data attribute.
-      const forceProdFlag = document.documentElement.dataset.forceProdCanonical === "true";
+      const forceProdFlag =
+        document.documentElement.dataset.forceProdCanonical === "true";
 
       // Compute cleanPath using shared canonical util
       let cleanPath;
       try {
-        const { getCanonicalPathFromRoutes } =
-          await import("../../utils/canonical-utils.js");
+        const { getCanonicalPathFromRoutes } = await import(
+          "../../utils/canonical-utils.js"
+        );
         cleanPath = getCanonicalPathFromRoutes(
           globalThis.location.pathname,
-          ROUTES,
+          ROUTES
         );
       } catch {
         // Fallback to previous inline behavior if import fails
@@ -650,11 +856,11 @@ async function loadSharedHead() {
           : pathForMatch + "/";
         const lowerMatch = pathForMatch.toLowerCase();
         let routeKey = Object.keys(ROUTES).find(
-          (k) => k !== "default" && lowerMatch.startsWith(k),
+          (k) => k !== "default" && lowerMatch.startsWith(k)
         );
         if (!routeKey)
           routeKey = Object.keys(ROUTES).find(
-            (k) => k !== "default" && lowerMatch.includes(k),
+            (k) => k !== "default" && lowerMatch.includes(k)
           );
         cleanPath = routeKey || pathForMatch;
         if (routeKey && !routeKey.endsWith("/")) {
@@ -670,7 +876,7 @@ async function loadSharedHead() {
         pageUrl,
         BASE_URL,
         globalThis.location.pathname,
-        globalThis.location.origin,
+        globalThis.location.origin
       );
 
       const canonicalEl = document.head.querySelector('link[rel="canonical"]');
@@ -697,10 +903,12 @@ async function loadSharedHead() {
     // Ensure PWA manifest & Apple mobile settings
     try {
       const { links, iconLinks, metas } = buildPwaAssets(BASE_URL, BRAND_DATA);
-      links.forEach((l) => upsertLink(l.rel, l.href));        metas.forEach((m) => upsertMeta(m.name, m.content));      const addIcon = (href, sizes, type) => {
+      links.forEach((l) => upsertLink(l.rel, l.href));
+      metas.forEach((m) => upsertMeta(m.name, m.content));
+      const addIcon = (href, sizes, type) => {
         if (!href) return;
         let el = document.head.querySelector(
-          `link[rel="icon"][sizes="${sizes}"]`,
+          `link[rel="icon"][sizes="${sizes}"]`
         );
         if (el) el.setAttribute("href", href);
         else {
@@ -712,34 +920,40 @@ async function loadSharedHead() {
           document.head.appendChild(el);
         }
       };
-iconLinks.filter((l) => l.rel === "icon" && l.sizes).forEach((l) => addIcon(l.href, l.sizes, l.type));
+      iconLinks
+        .filter((l) => l.rel === "icon" && l.sizes)
+        .forEach((l) => addIcon(l.href, l.sizes, l.type));
 
-      iconLinks.filter((l) => l.rel === "shortcut icon").forEach((l) => {
-        let el = document.head.querySelector('link[rel="shortcut icon"]');
-        if (el) el.setAttribute("href", l.href);
-        else {
-          el = document.createElement("link");
-          el.rel = "shortcut icon";
-          el.href = l.href;
-          document.head.appendChild(el);
-        }
-      });
+      iconLinks
+        .filter((l) => l.rel === "shortcut icon")
+        .forEach((l) => {
+          let el = document.head.querySelector('link[rel="shortcut icon"]');
+          if (el) el.setAttribute("href", l.href);
+          else {
+            el = document.createElement("link");
+            el.rel = "shortcut icon";
+            el.href = l.href;
+            document.head.appendChild(el);
+          }
+        });
       upsertMeta("theme-color", "#0d0d0d");
       upsertMeta("apple-mobile-web-app-capable", "yes");
       upsertMeta("apple-mobile-web-app-title", BRAND_DATA.name);
       upsertMeta("apple-mobile-web-app-status-bar-style", "default");
 
-      iconLinks.filter((l) => l.rel === "apple-touch-icon").forEach((l) => {
-        let el = document.head.querySelector('link[rel="apple-touch-icon"]');
-        if (el) el.setAttribute("href", l.href);
-        else {
-          el = document.createElement("link");
-          el.setAttribute("rel", "apple-touch-icon");
-          el.setAttribute("sizes", l.sizes || "180x180");
-          el.setAttribute("href", l.href);
-          document.head.appendChild(el);
-        }
-      });
+      iconLinks
+        .filter((l) => l.rel === "apple-touch-icon")
+        .forEach((l) => {
+          let el = document.head.querySelector('link[rel="apple-touch-icon"]');
+          if (el) el.setAttribute("href", l.href);
+          else {
+            el = document.createElement("link");
+            el.setAttribute("rel", "apple-touch-icon");
+            el.setAttribute("sizes", l.sizes || "180x180");
+            el.setAttribute("href", l.href);
+            document.head.appendChild(el);
+          }
+        });
     } catch (e) {
       // Safe logging in catch block
       log?.warn?.("PWA meta injection failed:", e);
@@ -765,63 +979,63 @@ iconLinks.filter((l) => l.rel === "icon" && l.sizes).forEach((l) => addIcon(l.hr
   };
 
   const graph = [];
-    // 1. ORGANIZATION (Organization for Local SEO) + 2. PERSON (Die Haupt-Entität)
-    graph.push(
-      {
-        "@type": "Organization",
-        "@id": ID.org,
-        name: BRAND_DATA.legalName,
-        url: BASE_URL,
-        logo: {
-          "@type": "ImageObject",
-          url: BRAND_DATA.logo,
-          width: 512,
-          height: 512,
-        },
-        founder: { "@id": ID.person },
-        image: {
-          "@type": "ImageObject",
-          url: pageData?.image || BRAND_DATA.logo,
-          width: 1200,
-          height: 630,
-        },
-        email: BRAND_DATA.email,
-        sameAs: BRAND_DATA.sameAs,
-        address: BRAND_DATA.address || {
-          "@type": "PostalAddress",
-          addressLocality: "Berlin",
-          addressCountry: "DE",
-        },
+  // 1. ORGANIZATION (Organization for Local SEO) + 2. PERSON (Die Haupt-Entität)
+  graph.push(
+    {
+      "@type": "Organization",
+      "@id": ID.org,
+      name: BRAND_DATA.legalName,
+      url: BASE_URL,
+      logo: {
+        "@type": "ImageObject",
+        url: BRAND_DATA.logo,
+        width: 512,
+        height: 512,
+      },
+      founder: { "@id": ID.person },
+      image: {
+        "@type": "ImageObject",
+        url: pageData?.image || BRAND_DATA.logo,
+        width: 1200,
+        height: 630,
+      },
+      email: BRAND_DATA.email,
+      sameAs: BRAND_DATA.sameAs,
+      address: BRAND_DATA.address || {
+        "@type": "PostalAddress",
+        addressLocality: "Berlin",
+        addressCountry: "DE",
+      },
+      geo: BRAND_DATA.geo,
+    },
+    {
+      "@type": ["Person", "Photographer"],
+      "@id": ID.person,
+      name: BRAND_DATA.name,
+      alternateName: BRAND_DATA.alternateName,
+      jobTitle: BRAND_DATA.jobTitle,
+      worksFor: { "@id": ID.org },
+      url: BASE_URL,
+      image: {
+        "@type": "ImageObject",
+        "@id": `${BASE_URL}/#personImage`,
+        url: "https://commons.wikimedia.org/wiki/File:Abdulkerim_Sesli_portrait_2025.png",
+        caption: BRAND_DATA.name,
+      },
+      description: pageData.description,
+      // Identity Disambiguation
+      disambiguatingDescription:
+        "Webentwickler (React, Three.js) und Fotograf aus Berlin, nicht zu verwechseln mit 'Sesli Kitap' oder Hörbuch-Verlagen.",
+      sameAs: BRAND_DATA.sameAs,
+      homeLocation: {
+        "@type": "Place",
+        name: "Berlin",
+        address: BRAND_DATA.address,
         geo: BRAND_DATA.geo,
       },
-      {
-        "@type": ["Person", "Photographer"],
-        "@id": ID.person,
-        name: BRAND_DATA.name,
-        alternateName: BRAND_DATA.alternateName,
-        jobTitle: BRAND_DATA.jobTitle,
-        worksFor: { "@id": ID.org },
-        url: BASE_URL,
-        image: {
-          "@type": "ImageObject",
-          "@id": `${BASE_URL}/#personImage`,
-          url: "https://commons.wikimedia.org/wiki/File:Abdulkerim_Sesli_portrait_2025.png",
-          caption: BRAND_DATA.name,
-        },
-        description: pageData.description,
-        // Identity Disambiguation
-        disambiguatingDescription:
-          "Webentwickler (React, Three.js) und Fotograf aus Berlin, nicht zu verwechseln mit 'Sesli Kitap' oder Hörbuch-Verlagen.",
-        sameAs: BRAND_DATA.sameAs,
-        homeLocation: {
-          "@type": "Place",
-          name: "Berlin",
-          address: BRAND_DATA.address,
-          geo: BRAND_DATA.geo,
-        },
-        knowsAbout: [
-          {
-            "@type": "Thing",
+      knowsAbout: [
+        {
+          "@type": "Thing",
           name: "Web Development",
           sameAs: "https://www.wikidata.org/wiki/Q386275",
         },
@@ -852,101 +1066,114 @@ iconLinks.filter((l) => l.rel === "icon" && l.sizes).forEach((l) => addIcon(l.hr
           sameAs: "https://www.wikidata.org/wiki/Q64",
         },
       ],
-    });
-
-    // 2.1 SPECIAL: FEATURE SNIPPET OPTIMIZATION (Skills as ItemList)
-    // Helps Google display "Skills: React, Three.js..." in snippets
-    if (
-      pageUrl.includes("/about") ||
-      pageUrl === BASE_URL ||
-      pageUrl === `${BASE_URL}/`
-    ) {
-      graph.push({
-        "@type": "ItemList",
-        "@id": `${BASE_URL}/#skills`,
-        name: "Technische Skills & Kompetenzen",
-        description:
-          "Kernkompetenzen in der Fullstack-Webentwicklung und Fotografie",
-        itemListElement: [
-          {
-            "@type": "ListItem",
-            position: 1,
-            name: "React & Next.js Ecosystem",
-          },
-          {
-            "@type": "ListItem",
-            position: 2,
-            name: "Three.js & WebGL 3D-Visualisierung",
-          },
-          {
-            "@type": "ListItem",
-            position: 3,
-            name: "Node.js & Backend Architecture",
-          },
-          {
-            "@type": "ListItem",
-            position: 4,
-            name: "UI/UX Design & Animation",
-          },
-          {
-            "@type": "ListItem",
-            position: 5,
-            name: "Urban & Portrait Photography",
-          },
-        ],
-      });
     }
+  );
 
-    // (AI Context extraction moved to the top-level `generateSchemaGraph` for clarity and testability)
-
-    // (WebPage and WebSite graph nodes generated in `generateSchemaGraph` - removed duplicate here)
-
-    // 5. FAQ (STRICT MODE & WHITESPACE CLEANING)
-    // Filtert "schmutzige" Strings und setzt stabile IDs, um "Unbenanntes Element" zu verhindern.
-    /* FAQ generation is handled by generateSchemaGraph; no local placeholder needed */
-
-
-    // FAQ generation moved to `generateSchemaGraph` (no inline fallback here)
-
-    // 6. BREADCRUMBS
-    const segments = globalThis.location.pathname
-      .replace(/\/$/, "")
-      .split("/")
-      .filter(Boolean);
-    const crumbs = [
-      {
-        "@type": "ListItem",
-        position: 1,
-        name: "Home",
-        item: { "@id": BASE_URL, name: "Home" },
-      },
-    ];
-    let pathAcc = canonicalOrigin;
-    segments.forEach((seg, i) => {
-      pathAcc += `/${seg}`;
-      const name = seg.charAt(0).toUpperCase() + seg.slice(1);
-      crumbs.push({
-        "@type": "ListItem",
-        position: i + 2,
-        name: name,
-        item: { "@id": pathAcc, name: name },
-      });
-    });
+  // 2.1 SPECIAL: FEATURE SNIPPET OPTIMIZATION (Skills as ItemList)
+  // Helps Google display "Skills: React, Three.js..." in snippets
+  if (
+    pageUrl.includes("/about") ||
+    pageUrl === BASE_URL ||
+    pageUrl === `${BASE_URL}/`
+  ) {
     graph.push({
-      "@type": "BreadcrumbList",
-      "@id": ID.breadcrumb,
-      name: pageData?.title || document.title || "Navigationspfad",
-      itemListElement: crumbs,
+      "@type": "ItemList",
+      "@id": `${BASE_URL}/#skills`,
+      name: "Technische Skills & Kompetenzen",
+      description:
+        "Kernkompetenzen in der Fullstack-Webentwicklung und Fotografie",
+      itemListElement: [
+        {
+          "@type": "ListItem",
+          position: 1,
+          name: "React & Next.js Ecosystem",
+        },
+        {
+          "@type": "ListItem",
+          position: 2,
+          name: "Three.js & WebGL 3D-Visualisierung",
+        },
+        {
+          "@type": "ListItem",
+          position: 3,
+          name: "Node.js & Backend Architecture",
+        },
+        {
+          "@type": "ListItem",
+          position: 4,
+          name: "UI/UX Design & Animation",
+        },
+        {
+          "@type": "ListItem",
+          position: 5,
+          name: "Urban & Portrait Photography",
+        },
+      ],
     });
+  }
 
-    // (graph assembled inside generateSchemaGraph)
+  // (AI Context extraction moved to the top-level `generateSchemaGraph` for clarity and testability)
 
+  // (WebPage and WebSite graph nodes generated in `generateSchemaGraph` - removed duplicate here)
 
-    // Trigger schema generation via the exported scheduler (testable)
-    const scheduleSchema = () => scheduleSchemaInjection(() => injectSchema(pageData, pageUrl, BASE_URL, BRAND_DATA, BUSINESS_FAQS, document), 1500, 1200);
+  // 5. FAQ (STRICT MODE & WHITESPACE CLEANING)
+  // Filtert "schmutzige" Strings und setzt stabile IDs, um "Unbenanntes Element" zu verhindern.
+  /* FAQ generation is handled by generateSchemaGraph; no local placeholder needed */
 
-    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", scheduleSchema);
-    else scheduleSchema();
+  // FAQ generation moved to `generateSchemaGraph` (no inline fallback here)
+
+  // 6. BREADCRUMBS
+  const segments = globalThis.location.pathname
+    .replace(/\/$/, "")
+    .split("/")
+    .filter(Boolean);
+  const crumbs = [
+    {
+      "@type": "ListItem",
+      position: 1,
+      name: "Home",
+      item: { "@id": BASE_URL, name: "Home" },
+    },
+  ];
+  let pathAcc = canonicalOrigin;
+  segments.forEach((seg, i) => {
+    pathAcc += `/${seg}`;
+    const name = seg.charAt(0).toUpperCase() + seg.slice(1);
+    crumbs.push({
+      "@type": "ListItem",
+      position: i + 2,
+      name: name,
+      item: { "@id": pathAcc, name: name },
+    });
+  });
+  graph.push({
+    "@type": "BreadcrumbList",
+    "@id": ID.breadcrumb,
+    name: pageData?.title || document.title || "Navigationspfad",
+    itemListElement: crumbs,
+  });
+
+  // (graph assembled inside generateSchemaGraph)
+
+  // Trigger schema generation via the exported scheduler (testable)
+  const scheduleSchema = () =>
+    scheduleSchemaInjection(
+      () =>
+        injectSchema(
+          pageData,
+          pageUrl,
+          BASE_URL,
+          BRAND_DATA,
+          BUSINESS_FAQS,
+          document
+        ),
+      1500,
+      1200
+    );
+
+  if (document.readyState === "loading")
+    document.addEventListener("DOMContentLoaded", scheduleSchema);
+  else scheduleSchema();
 
   // UI Helper
   const hideLoader = () => {
@@ -964,49 +1191,52 @@ iconLinks.filter((l) => l.rel === "icon" && l.sizes).forEach((l) => addIcon(l.hr
 // Helper to apply a single icon link to the document
 function applyIconLink(doc, ic) {
   if (!ic?.rel) return;
-  if (ic.rel === 'icon' && ic.sizes) {
+  if (ic.rel === "icon" && ic.sizes) {
     // upsert link[rel="icon"][sizes="..."]
     let el = doc.head.querySelector(`link[rel="icon"][sizes="${ic.sizes}"]`);
     if (el) {
-      el.setAttribute('href', ic.href);
+      el.setAttribute("href", ic.href);
     } else {
-      el = doc.createElement('link');
-      el.setAttribute('rel', 'icon');
-      el.setAttribute('sizes', ic.sizes);
-      if (ic.type) el.setAttribute('type', ic.type);
-      el.setAttribute('href', ic.href);
+      el = doc.createElement("link");
+      el.setAttribute("rel", "icon");
+      el.setAttribute("sizes", ic.sizes);
+      if (ic.type) el.setAttribute("type", ic.type);
+      el.setAttribute("href", ic.href);
       doc.head.appendChild(el);
     }
-  } else if (ic.rel === 'shortcut icon') {
+  } else if (ic.rel === "shortcut icon") {
     // upsert link[rel="shortcut icon"]
     let el = doc.head.querySelector('link[rel="shortcut icon"]');
     if (el) {
-      el.setAttribute('href', ic.href);
+      el.setAttribute("href", ic.href);
     } else {
-      el = doc.createElement('link');
-      el.setAttribute('rel', 'shortcut icon');
-      if (ic.type) el.setAttribute('type', ic.type);
-      el.setAttribute('href', ic.href);
+      el = doc.createElement("link");
+      el.setAttribute("rel", "shortcut icon");
+      if (ic.type) el.setAttribute("type", ic.type);
+      el.setAttribute("href", ic.href);
       doc.head.appendChild(el);
     }
   } else {
     // upsert other rels (e.g. apple-touch-icon)
     let el = doc.head.querySelector(`link[rel="${ic.rel}"]`);
     if (el) {
-      el.setAttribute('href', ic.href);
+      el.setAttribute("href", ic.href);
     } else {
-      el = doc.createElement('link');
-      el.setAttribute('rel', ic.rel);
-      if (ic.sizes) el.setAttribute('sizes', ic.sizes);
-      if (ic.type) el.setAttribute('type', ic.type);
-      el.setAttribute('href', ic.href);
+      el = doc.createElement("link");
+      el.setAttribute("rel", ic.rel);
+      if (ic.sizes) el.setAttribute("sizes", ic.sizes);
+      if (ic.type) el.setAttribute("type", ic.type);
+      el.setAttribute("href", ic.href);
       doc.head.appendChild(el);
     }
   }
 }
 
 // Orchestrator helper: performs high-level head initialization using the exported helpers.
-export function orchestrateHead(doc = typeof document === 'undefined' ? null : document, options = {}) {
+export function orchestrateHead(
+  doc = typeof document === "undefined" ? null : document,
+  options = {}
+) {
   if (!doc?.head) return null;
 
   const BASE_URL = options.BASE_URL || "https://abdulkerimsesli.de";
@@ -1015,13 +1245,19 @@ export function orchestrateHead(doc = typeof document === 'undefined' ? null : d
   const BUSINESS_FAQS = options.BUSINESS_FAQS || [];
 
   const currentPath = globalThis.location.pathname.toLowerCase();
-  const matchedKey = Object.keys(ROUTES).find((key) => key !== "default" && currentPath.includes(key));
-  const pageData = matchedKey ? ROUTES[matchedKey] : (ROUTES.default || {});
+  const matchedKey = Object.keys(ROUTES).find(
+    (key) => key !== "default" && currentPath.includes(key)
+  );
+  const pageData = matchedKey ? ROUTES[matchedKey] : ROUTES.default || {};
   const pageUrl = globalThis.location.href.split("#")[0];
 
   // 1) push page metadata
   globalThis.dataLayer = globalThis.dataLayer || [];
-  const page_meta = buildPageMeta(pageData, pageUrl, globalThis.location.pathname || "/");
+  const page_meta = buildPageMeta(
+    pageData,
+    pageUrl,
+    globalThis.location.pathname || "/"
+  );
   globalThis.dataLayer.push({ event: "pageMetadataReady", page_meta });
 
   // 2) core metas
@@ -1052,16 +1288,21 @@ export function orchestrateHead(doc = typeof document === 'undefined' ? null : d
   const { effectiveCanonical, alternates } = buildCanonicalLinks(
     ROUTES.forceProdFlag || false,
     globalThis.location.hostname.toLowerCase(),
-    (options.cleanPath ?? globalThis.location.pathname),
+    options.cleanPath ?? globalThis.location.pathname,
     pageUrl,
     BASE_URL,
     globalThis.location.pathname,
-    globalThis.location.origin,
+    globalThis.location.origin
   );
   applyCanonicalLinks(doc, alternates, effectiveCanonical);
 
   // 6) schedule schema injection
-  scheduleSchemaInjection(() => injectSchema(pageData, pageUrl, BASE_URL, BRAND_DATA, BUSINESS_FAQS, doc), 1500, 1200);
+  scheduleSchemaInjection(
+    () =>
+      injectSchema(pageData, pageUrl, BASE_URL, BRAND_DATA, BUSINESS_FAQS, doc),
+    1500,
+    1200
+  );
 
   return { pageData, pageUrl, effectiveCanonical, alternates };
 }
