@@ -36,7 +36,10 @@
 # Keep this after specific redirects so we don't accidentally override them.
 
 # Don't redirect .html in /pages/ as they are loaded dynamically
-/pages/*.html   /pages/:splat.html   200
+# Ensure any requests under /pages/ are rewritten to the physical folder
+# so dynamic XHR requests (e.g. /pages/home/hero.html) are served directly
+/pages/*         /pages/:splat         200
+/pages/*.html    /pages/:splat.html    200
 
 /*.html   /:splat/   301
 
