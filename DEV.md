@@ -97,6 +97,7 @@ npx eslint .
 
 - Verwende das Logger-System (`createLogger`) statt direkter `console.*` Aufrufe
 - Halte CSS-Variablen in `content/root.css` zentralisiert
+- Für seiten-spezifische Styles verwende BEM mit dem Seiten-Block-Namen (z. B. `about__intro-text` in `pages/about/`) — das verbessert Konsistenz und vermeidet Kollisionen.
 - Service Worker wurde entfernt; kein Version-Bump erforderlich
 - Teste Offline-/Network-Fallbacks manuell mit DevTools Network Throttling
 
