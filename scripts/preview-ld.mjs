@@ -70,7 +70,7 @@ const BASE_URL = "https://abdulkerimsesli.de";
 const BRAND_DATA = {
   name: "Abdulkerim Sesli",
   alternateName: ["Abdul Sesli", "Abdul Berlin", "Abdulkerim Berlin"],
-  logo: `${BASE_URL}/content/assets/img/icons/icon-512.svg`,
+  logo: `${BASE_URL}/content/assets/img/icons/favicon-512.png`,
   sameAs: [
     "https://github.com/aKs030",
     "https://linkedin.com/in/abdulkerimsesli",

@@ -147,9 +147,9 @@ function BlogApp() {
             name: "Abdulkerim — Digital Creator Portfolio",
             logo: {
               "@type": "ImageObject",
-              url: "https://abdulkerimsesli.de/content/assets/img/icons/icon-512.png",
+              url: "https://abdulkerimsesli.de/content/assets/img/icons/favicon-512.png",
               contentUrl:
-                "https://abdulkerimsesli.de/content/assets/img/icons/icon-512.png",
+                "https://abdulkerimsesli.de/content/assets/img/icons/favicon-512.png",
               creator: { "@type": "Person", name: "Abdulkerim Sesli" },
               license: "https://abdulkerimsesli.de/#image-license",
               creditText: "Logo: Abdulkerim Sesli",

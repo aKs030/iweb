@@ -163,7 +163,7 @@
                   "@id": canonical,
                 },
                 image:
-                  "https://abdulkerimsesli.de/content/assets/img/icons/icon-512.png",
+                  "https://abdulkerimsesli.de/content/assets/img/icons/favicon-512.png",
               });
               document.head.appendChild(script);
             }
