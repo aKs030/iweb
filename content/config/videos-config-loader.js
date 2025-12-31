@@ -61,14 +61,18 @@ async function loadConfig() {
       window.YOUTUBE_CHANNEL_ID = "UCTGRherjM4iuIn86xxubuPg";
     }
 
-    // If no API key found, enable mock mode for stable local testing (localhost or file:).
-    // Also allow forcing mock mode via ?mockVideos=1
-    if (!window.YOUTUBE_API_KEY) {
+    // Allow forced mock mode via ?mockVideos=1 even when an API key exists.
+    // This is useful for testing UI with deterministic mock data.
+    const forceMock = new URLSearchParams(location.search).has("mockVideos");
+    if (forceMock) {
+      window.YOUTUBE_USE_MOCK = true;
+      log.warn("Using mock data due to ?mockVideos=1 (forced).");
+    } else if (!window.YOUTUBE_API_KEY) {
       const isLocal =
         location.protocol === "file:" ||
         location.hostname === "localhost" ||
         location.hostname === "127.0.0.1";
-      if (isLocal || new URLSearchParams(location.search).has("mockVideos")) {
+      if (isLocal) {
         window.YOUTUBE_USE_MOCK = true;
         log.warn("No API key found — using mock data for development/testing.");
       } else {
