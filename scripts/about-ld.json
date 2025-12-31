@@ -37,17 +37,10 @@
       }
     },
     {
-      "@type": [
-        "Person",
-        "Photographer"
-      ],
+      "@type": ["Person", "Photographer"],
       "@id": "https://abdulkerimsesli.de/#person",
       "name": "Abdulkerim Sesli",
-      "alternateName": [
-        "Abdul Sesli",
-        "Abdul Berlin",
-        "Abdulkerim Berlin"
-      ],
+      "alternateName": ["Abdul Sesli", "Abdul Berlin", "Abdulkerim Berlin"],
       "worksFor": {
         "@id": "https://abdulkerimsesli.de/#organization"
       },
