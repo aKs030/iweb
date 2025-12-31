@@ -378,22 +378,74 @@ header {
 }
 
 /* --- Replacements for inline styles (utility classes) — BEM names --- */
-.about__intro-text { max-width: 600px; }
-.about__cta { display: flex; gap: 1rem; flex-wrap: wrap; }
-.about__location { font-size: 0.9rem; margin-bottom: 0; }
-.about__header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
-.about__subheading { font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em; margin-bottom: 0.5rem; }
-.about__stack { margin-bottom: 1.5rem; }
-.about__small { font-size: 0.9rem; }
-.about__timeline-desc { margin-top: 0.5rem; font-size: 0.95rem; }
-.about__exp-footer { margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--card-border); }
-.about__section-cta { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
-.about__link--accent { font-size: 0.9rem; color: var(--accent); }
-.mini-card .about__mini-icon { margin-bottom: 0.5rem; }
-.about__icon--pink { color: #f472b6; }
-.about__icon--purple { color: #a78bfa; }
+.about__intro-text {
+  max-width: 600px;
+}
+.about__cta {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.about__location {
+  font-size: 0.9rem;
+  margin-bottom: 0;
+}
+.about__header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+.about__subheading {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+.about__stack {
+  margin-bottom: 1.5rem;
+}
+.about__small {
+  font-size: 0.9rem;
+}
+.about__timeline-desc {
+  margin-top: 0.5rem;
+  font-size: 0.95rem;
+}
+.about__exp-footer {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--card-border);
+}
+.about__section-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+.about__link--accent {
+  font-size: 0.9rem;
+  color: var(--accent);
+}
+.mini-card .about__mini-icon {
+  margin-bottom: 0.5rem;
+}
+.about__icon--pink {
+  color: #f472b6;
+}
+.about__icon--purple {
+  color: #a78bfa;
+}
 
 /* Fallback UI styles used by about.js */
-.about__container { padding: 2rem; }
-.about__error p { color: var(--text-muted); margin-bottom: 1rem; }
-.about__error .btn { margin-top: 0.5rem; }
+.about__container {
+  padding: 2rem;
+}
+.about__error p {
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+}
+.about__error .btn {
+  margin-top: 0.5rem;
+}
