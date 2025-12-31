@@ -20,7 +20,7 @@ const BRAND_DATA = {
   name: "Abdulkerim Sesli",
   legalName: "Abdulkerim Sesli — Creative Digital Services",
   alternateName: ["Abdul Sesli", "Abdul Berlin", "Abdulkerim Berlin"],
-  logo: `${BASE_URL}/content/assets/img/icons/icon-512.png`, // [GELB] Das Icon für Google
+  logo: `${BASE_URL}/content/assets/img/icons/icon-512.svg`, // [GELB] Das Icon für Google
   jobTitle: ["Web Developer", "Photographer"],
   email: "kontakt@abdulkerimsesli.de",
   areaServed: "Berlin, Deutschland",
