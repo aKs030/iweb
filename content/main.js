@@ -405,6 +405,20 @@ const ThreeEarthLoader = (() => {
       return;
     }
 
+    // Performance guard: skip Three.js on small viewports or when user enabled save-data
+    try {
+      if (typeof matchMedia === "function" && matchMedia("(max-width:900px)").matches) {
+        log.info("Three.js skipped: small viewport");
+        return;
+      }
+      if (navigator.connection?.saveData) {
+        log.info("Three.js skipped: save-data mode detected");
+        return;
+      }
+    } catch (err) {
+      log.warn("Three.js guard check failed", err);
+    }
+
     isLoading = true;
 
     try {

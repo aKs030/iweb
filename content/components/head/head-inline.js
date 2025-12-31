@@ -238,19 +238,37 @@ dataLayer.push({
       "/content/styles/root.css",
       "/content/styles/main.css",
       "/content/components/menu/menu.css",
-      "/content/components/robot-companion/robot-companion.css",
       "/content/components/footer/footer.css",
     ];
 
     const SCRIPTS = [
       { src: "/content/main.js", module: true, preload: false },
       { src: "/content/components/menu/menu.js", module: true },
-      {
-        src: "/content/components/robot-companion/robot-companion.js",
-        module: true,
-      },
       { src: "/content/components/footer/footer-complete.js", module: true },
     ];
+
+    // Defer non-critical assets (loaded after idle to reduce blocking during LCP)
+    const deferNonCriticalAssets = () => {
+      try {
+        const schedule = (cb) => {
+          if (globalThis.requestIdleCallback) {
+            requestIdleCallback(cb, { timeout: 2000 });
+          } else {
+            setTimeout(cb, 1500);
+          }
+        };
+
+        schedule(() => {
+          upsertStyle("/content/components/robot-companion/robot-companion.css");
+          upsertScript({
+            src: "/content/components/robot-companion/robot-companion.js",
+            module: true,
+          });
+        });
+      } catch (err) {
+        log?.warn?.("head-inline: deferNonCriticalAssets failed", err);
+      }
+    };
 
     const upsertStyle = (href) => {
       if (!document.head.querySelector(`link[href="${href}"]`)) {
@@ -297,6 +315,13 @@ dataLayer.push({
         upsertModulePreload(s.src)
       );
       SCRIPTS.forEach(upsertScript);
+
+      // Schedule deferring of non-critical assets after core injection
+      try {
+        deferNonCriticalAssets();
+      } catch (err) {
+        log?.warn?.("head-inline: deferNonCriticalAssets call failed", err);
+      }
     };
 
     if (document.readyState === "loading") {
