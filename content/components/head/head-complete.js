@@ -26,6 +26,7 @@ const BRAND_DATA = {
   areaServed: "Berlin, Deutschland",
   address: {
     "@type": "PostalAddress",
+    streetAddress: "Sterkrader Str. 59",
     addressLocality: "Berlin",
     postalCode: "13507",
     addressCountry: "DE",
@@ -174,13 +175,20 @@ export function generateSchemaGraph(
         url: BRAND_DATA.logo,
         width: 512,
         height: 512,
+        creditText: `Logo: ${BRAND_DATA.name}`,
+        copyrightNotice: `© ${new Date().getFullYear()} ${BRAND_DATA.name}`,
+        acquireLicensePage: `${BASE_URL}/#image-license`
       },
       image: {
         "@type": "ImageObject",
         url: pageData?.image || BRAND_DATA.logo,
         width: 1200,
         height: 630,
+        creditText: pageData.imageCredit || `Photo: ${BRAND_DATA.name}`,
+        copyrightNotice: `© ${new Date().getFullYear()} ${BRAND_DATA.name}`,
+        acquireLicensePage: `${BASE_URL}/#image-license`
       },
+
       email: BRAND_DATA.email,
       sameAs: BRAND_DATA.sameAs,
       contactPoint: BRAND_DATA.contactPoint,
@@ -361,6 +369,9 @@ export function generateSchemaGraph(
         caption: pageData.title || pageData.description || "",
         creator: { "@type": "Person", name: BRAND_DATA.name },
         license: `${BASE_URL}/#image-license`,
+        creditText: pageData.imageCredit || `Photo: ${BRAND_DATA.name}`,
+        copyrightNotice: `© ${new Date().getFullYear()} ${BRAND_DATA.name}`,
+        acquireLicensePage: `${BASE_URL}/#image-license`,
       };
       graph.push(imageNode);
       const webpageNode = graph.find((g) => g["@id"] === ID.webpage);
@@ -1014,6 +1025,9 @@ async function loadSharedHead() {
         url: BRAND_DATA.logo,
         width: 512,
         height: 512,
+        creditText: `Logo: ${BRAND_DATA.name}`,
+        copyrightNotice: `© ${new Date().getFullYear()} ${BRAND_DATA.name}`,
+        acquireLicensePage: `${BASE_URL}/#image-license`
       },
       founder: { "@id": ID.person },
       image: {
@@ -1021,6 +1035,9 @@ async function loadSharedHead() {
         url: pageData?.image || BRAND_DATA.logo,
         width: 1200,
         height: 630,
+        creditText: pageData.imageCredit || `Photo: ${BRAND_DATA.name}`,
+        copyrightNotice: `© ${new Date().getFullYear()} ${BRAND_DATA.name}`,
+        acquireLicensePage: `${BASE_URL}/#image-license`
       },
       email: BRAND_DATA.email,
       sameAs: BRAND_DATA.sameAs,

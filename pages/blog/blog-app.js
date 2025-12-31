@@ -149,6 +149,13 @@ function BlogApp() {
               "@type": "ImageObject",
               url: "https://abdulkerimsesli.de/content/assets/img/icons/icon-512.png",
             },
+            address: {
+              "@type": "PostalAddress",
+              "streetAddress": "Sterkrader Str. 59",
+              "postalCode": "13507",
+              "addressLocality": "Berlin",
+              "addressCountry": "DE"
+            }
           },
           articleBody: post.content,
         };
