@@ -98,501 +98,77 @@
 
     <!-- Server-side Breadcrumbs JSON-LD and WebPage (mainEntity) -->
     <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "BreadcrumbList",
-        "name": "Videos",
-        "itemListElement": [
-          {
-            "@type": "ListItem",
-            "position": 1,
-            "name": "Startseite",
-            "item": {
-              "@id": "https://abdulkerimsesli.de/",
-              "name": "Startseite"
-            }
-          },
-          {
-            "@type": "ListItem",
-            "position": 2,
-            "name": "Videos",
-            "item": {
-              "@id": "https://abdulkerimsesli.de/videos/",
-              "name": "Videos"
-            }
-          }
-        ]
+{
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  "name": "Videos von Abdulkerim Sesli",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "item": {
+        "@type": "VideoObject",
+        "name": "Interaktive Erde — Abdulkerim Berlin",
+        "contentUrl": "https://youtu.be/1bL8bZd6cpY"
       }
-    </script>
-    <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "WebPage",
-        "url": "https://abdulkerimsesli.de/videos/",
-        "name": "Videos — Abdulkerim Sesli",
-        "mainEntity": {
-          "@type": "ItemList",
-          "@id": "https://abdulkerimsesli.de/videos/#videos-list"
-        }
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "item": {
+        "@type": "VideoObject",
+        "name": "Making-of Fotoshooting — Abdulkerim Berlin",
+        "contentUrl": "https://youtu.be/rXMLVt9vhxQ"
       }
-    </script>
-  </head>
-  <body>
-    <!-- Google Tag Manager (noscript) -->
-    <noscript
-      ><iframe title="Google Tag Manager (noscript)"
-        src="https://www.googletagmanager.com/ns.html?id=GTM-5F5ZSTTL"
-        height="0"
-        width="0"
-        style="display: none; visibility: hidden"
-      ></iframe
-    ></noscript>
-    <!-- End Google Tag Manager (noscript) -->
-    <main class="videos-main">
-      <div class="container">
-        <div
-          id="videos-status"
-          class="visually-hidden"
-          aria-live="polite"
-        ></div>
-        <h1>Videos — Abdulkerim Sesli</h1>
-        <p class="lead">
-          Eine Auswahl meiner Arbeiten, kurzen Vorstellungen und
-          Behind-the-Scenes.
-        </p>
-        <div class="videos-header-actions">
-          <div class="action-buttons">
-            <a
-              class="btn-subscribe"
-              href="https://www.youtube.com/channel/UCTGRherjM4iuIn86xxubuPg"
-              target="_blank"
-              rel="noopener"
-            >
-              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path
-                  d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"
-                  fill="#fff"
-                />
-              </svg>
-              YouTube Abonnieren
-            </a>
-            <button
-              class="btn-share"
-              data-share="youtube-channel"
-            >
-              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path
-                  d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"
-                  fill="#fff"
-                />
-              </svg>
-              Kanal Teilen
-            </button>
-          </div>
-        </div>
-
-        <section
-          class="video-grid"
-          itemscope
-          itemtype="https://schema.org/VideoGallery"
-        >
-          <meta itemprop="name" content="Videos von Abdulkerim Sesli" />
-          <meta
-            itemprop="description"
-            content="Sammlung von Projekt-Videos, Making-ofs und Tutorials"
-          />
-          <!-- Video 1 -->
-          <article class="video-card">
-            <header>
-              <h2>Projektvorstellung: Interaktive Erde</h2>
-            </header>
-            <figure class="thumb-wrapper">
-              <button
-                class="video-thumb"
-                data-video-id="1bL8bZd6cpY"
-                data-thumb="https://i.ytimg.com/vi/1bL8bZd6cpY/hqdefault.jpg"
-                aria-label="Play Motion Design: Neon Bot Experiment"
-              >
-                <span class="play-button" aria-hidden="true">
-                  <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-                    <polygon points="70,55 70,145 145,100" />
-                  </svg>
-                </span>
-                <span class="visually-hidden">Play Motion Design: Neon Bot Experiment</span>
-              </button>
-            </figure>
-            <div class="video-meta">
-              <div class="video-info">
-                <small class="pub-date">2025-12-20</small>
-              </div>
-              <div class="video-actions">
-                <a
-                  href="https://youtu.be/1bL8bZd6cpY"
-                  target="_blank"
-                  rel="noopener"
-                  >Auf YouTube öffnen</a
-                >
-              </div>
-            </div>
-
-            <script type="application/ld+json">
-              {
-                "@context": "https://schema.org",
-                "@type": "VideoObject",
-                "name": "Interaktive Erde — Abdulkerim Berlin",
-                "description": "Projektvorstellung: Interaktive 3D-Erde mit WebGL und Partikelsystemen.",
-                "thumbnailUrl": "https://i.ytimg.com/vi/1bL8bZd6cpY/hqdefault.jpg",
-                "uploadDate": "2025-12-20T00:00:00+00:00",
-                "duration": "PT9S",
-                "contentUrl": "https://youtu.be/1bL8bZd6cpY",
-                "embedUrl": "https://www.youtube-nocookie.com/embed/1bL8bZd6cpY",
-                "isFamilyFriendly": true,
-                "publisher": {
-                  "@type": "Organization",
-                  "@id": "https://abdulkerimsesli.de/#organization",
-                  "logo": {
-                    "@type": "ImageObject",
-                    "url": "https://abdulkerimsesli.de/content/assets/img/icons/icon-512.png",
-                    "contentUrl": "https://abdulkerimsesli.de/content/assets/img/icons/icon-512.png",
-                    "creator": { "@type": "Person", "name": "Abdulkerim Sesli" },
-                    "license": "https://abdulkerimsesli.de/#image-license",
-                    "creditText": "Logo: Abdulkerim Sesli",
-                    "copyrightNotice": "© 2025 Abdulkerim Sesli",
-                    "acquireLicensePage": "https://abdulkerimsesli.de/#image-license"
-                  },
-                  "address": {
-                    "@type": "PostalAddress",
-                    "streetAddress": "Sterkrader Str. 59",
-                    "postalCode": "13507",
-                    "addressLocality": "Berlin",
-                    "addressCountry": "DE"
-                  }
-                }
-              }
-            </script>
-          </article>
-
-          <!-- Video 2 -->
-          <article class="video-card">
-            <header>
-              <h2>Making-of: Fotoshooting</h2>
-            </header>
-            <figure class="thumb-wrapper">
-              <button
-                class="video-thumb"
-                data-video-id="rXMLVt9vhxQ"
-                data-thumb="https://i.ytimg.com/vi/rXMLVt9vhxQ/hqdefault.jpg"
-                aria-label="Play Making-of: Fotoshooting"
-                >
-                <span class="play-button" aria-hidden="true">
-                  <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-                    <polygon points="70,55 70,145 145,100" />
-                  </svg>
-                </span>
-                <span class="visually-hidden">Play Making-of: Fotoshooting</span>
-                </span>
-              </button>
-            </figure>
-            <div class="video-meta">
-              <div class="video-info">
-                <small class="pub-date">2011-01-18</small>
-              </div>
-              <div class="video-actions">
-                <a
-                  href="https://youtu.be/rXMLVt9vhxQ"
-                  target="_blank"
-                  rel="noopener"
-                  >Auf YouTube öffnen</a
-                >
-              </div>
-            </div>
-
-            <script type="application/ld+json">
-              {
-                "@context": "https://schema.org",
-                "@type": "VideoObject",
-                "name": "Making-of Fotoshooting — Abdulkerim Berlin",
-                "description": "Making-of: Bildkomposition, Beleuchtung und Nachbearbeitung.",
-                "thumbnailUrl": "https://i.ytimg.com/vi/rXMLVt9vhxQ/hqdefault.jpg",
-                "uploadDate": "2011-01-18T00:00:00+00:00",
-                "duration": "PT11S",
-                "contentUrl": "https://youtu.be/rXMLVt9vhxQ",
-                "embedUrl": "https://www.youtube-nocookie.com/embed/rXMLVt9vhxQ",
-                "isFamilyFriendly": true,
-                "publisher": {
-                  "@type": "Organization",
-                  "@id": "https://abdulkerimsesli.de/#organization",
-                  "logo": {
-                    "@type": "ImageObject",
-                    "url": "https://abdulkerimsesli.de/content/assets/img/icons/icon-512.png"
-                  },
-                  "address": {
-                    "@type": "PostalAddress",
-                    "streetAddress": "Sterkrader Str. 59",
-                    "postalCode": "13507",
-                    "addressLocality": "Berlin",
-                    "addressCountry": "DE"
-                  }
-                }
-              }
-            </script>
-          </article>
-
-          <!-- Video 3 -->
-          <article class="video-card">
-            <header>
-              <h2>Logo Animation (Software Style)</h2>
-            </header>
-            <figure class="thumb-wrapper">
-              <button
-                class="video-thumb"
-                data-video-id="tImMPQKiQVk"
-                data-thumb="https://i.ytimg.com/vi/tImMPQKiQVk/hqdefault.jpg"
-                aria-label="Play Logo Animation (Software Style)"
-                >
-                <span class="play-button" aria-hidden="true">
-                  <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><polygon points="70,55 70,145 145,100"/></svg>
-                </span>
-                <span class="visually-hidden">Play Logo Animation (Software Style)</span>
-              </button>
-            </figure>
-            <div class="video-meta">
-              <div class="video-info"><small class="pub-date">2025-12-28</small></div>
-              <div class="video-actions"><a href="https://youtu.be/tImMPQKiQVk" target="_blank" rel="noopener">Auf YouTube öffnen</a></div>
-            </div>
-
-            <script type="application/ld+json">
-              {"@context":"https://schema.org","@type":"VideoObject","name":"Logo Animation (Software Style) - Abdulkerim Berlin","description":"Clean UI-style logo animation designed like a professional desktop program.","thumbnailUrl":"https://i.ytimg.com/vi/tImMPQKiQVk/hqdefault.jpg","uploadDate":"2025-12-28T19:14:37Z","duration":"PT5S","contentUrl":"https://youtu.be/tImMPQKiQVk","embedUrl":"https://www.youtube-nocookie.com/embed/tImMPQKiQVk","isFamilyFriendly":true}
-            </script>
-          </article>
-
-          <!-- Video 4 -->
-          <article class="video-card">
-            <header>
-              <h2>#Mond #Moon #Astrofotografie #LunarSurface #NightSky</h2>
-            </header>
-            <figure class="thumb-wrapper">
-              <button
-                class="video-thumb"
-                data-video-id="z8W9UJbUSo4"
-                data-thumb="https://i.ytimg.com/vi/z8W9UJbUSo4/hqdefault.jpg"
-                aria-label="Play #Mond #Moon #Astrofotografie #LunarSurface #NightSky"
-                >
-                <span class="play-button" aria-hidden="true">
-                  <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><polygon points="70,55 70,145 145,100"/></svg>
-                </span>
-                <span class="visually-hidden">Play #Mond #Moon #Astrofotografie #LunarSurface #NightSky</span>
-              </button>
-            </figure>
-            <div class="video-meta">
-              <div class="video-info"><small class="pub-date">2025-12-27</small></div>
-              <div class="video-actions"><a href="https://youtu.be/z8W9UJbUSo4" target="_blank" rel="noopener">Auf YouTube öffnen</a></div>
-            </div>
-
-            <script type="application/ld+json">
-              {"@context":"https://schema.org","@type":"VideoObject","name":"#Mond #Moon #Astrofotografie #LunarSurface #NightSky — Abdulkerim","description":"Kurzclip der Mondoberfläche — Astrofotografie und kurzer Blick auf den Nachthimmel.","thumbnailUrl":"https://i.ytimg.com/vi/z8W9UJbUSo4/hqdefault.jpg","uploadDate":"2025-12-27T08:44:03Z","duration":"PT9S","contentUrl":"https://youtu.be/z8W9UJbUSo4","embedUrl":"https://www.youtube-nocookie.com/embed/z8W9UJbUSo4","isFamilyFriendly":true}
-            </script>
-          </article>
-
-          <!-- Video 5 -->
-          <article class="video-card">
-            <header>
-              <h2>Future Bot Animation</h2>
-            </header>
-            <figure class="thumb-wrapper">
-              <button
-                class="video-thumb"
-                data-video-id="clbOHUT4w5o"
-                data-thumb="https://i.ytimg.com/vi/clbOHUT4w5o/hqdefault.jpg"
-                aria-label="Play Future Bot Animation"
-                >
-                <span class="play-button" aria-hidden="true">
-                  <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><polygon points="70,55 70,145 145,100"/></svg>
-                </span>
-                <span class="visually-hidden">Play Future Bot Animation</span>
-              </button>
-            </figure>
-            <div class="video-meta">
-              <div class="video-info"><small class="pub-date">2025-12-21</small></div>
-              <div class="video-actions"><a href="https://youtu.be/clbOHUT4w5o" target="_blank" rel="noopener">Auf YouTube öffnen</a></div>
-            </div>
-
-            <script type="application/ld+json">
-              {"@context":"https://schema.org","@type":"VideoObject","name":"Future Bot Animation by Abdulkerim","description":"Kurzloop einer futuristischen Roboter-Animation mit neonfarbener Ästhetik.","thumbnailUrl":"https://i.ytimg.com/vi/clbOHUT4w5o/hqdefault.jpg","uploadDate":"2025-12-21T13:19:18Z","duration":"PT9S","contentUrl":"https://youtu.be/clbOHUT4w5o","embedUrl":"https://www.youtube-nocookie.com/embed/clbOHUT4w5o","isFamilyFriendly":true}
-            </script>
-          </article>
-
-          <!-- Video 6 -->
-          <article class="video-card">
-            <header>
-              <h2>Neon Robot Animation | Abdulkerim (AKS Motion Design)</h2>
-            </header>
-            <figure class="thumb-wrapper">
-              <button
-                class="video-thumb"
-                data-video-id="UorHOTKWtK4"
-                data-thumb="https://i.ytimg.com/vi/UorHOTKWtK4/hqdefault.jpg"
-                aria-label="Play Neon Robot Animation"
-                >
-                <span class="play-button" aria-hidden="true">
-                  <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><polygon points="70,55 70,145 145,100"/></svg>
-                </span>
-                <span class="visually-hidden">Play Neon Robot Animation</span>
-              </button>
-            </figure>
-            <div class="video-meta">
-              <div class="video-info"><small class="pub-date">2025-12-20</small></div>
-              <div class="video-actions"><a href="https://youtu.be/UorHOTKWtK4" target="_blank" rel="noopener">Auf YouTube öffnen</a></div>
-            </div>
-
-            <script type="application/ld+json">
-              {"@context":"https://schema.org","@type":"VideoObject","name":"Neon Robot Animation | Abdulkerim (AKS Motion Design)","description":"In diesem Video zeige ich eine aktuelle Motion-Design-Studie: Eine stilisierte Roboter-Animation mit dynamischen Neon-Effekten.","thumbnailUrl":"https://i.ytimg.com/vi/UorHOTKWtK4/hqdefault.jpg","uploadDate":"2025-12-20T22:21:30Z","duration":"PT3S","contentUrl":"https://youtu.be/UorHOTKWtK4","embedUrl":"https://www.youtube-nocookie.com/embed/UorHOTKWtK4","isFamilyFriendly":true}
-            </script>
-          </article>
-
-          <!-- Video 7 -->
-          <article class="video-card">
-            <header>
-              <h2>Motion Graphics Test | Abdulkerim (AKS)</h2>
-            </header>
-            <figure class="thumb-wrapper">
-              <button
-                class="video-thumb"
-                data-video-id="lpictttLoEk"
-                data-thumb="https://i.ytimg.com/vi/lpictttLoEk/hqdefault.jpg"
-                aria-label="Play Motion Graphics Test"
-                >
-                <span class="play-button" aria-hidden="true">
-                  <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><polygon points="70,55 70,145 145,100"/></svg>
-                </span>
-                <span class="visually-hidden">Play Motion Graphics Test</span>
-              </button>
-            </figure>
-            <div class="video-meta">
-              <div class="video-info"><small class="pub-date">2011-01-20</small></div>
-              <div class="video-actions"><a href="https://youtu.be/lpictttLoEk" target="_blank" rel="noopener">Auf YouTube öffnen</a></div>
-            </div>
-
-            <script type="application/ld+json">
-              {"@context":"https://schema.org","@type":"VideoObject","name":"Motion Graphics Test | Abdulkerim (AKS)","description":"in kleiner Einblick in meine Anfänge und Tests mit After Effects CS4.","thumbnailUrl":"https://i.ytimg.com/vi/lpictttLoEk/hqdefault.jpg","uploadDate":"2011-01-20T14:50:50Z","duration":"PT11S","contentUrl":"https://youtu.be/lpictttLoEk","embedUrl":"https://www.youtube-nocookie.com/embed/lpictttLoEk","isFamilyFriendly":true}
-            </script>
-          </article>
-        </section>
-
-        <script type="application/ld+json">
-          {
-            "@context": "https://schema.org",
-            "@type": "ItemList",
-            "name": "Videos von Abdulkerim Sesli",
-            "itemListElement": [
-              {
-                "@type": "ListItem",
-                "position": 1,
-                "item": {
-                  "@type": "VideoObject",
-                  "name": "Logo Animation (Software Style) — Abdulkerim Berlin",
-                  "thumbnailUrl": "https://i.ytimg.com/vi/tImMPQKiQVk/hqdefault.jpg",
-                  "uploadDate": "2025-12-28T19:14:37Z",
-                  "duration": "PT5S",
-                  "contentUrl": "https://youtu.be/tImMPQKiQVk",
-                  "embedUrl": "https://www.youtube-nocookie.com/embed/tImMPQKiQVk",
-                  "description": "Clean UI-style logo animation designed like a professional desktop program.",
-                  "publisher": { "@type": "Organization", "@id": "https://abdulkerimsesli.de/#organization", "logo": { "@type": "ImageObject", "url": "https://abdulkerimsesli.de/content/assets/img/icons/icon-512.png", "contentUrl": "https://abdulkerimsesli.de/content/assets/img/icons/icon-512.png", "creator": { "@type": "Person", "name": "Abdulkerim Sesli" }, "license": "https://abdulkerimsesli.de/#image-license", "creditText": "Logo: Abdulkerim Sesli", "copyrightNotice": "© 2025 Abdulkerim Sesli", "acquireLicensePage": "https://abdulkerimsesli.de/#image-license" }, "address": { "@type": "PostalAddress", "streetAddress": "Sterkrader Str. 59", "postalCode": "13507", "addressLocality": "Berlin", "addressCountry": "DE" },
-                }
-              },
-              {
-                "@type": "ListItem",
-                "position": 2,
-                "item": {
-                  "@type": "VideoObject",
-                  "name": "#Mond #Moon #Astrofotografie #LunarSurface #NightSky — Abdulkerim Berlin",
-                  "thumbnailUrl": "https://i.ytimg.com/vi/z8W9UJbUSo4/hqdefault.jpg",
-                  "uploadDate": "2025-12-27T08:44:03Z",
-                  "duration": "PT9S",
-                  "contentUrl": "https://youtu.be/z8W9UJbUSo4",
-                  "embedUrl": "https://www.youtube-nocookie.com/embed/z8W9UJbUSo4",
-                  "description": "Kurzclip der Mondoberfläche — Astrofotografie und kurzer Blick auf den Nachthimmel.",
-                  "publisher": { "@type": "Organization", "@id": "https://abdulkerimsesli.de/#organization", "logo": { "@type": "ImageObject", "url": "https://abdulkerimsesli.de/content/assets/img/icons/icon-512.png", "contentUrl": "https://abdulkerimsesli.de/content/assets/img/icons/icon-512.png", "creator": { "@type": "Person", "name": "Abdulkerim Sesli" }, "license": "https://abdulkerimsesli.de/#image-license", "creditText": "Logo: Abdulkerim Sesli", "copyrightNotice": "© 2025 Abdulkerim Sesli", "acquireLicensePage": "https://abdulkerimsesli.de/#image-license" }, "address": { "@type": "PostalAddress", "streetAddress": "Sterkrader Str. 59", "postalCode": "13507", "addressLocality": "Berlin", "addressCountry": "DE" } }
-                }
-              },
-              {
-                "@type": "ListItem",
-                "position": 3,
-                "item": {
-                  "@type": "VideoObject",
-                  "name": "Future Bot Animation — Abdulkerim Berlin",
-                  "thumbnailUrl": "https://i.ytimg.com/vi/clbOHUT4w5o/hqdefault.jpg",
-                  "uploadDate": "2025-12-21T13:19:18Z",
-                  "duration": "PT9S",
-                  "contentUrl": "https://youtu.be/clbOHUT4w5o",
-                  "embedUrl": "https://www.youtube-nocookie.com/embed/clbOHUT4w5o",
-                  "description": "Kurzloop einer futuristischen Roboter-Animation mit neonfarbener Ästhetik.",
-                  "publisher": { "@type": "Organization", "@id": "https://abdulkerimsesli.de/#organization", "logo": { "@type": "ImageObject", "url": "https://abdulkerimsesli.de/content/assets/img/icons/icon-512.png", "contentUrl": "https://abdulkerimsesli.de/content/assets/img/icons/icon-512.png", "creator": { "@type": "Person", "name": "Abdulkerim Sesli" }, "license": "https://abdulkerimsesli.de/#image-license", "creditText": "Logo: Abdulkerim Sesli", "copyrightNotice": "© 2025 Abdulkerim Sesli", "acquireLicensePage": "https://abdulkerimsesli.de/#image-license" }, "address": { "@type": "PostalAddress", "streetAddress": "Sterkrader Str. 59", "postalCode": "13507", "addressLocality": "Berlin", "addressCountry": "DE" } }
-                }
-              },
-              {
-                "@type": "ListItem",
-                "position": 4,
-                "item": {
-                  "@type": "VideoObject",
-                  "name": "Neon Robot Animation | Abdulkerim (AKS Motion Design) — Abdulkerim Berlin",
-                  "thumbnailUrl": "https://i.ytimg.com/vi/UorHOTKWtK4/hqdefault.jpg",
-                  "uploadDate": "2025-12-20T22:21:30Z",
-                  "duration": "PT3S",
-                  "contentUrl": "https://youtu.be/UorHOTKWtK4",
-                  "embedUrl": "https://www.youtube-nocookie.com/embed/UorHOTKWtK4",
-                  "description": "In diesem Video zeige ich eine aktuelle Motion-Design-Studie: Eine stilisierte Roboter-Animation mit dynamischen Neon-Effekten.",
-                  "publisher": { "@type": "Organization", "@id": "https://abdulkerimsesli.de/#organization", "logo": { "@type": "ImageObject", "url": "https://abdulkerimsesli.de/content/assets/img/icons/icon-512.png", "contentUrl": "https://abdulkerimsesli.de/content/assets/img/icons/icon-512.png", "creator": { "@type": "Person", "name": "Abdulkerim Sesli" }, "license": "https://abdulkerimsesli.de/#image-license", "creditText": "Logo: Abdulkerim Sesli", "copyrightNotice": "© 2025 Abdulkerim Sesli", "acquireLicensePage": "https://abdulkerimsesli.de/#image-license" }, "address": { "@type": "PostalAddress", "streetAddress": "Sterkrader Str. 59", "postalCode": "13507", "addressLocality": "Berlin", "addressCountry": "DE" } }
-                }
-              },
-              {
-                "@type": "ListItem",
-                "position": 5,
-                "item": {
-                  "@type": "VideoObject",
-                  "name": "Motion Design: Neon Bot Experiment — Abdulkerim Berlin",
-                  "thumbnailUrl": "https://i.ytimg.com/vi/1bL8bZd6cpY/hqdefault.jpg",
-                  "uploadDate": "2025-12-20T19:43:34Z",
-                  "duration": "PT9S",
-                  "contentUrl": "https://youtu.be/1bL8bZd6cpY",
-                  "embedUrl": "https://www.youtube-nocookie.com/embed/1bL8bZd6cpY",
-                  "description": "In diesem Video zeige ich ein aktuelles Motion-Design-Projekt: Eine stilisierte Roboter-Animation mit leuchtenden Neon-Effekten und Partikel-Animationen.",
-                  "publisher": { "@type": "Organization", "@id": "https://abdulkerimsesli.de/#organization", "logo": { "@type": "ImageObject", "url": "https://abdulkerimsesli.de/content/assets/img/icons/icon-512.png", "contentUrl": "https://abdulkerimsesli.de/content/assets/img/icons/icon-512.png", "creator": { "@type": "Person", "name": "Abdulkerim Sesli" }, "license": "https://abdulkerimsesli.de/#image-license", "creditText": "Logo: Abdulkerim Sesli", "copyrightNotice": "© 2025 Abdulkerim Sesli", "acquireLicensePage": "https://abdulkerimsesli.de/#image-license" }, "address": { "@type": "PostalAddress", "streetAddress": "Sterkrader Str. 59", "postalCode": "13507", "addressLocality": "Berlin", "addressCountry": "DE" } }
-                }
-              },
-              {
-                "@type": "ListItem",
-                "position": 6,
-                "item": {
-                  "@type": "VideoObject",
-                  "name": "Motion Graphics Test | Abdulkerim (AKS) — Abdulkerim Berlin",
-                  "thumbnailUrl": "https://i.ytimg.com/vi/lpictttLoEk/hqdefault.jpg",
-                  "uploadDate": "2011-01-20T14:50:50Z",
-                  "duration": "PT11S",
-                  "contentUrl": "https://youtu.be/lpictttLoEk",
-                  "embedUrl": "https://www.youtube-nocookie.com/embed/lpictttLoEk",
-                  "description": "in kleiner Einblick in meine Anfänge und Tests mit After Effects CS4.",
-                  "publisher": { "@type": "Organization", "@id": "https://abdulkerimsesli.de/#organization", "logo": { "@type": "ImageObject", "url": "https://abdulkerimsesli.de/content/assets/img/icons/icon-512.png", "contentUrl": "https://abdulkerimsesli.de/content/assets/img/icons/icon-512.png", "creator": { "@type": "Person", "name": "Abdulkerim Sesli" }, "license": "https://abdulkerimsesli.de/#image-license", "creditText": "Logo: Abdulkerim Sesli", "copyrightNotice": "© 2025 Abdulkerim Sesli", "acquireLicensePage": "https://abdulkerimsesli.de/#image-license" }, "address": { "@type": "PostalAddress", "streetAddress": "Sterkrader Str. 59", "postalCode": "13507", "addressLocality": "Berlin", "addressCountry": "DE" } }
-                }
-              },
-              {
-                "@type": "ListItem",
-                "position": 7,
-                "item": {
-                  "@type": "VideoObject",
-                  "name": "Logo Animation Test 1 | Abdulkerim (AKS) — Abdulkerim Berlin",
-                  "thumbnailUrl": "https://i.ytimg.com/vi/rXMLVt9vhxQ/hqdefault.jpg",
-                  "uploadDate": "2011-01-18T22:08:54Z",
-                  "duration": "PT11S",
-                  "contentUrl": "https://youtu.be/rXMLVt9vhxQ",
-                  "embedUrl": "https://www.youtube-nocookie.com/embed/rXMLVt9vhxQ",
-                  "description": "Dies ist mein erster technischer Test in After Effects CS4.",
-                  "publisher": { "@type": "Person", "name": "Abdulkerim Sesli" }
-                }
-              }
-            ]
-          }
-        </script>
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "item": {
+        "@type": "VideoObject",
+        "name": "Logo Animation (Software Style) — Abdulkerim Berlin",
+        "contentUrl": "https://youtu.be/tImMPQKiQVk"
+      }
+    },
+    {
+      "@type": "ListItem",
+      "position": 4,
+      "item": {
+        "@type": "VideoObject",
+        "name": "#Mond #Moon #Astrofotografie #LunarSurface #NightSky — Abdulkerim Berlin",
+        "contentUrl": "https://youtu.be/z8W9UJbUSo4"
+      }
+    },
+    {
+      "@type": "ListItem",
+      "position": 5,
+      "item": {
+        "@type": "VideoObject",
+        "name": "Future Bot Animation — Abdulkerim Berlin",
+        "contentUrl": "https://youtu.be/clbOHUT4w5o"
+      }
+    },
+    {
+      "@type": "ListItem",
+      "position": 6,
+      "item": {
+        "@type": "VideoObject",
+        "name": "Neon Robot Animation | Abdulkerim (AKS Motion Design) — Abdulkerim Berlin",
+        "contentUrl": "https://youtu.be/UorHOTKWtK4"
+      }
+    },
+    {
+      "@type": "ListItem",
+      "position": 7,
+      "item": {
+        "@type": "VideoObject",
+        "name": "Motion Graphics Test | Abdulkerim (AKS) — Abdulkerim Berlin",
+        "contentUrl": "https://youtu.be/lpictttLoEk"
+      }
+    }
+  ]
+}
+</script>
 
         <aside class="gmb-note">
           <h3>Tipp zum Teilen</h3>
