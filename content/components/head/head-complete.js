@@ -670,17 +670,69 @@ export function buildPwaAssets(BASE_URL, BRAND_DATA) {
     },
   ];
   const iconLinks = [
-    { rel: "icon", sizes: "16x16", href: `${BASE_URL}/content/assets/img/icons/favicon-16.png`, type: "image/png" },
-    { rel: "icon", sizes: "32x32", href: `${BASE_URL}/content/assets/img/icons/favicon-32.png`, type: "image/png" },
-    { rel: "icon", sizes: "48x48", href: `${BASE_URL}/content/assets/img/icons/favicon-48.png`, type: "image/png" },
-    { rel: "icon", sizes: "64x64", href: `${BASE_URL}/content/assets/img/icons/favicon-64.png`, type: "image/png" },
-    { rel: "icon", sizes: "128x128", href: `${BASE_URL}/content/assets/img/icons/favicon-128.png`, type: "image/png" },
-    { rel: "icon", sizes: "192x192", href: `${BASE_URL}/content/assets/img/icons/favicon-192.png`, type: "image/png" },
-    { rel: "icon", sizes: "256x256", href: `${BASE_URL}/content/assets/img/icons/favicon-256.png`, type: "image/png" },
-    { rel: "icon", sizes: "512x512", href: `${BASE_URL}/content/assets/img/icons/favicon-512.png`, type: "image/png" },
-    { rel: "icon", sizes: "any", href: `${BASE_URL}/content/assets/img/icons/favicon.svg`, type: "image/svg+xml" },
-    { rel: "shortcut icon", href: `${BASE_URL}/content/assets/img/icons/favicon.ico` },
-    { rel: "apple-touch-icon", sizes: "180x180", href: `${BASE_URL}/content/assets/img/icons/apple-touch-icon.png` },
+    {
+      rel: "icon",
+      sizes: "16x16",
+      href: `${BASE_URL}/content/assets/img/icons/favicon-16.png`,
+      type: "image/png",
+    },
+    {
+      rel: "icon",
+      sizes: "32x32",
+      href: `${BASE_URL}/content/assets/img/icons/favicon-32.png`,
+      type: "image/png",
+    },
+    {
+      rel: "icon",
+      sizes: "48x48",
+      href: `${BASE_URL}/content/assets/img/icons/favicon-48.png`,
+      type: "image/png",
+    },
+    {
+      rel: "icon",
+      sizes: "64x64",
+      href: `${BASE_URL}/content/assets/img/icons/favicon-64.png`,
+      type: "image/png",
+    },
+    {
+      rel: "icon",
+      sizes: "128x128",
+      href: `${BASE_URL}/content/assets/img/icons/favicon-128.png`,
+      type: "image/png",
+    },
+    {
+      rel: "icon",
+      sizes: "192x192",
+      href: `${BASE_URL}/content/assets/img/icons/favicon-192.png`,
+      type: "image/png",
+    },
+    {
+      rel: "icon",
+      sizes: "256x256",
+      href: `${BASE_URL}/content/assets/img/icons/favicon-256.png`,
+      type: "image/png",
+    },
+    {
+      rel: "icon",
+      sizes: "512x512",
+      href: `${BASE_URL}/content/assets/img/icons/favicon-512.png`,
+      type: "image/png",
+    },
+    {
+      rel: "icon",
+      sizes: "any",
+      href: `${BASE_URL}/content/assets/img/icons/favicon.svg`,
+      type: "image/svg+xml",
+    },
+    {
+      rel: "shortcut icon",
+      href: `${BASE_URL}/content/assets/img/icons/favicon.ico`,
+    },
+    {
+      rel: "apple-touch-icon",
+      sizes: "180x180",
+      href: `${BASE_URL}/content/assets/img/icons/apple-touch-icon.png`,
+    },
   ];
   const metas = [
     { name: "theme-color", content: "#0d0d0d" },
