@@ -12,15 +12,54 @@
       href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
+    <link rel="stylesheet" href="/content/components/menu/menu.css" />
+
+    <script
+      type="module"
+      src="/content/components/head/head-inline.js"
+      crossorigin="anonymous"
+    ></script>
+
+    <script
+      src="/content/components/head/head-complete.js"
+      type="module"
+      crossorigin="anonymous"
+    ></script>
 
     <!-- Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-
+    <!-- Main application script (early load for hero/3D init) -->
+    <script
+      type="module"
+      src="/content/main.js"
+      crossorigin="anonymous"
+    ></script>
     <link rel="stylesheet" href="/pages/about/about.css" />
+    <link rel="stylesheet" href="/content/components/menu/menu.css" />
+    <link rel="stylesheet" href="/content/styles/root.css" />
+    <link
+      rel="stylesheet"
+      href="/content/styles/main.css"
+      media="print"
+      data-defer="1"
+    />
+    <noscript
+      ><link rel="stylesheet" href="/content/styles/main.css"
+    /></noscript>
+    <!-- Footer styles: deferred to keep initial render light -->
+    <link
+      rel="stylesheet"
+      href="/content/components/footer/footer.css"
+      media="print"
+      data-defer="1"
+    />
+    <noscript
+      ><link rel="stylesheet" href="/content/components/footer/footer.css"
+    /></noscript>
   </head>
   <body>
-    <header class="container">
-      <!-- Navigation Placeholder (optional) -->
+    <header class="site-header">
+      <div id="menu-container"></div>
     </header>
 
     <main class="container">
@@ -188,5 +227,16 @@
       // Initialize Lucide Icons
       lucide.createIcons();
     </script>
+
+    <!-- Footer container -->
+    <div
+      id="footer-container"
+      data-footer-src="/content/components/footer/footer"
+    ></div>
+    <script
+      src="/content/components/footer/footer-complete.js"
+      type="module"
+      crossorigin="anonymous"
+    ></script>
   </body>
 </html>
