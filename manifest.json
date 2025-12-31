@@ -13,30 +13,30 @@
   "theme_color": "#0d0d0d",
   "icons": [
     {
-      "src": "https://abdulkerimsesli.de/content/assets/img/icons/icon-96.png",
-      "sizes": "96x96",
+      "src": "/content/assets/img/icons/favicon-128.png",
+      "sizes": "128x128",
       "type": "image/png"
     },
     {
-      "src": "https://abdulkerimsesli.de/content/assets/img/icons/icon-144.png",
-      "sizes": "144x144",
-      "type": "image/png"
-    },
-    {
-      "src": "https://abdulkerimsesli.de/content/assets/img/icons/apple-touch-icon.png",
-      "sizes": "180x180",
-      "type": "image/png"
-    },
-    {
-      "src": "https://abdulkerimsesli.de/content/assets/img/icons/favicon-192x192.png",
+      "src": "/content/assets/img/icons/favicon-192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "https://abdulkerimsesli.de/content/assets/img/icons/favicon-512x512.png",
+      "src": "/content/assets/img/icons/favicon-256.png",
+      "sizes": "256x256",
+      "type": "image/png"
+    },
+    {
+      "src": "/content/assets/img/icons/favicon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    },
+    {
+      "src": "/content/assets/img/icons/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
     }
   ],
   "categories": ["portfolio", "developer", "creative", "web"],
