@@ -89,9 +89,9 @@
 
         // Ensure about CSS is loaded when content is injected (idempotent)
         if (!document.querySelector('link[href="/pages/about/about.css"]')) {
-          const aboutLink = document.createElement('link');
-          aboutLink.rel = 'stylesheet';
-          aboutLink.href = '/pages/about/about.css';
+          const aboutLink = document.createElement("link");
+          aboutLink.rel = "stylesheet";
+          aboutLink.href = "/pages/about/about.css";
           document.head.appendChild(aboutLink);
         }
 
