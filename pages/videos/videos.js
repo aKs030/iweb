@@ -289,7 +289,6 @@ export function renderVideoCard(grid, it, detailsMap) {
     publisher: {
       "@type": "Organization",
       "@id": "https://abdulkerimsesli.de/#organization",
-      name: "Abdulkerim Berlin",
       logo: {
         "@type": "ImageObject",
         url: "https://abdulkerimsesli.de/content/assets/img/icons/icon-512.png",
