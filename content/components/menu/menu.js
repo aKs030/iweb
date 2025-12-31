@@ -280,7 +280,7 @@ function initializeLogo(container) {
 
 function initializeSubmenuLinks() {
   const submenuButtons = document.querySelectorAll(
-    ".has-submenu > .submenu-toggle",
+    ".has-submenu > .submenu-toggle"
   );
   submenuButtons.forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -316,7 +316,7 @@ function initializeSubmenuLinks() {
             tapped = false;
           }
         },
-        { passive: false },
+        { passive: false }
       );
     });
     document.addEventListener("touchstart", function (e) {
@@ -373,7 +373,7 @@ function extractSectionInfo(sectionId) {
     const sectionElement = document.querySelector(`#${sectionId}`);
     if (sectionElement) {
       const headers = sectionElement.querySelectorAll(
-        ".section-header, .section-subtitle",
+        ".section-header, .section-subtitle"
       );
       headers.forEach((header) => {
         header.style.display = "none";
@@ -459,8 +459,8 @@ function initializeScrollDetection() {
       if (!sectionId && typeof index === "number") {
         const sections = Array.from(
           document.querySelectorAll(
-            "main .section, .section, footer#site-footer",
-          ),
+            "main .section, .section, footer#site-footer"
+          )
         );
         const section = sections[index];
         sectionId = section?.id;
