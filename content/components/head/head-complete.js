@@ -137,10 +137,7 @@ const BUSINESS_FAQS = [
 export function generateSchemaGraph(pageData, pageUrl, BASE_URL, BRAND_DATA, BUSINESS_FAQS, doc = typeof document === 'undefined' ? null : document) {
   // Use canonical origin (prod or runtime origin) so JSON-LD stays consistent in local/dev
   const canonicalOrigin =
-    (doc?.documentElement?.dataset?.forceProdCanonical === "true") ||
-    ["abdulkerimsesli.de", "www.abdulkerimsesli.de"].includes(
-      globalThis.location.hostname.toLowerCase(),
-    )
+    (doc?.documentElement?.dataset?.forceProdCanonical === "true")
       ? BASE_URL
       : globalThis.location.origin;
 
@@ -325,19 +322,17 @@ export function computeEffectiveCanonical(
   locationPath = globalThis.location?.pathname || "",
   locationOrigin = globalThis.location?.origin || "",
 ) {
-  const PROD_HOSTS = new Set(["abdulkerimsesli.de", "www.abdulkerimsesli.de"]);
-
-  const canonicalHref =
-    forceProdFlag || PROD_HOSTS.has(hostname)
-      ? `${BASE_URL}${cleanPath}`
-      : pageUrl;
+  // Determine canonicalHref and effectiveCanonical.
+  // Removed host-based PROD_HOSTS detection per request — only `forceProdFlag`
+  // (explicit) controls whether production canonical is used.
+  const canonicalHref = forceProdFlag ? `${BASE_URL}${cleanPath}` : pageUrl;
 
   const isDirtyPath = /^\/pages\//i.exec(locationPath) || /\/index\.html$/i.exec(locationPath);
 
   let effectiveCanonical;
   if (forceProdFlag) {
     effectiveCanonical = `${BASE_URL}${cleanPath}`;
-  } else if (isDirtyPath && !PROD_HOSTS.has(hostname)) {
+  } else if (isDirtyPath) {
     effectiveCanonical = `${locationOrigin}${cleanPath}`;
   } else {
     effectiveCanonical = canonicalHref;
@@ -551,8 +546,8 @@ async function loadSharedHead() {
   try {
     await import("../../utils/shared-utilities.js");
 
-    // Known production hosts - used in canonical & JSON-LD decisions
-    const PROD_HOSTS = new Set(["abdulkerimsesli.de", "www.abdulkerimsesli.de"]);
+    // NOTE: host-based automatic production detection removed — prefer explicit
+    // opt-in via `data-force-prod-canonical="true"` when production canonical is required.
 
     // computeEffectiveCanonical has been moved to a top-level, exported helper (`computeEffectiveCanonical`).
     // Use: computeEffectiveCanonical(forceProdFlag, hostname, cleanPath, pageUrl, BASE_URL)
@@ -624,16 +619,14 @@ async function loadSharedHead() {
           });
     }
 
-    // Canonical: prefer fixed production origin for known hosts, else use runtime pageUrl
+    // Canonical: compute and apply canonical and alternate links
     try {
-      // PROD_HOSTS is defined above (shared); determine hostname for env checks
+      // determine hostname for env checks
       const hostname = globalThis.location.hostname.toLowerCase();
 
       // Force Canonical to Production host when true. Set to false to allow dev/staging canonical behavior.
-      // Recommended: automatically use production for known hosts, otherwise allow opt-in via data attribute
-      const forceProdFlag =
-        PROD_HOSTS.has(hostname) ||
-        document.documentElement.dataset.forceProdCanonical === "true";
+      // Only honor an explicit opt-in via data attribute.
+      const forceProdFlag = document.documentElement.dataset.forceProdCanonical === "true";
 
       // Compute cleanPath using shared canonical util
       let cleanPath;
@@ -759,10 +752,7 @@ iconLinks.filter((l) => l.rel === "icon" && l.sizes).forEach((l) => addIcon(l.hr
   // NOTE: the heavy graph generation has been extracted to `generateSchemaGraph` (exported at the top of this module).
   // Use canonical origin (prod or runtime origin) so JSON-LD stays consistent in local/dev
   const canonicalOrigin =
-    document.documentElement.dataset.forceProdCanonical === "true" ||
-    ["abdulkerimsesli.de", "www.abdulkerimsesli.de"].includes(
-      globalThis.location.hostname.toLowerCase(),
-    )
+    document.documentElement.dataset.forceProdCanonical === "true"
       ? BASE_URL
       : globalThis.location.origin;
 

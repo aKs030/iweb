@@ -27,7 +27,7 @@ const HOST_GTM_MAP = {
 };
 
 const detectHostConfig = (host) => {
-  const h = (host || (globalThis?.location?.hostname) || "").toLowerCase();
+  const h = (host || globalThis?.location?.hostname || "").toLowerCase();
   if (!h) return HOST_GTM_MAP.default;
   // exact match or strip www.
   if (HOST_GTM_MAP[h]) return HOST_GTM_MAP[h];
@@ -40,7 +40,6 @@ const detectHostConfig = (host) => {
 globalThis.__getGtmConfigForHost = detectHostConfig;
 
 const { gtm: GTM_ID, ga4: GA4_MEASUREMENT_ID } = detectHostConfig();
-
 
 const dataLayer = (globalThis.dataLayer = globalThis.dataLayer || []);
 function gtag() {
@@ -69,7 +68,9 @@ dataLayer.push({
     if (!GA4_MEASUREMENT_ID || GA4_MEASUREMENT_ID.indexOf("G-") !== 0) return;
     // If GTM is configured, prefer GTM for GA4 (avoid double-tracking)
     if (GTM_ID && GTM_ID !== "GTM-XXXXXXX") {
-      log?.info?.("GTM present — configure GA4 inside GTM instead of direct gtag load");
+      log?.info?.(
+        "GTM present — configure GA4 inside GTM instead of direct gtag load"
+      );
       return;
     }
 
@@ -95,7 +96,9 @@ dataLayer.push({
 (function injectGTM() {
   try {
     if (!GTM_ID || GTM_ID === "GTM-XXXXXXX") {
-      log?.info?.("GTM not configured — set GTM_ID in head-inline.js to enable");
+      log?.info?.(
+        "GTM not configured — set GTM_ID in head-inline.js to enable"
+      );
       return;
     }
 
@@ -262,7 +265,7 @@ dataLayer.push({
     const upsertModulePreload = (href) => {
       if (
         !document.head.querySelector(
-          `link[rel="modulepreload"][href="${href}"]`,
+          `link[rel="modulepreload"][href="${href}"]`
         )
       ) {
         const l = document.createElement("link");
@@ -291,7 +294,7 @@ dataLayer.push({
     const performInjection = () => {
       STYLES.forEach(upsertStyle);
       SCRIPTS.filter((s) => s.preload).forEach((s) =>
-        upsertModulePreload(s.src),
+        upsertModulePreload(s.src)
       );
       SCRIPTS.forEach(upsertScript);
     };
@@ -312,40 +315,51 @@ dataLayer.push({
 (function hideBrandingFromUsers() {
   try {
     const ua = (navigator.userAgent || "").toLowerCase();
-    const isBot = /(bot|googlebot|bingbot|slurp|duckduckgo|baiduspider|yandex|facebookexternalhit|embedly|twitterbot)/i.test(ua);
+    const isBot =
+      /(bot|googlebot|bingbot|slurp|duckduckgo|baiduspider|yandex|facebookexternalhit|embedly|twitterbot)/i.test(
+        ua
+      );
 
-    const BRAND_REGEX = /\s*(?:[—–-]\s*Abdulkerim Sesli|\|\s*Abdulkerim Sesli|Abdulkerim\s*—\s*Digital Creator Portfolio)\s*$/i;
-    const sanitize = (s) => (String(s || "").replace(BRAND_REGEX, "")).trim();
+    const BRAND_REGEX =
+      /\s*(?:[—–-]\s*Abdulkerim Sesli|\|\s*Abdulkerim Sesli|Abdulkerim\s*—\s*Digital Creator Portfolio)\s*$/i;
+    const sanitize = (s) =>
+      String(s || "")
+        .replace(BRAND_REGEX, "")
+        .trim();
 
     // Small page→emoji mapping for concise tab titles
     const SHORT_MAP = {
-      videos: 'Videos 🎬',
-      video: 'Videos 🎬',
-      projekte: 'Projekte 💼',
-      projekt: 'Projekte 💼',
-      blog: 'Blog ✍️',
-      start: 'Startseite 🏠',
-      startseite: 'Startseite 🏠',
-      kontakt: 'Kontakt ✉️',
-      impressum: 'Impressum ℹ️',
-      datenschutz: 'Datenschutz 🔒',
-      home: 'Startseite 🏠',
+      videos: "Videos 🎬",
+      video: "Videos 🎬",
+      projekte: "Projekte 💼",
+      projekt: "Projekte 💼",
+      blog: "Blog ✍️",
+      start: "Startseite 🏠",
+      startseite: "Startseite 🏠",
+      kontakt: "Kontakt ✉️",
+      impressum: "Impressum ℹ️",
+      datenschutz: "Datenschutz 🔒",
+      home: "Startseite 🏠",
     };
 
     const makeShortTitle = (s) => {
       try {
-        if (!s) return '';
+        if (!s) return "";
         const low = s.toLowerCase();
         // prefer exact/contains matches from mapping
         for (const k of Object.keys(SHORT_MAP)) {
           if (low.includes(k)) return SHORT_MAP[k];
         }
         // fallback: first word with globe emoji
-        const first = String(s).split(/[—–\-|:]/)[0].trim().split(/\s+/)[0] || '';
-        if (!first) return '';
-        return first.charAt(0).toUpperCase() + first.slice(1) + ' 🌐';
+        const first =
+          String(s)
+            .split(/[—–\-|:]/)[0]
+            .trim()
+            .split(/\s+/)[0] || "";
+        if (!first) return "";
+        return first.charAt(0).toUpperCase() + first.slice(1) + " 🌐";
       } catch {
-        return '';
+        return "";
       }
     };
 
@@ -360,7 +374,7 @@ dataLayer.push({
 
     // Observe <title> changes and sanitize for humans; also map to short tab title
     try {
-      const titleEl = document.querySelector('title');
+      const titleEl = document.querySelector("title");
       if (titleEl && !isBot) {
         new MutationObserver(() => {
           const t = document.title;
@@ -368,7 +382,11 @@ dataLayer.push({
           const short = makeShortTitle(s);
           const newTitle = short || s;
           if (newTitle !== t) document.title = newTitle;
-        }).observe(titleEl, { childList: true, characterData: true, subtree: true });
+        }).observe(titleEl, {
+          childList: true,
+          characterData: true,
+          subtree: true,
+        });
       }
     } catch {
       // ignore errors in title observer
@@ -376,11 +394,15 @@ dataLayer.push({
 
     // Sanitize visible headings on page and watch for added nodes
     const sanitizeHeadings = () => {
-      document.querySelectorAll('h1,h2,.section-title,.section-header,.page-title,.site-title').forEach((el) => {
-        if (!el?.textContent) return;
-        const cleaned = sanitize(el.textContent);
-        if (cleaned !== el.textContent) el.textContent = cleaned;
-      });
+      document
+        .querySelectorAll(
+          "h1,h2,.section-title,.section-header,.page-title,.site-title"
+        )
+        .forEach((el) => {
+          if (!el?.textContent) return;
+          const cleaned = sanitize(el.textContent);
+          if (cleaned !== el.textContent) el.textContent = cleaned;
+        });
     };
 
     sanitizeHeadings();
@@ -396,7 +418,10 @@ dataLayer.push({
       }
       if (changed) sanitizeHeadings();
     });
-    mo.observe(document.documentElement || document.body, { childList: true, subtree: true });
+    mo.observe(document.documentElement || document.body, {
+      childList: true,
+      subtree: true,
+    });
   } catch {
     // ignore errors in hideBrandingFromUsers
   }
