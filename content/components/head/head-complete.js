@@ -58,6 +58,14 @@ const BRAND_DATA = {
   telephone: "+49-30-12345678",
   paymentAccepted: "Invoice",
   currenciesAccepted: "EUR",
+
+  // Optional social statistics (set server-side for accuracy)
+  // - followersCount: total followers on primary platform
+  // - likesCount: aggregate likes where meaningful
+  // - postsCount: number of authored posts or contributions (used for WriteAction)
+  followersCount: 5400, // example value: total followers across platforms
+  likesCount: 12000, // example aggregated likes
+  postsCount: 234, // example authored posts count
 };
 
 const ROUTES = {
@@ -261,6 +269,100 @@ export function generateSchemaGraph(
     }
   );
 
+  // Enrich Person node for ProfilePage (identifier, images, interaction stats) ✅
+  try {
+    const personNode = graph.find((g) => g["@id"] === ID.person);
+    if (personNode) {
+      // Ensure a stable identifier (use the person fragment URL)
+      if (!personNode.identifier) personNode.identifier = ID.person;
+
+      // If multiple profile images exist on the page, include up to 3 images (recommended by Google)
+      try {
+        const imgs = Array.from(
+          doc.querySelectorAll("main img, .profile-photo, .avatar") || []
+        )
+          .map((i) => i.src)
+          .filter(Boolean);
+        if (imgs.length > 1) {
+          personNode.image = imgs.slice(0, 3);
+        }
+      } catch (e) {}
+
+      // Agent interaction statistic: prefer server-side postsCount, fallback to counting <article> elements
+      try {
+        const postsCount = Number(BRAND_DATA.postsCount) || 0;
+        const articlesCount = doc?.querySelectorAll?.("article")?.length || 0;
+        const writeCount = postsCount > 0 ? postsCount : articlesCount;
+        if (writeCount > 0) {
+          personNode.agentInteractionStatistic = {
+            "@type": "InteractionCounter",
+            interactionType: "https://schema.org/WriteAction",
+            userInteractionCount: writeCount,
+          };
+        }
+      } catch (e) {}
+
+      // Interaction statistics (followers / likes) — prefer server-side BRAND_DATA values and fallback to DOM
+      try {
+        const findCount = (selectors) => {
+          for (const s of selectors) {
+            const el = doc.querySelector(s);
+            if (!el) continue;
+            const attr =
+              el.dataset?.followers ||
+              el.dataset?.followersCount ||
+              el.dataset?.likes ||
+              el.dataset?.likesCount;
+            if (attr) return Number(String(attr).replace(/\D/g, "")) || 0;
+            const text = String(el.textContent || "").replace(/\D/g, "");
+            if (text) return Number(text) || 0;
+          }
+          return 0;
+        };
+
+        const brandFollowers = Number(BRAND_DATA.followersCount) || 0;
+        const followers =
+          brandFollowers > 0
+            ? brandFollowers
+            : findCount([
+                "[data-followers]",
+                "[data-followers-count]",
+                ".followers-count",
+                ".follower-count",
+              ]);
+        if (followers > 0) {
+          personNode.interactionStatistic =
+            personNode.interactionStatistic || [];
+          personNode.interactionStatistic.push({
+            "@type": "InteractionCounter",
+            interactionType: "https://schema.org/FollowAction",
+            userInteractionCount: followers,
+          });
+        }
+
+        const brandLikes = Number(BRAND_DATA.likesCount) || 0;
+        const likes =
+          brandLikes > 0
+            ? brandLikes
+            : findCount([
+                "[data-likes]",
+                "[data-likes-count]",
+                ".likes-count",
+                ".like-count",
+              ]);
+        if (likes > 0) {
+          personNode.interactionStatistic =
+            personNode.interactionStatistic || [];
+          personNode.interactionStatistic.push({
+            "@type": "InteractionCounter",
+            interactionType: "https://schema.org/LikeAction",
+            userInteractionCount: likes,
+          });
+        }
+      } catch (e) {}
+    }
+  } catch (e) {}
+
   // Skills/ItemList
   if (
     pageUrl.includes("/about") ||
@@ -356,6 +458,32 @@ export function generateSchemaGraph(
       },
     }
   );
+
+  // Try to add dateCreated to the WebPage if the page provides a published time (meta or time element)
+  try {
+    const pageNode = graph.find((g) => g["@id"] === ID.webpage);
+    if (pageNode) {
+      const metaPub =
+        doc?.head?.querySelector(
+          'meta[property="article:published_time"], meta[name="dateCreated"], meta[property="og:published_time"]'
+        ) || null;
+      const timeEl =
+        doc?.querySelector(
+          'time[datetime][pubdate], time[datetime][itemprop="dateCreated"], time[datetime][data-created]'
+        ) || null;
+      const created =
+        metaPub?.getAttribute("content") ||
+        timeEl?.getAttribute("datetime") ||
+        null;
+      if (created) {
+        try {
+          pageNode.dateCreated = new Date(created).toISOString();
+        } catch (e) {
+          pageNode.dateCreated = created;
+        }
+      }
+    }
+  } catch (e) {}
 
   // ImageObject enrichment for richer image results (helps Image Pack / Image Carousel)
   try {

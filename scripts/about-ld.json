@@ -1,0 +1,237 @@
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://abdulkerimsesli.de/#organization",
+      "url": "https://abdulkerimsesli.de",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://abdulkerimsesli.de/content/assets/img/icons/icon-512.png",
+        "width": 512,
+        "height": 512,
+        "creditText": "Logo: Abdulkerim Sesli",
+        "copyrightNotice": "© 2025 Abdulkerim Sesli",
+        "acquireLicensePage": "https://abdulkerimsesli.de/#image-license"
+      },
+      "image": {
+        "@type": "ImageObject",
+        "url": "https://abdulkerimsesli.de/content/assets/img/og/og-about.png",
+        "width": 1200,
+        "height": 630,
+        "creditText": "Photo: Abdulkerim Sesli",
+        "copyrightNotice": "© 2025 Abdulkerim Sesli",
+        "acquireLicensePage": "https://abdulkerimsesli.de/#image-license"
+      },
+      "sameAs": [
+        "https://github.com/aKs030",
+        "https://linkedin.com/in/abdulkerimsesli"
+      ],
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Berlin",
+        "addressCountry": "DE"
+      },
+      "founder": {
+        "@id": "https://abdulkerimsesli.de/#person"
+      }
+    },
+    {
+      "@type": [
+        "Person",
+        "Photographer"
+      ],
+      "@id": "https://abdulkerimsesli.de/#person",
+      "name": "Abdulkerim Sesli",
+      "alternateName": [
+        "Abdul Sesli",
+        "Abdul Berlin",
+        "Abdulkerim Berlin"
+      ],
+      "worksFor": {
+        "@id": "https://abdulkerimsesli.de/#organization"
+      },
+      "url": "https://abdulkerimsesli.de",
+      "image": {
+        "@type": "ImageObject",
+        "@id": "https://abdulkerimsesli.de/#personImage",
+        "url": "https://commons.wikimedia.org/wiki/File:Abdulkerim_Sesli_portrait_2025.png",
+        "caption": "Abdulkerim Sesli"
+      },
+      "description": "Der Mensch hinter dem Code. Detaillierter Lebenslauf, Tech-Stack Übersicht und direkte Kontaktmöglichkeiten für Projektanfragen und Kooperationen.",
+      "disambiguatingDescription": "Webentwickler (React, Three.js) und Fotograf aus Berlin, nicht zu verwechseln mit 'Sesli Kitap' oder Hörbuch-Verlagen.",
+      "sameAs": [
+        "https://github.com/aKs030",
+        "https://linkedin.com/in/abdulkerimsesli"
+      ],
+      "homeLocation": {
+        "@type": "Place",
+        "name": "Berlin"
+      },
+      "knowsAbout": [
+        {
+          "@type": "Thing",
+          "name": "Web Development",
+          "sameAs": "https://www.wikidata.org/wiki/Q386275"
+        },
+        {
+          "@type": "Thing",
+          "name": "React",
+          "sameAs": "https://www.wikidata.org/wiki/Q19399674"
+        },
+        {
+          "@type": "Thing",
+          "name": "Three.js",
+          "sameAs": "https://www.wikidata.org/wiki/Q28135934"
+        },
+        {
+          "@type": "Thing",
+          "name": "JavaScript",
+          "sameAs": "https://www.wikidata.org/wiki/Q28865"
+        },
+        {
+          "@type": "Thing",
+          "name": "Photography",
+          "sameAs": "https://www.wikidata.org/wiki/Q11633"
+        },
+        {
+          "@type": "Thing",
+          "name": "Urban Photography"
+        },
+        {
+          "@type": "Place",
+          "name": "Berlin",
+          "sameAs": "https://www.wikidata.org/wiki/Q64"
+        }
+      ],
+      "identifier": "https://abdulkerimsesli.de/#person",
+      "agentInteractionStatistic": {
+        "@type": "InteractionCounter",
+        "interactionType": "https://schema.org/WriteAction",
+        "userInteractionCount": 234
+      },
+      "interactionStatistic": [
+        {
+          "@type": "InteractionCounter",
+          "interactionType": "https://schema.org/FollowAction",
+          "userInteractionCount": 5400
+        },
+        {
+          "@type": "InteractionCounter",
+          "interactionType": "https://schema.org/LikeAction",
+          "userInteractionCount": 12000
+        }
+      ]
+    },
+    {
+      "@type": "ItemList",
+      "@id": "https://abdulkerimsesli.de/#skills",
+      "name": "Technische Skills & Kompetenzen",
+      "description": "Kernkompetenzen in der Fullstack-Webentwicklung und Fotografie",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "React & Next.js Ecosystem"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Three.js & WebGL 3D-Visualisierung"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Node.js & Backend Architecture"
+        },
+        {
+          "@type": "ListItem",
+          "position": 4,
+          "name": "UI/UX Design & Animation"
+        },
+        {
+          "@type": "ListItem",
+          "position": 5,
+          "name": "Urban & Portrait Photography"
+        }
+      ]
+    },
+    {
+      "@type": "ProfilePage",
+      "@id": "https://abdulkerimsesli.de/about/#webpage",
+      "url": "https://abdulkerimsesli.de/about/",
+      "name": "Kontakt & Profil | Abdulkerim Sesli",
+      "description": "Der Mensch hinter dem Code. Detaillierter Lebenslauf, Tech-Stack Übersicht und direkte Kontaktmöglichkeiten für Projektanfragen und Kooperationen.",
+      "text": "",
+      "isPartOf": {
+        "@id": "https://abdulkerimsesli.de/#website"
+      },
+      "mainEntity": {
+        "@id": "https://abdulkerimsesli.de/#person"
+      },
+      "publisher": {
+        "@id": "https://abdulkerimsesli.de/#organization"
+      },
+      "inLanguage": "de-DE",
+      "dateModified": "2025-12-31T19:50:09.640Z",
+      "dateCreated": "2025-12-31T12:00:00.000Z",
+      "primaryImageOfPage": {
+        "@id": "https://abdulkerimsesli.de/about/#primaryImage"
+      }
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://abdulkerimsesli.de/#website",
+      "url": "https://abdulkerimsesli.de",
+      "name": "Abdulkerim Sesli Portfolio",
+      "publisher": {
+        "@id": "https://abdulkerimsesli.de/#organization"
+      },
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://abdulkerimsesli.de/?s={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    },
+    {
+      "@type": "ImageObject",
+      "@id": "https://abdulkerimsesli.de/about/#primaryImage",
+      "contentUrl": "https://abdulkerimsesli.de/content/assets/img/og/og-about.png",
+      "url": "https://abdulkerimsesli.de/content/assets/img/og/og-about.png",
+      "caption": "Kontakt & Profil | Abdulkerim Sesli",
+      "creator": {
+        "@type": "Person",
+        "name": "Abdulkerim Sesli"
+      },
+      "license": "https://abdulkerimsesli.de/#image-license",
+      "creditText": "Photo: Abdulkerim Sesli",
+      "copyrightNotice": "© 2025 Abdulkerim Sesli",
+      "acquireLicensePage": "https://abdulkerimsesli.de/#image-license"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://abdulkerimsesli.de/about/#breadcrumb",
+      "name": "Kontakt & Profil | Abdulkerim Sesli",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": {
+            "@id": "https://abdulkerimsesli.de",
+            "name": "Home"
+          }
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "About",
+          "item": {
+            "@id": "https://abdulkerimsesli.de/about",
+            "name": "About"
+          }
+        }
+      ]
+    }
+  ]
+}
