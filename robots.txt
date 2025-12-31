@@ -18,11 +18,22 @@ Allow: /
 
 # Note: video sitemap above added to improve video indexing
 # If you add more video content, run: YT_API_KEY=<key> python3 scripts/update_video_sitemap.py
-# Block technical and non-relevant areas
+# Relaxed rules to improve rendering: allow JS/CSS/JSON where needed while keeping dev files blocked
+# Keep broad disallows but explicitly allow static asset types (Google honors most-specific rule)
 Disallow: /content/vendor/
+Allow: /content/vendor/*.js$
+Allow: /content/vendor/*.css$
+Allow: /content/vendor/*.json$
 Disallow: /content/config/
+Allow: /content/config/*.js$
+Allow: /content/config/*.css$
+Allow: /content/config/*.json$
 Disallow: /content/utils/
-Disallow: /*.json$
+Allow: /content/utils/*.js$
+Allow: /content/utils/*.css$
+Allow: /content/utils/*.json$
+# Allow JSON manifest and other JSON structured data
+Allow: /*.json$
 Allow: /manifest.json
 
 # Local/dev files and folders (should never be crawled)
