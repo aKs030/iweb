@@ -62,6 +62,10 @@ Alle direkten `console.*` Aufrufe wurden durch das zentrale Logger-System ersetz
 - `pages/about/about.css` wurde bereinigt und optimiert
 - Doppelte Selektoren wurden konsolidiert
 
+### ✅ Dynamisches Laden von Komponenten
+
+- Menü (`menu`), Footer und Roboter (`robot-companion`) werden nun zentral von `content/components/head/head-inline.js` per nicht-blockierendem Injection-Pattern geladen (CSS + JS). Entferne keine statischen `link`/`script`-Includes für diese Komponenten in Seiten-Templates, da sie jetzt automatisch injiziert werden.
+
 ### ✅ Dependencies aktualisiert
 
 - ESLint: v8 → v9
