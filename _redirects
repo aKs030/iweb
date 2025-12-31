@@ -24,8 +24,11 @@
 
 
 # Leite /datenschutz und /impressum auf die Footer-Komponenten um
-/datenschutz    /content/components/footer/datenschutz.html   200
-/impressum      /content/components/footer/impressum.html     200
+# Canonicalize to trailing-slash and serve the actual footer pages
+/datenschutz    /datenschutz/                                      301
+/datenschutz/   /content/components/footer/datenschutz.html       200
+/impressum      /impressum/                                       301
+/impressum/     /content/components/footer/impressum.html         200
 
 # -------------------------------
 # 3) Generic cleanups
