@@ -48,7 +48,7 @@ const doc = {
     if (sel === "main img, .profile-photo, .avatar")
       return [
         {
-          src: "https://abdulkerimsesli.de/content/assets/img/icons/icon-512.png",
+          src: "/content/assets/img/icons/icon-512.svg",
         },
       ];
     if (sel === ".faq-item") return [];
@@ -70,7 +70,7 @@ const BASE_URL = "https://abdulkerimsesli.de";
 const BRAND_DATA = {
   name: "Abdulkerim Sesli",
   alternateName: ["Abdul Sesli", "Abdul Berlin", "Abdulkerim Berlin"],
-  logo: `${BASE_URL}/content/assets/img/icons/icon-512.png`,
+  logo: `${BASE_URL}/content/assets/img/icons/icon-512.svg`,
   sameAs: [
     "https://github.com/aKs030",
     "https://linkedin.com/in/abdulkerimsesli",
