@@ -295,26 +295,92 @@
     ></script>
 
     <!-- Preconnect to common third-party origins to reduce initial handshake time -->
-    <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin />
-    <link rel="preconnect" href="https://static.cloudflareinsights.com" crossorigin />
+    <link
+      rel="preconnect"
+      href="https://www.googletagmanager.com"
+      crossorigin
+    />
+    <link
+      rel="preconnect"
+      href="https://static.cloudflareinsights.com"
+      crossorigin
+    />
 
     <!-- Inline minimal critical CSS for the Hero (improves LCP / FOCP) -->
-    <style id="hero-critical-css">.hero{display:flex;align-items:center;justify-content:center;min-height:100dvh;padding:0 .5rem;box-sizing:border-box}.hero-title{font:800 clamp(3rem,6vw,4.5rem)/1.03 var(--font-inter);margin:0;padding:8px 12px;max-width:30ch;color:var(--color-text-main,#fff);text-align:center;white-space:normal}.hero-visual{animation:none}.three-earth-fallback{display:block}</style>
+    <style id="hero-critical-css">
+      .hero {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100dvh;
+        padding: 0 0.5rem;
+        box-sizing: border-box;
+      }
+      .hero-title {
+        font: 800 clamp(3rem, 6vw, 4.5rem) / 1.03 var(--font-inter);
+        margin: 0;
+        padding: 8px 12px;
+        max-width: 30ch;
+        color: var(--color-text-main, #fff);
+        text-align: center;
+        white-space: normal;
+      }
+      .hero-visual {
+        animation: none;
+      }
+      .three-earth-fallback {
+        display: block;
+      }
+    </style>
 
     <!-- Preload non-critical page CSS with onload switch to avoid render-blocking -->
-    <link rel="preload" href="/content/styles/root.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
-    <noscript><link rel="stylesheet" href="/content/styles/root.css" /></noscript>
+    <link
+      rel="preload"
+      href="/content/styles/root.css"
+      as="style"
+      onload="this.onload=null;this.rel='stylesheet'"
+    />
+    <noscript
+      ><link rel="stylesheet" href="/content/styles/root.css"
+    /></noscript>
 
-    <link rel="preload" href="/pages/home/hero.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link
+      rel="preload"
+      href="/pages/home/hero.css"
+      as="style"
+      onload="this.onload=null;this.rel='stylesheet'"
+    />
 
-    <link rel="preload" href="/content/components/typewriter/typewriter.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link
+      rel="preload"
+      href="/content/components/typewriter/typewriter.css"
+      as="style"
+      onload="this.onload=null;this.rel='stylesheet'"
+    />
 
-    <link rel="preload" href="/content/components/particles/three-earth.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link
+      rel="preload"
+      href="/content/components/particles/three-earth.css"
+      as="style"
+      onload="this.onload=null;this.rel='stylesheet'"
+    />
 
-    <link rel="preload" href="/pages/home/section3.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
+    <link
+      rel="preload"
+      href="/pages/home/section3.css"
+      as="style"
+      onload="this.onload=null;this.rel='stylesheet'"
+    />
 
-    <link rel="stylesheet" href="/content/styles/main.css" media="print" data-defer="1" />
-    <noscript><link rel="stylesheet" href="/content/styles/main.css" /></noscript>
+    <link
+      rel="stylesheet"
+      href="/content/styles/main.css"
+      media="print"
+      data-defer="1"
+    />
+    <noscript
+      ><link rel="stylesheet" href="/content/styles/main.css"
+    /></noscript>
 
     <!-- main.js is loaded & preloaded via head-inline to control timing (modulepreload + module script injection) -->
 

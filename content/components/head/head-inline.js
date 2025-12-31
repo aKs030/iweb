@@ -235,7 +235,8 @@ dataLayer.push({
 (function injectCoreAssets() {
   try {
     const getStylesForPath = () => {
-      const p = (globalThis.location?.pathname || "").replace(/\/+$/g, "") || "/";
+      const p =
+        (globalThis.location?.pathname || "").replace(/\/+$/g, "") || "/";
       // Base styles always useful
       const base = [
         "/content/styles/root.css",
@@ -273,7 +274,9 @@ dataLayer.push({
         };
 
         schedule(() => {
-          upsertStyle("/content/components/robot-companion/robot-companion.css");
+          upsertStyle(
+            "/content/components/robot-companion/robot-companion.css"
+          );
           upsertScript({
             src: "/content/components/robot-companion/robot-companion.js",
             module: true,
@@ -286,7 +289,11 @@ dataLayer.push({
 
     const upsertPreconnect = (origin) => {
       try {
-        if (!document.head.querySelector(`link[rel="preconnect"][href="${origin}"]`)) {
+        if (
+          !document.head.querySelector(
+            `link[rel="preconnect"][href="${origin}"]`
+          )
+        ) {
           const l = document.createElement("link");
           l.rel = "preconnect";
           l.href = origin;
@@ -387,7 +394,9 @@ dataLayer.push({
       });
 
       // Preload module scripts we want parsed early (main app bundle)
-      SCRIPTS.filter((s) => s.preload).forEach((s) => upsertModulePreload(s.src));
+      SCRIPTS.filter((s) => s.preload).forEach((s) =>
+        upsertModulePreload(s.src)
+      );
 
       // Insert scripts (module scripts can be fetched/parsed in parallel when preloaded)
       SCRIPTS.forEach(upsertScript);
@@ -415,7 +424,8 @@ dataLayer.push({
 // === Inject minimal critical CSS for the Hero on the Startseite
 (function injectHeroCriticalCSS() {
   try {
-    const path = (globalThis.location?.pathname || "").replace(/\/+$|^$/, "") || "/";
+    const path =
+      (globalThis.location?.pathname || "").replace(/\/+$|^$/, "") || "/";
     // Only inline on the root path to avoid extra payload on subpages
     if (path !== "/") return;
     if (document.head.querySelector("#hero-critical-css")) return;
