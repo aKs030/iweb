@@ -148,6 +148,12 @@ function BlogApp() {
             logo: {
               "@type": "ImageObject",
               url: "https://abdulkerimsesli.de/content/assets/img/icons/icon-512.png",
+              contentUrl: "https://abdulkerimsesli.de/content/assets/img/icons/icon-512.png",
+              creator: { "@type": "Person", "name": "Abdulkerim Sesli" },
+              license: "https://abdulkerimsesli.de/#image-license",
+              creditText: "Logo: Abdulkerim Sesli",
+              copyrightNotice: "© 2025 Abdulkerim Sesli",
+              acquireLicensePage: "https://abdulkerimsesli.de/#image-license",
             },
             address: {
               "@type": "PostalAddress",
