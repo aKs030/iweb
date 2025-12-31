@@ -43,12 +43,8 @@
 
     <!-- Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Main application script (early load for hero/3D init) -->
-    <script
-      type="module"
-      src="/content/main.js"
-      crossorigin="anonymous"
-    ></script>
+    <!-- Main application: use modulepreload and let head-inline inject the executing module -->
+    <link rel="modulepreload" href="/content/main.js" crossorigin />
     <link rel="stylesheet" href="/pages/about/about.css" />
     <link rel="stylesheet" href="/content/styles/root.css" />
     <link

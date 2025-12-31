@@ -6,10 +6,9 @@ import {
   TimerManager,
 } from "../../content/utils/shared-utilities.js";
 import { createLogger } from "../../content/utils/shared-utilities.js";
-import {
-  initHeroSubtitle,
-  stopHeroSubtitle,
-} from "../../content/components/typewriter/TypeWriter.js";
+// TypeWriter will be loaded lazily via dynamic import when needed
+let typeWriterModule = null;
+let stopHeroSubtitleFn = null;
 
 // Logger für HeroManager
 const logger = createLogger("HeroManager");
@@ -25,12 +24,23 @@ const HeroManager = (() => {
 
   async function loadTyped(heroDataModule) {
     try {
-      if (typeof initHeroSubtitle === "function") {
-        const tw = await initHeroSubtitle({ heroDataModule });
-        if (tw) {
-          _currentTypeWriter = tw;
-          return tw;
-        }
+      if (!typeWriterModule) {
+        typeWriterModule = await import(
+          "../../content/components/typewriter/TypeWriter.js"
+        ).catch((err) => {
+          logger.warn("Failed to import TypeWriter module", err);
+          return null;
+        });
+      }
+
+      if (!typeWriterModule || typeof typeWriterModule.initHeroSubtitle !== "function")
+        return false;
+
+      const tw = await typeWriterModule.initHeroSubtitle({ heroDataModule });
+      if (tw) {
+        _currentTypeWriter = tw;
+        stopHeroSubtitleFn = typeWriterModule.stopHeroSubtitle;
+        return tw;
       }
     } catch (err) {
       logger.warn("Failed to load TypeWriter modules", err);
@@ -121,7 +131,7 @@ const HeroManager = (() => {
     heroTimers.clearAll();
     isInitialized = false;
     try {
-      if (typeof stopHeroSubtitle === "function") stopHeroSubtitle();
+      if (typeof stopHeroSubtitleFn === "function") stopHeroSubtitleFn();
       _currentTypeWriter = null;
     } catch (err) {
       logger.warn("HeroManager: stopHeroSubtitle failed", err);

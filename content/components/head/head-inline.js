@@ -234,15 +234,29 @@ dataLayer.push({
 // --- 3) Asset helper: non-blocking injection of core CSS/JS used across pages
 (function injectCoreAssets() {
   try {
-    const STYLES = [
-      "/content/styles/root.css",
-      "/content/styles/main.css",
-      "/content/components/menu/menu.css",
-      "/content/components/footer/footer.css",
-    ];
+    const getStylesForPath = () => {
+      const p = (globalThis.location?.pathname || "").replace(/\/+$/g, "") || "/";
+      // Base styles always useful
+      const base = [
+        "/content/styles/root.css",
+        "/content/styles/main.css",
+        "/content/components/menu/menu.css",
+        "/content/components/footer/footer.css",
+      ];
+      // Page-specific additions (only for root to avoid extra blocking on subpages)
+      if (p === "/") {
+        return base.concat([
+          "/pages/home/hero.css",
+          "/content/components/typewriter/typewriter.css",
+          "/content/components/particles/three-earth.css",
+          "/pages/home/section3.css",
+        ]);
+      }
+      return base;
+    };
 
     const SCRIPTS = [
-      { src: "/content/main.js", module: true, preload: false },
+      { src: "/content/main.js", module: true, preload: true },
       { src: "/content/components/menu/menu.js", module: true },
       { src: "/content/components/footer/footer-complete.js", module: true },
     ];
@@ -270,14 +284,65 @@ dataLayer.push({
       }
     };
 
-    const upsertStyle = (href) => {
-      if (!document.head.querySelector(`link[href="${href}"]`)) {
+    const upsertPreconnect = (origin) => {
+      try {
+        if (!document.head.querySelector(`link[rel="preconnect"][href="${origin}"]`)) {
+          const l = document.createElement("link");
+          l.rel = "preconnect";
+          l.href = origin;
+          l.crossOrigin = "anonymous";
+          l.dataset.injectedBy = "head-inline";
+          document.head.appendChild(l);
+        }
+      } catch (err) {
+        /* ignore */
+      }
+    };
+
+    const upsertStyle = (href, { critical = false } = {}) => {
+      if (document.head.querySelector(`link[href="${href}"]`)) return;
+
+      // Critical styles must be inserted as stylesheet synchronously
+      if (critical) {
         const l = document.createElement("link");
         l.rel = "stylesheet";
         l.href = href;
         l.dataset.injectedBy = "head-inline";
         document.head.appendChild(l);
+        return;
       }
+
+      // Use preload/as=style then switch to stylesheet onload to avoid render-blocking
+      const l = document.createElement("link");
+      l.rel = "preload";
+      l.href = href;
+      l.as = "style";
+      l.dataset.injectedBy = "head-inline";
+      l.onload = function () {
+        try {
+          this.onload = null;
+          this.rel = "stylesheet";
+        } catch (e) {
+          /* ignore */
+        }
+      };
+      document.head.appendChild(l);
+
+      // Add a small safety timeout to ensure stylesheet eventually applies in older browsers
+      setTimeout(() => {
+        try {
+          const existing = document.head.querySelector(`link[href="${href}"]`);
+          if (!existing || existing.rel === "preload") {
+            const fallback = document.createElement("link");
+            fallback.rel = "stylesheet";
+            fallback.href = href;
+            fallback.dataset.injectedBy = "head-inline";
+            document.head.appendChild(fallback);
+          }
+        } catch (e) {
+          /* ignore */
+        }
+      }, 3000);
     };
 
     const upsertModulePreload = (href) => {
@@ -310,10 +375,21 @@ dataLayer.push({
     };
 
     const performInjection = () => {
-      STYLES.forEach(upsertStyle);
-      SCRIPTS.filter((s) => s.preload).forEach((s) =>
-        upsertModulePreload(s.src)
-      );
+      // Hint to connect to important third-party origins early
+      upsertPreconnect("https://www.googletagmanager.com");
+      upsertPreconnect("https://static.cloudflareinsights.com");
+
+      // Insert styles (use critical flag only when strictly needed)
+      const styles = getStylesForPath();
+      styles.forEach((href) => {
+        const critical = href.includes("hero.css");
+        upsertStyle(href, { critical });
+      });
+
+      // Preload module scripts we want parsed early (main app bundle)
+      SCRIPTS.filter((s) => s.preload).forEach((s) => upsertModulePreload(s.src));
+
+      // Insert scripts (module scripts can be fetched/parsed in parallel when preloaded)
       SCRIPTS.forEach(upsertScript);
 
       // Schedule deferring of non-critical assets after core injection
