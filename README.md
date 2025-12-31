@@ -145,6 +145,10 @@ Füge kurze Vorschau-Bilder in `assets/` hinzu und verlinke sie hier:
 
 Wenn du mir 1–2 Screenshots gibst, füge ich sie gern direkt ein.
 
+## 📄 Verfügbare Assets
+
+- `content/assets/Abdulkerim_Sesli_CV_DE.pdf` — Platzhalter für den deutschen Lebenslauf (PDF). Ersetze die Datei durch die finale Version, wenn du sie bereitstellst.
+
 ---
 
 ## 📄 Lizenz
