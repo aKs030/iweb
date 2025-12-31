@@ -1,365 +1,621 @@
 <!DOCTYPE html>
 <html lang="de">
   <head>
-    <script>
-      globalThis.dataLayer = globalThis.dataLayer || [];
-      globalThis.dataLayer.push({
-        ga4_measurement_id: "G-757KWG0PG4",
-        ads_conversion_id: "AW-1036079663",
-      });
-    </script>
-    <!-- Google Tag Manager -->
-    <script>
-      (function (w, d, s, l, i) {
-        w[l] = w[l] || [];
-        w[l].push({ "gtm.start": Date.now(), event: "gtm.js" });
-        var f = d.getElementsByTagName(s)[0],
-          j = d.createElement(s),
-          dl = l === "dataLayer" ? "" : "&l=" + l;
-        j.async = true;
-        j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
-        f.parentNode.insertBefore(j, f);
-      })(globalThis, document, "script", "dataLayer", "GTM-5F5ZSTTL");
-    </script>
-    <!-- End Google Tag Manager -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Über mich | Abdulkerim Sesli</title>
 
-    <meta name="mobile-web-app-capable" content="yes" />
-    <!-- Content-Security-Policy removed per user request (less restrictive) -->
-    <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, viewport-fit=cover"
-    />
-
-    <!-- Shared Head & Styles -->
-    <!-- Server-side favicons for crawlers and browsers -->
-    <link rel="icon" href="https://abdulkerimsesli.de/favicon.ico" />
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      rel="icon"
-      type="image/png"
-      sizes="32x32"
-      href="https://abdulkerimsesli.de/content/assets/img/icons/icon-32.png"
-    />
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="192x192"
-      href="https://abdulkerimsesli.de/content/assets/img/icons/favicon-192x192.png"
-    />
-    <link
-      rel="icon"
-      sizes="any"
-      href="/content/assets/img/icons/favicon.svg"
-      type="image/svg+xml"
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
     />
 
-    <meta property="og:locale" content="de_DE" />
-    <meta
-      property="og:site_name"
-      content="Abdulkerim — Digital Creator Portfolio"
-    />
-
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content="https://abdulkerimsesli.de/about/" />
-    <meta
-      property="twitter:title"
-      content="Kontakt & Profil | Abdulkerim Sesli"
-    />
-    <meta
-      property="twitter:description"
-      content="Der Mensch hinter dem Code. Detaillierter Lebenslauf, Tech-Stack Übersicht und direkte Kontaktmöglichkeiten."
-    />
-    <meta
-      property="twitter:image"
-      content="https://abdulkerimsesli.de/content/assets/img/og/og-about.png"
-    />
-
-    <script
-      src="/content/components/head/head-complete.js"
-      type="module"
-    ></script>
-    <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "Person",
-        "name": "Abdulkerim Sesli",
-        "jobTitle": "Webentwickler & Fotograf",
-        "description": "Webentwickler aus Berlin — spezialisiert auf performante, barrierearme Webanwendungen, interaktive Visualisierungen und Fotografie.",
-        "url": "https://abdulkerimsesli.de/about/",
-        "email": "mailto:kontakt@abdulkerimsesli.de",
-        "sameAs": [
-          "https://github.com/aKs030",
-          "https://linkedin.com/in/abdulkerimsesli",
-          "https://x.com/kRm_030"
-        ],
-        "knowsAbout": [
-          "Webentwicklung",
-          "Frontend",
-          "Backend",
-          "Performance",
-          "SEO",
-          "Three.js",
-          "Fotografie"
-        ]
-      }
-    </script>
-    <script
-      type="module"
-      src="/content/components/head/head-inline.js"
-    ></script>
-
-    <!-- Specific Styles for About -->
-    <link rel="stylesheet" href="/pages/about/about.css" />
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
-      /* Ensure proper spacing for standalone page */
-      main {
-        padding-top: 100px;
-        min-height: 100vh;
-        display: flex;
-        justify-content: center;
-        background-color: var(--bg-color, #0a0a0f);
+      :root {
+        --bg-dark: #030712;
+        --card-bg: rgba(17, 24, 39, 0.7);
+        --card-border: rgba(255, 255, 255, 0.08);
+        --primary: #3b82f6;
+        --primary-glow: rgba(59, 130, 246, 0.5);
+        --accent: #06b6d4;
+        --text-main: #f8fafc;
+        --text-muted: #94a3b8;
+        --gradient-text: linear-gradient(135deg, #60a5fa 0%, #2dd4bf 100%);
       }
-      .standalone-about {
-        width: 100%;
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        background-color: var(--bg-dark);
+        color: var(--text-main);
+        font-family: "Plus Jakarta Sans", sans-serif;
+        line-height: 1.6;
+        overflow-x: hidden;
+        min-height: 100vh;
+        background-image: radial-gradient(
+            circle at 15% 50%,
+            rgba(59, 130, 246, 0.08) 0%,
+            transparent 25%
+          ),
+          radial-gradient(
+            circle at 85% 30%,
+            rgba(6, 182, 212, 0.08) 0%,
+            transparent 25%
+          );
+      }
+
+      /* Typography */
+      h1,
+      h2,
+      h3,
+      h4 {
+        font-family: "Outfit", sans-serif;
+        font-weight: 700;
+        line-height: 1.2;
+      }
+
+      h1 {
+        font-size: clamp(2.5rem, 5vw, 4rem);
+        margin-bottom: 1rem;
+        letter-spacing: -0.02em;
+      }
+
+      .gradient-text {
+        background: var(--gradient-text);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      p {
+        color: var(--text-muted);
+        margin-bottom: 1.5rem;
+        font-size: 1.05rem;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+        transition: color 0.2s ease;
+      }
+
+      /* Utility */
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 1.5rem;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        border-radius: 9999px;
+        font-weight: 600;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        font-size: 0.95rem;
+      }
+
+      .btn-primary {
+        background: var(--text-main);
+        color: var(--bg-dark);
+      }
+
+      .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+      }
+
+      .btn-outline {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--card-border);
+        color: var(--text-main);
+        backdrop-filter: blur(10px);
+      }
+
+      .btn-outline:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.2);
+      }
+
+      /* Layout */
+      header {
+        padding: 6rem 0 4rem;
+        position: relative;
+      }
+
+      /* Modern Grid Layout */
+      .bento-grid {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 4rem;
+      }
+
+      .card {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: 1.5rem;
+        padding: 2rem;
+        backdrop-filter: blur(12px);
+        transition: transform 0.3s ease, border-color 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .card:hover {
+        border-color: rgba(255, 255, 255, 0.2);
+        transform: translateY(-2px);
+      }
+
+      /* Grid Areas */
+      .area-intro {
+        grid-column: span 12;
+      }
+      .area-stack {
+        grid-column: span 12;
+      }
+      .area-exp {
+        grid-column: span 12;
+      }
+      .area-connect {
+        grid-column: span 12;
+      }
+
+      @media (min-width: 768px) {
+        .area-intro {
+          grid-column: span 8;
+        }
+        .area-connect {
+          grid-column: span 4;
+        }
+        .area-stack {
+          grid-column: span 5;
+        }
+        .area-exp {
+          grid-column: span 7;
+        }
+      }
+
+      /* Specific Card Styles */
+      .intro-card {
         display: flex;
+        flex-direction: column;
         justify-content: center;
+      }
+
+      .profile-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(59, 130, 246, 0.15);
+        color: #60a5fa;
+        padding: 0.35rem 0.75rem;
+        border-radius: 99px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        width: fit-content;
+        border: 1px solid rgba(59, 130, 246, 0.2);
+      }
+
+      .connect-card {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        background: linear-gradient(
+          145deg,
+          rgba(17, 24, 39, 0.8),
+          rgba(15, 23, 42, 0.9)
+        );
+      }
+
+      .social-links {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        margin-top: 1.5rem;
+      }
+
+      .social-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 1rem;
+        border: 1px solid transparent;
+        transition: all 0.2s;
+      }
+
+      .social-item:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.1);
+      }
+
+      /* Stack Tags */
+      .stack-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-top: 1.5rem;
+      }
+
+      .stack-tag {
+        padding: 0.5rem 1rem;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 0.75rem;
+        font-size: 0.9rem;
+        color: var(--text-main);
+        border: 1px solid var(--card-border);
+        transition: all 0.2s;
+      }
+
+      .stack-tag:hover {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: rgba(255, 255, 255, 0.2);
+        transform: translateY(-1px);
+      }
+
+      /* Timeline */
+      .timeline {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        margin-top: 1.5rem;
+      }
+
+      .timeline-item {
+        padding-left: 1.5rem;
+        border-left: 2px solid rgba(255, 255, 255, 0.1);
+        position: relative;
+      }
+
+      .timeline-item::before {
+        content: "";
+        position: absolute;
+        left: -5px;
+        top: 6px;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--accent);
+        box-shadow: 0 0 8px var(--accent);
+      }
+
+      .timeline-date {
+        font-size: 0.85rem;
+        color: var(--accent);
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+        display: block;
+      }
+
+      .timeline-title {
+        color: var(--text-main);
+        font-weight: 600;
+        font-size: 1.1rem;
+      }
+
+      .timeline-role {
+        font-size: 0.95rem;
+        color: var(--text-muted);
+      }
+
+      /* Playground Mini-Cards */
+      .playground-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-top: 2rem;
+      }
+
+      .mini-card {
+        background: rgba(255, 255, 255, 0.03);
+        padding: 1.25rem;
+        border-radius: 1rem;
+        border: 1px solid var(--card-border);
+        transition: all 0.2s;
+      }
+
+      .mini-card:hover {
+        background: rgba(255, 255, 255, 0.06);
+        border-color: var(--accent);
+      }
+
+      .mini-card h4 {
+        color: var(--text-main);
+        margin-bottom: 0.5rem;
+        font-size: 1rem;
+      }
+
+      .mini-card span {
+        font-size: 0.8rem;
+        color: var(--text-muted);
+      }
+
+      /* Animations */
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .fade-in {
+        animation: fadeIn 0.6s ease-out forwards;
+        opacity: 0;
+      }
+
+      .delay-1 {
+        animation-delay: 0.1s;
+      }
+      .delay-2 {
+        animation-delay: 0.2s;
+      }
+      .delay-3 {
+        animation-delay: 0.3s;
+      }
+      .delay-4 {
+        animation-delay: 0.4s;
+      }
+
+      /* Profile Image */
+      .profile-img {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid rgba(255, 255, 255, 0.1);
+        margin-bottom: 1.5rem;
+        display: block;
+      }
+
+      @media (max-width: 600px) {
+        h1 {
+          font-size: 2.5rem;
+        }
+        .card {
+          padding: 1.5rem;
+        }
       }
     </style>
   </head>
   <body>
-    <a class="skip-link" href="#main-content">Zum Inhalt springen</a>
-    <!-- Google Tag Manager (noscript) -->
-    <noscript
-      ><iframe
-        title="Google Tag Manager (noscript)"
-        src="https://www.googletagmanager.com/ns.html?id=GTM-5F5ZSTTL"
-        height="0"
-        width="0"
-        style="display: none; visibility: hidden"
-      ></iframe
-    ></noscript>
-    <!-- End Google Tag Manager (noscript) -->
-    <main id="main-content">
-      <div class="standalone-about section about">
-        <div class="about__container">
-          <aside
-            class="about__meta"
-            aria-label="Kurzinfo zum Autor"
-            role="complementary"
+    <header class="container">
+      <!-- Navigation Placeholder (optional) -->
+    </header>
+
+    <main class="container">
+      <div class="bento-grid">
+        <!-- 1. Intro Section (Large) -->
+        <div class="card area-intro intro-card fade-in delay-1">
+          <div class="profile-badge">
+            <i data-lucide="code-2" width="16"></i>
+            Full-Stack Developer & Creative
+          </div>
+          <h1>
+            Code trifft <span class="gradient-text">Kreativität.</span><br />
+            Digitale Erlebnisse, die bleiben.
+          </h1>
+          <p style="max-width: 600px">
+            Ich bin Abdulkerim Sesli. Entwickler, Designer und Problemlöser aus
+            Berlin. Ich verbinde technische Präzision mit ästhetischem Anspruch,
+            um Webanwendungen zu schaffen, die nicht nur funktionieren, sondern
+            begeistern.
+          </p>
+          <div style="display: flex; gap: 1rem; flex-wrap: wrap">
+            <a href="mailto:kontakt@abdulkerimsesli.de" class="btn btn-primary">
+              Projekt anfragen <i data-lucide="arrow-right" width="18"></i>
+            </a>
+            <a
+              href="/content/assets/Abdulkerim_Sesli_CV_DE.pdf"
+              class="btn btn-outline"
+              download
+            >
+              <i data-lucide="download" width="18"></i> Lebenslauf
+            </a>
+          </div>
+        </div>
+
+        <!-- 2. Connect / Quick Info (Small Side) -->
+        <div class="card area-connect fade-in delay-2">
+          <div>
+            <img
+              src="/content/assets/img/icons/icon-512.png"
+              alt="Abdulkerim Sesli"
+              class="profile-img"
+            />
+            <h3>Let's Connect</h3>
+            <p style="font-size: 0.9rem; margin-bottom: 0">
+              Berlin, Deutschland
+            </p>
+          </div>
+          <div class="social-links">
+            <a
+              href="https://github.com/aKs030"
+              target="_blank"
+              class="social-item"
+            >
+              <i data-lucide="github"></i>
+              <span>GitHub</span>
+            </a>
+            <a
+              href="https://linkedin.com/in/abdulkerimsesli"
+              target="_blank"
+              class="social-item"
+            >
+              <i data-lucide="linkedin"></i>
+              <span>LinkedIn</span>
+            </a>
+            <a href="mailto:kontakt@abdulkerimsesli.de" class="social-item">
+              <i data-lucide="mail"></i>
+              <span>Email</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- 3. Tech Stack -->
+        <div class="card area-stack fade-in delay-3">
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              gap: 0.75rem;
+              margin-bottom: 1rem;
+            "
           >
-            <figure class="about__figure">
-              <img
-                src="/content/assets/img/icons/icon-512.png"
-                alt="Porträt von Abdulkerim Sesli"
-                width="160"
-                height="160"
-                loading="lazy"
-                decoding="async"
-                fetchpriority="low"
-              />
-            </figure>
-            <div class="about__card-body">
-              <p class="about__role">
-                <span id="jobTitle">Webentwickler & Fotograf</span>
-                <br />
-                Digital Creator • Webentwicklung • Fotografie
-              </p>
-              <p class="about__links">
-                <a
-                  href="https://github.com/aKs030"
-                  rel="me noopener noreferrer"
-                  target="_blank"
-                  >GitHub</a
-                >
-                <a
-                  href="https://linkedin.com/in/abdulkerimsesli"
-                  rel="me noopener noreferrer"
-                  target="_blank"
-                  >LinkedIn</a
-                >
-              </p>
-              <p class="about__contact">
-                <a href="mailto:kontakt@abdulkerimsesli.de" aria-label="E-Mail"
-                  >kontakt@abdulkerimsesli.de</a
-                >
-                <br />
-                Geboren 1991, Berlin • Sprachen: Deutsch, Englisch
-                <br />
-                <a
-                  href="/content/assets/Abdulkerim_Sesli_CV_DE.pdf"
-                  download
-                  class="cv-link"
-                  aria-label="Lebenslauf herunterladen (PDF)"
-                  >Lebenslauf (PDF)</a
-                >
+            <i data-lucide="cpu" color="#60a5fa"></i>
+            <h3>Tech Arsenal</h3>
+          </div>
+          <p style="font-size: 0.9rem">
+            Tools, mit denen ich Ideen in Realität verwandle.
+          </p>
+
+          <div style="margin-bottom: 1.5rem">
+            <h4
+              style="
+                font-size: 0.85rem;
+                text-transform: uppercase;
+                color: var(--text-muted);
+                letter-spacing: 0.05em;
+                margin-bottom: 0.5rem;
+              "
+            >
+              Core & Frontend
+            </h4>
+            <div class="stack-list">
+              <span class="stack-tag">JavaScript (ES6+)</span>
+              <span class="stack-tag">React</span>
+              <span class="stack-tag">Vue.js</span>
+              <span class="stack-tag">Tailwind CSS</span>
+              <span class="stack-tag">Three.js / WebGL</span>
+            </div>
+          </div>
+
+          <div>
+            <h4
+              style="
+                font-size: 0.85rem;
+                text-transform: uppercase;
+                color: var(--text-muted);
+                letter-spacing: 0.05em;
+                margin-bottom: 0.5rem;
+              "
+            >
+              Backend & Ops
+            </h4>
+            <div class="stack-list">
+              <span class="stack-tag">Node.js</span>
+              <span class="stack-tag">Express</span>
+              <span class="stack-tag">MongoDB</span>
+              <span class="stack-tag">SQL</span>
+              <span class="stack-tag">Docker</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Experience & Playground -->
+        <div class="card area-exp fade-in delay-4">
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              gap: 0.75rem;
+              margin-bottom: 1.5rem;
+            "
+          >
+            <i data-lucide="briefcase" color="#2dd4bf"></i>
+            <h3>Werdegang</h3>
+          </div>
+
+          <div class="timeline">
+            <div class="timeline-item">
+              <span class="timeline-date">2020 – Heute</span>
+              <h4 class="timeline-title">Freelance Full-Stack Developer</h4>
+              <span class="timeline-role">Selbstständig</span>
+              <p style="margin-top: 0.5rem; font-size: 0.95rem">
+                Entwicklung hochperformanter Web-Lösungen und SPAs. Fokus auf
+                interaktive User Experience, SEO-Optimierung und skalierbare
+                Architekturen für diverse Kundenprojekte.
               </p>
             </div>
-          </aside>
-          <article class="about__content">
-            <div class="about__text" data-parallax-speed="0.1">
-              <h1 id="about-heading">Hi — ich bin Abdulkerim</h1>
 
-              <p>
-                Ich gestalte und entwickle performante, barrierearme
-                Webanwendungen und visuelle Erlebnisse. Als Full‑Stack
-                Webentwickler aus Berlin verbinde ich moderne Technologien mit
-                einem klaren Fokus auf Usability, Performance und Design.
+            <div class="timeline-item">
+              <span class="timeline-date">2018 – 2020</span>
+              <h4 class="timeline-title">Web & Product Development</h4>
+              <span class="timeline-role">TechStartup Umfeld</span>
+              <p style="margin-top: 0.5rem; font-size: 0.95rem">
+                Kernentwicklung von SaaS-Komponenten, REST-API Integrationen und
+                UX-Optimierung in einem agilen Team.
               </p>
+            </div>
+          </div>
 
-              <p>
-                Meine Leistungen reichen von Konzeption und Prototyping über
-                Frontend‑ und Backend‑Entwicklung bis hin zu interaktiven
-                3D‑Visualisierungen (Three.js) und Fotografie für Web &amp;
-                Social Media.
-              </p>
-
-              <p>
-                Ich arbeite eng mit Auftraggebern zusammen — von der Idee bis
-                zum Launch — und lege Wert auf sauberen, wartbaren Code sowie
-                messbare Ergebnisse.
-              </p>
-
-              <ul class="about__services" aria-label="Kompetenzen">
-                <li>Modernes JavaScript (ES6+), React &amp; Frameworks</li>
-                <li>Node.js, Express, REST APIs</li>
-                <li>Three.js &amp; interaktive Visualisierungen</li>
-                <li>SEO, Barrierefreiheit &amp; Performance</li>
-              </ul>
-
-              <p class="about__cta-text">
-                Interesse an Zusammenarbeit oder Fragen?
-                <a href="mailto:kontakt@abdulkerimsesli.de"
-                  >kontakt@abdulkerimsesli.de</a
-                >
-                •
-                <a
-                  href="/content/assets/Abdulkerim_Sesli_CV_DE.pdf"
-                  download
-                  class="cv-link"
-                  >Lebenslauf (PDF)</a
-                >
-              </p>
-
-              <nav class="about__cta" aria-label="Navigationsoptionen">
-                <a
-                  href="/"
-                  class="btn btn-primary"
-                  aria-label="Zurück zur Startseite"
-                  >Zur Startseite</a
-                >
-                <a
-                  href="/content/assets/Abdulkerim_Sesli_CV_DE.pdf"
-                  class="btn btn-secondary"
-                  download
-                  aria-label="Lebenslauf herunterladen (PDF)"
-                >
-                  <span class="visually-hidden">Lebenslauf herunterladen</span>
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    aria-hidden="true"
-                  >
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                    <polyline points="7 10 12 15 17 10" />
-                    <line x1="12" y1="15" x2="12" y2="3" />
-                  </svg>
-                  <span>Lebenslauf</span>
-                </a>
-              </nav>
-
-              <section class="about__notable" aria-labelledby="notable-heading">
-                <h2 id="notable-heading">Ausgewählte Projekte</h2>
-                <ul>
-                  <li>
-                    <a href="/projekte/#project-1">Schere Stein Papier</a>
-                  </li>
-                  <li><a href="/projekte/#project-2">Zahlen Raten</a></li>
-                  <li><a href="/projekte/#project-3">Color Changer</a></li>
-                </ul>
-              </section>
-
-              <section class="about__skills" aria-labelledby="skills-heading">
-                <h2 id="skills-heading">Fähigkeiten & Technologien</h2>
-                <div class="skills-grid">
-                  <div class="skill-category">
-                    <h3>Frontend</h3>
-                    <ul>
-                      <li>HTML5 & CSS3</li>
-                      <li>JavaScript (ES6+)</li>
-                      <li>React & Vue.js</li>
-                      <li>Three.js für 3D</li>
-                    </ul>
-                  </div>
-                  <div class="skill-category">
-                    <h3>Backend</h3>
-                    <ul>
-                      <li>Node.js</li>
-                      <li>Express.js</li>
-                      <li>RESTful APIs</li>
-                      <li>Datenbanken (MongoDB, SQL)</li>
-                    </ul>
-                  </div>
-                  <div class="skill-category">
-                    <h3>Tools & Andere</h3>
-                    <ul>
-                      <li>Git & GitHub</li>
-                      <li>Webpack & Vite</li>
-                      <li>SEO & Performance</li>
-                      <li>UI/UX Design</li>
-                    </ul>
-                  </div>
-                </div>
-              </section>
-
-              <section
-                class="about__experience"
-                aria-labelledby="experience-heading"
+          <div
+            style="
+              margin-top: 3rem;
+              padding-top: 2rem;
+              border-top: 1px solid var(--card-border);
+            "
+          >
+            <div
+              style="
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 1rem;
+              "
+            >
+              <h3>Coding Playground</h3>
+              <a
+                href="/projekte"
+                style="font-size: 0.9rem; color: var(--accent)"
+                >Alle Projekte →</a
               >
-                <h2 id="experience-heading">Berufserfahrung</h2>
-                <div class="experience-item">
-                  <h3>Freiberuflicher Webentwickler</h3>
-                  <p class="experience-date">2020 - Heute</p>
-                  <p>
-                    Entwicklung maßgeschneiderter Websites und Webanwendungen
-                    für verschiedene Kunden. Fokus auf moderne Technologien und
-                    benutzerfreundliche Designs.
-                  </p>
-                </div>
-                <div class="experience-item">
-                  <h3>Junior Developer bei TechStartup</h3>
-                  <p class="experience-date">2018 - 2020</p>
-                  <p>
-                    Mitarbeit an der Entwicklung von SaaS-Produkten.
-                    Verantwortlich für Frontend-Komponenten und
-                    API-Integrationen.
-                  </p>
-                </div>
-              </section>
             </div>
-          </article>
+
+            <div class="playground-grid">
+              <a href="/projekte/#project-1" class="mini-card">
+                <i
+                  data-lucide="gamepad-2"
+                  style="margin-bottom: 0.5rem; color: #f472b6"
+                ></i>
+                <h4>Schere Stein Papier</h4>
+                <span>Logik & State Management Experiment</span>
+              </a>
+              <a href="/projekte/#project-3" class="mini-card">
+                <i
+                  data-lucide="palette"
+                  style="margin-bottom: 0.5rem; color: #a78bfa"
+                ></i>
+                <h4>Color Changer</h4>
+                <span>Echtzeit DOM-Manipulation</span>
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </main>
 
-    <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "ProfilePage",
-        "mainEntity": {
-          "@type": "Person",
-          "@id": "https://abdulkerimsesli.de/#person"
-        },
-        "url": "https://abdulkerimsesli.de/about/",
-        "inLanguage": "de-DE"
-      }
+    <script>
+      // Initialize Lucide Icons
+      lucide.createIcons();
     </script>
   </body>
 </html>
