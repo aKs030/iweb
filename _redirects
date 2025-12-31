@@ -22,13 +22,10 @@
 /pages/projekte/projekte.html   /projekte/    301
 /pages/videos/videos.html       /videos/      301
 
-# Redirect legacy/internal component URLs to canonical public pages
-/content/components/footer/datenschutz.html    /datenschutz/ 301
-/content/components/footer/impressum.html       /impressum/   301
-/content/components/footer/datenschutz         /datenschutz/ 301
-/content/components/footer/impressum           /impressum/   301
-/content/footer/datenschutz                     /datenschutz/ 301
-/content/footer/impressum                       /impressum/   301
+
+# Leite /datenschutz und /impressum auf die Footer-Komponenten um
+/datenschutz    /content/components/footer/datenschutz.html   200
+/impressum      /content/components/footer/impressum.html     200
 
 # -------------------------------
 # 3) Generic cleanups
