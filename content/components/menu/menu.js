@@ -160,7 +160,7 @@ function getMenuHTML() {
           </a>
         </li>
         <li>
-          <a href="#section3">
+          <a href="/about/">
             <svg class="nav-icon" aria-hidden="true">
               <use href="#icon-user"></use>
             </svg>
