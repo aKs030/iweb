@@ -13,11 +13,14 @@
       <image:loc>https://abdulkerimsesli.de/content/assets/img/og/og-home.png</image:loc>
       <image:caption>Abdulkerim Sesli - Digital Creator Portfolio Homepage</image:caption>
       <image:title>Abdulkerim Sesli Portfolio</image:title>
+      <image:geo_location>Berlin, Deutschland</image:geo_location>
+      <image:license>https://abdulkerimsesli.de/#image-license</image:license>
     </image:image>
     <image:image>
       <image:loc>https://abdulkerimsesli.de/content/assets/img/icons/icon-512.png</image:loc>
       <image:caption>Abdulkerim Sesli Logo</image:caption>
       <image:title>AKS Logo</image:title>
+      <image:license>https://abdulkerimsesli.de/#image-license</image:license>
     </image:image>
   </url>
 
@@ -99,30 +102,84 @@
       <image:caption>Berglandschaft im Morgengrauen - Alpenfotografie</image:caption>
       <image:title>Bergpanorama Alpen</image:title>
       <image:geo_location>Alpen, Deutschland</image:geo_location>
+      <image:license>https://unsplash.com/license</image:license>
     </image:image>
     <image:image>
       <image:loc>https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=1200</image:loc>
       <image:caption>Mystischer Nebelwald - Schwarzwald Fotografie</image:caption>
       <image:title>Nebelwald Schwarzwald</image:title>
       <image:geo_location>Schwarzwald, Deutschland</image:geo_location>
+      <image:license>https://unsplash.com/license</image:license>
     </image:image>
     <image:image>
       <image:loc>https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=1200</image:loc>
       <image:caption>Urbane Architektur - Moderne Stadtfotografie Berlin</image:caption>
       <image:title>Urbane Architektur Berlin</image:title>
       <image:geo_location>Berlin, Deutschland</image:geo_location>
+      <image:license>https://unsplash.com/license</image:license>
     </image:image>
     <image:image>
       <image:loc>https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=1200</image:loc>
       <image:caption>Goldener Sonnenuntergang an der Nordsee</image:caption>
       <image:title>Sonnenuntergang Nordsee</image:title>
       <image:geo_location>Nordsee, Deutschland</image:geo_location>
+      <image:license>https://unsplash.com/license</image:license>
     </image:image>
     <image:image>
       <image:loc>https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=1200</image:loc>
       <image:caption>Stille am Bergsee - Bayerische Alpen</image:caption>
       <image:title>Bergsee Bayern</image:title>
       <image:geo_location>Bayern, Deutschland</image:geo_location>
+      <image:license>https://unsplash.com/license</image:license>
+    </image:image>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1444464666168-49d633b86797?w=1200</image:loc>
+      <image:caption>Reise ans Ende der Welt</image:caption>
+      <image:title>Reise ans Ende der Welt</image:title>
+      <image:geo_location>Island</image:geo_location>
+      <image:license>https://unsplash.com/license</image:license>
+    </image:image>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1477346611705-65d1883cee1e?w=1200</image:loc>
+      <image:caption>Küstenstraße am Pazifik</image:caption>
+      <image:title>Küstenstraße Pazifik</image:title>
+      <image:geo_location>Kalifornien, USA</image:geo_location>
+      <image:license>https://unsplash.com/license</image:license>
+    </image:image>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1511593358241-7eea1f3c84e5?w=1200</image:loc>
+      <image:caption>Moderne Skyline</image:caption>
+      <image:title>Moderne Skyline</image:title>
+      <image:geo_location>Frankfurt, Deutschland</image:geo_location>
+      <image:license>https://unsplash.com/license</image:license>
+    </image:image>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1426604966848-d7adac402bff?w=1200</image:loc>
+      <image:caption>Unberührte Wildnis</image:caption>
+      <image:title>Unberührte Wildnis</image:title>
+      <image:geo_location>Österreich</image:geo_location>
+      <image:license>https://unsplash.com/license</image:license>
+    </image:image>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&amp;h=600</image:loc>
+      <image:caption>Panorama der Alpen</image:caption>
+      <image:title>Panorama der Alpen</image:title>
+      <image:geo_location>Schweiz</image:geo_location>
+      <image:license>https://unsplash.com/license</image:license>
+    </image:image>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1200</image:loc>
+      <image:caption>Herbstlicher Waldweg</image:caption>
+      <image:title>Herbstlicher Waldweg</image:title>
+      <image:geo_location>Thüringen, Deutschland</image:geo_location>
+      <image:license>https://unsplash.com/license</image:license>
+    </image:image>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=1200</image:loc>
+      <image:caption>Nächtliche Stadtansicht</image:caption>
+      <image:title>Nächtliche Stadtansicht</image:title>
+      <image:geo_location>Hamburg, Deutschland</image:geo_location>
+      <image:license>https://unsplash.com/license</image:license>
     </image:image>
   </url>
 

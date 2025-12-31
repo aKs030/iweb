@@ -349,6 +349,29 @@ export function generateSchemaGraph(
     }
   );
 
+  // ImageObject enrichment for richer image results (helps Image Pack / Image Carousel)
+  try {
+    if (pageData.image) {
+      const imageId = `${pageUrl}#primaryImage`;
+      const imageNode = {
+        "@type": "ImageObject",
+        "@id": imageId,
+        contentUrl: pageData.image,
+        url: pageData.image,
+        caption: pageData.title || pageData.description || "",
+        creator: { "@type": "Person", name: BRAND_DATA.name },
+        license: `${BASE_URL}/#image-license`,
+      };
+      graph.push(imageNode);
+      const webpageNode = graph.find((g) => g["@id"] === ID.webpage);
+      if (webpageNode) {
+        webpageNode.primaryImageOfPage = { "@id": imageId };
+      }
+    }
+  } catch (e) {
+    log?.warn?.("head-complete: image enrichment failed", e);
+  }
+
   // FAQ handling
   const faqNodes = Array.from(doc?.querySelectorAll?.(".faq-item") || [])
     .map((el, i) => {
