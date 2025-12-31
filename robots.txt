@@ -36,6 +36,15 @@ Allow: /content/utils/*.json$
 Allow: /*.json$
 Allow: /manifest.json
 
+# Allow rendering-critical component and style assets (JS/CSS)
+Allow: /content/components/
+Allow: /content/components/*.js$
+Allow: /content/components/*.css$
+Allow: /content/components/*/*.js$
+Allow: /content/components/*/*.css$
+Allow: /content/styles/*.css$
+Allow: /content/main.js
+
 # Local/dev files and folders (should never be crawled)
 Disallow: /node_modules/
 Disallow: /tmp/
