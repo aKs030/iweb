@@ -33,7 +33,10 @@ const HeroManager = (() => {
         });
       }
 
-      if (!typeWriterModule || typeof typeWriterModule.initHeroSubtitle !== "function")
+      if (
+        !typeWriterModule ||
+        typeof typeWriterModule.initHeroSubtitle !== "function"
+      )
         return false;
 
       const tw = await typeWriterModule.initHeroSubtitle({ heroDataModule });
@@ -175,7 +178,7 @@ export function initHeroFeatureBundle() {
         HeroManager.setRandomGreetingHTML();
       }
     },
-    { once: true },
+    { once: true }
   );
 
   document.addEventListener(EVENTS.HERO_TYPING_END, (e) => {
@@ -216,14 +219,14 @@ export function initHeroFeatureBundle() {
         target.dataset.state !== "loaded"
       ) {
         window.SectionLoader.loadSection(target).finally(() =>
-          requestAnimationFrame(doScroll),
+          requestAnimationFrame(doScroll)
         );
         return;
       }
     } catch (err) {
       logger.warn(
         "HeroManager: SectionLoader.loadSection failed, falling back to immediate scroll",
-        err,
+        err
       );
     }
 
