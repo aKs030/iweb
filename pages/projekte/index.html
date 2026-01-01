@@ -333,13 +333,42 @@
         // Lazy-load Three-Earth only when needed: on visibility or user interaction
         const threeContainer = document.getElementById("threeEarthContainer");
 
+        // Background prefetch: import module + preload styles during idle time so
+        // the UI appears faster when we actually initialize the system.
+        let __three_prefetched_module = null;
+        const prefetchThreeModule = () => {
+          if (__three_prefetched_module) return;
+          import("../../content/components/particles/three-earth-system.js")
+            .then((m) => {
+              __three_prefetched_module = m;
+              try {
+                ensureThreeEarthStyles().catch(() => {});
+              } catch (err) {
+                log.debug("ensureThreeEarthStyles prefetch ignored", err);
+              }
+            })
+            .catch((e) => log.debug("three-earth prefetch failed", e));
+        };
+
+        if (typeof requestIdleCallback === "function") {
+          try {
+            requestIdleCallback(prefetchThreeModule, { timeout: 2000 });
+          } catch {
+            setTimeout(prefetchThreeModule, 2000);
+          }
+        } else {
+          setTimeout(prefetchThreeModule, 2000);
+        }
+
         const loadThreeEarth = async () => {
           if (globalThis.__threeEarthLoaded) return;
           globalThis.__threeEarthLoaded = true;
           try {
-            const mod = await import(
-              "../../content/components/particles/three-earth-system.js"
-            );
+            const mod =
+              __three_prefetched_module ||
+              (await import(
+                "../../content/components/particles/three-earth-system.js"
+              ));
 
             // Allow module to expose API and adjust presets before init
             try {
@@ -393,12 +422,12 @@
                 }
               }
             },
-            { root: null, rootMargin: "200px", threshold: 0.05 }
+            { root: null, rootMargin: "600px", threshold: 0.05 }
           );
           io.observe(threeContainer);
         } else {
-          // Fallback: load after a short idle period
-          setTimeout(loadThreeEarth, 3000);
+          // Fallback: load after a short idle period (reduced from 3s to 1s)
+          setTimeout(loadThreeEarth, 1000);
         }
 
         // Also trigger on first user interaction to prioritise UX
