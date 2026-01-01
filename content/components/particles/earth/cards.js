@@ -51,6 +51,21 @@ export class CardManager {
     this._boundPointerUp = null;
   }
 
+  // Convert a vertical pixel offset to world-space Y delta at z ~= 0 using the current camera
+  _pixelsToWorldY(pixels) {
+    if (!this.renderer || !this.camera) return 0;
+    const canvasRect = this.renderer.domElement.getBoundingClientRect();
+    const height = canvasRect.height || (globalThis.window?.innerHeight ?? 800);
+    if (!height) return 0;
+    // NDC delta (top/bottom range is -1..1 => total 2 units)
+    const ndcDelta = (pixels / height) * 2;
+    const v1 = new this.THREE.Vector3(0, 0, 0.5);
+    const v2 = new this.THREE.Vector3(0, -ndcDelta, 0.5);
+    v1.unproject(this.camera);
+    v2.unproject(this.camera);
+    return v2.y - v1.y;
+  }
+
   initFromData(dataArray) {
     if (this.cards.length > 0) return;
     if (!Array.isArray(dataArray) || dataArray.length === 0) return;
@@ -111,18 +126,24 @@ export class CardManager {
 
         this.cards.forEach((card, idx) => {
           if (isMobile) {
-            // Mobile: Vertical Stack
+            // Mobile: Vertical Stack — push cards down to avoid overlapping the fixed header/menu
             const scale = 0.82;
             const spacingY = 2.9;
             const y = (centerOffset - idx) * spacingY;
 
+            // Compute an approximate world-space offset that corresponds to the header height in pixels
+            const headerPixels = 76; // approx header height + spacing used in CSS
+            const headerWorldOffset = this._pixelsToWorldY(headerPixels);
+
             card.scale.setScalar(scale);
             card.position.x = 0;
-            card.position.y = y;
+            // Move cards down by subtracting the world offset (positive headerWorldOffset moves cards down)
+            const finalY = y - headerWorldOffset;
+            card.position.y = finalY;
 
             // Update metadata for animation loop
-            card.userData.originalY = y;
-            card.userData.hoverY = y + 0.2; // Reduced hover lift on mobile
+            card.userData.originalY = finalY;
+            card.userData.hoverY = finalY + 0.2; // Reduced hover lift on mobile
           } else {
             // Desktop: Horizontal Row
             const adaptiveScale = Math.min(1, vw / 1200);

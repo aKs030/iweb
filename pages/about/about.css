@@ -78,6 +78,18 @@ a {
   padding: 0 1.5rem;
 }
 
+/* Ensure about page content starts below the fixed header so the menu's background remains empty */
+.about-page main.container {
+  padding-top: calc(52px + 24px); /* header top spacing + header height */
+}
+
+/* Mobile tweak */
+@media (max-width: 600px) {
+  .about-page main.container {
+    padding-top: calc(48px + 20px);
+  }
+}
+
 .btn {
   display: inline-flex;
   align-items: center;
