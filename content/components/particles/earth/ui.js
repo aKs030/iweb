@@ -126,7 +126,7 @@ export class PerformanceMonitor {
     // Throttled adjustment to avoid rapid fluctuating changes
     this.throttledAdjustResolution = throttle(
       () => this.adjustResolution(),
-      1000,
+      1000
     );
   }
 
@@ -153,12 +153,12 @@ export class PerformanceMonitor {
     const newPixelRatio = calculateDynamicResolution(
       this.fps,
       this.currentPixelRatio,
-      CONFIG.PERFORMANCE,
+      CONFIG.PERFORMANCE
     );
 
     if (newPixelRatio !== this.currentPixelRatio) {
       log.info(
-        `Adjusting pixel ratio: ${this.currentPixelRatio} -> ${newPixelRatio}`,
+        `Adjusting pixel ratio: ${this.currentPixelRatio} -> ${newPixelRatio}`
       );
       this.currentPixelRatio = newPixelRatio;
       try {

@@ -436,8 +436,6 @@ textarea:focus-visible {
   border: 0 !important;
 }
 
-
-
 /* Utility class used throughout site */
 .hidden {
   display: none !important;
