@@ -956,13 +956,48 @@ function _setupManagersAndCards(container) {
 
   shootingStarManager = new ShootingStarManager(scene, THREE_INSTANCE);
 
-  // Cards (Pure WebGL)
+  // Cards (Pure WebGL) — data-driven initialization
+  const DEFAULT_FEATURES = [
+    {
+      title: "Über mich",
+      subtitle: "ÜBER MICH",
+      text: "Kurz & knapp: Wer ich bin, was mich antreibt und meine Vision.",
+      link: "/about/",
+      iconChar: "👨‍💻",
+      color: "#07a1ff",
+    },
+    {
+      title: "Projekte",
+      subtitle: "PROJEKTE",
+      text: "Auswahl an Projekten — Konzept, Umsetzung und Ergebnis.",
+      link: "/projekte/",
+      iconChar: "🚀",
+      color: "#a107ff",
+    },
+    {
+      title: "Fotos",
+      subtitle: "FOTOS",
+      text: "Ausschnitte aus meiner Sicht der Welt.",
+      link: "/gallery/",
+      iconChar: "📸",
+      color: "#ff07a1",
+    },
+  ];
+
   cardManager = new CardManager(THREE_INSTANCE, scene, camera, renderer);
 
-  // Listen for dynamic section loading to init cards (read DOM for content)
+  // Let the stars system use card mesh rects when available
+  if (starManager && typeof starManager.setCardManager === "function") {
+    starManager.setCardManager(cardManager);
+  }
+
+  // Initialize exclusively from built-in data (WebGL-only)
+  cardManager.initFromData(DEFAULT_FEATURES);
+
+  // Keep a lightweight listener to ensure cards are present when the section is (no DOM parsing)
   const onSectionLoaded = (e) => {
     if (e.detail?.id === "features" && cardManager) {
-      cardManager.initFromDOM(e.detail.section);
+      cardManager.initFromData(DEFAULT_FEATURES);
     }
   };
   document.addEventListener("section:loaded", onSectionLoaded);
@@ -971,12 +1006,6 @@ function _setupManagersAndCards(container) {
     () => document.removeEventListener("section:loaded", onSectionLoaded),
     "section listener",
   );
-
-  // Check if already loaded
-  const featuresSection = document.getElementById("features");
-  if (featuresSection?.dataset?.state === "loaded") {
-    cardManager.initFromDOM(featuresSection);
-  }
 }
 
 function triggerShowcase(duration = 8000) {

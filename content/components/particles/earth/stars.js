@@ -139,41 +139,45 @@ export class StarManager {
     }
   }
 
+  // Allow external managers (e.g., CardManager) to be used as the source of card rects
+  setCardManager(cm) {
+    this.cardManager = cm;
+  }
+
   getCardPositions() {
     if (!this.camera || this.isDisposed) return [];
 
-    const featuresSection = getElementById("features");
-    if (!featuresSection) return [];
+    // Only use CardManager rects (WebGL-driven)
+    if (this.cardManager?.getCardScreenRects) {
+      const rects = this.cardManager.getCardScreenRects();
+      if (!rects || rects.length === 0) return [];
 
-    const cards = featuresSection.querySelectorAll(".card");
-    if (cards.length === 0) return [];
+      const positions = [];
+      const width = this.renderer
+        ? this.renderer.domElement.clientWidth
+        : window.innerWidth;
+      const height = this.renderer
+        ? this.renderer.domElement.clientHeight
+        : window.innerHeight;
 
-    const positions = [];
-    const width = this.renderer
-      ? this.renderer.domElement.clientWidth
-      : window.innerWidth;
-    const height = this.renderer
-      ? this.renderer.domElement.clientHeight
-      : window.innerHeight;
+      rects.forEach((rect) => {
+        if (rect.right - rect.left > 0 && rect.bottom - rect.top > 0) {
+          const perimeterPositions = this.getCardPerimeterPositions(
+            rect,
+            width,
+            height,
+            -2,
+            rects.length,
+          );
+          positions.push(...perimeterPositions);
+        }
+      });
 
-    const cardCount = cards.length;
+      return positions;
+    }
 
-    cards.forEach((card) => {
-      const rect = card.getBoundingClientRect();
-      // Ensure element is actually somewhat visible/valid
-      if (rect.width > 0 && rect.height > 0) {
-        const perimeterPositions = this.getCardPerimeterPositions(
-          rect,
-          width,
-          height,
-          -2,
-          cardCount,
-        );
-        positions.push(...perimeterPositions);
-      }
-    });
-
-    return positions;
+    // If no CardManager is present, don't attempt DOM queries (WebGL-only policy)
+    return [];
   }
 
   getCardPerimeterPositions(
@@ -242,13 +246,7 @@ export class StarManager {
     if (!this.starField || this.isDisposed) return;
     this.areStarsFormingCards = true;
 
-    const cards = document.querySelectorAll("#features .card");
-    cards.forEach((card) => {
-      card.style.opacity = "0";
-      card.style.pointerEvents = "none";
-      card.classList.remove("flash-active"); // Reset previous flash
-    });
-
+    // When using WebGL cards, prefer card mesh rects instead of manipulating DOM
     const cardPositions = this.getCardPositions();
     if (cardPositions.length === 0) return;
 
@@ -260,8 +258,7 @@ export class StarManager {
       if (!this.isDisposed && this.transition.targetValue === 1.0) {
         // Refine once settled
         const refinedPositions = this.getCardPositions();
-        if (refinedPositions.length > 0)
-          this.updateTargetBuffer(refinedPositions);
+        if (refinedPositions.length > 0) this.updateTargetBuffer(refinedPositions);
       }
     }, CONFIG.STARS.ANIMATION.CAMERA_SETTLE_DELAY);
   }
@@ -271,11 +268,7 @@ export class StarManager {
     this.areStarsFormingCards = false;
     this.disableScrollUpdates();
     this.startTransition(0.0);
-
-    const cards = document.querySelectorAll("#features .card");
-    cards.forEach((card) => {
-      card.classList.remove("flash-active");
-    });
+    // No DOM manipulations when using WebGL card meshes
   }
 
   enableScrollUpdates() {
@@ -375,29 +368,9 @@ export class StarManager {
   }
 
   updateCardOpacity(transitionValue) {
-    const cards = document.querySelectorAll("#features .card");
-
-    // Trigger flash when stars are gathered (transitionValue > 0.85)
-    // Only trigger once when passing the threshold
-    if (transitionValue > 0.85) {
-      cards.forEach((card) => {
-        if (
-          !card.classList.contains("flash-active") &&
-          this.areStarsFormingCards
-        ) {
-          card.classList.add("flash-active");
-          // Set final state directly (animation handles visual entry)
-          card.style.opacity = "1";
-          card.style.pointerEvents = "auto";
-        }
-      });
-    } else if (transitionValue < 0.1) {
-      // Reset when transitioning back to stars
-      cards.forEach((card) => {
-        card.style.opacity = "0";
-        card.style.pointerEvents = "none";
-        card.classList.remove("flash-active");
-      });
+    // WebGL-only: use CardManager progress API if available
+    if (this.cardManager && typeof this.cardManager.setProgress === "function") {
+      this.cardManager.setProgress(transitionValue);
     }
   }
 
