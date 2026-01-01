@@ -338,34 +338,106 @@ ScrollSnapping.init();
 // ===== Loading Screen Manager =====
 const LoadingScreenManager = (() => {
   const MIN_DISPLAY_TIME = 600;
+  const state = {
+    overlay: null,
+    bar: null,
+    text: null,
+    percent: null,
+    progress: 0,
+    interval: null,
+    messageIndex: 0,
+    messages: [
+      "Initialisiere System...",
+      "Assets werden geladen...",
+      "Verbinde Neural Interface...",
+      "Rendere 3D-Umgebung...",
+      "Optimiere Shader...",
+      "Starte KI-Module...",
+      "Synchronisiere Daten...",
+    ],
+  };
+
   let startTime = 0;
+  let hasHidden = false;
+
+  function bindElements() {
+    state.overlay = getElementById("app-loader");
+    state.bar = getElementById("loader-progress-bar");
+    state.text = getElementById("loader-status-text");
+    state.percent = getElementById("loader-percentage");
+    return Boolean(state.overlay);
+  }
+
+  function updateUI(statusText) {
+    if (state.bar) state.bar.style.width = `${Math.floor(state.progress)}%`;
+    if (state.percent)
+      state.percent.textContent = `${Math.floor(state.progress)}%`;
+    if (statusText && state.text) state.text.textContent = statusText;
+  }
+
+  function stopSimulation() {
+    if (state.interval) {
+      clearInterval(state.interval);
+      state.interval = null;
+    }
+  }
+
+  function startSimulation() {
+    if (!state.overlay) return;
+
+    stopSimulation();
+    state.progress = 0;
+    state.messageIndex = 0;
+    state.overlay.classList.remove("fade-out");
+    state.overlay.style.display = "flex";
+    state.overlay.removeAttribute("aria-hidden");
+    updateUI(state.messages[state.messageIndex]);
+
+    state.interval = setInterval(() => {
+      const increment = Math.random() * (state.progress > 70 ? 2 : 5);
+      const ceiling = 96;
+      const next = Math.min(state.progress + increment, ceiling);
+      state.progress = Math.max(state.progress, next);
+
+      // Rotate messages for a subtle "system" feel
+      if (Math.random() > 0.8 && state.progress < 94) {
+        state.messageIndex =
+          (state.messageIndex + 1) % state.messages.length;
+        updateUI(state.messages[state.messageIndex]);
+      } else {
+        updateUI();
+      }
+    }, 120);
+  }
+
+  function finalizeProgress(statusText = "Bereit.") {
+    stopSimulation();
+    state.progress = 100;
+    updateUI(statusText);
+  }
 
   function hide() {
-    const loadingScreen = getElementById("loadingScreen");
-    if (!loadingScreen) return;
+    if (hasHidden) return;
+    if (!state.overlay) return;
 
     const elapsed = performance.now() - startTime;
     const delay = Math.max(0, MIN_DISPLAY_TIME - elapsed);
 
     setTimeout(() => {
-      loadingScreen.classList.add("hide");
-      loadingScreen.setAttribute("aria-hidden", "true");
+      hasHidden = true;
+      finalizeProgress();
 
-      Object.assign(loadingScreen.style, {
-        opacity: "0",
-        pointerEvents: "none",
-        visibility: "hidden",
-      });
+      state.overlay.classList.add("fade-out");
+      state.overlay.setAttribute("aria-hidden", "true");
+        state.overlay.dataset.loaderDone = "true";
 
       const cleanup = () => {
-        loadingScreen.style.display = "none";
-        loadingScreen.removeEventListener("transitionend", cleanup);
+        state.overlay.style.display = "none";
+        state.overlay.removeEventListener("transitionend", cleanup);
       };
 
-      loadingScreen.addEventListener("transitionend", cleanup);
-      setTimeout(cleanup, 700);
-
-      announce("Anwendung geladen", { dedupe: true });
+      state.overlay.addEventListener("transitionend", cleanup);
+      setTimeout(cleanup, 900);
 
       try {
         document.body.classList.remove("global-loading-visible");
@@ -374,21 +446,36 @@ const LoadingScreenManager = (() => {
       }
 
       perfMarks.loadingHidden = performance.now();
-      log.info(`Loading screen hidden after ${Math.round(elapsed)}ms`);
-
-      try {
-        fire(EVENTS.LOADING_HIDE);
-      } catch {
-        /* ignore */
-      }
+      announce("Anwendung geladen", { dedupe: true });
+      fire(EVENTS.LOADING_HIDE);
+      globalThis.dispatchEvent(new Event("app-ready"));
     }, delay);
   }
 
   function init() {
     startTime = performance.now();
+    if (!bindElements()) return;
+
+    try {
+      document.body.classList.add("global-loading-visible");
+    } catch {
+      /* ignore */
+    }
+
+    startSimulation();
   }
 
-  return { init, hide };
+  function setStatus(message, progress) {
+    if (!state.overlay || hasHidden) return;
+
+    if (typeof progress === "number") {
+      state.progress = Math.min(Math.max(progress, state.progress), 98);
+    }
+
+    updateUI(message);
+  }
+
+  return { init, hide, setStatus };
 })();
 
 // ===== Three.js Earth System Loader =====
@@ -498,6 +585,7 @@ document.addEventListener(
     const checkReady = () => {
       if (!modulesReady || !windowLoaded) return;
       if (AppLoadManager.isBlocked()) return;
+      LoadingScreenManager.setStatus("Starte Experience...", 98);
       LoadingScreenManager.hide();
     };
 
@@ -508,6 +596,7 @@ document.addEventListener(
       () => {
         perfMarks.windowLoaded = performance.now();
         windowLoaded = true;
+        LoadingScreenManager.setStatus("Finalisiere Assets...", 92);
         checkReady();
       },
       { once: true }
@@ -522,6 +611,7 @@ document.addEventListener(
 
     modulesReady = true;
     perfMarks.modulesReady = performance.now();
+  LoadingScreenManager.setStatus("Initialisiere 3D-Engine...", 90);
     fire(EVENTS.MODULES_READY);
     checkReady();
     (function scheduleSmartForceHide(attempt = 1) {
@@ -568,6 +658,7 @@ document.addEventListener(
 
           log.warn("Forcing loading screen hide after timeout");
           // Force-hide now
+          LoadingScreenManager.setStatus("Schließe Ladebildschirm...");
           LoadingScreenManager.hide();
         },
         attempt === 1 ? INITIAL_DELAY : RETRY_DELAY

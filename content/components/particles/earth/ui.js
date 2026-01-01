@@ -9,15 +9,16 @@ const log = createLogger("EarthUI");
 
 /*
   Earth UI Loader
-  - Uses a single global page loader (id: #loadingScreen) with a spinner.
-  - This module only shows/hides the spinner; progress bars/percent indicators
-    were removed for a simpler, unified loading UX.
+  - Uses the global page loader (id: #app-loader) with neon progress UI.
+  - This module only toggles visibility and can hint a status message while
+    the Earth system spins up.
 */
 
 function getGlobalLoaderElements() {
-  const screen = document.getElementById("loadingScreen");
-  if (!screen) return null;
-  return { screen };
+  const overlay = document.getElementById("app-loader");
+  const text = document.getElementById("loader-status-text");
+  if (!overlay) return null;
+  return { overlay, text };
 }
 
 export function showLoadingState(container) {
@@ -25,17 +26,21 @@ export function showLoadingState(container) {
 
   // Prefer the global page loader when available
   const globals = getGlobalLoaderElements();
-  if (globals && globals.screen) {
-    globals.screen?.classList.remove("hidden", "hide");
-    globals.screen?.removeAttribute("aria-hidden");
-    Object.assign(globals.screen?.style, {
+  if (globals?.overlay) {
+    if (globals.overlay.dataset.loaderDone === "true") return;
+
+    globals.overlay.classList.remove("fade-out", "hidden");
+    globals.overlay.removeAttribute("aria-hidden");
+    globals.overlay.setAttribute("aria-live", "polite");
+    Object.assign(globals.overlay.style, {
       display: "flex",
       opacity: "1",
       pointerEvents: "auto",
       visibility: "visible",
     });
-    // Optionally set an aria message
-    globals.screen?.setAttribute("aria-live", "polite");
+    if (globals.text) {
+      globals.text.textContent = "Initialisiere 3D-Engine...";
+    }
     try {
       document.body.classList.add("global-loading-visible");
     } catch (err) {
@@ -50,25 +55,19 @@ export function hideLoadingState(container) {
   if (!container) return;
 
   const globals = getGlobalLoaderElements();
-  if (globals && globals.screen) {
-    // Hide the global loader using the same pattern as the rest of the app
-    globals.screen?.classList.add("hide");
-    globals.screen?.setAttribute("aria-hidden", "true");
-    globals.screen?.removeAttribute("aria-live");
-    Object.assign(globals.screen?.style, {
-      opacity: "0",
-      pointerEvents: "none",
-      visibility: "hidden",
-    });
-    // Reset visuals (after transition)
+  if (globals?.overlay) {
+    globals.overlay.classList.add("fade-out");
+    globals.overlay.setAttribute("aria-hidden", "true");
+    globals.overlay.removeAttribute("aria-live");
+
     setTimeout(() => {
-      if (globals.screen) globals.screen.style.display = "none";
+      if (globals.overlay) globals.overlay.style.display = "none";
       try {
         document.body.classList.remove("global-loading-visible");
       } catch (err) {
         log.warn("EarthUI: remove global-loading-visible failed", err);
       }
-    }, 300);
+    }, 800);
   } else {
     // No local progress UI to clear; do nothing.
   }
@@ -79,8 +78,8 @@ export function showErrorState(container, error, retryCallback) {
 
   // Hide global loader to reveal page error/fallback
   const globals = getGlobalLoaderElements();
-  if (globals && globals.screen) {
-    globals.screen?.classList.add("hidden");
+  if (globals?.overlay) {
+    globals.overlay.classList.add("fade-out");
   }
 
   container.classList.add("error");
