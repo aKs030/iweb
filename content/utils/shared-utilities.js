@@ -271,6 +271,9 @@ export const AppLoadManager = (() => {
       pending.delete(name);
       try {
         log.debug(`Unblocked: ${name}`);
+        if (pending.size === 0) {
+          fire(EVENTS.LOADING_UNBLOCKED);
+        }
       } catch {
         /* ignore logging errors */
       }
@@ -303,6 +306,8 @@ export const EVENTS = Object.freeze({
   MODULES_READY: "app:modulesReady",
   HERO_INIT_READY: "app:heroInitReady",
   SW_UPDATE_AVAILABLE: "sw:updateAvailable",
+  LOADING_UNBLOCKED: "app:loadingUnblocked",
+  LOADING_HIDE: "app:loaderHide",
 });
 
 export function fire(type, detail = null, target = document) {
