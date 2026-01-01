@@ -223,12 +223,12 @@ dataLayer.push({
       try {
         if (!globalThis.__footerModuleLoaded) {
           globalThis.__footerModuleLoaded = true;
-          import('/content/components/footer/footer-complete.js')
+          import("/content/components/footer/footer-complete.js")
             .then((m) => {
-              if (typeof m.initFooter === 'function') m.initFooter();
+              if (typeof m.initFooter === "function") m.initFooter();
             })
             .catch((err) =>
-              log?.warn?.('head-inline: import footer module failed', err),
+              log?.warn?.("head-inline: import footer module failed", err)
             );
         }
       } catch (e) {
@@ -254,10 +254,7 @@ dataLayer.push({
       const p =
         (globalThis.location?.pathname || "").replace(/\/+$/g, "") || "/";
       // Base styles always useful
-      const base = [
-        "/content/styles/root.css",
-        "/content/styles/main.css",
-      ];
+      const base = ["/content/styles/root.css", "/content/styles/main.css"];
       // Page-specific additions (only for root to avoid extra blocking on subpages)
       if (p === "/") {
         return base.concat([

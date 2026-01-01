@@ -10,10 +10,11 @@
 // Importversuch mit Fallback für Standalone-Nutzung
 let createLogger, CookieManager, a11y;
 try {
-  ({ createLogger, CookieManager } =
-    await import("../../utils/shared-utilities.js").catch(() => {
-      throw new Error("Utils missing");
-    }));
+  ({ createLogger, CookieManager } = await import(
+    "../../utils/shared-utilities.js"
+  ).catch(() => {
+    throw new Error("Utils missing");
+  }));
   ({ a11y } = await import("../../utils/accessibility-manager.js").catch(() => {
     throw new Error("A11y missing");
   }));
@@ -165,7 +166,7 @@ const ProgrammaticScroll = (() => {
               ProgrammaticScroll.clear(token);
             }
           },
-          { threshold: [0.5, 1] },
+          { threshold: [0.5, 1] }
         );
 
         observer.observe(element);
@@ -193,7 +194,7 @@ const ProgrammaticScroll = (() => {
 
       const timeoutId = setTimeout(
         () => ProgrammaticScroll.clear(token),
-        timeout,
+        timeout
       );
       watchers.set(token, { listener, timeoutId });
       return token;
@@ -232,14 +233,18 @@ const GlobalClose = (() => {
       if (isMobile) {
         // Mobile: only close on actual scroll movement
         globalThis.addEventListener("scroll", onUserScroll, { passive: true });
-        globalThis.addEventListener("touchmove", onUserScroll, { passive: true });
+        globalThis.addEventListener("touchmove", onUserScroll, {
+          passive: true,
+        });
       } else {
         document.addEventListener("click", onDocClick, {
           capture: true,
           passive: true,
         });
         globalThis.addEventListener("wheel", onUserScroll, { passive: true });
-        globalThis.addEventListener("touchstart", onUserScroll, { passive: true });
+        globalThis.addEventListener("touchstart", onUserScroll, {
+          passive: true,
+        });
       }
 
       bound = true;
@@ -263,7 +268,7 @@ const GoogleAnalytics = {
     performance.mark("analytics-load-start");
 
     const blockedScripts = document.querySelectorAll(
-      'script[data-consent="required"]',
+      'script[data-consent="required"]'
     );
     if (blockedScripts.length === 0) return;
 
@@ -284,7 +289,7 @@ const GoogleAnalytics = {
     performance.measure(
       "analytics-load",
       "analytics-load-start",
-      "analytics-load-end",
+      "analytics-load-end"
     );
     log.info("Google Analytics loaded");
   },
@@ -390,7 +395,7 @@ const CookieSettings = (() => {
           try {
             a11y?.announce(
               "Cookie-Einstellungen gespeichert: Analyse aktiviert",
-              { priority: "polite" },
+              { priority: "polite" }
             );
           } catch {}
         } else {
@@ -399,7 +404,7 @@ const CookieSettings = (() => {
           try {
             a11y?.announce(
               "Cookie-Einstellungen gespeichert: Analyse deaktiviert",
-              { priority: "polite" },
+              { priority: "polite" }
             );
           } catch {}
         }
@@ -469,7 +474,7 @@ const CookieSettings = (() => {
       elements.triggerBtn.setAttribute("aria-expanded", "true");
 
     requestAnimationFrame(() =>
-      globalThis.scrollTo({ top: document.body.scrollHeight, behavior: "auto" }),
+      globalThis.scrollTo({ top: document.body.scrollHeight, behavior: "auto" })
     );
 
     ProgrammaticScroll.create(CONSTANTS.SCROLL_MARK_DURATION);
@@ -486,7 +491,7 @@ const CookieSettings = (() => {
     performance.measure(
       "cookie-settings-open",
       "cookie-settings-open-start",
-      "cookie-settings-open-end",
+      "cookie-settings-open-end"
     );
   };
 
@@ -528,7 +533,8 @@ function closeFooter() {
   document.documentElement.style.removeProperty("scroll-snap-type");
 
   // 5. State Reset
-  if (globalThis.footerScrollHandler) globalThis.footerScrollHandler.expanded = false;
+  if (globalThis.footerScrollHandler)
+    globalThis.footerScrollHandler.expanded = false;
 
   // 6. Listener Cleanup
   GlobalClose.unbind();
@@ -616,14 +622,14 @@ class FooterLoader {
       new FooterResizer().init();
 
       document.dispatchEvent(
-        new CustomEvent("footer:loaded", { detail: { timestamp: Date.now() } }),
+        new CustomEvent("footer:loaded", { detail: { timestamp: Date.now() } })
       );
 
       performance.mark("footer-load-end");
       performance.measure(
         "footer-load",
         "footer-load-start",
-        "footer-load-end",
+        "footer-load-end"
       );
       return true;
     } catch (error) {
@@ -688,7 +694,7 @@ class FooterLoader {
           this.handleFooterTrigger();
         }
       },
-      { passive: false },
+      { passive: false }
     );
 
     // Three-Showcase Button
@@ -700,7 +706,7 @@ class FooterLoader {
         document.dispatchEvent(
           new CustomEvent("three-earth:showcase", {
             detail: { duration: 8000 },
-          }),
+          })
         );
         setTimeout(() => showcaseBtn.classList.remove("active"), 8000);
       });
@@ -755,7 +761,8 @@ class ScrollHandler {
         trigger.dataset.collapseThreshold =
           trigger.dataset.collapseThreshold || "0.0008";
         trigger.dataset.expandLockMs = trigger.dataset.expandLockMs || "1000";
-        trigger.dataset.collapseDebounceMs = trigger.dataset.collapseDebounceMs || "250";
+        trigger.dataset.collapseDebounceMs =
+          trigger.dataset.collapseDebounceMs || "250";
 
         if (footer?.parentNode) {
           footer.parentNode.insertBefore(trigger, footer);
@@ -770,7 +777,7 @@ class ScrollHandler {
         try {
           log.warn(
             "ScrollHandler: failed to create fallback #footer-trigger-zone",
-            err,
+            err
           );
         } catch {}
       }
@@ -780,7 +787,7 @@ class ScrollHandler {
       // If still missing, log and abort
       try {
         log.warn(
-          "ScrollHandler: #footer-trigger-zone not found after fallback; aborting init",
+          "ScrollHandler: #footer-trigger-zone not found after fallback; aborting init"
         );
       } catch {}
       return;
@@ -813,7 +820,9 @@ class ScrollHandler {
       this.observer?.disconnect();
       this.init();
     }, 150);
-    globalThis.addEventListener("resize", this._resizeHandler, { passive: true });
+    globalThis.addEventListener("resize", this._resizeHandler, {
+      passive: true,
+    });
   }
 
   cleanup() {
@@ -865,14 +874,17 @@ class ScrollHandler {
       // If still in post-expand lock period schedule collapse after lock + debounce
       if (now < (this._lockUntil || 0)) {
         const delay =
-          this._lockUntil - now +
+          this._lockUntil -
+          now +
           (this.collapseDebounceMs || CONSTANTS.COLLAPSE_DEBOUNCE_MS);
         this._scheduleCollapse(delay);
         return;
       }
 
       // Otherwise schedule normal debounce collapse
-      this._scheduleCollapse(this.collapseDebounceMs || CONSTANTS.COLLAPSE_DEBOUNCE_MS);
+      this._scheduleCollapse(
+        this.collapseDebounceMs || CONSTANTS.COLLAPSE_DEBOUNCE_MS
+      );
     }
   }
 
@@ -889,7 +901,7 @@ class ScrollHandler {
           .split(" ")
           .concat(["footer-expanded"])
           .filter(Boolean)
-          .join(" "),
+          .join(" ")
       );
     } catch {}
 
@@ -901,7 +913,7 @@ class ScrollHandler {
           .split(" ")
           .concat(["footer-expanded"])
           .filter(Boolean)
-          .join(" "),
+          .join(" ")
       );
     } catch {}
 
@@ -910,23 +922,41 @@ class ScrollHandler {
 
     this.expanded = true;
     // Set a short lock period to avoid immediate collapse from tiny scroll jitter
-    this._lockUntil = Date.now() + (this.expandLockMs || CONSTANTS.EXPAND_LOCK_MS);
+    this._lockUntil =
+      Date.now() + (this.expandLockMs || CONSTANTS.EXPAND_LOCK_MS);
   }
 
   _applyThresholds(trigger, isDesktop, defaultExpand, defaultCollapse) {
     try {
-      const { expandThreshold, collapseThreshold, expandLockMs, collapseDebounceMs } = trigger.dataset;
-      this.expandThreshold = expandThreshold ? Number.parseFloat(expandThreshold) : defaultExpand;
-      this.collapseThreshold = collapseThreshold ? Number.parseFloat(collapseThreshold) : defaultCollapse;
+      const {
+        expandThreshold,
+        collapseThreshold,
+        expandLockMs,
+        collapseDebounceMs,
+      } = trigger.dataset;
+      this.expandThreshold = expandThreshold
+        ? Number.parseFloat(expandThreshold)
+        : defaultExpand;
+      this.collapseThreshold = collapseThreshold
+        ? Number.parseFloat(collapseThreshold)
+        : defaultCollapse;
 
-      const parsedLock = expandLockMs ? Number.parseInt(expandLockMs, 10) : Number.NaN;
-      const parsedDebounce = collapseDebounceMs ? Number.parseInt(collapseDebounceMs, 10) : Number.NaN;
+      const parsedLock = expandLockMs
+        ? Number.parseInt(expandLockMs, 10)
+        : Number.NaN;
+      const parsedDebounce = collapseDebounceMs
+        ? Number.parseInt(collapseDebounceMs, 10)
+        : Number.NaN;
 
       // Increase defaults: Desktop 1000ms, Mobile 500ms
       const defaultLock = isDesktop ? 1000 : 500;
       const defaultDebounce = isDesktop ? 250 : 200;
-      this.expandLockMs = !Number.isNaN(parsedLock) && parsedLock >= 0 ? parsedLock : defaultLock;
-      this.collapseDebounceMs = !Number.isNaN(parsedDebounce) && parsedDebounce >= 0 ? parsedDebounce : defaultDebounce;
+      this.expandLockMs =
+        !Number.isNaN(parsedLock) && parsedLock >= 0 ? parsedLock : defaultLock;
+      this.collapseDebounceMs =
+        !Number.isNaN(parsedDebounce) && parsedDebounce >= 0
+          ? parsedDebounce
+          : defaultDebounce;
     } catch {
       this.expandThreshold = defaultExpand;
       this.collapseThreshold = defaultCollapse;
@@ -936,24 +966,34 @@ class ScrollHandler {
   }
 
   _setupObserver(trigger, rootMargin) {
-    this.observer = new IntersectionObserver((entries) => {
-      const entry = entries[0];
-      if (!entry) return;
-      if (!entry.isIntersecting && ProgrammaticScroll.hasActive()) return;
+    this.observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (!entry) return;
+        if (!entry.isIntersecting && ProgrammaticScroll.hasActive()) return;
 
-      // Save last observed values for decision-making during scheduled collapse
-      this._lastIntersectionRatio = entry.intersectionRatio;
-      this._lastIsIntersecting = entry.isIntersecting;
+        // Save last observed values for decision-making during scheduled collapse
+        this._lastIntersectionRatio = entry.intersectionRatio;
+        this._lastIsIntersecting = entry.isIntersecting;
 
-      // Logic: Expand if we hit the bottom trigger significantly
-      const shouldExpand = entry.isIntersecting && entry.intersectionRatio >= this.expandThreshold;
+        // Logic: Expand if we hit the bottom trigger significantly
+        const shouldExpand =
+          entry.isIntersecting &&
+          entry.intersectionRatio >= this.expandThreshold;
 
-      // Prevent collapse if we are just slightly scrolling but still near bottom
-      if (!shouldExpand && this.expanded && entry.intersectionRatio > this.collapseThreshold) return;
+        // Prevent collapse if we are just slightly scrolling but still near bottom
+        if (
+          !shouldExpand &&
+          this.expanded &&
+          entry.intersectionRatio > this.collapseThreshold
+        )
+          return;
 
-      // If collapse requested shortly after expand, let toggleExpansion decide via lock/debounce
-      this.toggleExpansion(shouldExpand);
-    }, { rootMargin, threshold: [this.collapseThreshold, this.expandThreshold] });
+        // If collapse requested shortly after expand, let toggleExpansion decide via lock/debounce
+        this.toggleExpansion(shouldExpand);
+      },
+      { rootMargin, threshold: [this.collapseThreshold, this.expandThreshold] }
+    );
 
     this.observer.observe(trigger);
   }
@@ -965,11 +1005,14 @@ class ScrollHandler {
       if (this.expanded) return;
 
       const scrollY = globalThis.scrollY || globalThis.pageYOffset || 0;
-      const nearBottom = (globalThis.innerHeight || 0) + scrollY >= document.body.scrollHeight - (this._nearBottomPx || 24);
+      const nearBottom =
+        (globalThis.innerHeight || 0) + scrollY >=
+        document.body.scrollHeight - (this._nearBottomPx || 24);
       if (!nearBottom) return;
 
       // For wheel events ensure the user is scrolling downwards (deltaY > 0)
-      if (e?.type === "wheel" && typeof e.deltaY === "number" && e.deltaY <= 0) return;
+      if (e?.type === "wheel" && typeof e.deltaY === "number" && e.deltaY <= 0)
+        return;
 
       // Trigger expansion as a robust fallback when IO didn't report intersecting
       try {
@@ -979,8 +1022,12 @@ class ScrollHandler {
       }
     };
 
-    globalThis.addEventListener("wheel", this._userScrollListener, { passive: true });
-    globalThis.addEventListener("touchstart", this._userScrollListener, { passive: true });
+    globalThis.addEventListener("wheel", this._userScrollListener, {
+      passive: true,
+    });
+    globalThis.addEventListener("touchstart", this._userScrollListener, {
+      passive: true,
+    });
   }
 
   _scheduleCollapse(delay) {
@@ -990,7 +1037,8 @@ class ScrollHandler {
       this._scheduledCollapse = false;
       const lastRatio = this._lastIntersectionRatio ?? 0;
       const lastIntersecting = !!this._lastIsIntersecting;
-      const shouldCancel = lastIntersecting && lastRatio >= this.collapseThreshold;
+      const shouldCancel =
+        lastIntersecting && lastRatio >= this.collapseThreshold;
       if (shouldCancel) {
         this._collapseTimer = null;
         return;
@@ -1011,12 +1059,14 @@ class FooterResizer {
   constructor() {
     this.debouncedApply = debounce(
       this.apply.bind(this),
-      CONSTANTS.RESIZE_DEBOUNCE,
+      CONSTANTS.RESIZE_DEBOUNCE
     );
   }
 
   init() {
-    globalThis.addEventListener("resize", this.debouncedApply, { passive: true });
+    globalThis.addEventListener("resize", this.debouncedApply, {
+      passive: true,
+    });
     this.apply();
   }
 
@@ -1025,12 +1075,12 @@ class FooterResizer {
     if (!content) return;
     const height = Math.min(
       Math.max(0, content.scrollHeight),
-      (globalThis.innerHeight || 0) - 24,
+      (globalThis.innerHeight || 0) - 24
     );
     if (height > 0)
       document.documentElement.style.setProperty(
         "--footer-actual-height",
-        `${height}px`,
+        `${height}px`
       );
   }
 }
