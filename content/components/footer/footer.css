@@ -48,6 +48,21 @@
   --footer-icon-size-sm: 12px;
   --footer-icon-size-md: 14px;
   --footer-icon-gap: 6px;
+
+  /* Modern chip styling */
+  --footer-chip-bg: linear-gradient(
+    140deg,
+    rgba(255, 255, 255, 0.08),
+    rgba(255, 255, 255, 0.02)
+  );
+  --footer-chip-bg-hover: linear-gradient(
+    140deg,
+    rgba(255, 255, 255, 0.12),
+    rgba(255, 255, 255, 0.05)
+  );
+  --footer-chip-border: rgba(255, 255, 255, 0.14);
+  --footer-chip-border-strong: rgba(255, 255, 255, 0.26);
+  --footer-chip-shadow: 0 10px 30px rgba(0, 0, 0, 0.14);
 }
 
 /* ===== Base Footer Container ===== */
@@ -150,19 +165,15 @@ body.footer-expanded {
 }
 
 /* Shared Link Styles (DRY) */
-.footer-brand-link,
-.footer-nav-link {
+.footer-brand-link {
+  color: var(--dynamic-footer-label-primary);
+  font-weight: var(--dynamic-footer-font-weight-medium);
+  margin-left: 4px;
   padding: 2px 4px;
   border-radius: var(--dynamic-footer-micro-radius);
   transition: all var(--footer-transition-quick);
   text-decoration: none;
   will-change: transform, background-color;
-}
-
-.footer-brand-link {
-  color: var(--dynamic-footer-label-primary);
-  font-weight: var(--dynamic-footer-font-weight-medium);
-  margin-left: 4px;
 }
 
 .footer-brand-link:hover {
@@ -178,30 +189,47 @@ body.footer-expanded {
   flex-shrink: 0;
 }
 
-.footer-nav-link {
-  color: var(--dynamic-footer-label-secondary);
+.footer-nav-link,
+.footer-legal-link-enhanced,
+.footer-cookie-btn {
+  color: var(--dynamic-footer-label-primary);
   font-size: var(--footer-text-xs);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 3px;
+  gap: var(--footer-icon-gap);
   white-space: nowrap;
-  min-height: 28px;
-  padding: 3px 7px;
+  min-height: 32px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--footer-chip-border);
+  background: var(--footer-chip-bg);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05), var(--footer-chip-shadow);
+  transition: transform var(--footer-transition-quick),
+    box-shadow var(--footer-transition-quick),
+    background var(--footer-transition-quick),
+    border-color var(--footer-transition-quick),
+    color var(--footer-transition-quick);
+  text-decoration: none;
+  will-change: transform, background-color;
 }
 
-.footer-nav-link svg {
-  flex-shrink: 0;
-  opacity: 0.8;
+.footer-cookie-btn {
+  font: inherit;
+  cursor: pointer;
+  line-height: 1;
+  appearance: none;
 }
 
-/* Consistent icon sizing and alignment */
 .footer-nav-link svg,
 .footer-legal-link-enhanced svg,
 .footer-brand-link-enhanced svg,
-.footer-cookies-link svg {
-  width: var(--footer-icon-size-sm);
-  height: var(--footer-icon-size-sm);
+.footer-cookies-link svg,
+.footer-cookie-btn svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  opacity: 0.9;
   display: inline-block;
   vertical-align: middle;
 }
@@ -216,7 +244,8 @@ body.footer-expanded {
 .footer-nav-link svg *,
 .footer-legal-link-enhanced svg *,
 .footer-brand-link-enhanced svg *,
-.footer-cookies-link svg * {
+.footer-cookies-link svg *,
+.footer-cookie-btn svg * {
   stroke: currentcolor;
   fill: currentcolor;
 }
@@ -224,16 +253,28 @@ body.footer-expanded {
 /* Slightly increase gap between icon and text */
 .footer-nav-link,
 .footer-legal-link-enhanced,
-.footer-brand-link-enhanced {
+.footer-brand-link-enhanced,
+.footer-cookie-btn {
   gap: var(--footer-icon-gap);
   align-items: center;
   line-height: 1;
 }
 
-.footer-nav-link:hover {
+.footer-nav-link:hover,
+.footer-legal-link-enhanced:hover,
+.footer-cookie-btn:hover {
   color: var(--dynamic-footer-label-primary);
-  background: var(--dynamic-footer-fill-primary);
-  transform: translateZ(0);
+  border-color: var(--footer-chip-border-strong);
+  background: var(--footer-chip-bg-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.18);
+}
+
+.footer-nav-link:focus-visible,
+.footer-legal-link-enhanced:focus-visible,
+.footer-cookie-btn:focus-visible {
+  outline: 2px solid var(--dynamic-footer-accent-blue);
+  outline-offset: 3px;
 }
 
 /* ===== Maximized Footer ===== */
@@ -297,17 +338,14 @@ body.footer-expanded {
   );
   color: var(--dynamic-footer-label-primary);
   border: 1px solid rgba(255, 255, 255, 0.06);
-  box-shadow:
-    0 6px 20px rgba(0, 0, 0, 0.25),
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25),
     inset 0 1px 0 rgba(255, 255, 255, 0.02);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition:
-    transform 300ms cubic-bezier(0.2, 0.8, 0.2, 1),
-    box-shadow 300ms ease,
-    opacity 200ms ease;
+  transition: transform 300ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 300ms ease, opacity 200ms ease;
 }
 
 .three-showcase-btn svg {
@@ -321,8 +359,7 @@ body.footer-expanded {
 
 .three-showcase-btn:hover {
   transform: translateY(-4px) rotate(-6deg);
-  box-shadow:
-    0 10px 30px rgba(0, 0, 0, 0.35),
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35),
     inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
@@ -422,17 +459,19 @@ body.footer-expanded {
 
 .footer-legal-link-enhanced,
 .footer-brand-link-enhanced {
-  color: var(--dynamic-footer-label-secondary);
+  color: var(--dynamic-footer-label-primary);
   text-decoration: none;
   font-size: var(--footer-text-xs);
   display: inline-flex;
-  gap: 8px;
+  gap: var(--footer-icon-gap);
   align-items: center;
 }
 
 /* ===== Mobile touch target improvements ===== */
 @media (max-width: 480px) {
   .footer-nav-link,
+  .footer-legal-link-enhanced,
+  .footer-cookie-btn,
   .footer-social-btn,
   .cookie-accept-btn,
   .cookie-reject-btn,
@@ -487,8 +526,7 @@ body.footer-expanded {
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
-  transition:
-    transform var(--footer-transition-quick),
+  transition: transform var(--footer-transition-quick),
     background-color var(--footer-transition-quick),
     border-color var(--footer-transition-quick);
   will-change: transform;
@@ -1212,6 +1250,7 @@ body.footer-expanded {
 
   .footer-nav-link,
   .footer-legal-link-enhanced,
+  .footer-cookie-btn,
   .footer-social-btn {
     padding: 10px;
     min-height: 44px;
@@ -1221,6 +1260,7 @@ body.footer-expanded {
 
   .footer-nav-link svg,
   .footer-legal-link-enhanced svg,
+  .footer-cookie-btn svg,
   .footer-social-btn svg {
     width: 16px;
     height: 16px;
