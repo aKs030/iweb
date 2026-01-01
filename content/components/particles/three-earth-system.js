@@ -386,12 +386,7 @@ function _createLoadingManager(THREE, container) {
 
   loadingManager.onLoad = () => {
     if (!isSystemActive) return;
-    try {
-      AppLoadManager.unblock("three-earth");
-    } catch (err) {
-      log.warn("[ThreeEarthSystem] AppLoadManager.unblock failed", err);
-    }
-    // Mark assets as ready; delay hiding the global loader until the first
+    // Mark assets as ready; delay unblocking the global loader until the first
     // actual frame is rendered to avoid flashing/blank between loader and canvas
     assetsReady = true;
 
@@ -903,12 +898,39 @@ function _renderIfReady() {
 
     // If assets are loaded and this is the first rendered frame, hide the
     // global loader — this prevents the loader disappearing before the
-    // canvas actually painted (avoids blank flashes).
+    // canvas actually painted (avoids blank flashes). Also, only unblock the
+    // AppLoadManager after the first visible frame to avoid revealing a
+    // blank canvas when the global loader hides.
     try {
       if (assetsReady && !firstFrameRendered) {
         firstFrameRendered = true;
         const container = getElementById("threeEarthContainer");
-        hideLoadingState(container);
+        try {
+          log.info("First rendered frame — hiding loader and unblocking three-earth");
+        } catch (e) {
+          /* ignore */
+        }
+        try {
+          hideLoadingState(container);
+        } catch (err) {
+          log.debug("post-render loader hide failed", err);
+        }
+
+        try {
+          AppLoadManager.unblock("three-earth");
+        } catch (err) {
+          log.warn("[ThreeEarthSystem] AppLoadManager.unblock failed on first frame", err);
+        }
+
+        try {
+          document.dispatchEvent(
+            new CustomEvent("three-first-frame", {
+              detail: { containerId: container?.id ?? null },
+            })
+          );
+        } catch (err) {
+          log.warn("three-first-frame dispatch failed", err);
+        }
       }
     } catch (err) {
       log.debug("post-render loader hide failed", err);
