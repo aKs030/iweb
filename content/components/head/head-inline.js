@@ -274,6 +274,32 @@ dataLayer.push({
         };
 
         schedule(() => {
+          const _path =
+            (globalThis.location?.pathname || "").replace(/\/+$|\/+$/g, "") ||
+            "/";
+
+          // Load NLWeb only on the Projekte page to avoid unnecessary loading site-wide
+          if (_path === "/projekte" || _path.startsWith("/projekte/")) {
+            // NLWeb (Cloudflare AutoRAG) widget — external worker hosting
+            upsertPreconnect(
+              "https://throbbing-mode-6fe1-nlweb.httpsgithubcomaks030website.workers.dev"
+            );
+            upsertStyle(
+              "https://throbbing-mode-6fe1-nlweb.httpsgithubcomaks030website.workers.dev/nlweb-dropdown-chat.css"
+            );
+            upsertStyle(
+              "https://throbbing-mode-6fe1-nlweb.httpsgithubcomaks030website.workers.dev/common-chat-styles.css"
+            );
+
+            // Preload and load a local initializer module that imports the NLWeb worker module
+            upsertModulePreload("/content/components/search/nlweb-init.js");
+            upsertScript({
+              src: "/content/components/search/nlweb-init.js",
+              module: true,
+            });
+          }
+
+          // Existing deferred assets (loaded everywhere)
           upsertStyle(
             "/content/components/robot-companion/robot-companion.css"
           );
