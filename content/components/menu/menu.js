@@ -24,10 +24,48 @@ import {
 } from "../../utils/shared-utilities.js";
 
 const _log = createLogger("menu");
+const MENU_CSS_URL = "/content/components/menu/menu.css";
+
+// Load menu styles from the module so subpages don't need a separate link tag
+function ensureMenuStyles() {
+  if (typeof document === "undefined") return null;
+  const existing = document.head.querySelector(`link[href="${MENU_CSS_URL}"]`);
+  if (existing) return existing;
+
+  const link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.href = MENU_CSS_URL;
+  link.media = "all";
+  link.dataset.injectedBy = "menu-js";
+  document.head.appendChild(link);
+  return link;
+}
+
+ensureMenuStyles();
 
 const initMenu = () => {
   const menuContainer = getElementById("menu-container");
   if (!menuContainer) {
+    // Wait for #menu-container to be injected (race with head-inline.js)
+    // Use a MutationObserver to retry initialization once the element appears.
+    try {
+      if (typeof MutationObserver !== "undefined" && document.body) {
+        const observer = new MutationObserver((mutations, obs) => {
+          const el = getElementById("menu-container");
+          if (el) {
+            obs.disconnect();
+            // retry initialization now that container exists
+            initMenu();
+          }
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+        // safety fallback: stop observing after 3s
+        setTimeout(() => observer.disconnect(), 3000);
+      }
+    } catch (err) {
+      /* ignore observer failures */
+    }
+
     return;
   }
 
