@@ -1,8 +1,5 @@
 import { CONFIG } from "./config.js";
-import {
-  createLogger,
-  getElementById,
-} from "../../../utils/shared-utilities.js";
+import { createLogger } from "../../../utils/shared-utilities.js";
 
 const log = createLogger("EarthStars");
 
