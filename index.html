@@ -333,44 +333,8 @@
       }
     </style>
 
-    <!-- Preload non-critical page CSS with onload switch to avoid render-blocking -->
-    <link
-      rel="preload"
-      href="/content/styles/root.css"
-      as="style"
-      onload="this.onload=null;this.rel='stylesheet'"
-    />
-    <noscript
-      ><link rel="stylesheet" href="/content/styles/root.css"
-    /></noscript>
-
-    <link
-      rel="preload"
-      href="/pages/home/hero.css"
-      as="style"
-      onload="this.onload=null;this.rel='stylesheet'"
-    />
-
-    <link
-      rel="preload"
-      href="/content/components/typewriter/typewriter.css"
-      as="style"
-      onload="this.onload=null;this.rel='stylesheet'"
-    />
-
-    <link
-      rel="preload"
-      href="/content/components/particles/three-earth.css"
-      as="style"
-      onload="this.onload=null;this.rel='stylesheet'"
-    />
-
-    <link
-      rel="preload"
-      href="/pages/home/section3.css"
-      as="style"
-      onload="this.onload=null;this.rel='stylesheet'"
-    />
+    <!-- Preloads removed: head-inline.js injects styles conditionally to avoid unused preloads -->
+    <noscript><link rel="stylesheet" href="/content/styles/root.css" /></noscript>
     <script
       type="module"
       src="/content/main.js"
