@@ -906,7 +906,9 @@ function _renderIfReady() {
         firstFrameRendered = true;
         const container = getElementById("threeEarthContainer");
         try {
-          log.info("First rendered frame — hiding loader and unblocking three-earth");
+          log.info(
+            "First rendered frame — hiding loader and unblocking three-earth"
+          );
         } catch (e) {
           /* ignore */
         }
@@ -919,7 +921,10 @@ function _renderIfReady() {
         try {
           AppLoadManager.unblock("three-earth");
         } catch (err) {
-          log.warn("[ThreeEarthSystem] AppLoadManager.unblock failed on first frame", err);
+          log.warn(
+            "[ThreeEarthSystem] AppLoadManager.unblock failed on first frame",
+            err
+          );
         }
 
         try {
