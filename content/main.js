@@ -401,8 +401,7 @@ const LoadingScreenManager = (() => {
 
       // Rotate messages for a subtle "system" feel
       if (Math.random() > 0.8 && state.progress < 94) {
-        state.messageIndex =
-          (state.messageIndex + 1) % state.messages.length;
+        state.messageIndex = (state.messageIndex + 1) % state.messages.length;
         updateUI(state.messages[state.messageIndex]);
       } else {
         updateUI();
@@ -429,7 +428,7 @@ const LoadingScreenManager = (() => {
 
       state.overlay.classList.add("fade-out");
       state.overlay.setAttribute("aria-hidden", "true");
-        state.overlay.dataset.loaderDone = "true";
+      state.overlay.dataset.loaderDone = "true";
 
       const cleanup = () => {
         state.overlay.style.display = "none";
@@ -611,7 +610,7 @@ document.addEventListener(
 
     modulesReady = true;
     perfMarks.modulesReady = performance.now();
-  LoadingScreenManager.setStatus("Initialisiere 3D-Engine...", 90);
+    LoadingScreenManager.setStatus("Initialisiere 3D-Engine...", 90);
     fire(EVENTS.MODULES_READY);
     checkReady();
     (function scheduleSmartForceHide(attempt = 1) {
