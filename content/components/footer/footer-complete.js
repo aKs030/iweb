@@ -568,6 +568,21 @@ class FooterLoader {
     }
     if (!container) return false;
 
+    // If the container already contains rendered footer HTML (e.g., pre-inserted),
+    // initialize behavior without re-fetching the fragment.
+    try {
+      if (container.querySelector && container.querySelector("#site-footer")) {
+        this.updateYears();
+        this.setupInteractions();
+        new ConsentBanner().init();
+        new ScrollHandler().init();
+        new FooterResizer().init();
+        return true;
+      }
+    } catch (e) {
+      /* ignore */
+    }
+
     try {
       const srcBase =
         container.dataset.footerSrc || "/content/components/footer/footer";
@@ -1021,7 +1036,4 @@ class FooterResizer {
 }
 
 // ===== Auto-Start =====
-const initFooter = () => new FooterLoader().init();
-if (document.readyState === "loading")
-  document.addEventListener("DOMContentLoaded", initFooter, { once: true });
-else initFooter();
+export const initFooter = () => new FooterLoader().init();

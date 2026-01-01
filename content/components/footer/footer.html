@@ -1,3 +1,6 @@
+<link rel="stylesheet" href="/content/components/footer/footer.css" />
+<!-- Footer container: include this on pages to automatically load the footer -->
+<!-- Example: <div id="footer-container" data-footer-src="/content/components/footer/footer"></div> -->
 <footer
   id="site-footer"
   class="site-footer-fixed"
@@ -606,3 +609,10 @@
     </div>
   </div>
 </footer>
+
+<script type="module">
+  // Standalone preview loader — runs when visiting the component URL directly
+  import('/content/components/footer/footer-complete.js')
+    .then((m) => m?.initFooter && m.initFooter())
+    .catch(() => {});
+</script>
