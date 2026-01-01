@@ -241,7 +241,6 @@ dataLayer.push({
       const base = [
         "/content/styles/root.css",
         "/content/styles/main.css",
-        "/content/components/menu/menu.css",
         "/content/components/footer/footer.css",
       ];
       // Page-specific additions (only for root to avoid extra blocking on subpages)
