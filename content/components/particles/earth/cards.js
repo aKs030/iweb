@@ -51,67 +51,45 @@ export class CardManager {
     this._boundPointerUp = null;
   }
 
-  initFromDOM(sectionElement) {
+  initFromData(dataArray) {
     if (this.cards.length > 0) return;
+    if (!Array.isArray(dataArray) || dataArray.length === 0) return;
 
-    const originalCards = sectionElement.querySelectorAll(
-      ".features-cards .card",
-    );
-    if (!originalCards.length) return;
+    log.debug(`Initializing ${dataArray.length} cards from data`);
 
-    log.debug(`Found ${originalCards.length} cards to convert to WebGL`);
-
-    // Compute positions dynamically so cards fit the viewport and don't overlap
-    const cardCount = originalCards.length;
-    // Base geometry width/height in world units (smaller than before)
+    // Compute layout as before
+    const cardCount = dataArray.length;
     const baseW = 2.2;
     const baseH = 2.8;
-    // Spacing between card centers (proportional to width)
     const spacing = baseW * (cardCount > 2 ? 1.4 : 1.25);
     const centerOffset = (cardCount - 1) / 2;
 
-    const positions = Array.from({ length: cardCount }).map((_, i) => {
-      return {
-        x: (i - centerOffset) * spacing,
-        y: 0,
-        z: 0,
-        color: ["#07a1ff", "#a107ff", "#ff07a1"][i] || "#ffffff",
-      };
-    });
+    this._baseW = baseW;
+    this._baseH = baseH;
+
+    const positions = dataArray.map((d, i) => ({
+      x: (i - centerOffset) * spacing,
+      y: 0,
+      z: 0,
+      color: d.color || ["#07a1ff", "#a107ff", "#ff07a1"][i] || "#ffffff",
+    }));
 
     // Shared geometry reused across cards to reduce memory / GC churn
     this._sharedGeometry = new this.THREE.PlaneGeometry(baseW, baseH);
 
     // Prepare shared glow texture (small radial gradient) once
-    if (!this._sharedGlowTexture)
-      this._sharedGlowTexture = this.createGlowTexture();
+    if (!this._sharedGlowTexture) this._sharedGlowTexture = this.createGlowTexture();
 
-    originalCards.forEach((cardEl, index) => {
-      // Extract Data
-      const rawTitle =
-        cardEl.querySelector(".card-title")?.innerText || "Title";
-      const rawSubtitle =
-        cardEl.querySelector(".card-title")?.dataset?.eyebrow ||
-        "INFO";
-      const rawText = cardEl.querySelector(".card-text")?.innerText || "";
-      const title = rawTitle.replaceAll(/\s+/g, " ").trim();
-      const subtitle = rawSubtitle.replaceAll(/\s+/g, " ").trim();
-      const text = rawText.replaceAll(/\s+/g, " ").trim();
-      const link =
-        cardEl.querySelector(".card-link")?.getAttribute("href") || "#";
-      const iconChar = (
-        cardEl.querySelector(".icon-wrapper i")?.innerText || ""
-      ).trim();
-
+    dataArray.forEach((d, index) => {
       const data = {
         id: index,
-        title,
-        subtitle,
-        text,
-        link,
-        iconChar,
-        color: positions[index]?.color || "#ffffff",
-        position: positions[index] || { x: 0, y: 0, z: 0 },
+        title: d.title || "",
+        subtitle: d.subtitle || "",
+        text: d.text || "",
+        link: d.link || "#",
+        iconChar: d.iconChar || "",
+        color: positions[index].color,
+        position: positions[index],
       };
 
       const mesh = this._createMeshFromData(data, index, baseW, baseH);
@@ -134,9 +112,7 @@ export class CardManager {
           if (isMobile) {
             // Mobile: Vertical Stack
             const scale = 0.82;
-            // Increased spacing slightly for cleaner layout (2.75 -> 2.9)
             const spacingY = 2.9;
-            // Stack from top to bottom
             const y = (centerOffset - idx) * spacingY;
 
             card.scale.setScalar(scale);
@@ -149,10 +125,7 @@ export class CardManager {
           } else {
             // Desktop: Horizontal Row
             const adaptiveScale = Math.min(1, vw / 1200);
-            const newSpacing =
-              baseW *
-              (cardCount > 2 ? 1.4 : 1.25) *
-              Math.max(0.85, adaptiveScale);
+            const newSpacing = baseW * (cardCount > 2 ? 1.4 : 1.25) * Math.max(0.85, adaptiveScale);
             const x = (idx - centerOffset) * newSpacing;
 
             card.scale.setScalar(0.95 * Math.max(0.65, adaptiveScale));
@@ -173,6 +146,49 @@ export class CardManager {
       // Force initial layout
       this._onResize();
     }
+  }
+
+  // Return bounding rects in page coordinates for each card mesh so DOM-based
+  // systems can align effects (e.g., star transitions) without requiring HTML cards.
+  getCardScreenRects() {
+    if (!this.renderer || !this.camera || this.cards.length === 0) return [];
+
+    const canvasRect = this.renderer.domElement.getBoundingClientRect();
+    const width = canvasRect.width;
+    const height = canvasRect.height;
+
+    const tmpVec = new this.THREE.Vector3();
+    const tmpVec2 = new this.THREE.Vector3();
+
+    return this.cards.map((card) => {
+      // Center
+      card.updateMatrixWorld();
+      card.getWorldPosition(tmpVec);
+      tmpVec.project(this.camera);
+      const cx = (tmpVec.x * 0.5 + 0.5) * width + canvasRect.left;
+      const cy = (-tmpVec.y * 0.5 + 0.5) * height + canvasRect.top;
+
+      // Approximate half-width/height in pixels by projecting edge offsets
+      const halfWWorld = (this._baseW || 2.2) * 0.5 * card.scale.x;
+      const halfHWorld = (this._baseH || 2.8) * 0.5 * card.scale.y;
+
+      // Right edge
+      tmpVec2.set(halfWWorld, 0, 0).applyMatrix4(card.matrixWorld);
+      tmpVec2.project(this.camera);
+      const rx = (tmpVec2.x * 0.5 + 0.5) * width + canvasRect.left;
+
+      // Top edge
+      tmpVec2.set(0, halfHWorld, 0).applyMatrix4(card.matrixWorld);
+      tmpVec2.project(this.camera);
+      const ty = (-tmpVec2.y * 0.5 + 0.5) * height + canvasRect.top;
+
+      const left = Math.min(cx, rx) - Math.abs(rx - cx);
+      const right = Math.max(cx, rx);
+      const top = Math.min(cy, ty) - Math.abs(ty - cy);
+      const bottom = Math.max(cy, ty);
+
+      return { left, top, right, bottom };
+    });
   }
 
   createCardTexture(data) {
