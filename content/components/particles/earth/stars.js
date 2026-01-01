@@ -76,15 +76,15 @@ export class StarManager {
     const starGeometry = new this.THREE.BufferGeometry();
     starGeometry.setAttribute(
       "position",
-      new this.THREE.BufferAttribute(positions, 3),
+      new this.THREE.BufferAttribute(positions, 3)
     );
     starGeometry.setAttribute(
       "aTargetPosition",
-      new this.THREE.BufferAttribute(targetPositions, 3),
+      new this.THREE.BufferAttribute(targetPositions, 3)
     );
     starGeometry.setAttribute(
       "color",
-      new this.THREE.BufferAttribute(colors, 3),
+      new this.THREE.BufferAttribute(colors, 3)
     );
     starGeometry.setAttribute("size", new this.THREE.BufferAttribute(sizes, 1));
 
@@ -167,7 +167,7 @@ export class StarManager {
             width,
             height,
             -2,
-            rects.length,
+            rects.length
           );
           positions.push(...perimeterPositions);
         }
@@ -185,7 +185,7 @@ export class StarManager {
     viewportWidth,
     viewportHeight,
     targetZ,
-    cardCount = 3,
+    cardCount = 3
   ) {
     const positions = [];
     const totalStars = this.isMobileDevice
@@ -258,7 +258,8 @@ export class StarManager {
       if (!this.isDisposed && this.transition.targetValue === 1.0) {
         // Refine once settled
         const refinedPositions = this.getCardPositions();
-        if (refinedPositions.length > 0) this.updateTargetBuffer(refinedPositions);
+        if (refinedPositions.length > 0)
+          this.updateTargetBuffer(refinedPositions);
       }
     }, CONFIG.STARS.ANIMATION.CAMERA_SETTLE_DELAY);
   }
@@ -362,14 +363,17 @@ export class StarManager {
 
     if (this.transition.active) {
       this.transition.rafId = requestAnimationFrame(() =>
-        this.animateTransitionLoop(),
+        this.animateTransitionLoop()
       );
     }
   }
 
   updateCardOpacity(transitionValue) {
     // WebGL-only: use CardManager progress API if available
-    if (this.cardManager && typeof this.cardManager.setProgress === "function") {
+    if (
+      this.cardManager &&
+      typeof this.cardManager.setProgress === "function"
+    ) {
       this.cardManager.setProgress(transitionValue);
     }
   }
@@ -450,7 +454,7 @@ export class ShootingStarManager {
       const velocity = new this.THREE.Vector3(
         (Math.random() - 0.9) * 0.2,
         (Math.random() - 0.6) * -0.2,
-        0,
+        0
       );
 
       star.position.set(startPos.x, startPos.y, startPos.z);

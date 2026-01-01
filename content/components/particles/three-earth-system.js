@@ -127,7 +127,7 @@ const ThreeEarthManager = (() => {
         scene,
         renderer,
         isMobileDevice,
-        loadingManager,
+        loadingManager
       );
 
       // CRITICAL CHECK
@@ -330,7 +330,7 @@ async function loadThreeWithWatchdog(earthTimers, container) {
     threeLoadWatchTimer = earthTimers.setTimeout(() => {
       if (!loaded) {
         log.warn(
-          "Three.js load taking too long — unblocking three-earth to avoid blocking global loader",
+          "Three.js load taking too long — unblocking three-earth to avoid blocking global loader"
         );
         try {
           AppLoadManager.unblock("three-earth");
@@ -338,14 +338,10 @@ async function loadThreeWithWatchdog(earthTimers, container) {
           log.warn("AppLoadManager.unblock ignored", err);
         }
         try {
-          showErrorState(
-            container,
-            new Error("Three.js load timeout"),
-            () => {
-              cleanup();
-              initThreeEarth();
-            },
-          );
+          showErrorState(container, new Error("Three.js load timeout"), () => {
+            cleanup();
+            initThreeEarth();
+          });
         } catch (err) {
           log.warn("showErrorState fallback ignored", err);
         }
@@ -365,7 +361,7 @@ async function loadThreeWithWatchdog(earthTimers, container) {
   }
 
   return THREE;
-} 
+}
 
 function _createLoadingManager(THREE, container) {
   const loadingManager = new THREE.LoadingManager();
@@ -389,7 +385,7 @@ function _createLoadingManager(THREE, container) {
       document.dispatchEvent(
         new CustomEvent("three-ready", {
           detail: { containerId: container?.id ?? null },
-        }),
+        })
       );
     } catch (err) {
       log.warn("three-ready dispatch failed", err);
@@ -469,7 +465,7 @@ function _finalizeInitialization(container) {
       document.dispatchEvent(
         new CustomEvent("three-ready", {
           detail: { containerId: container?.id ?? null },
-        }),
+        })
       );
     }
   } catch (err) {
@@ -491,7 +487,7 @@ function _bindInteractionHandlers(onMove, onClick) {
       globalThis.removeEventListener("mousemove", onMove);
       globalThis.removeEventListener("click", onClick);
     },
-    "interaction",
+    "interaction"
   );
 }
 
@@ -510,7 +506,7 @@ function _ensureWebGLOrFallback(container, forceThree) {
     __three_webgl_tested = true;
     if (!forceThree && !supportsWebGL()) {
       log.warn(
-        "WebGL not supported in this environment; skipping Three.js initialization",
+        "WebGL not supported in this environment; skipping Three.js initialization"
       );
       // Add visible fallback to container so users see a friendly image/message
       try {
@@ -523,7 +519,7 @@ function _ensureWebGLOrFallback(container, forceThree) {
           fallback.setAttribute("role", "img");
           fallback.setAttribute(
             "aria-label",
-            "Interaktive Darstellung wird nicht unterstützt. Statische Vorschau angezeigt.",
+            "Interaktive Darstellung wird nicht unterstützt. Statische Vorschau angezeigt."
           );
           fallback.innerHTML = `
             <div class="three-earth-fallback__inner">
@@ -542,7 +538,7 @@ function _ensureWebGLOrFallback(container, forceThree) {
       }
       showErrorState(
         container,
-        new Error("WebGL nicht verfügbar oder blockiert"),
+        new Error("WebGL nicht verfügbar oder blockiert")
       );
       // mark cleanup and exit gracefully
       sharedCleanupManager.cleanupSystem("three-earth");
@@ -551,7 +547,7 @@ function _ensureWebGLOrFallback(container, forceThree) {
 
     if (forceThree) {
       log.info(
-        "Force flag detected: attempting to initialize Three.js despite WebGL checks",
+        "Force flag detected: attempting to initialize Three.js despite WebGL checks"
       );
     }
   }
@@ -566,7 +562,9 @@ function _detectAndEnsureWebGL(container) {
   }
 
   const urlParams = new URL(location.href).searchParams;
-  const forceThree = urlParams.get("forceThree") === "1" || Boolean(globalThis.__FORCE_THREE_EARTH);
+  const forceThree =
+    urlParams.get("forceThree") === "1" ||
+    Boolean(globalThis.__FORCE_THREE_EARTH);
 
   return _ensureWebGLOrFallback(container, forceThree);
 }
@@ -596,7 +594,7 @@ function _initManagers(container) {
   sharedCleanupManager.addCleanupFunction(
     "three-earth",
     () => container.removeEventListener("wheel", onWheel),
-    "wheel control",
+    "wheel control"
   );
 }
 
@@ -625,19 +623,24 @@ function getOptimizedConfig(capabilities) {
 
 function setupSectionDetection() {
   const sections = Array.from(
-    document.querySelectorAll("section[id], div#footer-trigger-zone"),
+    document.querySelectorAll("section[id], div#footer-trigger-zone")
   );
   if (sections.length === 0) return;
 
   const OBSERVER_THRESHOLDS = Array.from({ length: 21 }, (_, i) => i / 20);
 
-  sectionObserver = new IntersectionObserver(_onSectionObserverEntries, { rootMargin: "-20% 0px -20% 0px", threshold: OBSERVER_THRESHOLDS });
+  sectionObserver = new IntersectionObserver(_onSectionObserverEntries, {
+    rootMargin: "-20% 0px -20% 0px",
+    threshold: OBSERVER_THRESHOLDS,
+  });
 
   sections.forEach((section) => sectionObserver.observe(section));
 }
 
 function setupViewportObserver(container) {
-  viewportObserver = new IntersectionObserver(_onViewportEntries, { threshold: 0 });
+  viewportObserver = new IntersectionObserver(_onViewportEntries, {
+    threshold: 0,
+  });
   viewportObserver.observe(container);
 }
 
@@ -649,7 +652,8 @@ function updateEarthForSection(sectionName, options = {}) {
   _applyConfigToMeshes(config);
 
   if (allowModeSwitch) {
-    const newMode = earthMesh.userData.currentMode === "night" ? "day" : "night";
+    const newMode =
+      earthMesh.userData.currentMode === "night" ? "day" : "night";
     earthMesh.material = newMode === "day" ? dayMaterial : nightMaterial;
     earthMesh.material.needsUpdate = true;
     earthMesh.userData.currentMode = newMode;
@@ -658,7 +662,8 @@ function updateEarthForSection(sectionName, options = {}) {
 
   if (directionalLight && ambientLight) {
     const mode = earthMesh.userData.currentMode;
-    const lightingConfig = mode === "day" ? CONFIG.LIGHTING.DAY : CONFIG.LIGHTING.NIGHT;
+    const lightingConfig =
+      mode === "day" ? CONFIG.LIGHTING.DAY : CONFIG.LIGHTING.NIGHT;
     directionalLight.intensity = lightingConfig.SUN_INTENSITY;
     ambientLight.intensity = lightingConfig.AMBIENT_INTENSITY;
     ambientLight.color.setHex(lightingConfig.AMBIENT_COLOR);
@@ -683,13 +688,20 @@ function _getSectionConfig(sectionName) {
       mode: "night",
     },
     contact: {
-      earth: { pos: { x: 0, y: -1.5, z: 0 }, scale: 1.1, rotation: Math.PI / 2 },
+      earth: {
+        pos: { x: 0, y: -1.5, z: 0 },
+        scale: 1.1,
+        rotation: Math.PI / 2,
+      },
       moon: { pos: { x: -45, y: -45, z: -90 }, scale: 0.4 },
       mode: "day",
     },
   };
 
-  return configs[sectionName === "site-footer" ? "contact" : sectionName] || configs.hero;
+  return (
+    configs[sectionName === "site-footer" ? "contact" : sectionName] ||
+    configs.hero
+  );
 }
 
 function _onSectionObserverEntries(entries) {
@@ -716,7 +728,8 @@ function _onSectionObserverEntries(entries) {
 
     cameraManager?.updateCameraForSection(newSection);
 
-    const isFeaturesToAbout = previousSection === "features" && newSection === "section3";
+    const isFeaturesToAbout =
+      previousSection === "features" && newSection === "section3";
     updateEarthForSection(newSection, { allowModeSwitch: isFeaturesToAbout });
 
     if (newSection === "features") {
@@ -756,7 +769,7 @@ function _applyConfigToMeshes(config) {
   earthMesh.userData.targetPosition = new THREE_INSTANCE.Vector3(
     config.earth.pos.x,
     config.earth.pos.y,
-    config.earth.pos.z,
+    config.earth.pos.z
   );
   earthMesh.userData.targetScale = config.earth.scale;
   earthMesh.userData.targetRotation = config.earth.rotation;
@@ -765,7 +778,7 @@ function _applyConfigToMeshes(config) {
     moonMesh.userData.targetPosition = new THREE_INSTANCE.Vector3(
       config.moon.pos.x,
       config.moon.pos.y,
-      config.moon.pos.z,
+      config.moon.pos.z
     );
     moonMesh.userData.targetScale = config.moon.scale;
   }
@@ -785,7 +798,7 @@ function handleVisibilityChange() {
   if (!animationFrameId && animate && isSystemVisible && isSystemActive) {
     animate();
   }
-} 
+}
 
 function startAnimationLoop() {
   const clock = new THREE_INSTANCE.Clock();
@@ -831,8 +844,10 @@ function _updateNightPulse(elapsedTime, frameCounter, capabilities) {
     const baseIntensity = CONFIG.EARTH.EMISSIVE_INTENSITY * 4;
     const pulseAmount =
       Math.sin(elapsedTime * CONFIG.EARTH.EMISSIVE_PULSE_SPEED) *
-      CONFIG.EARTH.EMISSIVE_PULSE_AMPLITUDE * 2;
-    if (earthMesh?.material) earthMesh.material.emissiveIntensity = baseIntensity + pulseAmount;
+      CONFIG.EARTH.EMISSIVE_PULSE_AMPLITUDE *
+      2;
+    if (earthMesh?.material)
+      earthMesh.material.emissiveIntensity = baseIntensity + pulseAmount;
   }
 }
 
@@ -861,8 +876,10 @@ function setupInteraction() {
   if (!onMove) {
     onMove = (event) => {
       if (!isSystemActive) return;
-      globalThis.lastMousePos.x = (event.clientX / globalThis.innerWidth) * 2 - 1;
-      globalThis.lastMousePos.y = -(event.clientY / globalThis.innerHeight) * 2 + 1;
+      globalThis.lastMousePos.x =
+        (event.clientX / globalThis.innerWidth) * 2 - 1;
+      globalThis.lastMousePos.y =
+        -(event.clientY / globalThis.innerHeight) * 2 + 1;
     };
   }
 
@@ -913,7 +930,8 @@ function setupResizeHandler() {
     if (!container || !camera || !renderer) return;
     const width = container.clientWidth;
     const height = container.clientHeight;
-    isMobileDevice = globalThis.matchMedia?.("(max-width: 768px)")?.matches ?? false;
+    isMobileDevice =
+      globalThis.matchMedia?.("(max-width: 768px)")?.matches ?? false;
 
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
@@ -925,7 +943,7 @@ function setupResizeHandler() {
   sharedCleanupManager.addCleanupFunction(
     "three-earth",
     resizeCleanup,
-    "resize handler",
+    "resize handler"
   );
 }
 
@@ -936,23 +954,20 @@ function _setupManagersAndCards(container) {
   // Mark system as active for CSS
   document.body.classList.add("three-earth-active");
 
-  performanceMonitor = new PerformanceMonitor(
-    container,
-    renderer,
-    (level) => {
-      currentQualityLevel = level;
-      const levelCfg = CONFIG.QUALITY_LEVELS[currentQualityLevel];
-      if (cloudMesh) cloudMesh.visible = levelCfg.cloudLayer;
-      if (shootingStarManager) shootingStarManager.disabled = !levelCfg.meteorShowers;
-      try {
-        if (renderer && CONFIG.PERFORMANCE?.PIXEL_RATIO) {
-          renderer.setPixelRatio(CONFIG.PERFORMANCE.PIXEL_RATIO);
-        }
-      } catch (e) {
-        log.debug("Unable to set PIXEL_RATIO during quality apply", e);
+  performanceMonitor = new PerformanceMonitor(container, renderer, (level) => {
+    currentQualityLevel = level;
+    const levelCfg = CONFIG.QUALITY_LEVELS[currentQualityLevel];
+    if (cloudMesh) cloudMesh.visible = levelCfg.cloudLayer;
+    if (shootingStarManager)
+      shootingStarManager.disabled = !levelCfg.meteorShowers;
+    try {
+      if (renderer && CONFIG.PERFORMANCE?.PIXEL_RATIO) {
+        renderer.setPixelRatio(CONFIG.PERFORMANCE.PIXEL_RATIO);
       }
-    },
-  );
+    } catch (e) {
+      log.debug("Unable to set PIXEL_RATIO during quality apply", e);
+    }
+  });
 
   shootingStarManager = new ShootingStarManager(scene, THREE_INSTANCE);
 
@@ -1004,7 +1019,7 @@ function _setupManagersAndCards(container) {
   sharedCleanupManager.addCleanupFunction(
     "three-earth",
     () => document.removeEventListener("section:loaded", onSectionLoaded),
-    "section listener",
+    "section listener"
   );
 }
 
@@ -1049,8 +1064,7 @@ function triggerShowcase(duration = 8000) {
     CONFIG.CLOUDS.ROTATION_SPEED =
       showcaseOriginals.cloudSpeed || CONFIG.CLOUDS.ROTATION_SPEED;
     CONFIG.EARTH.EMISSIVE_PULSE_AMPLITUDE =
-      showcaseOriginals.emissiveAmp ||
-      CONFIG.EARTH.EMISSIVE_PULSE_AMPLITUDE;
+      showcaseOriginals.emissiveAmp || CONFIG.EARTH.EMISSIVE_PULSE_AMPLITUDE;
     showcaseActive = false;
     showcaseTimeoutId = null;
   }, duration);
@@ -1069,8 +1083,12 @@ function _setupShowcaseTriggers() {
   document.addEventListener("three-earth:showcase", _onThreeEarthShowcase);
   sharedCleanupManager.addCleanupFunction(
     "three-earth",
-    () => document.removeEventListener("three-earth:showcase", _onThreeEarthShowcase),
-    "showcase listener",
+    () =>
+      document.removeEventListener(
+        "three-earth:showcase",
+        _onThreeEarthShowcase
+      ),
+    "showcase listener"
   );
 }
 // ===== Public API =====
@@ -1092,4 +1110,12 @@ export const EarthSystemAPI = {
   },
 };
 export default ThreeEarthManager;
-export { detectDeviceCapabilities, getOptimizedConfig, _createLoadingManager, _mapId, _onSectionObserverEntries, _detectAndEnsureWebGL, __setIsSystemActive };
+export {
+  detectDeviceCapabilities,
+  getOptimizedConfig,
+  _createLoadingManager,
+  _mapId,
+  _onSectionObserverEntries,
+  _detectAndEnsureWebGL,
+  __setIsSystemActive,
+};
