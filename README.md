@@ -104,6 +104,7 @@ Hinweis: Der Service Worker wurde entfernt; Offline-Caching über `sw.js` ist ni
 - ✅ **Logger-System**: Zentralisiertes Logging via `shared-utilities.js`
 - ✅ **ESM Migration**: Vollständige Umstellung auf ES Modules
 - ✅ **Dependency Update**: ESLint v9, Concurrently v9
+- ✅ **Karten‑Migration**: Feature‑Karten wurden auf `three-earth` (WebGL) umgestellt; statische HTML‑Karten entfernt und die alte CSS in `archive/removed-cards/cards.legacy.css` archiviert.
 
 ---
 
