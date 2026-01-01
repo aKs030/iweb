@@ -12,7 +12,7 @@ const getBaseUrl = (apiKey) => `https://generativelanguage.googleapis.com/v1beta
  * @param {string} systemInstruction - Anweisungen für das System.
  * @returns {Promise<string>} - Die Antwort der KI.
  */
-export async function getGeminiResponse(prompt, systemInstruction = "Du bist ein hilfreicher Roboter-Begleiter.") {
+async function getGeminiResponse(prompt, systemInstruction = "Du bist ein hilfreicher Roboter-Begleiter.") {
     const payload = {
         contents: [{ parts: [{ text: prompt }] }],
         systemInstruction: { parts: [{ text: systemInstruction }] }
