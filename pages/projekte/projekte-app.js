@@ -288,7 +288,9 @@ function App() {
 
   const toRawGithackUrl = (ghUrl) => {
     try {
-      const m = /github\.com\/([^/]+)\/([^/]+)\/tree\/([^/]+)\/(.+)$/.exec(ghUrl);
+      const m = /github\.com\/([^/]+)\/([^/]+)\/tree\/([^/]+)\/(.+)$/.exec(
+        ghUrl
+      );
       if (m) {
         const [, owner, repo, branch, path] = m;
         return `https://raw.githack.com/${owner}/${repo}/${branch}/${path}/index.html`;
@@ -299,7 +301,9 @@ function App() {
 
   const toJsDelivrUrl = (ghUrl) => {
     try {
-      const m = /github\.com\/([^/]+)\/([^/]+)\/tree\/([^/]+)\/(.+)$/.exec(ghUrl);
+      const m = /github\.com\/([^/]+)\/([^/]+)\/tree\/([^/]+)\/(.+)$/.exec(
+        ghUrl
+      );
       if (m) {
         const [, owner, repo, branch, path] = m;
         return `https://cdn.jsdelivr.net/gh/${owner}/${repo}@${branch}/${path}/index.html`;
@@ -403,7 +407,7 @@ function App() {
             candidates.push(
               project.appPath.endsWith("/")
                 ? project.appPath + "index.html"
-                : project.appPath,
+                : project.appPath
             );
 
           for (const url of candidates) {
@@ -542,7 +546,7 @@ function App() {
                   ${project.tags.map(
                     (tag, i) => html`
                       <span key=${i} className="tag">${tag}</span>
-                    `,
+                    `
                   )}
                 </div>
                 <div className="project-actions">
@@ -570,7 +574,7 @@ function App() {
               </div>
             </div>
           </section>
-        `,
+        `
       )}
       ${toastMsg
         ? html` <div className="toast-notification">${toastMsg}</div> `
@@ -648,6 +652,7 @@ function App() {
               Schreib mir
             </button>
           </div>
+          <div id="docs-search-container"></div>
         </div>
       </section>
     <//>
