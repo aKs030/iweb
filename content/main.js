@@ -423,31 +423,71 @@ const LoadingScreenManager = (() => {
     const delay = Math.max(0, MIN_DISPLAY_TIME - elapsed);
 
     setTimeout(() => {
-      hasHidden = true;
-      finalizeProgress();
+      // If there's an Earth container on the page, wait up to 4s for the
+      // 'earth-ready' signal (or compatible signals) to avoid hiding the
+      // loader before the 3D canvas can show a visible frame.
+      const earthContainerPresent =
+        document.getElementById("threeEarthContainer") ||
+        document.getElementById("earth-container");
 
-      state.overlay.classList.add("fade-out");
-      state.overlay.setAttribute("aria-hidden", "true");
-      state.overlay.dataset.loaderDone = "true";
+      const proceedToHide = () => {
+        if (hasHidden) return;
+        hasHidden = true;
+        finalizeProgress();
 
-      const cleanup = () => {
-        state.overlay.style.display = "none";
-        state.overlay.removeEventListener("transitionend", cleanup);
+        state.overlay.classList.add("fade-out");
+        state.overlay.setAttribute("aria-hidden", "true");
+        state.overlay.dataset.loaderDone = "true";
+
+        const cleanup = () => {
+          state.overlay.style.display = "none";
+          state.overlay.removeEventListener("transitionend", cleanup);
+        };
+
+        state.overlay.addEventListener("transitionend", cleanup);
+        setTimeout(cleanup, 900);
+
+        try {
+          document.body.classList.remove("global-loading-visible");
+        } catch {
+          /* ignore */
+        }
+
+        perfMarks.loadingHidden = performance.now();
+        announce("Anwendung geladen", { dedupe: true });
+        fire(EVENTS.LOADING_HIDE);
+        globalThis.dispatchEvent(new Event("app-ready"));
       };
 
-      state.overlay.addEventListener("transitionend", cleanup);
-      setTimeout(cleanup, 900);
-
-      try {
-        document.body.classList.remove("global-loading-visible");
-      } catch {
-        /* ignore */
+      if (!earthContainerPresent) {
+        proceedToHide();
+        return;
       }
 
-      perfMarks.loadingHidden = performance.now();
-      announce("Anwendung geladen", { dedupe: true });
-      fire(EVENTS.LOADING_HIDE);
-      globalThis.dispatchEvent(new Event("app-ready"));
+      // Wait for one of the ready signals with a safety timeout
+      let settled = false;
+      const settle = () => {
+        if (settled) return;
+        settled = true;
+        proceedToHide();
+      };
+
+      const timeoutMs = 4000;
+      const t = setTimeout(() => {
+        try {
+          console.warn("Earth load timeout - proceeding anyway");
+        } catch {}
+        settle();
+      }, timeoutMs);
+
+      const onReady = () => {
+        clearTimeout(t);
+        settle();
+      };
+
+      window.addEventListener("earth-ready", onReady, { once: true });
+      window.addEventListener("three-first-frame", onReady, { once: true });
+      window.addEventListener("three-ready", onReady, { once: true });
     }, delay);
   }
 

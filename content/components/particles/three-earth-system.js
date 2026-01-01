@@ -398,6 +398,12 @@ function _createLoadingManager(THREE, container) {
           detail: { containerId: container?.id ?? null },
         })
       );
+      // Compatibility event for pages that wait for the earth to be ready
+      try {
+        window.dispatchEvent(new Event("earth-ready"));
+      } catch (err) {
+        log.warn("earth-ready dispatch failed", err);
+      }
     } catch (err) {
       log.warn("three-ready dispatch failed", err);
     }
@@ -409,6 +415,12 @@ function _createLoadingManager(THREE, container) {
       AppLoadManager.unblock("three-earth");
     } catch {
       /* ignore */
+    }
+    try {
+      // Ensure pages waiting for earth-ready continue after an error
+      window.dispatchEvent(new Event("earth-ready"));
+    } catch (err) {
+      log.warn("earth-ready dispatch onError failed", err);
     }
   };
 
@@ -478,6 +490,11 @@ function _finalizeInitialization(container) {
           detail: { containerId: container?.id ?? null },
         })
       );
+      try {
+        window.dispatchEvent(new Event("earth-ready"));
+      } catch (err) {
+        log.warn("earth-ready dispatch fallback failed", err);
+      }
     }
   } catch (err) {
     log.warn("Failed to set fallback three-ready", err);
