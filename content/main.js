@@ -462,6 +462,55 @@ const LoadingScreenManager = (() => {
     }
 
     startSimulation();
+
+    // Show explicit status when specific modules block the loader (e.g. three-earth)
+    try {
+      document.addEventListener(EVENTS.LOADING_BLOCKED, (e) => {
+        try {
+          const name = e?.detail?.name;
+          if (name === "three-earth") {
+            // Make the loader message explicit when waiting for the Earth system
+            LoadingScreenManager.setStatus("Warte auf 3D‑Ansicht…");
+          }
+        } catch (err) {
+          log.debug("LOADING_BLOCKED handler failed", err);
+        }
+      });
+
+      // Update loader percentage while Three-Earth reports progress
+      document.addEventListener("three-progress", (e) => {
+        try {
+          const pct =
+            typeof e?.detail?.percent === "number"
+              ? e.detail.percent
+              : Math.round((e?.detail?.progress || 0) * 100);
+          LoadingScreenManager.setStatus("Warte auf 3D‑Ansicht…", pct);
+        } catch (err) {
+          log.debug("three-progress handler failed", err);
+        }
+      });
+
+      // When the Earth module reports it's ready, reflect that in the loader
+      document.addEventListener("three-ready", (e) => {
+        try {
+          const containerId = e?.detail?.containerId || "threeEarthContainer";
+          LoadingScreenManager.setStatus("3D‑Ansicht wird angezeigt…", 95);
+        } catch (err) {
+          log.debug("three-ready handler failed", err);
+        }
+      });
+
+      // Ensure we show a final status when AppLoadManager unblocks everything
+      document.addEventListener(EVENTS.LOADING_UNBLOCKED, () => {
+        try {
+          LoadingScreenManager.setStatus("Finalisiere Assets...", 98);
+        } catch (err) {
+          log.debug("LOADING_UNBLOCKED handler failed", err);
+        }
+      });
+    } catch (err) {
+      /* ignore listener attach errors */
+    }
   }
 
   function setStatus(message, progress) {
