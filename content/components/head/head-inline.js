@@ -300,9 +300,6 @@ dataLayer.push({
           }
 
           // Existing deferred assets (loaded everywhere)
-          upsertStyle(
-            "/content/components/robot-companion/robot-companion.css"
-          );
           upsertScript({
             src: "/content/components/robot-companion/robot-companion.js",
             module: true,
