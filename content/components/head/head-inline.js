@@ -218,6 +218,22 @@ dataLayer.push({
           document.body.appendChild(trigger);
         }
       }
+
+      // Ensure the footer module is loaded (dynamic import) so it can initialize the injected container
+      try {
+        if (!globalThis.__footerModuleLoaded) {
+          globalThis.__footerModuleLoaded = true;
+          import('/content/components/footer/footer-complete.js')
+            .then((m) => {
+              if (typeof m.initFooter === 'function') m.initFooter();
+            })
+            .catch((err) =>
+              log?.warn?.('head-inline: import footer module failed', err),
+            );
+        }
+      } catch (e) {
+        /* ignore */
+      }
     };
 
     if (document.readyState === "loading") {
@@ -241,7 +257,6 @@ dataLayer.push({
       const base = [
         "/content/styles/root.css",
         "/content/styles/main.css",
-        "/content/components/footer/footer.css",
       ];
       // Page-specific additions (only for root to avoid extra blocking on subpages)
       if (p === "/") {
@@ -258,7 +273,6 @@ dataLayer.push({
     const SCRIPTS = [
       { src: "/content/main.js", module: true, preload: true },
       { src: "/content/components/menu/menu.js", module: true },
-      { src: "/content/components/footer/footer-complete.js", module: true },
     ];
 
     // Defer non-critical assets (loaded after idle to reduce blocking during LCP)
