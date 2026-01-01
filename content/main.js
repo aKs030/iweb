@@ -35,7 +35,8 @@ const ENV = {
   isTest:
     new URLSearchParams(globalThis.location.search).has("test") ||
     navigator.userAgent.includes("HeadlessChrome") ||
-    (globalThis.location.hostname === "localhost" && globalThis.navigator.webdriver),
+    (globalThis.location.hostname === "localhost" &&
+      globalThis.navigator.webdriver),
   debug: new URLSearchParams(globalThis.location.search).has("debug"),
   // Service Worker removed — cleanup runs once on page load to unregister previous registrations and clear caches.
   // (Property `useServiceWorker` removed)
@@ -102,7 +103,7 @@ const SectionLoader = (() => {
       document.dispatchEvent(
         new CustomEvent(type, {
           detail: { id: section?.id, section, ...detail },
-        }),
+        })
       );
     } catch (error) {
       log.debug(`Event dispatch failed: ${type}`, error);
@@ -142,7 +143,9 @@ const SectionLoader = (() => {
     }
     if (!response || !response.ok) {
       throw new Error(
-        `HTTP ${response ? response.status : "NO_RESPONSE"}: ${response ? response.statusText : "no response"}`,
+        `HTTP ${response ? response.status : "NO_RESPONSE"}: ${
+          response ? response.statusText : "no response"
+        }`
       );
     }
     return await response.text();
@@ -394,7 +397,7 @@ const ThreeEarthLoader = (() => {
     // ALLOW for specific verification script if requested via global override
     if (ENV.isTest && !globalThis.__FORCE_THREE_EARTH) {
       log.info(
-        "Test environment detected - skipping Three.js Earth system for performance",
+        "Test environment detected - skipping Three.js Earth system for performance"
       );
       return;
     }
@@ -407,10 +410,6 @@ const ThreeEarthLoader = (() => {
 
     // Performance guard: skip Three.js on small viewports or when user enabled save-data
     try {
-      if (typeof matchMedia === "function" && matchMedia("(max-width:900px)").matches) {
-        log.info("Three.js skipped: small viewport");
-        return;
-      }
       if (navigator.connection?.saveData) {
         log.info("Three.js skipped: save-data mode detected");
         return;
@@ -423,8 +422,9 @@ const ThreeEarthLoader = (() => {
 
     try {
       log.info("Loading Three.js Earth system...");
-      const module =
-        await import("./components/particles/three-earth-system.js");
+      const module = await import(
+        "./components/particles/three-earth-system.js"
+      );
       const ThreeEarthManager = module.default;
 
       cleanupFn = await ThreeEarthManager.initThreeEarth();
@@ -458,7 +458,7 @@ const ThreeEarthLoader = (() => {
           }
         }
       },
-      { rootMargin: "100px", threshold: 0.01 },
+      { rootMargin: "100px", threshold: 0.01 }
     );
 
     observer.observe(container);
@@ -501,7 +501,7 @@ document.addEventListener(
         windowLoaded = true;
         checkReady();
       },
-      { once: true },
+      { once: true }
     );
 
     fire(EVENTS.CORE_INITIALIZED);
@@ -537,7 +537,9 @@ document.addEventListener(
                   ? AppLoadManager.getPending()
                   : [];
               log.warn(
-                `Deferring forced loading screen hide (attempt ${attempt}): blocking modules=${Array.isArray(pending) ? pending.join(", ") : String(pending)}`,
+                `Deferring forced loading screen hide (attempt ${attempt}): blocking modules=${
+                  Array.isArray(pending) ? pending.join(", ") : String(pending)
+                }`
               );
 
               if (attempt < MAX_ATTEMPTS) {
@@ -545,13 +547,13 @@ document.addEventListener(
                 return;
               }
               log.warn(
-                "Max attempts reached - forcing hide despite blocking modules",
+                "Max attempts reached - forcing hide despite blocking modules"
               );
             }
           } catch (e) {
             log.debug(
               "AppLoadManager not available or check failed (expected in some environments)",
-              e,
+              e
             );
           }
 
@@ -559,7 +561,7 @@ document.addEventListener(
           // Force-hide now
           LoadingScreenManager.hide();
         },
-        attempt === 1 ? INITIAL_DELAY : RETRY_DELAY,
+        attempt === 1 ? INITIAL_DELAY : RETRY_DELAY
       );
     })();
 
@@ -569,7 +571,7 @@ document.addEventListener(
     const activateDeferredStyles = () => {
       try {
         const links = document.querySelectorAll(
-          'link[rel="stylesheet"][data-defer="1"]',
+          'link[rel="stylesheet"][data-defer="1"]'
         );
         links.forEach((link) => {
           try {
@@ -651,8 +653,7 @@ document.addEventListener(
       if (share) {
         event.preventDefault();
         const shareUrl =
-          share.dataset.shareUrl ||
-          "https://www.youtube.com/@aks.030";
+          share.dataset.shareUrl || "https://www.youtube.com/@aks.030";
         const shareData = {
           title: document.title,
           text: "Schau dir diesen Kanal an",
@@ -695,9 +696,9 @@ document.addEventListener(
                 r
                   .unregister()
                   .catch((err) =>
-                    log.warn("ServiceWorker unregister failed", err),
-                  ),
-              ),
+                    log.warn("ServiceWorker unregister failed", err)
+                  )
+              )
             );
 
             if ("caches" in window) {
@@ -706,13 +707,13 @@ document.addEventListener(
             }
 
             log.info(
-              "Service Workers unregistered and caches cleared (cleanup).",
+              "Service Workers unregistered and caches cleared (cleanup)."
             );
           } catch (e) {
             log.debug("Service Worker cleanup failed:", e);
           }
         },
-        { once: true },
+        { once: true }
       );
     } else {
       log.info("Service Worker cleanup skipped: not supported or test env");
@@ -726,7 +727,7 @@ document.addEventListener(
 
     // Dev-only ReconnectingWebSocket helper removed (was used for ?ws-test / local debug).
   },
-  { once: true },
+  { once: true }
 );
 
 // ===== BFCache / Back Button Handling =====
