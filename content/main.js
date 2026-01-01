@@ -581,6 +581,24 @@ const ThreeEarthLoader = (() => {
     const container = getElementById("threeEarthContainer");
     if (!container) return;
 
+    // Immediate visibility check: if the container is already within the
+    // rootMargin area *or* the global loader is still visible, trigger load
+    // immediately so the Earth is prepared while the loader is active.
+    try {
+      const rect = container.getBoundingClientRect();
+      const withinMargin =
+        rect.top < (globalThis.innerHeight || 0) + 100 && rect.bottom > -100;
+      const loaderVisible =
+        document.getElementById("app-loader")?.dataset?.loaderDone !== "true";
+
+      if (withinMargin || loaderVisible) {
+        load();
+        return;
+      }
+    } catch (e) {
+      // ignore and fallback to observer
+    }
+
     const observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
