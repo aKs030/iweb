@@ -614,9 +614,28 @@ document.addEventListener(
     fire(EVENTS.MODULES_READY);
     checkReady();
     (function scheduleSmartForceHide(attempt = 1) {
-      const INITIAL_DELAY = 5000;
+      const DEFAULT_INITIAL_DELAY = 5000;
+      const EXTENDED_INITIAL_DELAY = 8000; // give heavier modules (three-earth) more time on slower hosts
       const RETRY_DELAY = 5000;
       const MAX_ATTEMPTS = 3;
+
+      // Compute delay dynamically in case heavier modules are still blocking
+      const computeDelay = () => {
+        try {
+          if (
+            AppLoadManager !== undefined &&
+            typeof AppLoadManager.getPending === "function"
+          ) {
+            const pending = AppLoadManager.getPending() || [];
+            if (pending.includes("three-earth")) return EXTENDED_INITIAL_DELAY;
+          }
+        } catch (err) {
+          /* ignore and fall back to default */
+        }
+        return DEFAULT_INITIAL_DELAY;
+      };
+
+      const initialDelay = computeDelay();
 
       setTimeout(
         () => {
@@ -660,7 +679,7 @@ document.addEventListener(
           LoadingScreenManager.setStatus("Schließe Ladebildschirm...");
           LoadingScreenManager.hide();
         },
-        attempt === 1 ? INITIAL_DELAY : RETRY_DELAY
+        attempt === 1 ? initialDelay : RETRY_DELAY
       );
     })();
 

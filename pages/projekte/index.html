@@ -396,6 +396,21 @@
             { root: null, rootMargin: "200px", threshold: 0.05 }
           );
           io.observe(threeContainer);
+
+          // Immediate visibility check: if the container is already within the
+          // rootMargin area, trigger load right away to avoid idle/observer delays.
+          try {
+            const rect = threeContainer.getBoundingClientRect();
+            const withinMargin =
+              rect.top < (globalThis.innerHeight || 0) + 200 &&
+              rect.bottom > -200;
+            if (withinMargin) {
+              loadThreeEarth();
+              io.disconnect();
+            }
+          } catch (e) {
+            // ignore and rely on IntersectionObserver
+          }
         } else {
           // Fallback: load after a short idle period
           setTimeout(loadThreeEarth, 3000);
