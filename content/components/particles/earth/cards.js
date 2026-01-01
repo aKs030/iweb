@@ -78,7 +78,8 @@ export class CardManager {
     this._sharedGeometry = new this.THREE.PlaneGeometry(baseW, baseH);
 
     // Prepare shared glow texture (small radial gradient) once
-    if (!this._sharedGlowTexture) this._sharedGlowTexture = this.createGlowTexture();
+    if (!this._sharedGlowTexture)
+      this._sharedGlowTexture = this.createGlowTexture();
 
     dataArray.forEach((d, index) => {
       const data = {
@@ -125,7 +126,10 @@ export class CardManager {
           } else {
             // Desktop: Horizontal Row
             const adaptiveScale = Math.min(1, vw / 1200);
-            const newSpacing = baseW * (cardCount > 2 ? 1.4 : 1.25) * Math.max(0.85, adaptiveScale);
+            const newSpacing =
+              baseW *
+              (cardCount > 2 ? 1.4 : 1.25) *
+              Math.max(0.85, adaptiveScale);
             const x = (idx - centerOffset) * newSpacing;
 
             card.scale.setScalar(0.95 * Math.max(0.65, adaptiveScale));
@@ -193,7 +197,9 @@ export class CardManager {
 
   createCardTexture(data) {
     // Determine a scaling factor based on device pixel ratio to keep text crisp
-    const DPR = globalThis.window?.devicePixelRatio ? globalThis.window.devicePixelRatio : 1;
+    const DPR = globalThis.window?.devicePixelRatio
+      ? globalThis.window.devicePixelRatio
+      : 1;
     // Scale aggressively on high-DPI displays for crisper text, clamped for performance
     const S = Math.min(Math.max(Math.ceil(DPR * 2), 2), 4);
     const W = 512 * S;
@@ -233,7 +239,7 @@ export class CardManager {
     if (!ctx) {
       // Defensive: Some environments may not provide a 2D context; return a minimal texture
       log.warn(
-        "CardManager: 2D canvas context unavailable; returning empty texture",
+        "CardManager: 2D canvas context unavailable; returning empty texture"
       );
       const texture = new this.THREE.CanvasTexture(canvas);
       texture.needsUpdate = true;
@@ -269,7 +275,9 @@ export class CardManager {
 
     // 4. Icon Text (Emoji/Char) - use emoji-capable font stack as fallback
     ctx.fillStyle = "#ffffff";
-    ctx.font = `${60 * S}px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", Arial, sans-serif`;
+    ctx.font = `${
+      60 * S
+    }px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", Arial, sans-serif`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText(data.iconChar, iconCenterX, iconY + 5 * S);
@@ -284,7 +292,7 @@ export class CardManager {
       "bold",
       24 * S,
       12 * S,
-      'Arial, "Helvetica Neue", sans-serif',
+      'Arial, "Helvetica Neue", sans-serif'
     );
     ctx.font = `bold ${subtitleSize}px Arial, "Helvetica Neue", sans-serif`;
     ctx.fillText(subtitleText, iconCenterX, 280 * S);
@@ -299,7 +307,7 @@ export class CardManager {
       "bold",
       48 * S,
       20 * S,
-      'Arial, "Helvetica Neue", sans-serif',
+      'Arial, "Helvetica Neue", sans-serif'
     );
     ctx.font = `bold ${titleSize}px Arial, "Helvetica Neue", sans-serif`;
     ctx.fillText(titleText, iconCenterX, 350 * S);
@@ -315,7 +323,7 @@ export class CardManager {
       iconCenterX,
       450 * S,
       400 * S,
-      Math.round(40 * S),
+      Math.round(40 * S)
     );
 
     const texture = new this.THREE.CanvasTexture(canvas);
@@ -334,7 +342,9 @@ export class CardManager {
   }
 
   createGlowTexture() {
-    const DPR = globalThis.devicePixelRatio ? Math.min(globalThis.devicePixelRatio, 2) : 1;
+    const DPR = globalThis.devicePixelRatio
+      ? Math.min(globalThis.devicePixelRatio, 2)
+      : 1;
     const size = Math.floor(128 * DPR);
     const canvas =
       typeof OffscreenCanvas === "undefined"
@@ -347,7 +357,7 @@ export class CardManager {
     const ctx = canvas.getContext("2d");
     if (!ctx) {
       log.warn(
-        "CardManager: 2D canvas context unavailable for glow; returning empty texture",
+        "CardManager: 2D canvas context unavailable for glow; returning empty texture"
       );
       const tex = new this.THREE.CanvasTexture(canvas);
       tex.needsUpdate = true;
@@ -466,7 +476,7 @@ export class CardManager {
     fontWeight = "normal",
     initialSize = 24,
     minSize = 12,
-    fontFamily = "Arial, sans-serif",
+    fontFamily = "Arial, sans-serif"
   ) {
     if (!text) return initialSize;
     let size = initialSize;
@@ -492,8 +502,8 @@ export class CardManager {
       0,
       Math.min(
         1,
-        typeof progress === "number" && !Number.isNaN(progress) ? progress : 0,
-      ),
+        typeof progress === "number" && !Number.isNaN(progress) ? progress : 0
+      )
     );
     const wasVisible = this.cardGroup.visible;
     this.cardGroup.visible = p > 0.01;
@@ -509,7 +519,7 @@ export class CardManager {
       const stagger = (card.userData.entranceDelay || 0) / 800;
       const local = Math.max(
         0,
-        Math.min(1, (p - stagger) / Math.max(0.0001, 1 - stagger)),
+        Math.min(1, (p - stagger) / Math.max(0.0001, 1 - stagger))
       );
       card.userData.entranceTarget = local;
       // Also map opacity target so the material fades out gracefully
@@ -632,7 +642,7 @@ export class CardManager {
       card.userData.currentTiltX,
       card.userData.currentTiltY,
       0,
-      "XYZ",
+      "XYZ"
     );
     this._tmpQuat2.setFromEuler(this._tmpEuler);
 
@@ -646,7 +656,7 @@ export class CardManager {
       glow.material.opacity =
         Math.max(
           0.06,
-          0.6 * (0.5 + 0.5 * Math.sin(time * 0.002 + card.userData.id)),
+          0.6 * (0.5 + 0.5 * Math.sin(time * 0.002 + card.userData.id))
         ) * card.userData.entranceProgress;
     }
   }
@@ -654,7 +664,7 @@ export class CardManager {
   handleClick(mousePos) {
     const pos = mousePos || this._lastPointerPos || { x: 0, y: 0 };
     // Only respond when cards are actually visible in the scene
-    if (!this.cardGroup.visible) return; 
+    if (!this.cardGroup.visible) return;
 
     // Use the same screen-based detection as hover
     const clickedCard = this.getHoveredCardFromScreen(pos);
@@ -669,16 +679,18 @@ export class CardManager {
 
   // Pointer handling helpers: attach/detach pointer handlers to a DOM element
   attachPointerHandlers(domElement) {
-    const el =
-      domElement || this.renderer?.domElement || globalThis;
+    const el = domElement || this.renderer?.domElement || globalThis;
 
     // Remove existing handlers if present
     if (this._boundPointerMove) this.detachPointerHandlers();
 
     this._boundPointerMove = (e) => {
-      const rect =
-        el.getBoundingClientRect?.() ??
-        { left: 0, top: 0, width: globalThis.innerWidth, height: globalThis.innerHeight }; 
+      const rect = el.getBoundingClientRect?.() ?? {
+        left: 0,
+        top: 0,
+        width: globalThis.innerWidth,
+        height: globalThis.innerHeight,
+      };
       const x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
       const y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
       this._lastPointerPos.x = x;
@@ -712,9 +724,7 @@ export class CardManager {
   }
 
   detachPointerHandlers() {
-    const el =
-      this._pointerElement ||
-      this.renderer?.domElement || globalThis;
+    const el = this._pointerElement || this.renderer?.domElement || globalThis;
     if (!el) return;
     if (this._boundPointerMove)
       el.removeEventListener("pointermove", this._boundPointerMove);
