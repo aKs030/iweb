@@ -266,6 +266,11 @@ export const AppLoadManager = (() => {
       } catch {
         /* ignore logging errors */
       }
+      try {
+        fire(EVENTS.LOADING_BLOCKED, { name });
+      } catch {
+        /* ignore fire errors */
+      }
     },
 
     unblock(name) {
@@ -308,6 +313,7 @@ export const EVENTS = Object.freeze({
   MODULES_READY: "app:modulesReady",
   HERO_INIT_READY: "app:heroInitReady",
   SW_UPDATE_AVAILABLE: "sw:updateAvailable",
+  LOADING_BLOCKED: "app:loadingBlocked",
   LOADING_UNBLOCKED: "app:loadingUnblocked",
   LOADING_HIDE: "app:loaderHide",
 });
