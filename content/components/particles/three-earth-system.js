@@ -66,6 +66,10 @@ let showcaseActive = false;
 let showcaseTimeoutId = null;
 const showcaseOriginals = {};
 
+// Loading sync flags — ensure loader stays until first rendered frame
+let assetsReady = false;
+let firstFrameRendered = false;
+
 // Flag to prevent zombie execution after cleanup
 let isSystemActive = false;
 
@@ -253,6 +257,10 @@ const ThreeEarthManager = (() => {
     dayMaterial = nightMaterial = null;
     directionalLight = ambientLight = null;
 
+    // Reset rendering sync flags
+    assetsReady = false;
+    firstFrameRendered = false;
+
     if (cardManager) cardManager.cleanup();
     cardManager = starManager = shootingStarManager = performanceMonitor = null;
     cameraManager = null;
@@ -368,7 +376,12 @@ function _createLoadingManager(THREE, container) {
 
   loadingManager.onProgress = (_url, _itemsLoaded, _itemsTotal) => {
     if (!isSystemActive) return;
-    showLoadingState(container);
+    try {
+      const progress = Math.min(1, _itemsLoaded / Math.max(1, _itemsTotal));
+      showLoadingState(container, progress);
+    } catch (err) {
+      log.debug("onProgress UI update failed", err);
+    }
   };
 
   loadingManager.onLoad = () => {
@@ -378,7 +391,10 @@ function _createLoadingManager(THREE, container) {
     } catch (err) {
       log.warn("[ThreeEarthSystem] AppLoadManager.unblock failed", err);
     }
-    hideLoadingState(container);
+    // Mark assets as ready; delay hiding the global loader until the first
+    // actual frame is rendered to avoid flashing/blank between loader and canvas
+    assetsReady = true;
+
     // Signal that Three has finished loading textures/resources and is ready
     try {
       container.dataset.threeReady = "1";
@@ -884,6 +900,19 @@ function _updateManagers(elapsedTime, capabilities) {
 function _renderIfReady() {
   if (renderer && scene && camera) {
     renderer.render(scene, camera);
+
+    // If assets are loaded and this is the first rendered frame, hide the
+    // global loader — this prevents the loader disappearing before the
+    // canvas actually painted (avoids blank flashes).
+    try {
+      if (assetsReady && !firstFrameRendered) {
+        firstFrameRendered = true;
+        const container = getElementById("threeEarthContainer");
+        hideLoadingState(container);
+      }
+    } catch (err) {
+      log.debug("post-render loader hide failed", err);
+    }
   }
 }
 

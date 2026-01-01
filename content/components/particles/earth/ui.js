@@ -21,7 +21,7 @@ function getGlobalLoaderElements() {
   return { overlay, text };
 }
 
-export function showLoadingState(container) {
+export function showLoadingState(container, progress) {
   if (!container) return;
 
   // Prefer the global page loader when available
@@ -32,15 +32,36 @@ export function showLoadingState(container) {
     globals.overlay.classList.remove("fade-out", "hidden");
     globals.overlay.removeAttribute("aria-hidden");
     globals.overlay.setAttribute("aria-live", "polite");
+    globals.overlay.setAttribute("role", "status");
     Object.assign(globals.overlay.style, {
       display: "flex",
       opacity: "1",
       pointerEvents: "auto",
       visibility: "visible",
     });
+
     if (globals.text) {
-      globals.text.textContent = "Initialisiere 3D-Engine...";
+      if (typeof progress === "number") {
+        const pct = Math.round(progress * 100);
+        globals.text.textContent = `Lädt 3D‑Ansicht… (${pct}%)`;
+      } else {
+        globals.text.textContent = "Initialisiere 3D-Engine...";
+      }
     }
+
+    if (typeof progress === "number") {
+      globals.overlay.setAttribute(
+        "aria-valuenow",
+        String(Math.round(progress * 100))
+      );
+      globals.overlay.setAttribute("aria-valuemin", "0");
+      globals.overlay.setAttribute("aria-valuemax", "100");
+    } else {
+      globals.overlay.removeAttribute("aria-valuenow");
+      globals.overlay.removeAttribute("aria-valuemin");
+      globals.overlay.removeAttribute("aria-valuemax");
+    }
+
     try {
       document.body.classList.add("global-loading-visible");
     } catch (err) {
@@ -80,6 +101,8 @@ export function showErrorState(container, error, retryCallback) {
   const globals = getGlobalLoaderElements();
   if (globals?.overlay) {
     globals.overlay.classList.add("fade-out");
+    // Ensure loader fully hides
+    hideLoadingState(container);
   }
 
   container.classList.add("error");
