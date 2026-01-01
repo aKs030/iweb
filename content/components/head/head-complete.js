@@ -1380,10 +1380,10 @@ async function loadSharedHead() {
 
   // UI Helper: follow app events instead of raw window load to avoid early hides
   const hideLoader = () => {
-    const el = document.getElementById("loadingScreen");
+    const el = document.getElementById("app-loader");
     if (!el) return;
 
-    el.classList.add("hide");
+    el.classList.add("fade-out");
     el.setAttribute("aria-hidden", "true");
     Object.assign(el.style, {
       opacity: "0",
@@ -1393,7 +1393,7 @@ async function loadSharedHead() {
 
     setTimeout(() => {
       if (el) el.style.display = "none";
-    }, 700);
+    }, 800);
   };
 
   // React only when the app signals that all blocking tasks are done.

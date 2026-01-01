@@ -333,6 +333,8 @@
       }
     </style>
 
+    <link rel="stylesheet" href="/content/styles/loader.css" />
+
     <!-- Preloads removed: head-inline.js injects styles conditionally to avoid unused preloads -->
     <noscript
       ><link rel="stylesheet" href="/content/styles/root.css"
@@ -364,6 +366,38 @@
     <noscript><link rel="stylesheet" href="/pages/about/about.css" /></noscript>
   </head>
   <body>
+    <!-- MODERN LOADER START -->
+    <div
+      id="app-loader"
+      aria-live="polite"
+      aria-label="Anwendung wird geladen"
+    >
+      <div class="loader-spinner" aria-hidden="true"></div>
+      <div class="loader-content">
+        <div class="loader-logo" aria-hidden="true">AKS | WEB</div>
+
+        <div class="progress-container" role="presentation">
+          <div class="progress-bar" id="loader-progress-bar"></div>
+        </div>
+
+        <div class="loader-info" aria-live="polite">
+          <span class="status-text" id="loader-status-text"
+            >Initialisiere System...</span
+          >
+          <span class="percentage" id="loader-percentage">0%</span>
+        </div>
+      </div>
+    </div>
+    <!-- MODERN LOADER END -->
+
+    <noscript>
+      <style>
+        #app-loader {
+          display: none !important;
+        }
+      </style>
+    </noscript>
+
     <!-- Google Tag Manager (noscript) -->
     <noscript
       ><iframe
@@ -379,16 +413,6 @@
     <header class="site-header">
       <div id="menu-container"></div>
     </header>
-
-    <!-- Global Loading Screen (minimal static fallback for initial paint) -->
-    <output
-      class="loading-screen"
-      id="loadingScreen"
-      aria-hidden="true"
-      aria-label="Seite wird geladen"
-    >
-      <div class="loader" aria-hidden="true"></div>
-    </output>
 
     <!-- Advanced Three.js Earth System -->
     <div

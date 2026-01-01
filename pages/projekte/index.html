@@ -105,6 +105,13 @@
       src="/content/components/head/head-inline.js"
     ></script>
 
+    <script
+      type="module"
+      src="/content/main.js"
+      crossorigin="anonymous"
+    ></script>
+    <link rel="stylesheet" href="/content/styles/loader.css" />
+
     <!-- React Dependencies (Production Version für bessere Performance) -->
     <!-- Load React & ReactDOM from jsDelivr (allowed by CSP in content/head/head.html) -->
     <script
@@ -237,6 +244,36 @@
     </script>
   </head>
   <body>
+    <div
+      id="app-loader"
+      aria-live="polite"
+      aria-label="Anwendung wird geladen"
+    >
+      <div class="loader-spinner" aria-hidden="true"></div>
+      <div class="loader-content">
+        <div class="loader-logo" aria-hidden="true">AKS | WEB</div>
+
+        <div class="progress-container" role="presentation">
+          <div class="progress-bar" id="loader-progress-bar"></div>
+        </div>
+
+        <div class="loader-info" aria-live="polite">
+          <span class="status-text" id="loader-status-text"
+            >Initialisiere System...</span
+          >
+          <span class="percentage" id="loader-percentage">0%</span>
+        </div>
+      </div>
+    </div>
+
+    <noscript>
+      <style>
+        #app-loader {
+          display: none !important;
+        }
+      </style>
+    </noscript>
+
     <!-- Google Tag Manager (noscript) -->
     <noscript
       ><iframe
