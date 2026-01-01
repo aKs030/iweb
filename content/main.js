@@ -375,6 +375,12 @@ const LoadingScreenManager = (() => {
 
       perfMarks.loadingHidden = performance.now();
       log.info(`Loading screen hidden after ${Math.round(elapsed)}ms`);
+
+      try {
+        fire(EVENTS.LOADING_HIDE);
+      } catch {
+        /* ignore */
+      }
     }, delay);
   }
 
@@ -491,8 +497,11 @@ document.addEventListener(
 
     const checkReady = () => {
       if (!modulesReady || !windowLoaded) return;
+      if (AppLoadManager.isBlocked()) return;
       LoadingScreenManager.hide();
     };
+
+    document.addEventListener(EVENTS.LOADING_UNBLOCKED, checkReady);
 
     globalThis.addEventListener(
       "load",

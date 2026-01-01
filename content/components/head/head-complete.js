@@ -1378,16 +1378,26 @@ async function loadSharedHead() {
     document.addEventListener("DOMContentLoaded", scheduleSchema);
   else scheduleSchema();
 
-  // UI Helper
+  // UI Helper: follow app events instead of raw window load to avoid early hides
   const hideLoader = () => {
     const el = document.getElementById("loadingScreen");
-    if (el) {
-      el.classList.add("hide");
-      setTimeout(() => (el.style.display = "none"), 700);
-    }
+    if (!el) return;
+
+    el.classList.add("hide");
+    el.setAttribute("aria-hidden", "true");
+    Object.assign(el.style, {
+      opacity: "0",
+      pointerEvents: "none",
+      visibility: "hidden",
+    });
+
+    setTimeout(() => {
+      if (el) el.style.display = "none";
+    }, 700);
   };
-  globalThis.addEventListener("load", hideLoader);
-  setTimeout(hideLoader, 2000);
+
+  // React only when the app signals that all blocking tasks are done.
+  document.addEventListener("app:loaderHide", hideLoader, { once: true });
   globalThis.SHARED_HEAD_LOADED = true;
 }
 
