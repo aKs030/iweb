@@ -119,7 +119,9 @@ export const CookieManager = {
     date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
     const expires = `; expires=${date.toUTCString()}`;
     const secure = window.location.protocol === "https:" ? "; Secure" : "";
-    document.cookie = `${name}=${value || ""}${expires}; path=/; SameSite=Lax${secure}`;
+    document.cookie = `${name}=${
+      value || ""
+    }${expires}; path=/; SameSite=Lax${secure}`;
   },
 
   get(name) {
@@ -375,7 +377,7 @@ function createObserverWrapper(callback, options, triggerOnce = false) {
 
 export function createLazyLoadObserver(
   callback,
-  options = OBSERVER_CONFIGS.lazyLoad,
+  options = OBSERVER_CONFIGS.lazyLoad
 ) {
   return createObserverWrapper(callback, options, true);
 }
@@ -516,7 +518,7 @@ export class SectionTracker {
       document.addEventListener(
         "DOMContentLoaded",
         () => this.setupObserver(),
-        { once: true },
+        { once: true }
       );
     } else {
       setTimeout(() => this.setupObserver(), 100);
@@ -546,7 +548,7 @@ export class SectionTracker {
 
     this.observer = new IntersectionObserver(
       (entries) => this.handleIntersections(entries),
-      OBSERVER_CONFIGS.sectionTracking,
+      OBSERVER_CONFIGS.sectionTracking
     );
 
     this.sections.forEach((section) => {
@@ -558,7 +560,7 @@ export class SectionTracker {
 
   refreshSections() {
     this.sections = Array.from(
-      document.querySelectorAll("main .section[id], footer#site-footer[id]"),
+      document.querySelectorAll("main .section[id], footer#site-footer[id]")
     ).filter((section) => section.id);
 
     if (this.observer) {
