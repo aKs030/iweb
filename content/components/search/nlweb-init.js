@@ -16,8 +16,7 @@ async function initNLWeb() {
       document.body.appendChild(div);
     }
 
-    // eslint-disable-next-line no-unused-vars
-    const chat = new NLWebDropdownChat({
+    const _chat = new NLWebDropdownChat({
       containerId: "docs-search-container",
       site: DEFAULT_SITE,
       placeholder: "Search for docs...",

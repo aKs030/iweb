@@ -236,7 +236,7 @@ async function fetchVideoDetailsMap(apiKey, vidIds) {
   return map;
 }
 
-export function renderVideoCard(grid, it, detailsMap) {
+function renderVideoCard(grid, it, detailsMap) {
   const vid = it.snippet.resourceId.videoId;
   const rawTitle = it.snippet.title;
   const title = cleanTitle(rawTitle);
@@ -331,7 +331,7 @@ export function renderVideoCard(grid, it, detailsMap) {
   bindThumb(thumbBtn);
 }
 
-async function renderDemoVideos(grid, demo) {
+async function _renderDemoVideos(grid, demo) {
   grid.innerHTML = "";
   demo.forEach((it) => renderVideoCard(grid, it, {}));
 }
@@ -412,12 +412,12 @@ function cleanTitle(s) {
   if (!s) return s;
   // Remove trailing separator and channel name starting with Abdulkerim
   return String(s)
-    .replace(/\s*([\-–—|])\s*(Abdulkerim[\s\S]*)$/i, "")
+    .replace(/\s*([-–—|])\s*(Abdulkerim[\s\S]*)$/i, "")
     .trim();
 }
 
 // Helper: show friendly error message in page
-export function showErrorMessage(err) {
+function showErrorMessage(err) {
   try {
     const container =
       document.querySelector(".videos-main .container") || document.body;
@@ -468,7 +468,7 @@ export function showErrorMessage(err) {
 }
 
 // Helper: show non-error informational message in page
-export function showInfoMessage(msg) {
+function showInfoMessage(msg) {
   try {
     const container =
       document.querySelector(".videos-main .container") || document.body;
@@ -495,7 +495,7 @@ export function showInfoMessage(msg) {
 }
 
 // Extracted API loader (top-level to reduce nested complexity)
-export async function loadFromApi(apiKey, handle) {
+async function loadFromApi(apiKey, handle) {
   const channelId = await fetchChannelId(apiKey, handle);
   if (!channelId) return { items: [], detailsMap: {} };
 

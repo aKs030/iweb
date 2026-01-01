@@ -91,5 +91,3 @@ async function loadConfig() {
 }
 
 loadConfig();
-
-export default true;
