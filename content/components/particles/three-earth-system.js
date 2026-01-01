@@ -642,6 +642,26 @@ function setupViewportObserver(container) {
     threshold: 0,
   });
   viewportObserver.observe(container);
+
+  // Fallback: immediately check visibility to avoid cases where intersection
+  // events fire only after a scroll or layout change. If container is already
+  // in viewport, ensure render loop is running.
+  try {
+    const rect = container.getBoundingClientRect();
+    const isVisibleNow =
+      rect.top < globalThis.innerHeight &&
+      rect.bottom > 0 &&
+      rect.left < globalThis.innerWidth &&
+      rect.right > 0;
+    if (isVisibleNow) {
+      isSystemVisible = true;
+      if (!animationFrameId && animate && isSystemActive) {
+        animate();
+      }
+    }
+  } catch (err) {
+    log.debug("Immediate visibility check failed", err);
+  }
 }
 
 function updateEarthForSection(sectionName, options = {}) {
