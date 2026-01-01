@@ -379,17 +379,6 @@ function _createLoadingManager(THREE, container) {
     try {
       const progress = Math.min(1, _itemsLoaded / Math.max(1, _itemsTotal));
       showLoadingState(container, progress);
-
-      const pct = Math.round(progress * 100);
-      try {
-        document.dispatchEvent(
-          new CustomEvent("three-progress", {
-            detail: { progress, percent: pct },
-          })
-        );
-      } catch (err) {
-        log.debug("three-progress dispatch failed", err);
-      }
     } catch (err) {
       log.debug("onProgress UI update failed", err);
     }
@@ -405,17 +394,6 @@ function _createLoadingManager(THREE, container) {
     // Mark assets as ready; delay hiding the global loader until the first
     // actual frame is rendered to avoid flashing/blank between loader and canvas
     assetsReady = true;
-
-    // Emit final progress update (100%) before signaling readiness
-    try {
-      document.dispatchEvent(
-        new CustomEvent("three-progress", {
-          detail: { progress: 1, percent: 100 },
-        })
-      );
-    } catch (err) {
-      log.debug("three-progress (final) dispatch failed", err);
-    }
 
     // Signal that Three has finished loading textures/resources and is ready
     try {
