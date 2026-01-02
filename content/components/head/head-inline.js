@@ -51,6 +51,8 @@ try {
   gtag("consent", "default", {
     ad_storage: "denied",
     analytics_storage: "denied",
+    ad_user_data: "denied",
+    ad_personalization: "denied",
   });
 } catch (e) {
   /* ignore */
@@ -74,6 +76,8 @@ try {
               gtag("consent", "update", {
                 ad_storage: "granted",
                 analytics_storage: "granted",
+                ad_user_data: "granted",
+                ad_personalization: "granted",
               });
             } catch (e) {
               /* ignore */
