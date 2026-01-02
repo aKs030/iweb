@@ -4,8 +4,8 @@ import {
   EVENTS,
   getElementById,
   TimerManager,
+  createLogger,
 } from '../../content/utils/shared-utilities.js';
-import { createLogger } from '../../content/utils/shared-utilities.js';
 // TypeWriter will be loaded lazily via dynamic import when needed
 let typeWriterModule = null;
 let stopHeroSubtitleFn = null;
@@ -21,6 +21,7 @@ const HeroManager = (() => {
   let heroData = null;
   let isInitialized = false;
   let _currentTypeWriter = null; // stored instance for controlled cleanup
+  void _currentTypeWriter; // hint to linter: variable may be used indirectly (cleanup/inspection)
 
   async function loadTyped(heroDataModule) {
     try {

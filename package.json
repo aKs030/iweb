@@ -30,7 +30,7 @@
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-prettier": "^4.2.5",
     "husky": "^8.0.0",
-    "lint-staged": "^13.0.0",
+    "lint-staged": "^16.2.7",
     "playwright": "^1.40.0",
     "prettier": "^2.8.8"
   },
