@@ -42,7 +42,7 @@
 
   /* Z-Index Scale */
   --z-footer: 1000;
-  --z-cookie-modal: 10000;
+  /* cookie modal z-index removed; cookie styles live in cookie-consent.css */
 
   /* Icon sizing */
   --footer-icon-size-sm: 12px;
@@ -188,10 +188,8 @@ body.footer-expanded {
   flex-wrap: nowrap;
   flex-shrink: 0;
 }
-
 .footer-nav-link,
-.footer-legal-link-enhanced,
-.footer-cookie-btn {
+.footer-legal-link-enhanced {
   color: var(--dynamic-footer-label-primary);
   font-size: var(--footer-text-xs);
   display: inline-flex;
@@ -213,19 +211,9 @@ body.footer-expanded {
   text-decoration: none;
   will-change: transform, background-color;
 }
-
-.footer-cookie-btn {
-  font: inherit;
-  cursor: pointer;
-  line-height: 1;
-  appearance: none;
-}
-
 .footer-nav-link svg,
 .footer-legal-link-enhanced svg,
-.footer-brand-link-enhanced svg,
-.footer-cookies-link svg,
-.footer-cookie-btn svg {
+.footer-brand-link-enhanced svg {
   width: 14px;
   height: 14px;
   flex-shrink: 0;
@@ -243,9 +231,7 @@ body.footer-expanded {
 /* Ensure icons use currentColor so hover color changes apply */
 .footer-nav-link svg *,
 .footer-legal-link-enhanced svg *,
-.footer-brand-link-enhanced svg *,
-.footer-cookies-link svg *,
-.footer-cookie-btn svg * {
+.footer-brand-link-enhanced svg * {
   stroke: currentcolor;
   fill: currentcolor;
 }
@@ -253,26 +239,21 @@ body.footer-expanded {
 /* Slightly increase gap between icon and text */
 .footer-nav-link,
 .footer-legal-link-enhanced,
-.footer-brand-link-enhanced,
-.footer-cookie-btn {
+.footer-brand-link-enhanced {
   gap: var(--footer-icon-gap);
   align-items: center;
   line-height: 1;
 }
-
 .footer-nav-link:hover,
-.footer-legal-link-enhanced:hover,
-.footer-cookie-btn:hover {
+.footer-legal-link-enhanced:hover {
   color: var(--dynamic-footer-label-primary);
   border-color: var(--footer-chip-border-strong);
   background: var(--footer-chip-bg-hover);
   transform: translateY(-1px);
   box-shadow: 0 14px 32px rgba(0, 0, 0, 0.18);
 }
-
 .footer-nav-link:focus-visible,
-.footer-legal-link-enhanced:focus-visible,
-.footer-cookie-btn:focus-visible {
+.footer-legal-link-enhanced:focus-visible {
   outline: 2px solid var(--dynamic-footer-accent-blue);
   outline-offset: 3px;
 }
@@ -471,12 +452,7 @@ body.footer-expanded {
 @media (max-width: 480px) {
   .footer-nav-link,
   .footer-legal-link-enhanced,
-  .footer-cookie-btn,
-  .footer-social-btn,
-  .cookie-accept-btn,
-  .cookie-reject-btn,
-  .cookie-settings-close,
-  .footer-cookies-link {
+  .footer-social-btn {
     min-height: 44px;
     padding: 10px 12px;
     border-radius: 8px;
@@ -712,219 +688,6 @@ body.footer-expanded {
 .newsletter-submit-enhanced:hover {
   background: var(--dynamic-footer-accent-purple);
   transform: translateY(-1px) translateZ(0);
-}
-
-/* ===== Cookie Settings (Kompakter) ===== */
-.footer-cookie-settings {
-  position: relative;
-  width: 100%;
-  background: var(--dynamic-footer-bg-card);
-  border-radius: var(--dynamic-footer-radius-large);
-  z-index: 100;
-  overflow: hidden;
-  animation: slideUpFade 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  transform: translateZ(0);
-}
-
-/* Trigger zone: invisible, non-interactive element used by IntersectionObserver. Keep a minimal height so it is detectable across browsers. */
-.footer-trigger-zone {
-  display: block;
-  width: 100%;
-  min-height: 16px; /* increased to improve first-scroll intersection detection */
-  pointer-events: none;
-  visibility: hidden; /* ensure it doesn't affect layout visually */
-}
-
-.footer-cookie-settings.hidden {
-  display: none;
-}
-
-/* Cookie settings layout center and constrain width */
-.cookie-settings-container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: var(--footer-spacing-md);
-  box-sizing: border-box;
-}
-
-.cookie-settings-content {
-  display: flex;
-  flex-direction: column;
-  gap: var(--footer-spacing-xs);
-  align-items: center; /* center stack */
-}
-
-/* Compact header + actions */
-.cookie-settings-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 10px;
-  border-bottom: 1px solid var(--dynamic-footer-separator);
-}
-
-.cookie-settings-header h2 {
-  margin: 0;
-  font-size: var(--footer-text-sm);
-  color: var(--dynamic-footer-label-primary);
-  font-weight: var(--dynamic-footer-font-weight-medium);
-}
-
-.cookie-settings-close {
-  background: transparent;
-  border: none;
-  width: 28px;
-  height: 28px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--dynamic-footer-micro-radius);
-  color: var(--dynamic-footer-label-secondary);
-}
-
-.cookie-settings-close:hover {
-  background: var(--dynamic-footer-fill-primary);
-  color: var(--dynamic-footer-label-primary);
-}
-
-/* Make cookie sections compact within footer view */
-.footer-cookie-settings .cookie-category {
-  margin-bottom: 8px;
-  padding: 8px;
-  background: var(--dynamic-footer-fill-secondary);
-  border: 1px solid var(--dynamic-footer-separator);
-  border-radius: var(--dynamic-footer-micro-radius);
-  width: 100%;
-  max-width: 560px; /* do not stretch full width */
-}
-
-.footer-cookie-settings .cookie-category-header {
-  margin-bottom: 4px;
-}
-
-.footer-cookie-settings .cookie-category-header h3 {
-  font-size: var(--footer-text-sm);
-}
-
-.footer-cookie-settings .cookie-category-description {
-  font-size: var(--footer-text-xs);
-  line-height: 1.4;
-  margin-bottom: 6px;
-}
-
-.footer-cookie-settings .cookie-item {
-  padding: 6px;
-  margin-bottom: 6px;
-}
-
-.footer-cookie-settings .cookie-item p,
-.footer-cookie-settings .cookie-item strong {
-  font-size: var(--footer-text-xs);
-}
-
-.footer-cookie-settings .cookie-duration {
-  font-size: 10px;
-}
-
-/* Compact intro */
-.footer-cookie-settings .cookie-settings-intro {
-  font-size: var(--footer-text-xs);
-  line-height: 1.4;
-  color: var(--dynamic-footer-label-secondary);
-  margin: 4px 0 6px;
-}
-
-/* Smaller status chip */
-.footer-cookie-settings .cookie-status {
-  padding: 2px 8px;
-  font-size: 10px;
-}
-
-/* Smaller toggle within footer cookie view */
-.footer-cookie-settings .cookie-toggle {
-  width: 40px;
-  height: 20px;
-}
-
-.footer-cookie-settings .cookie-toggle-slider::before {
-  width: 14px;
-  height: 14px;
-  left: 3px;
-  bottom: 3px;
-}
-
-.footer-cookie-settings
-  .cookie-toggle
-  input:checked
-  + .cookie-toggle-slider::before {
-  transform: translateX(20px);
-}
-
-.footer-cookie-settings .cookie-toggle input:focus + .cookie-toggle-slider {
-  box-shadow: 0 0 0 2px rgb(10 132 255 / 35%);
-}
-
-/* Footer actions (buttons) */
-.cookie-settings-footer {
-  display: flex;
-  gap: 6px;
-  justify-content: center;
-  padding-top: 8px;
-  width: 100%;
-  max-width: 560px; /* align with centered cards */
-  margin: 8px auto 0;
-}
-
-.cookie-settings-btn {
-  padding: 5px 9px;
-  border-radius: 6px;
-  font-size: var(--footer-text-xs);
-  font-weight: var(--dynamic-footer-font-weight-medium);
-  border: 1px solid transparent;
-  cursor: pointer;
-}
-
-.cookie-settings-btn-primary {
-  background: var(--dynamic-footer-accent-blue);
-  color: #fff;
-}
-
-.cookie-settings-btn-primary:hover {
-  background: var(--dynamic-footer-accent-purple);
-}
-
-.cookie-settings-btn-secondary {
-  background: var(--dynamic-footer-fill-secondary);
-  color: var(--dynamic-footer-label-primary);
-  border-color: var(--dynamic-footer-separator);
-}
-
-.cookie-settings-btn-secondary:hover {
-  background: var(--dynamic-footer-fill-primary);
-}
-
-/* Keep mobile targets comfortable */
-@media (width <= 768px) {
-  .footer-cookie-settings .cookie-toggle {
-    width: 48px;
-    height: 24px;
-  }
-
-  .footer-cookie-settings .cookie-toggle-slider::before {
-    width: 18px;
-    height: 18px;
-  }
-
-  .footer-cookie-settings
-    .cookie-toggle
-    input:checked
-    + .cookie-toggle-slider::before {
-    transform: translateX(24px);
-  }
-
-  .cookie-settings-footer .cookie-settings-btn {
-    padding: 8px 12px;
-  }
 }
 
 @keyframes slideUpFade {
@@ -1250,17 +1013,14 @@ body.footer-expanded {
 
   .footer-nav-link,
   .footer-legal-link-enhanced,
-  .footer-cookie-btn,
   .footer-social-btn {
     padding: 10px;
     min-height: 44px;
     min-width: 44px;
     justify-content: center;
   }
-
   .footer-nav-link svg,
   .footer-legal-link-enhanced svg,
-  .footer-cookie-btn svg,
   .footer-social-btn svg {
     width: 16px;
     height: 16px;
