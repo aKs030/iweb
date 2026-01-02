@@ -118,11 +118,11 @@
 }
 
 /* CSS-Only Fallback (wenn TypeWriter JS nicht lädt) */
-body:not(.has-typingjs) .typewriter-title .cursor {
+.typewriter-title:not(.has-typingjs) .cursor {
   display: none;
 }
 
-body:not(.has-typingjs) .typewriter-title .typed-text {
+.typewriter-title:not(.has-typingjs) .typed-text {
   display: inline-block;
   white-space: nowrap;
   overflow: hidden;
