@@ -62,27 +62,33 @@ export class RobotCollision {
     // Update obstacle cache periodically
     this.updateObstacleCache();
 
+    // Batch all layout reads first (prevent layout thrashing)
     const robotRect = this.robot.dom.avatar.getBoundingClientRect();
+    
+    // Pre-calculate hitbox once
+    const hitBox = {
+      left: robotRect.left + 15,
+      right: robotRect.right - 15,
+      top: robotRect.top + 10,
+      bottom: robotRect.bottom - 10,
+    };
 
-    // Iterate only over visible obstacles
-    for (const obs of this.visibleObstacles) {
-      // Skip hidden or tiny elements (re-check visibility as they might have changed)
-      if (obs.offsetParent === null) continue;
+    // Read all obstacle rects in one batch
+    const obstacles = Array.from(this.visibleObstacles)
+      .filter(obs => {
+        // Quick visibility checks without layout reads
+        if (obs.offsetParent === null) return false;
+        if (this.robot.dom.container.contains(obs)) return false;
+        return true;
+      })
+      .map(obs => ({
+        element: obs,
+        rect: obs.getBoundingClientRect()
+      }));
 
-      // Skip self (just in case) or children
-      if (this.robot.dom.container.contains(obs)) continue;
-
-      const obsRect = obs.getBoundingClientRect();
-
-      // Intersection check
-      // Robot is roughly 80x80. We use a smaller hitbox.
-      const hitBox = {
-        left: robotRect.left + 15,
-        right: robotRect.right - 15,
-        top: robotRect.top + 10,
-        bottom: robotRect.bottom - 10,
-      };
-
+    // Now process collisions with cached rects
+    for (const { element: obs, rect: obsRect } of obstacles) {
+      // Intersection check with pre-calculated hitbox
       const intersect = !(
         obsRect.right < hitBox.left ||
         obsRect.left > hitBox.right ||
