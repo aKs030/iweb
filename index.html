@@ -348,7 +348,35 @@
       }
       .three-earth-fallback {
         display: block;
+        /* Make the fallback occupy the full container without affecting page flow */
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        pointer-events: none;
       }
+
+      /* Hero / Three.js visual reservation (prevents large CLS) */
+      #threeEarthContainer.three-earth-container,
+      .three-earth-container {
+        /* Stable visual while WebGL/JS loads */
+        background-color: #04050a;
+        background-image: url("/content/assets/img/og/og-home@1200.avif");
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: cover;
+        /* Reserve vertical space so other layout doesn't shift when the canvas is inserted */
+        min-height: clamp(520px, 60vh, 820px);
+        contain: layout paint;
+        will-change: transform, opacity;
+        /* Keep the visual out of document flow */
+        position: fixed;
+        inset: 0;
+        z-index: 0 !important;
+        pointer-events: none;
+      }
+
       /* Reserve space for main content to prevent CLS */
       #main-content {
         min-height: 100vh;
