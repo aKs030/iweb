@@ -76,20 +76,17 @@ const HeroManager = (() => {
       return;
     }
 
-    // Batch layout read in requestAnimationFrame to prevent reflow
-    requestAnimationFrame(() => {
-      const rect = heroEl.getBoundingClientRect();
-      if (rect.top < innerHeight && rect.bottom > 0) {
-        triggerLoad();
-        return;
-      }
+    const rect = heroEl.getBoundingClientRect();
+    if (rect.top < innerHeight && rect.bottom > 0) {
+      triggerLoad();
+      return;
+    }
 
-      const obs = createTriggerOnceObserver(triggerLoad);
-      obs.observe(heroEl);
+    const obs = createTriggerOnceObserver(triggerLoad);
+    obs.observe(heroEl);
 
-      // Fallback load just in case observer fails or is delayed too long
-      heroTimers.setTimeout(triggerLoad, 6000);
-    });
+    // Fallback load just in case observer fails or is delayed too long
+    heroTimers.setTimeout(triggerLoad, 6000);
   }
 
   const ensureHeroData = async () =>
