@@ -295,6 +295,20 @@ const GoogleAnalytics = {
   },
 };
 
+// Helper: update gtag consent state safely
+function updateGtagConsent(granted = true) {
+  try {
+    if (typeof gtag === "function") {
+      gtag("consent", "update", {
+        ad_storage: granted ? "granted" : "denied",
+        analytics_storage: granted ? "granted" : "denied",
+      });
+    }
+  } catch (e) {
+    /* ignore */
+  }
+}
+
 // ===== Consent Banner (Optimized) =====
 class ConsentBanner {
   constructor() {
@@ -312,9 +326,12 @@ class ConsentBanner {
     const consent = CookieManager.get("cookie_consent");
 
     if (consent === "accepted") {
+      // ensure gtag consent state is set for already-accepted users
+      updateGtagConsent(true);
       GoogleAnalytics.load();
       banner.classList.add("hidden");
     } else if (consent === "rejected") {
+      updateGtagConsent(false);
       banner.classList.add("hidden");
     } else {
       banner.classList.remove("hidden");
@@ -332,6 +349,8 @@ class ConsentBanner {
     globalThis.dataLayer = globalThis.dataLayer || [];
     globalThis.dataLayer.push({ event: "consentGranted" });
 
+    // Update gtag consent immediately and load analytics
+    updateGtagConsent(true);
     GoogleAnalytics.load();
     try {
       a11y?.announce("Cookie-Präferenz: Alle Cookies akzeptiert", {
@@ -376,6 +395,7 @@ const CookieSettings = (() => {
       rejectAllBtn: () => {
         CookieManager.set("cookie_consent", "rejected");
         CookieManager.deleteAnalytics();
+        updateGtagConsent(false);
         try {
           a11y?.announce("Cookie-Einstellungen: Nur notwendige Cookies aktiv", {
             priority: "polite",
@@ -391,6 +411,7 @@ const CookieSettings = (() => {
           globalThis.dataLayer = globalThis.dataLayer || [];
           globalThis.dataLayer.push({ event: "consentGranted" });
 
+          updateGtagConsent(true);
           GoogleAnalytics.load();
           try {
             a11y?.announce(
@@ -401,6 +422,7 @@ const CookieSettings = (() => {
         } else {
           CookieManager.set("cookie_consent", "rejected");
           CookieManager.deleteAnalytics();
+          updateGtagConsent(false);
           try {
             a11y?.announce(
               "Cookie-Einstellungen gespeichert: Analyse deaktiviert",
@@ -417,6 +439,7 @@ const CookieSettings = (() => {
         globalThis.dataLayer = globalThis.dataLayer || [];
         globalThis.dataLayer.push({ event: "consentGranted" });
 
+        updateGtagConsent(true);
         GoogleAnalytics.load();
         try {
           a11y?.announce("Cookie-Einstellungen: Alle Cookies aktiviert", {
