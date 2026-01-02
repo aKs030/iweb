@@ -3,7 +3,7 @@
   "containerVersion": {
     "container": {
       "publicId": "GT-TQTFN4NN",
-      "name": "Meine Webseite - GA4 + Ads (GT-TQTFN4NN)"
+      "name": "meine-webseite.local - GA4 + Ads (GT-TQTFN4NN)"
     },
     "tag": [
       {
@@ -59,8 +59,16 @@
           {
             "type": "equals",
             "parameter": [
-              { "key": "arg0", "type": "TEMPLATE", "value": "event" },
-              { "key": "arg1", "type": "TEMPLATE", "value": "consentGranted" }
+              {
+                "key": "arg0",
+                "type": "TEMPLATE",
+                "value": "event"
+              },
+              {
+                "key": "arg1",
+                "type": "TEMPLATE",
+                "value": "consentGranted"
+              }
             ]
           }
         ]
@@ -73,7 +81,11 @@
           {
             "type": "equals",
             "parameter": [
-              { "key": "arg0", "type": "TEMPLATE", "value": "event" },
+              {
+                "key": "arg0",
+                "type": "TEMPLATE",
+                "value": "event"
+              },
               {
                 "key": "arg1",
                 "type": "TEMPLATE",
@@ -91,8 +103,16 @@
           {
             "type": "equals",
             "parameter": [
-              { "key": "arg0", "type": "TEMPLATE", "value": "event" },
-              { "key": "arg1", "type": "TEMPLATE", "value": "conversionEvent" }
+              {
+                "key": "arg0",
+                "type": "TEMPLATE",
+                "value": "event"
+              },
+              {
+                "key": "arg1",
+                "type": "TEMPLATE",
+                "value": "conversionEvent"
+              }
             ]
           }
         ]
@@ -101,23 +121,35 @@
     "variable": [
       {
         "name": "GA4_MEASUREMENT_ID",
-        "type": "constant",
+        "type": "dataLayer",
         "parameter": [
-          { "key": "value", "type": "TEMPLATE", "value": "G-S0587RQ4CN" }
+          {
+            "key": "name",
+            "type": "TEMPLATE",
+            "value": "ga4_measurement_id"
+          }
         ]
       },
       {
         "name": "AW_CONVERSION_ID",
-        "type": "constant",
+        "type": "dataLayer",
         "parameter": [
-          { "key": "value", "type": "TEMPLATE", "value": "AW-17819941793" }
+          {
+            "key": "name",
+            "type": "TEMPLATE",
+            "value": "ads_conversion_id"
+          }
         ]
       },
       {
         "name": "AW_CONVERSION_LABEL",
-        "type": "constant",
+        "type": "dataLayer",
         "parameter": [
-          { "key": "value", "type": "TEMPLATE", "value": "AW-CONV-LABEL" }
+          {
+            "key": "name",
+            "type": "TEMPLATE",
+            "value": "ads_conversion_label"
+          }
         ]
       }
     ],

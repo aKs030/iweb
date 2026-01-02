@@ -11,10 +11,7 @@ body {
   background-color: var(--blog-bg);
   color: var(--blog-text);
   margin: 0;
-  font-family:
-    system-ui,
-    -apple-system,
-    sans-serif;
+  font-family: system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -73,9 +70,7 @@ body {
   border: 1px solid var(--blog-border);
   border-radius: 12px;
   padding: 1.5rem;
-  transition:
-    transform 0.2s ease,
-    border-color 0.2s ease;
+  transition: transform 0.2s ease, border-color 0.2s ease;
   display: flex;
   flex-direction: column;
   height: 100%;

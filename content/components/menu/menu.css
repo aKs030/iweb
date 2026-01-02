@@ -36,9 +36,7 @@
   border-radius: 8px;
   border: 2px solid var(--accent-primary, #0f8);
   box-shadow: 0 4px 16px rgb(0 0 0 / 30%);
-  transition:
-    clip-path 0.3s ease,
-    box-shadow 0.2s ease;
+  transition: clip-path 0.3s ease, box-shadow 0.2s ease;
   pointer-events: auto;
   white-space: nowrap;
   z-index: 10001;
@@ -131,9 +129,7 @@ body {
 .site-menu__list li,
 .site-menu__list li a {
   font-family: var(--font-primary);
-  font-feature-settings:
-    "kern" 1,
-    "liga" 1;
+  font-feature-settings: 'kern' 1, 'liga' 1;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-size: 17px; /* Dynamic Menu Standard Body Size */
@@ -186,8 +182,7 @@ body {
   z-index: 9999;
 
   /* Animation */
-  animation: dynamicMenuHeaderAppear 0.8s var(--dynamic-menu-spring-bounce)
-    forwards;
+  animation: dynamicMenuHeaderAppear 0.8s var(--dynamic-menu-spring-bounce) forwards;
   opacity: 0;
   transform: translateX(-50%) translateY(-20px) scale(0.95);
 
@@ -428,7 +423,7 @@ button.submenu-toggle:focus .icon-fallback {
 .site-menu__hamburger,
 .site-menu__hamburger::before,
 .site-menu__hamburger::after {
-  content: "";
+  content: '';
   display: block;
   background: var(--dynamic-menu-label-primary);
   width: 18px;
@@ -658,7 +653,7 @@ main {
   /* Mobile submenu indicator */
   .site-menu__list .has-submenu > a::after,
   .site-menu__list .has-submenu > .submenu-toggle::after {
-    content: "⌄";
+    content: '⌄';
     transform: rotate(-90deg);
   }
 
@@ -679,7 +674,7 @@ main {
 /* ===== Dynamic Menu Submenu Indicators ===== */
 .site-menu__list .has-submenu > a::after,
 .site-menu__list .has-submenu > .submenu-toggle::after {
-  content: "›";
+  content: '›';
   display: inline-block;
   margin-left: 8px;
   font-size: 16px;

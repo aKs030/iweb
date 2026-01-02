@@ -3,12 +3,11 @@
   <head>
     <meta charset="utf-8" />
     <!-- Content-Security-Policy removed per user request (less restrictive) -->
+    <!-- Google measurement IDs (GA4 / Ads) are injected dynamically by
+         /content/components/head/head-inline.js using content/config/site-config.js.
+         Do not hardcode them here. -->
     <script>
       globalThis.dataLayer = globalThis.dataLayer || [];
-      globalThis.dataLayer.push({
-        ga4_measurement_id: "G-757KWG0PG4",
-        ads_conversion_id: "AW-1036079663",
-      });
     </script>
     <title>Abdulkerim Sesli — Web Developer & Photographer in Berlin</title>
     <meta
@@ -395,17 +394,7 @@
       </style>
     </noscript>
 
-    <!-- Google Tag Manager (noscript) -->
-    <noscript
-      ><iframe
-        title="Google Tag Manager (noscript)"
-        src="https://www.googletagmanager.com/ns.html?id=GTM-5F5ZSTTL"
-        height="0"
-        width="0"
-        style="display: none; visibility: hidden"
-      ></iframe
-    ></noscript>
-    <!-- End Google Tag Manager (noscript) -->
+    <!-- Google Tag Manager (noscript) removed — noscript iframe is injected dynamically by head-inline.js if GTM is configured (see content/config/site-config.js) -->
     <!-- Menü (dynamisch geladen) -->
     <header class="site-header">
       <div id="menu-container"></div>
