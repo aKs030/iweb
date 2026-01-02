@@ -439,18 +439,18 @@
         will-change: transform, opacity;
       }
 
-      /* Hotfix: disable layout-affecting transitions while dynamic intro classes are active
-         This prevents large CLS caused by JS toggling classes that affect layout.
-         Remove once full refactors are implemented. */
-      body.has-typingjs *, body.global-loading-visible * {
-        /* Allow only transform/opacity animations; block margin/padding/top/height changes */
-        transition-property: transform, opacity !important;
-        transition-duration: 0s !important;
-        animation: none !important;
+      /* Loader overlay scoping: keep loader styles fixed/overlayed without touching document flow */
+      body.global-loading-visible #app-loader,
+      body.global-loading-visible .loader-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 99998;
+        pointer-events: none;
       }
-      body.has-typingjs, body.global-loading-visible {
-        transition: none !important;
-      }
+
+      /* Note: Removed broad 'disable transitions' hotfix that globally blocked transitions while the
+         TypeWriter was active. TypeWriter is now using transform/opacity and reserved heights so
+         the global rule is no longer necessary and was causing testability issues. */
     </style>
 
     <!-- Loader CSS inline (prevents render-blocking) -->
