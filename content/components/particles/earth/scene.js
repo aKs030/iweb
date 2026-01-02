@@ -1,4 +1,4 @@
-import { CONFIG } from "./config.js";
+import { CONFIG } from './config.js';
 
 export function setupScene(THREE, container) {
   const scene = new THREE.Scene();
@@ -8,14 +8,14 @@ export function setupScene(THREE, container) {
     CONFIG.CAMERA.FOV,
     aspectRatio,
     CONFIG.CAMERA.NEAR,
-    CONFIG.CAMERA.FAR,
+    CONFIG.CAMERA.FAR
   );
 
   const renderer = new THREE.WebGLRenderer({
-    canvas: container.querySelector("canvas") || undefined,
+    canvas: container.querySelector('canvas') || undefined,
     antialias: false,
     alpha: true,
-    powerPreference: "low-power",
+    powerPreference: 'low-power',
     preserveDrawingBuffer: false,
   });
 
@@ -33,11 +33,11 @@ export function setupScene(THREE, container) {
 
   // Mark that the renderer DOM element has been attached so tests or other code can detect presence
   try {
-    container.dataset.threeAttached = "1";
+    container.dataset.threeAttached = '1';
     document.dispatchEvent(
-      new CustomEvent("three-attached", {
+      new CustomEvent('three-attached', {
         detail: { containerId: container.id || null },
-      }),
+      })
     );
   } catch {
     /* ignore */
@@ -47,16 +47,13 @@ export function setupScene(THREE, container) {
 }
 
 export function setupLighting(THREE, scene) {
-  const directionalLight = new THREE.DirectionalLight(
-    0xffffff,
-    CONFIG.SUN.INTENSITY,
-  );
+  const directionalLight = new THREE.DirectionalLight(0xffffff, CONFIG.SUN.INTENSITY);
   directionalLight.position.set(CONFIG.SUN.RADIUS, CONFIG.SUN.HEIGHT, 0);
   scene.add(directionalLight);
 
   const ambientLight = new THREE.AmbientLight(
     CONFIG.LIGHTING.DAY.AMBIENT_COLOR,
-    CONFIG.LIGHTING.DAY.AMBIENT_INTENSITY,
+    CONFIG.LIGHTING.DAY.AMBIENT_INTENSITY
   );
   scene.add(ambientLight);
 
@@ -120,17 +117,11 @@ export function createAtmosphere(THREE, isMobileDevice = false) {
     depthWrite: false,
   });
 
-  const segments = isMobileDevice
-    ? CONFIG.EARTH.SEGMENTS_MOBILE
-    : CONFIG.EARTH.SEGMENTS;
+  const segments = isMobileDevice ? CONFIG.EARTH.SEGMENTS_MOBILE : CONFIG.EARTH.SEGMENTS;
 
   const atmosphere = new THREE.Mesh(
-    new THREE.SphereGeometry(
-      CONFIG.EARTH.RADIUS * CONFIG.ATMOSPHERE.SCALE,
-      segments,
-      segments,
-    ),
-    atmosphereMaterial,
+    new THREE.SphereGeometry(CONFIG.EARTH.RADIUS * CONFIG.ATMOSPHERE.SCALE, segments, segments),
+    atmosphereMaterial
   );
 
   return atmosphere;

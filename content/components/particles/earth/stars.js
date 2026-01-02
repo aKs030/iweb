@@ -1,7 +1,7 @@
-import { CONFIG } from "./config.js";
-import { createLogger } from "../../../utils/shared-utilities.js";
+import { CONFIG } from './config.js';
+import { createLogger } from '../../../utils/shared-utilities.js';
 
-const log = createLogger("EarthStars");
+const log = createLogger('EarthStars');
 
 export class StarManager {
   constructor(THREE, scene, camera, renderer) {
@@ -21,7 +21,7 @@ export class StarManager {
       rafId: null,
     };
 
-    this.isMobileDevice = window.matchMedia("(max-width: 768px)").matches;
+    this.isMobileDevice = window.matchMedia('(max-width: 768px)').matches;
     this.scrollUpdateEnabled = false;
     this.lastScrollUpdate = 0;
     this.scrollUpdateThrottle = 150;
@@ -35,9 +35,7 @@ export class StarManager {
   createStarField() {
     if (this.isDisposed) return null;
 
-    const starCount = this.isMobileDevice
-      ? CONFIG.STARS.COUNT / 2
-      : CONFIG.STARS.COUNT;
+    const starCount = this.isMobileDevice ? CONFIG.STARS.COUNT / 2 : CONFIG.STARS.COUNT;
     const positions = new Float32Array(starCount * 3);
     const targetPositions = new Float32Array(starCount * 3);
     const colors = new Float32Array(starCount * 3);
@@ -71,19 +69,13 @@ export class StarManager {
     }
 
     const starGeometry = new this.THREE.BufferGeometry();
+    starGeometry.setAttribute('position', new this.THREE.BufferAttribute(positions, 3));
     starGeometry.setAttribute(
-      "position",
-      new this.THREE.BufferAttribute(positions, 3)
-    );
-    starGeometry.setAttribute(
-      "aTargetPosition",
+      'aTargetPosition',
       new this.THREE.BufferAttribute(targetPositions, 3)
     );
-    starGeometry.setAttribute(
-      "color",
-      new this.THREE.BufferAttribute(colors, 3)
-    );
-    starGeometry.setAttribute("size", new this.THREE.BufferAttribute(sizes, 1));
+    starGeometry.setAttribute('color', new this.THREE.BufferAttribute(colors, 3));
+    starGeometry.setAttribute('size', new this.THREE.BufferAttribute(sizes, 1));
 
     const starMaterial = new this.THREE.ShaderMaterial({
       uniforms: {
@@ -150,12 +142,8 @@ export class StarManager {
       if (!rects || rects.length === 0) return [];
 
       const positions = [];
-      const width = this.renderer
-        ? this.renderer.domElement.clientWidth
-        : window.innerWidth;
-      const height = this.renderer
-        ? this.renderer.domElement.clientHeight
-        : window.innerHeight;
+      const width = this.renderer ? this.renderer.domElement.clientWidth : window.innerWidth;
+      const height = this.renderer ? this.renderer.domElement.clientHeight : window.innerHeight;
 
       rects.forEach((rect) => {
         if (rect.right - rect.left > 0 && rect.bottom - rect.top > 0) {
@@ -177,17 +165,9 @@ export class StarManager {
     return [];
   }
 
-  getCardPerimeterPositions(
-    rect,
-    viewportWidth,
-    viewportHeight,
-    targetZ,
-    cardCount = 3
-  ) {
+  getCardPerimeterPositions(rect, viewportWidth, viewportHeight, targetZ, cardCount = 3) {
     const positions = [];
-    const totalStars = this.isMobileDevice
-      ? CONFIG.STARS.COUNT / 2
-      : CONFIG.STARS.COUNT;
+    const totalStars = this.isMobileDevice ? CONFIG.STARS.COUNT / 2 : CONFIG.STARS.COUNT;
     const starsPerCard = Math.floor(totalStars / cardCount);
 
     // Calculate distributions: 20% on perimeter, 80% inside
@@ -255,8 +235,7 @@ export class StarManager {
       if (!this.isDisposed && this.transition.targetValue === 1.0) {
         // Refine once settled
         const refinedPositions = this.getCardPositions();
-        if (refinedPositions.length > 0)
-          this.updateTargetBuffer(refinedPositions);
+        if (refinedPositions.length > 0) this.updateTargetBuffer(refinedPositions);
       }
     }, CONFIG.STARS.ANIMATION.CAMERA_SETTLE_DELAY);
   }
@@ -273,7 +252,7 @@ export class StarManager {
     if (this.scrollUpdateEnabled || this.isDisposed) return;
     this.scrollUpdateEnabled = true;
     this.boundScrollHandler = this.handleScroll.bind(this);
-    window.addEventListener("scroll", this.boundScrollHandler, {
+    window.addEventListener('scroll', this.boundScrollHandler, {
       passive: true,
     });
   }
@@ -282,14 +261,13 @@ export class StarManager {
     if (!this.scrollUpdateEnabled) return;
     this.scrollUpdateEnabled = false;
     if (this.boundScrollHandler) {
-      window.removeEventListener("scroll", this.boundScrollHandler);
+      window.removeEventListener('scroll', this.boundScrollHandler);
       this.boundScrollHandler = null;
     }
   }
 
   handleScroll() {
-    if (!this.scrollUpdateEnabled || this.isDisposed || this.transition.active)
-      return;
+    if (!this.scrollUpdateEnabled || this.isDisposed || this.transition.active) return;
 
     const now = performance.now();
     if (now - this.lastScrollUpdate < this.scrollUpdateThrottle) return;
@@ -316,8 +294,7 @@ export class StarManager {
         const spreadFactor = CONFIG.STARS.ANIMATION.SPREAD_XY;
         array[i3] = target.x + (Math.random() - 0.5) * spreadFactor;
         array[i3 + 1] = target.y + (Math.random() - 0.5) * spreadFactor;
-        array[i3 + 2] =
-          target.z + (Math.random() - 0.5) * CONFIG.STARS.ANIMATION.SPREAD_Z;
+        array[i3 + 2] = target.z + (Math.random() - 0.5) * CONFIG.STARS.ANIMATION.SPREAD_Z;
       }
     }
 
@@ -359,18 +336,13 @@ export class StarManager {
     }
 
     if (this.transition.active) {
-      this.transition.rafId = requestAnimationFrame(() =>
-        this.animateTransitionLoop()
-      );
+      this.transition.rafId = requestAnimationFrame(() => this.animateTransitionLoop());
     }
   }
 
   updateCardOpacity(transitionValue) {
     // WebGL-only: use CardManager progress API if available
-    if (
-      this.cardManager &&
-      typeof this.cardManager.setProgress === "function"
-    ) {
+    if (this.cardManager && typeof this.cardManager.setProgress === 'function') {
       this.cardManager.setProgress(transitionValue);
     }
   }
@@ -426,10 +398,7 @@ export class ShootingStarManager {
   }
 
   createShootingStar() {
-    if (
-      this.isDisposed ||
-      this.activeStars.length >= CONFIG.SHOOTING_STARS.MAX_SIMULTANEOUS
-    )
+    if (this.isDisposed || this.activeStars.length >= CONFIG.SHOOTING_STARS.MAX_SIMULTANEOUS)
       return;
 
     try {
@@ -467,7 +436,7 @@ export class ShootingStarManager {
 
       this.scene.add(star);
     } catch (error) {
-      log.error("Failed to create shooting star:", error);
+      log.error('Failed to create shooting star:', error);
     }
   }
 
@@ -497,8 +466,7 @@ export class ShootingStarManager {
 
       const fadeStart = star.lifetime * 0.7;
       if (star.age > fadeStart) {
-        const fadeProgress =
-          (star.age - fadeStart) / (star.lifetime - fadeStart);
+        const fadeProgress = (star.age - fadeStart) / (star.lifetime - fadeStart);
         star.mesh.material.opacity = 1 - fadeProgress;
       }
 
@@ -512,11 +480,10 @@ export class ShootingStarManager {
   }
 
   triggerShower() {
-    if (this.isDisposed || this.isShowerActive || this.showerCooldownTimer > 0)
-      return;
+    if (this.isDisposed || this.isShowerActive || this.showerCooldownTimer > 0) return;
     this.isShowerActive = true;
     this.showerTimer = 0;
-    log.info("🌠 Meteor shower triggered!");
+    log.info('🌠 Meteor shower triggered!');
   }
 
   cleanup() {

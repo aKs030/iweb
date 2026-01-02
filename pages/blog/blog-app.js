@@ -1,9 +1,9 @@
 /* global React, ReactDOM */
-import htm from "https://cdn.jsdelivr.net/npm/htm@3.1.1/dist/htm.module.js";
-import { createLogger } from "../../content/utils/shared-utilities.js";
+import htm from 'https://cdn.jsdelivr.net/npm/htm@3.1.1/dist/htm.module.js';
+import { createLogger } from '../../content/utils/shared-utilities.js';
 
-const log = createLogger("BlogApp");
-import { blogPosts } from "./blog-data.js";
+const log = createLogger('BlogApp');
+import { blogPosts } from './blog-data.js';
 
 const html = htm.bind(React.createElement);
 
@@ -43,28 +43,23 @@ const ArrowRight = () => html`
 `;
 
 function BlogApp() {
-  const [filter, setFilter] = React.useState("All");
+  const [filter, setFilter] = React.useState('All');
   const [currentPostId, setCurrentPostId] = React.useState(null);
 
   // Extract unique categories
-  const categories = [
-    "All",
-    ...new Set(blogPosts.map((post) => post.category)),
-  ];
+  const categories = ['All', ...new Set(blogPosts.map((post) => post.category))];
 
   const filteredPosts =
-    filter === "All"
-      ? blogPosts
-      : blogPosts.filter((post) => post.category === filter);
+    filter === 'All' ? blogPosts : blogPosts.filter((post) => post.category === filter);
 
   // Helper to escape HTML when inserting text content (prefixed with _ to silence unused-var warning)
   const _escapeHTML = (value) =>
     String(value)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#39;");
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
 
   // Sync with hash routing (#/blog/:id)
   React.useEffect(() => {
@@ -73,29 +68,25 @@ function BlogApp() {
       setCurrentPostId(m ? decodeURIComponent(m[1]) : null);
     };
     parseHash();
-    window.addEventListener("hashchange", parseHash);
-    return () => window.removeEventListener("hashchange", parseHash);
+    window.addEventListener('hashchange', parseHash);
+    return () => window.removeEventListener('hashchange', parseHash);
   }, []);
 
   // Update head (meta + JSON-LD) when viewing a single post
   React.useEffect(() => {
     if (!currentPostId) {
       // remove temp article JSON-LD and restore description/title if present
-      const t = document.querySelector(
-        'script[type="application/ld+json"][data-temp-article]'
-      );
+      const t = document.querySelector('script[type="application/ld+json"][data-temp-article]');
       if (t) t.remove();
-      const meta = document.querySelector(
-        'meta[name="description"][data-temp]'
-      );
+      const meta = document.querySelector('meta[name="description"][data-temp]');
       if (meta) {
-        const orig = meta.getAttribute("data-orig");
-        if (orig) meta.setAttribute("content", orig);
-        meta.removeAttribute("data-temp");
+        const orig = meta.getAttribute('data-orig');
+        if (orig) meta.setAttribute('content', orig);
+        meta.removeAttribute('data-temp');
       }
 
       // FIX: Restore the central title defined in head-complete.js/PAGE_CONFIG
-      document.title = "Tech Blog & Insights | Abdulkerim Sesli";
+      document.title = 'Tech Blog & Insights | Abdulkerim Sesli';
       return;
     }
 
@@ -106,74 +97,67 @@ function BlogApp() {
     const desc = post.excerpt || String(post.content).slice(0, 160);
     const meta = document.querySelector('meta[name="description"]');
     if (meta) {
-      if (!meta.getAttribute("data-orig"))
-        meta.setAttribute("data-orig", meta.getAttribute("content") || "");
-      meta.setAttribute("content", desc);
-      meta.setAttribute("data-temp", "1");
+      if (!meta.getAttribute('data-orig'))
+        meta.setAttribute('data-orig', meta.getAttribute('content') || '');
+      meta.setAttribute('content', desc);
+      meta.setAttribute('data-temp', '1');
     }
     document.title = `${post.title} — Abdulkerim Sesli`;
 
     // Insert Article JSON-LD (temp, dupe-safe)
     try {
-      if (
-        !document.querySelector(
-          'script[type="application/ld+json"][data-temp-article]'
-        )
-      ) {
+      if (!document.querySelector('script[type="application/ld+json"][data-temp-article]')) {
         const ld = {
-          "@context": "https://schema.org",
-          "@type": "BlogPosting",
+          '@context': 'https://schema.org',
+          '@type': 'BlogPosting',
           mainEntityOfPage: {
-            "@type": "WebPage",
-            "@id": `https://abdulkerimsesli.de/blog/${post.id}`,
+            '@type': 'WebPage',
+            '@id': `https://abdulkerimsesli.de/blog/${post.id}`,
           },
           headline: post.title,
           description: post.excerpt,
           datePublished: new Date(post.date).toISOString(),
           dateModified: new Date(post.date).toISOString(),
           author: {
-            "@type": "Person",
-            "@id": "https://abdulkerimsesli.de/#person",
+            '@type': 'Person',
+            '@id': 'https://abdulkerimsesli.de/#person',
           },
           image: {
-            "@type": "ImageObject",
-            url:
-              post.image ||
-              "https://abdulkerimsesli.de/content/assets/img/og/og-home.png",
+            '@type': 'ImageObject',
+            url: post.image || 'https://abdulkerimsesli.de/content/assets/img/og/og-home.png',
           },
           publisher: {
-            "@type": "Organization",
-            "@id": "https://abdulkerimsesli.de/#organization",
-            name: "Abdulkerim — Digital Creator Portfolio",
+            '@type': 'Organization',
+            '@id': 'https://abdulkerimsesli.de/#organization',
+            name: 'Abdulkerim — Digital Creator Portfolio',
             logo: {
-              "@type": "ImageObject",
-              url: "https://abdulkerimsesli.de/content/assets/img/icons/favicon-512.png",
-              contentUrl:
-                "https://abdulkerimsesli.de/content/assets/img/icons/favicon-512.png",
-              creator: { "@type": "Person", name: "Abdulkerim Sesli" },
-              license: "https://abdulkerimsesli.de/#image-license",
-              creditText: "Logo: Abdulkerim Sesli",
-              copyrightNotice: "© 2025 Abdulkerim Sesli",
-              acquireLicensePage: "https://abdulkerimsesli.de/#image-license",
+              '@type': 'ImageObject',
+              url: 'https://abdulkerimsesli.de/content/assets/img/icons/favicon-512.png',
+              contentUrl: 'https://abdulkerimsesli.de/content/assets/img/icons/favicon-512.png',
+              creator: { '@type': 'Person', name: 'Abdulkerim Sesli' },
+              license: 'https://abdulkerimsesli.de/#image-license',
+              creditText: 'Logo: Abdulkerim Sesli',
+              copyrightNotice: '© 2025 Abdulkerim Sesli',
+              acquireLicensePage: 'https://abdulkerimsesli.de/#image-license',
             },
             address: {
-              "@type": "PostalAddress",
-              streetAddress: "Sterkrader Str. 59",
-              postalCode: "13507",
-              addressLocality: "Berlin",
-              addressCountry: "DE",
+              '@type': 'PostalAddress',
+              streetAddress: 'Sterkrader Str. 59',
+              postalCode: '13507',
+              addressLocality: 'Berlin',
+              addressCountry: 'DE',
             },
           },
           articleBody: post.content,
         };
-        const s = document.createElement("script");
-        s.type = "application/ld+json";
-        s.setAttribute("data-temp-article", "1");
+        const s = document.createElement('script');
+        s.type = 'application/ld+json';
+        s.setAttribute('data-temp-article', '1');
         s.textContent = JSON.stringify(ld);
         document.head.appendChild(s);
       }
     } catch (e) {
-      log.warn("Could not insert Article JSON-LD", e);
+      log.warn('Could not insert Article JSON-LD', e);
     }
   }, [currentPostId]);
 
@@ -183,8 +167,8 @@ function BlogApp() {
       <header>
         <h1 className="blog-headline">Wissen & Einblicke</h1>
         <p className="blog-subline">
-          Gedanken zu Web-Entwicklung, Fotografie und digitalem Design. Hier
-          teile ich, was ich lerne und erschaffe.
+          Gedanken zu Web-Entwicklung, Fotografie und digitalem Design. Hier teile ich, was ich
+          lerne und erschaffe.
         </p>
       </header>
 
@@ -194,7 +178,7 @@ function BlogApp() {
           (cat) => html`
             <button
               key=${cat}
-              className=${`filter-btn ${filter === cat ? "active" : ""}`}
+              className=${`filter-btn ${filter === cat ? 'active' : ''}`}
               onClick=${() => setFilter(cat)}
             >
               ${cat}
@@ -213,10 +197,7 @@ function BlogApp() {
                   return html`
                     <div class="not-found">
                       Beitrag nicht gefunden.
-                      <button
-                        onClick=${() => (location.hash = "#/blog/")}
-                        className="btn"
-                      >
+                      <button onClick=${() => (location.hash = '#/blog/')} className="btn">
                         Zurück
                       </button>
                     </div>
@@ -229,10 +210,7 @@ function BlogApp() {
                     </header>
                     <section className="article-body">${post.content}</section>
                     <p>
-                      <button
-                        className="btn"
-                        onClick=${() => (location.hash = "#/blog/")}
-                      >
+                      <button className="btn" onClick=${() => (location.hash = '#/blog/')}>
                         Zurück
                       </button>
                     </p>
@@ -277,11 +255,11 @@ function BlogApp() {
 }
 
 // Init
-const rootEl = document.getElementById("root");
+const rootEl = document.getElementById('root');
 if (rootEl && window.ReactDOM && window.React) {
   const root = ReactDOM.createRoot(rootEl);
   root.render(html` <${BlogApp} /> `);
 } else {
   // Silent fail in production
-  log.error("React environment not ready");
+  log.error('React environment not ready');
 }
