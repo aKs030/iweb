@@ -64,7 +64,11 @@ try {
       try {
         for (let i = 0; i < arguments.length; i++) {
           const arg = arguments[i];
-          if (arg && typeof arg === "object" && arg.event === "consentGranted") {
+          if (
+            arg &&
+            typeof arg === "object" &&
+            arg.event === "consentGranted"
+          ) {
             try {
               // Update Google consent state to granted
               gtag("consent", "update", {
