@@ -42,7 +42,6 @@
 
   /* Z-Index Scale */
   --z-footer: 1000;
-  /* cookie modal z-index removed; cookie styles live in cookie-consent.css */
 
   /* Icon sizing */
   --footer-icon-size-sm: 12px;
