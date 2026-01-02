@@ -13,7 +13,6 @@
 - [Installation](#-installation)
 - [Skripte](#-skripte)
 - [Projektstruktur](#-projektstruktur)
-- [PWA & Service Worker](#-pwa--service-worker)
 - [Aktuelle Änderungen](#-aktuelle-%C3%A4nderungen)
 - [Mitmachen (Contributing)](#-mitmachen-contributing)
 - [CI & Badges](#-ci--badges)
@@ -89,12 +88,6 @@ iweb/
 │   └── projekte/          # Projekt-Showcase
 └── manifest.json          # PWA Konfiguration
 ```
-
----
-
-## 🔧 PWA & Service Worker
-
-Hinweis: Der Service Worker wurde entfernt; Offline-Caching über `sw.js` ist nicht mehr aktiv (Dezember 2025).
 
 ---
 

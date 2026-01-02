@@ -38,8 +38,6 @@ const ENV = {
     (globalThis.location.hostname === "localhost" &&
       globalThis.navigator.webdriver),
   debug: new URLSearchParams(globalThis.location.search).has("debug"),
-  // Service Worker removed — cleanup runs once on page load to unregister previous registrations and clear caches.
-  // (Property `useServiceWorker` removed)
 };
 
 // ===== Performance Tracking =====
@@ -857,43 +855,6 @@ document.addEventListener(
         }
       }
     });
-
-    // ===== Service Worker Cleanup (one-time) =====
-    // This will unregister any previously installed service workers and clear all caches.
-    // Keep as a one-time cleanup to ensure clients no longer use the old SW code.
-    if ("serviceWorker" in navigator && !ENV.isTest) {
-      globalThis.addEventListener(
-        "load",
-        async () => {
-          try {
-            const regs = await navigator.serviceWorker.getRegistrations();
-            await Promise.all(
-              regs.map((r) =>
-                r
-                  .unregister()
-                  .catch((err) =>
-                    log.warn("ServiceWorker unregister failed", err)
-                  )
-              )
-            );
-
-            if ("caches" in window) {
-              const keys = await caches.keys();
-              await Promise.all(keys.map((k) => caches.delete(k)));
-            }
-
-            log.info(
-              "Service Workers unregistered and caches cleared (cleanup)."
-            );
-          } catch (e) {
-            log.debug("Service Worker cleanup failed:", e);
-          }
-        },
-        { once: true }
-      );
-    } else {
-      log.info("Service Worker cleanup skipped: not supported or test env");
-    }
 
     log.info("Performance:", {
       domReady: Math.round(perfMarks.domReady - perfMarks.start),
