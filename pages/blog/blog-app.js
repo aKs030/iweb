@@ -52,15 +52,6 @@ function BlogApp() {
   const filteredPosts =
     filter === 'All' ? blogPosts : blogPosts.filter((post) => post.category === filter);
 
-  // Helper to escape HTML when inserting text content (prefixed with _ to silence unused-var warning)
-  const _escapeHTML = (value) =>
-    String(value)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
-
   // Sync with hash routing (#/blog/:id)
   React.useEffect(() => {
     const parseHash = () => {

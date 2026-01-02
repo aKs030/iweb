@@ -1,3 +1,4 @@
+/* exported _shareChannel, _renderDemoVideos */
 import { createLogger } from '../../content/utils/shared-utilities.js';
 
 const log = createLogger('videos');
@@ -310,6 +311,12 @@ function renderVideoCard(grid, it, detailsMap) {
 async function _renderDemoVideos(grid, demo) {
   grid.innerHTML = '';
   demo.forEach((it) => renderVideoCard(grid, it, {}));
+}
+
+// Expose debug helpers to window for manual testing (safe when window is defined)
+if (typeof window !== 'undefined') {
+  window._shareChannel = _shareChannel;
+  window._renderDemoVideos = _renderDemoVideos;
 }
 
 // Videos page loader (moved from inline to avoid HTML parsing issues)

@@ -67,26 +67,6 @@ function makeLineMeasurer(subtitleEl) {
     return measurer.firstChild.getBoundingClientRect().height || 0;
   };
 
-  const _measure = (text) => {
-    measurer.innerHTML = '';
-    const span = document.createElement('span');
-    span.textContent = text;
-
-    measurer.appendChild(span);
-
-    const rect = subtitleEl.getBoundingClientRect();
-    const available = Math.max(0, window.innerWidth - (rect.left || 0) - 12);
-    const cap = Math.min(window.innerWidth * 0.92, 820);
-    measurer.style.width = Math.max(1, Math.min(available || cap, cap)) + 'px';
-
-    const lh = getLineHeight();
-    const h = span.getBoundingClientRect().height;
-    if (!lh || !h) return 1;
-
-    const max = parseInt(cs.getPropertyValue('--reserve-lines')) || 6;
-    return Math.max(1, Math.min(max, Math.round(h / lh)));
-  };
-
   const getLines = (text) => {
     measurer.innerHTML = '';
     const words = text.split(' ');

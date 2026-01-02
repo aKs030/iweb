@@ -15,7 +15,8 @@ async function initNLWeb() {
       document.body.appendChild(div);
     }
 
-    const _chat = new NLWebDropdownChat({
+    // Instantiate widget (no local reference needed)
+    new NLWebDropdownChat({
       containerId: 'docs-search-container',
       site: DEFAULT_SITE,
       placeholder: 'Search for docs...',

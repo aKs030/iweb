@@ -28,7 +28,7 @@ import './components/menu/menu.js';
 const log = createLogger('main');
 
 // Debug / Dev hooks (exported for test & debug tooling)
-let __threeEarthCleanup = null;
+globalThis.__threeEarthCleanup = null;
 
 // ===== Configuration & Environment =====
 const ENV = {
@@ -544,8 +544,8 @@ const ThreeEarthLoader = (() => {
 
       if (typeof cleanupFn === 'function') {
         // Export the cleanup function for programmatic control
-        __threeEarthCleanup = cleanupFn;
-        // Optionally expose in debug mode for backwards compatibility
+        globalThis.__threeEarthCleanup = cleanupFn;
+        // Optionally keep compatibility (same global assignment) - no-op when debug is off
         if (ENV.debug) globalThis.__threeEarthCleanup = cleanupFn;
 
         log.info('Three.js Earth system initialized');
