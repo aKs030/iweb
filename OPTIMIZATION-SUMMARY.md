@@ -11,12 +11,14 @@ npm run build
 ```
 
 **Was passiert:**
+
 - Nutzt **esbuild** (15x schneller als Webpack)
 - Minifiziert 14+ kritische JavaScript-Dateien
 - Unterstützt Top-level await & moderne JS Features
 - Gibt Größenreport aus
 
 **Resultat (lokaler Test):**
+
 ```
 ✅ Minified: content/components/typewriter/TypeWriter.js (6.54 KiB)
 ✅ Minified: content/components/footer/footer-complete.js (16.48 KiB)
@@ -37,12 +39,14 @@ npm run build:brotli
 ```
 
 **Was passiert:**
+
 - Führt zuerst `npm run build` aus
 - Komprimiert mit **Node.js zlib** (nativer Brotli)
 - Quality Level 11 (maximale Kompression)
 - Erzeugt `.br` Dateien für Server-seitige Auslieferung
 
 **Resultat (lokaler Test):**
+
 ```
 ✅ Compressed: content/vendor/three/three.module.js
    628 KiB → 132 KiB (79% reduction)
@@ -71,11 +75,13 @@ npm run analyze:threejs
 ```
 
 **Was passiert:**
+
 - Analysiert welche Three.js Features genutzt werden
 - Zeigt Optimierungs-Potenziale
 - Gibt Empfehlungen für Custom Builds
 
 **Resultat (lokaler Test):**
+
 ```
 📊 Three.js Feature Analysis
 
@@ -109,16 +115,19 @@ Custom build + Brotli:   128 KiB (90% smaller)
 ## 📦 Implementierte Files
 
 ### Build Scripts
+
 - [scripts/build.js](scripts/build.js) — Minification mit esbuild
 - [scripts/brotli-compress.js](scripts/brotli-compress.js) — Brotli Compression
 - [scripts/analyze-threejs.js](scripts/analyze-threejs.js) — Feature Analysis
 
 ### Dokumentation
+
 - [BUILD-GUIDE.md](BUILD-GUIDE.md) — Detaillierte Build-Anleitung
 - [OPTIMIZATION-QUICK-START.md](OPTIMIZATION-QUICK-START.md) — Quick-Start
 - [THREE-JS-OPTIMIZATION-COMPLETE.md](THREE-JS-OPTIMIZATION-COMPLETE.md) — Diese Datei
 
 ### Updated Configuration
+
 - [package.json](package.json) — Neue Scripts & Dependencies
 - [.gitignore](.gitignore) — Ausgeschlossene Build-Artefakte
 
@@ -128,41 +137,44 @@ Custom build + Brotli:   128 KiB (90% smaller)
 
 ### JavaScript Bundle-Größe
 
-| Metrik | Vorher | Nachher | Ersparnis |
-|--------|--------|---------|-----------|
-| **three.module.js** (uncompressed) | 628 KiB | 628 KiB | — |
-| **three.module.js** (minified) | 628 KiB | 390 KiB | 38% |
-| **three.module.js** (Brotli) | 628 KiB | **132 KiB** | **79%** |
-| **Alle JS Dateien** (minified) | ~5 MiB | ~1.2 MiB | 76% |
-| **Alle JS Dateien** (Brotli) | ~5 MiB | **~500 KiB** | **90%** |
+| Metrik                             | Vorher  | Nachher      | Ersparnis |
+| ---------------------------------- | ------- | ------------ | --------- |
+| **three.module.js** (uncompressed) | 628 KiB | 628 KiB      | —         |
+| **three.module.js** (minified)     | 628 KiB | 390 KiB      | 38%       |
+| **three.module.js** (Brotli)       | 628 KiB | **132 KiB**  | **79%**   |
+| **Alle JS Dateien** (minified)     | ~5 MiB  | ~1.2 MiB     | 76%       |
+| **Alle JS Dateien** (Brotli)       | ~5 MiB  | **~500 KiB** | **90%**   |
 
 ### Geschätzter Page Load Impact
 
 **Szenario: 3G Network (1 Mbps)**
 
-| Metrik | Vorher | Nachher | Improvement |
-|--------|--------|---------|-------------|
-| three.module.js Download | 9 Sec | 1.2 Sec | **87% schneller** |
-| LCP (Largest Contentful Paint) | ~1.2 s | ~0.8 s | **33% schneller** |
-| Total Page Load | ~3.5 s | ~1.8 s | **49% schneller** |
+| Metrik                         | Vorher | Nachher | Improvement       |
+| ------------------------------ | ------ | ------- | ----------------- |
+| three.module.js Download       | 9 Sec  | 1.2 Sec | **87% schneller** |
+| LCP (Largest Contentful Paint) | ~1.2 s | ~0.8 s  | **33% schneller** |
+| Total Page Load                | ~3.5 s | ~1.8 s  | **49% schneller** |
 
 ---
 
 ## 🚀 Quick Start für Production
 
 ### 1. Install Dependencies
+
 ```bash
 cd /Users/abdo/iweb
 npm install
 ```
 
 ### 2. Build & Compress
+
 ```bash
 npm run build        # Minification
 npm run build:brotli # Brotli (.br files)
 ```
 
 ### 3. Test Local
+
 ```bash
 npm run dev
 # Öffne http://localhost:3000
@@ -170,11 +182,13 @@ npm run dev
 ```
 
 ### 4. Deploy
+
 - Upload beide `.js` UND `.js.br` Dateien
 - Server muss `Content-Encoding: br` Header setzen (siehe BUILD-GUIDE.md)
 - Browser fallen zu `.js` zurück falls Brotli nicht unterstützt
 
 ### 5. Validate
+
 ```bash
 curl -H "Accept-Encoding: br" \
   https://your-site.com/content/vendor/three/three.module.js \
@@ -186,16 +200,19 @@ curl -H "Accept-Encoding: br" \
 ## 🎯 Empfohlene Nächste Schritte
 
 ### Priorität 🔴 Hoch
+
 - ✅ **Production Deploy** mit `.br` Files
 - ✅ **Server konfigurieren** für Brotli-Header
 - ✅ **Lighthouse überprüfen** nach Deploy
 
 ### Priorität 🟡 Mittel
+
 - [ ] Custom Three.js Build (weitere 15-20% Ersparnis)
 - [ ] Image Lazy-Loading
 - [ ] CSS Minification
 
 ### Priorität 🟢 Optional
+
 - [ ] Code-Splitting für verschiedene Pages
 - [ ] Dynamic Imports für Features
 - [ ] Service Worker für Caching
@@ -223,6 +240,7 @@ npm run lint:check         # Nur Check (kein Fix)
 ## 📝 Zusammenfassung der Änderungen
 
 ### Neu hinzugefügt:
+
 ```
 scripts/
   ├── build.js                      (229 Zeilen)
@@ -236,12 +254,14 @@ Dokumentation:
 ```
 
 ### Modifiziert:
+
 ```
 package.json                         (Added esbuild, brotli)
 .gitignore                          (Added *.br, *.min.js)
 ```
 
 ### Nicht verändert (aber optimiert durch vorherige Phase):
+
 ```
 content/components/typewriter/TypeWriter.js
 content/components/footer/footer-complete.js

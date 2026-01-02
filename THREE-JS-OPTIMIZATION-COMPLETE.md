@@ -7,17 +7,20 @@
 **Datei:** [scripts/build.js](scripts/build.js)
 
 **Features:**
+
 - ✅ Nutzt **esbuild** (15x schneller als Webpack)
 - ✅ Minifiziert alle kritischen JavaScript-Dateien in-place
 - ✅ Unterstützt ES2022 Features (Top-level await, etc.)
 - ✅ Generiert Größen-Reports für jede Datei
 
 **Ausführung:**
+
 ```bash
 npm run build
 ```
 
 **Resultat** (lokaler Test):
+
 ```
 TypeWriter.js: 6.54 KiB
 footer-complete.js: 16.48 KiB
@@ -34,12 +37,14 @@ main.js: 11.62 KiB
 **Datei:** [scripts/brotli-compress.js](scripts/brotli-compress.js)
 
 **Features:**
+
 - ✅ Erzeugt `.br`-Dateien für Server-seitige Kompression
 - ✅ Nutzt **Node.js zlib** (in Betriebssystem integriert)
 - ✅ Quality Level 11 für maximale Kompression
 - ✅ Zeigt Größenreduktion pro Datei an
 
 **Ausführung:**
+
 ```bash
 npm run build:brotli
 ```
@@ -53,16 +58,19 @@ npm run build:brotli
 **Datei:** [scripts/analyze-threejs.js](scripts/analyze-threejs.js)
 
 **Features:**
+
 - ✅ Analysiert welche Three.js-Features genutzt werden
 - ✅ Zeigt Optimierungs-Potenzial
 - ✅ Gibt Empfehlungen für Custom Builds
 
 **Ausführung:**
+
 ```bash
 npm run analyze:threejs
 ```
 
 **Beispiel-Output:**
+
 ```
 ✅ Detected Three.js Features:
   • THREE.WebGLRenderer
@@ -80,10 +88,10 @@ npm run analyze:threejs
 
 esbuild minification
   Size: 396 KiB (69% smaller)
-  
+
 Custom build (estimated)
   Size: 192 KiB (85% smaller)
-  
+
 Custom build + Brotli
   Size: 128 KiB (90% smaller)
 ```
@@ -93,6 +101,7 @@ Custom build + Brotli
 ### 4. **Package.json Updates**
 
 **Neue Dependencies:**
+
 ```json
 {
   "devDependencies": {
@@ -103,6 +112,7 @@ Custom build + Brotli
 ```
 
 **Neue Scripts:**
+
 ```json
 {
   "scripts": {
@@ -119,11 +129,11 @@ Custom build + Brotli
 
 Folgende Dokumentationen wurden erstellt:
 
-| Datei | Zweck |
-|-------|--------|
-| [BUILD-GUIDE.md](BUILD-GUIDE.md) | Detaillierte Build-Pipeline Anleitung |
-| [OPTIMIZATION-QUICK-START.md](OPTIMIZATION-QUICK-START.md) | Quick-Start für Minification & Brotli |
-| [LAYOUT-SHIFT-FIXES.md](LAYOUT-SHIFT-FIXES.md) | CLS/Reflow Optimierungen (vorherige Phase) |
+| Datei                                                      | Zweck                                      |
+| ---------------------------------------------------------- | ------------------------------------------ |
+| [BUILD-GUIDE.md](BUILD-GUIDE.md)                           | Detaillierte Build-Pipeline Anleitung      |
+| [OPTIMIZATION-QUICK-START.md](OPTIMIZATION-QUICK-START.md) | Quick-Start für Minification & Brotli      |
+| [LAYOUT-SHIFT-FIXES.md](LAYOUT-SHIFT-FIXES.md)             | CLS/Reflow Optimierungen (vorherige Phase) |
 
 ---
 
@@ -131,16 +141,17 @@ Folgende Dokumentationen wurden erstellt:
 
 ### Bundle-Größe Reduktion
 
-| Szenario | Größe | Ersparnis |
-|----------|-------|-----------|
-| Original (uncompressed) | 1.276 MiB | — |
-| Nach Minification | ~390 KiB | 69% |
-| Nach Brotli (Quality 11) | ~300 KiB | 77% |
-| Custom Build + Brotli | ~128 KiB | 90% |
+| Szenario                 | Größe     | Ersparnis |
+| ------------------------ | --------- | --------- |
+| Original (uncompressed)  | 1.276 MiB | —         |
+| Nach Minification        | ~390 KiB  | 69%       |
+| Nach Brotli (Quality 11) | ~300 KiB  | 77%       |
+| Custom Build + Brotli    | ~128 KiB  | 90%       |
 
 ### Estimated Page Load Impact
 
 **Three.js Modul Download-Zeit (3G Network):**
+
 - Vorher: ~9 Sekunden
 - Nachher: ~2-3 Sekunden
 - **Improvement: 70% schneller**
@@ -166,26 +177,28 @@ npm run build:brotli  # Erzeugt .br Dateien (dauert ~1-2 Minuten)
 ### Step 3: Deploy zu Production
 
 Hochladen:
+
 - ✅ Original `.js` Dateien (Fallback)
 - ✅ `.js.br` Dateien (Brotli-komprimiert)
 
 ### Step 4: Server konfigurieren
 
 Beispiel für **Cloudflare Workers**:
+
 ```javascript
 export default {
   async fetch(request) {
     const url = new URL(request.url);
-    const acceptEncoding = request.headers.get('accept-encoding') || '';
-    
-    if (acceptEncoding.includes('br')) {
-      const brResponse = await fetch(url.pathname + '.br');
+    const acceptEncoding = request.headers.get("accept-encoding") || "";
+
+    if (acceptEncoding.includes("br")) {
+      const brResponse = await fetch(url.pathname + ".br");
       if (brResponse.ok) {
         return new Response(brResponse.body, {
           headers: {
-            'Content-Encoding': 'br',
-            'Content-Type': 'application/javascript',
-            'Vary': 'Accept-Encoding',
+            "Content-Encoding": "br",
+            "Content-Type": "application/javascript",
+            Vary: "Accept-Encoding",
           },
         });
       }
@@ -202,6 +215,7 @@ export default {
 ### Für noch bessere Kompression:
 
 1. **Custom Three.js Build** (zusätzliche 15-20% Ersparnis)
+
    ```bash
    git clone https://github.com/mrdoob/three.js.git
    cd three.js
@@ -210,6 +224,7 @@ export default {
    ```
 
 2. **Asset Optimization**
+
    - Image Lazy-Loading
    - CSS Minification
    - WebP/AVIF Image Formats
