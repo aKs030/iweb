@@ -606,38 +606,29 @@ export class SectionTracker {
   }
 
   checkInitialSection() {
-    // Batch all layout reads to avoid reflows
-    requestAnimationFrame(() => {
-      const viewportCenter = window.innerHeight / 2;
-      let activeSection = null;
-      let bestDistance = Infinity;
+    const viewportCenter = window.innerHeight / 2;
+    let activeSection = null;
+    let bestDistance = Infinity;
 
-      // Read all rects in one go (batched reads)
-      const sectionData = this.sections.map((section) => ({
-        section,
-        rect: section.getBoundingClientRect(),
-      }));
+    this.sections.forEach((section) => {
+      const rect = section.getBoundingClientRect();
+      const sectionCenter = rect.top + rect.height / 2;
+      const distance = Math.abs(sectionCenter - viewportCenter);
 
-      // Process after all reads are done
-      sectionData.forEach(({ section, rect }) => {
-        const sectionCenter = rect.top + rect.height / 2;
-        const distance = Math.abs(sectionCenter - viewportCenter);
-
-        if (
-          distance < bestDistance &&
-          rect.top < viewportCenter &&
-          rect.bottom > viewportCenter
-        ) {
-          bestDistance = distance;
-          activeSection = section;
-        }
-      });
-
-      if (activeSection && activeSection.id !== this.currentSectionId) {
-        this.currentSectionId = activeSection.id;
-        this.dispatchSectionChange(activeSection.id);
+      if (
+        distance < bestDistance &&
+        rect.top < viewportCenter &&
+        rect.bottom > viewportCenter
+      ) {
+        bestDistance = distance;
+        activeSection = section;
       }
     });
+
+    if (activeSection && activeSection.id !== this.currentSectionId) {
+      this.currentSectionId = activeSection.id;
+      this.dispatchSectionChange(activeSection.id);
+    }
   }
 
   dispatchSectionChange(sectionId) {
