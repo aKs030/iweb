@@ -64,7 +64,7 @@
   font-size: 0.75rem;
   line-height: 1.2;
   color: var(--dynamic-footer-text-primary, #fff);
-  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
   font-family: var(--font-primary);
   font-weight: 400;
   white-space: nowrap;
@@ -107,7 +107,7 @@
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow: 0 1px 6px rgb(0 0 0 / 40%);
   font-family: var(--font-primary);
-} 
+}
 
 .cookie-accept-btn:hover {
   background: linear-gradient(135deg, #06c 0%, #004c99 100%);
@@ -150,7 +150,7 @@
   transform: translateY(0);
   background: rgb(11 13 17 / 36%);
   color: #fff;
-} 
+}
 
 .cookie-reject-btn:focus {
   outline: 2px solid rgb(255 255 255 / 50%);
@@ -430,7 +430,7 @@
   background: #0f6b4f; /* darker green to satisfy contrast checks */
   color: #fff;
   border: 1px solid #0d6048;
-} 
+}
 
 .cookie-category-description {
   font-size: 0.9rem;
@@ -542,7 +542,7 @@
   background: rgb(11 13 17 / 48%);
   padding: 2px 8px;
   border-radius: 4px;
-} 
+}
 
 /* Privacy Info removed */
 
@@ -571,7 +571,7 @@
   background: linear-gradient(135deg, #0058d8 0%, #004c99 100%);
   color: #fff;
   box-shadow: 0 4px 12px rgb(0 0 0 / 40%);
-} 
+}
 
 .cookie-modal-btn-primary:hover {
   background: linear-gradient(135deg, #06c 0%, #004c99 100%);
