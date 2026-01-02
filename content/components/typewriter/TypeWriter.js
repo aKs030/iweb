@@ -68,17 +68,25 @@ function makeLineMeasurer(subtitleEl) {
   };
 
   const _measure = (text) => {
+    // Batch all DOM reads together before any DOM writes to minimize forced reflows
     measurer.innerHTML = "";
     const span = document.createElement("span");
     span.textContent = text;
-
     measurer.appendChild(span);
 
-    const rect = subtitleEl.getBoundingClientRect();
-    const available = Math.max(0, window.innerWidth - (rect.left || 0) - 12);
-    const cap = Math.min(window.innerWidth * 0.92, 820);
-    measurer.style.width = Math.max(1, Math.min(available || cap, cap)) + "px";
-
+    // Batch all reads first
+    const rectRead = subtitleEl.getBoundingClientRect();
+    const measurementStyleWidth = Math.max(
+      1,
+      Math.min(
+        Math.max(0, window.innerWidth - (rectRead.left || 0) - 12) ||
+          Math.min(window.innerWidth * 0.92, 820),
+        Math.min(window.innerWidth * 0.92, 820)
+      )
+    );
+    
+    // Now apply styles in batch
+    measurer.style.width = measurementStyleWidth + "px";
     const lh = getLineHeight();
     const h = span.getBoundingClientRect().height;
     if (!lh || !h) return 1;
@@ -93,10 +101,12 @@ function makeLineMeasurer(subtitleEl) {
     const lines = [];
     let currentLine = [];
 
-    const rect = subtitleEl.getBoundingClientRect();
-    const available = Math.max(0, window.innerWidth - (rect.left || 0) - 12);
+    // Batch read: Get width once, apply once
+    const rectRead = subtitleEl.getBoundingClientRect();
+    const available = Math.max(0, window.innerWidth - (rectRead.left || 0) - 12);
     const cap = Math.min(window.innerWidth * 0.92, 820);
-    measurer.style.width = Math.max(1, Math.min(available || cap, cap)) + "px";
+    const finalWidth = Math.max(1, Math.min(available || cap, cap));
+    measurer.style.width = finalWidth + "px";
 
     const lh = getLineHeight();
     if (!lh) return [text];
@@ -106,8 +116,11 @@ function makeLineMeasurer(subtitleEl) {
         ? currentLine.join(" ") + " " + word
         : word;
       measurer.textContent = testLine;
+      
+      // Single read of height after DOM update
+      const measureHeight = measurer.getBoundingClientRect().height;
 
-      if (measurer.getBoundingClientRect().height > lh * 1.1) {
+      if (measureHeight > lh * 1.1) {
         if (currentLine.length) {
           lines.push(currentLine.join(" "));
           currentLine = [word];

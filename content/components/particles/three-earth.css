@@ -46,11 +46,13 @@
   box-shadow: 0 8px 32px rgb(0 0 0 / 30%);
   opacity: 1;
   transition: opacity 0.5s ease;
+  contain: layout style paint; /* Prevents layout thrashing */
 }
 
 .three-earth-error.hidden {
   opacity: 0;
   pointer-events: none;
+  display: none; /* Remove from flow completely when hidden */
 }
 
 /* merged duplicate background definition removed to avoid duplicate selector */
