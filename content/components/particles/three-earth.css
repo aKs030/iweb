@@ -76,11 +76,11 @@
 }
 
 /* Section-based Opacity Transitions */
-.three-earth-container[data-section="hero"] {
+.three-earth-container[data-section='hero'] {
   opacity: 1;
 }
 
-.three-earth-container[data-section="features"] {
+.three-earth-container[data-section='features'] {
   opacity: 0.95;
 }
 

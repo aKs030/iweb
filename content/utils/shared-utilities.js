@@ -53,16 +53,16 @@ export function createLogger(category) {
   };
 }
 
-const sharedLogger = createLogger("SharedUtilities");
+const sharedLogger = createLogger('SharedUtilities');
 
 // Auto-enable debug mode
-if (typeof window !== "undefined") {
+if (typeof window !== 'undefined') {
   const urlParams = new URLSearchParams(window.location.search);
-  const debugParam = urlParams.get("debug");
-  const debugStorage = window.localStorage?.getItem("iweb-debug");
+  const debugParam = urlParams.get('debug');
+  const debugStorage = window.localStorage?.getItem('iweb-debug');
 
-  if (debugParam === "true" || debugStorage === "true") {
-    setGlobalLogLevel("debug");
+  if (debugParam === 'true' || debugStorage === 'true') {
+    setGlobalLogLevel('debug');
   }
 }
 
@@ -77,7 +77,7 @@ export async function fetchWithTimeout(url, timeout = 8000) {
 
   try {
     const response = await fetch(url, {
-      credentials: "same-origin",
+      credentials: 'same-origin',
       signal: controller.signal,
     });
     clearTimeout(timeoutId);
@@ -118,15 +118,13 @@ export const CookieManager = {
     const date = new Date();
     date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
     const expires = `; expires=${date.toUTCString()}`;
-    const secure = window.location.protocol === "https:" ? "; Secure" : "";
-    document.cookie = `${name}=${
-      value || ""
-    }${expires}; path=/; SameSite=Lax${secure}`;
+    const secure = window.location.protocol === 'https:' ? '; Secure' : '';
+    document.cookie = `${name}=${value || ''}${expires}; path=/; SameSite=Lax${secure}`;
   },
 
   get(name) {
     const nameEQ = `${name}=`;
-    const cookies = document.cookie.split(";");
+    const cookies = document.cookie.split(';');
     for (let cookie of cookies) {
       cookie = cookie.trim();
       if (cookie.startsWith(nameEQ)) {
@@ -137,21 +135,17 @@ export const CookieManager = {
   },
 
   delete(name) {
-    const domains = [
-      "",
-      window.location.hostname,
-      `.${window.location.hostname}`,
-    ];
+    const domains = ['', window.location.hostname, `.${window.location.hostname}`];
     domains.forEach((domain) => {
-      const domainPart = domain ? `; domain=${domain}` : "";
+      const domainPart = domain ? `; domain=${domain}` : '';
       document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/${domainPart}`;
     });
   },
 
   deleteAnalytics() {
-    const analyticsCookies = ["_ga", "_gid", "_gat", "_gat_gtag_G_S0587RQ4CN"];
+    const analyticsCookies = ['_ga', '_gid', '_gat', '_gat_gtag_G_S0587RQ4CN'];
     analyticsCookies.forEach((name) => this.delete(name));
-    sharedLogger.info("Analytics cookies deleted");
+    sharedLogger.info('Analytics cookies deleted');
   },
 };
 
@@ -255,7 +249,7 @@ export class TimerManager {
 // Small singleton that tracks modules which block the global loading screen.
 export const AppLoadManager = (() => {
   const pending = new Set();
-  const log = createLogger("AppLoadManager");
+  const log = createLogger('AppLoadManager');
 
   return {
     block(name) {
@@ -297,19 +291,19 @@ export const AppLoadManager = (() => {
 // ===== Events System =====
 
 export const EVENTS = Object.freeze({
-  HERO_LOADED: "hero:loaded",
-  HERO_TYPING_END: "hero:typingEnd",
-  FEATURES_TEMPLATES_LOADED: "featuresTemplatesLoaded",
-  FEATURES_TEMPLATES_ERROR: "featuresTemplatesError",
-  TEMPLATE_MOUNTED: "template:mounted",
-  FEATURES_CHANGE: "features:change",
-  DOM_READY: "app:domReady",
-  CORE_INITIALIZED: "app:coreInitialized",
-  MODULES_READY: "app:modulesReady",
-  HERO_INIT_READY: "app:heroInitReady",
-  SW_UPDATE_AVAILABLE: "sw:updateAvailable",
-  LOADING_UNBLOCKED: "app:loadingUnblocked",
-  LOADING_HIDE: "app:loaderHide",
+  HERO_LOADED: 'hero:loaded',
+  HERO_TYPING_END: 'hero:typingEnd',
+  FEATURES_TEMPLATES_LOADED: 'featuresTemplatesLoaded',
+  FEATURES_TEMPLATES_ERROR: 'featuresTemplatesError',
+  TEMPLATE_MOUNTED: 'template:mounted',
+  FEATURES_CHANGE: 'features:change',
+  DOM_READY: 'app:domReady',
+  CORE_INITIALIZED: 'app:coreInitialized',
+  MODULES_READY: 'app:modulesReady',
+  HERO_INIT_READY: 'app:heroInitReady',
+  SW_UPDATE_AVAILABLE: 'sw:updateAvailable',
+  LOADING_UNBLOCKED: 'app:loadingUnblocked',
+  LOADING_HIDE: 'app:loaderHide',
 });
 
 export function fire(type, detail = null, target = document) {
@@ -333,17 +327,17 @@ export function fire(type, detail = null, target = document) {
 const OBSERVER_CONFIGS = {
   lazyLoad: {
     threshold: 0.15,
-    rootMargin: "120px 0px",
+    rootMargin: '120px 0px',
   },
   sectionTracking: {
     threshold: [0.1, 0.3, 0.5, 0.7],
-    rootMargin: "-10% 0px -10% 0px",
+    rootMargin: '-10% 0px -10% 0px',
   },
 };
 
 function createObserverWrapper(callback, options, triggerOnce = false) {
   if (!window.IntersectionObserver) {
-    sharedLogger.warn("IntersectionObserver not available - using fallback");
+    sharedLogger.warn('IntersectionObserver not available - using fallback');
     return {
       observer: null,
       observe: (element) => {
@@ -375,10 +369,7 @@ function createObserverWrapper(callback, options, triggerOnce = false) {
   };
 }
 
-export function createLazyLoadObserver(
-  callback,
-  options = OBSERVER_CONFIGS.lazyLoad
-) {
+export function createLazyLoadObserver(callback, options = OBSERVER_CONFIGS.lazyLoad) {
   return createObserverWrapper(callback, options, true);
 }
 
@@ -447,7 +438,7 @@ async function ensurePersistentStorage() {
 
       return { supported: true, persisted, quota };
     } catch (error) {
-      sharedLogger.warn("Persistent storage check failed:", error);
+      sharedLogger.warn('Persistent storage check failed:', error);
       return { supported: false, persisted: false };
     }
   })();
@@ -459,7 +450,7 @@ export function schedulePersistentStorageRequest(delay = 2500) {
   try {
     setTimeout(() => {
       ensurePersistentStorage().catch((err) => {
-        sharedLogger.warn("ensurePersistentStorage failed", err);
+        sharedLogger.warn('ensurePersistentStorage failed', err);
         /* swallow after logging */ void 0;
       });
     }, delay);
@@ -488,7 +479,7 @@ export function addListener(target, event, handler, options = {}) {
     target.addEventListener(event, handler, finalOptions);
     return () => target.removeEventListener(event, handler, finalOptions);
   } catch (err) {
-    sharedLogger.warn("addListener: failed to add listener", err);
+    sharedLogger.warn('addListener: failed to add listener', err);
     return () => {};
   }
 }
@@ -496,10 +487,10 @@ export function addListener(target, event, handler, options = {}) {
 // ===== Window Event Helpers =====
 
 export function onResize(callback, delay = 100) {
-  if (typeof window === "undefined") return () => {};
+  if (typeof window === 'undefined') return () => {};
 
   const debouncedCallback = debounce(callback, delay);
-  return addListener(window, "resize", debouncedCallback);
+  return addListener(window, 'resize', debouncedCallback);
 }
 
 // ===== Section Tracker =====
@@ -510,25 +501,21 @@ export class SectionTracker {
     this.sectionRatios = new Map();
     this.currentSectionId = null;
     this.observer = null;
-    this.log = createLogger("SectionTracker");
+    this.log = createLogger('SectionTracker');
   }
 
   init() {
-    if (document.readyState === "loading") {
-      document.addEventListener(
-        "DOMContentLoaded",
-        () => this.setupObserver(),
-        { once: true }
-      );
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => this.setupObserver(), { once: true });
     } else {
       setTimeout(() => this.setupObserver(), 100);
     }
 
-    document.addEventListener("section:loaded", () => {
+    document.addEventListener('section:loaded', () => {
       setTimeout(() => this.refreshSections(), 50);
     });
 
-    document.addEventListener("footer:loaded", () => {
+    document.addEventListener('footer:loaded', () => {
       setTimeout(() => this.refreshSections(), 50);
     });
   }
@@ -537,12 +524,12 @@ export class SectionTracker {
     this.refreshSections();
 
     if (!window.IntersectionObserver) {
-      this.log.warn("IntersectionObserver unavailable");
+      this.log.warn('IntersectionObserver unavailable');
       return;
     }
 
     if (this.sections.length === 0) {
-      this.log.debug("No sections found to track yet");
+      this.log.debug('No sections found to track yet');
       return;
     }
 
@@ -560,7 +547,7 @@ export class SectionTracker {
 
   refreshSections() {
     this.sections = Array.from(
-      document.querySelectorAll("main .section[id], footer#site-footer[id]")
+      document.querySelectorAll('main .section[id], footer#site-footer[id]')
     ).filter((section) => section.id);
 
     if (this.observer) {
@@ -615,11 +602,7 @@ export class SectionTracker {
       const sectionCenter = rect.top + rect.height / 2;
       const distance = Math.abs(sectionCenter - viewportCenter);
 
-      if (
-        distance < bestDistance &&
-        rect.top < viewportCenter &&
-        rect.bottom > viewportCenter
-      ) {
+      if (distance < bestDistance && rect.top < viewportCenter && rect.bottom > viewportCenter) {
         bestDistance = distance;
         activeSection = section;
       }
@@ -637,11 +620,11 @@ export class SectionTracker {
       const section = getElementById(sectionId);
 
       const detail = { id: sectionId, index: sectionIndex, section };
-      window.dispatchEvent(new CustomEvent("snapSectionChange", { detail }));
+      window.dispatchEvent(new CustomEvent('snapSectionChange', { detail }));
 
       this.log.debug(`Section changed: ${sectionId}`);
     } catch (error) {
-      this.log.warn("Failed to dispatch section change:", error);
+      this.log.warn('Failed to dispatch section change:', error);
     }
   }
 

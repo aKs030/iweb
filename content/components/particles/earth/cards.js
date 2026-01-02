@@ -1,6 +1,6 @@
-import { createLogger } from "../../../utils/shared-utilities.js";
+import { createLogger } from '../../../utils/shared-utilities.js';
 
-const log = createLogger("CardManager");
+const log = createLogger('CardManager');
 
 export class CardManager {
   constructor(THREE, scene, camera, renderer) {
@@ -86,24 +86,23 @@ export class CardManager {
       x: (i - centerOffset) * spacing,
       y: 0,
       z: 0,
-      color: d.color || ["#07a1ff", "#a107ff", "#ff07a1"][i] || "#ffffff",
+      color: d.color || ['#07a1ff', '#a107ff', '#ff07a1'][i] || '#ffffff',
     }));
 
     // Shared geometry reused across cards to reduce memory / GC churn
     this._sharedGeometry = new this.THREE.PlaneGeometry(baseW, baseH);
 
     // Prepare shared glow texture (small radial gradient) once
-    if (!this._sharedGlowTexture)
-      this._sharedGlowTexture = this.createGlowTexture();
+    if (!this._sharedGlowTexture) this._sharedGlowTexture = this.createGlowTexture();
 
     dataArray.forEach((d, index) => {
       const data = {
         id: index,
-        title: d.title || "",
-        subtitle: d.subtitle || "",
-        text: d.text || "",
-        link: d.link || "#",
-        iconChar: d.iconChar || "",
+        title: d.title || '',
+        subtitle: d.subtitle || '',
+        text: d.text || '',
+        link: d.link || '#',
+        iconChar: d.iconChar || '',
         color: positions[index].color,
         position: positions[index],
       };
@@ -147,10 +146,7 @@ export class CardManager {
           } else {
             // Desktop: Horizontal Row
             const adaptiveScale = Math.min(1, vw / 1200);
-            const newSpacing =
-              baseW *
-              (cardCount > 2 ? 1.4 : 1.25) *
-              Math.max(0.85, adaptiveScale);
+            const newSpacing = baseW * (cardCount > 2 ? 1.4 : 1.25) * Math.max(0.85, adaptiveScale);
             const x = (idx - centerOffset) * newSpacing;
 
             card.scale.setScalar(0.95 * Math.max(0.65, adaptiveScale));
@@ -167,7 +163,7 @@ export class CardManager {
     };
 
     if (globalThis.window !== undefined) {
-      window.addEventListener("resize", this._onResize);
+      window.addEventListener('resize', this._onResize);
       // Force initial layout
       this._onResize();
     }
@@ -218,9 +214,7 @@ export class CardManager {
 
   createCardTexture(data) {
     // Determine a scaling factor based on device pixel ratio to keep text crisp
-    const DPR = globalThis.window?.devicePixelRatio
-      ? globalThis.window.devicePixelRatio
-      : 1;
+    const DPR = globalThis.window?.devicePixelRatio ? globalThis.window.devicePixelRatio : 1;
     // Scale aggressively on high-DPI displays for crisper text, clamped for performance
     const S = Math.min(Math.max(Math.ceil(DPR * 2), 2), 4);
     const W = 512 * S;
@@ -228,11 +222,11 @@ export class CardManager {
 
     // Create a stable cache key from relevant content (limit text length to avoid huge keys)
     const keyObj = {
-      title: (data.title || "").slice(0, 256),
-      subtitle: (data.subtitle || "").slice(0, 128),
-      text: (data.text || "").slice(0, 512),
-      iconChar: data.iconChar || "",
-      color: data.color || "#ffffff",
+      title: (data.title || '').slice(0, 256),
+      subtitle: (data.subtitle || '').slice(0, 128),
+      text: (data.text || '').slice(0, 512),
+      iconChar: data.iconChar || '',
+      color: data.color || '#ffffff',
       DPR: Math.round(DPR * 100), // quantize a bit
     };
     const key = JSON.stringify(keyObj);
@@ -249,19 +243,17 @@ export class CardManager {
     this._profile.cacheMisses++;
 
     const canvas =
-      typeof OffscreenCanvas === "undefined"
-        ? document.createElement("canvas")
+      typeof OffscreenCanvas === 'undefined'
+        ? document.createElement('canvas')
         : new OffscreenCanvas(W, H);
-    if (typeof OffscreenCanvas === "undefined") {
+    if (typeof OffscreenCanvas === 'undefined') {
       canvas.width = W;
       canvas.height = H;
     }
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext('2d');
     if (!ctx) {
       // Defensive: Some environments may not provide a 2D context; return a minimal texture
-      log.warn(
-        "CardManager: 2D canvas context unavailable; returning empty texture"
-      );
+      log.warn('CardManager: 2D canvas context unavailable; returning empty texture');
       const texture = new this.THREE.CanvasTexture(canvas);
       texture.needsUpdate = true;
       // don't add to cache (no meaningful content)
@@ -270,8 +262,8 @@ export class CardManager {
 
     // 1. Background (Glass effect simulation)
     const gradient = ctx.createLinearGradient(0, 0, W, H);
-    gradient.addColorStop(0, "rgba(20, 30, 60, 0.9)");
-    gradient.addColorStop(1, "rgba(10, 15, 30, 0.95)");
+    gradient.addColorStop(0, 'rgba(20, 30, 60, 0.9)');
+    gradient.addColorStop(1, 'rgba(10, 15, 30, 0.95)');
     ctx.fillStyle = gradient;
 
     const R = 40 * S;
@@ -286,7 +278,7 @@ export class CardManager {
     const iconCenterX = 256 * S;
     const iconRadius = 60 * S;
 
-    ctx.fillStyle = "rgba(255, 255, 255, 0.05)";
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
     ctx.beginPath();
     ctx.arc(iconCenterX, iconY, iconRadius, 0, Math.PI * 2);
     ctx.fill();
@@ -295,22 +287,22 @@ export class CardManager {
     ctx.stroke();
 
     // 4. Icon Text (Emoji/Char) - use emoji-capable font stack as fallback
-    ctx.fillStyle = "#ffffff";
+    ctx.fillStyle = '#ffffff';
     ctx.font = `${
       60 * S
     }px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", Arial, sans-serif`;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
     ctx.fillText(data.iconChar, iconCenterX, iconY + 5 * S);
 
     // 5. Subtitle (fit to width)
     ctx.fillStyle = data.color;
-    const subtitleText = (data.subtitle || "").trim();
+    const subtitleText = (data.subtitle || '').trim();
     const subtitleSize = this.fitTextToWidth(
       ctx,
       subtitleText,
       420 * S,
-      "bold",
+      'bold',
       24 * S,
       12 * S,
       'Arial, "Helvetica Neue", sans-serif'
@@ -319,13 +311,13 @@ export class CardManager {
     ctx.fillText(subtitleText, iconCenterX, 280 * S);
 
     // 6. Title (fit to width, prefer single line)
-    ctx.fillStyle = "#ffffff";
-    const titleText = (data.title || "").trim();
+    ctx.fillStyle = '#ffffff';
+    const titleText = (data.title || '').trim();
     const titleSize = this.fitTextToWidth(
       ctx,
       titleText,
       420 * S,
-      "bold",
+      'bold',
       48 * S,
       20 * S,
       'Arial, "Helvetica Neue", sans-serif'
@@ -334,18 +326,10 @@ export class CardManager {
     ctx.fillText(titleText, iconCenterX, 350 * S);
 
     // 7. Text (Wrapped) - reduce size slightly for long text
-    ctx.fillStyle = "#cccccc";
-    const baseTextSize =
-      data.text && data.text.length > 160 ? Math.max(18 * S, 22 * S) : 30 * S;
+    ctx.fillStyle = '#cccccc';
+    const baseTextSize = data.text && data.text.length > 160 ? Math.max(18 * S, 22 * S) : 30 * S;
     ctx.font = `${baseTextSize}px Arial, "Helvetica Neue", sans-serif`;
-    this.wrapText(
-      ctx,
-      data.text,
-      iconCenterX,
-      450 * S,
-      400 * S,
-      Math.round(40 * S)
-    );
+    this.wrapText(ctx, data.text, iconCenterX, 450 * S, 400 * S, Math.round(40 * S));
 
     const texture = new this.THREE.CanvasTexture(canvas);
     // Use mipmaps + linear mipmap filtering for crisper downscaled rendering
@@ -363,23 +347,19 @@ export class CardManager {
   }
 
   createGlowTexture() {
-    const DPR = globalThis.devicePixelRatio
-      ? Math.min(globalThis.devicePixelRatio, 2)
-      : 1;
+    const DPR = globalThis.devicePixelRatio ? Math.min(globalThis.devicePixelRatio, 2) : 1;
     const size = Math.floor(128 * DPR);
     const canvas =
-      typeof OffscreenCanvas === "undefined"
-        ? document.createElement("canvas")
+      typeof OffscreenCanvas === 'undefined'
+        ? document.createElement('canvas')
         : new OffscreenCanvas(size, size);
-    if (typeof OffscreenCanvas === "undefined") {
+    if (typeof OffscreenCanvas === 'undefined') {
       canvas.width = size;
       canvas.height = size;
     }
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext('2d');
     if (!ctx) {
-      log.warn(
-        "CardManager: 2D canvas context unavailable for glow; returning empty texture"
-      );
+      log.warn('CardManager: 2D canvas context unavailable for glow; returning empty texture');
       const tex = new this.THREE.CanvasTexture(canvas);
       tex.needsUpdate = true;
       return tex;
@@ -389,9 +369,9 @@ export class CardManager {
     const cy = size / 2;
     const r = size * 0.45;
     const grad = ctx.createRadialGradient(cx, cy, r * 0.1, cx, cy, r);
-    grad.addColorStop(0, "rgba(255,255,255,0.9)");
-    grad.addColorStop(0.3, "rgba(255,255,255,0.45)");
-    grad.addColorStop(1, "rgba(255,255,255,0)");
+    grad.addColorStop(0, 'rgba(255,255,255,0.9)');
+    grad.addColorStop(0.3, 'rgba(255,255,255,0.45)');
+    grad.addColorStop(1, 'rgba(255,255,255,0)');
 
     ctx.fillStyle = grad;
     ctx.beginPath();
@@ -423,7 +403,7 @@ export class CardManager {
     // Using 1.5 * scale would be proportional. Using just 1.5 or 2 makes it very thin on high res.
     // Let's go with 1.5 pixels absolute thickness on the scaled canvas.
     // Since we scale by 2, a 1.5px line is effectively 0.75px on the original geometry.
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
     ctx.lineWidth = 1.5;
     this.roundRect(ctx, x, y, w, h, r);
     ctx.stroke();
@@ -455,7 +435,7 @@ export class CardManager {
       // Let's try 0.5 to 2.0 pixels on the 2x canvas (0.25 to 1.0 effective).
       const size = Math.random() * 1.5 + 0.5;
 
-      ctx.fillStyle = Math.random() > 0.7 ? ctx.strokeStyle : "#ffffff";
+      ctx.fillStyle = Math.random() > 0.7 ? ctx.strokeStyle : '#ffffff';
       ctx.globalAlpha = Math.random() * 0.8 + 0.2;
       ctx.beginPath();
       ctx.arc(px, py, size, 0, Math.PI * 2);
@@ -465,22 +445,22 @@ export class CardManager {
   }
 
   wrapText(ctx, text, x, y, maxWidth, lineHeight) {
-    const words = (text || "").split(" ");
-    let line = "";
+    const words = (text || '').split(' ');
+    let line = '';
     let lineCount = 0;
     const maxLines = 4;
 
     for (let n = 0; n < words.length; n++) {
-      const testLine = line + words[n] + " ";
+      const testLine = line + words[n] + ' ';
       const metrics = ctx.measureText(testLine);
       const testWidth = metrics.width;
       if (testWidth > maxWidth && n > 0) {
         ctx.fillText(line, x, y);
-        line = words[n] + " ";
+        line = words[n] + ' ';
         y += lineHeight;
         lineCount++;
         if (lineCount >= maxLines) {
-          line += "...";
+          line += '...';
           break;
         }
       } else {
@@ -494,15 +474,15 @@ export class CardManager {
     ctx,
     text,
     maxWidth,
-    fontWeight = "normal",
+    fontWeight = 'normal',
     initialSize = 24,
     minSize = 12,
-    fontFamily = "Arial, sans-serif"
+    fontFamily = 'Arial, sans-serif'
   ) {
     if (!text) return initialSize;
     let size = initialSize;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
     while (size >= minSize) {
       ctx.font = `${fontWeight} ${Math.round(size)}px ${fontFamily}`;
       const w = ctx.measureText(text).width;
@@ -521,10 +501,7 @@ export class CardManager {
   setProgress(progress) {
     const p = Math.max(
       0,
-      Math.min(
-        1,
-        typeof progress === "number" && !Number.isNaN(progress) ? progress : 0
-      )
+      Math.min(1, typeof progress === 'number' && !Number.isNaN(progress) ? progress : 0)
     );
     const wasVisible = this.cardGroup.visible;
     this.cardGroup.visible = p > 0.01;
@@ -538,10 +515,7 @@ export class CardManager {
     this.cards.forEach((card) => {
       // account for per-card stagger using entranceDelay
       const stagger = (card.userData.entranceDelay || 0) / 800;
-      const local = Math.max(
-        0,
-        Math.min(1, (p - stagger) / Math.max(0.0001, 1 - stagger))
-      );
+      const local = Math.max(0, Math.min(1, (p - stagger) / Math.max(0.0001, 1 - stagger)));
       card.userData.entranceTarget = local;
       // Also map opacity target so the material fades out gracefully
       card.userData.targetOpacity = local > 0 ? 1 : 0;
@@ -577,7 +551,7 @@ export class CardManager {
         // Stable for 3 frames
         if (candidate !== this._hovered) {
           this._hovered = candidate;
-          document.body.style.cursor = candidate ? "pointer" : "";
+          document.body.style.cursor = candidate ? 'pointer' : '';
         }
       }
     } else {
@@ -596,52 +570,41 @@ export class CardManager {
       this._updateCardGlow(card, time);
     });
 
-    if (
-      !this.isVisible &&
-      this.cards[0] &&
-      this.cards[0].material.opacity < 0.01
-    ) {
+    if (!this.isVisible && this.cards[0] && this.cards[0].material.opacity < 0.01) {
       this.cardGroup.visible = false;
     }
   }
 
   _updateCardEntranceAndOpacity(card) {
     let targetEntrance;
-    if (typeof card.userData.entranceTarget === "number") {
+    if (typeof card.userData.entranceTarget === 'number') {
       targetEntrance = card.userData.entranceTarget;
     } else {
       targetEntrance = this.isVisible ? 1 : 0;
     }
-    card.userData.entranceProgress +=
-      (targetEntrance - card.userData.entranceProgress) * 0.02;
+    card.userData.entranceProgress += (targetEntrance - card.userData.entranceProgress) * 0.02;
 
     const baseOpacity = card.userData.targetOpacity || 1;
-    card.material.opacity =
-      baseOpacity * (0.05 + 0.95 * card.userData.entranceProgress);
+    card.material.opacity = baseOpacity * (0.05 + 0.95 * card.userData.entranceProgress);
   }
 
   _updateCardHoverTiltAndMotion(card, pos, hoveredCard, time) {
     const floatY =
-      Math.sin(time * 0.001 + card.userData.id) *
-      0.06 *
-      (1 - card.userData.hoverProgress * 0.7);
+      Math.sin(time * 0.001 + card.userData.id) * 0.06 * (1 - card.userData.hoverProgress * 0.7);
 
     const isHovered = card === hoveredCard;
     let hoverTarget = isHovered ? 1 : 0;
     if (!isHovered && card.userData.hoverProgress > 0.5) {
       hoverTarget = card.userData.hoverProgress;
     }
-    card.userData.hoverProgress +=
-      (hoverTarget - card.userData.hoverProgress) * 0.04;
+    card.userData.hoverProgress += (hoverTarget - card.userData.hoverProgress) * 0.04;
 
     const parallax = card.userData.parallaxStrength || 0.12;
     const targetTiltX = -pos.y * parallax * card.userData.hoverProgress;
     const targetTiltY = pos.x * parallax * card.userData.hoverProgress * 0.8;
 
-    card.userData.currentTiltX +=
-      (targetTiltX - card.userData.currentTiltX) * 0.04;
-    card.userData.currentTiltY +=
-      (targetTiltY - card.userData.currentTiltY) * 0.04;
+    card.userData.currentTiltX += (targetTiltX - card.userData.currentTiltX) * 0.04;
+    card.userData.currentTiltY += (targetTiltY - card.userData.currentTiltY) * 0.04;
 
     let targetY = card.userData.originalY;
     let targetScale = 1;
@@ -659,12 +622,7 @@ export class CardManager {
     this._orientDummy.lookAt(this._tmpVec.x, card.position.y, this._tmpVec.z);
     this._tmpQuat.copy(this._orientDummy.quaternion);
 
-    this._tmpEuler.set(
-      card.userData.currentTiltX,
-      card.userData.currentTiltY,
-      0,
-      "XYZ"
-    );
+    this._tmpEuler.set(card.userData.currentTiltX, card.userData.currentTiltY, 0, 'XYZ');
     this._tmpQuat2.setFromEuler(this._tmpEuler);
 
     this._tmpQuat.multiply(this._tmpQuat2);
@@ -675,10 +633,8 @@ export class CardManager {
     if (card.userData?.glow?.material) {
       const glow = card.userData.glow;
       glow.material.opacity =
-        Math.max(
-          0.06,
-          0.6 * (0.5 + 0.5 * Math.sin(time * 0.002 + card.userData.id))
-        ) * card.userData.entranceProgress;
+        Math.max(0.06, 0.6 * (0.5 + 0.5 * Math.sin(time * 0.002 + card.userData.id))) *
+        card.userData.entranceProgress;
     }
   }
 
@@ -693,7 +649,7 @@ export class CardManager {
     if (clickedCard) {
       const link = clickedCard.userData.link;
       // Ignore placeholder or empty links
-      if (!link || link === "#") return;
+      if (!link || link === '#') return;
       globalThis.location.href = link;
     }
   }
@@ -737,9 +693,9 @@ export class CardManager {
       this._pointerDownPos = null;
     };
 
-    el.addEventListener("pointermove", this._boundPointerMove);
-    el.addEventListener("pointerdown", this._boundPointerDown);
-    el.addEventListener("pointerup", this._boundPointerUp);
+    el.addEventListener('pointermove', this._boundPointerMove);
+    el.addEventListener('pointerdown', this._boundPointerDown);
+    el.addEventListener('pointerup', this._boundPointerUp);
 
     this._pointerElement = el;
   }
@@ -747,12 +703,9 @@ export class CardManager {
   detachPointerHandlers() {
     const el = this._pointerElement || this.renderer?.domElement || globalThis;
     if (!el) return;
-    if (this._boundPointerMove)
-      el.removeEventListener("pointermove", this._boundPointerMove);
-    if (this._boundPointerDown)
-      el.removeEventListener("pointerdown", this._boundPointerDown);
-    if (this._boundPointerUp)
-      el.removeEventListener("pointerup", this._boundPointerUp);
+    if (this._boundPointerMove) el.removeEventListener('pointermove', this._boundPointerMove);
+    if (this._boundPointerDown) el.removeEventListener('pointerdown', this._boundPointerDown);
+    if (this._boundPointerUp) el.removeEventListener('pointerup', this._boundPointerUp);
 
     this._pointerElement = null;
     this._boundPointerMove = null;
@@ -840,7 +793,7 @@ export class CardManager {
         this._disposeGlowMaterial(glow);
       }
     } catch (err) {
-      log.warn("EarthCards: disposal error", err);
+      log.warn('EarthCards: disposal error', err);
     }
   }
 
@@ -852,7 +805,7 @@ export class CardManager {
           this._profile.texturesDisposed++;
         }
       } catch (err) {
-        log.warn("EarthCards: error disposing cached texture", err);
+        log.warn('EarthCards: error disposing cached texture', err);
       }
     }
     this._textureCache.clear();
@@ -881,27 +834,24 @@ export class CardManager {
         map.dispose();
       }
     } catch (err) {
-      log.warn("EarthCards: releaseTextureFromCache failed", err);
+      log.warn('EarthCards: releaseTextureFromCache failed', err);
     }
   }
 
   _disposeGlowMaterial(glow) {
     try {
-      if (
-        glow.material.map?.dispose &&
-        glow.material.map !== this._sharedGlowTexture
-      ) {
+      if (glow.material.map?.dispose && glow.material.map !== this._sharedGlowTexture) {
         glow.material.map.dispose();
       }
       glow.material.dispose?.();
     } catch (err) {
-      log.warn("EarthCards: glow dispose failed", err);
+      log.warn('EarthCards: glow dispose failed', err);
     }
   }
 
   _removeResizeHandler() {
     try {
-      globalThis.removeEventListener("resize", this._onResize);
+      globalThis.removeEventListener('resize', this._onResize);
     } catch {}
     this._onResize = null;
     if (this._resizeRAF) {

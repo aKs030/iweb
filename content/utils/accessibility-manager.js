@@ -7,10 +7,8 @@ class AccessibilityManager {
     this.focusTrapStack = [];
     this.lastFocusedElement = null;
     // resolve MQLs safely
-    this.reducedMotionMQL = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    );
-    this.highContrastMQL = window.matchMedia("(prefers-contrast: more)");
+    this.reducedMotionMQL = window.matchMedia('(prefers-reduced-motion: reduce)');
+    this.highContrastMQL = window.matchMedia('(prefers-contrast: more)');
     this.reducedMotion = this.reducedMotionMQL.matches;
     this.highContrast = this.highContrastMQL.matches;
 
@@ -25,11 +23,11 @@ class AccessibilityManager {
 
     // Listen for preference changes (modern browsers support addEventListener on MediaQueryList)
     try {
-      this.reducedMotionMQL.addEventListener("change", (e) => {
+      this.reducedMotionMQL.addEventListener('change', (e) => {
         this.reducedMotion = e.matches;
         this.updateAnimations();
       });
-      this.highContrastMQL.addEventListener("change", (e) => {
+      this.highContrastMQL.addEventListener('change', (e) => {
         this.highContrast = e.matches;
         this.updateContrast();
       });
@@ -60,38 +58,38 @@ class AccessibilityManager {
   }
 
   setupKeyboardNav() {
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") {
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
         this.handleEscape();
       }
 
-      if (e.key === "Tab" && this.focusTrapStack.length > 0) {
+      if (e.key === 'Tab' && this.focusTrapStack.length > 0) {
         this.handleTabInTrap(e);
       }
     });
   }
 
   setupSkipLinks() {
-    const skipLinks = document.querySelectorAll(".skip-link");
+    const skipLinks = document.querySelectorAll('.skip-link');
     skipLinks.forEach((link) => {
-      link.addEventListener("click", (e) => {
+      link.addEventListener('click', (e) => {
         e.preventDefault();
-        const href = link.getAttribute("href");
+        const href = link.getAttribute('href');
         if (!href) return;
         const target = document.querySelector(href);
         if (!target) return;
-        target.setAttribute("tabindex", "-1");
+        target.setAttribute('tabindex', '-1');
         target.focus();
         target.addEventListener(
-          "blur",
+          'blur',
           () => {
             try {
-              target.removeAttribute("tabindex");
+              target.removeAttribute('tabindex');
             } catch {
               /* ignored */
             }
           },
-          { once: true },
+          { once: true }
         );
       });
     });
@@ -101,7 +99,7 @@ class AccessibilityManager {
     if (!container) return;
 
     const focusableElements = container.querySelectorAll(
-      'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])',
+      'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
     );
 
     if (!focusableElements || focusableElements.length === 0) return;
@@ -160,20 +158,18 @@ class AccessibilityManager {
 
   handleEscape() {
     // Close cookie modal
-    const cookieModal = document.querySelector(
-      ".footer-cookie-settings:not(.hidden)",
-    );
+    const cookieModal = document.querySelector('.footer-cookie-settings:not(.hidden)');
     if (cookieModal) {
-      const closeBtn = cookieModal.querySelector(".cookie-settings-close");
+      const closeBtn = cookieModal.querySelector('.cookie-settings-close');
       if (closeBtn) closeBtn.click();
       return;
     }
 
     // Close expanded footer (request close via event so footer module handles cleanup)
-    const footer = document.getElementById("site-footer");
-    if (footer && footer.classList.contains("footer-expanded")) {
+    const footer = document.getElementById('site-footer');
+    if (footer && footer.classList.contains('footer-expanded')) {
       try {
-        document.dispatchEvent(new CustomEvent("footer:requestClose"));
+        document.dispatchEvent(new CustomEvent('footer:requestClose'));
       } catch {
         /* ignore */
       }
@@ -182,10 +178,10 @@ class AccessibilityManager {
 
   updateAnimations() {
     if (this.reducedMotion) {
-      document.documentElement.style.setProperty("--transition-fast", "0s");
-      document.documentElement.style.setProperty("--transition-base", "0s");
-      document.documentElement.style.setProperty("--transition-smooth", "0s");
-      document.documentElement.style.setProperty("--transition-slow", "0s");
+      document.documentElement.style.setProperty('--transition-fast', '0s');
+      document.documentElement.style.setProperty('--transition-base', '0s');
+      document.documentElement.style.setProperty('--transition-smooth', '0s');
+      document.documentElement.style.setProperty('--transition-slow', '0s');
     } else {
       // Reset if not reduced motion — values come from CSS variables; this is a no-op here
     }
@@ -193,19 +189,19 @@ class AccessibilityManager {
 
   updateContrast() {
     if (this.highContrast) {
-      document.body.classList.add("high-contrast");
+      document.body.classList.add('high-contrast');
     } else {
-      document.body.classList.remove("high-contrast");
+      document.body.classList.remove('high-contrast');
     }
   }
 
   // Announce method — accepts priority: 'polite' | 'assertive'
-  announce(message, { priority = "polite", clearPrevious = true } = {}) {
+  announce(message, { priority = 'polite', clearPrevious = true } = {}) {
     if (!message) return;
     // If a global announce helper exists, prefer it (keeps dedupe/assertive behaviours centralized)
-    if (typeof window?.announce === "function") {
+    if (typeof window?.announce === 'function') {
       try {
-        window.announce(message, { assertive: priority === "assertive" });
+        window.announce(message, { assertive: priority === 'assertive' });
         return;
       } catch {
         /* continue fallback */
@@ -213,13 +209,13 @@ class AccessibilityManager {
     }
 
     const region =
-      priority === "assertive"
-        ? document.getElementById("live-region-assertive")
-        : document.getElementById("live-region-status");
+      priority === 'assertive'
+        ? document.getElementById('live-region-assertive')
+        : document.getElementById('live-region-status');
     if (!region) return;
 
     if (clearPrevious) {
-      region.textContent = "";
+      region.textContent = '';
     }
     // small delay for screen reader compatibility
     setTimeout(() => {

@@ -1,6 +1,6 @@
-import { createLogger } from "../../content/utils/shared-utilities.js";
+import { createLogger } from '../../content/utils/shared-utilities.js';
 
-const log = createLogger("projekte-app");
+const log = createLogger('projekte-app');
 
 /* global React, ReactDOM */
 /**
@@ -10,7 +10,7 @@ const log = createLogger("projekte-app");
  */
 
 // Use jsDelivr CDN (allowed by CSP in content/head/head.html) instead of unpkg
-import htm from "https://cdn.jsdelivr.net/npm/htm@3.1.1/dist/htm.module.js";
+import htm from 'https://cdn.jsdelivr.net/npm/htm@3.1.1/dist/htm.module.js';
 
 // Bind htm to React's createElement function
 const html = htm.bind(React.createElement);
@@ -129,114 +129,91 @@ const Check = (props) => html`
 const projects = [
   {
     id: 1,
-    title: "Schere Stein Papier",
-    description: "Der Klassiker gegen den Computer!",
-    tags: ["JavaScript", "Game Logic"],
-    category: "Game",
-    datePublished: "2023-07-05",
-    image: "https://abdulkerimsesli.de/content/assets/img/og/og-projekte.png",
-    appPath: "/projekte/apps/schere-stein-papier/",
-    githubPath:
-      "https://github.com/aKs030/Webgame/tree/main/apps/schere-stein-papier",
+    title: 'Schere Stein Papier',
+    description: 'Der Klassiker gegen den Computer!',
+    tags: ['JavaScript', 'Game Logic'],
+    category: 'Game',
+    datePublished: '2023-07-05',
+    image: 'https://abdulkerimsesli.de/content/assets/img/og/og-projekte.png',
+    appPath: '/projekte/apps/schere-stein-papier/',
+    githubPath: 'https://github.com/aKs030/Webgame/tree/main/apps/schere-stein-papier',
     bgStyle: {
       background:
-        "linear-gradient(to bottom right, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2))",
+        'linear-gradient(to bottom right, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2))',
     },
-    glowColor: "#5586f7ff",
-    icon: html`
-      <${Gamepad2}
-        style=${{ color: "#c084fc", width: "32px", height: "32px" }}
-      />
-    `,
+    glowColor: '#5586f7ff',
+    icon: html` <${Gamepad2} style=${{ color: '#c084fc', width: '32px', height: '32px' }} /> `,
     previewContent: html`
       <div className="preview-container-vs">
-        <div style=${{ fontSize: "3rem" }}>🪨</div>
-        <div style=${{ fontSize: "1.5rem", opacity: 0.5 }}>VS</div>
-        <div style=${{ fontSize: "3rem" }}>✂️</div>
+        <div style=${{ fontSize: '3rem' }}>🪨</div>
+        <div style=${{ fontSize: '1.5rem', opacity: 0.5 }}>VS</div>
+        <div style=${{ fontSize: '3rem' }}>✂️</div>
       </div>
     `,
   },
   {
     id: 2,
-    title: "Zahlen Raten",
-    description: "Finde die geheime Zahl zwischen 1 und 100.",
-    tags: ["Logic", "Input"],
-    category: "Puzzle",
-    datePublished: "2024-08-01",
-    image: "https://abdulkerimsesli.de/content/assets/img/og/og-projekte.png",
-    appPath: "/projekte/apps/zahlen-raten/",
-    githubPath: "https://github.com/aKs030/Webgame/tree/main/apps/zahlen-raten",
+    title: 'Zahlen Raten',
+    description: 'Finde die geheime Zahl zwischen 1 und 100.',
+    tags: ['Logic', 'Input'],
+    category: 'Puzzle',
+    datePublished: '2024-08-01',
+    image: 'https://abdulkerimsesli.de/content/assets/img/og/og-projekte.png',
+    appPath: '/projekte/apps/zahlen-raten/',
+    githubPath: 'https://github.com/aKs030/Webgame/tree/main/apps/zahlen-raten',
     bgStyle: {
       background:
-        "linear-gradient(to bottom right, rgba(34, 197, 94, 0.2), rgba(16, 185, 129, 0.2))",
+        'linear-gradient(to bottom right, rgba(34, 197, 94, 0.2), rgba(16, 185, 129, 0.2))',
     },
-    glowColor: "#10b981",
-    icon: html`
-      <${Binary} style=${{ color: "#34d399", width: "32px", height: "32px" }} />
-    `,
+    glowColor: '#10b981',
+    icon: html` <${Binary} style=${{ color: '#34d399', width: '32px', height: '32px' }} /> `,
     previewContent: html`
       <div className="preview-container">
-        <span
-          style=${{ fontSize: "4rem", color: "#6ee7b7", fontWeight: "bold" }}
-          >?</span
-        >
+        <span style=${{ fontSize: '4rem', color: '#6ee7b7', fontWeight: 'bold' }}>?</span>
       </div>
     `,
   },
   {
     id: 3,
-    title: "Color Changer",
-    description: "Dynamische Hintergrundfarben per Klick.",
-    tags: ["DOM", "Events"],
-    category: "UI",
-    datePublished: "2022-03-15",
-    image: "https://abdulkerimsesli.de/content/assets/img/og/og-projekte.png",
-    appPath: "/projekte/apps/color-changer/",
-    githubPath:
-      "https://github.com/aKs030/Webgame/tree/main/apps/color-changer",
+    title: 'Color Changer',
+    description: 'Dynamische Hintergrundfarben per Klick.',
+    tags: ['DOM', 'Events'],
+    category: 'UI',
+    datePublished: '2022-03-15',
+    image: 'https://abdulkerimsesli.de/content/assets/img/og/og-projekte.png',
+    appPath: '/projekte/apps/color-changer/',
+    githubPath: 'https://github.com/aKs030/Webgame/tree/main/apps/color-changer',
     bgStyle: {
       background:
-        "linear-gradient(to bottom right, rgba(249, 115, 22, 0.2), rgba(236, 72, 153, 0.2))",
+        'linear-gradient(to bottom right, rgba(249, 115, 22, 0.2), rgba(236, 72, 153, 0.2))',
     },
-    glowColor: "#ec4899",
-    icon: html`
-      <${Palette}
-        style=${{ color: "#f472b6", width: "32px", height: "32px" }}
-      />
-    `,
+    glowColor: '#ec4899',
+    icon: html` <${Palette} style=${{ color: '#f472b6', width: '32px', height: '32px' }} /> `,
     previewContent: html`
       <div className="preview-container">
-        <${Palette}
-          style=${{ width: "4rem", height: "4rem", color: "#f472b6" }}
-        />
+        <${Palette} style=${{ width: '4rem', height: '4rem', color: '#f472b6' }} />
       </div>
     `,
   },
   {
     id: 4,
-    title: "To-Do Liste",
-    description: "Produktivitäts-Tool zum Verwalten von Aufgaben.",
-    tags: ["CRUD", "Arrays"],
-    category: "App",
-    datePublished: "2021-11-05",
-    image: "https://abdulkerimsesli.de/content/assets/img/og/og-projekte.png",
-    appPath: "/projekte/apps/todo-liste/",
-    githubPath: "https://github.com/aKs030/Webgame/tree/main/apps/todo-liste",
+    title: 'To-Do Liste',
+    description: 'Produktivitäts-Tool zum Verwalten von Aufgaben.',
+    tags: ['CRUD', 'Arrays'],
+    category: 'App',
+    datePublished: '2021-11-05',
+    image: 'https://abdulkerimsesli.de/content/assets/img/og/og-projekte.png',
+    appPath: '/projekte/apps/todo-liste/',
+    githubPath: 'https://github.com/aKs030/Webgame/tree/main/apps/todo-liste',
     bgStyle: {
       background:
-        "linear-gradient(to bottom right, rgba(59, 130, 246, 0.2), rgba(6, 182, 212, 0.2))",
+        'linear-gradient(to bottom right, rgba(59, 130, 246, 0.2), rgba(6, 182, 212, 0.2))',
     },
-    glowColor: "#06b6d4",
-    icon: html`
-      <${ListTodo}
-        style=${{ color: "#22d3ee", width: "32px", height: "32px" }}
-      />
-    `,
+    glowColor: '#06b6d4',
+    icon: html` <${ListTodo} style=${{ color: '#22d3ee', width: '32px', height: '32px' }} /> `,
     previewContent: html`
       <div className="preview-container">
-        <${Check}
-          style=${{ width: "4rem", height: "4rem", color: "#22d3ee" }}
-        />
+        <${Check} style=${{ width: '4rem', height: '4rem', color: '#22d3ee' }} />
       </div>
     `,
   },
@@ -245,28 +222,28 @@ const projects = [
 // --- APP ---
 function App() {
   const scrollToProjects = () => {
-    const firstProject = document.getElementById("project-1");
-    if (firstProject) firstProject.scrollIntoView({ behavior: "smooth" });
+    const firstProject = document.getElementById('project-1');
+    if (firstProject) firstProject.scrollIntoView({ behavior: 'smooth' });
   };
 
   // Modal preview state for opening apps in a popup
   const [modalOpen, setModalOpen] = React.useState(false);
-  const [modalUrl, setModalUrl] = React.useState("");
-  const [modalTitle, setModalTitle] = React.useState("");
+  const [modalUrl, setModalUrl] = React.useState('');
+  const [modalTitle, setModalTitle] = React.useState('');
   const [iframeLoading, setIframeLoading] = React.useState(true);
-  const [toastMsg, setToastMsg] = React.useState("");
+  const [toastMsg, setToastMsg] = React.useState('');
   const toastTimerRef = React.useRef(null);
   const showToast = (msg, ms = 2600) => {
     setToastMsg(msg);
     if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
-    toastTimerRef.current = setTimeout(() => setToastMsg(""), ms);
+    toastTimerRef.current = setTimeout(() => setToastMsg(''), ms);
   };
 
   const getDirectUrl = (project) => {
     if (project.githubPath) {
       try {
         const url = new URL(project.githubPath);
-        if (url.host === "github.com") {
+        if (url.host === 'github.com') {
           const pathname = url.pathname;
           const m = /^\/([^/]+)\/([^/]+)\/tree\/([^/]+)\/(.+)$/.exec(pathname);
           if (m) {
@@ -280,36 +257,30 @@ function App() {
     }
     // fallback
     if (project.appPath)
-      return project.appPath.endsWith("/")
-        ? project.appPath + "index.html"
-        : project.appPath;
-    return project.githubPath || "";
+      return project.appPath.endsWith('/') ? project.appPath + 'index.html' : project.appPath;
+    return project.githubPath || '';
   };
 
   const toRawGithackUrl = (ghUrl) => {
     try {
-      const m = /github\.com\/([^/]+)\/([^/]+)\/tree\/([^/]+)\/(.+)$/.exec(
-        ghUrl
-      );
+      const m = /github\.com\/([^/]+)\/([^/]+)\/tree\/([^/]+)\/(.+)$/.exec(ghUrl);
       if (m) {
         const [, owner, repo, branch, path] = m;
         return `https://raw.githack.com/${owner}/${repo}/${branch}/${path}/index.html`;
       }
     } catch {}
-    return "";
+    return '';
   };
 
   const toJsDelivrUrl = (ghUrl) => {
     try {
-      const m = /github\.com\/([^/]+)\/([^/]+)\/tree\/([^/]+)\/(.+)$/.exec(
-        ghUrl
-      );
+      const m = /github\.com\/([^/]+)\/([^/]+)\/tree\/([^/]+)\/(.+)$/.exec(ghUrl);
       if (m) {
         const [, owner, repo, branch, path] = m;
         return `https://cdn.jsdelivr.net/gh/${owner}/${repo}@${branch}/${path}/index.html`;
       }
     } catch {}
-    return "";
+    return '';
   };
 
   const testUrl = async (url, timeout = 2500) => {
@@ -318,8 +289,8 @@ function App() {
       const controller = new AbortController();
       const id = setTimeout(() => controller.abort(), timeout);
       const res = await fetch(url, {
-        method: "GET",
-        mode: "cors",
+        method: 'GET',
+        mode: 'cors',
         signal: controller.signal,
       });
       clearTimeout(id);
@@ -331,9 +302,9 @@ function App() {
 
   const openDirect = async (project) => {
     // Try raw.githack first (embed-friendly), then jsDelivr, then fallback to raw.githubusercontent (new tab)
-    const gh = project.githubPath || "";
-    const rawGithack = gh ? toRawGithackUrl(gh) : "";
-    const jsDelivr = gh ? toJsDelivrUrl(gh) : "";
+    const gh = project.githubPath || '';
+    const rawGithack = gh ? toRawGithackUrl(gh) : '';
+    const jsDelivr = gh ? toJsDelivrUrl(gh) : '';
 
     // prefer raw.githack
     if (rawGithack && (await testUrl(rawGithack, 2500))) {
@@ -342,7 +313,7 @@ function App() {
       setIframeLoading(true);
       setModalOpen(true);
       try {
-        document.body.style.overflow = "hidden";
+        document.body.style.overflow = 'hidden';
       } catch {}
       return;
     }
@@ -354,32 +325,31 @@ function App() {
       setIframeLoading(true);
       setModalOpen(true);
       try {
-        document.body.style.overflow = "hidden";
+        document.body.style.overflow = 'hidden';
       } catch {}
       return;
     }
 
     // fallback: open raw.githubusercontent or appPath in new tab
-    const direct =
-      getDirectUrl(project) || project.githubPath || project.appPath || "";
+    const direct = getDirectUrl(project) || project.githubPath || project.appPath || '';
     if (!direct) {
-      showToast("Keine gültige App-URL vorhanden");
+      showToast('Keine gültige App-URL vorhanden');
       return;
     }
     try {
-      window.open(direct, "_blank", "noopener");
-      showToast("App in neuem Tab geöffnet");
+      window.open(direct, '_blank', 'noopener');
+      showToast('App in neuem Tab geöffnet');
     } catch {
-      showToast("Öffnen im Tab fehlgeschlagen");
+      showToast('Öffnen im Tab fehlgeschlagen');
     }
   };
 
   const closeAppModal = () => {
     setModalOpen(false);
-    setModalUrl("");
-    setModalTitle("");
+    setModalUrl('');
+    setModalTitle('');
     try {
-      document.body.style.overflow = "";
+      document.body.style.overflow = '';
     } catch {}
   };
 
@@ -395,7 +365,7 @@ function App() {
       let canceled = false;
       (async () => {
         try {
-          const gh = project.githubPath || "";
+          const gh = project.githubPath || '';
           const candidates = [];
           if (gh) {
             const raw = toRawGithackUrl(gh);
@@ -405,9 +375,7 @@ function App() {
           }
           if (project.appPath)
             candidates.push(
-              project.appPath.endsWith("/")
-                ? project.appPath + "index.html"
-                : project.appPath
+              project.appPath.endsWith('/') ? project.appPath + 'index.html' : project.appPath
             );
 
           for (const url of candidates) {
@@ -489,13 +457,13 @@ function App() {
             <span className="text-gradient-accent">Projekte.</span>
           </h1>
           <p className="description">
-            Willkommen in meiner digitalen Werkstatt. Hier sammle ich meine
-            Experimente, vom ersten console.log bis zu interaktiven Web-Apps.
+            Willkommen in meiner digitalen Werkstatt. Hier sammle ich meine Experimente, vom ersten
+            console.log bis zu interaktiven Web-Apps.
           </p>
           <div className="btn-group">
             <button onClick=${scrollToProjects} className="btn btn-primary">
               Los geht's
-              <${ArrowDown} style=${{ width: "1rem", height: "1rem" }} />
+              <${ArrowDown} style=${{ width: '1rem', height: '1rem' }} />
             </button>
           </div>
         </div>
@@ -504,11 +472,7 @@ function App() {
       <!-- Project Sections -->
       ${projects.map(
         (project) => html`
-          <section
-            key=${project.id}
-            id=${`project-${project.id}`}
-            className="snap-section"
-          >
+          <section key=${project.id} id=${`project-${project.id}`} className="snap-section">
             <div className="glow-bg" style=${project.bgStyle}></div>
             <div className="project-grid">
               <!-- Left Side (Mockup) -->
@@ -516,15 +480,12 @@ function App() {
                 className="group"
                 style=${{
                   order: 2,
-                  display: "flex",
-                  justifyContent: "center",
-                  position: "relative",
+                  display: 'flex',
+                  justifyContent: 'center',
+                  position: 'relative',
                 }}
               >
-                <div
-                  className="back-glow"
-                  style=${{ backgroundColor: project.glowColor }}
-                ></div>
+                <div className="back-glow" style=${{ backgroundColor: project.glowColor }}></div>
                 <div className="window-mockup">
                   <div className="mockup-content">
                     <div className="mockup-bg-pattern"></div>
@@ -544,9 +505,7 @@ function App() {
                 <p className="project-desc">${project.description}</p>
                 <div className="tags-container">
                   ${project.tags.map(
-                    (tag, i) => html`
-                      <span key=${i} className="tag">${tag}</span>
-                    `
+                    (tag, i) => html` <span key=${i} className="tag">${tag}</span> `
                   )}
                 </div>
                 <div className="project-actions">
@@ -555,9 +514,7 @@ function App() {
                     onClick=${() => openDirect(project)}
                     aria-label=${`App öffnen ${project.title}`}
                   >
-                    <${ExternalLink}
-                      style=${{ width: "1rem", height: "1rem" }}
-                    />
+                    <${ExternalLink} style=${{ width: '1rem', height: '1rem' }} />
                     App öffnen
                   </button>
                   <a
@@ -567,7 +524,7 @@ function App() {
                     rel="noopener noreferrer"
                     aria-label=${`Code ${project.title} auf GitHub`}
                   >
-                    <${Github} style=${{ width: "1rem", height: "1rem" }} />
+                    <${Github} style=${{ width: '1rem', height: '1rem' }} />
                     Code
                   </a>
                 </div>
@@ -576,9 +533,7 @@ function App() {
           </section>
         `
       )}
-      ${toastMsg
-        ? html` <div className="toast-notification">${toastMsg}</div> `
-        : null}
+      ${toastMsg ? html` <div className="toast-notification">${toastMsg}</div> ` : null}
       ${modalOpen
         ? html`
             <div
@@ -598,7 +553,7 @@ function App() {
                       target="_blank"
                       rel="noopener noreferrer"
                       className="btn btn-outline btn-small"
-                      style=${{ marginRight: "0.5rem" }}
+                      style=${{ marginRight: '0.5rem' }}
                     >
                       In neuem Tab öffnen
                     </a>
@@ -613,9 +568,7 @@ function App() {
                 </div>
                 <div className="modal-body">
                   ${iframeLoading
-                    ? html`
-                        <div className="iframe-loader">Lade Vorschau…</div>
-                      `
+                    ? html` <div className="iframe-loader">Lade Vorschau…</div> `
                     : null}
                   <iframe
                     src=${modalUrl}
@@ -632,22 +585,21 @@ function App() {
       <!-- Contact Section -->
       <section className="snap-section contact-section" id="contact">
         <div className="container-center">
-          <div style=${{ marginBottom: "2rem" }}>
+          <div style=${{ marginBottom: '2rem' }}>
             <div className="contact-icon-wrapper">
               <${MousePointerClick}
-                style=${{ width: "2.5rem", height: "2.5rem", color: "#60a5fa" }}
+                style=${{ width: '2.5rem', height: '2.5rem', color: '#60a5fa' }}
               />
             </div>
           </div>
           <h2 className="contact-title">Lust auf ein Spiel?</h2>
           <p className="contact-text">
-            Ich lerne jeden Tag dazu. Hast du Ideen für mein nächstes kleines
-            Projekt?
+            Ich lerne jeden Tag dazu. Hast du Ideen für mein nächstes kleines Projekt?
           </p>
           <div className="btn-group">
             <button
               className="btn btn-primary"
-              style=${{ backgroundColor: "#2563eb", color: "white" }}
+              style=${{ backgroundColor: '#2563eb', color: 'white' }}
             >
               Schreib mir
             </button>
@@ -662,14 +614,14 @@ function App() {
 // Init Function to be called from HTML
 // eslint-disable-next-line import/no-unused-modules -- used by the HTML module script in `pages/projekte/index.html`
 export function initProjectsApp() {
-  const rootEl = document.getElementById("root");
+  const rootEl = document.getElementById('root');
   if (rootEl && window.ReactDOM && window.React) {
     const root = ReactDOM.createRoot(rootEl);
     root.render(html` <${App} /> `);
   } else {
     // React dependencies or root element missing - fail silently in production
-    if (typeof console !== "undefined" && log.error) {
-      log.error("React dependencies or root element missing");
+    if (typeof console !== 'undefined' && log.error) {
+      log.error('React dependencies or root element missing');
     }
   }
 }

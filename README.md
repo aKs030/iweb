@@ -58,6 +58,17 @@ npm run prepare
 npm run dev
 ```
 
+**Wichtig:** `node_modules/` sollte lokal bleiben und **nicht** ins Repository committet werden. Ich habe deshalb eine `.gitignore` angelegt, die `node_modules/` und lokale Konfigdateien (`content/config/videos-part-*.js`) ausschließt.
+
+Wenn `node_modules` bereits versehentlich ins Repo committet wurde, entferne sie aus dem Index mit:
+
+```bash
+git rm -r --cached node_modules
+git commit -m "Remove node_modules from repo"
+```
+
+Danach sicherstellen, dass `.gitignore` committed ist, damit `node_modules/` nicht erneut hinzugefügt wird.
+
 ---
 
 ## 📦 Skripte
@@ -70,6 +81,9 @@ npm run dev
 | `npm run format:check` | Überprüft Format mit Prettier                           |
 | `npm run prepare`      | Installiert Husky-Git-Hooks                             |
 | `npm run lint`         | Führt ESLint aus (`lint:js` für .js/.ts Dateien)        |
+| `npm run test:smoke`   | Führt die Playwright-basierten Smoke-Tests aus          |
+
+> Hinweis: Smoke-Tests verwenden Playwright; führe `npm install` und bei Bedarf `npx playwright install` aus, bevor du `npm run test:smoke` startest.
 
 > Hinweis: In älteren Dokumenten wird `npm run build:prod` erwähnt — aktuell existiert kein `build`-Skript in `package.json`. Wenn du ein Production-Build-Setup möchtest, kann ich ein `build`-Script (z.B. mit `esbuild`) ergänzen.
 
@@ -87,6 +101,9 @@ iweb/
 │   ├── gallery/           # React-basierte Foto-Galerie (Lazy Loaded)
 │   └── projekte/          # Projekt-Showcase
 └── manifest.json          # PWA Konfiguration
+
+### 🔧 Konfiguration
+Zentrale Host-/Site-abhängige Einstellungen (GTM/GA4/Ads-IDs, Ads-Conversion-Label, Feature-Flags) befinden sich in `content/config/site-config.js`. Ändere dort Host-Mapping-Einträge (Schlüssel sind Hostnamen, `default` wird als Fallback verwendet).
 ```
 
 ---

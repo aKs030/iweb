@@ -3,7 +3,7 @@
   "containerVersion": {
     "container": {
       "publicId": "GTM-5F5ZSTTL",
-      "name": "abdulkerimsesli.de - GA4 + Ads (GTM-5F5ZSTTL) — Primary for www.abdulkerimsesli.de"
+      "name": "abdulkerimsesli.de - GA4 + Ads (GTM-5F5ZSTTL)"
     },
     "tag": [
       {
@@ -59,8 +59,16 @@
           {
             "type": "equals",
             "parameter": [
-              { "key": "arg0", "type": "TEMPLATE", "value": "event" },
-              { "key": "arg1", "type": "TEMPLATE", "value": "consentGranted" }
+              {
+                "key": "arg0",
+                "type": "TEMPLATE",
+                "value": "event"
+              },
+              {
+                "key": "arg1",
+                "type": "TEMPLATE",
+                "value": "consentGranted"
+              }
             ]
           }
         ]
@@ -73,7 +81,11 @@
           {
             "type": "equals",
             "parameter": [
-              { "key": "arg0", "type": "TEMPLATE", "value": "event" },
+              {
+                "key": "arg0",
+                "type": "TEMPLATE",
+                "value": "event"
+              },
               {
                 "key": "arg1",
                 "type": "TEMPLATE",
@@ -91,8 +103,16 @@
           {
             "type": "equals",
             "parameter": [
-              { "key": "arg0", "type": "TEMPLATE", "value": "event" },
-              { "key": "arg1", "type": "TEMPLATE", "value": "conversionEvent" }
+              {
+                "key": "arg0",
+                "type": "TEMPLATE",
+                "value": "event"
+              },
+              {
+                "key": "arg1",
+                "type": "TEMPLATE",
+                "value": "conversionEvent"
+              }
             ]
           }
         ]
@@ -103,21 +123,33 @@
         "name": "GA4_MEASUREMENT_ID",
         "type": "dataLayer",
         "parameter": [
-          { "key": "name", "type": "TEMPLATE", "value": "ga4_measurement_id" }
+          {
+            "key": "name",
+            "type": "TEMPLATE",
+            "value": "ga4_measurement_id"
+          }
         ]
       },
       {
         "name": "AW_CONVERSION_ID",
         "type": "dataLayer",
         "parameter": [
-          { "key": "name", "type": "TEMPLATE", "value": "ads_conversion_id" }
+          {
+            "key": "name",
+            "type": "TEMPLATE",
+            "value": "ads_conversion_id"
+          }
         ]
       },
       {
         "name": "AW_CONVERSION_LABEL",
-        "type": "constant",
+        "type": "dataLayer",
         "parameter": [
-          { "key": "value", "type": "TEMPLATE", "value": "AW-CONV-LABEL" }
+          {
+            "key": "name",
+            "type": "TEMPLATE",
+            "value": "ads_conversion_label"
+          }
         ]
       }
     ],

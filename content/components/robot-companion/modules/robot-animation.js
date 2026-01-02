@@ -16,7 +16,7 @@ export class RobotAnimation {
     // Start Animation State
     this.startAnimation = {
       active: false,
-      phase: "idle",
+      phase: 'idle',
       startTime: 0,
       startX: 0,
       targetX: 0,
@@ -76,15 +76,15 @@ export class RobotAnimation {
     this.thinkingActive = true;
 
     if (this.robot.dom.svg) {
-      const antenna = this.robot.dom.svg.querySelector(".robot-antenna-light");
+      const antenna = this.robot.dom.svg.querySelector('.robot-antenna-light');
       if (antenna) {
-        antenna.classList.add("is-thinking");
+        antenna.classList.add('is-thinking');
       }
     }
 
     if (this.robot.dom.eyes) {
       this.stopIdleEyeMovement();
-      this.robot.dom.eyes.classList.add("is-thinking");
+      this.robot.dom.eyes.classList.add('is-thinking');
     }
   }
 
@@ -93,20 +93,20 @@ export class RobotAnimation {
     this.thinkingActive = false;
 
     if (this.robot.dom.svg) {
-      const antenna = this.robot.dom.svg.querySelector(".robot-antenna-light");
+      const antenna = this.robot.dom.svg.querySelector('.robot-antenna-light');
       if (antenna) {
-        antenna.classList.remove("is-thinking");
+        antenna.classList.remove('is-thinking');
       }
     }
 
     if (this.robot.dom.eyes) {
-      this.robot.dom.eyes.classList.remove("is-thinking");
+      this.robot.dom.eyes.classList.remove('is-thinking');
       this.startIdleEyeMovement();
     }
   }
 
   startTypeWriterKnockbackAnimation() {
-    const typeWriter = document.querySelector(".typewriter-title");
+    const typeWriter = document.querySelector('.typewriter-title');
     if (!typeWriter || !this.robot.dom.container) {
       this.startPatrol();
       return;
@@ -114,7 +114,7 @@ export class RobotAnimation {
 
     const twRect = typeWriter.getBoundingClientRect();
     const robotWidth = 80;
-    const windowWidth = (typeof globalThis !== "undefined" ? globalThis.innerWidth : 0);
+    const windowWidth = typeof globalThis !== 'undefined' ? globalThis.innerWidth : 0;
 
     const initialLeft = windowWidth - 30 - robotWidth;
     const gap = 24;
@@ -134,7 +134,7 @@ export class RobotAnimation {
     const targetX = Math.max(0, Math.round(initialLeft - targetLeft));
 
     this.startAnimation.active = true;
-    this.startAnimation.phase = "approach";
+    this.startAnimation.phase = 'approach';
     this.startAnimation.startTime = performance.now();
     this.startAnimation.startX = startX;
     this.startAnimation.targetX = targetX;
@@ -145,7 +145,7 @@ export class RobotAnimation {
     this.patrol.bouncePhase = 0;
 
     this.robot.dom.container.style.transform = `translate3d(-${this.patrol.x}px, ${this.patrol.y}px, 0) rotate(0deg)`;
-    this.robot.dom.container.style.opacity = "1";
+    this.robot.dom.container.style.opacity = '1';
     requestAnimationFrame(this.updateStartAnimation);
   }
 
@@ -157,7 +157,7 @@ export class RobotAnimation {
 
     const now = performance.now();
 
-    if (this.startAnimation.phase === "approach") {
+    if (this.startAnimation.phase === 'approach') {
       const elapsed = now - this.startAnimation.startTime;
       const t = Math.min(1, elapsed / this.startAnimation.duration);
       const eased = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
@@ -178,7 +178,7 @@ export class RobotAnimation {
 
       const isDashing = t > 0.3;
       if (isDashing && this.robot.dom.particles) {
-        this.robot.dom.particles.style.opacity = "0.9";
+        this.robot.dom.particles.style.opacity = '0.9';
       }
 
       this.setAvatarState({ moving: true, dashing: isDashing });
@@ -190,7 +190,7 @@ export class RobotAnimation {
       this.robot.dom.container.style.transform = `translate3d(-${this.patrol.x}px, ${this.patrol.y}px, 0) rotate(-4deg)`;
 
       if (t >= 1) {
-        this.startAnimation.phase = "pause";
+        this.startAnimation.phase = 'pause';
         this.startAnimation.pauseUntil = now + 200;
         this.setAvatarState({ moving: false, dashing: false });
       }
@@ -199,22 +199,21 @@ export class RobotAnimation {
       return;
     }
 
-    if (this.startAnimation.phase === "pause") {
+    if (this.startAnimation.phase === 'pause') {
       if (now >= this.startAnimation.pauseUntil) {
         const reactions = [
-          "Autsch! 😵",
-          "Ups! Das war hart! 💥",
-          "Whoa! 😲",
-          "Hey! Nicht schubsen! 😠",
+          'Autsch! 😵',
+          'Ups! Das war hart! 💥',
+          'Whoa! 😲',
+          'Hey! Nicht schubsen! 😠',
         ];
-        const reaction =
-          reactions[Math.floor(Math.random() * reactions.length)];
+        const reaction = reactions[Math.floor(Math.random() * reactions.length)];
         this.robot.showBubble(reaction);
         setTimeout(() => this.robot.hideBubble(), 2500);
 
         this.spawnParticleBurst(15, { strength: 2, spread: 180 });
 
-        this.startAnimation.phase = "knockback";
+        this.startAnimation.phase = 'knockback';
         this.startAnimation.knockbackStartTime = now;
         this.startAnimation.knockbackStartX = this.patrol.x;
         this.startAnimation.knockbackStartY = this.patrol.y;
@@ -224,7 +223,7 @@ export class RobotAnimation {
       return;
     }
 
-    if (this.startAnimation.phase === "knockback") {
+    if (this.startAnimation.phase === 'knockback') {
       const elapsed = now - this.startAnimation.knockbackStartTime;
       const t = Math.min(1, elapsed / this.startAnimation.knockbackDuration);
 
@@ -243,15 +242,15 @@ export class RobotAnimation {
       this.robot.dom.container.style.transform = `translate3d(-${this.patrol.x}px, ${this.patrol.y}px, 0) rotate(${containerRot}deg)`;
 
       if (this.robot.dom.flame) {
-        this.robot.dom.flame.style.opacity = "0.2";
+        this.robot.dom.flame.style.opacity = '0.2';
       }
 
       if (t < 0.3 && this.robot.dom.particles) {
-        this.robot.dom.particles.style.opacity = "1";
+        this.robot.dom.particles.style.opacity = '1';
       }
 
       if (t >= 1) {
-        this.startAnimation.phase = "landing";
+        this.startAnimation.phase = 'landing';
         this.spawnParticleBurst(8, { strength: 1.5 });
 
         setTimeout(() => {
@@ -259,7 +258,7 @@ export class RobotAnimation {
           this.patrol.active = true;
           this.patrol.y = 0;
           if (this.robot.dom.svg) {
-            this.robot.dom.svg.style.transform = "rotate(0deg)";
+            this.robot.dom.svg.style.transform = 'rotate(0deg)';
           }
           this.startPatrol();
         }, 300);
@@ -269,7 +268,7 @@ export class RobotAnimation {
       return;
     }
 
-    if (this.startAnimation.phase === "landing") {
+    if (this.startAnimation.phase === 'landing') {
       if (!this.startAnimation.active) return;
       requestAnimationFrame(this.updateStartAnimation);
     }
@@ -277,8 +276,7 @@ export class RobotAnimation {
 
   startPatrol() {
     this.patrol.active = true;
-    if (this.robot.dom && this.robot.dom.container)
-      this.robot.dom.container.style.opacity = "1";
+    if (this.robot.dom && this.robot.dom.container) this.robot.dom.container.style.opacity = '1';
     requestAnimationFrame(this.updatePatrol);
   }
 
@@ -300,27 +298,23 @@ export class RobotAnimation {
     }
 
     const now = performance.now();
-    if (
-      now - this.cacheConfig.lastTypeWriterCheck >
-      this.cacheConfig.typeWriterCheckInterval
-    ) {
-      this.robot.dom.typeWriter = document.querySelector(".typewriter-title");
+    if (now - this.cacheConfig.lastTypeWriterCheck > this.cacheConfig.typeWriterCheckInterval) {
+      this.robot.dom.typeWriter = document.querySelector('.typewriter-title');
       this.cacheConfig.lastTypeWriterCheck = now;
     }
 
-    const isHovering =
-      this.robot.dom.avatar && this.robot.dom.avatar.matches(":hover");
+    const isHovering = this.robot.dom.avatar && this.robot.dom.avatar.matches(':hover');
     if (this.robot.chatModule.isOpen || this.patrol.isPaused || isHovering) {
       this.setAvatarState({ moving: false, dashing: false });
-      if (this.robot.dom.flame) this.robot.dom.flame.style.opacity = "0";
-      if (this.robot.dom.particles)
-        this.robot.dom.particles.style.opacity = "0";
+      if (this.robot.dom.flame) this.robot.dom.flame.style.opacity = '0';
+      if (this.robot.dom.particles) this.robot.dom.particles.style.opacity = '0';
       requestAnimationFrame(this.updatePatrol);
       return;
     }
 
     const robotWidth = 80;
-    const initialLeft = (typeof globalThis !== "undefined" ? globalThis.innerWidth : 0) - 30 - robotWidth;
+    const initialLeft =
+      (typeof globalThis !== 'undefined' ? globalThis.innerWidth : 0) - 30 - robotWidth;
     let maxLeft = initialLeft - 20;
 
     let twRect = null;
@@ -332,11 +326,7 @@ export class RobotAnimation {
 
     if (maxLeft < 0) maxLeft = 0;
 
-    if (
-      Math.random() < 0.005 &&
-      this.patrol.x > 50 &&
-      this.patrol.x < maxLeft - 50
-    ) {
+    if (Math.random() < 0.005 && this.patrol.x > 50 && this.patrol.x < maxLeft - 50) {
       this.patrol.direction *= -1;
     }
 
@@ -379,42 +369,32 @@ export class RobotAnimation {
 
     this.patrol.bouncePhase += dashActive ? 0.08 : 0.05;
     this.patrol.y = Math.sin(this.patrol.bouncePhase) * (dashActive ? 4 : 3);
-    this.robot.animationState = "moving";
+    this.robot.animationState = 'moving';
 
     this.setAvatarState({ moving: true, dashing: dashActive });
 
     if (this.robot.dom.svg) {
       const baseTilt = this.patrol.direction > 0 ? -5 : 5;
       const tiltIntensity =
-        this.startAnimation && this.startAnimation.active
-          ? 1.6
-          : dashActive
-            ? 1.2
-            : 1;
+        this.startAnimation && this.startAnimation.active ? 1.6 : dashActive ? 1.2 : 1;
       this.robot.dom.svg.style.transform = `rotate(${baseTilt * tiltIntensity}deg)`;
     }
     if (this.robot.dom.eyes) this.updateEyesTransform();
     if (this.robot.dom.flame) {
       const flameIntensity =
-        this.startAnimation && this.startAnimation.active
-          ? 1.4
-          : dashActive
-            ? 1.2
-            : 0.85;
+        this.startAnimation && this.startAnimation.active ? 1.4 : dashActive ? 1.2 : 0.85;
       this.robot.dom.flame.style.opacity = flameIntensity;
       this.robot.dom.flame.style.transform = `scale(${1 + (flameIntensity - 0.7) * 0.4})`;
     }
     if (this.robot.dom.particles) {
       this.robot.dom.particles.style.opacity =
-        dashActive || (this.startAnimation && this.startAnimation.active)
-          ? "0.9"
-          : "0.5";
+        dashActive || (this.startAnimation && this.startAnimation.active) ? '0.9' : '0.5';
     }
 
     if (this.robot.dom.legs) {
       const shouldWiggle = dashActive || Math.abs(this.patrol.direction) === 1;
-      if (this.robot.dom.legs.classList.contains("wiggle") !== shouldWiggle) {
-        this.robot.dom.legs.classList.toggle("wiggle", shouldWiggle);
+      if (this.robot.dom.legs.classList.contains('wiggle') !== shouldWiggle) {
+        this.robot.dom.legs.classList.toggle('wiggle', shouldWiggle);
       }
     }
 
@@ -440,10 +420,10 @@ export class RobotAnimation {
           ? -6
           : 6
         : dashActive
-          ? this.patrol.direction > 0
-            ? -4
-            : 4
-          : 0;
+        ? this.patrol.direction > 0
+          ? -4
+          : 4
+        : 0;
 
     this.robot.dom.container.style.transform = `translate3d(-${this.patrol.x}px, ${this.patrol.y}px, 0) rotate(${containerRotation}deg)`;
 
@@ -452,19 +432,18 @@ export class RobotAnimation {
 
   pausePatrol(ms) {
     this.patrol.isPaused = true;
-    this.robot.animationState = "idle";
+    this.robot.animationState = 'idle';
     this.motion.dashUntil = 0;
     this.setAvatarState({ moving: false, dashing: false });
-    if (this.robot.dom.flame) this.robot.dom.flame.style.opacity = "0";
-    if (this.robot.dom.particles) this.robot.dom.particles.style.opacity = "0";
+    if (this.robot.dom.flame) this.robot.dom.flame.style.opacity = '0';
+    if (this.robot.dom.particles) this.robot.dom.particles.style.opacity = '0';
 
     this.triggerRandomIdleAnimation(ms);
 
     if (this.robot.dom.thinking && Math.random() < 0.3) {
-      this.robot.dom.thinking.style.opacity = "1";
+      this.robot.dom.thinking.style.opacity = '1';
       setTimeout(() => {
-        if (this.robot.dom.thinking)
-          this.robot.dom.thinking.style.opacity = "0";
+        if (this.robot.dom.thinking) this.robot.dom.thinking.style.opacity = '0';
       }, ms * 0.6);
     }
     setTimeout(() => {
@@ -476,30 +455,29 @@ export class RobotAnimation {
   triggerRandomIdleAnimation(_duration) {
     const r = Math.random();
     if (r < 0.3) {
-      this.robot.dom.avatar.classList.add("waving");
+      this.robot.dom.avatar.classList.add('waving');
     } else if (r < 0.6) {
-      this.robot.dom.avatar.classList.add("check-watch");
+      this.robot.dom.avatar.classList.add('check-watch');
       if (this.robot.dom.eyes) {
-        this.robot.dom.eyes.style.transform = "translate(-2px, 4px)";
+        this.robot.dom.eyes.style.transform = 'translate(-2px, 4px)';
       }
     } else {
       if (this.robot.dom.eyes) {
-        this.robot.dom.eyes.style.transform = `translate(${Math.random() * 4 - 2}px, ${Math.random() * 2 - 1}px)`;
+        this.robot.dom.eyes.style.transform = `translate(${Math.random() * 4 - 2}px, ${
+          Math.random() * 2 - 1
+        }px)`;
       }
     }
   }
 
   resetIdleAnimations() {
     if (this.robot.dom.avatar) {
-      this.robot.dom.avatar.classList.remove("waving");
-      this.robot.dom.avatar.classList.remove("check-watch");
+      this.robot.dom.avatar.classList.remove('waving');
+      this.robot.dom.avatar.classList.remove('check-watch');
     }
   }
 
-  spawnParticleBurst(
-    count = 6,
-    { direction = 0, strength = 1, spread = null } = {},
-  ) {
+  spawnParticleBurst(count = 6, { direction = 0, strength = 1, spread = null } = {}) {
     if (!this.robot.dom.container) return;
     const rect = this.robot.dom.avatar.getBoundingClientRect();
     const baseX = rect.left + rect.width / 2;
@@ -507,15 +485,14 @@ export class RobotAnimation {
     const cRect = this.robot.dom.container.getBoundingClientRect();
 
     for (let i = 0; i < count; i++) {
-      const el = document.createElement("div");
-      el.className = "robot-burst-particle";
-      const size =
-        4 + Math.round(3 + Math.random() * 4) * Math.min(1.2, strength);
+      const el = document.createElement('div');
+      el.className = 'robot-burst-particle';
+      const size = 4 + Math.round(3 + Math.random() * 4) * Math.min(1.2, strength);
       el.style.width = `${size}px`;
       el.style.height = `${size}px`;
       if (strength > 1.5 && Math.random() < 0.35) {
-        el.style.filter = "blur(0.9px)";
-        el.style.opacity = "0.9";
+        el.style.filter = 'blur(0.9px)';
+        el.style.opacity = '0.9';
       }
       this.robot.dom.container.appendChild(el);
 
@@ -527,11 +504,7 @@ export class RobotAnimation {
       } else {
         const angleSpread = Math.PI / 3;
         const baseAngle =
-          direction === 0
-            ? -Math.PI / 2
-            : direction > 0
-              ? -Math.PI / 4
-              : (-3 * Math.PI) / 4;
+          direction === 0 ? -Math.PI / 2 : direction > 0 ? -Math.PI / 4 : (-3 * Math.PI) / 4;
         angle = baseAngle + (Math.random() - 0.5) * angleSpread;
       }
 
@@ -539,13 +512,13 @@ export class RobotAnimation {
       const dx = Math.cos(angle) * distance * strength;
       const dy = Math.sin(angle) * distance * strength - 10 * strength;
 
-      el.style.left = baseX - cRect.left - size / 2 + "px";
-      el.style.top = baseY - cRect.top - size / 2 + "px";
+      el.style.left = baseX - cRect.left - size / 2 + 'px';
+      el.style.top = baseY - cRect.top - size / 2 + 'px';
 
       requestAnimationFrame(() => {
         el.style.transform = `translate(${dx}px, ${dy}px) scale(${0.5 + Math.random() * 0.6})`;
-        el.style.opacity = "0";
-        if (Math.random() < 0.15) el.style.filter = "blur(1px)";
+        el.style.opacity = '0';
+        if (Math.random() < 0.15) el.style.filter = 'blur(1px)';
       });
 
       setTimeout(() => el.remove(), 900 + Math.random() * 600);
@@ -554,13 +527,13 @@ export class RobotAnimation {
 
   setAvatarState({ moving = false, dashing = false } = {}) {
     if (!this.robot.dom.avatar) return;
-    this.robot.dom.avatar.classList.toggle("is-moving", moving);
-    this.robot.dom.avatar.classList.toggle("is-dashing", dashing);
+    this.robot.dom.avatar.classList.toggle('is-moving', moving);
+    this.robot.dom.avatar.classList.toggle('is-dashing', dashing);
   }
 
   spawnFlameParticle() {
     if (!this.robot.dom.container || !this.robot.dom.avatar) return;
-    const el = document.createElement("div");
+    const el = document.createElement('div');
     el.style.cssText = `
         position: absolute;
         width: 4px; height: 4px;
@@ -579,8 +552,8 @@ export class RobotAnimation {
     const startX = rect.left + rect.width / 2 - cRect.left;
     const startY = rect.top + rect.height - 15 - cRect.top;
 
-    el.style.left = startX - 2 + "px";
-    el.style.top = startY + "px";
+    el.style.left = startX - 2 + 'px';
+    el.style.top = startY + 'px';
 
     this.robot.dom.container.appendChild(el);
 
@@ -588,7 +561,7 @@ export class RobotAnimation {
       const dx = (Math.random() - 0.5) * 10;
       const dy = 15 + Math.random() * 15;
       el.style.transform = `translate(${dx}px, ${dy}px) scale(0)`;
-      el.style.opacity = "0";
+      el.style.opacity = '0';
     });
 
     setTimeout(() => el.remove(), 600);
@@ -601,36 +574,35 @@ export class RobotAnimation {
         return;
       }
 
-      const effects = ["jump", "shake", "flash"];
+      const effects = ['jump', 'shake', 'flash'];
       const effect = effects[Math.floor(Math.random() * effects.length)];
 
-      if (effect === "jump") {
+      if (effect === 'jump') {
         this.robot.dom.avatar.style.transition =
-          "transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)";
-        this.robot.dom.avatar.style.transform = "translateY(-20px) scale(1.1)";
+          'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+        this.robot.dom.avatar.style.transform = 'translateY(-20px) scale(1.1)';
         setTimeout(() => {
-          this.robot.dom.avatar.style.transform = "";
+          this.robot.dom.avatar.style.transform = '';
           setTimeout(resolve, 200);
         }, 200);
-      } else if (effect === "shake") {
+      } else if (effect === 'shake') {
         this.robot.dom.avatar.animate(
           [
-            { transform: "translateX(0)" },
-            { transform: "translateX(-5px) rotate(-5deg)" },
-            { transform: "translateX(5px) rotate(5deg)" },
-            { transform: "translateX(-5px) rotate(-5deg)" },
-            { transform: "translateX(0)" },
+            { transform: 'translateX(0)' },
+            { transform: 'translateX(-5px) rotate(-5deg)' },
+            { transform: 'translateX(5px) rotate(5deg)' },
+            { transform: 'translateX(-5px) rotate(-5deg)' },
+            { transform: 'translateX(0)' },
           ],
-          { duration: 300 },
+          { duration: 300 }
         );
         setTimeout(resolve, 350);
       } else {
         if (this.robot.dom.svg) {
-          this.robot.dom.svg.style.filter =
-            "brightness(2) drop-shadow(0 0 10px #fff)";
+          this.robot.dom.svg.style.filter = 'brightness(2) drop-shadow(0 0 10px #fff)';
         }
         setTimeout(() => {
-          if (this.robot.dom.svg) this.robot.dom.svg.style.filter = "";
+          if (this.robot.dom.svg) this.robot.dom.svg.style.filter = '';
           setTimeout(resolve, 100);
         }, 150);
       }
@@ -641,8 +613,7 @@ export class RobotAnimation {
     this.stopIdleEyeMovement();
     const cfg = this.eyeIdleConfig;
     const scheduleNext = () => {
-      const delay =
-        cfg.intervalMin + Math.random() * (cfg.intervalMax - cfg.intervalMin);
+      const delay = cfg.intervalMin + Math.random() * (cfg.intervalMax - cfg.intervalMin);
       this._eyeIdleTimer = setTimeout(() => {
         const targetX = (Math.random() * 2 - 1) * cfg.amplitudeX;
         const targetY = (Math.random() * 2 - 1) * cfg.amplitudeY;
@@ -673,20 +644,18 @@ export class RobotAnimation {
 
   updateEyesTransform() {
     if (!this.robot.dom || !this.robot.dom.eyes) return;
-    const eyeOffset =
-      typeof this.patrol !== "undefined" && this.patrol.direction > 0 ? -3 : 3;
+    const eyeOffset = typeof this.patrol !== 'undefined' && this.patrol.direction > 0 ? -3 : 3;
     const eyeIntensity =
-      (this.startAnimation && this.startAnimation.active) ||
-      this.patrol.isPaused
+      (this.startAnimation && this.startAnimation.active) || this.patrol.isPaused
         ? 1.4
         : this.motion && this.motion.dashUntil > performance.now()
-          ? 1.2
-          : 1;
+        ? 1.2
+        : 1;
     const baseX = eyeOffset * eyeIntensity;
     const totalX = baseX + (this.eyeIdleOffset.x || 0);
     const totalY = this.eyeIdleOffset.y || 0;
     this.robot.dom.eyes.style.transform = `translate(${totalX}px, ${totalY}px)`;
-    this.robot.dom.eyes.style.transition = "transform 0.6s ease";
+    this.robot.dom.eyes.style.transition = 'transform 0.6s ease';
   }
 
   startBlinkLoop() {
@@ -694,8 +663,7 @@ export class RobotAnimation {
     const schedule = () => {
       const delay =
         this.blinkConfig.intervalMin +
-        Math.random() *
-          (this.blinkConfig.intervalMax - this.blinkConfig.intervalMin);
+        Math.random() * (this.blinkConfig.intervalMax - this.blinkConfig.intervalMin);
       this._blinkTimer = setTimeout(() => {
         this.doBlink();
         schedule();
@@ -713,14 +681,11 @@ export class RobotAnimation {
 
   doBlink() {
     if (!this.robot.dom || !this.robot.dom.eyes) return;
-    const lids = this.robot.dom.eyes.querySelectorAll(".robot-lid");
+    const lids = this.robot.dom.eyes.querySelectorAll('.robot-lid');
     if (!lids.length) return;
-    lids.forEach((l) => l.classList.add("is-blink"));
-    setTimeout(
-      () => {
-        lids.forEach((l) => l.classList.remove("is-blink"));
-      },
-      (this.blinkConfig.duration || 120) + 20,
-    );
+    lids.forEach((l) => l.classList.add('is-blink'));
+    setTimeout(() => {
+      lids.forEach((l) => l.classList.remove('is-blink'));
+    }, (this.blinkConfig.duration || 120) + 20);
   }
 }

@@ -4,7 +4,7 @@
 
 /* Default: Dark Mode */
 :root {
-  --theme-mode: "dark";
+  --theme-mode: 'dark';
 
   /* Brand Colors - Safari UI inspired */
   --primary-color: #007aff;
@@ -49,15 +49,11 @@
   --container-width: 1600px;
 
   /* Fonts - System fonts als primäre Schriftart für gesamte Website */
-  --font-primary: -apple-system, blinkmacsystemfont, "Segoe UI", roboto,
-    sans-serif;
-  --font-mono: "SF Mono", monaco, "Cascadia Code", "Roboto Mono", monospace;
-  --font-inter: -apple-system, blinkmacsystemfont, "Segoe UI", roboto,
-    sans-serif;
-  --critical-font-stack: -apple-system, blinkmacsystemfont, "Segoe UI", roboto,
-    sans-serif;
-  --font-script: -apple-system, blinkmacsystemfont, "Segoe UI", roboto,
-    sans-serif;
+  --font-primary: -apple-system, blinkmacsystemfont, 'Segoe UI', roboto, sans-serif;
+  --font-mono: 'SF Mono', monaco, 'Cascadia Code', 'Roboto Mono', monospace;
+  --font-inter: -apple-system, blinkmacsystemfont, 'Segoe UI', roboto, sans-serif;
+  --critical-font-stack: -apple-system, blinkmacsystemfont, 'Segoe UI', roboto, sans-serif;
+  --font-script: -apple-system, blinkmacsystemfont, 'Segoe UI', roboto, sans-serif;
 
   /* Typography tokens */
   --font-family-main: var(--font-primary);
@@ -183,8 +179,7 @@
   --card-blur-base: 24px;
   --card-blur-hover: 28px;
   --card-shadow-base: 0 10px 40px rgb(0 0 0 / 25%), 0 2px 8px rgb(0 0 0 / 15%);
-  --card-shadow-hover: 0 20px 60px rgb(0 0 0 / 35%),
-    0 0 40px rgb(7 161 255 / 20%);
+  --card-shadow-hover: 0 20px 60px rgb(0 0 0 / 35%), 0 0 40px rgb(7 161 255 / 20%);
   --card-glow-color: rgb(7 161 255 / 40%);
 
   /* Safe-area */
@@ -216,10 +211,8 @@
   --component-pill-radius: 24px;
   --component-card-radius: 16px;
   --component-micro-radius: 8px;
-  --component-shadow-depth-2: 0 4px 12px rgb(0 0 0 / 15%),
-    0 2px 4px rgb(0 0 0 / 12%);
-  --component-shadow-depth-3: 0 8px 32px rgb(0 0 0 / 18%),
-    0 4px 8px rgb(0 0 0 / 15%);
+  --component-shadow-depth-2: 0 4px 12px rgb(0 0 0 / 15%), 0 2px 4px rgb(0 0 0 / 12%);
+  --component-shadow-depth-3: 0 8px 32px rgb(0 0 0 / 18%), 0 4px 8px rgb(0 0 0 / 15%);
   --component-spring-bounce: cubic-bezier(0.175, 0.885, 0.32, 1.275);
   --component-spring-smooth: cubic-bezier(0.25, 0.46, 0.45, 0.94);
   --component-spring-quick: cubic-bezier(0.4, 0, 0.2, 1);
@@ -231,8 +224,8 @@
   --component-separator: rgb(255 255 255 / 15%);
   --component-fill-primary: rgb(255 255 255 / 10%);
   --component-fill-secondary: rgb(255 255 255 / 12%);
-  --component-font-family: "Inter", -apple-system, "SF Pro Display",
-    "SF Pro Text", system-ui, sans-serif;
+  --component-font-family: 'Inter', -apple-system, 'SF Pro Display', 'SF Pro Text', system-ui,
+    sans-serif;
   --component-text-primary: 17px;
   --component-text-secondary: 15px;
   --component-text-small: 13px;
@@ -307,8 +300,8 @@ iframe {
 /* =======================
    LIGHT MODE OVERRIDE (Blue Theme)
 ======================= */
-:root[data-theme="light"] {
-  --theme-mode: "light";
+:root[data-theme='light'] {
+  --theme-mode: 'light';
 
   /* Blue Light Mode Background */
   --bg-primary: #1e3a8a;
@@ -354,7 +347,7 @@ iframe {
 @media (prefers-color-scheme: light) {
   :root:not([data-theme]) {
     /* Reuse light mode variables */
-    --theme-mode: "light";
+    --theme-mode: 'light';
     --bg-primary: #1e3a8a;
     --bg-secondary: #1e40af;
     --bg-tertiary: #2563eb;
@@ -390,8 +383,7 @@ select:focus-visible,
 textarea:focus-visible {
   outline: 2px solid #fff;
   outline-offset: 3px;
-  box-shadow: 0 0 0 4px
-    color-mix(in srgb, var(--primary-color) 55%, transparent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary-color) 55%, transparent);
   background: rgb(0 119 255 / 12%);
   border-radius: 6px;
   transition: box-shadow 0.15s, outline-color 0.15s;
@@ -463,11 +455,7 @@ textarea:focus-visible {
 /* Loading UI consolidated — using global spinner only */
 
 .btn-primary {
-  background: linear-gradient(
-    135deg,
-    var(--primary-color),
-    var(--primary-dark)
-  );
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
   color: #fff;
   box-shadow: 0 0 12px rgb(9 139 255 / 30%);
 }
@@ -478,7 +466,7 @@ textarea:focus-visible {
 }
 
 .btn-primary::before {
-  content: "";
+  content: '';
   position: absolute;
   top: 0;
   left: -100%;

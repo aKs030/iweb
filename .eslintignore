@@ -1,0 +1,10 @@
+node_modules/
+dist/
+build/
+.content/**/videos-part-*.js
+content/config/videos-part-*.js
+coverage/
+.playwright/
+
+# Ignore generated vendor files
+content/vendor/

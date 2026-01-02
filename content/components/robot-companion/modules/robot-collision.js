@@ -1,5 +1,5 @@
-import { createLogger } from "../../../utils/shared-utilities.js";
-const log = createLogger("RobotCollision");
+import { createLogger } from '../../../utils/shared-utilities.js';
+const log = createLogger('RobotCollision');
 
 export class RobotCollision {
   constructor(robot) {
@@ -21,21 +21,18 @@ export class RobotCollision {
           }
         });
       },
-      { rootMargin: "50px" },
+      { rootMargin: '50px' }
     );
   }
 
   updateObstacleCache() {
     // Update cache every 2 seconds or so
     const now = performance.now();
-    if (this._lastObstacleUpdate && now - this._lastObstacleUpdate < 2000)
-      return;
+    if (this._lastObstacleUpdate && now - this._lastObstacleUpdate < 2000) return;
     this._lastObstacleUpdate = now;
 
     // Cache relevant elements
-    const currentObstacles = document.querySelectorAll(
-      "img, .card, button.btn, h2, .gallery-item",
-    );
+    const currentObstacles = document.querySelectorAll('img, .card, button.btn, h2, .gallery-item');
 
     currentObstacles.forEach((el) => {
       if (!this._trackedObstacles.has(el)) {
@@ -111,10 +108,10 @@ export class RobotCollision {
   triggerCollisionReaction(obs, obsRect) {
     // Reactions: Knockback, Dizzy, Short Circuit, Bounce
     const r = Math.random();
-    let type = "bounce";
-    if (r < 0.2) type = "dizzy";
-    else if (r < 0.4) type = "short_circuit";
-    else if (r < 0.6) type = "knockback";
+    let type = 'bounce';
+    if (r < 0.2) type = 'dizzy';
+    else if (r < 0.4) type = 'short_circuit';
+    else if (r < 0.6) type = 'knockback';
 
     // Determine direction relative to object center
     const robotRect = this.robot.dom.avatar.getBoundingClientRect();
@@ -124,7 +121,7 @@ export class RobotCollision {
     const hitFromRight = robotCX > obsCX; // Robot is to the right of object center
 
     // Show bubble
-    const texts = ["Huch!", "Oha!", "Eng hier!", "Platz da!"];
+    const texts = ['Huch!', 'Oha!', 'Eng hier!', 'Platz da!'];
     this.robot.showBubble(texts[Math.floor(Math.random() * texts.length)]);
     setTimeout(() => this.robot.hideBubble(), 1500);
 
@@ -132,11 +129,11 @@ export class RobotCollision {
 
     const anim = this.robot.animationModule;
 
-    if (type === "dizzy") {
+    if (type === 'dizzy') {
       anim.pausePatrol(2000);
       if (this.robot.dom.svg) {
-        this.robot.dom.svg.style.transition = "transform 1s ease";
-        this.robot.dom.svg.style.transform = "rotate(720deg)";
+        this.robot.dom.svg.style.transition = 'transform 1s ease';
+        this.robot.dom.svg.style.transform = 'rotate(720deg)';
       }
       if (this.robot.dom.eyes) {
         // Temporarily change eyes to 'X'
@@ -154,24 +151,24 @@ export class RobotCollision {
                 <path class="robot-lid" d="M54 36 C56 30 64 30 66 36 L66 44 C64 38 56 38 54 44 Z" fill="url(#lidGradient)" filter="url(#lidShadow)" />
              `;
           }
-          if (this.robot.dom.svg) this.robot.dom.svg.style.transform = "";
+          if (this.robot.dom.svg) this.robot.dom.svg.style.transform = '';
         }, 2000);
       }
-    } else if (type === "short_circuit") {
+    } else if (type === 'short_circuit') {
       anim.pausePatrol(1500);
       anim.spawnParticleBurst(10, { spread: 360, strength: 1.5 });
-      this.robot.dom.avatar.style.animation = "none"; // reset
+      this.robot.dom.avatar.style.animation = 'none'; // reset
       // Trigger CSS jitter
       this.robot.dom.avatar.animate(
         [
-          { transform: "translate(2px, 2px)" },
-          { transform: "translate(-2px, -2px)" },
-          { transform: "translate(2px, -2px)" },
-          { transform: "translate(-2px, 2px)" },
+          { transform: 'translate(2px, 2px)' },
+          { transform: 'translate(-2px, -2px)' },
+          { transform: 'translate(2px, -2px)' },
+          { transform: 'translate(-2px, 2px)' },
         ],
-        { duration: 100, iterations: 10 },
+        { duration: 100, iterations: 10 }
       );
-    } else if (type === "knockback") {
+    } else if (type === 'knockback') {
       // Push away
       anim.patrol.direction = hitFromRight ? -1 : 1;
       anim.spawnParticleBurst(5, { direction: anim.patrol.direction });
@@ -196,8 +193,7 @@ export class RobotCollision {
     if (!this.robot.dom || !this.robot.dom.container) return false;
     try {
       // Use the robot avatar or svg bounding box instead of the full container
-      const sourceEl =
-        this.robot.dom.svg || this.robot.dom.avatar || this.robot.dom.container;
+      const sourceEl = this.robot.dom.svg || this.robot.dom.avatar || this.robot.dom.container;
       const rRectRaw = sourceEl.getBoundingClientRect();
       // Shrink the rect slightly so the collision triggers only when the visible robot
       // (not the container/bubble) is actually overlapping the text
@@ -217,23 +213,21 @@ export class RobotCollision {
       );
       if (!intersects) return false;
       // Require a minimal overlap in px so the robot and text truly touch (prevents early triggers)
-      const overlapX =
-        Math.min(twRect.right, rRect.right) - Math.max(twRect.left, rRect.left);
-      const overlapY =
-        Math.min(twRect.bottom, rRect.bottom) - Math.max(twRect.top, rRect.top);
+      const overlapX = Math.min(twRect.right, rRect.right) - Math.max(twRect.left, rRect.left);
+      const overlapY = Math.min(twRect.bottom, rRect.bottom) - Math.max(twRect.top, rRect.top);
       if (overlapX < 6 || overlapY < 6) return false;
       // Clamp maxLeft fallback
       const robotWidth = 80;
       const initialLeft = window.innerWidth - 30 - robotWidth;
-      _maxLeft = typeof _maxLeft === "number" ? _maxLeft : initialLeft - 20;
+      _maxLeft = typeof _maxLeft === 'number' ? _maxLeft : initialLeft - 20;
 
       // Collision reaction: show bubble and particle burst. If there's no
       // existing startAnimation active, trigger the dedicated knockback.
       const reactions = [
-        "Autsch! 😵",
-        "Ups! Das war hart! 💥",
-        "Whoa! 😲",
-        "Hey! Nicht schubsen! 😠",
+        'Autsch! 😵',
+        'Ups! Das war hart! 💥',
+        'Whoa! 😲',
+        'Hey! Nicht schubsen! 😠',
       ];
       const reaction = reactions[Math.floor(Math.random() * reactions.length)];
       this.robot.showBubble(reaction);
@@ -251,7 +245,7 @@ export class RobotCollision {
 
       return true;
     } catch (err) {
-      log.warn("checkForTypewriterCollision failed", err);
+      log.warn('checkForTypewriterCollision failed', err);
       return false;
     }
   }
@@ -265,7 +259,7 @@ export class RobotCollision {
 
     // Setup knockback animation parameters (re-use existing startAnimation workflow)
     anim.startAnimation.active = true;
-    anim.startAnimation.phase = "knockback";
+    anim.startAnimation.phase = 'knockback';
     anim.startAnimation.knockbackStartTime = now;
     anim.startAnimation.knockbackDuration = 700; // slightly longer for drama
     anim.startAnimation.knockbackStartX = anim.patrol.x;

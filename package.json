@@ -5,7 +5,30 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "npx http-server ."
+    "dev": "npx http-server .",
+    "test:smoke": "node scripts/smoke-tests.js",
+    "sync:gtm": "node scripts/sync-gtm-with-site-config.js",
+    "format": "prettier --write \"**/*.{js,css,json,md}\"",
+    "lint": "eslint \"**/*.{js,ts}\" --fix",
+    "prepare": "husky install"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "eslint --fix",
+      "prettier --write",
+      "git add"
+    ],
+    "*.{css,md,json}": [
+      "prettier --write",
+      "git add"
+    ]
+  },
+  "devDependencies": {
+    "playwright": "^1.40.0",
+    "eslint": "^8.40.0",
+    "prettier": "^2.8.8",
+    "husky": "^8.0.0",
+    "lint-staged": "^13.0.0"
   },
   "repository": {
     "type": "git",

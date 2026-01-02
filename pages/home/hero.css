@@ -34,30 +34,20 @@
 
   /* keep reasonable vertical space for multi-line hero headings while avoiding excessive height */
   min-height: 2.2em;
-  font-variation-settings: "opsz" 18;
+  font-variation-settings: 'opsz' 18;
   font-optical-sizing: auto;
-  text-shadow:
-    0 0 18px rgb(37 99 235 / 35%),
-    0 0 32px rgb(37 99 235 / 22%);
-  animation:
-    gradientMove var(--greet-anim-grad-dur) linear infinite,
+  text-shadow: 0 0 18px rgb(37 99 235 / 35%), 0 0 32px rgb(37 99 235 / 22%);
+  animation: gradientMove var(--greet-anim-grad-dur) linear infinite,
     pulseGlow var(--greet-anim-pulse-dur) ease-in-out infinite;
-  transition:
-    text-shadow var(--transition-base),
-    filter var(--transition-base);
+  transition: text-shadow var(--transition-base), filter var(--transition-base);
   will-change: text-shadow;
 }
 
 .hero-title:hover {
-  text-shadow:
-    0 0 26px rgb(37 99 235 / 45%),
-    0 0 52px rgb(37 99 235 / 32%);
-  animation:
-    gradientMove var(--greet-anim-grad-dur) linear infinite,
+  text-shadow: 0 0 26px rgb(37 99 235 / 45%), 0 0 52px rgb(37 99 235 / 32%);
+  animation: gradientMove var(--greet-anim-grad-dur) linear infinite,
     pulseGlowHover var(--greet-anim-pulse-dur) ease-in-out infinite;
-  transition:
-    text-shadow var(--transition-base),
-    filter var(--transition-base);
+  transition: text-shadow var(--transition-base), filter var(--transition-base);
 }
 
 /* Respect user prefer-reduced-motion */
@@ -90,65 +80,45 @@
 
 @keyframes pulseGlow {
   0% {
-    text-shadow:
-      0 0 12px rgb(37 99 235 / 60%),
-      0 0 22px rgb(6 182 212 / 35%);
+    text-shadow: 0 0 12px rgb(37 99 235 / 60%), 0 0 22px rgb(6 182 212 / 35%);
   }
 
   25% {
-    text-shadow:
-      0 0 18px rgb(6 182 212 / 70%),
-      0 0 32px rgb(37 99 235 / 20%);
+    text-shadow: 0 0 18px rgb(6 182 212 / 70%), 0 0 32px rgb(37 99 235 / 20%);
   }
 
   50% {
-    text-shadow:
-      0 0 20px rgb(16 185 129 / 60%),
-      0 0 36px rgb(6 182 212 / 25%);
+    text-shadow: 0 0 20px rgb(16 185 129 / 60%), 0 0 36px rgb(6 182 212 / 25%);
   }
 
   75% {
-    text-shadow:
-      0 0 18px rgb(99 102 241 / 70%),
-      0 0 30px rgb(37 99 235 / 25%);
+    text-shadow: 0 0 18px rgb(99 102 241 / 70%), 0 0 30px rgb(37 99 235 / 25%);
   }
 
   100% {
-    text-shadow:
-      0 0 12px rgb(37 99 235 / 60%),
-      0 0 22px rgb(6 182 212 / 35%);
+    text-shadow: 0 0 12px rgb(37 99 235 / 60%), 0 0 22px rgb(6 182 212 / 35%);
   }
 }
 
 @keyframes pulseGlowHover {
   0% {
-    text-shadow:
-      0 0 14px rgb(37 99 235 / 70%),
-      0 0 28px rgb(6 182 212 / 45%);
+    text-shadow: 0 0 14px rgb(37 99 235 / 70%), 0 0 28px rgb(6 182 212 / 45%);
   }
 
   25% {
-    text-shadow:
-      0 0 22px rgb(6 182 212 / 80%),
-      0 0 36px rgb(37 99 235 / 35%);
+    text-shadow: 0 0 22px rgb(6 182 212 / 80%), 0 0 36px rgb(37 99 235 / 35%);
   }
 
   50% {
-    text-shadow:
-      0 0 28px rgb(16 185 129 / 75%),
-      0 0 44px rgb(6 182 212 / 32%);
+    text-shadow: 0 0 28px rgb(16 185 129 / 75%), 0 0 44px rgb(6 182 212 / 32%);
   }
 
   75% {
-    text-shadow:
-      0 0 24px rgb(99 102 241 / 80%),
-      0 0 40px rgb(37 99 235 / 38%);
+    text-shadow: 0 0 24px rgb(99 102 241 / 80%), 0 0 40px rgb(37 99 235 / 38%);
   }
 
   100% {
-    text-shadow:
-      0 0 14px rgb(37 99 235 / 70%),
-      0 0 28px rgb(6 182 212 / 45%);
+    text-shadow: 0 0 14px rgb(37 99 235 / 70%), 0 0 28px rgb(6 182 212 / 45%);
   }
 }
 
@@ -304,7 +274,7 @@
 }
 
 /* Once resources are loaded explicitly mark the container as ready */
-.three-earth-container[data-three-ready="1"] canvas {
+.three-earth-container[data-three-ready='1'] canvas {
   opacity: 1;
 }
 
@@ -365,7 +335,7 @@ body:not(.hero-active) .floating-icon {
 }
 
 .spotlight-bg::before {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0;
   border-radius: inherit; /* match pill shape */
@@ -437,16 +407,12 @@ body:not(.hero-active) .hero-title {
   }
 
   .hero-title {
-    font-size: clamp(
-      1.05rem,
-      4.8vw,
-      1.6rem
-    ) !important; /* force smaller type on mobile */
+    font-size: clamp(1.05rem, 4.8vw, 1.6rem) !important; /* force smaller type on mobile */
     min-inline-size: clamp(10ch, 26vw, 22ch);
     max-width: 100%;
     padding: 6px 8px; /* keep the pill visually compact */
     line-height: 1.05;
-    font-variation-settings: "opsz" 14;
+    font-variation-settings: 'opsz' 14;
     filter: none !important;
     will-change: text-shadow;
     overflow-wrap: break-word;
@@ -478,16 +444,12 @@ body:not(.hero-active) .hero-title {
   }
 
   .hero-title {
-    font-size: clamp(
-      0.95rem,
-      4.2vw,
-      1.2rem
-    ) !important; /* further reduce type on 360px */
+    font-size: clamp(0.95rem, 4.2vw, 1.2rem) !important; /* further reduce type on 360px */
     min-inline-size: clamp(8ch, 22vw, 18ch);
     max-width: 100%;
     padding: 4px 6px;
     line-height: 1.02;
-    font-variation-settings: "opsz" 12;
+    font-variation-settings: 'opsz' 12;
     filter: none !important;
     will-change: text-shadow;
     white-space: normal; /* allow wrapping on tiny screens */

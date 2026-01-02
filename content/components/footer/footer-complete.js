@@ -10,13 +10,11 @@
 // Importversuch mit Fallback für Standalone-Nutzung
 let createLogger, CookieManager, a11y;
 try {
-  ({ createLogger, CookieManager } = await import(
-    "../../utils/shared-utilities.js"
-  ).catch(() => {
-    throw new Error("Utils missing");
+  ({ createLogger, CookieManager } = await import('../../utils/shared-utilities.js').catch(() => {
+    throw new Error('Utils missing');
   }));
-  ({ a11y } = await import("../../utils/accessibility-manager.js").catch(() => {
-    throw new Error("A11y missing");
+  ({ a11y } = await import('../../utils/accessibility-manager.js').catch(() => {
+    throw new Error('A11y missing');
   }));
 } catch {
   // Fallback Mocks, falls Dateien fehlen oder Pfade anders sind
@@ -28,7 +26,7 @@ try {
   CookieManager = {
     get: (k) => localStorage.getItem(k),
     set: (k, v) => localStorage.setItem(k, v),
-    deleteAnalytics: () => console.warn("Analytics deleted (Mock)"),
+    deleteAnalytics: () => console.warn('Analytics deleted (Mock)'),
   };
   a11y = {
     announce: (msg) => console.warn(`[A11y]: ${msg}`),
@@ -37,7 +35,7 @@ try {
   };
 }
 
-const log = createLogger("FooterSystem");
+const log = createLogger('FooterSystem');
 
 // ===== Utilities =====
 const debounce = (func, wait) => {
@@ -80,7 +78,7 @@ class DOMCache {
   }
 
   get(selector, parent = document) {
-    const key = `${selector}-${parent === document ? "doc" : "parent"}`;
+    const key = `${selector}-${parent === document ? 'doc' : 'parent'}`;
     if (!this.cache.has(key)) {
       this.cache.set(key, parent.querySelector(selector));
     }
@@ -120,7 +118,7 @@ const ProgrammaticScroll = (() => {
     create(duration = CONSTANTS.SCROLL_MARK_DURATION) {
       if (timer) clearTimeout(timer);
 
-      const token = Symbol("progScroll");
+      const token = Symbol('progScroll');
       activeToken = token;
 
       if (duration > 0) {
@@ -143,7 +141,7 @@ const ProgrammaticScroll = (() => {
         const watcher = watchers.get(token);
         watcher.observer?.disconnect();
         if (watcher.listener) {
-          globalThis.removeEventListener("scroll", watcher.listener);
+          globalThis.removeEventListener('scroll', watcher.listener);
         }
         if (watcher.timeoutId) clearTimeout(watcher.timeoutId);
         watchers.delete(token);
@@ -155,10 +153,9 @@ const ProgrammaticScroll = (() => {
     watchUntil(token, target, timeout = CONSTANTS.SCROLL_WATCH_TIMEOUT) {
       if (!token) return;
 
-      const element =
-        typeof target === "string" ? domCache.get(target) : target;
+      const element = typeof target === 'string' ? domCache.get(target) : target;
 
-      if (element && "IntersectionObserver" in globalThis) {
+      if (element && 'IntersectionObserver' in globalThis) {
         const observer = new IntersectionObserver(
           (entries) => {
             const entry = entries[0];
@@ -190,12 +187,9 @@ const ProgrammaticScroll = (() => {
 
       const listener = () => check();
       check();
-      globalThis.addEventListener("scroll", listener, { passive: true });
+      globalThis.addEventListener('scroll', listener, { passive: true });
 
-      const timeoutId = setTimeout(
-        () => ProgrammaticScroll.clear(token),
-        timeout
-      );
+      const timeoutId = setTimeout(() => ProgrammaticScroll.clear(token), timeout);
       watchers.set(token, { listener, timeoutId });
       return token;
     },
@@ -208,17 +202,17 @@ const GlobalClose = (() => {
   let bound = false;
 
   const onDocClick = (e) => {
-    const footer = domCache.get("#site-footer");
-    if (!footer?.classList.contains("footer-expanded")) return;
+    const footer = domCache.get('#site-footer');
+    if (!footer?.classList.contains('footer-expanded')) return;
     // Ignore clicks inside the footer
-    if (e.target.closest("#site-footer")) return;
+    if (e.target.closest('#site-footer')) return;
     closeHandler?.();
   };
 
   const onUserScroll = () => {
     if (ProgrammaticScroll.hasActive()) return;
-    const footer = domCache.get("#site-footer");
-    if (!footer?.classList.contains("footer-expanded")) return;
+    const footer = domCache.get('#site-footer');
+    if (!footer?.classList.contains('footer-expanded')) return;
     closeHandler?.();
   };
 
@@ -228,21 +222,21 @@ const GlobalClose = (() => {
     bind() {
       if (bound) return;
 
-      const isMobile = globalThis.matchMedia?.("(max-width: 768px)")?.matches;
+      const isMobile = globalThis.matchMedia?.('(max-width: 768px)')?.matches;
 
       if (isMobile) {
         // Mobile: only close on actual scroll movement
-        globalThis.addEventListener("scroll", onUserScroll, { passive: true });
-        globalThis.addEventListener("touchmove", onUserScroll, {
+        globalThis.addEventListener('scroll', onUserScroll, { passive: true });
+        globalThis.addEventListener('touchmove', onUserScroll, {
           passive: true,
         });
       } else {
-        document.addEventListener("click", onDocClick, {
+        document.addEventListener('click', onDocClick, {
           capture: true,
           passive: true,
         });
-        globalThis.addEventListener("wheel", onUserScroll, { passive: true });
-        globalThis.addEventListener("touchstart", onUserScroll, {
+        globalThis.addEventListener('wheel', onUserScroll, { passive: true });
+        globalThis.addEventListener('touchstart', onUserScroll, {
           passive: true,
         });
       }
@@ -252,11 +246,11 @@ const GlobalClose = (() => {
 
     unbind() {
       if (!bound) return;
-      document.removeEventListener("click", onDocClick, true);
-      globalThis.removeEventListener("wheel", onUserScroll);
-      globalThis.removeEventListener("touchstart", onUserScroll);
-      globalThis.removeEventListener("scroll", onUserScroll);
-      globalThis.removeEventListener("touchmove", onUserScroll);
+      document.removeEventListener('click', onDocClick, true);
+      globalThis.removeEventListener('wheel', onUserScroll);
+      globalThis.removeEventListener('touchstart', onUserScroll);
+      globalThis.removeEventListener('scroll', onUserScroll);
+      globalThis.removeEventListener('touchmove', onUserScroll);
       bound = false;
     },
   };
@@ -265,19 +259,17 @@ const GlobalClose = (() => {
 // ===== Analytics =====
 const GoogleAnalytics = {
   load() {
-    performance.mark("analytics-load-start");
+    performance.mark('analytics-load-start');
 
-    const blockedScripts = document.querySelectorAll(
-      'script[data-consent="required"]'
-    );
+    const blockedScripts = document.querySelectorAll('script[data-consent="required"]');
     if (blockedScripts.length === 0) return;
 
     blockedScripts.forEach((script) => {
-      const newScript = document.createElement("script");
+      const newScript = document.createElement('script');
       Array.from(script.attributes).forEach((attr) => {
-        if (attr.name === "data-src") {
-          newScript.setAttribute("src", attr.value);
-        } else if (!["data-consent", "type"].includes(attr.name)) {
+        if (attr.name === 'data-src') {
+          newScript.setAttribute('src', attr.value);
+        } else if (!['data-consent', 'type'].includes(attr.name)) {
           newScript.setAttribute(attr.name, attr.value);
         }
       });
@@ -285,35 +277,31 @@ const GoogleAnalytics = {
       script.parentNode.replaceChild(newScript, script);
     });
 
-    performance.mark("analytics-load-end");
-    performance.measure(
-      "analytics-load",
-      "analytics-load-start",
-      "analytics-load-end"
-    );
-    log.info("Google Analytics loaded");
+    performance.mark('analytics-load-end');
+    performance.measure('analytics-load', 'analytics-load-start', 'analytics-load-end');
+    log.info('Google Analytics loaded');
   },
 };
 
 // Helper: update gtag consent state safely
 function updateGtagConsent(input = true) {
   try {
-    if (typeof gtag !== "function") return;
+    if (typeof gtag !== 'function') return;
 
     // Support boolean or object input for flexibility
     let payload = {};
-    if (typeof input === "boolean") {
-      const v = input ? "granted" : "denied";
+    if (typeof input === 'boolean') {
+      const v = input ? 'granted' : 'denied';
       payload = {
         ad_storage: v,
         analytics_storage: v,
         ad_user_data: v,
         ad_personalization: v,
       };
-    } else if (input && typeof input === "object") {
+    } else if (input && typeof input === 'object') {
       // Allow partial overrides
       const granted = input.granted === true;
-      const defaultV = granted ? "granted" : "denied";
+      const defaultV = granted ? 'granted' : 'denied';
       payload = {
         ad_storage: input.ad_storage || defaultV,
         analytics_storage: input.analytics_storage || defaultV,
@@ -322,7 +310,7 @@ function updateGtagConsent(input = true) {
       };
     }
 
-    gtag("consent", "update", payload);
+    gtag('consent', 'update', payload);
   } catch (e) {
     /* ignore */
   }
@@ -332,9 +320,9 @@ function updateGtagConsent(input = true) {
 class ConsentBanner {
   constructor() {
     this.elements = {
-      banner: domCache.get("#cookie-consent-banner"),
-      acceptBtn: domCache.get("#accept-cookies-btn"),
-      rejectBtn: domCache.get("#reject-cookies-btn"),
+      banner: domCache.get('#cookie-consent-banner'),
+      acceptBtn: domCache.get('#accept-cookies-btn'),
+      rejectBtn: domCache.get('#reject-cookies-btn'),
     };
   }
 
@@ -342,48 +330,48 @@ class ConsentBanner {
     const { banner, acceptBtn, rejectBtn } = this.elements;
     if (!banner || !acceptBtn) return;
 
-    const consent = CookieManager.get("cookie_consent");
+    const consent = CookieManager.get('cookie_consent');
 
-    if (consent === "accepted") {
+    if (consent === 'accepted') {
       // ensure gtag consent state is set for already-accepted users
       updateGtagConsent(true);
       GoogleAnalytics.load();
-      banner.classList.add("hidden");
-    } else if (consent === "rejected") {
+      banner.classList.add('hidden');
+    } else if (consent === 'rejected') {
       updateGtagConsent(false);
-      banner.classList.add("hidden");
+      banner.classList.add('hidden');
     } else {
-      banner.classList.remove("hidden");
+      banner.classList.remove('hidden');
     }
 
     // Event Listeners
-    acceptBtn.addEventListener("click", () => this.accept(), { once: false });
-    rejectBtn?.addEventListener("click", () => this.reject(), { once: false });
+    acceptBtn.addEventListener('click', () => this.accept(), { once: false });
+    rejectBtn?.addEventListener('click', () => this.reject(), { once: false });
   }
 
   accept() {
-    this.elements.banner.classList.add("hidden");
-    CookieManager.set("cookie_consent", "accepted");
+    this.elements.banner.classList.add('hidden');
+    CookieManager.set('cookie_consent', 'accepted');
 
     globalThis.dataLayer = globalThis.dataLayer || [];
-    globalThis.dataLayer.push({ event: "consentGranted" });
+    globalThis.dataLayer.push({ event: 'consentGranted' });
 
     // Update gtag consent immediately and load analytics
     updateGtagConsent(true);
     GoogleAnalytics.load();
     try {
-      a11y?.announce("Cookie-Präferenz: Alle Cookies akzeptiert", {
-        priority: "polite",
+      a11y?.announce('Cookie-Präferenz: Alle Cookies akzeptiert', {
+        priority: 'polite',
       });
     } catch {}
   }
 
   reject() {
-    this.elements.banner.classList.add("hidden");
-    CookieManager.set("cookie_consent", "rejected");
+    this.elements.banner.classList.add('hidden');
+    CookieManager.set('cookie_consent', 'rejected');
     try {
-      a11y?.announce("Cookie-Präferenz: Nur notwendige Cookies akzeptiert", {
-        priority: "polite",
+      a11y?.announce('Cookie-Präferenz: Nur notwendige Cookies akzeptiert', {
+        priority: 'polite',
       });
     } catch {}
   }
@@ -395,43 +383,42 @@ const CookieSettings = (() => {
   const handlers = new Map();
 
   const getElements = memoize(() => ({
-    footer: domCache.get("#site-footer"),
-    footerMin: domCache.get(".footer-minimized"),
-    footerMax: domCache.get(".footer-maximized"),
-    cookieView: domCache.get("#footer-cookie-view"),
-    normalContent: domCache.get("#footer-normal-content"),
-    analyticsToggle: domCache.get("#footer-analytics-toggle"),
-    adPersonalizationToggle: domCache.get("#footer-ad-personalization-toggle"),
-    closeBtn: domCache.get("#close-cookie-footer"),
-    rejectAllBtn: domCache.get("#footer-reject-all"),
-    acceptSelectedBtn: domCache.get("#footer-accept-selected"),
-    acceptAllBtn: domCache.get("#footer-accept-all"),
-    triggerBtn: domCache.get("#footer-cookies-link"), // Für aria-expanded
+    footer: domCache.get('#site-footer'),
+    footerMin: domCache.get('.footer-minimized'),
+    footerMax: domCache.get('.footer-maximized'),
+    cookieView: domCache.get('#footer-cookie-view'),
+    normalContent: domCache.get('#footer-normal-content'),
+    analyticsToggle: domCache.get('#footer-analytics-toggle'),
+    adPersonalizationToggle: domCache.get('#footer-ad-personalization-toggle'),
+    closeBtn: domCache.get('#close-cookie-footer'),
+    rejectAllBtn: domCache.get('#footer-reject-all'),
+    acceptSelectedBtn: domCache.get('#footer-accept-selected'),
+    acceptAllBtn: domCache.get('#footer-accept-all'),
+    triggerBtn: domCache.get('#footer-cookies-link'), // Für aria-expanded
   }));
 
   const setupHandlers = (elements) => {
     const handlerMap = {
       closeBtn: () => close(),
       rejectAllBtn: () => {
-        CookieManager.set("cookie_consent", "rejected");
+        CookieManager.set('cookie_consent', 'rejected');
         CookieManager.set(
-          "cookie_consent_detail",
+          'cookie_consent_detail',
           JSON.stringify({ analytics: false, ad_personalization: false })
         );
         CookieManager.deleteAnalytics();
         updateGtagConsent(false);
         try {
-          a11y?.announce("Cookie-Einstellungen: Nur notwendige Cookies aktiv", {
-            priority: "polite",
+          a11y?.announce('Cookie-Einstellungen: Nur notwendige Cookies aktiv', {
+            priority: 'polite',
           });
         } catch {}
         close();
-        domCache.get("#cookie-consent-banner")?.classList.add("hidden");
+        domCache.get('#cookie-consent-banner')?.classList.add('hidden');
       },
       acceptSelectedBtn: () => {
         const analyticsEnabled = !!elements.analyticsToggle?.checked;
-        const adPersonalizationEnabled =
-          !!elements.adPersonalizationToggle?.checked;
+        const adPersonalizationEnabled = !!elements.adPersonalizationToggle?.checked;
 
         // Persist an explicit detail object for granular consent
         const detail = {
@@ -439,22 +426,22 @@ const CookieSettings = (() => {
           ad_personalization: adPersonalizationEnabled,
         };
 
-        CookieManager.set("cookie_consent_detail", JSON.stringify(detail));
+        CookieManager.set('cookie_consent_detail', JSON.stringify(detail));
         // Set an overall cookie_consent value (accepted if any optional cookie enabled)
         CookieManager.set(
-          "cookie_consent",
-          analyticsEnabled || adPersonalizationEnabled ? "accepted" : "rejected"
+          'cookie_consent',
+          analyticsEnabled || adPersonalizationEnabled ? 'accepted' : 'rejected'
         );
 
         globalThis.dataLayer = globalThis.dataLayer || [];
-        globalThis.dataLayer.push({ event: "consentGranted", detail });
+        globalThis.dataLayer.push({ event: 'consentGranted', detail });
 
         // Update gtag consent with granular values
         updateGtagConsent({
-          analytics_storage: analyticsEnabled ? "granted" : "denied",
-          ad_storage: adPersonalizationEnabled ? "granted" : "denied",
-          ad_user_data: adPersonalizationEnabled ? "granted" : "denied",
-          ad_personalization: adPersonalizationEnabled ? "granted" : "denied",
+          analytics_storage: analyticsEnabled ? 'granted' : 'denied',
+          ad_storage: adPersonalizationEnabled ? 'granted' : 'denied',
+          ad_user_data: adPersonalizationEnabled ? 'granted' : 'denied',
+          ad_personalization: adPersonalizationEnabled ? 'granted' : 'denied',
         });
 
         if (analyticsEnabled) {
@@ -466,48 +453,48 @@ const CookieSettings = (() => {
         try {
           a11y?.announce(
             analyticsEnabled
-              ? "Cookie-Einstellungen gespeichert: Analyse aktiviert"
-              : "Cookie-Einstellungen gespeichert: Analyse deaktiviert",
-            { priority: "polite" }
+              ? 'Cookie-Einstellungen gespeichert: Analyse aktiviert'
+              : 'Cookie-Einstellungen gespeichert: Analyse deaktiviert',
+            { priority: 'polite' }
           );
         } catch {}
         close();
-        domCache.get("#cookie-consent-banner")?.classList.add("hidden");
+        domCache.get('#cookie-consent-banner')?.classList.add('hidden');
       },
       acceptAllBtn: () => {
-        CookieManager.set("cookie_consent", "accepted");
+        CookieManager.set('cookie_consent', 'accepted');
         CookieManager.set(
-          "cookie_consent_detail",
+          'cookie_consent_detail',
           JSON.stringify({ analytics: true, ad_personalization: true })
         );
 
         globalThis.dataLayer = globalThis.dataLayer || [];
         globalThis.dataLayer.push({
-          event: "consentGranted",
+          event: 'consentGranted',
           detail: { analytics: true, ad_personalization: true },
         });
 
         updateGtagConsent({
-          analytics_storage: "granted",
-          ad_storage: "granted",
-          ad_user_data: "granted",
-          ad_personalization: "granted",
+          analytics_storage: 'granted',
+          ad_storage: 'granted',
+          ad_user_data: 'granted',
+          ad_personalization: 'granted',
         });
         GoogleAnalytics.load();
         try {
-          a11y?.announce("Cookie-Einstellungen: Alle Cookies aktiviert", {
-            priority: "polite",
+          a11y?.announce('Cookie-Einstellungen: Alle Cookies aktiviert', {
+            priority: 'polite',
           });
         } catch {}
         close();
-        domCache.get("#cookie-consent-banner")?.classList.add("hidden");
+        domCache.get('#cookie-consent-banner')?.classList.add('hidden');
       },
     };
 
     Object.entries(handlerMap).forEach(([key, handler]) => {
       const element = elements[key];
       if (element && !handlers.has(element)) {
-        element.addEventListener("click", handler);
+        element.addEventListener('click', handler);
         handlers.set(element, handler);
       }
     });
@@ -515,42 +502,40 @@ const CookieSettings = (() => {
     const removeHandlers = () => {
       handlers.forEach((handler, el) => {
         try {
-          el.removeEventListener("click", handler);
+          el.removeEventListener('click', handler);
         } catch {}
       });
       handlers.clear();
     };
 
     // Attach cleanup to cookieView so closeFooter can access it
-    if (elements.cookieView)
-      elements.cookieView._removeHandlers = removeHandlers;
+    if (elements.cookieView) elements.cookieView._removeHandlers = removeHandlers;
   };
 
   const open = () => {
-    performance.mark("cookie-settings-open-start");
+    performance.mark('cookie-settings-open-start');
     elements = getElements();
     if (!elements.footer || !elements.cookieView) return;
 
-    const consent = CookieManager.get("cookie_consent");
+    const consent = CookieManager.get('cookie_consent');
     if (elements.analyticsToggle) {
-      elements.analyticsToggle.checked = consent === "accepted";
+      elements.analyticsToggle.checked = consent === 'accepted';
     }
 
-    document.documentElement.style.scrollSnapType = "none";
+    document.documentElement.style.scrollSnapType = 'none';
 
-    elements.footer.classList.add("footer-expanded");
-    document.body.classList.add("footer-expanded");
-    elements.footerMin?.classList.add("footer-hidden");
-    elements.footerMax?.classList.remove("footer-hidden");
-    elements.cookieView.classList.remove("hidden");
-    if (elements.normalContent) elements.normalContent.style.display = "none";
+    elements.footer.classList.add('footer-expanded');
+    document.body.classList.add('footer-expanded');
+    elements.footerMin?.classList.add('footer-hidden');
+    elements.footerMax?.classList.remove('footer-hidden');
+    elements.cookieView.classList.remove('hidden');
+    if (elements.normalContent) elements.normalContent.style.display = 'none';
 
     // Accessibility Update
-    if (elements.triggerBtn)
-      elements.triggerBtn.setAttribute("aria-expanded", "true");
+    if (elements.triggerBtn) elements.triggerBtn.setAttribute('aria-expanded', 'true');
 
     requestAnimationFrame(() =>
-      globalThis.scrollTo({ top: document.body.scrollHeight, behavior: "auto" })
+      globalThis.scrollTo({ top: document.body.scrollHeight, behavior: 'auto' })
     );
 
     ProgrammaticScroll.create(CONSTANTS.SCROLL_MARK_DURATION);
@@ -560,29 +545,27 @@ const CookieSettings = (() => {
     try {
       a11y?.trapFocus(elements.cookieView);
     } catch (e) {
-      log.warn("Focus trap failed", e);
+      log.warn('Focus trap failed', e);
     }
 
     // Initialize toggle states from persisted detail if present
     try {
-      const raw = CookieManager.get("cookie_consent_detail");
+      const raw = CookieManager.get('cookie_consent_detail');
       if (raw) {
         const parsed = JSON.parse(raw);
-        if (elements.analyticsToggle)
-          elements.analyticsToggle.checked = !!parsed.analytics;
+        if (elements.analyticsToggle) elements.analyticsToggle.checked = !!parsed.analytics;
         if (elements.adPersonalizationToggle)
-          elements.adPersonalizationToggle.checked =
-            !!parsed.ad_personalization;
+          elements.adPersonalizationToggle.checked = !!parsed.ad_personalization;
       }
     } catch (e) {
       /* ignore */
     }
 
-    performance.mark("cookie-settings-open-end");
+    performance.mark('cookie-settings-open-end');
     performance.measure(
-      "cookie-settings-open",
-      "cookie-settings-open-start",
-      "cookie-settings-open-end"
+      'cookie-settings-open',
+      'cookie-settings-open-start',
+      'cookie-settings-open-end'
     );
   };
 
@@ -590,7 +573,7 @@ const CookieSettings = (() => {
     if (!elements) elements = getElements();
 
     // Reset Accessibility
-    elements?.triggerBtn?.setAttribute("aria-expanded", "false");
+    elements?.triggerBtn?.setAttribute('aria-expanded', 'false');
 
     // Centralized cleanup
     closeFooter();
@@ -603,29 +586,28 @@ GlobalClose.setCloseHandler(() => CookieSettings.close());
 
 // ===== Central Footer Cleanup Helper =====
 function closeFooter() {
-  const footer = domCache.get("#site-footer");
+  const footer = domCache.get('#site-footer');
   if (!footer) return;
 
   // 1. Visual Reset
-  footer.classList.remove("footer-expanded");
-  document.body.classList.remove("footer-expanded");
-  footer.querySelector(".footer-maximized")?.classList.add("footer-hidden");
-  footer.querySelector(".footer-minimized")?.classList.remove("footer-hidden");
+  footer.classList.remove('footer-expanded');
+  document.body.classList.remove('footer-expanded');
+  footer.querySelector('.footer-maximized')?.classList.add('footer-hidden');
+  footer.querySelector('.footer-minimized')?.classList.remove('footer-hidden');
 
   // 2. Content Reset (show normal content again if it was hidden by cookie view)
-  const normal = domCache.get("#footer-normal-content");
-  if (normal) normal.style.display = "block";
+  const normal = domCache.get('#footer-normal-content');
+  if (normal) normal.style.display = 'block';
 
   // 3. Hide Cookie View specifically
-  const cookieView = domCache.get("#footer-cookie-view");
-  if (cookieView) cookieView.classList.add("hidden");
+  const cookieView = domCache.get('#footer-cookie-view');
+  if (cookieView) cookieView.classList.add('hidden');
 
   // 4. Style Reset
-  document.documentElement.style.removeProperty("scroll-snap-type");
+  document.documentElement.style.removeProperty('scroll-snap-type');
 
   // 5. State Reset
-  if (globalThis.footerScrollHandler)
-    globalThis.footerScrollHandler.expanded = false;
+  if (globalThis.footerScrollHandler) globalThis.footerScrollHandler.expanded = false;
 
   // 6. Listener Cleanup
   GlobalClose.unbind();
@@ -642,20 +624,20 @@ function closeFooter() {
   try {
     a11y?.releaseFocus();
   } catch (e) {
-    log.warn("Focus release failed", e);
+    log.warn('Focus release failed', e);
   }
 }
 
-document.addEventListener("footer:requestClose", closeFooter);
+document.addEventListener('footer:requestClose', closeFooter);
 
 // ===== Footer Loader (Optimized) =====
 class FooterLoader {
   async init() {
-    performance.mark("footer-load-start");
-    const container = domCache.get("#footer-container");
+    performance.mark('footer-load-start');
+    const container = domCache.get('#footer-container');
 
     // If no container, assume footer is already in DOM (static) and just init logic
-    if (!container && domCache?.get?.("#site-footer")) {
+    if (!container && domCache?.get?.('#site-footer')) {
       this.updateYears();
       this.setupInteractions();
       new ConsentBanner().init();
@@ -668,7 +650,7 @@ class FooterLoader {
     // If the container already contains rendered footer HTML (e.g., pre-inserted),
     // initialize behavior without re-fetching the fragment.
     try {
-      if (container.querySelector && container.querySelector("#site-footer")) {
+      if (container.querySelector && container.querySelector('#site-footer')) {
         this.updateYears();
         this.setupInteractions();
         new ConsentBanner().init();
@@ -681,14 +663,11 @@ class FooterLoader {
     }
 
     try {
-      const srcBase =
-        container.dataset.footerSrc || "/content/components/footer/footer";
+      const srcBase = container.dataset.footerSrc || '/content/components/footer/footer';
       const isLocal =
-        ["localhost", "127.0.0.1"].some((h) => location.hostname.includes(h)) ||
-        location.hostname.endsWith(".local");
-      const candidates = isLocal
-        ? [srcBase + ".html", srcBase]
-        : [srcBase, srcBase + ".html"];
+        ['localhost', '127.0.0.1'].some((h) => location.hostname.includes(h)) ||
+        location.hostname.endsWith('.local');
+      const candidates = isLocal ? [srcBase + '.html', srcBase] : [srcBase, srcBase + '.html'];
 
       let response;
       for (const c of candidates) {
@@ -700,7 +679,7 @@ class FooterLoader {
         }
       }
 
-      if (!response?.ok) throw new Error("Footer load failed");
+      if (!response?.ok) throw new Error('Footer load failed');
 
       container.innerHTML = await response.text();
       domCache?.invalidate?.();
@@ -713,38 +692,34 @@ class FooterLoader {
       new FooterResizer().init();
 
       document.dispatchEvent(
-        new CustomEvent("footer:loaded", { detail: { timestamp: Date.now() } })
+        new CustomEvent('footer:loaded', { detail: { timestamp: Date.now() } })
       );
 
-      performance.mark("footer-load-end");
-      performance.measure(
-        "footer-load",
-        "footer-load-start",
-        "footer-load-end"
-      );
+      performance.mark('footer-load-end');
+      performance.measure('footer-load', 'footer-load-start', 'footer-load-end');
       return true;
     } catch (error) {
-      log.error("Footer load failed", error);
+      log.error('Footer load failed', error);
       return false;
     }
   }
 
   updateYears() {
     const year = new Date().getFullYear();
-    domCache.getAll(".current-year").forEach((el) => (el.textContent = year));
+    domCache.getAll('.current-year').forEach((el) => (el.textContent = year));
   }
 
   setupInteractions() {
     // Newsletter Form
-    const form = domCache.get(".newsletter-form-enhanced");
+    const form = domCache.get('.newsletter-form-enhanced');
     if (form) {
-      form.addEventListener("submit", (e) => {
+      form.addEventListener('submit', (e) => {
         e.preventDefault();
-        const input = form.querySelector("#newsletter-email");
+        const input = form.querySelector('#newsletter-email');
         if (input && !input.checkValidity()) {
           try {
-            a11y?.announce("Bitte gültige E-Mail eingeben", {
-              priority: "assertive",
+            a11y?.announce('Bitte gültige E-Mail eingeben', {
+              priority: 'assertive',
             });
           } catch {}
           return;
@@ -753,7 +728,7 @@ class FooterLoader {
         const btn = form.querySelector('button[type="submit"]');
         if (btn) {
           const originalText = btn.textContent;
-          btn.textContent = "✓";
+          btn.textContent = '✓';
           btn.disabled = true;
           setTimeout(() => {
             btn.textContent = originalText;
@@ -762,17 +737,17 @@ class FooterLoader {
         }
         form.reset();
         try {
-          a11y?.announce("Newsletter abonniert", { priority: "polite" });
+          a11y?.announce('Newsletter abonniert', { priority: 'polite' });
         } catch {}
       });
     }
 
     // Event Delegation
     document.addEventListener(
-      "click",
+      'click',
       (e) => {
-        const cookieTrigger = e.target.closest("[data-cookie-trigger]");
-        const footerTrigger = e.target.closest("[data-footer-trigger]");
+        const cookieTrigger = e.target.closest('[data-cookie-trigger]');
+        const footerTrigger = e.target.closest('[data-footer-trigger]');
 
         if (cookieTrigger) {
           e.preventDefault();
@@ -789,17 +764,17 @@ class FooterLoader {
     );
 
     // Three-Showcase Button
-    const showcaseBtn = domCache.get("#threeShowcaseBtn");
+    const showcaseBtn = domCache.get('#threeShowcaseBtn');
     if (showcaseBtn && !showcaseBtn.dataset.init) {
-      showcaseBtn.dataset.init = "1";
-      showcaseBtn.addEventListener("click", () => {
-        showcaseBtn.classList.add("active");
+      showcaseBtn.dataset.init = '1';
+      showcaseBtn.addEventListener('click', () => {
+        showcaseBtn.classList.add('active');
         document.dispatchEvent(
-          new CustomEvent("three-earth:showcase", {
+          new CustomEvent('three-earth:showcase', {
             detail: { duration: 8000 },
           })
         );
-        setTimeout(() => showcaseBtn.classList.remove("active"), 8000);
+        setTimeout(() => showcaseBtn.classList.remove('active'), 8000);
       });
     }
   }
@@ -828,32 +803,28 @@ class ScrollHandler {
   }
 
   init() {
-    const footer = domCache.get("#site-footer");
+    const footer = domCache.get('#site-footer');
 
     // The trigger is injected by head-inline.js at document start; prefer cached lookup and fallback to DOM.
     let trigger =
-      domCache.get("#footer-trigger-zone") ||
-      document.getElementById("footer-trigger-zone");
+      domCache.get('#footer-trigger-zone') || document.getElementById('footer-trigger-zone');
 
     // If trigger missing, create a robust fallback to avoid race conditions
     if (!trigger) {
       try {
-        trigger = document.createElement("div");
-        trigger.id = "footer-trigger-zone";
-        trigger.className = "footer-trigger-zone";
-        trigger.setAttribute("aria-hidden", "true");
-        trigger.setAttribute("role", "presentation");
-        trigger.style.pointerEvents = "none";
-        trigger.style.minHeight = "96px";
-        trigger.style.width = "100%";
+        trigger = document.createElement('div');
+        trigger.id = 'footer-trigger-zone';
+        trigger.className = 'footer-trigger-zone';
+        trigger.setAttribute('aria-hidden', 'true');
+        trigger.setAttribute('role', 'presentation');
+        trigger.style.pointerEvents = 'none';
+        trigger.style.minHeight = '96px';
+        trigger.style.width = '100%';
 
-        trigger.dataset.expandThreshold =
-          trigger.dataset.expandThreshold || "0.002";
-        trigger.dataset.collapseThreshold =
-          trigger.dataset.collapseThreshold || "0.0008";
-        trigger.dataset.expandLockMs = trigger.dataset.expandLockMs || "1000";
-        trigger.dataset.collapseDebounceMs =
-          trigger.dataset.collapseDebounceMs || "250";
+        trigger.dataset.expandThreshold = trigger.dataset.expandThreshold || '0.002';
+        trigger.dataset.collapseThreshold = trigger.dataset.collapseThreshold || '0.0008';
+        trigger.dataset.expandLockMs = trigger.dataset.expandLockMs || '1000';
+        trigger.dataset.collapseDebounceMs = trigger.dataset.collapseDebounceMs || '250';
 
         if (footer?.parentNode) {
           footer.parentNode.insertBefore(trigger, footer);
@@ -866,10 +837,7 @@ class ScrollHandler {
         domCache?.invalidate?.();
       } catch (err) {
         try {
-          log.warn(
-            "ScrollHandler: failed to create fallback #footer-trigger-zone",
-            err
-          );
+          log.warn('ScrollHandler: failed to create fallback #footer-trigger-zone', err);
         } catch {}
       }
     }
@@ -877,20 +845,16 @@ class ScrollHandler {
     if (!footer || !trigger) {
       // If still missing, log and abort
       try {
-        log.warn(
-          "ScrollHandler: #footer-trigger-zone not found after fallback; aborting init"
-        );
+        log.warn('ScrollHandler: #footer-trigger-zone not found after fallback; aborting init');
       } catch {}
       return;
     }
 
     // Initial State Check
-    footer
-      .querySelector(".footer-minimized")
-      ?.classList.remove("footer-hidden");
-    footer.querySelector(".footer-maximized")?.classList.add("footer-hidden");
+    footer.querySelector('.footer-minimized')?.classList.remove('footer-hidden');
+    footer.querySelector('.footer-maximized')?.classList.add('footer-hidden');
 
-    const isDesktop = globalThis.matchMedia?.("(min-width: 769px)")?.matches;
+    const isDesktop = globalThis.matchMedia?.('(min-width: 769px)')?.matches;
     // Slightly smaller thresholds for better first-scroll sensitivity on desktop
     const defaultExpand = isDesktop ? 0.003 : 0.05;
     const defaultCollapse = isDesktop ? 0.001 : 0.02;
@@ -899,7 +863,7 @@ class ScrollHandler {
     this._applyThresholds(trigger, isDesktop, defaultExpand, defaultCollapse);
 
     // Slightly extend the observer rootMargin on desktop to be more forgiving
-    const rootMargin = isDesktop ? "0px 0px -2% 0px" : "0px 0px -10% 0px";
+    const rootMargin = isDesktop ? '0px 0px -2% 0px' : '0px 0px -10% 0px';
 
     // Setup intersection observer
     this._setupObserver(trigger, rootMargin);
@@ -911,23 +875,22 @@ class ScrollHandler {
       this.observer?.disconnect();
       this.init();
     }, 150);
-    globalThis.addEventListener("resize", this._resizeHandler, {
+    globalThis.addEventListener('resize', this._resizeHandler, {
       passive: true,
     });
   }
 
   cleanup() {
     this.observer?.disconnect();
-    if (this._resizeHandler)
-      globalThis.removeEventListener("resize", this._resizeHandler);
+    if (this._resizeHandler) globalThis.removeEventListener('resize', this._resizeHandler);
     if (this._collapseTimer) {
       clearTimeout(this._collapseTimer);
       this._collapseTimer = null;
     }
     if (this._userScrollListener) {
       try {
-        globalThis.removeEventListener("wheel", this._userScrollListener);
-        globalThis.removeEventListener("touchstart", this._userScrollListener);
+        globalThis.removeEventListener('wheel', this._userScrollListener);
+        globalThis.removeEventListener('touchstart', this._userScrollListener);
       } catch {}
       this._userScrollListener = null;
     }
@@ -935,8 +898,8 @@ class ScrollHandler {
 
   toggleExpansion(shouldExpand) {
     // Prefer cached lookup but fall back to direct querySelector to avoid stale cache issues
-    let footer = domCache.get("#site-footer");
-    if (!footer) footer = document.querySelector("#site-footer");
+    let footer = domCache.get('#site-footer');
+    if (!footer) footer = document.querySelector('#site-footer');
     if (!footer) return;
 
     // Debug probe for tests and CI
@@ -944,8 +907,8 @@ class ScrollHandler {
       globalThis._lastToggleCall = { ts: Date.now(), shouldExpand };
     } catch {}
 
-    const min = footer.querySelector(".footer-minimized");
-    const max = footer.querySelector(".footer-maximized");
+    const min = footer.querySelector('.footer-minimized');
+    const max = footer.querySelector('.footer-maximized');
 
     if (shouldExpand && !this.expanded) {
       // Cancel any pending collapse and expand immediately
@@ -965,76 +928,63 @@ class ScrollHandler {
       // If still in post-expand lock period schedule collapse after lock + debounce
       if (now < (this._lockUntil || 0)) {
         const delay =
-          this._lockUntil -
-          now +
-          (this.collapseDebounceMs || CONSTANTS.COLLAPSE_DEBOUNCE_MS);
+          this._lockUntil - now + (this.collapseDebounceMs || CONSTANTS.COLLAPSE_DEBOUNCE_MS);
         this._scheduleCollapse(delay);
         return;
       }
 
       // Otherwise schedule normal debounce collapse
-      this._scheduleCollapse(
-        this.collapseDebounceMs || CONSTANTS.COLLAPSE_DEBOUNCE_MS
-      );
+      this._scheduleCollapse(this.collapseDebounceMs || CONSTANTS.COLLAPSE_DEBOUNCE_MS);
     }
   }
 
   _expandFooter(footer, min, max) {
     ProgrammaticScroll.create(1000);
     GlobalClose.bind();
-    document.documentElement.style.scrollSnapType = "none";
+    document.documentElement.style.scrollSnapType = 'none';
 
     try {
-      footer.classList.add("footer-expanded");
+      footer.classList.add('footer-expanded');
       footer.setAttribute(
-        "class",
-        (footer.getAttribute("class") || "")
-          .split(" ")
-          .concat(["footer-expanded"])
+        'class',
+        (footer.getAttribute('class') || '')
+          .split(' ')
+          .concat(['footer-expanded'])
           .filter(Boolean)
-          .join(" ")
+          .join(' ')
       );
     } catch {}
 
     try {
-      document.body.classList.add("footer-expanded");
+      document.body.classList.add('footer-expanded');
       document.body.setAttribute(
-        "class",
-        (document.body.getAttribute("class") || "")
-          .split(" ")
-          .concat(["footer-expanded"])
+        'class',
+        (document.body.getAttribute('class') || '')
+          .split(' ')
+          .concat(['footer-expanded'])
           .filter(Boolean)
-          .join(" ")
+          .join(' ')
       );
     } catch {}
 
-    max?.classList.remove("footer-hidden");
-    min?.classList.add("footer-hidden");
+    max?.classList.remove('footer-hidden');
+    min?.classList.add('footer-hidden');
 
     this.expanded = true;
     // Set a short lock period to avoid immediate collapse from tiny scroll jitter
-    this._lockUntil =
-      Date.now() + (this.expandLockMs || CONSTANTS.EXPAND_LOCK_MS);
+    this._lockUntil = Date.now() + (this.expandLockMs || CONSTANTS.EXPAND_LOCK_MS);
   }
 
   _applyThresholds(trigger, isDesktop, defaultExpand, defaultCollapse) {
     try {
-      const {
-        expandThreshold,
-        collapseThreshold,
-        expandLockMs,
-        collapseDebounceMs,
-      } = trigger.dataset;
-      this.expandThreshold = expandThreshold
-        ? Number.parseFloat(expandThreshold)
-        : defaultExpand;
+      const { expandThreshold, collapseThreshold, expandLockMs, collapseDebounceMs } =
+        trigger.dataset;
+      this.expandThreshold = expandThreshold ? Number.parseFloat(expandThreshold) : defaultExpand;
       this.collapseThreshold = collapseThreshold
         ? Number.parseFloat(collapseThreshold)
         : defaultCollapse;
 
-      const parsedLock = expandLockMs
-        ? Number.parseInt(expandLockMs, 10)
-        : Number.NaN;
+      const parsedLock = expandLockMs ? Number.parseInt(expandLockMs, 10) : Number.NaN;
       const parsedDebounce = collapseDebounceMs
         ? Number.parseInt(collapseDebounceMs, 10)
         : Number.NaN;
@@ -1042,12 +992,9 @@ class ScrollHandler {
       // Increase defaults: Desktop 1000ms, Mobile 500ms
       const defaultLock = isDesktop ? 1000 : 500;
       const defaultDebounce = isDesktop ? 250 : 200;
-      this.expandLockMs =
-        !Number.isNaN(parsedLock) && parsedLock >= 0 ? parsedLock : defaultLock;
+      this.expandLockMs = !Number.isNaN(parsedLock) && parsedLock >= 0 ? parsedLock : defaultLock;
       this.collapseDebounceMs =
-        !Number.isNaN(parsedDebounce) && parsedDebounce >= 0
-          ? parsedDebounce
-          : defaultDebounce;
+        !Number.isNaN(parsedDebounce) && parsedDebounce >= 0 ? parsedDebounce : defaultDebounce;
     } catch {
       this.expandThreshold = defaultExpand;
       this.collapseThreshold = defaultCollapse;
@@ -1069,15 +1016,10 @@ class ScrollHandler {
 
         // Logic: Expand if we hit the bottom trigger significantly
         const shouldExpand =
-          entry.isIntersecting &&
-          entry.intersectionRatio >= this.expandThreshold;
+          entry.isIntersecting && entry.intersectionRatio >= this.expandThreshold;
 
         // Prevent collapse if we are just slightly scrolling but still near bottom
-        if (
-          !shouldExpand &&
-          this.expanded &&
-          entry.intersectionRatio > this.collapseThreshold
-        )
+        if (!shouldExpand && this.expanded && entry.intersectionRatio > this.collapseThreshold)
           return;
 
         // If collapse requested shortly after expand, let toggleExpansion decide via lock/debounce
@@ -1102,21 +1044,20 @@ class ScrollHandler {
       if (!nearBottom) return;
 
       // For wheel events ensure the user is scrolling downwards (deltaY > 0)
-      if (e?.type === "wheel" && typeof e.deltaY === "number" && e.deltaY <= 0)
-        return;
+      if (e?.type === 'wheel' && typeof e.deltaY === 'number' && e.deltaY <= 0) return;
 
       // Trigger expansion as a robust fallback when IO didn't report intersecting
       try {
         this.toggleExpansion(true);
       } catch (err) {
-        log.warn("fallback scroll expand failed", err);
+        log.warn('fallback scroll expand failed', err);
       }
     };
 
-    globalThis.addEventListener("wheel", this._userScrollListener, {
+    globalThis.addEventListener('wheel', this._userScrollListener, {
       passive: true,
     });
-    globalThis.addEventListener("touchstart", this._userScrollListener, {
+    globalThis.addEventListener('touchstart', this._userScrollListener, {
       passive: true,
     });
   }
@@ -1128,8 +1069,7 @@ class ScrollHandler {
       this._scheduledCollapse = false;
       const lastRatio = this._lastIntersectionRatio ?? 0;
       const lastIntersecting = !!this._lastIsIntersecting;
-      const shouldCancel =
-        lastIntersecting && lastRatio >= this.collapseThreshold;
+      const shouldCancel = lastIntersecting && lastRatio >= this.collapseThreshold;
       if (shouldCancel) {
         this._collapseTimer = null;
         return;
@@ -1137,7 +1077,7 @@ class ScrollHandler {
       try {
         closeFooter();
       } catch (err) {
-        log.warn("scheduled close failed", err);
+        log.warn('scheduled close failed', err);
       }
       this.expanded = false;
       this._collapseTimer = null;
@@ -1148,31 +1088,22 @@ class ScrollHandler {
 // ===== Footer Resizer (Optimized) =====
 class FooterResizer {
   constructor() {
-    this.debouncedApply = debounce(
-      this.apply.bind(this),
-      CONSTANTS.RESIZE_DEBOUNCE
-    );
+    this.debouncedApply = debounce(this.apply.bind(this), CONSTANTS.RESIZE_DEBOUNCE);
   }
 
   init() {
-    globalThis.addEventListener("resize", this.debouncedApply, {
+    globalThis.addEventListener('resize', this.debouncedApply, {
       passive: true,
     });
     this.apply();
   }
 
   apply() {
-    const content = domCache.get("#site-footer .footer-enhanced-content");
+    const content = domCache.get('#site-footer .footer-enhanced-content');
     if (!content) return;
-    const height = Math.min(
-      Math.max(0, content.scrollHeight),
-      (globalThis.innerHeight || 0) - 24
-    );
+    const height = Math.min(Math.max(0, content.scrollHeight), (globalThis.innerHeight || 0) - 24);
     if (height > 0)
-      document.documentElement.style.setProperty(
-        "--footer-actual-height",
-        `${height}px`
-      );
+      document.documentElement.style.setProperty('--footer-actual-height', `${height}px`);
   }
 }
 

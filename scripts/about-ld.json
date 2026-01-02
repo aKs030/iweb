@@ -23,10 +23,7 @@
         "copyrightNotice": "© 2025 Abdulkerim Sesli",
         "acquireLicensePage": "https://abdulkerimsesli.de/#image-license"
       },
-      "sameAs": [
-        "https://github.com/aKs030",
-        "https://linkedin.com/in/abdulkerimsesli"
-      ],
+      "sameAs": ["https://github.com/aKs030", "https://linkedin.com/in/abdulkerimsesli"],
       "address": {
         "@type": "PostalAddress",
         "addressLocality": "Berlin",
@@ -53,10 +50,7 @@
       },
       "description": "Der Mensch hinter dem Code. Detaillierter Lebenslauf, Tech-Stack Übersicht und direkte Kontaktmöglichkeiten für Projektanfragen und Kooperationen.",
       "disambiguatingDescription": "Webentwickler (React, Three.js) und Fotograf aus Berlin, nicht zu verwechseln mit 'Sesli Kitap' oder Hörbuch-Verlagen.",
-      "sameAs": [
-        "https://github.com/aKs030",
-        "https://linkedin.com/in/abdulkerimsesli"
-      ],
+      "sameAs": ["https://github.com/aKs030", "https://linkedin.com/in/abdulkerimsesli"],
       "homeLocation": {
         "@type": "Place",
         "name": "Berlin"

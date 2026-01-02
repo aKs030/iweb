@@ -46,7 +46,7 @@
 
 .robot-avatar::after,
 .robot-avatar::before {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0;
   pointer-events: none;
@@ -56,11 +56,7 @@
 }
 
 .robot-avatar::after {
-  background: radial-gradient(
-    circle at 50% 90%,
-    rgb(64 224 208 / 35%),
-    transparent 55%
-  );
+  background: radial-gradient(circle at 50% 90%, rgb(64 224 208 / 35%), transparent 55%);
   filter: blur(6px);
   mix-blend-mode: screen;
   transform: translateY(10px) scale(1.05, 1.3);
@@ -127,9 +123,7 @@
   -webkit-transform-box: fill-box;
   transform-box: fill-box;
   transform: translateY(0) scaleY(0.03);
-  transition:
-    transform 130ms cubic-bezier(0.2, 0.9, 0.2, 1),
-    opacity 150ms ease-in-out;
+  transition: transform 130ms cubic-bezier(0.2, 0.9, 0.2, 1), opacity 150ms ease-in-out;
   will-change: transform;
   opacity: 1;
 }
@@ -166,8 +160,7 @@
   }
 
   96.5% {
-    filter: drop-shadow(0 0 15px rgb(64 224 208 / 40%)) hue-rotate(90deg)
-      saturate(2);
+    filter: drop-shadow(0 0 15px rgb(64 224 208 / 40%)) hue-rotate(90deg) saturate(2);
   }
 
   97% {
@@ -224,9 +217,7 @@
 
 .robot-flame {
   transform-origin: 50% 90px;
-  transition:
-    opacity 0.3s ease,
-    transform 0.3s ease;
+  transition: opacity 0.3s ease, transform 0.3s ease;
   will-change: transform, opacity;
 }
 
@@ -340,15 +331,9 @@
   pointer-events: none;
   transform-origin: center;
   opacity: 1;
-  transition:
-    transform 600ms cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 400ms ease-out;
+  transition: transform 600ms cubic-bezier(0.22, 1, 0.36, 1), opacity 400ms ease-out;
   mix-blend-mode: screen;
-  background: radial-gradient(
-    circle,
-    rgb(255 255 255 / 95%),
-    rgb(64 224 208 / 90%)
-  );
+  background: radial-gradient(circle, rgb(255 255 255 / 95%), rgb(64 224 208 / 90%));
   will-change: transform, opacity;
 }
 
@@ -434,9 +419,7 @@
   opacity: 0;
   transform: scale(0);
   transform-origin: calc(100% - 40px) bottom;
-  transition:
-    opacity 0.3s ease,
-    transform 0.3s ease;
+  transition: opacity 0.3s ease, transform 0.3s ease;
   pointer-events: auto;
   -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
@@ -447,7 +430,7 @@
 }
 
 .robot-bubble::after {
-  content: "";
+  content: '';
   position: absolute;
   bottom: -6px;
   right: 20px;
@@ -463,8 +446,7 @@
 .robot-bubble.visible {
   opacity: 1;
   transform: scale(1);
-  animation:
-    bubblePop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards,
+  animation: bubblePop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards,
     hologramPulse 4s ease-in-out infinite 0.5s;
 }
 
@@ -488,16 +470,12 @@
 @keyframes hologramPulse {
   0%,
   100% {
-    box-shadow:
-      0 4px 12px rgb(0 0 0 / 30%),
-      0 0 0 rgb(64 224 208 / 0%);
+    box-shadow: 0 4px 12px rgb(0 0 0 / 30%), 0 0 0 rgb(64 224 208 / 0%);
     border-color: rgb(64 224 208 / 30%);
   }
 
   50% {
-    box-shadow:
-      0 8px 20px rgb(0 0 0 / 40%),
-      0 0 10px rgb(64 224 208 / 20%);
+    box-shadow: 0 8px 20px rgb(0 0 0 / 40%), 0 0 10px rgb(64 224 208 / 20%);
     border-color: rgb(64 224 208 / 60%);
   }
 }
@@ -878,7 +856,7 @@
   border-radius: 8px;
   border-left: 3px solid #40e0d0;
   margin: 5px 0;
-  font-family: "Courier New", monospace;
+  font-family: 'Courier New', monospace;
   font-size: 0.85rem;
   line-height: 1.5;
   overflow-x: auto;
@@ -905,27 +883,17 @@
 }
 
 .robot-avatar.mood-enthusiastic::after {
-  animation:
-    trailFlow 1s ease-in-out infinite,
-    moodPulse 0.8s ease-in-out infinite;
+  animation: trailFlow 1s ease-in-out infinite, moodPulse 0.8s ease-in-out infinite;
 }
 
 /* Game buttons special styling */
-.chat-option-btn[data-game="true"] {
-  background: linear-gradient(
-    135deg,
-    rgb(64 224 208 / 20%),
-    rgb(64 224 208 / 5%)
-  );
+.chat-option-btn[data-game='true'] {
+  background: linear-gradient(135deg, rgb(64 224 208 / 20%), rgb(64 224 208 / 5%));
   border-color: #40e0d0;
 }
 
-.chat-option-btn[data-game="true"]:hover {
-  background: linear-gradient(
-    135deg,
-    rgb(64 224 208 / 30%),
-    rgb(64 224 208 / 10%)
-  );
+.chat-option-btn[data-game='true']:hover {
+  background: linear-gradient(135deg, rgb(64 224 208 / 30%), rgb(64 224 208 / 10%));
   box-shadow: 0 0 15px rgb(64 224 208 / 40%);
 }
 

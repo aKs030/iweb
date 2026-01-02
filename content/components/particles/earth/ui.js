@@ -1,11 +1,8 @@
-import { CONFIG } from "./config.js";
-import { createLogger, throttle } from "../../../utils/shared-utilities.js";
-import {
-  calculateQualityLevel,
-  calculateDynamicResolution,
-} from "./ui_helpers.js";
+import { CONFIG } from './config.js';
+import { createLogger, throttle } from '../../../utils/shared-utilities.js';
+import { calculateQualityLevel, calculateDynamicResolution } from './ui_helpers.js';
 
-const log = createLogger("EarthUI");
+const log = createLogger('EarthUI');
 
 /*
   Earth UI Loader
@@ -15,8 +12,8 @@ const log = createLogger("EarthUI");
 */
 
 function getGlobalLoaderElements() {
-  const overlay = document.getElementById("app-loader");
-  const text = document.getElementById("loader-status-text");
+  const overlay = document.getElementById('app-loader');
+  const text = document.getElementById('loader-status-text');
   if (!overlay) return null;
   return { overlay, text };
 }
@@ -27,45 +24,42 @@ export function showLoadingState(container, progress) {
   // Prefer the global page loader when available
   const globals = getGlobalLoaderElements();
   if (globals?.overlay) {
-    if (globals.overlay.dataset.loaderDone === "true") return;
+    if (globals.overlay.dataset.loaderDone === 'true') return;
 
-    globals.overlay.classList.remove("fade-out", "hidden");
-    globals.overlay.removeAttribute("aria-hidden");
-    globals.overlay.setAttribute("aria-live", "polite");
-    globals.overlay.setAttribute("role", "status");
+    globals.overlay.classList.remove('fade-out', 'hidden');
+    globals.overlay.removeAttribute('aria-hidden');
+    globals.overlay.setAttribute('aria-live', 'polite');
+    globals.overlay.setAttribute('role', 'status');
     Object.assign(globals.overlay.style, {
-      display: "flex",
-      opacity: "1",
-      pointerEvents: "auto",
-      visibility: "visible",
+      display: 'flex',
+      opacity: '1',
+      pointerEvents: 'auto',
+      visibility: 'visible',
     });
 
     if (globals.text) {
-      if (typeof progress === "number") {
+      if (typeof progress === 'number') {
         const pct = Math.round(progress * 100);
         globals.text.textContent = `Lädt 3D‑Ansicht… (${pct}%)`;
       } else {
-        globals.text.textContent = "Initialisiere 3D-Engine...";
+        globals.text.textContent = 'Initialisiere 3D-Engine...';
       }
     }
 
-    if (typeof progress === "number") {
-      globals.overlay.setAttribute(
-        "aria-valuenow",
-        String(Math.round(progress * 100))
-      );
-      globals.overlay.setAttribute("aria-valuemin", "0");
-      globals.overlay.setAttribute("aria-valuemax", "100");
+    if (typeof progress === 'number') {
+      globals.overlay.setAttribute('aria-valuenow', String(Math.round(progress * 100)));
+      globals.overlay.setAttribute('aria-valuemin', '0');
+      globals.overlay.setAttribute('aria-valuemax', '100');
     } else {
-      globals.overlay.removeAttribute("aria-valuenow");
-      globals.overlay.removeAttribute("aria-valuemin");
-      globals.overlay.removeAttribute("aria-valuemax");
+      globals.overlay.removeAttribute('aria-valuenow');
+      globals.overlay.removeAttribute('aria-valuemin');
+      globals.overlay.removeAttribute('aria-valuemax');
     }
 
     try {
-      document.body.classList.add("global-loading-visible");
+      document.body.classList.add('global-loading-visible');
     } catch (err) {
-      log.warn("EarthUI: add global-loading-visible failed", err);
+      log.warn('EarthUI: add global-loading-visible failed', err);
     }
   } else {
     // Fallback: no local progress UI; do nothing.
@@ -77,16 +71,16 @@ export function hideLoadingState(container) {
 
   const globals = getGlobalLoaderElements();
   if (globals?.overlay) {
-    globals.overlay.classList.add("fade-out");
-    globals.overlay.setAttribute("aria-hidden", "true");
-    globals.overlay.removeAttribute("aria-live");
+    globals.overlay.classList.add('fade-out');
+    globals.overlay.setAttribute('aria-hidden', 'true');
+    globals.overlay.removeAttribute('aria-live');
 
     setTimeout(() => {
-      if (globals.overlay) globals.overlay.style.display = "none";
+      if (globals.overlay) globals.overlay.style.display = 'none';
       try {
-        document.body.classList.remove("global-loading-visible");
+        document.body.classList.remove('global-loading-visible');
       } catch (err) {
-        log.warn("EarthUI: remove global-loading-visible failed", err);
+        log.warn('EarthUI: remove global-loading-visible failed', err);
       }
     }, 800);
   } else {
@@ -100,34 +94,34 @@ export function showErrorState(container, error, retryCallback) {
   // Hide global loader to reveal page error/fallback
   const globals = getGlobalLoaderElements();
   if (globals?.overlay) {
-    globals.overlay.classList.add("fade-out");
+    globals.overlay.classList.add('fade-out');
     // Ensure loader fully hides
     hideLoadingState(container);
   }
 
-  container.classList.add("error");
+  container.classList.add('error');
 
-  const errorElement = container.querySelector(".three-earth-error");
+  const errorElement = container.querySelector('.three-earth-error');
   if (errorElement) {
-    errorElement.classList.remove("hidden");
-    const errorText = errorElement.querySelector("p");
+    errorElement.classList.remove('hidden');
+    const errorText = errorElement.querySelector('p');
     if (errorText) {
-      const msg = error?.message || "Unknown error";
+      const msg = error?.message || 'Unknown error';
       errorText.textContent = `WebGL Fehler: ${msg}`;
     }
 
     // Add retry button if not present
-    let retryBtn = errorElement.querySelector(".three-earth-retry");
+    let retryBtn = errorElement.querySelector('.three-earth-retry');
     if (!retryBtn && retryCallback) {
-      retryBtn = document.createElement("button");
-      retryBtn.className = "retry-btn three-earth-retry";
-      retryBtn.type = "button";
-      retryBtn.textContent = "Neu versuchen";
-      retryBtn.addEventListener("click", async () => {
+      retryBtn = document.createElement('button');
+      retryBtn.className = 'retry-btn three-earth-retry';
+      retryBtn.type = 'button';
+      retryBtn.textContent = 'Neu versuchen';
+      retryBtn.addEventListener('click', async () => {
         try {
           await retryCallback();
         } catch (err) {
-          log.error("Retry failed:", err);
+          log.error('Retry failed:', err);
           if (errorText) errorText.textContent = `Fehler: ${err.message}`;
         }
       });
@@ -144,13 +138,10 @@ export class PerformanceMonitor {
     this.lastTime = performance.now();
     this.fps = 60;
     this.currentPixelRatio = CONFIG.PERFORMANCE.PIXEL_RATIO;
-    this.currentQualityLevel = "HIGH";
+    this.currentQualityLevel = 'HIGH';
 
     // Throttled adjustment to avoid rapid fluctuating changes
-    this.throttledAdjustResolution = throttle(
-      () => this.adjustResolution(),
-      1000
-    );
+    this.throttledAdjustResolution = throttle(() => this.adjustResolution(), 1000);
   }
 
   update() {
@@ -180,14 +171,12 @@ export class PerformanceMonitor {
     );
 
     if (newPixelRatio !== this.currentPixelRatio) {
-      log.info(
-        `Adjusting pixel ratio: ${this.currentPixelRatio} -> ${newPixelRatio}`
-      );
+      log.info(`Adjusting pixel ratio: ${this.currentPixelRatio} -> ${newPixelRatio}`);
       this.currentPixelRatio = newPixelRatio;
       try {
         this.renderer.setPixelRatio(this.currentPixelRatio);
       } catch (e) {
-        log.warn("Failed to set pixel ratio on renderer:", e);
+        log.warn('Failed to set pixel ratio on renderer:', e);
       }
     }
   }

@@ -1,7 +1,6 @@
 // NLWeb initializer (imports worker module and instantiates the dropdown chat)
 // Update DEFAULT_SITE / DEFAULT_ENDPOINT to your deployed worker if needed
-const DEFAULT_SITE =
-  "https://throbbing-mode-6fe1-nlweb.httpsgithubcomaks030website.workers.dev";
+const DEFAULT_SITE = 'https://throbbing-mode-6fe1-nlweb.httpsgithubcomaks030website.workers.dev';
 const DEFAULT_ENDPOINT = DEFAULT_SITE;
 
 // Use dynamic import of the worker module
@@ -10,26 +9,26 @@ async function initNLWeb() {
     const module = await import(`${DEFAULT_SITE}/nlweb-dropdown-chat.js`);
     const { NLWebDropdownChat } = module;
 
-    if (!document.getElementById("docs-search-container")) {
-      const div = document.createElement("div");
-      div.id = "docs-search-container";
+    if (!document.getElementById('docs-search-container')) {
+      const div = document.createElement('div');
+      div.id = 'docs-search-container';
       document.body.appendChild(div);
     }
 
     const _chat = new NLWebDropdownChat({
-      containerId: "docs-search-container",
+      containerId: 'docs-search-container',
       site: DEFAULT_SITE,
-      placeholder: "Search for docs...",
+      placeholder: 'Search for docs...',
       endpoint: DEFAULT_ENDPOINT,
     });
   } catch (err) {
     // Non-fatal: log to console for debugging
-    console.warn("NLWeb init failed", err);
+    console.warn('NLWeb init failed', err);
   }
 }
 
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", initNLWeb, { once: true });
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initNLWeb, { once: true });
 } else {
   initNLWeb();
 }
