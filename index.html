@@ -339,23 +339,76 @@
       /* Reserve space for main content to prevent CLS */
       #main-content {
         min-height: 100vh;
+        /* Prevent unexpected scroll anchoring shifts when content above changes */
+        overflow-anchor: none;
         /* content-visibility für bessere Rendering-Performance */
         content-visibility: auto;
         /* Strikte Containment-Strategie */
         contain: layout style paint;
+        position: relative;
+      }
+
+      /* Guard for initial loading state that can cause big shifts */
+      body.global-loading-visible {
+        min-height: 100vh;
+        overflow-anchor: none;
+        /* Ensure the class itself does not change flow or layout */
+        display: block;
+        position: static;
+      }
+
+      /* Fixed overlay pseudo-element to show loader without touching layout */
+      body.global-loading-visible::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: 99997;
+        pointer-events: none;
+      }
+
+      body.global-loading-visible > main#main-content {
+        position: relative;
       }
       
       /* Hero Section Höhenreservierung */
       #hero {
-        min-height: clamp(500px, 100vh, 1200px);
+        min-height: clamp(600px, 100vh, 1200px);
         contain: layout style;
       }
       
       /* Typewriter Container Höhenreservierung */
       .typewriter-title {
         /* Verhindert Layout Shift beim dynamischen Textumbruch */
-        min-height: var(--box-h, 2.2em);
-        will-change: auto;
+        min-height: var(--box-h, 3.2rem);
+        will-change: transform, opacity;
+        opacity: 0; /* keep hidden until JS sets opacity via transform-based animation */
+      }
+
+      /* Robot companion stable positioning to avoid small shifts */
+      #robot-companion-container {
+        width: 80px;
+        height: 80px;
+        contain: layout style paint;
+        will-change: transform, opacity;
+      }
+
+      #robot-companion-container .robot-bubble {
+        min-width: 200px;
+        max-width: 320px;
+        will-change: transform, opacity;
+      }
+
+      /* Hotfix: disable layout-affecting transitions while dynamic intro classes are active
+         This prevents large CLS caused by JS toggling classes that affect layout.
+         Remove once full refactors are implemented. */
+      body.has-typingjs *, body.global-loading-visible * {
+        /* Allow only transform/opacity animations; block margin/padding/top/height changes */
+        transition-property: transform, opacity !important;
+        transition-duration: 0s !important;
+        animation: none !important;
+      }
+      body.has-typingjs, body.global-loading-visible {
+        transition: none !important;
       }
     </style>
 
