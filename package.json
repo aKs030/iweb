@@ -1,0 +1,22 @@
+{
+  "name": "iweb",
+  "version": "1.0.0",
+  "description": "[![LinkedIn](https://img.shields.io/badge/LinkedIn-abdulkerim--s-0077B5?logo=linkedin)](https://linkedin.com/in/abdulkerim-s) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "npx http-server ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aKs030/iweb.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/aKs030/iweb/issues"
+  },
+  "homepage": "https://github.com/aKs030/iweb#readme"
+}

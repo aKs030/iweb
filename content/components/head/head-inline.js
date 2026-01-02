@@ -23,7 +23,7 @@ const HOST_GTM_MAP = {
     ga4: "G-S0587RQ4CN",
     aw: "AW-17819941793",
   },
-  default: { gtm: "GT-TQTFN4NN", ga4: "G-S0587RQ4CN", aw: "AW-17819941793" },
+  default: { gtm: "GTM-5F5ZSTTL", ga4: "G-757KWG0PG4", aw: "AW-1036079663" },
 };
 
 const detectHostConfig = (host) => {
@@ -45,6 +45,46 @@ const dataLayer = (globalThis.dataLayer = globalThis.dataLayer || []);
 function gtag() {
   dataLayer.push(arguments);
 }
+// Consent Mode v2: set conservative defaults and react to user consent
+try {
+  // Default to denied so analytics/ads don't fire before consent
+  gtag("consent", "default", {
+    ad_storage: "denied",
+    analytics_storage: "denied",
+  });
+} catch (e) {
+  /* ignore */
+}
+
+// Intercept dataLayer.push to handle consentGranted events reliably
+(function () {
+  try {
+    const originalPush = dataLayer.push.bind(dataLayer);
+    dataLayer.push = function () {
+      try {
+        for (let i = 0; i < arguments.length; i++) {
+          const arg = arguments[i];
+          if (arg && typeof arg === "object" && arg.event === "consentGranted") {
+            try {
+              // Update Google consent state to granted
+              gtag("consent", "update", {
+                ad_storage: "granted",
+                analytics_storage: "granted",
+              });
+            } catch (e) {
+              /* ignore */
+            }
+          }
+        }
+      } catch (e) {
+        /* ignore */
+      }
+      return originalPush.apply(null, arguments);
+    };
+  } catch (e) {
+    /* ignore */
+  }
+})();
 gtag("js", Date.now());
 // ===== Migration note =====
 // Move all GA4 and Google Ads tags into Google Tag Manager (GTM) to avoid double-tracking.
