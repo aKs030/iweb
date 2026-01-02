@@ -10,19 +10,6 @@
         ads_conversion_id: "AW-1036079663",
       });
     </script>
-
-    <!-- Prevent any runtime or stale script from adding has-typingjs to body and causing CLS -->
-    <script>
-      try {
-        // Remove immediately if present (synchronous, before layout)
-        if (typeof document !== 'undefined' && document.body) {
-          document.body.classList.remove('has-typingjs');
-          document.documentElement.classList.remove('has-typingjs');
-        }
-      } catch (e) {
-        /* ignore */
-      }
-    </script>
     <title>Abdulkerim Sesli — Web Developer & Photographer in Berlin</title>
     <meta
       name="viewport"
@@ -348,109 +335,12 @@
       }
       .three-earth-fallback {
         display: block;
-        /* Make the fallback occupy the full container without affecting page flow */
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
-        pointer-events: none;
       }
-
-      /* Hero / Three.js visual reservation (prevents large CLS) */
-      #threeEarthContainer.three-earth-container,
-      .three-earth-container {
-        /* Stable visual while WebGL/JS loads */
-        background-color: #04050a;
-        background-image: url("/content/assets/img/og/og-home@1200.avif");
-        background-repeat: no-repeat;
-        background-position: center;
-        background-size: cover;
-        /* Reserve vertical space so other layout doesn't shift when the canvas is inserted */
-        min-height: clamp(520px, 60vh, 820px);
-        contain: layout paint;
-        will-change: transform, opacity;
-        /* Keep the visual out of document flow */
-        position: fixed;
-        inset: 0;
-        z-index: 0 !important;
-        pointer-events: none;
-      }
-
       /* Reserve space for main content to prevent CLS */
       #main-content {
         min-height: 100vh;
-        /* Prevent unexpected scroll anchoring shifts when content above changes */
-        overflow-anchor: none;
-        /* content-visibility für bessere Rendering-Performance */
-        content-visibility: auto;
-        /* Strikte Containment-Strategie */
         contain: layout style paint;
-        position: relative;
       }
-
-      /* Guard for initial loading state that can cause big shifts */
-      body.global-loading-visible {
-        min-height: 100vh;
-        overflow-anchor: none;
-        /* Ensure the class itself does not change flow or layout */
-        display: block;
-        position: static;
-      }
-
-      /* Fixed overlay pseudo-element to show loader without touching layout */
-      body.global-loading-visible::after {
-        content: "";
-        position: fixed;
-        inset: 0;
-        z-index: 99997;
-        pointer-events: none;
-      }
-
-      body.global-loading-visible > main#main-content {
-        position: relative;
-      }
-      
-      /* Hero Section Höhenreservierung */
-      #hero {
-        min-height: clamp(600px, 100vh, 1200px);
-        contain: layout style;
-      }
-      
-      /* Typewriter Container Höhenreservierung */
-      .typewriter-title {
-        /* Verhindert Layout Shift beim dynamischen Textumbruch */
-        min-height: var(--box-h, 3.2rem);
-        will-change: transform, opacity;
-        opacity: 0; /* keep hidden until JS sets opacity via transform-based animation */
-      }
-
-      /* Robot companion stable positioning to avoid small shifts */
-      #robot-companion-container {
-        width: 80px;
-        height: 80px;
-        contain: layout style paint;
-        will-change: transform, opacity;
-      }
-
-      #robot-companion-container .robot-bubble {
-        min-width: 200px;
-        max-width: 320px;
-        will-change: transform, opacity;
-      }
-
-      /* Loader overlay scoping: keep loader styles fixed/overlayed without touching document flow */
-      body.global-loading-visible #app-loader,
-      body.global-loading-visible .loader-overlay {
-        position: fixed;
-        inset: 0;
-        z-index: 99998;
-        pointer-events: none;
-      }
-
-      /* Note: Removed broad 'disable transitions' hotfix that globally blocked transitions while the
-         TypeWriter was active. TypeWriter is now using transform/opacity and reserved heights so
-         the global rule is no longer necessary and was causing testability issues. */
     </style>
 
     <!-- Loader CSS inline (prevents render-blocking) -->
