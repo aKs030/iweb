@@ -84,7 +84,7 @@ function makeLineMeasurer(subtitleEl) {
         Math.min(window.innerWidth * 0.92, 820)
       )
     );
-    
+
     // Now apply styles in batch
     measurer.style.width = measurementStyleWidth + "px";
     const lh = getLineHeight();
@@ -103,7 +103,10 @@ function makeLineMeasurer(subtitleEl) {
 
     // Batch read: Get width once, apply once
     const rectRead = subtitleEl.getBoundingClientRect();
-    const available = Math.max(0, window.innerWidth - (rectRead.left || 0) - 12);
+    const available = Math.max(
+      0,
+      window.innerWidth - (rectRead.left || 0) - 12
+    );
     const cap = Math.min(window.innerWidth * 0.92, 820);
     const finalWidth = Math.max(1, Math.min(available || cap, cap));
     measurer.style.width = finalWidth + "px";
@@ -116,7 +119,7 @@ function makeLineMeasurer(subtitleEl) {
         ? currentLine.join(" ") + " " + word
         : word;
       measurer.textContent = testLine;
-      
+
       // Single read of height after DOM update
       const measureHeight = measurer.getBoundingClientRect().height;
 
@@ -283,7 +286,7 @@ export class TypeWriter {
     if (!this._isDeleting && this._txt === full) {
       try {
         document.dispatchEvent(
-          new CustomEvent("hero:typingEnd", { detail: { text: full, author } }),
+          new CustomEvent("hero:typingEnd", { detail: { text: full, author } })
         );
       } catch (err) {
         log.warn("TypeWriter: dispatch hero:typingEnd failed", err);
@@ -355,8 +358,8 @@ export async function initHeroSubtitle(options = {}) {
           const base = document.body.classList.contains("footer-expanded")
             ? "clamp(8px,1.5vw,16px)"
             : el.classList.contains("typewriter-title--fixed")
-              ? "clamp(16px,2.5vw,32px)"
-              : "clamp(12px,2vw,24px)";
+            ? "clamp(16px,2.5vw,32px)"
+            : "clamp(12px,2vw,24px)";
           setCSSVars(el, { bottom: `calc(${base} + ${overlap}px)` });
         }
       } catch (err) {
@@ -425,7 +428,7 @@ export async function initHeroSubtitle(options = {}) {
         () => requestAnimationFrame(pollOverlap),
         {
           passive: true,
-        },
+        }
       );
 
       // Expose instance for imports (preferred) and keep debug window hook for quick manual debugging
