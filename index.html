@@ -339,7 +339,23 @@
       /* Reserve space for main content to prevent CLS */
       #main-content {
         min-height: 100vh;
+        /* content-visibility für bessere Rendering-Performance */
+        content-visibility: auto;
+        /* Strikte Containment-Strategie */
         contain: layout style paint;
+      }
+      
+      /* Hero Section Höhenreservierung */
+      #hero {
+        min-height: clamp(500px, 100vh, 1200px);
+        contain: layout style;
+      }
+      
+      /* Typewriter Container Höhenreservierung */
+      .typewriter-title {
+        /* Verhindert Layout Shift beim dynamischen Textumbruch */
+        min-height: var(--box-h, 2.2em);
+        will-change: auto;
       }
     </style>
 

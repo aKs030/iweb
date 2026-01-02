@@ -4,3 +4,7 @@ archive/**
 public/**
 node_modules/**
 tmp/**
+
+# Ignore build artifacts
+dist/**
+build/**
