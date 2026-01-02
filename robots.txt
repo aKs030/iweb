@@ -1,0 +1,146 @@
+# robots.txt for abdulkerimsesli.de
+# Minimal, Google-friendly configuration
+
+# Sitemap locations
+Sitemap: https://abdulkerimsesli.de/sitemap.xml
+Sitemap: https://abdulkerimsesli.de/sitemap-images.xml
+Sitemap: https://abdulkerimsesli.de/sitemap-videos.xml
+
+Sitemap: https://abdulkerimsesli.de/ai-sitemap.xml
+
+# Optional: preferred host (some crawlers support this)
+# Host directive is non-standard but recognized by some bots
+Host: abdulkerimsesli.de
+
+# Default rules for all crawlers
+User-agent: *
+Allow: /
+
+# Note: video sitemap above added to improve video indexing
+# If you add more video content, run: YT_API_KEY=<key> python3 scripts/update_video_sitemap.py
+# Relaxed rules to improve rendering: allow JS/CSS/JSON where needed while keeping dev files blocked
+# Keep broad disallows but explicitly allow static asset types (Google honors most-specific rule)
+Disallow: /content/vendor/
+Allow: /content/vendor/*.js$
+Allow: /content/vendor/*.css$
+Allow: /content/vendor/*.json$
+Disallow: /content/config/
+Allow: /content/config/*.js$
+Allow: /content/config/*.css$
+Allow: /content/config/*.json$
+Disallow: /content/utils/
+Allow: /content/utils/*.js$
+Allow: /content/utils/*.css$
+Allow: /content/utils/*.json$
+# Allow JSON manifest and other JSON structured data
+Allow: /*.json$
+Allow: /manifest.json
+
+# Allow rendering-critical component and style assets (JS/CSS)
+Allow: /content/components/
+Allow: /content/components/*.js$
+Allow: /content/components/*.css$
+Allow: /content/components/*/*.js$
+Allow: /content/components/*/*.css$
+Allow: /content/styles/*.css$
+Allow: /content/main.js
+
+# Local/dev files and folders (should never be crawled)
+Disallow: /node_modules/
+Disallow: /tmp/
+Disallow: /dev/
+Disallow: /README.DEV.md
+Disallow: /dev-server.log
+Disallow: /.live-server.json
+
+# Google-specific rules
+User-agent: Googlebot
+Allow: /
+# Ensure JS and CSS are allowed for rendering
+Allow: /*.js$
+Allow: /*.css$
+
+# Google Image Bot
+User-agent: Googlebot-Image
+Allow: /
+Allow: /content/assets/img/
+
+# Google Video Bot
+User-agent: Googlebot-Video
+Allow: /videos/
+
+# Bing Bot
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 5
+
+# Other useful bots
+User-agent: Slurp
+Allow: /
+
+# Reduce crawl rate for less-friendly crawlers
+User-agent: *
+# Note: Crawl-delay supported by some crawlers; Google ignores it
+Crawl-delay: 1
+
+User-agent: DuckDuckBot
+Allow: /
+
+User-agent: Baiduspider
+Allow: /
+
+# Social Media Bots (for previews)
+User-agent: facebookexternalhit
+Allow: /
+
+User-agent: Twitterbot
+Allow: /
+
+User-agent: LinkedInBot
+Allow: /
+
+User-agent: Pinterestbot
+Allow: /
+
+# Explicitly allow known AI/LLM crawlers so they can access sitemaps and structured data
+User-agent: gptbot
+Allow: /
+
+User-agent: OpenAI
+Allow: /
+
+User-agent: openai
+Allow: /
+
+User-agent: Anthropic
+Allow: /
+
+User-agent: Perplexity
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+# Block aggressive or unwanted bots
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: dotbot
+Disallow: /
+
+User-agent: rogerbot
+Disallow: /
+
+# Archive.org allowed
+User-agent: ia_archiver
+Allow: /
+
+# Contact / last updated
+# Contact: https://abdulkerimsesli.de/about/
+# Last updated: 2025-12-22
