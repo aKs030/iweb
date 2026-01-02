@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Über mich | Abdulkerim Sesli</title>
+    <meta name="dateCreated" content="2025-12-31T12:00:00Z" />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <script
+      type="module"
+      src="/content/components/head/head-inline.js"
+      crossorigin="anonymous"
+    ></script>
+
+    <script
+      src="/content/components/head/head-complete.js"
+      type="module"
+      crossorigin="anonymous"
+    ></script>
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "ImageObject",
+        "contentUrl": "/content/assets/img/icons/icon-512.png",
+        "caption": "Porträt von Abdulkerim Sesli - Digital Creator",
+        "creator": { "@type": "Person", "name": "Abdulkerim Sesli" },
+        "license": "https://abdulkerimsesli.de/#image-license",
+        "creditText": "Photo: Abdulkerim Sesli",
+        "copyrightNotice": "© 2025 Abdulkerim Sesli",
+        "acquireLicensePage": "https://abdulkerimsesli.de/#image-license"
+      }
+    </script>
+
+    <!-- Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Main application: use modulepreload and let head-inline inject the executing module -->
+    <link rel="modulepreload" href="/content/main.js" crossorigin />
+    <script
+      type="module"
+      src="/content/main.js"
+      crossorigin="anonymous"
+    ></script>
+    <link rel="stylesheet" href="/content/styles/loader.css" />
+    <link rel="stylesheet" href="/pages/about/about.css" />
+    <link rel="stylesheet" href="/content/styles/root.css" />
+    <link
+      rel="stylesheet"
+      href="/content/styles/main.css"
+      media="print"
+      data-defer="1"
+    />
+    <noscript
+      ><link rel="stylesheet" href="/content/styles/main.css"
+    /></noscript>
+  </head>
+  <body class="about-page">
+    <div id="app-loader" aria-live="polite" aria-label="Anwendung wird geladen">
+      <div class="loader-spinner" aria-hidden="true"></div>
+      <div class="loader-content">
+        <div class="loader-logo" aria-hidden="true">AKS | WEB</div>
+
+        <div class="progress-container" role="presentation">
+          <div class="progress-bar" id="loader-progress-bar"></div>
+        </div>
+
+        <div class="loader-info" aria-live="polite">
+          <span class="status-text" id="loader-status-text"
+            >Initialisiere System...</span
+          >
+          <span class="percentage" id="loader-percentage">0%</span>
+        </div>
+      </div>
+    </div>
+
+    <noscript>
+      <style>
+        #app-loader {
+          display: none !important;
+        }
+      </style>
+    </noscript>
+
+    <main class="container">
+      <div class="bento-grid">
+        <!-- 1. Intro Section (Large) -->
+        <div class="card area-intro intro-card fade-in delay-1">
+          <div class="profile-badge">
+            <i data-lucide="code-2" width="16"></i>
+            Full-Stack Developer & Creative
+          </div>
+          <h1>
+            Code trifft <span class="gradient-text">Kreativität.</span><br />
+            Digitale Erlebnisse, die bleiben.
+          </h1>
+          <p class="about__intro-text">
+            Ich bin Abdulkerim Sesli. Entwickler, Designer und Problemlöser aus
+            Berlin. Ich verbinde technische Präzision mit ästhetischem Anspruch,
+            um Webanwendungen zu schaffen, die nicht nur funktionieren, sondern
+            begeistern.
+          </p>
+          <div class="about__cta">
+            <a href="mailto:kontakt@abdulkerimsesli.de" class="btn btn-primary">
+              Projekt anfragen <i data-lucide="arrow-right" width="18"></i>
+            </a>
+            <a
+              href="/content/assets/Abdulkerim_Sesli_CV_DE.pdf"
+              class="btn btn-outline"
+              download
+            >
+              <i data-lucide="download" width="18"></i> Lebenslauf
+            </a>
+          </div>
+        </div>
+
+        <!-- 2. Connect / Quick Info (Small Side) -->
+        <div class="card area-connect fade-in delay-2">
+          <div>
+            <img
+              src="/content/assets/img/icons/favicon-512.png"
+              alt="Abdulkerim Sesli"
+              class="profile-img"
+            />
+            <h3>Let's Connect</h3>
+            <p class="about__location">Berlin, Deutschland</p>
+          </div>
+          <div class="social-links">
+            <a
+              href="https://github.com/aKs030"
+              target="_blank"
+              class="social-item"
+            >
+              <i data-lucide="github"></i>
+              <span>GitHub</span>
+            </a>
+            <a
+              href="https://linkedin.com/in/abdulkerimsesli"
+              target="_blank"
+              class="social-item"
+            >
+              <i data-lucide="linkedin"></i>
+              <span>LinkedIn</span>
+            </a>
+            <a href="mailto:kontakt@abdulkerimsesli.de" class="social-item">
+              <i data-lucide="mail"></i>
+              <span>Email</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- 3. Tech Stack -->
+        <div class="card area-stack fade-in delay-3">
+          <div class="about__header">
+            <i data-lucide="cpu" color="#60a5fa"></i>
+            <h3>Tech Arsenal</h3>
+          </div>
+          <p class="about__small">
+            Tools, mit denen ich Ideen in Realität verwandle.
+          </p>
+
+          <div class="about__stack">
+            <h4 class="about__subheading">Core & Frontend</h4>
+            <div class="stack-list">
+              <span class="stack-tag">JavaScript (ES6+)</span>
+              <span class="stack-tag">React</span>
+              <span class="stack-tag">Vue.js</span>
+              <span class="stack-tag">Tailwind CSS</span>
+              <span class="stack-tag">Three.js / WebGL</span>
+            </div>
+          </div>
+
+          <div>
+            <h4 class="about__subheading">Backend & Ops</h4>
+            <div class="stack-list">
+              <span class="stack-tag">Node.js</span>
+              <span class="stack-tag">Express</span>
+              <span class="stack-tag">MongoDB</span>
+              <span class="stack-tag">SQL</span>
+              <span class="stack-tag">Docker</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. Experience & Playground -->
+        <div class="card area-exp fade-in delay-4">
+          <div class="about__header">
+            <i data-lucide="briefcase" color="#2dd4bf"></i>
+            <h3>Werdegang</h3>
+          </div>
+
+          <div class="timeline">
+            <div class="timeline-item">
+              <span class="timeline-date">2020 – Heute</span>
+              <h4 class="timeline-title">Freelance Full-Stack Developer</h4>
+              <span class="timeline-role">Selbstständig</span>
+              <p class="about__timeline-desc">
+                Entwicklung hochperformanter Web-Lösungen und SPAs. Fokus auf
+                interaktive User Experience, SEO-Optimierung und skalierbare
+                Architekturen für diverse Kundenprojekte.
+              </p>
+            </div>
+
+            <div class="timeline-item">
+              <span class="timeline-date">2018 – 2020</span>
+              <h4 class="timeline-title">Web & Product Development</h4>
+              <span class="timeline-role">TechStartup Umfeld</span>
+              <p class="about__timeline-desc">
+                Kernentwicklung von SaaS-Komponenten, REST-API Integrationen und
+                UX-Optimierung in einem agilen Team.
+              </p>
+            </div>
+          </div>
+
+          <div class="about__exp-footer">
+            <div class="about__section-cta">
+              <h3>Coding Playground</h3>
+              <a href="/projekte" class="about__link--accent"
+                >Alle Projekte →</a
+              >
+            </div>
+
+            <div class="playground-grid">
+              <a href="/projekte/#project-1" class="mini-card">
+                <i
+                  data-lucide="gamepad-2"
+                  class="about__mini-icon about__icon--pink"
+                ></i>
+                <h4>Schere Stein Papier</h4>
+                <span>Logik & State Management Experiment</span>
+              </a>
+              <a href="/projekte/#project-3" class="mini-card">
+                <i
+                  data-lucide="palette"
+                  class="about__mini-icon about__icon--purple"
+                ></i>
+                <h4>Color Changer</h4>
+                <span>Echtzeit DOM-Manipulation</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      // Initialize Lucide Icons
+      lucide.createIcons();
+    </script>
+  </body>
+</html>
