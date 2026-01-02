@@ -413,13 +413,13 @@ const CookieSettings = (() => {
     const handlerMap = {
       closeBtn: () => close(),
       rejectAllBtn: () => {
-            CookieManager.set("cookie_consent", "rejected");
-            CookieManager.set(
-              "cookie_consent_detail",
-              JSON.stringify({ analytics: false, ad_personalization: false })
-            );
-            CookieManager.deleteAnalytics();
-            updateGtagConsent(false);
+        CookieManager.set("cookie_consent", "rejected");
+        CookieManager.set(
+          "cookie_consent_detail",
+          JSON.stringify({ analytics: false, ad_personalization: false })
+        );
+        CookieManager.deleteAnalytics();
+        updateGtagConsent(false);
         try {
           a11y?.announce("Cookie-Einstellungen: Nur notwendige Cookies aktiv", {
             priority: "polite",
@@ -430,7 +430,8 @@ const CookieSettings = (() => {
       },
       acceptSelectedBtn: () => {
         const analyticsEnabled = !!elements.analyticsToggle?.checked;
-        const adPersonalizationEnabled = !!elements.adPersonalizationToggle?.checked;
+        const adPersonalizationEnabled =
+          !!elements.adPersonalizationToggle?.checked;
 
         // Persist an explicit detail object for granular consent
         const detail = {
@@ -440,7 +441,10 @@ const CookieSettings = (() => {
 
         CookieManager.set("cookie_consent_detail", JSON.stringify(detail));
         // Set an overall cookie_consent value (accepted if any optional cookie enabled)
-        CookieManager.set("cookie_consent", analyticsEnabled || adPersonalizationEnabled ? "accepted" : "rejected");
+        CookieManager.set(
+          "cookie_consent",
+          analyticsEnabled || adPersonalizationEnabled ? "accepted" : "rejected"
+        );
 
         globalThis.dataLayer = globalThis.dataLayer || [];
         globalThis.dataLayer.push({ event: "consentGranted", detail });
@@ -471,22 +475,25 @@ const CookieSettings = (() => {
         domCache.get("#cookie-consent-banner")?.classList.add("hidden");
       },
       acceptAllBtn: () => {
-            CookieManager.set("cookie_consent", "accepted");
-            CookieManager.set(
-              "cookie_consent_detail",
-              JSON.stringify({ analytics: true, ad_personalization: true })
-            );
+        CookieManager.set("cookie_consent", "accepted");
+        CookieManager.set(
+          "cookie_consent_detail",
+          JSON.stringify({ analytics: true, ad_personalization: true })
+        );
 
-            globalThis.dataLayer = globalThis.dataLayer || [];
-            globalThis.dataLayer.push({ event: "consentGranted", detail: { analytics: true, ad_personalization: true } });
+        globalThis.dataLayer = globalThis.dataLayer || [];
+        globalThis.dataLayer.push({
+          event: "consentGranted",
+          detail: { analytics: true, ad_personalization: true },
+        });
 
-            updateGtagConsent({
-              analytics_storage: "granted",
-              ad_storage: "granted",
-              ad_user_data: "granted",
-              ad_personalization: "granted",
-            });
-            GoogleAnalytics.load();
+        updateGtagConsent({
+          analytics_storage: "granted",
+          ad_storage: "granted",
+          ad_user_data: "granted",
+          ad_personalization: "granted",
+        });
+        GoogleAnalytics.load();
         try {
           a11y?.announce("Cookie-Einstellungen: Alle Cookies aktiviert", {
             priority: "polite",
@@ -564,7 +571,8 @@ const CookieSettings = (() => {
         if (elements.analyticsToggle)
           elements.analyticsToggle.checked = !!parsed.analytics;
         if (elements.adPersonalizationToggle)
-          elements.adPersonalizationToggle.checked = !!parsed.ad_personalization;
+          elements.adPersonalizationToggle.checked =
+            !!parsed.ad_personalization;
       }
     } catch (e) {
       /* ignore */
