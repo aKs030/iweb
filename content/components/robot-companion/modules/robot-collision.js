@@ -21,7 +21,7 @@ export class RobotCollision {
           }
         });
       },
-      { rootMargin: "50px" },
+      { rootMargin: "50px" }
     );
   }
 
@@ -34,7 +34,7 @@ export class RobotCollision {
 
     // Cache relevant elements
     const currentObstacles = document.querySelectorAll(
-      "img, .card, button.btn, h2, .gallery-item",
+      "img, .card, button.btn, h2, .gallery-item"
     );
 
     currentObstacles.forEach((el) => {
@@ -169,7 +169,7 @@ export class RobotCollision {
           { transform: "translate(2px, -2px)" },
           { transform: "translate(-2px, 2px)" },
         ],
-        { duration: 100, iterations: 10 },
+        { duration: 100, iterations: 10 }
       );
     } else if (type === "knockback") {
       // Push away
