@@ -1074,23 +1074,20 @@ class FooterResizer {
   apply() {
     const content = domCache.get("#site-footer .footer-enhanced-content");
     if (!content) return;
-    
+
     // Batch DOM reads together to avoid layout thrashing
     // Use requestAnimationFrame to defer expensive measurements
     if (this._measurementScheduled) return;
     this._measurementScheduled = true;
-    
+
     requestAnimationFrame(() => {
       this._measurementScheduled = false;
-      
+
       // Now perform all reads at once
       const scrollH = content.scrollHeight;
       const innerH = globalThis.innerHeight || 0;
-      const height = Math.min(
-        Math.max(0, scrollH),
-        innerH - 24
-      );
-      
+      const height = Math.min(Math.max(0, scrollH), innerH - 24);
+
       if (height > 0)
         document.documentElement.style.setProperty(
           "--footer-actual-height",
