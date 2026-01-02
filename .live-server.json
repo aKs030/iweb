@@ -1,0 +1,15 @@
+{
+  "root": ".",
+  "open": "/",
+  "ignore": "node_modules",
+  "file": "index.html",
+  "wait": 1000,
+  "mount": [
+    ["/projekte", "./pages/projekte"],
+    ["/gallery", "./pages/gallery"],
+    ["/videos", "./pages/videos"],
+    ["/blog", "./pages/blog"],
+    ["/about", "./pages/about"]
+  ],
+  "middleware": []
+}
