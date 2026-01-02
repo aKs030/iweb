@@ -1,6 +1,0 @@
-# Ignore vendor, archives and public assets
-content/vendor/**
-archive/**
-public/**
-node_modules/**
-tmp/**
