@@ -308,6 +308,11 @@
 
     <!-- Inline minimal critical CSS for the Hero (improves LCP / FOCP) -->
     <style id="hero-critical-css">
+      @font-face {
+        font-family: var(--font-inter);
+        src: local("Inter"), local("system-ui"), system-ui;
+        font-display: swap; /* Fallback-Schriftart sofort zeigen, swap wenn echte Schriftart lädt */
+      }
       .hero {
         display: flex;
         align-items: center;
