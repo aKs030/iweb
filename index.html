@@ -10,6 +10,19 @@
         ads_conversion_id: "AW-1036079663",
       });
     </script>
+
+    <!-- Prevent any runtime or stale script from adding has-typingjs to body and causing CLS -->
+    <script>
+      try {
+        // Remove immediately if present (synchronous, before layout)
+        if (typeof document !== 'undefined' && document.body) {
+          document.body.classList.remove('has-typingjs');
+          document.documentElement.classList.remove('has-typingjs');
+        }
+      } catch (e) {
+        /* ignore */
+      }
+    </script>
     <title>Abdulkerim Sesli — Web Developer & Photographer in Berlin</title>
     <meta
       name="viewport"
