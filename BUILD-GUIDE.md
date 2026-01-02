@@ -11,6 +11,7 @@ npm run build
 ```
 
 Dies minifiziert alle kritischen JavaScript-Dateien:
+
 - `content/components/typewriter/TypeWriter.js` (4.89 KiB → ~1.5 KiB)
 - `content/components/footer/footer-complete.js` (8.4 KiB → ~2.5 KiB)
 - `content/components/particles/three-earth-system.js` (11.10 KiB → ~3.5 KiB)
@@ -43,29 +44,27 @@ Three.js wird vollständig geladen, aber nur folgende Features werden in der App
 
 ```javascript
 // content/components/particles/earth/scene.js
-- THREE.Scene
-- THREE.Sphere
-- THREE.MeshPhongMaterial
-- THREE.PointLight
-- THREE.AmbientLight
-
-// content/components/particles/earth/camera.js
-- THREE.PerspectiveCamera
-
-// content/components/particles/earth/assets.js
-- THREE.TextureLoader
-- THREE.Mesh
-- THREE.SphereGeometry
-
-// content/components/particles/three-earth-system.js
-- THREE.WebGLRenderer
-- THREE.Vector3
-- THREE.Raycaster
+-THREE.Scene -
+  THREE.Sphere -
+  THREE.MeshPhongMaterial -
+  THREE.PointLight -
+  THREE.AmbientLight -
+  // content/components/particles/earth/camera.js
+  THREE.PerspectiveCamera -
+  // content/components/particles/earth/assets.js
+  THREE.TextureLoader -
+  THREE.Mesh -
+  THREE.SphereGeometry -
+  // content/components/particles/three-earth-system.js
+  THREE.WebGLRenderer -
+  THREE.Vector3 -
+  THREE.Raycaster;
 ```
 
 ### Optimierungs-Möglichkeiten:
 
 1. **Custom Three.js Build** (empfohlen):
+
    ```bash
    # Herunterladen und nur benötigte Features bauen
    git clone https://github.com/mrdoob/three.js.git
@@ -75,6 +74,7 @@ Three.js wird vollständig geladen, aber nur folgende Features werden in der App
    ```
 
 2. **Externe Minifier nutzen**:
+
    - [Terser](https://terser.org/) für aggressive Minification
    - [esbuild](https://esbuild.github.io/) für schnelle Builds
 
@@ -94,25 +94,25 @@ Three.js wird vollständig geladen, aber nur folgende Features werden in der App
 export default {
   async fetch(request) {
     const url = new URL(request.url);
-    
+
     // Prüfe ob Client Brotli akzeptiert
-    const acceptEncoding = request.headers.get('accept-encoding') || '';
-    
-    if (acceptEncoding.includes('br')) {
-      const brPath = url.pathname + '.br';
+    const acceptEncoding = request.headers.get("accept-encoding") || "";
+
+    if (acceptEncoding.includes("br")) {
+      const brPath = url.pathname + ".br";
       const brResponse = await fetch(brPath);
       if (brResponse.ok) {
         return new Response(brResponse.body, {
           headers: {
-            'Content-Encoding': 'br',
-            'Content-Type': 'application/javascript',
-            'Vary': 'Accept-Encoding',
+            "Content-Encoding": "br",
+            "Content-Type": "application/javascript",
+            Vary: "Accept-Encoding",
             ...brResponse.headers,
           },
         });
       }
     }
-    
+
     return fetch(request);
   },
 };
@@ -153,21 +153,25 @@ brotli_types application/javascript text/css text/plain;
 ## 📊 Performance-Metriken
 
 ### Vor Optimierung
+
 - **three.module.js**: 1.276 MiB (unminified)
 - **Gesamtes JS**: ~5-6 MiB
 - **Estimated LCP**: ~1200 ms
 
 ### Nach Minification
+
 - **three.module.js**: ~390 KiB (esbuild)
 - **Gesamtes JS**: ~1.2 MiB
 - **Improvement**: ~70% Größenreduktion
 
 ### Nach Brotli-Kompression
+
 - **three.module.js**: ~300 KiB (over-the-wire)
 - **Gesamtes JS**: ~500 KiB
 - **Improvement**: ~80% Größenreduktion
 
 ### Nach Tree-shaking (potenzial)
+
 - **three.module.js**: ~150-200 KiB (custom build)
 - **Improvement**: ~85% Größenreduktion
 
@@ -188,20 +192,24 @@ brotli_types application/javascript text/css text/plain;
 ## 📝 Troubleshooting
 
 ### Build schlägt fehl: "esbuild not found"
+
 ```bash
 npm install
 npm run build
 ```
 
 ### Browser lädt .br-Datei als Download statt zu dekomprimieren
+
 → Server sendet nicht `Content-Encoding: br` Header. Siehe Server-Konfiguration oben.
 
 ### Minified Code funktioniert nicht richtig
+
 - Überprüfe dass alle `export` Statements korrekt sind
 - Nutze `--sourcemap` Option beim Build für Debugging
 - Überprüfe Browser Console auf Fehler
 
 ### Three.js wird nicht geladen
+
 ```javascript
 // Debug: Prüfe ob THREE global verfügbar ist
 console.log(window.THREE);

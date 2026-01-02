@@ -5,6 +5,7 @@ Die folgenden Optimierungen wurden implementiert, um die Bundle-Größe zu reduz
 ## 📦 Was wurde hinzugefügt?
 
 ### 1. **Minification Pipeline** (`npm run build`)
+
 Minifiziert alle kritischen JavaScript-Dateien mit **esbuild** (15x schneller als Webpack):
 
 ```bash
@@ -12,12 +13,14 @@ npm run build
 ```
 
 **Größenreduzierung:**
+
 - TypeWriter.js: 4.89 KiB → ~1.5 KiB (69%)
 - footer-complete.js: 8.4 KiB → ~2.5 KiB (70%)
 - three-earth-system.js: 11.10 KiB → ~3.5 KiB (68%)
 - **three.module.js: 1.276 MiB → ~390 KiB (69%)**
 
 ### 2. **Brotli Compression** (`npm run build:brotli`)
+
 Erzeugt `.br`-Dateien für Server-seitige Komprimierung:
 
 ```bash
@@ -25,10 +28,12 @@ npm run build:brotli
 ```
 
 **Zusätzliche Größenreduzierung (über-the-wire):**
+
 - three.module.js: 390 KiB → ~300 KiB (23% weitere Reduktion)
 - Alle JS-Dateien zusammen: ~75% Reduktion vs. Original
 
 ### 3. **Three.js Feature Analysis** (`npm run analyze:threejs`)
+
 Zeigt, welche Three.js-Features genutzt werden und Optimierungs-Möglichkeiten:
 
 ```bash
@@ -40,12 +45,14 @@ npm run analyze:threejs
 ## 🎯 Recommended Usage
 
 ### Development
+
 ```bash
 npm run dev
 # Alles normal, keine Minification erforderlich
 ```
 
 ### Vorbereitung für Production
+
 ```bash
 # 1. Installiere Dependencies
 npm install
@@ -66,12 +73,12 @@ npm run build:brotli
 
 ## 📊 Performance Impact
 
-| Metrik | Vorher | Nachher | Ersparnis |
-|--------|--------|---------|-----------|
-| three.module.js (uncompressed) | 1.276 MiB | 390 KiB | 69% |
-| three.module.js (with Brotli) | 1.276 MiB | 300 KiB | 76% |
-| Gesamtes JS (minified) | ~5-6 MiB | ~1.2 MiB | 75% |
-| Estimated LCP Improvement | ~1200 ms | ~800 ms | 33% |
+| Metrik                         | Vorher    | Nachher  | Ersparnis |
+| ------------------------------ | --------- | -------- | --------- |
+| three.module.js (uncompressed) | 1.276 MiB | 390 KiB  | 69%       |
+| three.module.js (with Brotli)  | 1.276 MiB | 300 KiB  | 76%       |
+| Gesamtes JS (minified)         | ~5-6 MiB  | ~1.2 MiB | 75%       |
+| Estimated LCP Improvement      | ~1200 ms  | ~800 ms  | 33%       |
 
 ---
 
@@ -80,9 +87,11 @@ npm run build:brotli
 Für Brotli-Kompression muss der Server konfiguriert sein:
 
 ### Cloudflare
+
 Nutzen Sie **Cloudflare Workers** oder **Pages Functions** um `.br`-Dateien automatisch zu serven.
 
 ### Netlify
+
 ```toml
 [[headers]]
   for = "/content/vendor/three/three.module.js"
@@ -91,14 +100,13 @@ Nutzen Sie **Cloudflare Workers** oder **Pages Functions** um `.br`-Dateien auto
 ```
 
 ### Vercel
+
 ```json
 {
   "headers": [
     {
       "source": "/content/vendor/three/three.module.js",
-      "headers": [
-        { "key": "Content-Encoding", "value": "br" }
-      ]
+      "headers": [{ "key": "Content-Encoding", "value": "br" }]
     }
   ]
 }
@@ -109,6 +117,7 @@ Nutzen Sie **Cloudflare Workers** oder **Pages Functions** um `.br`-Dateien auto
 ## 🧪 Validierung nach Build
 
 1. **Prüfe ob Minification funktioniert:**
+
    ```bash
    # Original vs. minified Größe vergleichen
    ls -lh content/components/typewriter/TypeWriter.js
@@ -116,12 +125,14 @@ Nutzen Sie **Cloudflare Workers** oder **Pages Functions** um `.br`-Dateien auto
    ```
 
 2. **Teste lokal:**
+
    ```bash
    npm run dev
    # Öffne http://localhost:3000 und überprüfe Console auf Fehler
    ```
 
 3. **Lighthouse Score überprüfen:**
+
    - Chrome DevTools → Lighthouse
    - Überprüfe besonders: LCP, FID, CLS Metriken
 
