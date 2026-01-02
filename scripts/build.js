@@ -22,6 +22,9 @@ const filesToMinify = [
   "content/components/typewriter/TypeWriterText.js",
   "content/components/footer/footer-complete.js",
 
+  // Robot Companion (2.1 KiB potential savings)
+  "content/components/robot-companion/robot-companion.js",
+
   // Wichtig: Three.js Earth System
   "content/components/particles/three-earth-system.js",
   "content/components/particles/shared-particle-system.js",
