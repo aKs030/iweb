@@ -44,8 +44,6 @@ coverage/
 .playwright/
 ms-playwright/
 
-# Husky hooks (local only)
-.husky/
 
 # IDE / editor
 .vscode/
