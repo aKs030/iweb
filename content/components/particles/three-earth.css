@@ -11,6 +11,10 @@
   isolation: isolate;
   cursor: grab;
   transition: opacity 0.8s ease;
+  /* Reserve full viewport dimensions to prevent CLS */
+  width: 100vw;
+  height: 100vh;
+  min-height: 100vh;
 }
 
 .three-earth-container.is-dragging {
