@@ -1,0 +1,74 @@
+# Cloudflare Pages / Netlify style redirects
+# Purpose: canonicalize folder URLs, remove index.html and .html endings where desired
+
+# -------------------------------
+# 1) Domain + protocol canonicalization
+# NOTE: Cloudflare Pages doesn't support absolute URLs in _redirects.
+# Domain redirects should be handled via DNS/page rules or removed if handled elsewhere.
+# Removed absolute URL redirects as they're not supported by Cloudflare Pages.
+
+# -------------------------------
+# 2) Specific 301 redirects (keep these before any generic rules)
+
+# Remove explicit index.html mappings (canonical trailing-slash roots)
+/index.html          /              301
+/blog/index.html     /blog/         301
+/projekte/index.html /projekte/     301
+/gallery/index.html  /gallery/      301
+/videos/index.html   /videos/       301
+
+# Redirect old file locations to new clean URLs
+/pages/gallery/gallery.html     /gallery/     301
+/pages/projekte/projekte.html   /projekte/    301
+/pages/videos/videos.html       /videos/      301
+
+
+# Leite /datenschutz und /impressum auf die Footer-Komponenten um
+# Canonicalize to trailing-slash and serve the actual footer pages
+/datenschutz    /datenschutz/                                      301
+/datenschutz/   /content/components/footer/datenschutz.html       200
+/impressum      /impressum/                                       301
+/impressum/     /content/components/footer/impressum.html         200
+
+# -------------------------------
+# 3) Generic cleanups
+# Remove any remaining ".html" endings and canonicalize to trailing-slash roots.
+# Keep this after specific redirects so we don't accidentally override them.
+
+# Don't redirect .html in /pages/ as they are loaded dynamically
+# Ensure any requests under /pages/ are rewritten to the physical folder
+# so dynamic XHR requests (e.g. /pages/home/hero.html) are served directly
+/pages/*         /pages/:splat         200
+/pages/*.html    /pages/:splat.html    200
+
+/*.html   /:splat/   301
+
+# Ensure root section names without trailing slash are redirected to the slash version
+/about    /about/     301
+/blog     /blog/      301
+/gallery  /gallery/   301
+/projekte /projekte/  301
+/videos   /videos/    301
+
+# -------------------------------
+# 4) Rewrites to serve content from the physical /pages/ folders
+# These are 200 rewrites so clean URLs map to their actual files under /pages/.
+# Removed root redirects that were causing infinite loops - the wildcard rules handle everything
+/gallery/*      /pages/gallery/:splat     200
+/projekte/*     /pages/projekte/:splat    200
+/videos/*       /pages/videos/:splat      200
+/blog/*         /pages/blog/:splat        200
+/about/*        /pages/about/:splat       200
+
+# -------------------------------
+# Notes / rationale:
+# - Specific redirects come first to avoid conflicts with the generic ".html" rule.
+# - The generic rule redirects any ".html" URL to the same path with a trailing slash.
+#   This covers both top-level pages like /about.html -> /about/ and deeper paths.
+# - We also add short redirects so requests to e.g. /about (no slash) get a canonical
+#   trailing-slash URL to match how directories are served.
+# - Removed absolute URL redirects as Cloudflare Pages doesn't support them.
+# - Removed root 200 rewrites that were causing infinite loops with .html removal rules.
+# - Test after deploy: check a sample of old URLs, ".html" URLs and domain variants to
+#   ensure there are no redirect loops and that final destinations return 200.
+
