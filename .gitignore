@@ -6,14 +6,12 @@ tmp/
 /.cache/
 dist/
 
-# Local YouTube API key parts (do NOT commit)
-/content/config/videos-part-a.js
-/content/config/videos-part-b.js
+# Build artifacts (compiled and compressed files)
+*.min.js
+*.br
+content/**/*.br
+content/**/*.min.js
 
-# Local dev server / npm local files
-dev-server.js
-dev-server.log
-.live-server.json
 package.json
 package-lock.json
 
