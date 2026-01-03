@@ -15,6 +15,10 @@ const getBaseUrl = (apiKey) =>
  * @param {string} systemInstruction - Anweisungen für das System.
  * @returns {Promise<string>} - Die Antwort der KI.
  */
+import { createLogger } from '../../utils/shared-utilities.js';
+
+const log = createLogger('GeminiService');
+
 async function getGeminiResponse(
   prompt,
   systemInstruction = 'Du bist ein hilfreicher Roboter-Begleiter.'
@@ -71,7 +75,10 @@ async function getGeminiResponse(
     } catch (error) {
       if (i === maxRetries - 1) {
         // Letzter Versuch fehlgeschlagen
-        console.error('Gemini API Fehler nach Max Retries:', error);
+        log.error(
+          'Gemini API Fehler nach Max Retries: ' +
+            (error && error.message ? error.message : String(error))
+        );
         return 'Entschuldigung, ich habe gerade Verbindungsprobleme. Bitte versuche es später noch einmal.';
       }
 

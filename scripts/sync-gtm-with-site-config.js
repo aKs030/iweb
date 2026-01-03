@@ -8,6 +8,7 @@
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
+const { info, warn, error } = require('./log');
 
 const ROOT = path.resolve(__dirname, '..');
 const SITE_CFG_PATH = path.join(ROOT, 'content', 'config', 'site-config.js');
@@ -71,7 +72,7 @@ function syncContainer(filePath, siteConfig) {
   try {
     json = JSON.parse(raw);
   } catch (e) {
-    console.error('Failed to parse', filePath, e.message);
+    error('Failed to parse ' + filePath + ': ' + e.message);
     return false;
   }
 
@@ -128,23 +129,23 @@ function syncContainer(filePath, siteConfig) {
 }
 
 async function main() {
-  console.log('Loading site-config...');
+  info('Loading site-config...');
   const siteConfig = await loadSiteConfig();
-  console.log('Loaded sites:', Object.keys(siteConfig).join(', '));
+  info('Loaded sites: ' + Object.keys(siteConfig).join(', '));
 
   const results = [];
   for (const f of GTM_FILES) {
     if (!fs.existsSync(f)) {
-      console.warn('File not found, skipping:', f);
+      warn('File not found, skipping: ' + f);
       continue;
     }
     const res = syncContainer(f, siteConfig);
     results.push(res);
   }
 
-  console.log('Sync results:');
+  info('Sync results:');
   results.forEach((r) => {
-    console.log(
+    info(
       `- ${path.basename(r.filePath)}: publicId=${r.publicId}, hostMatch=${
         r.hostMatch || 'none'
       }, updatedVars=${r.updatedVars}, changed=${r.changed}`
@@ -153,6 +154,6 @@ async function main() {
 }
 
 main().catch((err) => {
-  console.error('Sync script failed:', err);
+  error('Sync script failed: ' + (err && err.message ? err.message : String(err)));
   process.exit(1);
 });
