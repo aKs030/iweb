@@ -11,12 +11,16 @@
   scroll-snap-align: start;
   scroll-snap-stop: always;
   min-height: 100vh;
+}
 
-  /* OPTIMIZATION: content-visibility allows browser to skip rendering work for off-screen sections */
-  content-visibility: auto;
-
-  /* Fallback size estimation to prevent scrollbar jumping */
-  contain-intrinsic-size: 1px 100vh;
+/* Optimierung: content-visibility nur wenn unterstützt */
+@supports (content-visibility: auto) {
+  .section {
+    /* OPTIMIZATION: content-visibility allows browser to skip rendering work for off-screen sections */
+    content-visibility: auto;
+    /* Fallback size estimation to prevent scrollbar jumping */
+    contain-intrinsic-size: 100% 100vh;
+  }
 }
 
 @media (width <= 768px) {

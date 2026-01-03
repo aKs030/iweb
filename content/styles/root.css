@@ -192,6 +192,15 @@
     }
   }
 
+  /* Respect reduced motion preferences */
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation: none !important;
+      transition: none !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
   /* ===== TypeWriter Custom Properties ===== */
   --typing-target: 28ch;
   --typing-steps: 28;

@@ -587,18 +587,27 @@ const ThreeEarthLoader = (() => {
           }
         }
       },
-      { rootMargin: '100px', threshold: 0.01 }
+      { rootMargin: '400px', threshold: 0.01 }
     );
 
     observer.observe(container);
   }
 
-  function initDelayed() {
-    if (globalThis.requestIdleCallback) {
-      requestIdleCallback(init, { timeout: 2000 });
-    } else {
-      setTimeout(init, 1000);
+  // Use a safe idleCallback wrapper that simulates a deadline when native API is absent
+  function idleCallbackWrapper(cb, opts) {
+    if (typeof globalThis.requestIdleCallback === 'function') {
+      return globalThis.requestIdleCallback(cb, opts);
     }
+    const timeout = (opts && opts.timeout) || 200;
+    const start = Date.now();
+    return setTimeout(
+      () => cb({ timeRemaining: () => Math.max(0, 50 - (Date.now() - start)) }),
+      timeout
+    );
+  }
+
+  function initDelayed() {
+    idleCallbackWrapper(init, { timeout: 2000 });
   }
 
   return { initDelayed };
