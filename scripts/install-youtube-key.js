@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 const fs = require('fs');
+const { error, info } = require('./log');
 (async () => {
   const key = process.env.YT_KEY;
   if (!key) {
-    console.error('ERROR: Please pass the key via YT_KEY env var');
+    error('ERROR: Please pass the key via YT_KEY env var');
     process.exit(2);
   }
 
@@ -15,29 +16,28 @@ const fs = require('fs');
 
   fs.writeFileSync('content/config/videos-part-a.js', `export default "${partA}";\n`, 'utf8');
   fs.writeFileSync('content/config/videos-part-b.js', `export default "${partB}";\n`, 'utf8');
-  console.log('Wrote content/config/videos-part-a.js and videos-part-b.js (local files only)');
 
   const recon =
     Buffer.from(partA, 'base64').toString('utf8') + Buffer.from(partB, 'base64').toString('utf8');
   if (recon !== key) {
-    console.error('ERROR: Reconstruction mismatch');
+    error('ERROR: Reconstruction mismatch');
     process.exit(3);
   }
-  console.log('Reconstructed key matches original (not displayed)');
+  info('Reconstructed key matches original (not displayed)');
 
   // Quick YouTube API check
   try {
     const url = `https://www.googleapis.com/youtube/v3/channels?part=contentDetails&id=UCTGRherjM4iuIn86xxubuPg&key=${recon}`;
     const res = await fetch(url);
-    console.log('YouTube API HTTP status:', res.status);
+    info('YouTube API HTTP status: ' + res.status);
     const json = await res.json();
     if (res.ok) {
-      console.log('YouTube response: items:', (json.items || []).length);
+      info('YouTube response: items: ' + (json.items || []).length);
     } else {
-      console.error('YouTube API error:', JSON.stringify(json).slice(0, 800));
+      error('YouTube API error: ' + JSON.stringify(json).slice(0, 800));
     }
   } catch (e) {
-    console.error('Fetch failed:', e.message);
+    error('Fetch failed: ' + (e && e.message ? e.message : String(e)));
     process.exit(4);
   }
 })();

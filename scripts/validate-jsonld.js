@@ -8,6 +8,8 @@ const files = [
 ];
 let ok = true;
 const scriptRegex = /<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
+const { info, error } = require('./log');
+
 files.forEach((file) => {
   try {
     const content = fs.readFileSync(file, 'utf8');
@@ -18,22 +20,21 @@ files.forEach((file) => {
       const raw = match[1].trim();
       try {
         JSON.parse(raw);
-        console.log(`OK: ${path.relative(process.cwd(), file)} script#${idx} parsed`);
+        info(`OK: ${path.relative(process.cwd(), file)} script#${idx} parsed`);
       } catch (e) {
         ok = false;
-        console.error(
-          `ERROR: ${path.relative(process.cwd(), file)} script#${idx} failed to parse:`
-        );
-        console.error(e.message);
+        error(`ERROR: ${path.relative(process.cwd(), file)} script#${idx} failed to parse:`);
+        error(e.message);
         const snippet = raw.substring(0, 500) + (raw.length > 500 ? '... (truncated)' : '');
-        console.error(snippet);
+        error(snippet);
       }
     }
-    if (idx === 0)
-      console.log(`NOTICE: ${path.relative(process.cwd(), file)} no ld+json scripts found`);
+    if (idx === 0) {
+      info(`NOTICE: ${path.relative(process.cwd(), file)} no ld+json scripts found`);
+    }
   } catch (e) {
     ok = false;
-    console.error(`ERROR: Unable to read ${file}: ${e.message}`);
+    error(`ERROR: Unable to read ${file}: ${e.message}`);
   }
 });
 process.exit(ok ? 0 : 1);

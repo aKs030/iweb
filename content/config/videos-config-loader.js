@@ -83,10 +83,14 @@ async function loadConfig() {
     }
   } catch (e) {
     // Non-fatal — videos.js will handle absence of key gracefully
-    // use console as fallback when `log` isn't available
-    if (typeof log !== 'undefined' && typeof log.warn === 'function')
+    // use global iwebLogger or console as fallback when `log` isn't available
+    if (typeof log !== 'undefined' && typeof log.warn === 'function') {
       log.warn('[videos-config-loader] Could not load split parts:', e);
-    else console.warn('[videos-config-loader] Could not load split parts:', e);
+    } else if (globalThis.iwebLogger && typeof globalThis.iwebLogger.warn === 'function') {
+      globalThis.iwebLogger.warn('[videos-config-loader] Could not load split parts:', e);
+    } else {
+      console.warn('[videos-config-loader] Could not load split parts:', e);
+    }
   }
 }
 

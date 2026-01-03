@@ -19,17 +19,20 @@ try {
 } catch {
   // Fallback Mocks, falls Dateien fehlen oder Pfade anders sind
   createLogger = () => ({
-    info: console.warn,
-    warn: console.warn,
-    error: console.error,
+    info: (...args) => globalThis.iwebLogger?.info?.(...args) || console.info(...args),
+    warn: (...args) => globalThis.iwebLogger?.warn?.(...args) || console.warn(...args),
+    error: (...args) => globalThis.iwebLogger?.error?.(...args) || console.error(...args),
   });
   CookieManager = {
     get: (k) => localStorage.getItem(k),
     set: (k, v) => localStorage.setItem(k, v),
-    deleteAnalytics: () => console.warn('Analytics deleted (Mock)'),
+    deleteAnalytics: () =>
+      globalThis.iwebLogger?.warn?.('Analytics deleted (Mock)') ||
+      console.warn('Analytics deleted (Mock)'),
   };
   a11y = {
-    announce: (msg) => console.warn(`[A11y]: ${msg}`),
+    announce: (msg) =>
+      globalThis.iwebLogger?.warn?.(`[A11y]: ${msg}`) || console.warn(`[A11y]: ${msg}`),
     trapFocus: () => {},
     releaseFocus: () => {},
   };

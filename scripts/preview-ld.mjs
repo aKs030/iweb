@@ -93,6 +93,7 @@ const BUSINESS_FAQS = [];
       doc
     );
     const payload = { "@context": "https://schema.org", "@graph": graph };
+    // Use console.log here intentionally for CLI output
     console.log(JSON.stringify(payload, null, 2));
   } catch (err) {
     console.error("Error generating schema graph:", err);

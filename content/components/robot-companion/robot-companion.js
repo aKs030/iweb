@@ -768,9 +768,17 @@ class RobotCompanion {
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => {
     const robot = new RobotCompanion();
-    robot.initialize().catch((e) => console.error('RobotCompanion init failed', e));
+    robot
+      .initialize()
+      .catch((e) =>
+        log.error('RobotCompanion init failed: ' + (e && e.message ? e.message : String(e)))
+      );
   });
 } else {
   const robot = new RobotCompanion();
-  robot.initialize().catch((e) => console.error('RobotCompanion init failed', e));
+  robot
+    .initialize()
+    .catch((e) =>
+      log.error('RobotCompanion init failed: ' + (e && e.message ? e.message : String(e)))
+    );
 }
