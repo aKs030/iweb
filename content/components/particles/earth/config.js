@@ -48,15 +48,15 @@ export const CONFIG = {
   },
   STARS: {
     COUNT: 3000,
-    TWINKLE_SPEED: 0.2, // Reduziert für subtileren Effekt
+    TWINKLE_SPEED: 0.2,
     ANIMATION: {
-      DURATION: 2800, // Schnellere Animation
-      CAMERA_SETTLE_DELAY: 1800, // Schnellere Anpassung
+      DURATION: 2800,
+      CAMERA_SETTLE_DELAY: 1800,
       MIN_UPDATE_INTERVAL: 100,
       CARD_FADE_START: 0.75,
       CARD_FADE_END: 0.95,
-      SPREAD_XY: 0.02, // Extrem fein für exakte Rand-Linien
-      SPREAD_Z: 0.01, // Minimale Tiefe
+      SPREAD_XY: 0.02,
+      SPREAD_Z: 0.01,
       LERP_FACTOR: 0.08,
     },
   },
@@ -81,11 +81,12 @@ export const CONFIG = {
         z: 10.5,
         lookAt: { x: 0, y: -0.5, z: 0 },
       },
+      // OPTIMIZED: Wide angle shot to fit 5 curved cards perfectly
       features: {
-        x: 7.0,
-        y: 5.5,
-        z: 7.5,
-        lookAt: { x: 0, y: 0.5, z: 0 },
+        x: 7.5,
+        y: 6.0,
+        z: 8.5,
+        lookAt: { x: 0, y: 0.0, z: 0 },
       },
       about: {
         x: -3.2,
@@ -110,8 +111,6 @@ export const CONFIG = {
     MAX_SIMULTANEOUS: 3,
   },
   PERFORMANCE: {
-    // Cap pixel ratio conservatively to avoid GPU stalls on some drivers/devices
-    // Dynamically adjusted by PerformanceMonitor during runtime
     PIXEL_RATIO: Math.min(window.devicePixelRatio || 1, 1.5),
     TARGET_FPS: 30,
     DRS_DOWN_THRESHOLD: 25,

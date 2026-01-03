@@ -4,8 +4,11 @@ export function setupScene(THREE, container) {
   const scene = new THREE.Scene();
 
   const aspectRatio = container.clientWidth / container.clientHeight;
+  // Use wider FOV on mobile for better vertical card visibility
+  const isMobile = container.clientWidth < 768;
+  const fov = isMobile ? 55 : CONFIG.CAMERA.FOV;
   const camera = new THREE.PerspectiveCamera(
-    CONFIG.CAMERA.FOV,
+    fov,
     aspectRatio,
     CONFIG.CAMERA.NEAR,
     CONFIG.CAMERA.FAR
