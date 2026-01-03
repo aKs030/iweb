@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "npx http-server .",
+    "iweb": "node scripts/dev-server.js",
+    "dev": "npm run iweb",
+    "start": "npm run iweb",
     "test:smoke": "node scripts/smoke-tests.js",
     "sync:gtm": "node scripts/sync-gtm-with-site-config.js",
     "format": "prettier --write \"**/*.{js,css,json,md}\"",
