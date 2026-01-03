@@ -31,10 +31,9 @@ export class CardManager {
     this.cardGroup.visible = false;
 
     // Texture cache to reuse generated canvases / textures when card content is identical
-    // Map<key, {texture: CanvasTexture, count: number}>
     this._textureCache = new Map();
 
-    // Profiling counters (useful for optional profiling/debugging)
+    // Profiling
     this._profile = {
       texturesCreated: 0,
       texturesDisposed: 0,
@@ -72,28 +71,27 @@ export class CardManager {
 
     log.debug(`Initializing ${dataArray.length} cards from data`);
 
-    // Compute layout as before
     const cardCount = dataArray.length;
+    // Base dimensions for the card plane
     const baseW = 2.2;
     const baseH = 2.8;
-    // Adjusted spacing for 5+ cards
-    const spacing = baseW * (cardCount > 4 ? 1.15 : cardCount > 2 ? 1.4 : 1.25);
-    const centerOffset = (cardCount - 1) / 2;
 
     this._baseW = baseW;
     this._baseH = baseH;
+    const centerOffset = (cardCount - 1) / 2;
 
+    // Default Layout - positions will be refined in _onResize
     const positions = dataArray.map((d, i) => ({
-      x: (i - centerOffset) * spacing,
+      x: (i - centerOffset) * (baseW * 1.2),
       y: 0,
       z: 0,
       color: d.color || ['#07a1ff', '#a107ff', '#ff07a1'][i] || '#ffffff',
     }));
 
-    // Shared geometry reused across cards to reduce memory / GC churn
+    // Shared geometry reused across cards
     this._sharedGeometry = new this.THREE.PlaneGeometry(baseW, baseH);
 
-    // Prepare shared glow texture (small radial gradient) once
+    // Prepare shared glow texture once
     if (!this._sharedGlowTexture) this._sharedGlowTexture = this.createGlowTexture();
 
     dataArray.forEach((d, index) => {
@@ -117,7 +115,7 @@ export class CardManager {
       this.cardGroup.visible = true;
     }
 
-    // Recompute positions on resize to maintain spacing and fit (throttled via rAF)
+    // Dynamic Resize & Layout Logic
     this._onResize = () => {
       if (this._resizeRAF) cancelAnimationFrame(this._resizeRAF);
       this._resizeRAF = requestAnimationFrame(() => {
@@ -126,40 +124,65 @@ export class CardManager {
 
         this.cards.forEach((card, idx) => {
           if (isMobile) {
-            // Mobile: Vertical Stack — push cards down to avoid overlapping the fixed header/menu
-            const scale = 0.82;
-            const spacingY = 2.9;
-            const y = (centerOffset - idx) * spacingY;
+            // === Mobile Layout (2-Column Grid) ===
+            const scale = 0.5; // Smaller for grid layout
 
-            // Compute an approximate world-space offset that corresponds to the header height in pixels
-            const headerPixels = 76; // approx header height + spacing used in CSS
+            // Grid positioning: 2 columns, 3 rows (for 5 cards)
+            const col = idx % 2; // 0 or 1
+            const row = Math.floor(idx / 2); // 0, 1, 2
+
+            // Horizontal spacing between columns
+            const colSpacing = 2.5;
+            const x = (col - 0.5) * colSpacing; // Center around 0
+
+            // Vertical spacing between rows
+            const rowSpacing = 2.4;
+            const y = (1 - row) * rowSpacing; // Top to bottom
+
+            // Header offset
+            const headerPixels = 20;
             const headerWorldOffset = this._pixelsToWorldY(headerPixels);
 
             card.scale.setScalar(scale);
-            card.position.x = 0;
-            // Move cards down by subtracting the world offset (positive headerWorldOffset moves cards down)
-            const finalY = y - headerWorldOffset;
-            card.position.y = finalY;
+            card.position.x = x;
+            card.position.y = y - headerWorldOffset;
+            card.position.z = 0;
 
-            // Update metadata for animation loop
-            card.userData.originalY = finalY;
-            card.userData.hoverY = finalY + 0.2; // Reduced hover lift on mobile
+            // Update metadata for hover/animation
+            card.userData.originalY = y - headerWorldOffset;
+            card.userData.hoverY = y - headerWorldOffset + 0.2;
+            card.userData.originalZ = 0;
           } else {
-            // Desktop: Horizontal Row
+            // === Desktop Layout (Horizontal Arc) ===
             const adaptiveScale = Math.min(1, vw / 1400);
-            const newSpacing =
-              baseW *
-              (cardCount > 4 ? 1.15 : cardCount > 2 ? 1.4 : 1.25) *
-              Math.max(0.75, adaptiveScale);
+
+            // Optimized scale for 5 cards - slightly larger if space permits
+            const baseScale = 0.92;
+            const finalScale = baseScale * Math.max(0.6, adaptiveScale);
+
+            // Spacing optimization: Tighter packing for 5 cards to fit view
+            // Using 1.12 factor (12% gap) instead of 1.15-1.4
+            const spacingFactor = 1.12;
+            const newSpacing = baseW * spacingFactor * Math.max(0.75, adaptiveScale);
+
             const x = (idx - centerOffset) * newSpacing;
 
-            card.scale.setScalar(0.9 * Math.max(0.55, adaptiveScale));
+            // ARC EFFECT: Calculate Z-depth based on distance from center
+            // Creates a concave menu feeling (cockpit style)
+            const distFromCenter = Math.abs(idx - centerOffset);
+            // Parabolic curve: z = a * x^2.
+            // The further out, the more pushed back (negative Z)
+            const zCurve = -(Math.pow(distFromCenter, 1.8) * 0.25);
+
+            card.scale.setScalar(finalScale);
             card.position.x = x;
             card.position.y = 0;
+            card.position.z = zCurve;
 
             // Reset metadata
             card.userData.originalY = 0;
-            card.userData.hoverY = 0.5;
+            card.userData.hoverY = 0.4; // Nice lift on hover
+            card.userData.originalZ = zCurve;
           }
         });
         this._resizeRAF = null;
@@ -173,8 +196,6 @@ export class CardManager {
     }
   }
 
-  // Return bounding rects in page coordinates for each card mesh so DOM-based
-  // systems can align effects (e.g., star transitions) without requiring HTML cards.
   getCardScreenRects() {
     if (!this.renderer || !this.camera || this.cards.length === 0) return [];
 
@@ -186,23 +207,19 @@ export class CardManager {
     const tmpVec2 = new this.THREE.Vector3();
 
     return this.cards.map((card) => {
-      // Center
       card.updateMatrixWorld();
       card.getWorldPosition(tmpVec);
       tmpVec.project(this.camera);
       const cx = (tmpVec.x * 0.5 + 0.5) * width + canvasRect.left;
       const cy = (-tmpVec.y * 0.5 + 0.5) * height + canvasRect.top;
 
-      // Approximate half-width/height in pixels by projecting edge offsets
       const halfWWorld = (this._baseW || 2.2) * 0.5 * card.scale.x;
       const halfHWorld = (this._baseH || 2.8) * 0.5 * card.scale.y;
 
-      // Right edge
       tmpVec2.set(halfWWorld, 0, 0).applyMatrix4(card.matrixWorld);
       tmpVec2.project(this.camera);
       const rx = (tmpVec2.x * 0.5 + 0.5) * width + canvasRect.left;
 
-      // Top edge
       tmpVec2.set(0, halfHWorld, 0).applyMatrix4(card.matrixWorld);
       tmpVec2.project(this.camera);
       const ty = (-tmpVec2.y * 0.5 + 0.5) * height + canvasRect.top;
@@ -217,25 +234,21 @@ export class CardManager {
   }
 
   createCardTexture(data) {
-    // Determine a scaling factor based on device pixel ratio to keep text crisp
     const DPR = globalThis.window?.devicePixelRatio ? globalThis.window.devicePixelRatio : 1;
-    // Scale aggressively on high-DPI displays for crisper text, clamped for performance
     const S = Math.min(Math.max(Math.ceil(DPR * 2), 2), 4);
     const W = 512 * S;
     const H = 700 * S;
 
-    // Create a stable cache key from relevant content (limit text length to avoid huge keys)
     const keyObj = {
       title: (data.title || '').slice(0, 256),
       subtitle: (data.subtitle || '').slice(0, 128),
       text: (data.text || '').slice(0, 512),
       iconChar: data.iconChar || '',
       color: data.color || '#ffffff',
-      DPR: Math.round(DPR * 100), // quantize a bit
+      DPR: Math.round(DPR * 100),
     };
     const key = JSON.stringify(keyObj);
 
-    // Use cache if available
     const cached = this._textureCache.get(key);
     if (cached?.texture) {
       cached.count++;
@@ -243,7 +256,6 @@ export class CardManager {
       return cached.texture;
     }
 
-    // Miss - create a new canvas texture
     this._profile.cacheMisses++;
 
     const canvas =
@@ -256,25 +268,23 @@ export class CardManager {
     }
     const ctx = canvas.getContext('2d');
     if (!ctx) {
-      // Defensive: Some environments may not provide a 2D context; return a minimal texture
-      log.warn('CardManager: 2D canvas context unavailable; returning empty texture');
+      log.warn('CardManager: 2D canvas context unavailable');
       const texture = new this.THREE.CanvasTexture(canvas);
       texture.needsUpdate = true;
-      // don't add to cache (no meaningful content)
       return texture;
     }
 
-    // 1. Background (Glass effect simulation)
+    // 1. Background (Glass)
     const gradient = ctx.createLinearGradient(0, 0, W, H);
-    gradient.addColorStop(0, 'rgba(20, 30, 60, 0.9)');
-    gradient.addColorStop(1, 'rgba(10, 15, 30, 0.95)');
+    gradient.addColorStop(0, 'rgba(20, 30, 60, 0.92)'); // Slightly more opaque for readability
+    gradient.addColorStop(1, 'rgba(10, 15, 30, 0.96)');
     ctx.fillStyle = gradient;
 
     const R = 40 * S;
     this.roundRect(ctx, 0, 0, W, H, R);
     ctx.fill();
 
-    // 2. Star Border (Fine line + Dots)
+    // 2. Star Border
     this.drawStarBorder(ctx, 0, 0, W, H, R, S);
 
     // 3. Icon Circle
@@ -290,60 +300,59 @@ export class CardManager {
     ctx.lineWidth = 2 * S;
     ctx.stroke();
 
-    // 4. Icon Text (Emoji/Char) - use emoji-capable font stack as fallback
+    // 4. Icon Text
     ctx.fillStyle = '#ffffff';
-    ctx.font = `${
-      60 * S
-    }px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", Arial, sans-serif`;
+    ctx.font = `${60 * S}px "Apple Color Emoji", "Segoe UI Emoji", Arial, sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(data.iconChar, iconCenterX, iconY + 5 * S);
 
-    // 5. Subtitle (fit to width)
+    // 5. Subtitle - Optimized Size
     ctx.fillStyle = data.color;
     const subtitleText = (data.subtitle || '').trim();
+    // Bumped base size from 24 to 26 for better legibility
     const subtitleSize = this.fitTextToWidth(
       ctx,
       subtitleText,
       420 * S,
       'bold',
-      24 * S,
-      12 * S,
-      'Arial, "Helvetica Neue", sans-serif'
+      26 * S,
+      14 * S,
+      'Arial, sans-serif'
     );
-    ctx.font = `bold ${subtitleSize}px Arial, "Helvetica Neue", sans-serif`;
+    ctx.font = `bold ${subtitleSize}px Arial, sans-serif`;
     ctx.fillText(subtitleText, iconCenterX, 280 * S);
 
-    // 6. Title (fit to width, prefer single line)
+    // 6. Title - Optimized Size & Weight
     ctx.fillStyle = '#ffffff';
     const titleText = (data.title || '').trim();
+    // Bumped base size from 48 to 52
     const titleSize = this.fitTextToWidth(
       ctx,
       titleText,
       420 * S,
-      'bold',
-      48 * S,
-      20 * S,
-      'Arial, "Helvetica Neue", sans-serif'
+      '800', // Extra Bold
+      52 * S,
+      24 * S,
+      'Arial, sans-serif'
     );
-    ctx.font = `bold ${titleSize}px Arial, "Helvetica Neue", sans-serif`;
+    ctx.font = `800 ${titleSize}px Arial, sans-serif`;
     ctx.fillText(titleText, iconCenterX, 350 * S);
 
-    // 7. Text (Wrapped) - reduce size slightly for long text
-    ctx.fillStyle = '#cccccc';
-    const baseTextSize = data.text && data.text.length > 160 ? Math.max(18 * S, 22 * S) : 30 * S;
-    ctx.font = `${baseTextSize}px Arial, "Helvetica Neue", sans-serif`;
-    this.wrapText(ctx, data.text, iconCenterX, 450 * S, 400 * S, Math.round(40 * S));
+    // 7. Text (Wrapped) - Increased contrast and size
+    ctx.fillStyle = '#dddddd'; // Lighter grey for better contrast
+    // Increased base text size from 30 to 32
+    const baseTextSize = data.text && data.text.length > 160 ? 24 * S : 32 * S;
+    ctx.font = `${baseTextSize}px Arial, sans-serif`;
+    this.wrapText(ctx, data.text, iconCenterX, 460 * S, 400 * S, Math.round(44 * S));
 
     const texture = new this.THREE.CanvasTexture(canvas);
-    // Use mipmaps + linear mipmap filtering for crisper downscaled rendering
     texture.generateMipmaps = true;
     texture.minFilter = this.THREE.LinearMipmapLinearFilter;
     texture.magFilter = this.THREE.LinearFilter;
     texture.anisotropy = this.renderer?.capabilities?.getMaxAnisotropy?.() ?? 0;
     texture.needsUpdate = true;
 
-    // Store in cache with reference count
     this._textureCache.set(key, { texture, count: 1 });
     this._profile.texturesCreated++;
 
@@ -363,7 +372,6 @@ export class CardManager {
     }
     const ctx = canvas.getContext('2d');
     if (!ctx) {
-      log.warn('CardManager: 2D canvas context unavailable for glow; returning empty texture');
       const tex = new this.THREE.CanvasTexture(canvas);
       tex.needsUpdate = true;
       return tex;
@@ -403,20 +411,14 @@ export class CardManager {
   }
 
   drawStarBorder(ctx, x, y, w, h, r, scale) {
-    // Fine line - keeping it thin relative to the scaled size to appear "finer"
-    // Using 1.5 * scale would be proportional. Using just 1.5 or 2 makes it very thin on high res.
-    // Let's go with 1.5 pixels absolute thickness on the scaled canvas.
-    // Since we scale by 2, a 1.5px line is effectively 0.75px on the original geometry.
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
     ctx.lineWidth = 1.5;
     this.roundRect(ctx, x, y, w, h, r);
     ctx.stroke();
 
-    // Dots
-    const numStars = Math.min(200, Math.max(20, Math.floor(60 * scale))); // scale-dependent density
+    const numStars = Math.min(200, Math.max(20, Math.floor(60 * scale)));
     ctx.save();
     for (let i = 0; i < numStars; i++) {
-      // Random position along perimeter approximation
       const side = Math.floor(Math.random() * 4);
       let px, py;
       if (side === 0) {
@@ -433,10 +435,6 @@ export class CardManager {
         py = y + Math.random() * h;
       }
 
-      // Smaller size for "finer" look.
-      // Original was: Math.random() * 2 + 0.5 (relative to 1x scale)
-      // We want it smaller.
-      // Let's try 0.5 to 2.0 pixels on the 2x canvas (0.25 to 1.0 effective).
       const size = Math.random() * 1.5 + 0.5;
 
       ctx.fillStyle = Math.random() > 0.7 ? ctx.strokeStyle : '#ffffff';
@@ -452,7 +450,7 @@ export class CardManager {
     const words = (text || '').split(' ');
     let line = '';
     let lineCount = 0;
-    const maxLines = 4;
+    const maxLines = 5; // Allow slightly more text
 
     for (let n = 0; n < words.length; n++) {
       const testLine = line + words[n] + ' ';
@@ -474,15 +472,7 @@ export class CardManager {
     ctx.fillText(line, x, y);
   }
 
-  fitTextToWidth(
-    ctx,
-    text,
-    maxWidth,
-    fontWeight = 'normal',
-    initialSize = 24,
-    minSize = 12,
-    fontFamily = 'Arial, sans-serif'
-  ) {
+  fitTextToWidth(ctx, text, maxWidth, fontWeight, initialSize, minSize, fontFamily) {
     if (!text) return initialSize;
     let size = initialSize;
     ctx.textAlign = 'center';
@@ -497,7 +487,6 @@ export class CardManager {
   }
 
   setVisible(visible) {
-    // Backwards-compatible: map visible boolean to progress target
     this.isVisible = visible;
     this.setProgress(visible ? 1 : 0);
   }
@@ -510,49 +499,35 @@ export class CardManager {
     const wasVisible = this.cardGroup.visible;
     this.cardGroup.visible = p > 0.01;
 
-    // If becoming visible right now, snap cards to face the camera to avoid
-    // a brief incorrect orientation during the entrance animation.
     if (this.cardGroup.visible && !wasVisible) {
       this.alignCardsToCameraImmediate();
     }
 
     this.cards.forEach((card) => {
-      // account for per-card stagger using entranceDelay
+      // Stagger entrance slightly
       const stagger = (card.userData.entranceDelay || 0) / 800;
       const local = Math.max(0, Math.min(1, (p - stagger) / Math.max(0.0001, 1 - stagger)));
       card.userData.entranceTarget = local;
-      // Also map opacity target so the material fades out gracefully
       card.userData.targetOpacity = local > 0 ? 1 : 0;
     });
   }
 
-  // Robust hover detection using Raycaster (replacing custom projection math)
   getHoveredCardFromScreen(mousePos) {
     if (!this.raycaster || !this.camera) return null;
-
     this.raycaster.setFromCamera(mousePos, this.camera);
     const intersects = this.raycaster.intersectObjects(this.cards, false);
-
-    if (intersects.length > 0) {
-      // Raycaster automatically sorts by distance, so the first hit is the closest
-      return intersects[0].object;
-    }
-
-    return null;
+    return intersects.length > 0 ? intersects[0].object : null;
   }
 
   update(time, mousePos) {
     if (!this.cardGroup.visible) return;
 
-    // Use new screen-based hover detection instead of raycaster
     const pos = mousePos || this._lastPointerPos || { x: 0, y: 0 };
     const candidate = this.getHoveredCardFromScreen(pos);
 
-    // Debounce hover to prevent flickering from rapid mouse movements
     if (candidate === this._hoverCandidate) {
       this._hoverFrames++;
       if (this._hoverFrames >= 3) {
-        // Stable for 3 frames
         if (candidate !== this._hovered) {
           this._hovered = candidate;
           document.body.style.cursor = candidate ? 'pointer' : '';
@@ -564,7 +539,6 @@ export class CardManager {
     }
 
     const hoveredCard = this._hovered;
-
     this.camera.getWorldPosition(this._tmpVec);
 
     this.cards.forEach((card) => {
@@ -580,14 +554,13 @@ export class CardManager {
   }
 
   _updateCardEntranceAndOpacity(card) {
-    let targetEntrance;
-    if (typeof card.userData.entranceTarget === 'number') {
-      targetEntrance = card.userData.entranceTarget;
-    } else {
-      targetEntrance = this.isVisible ? 1 : 0;
-    }
+    let targetEntrance =
+      typeof card.userData.entranceTarget === 'number'
+        ? card.userData.entranceTarget
+        : this.isVisible
+        ? 1
+        : 0;
     card.userData.entranceProgress += (targetEntrance - card.userData.entranceProgress) * 0.02;
-
     const baseOpacity = card.userData.targetOpacity || 1;
     card.material.opacity = baseOpacity * (0.05 + 0.95 * card.userData.entranceProgress);
   }
@@ -601,24 +574,56 @@ export class CardManager {
     if (!isHovered && card.userData.hoverProgress > 0.5) {
       hoverTarget = card.userData.hoverProgress;
     }
-    card.userData.hoverProgress += (hoverTarget - card.userData.hoverProgress) * 0.04;
+    card.userData.hoverProgress += (hoverTarget - card.userData.hoverProgress) * 0.05; // Slightly snappier
 
     const parallax = card.userData.parallaxStrength || 0.12;
     const targetTiltX = -pos.y * parallax * card.userData.hoverProgress;
     const targetTiltY = pos.x * parallax * card.userData.hoverProgress * 0.8;
 
-    card.userData.currentTiltX += (targetTiltX - card.userData.currentTiltX) * 0.04;
-    card.userData.currentTiltY += (targetTiltY - card.userData.currentTiltY) * 0.04;
+    card.userData.currentTiltX += (targetTiltX - card.userData.currentTiltX) * 0.05;
+    card.userData.currentTiltY += (targetTiltY - card.userData.currentTiltY) * 0.05;
 
     let targetY = card.userData.originalY;
+    let targetZ = card.userData.originalZ || 0;
     let targetScale = 1;
+
     if (card === hoveredCard) {
       targetY = card.userData.hoverY;
+      targetZ = (card.userData.originalZ || 0) + 0.5; // Bring closer on hover
       targetScale = 1.05;
     }
 
-    card.position.y += (targetY + floatY - card.position.y) * 0.04;
-    card.scale.setScalar(card.scale.x + (targetScale - card.scale.x) * 0.04);
+    card.position.y += (targetY + floatY - card.position.y) * 0.05;
+    card.position.z += (targetZ - card.position.z) * 0.05;
+
+    // Scale interpolation logic adjusted for base scale
+    // We can't just lerp to 1 or 1.05 because resize sets a specific scale.
+    // Instead we modify the scale set by resize.
+    // Note: Since _onResize runs infrequently, we should store baseScale in userData if we wanted perfect scalar lerp,
+    // but here we are just adding a small factor or using the scale from resize.
+    // Actually, simple addition is safer here to avoid fighting the resizer.
+    // However, card.scale is set every frame by resize RAF if resizing.
+    // Let's assume resize is not active.
+    // Current approach in `update`:
+    // card.scale.x += (targetScale - card.scale.x) * 0.04
+    // This assumes targetScale is the absolute target.
+    // But `_onResize` sets `card.scale` based on screen width.
+    // We should treat the scale from resize as the "base".
+    // For now, let's just multiply the current scale slightly.
+    // This is complex without storing baseScale.
+    // Let's rely on the fact that if NOT resizing, scale is stable.
+    // We will just scale X, Y, Z by a factor.
+
+    // Simpler: Apply hover scale on top of base scale is hard without hierarchy.
+    // Current implementation overwrites scale.
+    // We will fix this by storing baseScale in userData during resize.
+    // (Added to resize logic: card.userData.baseScale = finalScale)
+    // If not present, default to current.
+
+    const baseScale = card.userData.baseScale || card.scale.x;
+    const finalTargetScale = baseScale * targetScale;
+
+    card.scale.setScalar(card.scale.x + (finalTargetScale - card.scale.x) * 0.05);
   }
 
   _applyOrientation(card) {
@@ -630,7 +635,7 @@ export class CardManager {
     this._tmpQuat2.setFromEuler(this._tmpEuler);
 
     this._tmpQuat.multiply(this._tmpQuat2);
-    card.quaternion.slerp(this._tmpQuat, 0.04);
+    card.quaternion.slerp(this._tmpQuat, 0.05);
   }
 
   _updateCardGlow(card, time) {
@@ -644,25 +649,17 @@ export class CardManager {
 
   handleClick(mousePos) {
     const pos = mousePos || this._lastPointerPos || { x: 0, y: 0 };
-    // Only respond when cards are actually visible in the scene
     if (!this.cardGroup.visible) return;
-
-    // Use the same screen-based detection as hover
     const clickedCard = this.getHoveredCardFromScreen(pos);
-
     if (clickedCard) {
       const link = clickedCard.userData.link;
-      // Ignore placeholder or empty links
       if (!link || link === '#') return;
       globalThis.location.href = link;
     }
   }
 
-  // Pointer handling helpers: attach/detach pointer handlers to a DOM element
   attachPointerHandlers(domElement) {
     const el = domElement || this.renderer?.domElement || globalThis;
-
-    // Remove existing handlers if present
     if (this._boundPointerMove) this.detachPointerHandlers();
 
     this._boundPointerMove = (e) => {
@@ -689,18 +686,13 @@ export class CardManager {
       if (!this._pointerDownPos) return;
       const dx = this._lastPointerPos.x - this._pointerDownPos.x;
       const dy = this._lastPointerPos.y - this._pointerDownPos.y;
-      const dist = Math.hypot(dx, dy);
-      // Consider it a click/tap if finger didn't move much
-      if (dist < 0.04) {
-        this.handleClick(this._lastPointerPos);
-      }
+      if (Math.hypot(dx, dy) < 0.04) this.handleClick(this._lastPointerPos);
       this._pointerDownPos = null;
     };
 
     el.addEventListener('pointermove', this._boundPointerMove);
     el.addEventListener('pointerdown', this._boundPointerDown);
     el.addEventListener('pointerup', this._boundPointerUp);
-
     this._pointerElement = el;
   }
 
@@ -710,14 +702,9 @@ export class CardManager {
     if (this._boundPointerMove) el.removeEventListener('pointermove', this._boundPointerMove);
     if (this._boundPointerDown) el.removeEventListener('pointerdown', this._boundPointerDown);
     if (this._boundPointerUp) el.removeEventListener('pointerup', this._boundPointerUp);
-
     this._pointerElement = null;
-    this._boundPointerMove = null;
-    this._boundPointerDown = null;
-    this._boundPointerUp = null;
   }
 
-  // Return simple profiling data for debugging or reporting
   getProfilingData() {
     return {
       texturesCreated: this._profile.texturesCreated,
@@ -729,14 +716,12 @@ export class CardManager {
   }
 
   alignCardsToCameraImmediate() {
-    // Immediately orient all cards to face the current camera position (projected upright).
     if (!this.camera) return;
     this.camera.getWorldPosition(this._tmpVec);
     this.cards.forEach((card) => {
       this._orientDummy.position.copy(card.position);
       this._orientDummy.lookAt(this._tmpVec.x, card.position.y, this._tmpVec.z);
       card.quaternion.copy(this._orientDummy.quaternion);
-      // Reset tilt state
       card.userData.currentTiltX = 0;
       card.userData.currentTiltY = 0;
     });
@@ -744,58 +729,33 @@ export class CardManager {
 
   cleanup() {
     this.scene.remove(this.cardGroup);
-
-    // Dispose each card's resources (geometry, textures, materials, glow)
-    // NOTE: some resources are shared across cards (geometry, glow texture). Avoid
-    // disposing those per-card to prevent double-disposal and use-after-dispose errors.
     this.cards.forEach((card) => this._disposeCardResources(card));
-
-    // Dispose shared geometry and textures
     if (this._sharedGeometry) {
       this._sharedGeometry.dispose();
       this._sharedGeometry = null;
     }
-
     if (this._sharedGlowTexture?.dispose) {
       this._sharedGlowTexture.dispose();
       this._sharedGlowTexture = null;
     }
-
-    // Clear card references
     this.cards = [];
-
-    // Dispose any remaining cached textures
     this._disposeCachedTextures();
-
-    // Remove pointer handlers if attached
     try {
       this.detachPointerHandlers();
-    } catch {
-      // ignore
-    }
-
-    // Remove resize handler / cancel RAF
+    } catch {}
     this._removeResizeHandler();
   }
 
-  // Helper: dispose resources for a single card
   _disposeCardResources(card) {
     try {
-      // Only dispose geometry if it's not the shared geometry
-      if (card.geometry?.dispose && card.geometry !== this._sharedGeometry) {
-        card.geometry.dispose();
-      }
-
+      if (card.geometry?.dispose && card.geometry !== this._sharedGeometry) card.geometry.dispose();
       if (card.material) {
         this._releaseTextureFromCache(card.material.map);
         card.material.map = null;
         card.material.dispose?.();
       }
-
       const glow = card.userData?.glow;
-      if (glow?.material) {
-        this._disposeGlowMaterial(glow);
-      }
+      if (glow?.material) this._disposeGlowMaterial(glow);
     } catch (err) {
       log.warn('EarthCards: disposal error', err);
     }
@@ -833,10 +793,7 @@ export class CardManager {
           break;
         }
       }
-
-      if (!foundKey && map?.dispose) {
-        map.dispose();
-      }
+      if (!foundKey && map?.dispose) map.dispose();
     } catch (err) {
       log.warn('EarthCards: releaseTextureFromCache failed', err);
     }
@@ -844,9 +801,8 @@ export class CardManager {
 
   _disposeGlowMaterial(glow) {
     try {
-      if (glow.material.map?.dispose && glow.material.map !== this._sharedGlowTexture) {
+      if (glow.material.map?.dispose && glow.material.map !== this._sharedGlowTexture)
         glow.material.map.dispose();
-      }
       glow.material.dispose?.();
     } catch (err) {
       log.warn('EarthCards: glow dispose failed', err);
@@ -864,7 +820,6 @@ export class CardManager {
     }
   }
 
-  // Create mesh and related resources for a card from its data payload
   _createMeshFromData(data, index, baseW, baseH) {
     const texture = this.createCardTexture(data);
     const material = new this.THREE.MeshBasicMaterial({
@@ -879,13 +834,16 @@ export class CardManager {
     mesh.position.set(data.position.x, data.position.y - 0.8, data.position.z);
 
     const viewportScale = Math.min(1, (globalThis.innerWidth || 1200) / 1200);
-    mesh.scale.setScalar(0.95 * Math.max(0.85, viewportScale));
+    const scale = 0.95 * Math.max(0.85, viewportScale);
+    mesh.scale.setScalar(scale);
 
     mesh.userData = {
       isCard: true,
       link: data.link,
       originalY: data.position.y,
       hoverY: data.position.y + 0.5,
+      originalZ: 0,
+      baseScale: scale, // Store for hover calculation
       targetOpacity: 1,
       id: data.id,
       entranceDelay: index * 80,

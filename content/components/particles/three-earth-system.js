@@ -984,6 +984,8 @@ function setupResizeHandler() {
     isMobileDevice = globalThis.matchMedia?.('(max-width: 768px)')?.matches ?? false;
 
     camera.aspect = width / height;
+    // Adjust FOV for mobile to show more vertical content
+    camera.fov = isMobileDevice ? 55 : CONFIG.CAMERA.FOV;
     camera.updateProjectionMatrix();
     renderer.setSize(width, height);
 
