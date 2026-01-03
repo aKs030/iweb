@@ -1,4 +1,3 @@
-// ===== Shared Utilities Import =====
 import {
   createTriggerOnceObserver,
   EVENTS,
@@ -6,22 +5,26 @@ import {
   TimerManager,
   createLogger,
 } from '../../content/utils/shared-utilities.js';
-// TypeWriter will be loaded lazily via dynamic import when needed
+
 let typeWriterModule = null;
-let stopHeroSubtitleFn = null;
 
-// Logger für HeroManager
 const logger = createLogger('HeroManager');
-
-// Timer Manager für Hero-spezifische Timeouts
 const heroTimers = new TimerManager();
 
 // ===== Hero Management Module =====
+const HERO_LAZY_FALLBACK_MS = 6000;
+const HERO_LOOKUP_MAX = 3;
+const HERO_LOOKUP_DELAY_MS = 900;
+
 const HeroManager = (() => {
   let heroData = null;
   let isInitialized = false;
-  let _currentTypeWriter = null; // stored instance for controlled cleanup
-  void _currentTypeWriter; // hint to linter: variable may be used indirectly (cleanup/inspection)
+  let currentTypeWriter = null;
+  let clickHandler = null;
+  let observer = null;
+  let loaded = false;
+  let triggerLoad = null;
+  let heroLookupAttempts = 0;
 
   async function loadTyped(heroDataModule) {
     try {
@@ -34,44 +37,46 @@ const HeroManager = (() => {
         );
       }
 
-      if (!typeWriterModule || typeof typeWriterModule.initHeroSubtitle !== 'function')
-        return false;
+      if (!typeWriterModule?.initHeroSubtitle) return false;
 
       const tw = await typeWriterModule.initHeroSubtitle({ heroDataModule });
       if (tw) {
-        _currentTypeWriter = tw;
-        stopHeroSubtitleFn = typeWriterModule.stopHeroSubtitle;
+        currentTypeWriter = tw;
         return tw;
       }
     } catch (err) {
       logger.warn('Failed to load TypeWriter modules', err);
-      return false;
     }
     return false;
   }
 
   function initLazyHeroModules() {
     if (isInitialized) return;
-    isInitialized = true;
 
-    let loaded = false;
-    const triggerLoad = async () => {
-      if (loaded) return;
-      loaded = true;
+    if (!triggerLoad) {
+      triggerLoad = async () => {
+        if (loaded) return;
+        loaded = true;
 
-      // Lade Daten und gebe sie weiter
-      const dataModule = await ensureHeroData().catch(() => ({}));
-      await loadTyped(dataModule);
-
-      setRandomGreetingHTML();
-    };
+        const dataModule = await ensureHeroData().catch(() => ({}));
+        await loadTyped(dataModule);
+        setRandomGreetingHTML();
+        isInitialized = true;
+      };
+    }
 
     const heroEl = getElementById('hero') || document.querySelector('section#hero');
     if (!heroEl) {
-      // Retry or fallback if hero element missing momentarily
-      heroTimers.setTimeout(triggerLoad, 2500);
+      if (heroLookupAttempts < HERO_LOOKUP_MAX) {
+        heroLookupAttempts += 1;
+        heroTimers.setTimeout(initLazyHeroModules, HERO_LOOKUP_DELAY_MS * heroLookupAttempts);
+      } else {
+        heroTimers.setTimeout(triggerLoad, HERO_LAZY_FALLBACK_MS);
+      }
       return;
     }
+
+    heroLookupAttempts = 0;
 
     const rect = heroEl.getBoundingClientRect();
     if (rect.top < innerHeight && rect.bottom > 0) {
@@ -79,11 +84,9 @@ const HeroManager = (() => {
       return;
     }
 
-    const obs = createTriggerOnceObserver(triggerLoad);
-    obs.observe(heroEl);
-
-    // Fallback load just in case observer fails or is delayed too long
-    heroTimers.setTimeout(triggerLoad, 6000);
+    observer = createTriggerOnceObserver(triggerLoad);
+    observer.observe(heroEl);
+    heroTimers.setTimeout(triggerLoad, HERO_LAZY_FALLBACK_MS);
   }
 
   const ensureHeroData = async () =>
@@ -93,10 +96,10 @@ const HeroManager = (() => {
       return {};
     }));
 
-  async function setRandomGreetingHTML(animated = false) {
+  async function setRandomGreetingHTML() {
     const delays = [0, 50, 120, 240, 480];
     let el = null;
-    // Retry finding element with exponential backoff if not immediately present
+
     for (const d of delays) {
       if (d) await heroTimers.sleep(d);
       el = getElementById('greetingText');
@@ -106,20 +109,12 @@ const HeroManager = (() => {
 
     try {
       const mod = await ensureHeroData();
-      const set = mod.getGreetingSet ? mod.getGreetingSet() : [];
-      const next = mod.pickGreeting ? mod.pickGreeting(el.dataset.last, set) : '';
+      const set = mod.getGreetingSet?.() ?? [];
+      const next = mod.pickGreeting?.(el.dataset.last, set) ?? '';
       if (!next) return;
 
       el.dataset.last = next;
-      if (animated) {
-        el.classList.add('fade');
-        heroTimers.setTimeout(() => {
-          el.textContent = next;
-          el.classList.remove('fade');
-        }, 360);
-      } else {
-        el.textContent = next;
-      }
+      el.textContent = next;
     } catch (e) {
       logger.warn('Error setting greeting text', e);
     }
@@ -128,12 +123,35 @@ const HeroManager = (() => {
   function cleanup() {
     heroTimers.clearAll();
     isInitialized = false;
+    loaded = false;
+    triggerLoad = null;
+    heroLookupAttempts = 0;
     try {
-      if (typeof stopHeroSubtitleFn === 'function') stopHeroSubtitleFn();
-      _currentTypeWriter = null;
+      typeWriterModule?.stopHeroSubtitle?.();
+      currentTypeWriter = null;
     } catch (err) {
       logger.warn('HeroManager: stopHeroSubtitle failed', err);
     }
+    if (clickHandler) {
+      document.removeEventListener('click', clickHandler);
+      clickHandler = null;
+    }
+    if (observer) {
+      try {
+        observer.disconnect();
+      } catch (err) {
+        logger.warn('HeroManager: observer disconnect failed', err);
+      }
+      observer = null;
+    }
+  }
+
+  function setClickHandler(handler) {
+    if (clickHandler) {
+      document.removeEventListener('click', clickHandler);
+    }
+    clickHandler = handler;
+    document.addEventListener('click', handler);
   }
 
   return {
@@ -141,57 +159,50 @@ const HeroManager = (() => {
     setRandomGreetingHTML,
     ensureHeroData,
     cleanup,
+    setClickHandler,
   };
 })();
 
 // ===== Public API =====
 export function initHeroFeatureBundle() {
-  // Clear any existing timers first to prevent duplicate logic on re-init
   HeroManager.cleanup();
 
-  // Events für Hero
   const onHeroLoaded = () => {
     const el = getElementById('greetingText');
     if (!el) return;
     if (!el.textContent.trim() || el.textContent.trim() === 'Willkommen') {
       HeroManager.setRandomGreetingHTML();
-      (window.announce || (() => {}))('Hero Bereich bereit.');
+      window.announce?.('Hero Bereich bereit.');
     }
   };
 
-  // Event Listener sicher hinzufügen
   document.removeEventListener(EVENTS.HERO_LOADED, onHeroLoaded);
-  document.addEventListener(EVENTS.HERO_LOADED, onHeroLoaded);
+  document.addEventListener(EVENTS.HERO_LOADED, onHeroLoaded, { once: true });
 
-  // Verwende koordinierte Events statt separaten DOMContentLoaded Handler
   document.addEventListener(
     EVENTS.HERO_INIT_READY,
     () => {
       const el = getElementById('greetingText');
-      if (!el) return;
-      if (!el.textContent.trim()) {
-        HeroManager.setRandomGreetingHTML();
-      }
+      if (el?.textContent.trim()) return;
+      HeroManager.setRandomGreetingHTML();
     },
     { once: true }
   );
 
   document.addEventListener(EVENTS.HERO_TYPING_END, (e) => {
-    const text = e.detail?.text || 'Text';
-    (window.announce || (() => {}))(`Zitat vollständig: ${text}`);
+    window.announce?.(`Zitat vollständig: ${e.detail?.text ?? 'Text'}`);
   });
 
-  // Lazy Hero Module + Animations
   HeroManager.initLazyHeroModules();
 
-  // Smooth Scroll Handler für Hero Buttons
-  const handleHeroAnchorClick = (event) => {
+  const handleHeroClick = (event) => {
     const link = event.target.closest('.hero-buttons a[href^="#"]');
     if (!link) return;
+
     const href = link.getAttribute('href') || '';
     if (!href.startsWith('#')) return;
-    event.preventDefault();
 
+    event.preventDefault();
     const targetId = href.slice(1);
     const target = getElementById(targetId) || document.getElementById(targetId);
     if (!target) return;
@@ -206,21 +217,12 @@ export function initHeroFeatureBundle() {
       }
     };
 
-    try {
-      if (window.SectionLoader && target.dataset && target.dataset.state !== 'loaded') {
-        window.SectionLoader.loadSection(target).finally(() => requestAnimationFrame(doScroll));
-        return;
-      }
-    } catch (err) {
-      logger.warn(
-        'HeroManager: SectionLoader.loadSection failed, falling back to immediate scroll',
-        err
-      );
+    if (window.SectionLoader?.loadSection) {
+      window.SectionLoader.loadSection(target).finally(() => requestAnimationFrame(doScroll));
+    } else {
+      requestAnimationFrame(doScroll);
     }
-
-    requestAnimationFrame(doScroll);
   };
 
-  document.removeEventListener('click', handleHeroAnchorClick);
-  document.addEventListener('click', handleHeroAnchorClick);
+  HeroManager.setClickHandler(handleHeroClick);
 }
