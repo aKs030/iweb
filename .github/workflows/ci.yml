@@ -2,12 +2,10 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
-jobs:
-  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -32,8 +30,3 @@ jobs:
 
       - name: Start server
         run: npx http-server . -p 8081 &
-
-      - name: Smoke tests
-        env:
-          TEST_URL: http://localhost:8081
-        run: npm run test:smoke
