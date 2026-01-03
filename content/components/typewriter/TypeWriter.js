@@ -4,15 +4,13 @@ import {
   getElementById,
   shuffle,
   TimerManager,
+  EVENTS,
 } from '../../utils/shared-utilities.js';
 
 const log = createLogger('TypeWriter');
 
-// Internal instance reference and public helpers
+// Internal instance reference and public helper
 let typeWriterInstance = null;
-export function getTypeWriterInstance() {
-  return typeWriterInstance;
-}
 export function stopHeroSubtitle() {
   if (!typeWriterInstance) return false;
   try {
@@ -248,7 +246,7 @@ export class TypeWriter {
     if (!this._isDeleting && this._txt === full) {
       try {
         document.dispatchEvent(
-          new CustomEvent('hero:typingEnd', { detail: { text: full, author } })
+          new CustomEvent(EVENTS.HERO_TYPING_END, { detail: { text: full, author } })
         );
       } catch (err) {
         log.warn('TypeWriter: dispatch hero:typingEnd failed', err);
@@ -364,7 +362,7 @@ export async function initHeroSubtitle(options = {}) {
       });
 
       // Remove lock after typing ends (released for next measure)
-      document.addEventListener('hero:typingEnd', () => {
+      document.addEventListener(EVENTS.HERO_TYPING_END, () => {
         try {
           subtitleEl.classList.remove('is-locked');
         } catch (err) {

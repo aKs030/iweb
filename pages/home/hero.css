@@ -1,7 +1,5 @@
-/* Body-level 'hero is inactive' state is defined lower so base rules are above overrides */
-
+/* ===== Hero Title =====*/
 .hero-title {
-  /* Responsive font sizing for mid-sized viewports */
   position: relative;
   font-family: var(--font-inter);
   font-size: var(--greet-fs);
@@ -19,20 +17,13 @@
   -webkit-text-fill-color: transparent;
   color: transparent;
   opacity: 1;
-  -webkit-user-select: none;
   user-select: none;
   white-space: normal;
   overflow-wrap: anywhere;
   word-break: normal;
   hyphens: auto;
   max-width: var(--greet-max);
-
-  /* ensure a reasonable minimum line length to avoid many short wrapped columns */
-
-  /* Use CSS variable for min-inline-size to make mobile tweaks easier */
   min-inline-size: var(--greet-min-inline, clamp(18ch, 32vw, 42ch));
-
-  /* keep reasonable vertical space for multi-line hero headings while avoiding excessive height */
   min-height: 2.2em;
   font-variation-settings: 'opsz' 18;
   font-optical-sizing: auto;
@@ -47,7 +38,6 @@
   text-shadow: 0 0 26px rgb(37 99 235 / 45%), 0 0 52px rgb(37 99 235 / 32%);
   animation: gradientMove var(--greet-anim-grad-dur) linear infinite,
     pulseGlowHover var(--greet-anim-pulse-dur) ease-in-out infinite;
-  transition: text-shadow var(--transition-base), filter var(--transition-base);
 }
 
 /* Respect user prefer-reduced-motion */
@@ -79,46 +69,34 @@
 }
 
 @keyframes pulseGlow {
-  0% {
+  0%,
+  100% {
     text-shadow: 0 0 12px rgb(37 99 235 / 60%), 0 0 22px rgb(6 182 212 / 35%);
   }
-
   25% {
     text-shadow: 0 0 18px rgb(6 182 212 / 70%), 0 0 32px rgb(37 99 235 / 20%);
   }
-
   50% {
     text-shadow: 0 0 20px rgb(16 185 129 / 60%), 0 0 36px rgb(6 182 212 / 25%);
   }
-
   75% {
     text-shadow: 0 0 18px rgb(99 102 241 / 70%), 0 0 30px rgb(37 99 235 / 25%);
-  }
-
-  100% {
-    text-shadow: 0 0 12px rgb(37 99 235 / 60%), 0 0 22px rgb(6 182 212 / 35%);
   }
 }
 
 @keyframes pulseGlowHover {
-  0% {
+  0%,
+  100% {
     text-shadow: 0 0 14px rgb(37 99 235 / 70%), 0 0 28px rgb(6 182 212 / 45%);
   }
-
   25% {
     text-shadow: 0 0 22px rgb(6 182 212 / 80%), 0 0 36px rgb(37 99 235 / 35%);
   }
-
   50% {
     text-shadow: 0 0 28px rgb(16 185 129 / 75%), 0 0 44px rgb(6 182 212 / 32%);
   }
-
   75% {
     text-shadow: 0 0 24px rgb(99 102 241 / 80%), 0 0 40px rgb(37 99 235 / 38%);
-  }
-
-  100% {
-    text-shadow: 0 0 14px rgb(37 99 235 / 70%), 0 0 28px rgb(6 182 212 / 45%);
   }
 }
 
@@ -140,10 +118,10 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  min-height: 100dvh; /* statt 100vh */
-  height: auto; /* keine starre Höhe */
+  min-height: 100dvh;
+  height: auto;
   padding: 0 var(--spacing-sm);
-  box-sizing: border-box; /* wichtig! */
+  box-sizing: border-box;
 }
 
 .hero.section {
@@ -160,13 +138,6 @@
   width: 100%;
 }
 
-/* CRT Power-On Effekt entfernt - Animation-System deaktiviert */
-
-/* Gradient Overlay jetzt global gelöst */
-
-/* (typing area - moved to content/TypeWriter/typewriter.css) */
-
-/* Visual / Greeting */
 .hero-visual {
   position: relative;
   animation: fadeInUp 1s ease-out 0.3s both;
@@ -190,15 +161,12 @@
 .floating-icon.delay-0 {
   animation-delay: var(--delay-0);
 }
-
 .floating-icon.delay-1 {
   animation-delay: var(--delay-1);
 }
-
 .floating-icon.delay-2 {
   animation-delay: var(--delay-2);
 }
-
 .floating-icon.delay-3 {
   animation-delay: var(--delay-3);
 }
@@ -207,17 +175,14 @@
   top: 10%;
   right: -50px;
 }
-
 .floating-icon:nth-child(2) {
   top: 70%;
   right: -40px;
 }
-
 .floating-icon:nth-child(3) {
   bottom: 20%;
   left: -50px;
 }
-
 .floating-icon:nth-child(4) {
   top: 40%;
   left: -40px;
@@ -228,7 +193,6 @@
   100% {
     transform: translateY(0) rotate(0deg);
   }
-
   50% {
     transform: translateY(-20px) rotate(10deg);
   }
@@ -267,18 +231,15 @@
   display: block;
 }
 
-/* Ensure consistent visuals until the Three.js canvas is fully ready */
 .three-earth-container canvas {
   opacity: 0;
   transition: opacity 320ms ease;
 }
 
-/* Once resources are loaded explicitly mark the container as ready */
 .three-earth-container[data-three-ready='1'] canvas {
   opacity: 1;
 }
 
-/* If a canvas exists, prefer canvas and hide the fallback */
 .three-earth-container:has(canvas) .three-earth-fallback {
   display: none;
 }
@@ -382,20 +343,18 @@ body:not(.hero-active) .hero-title {
   animation-play-state: paused;
 }
 
-/* Mobile: smaller type, tighter padding and improved wrapping */
+/* ===== Mobile: smaller type, tighter padding =====*/
 @media (width <= 420px) {
   .hero-image-container {
-    width: 72vw; /* slightly larger for tiny screens to keep visual balance */
-    max-width: 300px; /* reduce max so the hero title wraps more naturally */
-
-    /* allow glow to be visible outside the container */
+    width: 72vw;
+    max-width: 300px;
     overflow: visible;
     padding-inline: clamp(6px, 3vw, 12px);
     box-sizing: border-box;
   }
 
   .spotlight-bg {
-    position: relative; /* keep pill in flow so it doesn't overflow the container */
+    position: relative;
     top: auto;
     left: auto;
     transform: none;
@@ -403,30 +362,34 @@ body:not(.hero-active) .hero-title {
     padding-inline: clamp(8px, 3vw, 16px);
     box-sizing: border-box;
     max-width: 100%;
-    margin-inline: auto; /* center inside container */
+    margin-inline: auto;
   }
 
   .hero-title {
-    font-size: clamp(1.05rem, 4.8vw, 1.6rem) !important; /* force smaller type on mobile */
+    font-size: clamp(1.05rem, 4.8vw, 1.6rem) !important;
     min-inline-size: clamp(10ch, 26vw, 22ch);
     max-width: 100%;
-    padding: 6px 8px; /* keep the pill visually compact */
+    padding: 6px 8px;
     line-height: 1.05;
     font-variation-settings: 'opsz' 14;
     filter: none !important;
     will-change: text-shadow;
     overflow-wrap: break-word;
-    overflow-wrap: anywhere;
     hyphens: auto;
+  }
+
+  .spotlight-bg::before {
+    filter: blur(32px) saturate(1.04) contrast(1.02);
+    transform: rotate(-8deg) scale(1.12);
   }
 }
 
-/* Extra-small mobile breakpoint for very narrow devices (e.g. older phones, compact landscape) */
+/* ===== Extra-small mobile breakpoint =====*/
 @media (width <= 360px) {
   .hero-image-container {
-    width: 84vw; /* keep large visual but leave margin */
-    max-width: 260px; /* reduce max width so everything wraps neatly */
-    overflow: visible; /* we want the blurred glow to not be clipped */
+    width: 84vw;
+    max-width: 260px;
+    overflow: visible;
     padding-inline: clamp(6px, 2.8vw, 10px);
     box-sizing: border-box;
   }
@@ -444,7 +407,7 @@ body:not(.hero-active) .hero-title {
   }
 
   .hero-title {
-    font-size: clamp(0.95rem, 4.2vw, 1.2rem) !important; /* further reduce type on 360px */
+    font-size: clamp(0.95rem, 4.2vw, 1.2rem) !important;
     min-inline-size: clamp(8ch, 22vw, 18ch);
     max-width: 100%;
     padding: 4px 6px;
@@ -452,17 +415,15 @@ body:not(.hero-active) .hero-title {
     font-variation-settings: 'opsz' 12;
     filter: none !important;
     will-change: text-shadow;
-    white-space: normal; /* allow wrapping on tiny screens */
+    white-space: normal;
     overflow-wrap: break-word;
   }
 
-  /* reduce and reposition buttons to avoid overlap with hero visuals */
   .hero-buttons {
     bottom: clamp(2.2rem, 12vh, 6rem);
     gap: 0.75rem;
   }
 
-  /* scale or hide decorative icons on very small screens */
   .floating-icon {
     opacity: 0.85;
     font-size: 1.6rem;
@@ -470,11 +431,16 @@ body:not(.hero-active) .hero-title {
 
   .floating-icon:nth-child(1),
   .floating-icon:nth-child(3) {
-    display: none; /* hide a couple of icons to reduce visual clutter */
+    display: none;
+  }
+
+  .spotlight-bg::before {
+    filter: blur(22px) saturate(1.04) contrast(1.02);
+    transform: rotate(-8deg) scale(1.08);
   }
 }
 
-/* ===== Hero Buttons (aus content/buttons.css verschoben) ===== */
+/* ===== Hero Buttons =====*/
 .hero-buttons {
   display: flex;
   flex-wrap: nowrap;
@@ -487,7 +453,7 @@ body:not(.hero-active) .hero-title {
   transform: translateX(-50%);
   width: fit-content;
   pointer-events: auto;
-  z-index: 80; /* over subtitle (70) and visuals */
+  z-index: 80;
 }
 
 .hero-buttons .btn {
@@ -495,15 +461,13 @@ body:not(.hero-active) .hero-title {
   font-size: 0.875rem;
 }
 
-/* ===== CRT Styles (aus buttons.css verschoben) ===== */
+/* ===== CRT Button Styles =====*/
 .hero__button--crt {
   position: relative;
   isolation: isolate;
   background: var(--primary-color);
   color: #fff;
 }
-
-/* Removed duplicate `.hero__button--crt.btn-secondary` definition, consolidated below */
 
 .hero__button--crt:hover::after {
   opacity: 0.4;
