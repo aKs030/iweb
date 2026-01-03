@@ -460,7 +460,7 @@ const LoadingScreenManager = (() => {
       const timeoutMs = 4000;
       const t = setTimeout(() => {
         try {
-          console.warn('Earth load timeout - proceeding anyway');
+          log.warn('Earth load timeout - proceeding anyway');
         } catch {}
         settle();
       }, timeoutMs);

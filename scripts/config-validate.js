@@ -49,11 +49,12 @@ function validate() {
       errors.push(`${host}: aw_label must be a string`);
   }
 
+  const { error, info } = require('./log');
   if (errors.length) {
-    console.error('site-config validation failed:\n' + errors.map((e) => ' - ' + e).join('\n'));
+    error('site-config validation failed:\n' + errors.map((e) => ' - ' + e).join('\n'));
     process.exit(1);
   }
-  console.log('site-config validation passed');
+  info('site-config validation passed');
 }
 
 validate();
