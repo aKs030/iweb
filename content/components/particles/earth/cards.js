@@ -76,7 +76,8 @@ export class CardManager {
     const cardCount = dataArray.length;
     const baseW = 2.2;
     const baseH = 2.8;
-    const spacing = baseW * (cardCount > 2 ? 1.4 : 1.25);
+    // Adjusted spacing for 5+ cards
+    const spacing = baseW * (cardCount > 4 ? 1.15 : cardCount > 2 ? 1.4 : 1.25);
     const centerOffset = (cardCount - 1) / 2;
 
     this._baseW = baseW;
@@ -145,11 +146,14 @@ export class CardManager {
             card.userData.hoverY = finalY + 0.2; // Reduced hover lift on mobile
           } else {
             // Desktop: Horizontal Row
-            const adaptiveScale = Math.min(1, vw / 1200);
-            const newSpacing = baseW * (cardCount > 2 ? 1.4 : 1.25) * Math.max(0.85, adaptiveScale);
+            const adaptiveScale = Math.min(1, vw / 1400);
+            const newSpacing =
+              baseW *
+              (cardCount > 4 ? 1.15 : cardCount > 2 ? 1.4 : 1.25) *
+              Math.max(0.75, adaptiveScale);
             const x = (idx - centerOffset) * newSpacing;
 
-            card.scale.setScalar(0.95 * Math.max(0.65, adaptiveScale));
+            card.scale.setScalar(0.9 * Math.max(0.55, adaptiveScale));
             card.position.x = x;
             card.position.y = 0;
 

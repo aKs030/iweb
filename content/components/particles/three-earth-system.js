@@ -1042,6 +1042,22 @@ function _setupManagersAndCards(container) {
       iconChar: '📸',
       color: '#ff07a1',
     },
+    {
+      title: 'Videos',
+      subtitle: 'VIDEOS',
+      text: 'Meine Videosammlung — Technik, Making-of und Stories.',
+      link: '/videos/',
+      iconChar: '🎬',
+      color: '#07ffbc',
+    },
+    {
+      title: 'Blog',
+      subtitle: 'BLOG',
+      text: 'Aktuelle Gedanken, Learnings und Updates rund um meine Arbeit.',
+      link: '/blog/',
+      iconChar: '📝',
+      color: '#ffb807',
+    },
   ];
 
   cardManager = new CardManager(THREE_INSTANCE, scene, camera, renderer);
