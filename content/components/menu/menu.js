@@ -194,6 +194,15 @@ function getMenuHTML() {
           </a>
         </li>
         <li>
+          <a href="/blog/">
+            <svg class="nav-icon" aria-hidden="true">
+              <use href="#icon-mail"></use>
+            </svg>
+            <span class="icon-fallback" style="display: none">📝</span>
+            <span>Blog</span>
+          </a>
+        </li>
+        <li>
           <a href="/about/">
             <svg class="nav-icon" aria-hidden="true">
               <use href="#icon-user"></use>
