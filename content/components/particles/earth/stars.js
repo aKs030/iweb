@@ -175,21 +175,23 @@ export class StarManager {
     const surfaceStars = starsPerCard - perimeterStars;
     const starsPerEdge = Math.floor(perimeterStars / 4);
 
-    const screenToWorld = (x, y) => {
+    // Optimized screenToWorld: writes directly to an array or object to avoid allocation
+    // We'll just return x,y,z components to push into a flat array
+    const pushWorldPos = (x, y, outArray) => {
       const ndcX = (x / viewportWidth) * 2 - 1;
       const ndcY = -((y / viewportHeight) * 2 - 1);
 
-      // Reuse tempVector to avoid GC
       this.tempVector.set(ndcX, ndcY, 0);
       this.tempVector.unproject(this.camera);
       this.tempVector.sub(this.camera.position).normalize();
 
       const distance = (targetZ - this.camera.position.z) / this.tempVector.z;
-      // Return a plain object to avoid creating Vector3 clones
-      const px = this.camera.position.x + this.tempVector.x * distance;
-      const py = this.camera.position.y + this.tempVector.y * distance;
-      const pz = this.camera.position.z + this.tempVector.z * distance;
-      return { x: px, y: py, z: pz };
+
+      outArray.push(
+        this.camera.position.x + this.tempVector.x * distance,
+        this.camera.position.y + this.tempVector.y * distance,
+        this.camera.position.z + this.tempVector.z * distance
+      );
     };
 
     // 1. Perimeter (Border)
@@ -198,8 +200,7 @@ export class StarManager {
         const t = i / Math.max(1, starsPerEdge - 1);
         const x = startX + (endX - startX) * t;
         const y = startY + (endY - startY) * t;
-        const worldPos = screenToWorld(x, y);
-        positions.push(worldPos);
+        pushWorldPos(x, y, positions);
       }
     };
 
@@ -212,8 +213,7 @@ export class StarManager {
     for (let i = 0; i < surfaceStars; i++) {
       const x = rect.left + Math.random() * rect.width;
       const y = rect.top + Math.random() * rect.height;
-      const worldPos = screenToWorld(x, y);
-      positions.push(worldPos);
+      pushWorldPos(x, y, positions);
     }
 
     return positions;
@@ -280,22 +280,28 @@ export class StarManager {
 
   updateTargetBuffer(cardPositions) {
     if (this.isDisposed || !this.starField) return;
+    if (!cardPositions || cardPositions.length === 0) return;
 
     const attr = this.starField.geometry.attributes.aTargetPosition;
     const array = attr.array;
     const count = array.length / 3;
+    const numPositions = cardPositions.length / 3; // Now flat array [x,y,z...]
+
+    if (numPositions === 0) return;
 
     for (let i = 0; i < count; i++) {
       const i3 = i * 3;
       // Wrap around if we have more stars than card-points
-      const target = cardPositions[i % cardPositions.length];
+      const targetIndex = (i % numPositions) * 3;
 
-      if (target) {
-        const spreadFactor = CONFIG.STARS.ANIMATION.SPREAD_XY;
-        array[i3] = target.x + (Math.random() - 0.5) * spreadFactor;
-        array[i3 + 1] = target.y + (Math.random() - 0.5) * spreadFactor;
-        array[i3 + 2] = target.z + (Math.random() - 0.5) * CONFIG.STARS.ANIMATION.SPREAD_Z;
-      }
+      const tx = cardPositions[targetIndex];
+      const ty = cardPositions[targetIndex + 1];
+      const tz = cardPositions[targetIndex + 2];
+
+      const spreadFactor = CONFIG.STARS.ANIMATION.SPREAD_XY;
+      array[i3] = tx + (Math.random() - 0.5) * spreadFactor;
+      array[i3 + 1] = ty + (Math.random() - 0.5) * spreadFactor;
+      array[i3 + 2] = tz + (Math.random() - 0.5) * CONFIG.STARS.ANIMATION.SPREAD_Z;
     }
 
     attr.needsUpdate = true;

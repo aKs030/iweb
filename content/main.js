@@ -470,7 +470,6 @@ const LoadingScreenManager = (() => {
         settle();
       };
 
-      window.addEventListener('earth-ready', onReady, { once: true });
       window.addEventListener('three-first-frame', onReady, { once: true });
       window.addEventListener('three-ready', onReady, { once: true });
     }, delay);
