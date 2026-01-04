@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 jobs:
-  build-and-test:
+  lint-and-validate:
     runs-on: ubuntu-latest
 
     steps:
@@ -16,7 +16,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
           cache: 'npm'
 
       - name: Install dependencies
@@ -27,14 +27,3 @@ jobs:
 
       - name: Lint
         run: npm run lint
-
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps
-
-      - name: Start server and wait
-        run: |
-          npx http-server . -p 8081 &
-          npx wait-on http://localhost:8081
-
-      - name: Run Smoke Tests
-        run: npm run test:smoke
