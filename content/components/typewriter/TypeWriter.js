@@ -320,8 +320,8 @@ export async function initHeroSubtitle(options = {}) {
           const base = document.body.classList.contains('footer-expanded')
             ? 'clamp(8px,1.5vw,16px)'
             : el.classList.contains('typewriter-title--fixed')
-            ? 'clamp(16px,2.5vw,32px)'
-            : 'clamp(12px,2vw,24px)';
+              ? 'clamp(16px,2.5vw,32px)'
+              : 'clamp(12px,2vw,24px)';
           setCSSVars(el, { bottom: `calc(${base} + ${overlap}px)` });
         }
       } catch (err) {

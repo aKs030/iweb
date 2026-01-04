@@ -286,7 +286,7 @@ export function generateSchemaGraph(
         if (imgs.length > 1) {
           personNode.image = imgs.slice(0, 3);
         }
-      } catch (e) {}
+      } catch (e) { }
 
       // Agent interaction statistic: prefer server-side postsCount, fallback to counting <article> elements
       try {
@@ -300,7 +300,7 @@ export function generateSchemaGraph(
             userInteractionCount: writeCount,
           };
         }
-      } catch (e) {}
+      } catch (e) { }
 
       // Interaction statistics (followers / likes) — prefer server-side BRAND_DATA values and fallback to DOM
       try {
@@ -325,11 +325,11 @@ export function generateSchemaGraph(
           brandFollowers > 0
             ? brandFollowers
             : findCount([
-                '[data-followers]',
-                '[data-followers-count]',
-                '.followers-count',
-                '.follower-count',
-              ]);
+              '[data-followers]',
+              '[data-followers-count]',
+              '.followers-count',
+              '.follower-count',
+            ]);
         if (followers > 0) {
           personNode.interactionStatistic = personNode.interactionStatistic || [];
           personNode.interactionStatistic.push({
@@ -352,9 +352,9 @@ export function generateSchemaGraph(
             userInteractionCount: likes,
           });
         }
-      } catch (e) {}
+      } catch (e) { }
     }
-  } catch (e) {}
+  } catch (e) { }
 
   // Skills/ItemList
   if (pageUrl.includes('/about') || pageUrl === BASE_URL || pageUrl === `${BASE_URL}/`) {
@@ -464,7 +464,7 @@ export function generateSchemaGraph(
         }
       }
     }
-  } catch (e) {}
+  } catch (e) { }
 
   // ImageObject enrichment for richer image results (helps Image Pack / Image Carousel)
   try {
@@ -996,7 +996,7 @@ async function loadSharedHead() {
       // Force Canonical to Production host when true. Set to false to allow dev/staging canonical behavior.
       // Only honor an explicit opt-in via data attribute.
       const forceProdFlag = document.documentElement.dataset.forceProdCanonical === 'true';
-      
+
       // Check if head-inline.js already set an early canonical (will be updated with proper value)
       const earlyCanonical = document.head.querySelector('link[rel="canonical"][data-early="true"]');
 
