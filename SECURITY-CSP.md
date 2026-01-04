@@ -25,7 +25,7 @@ Content-Security-Policy:
 
 > Hinweis: If you prefer a stricter policy that avoids CDN host entries, use the local Three.js fallback:
 >
-> - Run `scripts/fetch_three.sh` to download `three.module.js` into `content/vendor/three/` and optionally commit it.
+> - Three.js is loaded from CDN (jsdelivr).
 > - In that case you can keep `script-src 'self'` and avoid adding `https://cdn.jsdelivr.net` to your CSP.
 > - Cloudflare Insights (beacon scripts) still require `https://*.cloudflareinsights.com` in `script-src` and `connect-src` unless you disable the integration.
 >
@@ -234,7 +234,7 @@ connect-src 'self' ws://localhost:* ws://127.0.0.1:*;
 
 ```javascript
 // Test CSP violations in console
-console.log('CSP Test: Inline script executed');
+console.log("CSP Test: Inline script executed");
 
 // Dies sollte blockiert werden bei strikter CSP:
 eval('console.log("eval test")');

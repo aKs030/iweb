@@ -27,7 +27,7 @@ function setGlobalLogLevel(level) {
 export function createLogger(category) {
   const prefix = `[${category}]`;
   const console = globalThis.console || {};
-  const noop = () => {};
+  const noop = () => { };
 
   return {
     error: (message, ...args) => {
@@ -316,12 +316,6 @@ export function fire(type, detail = null, target = document) {
   }
 }
 
-// Legacy global shim removed — prefer explicit imports and module exports.
-// The previous helper `setLegacyGlobal` and `LEGACY_CLEAN_MODE` were deprecated and
-// removed to avoid polluting the global scope. If you relied on these globals for
-// debugging, prefer importing the module or use an explicit debug hook guarded by
-// `ENV.debug` in local development builds.
-
 // ===== Intersection Observer Utilities =====
 
 const OBSERVER_CONFIGS = {
@@ -347,7 +341,7 @@ function createObserverWrapper(callback, options, triggerOnce = false) {
           callback(element);
         }
       },
-      disconnect: () => {},
+      disconnect: () => { },
     };
   }
 
@@ -378,8 +372,8 @@ export function createTriggerOnceObserver(callback, options = {}) {
     setTimeout(callback, 0);
     return {
       observer: null,
-      observe: () => {},
-      disconnect: () => {},
+      observe: () => { },
+      disconnect: () => { },
     };
   }
 
@@ -471,7 +465,7 @@ export function randomInt(min, max) {
 // ===== Unified Event Listener Helper =====
 
 export function addListener(target, event, handler, options = {}) {
-  if (!target?.addEventListener) return () => {};
+  if (!target?.addEventListener) return () => { };
 
   const finalOptions = { passive: true, ...options };
 
@@ -480,14 +474,14 @@ export function addListener(target, event, handler, options = {}) {
     return () => target.removeEventListener(event, handler, finalOptions);
   } catch (err) {
     sharedLogger.warn('addListener: failed to add listener', err);
-    return () => {};
+    return () => { };
   }
 }
 
 // ===== Window Event Helpers =====
 
 export function onResize(callback, delay = 100) {
-  if (typeof window === 'undefined') return () => {};
+  if (typeof window === 'undefined') return () => { };
 
   const debouncedCallback = debounce(callback, delay);
   return addListener(window, 'resize', debouncedCallback);

@@ -20,10 +20,6 @@ Allow: /
 # If you add more video content, run: YT_API_KEY=<key> python3 scripts/update_video_sitemap.py
 # Relaxed rules to improve rendering: allow JS/CSS/JSON where needed while keeping dev files blocked
 # Keep broad disallows but explicitly allow static asset types (Google honors most-specific rule)
-Disallow: /content/vendor/
-Allow: /content/vendor/*.js$
-Allow: /content/vendor/*.css$
-Allow: /content/vendor/*.json$
 Disallow: /content/config/
 Allow: /content/config/*.js$
 Allow: /content/config/*.css$

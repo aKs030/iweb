@@ -1,69 +1,39 @@
-# .gitignore (optimized)
-# Keep local dependency installs, caches, and secrets out of the repository.
-
-# Node / package manager
+# Dependencies
 node_modules/
 .pnp*
-.pnp.js
 
-# Environment & secrets
-.env
-.env.*
-.env.local
-.env.development.local
-.env.test.local
+# Secrets & Environment
+.env*
+!.env.example
 
-# OS files
+# OS & Editor
 .DS_Store
 Thumbs.db
-desktop.ini
+.vscode/
+.idea/
+*.sublime-*
 
-# Logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
+# Logs & Caches
 *.log
-
-# Build / distribution / caches
-dist/
-build/
-.out/
+.eslintcache
 .cache/
 .parcel-cache/
 .vite/
 .sass-cache/
-
-# Test coverage / reports
-coverage/
-.nyc_output/
-.playwright-report/
-
-# Playwright / browser artifacts
-.playwright/
-ms-playwright/
-
-
-# IDE / editor
-.vscode/
-.idea/
-*.sublime-workspace
-*.sublime-project
-
-# Local config parts (must stay local)
-content/config/videos-part-*.js
-content/config/*.local.js
-
-# Misc
-.coverage
-.eslintcache
 .tmp/
 tmp/
 
-# OS temp files
+# Build outputs
+dist/
+build/
+coverage/
+.nyc_output/
+public/
+
+# Local config
+content/config/videos-part-*.js
+content/config/*.local.js
+
+# Temp files
 *.swp
 *~
-
-# Optional: ignore local package-lock if you purposely want reproducible builds
-# (recommended to keep it committed)

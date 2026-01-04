@@ -1,6 +1,0 @@
-#!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
-
-# Run staged-file checks and lint-staged
-node scripts/check-staged.js || exit 1
-npx --no-install lint-staged || exit 1

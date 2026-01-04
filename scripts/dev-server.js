@@ -10,6 +10,7 @@ const fs = require('fs');
 const path = require('path');
 const { exec } = require('child_process');
 
+// Configuration
 const PORT = 8080;
 const ROOT = path.join(__dirname, '..');
 
@@ -34,7 +35,10 @@ const MIME_TYPES = {
   '.webmanifest': 'application/manifest+json',
 };
 
-// Parse _redirects file
+/**
+ * Parse _redirects file and convert rules to regex patterns
+ * @returns {Array} Array of redirect rules
+ */
 function parseRedirects() {
   const redirectsPath = path.join(ROOT, '_redirects');
   if (!fs.existsSync(redirectsPath)) return [];
@@ -70,7 +74,12 @@ function parseRedirects() {
   return rules;
 }
 
-// Apply redirect rules
+/**
+ * Apply redirect rules to a URL
+ * @param {string} url - The URL to check
+ * @param {Array} rules - Array of redirect rules
+ * @returns {Object|null} Redirect target and status, or null if no match
+ */
 function applyRedirects(url, rules) {
   for (const rule of rules) {
     const match = url.match(rule.pattern);
@@ -91,7 +100,11 @@ function applyRedirects(url, rules) {
   return null;
 }
 
-// Serve file
+/**
+ * Serve a file with appropriate MIME type
+ * @param {string} filePath - Path to the file to serve
+ * @param {Object} res - HTTP response object
+ */
 function serveFile(filePath, res) {
   const ext = path.extname(filePath).toLowerCase();
   const mimeType = MIME_TYPES[ext] || 'application/octet-stream';
@@ -114,7 +127,7 @@ function serveFile(filePath, res) {
   });
 }
 
-// Main request handler
+// Initialize redirects and create server
 const redirects = parseRedirects();
 
 const server = http.createServer((req, res) => {
@@ -172,7 +185,13 @@ server.listen(PORT, () => {
 
   // Auto-open browser
   const url = `http://localhost:${PORT}`;
-  const start =
-    process.platform === 'darwin' ? 'open' : process.platform === 'win32' ? 'start' : 'xdg-open';
-  exec(`${start} ${url}`);
+  const openCommand = process.platform === 'darwin' ? 'open'
+    : process.platform === 'win32' ? 'start'
+      : 'xdg-open';
+
+  exec(`${openCommand} ${url}`, (err) => {
+    if (err) {
+      console.error('Could not auto-open browser:', err.message);
+    }
+  });
 });

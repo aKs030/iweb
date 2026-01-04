@@ -283,7 +283,7 @@ dataLayer.push({
     };
 
     const SCRIPTS = [
-      { src: '/content/main.js', module: true, preload: true },
+      { src: '/content/main.js', module: true, preload: false },
       { src: '/content/components/menu/menu.js', module: true },
     ];
 
@@ -307,14 +307,10 @@ dataLayer.push({
             upsertPreconnect(
               'https://throbbing-mode-6fe1-nlweb.httpsgithubcomaks030website.workers.dev'
             );
-            upsertStyle(
-              'https://throbbing-mode-6fe1-nlweb.httpsgithubcomaks030website.workers.dev/nlweb-dropdown-chat.css'
-            );
-            upsertStyle(
-              'https://throbbing-mode-6fe1-nlweb.httpsgithubcomaks030website.workers.dev/common-chat-styles.css'
-            );
+            // CSS files are loaded lazily by nlweb-init.js when widget is actually used
+            // No need to preload them here to avoid unused preload warnings
 
-            // Preload and load a local initializer module that imports the NLWeb worker module
+            // Load the local initializer module that imports the NLWeb worker module
             upsertModulePreload('/content/components/search/nlweb-init.js');
             upsertScript({
               src: '/content/components/search/nlweb-init.js',
