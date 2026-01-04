@@ -133,6 +133,14 @@ body.footer-expanded {
   opacity: 1;
   transform: translateY(0) translateZ(0);
   transition: all 0.25s var(--dynamic-footer-spring-quick);
+  cursor: pointer; /* Affordance: area is interactive */
+}
+
+.footer-minimized:focus-visible {
+  outline: 3px solid var(--dynamic-footer-accent-blue);
+  outline-offset: 4px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  border-radius: inherit;
 }
 
 .footer-minimal-content {

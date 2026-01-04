@@ -110,6 +110,7 @@ class DOMCache {
 }
 
 const domCache = new DOMCache();
+let footerKeydownInit = false;
 
 // ===== Programmatic Scroll (Optimized) =====
 const ProgrammaticScroll = (() => {
@@ -593,10 +594,54 @@ function closeFooter() {
   if (!footer) return;
 
   // 1. Visual Reset
-  footer.classList.remove('footer-expanded');
-  document.body.classList.remove('footer-expanded');
-  footer.querySelector('.footer-maximized')?.classList.add('footer-hidden');
-  footer.querySelector('.footer-minimized')?.classList.remove('footer-hidden');
+  try {
+    footer.classList.remove('footer-expanded');
+    document.body.classList.remove('footer-expanded');
+    footer.querySelector('.footer-maximized')?.classList.add('footer-hidden');
+    const minEl = footer.querySelector('.footer-minimized');
+    if (minEl) {
+      minEl.classList.remove('footer-hidden');
+      try {
+        minEl.setAttribute('aria-hidden', 'false');
+      } catch {}
+    }
+    footer.setAttribute('aria-expanded', 'false');
+  } catch {}
+
+  // Keyboard accessibility: allow Enter/Space to expand when .footer-minimized is focused
+  try {
+    if (!footerKeydownInit) {
+      document.addEventListener(
+        'keydown',
+        (e) => {
+          if (e.key !== 'Enter' && e.key !== ' ') return;
+          const focused = document.activeElement;
+          if (focused && focused.closest && focused.closest('.footer-minimized')) {
+            const interactive = focused.closest(
+              'a, button, input, textarea, select, [data-cookie-trigger]'
+            );
+            if (!interactive) {
+              e.preventDefault();
+              try {
+                if (globalThis.footerScrollHandler)
+                  globalThis.footerScrollHandler.toggleExpansion(true);
+              } catch (err) {
+                try {
+                  log.warn('keyboard expand failed', err);
+                } catch {}
+              }
+            }
+          }
+        },
+        { passive: false }
+      );
+      footerKeydownInit = true;
+    }
+  } catch (err) {
+    try {
+      log.warn('keyboard init failed', err);
+    } catch {}
+  }
 
   // 2. Content Reset (show normal content again if it was hidden by cookie view)
   const normal = domCache.get('#footer-normal-content');
@@ -751,6 +796,7 @@ class FooterLoader {
       (e) => {
         const cookieTrigger = e.target.closest('[data-cookie-trigger]');
         const footerTrigger = e.target.closest('[data-footer-trigger]');
+        const footerMinClick = e.target.closest('.footer-minimized');
 
         if (cookieTrigger) {
           e.preventDefault();
@@ -758,9 +804,23 @@ class FooterLoader {
           return;
         }
 
+        // Click on minimized footer background should expand the footer.
+        // Ignore clicks that land on interactive controls (links/buttons/inputs) to avoid interfering with their default actions.
+        if (footerMinClick) {
+          const interactive = e.target.closest(
+            'a, button, input, textarea, select, [data-cookie-trigger]'
+          );
+          if (!interactive) {
+            e.preventDefault();
+            this.handleFooterTrigger();
+            return;
+          }
+        }
+
         if (footerTrigger) {
           e.preventDefault();
           this.handleFooterTrigger();
+          return;
         }
       },
       { passive: false }
@@ -959,6 +1019,10 @@ class ScrollHandler {
     } catch {}
 
     try {
+      footer.setAttribute('aria-expanded', 'true');
+    } catch {}
+
+    try {
       document.body.classList.add('footer-expanded');
       document.body.setAttribute(
         'class',
@@ -972,6 +1036,9 @@ class ScrollHandler {
 
     max?.classList.remove('footer-hidden');
     min?.classList.add('footer-hidden');
+    try {
+      min?.setAttribute('aria-hidden', 'true');
+    } catch {}
 
     this.expanded = true;
     // Set a short lock period to avoid immediate collapse from tiny scroll jitter
