@@ -48,9 +48,11 @@ export class StarManager {
       const theta = Math.random() * Math.PI * 2;
       const phi = Math.acos(2 * Math.random() - 1);
 
-      const x = radius * Math.sin(phi) * Math.cos(theta);
-      const y = radius * Math.sin(phi) * Math.sin(theta);
-      const z = radius * Math.cos(phi);
+      const sinPhi = Math.sin(phi);
+      const cosPhi = Math.cos(phi);
+      const x = radius * sinPhi * Math.cos(theta);
+      const y = radius * sinPhi * Math.sin(theta);
+      const z = radius * cosPhi;
 
       positions[i3] = x;
       positions[i3 + 1] = y;
