@@ -288,7 +288,9 @@ export async function initHeroSubtitle(options = {}) {
 
     if (!subtitleEl || !typedText || !typedAuthor) return false;
 
-    const { default: quotes } = await import('./TypeWriterText.js');
+    const quotes = await fetch('/content/config/typewriter-quotes.json')
+      .then(r => r.json())
+      .catch(() => null);
 
     if (!quotes?.length) return false;
 

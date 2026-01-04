@@ -453,6 +453,24 @@ dataLayer.push({
   }
 })();
 
+// === Early Canonical Link injection (SEO-critical: set before bots parse)
+(function setEarlyCanonical() {
+  try {
+    // Set a basic canonical immediately to avoid SEO gaps before head-complete.js runs
+    const canonicalUrl = globalThis.location.href.split('#')[0].split('?')[0];
+    if (!document.head.querySelector('link[rel="canonical"]')) {
+      const link = document.createElement('link');
+      link.rel = 'canonical';
+      link.href = canonicalUrl;
+      link.dataset.injectedBy = 'head-inline';
+      link.dataset.early = 'true';
+      document.head.appendChild(link);
+    }
+  } catch (err) {
+    log?.warn?.('head-inline: setEarlyCanonical failed', err);
+  }
+})();
+
 // === Inject minimal critical CSS for the Hero on the Startseite
 (function injectHeroCriticalCSS() {
   try {
@@ -592,3 +610,14 @@ dataLayer.push({
     // ignore errors in hideBrandingFromUsers
   }
 })();
+
+// === Signal that head-inline.js initialization is complete
+// This flag prevents race conditions with head-complete.js
+globalThis.__HEAD_INLINE_READY = true;
+
+// === Load head-complete.js dynamically after head-inline is ready
+// This ensures head-complete.js never starts before head-inline.js is finished
+// preventing the "timeout waiting for head-inline" warning
+import('/content/components/head/head-complete.js').catch((err) => {
+  console.error('[head-inline] Failed to load head-complete.js:', err);
+});

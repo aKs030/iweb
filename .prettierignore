@@ -1,7 +1,33 @@
+# Dependencies
 node_modules/
+
+# Build outputs
 dist/
 build/
 coverage/
 .nyc_output/
+
+# Config & Environment
 content/config/videos-part-*.js
+.env
+.env.local
+.env.*.local
+
+# Lock files
 package-lock.json
+
+# ESLint & Prettier (config files, not needed in formatting)
+.eslintrc.cjs
+.eslintignore
+.prettierignore
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.sublime-workspace
+
+# Logs
+*.log
+.cache/
