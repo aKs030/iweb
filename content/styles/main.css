@@ -332,52 +332,16 @@ a:hover {
   }
 }
 
-/* Accessibility */
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation-duration: 0.01ms;
-    animation-iteration-count: 1;
-    transition-duration: 0.01ms;
-  }
-}
+/* Accessibility - prefers-reduced-motion handled globally in root.css */
 
-/* Focus Indicators */
-*:focus-visible {
-  outline: 2px solid #fff;
-  outline-offset: 3px;
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary-color) 55%, transparent);
-  transition: box-shadow 0.15s ease, outline-color 0.15s ease;
-}
-
-@media (prefers-contrast: more) {
-  *:focus-visible {
-    outline: 3px solid #fff;
-    outline-offset: 4px;
-    box-shadow: 0 0 0 5px #000, 0 0 0 8px var(--primary-color);
-  }
-}
-
-@media (forced-colors: active) {
-  *:focus-visible {
-    outline: 2px solid ButtonText;
-    outline-offset: 4px;
-    box-shadow: none;
-  }
-}
+/* Focus Indicators - handled globally in root.css */
 
 ::selection {
   background: var(--primary-color);
   color: white;
 }
 
-/* Scrollbar styling consolidated in content/styles/root.css (mobile-focused) */
-
-html {
-  @supports (scrollbar-width: none) {
-    scrollbar-width: none;
-  }
-  -ms-overflow-style: none;
-}
+/* Scrollbar styling consolidated in content/styles/root.css */
 
 /* Print Styles */
 @media print {

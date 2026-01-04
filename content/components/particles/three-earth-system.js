@@ -155,6 +155,29 @@ export const initThreeEarth = async () => {
 
     _finalizeInitialization(container);
 
+    // Fire ready event immediately after successful initialization
+    // This ensures main.js doesn't timeout waiting for the event
+    try {
+      container.dataset.threeReady = '1';
+      document.dispatchEvent(
+        new CustomEvent('three-ready', {
+          detail: { containerId: container?.id ?? null },
+        })
+      );
+      log.debug('three-ready event dispatched after initialization');
+    } catch (err) {
+      log.warn('three-ready dispatch after init failed', err);
+    }
+
+    // Early unblock: Don't wait for first frame if everything else is ready
+    // This prevents timeout warnings when the animation loop is slow to start
+    try {
+      AppLoadManager.unblock('three-earth');
+      log.debug('Earth system unblocked early (pre-render)');
+    } catch (err) {
+      log.warn('Early unblock failed', err);
+    }
+
     return cleanup;
   } catch (error) {
     log.error('Initialization failed:', error);
@@ -373,16 +396,12 @@ function _createLoadingManager(THREE, container) {
     // actual frame is rendered to avoid flashing/blank between loader and canvas
     assetsReady = true;
 
-    // Signal that Three has finished loading textures/resources and is ready
+    // Note: three-ready event is now dispatched after full initialization
+    // not here, to ensure all managers and handlers are set up first
     try {
       container.dataset.threeReady = '1';
-      document.dispatchEvent(
-        new CustomEvent('three-ready', {
-          detail: { containerId: container?.id ?? null },
-        })
-      );
     } catch (err) {
-      log.warn('three-ready dispatch failed', err);
+      log.warn('Failed to set threeReady dataset', err);
     }
   };
 
@@ -453,6 +472,9 @@ function _finalizeInitialization(container) {
 
   log.info('Initialization complete');
 
+  // Note: three-ready event is now dispatched immediately after initialization
+  // in initThreeEarth() to prevent timeout issues in main.js
+  // This fallback is kept for backwards compatibility
   try {
     if (!container.dataset.threeReady) {
       container.dataset.threeReady = '1';
@@ -891,7 +913,7 @@ function _renderIfReady() {
         firstFrameRendered = true;
         const container = getElementById('threeEarthContainer');
         try {
-          log.info('First rendered frame — hiding loader and unblocking three-earth');
+          log.info('First rendered frame — hiding loader');
         } catch (e) {
           /* ignore */
         }
@@ -901,11 +923,8 @@ function _renderIfReady() {
           log.debug('post-render loader hide failed', err);
         }
 
-        try {
-          AppLoadManager.unblock('three-earth');
-        } catch (err) {
-          log.warn('[ThreeEarthSystem] AppLoadManager.unblock failed on first frame', err);
-        }
+        // Note: AppLoadManager.unblock is already called during initialization
+        // No need to call it again here
 
         try {
           document.dispatchEvent(

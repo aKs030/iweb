@@ -1,6 +1,28 @@
+# Dependencies
 node_modules/
+
+# Build outputs
 dist/
 build/
 coverage/
 .nyc_output/
+
+# Config
 content/config/videos-part-*.js
+.env
+.env.local
+.env.*.local
+
+# Prettier & ESLint (config files don't need linting)
+.prettierrc
+.prettierignore
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+.cache/
