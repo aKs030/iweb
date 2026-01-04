@@ -470,8 +470,9 @@ const LoadingScreenManager = (() => {
         settle();
       };
 
-      window.addEventListener('three-first-frame', onReady, { once: true });
-      window.addEventListener('three-ready', onReady, { once: true });
+      // three-earth-system dispatches these on document, and they don't bubble
+      document.addEventListener('three-first-frame', onReady, { once: true });
+      document.addEventListener('three-ready', onReady, { once: true });
     }, delay);
   }
 
