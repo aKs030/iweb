@@ -538,9 +538,17 @@ const ThreeEarthLoader = (() => {
     try {
       log.info('Loading Three.js Earth system...');
       const module = await import('./components/particles/three-earth-system.js');
-      const ThreeEarthManager = module.default;
 
-      cleanupFn = await ThreeEarthManager.initThreeEarth();
+      // Robust import handling: prefer default, fall back to named exports
+      const manager = module.default || module;
+      const initFn = manager.initThreeEarth || module.initThreeEarth;
+
+      if (typeof initFn !== 'function') {
+        log.error('ThreeEarthManager import failed:', Object.keys(module));
+        throw new Error('initThreeEarth not found in module exports');
+      }
+
+      cleanupFn = await initFn();
 
       if (typeof cleanupFn === 'function') {
         // Export the cleanup function for programmatic control
