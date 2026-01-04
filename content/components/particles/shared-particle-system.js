@@ -360,10 +360,6 @@ export function unregisterParticleSystem(name) {
   return sharedState.unregisterSystem(name);
 }
 
-// Deprecated: hasParticleSystem was used to query shared particle systems.
-// Prefer using `getSharedState().hasSystem(name)` directly for explicit access.
-// Kept for backward-compatibility until v2.4, but removed here as it's unused.
-
 // ===== Global Cleanup Hook =====
 
 if (typeof window !== 'undefined') {

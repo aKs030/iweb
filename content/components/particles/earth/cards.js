@@ -58,11 +58,18 @@ export class CardManager {
     if (!height) return 0;
     // NDC delta (top/bottom range is -1..1 => total 2 units)
     const ndcDelta = (pixels / height) * 2;
-    const v1 = new this.THREE.Vector3(0, 0, 0.5);
-    const v2 = new this.THREE.Vector3(0, -ndcDelta, 0.5);
-    v1.unproject(this.camera);
-    v2.unproject(this.camera);
-    return v2.y - v1.y;
+
+    // Reuse temp vectors (create on demand if missing on instance)
+    if (!this._pv1) this._pv1 = new this.THREE.Vector3();
+    if (!this._pv2) this._pv2 = new this.THREE.Vector3();
+
+    this._pv1.set(0, 0, 0.5);
+    this._pv2.set(0, -ndcDelta, 0.5);
+
+    this._pv1.unproject(this.camera);
+    this._pv2.unproject(this.camera);
+
+    return this._pv2.y - this._pv1.y;
   }
 
   initFromData(dataArray) {
@@ -238,8 +245,13 @@ export class CardManager {
   }
 
   createCardTexture(data) {
-    const DPR = globalThis.window?.devicePixelRatio ? globalThis.window.devicePixelRatio : 1;
-    const S = Math.min(Math.max(Math.ceil(DPR * 2), 2), 4);
+    const DPR = globalThis.window?.devicePixelRatio || 1;
+    // OPTIMIZATION: Cap scale factor to reduce memory usage on mobile/high-DPI
+    const isMobile = globalThis.innerWidth < 768;
+    // Max S=2 on mobile (1024px width), S=3 on desktop (1536px width). S=4 is overkill (2048px).
+    const maxS = isMobile ? 2 : 3;
+    const S = Math.min(Math.max(Math.ceil(DPR * 1.5), 2), maxS);
+
     const W = 512 * S;
     const H = 700 * S;
 
@@ -249,7 +261,7 @@ export class CardManager {
       text: (data.text || '').slice(0, 512),
       iconChar: data.iconChar || '',
       color: data.color || '#ffffff',
-      DPR: Math.round(DPR * 100),
+      scale: S, // Include scale in key
     };
     const key = JSON.stringify(keyObj);
 
@@ -262,15 +274,21 @@ export class CardManager {
 
     this._profile.cacheMisses++;
 
-    const canvas =
-      typeof OffscreenCanvas === 'undefined'
-        ? document.createElement('canvas')
-        : new OffscreenCanvas(W, H);
-    if (typeof OffscreenCanvas === 'undefined') {
-      canvas.width = W;
-      canvas.height = H;
+    let canvas, ctx;
+    try {
+      if (typeof OffscreenCanvas !== 'undefined') {
+        canvas = new OffscreenCanvas(W, H);
+      } else {
+        canvas = document.createElement('canvas');
+        canvas.width = W;
+        canvas.height = H;
+      }
+      // Transparency required for rounded corners
+      ctx = canvas.getContext('2d');
+    } catch (e) {
+      log.warn('CardManager: canvas creation failed', e);
     }
-    const ctx = canvas.getContext('2d');
+
     if (!ctx) {
       log.warn('CardManager: 2D canvas context unavailable');
       const texture = new this.THREE.CanvasTexture(canvas);
@@ -477,17 +495,54 @@ export class CardManager {
   }
 
   fitTextToWidth(ctx, text, maxWidth, fontWeight, initialSize, minSize, fontFamily) {
-    if (!text) return initialSize;
-    let size = initialSize;
+    if (!text) return minSize;
+
+    // Edge case: if initialSize < minSize, return immediately
+    if (initialSize < minSize) {
+      log.warn(
+        `fitTextToWidth: initialSize (${initialSize}) < minSize (${minSize}), returning minSize`
+      );
+      return minSize;
+    }
+
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    while (size >= minSize) {
-      ctx.font = `${fontWeight} ${Math.round(size)}px ${fontFamily}`;
-      const w = ctx.measureText(text).width;
-      if (w <= maxWidth) break;
-      size -= 1;
+
+    // Binary search for optimal font size: O(log n) instead of O(n).
+    // Reduces ctx.measureText() calls from ~40 (linear) to ~5 (binary).
+    let low = minSize;
+    let high = initialSize;
+    let result = minSize;
+    let lastSize = null; // Cache size value to avoid redundant ctx.font assignments
+
+    while (low <= high) {
+      const mid = Math.round((low + high) / 2);
+
+      // Only set ctx.font if size changed (Browser font parsing is expensive).
+      // Compare numeric size instead of full font string for O(1) comparison.
+      if (mid !== lastSize) {
+        ctx.font = `${fontWeight} ${mid}px ${fontFamily}`;
+        lastSize = mid;
+      }
+
+      // measureText can theoretically throw if context is invalid
+      let w;
+      try {
+        w = ctx.measureText(text).width;
+      } catch (e) {
+        log.warn('measureText failed, returning minSize', e);
+        return minSize;
+      }
+
+      if (w <= maxWidth) {
+        result = mid;
+        low = mid + 1;
+      } else {
+        high = mid - 1;
+      }
     }
-    return Math.max(minSize, Math.round(size));
+
+    return result;
   }
 
   setVisible(visible) {

@@ -3,8 +3,8 @@
  * * OPTIMIZATIONS v4.1 (Performance):
  * - Fine-tuned ThreeEarthLoader init
  * - Ensure proper cleanup references
- * * @version 4.1.0
- * @last-modified 2025-11-29
+ * * @version 4.1.1
+ * @last-modified 2026-01-04
  */
 
 import { initHeroFeatureBundle } from '../pages/home/hero-manager.js';
@@ -457,22 +457,43 @@ const LoadingScreenManager = (() => {
         proceedToHide();
       };
 
-      const timeoutMs = 4000;
+      // Use configurable timeout from globalThis.CONFIG or fall back to 4000ms
+      // CONFIG might not be loaded yet, so check safely with try-catch
+      let timeoutMs = 4000;
+      try {
+        if (globalThis.CONFIG?.PERFORMANCE?.EARTH_LOAD_TIMEOUT) {
+          timeoutMs = globalThis.CONFIG.PERFORMANCE.EARTH_LOAD_TIMEOUT;
+        }
+      } catch {
+        // CONFIG not available, use default
+      }
+
+      let timedOut = false;
       const t = setTimeout(() => {
+        timedOut = true;
         try {
-          log.warn('Earth load timeout - proceeding anyway');
+          log.warn(`Earth load timeout after ${timeoutMs}ms - proceeding anyway`);
         } catch {}
         settle();
       }, timeoutMs);
 
+      const startTime = performance.now();
       const onReady = () => {
         clearTimeout(t);
+        const duration = performance.now() - startTime;
+        // Log performance metrics if debug mode is enabled, including timeout status
+        if (ENV.debug) {
+          const readyStatus = timedOut ? '(timeout)' : '(ready signal)';
+          log.debug(`Earth system ${readyStatus} in ${Math.round(duration)}ms`);
+        }
         settle();
       };
 
-      window.addEventListener('earth-ready', onReady, { once: true });
-      window.addEventListener('three-first-frame', onReady, { once: true });
-      window.addEventListener('three-ready', onReady, { once: true });
+      // three-earth-system dispatches these on document (custom events, don't bubble).
+      // Listen on document for reliable capture of three-first-frame and three-ready signals.
+      // First to fire wins; subsequent signals are ignored via settled flag.
+      document.addEventListener('three-first-frame', onReady, { once: true });
+      document.addEventListener('three-ready', onReady, { once: true });
     }, delay);
   }
 
@@ -537,10 +558,13 @@ const ThreeEarthLoader = (() => {
 
     try {
       log.info('Loading Three.js Earth system...');
-      const module = await import('./components/particles/three-earth-system.js');
-      const ThreeEarthManager = module.default;
+      const { initThreeEarth } = await import('./components/particles/three-earth-system.js');
 
-      cleanupFn = await ThreeEarthManager.initThreeEarth();
+      if (typeof initThreeEarth !== 'function') {
+        throw new Error('initThreeEarth not found in module exports');
+      }
+
+      cleanupFn = await initThreeEarth();
 
       if (typeof cleanupFn === 'function') {
         // Export the cleanup function for programmatic control
