@@ -12,8 +12,51 @@
 const ICON_SIZE = { width: '32px', height: '32px' };
 const LARGE_ICON_SIZE = { width: '4rem', height: '4rem' };
 
+// Preview font sizes
+const PREVIEW_FONT = {
+  large: '4rem',
+  medium: '3rem',
+  small: '1.5rem',
+};
+
+// GitHub repository base URL
+const GITHUB_BASE = 'https://github.com/aKs030/Webgame/tree/main/apps';
+
 // Default Open Graph image
 const DEFAULT_OG_IMAGE = 'https://abdulkerimsesli.de/content/assets/img/og/og-projekte.png';
+
+// Theme colors for consistent design system
+const THEME_COLORS = {
+  purple: {
+    icon: '#c084fc',
+    preview: '#c084fc',
+    gradient: ['rgba(99, 102, 241, 0.2)', 'rgba(168, 85, 247, 0.2)'],
+  },
+  green: {
+    icon: '#34d399',
+    preview: '#6ee7b7',
+    gradient: ['rgba(34, 197, 94, 0.2)', 'rgba(16, 185, 129, 0.2)'],
+  },
+  pink: {
+    icon: '#f472b6',
+    preview: '#f472b6',
+    gradient: ['rgba(249, 115, 22, 0.2)', 'rgba(236, 72, 153, 0.2)'],
+  },
+  cyan: {
+    icon: '#22d3ee',
+    preview: '#22d3ee',
+    gradient: ['rgba(59, 130, 246, 0.2)', 'rgba(6, 182, 212, 0.2)'],
+  },
+};
+
+/**
+ * Helper function to create gradient backgrounds
+ * @param {string[]} colors - Array of two gradient colors (rgba format)
+ * @returns {Object} Style object with gradient background
+ */
+const createGradient = (colors) => ({
+  background: `linear-gradient(to bottom right, ${colors[0]}, ${colors[1]})`,
+});
 
 /**
  * Creates the projects array with icon and preview components
@@ -34,18 +77,15 @@ export function createProjectsData(html, icons) {
       datePublished: '2023-07-05',
       image: DEFAULT_OG_IMAGE,
       appPath: '/projekte/apps/schere-stein-papier/',
-      githubPath: 'https://github.com/aKs030/Webgame/tree/main/apps/schere-stein-papier',
-      bgStyle: {
-        background:
-          'linear-gradient(to bottom right, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2))',
-      },
+      githubPath: `${GITHUB_BASE}/schere-stein-papier`,
+      bgStyle: createGradient(THEME_COLORS.purple.gradient),
       glowColor: '#5586f7ff',
-      icon: html` <${Gamepad2} style=${{ color: '#c084fc', ...ICON_SIZE }} /> `,
+      icon: html` <${Gamepad2} style=${{ color: THEME_COLORS.purple.icon, ...ICON_SIZE }} /> `,
       previewContent: html`
         <div className="preview-container-vs">
-          <div style=${{ fontSize: '3rem' }}>🪨</div>
-          <div style=${{ fontSize: '1.5rem', opacity: 0.5 }}>VS</div>
-          <div style=${{ fontSize: '3rem' }}>✂️</div>
+          <div style=${{ fontSize: PREVIEW_FONT.medium }}>🪨</div>
+          <div style=${{ fontSize: PREVIEW_FONT.small, opacity: 0.5 }}>VS</div>
+          <div style=${{ fontSize: PREVIEW_FONT.medium }}>✂️</div>
         </div>
       `,
     },
@@ -58,16 +98,20 @@ export function createProjectsData(html, icons) {
       datePublished: '2024-08-01',
       image: DEFAULT_OG_IMAGE,
       appPath: '/projekte/apps/zahlen-raten/',
-      githubPath: 'https://github.com/aKs030/Webgame/tree/main/apps/zahlen-raten',
-      bgStyle: {
-        background:
-          'linear-gradient(to bottom right, rgba(34, 197, 94, 0.2), rgba(16, 185, 129, 0.2))',
-      },
+      githubPath: `${GITHUB_BASE}/zahlen-raten`,
+      bgStyle: createGradient(THEME_COLORS.green.gradient),
       glowColor: '#10b981',
-      icon: html` <${Binary} style=${{ color: '#34d399', ...ICON_SIZE }} /> `,
+      icon: html` <${Binary} style=${{ color: THEME_COLORS.green.icon, ...ICON_SIZE }} /> `,
       previewContent: html`
         <div className="preview-container">
-          <span style=${{ fontSize: '4rem', color: '#6ee7b7', fontWeight: 'bold' }}>?</span>
+          <span
+            style=${{
+              fontSize: PREVIEW_FONT.large,
+              color: THEME_COLORS.green.preview,
+              fontWeight: 'bold',
+            }}
+            >?</span
+          >
         </div>
       `,
     },
@@ -80,16 +124,13 @@ export function createProjectsData(html, icons) {
       datePublished: '2022-03-15',
       image: DEFAULT_OG_IMAGE,
       appPath: '/projekte/apps/color-changer/',
-      githubPath: 'https://github.com/aKs030/Webgame/tree/main/apps/color-changer',
-      bgStyle: {
-        background:
-          'linear-gradient(to bottom right, rgba(249, 115, 22, 0.2), rgba(236, 72, 153, 0.2))',
-      },
+      githubPath: `${GITHUB_BASE}/color-changer`,
+      bgStyle: createGradient(THEME_COLORS.pink.gradient),
       glowColor: '#ec4899',
-      icon: html` <${Palette} style=${{ color: '#f472b6', ...ICON_SIZE }} /> `,
+      icon: html` <${Palette} style=${{ color: THEME_COLORS.pink.icon, ...ICON_SIZE }} /> `,
       previewContent: html`
         <div className="preview-container">
-          <${Palette} style=${{ color: '#f472b6', ...LARGE_ICON_SIZE }} />
+          <${Palette} style=${{ color: THEME_COLORS.pink.preview, ...LARGE_ICON_SIZE }} />
         </div>
       `,
     },
@@ -102,16 +143,13 @@ export function createProjectsData(html, icons) {
       datePublished: '2021-11-05',
       image: DEFAULT_OG_IMAGE,
       appPath: '/projekte/apps/todo-liste/',
-      githubPath: 'https://github.com/aKs030/Webgame/tree/main/apps/todo-liste',
-      bgStyle: {
-        background:
-          'linear-gradient(to bottom right, rgba(59, 130, 246, 0.2), rgba(6, 182, 212, 0.2))',
-      },
+      githubPath: `${GITHUB_BASE}/todo-liste`,
+      bgStyle: createGradient(THEME_COLORS.cyan.gradient),
       glowColor: '#06b6d4',
-      icon: html` <${ListTodo} style=${{ color: '#22d3ee', ...ICON_SIZE }} /> `,
+      icon: html` <${ListTodo} style=${{ color: THEME_COLORS.cyan.icon, ...ICON_SIZE }} /> `,
       previewContent: html`
         <div className="preview-container">
-          <${Check} style=${{ color: '#22d3ee', ...LARGE_ICON_SIZE }} />
+          <${Check} style=${{ color: THEME_COLORS.cyan.preview, ...LARGE_ICON_SIZE }} />
         </div>
       `,
     },
