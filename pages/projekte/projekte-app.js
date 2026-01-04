@@ -1,4 +1,5 @@
 import { createLogger } from '../../content/utils/shared-utilities.js';
+import { createProjectsData } from './projects-data.js';
 
 const log = createLogger('projekte-app');
 
@@ -126,98 +127,14 @@ const Check = (props) => html`
 `;
 
 // --- DATA ---
-const projects = [
-  {
-    id: 1,
-    title: 'Schere Stein Papier',
-    description: 'Der Klassiker gegen den Computer!',
-    tags: ['JavaScript', 'Game Logic'],
-    category: 'Game',
-    datePublished: '2023-07-05',
-    image: 'https://abdulkerimsesli.de/content/assets/img/og/og-projekte.png',
-    appPath: '/projekte/apps/schere-stein-papier/',
-    githubPath: 'https://github.com/aKs030/Webgame/tree/main/apps/schere-stein-papier',
-    bgStyle: {
-      background:
-        'linear-gradient(to bottom right, rgba(99, 102, 241, 0.2), rgba(168, 85, 247, 0.2))',
-    },
-    glowColor: '#5586f7ff',
-    icon: html` <${Gamepad2} style=${{ color: '#c084fc', width: '32px', height: '32px' }} /> `,
-    previewContent: html`
-      <div className="preview-container-vs">
-        <div style=${{ fontSize: '3rem' }}>🪨</div>
-        <div style=${{ fontSize: '1.5rem', opacity: 0.5 }}>VS</div>
-        <div style=${{ fontSize: '3rem' }}>✂️</div>
-      </div>
-    `,
-  },
-  {
-    id: 2,
-    title: 'Zahlen Raten',
-    description: 'Finde die geheime Zahl zwischen 1 und 100.',
-    tags: ['Logic', 'Input'],
-    category: 'Puzzle',
-    datePublished: '2024-08-01',
-    image: 'https://abdulkerimsesli.de/content/assets/img/og/og-projekte.png',
-    appPath: '/projekte/apps/zahlen-raten/',
-    githubPath: 'https://github.com/aKs030/Webgame/tree/main/apps/zahlen-raten',
-    bgStyle: {
-      background:
-        'linear-gradient(to bottom right, rgba(34, 197, 94, 0.2), rgba(16, 185, 129, 0.2))',
-    },
-    glowColor: '#10b981',
-    icon: html` <${Binary} style=${{ color: '#34d399', width: '32px', height: '32px' }} /> `,
-    previewContent: html`
-      <div className="preview-container">
-        <span style=${{ fontSize: '4rem', color: '#6ee7b7', fontWeight: 'bold' }}>?</span>
-      </div>
-    `,
-  },
-  {
-    id: 3,
-    title: 'Color Changer',
-    description: 'Dynamische Hintergrundfarben per Klick.',
-    tags: ['DOM', 'Events'],
-    category: 'UI',
-    datePublished: '2022-03-15',
-    image: 'https://abdulkerimsesli.de/content/assets/img/og/og-projekte.png',
-    appPath: '/projekte/apps/color-changer/',
-    githubPath: 'https://github.com/aKs030/Webgame/tree/main/apps/color-changer',
-    bgStyle: {
-      background:
-        'linear-gradient(to bottom right, rgba(249, 115, 22, 0.2), rgba(236, 72, 153, 0.2))',
-    },
-    glowColor: '#ec4899',
-    icon: html` <${Palette} style=${{ color: '#f472b6', width: '32px', height: '32px' }} /> `,
-    previewContent: html`
-      <div className="preview-container">
-        <${Palette} style=${{ width: '4rem', height: '4rem', color: '#f472b6' }} />
-      </div>
-    `,
-  },
-  {
-    id: 4,
-    title: 'To-Do Liste',
-    description: 'Produktivitäts-Tool zum Verwalten von Aufgaben.',
-    tags: ['CRUD', 'Arrays'],
-    category: 'App',
-    datePublished: '2021-11-05',
-    image: 'https://abdulkerimsesli.de/content/assets/img/og/og-projekte.png',
-    appPath: '/projekte/apps/todo-liste/',
-    githubPath: 'https://github.com/aKs030/Webgame/tree/main/apps/todo-liste',
-    bgStyle: {
-      background:
-        'linear-gradient(to bottom right, rgba(59, 130, 246, 0.2), rgba(6, 182, 212, 0.2))',
-    },
-    glowColor: '#06b6d4',
-    icon: html` <${ListTodo} style=${{ color: '#22d3ee', width: '32px', height: '32px' }} /> `,
-    previewContent: html`
-      <div className="preview-container">
-        <${Check} style=${{ width: '4rem', height: '4rem', color: '#22d3ee' }} />
-      </div>
-    `,
-  },
-];
+// Import project data with icons
+const projects = createProjectsData(html, {
+  Gamepad2,
+  Binary,
+  Palette,
+  ListTodo,
+  Check,
+});
 
 // --- APP ---
 function App() {
