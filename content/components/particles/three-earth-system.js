@@ -67,222 +67,220 @@ let isSystemActive = false;
 
 // ===== Main Manager =====
 
-const ThreeEarthManager = (() => {
-  const initThreeEarth = async () => {
-    const sharedState = getSharedState();
-    if (sharedState.systems.has('three-earth')) {
-      log.debug('System already initialized');
+export const initThreeEarth = async () => {
+  const sharedState = getSharedState();
+  if (sharedState.systems.has('three-earth')) {
+    log.debug('System already initialized');
+    return cleanup;
+  }
+
+  const container = getElementById('threeEarthContainer');
+  if (!container) {
+    log.warn('Container not found');
+    return () => {};
+  }
+
+  // Set Active Flag
+  isSystemActive = true;
+
+  try {
+    log.info('Initializing Three.js Earth System v11.0.0 (Pure WebGL)');
+
+    // Device Detection & WebGL check
+    if (!_detectAndEnsureWebGL(container)) return cleanup;
+
+    _registerAndBlock();
+
+    // Load Three.js with watchdog to avoid blocking the global loader
+    THREE_INSTANCE = await loadThreeWithWatchdog(earthTimers, container);
+
+    // CRITICAL CHECK: Did cleanup happen while awaiting ThreeJS?
+    if (!isSystemActive) return cleanup;
+
+    showLoadingState(container);
+
+    // Scene Setup
+    isMobileDevice =
+      !!deviceCapabilities?.isMobile ||
+      (globalThis.matchMedia?.('(max-width: 768px)')?.matches ?? false);
+
+    const sceneObjects = setupScene(THREE_INSTANCE, container);
+    scene = sceneObjects.scene;
+    camera = sceneObjects.camera;
+    renderer = sceneObjects.renderer;
+
+    if (renderer && CONFIG.PERFORMANCE?.PIXEL_RATIO) {
+      renderer.setPixelRatio(CONFIG.PERFORMANCE.PIXEL_RATIO);
+    }
+
+    const loadingManager = _createLoadingManager(THREE_INSTANCE, container);
+    _setupStarsAndLighting(THREE_INSTANCE, scene, camera, renderer);
+
+    // Assets Loading (moved to helper)
+    const [earthAssets, moonLOD, cloudObj] = await loadAssets(
+      THREE_INSTANCE,
+      scene,
+      renderer,
+      isMobileDevice,
+      loadingManager
+    );
+
+    // CRITICAL CHECK
+    if (!isSystemActive) {
+      if (earthAssets.dayMaterial) earthAssets.dayMaterial.dispose();
       return cleanup;
     }
 
-    const container = getElementById('threeEarthContainer');
-    if (!container) {
-      log.warn('Container not found');
-      return () => {};
+    earthMesh = earthAssets.earthMesh;
+    dayMaterial = earthAssets.dayMaterial;
+    nightMaterial = earthAssets.nightMaterial;
+    moonMesh = moonLOD;
+    cloudMesh = cloudObj;
+
+    // Final Scene Assembly
+    if (cloudMesh) {
+      cloudMesh.position.copy(earthMesh.position);
+      cloudMesh.scale.copy(earthMesh.scale);
+      scene.add(cloudMesh);
     }
 
-    // Set Active Flag
-    isSystemActive = true;
+    const atmosphereMesh = createAtmosphere(THREE_INSTANCE, isMobileDevice);
+    earthMesh.add(atmosphereMesh);
 
+    // Managers and event wiring
+    _initManagers(container);
+    _setupManagersAndCards(container);
+    // Setup showcase triggers and handlers
+    _setupShowcaseTriggers();
+
+    _finalizeInitialization(container);
+
+    return cleanup;
+  } catch (error) {
+    log.error('Initialization failed:', error);
     try {
-      log.info('Initializing Three.js Earth System v11.0.0 (Pure WebGL)');
-
-      // Device Detection & WebGL check
-      if (!_detectAndEnsureWebGL(container)) return cleanup;
-
-      _registerAndBlock();
-
-      // Load Three.js with watchdog to avoid blocking the global loader
-      THREE_INSTANCE = await loadThreeWithWatchdog(earthTimers, container);
-
-      // CRITICAL CHECK: Did cleanup happen while awaiting ThreeJS?
-      if (!isSystemActive) return cleanup;
-
-      showLoadingState(container);
-
-      // Scene Setup
-      isMobileDevice =
-        !!deviceCapabilities?.isMobile ||
-        (globalThis.matchMedia?.('(max-width: 768px)')?.matches ?? false);
-
-      const sceneObjects = setupScene(THREE_INSTANCE, container);
-      scene = sceneObjects.scene;
-      camera = sceneObjects.camera;
-      renderer = sceneObjects.renderer;
-
-      if (renderer && CONFIG.PERFORMANCE?.PIXEL_RATIO) {
-        renderer.setPixelRatio(CONFIG.PERFORMANCE.PIXEL_RATIO);
-      }
-
-      const loadingManager = _createLoadingManager(THREE_INSTANCE, container);
-      _setupStarsAndLighting(THREE_INSTANCE, scene, camera, renderer);
-
-      // Assets Loading (moved to helper)
-      const [earthAssets, moonLOD, cloudObj] = await loadAssets(
-        THREE_INSTANCE,
-        scene,
-        renderer,
-        isMobileDevice,
-        loadingManager
-      );
-
-      // CRITICAL CHECK
-      if (!isSystemActive) {
-        if (earthAssets.dayMaterial) earthAssets.dayMaterial.dispose();
-        return cleanup;
-      }
-
-      earthMesh = earthAssets.earthMesh;
-      dayMaterial = earthAssets.dayMaterial;
-      nightMaterial = earthAssets.nightMaterial;
-      moonMesh = moonLOD;
-      cloudMesh = cloudObj;
-
-      // Final Scene Assembly
-      if (cloudMesh) {
-        cloudMesh.position.copy(earthMesh.position);
-        cloudMesh.scale.copy(earthMesh.scale);
-        scene.add(cloudMesh);
-      }
-
-      const atmosphereMesh = createAtmosphere(THREE_INSTANCE, isMobileDevice);
-      earthMesh.add(atmosphereMesh);
-
-      // Managers and event wiring
-      _initManagers(container);
-      _setupManagersAndCards(container);
-      // Setup showcase triggers and handlers
-      _setupShowcaseTriggers();
-
-      _finalizeInitialization(container);
-
-      return cleanup;
-    } catch (error) {
-      log.error('Initialization failed:', error);
-      try {
-        if (renderer) renderer.dispose();
-      } catch {
-        /* ignore */
-      }
-      sharedCleanupManager.cleanupSystem('three-earth');
-      showErrorState(container, error, () => {
-        cleanup();
-        initThreeEarth();
-      });
-      return () => {};
-    }
-  };
-
-  const cleanup = () => {
-    isSystemActive = false;
-    log.info('Cleaning up Earth system');
-
-    // Remove interaction listeners first
-    try {
-      globalThis.removeEventListener('mousemove', onMove);
-      globalThis.removeEventListener('click', onClick);
+      if (renderer) renderer.dispose();
     } catch {
       /* ignore */
     }
-
-    // Clear any pending showcase timers and revert temporary config if needed
-    if (showcaseTimeoutId) {
-      try {
-        clearTimeout(showcaseTimeoutId);
-      } catch {
-        /* ignore */
-      }
-      showcaseTimeoutId = null;
-    }
-
-    if (showcaseActive) {
-      // revert any temporary config we changed for the showcase
-      try {
-        if (showcaseOriginals.cloudSpeed !== undefined)
-          CONFIG.CLOUDS.ROTATION_SPEED = showcaseOriginals.cloudSpeed;
-        if (showcaseOriginals.emissiveAmp !== undefined)
-          CONFIG.EARTH.EMISSIVE_PULSE_AMPLITUDE = showcaseOriginals.emissiveAmp;
-      } catch {
-        /* ignore */
-      }
-      showcaseActive = false;
-    }
-
-    if (animationFrameId) {
-      cancelAnimationFrame(animationFrameId);
-      animationFrameId = null;
-    }
-
-    document.removeEventListener('visibilitychange', handleVisibilityChange);
-
-    performanceMonitor?.cleanup();
-    shootingStarManager?.cleanup();
-    cameraManager?.cleanup();
-    starManager?.cleanup();
-    sectionObserver?.disconnect();
-    viewportObserver?.disconnect();
-    earthTimers.clearAll();
     sharedCleanupManager.cleanupSystem('three-earth');
-
-    if (scene) {
-      scene.traverse((obj) => {
-        if (obj.geometry) obj.geometry.dispose();
-        if (obj.material) {
-          if (Array.isArray(obj.material)) {
-            obj.material.forEach((m) => disposeMaterial(m));
-          } else {
-            disposeMaterial(obj.material);
-          }
-        }
-      });
-      scene.clear();
-    }
-
-    if (renderer) {
-      renderer.dispose();
-    }
-
-    [dayMaterial, nightMaterial].forEach(disposeMaterial);
-
-    scene = camera = renderer = null;
-    earthMesh = moonMesh = cloudMesh = null;
-    dayMaterial = nightMaterial = null;
-    directionalLight = ambientLight = null;
-
-    // Reset rendering sync flags
-    assetsReady = false;
-    firstFrameRendered = false;
-
-    if (cardManager) cardManager.cleanup();
-    cardManager = starManager = shootingStarManager = performanceMonitor = null;
-    cameraManager = null;
-
-    unregisterParticleSystem('three-earth');
-    document.body.classList.remove('three-earth-active');
-    log.info('Cleanup complete');
-  };
-
-  function disposeMaterial(material) {
-    if (!material) return;
-    const textureProps = ['map', 'normalMap', 'bumpMap', 'envMap', 'emissiveMap', 'alphaMap'];
-    textureProps.forEach((prop) => {
-      if (material[prop]?.dispose) {
-        material[prop].dispose();
-        material[prop] = null;
-      }
+    showErrorState(container, error, () => {
+      cleanup();
+      initThreeEarth();
     });
-    if (material.uniforms) {
-      Object.values(material.uniforms).forEach((uniform) => {
-        if (uniform?.value && typeof uniform.value.dispose === 'function') {
-          uniform.value.dispose();
-        }
-      });
-    }
-    material.dispose();
+    return () => {};
+  }
+};
+
+export const cleanup = () => {
+  isSystemActive = false;
+  log.info('Cleaning up Earth system');
+
+  // Remove interaction listeners first
+  try {
+    globalThis.removeEventListener('mousemove', onMove);
+    globalThis.removeEventListener('click', onClick);
+  } catch {
+    /* ignore */
   }
 
-  return { initThreeEarth, cleanup };
-})();
+  // Clear any pending showcase timers and revert temporary config if needed
+  if (showcaseTimeoutId) {
+    try {
+      clearTimeout(showcaseTimeoutId);
+    } catch {
+      /* ignore */
+    }
+    showcaseTimeoutId = null;
+  }
+
+  if (showcaseActive) {
+    // revert any temporary config we changed for the showcase
+    try {
+      if (showcaseOriginals.cloudSpeed !== undefined)
+        CONFIG.CLOUDS.ROTATION_SPEED = showcaseOriginals.cloudSpeed;
+      if (showcaseOriginals.emissiveAmp !== undefined)
+        CONFIG.EARTH.EMISSIVE_PULSE_AMPLITUDE = showcaseOriginals.emissiveAmp;
+    } catch {
+      /* ignore */
+    }
+    showcaseActive = false;
+  }
+
+  if (animationFrameId) {
+    cancelAnimationFrame(animationFrameId);
+    animationFrameId = null;
+  }
+
+  document.removeEventListener('visibilitychange', handleVisibilityChange);
+
+  performanceMonitor?.cleanup();
+  shootingStarManager?.cleanup();
+  cameraManager?.cleanup();
+  starManager?.cleanup();
+  sectionObserver?.disconnect();
+  viewportObserver?.disconnect();
+  earthTimers.clearAll();
+  sharedCleanupManager.cleanupSystem('three-earth');
+
+  if (scene) {
+    scene.traverse((obj) => {
+      if (obj.geometry) obj.geometry.dispose();
+      if (obj.material) {
+        if (Array.isArray(obj.material)) {
+          obj.material.forEach((m) => disposeMaterial(m));
+        } else {
+          disposeMaterial(obj.material);
+        }
+      }
+    });
+    scene.clear();
+  }
+
+  if (renderer) {
+    renderer.dispose();
+  }
+
+  [dayMaterial, nightMaterial].forEach(disposeMaterial);
+
+  scene = camera = renderer = null;
+  earthMesh = moonMesh = cloudMesh = null;
+  dayMaterial = nightMaterial = null;
+  directionalLight = ambientLight = null;
+
+  // Reset rendering sync flags
+  assetsReady = false;
+  firstFrameRendered = false;
+
+  if (cardManager) cardManager.cleanup();
+  cardManager = starManager = shootingStarManager = performanceMonitor = null;
+  cameraManager = null;
+
+  unregisterParticleSystem('three-earth');
+  document.body.classList.remove('three-earth-active');
+  log.info('Cleanup complete');
+};
+
+function disposeMaterial(material) {
+  if (!material) return;
+  const textureProps = ['map', 'normalMap', 'bumpMap', 'envMap', 'emissiveMap', 'alphaMap'];
+  textureProps.forEach((prop) => {
+    if (material[prop]?.dispose) {
+      material[prop].dispose();
+      material[prop] = null;
+    }
+  });
+  if (material.uniforms) {
+    Object.values(material.uniforms).forEach((uniform) => {
+      if (uniform?.value && typeof uniform.value.dispose === 'function') {
+        uniform.value.dispose();
+      }
+    });
+  }
+  material.dispose();
+}
+
+const ThreeEarthManager = { initThreeEarth, cleanup };
 
 // ===== Helpers =====
 
@@ -383,12 +381,6 @@ function _createLoadingManager(THREE, container) {
           detail: { containerId: container?.id ?? null },
         })
       );
-      // Compatibility event for pages that wait for the earth to be ready
-      try {
-        window.dispatchEvent(new Event('earth-ready'));
-      } catch (err) {
-        log.warn('earth-ready dispatch failed', err);
-      }
     } catch (err) {
       log.warn('three-ready dispatch failed', err);
     }
@@ -400,12 +392,6 @@ function _createLoadingManager(THREE, container) {
       AppLoadManager.unblock('three-earth');
     } catch {
       /* ignore */
-    }
-    try {
-      // Ensure pages waiting for earth-ready continue after an error
-      window.dispatchEvent(new Event('earth-ready'));
-    } catch (err) {
-      log.warn('earth-ready dispatch onError failed', err);
     }
   };
 
@@ -475,25 +461,40 @@ function _finalizeInitialization(container) {
           detail: { containerId: container?.id ?? null },
         })
       );
-      try {
-        window.dispatchEvent(new Event('earth-ready'));
-      } catch (err) {
-        log.warn('earth-ready dispatch fallback failed', err);
-      }
     }
   } catch (err) {
     log.warn('Failed to set fallback three-ready', err);
   }
 }
+
 function _bindInteractionHandlers(onMove, onClick) {
+  // For closure-based handlers, always detach old handlers first to avoid duplicates.
+  // Use weak references to avoid memory leaks if cleanup() is skipped.
   try {
-    globalThis.removeEventListener('mousemove', onMove);
-    globalThis.removeEventListener('click', onClick);
+    const prevMove = globalThis._threeEarthMove;
+    const prevClick = globalThis._threeEarthClick;
+
+    if (prevMove && prevMove !== onMove) {
+      globalThis.removeEventListener('mousemove', prevMove);
+    }
+    if (prevClick && prevClick !== onClick) {
+      globalThis.removeEventListener('click', prevClick);
+    }
   } catch {
-    /* ignore */
+    /* ignore detach errors */
   }
+
   globalThis.addEventListener('mousemove', onMove);
   globalThis.addEventListener('click', onClick);
+
+  // Store handlers for later cleanup. These are STRONG references (not WeakMap);
+  // we rely on the cleanup() call to properly dispose them.
+  // If cleanup() never runs, the old handlers remain but new ones still work.
+  // Note: Handlers won't be GC'd while globalThis exists, but that's acceptable
+  // because (1) there are at most 2 handlers, and (2) cleanup is called on page unload.
+  globalThis._threeEarthMove = onMove;
+  globalThis._threeEarthClick = onClick;
+
   sharedCleanupManager.addCleanupFunction(
     'three-earth',
     () => {
@@ -1151,7 +1152,6 @@ function _setupShowcaseTriggers() {
 }
 // ===== Public API =====
 
-export const { initThreeEarth, cleanup } = ThreeEarthManager;
 export const EarthSystemAPI = {
   flyToPreset: (presetName) => {
     if (cameraManager) cameraManager.flyToPreset(presetName);
