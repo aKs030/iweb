@@ -153,36 +153,40 @@ export class CardManager {
             card.userData.hoverY = y - headerWorldOffset + 0.2;
             card.userData.originalZ = 0;
           } else {
-            // === Desktop Layout (Horizontal Arc) ===
+            // === Desktop Layout (Grid: 3 oben, 2 unten) ===
+            // Größere Kartengröße für besseren visuellen Impact
+            const baseScale = 1.15;
             const adaptiveScale = Math.min(1, vw / 1400);
+            const finalScale = baseScale * Math.max(0.75, adaptiveScale);
 
-            // Optimized scale for 5 cards - slightly larger if space permits
-            const baseScale = 0.92;
-            const finalScale = baseScale * Math.max(0.6, adaptiveScale);
+            // Grid-Abstände mit optimiertem Spacing
+            const cardSpacingX = 3.0; // Horizontaler Abstand zwischen Karten
+            const cardSpacingY = 3.2; // Vertikaler Abstand zwischen Zeilen
 
-            // Spacing optimization: Tighter packing for 5 cards to fit view
-            // Using 1.12 factor (12% gap) instead of 1.15-1.4
-            const spacingFactor = 1.12;
-            const newSpacing = baseW * spacingFactor * Math.max(0.75, adaptiveScale);
+            // Layout: 3 Karten oben, 2 unten (versetzt zentriert)
+            let x, y;
 
-            const x = (idx - centerOffset) * newSpacing;
-
-            // ARC EFFECT: Calculate Z-depth based on distance from center
-            // Creates a concave menu feeling (cockpit style)
-            const distFromCenter = Math.abs(idx - centerOffset);
-            // Parabolic curve: z = a * x^2.
-            // The further out, the more pushed back (negative Z)
-            const zCurve = -(Math.pow(distFromCenter, 1.8) * 0.25);
+            if (idx < 3) {
+              // Obere Reihe: 3 Karten
+              const colIndex = idx; // 0, 1, 2
+              x = (colIndex - 1) * cardSpacingX; // -2.6, 0, +2.6
+              y = cardSpacingY / 2; // Oben
+            } else {
+              // Untere Reihe: 2 Karten (versetzt zentriert)
+              const colIndex = idx - 3; // 0, 1
+              x = (colIndex - 0.5) * cardSpacingX; // -1.3, +1.3
+              y = -cardSpacingY / 2; // Unten
+            }
 
             card.scale.setScalar(finalScale);
             card.position.x = x;
-            card.position.y = 0;
-            card.position.z = zCurve;
+            card.position.y = y;
+            card.position.z = 0; // Keine Tiefenvariation
 
             // Reset metadata
-            card.userData.originalY = 0;
-            card.userData.hoverY = 0.4; // Nice lift on hover
-            card.userData.originalZ = zCurve;
+            card.userData.originalY = y;
+            card.userData.hoverY = y + 0.3; // Sanfte Hebung beim Hover
+            card.userData.originalZ = 0;
           }
         });
         this._resizeRAF = null;
