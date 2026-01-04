@@ -1,8 +1,8 @@
-# Abdulkerim — Digital Portfolio 🚀
+# Abdulkerim Sesli — Portfolio
 
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-abdulkerim--s-0077B5?logo=linkedin)](https://linkedin.com/in/abdulkerim-s) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-abdulkerim--sesli-0077B5?logo=linkedin)](https://linkedin.com/in/abdulkerimsesli) [![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](https://opensource.org/licenses/ISC)
 
-**Modernes, hochperformantes Portfolio-Framework von Abdulkerim Sesli — PWA-fähig, barrierearm und mit interaktiven Visualisierungen.**
+**Portfolio website of Abdulkerim Sesli — Web Developer & Photographer in Berlin. PWA-ready, accessible, and featuring interactive Three.js visualizations.**
 
 ---
 
@@ -52,8 +52,6 @@ Copy-ready Profile/Bio Texte für GitHub, LinkedIn und andere Profile findest du
 ```bash
 # Dependencies installieren
 npm install
-# Husky-Hooks installieren
-npm run prepare
 # Lokalen Server starten
 npm run dev
 ```
@@ -73,19 +71,15 @@ Danach sicherstellen, dass `.gitignore` committed ist, damit `node_modules/` nic
 
 ## 📦 Skripte
 
-| Befehl                 | Beschreibung                                            |
-| ---------------------- | ------------------------------------------------------- |
-| `npm run dev`          | Startet lokalen HTTP-Server (http-server auf Port 8081) |
-| `npm run serve`        | Startet `http-server` (gleich wie `dev`)                |
-| `npm run format`       | Formatiert Code mit Prettier                            |
-| `npm run format:check` | Überprüft Format mit Prettier                           |
-| `npm run prepare`      | Installiert Husky-Git-Hooks                             |
-| `npm run lint`         | Führt ESLint aus (`lint:js` für .js/.ts Dateien)        |
-| `npm run test:smoke`   | Führt die Playwright-basierten Smoke-Tests aus          |
-
-> Hinweis: Smoke-Tests verwenden Playwright; führe `npm install` und bei Bedarf `npx playwright install` aus, bevor du `npm run test:smoke` startest.
-
-> Hinweis: In älteren Dokumenten wird `npm run build:prod` erwähnt — aktuell existiert kein `build`-Skript in `package.json`. Wenn du ein Production-Build-Setup möchtest, kann ich ein `build`-Script (z.B. mit `esbuild`) ergänzen.
+| Befehl                    | Beschreibung                                   |
+| ------------------------- | ---------------------------------------------- |
+| `npm run dev`             | Startet lokalen Entwicklungsserver (Port 8080) |
+| `npm run start`           | Alias für `npm run dev`                        |
+| `npm run format`          | Formatiert Code mit Prettier                   |
+| `npm run lint`            | Führt ESLint aus und behebt Probleme           |
+| `npm run prepare`         | Installiert Husky-Git-Hooks                    |
+| `npm run config:validate` | Validiert Konfigurationsdateien                |
+| `npm run sync:gtm`        | Synchronisiert GTM-Container mit Site-Config   |
 
 ---
 
@@ -113,8 +107,9 @@ Zentrale Host-/Site-abhängige Einstellungen (GTM/GA4/Ads-IDs, Ads-Conversion-La
 - ✅ **React Photo Gallery**: Performante Galerie mit Filter & Zoom
 - ✅ **Logger-System**: Zentralisiertes Logging via `shared-utilities.js`
 - ✅ **ESM Migration**: Vollständige Umstellung auf ES Modules
-- ✅ **Dependency Update**: ESLint v9, Concurrently v9
-- ✅ **Karten‑Migration**: Feature‑Karten wurden auf `three-earth` (WebGL) umgestellt; statische HTML‑Karten entfernt und die alte CSS in `archive/removed-cards/cards.legacy.css` archiviert.
+- ✅ **Code-Cleanup**: Playwright & React entfernt (nicht verwendet)
+- ✅ **Vendor-Ordner optimiert**: Three.js von CDN (statt lokal)
+- ✅ **Performance**: Earth-Loader optimiert, CSS-Preloads bereinigt
 
 ---
 
@@ -124,7 +119,6 @@ Kurz-Checklist für Beiträge:
 
 - Fork → Branch → Commit → PR
 - Vor Commit: `npm run format` und `npm run lint`
-- Husky-Hooks sind aktiv (`prepare`/`install`) — Commit wird formatiert und gelinted
 - Schreibe kurze, aussagekräftige PR-Titel und beschreibe Änderungen im PR-Body
 
 Für grössere Änderungen: Öffne bitte zuerst ein Issue zur Diskussion.
@@ -133,16 +127,11 @@ Für grössere Änderungen: Öffne bitte zuerst ein Issue zur Diskussion.
 
 ## 📊 CI & Badges
 
-Aktuell ist kein CI-Workflow im Repo gefunden. Empfohlen:
+✅ **GitHub Actions CI aktiviert** - siehe `.github/workflows/ci.yml`:
 
-- GitHub Actions für Build, Lint und Tests
-- Coverage (z.B. Codecov) falls Tests hinzugefügt werden
-
-Badge-Template (ersetze `OWNER/REPO` und `workflow.yml`):
-
-`![CI](https://github.com/OWNER/REPO/actions/workflows/workflow.yml/badge.svg)`
-
-Wenn du möchtest, richte ich ein Beispiel-Workflow ein und füge ein aktives Badge hinzu.
+- ESLint Linting auf alle `.js` und `.ts` Dateien
+- Konfiguration-Validierung
+- Läuft auf Node.js 20 LTS
 
 ---
 

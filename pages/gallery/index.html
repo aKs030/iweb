@@ -26,9 +26,7 @@
       sizes="180x180"
       href="/content/assets/img/icons/apple-touch-icon.png"
     />
-    <title>
-      Fotografie Portfolio | Urban & Portrait Berlin — Abdulkerim Sesli
-    </title>
+    <title>Fotografie Portfolio | Urban & Portrait Berlin — Abdulkerim Sesli</title>
     <meta
       name="description"
       content="Visuelle Ästhetik aus der Hauptstadt. Kuratierte Galerie mit Fokus auf Street Photography, Architektur und atmosphärische Portraits aus Berlin und Umgebung."
@@ -51,17 +49,11 @@
       content="https://abdulkerimsesli.de/content/assets/img/og/og-gallery.png"
     />
     <meta property="og:locale" content="de_DE" />
-    <meta
-      property="og:site_name"
-      content="Abdulkerim — Digital Creator Portfolio"
-    />
+    <meta property="og:site_name" content="Abdulkerim — Digital Creator Portfolio" />
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image" />
-    <meta
-      property="twitter:url"
-      content="https://abdulkerimsesli.de/gallery/"
-    />
+    <meta property="twitter:url" content="https://abdulkerimsesli.de/gallery/" />
     <meta
       property="twitter:title"
       content="Fotografie Portfolio | Urban & Portrait Berlin — Abdulkerim Sesli"
@@ -91,20 +83,10 @@
       }
     </script>
 
-    <script
-      src="/content/components/head/head-complete.js"
-      type="module"
-    ></script>
-    <script
-      type="module"
-      src="/content/components/head/head-inline.js"
-    ></script>
+    <script src="/content/components/head/head-complete.js" type="module"></script>
+    <script type="module" src="/content/components/head/head-inline.js"></script>
 
-    <script
-      type="module"
-      src="/content/main.js"
-      crossorigin="anonymous"
-    ></script>
+    <script type="module" src="/content/main.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="/content/styles/loader.css" />
 
     <!-- Local gallery styles (replaces Tailwind CDN) -->
@@ -121,9 +103,7 @@
         </div>
 
         <div class="loader-info" aria-live="polite">
-          <span class="status-text" id="loader-status-text"
-            >Initialisiere System...</span
-          >
+          <span class="status-text" id="loader-status-text">Initialisiere System...</span>
           <span class="percentage" id="loader-percentage">0%</span>
         </div>
       </div>
@@ -144,20 +124,19 @@
       <div id="root"></div>
     </main>
 
-    <!-- React & Libraries (Production minified) - local vendor files to improve reliability -->
-    <script crossorigin src="/content/vendor/react.production.min.js"></script>
+    <!-- React & Libraries (Production minified) from CDN -->
     <script
       crossorigin
-      src="/content/vendor/react-dom.production.min.js"
+      src="https://cdn.jsdelivr.net/npm/react@18/umd/react.production.min.js"
+    ></script>
+    <script
+      crossorigin
+      src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.production.min.js"
     ></script>
 
     <!-- Lucide Icons removed — using inline/local icons to avoid many ESM module requests -->
 
     <!-- Gallery Component -->
-    <script
-      type="module"
-      src="/pages/gallery/gallery-app.js"
-      crossorigin="anonymous"
-    ></script>
+    <script type="module" src="/pages/gallery/gallery-app.js" crossorigin="anonymous"></script>
   </body>
 </html>

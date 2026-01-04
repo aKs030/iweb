@@ -1,40 +1,26 @@
 module.exports = {
   root: true,
-  env: {
-    es2022: true,
-    node: true,
-    browser: true,
-  },
-  extends: ["eslint:recommended", "plugin:prettier/recommended", "plugin:import/recommended"],
-  plugins: ["prettier", "import"],
-  parserOptions: {
-    ecmaVersion: 2022,
-    sourceType: "module",
-  },
+  ignorePatterns: ['node_modules/', 'dist/', 'build/', 'coverage/', '.nyc_output/', 'content/config/videos-part-*.js'],
+  env: { es2022: true, node: true, browser: true },
+  extends: ['eslint:recommended', 'plugin:prettier/recommended', 'plugin:import/recommended'],
+  plugins: ['prettier', 'import'],
+  parserOptions: { ecmaVersion: 2022, sourceType: 'module' },
+  globals: { gtag: 'readonly' },
   rules: {
-    // project-specific overrides
-    "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
-    "no-console": ["warn", { allow: ["warn", "error", "info"] }],
-    // allow empty catch blocks commonly used when ignoring errors intentionally
-    "no-empty": ["error", { "allowEmptyCatch": true }],
-    // runtime globals used by analytics
-    "no-undef": ["error", { "typeof": true }],
-  },
-  globals: {
-    gtag: 'readonly'
+    'no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+    'no-console': ['warn', { allow: ['warn', 'error', 'info'] }],
+    'no-empty': ['error', { allowEmptyCatch: true }],
+    'no-undef': ['error', { typeof: true }],
   },
   overrides: [
     {
-      files: ["scripts/**", "*.config.js"],
+      files: ['scripts/**', '*.config.js'],
       env: { node: true, browser: false },
-      rules: { "no-console": "off" }
+      rules: { 'no-console': 'off' },
     },
     {
-      files: ["pages/**", "content/**"],
-      rules: {
-        // These imports are resolved at runtime (CDN or server-side injection)
-        "import/no-unresolved": "off"
-      }
-    }
-  ]
+      files: ['pages/**', 'content/**'],
+      rules: { 'import/no-unresolved': 'off' },
+    },
+  ],
 };
