@@ -449,51 +449,14 @@ const LoadingScreenManager = (() => {
         return;
       }
 
-      // Wait for one of the ready signals with a safety timeout
-      let settled = false;
-      const settle = () => {
-        if (settled) return;
-        settled = true;
-        proceedToHide();
-      };
-
-      // Use configurable timeout from globalThis.CONFIG or fall back to 4000ms
-      // CONFIG might not be loaded yet, so check safely with try-catch
-      let timeoutMs = 4000;
-      try {
-        if (globalThis.CONFIG?.PERFORMANCE?.EARTH_LOAD_TIMEOUT) {
-          timeoutMs = globalThis.CONFIG.PERFORMANCE.EARTH_LOAD_TIMEOUT;
-        }
-      } catch {
-        // CONFIG not available, use default
-      }
-
-      let timedOut = false;
-      const t = setTimeout(() => {
-        timedOut = true;
-        try {
-          log.warn(`Earth load timeout after ${timeoutMs}ms - proceeding anyway`);
-        } catch {}
-        settle();
-      }, timeoutMs);
-
-      const startTime = performance.now();
-      const onReady = () => {
-        clearTimeout(t);
-        const duration = performance.now() - startTime;
-        // Log performance metrics if debug mode is enabled, including timeout status
+      // Three.js Earth system now unblocks itself immediately after initialization
+      // No need to wait for events here - just proceed after a short grace period
+      setTimeout(() => {
         if (ENV.debug) {
-          const readyStatus = timedOut ? '(timeout)' : '(ready signal)';
-          log.debug(`Earth system ${readyStatus} in ${Math.round(duration)}ms`);
+          log.debug('Earth grace period completed - proceeding to hide loader');
         }
-        settle();
-      };
-
-      // three-earth-system dispatches these on document (custom events, don't bubble).
-      // Listen on document for reliable capture of three-first-frame and three-ready signals.
-      // First to fire wins; subsequent signals are ignored via settled flag.
-      document.addEventListener('three-first-frame', onReady, { once: true });
-      document.addEventListener('three-ready', onReady, { once: true });
+        proceedToHide();
+      }, 500);
     }, delay);
   }
 

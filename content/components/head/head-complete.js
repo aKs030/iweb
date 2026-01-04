@@ -854,6 +854,24 @@ async function loadSharedHead() {
 
   if (globalThis.SHARED_HEAD_LOADED) return;
 
+  // Wait for head-inline.js to complete critical setup (prevents race conditions)
+  if (!globalThis.__HEAD_INLINE_READY) {
+    await new Promise((resolve) => {
+      const checkInterval = setInterval(() => {
+        if (globalThis.__HEAD_INLINE_READY) {
+          clearInterval(checkInterval);
+          resolve();
+        }
+      }, 50);
+      // Safety timeout after 5 seconds
+      setTimeout(() => {
+        clearInterval(checkInterval);
+        log?.warn?.('head-complete: timeout waiting for head-inline, proceeding anyway');
+        resolve();
+      }, 5000);
+    });
+  }
+
   // --- 1. GLOBALE DATEN & KONFIGURATION ---
 
   // B. INHALTS-STEUERUNG (Snippet Text Füllung)
@@ -978,6 +996,9 @@ async function loadSharedHead() {
       // Force Canonical to Production host when true. Set to false to allow dev/staging canonical behavior.
       // Only honor an explicit opt-in via data attribute.
       const forceProdFlag = document.documentElement.dataset.forceProdCanonical === 'true';
+      
+      // Check if head-inline.js already set an early canonical (will be updated with proper value)
+      const earlyCanonical = document.head.querySelector('link[rel="canonical"][data-early="true"]');
 
       // Compute cleanPath using shared canonical util
       let cleanPath;
@@ -1015,8 +1036,13 @@ async function loadSharedHead() {
       );
 
       const canonicalEl = document.head.querySelector('link[rel="canonical"]');
-      if (canonicalEl) canonicalEl.setAttribute('href', effectiveCanonical);
-      else upsertLink('canonical', effectiveCanonical);
+      if (canonicalEl) {
+        canonicalEl.setAttribute('href', effectiveCanonical);
+        // Remove early flag if present (now properly configured)
+        canonicalEl.removeAttribute('data-early');
+      } else {
+        upsertLink('canonical', effectiveCanonical);
+      }
 
       // Apply canonical and hreflang alternates using pure, testable helper
       applyCanonicalLinks(document, alternates, effectiveCanonical);
