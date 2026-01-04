@@ -569,8 +569,6 @@ const ThreeEarthLoader = (() => {
       if (typeof cleanupFn === 'function') {
         // Export the cleanup function for programmatic control
         globalThis.__threeEarthCleanup = cleanupFn;
-        // Optionally keep compatibility (same global assignment) - no-op when debug is off
-        if (ENV.debug) globalThis.__threeEarthCleanup = cleanupFn;
 
         log.info('Three.js Earth system initialized');
         perfMarks.threeJsLoaded = performance.now();

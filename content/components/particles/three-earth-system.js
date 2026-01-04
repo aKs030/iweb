@@ -1092,7 +1092,6 @@ function triggerShowcase(duration = 8000) {
   if (deviceCapabilities?.isLowEnd) return; // avoid heavy effects on low-end devices
   showcaseActive = true;
 
-  // Backup originals
   showcaseOriginals.cloudSpeed = CONFIG.CLOUDS.ROTATION_SPEED;
   showcaseOriginals.emissiveAmp = CONFIG.EARTH.EMISSIVE_PULSE_AMPLITUDE;
 

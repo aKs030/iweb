@@ -210,7 +210,6 @@ class SharedCleanupManager {
     // Deactivate parallax
     sharedParallaxManager.deactivate();
 
-    // Reset state
     sharedState.reset();
 
     log.info('Global cleanup completed');
