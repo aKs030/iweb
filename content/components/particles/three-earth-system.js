@@ -67,15 +67,14 @@ let isSystemActive = false;
 
 // ===== Main Manager =====
 
-const ThreeEarthManager = (() => {
-  const initThreeEarth = async () => {
-    const sharedState = getSharedState();
-    if (sharedState.systems.has('three-earth')) {
-      log.debug('System already initialized');
-      return cleanup;
-    }
+export const initThreeEarth = async () => {
+  const sharedState = getSharedState();
+  if (sharedState.systems.has('three-earth')) {
+    log.debug('System already initialized');
+    return cleanup;
+  }
 
-    const container = getElementById('threeEarthContainer');
+  const container = getElementById('threeEarthContainer');
     if (!container) {
       log.warn('Container not found');
       return () => {};
@@ -169,13 +168,13 @@ const ThreeEarthManager = (() => {
         cleanup();
         initThreeEarth();
       });
-      return () => {};
-    }
-  };
+    return () => {};
+  }
+};
 
-  const cleanup = () => {
-    isSystemActive = false;
-    log.info('Cleaning up Earth system');
+export const cleanup = () => {
+  isSystemActive = false;
+  log.info('Cleaning up Earth system');
 
     // Remove interaction listeners first
     try {
@@ -278,11 +277,10 @@ const ThreeEarthManager = (() => {
         }
       });
     }
-    material.dispose();
-  }
+  material.dispose();
+}
 
-  return { initThreeEarth, cleanup };
-})();
+const ThreeEarthManager = { initThreeEarth, cleanup };
 
 // ===== Helpers =====
 
@@ -1146,7 +1144,6 @@ function _setupShowcaseTriggers() {
 }
 // ===== Public API =====
 
-export const { initThreeEarth, cleanup } = ThreeEarthManager;
 export const EarthSystemAPI = {
   flyToPreset: (presetName) => {
     if (cameraManager) cameraManager.flyToPreset(presetName);
