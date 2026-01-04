@@ -1,0 +1,7 @@
+node_modules/
+dist/
+build/
+coverage/
+.nyc_output/
+content/config/videos-part-*.js
+package-lock.json
