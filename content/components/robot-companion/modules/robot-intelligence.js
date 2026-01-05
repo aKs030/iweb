@@ -10,23 +10,50 @@ export class RobotIntelligence {
     this.lastInteractionTime = Date.now();
     this.isIdle = false;
 
+    // Event-Listener Handler f\u00fcr Cleanup speichern
+    this._handlers = {
+      mousemove: (e) => this.handleMouseMove(e),
+      scroll: () => this.handleScroll(),
+      mousedown: () => this.resetIdle(),
+      keydown: () => this.resetIdle(),
+      touchstart: () => this.resetIdle()
+    };
+
     this.setupListeners();
 
     // Check idle state every 10 seconds
-    setInterval(() => this.checkIdle(), 10000);
+    this._idleCheckInterval = setInterval(() => this.checkIdle(), 10000);
   }
 
   setupListeners() {
     // Passive listener for performance
-    document.addEventListener('mousemove', (e) => this.handleMouseMove(e), {
+    document.addEventListener('mousemove', this._handlers.mousemove, {
       passive: true,
     });
-    document.addEventListener('scroll', () => this.handleScroll(), {
+    document.addEventListener('scroll', this._handlers.scroll, {
       passive: true,
     });
     ['mousedown', 'keydown', 'touchstart'].forEach((evt) => {
-      document.addEventListener(evt, () => this.resetIdle(), { passive: true });
+      document.addEventListener(evt, this._handlers[evt], { passive: true });
     });
+  }
+
+  destroy() {
+    // Entferne alle Event-Listener
+    document.removeEventListener('mousemove', this._handlers.mousemove);
+    document.removeEventListener('scroll', this._handlers.scroll);
+    ['mousedown', 'keydown', 'touchstart'].forEach((evt) => {
+      document.removeEventListener(evt, this._handlers[evt]);
+    });
+
+    // Stoppe Idle-Check Interval
+    if (this._idleCheckInterval) {
+      clearInterval(this._idleCheckInterval);
+      this._idleCheckInterval = null;
+    }
+
+    // Clear Referenzen
+    this._handlers = null;
   }
 
   resetIdle() {

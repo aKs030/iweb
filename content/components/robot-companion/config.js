@@ -1,3 +1,12 @@
+/**
+ * Gemini API Konfiguration
+ * 
+ * WICHTIG: Diese Datei wird von gemini-service.js dynamisch importiert (nur serverseitig).
+ * Sie wird NICHT in den Browser-Bundle aufgenommen, um den API-Key zu schützen.
+ * 
+ * Verwendung: Server-seitige Requests nutzen diese Konfiguration.
+ * Browser-Requests verwenden stattdessen den /api/gemini Proxy-Endpunkt.
+ */
 export const config = {
   // Key is obfuscated to prevent GitHub from revoking it.
   // PLEASE RESTRICT THIS KEY IN GOOGLE CLOUD CONSOLE TO: www.abdulkerimsesli.de

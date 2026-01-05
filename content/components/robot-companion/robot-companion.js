@@ -43,6 +43,24 @@ class RobotCompanion {
     this.currentObservedContext = null;
     this._sectionObserver = null;
 
+    // Zentrale Event-Listener Verwaltung für sauberes Cleanup
+    this._eventListeners = {
+      scroll: [],
+      resize: [],
+      visualViewportResize: [],
+      visualViewportScroll: [],
+      inputFocus: null,
+      inputBlur: null,
+      heroTypingEnd: null
+    };
+
+    // Zentrale Timeout/Interval Verwaltung
+    this._timers = {
+      timeouts: new Set(),
+      intervals: new Set(),
+      scrollTimeout: null
+    };
+
     // Mood & Analytics System
     this.analytics = {
       sessions: Number.parseInt(localStorage.getItem('robot-sessions') || '0', 10) + 1,
@@ -59,9 +77,32 @@ class RobotCompanion {
     this.dom = {};
 
     this.applyTexts();
+  }
 
-    this._sectionCheckInterval = null;
-    this._scrollListener = null;
+  // Sichere Timeout/Interval-Wrapper für automatisches Cleanup
+  _setTimeout(callback, delay) {
+    const id = setTimeout(() => {
+      this._timers.timeouts.delete(id);
+      callback();
+    }, delay);
+    this._timers.timeouts.add(id);
+    return id;
+  }
+
+  _setInterval(callback, delay) {
+    const id = setInterval(callback, delay);
+    this._timers.intervals.add(id);
+    return id;
+  }
+
+  _clearTimeout(id) {
+    clearTimeout(id);
+    this._timers.timeouts.delete(id);
+  }
+
+  _clearInterval(id) {
+    clearInterval(id);
+    this._timers.intervals.delete(id);
   }
 
   applyTexts() {
@@ -74,18 +115,18 @@ class RobotCompanion {
     chat.contextGreetings = src.contextGreetings || chat.contextGreetings || { default: [] };
     chat.moodGreetings = src.moodGreetings ||
       chat.moodGreetings || {
-        normal: ['Hey! Wie kann ich helfen?', 'Hi! Was brauchst du?'],
-      };
+      normal: ['Hey! Wie kann ich helfen?', 'Hi! Was brauchst du?'],
+    };
     chat.startMessageSuffix = src.startMessageSuffix || chat.startMessageSuffix || {};
     chat.initialBubbleGreetings = src.initialBubbleGreetings ||
       chat.initialBubbleGreetings || ['Psst! Brauchst du Hilfe?'];
     chat.initialBubblePools = src.initialBubblePools || chat.initialBubblePools || [];
     chat.initialBubbleSequenceConfig = src.initialBubbleSequenceConfig ||
       chat.initialBubbleSequenceConfig || {
-        steps: 4,
-        displayDuration: 10000,
-        pausesAfter: [0, 20000, 20000, 0],
-      };
+      steps: 4,
+      displayDuration: 10000,
+      pausesAfter: [0, 20000, 20000, 0],
+    };
   }
 
   loadTexts() {
@@ -154,9 +195,12 @@ class RobotCompanion {
     if (typeof globalThis !== 'undefined') {
       globalThis.addEventListener('scroll', requestTick, { passive: true });
       globalThis.addEventListener('resize', requestTick, { passive: true });
+      // Registriere Listener für Cleanup
+      this._eventListeners.scroll.push({ target: globalThis, handler: requestTick });
+      this._eventListeners.resize.push({ target: globalThis, handler: requestTick });
     }
     requestAnimationFrame(checkOverlap);
-    setInterval(requestTick, 1000);
+    this._footerCheckInterval = this._setInterval(requestTick, 1000);
   }
 
   setupMobileViewportHandler() {
@@ -260,11 +304,18 @@ class RobotCompanion {
     if (typeof globalThis !== 'undefined' && globalThis.visualViewport) {
       globalThis.visualViewport.addEventListener('resize', handleResize);
       globalThis.visualViewport.addEventListener('scroll', handleResize);
+      // Registriere Listener für Cleanup
+      this._eventListeners.visualViewportResize.push({ target: globalThis.visualViewport, handler: handleResize });
+      this._eventListeners.visualViewportScroll.push({ target: globalThis.visualViewport, handler: handleResize });
     }
 
     if (this.dom.input) {
+      const blurHandler = () => setTimeout(handleResize, 200);
       this.dom.input.addEventListener('focus', handleResize);
-      this.dom.input.addEventListener('blur', () => setTimeout(handleResize, 200));
+      this.dom.input.addEventListener('blur', blurHandler);
+      // Registriere Listener für Cleanup
+      this._eventListeners.inputFocus = { target: this.dom.input, handler: handleResize };
+      this._eventListeners.inputBlur = { target: this.dom.input, handler: blurHandler };
     }
   }
 
@@ -277,7 +328,7 @@ class RobotCompanion {
     this.setupFooterOverlapCheck();
     this.setupMobileViewportHandler();
 
-    setTimeout(() => {
+    this._setTimeout(() => {
       const ctx = this.getPageContext();
       if (!this.chatModule.isOpen && !this.chatModule.lastGreetedContext) {
         const showSequenceChance = 0.9;
@@ -290,10 +341,10 @@ class RobotCompanion {
         } else {
           const greet =
             this.chatModule.initialBubbleGreetings &&
-            this.chatModule.initialBubbleGreetings.length > 0
+              this.chatModule.initialBubbleGreetings.length > 0
               ? this.chatModule.initialBubbleGreetings[
-                  Math.floor(Math.random() * this.chatModule.initialBubbleGreetings.length)
-                ]
+              Math.floor(Math.random() * this.chatModule.initialBubbleGreetings.length)
+              ]
               : 'Hallo!';
           const ctxArr =
             this.chatModule.contextGreetings[ctx] || this.chatModule.contextGreetings.default || [];
@@ -310,7 +361,7 @@ class RobotCompanion {
 
     this.setupSectionChangeDetection();
 
-    setTimeout(() => {
+    this._setTimeout(() => {
       this.animationModule.startTypeWriterKnockbackAnimation();
     }, 1500);
 
@@ -329,6 +380,7 @@ class RobotCompanion {
       }
     };
     document.addEventListener('hero:typingEnd', this._onHeroTypingEnd);
+    this._eventListeners.heroTypingEnd = { target: document, handler: this._onHeroTypingEnd };
   }
 
   setupSectionChangeDetection() {
@@ -341,7 +393,7 @@ class RobotCompanion {
       const currentContext = this.getPageContext();
       if (currentContext !== lastContext && currentContext !== this.chatModule.lastGreetedContext) {
         lastContext = currentContext;
-        setTimeout(() => {
+        this._setTimeout(() => {
           if (this.getPageContext() === currentContext && !this.chatModule.isOpen) {
             this.chatModule.startInitialBubbleSequence();
           }
@@ -349,10 +401,11 @@ class RobotCompanion {
       }
     };
 
-    let scrollTimeout;
     this._scrollListener = () => {
-      clearTimeout(scrollTimeout);
-      scrollTimeout = setTimeout(() => {
+      if (this._timers.scrollTimeout) {
+        this._clearTimeout(this._timers.scrollTimeout);
+      }
+      this._timers.scrollTimeout = this._setTimeout(() => {
         checkContextChange();
         try {
           const tw = document.querySelector('.typewriter-title');
@@ -369,32 +422,120 @@ class RobotCompanion {
         }
       }, 500);
     };
-    if (typeof globalThis !== 'undefined')
+    if (typeof globalThis !== 'undefined') {
       globalThis.addEventListener('scroll', this._scrollListener, { passive: true });
-    this._sectionCheckInterval = setInterval(checkContextChange, 3000);
+      // Registriere Listener für Cleanup
+      this._eventListeners.scroll.push({ target: globalThis, handler: this._scrollListener });
+    }
+    this._sectionCheckInterval = this._setInterval(checkContextChange, 3000);
   }
 
   destroy() {
-    this.chatModule.clearBubbleSequence();
-    this.animationModule.stopIdleEyeMovement();
-    this.animationModule.stopBlinkLoop();
+    // Module Cleanup
+    if (this.chatModule?.destroy) {
+      this.chatModule.destroy();
+    }
+    this.chatModule?.clearBubbleSequence();
+    this.animationModule?.stopIdleEyeMovement();
+    this.animationModule?.stopBlinkLoop();
+
+    // Intelligence Modul Cleanup (Event-Listener entfernen)
+    if (this.intelligenceModule?.destroy) {
+      this.intelligenceModule.destroy();
+    }
+
+    // Collision Modul Cleanup (IntersectionObserver)
+    if (this.collisionModule?.destroy) {
+      this.collisionModule.destroy();
+    }
+
+    // Observer Cleanup
     if (this._sectionObserver) {
       this._sectionObserver.disconnect();
       this._sectionObserver = null;
     }
-    if (this._scrollListener) {
-      if (typeof globalThis !== 'undefined')
-        globalThis.removeEventListener('scroll', this._scrollListener);
-      this._scrollListener = null;
+
+    // Zentrale Event-Listener Cleanup
+    if (this._eventListeners) {
+      // Scroll Listeners
+      this._eventListeners.scroll.forEach(({ target, handler }) => {
+        target.removeEventListener('scroll', handler);
+      });
+
+      // Resize Listeners
+      this._eventListeners.resize.forEach(({ target, handler }) => {
+        target.removeEventListener('resize', handler);
+      });
+
+      // Visual Viewport Listeners
+      this._eventListeners.visualViewportResize.forEach(({ target, handler }) => {
+        target.removeEventListener('resize', handler);
+      });
+      this._eventListeners.visualViewportScroll.forEach(({ target, handler }) => {
+        target.removeEventListener('scroll', handler);
+      });
+
+      // Input Listeners
+      if (this._eventListeners.inputFocus) {
+        const { target, handler } = this._eventListeners.inputFocus;
+        target.removeEventListener('focus', handler);
+      }
+      if (this._eventListeners.inputBlur) {
+        const { target, handler } = this._eventListeners.inputBlur;
+        target.removeEventListener('blur', handler);
+      }
+
+      // Hero Typing End Listener
+      if (this._eventListeners.heroTypingEnd) {
+        const { target, handler } = this._eventListeners.heroTypingEnd;
+        target.removeEventListener('hero:typingEnd', handler);
+      }
+
+      // Clear alle Referenzen
+      this._eventListeners = {
+        scroll: [],
+        resize: [],
+        visualViewportResize: [],
+        visualViewportScroll: [],
+        inputFocus: null,
+        inputBlur: null,
+        heroTypingEnd: null
+      };
     }
-    if (this._onHeroTypingEnd) {
-      document.removeEventListener('hero:typingEnd', this._onHeroTypingEnd);
-      this._onHeroTypingEnd = null;
-    }
+
+    // Interval Cleanup
     if (this._sectionCheckInterval) {
-      clearInterval(this._sectionCheckInterval);
+      this._clearInterval(this._sectionCheckInterval);
       this._sectionCheckInterval = null;
     }
+    if (this._footerCheckInterval) {
+      this._clearInterval(this._footerCheckInterval);
+      this._footerCheckInterval = null;
+    }
+
+    // Zentrale Timer Cleanup
+    if (this._timers) {
+      // Alle verbleibenden Timeouts canceln
+      this._timers.timeouts.forEach(id => clearTimeout(id));
+      this._timers.timeouts.clear();
+
+      // Alle verbleibenden Intervals canceln
+      this._timers.intervals.forEach(id => clearInterval(id));
+      this._timers.intervals.clear();
+
+      // Scroll Timeout
+      if (this._timers.scrollTimeout) {
+        clearTimeout(this._timers.scrollTimeout);
+        this._timers.scrollTimeout = null;
+      }
+    }
+
+    // Andere Module Cleanup
+    if (this.collisionModule?.obstacleObserver) {
+      this.collisionModule.obstacleObserver.disconnect();
+    }
+
+    // DOM Cleanup
     if (this.dom.container && this.dom.container.parentNode) {
       this.dom.container?.remove();
     }
@@ -444,7 +585,7 @@ class RobotCompanion {
     this.easterEggFound.add(id);
     localStorage.setItem('robot-easter-eggs', JSON.stringify([...this.easterEggFound]));
     this.chatModule.showBubble(message);
-    setTimeout(() => this.chatModule.hideBubble(), 10000);
+    this._setTimeout(() => this.chatModule.hideBubble(), 10000);
   }
 
   trackSectionVisit(context) {
@@ -716,7 +857,7 @@ class RobotCompanion {
 
     this.chatModule.addMessage(desc, 'bot');
     this.chatModule.addMessage(stats, 'bot');
-    setTimeout(() => this.chatModule.handleAction('start'), 2000);
+    this._setTimeout(() => this.chatModule.handleAction('start'), 2000);
   }
 
   // Delegated methods

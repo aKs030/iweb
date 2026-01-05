@@ -25,6 +25,19 @@ export class RobotCollision {
     );
   }
 
+  destroy() {
+    // Disconnect IntersectionObserver
+    if (this.obstacleObserver) {
+      this.obstacleObserver.disconnect();
+      this.obstacleObserver = null;
+    }
+
+    // Clear alle Sets
+    this.visibleObstacles.clear();
+    this._recentCollisions = new WeakSet();
+    this._trackedObstacles = new WeakSet();
+  }
+
   updateObstacleCache() {
     // Update cache every 2 seconds or so
     const now = performance.now();
