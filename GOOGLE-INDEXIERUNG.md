@@ -3,14 +3,18 @@
 ## 🔍 Identifizierte Probleme (Stand: 05.01.2026)
 
 ### Problem 1: Duplikat-URLs
+
 Google crawlt mehrere Varianten derselben Seite:
+
 - ❌ `http://abdulkerimsesli.de/` vs `https://abdulkerimsesli.de/`
 - ❌ `www.abdulkerimsesli.de` vs `abdulkerimsesli.de`
 - ❌ `/index.html` vs `/`
 - ❌ `/projekte` vs `/projekte/`
 
 ### Problem 2: Veraltete URLs (17 Seiten)
+
 Alte URL-Struktur nach Refactoring wird noch gecrawlt:
+
 - `/pages/album.html` → `/gallery/`
 - `/pages/ubermich.html` → `/about/`
 - `/pages/features/*` → Nicht mehr existent
@@ -20,7 +24,8 @@ Alte URL-Struktur nach Refactoring wird noch gecrawlt:
 
 ## ✅ Durchgeführte Lösungen
 
-### 1. **_redirects Datei erweitert**
+### 1. **\_redirects Datei erweitert**
+
 Alle veralteten URLs werden jetzt explizit umgeleitet:
 
 ```plaintext
@@ -43,6 +48,7 @@ Alle veralteten URLs werden jetzt explizit umgeleitet:
 ```
 
 ### 2. **robots.txt optimiert**
+
 Veraltete Pfade werden aktiv blockiert für schnellere De-Indexierung:
 
 ```plaintext
@@ -61,7 +67,9 @@ Allow: /datenschutz/
 ```
 
 ### 3. **Canonical Tags**
+
 Werden bereits dynamisch durch `head-complete.js` gesetzt:
+
 - ✅ Immer HTTPS
 - ✅ Immer ohne www
 - ✅ Immer mit trailing slash
@@ -74,6 +82,7 @@ Werden bereits dynamisch durch `head-complete.js` gesetzt:
 ### Sofort (nach Deploy):
 
 1. **Google Search Console**:
+
    - Gehe zu: https://search.google.com/search-console
    - URL-Prüfung für die neuen clean URLs durchführen:
      - `https://abdulkerimsesli.de/`
@@ -85,6 +94,7 @@ Werden bereits dynamisch durch `head-complete.js` gesetzt:
    - "Indexierung beantragen" für alle Hauptseiten
 
 2. **URLs als entfernt markieren**:
+
    - Search Console → Entfernen → URLs vorübergehend entfernen
    - Alle alten URLs aus der Liste markieren:
      - `https://abdulkerimsesli.de/index.html`
@@ -100,6 +110,7 @@ Werden bereits dynamisch durch `head-complete.js` gesetzt:
 ### Nach 1 Woche:
 
 1. **Überprüfung in Search Console**:
+
    - Abdeckung → Fehler prüfen
    - "Seite mit Weiterleitung" sollte verschwinden
    - Duplikate sollten sich reduzieren
@@ -120,18 +131,22 @@ Werden bereits dynamisch durch `head-complete.js` gesetzt:
 ## 📋 Checkliste für Domain-Einstellungen
 
 ### Cloudflare/DNS Settings:
+
 - [ ] HTTPS erzwingen (Always Use HTTPS)
 - [ ] HSTS aktiviert (Strict-Transport-Security Header)
 - [ ] www → non-www Redirect (oder umgekehrt, aber konsistent!)
 - [ ] Trailing Slash Normalisierung
 
 ### Empfehlung:
+
 ```
 Kanonische Domain: https://abdulkerimsesli.de/ (ohne www, mit trailing slash)
 ```
 
 ### Cloudflare Page Rules (falls noch nicht aktiv):
+
 1. **www Redirect**:
+
    - URL: `www.abdulkerimsesli.de/*`
    - Setting: Forwarding URL (301)
    - Destination: `https://abdulkerimsesli.de/$1`
@@ -154,11 +169,13 @@ Kanonische Domain: https://abdulkerimsesli.de/ (ohne www, mit trailing slash)
 ## 📊 Monitoring
 
 ### Wöchentlich prüfen:
+
 - [ ] Search Console → Abdeckung
 - [ ] Search Console → Core Web Vitals
 - [ ] Search Console → Sitemaps
 
 ### Bei Problemen:
+
 - [ ] URL-Prüfung für betroffene Seite
 - [ ] Server-Logs prüfen (Cloudflare Analytics)
 - [ ] Redirect-Kette testen: https://httpstatus.io/
@@ -168,14 +185,17 @@ Kanonische Domain: https://abdulkerimsesli.de/ (ohne www, mit trailing slash)
 ## ⚠️ Häufige Fehler vermeiden
 
 1. **Redirect-Schleifen**:
+
    - Immer testen: `curl -I https://abdulkerimsesli.de/projekte`
    - Sollte `200 OK` zurückgeben, nicht `301` → `301` → `200`
 
 2. **Canonical Konflikte**:
+
    - Canonical Tag sollte immer auf die finale URL zeigen
    - Nie auf eine URL, die selbst redirected
 
 3. **Mixed Content**:
+
    - Alle internen Links sollten HTTPS sein
    - Keine http:// Links im HTML
 
@@ -188,16 +208,19 @@ Kanonische Domain: https://abdulkerimsesli.de/ (ohne www, mit trailing slash)
 ## 📈 Erwartete Resultate
 
 **Nach 3-7 Tagen**:
+
 - ✅ Veraltete URLs beginnen zu verschwinden
 - ✅ Canonical URLs werden bevorzugt gecrawlt
 - ✅ "Seite mit Weiterleitung" Fehler reduzieren sich
 
 **Nach 2-4 Wochen**:
+
 - ✅ Alle Duplikate sind aufgelöst
 - ✅ Nur noch kanonische URLs im Index
 - ✅ Bessere Click-Through-Rate (CTR)
 
 **Nach 1-2 Monaten**:
+
 - ✅ Verbesserte Rankings (konsolidierte Link-Power)
 - ✅ Sauberer Google Index
 - ✅ Keine "Duplikat"-Warnungen mehr
