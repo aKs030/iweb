@@ -11,7 +11,7 @@ body {
   background-color: var(--blog-bg);
   color: var(--blog-text);
   margin: 0;
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: var(--font-inter);
   -webkit-font-smoothing: antialiased;
 }
 

@@ -9,7 +9,7 @@ html {
 
 body {
   margin: 0;
-  font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: var(--font-inter);
   background: transparent;
   color: #e5e7eb;
 }
@@ -961,7 +961,7 @@ img {
   height: 1px;
 }
 
-..badge {
+.badge {
   padding: 0.25rem 0.75rem;
   background: rgb(11 13 17 / 36%);
   border: 1px solid rgb(255 255 255 / 12%);
