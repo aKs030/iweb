@@ -7,10 +7,6 @@ Sitemap: https://abdulkerimsesli.de/sitemap-images.xml
 Sitemap: https://abdulkerimsesli.de/sitemap-videos.xml
 Sitemap: https://abdulkerimsesli.de/ai-sitemap.xml
 
-# Optional: preferred host (some crawlers support this)
-# Host directive is non-standard but recognized by some bots
-Host: abdulkerimsesli.de
-
 # Default rules for all crawlers
 User-agent: *
 Allow: /
@@ -25,8 +21,9 @@ Disallow: /pages/features/
 Disallow: /pages/komponente/
 Disallow: /content/footer/
 
-# Block direkten Zugriff auf .html Dateien (werden auf clean URLs umgeleitet)
-Disallow: /*.html$
+# Note: Wildcards und regex (*.html$, *.js$) werden von Googlebot NICHT unterstützt
+# Nur explizite Pfade oder Ordner mit / am Ende verwenden
+
 # Allow wichtige Footer-Seiten (werden über clean URLs zugänglich gemacht)
 Allow: /impressum/
 Allow: /datenschutz/
@@ -36,24 +33,14 @@ Allow: /datenschutz/
 # Relaxed rules to improve rendering: allow JS/CSS/JSON where needed while keeping dev files blocked
 # Keep broad disallows but explicitly allow static asset types (Google honors most-specific rule)
 Disallow: /content/config/
-Allow: /content/config/*.js$
-Allow: /content/config/*.css$
-Allow: /content/config/*.json$
 Disallow: /content/utils/
-Allow: /content/utils/*.js$
-Allow: /content/utils/*.css$
-Allow: /content/utils/*.json$
+
 # Allow JSON manifest and other JSON structured data
-Allow: /*.json$
 Allow: /manifest.json
 
 # Allow rendering-critical component and style assets (JS/CSS)
 Allow: /content/components/
-Allow: /content/components/*.js$
-Allow: /content/components/*.css$
-Allow: /content/components/*/*.js$
-Allow: /content/components/*/*.css$
-Allow: /content/styles/*.css$
+Allow: /content/styles/
 Allow: /content/main.js
 
 # Local/dev files and folders (should never be crawled)
@@ -67,18 +54,14 @@ Disallow: /.live-server.json
 # Google-specific rules
 User-agent: Googlebot
 Allow: /
-# Ensure JS and CSS are allowed for rendering
-Allow: /*.js$
-Allow: /*.css$
 
 # Google Image Bot
 User-agent: Googlebot-Image
 Allow: /
-Allow: /content/assets/img/
 
 # Google Video Bot
 User-agent: Googlebot-Video
-Allow: /videos/
+Allow: /
 
 # Bing Bot
 User-agent: Bingbot
