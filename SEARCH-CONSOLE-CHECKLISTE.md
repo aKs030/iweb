@@ -7,6 +7,7 @@
 Gehe zu: https://search.google.com/search-console
 
 #### Neue Canonical URLs prüfen & indexieren:
+
 ```
 ☐ https://abdulkerimsesli.de/
 ☐ https://abdulkerimsesli.de/projekte/
@@ -19,6 +20,7 @@ Gehe zu: https://search.google.com/search-console
 ```
 
 **Pro URL:**
+
 1. URL in Suchfeld eingeben
 2. "URL prüfen" klicken
 3. Wenn "URL ist bei Google": ✓
@@ -56,13 +58,15 @@ Gehe zu: https://search.google.com/search-console
 ### 3. Sitemap neu einreichen (Priorität: MITTEL)
 
 **Sitemaps** → Sitemap URL eingeben:
+
 ```
 ☐ https://abdulkerimsesli.de/sitemap.xml
 ☐ https://abdulkerimsesli.de/sitemap-images.xml
 ☐ https://abdulkerimsesli.de/sitemap-videos.xml
 ```
 
-Wenn bereits vorhanden: 
+Wenn bereits vorhanden:
+
 - Löschen und neu einreichen
 - ODER: "Erneut senden" klicken
 
@@ -73,6 +77,7 @@ Wenn bereits vorhanden:
 **Einstellungen** → **Bevorzugte Domain**
 
 Bestätigen dass folgende Einstellungen korrekt sind:
+
 ```
 ☐ Protokoll: HTTPS (nicht HTTP)
 ☐ Domain: abdulkerimsesli.de (OHNE www)
@@ -86,6 +91,7 @@ Bestätigen dass folgende Einstellungen korrekt sind:
 **Abdeckung** → **Ausgeschlossen** → "Seite mit Weiterleitung"
 
 Für jede URL prüfen:
+
 1. Auf URL klicken
 2. "URL prüfen"
 3. Verify dass:
@@ -100,9 +106,10 @@ Für jede URL prüfen:
 **Abdeckung** → **Ausgeschlossen** → "Duplikat – Google hat eine andere Seite als der Nutzer als kanonische Seite bestimmt"
 
 Für jede betroffene URL:
+
 1. URL öffnen
 2. "Von Google ausgewählte canonical URL" prüfen
-3. Wenn falsch: 
+3. Wenn falsch:
    - HTML-Canonical-Tag prüfen
    - Weiterleitungen prüfen
    - URL zur Indexierung einreichen
@@ -116,6 +123,7 @@ Für jede betroffene URL:
 Gehe zu: https://search.google.com/test/rich-results
 
 Teste folgende URLs:
+
 ```
 ☐ https://abdulkerimsesli.de/
 ☐ https://abdulkerimsesli.de/projekte/
@@ -123,6 +131,7 @@ Teste folgende URLs:
 ```
 
 Sollte zeigen:
+
 - ✅ Organization Schema
 - ✅ Person Schema
 - ✅ BreadcrumbList
@@ -133,6 +142,7 @@ Sollte zeigen:
 ## 📊 Monitoring (Wöchentlich)
 
 ### Woche 1-2:
+
 ```
 ☐ Abdeckung → Gültig → Sollte steigen
 ☐ Abdeckung → Ausgeschlossen → "Seite mit Weiterleitung" sollte sinken
@@ -140,6 +150,7 @@ Sollte zeigen:
 ```
 
 ### Woche 3-4:
+
 ```
 ☐ Alle Duplikate sollten aufgelöst sein
 ☐ Nur noch canonical URLs im Index
@@ -152,21 +163,27 @@ Sollte zeigen:
 ## 🚨 Troubleshooting
 
 ### Problem: "Weiterleitung funktioniert nicht"
+
 **Lösung:**
+
 1. Lokale Test: `curl -I https://abdulkerimsesli.de/projekte`
 2. Online-Test: https://httpstatus.io/
-3. Prüfe _redirects Datei
+3. Prüfe \_redirects Datei
 4. Cache leeren (Cloudflare)
 
 ### Problem: "Canonical URL wird ignoriert"
+
 **Lösung:**
+
 1. HTML-Quellcode prüfen (View Source)
 2. Canonical Tag muss im `<head>` sein
 3. Darf nur EIN Canonical Tag geben
 4. URL muss absolute URL sein (mit https://)
 
 ### Problem: "www-Variante wird noch indexiert"
+
 **Lösung:**
+
 1. Cloudflare Page Rule prüfen
 2. DNS CNAME für www prüfen
 3. In Search Console beide Properties verbinden
