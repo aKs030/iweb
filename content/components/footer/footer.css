@@ -132,7 +132,9 @@ body.footer-expanded {
   align-items: center;
   opacity: 1;
   transform: translateY(0) translateZ(0);
-  transition: all 0.25s var(--dynamic-footer-spring-quick);
+  transition: transform 0.25s var(--dynamic-footer-spring-quick),
+    opacity 0.25s var(--dynamic-footer-spring-quick),
+    background-color 0.25s var(--dynamic-footer-spring-quick);
   cursor: pointer; /* Affordance: area is interactive */
 }
 
@@ -174,7 +176,8 @@ body.footer-expanded {
   margin-left: 4px;
   padding: 2px 4px;
   border-radius: var(--dynamic-footer-micro-radius);
-  transition: all var(--footer-transition-quick);
+  transition: color var(--footer-transition-quick), background-color var(--footer-transition-quick),
+    transform var(--footer-transition-quick);
   text-decoration: none;
   will-change: transform, background-color;
 }
@@ -203,7 +206,7 @@ body.footer-expanded {
   white-space: nowrap;
   min-height: 32px;
   padding: 6px 12px;
-  border-radius: 999px;
+  border-radius: var(--radius-full);
   border: 1px solid var(--footer-chip-border);
   background: var(--footer-chip-bg);
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05), var(--footer-chip-shadow);

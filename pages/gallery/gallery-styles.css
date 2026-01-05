@@ -511,7 +511,7 @@ img {
 }
 
 .rounded-full {
-  border-radius: 9999px;
+  border-radius: var(--radius-full);
 }
 
 .w-px {
@@ -706,7 +706,8 @@ img {
 
 /* Transitions & Animations */
 .transition-all {
-  transition: all 200ms ease;
+  transition: transform 200ms ease, opacity 200ms ease, background-color 200ms ease,
+    color 200ms ease, border-color 200ms ease;
 }
 
 .transition-transform {
@@ -858,7 +859,7 @@ img {
   border-radius: 1rem;
   -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
-  transition: all 150ms ease;
+  transition: background 150ms ease, border-color 150ms ease, box-shadow 150ms ease;
 }
 
 .input-base::placeholder {
@@ -965,7 +966,7 @@ img {
   padding: 0.25rem 0.75rem;
   background: rgb(11 13 17 / 36%);
   border: 1px solid rgb(255 255 255 / 12%);
-  border-radius: 9999px;
+  border-radius: var(--radius-full);
   color: #fff;
   font-size: 0.75rem;
   -webkit-backdrop-filter: blur(12px);
@@ -1011,7 +1012,7 @@ img {
   height: 4rem;
   border: 4px solid rgb(168 85 247 / 30%);
   border-top-color: #a855f7;
-  border-radius: 9999px;
+  border-radius: var(--radius-full);
   animation: spin 1s linear infinite;
 }
 
@@ -1020,7 +1021,7 @@ img {
   height: 2rem;
   border: 4px solid rgb(236 72 153 / 30%);
   border-top-color: #ec4899;
-  border-radius: 9999px;
+  border-radius: var(--radius-full);
   animation: spin 1s linear infinite reverse;
 }
 

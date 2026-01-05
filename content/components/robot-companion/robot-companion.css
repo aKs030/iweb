@@ -136,7 +136,7 @@
 .robot-avatar:hover .robot-pupil {
   fill: #fff;
   filter: drop-shadow(0 0 4px #fff);
-  transition: all 0.2s;
+  transition: filter 0.2s ease, fill 0.2s ease, transform 0.2s ease;
 }
 
 @keyframes signalTransmit {
@@ -519,7 +519,8 @@
   opacity: 0;
   transform: translateY(20px) scale(0.95);
   transform-origin: bottom right;
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   pointer-events: auto;
   -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
@@ -670,7 +671,7 @@
   border-radius: 20px;
   font-size: 0.85rem;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background 0.2s, color 0.2s, transform 0.2s;
   -webkit-user-select: none;
   user-select: none;
 }
