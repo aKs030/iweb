@@ -453,7 +453,8 @@ textarea:focus-visible {
   border: none;
   border-radius: var(--radius-md);
   cursor: pointer;
-  transition: all var(--transition-base);
+  transition: transform var(--transition-base), box-shadow var(--transition-base),
+    background-color var(--transition-base);
   text-decoration: none;
   position: relative;
   overflow: hidden;

@@ -74,7 +74,8 @@
   flex-shrink: 0;
   margin-right: 8px; /* Einheitlicher Abstand */
   filter: drop-shadow(0 0.5px 1px rgb(0 0 0 / 15%));
-  transition: all 0.2s var(--dynamic-menu-spring-quick);
+  transition: transform 0.2s var(--dynamic-menu-spring-quick),
+    opacity 0.2s var(--dynamic-menu-spring-quick), filter 0.2s var(--dynamic-menu-spring-quick);
   opacity: 0.85;
   display: inline-block;
   position: relative;
@@ -213,7 +214,8 @@ body {
 
 .site-logo {
   /* Dynamic Menu Micro-Animation */
-  transition: all 0.3s var(--dynamic-menu-spring-quick);
+  transition: transform 0.3s var(--dynamic-menu-spring-quick),
+    opacity 0.3s var(--dynamic-menu-spring-quick);
   cursor: pointer;
   text-decoration: none;
   display: inline-block;
@@ -252,7 +254,8 @@ body {
   letter-spacing: 0.01em;
   opacity: 0;
   transform: translateY(-4px) scale(0.95);
-  transition: all 0.4s var(--dynamic-menu-spring-smooth);
+  transition: opacity 0.4s var(--dynamic-menu-spring-smooth),
+    transform 0.4s var(--dynamic-menu-spring-smooth);
   text-align: left;
   line-height: 1.1;
   margin-top: -2px;
@@ -319,7 +322,9 @@ body {
   font-size: clamp(14px, 1.3vw, 16px);
   letter-spacing: -0.01em;
   touch-action: manipulation;
-  transition: all 0.2s var(--dynamic-menu-spring-quick);
+  transition: background 0.2s var(--dynamic-menu-spring-quick),
+    color 0.2s var(--dynamic-menu-spring-quick), transform 0.2s var(--dynamic-menu-spring-quick),
+    border-color 0.2s var(--dynamic-menu-spring-quick);
   -webkit-tap-highlight-color: rgb(0 122 255 / 10%);
   -webkit-user-select: none;
   user-select: none;
@@ -350,7 +355,8 @@ body {
 .site-menu__list .submenu li a {
   color: var(--dynamic-menu-label-secondary);
   display: block;
-  transition: all 0.2s var(--dynamic-menu-spring-quick);
+  transition: background 0.2s var(--dynamic-menu-spring-quick),
+    color 0.2s var(--dynamic-menu-spring-quick), transform 0.2s var(--dynamic-menu-spring-quick);
   padding: 12px 20px;
   min-width: 160px;
   font-size: 15px;
@@ -405,7 +411,8 @@ button.submenu-toggle:focus .icon-fallback {
   height: 40px;
   position: absolute;
   right: 24px;
-  transition: all 0.2s var(--dynamic-menu-spring-quick);
+  transition: background 0.2s var(--dynamic-menu-spring-quick),
+    transform 0.2s var(--dynamic-menu-spring-quick), opacity 0.2s var(--dynamic-menu-spring-quick);
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
 }
@@ -430,7 +437,8 @@ button.submenu-toggle:focus .icon-fallback {
   height: 2px;
   margin: 4px auto;
   border-radius: 2px;
-  transition: all 0.3s var(--dynamic-menu-spring-bounce);
+  transition: background 0.3s var(--dynamic-menu-spring-bounce),
+    transform 0.3s var(--dynamic-menu-spring-bounce), opacity 0.3s var(--dynamic-menu-spring-bounce);
 }
 
 .site-menu__toggle:focus-visible {
@@ -477,7 +485,8 @@ button.submenu-toggle:focus .icon-fallback {
 
   /* Intelligente Positionierung - verhindert Überlauf */
   transform-origin: top left;
-  transition: all 0.2s var(--dynamic-menu-spring-quick);
+  transition: opacity 0.2s var(--dynamic-menu-spring-quick),
+    transform 0.2s var(--dynamic-menu-spring-quick);
 }
 
 .site-menu__list .has-submenu .submenu.position-right {
@@ -510,7 +519,8 @@ button.submenu-toggle:focus .icon-fallback {
     opacity: 0;
     pointer-events: none;
     transform: translateY(-8px) scale(0.96);
-    transition: all 0.25s var(--dynamic-menu-spring-smooth);
+    transition: opacity 0.25s var(--dynamic-menu-spring-smooth),
+      transform 0.25s var(--dynamic-menu-spring-smooth);
     display: block; /* Always rendered for smooth transitions */
   }
 
@@ -580,7 +590,8 @@ main {
 
     /* Animation */
     transform: translateX(110%) scale(0.95);
-    transition: all 0.4s var(--dynamic-menu-spring-bounce);
+    transition: transform 0.4s var(--dynamic-menu-spring-bounce),
+      opacity 0.4s var(--dynamic-menu-spring-bounce);
     flex-direction: column;
     gap: 0;
     z-index: 9998;
@@ -610,7 +621,8 @@ main {
     border: none;
     color: var(--dynamic-menu-label-primary);
     touch-action: manipulation;
-    transition: all 0.2s var(--dynamic-menu-spring-quick);
+    transition: background 0.2s var(--dynamic-menu-spring-quick),
+      color 0.2s var(--dynamic-menu-spring-quick), transform 0.2s var(--dynamic-menu-spring-quick);
   }
 
   .site-menu__list li a:hover,

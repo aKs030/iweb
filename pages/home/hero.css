@@ -290,7 +290,7 @@ body:not(.hero-active) .floating-icon {
   padding-block: clamp(10px, 1.6vw, 18px);
   padding-inline: clamp(18px, 4vw, 36px);
   box-sizing: border-box;
-  border-radius: 999px; /* pill shape */
+  border-radius: var(--radius-full); /* pill shape */
   white-space: normal; /* allow wrapping if needed */
   max-width: 100%; /* do not exceed the hero-image-container width */
 }
@@ -401,7 +401,7 @@ body:not(.hero-active) .hero-title {
     transform: none;
     padding-block: clamp(4px, 1.2vw, 8px);
     padding-inline: clamp(6px, 2.2vw, 12px);
-    border-radius: 999px;
+    border-radius: var(--radius-full);
     max-width: 100%;
     margin-inline: auto;
   }

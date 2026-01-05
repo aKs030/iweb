@@ -606,10 +606,6 @@ function _registerAndBlock() {
   }
 }
 
-function __setIsSystemActive(val) {
-  isSystemActive = !!val;
-}
-
 function _initManagers(container) {
   cameraManager = new CameraManager(THREE_INSTANCE, camera);
   cameraManager.setupCameraSystem();
@@ -652,6 +648,12 @@ function setupSectionDetection() {
   const sections = Array.from(document.querySelectorAll('section[id], div#footer-trigger-zone'));
   if (sections.length === 0) return;
 
+  // Fallback when IntersectionObserver is not supported
+  if (!('IntersectionObserver' in globalThis)) {
+    log.warn('IntersectionObserver not supported - section detection disabled');
+    return;
+  }
+
   const OBSERVER_THRESHOLDS = Array.from({ length: 21 }, (_, i) => i / 20);
 
   sectionObserver = new IntersectionObserver(_onSectionObserverEntries, {
@@ -663,8 +665,22 @@ function setupSectionDetection() {
 }
 
 function setupViewportObserver(container) {
+  // Enhanced Viewport Observer with aggressive pause strategy
+  // When Earth scrolls out of view, animation loop is paused to save CPU/GPU
+
+  // Fallback for browsers without IntersectionObserver support
+  if (!('IntersectionObserver' in globalThis)) {
+    log.warn('IntersectionObserver not supported - animation stays active');
+    isSystemVisible = true;
+    if (!animationFrameId && animate && isSystemActive) {
+      animate();
+    }
+    return;
+  }
+
   viewportObserver = new IntersectionObserver(_onViewportEntries, {
     threshold: 0,
+    rootMargin: '50px', // Small buffer to resume just before entering viewport
   });
   viewportObserver.observe(container);
 
@@ -827,13 +843,22 @@ function _applyConfigToMeshes(config) {
 let animate;
 
 function handleVisibilityChange() {
+  // Enhanced Page Visibility API: Pause rendering when tab is inactive
+  // This provides significant CPU/GPU/Battery savings on mobile devices
   if (document.hidden) {
+    log.debug('Tab hidden - pausing Earth animation');
     if (animationFrameId) {
       cancelAnimationFrame(animationFrameId);
       animationFrameId = null;
     }
     return;
   }
+  // Resume animation only if:
+  // 1. No animation is currently running
+  // 2. The animate function exists
+  // 3. The container is visible in viewport
+  // 4. The system is still active
+  log.debug('Tab visible - resuming Earth animation');
   if (!animationFrameId && animate && isSystemVisible && isSystemActive) {
     animate();
   }
@@ -1188,10 +1213,8 @@ export const EarthSystemAPI = {
 export default ThreeEarthManager;
 export {
   detectDeviceCapabilities,
-  getOptimizedConfig,
   _createLoadingManager,
   _mapId,
   _onSectionObserverEntries,
   _detectAndEnsureWebGL,
-  __setIsSystemActive,
 };
