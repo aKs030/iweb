@@ -78,7 +78,7 @@ body {
 /* Decorative Orbs */
 .bg-orb {
   position: fixed;
-  border-radius: 9999px;
+  border-radius: var(--radius-full);
   filter: blur(120px);
   animation: pulse-slow 6s infinite;
   z-index: -1;
@@ -133,7 +133,7 @@ body {
   align-items: center;
   gap: 0.5rem;
   padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
+  border-radius: var(--radius-full);
   background-color: rgba(0, 0, 0, 0.62);
   border: 1px solid rgba(255, 255, 255, 0.08);
   color: #fff;
@@ -154,14 +154,14 @@ body {
   position: absolute;
   height: 100%;
   width: 100%;
-  border-radius: 9999px;
+  border-radius: var(--radius-full);
   background-color: #60a5fa;
   opacity: 0.75;
   animation: ping 1s infinite;
 }
 .badge-dot {
   position: relative;
-  border-radius: 9999px;
+  border-radius: var(--radius-full);
   height: 0.5rem;
   width: 0.5rem;
   background-color: #3b82f6;
@@ -216,9 +216,10 @@ body {
   align-items: center;
   gap: 0.5rem;
   padding: 1rem 2rem;
-  border-radius: 9999px;
+  border-radius: var(--radius-full);
   font-weight: 700;
-  transition: all 0.3s;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease, color 0.3s ease,
+    border-color 0.3s ease;
   cursor: pointer;
   border: none;
   font-size: 1rem;
@@ -338,7 +339,7 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
   z-index: 20;
-  transition: all 0.5s;
+  transition: transform 0.5s;
 }
 .window-mockup:hover .mockup-icon {
   transform: scale(1.1) rotate(12deg);
@@ -376,7 +377,7 @@ body {
   color: #fff;
   background-color: rgba(0, 0, 0, 0.56);
   padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
+  border-radius: var(--radius-full);
   border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
@@ -423,7 +424,7 @@ body {
 }
 .contact-icon-wrapper {
   padding: 1.5rem;
-  border-radius: 9999px;
+  border-radius: var(--radius-full);
   background-color: rgba(37, 99, 235, 0.1);
   border: 1px solid rgba(59, 130, 246, 0.3);
   -webkit-backdrop-filter: blur(12px);
@@ -464,7 +465,7 @@ body {
   transform: translate(-50%, -50%);
   width: 75%;
   height: 75%;
-  border-radius: 9999px;
+  border-radius: var(--radius-full);
   filter: blur(80px);
   opacity: 0;
   transition: opacity 0.7s;

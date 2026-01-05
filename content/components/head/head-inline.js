@@ -419,13 +419,30 @@ dataLayer.push({
       // Hint to connect to important third-party origins early
       upsertPreconnect('https://www.googletagmanager.com');
       upsertPreconnect('https://static.cloudflareinsights.com');
+      upsertPreconnect('https://www.gstatic.com'); // gtag fallback
 
       // Insert styles (use critical flag only when strictly needed)
       const styles = getStylesForPath();
+      const p = (globalThis.location?.pathname || '').replace(/\/+$/g, '') || '/';
+
+      const criticalStyles = new Set([
+        '/content/styles/root.css',
+        '/content/styles/main.css',
+      ]);
+      const homeCritical = new Set([
+        '/pages/home/hero.css',
+        '/content/components/typewriter/typewriter.css',
+        '/content/components/particles/three-earth.css',
+        '/pages/home/section3.css',
+      ]);
+
       styles.forEach((href) => {
-        const critical = href.includes('hero.css');
-        upsertStyle(href, { critical });
+        const isCritical = criticalStyles.has(href) || (p === '/' && homeCritical.has(href));
+        upsertStyle(href, { critical: isCritical });
       });
+
+      // Preload main.js for faster parsing (warm fetch)
+      upsertModulePreload('/content/main.js');
 
       // Preload module scripts we want parsed early (main app bundle)
       SCRIPTS.filter((s) => s.preload).forEach((s) => upsertModulePreload(s.src));
