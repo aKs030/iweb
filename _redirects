@@ -8,7 +8,23 @@
 # Removed absolute URL redirects as they're not supported by Cloudflare Pages.
 
 # -------------------------------
-# 2) Specific 301 redirects (keep these before any generic rules)
+# 2) Alte/veraltete URLs (Legacy-Cleanup für Google Search Console)
+# Diese URLs existieren nicht mehr, sollten aber sauber auf die neuen Pfade umgeleitet werden
+
+# Alte /pages/* Struktur (vor Refactoring)
+/pages/album.html                    /gallery/                 301
+/pages/ubermich.html                 /about/                   301
+/pages/index-game.html               /                         301
+/pages/features/wetter.html          /                         301
+/pages/features/snake.html           /                         301
+/pages/komponente/footer.html        /                         301
+
+# Alte Footer-Pfade (vor Umstrukturierung)
+/content/footer/datenschutz.html     /datenschutz/             301
+/content/footer/impressum.html       /impressum/               301
+
+# -------------------------------
+# 3) Specific 301 redirects (keep these before any generic rules)
 
 # Remove explicit index.html mappings (canonical trailing-slash roots)
 /index.html          /              301
@@ -16,12 +32,18 @@
 /projekte/index.html /projekte/     301
 /gallery/index.html  /gallery/      301
 /videos/index.html   /videos/       301
+/about/index.html    /about/        301
 
 # Redirect old file locations to new clean URLs
 /pages/gallery/gallery.html     /gallery/     301
 /pages/projekte/projekte.html   /projekte/    301
 /pages/videos/videos.html       /videos/      301
+/pages/about/about.html         /about/       301
+/pages/blog/blog.html           /blog/        301
 
+# Legacy direkter .html Zugriff auf impressum/datenschutz
+/impressum.html                 /impressum/   301
+/datenschutz.html              /datenschutz/ 301
 
 # Leite /datenschutz und /impressum auf die Footer-Komponenten um
 # Canonicalize to trailing-slash and serve the actual footer pages
@@ -31,7 +53,7 @@
 /impressum/     /content/components/footer/impressum.html         200
 
 # -------------------------------
-# 3) Generic cleanups
+# 4) Generic cleanups
 # Remove any remaining ".html" endings and canonicalize to trailing-slash roots.
 # Keep this after specific redirects so we don't accidentally override them.
 
@@ -53,7 +75,7 @@
 /videos   /videos/    301
 
 # -------------------------------
-# 4) Rewrites to serve content from the physical /pages/ folders
+# 5) Rewrites to serve content from the physical /pages/ folders
 # These are 200 rewrites so clean URLs map to their actual files under /pages/.
 # Removed root redirects that were causing infinite loops - the wildcard rules handle everything
 /gallery/*      /pages/gallery/:splat     200
@@ -71,6 +93,6 @@
 #   trailing-slash URL to match how directories are served.
 # - Removed absolute URL redirects as Cloudflare Pages doesn't support them.
 # - Removed root 200 rewrites that were causing infinite loops with .html removal rules.
+# - Legacy URLs (pre-refactoring) are explicitly redirected to prevent 404s in Google Search Console.
 # - Test after deploy: check a sample of old URLs, ".html" URLs and domain variants to
 #   ensure there are no redirect loops and that final destinations return 200.
-
