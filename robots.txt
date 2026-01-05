@@ -5,7 +5,6 @@
 Sitemap: https://abdulkerimsesli.de/sitemap.xml
 Sitemap: https://abdulkerimsesli.de/sitemap-images.xml
 Sitemap: https://abdulkerimsesli.de/sitemap-videos.xml
-
 Sitemap: https://abdulkerimsesli.de/ai-sitemap.xml
 
 # Optional: preferred host (some crawlers support this)
@@ -15,6 +14,22 @@ Host: abdulkerimsesli.de
 # Default rules for all crawlers
 User-agent: *
 Allow: /
+
+# Block veraltete URL-Pfade (Legacy nach Refactoring)
+# Diese Pfade existieren nicht mehr und werden per 301 umgeleitet
+# Blockierung beschleunigt De-Indexierung in Google
+Disallow: /pages/album.html
+Disallow: /pages/ubermich.html
+Disallow: /pages/index-game.html
+Disallow: /pages/features/
+Disallow: /pages/komponente/
+Disallow: /content/footer/
+
+# Block direkten Zugriff auf .html Dateien (werden auf clean URLs umgeleitet)
+Disallow: /*.html$
+# Allow wichtige Footer-Seiten (werden über clean URLs zugänglich gemacht)
+Allow: /impressum/
+Allow: /datenschutz/
 
 # Note: video sitemap above added to improve video indexing
 # If you add more video content, run: YT_API_KEY=<key> python3 scripts/update_video_sitemap.py
