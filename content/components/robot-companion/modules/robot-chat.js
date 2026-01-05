@@ -14,6 +14,15 @@ export class RobotChat {
     this.history = [];
   }
 
+  destroy() {
+    // Cleanup aller Bubble-Sequence Timers
+    this.clearBubbleSequence();
+
+    // Clear History
+    this.history = [];
+    this._bubbleSequenceTimers = [];
+  }
+
   toggleChat(forceState) {
     const newState = forceState ?? !this.isOpen;
     if (newState) {

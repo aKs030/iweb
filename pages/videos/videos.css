@@ -44,7 +44,7 @@
 }
 .videos-main {
   padding: 4rem 2rem;
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  font-family: var(--font-inter);
   color: var(--text-primary);
   background: radial-gradient(ellipse at top, #1a1a2e 0%, var(--bg-main) 50%);
   background-attachment: fixed;
