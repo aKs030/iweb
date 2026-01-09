@@ -31,3 +31,5 @@ Thumbs.db
 # Logs
 *.log
 .cache/
+
+# Temporarily ignore file with HTML syntax error so Prettier can finish
