@@ -143,7 +143,7 @@ const SectionLoader = (() => {
       throw new Error(
         `HTTP ${response ? response.status : 'NO_RESPONSE'}: ${
           response ? response.statusText : 'no response'
-        }`
+        }`,
       );
     }
     return await response.text();
@@ -706,7 +706,7 @@ document.addEventListener(
               log.warn(
                 `Deferring forced loading screen hide (attempt ${attempt}): blocking modules=${
                   Array.isArray(pending) ? pending.join(', ') : String(pending)
-                }`
+                }`,
               );
 
               if (attempt < MAX_ATTEMPTS) {
