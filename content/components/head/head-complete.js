@@ -1053,7 +1053,7 @@ async function loadSharedHead() {
 
       // Check if head-inline.js already set an early canonical (will be updated with proper value)
       const earlyCanonical = document.head.querySelector(
-        'link[rel="canonical"][data-early="true"]',
+        'link[rel="canonical"][data-early="true"]'
       );
 
       // Compute cleanPath using shared canonical util
