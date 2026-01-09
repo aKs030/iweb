@@ -13,7 +13,9 @@
   let logger;
 
   try {
-    const { createLogger } = await import('../../content/utils/shared-utilities.js');
+    const { createLogger } = await import(
+      '../../content/utils/shared-utilities.js'
+    );
     logger = createLogger('AboutModule');
   } catch (err) {
     logger?.warn?.('AboutModule: failed to import createLogger', err);
@@ -98,7 +100,8 @@
         // Set page-specific metadata (title, description, canonical, OG/Twitter) and add page-level JSON-LD
         (function setAboutPageMeta() {
           try {
-            const pageTitle = 'Über mich — Abdulkerim Sesli — Web Development & Design';
+            const pageTitle =
+              'Über mich — Abdulkerim Sesli — Web Development & Design';
             const description =
               'Abdulkerim Sesli: Full-Stack Webentwickler & Fotograf aus Berlin. Spezialisiert auf performante Web-Apps, Three.js Visualisierungen und modernes UI/UX Design.';
             const canonical = new URL(window.location.origin + '/about/').href;
@@ -159,7 +162,8 @@
                   '@type': 'WebPage',
                   '@id': canonical,
                 },
-                image: 'https://abdulkerimsesli.de/content/assets/img/icons/favicon-512.png',
+                image:
+                  'https://abdulkerimsesli.de/content/assets/img/icons/favicon-512.png',
               });
               document.head.appendChild(script);
             }
@@ -173,7 +177,7 @@
         document.dispatchEvent(
           new CustomEvent('about:loaded', {
             detail: { success: true, attempts: attempt + 1 },
-          })
+          }),
         );
 
         logger.info('About content loaded successfully');
@@ -209,7 +213,7 @@
     document.dispatchEvent(
       new CustomEvent('about:error', {
         detail: { error: lastError, attempts: RETRY_ATTEMPTS + 1 },
-      })
+      }),
     );
 
     return false;

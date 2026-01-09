@@ -21,7 +21,7 @@ const log = createLogger('GeminiService');
 
 async function getGeminiResponse(
   prompt,
-  systemInstruction = 'Du bist ein hilfreicher Roboter-Begleiter.'
+  systemInstruction = 'Du bist ein hilfreicher Roboter-Begleiter.',
 ) {
   const payload = {
     contents: [{ parts: [{ text: prompt }] }],
@@ -69,7 +69,8 @@ async function getGeminiResponse(
         ? await doBrowserRequest(prompt, systemInstruction)
         : await doServerRequest(payload);
 
-      const text = result.text || result.candidates?.[0]?.content?.parts?.[0]?.text;
+      const text =
+        result.text || result.candidates?.[0]?.content?.parts?.[0]?.text;
       if (!text) throw new Error('Keine Antwort vom Modell erhalten.');
       return text;
     } catch (error) {
@@ -77,7 +78,7 @@ async function getGeminiResponse(
         // Letzter Versuch fehlgeschlagen
         log.error(
           'Gemini API Fehler nach Max Retries: ' +
-            (error && error.message ? error.message : String(error))
+            (error && error.message ? error.message : String(error)),
         );
         return 'Entschuldigung, ich habe gerade Verbindungsprobleme. Bitte versuche es später noch einmal.';
       }
@@ -106,7 +107,7 @@ export class GeminiService {
 
   async getSuggestion(behavior) {
     const prompt = `Gib eine kurze, konkrete Empfehlung für den Nutzer basierend auf:\n${JSON.stringify(
-      behavior
+      behavior,
     )}`;
     const system = 'Sei prägnant, maximal 2 Sätze.';
     return await getGeminiResponse(prompt, system);

@@ -80,7 +80,9 @@ function makeLineMeasurer(subtitleEl) {
     if (!lh) return [text];
 
     words.forEach((word) => {
-      const testLine = currentLine.length ? currentLine.join(' ') + ' ' + word : word;
+      const testLine = currentLine.length
+        ? currentLine.join(' ') + ' ' + word
+        : word;
       measurer.textContent = testLine;
 
       if (measurer.getBoundingClientRect().height > lh * 1.1) {
@@ -246,7 +248,9 @@ export class TypeWriter {
     if (!this._isDeleting && this._txt === full) {
       try {
         document.dispatchEvent(
-          new CustomEvent(EVENTS.HERO_TYPING_END, { detail: { text: full, author } })
+          new CustomEvent(EVENTS.HERO_TYPING_END, {
+            detail: { text: full, author },
+          }),
         );
       } catch (err) {
         log.warn('TypeWriter: dispatch hero:typingEnd failed', err);
@@ -289,7 +293,7 @@ export async function initHeroSubtitle(options = {}) {
     if (!subtitleEl || !typedText || !typedAuthor) return false;
 
     const quotes = await fetch('/content/config/typewriter-quotes.json')
-      .then(r => r.json())
+      .then((r) => r.json())
       .catch(() => null);
 
     if (!quotes?.length) return false;
@@ -320,8 +324,8 @@ export async function initHeroSubtitle(options = {}) {
           const base = document.body.classList.contains('footer-expanded')
             ? 'clamp(8px,1.5vw,16px)'
             : el.classList.contains('typewriter-title--fixed')
-              ? 'clamp(16px,2.5vw,32px)'
-              : 'clamp(12px,2vw,24px)';
+            ? 'clamp(16px,2.5vw,32px)'
+            : 'clamp(12px,2vw,24px)';
           setCSSVars(el, { bottom: `calc(${base} + ${overlap}px)` });
         }
       } catch (err) {
@@ -385,9 +389,13 @@ export async function initHeroSubtitle(options = {}) {
       // Also check when footer explicitly reports loaded
       document.addEventListener('footer:loaded', pollOverlap, { once: true });
       // And on resize
-      window.addEventListener('resize', () => requestAnimationFrame(pollOverlap), {
-        passive: true,
-      });
+      window.addEventListener(
+        'resize',
+        () => requestAnimationFrame(pollOverlap),
+        {
+          passive: true,
+        },
+      );
 
       // Expose instance for imports (preferred) and keep debug window hook for quick manual debugging
       typeWriterInstance = tw;

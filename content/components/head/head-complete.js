@@ -70,7 +70,8 @@ const BRAND_DATA = {
 
 const ROUTES = {
   default: {
-    title: 'Abdulkerim Sesli | Webentwicklung & Fotografie Berlin | Abdul Berlin',
+    title:
+      'Abdulkerim Sesli | Webentwicklung & Fotografie Berlin | Abdul Berlin',
     description:
       'Offizielles Portfolio von Abdulkerim Sesli (Abdul Berlin). Webentwickler (React, Three.js) und Fotograf aus Berlin. Nicht zu verwechseln mit Hörbuch-Verlagen.',
     title_en: 'Abdulkerim Sesli — Web Developer & Photographer in Berlin',
@@ -103,9 +104,11 @@ const ROUTES = {
   },
   '/videos/': {
     title: 'Videos — Abdulkerim Sesli',
-    description: 'Eine Auswahl meiner Arbeiten, kurzen Vorstellungen und Behind-the-Scenes.',
+    description:
+      'Eine Auswahl meiner Arbeiten, kurzen Vorstellungen und Behind-the-Scenes.',
     title_en: 'Videos — Abdulkerim Sesli',
-    description_en: 'A selection of my work, brief presentations and behind-the-scenes.',
+    description_en:
+      'A selection of my work, brief presentations and behind-the-scenes.',
     type: 'CollectionPage',
     // NOTE: currently uses og-home.png as a fallback.
     image: `${BASE_URL}/content/assets/img/og/og-home.png`,
@@ -151,7 +154,7 @@ export function generateSchemaGraph(
   BASE_URL,
   BRAND_DATA,
   BUSINESS_FAQS,
-  doc = typeof document === 'undefined' ? null : document
+  doc = typeof document === 'undefined' ? null : document,
 ) {
   // Use canonical origin (prod or runtime origin) so JSON-LD stays consistent in local/dev
   const canonicalOrigin =
@@ -268,7 +271,7 @@ export function generateSchemaGraph(
           sameAs: 'https://www.wikidata.org/wiki/Q64',
         },
       ],
-    }
+    },
   );
 
   // Enrich Person node for ProfilePage (identifier, images, interaction stats) ✅
@@ -280,13 +283,15 @@ export function generateSchemaGraph(
 
       // If multiple profile images exist on the page, include up to 3 images (recommended by Google)
       try {
-        const imgs = Array.from(doc.querySelectorAll('main img, .profile-photo, .avatar') || [])
+        const imgs = Array.from(
+          doc.querySelectorAll('main img, .profile-photo, .avatar') || [],
+        )
           .map((i) => i.src)
           .filter(Boolean);
         if (imgs.length > 1) {
           personNode.image = imgs.slice(0, 3);
         }
-      } catch (e) { }
+      } catch (e) {}
 
       // Agent interaction statistic: prefer server-side postsCount, fallback to counting <article> elements
       try {
@@ -300,7 +305,7 @@ export function generateSchemaGraph(
             userInteractionCount: writeCount,
           };
         }
-      } catch (e) { }
+      } catch (e) {}
 
       // Interaction statistics (followers / likes) — prefer server-side BRAND_DATA values and fallback to DOM
       try {
@@ -325,13 +330,14 @@ export function generateSchemaGraph(
           brandFollowers > 0
             ? brandFollowers
             : findCount([
-              '[data-followers]',
-              '[data-followers-count]',
-              '.followers-count',
-              '.follower-count',
-            ]);
+                '[data-followers]',
+                '[data-followers-count]',
+                '.followers-count',
+                '.follower-count',
+              ]);
         if (followers > 0) {
-          personNode.interactionStatistic = personNode.interactionStatistic || [];
+          personNode.interactionStatistic =
+            personNode.interactionStatistic || [];
           personNode.interactionStatistic.push({
             '@type': 'InteractionCounter',
             interactionType: 'https://schema.org/FollowAction',
@@ -343,26 +349,37 @@ export function generateSchemaGraph(
         const likes =
           brandLikes > 0
             ? brandLikes
-            : findCount(['[data-likes]', '[data-likes-count]', '.likes-count', '.like-count']);
+            : findCount([
+                '[data-likes]',
+                '[data-likes-count]',
+                '.likes-count',
+                '.like-count',
+              ]);
         if (likes > 0) {
-          personNode.interactionStatistic = personNode.interactionStatistic || [];
+          personNode.interactionStatistic =
+            personNode.interactionStatistic || [];
           personNode.interactionStatistic.push({
             '@type': 'InteractionCounter',
             interactionType: 'https://schema.org/LikeAction',
             userInteractionCount: likes,
           });
         }
-      } catch (e) { }
+      } catch (e) {}
     }
-  } catch (e) { }
+  } catch (e) {}
 
   // Skills/ItemList
-  if (pageUrl.includes('/about') || pageUrl === BASE_URL || pageUrl === `${BASE_URL}/`) {
+  if (
+    pageUrl.includes('/about') ||
+    pageUrl === BASE_URL ||
+    pageUrl === `${BASE_URL}/`
+  ) {
     graph.push({
       '@type': 'ItemList',
       '@id': `${BASE_URL}/#skills`,
       name: 'Technische Skills & Kompetenzen',
-      description: 'Kernkompetenzen in der Fullstack-Webentwicklung und Fotografie',
+      description:
+        'Kernkompetenzen in der Fullstack-Webentwicklung und Fotografie',
       itemListElement: [
         { '@type': 'ListItem', position: 1, name: 'React & Next.js Ecosystem' },
         {
@@ -389,7 +406,9 @@ export function generateSchemaGraph(
   const extractPageContent = () => {
     try {
       const contentNode =
-        document.querySelector('main') || document.querySelector('article') || document.body;
+        document.querySelector('main') ||
+        document.querySelector('article') ||
+        document.body;
       if (!contentNode) return '';
       const clone = contentNode.cloneNode(true);
       const noiseSelectors = [
@@ -403,7 +422,9 @@ export function generateSchemaGraph(
         '.no-ai',
         '[aria-hidden="true"]',
       ];
-      noiseSelectors.forEach((sel) => clone.querySelectorAll(sel).forEach((el) => el.remove()));
+      noiseSelectors.forEach((sel) =>
+        clone.querySelectorAll(sel).forEach((el) => el.remove()),
+      );
       let text = clone.innerText || clone.textContent || '';
       text = text.replaceAll(/\s+/g, ' ').trim();
       return text.length > 5000 ? text.substring(0, 5000) + '...' : text;
@@ -440,7 +461,7 @@ export function generateSchemaGraph(
         target: `${BASE_URL}/?s={search_term_string}`,
         'query-input': 'required name=search_term_string',
       },
-    }
+    },
   );
 
   // Try to add dateCreated to the WebPage if the page provides a published time (meta or time element)
@@ -449,13 +470,16 @@ export function generateSchemaGraph(
     if (pageNode) {
       const metaPub =
         doc?.head?.querySelector(
-          'meta[property="article:published_time"], meta[name="dateCreated"], meta[property="og:published_time"]'
+          'meta[property="article:published_time"], meta[name="dateCreated"], meta[property="og:published_time"]',
         ) || null;
       const timeEl =
         doc?.querySelector(
-          'time[datetime][pubdate], time[datetime][itemprop="dateCreated"], time[datetime][data-created]'
+          'time[datetime][pubdate], time[datetime][itemprop="dateCreated"], time[datetime][data-created]',
         ) || null;
-      const created = metaPub?.getAttribute('content') || timeEl?.getAttribute('datetime') || null;
+      const created =
+        metaPub?.getAttribute('content') ||
+        timeEl?.getAttribute('datetime') ||
+        null;
       if (created) {
         try {
           pageNode.dateCreated = new Date(created).toISOString();
@@ -464,7 +488,7 @@ export function generateSchemaGraph(
         }
       }
     }
-  } catch (e) { }
+  } catch (e) {}
 
   // ImageObject enrichment for richer image results (helps Image Pack / Image Carousel)
   try {
@@ -511,8 +535,12 @@ export function generateSchemaGraph(
 
   let faqEntities = faqNodes;
   if (faqEntities.length === 0) {
-    const isHomepage = globalThis.location.pathname === '/' || globalThis.location.pathname === '';
-    const hasBusinessFaqFlag = !!(doc?.querySelector?.('[data-inject-business-faq]') || false);
+    const isHomepage =
+      globalThis.location.pathname === '/' ||
+      globalThis.location.pathname === '';
+    const hasBusinessFaqFlag = !!(
+      doc?.querySelector?.('[data-inject-business-faq]') || false
+    );
     if (isHomepage || hasBusinessFaqFlag) {
       const fallbackFaqNodes = BUSINESS_FAQS.map((item, i) => ({
         '@type': 'Question',
@@ -531,13 +559,18 @@ export function generateSchemaGraph(
     graph.push({
       '@type': 'FAQPage',
       '@id': `${pageUrl}#faq`,
-      name: pageData?.title ? `${pageData.title} — FAQ` : 'Häufig gestellte Fragen',
+      name: pageData?.title
+        ? `${pageData.title} — FAQ`
+        : 'Häufig gestellte Fragen',
       mainEntity: faqEntities,
       isPartOf: { '@id': ID.webpage },
     });
   }
   // Breadcrumbs
-  const segments = globalThis.location.pathname.replace(/\/$/, '').split('/').filter(Boolean);
+  const segments = globalThis.location.pathname
+    .replace(/\/$/, '')
+    .split('/')
+    .filter(Boolean);
   const crumbs = [
     {
       '@type': 'ListItem',
@@ -576,14 +609,15 @@ export function computeEffectiveCanonical(
   pageUrl,
   BASE_URL,
   locationPath = globalThis.location?.pathname || '',
-  locationOrigin = globalThis.location?.origin || ''
+  locationOrigin = globalThis.location?.origin || '',
 ) {
   // Determine canonicalHref and effectiveCanonical.
   // Removed host-based PROD_HOSTS detection per request — only `forceProdFlag`
   // (explicit) controls whether production canonical is used.
   const canonicalHref = forceProdFlag ? `${BASE_URL}${cleanPath}` : pageUrl;
 
-  const isDirtyPath = /^\/pages\//i.exec(locationPath) || /\/index\.html$/i.exec(locationPath);
+  const isDirtyPath =
+    /^\/pages\//i.exec(locationPath) || /\/index\.html$/i.exec(locationPath);
 
   let effectiveCanonical;
   if (forceProdFlag) {
@@ -605,7 +639,7 @@ export function buildCanonicalLinks(
   pageUrl,
   BASE_URL,
   locationPath = globalThis.location?.pathname || '',
-  locationOrigin = globalThis.location?.origin || ''
+  locationOrigin = globalThis.location?.origin || '',
 ) {
   const { canonicalHref, effectiveCanonical } = computeEffectiveCanonical(
     forceProdFlag,
@@ -614,7 +648,7 @@ export function buildCanonicalLinks(
     pageUrl,
     BASE_URL,
     locationPath,
-    locationOrigin
+    locationOrigin,
   );
 
   const canonicalOrigin = forceProdFlag ? BASE_URL : locationOrigin;
@@ -725,7 +759,7 @@ export function upsertMeta(
   nameOrProperty,
   content,
   isProperty = false,
-  doc = typeof document === 'undefined' ? null : document
+  doc = typeof document === 'undefined' ? null : document,
 ) {
   if (!doc?.head || !content) return;
   const selector = isProperty
@@ -743,7 +777,11 @@ export function upsertMeta(
   }
 }
 
-export function upsertLink(rel, href, doc = typeof document === 'undefined' ? null : document) {
+export function upsertLink(
+  rel,
+  href,
+  doc = typeof document === 'undefined' ? null : document,
+) {
   if (!doc?.head || !href) return;
   let el = doc?.head?.querySelector(`link[rel="${rel}"]`);
   if (el) {
@@ -759,7 +797,7 @@ export function upsertLink(rel, href, doc = typeof document === 'undefined' ? nu
 export function applyCanonicalLinks(
   doc = typeof document === 'undefined' ? null : document,
   alternates = [],
-  effectiveCanonical = ''
+  effectiveCanonical = '',
 ) {
   if (!doc?.head) return;
 
@@ -795,7 +833,11 @@ export function applyCanonicalLinks(
 }
 
 // Schedule schema injection using requestIdleCallback when available, otherwise fallback to setTimeout.
-export function scheduleSchemaInjection(callback, idleTimeout = 1500, fallbackDelay = 1200) {
+export function scheduleSchemaInjection(
+  callback,
+  idleTimeout = 1500,
+  fallbackDelay = 1200,
+) {
   if (typeof globalThis.requestIdleCallback === 'function') {
     try {
       return globalThis.requestIdleCallback(callback, { timeout: idleTimeout });
@@ -814,7 +856,7 @@ export function injectSchema(
   BASE_URL_LOCAL,
   BRAND_DATA_LOCAL,
   BUSINESS_FAQS_LOCAL,
-  doc = typeof document === 'undefined' ? null : document
+  doc = typeof document === 'undefined' ? null : document,
 ) {
   if (!doc?.head) return;
   try {
@@ -824,7 +866,7 @@ export function injectSchema(
       BASE_URL_LOCAL,
       BRAND_DATA_LOCAL,
       BUSINESS_FAQS_LOCAL,
-      doc
+      doc,
     );
     const ldId = 'head-complete-ldjson';
     let script = doc.getElementById(ldId);
@@ -848,7 +890,9 @@ export function injectSchema(
 async function loadSharedHead() {
   // Skip all DOM mutations when running in non-browser environments (e.g. Node imports during CI/tests)
   if (document === undefined || globalThis.location === undefined) {
-    log?.info?.('head-complete: running in non-browser environment; skipping loadSharedHead');
+    log?.info?.(
+      'head-complete: running in non-browser environment; skipping loadSharedHead',
+    );
     return;
   }
 
@@ -866,7 +910,9 @@ async function loadSharedHead() {
       // Safety timeout after 5 seconds
       setTimeout(() => {
         clearInterval(checkInterval);
-        log?.warn?.('head-complete: timeout waiting for head-inline, proceeding anyway');
+        log?.warn?.(
+          'head-complete: timeout waiting for head-inline, proceeding anyway',
+        );
         resolve();
       }, 5000);
     });
@@ -880,7 +926,7 @@ async function loadSharedHead() {
   // Pfad-Logik
   const currentPath = globalThis.location.pathname.toLowerCase();
   const matchedKey = Object.keys(ROUTES).find(
-    (key) => key !== 'default' && currentPath.includes(key)
+    (key) => key !== 'default' && currentPath.includes(key),
   );
   const rawPageData = matchedKey ? ROUTES[matchedKey] : ROUTES.default;
   const pageUrl = globalThis.location.href.split('#')[0];
@@ -894,7 +940,10 @@ async function loadSharedHead() {
   const isEnglish = preferredLang.startsWith('en');
   const pageData = {
     ...rawPageData,
-    title: isEnglish && rawPageData.title_en ? rawPageData.title_en : rawPageData.title,
+    title:
+      isEnglish && rawPageData.title_en
+        ? rawPageData.title_en
+        : rawPageData.title,
     description:
       isEnglish && rawPageData.description_en
         ? rawPageData.description_en
@@ -904,7 +953,11 @@ async function loadSharedHead() {
   // --- Push stable page metadata to dataLayer for GTM (no PII) ---
   try {
     globalThis.dataLayer = globalThis.dataLayer || [];
-    const page_meta = buildPageMeta(pageData, pageUrl, globalThis.location.pathname || '/');
+    const page_meta = buildPageMeta(
+      pageData,
+      pageUrl,
+      globalThis.location.pathname || '/',
+    );
 
     // push a named event so GTM can use it as trigger (and to avoid premature reads)
     globalThis.dataLayer.push({ event: 'pageMetadataReady', page_meta });
@@ -995,16 +1048,24 @@ async function loadSharedHead() {
 
       // Force Canonical to Production host when true. Set to false to allow dev/staging canonical behavior.
       // Only honor an explicit opt-in via data attribute.
-      const forceProdFlag = document.documentElement.dataset.forceProdCanonical === 'true';
+      const forceProdFlag =
+        document.documentElement.dataset.forceProdCanonical === 'true';
 
       // Check if head-inline.js already set an early canonical (will be updated with proper value)
-      const earlyCanonical = document.head.querySelector('link[rel="canonical"][data-early="true"]');
+      const earlyCanonical = document.head.querySelector(
+        'link[rel="canonical"][data-early="true"]',
+      );
 
       // Compute cleanPath using shared canonical util
       let cleanPath;
       try {
-        const { getCanonicalPathFromRoutes } = await import('../../utils/canonical-utils.js');
-        cleanPath = getCanonicalPathFromRoutes(globalThis.location.pathname, ROUTES);
+        const { getCanonicalPathFromRoutes } = await import(
+          '../../utils/canonical-utils.js'
+        );
+        cleanPath = getCanonicalPathFromRoutes(
+          globalThis.location.pathname,
+          ROUTES,
+        );
       } catch {
         // Fallback to previous inline behavior if import fails
         const rawPath = globalThis.location.pathname || '/';
@@ -1013,11 +1074,17 @@ async function loadSharedHead() {
         pathForMatch = pathForMatch.replaceAll(/\.html$/i, '/');
         pathForMatch = pathForMatch.replaceAll(/\/\/+/g, '/');
         if (!pathForMatch.startsWith('/')) pathForMatch = '/' + pathForMatch;
-        pathForMatch = pathForMatch.endsWith('/') ? pathForMatch : pathForMatch + '/';
+        pathForMatch = pathForMatch.endsWith('/')
+          ? pathForMatch
+          : pathForMatch + '/';
         const lowerMatch = pathForMatch.toLowerCase();
-        let routeKey = Object.keys(ROUTES).find((k) => k !== 'default' && lowerMatch.startsWith(k));
+        let routeKey = Object.keys(ROUTES).find(
+          (k) => k !== 'default' && lowerMatch.startsWith(k),
+        );
         if (!routeKey)
-          routeKey = Object.keys(ROUTES).find((k) => k !== 'default' && lowerMatch.includes(k));
+          routeKey = Object.keys(ROUTES).find(
+            (k) => k !== 'default' && lowerMatch.includes(k),
+          );
         cleanPath = routeKey || pathForMatch;
         if (routeKey && !routeKey.endsWith('/')) {
           cleanPath = routeKey + '/';
@@ -1032,7 +1099,7 @@ async function loadSharedHead() {
         pageUrl,
         BASE_URL,
         globalThis.location.pathname,
-        globalThis.location.origin
+        globalThis.location.origin,
       );
 
       const canonicalEl = document.head.querySelector('link[rel="canonical"]');
@@ -1068,7 +1135,9 @@ async function loadSharedHead() {
       metas.forEach((m) => upsertMeta(m.name, m.content));
       const addIcon = (href, sizes, type) => {
         if (!href) return;
-        let el = document.head.querySelector(`link[rel="icon"][sizes="${sizes}"]`);
+        let el = document.head.querySelector(
+          `link[rel="icon"][sizes="${sizes}"]`,
+        );
         if (el) el.setAttribute('href', href);
         else {
           el = document.createElement('link');
@@ -1232,17 +1301,22 @@ async function loadSharedHead() {
           sameAs: 'https://www.wikidata.org/wiki/Q64',
         },
       ],
-    }
+    },
   );
 
   // 2.1 SPECIAL: FEATURE SNIPPET OPTIMIZATION (Skills as ItemList)
   // Helps Google display "Skills: React, Three.js..." in snippets
-  if (pageUrl.includes('/about') || pageUrl === BASE_URL || pageUrl === `${BASE_URL}/`) {
+  if (
+    pageUrl.includes('/about') ||
+    pageUrl === BASE_URL ||
+    pageUrl === `${BASE_URL}/`
+  ) {
     graph.push({
       '@type': 'ItemList',
       '@id': `${BASE_URL}/#skills`,
       name: 'Technische Skills & Kompetenzen',
-      description: 'Kernkompetenzen in der Fullstack-Webentwicklung und Fotografie',
+      description:
+        'Kernkompetenzen in der Fullstack-Webentwicklung und Fotografie',
       itemListElement: [
         {
           '@type': 'ListItem',
@@ -1284,7 +1358,10 @@ async function loadSharedHead() {
   // FAQ generation moved to `generateSchemaGraph` (no inline fallback here)
 
   // 6. BREADCRUMBS
-  const segments = globalThis.location.pathname.replace(/\/$/, '').split('/').filter(Boolean);
+  const segments = globalThis.location.pathname
+    .replace(/\/$/, '')
+    .split('/')
+    .filter(Boolean);
   const crumbs = [
     {
       '@type': 'ListItem',
@@ -1316,9 +1393,17 @@ async function loadSharedHead() {
   // Trigger schema generation via the exported scheduler (testable)
   const scheduleSchema = () =>
     scheduleSchemaInjection(
-      () => injectSchema(pageData, pageUrl, BASE_URL, BRAND_DATA, BUSINESS_FAQS, document),
+      () =>
+        injectSchema(
+          pageData,
+          pageUrl,
+          BASE_URL,
+          BRAND_DATA,
+          BUSINESS_FAQS,
+          document,
+        ),
       1500,
-      1200
+      1200,
     );
 
   if (document.readyState === 'loading')
@@ -1395,7 +1480,7 @@ function applyIconLink(doc, ic) {
 // Orchestrator helper: performs high-level head initialization using the exported helpers.
 export function orchestrateHead(
   doc = typeof document === 'undefined' ? null : document,
-  options = {}
+  options = {},
 ) {
   if (!doc?.head) return null;
 
@@ -1406,14 +1491,18 @@ export function orchestrateHead(
 
   const currentPath = globalThis.location.pathname.toLowerCase();
   const matchedKey = Object.keys(ROUTES).find(
-    (key) => key !== 'default' && currentPath.includes(key)
+    (key) => key !== 'default' && currentPath.includes(key),
   );
   const pageData = matchedKey ? ROUTES[matchedKey] : ROUTES.default || {};
   const pageUrl = globalThis.location.href.split('#')[0];
 
   // 1) push page metadata
   globalThis.dataLayer = globalThis.dataLayer || [];
-  const page_meta = buildPageMeta(pageData, pageUrl, globalThis.location.pathname || '/');
+  const page_meta = buildPageMeta(
+    pageData,
+    pageUrl,
+    globalThis.location.pathname || '/',
+  );
   globalThis.dataLayer.push({ event: 'pageMetadataReady', page_meta });
 
   // 2) core metas
@@ -1448,15 +1537,16 @@ export function orchestrateHead(
     pageUrl,
     BASE_URL,
     globalThis.location.pathname,
-    globalThis.location.origin
+    globalThis.location.origin,
   );
   applyCanonicalLinks(doc, alternates, effectiveCanonical);
 
   // 6) schedule schema injection
   scheduleSchemaInjection(
-    () => injectSchema(pageData, pageUrl, BASE_URL, BRAND_DATA, BUSINESS_FAQS, doc),
+    () =>
+      injectSchema(pageData, pageUrl, BASE_URL, BRAND_DATA, BUSINESS_FAQS, doc),
     1500,
-    1200
+    1200,
   );
 
   return { pageData, pageUrl, effectiveCanonical, alternates };
