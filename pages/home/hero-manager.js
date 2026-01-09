@@ -29,12 +29,12 @@ const HeroManager = (() => {
   async function loadTyped(heroDataModule) {
     try {
       if (!typeWriterModule) {
-        typeWriterModule = await import('../../content/components/typewriter/TypeWriter.js').catch(
-          (err) => {
-            logger.warn('Failed to import TypeWriter module', err);
-            return null;
-          }
-        );
+        typeWriterModule = await import(
+          '../../content/components/typewriter/TypeWriter.js'
+        ).catch((err) => {
+          logger.warn('Failed to import TypeWriter module', err);
+          return null;
+        });
       }
 
       if (!typeWriterModule?.initHeroSubtitle) return false;
@@ -65,11 +65,15 @@ const HeroManager = (() => {
       };
     }
 
-    const heroEl = getElementById('hero') || document.querySelector('section#hero');
+    const heroEl =
+      getElementById('hero') || document.querySelector('section#hero');
     if (!heroEl) {
       if (heroLookupAttempts < HERO_LOOKUP_MAX) {
         heroLookupAttempts += 1;
-        heroTimers.setTimeout(initLazyHeroModules, HERO_LOOKUP_DELAY_MS * heroLookupAttempts);
+        heroTimers.setTimeout(
+          initLazyHeroModules,
+          HERO_LOOKUP_DELAY_MS * heroLookupAttempts,
+        );
       } else {
         heroTimers.setTimeout(triggerLoad, HERO_LAZY_FALLBACK_MS);
       }
@@ -186,7 +190,7 @@ export function initHeroFeatureBundle() {
       if (el?.textContent.trim()) return;
       HeroManager.setRandomGreetingHTML();
     },
-    { once: true }
+    { once: true },
   );
 
   document.addEventListener(EVENTS.HERO_TYPING_END, (e) => {
@@ -204,7 +208,8 @@ export function initHeroFeatureBundle() {
 
     event.preventDefault();
     const targetId = href.slice(1);
-    const target = getElementById(targetId) || document.getElementById(targetId);
+    const target =
+      getElementById(targetId) || document.getElementById(targetId);
     if (!target) return;
 
     const doScroll = () => {
@@ -218,7 +223,9 @@ export function initHeroFeatureBundle() {
     };
 
     if (window.SectionLoader?.loadSection) {
-      window.SectionLoader.loadSection(target).finally(() => requestAnimationFrame(doScroll));
+      window.SectionLoader.loadSection(target).finally(() =>
+        requestAnimationFrame(doScroll),
+      );
     } else {
       requestAnimationFrame(doScroll);
     }

@@ -25,7 +25,8 @@ function loadSiteConfig() {
   if (idx < 0) throw new Error('site-config.js format not recognized');
   const after = src.slice(idx + marker.length);
   const firstBrace = after.indexOf('{');
-  if (firstBrace < 0) throw new Error('Could not find opening brace for object');
+  if (firstBrace < 0)
+    throw new Error('Could not find opening brace for object');
   let i = firstBrace;
   let depth = 0;
   for (; i < after.length; i++) {
@@ -40,10 +41,14 @@ function loadSiteConfig() {
         const wrapper = `(function(){ return (${objectText}); })()`;
         const sandbox = {};
         try {
-          const res = vm.runInNewContext(wrapper, sandbox, { filename: SITE_CFG_PATH });
+          const res = vm.runInNewContext(wrapper, sandbox, {
+            filename: SITE_CFG_PATH,
+          });
           return res;
         } catch (err) {
-          throw new Error('Failed to evaluate site-config.js object: ' + err.message);
+          throw new Error(
+            'Failed to evaluate site-config.js object: ' + err.message,
+          );
         }
       }
     }
@@ -148,12 +153,14 @@ async function main() {
     info(
       `- ${path.basename(r.filePath)}: publicId=${r.publicId}, hostMatch=${
         r.hostMatch || 'none'
-      }, updatedVars=${r.updatedVars}, changed=${r.changed}`
+      }, updatedVars=${r.updatedVars}, changed=${r.changed}`,
     );
   });
 }
 
 main().catch((err) => {
-  error('Sync script failed: ' + (err && err.message ? err.message : String(err)));
+  error(
+    'Sync script failed: ' + (err && err.message ? err.message : String(err)),
+  );
   process.exit(1);
 });

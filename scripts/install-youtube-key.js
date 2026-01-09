@@ -14,11 +14,20 @@ const { error, info } = require('./log');
   const partA = Buffer.from(a, 'utf8').toString('base64');
   const partB = Buffer.from(b, 'utf8').toString('base64');
 
-  fs.writeFileSync('content/config/videos-part-a.js', `export default "${partA}";\n`, 'utf8');
-  fs.writeFileSync('content/config/videos-part-b.js', `export default "${partB}";\n`, 'utf8');
+  fs.writeFileSync(
+    'content/config/videos-part-a.js',
+    `export default "${partA}";\n`,
+    'utf8',
+  );
+  fs.writeFileSync(
+    'content/config/videos-part-b.js',
+    `export default "${partB}";\n`,
+    'utf8',
+  );
 
   const recon =
-    Buffer.from(partA, 'base64').toString('utf8') + Buffer.from(partB, 'base64').toString('utf8');
+    Buffer.from(partA, 'base64').toString('utf8') +
+    Buffer.from(partB, 'base64').toString('utf8');
   if (recon !== key) {
     error('ERROR: Reconstruction mismatch');
     process.exit(3);

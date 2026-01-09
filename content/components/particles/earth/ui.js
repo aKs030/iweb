@@ -1,6 +1,9 @@
 import { CONFIG } from './config.js';
 import { createLogger, throttle } from '../../../utils/shared-utilities.js';
-import { calculateQualityLevel, calculateDynamicResolution } from './ui_helpers.js';
+import {
+  calculateQualityLevel,
+  calculateDynamicResolution,
+} from './ui_helpers.js';
 
 const log = createLogger('EarthUI');
 
@@ -47,7 +50,10 @@ export function showLoadingState(container, progress) {
     }
 
     if (typeof progress === 'number') {
-      globals.overlay.setAttribute('aria-valuenow', String(Math.round(progress * 100)));
+      globals.overlay.setAttribute(
+        'aria-valuenow',
+        String(Math.round(progress * 100)),
+      );
       globals.overlay.setAttribute('aria-valuemin', '0');
       globals.overlay.setAttribute('aria-valuemax', '100');
     } else {
@@ -141,7 +147,10 @@ export class PerformanceMonitor {
     this.currentQualityLevel = 'HIGH';
 
     // Throttled adjustment to avoid rapid fluctuating changes
-    this.throttledAdjustResolution = throttle(() => this.adjustResolution(), 1000);
+    this.throttledAdjustResolution = throttle(
+      () => this.adjustResolution(),
+      1000,
+    );
   }
 
   update() {
@@ -167,11 +176,13 @@ export class PerformanceMonitor {
     const newPixelRatio = calculateDynamicResolution(
       this.fps,
       this.currentPixelRatio,
-      CONFIG.PERFORMANCE
+      CONFIG.PERFORMANCE,
     );
 
     if (newPixelRatio !== this.currentPixelRatio) {
-      log.info(`Adjusting pixel ratio: ${this.currentPixelRatio} -> ${newPixelRatio}`);
+      log.info(
+        `Adjusting pixel ratio: ${this.currentPixelRatio} -> ${newPixelRatio}`,
+      );
       this.currentPixelRatio = newPixelRatio;
       try {
         this.renderer.setPixelRatio(this.currentPixelRatio);
