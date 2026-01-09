@@ -35,7 +35,8 @@ const ENV = {
   isTest:
     new URLSearchParams(globalThis.location.search).has('test') ||
     navigator.userAgent.includes('HeadlessChrome') ||
-    (globalThis.location.hostname === 'localhost' && globalThis.navigator.webdriver),
+    (globalThis.location.hostname === 'localhost' &&
+      globalThis.navigator.webdriver),
   debug: new URLSearchParams(globalThis.location.search).has('debug'),
 };
 
@@ -100,7 +101,7 @@ const SectionLoader = (() => {
       document.dispatchEvent(
         new CustomEvent(type, {
           detail: { id: section?.id, section, ...detail },
-        })
+        }),
       );
     } catch (error) {
       log.debug(`Event dispatch failed: ${type}`, error);
@@ -140,8 +141,9 @@ const SectionLoader = (() => {
     }
     if (!response || !response.ok) {
       throw new Error(
-        `HTTP ${response ? response.status : 'NO_RESPONSE'}: ${response ? response.statusText : 'no response'
-        }`
+        `HTTP ${response ? response.status : 'NO_RESPONSE'}: ${
+          response ? response.statusText : 'no response'
+        }`,
       );
     }
     return await response.text();
@@ -175,7 +177,9 @@ const SectionLoader = (() => {
         section.appendChild(template.content.cloneNode(true));
       }
 
-      section.querySelectorAll('.section-skeleton').forEach((el) => el.remove());
+      section
+        .querySelectorAll('.section-skeleton')
+        .forEach((el) => el.remove());
 
       section.dataset.state = 'loaded';
       section.removeAttribute('aria-busy');
@@ -291,7 +295,8 @@ if (document.readyState !== 'loading') {
 // ===== Scroll Snapping =====
 const ScrollSnapping = (() => {
   let snapTimer = null;
-  const snapContainer = document.querySelector('.snap-container') || document.documentElement;
+  const snapContainer =
+    document.querySelector('.snap-container') || document.documentElement;
 
   const disableSnap = () => snapContainer.classList.add('no-snap');
   const enableSnap = () => snapContainer.classList.remove('no-snap');
@@ -303,7 +308,15 @@ const ScrollSnapping = (() => {
   }
 
   function handleKey(event) {
-    const scrollKeys = ['PageDown', 'PageUp', 'Home', 'End', 'ArrowDown', 'ArrowUp', 'Space'];
+    const scrollKeys = [
+      'PageDown',
+      'PageUp',
+      'Home',
+      'End',
+      'ArrowDown',
+      'ArrowUp',
+      'Space',
+    ];
     if (scrollKeys.includes(event.key)) {
       handleScroll();
     }
@@ -355,7 +368,8 @@ const LoadingScreenManager = (() => {
 
   function updateUI(statusText) {
     if (state.bar) state.bar.style.width = `${Math.floor(state.progress)}%`;
-    if (state.percent) state.percent.textContent = `${Math.floor(state.progress)}%`;
+    if (state.percent)
+      state.percent.textContent = `${Math.floor(state.progress)}%`;
     if (statusText && state.text) state.text.textContent = statusText;
   }
 
@@ -496,7 +510,9 @@ const ThreeEarthLoader = (() => {
     // Explicitly check env for testing to skip heavy WebGL
     // ALLOW for specific verification script if requested via global override
     if (ENV.isTest && !globalThis.__FORCE_THREE_EARTH) {
-      log.info('Test environment detected - skipping Three.js Earth system for performance');
+      log.info(
+        'Test environment detected - skipping Three.js Earth system for performance',
+      );
       return;
     }
 
@@ -520,7 +536,9 @@ const ThreeEarthLoader = (() => {
 
     try {
       log.info('Loading Three.js Earth system...');
-      const { initThreeEarth } = await import('./components/particles/three-earth-system.js');
+      const { initThreeEarth } = await import(
+        './components/particles/three-earth-system.js'
+      );
 
       if (typeof initThreeEarth !== 'function') {
         throw new Error('initThreeEarth not found in module exports');
@@ -551,8 +569,10 @@ const ThreeEarthLoader = (() => {
     // immediately so the Earth is prepared while the loader is active.
     try {
       const rect = container.getBoundingClientRect();
-      const withinMargin = rect.top < (globalThis.innerHeight || 0) + 100 && rect.bottom > -100;
-      const loaderVisible = document.getElementById('app-loader')?.dataset?.loaderDone !== 'true';
+      const withinMargin =
+        rect.top < (globalThis.innerHeight || 0) + 100 && rect.bottom > -100;
+      const loaderVisible =
+        document.getElementById('app-loader')?.dataset?.loaderDone !== 'true';
 
       if (withinMargin || loaderVisible) {
         load();
@@ -571,7 +591,7 @@ const ThreeEarthLoader = (() => {
           }
         }
       },
-      { rootMargin: '400px', threshold: 0.01 }
+      { rootMargin: '400px', threshold: 0.01 },
     );
 
     observer.observe(container);
@@ -586,7 +606,7 @@ const ThreeEarthLoader = (() => {
     const start = Date.now();
     return setTimeout(
       () => cb({ timeRemaining: () => Math.max(0, 50 - (Date.now() - start)) }),
-      timeout
+      timeout,
     );
   }
 
@@ -628,7 +648,7 @@ document.addEventListener(
         LoadingScreenManager.setStatus('Finalisiere Assets...', 92);
         checkReady();
       },
-      { once: true }
+      { once: true },
     );
 
     fire(EVENTS.CORE_INITIALIZED);
@@ -652,7 +672,10 @@ document.addEventListener(
       // Compute delay dynamically in case heavier modules are still blocking
       const computeDelay = () => {
         try {
-          if (AppLoadManager !== undefined && typeof AppLoadManager.getPending === 'function') {
+          if (
+            AppLoadManager !== undefined &&
+            typeof AppLoadManager.getPending === 'function'
+          ) {
             const pending = AppLoadManager.getPending() || [];
             if (pending.includes('three-earth')) return EXTENDED_INITIAL_DELAY;
           }
@@ -677,22 +700,27 @@ document.addEventListener(
               AppLoadManager.isBlocked?.()
             ) {
               const pending =
-                typeof AppLoadManager.getPending === 'function' ? AppLoadManager.getPending() : [];
+                typeof AppLoadManager.getPending === 'function'
+                  ? AppLoadManager.getPending()
+                  : [];
               log.warn(
-                `Deferring forced loading screen hide (attempt ${attempt}): blocking modules=${Array.isArray(pending) ? pending.join(', ') : String(pending)
-                }`
+                `Deferring forced loading screen hide (attempt ${attempt}): blocking modules=${
+                  Array.isArray(pending) ? pending.join(', ') : String(pending)
+                }`,
               );
 
               if (attempt < MAX_ATTEMPTS) {
                 scheduleSmartForceHide(attempt + 1);
                 return;
               }
-              log.warn('Max attempts reached - forcing hide despite blocking modules');
+              log.warn(
+                'Max attempts reached - forcing hide despite blocking modules',
+              );
             }
           } catch (e) {
             log.debug(
               'AppLoadManager not available or check failed (expected in some environments)',
-              e
+              e,
             );
           }
 
@@ -701,7 +729,7 @@ document.addEventListener(
           LoadingScreenManager.setStatus('Schließe Ladebildschirm...');
           LoadingScreenManager.hide();
         },
-        attempt === 1 ? initialDelay : RETRY_DELAY
+        attempt === 1 ? initialDelay : RETRY_DELAY,
       );
     })();
 
@@ -710,7 +738,9 @@ document.addEventListener(
     // Activate deferred styles that were marked with data-defer="1"
     const activateDeferredStyles = () => {
       try {
-        const links = document.querySelectorAll('link[rel="stylesheet"][data-defer="1"]');
+        const links = document.querySelectorAll(
+          'link[rel="stylesheet"][data-defer="1"]',
+        );
         links.forEach((link) => {
           try {
             link.media = 'all';
@@ -744,7 +774,10 @@ document.addEventListener(
         for (const m of mutations) {
           for (const node of m.addedNodes) {
             try {
-              if (node.nodeType === 1 && node.matches?.('link[rel="stylesheet"][data-defer="1"]')) {
+              if (
+                node.nodeType === 1 &&
+                node.matches?.('link[rel="stylesheet"][data-defer="1"]')
+              ) {
                 node.media = 'all';
                 delete node.dataset.defer;
               }
@@ -787,7 +820,8 @@ document.addEventListener(
       const share = target?.closest('.btn-share');
       if (share) {
         event.preventDefault();
-        const shareUrl = share.dataset.shareUrl || 'https://www.youtube.com/@aks.030';
+        const shareUrl =
+          share.dataset.shareUrl || 'https://www.youtube.com/@aks.030';
         const shareData = {
           title: document.title,
           text: 'Schau dir diesen Kanal an',
@@ -795,7 +829,9 @@ document.addEventListener(
         };
 
         if (navigator.share) {
-          navigator.share(shareData).catch((err) => log.warn('share failed', err));
+          navigator
+            .share(shareData)
+            .catch((err) => log.warn('share failed', err));
         } else if (navigator.clipboard) {
           navigator.clipboard.writeText(shareUrl).then(() => {
             try {
@@ -822,7 +858,7 @@ document.addEventListener(
 
     // Dev-only ReconnectingWebSocket helper removed (was used for ?ws-test / local debug).
   },
-  { once: true }
+  { once: true },
 );
 
 // ===== BFCache / Back Button Handling =====
@@ -838,7 +874,11 @@ globalThis.addEventListener('pageshow', (event) => {
     globalThis.dispatchEvent(new CustomEvent('resize'));
 
     // Re-check visibility
-    if (!document.hidden && globalThis.threeEarthSystem && globalThis.threeEarthSystem.animate) {
+    if (
+      !document.hidden &&
+      globalThis.threeEarthSystem &&
+      globalThis.threeEarthSystem.animate
+    ) {
       // If system exposed an animate function, we could call it, but the loop usually uses rAF
       // which might have been paused.
       // The visibilitychange handler should pick this up, but let's trigger it.

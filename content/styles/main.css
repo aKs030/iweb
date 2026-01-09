@@ -54,7 +54,12 @@
   left: 0;
   width: 100%;
   height: 2px;
-  background: linear-gradient(90deg, transparent, var(--loader-accent), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--loader-accent),
+    transparent
+  );
   animation: scanline 2s infinite ease-in-out;
 }
 
@@ -262,7 +267,10 @@ body {
 .container {
   width: min(100%, var(--container-width));
   margin-inline: auto;
-  padding-inline: max(clamp(0.5rem, 4vw, 1.5rem), env(safe-area-inset-left, 0px));
+  padding-inline: max(
+    clamp(0.5rem, 4vw, 1.5rem),
+    env(safe-area-inset-left, 0px)
+  );
   box-sizing: border-box;
 }
 
@@ -362,8 +370,8 @@ body {
   gap: 0.35rem;
   font-weight: 500;
   box-shadow: var(--shadow-sm);
-  transition: background var(--transition-fast), transform var(--transition-fast),
-    box-shadow var(--transition-fast);
+  transition: background var(--transition-fast),
+    transform var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .section-retry:hover {

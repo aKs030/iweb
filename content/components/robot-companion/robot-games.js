@@ -18,7 +18,10 @@ export class RobotGames {
 
   startTicTacToe() {
     this.state.ticTacToe.board = Array(9).fill(null);
-    this.robot.addMessage('🎮 Tic-Tac-Toe! Du bist X, ich bin O. Viel Glück! 😎', 'bot');
+    this.robot.addMessage(
+      '🎮 Tic-Tac-Toe! Du bist X, ich bin O. Viel Glück! 😎',
+      'bot',
+    );
 
     const gameContainer = document.createElement('div');
     gameContainer.className = 'tic-tac-toe-game';
@@ -64,7 +67,10 @@ export class RobotGames {
         gameContainer.children[botMove].style.cursor = 'not-allowed';
 
         if (this.checkTicTacToeWin('O')) {
-          this.robot.addMessage('🤖 Ich habe gewonnen! Nochmal versuchen? 😏', 'bot');
+          this.robot.addMessage(
+            '🤖 Ich habe gewonnen! Nochmal versuchen? 😏',
+            'bot',
+          );
           this.disableTicTacToeBoard(gameContainer);
           setTimeout(() => this.robot.handleAction('games'), 2000);
           return;
@@ -112,7 +118,9 @@ export class RobotGames {
     const available = board
       .map((cell, idx) => (cell === null ? idx : null))
       .filter((idx) => idx !== null);
-    return available.length > 0 ? available[Math.floor(Math.random() * available.length)] : -1;
+    return available.length > 0
+      ? available[Math.floor(Math.random() * available.length)]
+      : -1;
   }
 
   checkTicTacToeWin(symbol) {
@@ -128,7 +136,9 @@ export class RobotGames {
       [2, 4, 6],
     ];
 
-    return winPatterns.some((pattern) => pattern.every((idx) => board[idx] === symbol));
+    return winPatterns.some((pattern) =>
+      pattern.every((idx) => board[idx] === symbol),
+    );
   }
 
   disableTicTacToeBoard(gameContainer) {
@@ -169,7 +179,12 @@ export class RobotGames {
       },
       {
         q: 'Was ist die Geschwindigkeit des Lichts?',
-        options: ['300.000 km/s', '150.000 km/s', '450.000 km/s', '200.000 km/s'],
+        options: [
+          '300.000 km/s',
+          '150.000 km/s',
+          '450.000 km/s',
+          '200.000 km/s',
+        ],
         answer: 0,
       },
     ];
@@ -177,7 +192,10 @@ export class RobotGames {
     const question = questions[Math.floor(Math.random() * questions.length)];
     this.state.currentTrivia = question;
 
-    this.robot.addMessage(`🧠 Trivia-Quiz! Score: ${this.state.triviaScore}`, 'bot');
+    this.robot.addMessage(
+      `🧠 Trivia-Quiz! Score: ${this.state.triviaScore}`,
+      'bot',
+    );
     this.robot.addMessage(question.q, 'bot');
 
     const options = question.options.map((opt, idx) => ({
@@ -198,10 +216,13 @@ export class RobotGames {
       localStorage.setItem('robot-trivia-score', this.state.triviaScore);
       this.robot.addMessage('✅ Richtig! Sehr gut! 🎉', 'bot');
 
-      if (this.state.triviaScore === 5 && !this.robot.easterEggFound.has('trivia-master')) {
+      if (
+        this.state.triviaScore === 5 &&
+        !this.robot.easterEggFound.has('trivia-master')
+      ) {
         this.robot.unlockEasterEgg(
           'trivia-master',
-          '🧠 Trivia-Master! 5 richtige Antworten! Du bist ein Genie! 🏆'
+          '🧠 Trivia-Master! 5 richtige Antworten! Du bist ein Genie! 🏆',
         );
       }
     } else {
@@ -209,7 +230,7 @@ export class RobotGames {
         `❌ Leider falsch! Die richtige Antwort war: ${
           this.state.currentTrivia.options[this.state.currentTrivia.answer]
         }`,
-        'bot'
+        'bot',
       );
     }
 
@@ -233,7 +254,7 @@ export class RobotGames {
 
     this.robot.addMessage(
       '🎲 Zahlenraten! Ich denke an eine Zahl zwischen 1 und 100. Du hast 7 Versuche!',
-      'bot'
+      'bot',
     );
     this.robot.addMessage('Gib eine Zahl ein:', 'bot');
 
@@ -246,7 +267,10 @@ export class RobotGames {
 
     const num = parseInt(guess);
     if (isNaN(num) || num < 1 || num > 100) {
-      this.robot.addMessage('⚠️ Bitte eine Zahl zwischen 1 und 100 eingeben!', 'bot');
+      this.robot.addMessage(
+        '⚠️ Bitte eine Zahl zwischen 1 und 100 eingeben!',
+        'bot',
+      );
       return;
     }
 
@@ -256,25 +280,31 @@ export class RobotGames {
     if (num === target) {
       this.robot.addMessage(
         `🎉 Richtig! Die Zahl war ${target}! Du hast ${attempts} Versuche gebraucht! 🏆`,
-        'bot'
+        'bot',
       );
       this.state.guessNumberActive = false;
 
       if (attempts <= 3 && !this.robot.easterEggFound.has('lucky-guesser')) {
         this.robot.unlockEasterEgg(
           'lucky-guesser',
-          '🍀 Lucky Guesser! In 3 oder weniger Versuchen! Unglaublich! 🎯'
+          '🍀 Lucky Guesser! In 3 oder weniger Versuchen! Unglaublich! 🎯',
         );
       }
 
       setTimeout(() => this.robot.handleAction('games'), 2000);
     } else if (attempts >= maxAttempts) {
-      this.robot.addMessage(`😅 Keine Versuche mehr! Die Zahl war ${target}. Nochmal?`, 'bot');
+      this.robot.addMessage(
+        `😅 Keine Versuche mehr! Die Zahl war ${target}. Nochmal?`,
+        'bot',
+      );
       this.state.guessNumberActive = false;
       setTimeout(() => this.robot.handleAction('games'), 2000);
     } else {
       const hint = num < target ? '📈 Zu niedrig!' : '📉 Zu hoch!';
-      this.robot.addMessage(`${hint} Versuche übrig: ${maxAttempts - attempts}`, 'bot');
+      this.robot.addMessage(
+        `${hint} Versuche übrig: ${maxAttempts - attempts}`,
+        'bot',
+      );
     }
   }
 }
