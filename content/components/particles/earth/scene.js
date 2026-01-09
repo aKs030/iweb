@@ -11,7 +11,7 @@ export function setupScene(THREE, container) {
     fov,
     aspectRatio,
     CONFIG.CAMERA.NEAR,
-    CONFIG.CAMERA.FAR
+    CONFIG.CAMERA.FAR,
   );
 
   const renderer = new THREE.WebGLRenderer({
@@ -40,7 +40,7 @@ export function setupScene(THREE, container) {
     document.dispatchEvent(
       new CustomEvent('three-attached', {
         detail: { containerId: container.id || null },
-      })
+      }),
     );
   } catch {
     /* ignore */
@@ -50,13 +50,16 @@ export function setupScene(THREE, container) {
 }
 
 export function setupLighting(THREE, scene) {
-  const directionalLight = new THREE.DirectionalLight(0xffffff, CONFIG.SUN.INTENSITY);
+  const directionalLight = new THREE.DirectionalLight(
+    0xffffff,
+    CONFIG.SUN.INTENSITY,
+  );
   directionalLight.position.set(CONFIG.SUN.RADIUS, CONFIG.SUN.HEIGHT, 0);
   scene.add(directionalLight);
 
   const ambientLight = new THREE.AmbientLight(
     CONFIG.LIGHTING.DAY.AMBIENT_COLOR,
-    CONFIG.LIGHTING.DAY.AMBIENT_INTENSITY
+    CONFIG.LIGHTING.DAY.AMBIENT_INTENSITY,
   );
   scene.add(ambientLight);
 
@@ -120,11 +123,17 @@ export function createAtmosphere(THREE, isMobileDevice = false) {
     depthWrite: false,
   });
 
-  const segments = isMobileDevice ? CONFIG.EARTH.SEGMENTS_MOBILE : CONFIG.EARTH.SEGMENTS;
+  const segments = isMobileDevice
+    ? CONFIG.EARTH.SEGMENTS_MOBILE
+    : CONFIG.EARTH.SEGMENTS;
 
   const atmosphere = new THREE.Mesh(
-    new THREE.SphereGeometry(CONFIG.EARTH.RADIUS * CONFIG.ATMOSPHERE.SCALE, segments, segments),
-    atmosphereMaterial
+    new THREE.SphereGeometry(
+      CONFIG.EARTH.RADIUS * CONFIG.ATMOSPHERE.SCALE,
+      segments,
+      segments,
+    ),
+    atmosphereMaterial,
   );
 
   return atmosphere;

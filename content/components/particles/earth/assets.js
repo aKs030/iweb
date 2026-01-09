@@ -3,7 +3,13 @@ import { createLogger } from '../../../utils/shared-utilities.js';
 
 const log = createLogger('EarthAssets');
 
-export async function createEarthSystem(THREE, scene, renderer, isMobileDevice, loadingManager) {
+export async function createEarthSystem(
+  THREE,
+  scene,
+  renderer,
+  isMobileDevice,
+  loadingManager,
+) {
   // Use passed loadingManager or fallback to a new one
   const manager = loadingManager || new THREE.LoadingManager();
   const textureLoader = new THREE.TextureLoader(manager);
@@ -48,9 +54,15 @@ export async function createEarthSystem(THREE, scene, renderer, isMobileDevice, 
   });
 
   // OPTIMIZATION: Reduce segments on mobile
-  const segments = isMobileDevice ? CONFIG.EARTH.SEGMENTS_MOBILE : CONFIG.EARTH.SEGMENTS;
+  const segments = isMobileDevice
+    ? CONFIG.EARTH.SEGMENTS_MOBILE
+    : CONFIG.EARTH.SEGMENTS;
 
-  const earthGeometry = new THREE.SphereGeometry(CONFIG.EARTH.RADIUS, segments, segments);
+  const earthGeometry = new THREE.SphereGeometry(
+    CONFIG.EARTH.RADIUS,
+    segments,
+    segments,
+  );
   const earthMesh = new THREE.Mesh(earthGeometry, dayMaterial);
   earthMesh.position.set(0, -6, 0);
   earthMesh.scale.set(1.5, 1.5, 1.5);
@@ -64,7 +76,13 @@ export async function createEarthSystem(THREE, scene, renderer, isMobileDevice, 
   return { earthMesh, dayMaterial, nightMaterial };
 }
 
-export async function createMoonSystem(THREE, scene, renderer, isMobileDevice, loadingManager) {
+export async function createMoonSystem(
+  THREE,
+  scene,
+  renderer,
+  isMobileDevice,
+  loadingManager,
+) {
   const textureLoader = new THREE.TextureLoader(loadingManager);
 
   const [moonTexture, moonBumpTexture] = await Promise.all([
@@ -73,8 +91,10 @@ export async function createMoonSystem(THREE, scene, renderer, isMobileDevice, l
   ]);
 
   const maxAniso = renderer.capabilities.getMaxAnisotropy();
-  if (moonTexture) moonTexture.anisotropy = Math.min(maxAniso, isMobileDevice ? 4 : 16);
-  if (moonBumpTexture) moonBumpTexture.anisotropy = Math.min(maxAniso, isMobileDevice ? 4 : 16);
+  if (moonTexture)
+    moonTexture.anisotropy = Math.min(maxAniso, isMobileDevice ? 4 : 16);
+  if (moonBumpTexture)
+    moonBumpTexture.anisotropy = Math.min(maxAniso, isMobileDevice ? 4 : 16);
 
   const moonMaterial = new THREE.MeshStandardMaterial({
     map: moonTexture,
@@ -91,7 +111,7 @@ export async function createMoonSystem(THREE, scene, renderer, isMobileDevice, l
   const moonGeometryHigh = new THREE.SphereGeometry(
     CONFIG.MOON.RADIUS,
     CONFIG.MOON.SEGMENTS,
-    CONFIG.MOON.SEGMENTS
+    CONFIG.MOON.SEGMENTS,
   );
   moonLOD.addLevel(new THREE.Mesh(moonGeometryHigh, moonMaterial), 0);
 
@@ -104,17 +124,28 @@ export async function createMoonSystem(THREE, scene, renderer, isMobileDevice, l
   moonLOD.addLevel(new THREE.Mesh(moonGeometryLow, moonMaterial), 40);
 
   moonLOD.position.set(CONFIG.MOON.DISTANCE, 2, -10);
-  moonLOD.userData.targetPosition = new THREE.Vector3(CONFIG.MOON.DISTANCE, 2, -10);
+  moonLOD.userData.targetPosition = new THREE.Vector3(
+    CONFIG.MOON.DISTANCE,
+    2,
+    -10,
+  );
   moonLOD.userData.targetScale = 1;
 
   scene.add(moonLOD);
   return moonLOD;
 }
 
-export async function createCloudLayer(THREE, renderer, loadingManager, isMobileDevice) {
+export async function createCloudLayer(
+  THREE,
+  renderer,
+  loadingManager,
+  isMobileDevice,
+) {
   const textureLoader = new THREE.TextureLoader(loadingManager);
   try {
-    const cloudTexture = await textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.CLOUDS);
+    const cloudTexture = await textureLoader.loadAsync(
+      CONFIG.PATHS.TEXTURES.CLOUDS,
+    );
     cloudTexture.wrapS = THREE.RepeatWrapping;
     cloudTexture.wrapT = THREE.RepeatWrapping;
     cloudTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
@@ -129,12 +160,14 @@ export async function createCloudLayer(THREE, renderer, loadingManager, isMobile
     });
 
     // OPTIMIZATION: Use same segment reduction for clouds
-    const segments = isMobileDevice ? CONFIG.EARTH.SEGMENTS_MOBILE : CONFIG.EARTH.SEGMENTS;
+    const segments = isMobileDevice
+      ? CONFIG.EARTH.SEGMENTS_MOBILE
+      : CONFIG.EARTH.SEGMENTS;
 
     const cloudGeometry = new THREE.SphereGeometry(
       CONFIG.EARTH.RADIUS + CONFIG.CLOUDS.ALTITUDE,
       segments,
-      segments
+      segments,
     );
     return new THREE.Mesh(cloudGeometry, cloudMaterial);
   } catch (error) {
