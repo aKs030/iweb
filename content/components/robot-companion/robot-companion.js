@@ -130,7 +130,8 @@ class RobotCompanion {
       chat.moodGreetings || {
         normal: ['Hey! Wie kann ich helfen?', 'Hi! Was brauchst du?'],
       };
-    chat.startMessageSuffix = src.startMessageSuffix || chat.startMessageSuffix || {};
+    chat.startMessageSuffix =
+      src.startMessageSuffix || chat.startMessageSuffix || {};
     chat.startMessageSuffix =
       src.startMessageSuffix || chat.startMessageSuffix || {};
     chat.initialBubbleGreetings = src.initialBubbleGreetings ||
