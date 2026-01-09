@@ -899,23 +899,30 @@ function handleVisibilityChange() {
 function startAnimationLoop() {
   const clock = new THREE_INSTANCE.Clock();
   const capabilities = deviceCapabilities || detectDeviceCapabilities();
-  const frameSkip = capabilities.isLowEnd ? 2 : 1;
-  let frameCounter = 0;
+  const updateInterval = capabilities.isLowEnd ? 1 / 30 : 1 / 60; // seconds between heavy updates
+  let updateAccumulator = 0;
 
   animate = () => {
     if (!isSystemActive) return;
     animationFrameId = requestAnimationFrame(animate);
-    frameCounter++;
 
-    if (frameCounter % frameSkip !== 0) return;
-
-    // Use delta time for consistent speed across all frame rates (60Hz vs 120Hz)
+    // Always measure delta/elapsed each frame
     const delta = clock.getDelta();
-    const elapsedTime = clock.getElapsedTime();
+    updateAccumulator += delta;
 
-    _advancePeriodicAnimations(frameCounter, elapsedTime, capabilities, delta);
-    _updateNightPulse(elapsedTime, frameCounter, capabilities);
-    _updateManagers(elapsedTime, capabilities);
+    // Throttle heavy updates on low-end devices using time-based accumulator
+    if (updateAccumulator >= updateInterval) {
+      const elapsedTime = clock.getElapsedTime();
+      const deltaForUpdates = updateAccumulator; // accumulated time since last heavy update
+
+      _advancePeriodicAnimations(elapsedTime, capabilities, deltaForUpdates);
+      _updateNightPulse(elapsedTime, capabilities, deltaForUpdates);
+      _updateManagers(elapsedTime, capabilities);
+
+      updateAccumulator = 0;
+    }
+
+    // Always render each animation frame for smooth visuals
     _renderIfReady();
   };
 
@@ -923,7 +930,7 @@ function startAnimationLoop() {
   if (document.visibilityState === 'visible') animate();
 }
 
-function _advancePeriodicAnimations(frameCounter, elapsedTime, capabilities, delta) {
+function _advancePeriodicAnimations(elapsedTime, capabilities, delta) {
   // Normalize speeds to match original 60fps behavior:
   // Clouds: ran every 2nd frame (30fps effective) -> 30x multiplier
   // Moon: ran every 3rd frame (20fps effective) -> 20x multiplier
@@ -936,12 +943,8 @@ function _advancePeriodicAnimations(frameCounter, elapsedTime, capabilities, del
   if (!capabilities.isLowEnd) starManager?.update(elapsedTime);
 }
 
-function _updateNightPulse(elapsedTime, frameCounter, capabilities) {
-  if (
-    earthMesh?.userData.currentMode === 'night' &&
-    !capabilities.isLowEnd &&
-    frameCounter % 2 === 0
-  ) {
+function _updateNightPulse(elapsedTime, capabilities, delta) {
+  if (earthMesh?.userData.currentMode === 'night' && !capabilities.isLowEnd) {
     const baseIntensity = CONFIG.EARTH.EMISSIVE_INTENSITY * 4;
     const pulseAmount =
       Math.sin(elapsedTime * CONFIG.EARTH.EMISSIVE_PULSE_SPEED) *
