@@ -8,7 +8,7 @@
     "dev": "npm run iweb",
     "start": "npm run iweb",
     "sync:gtm": "node scripts/sync-gtm-with-site-config.js",
-    "format": "prettier --write \"**/*.{js,css,json,md}\"",
+    "format": "prettier --write \"**/*.{js,css,json,md,html,htm}\"",
     "lint": "eslint \"**/*.{js,ts}\" --fix",
     "config:validate": "node scripts/config-validate.js"
   },
@@ -17,7 +17,7 @@
       "eslint --fix",
       "prettier --write"
     ],
-    "*.{css,md,json}": [
+    "*.{css,md,json,html}": [
       "prettier --write"
     ]
   },

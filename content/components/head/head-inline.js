@@ -48,7 +48,11 @@ try {
       try {
         for (let i = 0; i < arguments.length; i++) {
           const arg = arguments[i];
-          if (arg && typeof arg === 'object' && arg.event === 'consentGranted') {
+          if (
+            arg &&
+            typeof arg === 'object' &&
+            arg.event === 'consentGranted'
+          ) {
             try {
               // Update Google consent state to granted
               gtag('consent', 'update', {
@@ -96,15 +100,20 @@ dataLayer.push({
     if (!GA4_MEASUREMENT_ID || GA4_MEASUREMENT_ID.indexOf('G-') !== 0) return;
     // If GTM is configured, prefer GTM for GA4 (avoid double-tracking)
     if (GTM_ID && GTM_ID !== 'GTM-XXXXXXX') {
-      log?.info?.('GTM present — configure GA4 inside GTM instead of direct gtag load');
+      log?.info?.(
+        'GTM present — configure GA4 inside GTM instead of direct gtag load',
+      );
       return;
     }
 
     // Load gtag.js if not already present
-    if (!document.querySelector(`script[src*="gtag/js?id=${GA4_MEASUREMENT_ID}"]`)) {
+    if (
+      !document.querySelector(`script[src*="gtag/js?id=${GA4_MEASUREMENT_ID}"]`)
+    ) {
       const s = document.createElement('script');
       s.async = true;
-      s.src = 'https://www.googletagmanager.com/gtag/js?id=' + GA4_MEASUREMENT_ID;
+      s.src =
+        'https://www.googletagmanager.com/gtag/js?id=' + GA4_MEASUREMENT_ID;
       document.head.appendChild(s);
     }
 
@@ -119,7 +128,9 @@ dataLayer.push({
 (function injectGTM() {
   try {
     if (!GTM_ID || GTM_ID === 'GTM-XXXXXXX') {
-      log?.info?.('GTM not configured — set GTM_ID in head-inline.js to enable');
+      log?.info?.(
+        'GTM not configured — set GTM_ID in head-inline.js to enable',
+      );
       return;
     }
 
@@ -222,13 +233,16 @@ dataLayer.push({
         // Default thresholds (can be overridden per page by setting data attributes)
         // Small numbers increase sensitivity so even the smallest scroll can trigger the footer on desktop
         // Further reduce thresholds to improve first-scroll reliability in headless/CI and real browsers
-        trigger.dataset.expandThreshold = trigger.dataset.expandThreshold || '0.002';
-        trigger.dataset.collapseThreshold = trigger.dataset.collapseThreshold || '0.0008';
+        trigger.dataset.expandThreshold =
+          trigger.dataset.expandThreshold || '0.002';
+        trigger.dataset.collapseThreshold =
+          trigger.dataset.collapseThreshold || '0.0008';
 
         // Default lock and debounce (ms) — can be overridden per-page using data attributes
         // Keep desktop more forgiving by default
         trigger.dataset.expandLockMs = trigger.dataset.expandLockMs || '1000';
-        trigger.dataset.collapseDebounceMs = trigger.dataset.collapseDebounceMs || '250';
+        trigger.dataset.collapseDebounceMs =
+          trigger.dataset.collapseDebounceMs || '250';
 
         if (footerContainer?.parentNode) {
           footerContainer.parentNode.insertBefore(trigger, footerContainer);
@@ -245,7 +259,9 @@ dataLayer.push({
             .then((m) => {
               if (typeof m.initFooter === 'function') m.initFooter();
             })
-            .catch((err) => log?.warn?.('head-inline: import footer module failed', err));
+            .catch((err) =>
+              log?.warn?.('head-inline: import footer module failed', err),
+            );
         }
       } catch (e) {
         /* ignore */
@@ -267,7 +283,8 @@ dataLayer.push({
 (function injectCoreAssets() {
   try {
     const getStylesForPath = () => {
-      const p = (globalThis.location?.pathname || '').replace(/\/+$/g, '') || '/';
+      const p =
+        (globalThis.location?.pathname || '').replace(/\/+$/g, '') || '/';
       // Base styles always useful
       const base = ['/content/styles/root.css', '/content/styles/main.css'];
       // Page-specific additions (only for root to avoid extra blocking on subpages)
@@ -299,13 +316,15 @@ dataLayer.push({
         };
 
         schedule(() => {
-          const _path = (globalThis.location?.pathname || '').replace(/\/+$|\/+$/g, '') || '/';
+          const _path =
+            (globalThis.location?.pathname || '').replace(/\/+$|\/+$/g, '') ||
+            '/';
 
           // Load NLWeb only on the Projekte page to avoid unnecessary loading site-wide
           if (_path === '/projekte' || _path.startsWith('/projekte/')) {
             // NLWeb (Cloudflare AutoRAG) widget — external worker hosting
             upsertPreconnect(
-              'https://throbbing-mode-6fe1-nlweb.httpsgithubcomaks030website.workers.dev'
+              'https://throbbing-mode-6fe1-nlweb.httpsgithubcomaks030website.workers.dev',
             );
             // CSS files are loaded lazily by nlweb-init.js when widget is actually used
             // No need to preload them here to avoid unused preload warnings
@@ -331,7 +350,11 @@ dataLayer.push({
 
     const upsertPreconnect = (origin) => {
       try {
-        if (!document.head.querySelector(`link[rel="preconnect"][href="${origin}"]`)) {
+        if (
+          !document.head.querySelector(
+            `link[rel="preconnect"][href="${origin}"]`,
+          )
+        ) {
           const l = document.createElement('link');
           l.rel = 'preconnect';
           l.href = origin;
@@ -391,7 +414,11 @@ dataLayer.push({
     };
 
     const upsertModulePreload = (href) => {
-      if (!document.head.querySelector(`link[rel="modulepreload"][href="${href}"]`)) {
+      if (
+        !document.head.querySelector(
+          `link[rel="modulepreload"][href="${href}"]`,
+        )
+      ) {
         const l = document.createElement('link');
         l.rel = 'modulepreload';
         l.href = href;
@@ -423,7 +450,8 @@ dataLayer.push({
 
       // Insert styles (use critical flag only when strictly needed)
       const styles = getStylesForPath();
-      const p = (globalThis.location?.pathname || '').replace(/\/+$/g, '') || '/';
+      const p =
+        (globalThis.location?.pathname || '').replace(/\/+$/g, '') || '/';
 
       const criticalStyles = new Set([
         '/content/styles/root.css',
@@ -437,7 +465,8 @@ dataLayer.push({
       ]);
 
       styles.forEach((href) => {
-        const isCritical = criticalStyles.has(href) || (p === '/' && homeCritical.has(href));
+        const isCritical =
+          criticalStyles.has(href) || (p === '/' && homeCritical.has(href));
         upsertStyle(href, { critical: isCritical });
       });
 
@@ -445,7 +474,9 @@ dataLayer.push({
       upsertModulePreload('/content/main.js');
 
       // Preload module scripts we want parsed early (main app bundle)
-      SCRIPTS.filter((s) => s.preload).forEach((s) => upsertModulePreload(s.src));
+      SCRIPTS.filter((s) => s.preload).forEach((s) =>
+        upsertModulePreload(s.src),
+      );
 
       // Insert scripts (module scripts can be fetched/parsed in parallel when preloaded)
       SCRIPTS.forEach(upsertScript);
@@ -491,7 +522,8 @@ dataLayer.push({
 // === Inject minimal critical CSS for the Hero on the Startseite
 (function injectHeroCriticalCSS() {
   try {
-    const path = (globalThis.location?.pathname || '').replace(/\/+$|^$/, '') || '/';
+    const path =
+      (globalThis.location?.pathname || '').replace(/\/+$|^$/, '') || '/';
     // Only inline on the root path to avoid extra payload on subpages
     if (path !== '/') return;
     if (document.head.querySelector('#hero-critical-css')) return;
@@ -520,7 +552,7 @@ dataLayer.push({
     const ua = (navigator.userAgent || '').toLowerCase();
     const isBot =
       /(bot|googlebot|bingbot|slurp|duckduckgo|baiduspider|yandex|facebookexternalhit|embedly|twitterbot)/i.test(
-        ua
+        ua,
       );
 
     const BRAND_REGEX =
@@ -598,7 +630,9 @@ dataLayer.push({
     // Sanitize visible headings on page and watch for added nodes
     const sanitizeHeadings = () => {
       document
-        .querySelectorAll('h1,h2,.section-title,.section-header,.page-title,.site-title')
+        .querySelectorAll(
+          'h1,h2,.section-title,.section-header,.page-title,.site-title',
+        )
         .forEach((el) => {
           if (!el?.textContent) return;
           const cleaned = sanitize(el.textContent);
