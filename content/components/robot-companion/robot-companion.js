@@ -51,14 +51,14 @@ class RobotCompanion {
       visualViewportScroll: [],
       inputFocus: null,
       inputBlur: null,
-      heroTypingEnd: null
+      heroTypingEnd: null,
     };
 
     // Zentrale Timeout/Interval Verwaltung
     this._timers = {
       timeouts: new Set(),
       intervals: new Set(),
-      scrollTimeout: null
+      scrollTimeout: null,
     };
 
     // Mood & Analytics System
@@ -115,18 +115,18 @@ class RobotCompanion {
     chat.contextGreetings = src.contextGreetings || chat.contextGreetings || { default: [] };
     chat.moodGreetings = src.moodGreetings ||
       chat.moodGreetings || {
-      normal: ['Hey! Wie kann ich helfen?', 'Hi! Was brauchst du?'],
-    };
+        normal: ['Hey! Wie kann ich helfen?', 'Hi! Was brauchst du?'],
+      };
     chat.startMessageSuffix = src.startMessageSuffix || chat.startMessageSuffix || {};
     chat.initialBubbleGreetings = src.initialBubbleGreetings ||
       chat.initialBubbleGreetings || ['Psst! Brauchst du Hilfe?'];
     chat.initialBubblePools = src.initialBubblePools || chat.initialBubblePools || [];
     chat.initialBubbleSequenceConfig = src.initialBubbleSequenceConfig ||
       chat.initialBubbleSequenceConfig || {
-      steps: 4,
-      displayDuration: 10000,
-      pausesAfter: [0, 20000, 20000, 0],
-    };
+        steps: 4,
+        displayDuration: 10000,
+        pausesAfter: [0, 20000, 20000, 0],
+      };
   }
 
   loadTexts() {
@@ -305,8 +305,14 @@ class RobotCompanion {
       globalThis.visualViewport.addEventListener('resize', handleResize);
       globalThis.visualViewport.addEventListener('scroll', handleResize);
       // Registriere Listener für Cleanup
-      this._eventListeners.visualViewportResize.push({ target: globalThis.visualViewport, handler: handleResize });
-      this._eventListeners.visualViewportScroll.push({ target: globalThis.visualViewport, handler: handleResize });
+      this._eventListeners.visualViewportResize.push({
+        target: globalThis.visualViewport,
+        handler: handleResize,
+      });
+      this._eventListeners.visualViewportScroll.push({
+        target: globalThis.visualViewport,
+        handler: handleResize,
+      });
     }
 
     if (this.dom.input) {
@@ -341,10 +347,10 @@ class RobotCompanion {
         } else {
           const greet =
             this.chatModule.initialBubbleGreetings &&
-              this.chatModule.initialBubbleGreetings.length > 0
+            this.chatModule.initialBubbleGreetings.length > 0
               ? this.chatModule.initialBubbleGreetings[
-              Math.floor(Math.random() * this.chatModule.initialBubbleGreetings.length)
-              ]
+                  Math.floor(Math.random() * this.chatModule.initialBubbleGreetings.length)
+                ]
               : 'Hallo!';
           const ctxArr =
             this.chatModule.contextGreetings[ctx] || this.chatModule.contextGreetings.default || [];
@@ -499,7 +505,7 @@ class RobotCompanion {
         visualViewportScroll: [],
         inputFocus: null,
         inputBlur: null,
-        heroTypingEnd: null
+        heroTypingEnd: null,
       };
     }
 
@@ -516,11 +522,11 @@ class RobotCompanion {
     // Zentrale Timer Cleanup
     if (this._timers) {
       // Alle verbleibenden Timeouts canceln
-      this._timers.timeouts.forEach(id => clearTimeout(id));
+      this._timers.timeouts.forEach((id) => clearTimeout(id));
       this._timers.timeouts.clear();
 
       // Alle verbleibenden Intervals canceln
-      this._timers.intervals.forEach(id => clearInterval(id));
+      this._timers.intervals.forEach((id) => clearInterval(id));
       this._timers.intervals.clear();
 
       // Scroll Timeout

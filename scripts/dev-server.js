@@ -185,9 +185,8 @@ server.listen(PORT, () => {
 
   // Auto-open browser
   const url = `http://localhost:${PORT}`;
-  const openCommand = process.platform === 'darwin' ? 'open'
-    : process.platform === 'win32' ? 'start'
-      : 'xdg-open';
+  const openCommand =
+    process.platform === 'darwin' ? 'open' : process.platform === 'win32' ? 'start' : 'xdg-open';
 
   exec(`${openCommand} ${url}`, (err) => {
     if (err) {
