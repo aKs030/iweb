@@ -58,7 +58,10 @@ export class RobotSound {
 
     gain.gain.setValueAtTime(vol, this.ctx.currentTime);
     try {
-      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+      gain.gain.exponentialRampToValueAtTime(
+        0.001,
+        this.ctx.currentTime + duration,
+      );
     } catch (err) {
       log.warn('RobotSound: gain ramp failed', err);
     }
@@ -70,7 +73,10 @@ export class RobotSound {
       osc.start();
       osc.stop(this.ctx.currentTime + duration);
     } catch (e) {
-      log.warn('Oscillator start failed (likely due to autoplay restrictions)', e);
+      log.warn(
+        'Oscillator start failed (likely due to autoplay restrictions)',
+        e,
+      );
     }
   }
 
@@ -91,7 +97,10 @@ export class RobotSound {
 
     // Quick sweep
     osc.frequency.setValueAtTime(1000, this.ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(2000, this.ctx.currentTime + 0.1);
+    osc.frequency.exponentialRampToValueAtTime(
+      2000,
+      this.ctx.currentTime + 0.1,
+    );
 
     gain.gain.setValueAtTime(0.05, this.ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.1);

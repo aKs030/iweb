@@ -126,7 +126,8 @@ body:not(.has-typingjs) .typewriter-title .typed-text {
   overflow: hidden;
   border-right: 2px solid var(--text-primary, #fff);
   width: 0;
-  animation: typing 3s steps(var(--typing-steps)) forwards, blink-caret 0.75s step-end infinite;
+  animation: typing 3s steps(var(--typing-steps)) forwards,
+    blink-caret 0.75s step-end infinite;
 }
 
 /* Locked state for TypeWriter */

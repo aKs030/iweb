@@ -17,7 +17,11 @@
  */
 
 // ===== Shared Utilities Import =====
-import { createLogger, getElementById, EVENTS } from '../../utils/shared-utilities.js';
+import {
+  createLogger,
+  getElementById,
+  EVENTS,
+} from '../../utils/shared-utilities.js';
 
 const _log = createLogger('menu');
 const MENU_CSS_URL = '/content/components/menu/menu.css';
@@ -269,7 +273,12 @@ function initializeMenu(container) {
       const isAnchor = href && href.startsWith('#');
       closeMenu(container);
 
-      if (window.innerWidth <= 768 && href && !isExternal && !a.hasAttribute('target')) {
+      if (
+        window.innerWidth <= 768 &&
+        href &&
+        !isExternal &&
+        !a.hasAttribute('target')
+      ) {
         // Prevent default to allow smooth close animation then navigate
         if (!isAnchor) {
           e.preventDefault();
@@ -317,7 +326,9 @@ function initializeLogo(container) {
 }
 
 function initializeSubmenuLinks() {
-  const submenuButtons = document.querySelectorAll('.has-submenu > .submenu-toggle');
+  const submenuButtons = document.querySelectorAll(
+    '.has-submenu > .submenu-toggle',
+  );
   submenuButtons.forEach((btn) => {
     btn.addEventListener('click', () => {
       const submenu = btn.nextElementSibling;
@@ -352,12 +363,14 @@ function initializeSubmenuLinks() {
             tapped = false;
           }
         },
-        { passive: false }
+        { passive: false },
       );
     });
     document.addEventListener('touchstart', function (e) {
       if (!e.target.closest('.site-menu')) {
-        document.querySelectorAll('.has-submenu.open').forEach((el) => el.classList.remove('open'));
+        document
+          .querySelectorAll('.has-submenu.open')
+          .forEach((el) => el.classList.remove('open'));
       }
     });
   }
@@ -406,7 +419,9 @@ function extractSectionInfo(sectionId) {
   if (['hero', 'features', 'section3', 'contact'].includes(sectionId)) {
     const sectionElement = document.querySelector(`#${sectionId}`);
     if (sectionElement) {
-      const headers = sectionElement.querySelectorAll('.section-header, .section-subtitle');
+      const headers = sectionElement.querySelectorAll(
+        '.section-header, .section-subtitle',
+      );
       headers.forEach((header) => {
         header.style.display = 'none';
         header.style.visibility = 'hidden';
@@ -423,8 +438,14 @@ function extractSectionInfo(sectionId) {
   const titleEl = header.querySelector('.section-title, h1, h2, h3');
   const subtitleEl = header.querySelector('.section-subtitle');
 
-  const title = titleEl?.textContent?.trim() || fallbackTitleMap[sectionId]?.title || 'Startseite';
-  const subtitle = subtitleEl?.textContent?.trim() || fallbackTitleMap[sectionId]?.subtitle || '';
+  const title =
+    titleEl?.textContent?.trim() ||
+    fallbackTitleMap[sectionId]?.title ||
+    'Startseite';
+  const subtitle =
+    subtitleEl?.textContent?.trim() ||
+    fallbackTitleMap[sectionId]?.subtitle ||
+    '';
 
   return { title, subtitle };
 }
@@ -484,7 +505,9 @@ function initializeScrollDetection() {
 
       if (!sectionId && typeof index === 'number') {
         const sections = Array.from(
-          document.querySelectorAll('main .section, .section, footer#site-footer')
+          document.querySelectorAll(
+            'main .section, .section, footer#site-footer',
+          ),
         );
         const section = sections[index];
         sectionId = section?.id;
@@ -510,7 +533,10 @@ function initializeScrollDetection() {
   };
 
   // Check if already ready
-  if (document.querySelector('#hero') && document.querySelector('#site-footer')) {
+  if (
+    document.querySelector('#hero') &&
+    document.querySelector('#site-footer')
+  ) {
     start();
   } else {
     // Listen for the ready event

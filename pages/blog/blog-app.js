@@ -47,10 +47,15 @@ function BlogApp() {
   const [currentPostId, setCurrentPostId] = React.useState(null);
 
   // Extract unique categories
-  const categories = ['All', ...new Set(blogPosts.map((post) => post.category))];
+  const categories = [
+    'All',
+    ...new Set(blogPosts.map((post) => post.category)),
+  ];
 
   const filteredPosts =
-    filter === 'All' ? blogPosts : blogPosts.filter((post) => post.category === filter);
+    filter === 'All'
+      ? blogPosts
+      : blogPosts.filter((post) => post.category === filter);
 
   // Sync with hash routing (#/blog/:id)
   React.useEffect(() => {
@@ -67,9 +72,13 @@ function BlogApp() {
   React.useEffect(() => {
     if (!currentPostId) {
       // remove temp article JSON-LD and restore description/title if present
-      const t = document.querySelector('script[type="application/ld+json"][data-temp-article]');
+      const t = document.querySelector(
+        'script[type="application/ld+json"][data-temp-article]',
+      );
       if (t) t.remove();
-      const meta = document.querySelector('meta[name="description"][data-temp]');
+      const meta = document.querySelector(
+        'meta[name="description"][data-temp]',
+      );
       if (meta) {
         const orig = meta.getAttribute('data-orig');
         if (orig) meta.setAttribute('content', orig);
@@ -97,7 +106,11 @@ function BlogApp() {
 
     // Insert Article JSON-LD (temp, dupe-safe)
     try {
-      if (!document.querySelector('script[type="application/ld+json"][data-temp-article]')) {
+      if (
+        !document.querySelector(
+          'script[type="application/ld+json"][data-temp-article]',
+        )
+      ) {
         const ld = {
           '@context': 'https://schema.org',
           '@type': 'BlogPosting',
@@ -115,7 +128,9 @@ function BlogApp() {
           },
           image: {
             '@type': 'ImageObject',
-            url: post.image || 'https://abdulkerimsesli.de/content/assets/img/og/og-home.png',
+            url:
+              post.image ||
+              'https://abdulkerimsesli.de/content/assets/img/og/og-home.png',
           },
           publisher: {
             '@type': 'Organization',
@@ -124,7 +139,8 @@ function BlogApp() {
             logo: {
               '@type': 'ImageObject',
               url: 'https://abdulkerimsesli.de/content/assets/img/icons/favicon-512.png',
-              contentUrl: 'https://abdulkerimsesli.de/content/assets/img/icons/favicon-512.png',
+              contentUrl:
+                'https://abdulkerimsesli.de/content/assets/img/icons/favicon-512.png',
               creator: { '@type': 'Person', name: 'Abdulkerim Sesli' },
               license: 'https://abdulkerimsesli.de/#image-license',
               creditText: 'Logo: Abdulkerim Sesli',
@@ -158,8 +174,8 @@ function BlogApp() {
       <header>
         <h1 className="blog-headline">Wissen & Einblicke</h1>
         <p className="blog-subline">
-          Gedanken zu Web-Entwicklung, Fotografie und digitalem Design. Hier teile ich, was ich
-          lerne und erschaffe.
+          Gedanken zu Web-Entwicklung, Fotografie und digitalem Design. Hier
+          teile ich, was ich lerne und erschaffe.
         </p>
       </header>
 
@@ -174,7 +190,7 @@ function BlogApp() {
             >
               ${cat}
             </button>
-          `
+          `,
         )}
       </div>
 
@@ -188,7 +204,10 @@ function BlogApp() {
                   return html`
                     <div class="not-found">
                       Beitrag nicht gefunden.
-                      <button onClick=${() => (location.hash = '#/blog/')} className="btn">
+                      <button
+                        onClick=${() => (location.hash = '#/blog/')}
+                        className="btn"
+                      >
                         Zurück
                       </button>
                     </div>
@@ -201,7 +220,10 @@ function BlogApp() {
                     </header>
                     <section className="article-body">${post.content}</section>
                     <p>
-                      <button className="btn" onClick=${() => (location.hash = '#/blog/')}>
+                      <button
+                        className="btn"
+                        onClick=${() => (location.hash = '#/blog/')}
+                      >
                         Zurück
                       </button>
                     </p>
@@ -237,7 +259,7 @@ function BlogApp() {
                       </button>
                     </div>
                   </article>
-                `
+                `,
               )}
             </div>
           `}

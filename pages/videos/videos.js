@@ -6,7 +6,10 @@ const log = createLogger('videos');
 // Share function for YouTube channel
 function _shareChannel() {
   const channelId = globalThis.YOUTUBE_CHANNEL_ID;
-  const handle = (globalThis.YOUTUBE_CHANNEL_HANDLE || 'aks.030').replace(/^@/, '');
+  const handle = (globalThis.YOUTUBE_CHANNEL_HANDLE || 'aks.030').replace(
+    /^@/,
+    '',
+  );
   const url = channelId
     ? `https://www.youtube.com/channel/${channelId}`
     : `https://www.youtube.com/@${handle}`;
@@ -25,8 +28,10 @@ function _shareChannel() {
     })
     .catch(() => {
       window.open(
-        `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
-        '_blank'
+        `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+          url,
+        )}`,
+        '_blank',
       );
     });
 }
@@ -46,7 +51,7 @@ function activateThumb(btn) {
   iframe.setAttribute('frameborder', '0');
   iframe.setAttribute(
     'allow',
-    'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'
+    'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture',
   );
   iframe.setAttribute('allowfullscreen', '');
   wrapper.appendChild(iframe);
@@ -62,8 +67,12 @@ function activateThumb(btn) {
 // Bind event handlers and accessible label for a thumb button
 function bindThumb(btn) {
   if (btn.dataset.bound) return;
-  if (btn.dataset.thumb) btn.style.backgroundImage = `url('${btn.dataset.thumb}')`;
-  if (btn.getAttribute('aria-label') && !btn.querySelector('.visually-hidden')) {
+  if (btn.dataset.thumb)
+    btn.style.backgroundImage = `url('${btn.dataset.thumb}')`;
+  if (
+    btn.getAttribute('aria-label') &&
+    !btn.querySelector('.visually-hidden')
+  ) {
     const span = document.createElement('span');
     span.className = 'visually-hidden';
     span.textContent = btn.getAttribute('aria-label');
@@ -91,7 +100,9 @@ async function fetchJson(url) {
     } catch {
       /* noop */
     }
-    const err = new Error(`Fetch failed: ${res.status} ${res.statusText} — ${text.slice(0, 200)}`);
+    const err = new Error(
+      `Fetch failed: ${res.status} ${res.statusText} — ${text.slice(0, 200)}`,
+    );
     err.status = res.status;
     err.statusText = res.statusText;
     err.body = text;
@@ -102,35 +113,43 @@ async function fetchJson(url) {
 
 async function fetchChannelId(apiKey, handle) {
   // Prefer explicit channel id when set
-  if (globalThis.YOUTUBE_CHANNEL_ID) return String(globalThis.YOUTUBE_CHANNEL_ID).trim();
+  if (globalThis.YOUTUBE_CHANNEL_ID)
+    return String(globalThis.YOUTUBE_CHANNEL_ID).trim();
 
   // If handle looks like a channel id already (starts with UC), return it
-  if (/^UC[0-9A-Za-z_-]{22,}$/.test(String(handle || ''))) return String(handle).trim();
+  if (/^UC[0-9A-Za-z_-]{22,}$/.test(String(handle || '')))
+    return String(handle).trim();
 
   // Try searching for the handle (allow up to 5 results to disambiguate)
   const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=channel&q=${encodeURIComponent(
-    handle
+    handle,
   )}&maxResults=5&key=${apiKey}`;
   const json = await fetchJson(url);
   const items = json?.items || [];
   if (!items.length) return null;
 
   // Collect candidate channelIds
-  const ids = items.map((i) => i?.id?.channelId || i?.snippet?.channelId).filter(Boolean);
+  const ids = items
+    .map((i) => i?.id?.channelId || i?.snippet?.channelId)
+    .filter(Boolean);
   if (!ids.length) return null;
   if (ids.length === 1) return ids[0];
 
   // If multiple candidates, fetch their statistics and prefer one with videoCount > 0
   try {
     const chUrl = `https://www.googleapis.com/youtube/v3/channels?part=statistics,contentDetails&id=${ids.join(
-      ','
+      ',',
     )}&key=${apiKey}`;
     const chJson = await fetchJson(chUrl);
     const chItems = chJson?.items || [];
-    const preferred = chItems.find((c) => Number(c?.statistics?.videoCount) > 0);
+    const preferred = chItems.find(
+      (c) => Number(c?.statistics?.videoCount) > 0,
+    );
     if (preferred && preferred.id) return preferred.id;
   } catch (e) {
-    log.warn('Could not disambiguate channel via statistics: ' + (e?.message || e));
+    log.warn(
+      'Could not disambiguate channel via statistics: ' + (e?.message || e),
+    );
     // fall back to first id
   }
 
@@ -156,7 +175,10 @@ async function fetchPlaylistItems(apiKey, uploads, maxResults = 50) {
       pageToken = json.nextPageToken;
     } catch (e) {
       // If the uploads playlist cannot be found (e.g., private or empty), treat as no videos
-      if (e?.status === 404 && /playlistNotFound|playlistId/.test(e?.body || '')) {
+      if (
+        e?.status === 404 &&
+        /playlistNotFound|playlistId/.test(e?.body || '')
+      ) {
         log.warn(`Uploads playlist not found or inaccessible: ${uploads}`);
         return [];
       }
@@ -202,7 +224,7 @@ async function fetchVideoDetailsMap(apiKey, vidIds) {
   const map = {};
   if (!vidIds.length) return map;
   const url = `https://www.googleapis.com/youtube/v3/videos?part=contentDetails,statistics&id=${vidIds.join(
-    ','
+    ',',
   )}&key=${apiKey}`;
   try {
     const json = await fetchJson(url);
@@ -222,7 +244,8 @@ function renderVideoCard(grid, it, detailsMap) {
   const desc = it.snippet?.description?.trim()
     ? it.snippet.description
     : `${title} — Video von Abdulkerim Sesli`;
-  const thumb = it.snippet?.thumbnails?.high?.url || it.snippet?.thumbnails?.default?.url;
+  const thumb =
+    it.snippet?.thumbnails?.high?.url || it.snippet?.thumbnails?.default?.url;
   const pub = it.snippet.publishedAt || new Date().toISOString();
 
   const videoDetail = detailsMap[vid];
@@ -270,7 +293,8 @@ function renderVideoCard(grid, it, detailsMap) {
       logo: {
         '@type': 'ImageObject',
         url: 'https://abdulkerimsesli.de/content/assets/img/icons/favicon-512.png',
-        contentUrl: 'https://abdulkerimsesli.de/content/assets/img/icons/favicon-512.png',
+        contentUrl:
+          'https://abdulkerimsesli.de/content/assets/img/icons/favicon-512.png',
         creator: { '@type': 'Person', name: 'Abdulkerim Sesli' },
         license: 'https://abdulkerimsesli.de/#image-license',
         creditText: 'Logo: Abdulkerim Sesli',
@@ -322,7 +346,10 @@ if (typeof window !== 'undefined') {
 // Videos page loader (moved from inline to avoid HTML parsing issues)
 async function loadLatestVideos() {
   const apiKey = globalThis.YOUTUBE_API_KEY;
-  const handle = (globalThis.YOUTUBE_CHANNEL_HANDLE || 'aks.030').replace(/^@/, '');
+  const handle = (globalThis.YOUTUBE_CHANNEL_HANDLE || 'aks.030').replace(
+    /^@/,
+    '',
+  );
 
   // Bind any existing static thumbnails (works without API key)
   try {
@@ -346,7 +373,7 @@ async function loadLatestVideos() {
   try {
     if (globalThis.location?.protocol === 'file:') {
       log.warn(
-        'Running from file:// — network requests may be blocked. Serve site via http://localhost for proper API requests.'
+        'Running from file:// — network requests may be blocked. Serve site via http://localhost for proper API requests.',
       );
       return;
     }
@@ -361,7 +388,7 @@ async function loadLatestVideos() {
       log.warn('Keine Videos gefunden');
       // Show a friendly informational message and keep any static entries on the page
       showInfoMessage(
-        'Keine öffentlichen Uploads auf YouTube gefunden — es werden die statisch eingebetteten Videos angezeigt.'
+        'Keine öffentlichen Uploads auf YouTube gefunden — es werden die statisch eingebetteten Videos angezeigt.',
       );
       setStatus('');
       return;
@@ -399,7 +426,8 @@ function cleanTitle(s) {
 // Helper: show friendly error message in page
 function showErrorMessage(err) {
   try {
-    const container = document.querySelector('.videos-main .container') || document.body;
+    const container =
+      document.querySelector('.videos-main .container') || document.body;
     const el = document.createElement('aside');
     el.className = 'video-error';
     let message = 'Fehler beim Laden der Videos.';
@@ -407,14 +435,20 @@ function showErrorMessage(err) {
       message +=
         ' API-Key ungültig (400). Prüfe in der Google Cloud Console, ob der Key aktiv ist und die YouTube Data API v3 freigeschaltet ist.';
       if (
-        /API_KEY_INVALID|API key not valid/.test((err?.body || '') + ' ' + (err?.message || ''))
+        /API_KEY_INVALID|API key not valid/.test(
+          (err?.body || '') + ' ' + (err?.message || ''),
+        )
       ) {
         message += ' Hinweis: Der API-Key scheint ungültig zu sein.';
       }
     } else if (err?.status === 403) {
       message +=
         ' API-Zugriff verweigert (403). Prüfe deine API-Key Referrer-Einschränkungen oder teste über http://localhost:8000.';
-      if (/API_KEY_HTTP_REFERRER_BLOCKED|Requests from referer/.test(err?.body || '')) {
+      if (
+        /API_KEY_HTTP_REFERRER_BLOCKED|Requests from referer/.test(
+          err?.body || '',
+        )
+      ) {
         message += ' Hinweis: Requests mit leerem Referer werden geblockt.';
       }
     } else if (err?.message) {
@@ -443,7 +477,8 @@ function showErrorMessage(err) {
 // Helper: show non-error informational message in page
 function showInfoMessage(msg) {
   try {
-    const container = document.querySelector('.videos-main .container') || document.body;
+    const container =
+      document.querySelector('.videos-main .container') || document.body;
     const el = document.createElement('aside');
     el.className = 'video-note';
     el.textContent = msg;
@@ -481,7 +516,9 @@ async function loadFromApi(apiKey, handle) {
       // Inform the user in the UI when running in a browser
       try {
         if (typeof window !== 'undefined' && document)
-          showInfoMessage('Uploads playlist leer — lade Videos per Suche als Fallback.');
+          showInfoMessage(
+            'Uploads playlist leer — lade Videos per Suche als Fallback.',
+          );
       } catch (e) {
         /* ignore */
       }
@@ -492,7 +529,9 @@ async function loadFromApi(apiKey, handle) {
     log.warn('No uploads playlist available — falling back to search');
     try {
       if (typeof window !== 'undefined' && document)
-        showInfoMessage('Uploads playlist nicht vorhanden — lade Videos per Suche als Fallback.');
+        showInfoMessage(
+          'Uploads playlist nicht vorhanden — lade Videos per Suche als Fallback.',
+        );
     } catch (e) {
       /* ignore */
     }
@@ -501,7 +540,9 @@ async function loadFromApi(apiKey, handle) {
 
   if (!items.length) return { items: [], detailsMap: {} };
 
-  const vidIds = items.map((it) => it.snippet.resourceId.videoId).filter(Boolean);
+  const vidIds = items
+    .map((it) => it.snippet.resourceId.videoId)
+    .filter(Boolean);
   const detailsMap = await fetchVideoDetailsMap(apiKey, vidIds);
   return { items, detailsMap };
 }
