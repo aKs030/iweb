@@ -1051,11 +1051,6 @@ async function loadSharedHead() {
       const forceProdFlag =
         document.documentElement.dataset.forceProdCanonical === 'true';
 
-      // Check if head-inline.js already set an early canonical (will be updated with proper value)
-      const earlyCanonical = document.head.querySelector(
-        'link[rel="canonical"][data-early="true"]',
-      );
-
       // Compute cleanPath using shared canonical util
       let cleanPath;
       try {
