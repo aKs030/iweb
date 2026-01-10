@@ -915,14 +915,13 @@ function startAnimationLoop() {
       const elapsedTime = clock.getElapsedTime();
       const deltaForUpdates = updateAccumulator; // accumulated time since last heavy update
 
-      _advancePeriodicAnimations(elapsedTime, capabilities, deltaForUpdates);
-      _updateNightPulse(elapsedTime, capabilities, deltaForUpdates);
-      _updateManagers(elapsedTime, capabilities);
+    // Use delta time for consistent speed across all frame rates (60Hz vs 120Hz)
+    const delta = clock.getDelta();
+    const elapsedTime = clock.getElapsedTime();
 
-      updateAccumulator = 0;
-    }
-
-    // Always render each animation frame for smooth visuals
+    _advancePeriodicAnimations(frameCounter, elapsedTime, capabilities, delta);
+    _updateNightPulse(elapsedTime, frameCounter, capabilities);
+    _updateManagers(elapsedTime, capabilities, delta);
     _renderIfReady();
   };
 
@@ -930,7 +929,7 @@ function startAnimationLoop() {
   if (document.visibilityState === 'visible') animate();
 }
 
-function _advancePeriodicAnimations(elapsedTime, capabilities, delta) {
+function _advancePeriodicAnimations(frameCounter, elapsedTime, capabilities, delta) {
   // Normalize speeds to match original 60fps behavior:
   // Clouds: ran every 2nd frame (30fps effective) -> 30x multiplier
   // Moon: ran every 3rd frame (20fps effective) -> 20x multiplier
@@ -943,7 +942,7 @@ function _advancePeriodicAnimations(elapsedTime, capabilities, delta) {
   if (!capabilities.isLowEnd) starManager?.update(elapsedTime);
 }
 
-function _updateNightPulse(elapsedTime, capabilities, delta) {
+function _updateNightPulse(elapsedTime, frameCounter, capabilities) {
   if (earthMesh?.userData.currentMode === 'night' && !capabilities.isLowEnd) {
     const baseIntensity = CONFIG.EARTH.EMISSIVE_INTENSITY * 4;
     const pulseAmount =
@@ -955,13 +954,13 @@ function _updateNightPulse(elapsedTime, capabilities, delta) {
   }
 }
 
-function _updateManagers(elapsedTime, capabilities) {
+function _updateManagers(elapsedTime, capabilities, delta) {
   cameraManager?.updateCameraPosition();
   updateObjectTransforms();
   if (cardManager && globalThis.lastMousePos) {
     cardManager.update(elapsedTime * 1000, globalThis.lastMousePos);
   }
-  if (!capabilities.isLowEnd) shootingStarManager?.update();
+  if (!capabilities.isLowEnd) shootingStarManager?.update(delta);
   if (performanceMonitor) performanceMonitor.update();
 }
 

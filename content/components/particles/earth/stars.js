@@ -508,29 +508,36 @@ export class ShootingStarManager {
     }
   }
 
-  update() {
+  update(delta) {
     if (this.disabled || this.isDisposed) return;
 
+    // Normalize speed to 60Hz ticks to preserve config values
+    const timeScale = (delta || 0.016) * 60;
+
     if (this.isShowerActive) {
-      this.showerTimer++;
+      this.showerTimer += timeScale;
       if (this.showerTimer >= CONFIG.SHOOTING_STARS.SHOWER_DURATION) {
         this.isShowerActive = false;
         this.showerCooldownTimer = CONFIG.SHOOTING_STARS.SHOWER_COOLDOWN;
       }
     }
 
-    if (this.showerCooldownTimer > 0) this.showerCooldownTimer--;
+    if (this.showerCooldownTimer > 0) this.showerCooldownTimer -= timeScale;
 
     const spawnChance = this.isShowerActive
       ? CONFIG.SHOOTING_STARS.SHOWER_FREQUENCY
       : CONFIG.SHOOTING_STARS.BASE_FREQUENCY;
 
-    if (Math.random() < spawnChance) this.createShootingStar();
+    // Adjust probability for time step
+    if (Math.random() < spawnChance * timeScale) this.createShootingStar();
 
     for (let i = this.activeStars.length - 1; i >= 0; i--) {
       const star = this.activeStars[i];
-      star.age++;
-      star.mesh.position.add(star.velocity);
+      star.age += timeScale;
+
+      // Scale velocity by timeScale
+      const move = star.velocity.clone().multiplyScalar(timeScale);
+      star.mesh.position.add(move);
 
       const fadeStart = star.lifetime * 0.7;
       if (star.age > fadeStart) {
