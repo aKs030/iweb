@@ -140,15 +140,35 @@ window.robotCompanionTexts = {
       'Yeah! So viele Interaktionen - ich LIEBE es!',
       'Du bist ja Power-User! Respekt!',
     ],
-    normal: ['Hey! Wie kann ich helfen?', 'Hi! Was brauchst du?', 'Hallo! Ready für Action!'],
+    normal: [
+      'Hey! Wie kann ich helfen?',
+      'Hi! Was brauchst du?',
+      'Hallo! Ready für Action!',
+    ],
   },
 
   initialBubblePools: [
     ['Hey!', 'Hi!', 'Hallo!', 'Servus!'],
-    ['Ich bin Cyber, dein Assistent.', 'Brauchst du Hilfe?', 'Fragen? Ich bin hier!'],
-    ['Toll, dass du vorbeischaust!', 'Willkommen auf der Seite!', 'Schön, dich zu sehen!'],
-    ['Soll ich dir was zeigen?', 'Lust auf einen Rundgang?', 'Projekte oder Galerie ansehen?'],
-    ['Klick auf mich für mehr!', 'Ich helfe dir gern weiter!', 'Lass uns loslegen!'],
+    [
+      'Ich bin Cyber, dein Assistent.',
+      'Brauchst du Hilfe?',
+      'Fragen? Ich bin hier!',
+    ],
+    [
+      'Toll, dass du vorbeischaust!',
+      'Willkommen auf der Seite!',
+      'Schön, dich zu sehen!',
+    ],
+    [
+      'Soll ich dir was zeigen?',
+      'Lust auf einen Rundgang?',
+      'Projekte oder Galerie ansehen?',
+    ],
+    [
+      'Klick auf mich für mehr!',
+      'Ich helfe dir gern weiter!',
+      'Lass uns loslegen!',
+    ],
   ],
 
   contextGreetings: {
@@ -195,12 +215,16 @@ window.robotCompanionTexts = {
   },
 
   startMessageSuffix: {
-    projects: 'Du bist auf der Projektseite — willst du ein zufälliges Projekt sehen?',
+    projects:
+      'Du bist auf der Projektseite — willst du ein zufälliges Projekt sehen?',
     gallery: 'Auf der Galerie? Ich kann dir ein paar Favoriten zeigen!',
-    about: 'Auf der Über-Seite — ich kann dir die Bio und den Tech-Stack zeigen!',
+    about:
+      'Auf der Über-Seite — ich kann dir die Bio und den Tech-Stack zeigen!',
     hero: 'Auf der Startseite? Ich kann dir die Highlights zeigen!',
-    features: 'Auf der Feature-Übersicht — interessiert an Details zu einem bestimmten Feature?',
-    footer: 'Im Footer findest du Kontakt & Impressum — soll ich dich dorthin bringen?',
+    features:
+      'Auf der Feature-Übersicht — interessiert an Details zu einem bestimmten Feature?',
+    footer:
+      'Im Footer findest du Kontakt & Impressum — soll ich dich dorthin bringen?',
     // 'cards' intent deprecated — mapped into 'features' intent
   },
 
