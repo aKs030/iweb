@@ -16,7 +16,7 @@ export class RobotIntelligence {
       scroll: () => this.handleScroll(),
       mousedown: () => this.resetIdle(),
       keydown: () => this.resetIdle(),
-      touchstart: () => this.resetIdle()
+      touchstart: () => this.resetIdle(),
     };
 
     this.setupListeners();

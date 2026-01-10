@@ -77,7 +77,7 @@ export const initThreeEarth = async () => {
   const container = getElementById('threeEarthContainer');
   if (!container) {
     log.warn('Container not found');
-    return () => { };
+    return () => {};
   }
 
   // Set Active Flag
@@ -191,7 +191,7 @@ export const initThreeEarth = async () => {
       cleanup();
       initThreeEarth();
     });
-    return () => { };
+    return () => {};
   }
 };
 
@@ -877,11 +877,13 @@ function startAnimationLoop() {
 
     if (frameCounter % frameSkip !== 0) return;
 
+    // Use delta time for consistent speed across all frame rates (60Hz vs 120Hz)
+    const delta = clock.getDelta();
     const elapsedTime = clock.getElapsedTime();
 
-    _advancePeriodicAnimations(frameCounter, elapsedTime, capabilities);
+    _advancePeriodicAnimations(frameCounter, elapsedTime, capabilities, delta);
     _updateNightPulse(elapsedTime, frameCounter, capabilities);
-    _updateManagers(elapsedTime, capabilities);
+    _updateManagers(elapsedTime, capabilities, delta);
     _renderIfReady();
   };
 
@@ -889,22 +891,21 @@ function startAnimationLoop() {
   if (document.visibilityState === 'visible') animate();
 }
 
-function _advancePeriodicAnimations(frameCounter, elapsedTime, capabilities) {
-  if (cloudMesh && frameCounter % 2 === 0) {
-    cloudMesh.rotation.y += CONFIG.CLOUDS.ROTATION_SPEED;
+function _advancePeriodicAnimations(frameCounter, elapsedTime, capabilities, delta) {
+  // Normalize speeds to match original 60fps behavior:
+  // Clouds: ran every 2nd frame (30fps effective) -> 30x multiplier
+  // Moon: ran every 3rd frame (20fps effective) -> 20x multiplier
+  if (cloudMesh) {
+    cloudMesh.rotation.y += CONFIG.CLOUDS.ROTATION_SPEED * 30 * delta;
   }
-  if (moonMesh && frameCounter % 3 === 0) {
-    moonMesh.rotation.y += CONFIG.MOON.ORBIT_SPEED;
+  if (moonMesh) {
+    moonMesh.rotation.y += CONFIG.MOON.ORBIT_SPEED * 20 * delta;
   }
   if (!capabilities.isLowEnd) starManager?.update(elapsedTime);
 }
 
 function _updateNightPulse(elapsedTime, frameCounter, capabilities) {
-  if (
-    earthMesh?.userData.currentMode === 'night' &&
-    !capabilities.isLowEnd &&
-    frameCounter % 2 === 0
-  ) {
+  if (earthMesh?.userData.currentMode === 'night' && !capabilities.isLowEnd) {
     const baseIntensity = CONFIG.EARTH.EMISSIVE_INTENSITY * 4;
     const pulseAmount =
       Math.sin(elapsedTime * CONFIG.EARTH.EMISSIVE_PULSE_SPEED) *
@@ -914,13 +915,13 @@ function _updateNightPulse(elapsedTime, frameCounter, capabilities) {
   }
 }
 
-function _updateManagers(elapsedTime, capabilities) {
+function _updateManagers(elapsedTime, capabilities, delta) {
   cameraManager?.updateCameraPosition();
   updateObjectTransforms();
   if (cardManager && globalThis.lastMousePos) {
     cardManager.update(elapsedTime * 1000, globalThis.lastMousePos);
   }
-  if (!capabilities.isLowEnd) shootingStarManager?.update();
+  if (!capabilities.isLowEnd) shootingStarManager?.update(delta);
   if (performanceMonitor) performanceMonitor.update();
 }
 
