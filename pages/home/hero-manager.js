@@ -19,7 +19,6 @@ const HERO_LOOKUP_DELAY_MS = 900;
 const HeroManager = (() => {
   let heroData = null;
   let isInitialized = false;
-  let currentTypeWriter = null;
   let clickHandler = null;
   let observer = null;
   let loaded = false;
@@ -41,7 +40,6 @@ const HeroManager = (() => {
 
       const tw = await typeWriterModule.initHeroSubtitle({ heroDataModule });
       if (tw) {
-        currentTypeWriter = tw;
         return tw;
       }
     } catch (err) {
@@ -128,7 +126,6 @@ const HeroManager = (() => {
     heroLookupAttempts = 0;
     try {
       typeWriterModule?.stopHeroSubtitle?.();
-      currentTypeWriter = null;
     } catch (err) {
       logger.warn('HeroManager: stopHeroSubtitle failed', err);
     }

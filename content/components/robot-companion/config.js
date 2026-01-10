@@ -1,9 +1,9 @@
 /**
  * Gemini API Konfiguration
- * 
+ *
  * WICHTIG: Diese Datei wird von gemini-service.js dynamisch importiert (nur serverseitig).
  * Sie wird NICHT in den Browser-Bundle aufgenommen, um den API-Key zu schützen.
- * 
+ *
  * Verwendung: Server-seitige Requests nutzen diese Konfiguration.
  * Browser-Requests verwenden stattdessen den /api/gemini Proxy-Endpunkt.
  */
