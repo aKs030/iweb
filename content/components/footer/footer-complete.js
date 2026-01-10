@@ -10,7 +10,9 @@
 // Importversuch mit Fallback für Standalone-Nutzung
 let createLogger, CookieManager, a11y;
 try {
-  ({ createLogger, CookieManager } = await import('../../utils/shared-utilities.js').catch(() => {
+  ({ createLogger, CookieManager } = await import(
+    '../../utils/shared-utilities.js'
+  ).catch(() => {
     throw new Error('Utils missing');
   }));
   ({ a11y } = await import('../../utils/accessibility-manager.js').catch(() => {
@@ -19,9 +21,12 @@ try {
 } catch {
   // Fallback Mocks, falls Dateien fehlen oder Pfade anders sind
   createLogger = () => ({
-    info: (...args) => globalThis.iwebLogger?.info?.(...args) || console.info(...args),
-    warn: (...args) => globalThis.iwebLogger?.warn?.(...args) || console.warn(...args),
-    error: (...args) => globalThis.iwebLogger?.error?.(...args) || console.error(...args),
+    info: (...args) =>
+      globalThis.iwebLogger?.info?.(...args) || console.info(...args),
+    warn: (...args) =>
+      globalThis.iwebLogger?.warn?.(...args) || console.warn(...args),
+    error: (...args) =>
+      globalThis.iwebLogger?.error?.(...args) || console.error(...args),
   });
   CookieManager = {
     get: (k) => localStorage.getItem(k),
@@ -32,7 +37,8 @@ try {
   };
   a11y = {
     announce: (msg) =>
-      globalThis.iwebLogger?.warn?.(`[A11y]: ${msg}`) || console.warn(`[A11y]: ${msg}`),
+      globalThis.iwebLogger?.warn?.(`[A11y]: ${msg}`) ||
+      console.warn(`[A11y]: ${msg}`),
     trapFocus: () => {},
     releaseFocus: () => {},
   };
@@ -157,7 +163,8 @@ const ProgrammaticScroll = (() => {
     watchUntil(token, target, timeout = CONSTANTS.SCROLL_WATCH_TIMEOUT) {
       if (!token) return;
 
-      const element = typeof target === 'string' ? domCache.get(target) : target;
+      const element =
+        typeof target === 'string' ? domCache.get(target) : target;
 
       if (element && 'IntersectionObserver' in globalThis) {
         const observer = new IntersectionObserver(
@@ -167,7 +174,7 @@ const ProgrammaticScroll = (() => {
               ProgrammaticScroll.clear(token);
             }
           },
-          { threshold: [0.5, 1] }
+          { threshold: [0.5, 1] },
         );
 
         observer.observe(element);
@@ -193,7 +200,10 @@ const ProgrammaticScroll = (() => {
       check();
       globalThis.addEventListener('scroll', listener, { passive: true });
 
-      const timeoutId = setTimeout(() => ProgrammaticScroll.clear(token), timeout);
+      const timeoutId = setTimeout(
+        () => ProgrammaticScroll.clear(token),
+        timeout,
+      );
       watchers.set(token, { listener, timeoutId });
       return token;
     },
@@ -265,7 +275,9 @@ const GoogleAnalytics = {
   load() {
     performance.mark('analytics-load-start');
 
-    const blockedScripts = document.querySelectorAll('script[data-consent="required"]');
+    const blockedScripts = document.querySelectorAll(
+      'script[data-consent="required"]',
+    );
     if (blockedScripts.length === 0) return;
 
     blockedScripts.forEach((script) => {
@@ -282,7 +294,11 @@ const GoogleAnalytics = {
     });
 
     performance.mark('analytics-load-end');
-    performance.measure('analytics-load', 'analytics-load-start', 'analytics-load-end');
+    performance.measure(
+      'analytics-load',
+      'analytics-load-start',
+      'analytics-load-end',
+    );
     log.info('Google Analytics loaded');
   },
 };
@@ -408,7 +424,7 @@ const CookieSettings = (() => {
         CookieManager.set('cookie_consent', 'rejected');
         CookieManager.set(
           'cookie_consent_detail',
-          JSON.stringify({ analytics: false, ad_personalization: false })
+          JSON.stringify({ analytics: false, ad_personalization: false }),
         );
         CookieManager.deleteAnalytics();
         updateGtagConsent(false);
@@ -422,7 +438,8 @@ const CookieSettings = (() => {
       },
       acceptSelectedBtn: () => {
         const analyticsEnabled = !!elements.analyticsToggle?.checked;
-        const adPersonalizationEnabled = !!elements.adPersonalizationToggle?.checked;
+        const adPersonalizationEnabled =
+          !!elements.adPersonalizationToggle?.checked;
 
         // Persist an explicit detail object for granular consent
         const detail = {
@@ -434,7 +451,9 @@ const CookieSettings = (() => {
         // Set an overall cookie_consent value (accepted if any optional cookie enabled)
         CookieManager.set(
           'cookie_consent',
-          analyticsEnabled || adPersonalizationEnabled ? 'accepted' : 'rejected'
+          analyticsEnabled || adPersonalizationEnabled
+            ? 'accepted'
+            : 'rejected',
         );
 
         globalThis.dataLayer = globalThis.dataLayer || [];
@@ -459,7 +478,7 @@ const CookieSettings = (() => {
             analyticsEnabled
               ? 'Cookie-Einstellungen gespeichert: Analyse aktiviert'
               : 'Cookie-Einstellungen gespeichert: Analyse deaktiviert',
-            { priority: 'polite' }
+            { priority: 'polite' },
           );
         } catch {}
         close();
@@ -469,7 +488,7 @@ const CookieSettings = (() => {
         CookieManager.set('cookie_consent', 'accepted');
         CookieManager.set(
           'cookie_consent_detail',
-          JSON.stringify({ analytics: true, ad_personalization: true })
+          JSON.stringify({ analytics: true, ad_personalization: true }),
         );
 
         globalThis.dataLayer = globalThis.dataLayer || [];
@@ -513,7 +532,8 @@ const CookieSettings = (() => {
     };
 
     // Attach cleanup to cookieView so closeFooter can access it
-    if (elements.cookieView) elements.cookieView._removeHandlers = removeHandlers;
+    if (elements.cookieView)
+      elements.cookieView._removeHandlers = removeHandlers;
   };
 
   const open = () => {
@@ -536,10 +556,14 @@ const CookieSettings = (() => {
     if (elements.normalContent) elements.normalContent.style.display = 'none';
 
     // Accessibility Update
-    if (elements.triggerBtn) elements.triggerBtn.setAttribute('aria-expanded', 'true');
+    if (elements.triggerBtn)
+      elements.triggerBtn.setAttribute('aria-expanded', 'true');
 
     requestAnimationFrame(() =>
-      globalThis.scrollTo({ top: document.body.scrollHeight, behavior: 'auto' })
+      globalThis.scrollTo({
+        top: document.body.scrollHeight,
+        behavior: 'auto',
+      }),
     );
 
     ProgrammaticScroll.create(CONSTANTS.SCROLL_MARK_DURATION);
@@ -557,9 +581,11 @@ const CookieSettings = (() => {
       const raw = CookieManager.get('cookie_consent_detail');
       if (raw) {
         const parsed = JSON.parse(raw);
-        if (elements.analyticsToggle) elements.analyticsToggle.checked = !!parsed.analytics;
+        if (elements.analyticsToggle)
+          elements.analyticsToggle.checked = !!parsed.analytics;
         if (elements.adPersonalizationToggle)
-          elements.adPersonalizationToggle.checked = !!parsed.ad_personalization;
+          elements.adPersonalizationToggle.checked =
+            !!parsed.ad_personalization;
       }
     } catch (e) {
       /* ignore */
@@ -569,7 +595,7 @@ const CookieSettings = (() => {
     performance.measure(
       'cookie-settings-open',
       'cookie-settings-open-start',
-      'cookie-settings-open-end'
+      'cookie-settings-open-end',
     );
   };
 
@@ -616,9 +642,13 @@ function closeFooter() {
         (e) => {
           if (e.key !== 'Enter' && e.key !== ' ') return;
           const focused = document.activeElement;
-          if (focused && focused.closest && focused.closest('.footer-minimized')) {
+          if (
+            focused &&
+            focused.closest &&
+            focused.closest('.footer-minimized')
+          ) {
             const interactive = focused.closest(
-              'a, button, input, textarea, select, [data-cookie-trigger]'
+              'a, button, input, textarea, select, [data-cookie-trigger]',
             );
             if (!interactive) {
               e.preventDefault();
@@ -633,7 +663,7 @@ function closeFooter() {
             }
           }
         },
-        { passive: false }
+        { passive: false },
       );
       footerKeydownInit = true;
     }
@@ -655,7 +685,8 @@ function closeFooter() {
   document.documentElement.style.removeProperty('scroll-snap-type');
 
   // 5. State Reset
-  if (globalThis.footerScrollHandler) globalThis.footerScrollHandler.expanded = false;
+  if (globalThis.footerScrollHandler)
+    globalThis.footerScrollHandler.expanded = false;
 
   // 6. Listener Cleanup
   GlobalClose.unbind();
@@ -711,11 +742,14 @@ class FooterLoader {
     }
 
     try {
-      const srcBase = container.dataset.footerSrc || '/content/components/footer/footer';
+      const srcBase =
+        container.dataset.footerSrc || '/content/components/footer/footer';
       const isLocal =
         ['localhost', '127.0.0.1'].some((h) => location.hostname.includes(h)) ||
         location.hostname.endsWith('.local');
-      const candidates = isLocal ? [srcBase + '.html', srcBase] : [srcBase, srcBase + '.html'];
+      const candidates = isLocal
+        ? [srcBase + '.html', srcBase]
+        : [srcBase, srcBase + '.html'];
 
       let response;
       for (const c of candidates) {
@@ -740,11 +774,15 @@ class FooterLoader {
       new FooterResizer().init();
 
       document.dispatchEvent(
-        new CustomEvent('footer:loaded', { detail: { timestamp: Date.now() } })
+        new CustomEvent('footer:loaded', { detail: { timestamp: Date.now() } }),
       );
 
       performance.mark('footer-load-end');
-      performance.measure('footer-load', 'footer-load-start', 'footer-load-end');
+      performance.measure(
+        'footer-load',
+        'footer-load-start',
+        'footer-load-end',
+      );
       return true;
     } catch (error) {
       log.error('Footer load failed', error);
@@ -808,7 +846,7 @@ class FooterLoader {
         // Ignore clicks that land on interactive controls (links/buttons/inputs) to avoid interfering with their default actions.
         if (footerMinClick) {
           const interactive = e.target.closest(
-            'a, button, input, textarea, select, [data-cookie-trigger]'
+            'a, button, input, textarea, select, [data-cookie-trigger]',
           );
           if (!interactive) {
             e.preventDefault();
@@ -823,7 +861,7 @@ class FooterLoader {
           return;
         }
       },
-      { passive: false }
+      { passive: false },
     );
 
     // Three-Showcase Button
@@ -835,7 +873,7 @@ class FooterLoader {
         document.dispatchEvent(
           new CustomEvent('three-earth:showcase', {
             detail: { duration: 8000 },
-          })
+          }),
         );
         setTimeout(() => showcaseBtn.classList.remove('active'), 8000);
       });
@@ -870,7 +908,8 @@ class ScrollHandler {
 
     // The trigger is injected by head-inline.js at document start; prefer cached lookup and fallback to DOM.
     let trigger =
-      domCache.get('#footer-trigger-zone') || document.getElementById('footer-trigger-zone');
+      domCache.get('#footer-trigger-zone') ||
+      document.getElementById('footer-trigger-zone');
 
     // If trigger missing, create a robust fallback to avoid race conditions
     if (!trigger) {
@@ -884,10 +923,13 @@ class ScrollHandler {
         trigger.style.minHeight = '96px';
         trigger.style.width = '100%';
 
-        trigger.dataset.expandThreshold = trigger.dataset.expandThreshold || '0.002';
-        trigger.dataset.collapseThreshold = trigger.dataset.collapseThreshold || '0.0008';
+        trigger.dataset.expandThreshold =
+          trigger.dataset.expandThreshold || '0.002';
+        trigger.dataset.collapseThreshold =
+          trigger.dataset.collapseThreshold || '0.0008';
         trigger.dataset.expandLockMs = trigger.dataset.expandLockMs || '1000';
-        trigger.dataset.collapseDebounceMs = trigger.dataset.collapseDebounceMs || '250';
+        trigger.dataset.collapseDebounceMs =
+          trigger.dataset.collapseDebounceMs || '250';
 
         if (footer?.parentNode) {
           footer.parentNode.insertBefore(trigger, footer);
@@ -900,7 +942,10 @@ class ScrollHandler {
         domCache?.invalidate?.();
       } catch (err) {
         try {
-          log.warn('ScrollHandler: failed to create fallback #footer-trigger-zone', err);
+          log.warn(
+            'ScrollHandler: failed to create fallback #footer-trigger-zone',
+            err,
+          );
         } catch {}
       }
     }
@@ -908,13 +953,17 @@ class ScrollHandler {
     if (!footer || !trigger) {
       // If still missing, log and abort
       try {
-        log.warn('ScrollHandler: #footer-trigger-zone not found after fallback; aborting init');
+        log.warn(
+          'ScrollHandler: #footer-trigger-zone not found after fallback; aborting init',
+        );
       } catch {}
       return;
     }
 
     // Initial State Check
-    footer.querySelector('.footer-minimized')?.classList.remove('footer-hidden');
+    footer
+      .querySelector('.footer-minimized')
+      ?.classList.remove('footer-hidden');
     footer.querySelector('.footer-maximized')?.classList.add('footer-hidden');
 
     const isDesktop = globalThis.matchMedia?.('(min-width: 769px)')?.matches;
@@ -945,7 +994,8 @@ class ScrollHandler {
 
   cleanup() {
     this.observer?.disconnect();
-    if (this._resizeHandler) globalThis.removeEventListener('resize', this._resizeHandler);
+    if (this._resizeHandler)
+      globalThis.removeEventListener('resize', this._resizeHandler);
     if (this._collapseTimer) {
       clearTimeout(this._collapseTimer);
       this._collapseTimer = null;
@@ -991,13 +1041,17 @@ class ScrollHandler {
       // If still in post-expand lock period schedule collapse after lock + debounce
       if (now < (this._lockUntil || 0)) {
         const delay =
-          this._lockUntil - now + (this.collapseDebounceMs || CONSTANTS.COLLAPSE_DEBOUNCE_MS);
+          this._lockUntil -
+          now +
+          (this.collapseDebounceMs || CONSTANTS.COLLAPSE_DEBOUNCE_MS);
         this._scheduleCollapse(delay);
         return;
       }
 
       // Otherwise schedule normal debounce collapse
-      this._scheduleCollapse(this.collapseDebounceMs || CONSTANTS.COLLAPSE_DEBOUNCE_MS);
+      this._scheduleCollapse(
+        this.collapseDebounceMs || CONSTANTS.COLLAPSE_DEBOUNCE_MS,
+      );
     }
   }
 
@@ -1014,7 +1068,7 @@ class ScrollHandler {
           .split(' ')
           .concat(['footer-expanded'])
           .filter(Boolean)
-          .join(' ')
+          .join(' '),
       );
     } catch {}
 
@@ -1030,7 +1084,7 @@ class ScrollHandler {
           .split(' ')
           .concat(['footer-expanded'])
           .filter(Boolean)
-          .join(' ')
+          .join(' '),
       );
     } catch {}
 
@@ -1042,19 +1096,28 @@ class ScrollHandler {
 
     this.expanded = true;
     // Set a short lock period to avoid immediate collapse from tiny scroll jitter
-    this._lockUntil = Date.now() + (this.expandLockMs || CONSTANTS.EXPAND_LOCK_MS);
+    this._lockUntil =
+      Date.now() + (this.expandLockMs || CONSTANTS.EXPAND_LOCK_MS);
   }
 
   _applyThresholds(trigger, isDesktop, defaultExpand, defaultCollapse) {
     try {
-      const { expandThreshold, collapseThreshold, expandLockMs, collapseDebounceMs } =
-        trigger.dataset;
-      this.expandThreshold = expandThreshold ? Number.parseFloat(expandThreshold) : defaultExpand;
+      const {
+        expandThreshold,
+        collapseThreshold,
+        expandLockMs,
+        collapseDebounceMs,
+      } = trigger.dataset;
+      this.expandThreshold = expandThreshold
+        ? Number.parseFloat(expandThreshold)
+        : defaultExpand;
       this.collapseThreshold = collapseThreshold
         ? Number.parseFloat(collapseThreshold)
         : defaultCollapse;
 
-      const parsedLock = expandLockMs ? Number.parseInt(expandLockMs, 10) : Number.NaN;
+      const parsedLock = expandLockMs
+        ? Number.parseInt(expandLockMs, 10)
+        : Number.NaN;
       const parsedDebounce = collapseDebounceMs
         ? Number.parseInt(collapseDebounceMs, 10)
         : Number.NaN;
@@ -1062,9 +1125,12 @@ class ScrollHandler {
       // Increase defaults: Desktop 1000ms, Mobile 500ms
       const defaultLock = isDesktop ? 1000 : 500;
       const defaultDebounce = isDesktop ? 250 : 200;
-      this.expandLockMs = !Number.isNaN(parsedLock) && parsedLock >= 0 ? parsedLock : defaultLock;
+      this.expandLockMs =
+        !Number.isNaN(parsedLock) && parsedLock >= 0 ? parsedLock : defaultLock;
       this.collapseDebounceMs =
-        !Number.isNaN(parsedDebounce) && parsedDebounce >= 0 ? parsedDebounce : defaultDebounce;
+        !Number.isNaN(parsedDebounce) && parsedDebounce >= 0
+          ? parsedDebounce
+          : defaultDebounce;
     } catch {
       this.expandThreshold = defaultExpand;
       this.collapseThreshold = defaultCollapse;
@@ -1086,16 +1152,21 @@ class ScrollHandler {
 
         // Logic: Expand if we hit the bottom trigger significantly
         const shouldExpand =
-          entry.isIntersecting && entry.intersectionRatio >= this.expandThreshold;
+          entry.isIntersecting &&
+          entry.intersectionRatio >= this.expandThreshold;
 
         // Prevent collapse if we are just slightly scrolling but still near bottom
-        if (!shouldExpand && this.expanded && entry.intersectionRatio > this.collapseThreshold)
+        if (
+          !shouldExpand &&
+          this.expanded &&
+          entry.intersectionRatio > this.collapseThreshold
+        )
           return;
 
         // If collapse requested shortly after expand, let toggleExpansion decide via lock/debounce
         this.toggleExpansion(shouldExpand);
       },
-      { rootMargin, threshold: [this.collapseThreshold, this.expandThreshold] }
+      { rootMargin, threshold: [this.collapseThreshold, this.expandThreshold] },
     );
 
     this.observer.observe(trigger);
@@ -1114,7 +1185,8 @@ class ScrollHandler {
       if (!nearBottom) return;
 
       // For wheel events ensure the user is scrolling downwards (deltaY > 0)
-      if (e?.type === 'wheel' && typeof e.deltaY === 'number' && e.deltaY <= 0) return;
+      if (e?.type === 'wheel' && typeof e.deltaY === 'number' && e.deltaY <= 0)
+        return;
 
       // Trigger expansion as a robust fallback when IO didn't report intersecting
       try {
@@ -1139,7 +1211,8 @@ class ScrollHandler {
       this._scheduledCollapse = false;
       const lastRatio = this._lastIntersectionRatio ?? 0;
       const lastIntersecting = !!this._lastIsIntersecting;
-      const shouldCancel = lastIntersecting && lastRatio >= this.collapseThreshold;
+      const shouldCancel =
+        lastIntersecting && lastRatio >= this.collapseThreshold;
       if (shouldCancel) {
         this._collapseTimer = null;
         return;
@@ -1158,7 +1231,10 @@ class ScrollHandler {
 // ===== Footer Resizer (Optimized) =====
 class FooterResizer {
   constructor() {
-    this.debouncedApply = debounce(this.apply.bind(this), CONSTANTS.RESIZE_DEBOUNCE);
+    this.debouncedApply = debounce(
+      this.apply.bind(this),
+      CONSTANTS.RESIZE_DEBOUNCE,
+    );
   }
 
   init() {
@@ -1171,9 +1247,15 @@ class FooterResizer {
   apply() {
     const content = domCache.get('#site-footer .footer-enhanced-content');
     if (!content) return;
-    const height = Math.min(Math.max(0, content.scrollHeight), (globalThis.innerHeight || 0) - 24);
+    const height = Math.min(
+      Math.max(0, content.scrollHeight),
+      (globalThis.innerHeight || 0) - 24,
+    );
     if (height > 0)
-      document.documentElement.style.setProperty('--footer-actual-height', `${height}px`);
+      document.documentElement.style.setProperty(
+        '--footer-actual-height',
+        `${height}px`,
+      );
   }
 }
 

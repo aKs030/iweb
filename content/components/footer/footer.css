@@ -49,7 +49,11 @@
   --footer-icon-gap: 6px;
 
   /* Modern chip styling */
-  --footer-chip-bg: linear-gradient(140deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
+  --footer-chip-bg: linear-gradient(
+    140deg,
+    rgba(255, 255, 255, 0.08),
+    rgba(255, 255, 255, 0.02)
+  );
   --footer-chip-bg-hover: linear-gradient(
     140deg,
     rgba(255, 255, 255, 0.12),
@@ -176,7 +180,8 @@ body.footer-expanded {
   margin-left: 4px;
   padding: 2px 4px;
   border-radius: var(--dynamic-footer-micro-radius);
-  transition: color var(--footer-transition-quick), background-color var(--footer-transition-quick),
+  transition: color var(--footer-transition-quick),
+    background-color var(--footer-transition-quick),
     transform var(--footer-transition-quick);
   text-decoration: none;
   will-change: transform, background-color;
@@ -210,8 +215,10 @@ body.footer-expanded {
   border: 1px solid var(--footer-chip-border);
   background: var(--footer-chip-bg);
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.05), var(--footer-chip-shadow);
-  transition: transform var(--footer-transition-quick), box-shadow var(--footer-transition-quick),
-    background var(--footer-transition-quick), border-color var(--footer-transition-quick),
+  transition: transform var(--footer-transition-quick),
+    box-shadow var(--footer-transition-quick),
+    background var(--footer-transition-quick),
+    border-color var(--footer-transition-quick),
     color var(--footer-transition-quick);
   text-decoration: none;
   will-change: transform, background-color;
@@ -332,16 +339,21 @@ body.footer-expanded {
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.06),
+    rgba(255, 255, 255, 0.02)
+  );
   color: var(--dynamic-footer-label-primary);
   border: 1px solid rgba(255, 255, 255, 0.06);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.02);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.02);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: transform 300ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 300ms ease,
-    opacity 200ms ease;
+  transition: transform 300ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 300ms ease, opacity 200ms ease;
 }
 
 .three-showcase-btn svg {
@@ -355,7 +367,8 @@ body.footer-expanded {
 
 .three-showcase-btn:hover {
   transform: translateY(-4px) rotate(-6deg);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
 .three-showcase-btn.active {
@@ -401,8 +414,12 @@ body.footer-expanded {
   width: 100%;
   max-width: 1400px;
   margin: 0 auto;
-  padding-left: calc(var(--footer-horizontal-margin) - var(--footer-spacing-xs));
-  padding-right: calc(var(--footer-horizontal-margin) - var(--footer-spacing-xs));
+  padding-left: calc(
+    var(--footer-horizontal-margin) - var(--footer-spacing-xs)
+  );
+  padding-right: calc(
+    var(--footer-horizontal-margin) - var(--footer-spacing-xs)
+  );
   flex-wrap: wrap;
   text-align: center;
 }
@@ -514,7 +531,8 @@ body.footer-expanded {
   max-width: 100%;
   box-sizing: border-box;
   transition: transform var(--footer-transition-quick),
-    background-color var(--footer-transition-quick), border-color var(--footer-transition-quick);
+    background-color var(--footer-transition-quick),
+    border-color var(--footer-transition-quick);
   will-change: transform;
   transform: translateZ(0);
   /* Performance: lazy render off-screen cards */

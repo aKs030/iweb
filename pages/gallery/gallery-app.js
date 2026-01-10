@@ -35,7 +35,7 @@ const createIcon =
         strokeWidth: '2',
         className,
       },
-      paths
+      paths,
     );
 
 const Heart = createIcon(
@@ -44,8 +44,8 @@ const Heart = createIcon(
     null,
     React.createElement('path', {
       d: 'M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z',
-    })
-  )
+    }),
+  ),
 );
 
 const X_Icon = createIcon(
@@ -53,24 +53,24 @@ const X_Icon = createIcon(
     React.Fragment,
     null,
     React.createElement('line', { x1: '18', y1: '6', x2: '6', y2: '18' }),
-    React.createElement('line', { x1: '6', y1: '6', x2: '18', y2: '18' })
-  )
+    React.createElement('line', { x1: '6', y1: '6', x2: '18', y2: '18' }),
+  ),
 );
 
 const ChevronLeft = createIcon(
   React.createElement(
     React.Fragment,
     null,
-    React.createElement('polyline', { points: '15 18 9 12 15 6' })
-  )
+    React.createElement('polyline', { points: '15 18 9 12 15 6' }),
+  ),
 );
 
 const ChevronRight = createIcon(
   React.createElement(
     React.Fragment,
     null,
-    React.createElement('polyline', { points: '9 18 15 12 9 6' })
-  )
+    React.createElement('polyline', { points: '9 18 15 12 9 6' }),
+  ),
 );
 
 const ZoomIn = createIcon(
@@ -85,8 +85,8 @@ const ZoomIn = createIcon(
       y2: '16.65',
     }),
     React.createElement('line', { x1: '11', y1: '8', x2: '11', y2: '14' }),
-    React.createElement('line', { x1: '8', y1: '11', x2: '14', y2: '11' })
-  )
+    React.createElement('line', { x1: '8', y1: '11', x2: '14', y2: '11' }),
+  ),
 );
 
 const ZoomOut = createIcon(
@@ -100,8 +100,8 @@ const ZoomOut = createIcon(
       x2: '16.65',
       y2: '16.65',
     }),
-    React.createElement('line', { x1: '8', y1: '11', x2: '14', y2: '11' })
-  )
+    React.createElement('line', { x1: '8', y1: '11', x2: '14', y2: '11' }),
+  ),
 );
 
 const Download = createIcon(
@@ -112,8 +112,8 @@ const Download = createIcon(
       d: 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4',
     }),
     React.createElement('polyline', { points: '7 10 12 15 17 10' }),
-    React.createElement('line', { x1: '12', y1: '15', x2: '12', y2: '3' })
-  )
+    React.createElement('line', { x1: '12', y1: '15', x2: '12', y2: '3' }),
+  ),
 );
 
 const Grid2x2 = createIcon(
@@ -123,8 +123,8 @@ const Grid2x2 = createIcon(
     React.createElement('rect', { x: '3', y: '3', width: '7', height: '7' }),
     React.createElement('rect', { x: '14', y: '3', width: '7', height: '7' }),
     React.createElement('rect', { x: '14', y: '14', width: '7', height: '7' }),
-    React.createElement('rect', { x: '3', y: '14', width: '7', height: '7' })
-  )
+    React.createElement('rect', { x: '3', y: '14', width: '7', height: '7' }),
+  ),
 );
 
 const Grid3x3 = createIcon(
@@ -139,8 +139,8 @@ const Grid3x3 = createIcon(
     React.createElement('rect', { x: '17', y: '10', width: '5', height: '5' }),
     React.createElement('rect', { x: '3', y: '17', width: '5', height: '5' }),
     React.createElement('rect', { x: '10', y: '17', width: '5', height: '5' }),
-    React.createElement('rect', { x: '17', y: '17', width: '5', height: '5' })
-  )
+    React.createElement('rect', { x: '17', y: '17', width: '5', height: '5' }),
+  ),
 );
 
 const Search = createIcon(
@@ -153,8 +153,8 @@ const Search = createIcon(
       y1: '21',
       x2: '16.65',
       y2: '16.65',
-    })
-  )
+    }),
+  ),
 );
 
 const Share2 = createIcon(
@@ -175,16 +175,16 @@ const Share2 = createIcon(
       y1: '6.51',
       x2: '8.59',
       y2: '10.49',
-    })
-  )
+    }),
+  ),
 );
 
 const Play = createIcon(
   React.createElement(
     React.Fragment,
     null,
-    React.createElement('polygon', { points: '5 3 19 12 5 21 5 3' })
-  )
+    React.createElement('polygon', { points: '5 3 19 12 5 21 5 3' }),
+  ),
 );
 
 const Pause = createIcon(
@@ -192,8 +192,8 @@ const Pause = createIcon(
     React.Fragment,
     null,
     React.createElement('rect', { x: '6', y: '4', width: '4', height: '16' }),
-    React.createElement('rect', { x: '14', y: '4', width: '4', height: '16' })
-  )
+    React.createElement('rect', { x: '14', y: '4', width: '4', height: '16' }),
+  ),
 );
 
 const Info = createIcon(
@@ -202,8 +202,8 @@ const Info = createIcon(
     null,
     React.createElement('circle', { cx: '12', cy: '12', r: '10' }),
     React.createElement('line', { x1: '12', y1: '16', x2: '12', y2: '12' }),
-    React.createElement('line', { x1: '12', y1: '8', x2: '12.01', y2: '8' })
-  )
+    React.createElement('line', { x1: '12', y1: '8', x2: '12.01', y2: '8' }),
+  ),
 );
 
 const PhotoGallery = () => {
@@ -373,16 +373,23 @@ const PhotoGallery = () => {
 
   // Memoize gefilterte Fotos für bessere Performance
   const filteredPhotos = useMemo(() => {
-    let result = filter === 'all' ? photos : photos.filter((photo) => photo.category === filter);
+    let result =
+      filter === 'all'
+        ? photos
+        : photos.filter((photo) => photo.category === filter);
 
     if (debouncedSearchQuery) {
       result = result.filter(
         (photo) =>
-          photo.title.toLowerCase().includes(debouncedSearchQuery.toLowerCase()) ||
+          photo.title
+            .toLowerCase()
+            .includes(debouncedSearchQuery.toLowerCase()) ||
           photo.tags.some((tag) =>
-            tag.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
+            tag.toLowerCase().includes(debouncedSearchQuery.toLowerCase()),
           ) ||
-          photo.location.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
+          photo.location
+            .toLowerCase()
+            .includes(debouncedSearchQuery.toLowerCase()),
       );
     }
 
@@ -484,7 +491,8 @@ const PhotoGallery = () => {
       if (mainEl) mainEl.removeAttribute('aria-hidden');
       setTimeout(() => {
         try {
-          if (prevActive && typeof prevActive.focus === 'function') prevActive.focus();
+          if (prevActive && typeof prevActive.focus === 'function')
+            prevActive.focus();
         } catch (err) {
           log.warn('GalleryApp: restoring focus failed', err);
         }
@@ -494,12 +502,16 @@ const PhotoGallery = () => {
 
   const navigateImage = useCallback(
     (direction) => {
-      const currentIndex = filteredPhotos.findIndex((p) => p.id === selectedImage.id);
-      const newIndex = (currentIndex + direction + filteredPhotos.length) % filteredPhotos.length;
+      const currentIndex = filteredPhotos.findIndex(
+        (p) => p.id === selectedImage.id,
+      );
+      const newIndex =
+        (currentIndex + direction + filteredPhotos.length) %
+        filteredPhotos.length;
       setSelectedImage(filteredPhotos[newIndex]);
       setZoom(1);
     },
-    [selectedImage, filteredPhotos]
+    [selectedImage, filteredPhotos],
   );
 
   const handleZoom = useCallback((delta) => {
@@ -515,7 +527,9 @@ const PhotoGallery = () => {
 
   const toggleFavorite = useCallback((id, e) => {
     e.stopPropagation();
-    setFavorites((prev) => (prev.includes(id) ? prev.filter((fav) => fav !== id) : [...prev, id]));
+    setFavorites((prev) =>
+      prev.includes(id) ? prev.filter((fav) => fav !== id) : [...prev, id],
+    );
   }, []);
 
   const handleShare = useCallback(() => {
@@ -529,7 +543,9 @@ const PhotoGallery = () => {
   }, [selectedImage]);
 
   const gridCols =
-    gridSize === 2 ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3';
+    gridSize === 2
+      ? 'grid-cols-1 sm:grid-cols-2'
+      : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3';
 
   return React.createElement(
     'div',
@@ -546,13 +562,13 @@ const PhotoGallery = () => {
             className:
               'text-5xl sm:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 mb-3',
           },
-          'Premium Fotogalerie'
+          'Premium Fotogalerie',
         ),
         React.createElement(
           'p',
           { className: 'text-indigo-200 text-lg' },
-          'Professionelle Fotografie in höchster Qualität'
-        )
+          'Professionelle Fotografie in höchster Qualität',
+        ),
       ),
       React.createElement(
         'div',
@@ -561,7 +577,8 @@ const PhotoGallery = () => {
           'div',
           { className: 'relative' },
           Search({
-            className: 'absolute left-4 top-1/2 -translate-y-1/2 text-indigo-300',
+            className:
+              'absolute left-4 top-1/2 -translate-y-1/2 text-indigo-300',
             size: 20,
           }),
           React.createElement('input', {
@@ -571,13 +588,14 @@ const PhotoGallery = () => {
             onChange: (e) => setSearchQuery(e.target.value),
             className:
               'w-full pl-12 pr-4 py-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl text-white placeholder-indigo-300 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all',
-          })
-        )
+          }),
+        ),
       ),
       React.createElement(
         'div',
         {
-          className: 'flex flex-col lg:flex-row justify-between items-center gap-4 mb-6',
+          className:
+            'flex flex-col lg:flex-row justify-between items-center gap-4 mb-6',
         },
         React.createElement(
           'div',
@@ -595,9 +613,9 @@ const PhotoGallery = () => {
                     : 'bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm border border-white/10'
                 }`,
               },
-              cat.charAt(0).toUpperCase() + cat.slice(1)
-            )
-          )
+              cat.charAt(0).toUpperCase() + cat.slice(1),
+            ),
+          ),
         ),
         React.createElement(
           'div',
@@ -610,13 +628,21 @@ const PhotoGallery = () => {
               className:
                 'px-4 py-2.5 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-500',
             },
-            React.createElement('option', { value: 'date', className: 'bg-slate-900' }, 'Neueste'),
-            React.createElement('option', { value: 'title', className: 'bg-slate-900' }, 'Titel'),
+            React.createElement(
+              'option',
+              { value: 'date', className: 'bg-slate-900' },
+              'Neueste',
+            ),
+            React.createElement(
+              'option',
+              { value: 'title', className: 'bg-slate-900' },
+              'Titel',
+            ),
             React.createElement(
               'option',
               { value: 'popular', className: 'bg-slate-900' },
-              'Beliebt'
-            )
+              'Beliebt',
+            ),
           ),
           React.createElement(
             'div',
@@ -629,29 +655,35 @@ const PhotoGallery = () => {
               {
                 onClick: () => setGridSize(2),
                 className: `p-2 rounded-lg transition-all ${
-                  gridSize === 2 ? 'bg-purple-500 text-white' : 'text-white hover:bg-white/10'
+                  gridSize === 2
+                    ? 'bg-purple-500 text-white'
+                    : 'text-white hover:bg-white/10'
                 }`,
               },
-              Grid2x2({ size: 18 })
+              Grid2x2({ size: 18 }),
             ),
             React.createElement(
               'button',
               {
                 onClick: () => setGridSize(3),
                 className: `p-2 rounded-lg transition-all ${
-                  gridSize === 3 ? 'bg-purple-500 text-white' : 'text-white hover:bg-white/10'
+                  gridSize === 3
+                    ? 'bg-purple-500 text-white'
+                    : 'text-white hover:bg-white/10'
                 }`,
               },
-              Grid3x3({ size: 18 })
-            )
-          )
-        )
+              Grid3x3({ size: 18 }),
+            ),
+          ),
+        ),
       ),
       React.createElement(
         'div',
         { className: 'text-center text-indigo-300 mb-6' },
-        `${filteredPhotos.length} ${filteredPhotos.length === 1 ? 'Foto' : 'Fotos'} gefunden`
-      )
+        `${filteredPhotos.length} ${
+          filteredPhotos.length === 1 ? 'Foto' : 'Fotos'
+        } gefunden`,
+      ),
     ),
     React.createElement(
       'div',
@@ -685,7 +717,8 @@ const PhotoGallery = () => {
           React.createElement(
             'div',
             {
-              className: 'aspect-[4/3] bg-slate-800/50 backdrop-blur-sm relative',
+              className:
+                'aspect-[4/3] bg-slate-800/50 backdrop-blur-sm relative',
             },
             React.createElement('img', {
               src: photo.url,
@@ -694,12 +727,13 @@ const PhotoGallery = () => {
               decoding: 'async',
               className:
                 'w-full h-full object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-110',
-              onLoad: () => setImageLoaded((prev) => ({ ...prev, [photo.id]: true })),
+              onLoad: () =>
+                setImageLoaded((prev) => ({ ...prev, [photo.id]: true })),
             }),
             React.createElement('div', {
               className:
                 'absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60',
-            })
+            }),
           ),
           React.createElement(
             'div',
@@ -716,7 +750,7 @@ const PhotoGallery = () => {
                   className:
                     'px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-white text-xs font-medium border border-white/30',
                 },
-                photo.category
+                photo.category,
               ),
               React.createElement(
                 'button',
@@ -728,10 +762,12 @@ const PhotoGallery = () => {
                 Heart({
                   size: 18,
                   className: `${
-                    favorites.includes(photo.id) ? 'fill-red-500 text-red-500' : 'text-white'
+                    favorites.includes(photo.id)
+                      ? 'fill-red-500 text-red-500'
+                      : 'text-white'
                   }`,
-                })
-              )
+                }),
+              ),
             ),
             React.createElement(
               'div',
@@ -739,7 +775,7 @@ const PhotoGallery = () => {
               React.createElement(
                 'h3',
                 { className: 'text-white text-xl font-bold mb-2' },
-                photo.title
+                photo.title,
               ),
               React.createElement(
                 'div',
@@ -748,15 +784,16 @@ const PhotoGallery = () => {
                 },
                 React.createElement('span', null, photo.camera),
                 React.createElement('span', null, '•'),
-                React.createElement('span', null, photo.location)
-              )
-            )
+                React.createElement('span', null, photo.location),
+              ),
+            ),
           ),
           !imageLoaded[photo.id] &&
             React.createElement(
               'div',
               {
-                className: 'absolute inset-0 bg-slate-900 flex items-center justify-center',
+                className:
+                  'absolute inset-0 bg-slate-900 flex items-center justify-center',
               },
               React.createElement(
                 'div',
@@ -768,18 +805,19 @@ const PhotoGallery = () => {
                 React.createElement(
                   'div',
                   {
-                    className: 'absolute inset-0 flex items-center justify-center',
+                    className:
+                      'absolute inset-0 flex items-center justify-center',
                   },
                   React.createElement('div', {
                     className:
                       'w-8 h-8 border-4 border-pink-500/30 border-t-pink-500 rounded-full animate-spin',
                     style: { animationDirection: 'reverse' },
-                  })
-                )
-              )
-            )
-        )
-      )
+                  }),
+                ),
+              ),
+            ),
+        ),
+      ),
     ),
     selectedImage &&
       React.createElement(
@@ -815,15 +853,15 @@ const PhotoGallery = () => {
               React.createElement(
                 'h2',
                 { id: 'lightbox-title', className: 'text-2xl font-bold mb-1' },
-                selectedImage.title
+                selectedImage.title,
               ),
               React.createElement(
                 'p',
                 { className: 'text-indigo-300' },
-                `${selectedImage.location} • ${new Date(selectedImage.date).toLocaleDateString(
-                  'de-DE'
-                )}`
-              )
+                `${selectedImage.location} • ${new Date(
+                  selectedImage.date,
+                ).toLocaleDateString('de-DE')}`,
+              ),
             ),
             React.createElement(
               'div',
@@ -839,7 +877,7 @@ const PhotoGallery = () => {
                     showInfo ? 'bg-purple-500' : 'bg-white/10 hover:bg-white/20'
                   }`,
                 },
-                Info({ size: 20, className: 'text-white' })
+                Info({ size: 20, className: 'text-white' }),
               ),
               React.createElement(
                 'button',
@@ -849,12 +887,14 @@ const PhotoGallery = () => {
                     setIsSlideshow(!isSlideshow);
                   },
                   className: `p-3 rounded-xl transition-all backdrop-blur-md ${
-                    isSlideshow ? 'bg-purple-500' : 'bg-white/10 hover:bg-white/20'
+                    isSlideshow
+                      ? 'bg-purple-500'
+                      : 'bg-white/10 hover:bg-white/20'
                   }`,
                 },
                 isSlideshow
                   ? Pause({ size: 20, className: 'text-white' })
-                  : Play({ size: 20, className: 'text-white' })
+                  : Play({ size: 20, className: 'text-white' }),
               ),
               React.createElement(
                 'button',
@@ -869,10 +909,10 @@ const PhotoGallery = () => {
                   className:
                     'p-3 bg-white/10 hover:bg-white/20 rounded-xl transition-all backdrop-blur-md',
                 },
-                X_Icon({ size: 20, className: 'text-white' })
-              )
-            )
-          )
+                X_Icon({ size: 20, className: 'text-white' }),
+              ),
+            ),
+          ),
         ),
         showInfo &&
           React.createElement(
@@ -884,7 +924,7 @@ const PhotoGallery = () => {
             React.createElement(
               'h3',
               { className: 'text-white font-bold text-lg mb-4' },
-              'Foto-Details'
+              'Foto-Details',
             ),
             React.createElement(
               'div',
@@ -892,57 +932,81 @@ const PhotoGallery = () => {
               React.createElement(
                 'div',
                 { className: 'flex justify-between' },
-                React.createElement('span', { className: 'text-indigo-300' }, 'Kamera:'),
+                React.createElement(
+                  'span',
+                  { className: 'text-indigo-300' },
+                  'Kamera:',
+                ),
                 React.createElement(
                   'span',
                   { className: 'text-white font-medium' },
-                  selectedImage.camera
-                )
+                  selectedImage.camera,
+                ),
               ),
               React.createElement(
                 'div',
                 { className: 'flex justify-between' },
-                React.createElement('span', { className: 'text-indigo-300' }, 'Blende:'),
+                React.createElement(
+                  'span',
+                  { className: 'text-indigo-300' },
+                  'Blende:',
+                ),
                 React.createElement(
                   'span',
                   { className: 'text-white font-medium' },
-                  selectedImage.aperture
-                )
+                  selectedImage.aperture,
+                ),
               ),
               React.createElement(
                 'div',
                 { className: 'flex justify-between' },
-                React.createElement('span', { className: 'text-indigo-300' }, 'ISO:'),
+                React.createElement(
+                  'span',
+                  { className: 'text-indigo-300' },
+                  'ISO:',
+                ),
                 React.createElement(
                   'span',
                   { className: 'text-white font-medium' },
-                  selectedImage.iso
-                )
+                  selectedImage.iso,
+                ),
               ),
               React.createElement(
                 'div',
                 { className: 'flex justify-between' },
-                React.createElement('span', { className: 'text-indigo-300' }, 'Ort:'),
+                React.createElement(
+                  'span',
+                  { className: 'text-indigo-300' },
+                  'Ort:',
+                ),
                 React.createElement(
                   'span',
                   { className: 'text-white font-medium' },
-                  selectedImage.location
-                )
+                  selectedImage.location,
+                ),
               ),
               React.createElement(
                 'div',
                 { className: 'flex justify-between' },
-                React.createElement('span', { className: 'text-indigo-300' }, 'Datum:'),
+                React.createElement(
+                  'span',
+                  { className: 'text-indigo-300' },
+                  'Datum:',
+                ),
                 React.createElement(
                   'span',
                   { className: 'text-white font-medium' },
-                  new Date(selectedImage.date).toLocaleDateString('de-DE')
-                )
+                  new Date(selectedImage.date).toLocaleDateString('de-DE'),
+                ),
               ),
               React.createElement(
                 'div',
                 { className: 'pt-3 border-t border-white/10' },
-                React.createElement('span', { className: 'text-indigo-300 block mb-2' }, 'Tags:'),
+                React.createElement(
+                  'span',
+                  { className: 'text-indigo-300 block mb-2' },
+                  'Tags:',
+                ),
                 React.createElement(
                   'div',
                   { className: 'flex flex-wrap gap-2' },
@@ -951,14 +1015,15 @@ const PhotoGallery = () => {
                       'span',
                       {
                         key: tag,
-                        className: 'px-2 py-1 bg-purple-500/20 text-purple-300 rounded-lg text-xs',
+                        className:
+                          'px-2 py-1 bg-purple-500/20 text-purple-300 rounded-lg text-xs',
                       },
-                      `#${tag}`
-                    )
-                  )
-                )
-              )
-            )
+                      `#${tag}`,
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ),
         React.createElement(
           'button',
@@ -973,7 +1038,7 @@ const PhotoGallery = () => {
           ChevronLeft({
             size: 32,
             className: 'text-white group-hover:scale-110 transition-transform',
-          })
+          }),
         ),
         React.createElement(
           'button',
@@ -988,7 +1053,7 @@ const PhotoGallery = () => {
           ChevronRight({
             size: 32,
             className: 'text-white group-hover:scale-110 transition-transform',
-          })
+          }),
         ),
         React.createElement(
           'div',
@@ -1005,7 +1070,7 @@ const PhotoGallery = () => {
               },
               className: 'p-3 hover:bg-white/10 rounded-xl transition-all',
             },
-            ZoomOut({ size: 20, className: 'text-white' })
+            ZoomOut({ size: 20, className: 'text-white' }),
           ),
           React.createElement(
             'div',
@@ -1013,7 +1078,7 @@ const PhotoGallery = () => {
               className:
                 'px-4 py-3 text-white font-semibold min-w-[80px] text-center bg-white/5 rounded-xl',
             },
-            `${Math.round(zoom * 100)}%`
+            `${Math.round(zoom * 100)}%`,
           ),
           React.createElement(
             'button',
@@ -1024,7 +1089,7 @@ const PhotoGallery = () => {
               },
               className: 'p-3 hover:bg-white/10 rounded-xl transition-all',
             },
-            ZoomIn({ size: 20, className: 'text-white' })
+            ZoomIn({ size: 20, className: 'text-white' }),
           ),
           React.createElement('div', { className: 'w-px bg-white/20' }),
           React.createElement(
@@ -1039,9 +1104,11 @@ const PhotoGallery = () => {
             Heart({
               size: 20,
               className: `${
-                favorites.includes(selectedImage.id) ? 'fill-red-500 text-red-500' : 'text-white'
+                favorites.includes(selectedImage.id)
+                  ? 'fill-red-500 text-red-500'
+                  : 'text-white'
               }`,
-            })
+            }),
           ),
           React.createElement(
             'button',
@@ -1052,7 +1119,7 @@ const PhotoGallery = () => {
               },
               className: 'p-3 hover:bg-white/10 rounded-xl transition-all',
             },
-            Share2({ size: 20, className: 'text-white' })
+            Share2({ size: 20, className: 'text-white' }),
           ),
           React.createElement(
             'button',
@@ -1063,8 +1130,8 @@ const PhotoGallery = () => {
               },
               className: 'p-3 hover:bg-white/10 rounded-xl transition-all',
             },
-            Download({ size: 20, className: 'text-white' })
-          )
+            Download({ size: 20, className: 'text-white' }),
+          ),
         ),
         React.createElement(
           'div',
@@ -1075,12 +1142,13 @@ const PhotoGallery = () => {
           React.createElement('img', {
             src: selectedImage.url,
             alt: selectedImage.title,
-            className: 'max-w-full max-h-[80vh] object-contain transition-all duration-300',
+            className:
+              'max-w-full max-h-[80vh] object-contain transition-all duration-300',
             style: {
               transform: `scale(${zoom})`,
               filter: 'drop-shadow(0 25px 50px rgba(0,0,0,0.5))',
             },
-          })
+          }),
         ),
         isSlideshow &&
           React.createElement(
@@ -1090,11 +1158,12 @@ const PhotoGallery = () => {
                 'absolute bottom-32 left-1/2 -translate-x-1/2 w-64 h-1 bg-white/20 rounded-full overflow-hidden',
             },
             React.createElement('div', {
-              className: 'h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full',
+              className:
+                'h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full',
               style: {
                 animation: 'progress 3s linear infinite',
               },
-            })
+            }),
           ),
         React.createElement(
           'style',
@@ -1119,9 +1188,9 @@ const PhotoGallery = () => {
             width: 100%;
           }
         }
-      `
-        )
-      )
+      `,
+        ),
+      ),
   );
 };
 

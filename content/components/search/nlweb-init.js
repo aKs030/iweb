@@ -3,7 +3,8 @@
 import { createLogger } from '../../utils/shared-utilities.js';
 const log = createLogger('NLWeb');
 
-const DEFAULT_SITE = 'https://throbbing-mode-6fe1-nlweb.httpsgithubcomaks030website.workers.dev';
+const DEFAULT_SITE =
+  'https://throbbing-mode-6fe1-nlweb.httpsgithubcomaks030website.workers.dev';
 const DEFAULT_ENDPOINT = DEFAULT_SITE;
 
 // Use dynamic import of the worker module

@@ -34,7 +34,8 @@ export class RobotChat {
       this.robot.animationModule.stopBlinkLoop();
       const ctx = this.robot.getPageContext();
       this.lastGreetedContext = ctx;
-      if (this.robot.dom.messages.children.length === 0) this.handleAction('start');
+      if (this.robot.dom.messages.children.length === 0)
+        this.handleAction('start');
 
       // Focus Trap
       globalThis?.a11y?.trapFocus(this.robot.dom.window);
@@ -81,7 +82,10 @@ export class RobotChat {
     this.robot.trackInteraction('message');
 
     try {
-      const response = await this.robot.gemini.generateResponse(text, this.history);
+      const response = await this.robot.gemini.generateResponse(
+        text,
+        this.history,
+      );
       this.removeTyping();
       this.robot.animationModule.stopThinking();
       this.addMessage(response, 'bot');
@@ -111,7 +115,8 @@ export class RobotChat {
   }
 
   hideBubble() {
-    if (this.robot.dom.bubble) this.robot.dom.bubble.classList.remove('visible');
+    if (this.robot.dom.bubble)
+      this.robot.dom.bubble.classList.remove('visible');
   }
 
   showTyping() {
@@ -239,7 +244,8 @@ export class RobotChat {
     } else if (actionKey === 'start') {
       const ctx = this.robot.getPageContext();
       const suffix = String(this.startMessageSuffix?.[ctx] ?? '').trim();
-      if (suffix) responseText = `${String(responseText || '').trim()} ${suffix}`.trim();
+      if (suffix)
+        responseText = `${String(responseText || '').trim()} ${suffix}`.trim();
     }
 
     const typingTime = Math.min(Math.max(responseText.length * 15, 800), 2000);
@@ -263,7 +269,8 @@ export class RobotChat {
 
   getContextGreetingForContext(ctxArr, ctxKey) {
     if (!ctxArr || ctxArr.length === 0) return null;
-    if (!this.contextGreetingHistory[ctxKey]) this.contextGreetingHistory[ctxKey] = new Set();
+    if (!this.contextGreetingHistory[ctxKey])
+      this.contextGreetingHistory[ctxKey] = new Set();
     const used = this.contextGreetingHistory[ctxKey];
     let candidates = ctxArr.filter((g) => !used.has(g));
     if (candidates.length === 0) {
@@ -319,7 +326,9 @@ export class RobotChat {
       this.initialBubbleGreetings.length > 0
     ) {
       const fallback =
-        this.initialBubbleGreetings[Math.floor(Math.random() * this.initialBubbleGreetings.length)];
+        this.initialBubbleGreetings[
+          Math.floor(Math.random() * this.initialBubbleGreetings.length)
+        ];
       picks.push(String(fallback || '').trim());
     }
 
