@@ -90,7 +90,9 @@ class SharedParallaxManager {
   }
 
   removeHandler(handler) {
-    const handlerObj = Array.from(this.handlers).find((h) => h.handler === handler);
+    const handlerObj = Array.from(this.handlers).find(
+      (h) => h.handler === handler,
+    );
     if (handlerObj) {
       this.handlers.delete(handlerObj);
       log.debug(`Parallax handler '${handlerObj.name}' removed`);
@@ -114,7 +116,7 @@ class SharedParallaxManager {
       // Update CSS variable
       document.documentElement.style.setProperty(
         `${SHARED_CONFIG.SCROLL.CSS_PROPERTY_PREFIX}progress`,
-        progress.toFixed(4)
+        progress.toFixed(4),
       );
 
       // Call all handlers
@@ -160,7 +162,9 @@ class SharedCleanupManager {
 
   addCleanupFunction(systemName, cleanupFn, description = 'anonymous') {
     if (typeof cleanupFn !== 'function') {
-      log.error(`Invalid cleanup function for '${systemName}', must be a function`);
+      log.error(
+        `Invalid cleanup function for '${systemName}', must be a function`,
+      );
       return;
     }
 
@@ -169,7 +173,9 @@ class SharedCleanupManager {
     }
 
     this.cleanupFunctions.get(systemName).push({ fn: cleanupFn, description });
-    log.debug(`Cleanup function '${description}' registered for '${systemName}'`);
+    log.debug(
+      `Cleanup function '${description}' registered for '${systemName}'`,
+    );
   }
 
   cleanupSystem(systemName) {
@@ -179,7 +185,9 @@ class SharedCleanupManager {
       return;
     }
 
-    log.info(`Cleaning up system '${systemName}' (${systemCleanups.length} functions)`);
+    log.info(
+      `Cleaning up system '${systemName}' (${systemCleanups.length} functions)`,
+    );
 
     let successCount = 0;
     let errorCount = 0;
@@ -190,14 +198,17 @@ class SharedCleanupManager {
         successCount++;
       } catch (error) {
         errorCount++;
-        log.error(`Error in cleanup '${description}' for '${systemName}':`, error);
+        log.error(
+          `Error in cleanup '${description}' for '${systemName}':`,
+          error,
+        );
       }
     });
 
     this.cleanupFunctions.delete(systemName);
 
     log.info(
-      `System '${systemName}' cleanup complete: ${successCount} success, ${errorCount} errors`
+      `System '${systemName}' cleanup complete: ${successCount} success, ${errorCount} errors`,
     );
   }
 
@@ -257,7 +268,8 @@ export async function loadThreeJS() {
 
         // If this is a same-origin (local) path, do a quick HEAD check to verify availability
         // and inspect Content-Encoding (precompressed .br/.gz served by the host).
-        const isLocalPath = src.startsWith('/') || src.startsWith(location.origin);
+        const isLocalPath =
+          src.startsWith('/') || src.startsWith(location.origin);
         if (isLocalPath) {
           try {
             const headResp = await fetch(src, {
@@ -266,7 +278,7 @@ export async function loadThreeJS() {
             });
             if (!headResp.ok) {
               log.warn(
-                `HEAD check for local Three.js returned ${headResp.status} - skipping ${src}`
+                `HEAD check for local Three.js returned ${headResp.status} - skipping ${src}`,
               );
               // Skip to next candidate (likely CDN)
               if (i === THREE_PATHS.length - 1) {
@@ -279,17 +291,17 @@ export async function loadThreeJS() {
             const encoding = headResp.headers.get('content-encoding');
             if (encoding) {
               log.info(
-                `Server serves precompressed Three.js at ${src} with Content-Encoding: ${encoding}`
+                `Server serves precompressed Three.js at ${src} with Content-Encoding: ${encoding}`,
               );
             } else {
               log.info(
-                `No Content-Encoding header for ${src}; server may serve uncompressed or use static precompressed mapping.`
+                `No Content-Encoding header for ${src}; server may serve uncompressed or use static precompressed mapping.`,
               );
             }
           } catch (headErr) {
             log.debug(
               'HEAD check failed for local Three.js; will attempt import and fallback if needed',
-              headErr
+              headErr,
             );
           }
         } else {
@@ -303,12 +315,14 @@ export async function loadThreeJS() {
             if (headResp && headResp.ok) {
               const encoding = headResp.headers.get('content-encoding');
               if (encoding)
-                log.info(`Remote precompressed Content-Encoding for ${src}: ${encoding}`);
+                log.info(
+                  `Remote precompressed Content-Encoding for ${src}: ${encoding}`,
+                );
             }
           } catch (e) {
             log.debug(
               'HEAD check for cross-origin resource failed or blocked by CORS; proceeding to import',
-              e
+              e,
             );
           }
         }

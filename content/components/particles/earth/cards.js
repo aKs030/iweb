@@ -99,7 +99,8 @@ export class CardManager {
     this._sharedGeometry = new this.THREE.PlaneGeometry(baseW, baseH);
 
     // Prepare shared glow texture once
-    if (!this._sharedGlowTexture) this._sharedGlowTexture = this.createGlowTexture();
+    if (!this._sharedGlowTexture)
+      this._sharedGlowTexture = this.createGlowTexture();
 
     dataArray.forEach((d, index) => {
       const data = {
@@ -324,7 +325,9 @@ export class CardManager {
 
     // 4. Icon Text
     ctx.fillStyle = '#ffffff';
-    ctx.font = `${60 * S}px "Apple Color Emoji", "Segoe UI Emoji", Arial, sans-serif`;
+    ctx.font = `${
+      60 * S
+    }px "Apple Color Emoji", "Segoe UI Emoji", Arial, sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(data.iconChar, iconCenterX, iconY + 5 * S);
@@ -340,7 +343,7 @@ export class CardManager {
       'bold',
       26 * S,
       14 * S,
-      'Arial, sans-serif'
+      'Arial, sans-serif',
     );
     ctx.font = `bold ${subtitleSize}px Arial, sans-serif`;
     ctx.fillText(subtitleText, iconCenterX, 280 * S);
@@ -356,7 +359,7 @@ export class CardManager {
       '800', // Extra Bold
       52 * S,
       24 * S,
-      'Arial, sans-serif'
+      'Arial, sans-serif',
     );
     ctx.font = `800 ${titleSize}px Arial, sans-serif`;
     ctx.fillText(titleText, iconCenterX, 350 * S);
@@ -366,7 +369,14 @@ export class CardManager {
     // Increased base text size from 30 to 32
     const baseTextSize = data.text && data.text.length > 160 ? 24 * S : 32 * S;
     ctx.font = `${baseTextSize}px Arial, sans-serif`;
-    this.wrapText(ctx, data.text, iconCenterX, 460 * S, 400 * S, Math.round(44 * S));
+    this.wrapText(
+      ctx,
+      data.text,
+      iconCenterX,
+      460 * S,
+      400 * S,
+      Math.round(44 * S),
+    );
 
     const texture = new this.THREE.CanvasTexture(canvas);
     texture.generateMipmaps = true;
@@ -382,7 +392,9 @@ export class CardManager {
   }
 
   createGlowTexture() {
-    const DPR = globalThis.devicePixelRatio ? Math.min(globalThis.devicePixelRatio, 2) : 1;
+    const DPR = globalThis.devicePixelRatio
+      ? Math.min(globalThis.devicePixelRatio, 2)
+      : 1;
     const size = Math.floor(128 * DPR);
     const canvas =
       typeof OffscreenCanvas === 'undefined'
@@ -494,13 +506,21 @@ export class CardManager {
     ctx.fillText(line, x, y);
   }
 
-  fitTextToWidth(ctx, text, maxWidth, fontWeight, initialSize, minSize, fontFamily) {
+  fitTextToWidth(
+    ctx,
+    text,
+    maxWidth,
+    fontWeight,
+    initialSize,
+    minSize,
+    fontFamily,
+  ) {
     if (!text) return minSize;
 
     // Edge case: if initialSize < minSize, return immediately
     if (initialSize < minSize) {
       log.warn(
-        `fitTextToWidth: initialSize (${initialSize}) < minSize (${minSize}), returning minSize`
+        `fitTextToWidth: initialSize (${initialSize}) < minSize (${minSize}), returning minSize`,
       );
       return minSize;
     }
@@ -553,7 +573,10 @@ export class CardManager {
   setProgress(progress) {
     const p = Math.max(
       0,
-      Math.min(1, typeof progress === 'number' && !Number.isNaN(progress) ? progress : 0)
+      Math.min(
+        1,
+        typeof progress === 'number' && !Number.isNaN(progress) ? progress : 0,
+      ),
     );
     const wasVisible = this.cardGroup.visible;
     this.cardGroup.visible = p > 0.01;
@@ -565,7 +588,10 @@ export class CardManager {
     this.cards.forEach((card) => {
       // Stagger entrance slightly
       const stagger = (card.userData.entranceDelay || 0) / 800;
-      const local = Math.max(0, Math.min(1, (p - stagger) / Math.max(0.0001, 1 - stagger)));
+      const local = Math.max(
+        0,
+        Math.min(1, (p - stagger) / Math.max(0.0001, 1 - stagger)),
+      );
       card.userData.entranceTarget = local;
       card.userData.targetOpacity = local > 0 ? 1 : 0;
     });
@@ -607,7 +633,11 @@ export class CardManager {
       this._updateCardGlow(card, time);
     });
 
-    if (!this.isVisible && this.cards[0] && this.cards[0].material.opacity < 0.01) {
+    if (
+      !this.isVisible &&
+      this.cards[0] &&
+      this.cards[0].material.opacity < 0.01
+    ) {
       this.cardGroup.visible = false;
     }
   }
@@ -619,28 +649,35 @@ export class CardManager {
         : this.isVisible
         ? 1
         : 0;
-    card.userData.entranceProgress += (targetEntrance - card.userData.entranceProgress) * 0.02;
+    card.userData.entranceProgress +=
+      (targetEntrance - card.userData.entranceProgress) * 0.02;
     const baseOpacity = card.userData.targetOpacity || 1;
-    card.material.opacity = baseOpacity * (0.05 + 0.95 * card.userData.entranceProgress);
+    card.material.opacity =
+      baseOpacity * (0.05 + 0.95 * card.userData.entranceProgress);
   }
 
   _updateCardHoverTiltAndMotion(card, pos, hoveredCard, time) {
     const floatY =
-      Math.sin(time * 0.001 + card.userData.id) * 0.06 * (1 - card.userData.hoverProgress * 0.7);
+      Math.sin(time * 0.001 + card.userData.id) *
+      0.06 *
+      (1 - card.userData.hoverProgress * 0.7);
 
     const isHovered = card === hoveredCard;
     let hoverTarget = isHovered ? 1 : 0;
     if (!isHovered && card.userData.hoverProgress > 0.5) {
       hoverTarget = card.userData.hoverProgress;
     }
-    card.userData.hoverProgress += (hoverTarget - card.userData.hoverProgress) * 0.05; // Slightly snappier
+    card.userData.hoverProgress +=
+      (hoverTarget - card.userData.hoverProgress) * 0.05; // Slightly snappier
 
     const parallax = card.userData.parallaxStrength || 0.12;
     const targetTiltX = -pos.y * parallax * card.userData.hoverProgress;
     const targetTiltY = pos.x * parallax * card.userData.hoverProgress * 0.8;
 
-    card.userData.currentTiltX += (targetTiltX - card.userData.currentTiltX) * 0.05;
-    card.userData.currentTiltY += (targetTiltY - card.userData.currentTiltY) * 0.05;
+    card.userData.currentTiltX +=
+      (targetTiltX - card.userData.currentTiltX) * 0.05;
+    card.userData.currentTiltY +=
+      (targetTiltY - card.userData.currentTiltY) * 0.05;
 
     let targetY = card.userData.originalY;
     let targetZ = card.userData.originalZ || 0;
@@ -682,7 +719,9 @@ export class CardManager {
     const baseScale = card.userData.baseScale || card.scale.x;
     const finalTargetScale = baseScale * targetScale;
 
-    card.scale.setScalar(card.scale.x + (finalTargetScale - card.scale.x) * 0.05);
+    card.scale.setScalar(
+      card.scale.x + (finalTargetScale - card.scale.x) * 0.05,
+    );
   }
 
   _applyOrientation(card) {
@@ -690,7 +729,12 @@ export class CardManager {
     this._orientDummy.lookAt(this._tmpVec.x, card.position.y, this._tmpVec.z);
     this._tmpQuat.copy(this._orientDummy.quaternion);
 
-    this._tmpEuler.set(card.userData.currentTiltX, card.userData.currentTiltY, 0, 'XYZ');
+    this._tmpEuler.set(
+      card.userData.currentTiltX,
+      card.userData.currentTiltY,
+      0,
+      'XYZ',
+    );
     this._tmpQuat2.setFromEuler(this._tmpEuler);
 
     this._tmpQuat.multiply(this._tmpQuat2);
@@ -701,8 +745,10 @@ export class CardManager {
     if (card.userData?.glow?.material) {
       const glow = card.userData.glow;
       glow.material.opacity =
-        Math.max(0.06, 0.6 * (0.5 + 0.5 * Math.sin(time * 0.002 + card.userData.id))) *
-        card.userData.entranceProgress;
+        Math.max(
+          0.06,
+          0.6 * (0.5 + 0.5 * Math.sin(time * 0.002 + card.userData.id)),
+        ) * card.userData.entranceProgress;
     }
   }
 
@@ -758,9 +804,12 @@ export class CardManager {
   detachPointerHandlers() {
     const el = this._pointerElement || this.renderer?.domElement || globalThis;
     if (!el) return;
-    if (this._boundPointerMove) el.removeEventListener('pointermove', this._boundPointerMove);
-    if (this._boundPointerDown) el.removeEventListener('pointerdown', this._boundPointerDown);
-    if (this._boundPointerUp) el.removeEventListener('pointerup', this._boundPointerUp);
+    if (this._boundPointerMove)
+      el.removeEventListener('pointermove', this._boundPointerMove);
+    if (this._boundPointerDown)
+      el.removeEventListener('pointerdown', this._boundPointerDown);
+    if (this._boundPointerUp)
+      el.removeEventListener('pointerup', this._boundPointerUp);
     this._pointerElement = null;
   }
 
@@ -807,7 +856,8 @@ export class CardManager {
 
   _disposeCardResources(card) {
     try {
-      if (card.geometry?.dispose && card.geometry !== this._sharedGeometry) card.geometry.dispose();
+      if (card.geometry?.dispose && card.geometry !== this._sharedGeometry)
+        card.geometry.dispose();
       if (card.material) {
         this._releaseTextureFromCache(card.material.map);
         card.material.map = null;
@@ -860,7 +910,10 @@ export class CardManager {
 
   _disposeGlowMaterial(glow) {
     try {
-      if (glow.material.map?.dispose && glow.material.map !== this._sharedGlowTexture)
+      if (
+        glow.material.map?.dispose &&
+        glow.material.map !== this._sharedGlowTexture
+      )
         glow.material.map.dispose();
       glow.material.dispose?.();
     } catch (err) {

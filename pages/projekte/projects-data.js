@@ -23,7 +23,8 @@ const PREVIEW_FONT = {
 const GITHUB_BASE = 'https://github.com/aKs030/Webgame/tree/main/apps';
 
 // Default Open Graph image
-const DEFAULT_OG_IMAGE = 'https://abdulkerimsesli.de/content/assets/img/og/og-projekte.png';
+const DEFAULT_OG_IMAGE =
+  'https://abdulkerimsesli.de/content/assets/img/og/og-projekte.png';
 
 // Theme colors for consistent design system
 const THEME_COLORS = {
@@ -80,7 +81,11 @@ export function createProjectsData(html, icons) {
       githubPath: `${GITHUB_BASE}/schere-stein-papier`,
       bgStyle: createGradient(THEME_COLORS.purple.gradient),
       glowColor: '#5586f7ff',
-      icon: html` <${Gamepad2} style=${{ color: THEME_COLORS.purple.icon, ...ICON_SIZE }} /> `,
+      icon: html`
+        <${Gamepad2}
+          style=${{ color: THEME_COLORS.purple.icon, ...ICON_SIZE }}
+        />
+      `,
       previewContent: html`
         <div className="preview-container-vs">
           <div style=${{ fontSize: PREVIEW_FONT.medium }}>🪨</div>
@@ -101,7 +106,9 @@ export function createProjectsData(html, icons) {
       githubPath: `${GITHUB_BASE}/zahlen-raten`,
       bgStyle: createGradient(THEME_COLORS.green.gradient),
       glowColor: '#10b981',
-      icon: html` <${Binary} style=${{ color: THEME_COLORS.green.icon, ...ICON_SIZE }} /> `,
+      icon: html`
+        <${Binary} style=${{ color: THEME_COLORS.green.icon, ...ICON_SIZE }} />
+      `,
       previewContent: html`
         <div className="preview-container">
           <span
@@ -127,10 +134,14 @@ export function createProjectsData(html, icons) {
       githubPath: `${GITHUB_BASE}/color-changer`,
       bgStyle: createGradient(THEME_COLORS.pink.gradient),
       glowColor: '#ec4899',
-      icon: html` <${Palette} style=${{ color: THEME_COLORS.pink.icon, ...ICON_SIZE }} /> `,
+      icon: html`
+        <${Palette} style=${{ color: THEME_COLORS.pink.icon, ...ICON_SIZE }} />
+      `,
       previewContent: html`
         <div className="preview-container">
-          <${Palette} style=${{ color: THEME_COLORS.pink.preview, ...LARGE_ICON_SIZE }} />
+          <${Palette}
+            style=${{ color: THEME_COLORS.pink.preview, ...LARGE_ICON_SIZE }}
+          />
         </div>
       `,
     },
@@ -146,10 +157,14 @@ export function createProjectsData(html, icons) {
       githubPath: `${GITHUB_BASE}/todo-liste`,
       bgStyle: createGradient(THEME_COLORS.cyan.gradient),
       glowColor: '#06b6d4',
-      icon: html` <${ListTodo} style=${{ color: THEME_COLORS.cyan.icon, ...ICON_SIZE }} /> `,
+      icon: html`
+        <${ListTodo} style=${{ color: THEME_COLORS.cyan.icon, ...ICON_SIZE }} />
+      `,
       previewContent: html`
         <div className="preview-container">
-          <${Check} style=${{ color: THEME_COLORS.cyan.preview, ...LARGE_ICON_SIZE }} />
+          <${Check}
+            style=${{ color: THEME_COLORS.cyan.preview, ...LARGE_ICON_SIZE }}
+          />
         </div>
       `,
     },

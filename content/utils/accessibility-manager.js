@@ -7,7 +7,9 @@ class AccessibilityManager {
     this.focusTrapStack = [];
     this.lastFocusedElement = null;
     // resolve MQLs safely
-    this.reducedMotionMQL = window.matchMedia('(prefers-reduced-motion: reduce)');
+    this.reducedMotionMQL = window.matchMedia(
+      '(prefers-reduced-motion: reduce)',
+    );
     this.highContrastMQL = window.matchMedia('(prefers-contrast: more)');
     this.reducedMotion = this.reducedMotionMQL.matches;
     this.highContrast = this.highContrastMQL.matches;
@@ -89,7 +91,7 @@ class AccessibilityManager {
               /* ignored */
             }
           },
-          { once: true }
+          { once: true },
         );
       });
     });
@@ -99,7 +101,7 @@ class AccessibilityManager {
     if (!container) return;
 
     const focusableElements = container.querySelectorAll(
-      'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
+      'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])',
     );
 
     if (!focusableElements || focusableElements.length === 0) return;
@@ -158,7 +160,9 @@ class AccessibilityManager {
 
   handleEscape() {
     // Close cookie modal
-    const cookieModal = document.querySelector('.footer-cookie-settings:not(.hidden)');
+    const cookieModal = document.querySelector(
+      '.footer-cookie-settings:not(.hidden)',
+    );
     if (cookieModal) {
       const closeBtn = cookieModal.querySelector('.cookie-settings-close');
       if (closeBtn) closeBtn.click();

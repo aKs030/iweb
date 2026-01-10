@@ -119,7 +119,9 @@ export const CookieManager = {
     date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
     const expires = `; expires=${date.toUTCString()}`;
     const secure = window.location.protocol === 'https:' ? '; Secure' : '';
-    document.cookie = `${name}=${value || ''}${expires}; path=/; SameSite=Lax${secure}`;
+    document.cookie = `${name}=${
+      value || ''
+    }${expires}; path=/; SameSite=Lax${secure}`;
   },
 
   get(name) {
@@ -135,7 +137,11 @@ export const CookieManager = {
   },
 
   delete(name) {
-    const domains = ['', window.location.hostname, `.${window.location.hostname}`];
+    const domains = [
+      '',
+      window.location.hostname,
+      `.${window.location.hostname}`,
+    ];
     domains.forEach((domain) => {
       const domainPart = domain ? `; domain=${domain}` : '';
       document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/${domainPart}`;
@@ -363,7 +369,10 @@ function createObserverWrapper(callback, options, triggerOnce = false) {
   };
 }
 
-export function createLazyLoadObserver(callback, options = OBSERVER_CONFIGS.lazyLoad) {
+export function createLazyLoadObserver(
+  callback,
+  options = OBSERVER_CONFIGS.lazyLoad,
+) {
   return createObserverWrapper(callback, options, true);
 }
 
@@ -500,7 +509,11 @@ export class SectionTracker {
 
   init() {
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', () => this.setupObserver(), { once: true });
+      document.addEventListener(
+        'DOMContentLoaded',
+        () => this.setupObserver(),
+        { once: true },
+      );
     } else {
       setTimeout(() => this.setupObserver(), 100);
     }
@@ -529,7 +542,7 @@ export class SectionTracker {
 
     this.observer = new IntersectionObserver(
       (entries) => this.handleIntersections(entries),
-      OBSERVER_CONFIGS.sectionTracking
+      OBSERVER_CONFIGS.sectionTracking,
     );
 
     this.sections.forEach((section) => {
@@ -541,7 +554,7 @@ export class SectionTracker {
 
   refreshSections() {
     this.sections = Array.from(
-      document.querySelectorAll('main .section[id], footer#site-footer[id]')
+      document.querySelectorAll('main .section[id], footer#site-footer[id]'),
     ).filter((section) => section.id);
 
     if (this.observer) {
@@ -596,7 +609,11 @@ export class SectionTracker {
       const sectionCenter = rect.top + rect.height / 2;
       const distance = Math.abs(sectionCenter - viewportCenter);
 
-      if (distance < bestDistance && rect.top < viewportCenter && rect.bottom > viewportCenter) {
+      if (
+        distance < bestDistance &&
+        rect.top < viewportCenter &&
+        rect.bottom > viewportCenter
+      ) {
         bestDistance = distance;
         activeSection = section;
       }

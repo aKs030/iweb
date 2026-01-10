@@ -18,7 +18,10 @@ export function calculateDynamicResolution(fps, currentRatio, perfConfig) {
 
   if (fps < perfConfig.DRS_DOWN_THRESHOLD && currentRatio > 0.5) {
     return Math.max(0.5, currentRatio - 0.15);
-  } else if (fps > perfConfig.DRS_UP_THRESHOLD && currentRatio < perfConfig.PIXEL_RATIO) {
+  } else if (
+    fps > perfConfig.DRS_UP_THRESHOLD &&
+    currentRatio < perfConfig.PIXEL_RATIO
+  ) {
     return Math.min(perfConfig.PIXEL_RATIO, currentRatio + 0.05);
   }
 

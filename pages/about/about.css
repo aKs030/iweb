@@ -24,8 +24,16 @@ body {
   line-height: 1.6;
   overflow-x: hidden;
   min-height: 100vh;
-  background-image: radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.08) 0%, transparent 25%),
-    radial-gradient(circle at 85% 30%, rgba(6, 182, 212, 0.08) 0%, transparent 25%);
+  background-image: radial-gradient(
+      circle at 15% 50%,
+      rgba(59, 130, 246, 0.08) 0%,
+      transparent 25%
+    ),
+    radial-gradient(
+      circle at 85% 30%,
+      rgba(6, 182, 212, 0.08) 0%,
+      transparent 25%
+    );
 }
 
 /* Typography */
@@ -90,8 +98,10 @@ a {
   border-radius: var(--radius-full);
   font-weight: 600;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-    color 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   font-size: 0.95rem;
 }
 
@@ -202,7 +212,11 @@ header {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  background: linear-gradient(145deg, rgba(17, 24, 39, 0.8), rgba(15, 23, 42, 0.9));
+  background: linear-gradient(
+    145deg,
+    rgba(17, 24, 39, 0.8),
+    rgba(15, 23, 42, 0.9)
+  );
 }
 
 .social-links {

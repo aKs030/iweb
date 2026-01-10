@@ -4,7 +4,10 @@
     <!-- Google Tag Manager: dynamically injected via /content/components/head/head-inline.js using /content/config/site-config.js. Remove hard-coded IDs and maintain configuration in site-config.js. -->
     <meta name="mobile-web-app-capable" content="yes" />
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
 
     <!-- Server-side favicons for crawlers and browsers -->
     <link rel="icon" href="/content/assets/img/icons/favicon.ico" />
@@ -35,7 +38,10 @@
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://abdulkerimsesli.de/projekte/" />
-    <meta property="og:title" content="Referenzen & Code-Projekte | Abdulkerim Sesli" />
+    <meta
+      property="og:title"
+      content="Referenzen & Code-Projekte | Abdulkerim Sesli"
+    />
     <meta
       property="og:description"
       content="Entdecke interaktive Web-Experimente und Business-Anwendungen. Spezialisiert auf performante React-Lösungen, 3D-Web (Three.js) und modernes UI/UX Design."
@@ -45,12 +51,21 @@
       content="https://abdulkerimsesli.de/content/assets/img/og/og-projekte.png"
     />
     <meta property="og:locale" content="de_DE" />
-    <meta property="og:site_name" content="Abdulkerim — Digital Creator Portfolio" />
+    <meta
+      property="og:site_name"
+      content="Abdulkerim — Digital Creator Portfolio"
+    />
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content="https://abdulkerimsesli.de/projekte/" />
-    <meta property="twitter:title" content="Referenzen & Code-Projekte | Abdulkerim Sesli" />
+    <meta
+      property="twitter:url"
+      content="https://abdulkerimsesli.de/projekte/"
+    />
+    <meta
+      property="twitter:title"
+      content="Referenzen & Code-Projekte | Abdulkerim Sesli"
+    />
     <meta
       property="twitter:description"
       content="Entdecke interaktive Web-Experimente und Business-Anwendungen. Spezialisiert auf performante React-Lösungen, 3D-Web (Three.js)."
@@ -61,10 +76,17 @@
     />
 
     <!-- head-complete.js is now loaded dynamically by head-inline.js -->
-    <script type="module" src="/content/components/head/head-inline.js"></script>
+    <script
+      type="module"
+      src="/content/components/head/head-inline.js"
+    ></script>
 
-    <script type="module" src="/content/main.js" crossorigin="anonymous" defer></script>
-    <link rel="stylesheet" href="/content/styles/loader.css" />
+    <script
+      type="module"
+      src="/content/main.js"
+      crossorigin="anonymous"
+      defer
+    ></script>
 
     <!-- React Dependencies (Production Version für bessere Performance) -->
     <!-- Load React & ReactDOM from jsDelivr (allowed by CSP in content/head/head.html) -->
@@ -208,7 +230,9 @@
         </div>
 
         <div class="loader-info" aria-live="polite">
-          <span class="status-text" id="loader-status-text">Initialisiere System...</span>
+          <span class="status-text" id="loader-status-text"
+            >Initialisiere System...</span
+          >
           <span class="percentage" id="loader-percentage">0%</span>
         </div>
       </div>
@@ -225,7 +249,11 @@
     <!-- Google Tag Manager (noscript) removed — noscript iframe is injected dynamically by head-inline.js if GTM is configured (see content/config/site-config.js) -->
 
     <!-- 3D ERDE -->
-    <div id="threeEarthContainer" class="three-earth-container" data-section="hero">
+    <div
+      id="threeEarthContainer"
+      class="three-earth-container"
+      data-section="hero"
+    >
       <div class="three-earth-error hidden"><p>WebGL Fehler</p></div>
     </div>
 
@@ -276,14 +304,19 @@
           if (globalThis.__threeEarthLoaded) return;
           globalThis.__threeEarthLoaded = true;
           try {
-            const mod = await import('../../content/components/particles/three-earth-system.js');
+            const mod = await import(
+              '../../content/components/particles/three-earth-system.js'
+            );
 
             // Allow module to expose API and adjust presets before init
             try {
               const config = mod?.EarthSystemAPI?.getConfig?.();
-              const basePreset = config?.CAMERA?.PRESETS?.features || config?.CAMERA?.PRESETS?.hero;
+              const basePreset =
+                config?.CAMERA?.PRESETS?.features ||
+                config?.CAMERA?.PRESETS?.hero;
               if (basePreset) {
-                const baseRadius = Math.hypot(basePreset.x || 0, basePreset.z || 0) || 12;
+                const baseRadius =
+                  Math.hypot(basePreset.x || 0, basePreset.z || 0) || 12;
                 for (let i = 1; i <= 10; i++) {
                   const angle = i * 0.8;
                   config.CAMERA.PRESETS[`project-${i}`] = {
@@ -327,7 +360,7 @@
                 }
               }
             },
-            { root: null, rootMargin: '200px', threshold: 0.05 }
+            { root: null, rootMargin: '200px', threshold: 0.05 },
           );
           io.observe(threeContainer);
 
@@ -336,7 +369,8 @@
           try {
             const rect = threeContainer.getBoundingClientRect();
             const withinMargin =
-              rect.top < (globalThis.innerHeight || 0) + 200 && rect.bottom > -200;
+              rect.top < (globalThis.innerHeight || 0) + 200 &&
+              rect.bottom > -200;
             if (withinMargin) {
               loadThreeEarth();
               io.disconnect();

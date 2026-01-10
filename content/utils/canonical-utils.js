@@ -12,9 +12,13 @@ export function getCanonicalPathFromRoutes(pathname, routes) {
 
   const lowerMatch = pathForMatch.toLowerCase();
   // Prefer startsWith matches (exact or sub-path), fallback to includes
-  let routeKey = Object.keys(routes).find((k) => k !== 'default' && lowerMatch.startsWith(k));
+  let routeKey = Object.keys(routes).find(
+    (k) => k !== 'default' && lowerMatch.startsWith(k),
+  );
   if (!routeKey)
-    routeKey = Object.keys(routes).find((k) => k !== 'default' && lowerMatch.includes(k));
+    routeKey = Object.keys(routes).find(
+      (k) => k !== 'default' && lowerMatch.includes(k),
+    );
 
   if (routeKey) return ensureTrailingSlash(routeKey);
   return pathForMatch;
@@ -22,5 +26,9 @@ export function getCanonicalPathFromRoutes(pathname, routes) {
 
 // Utility to compute canonical origin for JSON-LD and alternates
 export function getCanonicalOrigin(forceProdFlag, baseUrl) {
-  return forceProdFlag ? baseUrl : typeof window !== 'undefined' ? window.location.origin : baseUrl;
+  return forceProdFlag
+    ? baseUrl
+    : typeof window !== 'undefined'
+    ? window.location.origin
+    : baseUrl;
 }

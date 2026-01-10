@@ -1,24 +1,15 @@
 {
-  "printWidth": 100,
+  "printWidth": 80,
   "tabWidth": 2,
   "useTabs": false,
   "semi": true,
   "singleQuote": true,
-  "trailingComma": "es5",
+  "trailingComma": "all",
   "arrowParens": "always",
   "overrides": [
     {
       "files": "*.{json,md,yml,yaml}",
       "options": { "singleQuote": false }
     }
-  ],
-  "ignorePatterns": [
-    "node_modules/",
-    "dist/",
-    "build/",
-    "coverage/",
-    ".nyc_output/",
-    "content/config/videos-part-*.js",
-    "package-lock.json"
   ]
 }

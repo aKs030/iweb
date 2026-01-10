@@ -21,7 +21,7 @@ export class RobotCollision {
           }
         });
       },
-      { rootMargin: '50px' }
+      { rootMargin: '50px' },
     );
   }
 
@@ -41,11 +41,14 @@ export class RobotCollision {
   updateObstacleCache() {
     // Update cache every 2 seconds or so
     const now = performance.now();
-    if (this._lastObstacleUpdate && now - this._lastObstacleUpdate < 2000) return;
+    if (this._lastObstacleUpdate && now - this._lastObstacleUpdate < 2000)
+      return;
     this._lastObstacleUpdate = now;
 
     // Cache relevant elements
-    const currentObstacles = document.querySelectorAll('img, .card, button.btn, h2, .gallery-item');
+    const currentObstacles = document.querySelectorAll(
+      'img, .card, button.btn, h2, .gallery-item',
+    );
 
     currentObstacles.forEach((el) => {
       if (!this._trackedObstacles.has(el)) {
@@ -179,7 +182,7 @@ export class RobotCollision {
           { transform: 'translate(2px, -2px)' },
           { transform: 'translate(-2px, 2px)' },
         ],
-        { duration: 100, iterations: 10 }
+        { duration: 100, iterations: 10 },
       );
     } else if (type === 'knockback') {
       // Push away
@@ -206,7 +209,8 @@ export class RobotCollision {
     if (!this.robot.dom || !this.robot.dom.container) return false;
     try {
       // Use the robot avatar or svg bounding box instead of the full container
-      const sourceEl = this.robot.dom.svg || this.robot.dom.avatar || this.robot.dom.container;
+      const sourceEl =
+        this.robot.dom.svg || this.robot.dom.avatar || this.robot.dom.container;
       const rRectRaw = sourceEl.getBoundingClientRect();
       // Shrink the rect slightly so the collision triggers only when the visible robot
       // (not the container/bubble) is actually overlapping the text
@@ -226,8 +230,10 @@ export class RobotCollision {
       );
       if (!intersects) return false;
       // Require a minimal overlap in px so the robot and text truly touch (prevents early triggers)
-      const overlapX = Math.min(twRect.right, rRect.right) - Math.max(twRect.left, rRect.left);
-      const overlapY = Math.min(twRect.bottom, rRect.bottom) - Math.max(twRect.top, rRect.top);
+      const overlapX =
+        Math.min(twRect.right, rRect.right) - Math.max(twRect.left, rRect.left);
+      const overlapY =
+        Math.min(twRect.bottom, rRect.bottom) - Math.max(twRect.top, rRect.top);
       if (overlapX < 6 || overlapY < 6) return false;
       // Clamp maxLeft fallback
       const robotWidth = 80;

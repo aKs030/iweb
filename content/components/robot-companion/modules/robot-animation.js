@@ -114,7 +114,8 @@ export class RobotAnimation {
 
     const twRect = typeWriter.getBoundingClientRect();
     const robotWidth = 80;
-    const windowWidth = typeof globalThis !== 'undefined' ? globalThis.innerWidth : 0;
+    const windowWidth =
+      typeof globalThis !== 'undefined' ? globalThis.innerWidth : 0;
 
     const initialLeft = windowWidth - 30 - robotWidth;
     const gap = 24;
@@ -172,7 +173,9 @@ export class RobotAnimation {
       const flameIntensity = 0.8 + 0.6 * eased;
       if (this.robot.dom.flame) {
         this.robot.dom.flame.style.opacity = flameIntensity;
-        this.robot.dom.flame.style.transform = `scale(${1 + flameIntensity * 0.3})`;
+        this.robot.dom.flame.style.transform = `scale(${
+          1 + flameIntensity * 0.3
+        })`;
         if (Math.random() < 0.2) this.spawnFlameParticle();
       }
 
@@ -207,7 +210,8 @@ export class RobotAnimation {
           'Whoa! 😲',
           'Hey! Nicht schubsen! 😠',
         ];
-        const reaction = reactions[Math.floor(Math.random() * reactions.length)];
+        const reaction =
+          reactions[Math.floor(Math.random() * reactions.length)];
         this.robot.showBubble(reaction);
         setTimeout(() => this.robot.hideBubble(), 2500);
 
@@ -276,7 +280,8 @@ export class RobotAnimation {
 
   startPatrol() {
     this.patrol.active = true;
-    if (this.robot.dom && this.robot.dom.container) this.robot.dom.container.style.opacity = '1';
+    if (this.robot.dom && this.robot.dom.container)
+      this.robot.dom.container.style.opacity = '1';
     requestAnimationFrame(this.updatePatrol);
   }
 
@@ -298,23 +303,30 @@ export class RobotAnimation {
     }
 
     const now = performance.now();
-    if (now - this.cacheConfig.lastTypeWriterCheck > this.cacheConfig.typeWriterCheckInterval) {
+    if (
+      now - this.cacheConfig.lastTypeWriterCheck >
+      this.cacheConfig.typeWriterCheckInterval
+    ) {
       this.robot.dom.typeWriter = document.querySelector('.typewriter-title');
       this.cacheConfig.lastTypeWriterCheck = now;
     }
 
-    const isHovering = this.robot.dom.avatar && this.robot.dom.avatar.matches(':hover');
+    const isHovering =
+      this.robot.dom.avatar && this.robot.dom.avatar.matches(':hover');
     if (this.robot.chatModule.isOpen || this.patrol.isPaused || isHovering) {
       this.setAvatarState({ moving: false, dashing: false });
       if (this.robot.dom.flame) this.robot.dom.flame.style.opacity = '0';
-      if (this.robot.dom.particles) this.robot.dom.particles.style.opacity = '0';
+      if (this.robot.dom.particles)
+        this.robot.dom.particles.style.opacity = '0';
       requestAnimationFrame(this.updatePatrol);
       return;
     }
 
     const robotWidth = 80;
     const initialLeft =
-      (typeof globalThis !== 'undefined' ? globalThis.innerWidth : 0) - 30 - robotWidth;
+      (typeof globalThis !== 'undefined' ? globalThis.innerWidth : 0) -
+      30 -
+      robotWidth;
     let maxLeft = initialLeft - 20;
 
     let twRect = null;
@@ -326,7 +338,11 @@ export class RobotAnimation {
 
     if (maxLeft < 0) maxLeft = 0;
 
-    if (Math.random() < 0.005 && this.patrol.x > 50 && this.patrol.x < maxLeft - 50) {
+    if (
+      Math.random() < 0.005 &&
+      this.patrol.x > 50 &&
+      this.patrol.x < maxLeft - 50
+    ) {
       this.patrol.direction *= -1;
     }
 
@@ -376,19 +392,33 @@ export class RobotAnimation {
     if (this.robot.dom.svg) {
       const baseTilt = this.patrol.direction > 0 ? -5 : 5;
       const tiltIntensity =
-        this.startAnimation && this.startAnimation.active ? 1.6 : dashActive ? 1.2 : 1;
-      this.robot.dom.svg.style.transform = `rotate(${baseTilt * tiltIntensity}deg)`;
+        this.startAnimation && this.startAnimation.active
+          ? 1.6
+          : dashActive
+          ? 1.2
+          : 1;
+      this.robot.dom.svg.style.transform = `rotate(${
+        baseTilt * tiltIntensity
+      }deg)`;
     }
     if (this.robot.dom.eyes) this.updateEyesTransform();
     if (this.robot.dom.flame) {
       const flameIntensity =
-        this.startAnimation && this.startAnimation.active ? 1.4 : dashActive ? 1.2 : 0.85;
+        this.startAnimation && this.startAnimation.active
+          ? 1.4
+          : dashActive
+          ? 1.2
+          : 0.85;
       this.robot.dom.flame.style.opacity = flameIntensity;
-      this.robot.dom.flame.style.transform = `scale(${1 + (flameIntensity - 0.7) * 0.4})`;
+      this.robot.dom.flame.style.transform = `scale(${
+        1 + (flameIntensity - 0.7) * 0.4
+      })`;
     }
     if (this.robot.dom.particles) {
       this.robot.dom.particles.style.opacity =
-        dashActive || (this.startAnimation && this.startAnimation.active) ? '0.9' : '0.5';
+        dashActive || (this.startAnimation && this.startAnimation.active)
+          ? '0.9'
+          : '0.5';
     }
 
     if (this.robot.dom.legs) {
@@ -443,7 +473,8 @@ export class RobotAnimation {
     if (this.robot.dom.thinking && Math.random() < 0.3) {
       this.robot.dom.thinking.style.opacity = '1';
       setTimeout(() => {
-        if (this.robot.dom.thinking) this.robot.dom.thinking.style.opacity = '0';
+        if (this.robot.dom.thinking)
+          this.robot.dom.thinking.style.opacity = '0';
       }, ms * 0.6);
     }
     setTimeout(() => {
@@ -463,9 +494,9 @@ export class RobotAnimation {
       }
     } else {
       if (this.robot.dom.eyes) {
-        this.robot.dom.eyes.style.transform = `translate(${Math.random() * 4 - 2}px, ${
-          Math.random() * 2 - 1
-        }px)`;
+        this.robot.dom.eyes.style.transform = `translate(${
+          Math.random() * 4 - 2
+        }px, ${Math.random() * 2 - 1}px)`;
       }
     }
   }
@@ -477,7 +508,10 @@ export class RobotAnimation {
     }
   }
 
-  spawnParticleBurst(count = 6, { direction = 0, strength = 1, spread = null } = {}) {
+  spawnParticleBurst(
+    count = 6,
+    { direction = 0, strength = 1, spread = null } = {},
+  ) {
     if (!this.robot.dom.container) return;
     const rect = this.robot.dom.avatar.getBoundingClientRect();
     const baseX = rect.left + rect.width / 2;
@@ -487,7 +521,8 @@ export class RobotAnimation {
     for (let i = 0; i < count; i++) {
       const el = document.createElement('div');
       el.className = 'robot-burst-particle';
-      const size = 4 + Math.round(3 + Math.random() * 4) * Math.min(1.2, strength);
+      const size =
+        4 + Math.round(3 + Math.random() * 4) * Math.min(1.2, strength);
       el.style.width = `${size}px`;
       el.style.height = `${size}px`;
       if (strength > 1.5 && Math.random() < 0.35) {
@@ -504,7 +539,11 @@ export class RobotAnimation {
       } else {
         const angleSpread = Math.PI / 3;
         const baseAngle =
-          direction === 0 ? -Math.PI / 2 : direction > 0 ? -Math.PI / 4 : (-3 * Math.PI) / 4;
+          direction === 0
+            ? -Math.PI / 2
+            : direction > 0
+            ? -Math.PI / 4
+            : (-3 * Math.PI) / 4;
         angle = baseAngle + (Math.random() - 0.5) * angleSpread;
       }
 
@@ -516,7 +555,9 @@ export class RobotAnimation {
       el.style.top = baseY - cRect.top - size / 2 + 'px';
 
       requestAnimationFrame(() => {
-        el.style.transform = `translate(${dx}px, ${dy}px) scale(${0.5 + Math.random() * 0.6})`;
+        el.style.transform = `translate(${dx}px, ${dy}px) scale(${
+          0.5 + Math.random() * 0.6
+        })`;
         el.style.opacity = '0';
         if (Math.random() < 0.15) el.style.filter = 'blur(1px)';
       });
@@ -594,12 +635,13 @@ export class RobotAnimation {
             { transform: 'translateX(-5px) rotate(-5deg)' },
             { transform: 'translateX(0)' },
           ],
-          { duration: 300 }
+          { duration: 300 },
         );
         setTimeout(resolve, 350);
       } else {
         if (this.robot.dom.svg) {
-          this.robot.dom.svg.style.filter = 'brightness(2) drop-shadow(0 0 10px #fff)';
+          this.robot.dom.svg.style.filter =
+            'brightness(2) drop-shadow(0 0 10px #fff)';
         }
         setTimeout(() => {
           if (this.robot.dom.svg) this.robot.dom.svg.style.filter = '';
@@ -613,7 +655,8 @@ export class RobotAnimation {
     this.stopIdleEyeMovement();
     const cfg = this.eyeIdleConfig;
     const scheduleNext = () => {
-      const delay = cfg.intervalMin + Math.random() * (cfg.intervalMax - cfg.intervalMin);
+      const delay =
+        cfg.intervalMin + Math.random() * (cfg.intervalMax - cfg.intervalMin);
       this._eyeIdleTimer = setTimeout(() => {
         const targetX = (Math.random() * 2 - 1) * cfg.amplitudeX;
         const targetY = (Math.random() * 2 - 1) * cfg.amplitudeY;
@@ -644,9 +687,11 @@ export class RobotAnimation {
 
   updateEyesTransform() {
     if (!this.robot.dom || !this.robot.dom.eyes) return;
-    const eyeOffset = typeof this.patrol !== 'undefined' && this.patrol.direction > 0 ? -3 : 3;
+    const eyeOffset =
+      typeof this.patrol !== 'undefined' && this.patrol.direction > 0 ? -3 : 3;
     const eyeIntensity =
-      (this.startAnimation && this.startAnimation.active) || this.patrol.isPaused
+      (this.startAnimation && this.startAnimation.active) ||
+      this.patrol.isPaused
         ? 1.4
         : this.motion && this.motion.dashUntil > performance.now()
         ? 1.2
@@ -663,7 +708,8 @@ export class RobotAnimation {
     const schedule = () => {
       const delay =
         this.blinkConfig.intervalMin +
-        Math.random() * (this.blinkConfig.intervalMax - this.blinkConfig.intervalMin);
+        Math.random() *
+          (this.blinkConfig.intervalMax - this.blinkConfig.intervalMin);
       this._blinkTimer = setTimeout(() => {
         this.doBlink();
         schedule();
