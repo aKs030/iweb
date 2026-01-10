@@ -80,7 +80,9 @@ function makeLineMeasurer(subtitleEl) {
     if (!lh) return [text];
 
     words.forEach((word) => {
-      const testLine = currentLine.length ? currentLine.join(' ') + ' ' + word : word;
+      const testLine = currentLine.length
+        ? currentLine.join(' ') + ' ' + word
+        : word;
       measurer.textContent = testLine;
 
       if (measurer.getBoundingClientRect().height > lh * 1.1) {
@@ -246,7 +248,9 @@ export class TypeWriter {
     if (!this._isDeleting && this._txt === full) {
       try {
         document.dispatchEvent(
-          new CustomEvent(EVENTS.HERO_TYPING_END, { detail: { text: full, author } })
+          new CustomEvent(EVENTS.HERO_TYPING_END, {
+            detail: { text: full, author },
+          }),
         );
       } catch (err) {
         log.warn('TypeWriter: dispatch hero:typingEnd failed', err);
@@ -385,9 +389,13 @@ export async function initHeroSubtitle(options = {}) {
       // Also check when footer explicitly reports loaded
       document.addEventListener('footer:loaded', pollOverlap, { once: true });
       // And on resize
-      window.addEventListener('resize', () => requestAnimationFrame(pollOverlap), {
-        passive: true,
-      });
+      window.addEventListener(
+        'resize',
+        () => requestAnimationFrame(pollOverlap),
+        {
+          passive: true,
+        },
+      );
 
       // Expose instance for imports (preferred) and keep debug window hook for quick manual debugging
       typeWriterInstance = tw;

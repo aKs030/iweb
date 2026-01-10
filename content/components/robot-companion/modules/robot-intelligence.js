@@ -84,7 +84,10 @@ export class RobotIntelligence {
 
     // Calculate speed every 100ms
     if (dt > 100) {
-      const dist = Math.hypot(e.clientX - this.mouse.lastX, e.clientY - this.mouse.lastY);
+      const dist = Math.hypot(
+        e.clientX - this.mouse.lastX,
+        e.clientY - this.mouse.lastY,
+      );
       this.mouse.speed = dist / dt; // pixels per ms
 
       this.mouse.lastX = e.clientX;
@@ -104,7 +107,8 @@ export class RobotIntelligence {
     const dt = now - this.lastScrollTime;
 
     if (dt > 100) {
-      const scrollY = typeof globalThis !== 'undefined' ? globalThis.scrollY : 0;
+      const scrollY =
+        typeof globalThis !== 'undefined' ? globalThis.scrollY : 0;
       const dist = Math.abs(scrollY - this.scroll.lastY);
       const speed = dist / dt;
 

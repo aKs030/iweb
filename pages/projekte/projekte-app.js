@@ -174,13 +174,17 @@ function App() {
     }
     // fallback
     if (project.appPath)
-      return project.appPath.endsWith('/') ? project.appPath + 'index.html' : project.appPath;
+      return project.appPath.endsWith('/')
+        ? project.appPath + 'index.html'
+        : project.appPath;
     return project.githubPath || '';
   };
 
   const toRawGithackUrl = (ghUrl) => {
     try {
-      const m = /github\.com\/([^/]+)\/([^/]+)\/tree\/([^/]+)\/(.+)$/.exec(ghUrl);
+      const m = /github\.com\/([^/]+)\/([^/]+)\/tree\/([^/]+)\/(.+)$/.exec(
+        ghUrl,
+      );
       if (m) {
         const [, owner, repo, branch, path] = m;
         return `https://raw.githack.com/${owner}/${repo}/${branch}/${path}/index.html`;
@@ -191,7 +195,9 @@ function App() {
 
   const toJsDelivrUrl = (ghUrl) => {
     try {
-      const m = /github\.com\/([^/]+)\/([^/]+)\/tree\/([^/]+)\/(.+)$/.exec(ghUrl);
+      const m = /github\.com\/([^/]+)\/([^/]+)\/tree\/([^/]+)\/(.+)$/.exec(
+        ghUrl,
+      );
       if (m) {
         const [, owner, repo, branch, path] = m;
         return `https://cdn.jsdelivr.net/gh/${owner}/${repo}@${branch}/${path}/index.html`;
@@ -248,7 +254,8 @@ function App() {
     }
 
     // fallback: open raw.githubusercontent or appPath in new tab
-    const direct = getDirectUrl(project) || project.githubPath || project.appPath || '';
+    const direct =
+      getDirectUrl(project) || project.githubPath || project.appPath || '';
     if (!direct) {
       showToast('Keine gültige App-URL vorhanden');
       return;
@@ -292,7 +299,9 @@ function App() {
           }
           if (project.appPath)
             candidates.push(
-              project.appPath.endsWith('/') ? project.appPath + 'index.html' : project.appPath
+              project.appPath.endsWith('/')
+                ? project.appPath + 'index.html'
+                : project.appPath,
             );
 
           for (const url of candidates) {
@@ -374,8 +383,8 @@ function App() {
             <span className="text-gradient-accent">Projekte.</span>
           </h1>
           <p className="description">
-            Willkommen in meiner digitalen Werkstatt. Hier sammle ich meine Experimente, vom ersten
-            console.log bis zu interaktiven Web-Apps.
+            Willkommen in meiner digitalen Werkstatt. Hier sammle ich meine
+            Experimente, vom ersten console.log bis zu interaktiven Web-Apps.
           </p>
           <div className="btn-group">
             <button onClick=${scrollToProjects} className="btn btn-primary">
@@ -389,7 +398,11 @@ function App() {
       <!-- Project Sections -->
       ${projects.map(
         (project) => html`
-          <section key=${project.id} id=${`project-${project.id}`} className="snap-section">
+          <section
+            key=${project.id}
+            id=${`project-${project.id}`}
+            className="snap-section"
+          >
             <div className="glow-bg" style=${project.bgStyle}></div>
             <div className="project-grid">
               <!-- Left Side (Mockup) -->
@@ -402,7 +415,10 @@ function App() {
                   position: 'relative',
                 }}
               >
-                <div className="back-glow" style=${{ backgroundColor: project.glowColor }}></div>
+                <div
+                  className="back-glow"
+                  style=${{ backgroundColor: project.glowColor }}
+                ></div>
                 <div className="window-mockup">
                   <div className="mockup-content">
                     <div className="mockup-bg-pattern"></div>
@@ -422,7 +438,8 @@ function App() {
                 <p className="project-desc">${project.description}</p>
                 <div className="tags-container">
                   ${project.tags.map(
-                    (tag, i) => html` <span key=${i} className="tag">${tag}</span> `
+                    (tag, i) =>
+                      html` <span key=${i} className="tag">${tag}</span> `,
                   )}
                 </div>
                 <div className="project-actions">
@@ -431,7 +448,9 @@ function App() {
                     onClick=${() => openDirect(project)}
                     aria-label=${`App öffnen ${project.title}`}
                   >
-                    <${ExternalLink} style=${{ width: '1rem', height: '1rem' }} />
+                    <${ExternalLink}
+                      style=${{ width: '1rem', height: '1rem' }}
+                    />
                     App öffnen
                   </button>
                   <a
@@ -448,9 +467,11 @@ function App() {
               </div>
             </div>
           </section>
-        `
+        `,
       )}
-      ${toastMsg ? html` <div className="toast-notification">${toastMsg}</div> ` : null}
+      ${toastMsg
+        ? html` <div className="toast-notification">${toastMsg}</div> `
+        : null}
       ${modalOpen
         ? html`
             <div
@@ -485,7 +506,9 @@ function App() {
                 </div>
                 <div className="modal-body">
                   ${iframeLoading
-                    ? html` <div className="iframe-loader">Lade Vorschau…</div> `
+                    ? html`
+                        <div className="iframe-loader">Lade Vorschau…</div>
+                      `
                     : null}
                   <iframe
                     src=${modalUrl}
@@ -511,7 +534,8 @@ function App() {
           </div>
           <h2 className="contact-title">Lust auf ein Spiel?</h2>
           <p className="contact-text">
-            Ich lerne jeden Tag dazu. Hast du Ideen für mein nächstes kleines Projekt?
+            Ich lerne jeden Tag dazu. Hast du Ideen für mein nächstes kleines
+            Projekt?
           </p>
           <div className="btn-group">
             <button

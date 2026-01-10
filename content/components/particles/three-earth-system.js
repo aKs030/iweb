@@ -22,7 +22,11 @@ import {
 
 import { CONFIG } from './earth/config.js';
 import { setupScene, setupLighting, createAtmosphere } from './earth/scene.js';
-import { createEarthSystem, createMoonSystem, createCloudLayer } from './earth/assets.js';
+import {
+  createEarthSystem,
+  createMoonSystem,
+  createCloudLayer,
+} from './earth/assets.js';
 import { CameraManager } from './earth/camera.js';
 import { StarManager, ShootingStarManager } from './earth/stars.js';
 import { CardManager } from './earth/cards.js';
@@ -43,7 +47,11 @@ let dayMaterial, nightMaterial;
 let directionalLight, ambientLight;
 
 // Sub-systems
-let cameraManager, starManager, shootingStarManager, performanceMonitor, cardManager;
+let cameraManager,
+  starManager,
+  shootingStarManager,
+  performanceMonitor,
+  cardManager;
 
 // State
 let sectionObserver, viewportObserver, animationFrameId;
@@ -122,7 +130,7 @@ export const initThreeEarth = async () => {
       scene,
       renderer,
       isMobileDevice,
-      loadingManager
+      loadingManager,
     );
 
     // CRITICAL CHECK
@@ -162,7 +170,7 @@ export const initThreeEarth = async () => {
       document.dispatchEvent(
         new CustomEvent('three-ready', {
           detail: { containerId: container?.id ?? null },
-        })
+        }),
       );
       log.debug('three-ready event dispatched after initialization');
     } catch (err) {
@@ -286,7 +294,14 @@ export const cleanup = () => {
 
 function disposeMaterial(material) {
   if (!material) return;
-  const textureProps = ['map', 'normalMap', 'bumpMap', 'envMap', 'emissiveMap', 'alphaMap'];
+  const textureProps = [
+    'map',
+    'normalMap',
+    'bumpMap',
+    'envMap',
+    'emissiveMap',
+    'alphaMap',
+  ];
   textureProps.forEach((prop) => {
     if (material[prop]?.dispose) {
       material[prop].dispose();
@@ -344,7 +359,7 @@ async function loadThreeWithWatchdog(earthTimers, container) {
     threeLoadWatchTimer = earthTimers.setTimeout(() => {
       if (!loaded) {
         log.warn(
-          'Three.js load taking too long — unblocking three-earth to avoid blocking global loader'
+          'Three.js load taking too long — unblocking three-earth to avoid blocking global loader',
         );
         try {
           AppLoadManager.unblock('three-earth');
@@ -481,7 +496,7 @@ function _finalizeInitialization(container) {
       document.dispatchEvent(
         new CustomEvent('three-ready', {
           detail: { containerId: container?.id ?? null },
-        })
+        }),
       );
     }
   } catch (err) {
@@ -523,7 +538,7 @@ function _bindInteractionHandlers(onMove, onClick) {
       globalThis.removeEventListener('mousemove', onMove);
       globalThis.removeEventListener('click', onClick);
     },
-    'interaction'
+    'interaction',
   );
 }
 
@@ -541,7 +556,9 @@ function _ensureWebGLOrFallback(container, forceThree) {
   if (!__three_webgl_tested) {
     __three_webgl_tested = true;
     if (!forceThree && !supportsWebGL()) {
-      log.warn('WebGL not supported in this environment; skipping Three.js initialization');
+      log.warn(
+        'WebGL not supported in this environment; skipping Three.js initialization',
+      );
       // Add visible fallback to container so users see a friendly image/message
       try {
         container.classList.add('three-earth-unavailable');
@@ -553,7 +570,7 @@ function _ensureWebGLOrFallback(container, forceThree) {
           fallback.setAttribute('role', 'img');
           fallback.setAttribute(
             'aria-label',
-            'Interaktive Darstellung wird nicht unterstützt. Statische Vorschau angezeigt.'
+            'Interaktive Darstellung wird nicht unterstützt. Statische Vorschau angezeigt.',
           );
           fallback.innerHTML = `
             <div class="three-earth-fallback__inner">
@@ -570,14 +587,19 @@ function _ensureWebGLOrFallback(container, forceThree) {
       } catch (err) {
         log.warn('DOM insert ignored', err);
       }
-      showErrorState(container, new Error('WebGL nicht verfügbar oder blockiert'));
+      showErrorState(
+        container,
+        new Error('WebGL nicht verfügbar oder blockiert'),
+      );
       // mark cleanup and exit gracefully
       sharedCleanupManager.cleanupSystem('three-earth');
       return false;
     }
 
     if (forceThree) {
-      log.info('Force flag detected: attempting to initialize Three.js despite WebGL checks');
+      log.info(
+        'Force flag detected: attempting to initialize Three.js despite WebGL checks',
+      );
     }
   }
   return true;
@@ -591,7 +613,9 @@ function _detectAndEnsureWebGL(container) {
   }
 
   const urlParams = new URL(location.href).searchParams;
-  const forceThree = urlParams.get('forceThree') === '1' || Boolean(globalThis.__FORCE_THREE_EARTH);
+  const forceThree =
+    urlParams.get('forceThree') === '1' ||
+    Boolean(globalThis.__FORCE_THREE_EARTH);
 
   return _ensureWebGLOrFallback(container, forceThree);
 }
@@ -617,7 +641,7 @@ function _initManagers(container) {
   sharedCleanupManager.addCleanupFunction(
     'three-earth',
     () => container.removeEventListener('wheel', onWheel),
-    'wheel control'
+    'wheel control',
   );
 }
 
@@ -645,7 +669,9 @@ function getOptimizedConfig(capabilities) {
 }
 
 function setupSectionDetection() {
-  const sections = Array.from(document.querySelectorAll('section[id], div#footer-trigger-zone'));
+  const sections = Array.from(
+    document.querySelectorAll('section[id], div#footer-trigger-zone'),
+  );
   if (sections.length === 0) return;
 
   // Fallback when IntersectionObserver is not supported
@@ -713,7 +739,8 @@ function updateEarthForSection(sectionName, options = {}) {
   _applyConfigToMeshes(config);
 
   if (allowModeSwitch) {
-    const newMode = earthMesh.userData.currentMode === 'night' ? 'day' : 'night';
+    const newMode =
+      earthMesh.userData.currentMode === 'night' ? 'day' : 'night';
     earthMesh.material = newMode === 'day' ? dayMaterial : nightMaterial;
     earthMesh.material.needsUpdate = true;
     earthMesh.userData.currentMode = newMode;
@@ -722,7 +749,8 @@ function updateEarthForSection(sectionName, options = {}) {
 
   if (directionalLight && ambientLight) {
     const mode = earthMesh.userData.currentMode;
-    const lightingConfig = mode === 'day' ? CONFIG.LIGHTING.DAY : CONFIG.LIGHTING.NIGHT;
+    const lightingConfig =
+      mode === 'day' ? CONFIG.LIGHTING.DAY : CONFIG.LIGHTING.NIGHT;
     directionalLight.intensity = lightingConfig.SUN_INTENSITY;
     ambientLight.intensity = lightingConfig.AMBIENT_INTENSITY;
     ambientLight.color.setHex(lightingConfig.AMBIENT_COLOR);
@@ -757,7 +785,10 @@ function _getSectionConfig(sectionName) {
     },
   };
 
-  return configs[sectionName === 'site-footer' ? 'contact' : sectionName] || configs.hero;
+  return (
+    configs[sectionName === 'site-footer' ? 'contact' : sectionName] ||
+    configs.hero
+  );
 }
 
 function _onSectionObserverEntries(entries) {
@@ -784,7 +815,8 @@ function _onSectionObserverEntries(entries) {
 
     cameraManager?.updateCameraForSection(newSection);
 
-    const isFeaturesToAbout = previousSection === 'features' && newSection === 'section3';
+    const isFeaturesToAbout =
+      previousSection === 'features' && newSection === 'section3';
     updateEarthForSection(newSection, { allowModeSwitch: isFeaturesToAbout });
 
     if (newSection === 'features') {
@@ -824,7 +856,7 @@ function _applyConfigToMeshes(config) {
   earthMesh.userData.targetPosition = new THREE_INSTANCE.Vector3(
     config.earth.pos.x,
     config.earth.pos.y,
-    config.earth.pos.z
+    config.earth.pos.z,
   );
   earthMesh.userData.targetScale = config.earth.scale;
   earthMesh.userData.targetRotation = config.earth.rotation;
@@ -833,7 +865,7 @@ function _applyConfigToMeshes(config) {
     moonMesh.userData.targetPosition = new THREE_INSTANCE.Vector3(
       config.moon.pos.x,
       config.moon.pos.y,
-      config.moon.pos.z
+      config.moon.pos.z,
     );
     moonMesh.userData.targetScale = config.moon.scale;
   }
@@ -867,15 +899,21 @@ function handleVisibilityChange() {
 function startAnimationLoop() {
   const clock = new THREE_INSTANCE.Clock();
   const capabilities = deviceCapabilities || detectDeviceCapabilities();
-  const frameSkip = capabilities.isLowEnd ? 2 : 1;
-  let frameCounter = 0;
+  const updateInterval = capabilities.isLowEnd ? 1 / 30 : 1 / 60; // seconds between heavy updates
+  let updateAccumulator = 0;
 
   animate = () => {
     if (!isSystemActive) return;
     animationFrameId = requestAnimationFrame(animate);
-    frameCounter++;
 
-    if (frameCounter % frameSkip !== 0) return;
+    // Always measure delta/elapsed each frame
+    const delta = clock.getDelta();
+    updateAccumulator += delta;
+
+    // Throttle heavy updates on low-end devices using time-based accumulator
+    if (updateAccumulator >= updateInterval) {
+      const elapsedTime = clock.getElapsedTime();
+      const deltaForUpdates = updateAccumulator; // accumulated time since last heavy update
 
     // Use delta time for consistent speed across all frame rates (60Hz vs 120Hz)
     const delta = clock.getDelta();
@@ -911,7 +949,8 @@ function _updateNightPulse(elapsedTime, frameCounter, capabilities) {
       Math.sin(elapsedTime * CONFIG.EARTH.EMISSIVE_PULSE_SPEED) *
       CONFIG.EARTH.EMISSIVE_PULSE_AMPLITUDE *
       2;
-    if (earthMesh?.material) earthMesh.material.emissiveIntensity = baseIntensity + pulseAmount;
+    if (earthMesh?.material)
+      earthMesh.material.emissiveIntensity = baseIntensity + pulseAmount;
   }
 }
 
@@ -956,7 +995,7 @@ function _renderIfReady() {
           document.dispatchEvent(
             new CustomEvent('three-first-frame', {
               detail: { containerId: container?.id ?? null },
-            })
+            }),
           );
         } catch (err) {
           log.warn('three-first-frame dispatch failed', err);
@@ -977,8 +1016,10 @@ function setupInteraction() {
   if (!onMove) {
     onMove = (event) => {
       if (!isSystemActive) return;
-      globalThis.lastMousePos.x = (event.clientX / globalThis.innerWidth) * 2 - 1;
-      globalThis.lastMousePos.y = -(event.clientY / globalThis.innerHeight) * 2 + 1;
+      globalThis.lastMousePos.x =
+        (event.clientX / globalThis.innerWidth) * 2 - 1;
+      globalThis.lastMousePos.y =
+        -(event.clientY / globalThis.innerHeight) * 2 + 1;
     };
   }
 
@@ -1000,7 +1041,8 @@ function updateObjectTransforms() {
   if (earthMesh.userData.targetPosition)
     earthMesh.position.lerp(earthMesh.userData.targetPosition, 0.04);
   if (earthMesh.userData.targetScale) {
-    earthMesh.scale.x += (earthMesh.userData.targetScale - earthMesh.scale.x) * 0.06;
+    earthMesh.scale.x +=
+      (earthMesh.userData.targetScale - earthMesh.scale.x) * 0.06;
     earthMesh.scale.y = earthMesh.scale.z = earthMesh.scale.x;
   }
   if (earthMesh.userData.targetRotation !== undefined) {
@@ -1015,7 +1057,8 @@ function updateObjectTransforms() {
     if (moonMesh.userData.targetPosition)
       moonMesh.position.lerp(moonMesh.userData.targetPosition, 0.04);
     if (moonMesh.userData.targetScale) {
-      moonMesh.scale.x += (moonMesh.userData.targetScale - moonMesh.scale.x) * 0.06;
+      moonMesh.scale.x +=
+        (moonMesh.userData.targetScale - moonMesh.scale.x) * 0.06;
       moonMesh.scale.y = moonMesh.scale.z = moonMesh.scale.x;
     }
   }
@@ -1027,7 +1070,8 @@ function setupResizeHandler() {
     if (!container || !camera || !renderer) return;
     const width = container.clientWidth;
     const height = container.clientHeight;
-    isMobileDevice = globalThis.matchMedia?.('(max-width: 768px)')?.matches ?? false;
+    isMobileDevice =
+      globalThis.matchMedia?.('(max-width: 768px)')?.matches ?? false;
 
     camera.aspect = width / height;
     // Adjust FOV for mobile to show more vertical content
@@ -1038,7 +1082,11 @@ function setupResizeHandler() {
     if (starManager) starManager.handleResize(width, height);
   };
   const resizeCleanup = onResize(handleResize, 100);
-  sharedCleanupManager.addCleanupFunction('three-earth', resizeCleanup, 'resize handler');
+  sharedCleanupManager.addCleanupFunction(
+    'three-earth',
+    resizeCleanup,
+    'resize handler',
+  );
 }
 
 function _setupManagersAndCards(container) {
@@ -1052,7 +1100,8 @@ function _setupManagersAndCards(container) {
     currentQualityLevel = level;
     const levelCfg = CONFIG.QUALITY_LEVELS[currentQualityLevel];
     if (cloudMesh) cloudMesh.visible = levelCfg.cloudLayer;
-    if (shootingStarManager) shootingStarManager.disabled = !levelCfg.meteorShowers;
+    if (shootingStarManager)
+      shootingStarManager.disabled = !levelCfg.meteorShowers;
     try {
       if (renderer && CONFIG.PERFORMANCE?.PIXEL_RATIO) {
         renderer.setPixelRatio(CONFIG.PERFORMANCE.PIXEL_RATIO);
@@ -1128,7 +1177,7 @@ function _setupManagersAndCards(container) {
   sharedCleanupManager.addCleanupFunction(
     'three-earth',
     () => document.removeEventListener('section:loaded', onSectionLoaded),
-    'section listener'
+    'section listener',
   );
 }
 
@@ -1169,7 +1218,8 @@ function triggerShowcase(duration = 8000) {
 
   // Revert after duration
   showcaseTimeoutId = setTimeout(() => {
-    CONFIG.CLOUDS.ROTATION_SPEED = showcaseOriginals.cloudSpeed || CONFIG.CLOUDS.ROTATION_SPEED;
+    CONFIG.CLOUDS.ROTATION_SPEED =
+      showcaseOriginals.cloudSpeed || CONFIG.CLOUDS.ROTATION_SPEED;
     CONFIG.EARTH.EMISSIVE_PULSE_AMPLITUDE =
       showcaseOriginals.emissiveAmp || CONFIG.EARTH.EMISSIVE_PULSE_AMPLITUDE;
     showcaseActive = false;
@@ -1190,8 +1240,12 @@ function _setupShowcaseTriggers() {
   document.addEventListener('three-earth:showcase', _onThreeEarthShowcase);
   sharedCleanupManager.addCleanupFunction(
     'three-earth',
-    () => document.removeEventListener('three-earth:showcase', _onThreeEarthShowcase),
-    'showcase listener'
+    () =>
+      document.removeEventListener(
+        'three-earth:showcase',
+        _onThreeEarthShowcase,
+      ),
+    'showcase listener',
   );
 }
 // ===== Public API =====
