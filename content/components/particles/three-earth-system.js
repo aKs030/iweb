@@ -910,17 +910,12 @@ function startAnimationLoop() {
     const delta = clock.getDelta();
     updateAccumulator += delta;
 
-    // Throttle heavy updates on low-end devices using time-based accumulator
-    if (updateAccumulator >= updateInterval) {
-      const elapsedTime = clock.getElapsedTime();
-      const deltaForUpdates = updateAccumulator; // accumulated time since last heavy update
-
     // Use delta time for consistent speed across all frame rates (60Hz vs 120Hz)
     const delta = clock.getDelta();
     const elapsedTime = clock.getElapsedTime();
 
     _advancePeriodicAnimations(frameCounter, elapsedTime, capabilities, delta);
-    _updateNightPulse(elapsedTime, frameCounter, capabilities);
+    _updateNightPulse(elapsedTime, capabilities);
     _updateManagers(elapsedTime, capabilities, delta);
     _renderIfReady();
   };
@@ -942,7 +937,7 @@ function _advancePeriodicAnimations(frameCounter, elapsedTime, capabilities, del
   if (!capabilities.isLowEnd) starManager?.update(elapsedTime);
 }
 
-function _updateNightPulse(elapsedTime, frameCounter, capabilities) {
+function _updateNightPulse(elapsedTime, capabilities) {
   if (earthMesh?.userData.currentMode === 'night' && !capabilities.isLowEnd) {
     const baseIntensity = CONFIG.EARTH.EMISSIVE_INTENSITY * 4;
     const pulseAmount =

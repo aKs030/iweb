@@ -535,9 +535,8 @@ export class ShootingStarManager {
       const star = this.activeStars[i];
       star.age += timeScale;
 
-      // Scale velocity by timeScale
-      const move = star.velocity.clone().multiplyScalar(timeScale);
-      star.mesh.position.add(move);
+      // Scale velocity by timeScale (optimized to avoid allocation)
+      star.mesh.position.addScaledVector(star.velocity, timeScale);
 
       const fadeStart = star.lifetime * 0.7;
       if (star.age > fadeStart) {
