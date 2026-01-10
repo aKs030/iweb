@@ -1048,8 +1048,7 @@ async function loadSharedHead() {
 
       // Force Canonical to Production host when true. Set to false to allow dev/staging canonical behavior.
       // Only honor an explicit opt-in via data attribute.
-      const forceProdFlag =
-        document.documentElement.dataset.forceProdCanonical === 'true';
+      const forceProdFlag = document.documentElement.dataset.forceProdCanonical === 'true';
 
       // Compute cleanPath using shared canonical util
       let cleanPath;
