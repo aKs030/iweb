@@ -48,8 +48,13 @@ export class CameraManager {
 
     const startPos = { ...this.cameraTarget };
     const startZoom = this.mouseState.zoom;
-    const startLookAt = this.camera.userData.currentLookAt || new this.THREE.Vector3(0, 0, 0);
-    const endLookAt = new this.THREE.Vector3(preset.lookAt.x, preset.lookAt.y, preset.lookAt.z);
+    const startLookAt =
+      this.camera.userData.currentLookAt || new this.THREE.Vector3(0, 0, 0);
+    const endLookAt = new this.THREE.Vector3(
+      preset.lookAt.x,
+      preset.lookAt.y,
+      preset.lookAt.z,
+    );
 
     const duration = CONFIG.CAMERA.TRANSITION_DURATION * 1000;
     const startTime = performance.now();
@@ -67,7 +72,11 @@ export class CameraManager {
       this.mouseState.zoom = startZoom + (preset.z - startZoom) * eased;
 
       if (this.camera) {
-        const blendedLookAt = new this.THREE.Vector3().lerpVectors(startLookAt, endLookAt, eased);
+        const blendedLookAt = new this.THREE.Vector3().lerpVectors(
+          startLookAt,
+          endLookAt,
+          eased,
+        );
         this.camera.lookAt(blendedLookAt);
         this.camera.userData.currentLookAt = blendedLookAt.clone();
       }
@@ -93,16 +102,22 @@ export class CameraManager {
     this.cameraOrbitAngle += angleDiff * easingFactor;
 
     const radius = this.mouseState.zoom;
-    const finalX = this.cameraTarget.x + Math.sin(this.cameraOrbitAngle) * radius * 0.75;
+    const finalX =
+      this.cameraTarget.x + Math.sin(this.cameraOrbitAngle) * radius * 0.75;
     const finalY = this.cameraTarget.y;
     const finalZ = Math.cos(this.cameraOrbitAngle) * radius;
 
     this.cameraPosition.x += (finalX - this.cameraPosition.x) * lerpFactor;
     this.cameraPosition.y += (finalY - this.cameraPosition.y) * lerpFactor;
     this.cameraPosition.z += (finalZ - this.cameraPosition.z) * lerpFactor;
-    this.camera.position.set(this.cameraPosition.x, this.cameraPosition.y, this.cameraPosition.z);
+    this.camera.position.set(
+      this.cameraPosition.x,
+      this.cameraPosition.y,
+      this.cameraPosition.z,
+    );
 
-    const currentLookAt = this.camera.userData.currentLookAt || new this.THREE.Vector3(0, 0, 0);
+    const currentLookAt =
+      this.camera.userData.currentLookAt || new this.THREE.Vector3(0, 0, 0);
     this.camera.lookAt(currentLookAt);
   }
 
@@ -110,7 +125,7 @@ export class CameraManager {
     this.mouseState.zoom -= e.deltaY * 0.01;
     this.mouseState.zoom = Math.max(
       CONFIG.CAMERA.ZOOM_MIN,
-      Math.min(CONFIG.CAMERA.ZOOM_MAX, this.mouseState.zoom)
+      Math.min(CONFIG.CAMERA.ZOOM_MAX, this.mouseState.zoom),
     );
   }
 

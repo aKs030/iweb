@@ -10,7 +10,10 @@
       globalThis.dataLayer = globalThis.dataLayer || [];
     </script>
     <title>Abdulkerim Sesli — Web Developer & Photographer in Berlin</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
     <meta name="mobile-web-app-capable" content="yes" />
     <!-- Static description fallback for crawlers -->
     <meta
@@ -29,7 +32,12 @@
       sizes="192x192"
       href="/content/assets/img/icons/favicon-192x192.png"
     />
-    <link rel="icon" type="image/png" sizes="96x96" href="/content/assets/img/icons/icon-96.png" />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="96x96"
+      href="/content/assets/img/icons/icon-96.png"
+    />
     <link
       rel="icon"
       type="image/png"
@@ -44,9 +52,16 @@
     />
     <link rel="manifest" href="/manifest.json" />
     <link rel="icon" href="/content/assets/img/icons/favicon.ico" />
-    <link rel="mask-icon" href="/content/assets/img/icons/safari-pinned-tab.svg" color="#0d0d0d" />
+    <link
+      rel="mask-icon"
+      href="/content/assets/img/icons/safari-pinned-tab.svg"
+      color="#0d0d0d"
+    />
     <meta name="msapplication-TileColor" content="#0d0d0d" />
-    <meta name="msapplication-TileImage" content="/content/assets/img/icons/favicon-192x192.png" />
+    <meta
+      name="msapplication-TileImage"
+      content="/content/assets/img/icons/favicon-192x192.png"
+    />
     <link
       rel="apple-touch-icon"
       sizes="180x180"
@@ -56,7 +71,10 @@
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://abdulkerimsesli.de/" />
-    <meta property="og:title" content="Abdulkerim — Digital Creator Portfolio" />
+    <meta
+      property="og:title"
+      content="Abdulkerim — Digital Creator Portfolio"
+    />
     <meta
       property="og:description"
       content="Offizielles Portfolio von Abdulkerim Sesli. Professionelle Webentwicklung (React, Three.js) und Urban Photography aus Berlin. Jetzt Referenzen ansehen &amp; kontaktieren."
@@ -66,12 +84,18 @@
       content="https://abdulkerimsesli.de/content/assets/img/og/og-home.png"
     />
     <meta property="og:locale" content="de_DE" />
-    <meta property="og:site_name" content="Abdulkerim — Digital Creator Portfolio" />
+    <meta
+      property="og:site_name"
+      content="Abdulkerim — Digital Creator Portfolio"
+    />
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image" />
     <meta property="twitter:url" content="https://abdulkerimsesli.de/" />
-    <meta property="twitter:title" content="Abdulkerim — Digital Creator Portfolio" />
+    <meta
+      property="twitter:title"
+      content="Abdulkerim — Digital Creator Portfolio"
+    />
     <meta
       property="twitter:description"
       content="Offizielles Portfolio von Abdulkerim Sesli. Professionelle Webentwicklung (React, Three.js) und Urban Photography aus Berlin."
@@ -269,8 +293,16 @@
     <!-- Preconnect to common third-party origins to reduce initial handshake time -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin />
-    <link rel="preconnect" href="https://static.cloudflareinsights.com" crossorigin />
+    <link
+      rel="preconnect"
+      href="https://www.googletagmanager.com"
+      crossorigin
+    />
+    <link
+      rel="preconnect"
+      href="https://static.cloudflareinsights.com"
+      crossorigin
+    />
     <!-- DNS-prefetch to reduce DNS lookup latency for commonly used third-party origins -->
     <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
     <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
@@ -303,18 +335,36 @@
       }
     </style>
 
-    <link rel="stylesheet" href="/content/styles/loader.css" />
-
+    <!-- Loader styles consolidated into main.css -->
     <!-- Preloads removed: head-inline.js injects styles conditionally to avoid unused preloads -->
-    <noscript><link rel="stylesheet" href="/content/styles/root.css" /></noscript>
-    <script type="module" src="/content/main.js" crossorigin="anonymous" defer></script>
-    <link rel="stylesheet" href="/content/styles/main.css" media="print" data-defer="1" />
-    <noscript><link rel="stylesheet" href="/content/styles/main.css" /></noscript>
+    <noscript
+      ><link rel="stylesheet" href="/content/styles/root.css"
+    /></noscript>
+    <script
+      type="module"
+      src="/content/main.js"
+      crossorigin="anonymous"
+      defer
+    ></script>
+    <link
+      rel="stylesheet"
+      href="/content/styles/main.css"
+      media="print"
+      data-defer="1"
+    />
+    <noscript
+      ><link rel="stylesheet" href="/content/styles/main.css"
+    /></noscript>
 
     <!-- main.js is loaded & preloaded via head-inline to control timing (modulepreload + module script injection) -->
 
     <!-- Deferred Styles (Below-the-Fold) -->
-    <link rel="stylesheet" href="/pages/about/about.css" media="print" data-defer="1" />
+    <link
+      rel="stylesheet"
+      href="/pages/about/about.css"
+      media="print"
+      data-defer="1"
+    />
     <noscript><link rel="stylesheet" href="/pages/about/about.css" /></noscript>
   </head>
   <body>
@@ -329,7 +379,9 @@
         </div>
 
         <div class="loader-info" aria-live="polite">
-          <span class="status-text" id="loader-status-text">Initialisiere System...</span>
+          <span class="status-text" id="loader-status-text"
+            >Initialisiere System...</span
+          >
           <span class="percentage" id="loader-percentage">0%</span>
         </div>
       </div>
@@ -359,8 +411,9 @@
     >
       <!-- Hidden description for screen readers -->
       <div id="earth-description" class="visually-hidden">
-        Eine interaktive 3D-Darstellung der Erde mit realistischen Texturen und Animationen.
-        Verwenden Sie die Steuerungstasten zum Zoomen und Wechseln zwischen Kamera-Modi.
+        Eine interaktive 3D-Darstellung der Erde mit realistischen Texturen und
+        Animationen. Verwenden Sie die Steuerungstasten zum Zoomen und Wechseln
+        zwischen Kamera-Modi.
       </div>
 
       <div class="three-earth-error hidden">
@@ -423,6 +476,9 @@
     </main>
 
     <!-- Footer container -->
-    <div id="footer-container" data-footer-src="/content/components/footer/footer"></div>
+    <div
+      id="footer-container"
+      data-footer-src="/content/components/footer/footer"
+    ></div>
   </body>
 </html>

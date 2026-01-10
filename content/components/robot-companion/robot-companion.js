@@ -20,7 +20,9 @@ class RobotCompanion {
 
   constructor() {
     this.texts =
-      (typeof globalThis !== 'undefined' && globalThis.robotCompanionTexts) || this.texts || {};
+      (typeof globalThis !== 'undefined' && globalThis.robotCompanionTexts) ||
+      this.texts ||
+      {};
 
     this.gemini = new GeminiService();
     this.gameModule = new RobotGames(this);
@@ -37,7 +39,8 @@ class RobotCompanion {
     this.isKeyboardAdjustmentActive = false;
 
     // Store initial layout height for detecting keyboard even when layout viewport shrinks
-    this.initialLayoutHeight = typeof globalThis !== 'undefined' ? globalThis.innerHeight : 0;
+    this.initialLayoutHeight =
+      typeof globalThis !== 'undefined' ? globalThis.innerHeight : 0;
 
     // Context greeting dedupe & observed section tracking
     this.currentObservedContext = null;
@@ -63,16 +66,23 @@ class RobotCompanion {
 
     // Mood & Analytics System
     this.analytics = {
-      sessions: Number.parseInt(localStorage.getItem('robot-sessions') || '0', 10) + 1,
+      sessions:
+        Number.parseInt(localStorage.getItem('robot-sessions') || '0', 10) + 1,
       sectionsVisited: [],
-      interactions: Number.parseInt(localStorage.getItem('robot-interactions') || '0', 10),
-      lastVisit: localStorage.getItem('robot-last-visit') || new Date().toISOString(),
+      interactions: Number.parseInt(
+        localStorage.getItem('robot-interactions') || '0',
+        10,
+      ),
+      lastVisit:
+        localStorage.getItem('robot-last-visit') || new Date().toISOString(),
     };
     localStorage.setItem('robot-sessions', this.analytics.sessions);
     localStorage.setItem('robot-last-visit', new Date().toISOString());
 
     this.mood = this.calculateMood();
-    this.easterEggFound = new Set(JSON.parse(localStorage.getItem('robot-easter-eggs') || '[]'));
+    this.easterEggFound = new Set(
+      JSON.parse(localStorage.getItem('robot-easter-eggs') || '[]'),
+    );
 
     this.dom = {};
 
@@ -107,12 +117,15 @@ class RobotCompanion {
 
   applyTexts() {
     const src =
-      (typeof globalThis !== 'undefined' && globalThis.robotCompanionTexts) || this.texts || {};
+      (typeof globalThis !== 'undefined' && globalThis.robotCompanionTexts) ||
+      this.texts ||
+      {};
     const chat = this.chatModule;
 
     chat.knowledgeBase = src.knowledgeBase ||
       chat.knowledgeBase || { start: { text: 'Hallo!', options: [] } };
-    chat.contextGreetings = src.contextGreetings || chat.contextGreetings || { default: [] };
+    chat.contextGreetings = src.contextGreetings ||
+      chat.contextGreetings || { default: [] };
     chat.moodGreetings = src.moodGreetings ||
       chat.moodGreetings || {
         normal: ['Hey! Wie kann ich helfen?', 'Hi! Was brauchst du?'],
@@ -120,7 +133,8 @@ class RobotCompanion {
     chat.startMessageSuffix = src.startMessageSuffix || chat.startMessageSuffix || {};
     chat.initialBubbleGreetings = src.initialBubbleGreetings ||
       chat.initialBubbleGreetings || ['Psst! Brauchst du Hilfe?'];
-    chat.initialBubblePools = src.initialBubblePools || chat.initialBubblePools || [];
+    chat.initialBubblePools =
+      src.initialBubblePools || chat.initialBubblePools || [];
     chat.initialBubbleSequenceConfig = src.initialBubbleSequenceConfig ||
       chat.initialBubbleSequenceConfig || {
         steps: 4,
@@ -141,11 +155,15 @@ class RobotCompanion {
         return;
       }
       const script = document.createElement('script');
-      script.src = '/content/components/robot-companion/robot-companion-texts.js';
+      script.src =
+        '/content/components/robot-companion/robot-companion-texts.js';
       script.async = true;
       script.onload = () => {
         this.texts =
-          (typeof globalThis !== 'undefined' && globalThis.robotCompanionTexts) || this.texts || {};
+          (typeof globalThis !== 'undefined' &&
+            globalThis.robotCompanionTexts) ||
+          this.texts ||
+          {};
         resolve();
       };
       script.onerror = () => resolve();
@@ -165,7 +183,8 @@ class RobotCompanion {
       if (!this.dom.container) return;
       if (!this.dom.footer) {
         this.dom.footer =
-          document.querySelector('footer') || document.querySelector('#site-footer');
+          document.querySelector('footer') ||
+          document.querySelector('#site-footer');
       }
       const footer = this.dom.footer;
       if (!footer) return;
@@ -196,8 +215,14 @@ class RobotCompanion {
       globalThis.addEventListener('scroll', requestTick, { passive: true });
       globalThis.addEventListener('resize', requestTick, { passive: true });
       // Registriere Listener für Cleanup
-      this._eventListeners.scroll.push({ target: globalThis, handler: requestTick });
-      this._eventListeners.resize.push({ target: globalThis, handler: requestTick });
+      this._eventListeners.scroll.push({
+        target: globalThis,
+        handler: requestTick,
+      });
+      this._eventListeners.resize.push({
+        target: globalThis,
+        handler: requestTick,
+      });
     }
     requestAnimationFrame(checkOverlap);
     this._footerCheckInterval = this._setInterval(requestTick, 1000);
@@ -232,7 +257,8 @@ class RobotCompanion {
 
       // Threshold: > 150px difference usually implies keyboard.
       // Also trigger if input is focused and difference is measurable (>50px).
-      const isKeyboardOverlay = heightDiff > 150 || (isInputFocused && heightDiff > 50);
+      const isKeyboardOverlay =
+        heightDiff > 150 || (isInputFocused && heightDiff > 50);
 
       if (isKeyboardOverlay) {
         // Keyboard is open (overlay mode or partial resize)
@@ -320,8 +346,14 @@ class RobotCompanion {
       this.dom.input.addEventListener('focus', handleResize);
       this.dom.input.addEventListener('blur', blurHandler);
       // Registriere Listener für Cleanup
-      this._eventListeners.inputFocus = { target: this.dom.input, handler: handleResize };
-      this._eventListeners.inputBlur = { target: this.dom.input, handler: blurHandler };
+      this._eventListeners.inputFocus = {
+        target: this.dom.input,
+        handler: handleResize,
+      };
+      this._eventListeners.inputBlur = {
+        target: this.dom.input,
+        handler: blurHandler,
+      };
     }
   }
 
@@ -353,10 +385,14 @@ class RobotCompanion {
                 ]
               : 'Hallo!';
           const ctxArr =
-            this.chatModule.contextGreetings[ctx] || this.chatModule.contextGreetings.default || [];
+            this.chatModule.contextGreetings[ctx] ||
+            this.chatModule.contextGreetings.default ||
+            [];
           let finalGreet = greet;
           if (ctxArr.length && Math.random() < 0.7) {
-            const ctxMsg = String(ctxArr[Math.floor(Math.random() * ctxArr.length)] || '').trim();
+            const ctxMsg = String(
+              ctxArr[Math.floor(Math.random() * ctxArr.length)] || '',
+            ).trim();
             finalGreet = ctxMsg;
           }
           this.chatModule.showBubble(finalGreet);
@@ -378,7 +414,9 @@ class RobotCompanion {
         const twRect = typeWriter.getBoundingClientRect();
         const robotWidth = 80;
         const initialLeft =
-          (typeof globalThis !== 'undefined' ? globalThis.innerWidth : 0) - 30 - robotWidth;
+          (typeof globalThis !== 'undefined' ? globalThis.innerWidth : 0) -
+          30 -
+          robotWidth;
         const maxLeft = initialLeft - 20;
         this.collisionModule.checkForTypewriterCollision(twRect, maxLeft);
       } catch (err) {
@@ -386,7 +424,10 @@ class RobotCompanion {
       }
     };
     document.addEventListener('hero:typingEnd', this._onHeroTypingEnd);
-    this._eventListeners.heroTypingEnd = { target: document, handler: this._onHeroTypingEnd };
+    this._eventListeners.heroTypingEnd = {
+      target: document,
+      handler: this._onHeroTypingEnd,
+    };
   }
 
   setupSectionChangeDetection() {
@@ -397,10 +438,16 @@ class RobotCompanion {
       if (this.chatModule.isOpen) return;
 
       const currentContext = this.getPageContext();
-      if (currentContext !== lastContext && currentContext !== this.chatModule.lastGreetedContext) {
+      if (
+        currentContext !== lastContext &&
+        currentContext !== this.chatModule.lastGreetedContext
+      ) {
         lastContext = currentContext;
         this._setTimeout(() => {
-          if (this.getPageContext() === currentContext && !this.chatModule.isOpen) {
+          if (
+            this.getPageContext() === currentContext &&
+            !this.chatModule.isOpen
+          ) {
             this.chatModule.startInitialBubbleSequence();
           }
         }, 2000);
@@ -419,19 +466,29 @@ class RobotCompanion {
             const twRect = tw.getBoundingClientRect();
             const robotWidth = 80;
             const initialLeft =
-              (typeof globalThis !== 'undefined' ? globalThis.innerWidth : 0) - 30 - robotWidth;
+              (typeof globalThis !== 'undefined' ? globalThis.innerWidth : 0) -
+              30 -
+              robotWidth;
             const maxLeft = initialLeft - 20;
             this.collisionModule.checkForTypewriterCollision(twRect, maxLeft);
           }
         } catch (err) {
-          log.warn('RobotCompanion: scroll handler collision check failed', err);
+          log.warn(
+            'RobotCompanion: scroll handler collision check failed',
+            err,
+          );
         }
       }, 500);
     };
     if (typeof globalThis !== 'undefined') {
-      globalThis.addEventListener('scroll', this._scrollListener, { passive: true });
+      globalThis.addEventListener('scroll', this._scrollListener, {
+        passive: true,
+      });
       // Registriere Listener für Cleanup
-      this._eventListeners.scroll.push({ target: globalThis, handler: this._scrollListener });
+      this._eventListeners.scroll.push({
+        target: globalThis,
+        handler: this._scrollListener,
+      });
     }
     this._sectionCheckInterval = this._setInterval(checkContextChange, 3000);
   }
@@ -474,12 +531,16 @@ class RobotCompanion {
       });
 
       // Visual Viewport Listeners
-      this._eventListeners.visualViewportResize.forEach(({ target, handler }) => {
-        target.removeEventListener('resize', handler);
-      });
-      this._eventListeners.visualViewportScroll.forEach(({ target, handler }) => {
-        target.removeEventListener('scroll', handler);
-      });
+      this._eventListeners.visualViewportResize.forEach(
+        ({ target, handler }) => {
+          target.removeEventListener('resize', handler);
+        },
+      );
+      this._eventListeners.visualViewportScroll.forEach(
+        ({ target, handler }) => {
+          target.removeEventListener('scroll', handler);
+        },
+      );
 
       // Input Listeners
       if (this._eventListeners.inputFocus) {
@@ -566,30 +627,40 @@ class RobotCompanion {
         globalThis.robotCompanionTexts &&
         globalThis.robotCompanionTexts.moodGreetings) ||
       {};
-    const moodGreets = greetings[this.mood] || greetings['normal'] || ['Hey! Wie kann ich helfen?'];
+    const moodGreets = greetings[this.mood] ||
+      greetings['normal'] || ['Hey! Wie kann ich helfen?'];
     return moodGreets[Math.floor(Math.random() * moodGreets.length)];
   }
 
   trackInteraction(_type = 'general') {
     this.analytics.interactions++;
     localStorage.setItem('robot-interactions', this.analytics.interactions);
-    if (this.analytics.interactions === 10 && !this.easterEggFound.has('first-10')) {
+    if (
+      this.analytics.interactions === 10 &&
+      !this.easterEggFound.has('first-10')
+    ) {
       this.unlockEasterEgg(
         'first-10',
-        '🎉 Wow, 10 Interaktionen! Du bist hartnäckig! Hier ist ein Geschenk: Ein geheimes Mini-Game wurde freigeschaltet! 🎮'
+        '🎉 Wow, 10 Interaktionen! Du bist hartnäckig! Hier ist ein Geschenk: Ein geheimes Mini-Game wurde freigeschaltet! 🎮',
       );
     }
-    if (this.analytics.interactions === 50 && !this.easterEggFound.has('first-50')) {
+    if (
+      this.analytics.interactions === 50 &&
+      !this.easterEggFound.has('first-50')
+    ) {
       this.unlockEasterEgg(
         'first-50',
-        '🏆 50 Interaktionen! Du bist ein echter Power-User! Respekt! 💪'
+        '🏆 50 Interaktionen! Du bist ein echter Power-User! Respekt! 💪',
       );
     }
   }
 
   unlockEasterEgg(id, message) {
     this.easterEggFound.add(id);
-    localStorage.setItem('robot-easter-eggs', JSON.stringify([...this.easterEggFound]));
+    localStorage.setItem(
+      'robot-easter-eggs',
+      JSON.stringify([...this.easterEggFound]),
+    );
     this.chatModule.showBubble(message);
     this._setTimeout(() => this.chatModule.hideBubble(), 10000);
   }
@@ -597,10 +668,22 @@ class RobotCompanion {
   trackSectionVisit(context) {
     if (!this.analytics.sectionsVisited.includes(context)) {
       this.analytics.sectionsVisited.push(context);
-      const allSections = ['hero', 'features', 'section3', 'projects', 'gallery', 'footer'];
-      const visitedAll = allSections.every((s) => this.analytics.sectionsVisited.includes(s));
+      const allSections = [
+        'hero',
+        'features',
+        'section3',
+        'projects',
+        'gallery',
+        'footer',
+      ];
+      const visitedAll = allSections.every((s) =>
+        this.analytics.sectionsVisited.includes(s),
+      );
       if (visitedAll && !this.easterEggFound.has('explorer')) {
-        this.unlockEasterEgg('explorer', '🗺️ Du hast alle Bereiche erkundet! Echter Explorer! 🧭');
+        this.unlockEasterEgg(
+          'explorer',
+          '🗺️ Du hast alle Bereiche erkundet! Echter Explorer! 🧭',
+        );
       }
     }
   }
@@ -732,7 +815,9 @@ class RobotCompanion {
     });
 
     if (this.dom.sendBtn) {
-      this.dom.sendBtn.addEventListener('click', () => this.handleUserMessage());
+      this.dom.sendBtn.addEventListener('click', () =>
+        this.handleUserMessage(),
+      );
     }
 
     if (this.dom.input) {
@@ -781,17 +866,22 @@ class RobotCompanion {
       if (sectionCheck('#hero')) context = 'hero';
       else if (sectionCheck('#features')) context = 'features';
       else if (sectionCheck('#section3')) context = 'about';
-      else if (sectionCheck('#footer-container') || sectionCheck('footer')) context = 'footer';
+      else if (sectionCheck('#footer-container') || sectionCheck('footer'))
+        context = 'footer';
       else if (lower.includes('projekte')) context = 'projects';
-      else if (lower.includes('gallery') || lower.includes('fotos')) context = 'gallery';
-      else if (lower.includes('about') && file !== 'index.html') context = 'about';
-      else if (lower === '/' || file === 'index.html' || file === '') context = 'home';
+      else if (lower.includes('gallery') || lower.includes('fotos'))
+        context = 'gallery';
+      else if (lower.includes('about') && file !== 'index.html')
+        context = 'about';
+      else if (lower === '/' || file === 'index.html' || file === '')
+        context = 'home';
       else {
         const h1 = document.querySelector('h1');
         if (h1) {
           const h1Text = (h1.textContent || '').toLowerCase();
           if (h1Text.includes('projekt')) context = 'projects';
-          else if (h1Text.includes('foto') || h1Text.includes('galerie')) context = 'gallery';
+          else if (h1Text.includes('foto') || h1Text.includes('galerie'))
+            context = 'gallery';
         }
       }
 
@@ -816,12 +906,14 @@ class RobotCompanion {
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting && entry.intersectionRatio > 0.35) {
-            const match = sectionMap.find((s) => entry.target.matches(s.selector));
+            const match = sectionMap.find((s) =>
+              entry.target.matches(s.selector),
+            );
             if (match) this.currentObservedContext = match.ctx;
           }
         });
       },
-      { threshold: [0.35, 0.5, 0.75] }
+      { threshold: [0.35, 0.5, 0.75] },
     );
 
     sectionMap.forEach((s) => {
@@ -918,7 +1010,10 @@ if (document.readyState === 'loading') {
     robot
       .initialize()
       .catch((e) =>
-        log.error('RobotCompanion init failed: ' + (e && e.message ? e.message : String(e)))
+        log.error(
+          'RobotCompanion init failed: ' +
+            (e && e.message ? e.message : String(e)),
+        ),
       );
   });
 } else {
@@ -926,6 +1021,9 @@ if (document.readyState === 'loading') {
   robot
     .initialize()
     .catch((e) =>
-      log.error('RobotCompanion init failed: ' + (e && e.message ? e.message : String(e)))
+      log.error(
+        'RobotCompanion init failed: ' +
+          (e && e.message ? e.message : String(e)),
+      ),
     );
 }

@@ -30,14 +30,16 @@ export const blogPosts = [
     tags: ['Photography', 'Composition', 'Art'],
     readTime: '4 min',
     author: 'Abdulkerim Sesli (Abdul Berlin)',
-    image: 'https://abdulkerimsesli.de/content/assets/img/og/og-photography.png',
+    image:
+      'https://abdulkerimsesli.de/content/assets/img/og/og-photography.png',
   },
   {
     id: 'modern-ui-design',
     title: 'Modernes UI-Design: Mehr als nur Dark Mode',
     date: '10. Oktober 2025',
     category: 'Design',
-    excerpt: 'Warum Barrierefreiheit und Mikro-Interaktionen den Unterschied machen.',
+    excerpt:
+      'Warum Barrierefreiheit und Mikro-Interaktionen den Unterschied machen.',
     content:
       'Ein gutes UI sieht nicht nur gut aus, es fühlt sich auch gut an. Durch subtile Animationen und klares Feedback schaffen wir eine intuitive User Experience. Gleichzeitig darf Accessibility kein Nachgedanke sein – semantisches HTML und ausreichende Kontraste sind das Fundament jeder professionellen Web-Anwendung.',
     tags: ['UI/UX', 'Accessibility', 'Design'],
