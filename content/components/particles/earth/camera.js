@@ -1,8 +1,7 @@
 import { CONFIG } from './config.js';
-import { createLogger, TimerManager } from '../../../utils/shared-utilities.js';
+import { createLogger } from '../../../utils/shared-utilities.js';
 
 const log = createLogger('EarthCamera');
-const earthTimers = new TimerManager();
 
 export class CameraManager {
   constructor(THREE, camera) {
@@ -13,7 +12,19 @@ export class CameraManager {
     this.mouseState = { zoom: 10 };
     this.cameraOrbitAngle = 0;
     this.targetOrbitAngle = 0;
-    this.cameraTransition = null;
+
+    // Transition state (replacing setTimeout)
+    this.transition = {
+      active: false,
+      startTime: 0,
+      duration: 0,
+      startPos: null,
+      startZoom: 0,
+      startLookAt: null,
+      endPos: null,
+      endLookAt: null,
+      presetZ: 0,
+    };
   }
 
   setupCameraSystem() {
@@ -41,65 +52,85 @@ export class CameraManager {
     const preset = CONFIG.CAMERA.PRESETS[presetName];
     if (!preset) return;
 
-    if (this.cameraTransition) {
-      earthTimers.clearTimeout(this.cameraTransition);
-      this.cameraTransition = null;
-    }
+    // Start transition
+    this.transition.active = true;
+    this.transition.startTime = performance.now(); // We will use accumulated time or performance.now
+    this.transition.duration = CONFIG.CAMERA.TRANSITION_DURATION * 1000;
 
-    const startPos = { ...this.cameraTarget };
-    const startZoom = this.mouseState.zoom;
-    const startLookAt =
-      this.camera.userData.currentLookAt || new this.THREE.Vector3(0, 0, 0);
-    const endLookAt = new this.THREE.Vector3(
+    this.transition.startPos = { ...this.cameraTarget };
+    this.transition.startZoom = this.mouseState.zoom;
+    this.transition.startLookAt = this.camera.userData.currentLookAt
+      ? this.camera.userData.currentLookAt.clone()
+      : new this.THREE.Vector3(0, 0, 0);
+
+    this.transition.endPos = { x: preset.x, y: preset.y }; // z is zoom
+    this.transition.presetZ = preset.z;
+    this.transition.endLookAt = new this.THREE.Vector3(
       preset.lookAt.x,
       preset.lookAt.y,
       preset.lookAt.z,
     );
+  }
 
-    const duration = CONFIG.CAMERA.TRANSITION_DURATION * 1000;
-    const startTime = performance.now();
+  // UPDATED: Now accepts delta time for frame-rate independence
+  updateCameraPosition(delta = 0.016) {
+    // 1. Handle Active Transition
+    if (this.transition.active) {
+      const elapsed = performance.now() - this.transition.startTime;
+      const progress = Math.min(elapsed / this.transition.duration, 1);
 
-    const transitionStep = () => {
-      const elapsed = performance.now() - startTime;
-      const progress = Math.min(elapsed / duration, 1);
       const eased =
         progress < 0.5
           ? 8 * progress * progress * progress * progress
           : 1 - Math.pow(-2 * progress + 2, 4) / 2;
 
-      this.cameraTarget.x = startPos.x + (preset.x - startPos.x) * eased;
-      this.cameraTarget.y = startPos.y + (preset.y - startPos.y) * eased;
-      this.mouseState.zoom = startZoom + (preset.z - startZoom) * eased;
+      // Interpolate Targets
+      this.cameraTarget.x =
+        this.transition.startPos.x +
+        (this.transition.endPos.x - this.transition.startPos.x) * eased;
+      this.cameraTarget.y =
+        this.transition.startPos.y +
+        (this.transition.endPos.y - this.transition.startPos.y) * eased;
+      this.mouseState.zoom =
+        this.transition.startZoom +
+        (this.transition.presetZ - this.transition.startZoom) * eased;
 
       if (this.camera) {
         const blendedLookAt = new this.THREE.Vector3().lerpVectors(
-          startLookAt,
-          endLookAt,
+          this.transition.startLookAt,
+          this.transition.endLookAt,
           eased,
         );
         this.camera.lookAt(blendedLookAt);
         this.camera.userData.currentLookAt = blendedLookAt.clone();
       }
 
-      if (progress < 1) {
-        this.cameraTransition = earthTimers.setTimeout(transitionStep, 16);
-      } else {
-        this.cameraTransition = null;
-        if (this.camera) this.camera.userData.currentLookAt = endLookAt.clone();
+      if (progress >= 1) {
+        this.transition.active = false;
+        // Snap to final values to avoid floating point errors
+        if (this.camera)
+          this.camera.userData.currentLookAt =
+            this.transition.endLookAt.clone();
       }
-    };
+    }
 
-    transitionStep();
-  }
+    // 2. Handle Orbit & Smoothing (Frame-Rate Independent)
 
-  updateCameraPosition() {
-    const lerpFactor = CONFIG.CAMERA.LERP_FACTOR;
+    // Normalize delta to 60fps (approx 16.6ms)
+    // If delta is 0.016, timeScale is 1. If delta is 0.033 (30fps), timeScale is 2.
+    const timeScale = delta * 60;
+
     const angleDiff = this.targetOrbitAngle - this.cameraOrbitAngle;
-    const progress = Math.min(Math.abs(angleDiff) / Math.PI, 1);
-    const eased = 1 - Math.pow(1 - progress, 4);
-    const easingFactor = 0.06 + eased * 0.12;
+    const orbitProgress = Math.min(Math.abs(angleDiff) / Math.PI, 1);
+    const orbitEased = 1 - Math.pow(1 - orbitProgress, 4);
 
-    this.cameraOrbitAngle += angleDiff * easingFactor;
+    // Original base factor was 0.06 + eased * 0.12 (approx 0.06 to 0.18) per 60hz frame
+    const baseFactor = 0.06 + orbitEased * 0.12;
+
+    // Frame-independent dampening: 1 - (1 - rate)^timeScale
+    const adjustedFactor = 1 - Math.pow(1 - baseFactor, timeScale);
+
+    this.cameraOrbitAngle += angleDiff * adjustedFactor;
 
     const radius = this.mouseState.zoom;
     const finalX =
@@ -107,9 +138,15 @@ export class CameraManager {
     const finalY = this.cameraTarget.y;
     const finalZ = Math.cos(this.cameraOrbitAngle) * radius;
 
-    this.cameraPosition.x += (finalX - this.cameraPosition.x) * lerpFactor;
-    this.cameraPosition.y += (finalY - this.cameraPosition.y) * lerpFactor;
-    this.cameraPosition.z += (finalZ - this.cameraPosition.z) * lerpFactor;
+    // Apply similar dampening to position lerp
+    // Original: CONFIG.CAMERA.LERP_FACTOR (0.06)
+    const posLerpFactor =
+      1 - Math.pow(1 - CONFIG.CAMERA.LERP_FACTOR, timeScale);
+
+    this.cameraPosition.x += (finalX - this.cameraPosition.x) * posLerpFactor;
+    this.cameraPosition.y += (finalY - this.cameraPosition.y) * posLerpFactor;
+    this.cameraPosition.z += (finalZ - this.cameraPosition.z) * posLerpFactor;
+
     this.camera.position.set(
       this.cameraPosition.x,
       this.cameraPosition.y,
@@ -134,10 +171,6 @@ export class CameraManager {
   }
 
   cleanup() {
-    earthTimers.clearAll();
-    if (this.cameraTransition) {
-      clearTimeout(this.cameraTransition);
-      this.cameraTransition = null;
-    }
+    this.transition.active = false;
   }
 }
