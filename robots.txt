@@ -28,6 +28,10 @@ Disallow: /content/footer/
 Allow: /impressum/
 Allow: /datenschutz/
 
+# Allow crawling of the component redirects so Google sees the 301
+Allow: /content/components/footer/datenschutz.html
+Allow: /content/components/footer/impressum.html
+
 # Note: video sitemap above added to improve video indexing
 # If you add more video content, run: YT_API_KEY=<key> python3 scripts/update_video_sitemap.py
 # Relaxed rules to improve rendering: allow JS/CSS/JSON where needed while keeping dev files blocked

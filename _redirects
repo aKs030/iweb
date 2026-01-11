@@ -20,8 +20,10 @@
 /pages/komponente/footer.html        /                         301
 
 # Alte Footer-Pfade (vor Umstrukturierung)
-/content/footer/datenschutz.html     /datenschutz/             301
-/content/footer/impressum.html       /impressum/               301
+/content/footer/datenschutz.html             /datenschutz/             301
+/content/footer/impressum.html               /impressum/               301
+/content/components/footer/datenschutz.html  /datenschutz/             301
+/content/components/footer/impressum.html    /impressum/               301
 
 # -------------------------------
 # 3) Specific 301 redirects (keep these before any generic rules)
