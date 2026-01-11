@@ -1046,10 +1046,15 @@ async function loadSharedHead() {
       // determine hostname for env checks
       const hostname = globalThis.location.hostname.toLowerCase();
 
-      // Force Canonical to Production host when true. Set to false to allow dev/staging canonical behavior.
-      // Only honor an explicit opt-in via data attribute.
-      const forceProdFlag =
-        document.documentElement.dataset.forceProdCanonical === 'true';
+      // Force Canonical to Production host by default for all public access.
+      // We only disable this for local development (localhost, 127.0.0.1) or preview builds (*.pages.dev).
+      // This strictly enforces https://abdulkerimsesli.de as the canonical origin to prevent duplicates (http/www).
+      const isLocalOrPreview =
+        hostname === 'localhost' ||
+        hostname === '127.0.0.1' ||
+        hostname.endsWith('.pages.dev');
+
+      const forceProdFlag = !isLocalOrPreview;
 
       // Compute cleanPath using shared canonical util
       let cleanPath;
