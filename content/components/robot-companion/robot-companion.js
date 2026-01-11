@@ -130,7 +130,8 @@ class RobotCompanion {
       chat.moodGreetings || {
         normal: ['Hey! Wie kann ich helfen?', 'Hi! Was brauchst du?'],
       };
-    chat.startMessageSuffix = src.startMessageSuffix || chat.startMessageSuffix || {};
+    chat.startMessageSuffix =
+      src.startMessageSuffix || chat.startMessageSuffix || {};
     chat.initialBubbleGreetings = src.initialBubbleGreetings ||
       chat.initialBubbleGreetings || ['Psst! Brauchst du Hilfe?'];
     chat.initialBubblePools =
@@ -381,7 +382,10 @@ class RobotCompanion {
             this.chatModule.initialBubbleGreetings &&
             this.chatModule.initialBubbleGreetings.length > 0
               ? this.chatModule.initialBubbleGreetings[
-                  Math.floor(Math.random() * this.chatModule.initialBubbleGreetings.length)
+                  Math.floor(
+                    Math.random() *
+                      this.chatModule.initialBubbleGreetings.length,
+                  )
                 ]
               : 'Hallo!';
           const ctxArr =

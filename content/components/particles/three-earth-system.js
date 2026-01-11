@@ -899,8 +899,8 @@ function handleVisibilityChange() {
 function startAnimationLoop() {
   const clock = new THREE_INSTANCE.Clock();
   const capabilities = deviceCapabilities || detectDeviceCapabilities();
-  const updateInterval = capabilities.isLowEnd ? 1 / 30 : 1 / 60; // seconds between heavy updates
-  let updateAccumulator = 0;
+  // const updateInterval = capabilities.isLowEnd ? 1 / 30 : 1 / 60; // seconds between heavy updates
+  // let updateAccumulator = 0;
 
   animate = () => {
     if (!isSystemActive) return;
@@ -908,13 +908,12 @@ function startAnimationLoop() {
 
     // Always measure delta/elapsed each frame
     const delta = clock.getDelta();
-    updateAccumulator += delta;
+    // updateAccumulator += delta;
 
     // Use delta time for consistent speed across all frame rates (60Hz vs 120Hz)
-    const delta = clock.getDelta();
     const elapsedTime = clock.getElapsedTime();
 
-    _advancePeriodicAnimations(frameCounter, elapsedTime, capabilities, delta);
+    _advancePeriodicAnimations(null, elapsedTime, capabilities, delta);
     _updateNightPulse(elapsedTime, capabilities);
     _updateManagers(elapsedTime, capabilities, delta);
     _renderIfReady();
@@ -924,7 +923,12 @@ function startAnimationLoop() {
   if (document.visibilityState === 'visible') animate();
 }
 
-function _advancePeriodicAnimations(frameCounter, elapsedTime, capabilities, delta) {
+function _advancePeriodicAnimations(
+  frameCounter,
+  elapsedTime,
+  capabilities,
+  delta,
+) {
   // Normalize speeds to match original 60fps behavior:
   // Clouds: ran every 2nd frame (30fps effective) -> 30x multiplier
   // Moon: ran every 3rd frame (20fps effective) -> 20x multiplier
@@ -950,7 +954,7 @@ function _updateNightPulse(elapsedTime, capabilities) {
 }
 
 function _updateManagers(elapsedTime, capabilities, delta) {
-  cameraManager?.updateCameraPosition();
+  cameraManager?.updateCameraPosition(delta);
   updateObjectTransforms();
   if (cardManager && globalThis.lastMousePos) {
     cardManager.update(elapsedTime * 1000, globalThis.lastMousePos);
