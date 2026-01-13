@@ -38,10 +38,9 @@ const BRAND_DATA = {
   },
   sameAs: [
     'https://github.com/aKs030',
-    'https://linkedin.com/in/abdulkerimsesli',
-    'https://twitter.com/abdulkerimsesli',
+    'https://linkedin.com/in/abdulkerim-s',
     'https://x.com/kRm_030',
-    'https://www.instagram.com/abdulkerimsesli',
+    'https://instagram.com/abdul.codes',
     'https://www.youtube.com/@aks.030',
     'https://www.behance.net/abdulkerimsesli',
     'https://dribbble.com/abdulkerimsesli',
