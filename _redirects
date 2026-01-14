@@ -91,7 +91,7 @@
 /gallery/*      /pages/gallery/:splat     200
 /projekte/*     /pages/projekte/:splat    200
 /videos/*       /pages/videos/:splat      200
-/blog/*         /pages/blog/:splat        200
+/blog/*         /pages/blog/index.html    200
 /about/*        /pages/about/:splat       200
 
 # -------------------------------

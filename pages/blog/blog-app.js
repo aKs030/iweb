@@ -57,16 +57,52 @@ function BlogApp() {
       ? blogPosts
       : blogPosts.filter((post) => post.category === filter);
 
-  // Sync with hash routing (#/blog/:id)
+  // Clean URL Routing (History API) + Legacy Hash Support
   React.useEffect(() => {
-    const parseHash = () => {
-      const m = location.hash.match(/^#\/blog\/(.+)$/);
-      setCurrentPostId(m ? decodeURIComponent(m[1]) : null);
+    const parseUrl = () => {
+      // 1. Check legacy hash first (e.g. #/blog/my-post)
+      const hashMatch = location.hash.match(/^#\/blog\/(.+)$/);
+      if (hashMatch) {
+        const slug = hashMatch[1];
+        // Immediate redirect to clean URL
+        window.history.replaceState(null, '', `/blog/${slug}`);
+        setCurrentPostId(decodeURIComponent(slug));
+        return;
+      }
+
+      // 2. Parse Path (e.g. /blog/my-post)
+      const path = location.pathname;
+      // Remove trailing slash for consistency
+      const cleanPath = path.endsWith('/') ? path.slice(0, -1) : path;
+      const parts = cleanPath.split('/');
+      // Expected structure: ["", "blog", "my-post"] or ["", "blog"]
+      const slug = parts.length > 2 && parts[1] === 'blog' ? parts[2] : null;
+
+      setCurrentPostId(slug ? decodeURIComponent(slug) : null);
     };
-    parseHash();
-    window.addEventListener('hashchange', parseHash);
-    return () => window.removeEventListener('hashchange', parseHash);
+
+    // Initial check
+    parseUrl();
+
+    // Listen for Back/Forward navigation
+    const handlePopState = () => parseUrl();
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
   }, []);
+
+  // Navigation Helper
+  const navigateToPost = (id) => {
+    window.history.pushState(null, '', `/blog/${id}`);
+    // Manually trigger state update since pushState doesn't trigger popstate
+    setCurrentPostId(id);
+    window.scrollTo(0, 0);
+  };
+
+  const navigateToHome = () => {
+    window.history.pushState(null, '', '/blog/');
+    setCurrentPostId(null);
+    window.scrollTo(0, 0);
+  };
 
   // Update head (meta + JSON-LD) when viewing a single post
   React.useEffect(() => {
@@ -204,10 +240,7 @@ function BlogApp() {
                   return html`
                     <div class="not-found">
                       Beitrag nicht gefunden.
-                      <button
-                        onClick=${() => (location.hash = '#/blog/')}
-                        className="btn"
-                      >
+                      <button onClick=${navigateToHome} className="btn">
                         Zurück
                       </button>
                     </div>
@@ -220,10 +253,7 @@ function BlogApp() {
                     </header>
                     <section className="article-body">${post.content}</section>
                     <p>
-                      <button
-                        className="btn"
-                        onClick=${() => (location.hash = '#/blog/')}
-                      >
+                      <button className="btn" onClick=${navigateToHome}>
                         Zurück
                       </button>
                     </p>
@@ -252,7 +282,7 @@ function BlogApp() {
                       </span>
                       <button
                         className="btn-read"
-                        onClick=${() => (location.hash = `#/blog/${post.id}`)}
+                        onClick=${() => navigateToPost(post.id)}
                       >
                         Lesen
                         <${ArrowRight} />

@@ -80,7 +80,7 @@
 
   <!-- Blog Posts -->
   <url>
-    <loc>https://abdulkerimsesli.de/blog/#/blog/threejs-performance</loc>
+    <loc>https://abdulkerimsesli.de/blog/threejs-performance</loc>
     <lastmod>2025-12-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -91,7 +91,7 @@
   </url>
 
   <url>
-    <loc>https://abdulkerimsesli.de/blog/#/blog/visual-storytelling</loc>
+    <loc>https://abdulkerimsesli.de/blog/visual-storytelling</loc>
     <lastmod>2025-12-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -102,7 +102,7 @@
   </url>
 
   <url>
-    <loc>https://abdulkerimsesli.de/blog/#/blog/modern-ui-design</loc>
+    <loc>https://abdulkerimsesli.de/blog/modern-ui-design</loc>
     <lastmod>2025-12-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -113,7 +113,7 @@
   </url>
 
   <url>
-    <loc>https://abdulkerimsesli.de/blog/#/blog/react-no-build</loc>
+    <loc>https://abdulkerimsesli.de/blog/react-no-build</loc>
     <lastmod>2025-12-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
