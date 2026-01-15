@@ -325,8 +325,9 @@ export class CardManager {
 
     // 4. Icon Text
     ctx.fillStyle = '#ffffff';
-    ctx.font = `${60 * S
-      }px "Apple Color Emoji", "Segoe UI Emoji", Arial, sans-serif`;
+    ctx.font = `${
+      60 * S
+    }px "Apple Color Emoji", "Segoe UI Emoji", Arial, sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(data.iconChar, iconCenterX, iconY + 5 * S);
@@ -646,8 +647,8 @@ export class CardManager {
       typeof card.userData.entranceTarget === 'number'
         ? card.userData.entranceTarget
         : this.isVisible
-          ? 1
-          : 0;
+        ? 1
+        : 0;
     card.userData.entranceProgress +=
       (targetEntrance - card.userData.entranceProgress) * 0.02;
     const baseOpacity = card.userData.targetOpacity || 1;
@@ -849,7 +850,7 @@ export class CardManager {
     this._disposeCachedTextures();
     try {
       this.detachPointerHandlers();
-    } catch { }
+    } catch {}
     this._removeResizeHandler();
   }
 
@@ -923,7 +924,7 @@ export class CardManager {
   _removeResizeHandler() {
     try {
       globalThis.removeEventListener('resize', this._onResize);
-    } catch { }
+    } catch {}
     this._onResize = null;
     if (this._resizeRAF) {
       cancelAnimationFrame(this._resizeRAF);
