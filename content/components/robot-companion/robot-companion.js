@@ -131,8 +131,8 @@ class RobotCompanion {
       chat.contextGreetings || { default: [] };
     chat.moodGreetings = src.moodGreetings ||
       chat.moodGreetings || {
-      normal: ['Hey! Wie kann ich helfen?', 'Hi! Was brauchst du?'],
-    };
+        normal: ['Hey! Wie kann ich helfen?', 'Hi! Was brauchst du?'],
+      };
     chat.startMessageSuffix =
       src.startMessageSuffix || chat.startMessageSuffix || {};
     chat.initialBubbleGreetings = src.initialBubbleGreetings ||
@@ -141,10 +141,10 @@ class RobotCompanion {
       src.initialBubblePools || chat.initialBubblePools || [];
     chat.initialBubbleSequenceConfig = src.initialBubbleSequenceConfig ||
       chat.initialBubbleSequenceConfig || {
-      steps: 4,
-      displayDuration: 10000,
-      pausesAfter: [0, 20000, 20000, 0],
-    };
+        steps: 4,
+        displayDuration: 10000,
+        pausesAfter: [0, 20000, 20000, 0],
+      };
   }
 
   loadTexts() {
@@ -383,13 +383,13 @@ class RobotCompanion {
         } else {
           const greet =
             this.chatModule.initialBubbleGreetings &&
-              this.chatModule.initialBubbleGreetings.length > 0
+            this.chatModule.initialBubbleGreetings.length > 0
               ? this.chatModule.initialBubbleGreetings[
-              Math.floor(
-                Math.random() *
-                this.chatModule.initialBubbleGreetings.length,
-              )
-              ]
+                  Math.floor(
+                    Math.random() *
+                      this.chatModule.initialBubbleGreetings.length,
+                  )
+                ]
               : 'Hallo!';
           const ctxArr =
             this.chatModule.contextGreetings[ctx] ||
@@ -1072,7 +1072,7 @@ if (document.readyState === 'loading') {
       .catch((e) =>
         log.error(
           'RobotCompanion init failed: ' +
-          (e && e.message ? e.message : String(e)),
+            (e && e.message ? e.message : String(e)),
         ),
       );
   });
@@ -1083,7 +1083,7 @@ if (document.readyState === 'loading') {
     .catch((e) =>
       log.error(
         'RobotCompanion init failed: ' +
-        (e && e.message ? e.message : String(e)),
+          (e && e.message ? e.message : String(e)),
       ),
     );
 }
