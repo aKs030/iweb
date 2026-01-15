@@ -6,6 +6,13 @@
   --loader-text: #e0e0e0;
   --loader-accent: #00f3ff; /* Cyan Neon */
   --loader-accent-secondary: #7000ff; /* Purple Neon */
+  /* Spacing variables */
+  --gap-xs: 8px; /* used across components */
+  --gap-sm: 1rem; /* small spacing (buttons, headers) */
+  --gap-md: 2rem; /* medium spacing (sections, card gaps) */
+  --gap-lg: 4rem; /* large spacing (wide layouts) */
+  /* Shared visual tokens */
+  --card-border: rgba(255, 255, 255, 0.08);
 }
 
 #app-loader {
@@ -463,6 +470,63 @@ a {
 
 a:hover {
   color: var(--primary-light);
+}
+
+/* Utilities */
+
+.u-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap-xs);
+}
+
+.u-inline-center {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--gap-xs);
+}
+
+.u-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-xs);
+}
+
+.u-row {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-xs);
+}
+
+.u-wrap {
+  flex-wrap: wrap;
+}
+
+.u-between {
+  justify-content: space-between;
+}
+
+.u-start {
+  align-items: flex-start;
+}
+
+/* Responsive u-* utilities (lg breakpoint) */
+@media (min-width: 1024px) {
+  .lg\:u-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .lg\:u-stack {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .lg\:u-wrap {
+    flex-wrap: wrap;
+  }
 }
 
 /* Animations */

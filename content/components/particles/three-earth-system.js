@@ -10,7 +10,8 @@ import {
   onResize,
   TimerManager,
   AppLoadManager,
-} from '../../utils/shared-utilities.js';
+} from '/content/utils/shared-utilities.js';
+import { createObserver } from '/content/utils/intersection-observer.js';
 import {
   getSharedState,
   loadThreeJS,
@@ -682,7 +683,7 @@ function setupSectionDetection() {
 
   const OBSERVER_THRESHOLDS = Array.from({ length: 21 }, (_, i) => i / 20);
 
-  sectionObserver = new IntersectionObserver(_onSectionObserverEntries, {
+  sectionObserver = createObserver(_onSectionObserverEntries, {
     rootMargin: '-20% 0px -20% 0px',
     threshold: OBSERVER_THRESHOLDS,
   });
@@ -704,7 +705,7 @@ function setupViewportObserver(container) {
     return;
   }
 
-  viewportObserver = new IntersectionObserver(_onViewportEntries, {
+  viewportObserver = createObserver(_onViewportEntries, {
     threshold: 0,
     rootMargin: '50px', // Small buffer to resume just before entering viewport
   });

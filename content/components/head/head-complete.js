@@ -10,6 +10,7 @@
  */
 
 import { createLogger } from '../../utils/shared-utilities.js';
+import { upsertHeadLink } from '/content/utils/dom-helpers.js';
 
 const log = createLogger('HeadLoader');
 
@@ -147,7 +148,7 @@ const BUSINESS_FAQS = [
 ];
 
 // Extracted helper: generate schema graph for a given page context. Returns an array of graph nodes.
-export function generateSchemaGraph(
+function generateSchemaGraph(
   pageData,
   pageUrl,
   BASE_URL,
@@ -601,7 +602,7 @@ export function generateSchemaGraph(
 
 // Extracted helper: compute canonical href & effective canonical depending on host/context.
 // Designed to be testable in Node by allowing optional location overrides.
-export function computeEffectiveCanonical(
+function computeEffectiveCanonical(
   forceProdFlag,
   hostname,
   cleanPath,
@@ -631,7 +632,7 @@ export function computeEffectiveCanonical(
 }
 
 // Build canonical links helper (pure)
-export function buildCanonicalLinks(
+function buildCanonicalLinks(
   forceProdFlag,
   hostname,
   cleanPath,
@@ -659,7 +660,7 @@ export function buildCanonicalLinks(
   return { canonicalHref, effectiveCanonical, alternates, canonicalOrigin };
 }
 
-export function buildPwaAssets(BASE_URL, BRAND_DATA) {
+function buildPwaAssets(BASE_URL, BRAND_DATA) {
   const links = [
     { rel: 'manifest', href: '/manifest.json' },
     {
@@ -743,7 +744,7 @@ export function buildPwaAssets(BASE_URL, BRAND_DATA) {
   return { links, iconLinks, metas };
 }
 
-export function buildPageMeta(pageData, pageUrl, locationPath) {
+function buildPageMeta(pageData, pageUrl, locationPath) {
   return {
     page_title: pageData.title || document.title || '',
     page_path: locationPath || '/',
@@ -754,7 +755,7 @@ export function buildPageMeta(pageData, pageUrl, locationPath) {
   };
 }
 
-export function upsertMeta(
+function upsertMeta(
   nameOrProperty,
   content,
   isProperty = false,
@@ -776,7 +777,7 @@ export function upsertMeta(
   }
 }
 
-export function upsertLink(
+function upsertLink(
   rel,
   href,
   doc = typeof document === 'undefined' ? null : document,
@@ -793,7 +794,7 @@ export function upsertLink(
   }
 }
 
-export function applyCanonicalLinks(
+function applyCanonicalLinks(
   doc = typeof document === 'undefined' ? null : document,
   alternates = [],
   effectiveCanonical = '',
@@ -832,7 +833,7 @@ export function applyCanonicalLinks(
 }
 
 // Schedule schema injection using requestIdleCallback when available, otherwise fallback to setTimeout.
-export function scheduleSchemaInjection(
+function scheduleSchemaInjection(
   callback,
   idleTimeout = 1500,
   fallbackDelay = 1200,
@@ -849,7 +850,7 @@ export function scheduleSchemaInjection(
 }
 
 // Top-level injector: insert LD+JSON for given page context (testable)
-export function injectSchema(
+function injectSchema(
   pageDataLocal,
   pageUrlLocal,
   BASE_URL_LOCAL,
@@ -1122,10 +1123,7 @@ async function loadSharedHead() {
 
     // Ensure favicon exists (minimal, do not re-inject if present)
     if (!document.head.querySelector('link[rel="icon"]')) {
-      const iconLink = document.createElement('link');
-      iconLink.rel = 'icon';
-      iconLink.href = BRAND_DATA.logo;
-      document.head.appendChild(iconLink);
+      upsertHeadLink({ rel: 'icon', href: BRAND_DATA.logo });
     }
     // Ensure PWA manifest & Apple mobile settings
     try {
@@ -1432,124 +1430,13 @@ async function loadSharedHead() {
   globalThis.SHARED_HEAD_LOADED = true;
 }
 
-// Helper to apply a single icon link to the document
-function applyIconLink(doc, ic) {
-  if (!ic?.rel) return;
-  if (ic.rel === 'icon' && ic.sizes) {
-    // upsert link[rel="icon"][sizes="..."]
-    let el = doc.head.querySelector(`link[rel="icon"][sizes="${ic.sizes}"]`);
-    if (el) {
-      el.setAttribute('href', ic.href);
-    } else {
-      el = doc.createElement('link');
-      el.setAttribute('rel', 'icon');
-      el.setAttribute('sizes', ic.sizes);
-      if (ic.type) el.setAttribute('type', ic.type);
-      el.setAttribute('href', ic.href);
-      doc.head.appendChild(el);
-    }
-  } else if (ic.rel === 'shortcut icon') {
-    // upsert link[rel="shortcut icon"]
-    let el = doc.head.querySelector('link[rel="shortcut icon"]');
-    if (el) {
-      el.setAttribute('href', ic.href);
-    } else {
-      el = doc.createElement('link');
-      el.setAttribute('rel', 'shortcut icon');
-      if (ic.type) el.setAttribute('type', ic.type);
-      el.setAttribute('href', ic.href);
-      doc.head.appendChild(el);
-    }
-  } else {
-    // upsert other rels (e.g. apple-touch-icon)
-    let el = doc.head.querySelector(`link[rel="${ic.rel}"]`);
-    if (el) {
-      el.setAttribute('href', ic.href);
-    } else {
-      el = doc.createElement('link');
-      el.setAttribute('rel', ic.rel);
-      if (ic.sizes) el.setAttribute('sizes', ic.sizes);
-      if (ic.type) el.setAttribute('type', ic.type);
-      el.setAttribute('href', ic.href);
-      doc.head.appendChild(el);
-    }
-  }
-}
+// Removed unused helper: applyIconLink (local cleanup)
+// This helper was removed locally because it is not referenced anywhere in the repo.
+// Reintroduce if external consumers require it.
 
-// Orchestrator helper: performs high-level head initialization using the exported helpers.
-export function orchestrateHead(
-  doc = typeof document === 'undefined' ? null : document,
-  options = {},
-) {
-  if (!doc?.head) return null;
-
-  const BASE_URL = options.BASE_URL || 'https://abdulkerimsesli.de';
-  const BRAND_DATA = options.BRAND_DATA || {};
-  const ROUTES = options.ROUTES || {};
-  const BUSINESS_FAQS = options.BUSINESS_FAQS || [];
-
-  const currentPath = globalThis.location.pathname.toLowerCase();
-  const matchedKey = Object.keys(ROUTES).find(
-    (key) => key !== 'default' && currentPath.includes(key),
-  );
-  const pageData = matchedKey ? ROUTES[matchedKey] : ROUTES.default || {};
-  const pageUrl = globalThis.location.href.split('#')[0];
-
-  // 1) push page metadata
-  globalThis.dataLayer = globalThis.dataLayer || [];
-  const page_meta = buildPageMeta(
-    pageData,
-    pageUrl,
-    globalThis.location.pathname || '/',
-  );
-  globalThis.dataLayer.push({ event: 'pageMetadataReady', page_meta });
-
-  // 2) core metas
-  upsertMeta(doc, 'description', pageData?.description);
-  upsertMeta(doc, 'robots', 'index, follow, max-image-preview:large');
-  upsertMeta(doc, 'viewport', 'width=device-width, initial-scale=1');
-  upsertMeta(doc, 'language', 'de-DE');
-  upsertMeta(doc, 'author', BRAND_DATA.name || '');
-  upsertMeta(doc, 'twitter:card', 'summary_large_image');
-  upsertMeta(doc, 'twitter:creator', '@abdulkerimsesli');
-
-  // 3) OG tags
-  upsertMeta(doc, 'og:title', pageData.title, true);
-  upsertMeta(doc, 'og:description', pageData.description, true);
-  if (pageData.image) upsertMeta(doc, 'og:image', pageData.image, true);
-  upsertLink(doc, 'canonical', pageUrl);
-  upsertLink(doc, 'manifest', '/manifest.json');
-
-  // 4) PWA assets
-  const { links, iconLinks, metas } = buildPwaAssets(BASE_URL, BRAND_DATA);
-  links.forEach((l) => upsertLink(doc, l.rel, l.href));
-  metas.forEach((m) => upsertMeta(doc, m.name, m.content));
-
-  // Ensure icon links (icons, shortcut, apple-touch-icon) are applied
-  iconLinks.forEach((ic) => applyIconLink(doc, ic));
-
-  // 5) canonical + alternates
-  const { effectiveCanonical, alternates } = buildCanonicalLinks(
-    ROUTES.forceProdFlag || false,
-    globalThis.location.hostname.toLowerCase(),
-    options.cleanPath ?? globalThis.location.pathname,
-    pageUrl,
-    BASE_URL,
-    globalThis.location.pathname,
-    globalThis.location.origin,
-  );
-  applyCanonicalLinks(doc, alternates, effectiveCanonical);
-
-  // 6) schedule schema injection
-  scheduleSchemaInjection(
-    () =>
-      injectSchema(pageData, pageUrl, BASE_URL, BRAND_DATA, BUSINESS_FAQS, doc),
-    1500,
-    1200,
-  );
-
-  return { pageData, pageUrl, effectiveCanonical, alternates };
-}
+// Removed unused export: orchestrateHead (local cleanup)
+// This helper was removed locally because it is not referenced anywhere in the repo.
+// Reintroduce if external consumers require it.
 
 try {
   await loadSharedHead();

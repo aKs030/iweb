@@ -18,7 +18,9 @@ import {
   schedulePersistentStorageRequest,
   AppLoadManager,
   SectionTracker,
-} from './utils/shared-utilities.js';
+  addListener,
+} from '/content/utils/shared-utilities.js';
+import { observeOnce } from '/content/utils/intersection-observer.js';
 // initHeroSubtitle is imported where needed (hero manager); legacy global exposure removed
 import { a11y } from './utils/accessibility-manager.js';
 // Accessibility manager initializes itself and exposes a11y as needed (avoid duplicate global writes here)
@@ -218,9 +220,13 @@ const SectionLoader = (() => {
         button.type = 'button';
         button.className = 'section-retry';
         button.textContent = 'Erneut laden';
-        button.addEventListener('click', () => retrySection(section), {
+        const _onRetryClick = () => retrySection(section);
+        const _removeRetry = addListener(button, 'click', _onRetryClick, {
           once: true,
         });
+        // store remover to allow cleanup
+        button.__listenerRemovers = button.__listenerRemovers || [];
+        button.__listenerRemovers.push(_removeRetry);
 
         const wrapper = document.createElement('div');
         wrapper.className = 'section-error-box';
@@ -582,19 +588,14 @@ const ThreeEarthLoader = (() => {
       // ignore and fallback to observer
     }
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            observer.disconnect();
-            load();
-          }
-        }
+    // Use a one-shot observer helper for simpler semantics
+    observeOnce(
+      container,
+      () => {
+        load();
       },
       { rootMargin: '400px', threshold: 0.01 },
     );
-
-    observer.observe(container);
   }
 
   // Use a safe idleCallback wrapper that simulates a deadline when native API is absent
@@ -800,7 +801,7 @@ document.addEventListener(
     }
 
     // Delegated handlers for retry and share buttons to avoid inline handlers (CSP-compliant)
-    document.addEventListener('click', (event) => {
+    const _onDocDelegatedClick = (event) => {
       const target = event.target;
       if (!target) return;
 
@@ -847,8 +848,16 @@ document.addEventListener(
             log.warn('prompt failed', err);
           }
         }
+        return;
       }
-    });
+    };
+    const _removeMainDelegated = addListener(
+      document,
+      'click',
+      _onDocDelegatedClick,
+    );
+    // store ref for potential cleanup
+    globalThis.__main_delegated_remove = _removeMainDelegated;
 
     log.info('Performance:', {
       domReady: Math.round(perfMarks.domReady - perfMarks.start),

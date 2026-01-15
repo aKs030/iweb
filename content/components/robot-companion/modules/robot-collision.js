@@ -1,4 +1,5 @@
-import { createLogger } from '../../../utils/shared-utilities.js';
+import { createLogger } from '/content/utils/shared-utilities.js';
+import { createObserver } from '/content/utils/intersection-observer.js';
 const log = createLogger('RobotCollision');
 
 export class RobotCollision {
@@ -11,7 +12,7 @@ export class RobotCollision {
     this.visibleObstacles = new Set();
     this._trackedObstacles = new WeakSet();
 
-    this.obstacleObserver = new IntersectionObserver(
+    this.obstacleObserver = createObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
