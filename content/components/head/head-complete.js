@@ -291,7 +291,7 @@ function generateSchemaGraph(
         if (imgs.length > 1) {
           personNode.image = imgs.slice(0, 3);
         }
-      } catch (e) {}
+      } catch (e) { }
 
       // Agent interaction statistic: prefer server-side postsCount, fallback to counting <article> elements
       try {
@@ -305,7 +305,7 @@ function generateSchemaGraph(
             userInteractionCount: writeCount,
           };
         }
-      } catch (e) {}
+      } catch (e) { }
 
       // Interaction statistics (followers / likes) — prefer server-side BRAND_DATA values and fallback to DOM
       try {
@@ -330,11 +330,11 @@ function generateSchemaGraph(
           brandFollowers > 0
             ? brandFollowers
             : findCount([
-                '[data-followers]',
-                '[data-followers-count]',
-                '.followers-count',
-                '.follower-count',
-              ]);
+              '[data-followers]',
+              '[data-followers-count]',
+              '.followers-count',
+              '.follower-count',
+            ]);
         if (followers > 0) {
           personNode.interactionStatistic =
             personNode.interactionStatistic || [];
@@ -350,11 +350,11 @@ function generateSchemaGraph(
           brandLikes > 0
             ? brandLikes
             : findCount([
-                '[data-likes]',
-                '[data-likes-count]',
-                '.likes-count',
-                '.like-count',
-              ]);
+              '[data-likes]',
+              '[data-likes-count]',
+              '.likes-count',
+              '.like-count',
+            ]);
         if (likes > 0) {
           personNode.interactionStatistic =
             personNode.interactionStatistic || [];
@@ -364,9 +364,9 @@ function generateSchemaGraph(
             userInteractionCount: likes,
           });
         }
-      } catch (e) {}
+      } catch (e) { }
     }
-  } catch (e) {}
+  } catch (e) { }
 
   // Skills/ItemList
   if (
@@ -488,7 +488,7 @@ function generateSchemaGraph(
         }
       }
     }
-  } catch (e) {}
+  } catch (e) { }
 
   // ImageObject enrichment for richer image results (helps Image Pack / Image Carousel)
   try {
@@ -1104,10 +1104,17 @@ async function loadSharedHead() {
 
       const canonicalEl = document.head.querySelector('link[rel="canonical"]');
       if (canonicalEl) {
-        canonicalEl.setAttribute('href', effectiveCanonical);
+        // Server-side canonical tag exists (static) - only validate/update if needed
+        const currentHref = canonicalEl.getAttribute('href');
+        if (currentHref !== effectiveCanonical) {
+          log?.info?.('Updating canonical from', currentHref, 'to', effectiveCanonical);
+          canonicalEl.setAttribute('href', effectiveCanonical);
+        }
         // Remove early flag if present (now properly configured)
         canonicalEl.removeAttribute('data-early');
       } else {
+        // Fallback: no static canonical found, inject dynamically
+        log?.warn?.('No static canonical tag found, injecting dynamically');
         upsertLink('canonical', effectiveCanonical);
       }
 
@@ -1117,8 +1124,12 @@ async function loadSharedHead() {
       // Safe fallback log
       log.warn('canonical detection failed', err);
       const canonicalEl = document.head.querySelector('link[rel="canonical"]');
-      if (canonicalEl) canonicalEl.setAttribute('href', pageUrl);
-      else upsertLink('canonical', pageUrl);
+      if (canonicalEl) {
+        // Preserve existing canonical tag on error
+        log?.info?.('Preserving existing canonical tag on error');
+      } else {
+        upsertLink('canonical', pageUrl);
+      }
     }
 
     // Ensure favicon exists (minimal, do not re-inject if present)
