@@ -47,32 +47,11 @@
   "prefer_related_applications": false,
   "screenshots": [
     {
-      "src": "/content/assets/img/og/og-home.png",
-      "sizes": "1200x630",
+      "src": "/content/assets/img/icons/favicon-512.png",
+      "sizes": "512x512",
       "type": "image/png",
       "form_factor": "wide",
-      "label": "Abdulkerim Sesli Portfolio Homepage"
-    },
-    {
-      "src": "/content/assets/img/og/og-projekte.png",
-      "sizes": "1200x630",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "Webentwicklung & Coding Projekte"
-    },
-    {
-      "src": "/content/assets/img/og/og-gallery.png",
-      "sizes": "1200x630",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "Fotografie Portfolio - Urban & Portraits"
-    },
-    {
-      "src": "/content/assets/img/og/og-blog.png",
-      "sizes": "1200x630",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "Tech Blog & Tutorials"
+      "label": "Abdulkerim Sesli Portfolio"
     }
   ]
 }
