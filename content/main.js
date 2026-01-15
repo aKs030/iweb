@@ -50,6 +50,50 @@ const perfMarks = {
   windowLoaded: 0,
 };
 
+// ===== Service Worker Registration =====
+try {
+  if ('serviceWorker' in navigator) {
+    // Register after window load to avoid competing with critical resources
+    window.addEventListener('load', () => {
+      navigator.serviceWorker
+        .register('/sw.js')
+        .then(async (reg) => {
+          log?.info?.('ServiceWorker registered', reg.scope || '');
+
+          try {
+            // Optional Background Sync: retries queued work when back online
+            if ('sync' in reg) {
+              await reg.sync.register('sync-content');
+              log?.info?.('Background Sync registered');
+            }
+          } catch (e) {
+            // ignore unsupported
+          }
+
+          try {
+            // Optional Periodic Background Sync (if supported by the browser)
+            if ('periodicSync' in reg) {
+              const tags = await reg.periodicSync.getTags().catch(() => []);
+              if (!tags || !tags.includes('fetch-updates')) {
+                await reg.periodicSync.register('fetch-updates', {
+                  minInterval: 24 * 60 * 60 * 1000, // once per day
+                });
+                log?.info?.('Periodic Sync registered');
+              }
+            }
+          } catch (e) {
+            // ignore unsupported
+          }
+        })
+        .catch((err) => {
+          log?.warn?.('ServiceWorker registration failed', err);
+        });
+    });
+  }
+} catch (e) {
+  // Silent fail if environment does not permit SW
+}
+
 // ===== Accessibility Announcements =====
 const announce = (() => {
   const cache = new Map();
