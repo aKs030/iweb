@@ -143,7 +143,8 @@ const SectionLoader = (() => {
     }
     if (!response || !response.ok) {
       throw new Error(
-        `HTTP ${response ? response.status : 'NO_RESPONSE'}: ${response ? response.statusText : 'no response'
+        `HTTP ${response ? response.status : 'NO_RESPONSE'}: ${
+          response ? response.statusText : 'no response'
         }`,
       );
     }
@@ -704,7 +705,8 @@ document.addEventListener(
                   ? AppLoadManager.getPending()
                   : [];
               log.warn(
-                `Deferring forced loading screen hide (attempt ${attempt}): blocking modules=${Array.isArray(pending) ? pending.join(', ') : String(pending)
+                `Deferring forced loading screen hide (attempt ${attempt}): blocking modules=${
+                  Array.isArray(pending) ? pending.join(', ') : String(pending)
                 }`,
               );
 
