@@ -40,7 +40,7 @@ function validate() {
   if (errors.length) {
     error(
       'site-config validation failed:\n' +
-        errors.map((e) => ' - ' + e).join('\n'),
+      errors.map((e) => ' - ' + e).join('\n'),
     );
     process.exit(1);
   }

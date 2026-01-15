@@ -23,20 +23,20 @@ const useDebounce = (value, delay) => {
 // Lucide Icon Components (simplified inline versions)
 const createIcon =
   (paths) =>
-  ({ size = 20, className = '' } = {}) =>
-    React.createElement(
-      'svg',
-      {
-        width: size,
-        height: size,
-        viewBox: '0 0 24 24',
-        fill: 'none',
-        stroke: 'currentColor',
-        strokeWidth: '2',
-        className,
-      },
-      paths,
-    );
+    ({ size = 20, className = '' } = {}) =>
+      React.createElement(
+        'svg',
+        {
+          width: size,
+          height: size,
+          viewBox: '0 0 24 24',
+          fill: 'none',
+          stroke: 'currentColor',
+          strokeWidth: '2',
+          className,
+        },
+        paths,
+      );
 
 const Heart = createIcon(
   React.createElement(
@@ -607,11 +607,10 @@ const PhotoGallery = () => {
                 key: cat,
                 onClick: () => setFilter(cat),
                 'data-filter': cat,
-                className: `px-5 py-2.5 rounded-xl font-medium transition-all duration-300 ${
-                  filter === cat
+                className: `px-5 py-2.5 rounded-xl font-medium transition-all duration-300 ${filter === cat
                     ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg shadow-purple-500/50 scale-105'
                     : 'bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm border border-white/10'
-                }`,
+                  }`,
               },
               cat.charAt(0).toUpperCase() + cat.slice(1),
             ),
@@ -654,11 +653,10 @@ const PhotoGallery = () => {
               'button',
               {
                 onClick: () => setGridSize(2),
-                className: `p-2 rounded-lg transition-all ${
-                  gridSize === 2
+                className: `p-2 rounded-lg transition-all ${gridSize === 2
                     ? 'bg-purple-500 text-white'
                     : 'text-white hover:bg-white/10'
-                }`,
+                  }`,
               },
               Grid2x2({ size: 18 }),
             ),
@@ -666,11 +664,10 @@ const PhotoGallery = () => {
               'button',
               {
                 onClick: () => setGridSize(3),
-                className: `p-2 rounded-lg transition-all ${
-                  gridSize === 3
+                className: `p-2 rounded-lg transition-all ${gridSize === 3
                     ? 'bg-purple-500 text-white'
                     : 'text-white hover:bg-white/10'
-                }`,
+                  }`,
               },
               Grid3x3({ size: 18 }),
             ),
@@ -680,8 +677,7 @@ const PhotoGallery = () => {
       React.createElement(
         'div',
         { className: 'text-center text-indigo-300 mb-6' },
-        `${filteredPhotos.length} ${
-          filteredPhotos.length === 1 ? 'Foto' : 'Fotos'
+        `${filteredPhotos.length} ${filteredPhotos.length === 1 ? 'Foto' : 'Fotos'
         } gefunden`,
       ),
     ),
@@ -764,11 +760,10 @@ const PhotoGallery = () => {
                 },
                 Heart({
                   size: 18,
-                  className: `${
-                    favorites.includes(photo.id)
+                  className: `${favorites.includes(photo.id)
                       ? 'fill-red-500 text-red-500'
                       : 'text-white'
-                  }`,
+                    }`,
                 }),
               ),
             ),
@@ -790,384 +785,381 @@ const PhotoGallery = () => {
             ),
           ),
           !imageLoaded[photo.id] &&
+          React.createElement(
+            'div',
+            {
+              className: 'absolute inset-0 bg-slate-900 u-row u-center',
+            },
             React.createElement(
               'div',
-              {
-                className: 'absolute inset-0 bg-slate-900 u-row u-center',
-              },
+              { className: 'relative' },
+              React.createElement('div', {
+                className:
+                  'w-16 h-16 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin',
+              }),
               React.createElement(
                 'div',
-                { className: 'relative' },
+                {
+                  className: 'absolute inset-0 u-row u-center',
+                },
                 React.createElement('div', {
                   className:
-                    'w-16 h-16 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin',
+                    'w-8 h-8 border-4 border-pink-500/30 border-t-pink-500 rounded-full animate-spin',
+                  style: { animationDirection: 'reverse' },
                 }),
-                React.createElement(
-                  'div',
-                  {
-                    className: 'absolute inset-0 u-row u-center',
-                  },
-                  React.createElement('div', {
-                    className:
-                      'w-8 h-8 border-4 border-pink-500/30 border-t-pink-500 rounded-full animate-spin',
-                    style: { animationDirection: 'reverse' },
-                  }),
-                ),
               ),
             ),
+          ),
         ),
       ),
     ),
     selectedImage &&
+    React.createElement(
+      'div',
+      {
+        id: 'lightbox',
+        'data-test': 'lightbox',
+        role: 'dialog',
+        'aria-modal': 'true',
+        'aria-labelledby': 'lightbox-title',
+        className:
+          'fixed inset-0 bg-black/98 backdrop-blur-sm z-50 u-row u-center',
+        onClick: () => {
+          setSelectedImage(null);
+          setZoom(1);
+          setIsSlideshow(false);
+        },
+      },
       React.createElement(
         'div',
         {
-          id: 'lightbox',
-          'data-test': 'lightbox',
-          role: 'dialog',
-          'aria-modal': 'true',
-          'aria-labelledby': 'lightbox-title',
           className:
-            'fixed inset-0 bg-black/98 backdrop-blur-sm z-50 u-row u-center',
-          onClick: () => {
-            setSelectedImage(null);
-            setZoom(1);
-            setIsSlideshow(false);
-          },
+            'absolute top-0 left-0 right-0 p-6 bg-gradient-to-b from-black/80 to-transparent z-10',
         },
         React.createElement(
           'div',
           {
-            className:
-              'absolute top-0 left-0 right-0 p-6 bg-gradient-to-b from-black/80 to-transparent z-10',
+            className: 'max-w-7xl mx-auto u-row u-between',
           },
           React.createElement(
             'div',
-            {
-              className: 'max-w-7xl mx-auto u-row u-between',
-            },
+            { className: 'text-white' },
             React.createElement(
-              'div',
-              { className: 'text-white' },
-              React.createElement(
-                'h2',
-                { id: 'lightbox-title', className: 'text-2xl font-bold mb-1' },
-                selectedImage.title,
-              ),
-              React.createElement(
-                'p',
-                { className: 'text-indigo-300' },
-                `${selectedImage.location} • ${new Date(
-                  selectedImage.date,
-                ).toLocaleDateString('de-DE')}`,
-              ),
+              'h2',
+              { id: 'lightbox-title', className: 'text-2xl font-bold mb-1' },
+              selectedImage.title,
+            ),
+            React.createElement(
+              'p',
+              { className: 'text-indigo-300' },
+              `${selectedImage.location} • ${new Date(
+                selectedImage.date,
+              ).toLocaleDateString('de-DE')}`,
+            ),
+          ),
+          React.createElement(
+            'div',
+            { className: 'u-row' },
+            React.createElement(
+              'button',
+              {
+                onClick: (e) => {
+                  e.stopPropagation();
+                  setShowInfo(!showInfo);
+                },
+                className: `p-3 rounded-xl transition-all backdrop-blur-md ${showInfo ? 'bg-purple-500' : 'bg-white/10 hover:bg-white/20'
+                  }`,
+              },
+              Info({ size: 20, className: 'text-white' }),
+            ),
+            React.createElement(
+              'button',
+              {
+                onClick: (e) => {
+                  e.stopPropagation();
+                  setIsSlideshow(!isSlideshow);
+                },
+                className: `p-3 rounded-xl transition-all backdrop-blur-md ${isSlideshow
+                    ? 'bg-purple-500'
+                    : 'bg-white/10 hover:bg-white/20'
+                  }`,
+              },
+              isSlideshow
+                ? Pause({ size: 20, className: 'text-white' })
+                : Play({ size: 20, className: 'text-white' }),
+            ),
+            React.createElement(
+              'button',
+              {
+                id: 'lightbox-close',
+                onClick: (e) => {
+                  e.stopPropagation();
+                  setSelectedImage(null);
+                  setZoom(1);
+                  setIsSlideshow(false);
+                },
+                className:
+                  'p-3 bg-white/10 hover:bg-white/20 rounded-xl transition-all backdrop-blur-md',
+              },
+              X_Icon({ size: 20, className: 'text-white' }),
+            ),
+          ),
+        ),
+      ),
+      showInfo &&
+      React.createElement(
+        'div',
+        {
+          className:
+            'absolute top-24 right-6 w-80 bg-black/90 backdrop-blur-xl rounded-2xl p-6 border border-white/10 z-10',
+        },
+        React.createElement(
+          'h3',
+          { className: 'text-white font-bold text-lg mb-4' },
+          'Foto-Details',
+        ),
+        React.createElement(
+          'div',
+          { className: 'u-stack text-sm' },
+          React.createElement(
+            'div',
+            { className: 'u-row u-between' },
+            React.createElement(
+              'span',
+              { className: 'text-indigo-300' },
+              'Kamera:',
+            ),
+            React.createElement(
+              'span',
+              { className: 'text-white font-medium' },
+              selectedImage.camera,
+            ),
+          ),
+          React.createElement(
+            'div',
+            { className: 'u-row u-between' },
+            React.createElement(
+              'span',
+              { className: 'text-indigo-300' },
+              'Blende:',
+            ),
+            React.createElement(
+              'span',
+              { className: 'text-white font-medium' },
+              selectedImage.aperture,
+            ),
+          ),
+          React.createElement(
+            'div',
+            { className: 'u-row u-between' },
+            React.createElement(
+              'span',
+              { className: 'text-indigo-300' },
+              'ISO:',
+            ),
+            React.createElement(
+              'span',
+              { className: 'text-white font-medium' },
+              selectedImage.iso,
+            ),
+          ),
+          React.createElement(
+            'div',
+            { className: 'u-row u-between' },
+            React.createElement(
+              'span',
+              { className: 'text-indigo-300' },
+              'Ort:',
+            ),
+            React.createElement(
+              'span',
+              { className: 'text-white font-medium' },
+              selectedImage.location,
+            ),
+          ),
+          React.createElement(
+            'div',
+            { className: 'u-row u-between' },
+            React.createElement(
+              'span',
+              { className: 'text-indigo-300' },
+              'Datum:',
+            ),
+            React.createElement(
+              'span',
+              { className: 'text-white font-medium' },
+              new Date(selectedImage.date).toLocaleDateString('de-DE'),
+            ),
+          ),
+          React.createElement(
+            'div',
+            { className: 'pt-3 border-t border-white/10' },
+            React.createElement(
+              'span',
+              { className: 'text-indigo-300 block mb-2' },
+              'Tags:',
             ),
             React.createElement(
               'div',
-              { className: 'u-row' },
-              React.createElement(
-                'button',
-                {
-                  onClick: (e) => {
-                    e.stopPropagation();
-                    setShowInfo(!showInfo);
+              { className: 'u-row u-wrap' },
+              selectedImage.tags.map((tag) =>
+                React.createElement(
+                  'span',
+                  {
+                    key: tag,
+                    className:
+                      'px-2 py-1 bg-purple-500/20 text-purple-300 rounded-lg text-xs',
                   },
-                  className: `p-3 rounded-xl transition-all backdrop-blur-md ${
-                    showInfo ? 'bg-purple-500' : 'bg-white/10 hover:bg-white/20'
-                  }`,
-                },
-                Info({ size: 20, className: 'text-white' }),
-              ),
-              React.createElement(
-                'button',
-                {
-                  onClick: (e) => {
-                    e.stopPropagation();
-                    setIsSlideshow(!isSlideshow);
-                  },
-                  className: `p-3 rounded-xl transition-all backdrop-blur-md ${
-                    isSlideshow
-                      ? 'bg-purple-500'
-                      : 'bg-white/10 hover:bg-white/20'
-                  }`,
-                },
-                isSlideshow
-                  ? Pause({ size: 20, className: 'text-white' })
-                  : Play({ size: 20, className: 'text-white' }),
-              ),
-              React.createElement(
-                'button',
-                {
-                  id: 'lightbox-close',
-                  onClick: (e) => {
-                    e.stopPropagation();
-                    setSelectedImage(null);
-                    setZoom(1);
-                    setIsSlideshow(false);
-                  },
-                  className:
-                    'p-3 bg-white/10 hover:bg-white/20 rounded-xl transition-all backdrop-blur-md',
-                },
-                X_Icon({ size: 20, className: 'text-white' }),
+                  `#${tag}`,
+                ),
               ),
             ),
           ),
         ),
-        showInfo &&
-          React.createElement(
-            'div',
-            {
-              className:
-                'absolute top-24 right-6 w-80 bg-black/90 backdrop-blur-xl rounded-2xl p-6 border border-white/10 z-10',
-            },
-            React.createElement(
-              'h3',
-              { className: 'text-white font-bold text-lg mb-4' },
-              'Foto-Details',
-            ),
-            React.createElement(
-              'div',
-              { className: 'u-stack text-sm' },
-              React.createElement(
-                'div',
-                { className: 'u-row u-between' },
-                React.createElement(
-                  'span',
-                  { className: 'text-indigo-300' },
-                  'Kamera:',
-                ),
-                React.createElement(
-                  'span',
-                  { className: 'text-white font-medium' },
-                  selectedImage.camera,
-                ),
-              ),
-              React.createElement(
-                'div',
-                { className: 'u-row u-between' },
-                React.createElement(
-                  'span',
-                  { className: 'text-indigo-300' },
-                  'Blende:',
-                ),
-                React.createElement(
-                  'span',
-                  { className: 'text-white font-medium' },
-                  selectedImage.aperture,
-                ),
-              ),
-              React.createElement(
-                'div',
-                { className: 'u-row u-between' },
-                React.createElement(
-                  'span',
-                  { className: 'text-indigo-300' },
-                  'ISO:',
-                ),
-                React.createElement(
-                  'span',
-                  { className: 'text-white font-medium' },
-                  selectedImage.iso,
-                ),
-              ),
-              React.createElement(
-                'div',
-                { className: 'u-row u-between' },
-                React.createElement(
-                  'span',
-                  { className: 'text-indigo-300' },
-                  'Ort:',
-                ),
-                React.createElement(
-                  'span',
-                  { className: 'text-white font-medium' },
-                  selectedImage.location,
-                ),
-              ),
-              React.createElement(
-                'div',
-                { className: 'u-row u-between' },
-                React.createElement(
-                  'span',
-                  { className: 'text-indigo-300' },
-                  'Datum:',
-                ),
-                React.createElement(
-                  'span',
-                  { className: 'text-white font-medium' },
-                  new Date(selectedImage.date).toLocaleDateString('de-DE'),
-                ),
-              ),
-              React.createElement(
-                'div',
-                { className: 'pt-3 border-t border-white/10' },
-                React.createElement(
-                  'span',
-                  { className: 'text-indigo-300 block mb-2' },
-                  'Tags:',
-                ),
-                React.createElement(
-                  'div',
-                  { className: 'u-row u-wrap' },
-                  selectedImage.tags.map((tag) =>
-                    React.createElement(
-                      'span',
-                      {
-                        key: tag,
-                        className:
-                          'px-2 py-1 bg-purple-500/20 text-purple-300 rounded-lg text-xs',
-                      },
-                      `#${tag}`,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
+      ),
+      React.createElement(
+        'button',
+        {
+          onClick: (e) => {
+            e.stopPropagation();
+            navigateImage(-1);
+          },
+          className:
+            'absolute left-6 top-1/2 -translate-y-1/2 p-4 bg-white/10 hover:bg-white/20 rounded-full transition-all backdrop-blur-md z-10 group',
+        },
+        ChevronLeft({
+          size: 32,
+          className: 'text-white group-hover:scale-110 transition-transform',
+        }),
+      ),
+      React.createElement(
+        'button',
+        {
+          onClick: (e) => {
+            e.stopPropagation();
+            navigateImage(1);
+          },
+          className:
+            'absolute right-6 top-1/2 -translate-y-1/2 p-4 bg-white/10 hover:bg-white/20 rounded-full transition-all backdrop-blur-md z-10 group',
+        },
+        ChevronRight({
+          size: 32,
+          className: 'text-white group-hover:scale-110 transition-transform',
+        }),
+      ),
+      React.createElement(
+        'div',
+        {
+          className:
+            'absolute bottom-6 left-1/2 -translate-x-1/2 u-row bg-black/80 backdrop-blur-xl rounded-2xl p-3 border border-white/10',
+        },
         React.createElement(
           'button',
           {
             onClick: (e) => {
               e.stopPropagation();
-              navigateImage(-1);
+              handleZoom(-0.25);
             },
-            className:
-              'absolute left-6 top-1/2 -translate-y-1/2 p-4 bg-white/10 hover:bg-white/20 rounded-full transition-all backdrop-blur-md z-10 group',
+            className: 'p-3 hover:bg-white/10 rounded-xl transition-all',
           },
-          ChevronLeft({
-            size: 32,
-            className: 'text-white group-hover:scale-110 transition-transform',
-          }),
-        ),
-        React.createElement(
-          'button',
-          {
-            onClick: (e) => {
-              e.stopPropagation();
-              navigateImage(1);
-            },
-            className:
-              'absolute right-6 top-1/2 -translate-y-1/2 p-4 bg-white/10 hover:bg-white/20 rounded-full transition-all backdrop-blur-md z-10 group',
-          },
-          ChevronRight({
-            size: 32,
-            className: 'text-white group-hover:scale-110 transition-transform',
-          }),
+          ZoomOut({ size: 20, className: 'text-white' }),
         ),
         React.createElement(
           'div',
           {
             className:
-              'absolute bottom-6 left-1/2 -translate-x-1/2 u-row bg-black/80 backdrop-blur-xl rounded-2xl p-3 border border-white/10',
+              'px-4 py-3 text-white font-semibold min-w-[80px] text-center bg-white/5 rounded-xl',
           },
-          React.createElement(
-            'button',
-            {
-              onClick: (e) => {
-                e.stopPropagation();
-                handleZoom(-0.25);
-              },
-              className: 'p-3 hover:bg-white/10 rounded-xl transition-all',
+          `${Math.round(zoom * 100)}%`,
+        ),
+        React.createElement(
+          'button',
+          {
+            onClick: (e) => {
+              e.stopPropagation();
+              handleZoom(0.25);
             },
-            ZoomOut({ size: 20, className: 'text-white' }),
-          ),
-          React.createElement(
-            'div',
-            {
-              className:
-                'px-4 py-3 text-white font-semibold min-w-[80px] text-center bg-white/5 rounded-xl',
+            className: 'p-3 hover:bg-white/10 rounded-xl transition-all',
+          },
+          ZoomIn({ size: 20, className: 'text-white' }),
+        ),
+        React.createElement('div', { className: 'w-px bg-white/20' }),
+        React.createElement(
+          'button',
+          {
+            onClick: (e) => {
+              e.stopPropagation();
+              toggleFavorite(selectedImage.id, e);
             },
-            `${Math.round(zoom * 100)}%`,
-          ),
-          React.createElement(
-            'button',
-            {
-              onClick: (e) => {
-                e.stopPropagation();
-                handleZoom(0.25);
-              },
-              className: 'p-3 hover:bg-white/10 rounded-xl transition-all',
-            },
-            ZoomIn({ size: 20, className: 'text-white' }),
-          ),
-          React.createElement('div', { className: 'w-px bg-white/20' }),
-          React.createElement(
-            'button',
-            {
-              onClick: (e) => {
-                e.stopPropagation();
-                toggleFavorite(selectedImage.id, e);
-              },
-              className: 'p-3 hover:bg-white/10 rounded-xl transition-all',
-            },
-            Heart({
-              size: 20,
-              className: `${
-                favorites.includes(selectedImage.id)
-                  ? 'fill-red-500 text-red-500'
-                  : 'text-white'
+            className: 'p-3 hover:bg-white/10 rounded-xl transition-all',
+          },
+          Heart({
+            size: 20,
+            className: `${favorites.includes(selectedImage.id)
+                ? 'fill-red-500 text-red-500'
+                : 'text-white'
               }`,
-            }),
-          ),
-          React.createElement(
-            'button',
-            {
-              onClick: (e) => {
-                e.stopPropagation();
-                handleShare();
-              },
-              className: 'p-3 hover:bg-white/10 rounded-xl transition-all',
-            },
-            Share2({ size: 20, className: 'text-white' }),
-          ),
-          React.createElement(
-            'button',
-            {
-              onClick: (e) => {
-                e.stopPropagation();
-                handleDownload();
-              },
-              className: 'p-3 hover:bg-white/10 rounded-xl transition-all',
-            },
-            Download({ size: 20, className: 'text-white' }),
-          ),
-        ),
-        React.createElement(
-          'div',
-          {
-            className: 'relative max-w-full max-h-full overflow-hidden',
-            onClick: (e) => e.stopPropagation(),
-          },
-          React.createElement('img', {
-            src: selectedImage.url,
-            alt: selectedImage.title,
-            className:
-              'max-w-full max-h-[80vh] object-contain transition-all duration-300',
-            style: {
-              transform: `scale(${zoom})`,
-              filter: 'drop-shadow(0 25px 50px rgba(0,0,0,0.5))',
-            },
           }),
         ),
-        isSlideshow &&
-          React.createElement(
-            'div',
-            {
-              className:
-                'absolute bottom-32 left-1/2 -translate-x-1/2 w-64 h-1 bg-white/20 rounded-full overflow-hidden',
-            },
-            React.createElement('div', {
-              className:
-                'h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full',
-              style: {
-                animation: 'progress 3s linear infinite',
-              },
-            }),
-          ),
         React.createElement(
-          'style',
-          null,
-          `
+          'button',
+          {
+            onClick: (e) => {
+              e.stopPropagation();
+              handleShare();
+            },
+            className: 'p-3 hover:bg-white/10 rounded-xl transition-all',
+          },
+          Share2({ size: 20, className: 'text-white' }),
+        ),
+        React.createElement(
+          'button',
+          {
+            onClick: (e) => {
+              e.stopPropagation();
+              handleDownload();
+            },
+            className: 'p-3 hover:bg-white/10 rounded-xl transition-all',
+          },
+          Download({ size: 20, className: 'text-white' }),
+        ),
+      ),
+      React.createElement(
+        'div',
+        {
+          className: 'relative max-w-full max-h-full overflow-hidden',
+          onClick: (e) => e.stopPropagation(),
+        },
+        React.createElement('img', {
+          src: selectedImage.url,
+          alt: selectedImage.title,
+          className:
+            'max-w-full max-h-[80vh] object-contain transition-all duration-300',
+          style: {
+            transform: `scale(${zoom})`,
+            filter: 'drop-shadow(0 25px 50px rgba(0,0,0,0.5))',
+          },
+        }),
+      ),
+      isSlideshow &&
+      React.createElement(
+        'div',
+        {
+          className:
+            'absolute bottom-32 left-1/2 -translate-x-1/2 w-64 h-1 bg-white/20 rounded-full overflow-hidden',
+        },
+        React.createElement('div', {
+          className:
+            'h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full',
+          style: {
+            animation: 'progress 3s linear infinite',
+          },
+        }),
+      ),
+      React.createElement(
+        'style',
+        null,
+        `
         @keyframes fadeInScale {
           from {
             opacity: 0;
@@ -1188,8 +1180,8 @@ const PhotoGallery = () => {
           }
         }
       `,
-        ),
       ),
+    ),
   );
 };
 

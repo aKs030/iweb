@@ -14,7 +14,7 @@ export function createObserver(callback, options = {}) {
 }
 
 export function observeOnce(target, onIntersect, options = {}) {
-  if (!target) return () => {};
+  if (!target) return () => { };
   const obs = new IntersectionObserver((entries, o) => {
     for (const entry of entries) {
       if (entry.isIntersecting) {
@@ -37,7 +37,7 @@ export function createVisibilityWatcher(
   target,
   { onEnter, onExit, threshold = 0.01, rootMargin = '0px' } = {},
 ) {
-  if (!target) return { disconnect: () => {} };
+  if (!target) return { disconnect: () => { } };
   const observer = new IntersectionObserver(
     (entries) => {
       for (const entry of entries) {
@@ -63,7 +63,7 @@ export function createViewportPauser(
   container,
   { onPause, onResume, threshold = 0, rootMargin = '50px' } = {},
 ) {
-  if (!container) return { disconnect: () => {} };
+  if (!container) return { disconnect: () => { } };
   let isPaused = null;
   const check = (entry) => {
     const visible = entry.isIntersecting && entry.intersectionRatio > threshold;

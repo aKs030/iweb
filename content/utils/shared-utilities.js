@@ -27,7 +27,7 @@ function setGlobalLogLevel(level) {
 export function createLogger(category) {
   const prefix = `[${category}]`;
   const console = globalThis.console || {};
-  const noop = () => {};
+  const noop = () => { };
 
   return {
     error: (message, ...args) => {
@@ -138,9 +138,8 @@ export const CookieManager = {
     date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
     const expires = `; expires=${date.toUTCString()}`;
     const secure = window.location.protocol === 'https:' ? '; Secure' : '';
-    document.cookie = `${name}=${
-      value || ''
-    }${expires}; path=/; SameSite=Lax${secure}`;
+    document.cookie = `${name}=${value || ''
+      }${expires}; path=/; SameSite=Lax${secure}`;
   },
 
   get(name) {
@@ -366,7 +365,7 @@ function createObserverWrapper(callback, options, triggerOnce = false) {
           callback(element);
         }
       },
-      disconnect: () => {},
+      disconnect: () => { },
     };
   }
 
@@ -400,8 +399,8 @@ export function createTriggerOnceObserver(callback, options = {}) {
     setTimeout(callback, 0);
     return {
       observer: null,
-      observe: () => {},
-      disconnect: () => {},
+      observe: () => { },
+      disconnect: () => { },
     };
   }
 
@@ -493,7 +492,7 @@ export function randomInt(min, max) {
 // ===== Unified Event Listener Helper =====
 
 export function addListener(target, event, handler, options = {}) {
-  if (!target?.addEventListener) return () => {};
+  if (!target?.addEventListener) return () => { };
 
   const finalOptions = { passive: true, ...options };
 
@@ -502,14 +501,14 @@ export function addListener(target, event, handler, options = {}) {
     return () => target.removeEventListener(event, handler, finalOptions);
   } catch (err) {
     sharedLogger.warn('addListener: failed to add listener', err);
-    return () => {};
+    return () => { };
   }
 }
 
 // ===== Window Event Helpers =====
 
 export function onResize(callback, delay = 100) {
-  if (typeof window === 'undefined') return () => {};
+  if (typeof window === 'undefined') return () => { };
 
   const debouncedCallback = debounce(callback, delay);
   return addListener(window, 'resize', debouncedCallback);
