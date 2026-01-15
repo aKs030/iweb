@@ -25,6 +25,24 @@
     <!-- Description and keywords are provided centrally in content/components/head/head.html -->
     <!-- Canonical tag (static for reliable Google indexing) -->
     <link rel="canonical" href="https://abdulkerimsesli.de/" />
+
+    <!-- Preload critical assets for performance -->
+    <link
+      rel="preload"
+      href="/content/assets/img/og/og-home.png"
+      as="image"
+      type="image/png"
+    />
+    <link
+      rel="preconnect"
+      href="https://fonts.googleapis.com"
+    />
+    <link
+      rel="preconnect"
+      href="https://fonts.gstatic.com"
+      crossorigin
+    />
+
     <!-- Server-side favicons for crawlers and browsers (reduces reliance on client-side injection) -->
     <!-- Prefer PNG/SVG icons (>=48px) so Google mobile search can show the favicon reliably -->
     <link
@@ -142,6 +160,18 @@
               }
             ],
             "isPartOf": { "@id": "https://abdulkerimsesli.de/#webpage" }
+          },
+          {
+            "@type": "BreadcrumbList",
+            "@id": "https://abdulkerimsesli.de/#breadcrumb",
+            "itemListElement": [
+              {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Home",
+                "item": "https://abdulkerimsesli.de/"
+              }
+            ]
           }
         ]
       }
