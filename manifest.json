@@ -3,6 +3,7 @@
   "short_name": "Abdulkerim",
   "description": "Portfolio von Abdulkerim Sesli — Webentwicklung (React, Three.js) & Urban Photography aus Berlin",
   "lang": "de-DE",
+  "dir": "ltr",
   "id": "https://abdulkerimsesli.de/",
   "start_url": "/",
   "scope": "/",
@@ -45,6 +46,13 @@
   ],
   "categories": ["portfolio", "developer", "creative", "web"],
   "prefer_related_applications": false,
+  "related_applications": [
+    {
+      "platform": "android",
+      "id": "com.abdulkerimsesli.portfolio",
+      "url": "https://play.google.com/store/apps/details?id=com.abdulkerimsesli.portfolio"
+    }
+  ],
   "screenshots": [
     {
       "src": "/content/assets/img/icons/favicon-512.png",
@@ -52,6 +60,15 @@
       "type": "image/png",
       "form_factor": "wide",
       "label": "Abdulkerim Sesli Portfolio"
+    },
+    {
+      "src": "/content/assets/img/icons/favicon-256.png",
+      "sizes": "256x256",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Portfolio (Mobile)"
     }
   ]
+  ,
+  "iarc_rating_id": "0000-0000-0000-0000"
 }
