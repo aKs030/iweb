@@ -1,13 +1,13 @@
 {
-  "name": "Abdulkerim Sesli - Web Dev",
+  "name": "Abdulkerim Sesli - Web Developer & Photographer",
   "short_name": "Abdulkerim",
-  "description": "Portfolio von Abdulkerim Sesli — Webentwicklung & Fotografie",
+  "description": "Portfolio von Abdulkerim Sesli — Webentwicklung (React, Three.js) & Urban Photography aus Berlin",
   "lang": "de-DE",
-  "id": "/",
+  "id": "https://abdulkerimsesli.de/",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "display_override": ["standalone", "fullscreen"],
+  "display_override": ["standalone", "fullscreen", "minimal-ui"],
   "orientation": "any",
   "background_color": "#ffffff",
   "theme_color": "#0d0d0d",
@@ -15,17 +15,20 @@
     {
       "src": "/content/assets/img/icons/favicon-128.png",
       "sizes": "128x128",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "/content/assets/img/icons/favicon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "/content/assets/img/icons/favicon-256.png",
       "sizes": "256x256",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "/content/assets/img/icons/favicon-512.png",
@@ -36,9 +39,40 @@
     {
       "src": "/content/assets/img/icons/apple-touch-icon.png",
       "sizes": "180x180",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     }
   ],
   "categories": ["portfolio", "developer", "creative", "web"],
-  "prefer_related_applications": false
+  "prefer_related_applications": false,
+  "screenshots": [
+    {
+      "src": "/content/assets/img/og/og-home.png",
+      "sizes": "1200x630",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Abdulkerim Sesli Portfolio Homepage"
+    },
+    {
+      "src": "/content/assets/img/og/og-projekte.png",
+      "sizes": "1200x630",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Webentwicklung & Coding Projekte"
+    },
+    {
+      "src": "/content/assets/img/og/og-gallery.png",
+      "sizes": "1200x630",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Fotografie Portfolio - Urban & Portraits"
+    },
+    {
+      "src": "/content/assets/img/og/og-blog.png",
+      "sizes": "1200x630",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Tech Blog & Tutorials"
+    }
+  ]
 }
