@@ -327,7 +327,7 @@ export class RobotChat {
     ) {
       const fallback =
         this.initialBubbleGreetings[
-        Math.floor(Math.random() * this.initialBubbleGreetings.length)
+          Math.floor(Math.random() * this.initialBubbleGreetings.length)
         ];
       picks.push(String(fallback || '').trim());
     }
