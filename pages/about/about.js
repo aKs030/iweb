@@ -6,7 +6,7 @@
  * - Improved code structure
  */
 import { FAVICON_512 } from '/content/config/site-config.js';
-import { makeAbortController } from '/content/utils/shared-utilities.js';
+import { fetchWithTimeout } from '/content/utils/shared-utilities.js';
 import { upsertHeadLink } from '/content/utils/dom-helpers.js';
 
 (async function () {
@@ -53,26 +53,6 @@ import { upsertHeadLink } from '/content/utils/dom-helpers.js';
   if (!src) {
     logger.error('data-about-src attribute is missing');
     return;
-  }
-
-  /**
-   * Fetch with timeout
-   */
-  async function fetchWithTimeout(url, timeout = FETCH_TIMEOUT) {
-    const { controller, clearTimeout: clearCtrlTimeout } =
-      makeAbortController(timeout);
-
-    try {
-      const response = await fetch(url, {
-        cache: 'no-cache',
-        signal: controller.signal,
-      });
-      clearCtrlTimeout();
-      return response;
-    } catch (err) {
-      clearCtrlTimeout();
-      throw err;
-    }
   }
 
   /**

@@ -225,7 +225,6 @@ window.robotCompanionTexts = {
       'Auf der Feature-Übersicht — interessiert an Details zu einem bestimmten Feature?',
     footer:
       'Im Footer findest du Kontakt & Impressum — soll ich dich dorthin bringen?',
-    // 'cards' intent deprecated — mapped into 'features' intent
   },
 
   initialBubbleSequenceConfig: {

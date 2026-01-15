@@ -8,13 +8,13 @@
  */
 
 // Importversuch mit Fallback für Standalone-Nutzung
-let createLogger, CookieManager, a11y, createObserver;
+let createLogger, CookieManager, a11y, createObserver, debounce;
 let _addListener = null;
 try {
   const utils = await import('/content/utils/shared-utilities.js').catch(() => {
     throw new Error('Utils missing');
   });
-  ({ createLogger, CookieManager } = utils);
+  ({ createLogger, CookieManager, debounce } = utils);
   // expose addListener locally if present
   _addListener = utils.addListener;
   ({ a11y } = await import('../../utils/accessibility-manager.js').catch(() => {
@@ -52,15 +52,7 @@ try {
 
 const log = createLogger('FooterSystem');
 
-// ===== Utilities =====
-const debounce = (func, wait) => {
-  let timeout;
-  return (...args) => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func(...args), wait);
-  };
-};
-
+// ===== Utility: memoize (local - not in shared-utilities) =====
 const memoize = (fn) => {
   const cache = new Map();
   return (...args) => {
