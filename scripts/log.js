@@ -1,19 +1,19 @@
+#!/usr/bin/env node
 function _fmt(level, msg) {
-  const time = new Date().toISOString();
-  if (typeof msg === 'string') console.log(`[iweb:${level}] ${time} - ${msg}`);
-  else console.log(`[iweb:${level}] ${time} -`, msg);
+  const ts = new Date().toISOString();
+  return `[${ts}] [${level}] ${msg}`;
 }
 
 function info(msg) {
-  _fmt('info', msg);
+  console.log(_fmt('INFO', msg));
 }
 
 function warn(msg) {
-  _fmt('warn', msg);
+  console.warn(_fmt('WARN', msg));
 }
 
 function error(msg) {
-  _fmt('error', msg);
+  console.error(_fmt('ERROR', msg));
 }
 
 module.exports = { info, warn, error };

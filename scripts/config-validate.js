@@ -1,8 +1,6 @@
 #!/usr/bin/env node
 // Validate content/config/site-config.js entries (basic regex checks)
-const fs = require('fs');
 const path = require('path');
-const vm = require('vm');
 
 const SITE_CFG_PATH = path.join(
   __dirname,
@@ -12,36 +10,14 @@ const SITE_CFG_PATH = path.join(
   'site-config.js',
 );
 
-function loadSiteConfig() {
-  const src = fs.readFileSync(SITE_CFG_PATH, 'utf8');
-  const marker = 'export const SITE_CONFIG =';
-  const idx = src.indexOf(marker);
-  if (idx < 0) throw new Error('site-config.js format not recognized');
-  const after = src.slice(idx + marker.length);
-  const firstBrace = after.indexOf('{');
-  let i = firstBrace;
-  let depth = 0;
-  for (; i < after.length; i++) {
-    const ch = after[i];
-    if (ch === '{') depth++;
-    else if (ch === '}') {
-      depth--;
-      if (depth === 0) {
-        const objectText = after.slice(firstBrace, i + 1);
-        const wrapper = `(function(){ return (${objectText}); })()`;
-        const sandbox = {};
-        const res = vm.runInNewContext(wrapper, sandbox, {
-          filename: SITE_CFG_PATH,
-        });
-        return res;
-      }
-    }
-  }
-  throw new Error('Could not parse site-config object');
+const { loadSiteConfig } = require('./site-config-utils');
+
+function loadSiteConfigLocal() {
+  return loadSiteConfig(SITE_CFG_PATH);
 }
 
 function validate() {
-  const cfg = loadSiteConfig();
+  const cfg = loadSiteConfigLocal();
   const errors = [];
   const gtmRe = /^GT(M)?-[A-Z0-9]+$/i;
   const ga4Re = /^G-[A-Z0-9]+$/i;

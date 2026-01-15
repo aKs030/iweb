@@ -267,7 +267,8 @@
     <!-- Logic Script -->
     <script type="module">
       import { initProjectsApp } from './projekte-app.js';
-      import { createLogger } from '../../content/utils/shared-utilities.js';
+      import { createLogger } from '/content/utils/shared-utilities.js';
+      import { upsertHeadLink } from '/content/utils/dom-helpers.js';
       const log = createLogger('ProjektePage');
 
       // Load styles for Three Earth (Progressive Enhancement)
@@ -275,21 +276,22 @@
         const href = '/content/components/particles/three-earth.css';
         if (document.querySelector(`link[href="${href}"]`)) return;
         return new Promise((resolve, reject) => {
-          const link = document.createElement('link');
-          link.rel = 'stylesheet';
-          link.href = href;
-          link.media = 'print';
-          link.onload = () => {
-            try {
-              link.media = 'all';
-              resolve();
-            } catch (e) {
-              log.warn('Failed to set link.media', e);
-              resolve();
-            }
-          };
-          link.onerror = (e) => reject(e);
-          document.head.appendChild(link);
+          upsertHeadLink({
+            rel: 'stylesheet',
+            href,
+            attrs: { media: 'print' },
+            onload() {
+              try {
+                this.media = 'all';
+                resolve();
+              } catch (e) {
+                log.warn('Failed to set link.media', e);
+                resolve();
+              }
+            },
+          }) || resolve();
+          // add a fallback to reject in case of persistent failure
+          setTimeout(() => reject(new Error('stylesheet load timeout')), 5000);
         });
       }
 
@@ -350,19 +352,29 @@
 
         // If IntersectionObserver is available, init when container gets close to viewport
         if ('IntersectionObserver' in globalThis && threeContainer) {
-          const io = new IntersectionObserver(
-            (entries, obs) => {
+          // Inline one-shot helper to avoid relying on module imports in inline script
+          function observeOnceInline(target, onIntersect, options = {}) {
+            const obs = new IntersectionObserver((entries, o) => {
               for (const entry of entries) {
                 if (entry.isIntersecting) {
-                  loadThreeEarth();
-                  obs.disconnect();
+                  try {
+                    onIntersect(entry);
+                  } finally {
+                    o.disconnect();
+                  }
                   break;
                 }
               }
-            },
+            }, options);
+            obs.observe(target);
+            return () => obs.disconnect();
+          }
+
+          const ioDisconnect = observeOnceInline(
+            threeContainer,
+            () => loadThreeEarth(),
             { root: null, rootMargin: '200px', threshold: 0.05 },
           );
-          io.observe(threeContainer);
 
           // Immediate visibility check: if the container is already within the
           // rootMargin area, trigger load right away to avoid idle/observer delays.
@@ -373,7 +385,7 @@
               rect.bottom > -200;
             if (withinMargin) {
               loadThreeEarth();
-              io.disconnect();
+              ioDisconnect();
             }
           } catch (e) {
             // ignore and rely on IntersectionObserver

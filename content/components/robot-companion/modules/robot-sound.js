@@ -1,4 +1,4 @@
-import { createLogger } from '../../../utils/shared-utilities.js';
+import { createLogger } from '/content/utils/shared-utilities.js';
 const log = createLogger('RobotSound');
 
 export class RobotSound {

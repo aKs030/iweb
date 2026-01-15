@@ -5,6 +5,9 @@
  * - Better logging for debugging
  * - Improved code structure
  */
+import { FAVICON_512 } from '/content/config/site-config.js';
+import { makeAbortController } from '/content/utils/shared-utilities.js';
+import { upsertHeadLink } from '/content/utils/dom-helpers.js';
 
 (async function () {
   const RETRY_ATTEMPTS = 2;
@@ -12,11 +15,14 @@
 
   let logger;
 
+  let _addListener = null;
   try {
-    const { createLogger } = await import(
+    const { createLogger, addListener } = await import(
       '../../content/utils/shared-utilities.js'
     );
     logger = createLogger('AboutModule');
+    // expose addListener locally for handlers
+    _addListener = addListener;
   } catch (err) {
     logger?.warn?.('AboutModule: failed to import createLogger', err);
     // Fallback to no-op logger if import fails
@@ -27,6 +33,13 @@
       debug: () => {},
     };
   }
+
+  const safeAddListener = (target, event, handler, options = {}) => {
+    if (typeof _addListener === 'function')
+      return _addListener(target, event, handler, options);
+    target.addEventListener(event, handler, options);
+    return () => target.removeEventListener(event, handler, options);
+  };
 
   const host = document.querySelector('section#about[data-about-src]');
 
@@ -46,18 +59,18 @@
    * Fetch with timeout
    */
   async function fetchWithTimeout(url, timeout = FETCH_TIMEOUT) {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), timeout);
+    const { controller, clearTimeout: clearCtrlTimeout } =
+      makeAbortController(timeout);
 
     try {
       const response = await fetch(url, {
         cache: 'no-cache',
         signal: controller.signal,
       });
-      clearTimeout(timeoutId);
+      clearCtrlTimeout();
       return response;
     } catch (err) {
-      clearTimeout(timeoutId);
+      clearCtrlTimeout();
       throw err;
     }
   }
@@ -89,10 +102,12 @@
 
         // Ensure about CSS is loaded when content is injected (idempotent)
         if (!document.querySelector('link[href="/pages/about/about.css"]')) {
-          const aboutLink = document.createElement('link');
-          aboutLink.rel = 'stylesheet';
-          aboutLink.href = '/pages/about/about.css';
-          document.head.appendChild(aboutLink);
+          // Idempotent insert of about stylesheet
+          upsertHeadLink({
+            rel: 'stylesheet',
+            href: '/pages/about/about.css',
+            dataset: { injectedBy: 'about-module' },
+          });
         }
 
         host.innerHTML = html;
@@ -133,11 +148,11 @@
             // Canonical link
             let canonicalEl = document.querySelector('link[rel="canonical"]');
             if (!canonicalEl) {
-              canonicalEl = document.createElement('link');
-              canonicalEl.setAttribute('rel', 'canonical');
-              document.head.appendChild(canonicalEl);
-            }
-            canonicalEl.setAttribute('href', canonical);
+              canonicalEl = upsertHeadLink({
+                rel: 'canonical',
+                href: canonical,
+              });
+            } else canonicalEl.setAttribute('href', canonical);
 
             // OG/Twitter url
             const setMetaValue = (selector, attr, value) => {
@@ -162,8 +177,7 @@
                   '@type': 'WebPage',
                   '@id': canonical,
                 },
-                image:
-                  'https://abdulkerimsesli.de/content/assets/img/icons/favicon-512.png',
+                image: FAVICON_512,
               });
               document.head.appendChild(script);
             }
@@ -204,9 +218,13 @@
     // Attach event listener to the injected reload button
     const aboutReload = host.querySelector('.about-reload');
     if (aboutReload) {
-      aboutReload.addEventListener('click', () => location.reload(), {
+      const _onAboutReload = () => location.reload();
+      const _remove = safeAddListener(aboutReload, 'click', _onAboutReload, {
         once: true,
       });
+      // store remover on element for potential cleanup
+      aboutReload.__removers = aboutReload.__removers || [];
+      aboutReload.__removers.push(_remove);
     }
 
     // Dispatch error event

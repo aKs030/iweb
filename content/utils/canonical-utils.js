@@ -1,5 +1,5 @@
 // Canonical path utilities (pure functions)
-export const ensureTrailingSlash = (p) => (p.endsWith('/') ? p : p + '/');
+const ensureTrailingSlash = (p) => (p.endsWith('/') ? p : p + '/');
 
 export function getCanonicalPathFromRoutes(pathname, routes) {
   const rawPath = pathname || '/';
@@ -24,11 +24,6 @@ export function getCanonicalPathFromRoutes(pathname, routes) {
   return pathForMatch;
 }
 
-// Utility to compute canonical origin for JSON-LD and alternates
-export function getCanonicalOrigin(forceProdFlag, baseUrl) {
-  return forceProdFlag
-    ? baseUrl
-    : typeof window !== 'undefined'
-    ? window.location.origin
-    : baseUrl;
-}
+// Removed unused helper: getCanonicalOrigin (local cleanup)
+// This helper was removed locally because it is not referenced anywhere in the codebase.
+// Reintroduce if external consumers require it.

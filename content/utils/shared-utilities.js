@@ -88,6 +88,25 @@ export async function fetchWithTimeout(url, timeout = 8000) {
   }
 }
 
+// Convenience helper to create/expose an AbortController with optional auto-cancel
+export function makeAbortController(timeout) {
+  const controller = new AbortController();
+  let timeoutId = null;
+  if (typeof timeout === 'number') {
+    timeoutId = setTimeout(() => controller.abort(), timeout);
+  }
+  return {
+    controller,
+    cancel: () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      controller.abort();
+    },
+    clearTimeout: () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      timeoutId = null;
+    },
+  };
+}
 export function getElementById(id, useCache = true) {
   if (!id) return null;
 

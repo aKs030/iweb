@@ -62,7 +62,7 @@
 .three-earth-error .retry-btn {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--gap-xs);
   padding: 0.5rem 0.75rem;
   border-radius: 8px;
   background: #283046;

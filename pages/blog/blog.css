@@ -52,7 +52,7 @@ body {
 .blog-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 2rem;
+  gap: var(--gap-md);
 }
 
 @media (max-width: 640px) {
@@ -71,8 +71,13 @@ body {
   border-radius: 12px;
   padding: 1.5rem;
   transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+/* Use utilities in markup; provide fallback scoped layout for blog cards */
+.blog-card.u-stack {
   display: flex;
   flex-direction: column;
+  gap: var(--gap-sm);
   height: 100%;
 }
 
@@ -120,9 +125,6 @@ body {
 }
 
 .card-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   border-top: 1px solid var(--blog-border);
   padding-top: 1rem;
   margin-top: auto;
@@ -133,7 +135,7 @@ body {
   color: #64748b;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--gap-xs);
 }
 
 .btn-read {
@@ -145,12 +147,12 @@ body {
   padding: 0;
   display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: var(--gap-xs);
   transition: gap 0.2s ease;
 }
 
 .btn-read:hover {
-  gap: 0.5rem;
+  gap: var(--gap-xs);
   color: var(--blog-accent-hover);
 }
 
@@ -162,11 +164,10 @@ body {
 
 /* Filter Bar */
 .filter-bar {
-  display: flex;
-  gap: 1rem;
   margin-bottom: 2rem;
   overflow-x: auto;
   padding-bottom: 0.5rem;
+  /* layout handled by utilities (u-row u-wrap) */
 }
 
 .filter-btn {

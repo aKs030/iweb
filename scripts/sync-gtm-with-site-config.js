@@ -7,7 +7,6 @@
 
 const fs = require('fs');
 const path = require('path');
-const vm = require('vm');
 const { info, warn, error } = require('./log');
 
 const ROOT = path.resolve(__dirname, '..');
@@ -17,44 +16,9 @@ const GTM_FILES = [
   path.join(ROOT, 'gtm-container-meine-webseite.json'),
 ];
 
-function loadSiteConfig() {
-  // Read file and extract object literal by counting braces to avoid relying on ESM import.
-  const src = fs.readFileSync(SITE_CFG_PATH, 'utf8');
-  const marker = 'export const SITE_CONFIG =';
-  const idx = src.indexOf(marker);
-  if (idx < 0) throw new Error('site-config.js format not recognized');
-  const after = src.slice(idx + marker.length);
-  const firstBrace = after.indexOf('{');
-  if (firstBrace < 0)
-    throw new Error('Could not find opening brace for object');
-  let i = firstBrace;
-  let depth = 0;
-  for (; i < after.length; i++) {
-    const ch = after[i];
-    if (ch === '{') depth++;
-    else if (ch === '}') {
-      depth--;
-      if (depth === 0) {
-        // include the closing brace
-        const objectText = after.slice(firstBrace, i + 1);
-        // Evaluate the object text in a VM with limited globals
-        const wrapper = `(function(){ return (${objectText}); })()`;
-        const sandbox = {};
-        try {
-          const res = vm.runInNewContext(wrapper, sandbox, {
-            filename: SITE_CFG_PATH,
-          });
-          return res;
-        } catch (err) {
-          throw new Error(
-            'Failed to evaluate site-config.js object: ' + err.message,
-          );
-        }
-      }
-    }
-  }
-  throw new Error('Could not parse site-config object');
-}
+const { loadSiteConfig } = require('./site-config-utils');
+
+// Use shared loader
 
 function ensureDataLayerVariable(varObj, expectedName) {
   // Ensure variable is dataLayer with the name pointing to expectedName
@@ -135,7 +99,7 @@ function syncContainer(filePath, siteConfig) {
 
 async function main() {
   info('Loading site-config...');
-  const siteConfig = await loadSiteConfig();
+  const siteConfig = await loadSiteConfig(SITE_CFG_PATH);
   info('Loaded sites: ' + Object.keys(siteConfig).join(', '));
 
   const results = [];

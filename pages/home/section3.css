@@ -63,7 +63,7 @@
 .section3__cta {
   margin-top: 0.8rem;
   display: flex;
-  gap: 0.5rem;
+  gap: var(--gap-xs);
   flex-wrap: wrap;
   justify-content: flex-start;
 }
@@ -101,7 +101,7 @@
   }
   .section3__cta {
     flex-direction: column;
-    gap: 0.65rem;
+    gap: var(--gap-xs);
     align-items: stretch;
     margin-top: 1.1rem;
   }

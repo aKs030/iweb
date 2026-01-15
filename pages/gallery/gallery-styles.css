@@ -159,50 +159,8 @@ img {
   height: 100%;
 }
 
-/* Flex & Grid */
-.flex {
-  display: flex;
-}
-
-.flex-col {
-  flex-direction: column;
-}
-
-.flex-wrap {
-  flex-wrap: wrap;
-}
-
-.items-center {
-  align-items: center;
-}
-
-.items-start {
-  align-items: flex-start;
-}
-
-.justify-center {
-  justify-content: center;
-}
-
-.justify-between {
-  justify-content: space-between;
-}
-
-.gap-2 {
-  gap: 0.5rem;
-}
-
-.gap-3 {
-  gap: 0.75rem;
-}
-
-.gap-4 {
-  gap: 1rem;
-}
-
-.gap-6 {
-  gap: 1.5rem;
-}
+/* Legacy utility aliases removed — use `u-*` utilities and spacing variables instead */
+/* Removed to reduce duplicated styles and encourage `u-row`, `u-stack`, `u-center`, `u-wrap`, `u-between`, `u-start`. */
 
 .grid {
   display: grid;
@@ -246,9 +204,7 @@ img {
 }
 
 @media (width >= 1024px) {
-  .lg\:flex-row {
-    flex-direction: row;
-  }
+  /* Removed legacy responsive alias for flex-direction: use responsive `lg:u-row` in `content/styles/main.css` */
 
   .lg\:grid-cols-3 {
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -981,7 +937,7 @@ img {
 
 .card-grid {
   display: grid;
-  gap: 1.5rem;
+  gap: var(--gap-md);
 }
 
 .lightbox-overlay {

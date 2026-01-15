@@ -1,5 +1,6 @@
 /* exported _shareChannel, _renderDemoVideos */
-import { createLogger } from '../../content/utils/shared-utilities.js';
+import { createLogger } from '/content/utils/shared-utilities.js';
+import { FAVICON_512 } from '../../content/config/site-config.js';
 
 const log = createLogger('videos');
 
@@ -65,6 +66,7 @@ function activateThumb(btn) {
 }
 
 // Bind event handlers and accessible label for a thumb button
+// Bind event handlers and accessible label for a thumb button
 function bindThumb(btn) {
   if (btn.dataset.bound) return;
   if (btn.dataset.thumb)
@@ -78,13 +80,17 @@ function bindThumb(btn) {
     span.textContent = btn.getAttribute('aria-label');
     btn.appendChild(span);
   }
-  btn.addEventListener('click', () => activateThumb(btn));
-  btn.addEventListener('keydown', (e) => {
+  const _onThumbClick = () => activateThumb(btn);
+  const _onThumbKeydown = (e) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       activateThumb(btn);
     }
-  });
+  };
+  btn.addEventListener('click', _onThumbClick);
+  btn.addEventListener('keydown', _onThumbKeydown);
+  // store handlers for potential cleanup
+  btn.__thumbHandlers = { click: _onThumbClick, keydown: _onThumbKeydown };
   btn.dataset.bound = '1';
 }
 
@@ -271,7 +277,7 @@ function renderVideoCard(grid, it, detailsMap) {
 
   const meta = document.createElement('div');
   meta.className = 'video-meta';
-  meta.innerHTML = `<div class="video-info"><small class="pub-date">${pub}</small></div><div class="video-actions"><a href="https://youtu.be/${vid}" target="_blank" rel="noopener">Auf YouTube öffnen</a></div>`;
+  meta.innerHTML = `<div class="video-info"><small class="pub-date">${pub}</small></div><div class="video-actions u-row"><a href="https://youtu.be/${vid}" target="_blank" rel="noopener">Auf YouTube öffnen</a></div>`;
 
   const publisherName =
     globalThis.YOUTUBE_CHANNEL_ID === 'UCTGRherjM4iuIn86xxubuPg'
@@ -292,9 +298,8 @@ function renderVideoCard(grid, it, detailsMap) {
       '@id': 'https://abdulkerimsesli.de/#organization',
       logo: {
         '@type': 'ImageObject',
-        url: 'https://abdulkerimsesli.de/content/assets/img/icons/favicon-512.png',
-        contentUrl:
-          'https://abdulkerimsesli.de/content/assets/img/icons/favicon-512.png',
+        url: FAVICON_512,
+        contentUrl: FAVICON_512,
         creator: { '@type': 'Person', name: 'Abdulkerim Sesli' },
         license: 'https://abdulkerimsesli.de/#image-license',
         creditText: 'Logo: Abdulkerim Sesli',

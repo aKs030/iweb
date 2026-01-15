@@ -5,7 +5,7 @@ import {
   shuffle,
   TimerManager,
   EVENTS,
-} from '../../utils/shared-utilities.js';
+} from '/content/utils/shared-utilities.js';
 
 const log = createLogger('TypeWriter');
 
@@ -368,13 +368,14 @@ export async function initHeroSubtitle(options = {}) {
       });
 
       // Remove lock after typing ends (released for next measure)
-      document.addEventListener(EVENTS.HERO_TYPING_END, () => {
+      const onHeroTypingEnd = () => {
         try {
           subtitleEl.classList.remove('is-locked');
         } catch (err) {
           log.warn('TypeWriter: remove lock failed', err);
         }
-      });
+      };
+      document.addEventListener(EVENTS.HERO_TYPING_END, onHeroTypingEnd);
 
       // Robust polling to fix race conditions on initial load
       const pollOverlap = () => {
@@ -389,18 +390,16 @@ export async function initHeroSubtitle(options = {}) {
       // Also check when footer explicitly reports loaded
       document.addEventListener('footer:loaded', pollOverlap, { once: true });
       // And on resize
-      window.addEventListener(
-        'resize',
-        () => requestAnimationFrame(pollOverlap),
-        {
-          passive: true,
-        },
-      );
+      const onResize = () => requestAnimationFrame(pollOverlap);
+      window.addEventListener('resize', onResize, { passive: true });
 
       // Expose instance for imports (preferred) and keep debug window hook for quick manual debugging
       typeWriterInstance = tw;
-      // Instance assigned internally for module usage; external access via exports if needed.
-      // (No global debug exposure)
+      // Register cleanup hooks for BFCache/SPA teardown
+      typeWriterInstance.__teardown = () => {
+        document.removeEventListener(EVENTS.HERO_TYPING_END, onHeroTypingEnd);
+        window.removeEventListener('resize', onResize);
+      };
     };
 
     await (document.fonts?.ready ?? Promise.resolve());

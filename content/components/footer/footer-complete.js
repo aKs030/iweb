@@ -8,16 +8,22 @@
  */
 
 // Importversuch mit Fallback für Standalone-Nutzung
-let createLogger, CookieManager, a11y;
+let createLogger, CookieManager, a11y, createObserver;
+let _addListener = null;
 try {
-  ({ createLogger, CookieManager } = await import(
-    '../../utils/shared-utilities.js'
-  ).catch(() => {
+  const utils = await import('/content/utils/shared-utilities.js').catch(() => {
     throw new Error('Utils missing');
-  }));
+  });
+  ({ createLogger, CookieManager } = utils);
+  // expose addListener locally if present
+  _addListener = utils.addListener;
   ({ a11y } = await import('../../utils/accessibility-manager.js').catch(() => {
     throw new Error('A11y missing');
   }));
+  // IntersectionObserver helpers
+  ({ createObserver } = await import(
+    '/content/utils/intersection-observer.js'
+  ).catch(() => ({ createObserver: null })));
 } catch {
   // Fallback Mocks, falls Dateien fehlen oder Pfade anders sind
   createLogger = () => ({
@@ -117,6 +123,7 @@ class DOMCache {
 
 const domCache = new DOMCache();
 let footerKeydownInit = false;
+let footerKeydownHandler = null;
 
 // ===== Programmatic Scroll (Optimized) =====
 const ProgrammaticScroll = (() => {
@@ -167,7 +174,7 @@ const ProgrammaticScroll = (() => {
         typeof target === 'string' ? domCache.get(target) : target;
 
       if (element && 'IntersectionObserver' in globalThis) {
-        const observer = new IntersectionObserver(
+        const watcherObserver = createObserver(
           (entries) => {
             const entry = entries[0];
             if (entry.isIntersecting && entry.intersectionRatio >= 0.5) {
@@ -177,13 +184,13 @@ const ProgrammaticScroll = (() => {
           { threshold: [0.5, 1] },
         );
 
-        observer.observe(element);
+        watcherObserver.observe(element);
         const timeoutId = setTimeout(() => {
           ProgrammaticScroll.clear(token);
-          observer.disconnect();
+          watcherObserver.disconnect();
         }, timeout);
 
-        watchers.set(token, { observer, timeoutId });
+        watchers.set(token, { observer: watcherObserver, timeoutId });
         return token;
       }
 
@@ -364,9 +371,13 @@ class ConsentBanner {
       banner.classList.remove('hidden');
     }
 
-    // Event Listeners
-    acceptBtn.addEventListener('click', () => this.accept(), { once: false });
-    rejectBtn?.addEventListener('click', () => this.reject(), { once: false });
+    // Event Listeners (use named handlers for safe cleanup)
+    this._onAcceptClick = () => this.accept();
+    acceptBtn.addEventListener('click', this._onAcceptClick, { once: false });
+    if (rejectBtn) {
+      this._onRejectClick = () => this.reject();
+      rejectBtn.addEventListener('click', this._onRejectClick, { once: false });
+    }
   }
 
   accept() {
@@ -394,6 +405,18 @@ class ConsentBanner {
         priority: 'polite',
       });
     } catch {}
+  }
+
+  destroy() {
+    const { acceptBtn, rejectBtn } = this.elements;
+    try {
+      if (acceptBtn && this._onAcceptClick)
+        acceptBtn.removeEventListener('click', this._onAcceptClick);
+      if (rejectBtn && this._onRejectClick)
+        rejectBtn.removeEventListener('click', this._onRejectClick);
+    } catch (e) {
+      /* ignore cleanup errors */
+    }
   }
 }
 
@@ -637,34 +660,33 @@ function closeFooter() {
   // Keyboard accessibility: allow Enter/Space to expand when .footer-minimized is focused
   try {
     if (!footerKeydownInit) {
-      document.addEventListener(
-        'keydown',
-        (e) => {
-          if (e.key !== 'Enter' && e.key !== ' ') return;
-          const focused = document.activeElement;
-          if (
-            focused &&
-            focused.closest &&
-            focused.closest('.footer-minimized')
-          ) {
-            const interactive = focused.closest(
-              'a, button, input, textarea, select, [data-cookie-trigger]',
-            );
-            if (!interactive) {
-              e.preventDefault();
+      footerKeydownHandler = (e) => {
+        if (e.key !== 'Enter' && e.key !== ' ') return;
+        const focused = document.activeElement;
+        if (
+          focused &&
+          focused.closest &&
+          focused.closest('.footer-minimized')
+        ) {
+          const interactive = focused.closest(
+            'a, button, input, textarea, select, [data-cookie-trigger]',
+          );
+          if (!interactive) {
+            e.preventDefault();
+            try {
+              if (globalThis.footerScrollHandler)
+                globalThis.footerScrollHandler.toggleExpansion(true);
+            } catch (err) {
               try {
-                if (globalThis.footerScrollHandler)
-                  globalThis.footerScrollHandler.toggleExpansion(true);
-              } catch (err) {
-                try {
-                  log.warn('keyboard expand failed', err);
-                } catch {}
-              }
+                log.warn('keyboard expand failed', err);
+              } catch {}
             }
           }
-        },
-        { passive: false },
-      );
+        }
+      };
+      document.addEventListener('keydown', footerKeydownHandler, {
+        passive: false,
+      });
       footerKeydownInit = true;
     }
   } catch (err) {
@@ -719,9 +741,28 @@ class FooterLoader {
     if (!container && domCache?.get?.('#site-footer')) {
       this.updateYears();
       this.setupInteractions();
-      new ConsentBanner().init();
-      new ScrollHandler().init();
-      new FooterResizer().init();
+      // Store instances for later cleanup
+      this._instances = this._instances || {};
+      this._instances.consentBanner = new ConsentBanner();
+      this._instances.consentBanner.init();
+      this._instances.scrollHandler = new ScrollHandler();
+      this._instances.scrollHandler.init();
+      this._instances.footerResizer = new FooterResizer();
+      this._instances.footerResizer.init();
+
+      // Add small utility classes to frequently used footer elements to reuse spacing/center rules
+      try {
+        const footer = domCache.get('#site-footer');
+        if (footer) {
+          const socials = footer.querySelector('.footer-social-links');
+          if (socials) socials.classList.add('u-row');
+          const cards = footer.querySelector('.footer-cards-grid');
+          if (cards) cards.classList.add('u-row');
+          const minimal = footer.querySelector('.footer-minimal-content');
+          if (minimal) minimal.classList.add('u-row');
+        }
+      } catch {}
+
       return true;
     }
     if (!container) return false;
@@ -732,9 +773,13 @@ class FooterLoader {
       if (container.querySelector && container.querySelector('#site-footer')) {
         this.updateYears();
         this.setupInteractions();
-        new ConsentBanner().init();
-        new ScrollHandler().init();
-        new FooterResizer().init();
+        this._instances = this._instances || {};
+        this._instances.consentBanner = new ConsentBanner();
+        this._instances.consentBanner.init();
+        this._instances.scrollHandler = new ScrollHandler();
+        this._instances.scrollHandler.init();
+        this._instances.footerResizer = new FooterResizer();
+        this._instances.footerResizer.init();
         return true;
       }
     } catch (e) {
@@ -790,6 +835,50 @@ class FooterLoader {
     }
   }
 
+  destroy() {
+    // Destroy managed instances and cleanup handlers
+    try {
+      if (this._instances) {
+        for (const k of Object.keys(this._instances)) {
+          const inst = this._instances[k];
+          if (inst && typeof inst.destroy === 'function') inst.destroy();
+          else if (typeof inst === 'function') {
+            try {
+              inst();
+            } catch {}
+          }
+        }
+        this._instances = null;
+      }
+    } catch (e) {
+      /* ignore */
+    }
+
+    // Remove global footer keydown handler if set
+    try {
+      if (footerKeydownInit && typeof footerKeydownHandler === 'function') {
+        document.removeEventListener('keydown', footerKeydownHandler, {
+          passive: false,
+        });
+        footerKeydownHandler = null;
+        footerKeydownInit = false;
+      }
+    } catch (e) {
+      /* ignore */
+    }
+
+    // Remove three-showcase handler if set
+    try {
+      const showcaseBtn = domCache.get('#threeShowcaseBtn');
+      if (showcaseBtn && this._onShowcaseClick) {
+        showcaseBtn.removeEventListener('click', this._onShowcaseClick);
+        this._onShowcaseClick = null;
+      }
+    } catch (e) {
+      /* ignore */
+    }
+  }
+
   updateYears() {
     const year = new Date().getFullYear();
     domCache.getAll('.current-year').forEach((el) => (el.textContent = year));
@@ -799,7 +888,7 @@ class FooterLoader {
     // Newsletter Form
     const form = domCache.get('.newsletter-form-enhanced');
     if (form) {
-      form.addEventListener('submit', (e) => {
+      this._onNewsletterSubmit = (e) => {
         e.preventDefault();
         const input = form.querySelector('#newsletter-email');
         if (input && !input.checkValidity()) {
@@ -825,7 +914,17 @@ class FooterLoader {
         try {
           a11y?.announce('Newsletter abonniert', { priority: 'polite' });
         } catch {}
-      });
+      };
+      const _removeNews =
+        typeof _addListener === 'function'
+          ? _addListener(form, 'submit', this._onNewsletterSubmit)
+          : (() => {
+              form.addEventListener('submit', this._onNewsletterSubmit);
+              return () =>
+                form.removeEventListener('submit', this._onNewsletterSubmit);
+            })();
+      this._instances = this._instances || {};
+      this._instances._removeNews = _removeNews;
     }
 
     // Event Delegation
@@ -868,7 +967,7 @@ class FooterLoader {
     const showcaseBtn = domCache.get('#threeShowcaseBtn');
     if (showcaseBtn && !showcaseBtn.dataset.init) {
       showcaseBtn.dataset.init = '1';
-      showcaseBtn.addEventListener('click', () => {
+      this._onShowcaseClick = () => {
         showcaseBtn.classList.add('active');
         document.dispatchEvent(
           new CustomEvent('three-earth:showcase', {
@@ -876,7 +975,8 @@ class FooterLoader {
           }),
         );
         setTimeout(() => showcaseBtn.classList.remove('active'), 8000);
-      });
+      };
+      showcaseBtn.addEventListener('click', this._onShowcaseClick);
     }
   }
 

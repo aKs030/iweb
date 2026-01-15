@@ -443,7 +443,7 @@ body.footer-expanded {
   }
 
   .footer-social-links {
-    gap: 8px;
+    gap: var(--gap-xs);
     align-items: center;
   }
 
@@ -461,7 +461,7 @@ body.footer-expanded {
   }
 
   .footer-legal-nav {
-    gap: 8px;
+    gap: var(--gap-xs);
   }
 }
 
@@ -495,7 +495,7 @@ body.footer-expanded {
   }
 
   .footer-minimal-content {
-    gap: 8px;
+    gap: var(--gap-xs);
   }
 }
 
@@ -638,7 +638,7 @@ body.footer-expanded {
 .footer-work-link {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--gap-xs);
   padding: var(--footer-spacing-xs) 8px;
   color: var(--dynamic-footer-label-secondary);
   border-radius: var(--dynamic-footer-micro-radius);
@@ -869,7 +869,7 @@ body.footer-expanded {
 /* Mobile and small tablets */
 @media (width <= 768px) {
   :root {
-    --footer-card-gap: 8px;
+    --footer-card-gap: var(--gap-xs);
     --footer-spacing-md: 8px;
     --footer-max-height: calc(80dvh - 24px - env(safe-area-inset-bottom));
   }
@@ -914,7 +914,7 @@ body.footer-expanded {
 
   .footer-cards-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
+    gap: var(--gap-xs);
   }
 
   .footer-card {
@@ -960,7 +960,7 @@ body.footer-expanded {
     order: 2;
     display: flex;
     flex-direction: row;
-    gap: 8px;
+    gap: var(--gap-xs);
     align-items: center;
     justify-content: center;
     width: 100%;
@@ -997,7 +997,7 @@ body.footer-expanded {
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 8px;
+    gap: var(--gap-xs);
   }
 
   /* Input grows, button keeps intrinsic size */

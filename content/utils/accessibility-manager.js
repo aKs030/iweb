@@ -25,25 +25,37 @@ class AccessibilityManager {
 
     // Listen for preference changes (modern browsers support addEventListener on MediaQueryList)
     try {
-      this.reducedMotionMQL.addEventListener('change', (e) => {
+      this._onReducedMotionChange = (e) => {
         this.reducedMotion = e.matches;
         this.updateAnimations();
-      });
-      this.highContrastMQL.addEventListener('change', (e) => {
+      };
+      this.reducedMotionMQL.addEventListener(
+        'change',
+        this._onReducedMotionChange,
+      );
+
+      this._onHighContrastChange = (e) => {
         this.highContrast = e.matches;
         this.updateContrast();
-      });
+      };
+      this.highContrastMQL.addEventListener(
+        'change',
+        this._onHighContrastChange,
+      );
     } catch {
       // Fallback for older browsers
       try {
-        this.reducedMotionMQL.addListener((e) => {
+        this._onReducedMotionChange = (e) => {
           this.reducedMotion = e.matches;
           this.updateAnimations();
-        });
-        this.highContrastMQL.addListener((e) => {
+        };
+        this.reducedMotionMQL.addListener(this._onReducedMotionChange);
+
+        this._onHighContrastChange = (e) => {
           this.highContrast = e.matches;
           this.updateContrast();
-        });
+        };
+        this.highContrastMQL.addListener(this._onHighContrastChange);
       } catch {
         /* ignored */
       }
@@ -59,8 +71,43 @@ class AccessibilityManager {
     this._initialized = true;
   }
 
+  destroy() {
+    try {
+      if (this._onReducedMotionChange) {
+        if (this.reducedMotionMQL.removeEventListener)
+          this.reducedMotionMQL.removeEventListener(
+            'change',
+            this._onReducedMotionChange,
+          );
+        else if (this.reducedMotionMQL.removeListener)
+          this.reducedMotionMQL.removeListener(this._onReducedMotionChange);
+        this._onReducedMotionChange = null;
+      }
+    } catch {}
+    try {
+      if (this._onHighContrastChange) {
+        if (this.highContrastMQL.removeEventListener)
+          this.highContrastMQL.removeEventListener(
+            'change',
+            this._onHighContrastChange,
+          );
+        else if (this.highContrastMQL.removeListener)
+          this.highContrastMQL.removeListener(this._onHighContrastChange);
+        this._onHighContrastChange = null;
+      }
+    } catch {}
+    try {
+      if (this._onKeyboardNav)
+        document.removeEventListener('keydown', this._onKeyboardNav);
+    } catch {}
+    try {
+      if (this._skipRemovers && this._skipRemovers.length)
+        this._skipRemovers.forEach((r) => r());
+    } catch {}
+  }
+
   setupKeyboardNav() {
-    document.addEventListener('keydown', (e) => {
+    this._onKeyboardNav = (e) => {
       if (e.key === 'Escape') {
         this.handleEscape();
       }
@@ -68,13 +115,15 @@ class AccessibilityManager {
       if (e.key === 'Tab' && this.focusTrapStack.length > 0) {
         this.handleTabInTrap(e);
       }
-    });
+    };
+    document.addEventListener('keydown', this._onKeyboardNav);
   }
 
   setupSkipLinks() {
     const skipLinks = document.querySelectorAll('.skip-link');
+    this._skipRemovers = [];
     skipLinks.forEach((link) => {
-      link.addEventListener('click', (e) => {
+      const _onSkipClick = (e) => {
         e.preventDefault();
         const href = link.getAttribute('href');
         if (!href) return;
@@ -93,7 +142,11 @@ class AccessibilityManager {
           },
           { once: true },
         );
-      });
+      };
+      link.addEventListener('click', _onSkipClick);
+      this._skipRemovers.push(() =>
+        link.removeEventListener('click', _onSkipClick),
+      );
     });
   }
 

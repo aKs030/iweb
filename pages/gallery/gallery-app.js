@@ -1,5 +1,5 @@
 /* global React, ReactDOM */
-import { createLogger } from '../../content/utils/shared-utilities.js';
+import { createLogger } from '/content/utils/shared-utilities.js';
 
 const log = createLogger('gallery-app');
 
@@ -594,12 +594,12 @@ const PhotoGallery = () => {
       React.createElement(
         'div',
         {
-          className:
-            'flex flex-col lg:flex-row justify-between items-center gap-4 mb-6',
+          className: 'u-stack lg:u-row u-between u-start mb-6',
+          style: { gap: 'var(--gap-md)' },
         },
         React.createElement(
           'div',
-          { className: 'flex gap-2 flex-wrap justify-center' },
+          { className: 'u-row u-wrap u-center' },
           categories.map((cat) =>
             React.createElement(
               'button',
@@ -619,7 +619,7 @@ const PhotoGallery = () => {
         ),
         React.createElement(
           'div',
-          { className: 'flex gap-3 items-center' },
+          { className: 'u-row' },
           React.createElement(
             'select',
             {
@@ -648,7 +648,7 @@ const PhotoGallery = () => {
             'div',
             {
               className:
-                'flex gap-2 bg-white/10 backdrop-blur-sm rounded-xl p-1 border border-white/20',
+                'u-row bg-white/10 backdrop-blur-sm rounded-xl p-1 border border-white/20',
             },
             React.createElement(
               'button',
@@ -687,7 +687,10 @@ const PhotoGallery = () => {
     ),
     React.createElement(
       'div',
-      { className: `max-w-7xl mx-auto grid ${gridCols} gap-6` },
+      {
+        className: `max-w-7xl mx-auto grid ${gridCols}`,
+        style: { gap: 'var(--gap-lg)' },
+      },
 
       filteredPhotos.map((photo, index) =>
         React.createElement(
@@ -739,11 +742,11 @@ const PhotoGallery = () => {
             'div',
             {
               className:
-                'absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-between p-6',
+                'absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 u-stack u-between p-6',
             },
             React.createElement(
               'div',
-              { className: 'flex justify-between items-start' },
+              { className: 'u-row u-between u-start' },
               React.createElement(
                 'span',
                 {
@@ -779,9 +782,7 @@ const PhotoGallery = () => {
               ),
               React.createElement(
                 'div',
-                {
-                  className: 'flex items-center gap-3 text-indigo-200 text-sm',
-                },
+                { className: 'u-row' },
                 React.createElement('span', null, photo.camera),
                 React.createElement('span', null, '•'),
                 React.createElement('span', null, photo.location),
@@ -792,8 +793,7 @@ const PhotoGallery = () => {
             React.createElement(
               'div',
               {
-                className:
-                  'absolute inset-0 bg-slate-900 flex items-center justify-center',
+                className: 'absolute inset-0 bg-slate-900 u-row u-center',
               },
               React.createElement(
                 'div',
@@ -805,8 +805,7 @@ const PhotoGallery = () => {
                 React.createElement(
                   'div',
                   {
-                    className:
-                      'absolute inset-0 flex items-center justify-center',
+                    className: 'absolute inset-0 u-row u-center',
                   },
                   React.createElement('div', {
                     className:
@@ -829,7 +828,7 @@ const PhotoGallery = () => {
           'aria-modal': 'true',
           'aria-labelledby': 'lightbox-title',
           className:
-            'fixed inset-0 bg-black/98 backdrop-blur-sm z-50 flex items-center justify-center',
+            'fixed inset-0 bg-black/98 backdrop-blur-sm z-50 u-row u-center',
           onClick: () => {
             setSelectedImage(null);
             setZoom(1);
@@ -845,7 +844,7 @@ const PhotoGallery = () => {
           React.createElement(
             'div',
             {
-              className: 'max-w-7xl mx-auto flex justify-between items-center',
+              className: 'max-w-7xl mx-auto u-row u-between',
             },
             React.createElement(
               'div',
@@ -865,7 +864,7 @@ const PhotoGallery = () => {
             ),
             React.createElement(
               'div',
-              { className: 'flex gap-2' },
+              { className: 'u-row' },
               React.createElement(
                 'button',
                 {
@@ -928,10 +927,10 @@ const PhotoGallery = () => {
             ),
             React.createElement(
               'div',
-              { className: 'space-y-3 text-sm' },
+              { className: 'u-stack text-sm' },
               React.createElement(
                 'div',
-                { className: 'flex justify-between' },
+                { className: 'u-row u-between' },
                 React.createElement(
                   'span',
                   { className: 'text-indigo-300' },
@@ -945,7 +944,7 @@ const PhotoGallery = () => {
               ),
               React.createElement(
                 'div',
-                { className: 'flex justify-between' },
+                { className: 'u-row u-between' },
                 React.createElement(
                   'span',
                   { className: 'text-indigo-300' },
@@ -959,7 +958,7 @@ const PhotoGallery = () => {
               ),
               React.createElement(
                 'div',
-                { className: 'flex justify-between' },
+                { className: 'u-row u-between' },
                 React.createElement(
                   'span',
                   { className: 'text-indigo-300' },
@@ -973,7 +972,7 @@ const PhotoGallery = () => {
               ),
               React.createElement(
                 'div',
-                { className: 'flex justify-between' },
+                { className: 'u-row u-between' },
                 React.createElement(
                   'span',
                   { className: 'text-indigo-300' },
@@ -987,7 +986,7 @@ const PhotoGallery = () => {
               ),
               React.createElement(
                 'div',
-                { className: 'flex justify-between' },
+                { className: 'u-row u-between' },
                 React.createElement(
                   'span',
                   { className: 'text-indigo-300' },
@@ -1009,7 +1008,7 @@ const PhotoGallery = () => {
                 ),
                 React.createElement(
                   'div',
-                  { className: 'flex flex-wrap gap-2' },
+                  { className: 'u-row u-wrap' },
                   selectedImage.tags.map((tag) =>
                     React.createElement(
                       'span',
@@ -1059,7 +1058,7 @@ const PhotoGallery = () => {
           'div',
           {
             className:
-              'absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3 bg-black/80 backdrop-blur-xl rounded-2xl p-3 border border-white/10',
+              'absolute bottom-6 left-1/2 -translate-x-1/2 u-row bg-black/80 backdrop-blur-xl rounded-2xl p-3 border border-white/10',
           },
           React.createElement(
             'button',

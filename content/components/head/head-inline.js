@@ -1,4 +1,5 @@
-import { createLogger } from '../../utils/shared-utilities.js';
+import { createLogger } from '/content/utils/shared-utilities.js';
+import { upsertHeadLink } from '/content/utils/dom-helpers.js';
 
 const log = createLogger('head-inline');
 
@@ -350,18 +351,12 @@ dataLayer.push({
 
     const upsertPreconnect = (origin) => {
       try {
-        if (
-          !document.head.querySelector(
-            `link[rel="preconnect"][href="${origin}"]`,
-          )
-        ) {
-          const l = document.createElement('link');
-          l.rel = 'preconnect';
-          l.href = origin;
-          l.crossOrigin = 'anonymous';
-          l.dataset.injectedBy = 'head-inline';
-          document.head.appendChild(l);
-        }
+        upsertHeadLink({
+          rel: 'preconnect',
+          href: origin,
+          crossOrigin: 'anonymous',
+          dataset: { injectedBy: 'head-inline' },
+        });
       } catch (err) {
         /* ignore */
       }
@@ -372,40 +367,40 @@ dataLayer.push({
 
       // Critical styles must be inserted as stylesheet synchronously
       if (critical) {
-        const l = document.createElement('link');
-        l.rel = 'stylesheet';
-        l.href = href;
-        l.dataset.injectedBy = 'head-inline';
-        document.head.appendChild(l);
+        upsertHeadLink({
+          rel: 'stylesheet',
+          href,
+          dataset: { injectedBy: 'head-inline' },
+        });
         return;
       }
 
       // Use preload/as=style then switch to stylesheet onload to avoid render-blocking
-      const l = document.createElement('link');
-      l.rel = 'preload';
-      l.href = href;
-      l.as = 'style';
-      l.dataset.injectedBy = 'head-inline';
-      l.onload = function () {
-        try {
-          this.onload = null;
-          this.rel = 'stylesheet';
-        } catch (e) {
-          /* ignore */
-        }
-      };
-      document.head.appendChild(l);
+      upsertHeadLink({
+        rel: 'preload',
+        href,
+        as: 'style',
+        dataset: { injectedBy: 'head-inline' },
+        onload() {
+          try {
+            this.onload = null;
+            this.rel = 'stylesheet';
+          } catch (e) {
+            /* ignore */
+          }
+        },
+      });
 
       // Add a small safety timeout to ensure stylesheet eventually applies in older browsers
       setTimeout(() => {
         try {
           const existing = document.head.querySelector(`link[href="${href}"]`);
           if (!existing || existing.rel === 'preload') {
-            const fallback = document.createElement('link');
-            fallback.rel = 'stylesheet';
-            fallback.href = href;
-            fallback.dataset.injectedBy = 'head-inline';
-            document.head.appendChild(fallback);
+            upsertHeadLink({
+              rel: 'stylesheet',
+              href,
+              dataset: { injectedBy: 'head-inline' },
+            });
           }
         } catch (e) {
           /* ignore */
@@ -414,19 +409,12 @@ dataLayer.push({
     };
 
     const upsertModulePreload = (href) => {
-      if (
-        !document.head.querySelector(
-          `link[rel="modulepreload"][href="${href}"]`,
-        )
-      ) {
-        const l = document.createElement('link');
-        l.rel = 'modulepreload';
-        l.href = href;
-        // ensure crossorigin matches module script fetch mode to avoid credential-mode mismatch
-        l.crossOrigin = 'anonymous';
-        l.dataset.injectedBy = 'head-inline';
-        document.head.appendChild(l);
-      }
+      upsertHeadLink({
+        rel: 'modulepreload',
+        href,
+        crossOrigin: 'anonymous',
+        dataset: { injectedBy: 'head-inline' },
+      });
     };
 
     const upsertScript = ({ src, module }) => {
