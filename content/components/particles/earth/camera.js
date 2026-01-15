@@ -37,8 +37,8 @@ export class CameraManager {
       sectionName === 'site-footer'
         ? 'contact'
         : sectionName === 'section3'
-        ? 'about'
-        : sectionName;
+          ? 'about'
+          : sectionName;
     const preset = CONFIG.CAMERA.PRESETS[presetKey];
     if (preset) {
       this.flyToPreset(presetKey);
