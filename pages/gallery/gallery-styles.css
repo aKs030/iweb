@@ -743,12 +743,6 @@ img {
   animation: spin 1s linear infinite;
 }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 /* Aspect ratio */
 .aspect-\[4\/3\] {
   aspect-ratio: 4 / 3;
