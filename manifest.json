@@ -8,7 +8,13 @@
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "display_override": ["standalone", "fullscreen", "minimal-ui"],
+  "display_override": [
+    "standalone",
+    "fullscreen",
+    "minimal-ui",
+    "window-controls-overlay",
+    "browser"
+  ],
   "orientation": "any",
   "background_color": "#ffffff",
   "theme_color": "#0d0d0d",
