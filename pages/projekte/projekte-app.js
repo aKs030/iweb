@@ -192,7 +192,7 @@ function App() {
         const [, owner, repo, branch, path] = m;
         return `https://raw.githack.com/${owner}/${repo}/${branch}/${path}/index.html`;
       }
-    } catch {}
+    } catch { }
     return '';
   };
 
@@ -205,7 +205,7 @@ function App() {
         const [, owner, repo, branch, path] = m;
         return `https://cdn.jsdelivr.net/gh/${owner}/${repo}@${branch}/${path}/index.html`;
       }
-    } catch {}
+    } catch { }
     return '';
   };
 
@@ -240,7 +240,7 @@ function App() {
       setModalOpen(true);
       try {
         document.body.style.overflow = 'hidden';
-      } catch {}
+      } catch { }
       return;
     }
 
@@ -252,7 +252,7 @@ function App() {
       setModalOpen(true);
       try {
         document.body.style.overflow = 'hidden';
-      } catch {}
+      } catch { }
       return;
     }
 
@@ -277,7 +277,7 @@ function App() {
     setModalTitle('');
     try {
       document.body.style.overflow = '';
-    } catch {}
+    } catch { }
   };
 
   // Project mockup component: tries to resolve an embed-friendly URL (raw.githack/jsDelivr/appPath)
@@ -346,7 +346,7 @@ function App() {
     return html`
       <div className="mockup-iframe-wrapper u-center" ref=${wrapperRef}>
         ${previewUrl
-          ? html`
+        ? html`
               <iframe
                 className="mockup-iframe"
                 ref=${iframeRef}
@@ -357,7 +357,7 @@ function App() {
                 title=${project.title}
               ></iframe>
             `
-          : project.previewContent}
+        : project.previewContent}
       </div>
     `;
   };
@@ -400,7 +400,7 @@ function App() {
 
       <!-- Project Sections -->
       ${projects.map(
-        (project) => html`
+    (project) => html`
           <section
             key=${project.id}
             id=${`project-${project.id}`}
@@ -412,11 +412,11 @@ function App() {
               <div
                 className="group"
                 style=${{
-                  order: 2,
-                  display: 'flex',
-                  justifyContent: 'center',
-                  position: 'relative',
-                }}
+        order: 2,
+        display: 'flex',
+        justifyContent: 'center',
+        position: 'relative',
+      }}
               >
                 <div
                   className="back-glow"
@@ -441,9 +441,9 @@ function App() {
                 <p className="project-desc">${project.description}</p>
                 <div className="tags-container u-row u-wrap">
                   ${project.tags.map(
-                    (tag, i) =>
-                      html` <span key=${i} className="tag">${tag}</span> `,
-                  )}
+        (tag, i) =>
+          html` <span key=${i} className="tag">${tag}</span> `,
+      )}
                 </div>
                 <div className="project-actions u-row u-between u-wrap">
                   <button
@@ -471,12 +471,12 @@ function App() {
             </div>
           </section>
         `,
-      )}
+  )}
       ${toastMsg
-        ? html` <div className="toast-notification">${toastMsg}</div> `
-        : null}
+      ? html` <div className="toast-notification">${toastMsg}</div> `
+      : null}
       ${modalOpen
-        ? html`
+      ? html`
             <div
               role="dialog"
               aria-modal="true"
@@ -509,10 +509,10 @@ function App() {
                 </div>
                 <div className="modal-body">
                   ${iframeLoading
-                    ? html`
+          ? html`
                         <div className="iframe-loader">Lade Vorschau…</div>
                       `
-                    : null}
+          : null}
                   <iframe
                     src=${modalUrl}
                     onLoad=${() => setIframeLoading(false)}
@@ -523,7 +523,7 @@ function App() {
               </div>
             </div>
           `
-        : null}
+      : null}
 
       <!-- Contact Section -->
       <section className="snap-section contact-section" id="contact">

@@ -83,7 +83,7 @@ class AccessibilityManager {
           this.reducedMotionMQL.removeListener(this._onReducedMotionChange);
         this._onReducedMotionChange = null;
       }
-    } catch {}
+    } catch { }
     try {
       if (this._onHighContrastChange) {
         if (this.highContrastMQL.removeEventListener)
@@ -95,15 +95,15 @@ class AccessibilityManager {
           this.highContrastMQL.removeListener(this._onHighContrastChange);
         this._onHighContrastChange = null;
       }
-    } catch {}
+    } catch { }
     try {
       if (this._onKeyboardNav)
         document.removeEventListener('keydown', this._onKeyboardNav);
-    } catch {}
+    } catch { }
     try {
       if (this._skipRemovers && this._skipRemovers.length)
         this._skipRemovers.forEach((r) => r());
-    } catch {}
+    } catch { }
   }
 
   setupKeyboardNav() {
