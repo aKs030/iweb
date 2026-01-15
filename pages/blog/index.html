@@ -38,6 +38,14 @@
     <!-- Canonical tag (static for reliable Google indexing) -->
     <link rel="canonical" href="https://abdulkerimsesli.de/blog/" />
 
+    <!-- Preload critical OG image -->
+    <link
+      rel="preload"
+      href="/content/assets/img/og/og-blog.png"
+      as="image"
+      type="image/png"
+    />
+
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://abdulkerimsesli.de/blog/" />
@@ -74,6 +82,28 @@
       property="twitter:image"
       content="https://abdulkerimsesli.de/content/assets/img/og/og-blog.png"
     />
+
+    <!-- Breadcrumb Schema for SEO -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://abdulkerimsesli.de/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Blog",
+            "item": "https://abdulkerimsesli.de/blog/"
+          }
+        ]
+      }
+    </script>
 
     <!-- head-complete.js is now loaded dynamically by head-inline.js -->
 

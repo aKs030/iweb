@@ -37,6 +37,14 @@
     <!-- Canonical tag (static for reliable Google indexing) -->
     <link rel="canonical" href="https://abdulkerimsesli.de/gallery/" />
 
+    <!-- Preload critical OG image -->
+    <link
+      rel="preload"
+      href="/content/assets/img/og/og-gallery.png"
+      as="image"
+      type="image/png"
+    />
+
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://abdulkerimsesli.de/gallery/" />
@@ -90,6 +98,28 @@
         "creditText": "Photo: Abdulkerim Sesli",
         "copyrightNotice": "© 2025 Abdulkerim Sesli",
         "acquireLicensePage": "https://abdulkerimsesli.de/#image-license"
+      }
+    </script>
+
+    <!-- Breadcrumb Schema for SEO -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://abdulkerimsesli.de/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Galerie",
+            "item": "https://abdulkerimsesli.de/gallery/"
+          }
+        ]
       }
     </script>
 
