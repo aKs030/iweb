@@ -45,8 +45,8 @@ try {
     announce: (msg) =>
       globalThis.iwebLogger?.warn?.(`[A11y]: ${msg}`) ||
       console.warn(`[A11y]: ${msg}`),
-    trapFocus: () => { },
-    releaseFocus: () => { },
+    trapFocus: () => {},
+    releaseFocus: () => {},
   };
 }
 
@@ -386,7 +386,7 @@ class ConsentBanner {
       a11y?.announce('Cookie-Präferenz: Alle Cookies akzeptiert', {
         priority: 'polite',
       });
-    } catch { }
+    } catch {}
   }
 
   reject() {
@@ -396,7 +396,7 @@ class ConsentBanner {
       a11y?.announce('Cookie-Präferenz: Nur notwendige Cookies akzeptiert', {
         priority: 'polite',
       });
-    } catch { }
+    } catch {}
   }
 
   destroy() {
@@ -447,7 +447,7 @@ const CookieSettings = (() => {
           a11y?.announce('Cookie-Einstellungen: Nur notwendige Cookies aktiv', {
             priority: 'polite',
           });
-        } catch { }
+        } catch {}
         close();
         domCache.get('#cookie-consent-banner')?.classList.add('hidden');
       },
@@ -495,7 +495,7 @@ const CookieSettings = (() => {
               : 'Cookie-Einstellungen gespeichert: Analyse deaktiviert',
             { priority: 'polite' },
           );
-        } catch { }
+        } catch {}
         close();
         domCache.get('#cookie-consent-banner')?.classList.add('hidden');
       },
@@ -523,7 +523,7 @@ const CookieSettings = (() => {
           a11y?.announce('Cookie-Einstellungen: Alle Cookies aktiviert', {
             priority: 'polite',
           });
-        } catch { }
+        } catch {}
         close();
         domCache.get('#cookie-consent-banner')?.classList.add('hidden');
       },
@@ -541,7 +541,7 @@ const CookieSettings = (() => {
       handlers.forEach((handler, el) => {
         try {
           el.removeEventListener('click', handler);
-        } catch { }
+        } catch {}
       });
       handlers.clear();
     };
@@ -644,10 +644,10 @@ function closeFooter() {
       minEl.classList.remove('footer-hidden');
       try {
         minEl.setAttribute('aria-hidden', 'false');
-      } catch { }
+      } catch {}
     }
     footer.setAttribute('aria-expanded', 'false');
-  } catch { }
+  } catch {}
 
   // Keyboard accessibility: allow Enter/Space to expand when .footer-minimized is focused
   try {
@@ -671,7 +671,7 @@ function closeFooter() {
             } catch (err) {
               try {
                 log.warn('keyboard expand failed', err);
-              } catch { }
+              } catch {}
             }
           }
         }
@@ -684,7 +684,7 @@ function closeFooter() {
   } catch (err) {
     try {
       log.warn('keyboard init failed', err);
-    } catch { }
+    } catch {}
   }
 
   // 2. Content Reset (show normal content again if it was hidden by cookie view)
@@ -753,7 +753,7 @@ class FooterLoader {
           const minimal = footer.querySelector('.footer-minimal-content');
           if (minimal) minimal.classList.add('u-row');
         }
-      } catch { }
+      } catch {}
 
       return true;
     }
@@ -837,7 +837,7 @@ class FooterLoader {
           else if (typeof inst === 'function') {
             try {
               inst();
-            } catch { }
+            } catch {}
           }
         }
         this._instances = null;
@@ -888,7 +888,7 @@ class FooterLoader {
             a11y?.announce('Bitte gültige E-Mail eingeben', {
               priority: 'assertive',
             });
-          } catch { }
+          } catch {}
           return;
         }
 
@@ -905,16 +905,16 @@ class FooterLoader {
         form.reset();
         try {
           a11y?.announce('Newsletter abonniert', { priority: 'polite' });
-        } catch { }
+        } catch {}
       };
       const _removeNews =
         typeof _addListener === 'function'
           ? _addListener(form, 'submit', this._onNewsletterSubmit)
           : (() => {
-            form.addEventListener('submit', this._onNewsletterSubmit);
-            return () =>
-              form.removeEventListener('submit', this._onNewsletterSubmit);
-          })();
+              form.addEventListener('submit', this._onNewsletterSubmit);
+              return () =>
+                form.removeEventListener('submit', this._onNewsletterSubmit);
+            })();
       this._instances = this._instances || {};
       this._instances._removeNews = _removeNews;
     }
@@ -1038,7 +1038,7 @@ class ScrollHandler {
             'ScrollHandler: failed to create fallback #footer-trigger-zone',
             err,
           );
-        } catch { }
+        } catch {}
       }
     }
 
@@ -1048,7 +1048,7 @@ class ScrollHandler {
         log.warn(
           'ScrollHandler: #footer-trigger-zone not found after fallback; aborting init',
         );
-      } catch { }
+      } catch {}
       return;
     }
 
@@ -1096,7 +1096,7 @@ class ScrollHandler {
       try {
         globalThis.removeEventListener('wheel', this._userScrollListener);
         globalThis.removeEventListener('touchstart', this._userScrollListener);
-      } catch { }
+      } catch {}
       this._userScrollListener = null;
     }
   }
@@ -1110,7 +1110,7 @@ class ScrollHandler {
     // Debug probe for tests and CI
     try {
       globalThis._lastToggleCall = { ts: Date.now(), shouldExpand };
-    } catch { }
+    } catch {}
 
     const min = footer.querySelector('.footer-minimized');
     const max = footer.querySelector('.footer-maximized');
@@ -1162,11 +1162,11 @@ class ScrollHandler {
           .filter(Boolean)
           .join(' '),
       );
-    } catch { }
+    } catch {}
 
     try {
       footer.setAttribute('aria-expanded', 'true');
-    } catch { }
+    } catch {}
 
     try {
       document.body.classList.add('footer-expanded');
@@ -1178,13 +1178,13 @@ class ScrollHandler {
           .filter(Boolean)
           .join(' '),
       );
-    } catch { }
+    } catch {}
 
     max?.classList.remove('footer-hidden');
     min?.classList.add('footer-hidden');
     try {
       min?.setAttribute('aria-hidden', 'true');
-    } catch { }
+    } catch {}
 
     this.expanded = true;
     // Set a short lock period to avoid immediate collapse from tiny scroll jitter
@@ -1352,4 +1352,5 @@ class FooterResizer {
 }
 
 // ===== Auto-Start =====
+/* eslint-disable-next-line import/no-unused-modules */
 export const initFooter = () => new FooterLoader().init();

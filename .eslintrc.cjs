@@ -11,6 +11,8 @@ module.exports = {
     'no-console': ['warn', { allow: ['warn', 'error', 'info'] }],
     'no-empty': ['error', { allowEmptyCatch: true }],
     'no-undef': ['error', { typeof: true }],
+    // Warn about unused exports to help find dead code
+    'import/no-unused-modules': ['warn', { unusedExports: true }],
   },
   overrides: [
     {
