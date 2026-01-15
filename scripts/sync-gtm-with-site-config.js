@@ -115,7 +115,8 @@ async function main() {
   info('Sync results:');
   results.forEach((r) => {
     info(
-      `- ${path.basename(r.filePath)}: publicId=${r.publicId}, hostMatch=${r.hostMatch || 'none'
+      `- ${path.basename(r.filePath)}: publicId=${r.publicId}, hostMatch=${
+        r.hostMatch || 'none'
       }, updatedVars=${r.updatedVars}, changed=${r.changed}`,
     );
   });
