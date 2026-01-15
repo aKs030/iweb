@@ -10,7 +10,8 @@ import { RobotAnimation } from './modules/robot-animation.js';
 import { RobotChat } from './modules/robot-chat.js';
 import { RobotIntelligence } from './modules/robot-intelligence.js';
 import { RobotSound } from './modules/robot-sound.js';
-import { createLogger } from '../../utils/shared-utilities.js';
+import { createLogger } from '/content/utils/shared-utilities.js';
+import { createObserver } from '/content/utils/intersection-observer.js';
 
 const log = createLogger('RobotCompanion');
 
@@ -55,6 +56,8 @@ class RobotCompanion {
       inputFocus: null,
       inputBlur: null,
       heroTypingEnd: null,
+      // DOM element listeners (target, event, handler)
+      dom: [],
     };
 
     // Zentrale Timeout/Interval Verwaltung
@@ -562,6 +565,17 @@ class RobotCompanion {
         target.removeEventListener('hero:typingEnd', handler);
       }
 
+      // DOM element listeners
+      if (this._eventListeners.dom && this._eventListeners.dom.length) {
+        this._eventListeners.dom.forEach(({ target, event, handler }) => {
+          try {
+            target.removeEventListener(event, handler);
+          } catch (err) {
+            /* ignore */
+          }
+        });
+      }
+
       // Clear alle Referenzen
       this._eventListeners = {
         scroll: [],
@@ -571,6 +585,7 @@ class RobotCompanion {
         inputFocus: null,
         inputBlur: null,
         heroTypingEnd: null,
+        dom: [],
       };
     }
 
@@ -754,7 +769,7 @@ class RobotCompanion {
 
     container.innerHTML = `
             <div class="robot-chat-window" id="robot-chat-window">
-                <div class="chat-header">
+                <div class="chat-header u-inline-center">
                     <div class="chat-title"><span class="chat-status-dot"></span>Cyber Assistant</div>
                     <button class="chat-close-btn">&times;</button>
                 </div>
@@ -805,42 +820,85 @@ class RobotCompanion {
   }
 
   attachEvents() {
-    this.dom.avatar.addEventListener('click', () => this.handleAvatarClick());
-    this.dom.closeBtn.addEventListener('click', (e) => {
+    // Use named handlers so we can remove them during cleanup
+    const _onAvatarClick = () => this.handleAvatarClick();
+    this.dom.avatar.addEventListener('click', _onAvatarClick);
+    this._eventListeners.dom.push({
+      target: this.dom.avatar,
+      event: 'click',
+      handler: _onAvatarClick,
+    });
+
+    const _onCloseBtnClick = (e) => {
       e.stopPropagation();
       this.toggleChat(false);
+    };
+    this.dom.closeBtn.addEventListener('click', _onCloseBtnClick);
+    this._eventListeners.dom.push({
+      target: this.dom.closeBtn,
+      event: 'click',
+      handler: _onCloseBtnClick,
     });
-    this.dom.bubbleClose.addEventListener('click', (e) => {
+
+    const _onBubbleClose = (e) => {
       e.stopPropagation();
       const ctx = this.getPageContext();
       this.chatModule.lastGreetedContext = ctx;
       this.chatModule.clearBubbleSequence();
       this.chatModule.hideBubble();
+    };
+    this.dom.bubbleClose.addEventListener('click', _onBubbleClose);
+    this._eventListeners.dom.push({
+      target: this.dom.bubbleClose,
+      event: 'click',
+      handler: _onBubbleClose,
     });
 
     if (this.dom.sendBtn) {
-      this.dom.sendBtn.addEventListener('click', () =>
-        this.handleUserMessage(),
-      );
+      const _onSendBtn = () => this.handleUserMessage();
+      this.dom.sendBtn.addEventListener('click', _onSendBtn);
+      this._eventListeners.dom.push({
+        target: this.dom.sendBtn,
+        event: 'click',
+        handler: _onSendBtn,
+      });
     }
 
     if (this.dom.input) {
-      this.dom.input.addEventListener('keypress', (e) => {
+      const _onInputKeypress = (e) => {
         if (e.key === 'Enter') this.handleUserMessage();
+      };
+      this.dom.input.addEventListener('keypress', _onInputKeypress);
+      this._eventListeners.dom.push({
+        target: this.dom.input,
+        event: 'keypress',
+        handler: _onInputKeypress,
       });
 
-      this.dom.input.addEventListener('focus', () => {
+      const _onInputFocus = () => {
         if (this.dom.controls) {
           this.dom.controls.classList.add('hide-controls-mobile');
         }
+      };
+      this.dom.input.addEventListener('focus', _onInputFocus);
+      this._eventListeners.dom.push({
+        target: this.dom.input,
+        event: 'focus',
+        handler: _onInputFocus,
       });
 
-      this.dom.input.addEventListener('blur', () => {
+      const _onInputBlur = () => {
         setTimeout(() => {
           if (this.dom.controls) {
             this.dom.controls.classList.remove('hide-controls-mobile');
           }
         }, 200);
+      };
+      this.dom.input.addEventListener('blur', _onInputBlur);
+      this._eventListeners.dom.push({
+        target: this.dom.input,
+        event: 'blur',
+        handler: _onInputBlur,
       });
     }
   }
@@ -906,7 +964,7 @@ class RobotCompanion {
       { selector: 'footer', ctx: 'footer' },
     ];
 
-    const observer = new IntersectionObserver(
+    this._sectionObserver = createObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting && entry.intersectionRatio > 0.35) {
@@ -922,10 +980,8 @@ class RobotCompanion {
 
     sectionMap.forEach((s) => {
       const el = document.querySelector(s.selector);
-      if (el) observer.observe(el);
+      if (el) this._sectionObserver.observe(el);
     });
-
-    this._sectionObserver = observer;
   }
 
   showMoodInfo() {

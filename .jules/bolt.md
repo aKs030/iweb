@@ -1,3 +1,0 @@
-## 2024-05-23 - Frame-rate dependent animation logic in Three.js
-**Learning:** The Three.js Earth system was calculating rotation and orbital movement based on `frameCounter` logic (e.g., `frameCounter % 2 === 0`) rather than `delta` time. This caused the animation to run 2x faster on 120Hz displays compared to 60Hz displays, and scale unpredictably with frame drops.
-**Action:** Always use `clock.getDelta()` to drive continuous animations (rotation, position) in the render loop to ensure consistent speed across all devices and refresh rates. When refactoring legacy frame-based logic, calculate a multiplier based on the original target framerate (e.g., 60fps) to preserve the intended visual speed.

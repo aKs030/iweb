@@ -1,6 +1,7 @@
 /* global React, ReactDOM */
 import htm from 'https://cdn.jsdelivr.net/npm/htm@3.1.1/dist/htm.module.js';
-import { createLogger } from '../../content/utils/shared-utilities.js';
+import { createLogger } from '/content/utils/shared-utilities.js';
+import { FAVICON_512 } from '../../content/config/site-config.js';
 
 const log = createLogger('BlogApp');
 import { blogPosts } from './blog-data.js';
@@ -138,9 +139,8 @@ function BlogApp() {
             name: 'Abdulkerim — Digital Creator Portfolio',
             logo: {
               '@type': 'ImageObject',
-              url: 'https://abdulkerimsesli.de/content/assets/img/icons/favicon-512.png',
-              contentUrl:
-                'https://abdulkerimsesli.de/content/assets/img/icons/favicon-512.png',
+              url: FAVICON_512,
+              contentUrl: FAVICON_512,
               creator: { '@type': 'Person', name: 'Abdulkerim Sesli' },
               license: 'https://abdulkerimsesli.de/#image-license',
               creditText: 'Logo: Abdulkerim Sesli',
@@ -180,7 +180,7 @@ function BlogApp() {
       </header>
 
       <!-- Filter -->
-      <div className="filter-bar">
+      <div className="filter-bar u-row u-wrap">
         ${categories.map(
           (cat) => html`
             <button
@@ -236,8 +236,8 @@ function BlogApp() {
             <div className="blog-grid">
               ${filteredPosts.map(
                 (post) => html`
-                  <article key=${post.id} className="blog-card">
-                    <div className="card-footer">
+                  <article key=${post.id} className="blog-card u-stack">
+                    <div className="card-footer u-row u-between">
                       <span className="card-category">${post.category}</span>
                       <span className="card-date">${post.date}</span>
                     </div>
@@ -245,8 +245,8 @@ function BlogApp() {
                     <h2 className="card-title">${post.title}</h2>
                     <p className="card-excerpt">${post.excerpt}</p>
 
-                    <div className="card-footer">
-                      <span className="card-read-time">
+                    <div className="card-footer u-row u-between">
+                      <span className="card-read-time u-inline-center">
                         <${Clock} />
                         ${post.readTime}
                       </span>

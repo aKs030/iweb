@@ -1,4 +1,7 @@
-import { createLogger } from '../../content/utils/shared-utilities.js';
+import {
+  createLogger,
+  makeAbortController,
+} from '/content/utils/shared-utilities.js';
 import { createProjectsData } from './projects-data.js';
 
 const log = createLogger('projekte-app');
@@ -209,14 +212,14 @@ function App() {
   const testUrl = async (url, timeout = 2500) => {
     if (!url) return false;
     try {
-      const controller = new AbortController();
-      const id = setTimeout(() => controller.abort(), timeout);
+      const { controller, clearTimeout: clearCtrlTimeout } =
+        makeAbortController(timeout);
       const res = await fetch(url, {
         method: 'GET',
         mode: 'cors',
         signal: controller.signal,
       });
-      clearTimeout(id);
+      clearCtrlTimeout();
       return res?.ok;
     } catch {
       return false;
@@ -341,7 +344,7 @@ function App() {
     }, [previewUrl]);
 
     return html`
-      <div className="mockup-iframe-wrapper" ref=${wrapperRef}>
+      <div className="mockup-iframe-wrapper u-center" ref=${wrapperRef}>
         ${previewUrl
           ? html`
               <iframe
@@ -370,7 +373,7 @@ function App() {
     <${React.Fragment}>
       <!-- Hero Section -->
       <section className="snap-section" id="hero">
-        <div className="container-center">
+        <div className="container u-stack u-center">
           <div className="badge">
             <span className="badge-dot-container">
               <span className="badge-dot-ping"></span>
@@ -386,7 +389,7 @@ function App() {
             Willkommen in meiner digitalen Werkstatt. Hier sammle ich meine
             Experimente, vom ersten console.log bis zu interaktiven Web-Apps.
           </p>
-          <div className="btn-group">
+          <div className="btn-group u-row u-wrap">
             <button onClick=${scrollToProjects} className="btn btn-primary">
               Los geht's
               <${ArrowDown} style=${{ width: '1rem', height: '1rem' }} />
@@ -420,7 +423,7 @@ function App() {
                   style=${{ backgroundColor: project.glowColor }}
                 ></div>
                 <div className="window-mockup">
-                  <div className="mockup-content">
+                  <div className="mockup-content u-center">
                     <div className="mockup-bg-pattern"></div>
                     <${ProjectMockup} project=${project} />
                     <div className="mockup-icon">${project.icon}</div>
@@ -429,20 +432,20 @@ function App() {
               </div>
 
               <!-- Right Side (Content) -->
-              <div className="project-info" style=${{ order: 1 }}>
-                <div className="project-header">
+              <div className="project-info u-stack" style=${{ order: 1 }}>
+                <div className="project-header u-row">
                   <h2 className="project-title">${project.title}</h2>
                   <div className="divider"></div>
                   <span className="project-category">${project.category}</span>
                 </div>
                 <p className="project-desc">${project.description}</p>
-                <div className="tags-container">
+                <div className="tags-container u-row u-wrap">
                   ${project.tags.map(
                     (tag, i) =>
                       html` <span key=${i} className="tag">${tag}</span> `,
                   )}
                 </div>
-                <div className="project-actions">
+                <div className="project-actions u-row u-between u-wrap">
                   <button
                     className="btn btn-primary btn-small"
                     onClick=${() => openDirect(project)}
@@ -482,10 +485,10 @@ function App() {
             >
               <div className="modal-wrapper">
                 <div className="modal-header">
-                  <div className="modal-header-title">
+                  <div className="modal-header-title u-row u-inline-center">
                     <strong>${modalTitle}</strong>
                   </div>
-                  <div className="modal-header-actions">
+                  <div className="modal-header-actions u-row">
                     <a
                       href=${modalUrl}
                       target="_blank"
@@ -524,7 +527,7 @@ function App() {
 
       <!-- Contact Section -->
       <section className="snap-section contact-section" id="contact">
-        <div className="container-center">
+        <div className="container u-stack u-center">
           <div style=${{ marginBottom: '2rem' }}>
             <div className="contact-icon-wrapper">
               <${MousePointerClick}
@@ -537,7 +540,7 @@ function App() {
             Ich lerne jeden Tag dazu. Hast du Ideen für mein nächstes kleines
             Projekt?
           </p>
-          <div className="btn-group">
+          <div className="btn-group u-row u-wrap">
             <button
               className="btn btn-primary"
               style=${{ backgroundColor: '#2563eb', color: 'white' }}

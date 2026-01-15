@@ -21,7 +21,9 @@ import {
   createLogger,
   getElementById,
   EVENTS,
-} from '../../utils/shared-utilities.js';
+  addListener,
+} from '/content/utils/shared-utilities.js';
+import { upsertHeadLink } from '/content/utils/dom-helpers.js';
 
 const _log = createLogger('menu');
 const MENU_CSS_URL = '/content/components/menu/menu.css';
@@ -32,13 +34,12 @@ function ensureMenuStyles() {
   const existing = document.head.querySelector(`link[href="${MENU_CSS_URL}"]`);
   if (existing) return existing;
 
-  const link = document.createElement('link');
-  link.rel = 'stylesheet';
-  link.href = MENU_CSS_URL;
-  link.media = 'all';
-  link.dataset.injectedBy = 'menu-js';
-  document.head.appendChild(link);
-  return link;
+  return upsertHeadLink({
+    rel: 'stylesheet',
+    href: MENU_CSS_URL,
+    attrs: { media: 'all' },
+    dataset: { injectedBy: 'menu-js' },
+  });
 }
 
 ensureMenuStyles();
@@ -89,11 +90,15 @@ const initMenu = () => {
   window.addEventListener('hashchange', setActiveMenuLink);
   window.addEventListener('popstate', setActiveMenuLink);
 
-  document.addEventListener('click', (event) => {
+  const _onMenuDocClick = (event) => {
     const isClickInside = menuContainer.contains(event.target);
     const isMenuToggle = event.target.closest('.site-menu__toggle');
     if (!isClickInside && !isMenuToggle) closeMenu(menuContainer);
-  });
+  };
+  const _removeDocClick = addListener(document, 'click', _onMenuDocClick);
+  // store remover for potential cleanup
+  menuContainer.__listenerRemovers = menuContainer.__listenerRemovers || [];
+  menuContainer.__listenerRemovers.push(_removeDocClick);
 };
 
 // Use shared EVENTS.DOM_READY or fallback to DOMContentLoaded
@@ -143,7 +148,7 @@ function getMenuHTML() {
     </svg>
 
     <a href="/" class="site-logo-link">
-      <span class="site-logo__container">
+      <span class="site-logo__container u-inline-center">
         <span class="site-logo elegant-logo" id="site-title"><span class="visually-hidden">Startseite</span></span>
         <span class="site-subtitle" id="site-subtitle"></span>
       </span>
@@ -258,15 +263,26 @@ function initializeMenu(container) {
       menu.setAttribute('aria-hidden', String(!open));
     };
     const toggle = () => setState(!menu.classList.contains('open'));
-    menuToggle.addEventListener('click', toggle);
-    menuToggle.addEventListener('keydown', (event) => {
+    const _removeToggleClick = addListener(menuToggle, 'click', toggle);
+    const _onMenuToggleKeydown = (event) => {
       if (event.key === 'Enter') toggle();
-    });
+    };
+    const _removeToggleKeydown = addListener(
+      menuToggle,
+      'keydown',
+      _onMenuToggleKeydown,
+    );
+    // store removers for potential cleanup
+    menuToggle.__listenerRemovers = menuToggle.__listenerRemovers || [];
+    menuToggle.__listenerRemovers.push(
+      _removeToggleClick,
+      _removeToggleKeydown,
+    );
   }
 
   // Close the mobile menu when any navigation link is clicked
   container.querySelectorAll('.site-menu a[href]').forEach((a) => {
-    a.addEventListener('click', (e) => {
+    const _onNavLinkClick = (e) => {
       // Close the menu on mobile/compact view and delay navigation slightly so the close animation is visible
       const href = a.getAttribute('href');
       const isExternal = /^https?:\/\//i.test(href);
@@ -287,7 +303,11 @@ function initializeMenu(container) {
           }, 160);
         }
       }
-    });
+    };
+    const _removeNavClick = addListener(a, 'click', _onNavLinkClick);
+    // store ref to allow cleanup later
+    a.__listenerRemovers = a.__listenerRemovers || [];
+    a.__listenerRemovers.push(_removeNavClick);
   });
 
   initializeIcons();
@@ -319,9 +339,17 @@ function initializeIcons() {
 function initializeLogo(container) {
   const logoContainer = container.querySelector('.site-logo__container');
   if (logoContainer) {
-    logoContainer.addEventListener('contextmenu', () => {
+    const _onLogoContext = (e) => {
+      e.preventDefault?.();
       window.location.href = '/';
-    });
+    };
+    const _removeLogoContext = addListener(
+      logoContainer,
+      'contextmenu',
+      _onLogoContext,
+    );
+    logoContainer.__listenerRemovers = logoContainer.__listenerRemovers || [];
+    logoContainer.__listenerRemovers.push(_removeLogoContext);
   }
 }
 
@@ -330,7 +358,7 @@ function initializeSubmenuLinks() {
     '.has-submenu > .submenu-toggle',
   );
   submenuButtons.forEach((btn) => {
-    btn.addEventListener('click', () => {
+    const _onSubmenuToggle = () => {
       const submenu = btn.nextElementSibling;
       const open = submenu.style.display === 'block';
       document.querySelectorAll('.submenu').forEach((sm) => {
@@ -338,7 +366,10 @@ function initializeSubmenuLinks() {
       });
       submenu.style.display = open ? 'none' : 'block';
       btn.setAttribute('aria-expanded', String(!open));
-    });
+    };
+    const _removeToggle = addListener(btn, 'click', _onSubmenuToggle);
+    btn.__listenerRemovers = btn.__listenerRemovers || [];
+    btn.__listenerRemovers.push(_removeToggle);
   });
 
   const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;

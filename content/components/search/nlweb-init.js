@@ -1,6 +1,6 @@
 // NLWeb initializer (imports worker module and instantiates the dropdown chat)
 // Update DEFAULT_SITE / DEFAULT_ENDPOINT to your deployed worker if needed
-import { createLogger } from '../../utils/shared-utilities.js';
+import { createLogger } from '/content/utils/shared-utilities.js';
 const log = createLogger('NLWeb');
 
 const DEFAULT_SITE =

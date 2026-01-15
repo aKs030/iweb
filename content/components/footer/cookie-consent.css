@@ -74,7 +74,7 @@
   white-space: nowrap;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--gap-xs);
 }
 
 /* Responsive Text Logic Helpers */
@@ -172,7 +172,7 @@
 
 @media (max-width: 600px) {
   .cookie-banner-inline {
-    gap: 8px;
+    gap: var(--gap-xs);
     padding: 6px 6px 6px 10px;
     margin: 0 6px;
   }
@@ -227,7 +227,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid var(--card-border);
   background: rgba(10, 10, 10, 0.95);
   backdrop-filter: blur(10px);
   z-index: 10;
@@ -242,7 +242,7 @@
   letter-spacing: -0.01em;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--gap-xs);
 }
 
 .cookie-settings-close,
@@ -286,7 +286,7 @@
 /* --- Category Card (Modern Surface) --- */
 .cookie-category {
   background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--card-border);
   border-radius: 12px;
   padding: 16px;
   margin-bottom: 12px;
@@ -403,7 +403,7 @@
   border-top: 1px solid rgba(255, 255, 255, 0.06);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--gap-xs);
 }
 
 .cookie-item {
@@ -456,7 +456,7 @@
 .cookie-modal-footer {
   padding: 20px 24px;
   background: #0a0a0a;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid var(--card-border);
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;

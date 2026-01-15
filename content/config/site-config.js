@@ -37,3 +37,6 @@ export const SITE_CONFIG = {
   // Example for adding feature flags or global defaults in the future
   // "_meta": { "featureFlags": { "newHeader": false } },
 };
+
+// Asset URLs (use root-relative paths where possible)
+export const FAVICON_512 = '/content/assets/img/icons/favicon-512.png';

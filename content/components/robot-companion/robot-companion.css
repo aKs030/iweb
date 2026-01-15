@@ -560,7 +560,7 @@
   font-size: 0.95rem;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--gap-xs);
 }
 
 .chat-status-dot {
@@ -672,7 +672,7 @@
   background: rgb(15 23 42 / 60%);
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--gap-xs);
 }
 
 .chat-option-btn {
@@ -767,7 +767,7 @@
 /* AI Chat Extensions */
 .chat-actions {
   display: flex;
-  gap: 8px;
+  gap: var(--gap-xs);
 }
 
 .chat-mode-btn {
@@ -789,7 +789,7 @@
   display: flex;
   padding: 10px;
   border-top: 1px solid rgb(64 224 208 / 20%);
-  gap: 8px;
+  gap: var(--gap-xs);
 }
 
 #robot-chat-input {
@@ -827,7 +827,7 @@
 .tic-tac-toe-game {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  gap: var(--gap-xs);
   margin: 10px 0;
   max-width: 200px;
 }
