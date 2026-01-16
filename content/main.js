@@ -767,7 +767,14 @@ document.addEventListener(
             );
           }
 
-          log.warn('Forcing loading screen hide after timeout');
+          const pending =
+            typeof AppLoadManager?.getPending === 'function'
+              ? AppLoadManager.getPending()
+              : [];
+          log.info(
+            'Forcing loading screen hide after timeout',
+            pending.length ? { pendingModules: pending } : undefined,
+          );
           // Force-hide now
           LoadingScreenManager.setStatus('Schließe Ladebildschirm...');
           LoadingScreenManager.hide();
