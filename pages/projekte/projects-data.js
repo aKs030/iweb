@@ -24,7 +24,7 @@ const GITHUB_BASE = 'https://github.com/aKs030/Webgame/tree/main/apps';
 
 // Default Open Graph image
 const DEFAULT_OG_IMAGE =
-  'https://abdulkerimsesli.de/content/assets/img/og/og-projekte.png';
+  'https://www.abdulkerimsesli.de/content/assets/img/og/og-projekte.png';
 
 // Theme colors for consistent design system
 const THEME_COLORS = {
