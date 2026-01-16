@@ -10,7 +10,9 @@
     "sync:gtm": "node scripts/sync-gtm-with-site-config.js",
     "format": "prettier --write \"**/*.{js,css,json,md,html,htm}\"",
     "lint": "eslint \"**/*.{js,ts}\" --fix",
-    "config:validate": "node scripts/config-validate.js"
+    "config:validate": "node scripts/config-validate.js",
+    "images:build": "node scripts/generate-og-responsive-images.js",
+    "images:normalize": "node scripts/keep-only-webp.js"
   },
   "lint-staged": {
     "*.{js,ts}": [
@@ -28,7 +30,8 @@
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-prettier": "^4.2.5",
     "lint-staged": "^16.2.7",
-    "prettier": "^2.8.8"
+    "prettier": "^2.8.8",
+    "sharp": "^0.34.5"
   },
   "repository": {
     "type": "git",

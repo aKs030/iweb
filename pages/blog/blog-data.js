@@ -7,7 +7,8 @@ export const blogPosts = [
   {
     id: 'threejs-performance',
     title: 'Optimierung von Three.js für das Web',
-    date: '15. Dezember 2025',
+    date: '2025-12-15',
+    dateDisplay: '15. Dezember 2025',
     category: 'Development',
     excerpt:
       'Wie man komplexe 3D-Szenen performant im Browser rendert, ohne den Akku mobiler Geräte zu belasten.',
@@ -16,12 +17,14 @@ export const blogPosts = [
     tags: ['Three.js', 'WebGL', 'Performance'],
     readTime: '5 min',
     author: 'Abdulkerim Sesli (Abdul Berlin)',
-    image: 'https://www.abdulkerimsesli.de/content/assets/img/og/og-threejs.png',
+    imageKey: 'og-threejs',
+    image: 'https://www.abdulkerimsesli.de/content/assets/img/og/og-threejs-800.webp',
   },
   {
     id: 'visual-storytelling',
     title: 'Visuelles Storytelling in der Fotografie',
-    date: '2. November 2025',
+    date: '2025-11-02',
+    dateDisplay: '2. November 2025',
     category: 'Photography',
     excerpt:
       'Warum Komposition wichtiger ist als die Kamera. Ein Einblick in meine Herangehensweise bei Urban Photography.',
@@ -30,13 +33,15 @@ export const blogPosts = [
     tags: ['Photography', 'Composition', 'Art'],
     readTime: '4 min',
     author: 'Abdulkerim Sesli (Abdul Berlin)',
+    imageKey: 'og-photography',
     image:
-      'https://www.abdulkerimsesli.de/content/assets/img/og/og-photography.png',
+      'https://www.abdulkerimsesli.de/content/assets/img/og/og-photography-800.webp',
   },
   {
     id: 'modern-ui-design',
     title: 'Modernes UI-Design: Mehr als nur Dark Mode',
-    date: '10. Oktober 2025',
+    date: '2025-10-10',
+    dateDisplay: '10. Oktober 2025',
     category: 'Design',
     excerpt:
       'Warum Barrierefreiheit und Mikro-Interaktionen den Unterschied machen.',
@@ -45,12 +50,14 @@ export const blogPosts = [
     tags: ['UI/UX', 'Accessibility', 'Design'],
     readTime: '6 min',
     author: 'Abdulkerim Sesli (Abdul Berlin)',
-    image: 'https://www.abdulkerimsesli.de/content/assets/img/og/og-design.png',
+    imageKey: 'og-design',
+    image: 'https://www.abdulkerimsesli.de/content/assets/img/og/og-design-800.webp',
   },
   {
     id: 'react-no-build',
     title: 'React ohne Build-Tools nutzen',
-    date: '5. September 2025',
+    date: '2025-09-05',
+    dateDisplay: '5. September 2025',
     category: 'Development',
     excerpt:
       'Wie man moderne Frameworks in statischen Seiten einsetzt, ohne komplexe Toolchains zu benötigen.',
@@ -59,6 +66,7 @@ export const blogPosts = [
     tags: ['React', 'JavaScript', 'No-Build'],
     readTime: '3 min',
     author: 'Abdulkerim Sesli (Abdul Berlin)',
-    image: 'https://www.abdulkerimsesli.de/content/assets/img/og/og-react.png',
+    imageKey: 'og-react',
+    image: 'https://www.abdulkerimsesli.de/content/assets/img/og/og-react-800.webp',
   },
 ];

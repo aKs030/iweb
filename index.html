@@ -33,8 +33,7 @@
     <!-- Canonical tag (static for reliable Google indexing) -->
     <link rel="canonical" href="https://www.abdulkerimsesli.de/" />
 
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Font preconnects handled conditionally by head-inline.js when needed -->
 
     <!-- Server-side favicons for crawlers and browsers (reduces reliance on client-side injection) -->
     <!-- Prefer PNG/SVG icons (>=48px) so Google mobile search can show the favicon reliably -->
@@ -70,7 +69,8 @@
       color="#0d0d0d"
     />
     <meta name="msapplication-TileColor" content="#0d0d0d" />
-    <meta name="theme-color" content="#0b0d17" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0b0d17" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff" />
     <meta
       name="msapplication-TileImage"
       content="/content/assets/img/icons/favicon-192x192.png"
@@ -94,7 +94,7 @@
     />
     <meta
       property="og:image"
-      content="https://www.abdulkerimsesli.de/content/assets/img/og/og-home.png"
+      content="https://www.abdulkerimsesli.de/content/assets/img/og/og-home-800.webp"
     />
     <meta property="og:locale" content="de_DE" />
     <meta
@@ -115,7 +115,7 @@
     />
     <meta
       property="twitter:image"
-      content="https://www.abdulkerimsesli.de/content/assets/img/og/og-home.png"
+      content="https://www.abdulkerimsesli.de/content/assets/img/og/og-home-800.webp"
     />
 
     <!-- Server-side FAQ JSON-LD (ensures Search Console sees a named FAQPage) -->
@@ -235,7 +235,7 @@
       {
         "@context": "https://schema.org",
         "@type": "ImageObject",
-        "contentUrl": "https://www.abdulkerimsesli.de/content/assets/img/og/og-home.png",
+        "contentUrl": "https://www.abdulkerimsesli.de/content/assets/img/og/og-home-800.webp",
         "caption": "Hauptbild / Portfolio Hero — Abdulkerim Sesli",
         "creator": { "@type": "Person", "name": "Abdulkerim Sesli" },
         "license": "https://www.abdulkerimsesli.de/#image-license",

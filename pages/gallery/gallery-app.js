@@ -728,6 +728,7 @@ const PhotoGallery = () => {
               alt: photo.title,
               loading: 'lazy',
               decoding: 'async',
+              fetchpriority: index < 3 ? 'high' : 'low',
               className:
                 'w-full h-full object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-110',
               onLoad: () =>
@@ -1141,6 +1142,7 @@ const PhotoGallery = () => {
           React.createElement('img', {
             src: selectedImage.url,
             alt: selectedImage.title,
+            fetchpriority: 'high',
             className:
               'max-w-full max-h-[80vh] object-contain transition-all duration-300',
             style: {
