@@ -45,12 +45,14 @@ const STATIC_TEXTURES = [
 self.addEventListener('install', (event) => {
     event.waitUntil(
         Promise.all([
-            caches.open(CACHE_NAMES.APP_SHELL).then((cache) => cache.addAll(APP_SHELL)),
+            caches
+                .open(CACHE_NAMES.APP_SHELL)
+                .then((cache) => cache.addAll(APP_SHELL)),
             // Pre-cache static textures aggressively
             caches.open(CACHE_NAMES.TEXTURES).then((cache) =>
                 cache.addAll(STATIC_TEXTURES).catch(() => {
                     // Graceful fallback if some textures don't exist yet
-                    console.log('[SW] Some textures not available during install');
+                    // textures may be missing during install; ignore silently
                 }),
             ),
         ]),
@@ -65,7 +67,7 @@ self.addEventListener('activate', (event) => {
             Promise.all(
                 keys.map((key) => {
                     if (!CURRENT_CACHES.includes(key)) {
-                        console.log('[SW] Deleting old cache:', key);
+                        // deleting old cache during activation
                         return caches.delete(key);
                     }
                 }),
@@ -99,21 +101,23 @@ self.addEventListener('fetch', (event) => {
                 if (preloaded) {
                     // Also store response in runtime cache
                     const copy = preloaded.clone();
-                    caches.open(CACHE_NAMES.RUNTIME).then((cache) => cache.put(req, copy));
+                    caches
+                        .open(CACHE_NAMES.RUNTIME)
+                        .then((cache) => cache.put(req, copy));
                     return preloaded;
                 }
                 return fetch(req)
                     .then((res) => {
                         const copy = res.clone();
-                        caches.open(CACHE_NAMES.RUNTIME).then((cache) => cache.put(req, copy));
+                        caches
+                            .open(CACHE_NAMES.RUNTIME)
+                            .then((cache) => cache.put(req, copy));
                         return res;
                     })
                     .catch(() =>
-                        caches
-                            .match(req)
-                            .then((res) => res || caches.match('/index.html')),
+                        caches.match(req).then((res) => res || caches.match('/index.html')),
                     );
-            })()
+            })(),
         );
         return;
     }
@@ -125,7 +129,9 @@ self.addEventListener('fetch', (event) => {
                 if (cached) return cached;
                 return fetch(req).then((res) => {
                     if (res.ok) {
-                        caches.open(CACHE_NAMES.TEXTURES).then((cache) => cache.put(req, res.clone()));
+                        caches
+                            .open(CACHE_NAMES.TEXTURES)
+                            .then((cache) => cache.put(req, res.clone()));
                     }
                     return res;
                 });
@@ -163,7 +169,9 @@ self.addEventListener('fetch', (event) => {
                 if (cached) return cached;
                 return fetch(req).then((res) => {
                     if (res.ok) {
-                        caches.open(CACHE_NAMES.IMAGES).then((cache) => cache.put(req, res.clone()));
+                        caches
+                            .open(CACHE_NAMES.IMAGES)
+                            .then((cache) => cache.put(req, res.clone()));
                     }
                     return res;
                 });

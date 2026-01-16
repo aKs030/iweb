@@ -26,10 +26,10 @@ import { upsertHeadLink } from '/content/utils/dom-helpers.js';
     logger?.warn?.('AboutModule: failed to import createLogger', err);
     // Fallback to no-op logger if import fails
     logger = {
-      info: () => { },
-      warn: () => { },
-      error: () => { },
-      debug: () => { },
+      info: () => {},
+      warn: () => {},
+      error: () => {},
+      debug: () => {},
     };
   }
 

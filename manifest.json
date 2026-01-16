@@ -69,7 +69,10 @@
       "description": "Zu meinen Referenzen & Projekten",
       "url": "/projekte/",
       "icons": [
-        { "src": "/content/assets/img/og/og-projekte-800.webp", "sizes": "1200x630" }
+        {
+          "src": "/content/assets/img/og/og-projekte-800.webp",
+          "sizes": "1200x630"
+        }
       ]
     },
     {
@@ -78,7 +81,10 @@
       "description": "Meine Videos & Motion Design",
       "url": "/videos/",
       "icons": [
-        { "src": "/content/assets/img/og/og-videos-2400.webp", "sizes": "1200x630" }
+        {
+          "src": "/content/assets/img/og/og-videos-2400.webp",
+          "sizes": "1200x630"
+        }
       ]
     }
   ],

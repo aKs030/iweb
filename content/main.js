@@ -204,7 +204,8 @@ const SectionLoader = (() => {
     }
     if (!response || !response.ok) {
       throw new Error(
-        `HTTP ${response ? response.status : 'NO_RESPONSE'}: ${response ? response.statusText : 'no response'
+        `HTTP ${response ? response.status : 'NO_RESPONSE'}: ${
+          response ? response.statusText : 'no response'
         }`,
       );
     }
@@ -222,7 +223,8 @@ const SectionLoader = (() => {
 
     // Optimization: On subpages, skip eager loading non-critical sections
     // Let IntersectionObserver handle lazy-loading instead
-    const isHomePage = (globalThis.location?.pathname || '').replace(/\/+$/g, '') === '';
+    const isHomePage =
+      (globalThis.location?.pathname || '').replace(/\/+$/g, '') === '';
     const isEager = section.dataset.eager === 'true';
     if (!isHomePage && !isEager) {
       // Will be loaded lazily when IntersectionObserver detects visibility
@@ -785,7 +787,8 @@ document.addEventListener(
                   ? AppLoadManager.getPending()
                   : [];
               log.warn(
-                `Deferring forced loading screen hide (attempt ${attempt}): blocking modules=${Array.isArray(pending) ? pending.join(', ') : String(pending)
+                `Deferring forced loading screen hide (attempt ${attempt}): blocking modules=${
+                  Array.isArray(pending) ? pending.join(', ') : String(pending)
                 }`,
               );
 

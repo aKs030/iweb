@@ -18,7 +18,8 @@ export const blogPosts = [
     readTime: '5 min',
     author: 'Abdulkerim Sesli (Abdul Berlin)',
     imageKey: 'og-threejs',
-    image: 'https://www.abdulkerimsesli.de/content/assets/img/og/og-threejs-800.webp',
+    image:
+      'https://www.abdulkerimsesli.de/content/assets/img/og/og-threejs-800.webp',
   },
   {
     id: 'visual-storytelling',
@@ -51,7 +52,8 @@ export const blogPosts = [
     readTime: '6 min',
     author: 'Abdulkerim Sesli (Abdul Berlin)',
     imageKey: 'og-design',
-    image: 'https://www.abdulkerimsesli.de/content/assets/img/og/og-design-800.webp',
+    image:
+      'https://www.abdulkerimsesli.de/content/assets/img/og/og-design-800.webp',
   },
   {
     id: 'react-no-build',
@@ -67,6 +69,7 @@ export const blogPosts = [
     readTime: '3 min',
     author: 'Abdulkerim Sesli (Abdul Berlin)',
     imageKey: 'og-react',
-    image: 'https://www.abdulkerimsesli.de/content/assets/img/og/og-react-800.webp',
+    image:
+      'https://www.abdulkerimsesli.de/content/assets/img/og/og-react-800.webp',
   },
 ];
