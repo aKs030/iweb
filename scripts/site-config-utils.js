@@ -22,8 +22,8 @@ function loadSiteConfig(configPath) {
     if (!match) {
       error(
         'Failed to find SITE_CONFIG in ' +
-          configPath +
-          '. Expected: export const SITE_CONFIG = { ... };',
+        configPath +
+        '. Expected: export const SITE_CONFIG = { ... };',
       );
       process.exit(1);
     }

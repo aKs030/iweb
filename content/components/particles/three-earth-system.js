@@ -86,7 +86,7 @@ export const initThreeEarth = async () => {
   const container = getElementById('threeEarthContainer');
   if (!container) {
     log.warn('Container not found');
-    return () => {};
+    return () => { };
   }
 
   // Ensure previous fallbacks are cleared to avoid stale "WebGL nicht verfügbar" messages
@@ -201,7 +201,7 @@ export const initThreeEarth = async () => {
       cleanup();
       initThreeEarth();
     });
-    return () => {};
+    return () => { };
   }
 };
 

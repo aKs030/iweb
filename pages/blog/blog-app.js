@@ -152,9 +152,9 @@ function BlogApp() {
                 const h =
                   meta.originalWidth && meta.originalHeight
                     ? Math.round(
-                        (meta.originalHeight * (w || meta.originalWidth)) /
-                          meta.originalWidth,
-                      )
+                      (meta.originalHeight * (w || meta.originalWidth)) /
+                      meta.originalWidth,
+                    )
                     : null;
                 return {
                   '@type': 'ImageObject',
@@ -237,42 +237,42 @@ function BlogApp() {
         // Responsive picture using generated og-images-meta.json when available
         ogMeta && post.imageKey && ogMeta[post.imageKey]
           ? (() => {
-              const m = ogMeta[post.imageKey];
-              const webpSrc = (m.sources.webp || [])
-                .map((s) => `${s.url} ${s.width}w`)
-                .join(', ');
-              const fallback = m.fallback || post.image;
-              const w = m.fallbackWidth || m.originalWidth || null;
-              const h =
-                m.originalWidth && m.originalHeight
-                  ? Math.round(
-                      (m.originalHeight * (w || m.originalWidth)) /
-                        m.originalWidth,
-                    )
-                  : null;
-              return React.createElement(
-                'picture',
-                null,
-                webpSrc &&
-                  React.createElement('source', {
-                    type: 'image/webp',
-                    srcSet: webpSrc,
-                    sizes: '(max-width:640px) 100vw, 33vw',
-                  }),
-                React.createElement('img', {
-                  src: fallback,
-                  alt: post.title,
-                  fetchpriority: index < 2 ? 'high' : 'low',
-                  loading: 'lazy',
-                  decoding: 'async',
-                  className: 'blog-card-image',
-                  width: w || undefined,
-                  height: h || undefined,
-                }),
-              );
-            })()
+            const m = ogMeta[post.imageKey];
+            const webpSrc = (m.sources.webp || [])
+              .map((s) => `${s.url} ${s.width}w`)
+              .join(', ');
+            const fallback = m.fallback || post.image;
+            const w = m.fallbackWidth || m.originalWidth || null;
+            const h =
+              m.originalWidth && m.originalHeight
+                ? Math.round(
+                  (m.originalHeight * (w || m.originalWidth)) /
+                  m.originalWidth,
+                )
+                : null;
+            return React.createElement(
+              'picture',
+              null,
+              webpSrc &&
+              React.createElement('source', {
+                type: 'image/webp',
+                srcSet: webpSrc,
+                sizes: '(max-width:640px) 100vw, 33vw',
+              }),
+              React.createElement('img', {
+                src: fallback,
+                alt: post.title,
+                fetchpriority: index < 2 ? 'high' : 'low',
+                loading: 'lazy',
+                decoding: 'async',
+                className: 'blog-card-image',
+                width: w || undefined,
+                height: h || undefined,
+              }),
+            );
+          })()
           : post.image
-          ? React.createElement('img', {
+            ? React.createElement('img', {
               src: post.image,
               alt: post.title,
               fetchpriority: index < 2 ? 'high' : 'low',
@@ -280,7 +280,7 @@ function BlogApp() {
               decoding: 'async',
               className: 'blog-card-image',
             })
-          : null,
+            : null,
         React.createElement(
           'div',
           { className: 'card-footer u-row u-between' },
@@ -343,61 +343,61 @@ function BlogApp() {
     ),
     currentPostId
       ? (() => {
-          const post = blogPosts.find((p) => p.id === currentPostId);
-          return React.createElement(
-            'div',
-            { className: 'blog-detail' },
-            post
-              ? React.createElement(
-                  'article',
-                  { className: 'blog-article' },
-                  React.createElement(
-                    'header',
-                    null,
-                    React.createElement('h1', null, post.title),
-                    React.createElement(
-                      'p',
-                      { className: 'meta' },
-                      `${post.dateDisplay} — ${post.readTime}`,
-                    ),
-                  ),
-                  React.createElement('section', {
-                    className: 'article-body',
-                    dangerouslySetInnerHTML: { __html: post.content },
-                  }),
-                  React.createElement(
-                    'p',
-                    null,
-                    React.createElement(
-                      'button',
-                      {
-                        className: 'btn',
-                        onClick: () => (location.hash = '#/blog/'),
-                      },
-                      'Zurück',
-                    ),
-                  ),
-                )
-              : React.createElement(
-                  'div',
-                  { className: 'not-found' },
-                  'Beitrag nicht gefunden.',
-                  React.createElement(
-                    'button',
-                    {
-                      onClick: () => (location.hash = '#/blog/'),
-                      className: 'btn',
-                    },
-                    'Zurück',
-                  ),
-                ),
-          );
-        })()
-      : React.createElement(
+        const post = blogPosts.find((p) => p.id === currentPostId);
+        return React.createElement(
           'div',
-          { className: 'blog-grid' },
-          ...renderBlogGrid(),
-        ),
+          { className: 'blog-detail' },
+          post
+            ? React.createElement(
+              'article',
+              { className: 'blog-article' },
+              React.createElement(
+                'header',
+                null,
+                React.createElement('h1', null, post.title),
+                React.createElement(
+                  'p',
+                  { className: 'meta' },
+                  `${post.dateDisplay} — ${post.readTime}`,
+                ),
+              ),
+              React.createElement('section', {
+                className: 'article-body',
+                dangerouslySetInnerHTML: { __html: post.content },
+              }),
+              React.createElement(
+                'p',
+                null,
+                React.createElement(
+                  'button',
+                  {
+                    className: 'btn',
+                    onClick: () => (location.hash = '#/blog/'),
+                  },
+                  'Zurück',
+                ),
+              ),
+            )
+            : React.createElement(
+              'div',
+              { className: 'not-found' },
+              'Beitrag nicht gefunden.',
+              React.createElement(
+                'button',
+                {
+                  onClick: () => (location.hash = '#/blog/'),
+                  className: 'btn',
+                },
+                'Zurück',
+              ),
+            ),
+        );
+      })()
+      : React.createElement(
+        'div',
+        { className: 'blog-grid' },
+        ...renderBlogGrid(),
+      ),
   );
 }
 
