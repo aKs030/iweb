@@ -682,6 +682,13 @@ document.addEventListener(
         typeof AppLoadManager.isBlocked === 'function' &&
         AppLoadManager.isBlocked();
       if (blocked) return;
+      // Ensure Three.js Earth signaled readiness if present
+      const earthReady =
+        document.getElementById('threeEarthContainer')?.dataset?.threeReady ===
+        '1';
+      if (document.getElementById('threeEarthContainer') && !earthReady) {
+        return;
+      }
       LoadingScreenManager.setStatus('Starte Experience...', 98);
       LoadingScreenManager.hide();
     };

@@ -178,15 +178,6 @@ export const initThreeEarth = async () => {
       log.warn('three-ready dispatch after init failed', err);
     }
 
-    // Early unblock: Don't wait for first frame if everything else is ready
-    // This prevents timeout warnings when the animation loop is slow to start
-    try {
-      AppLoadManager.unblock('three-earth');
-      log.debug('Earth system unblocked early (pre-render)');
-    } catch (err) {
-      log.warn('Early unblock failed', err);
-    }
-
     return cleanup;
   } catch (error) {
     log.error('Initialization failed:', error);
@@ -988,8 +979,12 @@ function _renderIfReady() {
           log.debug('post-render loader hide failed', err);
         }
 
-        // Note: AppLoadManager.unblock is already called during initialization
-        // No need to call it again here
+        // Unblock the global loader only after the first visible frame
+        try {
+          AppLoadManager.unblock('three-earth');
+        } catch (err) {
+          log.warn('AppLoadManager.unblock after first frame failed', err);
+        }
 
         try {
           document.dispatchEvent(
