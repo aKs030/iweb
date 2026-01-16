@@ -82,6 +82,11 @@
 /content/components/*     /content/components/:splat      200
 /content/components/*.html /content/components/:splat.html 200
 
+# Explicitly serve known partials as 200 to avoid XHR redirect warnings in production
+/pages/home/hero          /pages/home/hero.html          200
+/pages/home/hero.html     /pages/home/hero.html          200
+/content/components/footer/footer.html /content/components/footer/footer.html 200
+
 /*.html   /:splat/   301
 
 # Ensure root section names without trailing slash are redirected to the slash version
