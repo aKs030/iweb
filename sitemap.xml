@@ -179,7 +179,7 @@
 
     <video:video>
       <video:thumbnail_loc>https://i.ytimg.com/vi/1bL8bZd6cpY/hqdefault.jpg</video:thumbnail_loc>
-      <video:title>Motion Design: Neon Bot Experiment | Abdulkerim #abdulkerim #Abdul Berlin #aKs — Abdulkerim Berlin</video:title>
+      <video:title>Motion Design: Neon Bot Experiment — AKS Motion Design</video:title>
       <video:description>In diesem Video zeige ich ein aktuelles Motion-Design-Projekt: Eine stilisierte Roboter-Animation mit leuchtenden Neon-Effekten und Partikel-Animationen. Dieses Werk ist Teil meines digitalen Portfolios und ein Experiment im Bereich Character-Design und visuelle Effekte. Es zeigt meine Weiterentwicklung im Bereich digitaler Animationen. Details zum Projekt: Design &amp; Animation: Abdulkerim Stil: Neon Motion Graphics / Sci-Fi Art Projektname: Neon-Bot AKS</video:description>
       <video:content_loc>https://youtu.be/1bL8bZd6cpY</video:content_loc>
       <video:player_loc>https://www.youtube-nocookie.com/embed/1bL8bZd6cpY</video:player_loc>
@@ -215,7 +215,7 @@
 
     <video:video>
       <video:thumbnail_loc>https://i.ytimg.com/vi/rXMLVt9vhxQ/hqdefault.jpg</video:thumbnail_loc>
-      <video:title>Logo Animation Test 1 | Abdulkerim (AKS) #edit #After Effects Design #AKS Logo-Test #Abdulkerim — Abdulkerim Berlin</video:title>
+      <video:title>Logo Animation Test 1 — AKS Motion Design</video:title>
       <video:description>Dies ist mein erster technischer Test in After Effects CS4. In diesem Projekt „1-AKS“ habe ich die Interaktion von Typografie und Hintergrundebenen (Ziegelwand-Textur) exploriert. Es markiert den Beginn meiner Auseinandersetzung mit Motion Graphics und dient heute als Dokumentation meiner frühen kreativen Arbeiten. Projekt-Details: Künstler: Abdulkerim Software: Adobe After Effects CS4 Konzept: AKS Logo-Animation 🎥 Weitere Tests auf diesem Kanal.</video:description>
       <video:content_loc>https://youtu.be/rXMLVt9vhxQ</video:content_loc>
       <video:player_loc>https://www.youtube-nocookie.com/embed/rXMLVt9vhxQ</video:player_loc>
@@ -245,13 +245,6 @@
     <priority>0.7</priority>
 
     <!-- External gallery images removed from sitemap: host your images under /content/assets/img/gallery/ and re-add here for maximum SEO benefit -->
-
-    <image:image>
-      <image:loc>https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=1200</image:loc>
-      <image:caption>Stille am Bergsee - Bayerische Alpen</image:caption>
-      <image:title>Bergsee Bayern</image:title>
-      <image:geo_location>Bayern, Deutschland</image:geo_location>
-    </image:image>
   </url>
 
   <!-- ========== ABOUT ========== -->
