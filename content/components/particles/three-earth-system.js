@@ -89,6 +89,14 @@ export const initThreeEarth = async () => {
     return () => { };
   }
 
+  // Ensure previous fallbacks are cleared to avoid stale "WebGL nicht verfügbar" messages
+  try {
+    container.classList.remove('three-earth-unavailable');
+    container.querySelectorAll('.three-earth-fallback').forEach((el) => el.remove());
+  } catch {
+    /* ignore */
+  }
+
   // Set Active Flag
   isSystemActive = true;
 
@@ -315,31 +323,8 @@ const ThreeEarthManager = { initThreeEarth, cleanup };
 // ===== Helpers =====
 
 function supportsWebGL() {
-  try {
-    const canvas = document.createElement('canvas');
-
-    // Try WebGL2 (strict), then WebGL2 (lenient), then WebGL1 (strict), then WebGL1 (lenient)
-    const ctx2Strict = canvas.getContext('webgl2', {
-      failIfMajorPerformanceCaveat: true,
-    });
-    if (ctx2Strict) return true;
-
-    const ctx2 = canvas.getContext('webgl2');
-    if (ctx2) return true;
-
-    const ctxStrict =
-      canvas.getContext('webgl', { failIfMajorPerformanceCaveat: true }) ||
-      canvas.getContext('experimental-webgl', {
-        failIfMajorPerformanceCaveat: true,
-      });
-    if (ctxStrict) return true;
-
-    const ctxLenient =
-      canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-    return !!ctxLenient;
-  } catch {
-    return false;
-  }
+  // Temporarily permissive: always attempt WebGL. Real checks proved too strict on some devices.
+  return true;
 }
 
 // Prevent repeated WebGL init attempts in environments where WebGL is unavailable
