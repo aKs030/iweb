@@ -78,9 +78,10 @@ const ROUTES = {
     description_en:
       'Abdulkerim Sesli — Web Developer & Photographer in Berlin. Specialist in React, Three.js and urban photography. Portfolio, references & contact.',
     type: 'ProfilePage',
-    image: `${BASE_URL}/content/assets/img/og/og-home.png`,
-    // Modern LCP image: keep PNG for social-card/OG but use AVIF for site delivery/preload
-    imageAvif: `${BASE_URL}/content/assets/img/og/og-home.avif`,
+    image: `${BASE_URL}/content/assets/img/og/og-home-800.webp`,
+    // Modern LCP image: use WebP for site delivery/preload
+    imageWebp: `${BASE_URL}/content/assets/img/og/og-home-800.webp`,
+
   },
   '/projekte/': {
     title: 'Referenzen & Code-Projekte | Abdulkerim Sesli',
@@ -90,7 +91,7 @@ const ROUTES = {
     description_en:
       'Explore interactive web experiments and business apps. Specialist in performant React solutions, 3D web (Three.js) and modern UI/UX.',
     type: 'CollectionPage',
-    image: `${BASE_URL}/content/assets/img/og/og-projects.png`,
+    image: `${BASE_URL}/content/assets/img/og/og-projekte-800.webp`, 
   },
   '/blog/': {
     title: 'Tech-Blog & Tutorials | Webentwicklung Berlin',
@@ -100,7 +101,7 @@ const ROUTES = {
     description_en:
       'Practical articles on JavaScript, CSS and web architecture. Hands-on tutorials and insights from a Berlin-based developer.',
     type: 'Blog',
-    image: `${BASE_URL}/content/assets/img/og/og-blog.png`,
+    image: `${BASE_URL}/content/assets/img/og/og-home-800.webp`, 
   },
   '/videos/': {
     title: 'Videos — Abdulkerim Sesli',
@@ -110,8 +111,8 @@ const ROUTES = {
     description_en:
       'A selection of my work, brief presentations and behind-the-scenes.',
     type: 'CollectionPage',
-    // NOTE: currently uses og-home.png as a fallback.
-    image: `${BASE_URL}/content/assets/img/og/og-home.png`,
+    // NOTE: use WebP fallback for modern delivery
+    image: `${BASE_URL}/content/assets/img/og/og-videos-2400.webp`,
   },
   '/gallery/': {
     title: 'Fotografie Portfolio | Urban & Portrait Berlin',
@@ -121,14 +122,14 @@ const ROUTES = {
     description_en:
       'Visual aesthetics from the capital. Curated gallery focused on street photography, architecture and atmospheric portraits from Berlin.',
     type: 'ImageGallery',
-    image: `${BASE_URL}/content/assets/img/og/og-gallery.png`,
+    image: `${BASE_URL}/content/assets/img/og/og-home-800.webp`, 
   },
   '/about/': {
     title: 'Kontakt & Profil | Abdulkerim Sesli',
     description:
       'Der Mensch hinter dem Code. Detaillierter Lebenslauf, Tech-Stack Übersicht und direkte Kontaktmöglichkeiten für Projektanfragen und Kooperationen.',
     type: 'AboutPage',
-    image: `${BASE_URL}/content/assets/img/og/og-about.png`,
+    image: `${BASE_URL}/content/assets/img/og/og-home-800.webp`, 
   },
 };
 

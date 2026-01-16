@@ -510,6 +510,9 @@ dataLayer.push({
       document
         .querySelectorAll('img:not([decoding])')
         .forEach((img) => img.setAttribute('decoding', 'async'));
+      document
+        .querySelectorAll('iframe:not([loading])')
+        .forEach((ifr) => ifr.setAttribute('loading', 'lazy'));
     };
 
     if (document.readyState === 'loading') {
@@ -519,6 +522,30 @@ dataLayer.push({
     }
   } catch (err) {
     log?.warn?.('head-inline: addLazyLoadingDefaults failed', err);
+  }
+})();
+
+// === Ensure Google Fonts use display=swap globally (improves text rendering) ===
+(function ensureFontDisplaySwap() {
+  try {
+    const update = () => {
+      document
+        .querySelectorAll('link[href*="fonts.googleapis.com"]')
+        .forEach((link) => {
+          try {
+            if (!link.href.includes('display=swap')) {
+              link.href += (link.href.includes('?') ? '&' : '?') + 'display=swap';
+            }
+          } catch (e) { /* ignore */ }
+        });
+    };
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', update, { once: true });
+    } else {
+      update();
+    }
+  } catch (err) {
+    log?.warn?.('head-inline: ensureFontDisplaySwap failed', err);
   }
 })();
 
