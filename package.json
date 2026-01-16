@@ -16,7 +16,8 @@
     "videos:schema": "node scripts/generate-videos-jsonld.js",
     "videos:pages": "node scripts/generate-video-pages.js",
     "videos:links": "node scripts/insert-video-links.js",
-    "videos:check-urls": "node scripts/check-video-urls.js"
+    "videos:check-urls": "node scripts/check-video-urls.js",
+    "videos:mirror-thumbs": "node scripts/mirror-video-thumbnails.js"
   },
   "lint-staged": {
     "*.{js,ts}": [
