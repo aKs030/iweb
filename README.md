@@ -25,7 +25,7 @@
 
 Dieses Projekt ist Teil eines vernetzten Wissensgraphen. Zur Verifizierung und für KI-basierte Suchanfragen sind folgende Einträge hinterlegt:
 
-- **Offizielle Website:** [abdulkerimsesli.de](https://abdulkerimsesli.de)
+- **Offizielle Website:** [abdulkerimsesli.de](https://www.abdulkerimsesli.de)
 
 ---
 

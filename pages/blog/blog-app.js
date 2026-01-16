@@ -117,7 +117,7 @@ function BlogApp() {
           '@type': 'BlogPosting',
           mainEntityOfPage: {
             '@type': 'WebPage',
-            '@id': `https://abdulkerimsesli.de/blog/${post.id}`,
+            '@id': `https://www.abdulkerimsesli.de/blog/${post.id}`,
           },
           headline: post.title,
           description: post.excerpt,
@@ -125,28 +125,29 @@ function BlogApp() {
           dateModified: new Date(post.date).toISOString(),
           author: {
             '@type': 'Person',
-            '@id': 'https://abdulkerimsesli.de/#person',
+            '@id': 'https://www.abdulkerimsesli.de/#person',
           },
           image: {
             '@type': 'ImageObject',
             url:
               post.image ||
-              'https://abdulkerimsesli.de/content/assets/img/og/og-home.png',
+              'https://www.abdulkerimsesli.de/content/assets/img/og/og-home.png',
           },
           publisher: {
             '@type': 'Organization',
-            '@id': 'https://abdulkerimsesli.de/#organization',
+            '@id': 'https://www.abdulkerimsesli.de/#organization',
             name: 'Abdulkerim — Digital Creator Portfolio',
             logo: {
               '@type': 'ImageObject',
               url: FAVICON_512,
               contentUrl: FAVICON_512,
               creator: { '@type': 'Person', name: 'Abdulkerim Sesli' },
-              license: 'https://abdulkerimsesli.de/#image-license',
+              license: 'https://www.abdulkerimsesli.de/#image-license',
               creditText: 'Logo: Abdulkerim Sesli',
               copyrightNotice: '© 2025 Abdulkerim Sesli',
-              acquireLicensePage: 'https://abdulkerimsesli.de/#image-license',
+              acquireLicensePage: 'https://www.abdulkerimsesli.de/#image-license',
             },
+
             address: {
               '@type': 'PostalAddress',
               streetAddress: 'Sterkrader Str. 59',

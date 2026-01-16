@@ -16,7 +16,7 @@ export const blogPosts = [
     tags: ['Three.js', 'WebGL', 'Performance'],
     readTime: '5 min',
     author: 'Abdulkerim Sesli (Abdul Berlin)',
-    image: 'https://abdulkerimsesli.de/content/assets/img/og/og-threejs.png',
+    image: 'https://www.abdulkerimsesli.de/content/assets/img/og/og-threejs.png',
   },
   {
     id: 'visual-storytelling',
@@ -31,7 +31,7 @@ export const blogPosts = [
     readTime: '4 min',
     author: 'Abdulkerim Sesli (Abdul Berlin)',
     image:
-      'https://abdulkerimsesli.de/content/assets/img/og/og-photography.png',
+      'https://www.abdulkerimsesli.de/content/assets/img/og/og-photography.png',
   },
   {
     id: 'modern-ui-design',
@@ -45,7 +45,7 @@ export const blogPosts = [
     tags: ['UI/UX', 'Accessibility', 'Design'],
     readTime: '6 min',
     author: 'Abdulkerim Sesli (Abdul Berlin)',
-    image: 'https://abdulkerimsesli.de/content/assets/img/og/og-design.png',
+    image: 'https://www.abdulkerimsesli.de/content/assets/img/og/og-design.png',
   },
   {
     id: 'react-no-build',
@@ -59,6 +59,6 @@ export const blogPosts = [
     tags: ['React', 'JavaScript', 'No-Build'],
     readTime: '3 min',
     author: 'Abdulkerim Sesli (Abdul Berlin)',
-    image: 'https://abdulkerimsesli.de/content/assets/img/og/og-react.png',
+    image: 'https://www.abdulkerimsesli.de/content/assets/img/og/og-react.png',
   },
 ];

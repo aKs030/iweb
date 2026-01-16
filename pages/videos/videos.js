@@ -295,16 +295,16 @@ function renderVideoCard(grid, it, detailsMap) {
     isFamilyFriendly: true,
     publisher: {
       '@type': 'Organization',
-      '@id': 'https://abdulkerimsesli.de/#organization',
+      '@id': 'https://www.abdulkerimsesli.de/#organization',
       logo: {
         '@type': 'ImageObject',
         url: FAVICON_512,
         contentUrl: FAVICON_512,
         creator: { '@type': 'Person', name: 'Abdulkerim Sesli' },
-        license: 'https://abdulkerimsesli.de/#image-license',
+        license: 'https://www.abdulkerimsesli.de/#image-license',
         creditText: 'Logo: Abdulkerim Sesli',
         copyrightNotice: '© 2025 Abdulkerim Sesli',
-        acquireLicensePage: 'https://abdulkerimsesli.de/#image-license',
+        acquireLicensePage: 'https://www.abdulkerimsesli.de/#image-license',
       },
       address: {
         '@type': 'PostalAddress',

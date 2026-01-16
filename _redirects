@@ -44,6 +44,13 @@
 /videos/index.html   /videos/       301
 /about/index.html    /about/        301
 
+# Preferred short root redirects (moved above splats/placeholders for Cloudflare performance)
+/about    /about/     301
+/blog     /blog/      301
+/gallery  /gallery/   301
+/projekte /projekte/  301
+/videos   /videos/    301
+
 # Redirect old file locations to new clean URLs
 /pages/gallery/gallery.html     /gallery/     301
 /pages/projekte/projekte.html   /projekte/    301
@@ -78,11 +85,7 @@
 /*.html   /:splat/   301
 
 # Ensure root section names without trailing slash are redirected to the slash version
-/about    /about/     301
-/blog     /blog/      301
-/gallery  /gallery/   301
-/projekte /projekte/  301
-/videos   /videos/    301
+# (moved above to improve matching performance as recommended by Cloudflare)
 
 # -------------------------------
 # 5) Rewrites to serve content from the physical /pages/ folders

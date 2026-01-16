@@ -15,7 +15,7 @@ import { upsertHeadLink } from '/content/utils/dom-helpers.js';
 const log = createLogger('HeadLoader');
 
 // Static configuration data
-const BASE_URL = 'https://abdulkerimsesli.de';
+const BASE_URL = 'https://www.abdulkerimsesli.de';
 
 const BRAND_DATA = {
   name: 'Abdulkerim Sesli',
@@ -1048,7 +1048,7 @@ async function loadSharedHead() {
 
       // Force Canonical to Production host by default for all public access.
       // We only disable this for local development (localhost, 127.0.0.1) or preview builds (*.pages.dev).
-      // This strictly enforces https://abdulkerimsesli.de as the canonical origin to prevent duplicates (http/www).
+      // This strictly enforces https://www.abdulkerimsesli.de as the canonical origin to prevent duplicates (http/www).
       const isLocalOrPreview =
         hostname === 'localhost' ||
         hostname === '127.0.0.1' ||

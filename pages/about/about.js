@@ -151,7 +151,7 @@ import { upsertHeadLink } from '/content/utils/dom-helpers.js';
                 '@context': 'https://schema.org',
                 '@type': 'Person',
                 name: 'Abdulkerim Sesli',
-                url: 'https://abdulkerimsesli.de/about/',
+                url: 'https://www.abdulkerimsesli.de/about/',
                 mainEntityOfPage: {
                   '@type': 'WebPage',
                   '@id': canonical,
