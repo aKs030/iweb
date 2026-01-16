@@ -18,8 +18,8 @@
 /pages/features/wetter.html          /                         301
 /pages/features/snake.html           /                         301
 /pages/komponente/footer.html        /                         301
-/pages/kontakt/                      /#kontakt                 301
-/pages/kontakt                       /#kontakt                 301
+/pages/kontakt/                      /#kontakt/                301
+/pages/kontakt                       /#kontakt/                301
 
 # Alte Footer-Pfade (vor Umstrukturierung)
 # Redirect both file and folder variations to the clean URL
