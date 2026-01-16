@@ -552,44 +552,17 @@ function _ensureWebGLOrFallback(container, forceThree) {
   if (!__three_webgl_tested) {
     __three_webgl_tested = true;
     if (!forceThree && !supportsWebGL()) {
+      // Be permissive: attempt initialization anyway, log warning, no fallback yet
       log.warn(
-        'WebGL not supported in this environment; skipping Three.js initialization',
+        'WebGL check failed; proceeding leniently to attempt Three.js initialization',
       );
-      // Add visible fallback to container so users see a friendly image/message
       try {
-        container.classList.add('three-earth-unavailable');
-        // Insert a fallback element if not present
-        if (!container.querySelector('.three-earth-fallback')) {
-          const fallback = document.createElement('div');
-          fallback.className = 'three-earth-fallback';
-          // role/aria labels are intentional and not replaced
-          fallback.setAttribute('role', 'img');
-          fallback.setAttribute(
-            'aria-label',
-            'Interaktive Darstellung wird nicht unterstützt. Statische Vorschau angezeigt.',
-          );
-          fallback.innerHTML = `
-            <div class="three-earth-fallback__inner">
-              <picture>
-                <source type="image/avif" srcset="/content/assets/img/og/og-home@1600.avif 1600w, /content/assets/img/og/og-home@1200.avif 1200w, /content/assets/img/og/og-home@800.avif 800w, /content/assets/img/og/og-home@400.avif 400w" sizes="(max-width:1200px) 100vw, 1200px" />
-                <source type="image/webp" srcset="/content/assets/img/og/og-home@1600.webp 1600w, /content/assets/img/og/og-home@1200.webp 1200w, /content/assets/img/og/og-home@800.webp 800w, /content/assets/img/og/og-home@400.webp 400w" sizes="(max-width:1200px) 100vw, 1200px" />
-                <img src="/content/assets/img/og/og-home@1200.avif" srcset="/content/assets/img/og/og-home@1600.avif 1600w, /content/assets/img/og/og-home@1200.avif 1200w, /content/assets/img/og/og-home@800.avif 800w" sizes="(max-width:1200px) 100vw, 1200px" alt="Abdulkerim — Digital Creator Portfolio" width="1200" height="630" decoding="async" loading="eager" fetchpriority="high" />
-              </picture>
-              <p class="three-earth-fallback__text">Interaktive 3D‑Ansicht wird von Ihrem Gerät nicht unterstützt. Hier eine Vorschau.</p>
-            </div>
-          `;
-          container.appendChild(fallback);
-        }
-      } catch (err) {
-        log.warn('DOM insert ignored', err);
+        container.classList.remove('three-earth-unavailable');
+        container.querySelector('.three-earth-fallback')?.remove();
+      } catch {
+        /* ignore */
       }
-      showErrorState(
-        container,
-        new Error('WebGL nicht verfügbar oder blockiert'),
-      );
-      // mark cleanup and exit gracefully
-      sharedCleanupManager.cleanupSystem('three-earth');
-      return false;
+      return true;
     }
 
     if (forceThree) {
@@ -602,6 +575,9 @@ function _ensureWebGLOrFallback(container, forceThree) {
 }
 
 function _detectAndEnsureWebGL(container) {
+  // Re-evaluate WebGL each init attempt to avoid sticky negatives
+  __three_webgl_tested = false;
+
   try {
     _applyDeviceConfigSafely();
   } catch (err) {
