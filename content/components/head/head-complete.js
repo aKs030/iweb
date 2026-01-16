@@ -950,6 +950,29 @@ async function loadSharedHead() {
         : rawPageData.description,
   };
 
+  // Allow partials to opt-in by setting `window.PAGE_META` or including an
+  // inline <script type="application/json" data-partial-meta> in the fragment.
+  // Values provided by partials will override ROUTES defaults for title/description/image.
+  try {
+    const partialMeta = globalThis.PAGE_META || (function () {
+      try {
+        const el = document.querySelector('script[type="application/json"][data-partial-meta]');
+        return el ? JSON.parse(el.textContent) : null;
+      } catch (e) {
+        return null;
+      }
+    })();
+
+    if (partialMeta && typeof partialMeta === 'object') {
+      if (partialMeta.image && partialMeta.image.startsWith('/')) {
+        partialMeta.image = `${BASE_URL}${partialMeta.image}`;
+      }
+      Object.assign(pageData, partialMeta);
+    }
+  } catch (e) {
+    log?.warn?.('head-complete: merging partial PAGE_META failed', e);
+  }
+
   // --- Push stable page metadata to dataLayer for GTM (no PII) ---
   try {
     globalThis.dataLayer = globalThis.dataLayer || [];
