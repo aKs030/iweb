@@ -183,7 +183,7 @@ function BlogApp() {
       <!-- Filter -->
       <div className="filter-bar u-row u-wrap">
         ${categories.map(
-          (cat) => html`
+    (cat) => html`
             <button
               key=${cat}
               className=${`filter-btn ${filter === cat ? 'active' : ''}`}
@@ -192,17 +192,17 @@ function BlogApp() {
               ${cat}
             </button>
           `,
-        )}
+  )}
       </div>
 
       <!-- Grid or Detail -->
       ${currentPostId
-        ? html`
+      ? html`
             <div className="blog-detail">
               ${(() => {
-                const post = blogPosts.find((p) => p.id === currentPostId);
-                if (!post)
-                  return html`
+          const post = blogPosts.find((p) => p.id === currentPostId);
+          if (!post)
+            return html`
                     <div class="not-found">
                       Beitrag nicht gefunden.
                       <button
@@ -213,7 +213,7 @@ function BlogApp() {
                       </button>
                     </div>
                   `;
-                return html`
+          return html`
                   <article className="blog-article">
                     <header>
                       <h1>${post.title}</h1>
@@ -230,13 +230,13 @@ function BlogApp() {
                     </p>
                   </article>
                 `;
-              })()}
+        })()}
             </div>
           `
-        : html`
+      : html`
             <div className="blog-grid">
               ${filteredPosts.map(
-                (post) => html`
+        (post) => html`
                   <article key=${post.id} className="blog-card u-stack">
                     <div className="card-footer u-row u-between">
                       <span className="card-category">${post.category}</span>
@@ -261,7 +261,7 @@ function BlogApp() {
                     </div>
                   </article>
                 `,
-              )}
+      )}
             </div>
           `}
     </div>
