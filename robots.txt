@@ -1,122 +1,32 @@
-# robots.txt for abdulkerimsesli.de
-# Minimal, Google-friendly configuration
+# robots.txt – abdulkerimsesli.de
+# Clean, Google-first configuration
 
-# Sitemap locations
 Sitemap: https://www.abdulkerimsesli.de/sitemap.xml
 Sitemap: https://www.abdulkerimsesli.de/sitemap-images.xml
 Sitemap: https://www.abdulkerimsesli.de/sitemap-videos.xml
 Sitemap: https://www.abdulkerimsesli.de/ai-sitemap.xml
 
-# Default rules for all crawlers
 User-agent: *
 Allow: /
 
-# Block raw component fragments and internal data
-# General rule: prevent indexing of raw partials
+# Block raw internal fragments
 Disallow: /content/components/*.html
 Disallow: /content/components/*/*.html
 
-# EXCEPTION: Allow crawling of specific components that are 301 redirected
-# This ensures Googlebot sees the redirect to the clean URL (/datenschutz/)
-# instead of just seeing a "Blocked" status.
+# Allow footer pages so Google sees the 301 redirects
 Allow: /content/components/footer/datenschutz.html
 Allow: /content/components/footer/impressum.html
 Allow: /content/components/footer/datenschutz/
 Allow: /content/components/footer/impressum/
 
-# Block internal system directories
+# Block internal/system paths
 Disallow: /content/config/
 Disallow: /content/utils/
 Disallow: /node_modules/
 Disallow: /tmp/
 Disallow: /dev/
-Disallow: /README.DEV.md
-Disallow: /dev-server.log
-Disallow: /.live-server.json
 
-# Allow rendering-critical assets
-Allow: /content/components/
-Allow: /content/styles/
-Allow: /content/main.js
-Allow: /manifest.json
-
-# NOTE on Legacy Paths:
-# We do NOT block /pages/album.html etc. here because they are 301 redirected.
-# Googlebot needs to crawl them to see the redirect and update the index.
-
-# Google-specific rules
-User-agent: Googlebot
-Allow: /
-
-# Google Image Bot
-User-agent: Googlebot-Image
-Allow: /
-
-# Google Video Bot
-User-agent: Googlebot-Video
-Allow: /
-
-# Bing Bot
-User-agent: Bingbot
-Allow: /
-Crawl-delay: 5
-
-# Other useful bots
-User-agent: Slurp
-Allow: /
-
-# Reduce crawl rate for less-friendly crawlers
-User-agent: *
-Crawl-delay: 1
-
-User-agent: DuckDuckBot
-Allow: /
-
-User-agent: Baiduspider
-Allow: /
-
-# Social Media Bots (for previews)
-User-agent: facebookexternalhit
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: LinkedInBot
-Allow: /
-
-User-agent: Pinterestbot
-Allow: /
-
-# Explicitly allow known AI/LLM crawlers
-User-agent: gptbot
-Allow: /
-
-User-agent: OpenAI
-Allow: /
-
-User-agent: openai
-Allow: /
-
-# Claude (Anthropic)
-User-agent: Claude-Web
-Allow: /
-
-User-agent: anthropic-ai
-Allow: /
-
-# Perplexity AI
-User-agent: PerplexityBot
-Allow: /
-
-# Meta AI
-User-agent: FacebookBot
-Allow: /
-
-User-agent: meta-externalagent
-Allow: /
-
-# Block aggressive SEO crawlers that consume bandwidth
+# Block aggressive crawlers
 User-agent: AhrefsBot
 Disallow: /
 
@@ -128,35 +38,3 @@ Disallow: /
 
 User-agent: DotBot
 Disallow: /
-
-User-agent: SEOkicks
-Disallow: /
-
-User-agent: Anthropic
-Allow: /
-
-User-agent: Perplexity
-Allow: /
-
-User-agent: PerplexityBot
-Allow: /
-
-# Block aggressive or unwanted bots
-User-agent: MJ12bot
-Disallow: /
-
-User-agent: AhrefsBot
-Disallow: /
-
-User-agent: SemrushBot
-Disallow: /
-
-User-agent: dotbot
-Disallow: /
-
-User-agent: rogerbot
-Disallow: /
-
-# Archive.org allowed
-User-agent: ia_archiver
-Allow: /
