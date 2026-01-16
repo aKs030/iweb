@@ -110,10 +110,22 @@ export function showErrorState(container, error, retryCallback) {
   const errorElement = container.querySelector('.three-earth-error');
   if (errorElement) {
     errorElement.classList.remove('hidden');
+    // Keep the error element minimal—just a subtle indicator "CSS-Modus"
+    // No verbose error message, just a silent fallback to static/CSS background
     const errorText = errorElement.querySelector('p');
     if (errorText) {
-      const msg = error?.message || 'Unknown error';
-      errorText.textContent = `WebGL Fehler: ${msg}`;
+      // Simple indicator only, no "WebGL nicht verfügbar" text
+      errorText.textContent = 'CSS-Modus';
+    }
+
+    // Optional: Add static Earth image background to container
+    try {
+      container.style.backgroundImage = 'url(/content/assets/img/earth/earth_day.webp)';
+      container.style.backgroundSize = 'cover';
+      container.style.backgroundPosition = 'center';
+      container.style.backgroundAttachment = 'fixed';
+    } catch (err) {
+      log.warn('Unable to set fallback background image', err);
     }
 
     // Add retry button if not present
