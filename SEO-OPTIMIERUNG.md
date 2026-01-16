@@ -222,7 +222,11 @@ if (canonicalEl) {
   <link rel="canonical" href="https://example.com/page/" />
 
   <--data 4. Preload kritische Ressourcen -->
-  <link rel="preload" href="/content/assets/img/og/og-home-800.webp" as="image" />
+  <link
+    rel="preload"
+    href="/content/assets/img/og/og-home-800.webp"
+    as="image"
+  />
 
   <--data 5. Open Graph -->
   <meta property="og:title" content="..." />

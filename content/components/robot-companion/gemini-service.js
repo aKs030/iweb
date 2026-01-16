@@ -5,7 +5,8 @@
 
 const MODEL_NAME = 'gemini-2.5-flash-preview-09-2025';
 const getBaseUrl = (apiKey) =>
-  `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${apiKey || ''
+  `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${
+    apiKey || ''
   }`; // server-only: pass API key when calling from server side
 
 /**
@@ -77,7 +78,7 @@ async function getGeminiResponse(
         // Letzter Versuch fehlgeschlagen
         log.error(
           'Gemini API Fehler nach Max Retries: ' +
-          (error && error.message ? error.message : String(error)),
+            (error && error.message ? error.message : String(error)),
         );
         return 'Entschuldigung, ich habe gerade Verbindungsprobleme. Bitte versuche es später noch einmal.';
       }

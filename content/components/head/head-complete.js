@@ -81,7 +81,6 @@ const ROUTES = {
     image: `${BASE_URL}/content/assets/img/og/og-home-800.webp`,
     // Modern LCP image: use WebP for site delivery/preload
     imageWebp: `${BASE_URL}/content/assets/img/og/og-home-800.webp`,
-
   },
   '/projekte/': {
     title: 'Referenzen & Code-Projekte | Abdulkerim Sesli',
@@ -91,7 +90,7 @@ const ROUTES = {
     description_en:
       'Explore interactive web experiments and business apps. Specialist in performant React solutions, 3D web (Three.js) and modern UI/UX.',
     type: 'CollectionPage',
-    image: `${BASE_URL}/content/assets/img/og/og-projekte-800.webp`, 
+    image: `${BASE_URL}/content/assets/img/og/og-projekte-800.webp`,
   },
   '/blog/': {
     title: 'Tech-Blog & Tutorials | Webentwicklung Berlin',
@@ -101,7 +100,7 @@ const ROUTES = {
     description_en:
       'Practical articles on JavaScript, CSS and web architecture. Hands-on tutorials and insights from a Berlin-based developer.',
     type: 'Blog',
-    image: `${BASE_URL}/content/assets/img/og/og-home-800.webp`, 
+    image: `${BASE_URL}/content/assets/img/og/og-home-800.webp`,
   },
   '/videos/': {
     title: 'Videos — Abdulkerim Sesli',
@@ -122,14 +121,14 @@ const ROUTES = {
     description_en:
       'Visual aesthetics from the capital. Curated gallery focused on street photography, architecture and atmospheric portraits from Berlin.',
     type: 'ImageGallery',
-    image: `${BASE_URL}/content/assets/img/og/og-home-800.webp`, 
+    image: `${BASE_URL}/content/assets/img/og/og-home-800.webp`,
   },
   '/about/': {
     title: 'Kontakt & Profil | Abdulkerim Sesli',
     description:
       'Der Mensch hinter dem Code. Detaillierter Lebenslauf, Tech-Stack Übersicht und direkte Kontaktmöglichkeiten für Projektanfragen und Kooperationen.',
     type: 'AboutPage',
-    image: `${BASE_URL}/content/assets/img/og/og-home-800.webp`, 
+    image: `${BASE_URL}/content/assets/img/og/og-home-800.webp`,
   },
 };
 
@@ -292,7 +291,7 @@ function generateSchemaGraph(
         if (imgs.length > 1) {
           personNode.image = imgs.slice(0, 3);
         }
-      } catch (e) { }
+      } catch (e) {}
 
       // Agent interaction statistic: prefer server-side postsCount, fallback to counting <article> elements
       try {
@@ -306,7 +305,7 @@ function generateSchemaGraph(
             userInteractionCount: writeCount,
           };
         }
-      } catch (e) { }
+      } catch (e) {}
 
       // Interaction statistics (followers / likes) — prefer server-side BRAND_DATA values and fallback to DOM
       try {
@@ -331,11 +330,11 @@ function generateSchemaGraph(
           brandFollowers > 0
             ? brandFollowers
             : findCount([
-              '[data-followers]',
-              '[data-followers-count]',
-              '.followers-count',
-              '.follower-count',
-            ]);
+                '[data-followers]',
+                '[data-followers-count]',
+                '.followers-count',
+                '.follower-count',
+              ]);
         if (followers > 0) {
           personNode.interactionStatistic =
             personNode.interactionStatistic || [];
@@ -351,11 +350,11 @@ function generateSchemaGraph(
           brandLikes > 0
             ? brandLikes
             : findCount([
-              '[data-likes]',
-              '[data-likes-count]',
-              '.likes-count',
-              '.like-count',
-            ]);
+                '[data-likes]',
+                '[data-likes-count]',
+                '.likes-count',
+                '.like-count',
+              ]);
         if (likes > 0) {
           personNode.interactionStatistic =
             personNode.interactionStatistic || [];
@@ -365,9 +364,9 @@ function generateSchemaGraph(
             userInteractionCount: likes,
           });
         }
-      } catch (e) { }
+      } catch (e) {}
     }
-  } catch (e) { }
+  } catch (e) {}
 
   // Skills/ItemList
   if (
@@ -489,7 +488,7 @@ function generateSchemaGraph(
         }
       }
     }
-  } catch (e) { }
+  } catch (e) {}
 
   // ImageObject enrichment for richer image results (helps Image Pack / Image Carousel)
   try {
@@ -955,14 +954,18 @@ async function loadSharedHead() {
   // inline <script type="application/json" data-partial-meta> in the fragment.
   // Values provided by partials will override ROUTES defaults for title/description/image.
   try {
-    const partialMeta = globalThis.PAGE_META || (function () {
-      try {
-        const el = document.querySelector('script[type="application/json"][data-partial-meta]');
-        return el ? JSON.parse(el.textContent) : null;
-      } catch (e) {
-        return null;
-      }
-    })();
+    const partialMeta =
+      globalThis.PAGE_META ||
+      (function () {
+        try {
+          const el = document.querySelector(
+            'script[type="application/json"][data-partial-meta]',
+          );
+          return el ? JSON.parse(el.textContent) : null;
+        } catch (e) {
+          return null;
+        }
+      })();
 
     if (partialMeta && typeof partialMeta === 'object') {
       if (partialMeta.image && partialMeta.image.startsWith('/')) {
@@ -1131,7 +1134,12 @@ async function loadSharedHead() {
         // Server-side canonical tag exists (static) - only validate/update if needed
         const currentHref = canonicalEl.getAttribute('href');
         if (currentHref !== effectiveCanonical) {
-          log?.info?.('Updating canonical from', currentHref, 'to', effectiveCanonical);
+          log?.info?.(
+            'Updating canonical from',
+            currentHref,
+            'to',
+            effectiveCanonical,
+          );
           canonicalEl.setAttribute('href', effectiveCanonical);
         }
         // Remove early flag if present (now properly configured)
