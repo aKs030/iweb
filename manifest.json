@@ -1,11 +1,11 @@
 {
-  "name": "Abdulkerim Sesli - Web Developer &amp; Photographer",
+  "name": "Abdulkerim Sesli - Web Developer & Photographer",
   "short_name": "Abdulkerim",
-  "description": "Portfolio von Abdulkerim Sesli — Webentwicklung (React, Three.js) &amp; Urban Photography aus Berlin",
+  "description": "Portfolio von Abdulkerim Sesli — Webentwicklung (React, Three.js) & Urban Photography aus Berlin",
   "lang": "de-DE",
   "dir": "ltr",
-  "id": "https://www.abdulkerimsesli.de/",
-  "start_url": "/",
+  "id": "/",
+  "start_url": "/?utm_source=pwa&utm_medium=launch",
   "scope": "/",
   "display": "standalone",
   "display_override": [
@@ -15,7 +15,7 @@
     "window-controls-overlay",
     "browser"
   ],
-  "orientation": "any",
+  "orientation": "portrait-primary",
   "background_color": "#ffffff",
   "theme_color": "#0d0d0d",
   "icons": [
@@ -29,7 +29,7 @@
       "src": "/content/assets/img/icons/favicon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any"
+      "purpose": "any maskable"
     },
     {
       "src": "/content/assets/img/icons/favicon-256.png",
@@ -50,30 +50,45 @@
       "purpose": "any"
     }
   ],
-  "categories": ["portfolio", "developer", "creative", "web"],
-  "prefer_related_applications": false,
-  "related_applications": [
+  "shortcuts": [
     {
-      "platform": "android",
-      "id": "com.abdulkerimsesli.portfolio",
-      "url": "https://play.google.com/store/apps/details?id=com.abdulkerimsesli.portfolio"
+      "name": "Kontakt",
+      "short_name": "Kontakt",
+      "description": "Direkt zur Kontakt-Sektion",
+      "url": "/#kontakt",
+      "icons": [{ "src": "/content/assets/img/icons/favicon-128.png", "sizes": "128x128" }]
+    },
+    {
+      "name": "Projekte",
+      "short_name": "Projekte",
+      "description": "Zu meinen Referenzen & Projekten",
+      "url": "/projekte/",
+      "icons": [{ "src": "/content/assets/img/og/og-projekte.png", "sizes": "1200x630" }]
+    },
+    {
+      "name": "Videos",
+      "short_name": "Videos",
+      "description": "Meine Videos & Motion Design",
+      "url": "/videos/",
+      "icons": [{ "src": "/content/assets/img/og/og-videos.png", "sizes": "1200x630" }]
     }
   ],
+  "categories": ["portfolio", "developer", "creative", "web"],
+  "prefer_related_applications": false,
   "screenshots": [
     {
-      "src": "/content/assets/img/icons/favicon-512.png",
-      "sizes": "512x512",
+      "src": "/content/assets/img/og/og-home.png",
+      "sizes": "1080x1920",
       "type": "image/png",
       "form_factor": "wide",
       "label": "Abdulkerim Sesli Portfolio"
     },
     {
-      "src": "/content/assets/img/icons/favicon-256.png",
-      "sizes": "256x256",
+      "src": "/content/assets/img/icons/favicon-512.png",
+      "sizes": "512x512",
       "type": "image/png",
       "form_factor": "narrow",
       "label": "Portfolio (Mobile)"
     }
-  ],
-  "iarc_rating_id": "0000-0000-0000-0000"
+  ]
 }

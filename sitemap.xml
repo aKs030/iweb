@@ -36,34 +36,7 @@
     </image:image>
   </url>
 
-  <!-- Einzelne Projekte -->
-  <url>
-    <loc>https://www.abdulkerimsesli.de/projekte/#project-1</loc>
-    <lastmod>2025-12-26</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://www.abdulkerimsesli.de/projekte/#project-2</loc>
-    <lastmod>2025-12-26</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://www.abdulkerimsesli.de/projekte/#project-3</loc>
-    <lastmod>2025-12-26</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-
-  <url>
-    <loc>https://www.abdulkerimsesli.de/projekte/#project-4</loc>
-    <lastmod>2025-12-26</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
+  <!-- Einzelne Projekte (Anchor-Links entfernt; use canonical /projekte/ instead) -->
 
   <!-- ========== BLOG ========== -->
   <url>
@@ -80,7 +53,7 @@
 
   <!-- Blog Posts -->
   <url>
-    <loc>https://www.abdulkerimsesli.de/blog/#/blog/threejs-performance</loc>
+    <loc>https://www.abdulkerimsesli.de/blog/threejs-performance/</loc>
     <lastmod>2025-12-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -91,7 +64,7 @@
   </url>
 
   <url>
-    <loc>https://www.abdulkerimsesli.de/blog/#/blog/visual-storytelling</loc>
+    <loc>https://www.abdulkerimsesli.de/blog/visual-storytelling/</loc>
     <lastmod>2025-12-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -102,7 +75,7 @@
   </url>
 
   <url>
-    <loc>https://www.abdulkerimsesli.de/blog/#/blog/modern-ui-design</loc>
+    <loc>https://www.abdulkerimsesli.de/blog/modern-ui-design/</loc>
     <lastmod>2025-12-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -113,7 +86,7 @@
   </url>
 
   <url>
-    <loc>https://www.abdulkerimsesli.de/blog/#/blog/react-no-build</loc>
+    <loc>https://www.abdulkerimsesli.de/blog/react-no-build/</loc>
     <lastmod>2025-12-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
@@ -148,8 +121,8 @@
 
     <video:video>
       <video:thumbnail_loc>https://i.ytimg.com/vi/z8W9UJbUSo4/hqdefault.jpg</video:thumbnail_loc>
-      <video:title>#Mond #Moon #Astrofotografie #LunarSurface #NightSky #Abdulkerim #Berlin #Abdulkerim #Abdulberlin — Abdulkerim Berlin</video:title>
-      <video:description></video:description>
+      <video:title>Lunar Surface — Astrophotography by Abdulkerim</video:title>
+      <video:description>Astrophotography close-ups of the lunar surface, including shooting techniques and post-processing tips.</video:description>
       <video:content_loc>https://youtu.be/z8W9UJbUSo4</video:content_loc>
       <video:player_loc>https://www.youtube-nocookie.com/embed/z8W9UJbUSo4</video:player_loc>
       <video:duration>9</video:duration>
@@ -164,8 +137,8 @@
 
     <video:video>
       <video:thumbnail_loc>https://i.ytimg.com/vi/clbOHUT4w5o/hqdefault.jpg</video:thumbnail_loc>
-      <video:title>Future Bot Animation by Abdulkerim #🤖✨Besuche meine Webseite🌍 — Abdulkerim Berlin</video:title>
-      <video:description></video:description>
+      <video:title>Future Bot Animation — AKS Motion Design</video:title>
+      <video:description>Short motion design clip showcasing a futuristic robot animation and motion branding work by Abdulkerim.</video:description>
       <video:content_loc>https://youtu.be/clbOHUT4w5o</video:content_loc>
       <video:player_loc>https://www.youtube-nocookie.com/embed/clbOHUT4w5o</video:player_loc>
       <video:duration>9</video:duration>
@@ -180,7 +153,7 @@
 
     <video:video>
       <video:thumbnail_loc>https://i.ytimg.com/vi/UorHOTKWtK4/hqdefault.jpg</video:thumbnail_loc>
-      <video:title>Neon Robot Animation | Abdulkerim (AKS Motion Design) #abdulkerim #abdulberlin — Abdulkerim Berlin</video:title>
+      <video:title>Neon Robot Animation — AKS Motion Design</video:title>
       <video:description>In diesem Video zeige ich eine aktuelle Motion-Design-Studie: Eine stilisierte Roboter-Animation mit dynamischen Neon-Effekten und einer abschließenden Logo-Integration meiner Website. Dieses Projekt ist Teil meines digitalen Portfolios und demonstriert die Kombination aus Character-Animation und visuellem Branding. Projektdetails: Animation &amp; Design: Abdulkerim Stil: Neon Sci-Fi / Motion Graphics Branding: AKS Digital Art Über diesen Kanal: Auf diesem Kanal dokumentiere ich meine kreative Entwicklung und teile persönliche Projekte im Bereich Design und Technologie in Berlin.</video:description>
       <video:content_loc>https://youtu.be/UorHOTKWtK4</video:content_loc>
       <video:player_loc>https://www.youtube-nocookie.com/embed/UorHOTKWtK4</video:player_loc>
@@ -271,34 +244,7 @@
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
 
-    <!-- Beispiel-Bilder aus der Gallery -->
-    <image:image>
-      <image:loc>https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200</image:loc>
-      <image:caption>Berglandschaft im Morgengrauen - Alpenfotografie</image:caption>
-      <image:title>Bergpanorama Alpen</image:title>
-      <image:geo_location>Alpen, Deutschland</image:geo_location>
-    </image:image>
-
-    <image:image>
-      <image:loc>https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=1200</image:loc>
-      <image:caption>Mystischer Nebelwald - Schwarzwald Fotografie</image:caption>
-      <image:title>Nebelwald Schwarzwald</image:title>
-      <image:geo_location>Schwarzwald, Deutschland</image:geo_location>
-    </image:image>
-
-    <image:image>
-      <image:loc>https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=1200</image:loc>
-      <image:caption>Urbane Architektur - Moderne Stadtfotografie Berlin</image:caption>
-      <image:title>Urbane Architektur Berlin</image:title>
-      <image:geo_location>Berlin, Deutschland</image:geo_location>
-    </image:image>
-
-    <image:image>
-      <image:loc>https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=1200</image:loc>
-      <image:caption>Goldener Sonnenuntergang an der Nordsee</image:caption>
-      <image:title>Sonnenuntergang Nordsee</image:title>
-      <image:geo_location>Nordsee, Deutschland</image:geo_location>
-    </image:image>
+    <!-- External gallery images removed from sitemap: host your images under /content/assets/img/gallery/ and re-add here for maximum SEO benefit -->
 
     <image:image>
       <image:loc>https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=1200</image:loc>
