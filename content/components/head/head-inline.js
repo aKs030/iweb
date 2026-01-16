@@ -119,7 +119,9 @@ dataLayer.push({
     }
 
     // Add font-display: swap to Google Fonts for instant text rendering
-    const fontLinks = document.querySelectorAll('link[href*="fonts.googleapis.com"]');
+    const fontLinks = document.querySelectorAll(
+      'link[href*="fonts.googleapis.com"]',
+    );
     fontLinks.forEach((link) => {
       if (!link.href.includes('display=swap')) {
         link.href += (link.href.includes('?') ? '&' : '?') + 'display=swap';
@@ -534,9 +536,12 @@ dataLayer.push({
         .forEach((link) => {
           try {
             if (!link.href.includes('display=swap')) {
-              link.href += (link.href.includes('?') ? '&' : '?') + 'display=swap';
+              link.href +=
+                (link.href.includes('?') ? '&' : '?') + 'display=swap';
             }
-          } catch (e) { /* ignore */ }
+          } catch (e) {
+            /* ignore */
+          }
         });
     };
     if (document.readyState === 'loading') {

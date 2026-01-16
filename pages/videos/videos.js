@@ -172,8 +172,9 @@ async function fetchPlaylistItems(apiKey, uploads, maxResults = 50) {
   const allItems = [];
   let pageToken = '';
   do {
-    const url = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${uploads}&maxResults=${maxResults}&key=${apiKey}${pageToken ? `&pageToken=${pageToken}` : ''
-      }`;
+    const url = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${uploads}&maxResults=${maxResults}&key=${apiKey}${
+      pageToken ? `&pageToken=${pageToken}` : ''
+    }`;
     try {
       const json = await fetchJson(url);
       allItems.push(...(json.items || []));
@@ -198,8 +199,9 @@ async function searchChannelVideos(apiKey, channelId, maxResults = 50) {
   const items = [];
   let pageToken = '';
   do {
-    const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${channelId}&order=date&type=video&maxResults=${maxResults}${pageToken ? `&pageToken=${pageToken}` : ''
-      }&key=${apiKey}`;
+    const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${channelId}&order=date&type=video&maxResults=${maxResults}${
+      pageToken ? `&pageToken=${pageToken}` : ''
+    }&key=${apiKey}`;
     try {
       const json = await fetchJson(url);
       (json.items || []).forEach((it) => {
@@ -275,7 +277,9 @@ function renderVideoCard(grid, it, detailsMap) {
 
   const meta = document.createElement('div');
   meta.className = 'video-meta';
-  meta.innerHTML = `<div class="video-info"><small class="pub-date">${pub}</small></div><div class="video-actions u-row"><a href="https://youtu.be/${vid}" target="_blank" rel="noopener">Auf YouTube öffnen</a></div>`;
+  meta.innerHTML = `<div class="video-info"><small class="pub-date">${pub}</small></div><div class="video-actions u-row"><a href="https://youtu.be/${vid}" target="_blank" rel="noopener">Auf YouTube öffnen</a> <a href="/videos/${vid}/" class="page-link" title="Öffne Landing‑Page für dieses Video" data-video-id="${vid}" data-video-title="${escapeHtml(
+    title,
+  )}">Seite öffnen</a></div>`;
 
   const publisherName =
     globalThis.YOUTUBE_CHANNEL_ID === 'UCTGRherjM4iuIn86xxubuPg'
@@ -330,6 +334,44 @@ function renderVideoCard(grid, it, detailsMap) {
   grid.appendChild(article);
   article.appendChild(thumbBtn);
   article.appendChild(meta);
+
+  // Attach analytics tracking to the per-video landing page link (GA4-friendly)
+  try {
+    const pageLinkEl = meta.querySelector('.page-link');
+    if (pageLinkEl) {
+      pageLinkEl.addEventListener('click', (_e) => {
+        try {
+          const ga4Payload = {
+            video_id: vid,
+            video_title: title,
+            page_location: location.href,
+          };
+          const uaPayload = {
+            event_category: 'video',
+            event_label: title,
+            video_id: vid,
+          };
+          if (typeof gtag === 'function') {
+            // GA4 event
+            gtag('event', 'open_video_page', ga4Payload);
+            // optional UA-style event for compatibility (if using legacy setups)
+            try {
+              gtag('event', 'open_video_page_ua', uaPayload);
+            } catch (_e) {}
+          } else if (Array.isArray(window.dataLayer)) {
+            window.dataLayer.push(
+              Object.assign({ event: 'open_video_page' }, ga4Payload),
+            );
+          }
+        } catch (err) {
+          /* ignore analytics errors */
+        }
+      });
+    }
+  } catch (err) {
+    /* ignore */
+  }
+
   article.appendChild(ld);
 
   bindThumb(thumbBtn);

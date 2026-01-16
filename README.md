@@ -81,6 +81,8 @@ Danach sicherstellen, dass `.gitignore` committed ist, damit `node_modules/` nic
 | `npm run config:validate` | Validiert Konfigurationsdateien                |
 | `npm run sync:gtm`        | Synchronisiert GTM-Container mit Site-Config   |
 
+> **Maintenance:** See `MAINTENANCE.md` for common maintenance commands (image generation, sitemap scripts, video checks) and CI suggestions.
+
 ---
 
 ## 📂 Projektstruktur

@@ -120,7 +120,8 @@ export function showErrorState(container, error, retryCallback) {
 
     // Optional: Add static Earth image background to container
     try {
-      container.style.backgroundImage = 'url(/content/assets/img/earth/earth_day.webp)';
+      container.style.backgroundImage =
+        'url(/content/assets/img/earth/earth_day.webp)';
       container.style.backgroundSize = 'cover';
       container.style.backgroundPosition = 'center';
       container.style.backgroundAttachment = 'fixed';

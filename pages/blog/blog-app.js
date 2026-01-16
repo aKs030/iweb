@@ -141,15 +141,27 @@ function BlogApp() {
             '@type': 'Person',
             '@id': 'https://www.abdulkerimsesli.de/#person',
           },
-          image: (function(){
+          image: (function () {
             try {
-              const meta = (typeof ogMeta !== 'undefined' && ogMeta && ogMeta[post.imageKey]) ? ogMeta[post.imageKey] : null;
+              const meta =
+                typeof ogMeta !== 'undefined' && ogMeta && ogMeta[post.imageKey]
+                  ? ogMeta[post.imageKey]
+                  : null;
               if (meta) {
                 const w = meta.fallbackWidth || meta.originalWidth || null;
-                const h = meta.originalWidth && meta.originalHeight ? Math.round((meta.originalHeight * (w || meta.originalWidth)) / meta.originalWidth) : null;
+                const h =
+                  meta.originalWidth && meta.originalHeight
+                    ? Math.round(
+                        (meta.originalHeight * (w || meta.originalWidth)) /
+                          meta.originalWidth,
+                      )
+                    : null;
                 return {
                   '@type': 'ImageObject',
-                  url: meta.fallback || post.image || 'https://www.abdulkerimsesli.de/content/assets/img/og/og-home-800.webp',
+                  url:
+                    meta.fallback ||
+                    post.image ||
+                    'https://www.abdulkerimsesli.de/content/assets/img/og/og-home-800.webp',
                   width: w || undefined,
                   height: h || undefined,
                 };
@@ -159,7 +171,9 @@ function BlogApp() {
             }
             return {
               '@type': 'ImageObject',
-              url: post.image || 'https://www.abdulkerimsesli.de/content/assets/img/og/og-home-800.webp'
+              url:
+                post.image ||
+                'https://www.abdulkerimsesli.de/content/assets/img/og/og-home-800.webp',
             };
           })(),
           publisher: {
@@ -174,7 +188,8 @@ function BlogApp() {
               license: 'https://www.abdulkerimsesli.de/#image-license',
               creditText: 'Logo: Abdulkerim Sesli',
               copyrightNotice: '© 2025 Abdulkerim Sesli',
-              acquireLicensePage: 'https://www.abdulkerimsesli.de/#image-license',
+              acquireLicensePage:
+                'https://www.abdulkerimsesli.de/#image-license',
             },
 
             address: {
@@ -223,14 +238,27 @@ function BlogApp() {
         ogMeta && post.imageKey && ogMeta[post.imageKey]
           ? (() => {
               const m = ogMeta[post.imageKey];
-              const webpSrc = (m.sources.webp || []).map((s) => `${s.url} ${s.width}w`).join(', ');
+              const webpSrc = (m.sources.webp || [])
+                .map((s) => `${s.url} ${s.width}w`)
+                .join(', ');
               const fallback = m.fallback || post.image;
               const w = m.fallbackWidth || m.originalWidth || null;
-              const h = m.originalWidth && m.originalHeight ? Math.round((m.originalHeight * (w || m.originalWidth)) / m.originalWidth) : null;
+              const h =
+                m.originalWidth && m.originalHeight
+                  ? Math.round(
+                      (m.originalHeight * (w || m.originalWidth)) /
+                        m.originalWidth,
+                    )
+                  : null;
               return React.createElement(
                 'picture',
                 null,
-                webpSrc && React.createElement('source', { type: 'image/webp', srcSet: webpSrc, sizes: '(max-width:640px) 100vw, 33vw' }),
+                webpSrc &&
+                  React.createElement('source', {
+                    type: 'image/webp',
+                    srcSet: webpSrc,
+                    sizes: '(max-width:640px) 100vw, 33vw',
+                  }),
                 React.createElement('img', {
                   src: fallback,
                   alt: post.title,
@@ -256,8 +284,16 @@ function BlogApp() {
         React.createElement(
           'div',
           { className: 'card-footer u-row u-between' },
-          React.createElement('span', { className: 'card-category' }, post.category),
-          React.createElement('span', { className: 'card-date' }, post.dateDisplay),
+          React.createElement(
+            'span',
+            { className: 'card-category' },
+            post.category,
+          ),
+          React.createElement(
+            'span',
+            { className: 'card-date' },
+            post.dateDisplay,
+          ),
         ),
         React.createElement('h2', { className: 'card-title' }, post.title),
         React.createElement('p', { className: 'card-excerpt' }, post.excerpt),
@@ -289,7 +325,11 @@ function BlogApp() {
     React.createElement(
       'header',
       null,
-      React.createElement('h1', { className: 'blog-headline' }, 'Wissen & Einblicke'),
+      React.createElement(
+        'h1',
+        { className: 'blog-headline' },
+        'Wissen & Einblicke',
+      ),
       React.createElement(
         'p',
         { className: 'blog-subline' },
@@ -303,52 +343,61 @@ function BlogApp() {
     ),
     currentPostId
       ? (() => {
-        const post = blogPosts.find((p) => p.id === currentPostId);
-        return React.createElement(
-          'div',
-          { className: 'blog-detail' },
-          post
-            ? React.createElement(
-              'article',
-              { className: 'blog-article' },
-              React.createElement('header', null,
-                React.createElement('h1', null, post.title),
-                React.createElement('p', { className: 'meta' }, `${post.dateDisplay} — ${post.readTime}`),
-              ),
-              React.createElement('section', { className: 'article-body', dangerouslySetInnerHTML: { __html: post.content } }),
-              React.createElement(
-                'p',
-                null,
-                React.createElement(
-                  'button',
-                  {
-                    className: 'btn',
-                    onClick: () => (location.hash = '#/blog/'),
-                  },
-                  'Zurück',
+          const post = blogPosts.find((p) => p.id === currentPostId);
+          return React.createElement(
+            'div',
+            { className: 'blog-detail' },
+            post
+              ? React.createElement(
+                  'article',
+                  { className: 'blog-article' },
+                  React.createElement(
+                    'header',
+                    null,
+                    React.createElement('h1', null, post.title),
+                    React.createElement(
+                      'p',
+                      { className: 'meta' },
+                      `${post.dateDisplay} — ${post.readTime}`,
+                    ),
+                  ),
+                  React.createElement('section', {
+                    className: 'article-body',
+                    dangerouslySetInnerHTML: { __html: post.content },
+                  }),
+                  React.createElement(
+                    'p',
+                    null,
+                    React.createElement(
+                      'button',
+                      {
+                        className: 'btn',
+                        onClick: () => (location.hash = '#/blog/'),
+                      },
+                      'Zurück',
+                    ),
+                  ),
+                )
+              : React.createElement(
+                  'div',
+                  { className: 'not-found' },
+                  'Beitrag nicht gefunden.',
+                  React.createElement(
+                    'button',
+                    {
+                      onClick: () => (location.hash = '#/blog/'),
+                      className: 'btn',
+                    },
+                    'Zurück',
+                  ),
                 ),
-              ),
-            )
-            : React.createElement(
-              'div',
-              { className: 'not-found' },
-              'Beitrag nicht gefunden.',
-              React.createElement(
-                'button',
-                {
-                  onClick: () => (location.hash = '#/blog/'),
-                  className: 'btn',
-                },
-                'Zurück',
-              ),
-            ),
-        );
-      })()
+          );
+        })()
       : React.createElement(
-        'div',
-        { className: 'blog-grid' },
-        ...renderBlogGrid(),
-      ),
+          'div',
+          { className: 'blog-grid' },
+          ...renderBlogGrid(),
+        ),
   );
 }
 
@@ -359,5 +408,9 @@ if (rootEl && React && ReactDOM) {
   root.render(React.createElement(BlogApp));
 } else {
   // Silent fail in production
-  log.error('React environment not ready', { hasRootEl: !!rootEl, hasReact: !!React, hasReactDOM: !!ReactDOM });
+  log.error('React environment not ready', {
+    hasRootEl: !!rootEl,
+    hasReact: !!React,
+    hasReactDOM: !!ReactDOM,
+  });
 }
