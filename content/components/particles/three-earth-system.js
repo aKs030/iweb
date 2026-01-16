@@ -317,22 +317,26 @@ const ThreeEarthManager = { initThreeEarth, cleanup };
 function supportsWebGL() {
   try {
     const canvas = document.createElement('canvas');
-    // Prefer WebGL2 when available
-    const ctx2 = canvas.getContext('webgl2', {
+
+    // Try WebGL2 (strict), then WebGL2 (lenient), then WebGL1 (strict), then WebGL1 (lenient)
+    const ctx2Strict = canvas.getContext('webgl2', {
       failIfMajorPerformanceCaveat: true,
     });
-    if (ctx2) {
-      try {
-        ctx2.getExtension?.('EXT_color_buffer_float');
-      } catch (err) {
-        log.warn('getExtension ignored', err);
-      }
-      return true;
-    }
-    const ctx =
+    if (ctx2Strict) return true;
+
+    const ctx2 = canvas.getContext('webgl2');
+    if (ctx2) return true;
+
+    const ctxStrict =
       canvas.getContext('webgl', { failIfMajorPerformanceCaveat: true }) ||
-      canvas.getContext('experimental-webgl');
-    return !!ctx;
+      canvas.getContext('experimental-webgl', {
+        failIfMajorPerformanceCaveat: true,
+      });
+    if (ctxStrict) return true;
+
+    const ctxLenient =
+      canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+    return !!ctxLenient;
   } catch {
     return false;
   }
