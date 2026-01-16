@@ -2,6 +2,13 @@
 <html lang="de">
   <head>
     <meta charset="utf-8" />
+    <!-- CRITICAL: Dark background inline to prevent white flicker before CSS loads -->
+    <style>
+      body {
+        background: #0b0d17;
+        color: #e0e0e0;
+      }
+    </style>
     <!-- Content-Security-Policy removed per user request (less restrictive) -->
     <!-- Google measurement IDs (GA4 / Ads) are injected dynamically by
          /content/components/head/head-inline.js using content/config/site-config.js.
@@ -426,16 +433,17 @@
       data-section="hero"
       aria-describedby="earth-description"
     >
-      <!-- Hidden description for screen readers -->
-      <div id="earth-description" class="visually-hidden">
+      <!-- Hidden description for screen readers only (invisible to sighted users) -->
+      <div id="earth-description" class="sr-only">
         Eine interaktive 3D-Darstellung der Erde mit realistischen Texturen und
         Animationen. Verwenden Sie die Steuerungstasten zum Zoomen und Wechseln
         zwischen Kamera-Modi.
       </div>
 
+      <!-- WebGL fallback (hidden by default, shown only if WebGL fails) -->
       <div class="three-earth-error hidden">
         <div class="error-icon">🌍</div>
-        <p>WebGL nicht verfügbar. CSS-Fallback aktiv.</p>
+        <p>CSS-Modus</p>
         <!-- retry button inserted by the module if WebGL fails -->
       </div>
     </div>
