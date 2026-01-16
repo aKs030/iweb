@@ -9,7 +9,7 @@
  * - [LILA] Identity Fix: Disambiguating Description & Alternate Names (Abdul Berlin)
  */
 
-import { createLogger } from '../../utils/shared-utilities.js';
+import { createLogger } from '/content/utils/shared-utilities.js';
 import { upsertHeadLink } from '/content/utils/dom-helpers.js';
 
 const log = createLogger('HeadLoader');

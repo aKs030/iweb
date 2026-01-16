@@ -15,7 +15,7 @@ const getBaseUrl = (apiKey) =>
  * @param {string} systemInstruction - Anweisungen für das System.
  * @returns {Promise<string>} - Die Antwort der KI.
  */
-import { createLogger } from '../../utils/shared-utilities.js';
+import { createLogger } from '/content/utils/shared-utilities.js';
 
 const log = createLogger('GeminiService');
 
