@@ -1,4 +1,5 @@
-/* global React, ReactDOM */
+import React from 'https://esm.sh/react@18.2.0?dev=false';
+import ReactDOM from 'https://esm.sh/react-dom@18.2.0/client?dev=false';
 import htm from 'https://cdn.jsdelivr.net/npm/htm@3.1.1/dist/htm.module.js';
 import { createLogger } from '/content/utils/shared-utilities.js';
 import { FAVICON_512 } from '../../content/config/site-config.js';
