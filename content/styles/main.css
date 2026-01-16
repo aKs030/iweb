@@ -224,6 +224,23 @@
 
 /* ===== END LOADER STYLES ===== */
 
+/* ===== Accessibility Helpers ===== */
+/* Screen Reader Only: Hide from sight but keep available to screen readers */
+.sr-only,
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* ===== END Accessibility Helpers ===== */
+
 /* Scroll-Snap Container */
 .snap-container {
   height: 100vh;
