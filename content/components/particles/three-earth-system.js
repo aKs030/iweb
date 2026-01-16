@@ -86,7 +86,7 @@ export const initThreeEarth = async () => {
   const container = getElementById('threeEarthContainer');
   if (!container) {
     log.warn('Container not found');
-    return () => {};
+    return () => { };
   }
 
   // Set Active Flag
@@ -191,7 +191,7 @@ export const initThreeEarth = async () => {
       cleanup();
       initThreeEarth();
     });
-    return () => {};
+    return () => { };
   }
 };
 
