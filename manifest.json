@@ -56,21 +56,30 @@
       "short_name": "Kontakt",
       "description": "Direkt zur Kontakt-Sektion",
       "url": "/#kontakt",
-      "icons": [{ "src": "/content/assets/img/icons/favicon-128.png", "sizes": "128x128" }]
+      "icons": [
+        {
+          "src": "/content/assets/img/icons/favicon-128.png",
+          "sizes": "128x128"
+        }
+      ]
     },
     {
       "name": "Projekte",
       "short_name": "Projekte",
       "description": "Zu meinen Referenzen & Projekten",
       "url": "/projekte/",
-      "icons": [{ "src": "/content/assets/img/og/og-projekte.png", "sizes": "1200x630" }]
+      "icons": [
+        { "src": "/content/assets/img/og/og-projekte.png", "sizes": "1200x630" }
+      ]
     },
     {
       "name": "Videos",
       "short_name": "Videos",
       "description": "Meine Videos & Motion Design",
       "url": "/videos/",
-      "icons": [{ "src": "/content/assets/img/og/og-videos.png", "sizes": "1200x630" }]
+      "icons": [
+        { "src": "/content/assets/img/og/og-videos.png", "sizes": "1200x630" }
+      ]
     }
   ],
   "categories": ["portfolio", "developer", "creative", "web"],
