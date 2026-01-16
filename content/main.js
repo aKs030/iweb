@@ -677,7 +677,11 @@ document.addEventListener(
 
     const checkReady = () => {
       if (!modulesReady || !windowLoaded) return;
-      if (AppLoadManager.isBlocked()) return;
+      const blocked =
+        typeof AppLoadManager !== 'undefined' &&
+        typeof AppLoadManager.isBlocked === 'function' &&
+        AppLoadManager.isBlocked();
+      if (blocked) return;
       LoadingScreenManager.setStatus('Starte Experience...', 98);
       LoadingScreenManager.hide();
     };
@@ -717,7 +721,7 @@ document.addEventListener(
       const computeDelay = () => {
         try {
           if (
-            AppLoadManager !== undefined &&
+            typeof AppLoadManager !== 'undefined' &&
             typeof AppLoadManager.getPending === 'function'
           ) {
             const pending = AppLoadManager.getPending() || [];
@@ -739,7 +743,7 @@ document.addEventListener(
           try {
             // Ensure AppLoadManager exists and is callable before using it (some environments may not register it)
             if (
-              AppLoadManager !== undefined &&
+              typeof AppLoadManager !== 'undefined' &&
               typeof AppLoadManager.isBlocked === 'function' &&
               AppLoadManager.isBlocked?.()
             ) {
