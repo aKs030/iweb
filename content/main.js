@@ -52,7 +52,8 @@ const perfMarks = {
 
 // ===== Service Worker Registration =====
 try {
-  if ('serviceWorker' in navigator) {
+  // Only attempt registration in secure contexts (https or localhost) and when supported
+  if ('serviceWorker' in navigator && window.isSecureContext) {
     // Register after window load to avoid competing with critical resources
     window.addEventListener('load', () => {
       navigator.serviceWorker
@@ -86,9 +87,25 @@ try {
           }
         })
         .catch((err) => {
-          log?.warn?.('ServiceWorker registration failed', err);
+          // Provide more context for debugging (message + stack when available)
+          try {
+            const details = {
+              name: err?.name || 'UnknownError',
+              message: err?.message || String(err),
+              stack: err?.stack || null,
+            };
+            log?.warn?.('ServiceWorker registration failed', details);
+          } catch (inner) {
+            log?.warn?.('ServiceWorker registration failed (unknown)', err);
+          }
         });
     });
+  } else {
+    if (!('serviceWorker' in navigator)) {
+      log?.info?.('ServiceWorker not supported by this browser');
+    } else if (!window.isSecureContext) {
+      log?.info?.('ServiceWorker registration skipped: insecure context');
+    }
   }
 } catch (e) {
   // Silent fail if environment does not permit SW
