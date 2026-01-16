@@ -70,6 +70,7 @@
       color="#0d0d0d"
     />
     <meta name="msapplication-TileColor" content="#0d0d0d" />
+      <meta name="theme-color" content="#0b0d17" />
     <meta
       name="msapplication-TileImage"
       content="/content/assets/img/icons/favicon-192x192.png"
@@ -314,23 +315,7 @@
 
     <!-- head-complete.js is now loaded dynamically by head-inline.js to prevent race conditions -->
 
-    <!-- Preconnect to common third-party origins to reduce initial handshake time -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      rel="preconnect"
-      href="https://www.googletagmanager.com"
-      crossorigin
-    />
-    <link
-      rel="preconnect"
-      href="https://static.cloudflareinsights.com"
-      crossorigin
-    />
-    <!-- DNS-prefetch to reduce DNS lookup latency for commonly used third-party origins -->
-    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
-    <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
-    <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+    <!-- Preconnects handled conditionally by head-inline.js (GTM/GA4/fonts) -->
 
     <!-- Inline minimal critical CSS for the Hero (improves LCP / FOCP) -->
     <style id="hero-critical-css">
