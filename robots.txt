@@ -20,8 +20,7 @@ Allow: /content/components/footer/datenschutz/
 Allow: /content/components/footer/impressum/
 
 # Block internal/system paths
-Disallow: /content/config/
-Disallow: /content/utils/
+# Note: Allowing /content/config and /content/utils so Google can load scripts required for rendering
 Disallow: /node_modules/
 Disallow: /tmp/
 Disallow: /dev/
