@@ -55,7 +55,7 @@
 ```html
 <link
   rel="preload"
-  href="/content/assets/img/og/og-home.png"
+  href="/content/assets/img/og/og-home-800.webp"
   as="image"
   type="image/png"
 />
@@ -222,7 +222,7 @@ if (canonicalEl) {
   <link rel="canonical" href="https://example.com/page/" />
 
   <--data 4. Preload kritische Ressourcen -->
-  <link rel="preload" href="/og-image.png" as="image" />
+  <link rel="preload" href="/content/assets/img/og/og-home-800.webp" as="image" />
 
   <--data 5. Open Graph -->
   <meta property="og:title" content="..." />

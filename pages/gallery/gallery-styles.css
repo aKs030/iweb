@@ -39,6 +39,27 @@ select:focus {
 
 img {
   display: block;
+  aspect-ratio: auto;
+}
+
+/* Gallery Images: 16:9 for thumbnails, 4:3 for lightbox */
+.gallery-thumbnail {
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  overflow: hidden;
+}
+
+.lightbox-image {
+  aspect-ratio: 4 / 3;
+  object-fit: contain;
+}
+
+/* Lightbox Modal Images */
+#lightbox img {
+  aspect-ratio: 4 / 3;
+  object-fit: contain;
+  max-width: 100%;
+  height: auto;
 }
 
 /* Layout utilities */

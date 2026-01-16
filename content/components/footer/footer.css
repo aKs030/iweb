@@ -85,6 +85,8 @@
   animation: footerEntrance 0.8s var(--dynamic-footer-spring-bounce) forwards;
   opacity: 0;
   will-change: transform, opacity; /* Performance hint */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 300px;
 
   /* Compact scale for footer variables (desktop-optimized) */
   --footer-text-xs: 9px;

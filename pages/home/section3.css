@@ -13,6 +13,8 @@
   width: 100%;
   min-height: 0;
   box-sizing: border-box;
+  content-visibility: auto;
+  contain-intrinsic-size: 100% 600px;
 }
 .section3__container {
   max-width: var(--section3-max-width);
