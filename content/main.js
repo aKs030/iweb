@@ -203,6 +203,15 @@ const SectionLoader = (() => {
       return;
     }
 
+    // Optimization: On subpages, skip eager loading non-critical sections
+    // Let IntersectionObserver handle lazy-loading instead
+    const isHomePage = (globalThis.location?.pathname || '').replace(/\/+$/g, '') === '';
+    const isEager = section.dataset.eager === 'true';
+    if (!isHomePage && !isEager) {
+      // Will be loaded lazily when IntersectionObserver detects visibility
+      return;
+    }
+
     loadedSections.add(section);
     const sectionName = getSectionName(section);
     const attempts = retryAttempts.get(section) || 0;

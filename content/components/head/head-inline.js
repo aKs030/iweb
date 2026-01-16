@@ -118,6 +118,14 @@ dataLayer.push({
       document.head.appendChild(s);
     }
 
+    // Add font-display: swap to Google Fonts for instant text rendering
+    const fontLinks = document.querySelectorAll('link[href*="fonts.googleapis.com"]');
+    fontLinks.forEach((link) => {
+      if (!link.href.includes('display=swap')) {
+        link.href += (link.href.includes('?') ? '&' : '?') + 'display=swap';
+      }
+    });
+
     gtag('config', GA4_MEASUREMENT_ID);
   } catch (err) {
     log?.warn?.('head-inline: GA4 fallback failed', err);
@@ -431,10 +439,16 @@ dataLayer.push({
     };
 
     const performInjection = () => {
-      // Hint to connect to important third-party origins early
-      upsertPreconnect('https://www.googletagmanager.com');
-      upsertPreconnect('https://static.cloudflareinsights.com');
-      upsertPreconnect('https://www.gstatic.com'); // gtag fallback
+      // Hint to connect to important third-party origins early (only when needed)
+      const hasGtm = GTM_ID && GTM_ID !== 'GTM-XXXXXXX';
+      if (hasGtm) {
+        upsertPreconnect('https://www.googletagmanager.com');
+        upsertPreconnect('https://static.cloudflareinsights.com');
+      }
+      // gtag fallback only when GA4 fallback is used; harmless otherwise but keep conditional
+      if (GA4_MEASUREMENT_ID && GA4_MEASUREMENT_ID.indexOf('G-') === 0) {
+        upsertPreconnect('https://www.gstatic.com');
+      }
 
       // Insert styles (use critical flag only when strictly needed)
       const styles = getStylesForPath();
@@ -457,9 +471,6 @@ dataLayer.push({
           criticalStyles.has(href) || (p === '/' && homeCritical.has(href));
         upsertStyle(href, { critical: isCritical });
       });
-
-      // Preload main.js for faster parsing (warm fetch)
-      upsertModulePreload('/content/main.js');
 
       // Preload module scripts we want parsed early (main app bundle)
       SCRIPTS.filter((s) => s.preload).forEach((s) =>
@@ -486,6 +497,28 @@ dataLayer.push({
     }
   } catch (err) {
     log?.warn?.('head-inline: injectCoreAssets failed', err);
+  }
+})();
+
+// === Progressive image defaults: lazy-load and async decode for content images ===
+(function addLazyLoadingDefaults() {
+  try {
+    const apply = () => {
+      document
+        .querySelectorAll('img:not([loading])')
+        .forEach((img) => img.setAttribute('loading', 'lazy'));
+      document
+        .querySelectorAll('img:not([decoding])')
+        .forEach((img) => img.setAttribute('decoding', 'async'));
+    };
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', apply, { once: true });
+    } else {
+      apply();
+    }
+  } catch (err) {
+    log?.warn?.('head-inline: addLazyLoadingDefaults failed', err);
   }
 })();
 
@@ -517,12 +550,10 @@ dataLayer.push({
     if (document.head.querySelector('#hero-critical-css')) return;
 
     const css = `
-/***** Critical Hero CSS (inlined) *****/
-.hero{display:flex;align-items:center;justify-content:center;min-height:100dvh;padding:0 .5rem;box-sizing:border-box}
-.hero-title{font:800 clamp(3rem,6vw,4.5rem)/1.03 var(--font-inter);margin:0;padding:8px 12px;max-width:30ch;color:var(--color-text-main,#fff);text-align:center;white-space:normal}
-.hero-visual{animation:none}
-.three-earth-fallback{display:block}
-`;
+  /***** Critical Hero CSS (inlined, minimal) *****/
+  .hero{display:flex;align-items:center;justify-content:center;min-height:100dvh;padding:0 .5rem;box-sizing:border-box}
+  .hero-title{font:800 clamp(3rem,6vw,4.5rem)/1.03 var(--font-inter);margin:0;padding:8px 12px;max-width:30ch;color:var(--color-text-main,#fff);text-align:center;white-space:normal}
+  `;
 
     const s = document.createElement('style');
     s.id = 'hero-critical-css';
