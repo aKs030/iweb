@@ -530,7 +530,7 @@ function BlogApp() {
                 </figure>
               `
             }
-            
+
             <div class="article-content-wrapper">
                 <${TableOfContents} htmlContent=${cleanHtml} />
                 <div class="article-body" dangerouslySetInnerHTML=${{
@@ -682,4 +682,38 @@ function BlogApp() {
 }
 
 const rootEl = document.getElementById('root');
-if (rootEl) ReactDOM.createRoot(rootEl).render(React.createElement(BlogApp));
+
+if (rootEl) {
+  ReactDOM.createRoot(rootEl).render(React.createElement(BlogApp));
+} else {
+  // Hybrid Bootstrapping: Check if we are on a static post page without #root
+  // but with #main-content or .blog-article
+  const mainContent = document.getElementById('main-content');
+  if (mainContent) {
+    const articleBody =
+      mainContent.querySelector('.article-body') ||
+      mainContent.querySelector('article');
+
+    if (articleBody) {
+      // We are on a static page. Let's hydrate/take over.
+      // 1. Create root
+      const newRoot = document.createElement('div');
+      newRoot.id = 'root';
+      // We want to replace mainContent with root, or append root and hide mainContent.
+      // Replacing is cleaner for the DOM.
+
+      // Extract data before removing
+      // const path = window.location.pathname;
+      // const match = path.match(/^\/blog\/([^/]+)\/?$/);
+      // const id = match ? match[1] : 'unknown';
+
+      // Let's create a temporary hidden container for the old content to ensure we don't lose it
+      // before React renders (though React render is async, we have the data in memory)
+      mainContent.style.display = 'none';
+      document.body.appendChild(newRoot);
+
+      // Render App
+      ReactDOM.createRoot(newRoot).render(React.createElement(BlogApp));
+    }
+  }
+}
