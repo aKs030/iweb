@@ -129,7 +129,7 @@ function ReadingProgress() {
     window.addEventListener('scroll', onScroll);
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
-  return html`<div class="reading-progress-container"><div class="reading-progress-bar" style=${{ width: width + '%' }}></div></div>`;
+  return html`<div className="reading-progress-container"><div className="reading-progress-bar" style=${{ width: width + '%' }}></div></div>`;
 }
 
 function RelatedPosts({ currentPost, allPosts }) {
@@ -147,9 +147,9 @@ function RelatedPosts({ currentPost, allPosts }) {
       <h3 className="related-posts-title">Das könnte dich auch interessieren</h3>
       <div className="blog-grid">
         ${related.map(post => html`
-            <article class="blog-card" onClick=${() => window.location.hash = `/blog/${post.id}`}>
-                <h4 class="card-title" style=${{ fontSize: '1.1rem' }}>${post.title}</h4>
-                <p class="card-excerpt" style=${{ fontSize: '0.9rem', marginBottom: '0' }}>${post.excerpt.slice(0, 80)}...</p>
+            <article key=${post.id} className="blog-card" onClick=${() => window.location.hash = `/blog/${post.id}`}>
+                <h4 className="card-title" style=${{ fontSize: '1.1rem' }}>${post.title}</h4>
+                <p className="card-excerpt" style=${{ fontSize: '0.9rem', marginBottom: '0' }}>${post.excerpt.slice(0, 80)}...</p>
             </article>
         `)}
       </div>
@@ -217,13 +217,13 @@ function BlogApp() {
     const post = posts.find(p => p.id === currentPostId);
 
     if (!post && !loading) return html`
-      <div class="container-blog pt-24 fade-in">
+      <div className="container-blog pt-24 fade-in">
         <p>Artikel nicht gefunden.</p>
-        <button class="btn-back" onClick=${() => window.location.hash = ''}>← Zurück</button>
+        <button className="btn-back" onClick=${() => window.location.hash = ''}>← Zurück</button>
       </div>
     `;
 
-    if (!post) return html`<div class="container-blog pt-24"><div style="color:#666">Lade Artikel...</div></div>`;
+    if (!post) return html`<div className="container-blog pt-24"><div style="color:#666">Lade Artikel...</div></div>`;
 
     const cleanHtml = DOMPurify.sanitize(post.html || (post.content ? marked.parse(post.content) : ''));
     const og = getOg(post.id);
@@ -234,35 +234,35 @@ function BlogApp() {
         <${ReadingProgress} />
         <${ScrollToTop} />
         
-        <div class="container-blog pt-24 fade-in">
-          <button class="btn-back" onClick=${() => window.location.hash = ''}>← Übersicht (ESC)</button>
+        <div className="container-blog pt-24 fade-in">
+          <button className="btn-back" onClick=${() => window.location.hash = ''}>← Übersicht (ESC)</button>
           
-          <article class="blog-article">
+          <article className="blog-article">
             <header>
-              <div class="card-meta">
-                <span class="card-category">${post.category}</span>
-                <span class="card-read-time"><${Icons.Clock}/> ${post.readTime}</span>
+              <div className="card-meta">
+                <span className="card-category">${post.category}</span>
+                <span className="card-read-time"><${Icons.Clock}/> ${post.readTime}</span>
               </div>
               <h1>${post.title}</h1>
-              <div class="meta">${post.dateDisplay}</div>
+              <div className="meta">${post.dateDisplay}</div>
             </header>
 
             ${heroSrc && html`
-              <figure class="article-hero">
-                <img src="${heroSrc}" alt="${post.title}" class="article-hero-img" />
+              <figure className="article-hero">
+                <img src="${heroSrc}" alt="${post.title}" className="article-hero-img" />
               </figure>
             `}
 
-            <div class="article-body" dangerouslySetInnerHTML=${{ __html: cleanHtml }}></div>
+            <div className="article-body" dangerouslySetInnerHTML=${{ __html: cleanHtml }}></div>
             
             <${RelatedPosts} currentPost=${post} allPosts=${posts} />
 
-            <div class="article-cta">
+            <div className="article-cta">
               <h3>Unterstützung bei deinem Projekt?</h3>
               <p style=${{ color: '#ccc', marginBottom: '1.5rem', maxWidth: '600px', margin: '0 auto 1.5rem' }}>
                 Benötigst du Hilfe bei Webdesign, Performance-Optimierung oder SEO? Lass uns unverbindlich darüber sprechen.
               </p>
-              <a href="/#contact" class="btn-primary">Jetzt Kontakt aufnehmen</a>
+              <a href="/#contact" className="btn-primary">Jetzt Kontakt aufnehmen</a>
             </div>
           </article>
         </div>
@@ -272,17 +272,17 @@ function BlogApp() {
 
   // List View
   return html`
-    <div class="container-blog fade-in" style=${{ paddingTop: '6rem' }}>
+    <div className="container-blog fade-in" style=${{ paddingTop: '6rem' }}>
       <${ScrollToTop} />
       
       <!-- Static Header -->
       <header style=${{ marginBottom: '2rem' }}>
-        <h1 class="blog-headline">Wissen & Einblicke</h1>
-        <p class="blog-subline">In unserem Blog teilen wir praxisnahe Tipps zu Webdesign, SEO, Performance und Online-Marketing – verständlich erklärt und direkt umsetzbar.</p>
+        <h1 className="blog-headline">Wissen & Einblicke</h1>
+        <p className="blog-subline">In unserem Blog teilen wir praxisnahe Tipps zu Webdesign, SEO, Performance und Online-Marketing – verständlich erklärt und direkt umsetzbar.</p>
       </header>
 
       <!-- Sticky Controls: Optimized Top Position -->
-      <div class="blog-sticky-header" style=${{
+      <div className="blog-sticky-header" style=${{
       position: 'sticky',
       top: '72px', /* Matches Site Header Height + Spacing */
       zIndex: 40,
@@ -293,22 +293,23 @@ function BlogApp() {
       margin: '0 -2rem 2.5rem -2rem',
       padding: '1rem 2rem'
     }}>
-        <div class="blog-header-content">
-          <div class="blog-controls">
-            <div class="search-wrapper">
-              <span class="search-icon"><${Icons.Search}/></span>
+        <div className="blog-header-content">
+          <div className="blog-controls">
+            <div className="search-wrapper">
+              <span className="search-icon"><${Icons.Search}/></span>
               <input 
                 type="text" 
-                class="search-input" 
+                className="search-input" 
                 placeholder="Suchen..." 
                 value=${search}
                 onInput=${(e) => setSearch(e.target.value)}
               />
             </div>
-            <div class="filter-bar">
+            <div className="filter-bar">
               ${categories.map(cat => html`
                 <button 
-                  class="filter-btn ${filter === cat ? 'active' : ''}" 
+                  key=${cat}
+                  className=${`filter-btn ${filter === cat ? 'active' : ''}`} 
                   onClick=${() => setFilter(cat)}
                 >
                   ${cat}
@@ -319,35 +320,35 @@ function BlogApp() {
         </div>
       </div>
 
-      <div class="blog-grid">
+      <div className="blog-grid">
         ${visiblePosts.map(post => {
       const og = getOg(post.id);
       const fallbackImg = post.image || (og ? (og.fallback || og.url) : null);
 
       return html`
-          <article class="blog-card" onClick=${() => window.location.hash = `/blog/${post.id}`}>
+          <article key=${post.id} className="blog-card" onClick=${() => window.location.hash = `/blog/${post.id}`}>
             ${og && og.sources && og.sources.webp
           ? html`
                 <picture>
                   <source type="image/webp" srcSet="${og.sources.webp.map(s => `${s.url} ${s.width}w`).join(', ')}" sizes="(max-width: 600px) 100vw, 340px" />
-                  <img src="${fallbackImg}" alt="${post.title}" class="blog-card-image" loading="lazy" width="${og.width || ''}" height="${og.height || ''}" />
+                  <img src="${fallbackImg}" alt="${post.title}" className="blog-card-image" loading="lazy" width="${og.width || ''}" height="${og.height || ''}" />
                 </picture>
               `
-          : fallbackImg ? html`<img src="${fallbackImg}" alt="${post.title}" class="blog-card-image" loading="lazy" />`
+          : fallbackImg ? html`<img src="${fallbackImg}" alt="${post.title}" className="blog-card-image" loading="lazy" />`
             : ''
         }
             
-            <div class="card-meta">
-              <span class="card-category">${post.category}</span>
-              <span class="card-date">${post.dateDisplay}</span>
+            <div className="card-meta">
+              <span className="card-category">${post.category}</span>
+              <span className="card-date">${post.dateDisplay}</span>
             </div>
             
-            <h2 class="card-title">${post.title}</h2>
-            <p class="card-excerpt">${post.excerpt}</p>
+            <h2 className="card-title">${post.title}</h2>
+            <p className="card-excerpt">${post.excerpt}</p>
             
-            <div class="card-footer">
-              <span class="card-read-time"><${Icons.Clock}/> ${post.readTime}</span>
-              <button class="btn-read">Weiterlesen <${Icons.ArrowRight}/></button>
+            <div className="card-footer">
+              <span className="card-read-time"><${Icons.Clock}/> ${post.readTime}</span>
+              <button className="btn-read">Weiterlesen <${Icons.ArrowRight}/></button>
             </div>
           </article>
         `})}
