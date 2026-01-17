@@ -2,21 +2,9 @@
 <html lang="de">
   <head>
     <meta charset="utf-8" />
-    <!-- CRITICAL: Dark background inline to prevent white flicker before CSS loads -->
-    <style>
-      body {
-        background: #0b0d17;
-        color: #e0e0e0;
-      }
-    </style>
-    <!-- Content-Security-Policy removed per user request (less restrictive) -->
-    <!-- Google measurement IDs (GA4 / Ads) are injected dynamically by
-         /content/components/head/head-inline.js using content/config/site-config.js.
-         Do not hardcode them here. -->
-    <script>
-      globalThis.dataLayer = globalThis.dataLayer || [];
-    </script>
-    <title>Abdulkerim Sesli — Web Developer & Photographer in Berlin</title>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <!-- Mobile: disable auto-detection of phone numbers and email addresses -->
+    <meta name="format-detection" content="telephone=no,email=no" />
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1, viewport-fit=cover"
@@ -30,8 +18,9 @@
     <!-- Date created (ISO 8601) - used by schema generation -->
     <meta name="dateCreated" content="2025-12-31T12:00:00Z" />
     <!-- Description and keywords are provided centrally in content/components/head/head.html -->
-    <!-- Canonical tag (static for reliable Google indexing) -->
+    <!-- Canonical and Sitemap Discovery -->
     <link rel="canonical" href="https://www.abdulkerimsesli.de/" />
+    <link rel="sitemap" href="/sitemap.xml" type="application/xml" />
 
     <!-- Font preconnects handled conditionally by head-inline.js when needed -->
 
@@ -79,6 +68,13 @@
       media="(prefers-color-scheme: light)"
       content="#ffffff"
     />
+    <!-- Apple Mobile Web App Settings -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="apple-mobile-web-app-title" content="Abdulkerim — Portfolio" />
     <meta
       name="msapplication-TileImage"
       content="/content/assets/img/icons/favicon-192x192.png"
@@ -104,6 +100,9 @@
       property="og:image"
       content="https://www.abdulkerimsesli.de/content/assets/img/og/og-home-800.webp"
     />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/webp" />
     <meta property="og:locale" content="de_DE" />
     <meta
       property="og:site_name"
@@ -125,6 +124,15 @@
       property="twitter:image"
       content="https://www.abdulkerimsesli.de/content/assets/img/og/og-home-800.webp"
     />
+    <meta property="twitter:image:width" content="1200" />
+    <meta property="twitter:image:height" content="630" />
+    <meta property="twitter:image:type" content="image/webp" />
+
+    <!-- DNS Prefetch for Analytics & External Services -->
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+    <link rel="dns-prefetch" href="https://www.google-analytics.com" />
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
 
     <!-- Server-side FAQ JSON-LD (ensures Search Console sees a named FAQPage) -->
     <script id="head-complete-ldjson" type="application/ld+json">
@@ -391,6 +399,7 @@
         alt="Abdulkerim Sesli — Portfolio Homepage: Webentwicklung & Fotografie"
         width="1200"
         height="630"
+        decoding="async"
       />
     </figure>
 

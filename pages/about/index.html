@@ -2,6 +2,9 @@
 <html lang="de">
   <head>
     <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <!-- Mobile: disable auto-detection of phone numbers and email addresses -->
+    <meta name="format-detection" content="telephone=no,email=no" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Über mich | Abdulkerim Sesli</title>
     <meta name="dateCreated" content="2025-12-31T12:00:00Z" />
@@ -9,9 +12,12 @@
       name="description"
       content="Der Mensch hinter dem Code. Detaillierter Lebenslauf, Tech-Stack Übersicht und direkte Kontaktmöglichkeiten für Projektanfragen und Kooperationen."
     />
-    <!-- Canonical tag (static for reliable Google indexing) -->
+    <!-- Canonical and Sitemap Discovery -->
     <link rel="canonical" href="https://www.abdulkerimsesli.de/about/" />
-
+    <link rel="sitemap" href="/sitemap.xml" type="application/xml" />
+    <!-- Preconnect to Critical Resources -->
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+    <link rel="dns-prefetch" href="https://www.google-analytics.com" />
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="profile" />
     <meta property="og:url" content="https://www.abdulkerimsesli.de/about/" />
@@ -24,7 +30,18 @@
       property="og:image"
       content="https://www.abdulkerimsesli.de/content/assets/img/og/og-home-800.webp"
     />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/webp" />
     <meta property="og:locale" content="de_DE" />
+
+    <!-- Apple Mobile Web App Settings -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="apple-mobile-web-app-title" content="Über mich — Abdulkerim" />
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image" />
@@ -43,6 +60,35 @@
     <meta
       property="twitter:image"
       content="https://www.abdulkerimsesli.de/content/assets/img/og/og-home-800.webp"
+    />
+    <meta property="twitter:image:width" content="1200" />
+    <meta property="twitter:image:height" content="630" />
+    <meta property="twitter:image:type" content="image/webp" />
+
+    <!-- PWA & Icons -->
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" href="/content/assets/img/icons/favicon.ico" />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="/content/assets/img/icons/favicon-32.png"
+    />
+    <link
+      rel="icon"
+      sizes="any"
+      href="/content/assets/img/icons/favicon.svg"
+      type="image/svg+xml"
+    />
+    <meta
+      name="theme-color"
+      media="(prefers-color-scheme: dark)"
+      content="#030303"
+    />
+    <meta
+      name="theme-color"
+      media="(prefers-color-scheme: light)"
+      content="#ffffff"
     />
 
     <!-- Breadcrumb Schema for SEO -->
@@ -188,6 +234,7 @@
               width="512"
               height="512"
               loading="lazy"
+              decoding="async"
             />
             <h3>Let's Connect</h3>
             <p class="about__location">Berlin, Deutschland</p>
