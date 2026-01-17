@@ -126,16 +126,36 @@ function BlogApp() {
     function parseArticleHtml(txt, id) {
       try {
         const doc = new DOMParser().parseFromString(txt, 'text/html');
-        const article = doc.querySelector('.blog-article') || doc.querySelector('article') || doc.querySelector('.page-article');
+        const article = doc.querySelector('.blog-article') || doc.querySelector('article') || doc.querySelector('.page-article') || doc.querySelector('main') || doc.body;
         const titleEl = article && article.querySelector('h1');
-        const metaEl = article && article.querySelector('.meta');
+        const metaEl = article && (article.querySelector('.meta') || article.querySelector('.article-meta'));
         const heroImg = article && article.querySelector('.article-hero img');
-        const bodyEl = article && (article.querySelector('.article-body') || article.querySelector('section') || article.querySelector('div'));
+        // Prefer scoped article body, otherwise fall back to a safe container
+        let bodyEl = article && (article.querySelector('.article-body') || article.querySelector('section') || article.querySelector('div'));
+        if (!bodyEl) bodyEl = article;
+
+        // Remove site chrome that might have been included in the extracted HTML
+        const chromeSelectors = ['header.site-header', 'nav.site-menu', '#footer-container', 'footer', '.site-footer', '.skip-links'];
+        chromeSelectors.forEach((sel) => {
+          const els = bodyEl.querySelectorAll ? bodyEl.querySelectorAll(sel) : [];
+          els.forEach((el) => el.remove());
+        });
+
+        // Remove any scripts and inline trackers from the extracted HTML
+        if (bodyEl.querySelectorAll) {
+          const scripts = bodyEl.querySelectorAll('script');
+          scripts.forEach((s) => s.remove());
+        }
+
         const title = titleEl ? titleEl.textContent.trim() : (doc.querySelector('title') ? doc.querySelector('title').textContent.trim() : id);
         const date = metaEl ? metaEl.textContent.trim() : '';
         const excerpt = bodyEl ? (bodyEl.querySelector('p') ? bodyEl.querySelector('p').textContent.trim().slice(0, 200) : '') : '';
         const image = heroImg ? (heroImg.getAttribute('src') || heroImg.getAttribute('data-src') || '') : (doc.querySelector('meta[property="og:image"]') ? doc.querySelector('meta[property="og:image"]').getAttribute('content') : '');
-        const contentHtml = bodyEl ? bodyEl.innerHTML : (doc.body ? doc.body.innerHTML : '');
+
+        // Serialize cleaned HTML and strip potential remaining script tags just in case
+        let contentHtml = bodyEl ? bodyEl.innerHTML.trim() : (doc.body ? doc.body.innerHTML : '');
+        contentHtml = contentHtml.replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, '');
+
         return {
           id,
           title,
@@ -166,7 +186,29 @@ function BlogApp() {
         await Promise.all(
           uniqueIds.map(async (id) => {
             try {
-              // Prefer markdown files in /content/posts/*.md
+              // Try the generated HTML page first (avoids 404s for missing markdown)
+              const htmlRes = await fetch(`/pages/blog/${id}/index.html`);
+              if (htmlRes.ok) {
+                const txt = await htmlRes.text();
+                const parsedHtml = parseArticleHtml(txt, id);
+                if (parsedHtml) {
+                  loaded.push(parsedHtml);
+                  return;
+                }
+              } else {
+                // try the clean path /blog/:id/ as alternative
+                const alt = await fetch(`/blog/${id}/`);
+                if (alt.ok) {
+                  const altTxt = await alt.text();
+                  const parsedAlt = parseArticleHtml(altTxt, id);
+                  if (parsedAlt) {
+                    loaded.push(parsedAlt);
+                    return;
+                  }
+                }
+              }
+
+              // Fallback: try markdown files in /content/posts/*.md
               const mdRes = await fetch(`/content/posts/${id}.md`);
               if (mdRes.ok) {
                 const txt = await mdRes.text();
@@ -187,21 +229,6 @@ function BlogApp() {
                 });
                 return;
               }
-
-              // Fallback: try to fetch the generated HTML page in /pages/blog/:id/index.html
-              const htmlRes = await fetch(`/pages/blog/${id}/index.html`);
-              if (!htmlRes.ok) {
-                // as a last resort try the clean path
-                const alt = await fetch(`/blog/${id}/`);
-                if (!alt.ok) return;
-                const altTxt = await alt.text();
-                const parsedAlt = parseArticleHtml(altTxt, id);
-                if (parsedAlt) loaded.push(parsedAlt);
-                return;
-              }
-              const htmlTxt = await htmlRes.text();
-              const parsedHtml = parseArticleHtml(htmlTxt, id);
-              if (parsedHtml) loaded.push(parsedHtml);
             } catch (e) {
               /* ignore individual failures */
             }
@@ -362,6 +389,20 @@ function BlogApp() {
           'script[type="application/ld+json"][data-temp-article]',
         )
       ) {
+        // Safely parse post.date into an ISO string if valid
+        const toIsoDate = (d) => {
+          try {
+            if (!d) return undefined;
+            const ds = String(d).trim();
+            if (!ds) return undefined;
+            const dt = new Date(ds + 'T00:00:00Z');
+            return isNaN(dt.getTime()) ? undefined : dt.toISOString();
+          } catch (e) {
+            return undefined;
+          }
+        };
+        const iso = toIsoDate(post.date);
+
         const ld = {
           '@context': 'https://schema.org',
           '@type': 'BlogPosting',
@@ -371,8 +412,6 @@ function BlogApp() {
           },
           headline: post.title,
           description: post.excerpt,
-          datePublished: new Date(post.date + 'T00:00:00Z').toISOString(),
-          dateModified: new Date(post.date + 'T00:00:00Z').toISOString(),
           author: {
             '@type': 'Person',
             '@id': 'https://www.abdulkerimsesli.de/#person',
@@ -440,6 +479,13 @@ function BlogApp() {
           articleSection: post.category,
           keywords: (post.meta && post.meta.keywords) || (post.schema && post.schema.keywords) || (post.tags && post.tags.join(',')),
         };
+
+        // Add date fields only when we have a valid ISO date
+        if (iso) {
+          ld.datePublished = iso;
+          ld.dateModified = iso;
+        }
+
         const s = document.createElement('script');
         s.type = 'application/ld+json';
         s.setAttribute('data-temp-article', '1');
