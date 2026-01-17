@@ -101,56 +101,6 @@
     <link rel="stylesheet" href="/content/styles/main.css" />
     <link rel="stylesheet" href="/pages/blog/blog.css" />
 
-    <!-- Inline Critical CSS for Skeleton Loader (prevents layout shift) -->
-    <style>
-      .skeleton-card {
-        background: #111;
-        border: 1px solid #333;
-        border-radius: 12px;
-        padding: 1.5rem;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-      }
-      .skeleton-img {
-        width: 100%;
-        aspect-ratio: 16/9;
-        background: #222;
-        border-radius: 8px;
-      }
-      .skeleton-text {
-        height: 1em;
-        background: #222;
-        border-radius: 4px;
-        width: 100%;
-      }
-      .skeleton-text.short {
-        width: 60%;
-      }
-      .skeleton-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-        gap: 2rem;
-        margin-top: 2rem;
-      }
-      /* Simple pulse animation */
-      @keyframes pulse {
-        0% {
-          opacity: 0.6;
-        }
-        50% {
-          opacity: 0.8;
-        }
-        100% {
-          opacity: 0.6;
-        }
-      }
-      .skeleton-card {
-        animation: pulse 1.5s infinite ease-in-out;
-      }
-    </style>
-
     <script
       type="module"
       src="/content/components/head/head-inline.js"
@@ -180,90 +130,16 @@
       </div>
     </div>
 
-    <noscript>
-      <style>
-        #app-loader {
-          display: none !important;
-        }
-      </style>
-    </noscript>
-
     <!-- Dynamic Header wird von menu.js geladen -->
 
     <main id="main-content" class="container-article">
-      <div id="root">
-        <!-- Skeleton UI: Wird angezeigt, bis React übernimmt -->
-        <div class="container-blog pt-24">
-          <header style="margin-bottom: 3rem">
-            <h1 class="blog-headline">Wissen & Einblicke</h1>
-            <div
-              class="skeleton-text short"
-              style="height: 1.5rem; background: #333"
-            ></div>
-          </header>
-          <div class="skeleton-grid">
-            <div class="skeleton-card">
-              <div class="skeleton-img"></div>
-              <div class="skeleton-text"></div>
-              <div class="skeleton-text short"></div>
-            </div>
-            <div class="skeleton-card">
-              <div class="skeleton-img"></div>
-              <div class="skeleton-text"></div>
-              <div class="skeleton-text short"></div>
-            </div>
-            <div class="skeleton-card">
-              <div class="skeleton-img"></div>
-              <div class="skeleton-text"></div>
-              <div class="skeleton-text short"></div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <div id="root"></div>
     </main>
 
     <div
       id="footer-container"
       data-footer-src="/content/components/footer/footer"
     ></div>
-
-    <!-- Seed Data: Hilft für sofortigen Content ohne extra Fetch -->
-    <script id="blog-list-json" type="application/json">
-      [
-        {
-          "id": "threejs-performance",
-          "title": "Optimierung von Three.js für das Web",
-          "excerpt": "Lerne praxisnahe Techniken, um Three.js-Szenen für maximale Performance zu optimieren – flüssige Animationen auch auf mobilen Geräten.",
-          "date": "2025-12-15",
-          "category": "Performance",
-          "image": "/content/assets/img/og/og-design-800.webp"
-        },
-        {
-          "id": "visual-storytelling",
-          "title": "Visuelles Storytelling",
-          "excerpt": "Erfahre, wie du durch Komposition und Lichtführung Emotionen weckst und deine Botschaft ohne Worte kommunizierst.",
-          "date": "2025-11-02",
-          "category": "Online-Marketing",
-          "image": "/content/assets/img/og/og-photography-800.webp"
-        },
-        {
-          "id": "modern-ui-design",
-          "title": "Modernes UI-Design",
-          "excerpt": "Entdecke die Prinzipien modernen UI-Designs: Von Accessibility bis zu Mikro-Interaktionen, die Nutzer begeistern.",
-          "date": "2025-10-10",
-          "category": "Webdesign",
-          "image": "/content/assets/img/og/og-design-800.webp"
-        },
-        {
-          "id": "react-no-build",
-          "title": "React ohne Build-Tools",
-          "excerpt": "Nutze React ohne komplexe Build-Tools: Mit ES Modules und htm startest du blitzschnell Prototypen und kleine Projekte.",
-          "date": "2025-09-05",
-          "category": "Webdesign",
-          "image": "/content/assets/img/og/og-home-800.webp"
-        }
-      ]
-    </script>
 
     <script type="module" src="/pages/blog/blog-app.js"></script>
   </body>
