@@ -22,10 +22,10 @@ const Icons = {
 const estimateReadTime = (text = '') => `${Math.max(1, Math.round(text.split(/\s+/).length / 200))} min`;
 
 const CATEGORY_OVERRIDES = {
-  'threejs-performance': 'WebGL',
-  'react-no-build': 'React',
-  'modern-ui-design': 'Design',
-  'visual-storytelling': 'Fotografie',
+  'threejs-performance': 'Performance',
+  'react-no-build': 'Webdesign',
+  'modern-ui-design': 'Webdesign',
+  'visual-storytelling': 'Online-Marketing',
 };
 
 function normalizePost(raw = {}) {
@@ -202,7 +202,10 @@ function BlogApp() {
     };
   }, [currentPostId]);
 
-  const categories = React.useMemo(() => ['All', ...new Set(posts.map(p => p.category).filter(Boolean))], [posts]);
+  const categories = React.useMemo(() => {
+    // Force specific categories to appear in filter list
+    return ['All', 'Webdesign', 'SEO', 'Performance', 'Online-Marketing'];
+  }, []);
   const visiblePosts = posts.filter(p => {
     const matchCat = filter === 'All' || p.category === filter;
     const matchSearch = !search || p.title.toLowerCase().includes(search.toLowerCase());
@@ -275,7 +278,7 @@ function BlogApp() {
       <!-- Static Header -->
       <header style=${{ marginBottom: '2rem' }}>
         <h1 class="blog-headline">Wissen & Einblicke</h1>
-        <p class="blog-subline">Gedanken zu Web-Entwicklung, Fotografie und digitalem Design.</p>
+        <p class="blog-subline">In unserem Blog teilen wir praxisnahe Tipps zu Webdesign, SEO, Performance und Online-Marketing – verständlich erklärt und direkt umsetzbar.</p>
       </header>
 
       <!-- Sticky Controls: Optimized Top Position -->

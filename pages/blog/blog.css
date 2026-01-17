@@ -610,6 +610,23 @@ body {
   font-size: 1.5rem;
 }
 
+.article-cta-box {
+  margin-top: 3rem;
+  padding: 2rem;
+  background: var(--blog-surface);
+  border: 1px solid var(--blog-border);
+  border-radius: 12px;
+  text-align: center;
+}
+
+.article-cta-box h3 {
+  margin-bottom: 1rem;
+}
+
+.article-cta-box p {
+  margin-bottom: 1.5rem;
+}
+
 .btn-primary {
   background: var(--blog-accent);
   color: white;
