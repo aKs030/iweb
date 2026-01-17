@@ -1,116 +1,230 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="de">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Modernes UI-Design: Mehr als nur Dark Mode — Abdulkerim Sesli</title>
-  <meta name="description" content="Entdecke die Prinzipien modernen UI-Designs: Von Accessibility bis zu Mikro-Interaktionen, die Nutzer begeistern." />
-  <link rel="canonical" href="https://www.abdulkerimsesli.de/blog/modern-ui-design/" />
-  <meta property="og:type" content="article" />
-  <meta property="og:title" content="Modernes UI-Design: Mehr als nur Dark Mode" />
-  <meta property="og:description" content="Modernes UI-Design bedeutet mehr als visuelle Trends: Es vereint Accessibility, Mikro‑Interaktionen und konsistente Nutzerführung. Praktische Beispiele und Guidelines für barrierefreie Interfaces. 👉 Beratung &amp; Audit erhältlich." />
-  <meta property="og:image" content="https://www.abdulkerimsesli.de/content/assets/img/og/og-design-800.webp" />
-  <meta property="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Modernes UI-Design: Mehr als nur Dark Mode" />
-  <meta name="twitter:description" content="Modernes UI-Design bedeutet mehr als visuelle Trends: Es vereint Accessibility, Mikro‑Interaktionen und konsistente Nutzerführung. Praktische Beispiele und Guidelines für barrierefreie Interfaces. 👉 Beratung &amp; Audit erhältlich." />
-  <meta name="twitter:image" content="https://www.abdulkerimsesli.de/content/assets/img/og/og-design-800.webp" />
-  <script type="application/ld+json">{
-  "@context": "https://schema.org",
-  "@type": "BlogPosting",
-  "mainEntityOfPage": {
-    "@type": "WebPage",
-    "@id": "https://www.abdulkerimsesli.de/blog/modern-ui-design/"
-  },
-  "headline": "Modernes UI-Design: Mehr als nur Dark Mode",
-  "description": "Modernes UI-Design bedeutet mehr als visuelle Trends: Es vereint Accessibility, Mikro‑Interaktionen und konsistente Nutzerführung. Praktische Beispiele und Guidelines für barrierefreie Interfaces. 👉 Beratung & Audit erhältlich.",
-  "datePublished": "2025-10-10T00:00:00.000Z",
-  "dateModified": "2025-10-10T00:00:00.000Z",
-  "author": {
-    "@type": "Person",
-    "name": "Abdulkerim Sesli"
-  },
-  "image": "https://www.abdulkerimsesli.de/content/assets/img/og/og-design-800.webp"
-}</script>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Modernes UI-Design: Mehr als nur Dark Mode — Abdulkerim Sesli</title>
+    <meta
+      name="description"
+      content="Entdecke die Prinzipien modernen UI-Designs: Von Accessibility bis zu Mikro-Interaktionen, die Nutzer begeistern."
+    />
+    <link
+      rel="canonical"
+      href="https://www.abdulkerimsesli.de/blog/modern-ui-design/"
+    />
+    <meta property="og:type" content="article" />
+    <meta
+      property="og:title"
+      content="Modernes UI-Design: Mehr als nur Dark Mode"
+    />
+    <meta
+      property="og:description"
+      content="Modernes UI-Design bedeutet mehr als visuelle Trends: Es vereint Accessibility, Mikro‑Interaktionen und konsistente Nutzerführung. Praktische Beispiele und Guidelines für barrierefreie Interfaces. 👉 Beratung &amp; Audit erhältlich."
+    />
+    <meta
+      property="og:image"
+      content="https://www.abdulkerimsesli.de/content/assets/img/og/og-design-800.webp"
+    />
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="Modernes UI-Design: Mehr als nur Dark Mode"
+    />
+    <meta
+      name="twitter:description"
+      content="Modernes UI-Design bedeutet mehr als visuelle Trends: Es vereint Accessibility, Mikro‑Interaktionen und konsistente Nutzerführung. Praktische Beispiele und Guidelines für barrierefreie Interfaces. 👉 Beratung &amp; Audit erhältlich."
+    />
+    <meta
+      name="twitter:image"
+      content="https://www.abdulkerimsesli.de/content/assets/img/og/og-design-800.webp"
+    />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "mainEntityOfPage": {
+          "@type": "WebPage",
+          "@id": "https://www.abdulkerimsesli.de/blog/modern-ui-design/"
+        },
+        "headline": "Modernes UI-Design: Mehr als nur Dark Mode",
+        "description": "Modernes UI-Design bedeutet mehr als visuelle Trends: Es vereint Accessibility, Mikro‑Interaktionen und konsistente Nutzerführung. Praktische Beispiele und Guidelines für barrierefreie Interfaces. 👉 Beratung & Audit erhältlich.",
+        "datePublished": "2025-10-10T00:00:00.000Z",
+        "dateModified": "2025-10-10T00:00:00.000Z",
+        "author": {
+          "@type": "Person",
+          "name": "Abdulkerim Sesli"
+        },
+        "image": "https://www.abdulkerimsesli.de/content/assets/img/og/og-design-800.webp"
+      }
+    </script>
 
-  <!-- Site styles & blog styles -->
-  <link rel="stylesheet" href="/content/styles/root.css" />
-  <link rel="stylesheet" href="/content/styles/main.css" />
-  <link rel="stylesheet" href="/pages/blog/blog.css" />
-  <link rel="stylesheet" href="/content/components/menu/menu.css" />
+    <!-- Site styles & blog styles -->
+    <link rel="stylesheet" href="/content/styles/root.css" />
+    <link rel="stylesheet" href="/content/styles/main.css" />
+    <link rel="stylesheet" href="/pages/blog/blog.css" />
+    <link rel="stylesheet" href="/content/components/menu/menu.css" />
 
+    <!-- Head scripts (GTM, menu, footer loader et al.) -->
+    <script
+      type="module"
+      src="/content/components/head/head-inline.js"
+    ></script>
+    <script
+      type="module"
+      src="/content/main.js"
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body>
+    <!-- Static header (for No-JS & better SEO/first-paint) -->
+    <header class="site-header">
+      <!-- SVG sprite (inlined for icons when JS is disabled) -->
+      <svg
+        aria-hidden="true"
+        style="position: absolute; width: 0; height: 0; overflow: hidden"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <defs>
+          <symbol id="icon-house" viewBox="0 0 576 512">
+            <path
+              fill="currentColor"
+              d="M541 229.16 512 205.26V64a32 32 0 0 0-32-32h-64a32 32 0 0 0-32 32v24.6L314.52 43a35.93 35.93 0 0 0-45 0L35 229.16a16 16 0 0 0-2 22.59l21.4 25.76a16 16 0 0 0 22.59 2L96 264.86V456a32 32 0 0 0 32 32h128V344a16 16 0 0 1 16-16h64a16 16 0 0 1 16 16v144h128a32 32 0 0 0 32-32V264.86l19 14.65a16 16 0 0 0 22.59-2l21.4-25.76a16 16 0 0 0-2-22.59Z"
+            />
+          </symbol>
+          <symbol id="icon-images" viewBox="0 0 576 512">
+            <path
+              fill="currentColor"
+              d="M480 416V80a48 48 0 0 0-48-48H80a48 48 0 0 0-48 48v336H16a16 16 0 0 0 0 32h448a16 16 0 0 0 0-32ZM64 416V80a16 16 0 0 1 16-16h352a16 16 0 0 1 16 16v336Zm96-80 64-80 48 64 64-80 80 96H160Zm48-144a40 40 0 1 1-40-40 40 40 0 0 1 40 40Zm368-96v304a16 16 0 0 1-16 16h-16v-32h16V96H496V64h16a16 16 0 0 1 16 16Z"
+            />
+          </symbol>
+          <symbol id="icon-user" viewBox="0 0 448 512">
+            <path
+              fill="currentColor"
+              d="M224 256A128 128 0 1 0 96 128a128 128 0 0 0 128 128Zm89.6 32h-11.7a174.64 174.64 0 0 1-155.8 0h-11.7A134.4 134.4 0 0 0 0 422.4 57.6 57.6 0 0 0 57.6 480h332.8A57.6 57.6 0 0 0 448 422.4 134.4 134.4 0 0 0 313.6 288Z"
+            />
+          </symbol>
+          <symbol id="icon-mail" viewBox="0 0 512 512">
+            <path
+              fill="currentColor"
+              d="M48 64C21.5 64 0 85.5 0 112v288c0 26.5 21.5 48 48 48h416c26.5 0 48-21.5 48-48V112c0-26.5-21.5-48-48-48H48zM48 96h416c8.8 0 16 7.2 16 16v41.4L288 264.4c-11.3 8.5-26.7 8.5-38 0L32 153.4V112c0-8.8 7.2-16 16-16zm0 320v-222l176 132c22.5 16.9 53.5 16.9 76 0l176-132v222c0 8.8-7.2 16-16 16H64c-8.8 0-16-7.2-16-16z"
+            />
+          </symbol>
+        </defs>
+      </svg>
 
-  <!-- Head scripts (GTM, menu, footer loader et al.) -->
-  <script type="module" src="/content/components/head/head-inline.js"></script>
-  <script type="module" src="/content/main.js" crossorigin="anonymous"></script>
-</head>
-<body>
-  <!-- Static header (for No-JS & better SEO/first-paint) -->
-  <header class="site-header">
-    <!-- SVG sprite (inlined for icons when JS is disabled) -->
-    <svg aria-hidden="true" style="position: absolute; width: 0; height: 0; overflow: hidden" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <symbol id="icon-house" viewBox="0 0 576 512"><path fill="currentColor" d="M541 229.16 512 205.26V64a32 32 0 0 0-32-32h-64a32 32 0 0 0-32 32v24.6L314.52 43a35.93 35.93 0 0 0-45 0L35 229.16a16 16 0 0 0-2 22.59l21.4 25.76a16 16 0 0 0 22.59 2L96 264.86V456a32 32 0 0 0 32 32h128V344a16 16 0 0 1 16-16h64a16 16 0 0 1 16 16v144h128a32 32 0 0 0 32-32V264.86l19 14.65a16 16 0 0 0 22.59-2l21.4-25.76a16 16 0 0 0-2-22.59Z"/></symbol>
-        <symbol id="icon-images" viewBox="0 0 576 512"><path fill="currentColor" d="M480 416V80a48 48 0 0 0-48-48H80a48 48 0 0 0-48 48v336H16a16 16 0 0 0 0 32h448a16 16 0 0 0 0-32ZM64 416V80a16 16 0 0 1 16-16h352a16 16 0 0 1 16 16v336Zm96-80 64-80 48 64 64-80 80 96H160Zm48-144a40 40 0 1 1-40-40 40 40 0 0 1 40 40Zm368-96v304a16 16 0 0 1-16 16h-16v-32h16V96H496V64h16a16 16 0 0 1 16 16Z"/></symbol>
-        <symbol id="icon-user" viewBox="0 0 448 512"><path fill="currentColor" d="M224 256A128 128 0 1 0 96 128a128 128 0 0 0 128 128Zm89.6 32h-11.7a174.64 174.64 0 0 1-155.8 0h-11.7A134.4 134.4 0 0 0 0 422.4 57.6 57.6 0 0 0 57.6 480h332.8A57.6 57.6 0 0 0 448 422.4 134.4 134.4 0 0 0 313.6 288Z"/></symbol>
-        <symbol id="icon-mail" viewBox="0 0 512 512"><path fill="currentColor" d="M48 64C21.5 64 0 85.5 0 112v288c0 26.5 21.5 48 48 48h416c26.5 0 48-21.5 48-48V112c0-26.5-21.5-48-48-48H48zM48 96h416c8.8 0 16 7.2 16 16v41.4L288 264.4c-11.3 8.5-26.7 8.5-38 0L32 153.4V112c0-8.8 7.2-16 16-16zm0 320v-222l176 132c22.5 16.9 53.5 16.9 76 0l176-132v222c0 8.8-7.2 16-16 16H64c-8.8 0-16-7.2-16-16z"/></symbol>
-      </defs>
-    </svg>
-
-    <div class="skip-links">
-      <a href="#main-content" class="skip-link">Zum Hauptinhalt springen</a>
-      <a href="#navigation" class="skip-link">Zur Navigation springen</a>
-    </div>
-
-    <a href="/" class="site-logo-link" title="Abdulkerim Sesli">
-      <span class="site-logo__container u-inline-center">
-        <!-- Inline SVG logo: AKS monogram for crisp LCP and scalability -->
-        <svg class="site-logo-svg" width="40" height="40" viewBox="0 0 100 100" role="img" aria-label="Abdulkerim Sesli logo" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="50" cy="50" r="48" fill="#0B74DE" />
-          <text x="50" y="60" text-anchor="middle" font-family="var(--font-primary, system-ui, sans-serif)" font-size="42" fill="#fff" font-weight="700">AKS</text>
-        </svg>
-        <span class="site-logo elegant-logo" id="site-title"><span class="visually-hidden">Startseite</span></span>
-        <span class="site-subtitle" id="site-subtitle"></span>
-      </span>
-    </a>
-  </header>
-
-  <main id="main-content" class="container-article">
-    <article class="blog-article">
-      <header class="article-header">
-        <h1>Modernes UI-Design: Mehr als nur Dark Mode</h1>
-        <p class="article-meta"><em>10. Oktober 2025</em></p>
-      </header>
-
-      <div class="article-body">
-        <h2 id="was-modernes-ui-design-wirklich-ausmacht">Was modernes UI-Design wirklich ausmacht</h2>
-        
-        <p>Modernes UI-Design geht weit über ästhetische Trends wie Dark Mode hinaus. Eine wirklich gute Benutzeroberfläche verbindet visuelle Klarheit mit funktionaler Zugänglichkeit.</p>
-
-        <h3 id="nutzerführung-durch-details">Nutzerführung durch Details</h3>
-        
-        <p>In diesem Beitrag zeige ich, wie Mikro-Interaktionen, sinnvolle Animationen und klares visuelles Feedback die User Experience verbessern. Gleichzeitig spielt Barrierefreiheit eine zentrale Rolle: semantisches HTML, ausreichende Farbkontraste und eine logische Tastaturnavigation sind unverzichtbar. Wer Accessibility von Anfang an mitdenkt, schafft nicht nur inklusivere Produkte, sondern auch robustere und zukunftssichere Web-Anwendungen.</p>
-        
-        <p>Neben der visuellen Gestaltung spielt auch die Konsistenz eine große Rolle. Wiederkehrende Muster, klare Abstände und vorhersehbares Verhalten von UI-Elementen erhöhen das Vertrauen der Nutzer und reduzieren kognitive Belastung. Design-Systeme und dokumentierte Komponentenbibliotheken sind dabei ein effektives Mittel, um Qualität und Skalierbarkeit langfristig sicherzustellen.</p>
-<h3 id="umsetzung--tools">Umsetzung &amp; Tools</h3>
-<p>Praktische Maßnahmen sind: Farbaudits (Kontrastprüfungen), automatisierte Accessibility‑Tests (axe) und dokumentierte Komponenten in Storybook. Kleine Mikro‑Interaktionen (Feedback, loading states) steigern die wahrgenommene Qualität ohne die Performance zu belasten.</p>
-<h4>Takeaways:</h4>
-<ul>
-  <li>Denke Accessibility früh mit (Semantik, Kontrast, Tastatur).</li>
-  <li>Nutze Mikro-Interaktionen sparsam und sinnvoll.</li>
-  <li>Dokumentiere Patterns in einem Design-System.</li>
-</ul>
-
-<p>🔗 Ebenfalls interessant: Im Artikel „Optimierung von Three.js für das Web" zeige ich, wie visuelle Qualität und technische Performance kombiniert werden können.</p>
-
-<p>👉 Möchten Sie ein nutzerfreundliches und barrierefreies Interface gestalten lassen? Ich berate Sie gerne.</p>
-
+      <div class="skip-links">
+        <a href="#main-content" class="skip-link">Zum Hauptinhalt springen</a>
+        <a href="#navigation" class="skip-link">Zur Navigation springen</a>
       </div>
 
-      <p><a href="/blog/">Zurück zum Blog</a></p>
-    </article>
-  </main>
+      <a href="/" class="site-logo-link" title="Abdulkerim Sesli">
+        <span class="site-logo__container u-inline-center">
+          <!-- Inline SVG logo: AKS monogram for crisp LCP and scalability -->
+          <svg
+            class="site-logo-svg"
+            width="40"
+            height="40"
+            viewBox="0 0 100 100"
+            role="img"
+            aria-label="Abdulkerim Sesli logo"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle cx="50" cy="50" r="48" fill="#0B74DE" />
+            <text
+              x="50"
+              y="60"
+              text-anchor="middle"
+              font-family="var(--font-primary, system-ui, sans-serif)"
+              font-size="42"
+              fill="#fff"
+              font-weight="700"
+            >
+              AKS
+            </text>
+          </svg>
+          <span class="site-logo elegant-logo" id="site-title"
+            ><span class="visually-hidden">Startseite</span></span
+          >
+          <span class="site-subtitle" id="site-subtitle"></span>
+        </span>
+      </a>
+    </header>
 
-  <!-- Footer container (loaded lazily by footer loader) -->
-  <div id="footer-container" data-footer-src="/content/components/footer/footer"></div>
-</body>
+    <main id="main-content" class="container-article">
+      <article class="blog-article">
+        <header class="article-header">
+          <h1>Modernes UI-Design: Mehr als nur Dark Mode</h1>
+          <p class="article-meta"><em>10. Oktober 2025</em></p>
+        </header>
+
+        <div class="article-body">
+          <h2 id="was-modernes-ui-design-wirklich-ausmacht">
+            Was modernes UI-Design wirklich ausmacht
+          </h2>
+
+          <p>
+            Modernes UI-Design geht weit über ästhetische Trends wie Dark Mode
+            hinaus. Eine wirklich gute Benutzeroberfläche verbindet visuelle
+            Klarheit mit funktionaler Zugänglichkeit.
+          </p>
+
+          <h3 id="nutzerführung-durch-details">Nutzerführung durch Details</h3>
+
+          <p>
+            In diesem Beitrag zeige ich, wie Mikro-Interaktionen, sinnvolle
+            Animationen und klares visuelles Feedback die User Experience
+            verbessern. Gleichzeitig spielt Barrierefreiheit eine zentrale
+            Rolle: semantisches HTML, ausreichende Farbkontraste und eine
+            logische Tastaturnavigation sind unverzichtbar. Wer Accessibility
+            von Anfang an mitdenkt, schafft nicht nur inklusivere Produkte,
+            sondern auch robustere und zukunftssichere Web-Anwendungen.
+          </p>
+
+          <p>
+            Neben der visuellen Gestaltung spielt auch die Konsistenz eine große
+            Rolle. Wiederkehrende Muster, klare Abstände und vorhersehbares
+            Verhalten von UI-Elementen erhöhen das Vertrauen der Nutzer und
+            reduzieren kognitive Belastung. Design-Systeme und dokumentierte
+            Komponentenbibliotheken sind dabei ein effektives Mittel, um
+            Qualität und Skalierbarkeit langfristig sicherzustellen.
+          </p>
+          <h3 id="umsetzung--tools">Umsetzung &amp; Tools</h3>
+          <p>
+            Praktische Maßnahmen sind: Farbaudits (Kontrastprüfungen),
+            automatisierte Accessibility‑Tests (axe) und dokumentierte
+            Komponenten in Storybook. Kleine Mikro‑Interaktionen (Feedback,
+            loading states) steigern die wahrgenommene Qualität ohne die
+            Performance zu belasten.
+          </p>
+          <h4>Takeaways:</h4>
+          <ul>
+            <li>
+              Denke Accessibility früh mit (Semantik, Kontrast, Tastatur).
+            </li>
+            <li>Nutze Mikro-Interaktionen sparsam und sinnvoll.</li>
+            <li>Dokumentiere Patterns in einem Design-System.</li>
+          </ul>
+
+          <p>
+            🔗 Ebenfalls interessant: Im Artikel „Optimierung von Three.js für
+            das Web" zeige ich, wie visuelle Qualität und technische Performance
+            kombiniert werden können.
+          </p>
+
+          <p>
+            👉 Möchten Sie ein nutzerfreundliches und barrierefreies Interface
+            gestalten lassen? Ich berate Sie gerne.
+          </p>
+        </div>
+
+        <p><a href="/blog/">Zurück zum Blog</a></p>
+      </article>
+    </main>
+
+    <!-- Footer container (loaded lazily by footer loader) -->
+    <div
+      id="footer-container"
+      data-footer-src="/content/components/footer/footer"
+    ></div>
+  </body>
 </html>
