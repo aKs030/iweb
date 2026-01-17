@@ -4,6 +4,9 @@
     <!-- Google Tag Manager: dynamically injected via /content/components/head/head-inline.js using /content/config/site-config.js. Remove hard-coded IDs and maintain configuration in site-config.js. -->
     <meta name="mobile-web-app-capable" content="yes" />
     <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <!-- Mobile: disable auto-detection of phone numbers and email addresses -->
+    <meta name="format-detection" content="telephone=no,email=no" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <!-- Shared Head -->
@@ -34,8 +37,13 @@
       content="Visuelle Ästhetik aus der Hauptstadt. Kuratierte Galerie mit Fokus auf Street Photography, Architektur und atmosphärische Portraits aus Berlin und Umgebung."
     />
     <meta name="dateCreated" content="2025-12-31T12:00:00Z" />
-    <!-- Canonical tag (static for reliable Google indexing) -->
+    <!-- Canonical and Sitemap Discovery -->
     <link rel="canonical" href="https://www.abdulkerimsesli.de/gallery/" />
+    <link rel="sitemap" href="/sitemap.xml" type="application/xml" />
+
+    <!-- Preconnect to Critical Resources -->
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+    <link rel="dns-prefetch" href="https://www.google-analytics.com" />
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
@@ -52,11 +60,22 @@
       property="og:image"
       content="https://www.abdulkerimsesli.de/content/assets/img/og/og-home-800.webp"
     />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/webp" />
     <meta property="og:locale" content="de_DE" />
     <meta
       property="og:site_name"
       content="Abdulkerim — Digital Creator Portfolio"
     />
+
+    <!-- Apple Mobile Web App Settings -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="apple-mobile-web-app-title" content="Galerie — Abdulkerim" />
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image" />
@@ -75,6 +94,22 @@
     <meta
       property="twitter:image"
       content="https://www.abdulkerimsesli.de/content/assets/img/og/og-home-800.webp"
+    />
+    <meta property="twitter:image:width" content="1200" />
+    <meta property="twitter:image:height" content="630" />
+    <meta property="twitter:image:type" content="image/webp" />
+
+    <!-- PWA & Icons -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta
+      name="theme-color"
+      media="(prefers-color-scheme: dark)"
+      content="#030303"
+    />
+    <meta
+      name="theme-color"
+      media="(prefers-color-scheme: light)"
+      content="#ffffff"
     />
 
     <script type="application/ld+json">

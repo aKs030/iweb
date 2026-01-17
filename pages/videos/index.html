@@ -5,6 +5,9 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <!-- Content-Security-Policy removed per user request (less restrictive) -->
     <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <!-- Mobile: disable auto-detection of phone numbers and email addresses -->
+    <meta name="format-detection" content="telephone=no,email=no" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <link rel="stylesheet" href="/pages/videos/videos.css" />
@@ -34,8 +37,13 @@
       content="Eine Auswahl meiner Arbeiten, kurzen Vorstellungen und Behind-the-Scenes."
     />
     <meta name="dateCreated" content="2025-12-31T12:00:00Z" />
-    <!-- Canonical tag (static for reliable Google indexing) -->
+    <!-- Canonical and Sitemap Discovery -->
     <link rel="canonical" href="https://www.abdulkerimsesli.de/videos/" />
+    <link rel="sitemap" href="/sitemap.xml" type="application/xml" />
+
+    <!-- Preconnect to Critical Resources -->
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+    <link rel="dns-prefetch" href="https://www.google-analytics.com" />
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
@@ -49,11 +57,22 @@
       property="og:image"
       content="https://www.abdulkerimsesli.de/content/assets/img/og/og-videos-2400.webp"
     />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/webp" />
     <meta property="og:locale" content="de_DE" />
     <meta
       property="og:site_name"
       content="Abdulkerim — Digital Creator Portfolio"
     />
+
+    <!-- Apple Mobile Web App Settings -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="apple-mobile-web-app-title" content="Videos — Abdulkerim" />
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image" />
@@ -69,6 +88,22 @@
     <meta
       property="twitter:image"
       content="https://www.abdulkerimsesli.de/content/assets/img/og/og-videos-2400.webp"
+    />
+    <meta property="twitter:image:width" content="1200" />
+    <meta property="twitter:image:height" content="630" />
+    <meta property="twitter:image:type" content="image/webp" />
+
+    <!-- PWA & Icons -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta
+      name="theme-color"
+      media="(prefers-color-scheme: dark)"
+      content="#030303"
+    />
+    <meta
+      name="theme-color"
+      media="(prefers-color-scheme: light)"
+      content="#ffffff"
     />
 
     <!-- head-complete.js is now loaded dynamically by head-inline.js -->
@@ -300,6 +335,7 @@
             alt="Videos — Auswahl meiner Arbeiten und Behind‑the‑Scenes von Abdulkerim Sesli"
             width="1200"
             height="630"
+            decoding="async"
           />
         </figure>
         <div

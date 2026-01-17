@@ -249,7 +249,7 @@ function BlogApp() {
 
             ${heroSrc && html`
               <figure className="article-hero">
-                <img src="${heroSrc}" alt="${post.title}" className="article-hero-img" />
+                <img src="${heroSrc}" alt="${post.title}" className="article-hero-img" decoding="async" />
               </figure>
             `}
 
