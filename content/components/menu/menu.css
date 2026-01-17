@@ -241,7 +241,7 @@ body {
 
 /* Active menu link styling */
 .site-menu__list a.active,
-.site-menu__list a[aria-current="page"] {
+.site-menu__list a[aria-current='page'] {
   color: var(--dynamic-menu-accent-blue);
   font-weight: 700;
 }
@@ -255,7 +255,6 @@ body {
     left: 16px;
   }
 }
-
 
 .site-logo {
   /* Dynamic Menu Micro-Animation */
