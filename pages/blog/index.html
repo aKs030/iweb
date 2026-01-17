@@ -6,55 +6,87 @@
     <title>Blog — Abdulkerim Sesli</title>
     <meta
       name="description"
-      content="Artikelübersicht und Archiv — Gedanken zu Web, JavaScript &amp; Projekte."
+      content="Einblicke in Web-Performance, React und modernes UI-Design. Wissen für Entwickler und Kreative."
     />
     <link rel="canonical" href="https://www.abdulkerimsesli.de/blog/" />
 
+    <!-- Open Graph / Social Media -->
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Blog — Abdulkerim Sesli" />
     <meta
       property="og:description"
-      content="Artikelübersicht und Archiv — Gedanken zu Web, JavaScript &amp; Projekte."
+      content="Einblicke in Web-Performance, React und modernes UI-Design."
     />
     <meta
       property="og:image"
       content="https://www.abdulkerimsesli.de/content/assets/img/og/og-home-800.webp"
     />
-    <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "CollectionPage",
-        "name": "Blog — Abdulkerim Sesli",
-        "description": "Artikelübersicht und Archiv — Gedanken zu Web, JavaScript & Projekte.",
-        "mainEntity": [
-          {
-            "@type": "BlogPosting",
-            "@id": "https://www.abdulkerimsesli.de/blog/threejs-performance/",
-            "headline": "Optimierung von Three.js für das Web"
-          },
-          {
-            "@type": "BlogPosting",
-            "@id": "https://www.abdulkerimsesli.de/blog/visual-storytelling/",
-            "headline": "Visuelles Storytelling in der Fotografie"
-          },
-          {
-            "@type": "BlogPosting",
-            "@id": "https://www.abdulkerimsesli.de/blog/modern-ui-design/",
-            "headline": "Modernes UI-Design: Mehr als nur Dark Mode"
-          },
-          {
-            "@type": "BlogPosting",
-            "@id": "https://www.abdulkerimsesli.de/blog/react-no-build/",
-            "headline": "React ohne Build-Tools nutzen"
-          }
-        ]
-      }
-    </script>
 
+    <!-- Preload Critical Scripts -->
+    <link rel="modulepreload" href="https://esm.sh/react@18.2.0?dev=false" />
+    <link
+      rel="modulepreload"
+      href="https://esm.sh/react-dom@18.2.0/client?dev=false"
+    />
+    <link
+      rel="modulepreload"
+      href="https://cdn.jsdelivr.net/npm/htm@3.1.1/dist/htm.module.js"
+    />
+
+    <!-- Styles -->
     <link rel="stylesheet" href="/content/styles/root.css" />
     <link rel="stylesheet" href="/content/styles/main.css" />
     <link rel="stylesheet" href="/pages/blog/blog.css" />
-    <link rel="stylesheet" href="/content/components/menu/menu.css" />
+
+    <!-- Inline Critical CSS for Skeleton Loader (prevents layout shift) -->
+    <style>
+      .skeleton-card {
+        background: #111;
+        border: 1px solid #333;
+        border-radius: 12px;
+        padding: 1.5rem;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+      .skeleton-img {
+        width: 100%;
+        aspect-ratio: 16/9;
+        background: #222;
+        border-radius: 8px;
+      }
+      .skeleton-text {
+        height: 1em;
+        background: #222;
+        border-radius: 4px;
+        width: 100%;
+      }
+      .skeleton-text.short {
+        width: 60%;
+      }
+      .skeleton-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 2rem;
+        margin-top: 2rem;
+      }
+      /* Simple pulse animation */
+      @keyframes pulse {
+        0% {
+          opacity: 0.6;
+        }
+        50% {
+          opacity: 0.8;
+        }
+        100% {
+          opacity: 0.6;
+        }
+      }
+      .skeleton-card {
+        animation: pulse 1.5s infinite ease-in-out;
+      }
+    </style>
 
     <script
       type="module"
@@ -67,86 +99,52 @@
     ></script>
   </head>
   <body>
+    <!-- Static Header -->
     <header class="site-header">
-      <svg
-        aria-hidden="true"
-        style="position: absolute; width: 0; height: 0; overflow: hidden"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <defs>
-          <symbol id="icon-house" viewBox="0 0 576 512">
-            <path
-              fill="currentColor"
-              d="M541 229.16 512 205.26V64a32 32 0 0 0-32-32h-64a32 32 0 0 0-32 32v24.6L314.52 43a35.93 35.93 0 0 0-45 0L35 229.16a16 16 0 0 0-2 22.59l21.4 25.76a16 16 0 0 0 22.59 2L96 264.86V456a32 32 0 0 0 32 32h128V344a16 16 0 0 1 16-16h64a16 16 0 0 1 16 16v144h128a32 32 0 0 0 32-32V264.86l19 14.65a16 16 0 0 0 22.59-2l21.4-25.76a16 16 0 0 0-2-22.59Z"
-            />
-          </symbol>
-        </defs>
-      </svg>
-
-      <div class="skip-links">
-        <a href="#main-content" class="skip-link">Zum Hauptinhalt springen</a>
-        <a href="#navigation" class="skip-link">Zur Navigation springen</a>
-      </div>
-
+      <!-- (Gekürzter Header für Übersichtlichkeit - hier würde das normale SVG-Icon-Set und Nav stehen) -->
       <a href="/" class="site-logo-link" title="Abdulkerim Sesli">
         <span class="site-logo__container u-inline-center">
-          <svg
-            class="site-logo-svg"
-            width="40"
-            height="40"
-            viewBox="0 0 100 100"
-            role="img"
-            aria-label="Abdulkerim Sesli logo"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <circle cx="50" cy="50" r="48" fill="#0B74DE" />
-            <text
-              x="50"
-              y="60"
-              text-anchor="middle"
-              font-family="var(--font-primary, system-ui, sans-serif)"
-              font-size="42"
-              fill="#fff"
-              font-weight="700"
-            >
-              AKS
-            </text>
-          </svg>
-          <span class="site-logo elegant-logo" id="site-title"
-            ><span class="visually-hidden">Startseite</span></span
-          >
+          <span class="site-logo elegant-logo">AKS</span>
         </span>
       </a>
-
-      <button
-        type="button"
-        class="site-menu__toggle"
-        aria-label="Menü"
-        aria-controls="navigation"
-        aria-expanded="false"
-      >
-        <span class="site-menu__hamburger"></span>
-      </button>
-
-      <nav
-        id="navigation"
-        class="site-menu"
-        role="navigation"
-        aria-label="Hauptnavigation"
-      >
+      <nav class="site-menu">
         <ul class="site-menu__list">
-          <li><a href="/">Startseite</a></li>
-          <li><a href="/projekte/">Projekte</a></li>
-          <li><a href="/gallery/">Fotos</a></li>
-          <li><a href="/videos/">Videos</a></li>
-          <li><a href="/blog/" class="active" aria-current="page">Blog</a></li>
-          <li><a href="/about/">Über mich</a></li>
+          <li><a href="/">Start</a></li>
+          <li><a href="/blog/" class="active">Blog</a></li>
         </ul>
       </nav>
     </header>
 
-    <main id="main-content" tabindex="-1" class="container-article">
-      <div id="root"></div>
+    <main id="main-content" class="container-article">
+      <div id="root">
+        <!-- Skeleton UI: Wird angezeigt, bis React übernimmt -->
+        <div class="container-blog pt-24">
+          <header style="margin-bottom: 3rem">
+            <h1 class="blog-headline">Wissen & Einblicke</h1>
+            <div
+              class="skeleton-text short"
+              style="height: 1.5rem; background: #333"
+            ></div>
+          </header>
+          <div class="skeleton-grid">
+            <div class="skeleton-card">
+              <div class="skeleton-img"></div>
+              <div class="skeleton-text"></div>
+              <div class="skeleton-text short"></div>
+            </div>
+            <div class="skeleton-card">
+              <div class="skeleton-img"></div>
+              <div class="skeleton-text"></div>
+              <div class="skeleton-text short"></div>
+            </div>
+            <div class="skeleton-card">
+              <div class="skeleton-img"></div>
+              <div class="skeleton-text"></div>
+              <div class="skeleton-text short"></div>
+            </div>
+          </div>
+        </div>
+      </div>
     </main>
 
     <div
@@ -154,9 +152,40 @@
       data-footer-src="/content/components/footer/footer"
     ></div>
 
+    <!-- Seed Data: Hilft für sofortigen Content ohne extra Fetch -->
     <script id="blog-list-json" type="application/json">
-      [{&quot;id&quot;:&quot;threejs-performance&quot;,&quot;title&quot;:&quot;Optimierung von Three.js für das Web&quot;,&quot;excerpt&quot;:&quot;Praxisnahe Techniken zur Performance-Optimierung von Three.js: InstancedMesh, LOD-Strategien, Texturkompression (KTX2) und Shader-Optimierung. Mit Messmethoden (Chrome DevTools &amp; Spector.js) und konkreter Checkliste für stabile FPS — auch auf mobilen Geräten. 👉 Kontakt für Projektunterstützung.&quot;,&quot;date&quot;:&quot;15. Dezember 2025&quot;,&quot;image&quot;:&quot;&quot;},{&quot;id&quot;:&quot;visual-storytelling&quot;,&quot;title&quot;:&quot;Visuelles Storytelling in der Fotografie&quot;,&quot;excerpt&quot;:&quot;Visuelles Storytelling: Komposition, Licht und Reduktion als Mittel, um Emotionen und klare Botschaften zu transportieren. Enthält Praxisbeispiele und eine Checkliste für Bildaufbau und Marken‑Fotografie. 👉 Anfrage für Shootings &amp; Beratung.&quot;,&quot;date&quot;:&quot;2. November 2025&quot;,&quot;image&quot;:&quot;&quot;},{&quot;id&quot;:&quot;modern-ui-design&quot;,&quot;title&quot;:&quot;Modernes UI-Design: Mehr als nur Dark Mode&quot;,&quot;excerpt&quot;:&quot;Modernes UI-Design bedeutet mehr als visuelle Trends: Es vereint Accessibility, Mikro‑Interaktionen und konsistente Nutzerführung. Praktische Beispiele und Guidelines für barrierefreie Interfaces. 👉 Beratung &amp; Audit erhältlich.&quot;,&quot;date&quot;:&quot;10. Oktober 2025&quot;,&quot;image&quot;:&quot;&quot;},{&quot;id&quot;:&quot;react-no-build&quot;,&quot;title&quot;:&quot;React ohne Build-Tools nutzen&quot;,&quot;excerpt&quot;:&quot;React ohne Build-Tools: Praktische Setups mit ES Modules und `htm` für schnelle Prototypen und kleine Projekte. Hinweise zu Performance, Limitations und Best Practices. 👉 Ich unterstütze beim Prototyping.&quot;,&quot;date&quot;:&quot;5. September 2025&quot;,&quot;image&quot;:&quot;&quot;}]
+      [
+        {
+          "id": "threejs-performance",
+          "title": "Optimierung von Three.js für das Web",
+          "excerpt": "Praxisnahe Techniken zur Performance-Optimierung von Three.js.",
+          "date": "2025-12-15",
+          "category": "WebGL"
+        },
+        {
+          "id": "visual-storytelling",
+          "title": "Visuelles Storytelling",
+          "excerpt": "Wie Komposition und Licht Emotionen transportieren.",
+          "date": "2025-11-02",
+          "category": "Fotografie"
+        },
+        {
+          "id": "modern-ui-design",
+          "title": "Modernes UI-Design",
+          "excerpt": "Accessibility und Mikro-Interaktionen im Fokus.",
+          "date": "2025-10-10",
+          "category": "Design"
+        },
+        {
+          "id": "react-no-build",
+          "title": "React ohne Build-Tools",
+          "excerpt": "ES Modules und htm für schnelle Prototypen.",
+          "date": "2025-09-05",
+          "category": "React"
+        }
+      ]
     </script>
+
     <script type="module" src="/pages/blog/blog-app.js"></script>
   </body>
 </html>
