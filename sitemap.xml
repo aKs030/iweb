@@ -24,7 +24,12 @@
   </url>
 
   <!-- ========== PROJEKTE ========== -->
-  <url>
+  
+
+
+
+
+<url>
     <loc>https://www.abdulkerimsesli.de/projekte/</loc>
     <lastmod>2025-12-26</lastmod>
     <changefreq>weekly</changefreq>
@@ -39,7 +44,12 @@
   <!-- Einzelne Projekte (Anchor-Links entfernt; use canonical /projekte/ instead) -->
 
   <!-- ========== BLOG ========== -->
-  <url>
+  
+
+
+
+
+<url>
     <loc>https://www.abdulkerimsesli.de/blog/</loc>
     <lastmod>2025-12-27</lastmod>
     <changefreq>daily</changefreq>
@@ -52,7 +62,12 @@
   </url>
 
   <!-- Blog Posts -->
-  <url>
+  
+
+
+
+
+<url>
     <loc>https://www.abdulkerimsesli.de/blog/threejs-performance/</loc>
     <lastmod>2025-12-27</lastmod>
     <changefreq>monthly</changefreq>
@@ -63,7 +78,12 @@
     </image:image>
   </url>
 
-  <url>
+  
+
+
+
+
+<url>
     <loc>https://www.abdulkerimsesli.de/blog/visual-storytelling/</loc>
     <lastmod>2025-12-27</lastmod>
     <changefreq>monthly</changefreq>
@@ -74,7 +94,12 @@
     </image:image>
   </url>
 
-  <url>
+  
+
+
+
+
+<url>
     <loc>https://www.abdulkerimsesli.de/blog/modern-ui-design/</loc>
     <lastmod>2025-12-27</lastmod>
     <changefreq>monthly</changefreq>
@@ -85,7 +110,12 @@
     </image:image>
   </url>
 
-  <url>
+  
+
+
+
+
+<url>
     <loc>https://www.abdulkerimsesli.de/blog/react-no-build/</loc>
     <lastmod>2025-12-27</lastmod>
     <changefreq>monthly</changefreq>
@@ -97,7 +127,12 @@
   </url>
 
   <!-- ========== VIDEOS ========== -->
-  <url>
+  
+
+
+
+
+<url>
     <loc>https://www.abdulkerimsesli.de/videos/</loc>
     <lastmod>2025-12-29</lastmod>
     <changefreq>weekly</changefreq>
@@ -238,7 +273,12 @@
   </url>
 
   <!-- ========== GALLERY ========== -->
-  <url>
+  
+
+
+
+
+<url>
     <loc>https://www.abdulkerimsesli.de/gallery/</loc>
     <lastmod>2025-12-26</lastmod>
     <changefreq>monthly</changefreq>
@@ -248,7 +288,12 @@
   </url>
 
   <!-- ========== ABOUT ========== -->
-  <url>
+  
+
+
+
+
+<url>
     <loc>https://www.abdulkerimsesli.de/about/</loc>
     <lastmod>2025-12-27</lastmod>
     <changefreq>monthly</changefreq>
@@ -261,18 +306,43 @@
   </url>
 
   <!-- ========== RECHTLICHES ========== -->
-  <url>
+  
+
+
+
+
+<url>
     <loc>https://www.abdulkerimsesli.de/impressum/</loc>
     <lastmod>2025-12-27</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
 
-  <url>
+  
+
+
+
+
+<url>
     <loc>https://www.abdulkerimsesli.de/datenschutz/</loc>
     <lastmod>2025-12-27</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
 
+  
+
+<url>
+    <loc>https://www.abdulkerimsesli.de/feed.xml</loc>
+    <lastmod>2026-01-17</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+</urlset>
+
+</urlset>
+</urlset>
+</urlset>
+</urlset>
 </urlset>

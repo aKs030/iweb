@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Optimierung von Three.js für das Web — Abdulkerim Sesli</title>
+  <meta name="description" content="Praxisnahe Techniken zur Performance-Optimierung von Three.js: InstancedMesh, LOD-Strategien, Texturkompression (KTX2) und Shader-Optimierung. Mit Messmethoden (Chrome DevTools &amp; Spector.js) und konkreter Checkliste für stabile FPS — auch auf mobilen Geräten. 👉 Kontakt für Projektunterstützung." />
+  <link rel="canonical" href="https://www.abdulkerimsesli.de/blog/threejs-performance/" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Optimierung von Three.js für das Web" />
+  <meta property="og:description" content="Praxisnahe Techniken zur Performance-Optimierung von Three.js: InstancedMesh, LOD-Strategien, Texturkompression (KTX2) und Shader-Optimierung. Mit Messmethoden (Chrome DevTools &amp; Spector.js) und konkreter Checkliste für stabile FPS — auch auf mobilen Geräten. 👉 Kontakt für Projektunterstützung." />
+  <meta property="og:image" content="https://www.abdulkerimsesli.de/content/assets/img/og/og-threejs-800.webp" />
+  <meta property="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Optimierung von Three.js für das Web" />
+  <meta name="twitter:description" content="Praxisnahe Techniken zur Performance-Optimierung von Three.js: InstancedMesh, LOD-Strategien, Texturkompression (KTX2) und Shader-Optimierung. Mit Messmethoden (Chrome DevTools &amp; Spector.js) und konkreter Checkliste für stabile FPS — auch auf mobilen Geräten. 👉 Kontakt für Projektunterstützung." />
+  <meta name="twitter:image" content="https://www.abdulkerimsesli.de/content/assets/img/og/og-threejs-800.webp" />
+  <script type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://www.abdulkerimsesli.de/blog/threejs-performance/"
+  },
+  "headline": "Optimierung von Three.js für das Web",
+  "description": "Praxisnahe Techniken zur Performance-Optimierung von Three.js: InstancedMesh, LOD-Strategien, Texturkompression (KTX2) und Shader-Optimierung. Mit Messmethoden (Chrome DevTools & Spector.js) und konkreter Checkliste für stabile FPS — auch auf mobilen Geräten. 👉 Kontakt für Projektunterstützung.",
+  "datePublished": "2025-12-15T00:00:00.000Z",
+  "dateModified": "2025-12-15T00:00:00.000Z",
+  "author": {
+    "@type": "Person",
+    "name": "Abdulkerim Sesli"
+  },
+  "image": "https://www.abdulkerimsesli.de/content/assets/img/og/og-threejs-800.webp"
+}</script>
+
+  <!-- Site styles & blog styles -->
+  <link rel="stylesheet" href="/content/styles/root.css" />
+  <link rel="stylesheet" href="/content/styles/main.css" />
+  <link rel="stylesheet" href="/pages/blog/blog.css" />
+  <link rel="stylesheet" href="/content/components/menu/menu.css" />
+
+
+  <!-- Head scripts (GTM, menu, footer loader et al.) -->
+  <script type="module" src="/content/components/head/head-inline.js"></script>
+  <script type="module" src="/content/main.js" crossorigin="anonymous"></script>
+</head>
+<body>
+  <!-- Static header (for No-JS & better SEO/first-paint) -->
+  <header class="site-header">
+    <!-- SVG sprite (inlined for icons when JS is disabled) -->
+    <svg aria-hidden="true" style="position: absolute; width: 0; height: 0; overflow: hidden" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <symbol id="icon-house" viewBox="0 0 576 512"><path fill="currentColor" d="M541 229.16 512 205.26V64a32 32 0 0 0-32-32h-64a32 32 0 0 0-32 32v24.6L314.52 43a35.93 35.93 0 0 0-45 0L35 229.16a16 16 0 0 0-2 22.59l21.4 25.76a16 16 0 0 0 22.59 2L96 264.86V456a32 32 0 0 0 32 32h128V344a16 16 0 0 1 16-16h64a16 16 0 0 1 16 16v144h128a32 32 0 0 0 32-32V264.86l19 14.65a16 16 0 0 0 22.59-2l21.4-25.76a16 16 0 0 0-2-22.59Z"/></symbol>
+        <symbol id="icon-images" viewBox="0 0 576 512"><path fill="currentColor" d="M480 416V80a48 48 0 0 0-48-48H80a48 48 0 0 0-48 48v336H16a16 16 0 0 0 0 32h448a16 16 0 0 0 0-32ZM64 416V80a16 16 0 0 1 16-16h352a16 16 0 0 1 16 16v336Zm96-80 64-80 48 64 64-80 80 96H160Zm48-144a40 40 0 1 1-40-40 40 40 0 0 1 40 40Zm368-96v304a16 16 0 0 1-16 16h-16v-32h16V96H496V64h16a16 16 0 0 1 16 16Z"/></symbol>
+        <symbol id="icon-user" viewBox="0 0 448 512"><path fill="currentColor" d="M224 256A128 128 0 1 0 96 128a128 128 0 0 0 128 128Zm89.6 32h-11.7a174.64 174.64 0 0 1-155.8 0h-11.7A134.4 134.4 0 0 0 0 422.4 57.6 57.6 0 0 0 57.6 480h332.8A57.6 57.6 0 0 0 448 422.4 134.4 134.4 0 0 0 313.6 288Z"/></symbol>
+        <symbol id="icon-mail" viewBox="0 0 512 512"><path fill="currentColor" d="M48 64C21.5 64 0 85.5 0 112v288c0 26.5 21.5 48 48 48h416c26.5 0 48-21.5 48-48V112c0-26.5-21.5-48-48-48H48zM48 96h416c8.8 0 16 7.2 16 16v41.4L288 264.4c-11.3 8.5-26.7 8.5-38 0L32 153.4V112c0-8.8 7.2-16 16-16zm0 320v-222l176 132c22.5 16.9 53.5 16.9 76 0l176-132v222c0 8.8-7.2 16-16 16H64c-8.8 0-16-7.2-16-16z"/></symbol>
+      </defs>
+    </svg>
+
+    <div class="skip-links">
+      <a href="#main-content" class="skip-link">Zum Hauptinhalt springen</a>
+      <a href="#navigation" class="skip-link">Zur Navigation springen</a>
+    </div>
+
+    <a href="/" class="site-logo-link" title="Abdulkerim Sesli">
+      <span class="site-logo__container u-inline-center">
+        <!-- Inline SVG logo: AKS monogram for crisp LCP and scalability -->
+        <svg class="site-logo-svg" width="40" height="40" viewBox="0 0 100 100" role="img" aria-label="Abdulkerim Sesli logo" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="50" cy="50" r="48" fill="#0B74DE" />
+          <text x="50" y="60" text-anchor="middle" font-family="var(--font-primary, system-ui, sans-serif)" font-size="42" fill="#fff" font-weight="700">AKS</text>
+        </svg>
+        <span class="site-logo elegant-logo" id="site-title"><span class="visually-hidden">Startseite</span></span>
+        <span class="site-subtitle" id="site-subtitle"></span>
+      </span>
+    </a>
+      <header class="article-header">
+        <h1>Optimierung von Three.js für das Web</h1>
+        <p class="article-meta"><em>15. Dezember 2025</em></p>
+      </header>
+
+      <div class="article-body">
+        <h2 id="warum-performance-in-threejs-entscheidend-istnnperformance-entscheidet-darüber-ob-eine-3derfahrung-angenehm-oder-frustrierend-wirkt-dieser-leitfaden-liefert-direkte-umsetzbare-maßnahmen-um-threejsszenen-effizient-und-ressourcenschonend-im-browser-zu-betreibennn-zentrale-optimierungstechnikennndazu-gehören-der-gezielte-einsatz-von-instancedmesh-zur-reduktion-von-draw-calls-effektives-level-of-detail-management-lod-sowie-die-optimierung-von-geometrien-und-texturennn-shader--und-memory-optimierungnnein-weiterer-schwerpunkt-liegt-auf-shader-optimierung-und-effizientem-memory-management-um-speicherlecks-zu-vermeiden-und-ladezeiten-zu-minimieren-besonders-auf-mobilen-geräten-ist-es-entscheidend-berechnungen-sinnvoll-auf-die-gpu-auszulagern-und-unnötige-rechenoperationen-zu-vermeiden-mit-diesen-methoden-lassen-sich-stabile-60-fps-erreichen--selbst-auf-mittelklasse-smartphones-nnzusätzlich-ist-ein-sauberes-asset-management-entscheidend-für-langfristige-performance-durch-das-wiederverwenden-von-materialien-das-gezielte-entladen-nicht-mehr-benötigter-ressourcen-und-den-einsatz-komprimierter-texturformate-wie-basis-oder-ktx2-lassen-sich-speicherverbrauch-und-ladezeiten-deutlich-reduzieren-auch-das-profiling-mit-tools-wie-den-chrome-devtools-oder-spectorjs-hilft-dabei-performance-engpässe-frühzeitig-zu-erkennen-und-gezielt-zu-behebennntakeawaysn--priorisieren-sie-drawcallreduktion-instancedmesh--merged-geometryn--nutze-komprimierte-texturformate-ktx2-und-implementiere-lod-für-entfernte-szeneninhalte">Warum Performance in Three.js entscheidend ist\n\nPerformance entscheidet darüber, ob eine 3D‑Erfahrung angenehm oder frustrierend wirkt. Dieser Leitfaden liefert direkte, umsetzbare Maßnahmen, um Three.js‑Szenen effizient und ressourcenschonend im Browser zu betreiben.\n\n## Zentrale Optimierungstechniken\n\nDazu gehören der gezielte Einsatz von InstancedMesh zur Reduktion von Draw Calls, effektives Level-of-Detail-Management (LOD) sowie die Optimierung von Geometrien und Texturen.\n\n### Shader- und Memory-Optimierung\n\nEin weiterer Schwerpunkt liegt auf Shader-Optimierung und effizientem Memory-Management, um Speicherlecks zu vermeiden und Ladezeiten zu minimieren. Besonders auf mobilen Geräten ist es entscheidend, Berechnungen sinnvoll auf die GPU auszulagern und unnötige Rechenoperationen zu vermeiden. Mit diesen Methoden lassen sich stabile 60 FPS erreichen – selbst auf Mittelklasse-Smartphones. \n\nZusätzlich ist ein sauberes Asset-Management entscheidend für langfristige Performance. Durch das Wiederverwenden von Materialien, das gezielte Entladen nicht mehr benötigter Ressourcen und den Einsatz komprimierter Texturformate wie Basis oder KTX2 lassen sich Speicherverbrauch und Ladezeiten deutlich reduzieren. Auch das Profiling mit Tools wie den Chrome DevTools oder Spector.js hilft dabei, Performance-Engpässe frühzeitig zu erkennen und gezielt zu beheben.\n\n<strong>Takeaways:</strong>\n- Priorisieren Sie Draw‑Call‑Reduktion (InstancedMesh / merged geometry).\n- Nutze komprimierte Texturformate (KTX2) und implementiere LOD für entfernte Szeneninhalte.</h2>
+<h3 id="praktische-checkliste">Praktische Checkliste</h3>
+<ul>
+<li>Prüfe Draw Calls mit DevTools / Spector.js und priorisiere die größten Kostenpunkte.</li>
+<li>Verwende Instancing oder `mergeGeometry` bzw. BufferGeometry‑Merges, um Draw Calls zu reduzieren.\n- Automatisieren Sie Profiling und Messläufe (DevTools, Spector.js, Lighthouse).\n\n🔗 Passend dazu: Auch der Artikel „Modernes UI-Design: Mehr als nur Dark Mode&quot; zeigt, wie Performance und Nutzererlebnis Hand in Hand gehen.\n\n👉 Planen Sie ein Web- oder Softwareprojekt? Lassen Sie uns über eine performante und saubere Umsetzung sprechen.</li>
+</ul>
+
+      </div>
+
+      <p><a href="/blog/">Zurück zum Blog</a></p>
+    </article>
+  </main>
+
+  <!-- Footer container (loaded lazily by footer loader) -->
+  <div id="footer-container" data-footer-src="/content/components/footer/footer"></div>
+</body>
+</html>
