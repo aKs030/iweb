@@ -99,6 +99,45 @@ function parseArticleHtml(htmlText, id) {
 
 // --- Components ---
 
+// Progressive Image Component mit Blur-up Effekt
+function ProgressiveImage({ src, alt, className, loading = 'lazy', fetchpriority, width, height }) {
+  const [loaded, setLoaded] = React.useState(false);
+  const [error, setError] = React.useState(false);
+  const imgRef = React.useRef(null);
+
+  React.useEffect(() => {
+    if (!imgRef.current) return;
+
+    // Wenn Bild bereits im Cache ist, sofort anzeigen
+    if (imgRef.current.complete && imgRef.current.naturalHeight !== 0) {
+      setLoaded(true);
+    }
+  }, [src]);
+
+  const handleLoad = () => setLoaded(true);
+  const handleError = () => setError(true);
+
+  if (error) return null;
+
+  return html`
+    <div className="progressive-image-wrapper ${loaded ? 'loaded' : ''}">
+      <img 
+        ref=${imgRef}
+        src=${src} 
+        alt=${alt} 
+        className=${className}
+        loading=${loading}
+        fetchpriority=${fetchpriority}
+        width=${width}
+        height=${height}
+        decoding="async"
+        onLoad=${handleLoad}
+        onError=${handleError}
+      />
+    </div>
+  `;
+}
+
 function ScrollToTop() {
   const [visible, setVisible] = React.useState(false);
   React.useEffect(() => {
@@ -249,7 +288,15 @@ function BlogApp() {
 
             ${heroSrc && html`
               <figure className="article-hero">
-                <img src="${heroSrc}" alt="${post.title}" className="article-hero-img" decoding="async" />
+                <${ProgressiveImage}
+                  src=${heroSrc}
+                  alt=${post.title}
+                  className="article-hero-img"
+                  loading="eager"
+                  fetchpriority="high"
+                  width=${og?.width || 800}
+                  height=${og?.height || 420}
+                />
               </figure>
             `}
 
@@ -321,22 +368,24 @@ function BlogApp() {
       </div>
 
       <div className="blog-grid">
-        ${visiblePosts.map(post => {
+        ${visiblePosts.map((post, idx) => {
       const og = getOg(post.id);
       const fallbackImg = post.image || (og ? (og.fallback || og.url) : null);
+      // Eager loading für erste 2 Bilder (Above the Fold)
+      const loadingStrategy = idx < 2 ? 'eager' : 'lazy';
+      const fetchPriority = idx === 0 ? 'high' : undefined;
 
       return html`
           <article key=${post.id} className="blog-card" onClick=${() => window.location.hash = `/blog/${post.id}`}>
-            ${og && og.sources && og.sources.webp
-          ? html`
-                <picture>
-                  <source type="image/webp" srcSet="${og.sources.webp.map(s => `${s.url} ${s.width}w`).join(', ')}" sizes="(max-width: 600px) 100vw, 340px" />
-                  <img src="${fallbackImg}" alt="${post.title}" className="blog-card-image" loading="lazy" width="${og.width || ''}" height="${og.height || ''}" />
-                </picture>
-              `
-          : fallbackImg ? html`<img src="${fallbackImg}" alt="${post.title}" className="blog-card-image" loading="lazy" />`
-            : ''
-        }
+            ${fallbackImg ? html`<${ProgressiveImage} 
+              src=${fallbackImg} 
+              alt=${post.title} 
+              className="blog-card-image" 
+              loading=${loadingStrategy}
+              fetchpriority=${fetchPriority}
+              width=${og?.width || 800}
+              height=${og?.height || 420}
+            />` : ''}
             
             <div className="card-meta">
               <span className="card-category">${post.category}</span>

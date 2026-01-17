@@ -162,6 +162,32 @@
     ></script>
   </head>
   <body>
+    <div id="app-loader" aria-live="polite" aria-label="Anwendung wird geladen">
+      <div class="loader-spinner" aria-hidden="true"></div>
+      <div class="loader-content">
+        <div class="loader-logo" aria-hidden="true">AKS | WEB</div>
+
+        <div class="progress-container" role="presentation">
+          <div class="progress-bar" id="loader-progress-bar"></div>
+        </div>
+
+        <div class="loader-info" aria-live="polite">
+          <span class="status-text" id="loader-status-text"
+            >Initialisiere System...</span
+          >
+          <span class="percentage" id="loader-percentage">0%</span>
+        </div>
+      </div>
+    </div>
+
+    <noscript>
+      <style>
+        #app-loader {
+          display: none !important;
+        }
+      </style>
+    </noscript>
+
     <!-- Dynamic Header wird von menu.js geladen -->
 
     <main id="main-content" class="container-article">
@@ -209,28 +235,32 @@
           "title": "Optimierung von Three.js für das Web",
           "excerpt": "Lerne praxisnahe Techniken, um Three.js-Szenen für maximale Performance zu optimieren – flüssige Animationen auch auf mobilen Geräten.",
           "date": "2025-12-15",
-          "category": "Performance"
+          "category": "Performance",
+          "image": "/content/assets/img/og/og-design-800.webp"
         },
         {
           "id": "visual-storytelling",
           "title": "Visuelles Storytelling",
           "excerpt": "Erfahre, wie du durch Komposition und Lichtführung Emotionen weckst und deine Botschaft ohne Worte kommunizierst.",
           "date": "2025-11-02",
-          "category": "Online-Marketing"
+          "category": "Online-Marketing",
+          "image": "/content/assets/img/og/og-photography-800.webp"
         },
         {
           "id": "modern-ui-design",
           "title": "Modernes UI-Design",
           "excerpt": "Entdecke die Prinzipien modernen UI-Designs: Von Accessibility bis zu Mikro-Interaktionen, die Nutzer begeistern.",
           "date": "2025-10-10",
-          "category": "Webdesign"
+          "category": "Webdesign",
+          "image": "/content/assets/img/og/og-design-800.webp"
         },
         {
           "id": "react-no-build",
           "title": "React ohne Build-Tools",
           "excerpt": "Nutze React ohne komplexe Build-Tools: Mit ES Modules und htm startest du blitzschnell Prototypen und kleine Projekte.",
           "date": "2025-09-05",
-          "category": "Webdesign"
+          "category": "Webdesign",
+          "image": "/content/assets/img/og/og-home-800.webp"
         }
       ]
     </script>
