@@ -12,7 +12,7 @@ import DOMPurify from 'https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.
 marked.setOptions({ mangle: false, headerIds: false });
 
 const log = createLogger('BlogApp');
-import { blogPosts } from './blog-data.js';
+// Posts are loaded dynamically from markdown files (content/posts/*.md) or sitemap; blog-data.js is deprecated
 
 const html = htm.bind(React.createElement);
 
@@ -68,26 +68,183 @@ function BlogApp() {
     return () => (mounted = false);
   }, []);
 
+  // Posts state (loaded from content/posts/*.md)
+  const [posts, setPosts] = React.useState([]);
+  const [loadingPosts, setLoadingPosts] = React.useState(true);
+
   // Extract unique categories
   const categories = [
     'All',
-    ...new Set(blogPosts.map((post) => post.category)),
+    ...new Set(posts.map((post) => post.category)),
   ];
 
   const filteredPosts =
-    filter === 'All'
-      ? blogPosts
-      : blogPosts.filter((post) => post.category === filter);
+    filter === 'All' ? posts : posts.filter((post) => post.category === filter);
 
-  // Sync with hash routing (#/blog/:id)
+  // Load posts: try sitemap -> content/posts/*.md
   React.useEffect(() => {
-    const parseHash = () => {
+    let mounted = true;
+
+    function parseFrontmatter(txt) {
+      // very small frontmatter parser: extract between first two '---' lines
+      const m = txt.match(/^---\s*([\s\S]*?)\s*---\s*/);
+      const meta = {};
+      let body = txt;
+      if (m) {
+        const fm = m[1];
+        body = txt.slice(m[0].length);
+        // parse simple key: "value" and arrays
+        const lines = fm.split(/\n/);
+        let curKey = null;
+        for (let line of lines) {
+          if (/^\s*-\s*/.test(line) && curKey) {
+            // array item
+            line = line.replace(/^\s*-\s*/, '').trim().replace(/^"|"$/g, '');
+            meta[curKey] = meta[curKey] || [];
+            meta[curKey].push(line);
+            continue;
+          }
+          const kv = line.match(/^([A-Za-z0-9_-]+):\s*(.*)$/);
+          if (kv) {
+            const k = kv[1];
+            let v = kv[2].trim();
+            v = v.replace(/^"|"$/g, '');
+            if (v === '') {
+              curKey = k; // start of array
+              meta[curKey] = meta[curKey] || [];
+            } else {
+              meta[k] = v;
+              curKey = null;
+            }
+          }
+        }
+      }
+      return { meta, body };
+    }
+
+    // Parse a generated article HTML page and extract title, date, excerpt, image and article HTML
+    function parseArticleHtml(txt, id) {
+      try {
+        const doc = new DOMParser().parseFromString(txt, 'text/html');
+        const article = doc.querySelector('.blog-article') || doc.querySelector('article') || doc.querySelector('.page-article');
+        const titleEl = article && article.querySelector('h1');
+        const metaEl = article && article.querySelector('.meta');
+        const heroImg = article && article.querySelector('.article-hero img');
+        const bodyEl = article && (article.querySelector('.article-body') || article.querySelector('section') || article.querySelector('div'));
+        const title = titleEl ? titleEl.textContent.trim() : (doc.querySelector('title') ? doc.querySelector('title').textContent.trim() : id);
+        const date = metaEl ? metaEl.textContent.trim() : '';
+        const excerpt = bodyEl ? (bodyEl.querySelector('p') ? bodyEl.querySelector('p').textContent.trim().slice(0, 200) : '') : '';
+        const image = heroImg ? (heroImg.getAttribute('src') || heroImg.getAttribute('data-src') || '') : (doc.querySelector('meta[property="og:image"]') ? doc.querySelector('meta[property="og:image"]').getAttribute('content') : '');
+        const contentHtml = bodyEl ? bodyEl.innerHTML : (doc.body ? doc.body.innerHTML : '');
+        return {
+          id,
+          title,
+          date,
+          dateDisplay: date,
+          category: '',
+          excerpt,
+          image,
+          tags: [],
+          readTime: '',
+          content: '',
+          html: contentHtml,
+          author: '',
+        };
+      } catch (e) {
+        return null;
+      }
+    }
+
+    async function loadFromSitemap() {
+      try {
+        const r = await fetch('/sitemap.xml');
+        if (!r.ok) throw new Error('sitemap fetch failed');
+        const xml = await r.text();
+        const ids = Array.from(xml.matchAll(/<loc>https?:\/\/[^<]*\/blog\/([^\/<>]+)\/?.*?<\/loc>/g)).map((m) => decodeURIComponent(m[1]));
+        const uniqueIds = Array.from(new Set(ids));
+        const loaded = [];
+        await Promise.all(
+          uniqueIds.map(async (id) => {
+            try {
+              // Prefer markdown files in /content/posts/*.md
+              const mdRes = await fetch(`/content/posts/${id}.md`);
+              if (mdRes.ok) {
+                const txt = await mdRes.text();
+                const parsed = parseFrontmatter(txt);
+                const meta = parsed.meta || {};
+                loaded.push({
+                  id,
+                  title: meta.title || id,
+                  date: meta.date || '',
+                  dateDisplay: meta.dateDisplay || meta.date || '',
+                  category: meta.category || '',
+                  excerpt: meta.excerpt || '',
+                  image: meta.image || '',
+                  tags: meta.tags || [],
+                  readTime: meta.readTime || '',
+                  content: parsed.body || '',
+                  author: meta.author || '',
+                });
+                return;
+              }
+
+              // Fallback: try to fetch the generated HTML page in /pages/blog/:id/index.html
+              const htmlRes = await fetch(`/pages/blog/${id}/index.html`);
+              if (!htmlRes.ok) {
+                // as a last resort try the clean path
+                const alt = await fetch(`/blog/${id}/`);
+                if (!alt.ok) return;
+                const altTxt = await alt.text();
+                const parsedAlt = parseArticleHtml(altTxt, id);
+                if (parsedAlt) loaded.push(parsedAlt);
+                return;
+              }
+              const htmlTxt = await htmlRes.text();
+              const parsedHtml = parseArticleHtml(htmlTxt, id);
+              if (parsedHtml) loaded.push(parsedHtml);
+            } catch (e) {
+              /* ignore individual failures */
+            }
+          }),
+        );
+        // sort by date desc if available
+        loaded.sort((a, b) => (a.date < b.date ? 1 : -1));
+        if (mounted) {
+          setPosts(loaded);
+          setLoadingPosts(false);
+        }
+      } catch (e) {
+        // fallback: attempt to fetch a minimal index (not present)
+        if (mounted) {
+          setPosts([]);
+          setLoadingPosts(false);
+        }
+      }
+    }
+
+    loadFromSitemap();
+    return () => (mounted = false);
+  }, []);
+
+  // Sync with hash routing + pathname routing (/blog/:id)
+  React.useEffect(() => {
+    const parseRoute = () => {
       const m = location.hash.match(/^#\/blog\/(.+)$/);
-      setCurrentPostId(m ? decodeURIComponent(m[1]) : null);
+      const p = location.pathname.match(/^\/blog\/([^\/]+)\/?$/);
+      const id = m ? decodeURIComponent(m[1]) : p ? decodeURIComponent(p[1]) : null;
+      setCurrentPostId(id);
+      // If the page was loaded directly at /blog/:id, update the hash so internal navigation still works
+      if (p && !location.hash) {
+        location.replace(`#/blog/${p[1]}`);
+      }
     };
-    parseHash();
-    window.addEventListener('hashchange', parseHash);
-    return () => window.removeEventListener('hashchange', parseHash);
+    parseRoute();
+    window.addEventListener('hashchange', parseRoute);
+    window.addEventListener('popstate', parseRoute);
+    return () => {
+      window.removeEventListener('hashchange', parseRoute);
+      window.removeEventListener('popstate', parseRoute);
+    };
   }, []);
 
   // Update head (meta + JSON-LD) when viewing a single post
@@ -118,7 +275,7 @@ function BlogApp() {
       revertMeta('meta[name="twitter:image"][data-temp]');
 
       // remove any temp og/twitter tags that we created from scratch (if present)
-      ['meta[property="og:title"][data-temp]','meta[property="og:description"][data-temp]','meta[property="og:image"][data-temp]','meta[name="twitter:title"][data-temp]','meta[name="twitter:description"][data-temp]','meta[name="twitter:image"][data-temp]']
+      ['meta[property="og:title"][data-temp]', 'meta[property="og:description"][data-temp]', 'meta[property="og:image"][data-temp]', 'meta[name="twitter:title"][data-temp]', 'meta[name="twitter:description"][data-temp]', 'meta[name="twitter:image"][data-temp]']
         .forEach((sel) => {
           const el = document.querySelector(sel);
           if (el && !el.getAttribute('data-orig')) el.remove();
@@ -126,10 +283,22 @@ function BlogApp() {
 
       // FIX: Restore the central title defined in head-complete.js/PAGE_CONFIG
       document.title = 'Tech Blog & Insights | Abdulkerim Sesli';
+
+      // restore canonical link (remove temporary per-post canonical)
+      (function restoreCanonical() {
+        const link = document.querySelector('link[rel="canonical"]');
+        if (link) {
+          if (!link.getAttribute('data-orig'))
+            link.setAttribute('data-orig', link.getAttribute('href') || '');
+          link.setAttribute('href', location.origin + '/blog/');
+          link.removeAttribute('data-temp');
+        }
+      })();
+
       return;
     }
 
-    const post = blogPosts.find((p) => p.id === currentPostId);
+    const post = posts.find((p) => p.id === currentPostId);
     if (!post) return;
 
     // Update meta description (temporary)
@@ -170,6 +339,21 @@ function BlogApp() {
     setMetaTag('twitter:card', 'summary_large_image', 'name');
 
     document.title = `${post.title} — Abdulkerim Sesli`;
+
+    // set canonical to the article URL (temporary while viewing)
+    (function setCanonical() {
+      let link = document.querySelector('link[rel="canonical"]');
+      const href = `${location.origin}/blog/${post.id}`;
+      if (!link) {
+        link = document.createElement('link');
+        link.setAttribute('rel', 'canonical');
+        document.head.appendChild(link);
+      }
+      if (!link.getAttribute('data-orig'))
+        link.setAttribute('data-orig', link.getAttribute('href') || '');
+      link.setAttribute('href', href);
+      link.setAttribute('data-temp', '1');
+    })();
 
     // Insert Article JSON-LD (temp, dupe-safe)
     try {
@@ -425,7 +609,7 @@ function BlogApp() {
     ),
     currentPostId
       ? (() => {
-        const post = blogPosts.find((p) => p.id === currentPostId);
+        const post = posts.find((p) => p.id === currentPostId);
         return React.createElement(
           'div',
           { className: 'blog-detail' },
@@ -436,15 +620,15 @@ function BlogApp() {
               // Hero image (if available)
               post.image
                 ? React.createElement(
-                    'figure',
-                    { className: 'article-hero' },
-                    React.createElement('img', {
-                      src: post.image,
-                      alt: post.imageAlt || post.title,
-                      className: 'article-hero-img',
-                      loading: 'eager',
-                    }),
-                  )
+                  'figure',
+                  { className: 'article-hero' },
+                  React.createElement('img', {
+                    src: post.image,
+                    alt: post.imageAlt || post.title,
+                    className: 'article-hero-img',
+                    loading: 'eager',
+                  }),
+                )
                 : null,
               React.createElement(
                 'header',
@@ -499,63 +683,64 @@ function BlogApp() {
                   'Mastodon',
                 ),
               ),
+              // prefer already-rendered HTML when available (from parsed article pages), otherwise render markdown
               React.createElement('section', {
                 className: 'article-body',
-                dangerouslySetInnerHTML: { __html: mdToHtml(post.content) },
+                dangerouslySetInnerHTML: { __html: post.html ? post.html : mdToHtml(post.content) },
               }),
               // Resources
               post.resources && post.resources.length
                 ? React.createElement(
-                    'div',
-                    { className: 'resources' },
-                    React.createElement('h4', null, 'Resources & Tools'),
-                    React.createElement(
-                      'ul',
-                      null,
-                      ...post.resources.map((r) =>
+                  'div',
+                  { className: 'resources' },
+                  React.createElement('h4', null, 'Resources & Tools'),
+                  React.createElement(
+                    'ul',
+                    null,
+                    ...post.resources.map((r) =>
+                      React.createElement(
+                        'li',
+                        { key: r.url },
                         React.createElement(
-                          'li',
-                          { key: r.url },
-                          React.createElement(
-                            'a',
-                            {
-                              href: r.url,
-                              target: '_blank',
-                              rel: 'noopener noreferrer',
-                            },
-                            r.title,
-                          ),
+                          'a',
+                          {
+                            href: r.url,
+                            target: '_blank',
+                            rel: 'noopener noreferrer',
+                          },
+                          r.title,
                         ),
                       ),
                     ),
-                  )
+                  ),
+                )
                 : null,
               // Related posts
               post.related && post.related.length
                 ? React.createElement(
-                    'div',
-                    { className: 'related' },
-                    React.createElement('h4', null, 'Verwandte Beiträge'),
-                    React.createElement(
-                      'ul',
-                      null,
-                      ...post.related.map((id) => {
-                        const relPost = blogPosts.find((p) => p.id === id);
-                        return React.createElement(
-                          'li',
-                          { key: id },
-                          React.createElement(
-                            'a',
-                            {
-                              href: '#/blog/' + id,
-                              onClick: () => (location.hash = `#/blog/${id}`),
-                            },
-                            relPost ? relPost.title : id,
-                          ),
-                        );
-                      }),
-                    ),
-                  )
+                  'div',
+                  { className: 'related' },
+                  React.createElement('h4', null, 'Verwandte Beiträge'),
+                  React.createElement(
+                    'ul',
+                    null,
+                    ...post.related.map((id) => {
+                      const relPost = posts.find((p) => p.id === id);
+                      return React.createElement(
+                        'li',
+                        { key: id },
+                        React.createElement(
+                          'a',
+                          {
+                            href: '#/blog/' + id,
+                            onClick: () => (location.hash = `#/blog/${id}`),
+                          },
+                          relPost ? relPost.title : id,
+                        ),
+                      );
+                    }),
+                  ),
+                )
                 : null,
               // CTA
               React.createElement(
