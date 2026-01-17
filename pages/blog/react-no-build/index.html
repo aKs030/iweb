@@ -81,16 +81,24 @@
       </header>
 
       <div class="article-body">
-        <h2 id="wann-react-ohne-build-tools-sinnvoll-istnnnicht-jedes-projekt-benötigt-eine-komplexe-build-toolchain-in-diesem-artikel-zeige-ich-wie-sich-react-auch-ohne-webpack-vite-oder-ähnliche-tools-einsetzen-lässtnn-vorteile-eines-no-build-ansatzesnndank-moderner-browser-features-wie-es-modules-und-leichtgewichtiger-helfer-wie-htm-kann-react-direkt-im-browser-genutzt-werden-das-vereinfacht-das-setup-erheblich-und-ist-ideal-für-kleinere-projekte-prototypen-oder-lernzwecke-neben-den-vorteilen-bespreche-ich-auch-die-grenzen-dieses-ansatzes-und-zeige-wann-ein-klassisches-build-system-dennoch-sinnvoll-ist-nn-beispiel-setup">Wann React ohne Build-Tools sinnvoll ist\n\nNicht jedes Projekt benötigt eine komplexe Build-Toolchain. In diesem Artikel zeige ich, wie sich React auch ohne Webpack, Vite oder ähnliche Tools einsetzen lässt.\n\n## Vorteile eines No-Build-Ansatzes\n\nDank moderner Browser-Features wie ES Modules und leichtgewichtiger Helfer wie `htm` kann React direkt im Browser genutzt werden. Das vereinfacht das Setup erheblich und ist ideal für kleinere Projekte, Prototypen oder Lernzwecke. Neben den Vorteilen bespreche ich auch die Grenzen dieses Ansatzes und zeige, wann ein klassisches Build-System dennoch sinnvoll ist. \n\n### Beispiel-Setup</h2>
-<p>Ein einfaches Setup besteht aus: einem kleinen ES Module‑Import, `htm` für deklarative Templates und einem zentralen State-Pattern (kein komplexes globales State). Für Prototypen empfiehlt sich eine schlanke Ordnerstruktur und Tests direkt im Browser.</p>
+        <p>Nicht jedes Projekt benötigt eine komplexe Build-Toolchain. In diesem Artikel zeige ich, wie sich React auch ohne Webpack, Vite oder ähnliche Tools einsetzen lässt.</p>
+<h2 id="vorteile-eines-no-build-ansatzes">Vorteile eines No-Build-Ansatzes</h2>
+<p>Dank moderner Browser-Features wie ES Modules und leichtgewichtiger Helfer wie <code>htm</code> kann React direkt im Browser genutzt werden. Das vereinfacht das Setup erheblich und ist ideal für kleinere Projekte, Prototypen oder Lernzwecke. Neben den Vorteilen bespreche ich auch die Grenzen dieses Ansatzes und zeige, wann ein klassisches Build-System dennoch sinnvoll ist. </p>
+<h3 id="beispiel-setup">Beispiel-Setup</h3>
+<p>Ein einfaches Setup besteht aus: einem kleinen ES Module‑Import, <code>htm</code> für deklarative Templates und einem zentralen State-Pattern (kein komplexes globales State). Für Prototypen empfiehlt sich eine schlanke Ordnerstruktur und Tests direkt im Browser.</p>
 <p>Dieser Ansatz eignet sich besonders für Lernprojekte, interne Tools oder statische Seiten mit interaktiven Komponenten.</p>
-<p><strong>Takeaways:</strong></p>
+<div class="takeaways">
+<strong>Takeaways:</strong>
 <ul>
-<li>Nutze ES Modules &amp; `htm` für schnelle Prototypen.</li>
+<li>Nutze ES Modules & `htm` für schnelle Prototypen.</li>
 <li>Vermeide komplexen State für No-Build-Projekte.</li>
 <li>Für größere Apps empfiehlt sich eine klassische Build-Toolchain.</li>
 </ul>
-<p>Entwickler profitieren von kürzeren Ladezeiten im Development und einem besseren Verständnis der zugrunde liegenden Web-Technologien. Für größere Anwendungen mit komplexem State-Management oder Performance-Anforderungen bleibt ein klassisches Build-Setup jedoch weiterhin die bessere Wahl.\n\n🔗 Passend dazu: Auch der Artikel „Modernes UI-Design: Mehr als nur Dark Mode“ zeigt, wie Performance und Nutzererlebnis Hand in Hand gehen.\n\n👉 Planen Sie ein Web- oder Softwareprojekt? Lassen Sie uns über eine performante und saubere Umsetzung sprechen.</p>
+</div>
+
+<p>Entwickler profitieren von kürzeren Ladezeiten im Development und einem besseren Verständnis der zugrunde liegenden Web-Technologien. Für größere Anwendungen mit komplexem State-Management oder Performance-Anforderungen bleibt ein klassisches Build-Setup jedoch weiterhin die bessere Wahl.</p>
+<p>🔗 Passend dazu: Auch der Artikel „<a href="/blog/modern-ui-design/">Modernes UI-Design: Mehr als nur Dark Mode</a>“ zeigt, wie Performance und Nutzererlebnis Hand in Hand gehen.</p>
+<p>👉 Planen Sie ein Web- oder Softwareprojekt? Lassen Sie uns über eine performante und saubere Umsetzung sprechen.</p>
 
       </div>
 
