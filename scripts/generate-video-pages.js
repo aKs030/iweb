@@ -76,12 +76,31 @@ function parseVideos(xml) {
 
 function createLandingHtml(video) {
     const pageUrl = `https://www.abdulkerimsesli.de/videos/${video.vid}/`;
+    // Load branding from central config so values remain consistent across site
+    const BRAND = require(path.join(PROJECT_ROOT, 'content', 'config', 'brand-data.json'));
+    const CREATOR_NAME = BRAND.name || 'Abdulkerim Sesli';
+    const CURRENT_YEAR = new Date().getFullYear();
+    const LICENSE_PAGE = BRAND.licensePage || 'https://www.abdulkerimsesli.de/#image-license';
+    const CREDIT_PREFIX = BRAND.creditPrefix || 'Photo: ';
+
     const ld = {
         '@context': 'https://schema.org',
         '@type': 'VideoObject',
         name: video.title || '',
         description: video.description || '',
+        creator: { '@type': 'Person', name: CREATOR_NAME },
         thumbnailUrl: video.thumbnail || undefined,
+        thumbnail: video.thumbnail
+            ? {
+                '@type': 'ImageObject',
+                url: video.thumbnail,
+                contentUrl: video.thumbnail,
+                creator: { '@type': 'Person', name: CREATOR_NAME },
+                creditText: `${CREDIT_PREFIX}${CREATOR_NAME}`,
+                copyrightNotice: `© ${CURRENT_YEAR} ${BRAND.copyrightHolder || CREATOR_NAME}`,
+                acquireLicensePage: LICENSE_PAGE,
+            }
+            : undefined,
         uploadDate: video.pubDate || undefined,
         contentUrl: video.content || undefined,
         embedUrl: video.player || undefined,
