@@ -1,0 +1,42 @@
+[
+  {
+    "id": "threejs-performance",
+    "title": "Optimierung von Three.js für das Web",
+    "excerpt": "Praxisnahe Techniken zur Performance-Optimierung von Three.js: InstancedMesh, LOD-Strategien, Texturkompression (KTX2) und Shader-Optimierung. Mit Messmethoden (Chrome DevTools & Spector.js) und konkreter Checkliste für stabile FPS — auch auf mobilen Geräten. 👉 Kontakt für Projektunterstützung.",
+    "date": "2025-12-15",
+    "dateDisplay": "15. Dezember 2025",
+    "category": "Performance",
+    "image": "https://www.abdulkerimsesli.de/content/assets/img/og/og-threejs-800.webp",
+    "readTime": "2 min"
+  },
+  {
+    "id": "visual-storytelling",
+    "title": "Visuelles Storytelling in der Fotografie",
+    "excerpt": "Visuelles Storytelling: Komposition, Licht und Reduktion als Mittel, um Emotionen und klare Botschaften zu transportieren. Enthält Praxisbeispiele und eine Checkliste für Bildaufbau und Marken‑Fotografie. 👉 Anfrage für Shootings & Beratung.",
+    "date": "2025-11-02",
+    "dateDisplay": "2. November 2025",
+    "category": "Online-Marketing",
+    "image": "https://www.abdulkerimsesli.de/content/assets/img/og/og-photography-800.webp",
+    "readTime": "2 min"
+  },
+  {
+    "id": "modern-ui-design",
+    "title": "Modernes UI-Design: Mehr als nur Dark Mode",
+    "excerpt": "Modernes UI-Design bedeutet mehr als visuelle Trends: Es vereint Accessibility, Mikro‑Interaktionen und konsistente Nutzerführung. Praktische Beispiele und Guidelines für barrierefreie Interfaces. 👉 Beratung & Audit erhältlich.",
+    "date": "2025-10-10",
+    "dateDisplay": "10. Oktober 2025",
+    "category": "Webdesign",
+    "image": "https://www.abdulkerimsesli.de/content/assets/img/og/og-design-800.webp",
+    "readTime": "1 min"
+  },
+  {
+    "id": "react-no-build",
+    "title": "React ohne Build-Tools nutzen",
+    "excerpt": "React ohne Build-Tools: Praktische Setups mit ES Modules und `htm` für schnelle Prototypen und kleine Projekte. Hinweise zu Performance, Limitations und Best Practices. 👉 Ich unterstütze beim Prototyping.",
+    "date": "2025-09-05",
+    "dateDisplay": "5. September 2025",
+    "category": "Webdesign",
+    "image": "https://www.abdulkerimsesli.de/content/assets/img/og/og-react-800.webp",
+    "readTime": "2 min"
+  }
+]
