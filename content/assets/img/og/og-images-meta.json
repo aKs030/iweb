@@ -8,7 +8,7 @@
         }
       ]
     },
-    "original": "/content/assets/img/og/og-design-800-800-800.webp",
+    "original": "/content/assets/img/og/og-design-800.webp",
     "originalWidth": 800,
     "originalHeight": 422,
     "fallback": "/content/assets/img/og/og-design-800.webp",
@@ -23,7 +23,7 @@
         }
       ]
     },
-    "original": "/content/assets/img/og/og-home-800-800-800.webp",
+    "original": "/content/assets/img/og/og-home-800.webp",
     "originalWidth": 800,
     "originalHeight": 420,
     "fallback": "/content/assets/img/og/og-home-800.webp",
@@ -38,7 +38,7 @@
         }
       ]
     },
-    "original": "/content/assets/img/og/og-photography-800-800-800.webp",
+    "original": "/content/assets/img/og/og-photography-800.webp",
     "originalWidth": 800,
     "originalHeight": 422,
     "fallback": "/content/assets/img/og/og-photography-800.webp",
@@ -53,7 +53,7 @@
         }
       ]
     },
-    "original": "/content/assets/img/og/og-projekte-800-800-800.webp",
+    "original": "/content/assets/img/og/og-projekte-800.webp",
     "originalWidth": 800,
     "originalHeight": 420,
     "fallback": "/content/assets/img/og/og-projekte-800.webp",
@@ -68,7 +68,7 @@
         }
       ]
     },
-    "original": "/content/assets/img/og/og-react-800-800-800.webp",
+    "original": "/content/assets/img/og/og-react-800.webp",
     "originalWidth": 800,
     "originalHeight": 422,
     "fallback": "/content/assets/img/og/og-react-800.webp",
@@ -83,7 +83,7 @@
         }
       ]
     },
-    "original": "/content/assets/img/og/og-threejs-800-800-800.webp",
+    "original": "/content/assets/img/og/og-threejs-800.webp",
     "originalWidth": 800,
     "originalHeight": 422,
     "fallback": "/content/assets/img/og/og-threejs-800.webp",
@@ -98,9 +98,9 @@
         }
       ]
     },
-    "original": "/content/assets/img/og/og-videos-1600-1200.webp",
-    "originalWidth": 1200,
-    "originalHeight": 634,
+    "original": "/content/assets/img/og/og-videos-800.webp",
+    "originalWidth": 800,
+    "originalHeight": 422,
     "fallback": "/content/assets/img/og/og-videos-800.webp",
     "fallbackWidth": 800
   }
