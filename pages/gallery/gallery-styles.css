@@ -806,10 +806,28 @@ img {
   color: #fff;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
   box-shadow: 0 15px 35px rgb(0 0 0 / 40%);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.15);
+  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
 }
 
 .btn-primary:hover {
   filter: brightness(1.05);
+}
+
+.btn-primary:hover::before {
+  left: 100%;
 }
 
 .ring-2 {

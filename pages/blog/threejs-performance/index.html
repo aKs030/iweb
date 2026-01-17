@@ -72,21 +72,46 @@
         <span class="site-subtitle" id="site-subtitle"></span>
       </span>
     </a>
+  </header>
 
-    <main id="main-content" class="container-article">
-      <article class="blog-article">
+  <main id="main-content" class="container-article">
+    <article class="blog-article">
       <header class="article-header">
         <h1>Optimierung von Three.js für das Web</h1>
         <p class="article-meta"><em>15. Dezember 2025</em></p>
       </header>
 
       <div class="article-body">
-        <h2 id="warum-performance-in-threejs-entscheidend-istnnperformance-entscheidet-darüber-ob-eine-3derfahrung-angenehm-oder-frustrierend-wirkt-dieser-leitfaden-liefert-direkte-umsetzbare-maßnahmen-um-threejsszenen-effizient-und-ressourcenschonend-im-browser-zu-betreibennn-zentrale-optimierungstechnikennndazu-gehören-der-gezielte-einsatz-von-instancedmesh-zur-reduktion-von-draw-calls-effektives-level-of-detail-management-lod-sowie-die-optimierung-von-geometrien-und-texturennn-shader--und-memory-optimierungnnein-weiterer-schwerpunkt-liegt-auf-shader-optimierung-und-effizientem-memory-management-um-speicherlecks-zu-vermeiden-und-ladezeiten-zu-minimieren-besonders-auf-mobilen-geräten-ist-es-entscheidend-berechnungen-sinnvoll-auf-die-gpu-auszulagern-und-unnötige-rechenoperationen-zu-vermeiden-mit-diesen-methoden-lassen-sich-stabile-60-fps-erreichen--selbst-auf-mittelklasse-smartphones-nnzusätzlich-ist-ein-sauberes-asset-management-entscheidend-für-langfristige-performance-durch-das-wiederverwenden-von-materialien-das-gezielte-entladen-nicht-mehr-benötigter-ressourcen-und-den-einsatz-komprimierter-texturformate-wie-basis-oder-ktx2-lassen-sich-speicherverbrauch-und-ladezeiten-deutlich-reduzieren-auch-das-profiling-mit-tools-wie-den-chrome-devtools-oder-spectorjs-hilft-dabei-performance-engpässe-frühzeitig-zu-erkennen-und-gezielt-zu-behebennntakeawaysn--priorisieren-sie-drawcallreduktion-instancedmesh--merged-geometryn--nutze-komprimierte-texturformate-ktx2-und-implementiere-lod-für-entfernte-szeneninhalte">Warum Performance in Three.js entscheidend ist\n\nPerformance entscheidet darüber, ob eine 3D‑Erfahrung angenehm oder frustrierend wirkt. Dieser Leitfaden liefert direkte, umsetzbare Maßnahmen, um Three.js‑Szenen effizient und ressourcenschonend im Browser zu betreiben.\n\n## Zentrale Optimierungstechniken\n\nDazu gehören der gezielte Einsatz von InstancedMesh zur Reduktion von Draw Calls, effektives Level-of-Detail-Management (LOD) sowie die Optimierung von Geometrien und Texturen.\n\n### Shader- und Memory-Optimierung\n\nEin weiterer Schwerpunkt liegt auf Shader-Optimierung und effizientem Memory-Management, um Speicherlecks zu vermeiden und Ladezeiten zu minimieren. Besonders auf mobilen Geräten ist es entscheidend, Berechnungen sinnvoll auf die GPU auszulagern und unnötige Rechenoperationen zu vermeiden. Mit diesen Methoden lassen sich stabile 60 FPS erreichen – selbst auf Mittelklasse-Smartphones. \n\nZusätzlich ist ein sauberes Asset-Management entscheidend für langfristige Performance. Durch das Wiederverwenden von Materialien, das gezielte Entladen nicht mehr benötigter Ressourcen und den Einsatz komprimierter Texturformate wie Basis oder KTX2 lassen sich Speicherverbrauch und Ladezeiten deutlich reduzieren. Auch das Profiling mit Tools wie den Chrome DevTools oder Spector.js hilft dabei, Performance-Engpässe frühzeitig zu erkennen und gezielt zu beheben.\n\n<strong>Takeaways:</strong>\n- Priorisieren Sie Draw‑Call‑Reduktion (InstancedMesh / merged geometry).\n- Nutze komprimierte Texturformate (KTX2) und implementiere LOD für entfernte Szeneninhalte.</h2>
-<h3 id="praktische-checkliste">Praktische Checkliste</h3>
-<ul>
-<li>Prüfe Draw Calls mit DevTools / Spector.js und priorisiere die größten Kostenpunkte.</li>
-<li>Verwende Instancing oder `mergeGeometry` bzw. BufferGeometry‑Merges, um Draw Calls zu reduzieren.\n- Automatisieren Sie Profiling und Messläufe (DevTools, Spector.js, Lighthouse).\n\n🔗 Passend dazu: Auch der Artikel „Modernes UI-Design: Mehr als nur Dark Mode&quot; zeigt, wie Performance und Nutzererlebnis Hand in Hand gehen.\n\n👉 Planen Sie ein Web- oder Softwareprojekt? Lassen Sie uns über eine performante und saubere Umsetzung sprechen.</li>
-</ul>
+        <h2 id="warum-performance-in-threejs-entscheidend-ist">Warum Performance in Three.js entscheidend ist</h2>
+        
+        <p>Performance entscheidet darüber, ob eine 3D‑Erfahrung angenehm oder frustrierend wirkt. Dieser Leitfaden liefert direkte, umsetzbare Maßnahmen, um Three.js‑Szenen effizient und ressourcenschonend im Browser zu betreiben.</p>
+
+        <h3 id="zentrale-optimierungstechniken">Zentrale Optimierungstechniken</h3>
+        
+        <p>Dazu gehören der gezielte Einsatz von InstancedMesh zur Reduktion von Draw Calls, effektives Level-of-Detail-Management (LOD) sowie die Optimierung von Geometrien und Texturen.</p>
+
+        <h3 id="shader-und-memory-optimierung">Shader- und Memory-Optimierung</h3>
+        
+        <p>Ein weiterer Schwerpunkt liegt auf Shader-Optimierung und effizientem Memory-Management, um Speicherlecks zu vermeiden und Ladezeiten zu minimieren. Besonders auf mobilen Geräten ist es entscheidend, Berechnungen sinnvoll auf die GPU auszulagern und unnötige Rechenoperationen zu vermeiden. Mit diesen Methoden lassen sich stabile 60 FPS erreichen – selbst auf Mittelklasse-Smartphones.</p>
+        
+        <p>Zusätzlich ist ein sauberes Asset-Management entscheidend für langfristige Performance. Durch das Wiederverwenden von Materialien, das gezielte Entladen nicht mehr benötigter Ressourcen und den Einsatz komprimierter Texturformate wie Basis oder KTX2 lassen sich Speicherverbrauch und Ladezeiten deutlich reduzieren. Auch das Profiling mit Tools wie den Chrome DevTools oder Spector.js hilft dabei, Performance-Engpässe frühzeitig zu erkennen und gezielt zu beheben.</p>
+
+        <h4>Takeaways:</h4>
+        <ul>
+          <li>Priorisieren Sie Draw‑Call‑Reduktion (InstancedMesh / merged geometry).</li>
+          <li>Nutze komprimierte Texturformate (KTX2) und implementiere LOD für entfernte Szeneninhalte.</li>
+        </ul>
+
+        <h3 id="praktische-checkliste">Praktische Checkliste</h3>
+        <ul>
+          <li>Prüfe Draw Calls mit DevTools / Spector.js und priorisiere die größten Kostenpunkte.</li>
+          <li>Verwende Instancing oder <code>mergeGeometry</code> bzw. BufferGeometry‑Merges, um Draw Calls zu reduzieren.</li>
+          <li>Automatisieren Sie Profiling und Messläufe (DevTools, Spector.js, Lighthouse).</li>
+        </ul>
+
+        <p>🔗 Passend dazu: Auch der Artikel „Modernes UI-Design: Mehr als nur Dark Mode" zeigt, wie Performance und Nutzererlebnis Hand in Hand gehen.</p>
+
+        <p>👉 Planen Sie ein Web- oder Softwareprojekt? Lassen Sie uns über eine performante und saubere Umsetzung sprechen.</p>
 
       </div>
 

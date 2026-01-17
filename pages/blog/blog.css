@@ -623,14 +623,34 @@ body {
   text-decoration: none;
   display: inline-block;
   margin-top: 1.5rem;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 4px 14px var(--blog-accent-glow);
+  position: relative;
+  overflow: hidden;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.15);
+  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
 }
 
 .btn-primary:hover {
   background: var(--blog-accent-hover);
   transform: translateY(-2px);
   box-shadow: 0 6px 20px var(--blog-accent-glow);
+}
+
+.btn-primary:hover::before {
+  left: 100%;
 }
 
 .btn-back {

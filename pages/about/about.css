@@ -108,11 +108,29 @@ a {
 .btn-primary {
   background: var(--text-main);
   color: var(--bg-dark);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.1);
+  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
   box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
+.btn-primary:hover::before {
+  left: 100%;
 }
 
 .btn-outline {
