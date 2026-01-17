@@ -12,7 +12,6 @@ import DOMPurify from 'https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.
 marked.setOptions({ mangle: false, headerIds: false });
 
 const log = createLogger('BlogApp');
-// Posts are loaded dynamically from markdown files (content/posts/*.md) or sitemap; blog-data.js is deprecated
 
 const html = htm.bind(React.createElement);
 
@@ -51,7 +50,94 @@ const ArrowRight = () => html`
   </svg>
 `;
 
+// Helpers to keep the blog list clean and fast
+const FALLBACK_CATEGORY = 'Artikel';
+const CATEGORY_OVERRIDES = {
+  'threejs-performance': 'Web',
+  'react-no-build': 'Web',
+  'modern-ui-design': 'Design',
+  'visual-storytelling': 'Fotografie',
+};
+
+function estimateReadTime(text = '') {
+  const words = String(text).split(/\s+/).filter(Boolean).length;
+  const minutes = Math.max(1, Math.round(words / 200));
+  return `${minutes} min`;
+}
+
+function normalizePost(raw = {}) {
+  const id = raw.id || raw.slug;
+  if (!id) return null;
+  const explicitCategory = CATEGORY_OVERRIDES[id];
+  const category = explicitCategory || (raw.category || '').trim() || FALLBACK_CATEGORY;
+  const dateDisplay = raw.dateDisplay || raw.date || '';
+  const readTime = raw.readTime || estimateReadTime(raw.content || raw.html || '');
+
+  return {
+    ...raw,
+    id,
+    category,
+    dateDisplay,
+    readTime,
+  };
+}
+
+function mergePosts(preferred = [], fallback = []) {
+  const map = new Map();
+  const add = (items = [], preferExisting) => {
+    items.forEach((item) => {
+      const normalized = normalizePost(item);
+      if (!normalized) return;
+      const existing = map.get(normalized.id) || {};
+      map.set(
+        normalized.id,
+        preferExisting ? { ...normalized, ...existing } : { ...existing, ...normalized },
+      );
+    });
+  };
+
+  add(fallback, true); // seed
+  add(preferred, false); // overwrite with fresher data
+  return Array.from(map.values());
+}
+
+function decodeEntities(str = '') {
+  try {
+    const div = document.createElement('div');
+    div.innerHTML = str;
+    return div.textContent || div.innerText || '';
+  } catch (e) {
+    return str;
+  }
+}
+
+function readSeedPosts() {
+  try {
+    const el = document.getElementById('blog-list-json');
+    if (!el || !el.textContent) return [];
+    const raw = el.textContent || el.innerHTML || '';
+    const parsed = JSON.parse(raw);
+    return (Array.isArray(parsed) ? parsed : [])
+      .map((p) => normalizePost({ ...p, dateDisplay: p.date }))
+      .filter(Boolean);
+  } catch (e) {
+    try {
+      const el = document.getElementById('blog-list-json');
+      const raw = (el && (el.textContent || el.innerHTML)) || '';
+      const decoded = decodeEntities(raw);
+      const parsed = JSON.parse(decoded);
+      return (Array.isArray(parsed) ? parsed : [])
+        .map((p) => normalizePost({ ...p, dateDisplay: p.date }))
+        .filter(Boolean);
+    } catch (err) {
+      log.warn('Could not read inline blog seed', err);
+      return [];
+    }
+  }
+}
+
 function BlogApp() {
+  const seedPosts = React.useMemo(() => readSeedPosts(), []);
   const [filter, setFilter] = React.useState('All');
   const [currentPostId, setCurrentPostId] = React.useState(null);
   const [ogMeta, setOgMeta] = React.useState(null);
@@ -69,14 +155,17 @@ function BlogApp() {
   }, []);
 
   // Posts state (loaded from content/posts/*.md)
-  const [posts, setPosts] = React.useState([]);
-  const [loadingPosts, setLoadingPosts] = React.useState(true);
+  const [posts, setPosts] = React.useState(seedPosts);
+  const [loadingPosts, setLoadingPosts] = React.useState(seedPosts.length === 0);
 
-  // Extract unique categories
-  const categories = [
-    'All',
-    ...new Set(posts.map((post) => post.category)),
-  ];
+  // Extract unique categories (skip falsy)
+  const categories = React.useMemo(() => {
+    const set = new Set(['All']);
+    posts.forEach((post) => {
+      if (post && post.category) set.add(post.category);
+    });
+    return Array.from(set);
+  }, [posts]);
 
   const filteredPosts =
     filter === 'All' ? posts : posts.filter((post) => post.category === filter);
@@ -172,10 +261,11 @@ function BlogApp() {
         } catch (e) {
           /* ignore tree walker errors in very old browsers */
         }
-
         const title = titleEl ? titleEl.textContent.trim() : (doc.querySelector('title') ? doc.querySelector('title').textContent.trim() : id);
         const date = metaEl ? metaEl.textContent.trim() : '';
-        const excerpt = bodyEl ? (bodyEl.querySelector('p') ? bodyEl.querySelector('p').textContent.trim().slice(0, 200) : '') : '';
+        const firstParagraph = bodyEl && bodyEl.querySelector && bodyEl.querySelector('p');
+        const excerptSource = firstParagraph ? firstParagraph.textContent : (bodyEl ? bodyEl.textContent : '');
+        const excerpt = (excerptSource || '').trim().slice(0, 200);
         const image = heroImg ? (heroImg.getAttribute('src') || heroImg.getAttribute('data-src') || '') : (doc.querySelector('meta[property="og:image"]') ? doc.querySelector('meta[property="og:image"]').getAttribute('content') : '');
 
         // Serialize cleaned HTML and run DOMPurify on it, then compact whitespace
@@ -189,20 +279,20 @@ function BlogApp() {
         }
         // Collapse multiple whitespace and remove leading/trailing spaces in tags
         contentHtml = contentHtml.replace(/\s{2,}/g, ' ').replace(/>\s+</g, '><').trim();
-        return {
+        return normalizePost({
           id,
           title,
           date,
           dateDisplay: date,
-          category: '',
+          category: FALLBACK_CATEGORY,
           excerpt,
           image,
           tags: [],
-          readTime: '',
+          readTime: estimateReadTime(bodyEl ? bodyEl.textContent : ''),
           content: '',
           html: contentHtml,
           author: '',
-        };
+        });
       } catch (e) {
         return null;
       }
@@ -247,19 +337,21 @@ function BlogApp() {
                 const txt = await mdRes.text();
                 const parsed = parseFrontmatter(txt);
                 const meta = parsed.meta || {};
-                loaded.push({
-                  id,
-                  title: meta.title || id,
-                  date: meta.date || '',
-                  dateDisplay: meta.dateDisplay || meta.date || '',
-                  category: meta.category || '',
-                  excerpt: meta.excerpt || '',
-                  image: meta.image || '',
-                  tags: meta.tags || [],
-                  readTime: meta.readTime || '',
-                  content: parsed.body || '',
-                  author: meta.author || '',
-                });
+                loaded.push(
+                  normalizePost({
+                    id,
+                    title: meta.title || id,
+                    date: meta.date || '',
+                    dateDisplay: meta.dateDisplay || meta.date || '',
+                    category: meta.category || FALLBACK_CATEGORY,
+                    excerpt: meta.excerpt || '',
+                    image: meta.image || '',
+                    tags: meta.tags || [],
+                    readTime: meta.readTime || estimateReadTime(parsed.body),
+                    content: parsed.body || '',
+                    author: meta.author || '',
+                  }),
+                );
                 return;
               }
             } catch (e) {
@@ -268,15 +360,18 @@ function BlogApp() {
           }),
         );
         // sort by date desc if available
-        loaded.sort((a, b) => (a.date < b.date ? 1 : -1));
+        const cleaned = mergePosts(
+          loaded.filter(Boolean).sort((a, b) => (a.date < b.date ? 1 : -1)),
+          seedPosts,
+        );
         if (mounted) {
-          setPosts(loaded);
+          setPosts(cleaned);
           setLoadingPosts(false);
         }
       } catch (e) {
         // fallback: attempt to fetch a minimal index (not present)
         if (mounted) {
-          setPosts([]);
+          setPosts(seedPosts);
           setLoadingPosts(false);
         }
       }
@@ -284,7 +379,7 @@ function BlogApp() {
 
     loadFromSitemap();
     return () => (mounted = false);
-  }, []);
+  }, [seedPosts]);
 
   // Sync with hash routing + pathname routing (/blog/:id)
   React.useEffect(() => {
@@ -668,23 +763,27 @@ function BlogApp() {
     'div',
     { className: 'container-blog' },
     React.createElement(
-      'header',
-      null,
-      React.createElement(
-        'h1',
-        { className: 'blog-headline' },
-        'Wissen & Einblicke',
-      ),
-      React.createElement(
-        'p',
-        { className: 'blog-subline' },
-        'Gedanken zu Web-Entwicklung, Fotografie und digitalem Design. Hier teile ich, was ich lerne und erschaffe.',
-      ),
-    ),
-    React.createElement(
       'div',
-      { className: 'filter-bar u-row u-wrap' },
-      ...renderFilterButtons(),
+      { className: 'blog-sticky-header' },
+      React.createElement(
+        'header',
+        null,
+        React.createElement(
+          'h1',
+          { className: 'blog-headline' },
+          'Wissen & Einblicke',
+        ),
+        React.createElement(
+          'p',
+          { className: 'blog-subline' },
+          'Gedanken zu Web-Entwicklung, Fotografie und digitalem Design. Hier teile ich, was ich lerne und erschaffe.',
+        ),
+      ),
+      React.createElement(
+        'div',
+        { className: 'filter-bar u-row u-wrap' },
+        ...renderFilterButtons(),
+      ),
     ),
     currentPostId
       ? (() => {
@@ -862,7 +961,23 @@ function BlogApp() {
       : React.createElement(
         'div',
         { className: 'blog-grid' },
-        ...renderBlogGrid(),
+        ...(loadingPosts && posts.length === 0
+          ? [
+            React.createElement(
+              'p',
+              { className: 'card-excerpt', key: 'loading' },
+              'Beiträge werden geladen ...',
+            ),
+          ]
+          : filteredPosts.length
+            ? renderBlogGrid()
+            : [
+              React.createElement(
+                'p',
+                { className: 'card-excerpt', key: 'empty' },
+                'Keine Beiträge gefunden.',
+              ),
+            ]),
       ),
   );
 }
