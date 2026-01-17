@@ -50,18 +50,29 @@ const FORMATS = [{ ext: 'webp', options: { quality: 75 }, method: 'webp' }];
       const outName = `${base}-${target}.webp`;
       const outPath = path.join(OUT_DIR, outName);
 
-      const pipeline =
-        info.width && info.width >= target ? img.resize(target) : img.clone();
-      await pipeline
-        .webp({ quality: FORMATS[0].options.quality })
-        .toFile(outPath);
+      // If the desired output name matches the input file, avoid writing to the same file
+      // (sharp cannot use the same file for input and output). Instead, just record the
+      // existing file as the webp source/fallback.
+      if (outName === f) {
+        meta[base].sources['webp'] = [
+          { url: `/content/assets/img/og/${outName}`, width: target },
+        ];
+        meta[base].fallback = `/content/assets/img/og/${outName}`;
+        meta[base].fallbackWidth = target;
+      } else {
+        const pipeline =
+          info.width && info.width >= target ? img.resize(target) : img.clone();
+        await pipeline
+          .webp({ quality: FORMATS[0].options.quality })
+          .toFile(outPath);
 
-      // set canonical sources/fallback
-      meta[base].sources['webp'] = [
-        { url: `/content/assets/img/og/${outName}`, width: target },
-      ];
-      meta[base].fallback = `/content/assets/img/og/${outName}`;
-      meta[base].fallbackWidth = target;
+        // set canonical sources/fallback
+        meta[base].sources['webp'] = [
+          { url: `/content/assets/img/og/${outName}`, width: target },
+        ];
+        meta[base].fallback = `/content/assets/img/og/${outName}`;
+        meta[base].fallbackWidth = target;
+      }
 
       console.log('[generate] done', f, '->', outName);
     } catch (err) {
