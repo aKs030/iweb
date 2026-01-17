@@ -172,8 +172,9 @@ async function fetchPlaylistItems(apiKey, uploads, maxResults = 50) {
   const allItems = [];
   let pageToken = '';
   do {
-    const url = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${uploads}&maxResults=${maxResults}&key=${apiKey}${pageToken ? `&pageToken=${pageToken}` : ''
-      }`;
+    const url = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${uploads}&maxResults=${maxResults}&key=${apiKey}${
+      pageToken ? `&pageToken=${pageToken}` : ''
+    }`;
     try {
       const json = await fetchJson(url);
       allItems.push(...(json.items || []));
@@ -198,8 +199,9 @@ async function searchChannelVideos(apiKey, channelId, maxResults = 50) {
   const items = [];
   let pageToken = '';
   do {
-    const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${channelId}&order=date&type=video&maxResults=${maxResults}${pageToken ? `&pageToken=${pageToken}` : ''
-      }&key=${apiKey}`;
+    const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${channelId}&order=date&type=video&maxResults=${maxResults}${
+      pageToken ? `&pageToken=${pageToken}` : ''
+    }&key=${apiKey}`;
     try {
       const json = await fetchJson(url);
       (json.items || []).forEach((it) => {
@@ -355,7 +357,7 @@ function renderVideoCard(grid, it, detailsMap) {
             // optional UA-style event for compatibility (if using legacy setups)
             try {
               gtag('event', 'open_video_page_ua', uaPayload);
-            } catch (_e) { }
+            } catch (_e) {}
           } else if (Array.isArray(window.dataLayer)) {
             window.dataLayer.push(
               Object.assign({ event: 'open_video_page' }, ga4Payload),

@@ -113,10 +113,10 @@ export function createProjectsData(html, icons) {
         <div className="preview-container">
           <span
             style=${{
-          fontSize: PREVIEW_FONT.large,
-          color: THEME_COLORS.green.preview,
-          fontWeight: 'bold',
-        }}
+              fontSize: PREVIEW_FONT.large,
+              color: THEME_COLORS.green.preview,
+              fontWeight: 'bold',
+            }}
             >?</span
           >
         </div>
