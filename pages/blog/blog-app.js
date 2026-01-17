@@ -147,15 +147,48 @@ function BlogApp() {
           scripts.forEach((s) => s.remove());
         }
 
+        // Remove <style> tags in case the generated page inlined them
+        if (bodyEl.querySelectorAll) {
+          const styleEls = bodyEl.querySelectorAll('style');
+          styleEls.forEach((s) => s.remove());
+        }
+
+        // Remove inline style attributes and event handlers
+        if (bodyEl.querySelectorAll) {
+          bodyEl.querySelectorAll('[style]').forEach((el) => el.removeAttribute('style'));
+          bodyEl.querySelectorAll('*').forEach((el) => {
+            Array.from(el.attributes || []).forEach((attr) => {
+              if (/^on/i.test(attr.name)) el.removeAttribute(attr.name);
+            });
+          });
+        }
+
+        // Remove HTML comments from extracted content
+        try {
+          const walker = document.createTreeWalker(bodyEl, NodeFilter.SHOW_COMMENT, null, false);
+          const toRemove = [];
+          while (walker.nextNode()) toRemove.push(walker.currentNode);
+          toRemove.forEach((n) => n.parentNode && n.parentNode.removeChild(n));
+        } catch (e) {
+          /* ignore tree walker errors in very old browsers */
+        }
+
         const title = titleEl ? titleEl.textContent.trim() : (doc.querySelector('title') ? doc.querySelector('title').textContent.trim() : id);
         const date = metaEl ? metaEl.textContent.trim() : '';
         const excerpt = bodyEl ? (bodyEl.querySelector('p') ? bodyEl.querySelector('p').textContent.trim().slice(0, 200) : '') : '';
         const image = heroImg ? (heroImg.getAttribute('src') || heroImg.getAttribute('data-src') || '') : (doc.querySelector('meta[property="og:image"]') ? doc.querySelector('meta[property="og:image"]').getAttribute('content') : '');
 
-        // Serialize cleaned HTML and strip potential remaining script tags just in case
+        // Serialize cleaned HTML and run DOMPurify on it, then compact whitespace
         let contentHtml = bodyEl ? bodyEl.innerHTML.trim() : (doc.body ? doc.body.innerHTML : '');
-        contentHtml = contentHtml.replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, '');
-
+        // final sanitize to remove any disallowed attributes/tags
+        try {
+          contentHtml = DOMPurify.sanitize(contentHtml, { RETURN_TRUSTED_TYPE: false });
+        } catch (e) {
+          // fallback to basic cleanup if DOMPurify not available
+          contentHtml = contentHtml.replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, '');
+        }
+        // Collapse multiple whitespace and remove leading/trailing spaces in tags
+        contentHtml = contentHtml.replace(/\s{2,}/g, ' ').replace(/>\s+</g, '><').trim();
         return {
           id,
           title,
