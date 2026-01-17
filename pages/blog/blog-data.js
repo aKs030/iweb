@@ -147,7 +147,7 @@ Praktische Maßnahmen sind: Farbaudits (Kontrastprüfungen), automatisierte Acce
     readTime: '6 min',
     imageAlt: 'Modernes UI-Design - Beispiel Interaktion',
     meta: {
-      description: 'Praktische Guidelines für barrierefreies UI‑Design: Accessibility, Micro‑Interactions, Dokumentation und Testintegration.'
+      description: 'Praktische Guidelines für barrierefreies UI‑Design: Accessibility, Micro‑Interactions, Dokumentation und Testintegration.',
       keywords: 'UI, UX, accessibility, design'
     },
     resources: [
