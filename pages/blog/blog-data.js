@@ -210,7 +210,7 @@ Entwickler profitieren von kürzeren Ladezeiten im Development und einem bessere
     readTime: '4 min',
     imageAlt: 'React ohne Build-Tools - Beispiel Setup',
     meta: {
-      description: 'Leitfaden: React ohne Build‑Tools mit ES Modules & `htm` — schnell für Prototypen, mit Hinweisen zu Grenzen und Migration.'
+      description: 'Leitfaden: React ohne Build‑Tools mit ES Modules & `htm` — schnell für Prototypen, mit Hinweisen zu Grenzen und Migration.',
       keywords: 'react, javascript, no-build, prototyping'
     },
     resources: [
