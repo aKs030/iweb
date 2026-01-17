@@ -249,7 +249,7 @@ body {
 }
 
 .article-body code {
-  background: rgba(255,255,255,0.03);
+  background: rgba(255, 255, 255, 0.03);
   padding: 0.12rem 0.4rem;
   border-radius: 6px;
   font-family: var(--font-mono);
@@ -258,7 +258,7 @@ body {
 }
 
 .article-body pre {
-  background: rgba(255,255,255,0.03);
+  background: rgba(255, 255, 255, 0.03);
   padding: 1rem;
   border-radius: 8px;
   overflow: auto;
@@ -280,7 +280,11 @@ body {
 }
 
 .article-body .takeaways {
-  background: linear-gradient(90deg, rgba(59,130,246,0.06), rgba(99,102,241,0.03));
+  background: linear-gradient(
+    90deg,
+    rgba(59, 130, 246, 0.06),
+    rgba(99, 102, 241, 0.03)
+  );
   border-left: 4px solid var(--blog-accent);
   padding: 1rem;
   border-radius: 8px;
@@ -317,7 +321,7 @@ body {
 
 .share-btn {
   background: transparent;
-  border: 1px solid rgba(255,255,255,0.06);
+  border: 1px solid rgba(255, 255, 255, 0.06);
   color: var(--blog-accent);
   padding: 0.35rem 0.7rem;
   border-radius: 999px;
@@ -327,21 +331,24 @@ body {
 }
 
 .share-btn:hover {
-  background: rgba(59,130,246,0.14);
+  background: rgba(59, 130, 246, 0.14);
   color: #fff;
 }
 
 /* Resources & Related */
-.resources h4, .related h4 {
+.resources h4,
+.related h4 {
   margin-top: 1.25rem;
   margin-bottom: 0.5rem;
 }
 
-.resources ul, .related ul {
+.resources ul,
+.related ul {
   margin-left: 1rem;
 }
 
-.resources li, .related li {
+.resources li,
+.related li {
   margin-bottom: 0.5rem;
 }
 
@@ -350,7 +357,11 @@ body {
 }
 
 .btn.btn-primary {
-  background: linear-gradient(90deg, var(--blog-accent), var(--blog-accent-hover));
+  background: linear-gradient(
+    90deg,
+    var(--blog-accent),
+    var(--blog-accent-hover)
+  );
   color: #fff;
   padding: 0.6rem 1rem;
   border-radius: 10px;
@@ -362,4 +373,3 @@ body {
 .btn.btn-primary:hover {
   transform: translateY(-2px);
 }
-
