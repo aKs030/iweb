@@ -22,10 +22,10 @@ const Icons = {
 const estimateReadTime = (text = '') => `${Math.max(1, Math.round(text.split(/\s+/).length / 200))} min`;
 
 const CATEGORY_OVERRIDES = {
-  'threejs-performance': 'WebGL',
-  'react-no-build': 'React',
-  'modern-ui-design': 'Design',
-  'visual-storytelling': 'Fotografie',
+  'threejs-performance': 'Performance',
+  'react-no-build': 'Webdesign',
+  'modern-ui-design': 'Webdesign',
+  'visual-storytelling': 'Online-Marketing',
 };
 
 function normalizePost(raw = {}) {
@@ -258,8 +258,11 @@ function BlogApp() {
             <${RelatedPosts} currentPost=${post} allPosts=${posts} />
 
             <div class="article-cta">
-              <h3>Gefällt Ihnen dieser Beitrag?</h3>
-              <a href="/#contact" class="btn-primary">Projekt anfragen</a>
+              <h3>Unterstützung bei deinem Projekt?</h3>
+              <p style=${{ color: '#ccc', marginBottom: '1.5rem', maxWidth: '600px', margin: '0 auto 1.5rem' }}>
+                Benötigst du Hilfe bei Webdesign, Performance-Optimierung oder SEO? Lass uns unverbindlich darüber sprechen.
+              </p>
+              <a href="/#contact" class="btn-primary">Jetzt Kontakt aufnehmen</a>
             </div>
           </article>
         </div>
@@ -275,7 +278,7 @@ function BlogApp() {
       <!-- Static Header -->
       <header style=${{ marginBottom: '2rem' }}>
         <h1 class="blog-headline">Wissen & Einblicke</h1>
-        <p class="blog-subline">Gedanken zu Web-Entwicklung, Fotografie und digitalem Design.</p>
+        <p class="blog-subline">In unserem Blog teilen wir praxisnahe Tipps zu Webdesign, SEO, Performance und Online-Marketing – verständlich erklärt und direkt umsetzbar.</p>
       </header>
 
       <!-- Sticky Controls: Optimized Top Position -->
@@ -344,7 +347,7 @@ function BlogApp() {
             
             <div class="card-footer">
               <span class="card-read-time"><${Icons.Clock}/> ${post.readTime}</span>
-              <button class="btn-read">Lesen <${Icons.ArrowRight}/></button>
+              <button class="btn-read">Weiterlesen <${Icons.ArrowRight}/></button>
             </div>
           </article>
         `})}
