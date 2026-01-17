@@ -142,8 +142,6 @@ export class RobotCollision {
     this.robot.showBubble(texts[Math.floor(Math.random() * texts.length)]);
     setTimeout(() => this.robot.hideBubble(), 1500);
 
-    if (this.robot.soundModule) this.robot.soundModule.playError();
-
     const anim = this.robot.animationModule;
 
     if (type === 'dizzy') {

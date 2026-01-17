@@ -143,12 +143,6 @@ export class RobotChat {
     this.robot.dom.messages.appendChild(msg);
     this.scrollToBottom();
 
-    // Sound effect
-    if (this.robot.soundModule) {
-      if (type === 'bot') this.robot.soundModule.playMessage();
-      else this.robot.soundModule.playBeep();
-    }
-
     // Update history
     this.history.push({
       role: type === 'user' ? 'user' : 'model',
@@ -327,7 +321,7 @@ export class RobotChat {
     ) {
       const fallback =
         this.initialBubbleGreetings[
-          Math.floor(Math.random() * this.initialBubbleGreetings.length)
+        Math.floor(Math.random() * this.initialBubbleGreetings.length)
         ];
       picks.push(String(fallback || '').trim());
     }
