@@ -22,6 +22,7 @@ const log = createLogger('GeminiService');
 async function getGeminiResponse(
   prompt,
   systemInstruction = 'Du bist ein hilfreicher Roboter-Begleiter.',
+  options = {},
 ) {
   const payload = {
     contents: [{ parts: [{ text: prompt }] }],
@@ -34,11 +35,11 @@ async function getGeminiResponse(
   const isRunningInBrowser = () =>
     globalThis.fetch !== undefined && globalThis.window !== undefined;
 
-  const doBrowserRequest = async (promptArg, systemArg) => {
+  const doBrowserRequest = async (promptArg, systemArg, opts) => {
     const r = await fetch('/api/gemini', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt: promptArg, systemInstruction: systemArg }),
+      body: JSON.stringify({ prompt: promptArg, systemInstruction: systemArg, options: opts }),
     });
     if (!r.ok) {
       const txt = await r.text();
@@ -92,10 +93,10 @@ async function getGeminiResponse(
 
 // Provide a thin class wrapper so callers can use `new GeminiService()` in the app
 export class GeminiService {
-  async generateResponse(prompt, _history = []) {
+  async generateResponse(prompt, _history = [], options = {}) {
     // _history is available to craft system instructions later if needed
     const system = 'Du bist ein hilfreicher Roboter-Begleiter.';
-    return await getGeminiResponse(prompt, system);
+    return await getGeminiResponse(prompt, system, options);
   }
 
   async summarizePage(content) {

@@ -82,13 +82,33 @@ export class RobotChat {
     this.robot.trackInteraction('message');
 
     try {
+      // Enable server-side search augmentation (RAG)
       const response = await this.robot.gemini.generateResponse(
         text,
         this.history,
+        { useSearch: true, topK: 3 },
       );
       this.removeTyping();
       this.robot.animationModule.stopThinking();
-      this.addMessage(response, 'bot');
+
+      // Response may be either string or { text, sources }
+      if (typeof response === 'string') {
+        this.addMessage(response, 'bot');
+      } else if (response && response.text) {
+        // Basic rendering: show answer + source list (if present)
+        const safeText = String(response.text || '');
+        let html = safeText;
+        if (Array.isArray(response.sources) && response.sources.length) {
+          html += '<div class="chat-sources"><strong>Quellen:</strong><ul>' +
+            response.sources
+              .map((s) => `<li><a href="${s.url}">${s.title}</a></li>`)
+              .join('') +
+            '</ul></div>';
+        }
+        this.addMessage(html, 'bot');
+      } else {
+        this.addMessage('Entschuldigung, keine Antwort erhalten.', 'bot');
+      }
     } catch (e) {
       log.error('generateResponse failed', e);
       this.removeTyping();
