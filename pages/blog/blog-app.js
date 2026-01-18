@@ -4,6 +4,7 @@ import htm from 'https://cdn.jsdelivr.net/npm/htm@3.1.1/dist/htm.module.js';
 import { createLogger } from '/content/utils/shared-utilities.js';
 import { marked } from 'https://cdn.jsdelivr.net/npm/marked@5.1.1/lib/marked.esm.js';
 import DOMPurify from 'https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.es.js';
+import Fuse from 'https://cdn.jsdelivr.net/npm/fuse.js@6.6.2/dist/fuse.esm.js';
 
 marked.setOptions({ mangle: false, headerIds: false });
 
@@ -78,6 +79,12 @@ const Icons = {
 const estimateReadTime = (text = '') =>
   `${Math.max(1, Math.round(text.split(/\s+/).length / 200))} min`;
 
+function stripHtml(html) {
+  const tmp = document.createElement('DIV');
+  tmp.innerHTML = html;
+  return tmp.textContent || tmp.innerText || '';
+}
+
 const CATEGORY_OVERRIDES = {
   'threejs-performance': 'Performance',
   'react-no-build': 'Webdesign',
@@ -99,6 +106,7 @@ function normalizePost(raw = {}) {
     timestamp: dateStr ? new Date(dateStr).getTime() : 0, // Pre-calc for sorting
     dateDisplay: raw.dateDisplay || dateStr,
     readTime: raw.readTime || estimateReadTime(raw.content || raw.html || ''),
+    plainText: stripHtml(raw.content || raw.html || ''),
   };
 }
 
@@ -297,14 +305,225 @@ function RelatedPosts({ currentPost, allPosts }) {
   `;
 }
 
+function HighlightMatch({ text = '', indices = [] }) {
+  if (!indices.length) return text;
+
+  const parts = [];
+  let lastIndex = 0;
+
+  indices.forEach(([start, end]) => {
+    if (start < lastIndex) return;
+
+    if (start > lastIndex) {
+      parts.push(text.slice(lastIndex, start));
+    }
+    parts.push(
+      html`<span className="highlight">${text.slice(start, end + 1)}</span>`,
+    );
+    lastIndex = end + 1;
+  });
+
+  if (lastIndex < text.length) {
+    parts.push(text.slice(lastIndex));
+  }
+
+  return parts;
+}
+
+function SearchModal({ isOpen, onClose, fuse }) {
+  const [query, setQuery] = React.useState('');
+  const [results, setResults] = React.useState([]);
+  const [selectedIndex, setSelectedIndex] = React.useState(0);
+  const inputRef = React.useRef(null);
+
+  React.useEffect(() => {
+    if (isOpen) {
+      setTimeout(() => inputRef.current?.focus(), 50);
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+      setQuery('');
+    }
+  }, [isOpen]);
+
+  React.useEffect(() => {
+    if (!query || !fuse) {
+      setResults([]);
+      return;
+    }
+    // Search with Fuse
+    const res = fuse.search(query);
+    setResults(res.slice(0, 5)); // Limit to top 5
+    setSelectedIndex(0);
+  }, [query, fuse]);
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Escape') onClose();
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setSelectedIndex((prev) => (prev + 1) % results.length);
+    }
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setSelectedIndex(
+        (prev) => (prev - 1 + results.length) % results.length,
+      );
+    }
+    if (e.key === 'Enter' && results[selectedIndex]) {
+      window.location.hash = `/blog/${results[selectedIndex].item.id}`;
+      onClose();
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return html`
+    <div className="search-modal-backdrop" onClick=${onClose}>
+      <div className="search-modal" onClick=${(e) => e.stopPropagation()}>
+        <div className="search-input-wrapper">
+          <span className="search-modal-icon"><${Icons.Search} /></span>
+          <input
+            ref=${inputRef}
+            type="text"
+            className="search-modal-input"
+            placeholder="Suchen... (Tippfehler erlaubt)"
+            value=${query}
+            onInput=${(e) => setQuery(e.target.value)}
+            onKeyDown=${handleKeyDown}
+          />
+          <button className="search-close-btn" onClick=${onClose}>ESC</button>
+        </div>
+        ${
+          results.length > 0 &&
+          html`
+            <ul className="search-results-list">
+              ${results.map(
+                (result, idx) => html`
+                  <li
+                    key=${result.item.id}
+                    className=${`search-result-item ${
+                      idx === selectedIndex ? 'selected' : ''
+                    }`}
+                    onClick=${() => {
+                      window.location.hash = `/blog/${result.item.id}`;
+                      onClose();
+                    }}
+                    onMouseEnter=${() => setSelectedIndex(idx)}
+                  >
+                    <div className="result-content">
+                      <span className="search-result-title">
+                        <${HighlightMatch}
+                          text=${result.item.title}
+                          indices=${result.matches?.find((m) => m.key === 'title')
+                            ?.indices || []}
+                        />
+                      </span>
+                      <span className="search-result-excerpt">
+                        ${(() => {
+                          const excerptMatch = result.matches?.find(
+                            (m) => m.key === 'excerpt',
+                          );
+                          const textMatch = result.matches?.find(
+                            (m) => m.key === 'plainText',
+                          );
+
+                          if (excerptMatch) {
+                            return html`<${HighlightMatch}
+                              text=${result.item.excerpt}
+                              indices=${excerptMatch.indices}
+                            />`;
+                          } else if (textMatch) {
+                            const fullText = result.item.plainText;
+                            const [mStart, mEnd] = textMatch.indices[0];
+                            const snippetStart = Math.max(0, mStart - 30);
+                            const snippetEnd = Math.min(
+                              fullText.length,
+                              mEnd + 60,
+                            );
+
+                            let snippetText = fullText.slice(
+                              snippetStart,
+                              snippetEnd,
+                            );
+                            let offset = 0;
+
+                            if (snippetStart > 0) {
+                              snippetText = '...' + snippetText;
+                              offset = 3;
+                            }
+                            if (snippetEnd < fullText.length) {
+                              snippetText = snippetText + '...';
+                            }
+
+                            const validIndices = textMatch.indices
+                              .map(([s, e]) => [
+                                s - snippetStart + offset,
+                                e - snippetStart + offset,
+                              ])
+                              .filter(
+                                ([s, e]) => s >= 0 && e < snippetText.length,
+                              );
+
+                            return html`<${HighlightMatch}
+                              text=${snippetText}
+                              indices=${validIndices}
+                            />`;
+                          }
+                          return result.item.excerpt.slice(0, 60) + '...';
+                        })()}
+                      </span>
+                    </div>
+                    <span className="search-result-arrow">↵</span>
+                  </li>
+                `,
+              )}
+            </ul>
+          `
+        }
+        ${
+          query &&
+          results.length === 0 &&
+          html`
+            <div className="search-no-results">Keine Ergebnisse gefunden.</div>
+          `
+        }
+      </div>
+    </div>
+  `;
+}
+
 // Main App
 function BlogApp() {
   const [posts, setPosts] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
   const [filter, setFilter] = React.useState('All');
   const [search, setSearch] = React.useState('');
+  const [isSearchOpen, setIsSearchOpen] = React.useState(false);
   const [currentPostId, setCurrentPostId] = React.useState(null);
   const [ogMeta, setOgMeta] = React.useState(null);
+
+  React.useEffect(() => {
+    const handleKey = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setIsSearchOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, []);
+
+  // Fuse Instance
+  const fuse = React.useMemo(() => {
+    if (posts.length === 0) return null;
+    return new Fuse(posts, {
+      keys: ['title', 'excerpt', 'plainText'],
+      includeMatches: true,
+      threshold: 0.3,
+      minMatchCharLength: 3,
+      ignoreLocation: true,
+    });
+  }, [posts]);
 
   React.useEffect(() => {
     const seedEl = document.getElementById('blog-list-json');
@@ -471,6 +690,11 @@ function BlogApp() {
 
   // List View
   return html`
+    <${SearchModal}
+      isOpen=${isSearchOpen}
+      onClose=${() => setIsSearchOpen(false)}
+      fuse=${fuse}
+    />
     <div className="container-blog fade-in" style=${{ paddingTop: '6rem' }}>
       <${ScrollToTop} />
 
@@ -501,15 +725,14 @@ function BlogApp() {
       >
         <div className="blog-header-content">
           <div className="blog-controls">
-            <div className="search-wrapper">
+            <div
+              className="search-wrapper search-trigger"
+              onClick=${() => setIsSearchOpen(true)}
+            >
               <span className="search-icon"><${Icons.Search} /></span>
-              <input
-                type="text"
-                className="search-input"
-                placeholder="Suchen..."
-                value=${search}
-                onInput=${(e) => setSearch(e.target.value)}
-              />
+              <div className="search-placeholder">
+                Suchen... <span className="kbd-shortcut">⌘K</span>
+              </div>
             </div>
             <div className="filter-bar">
               ${categories.map(
