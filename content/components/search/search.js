@@ -590,8 +590,8 @@ class SearchComponent {
             <div class="search-category-divider"></div>
           </div>
           ${items
-            .map((result) => this.createResultHTML(result, query))
-            .join('')}
+              .map((result) => this.createResultHTML(result, query))
+              .join('')}
         </div>
       `,
         )
