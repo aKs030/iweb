@@ -6,13 +6,15 @@
  */
 
 import { createLogger } from '/content/utils/shared-utilities.js';
+// Import Fuse.js from CDN
+import Fuse from 'https://cdn.jsdelivr.net/npm/fuse.js@6.6.2/dist/fuse.esm.js';
 
 const _log = createLogger('search');
 
 /**
  * Search Index - Enthält alle durchsuchbaren Inhalte der Webseite
  */
-const SEARCH_INDEX = [
+let searchIndex = [
   // Hauptseiten
   {
     id: 'home',
@@ -148,17 +150,88 @@ class SearchComponent {
     this.input = null;
     this.resultsContainer = null;
     this.isOpen = false;
-    this.searchIndex = SEARCH_INDEX;
     this.currentResults = [];
+    this.fuse = null;
+    this.selectedIndex = 0;
 
     this.init();
   }
 
-  init() {
+  async init() {
     this.createSearchOverlay();
     this.attachEventListeners();
     this.loadStyles();
+
+    // Initialisiere Fuse mit statischen Daten
+    this.initFuse(searchIndex);
+
+    // Lade dynamische Daten nach
+    this.fetchDynamicData();
+
     _log.info('Search component initialized');
+  }
+
+  initFuse(data) {
+    const options = {
+      includeScore: true,
+      keys: [
+        { name: 'title', weight: 0.7 },
+        { name: 'keywords', weight: 0.5 },
+        { name: 'description', weight: 0.3 },
+        { name: 'category', weight: 0.2 }
+      ],
+      threshold: 0.4,
+      distance: 100
+    };
+    this.fuse = new Fuse(data, options);
+  }
+
+  async fetchDynamicData() {
+    try {
+      // Versuche sitemap.xml zu laden für Blog-Posts
+      const r = await fetch('/sitemap.xml');
+      if (!r.ok) return;
+
+      const xml = await r.text();
+      // Extrahiere Blog-URLs
+      const matches = Array.from(xml.matchAll(/<loc>.*?\/blog\/([^\/<>]+)\/?.*?<\/loc>/g));
+
+      if (matches.length > 0) {
+        // Generiere Einträge basierend auf den IDs (Slug)
+        const blogEntries = matches.map(m => {
+          const slug = m[1];
+          // Versuche lesbaren Titel aus Slug zu generieren
+          const readableTitle = slug
+            .split('-')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+
+          return {
+            id: `blog-${slug}`,
+            title: readableTitle, // Fallback Titel
+            description: 'Blog Artikel über Webentwicklung und Design.',
+            category: 'Blog',
+            url: `/pages/blog/#/blog/${slug}`, // SPA Route Support
+            keywords: ['blog', 'artikel', ...slug.split('-')]
+          };
+        });
+
+        // Merge mit bestehendem Index (vermeide Duplikate)
+        const newIndex = [...searchIndex];
+        blogEntries.forEach(entry => {
+          if (!newIndex.find(existing => existing.url === entry.url)) {
+            newIndex.push(entry);
+          }
+        });
+
+        searchIndex = newIndex;
+        // Re-init Fuse mit neuen Daten
+        this.initFuse(searchIndex);
+        _log.info(`Dynamic search data loaded: ${blogEntries.length} posts added`);
+      }
+    } catch (e) {
+      _log.warn('Failed to fetch dynamic search data', e);
+    }
   }
 
   loadStyles() {
@@ -258,12 +331,22 @@ class SearchComponent {
     // Such-Input
     if (this.input) {
       this.input.addEventListener('input', (e) => {
+        this.selectedIndex = 0; // Reset selection on input
         this.handleSearch(e.target.value);
       });
 
       this.input.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && this.currentResults.length > 0) {
-          this.selectResult(0);
+        if (this.currentResults.length === 0) return;
+
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          this.moveSelection(1);
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          this.moveSelection(-1);
+        } else if (e.key === 'Enter') {
+          e.preventDefault();
+          this.selectResult(this.selectedIndex);
         }
       });
     }
@@ -329,58 +412,17 @@ class SearchComponent {
   }
 
   searchInIndex(query) {
-    const results = [];
+    if (!this.fuse) return [];
 
-    this.searchIndex.forEach(item => {
-      let score = 0;
-      const queryLower = query.toLowerCase();
+    // Fuse.js search
+    const fuseResults = this.fuse.search(query);
 
-      // Exakte Übereinstimmung im Titel (höchste Priorität)
-      if (item.title.toLowerCase().includes(queryLower)) {
-        score += 100;
-      }
-
-      // Übereinstimmung in der Beschreibung
-      if (item.description.toLowerCase().includes(queryLower)) {
-        score += 50;
-      }
-
-      // Übereinstimmung in Keywords
-      item.keywords.forEach(keyword => {
-        if (keyword.toLowerCase().includes(queryLower)) {
-          score += 30;
-        }
-      });
-
-      // Übereinstimmung in Kategorie
-      if (item.category.toLowerCase().includes(queryLower)) {
-        score += 20;
-      }
-
-      // Fuzzy-Matching: Teilwort-Übereinstimmungen
-      const words = queryLower.split(' ');
-      words.forEach(word => {
-        if (word.length > 2) {
-          const titleWords = item.title.toLowerCase().split(' ');
-          const descWords = item.description.toLowerCase().split(' ');
-
-          titleWords.forEach(tw => {
-            if (tw.startsWith(word)) score += 10;
-          });
-
-          descWords.forEach(dw => {
-            if (dw.startsWith(word)) score += 5;
-          });
-        }
-      });
-
-      if (score > 0) {
-        results.push({ ...item, score });
-      }
-    });
-
-    // Sortiere nach Score (höchster zuerst)
-    return results.sort((a, b) => b.score - a.score);
+    // Transformiere zurück in flaches Format & limitiere auf Top 15
+    return fuseResults.slice(0, 15).map(result => ({
+      ...result.item,
+      score: result.score, // Fuse score (0 = perfect match)
+      matches: result.matches // Für Highlighting später nützlich
+    }));
   }
 
   displayResults(results, query) {
@@ -412,6 +454,7 @@ class SearchComponent {
     // Highlight Query in Titel und Beschreibung
     const highlightedTitle = this.highlightText(result.title, query);
     const highlightedDesc = this.highlightText(result.description, query);
+    const isSelected = index === this.selectedIndex;
 
     const categoryIcons = {
       'Seite': '📄',
@@ -421,13 +464,23 @@ class SearchComponent {
     };
 
     return `
-      <a href="${result.url}" class="search-result-item" data-id="${result.id}">
-        <span class="search-result-category">${result.category}</span>
-        <div class="search-result-title">
-          <span class="search-result-icon">${categoryIcons[result.category] || '📄'}</span>
-          ${highlightedTitle}
+      <a href="${result.url}"
+         class="search-result-item ${isSelected ? 'selected' : ''}"
+         data-id="${result.id}"
+         id="search-result-${index}"
+         role="option"
+         aria-selected="${isSelected}"
+      >
+        <div class="search-result-icon-box">
+          ${categoryIcons[result.category] || '📄'}
         </div>
-        <div class="search-result-description">${highlightedDesc}</div>
+        <div class="search-result-content">
+          <div class="search-result-top">
+             <div class="search-result-title">${highlightedTitle}</div>
+             <div class="search-result-category">${result.category}</div>
+          </div>
+          <div class="search-result-description">${highlightedDesc}</div>
+        </div>
       </a>
     `;
   }
@@ -449,6 +502,32 @@ class SearchComponent {
     `;
     this.resultsContainer.innerHTML = html;
     this.currentResults = [];
+  }
+
+  moveSelection(direction) {
+    const max = this.currentResults.length - 1;
+    let next = this.selectedIndex + direction;
+
+    // Wrap around logic (optional) or clamp
+    if (next < 0) next = max;
+    if (next > max) next = 0;
+
+    this.selectedIndex = next;
+    this.updateSelectionUI();
+  }
+
+  updateSelectionUI() {
+    const items = this.resultsContainer.querySelectorAll('.search-result-item');
+    items.forEach((item, idx) => {
+      if (idx === this.selectedIndex) {
+        item.classList.add('selected');
+        item.setAttribute('aria-selected', 'true');
+        item.scrollIntoView({ block: 'nearest' });
+      } else {
+        item.classList.remove('selected');
+        item.setAttribute('aria-selected', 'false');
+      }
+    });
   }
 
   selectResult(index) {
