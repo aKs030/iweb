@@ -1,8 +1,8 @@
 /**
  * Search Component
- * Volltext-Suche für die Webseite mit Fuzzy-Matching
+ * Mac Spotlight-Inspired Search with Advanced Features
  * @author Abdulkerim Sesli
- * @version 1.0.0
+ * @version 2.0.0
  */
 
 import { createLogger } from '/content/utils/shared-utilities.js';
@@ -20,7 +20,9 @@ const SEARCH_INDEX = [
     description: 'Web Developer & Photographer in Berlin. Spezialisiert auf React, Three.js und Urban Photography.',
     category: 'Seite',
     url: '/',
-    keywords: ['home', 'start', 'hauptseite', 'portfolio', 'abdulkerim sesli']
+    icon: '🏠',
+    keywords: ['home', 'start', 'hauptseite', 'portfolio', 'abdulkerim sesli'],
+    priority: 10
   },
   {
     id: 'about',
@@ -28,7 +30,9 @@ const SEARCH_INDEX = [
     description: 'Erfahre mehr über meine Arbeit, Fähigkeiten und meinen Werdegang als Web Developer und Fotograf.',
     category: 'Seite',
     url: '/pages/about/',
-    keywords: ['über', 'about', 'biografie', 'cv', 'lebenslauf', 'skills', 'fähigkeiten']
+    icon: '👤',
+    keywords: ['über', 'about', 'biografie', 'cv', 'lebenslauf', 'skills', 'fähigkeiten'],
+    priority: 9
   },
   {
     id: 'projekte',
@@ -36,7 +40,9 @@ const SEARCH_INDEX = [
     description: 'Eine Auswahl meiner Web-Entwicklungsprojekte mit React, Three.js und modernen Technologien.',
     category: 'Seite',
     url: '/pages/projekte/',
-    keywords: ['projekte', 'projects', 'portfolio', 'arbeiten', 'react', 'threejs', 'web development']
+    icon: '💼',
+    keywords: ['projekte', 'projects', 'portfolio', 'arbeiten', 'react', 'threejs', 'web development'],
+    priority: 9
   },
   {
     id: 'gallery',
@@ -44,7 +50,9 @@ const SEARCH_INDEX = [
     description: 'Fotografie-Portfolio mit Urban Photography und kreativen Aufnahmen aus Berlin.',
     category: 'Seite',
     url: '/pages/gallery/',
-    keywords: ['galerie', 'gallery', 'fotografie', 'photography', 'bilder', 'fotos', 'urban']
+    icon: '📸',
+    keywords: ['galerie', 'gallery', 'fotografie', 'photography', 'bilder', 'fotos', 'urban'],
+    priority: 8
   },
   {
     id: 'blog',
@@ -52,7 +60,9 @@ const SEARCH_INDEX = [
     description: 'Artikel über Webentwicklung, Design, Fotografie und Technologie.',
     category: 'Seite',
     url: '/pages/blog/',
-    keywords: ['blog', 'artikel', 'posts', 'tutorials', 'guides']
+    icon: '📝',
+    keywords: ['blog', 'artikel', 'posts', 'tutorials', 'guides'],
+    priority: 8
   },
   {
     id: 'videos',
@@ -60,7 +70,9 @@ const SEARCH_INDEX = [
     description: 'Video-Portfolio mit Tutorials und kreativen Projekten.',
     category: 'Seite',
     url: '/pages/videos/',
-    keywords: ['videos', 'tutorials', 'youtube', 'film']
+    icon: '🎬',
+    keywords: ['videos', 'tutorials', 'youtube', 'film'],
+    priority: 7
   },
 
   // Blog Posts
@@ -70,7 +82,9 @@ const SEARCH_INDEX = [
     description: 'Moderne UI-Design-Prinzipien und Best Practices für Web-Anwendungen.',
     category: 'Blog',
     url: '/pages/blog/modern-ui-design/',
-    keywords: ['ui', 'design', 'interface', 'ux', 'user experience', 'modern', 'glassmorphism']
+    icon: '🎨',
+    keywords: ['ui', 'design', 'interface', 'ux', 'user experience', 'modern', 'glassmorphism'],
+    priority: 6
   },
   {
     id: 'blog-react-no-build',
@@ -78,7 +92,9 @@ const SEARCH_INDEX = [
     description: 'Wie man React ohne komplexe Build-Prozesse direkt im Browser nutzt.',
     category: 'Blog',
     url: '/pages/blog/react-no-build/',
-    keywords: ['react', 'no build', 'esm', 'modules', 'javascript', 'frontend']
+    icon: '⚛️',
+    keywords: ['react', 'no build', 'esm', 'modules', 'javascript', 'frontend'],
+    priority: 6
   },
   {
     id: 'blog-threejs-performance',
@@ -86,7 +102,9 @@ const SEARCH_INDEX = [
     description: 'Performance-Optimierung für Three.js Anwendungen und 3D-Grafik im Web.',
     category: 'Blog',
     url: '/pages/blog/threejs-performance/',
-    keywords: ['threejs', 'three.js', '3d', 'webgl', 'performance', 'optimization']
+    icon: '🎮',
+    keywords: ['threejs', 'three.js', '3d', 'webgl', 'performance', 'optimization'],
+    priority: 6
   },
   {
     id: 'blog-visual-storytelling',
@@ -94,7 +112,9 @@ const SEARCH_INDEX = [
     description: 'Geschichten visuell erzählen mit Fotografie und Webdesign.',
     category: 'Blog',
     url: '/pages/blog/visual-storytelling/',
-    keywords: ['storytelling', 'visual', 'fotografie', 'design', 'narrative']
+    icon: '📖',
+    keywords: ['storytelling', 'visual', 'fotografie', 'design', 'narrative'],
+    priority: 5
   },
 
   // Technologien
@@ -104,7 +124,9 @@ const SEARCH_INDEX = [
     description: 'Moderne React-Anwendungen mit Hooks, Context und Performance-Optimierungen.',
     category: 'Technologie',
     url: '/pages/projekte/#react',
-    keywords: ['react', 'javascript', 'frontend', 'spa', 'hooks', 'jsx']
+    icon: '⚛️',
+    keywords: ['react', 'javascript', 'frontend', 'spa', 'hooks', 'jsx'],
+    priority: 7
   },
   {
     id: 'tech-threejs',
@@ -112,7 +134,9 @@ const SEARCH_INDEX = [
     description: '3D-Grafik und interaktive Visualisierungen mit Three.js im Browser.',
     category: 'Technologie',
     url: '/pages/projekte/#threejs',
-    keywords: ['threejs', 'webgl', '3d', 'graphics', 'animation', 'particles']
+    icon: '🌐',
+    keywords: ['threejs', 'webgl', '3d', 'graphics', 'animation', 'particles'],
+    priority: 7
   },
   {
     id: 'tech-photography',
@@ -120,7 +144,9 @@ const SEARCH_INDEX = [
     description: 'Urban Photography, Portrait und kreative Fotografie in Berlin.',
     category: 'Technologie',
     url: '/pages/gallery/',
-    keywords: ['fotografie', 'photography', 'kamera', 'bilder', 'urban', 'portrait']
+    icon: '📷',
+    keywords: ['fotografie', 'photography', 'kamera', 'bilder', 'urban', 'portrait'],
+    priority: 6
   },
 
   // Kontakt & Legal
@@ -130,7 +156,9 @@ const SEARCH_INDEX = [
     description: 'Rechtliche Informationen und Kontaktdaten.',
     category: 'Info',
     url: '/content/components/footer/impressum.html',
-    keywords: ['impressum', 'legal', 'kontakt', 'contact', 'anschrift']
+    icon: 'ℹ️',
+    keywords: ['impressum', 'legal', 'kontakt', 'contact', 'anschrift'],
+    priority: 3
   },
   {
     id: 'datenschutz',
@@ -138,8 +166,20 @@ const SEARCH_INDEX = [
     description: 'Datenschutzerklärung und Informationen zum Umgang mit personenbezogenen Daten.',
     category: 'Info',
     url: '/content/components/footer/datenschutz.html',
-    keywords: ['datenschutz', 'privacy', 'dsgvo', 'gdpr', 'cookies']
+    icon: '🔒',
+    keywords: ['datenschutz', 'privacy', 'dsgvo', 'gdpr', 'cookies'],
+    priority: 3
   }
+];
+
+/**
+ * Quick Actions für schnellen Zugriff
+ */
+const QUICK_ACTIONS = [
+  { label: 'Alle Projekte', icon: '💼', url: '/pages/projekte/' },
+  { label: 'Foto-Galerie', icon: '📸', url: '/pages/gallery/' },
+  { label: 'Blog lesen', icon: '📝', url: '/pages/blog/' },
+  { label: 'Videos ansehen', icon: '🎬', url: '/pages/videos/' }
 ];
 
 class SearchComponent {
@@ -150,6 +190,9 @@ class SearchComponent {
     this.isOpen = false;
     this.searchIndex = SEARCH_INDEX;
     this.currentResults = [];
+    this.selectedIndex = -1;
+    this.recentSearches = this.loadRecentSearches();
+    this.searchTimeout = null;
 
     this.init();
   }
@@ -158,7 +201,7 @@ class SearchComponent {
     this.createSearchOverlay();
     this.attachEventListeners();
     this.loadStyles();
-    _log.info('Search component initialized');
+    _log.info('Search component initialized with Spotlight design');
   }
 
   loadStyles() {
@@ -186,44 +229,26 @@ class SearchComponent {
       <div class="search-modal" role="document">
         <div class="search-header">
           <div class="search-input-wrapper">
-            <span class="search-icon">🔍</span>
             <input 
               type="text" 
               class="search-input" 
-              placeholder="Suche nach Seiten, Projekten, Blog-Posts..."
+              placeholder="Spotlight-Suche"
               aria-label="Suchfeld"
               autocomplete="off"
+              autocorrect="off"
+              autocapitalize="off"
               spellcheck="false"
             >
+            <span class="search-icon" aria-hidden="true">🔍</span>
           </div>
-          <button class="search-close" aria-label="Suche schließen" title="Schließen (ESC)">
-            ✕
+          <button class="search-close" aria-label="Suche schließen" title="ESC">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
           </button>
         </div>
         
-        <div class="search-results" role="region" aria-live="polite">
-          <div class="search-empty">
-            <div class="search-empty-icon">🔍</div>
-            <div class="search-empty-text">Gib einen Suchbegriff ein</div>
-            <div class="search-empty-hint">Suche nach Seiten, Projekten oder Blog-Posts</div>
-          </div>
-        </div>
-
-        <div class="search-shortcuts">
-          <span class="search-shortcut">
-            <kbd class="search-shortcut-key">↑</kbd>
-            <kbd class="search-shortcut-key">↓</kbd>
-            <span>Navigieren</span>
-          </span>
-          <span class="search-shortcut">
-            <kbd class="search-shortcut-key">↵</kbd>
-            <span>Auswählen</span>
-          </span>
-          <span class="search-shortcut">
-            <kbd class="search-shortcut-key">ESC</kbd>
-            <span>Schließen</span>
-          </span>
-        </div>
+        <div class="search-results" role="region" aria-live="polite" aria-atomic="false"></div>
       </div>
     `;
 
@@ -240,32 +265,75 @@ class SearchComponent {
     });
   }
 
+  createQuickActionsHTML() {
+    return `
+      <div class="search-quick-actions">
+        ${QUICK_ACTIONS.map(action => `
+          <a href="${action.url}" class="search-quick-action">
+            <div class="search-quick-action-icon">${action.icon}</div>
+            <span class="search-quick-action-label">${action.label}</span>
+          </a>
+        `).join('')}
+      </div>
+    `;
+  }
+
   attachEventListeners() {
-    // Tastatur-Shortcuts
+    // Globale Tastatur-Shortcuts
     document.addEventListener('keydown', (e) => {
       // Cmd+K oder Ctrl+K zum Öffnen
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
-        this.open();
+        this.toggle();
       }
 
       // ESC zum Schließen
       if (e.key === 'Escape' && this.isOpen) {
         this.close();
       }
+
+      // Pfeiltasten für Navigation (nur wenn Suche offen)
+      if (this.isOpen && this.currentResults.length > 0) {
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          this.navigateResults(1);
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          this.navigateResults(-1);
+        } else if (e.key === 'Enter' && this.selectedIndex >= 0) {
+          e.preventDefault();
+          this.selectResult(this.selectedIndex);
+        }
+      }
     });
 
-    // Such-Input
+    // Such-Input mit Debouncing
     if (this.input) {
       this.input.addEventListener('input', (e) => {
-        this.handleSearch(e.target.value);
+        clearTimeout(this.searchTimeout);
+        this.searchTimeout = setTimeout(() => {
+          this.handleSearch(e.target.value);
+        }, 150); // 150ms Debounce
       });
 
+      // Sofortige Suche bei Enter
       this.input.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && this.currentResults.length > 0) {
-          this.selectResult(0);
+        if (e.key === 'Enter') {
+          clearTimeout(this.searchTimeout);
+          if (this.currentResults.length > 0) {
+            const index = this.selectedIndex >= 0 ? this.selectedIndex : 0;
+            this.selectResult(index);
+          }
         }
       });
+    }
+  }
+
+  toggle() {
+    if (this.isOpen) {
+      this.close();
+    } else {
+      this.open();
     }
   }
 
@@ -274,17 +342,27 @@ class SearchComponent {
 
     this.isOpen = true;
     this.overlay.classList.add('active');
+    this.selectedIndex = -1;
 
-    // Focus auf Input
-    setTimeout(() => {
-      if (this.input) {
-        this.input.focus();
-        this.input.select();
-      }
-    }, 100);
+    // Focus auf Input mit Verzögerung für Animation
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        if (this.input) {
+          this.input.focus();
+          this.input.select();
+        }
+      }, 100);
+    });
 
     // Body Scroll verhindern
     document.body.style.overflow = 'hidden';
+
+    // Kein Empty State anzeigen – Modal bleibt leer wie bei macOS 26.2
+    if (!this.input.value) {
+      this.resultsContainer.innerHTML = '';
+      this.currentResults = [];
+      this.selectedIndex = -1;
+    }
 
     _log.info('Search opened');
   }
@@ -294,14 +372,17 @@ class SearchComponent {
 
     this.isOpen = false;
     this.overlay.classList.remove('active');
+    this.selectedIndex = -1;
 
     // Input leeren
     if (this.input) {
       this.input.value = '';
     }
 
-    // Ergebnisse zurücksetzen
-    this.showEmptyState();
+    // Clear timeout
+    if (this.searchTimeout) {
+      clearTimeout(this.searchTimeout);
+    }
 
     // Body Scroll wieder erlauben
     document.body.style.overflow = '';
@@ -309,68 +390,113 @@ class SearchComponent {
     _log.info('Search closed');
   }
 
+  navigateResults(direction) {
+    if (this.currentResults.length === 0) return;
+
+    // Entferne vorherige Selektion
+    const previousItem = this.resultsContainer.querySelector('.search-result-item.keyboard-selected');
+    if (previousItem) {
+      previousItem.classList.remove('keyboard-selected');
+    }
+
+    // Berechne neuen Index
+    this.selectedIndex += direction;
+
+    // Wrap around
+    if (this.selectedIndex < 0) {
+      this.selectedIndex = this.currentResults.length - 1;
+    } else if (this.selectedIndex >= this.currentResults.length) {
+      this.selectedIndex = 0;
+    }
+
+    // Markiere neues Element
+    const items = this.resultsContainer.querySelectorAll('.search-result-item');
+    if (items[this.selectedIndex]) {
+      items[this.selectedIndex].classList.add('keyboard-selected');
+      items[this.selectedIndex].scrollIntoView({
+        block: 'nearest',
+        behavior: 'smooth'
+      });
+    }
+  }
+
   handleSearch(query) {
     const trimmedQuery = query.trim().toLowerCase();
 
     if (trimmedQuery.length === 0) {
-      this.showEmptyState();
+      this.resultsContainer.innerHTML = '';
+      this.currentResults = [];
+      this.selectedIndex = -1;
       return;
     }
 
-    if (trimmedQuery.length < 2) {
-      this.showEmptyState('Bitte mindestens 2 Zeichen eingeben');
-      return;
-    }
+
 
     // Suche durchführen
     const results = this.searchInIndex(trimmedQuery);
     this.currentResults = results;
-    this.displayResults(results, trimmedQuery);
+    this.selectedIndex = -1;
+
+    if (results.length > 0) {
+      this.displayResults(results, trimmedQuery);
+      // Speichere Suche
+      this.saveRecentSearch(trimmedQuery);
+    } else {
+      this.showEmptyState(`Keine Ergebnisse für "${trimmedQuery}"`);
+    }
   }
 
   searchInIndex(query) {
     const results = [];
+    const queryLower = query.toLowerCase();
+    const queryWords = queryLower.split(/\s+/).filter(w => w.length > 1);
 
     this.searchIndex.forEach(item => {
-      let score = 0;
-      const queryLower = query.toLowerCase();
+      let score = item.priority || 0; // Start mit Priorität
+      const titleLower = item.title.toLowerCase();
+      const descLower = item.description.toLowerCase();
 
-      // Exakte Übereinstimmung im Titel (höchste Priorität)
-      if (item.title.toLowerCase().includes(queryLower)) {
-        score += 100;
+      // Exakte Titel-Übereinstimmung (höchste Priorität)
+      if (titleLower === queryLower) {
+        score += 1000;
+      } else if (titleLower.startsWith(queryLower)) {
+        score += 500;
+      } else if (titleLower.includes(queryLower)) {
+        score += 200;
       }
 
       // Übereinstimmung in der Beschreibung
-      if (item.description.toLowerCase().includes(queryLower)) {
-        score += 50;
+      if (descLower.includes(queryLower)) {
+        score += 100;
       }
 
-      // Übereinstimmung in Keywords
+      // Keyword-Matching
       item.keywords.forEach(keyword => {
-        if (keyword.toLowerCase().includes(queryLower)) {
-          score += 30;
+        const keywordLower = keyword.toLowerCase();
+        if (keywordLower === queryLower) {
+          score += 150;
+        } else if (keywordLower.startsWith(queryLower)) {
+          score += 80;
+        } else if (keywordLower.includes(queryLower)) {
+          score += 40;
         }
       });
 
-      // Übereinstimmung in Kategorie
-      if (item.category.toLowerCase().includes(queryLower)) {
-        score += 20;
-      }
+      // Multi-Word-Matching
+      queryWords.forEach(word => {
+        if (titleLower.includes(word)) score += 30;
+        if (descLower.includes(word)) score += 15;
 
-      // Fuzzy-Matching: Teilwort-Übereinstimmungen
-      const words = queryLower.split(' ');
-      words.forEach(word => {
-        if (word.length > 2) {
-          const titleWords = item.title.toLowerCase().split(' ');
-          const descWords = item.description.toLowerCase().split(' ');
+        item.keywords.forEach(keyword => {
+          if (keyword.toLowerCase().includes(word)) score += 20;
+        });
+      });
 
-          titleWords.forEach(tw => {
-            if (tw.startsWith(word)) score += 10;
-          });
-
-          descWords.forEach(dw => {
-            if (dw.startsWith(word)) score += 5;
-          });
+      // Fuzzy-Matching für Tippfehler (Levenshtein-Distanz vereinfacht)
+      const titleWords = titleLower.split(/\s+/);
+      titleWords.forEach(tw => {
+        if (this.isSimilar(tw, queryLower)) {
+          score += 50;
         }
       });
 
@@ -380,7 +506,15 @@ class SearchComponent {
     });
 
     // Sortiere nach Score (höchster zuerst)
-    return results.sort((a, b) => b.score - a.score);
+    return results.sort((a, b) => b.score - a.score).slice(0, 20); // Max 20 Ergebnisse
+  }
+
+  isSimilar(str1, str2) {
+    // Einfache Ähnlichkeitsprüfung
+    if (str1.length < 3 || str2.length < 3) return false;
+    const shorter = str1.length < str2.length ? str1 : str2;
+    const longer = str1.length >= str2.length ? str1 : str2;
+    return longer.includes(shorter.substring(0, shorter.length - 1));
   }
 
   displayResults(results, query) {
@@ -389,12 +523,30 @@ class SearchComponent {
       return;
     }
 
+    // Gruppiere nach Kategorie
+    const grouped = {};
+    results.forEach(result => {
+      if (!grouped[result.category]) {
+        grouped[result.category] = [];
+      }
+      grouped[result.category].push(result);
+    });
+
     const html = `
       <div class="search-stats">
+        <span class="search-stats-icon">🔍</span>
         <span class="search-stats-count">${results.length}</span> 
-        ${results.length === 1 ? 'Ergebnis' : 'Ergebnisse'} gefunden
+        ${results.length === 1 ? 'Ergebnis' : 'Ergebnisse'}
       </div>
-      ${results.map((result, index) => this.createResultHTML(result, query, index)).join('')}
+      ${Object.entries(grouped).map(([category, items]) => `
+        <div class="search-category-group">
+          <div class="search-category-header">
+            <span>${category}</span>
+            <div class="search-category-divider"></div>
+          </div>
+          ${items.map((result, index) => this.createResultHTML(result, query)).join('')}
+        </div>
+      `).join('')}
     `;
 
     this.resultsContainer.innerHTML = html;
@@ -405,6 +557,15 @@ class SearchComponent {
         e.preventDefault();
         this.selectResult(index);
       });
+
+      item.addEventListener('mouseenter', () => {
+        // Entferne keyboard-selected von allen
+        this.resultsContainer.querySelectorAll('.search-result-item').forEach(el => {
+          el.classList.remove('keyboard-selected');
+        });
+        this.selectedIndex = index;
+        item.classList.add('keyboard-selected');
+      });
     });
   }
 
@@ -413,21 +574,17 @@ class SearchComponent {
     const highlightedTitle = this.highlightText(result.title, query);
     const highlightedDesc = this.highlightText(result.description, query);
 
-    const categoryIcons = {
-      'Seite': '📄',
-      'Blog': '📝',
-      'Technologie': '⚙️',
-      'Info': 'ℹ️'
-    };
-
     return `
       <a href="${result.url}" class="search-result-item" data-id="${result.id}">
-        <span class="search-result-category">${result.category}</span>
-        <div class="search-result-title">
-          <span class="search-result-icon">${categoryIcons[result.category] || '📄'}</span>
-          ${highlightedTitle}
+        <div class="search-result-icon-wrapper">
+          ${result.icon || '📄'}
         </div>
-        <div class="search-result-description">${highlightedDesc}</div>
+        <div class="search-result-content">
+          <div class="search-result-title-row">
+            <div class="search-result-title">${highlightedTitle}</div>
+          </div>
+          <div class="search-result-description">${highlightedDesc}</div>
+        </div>
       </a>
     `;
   }
@@ -435,33 +592,76 @@ class SearchComponent {
   highlightText(text, query) {
     if (!query) return text;
 
-    const regex = new RegExp(`(${query})`, 'gi');
-    return text.replace(regex, '<span class="search-result-highlight">$1</span>');
+    const words = query.toLowerCase().split(/\s+/).filter(w => w.length > 0);
+    let highlightedText = text;
+
+    words.forEach(word => {
+      const regex = new RegExp(`(${this.escapeRegex(word)})`, 'gi');
+      highlightedText = highlightedText.replace(regex, '<span class="search-result-highlight">$1</span>');
+    });
+
+    return highlightedText;
+  }
+
+  escapeRegex(str) {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 
   showEmptyState(message = null) {
     const html = `
       <div class="search-empty">
-        <div class="search-empty-icon">🔍</div>
-        <div class="search-empty-text">${message || 'Gib einen Suchbegriff ein'}</div>
-        <div class="search-empty-hint">Suche nach Seiten, Projekten oder Blog-Posts</div>
+        <div class="search-empty-text">${message || 'Keine Ergebnisse'}</div>
       </div>
     `;
     this.resultsContainer.innerHTML = html;
     this.currentResults = [];
+    this.selectedIndex = -1;
   }
+
 
   selectResult(index) {
     if (index < 0 || index >= this.currentResults.length) return;
 
     const result = this.currentResults[index];
-    _log.info(`Navigating to: ${result.url}`);
+    _log.info(`Navigating to: ${result.url} (score: ${result.score})`);
 
     // Navigation
     window.location.href = result.url;
 
     // Schließe Search
     this.close();
+  }
+
+  // Recent Searches Management
+  loadRecentSearches() {
+    try {
+      const stored = localStorage.getItem('search-recent');
+      return stored ? JSON.parse(stored) : [];
+    } catch (e) {
+      _log.warn('Failed to load recent searches:', e);
+      return [];
+    }
+  }
+
+  saveRecentSearch(query) {
+    try {
+      const recent = this.recentSearches.filter(q => q !== query);
+      recent.unshift(query);
+      this.recentSearches = recent.slice(0, 5); // Max 5 recent
+      localStorage.setItem('search-recent', JSON.stringify(this.recentSearches));
+    } catch (e) {
+      _log.warn('Failed to save recent search:', e);
+    }
+  }
+
+  clearRecentSearches() {
+    try {
+      this.recentSearches = [];
+      localStorage.removeItem('search-recent');
+      _log.info('Recent searches cleared');
+    } catch (e) {
+      _log.warn('Failed to clear recent searches:', e);
+    }
   }
 }
 
@@ -482,6 +682,7 @@ export function initSearch() {
   // Mache global verfügbar
   window.openSearch = () => searchInstance.open();
   window.closeSearch = () => searchInstance.close();
+  window.toggleSearch = () => searchInstance.toggle();
 
   return searchInstance;
 }
@@ -504,6 +705,17 @@ export function openSearch() {
 export function closeSearch() {
   if (searchInstance) {
     searchInstance.close();
+  }
+}
+
+/**
+ * Toggle Search
+ */
+export function toggleSearch() {
+  if (searchInstance) {
+    searchInstance.toggle();
+  } else {
+    openSearch();
   }
 }
 
