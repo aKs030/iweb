@@ -230,14 +230,6 @@ body {
   border-radius: 6px;
 }
 
-/* Fallback raster logo styling (kept for backward compatibility) */
-.site-logo-img {
-  display: inline-block;
-  width: 40px;
-  height: 40px;
-  object-fit: contain;
-  border-radius: 6px;
-}
 
 /* Active menu link styling */
 .site-menu__list a.active,
@@ -574,11 +566,7 @@ button.search-trigger:focus .icon-fallback {
     transform 0.2s var(--dynamic-menu-spring-quick);
 }
 
-.site-menu__list .has-submenu .submenu.position-right {
-  left: auto;
-  right: 0;
-  transform-origin: top right;
-}
+
 
 /* Automatische rechts-Ausrichtung wenn nötig */
 .site-menu__list .has-submenu:last-child .submenu,
