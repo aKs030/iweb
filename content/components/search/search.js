@@ -172,15 +172,8 @@ const SEARCH_INDEX = [
   }
 ];
 
-/**
- * Quick Actions für schnellen Zugriff
- */
-const QUICK_ACTIONS = [
-  { label: 'Alle Projekte', icon: '💼', url: '/pages/projekte/' },
-  { label: 'Foto-Galerie', icon: '📸', url: '/pages/gallery/' },
-  { label: 'Blog lesen', icon: '📝', url: '/pages/blog/' },
-  { label: 'Videos ansehen', icon: '🎬', url: '/pages/videos/' }
-];
+/* ===== Quick Actions - Removed (unused) ===== */
+/* The QUICK_ACTIONS constant was removed because Quick Actions are not currently injected by the UI. Keep a record here to reintroduce later if needed. */
 
 class SearchComponent {
   constructor() {
@@ -191,7 +184,7 @@ class SearchComponent {
     this.searchIndex = SEARCH_INDEX;
     this.currentResults = [];
     this.selectedIndex = -1;
-    this.recentSearches = this.loadRecentSearches();
+    /* Recent searches feature removed (unused). Previously stored in localStorage; methods removed below. */
     this.searchTimeout = null;
 
     this.init();
@@ -265,18 +258,7 @@ class SearchComponent {
     });
   }
 
-  createQuickActionsHTML() {
-    return `
-      <div class="search-quick-actions">
-        ${QUICK_ACTIONS.map(action => `
-          <a href="${action.url}" class="search-quick-action">
-            <div class="search-quick-action-icon">${action.icon}</div>
-            <span class="search-quick-action-label">${action.label}</span>
-          </a>
-        `).join('')}
-      </div>
-    `;
-  }
+  /* Quick Actions generator removed (unused). Reintroduce similar method if Quick Actions are enabled in the UI. */
 
   attachEventListeners() {
     // Globale Tastatur-Shortcuts
@@ -439,8 +421,7 @@ class SearchComponent {
 
     if (results.length > 0) {
       this.displayResults(results, trimmedQuery);
-      // Speichere Suche
-      this.saveRecentSearch(trimmedQuery);
+      /* Recent searches tracking removed — no localStorage updates */
     } else {
       this.showEmptyState(`Keine Ergebnisse für "${trimmedQuery}"`);
     }
@@ -632,37 +613,8 @@ class SearchComponent {
     this.close();
   }
 
-  // Recent Searches Management
-  loadRecentSearches() {
-    try {
-      const stored = localStorage.getItem('search-recent');
-      return stored ? JSON.parse(stored) : [];
-    } catch (e) {
-      _log.warn('Failed to load recent searches:', e);
-      return [];
-    }
-  }
-
-  saveRecentSearch(query) {
-    try {
-      const recent = this.recentSearches.filter(q => q !== query);
-      recent.unshift(query);
-      this.recentSearches = recent.slice(0, 5); // Max 5 recent
-      localStorage.setItem('search-recent', JSON.stringify(this.recentSearches));
-    } catch (e) {
-      _log.warn('Failed to save recent search:', e);
-    }
-  }
-
-  clearRecentSearches() {
-    try {
-      this.recentSearches = [];
-      localStorage.removeItem('search-recent');
-      _log.info('Recent searches cleared');
-    } catch (e) {
-      _log.warn('Failed to clear recent searches:', e);
-    }
-  }
+  /* Recent Searches feature removed (unused)
+     The related methods were removed to reduce code surface. Restore from version history if needed. */
 }
 
 // Globale Instanz
