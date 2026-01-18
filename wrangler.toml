@@ -18,4 +18,5 @@ crons = ["0 3 * * *"]
 
 # Production environment overrides (keep secrets in GitHub/Cloudflare, not here)
 [env.production]
+name = "throbbing-mode-6fe1-nlweb"
 vars = { RAG_ID = "throbbing-mode-6fe1" }
