@@ -471,6 +471,7 @@ export class ShootingStarManager {
 
     try {
       let star;
+      let isNew = false;
       if (this.pool.length > 0) {
         star = this.pool.pop();
         star.material.opacity = 1.0;
@@ -478,6 +479,7 @@ export class ShootingStarManager {
       } else {
         const material = this.sharedMaterial.clone();
         star = new this.THREE.Mesh(this.sharedGeometry, material);
+        isNew = true;
       }
 
       const startPos = {
@@ -502,7 +504,9 @@ export class ShootingStarManager {
         age: 0,
       });
 
-      this.scene.add(star);
+      if (isNew) {
+        this.scene.add(star);
+      }
     } catch (error) {
       log.error('Failed to create shooting star:', error);
     }
@@ -546,7 +550,7 @@ export class ShootingStarManager {
       }
 
       if (star.age > star.lifetime) {
-        this.scene.remove(star.mesh);
+        star.mesh.visible = false;
         // star.mesh.material.dispose(); // Don't dispose, reuse!
         this.pool.push(star.mesh);
         this.activeStars.splice(i, 1);
@@ -573,6 +577,7 @@ export class ShootingStarManager {
     // Dispose pooled stars
     this.pool.forEach((mesh) => {
       if (mesh.material) mesh.material.dispose();
+      this.scene.remove(mesh);
     });
     this.pool = [];
 
