@@ -13,10 +13,6 @@
   transition: opacity 0.8s ease;
 }
 
-.three-earth-container.is-dragging {
-  cursor: grabbing;
-}
-
 .three-earth-container canvas {
   display: block;
   width: 100%;

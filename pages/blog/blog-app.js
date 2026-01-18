@@ -302,7 +302,6 @@ function BlogApp() {
   const [posts, setPosts] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
   const [filter, setFilter] = React.useState('All');
-  const [search, setSearch] = React.useState('');
   const [currentPostId, setCurrentPostId] = React.useState(null);
   const [ogMeta, setOgMeta] = React.useState(null);
 
@@ -355,11 +354,9 @@ function BlogApp() {
     () =>
       posts.filter((p) => {
         const matchCat = filter === 'All' || p.category === filter;
-        const matchSearch =
-          !search || p.title.toLowerCase().includes(search.toLowerCase());
-        return matchCat && matchSearch;
+        return matchCat;
       }),
-    [posts, filter, search],
+    [posts, filter],
   );
 
   const getOg = (id) => (ogMeta ? ogMeta[id] : null);
@@ -501,16 +498,6 @@ function BlogApp() {
       >
         <div className="blog-header-content">
           <div className="blog-controls">
-            <div className="search-wrapper">
-              <span className="search-icon"><${Icons.Search} /></span>
-              <input
-                type="text"
-                className="search-input"
-                placeholder="Suchen..."
-                value=${search}
-                onInput=${(e) => setSearch(e.target.value)}
-              />
-            </div>
             <div className="filter-bar">
               ${categories.map(
                 (cat) => html`
