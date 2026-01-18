@@ -152,6 +152,7 @@ export class CardManager {
             const headerWorldOffset = this._pixelsToWorldY(headerPixels);
 
             card.scale.setScalar(scale);
+            card.userData.baseScale = scale;
             card.position.x = x;
             card.position.y = y - headerWorldOffset;
             card.position.z = 0;
@@ -187,6 +188,7 @@ export class CardManager {
             }
 
             card.scale.setScalar(finalScale);
+            card.userData.baseScale = finalScale;
             card.position.x = x;
             card.position.y = y;
             card.position.z = 0; // Keine Tiefenvariation
