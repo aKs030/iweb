@@ -27,9 +27,7 @@ async function trimCache(cacheName, maxEntries = 60) {
   const keys = await cache.keys();
   if (keys.length <= maxEntries) return;
   const toDelete = keys.length - maxEntries;
-  for (let i = 0; i < toDelete; i++) {
-    await cache.delete(keys[i]);
-  }
+  await Promise.all(keys.slice(0, toDelete).map((key) => cache.delete(key)));
 }
 
 // Static Earth textures that never change—pre-cache for offline reliability
