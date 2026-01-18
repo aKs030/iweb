@@ -331,23 +331,6 @@ dataLayer.push({
             (globalThis.location?.pathname || '').replace(/\/+$|\/+$/g, '') ||
             '/';
 
-          // Load NLWeb only on the Projekte page to avoid unnecessary loading site-wide
-          if (_path === '/projekte' || _path.startsWith('/projekte/')) {
-            // NLWeb (Cloudflare AutoRAG) widget — external worker hosting
-            upsertPreconnect(
-              'https://throbbing-mode-6fe1-nlweb.httpsgithubcomaks030website.workers.dev',
-            );
-            // CSS files are loaded lazily by nlweb-init.js when widget is actually used
-            // No need to preload them here to avoid unused preload warnings
-
-            // Load the local initializer module that imports the NLWeb worker module
-            upsertModulePreload('/content/components/search/nlweb-init.js');
-            upsertScript({
-              src: '/content/components/search/nlweb-init.js',
-              module: true,
-            });
-          }
-
           // Existing deferred assets (loaded everywhere)
           upsertScript({
             src: '/content/components/robot-companion/robot-companion.js',
