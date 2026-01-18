@@ -5,7 +5,13 @@
     "description": "Web Developer & Photographer in Berlin. Spezialisiert auf React, Three.js und Urban Photography.",
     "category": "Seite",
     "url": "/",
-    "keywords": ["home", "start", "hauptseite", "portfolio", "abdulkerim sesli"],
+    "keywords": [
+      "home",
+      "start",
+      "hauptseite",
+      "portfolio",
+      "abdulkerim sesli"
+    ],
     "priority": 10
   },
   {
@@ -14,7 +20,15 @@
     "description": "Erfahre mehr über meine Arbeit, Fähigkeiten und meinen Werdegang als Web Developer und Fotograf.",
     "category": "Seite",
     "url": "/pages/about/",
-    "keywords": ["über", "about", "biografie", "cv", "lebenslauf", "skills", "fähigkeiten"],
+    "keywords": [
+      "über",
+      "about",
+      "biografie",
+      "cv",
+      "lebenslauf",
+      "skills",
+      "fähigkeiten"
+    ],
     "priority": 9
   },
   {
@@ -23,7 +37,15 @@
     "description": "Eine Auswahl meiner Web-Entwicklungsprojekte mit React, Three.js und modernen Technologien.",
     "category": "Seite",
     "url": "/pages/projekte/",
-    "keywords": ["projekte", "projects", "portfolio", "arbeiten", "react", "threejs", "web development"],
+    "keywords": [
+      "projekte",
+      "projects",
+      "portfolio",
+      "arbeiten",
+      "react",
+      "threejs",
+      "web development"
+    ],
     "priority": 9
   },
   {
@@ -32,7 +54,15 @@
     "description": "Fotografie-Portfolio mit Urban Photography und kreativen Aufnahmen aus Berlin.",
     "category": "Seite",
     "url": "/pages/gallery/",
-    "keywords": ["galerie", "gallery", "fotografie", "photography", "bilder", "fotos", "urban"],
+    "keywords": [
+      "galerie",
+      "gallery",
+      "fotografie",
+      "photography",
+      "bilder",
+      "fotos",
+      "urban"
+    ],
     "priority": 8
   },
   {
