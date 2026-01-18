@@ -7,7 +7,8 @@
  * - Responsive Hamburger-Menü
  * - FontAwesome Icons und Google Fonts Integration
  * - Accessibility-optimiert mit ARIA-Attributen
- * * OPTIMIZATIONS v2.2.0:
+ *
+ * OPTIMIZATIONS v2.2.0:
  * - Integration of EVENTS constants
  * - Optimized event listener handling (passive/once)
  * - Improved performance on scroll via RAF
@@ -17,12 +18,7 @@
  */
 
 // ===== Shared Utilities Import =====
-import {
-  createLogger,
-  getElementById,
-  EVENTS,
-  addListener,
-} from '/content/utils/shared-utilities.js';
+import { createLogger, getElementById, EVENTS, addListener, } from '/content/utils/shared-utilities.js';
 import { upsertHeadLink } from '/content/utils/dom-helpers.js';
 
 const _log = createLogger('menu');
@@ -33,7 +29,6 @@ function ensureMenuStyles() {
   if (typeof document === 'undefined') return null;
   const existing = document.head.querySelector(`link[href="${MENU_CSS_URL}"]`);
   if (existing) return existing;
-
   return upsertHeadLink({
     rel: 'stylesheet',
     href: MENU_CSS_URL,
@@ -63,10 +58,7 @@ const initMenu = () => {
         // safety fallback: stop observing after 3s
         setTimeout(() => observer.disconnect(), 3000);
       }
-    } catch (err) {
-      /* ignore observer failures */
-    }
-
+    } catch (err) { /* ignore observer failures */ }
     return;
   }
 
@@ -86,6 +78,7 @@ const initMenu = () => {
   fixSubpageLinks(menuContainer);
   setSiteTitle();
   setActiveMenuLink();
+
   // Keep menu active state in sync when hash or history changes
   window.addEventListener('hashchange', setActiveMenuLink);
   window.addEventListener('popstate', setActiveMenuLink);
@@ -95,6 +88,7 @@ const initMenu = () => {
     const isMenuToggle = event.target.closest('.site-menu__toggle');
     if (!isClickInside && !isMenuToggle) closeMenu(menuContainer);
   };
+
   const _removeDocClick = addListener(document, 'click', _onMenuDocClick);
   // store remover for potential cleanup
   menuContainer.__listenerRemovers = menuContainer.__listenerRemovers || [];
@@ -110,134 +104,158 @@ if (document.readyState !== 'loading') {
 
 function getMenuHTML() {
   return `
-    <!-- Skip-Links für Accessibility (WCAG 2.1 Level AA) -->
-    <div class="skip-links">
-      <a href="#main-content" class="skip-link">Zum Hauptinhalt springen</a>
-      <a href="#navigation" class="skip-link">Zur Navigation springen</a>
-    </div>
+<!-- Skip-Links für Accessibility (WCAG 2.1 Level AA) -->
+<div class="skip-links">
+  <a href="#main-content" class="skip-link">Zum Hauptinhalt springen</a>
+  <a href="#navigation" class="skip-link">Zur Navigation springen</a>
+</div>
 
-    <!-- SVG Icon Sprite für Navigation -->
-    <svg
-      aria-hidden="true"
-      style="position: absolute; width: 0; height: 0; overflow: hidden"
-      xmlns="http://www.w3.org/2000/svg"
+<!-- SVG Icon Sprite für Navigation -->
+<svg
+  aria-hidden="true"
+  style="position: absolute; width: 0; height: 0; overflow: hidden"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <defs>
+    <symbol id="icon-house" viewBox="0 0 576 512">
+      <path
+        fill="currentColor"
+        d="M541 229.16 512 205.26V64a32 32 0 0 0-32-32h-64a32 32 0 0 0-32 32v24.6L314.52 43a35.93 35.93 0 0 0-45 0L35 229.16a16 16 0 0 0-2 22.59l21.4 25.76a16 16 0 0 0 22.59 2L96 264.86V456a32 32 0 0 0 32 32h128V344a16 16 0 0 1 16-16h64a16 16 0 0 1 16 16v144h128a32 32 0 0 0 32-32V264.86l19 14.65a16 16 0 0 0 22.59-2l21.4-25.76a16 16 0 0 0-2-22.59Z"
+      />
+    </symbol>
+    <symbol id="icon-images" viewBox="0 0 576 512">
+      <path
+        fill="currentColor"
+        d="M480 416V80a48 48 0 0 0-48-48H80a48 48 0 0 0-48 48v336H16a16 16 0 0 0 0 32h448a16 16 0 0 0 0-32ZM64 416V80a16 16 0 0 1 16-16h352a16 16 0 0 1 16 16v336Zm96-80 64-80 48 64 64-80 80 96H160Zm48-144a40 40 0 1 1-40-40 40 40 0 0 1 40 40Zm368-96v304a16 16 0 0 1-16 16h-16v-32h16V96H496V64h16a16 16 0 0 1 16 16Z"
+      />
+    </symbol>
+    <symbol id="icon-user" viewBox="0 0 448 512">
+      <path
+        fill="currentColor"
+        d="M224 256A128 128 0 1 0 96 128a128 128 0 0 0 128 128Zm89.6 32h-11.7a174.64 174.64 0 0 1-155.8 0h-11.7A134.4 134.4 0 0 0 0 422.4 57.6 57.6 0 0 0 57.6 480h332.8A57.6 57.6 0 0 0 448 422.4 134.4 134.4 0 0 0 313.6 288Z"
+      />
+    </symbol>
+    <symbol id="icon-mail" viewBox="0 0 512 512">
+      <path
+        fill="currentColor"
+        d="M48 64C21.5 64 0 85.5 0 112v288c0 26.5 21.5 48 48 48h416c26.5 0 48-21.5 48-48V112c0-26.5-21.5-48-48-48H48zM48 96h416c8.8 0 16 7.2 16 16v41.4L288 264.4c-11.3 8.5-26.7 8.5-38 0L32 153.4V112c0-8.8 7.2-16 16-16zm0 320v-222l176 132c22.5 16.9 53.5 16.9 76 0l176-132v222c0 8.8-7.2 16-16 16H64c-8.8 0-16-7.2-16-16z"
+      />
+    </symbol>
+    <symbol id="icon-search" viewBox="0 0 512 512">
+      <path
+        fill="currentColor"
+        d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352a144 144 0 1 0 0-288 144 144 0 1 0 0 288z"
+      />
+    </symbol>
+  </defs>
+</svg>
+
+<a href="/" class="site-logo-link">
+  <span class="site-logo__container u-inline-center">
+    <span class="site-logo elegant-logo" id="site-title"
+      ><span class="visually-hidden">Startseite</span></span
     >
-      <defs>
-        <symbol id="icon-house" viewBox="0 0 576 512">
-          <path
-            fill="currentColor"
-            d="M541 229.16 512 205.26V64a32 32 0 0 0-32-32h-64a32 32 0 0 0-32 32v24.6L314.52 43a35.93 35.93 0 0 0-45 0L35 229.16a16 16 0 0 0-2 22.59l21.4 25.76a16 16 0 0 0 22.59 2L96 264.86V456a32 32 0 0 0 32 32h128V344a16 16 0 0 1 16-16h64a16 16 0 0 1 16 16v144h128a32 32 0 0 0 32-32V264.86l19 14.65a16 16 0 0 0 22.59-2l21.4-25.76a16 16 0 0 0-2-22.59Z"
-          />
-        </symbol>
-        <symbol id="icon-images" viewBox="0 0 576 512">
-          <path
-            fill="currentColor"
-            d="M480 416V80a48 48 0 0 0-48-48H80a48 48 0 0 0-48 48v336H16a16 16 0 0 0 0 32h448a16 16 0 0 0 0-32ZM64 416V80a16 16 0 0 1 16-16h352a16 16 0 0 1 16 16v336Zm96-80 64-80 48 64 64-80 80 96H160Zm48-144a40 40 0 1 1-40-40 40 40 0 0 1 40 40Zm368-96v304a16 16 0 0 1-16 16h-16v-32h16V96H496V64h16a16 16 0 0 1 16 16Z"
-          />
-        </symbol>
-        <symbol id="icon-user" viewBox="0 0 448 512">
-          <path
-            fill="currentColor"
-            d="M224 256A128 128 0 1 0 96 128a128 128 0 0 0 128 128Zm89.6 32h-11.7a174.64 174.64 0 0 1-155.8 0h-11.7A134.4 134.4 0 0 0 0 422.4 57.6 57.6 0 0 0 57.6 480h332.8A57.6 57.6 0 0 0 448 422.4 134.4 134.4 0 0 0 313.6 288Z"
-          />
-        </symbol>
-        <symbol id="icon-mail" viewBox="0 0 512 512">
-          <path fill="currentColor" d="M48 64C21.5 64 0 85.5 0 112v288c0 26.5 21.5 48 48 48h416c26.5 0 48-21.5 48-48V112c0-26.5-21.5-48-48-48H48zM48 96h416c8.8 0 16 7.2 16 16v41.4L288 264.4c-11.3 8.5-26.7 8.5-38 0L32 153.4V112c0-8.8 7.2-16 16-16zm0 320v-222l176 132c22.5 16.9 53.5 16.9 76 0l176-132v222c0 8.8-7.2 16-16 16H64c-8.8 0-16-7.2-16-16z"/>
-        </symbol>
-      </defs>
-    </svg>
+    <span class="site-subtitle" id="site-subtitle"></span>
+  </span>
+</a>
 
-    <a href="/" class="site-logo-link">
-      <span class="site-logo__container u-inline-center">
-        <span class="site-logo elegant-logo" id="site-title"><span class="visually-hidden">Startseite</span></span>
-        <span class="site-subtitle" id="site-subtitle"></span>
-      </span>
-    </a>
+<button
+  type="button"
+  class="site-menu__toggle"
+  aria-label="Menü"
+  aria-controls="navigation"
+  aria-expanded="false"
+>
+  <span class="site-menu__hamburger"></span>
+</button>
 
-    <button
-      type="button"
-      class="site-menu__toggle"
-      aria-label="Menü"
-      aria-controls="navigation"
-      aria-expanded="false"
-    >
-      <span class="site-menu__hamburger"></span>
-    </button>
-
-    <nav id="navigation" class="site-menu" aria-label="Hauptnavigation">
-      <ul class="site-menu__list">
-        <li>
-          <a href="/">
-            <svg class="nav-icon" aria-hidden="true">
-              <use href="#icon-house"></use>
-            </svg>
-            <span class="icon-fallback" style="display: none">🏠</span>
-            <span>Startseite</span>
-          </a>
-        </li>
-        <li>
-          <a href="/projekte/">
-            <svg class="nav-icon" aria-hidden="true">
-              <use href="#icon-images"></use>
-            </svg>
-            <span class="icon-fallback" style="display: none">🖼️</span>
-            <span>Projekte</span>
-          </a>
-        </li>
-        <li>
-          <a href="/gallery/">
-            <svg class="nav-icon" aria-hidden="true">
-              <use href="#icon-images"></use>
-            </svg>
-            <span class="icon-fallback" style="display: none">📷</span>
-            <span>Fotos</span>
-          </a>
-        </li>
-        <li>
-          <a href="/videos/">
-            <svg class="nav-icon" aria-hidden="true">
-              <use href="#icon-images"></use>
-            </svg>
-            <span class="icon-fallback" style="display: none">🎬</span>
-            <span>Videos</span>
-          </a>
-        </li>
-        <li>
-          <a href="/blog/">
-            <svg class="nav-icon" aria-hidden="true">
-              <use href="#icon-mail"></use>
-            </svg>
-            <span class="icon-fallback" style="display: none">📝</span>
-            <span>Blog</span>
-          </a>
-        </li>
-        <li>
-          <a href="/about/">
-            <svg class="nav-icon" aria-hidden="true">
-              <use href="#icon-user"></use>
-            </svg>
-            <span class="icon-fallback" style="display: none">🧑</span>
-            <span>Über mich</span>
-          </a>
-        </li>
-        <li>
-          <a href="#site-footer" data-footer-trigger aria-expanded="false">
-            <svg class="nav-icon" aria-hidden="true">
-              <use href="#icon-mail"></use>
-            </svg>
-            <span class="icon-fallback" style="display: none">✉️</span>
-            <span>Kontakt</span>
-          </a>
-        </li>
-      </ul>
-    </nav>
-  `;
+<nav id="navigation" class="site-menu" aria-label="Hauptnavigation">
+  <ul class="site-menu__list">
+    <li>
+      <a href="/">
+        <svg class="nav-icon" aria-hidden="true">
+          <use href="#icon-house"></use>
+        </svg>
+        <span class="icon-fallback" style="display: none">🏠</span>
+        <span>Startseite</span>
+      </a>
+    </li>
+    <li>
+      <a href="/projekte/">
+        <svg class="nav-icon" aria-hidden="true">
+          <use href="#icon-images"></use>
+        </svg>
+        <span class="icon-fallback" style="display: none">🖼️</span>
+        <span>Projekte</span>
+      </a>
+    </li>
+    <li>
+      <a href="/gallery/">
+        <svg class="nav-icon" aria-hidden="true">
+          <use href="#icon-images"></use>
+        </svg>
+        <span class="icon-fallback" style="display: none">📷</span>
+        <span>Fotos</span>
+      </a>
+    </li>
+    <li>
+      <a href="/videos/">
+        <svg class="nav-icon" aria-hidden="true">
+          <use href="#icon-images"></use>
+        </svg>
+        <span class="icon-fallback" style="display: none">🎬</span>
+        <span>Videos</span>
+      </a>
+    </li>
+    <li>
+      <a href="/blog/">
+        <svg class="nav-icon" aria-hidden="true">
+          <use href="#icon-mail"></use>
+        </svg>
+        <span class="icon-fallback" style="display: none">📝</span>
+        <span>Blog</span>
+      </a>
+    </li>
+    <li>
+      <a href="/about/">
+        <svg class="nav-icon" aria-hidden="true">
+          <use href="#icon-user"></use>
+        </svg>
+        <span class="icon-fallback" style="display: none">🧑</span>
+        <span>Über mich</span>
+      </a>
+    </li>
+    <li>
+      <button
+        type="button"
+        class="search-trigger"
+        aria-label="Suche öffnen"
+        title="Suche (⌘K / Ctrl+K)"
+      >
+        <svg class="nav-icon" aria-hidden="true">
+          <use href="#icon-search"></use>
+        </svg>
+        <span class="icon-fallback" style="display: none">🔍</span>
+        <span>Suche</span>
+      </button>
+    </li>
+    <li>
+      <a href="#site-footer" data-footer-trigger aria-expanded="false">
+        <svg class="nav-icon" aria-hidden="true">
+          <use href="#icon-mail"></use>
+        </svg>
+        <span class="icon-fallback" style="display: none">✉️</span>
+        <span>Kontakt</span>
+      </a>
+    </li>
+  </ul>
+</nav>
+`;
 }
 
 function fixSubpageLinks(container) {
   const path = window.location.pathname;
   const isHomePage = path === '/' || path === '/index.html';
-
   if (!isHomePage) {
     const links = container.querySelectorAll('.site-menu a[href^="#"]');
     links.forEach((link) => {
@@ -250,6 +268,7 @@ function fixSubpageLinks(container) {
 function initializeMenu(container) {
   const menuToggle = container.querySelector('.site-menu__toggle');
   const menu = container.querySelector('.site-menu');
+
   if (menuToggle && menu) {
     menu.setAttribute('role', 'navigation');
     menuToggle.setAttribute('aria-controls', menu.id || 'navigation');
@@ -262,22 +281,40 @@ function initializeMenu(container) {
       menuToggle.setAttribute('aria-expanded', String(!!open));
       menu.setAttribute('aria-hidden', String(!open));
     };
+
     const toggle = () => setState(!menu.classList.contains('open'));
+
     const _removeToggleClick = addListener(menuToggle, 'click', toggle);
-    const _onMenuToggleKeydown = (event) => {
-      if (event.key === 'Enter') toggle();
-    };
+    const _onMenuToggleKeydown = (event) => { if (event.key === 'Enter') toggle(); };
     const _removeToggleKeydown = addListener(
       menuToggle,
       'keydown',
       _onMenuToggleKeydown,
     );
+
     // store removers for potential cleanup
     menuToggle.__listenerRemovers = menuToggle.__listenerRemovers || [];
     menuToggle.__listenerRemovers.push(
       _removeToggleClick,
       _removeToggleKeydown,
     );
+  }
+
+  // Initialize Search Trigger
+  const searchTrigger = container.querySelector('.search-trigger');
+  if (searchTrigger) {
+    const _onSearchClick = (e) => {
+      e.preventDefault();
+      closeMenu(container); // Close mobile menu
+      // Dynamically import and open search
+      import('/content/components/search/search.js')
+        .then(module => { if (module.openSearch) { module.openSearch(); } })
+        .catch(err => _log.error('Failed to load search:', err));
+    };
+
+    const _removeSearchClick = addListener(searchTrigger, 'click', _onSearchClick);
+    searchTrigger.__listenerRemovers = searchTrigger.__listenerRemovers || [];
+    searchTrigger.__listenerRemovers.push(_removeSearchClick);
   }
 
   // Close the mobile menu when any navigation link is clicked
@@ -287,23 +324,20 @@ function initializeMenu(container) {
       const href = a.getAttribute('href');
       const isExternal = /^https?:\/\//i.test(href);
       const isAnchor = href && href.startsWith('#');
+
       closeMenu(container);
 
       if (
-        window.innerWidth <= 768 &&
-        href &&
-        !isExternal &&
-        !a.hasAttribute('target')
+        window.innerWidth <= 768 && href && !isExternal && !a.hasAttribute('target')
       ) {
         // Prevent default to allow smooth close animation then navigate
         if (!isAnchor) {
           e.preventDefault();
-          setTimeout(() => {
-            window.location.href = href;
-          }, 160);
+          setTimeout(() => { window.location.href = href; }, 160);
         }
       }
     };
+
     const _removeNavClick = addListener(a, 'click', _onNavLinkClick);
     // store ref to allow cleanup later
     a.__listenerRemovers = a.__listenerRemovers || [];
@@ -319,12 +353,10 @@ function initializeIcons() {
     icons.forEach((use) => {
       const href = use.getAttribute('href');
       if (!href) return;
-
       const targetId = href.substring(1);
       const target = document.getElementById(targetId);
       const svg = use.closest('svg');
       const fallback = svg?.nextElementSibling;
-
       if (!target && fallback?.classList.contains('icon-fallback')) {
         svg.style.display = 'none';
         fallback.style.display = 'inline-block';
@@ -339,15 +371,8 @@ function initializeIcons() {
 function initializeLogo(container) {
   const logoContainer = container.querySelector('.site-logo__container');
   if (logoContainer) {
-    const _onLogoContext = (e) => {
-      e.preventDefault?.();
-      window.location.href = '/';
-    };
-    const _removeLogoContext = addListener(
-      logoContainer,
-      'contextmenu',
-      _onLogoContext,
-    );
+    const _onLogoContext = (e) => { e.preventDefault?.(); window.location.href = '/'; };
+    const _removeLogoContext = addListener(logoContainer, 'contextmenu', _onLogoContext,);
     logoContainer.__listenerRemovers = logoContainer.__listenerRemovers || [];
     logoContainer.__listenerRemovers.push(_removeLogoContext);
   }
@@ -357,22 +382,24 @@ function initializeSubmenuLinks() {
   const submenuButtons = document.querySelectorAll(
     '.has-submenu > .submenu-toggle',
   );
+
   submenuButtons.forEach((btn) => {
     const _onSubmenuToggle = () => {
       const submenu = btn.nextElementSibling;
       const open = submenu.style.display === 'block';
-      document.querySelectorAll('.submenu').forEach((sm) => {
-        if (sm !== submenu) sm.style.display = 'none';
-      });
+
+      document.querySelectorAll('.submenu').forEach((sm) => { if (sm !== submenu) sm.style.display = 'none'; });
       submenu.style.display = open ? 'none' : 'block';
       btn.setAttribute('aria-expanded', String(!open));
     };
+
     const _removeToggle = addListener(btn, 'click', _onSubmenuToggle);
     btn.__listenerRemovers = btn.__listenerRemovers || [];
     btn.__listenerRemovers.push(_removeToggle);
   });
 
   const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
   if (isTouch) {
     document.querySelectorAll('.has-submenu > a').forEach((link) => {
       let tapped = false;
@@ -382,14 +409,10 @@ function initializeSubmenuLinks() {
           const parent = link.parentElement;
           if (!parent.classList.contains('open')) {
             e.preventDefault();
-            document.querySelectorAll('.has-submenu.open').forEach((el) => {
-              if (el !== parent) el.classList.remove('open');
-            });
+            document.querySelectorAll('.has-submenu.open').forEach((el) => { if (el !== parent) el.classList.remove('open'); });
             parent.classList.add('open');
             tapped = true;
-            setTimeout(() => {
-              tapped = false;
-            }, 600);
+            setTimeout(() => { tapped = false; }, 600);
           } else if (!tapped) {
             tapped = false;
           }
@@ -397,6 +420,7 @@ function initializeSubmenuLinks() {
         { passive: false },
       );
     });
+
     document.addEventListener('touchstart', function (e) {
       if (!e.target.closest('.site-menu')) {
         document
@@ -424,8 +448,10 @@ function setSiteTitle() {
     '/projekte/': 'Projekte',
     '/videos/': 'Videos',
   };
+
   const path = window.location.pathname;
   const pageTitle = titleMap[path] || document.title || 'Website';
+
   const siteTitleEl = getElementById('site-title');
   if (siteTitleEl) siteTitleEl.textContent = pageTitle;
 
@@ -458,6 +484,7 @@ function extractSectionInfo(sectionId) {
         header.style.visibility = 'hidden';
       });
     }
+
     return fallbackTitleMap[sectionId] || { title: 'Startseite', subtitle: '' };
   }
 
@@ -469,14 +496,8 @@ function extractSectionInfo(sectionId) {
   const titleEl = header.querySelector('.section-title, h1, h2, h3');
   const subtitleEl = header.querySelector('.section-subtitle');
 
-  const title =
-    titleEl?.textContent?.trim() ||
-    fallbackTitleMap[sectionId]?.title ||
-    'Startseite';
-  const subtitle =
-    subtitleEl?.textContent?.trim() ||
-    fallbackTitleMap[sectionId]?.subtitle ||
-    '';
+  const title = titleEl?.textContent?.trim() || fallbackTitleMap[sectionId]?.title || 'Startseite';
+  const subtitle = subtitleEl?.textContent?.trim() || fallbackTitleMap[sectionId]?.subtitle || '';
 
   return { title, subtitle };
 }
@@ -491,21 +512,16 @@ function initializeScrollDetection() {
   function updateTitleAndSubtitle(newTitle, newSubtitle = '') {
     const siteTitleEl = getElementById('site-title');
     const siteSubtitleEl = getElementById('site-subtitle');
-
     if (!siteTitleEl) return;
 
     const currentTitle = siteTitleEl.textContent;
     const currentSubtitle = siteSubtitleEl?.textContent || '';
-
     if (currentTitle === newTitle && currentSubtitle === newSubtitle) return;
 
     siteTitleEl.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
     siteTitleEl.style.opacity = '0.6';
     siteTitleEl.style.transform = 'scale(0.95)';
-
-    if (siteSubtitleEl) {
-      siteSubtitleEl.classList.remove('show');
-    }
+    if (siteSubtitleEl) { siteSubtitleEl.classList.remove('show'); }
 
     setTimeout(() => {
       siteTitleEl.textContent = newTitle;
@@ -514,25 +530,19 @@ function initializeScrollDetection() {
 
       if (siteSubtitleEl && newSubtitle) {
         siteSubtitleEl.textContent = newSubtitle;
-        setTimeout(() => {
-          siteSubtitleEl.classList.add('show');
-        }, 100);
+        setTimeout(() => { siteSubtitleEl.classList.add('show'); }, 100);
       }
     }, 200);
   }
 
   function initSnapEventListener() {
-    if (snapEventListener) {
-      window.removeEventListener('snapSectionChange', snapEventListener);
-    }
+    if (snapEventListener) { window.removeEventListener('snapSectionChange', snapEventListener); }
 
     snapEventListener = (event) => {
       const { index, id } = event.detail || {};
       let sectionId = id;
 
-      if (sectionId === 'site-footer') {
-        sectionId = 'contact';
-      }
+      if (sectionId === 'site-footer') { sectionId = 'contact'; }
 
       if (!sectionId && typeof index === 'number') {
         const sections = Array.from(
@@ -542,9 +552,7 @@ function initializeScrollDetection() {
         );
         const section = sections[index];
         sectionId = section?.id;
-        if (sectionId === 'site-footer') {
-          sectionId = 'contact';
-        }
+        if (sectionId === 'site-footer') { sectionId = 'contact'; }
       }
 
       if (sectionId) {
@@ -594,6 +602,7 @@ function setActiveMenuLink() {
       } else {
         a.classList.remove('active');
       }
+
       return;
     }
 
