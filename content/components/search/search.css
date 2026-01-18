@@ -283,8 +283,6 @@
   color: var(--text-primary, #fff);
 }
 
-
-
 /* ===== Responsive ===== */
 @media (max-width: 768px) {
   .search-overlay {
