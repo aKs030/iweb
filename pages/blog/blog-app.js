@@ -1,13 +1,13 @@
 import React from 'https://esm.sh/react@18.2.0?dev=false';
 import ReactDOM from 'https://esm.sh/react-dom@18.2.0/client?dev=false';
 import htm from 'https://cdn.jsdelivr.net/npm/htm@3.1.1/dist/htm.module.js';
-import { createLogger } from '/content/utils/shared-utilities.js';
+/* createLogger import removed (unused in this module) */
 import { marked } from 'https://cdn.jsdelivr.net/npm/marked@5.1.1/lib/marked.esm.js';
 import DOMPurify from 'https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.es.js';
 
 marked.setOptions({ mangle: false, headerIds: false });
 
-const log = createLogger('BlogApp');
+/* logger available via createLogger('BlogApp') if needed */
 const html = htm.bind(React.createElement);
 
 // --- Icons ---
@@ -109,7 +109,7 @@ async function loadPostsData(seedPosts = []) {
     if (!r.ok) throw new Error('No sitemap');
     const xml = await r.text();
     const ids = Array.from(
-      xml.matchAll(/<loc>.*?\/blog\/([^\/<>]+)\/?.*?<\/loc>/g),
+      xml.matchAll(new RegExp('<loc>.*?/blog/([^/<>]+)/?.*?</loc>', 'g')),
     ).map((m) => m[1]);
     const uniqueIds = Array.from(new Set(ids));
 
@@ -274,7 +274,7 @@ function RelatedPosts({ currentPost, allPosts }) {
       </h3>
       <div className="blog-grid">
         ${related.map(
-    (post) => html`
+          (post) => html`
             <article
               key=${post.id}
               className="blog-card"
@@ -291,7 +291,7 @@ function RelatedPosts({ currentPost, allPosts }) {
               </p>
             </article>
           `,
-  )}
+        )}
       </div>
     </div>
   `;
@@ -320,7 +320,7 @@ function BlogApp() {
     fetch('/content/assets/img/og/og-images-meta.json')
       .then((r) => r.json())
       .then(setOgMeta)
-      .catch(() => { });
+      .catch(() => {});
   }, []);
 
   React.useEffect(() => {
@@ -370,9 +370,9 @@ function BlogApp() {
     () =>
       activePost
         ? DOMPurify.sanitize(
-          activePost.html ||
-          (activePost.content ? marked.parse(activePost.content) : ''),
-        )
+            activePost.html ||
+              (activePost.content ? marked.parse(activePost.content) : ''),
+          )
         : '',
     [activePost],
   );
@@ -411,21 +411,23 @@ function BlogApp() {
         
         <div className="container-blog pt-24 fade-in">
           <button className="btn-back" onClick=${() =>
-        (window.location.hash = '')}>← Übersicht (ESC)</button>
+            (window.location.hash = '')}>← Übersicht (ESC)</button>
           
           <article className="blog-article">
             <header>
               <div className="card-meta">
                 <span className="card-category">${post.category}</span>
-                <span className="card-read-time"><${Icons.Clock}/> ${post.readTime
-      }</span>
+                <span className="card-read-time"><${Icons.Clock}/> ${
+      post.readTime
+    }</span>
               </div>
               <h1>${post.title}</h1>
               <div className="meta">${post.dateDisplay}</div>
             </header>
 
-            ${heroSrc &&
-      html`
+            ${
+              heroSrc &&
+              html`
                 <figure className="article-hero">
                   <${ProgressiveImage}
                     src=${heroSrc}
@@ -438,22 +440,22 @@ function BlogApp() {
                   />
                 </figure>
               `
-      }
+            }
 
             <div className="article-body" dangerouslySetInnerHTML=${{
-        __html: cleanHtml,
-      }}></div>
+              __html: cleanHtml,
+            }}></div>
             
             <${RelatedPosts} currentPost=${post} allPosts=${posts} />
 
             <div className="article-cta">
               <h3>Unterstützung bei deinem Projekt?</h3>
               <p style=${{
-        color: '#ccc',
-        marginBottom: '1.5rem',
-        maxWidth: '600px',
-        margin: '0 auto 1.5rem',
-      }}>
+                color: '#ccc',
+                marginBottom: '1.5rem',
+                maxWidth: '600px',
+                margin: '0 auto 1.5rem',
+              }}>
                 Benötigst du Hilfe bei Webdesign, Performance-Optimierung oder SEO? Lass uns unverbindlich darüber sprechen.
               </p>
               <a href="/#contact" className="btn-primary">Jetzt Kontakt aufnehmen</a>
@@ -483,22 +485,22 @@ function BlogApp() {
       <div
         className="blog-sticky-header"
         style=${{
-      position: 'sticky',
-      top: '72px' /* Matches Site Header Height + Spacing */,
-      zIndex: 40,
-      background: 'rgba(3, 3, 3, 0.85)',
-      backdropFilter: 'blur(12px)',
-      WebkitBackdropFilter: 'blur(12px)',
-      borderBottom: '1px solid var(--blog-border)',
-      margin: '0 -2rem 2.5rem -2rem',
-      padding: '1rem 2rem',
-    }}
+          position: 'sticky',
+          top: '72px' /* Matches Site Header Height + Spacing */,
+          zIndex: 40,
+          background: 'rgba(3, 3, 3, 0.85)',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
+          borderBottom: '1px solid var(--blog-border)',
+          margin: '0 -2rem 2.5rem -2rem',
+          padding: '1rem 2rem',
+        }}
       >
         <div className="blog-header-content">
           <div className="blog-controls">
             <div className="filter-bar">
               ${categories.map(
-      (cat) => html`
+                (cat) => html`
                   <button
                     key=${cat}
                     className=${`filter-btn ${filter === cat ? 'active' : ''}`}
@@ -507,7 +509,7 @@ function BlogApp() {
                     ${cat}
                   </button>
                 `,
-    )}
+              )}
             </div>
           </div>
         </div>
@@ -515,20 +517,20 @@ function BlogApp() {
 
       <div className="blog-grid">
         ${visiblePosts.map((post, idx) => {
-      const og = getOg(post.id);
-      const fallbackImg = post.image || (og ? og.fallback || og.url : null);
-      // Eager loading für erste 2 Bilder (Above the Fold)
-      const loadingStrategy = idx < 2 ? 'eager' : 'lazy';
-      const fetchPriority = idx === 0 ? 'high' : undefined;
+          const og = getOg(post.id);
+          const fallbackImg = post.image || (og ? og.fallback || og.url : null);
+          // Eager loading für erste 2 Bilder (Above the Fold)
+          const loadingStrategy = idx < 2 ? 'eager' : 'lazy';
+          const fetchPriority = idx === 0 ? 'high' : undefined;
 
-      return html`
+          return html`
             <article
               key=${post.id}
               className="blog-card"
               onClick=${() => (window.location.hash = `/blog/${post.id}`)}
             >
               ${fallbackImg
-          ? html`<${ProgressiveImage}
+                ? html`<${ProgressiveImage}
                     src=${fallbackImg}
                     alt=${post.title}
                     className="blog-card-image"
@@ -537,7 +539,7 @@ function BlogApp() {
                     width=${og?.width || 800}
                     height=${og?.height || 420}
                   />`
-          : ''}
+                : ''}
 
               <div className="card-meta">
                 <span className="card-category">${post.category}</span>
@@ -557,10 +559,10 @@ function BlogApp() {
               </div>
             </article>
           `;
-    })}
+        })}
         ${visiblePosts.length === 0 && !loading
-      ? html`<p style="color:#666">Keine Artikel gefunden.</p>`
-      : ''}
+          ? html`<p style="color:#666">Keine Artikel gefunden.</p>`
+          : ''}
       </div>
     </div>
   `;

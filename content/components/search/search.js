@@ -5,6 +5,8 @@
  * @version 2.0.0
  */
 
+/* exported initSearch, openSearch, closeSearch, toggleSearch */
+/* eslint-disable import/no-unused-modules */
 import { createLogger } from '/content/utils/shared-utilities.js';
 
 const _log = createLogger('search');
@@ -17,52 +19,81 @@ const SEARCH_INDEX = [
   {
     id: 'home',
     title: 'Home',
-    description: 'Web Developer & Photographer in Berlin. Spezialisiert auf React, Three.js und Urban Photography.',
+    description:
+      'Web Developer & Photographer in Berlin. Spezialisiert auf React, Three.js und Urban Photography.',
     category: 'Seite',
     url: '/',
     icon: '🏠',
     keywords: ['home', 'start', 'hauptseite', 'portfolio', 'abdulkerim sesli'],
-    priority: 10
+    priority: 10,
   },
   {
     id: 'about',
     title: 'Über mich',
-    description: 'Erfahre mehr über meine Arbeit, Fähigkeiten und meinen Werdegang als Web Developer und Fotograf.',
+    description:
+      'Erfahre mehr über meine Arbeit, Fähigkeiten und meinen Werdegang als Web Developer und Fotograf.',
     category: 'Seite',
     url: '/pages/about/',
     icon: '👤',
-    keywords: ['über', 'about', 'biografie', 'cv', 'lebenslauf', 'skills', 'fähigkeiten'],
-    priority: 9
+    keywords: [
+      'über',
+      'about',
+      'biografie',
+      'cv',
+      'lebenslauf',
+      'skills',
+      'fähigkeiten',
+    ],
+    priority: 9,
   },
   {
     id: 'projekte',
     title: 'Projekte',
-    description: 'Eine Auswahl meiner Web-Entwicklungsprojekte mit React, Three.js und modernen Technologien.',
+    description:
+      'Eine Auswahl meiner Web-Entwicklungsprojekte mit React, Three.js und modernen Technologien.',
     category: 'Seite',
     url: '/pages/projekte/',
     icon: '💼',
-    keywords: ['projekte', 'projects', 'portfolio', 'arbeiten', 'react', 'threejs', 'web development'],
-    priority: 9
+    keywords: [
+      'projekte',
+      'projects',
+      'portfolio',
+      'arbeiten',
+      'react',
+      'threejs',
+      'web development',
+    ],
+    priority: 9,
   },
   {
     id: 'gallery',
     title: 'Galerie',
-    description: 'Fotografie-Portfolio mit Urban Photography und kreativen Aufnahmen aus Berlin.',
+    description:
+      'Fotografie-Portfolio mit Urban Photography und kreativen Aufnahmen aus Berlin.',
     category: 'Seite',
     url: '/pages/gallery/',
     icon: '📸',
-    keywords: ['galerie', 'gallery', 'fotografie', 'photography', 'bilder', 'fotos', 'urban'],
-    priority: 8
+    keywords: [
+      'galerie',
+      'gallery',
+      'fotografie',
+      'photography',
+      'bilder',
+      'fotos',
+      'urban',
+    ],
+    priority: 8,
   },
   {
     id: 'blog',
     title: 'Blog',
-    description: 'Artikel über Webentwicklung, Design, Fotografie und Technologie.',
+    description:
+      'Artikel über Webentwicklung, Design, Fotografie und Technologie.',
     category: 'Seite',
     url: '/pages/blog/',
     icon: '📝',
     keywords: ['blog', 'artikel', 'posts', 'tutorials', 'guides'],
-    priority: 8
+    priority: 8,
   },
   {
     id: 'videos',
@@ -72,39 +103,57 @@ const SEARCH_INDEX = [
     url: '/pages/videos/',
     icon: '🎬',
     keywords: ['videos', 'tutorials', 'youtube', 'film'],
-    priority: 7
+    priority: 7,
   },
 
   // Blog Posts
   {
     id: 'blog-modern-ui',
     title: 'Modern UI Design',
-    description: 'Moderne UI-Design-Prinzipien und Best Practices für Web-Anwendungen.',
+    description:
+      'Moderne UI-Design-Prinzipien und Best Practices für Web-Anwendungen.',
     category: 'Blog',
     url: '/pages/blog/modern-ui-design/',
     icon: '🎨',
-    keywords: ['ui', 'design', 'interface', 'ux', 'user experience', 'modern', 'glassmorphism'],
-    priority: 6
+    keywords: [
+      'ui',
+      'design',
+      'interface',
+      'ux',
+      'user experience',
+      'modern',
+      'glassmorphism',
+    ],
+    priority: 6,
   },
   {
     id: 'blog-react-no-build',
     title: 'React ohne Build-Tools',
-    description: 'Wie man React ohne komplexe Build-Prozesse direkt im Browser nutzt.',
+    description:
+      'Wie man React ohne komplexe Build-Prozesse direkt im Browser nutzt.',
     category: 'Blog',
     url: '/pages/blog/react-no-build/',
     icon: '⚛️',
     keywords: ['react', 'no build', 'esm', 'modules', 'javascript', 'frontend'],
-    priority: 6
+    priority: 6,
   },
   {
     id: 'blog-threejs-performance',
     title: 'Three.js Performance',
-    description: 'Performance-Optimierung für Three.js Anwendungen und 3D-Grafik im Web.',
+    description:
+      'Performance-Optimierung für Three.js Anwendungen und 3D-Grafik im Web.',
     category: 'Blog',
     url: '/pages/blog/threejs-performance/',
     icon: '🎮',
-    keywords: ['threejs', 'three.js', '3d', 'webgl', 'performance', 'optimization'],
-    priority: 6
+    keywords: [
+      'threejs',
+      'three.js',
+      '3d',
+      'webgl',
+      'performance',
+      'optimization',
+    ],
+    priority: 6,
   },
   {
     id: 'blog-visual-storytelling',
@@ -114,39 +163,49 @@ const SEARCH_INDEX = [
     url: '/pages/blog/visual-storytelling/',
     icon: '📖',
     keywords: ['storytelling', 'visual', 'fotografie', 'design', 'narrative'],
-    priority: 5
+    priority: 5,
   },
 
   // Technologien
   {
     id: 'tech-react',
     title: 'React Entwicklung',
-    description: 'Moderne React-Anwendungen mit Hooks, Context und Performance-Optimierungen.',
+    description:
+      'Moderne React-Anwendungen mit Hooks, Context und Performance-Optimierungen.',
     category: 'Technologie',
     url: '/pages/projekte/#react',
     icon: '⚛️',
     keywords: ['react', 'javascript', 'frontend', 'spa', 'hooks', 'jsx'],
-    priority: 7
+    priority: 7,
   },
   {
     id: 'tech-threejs',
     title: 'Three.js & WebGL',
-    description: '3D-Grafik und interaktive Visualisierungen mit Three.js im Browser.',
+    description:
+      '3D-Grafik und interaktive Visualisierungen mit Three.js im Browser.',
     category: 'Technologie',
     url: '/pages/projekte/#threejs',
     icon: '🌐',
     keywords: ['threejs', 'webgl', '3d', 'graphics', 'animation', 'particles'],
-    priority: 7
+    priority: 7,
   },
   {
     id: 'tech-photography',
     title: 'Fotografie',
-    description: 'Urban Photography, Portrait und kreative Fotografie in Berlin.',
+    description:
+      'Urban Photography, Portrait und kreative Fotografie in Berlin.',
     category: 'Technologie',
     url: '/pages/gallery/',
     icon: '📷',
-    keywords: ['fotografie', 'photography', 'kamera', 'bilder', 'urban', 'portrait'],
-    priority: 6
+    keywords: [
+      'fotografie',
+      'photography',
+      'kamera',
+      'bilder',
+      'urban',
+      'portrait',
+    ],
+    priority: 6,
   },
 
   // Kontakt & Legal
@@ -158,18 +217,19 @@ const SEARCH_INDEX = [
     url: '/content/components/footer/impressum.html',
     icon: 'ℹ️',
     keywords: ['impressum', 'legal', 'kontakt', 'contact', 'anschrift'],
-    priority: 3
+    priority: 3,
   },
   {
     id: 'datenschutz',
     title: 'Datenschutz',
-    description: 'Datenschutzerklärung und Informationen zum Umgang mit personenbezogenen Daten.',
+    description:
+      'Datenschutzerklärung und Informationen zum Umgang mit personenbezogenen Daten.',
     category: 'Info',
     url: '/content/components/footer/datenschutz.html',
     icon: '🔒',
     keywords: ['datenschutz', 'privacy', 'dsgvo', 'gdpr', 'cookies'],
-    priority: 3
-  }
+    priority: 3,
+  },
 ];
 
 /* ===== Quick Actions - Removed (unused) ===== */
@@ -252,7 +312,9 @@ class SearchComponent {
     this.resultsContainer = overlay.querySelector('.search-results');
 
     // Event Listeners für Modal
-    overlay.querySelector('.search-close').addEventListener('click', () => this.close());
+    overlay
+      .querySelector('.search-close')
+      .addEventListener('click', () => this.close());
     overlay.addEventListener('click', (e) => {
       if (e.target === overlay) this.close();
     });
@@ -376,7 +438,9 @@ class SearchComponent {
     if (this.currentResults.length === 0) return;
 
     // Entferne vorherige Selektion
-    const previousItem = this.resultsContainer.querySelector('.search-result-item.keyboard-selected');
+    const previousItem = this.resultsContainer.querySelector(
+      '.search-result-item.keyboard-selected',
+    );
     if (previousItem) {
       previousItem.classList.remove('keyboard-selected');
     }
@@ -397,7 +461,7 @@ class SearchComponent {
       items[this.selectedIndex].classList.add('keyboard-selected');
       items[this.selectedIndex].scrollIntoView({
         block: 'nearest',
-        behavior: 'smooth'
+        behavior: 'smooth',
       });
     }
   }
@@ -411,8 +475,6 @@ class SearchComponent {
       this.selectedIndex = -1;
       return;
     }
-
-
 
     // Suche durchführen
     const results = this.searchInIndex(trimmedQuery);
@@ -430,9 +492,9 @@ class SearchComponent {
   searchInIndex(query) {
     const results = [];
     const queryLower = query.toLowerCase();
-    const queryWords = queryLower.split(/\s+/).filter(w => w.length > 1);
+    const queryWords = queryLower.split(/\s+/).filter((w) => w.length > 1);
 
-    this.searchIndex.forEach(item => {
+    this.searchIndex.forEach((item) => {
       let score = item.priority || 0; // Start mit Priorität
       const titleLower = item.title.toLowerCase();
       const descLower = item.description.toLowerCase();
@@ -452,7 +514,7 @@ class SearchComponent {
       }
 
       // Keyword-Matching
-      item.keywords.forEach(keyword => {
+      item.keywords.forEach((keyword) => {
         const keywordLower = keyword.toLowerCase();
         if (keywordLower === queryLower) {
           score += 150;
@@ -464,18 +526,18 @@ class SearchComponent {
       });
 
       // Multi-Word-Matching
-      queryWords.forEach(word => {
+      queryWords.forEach((word) => {
         if (titleLower.includes(word)) score += 30;
         if (descLower.includes(word)) score += 15;
 
-        item.keywords.forEach(keyword => {
+        item.keywords.forEach((keyword) => {
           if (keyword.toLowerCase().includes(word)) score += 20;
         });
       });
 
       // Fuzzy-Matching für Tippfehler (Levenshtein-Distanz vereinfacht)
       const titleWords = titleLower.split(/\s+/);
-      titleWords.forEach(tw => {
+      titleWords.forEach((tw) => {
         if (this.isSimilar(tw, queryLower)) {
           score += 50;
         }
@@ -506,7 +568,7 @@ class SearchComponent {
 
     // Gruppiere nach Kategorie
     const grouped = {};
-    results.forEach(result => {
+    results.forEach((result) => {
       if (!grouped[result.category]) {
         grouped[result.category] = [];
       }
@@ -519,35 +581,45 @@ class SearchComponent {
         <span class="search-stats-count">${results.length}</span> 
         ${results.length === 1 ? 'Ergebnis' : 'Ergebnisse'}
       </div>
-      ${Object.entries(grouped).map(([category, items]) => `
+      ${Object.entries(grouped)
+        .map(
+          ([category, items]) => `
         <div class="search-category-group">
           <div class="search-category-header">
             <span>${category}</span>
             <div class="search-category-divider"></div>
           </div>
-          ${items.map((result, index) => this.createResultHTML(result, query)).join('')}
+          ${items
+            .map((result) => this.createResultHTML(result, query))
+            .join('')}
         </div>
-      `).join('')}
+      `,
+        )
+        .join('')}
     `;
 
     this.resultsContainer.innerHTML = html;
 
     // Event Listeners für Ergebnisse
-    this.resultsContainer.querySelectorAll('.search-result-item').forEach((item, index) => {
-      item.addEventListener('click', (e) => {
-        e.preventDefault();
-        this.selectResult(index);
-      });
-
-      item.addEventListener('mouseenter', () => {
-        // Entferne keyboard-selected von allen
-        this.resultsContainer.querySelectorAll('.search-result-item').forEach(el => {
-          el.classList.remove('keyboard-selected');
+    this.resultsContainer
+      .querySelectorAll('.search-result-item')
+      .forEach((item, index) => {
+        item.addEventListener('click', (e) => {
+          e.preventDefault();
+          this.selectResult(index);
         });
-        this.selectedIndex = index;
-        item.classList.add('keyboard-selected');
+
+        item.addEventListener('mouseenter', () => {
+          // Entferne keyboard-selected von allen
+          this.resultsContainer
+            .querySelectorAll('.search-result-item')
+            .forEach((el) => {
+              el.classList.remove('keyboard-selected');
+            });
+          this.selectedIndex = index;
+          item.classList.add('keyboard-selected');
+        });
       });
-    });
   }
 
   createResultHTML(result, query) {
@@ -573,12 +645,18 @@ class SearchComponent {
   highlightText(text, query) {
     if (!query) return text;
 
-    const words = query.toLowerCase().split(/\s+/).filter(w => w.length > 0);
+    const words = query
+      .toLowerCase()
+      .split(/\s+/)
+      .filter((w) => w.length > 0);
     let highlightedText = text;
 
-    words.forEach(word => {
+    words.forEach((word) => {
       const regex = new RegExp(`(${this.escapeRegex(word)})`, 'gi');
-      highlightedText = highlightedText.replace(regex, '<span class="search-result-highlight">$1</span>');
+      highlightedText = highlightedText.replace(
+        regex,
+        '<span class="search-result-highlight">$1</span>',
+      );
     });
 
     return highlightedText;
@@ -598,7 +676,6 @@ class SearchComponent {
     this.currentResults = [];
     this.selectedIndex = -1;
   }
-
 
   selectResult(index) {
     if (index < 0 || index >= this.currentResults.length) return;

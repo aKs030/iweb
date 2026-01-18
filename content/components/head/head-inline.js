@@ -327,10 +327,6 @@ dataLayer.push({
         };
 
         schedule(() => {
-          const _path =
-            (globalThis.location?.pathname || '').replace(/\/+$|\/+$/g, '') ||
-            '/';
-
           // Existing deferred assets (loaded everywhere)
           upsertScript({
             src: '/content/components/robot-companion/robot-companion.js',
