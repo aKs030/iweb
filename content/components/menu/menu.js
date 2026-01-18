@@ -18,7 +18,12 @@
  */
 
 // ===== Shared Utilities Import =====
-import { createLogger, getElementById, EVENTS, addListener, } from '/content/utils/shared-utilities.js';
+import {
+  createLogger,
+  getElementById,
+  EVENTS,
+  addListener,
+} from '/content/utils/shared-utilities.js';
 import { upsertHeadLink } from '/content/utils/dom-helpers.js';
 
 const _log = createLogger('menu');
@@ -58,7 +63,9 @@ const initMenu = () => {
         // safety fallback: stop observing after 3s
         setTimeout(() => observer.disconnect(), 3000);
       }
-    } catch (err) { /* ignore observer failures */ }
+    } catch (err) {
+      /* ignore observer failures */
+    }
     return;
   }
 
@@ -285,7 +292,9 @@ function initializeMenu(container) {
     const toggle = () => setState(!menu.classList.contains('open'));
 
     const _removeToggleClick = addListener(menuToggle, 'click', toggle);
-    const _onMenuToggleKeydown = (event) => { if (event.key === 'Enter') toggle(); };
+    const _onMenuToggleKeydown = (event) => {
+      if (event.key === 'Enter') toggle();
+    };
     const _removeToggleKeydown = addListener(
       menuToggle,
       'keydown',
@@ -308,11 +317,19 @@ function initializeMenu(container) {
       closeMenu(container); // Close mobile menu
       // Dynamically import and open search
       import('/content/components/search/search.js')
-        .then(module => { if (module.openSearch) { module.openSearch(); } })
-        .catch(err => _log.error('Failed to load search:', err));
+        .then((module) => {
+          if (module.openSearch) {
+            module.openSearch();
+          }
+        })
+        .catch((err) => _log.error('Failed to load search:', err));
     };
 
-    const _removeSearchClick = addListener(searchTrigger, 'click', _onSearchClick);
+    const _removeSearchClick = addListener(
+      searchTrigger,
+      'click',
+      _onSearchClick,
+    );
     searchTrigger.__listenerRemovers = searchTrigger.__listenerRemovers || [];
     searchTrigger.__listenerRemovers.push(_removeSearchClick);
   }
@@ -328,12 +345,17 @@ function initializeMenu(container) {
       closeMenu(container);
 
       if (
-        window.innerWidth <= 768 && href && !isExternal && !a.hasAttribute('target')
+        window.innerWidth <= 768 &&
+        href &&
+        !isExternal &&
+        !a.hasAttribute('target')
       ) {
         // Prevent default to allow smooth close animation then navigate
         if (!isAnchor) {
           e.preventDefault();
-          setTimeout(() => { window.location.href = href; }, 160);
+          setTimeout(() => {
+            window.location.href = href;
+          }, 160);
         }
       }
     };
@@ -371,8 +393,15 @@ function initializeIcons() {
 function initializeLogo(container) {
   const logoContainer = container.querySelector('.site-logo__container');
   if (logoContainer) {
-    const _onLogoContext = (e) => { e.preventDefault?.(); window.location.href = '/'; };
-    const _removeLogoContext = addListener(logoContainer, 'contextmenu', _onLogoContext,);
+    const _onLogoContext = (e) => {
+      e.preventDefault?.();
+      window.location.href = '/';
+    };
+    const _removeLogoContext = addListener(
+      logoContainer,
+      'contextmenu',
+      _onLogoContext,
+    );
     logoContainer.__listenerRemovers = logoContainer.__listenerRemovers || [];
     logoContainer.__listenerRemovers.push(_removeLogoContext);
   }
@@ -388,7 +417,9 @@ function initializeSubmenuLinks() {
       const submenu = btn.nextElementSibling;
       const open = submenu.style.display === 'block';
 
-      document.querySelectorAll('.submenu').forEach((sm) => { if (sm !== submenu) sm.style.display = 'none'; });
+      document.querySelectorAll('.submenu').forEach((sm) => {
+        if (sm !== submenu) sm.style.display = 'none';
+      });
       submenu.style.display = open ? 'none' : 'block';
       btn.setAttribute('aria-expanded', String(!open));
     };
@@ -409,10 +440,14 @@ function initializeSubmenuLinks() {
           const parent = link.parentElement;
           if (!parent.classList.contains('open')) {
             e.preventDefault();
-            document.querySelectorAll('.has-submenu.open').forEach((el) => { if (el !== parent) el.classList.remove('open'); });
+            document.querySelectorAll('.has-submenu.open').forEach((el) => {
+              if (el !== parent) el.classList.remove('open');
+            });
             parent.classList.add('open');
             tapped = true;
-            setTimeout(() => { tapped = false; }, 600);
+            setTimeout(() => {
+              tapped = false;
+            }, 600);
           } else if (!tapped) {
             tapped = false;
           }
@@ -496,8 +531,14 @@ function extractSectionInfo(sectionId) {
   const titleEl = header.querySelector('.section-title, h1, h2, h3');
   const subtitleEl = header.querySelector('.section-subtitle');
 
-  const title = titleEl?.textContent?.trim() || fallbackTitleMap[sectionId]?.title || 'Startseite';
-  const subtitle = subtitleEl?.textContent?.trim() || fallbackTitleMap[sectionId]?.subtitle || '';
+  const title =
+    titleEl?.textContent?.trim() ||
+    fallbackTitleMap[sectionId]?.title ||
+    'Startseite';
+  const subtitle =
+    subtitleEl?.textContent?.trim() ||
+    fallbackTitleMap[sectionId]?.subtitle ||
+    '';
 
   return { title, subtitle };
 }
@@ -521,7 +562,9 @@ function initializeScrollDetection() {
     siteTitleEl.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
     siteTitleEl.style.opacity = '0.6';
     siteTitleEl.style.transform = 'scale(0.95)';
-    if (siteSubtitleEl) { siteSubtitleEl.classList.remove('show'); }
+    if (siteSubtitleEl) {
+      siteSubtitleEl.classList.remove('show');
+    }
 
     setTimeout(() => {
       siteTitleEl.textContent = newTitle;
@@ -530,19 +573,25 @@ function initializeScrollDetection() {
 
       if (siteSubtitleEl && newSubtitle) {
         siteSubtitleEl.textContent = newSubtitle;
-        setTimeout(() => { siteSubtitleEl.classList.add('show'); }, 100);
+        setTimeout(() => {
+          siteSubtitleEl.classList.add('show');
+        }, 100);
       }
     }, 200);
   }
 
   function initSnapEventListener() {
-    if (snapEventListener) { window.removeEventListener('snapSectionChange', snapEventListener); }
+    if (snapEventListener) {
+      window.removeEventListener('snapSectionChange', snapEventListener);
+    }
 
     snapEventListener = (event) => {
       const { index, id } = event.detail || {};
       let sectionId = id;
 
-      if (sectionId === 'site-footer') { sectionId = 'contact'; }
+      if (sectionId === 'site-footer') {
+        sectionId = 'contact';
+      }
 
       if (!sectionId && typeof index === 'number') {
         const sections = Array.from(
@@ -552,7 +601,9 @@ function initializeScrollDetection() {
         );
         const section = sections[index];
         sectionId = section?.id;
-        if (sectionId === 'site-footer') { sectionId = 'contact'; }
+        if (sectionId === 'site-footer') {
+          sectionId = 'contact';
+        }
       }
 
       if (sectionId) {
