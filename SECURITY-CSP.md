@@ -29,12 +29,7 @@ Content-Security-Policy:
 > - In that case you can keep `script-src 'self'` and avoid adding `https://cdn.jsdelivr.net` to your CSP.
 > - Cloudflare Insights (beacon scripts) still require `https://*.cloudflareinsights.com` in `script-src` and `connect-src` unless you disable the integration.
 >
-> **Hinweis zur NLWeb/Worker-Integration:** Wenn Sie eine externe NLWeb-Worker-Instanz (z. B. `throbbing-mode-6fe1-nlweb.httpsgithubcomaks030website.workers.dev`) einbinden, fügen Sie diese Origin in den relevanten Direktiven hinzu (typischerweise `script-src`, `style-src` und `connect-src`). Beispiel (gekürzt):
->
-> - `script-src 'self' https://throbbing-mode-6fe1-nlweb.httpsgithubcomaks030website.workers.dev ...`
-> - `style-src 'self' https://throbbing-mode-6fe1-nlweb.httpsgithubcomaks030website.workers.dev ...`
-> - `connect-src 'self' https://throbbing-mode-6fe1-nlweb.httpsgithubcomaks030website.workers.dev ...`
->
+
 > Testen Sie die Policy im Report-Only-Modus, beobachten Sie die Browser-Konsole und passen Sie die Direktiven schrittweise an.
 ```
 
