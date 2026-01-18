@@ -381,7 +381,9 @@ body {
 .site-menu__list li a:hover,
 .site-menu__list li a:focus,
 .site-menu__list li .submenu-toggle:hover,
-.site-menu__list li .submenu-toggle:focus {
+.site-menu__list li .submenu-toggle:focus,
+.site-menu__list li button.search-trigger:hover,
+.site-menu__list li button.search-trigger:focus {
   color: var(--dynamic-menu-accent-blue);
   background: var(--dynamic-menu-fill-primary);
   border-color: var(--dynamic-menu-separator);
@@ -390,10 +392,41 @@ body {
 }
 
 .site-menu__list li a:active,
-.site-menu__list li .submenu-toggle:active {
+.site-menu__list li .submenu-toggle:active,
+.site-menu__list li button.search-trigger:active {
   background: var(--dynamic-menu-fill-secondary);
   color: var(--dynamic-menu-accent-blue-hover);
   transform: scale(0.98);
+}
+
+/* Search Trigger Button */
+.site-menu__list button.search-trigger {
+  text-decoration: none;
+  color: var(--dynamic-menu-label-primary);
+  font-family: var(--font-primary);
+  font-weight: 510;
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  padding: 8px 16px;
+  min-height: 36px;
+  min-width: max-content;
+  border-radius: 18px;
+  background: transparent;
+  border: 1px solid transparent;
+  font-size: clamp(14px, 1.3vw, 16px);
+  letter-spacing: -0.01em;
+  touch-action: manipulation;
+  transition: background 0.2s var(--dynamic-menu-spring-quick),
+    color 0.2s var(--dynamic-menu-spring-quick),
+    transform 0.2s var(--dynamic-menu-spring-quick),
+    border-color 0.2s var(--dynamic-menu-spring-quick);
+  -webkit-tap-highlight-color: rgb(0 122 255 / 10%);
+  -webkit-user-select: none;
+  user-select: none;
+  white-space: nowrap;
+  cursor: pointer;
 }
 
 .site-menu__list .submenu li,
@@ -433,10 +466,14 @@ body {
 .site-menu__list a:focus .nav-icon,
 button.submenu-toggle:hover .nav-icon,
 button.submenu-toggle:focus .nav-icon,
+button.search-trigger:hover .nav-icon,
+button.search-trigger:focus .nav-icon,
 .site-menu__list a:hover .icon-fallback,
 .site-menu__list a:focus .icon-fallback,
 button.submenu-toggle:hover .icon-fallback,
-button.submenu-toggle:focus .icon-fallback {
+button.submenu-toggle:focus .icon-fallback,
+button.search-trigger:hover .icon-fallback,
+button.search-trigger:focus .icon-fallback {
   transform: translateY(-1px) scale(1.1);
   opacity: 1;
   filter: drop-shadow(0 1px 2px rgb(0 0 0 / 25%));
