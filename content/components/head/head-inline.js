@@ -140,7 +140,7 @@ dataLayer.push({
   try {
     if (!GTM_ID || GTM_ID === 'GTM-XXXXXXX') {
       log?.info?.(
-        'GTM not configured — set GTM_ID in head-inline.js to enable',
+        'GTM not configured — set GTM_ID in content/config/site-config.js to enable',
       );
       return;
     }
