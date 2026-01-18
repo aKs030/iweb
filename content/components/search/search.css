@@ -7,17 +7,25 @@
 
 /* ===== CSS Custom Properties ===== */
 :root {
-  --spotlight-bg: rgba(30, 30, 30, 0.85);
-  --spotlight-bg-light: rgba(242, 242, 247, 0.88);
-  --spotlight-border: rgba(255, 255, 255, 0.18);
-  --spotlight-divider: rgba(255, 255, 255, 0.1);
-  --spotlight-hover: rgba(255, 255, 255, 0.08);
-  --spotlight-selected: rgb(10, 132, 255);
-  --spotlight-text: rgba(255, 255, 255, 0.92);
-  --spotlight-text-secondary: rgba(255, 255, 255, 0.6);
-  --spotlight-blur: 100px;
-  --spotlight-radius: 16px;
-  --spotlight-transition: cubic-bezier(0.28, 0.11, 0.32, 1);
+  /* Material */
+  --sp-bg: rgba(28, 28, 30, 0.82);
+  --sp-border: rgba(255, 255, 255, 0.14);
+  --sp-divider: rgba(255, 255, 255, 0.08);
+
+  /* Text */
+  --sp-text: rgba(255, 255, 255, 0.92);
+  --sp-text-secondary: rgba(255, 255, 255, 0.55);
+
+  /* Accent */
+  --sp-accent: rgb(10, 132, 255);
+
+  /* Interaction */
+  --sp-hover: rgba(255, 255, 255, 0.06);
+
+  /* Radius & Motion */
+  --sp-radius: 16px;
+  --sp-ease: cubic-bezier(0.28, 0.11, 0.32, 1);
+  --sp-blur: 100px;
 }
 
 /* ===== Search Container ===== */
@@ -37,9 +45,8 @@
   padding: 0;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.18s var(--spotlight-transition),
-    visibility 0.18s var(--spotlight-transition),
-    backdrop-filter 0.18s var(--spotlight-transition);
+  transition: opacity 0.18s var(--sp-ease), visibility 0.18s var(--sp-ease),
+    backdrop-filter 0.18s var(--sp-ease);
 }
 
 .search-overlay.active {
@@ -47,24 +54,27 @@
   visibility: visible;
 }
 
-/* ===== Search Modal - Sequoia Style ===== */
+/* ===== Search Modal - macOS Spotlight Style ===== */
 .search-modal {
-  position: absolute;
+  position: relative;
   top: 100px;
   width: 100%;
   max-width: 640px;
-  background: var(--spotlight-bg);
-  backdrop-filter: blur(var(--spotlight-blur)) saturate(200%);
-  -webkit-backdrop-filter: blur(var(--spotlight-blur)) saturate(200%);
-  border: 1px solid var(--spotlight-border);
-  border-radius: var(--spotlight-radius);
-  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.5), 0 0 1px rgba(255, 255, 255, 0.1),
-    inset 0 1px 1px rgba(255, 255, 255, 0.15);
+  background: var(--sp-bg);
+  backdrop-filter: blur(var(--sp-blur)) saturate(200%);
+  -webkit-backdrop-filter: blur(var(--sp-blur)) saturate(200%);
+  border: 1px solid var(--sp-border);
+  border-radius: var(--sp-radius);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui,
+    sans-serif;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.18), 0 12px 40px rgba(0, 0, 0, 0.45),
+    0 40px 120px rgba(0, 0, 0, 0.6);
   overflow: hidden;
   transform: scale(0.97) translateY(-10px);
   opacity: 0;
-  transition: transform 0.25s var(--spotlight-transition),
-    opacity 0.25s var(--spotlight-transition);
+  transition: transform 0.25s var(--sp-ease), opacity 0.25s var(--sp-ease);
   max-height: 580px;
   display: flex;
   flex-direction: column;
@@ -73,15 +83,48 @@
 .search-overlay.active .search-modal {
   transform: scale(1) translateY(0);
   opacity: 1;
+  animation: spotlight-in 0.28s var(--sp-ease);
 }
 
-/* ===== Search Header - Sequoia Style ===== */
+.search-overlay.input-focused .search-modal {
+  /* Minimal material brightening when input is focused (Apple-like) */
+  background: var(--sp-bg); /* fallback */
+  background: color-mix(in srgb, var(--sp-bg) 92%, white 8%);
+}
+
+.search-modal::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+      120% 80% at 50% 0%,
+      rgba(255, 255, 255, 0.08),
+      transparent 60%
+    ),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.015'/%3E%3C/svg%3E");
+  pointer-events: none;
+  mix-blend-mode: overlay;
+  border-radius: inherit;
+}
+
+/* ===== Search Header - macOS Spotlight Style ===== */
 .search-header {
   position: relative;
   padding: 0;
   margin: 0;
-  border-bottom: 0.5px solid var(--spotlight-divider);
+  border-bottom: 0.5px solid var(--sp-divider);
   background: rgba(255, 255, 255, 0.015);
+}
+
+.search-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.12);
+  pointer-events: none;
 }
 
 .search-input-wrapper {
@@ -106,20 +149,21 @@
   padding: 0 50px 0 52px;
   background: transparent;
   border: none;
-  color: var(--spotlight-text);
+  color: var(--sp-text);
   font-size: 22px;
   font-weight: 400;
   font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui,
     sans-serif;
   line-height: 1.2;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.6px;
   transition: none;
   outline: none;
-  caret-color: var(--spotlight-selected);
+  caret-color: var(--sp-accent);
+  text-shadow: 0 0 8px rgba(10, 132, 255, 0.28);
 }
 
 .search-input::placeholder {
-  color: var(--spotlight-text-secondary);
+  color: var(--sp-text-secondary);
   font-weight: 400;
 }
 
@@ -136,7 +180,7 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: var(--spotlight-text-secondary);
+  color: var(--sp-text-secondary);
   transition: all 0.12s ease;
   opacity: 0.7;
   border-radius: 7px;
@@ -145,7 +189,7 @@
 .search-close:hover {
   background: rgba(255, 255, 255, 0.1);
   opacity: 1;
-  color: var(--spotlight-text);
+  color: var(--sp-text);
 }
 
 .search-close:active {
@@ -192,9 +236,10 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.6px;
-  color: var(--spotlight-text-secondary);
+  color: var(--sp-text-secondary);
   background: transparent;
-  border-top: 0.5px solid var(--spotlight-divider);
+  border-top: 0.5px solid var(--sp-divider);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
 .search-category-group:first-child .search-category-header {
@@ -205,7 +250,7 @@
   display: none;
 }
 
-/* ===== Result Item - Sequoia Style ===== */
+/* ===== Result Item - macOS Spotlight Style ===== */
 .search-result-item {
   position: relative;
   padding: 9px 18px;
@@ -214,7 +259,7 @@
   border-radius: 0;
   margin: 0;
   cursor: pointer;
-  transition: background-color 0.1s var(--spotlight-transition);
+  transition: background-color 0.1s var(--sp-ease);
   text-decoration: none;
   display: flex;
   align-items: center;
@@ -224,11 +269,25 @@
 }
 
 .search-result-item:hover {
-  background: var(--spotlight-hover);
+  background: var(--sp-hover);
+}
+
+.search-result-item:hover .search-result-icon-wrapper {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+html.keyboard-mode .search-result-item:hover {
+  /* When navigating with keyboard, ignore pointer hover states */
+  background: transparent;
 }
 
 .search-result-item.keyboard-selected {
-  background: var(--spotlight-selected) !important;
+  background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.12),
+      rgba(255, 255, 255, 0.02)
+    ),
+    var(--sp-accent) !important;
 }
 
 .search-result-item.keyboard-selected .search-result-title,
@@ -252,7 +311,7 @@
   flex-shrink: 0;
   font-size: 18px;
   opacity: 0.9;
-  transition: all 0.1s var(--spotlight-transition);
+  transition: all 0.1s var(--sp-ease);
 }
 
 .search-result-content {
@@ -276,9 +335,9 @@
 .search-result-title {
   font-size: 14px;
   font-weight: 400;
-  color: var(--spotlight-text);
+  color: var(--sp-text);
   line-height: 1.3;
-  letter-spacing: -0.2px;
+  letter-spacing: -0.25px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -286,7 +345,7 @@
 
 .search-result-description {
   font-size: 12px;
-  color: var(--spotlight-text-secondary);
+  color: var(--sp-text-secondary);
   line-height: 1.35;
   display: -webkit-box;
   -webkit-line-clamp: 1;
@@ -309,7 +368,7 @@
 .search-empty {
   text-align: center;
   padding: 32px 20px;
-  color: var(--spotlight-text-secondary);
+  color: var(--sp-text-secondary);
 }
 
 .search-empty-icon {
@@ -322,30 +381,20 @@
 .search-empty-text {
   font-size: 13px;
   font-weight: 400;
-  color: var(--spotlight-text);
+  color: var(--sp-text);
   letter-spacing: -0.15px;
   margin-bottom: 3px;
 }
 
 .search-empty-hint {
   font-size: 11px;
-  color: var(--spotlight-text-secondary);
+  color: var(--sp-text-secondary);
   line-height: 1.4;
   font-weight: 400;
 }
 
-/* ===== Recent Searches - Hidden in Basic Spotlight ===== */
-.search-recent {
-  display: none;
-}
-
-.search-recent-header {
-  display: none;
-}
-
-.search-recent-clear {
-  display: none;
-}
+/* ===== Recent Searches - Removed (unused) ===== */
+/* Removed the Recent Searches CSS because the current JS does not render these elements. */
 
 /* ===== Search Stats - Hidden in Spotlight ===== */
 .search-stats {
@@ -360,69 +409,11 @@
   display: none;
 }
 
-/* ===== Keyboard Shortcuts Footer - Hidden like macOS ===== */
-.search-shortcuts {
-  display: none;
-}
+/* ===== Keyboard Shortcuts Footer - Removed (unused) ===== */
+/* The keyboard shortcuts footer is not generated by the current JS. Removed to reduce unused CSS; reintroduce if the feature is enabled again. */
 
-.search-shortcut {
-  display: none;
-}
-
-.search-shortcut-key {
-  display: none;
-}
-
-.search-shortcut-label {
-  display: none;
-}
-
-/* ===== Quick Actions - Sequoia Style ===== */
-.search-quick-actions {
-  padding: 6px 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-
-.search-quick-action {
-  padding: 9px 18px;
-  background: transparent;
-  border: none;
-  border-radius: 0;
-  cursor: pointer;
-  transition: background-color 0.1s var(--spotlight-transition);
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  color: inherit;
-}
-
-.search-quick-action:hover {
-  background: var(--spotlight-hover);
-  transform: none;
-}
-
-.search-quick-action-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 7px;
-  background: rgba(255, 255, 255, 0.06);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  opacity: 0.9;
-}
-
-.search-quick-action-label {
-  font-size: 14px;
-  font-weight: 400;
-  color: var(--spotlight-text);
-  letter-spacing: -0.2px;
-}
-
+/* ===== Quick Actions - Removed (unused) ===== */
+/* Quick Actions HTML generator exists but is not currently injected; removed CSS to reduce stylesheet size. Re-add if Quick Actions are enabled later. */
 /* ===== Responsive - Spotlight Style ===== */
 @media (max-width: 768px) {
   .search-modal {
@@ -496,6 +487,17 @@
   }
 }
 
+@keyframes spotlight-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(-14px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
 /* ===== Prefers Reduced Motion ===== */
 @media (prefers-reduced-motion: reduce) {
   .search-overlay,
@@ -512,13 +514,13 @@
 /* ===== Light Mode Support - Sequoia Style ===== */
 @media (prefers-color-scheme: light) {
   :root {
-    --spotlight-bg: rgba(242, 242, 247, 0.88);
-    --spotlight-border: rgba(0, 0, 0, 0.15);
-    --spotlight-divider: rgba(0, 0, 0, 0.1);
-    --spotlight-hover: rgba(0, 0, 0, 0.05);
-    --spotlight-selected: rgb(10, 132, 255);
-    --spotlight-text: rgba(0, 0, 0, 0.88);
-    --spotlight-text-secondary: rgba(0, 0, 0, 0.55);
+    --sp-bg: rgba(242, 242, 247, 0.88);
+    --sp-border: rgba(0, 0, 0, 0.15);
+    --sp-divider: rgba(0, 0, 0, 0.1);
+    --sp-hover: rgba(0, 0, 0, 0.05);
+    --sp-accent: rgb(10, 132, 255);
+    --sp-text: rgba(0, 0, 0, 0.88);
+    --sp-text-secondary: rgba(0, 0, 0, 0.55);
   }
 
   .search-overlay {
@@ -526,8 +528,8 @@
   }
 
   .search-modal {
-    box-shadow: 0 30px 90px rgba(0, 0, 0, 0.2), 0 0 1px rgba(0, 0, 0, 0.15),
-      inset 0 1px 1px rgba(255, 255, 255, 0.8);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.12),
+      0 8px 30px rgba(0, 0, 0, 0.12), 0 30px 90px rgba(0, 0, 0, 0.18);
   }
 
   .search-header {
@@ -563,11 +565,11 @@
 /* ===== High Contrast Mode ===== */
 @media (prefers-contrast: high) {
   .search-modal {
-    border: 2px solid var(--spotlight-border);
+    border: 2px solid var(--sp-border);
   }
 
   .search-result-item.keyboard-selected {
-    outline: 2px solid var(--spotlight-selected);
+    outline: 2px solid var(--sp-accent);
   }
 }
 
