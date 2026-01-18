@@ -146,8 +146,6 @@ globalThis.announce = announce;
 // ===== Section Tracker =====
 const sectionTracker = new SectionTracker();
 sectionTracker.init();
-// Kept for debugging/external access if strictly needed, but marked for review
-if (ENV.debug) globalThis.sectionTracker = sectionTracker;
 
 // ===== Section Loader =====
 const SectionLoader = (() => {
