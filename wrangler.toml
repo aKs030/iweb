@@ -2,21 +2,22 @@ name = "throbbing-mode-6fe1-nlweb"
 main = "workers/throbbing-mode-6fe1-nlweb/index.js"
 compatibility_date = "2025-05-23"
 compatibility_flags = ["nodejs_compat"]
+account_id = "652ca9f4abc93203c1ecd059dc00d1da"
 
 # Production + preview routes
 routes = [
   "https://throbbing-mode-6fe1-nlweb.httpsgithubcomaks030website.workers.dev/*",
-  "*-throbbing-mode-6fe1-nlweb.httpsgithubcomaks030website.workers.dev/*"  # preview wildcard
+  "*-throbbing-mode-6fe1-nlweb.httpsgithubcomaks030website.workers.dev/*"
 ]
 
 [vars]
 RAG_ID = "throbbing-mode-6fe1"
 
-# Scheduled triggers (Cron) - runs daily at 03:00 UTC. Adjust as needed.
+# Scheduled triggers (Cron) - runs daily at 03:00 UTC.
 [triggers]
 crons = ["0 3 * * *"]
 
-# Production environment overrides (keep secrets in GitHub/Cloudflare, not here)
+# Production environment overrides
 [env.production]
 name = "throbbing-mode-6fe1-nlweb"
 vars = { RAG_ID = "throbbing-mode-6fe1" }

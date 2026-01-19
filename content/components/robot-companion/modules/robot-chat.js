@@ -99,7 +99,8 @@ export class RobotChat {
         const safeText = String(response.text || '');
         let html = safeText;
         if (Array.isArray(response.sources) && response.sources.length) {
-          html += '<div class="chat-sources"><strong>Quellen:</strong><ul>' +
+          html +=
+            '<div class="chat-sources"><strong>Quellen:</strong><ul>' +
             response.sources
               .map((s) => `<li><a href="${s.url}">${s.title}</a></li>`)
               .join('') +
@@ -341,7 +342,7 @@ export class RobotChat {
     ) {
       const fallback =
         this.initialBubbleGreetings[
-        Math.floor(Math.random() * this.initialBubbleGreetings.length)
+          Math.floor(Math.random() * this.initialBubbleGreetings.length)
         ];
       picks.push(String(fallback || '').trim());
     }

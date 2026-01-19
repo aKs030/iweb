@@ -1,6 +1,8 @@
 // Worker: /api/search and /api/gemini (proxy + RAG augmentation)
 // Expects env.GEMINI_API_KEY to be set (use `wrangler secret put GEMINI_API_KEY`)
+// Expects env.CF_AI_API_KEY to be set (use `wrangler secret put CF_AI_API_KEY`) if Cloudflare AI is used in future.
 
+// eslint-disable-next-line
 import SEARCH_INDEX from './search-index.json' assert { type: 'json' };
 
 const MODEL = 'gemini-2.5-flash-preview-09-2025';
@@ -16,13 +18,13 @@ function serverSearch(query, topK = 5) {
     const results = SEARCH_INDEX.map((item) => {
         let score = item.priority || 0;
         const title = (item.title || '').toLowerCase();
-        const desc = (item.description || '').toLowerCase();
+        const description = (item.description || '').toLowerCase();
 
         if (title === q) score += 1000;
         else if (title.startsWith(q)) score += 500;
         else if (title.includes(q)) score += 200;
 
-        if (desc.includes(q)) score += 100;
+        if (description.includes(q)) score += 100;
 
         (item.keywords || []).forEach((k) => {
             const kl = (k || '').toLowerCase();
@@ -33,7 +35,7 @@ function serverSearch(query, topK = 5) {
 
         words.forEach((w) => {
             if (title.includes(w)) score += 30;
-            if (desc.includes(w)) score += 15;
+            if (description.includes(w)) score += 15;
             (item.keywords || []).forEach((k) => {
                 if ((k || '').toLowerCase().includes(w)) score += 20;
             });
@@ -66,11 +68,18 @@ async function callGemini(prompt, systemInstruction, apiKey) {
         throw new Error(`Gemini request failed: ${resp.status} ${txt}`);
     }
     const json = await resp.json();
-    const text = json.text || json.candidates?.[0]?.content?.parts?.[0]?.text;
-    return text;
+    return json.text || json.candidates?.[0]?.content?.parts?.[0]?.text;
 }
 
 export default {
+    async scheduled(event, env, ctx) { // eslint-disable-line no-unused-vars
+        // Handle scheduled events (Cron Triggers)
+        // Currently a placeholder for daily tasks (e.g. 03:00)
+        console.log(`Scheduled event triggered at ${new Date().toISOString()}`);
+        console.log(`RAG_ID: ${env.RAG_ID}`); // Log RAG_ID to ensure it's available
+        // Future: Implement index refresh or maintenance here
+    },
+
     async fetch(request, env) {
         const url = new URL(request.url);
 
@@ -109,7 +118,7 @@ export default {
                     const srcText = sources
                         .map((s, i) => `[[${i + 1}] ${s.title} — ${s.url}]: ${s.description}`)
                         .join('\n');
-                    augmented = `Nutze die folgenden relevanten Informationen von der Website als Kontext (falls hilfreich):\n${srcText}\n\nFrage: ${prompt}`;
+                    augmented = `Nutze die folgenden relevanten Informationen von der Website als Kontext (falls hilfreich). RAG-ID: ${env.RAG_ID || 'unknown'}\n\n${srcText}\n\nFrage: ${prompt}`;
                 }
 
                 const apiKey = env.GEMINI_API_KEY;
@@ -119,7 +128,7 @@ export default {
 
                 const text = await callGemini(augmented, systemInstruction || 'Du bist ein hilfreicher Assistent, antworte prägnant.', apiKey);
 
-                return new Response(JSON.stringify({ text, sources }), {
+                return new Response(JSON.stringify({ text, sources, ragId: env.RAG_ID }), {
                     status: 200,
                     headers: { 'Content-Type': 'application/json' },
                 });
