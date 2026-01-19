@@ -1,8 +1,9 @@
 /**
  * Search Component
  * Mac Spotlight-Inspired Search with Advanced Features
+ * Uses remote Cloudflare Worker API
  * @author Abdulkerim Sesli
- * @version 2.0.0
+ * @version 2.1.0
  */
 
 /* exported initSearch, openSearch, closeSearch, toggleSearch */
@@ -10,230 +11,8 @@
 import { createLogger } from '/content/utils/shared-utilities.js';
 
 const _log = createLogger('search');
-
-/**
- * Search Index - Enthält alle durchsuchbaren Inhalte der Webseite
- */
-const SEARCH_INDEX = [
-  // Hauptseiten
-  {
-    id: 'home',
-    title: 'Home',
-    description:
-      'Web Developer & Photographer in Berlin. Spezialisiert auf React, Three.js und Urban Photography.',
-    category: 'Seite',
-    url: '/',
-    icon: '🏠',
-    keywords: ['home', 'start', 'hauptseite', 'portfolio', 'abdulkerim sesli'],
-    priority: 10,
-  },
-  {
-    id: 'about',
-    title: 'Über mich',
-    description:
-      'Erfahre mehr über meine Arbeit, Fähigkeiten und meinen Werdegang als Web Developer und Fotograf.',
-    category: 'Seite',
-    url: '/pages/about/',
-    icon: '👤',
-    keywords: [
-      'über',
-      'about',
-      'biografie',
-      'cv',
-      'lebenslauf',
-      'skills',
-      'fähigkeiten',
-    ],
-    priority: 9,
-  },
-  {
-    id: 'projekte',
-    title: 'Projekte',
-    description:
-      'Eine Auswahl meiner Web-Entwicklungsprojekte mit React, Three.js und modernen Technologien.',
-    category: 'Seite',
-    url: '/pages/projekte/',
-    icon: '💼',
-    keywords: [
-      'projekte',
-      'projects',
-      'portfolio',
-      'arbeiten',
-      'react',
-      'threejs',
-      'web development',
-    ],
-    priority: 9,
-  },
-  {
-    id: 'gallery',
-    title: 'Galerie',
-    description:
-      'Fotografie-Portfolio mit Urban Photography und kreativen Aufnahmen aus Berlin.',
-    category: 'Seite',
-    url: '/pages/gallery/',
-    icon: '📸',
-    keywords: [
-      'galerie',
-      'gallery',
-      'fotografie',
-      'photography',
-      'bilder',
-      'fotos',
-      'urban',
-    ],
-    priority: 8,
-  },
-  {
-    id: 'blog',
-    title: 'Blog',
-    description:
-      'Artikel über Webentwicklung, Design, Fotografie und Technologie.',
-    category: 'Seite',
-    url: '/pages/blog/',
-    icon: '📝',
-    keywords: ['blog', 'artikel', 'posts', 'tutorials', 'guides'],
-    priority: 8,
-  },
-  {
-    id: 'videos',
-    title: 'Videos',
-    description: 'Video-Portfolio mit Tutorials und kreativen Projekten.',
-    category: 'Seite',
-    url: '/pages/videos/',
-    icon: '🎬',
-    keywords: ['videos', 'tutorials', 'youtube', 'film'],
-    priority: 7,
-  },
-
-  // Blog Posts
-  {
-    id: 'blog-modern-ui',
-    title: 'Modern UI Design',
-    description:
-      'Moderne UI-Design-Prinzipien und Best Practices für Web-Anwendungen.',
-    category: 'Blog',
-    url: '/pages/blog/modern-ui-design/',
-    icon: '🎨',
-    keywords: [
-      'ui',
-      'design',
-      'interface',
-      'ux',
-      'user experience',
-      'modern',
-      'glassmorphism',
-    ],
-    priority: 6,
-  },
-  {
-    id: 'blog-react-no-build',
-    title: 'React ohne Build-Tools',
-    description:
-      'Wie man React ohne komplexe Build-Prozesse direkt im Browser nutzt.',
-    category: 'Blog',
-    url: '/pages/blog/react-no-build/',
-    icon: '⚛️',
-    keywords: ['react', 'no build', 'esm', 'modules', 'javascript', 'frontend'],
-    priority: 6,
-  },
-  {
-    id: 'blog-threejs-performance',
-    title: 'Three.js Performance',
-    description:
-      'Performance-Optimierung für Three.js Anwendungen und 3D-Grafik im Web.',
-    category: 'Blog',
-    url: '/pages/blog/threejs-performance/',
-    icon: '🎮',
-    keywords: [
-      'threejs',
-      'three.js',
-      '3d',
-      'webgl',
-      'performance',
-      'optimization',
-    ],
-    priority: 6,
-  },
-  {
-    id: 'blog-visual-storytelling',
-    title: 'Visual Storytelling',
-    description: 'Geschichten visuell erzählen mit Fotografie und Webdesign.',
-    category: 'Blog',
-    url: '/pages/blog/visual-storytelling/',
-    icon: '📖',
-    keywords: ['storytelling', 'visual', 'fotografie', 'design', 'narrative'],
-    priority: 5,
-  },
-
-  // Technologien
-  {
-    id: 'tech-react',
-    title: 'React Entwicklung',
-    description:
-      'Moderne React-Anwendungen mit Hooks, Context und Performance-Optimierungen.',
-    category: 'Technologie',
-    url: '/pages/projekte/#react',
-    icon: '⚛️',
-    keywords: ['react', 'javascript', 'frontend', 'spa', 'hooks', 'jsx'],
-    priority: 7,
-  },
-  {
-    id: 'tech-threejs',
-    title: 'Three.js & WebGL',
-    description:
-      '3D-Grafik und interaktive Visualisierungen mit Three.js im Browser.',
-    category: 'Technologie',
-    url: '/pages/projekte/#threejs',
-    icon: '🌐',
-    keywords: ['threejs', 'webgl', '3d', 'graphics', 'animation', 'particles'],
-    priority: 7,
-  },
-  {
-    id: 'tech-photography',
-    title: 'Fotografie',
-    description:
-      'Urban Photography, Portrait und kreative Fotografie in Berlin.',
-    category: 'Technologie',
-    url: '/pages/gallery/',
-    icon: '📷',
-    keywords: [
-      'fotografie',
-      'photography',
-      'kamera',
-      'bilder',
-      'urban',
-      'portrait',
-    ],
-    priority: 6,
-  },
-
-  // Kontakt & Legal
-  {
-    id: 'impressum',
-    title: 'Impressum',
-    description: 'Rechtliche Informationen und Kontaktdaten.',
-    category: 'Info',
-    url: '/content/components/footer/impressum.html',
-    icon: 'ℹ️',
-    keywords: ['impressum', 'legal', 'kontakt', 'contact', 'anschrift'],
-    priority: 3,
-  },
-  {
-    id: 'datenschutz',
-    title: 'Datenschutz',
-    description:
-      'Datenschutzerklärung und Informationen zum Umgang mit personenbezogenen Daten.',
-    category: 'Info',
-    url: '/content/components/footer/datenschutz.html',
-    icon: '🔒',
-    keywords: ['datenschutz', 'privacy', 'dsgvo', 'gdpr', 'cookies'],
-    priority: 3,
-  },
-];
-
-/* ===== Quick Actions - Removed (unused) ===== */
-/* The QUICK_ACTIONS constant was removed because Quick Actions are not currently injected by the UI. Keep a record here to reintroduce later if needed. */
+const API_ENDPOINT =
+  'https://throbbing-mode-6fe1-nlweb.httpsgithubcomaks030website.workers.dev/api/search';
 
 class SearchComponent {
   constructor() {
@@ -241,11 +20,11 @@ class SearchComponent {
     this.input = null;
     this.resultsContainer = null;
     this.isOpen = false;
-    this.searchIndex = SEARCH_INDEX;
     this.currentResults = [];
     this.selectedIndex = -1;
-    /* Recent searches feature removed (unused). Previously stored in localStorage; methods removed below. */
     this.searchTimeout = null;
+    this.isLoading = false;
+    this.abortController = null;
 
     this.init();
   }
@@ -254,7 +33,7 @@ class SearchComponent {
     this.createSearchOverlay();
     this.attachEventListeners();
     this.loadStyles();
-    _log.info('Search component initialized with Spotlight design');
+    _log.info('Search component initialized with Remote API');
   }
 
   loadStyles() {
@@ -293,6 +72,7 @@ class SearchComponent {
               spellcheck="false"
             >
             <span class="search-icon" aria-hidden="true">🔍</span>
+            <div class="search-loading" style="display: none;"></div>
           </div>
           <button class="search-close" aria-label="Suche schließen" title="ESC">
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -310,6 +90,7 @@ class SearchComponent {
     this.overlay = overlay;
     this.input = overlay.querySelector('.search-input');
     this.resultsContainer = overlay.querySelector('.search-results');
+    this.loadingIndicator = overlay.querySelector('.search-loading');
 
     // Event Listeners für Modal
     overlay
@@ -319,8 +100,6 @@ class SearchComponent {
       if (e.target === overlay) this.close();
     });
   }
-
-  /* Quick Actions generator removed (unused). Reintroduce similar method if Quick Actions are enabled in the UI. */
 
   attachEventListeners() {
     // Globale Tastatur-Shortcuts
@@ -357,16 +136,17 @@ class SearchComponent {
         clearTimeout(this.searchTimeout);
         this.searchTimeout = setTimeout(() => {
           this.handleSearch(e.target.value);
-        }, 150); // 150ms Debounce
+        }, 300); // 300ms Debounce für Remote Request
       });
 
-      // Sofortige Suche bei Enter
+      // Sofortige Suche bei Enter (falls bereits Ergebnisse da sind oder um Suche zu erzwingen)
       this.input.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
           clearTimeout(this.searchTimeout);
-          if (this.currentResults.length > 0) {
-            const index = this.selectedIndex >= 0 ? this.selectedIndex : 0;
-            this.selectResult(index);
+          if (this.currentResults.length > 0 && this.selectedIndex >= 0) {
+            this.selectResult(this.selectedIndex);
+          } else if (this.input.value.trim().length > 0) {
+            this.handleSearch(this.input.value);
           }
         }
       });
@@ -401,7 +181,7 @@ class SearchComponent {
     // Body Scroll verhindern
     document.body.style.overflow = 'hidden';
 
-    // Kein Empty State anzeigen – Modal bleibt leer wie bei macOS 26.2
+    // Kein Empty State anzeigen – Modal bleibt leer wie bei macOS
     if (!this.input.value) {
       this.resultsContainer.innerHTML = '';
       this.currentResults = [];
@@ -423,15 +203,31 @@ class SearchComponent {
       this.input.value = '';
     }
 
-    // Clear timeout
+    // Clear timeout & abort fetch
     if (this.searchTimeout) {
       clearTimeout(this.searchTimeout);
     }
+    if (this.abortController) {
+      this.abortController.abort();
+    }
+
+    // Loading aus
+    this.setLoading(false);
 
     // Body Scroll wieder erlauben
     document.body.style.overflow = '';
 
     _log.info('Search closed');
+  }
+
+  setLoading(state) {
+    this.isLoading = state;
+    if (this.loadingIndicator) {
+      this.loadingIndicator.style.display = state ? 'block' : 'none';
+      // Search icon toggeln
+      const searchIcon = this.overlay.querySelector('.search-icon');
+      if (searchIcon) searchIcon.style.display = state ? 'none' : 'block';
+    }
   }
 
   navigateResults(direction) {
@@ -466,113 +262,76 @@ class SearchComponent {
     }
   }
 
-  handleSearch(query) {
-    const trimmedQuery = query.trim().toLowerCase();
+  async handleSearch(query) {
+    const trimmedQuery = query.trim();
 
     if (trimmedQuery.length === 0) {
       this.resultsContainer.innerHTML = '';
       this.currentResults = [];
       this.selectedIndex = -1;
+      this.setLoading(false);
       return;
     }
 
-    // Suche durchführen
-    const results = this.searchInIndex(trimmedQuery);
-    this.currentResults = results;
-    this.selectedIndex = -1;
+    this.setLoading(true);
 
-    if (results.length > 0) {
-      this.displayResults(results, trimmedQuery);
-      /* Recent searches tracking removed — no localStorage updates */
-    } else {
-      this.showEmptyState(`Keine Ergebnisse für "${trimmedQuery}"`);
+    // Cancel previous request
+    if (this.abortController) {
+      this.abortController.abort();
     }
-  }
+    this.abortController = new AbortController();
 
-  searchInIndex(query) {
-    const results = [];
-    const queryLower = query.toLowerCase();
-    const queryWords = queryLower.split(/\s+/).filter((w) => w.length > 1);
-
-    this.searchIndex.forEach((item) => {
-      let score = item.priority || 0; // Start mit Priorität
-      const titleLower = item.title.toLowerCase();
-      const descLower = item.description.toLowerCase();
-
-      // Exakte Titel-Übereinstimmung (höchste Priorität)
-      if (titleLower === queryLower) {
-        score += 1000;
-      } else if (titleLower.startsWith(queryLower)) {
-        score += 500;
-      } else if (titleLower.includes(queryLower)) {
-        score += 200;
-      }
-
-      // Übereinstimmung in der Beschreibung
-      if (descLower.includes(queryLower)) {
-        score += 100;
-      }
-
-      // Keyword-Matching
-      item.keywords.forEach((keyword) => {
-        const keywordLower = keyword.toLowerCase();
-        if (keywordLower === queryLower) {
-          score += 150;
-        } else if (keywordLower.startsWith(queryLower)) {
-          score += 80;
-        } else if (keywordLower.includes(queryLower)) {
-          score += 40;
-        }
+    try {
+      const response = await fetch(API_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query: trimmedQuery, topK: 20 }),
+        signal: this.abortController.signal,
       });
 
-      // Multi-Word-Matching
-      queryWords.forEach((word) => {
-        if (titleLower.includes(word)) score += 30;
-        if (descLower.includes(word)) score += 15;
-
-        item.keywords.forEach((keyword) => {
-          if (keyword.toLowerCase().includes(word)) score += 20;
-        });
-      });
-
-      // Fuzzy-Matching für Tippfehler (Levenshtein-Distanz vereinfacht)
-      const titleWords = titleLower.split(/\s+/);
-      titleWords.forEach((tw) => {
-        if (this.isSimilar(tw, queryLower)) {
-          score += 50;
-        }
-      });
-
-      if (score > 0) {
-        results.push({ ...item, score });
+      if (!response.ok) {
+        throw new Error(`API Error: ${response.status}`);
       }
-    });
 
-    // Sortiere nach Score (höchster zuerst)
-    return results.sort((a, b) => b.score - a.score).slice(0, 20); // Max 20 Ergebnisse
-  }
+      const data = await response.json();
 
-  isSimilar(str1, str2) {
-    // Einfache Ähnlichkeitsprüfung
-    if (str1.length < 3 || str2.length < 3) return false;
-    const shorter = str1.length < str2.length ? str1 : str2;
-    const longer = str1.length >= str2.length ? str1 : str2;
-    return longer.includes(shorter.substring(0, shorter.length - 1));
+      // API returns { results: [...] }
+      const results = data.results || [];
+
+      this.currentResults = results;
+      this.selectedIndex = -1;
+
+      if (results.length > 0) {
+        this.displayResults(results, trimmedQuery);
+      } else {
+        this.showEmptyState(`Keine Ergebnisse für "${trimmedQuery}"`);
+      }
+    } catch (err) {
+      if (err.name === 'AbortError') {
+        // Ignore aborts
+        return;
+      }
+      _log.error('Search failed:', err);
+      this.showEmptyState(
+        'Fehler bei der Suche. Bitte versuchen Sie es später.',
+      );
+    } finally {
+      this.setLoading(false);
+    }
   }
 
   displayResults(results, query) {
-    if (results.length === 0) {
-      this.showEmptyState(`Keine Ergebnisse für "${query}"`);
-      return;
-    }
-
     // Gruppiere nach Kategorie
     const grouped = {};
     results.forEach((result) => {
-      if (!grouped[result.category]) {
-        grouped[result.category] = [];
+      // Fallback falls Kategorie fehlt
+      const category = result.category || 'Ergebnisse';
+      if (!grouped[category]) {
+        grouped[category] = [];
       }
-      grouped[result.category].push(result);
+      grouped[category].push(result);
     });
 
     const html = `
@@ -590,8 +349,8 @@ class SearchComponent {
             <div class="search-category-divider"></div>
           </div>
           ${items
-              .map((result) => this.createResultHTML(result, query))
-              .join('')}
+            .map((result) => this.createResultHTML(result, query))
+            .join('')}
         </div>
       `,
         )
@@ -627,10 +386,13 @@ class SearchComponent {
     const highlightedTitle = this.highlightText(result.title, query);
     const highlightedDesc = this.highlightText(result.description, query);
 
+    // Fallback Icon
+    const icon = result.icon || '📄';
+
     return `
       <a href="${result.url}" class="search-result-item" data-id="${result.id}">
         <div class="search-result-icon-wrapper">
-          ${result.icon || '📄'}
+          ${icon}
         </div>
         <div class="search-result-content">
           <div class="search-result-title-row">
@@ -643,7 +405,7 @@ class SearchComponent {
   }
 
   highlightText(text, query) {
-    if (!query) return text;
+    if (!query || !text) return text;
 
     const words = query
       .toLowerCase()
@@ -681,7 +443,7 @@ class SearchComponent {
     if (index < 0 || index >= this.currentResults.length) return;
 
     const result = this.currentResults[index];
-    _log.info(`Navigating to: ${result.url} (score: ${result.score})`);
+    _log.info(`Navigating to: ${result.url}`);
 
     // Navigation
     window.location.href = result.url;
@@ -689,9 +451,6 @@ class SearchComponent {
     // Schließe Search
     this.close();
   }
-
-  /* Recent Searches feature removed (unused)
-     The related methods were removed to reduce code surface. Restore from version history if needed. */
 }
 
 // Globale Instanz

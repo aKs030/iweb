@@ -46,7 +46,15 @@ function serverSearch(query, topK = 5) {
         .filter((r) => r.score > 0)
         .sort((a, b) => b.score - a.score)
         .slice(0, topK)
-        .map((r) => ({ id: r.id, title: r.title, description: r.description, url: r.url }));
+        .map((r) => ({
+            id: r.id,
+            title: r.title,
+            description: r.description,
+            url: r.url,
+            category: r.category,
+            icon: r.icon,
+            keywords: r.keywords
+        }));
 }
 
 async function callGemini(prompt, systemInstruction, apiKey) {

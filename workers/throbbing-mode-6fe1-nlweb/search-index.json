@@ -5,6 +5,7 @@
     "description": "Web Developer & Photographer in Berlin. Spezialisiert auf React, Three.js und Urban Photography.",
     "category": "Seite",
     "url": "/",
+    "icon": "🏠",
     "keywords": [
       "home",
       "start",
@@ -20,6 +21,7 @@
     "description": "Erfahre mehr über meine Arbeit, Fähigkeiten und meinen Werdegang als Web Developer und Fotograf.",
     "category": "Seite",
     "url": "/pages/about/",
+    "icon": "👤",
     "keywords": [
       "über",
       "about",
@@ -37,6 +39,7 @@
     "description": "Eine Auswahl meiner Web-Entwicklungsprojekte mit React, Three.js und modernen Technologien.",
     "category": "Seite",
     "url": "/pages/projekte/",
+    "icon": "💼",
     "keywords": [
       "projekte",
       "projects",
@@ -54,6 +57,7 @@
     "description": "Fotografie-Portfolio mit Urban Photography und kreativen Aufnahmen aus Berlin.",
     "category": "Seite",
     "url": "/pages/gallery/",
+    "icon": "📸",
     "keywords": [
       "galerie",
       "gallery",
@@ -71,7 +75,180 @@
     "description": "Artikel über Webentwicklung, Design, Fotografie und Technologie.",
     "category": "Seite",
     "url": "/pages/blog/",
-    "keywords": ["blog", "artikel", "posts", "tutorials", "guides"],
+    "icon": "📝",
+    "keywords": [
+      "blog",
+      "artikel",
+      "posts",
+      "tutorials",
+      "guides"
+    ],
     "priority": 8
+  },
+  {
+    "id": "videos",
+    "title": "Videos",
+    "description": "Video-Portfolio mit Tutorials und kreativen Projekten.",
+    "category": "Seite",
+    "url": "/pages/videos/",
+    "icon": "🎬",
+    "keywords": [
+      "videos",
+      "tutorials",
+      "youtube",
+      "film"
+    ],
+    "priority": 7
+  },
+  {
+    "id": "blog-modern-ui",
+    "title": "Modern UI Design",
+    "description": "Moderne UI-Design-Prinzipien und Best Practices für Web-Anwendungen.",
+    "category": "Blog",
+    "url": "/pages/blog/modern-ui-design/",
+    "icon": "🎨",
+    "keywords": [
+      "ui",
+      "design",
+      "interface",
+      "ux",
+      "user experience",
+      "modern",
+      "glassmorphism"
+    ],
+    "priority": 6
+  },
+  {
+    "id": "blog-react-no-build",
+    "title": "React ohne Build-Tools",
+    "description": "Wie man React ohne komplexe Build-Prozesse direkt im Browser nutzt.",
+    "category": "Blog",
+    "url": "/pages/blog/react-no-build/",
+    "icon": "⚛️",
+    "keywords": [
+      "react",
+      "no build",
+      "esm",
+      "modules",
+      "javascript",
+      "frontend"
+    ],
+    "priority": 6
+  },
+  {
+    "id": "blog-threejs-performance",
+    "title": "Three.js Performance",
+    "description": "Performance-Optimierung für Three.js Anwendungen und 3D-Grafik im Web.",
+    "category": "Blog",
+    "url": "/pages/blog/threejs-performance/",
+    "icon": "🎮",
+    "keywords": [
+      "threejs",
+      "three.js",
+      "3d",
+      "webgl",
+      "performance",
+      "optimization"
+    ],
+    "priority": 6
+  },
+  {
+    "id": "blog-visual-storytelling",
+    "title": "Visual Storytelling",
+    "description": "Geschichten visuell erzählen mit Fotografie und Webdesign.",
+    "category": "Blog",
+    "url": "/pages/blog/visual-storytelling/",
+    "icon": "📖",
+    "keywords": [
+      "storytelling",
+      "visual",
+      "fotografie",
+      "design",
+      "narrative"
+    ],
+    "priority": 5
+  },
+  {
+    "id": "tech-react",
+    "title": "React Entwicklung",
+    "description": "Moderne React-Anwendungen mit Hooks, Context und Performance-Optimierungen.",
+    "category": "Technologie",
+    "url": "/pages/projekte/#react",
+    "icon": "⚛️",
+    "keywords": [
+      "react",
+      "javascript",
+      "frontend",
+      "spa",
+      "hooks",
+      "jsx"
+    ],
+    "priority": 7
+  },
+  {
+    "id": "tech-threejs",
+    "title": "Three.js & WebGL",
+    "description": "3D-Grafik und interaktive Visualisierungen mit Three.js im Browser.",
+    "category": "Technologie",
+    "url": "/pages/projekte/#threejs",
+    "icon": "🌐",
+    "keywords": [
+      "threejs",
+      "webgl",
+      "3d",
+      "graphics",
+      "animation",
+      "particles"
+    ],
+    "priority": 7
+  },
+  {
+    "id": "tech-photography",
+    "title": "Fotografie",
+    "description": "Urban Photography, Portrait und kreative Fotografie in Berlin.",
+    "category": "Technologie",
+    "url": "/pages/gallery/",
+    "icon": "📷",
+    "keywords": [
+      "fotografie",
+      "photography",
+      "kamera",
+      "bilder",
+      "urban",
+      "portrait"
+    ],
+    "priority": 6
+  },
+  {
+    "id": "impressum",
+    "title": "Impressum",
+    "description": "Rechtliche Informationen und Kontaktdaten.",
+    "category": "Info",
+    "url": "/content/components/footer/impressum.html",
+    "icon": "ℹ️",
+    "keywords": [
+      "impressum",
+      "legal",
+      "kontakt",
+      "contact",
+      "anschrift"
+    ],
+    "priority": 3
+  },
+  {
+    "id": "datenschutz",
+    "title": "Datenschutz",
+    "description": "Datenschutzerklärung und Informationen zum Umgang mit personenbezogenen Daten.",
+    "category": "Info",
+    "url": "/content/components/footer/datenschutz.html",
+    "icon": "🔒",
+    "keywords": [
+      "datenschutz",
+      "privacy",
+      "dsgvo",
+      "gdpr",
+      "cookies"
+    ],
+    "priority": 3
   }
 ]
