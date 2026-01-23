@@ -8,10 +8,7 @@
     "start": "node scripts/dev-server.js",
     "format": "prettier --write \"**/*.{js,css,json,md,html}\"",
     "lint": "eslint \"**/*.js\" --fix",
-    "lint:check": "eslint \"**/*.js\"",
-    "deploy:ai": "wrangler deploy --env=\"\"",
-    "deploy:youtube": "wrangler deploy --env youtube",
-    "deploy:all": "npm run deploy:ai && npm run deploy:youtube"
+    "lint:check": "eslint \"**/*.js\""
   },
   "lint-staged": {
     "*.{js,ts}": [

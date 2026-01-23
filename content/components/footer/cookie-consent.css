@@ -196,20 +196,6 @@
   color: #fff;
 }
 
-/* Standalone Modal Backdrop */
-.cookie-modal {
-  position: fixed;
-  inset: 0;
-  z-index: 99999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
-  transition: opacity 0.3s ease;
-}
-
 /* Main Container */
 .cookie-settings-container {
   width: 100%;
@@ -225,8 +211,7 @@
 }
 
 /* --- Header --- */
-.cookie-settings-header,
-.cookie-modal-header {
+.cookie-settings-header {
   padding: 18px 24px;
   display: flex;
   justify-content: space-between;
@@ -237,8 +222,7 @@
   z-index: 10;
 }
 
-.cookie-settings-header h2,
-.cookie-modal-header h2 {
+.cookie-settings-header h2 {
   font-size: 1rem;
   font-weight: 600;
   color: #fff;
@@ -249,8 +233,7 @@
   gap: var(--gap-xs);
 }
 
-.cookie-settings-close,
-.cookie-modal-close {
+.cookie-settings-close {
   width: 32px;
   height: 32px;
   border-radius: 8px;
@@ -264,23 +247,20 @@
   transition: all 0.2s;
 }
 
-.cookie-settings-close:hover,
-.cookie-modal-close:hover {
+.cookie-settings-close:hover {
   background: #1f1f1f;
   color: #fff;
 }
 
 /* --- Content Scroll Area --- */
-.cookie-settings-content,
-.cookie-modal-body {
+.cookie-settings-content {
   padding: 24px;
   background: #0a0a0a;
   overflow-y: auto;
   max-height: 70vh;
 }
 
-.cookie-settings-intro,
-.cookie-modal-intro {
+.cookie-settings-intro {
   font-size: 0.9rem;
   color: #999;
   margin: 0 0 24px 0;
@@ -460,8 +440,7 @@
    4. FOOTER ACTIONS
    ========================================= */
 
-.cookie-settings-footer,
-.cookie-modal-footer {
+.cookie-settings-footer {
   padding: 20px 24px;
   background: #0a0a0a;
   border-top: 1px solid var(--card-border);
@@ -470,8 +449,7 @@
   gap: 12px;
 }
 
-.cookie-settings-btn,
-.cookie-modal-btn {
+.cookie-settings-btn {
   padding: 12px 16px;
   border-radius: 10px;
   font-size: 0.85rem;
@@ -484,8 +462,7 @@
 }
 
 /* Secondary Action (Ghost) */
-.cookie-settings-btn-secondary,
-.cookie-modal-btn-secondary {
+.cookie-settings-btn-secondary {
   background: transparent;
   color: #888;
   border: 1px solid #333;
@@ -498,8 +475,7 @@
 }
 
 /* Primary Action (Solid White) */
-.cookie-settings-btn-primary,
-.cookie-modal-btn-primary {
+.cookie-settings-btn-primary {
   background: #fff;
   color: #000;
   border: 1px solid #fff;
@@ -568,7 +544,6 @@
 /* Print Hide */
 @media print {
   .cookie-banner-inline,
-  .cookie-modal,
   #footer-cookie-view {
     display: none !important;
   }
