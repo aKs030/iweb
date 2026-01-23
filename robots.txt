@@ -1,0 +1,39 @@
+# robots.txt – abdulkerimsesli.de
+# Clean, Google-first configuration
+
+Sitemap: https://www.abdulkerimsesli.de/sitemap.xml
+Sitemap: https://www.abdulkerimsesli.de/sitemap-images.xml
+Sitemap: https://www.abdulkerimsesli.de/sitemap-videos.xml
+Sitemap: https://www.abdulkerimsesli.de/ai-sitemap.xml
+
+User-agent: *
+Allow: /
+
+# Block raw internal fragments
+Disallow: /content/components/*.html
+Disallow: /content/components/*/*.html
+
+# Allow footer pages so Google sees the 301 redirects
+Allow: /content/components/footer/datenschutz.html
+Allow: /content/components/footer/impressum.html
+Allow: /content/components/footer/datenschutz/
+Allow: /content/components/footer/impressum/
+
+# Block internal/system paths
+# Note: Allowing /content/config and /content/utils so Google can load scripts required for rendering
+Disallow: /node_modules/
+Disallow: /tmp/
+Disallow: /dev/
+
+# Block aggressive crawlers
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
