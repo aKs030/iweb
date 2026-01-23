@@ -160,7 +160,21 @@ export class RobotChat {
   addMessage(text, type = 'bot') {
     const msg = document.createElement('div');
     msg.className = `message ${type}`;
-    msg.innerHTML = String(text || '');
+    
+    // Security: Use textContent for user messages, sanitize bot messages
+    if (type === 'user') {
+      msg.textContent = String(text || '');
+    } else {
+      // Bot messages may contain safe HTML (links, formatting)
+      // Import sanitizer dynamically to avoid circular dependencies
+      import('/content/utils/html-sanitizer.js').then(({ sanitizeHTMLMinimal }) => {
+        msg.innerHTML = sanitizeHTMLMinimal(String(text || ''));
+      }).catch(() => {
+        // Fallback: use textContent if sanitizer fails
+        msg.textContent = String(text || '');
+      });
+    }
+    
     this.robot.dom.messages.appendChild(msg);
     this.scrollToBottom();
 

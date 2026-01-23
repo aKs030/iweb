@@ -622,14 +622,21 @@ class SearchComponent {
   }
 
   createResultHTML(result, query) {
-    // Highlight Query in Titel und Beschreibung
-    const highlightedTitle = this.highlightText(result.title, query);
-    const highlightedDesc = this.highlightText(result.description, query);
+    // Security: Escape result data before highlighting
+    const safeTitle = this.escapeHTML(result.title || '');
+    const safeDesc = this.escapeHTML(result.description || '');
+    const safeUrl = this.escapeHTML(result.url || '#');
+    const safeId = this.escapeHTML(result.id || '');
+    const safeIcon = this.escapeHTML(result.icon || '📄');
+    
+    // Highlight Query in Titel und Beschreibung (after escaping)
+    const highlightedTitle = this.highlightText(safeTitle, query);
+    const highlightedDesc = this.highlightText(safeDesc, query);
 
     return `
-      <a href="${result.url}" class="search-result-item" data-id="${result.id}">
+      <a href="${safeUrl}" class="search-result-item" data-id="${safeId}">
         <div class="search-result-icon-wrapper">
-          ${result.icon || '📄'}
+          ${safeIcon}
         </div>
         <div class="search-result-content">
           <div class="search-result-title-row">
@@ -639,6 +646,13 @@ class SearchComponent {
         </div>
       </a>
     `;
+  }
+  
+  escapeHTML(text) {
+    if (!text || typeof text !== 'string') return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
   }
 
   highlightText(text, query) {
