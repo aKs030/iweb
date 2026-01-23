@@ -52,27 +52,25 @@ async function getGeminiResponse(
     return r.json();
   };
 
-  const doServerRequest = async (payloadArg) => {
-    // Server-side request: dynamically import config to avoid bundling secrets into browser code
-    const { config } = await import('./config.js');
-    const apiKey = config.getGeminiApiKey();
-    const r = await fetch(getBaseUrl(apiKey), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payloadArg),
-    });
-    if (!r.ok) {
-      const txt = await r.text();
-      throw new Error(`Server Error: ${r.status} ${txt}`);
-    }
-    return r.json();
+  const doServerRequest = async () => {
+    // DEPRECATED: Direct server-side requests are no longer supported for security.
+    // All requests must go through the Cloudflare Worker proxy at /api/gemini
+    throw new Error(
+      'Direct server-side Gemini API calls are disabled. ' +
+      'Use the browser proxy endpoint /api/gemini instead.'
+    );
   };
 
   for (let i = 0; i < maxRetries; i++) {
     try {
-      const result = isRunningInBrowser()
-        ? await doBrowserRequest(prompt, systemInstruction)
-        : await doServerRequest(payload);
+      // SECURITY: Always use browser proxy endpoint (never direct API calls)
+      if (!isRunningInBrowser()) {
+        throw new Error(
+          'Gemini service must run in browser context. Use /api/gemini proxy.'
+        );
+      }
+
+      const result = await doBrowserRequest(prompt, systemInstruction, _options);
 
       const text =
         result.text || result.candidates?.[0]?.content?.parts?.[0]?.text;
