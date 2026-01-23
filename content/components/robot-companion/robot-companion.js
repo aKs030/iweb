@@ -568,7 +568,7 @@ class RobotCompanion {
         this._eventListeners.dom.forEach(({ target, event, handler }) => {
           try {
             target.removeEventListener(event, handler);
-          } catch (err) {
+          } catch {
             /* ignore */
           }
         });

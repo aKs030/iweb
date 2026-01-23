@@ -67,6 +67,7 @@ Initial release of the portfolio website.
 ## Roadmap
 
 ### Phase 2: CSP Violation Fixes (Planned)
+
 - Monitor CSP violations for 24 hours
 - Remove `unsafe-inline` from script-src
 - Remove `unsafe-inline` from style-src
@@ -74,11 +75,13 @@ Initial release of the portfolio website.
 - Add nonces to necessary inline scripts
 
 ### Phase 3: CSP Enforcement (Planned)
+
 - Switch from report-only to enforcement mode
 - Monitor for issues
 - Run security audits
 
 ### Future Enhancements
+
 - Add automated security testing
 - Implement regular dependency update schedule
 - Add API rate limiting

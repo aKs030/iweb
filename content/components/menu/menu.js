@@ -63,7 +63,7 @@ const initMenu = () => {
         // safety fallback: stop observing after 3s
         setTimeout(() => observer.disconnect(), 3000);
       }
-    } catch (err) {
+    } catch {
       /* ignore observer failures */
     }
     return;
