@@ -1,0 +1,35 @@
+# iweb _headers — Cache & Security recommendations
+# - Adjust TTLs for non-fingerprinted bundles to avoid long-term staleness.
+# - For assets bundled with a content hash, prefer long-term immutable caching.
+
+# Static assets (images, icons, fonts) — safe to cache long-term if fingerprinted
+/content/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+  Vary: Accept-Encoding
+
+# Large runtime bundle. If you add a fingerprint to filenames, consider making this 1 year.
+/rl8i/*
+  Cache-Control: public, max-age=604800, stale-while-revalidate=2592000
+  Vary: Accept-Encoding
+
+# Main application script (not fingerprinted) — keep short browser TTL but allow edge caching
+/content/main.js
+  Cache-Control: public, max-age=0, s-maxage=3600, stale-while-revalidate=86400
+  Vary: Accept-Encoding
+
+# CSS that is used across the site (if not fingerprinted) — short browser TTL, edge short cache
+/content/styles/*
+  Cache-Control: public, max-age=0, s-maxage=3600, stale-while-revalidate=86400
+  Vary: Accept-Encoding
+
+# Default: HTML & dynamic content — fresh at the browser, short edge cache
+/*
+  Cache-Control: public, max-age=0, s-maxage=60, stale-while-revalidate=86400
+  Vary: Accept-Encoding
+
+  # Security headers (applied globally)
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+  X-Frame-Options: DENY
+  Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=()

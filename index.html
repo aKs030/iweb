@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <!-- Mobile: disable auto-detection of phone numbers and email addresses -->
+    <meta name="format-detection" content="telephone=no,email=no" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <!-- Static description fallback for crawlers -->
+    <meta
+      name="description"
+      content="Abdulkerim Sesli — Web Developer & Photographer in Berlin. Spezialisiert auf React, Three.js und Urban Photography. Portfolio, Referenzen & Kontakt."
+    />
+    <!-- Date created (ISO 8601) - used by schema generation -->
+    <meta name="dateCreated" content="2025-12-31T12:00:00Z" />
+    <!-- Description and keywords are provided centrally in content/components/head/head.html -->
+    <!-- Canonical and Sitemap Discovery -->
+    <link rel="canonical" href="https://www.abdulkerimsesli.de/" />
+    <link rel="sitemap" href="/sitemap.xml" type="application/xml" />
+
+    <!-- Font preconnects handled conditionally by head-inline.js when needed -->
+
+    <!-- Server-side favicons for crawlers and browsers (reduces reliance on client-side injection) -->
+    <!-- Prefer PNG/SVG icons (>=48px) so Google mobile search can show the favicon reliably -->
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="192x192"
+      href="/content/assets/img/icons/favicon-192x192.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="96x96"
+      href="/content/assets/img/icons/icon-96.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="/content/assets/img/icons/favicon-32.png"
+    />
+    <link
+      rel="icon"
+      sizes="any"
+      href="/content/assets/img/icons/favicon.svg"
+      type="image/svg+xml"
+    />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" href="/content/assets/img/icons/favicon.ico" />
+    <link
+      rel="mask-icon"
+      href="/content/assets/img/icons/safari-pinned-tab.svg"
+      color="#0d0d0d"
+    />
+    <meta name="msapplication-TileColor" content="#0d0d0d" />
+    <meta
+      name="theme-color"
+      media="(prefers-color-scheme: dark)"
+      content="#0b0d17"
+    />
+    <meta
+      name="theme-color"
+      media="(prefers-color-scheme: light)"
+      content="#ffffff"
+    />
+    <!-- Apple Mobile Web App Settings -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="apple-mobile-web-app-title" content="Abdulkerim — Portfolio" />
+    <meta
+      name="msapplication-TileImage"
+      content="/content/assets/img/icons/favicon-192x192.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="/content/assets/img/icons/apple-touch-icon.png"
+    />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://www.abdulkerimsesli.de/" />
+    <meta
+      property="og:title"
+      content="Abdulkerim — Digital Creator Portfolio"
+    />
+    <meta
+      property="og:description"
+      content="Offizielles Portfolio von Abdulkerim Sesli. Professionelle Webentwicklung (React, Three.js) und Urban Photography aus Berlin. Jetzt Referenzen ansehen &amp; kontaktieren."
+    />
+    <meta
+      property="og:image"
+      content="https://www.abdulkerimsesli.de/content/assets/img/og/og-home-800.webp"
+    />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/webp" />
+    <meta property="og:locale" content="de_DE" />
+    <meta
+      property="og:site_name"
+      content="Abdulkerim — Digital Creator Portfolio"
+    />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://www.abdulkerimsesli.de/" />
+    <meta
+      property="twitter:title"
+      content="Abdulkerim — Digital Creator Portfolio"
+    />
+    <meta
+      property="twitter:description"
+      content="Offizielles Portfolio von Abdulkerim Sesli. Professionelle Webentwicklung (React, Three.js) und Urban Photography aus Berlin."
+    />
+    <meta
+      property="twitter:image"
+      content="https://www.abdulkerimsesli.de/content/assets/img/og/og-home-800.webp"
+    />
+    <meta property="twitter:image:width" content="1200" />
+    <meta property="twitter:image:height" content="630" />
+    <meta property="twitter:image:type" content="image/webp" />
+
+    <!-- DNS Prefetch for Analytics & External Services -->
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+    <link rel="dns-prefetch" href="https://www.google-analytics.com" />
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
+
+    <!-- Server-side FAQ JSON-LD (ensures Search Console sees a named FAQPage) -->
+    <script id="head-complete-ldjson" type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "FAQPage",
+            "@id": "https://www.abdulkerimsesli.de/#faq",
+            "name": "Abdulkerim Sesli | Digitale Visitenkarte & Portfolio Berlin — FAQ",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "Was für Webentwicklungs-Services bietet Abdulkerim an?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Abdulkerim ist spezialisiert auf moderne Frontend-Entwicklung mit JavaScript, HTML/CSS, Node.js und responsive Webdesign. Er erstellt professionelle Websites und digitale Projekte."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Wo ist Abdulkerim als Webentwickler tätig?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Abdulkerim arbeitet als Freelance-Webentwickler und Fotograf in Berlin."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Welche Technologien verwendet Abdulkerim für Webentwicklung?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Er arbeitet hauptsächlich mit JavaScript, HTML/CSS, Node.js, Frontend Development und modernen Webtechnologien."
+                }
+              }
+            ],
+            "isPartOf": { "@id": "https://www.abdulkerimsesli.de/#webpage" }
+          },
+          {
+            "@type": "BreadcrumbList",
+            "@id": "https://www.abdulkerimsesli.de/#breadcrumb",
+            "itemListElement": [
+              {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Home",
+                "item": "https://www.abdulkerimsesli.de/"
+              }
+            ]
+          }
+        ]
+      }
+    </script>
+
+    <!-- Additional Structured Data for Person/Organization -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Abdulkerim Sesli",
+        "identifier": "https://www.abdulkerimsesli.de/#person",
+        "jobTitle": "Webentwickler & Fotograf",
+        "url": "https://www.abdulkerimsesli.de",
+        "email": "mailto:kontakt@abdulkerimsesli.de",
+        "sameAs": [
+          "https://github.com/aKs030",
+          "https://linkedin.com/in/abdulkerimsesli",
+          "https://x.com/kRm_030"
+        ],
+        "interactionStatistic": [
+          {
+            "@type": "InteractionCounter",
+            "interactionType": "https://schema.org/FollowAction",
+            "userInteractionCount": 5400
+          },
+          {
+            "@type": "InteractionCounter",
+            "interactionType": "https://schema.org/LikeAction",
+            "userInteractionCount": 12000
+          }
+        ],
+        "agentInteractionStatistic": {
+          "@type": "InteractionCounter",
+          "interactionType": "https://schema.org/WriteAction",
+          "userInteractionCount": 234
+        },
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "Sterkrader Str. 59",
+          "postalCode": "13507",
+          "addressLocality": "Berlin",
+          "addressCountry": "DE"
+        },
+        "knowsAbout": [
+          "Webentwicklung",
+          "JavaScript",
+          "React",
+          "Three.js",
+          "Node.js",
+          "HTML/CSS",
+          "Urban Photography",
+          "Frontend Development"
+        ],
+        "hasOccupation": {
+          "@type": "Occupation",
+          "name": "Webentwickler",
+          "occupationLocation": {
+            "@type": "City",
+            "name": "Berlin"
+          }
+        }
+      }
+    </script>
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "ImageObject",
+        "contentUrl": "https://www.abdulkerimsesli.de/content/assets/img/og/og-home-800.webp",
+        "caption": "Hauptbild / Portfolio Hero — Abdulkerim Sesli",
+        "creator": { "@type": "Person", "name": "Abdulkerim Sesli" },
+        "license": "https://www.abdulkerimsesli.de/#image-license",
+        "creditText": "Photo: Abdulkerim Sesli",
+        "copyrightNotice": "© 2025 Abdulkerim Sesli",
+        "acquireLicensePage": "https://www.abdulkerimsesli.de/#image-license",
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": "52.5733",
+          "longitude": "13.2911"
+        }
+      }
+    </script>
+
+    <!-- Organization JSON-LD: helps Google understand the organization/business -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "Abdulkerim Sesli",
+        "description": "Web Developer & Photographer in Berlin — Modern frontend development (React, Three.js) and urban photography services.",
+        "url": "https://www.abdulkerimsesli.de",
+        "sameAs": [
+          "https://github.com/aKs030",
+          "https://linkedin.com/in/abdulkerimsesli",
+          "https://x.com/kRm_030"
+        ],
+        "serviceArea": {
+          "@type": "Place",
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Sterkrader Str. 59",
+            "postalCode": "13507",
+            "addressLocality": "Berlin",
+            "addressCountry": "DE"
+          }
+        },
+        "paymentAccepted": "Invoice",
+        "currenciesAccepted": "EUR",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "Sterkrader Str. 59",
+          "postalCode": "13507",
+          "addressLocality": "Berlin",
+          "addressCountry": "DE"
+        },
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://www.abdulkerimsesli.de/content/assets/img/icons/favicon-512.png",
+          "contentUrl": "https://www.abdulkerimsesli.de/content/assets/img/icons/favicon-512.png",
+          "creator": { "@type": "Person", "name": "Abdulkerim Sesli" },
+          "license": "https://www.abdulkerimsesli.de/#image-license",
+          "width": 512,
+          "height": 512,
+          "creditText": "Logo: Abdulkerim Sesli",
+          "copyrightNotice": "© 2025 Abdulkerim Sesli",
+          "acquireLicensePage": "https://www.abdulkerimsesli.de/#image-license"
+        },
+        "founder": { "@type": "Person", "name": "Abdulkerim Sesli" },
+        "contactPoint": [
+          {
+            "@type": "ContactPoint",
+            "contactType": "customer service",
+            "email": "kontakt@abdulkerimsesli.de",
+            "url": "https://www.abdulkerimsesli.de/#kontakt"
+          }
+        ],
+        "openingHours": ["Mo-Fr 09:00-18:00"]
+      }
+    </script>
+
+    <script
+      type="module"
+      src="/content/components/head/head-inline.js"
+      crossorigin="anonymous"
+    ></script>
+
+    <!-- head-complete.js is now loaded dynamically by head-inline.js to prevent race conditions -->
+
+    <!-- Preconnects handled conditionally by head-inline.js (GTM/GA4/fonts) -->
+
+    <!-- Inline minimal critical CSS for the Hero (improves LCP / FOCP) -->
+    <style id="hero-critical-css">
+      .hero {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100dvh;
+        padding: 0 0.5rem;
+        box-sizing: border-box;
+      }
+      .hero-title {
+        font: 800 clamp(3rem, 6vw, 4.5rem) / 1.03 var(--font-inter);
+        margin: 0;
+        padding: 8px 12px;
+        max-width: 30ch;
+        color: var(--color-text-main, #fff);
+        text-align: center;
+        white-space: normal;
+      }
+      .hero-visual {
+        animation: none;
+      }
+      .three-earth-fallback {
+        display: block;
+      }
+    </style>
+
+    <!-- Loader styles consolidated into main.css -->
+    <!-- Preloads removed: head-inline.js injects styles conditionally to avoid unused preloads -->
+    <noscript
+      ><link rel="stylesheet" href="/content/styles/root.css"
+    /></noscript>
+    <script
+      type="module"
+      src="/content/main.js"
+      crossorigin="anonymous"
+      defer
+    ></script>
+    <link
+      rel="stylesheet"
+      href="/content/styles/main.css"
+      media="print"
+      data-defer="1"
+    />
+    <noscript
+      ><link rel="stylesheet" href="/content/styles/main.css"
+    /></noscript>
+
+    <!-- main.js is loaded & preloaded via head-inline to control timing (modulepreload + module script injection) -->
+
+    <!-- Deferred Styles (Below-the-Fold) -->
+    <link
+      rel="stylesheet"
+      href="/pages/about/about.css"
+      media="print"
+      data-defer="1"
+    />
+    <noscript><link rel="stylesheet" href="/pages/about/about.css" /></noscript>
+  </head>
+  <body>
+    <figure class="visually-hidden" aria-hidden="true">
+      <img
+        src="/content/assets/img/og/og-home-800.webp"
+        alt="Abdulkerim Sesli — Portfolio Homepage: Webentwicklung & Fotografie"
+        width="1200"
+        height="630"
+        decoding="async"
+      />
+    </figure>
+
+    <!-- MODERN LOADER START -->
+    <div id="app-loader" aria-live="polite" aria-label="Anwendung wird geladen">
+      <div class="loader-spinner" aria-hidden="true"></div>
+      <div class="loader-content">
+        <div class="loader-logo" aria-hidden="true">AKS | WEB</div>
+
+        <div class="progress-container" role="presentation">
+          <div class="progress-bar" id="loader-progress-bar"></div>
+        </div>
+
+        <div class="loader-info" aria-live="polite">
+          <span class="status-text" id="loader-status-text"
+            >Initialisiere System...</span
+          >
+          <span class="percentage" id="loader-percentage">0%</span>
+        </div>
+      </div>
+    </div>
+    <!-- MODERN LOADER END -->
+
+    <noscript>
+      <style>
+        #app-loader {
+          display: none !important;
+        }
+      </style>
+    </noscript>
+
+    <!-- Google Tag Manager (noscript) removed — noscript iframe is injected dynamically by head-inline.js if GTM is configured (see content/config/site-config.js) -->
+    <!-- Menü (dynamisch geladen) -->
+    <header class="site-header">
+      <div id="menu-container"></div>
+    </header>
+
+    <!-- Advanced Three.js Earth System -->
+    <div
+      id="threeEarthContainer"
+      class="three-earth-container"
+      data-section="hero"
+      aria-describedby="earth-description"
+    >
+      <!-- Hidden description for screen readers only (invisible to sighted users) -->
+      <div id="earth-description" class="sr-only">
+        Eine interaktive 3D-Darstellung der Erde mit realistischen Texturen und
+        Animationen. Verwenden Sie die Steuerungstasten zum Zoomen und Wechseln
+        zwischen Kamera-Modi.
+      </div>
+
+      <!-- WebGL fallback (hidden by default, shown only if WebGL fails) -->
+      <div class="three-earth-error hidden">
+        <div class="error-icon">🌍</div>
+        <p>CSS-Modus</p>
+        <!-- retry button inserted by the module if WebGL fails -->
+      </div>
+    </div>
+
+    <!-- ARIA Live Regions -->
+    <div
+      id="live-region-status"
+      class="visually-hidden"
+      aria-live="polite"
+      aria-atomic="true"
+    ></div>
+    <div
+      id="live-region-assertive"
+      class="visually-hidden"
+      aria-live="assertive"
+      aria-atomic="true"
+    ></div>
+
+    <p class="typewriter-title typewriter-title--fixed" data-offset-mode="full">
+      <span id="typedAuthor" class="typed-author"></span>
+      <span id="typedText" class="typed-text"></span>
+    </p>
+
+    <main id="main-content" tabindex="-1">
+      <section
+        id="hero"
+        class="section hero u-center"
+        aria-label="Abdulkerim — Digital Creator Portfolio"
+        data-section-src="/pages/home/hero"
+        data-eager="true"
+      >
+        <div class="section-skeleton" aria-hidden="true"></div>
+      </section>
+
+      <!-- Card Section -->
+      <section
+        id="features"
+        class="section features full-screen-section"
+        aria-label="Features und Leistungen"
+        data-eager="true"
+        data-state="loaded"
+      >
+        <div class="section-skeleton" aria-hidden="true"></div>
+
+        <div class="features-content"></div>
+      </section>
+
+      <!-- section3 -->
+      <section
+        id="section3"
+        class="section section3"
+        aria-labelledby="section3-heading"
+        data-section-src="/pages/home/section3"
+      ></section>
+    </main>
+
+    <!-- Footer container -->
+    <div
+      id="footer-container"
+      data-footer-src="/content/components/footer/footer"
+    ></div>
+  </body>
+</html>
