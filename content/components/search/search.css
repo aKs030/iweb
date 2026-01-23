@@ -45,7 +45,9 @@
   padding: 0;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.18s var(--sp-ease), visibility 0.18s var(--sp-ease),
+  transition:
+    opacity 0.18s var(--sp-ease),
+    visibility 0.18s var(--sp-ease),
     backdrop-filter 0.18s var(--sp-ease);
 }
 
@@ -67,14 +69,18 @@
   border-radius: var(--sp-radius);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui,
-    sans-serif;
-  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.18), 0 12px 40px rgba(0, 0, 0, 0.45),
+  font-family:
+    -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.18),
+    0 12px 40px rgba(0, 0, 0, 0.45),
     0 40px 120px rgba(0, 0, 0, 0.6);
   overflow: hidden;
   transform: scale(0.97) translateY(-10px);
   opacity: 0;
-  transition: transform 0.25s var(--sp-ease), opacity 0.25s var(--sp-ease);
+  transition:
+    transform 0.25s var(--sp-ease),
+    opacity 0.25s var(--sp-ease);
   max-height: 580px;
   display: flex;
   flex-direction: column;
@@ -93,10 +99,11 @@
 }
 
 .search-modal::before {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(
+  background:
+    radial-gradient(
       120% 80% at 50% 0%,
       rgba(255, 255, 255, 0.08),
       transparent 60%
@@ -117,7 +124,7 @@
 }
 
 .search-header::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -152,8 +159,8 @@
   color: var(--sp-text);
   font-size: 22px;
   font-weight: 400;
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui,
-    sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif;
   line-height: 1.2;
   letter-spacing: -0.6px;
   transition: none;
@@ -282,7 +289,8 @@ html.keyboard-mode .search-result-item:hover {
 }
 
 .search-result-item.keyboard-selected {
-  background: linear-gradient(
+  background:
+    linear-gradient(
       180deg,
       rgba(255, 255, 255, 0.12),
       rgba(255, 255, 255, 0.02)
@@ -528,8 +536,10 @@ html.keyboard-mode .search-result-item:hover {
   }
 
   .search-modal {
-    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.12),
-      0 8px 30px rgba(0, 0, 0, 0.12), 0 30px 90px rgba(0, 0, 0, 0.18);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.12),
+      0 8px 30px rgba(0, 0, 0, 0.12),
+      0 30px 90px rgba(0, 0, 0, 0.18);
   }
 
   .search-header {
@@ -553,7 +563,8 @@ html.keyboard-mode .search-result-item:hover {
   .search-shortcut-key {
     background: rgba(0, 0, 0, 0.08);
     border-color: rgba(0, 0, 0, 0.18);
-    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.08),
+    box-shadow:
+      0 1px 1px rgba(0, 0, 0, 0.08),
       inset 0 0.5px 0 rgba(255, 255, 255, 0.3);
   }
 
