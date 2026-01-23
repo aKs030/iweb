@@ -28,7 +28,9 @@ dist/
 build/
 coverage/
 .nyc_output/
-public/
+
+# Public assets (now managed separately)
+# public/ - removed from ignore as it's now part of structure
 
 # Local config
 content/config/videos-part-*.js

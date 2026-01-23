@@ -6,13 +6,7 @@
   --loader-text: #e0e0e0;
   --loader-accent: #00f3ff; /* Cyan Neon */
   --loader-accent-secondary: #7000ff; /* Purple Neon */
-  /* Spacing variables */
-  --gap-xs: 8px; /* used across components */
-  --gap-sm: 1rem; /* small spacing (buttons, headers) */
-  --gap-md: 2rem; /* medium spacing (sections, card gaps) */
-  --gap-lg: 4rem; /* large spacing (wide layouts) */
-  /* Shared visual tokens */
-  --card-border: rgba(255, 255, 255, 0.08);
+  /* Note: Spacing variables moved to root.css to avoid duplication */
 }
 
 #app-loader {
@@ -211,6 +205,23 @@
   }
 }
 
+/* Zentrale fadeIn Animation für alle Seiten */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
+}
+
 @media (max-width: 480px) {
   .loader-content {
     width: 80%;
@@ -224,22 +235,7 @@
 
 /* ===== END LOADER STYLES ===== */
 
-/* ===== Accessibility Helpers ===== */
-/* Screen Reader Only: Hide from sight but keep available to screen readers */
-.sr-only,
-.visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border-width: 0;
-}
-
-/* ===== END Accessibility Helpers ===== */
+/* Note: Accessibility helpers moved to root.css to avoid duplication */
 
 /* Scroll-Snap Container */
 .snap-container {
@@ -684,4 +680,34 @@ a:hover {
   pointer-events: none;
   visibility: hidden;
   position: relative;
+}
+
+/* Footer Section Styles */
+#footer-section {
+  min-height: auto !important;
+  padding: 0 !important;
+}
+
+#footer-section .site-footer {
+  background: #0d0d0d;
+  color: #ffffff;
+  padding: 2rem 1rem 1rem;
+  margin: 0;
+}
+
+#footer-section .site-footer a:hover {
+  color: #07a1ff !important;
+  transition: color 0.3s ease;
+}
+
+@media (max-width: 768px) {
+  #footer-section .site-footer > div:first-child {
+    grid-template-columns: 1fr !important;
+    text-align: center;
+  }
+
+  #footer-section .site-footer > div:last-child {
+    flex-direction: column !important;
+    text-align: center;
+  }
 }
