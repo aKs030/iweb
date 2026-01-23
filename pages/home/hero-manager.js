@@ -4,11 +4,11 @@ import {
   getElementById,
   TimerManager,
   createLogger,
-} from "/content/utils/shared-utilities.js";
+} from '/content/utils/shared-utilities.js';
 
 let typeWriterModule = null;
 
-const logger = createLogger("HeroManager");
+const logger = createLogger('HeroManager');
 const heroTimers = new TimerManager();
 
 // ===== Hero Management Module =====
@@ -29,9 +29,9 @@ const HeroManager = (() => {
     try {
       if (!typeWriterModule) {
         typeWriterModule =
-          await import("../../content/components/typewriter/TypeWriter.js").catch(
+          await import('../../content/components/typewriter/TypeWriter.js').catch(
             (err) => {
-              logger.warn("Failed to import TypeWriter module", err);
+              logger.warn('Failed to import TypeWriter module', err);
               return null;
             },
           );
@@ -44,7 +44,7 @@ const HeroManager = (() => {
         return tw;
       }
     } catch (err) {
-      logger.warn("Failed to load TypeWriter modules", err);
+      logger.warn('Failed to load TypeWriter modules', err);
     }
     return false;
   }
@@ -65,7 +65,7 @@ const HeroManager = (() => {
     }
 
     const heroEl =
-      getElementById("hero") || document.querySelector("section#hero");
+      getElementById('hero') || document.querySelector('section#hero');
     if (!heroEl) {
       if (heroLookupAttempts < HERO_LOOKUP_MAX) {
         heroLookupAttempts += 1;
@@ -94,8 +94,8 @@ const HeroManager = (() => {
 
   const ensureHeroData = async () =>
     heroData ||
-    (heroData = await import("./GrussText.js").catch((err) => {
-      logger.warn("Failed to load GrussText.js", err);
+    (heroData = await import('./GrussText.js').catch((err) => {
+      logger.warn('Failed to load GrussText.js', err);
       return {};
     }));
 
@@ -105,7 +105,7 @@ const HeroManager = (() => {
 
     for (const d of delays) {
       if (d) await heroTimers.sleep(d);
-      el = getElementById("greetingText");
+      el = getElementById('greetingText');
       if (el) break;
     }
     if (!el) return;
@@ -113,13 +113,13 @@ const HeroManager = (() => {
     try {
       const mod = await ensureHeroData();
       const set = mod.getGreetingSet?.() ?? [];
-      const next = mod.pickGreeting?.(el.dataset.last, set) ?? "";
+      const next = mod.pickGreeting?.(el.dataset.last, set) ?? '';
       if (!next) return;
 
       el.dataset.last = next;
       el.textContent = next;
     } catch (e) {
-      logger.warn("Error setting greeting text", e);
+      logger.warn('Error setting greeting text', e);
     }
   }
 
@@ -132,17 +132,17 @@ const HeroManager = (() => {
     try {
       typeWriterModule?.stopHeroSubtitle?.();
     } catch (err) {
-      logger.warn("HeroManager: stopHeroSubtitle failed", err);
+      logger.warn('HeroManager: stopHeroSubtitle failed', err);
     }
     if (clickHandler) {
-      document.removeEventListener("click", clickHandler);
+      document.removeEventListener('click', clickHandler);
       clickHandler = null;
     }
     if (observer) {
       try {
         observer.disconnect();
       } catch (err) {
-        logger.warn("HeroManager: observer disconnect failed", err);
+        logger.warn('HeroManager: observer disconnect failed', err);
       }
       observer = null;
     }
@@ -150,10 +150,10 @@ const HeroManager = (() => {
 
   function setClickHandler(handler) {
     if (clickHandler) {
-      document.removeEventListener("click", clickHandler);
+      document.removeEventListener('click', clickHandler);
     }
     clickHandler = handler;
-    document.addEventListener("click", handler);
+    document.addEventListener('click', handler);
   }
 
   return {
@@ -170,11 +170,11 @@ export function initHeroFeatureBundle() {
   HeroManager.cleanup();
 
   const onHeroLoaded = () => {
-    const el = getElementById("greetingText");
+    const el = getElementById('greetingText');
     if (!el) return;
-    if (!el.textContent.trim() || el.textContent.trim() === "Willkommen") {
+    if (!el.textContent.trim() || el.textContent.trim() === 'Willkommen') {
       HeroManager.setRandomGreetingHTML();
-      window.announce?.("Hero Bereich bereit.");
+      window.announce?.('Hero Bereich bereit.');
     }
   };
 
@@ -184,7 +184,7 @@ export function initHeroFeatureBundle() {
   document.addEventListener(
     EVENTS.HERO_INIT_READY,
     () => {
-      const el = getElementById("greetingText");
+      const el = getElementById('greetingText');
       if (el?.textContent.trim()) return;
       HeroManager.setRandomGreetingHTML();
     },
@@ -192,7 +192,7 @@ export function initHeroFeatureBundle() {
   );
 
   document.addEventListener(EVENTS.HERO_TYPING_END, (e) => {
-    window.announce?.(`Zitat vollständig: ${e.detail?.text ?? "Text"}`);
+    window.announce?.(`Zitat vollständig: ${e.detail?.text ?? 'Text'}`);
   });
 
   HeroManager.initLazyHeroModules();
@@ -201,8 +201,8 @@ export function initHeroFeatureBundle() {
     const link = event.target.closest('.hero-buttons a[href^="#"]');
     if (!link) return;
 
-    const href = link.getAttribute("href") || "";
-    if (!href.startsWith("#")) return;
+    const href = link.getAttribute('href') || '';
+    if (!href.startsWith('#')) return;
 
     event.preventDefault();
     const targetId = href.slice(1);
@@ -212,11 +212,11 @@ export function initHeroFeatureBundle() {
 
     const doScroll = () => {
       try {
-        target.scrollIntoView({ behavior: "smooth" });
+        target.scrollIntoView({ behavior: 'smooth' });
       } catch (err) {
-        logger.warn("HeroManager: scrollIntoView failed, using fallback", err);
+        logger.warn('HeroManager: scrollIntoView failed, using fallback', err);
         const top = target.getBoundingClientRect().top + window.pageYOffset;
-        window.scrollTo({ top, behavior: "smooth" });
+        window.scrollTo({ top, behavior: 'smooth' });
       }
     };
 

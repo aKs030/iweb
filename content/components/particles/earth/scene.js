@@ -1,4 +1,4 @@
-import { CONFIG } from "./config.js";
+import { CONFIG } from './config.js';
 
 export function setupScene(THREE, container) {
   const scene = new THREE.Scene();
@@ -15,10 +15,10 @@ export function setupScene(THREE, container) {
   );
 
   const renderer = new THREE.WebGLRenderer({
-    canvas: container.querySelector("canvas") || undefined,
+    canvas: container.querySelector('canvas') || undefined,
     antialias: false,
     alpha: true,
-    powerPreference: "low-power",
+    powerPreference: 'low-power',
     preserveDrawingBuffer: false,
   });
 
@@ -36,9 +36,9 @@ export function setupScene(THREE, container) {
 
   // Mark that the renderer DOM element has been attached so tests or other code can detect presence
   try {
-    container.dataset.threeAttached = "1";
+    container.dataset.threeAttached = '1';
     document.dispatchEvent(
-      new CustomEvent("three-attached", {
+      new CustomEvent('three-attached', {
         detail: { containerId: container.id || null },
       }),
     );

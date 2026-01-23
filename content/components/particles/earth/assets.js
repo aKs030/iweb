@@ -1,7 +1,7 @@
-import { CONFIG } from "./config.js";
-import { createLogger } from "/content/utils/shared-utilities.js";
+import { CONFIG } from './config.js';
+import { createLogger } from '/content/utils/shared-utilities.js';
 
-const log = createLogger("EarthAssets");
+const log = createLogger('EarthAssets');
 
 export async function createEarthSystem(
   THREE,
@@ -23,8 +23,8 @@ export async function createEarthSystem(
       textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.BUMP),
     ]);
   } catch (err) {
-    log.error("Texture loading failed:", err);
-    throw new Error("Texture loading failed: " + (err?.message || String(err)));
+    log.error('Texture loading failed:', err);
+    throw new Error('Texture loading failed: ' + (err?.message || String(err)));
   }
 
   const maxAniso = renderer.capabilities.getMaxAnisotropy();
@@ -66,7 +66,7 @@ export async function createEarthSystem(
   const earthMesh = new THREE.Mesh(earthGeometry, dayMaterial);
   earthMesh.position.set(0, -6, 0);
   earthMesh.scale.set(1.5, 1.5, 1.5);
-  earthMesh.userData.currentMode = "day";
+  earthMesh.userData.currentMode = 'day';
   earthMesh.userData.targetPosition = new THREE.Vector3(0, -6, 0);
   earthMesh.userData.targetScale = 1.5;
   earthMesh.userData.targetRotation = 0;
@@ -171,7 +171,7 @@ export async function createCloudLayer(
     );
     return new THREE.Mesh(cloudGeometry, cloudMaterial);
   } catch (error) {
-    log.warn("Cloud texture failed to load:", error);
+    log.warn('Cloud texture failed to load:', error);
     return new THREE.Object3D();
   }
 }
