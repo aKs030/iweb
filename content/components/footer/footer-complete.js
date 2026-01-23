@@ -1353,5 +1353,4 @@ class FooterResizer {
 }
 
 // ===== Auto-Start =====
-/* eslint-disable-next-line import/no-unused-modules */
 export const initFooter = () => new FooterLoader().init();

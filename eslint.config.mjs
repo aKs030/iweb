@@ -18,6 +18,7 @@ export default [
         performance: 'readonly',
         requestAnimationFrame: 'readonly',
         cancelAnimationFrame: 'readonly',
+        requestIdleCallback: 'readonly',
         setTimeout: 'readonly',
         clearTimeout: 'readonly',
         setInterval: 'readonly',
@@ -33,6 +34,14 @@ export default [
         localStorage: 'readonly',
         location: 'readonly',
         gtag: 'readonly',
+        alert: 'readonly',
+        getComputedStyle: 'readonly',
+        innerHeight: 'readonly',
+        atob: 'readonly',
+        btoa: 'readonly',
+        DOMParser: 'readonly',
+        AbortController: 'readonly',
+        OffscreenCanvas: 'readonly',
         // Node.js globals (for scripts)
         process: 'readonly',
         __dirname: 'readonly',
@@ -43,6 +52,10 @@ export default [
         // Service Worker globals
         self: 'readonly',
         caches: 'readonly',
+        // Cloudflare Worker globals
+        Request: 'readonly',
+        Response: 'readonly',
+        Headers: 'readonly',
       },
     },
     rules: {
