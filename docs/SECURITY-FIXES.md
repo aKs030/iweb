@@ -87,4 +87,23 @@ Nach der API-Key Rotation können wir mit den nächsten Sicherheits-Fixes fortfa
 
 ---
 
-**Status:** ⏳ Warte auf API-Key Rotation durch Entwickler
+## ✅ ERLEDIGT: API-Key Rotation abgeschlossen
+
+**Datum:** 2026-01-23
+
+### Durchgeführte Schritte:
+1. ✅ Neuer API-Key in Google Cloud Console erstellt
+2. ✅ Key im Cloudflare Worker gesetzt: `wrangler secret put GEMINI_API_KEY --env=""`
+3. ✅ Worker neu deployed: `wrangler deploy --env=""`
+4. ✅ Worker läuft auf:
+   - `www.abdulkerimsesli.de/api/gemini`
+   - `abdulkerimsesli.de/api/gemini`
+
+### ⚠️ NOCH ZU TUN:
+- [ ] Neuen Key in Google Cloud Console einschränken (Domain + API)
+- [ ] Alten Key (`AIzaSyCXX7Y6yTWNPuvUwC9ixlaVGj1n__Wv2Is`) löschen
+- [ ] Funktionstest durchführen
+
+---
+
+**Status:** ✅ Key gesetzt, ⏳ Warte auf Einschränkung & Löschung des alten Keys
