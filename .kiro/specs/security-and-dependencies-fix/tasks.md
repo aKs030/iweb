@@ -191,11 +191,11 @@ This task list implements the security and dependency fixes identified in the co
 
 ### 5.1 Dependency Testing
 
-- [ ] Run `npm audit` - verify 0 vulnerabilities
-- [ ] Run `npm run lint` - verify no errors
-- [ ] Run `npm run format` - verify formatting works
-- [ ] Run `npm run dev` - verify dev server starts
-- [ ] Test all pages load correctly
+- [x] Run `npm audit` - verify 0 vulnerabilities
+- [x] Run `npm run lint` - verify no errors
+- [x] Run `npm run format` - verify formatting works
+- [x] Run `npm run dev` - verify dev server starts
+- [x] Test all pages load correctly
 
 ### 5.2 API Proxy Testing
 
