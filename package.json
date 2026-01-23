@@ -4,11 +4,11 @@
   "description": "Portfolio website of Abdulkerim Sesli - Web Developer & Photographer in Berlin",
   "main": "index.js",
   "scripts": {
-    "iweb": "node scripts/dev-server.js",
-    "dev": "npm run iweb",
-    "start": "npm run iweb",
-    "format": "prettier --write \"**/*.{js,css,json,md,html,htm}\"",
-    "lint": "eslint \"**/*.{js,ts}\" --fix"
+    "dev": "node scripts/dev-server.js",
+    "start": "node scripts/dev-server.js",
+    "format": "prettier --write \"**/*.{js,css,json,md,html}\"",
+    "lint": "eslint \"**/*.js\" --fix",
+    "lint:check": "eslint \"**/*.js\""
   },
   "lint-staged": {
     "*.{js,ts}": [
@@ -20,11 +20,8 @@
     ]
   },
   "devDependencies": {
-    "depcheck": "^1.4.7",
-    "eslint": "^8.40.0",
-    "eslint-config-prettier": "^8.10.2",
-    "eslint-plugin-import": "^2.32.0",
-    "eslint-plugin-prettier": "^4.2.5",
+    "@eslint/js": "^9.39.2",
+    "eslint": "^9.39.2",
     "gray-matter": "^4.0.3",
     "lint-staged": "^16.2.7",
     "marked": "^5.1.2",

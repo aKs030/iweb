@@ -56,18 +56,21 @@ SEO              ████████████████████ 10
 ## 🛠️ Tech Stack
 
 ### Frontend
+
 - **JavaScript** - ES6+ Modules
 - **React** - 18.2.0 (via ESM)
 - **Three.js** - 3D Graphics
 - **HTML5/CSS3** - Semantic markup
 
 ### Tools
+
 - **Node.js** - Dev server
 - **ESLint** - Code linting
 - **Prettier** - Code formatting
 - **Sharp** - Image optimization
 
 ### Deployment
+
 - **Cloudflare Pages** - Hosting
 - **Service Worker** - Offline support
 - **PWA** - Progressive Web App
@@ -94,7 +97,9 @@ iweb/
 ## 🎯 Key Features
 
 ### 🌍 Interactive 3D Earth
+
 Real-time Earth visualization with:
+
 - Day/night textures
 - Cloud layer
 - Bump mapping
@@ -102,6 +107,7 @@ Real-time Earth visualization with:
 - Camera controls
 
 ### ♿ Accessibility
+
 - ARIA labels & roles
 - Keyboard navigation
 - Screen reader support
@@ -109,6 +115,7 @@ Real-time Earth visualization with:
 - Skip links
 
 ### 🔍 SEO
+
 - Schema.org JSON-LD
 - Open Graph tags
 - Twitter Cards
@@ -116,6 +123,7 @@ Real-time Earth visualization with:
 - robots.txt
 
 ### 📱 PWA
+
 - Service Worker caching
 - Offline support
 - Install prompt
@@ -127,10 +135,13 @@ Real-time Earth visualization with:
 ## 🚀 Development
 
 ### Dev Server
+
 ```bash
 npm run dev
 ```
+
 **Features:**
+
 - ⚡ Async I/O
 - 🛡️ Error handling
 - 📦 25 MIME types
@@ -139,6 +150,7 @@ npm run dev
 - 📊 Request timing
 
 ### Scripts
+
 ```bash
 npm run format           # Format code
 npm run lint             # Lint code
@@ -160,17 +172,17 @@ Production:   https://www.abdulkerimsesli.de
 
 ## 📚 Documentation
 
-| Document | Description |
-|----------|-------------|
-| `docs/PROJEKT-STATUS.md` | Compact overview |
-| `docs/QUICK-REFERENCE.md` | Commands & structure |
-| `docs/OPTIMIERUNGEN.md` | Optimization guide |
-| `docs/MAINTENANCE.md` | Maintenance guide |
-| `docs/ANALYTICS.md` | Analytics setup |
-| `docs/SEO-OPTIMIERUNG.md` | SEO optimization |
-| `docs/SECURITY-CSP.md` | Security & CSP |
-| `docs/SCHEMA-VALIDATOR-GUIDE.md` | Schema validation |
-| `docs/VALIDATOR-QUICK-REFERENCE.md` | Validator reference |
+| Document                            | Description          |
+| ----------------------------------- | -------------------- |
+| `docs/PROJEKT-STATUS.md`            | Compact overview     |
+| `docs/QUICK-REFERENCE.md`           | Commands & structure |
+| `docs/OPTIMIERUNGEN.md`             | Optimization guide   |
+| `docs/MAINTENANCE.md`               | Maintenance guide    |
+| `docs/ANALYTICS.md`                 | Analytics setup      |
+| `docs/SEO-OPTIMIERUNG.md`           | SEO optimization     |
+| `docs/SECURITY-CSP.md`              | Security & CSP       |
+| `docs/SCHEMA-VALIDATOR-GUIDE.md`    | Schema validation    |
+| `docs/VALIDATOR-QUICK-REFERENCE.md` | Validator reference  |
 
 ---
 
@@ -212,6 +224,7 @@ Production:   https://www.abdulkerimsesli.de
 ## 👤 Author
 
 **Abdulkerim Sesli**
+
 - Website: [abdulkerimsesli.de](https://www.abdulkerimsesli.de)
 - LinkedIn: [abdulkerim-s](https://linkedin.com/in/abdulkerim-s)
 - GitHub: [@aKs030](https://github.com/aKs030)

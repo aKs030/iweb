@@ -7,7 +7,8 @@ body {
   line-height: 1.6;
   overflow-x: hidden;
   min-height: 100vh;
-  background-image: radial-gradient(
+  background-image:
+    radial-gradient(
       circle at 15% 50%,
       rgba(59, 130, 246, 0.08) 0%,
       transparent 25%
@@ -70,7 +71,8 @@ a {
   padding: 0.75rem 1.5rem;
   border-radius: var(--radius-full);
   font-weight: 600;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+  transition:
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
     color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
@@ -86,7 +88,7 @@ a {
 }
 
 .btn-primary::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
@@ -138,7 +140,9 @@ header {
   border-radius: 1.5rem;
   padding: 2rem;
   backdrop-filter: blur(12px);
-  transition: transform 0.3s ease, border-color 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    border-color 0.3s ease;
   position: relative;
   overflow: hidden;
 }
@@ -217,7 +221,9 @@ header {
   background: rgba(255, 255, 255, 0.03);
   border-radius: 1rem;
   border: 1px solid transparent;
-  transition: background 0.2s, border-color 0.2s;
+  transition:
+    background 0.2s,
+    border-color 0.2s;
 }
 
 .social-item:hover {
@@ -237,7 +243,10 @@ header {
   font-size: 0.9rem;
   color: var(--text-main);
   border: 1px solid var(--card-border);
-  transition: background 0.2s, border-color 0.2s, transform 0.2s;
+  transition:
+    background 0.2s,
+    border-color 0.2s,
+    transform 0.2s;
 }
 
 .stack-tag:hover {
@@ -258,7 +267,7 @@ header {
 }
 
 .timeline-item::before {
-  content: '';
+  content: "";
   position: absolute;
   left: -5px;
   top: 6px;
@@ -301,7 +310,9 @@ header {
   padding: 1.25rem;
   border-radius: 1rem;
   border: 1px solid var(--card-border);
-  transition: background 0.2s, border-color 0.2s;
+  transition:
+    background 0.2s,
+    border-color 0.2s;
 }
 
 .mini-card:hover {

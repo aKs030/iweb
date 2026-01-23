@@ -36,7 +36,9 @@
   border-radius: 8px;
   border: 2px solid var(--accent-primary, #0f8);
   box-shadow: 0 4px 16px rgb(0 0 0 / 30%);
-  transition: clip-path 0.3s ease, box-shadow 0.2s ease;
+  transition:
+    clip-path 0.3s ease,
+    box-shadow 0.2s ease;
   pointer-events: auto;
   white-space: nowrap;
   z-index: 10001;
@@ -74,7 +76,8 @@
   flex-shrink: 0;
   margin-right: 8px; /* Einheitlicher Abstand */
   filter: drop-shadow(0 0.5px 1px rgb(0 0 0 / 15%));
-  transition: transform 0.2s var(--dynamic-menu-spring-quick),
+  transition:
+    transform 0.2s var(--dynamic-menu-spring-quick),
     opacity 0.2s var(--dynamic-menu-spring-quick),
     filter 0.2s var(--dynamic-menu-spring-quick);
   opacity: 0.85;
@@ -131,7 +134,9 @@ body {
 .site-menu__list li,
 .site-menu__list li a {
   font-family: var(--font-primary);
-  font-feature-settings: 'kern' 1, 'liga' 1;
+  font-feature-settings:
+    "kern" 1,
+    "liga" 1;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-size: 17px; /* Dynamic Menu Standard Body Size */
@@ -232,7 +237,7 @@ body {
 
 /* Active menu link styling */
 .site-menu__list a.active,
-.site-menu__list a[aria-current='page'] {
+.site-menu__list a[aria-current="page"] {
   color: var(--dynamic-menu-accent-blue);
   font-weight: 700;
 }
@@ -249,7 +254,8 @@ body {
 
 .site-logo {
   /* Dynamic Menu Micro-Animation */
-  transition: transform 0.3s var(--dynamic-menu-spring-quick),
+  transition:
+    transform 0.3s var(--dynamic-menu-spring-quick),
     opacity 0.3s var(--dynamic-menu-spring-quick);
   cursor: pointer;
   text-decoration: none;
@@ -289,7 +295,8 @@ body {
   letter-spacing: 0.01em;
   opacity: 0;
   transform: translateY(-4px) scale(0.95);
-  transition: opacity 0.4s var(--dynamic-menu-spring-smooth),
+  transition:
+    opacity 0.4s var(--dynamic-menu-spring-smooth),
     transform 0.4s var(--dynamic-menu-spring-smooth);
   text-align: left;
   line-height: 1.1;
@@ -357,7 +364,8 @@ body {
   font-size: clamp(14px, 1.3vw, 16px);
   letter-spacing: -0.01em;
   touch-action: manipulation;
-  transition: background 0.2s var(--dynamic-menu-spring-quick),
+  transition:
+    background 0.2s var(--dynamic-menu-spring-quick),
     color 0.2s var(--dynamic-menu-spring-quick),
     transform 0.2s var(--dynamic-menu-spring-quick),
     border-color 0.2s var(--dynamic-menu-spring-quick);
@@ -409,7 +417,8 @@ body {
   font-size: clamp(14px, 1.3vw, 16px);
   letter-spacing: -0.01em;
   touch-action: manipulation;
-  transition: background 0.2s var(--dynamic-menu-spring-quick),
+  transition:
+    background 0.2s var(--dynamic-menu-spring-quick),
     color 0.2s var(--dynamic-menu-spring-quick),
     transform 0.2s var(--dynamic-menu-spring-quick),
     border-color 0.2s var(--dynamic-menu-spring-quick);
@@ -424,7 +433,8 @@ body {
 .site-menu__list .submenu li a {
   color: var(--dynamic-menu-label-secondary);
   display: block;
-  transition: background 0.2s var(--dynamic-menu-spring-quick),
+  transition:
+    background 0.2s var(--dynamic-menu-spring-quick),
     color 0.2s var(--dynamic-menu-spring-quick),
     transform 0.2s var(--dynamic-menu-spring-quick);
   padding: 12px 20px;
@@ -485,7 +495,8 @@ button.search-trigger:focus .icon-fallback {
   height: 40px;
   position: absolute;
   right: 24px;
-  transition: background 0.2s var(--dynamic-menu-spring-quick),
+  transition:
+    background 0.2s var(--dynamic-menu-spring-quick),
     transform 0.2s var(--dynamic-menu-spring-quick),
     opacity 0.2s var(--dynamic-menu-spring-quick);
   -webkit-backdrop-filter: blur(10px);
@@ -505,14 +516,15 @@ button.search-trigger:focus .icon-fallback {
 .site-menu__hamburger,
 .site-menu__hamburger::before,
 .site-menu__hamburger::after {
-  content: '';
+  content: "";
   display: block;
   background: var(--dynamic-menu-label-primary);
   width: 18px;
   height: 2px;
   margin: 4px auto;
   border-radius: 2px;
-  transition: background 0.3s var(--dynamic-menu-spring-bounce),
+  transition:
+    background 0.3s var(--dynamic-menu-spring-bounce),
     transform 0.3s var(--dynamic-menu-spring-bounce),
     opacity 0.3s var(--dynamic-menu-spring-bounce);
 }
@@ -561,7 +573,8 @@ button.search-trigger:focus .icon-fallback {
 
   /* Intelligente Positionierung - verhindert Überlauf */
   transform-origin: top left;
-  transition: opacity 0.2s var(--dynamic-menu-spring-quick),
+  transition:
+    opacity 0.2s var(--dynamic-menu-spring-quick),
     transform 0.2s var(--dynamic-menu-spring-quick);
 }
 
@@ -589,7 +602,8 @@ button.search-trigger:focus .icon-fallback {
     opacity: 0;
     pointer-events: none;
     transform: translateY(-8px) scale(0.96);
-    transition: opacity 0.25s var(--dynamic-menu-spring-smooth),
+    transition:
+      opacity 0.25s var(--dynamic-menu-spring-smooth),
       transform 0.25s var(--dynamic-menu-spring-smooth);
     display: block; /* Always rendered for smooth transitions */
   }
@@ -660,7 +674,8 @@ main {
 
     /* Animation */
     transform: translateX(110%) scale(0.95);
-    transition: transform 0.4s var(--dynamic-menu-spring-bounce),
+    transition:
+      transform 0.4s var(--dynamic-menu-spring-bounce),
       opacity 0.4s var(--dynamic-menu-spring-bounce);
     flex-direction: column;
     gap: 0;
@@ -691,7 +706,8 @@ main {
     border: none;
     color: var(--dynamic-menu-label-primary);
     touch-action: manipulation;
-    transition: background 0.2s var(--dynamic-menu-spring-quick),
+    transition:
+      background 0.2s var(--dynamic-menu-spring-quick),
       color 0.2s var(--dynamic-menu-spring-quick),
       transform 0.2s var(--dynamic-menu-spring-quick);
   }
@@ -736,7 +752,7 @@ main {
   /* Mobile submenu indicator */
   .site-menu__list .has-submenu > a::after,
   .site-menu__list .has-submenu > .submenu-toggle::after {
-    content: '⌄';
+    content: "⌄";
     transform: rotate(-90deg);
   }
 
@@ -757,7 +773,7 @@ main {
 /* ===== Dynamic Menu Submenu Indicators ===== */
 .site-menu__list .has-submenu > a::after,
 .site-menu__list .has-submenu > .submenu-toggle::after {
-  content: '›';
+  content: "›";
   display: inline-block;
   margin-left: 8px;
   font-size: 16px;

@@ -1,27 +1,26 @@
-// Service Worker with optimized caching strategies
-// Version: 2026-01-16 - v2 with texture caching optimization
+// Service Worker - Optimized Caching Strategies
+// Version: 2026-01-23 - v3
 
-// Cache names with versioning for better cache busting
 const CACHE_NAMES = {
-  APP_SHELL: 'aks-portfolio-app-v2',
-  RUNTIME: 'aks-portfolio-runtime-v2',
-  IMAGES: 'aks-portfolio-images-v1',
-  TEXTURES: 'aks-portfolio-textures-v1', // Static 3D textures (Earth, Moon, never change)
-  FONTS: 'aks-portfolio-fonts-v1',
-  BUNDLES: 'aks-portfolio-bundles-v1', // Three.js and CDN bundles
+  APP_SHELL: "aks-portfolio-app-v3",
+  RUNTIME: "aks-portfolio-runtime-v3",
+  IMAGES: "aks-portfolio-images-v2",
+  TEXTURES: "aks-portfolio-textures-v2",
+  FONTS: "aks-portfolio-fonts-v2",
+  BUNDLES: "aks-portfolio-bundles-v2",
 };
 
 const APP_SHELL = [
-  '/',
-  '/index.html',
-  '/content/styles/main.css',
-  '/content/styles/root.css',
-  '/content/main.js',
-  '/manifest.json',
-  '/content/assets/img/icons/favicon-512.png',
+  "/",
+  "/index.html",
+  "/content/styles/main.css",
+  "/content/styles/root.css",
+  "/content/main.js",
+  "/manifest.json",
+  "/content/assets/img/icons/favicon-512.png",
 ];
 
-// Helper: limit cache size to avoid unbounded growth
+// Helper: limit cache size
 async function trimCache(cacheName, maxEntries = 60) {
   const cache = await caches.open(cacheName);
   const keys = await cache.keys();
@@ -30,27 +29,25 @@ async function trimCache(cacheName, maxEntries = 60) {
   await Promise.all(keys.slice(0, toDelete).map((key) => cache.delete(key)));
 }
 
-// Static Earth textures that never change—pre-cache for offline reliability
+// Static Earth textures - pre-cache for offline reliability
 const STATIC_TEXTURES = [
-  '/content/assets/img/earth/earth_day.webp',
-  '/content/assets/img/earth/earth_night.webp',
-  '/content/assets/img/earth/earth_normal.webp',
-  '/content/assets/img/earth/earth_bump.webp',
-  '/content/assets/img/earth/textures/moon_texture.webp',
-  '/content/assets/img/earth/textures/moon_bump.webp',
+  "/content/assets/img/earth/earth_day.webp",
+  "/content/assets/img/earth/earth_night.webp",
+  "/content/assets/img/earth/earth_normal.webp",
+  "/content/assets/img/earth/earth_bump.webp",
+  "/content/assets/img/earth/textures/moon_texture.webp",
+  "/content/assets/img/earth/textures/moon_bump.webp",
 ];
 
-self.addEventListener('install', (event) => {
+self.addEventListener("install", (event) => {
   event.waitUntil(
     Promise.all([
       caches
         .open(CACHE_NAMES.APP_SHELL)
         .then((cache) => cache.addAll(APP_SHELL)),
-      // Pre-cache static textures aggressively
       caches.open(CACHE_NAMES.TEXTURES).then((cache) =>
         cache.addAll(STATIC_TEXTURES).catch(() => {
-          // Graceful fallback if some textures don't exist yet
-          // textures may be missing during install; ignore silently
+          // Graceful fallback if textures don't exist
         }),
       ),
     ]),
@@ -58,46 +55,44 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-self.addEventListener('activate', (event) => {
+self.addEventListener("activate", (event) => {
   const CURRENT_CACHES = Object.values(CACHE_NAMES);
   event.waitUntil(
     caches.keys().then((keys) =>
       Promise.all(
         keys.map((key) => {
           if (!CURRENT_CACHES.includes(key)) {
-            // deleting old cache during activation
             return caches.delete(key);
           }
         }),
       ),
     ),
   );
-  // Enable navigation preload if supported for faster network responses
-  if ('navigationPreload' in self.registration) {
+
+  // Enable navigation preload if supported
+  if ("navigationPreload" in self.registration) {
     try {
       self.registration.navigationPreload.enable();
     } catch (e) {
-      // ignore
+      // Ignore
     }
   }
   self.clients.claim();
 });
 
 // Optimized fetch with per-asset-type caching strategies
-self.addEventListener('fetch', (event) => {
+self.addEventListener("fetch", (event) => {
   const req = event.request;
   const url = new URL(req.url);
 
-  // Skip non-GET requests
-  if (req.method !== 'GET') return;
+  if (req.method !== "GET") return;
 
   // HTML: network-first (always try fresh content)
-  if (req.headers.get('accept')?.includes('text/html')) {
+  if (req.headers.get("accept")?.includes("text/html")) {
     event.respondWith(
       (async () => {
         const preloaded = await event.preloadResponse;
         if (preloaded) {
-          // Also store response in runtime cache
           const copy = preloaded.clone();
           caches
             .open(CACHE_NAMES.RUNTIME)
@@ -113,14 +108,14 @@ self.addEventListener('fetch', (event) => {
             return res;
           })
           .catch(() =>
-            caches.match(req).then((res) => res || caches.match('/index.html')),
+            caches.match(req).then((res) => res || caches.match("/index.html")),
           );
       })(),
     );
     return;
   }
 
-  // Earth textures: cache-first + never revalidate (static assets)
+  // Earth textures: cache-first (static assets)
   if (url.pathname.match(/\/content\/assets\/img\/earth\/.*\.(webp|png)$/i)) {
     event.respondWith(
       caches.match(req).then((cached) => {
@@ -138,7 +133,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Fonts & external bundles (CDN): cache-first with long expiry
+  // Fonts & external bundles: cache-first
   if (
     url.pathname.match(/\.(woff2?|ttf|otf|eot)$/i) ||
     url.origin !== self.location.origin
@@ -160,7 +155,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Images: cache-first (reuse from browser cache)
+  // Images: cache-first
   if (url.pathname.match(/\.(jpg|jpeg|png|gif|svg|webp|ico|avif)$/i)) {
     event.respondWith(
       caches.match(req).then((cached) => {
@@ -178,7 +173,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // JS/CSS: network-first (prefer fresh, fallback to cache)
+  // JS/CSS: network-first
   event.respondWith(
     fetch(req)
       .then((res) => {
