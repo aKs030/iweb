@@ -556,7 +556,6 @@ function App() {
 }
 
 // Init Function to be called from HTML
-// eslint-disable-next-line import/no-unused-modules -- used by the HTML module script in `pages/projekte/index.html`
 export function initProjectsApp() {
   const rootEl = document.getElementById('root');
   if (rootEl && window.ReactDOM && window.React) {

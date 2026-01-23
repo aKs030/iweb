@@ -1,6 +1,5 @@
 // DOM helper utilities for head manipulation and link/meta upserts
 
-/* eslint-disable-next-line import/no-unused-modules */
 export function upsertHeadLink({
   rel,
   href,
@@ -39,7 +38,6 @@ export function upsertHeadLink({
   }
 }
 
-/* eslint-disable-next-line import/no-unused-modules */
 export function upsertMeta({ name, property, content }) {
   try {
     const selector = property

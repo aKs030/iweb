@@ -6,7 +6,6 @@
  */
 
 /* exported initSearch, openSearch, closeSearch, toggleSearch */
-/* eslint-disable import/no-unused-modules */
 import { createLogger } from '/content/utils/shared-utilities.js';
 
 const _log = createLogger('search');
