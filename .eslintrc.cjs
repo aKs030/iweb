@@ -8,7 +8,6 @@ module.exports = {
   globals: { 
     gtag: 'readonly', 
     announce: 'readonly', 
-    makeAbortController: 'readonly',
     React: 'readonly',
     ReactDOM: 'readonly'
   },

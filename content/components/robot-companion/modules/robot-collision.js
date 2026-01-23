@@ -1,5 +1,5 @@
 import { createLogger } from '/content/utils/shared-utilities.js';
-import { createObserver } from '/content/utils/intersection-observer.js';
+import { createObserver } from '/content/utils/observers/intersection-observer.js';
 const log = createLogger('RobotCollision');
 
 export class RobotCollision {

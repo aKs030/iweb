@@ -11,7 +11,7 @@ import {
   TimerManager,
   AppLoadManager,
 } from '/content/utils/shared-utilities.js';
-import { createObserver } from '/content/utils/intersection-observer.js';
+import { createObserver } from '/content/utils/observers/intersection-observer.js';
 import {
   getSharedState,
   loadThreeJS,

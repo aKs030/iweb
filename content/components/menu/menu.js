@@ -24,9 +24,9 @@ import {
   EVENTS,
   addListener,
 } from '/content/utils/shared-utilities.js';
-import { upsertHeadLink } from '/content/utils/dom-helpers.js';
+import { upsertHeadLink } from '/content/utils/dom/dom-helpers.js';
 
-const _log = createLogger('menu');
+const log = createLogger('menu');
 const MENU_CSS_URL = '/content/components/menu/menu.css';
 
 // Load menu styles from the module so subpages don't need a separate link tag
@@ -74,7 +74,7 @@ const initMenu = () => {
   menuContainer.dataset.initialized = 'true';
 
   menuContainer.innerHTML = getMenuHTML();
-  _log.info('Menu: injected into #menu-container');
+  log.info('Menu: injected into #menu-container');
 
   const yearEl = getElementById('current-year');
   if (yearEl) yearEl.textContent = new Date().getFullYear();
@@ -322,7 +322,7 @@ function initializeMenu(container) {
             module.openSearch();
           }
         })
-        .catch((err) => _log.error('Failed to load search:', err));
+        .catch((err) => log.error('Failed to load search:', err));
     };
 
     const _removeSearchClick = addListener(
