@@ -61,3 +61,47 @@ export function upsertMeta({ name, property, content }) {
     return null;
   }
 }
+
+/**
+ * Enhanced getElementById with caching
+ * @param {string} id - Element ID to find
+ * @returns {Element|null} Found element or null
+ */
+export function getElementById(id) {
+  if (!id) return null;
+  try {
+    return document.getElementById(id);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Create an AbortController with timeout
+ * @param {number} timeout - Timeout in milliseconds
+ * @returns {Object} Controller object with signal and cleanup
+ */
+export function makeAbortController(timeout = 8000) {
+  const controller = new AbortController();
+
+  const timeoutId = setTimeout(() => {
+    controller.abort();
+  }, timeout);
+
+  const clearTimeout = () => {
+    clearTimeout(timeoutId);
+  };
+
+  return {
+    controller,
+    signal: controller.signal,
+    clearTimeout,
+  };
+}
+
+/**
+ * Clear DOM cache (placeholder for future caching implementation)
+ */
+export function clearDOMCache() {
+  // Placeholder for future DOM caching implementation
+}

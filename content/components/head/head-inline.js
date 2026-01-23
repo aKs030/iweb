@@ -1,28 +1,19 @@
 import { createLogger } from '/content/utils/shared-utilities.js';
-import { upsertHeadLink } from '/content/utils/dom-helpers.js';
+import { upsertHeadLink } from '/content/utils/dom/dom-helpers.js';
+import {
+  getCurrentConfig,
+  isGTMConfigured,
+} from '/content/utils/config-validator.js';
 
 const log = createLogger('head-inline');
 
 // Head inline helpers moved to external file to comply with CSP
 // 1) gtag configuration (kept separate from gtag.js external loader)
 //    NOTE: Host-based GTM/GA4 mapping: prefer `content/config/site-config.js` for host config.
-import { SITE_CONFIG } from '../../config/site-config.js';
 
-const detectHostConfig = (host) => {
-  const h = (host || globalThis?.location?.hostname || '').toLowerCase();
-  const cfg = SITE_CONFIG || {};
-  if (!h) return cfg.default || {};
-  // exact match or strip www.
-  if (cfg[h]) return cfg[h];
-  const stripped = h.replace(/^www\./, '');
-  if (cfg[stripped]) return cfg[stripped];
-  return cfg.default || {};
-};
-
-// Expose for tests/debug
-globalThis.__getGtmConfigForHost = detectHostConfig;
-
-const { gtm: GTM_ID, ga4: GA4_MEASUREMENT_ID } = detectHostConfig();
+// Get current configuration
+const config = getCurrentConfig();
+const { gtm: GTM_ID, ga4: GA4_MEASUREMENT_ID } = config;
 
 const dataLayer = (globalThis.dataLayer = globalThis.dataLayer || []);
 function gtag() {
@@ -81,9 +72,8 @@ gtag('js', Date.now());
 // Move all GA4 and Google Ads tags into Google Tag Manager (GTM) to avoid double-tracking.
 // Expose IDs to the dataLayer so GTM can read them and configure tags/variables centrally.
 // Ads conversion ID is host-dependent; use the mapping above.
-const hostCfg = detectHostConfig();
-const ADS_CONVERSION_ID = hostCfg?.aw ?? null;
-const ADS_CONVERSION_LABEL = hostCfg?.aw_label ?? null;
+const ADS_CONVERSION_ID = config?.aw ?? null;
+const ADS_CONVERSION_LABEL = config?.aw_label ?? null;
 dataLayer.push({
   gtm_autoconfig: true,
   ads_conversion_id: ADS_CONVERSION_ID,
@@ -100,7 +90,7 @@ dataLayer.push({
   try {
     if (!GA4_MEASUREMENT_ID || GA4_MEASUREMENT_ID.indexOf('G-') !== 0) return;
     // If GTM is configured, prefer GTM for GA4 (avoid double-tracking)
-    if (GTM_ID && GTM_ID !== 'GTM-XXXXXXX') {
+    if (isGTMConfigured(config)) {
       log?.info?.(
         'GTM present — configure GA4 inside GTM instead of direct gtag load',
       );
@@ -138,7 +128,7 @@ dataLayer.push({
 //     Create a GTM Container at tagmanager.google.com and add your GA4 and other tags there.
 (function injectGTM() {
   try {
-    if (!GTM_ID || GTM_ID === 'GTM-XXXXXXX') {
+    if (!isGTMConfigured(config)) {
       log?.info?.(
         'GTM not configured — set GTM_ID in content/config/site-config.js to enable',
       );
@@ -162,7 +152,7 @@ dataLayer.push({
 // Ensure GTM noscript iframe is placed immediately after the opening <body> for non-JS environments
 (function ensureGTMNoScript() {
   try {
-    if (!GTM_ID || GTM_ID === 'GTM-XXXXXXX') return;
+    if (!isGTMConfigured(config)) return;
     const insert = () => {
       try {
         if (document.getElementById('gtm-noscript')) return;
@@ -421,7 +411,7 @@ dataLayer.push({
 
     const performInjection = () => {
       // Hint to connect to important third-party origins early (only when needed)
-      const hasGtm = GTM_ID && GTM_ID !== 'GTM-XXXXXXX';
+      const hasGtm = isGTMConfigured(config);
       if (hasGtm) {
         upsertPreconnect('https://www.googletagmanager.com');
         upsertPreconnect('https://static.cloudflareinsights.com');

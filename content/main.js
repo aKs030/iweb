@@ -18,11 +18,11 @@ import {
   SectionTracker,
   addListener,
 } from '/content/utils/shared-utilities.js';
-import { observeOnce } from '/content/utils/intersection-observer.js';
+import { observeOnce } from '/content/utils/observers/intersection-observer.js';
 import { a11y } from './utils/accessibility-manager.js';
 
 // Import performance optimizations
-import './utils/lazy-loader.js';
+import './utils/observers/lazy-loader.js';
 import './utils/resource-hints.js';
 import './utils/error-handler.js';
 

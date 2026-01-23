@@ -9,7 +9,7 @@
 /* eslint-disable import/no-unused-modules */
 import { createLogger } from '/content/utils/shared-utilities.js';
 
-const _log = createLogger('search');
+const log = createLogger('search');
 
 /**
  * Search Index - Enthält alle durchsuchbaren Inhalte der Webseite
@@ -254,7 +254,7 @@ class SearchComponent {
     this.createSearchOverlay();
     this.attachEventListeners();
     this.loadStyles();
-    _log.info('Search component initialized with Spotlight design');
+    log.info('Search component initialized with Spotlight design');
   }
 
   loadStyles() {
@@ -408,7 +408,7 @@ class SearchComponent {
       this.selectedIndex = -1;
     }
 
-    _log.info('Search opened');
+    log.info('Search opened');
   }
 
   close() {
@@ -431,7 +431,7 @@ class SearchComponent {
     // Body Scroll wieder erlauben
     document.body.style.overflow = '';
 
-    _log.info('Search closed');
+    log.info('Search closed');
   }
 
   navigateResults(direction) {
@@ -681,7 +681,7 @@ class SearchComponent {
     if (index < 0 || index >= this.currentResults.length) return;
 
     const result = this.currentResults[index];
-    _log.info(`Navigating to: ${result.url} (score: ${result.score})`);
+    log.info(`Navigating to: ${result.url} (score: ${result.score})`);
 
     // Navigation
     window.location.href = result.url;
@@ -702,7 +702,7 @@ let searchInstance = null;
  */
 export function initSearch() {
   if (searchInstance) {
-    _log.warn('Search already initialized');
+    log.warn('Search already initialized');
     return searchInstance;
   }
 

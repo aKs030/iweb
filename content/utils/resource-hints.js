@@ -22,9 +22,10 @@ export class ResourceHintsManager {
     this.dnsPrefetch('cdn.jsdelivr.net');
     this.dnsPrefetch('esm.sh');
     this.dnsPrefetch('raw.githack.com');
-    this.dnsPrefetch('cdn.jsdelivr.net');
 
     this.preconnect('fonts.gstatic.com', true);
+    this.preconnect('esm.sh', true);
+    this.preconnect('raw.githack.com', true);
 
     log.info('Resource hints initialized');
   }
