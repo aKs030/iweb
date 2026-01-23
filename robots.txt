@@ -4,7 +4,6 @@
 Sitemap: https://www.abdulkerimsesli.de/sitemap.xml
 Sitemap: https://www.abdulkerimsesli.de/sitemap-images.xml
 Sitemap: https://www.abdulkerimsesli.de/sitemap-videos.xml
-Sitemap: https://www.abdulkerimsesli.de/ai-sitemap.xml
 
 User-agent: *
 Allow: /
