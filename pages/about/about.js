@@ -7,7 +7,7 @@
  */
 import { FAVICON_512 } from '/content/config/site-config.js';
 import { fetchWithTimeout } from '/content/utils/shared-utilities.js';
-import { upsertHeadLink } from '/content/utils/dom-helpers.js';
+import { upsertHeadLink } from '/content/utils/dom/dom-helpers.js';
 
 (async function () {
   const RETRY_ATTEMPTS = 2;

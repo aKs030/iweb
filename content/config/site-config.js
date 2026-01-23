@@ -24,6 +24,7 @@ export const SITE_CONFIG = {
     gtm: 'GTM-5F5ZSTTL',
     ga4: 'G-757KWG0PG4',
     aw: 'AW-1036079663',
+    aw_label: 'AW-CONV-LABEL',
   },
 
   // Local / dev

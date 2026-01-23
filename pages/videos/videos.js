@@ -10,7 +10,7 @@ import {
   createVideoStructuredData,
   cleanTitle,
 } from '/content/utils/video-card-renderer.js';
-import { attachVideoAnalytics } from '/content/utils/video-analytics.js';
+import { attachVideoAnalytics } from '/content/utils/analytics/video-analytics.js';
 
 const log = createLogger('videos');
 

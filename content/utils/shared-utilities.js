@@ -64,7 +64,12 @@ if (typeof window !== 'undefined') {
 // ===== Re-exports from specialized modules =====
 
 // DOM utilities
-export { getElementById, makeAbortController, clearDOMCache } from './dom.js';
+export {
+  getElementById,
+  makeAbortController,
+  clearDOMCache,
+} from './dom/dom-helpers.js';
+import { makeAbortController } from './dom/dom-helpers.js';
 
 // Timing utilities
 export { throttle, debounce, TimerManager, onResize } from './timing.js';
@@ -86,7 +91,7 @@ export {
 
 // ===== Intersection Observer Utilities =====
 // Import centralized observer utilities to avoid duplication
-import { createObserver } from './intersection-observer.js';
+import { createObserver } from './observers/intersection-observer.js';
 
 const OBSERVER_CONFIGS = {
   lazyLoad: {
