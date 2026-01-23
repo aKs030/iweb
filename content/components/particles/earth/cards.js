@@ -1,6 +1,6 @@
-import { createLogger } from '/content/utils/shared-utilities.js';
+import { createLogger } from "/content/utils/shared-utilities.js";
 
-const log = createLogger('CardManager');
+const log = createLogger("CardManager");
 
 export class CardManager {
   constructor(THREE, scene, camera, renderer) {
@@ -92,7 +92,7 @@ export class CardManager {
       x: (i - centerOffset) * (baseW * 1.2),
       y: 0,
       z: 0,
-      color: d.color || ['#07a1ff', '#a107ff', '#ff07a1'][i] || '#ffffff',
+      color: d.color || ["#07a1ff", "#a107ff", "#ff07a1"][i] || "#ffffff",
     }));
 
     // Shared geometry reused across cards
@@ -105,11 +105,11 @@ export class CardManager {
     dataArray.forEach((d, index) => {
       const data = {
         id: index,
-        title: d.title || '',
-        subtitle: d.subtitle || '',
-        text: d.text || '',
-        link: d.link || '#',
-        iconChar: d.iconChar || '',
+        title: d.title || "",
+        subtitle: d.subtitle || "",
+        text: d.text || "",
+        link: d.link || "#",
+        iconChar: d.iconChar || "",
         color: positions[index].color,
         position: positions[index],
       };
@@ -202,7 +202,7 @@ export class CardManager {
     };
 
     if (globalThis.window !== undefined) {
-      window.addEventListener('resize', this._onResize);
+      window.addEventListener("resize", this._onResize);
       // Force initial layout
       this._onResize();
     }
@@ -257,11 +257,11 @@ export class CardManager {
     const H = 700 * S;
 
     const keyObj = {
-      title: (data.title || '').slice(0, 256),
-      subtitle: (data.subtitle || '').slice(0, 128),
-      text: (data.text || '').slice(0, 512),
-      iconChar: data.iconChar || '',
-      color: data.color || '#ffffff',
+      title: (data.title || "").slice(0, 256),
+      subtitle: (data.subtitle || "").slice(0, 128),
+      text: (data.text || "").slice(0, 512),
+      iconChar: data.iconChar || "",
+      color: data.color || "#ffffff",
       scale: S, // Include scale in key
     };
     const key = JSON.stringify(keyObj);
@@ -277,21 +277,21 @@ export class CardManager {
 
     let canvas, ctx;
     try {
-      if (typeof OffscreenCanvas !== 'undefined') {
+      if (typeof OffscreenCanvas !== "undefined") {
         canvas = new OffscreenCanvas(W, H);
       } else {
-        canvas = document.createElement('canvas');
+        canvas = document.createElement("canvas");
         canvas.width = W;
         canvas.height = H;
       }
       // Transparency required for rounded corners
-      ctx = canvas.getContext('2d');
+      ctx = canvas.getContext("2d");
     } catch (e) {
-      log.warn('CardManager: canvas creation failed', e);
+      log.warn("CardManager: canvas creation failed", e);
     }
 
     if (!ctx) {
-      log.warn('CardManager: 2D canvas context unavailable');
+      log.warn("CardManager: 2D canvas context unavailable");
       const texture = new this.THREE.CanvasTexture(canvas);
       texture.needsUpdate = true;
       return texture;
@@ -299,8 +299,8 @@ export class CardManager {
 
     // 1. Background (Glass)
     const gradient = ctx.createLinearGradient(0, 0, W, H);
-    gradient.addColorStop(0, 'rgba(20, 30, 60, 0.92)'); // Slightly more opaque for readability
-    gradient.addColorStop(1, 'rgba(10, 15, 30, 0.96)');
+    gradient.addColorStop(0, "rgba(20, 30, 60, 0.92)"); // Slightly more opaque for readability
+    gradient.addColorStop(1, "rgba(10, 15, 30, 0.96)");
     ctx.fillStyle = gradient;
 
     const R = 40 * S;
@@ -315,7 +315,7 @@ export class CardManager {
     const iconCenterX = 256 * S;
     const iconRadius = 60 * S;
 
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+    ctx.fillStyle = "rgba(255, 255, 255, 0.05)";
     ctx.beginPath();
     ctx.arc(iconCenterX, iconY, iconRadius, 0, Math.PI * 2);
     ctx.fill();
@@ -324,48 +324,48 @@ export class CardManager {
     ctx.stroke();
 
     // 4. Icon Text
-    ctx.fillStyle = '#ffffff';
+    ctx.fillStyle = "#ffffff";
     ctx.font = `${
       60 * S
     }px "Apple Color Emoji", "Segoe UI Emoji", Arial, sans-serif`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
     ctx.fillText(data.iconChar, iconCenterX, iconY + 5 * S);
 
     // 5. Subtitle - Optimized Size
     ctx.fillStyle = data.color;
-    const subtitleText = (data.subtitle || '').trim();
+    const subtitleText = (data.subtitle || "").trim();
     // Bumped base size from 24 to 26 for better legibility
     const subtitleSize = this.fitTextToWidth(
       ctx,
       subtitleText,
       420 * S,
-      'bold',
+      "bold",
       26 * S,
       14 * S,
-      'Arial, sans-serif',
+      "Arial, sans-serif",
     );
     ctx.font = `bold ${subtitleSize}px Arial, sans-serif`;
     ctx.fillText(subtitleText, iconCenterX, 280 * S);
 
     // 6. Title - Optimized Size & Weight
-    ctx.fillStyle = '#ffffff';
-    const titleText = (data.title || '').trim();
+    ctx.fillStyle = "#ffffff";
+    const titleText = (data.title || "").trim();
     // Bumped base size from 48 to 52
     const titleSize = this.fitTextToWidth(
       ctx,
       titleText,
       420 * S,
-      '800', // Extra Bold
+      "800", // Extra Bold
       52 * S,
       24 * S,
-      'Arial, sans-serif',
+      "Arial, sans-serif",
     );
     ctx.font = `800 ${titleSize}px Arial, sans-serif`;
     ctx.fillText(titleText, iconCenterX, 350 * S);
 
     // 7. Text (Wrapped) - Increased contrast and size
-    ctx.fillStyle = '#dddddd'; // Lighter grey for better contrast
+    ctx.fillStyle = "#dddddd"; // Lighter grey for better contrast
     // Increased base text size from 30 to 32
     const baseTextSize = data.text && data.text.length > 160 ? 24 * S : 32 * S;
     ctx.font = `${baseTextSize}px Arial, sans-serif`;
@@ -397,14 +397,14 @@ export class CardManager {
       : 1;
     const size = Math.floor(128 * DPR);
     const canvas =
-      typeof OffscreenCanvas === 'undefined'
-        ? document.createElement('canvas')
+      typeof OffscreenCanvas === "undefined"
+        ? document.createElement("canvas")
         : new OffscreenCanvas(size, size);
-    if (typeof OffscreenCanvas === 'undefined') {
+    if (typeof OffscreenCanvas === "undefined") {
       canvas.width = size;
       canvas.height = size;
     }
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     if (!ctx) {
       const tex = new this.THREE.CanvasTexture(canvas);
       tex.needsUpdate = true;
@@ -415,9 +415,9 @@ export class CardManager {
     const cy = size / 2;
     const r = size * 0.45;
     const grad = ctx.createRadialGradient(cx, cy, r * 0.1, cx, cy, r);
-    grad.addColorStop(0, 'rgba(255,255,255,0.9)');
-    grad.addColorStop(0.3, 'rgba(255,255,255,0.45)');
-    grad.addColorStop(1, 'rgba(255,255,255,0)');
+    grad.addColorStop(0, "rgba(255,255,255,0.9)");
+    grad.addColorStop(0.3, "rgba(255,255,255,0.45)");
+    grad.addColorStop(1, "rgba(255,255,255,0)");
 
     ctx.fillStyle = grad;
     ctx.beginPath();
@@ -445,7 +445,7 @@ export class CardManager {
   }
 
   drawStarBorder(ctx, x, y, w, h, r, scale) {
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
     ctx.lineWidth = 1.5;
     this.roundRect(ctx, x, y, w, h, r);
     ctx.stroke();
@@ -471,7 +471,7 @@ export class CardManager {
 
       const size = Math.random() * 1.5 + 0.5;
 
-      ctx.fillStyle = Math.random() > 0.7 ? ctx.strokeStyle : '#ffffff';
+      ctx.fillStyle = Math.random() > 0.7 ? ctx.strokeStyle : "#ffffff";
       ctx.globalAlpha = Math.random() * 0.8 + 0.2;
       ctx.beginPath();
       ctx.arc(px, py, size, 0, Math.PI * 2);
@@ -481,22 +481,22 @@ export class CardManager {
   }
 
   wrapText(ctx, text, x, y, maxWidth, lineHeight) {
-    const words = (text || '').split(' ');
-    let line = '';
+    const words = (text || "").split(" ");
+    let line = "";
     let lineCount = 0;
     const maxLines = 5; // Allow slightly more text
 
     for (let n = 0; n < words.length; n++) {
-      const testLine = line + words[n] + ' ';
+      const testLine = line + words[n] + " ";
       const metrics = ctx.measureText(testLine);
       const testWidth = metrics.width;
       if (testWidth > maxWidth && n > 0) {
         ctx.fillText(line, x, y);
-        line = words[n] + ' ';
+        line = words[n] + " ";
         y += lineHeight;
         lineCount++;
         if (lineCount >= maxLines) {
-          line += '...';
+          line += "...";
           break;
         }
       } else {
@@ -525,8 +525,8 @@ export class CardManager {
       return minSize;
     }
 
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
 
     // Binary search for optimal font size: O(log n) instead of O(n).
     // Reduces ctx.measureText() calls from ~40 (linear) to ~5 (binary).
@@ -550,7 +550,7 @@ export class CardManager {
       try {
         w = ctx.measureText(text).width;
       } catch (e) {
-        log.warn('measureText failed, returning minSize', e);
+        log.warn("measureText failed, returning minSize", e);
         return minSize;
       }
 
@@ -575,7 +575,7 @@ export class CardManager {
       0,
       Math.min(
         1,
-        typeof progress === 'number' && !Number.isNaN(progress) ? progress : 0,
+        typeof progress === "number" && !Number.isNaN(progress) ? progress : 0,
       ),
     );
     const wasVisible = this.cardGroup.visible;
@@ -615,7 +615,7 @@ export class CardManager {
       if (this._hoverFrames >= 3) {
         if (candidate !== this._hovered) {
           this._hovered = candidate;
-          document.body.style.cursor = candidate ? 'pointer' : '';
+          document.body.style.cursor = candidate ? "pointer" : "";
         }
       }
     } else {
@@ -643,12 +643,12 @@ export class CardManager {
   }
 
   _updateCardEntranceAndOpacity(card) {
-    let targetEntrance =
-      typeof card.userData.entranceTarget === 'number'
+    const targetEntrance =
+      typeof card.userData.entranceTarget === "number"
         ? card.userData.entranceTarget
         : this.isVisible
-        ? 1
-        : 0;
+          ? 1
+          : 0;
     card.userData.entranceProgress +=
       (targetEntrance - card.userData.entranceProgress) * 0.02;
     const baseOpacity = card.userData.targetOpacity || 1;
@@ -733,7 +733,7 @@ export class CardManager {
       card.userData.currentTiltX,
       card.userData.currentTiltY,
       0,
-      'XYZ',
+      "XYZ",
     );
     this._tmpQuat2.setFromEuler(this._tmpEuler);
 
@@ -758,7 +758,7 @@ export class CardManager {
     const clickedCard = this.getHoveredCardFromScreen(pos);
     if (clickedCard) {
       const link = clickedCard.userData.link;
-      if (!link || link === '#') return;
+      if (!link || link === "#") return;
       globalThis.location.href = link;
     }
   }
@@ -795,9 +795,9 @@ export class CardManager {
       this._pointerDownPos = null;
     };
 
-    el.addEventListener('pointermove', this._boundPointerMove);
-    el.addEventListener('pointerdown', this._boundPointerDown);
-    el.addEventListener('pointerup', this._boundPointerUp);
+    el.addEventListener("pointermove", this._boundPointerMove);
+    el.addEventListener("pointerdown", this._boundPointerDown);
+    el.addEventListener("pointerup", this._boundPointerUp);
     this._pointerElement = el;
   }
 
@@ -805,11 +805,11 @@ export class CardManager {
     const el = this._pointerElement || this.renderer?.domElement || globalThis;
     if (!el) return;
     if (this._boundPointerMove)
-      el.removeEventListener('pointermove', this._boundPointerMove);
+      el.removeEventListener("pointermove", this._boundPointerMove);
     if (this._boundPointerDown)
-      el.removeEventListener('pointerdown', this._boundPointerDown);
+      el.removeEventListener("pointerdown", this._boundPointerDown);
     if (this._boundPointerUp)
-      el.removeEventListener('pointerup', this._boundPointerUp);
+      el.removeEventListener("pointerup", this._boundPointerUp);
     this._pointerElement = null;
   }
 
@@ -866,7 +866,7 @@ export class CardManager {
       const glow = card.userData?.glow;
       if (glow?.material) this._disposeGlowMaterial(glow);
     } catch (err) {
-      log.warn('EarthCards: disposal error', err);
+      log.warn("EarthCards: disposal error", err);
     }
   }
 
@@ -878,7 +878,7 @@ export class CardManager {
           this._profile.texturesDisposed++;
         }
       } catch (err) {
-        log.warn('EarthCards: error disposing cached texture', err);
+        log.warn("EarthCards: error disposing cached texture", err);
       }
     }
     this._textureCache.clear();
@@ -904,7 +904,7 @@ export class CardManager {
       }
       if (!foundKey && map?.dispose) map.dispose();
     } catch (err) {
-      log.warn('EarthCards: releaseTextureFromCache failed', err);
+      log.warn("EarthCards: releaseTextureFromCache failed", err);
     }
   }
 
@@ -917,13 +917,13 @@ export class CardManager {
         glow.material.map.dispose();
       glow.material.dispose?.();
     } catch (err) {
-      log.warn('EarthCards: glow dispose failed', err);
+      log.warn("EarthCards: glow dispose failed", err);
     }
   }
 
   _removeResizeHandler() {
     try {
-      globalThis.removeEventListener('resize', this._onResize);
+      globalThis.removeEventListener("resize", this._onResize);
     } catch {}
     this._onResize = null;
     if (this._resizeRAF) {

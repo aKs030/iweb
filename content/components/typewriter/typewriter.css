@@ -24,7 +24,9 @@
   height: var(--box-h, calc(1.18em * 2));
   gap: var(--gap-px, 0.5rem);
   transform: translateY(6px);
-  transition: opacity 0.45s ease, transform 0.45s ease;
+  transition:
+    opacity 0.45s ease,
+    transform 0.45s ease;
 
   /* Ensure the typewriter is displayed above the footer component (footer z-index is high)
      Use a higher explicit z-index to keep the text visible above the footer overlay */
@@ -94,7 +96,7 @@
 
 /* TypeWriter Cursor Animation */
 .typewriter-title .typed-text .typed-line:last-child::after {
-  content: '';
+  content: "";
   display: inline-block;
   width: 0;
   height: 0.9em;
@@ -126,7 +128,8 @@ body:not(.has-typingjs) .typewriter-title .typed-text {
   overflow: hidden;
   border-right: 2px solid var(--text-primary, #fff);
   width: 0;
-  animation: typing 3s steps(var(--typing-steps)) forwards,
+  animation:
+    typing 3s steps(var(--typing-steps)) forwards,
     blink-caret 0.75s step-end infinite;
 }
 

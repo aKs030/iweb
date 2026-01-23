@@ -15,34 +15,34 @@
 async function loadConfig() {
   let log;
   try {
-    const { createLogger } = await import('../utils/shared-utilities.js');
-    log = createLogger('VideosConfig');
-    let partA = '';
-    let partB = '';
+    const { createLogger } = await import("../utils/shared-utilities.js");
+    log = createLogger("VideosConfig");
+    let partA = "";
+    let partB = "";
 
     try {
-      const m = await import('./videos-part-a.js');
-      partA = m && (m.default || '');
+      const m = await import("./videos-part-a.js");
+      partA = m && (m.default || "");
     } catch (err) {
-      log.warn('VideosConfig: videos-part-a import failed', err);
+      log.warn("VideosConfig: videos-part-a import failed", err);
       // missing or not found - skip
     }
 
     try {
-      const m = await import('./videos-part-b.js');
-      partB = m && (m.default || '');
+      const m = await import("./videos-part-b.js");
+      partB = m && (m.default || "");
     } catch (err) {
-      log.warn('VideosConfig: videos-part-b import failed', err);
+      log.warn("VideosConfig: videos-part-b import failed", err);
       // missing or not found - skip
     }
 
     const safeAtob = (s) => {
       try {
-        return s ? atob(String(s)) : '';
+        return s ? atob(String(s)) : "";
       } catch (err) {
         // If it's not base64, return raw
-        log.warn('VideosConfig: safeAtob failed', err);
-        return String(s || '');
+        log.warn("VideosConfig: safeAtob failed", err);
+        return String(s || "");
       }
     };
 
@@ -52,29 +52,29 @@ async function loadConfig() {
     }
 
     if (!window.YOUTUBE_CHANNEL_HANDLE) {
-      window.YOUTUBE_CHANNEL_HANDLE = 'aks.030';
+      window.YOUTUBE_CHANNEL_HANDLE = "aks.030";
     }
 
     // Default to the 'Abdulkerim Berlin' channel ID to ensure we resolve the correct channel
     // This can be overridden locally by setting YOUTUBE_CHANNEL_ID in dev environment.
     if (!window.YOUTUBE_CHANNEL_ID) {
-      window.YOUTUBE_CHANNEL_ID = 'UCTGRherjM4iuIn86xxubuPg';
+      window.YOUTUBE_CHANNEL_ID = "UCTGRherjM4iuIn86xxubuPg";
     }
 
     // Allow forced mock mode via ?mockVideos=1 even when an API key exists.
     // This is useful for testing UI with deterministic mock data.
-    const forceMock = new URLSearchParams(location.search).has('mockVideos');
+    const forceMock = new URLSearchParams(location.search).has("mockVideos");
     if (forceMock) {
       window.YOUTUBE_USE_MOCK = true;
-      log.warn('Using mock data due to ?mockVideos=1 (forced).');
+      log.warn("Using mock data due to ?mockVideos=1 (forced).");
     } else if (!window.YOUTUBE_API_KEY) {
       const isLocal =
-        location.protocol === 'file:' ||
-        location.hostname === 'localhost' ||
-        location.hostname === '127.0.0.1';
+        location.protocol === "file:" ||
+        location.hostname === "localhost" ||
+        location.hostname === "127.0.0.1";
       if (isLocal) {
         window.YOUTUBE_USE_MOCK = true;
-        log.warn('No API key found — using mock data for development/testing.');
+        log.warn("No API key found — using mock data for development/testing.");
       } else {
         window.YOUTUBE_USE_MOCK = false;
       }
@@ -84,18 +84,18 @@ async function loadConfig() {
   } catch (e) {
     // Non-fatal — videos.js will handle absence of key gracefully
     // use global iwebLogger or console as fallback when `log` isn't available
-    if (typeof log !== 'undefined' && typeof log.warn === 'function') {
-      log.warn('[videos-config-loader] Could not load split parts:', e);
+    if (typeof log !== "undefined" && typeof log.warn === "function") {
+      log.warn("[videos-config-loader] Could not load split parts:", e);
     } else if (
       globalThis.iwebLogger &&
-      typeof globalThis.iwebLogger.warn === 'function'
+      typeof globalThis.iwebLogger.warn === "function"
     ) {
       globalThis.iwebLogger.warn(
-        '[videos-config-loader] Could not load split parts:',
+        "[videos-config-loader] Could not load split parts:",
         e,
       );
     } else {
-      console.warn('[videos-config-loader] Could not load split parts:', e);
+      console.warn("[videos-config-loader] Could not load split parts:", e);
     }
   }
 }

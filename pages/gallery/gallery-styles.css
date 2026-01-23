@@ -653,7 +653,9 @@ img {
 }
 
 .shadow-lg {
-  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 25%), 0 4px 6px -4px rgb(0 0 0 / 25%);
+  box-shadow:
+    0 10px 15px -3px rgb(0 0 0 / 25%),
+    0 4px 6px -4px rgb(0 0 0 / 25%);
 }
 
 .shadow-purple-500\/40 {
@@ -688,8 +690,12 @@ img {
 
 /* Transitions & Animations */
 .transition-all {
-  transition: transform 200ms ease, opacity 200ms ease,
-    background-color 200ms ease, color 200ms ease, border-color 200ms ease;
+  transition:
+    transform 200ms ease,
+    opacity 200ms ease,
+    background-color 200ms ease,
+    color 200ms ease,
+    border-color 200ms ease;
 }
 
 .transition-transform {
@@ -811,7 +817,7 @@ img {
 }
 
 .btn-primary::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: -100%;
@@ -853,7 +859,9 @@ img {
   border-radius: 1rem;
   -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
-  transition: background 150ms ease, border-color 150ms ease,
+  transition:
+    background 150ms ease,
+    border-color 150ms ease,
     box-shadow 150ms ease;
 }
 
@@ -995,7 +1003,9 @@ img {
 
 /* Utility for inset shadow on selection cards */
 .selection-card {
-  transition: transform 200ms ease, box-shadow 200ms ease;
+  transition:
+    transform 200ms ease,
+    box-shadow 200ms ease;
 }
 
 .selection-card:hover {

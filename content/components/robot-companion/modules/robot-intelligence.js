@@ -27,22 +27,22 @@ export class RobotIntelligence {
 
   setupListeners() {
     // Passive listener for performance
-    document.addEventListener('mousemove', this._handlers.mousemove, {
+    document.addEventListener("mousemove", this._handlers.mousemove, {
       passive: true,
     });
-    document.addEventListener('scroll', this._handlers.scroll, {
+    document.addEventListener("scroll", this._handlers.scroll, {
       passive: true,
     });
-    ['mousedown', 'keydown', 'touchstart'].forEach((evt) => {
+    ["mousedown", "keydown", "touchstart"].forEach((evt) => {
       document.addEventListener(evt, this._handlers[evt], { passive: true });
     });
   }
 
   destroy() {
     // Entferne alle Event-Listener
-    document.removeEventListener('mousemove', this._handlers.mousemove);
-    document.removeEventListener('scroll', this._handlers.scroll);
-    ['mousedown', 'keydown', 'touchstart'].forEach((evt) => {
+    document.removeEventListener("mousemove", this._handlers.mousemove);
+    document.removeEventListener("scroll", this._handlers.scroll);
+    ["mousedown", "keydown", "touchstart"].forEach((evt) => {
       document.removeEventListener(evt, this._handlers[evt]);
     });
 
@@ -108,7 +108,7 @@ export class RobotIntelligence {
 
     if (dt > 100) {
       const scrollY =
-        typeof globalThis !== 'undefined' ? globalThis.scrollY : 0;
+        typeof globalThis !== "undefined" ? globalThis.scrollY : 0;
       const dist = Math.abs(scrollY - this.scroll.lastY);
       const speed = dist / dt;
 
@@ -125,10 +125,10 @@ export class RobotIntelligence {
     if (this.robot.chatModule.isOpen || Math.random() > 0.05) return; // Low chance
 
     const texts = [
-      'Whoa, nicht so schnell! 🏎️',
-      'Alles okay? Du wirkst eilig! 💨',
-      'Ich werde schwindelig... 😵‍💫',
-      'Suchst du etwas Bestimmtes? 🔍',
+      "Whoa, nicht so schnell! 🏎️",
+      "Alles okay? Du wirkst eilig! 💨",
+      "Ich werde schwindelig... 😵‍💫",
+      "Suchst du etwas Bestimmtes? 🔍",
     ];
 
     const text = texts[Math.floor(Math.random() * texts.length)];
@@ -140,10 +140,10 @@ export class RobotIntelligence {
     if (this.robot.chatModule.isOpen || Math.random() > 0.1) return;
 
     const texts = [
-      'Wuiiii! 🎢',
-      'Abwärts! 👇',
-      'Nicht so schnell scrollen! 📄',
-      'Habe ich etwas verpasst? 👀',
+      "Wuiiii! 🎢",
+      "Abwärts! 👇",
+      "Nicht so schnell scrollen! 📄",
+      "Habe ich etwas verpasst? 👀",
     ];
     const text = texts[Math.floor(Math.random() * texts.length)];
     this.robot.chatModule.showBubble(text);
@@ -155,10 +155,10 @@ export class RobotIntelligence {
     if (Math.random() > 0.3) return;
 
     const texts = [
-      'Bist du noch da? 😴',
-      'Langweilig... 🎵',
-      'Brauchst du Hilfe? 👋',
-      'Psst... ich bin noch hier! 🤖',
+      "Bist du noch da? 😴",
+      "Langweilig... 🎵",
+      "Brauchst du Hilfe? 👋",
+      "Psst... ich bin noch hier! 🤖",
     ];
     const text = texts[Math.floor(Math.random() * texts.length)];
     this.robot.chatModule.showBubble(text);

@@ -20,7 +20,7 @@ export function upsertHeadLink({
     let el = document.head.querySelector(selector);
     if (el) return el;
 
-    el = document.createElement('link');
+    el = document.createElement("link");
     el.rel = rel;
     el.href = href;
     if (as) el.as = as;
@@ -30,7 +30,7 @@ export function upsertHeadLink({
       el.dataset[k] = dataset[k];
     });
     Object.keys(attrs || {}).forEach((k) => el.setAttribute(k, attrs[k]));
-    if (typeof onload === 'function') el.onload = onload;
+    if (typeof onload === "function") el.onload = onload;
     document.head.appendChild(el);
     return el;
   } catch (e) {
@@ -47,14 +47,14 @@ export function upsertMeta({ name, property, content }) {
       : `meta[name="${name}"]`;
     let el = document.head.querySelector(selector);
     if (el) {
-      el.setAttribute(property ? 'property' : 'name', property || name);
-      el.setAttribute('content', content);
+      el.setAttribute(property ? "property" : "name", property || name);
+      el.setAttribute("content", content);
       return el;
     }
-    el = document.createElement('meta');
-    if (property) el.setAttribute('property', property);
-    else el.setAttribute('name', name);
-    el.setAttribute('content', content);
+    el = document.createElement("meta");
+    if (property) el.setAttribute("property", property);
+    else el.setAttribute("name", name);
+    el.setAttribute("content", content);
     document.head.appendChild(el);
     return el;
   } catch (e) {

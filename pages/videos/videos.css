@@ -33,7 +33,7 @@
 }
 
 .videos-main::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -83,8 +83,11 @@ h1 {
   background: var(--bg-card);
   border-radius: var(--card-radius);
   padding: 2rem;
-  box-shadow: 0 20px 40px var(--shadow), 0 0 0 1px rgba(255, 255, 255, 0.05);
-  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+  box-shadow:
+    0 20px 40px var(--shadow),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+  transition:
+    transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
     box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1),
     border-color 0.4s cubic-bezier(0.4, 0, 0.2, 1),
     background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -99,7 +102,7 @@ h1 {
 }
 
 .video-card::before {
-  content: '';
+  content: "";
   position: absolute;
   top: -2px;
   left: -2px;
@@ -114,7 +117,9 @@ h1 {
 
 .video-card:hover {
   transform: translateY(-12px) scale(1.02);
-  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6), 0 0 40px var(--accent-glow);
+  box-shadow:
+    0 30px 60px rgba(0, 0, 0, 0.6),
+    0 0 40px var(--accent-glow);
 }
 
 .video-card:hover::before {
@@ -206,14 +211,20 @@ h1 {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 10px 30px rgba(255, 0, 0, 0.5), 0 0 40px rgba(255, 0, 0, 0.3);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow:
+    0 10px 30px rgba(255, 0, 0, 0.5),
+    0 0 40px rgba(255, 0, 0, 0.3);
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
   animation: pulse 2s ease-in-out infinite;
 }
 
 .video-thumb:hover .play-button {
   transform: translate(-50%, -50%) scale(1.15);
-  box-shadow: 0 15px 40px rgba(255, 0, 0, 0.7), 0 0 60px rgba(255, 0, 0, 0.5);
+  box-shadow:
+    0 15px 40px rgba(255, 0, 0, 0.7),
+    0 0 60px rgba(255, 0, 0, 0.5);
   animation: none;
 }
 
@@ -250,7 +261,9 @@ h1 {
   color: var(--text-secondary);
   font-weight: 700;
   text-decoration: none;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 .video-actions .page-link:hover {
   background: var(--accent);
@@ -345,10 +358,12 @@ h1 {
   text-decoration: none;
   font-weight: 700;
   font-size: 1.125rem;
-  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+  transition:
+    transform 0.4s cubic-bezier(0.4, 0, 0.2, 1),
     box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1),
     background 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 8px 24px rgba(255, 0, 0, 0.35),
+  box-shadow:
+    0 8px 24px rgba(255, 0, 0, 0.35),
     inset 0 -2px 8px rgba(0, 0, 0, 0.3);
   border: none;
   cursor: pointer;
@@ -358,7 +373,7 @@ h1 {
 
 .btn-subscribe::before,
 .btn-share::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 50%;
   left: 50%;
@@ -367,7 +382,9 @@ h1 {
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.3);
   transform: translate(-50%, -50%);
-  transition: width 0.6s ease, height 0.6s ease;
+  transition:
+    width 0.6s ease,
+    height 0.6s ease;
 }
 
 .btn-subscribe:hover::before,
@@ -379,7 +396,9 @@ h1 {
 .btn-subscribe:hover,
 .btn-share:hover {
   transform: translateY(-4px) scale(1.05);
-  box-shadow: 0 12px 32px rgba(255, 0, 0, 0.5), 0 0 20px rgba(255, 0, 0, 0.3);
+  box-shadow:
+    0 12px 32px rgba(255, 0, 0, 0.5),
+    0 0 20px rgba(255, 0, 0, 0.3);
 }
 
 .btn-subscribe:active,
@@ -389,12 +408,14 @@ h1 {
 
 .btn-share {
   background: linear-gradient(135deg, var(--share-blue), #42a5f5);
-  box-shadow: 0 8px 24px rgba(24, 119, 242, 0.35),
+  box-shadow:
+    0 8px 24px rgba(24, 119, 242, 0.35),
     inset 0 -2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .btn-share:hover {
-  box-shadow: 0 12px 32px rgba(24, 119, 242, 0.5),
+  box-shadow:
+    0 12px 32px rgba(24, 119, 242, 0.5),
     0 0 20px rgba(24, 119, 242, 0.3);
 }
 
