@@ -68,9 +68,6 @@ if (typeof window !== 'undefined') {
 
 // ===== DOM Utilities =====
 
-const elementCache = new Map();
-const CACHE_MAX_SIZE = 20;
-
 export async function fetchWithTimeout(url, timeout = 8000) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeout);
@@ -107,28 +104,9 @@ export function makeAbortController(timeout) {
     },
   };
 }
-export function getElementById(id, useCache = true) {
-  if (!id) return null;
 
-  if (useCache && elementCache.has(id)) {
-    const cached = elementCache.get(id);
-    if (cached && document.contains(cached)) {
-      return cached;
-    }
-    elementCache.delete(id);
-  }
-
-  const element = document.getElementById(id);
-
-  if (useCache && element) {
-    if (elementCache.size >= CACHE_MAX_SIZE) {
-      const firstKey = elementCache.keys().next().value;
-      elementCache.delete(firstKey);
-    }
-    elementCache.set(id, element);
-  }
-
-  return element;
+export function getElementById(id) {
+  return id ? document.getElementById(id) : null;
 }
 
 // ===== Cookie Manager (Centralized) =====
