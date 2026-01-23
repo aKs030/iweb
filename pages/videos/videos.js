@@ -117,7 +117,7 @@ async function fetchJson(url) {
   return await res.json();
 }
 
-async function fetchChannelId(apiKey, handle) {
+async function fetchChannelId(handle) {
   // Prefer explicit channel id when set
   if (globalThis.YOUTUBE_CHANNEL_ID)
     return String(globalThis.YOUTUBE_CHANNEL_ID).trim();
@@ -127,9 +127,9 @@ async function fetchChannelId(apiKey, handle) {
     return String(handle).trim();
 
   // Try searching for the handle (allow up to 5 results to disambiguate)
-  const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=channel&q=${encodeURIComponent(
+  const url = `/api/youtube/search?part=snippet&type=channel&q=${encodeURIComponent(
     handle,
-  )}&maxResults=5&key=${apiKey}`;
+  )}&maxResults=5`;
   const json = await fetchJson(url);
   const items = json?.items || [];
   if (!items.length) return null;
@@ -143,9 +143,9 @@ async function fetchChannelId(apiKey, handle) {
 
   // If multiple candidates, fetch their statistics and prefer one with videoCount > 0
   try {
-    const chUrl = `https://www.googleapis.com/youtube/v3/channels?part=statistics,contentDetails&id=${ids.join(
+    const chUrl = `/api/youtube/channels?part=statistics,contentDetails&id=${ids.join(
       ',',
-    )}&key=${apiKey}`;
+    )}`;
     const chJson = await fetchJson(chUrl);
     const chItems = chJson?.items || [];
     const preferred = chItems.find(
@@ -162,17 +162,17 @@ async function fetchChannelId(apiKey, handle) {
   return ids[0];
 }
 
-async function fetchUploadsPlaylist(apiKey, channelId) {
-  const url = `https://www.googleapis.com/youtube/v3/channels?part=contentDetails&id=${channelId}&key=${apiKey}`;
+async function fetchUploadsPlaylist(channelId) {
+  const url = `/api/youtube/channels?part=contentDetails&id=${channelId}`;
   const json = await fetchJson(url);
   return json?.items?.[0]?.contentDetails?.relatedPlaylists?.uploads;
 }
 
-async function fetchPlaylistItems(apiKey, uploads, maxResults = 50) {
+async function fetchPlaylistItems(uploads, maxResults = 50) {
   const allItems = [];
   let pageToken = '';
   do {
-    const url = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&playlistId=${uploads}&maxResults=${maxResults}&key=${apiKey}${
+    const url = `/api/youtube/playlistItems?part=snippet&playlistId=${uploads}&maxResults=${maxResults}${
       pageToken ? `&pageToken=${pageToken}` : ''
     }`;
     try {
@@ -195,13 +195,13 @@ async function fetchPlaylistItems(apiKey, uploads, maxResults = 50) {
 }
 
 // Fallback: search for recent videos from a channel when playlist is missing/empty
-async function searchChannelVideos(apiKey, channelId, maxResults = 50) {
+async function searchChannelVideos(channelId, maxResults = 50) {
   const items = [];
   let pageToken = '';
   do {
-    const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&channelId=${channelId}&order=date&type=video&maxResults=${maxResults}${
+    const url = `/api/youtube/search?part=snippet&channelId=${channelId}&order=date&type=video&maxResults=${maxResults}${
       pageToken ? `&pageToken=${pageToken}` : ''
-    }&key=${apiKey}`;
+    }`;
     try {
       const json = await fetchJson(url);
       (json.items || []).forEach((it) => {
@@ -226,12 +226,12 @@ async function searchChannelVideos(apiKey, channelId, maxResults = 50) {
   return items;
 }
 
-async function fetchVideoDetailsMap(apiKey, vidIds) {
+async function fetchVideoDetailsMap(vidIds) {
   const map = {};
   if (!vidIds.length) return map;
-  const url = `https://www.googleapis.com/youtube/v3/videos?part=contentDetails,statistics&id=${vidIds.join(
+  const url = `/api/youtube/videos?part=contentDetails,statistics&id=${vidIds.join(
     ',',
-  )}&key=${apiKey}`;
+  )}`;
   try {
     const json = await fetchJson(url);
     (json.items || []).forEach((v) => {
@@ -390,19 +390,17 @@ if (typeof window !== 'undefined') {
 
 // Videos page loader (moved from inline to avoid HTML parsing issues)
 async function loadLatestVideos() {
-  const apiKey = globalThis.YOUTUBE_API_KEY;
   const handle = (globalThis.YOUTUBE_CHANNEL_HANDLE || 'aks.030').replace(
     /^@/,
     '',
   );
 
-  // Bind any existing static thumbnails (works without API key)
+  // Bind any existing static thumbnails (works without API)
   try {
     document.querySelectorAll('.video-thumb').forEach(bindThumb);
   } catch {
     /* ignore */
   }
-  if (!apiKey) return;
 
   const setStatus = (msg) => {
     try {
@@ -428,7 +426,7 @@ async function loadLatestVideos() {
     const grid = document.querySelector('.video-grid');
     if (!grid) return;
 
-    const { items, detailsMap } = await loadFromApi(apiKey, handle);
+    const { items, detailsMap } = await loadFromApi(handle);
     if (!items.length) {
       log.warn('Keine Videos gefunden');
       // Show a friendly informational message and keep any static entries on the page
@@ -547,15 +545,15 @@ function showInfoMessage(msg) {
 }
 
 // Extracted API loader (top-level to reduce nested complexity)
-async function loadFromApi(apiKey, handle) {
-  const channelId = await fetchChannelId(apiKey, handle);
+async function loadFromApi(handle) {
+  const channelId = await fetchChannelId(handle);
   if (!channelId) return { items: [], detailsMap: {} };
 
-  const uploads = await fetchUploadsPlaylist(apiKey, channelId);
+  const uploads = await fetchUploadsPlaylist(channelId);
   let items = [];
 
   if (uploads) {
-    items = await fetchPlaylistItems(apiKey, uploads);
+    items = await fetchPlaylistItems(uploads);
     if (items.length === 0) {
       log.warn('Uploads playlist returned no items — falling back to search');
       // Inform the user in the UI when running in a browser
@@ -568,7 +566,7 @@ async function loadFromApi(apiKey, handle) {
         /* ignore */
       }
       // Attempt search fallback when playlist is empty
-      items = await searchChannelVideos(apiKey, channelId);
+      items = await searchChannelVideos(channelId);
     }
   } else {
     log.warn('No uploads playlist available — falling back to search');
@@ -580,7 +578,7 @@ async function loadFromApi(apiKey, handle) {
     } catch (e) {
       /* ignore */
     }
-    items = await searchChannelVideos(apiKey, channelId);
+    items = await searchChannelVideos(channelId);
   }
 
   if (!items.length) return { items: [], detailsMap: {} };
@@ -588,7 +586,7 @@ async function loadFromApi(apiKey, handle) {
   const vidIds = items
     .map((it) => it.snippet.resourceId.videoId)
     .filter(Boolean);
-  const detailsMap = await fetchVideoDetailsMap(apiKey, vidIds);
+  const detailsMap = await fetchVideoDetailsMap(vidIds);
   return { items, detailsMap };
 }
 
