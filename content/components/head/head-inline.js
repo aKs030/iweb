@@ -266,7 +266,7 @@ dataLayer.push({
       try {
         if (!globalThis.__footerModuleLoaded) {
           globalThis.__footerModuleLoaded = true;
-          import('/content/components/footer/footer-complete.js')
+          import('/content/components/footer/footer-app.js')
             .then((m) => {
               if (typeof m.initFooter === 'function') m.initFooter();
             })

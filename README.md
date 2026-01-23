@@ -154,6 +154,7 @@ npm run dev
 ```bash
 npm run format           # Format code
 npm run lint             # Lint code
+npm run cleanup:check    # Check code quality
 npm run images:build     # Generate images
 npm run videos:schema    # Generate video schema
 npm run blog:pages       # Generate blog pages
