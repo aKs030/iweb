@@ -1,22 +1,33 @@
-name = "throbbing-mode-6fe1-nlweb"
+#:schema node_modules/wrangler/config-schema.json
+name = "ai-search-proxy"
 main = "workers/throbbing-mode-6fe1-nlweb/index.js"
-compatibility_date = "2025-05-23"
+compatibility_date = "2025-01-23"
 compatibility_flags = ["nodejs_compat"]
 
-# Production + preview routes
 routes = [
-  "https://throbbing-mode-6fe1-nlweb.httpsgithubcomaks030website.workers.dev/*",
-  "*-throbbing-mode-6fe1-nlweb.httpsgithubcomaks030website.workers.dev/*"  # preview wildcard
+  { pattern = "www.abdulkerimsesli.de/api/search", zone_name = "abdulkerimsesli.de" },
+  { pattern = "abdulkerimsesli.de/api/search", zone_name = "abdulkerimsesli.de" },
+  { pattern = "www.abdulkerimsesli.de/api/gemini", zone_name = "abdulkerimsesli.de" },
+  { pattern = "abdulkerimsesli.de/api/gemini", zone_name = "abdulkerimsesli.de" }
 ]
 
 [vars]
 RAG_ID = "throbbing-mode-6fe1"
 
-# Scheduled triggers (Cron) - runs daily at 03:00 UTC. Adjust as needed.
 [triggers]
 crons = ["0 3 * * *"]
 
-# Production environment overrides (keep secrets in GitHub/Cloudflare, not here)
-[env.production]
-name = "throbbing-mode-6fe1-nlweb"
-vars = { RAG_ID = "throbbing-mode-6fe1" }
+# Deploy: wrangler deploy --env=""
+# Secrets: wrangler secret put GEMINI_API_KEY --env=""
+
+[env.youtube]
+name = "youtube-api-proxy"
+main = "workers/youtube-api-proxy/index.js"
+compatibility_date = "2025-01-23"
+routes = [
+  { pattern = "www.abdulkerimsesli.de/api/youtube/*", zone_name = "abdulkerimsesli.de" },
+  { pattern = "abdulkerimsesli.de/api/youtube/*", zone_name = "abdulkerimsesli.de" }
+]
+
+# Deploy: wrangler deploy --env youtube
+# Secrets: wrangler secret put YOUTUBE_API_KEY --env youtube
