@@ -3,7 +3,6 @@
 // - createObserver(callback, options): returns { observe(el), unobserve(el), disconnect(), raw }.
 // - observeOnce(el, onIntersect, options): observes and disconnects after first intersect; returns a `disconnect` function.
 
-/* eslint-disable-next-line import/no-unused-modules */
 export function createObserver(callback, options = {}) {
   const observer = new IntersectionObserver(callback, options);
   return {
@@ -14,7 +13,6 @@ export function createObserver(callback, options = {}) {
   };
 }
 
-/* eslint-disable-next-line import/no-unused-modules */
 export function observeOnce(target, onIntersect, options = {}) {
   if (!target) return () => {};
   const obs = new IntersectionObserver((entries, o) => {

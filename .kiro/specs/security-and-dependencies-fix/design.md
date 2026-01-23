@@ -202,6 +202,7 @@ Since this is a static site, we'll use a hybrid approach:
    - Update third-party script sources
 
 3. **Phase 3: Enforce Mode** (Week 1, Day 3)
+
    ```
    Content-Security-Policy: [policy]
    ```
