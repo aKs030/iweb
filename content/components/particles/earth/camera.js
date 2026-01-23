@@ -1,7 +1,7 @@
-import { CONFIG } from "./config.js";
-import { createLogger } from "/content/utils/shared-utilities.js";
+import { CONFIG } from './config.js';
+import { createLogger } from '/content/utils/shared-utilities.js';
 
-const log = createLogger("EarthCamera");
+const log = createLogger('EarthCamera');
 
 export class CameraManager {
   constructor(THREE, camera) {
@@ -28,23 +28,23 @@ export class CameraManager {
   }
 
   setupCameraSystem() {
-    this.updateCameraForSection("hero");
+    this.updateCameraForSection('hero');
   }
 
   updateCameraForSection(sectionName) {
     // Map certain section ids to existing preset keys
     const presetKey =
-      sectionName === "site-footer"
-        ? "contact"
-        : sectionName === "section3"
-          ? "about"
+      sectionName === 'site-footer'
+        ? 'contact'
+        : sectionName === 'section3'
+          ? 'about'
           : sectionName;
     const preset = CONFIG.CAMERA.PRESETS[presetKey];
     if (preset) {
       this.flyToPreset(presetKey);
     } else {
       log.warn(`No preset for '${sectionName}', using hero`);
-      this.flyToPreset("hero");
+      this.flyToPreset('hero');
     }
   }
 

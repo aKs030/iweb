@@ -3,10 +3,10 @@
  * Implementiert Exponential Backoff und striktes Error-Handling.
  */
 
-const MODEL_NAME = "gemini-2.5-flash-preview-09-2025";
+const MODEL_NAME = 'gemini-2.5-flash-preview-09-2025';
 const getBaseUrl = (apiKey) =>
   `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${
-    apiKey || ""
+    apiKey || ''
   }`; // server-only: pass API key when calling from server side
 
 /**
@@ -15,13 +15,13 @@ const getBaseUrl = (apiKey) =>
  * @param {string} systemInstruction - Anweisungen für das System.
  * @returns {Promise<string>} - Die Antwort der KI.
  */
-import { createLogger } from "/content/utils/shared-utilities.js";
+import { createLogger } from '/content/utils/shared-utilities.js';
 
-const log = createLogger("GeminiService");
+const log = createLogger('GeminiService');
 
 async function getGeminiResponse(
   prompt,
-  systemInstruction = "Du bist ein hilfreicher Roboter-Begleiter.",
+  systemInstruction = 'Du bist ein hilfreicher Roboter-Begleiter.',
   options = {},
 ) {
   const payload = {
@@ -36,9 +36,9 @@ async function getGeminiResponse(
     globalThis.fetch !== undefined && globalThis.window !== undefined;
 
   const doBrowserRequest = async (promptArg, systemArg, opts) => {
-    const r = await fetch("/api/gemini", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+    const r = await fetch('/api/gemini', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         prompt: promptArg,
         systemInstruction: systemArg,
@@ -54,11 +54,11 @@ async function getGeminiResponse(
 
   const doServerRequest = async (payloadArg) => {
     // Server-side request: dynamically import config to avoid bundling secrets into browser code
-    const { config } = await import("./config.js");
+    const { config } = await import('./config.js');
     const apiKey = config.getGeminiApiKey();
     const r = await fetch(getBaseUrl(apiKey), {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payloadArg),
     });
     if (!r.ok) {
@@ -76,16 +76,16 @@ async function getGeminiResponse(
 
       const text =
         result.text || result.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (!text) throw new Error("Keine Antwort vom Modell erhalten.");
+      if (!text) throw new Error('Keine Antwort vom Modell erhalten.');
       return text;
     } catch (error) {
       if (i === maxRetries - 1) {
         // Letzter Versuch fehlgeschlagen
         log.error(
-          "Gemini API Fehler nach Max Retries: " +
+          'Gemini API Fehler nach Max Retries: ' +
             (error && error.message ? error.message : String(error)),
         );
-        return "Entschuldigung, ich habe gerade Verbindungsprobleme. Bitte versuche es später noch einmal.";
+        return 'Entschuldigung, ich habe gerade Verbindungsprobleme. Bitte versuche es später noch einmal.';
       }
 
       // Exponential Backoff (1s, 2s, 4s, 8s, 16s)
@@ -99,14 +99,14 @@ async function getGeminiResponse(
 export class GeminiService {
   async generateResponse(prompt, _history = [], options = {}) {
     // _history is available to craft system instructions later if needed
-    const system = "Du bist ein hilfreicher Roboter-Begleiter.";
+    const system = 'Du bist ein hilfreicher Roboter-Begleiter.';
     return await getGeminiResponse(prompt, system, options);
   }
 
   async summarizePage(content) {
-    const trimmed = String(content || "").slice(0, 4800);
+    const trimmed = String(content || '').slice(0, 4800);
     const prompt = `Fasse den folgenden Text kurz und präzise zusammen:\n\n${trimmed}`;
-    const system = "Fasse kurz zusammen. Maximal 3 Sätze.";
+    const system = 'Fasse kurz zusammen. Maximal 3 Sätze.';
     return await getGeminiResponse(prompt, system);
   }
 
@@ -114,7 +114,7 @@ export class GeminiService {
     const prompt = `Gib eine kurze, konkrete Empfehlung für den Nutzer basierend auf:\n${JSON.stringify(
       behavior,
     )}`;
-    const system = "Sei prägnant, maximal 2 Sätze.";
+    const system = 'Sei prägnant, maximal 2 Sätze.';
     return await getGeminiResponse(prompt, system);
   }
 }

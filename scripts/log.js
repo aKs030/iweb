@@ -5,15 +5,15 @@ function _fmt(level, msg) {
 }
 
 function info(msg) {
-  console.log(_fmt("INFO", msg));
+  console.log(_fmt('INFO', msg));
 }
 
 function warn(msg) {
-  console.warn(_fmt("WARN", msg));
+  console.warn(_fmt('WARN', msg));
 }
 
 function error(msg) {
-  console.error(_fmt("ERROR", msg));
+  console.error(_fmt('ERROR', msg));
 }
 
 module.exports = { info, warn, error };

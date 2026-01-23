@@ -1,9 +1,9 @@
-import React from "https://esm.sh/react@18.2.0?dev=false";
-import ReactDOM from "https://esm.sh/react-dom@18.2.0/client?dev=false";
-import htm from "https://cdn.jsdelivr.net/npm/htm@3.1.1/dist/htm.module.js";
+import React from 'https://esm.sh/react@18.2.0?dev=false';
+import ReactDOM from 'https://esm.sh/react-dom@18.2.0/client?dev=false';
+import htm from 'https://cdn.jsdelivr.net/npm/htm@3.1.1/dist/htm.module.js';
 /* createLogger import removed (unused in this module) */
-import { marked } from "https://cdn.jsdelivr.net/npm/marked@5.1.1/lib/marked.esm.js";
-import DOMPurify from "https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.es.js";
+import { marked } from 'https://cdn.jsdelivr.net/npm/marked@5.1.1/lib/marked.esm.js';
+import DOMPurify from 'https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.es.js';
 
 marked.setOptions({ mangle: false, headerIds: false });
 
@@ -75,22 +75,22 @@ const Icons = {
 };
 
 // --- Utilities ---
-const estimateReadTime = (text = "") =>
+const estimateReadTime = (text = '') =>
   `${Math.max(1, Math.round(text.split(/\s+/).length / 200))} min`;
 
 const CATEGORY_OVERRIDES = {
-  "threejs-performance": "Performance",
-  "react-no-build": "Webdesign",
-  "modern-ui-design": "Webdesign",
-  "visual-storytelling": "Online-Marketing",
+  'threejs-performance': 'Performance',
+  'react-no-build': 'Webdesign',
+  'modern-ui-design': 'Webdesign',
+  'visual-storytelling': 'Online-Marketing',
 };
 
 function normalizePost(raw = {}) {
   const id = raw.id || raw.slug;
   if (!id) return null;
   // Ensure we get the specific category, defaulting to 'Artikel' only if no match found
-  const category = CATEGORY_OVERRIDES[id] || raw.category || "Artikel";
-  const dateStr = raw.date || "";
+  const category = CATEGORY_OVERRIDES[id] || raw.category || 'Artikel';
+  const dateStr = raw.date || '';
 
   return {
     ...raw,
@@ -98,18 +98,18 @@ function normalizePost(raw = {}) {
     category,
     timestamp: dateStr ? new Date(dateStr).getTime() : 0, // Pre-calc for sorting
     dateDisplay: raw.dateDisplay || dateStr,
-    readTime: raw.readTime || estimateReadTime(raw.content || raw.html || ""),
+    readTime: raw.readTime || estimateReadTime(raw.content || raw.html || ''),
   };
 }
 
 // Fetch Logic
 async function loadPostsData(seedPosts = []) {
   try {
-    const r = await fetch("/sitemap.xml");
-    if (!r.ok) throw new Error("No sitemap");
+    const r = await fetch('/sitemap.xml');
+    if (!r.ok) throw new Error('No sitemap');
     const xml = await r.text();
     const ids = Array.from(
-      xml.matchAll(new RegExp("<loc>.*?/blog/([^/<>]+)/?.*?</loc>", "g")),
+      xml.matchAll(new RegExp('<loc>.*?/blog/([^/<>]+)/?.*?</loc>', 'g')),
     ).map((m) => m[1]);
     const uniqueIds = Array.from(new Set(ids));
 
@@ -138,35 +138,35 @@ async function loadPostsData(seedPosts = []) {
 
     return Array.from(map.values()).sort((a, b) => b.timestamp - a.timestamp);
   } catch (e) {
-    console.warn("Fallback to seed data", e);
+    console.warn('Fallback to seed data', e);
     return seedPosts;
   }
 }
 
 function parseArticleHtml(htmlText, id) {
-  const doc = new DOMParser().parseFromString(htmlText, "text/html");
-  const title = doc.querySelector("h1")?.textContent || id;
+  const doc = new DOMParser().parseFromString(htmlText, 'text/html');
+  const title = doc.querySelector('h1')?.textContent || id;
   const bodyEl =
-    doc.querySelector(".article-body") || doc.querySelector("article");
+    doc.querySelector('.article-body') || doc.querySelector('article');
   if (bodyEl)
     bodyEl
-      .querySelectorAll("script, style, .skip-links")
+      .querySelectorAll('script, style, .skip-links')
       .forEach((e) => e.remove());
 
-  const heroImg = doc.querySelector(".article-hero img")?.getAttribute("src");
+  const heroImg = doc.querySelector('.article-hero img')?.getAttribute('src');
   const metaImg = doc
     .querySelector('meta[property="og:image"]')
-    ?.getAttribute("content");
+    ?.getAttribute('content');
 
   return normalizePost({
     id,
     title,
-    date: doc.querySelector(".meta")?.textContent || "",
+    date: doc.querySelector('.meta')?.textContent || '',
     image: heroImg || metaImg || null,
     excerpt:
-      doc.querySelector('meta[name="description"]')?.getAttribute("content") ||
-      "",
-    html: bodyEl ? bodyEl.innerHTML : "",
+      doc.querySelector('meta[name="description"]')?.getAttribute('content') ||
+      '',
+    html: bodyEl ? bodyEl.innerHTML : '',
     // Category will be resolved by normalizePost via CATEGORY_OVERRIDES
   });
 }
@@ -178,7 +178,7 @@ const ProgressiveImage = React.memo(function ProgressiveImage({
   src,
   alt,
   className,
-  loading = "lazy",
+  loading = 'lazy',
   fetchpriority,
   width,
   height,
@@ -202,7 +202,7 @@ const ProgressiveImage = React.memo(function ProgressiveImage({
   if (error) return null;
 
   return html`
-    <div className="progressive-image-wrapper ${loaded ? "loaded" : ""}">
+    <div className="progressive-image-wrapper ${loaded ? 'loaded' : ''}">
       <img
         ref=${imgRef}
         src=${src}
@@ -224,14 +224,14 @@ function ScrollToTop() {
   const [visible, setVisible] = React.useState(false);
   React.useEffect(() => {
     const toggle = () => setVisible(window.scrollY > 400);
-    window.addEventListener("scroll", toggle);
-    return () => window.removeEventListener("scroll", toggle);
+    window.addEventListener('scroll', toggle);
+    return () => window.removeEventListener('scroll', toggle);
   }, []);
-  const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
+  const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
   return html`
     <button
-      className=${`scroll-to-top-btn ${visible ? "visible" : ""}`}
+      className=${`scroll-to-top-btn ${visible ? 'visible' : ''}`}
       onClick=${scrollToTop}
       aria-label="Nach oben scrollen"
     >
@@ -247,11 +247,11 @@ function ReadingProgress() {
       const h = document.body.scrollHeight - window.innerHeight;
       if (h > 0) setWidth((window.scrollY / h) * 100);
     };
-    window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
   return html`<div className="reading-progress-container">
-    <div className="reading-progress-bar" style=${{ width: width + "%" }}></div>
+    <div className="reading-progress-bar" style=${{ width: width + '%' }}></div>
   </div>`;
 }
 
@@ -280,12 +280,12 @@ function RelatedPosts({ currentPost, allPosts }) {
               className="blog-card"
               onClick=${() => (window.location.hash = `/blog/${post.id}`)}
             >
-              <h4 className="card-title" style=${{ fontSize: "1.1rem" }}>
+              <h4 className="card-title" style=${{ fontSize: '1.1rem' }}>
                 ${post.title}
               </h4>
               <p
                 className="card-excerpt"
-                style=${{ fontSize: "0.9rem", marginBottom: "0" }}
+                style=${{ fontSize: '0.9rem', marginBottom: '0' }}
               >
                 ${post.excerpt.slice(0, 80)}...
               </p>
@@ -301,14 +301,14 @@ function RelatedPosts({ currentPost, allPosts }) {
 function BlogApp() {
   const [posts, setPosts] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
-  const [filter, setFilter] = React.useState("All");
+  const [filter, setFilter] = React.useState('All');
   const [currentPostId, setCurrentPostId] = React.useState(null);
   const [ogMeta, setOgMeta] = React.useState(null);
 
   React.useEffect(() => {
-    const seedEl = document.getElementById("blog-list-json");
+    const seedEl = document.getElementById('blog-list-json');
     const seed = seedEl
-      ? JSON.parse(seedEl.textContent || "[]").map(normalizePost)
+      ? JSON.parse(seedEl.textContent || '[]').map(normalizePost)
       : [];
     setPosts(seed);
 
@@ -317,7 +317,7 @@ function BlogApp() {
       setLoading(false);
     });
 
-    fetch("/content/assets/img/og/og-images-meta.json")
+    fetch('/content/assets/img/og/og-images-meta.json')
       .then((r) => r.json())
       .then(setOgMeta)
       .catch(() => {});
@@ -326,34 +326,34 @@ function BlogApp() {
   React.useEffect(() => {
     const handleRoute = () => {
       const hash = window.location.hash;
-      if (hash.startsWith("#/blog/")) {
-        setCurrentPostId(hash.replace("#/blog/", ""));
+      if (hash.startsWith('#/blog/')) {
+        setCurrentPostId(hash.replace('#/blog/', ''));
         window.scrollTo(0, 0);
       } else {
         setCurrentPostId(null);
       }
     };
     const handleKey = (e) => {
-      if (e.key === "Escape" && currentPostId) window.location.hash = "#/blog/";
+      if (e.key === 'Escape' && currentPostId) window.location.hash = '#/blog/';
     };
-    window.addEventListener("hashchange", handleRoute);
-    window.addEventListener("keydown", handleKey);
+    window.addEventListener('hashchange', handleRoute);
+    window.addEventListener('keydown', handleKey);
     if (window.location.hash) handleRoute();
     return () => {
-      window.removeEventListener("hashchange", handleRoute);
-      window.removeEventListener("keydown", handleKey);
+      window.removeEventListener('hashchange', handleRoute);
+      window.removeEventListener('keydown', handleKey);
     };
   }, [currentPostId]);
 
   const categories = React.useMemo(
-    () => ["All", ...new Set(posts.map((p) => p.category).filter(Boolean))],
+    () => ['All', ...new Set(posts.map((p) => p.category).filter(Boolean))],
     [posts],
   );
 
   const visiblePosts = React.useMemo(
     () =>
       posts.filter((p) => {
-        const matchCat = filter === "All" || p.category === filter;
+        const matchCat = filter === 'All' || p.category === filter;
         return matchCat;
       }),
     [posts, filter],
@@ -371,9 +371,9 @@ function BlogApp() {
       activePost
         ? DOMPurify.sanitize(
             activePost.html ||
-              (activePost.content ? marked.parse(activePost.content) : ""),
+              (activePost.content ? marked.parse(activePost.content) : ''),
           )
-        : "",
+        : '',
     [activePost],
   );
 
@@ -388,7 +388,7 @@ function BlogApp() {
           <p>Artikel nicht gefunden.</p>
           <button
             className="btn-back"
-            onClick=${() => (window.location.hash = "")}
+            onClick=${() => (window.location.hash = '')}
           >
             ← Zurück
           </button>
@@ -411,7 +411,7 @@ function BlogApp() {
         
         <div className="container-blog pt-24 fade-in">
           <button className="btn-back" onClick=${() =>
-            (window.location.hash = "")}>← Übersicht (ESC)</button>
+            (window.location.hash = '')}>← Übersicht (ESC)</button>
           
           <article className="blog-article">
             <header>
@@ -451,10 +451,10 @@ function BlogApp() {
             <div className="article-cta">
               <h3>Unterstützung bei deinem Projekt?</h3>
               <p style=${{
-                color: "#ccc",
-                marginBottom: "1.5rem",
-                maxWidth: "600px",
-                margin: "0 auto 1.5rem",
+                color: '#ccc',
+                marginBottom: '1.5rem',
+                maxWidth: '600px',
+                margin: '0 auto 1.5rem',
               }}>
                 Benötigst du Hilfe bei Webdesign, Performance-Optimierung oder SEO? Lass uns unverbindlich darüber sprechen.
               </p>
@@ -468,11 +468,11 @@ function BlogApp() {
 
   // List View
   return html`
-    <div className="container-blog fade-in" style=${{ paddingTop: "6rem" }}>
+    <div className="container-blog fade-in" style=${{ paddingTop: '6rem' }}>
       <${ScrollToTop} />
 
       <!-- Static Header -->
-      <header style=${{ marginBottom: "2rem" }}>
+      <header style=${{ marginBottom: '2rem' }}>
         <h1 className="blog-headline">Wissen & Einblicke</h1>
         <p className="blog-subline">
           In unserem Blog teilen wir praxisnahe Tipps zu Webdesign, SEO,
@@ -485,15 +485,15 @@ function BlogApp() {
       <div
         className="blog-sticky-header"
         style=${{
-          position: "sticky",
-          top: "72px" /* Matches Site Header Height + Spacing */,
+          position: 'sticky',
+          top: '72px' /* Matches Site Header Height + Spacing */,
           zIndex: 40,
-          background: "rgba(3, 3, 3, 0.85)",
-          backdropFilter: "blur(12px)",
-          WebkitBackdropFilter: "blur(12px)",
-          borderBottom: "1px solid var(--blog-border)",
-          margin: "0 -2rem 2.5rem -2rem",
-          padding: "1rem 2rem",
+          background: 'rgba(3, 3, 3, 0.85)',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
+          borderBottom: '1px solid var(--blog-border)',
+          margin: '0 -2rem 2.5rem -2rem',
+          padding: '1rem 2rem',
         }}
       >
         <div className="blog-header-content">
@@ -503,7 +503,7 @@ function BlogApp() {
                 (cat) => html`
                   <button
                     key=${cat}
-                    className=${`filter-btn ${filter === cat ? "active" : ""}`}
+                    className=${`filter-btn ${filter === cat ? 'active' : ''}`}
                     onClick=${() => setFilter(cat)}
                   >
                     ${cat}
@@ -520,8 +520,8 @@ function BlogApp() {
           const og = getOg(post.id);
           const fallbackImg = post.image || (og ? og.fallback || og.url : null);
           // Eager loading für erste 2 Bilder (Above the Fold)
-          const loadingStrategy = idx < 2 ? "eager" : "lazy";
-          const fetchPriority = idx === 0 ? "high" : undefined;
+          const loadingStrategy = idx < 2 ? 'eager' : 'lazy';
+          const fetchPriority = idx === 0 ? 'high' : undefined;
 
           return html`
             <article
@@ -539,7 +539,7 @@ function BlogApp() {
                     width=${og?.width || 800}
                     height=${og?.height || 420}
                   />`
-                : ""}
+                : ''}
 
               <div className="card-meta">
                 <span className="card-category">${post.category}</span>
@@ -562,11 +562,11 @@ function BlogApp() {
         })}
         ${visiblePosts.length === 0 && !loading
           ? html`<p style="color:#666">Keine Artikel gefunden.</p>`
-          : ""}
+          : ''}
       </div>
     </div>
   `;
 }
 
-const rootEl = document.getElementById("root");
+const rootEl = document.getElementById('root');
 if (rootEl) ReactDOM.createRoot(rootEl).render(React.createElement(BlogApp));

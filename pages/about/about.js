@@ -5,9 +5,9 @@
  * - Better logging for debugging
  * - Improved code structure
  */
-import { FAVICON_512 } from "/content/config/site-config.js";
-import { fetchWithTimeout } from "/content/utils/shared-utilities.js";
-import { upsertHeadLink } from "/content/utils/dom-helpers.js";
+import { FAVICON_512 } from '/content/config/site-config.js';
+import { fetchWithTimeout } from '/content/utils/shared-utilities.js';
+import { upsertHeadLink } from '/content/utils/dom-helpers.js';
 
 (async function () {
   const RETRY_ATTEMPTS = 2;
@@ -17,12 +17,12 @@ import { upsertHeadLink } from "/content/utils/dom-helpers.js";
   let _addListener = null;
   try {
     const { createLogger, addListener } =
-      await import("../../content/utils/shared-utilities.js");
-    logger = createLogger("AboutModule");
+      await import('../../content/utils/shared-utilities.js');
+    logger = createLogger('AboutModule');
     // expose addListener locally for handlers
     _addListener = addListener;
   } catch (err) {
-    logger?.warn?.("AboutModule: failed to import createLogger", err);
+    logger?.warn?.('AboutModule: failed to import createLogger', err);
     // Fallback to no-op logger if import fails
     logger = {
       info: () => {},
@@ -33,23 +33,23 @@ import { upsertHeadLink } from "/content/utils/dom-helpers.js";
   }
 
   const safeAddListener = (target, event, handler, options = {}) => {
-    if (typeof _addListener === "function")
+    if (typeof _addListener === 'function')
       return _addListener(target, event, handler, options);
     target.addEventListener(event, handler, options);
     return () => target.removeEventListener(event, handler, options);
   };
 
-  const host = document.querySelector("section#about[data-about-src]");
+  const host = document.querySelector('section#about[data-about-src]');
 
   if (!host) {
-    logger.warn("About section host not found");
+    logger.warn('About section host not found');
     return;
   }
 
-  const src = host.getAttribute("data-about-src");
+  const src = host.getAttribute('data-about-src');
 
   if (!src) {
-    logger.error("data-about-src attribute is missing");
+    logger.error('data-about-src attribute is missing');
     return;
   }
 
@@ -75,16 +75,16 @@ import { upsertHeadLink } from "/content/utils/dom-helpers.js";
         const html = await response.text();
 
         if (!html.trim()) {
-          throw new Error("Empty response received");
+          throw new Error('Empty response received');
         }
 
         // Ensure about CSS is loaded when content is injected (idempotent)
         if (!document.querySelector('link[href="/pages/about/about.css"]')) {
           // Idempotent insert of about stylesheet
           upsertHeadLink({
-            rel: "stylesheet",
-            href: "/pages/about/about.css",
-            dataset: { injectedBy: "about-module" },
+            rel: 'stylesheet',
+            href: '/pages/about/about.css',
+            dataset: { injectedBy: 'about-module' },
           });
         }
 
@@ -94,10 +94,10 @@ import { upsertHeadLink } from "/content/utils/dom-helpers.js";
         (function setAboutPageMeta() {
           try {
             const pageTitle =
-              "Über mich — Abdulkerim Sesli — Web Development & Design";
+              'Über mich — Abdulkerim Sesli — Web Development & Design';
             const description =
-              "Abdulkerim Sesli: Full-Stack Webentwickler & Fotograf aus Berlin. Spezialisiert auf performante Web-Apps, Three.js Visualisierungen und modernes UI/UX Design.";
-            const canonical = new URL(window.location.origin + "/about/").href;
+              'Abdulkerim Sesli: Full-Stack Webentwickler & Fotograf aus Berlin. Spezialisiert auf performante Web-Apps, Three.js Visualisierungen und modernes UI/UX Design.';
+            const canonical = new URL(window.location.origin + '/about/').href;
             document.title = pageTitle;
 
             const upsertMeta = (attrName, attrValue, isProperty = false) => {
@@ -106,54 +106,54 @@ import { upsertHeadLink } from "/content/utils/dom-helpers.js";
                 : `meta[name="${attrName}"]`;
               let el = document.querySelector(selector);
               if (el) {
-                el.setAttribute(isProperty ? "property" : "name", attrName);
-                el.setAttribute("content", attrValue);
+                el.setAttribute(isProperty ? 'property' : 'name', attrName);
+                el.setAttribute('content', attrValue);
               } else {
-                el = document.createElement("meta");
-                if (isProperty) el.setAttribute("property", attrName);
-                else el.setAttribute("name", attrName);
-                el.setAttribute("content", attrValue);
+                el = document.createElement('meta');
+                if (isProperty) el.setAttribute('property', attrName);
+                else el.setAttribute('name', attrName);
+                el.setAttribute('content', attrValue);
                 document.head.appendChild(el);
               }
             };
 
-            upsertMeta("description", description);
-            upsertMeta("twitter:description", description);
-            upsertMeta("twitter:title", pageTitle);
-            upsertMeta("og:description", description, true);
-            upsertMeta("og:title", pageTitle, true);
+            upsertMeta('description', description);
+            upsertMeta('twitter:description', description);
+            upsertMeta('twitter:title', pageTitle);
+            upsertMeta('og:description', description, true);
+            upsertMeta('og:title', pageTitle, true);
 
             // Canonical link
             let canonicalEl = document.querySelector('link[rel="canonical"]');
             if (!canonicalEl) {
               canonicalEl = upsertHeadLink({
-                rel: "canonical",
+                rel: 'canonical',
                 href: canonical,
               });
-            } else canonicalEl.setAttribute("href", canonical);
+            } else canonicalEl.setAttribute('href', canonical);
 
             // OG/Twitter url
             const setMetaValue = (selector, attr, value) => {
               const el = document.querySelector(selector);
               if (el) el.setAttribute(attr, value);
             };
-            setMetaValue('meta[property="og:url"]', "content", canonical);
-            setMetaValue('meta[name="twitter:url"]', "content", canonical);
+            setMetaValue('meta[property="og:url"]', 'content', canonical);
+            setMetaValue('meta[name="twitter:url"]', 'content', canonical);
 
             // Insert page-specific Person JSON-LD (mainEntityOfPage)
-            const ldId = "about-person-ld";
+            const ldId = 'about-person-ld';
             if (!document.getElementById(ldId)) {
-              const script = document.createElement("script");
-              script.type = "application/ld+json";
+              const script = document.createElement('script');
+              script.type = 'application/ld+json';
               script.id = ldId;
               script.textContent = JSON.stringify({
-                "@context": "https://schema.org",
-                "@type": "Person",
-                name: "Abdulkerim Sesli",
-                url: "https://www.abdulkerimsesli.de/about/",
+                '@context': 'https://schema.org',
+                '@type': 'Person',
+                name: 'Abdulkerim Sesli',
+                url: 'https://www.abdulkerimsesli.de/about/',
                 mainEntityOfPage: {
-                  "@type": "WebPage",
-                  "@id": canonical,
+                  '@type': 'WebPage',
+                  '@id': canonical,
                 },
                 image: FAVICON_512,
               });
@@ -161,18 +161,18 @@ import { upsertHeadLink } from "/content/utils/dom-helpers.js";
             }
           } catch (e) {
             // Non-critical; don't break page
-            logger?.warn?.("about: could not set page meta", e);
+            logger?.warn?.('about: could not set page meta', e);
           }
         })();
 
         // Dispatch success event
         document.dispatchEvent(
-          new CustomEvent("about:loaded", {
+          new CustomEvent('about:loaded', {
             detail: { success: true, attempts: attempt + 1 },
           }),
         );
 
-        logger.info("About content loaded successfully");
+        logger.info('About content loaded successfully');
         return true;
       } catch (err) {
         lastError = err;
@@ -181,7 +181,7 @@ import { upsertHeadLink } from "/content/utils/dom-helpers.js";
     }
 
     // All attempts failed
-    logger.error("Failed to load about content after retries", lastError);
+    logger.error('Failed to load about content after retries', lastError);
 
     // Display fallback content (no inline handlers)
     host.innerHTML = `
@@ -194,10 +194,10 @@ import { upsertHeadLink } from "/content/utils/dom-helpers.js";
     `;
 
     // Attach event listener to the injected reload button
-    const aboutReload = host.querySelector(".about-reload");
+    const aboutReload = host.querySelector('.about-reload');
     if (aboutReload) {
       const _onAboutReload = () => location.reload();
-      const _remove = safeAddListener(aboutReload, "click", _onAboutReload, {
+      const _remove = safeAddListener(aboutReload, 'click', _onAboutReload, {
         once: true,
       });
       // store remover on element for potential cleanup
@@ -207,7 +207,7 @@ import { upsertHeadLink } from "/content/utils/dom-helpers.js";
 
     // Dispatch error event
     document.dispatchEvent(
-      new CustomEvent("about:error", {
+      new CustomEvent('about:error', {
         detail: { error: lastError, attempts: RETRY_ATTEMPTS + 1 },
       }),
     );

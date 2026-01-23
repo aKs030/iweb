@@ -25,7 +25,7 @@
   max-width: var(--greet-max);
   min-inline-size: var(--greet-min-inline, clamp(18ch, 32vw, 42ch));
   min-height: 2.2em;
-  font-variation-settings: "opsz" 18;
+  font-variation-settings: 'opsz' 18;
   font-optical-sizing: auto;
   text-shadow:
     0 0 18px rgb(37 99 235 / 35%),
@@ -252,7 +252,7 @@
   transition: opacity 320ms ease;
 }
 
-.three-earth-container[data-three-ready="1"] canvas {
+.three-earth-container[data-three-ready='1'] canvas {
   opacity: 1;
 }
 
@@ -312,7 +312,7 @@ body:not(.hero-active) .floating-icon {
 }
 
 .spotlight-bg::before {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0;
   border-radius: inherit; /* match pill shape */
@@ -387,7 +387,7 @@ body:not(.hero-active) .hero-title {
     max-width: 100%;
     padding: 6px 8px;
     line-height: 1.05;
-    font-variation-settings: "opsz" 14;
+    font-variation-settings: 'opsz' 14;
     filter: none !important;
     will-change: text-shadow;
     overflow-wrap: break-word;
@@ -428,7 +428,7 @@ body:not(.hero-active) .hero-title {
     max-width: 100%;
     padding: 4px 6px;
     line-height: 1.02;
-    font-variation-settings: "opsz" 12;
+    font-variation-settings: 'opsz' 12;
     filter: none !important;
     will-change: text-shadow;
     white-space: normal;
