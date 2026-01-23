@@ -1,24 +1,11 @@
 /* global React, ReactDOM */
-import { createLogger } from '/content/utils/shared-utilities.js';
-
-const log = createLogger('gallery-app');
+import {
+  useDebounce,
+  useFocusTrap,
+  useKeyboardNavigation,
+} from '/content/utils/react-hooks.js';
 
 const { useState, useEffect, useRef, useMemo, useCallback } = React;
-
-// Utility für Debouncing
-const useDebounce = (value, delay) => {
-  const [debouncedValue, setDebouncedValue] = useState(value);
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value);
-    }, delay);
-
-    return () => clearTimeout(handler);
-  }, [value, delay]);
-
-  return debouncedValue;
-};
 
 // Lucide Icon Components (simplified inline versions)
 const createIcon =
@@ -401,24 +388,15 @@ const PhotoGallery = () => {
     });
   }, [filter, debouncedSearchQuery, sortBy, favorites]);
 
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (!selectedImage) return;
-
-      if (e.key === 'Escape') {
-        setSelectedImage(null);
-        setZoom(1);
-        setIsSlideshow(false);
-      } else if (e.key === 'ArrowLeft') {
-        navigateImage(-1);
-      } else if (e.key === 'ArrowRight') {
-        navigateImage(1);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedImage]);
+  // Use custom hooks for keyboard navigation and focus trap
+  useKeyboardNavigation(
+    selectedImage,
+    setSelectedImage,
+    navigateImage,
+    setZoom,
+    setIsSlideshow,
+  );
+  useFocusTrap(!!selectedImage);
 
   useEffect(() => {
     if (isSlideshow && selectedImage) {
@@ -430,75 +408,6 @@ const PhotoGallery = () => {
       if (slideshowRef.current) clearTimeout(slideshowRef.current);
     };
   }, [isSlideshow, selectedImage]);
-
-  // Focus trap for the lightbox modal
-  useEffect(() => {
-    let prevActive = null;
-    const focusableSelector =
-      'a[href], area[href], input:not([disabled]):not([type=hidden]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), iframe, object, embed, [tabindex]:not([tabindex="-1"]), [contenteditable]';
-
-    function getFocusableElements(modal) {
-      const nodes = modal.querySelectorAll(focusableSelector);
-      return Array.prototype.slice.call(nodes);
-    }
-
-    function handleKeyTrap(e) {
-      if (e.key === 'Escape') {
-        setSelectedImage(null);
-      }
-      if (e.key === 'Tab') {
-        const modal = document.getElementById('lightbox');
-        if (!modal) return;
-        const focusable = getFocusableElements(modal);
-        if (focusable.length === 0) {
-          e.preventDefault();
-          return;
-        }
-        const first = focusable[0];
-        const last = focusable[focusable.length - 1];
-        if (!modal.contains(document.activeElement)) {
-          first.focus();
-          e.preventDefault();
-          return;
-        }
-        if (e.shiftKey && document.activeElement === first) {
-          last.focus();
-          e.preventDefault();
-          return;
-        }
-        if (!e.shiftKey && document.activeElement === last) {
-          first.focus();
-          e.preventDefault();
-          return;
-        }
-      }
-    }
-
-    if (selectedImage) {
-      prevActive = document.activeElement;
-      const closeBtn = document.getElementById('lightbox-close');
-      const mainEl = document.querySelector('main');
-      if (mainEl) mainEl.setAttribute('aria-hidden', 'true');
-      setTimeout(() => {
-        if (closeBtn) closeBtn.focus();
-      }, 0);
-      document.addEventListener('keydown', handleKeyTrap);
-    }
-
-    return () => {
-      document.removeEventListener('keydown', handleKeyTrap);
-      const mainEl = document.querySelector('main');
-      if (mainEl) mainEl.removeAttribute('aria-hidden');
-      setTimeout(() => {
-        try {
-          if (prevActive && typeof prevActive.focus === 'function')
-            prevActive.focus();
-        } catch (err) {
-          log.warn('GalleryApp: restoring focus failed', err);
-        }
-      }, 0);
-    };
-  }, [selectedImage]);
 
   const navigateImage = useCallback(
     (direction) => {

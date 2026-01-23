@@ -76,9 +76,12 @@ let isSystemActive = false;
 
 // ===== Main Manager =====
 
+// Constants
+const SYSTEM_ID = 'three-earth';
+
 export const initThreeEarth = async () => {
   const sharedState = getSharedState();
-  if (sharedState.systems.has('three-earth')) {
+  if (sharedState.systems.has(SYSTEM_ID)) {
     log.debug('System already initialized');
     return cleanup;
   }
@@ -196,7 +199,7 @@ export const initThreeEarth = async () => {
     } catch {
       /* ignore */
     }
-    sharedCleanupManager.cleanupSystem('three-earth');
+    sharedCleanupManager.cleanupSystem(SYSTEM_ID);
     showErrorState(container, error, () => {
       cleanup();
       initThreeEarth();
@@ -334,7 +337,35 @@ let __three_webgl_tested = false;
 
 // Load Three.js with a watchdog to avoid blocking the app loader
 async function loadThreeWithWatchdog(earthTimers, container) {
-  const THREE_LOAD_WATCH = 8000;
+  // Network-adaptive timeout based on connection speed
+  const getAdaptiveTimeout = () => {
+    try {
+      const connection =
+        navigator.connection ||
+        navigator.mozConnection ||
+        navigator.webkitConnection;
+      if (connection) {
+        // Adjust timeout based on effective connection type
+        switch (connection.effectiveType) {
+          case 'slow-2g':
+            return 15000;
+          case '2g':
+            return 12000;
+          case '3g':
+            return 10000;
+          case '4g':
+            return 8000;
+          default:
+            return 8000;
+        }
+      }
+    } catch {
+      // Fallback for browsers without Network Information API
+    }
+    return 8000; // Default timeout
+  };
+
+  const THREE_LOAD_WATCH = getAdaptiveTimeout();
   let threeLoadWatchTimer = null;
   let loaded = false;
 
@@ -663,22 +694,39 @@ function setupViewportObserver(container) {
     return;
   }
 
+  // Force visibility on homepage - Earth should always be visible
+  const isHomePage =
+    (globalThis.location?.pathname || '').replace(/\/+$/g, '') === '';
+  if (isHomePage) {
+    isSystemVisible = true;
+    if (!animationFrameId && animate && isSystemActive) {
+      animate();
+    }
+    // Still set up observer but with generous settings for homepage
+    viewportObserver = createObserver(_onViewportEntries, {
+      threshold: 0,
+      rootMargin: '200px',
+    });
+    viewportObserver.observe(container);
+    return;
+  }
+
+  // Standard observer for other pages
   viewportObserver = createObserver(_onViewportEntries, {
     threshold: 0,
-    rootMargin: '50px', // Small buffer to resume just before entering viewport
+    rootMargin: '50px',
   });
   viewportObserver.observe(container);
 
-  // Fallback: immediately check visibility to avoid cases where intersection
-  // events fire only after a scroll or layout change. If container is already
-  // in viewport, ensure render loop is running.
+  // Immediate visibility check
   try {
     const rect = container.getBoundingClientRect();
     const isVisibleNow =
-      rect.top < globalThis.innerHeight &&
-      rect.bottom > 0 &&
-      rect.left < globalThis.innerWidth &&
-      rect.right > 0;
+      rect.top < globalThis.innerHeight + 100 &&
+      rect.bottom > -100 &&
+      rect.left < globalThis.innerWidth + 100 &&
+      rect.right > -100;
+
     if (isVisibleNow) {
       isSystemVisible = true;
       if (!animationFrameId && animate && isSystemActive) {
@@ -686,7 +734,11 @@ function setupViewportObserver(container) {
       }
     }
   } catch (err) {
-    log.debug('Immediate visibility check failed', err);
+    // Fallback to visible state if check fails
+    isSystemVisible = true;
+    if (!animationFrameId && animate && isSystemActive) {
+      animate();
+    }
   }
 }
 
@@ -791,16 +843,30 @@ function _onSectionObserverEntries(entries) {
 
 function _onViewportEntries(entries) {
   const entry = entries[0];
-  isSystemVisible = entry.isIntersecting;
-  if (isSystemVisible) {
+  const wasVisible = isSystemVisible;
+
+  // Force visibility on homepage - Earth should always be visible
+  const isHomePage =
+    (globalThis.location?.pathname || '').replace(/\/+$/g, '') === '';
+  if (isHomePage) {
+    isSystemVisible = true;
     if (!animationFrameId && animate) {
-      log.debug('Container visible: resuming render loop');
       animate();
     }
     return;
   }
-  if (animationFrameId) {
-    log.debug('Container hidden: pausing render loop');
+
+  // Standard visibility logic for other pages
+  isSystemVisible = entry.isIntersecting;
+
+  if (isSystemVisible && !wasVisible) {
+    if (!animationFrameId && animate) {
+      animate();
+    }
+    return;
+  }
+
+  if (!isSystemVisible && wasVisible && animationFrameId) {
     cancelAnimationFrame(animationFrameId);
     animationFrameId = null;
   }
@@ -837,7 +903,6 @@ function handleVisibilityChange() {
   // Enhanced Page Visibility API: Pause rendering when tab is inactive
   // This provides significant CPU/GPU/Battery savings on mobile devices
   if (document.hidden) {
-    log.debug('Tab hidden - pausing Earth animation');
     if (animationFrameId) {
       cancelAnimationFrame(animationFrameId);
       animationFrameId = null;
@@ -849,7 +914,6 @@ function handleVisibilityChange() {
   // 2. The animate function exists
   // 3. The container is visible in viewport
   // 4. The system is still active
-  log.debug('Tab visible - resuming Earth animation');
   if (!animationFrameId && animate && isSystemVisible && isSystemActive) {
     animate();
   }
@@ -879,7 +943,14 @@ function startAnimationLoop() {
   };
 
   document.addEventListener('visibilitychange', handleVisibilityChange);
-  if (document.visibilityState === 'visible') animate();
+
+  // Force start animation on homepage
+  const isHomePage =
+    (globalThis.location?.pathname || '').replace(/\/+$/g, '') === '';
+  if (isHomePage || document.visibilityState === 'visible') {
+    isSystemVisible = true;
+    animate();
+  }
 }
 
 function _advancePeriodicAnimations(
@@ -937,7 +1008,7 @@ function _renderIfReady() {
         const container = getElementById('threeEarthContainer');
         try {
           log.info('First rendered frame — hiding loader');
-        } catch (e) {
+        } catch {
           /* ignore */
         }
         try {

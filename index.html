@@ -22,8 +22,6 @@
     <link rel="canonical" href="https://www.abdulkerimsesli.de/" />
     <link rel="sitemap" href="/sitemap.xml" type="application/xml" />
 
-    <!-- Font preconnects handled conditionally by head-inline.js when needed -->
-
     <!-- Server-side favicons for crawlers and browsers (reduces reliance on client-side injection) -->
     <!-- Prefer PNG/SVG icons (>=48px) so Google mobile search can show the favicon reliably -->
     <link
@@ -128,14 +126,14 @@
     <meta property="twitter:image:height" content="630" />
     <meta property="twitter:image:type" content="image/webp" />
 
-    <!-- DNS Prefetch for Analytics & External Services -->
+    <!-- DNS Prefetch for Analytics & Core Services -->
     <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
     <link rel="dns-prefetch" href="https://www.google-analytics.com" />
     <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
     <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
 
     <!-- Server-side FAQ JSON-LD (ensures Search Console sees a named FAQPage) -->
-    <script id="head-complete-ldjson" type="application/ld+json">
+    <script id="portfolio-schema" type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@graph": [
@@ -325,13 +323,9 @@
 
     <script
       type="module"
-      src="/content/components/head/head-inline.js"
+      src="/content/components/head/head-simple.js"
       crossorigin="anonymous"
     ></script>
-
-    <!-- head-complete.js is now loaded dynamically by head-inline.js to prevent race conditions -->
-
-    <!-- Preconnects handled conditionally by head-inline.js (GTM/GA4/fonts) -->
 
     <!-- Inline minimal critical CSS for the Hero (improves LCP / FOCP) -->
     <style id="hero-critical-css">
@@ -360,37 +354,57 @@
       }
     </style>
 
-    <!-- Loader styles consolidated into main.css -->
-    <!-- Preloads removed: head-inline.js injects styles conditionally to avoid unused preloads -->
-    <noscript
-      ><link rel="stylesheet" href="/content/styles/root.css"
-    /></noscript>
+    <!-- Critical Styles -->
+    <link rel="stylesheet" href="/content/styles/root.css" />
+    <link rel="stylesheet" href="/pages/home/hero.css" />
+    <link rel="stylesheet" href="/content/styles/main.css" />
+    <link
+      rel="stylesheet"
+      href="/content/components/particles/three-earth.css"
+    />
+
     <script
       type="module"
       src="/content/main.js"
       crossorigin="anonymous"
       defer
     ></script>
+
+    <!-- Deferred Styles -->
     <link
       rel="stylesheet"
-      href="/content/styles/main.css"
+      href="/content/styles/utilities.css"
       media="print"
       data-defer="1"
     />
-    <noscript
-      ><link rel="stylesheet" href="/content/styles/main.css"
-    /></noscript>
-
-    <!-- main.js is loaded & preloaded via head-inline to control timing (modulepreload + module script injection) -->
-
-    <!-- Deferred Styles (Below-the-Fold) -->
     <link
       rel="stylesheet"
       href="/pages/about/about.css"
       media="print"
       data-defer="1"
     />
+    <link
+      rel="stylesheet"
+      href="/pages/home/section3.css"
+      media="print"
+      data-defer="1"
+    />
+
+    <!-- Noscript Fallbacks -->
+    <noscript
+      ><link rel="stylesheet" href="/content/styles/root.css"
+    /></noscript>
+    <noscript><link rel="stylesheet" href="/pages/home/hero.css" /></noscript>
+    <noscript
+      ><link rel="stylesheet" href="/content/styles/main.css"
+    /></noscript>
+    <noscript
+      ><link rel="stylesheet" href="/content/styles/utilities.css"
+    /></noscript>
     <noscript><link rel="stylesheet" href="/pages/about/about.css" /></noscript>
+    <noscript
+      ><link rel="stylesheet" href="/pages/home/section3.css"
+    /></noscript>
   </head>
   <body>
     <figure class="visually-hidden" aria-hidden="true">
@@ -431,7 +445,6 @@
       </style>
     </noscript>
 
-    <!-- Google Tag Manager (noscript) removed — noscript iframe is injected dynamically by head-inline.js if GTM is configured (see content/config/site-config.js) -->
     <!-- Menü (dynamisch geladen) -->
     <header class="site-header">
       <div id="menu-container"></div>
@@ -483,10 +496,38 @@
         id="hero"
         class="section hero u-center"
         aria-label="Abdulkerim — Digital Creator Portfolio"
-        data-section-src="/pages/home/hero"
-        data-eager="true"
       >
-        <div class="section-skeleton" aria-hidden="true"></div>
+        <div class="container hero-content u-stack">
+          <div class="hero-visual">
+            <div class="hero-image-container u-center">
+              <div class="spotlight-bg">
+                <div class="hero-title" id="greetingText">Willkommen</div>
+              </div>
+              <div class="floating-icons">
+                <div class="floating-icon delay-0"><span>⭐️</span></div>
+                <div class="floating-icon delay-1"><span>✨</span></div>
+                <div class="floating-icon delay-2"><span>🌟</span></div>
+                <div class="floating-icon delay-3"><span>✨</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-buttons u-row" data-stagger-group="hero-btns">
+          <a
+            href="#features"
+            class="btn btn-primary hero__button--crt"
+            aria-label="Zu Features-Sektion scrollen"
+            >Weiter</a
+          >
+          <a
+            href="#footer"
+            class="btn btn-secondary hero__button--crt"
+            data-footer-trigger
+            aria-expanded="false"
+            >Kontakt</a
+          >
+        </div>
       </section>
 
       <!-- Card Section -->
@@ -509,12 +550,160 @@
         aria-labelledby="section3-heading"
         data-section-src="/pages/home/section3"
       ></section>
-    </main>
 
-    <!-- Footer container -->
-    <div
-      id="footer-container"
-      data-footer-src="/content/components/footer/footer"
-    ></div>
+      <!-- Footer Section -->
+      <section id="footer-section" class="section">
+        <div
+          id="footer-container"
+          data-footer-src="/content/components/footer/footer"
+        >
+          <!-- Fallback Footer Content -->
+          <footer
+            id="site-footer"
+            class="site-footer"
+            style="
+              background: #0d0d0d;
+              color: #ffffff;
+              padding: 2rem 1rem 1rem;
+              margin-top: 4rem;
+            "
+          >
+            <div
+              style="
+                max-width: 1200px;
+                margin: 0 auto;
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                gap: 2rem;
+              "
+            >
+              <div>
+                <h3
+                  style="color: #07a1ff; margin-bottom: 1rem; font-size: 1.1rem"
+                >
+                  Kontakt
+                </h3>
+                <p style="margin-bottom: 0.5rem; line-height: 1.6">
+                  <strong>Abdulkerim Sesli</strong><br />
+                  Web Developer & Photographer<br />
+                  Berlin, Deutschland
+                </p>
+                <p>
+                  <a
+                    href="mailto:kontakt@abdulkerimsesli.de"
+                    style="color: #ffffff; text-decoration: none"
+                    >kontakt@abdulkerimsesli.de</a
+                  >
+                </p>
+              </div>
+
+              <div>
+                <h3
+                  style="color: #07a1ff; margin-bottom: 1rem; font-size: 1.1rem"
+                >
+                  Social Media
+                </h3>
+                <div style="display: flex; flex-wrap: wrap; gap: 1rem">
+                  <a
+                    href="https://github.com/aKs030"
+                    target="_blank"
+                    rel="noopener"
+                    style="color: #ffffff; text-decoration: none"
+                    >GitHub</a
+                  >
+                  <a
+                    href="https://linkedin.com/in/abdulkerim-s"
+                    target="_blank"
+                    rel="noopener"
+                    style="color: #ffffff; text-decoration: none"
+                    >LinkedIn</a
+                  >
+                  <a
+                    href="https://instagram.com/abdul.codes"
+                    target="_blank"
+                    rel="noopener"
+                    style="color: #ffffff; text-decoration: none"
+                    >Instagram</a
+                  >
+                  <a
+                    href="https://www.youtube.com/@aks.030"
+                    target="_blank"
+                    rel="noopener"
+                    style="color: #ffffff; text-decoration: none"
+                    >YouTube</a
+                  >
+                </div>
+              </div>
+
+              <div>
+                <h3
+                  style="color: #07a1ff; margin-bottom: 1rem; font-size: 1.1rem"
+                >
+                  Navigation
+                </h3>
+                <nav style="display: flex; flex-direction: column; gap: 0.5rem">
+                  <a href="/" style="color: #ffffff; text-decoration: none"
+                    >Home</a
+                  >
+                  <a
+                    href="/about/"
+                    style="color: #ffffff; text-decoration: none"
+                    >Über mich</a
+                  >
+                  <a
+                    href="/projekte/"
+                    style="color: #ffffff; text-decoration: none"
+                    >Projekte</a
+                  >
+                  <a
+                    href="/gallery/"
+                    style="color: #ffffff; text-decoration: none"
+                    >Fotografie</a
+                  >
+                  <a
+                    href="/videos/"
+                    style="color: #ffffff; text-decoration: none"
+                    >Videos</a
+                  >
+                  <a href="/blog/" style="color: #ffffff; text-decoration: none"
+                    >Blog</a
+                  >
+                </nav>
+              </div>
+            </div>
+
+            <div
+              style="
+                max-width: 1200px;
+                margin: 2rem auto 0;
+                padding-top: 1rem;
+                border-top: 1px solid #333;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: 1rem;
+              "
+            >
+              <div style="display: flex; gap: 1rem">
+                <a
+                  href="/impressum/"
+                  style="color: #ccc; text-decoration: none; font-size: 0.9rem"
+                  >Impressum</a
+                >
+                <a
+                  href="/datenschutz/"
+                  style="color: #ccc; text-decoration: none; font-size: 0.9rem"
+                  >Datenschutz</a
+                >
+              </div>
+              <div style="color: #ccc; font-size: 0.9rem">
+                <p>&copy; 2026 Abdulkerim Sesli. Alle Rechte vorbehalten.</p>
+              </div>
+            </div>
+          </footer>
+        </div>
+      </section>
+    </main>
   </body>
 </html>

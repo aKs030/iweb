@@ -14,19 +14,15 @@
  */
 
 import { createLogger, throttle } from '/content/utils/shared-utilities.js';
-import { THREE_PATHS } from './config.js';
+import { THREE_PATHS, PERFORMANCE_CONFIG, SCROLL_CONFIG } from './config.js';
 
 const log = createLogger('sharedParticleSystem');
 
-// ===== Shared Configuration =====
+// ===== Shared Configuration (using centralized config) =====
 
 const SHARED_CONFIG = {
-  PERFORMANCE: {
-    THROTTLE_MS: 20,
-  },
-  SCROLL: {
-    CSS_PROPERTY_PREFIX: '--scroll-',
-  },
+  PERFORMANCE: PERFORMANCE_CONFIG,
+  SCROLL: SCROLL_CONFIG,
 };
 
 // ===== Shared State Management =====
@@ -260,6 +256,7 @@ export async function loadThreeJS() {
     return threeLoadingPromise;
   }
 
+  // eslint-disable-next-line complexity
   threeLoadingPromise = (async () => {
     for (let i = 0; i < THREE_PATHS.length; i++) {
       const src = THREE_PATHS[i];

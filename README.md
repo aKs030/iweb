@@ -89,14 +89,19 @@ Danach sicherstellen, dass `.gitignore` committed ist, damit `node_modules/` nic
 
 ```
 iweb/
+├── docs/                  # Dokumentation (ANALYTICS.md, MAINTENANCE.md, etc.)
+├── public/                # Statische Assets (_headers, _redirects, feed.xml)
 ├── content/               # Shared Components & Utilities (Core Logic)
-│   ├── particles/         # Three.js Earth System
-│   ├── accessibility/     # A11y Manager
-│   └── TypeWriter/        # Dynamische Text-Effekte
-├── pages/                 # Modulare Seiten-Struktur
-│   ├── gallery/           # React-basierte Foto-Galerie (Lazy Loaded)
-│   └── projekte/          # Projekt-Showcase
-└── manifest.json          # PWA Konfiguration
+│   ├── config/           # Konfigurationsdateien (GTM, browserconfig.xml)
+│   ├── particles/        # Three.js Earth System
+│   ├── accessibility/    # A11y Manager
+│   └── TypeWriter/       # Dynamische Text-Effekte
+├── pages/                # Modulare Seiten-Struktur
+│   ├── gallery/          # React-basierte Foto-Galerie (Lazy Loaded)
+│   └── projekte/         # Projekt-Showcase
+├── workers/              # Cloudflare Workers
+│   └── search-worker/    # Suchfunktionalität
+└── manifest.json         # PWA Konfiguration
 
 ### 🔧 Konfiguration
 Zentrale Host-/Site-abhängige Einstellungen (GTM/GA4/Ads-IDs, Ads-Conversion-Label, Feature-Flags) befinden sich in `content/config/site-config.js`. Ändere dort Host-Mapping-Einträge (Schlüssel sind Hostnamen, `default` wird als Fallback verwendet).
