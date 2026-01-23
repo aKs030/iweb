@@ -1,6 +1,16 @@
 /* exported _shareChannel, _renderDemoVideos */
 import { createLogger } from '/content/utils/shared-utilities.js';
-import { FAVICON_512 } from '../../content/config/site-config.js';
+import {
+  setStatus,
+  showErrorMessage,
+  showInfoMessage,
+} from '/content/utils/status-manager.js';
+import {
+  createVideoCardElement,
+  createVideoStructuredData,
+  cleanTitle,
+} from '/content/utils/video-card-renderer.js';
+import { attachVideoAnalytics } from '/content/utils/video-analytics.js';
 
 const log = createLogger('videos');
 
@@ -66,7 +76,6 @@ function activateThumb(btn) {
 }
 
 // Bind event handlers and accessible label for a thumb button
-// Bind event handlers and accessible label for a thumb button
 function bindThumb(btn) {
   if (btn.dataset.bound) return;
   if (btn.dataset.thumb)
@@ -89,7 +98,7 @@ function bindThumb(btn) {
   };
   btn.addEventListener('click', _onThumbClick);
   btn.addEventListener('keydown', _onThumbKeydown);
-  // store handlers for potential cleanup
+  // Store handlers for potential cleanup
   btn.__thumbHandlers = { click: _onThumbClick, keydown: _onThumbKeydown };
   btn.dataset.bound = '1';
 }
@@ -260,121 +269,34 @@ function renderVideoCard(grid, it, detailsMap) {
     ? Number(videoDetail.statistics.viewCount)
     : undefined;
 
-  const article = document.createElement('article');
-  article.className = 'video-card';
-  article.innerHTML = `
-    <h2>${escapeHtml(title)}</h2>
-    <p class="video-desc">${escapeHtml(desc)}</p>
-  `;
-
-  const thumbBtn = document.createElement('button');
-  thumbBtn.className = 'video-thumb';
-  thumbBtn.setAttribute('aria-label', `Play ${title}`);
-  thumbBtn.dataset.videoId = vid;
-  thumbBtn.dataset.thumb = thumb;
-  thumbBtn.innerHTML =
-    '<span class="play-button" aria-hidden="true"><svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><polygon points="70,55 70,145 145,100"/></svg></span>';
-
-  const meta = document.createElement('div');
-  meta.className = 'video-meta';
-  meta.innerHTML = `<div class="video-info"><small class="pub-date">${pub}</small></div><div class="video-actions u-row"><a href="https://youtu.be/${vid}" target="_blank" rel="noopener">Auf YouTube öffnen</a> <a href="/videos/${vid}/" class="page-link" title="Öffne Landing‑Page für dieses Video" data-video-id="${vid}" data-video-title="${escapeHtml(
+  // Create video data object
+  const videoData = {
+    vid,
+    rawTitle,
     title,
-  )}">Seite öffnen</a></div>`;
-
-  const publisherName =
-    globalThis.YOUTUBE_CHANNEL_ID === 'UCTGRherjM4iuIn86xxubuPg'
-      ? 'Abdulkerim Berlin'
-      : 'Abdulkerim Sesli';
-  const ldObj = {
-    '@context': 'https://schema.org',
-    '@type': 'VideoObject',
-    name: rawTitle + ` — ${publisherName}`,
-    description: desc,
-    thumbnailUrl: thumb,
-    uploadDate: pub,
-    contentUrl: `https://youtu.be/${vid}`,
-    embedUrl: `https://www.youtube-nocookie.com/embed/${vid}`,
-    isFamilyFriendly: true,
-    publisher: {
-      '@type': 'Organization',
-      '@id': 'https://www.abdulkerimsesli.de/#organization',
-      logo: {
-        '@type': 'ImageObject',
-        url: FAVICON_512,
-        contentUrl: FAVICON_512,
-        creator: { '@type': 'Person', name: 'Abdulkerim Sesli' },
-        license: 'https://www.abdulkerimsesli.de/#image-license',
-        creditText: 'Logo: Abdulkerim Sesli',
-        copyrightNotice: '© 2025 Abdulkerim Sesli',
-        acquireLicensePage: 'https://www.abdulkerimsesli.de/#image-license',
-      },
-      address: {
-        '@type': 'PostalAddress',
-        streetAddress: 'Sterkrader Str. 59',
-        postalCode: '13507',
-        addressLocality: 'Berlin',
-        addressCountry: 'DE',
-      },
-    },
+    desc,
+    thumb,
+    pub,
+    duration,
+    viewCount,
   };
 
-  if (duration) ldObj.duration = duration;
-  if (viewCount !== undefined) {
-    ldObj.interactionStatistic = {
-      '@type': 'InteractionCounter',
-      interactionType: 'http://schema.org/WatchAction',
-      userInteractionCount: viewCount,
-    };
-  }
+  // Create DOM elements
+  const article = createVideoCardElement(videoData);
+  const structuredData = createVideoStructuredData(videoData);
 
-  const ld = document.createElement('script');
-  ld.type = 'application/ld+json';
-  ld.textContent = JSON.stringify(ldObj);
+  // Attach analytics
+  attachVideoAnalytics(article, vid, title);
 
+  // Add to grid
   grid.appendChild(article);
-  article.appendChild(thumbBtn);
-  article.appendChild(meta);
+  article.appendChild(structuredData);
 
-  // Attach analytics tracking to the per-video landing page link (GA4-friendly)
-  try {
-    const pageLinkEl = meta.querySelector('.page-link');
-    if (pageLinkEl) {
-      pageLinkEl.addEventListener('click', (_e) => {
-        try {
-          const ga4Payload = {
-            video_id: vid,
-            video_title: title,
-            page_location: location.href,
-          };
-          const uaPayload = {
-            event_category: 'video',
-            event_label: title,
-            video_id: vid,
-          };
-          if (typeof gtag === 'function') {
-            // GA4 event
-            gtag('event', 'open_video_page', ga4Payload);
-            // optional UA-style event for compatibility (if using legacy setups)
-            try {
-              gtag('event', 'open_video_page_ua', uaPayload);
-            } catch (_e) {}
-          } else if (Array.isArray(window.dataLayer)) {
-            window.dataLayer.push(
-              Object.assign({ event: 'open_video_page' }, ga4Payload),
-            );
-          }
-        } catch (err) {
-          /* ignore analytics errors */
-        }
-      });
-    }
-  } catch (err) {
-    /* ignore */
+  // Bind thumbnail functionality
+  const thumbBtn = article.querySelector('.video-thumb');
+  if (thumbBtn) {
+    bindThumb(thumbBtn);
   }
-
-  article.appendChild(ld);
-
-  bindThumb(thumbBtn);
 }
 
 async function _renderDemoVideos(grid, demo) {
@@ -403,15 +325,6 @@ async function loadLatestVideos() {
     /* ignore */
   }
   if (!apiKey) return;
-
-  const setStatus = (msg) => {
-    try {
-      const el = document.getElementById('videos-status');
-      if (el) el.textContent = msg || '';
-    } catch {
-      // ignore
-    }
-  };
 
   setStatus('');
 
@@ -449,102 +362,7 @@ async function loadLatestVideos() {
   }
 }
 
-// Top-level escapeHtml helper (shared)
-function escapeHtml(s) {
-  return String(s)
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#39;');
-}
-
-// Helper: clean titles for display (remove trailing channel suffixes like "- Abdulkerim Sesli" or "— Abdulkerim Berlin")
-function cleanTitle(s) {
-  if (!s) return s;
-  // Remove trailing separator and channel name starting with Abdulkerim
-  return String(s)
-    .replace(/\s*([-–—|])\s*(Abdulkerim[\s\S]*)$/i, '')
-    .trim();
-}
-
-// Helper: show friendly error message in page
-function showErrorMessage(err) {
-  try {
-    const container =
-      document.querySelector('.videos-main .container') || document.body;
-    const el = document.createElement('aside');
-    el.className = 'video-error';
-    let message = 'Fehler beim Laden der Videos.';
-    if (err?.status === 400) {
-      message +=
-        ' API-Key ungültig (400). Prüfe in der Google Cloud Console, ob der Key aktiv ist und die YouTube Data API v3 freigeschaltet ist.';
-      if (
-        /API_KEY_INVALID|API key not valid/.test(
-          (err?.body || '') + ' ' + (err?.message || ''),
-        )
-      ) {
-        message += ' Hinweis: Der API-Key scheint ungültig zu sein.';
-      }
-    } else if (err?.status === 403) {
-      message +=
-        ' API-Zugriff verweigert (403). Prüfe deine API-Key Referrer-Einschränkungen oder teste über http://localhost:8000.';
-      if (
-        /API_KEY_HTTP_REFERRER_BLOCKED|Requests from referer/.test(
-          err?.body || '',
-        )
-      ) {
-        message += ' Hinweis: Requests mit leerem Referer werden geblockt.';
-      }
-    } else if (err?.message) {
-      message += ' ' + String(err.message).slice(0, 200);
-    }
-    el.textContent = message;
-    container.insertBefore(el, container.firstChild);
-    try {
-      const setStatus = (msg) => {
-        try {
-          const el2 = document.getElementById('videos-status');
-          if (el2) el2.textContent = msg || '';
-        } catch {
-          // ignore
-        }
-      };
-      setStatus(el.textContent);
-    } catch {
-      /* ignore */
-    }
-  } catch {
-    // ignore UI errors
-  }
-}
-
-// Helper: show non-error informational message in page
-function showInfoMessage(msg) {
-  try {
-    const container =
-      document.querySelector('.videos-main .container') || document.body;
-    const el = document.createElement('aside');
-    el.className = 'video-note';
-    el.textContent = msg;
-    container.insertBefore(el, container.firstChild);
-    try {
-      const setStatus = (m) => {
-        try {
-          const el2 = document.getElementById('videos-status');
-          if (el2) el2.textContent = m || '';
-        } catch {
-          // ignore
-        }
-      };
-      setStatus(msg);
-    } catch {
-      /* ignore */
-    }
-  } catch {
-    // ignore UI errors
-  }
-}
+// Shared utility helper - moved to video-card-renderer.js
 
 // Extracted API loader (top-level to reduce nested complexity)
 async function loadFromApi(apiKey, handle) {

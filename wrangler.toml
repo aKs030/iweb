@@ -1,5 +1,5 @@
 name = "throbbing-mode-6fe1-nlweb"
-main = "workers/throbbing-mode-6fe1-nlweb/index.js"
+main = "workers/search-worker/index.js"
 compatibility_date = "2025-05-23"
 compatibility_flags = ["nodejs_compat"]
 

@@ -10,9 +10,7 @@
 import { initHeroFeatureBundle } from '../pages/home/hero-manager.js';
 import {
   createLazyLoadObserver,
-  createLogger,
   EVENTS,
-  fetchWithTimeout,
   fire,
   getElementById,
   schedulePersistentStorageRequest,
@@ -21,13 +19,17 @@ import {
   addListener,
 } from '/content/utils/shared-utilities.js';
 import { observeOnce } from '/content/utils/intersection-observer.js';
-// initHeroSubtitle is imported where needed (hero manager); legacy global exposure removed
 import { a11y } from './utils/accessibility-manager.js';
-// Accessibility manager initializes itself and exposes a11y as needed (avoid duplicate global writes here)
+
+// Import performance optimizations
+import './utils/lazy-loader.js';
+import './utils/resource-hints.js';
+import './utils/error-handler.js';
 
 import './components/menu/menu.js';
+import './components/footer/footer-simple.js';
 
-const log = createLogger('main');
+const log = a11y?.createLogger?.('main') || console;
 
 // Debug / Dev hooks (exported for test & debug tooling)
 globalThis.__threeEarthCleanup = null;
@@ -50,98 +52,21 @@ const perfMarks = {
   windowLoaded: 0,
 };
 
-// ===== Service Worker Registration =====
-try {
-  // Only attempt registration in secure contexts (https or localhost) and when supported
-  if ('serviceWorker' in navigator && window.isSecureContext) {
-    // Register after window load to avoid competing with critical resources
-    window.addEventListener('load', () => {
-      navigator.serviceWorker
-        .register('/sw.js')
-        .then(async (reg) => {
-          log?.info?.('ServiceWorker registered', reg.scope || '');
-
-          try {
-            // Optional Background Sync: retries queued work when back online
-            if ('sync' in reg) {
-              await reg.sync.register('sync-content');
-              log?.info?.('Background Sync registered');
-            }
-          } catch (e) {
-            // ignore unsupported
-          }
-
-          try {
-            // Optional Periodic Background Sync (if supported by the browser)
-            if ('periodicSync' in reg) {
-              const tags = await reg.periodicSync.getTags().catch(() => []);
-              if (!tags || !tags.includes('fetch-updates')) {
-                await reg.periodicSync.register('fetch-updates', {
-                  minInterval: 24 * 60 * 60 * 1000, // once per day
-                });
-                log?.info?.('Periodic Sync registered');
-              }
-            }
-          } catch (e) {
-            // ignore unsupported
-          }
-        })
-        .catch((err) => {
-          // Provide more context for debugging (message + stack when available)
-          try {
-            const details = {
-              name: err?.name || 'UnknownError',
-              message: err?.message || String(err),
-              stack: err?.stack || null,
-            };
-            log?.warn?.('ServiceWorker registration failed', details);
-          } catch (inner) {
-            log?.warn?.('ServiceWorker registration failed (unknown)', err);
-          }
-        });
-    });
-  } else {
-    if (!('serviceWorker' in navigator)) {
-      log?.info?.('ServiceWorker not supported by this browser');
-    } else if (!window.isSecureContext) {
-      log?.info?.('ServiceWorker registration skipped: insecure context');
-    }
-  }
-} catch (e) {
-  // Silent fail if environment does not permit SW
-}
-
-// ===== Accessibility Announcements =====
-const announce = (() => {
-  const cache = new Map();
-
-  return (message, { assertive = false, dedupe = false } = {}) => {
-    if (!message) return;
-
-    if (dedupe && cache.has(message)) return;
-    if (dedupe) {
-      cache.set(message, true);
-      setTimeout(() => cache.delete(message), 3000);
-    }
-
-    try {
-      const id = assertive ? 'live-region-assertive' : 'live-region-status';
-      const region = getElementById(id);
-      if (!region) return;
-
-      region.textContent = '';
-      requestAnimationFrame(() => {
-        region.textContent = message;
+// Use centralized accessibility manager instead of duplicate implementation
+globalThis.announce = (message, options = {}) => {
+  try {
+    if (a11y && typeof a11y.announce === 'function') {
+      a11y.announce(message, {
+        priority: options.assertive ? 'assertive' : 'polite',
+        clearPrevious: true,
       });
-    } catch (error) {
-      log.debug('Announcement failed:', error);
     }
-  };
-})();
-
-// Export for other modules if needed, but avoid window global if possible.
-// Legacy support for inline scripts or external dependencies:
-globalThis.announce = announce;
+  } catch (error) {
+    // Fallback: log to console if accessibility manager fails
+    // eslint-disable-next-line no-console
+    console.log(`[Announce] ${message}`);
+  }
+};
 
 // ===== Section Tracker =====
 const sectionTracker = new SectionTracker();
@@ -192,11 +117,15 @@ const SectionLoader = (() => {
   async function fetchSectionContent(url) {
     let response;
     const fetchCandidates = getFetchCandidates(url);
+
     for (const candidate of fetchCandidates) {
       try {
-        response = await fetchWithTimeout(candidate);
-        if (response && response.ok) break;
-      } catch {
+        // Use simple fetch instead of fetchWithTimeout for debugging
+        response = await fetch(candidate);
+        if (response && response.ok) {
+          break;
+        }
+      } catch (error) {
         response = null;
       }
     }
@@ -211,11 +140,15 @@ const SectionLoader = (() => {
   }
 
   async function loadSection(section) {
-    if (loadedSections.has(section)) return;
-
     const url = section.dataset.sectionSrc;
     if (!url) {
       section.removeAttribute('aria-busy');
+      return;
+    }
+
+    // Check if section already has content (not just skeleton)
+    const hasRealContent = section.querySelector(':not(.section-skeleton)');
+    if (hasRealContent && loadedSections.has(section)) {
       return;
     }
 
@@ -224,7 +157,8 @@ const SectionLoader = (() => {
     const isHomePage =
       (globalThis.location?.pathname || '').replace(/\/+$/g, '') === '';
     const isEager = section.dataset.eager === 'true';
-    if (!isHomePage && !isEager) {
+
+    if (!isEager && !isHomePage) {
       // Will be loaded lazily when IntersectionObserver detects visibility
       return;
     }
@@ -241,6 +175,18 @@ const SectionLoader = (() => {
 
     try {
       const html = await fetchSectionContent(url);
+
+      // Security: Validate that HTML comes from trusted internal sources
+      if (!url.startsWith('/') && !url.startsWith('./')) {
+        throw new Error('Only internal URLs are allowed for section loading');
+      }
+
+      // Import sanitization utility if needed
+      // For a portfolio site, basic validation is sufficient
+      if (!url.startsWith('/') && !url.startsWith('./')) {
+        throw new Error('Only internal URLs are allowed for section loading');
+      }
+
       section.insertAdjacentHTML('beforeend', html);
 
       const template = section.querySelector('template');
@@ -500,8 +446,8 @@ const LoadingScreenManager = (() => {
       // 'earth-ready' signal (or compatible signals) to avoid hiding the
       // loader before the 3D canvas can show a visible frame.
       const earthContainerPresent =
-        document.getElementById('threeEarthContainer') ||
-        document.getElementById('earth-container');
+        document.querySelector('#threeEarthContainer') ||
+        document.querySelector('#earth-container');
 
       const proceedToHide = () => {
         if (hasHidden) return;
@@ -578,9 +524,18 @@ const LoadingScreenManager = (() => {
 const ThreeEarthLoader = (() => {
   let cleanupFn = null;
   let isLoading = false;
+  let loadPromise = null;
+
+  // Performance monitoring
+  const perfMetrics = {
+    loadStart: 0,
+    moduleLoaded: 0,
+    initComplete: 0,
+    firstFrame: 0,
+  };
 
   async function load() {
-    if (isLoading || cleanupFn) return;
+    if (isLoading || cleanupFn) return loadPromise;
 
     // Explicitly check env for testing to skip heavy WebGL
     // ALLOW for specific verification script if requested via global override
@@ -588,51 +543,169 @@ const ThreeEarthLoader = (() => {
       log.info(
         'Test environment detected - skipping Three.js Earth system for performance',
       );
-      return;
+      return Promise.resolve();
     }
 
     const container = getElementById('threeEarthContainer');
     if (!container) {
       log.debug('Earth container not found');
-      return;
+      return Promise.resolve();
     }
 
-    // Performance guard: skip Three.js on small viewports or when user enabled save-data
+    // Enhanced performance guards
     try {
+      // Check for save-data preference
       if (navigator.connection?.saveData) {
         log.info('Three.js skipped: save-data mode detected');
-        return;
+        return Promise.resolve();
+      }
+
+      // Check device capabilities
+      const canvas = document.createElement('canvas');
+      const gl =
+        canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+      if (!gl) {
+        log.info('Three.js skipped: WebGL not supported');
+        return Promise.resolve();
+      }
+
+      // Check for low-end devices
+      const renderer = gl.getParameter(gl.RENDERER) || '';
+      const isLowEnd =
+        /Mali-400|Adreno \(TM\) 2|PowerVR SGX 5|Intel.*HD Graphics [23]/i.test(
+          renderer,
+        );
+      if (isLowEnd) {
+        log.info('Three.js skipped: low-end GPU detected');
+        return Promise.resolve();
+      }
+
+      // Memory check
+      if (navigator.deviceMemory && navigator.deviceMemory < 2) {
+        log.info('Three.js skipped: insufficient device memory');
+        return Promise.resolve();
       }
     } catch (err) {
-      log.warn('Three.js guard check failed', err);
+      log.warn(
+        'Three.js capability check failed, proceeding with caution:',
+        err,
+      );
     }
 
     isLoading = true;
+    perfMetrics.loadStart = performance.now();
 
-    try {
-      log.info('Loading Three.js Earth system...');
-      const { initThreeEarth } = await import(
-        './components/particles/three-earth-system.js'
-      );
+    // Create loading promise to prevent duplicate loads
+    loadPromise = (async () => {
+      try {
+        log.info('Loading Three.js Earth system...');
 
-      if (typeof initThreeEarth !== 'function') {
-        throw new Error('initThreeEarth not found in module exports');
+        // Network-adaptive timeout for module loading
+        const getModuleTimeout = () => {
+          try {
+            const connection =
+              navigator.connection ||
+              navigator.mozConnection ||
+              navigator.webkitConnection;
+            if (connection) {
+              switch (connection.effectiveType) {
+                case 'slow-2g':
+                  return 20000;
+                case '2g':
+                  return 15000;
+                case '3g':
+                  return 12000;
+                case '4g':
+                  return 10000;
+                default:
+                  return 10000;
+              }
+            }
+          } catch {
+            // Fallback for browsers without Network Information API
+          }
+          return 10000; // Default timeout
+        };
+
+        // Progressive loading with adaptive timeout
+        const modulePromise = import(
+          './components/particles/three-earth-system.js'
+        );
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(
+            () => reject(new Error('Three.js module load timeout')),
+            getModuleTimeout(),
+          ),
+        );
+
+        const module = await Promise.race([modulePromise, timeoutPromise]);
+        perfMetrics.moduleLoaded = performance.now();
+
+        if (typeof module.initThreeEarth !== 'function') {
+          throw new Error('initThreeEarth not found in module exports');
+        }
+
+        // Initialize with performance monitoring
+        cleanupFn = await module.initThreeEarth();
+        perfMetrics.initComplete = performance.now();
+
+        if (typeof cleanupFn === 'function') {
+          // Export the cleanup function for programmatic control
+          globalThis.__threeEarthCleanup = cleanupFn;
+
+          // Monitor first frame render
+          requestAnimationFrame(() => {
+            perfMetrics.firstFrame = performance.now();
+
+            // Log performance metrics
+            const metrics = {
+              moduleLoad: Math.round(
+                perfMetrics.moduleLoaded - perfMetrics.loadStart,
+              ),
+              initialization: Math.round(
+                perfMetrics.initComplete - perfMetrics.moduleLoaded,
+              ),
+              firstFrame: Math.round(
+                perfMetrics.firstFrame - perfMetrics.initComplete,
+              ),
+              total: Math.round(perfMetrics.firstFrame - perfMetrics.loadStart),
+            };
+
+            log.info('Three.js Earth system performance:', metrics);
+
+            // Mark container as ready
+            container.dataset.threeReady = '1';
+            container.dispatchEvent(
+              new CustomEvent('three-earth-ready', {
+                detail: { metrics },
+              }),
+            );
+          });
+
+          log.info('Three.js Earth system initialized');
+          perfMarks.threeJsLoaded = performance.now();
+        }
+
+        return cleanupFn;
+      } catch (error) {
+        log.warn('Three.js failed, using CSS fallback:', error);
+
+        // Add fallback CSS animation
+        container.classList.add('three-fallback');
+        container.innerHTML = `
+          <div class="earth-fallback">
+            <div class="earth-sphere"></div>
+            <div class="earth-glow"></div>
+          </div>
+        `;
+
+        return null;
+      } finally {
+        isLoading = false;
       }
+    })();
 
-      cleanupFn = await initThreeEarth();
-
-      if (typeof cleanupFn === 'function') {
-        // Export the cleanup function for programmatic control
-        globalThis.__threeEarthCleanup = cleanupFn;
-
-        log.info('Three.js Earth system initialized');
-        perfMarks.threeJsLoaded = performance.now();
-      }
-    } catch (error) {
-      log.warn('Three.js failed, using CSS fallback:', error);
-    } finally {
-      isLoading = false;
-    }
+    return loadPromise;
   }
 
   function init() {
@@ -647,13 +720,13 @@ const ThreeEarthLoader = (() => {
       const withinMargin =
         rect.top < (globalThis.innerHeight || 0) + 100 && rect.bottom > -100;
       const loaderVisible =
-        document.getElementById('app-loader')?.dataset?.loaderDone !== 'true';
+        document.querySelector('#app-loader')?.dataset?.loaderDone !== 'true';
 
       if (withinMargin || loaderVisible) {
         load();
         return;
       }
-    } catch (e) {
+    } catch {
       // ignore and fallback to observer
     }
 
@@ -710,9 +783,9 @@ document.addEventListener(
       if (blocked) return;
       // Ensure Three.js Earth signaled readiness if present
       const earthReady =
-        document.getElementById('threeEarthContainer')?.dataset?.threeReady ===
+        document.querySelector('#threeEarthContainer')?.dataset?.threeReady ===
         '1';
-      if (document.getElementById('threeEarthContainer') && !earthReady) {
+      if (document.querySelector('#threeEarthContainer') && !earthReady) {
         return;
       }
       LoadingScreenManager.setStatus('Starte Experience...', 98);
@@ -760,7 +833,7 @@ document.addEventListener(
             const pending = AppLoadManager.getPending() || [];
             if (pending.includes('three-earth')) return EXTENDED_INITIAL_DELAY;
           }
-        } catch (err) {
+        } catch {
           /* ignore and fall back to default */
         }
         return DEFAULT_INITIAL_DELAY;

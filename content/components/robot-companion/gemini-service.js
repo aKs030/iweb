@@ -5,7 +5,8 @@
 
 const MODEL_NAME = 'gemini-2.5-flash-preview-09-2025';
 const getBaseUrl = (apiKey) =>
-  `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${apiKey || ''
+  `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${
+    apiKey || ''
   }`; // server-only: pass API key when calling from server side
 
 /**
@@ -21,7 +22,7 @@ const log = createLogger('GeminiService');
 async function getGeminiResponse(
   prompt,
   systemInstruction = 'Du bist ein hilfreicher Roboter-Begleiter.',
-  options = {},
+  _options = {}, // Prefix with underscore to indicate intentionally unused
 ) {
   const payload = {
     contents: [{ parts: [{ text: prompt }] }],
@@ -34,11 +35,15 @@ async function getGeminiResponse(
   const isRunningInBrowser = () =>
     globalThis.fetch !== undefined && globalThis.window !== undefined;
 
-  const doBrowserRequest = async (promptArg, systemArg, opts) => {
+  const doBrowserRequest = async (promptArg, systemArg, _opts) => {
     const r = await fetch('/api/gemini', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt: promptArg, systemInstruction: systemArg, options: opts }),
+      body: JSON.stringify({
+        prompt: promptArg,
+        systemInstruction: systemArg,
+        options: _options,
+      }),
     });
     if (!r.ok) {
       const txt = await r.text();
@@ -78,7 +83,7 @@ async function getGeminiResponse(
         // Letzter Versuch fehlgeschlagen
         log.error(
           'Gemini API Fehler nach Max Retries: ' +
-          (error && error.message ? error.message : String(error)),
+            (error && error.message ? error.message : String(error)),
         );
         return 'Entschuldigung, ich habe gerade Verbindungsprobleme. Bitte versuche es später noch einmal.';
       }

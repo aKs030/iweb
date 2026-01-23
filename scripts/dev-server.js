@@ -121,7 +121,13 @@ function serveFile(filePath, res) {
         res.end('Server Error');
       }
     } else {
-      res.writeHead(200, { 'Content-Type': mimeType });
+      // Add CORS headers for development
+      res.writeHead(200, {
+        'Content-Type': mimeType,
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      });
       res.end(content);
     }
   });
@@ -134,6 +140,17 @@ const server = http.createServer((req, res) => {
   let url = req.url.split('?')[0]; // Remove query string
 
   console.log(`${new Date().toISOString()} - ${req.method} ${url}`);
+
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    res.writeHead(200, {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    });
+    res.end();
+    return;
+  }
 
   // Apply redirects
   const redirect = applyRedirects(url, redirects);

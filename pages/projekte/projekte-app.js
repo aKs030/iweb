@@ -3,24 +3,22 @@ import {
   makeAbortController,
 } from '/content/utils/shared-utilities.js';
 import { createProjectsData } from './projects-data.js';
-
+import {
+  useProjectUrl,
+  useIframeScaling,
+} from '/content/utils/project-hooks.js';
 const log = createLogger('projekte-app');
-
 /* global React, ReactDOM */
 /**
  * Interactive Projects Module
  * Refactored to use 'htm' for cleaner, JSX-like syntax without a build step.
  * @version 2.0.0
  */
-
 // Use jsDelivr CDN (allowed by CSP in content/head/head.html) instead of unpkg
 import htm from 'https://cdn.jsdelivr.net/npm/htm@3.1.1/dist/htm.module.js';
-
 // Bind htm to React's createElement function
 const html = htm.bind(React.createElement);
-
 // --- Components ---
-
 // Base Icon Component
 const IconBase = ({ children, className, style, ...props }) => html`
   <svg
@@ -40,7 +38,6 @@ const IconBase = ({ children, className, style, ...props }) => html`
     ${children}
   </svg>
 `;
-
 // Icons
 const ExternalLink = (props) => html`
   <${IconBase} ...${props}>
@@ -49,7 +46,6 @@ const ExternalLink = (props) => html`
     <line x1="10" x2="21" y1="14" y2="3" />
   <//>
 `;
-
 const Github = (props) => html`
   <${IconBase} ...${props}>
     <path
@@ -58,14 +54,12 @@ const Github = (props) => html`
     <path d="M9 18c-4.51 2-5-2-7-2" />
   <//>
 `;
-
 const ArrowDown = (props) => html`
   <${IconBase} ...${props}>
     <path d="M12 5v14" />
     <path d="m19 12-7 7-7-7" />
   <//>
 `;
-
 const MousePointerClick = (props) => html`
   <${IconBase} ...${props}>
     <path d="M14 4.1 12 6" />
@@ -77,7 +71,6 @@ const MousePointerClick = (props) => html`
     />
   <//>
 `;
-
 const Palette = (props) => html`
   <${IconBase} ...${props}>
     <circle cx="13.5" cy="6.5" r=".5" fill="currentColor" />
@@ -89,7 +82,6 @@ const Palette = (props) => html`
     />
   <//>
 `;
-
 const Binary = (props) => html`
   <${IconBase} ...${props}>
     <rect x="14" y="14" width="4" height="6" rx="2" />
@@ -100,7 +92,6 @@ const Binary = (props) => html`
     <path d="M14 4h2v6" />
   <//>
 `;
-
 const Gamepad2 = (props) => html`
   <${IconBase} ...${props}>
     <line x1="6" x2="10" y1="11" y2="11" />
@@ -112,7 +103,6 @@ const Gamepad2 = (props) => html`
     />
   <//>
 `;
-
 const ListTodo = (props) => html`
   <${IconBase} ...${props}>
     <rect x="3" y="5" width="6" height="6" rx="1" />
@@ -122,13 +112,11 @@ const ListTodo = (props) => html`
     <path d="M13 18h8" />
   <//>
 `;
-
 const Check = (props) => html`
   <${IconBase} ...${props}>
     <path d="M20 6 9 17l-5-5" />
   <//>
 `;
-
 // --- DATA ---
 // Import project data with icons
 const projects = createProjectsData(html, {
@@ -138,14 +126,12 @@ const projects = createProjectsData(html, {
   ListTodo,
   Check,
 });
-
 // --- APP ---
 function App() {
   const scrollToProjects = () => {
     const firstProject = document.getElementById('project-1');
     if (firstProject) firstProject.scrollIntoView({ behavior: 'smooth' });
   };
-
   // Modal preview state for opening apps in a popup
   const [modalOpen, setModalOpen] = React.useState(false);
   const [modalUrl, setModalUrl] = React.useState('');
@@ -158,84 +144,15 @@ function App() {
     if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
     toastTimerRef.current = setTimeout(() => setToastMsg(''), ms);
   };
-
-  const getDirectUrl = (project) => {
-    if (project.githubPath) {
-      try {
-        const url = new URL(project.githubPath);
-        if (url.host === 'github.com') {
-          const pathname = url.pathname;
-          const m = /^\/([^/]+)\/([^/]+)\/tree\/([^/]+)\/(.+)$/.exec(pathname);
-          if (m) {
-            const [, owner, repo, branch, path] = m;
-            return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}/index.html`;
-          }
-        }
-      } catch {
-        // Invalid URL, fall through
-      }
-    }
-    // fallback
-    if (project.appPath)
-      return project.appPath.endsWith('/')
-        ? project.appPath + 'index.html'
-        : project.appPath;
-    return project.githubPath || '';
-  };
-
-  const toRawGithackUrl = (ghUrl) => {
-    try {
-      const m = /github\.com\/([^/]+)\/([^/]+)\/tree\/([^/]+)\/(.+)$/.exec(
-        ghUrl,
-      );
-      if (m) {
-        const [, owner, repo, branch, path] = m;
-        return `https://raw.githack.com/${owner}/${repo}/${branch}/${path}/index.html`;
-      }
-    } catch {}
-    return '';
-  };
-
-  const toJsDelivrUrl = (ghUrl) => {
-    try {
-      const m = /github\.com\/([^/]+)\/([^/]+)\/tree\/([^/]+)\/(.+)$/.exec(
-        ghUrl,
-      );
-      if (m) {
-        const [, owner, repo, branch, path] = m;
-        return `https://cdn.jsdelivr.net/gh/${owner}/${repo}@${branch}/${path}/index.html`;
-      }
-    } catch {}
-    return '';
-  };
-
-  const testUrl = async (url, timeout = 2500) => {
-    if (!url) return false;
-    try {
-      const { controller, clearTimeout: clearCtrlTimeout } =
-        makeAbortController(timeout);
-      const res = await fetch(url, {
-        method: 'GET',
-        mode: 'cors',
-        signal: controller.signal,
-      });
-      clearCtrlTimeout();
-      return res?.ok;
-    } catch {
-      return false;
-    }
-  };
+  // Remove unused getDirectUrl function - functionality moved to resolveProjectUrl
 
   const openDirect = async (project) => {
-    // Try raw.githack first (embed-friendly), then jsDelivr, then fallback to raw.githubusercontent (new tab)
-    const gh = project.githubPath || '';
-    const rawGithack = gh ? toRawGithackUrl(gh) : '';
-    const jsDelivr = gh ? toJsDelivrUrl(gh) : '';
+    // Use the same URL resolution logic as the hook
+    const previewUrl = await resolveProjectUrl(project);
 
-    // prefer raw.githack
-    if (rawGithack && (await testUrl(rawGithack, 2500))) {
+    if (previewUrl) {
       setModalTitle(project.title);
-      setModalUrl(rawGithack);
+      setModalUrl(previewUrl);
       setIframeLoading(true);
       setModalOpen(true);
       try {
@@ -243,22 +160,8 @@ function App() {
       } catch {}
       return;
     }
-
-    // next try jsDelivr
-    if (jsDelivr && (await testUrl(jsDelivr, 2500))) {
-      setModalTitle(project.title);
-      setModalUrl(jsDelivr);
-      setIframeLoading(true);
-      setModalOpen(true);
-      try {
-        document.body.style.overflow = 'hidden';
-      } catch {}
-      return;
-    }
-
-    // fallback: open raw.githubusercontent or appPath in new tab
-    const direct =
-      getDirectUrl(project) || project.githubPath || project.appPath || '';
+    // fallback: open direct URL in new tab
+    const direct = project.appPath || project.githubPath || '';
     if (!direct) {
       showToast('Keine gültige App-URL vorhanden');
       return;
@@ -270,7 +173,55 @@ function App() {
       showToast('Öffnen im Tab fehlgeschlagen');
     }
   };
+  // Helper function to resolve project URL (similar to the hook but synchronous)
+  const resolveProjectUrl = async (project) => {
+    const gh = project.githubPath || '';
+    const candidates = [];
 
+    if (gh) {
+      // Simple URL transformation for GitHub paths
+      const match = gh.match(
+        /github\.com\/([^/]+)\/([^/]+)\/tree\/([^/]+)\/(.+)$/,
+      );
+      if (match) {
+        const [, owner, repo, branch, path] = match;
+        candidates.push(
+          `https://raw.githack.com/${owner}/${repo}/${branch}/${path}/index.html`,
+        );
+        candidates.push(
+          `https://cdn.jsdelivr.net/gh/${owner}/${repo}@${branch}/${path}/index.html`,
+        );
+      }
+    }
+
+    if (project.appPath) {
+      candidates.push(
+        project.appPath.endsWith('/')
+          ? project.appPath + 'index.html'
+          : project.appPath,
+      );
+    }
+
+    // Test URLs and return first working one
+    for (const url of candidates) {
+      if (!url) continue;
+      try {
+        const { controller, clearTimeout: clearCtrlTimeout } =
+          makeAbortController(2500);
+        const res = await fetch(url, {
+          method: 'HEAD',
+          mode: 'no-cors',
+          signal: controller.signal,
+        });
+        clearCtrlTimeout();
+        if (res?.ok || res?.type === 'opaque') return url;
+      } catch {
+        continue;
+      }
+    }
+
+    return null;
+  };
   const closeAppModal = () => {
     setModalOpen(false);
     setModalUrl('');
@@ -279,70 +230,12 @@ function App() {
       document.body.style.overflow = '';
     } catch {}
   };
-
   // Project mockup component: tries to resolve an embed-friendly URL (raw.githack/jsDelivr/appPath)
   // and renders an iframe scaled to fit the mockup box (no internal scroll). Falls back to the
   // project's existing `previewContent` when no embed URL is available.
   const ProjectMockup = ({ project }) => {
-    const wrapperRef = React.useRef(null);
-    const iframeRef = React.useRef(null);
-    const [previewUrl, setPreviewUrl] = React.useState(null);
-
-    React.useEffect(() => {
-      let canceled = false;
-      (async () => {
-        try {
-          const gh = project.githubPath || '';
-          const candidates = [];
-          if (gh) {
-            const raw = toRawGithackUrl(gh);
-            const js = toJsDelivrUrl(gh);
-            if (raw) candidates.push(raw);
-            if (js) candidates.push(js);
-          }
-          if (project.appPath)
-            candidates.push(
-              project.appPath.endsWith('/')
-                ? project.appPath + 'index.html'
-                : project.appPath,
-            );
-
-          for (const url of candidates) {
-            if (!url) continue;
-            if (await testUrl(url, 2500)) {
-              if (!canceled) setPreviewUrl(url);
-              return;
-            }
-          }
-        } catch {
-          // ignore
-        }
-      })();
-      return () => {
-        canceled = true;
-      };
-    }, [project]);
-
-    // Scale iframe to fit wrapper while keeping aspect ratio
-    React.useEffect(() => {
-      if (!previewUrl) return;
-      const wrapper = wrapperRef.current;
-      const iframe = iframeRef.current;
-      if (!wrapper || !iframe) return;
-      const baseW = 1024;
-      const baseH = 768;
-      const apply = () => {
-        const w = wrapper.clientWidth;
-        const h = wrapper.clientHeight;
-        const scale = Math.min(1, w / baseW, h / baseH);
-        iframe.style.transform = `scale(${scale})`;
-      };
-      apply();
-      const ro = new ResizeObserver(apply);
-      ro.observe(wrapper);
-      return () => ro.disconnect();
-    }, [previewUrl]);
-
+    const previewUrl = useProjectUrl(project);
+    const { wrapperRef, iframeRef } = useIframeScaling(previewUrl);
     return html`
       <div className="mockup-iframe-wrapper u-center" ref=${wrapperRef}>
         ${previewUrl
@@ -361,14 +254,12 @@ function App() {
       </div>
     `;
   };
-
   // Cleanup toast timer on unmount
   React.useEffect(() => {
     return () => {
       if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
     };
   }, []);
-
   return html`
     <${React.Fragment}>
       <!-- Hero Section -->
@@ -397,7 +288,6 @@ function App() {
           </div>
         </div>
       </section>
-
       <!-- Project Sections -->
       ${projects.map(
         (project) => html`
@@ -430,7 +320,6 @@ function App() {
                   </div>
                 </div>
               </div>
-
               <!-- Right Side (Content) -->
               <div className="project-info u-stack" style=${{ order: 1 }}>
                 <div className="project-header u-row">
@@ -524,7 +413,6 @@ function App() {
             </div>
           `
         : null}
-
       <!-- Contact Section -->
       <section className="snap-section contact-section" id="contact">
         <div className="container u-stack u-center">
@@ -553,7 +441,6 @@ function App() {
     <//>
   `;
 }
-
 // Init Function to be called from HTML
 // eslint-disable-next-line import/no-unused-modules -- used by the HTML module script in `pages/projekte/index.html`
 export function initProjectsApp() {

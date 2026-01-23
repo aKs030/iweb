@@ -209,37 +209,6 @@
   aspect-ratio: auto;
 }
 
-.three-earth-container .three-earth-fallback {
-  display: none;
-  box-sizing: border-box;
-  width: 100%;
-  max-width: 720px;
-  margin: 0 auto;
-  text-align: center;
-  padding: 1rem;
-}
-
-.three-earth-container.three-earth-unavailable .three-earth-fallback {
-  display: block;
-}
-
-.three-earth-container canvas {
-  opacity: 0;
-  transition: opacity 320ms ease;
-}
-
-.three-earth-container[data-three-ready='1'] canvas {
-  opacity: 1;
-}
-
-.three-earth-container:has(canvas) .three-earth-fallback {
-  display: none;
-}
-
-.three-earth-container:has(canvas) canvas {
-  opacity: 1;
-}
-
 .three-earth-fallback__inner img {
   width: 100%;
   height: auto;

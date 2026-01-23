@@ -5,21 +5,9 @@
   "main": "index.js",
   "scripts": {
     "iweb": "node scripts/dev-server.js",
-    "dev": "npm run iweb",
     "start": "npm run iweb",
-    "sync:gtm": "node scripts/sync-gtm-with-site-config.js",
     "format": "prettier --write \"**/*.{js,css,json,md,html,htm}\"",
-    "lint": "eslint \"**/*.{js,ts}\" --fix",
-    "config:validate": "node scripts/config-validate.js",
-    "images:build": "node scripts/generate-og-responsive-images.js && node scripts/generate-image-sitemap.js && node scripts/generate-videos-jsonld.js && node scripts/generate-blog-pages.js",
-    "images:sitemap": "node scripts/generate-image-sitemap.js",
-    "videos:schema": "node scripts/generate-videos-jsonld.js",
-    "videos:pages": "node scripts/generate-video-pages.js",
-    "blog:pages": "node scripts/generate-blog-pages.js",
-    "blog:migrate": "node scripts/migrate-blog-data-to-markdown.js",
-    "videos:links": "node scripts/insert-video-links.js",
-    "videos:check-urls": "node scripts/check-video-urls.js",
-    "videos:mirror-thumbs": "node scripts/mirror-video-thumbnails.js"
+    "lint": "eslint \"**/*.{js,ts}\" --fix"
   },
   "lint-staged": {
     "*.{js,ts}": [
@@ -31,16 +19,12 @@
     ]
   },
   "devDependencies": {
-    "depcheck": "^1.4.7",
     "eslint": "^8.40.0",
     "eslint-config-prettier": "^8.10.2",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-prettier": "^4.2.5",
-    "gray-matter": "^4.0.3",
     "lint-staged": "^16.2.7",
-    "marked": "^5.1.2",
-    "prettier": "^2.8.8",
-    "sharp": "^0.34.5"
+    "prettier": "^2.8.8"
   },
   "repository": {
     "type": "git",
