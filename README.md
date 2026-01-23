@@ -180,7 +180,8 @@ Production:   https://www.abdulkerimsesli.de
 | `docs/MAINTENANCE.md`               | Maintenance guide    |
 | `docs/ANALYTICS.md`                 | Analytics setup      |
 | `docs/SEO-OPTIMIERUNG.md`           | SEO optimization     |
-| `docs/SECURITY-CSP.md`              | Security & CSP       |
+| `docs/SECURITY.md`                  | Security guide       |
+| `docs/SECURITY-CSP.md`              | CSP implementation   |
 | `docs/SCHEMA-VALIDATOR-GUIDE.md`    | Schema validation    |
 | `docs/VALIDATOR-QUICK-REFERENCE.md` | Validator reference  |
 
@@ -207,11 +208,15 @@ Production:   https://www.abdulkerimsesli.de
 
 ## 🔒 Security
 
-- ✅ HTTPS enforced
-- ✅ CSP-ready
-- ✅ XSS protection (DOMPurify)
-- ✅ Secure cookies
-- ✅ No inline scripts
+- ✅ **HTTPS enforced** - Strict Transport Security enabled
+- ✅ **Content Security Policy** - Report-only mode active
+- ✅ **API Key Protection** - Cloudflare Worker proxy for YouTube API
+- ✅ **XSS Protection** - DOMPurify sanitization
+- ✅ **Security Headers** - X-Frame-Options, X-Content-Type-Options, etc.
+- ✅ **Production Logging** - No sensitive data in console
+- ✅ **0 Vulnerabilities** - All dependencies audited
+
+**See:** `docs/SECURITY.md` for detailed security documentation
 
 ---
 
