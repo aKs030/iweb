@@ -1,0 +1,19 @@
+name = "youtube-api-proxy"
+main = "index.js"
+compatibility_date = "2025-01-23"
+
+# Routes for production
+routes = [
+  { pattern = "www.abdulkerimsesli.de/api/youtube/*", zone_name = "abdulkerimsesli.de" },
+  { pattern = "abdulkerimsesli.de/api/youtube/*", zone_name = "abdulkerimsesli.de" }
+]
+
+# Environment variables (secrets set via CLI)
+# wrangler secret put YOUTUBE_API_KEY
+
+[env.production]
+name = "youtube-api-proxy"
+routes = [
+  { pattern = "www.abdulkerimsesli.de/api/youtube/*", zone_name = "abdulkerimsesli.de" },
+  { pattern = "abdulkerimsesli.de/api/youtube/*", zone_name = "abdulkerimsesli.de" }
+]
