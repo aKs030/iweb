@@ -83,7 +83,7 @@ async function loadConfig() {
     }
   } catch (e) {
     // Non-fatal — videos.js will handle absence of key gracefully
-    // use global iwebLogger or console as fallback when `log` isn't available
+    // use global iwebLogger or log as fallback when `log` isn't available
     if (typeof log !== 'undefined' && typeof log.warn === 'function') {
       log.warn('[videos-config-loader] Could not load split parts:', e);
     } else if (
@@ -94,9 +94,8 @@ async function loadConfig() {
         '[videos-config-loader] Could not load split parts:',
         e,
       );
-    } else {
-      console.warn('[videos-config-loader] Could not load split parts:', e);
     }
+    // Fallback removed - logger should always be available
   }
 }
 
