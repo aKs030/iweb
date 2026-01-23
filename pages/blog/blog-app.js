@@ -118,7 +118,7 @@ async function loadPostsData(seedPosts = []) {
         try {
           const res = await fetch(`/pages/blog/${id}/index.html`);
           if (res.ok) return parseArticleHtml(await res.text(), id);
-        } catch (e) {
+        } catch {
           return null;
         }
       }),

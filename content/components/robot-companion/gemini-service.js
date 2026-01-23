@@ -22,7 +22,7 @@ const log = createLogger('GeminiService');
 async function getGeminiResponse(
   prompt,
   systemInstruction = 'Du bist ein hilfreicher Roboter-Begleiter.',
-  options = {},
+  _options = {},
 ) {
   const payload = {
     contents: [{ parts: [{ text: prompt }] }],

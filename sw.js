@@ -73,7 +73,7 @@ self.addEventListener('activate', (event) => {
   if ('navigationPreload' in self.registration) {
     try {
       self.registration.navigationPreload.enable();
-    } catch (e) {
+    } catch {
       // Ignore
     }
   }

@@ -32,7 +32,7 @@ export function upsertHeadLink({
     if (typeof onload === 'function') el.onload = onload;
     document.head.appendChild(el);
     return el;
-  } catch (e) {
+  } catch {
     // Silent fallback
     return null;
   }
@@ -55,7 +55,7 @@ export function upsertMeta({ name, property, content }) {
     el.setAttribute('content', content);
     document.head.appendChild(el);
     return el;
-  } catch (e) {
+  } catch {
     return null;
   }
 }

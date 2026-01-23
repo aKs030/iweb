@@ -4,9 +4,12 @@
  * Vereint alle Footer-Funktionen in einer Datei
  */
 
-import { createLogger, CookieManager, debounce } from '/content/utils/shared-utilities.js';
+import {
+  createLogger,
+  CookieManager,
+  debounce,
+} from '/content/utils/shared-utilities.js';
 import { a11y } from '/content/utils/accessibility-manager.js';
-import { createObserver } from '/content/utils/intersection-observer.js';
 
 const log = createLogger('FooterApp');
 
@@ -121,9 +124,14 @@ const GlobalClose = (() => {
       const isMobile = globalThis.matchMedia?.('(max-width: 768px)')?.matches;
       if (isMobile) {
         globalThis.addEventListener('scroll', onUserScroll, { passive: true });
-        globalThis.addEventListener('touchmove', onUserScroll, { passive: true });
+        globalThis.addEventListener('touchmove', onUserScroll, {
+          passive: true,
+        });
       } else {
-        document.addEventListener('click', onDocClick, { capture: true, passive: true });
+        document.addEventListener('click', onDocClick, {
+          capture: true,
+          passive: true,
+        });
         globalThis.addEventListener('wheel', onUserScroll, { passive: true });
       }
       bound = true;
@@ -142,7 +150,9 @@ const GlobalClose = (() => {
 // ===== Analytics =====
 const GoogleAnalytics = {
   load() {
-    const blockedScripts = document.querySelectorAll('script[data-consent="required"]');
+    const blockedScripts = document.querySelectorAll(
+      'script[data-consent="required"]',
+    );
     if (blockedScripts.length === 0) return;
     blockedScripts.forEach((script) => {
       const newScript = document.createElement('script');
@@ -183,7 +193,7 @@ function updateGtagConsent(input = true) {
       };
     }
     gtag('consent', 'update', payload);
-  } catch (e) {
+  } catch {
     /* ignore */
   }
 }
@@ -228,13 +238,17 @@ class ConsentBanner {
     globalThis.dataLayer.push({ event: 'consentGranted' });
     updateGtagConsent(true);
     GoogleAnalytics.load();
-    a11y?.announce('Cookie-Präferenz: Alle Cookies akzeptiert', { priority: 'polite' });
+    a11y?.announce('Cookie-Präferenz: Alle Cookies akzeptiert', {
+      priority: 'polite',
+    });
   }
 
   reject() {
     this.elements.banner.classList.add('hidden');
     CookieManager.set('cookie_consent', 'rejected');
-    a11y?.announce('Cookie-Präferenz: Nur notwendige Cookies akzeptiert', { priority: 'polite' });
+    a11y?.announce('Cookie-Präferenz: Nur notwendige Cookies akzeptiert', {
+      priority: 'polite',
+    });
   }
 }
 
@@ -269,10 +283,14 @@ const CookieSettings = (() => {
     document.body.classList.add('footer-expanded');
     elements.cookieView.classList.remove('hidden');
     if (elements.normalContent) elements.normalContent.style.display = 'none';
-    if (elements.triggerBtn) elements.triggerBtn.setAttribute('aria-expanded', 'true');
+    if (elements.triggerBtn)
+      elements.triggerBtn.setAttribute('aria-expanded', 'true');
 
     requestAnimationFrame(() =>
-      globalThis.scrollTo({ top: document.body.scrollHeight, behavior: 'auto' })
+      globalThis.scrollTo({
+        top: document.body.scrollHeight,
+        behavior: 'auto',
+      }),
     );
 
     ProgrammaticScroll.create(CONSTANTS.SCROLL_MARK_DURATION);
@@ -283,19 +301,31 @@ const CookieSettings = (() => {
     elements.closeBtn?.addEventListener('click', close);
     elements.rejectAllBtn?.addEventListener('click', () => {
       CookieManager.set('cookie_consent', 'rejected');
-      CookieManager.set('cookie_consent_detail', JSON.stringify({ analytics: false, ad_personalization: false }));
+      CookieManager.set(
+        'cookie_consent_detail',
+        JSON.stringify({ analytics: false, ad_personalization: false }),
+      );
       CookieManager.deleteAnalytics();
       updateGtagConsent(false);
-      a11y?.announce('Cookie-Einstellungen: Nur notwendige Cookies aktiv', { priority: 'polite' });
+      a11y?.announce('Cookie-Einstellungen: Nur notwendige Cookies aktiv', {
+        priority: 'polite',
+      });
       close();
       domCache.get('#cookie-consent-banner')?.classList.add('hidden');
     });
     elements.acceptSelectedBtn?.addEventListener('click', () => {
       const analyticsEnabled = !!elements.analyticsToggle?.checked;
-      const adPersonalizationEnabled = !!elements.adPersonalizationToggle?.checked;
-      const detail = { analytics: analyticsEnabled, ad_personalization: adPersonalizationEnabled };
+      const adPersonalizationEnabled =
+        !!elements.adPersonalizationToggle?.checked;
+      const detail = {
+        analytics: analyticsEnabled,
+        ad_personalization: adPersonalizationEnabled,
+      };
       CookieManager.set('cookie_consent_detail', JSON.stringify(detail));
-      CookieManager.set('cookie_consent', analyticsEnabled || adPersonalizationEnabled ? 'accepted' : 'rejected');
+      CookieManager.set(
+        'cookie_consent',
+        analyticsEnabled || adPersonalizationEnabled ? 'accepted' : 'rejected',
+      );
       globalThis.dataLayer = globalThis.dataLayer || [];
       globalThis.dataLayer.push({ event: 'consentGranted', detail });
       updateGtagConsent({
@@ -306,18 +336,36 @@ const CookieSettings = (() => {
       });
       if (analyticsEnabled) GoogleAnalytics.load();
       else CookieManager.deleteAnalytics();
-      a11y?.announce(analyticsEnabled ? 'Cookie-Einstellungen gespeichert: Analyse aktiviert' : 'Cookie-Einstellungen gespeichert: Analyse deaktiviert', { priority: 'polite' });
+      a11y?.announce(
+        analyticsEnabled
+          ? 'Cookie-Einstellungen gespeichert: Analyse aktiviert'
+          : 'Cookie-Einstellungen gespeichert: Analyse deaktiviert',
+        { priority: 'polite' },
+      );
       close();
       domCache.get('#cookie-consent-banner')?.classList.add('hidden');
     });
     elements.acceptAllBtn?.addEventListener('click', () => {
       CookieManager.set('cookie_consent', 'accepted');
-      CookieManager.set('cookie_consent_detail', JSON.stringify({ analytics: true, ad_personalization: true }));
+      CookieManager.set(
+        'cookie_consent_detail',
+        JSON.stringify({ analytics: true, ad_personalization: true }),
+      );
       globalThis.dataLayer = globalThis.dataLayer || [];
-      globalThis.dataLayer.push({ event: 'consentGranted', detail: { analytics: true, ad_personalization: true } });
-      updateGtagConsent({ analytics_storage: 'granted', ad_storage: 'granted', ad_user_data: 'granted', ad_personalization: 'granted' });
+      globalThis.dataLayer.push({
+        event: 'consentGranted',
+        detail: { analytics: true, ad_personalization: true },
+      });
+      updateGtagConsent({
+        analytics_storage: 'granted',
+        ad_storage: 'granted',
+        ad_user_data: 'granted',
+        ad_personalization: 'granted',
+      });
       GoogleAnalytics.load();
-      a11y?.announce('Cookie-Einstellungen: Alle Cookies aktiviert', { priority: 'polite' });
+      a11y?.announce('Cookie-Einstellungen: Alle Cookies aktiviert', {
+        priority: 'polite',
+      });
       close();
       domCache.get('#cookie-consent-banner')?.classList.add('hidden');
     });
@@ -327,8 +375,11 @@ const CookieSettings = (() => {
       const raw = CookieManager.get('cookie_consent_detail');
       if (raw) {
         const parsed = JSON.parse(raw);
-        if (elements.analyticsToggle) elements.analyticsToggle.checked = !!parsed.analytics;
-        if (elements.adPersonalizationToggle) elements.adPersonalizationToggle.checked = !!parsed.ad_personalization;
+        if (elements.analyticsToggle)
+          elements.analyticsToggle.checked = !!parsed.analytics;
+        if (elements.adPersonalizationToggle)
+          elements.adPersonalizationToggle.checked =
+            !!parsed.ad_personalization;
       }
     } catch (e) {
       /* ignore */
@@ -368,7 +419,8 @@ function closeFooter() {
   if (cookieView) cookieView.classList.add('hidden');
 
   document.documentElement.style.removeProperty('scroll-snap-type');
-  if (globalThis.footerScrollHandler) globalThis.footerScrollHandler.expanded = false;
+  if (globalThis.footerScrollHandler)
+    globalThis.footerScrollHandler.expanded = false;
   GlobalClose.unbind();
   a11y?.releaseFocus();
 }
@@ -387,7 +439,9 @@ class ScrollHandler {
 
   init() {
     const footer = domCache.get('#site-footer');
-    let trigger = domCache.get('#footer-trigger-zone') || document.getElementById('footer-trigger-zone');
+    let trigger =
+      domCache.get('#footer-trigger-zone') ||
+      document.getElementById('footer-trigger-zone');
 
     if (!trigger) {
       trigger = document.createElement('div');
@@ -407,7 +461,9 @@ class ScrollHandler {
 
     if (!footer || !trigger) return;
 
-    footer.querySelector('.footer-minimized')?.classList.remove('footer-hidden');
+    footer
+      .querySelector('.footer-minimized')
+      ?.classList.remove('footer-hidden');
     footer.querySelector('.footer-maximized')?.classList.add('footer-hidden');
 
     const isDesktop = globalThis.matchMedia?.('(min-width: 769px)')?.matches;
@@ -418,14 +474,21 @@ class ScrollHandler {
     this.observer = new IntersectionObserver(
       (entries) => {
         const entry = entries[0];
-        if (!entry || (!entry.isIntersecting && ProgrammaticScroll.hasActive())) return;
+        if (!entry || (!entry.isIntersecting && ProgrammaticScroll.hasActive()))
+          return;
 
-        const shouldExpand = entry.isIntersecting && entry.intersectionRatio >= expandThreshold;
-        if (!shouldExpand && this.expanded && entry.intersectionRatio > collapseThreshold) return;
+        const shouldExpand =
+          entry.isIntersecting && entry.intersectionRatio >= expandThreshold;
+        if (
+          !shouldExpand &&
+          this.expanded &&
+          entry.intersectionRatio > collapseThreshold
+        )
+          return;
 
         this.toggleExpansion(shouldExpand);
       },
-      { rootMargin, threshold: [collapseThreshold, expandThreshold] }
+      { rootMargin, threshold: [collapseThreshold, expandThreshold] },
     );
 
     this.observer.observe(trigger);
@@ -434,11 +497,14 @@ class ScrollHandler {
       this.observer?.disconnect();
       this.init();
     }, 150);
-    globalThis.addEventListener('resize', this._resizeHandler, { passive: true });
+    globalThis.addEventListener('resize', this._resizeHandler, {
+      passive: true,
+    });
   }
 
   toggleExpansion(shouldExpand) {
-    const footer = domCache.get('#site-footer') || document.querySelector('#site-footer');
+    const footer =
+      domCache.get('#site-footer') || document.querySelector('#site-footer');
     if (!footer) return;
 
     const min = footer.querySelector('.footer-minimized');
@@ -465,7 +531,10 @@ class ScrollHandler {
 
     if (!shouldExpand && this.expanded) {
       const now = Date.now();
-      const delay = now < this._lockUntil ? this._lockUntil - now + CONSTANTS.COLLAPSE_DEBOUNCE_MS : CONSTANTS.COLLAPSE_DEBOUNCE_MS;
+      const delay =
+        now < this._lockUntil
+          ? this._lockUntil - now + CONSTANTS.COLLAPSE_DEBOUNCE_MS
+          : CONSTANTS.COLLAPSE_DEBOUNCE_MS;
       if (this._collapseTimer) clearTimeout(this._collapseTimer);
       this._collapseTimer = setTimeout(() => {
         closeFooter();
@@ -500,9 +569,14 @@ class FooterLoader {
     }
 
     try {
-      const srcBase = container.dataset.footerSrc || '/content/components/footer/footer';
-      const isLocal = ['localhost', '127.0.0.1'].some((h) => location.hostname.includes(h)) || location.hostname.endsWith('.local');
-      const candidates = isLocal ? [srcBase + '.html', srcBase] : [srcBase, srcBase + '.html'];
+      const srcBase =
+        container.dataset.footerSrc || '/content/components/footer/footer';
+      const isLocal =
+        ['localhost', '127.0.0.1'].some((h) => location.hostname.includes(h)) ||
+        location.hostname.endsWith('.local');
+      const candidates = isLocal
+        ? [srcBase + '.html', srcBase]
+        : [srcBase, srcBase + '.html'];
 
       let response;
       for (const c of candidates) {
@@ -524,7 +598,9 @@ class FooterLoader {
       new ConsentBanner().init();
       new ScrollHandler().init();
 
-      document.dispatchEvent(new CustomEvent('footer:loaded', { detail: { timestamp: Date.now() } }));
+      document.dispatchEvent(
+        new CustomEvent('footer:loaded', { detail: { timestamp: Date.now() } }),
+      );
       return true;
     } catch (error) {
       log.error('Footer load failed', error);
@@ -545,7 +621,9 @@ class FooterLoader {
         e.preventDefault();
         const input = form.querySelector('#newsletter-email');
         if (input && !input.checkValidity()) {
-          a11y?.announce('Bitte gültige E-Mail eingeben', { priority: 'assertive' });
+          a11y?.announce('Bitte gültige E-Mail eingeben', {
+            priority: 'assertive',
+          });
           return;
         }
         const btn = form.querySelector('button[type="submit"]');
@@ -564,27 +642,33 @@ class FooterLoader {
     }
 
     // Event Delegation
-    document.addEventListener('click', (e) => {
-      const cookieTrigger = e.target.closest('[data-cookie-trigger]');
-      const footerMinClick = e.target.closest('.footer-minimized');
+    document.addEventListener(
+      'click',
+      (e) => {
+        const cookieTrigger = e.target.closest('[data-cookie-trigger]');
+        const footerMinClick = e.target.closest('.footer-minimized');
 
-      if (cookieTrigger) {
-        e.preventDefault();
-        CookieSettings.open();
-        return;
-      }
-
-      if (footerMinClick) {
-        const interactive = e.target.closest('a, button, input, textarea, select, [data-cookie-trigger]');
-        if (!interactive) {
+        if (cookieTrigger) {
           e.preventDefault();
-          if (globalThis.footerScrollHandler) {
-            globalThis.footerScrollHandler.toggleExpansion(true);
-          }
+          CookieSettings.open();
           return;
         }
-      }
-    }, { passive: false });
+
+        if (footerMinClick) {
+          const interactive = e.target.closest(
+            'a, button, input, textarea, select, [data-cookie-trigger]',
+          );
+          if (!interactive) {
+            e.preventDefault();
+            if (globalThis.footerScrollHandler) {
+              globalThis.footerScrollHandler.toggleExpansion(true);
+            }
+            return;
+          }
+        }
+      },
+      { passive: false },
+    );
 
     // Three-Showcase Button
     const showcaseBtn = domCache.get('#threeShowcaseBtn');
@@ -592,7 +676,11 @@ class FooterLoader {
       showcaseBtn.dataset.init = '1';
       showcaseBtn.addEventListener('click', () => {
         showcaseBtn.classList.add('active');
-        document.dispatchEvent(new CustomEvent('three-earth:showcase', { detail: { duration: 8000 } }));
+        document.dispatchEvent(
+          new CustomEvent('three-earth:showcase', {
+            detail: { duration: 8000 },
+          }),
+        );
         setTimeout(() => showcaseBtn.classList.remove('active'), 8000);
       });
     }
