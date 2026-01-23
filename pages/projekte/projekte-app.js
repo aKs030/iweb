@@ -1,10 +1,10 @@
 import {
   createLogger,
   makeAbortController,
-} from "/content/utils/shared-utilities.js";
-import { createProjectsData } from "./projects-data.js";
+} from '/content/utils/shared-utilities.js';
+import { createProjectsData } from './projects-data.js';
 
-const log = createLogger("projekte-app");
+const log = createLogger('projekte-app');
 
 /* global React, ReactDOM */
 /**
@@ -14,7 +14,7 @@ const log = createLogger("projekte-app");
  */
 
 // Use jsDelivr CDN (allowed by CSP in content/head/head.html) instead of unpkg
-import htm from "https://cdn.jsdelivr.net/npm/htm@3.1.1/dist/htm.module.js";
+import htm from 'https://cdn.jsdelivr.net/npm/htm@3.1.1/dist/htm.module.js';
 
 // Bind htm to React's createElement function
 const html = htm.bind(React.createElement);
@@ -142,28 +142,28 @@ const projects = createProjectsData(html, {
 // --- APP ---
 function App() {
   const scrollToProjects = () => {
-    const firstProject = document.getElementById("project-1");
-    if (firstProject) firstProject.scrollIntoView({ behavior: "smooth" });
+    const firstProject = document.getElementById('project-1');
+    if (firstProject) firstProject.scrollIntoView({ behavior: 'smooth' });
   };
 
   // Modal preview state for opening apps in a popup
   const [modalOpen, setModalOpen] = React.useState(false);
-  const [modalUrl, setModalUrl] = React.useState("");
-  const [modalTitle, setModalTitle] = React.useState("");
+  const [modalUrl, setModalUrl] = React.useState('');
+  const [modalTitle, setModalTitle] = React.useState('');
   const [iframeLoading, setIframeLoading] = React.useState(true);
-  const [toastMsg, setToastMsg] = React.useState("");
+  const [toastMsg, setToastMsg] = React.useState('');
   const toastTimerRef = React.useRef(null);
   const showToast = (msg, ms = 2600) => {
     setToastMsg(msg);
     if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
-    toastTimerRef.current = setTimeout(() => setToastMsg(""), ms);
+    toastTimerRef.current = setTimeout(() => setToastMsg(''), ms);
   };
 
   const getDirectUrl = (project) => {
     if (project.githubPath) {
       try {
         const url = new URL(project.githubPath);
-        if (url.host === "github.com") {
+        if (url.host === 'github.com') {
           const pathname = url.pathname;
           const m = /^\/([^/]+)\/([^/]+)\/tree\/([^/]+)\/(.+)$/.exec(pathname);
           if (m) {
@@ -177,10 +177,10 @@ function App() {
     }
     // fallback
     if (project.appPath)
-      return project.appPath.endsWith("/")
-        ? project.appPath + "index.html"
+      return project.appPath.endsWith('/')
+        ? project.appPath + 'index.html'
         : project.appPath;
-    return project.githubPath || "";
+    return project.githubPath || '';
   };
 
   const toRawGithackUrl = (ghUrl) => {
@@ -193,7 +193,7 @@ function App() {
         return `https://raw.githack.com/${owner}/${repo}/${branch}/${path}/index.html`;
       }
     } catch {}
-    return "";
+    return '';
   };
 
   const toJsDelivrUrl = (ghUrl) => {
@@ -206,7 +206,7 @@ function App() {
         return `https://cdn.jsdelivr.net/gh/${owner}/${repo}@${branch}/${path}/index.html`;
       }
     } catch {}
-    return "";
+    return '';
   };
 
   const testUrl = async (url, timeout = 2500) => {
@@ -215,8 +215,8 @@ function App() {
       const { controller, clearTimeout: clearCtrlTimeout } =
         makeAbortController(timeout);
       const res = await fetch(url, {
-        method: "GET",
-        mode: "cors",
+        method: 'GET',
+        mode: 'cors',
         signal: controller.signal,
       });
       clearCtrlTimeout();
@@ -228,9 +228,9 @@ function App() {
 
   const openDirect = async (project) => {
     // Try raw.githack first (embed-friendly), then jsDelivr, then fallback to raw.githubusercontent (new tab)
-    const gh = project.githubPath || "";
-    const rawGithack = gh ? toRawGithackUrl(gh) : "";
-    const jsDelivr = gh ? toJsDelivrUrl(gh) : "";
+    const gh = project.githubPath || '';
+    const rawGithack = gh ? toRawGithackUrl(gh) : '';
+    const jsDelivr = gh ? toJsDelivrUrl(gh) : '';
 
     // prefer raw.githack
     if (rawGithack && (await testUrl(rawGithack, 2500))) {
@@ -239,7 +239,7 @@ function App() {
       setIframeLoading(true);
       setModalOpen(true);
       try {
-        document.body.style.overflow = "hidden";
+        document.body.style.overflow = 'hidden';
       } catch {}
       return;
     }
@@ -251,32 +251,32 @@ function App() {
       setIframeLoading(true);
       setModalOpen(true);
       try {
-        document.body.style.overflow = "hidden";
+        document.body.style.overflow = 'hidden';
       } catch {}
       return;
     }
 
     // fallback: open raw.githubusercontent or appPath in new tab
     const direct =
-      getDirectUrl(project) || project.githubPath || project.appPath || "";
+      getDirectUrl(project) || project.githubPath || project.appPath || '';
     if (!direct) {
-      showToast("Keine gültige App-URL vorhanden");
+      showToast('Keine gültige App-URL vorhanden');
       return;
     }
     try {
-      window.open(direct, "_blank", "noopener");
-      showToast("App in neuem Tab geöffnet");
+      window.open(direct, '_blank', 'noopener');
+      showToast('App in neuem Tab geöffnet');
     } catch {
-      showToast("Öffnen im Tab fehlgeschlagen");
+      showToast('Öffnen im Tab fehlgeschlagen');
     }
   };
 
   const closeAppModal = () => {
     setModalOpen(false);
-    setModalUrl("");
-    setModalTitle("");
+    setModalUrl('');
+    setModalTitle('');
     try {
-      document.body.style.overflow = "";
+      document.body.style.overflow = '';
     } catch {}
   };
 
@@ -292,7 +292,7 @@ function App() {
       let canceled = false;
       (async () => {
         try {
-          const gh = project.githubPath || "";
+          const gh = project.githubPath || '';
           const candidates = [];
           if (gh) {
             const raw = toRawGithackUrl(gh);
@@ -302,8 +302,8 @@ function App() {
           }
           if (project.appPath)
             candidates.push(
-              project.appPath.endsWith("/")
-                ? project.appPath + "index.html"
+              project.appPath.endsWith('/')
+                ? project.appPath + 'index.html'
                 : project.appPath,
             );
 
@@ -392,7 +392,7 @@ function App() {
           <div className="btn-group u-row u-wrap">
             <button onClick=${scrollToProjects} className="btn btn-primary">
               Los geht's
-              <${ArrowDown} style=${{ width: "1rem", height: "1rem" }} />
+              <${ArrowDown} style=${{ width: '1rem', height: '1rem' }} />
             </button>
           </div>
         </div>
@@ -413,9 +413,9 @@ function App() {
                 className="group"
                 style=${{
                   order: 2,
-                  display: "flex",
-                  justifyContent: "center",
-                  position: "relative",
+                  display: 'flex',
+                  justifyContent: 'center',
+                  position: 'relative',
                 }}
               >
                 <div
@@ -453,7 +453,7 @@ function App() {
                     aria-label=${`App öffnen ${project.title}`}
                   >
                     <${ExternalLink}
-                      style=${{ width: "1rem", height: "1rem" }}
+                      style=${{ width: '1rem', height: '1rem' }}
                     />
                     App öffnen
                   </button>
@@ -464,7 +464,7 @@ function App() {
                     rel="noopener noreferrer"
                     aria-label=${`Code ${project.title} auf GitHub`}
                   >
-                    <${Github} style=${{ width: "1rem", height: "1rem" }} />
+                    <${Github} style=${{ width: '1rem', height: '1rem' }} />
                     Code
                   </a>
                 </div>
@@ -495,7 +495,7 @@ function App() {
                       target="_blank"
                       rel="noopener noreferrer"
                       className="btn btn-outline btn-small"
-                      style=${{ marginRight: "0.5rem" }}
+                      style=${{ marginRight: '0.5rem' }}
                     >
                       In neuem Tab öffnen
                     </a>
@@ -529,10 +529,10 @@ function App() {
       <!-- Contact Section -->
       <section className="snap-section contact-section" id="contact">
         <div className="container u-stack u-center">
-          <div style=${{ marginBottom: "2rem" }}>
+          <div style=${{ marginBottom: '2rem' }}>
             <div className="contact-icon-wrapper">
               <${MousePointerClick}
-                style=${{ width: "2.5rem", height: "2.5rem", color: "#60a5fa" }}
+                style=${{ width: '2.5rem', height: '2.5rem', color: '#60a5fa' }}
               />
             </div>
           </div>
@@ -544,7 +544,7 @@ function App() {
           <div className="btn-group u-row u-wrap">
             <button
               className="btn btn-primary"
-              style=${{ backgroundColor: "#2563eb", color: "white" }}
+              style=${{ backgroundColor: '#2563eb', color: 'white' }}
             >
               Schreib mir
             </button>
@@ -558,14 +558,14 @@ function App() {
 // Init Function to be called from HTML
 // eslint-disable-next-line import/no-unused-modules -- used by the HTML module script in `pages/projekte/index.html`
 export function initProjectsApp() {
-  const rootEl = document.getElementById("root");
+  const rootEl = document.getElementById('root');
   if (rootEl && window.ReactDOM && window.React) {
     const root = ReactDOM.createRoot(rootEl);
     root.render(html` <${App} /> `);
   } else {
     // React dependencies or root element missing - fail silently in production
-    if (typeof console !== "undefined" && log.error) {
-      log.error("React dependencies or root element missing");
+    if (typeof console !== 'undefined' && log.error) {
+      log.error('React dependencies or root element missing');
     }
   }
 }

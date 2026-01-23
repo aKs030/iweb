@@ -8,9 +8,9 @@ class AccessibilityManager {
     this.lastFocusedElement = null;
     // resolve MQLs safely
     this.reducedMotionMQL = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
+      '(prefers-reduced-motion: reduce)',
     );
-    this.highContrastMQL = window.matchMedia("(prefers-contrast: more)");
+    this.highContrastMQL = window.matchMedia('(prefers-contrast: more)');
     this.reducedMotion = this.reducedMotionMQL.matches;
     this.highContrast = this.highContrastMQL.matches;
 
@@ -30,7 +30,7 @@ class AccessibilityManager {
         this.updateAnimations();
       };
       this.reducedMotionMQL.addEventListener(
-        "change",
+        'change',
         this._onReducedMotionChange,
       );
 
@@ -39,7 +39,7 @@ class AccessibilityManager {
         this.updateContrast();
       };
       this.highContrastMQL.addEventListener(
-        "change",
+        'change',
         this._onHighContrastChange,
       );
     } catch {
@@ -76,7 +76,7 @@ class AccessibilityManager {
       if (this._onReducedMotionChange) {
         if (this.reducedMotionMQL.removeEventListener)
           this.reducedMotionMQL.removeEventListener(
-            "change",
+            'change',
             this._onReducedMotionChange,
           );
         else if (this.reducedMotionMQL.removeListener)
@@ -88,7 +88,7 @@ class AccessibilityManager {
       if (this._onHighContrastChange) {
         if (this.highContrastMQL.removeEventListener)
           this.highContrastMQL.removeEventListener(
-            "change",
+            'change',
             this._onHighContrastChange,
           );
         else if (this.highContrastMQL.removeListener)
@@ -98,7 +98,7 @@ class AccessibilityManager {
     } catch {}
     try {
       if (this._onKeyboardNav)
-        document.removeEventListener("keydown", this._onKeyboardNav);
+        document.removeEventListener('keydown', this._onKeyboardNav);
     } catch {}
     try {
       if (this._skipRemovers && this._skipRemovers.length)
@@ -108,34 +108,34 @@ class AccessibilityManager {
 
   setupKeyboardNav() {
     this._onKeyboardNav = (e) => {
-      if (e.key === "Escape") {
+      if (e.key === 'Escape') {
         this.handleEscape();
       }
 
-      if (e.key === "Tab" && this.focusTrapStack.length > 0) {
+      if (e.key === 'Tab' && this.focusTrapStack.length > 0) {
         this.handleTabInTrap(e);
       }
     };
-    document.addEventListener("keydown", this._onKeyboardNav);
+    document.addEventListener('keydown', this._onKeyboardNav);
   }
 
   setupSkipLinks() {
-    const skipLinks = document.querySelectorAll(".skip-link");
+    const skipLinks = document.querySelectorAll('.skip-link');
     this._skipRemovers = [];
     skipLinks.forEach((link) => {
       const _onSkipClick = (e) => {
         e.preventDefault();
-        const href = link.getAttribute("href");
+        const href = link.getAttribute('href');
         if (!href) return;
         const target = document.querySelector(href);
         if (!target) return;
-        target.setAttribute("tabindex", "-1");
+        target.setAttribute('tabindex', '-1');
         target.focus();
         target.addEventListener(
-          "blur",
+          'blur',
           () => {
             try {
-              target.removeAttribute("tabindex");
+              target.removeAttribute('tabindex');
             } catch {
               /* ignored */
             }
@@ -143,9 +143,9 @@ class AccessibilityManager {
           { once: true },
         );
       };
-      link.addEventListener("click", _onSkipClick);
+      link.addEventListener('click', _onSkipClick);
       this._skipRemovers.push(() =>
-        link.removeEventListener("click", _onSkipClick),
+        link.removeEventListener('click', _onSkipClick),
       );
     });
   }
@@ -214,19 +214,19 @@ class AccessibilityManager {
   handleEscape() {
     // Close cookie modal
     const cookieModal = document.querySelector(
-      ".footer-cookie-settings:not(.hidden)",
+      '.footer-cookie-settings:not(.hidden)',
     );
     if (cookieModal) {
-      const closeBtn = cookieModal.querySelector(".cookie-settings-close");
+      const closeBtn = cookieModal.querySelector('.cookie-settings-close');
       if (closeBtn) closeBtn.click();
       return;
     }
 
     // Close expanded footer (request close via event so footer module handles cleanup)
-    const footer = document.getElementById("site-footer");
-    if (footer && footer.classList.contains("footer-expanded")) {
+    const footer = document.getElementById('site-footer');
+    if (footer && footer.classList.contains('footer-expanded')) {
       try {
-        document.dispatchEvent(new CustomEvent("footer:requestClose"));
+        document.dispatchEvent(new CustomEvent('footer:requestClose'));
       } catch {
         /* ignore */
       }
@@ -235,10 +235,10 @@ class AccessibilityManager {
 
   updateAnimations() {
     if (this.reducedMotion) {
-      document.documentElement.style.setProperty("--transition-fast", "0s");
-      document.documentElement.style.setProperty("--transition-base", "0s");
-      document.documentElement.style.setProperty("--transition-smooth", "0s");
-      document.documentElement.style.setProperty("--transition-slow", "0s");
+      document.documentElement.style.setProperty('--transition-fast', '0s');
+      document.documentElement.style.setProperty('--transition-base', '0s');
+      document.documentElement.style.setProperty('--transition-smooth', '0s');
+      document.documentElement.style.setProperty('--transition-slow', '0s');
     } else {
       // Reset if not reduced motion — values come from CSS variables; this is a no-op here
     }
@@ -246,19 +246,19 @@ class AccessibilityManager {
 
   updateContrast() {
     if (this.highContrast) {
-      document.body.classList.add("high-contrast");
+      document.body.classList.add('high-contrast');
     } else {
-      document.body.classList.remove("high-contrast");
+      document.body.classList.remove('high-contrast');
     }
   }
 
   // Announce method — accepts priority: 'polite' | 'assertive'
-  announce(message, { priority = "polite", clearPrevious = true } = {}) {
+  announce(message, { priority = 'polite', clearPrevious = true } = {}) {
     if (!message) return;
     // If a global announce helper exists, prefer it (keeps dedupe/assertive behaviours centralized)
-    if (typeof window?.announce === "function") {
+    if (typeof window?.announce === 'function') {
       try {
-        window.announce(message, { assertive: priority === "assertive" });
+        window.announce(message, { assertive: priority === 'assertive' });
         return;
       } catch {
         /* continue fallback */
@@ -266,13 +266,13 @@ class AccessibilityManager {
     }
 
     const region =
-      priority === "assertive"
-        ? document.getElementById("live-region-assertive")
-        : document.getElementById("live-region-status");
+      priority === 'assertive'
+        ? document.getElementById('live-region-assertive')
+        : document.getElementById('live-region-status');
     if (!region) return;
 
     if (clearPrevious) {
-      region.textContent = "";
+      region.textContent = '';
     }
     // small delay for screen reader compatibility
     setTimeout(() => {

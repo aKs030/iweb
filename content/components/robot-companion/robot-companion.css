@@ -46,7 +46,7 @@
 
 .robot-avatar::after,
 .robot-avatar::before {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0;
   pointer-events: none;
@@ -450,7 +450,7 @@
 }
 
 .robot-bubble::after {
-  content: "";
+  content: '';
   position: absolute;
   bottom: -6px;
   right: 20px;
@@ -906,7 +906,7 @@
   border-radius: 8px;
   border-left: 3px solid #40e0d0;
   margin: 5px 0;
-  font-family: "Courier New", monospace;
+  font-family: 'Courier New', monospace;
   font-size: 0.85rem;
   line-height: 1.5;
   overflow-x: auto;
@@ -939,7 +939,7 @@
 }
 
 /* Game buttons special styling */
-.chat-option-btn[data-game="true"] {
+.chat-option-btn[data-game='true'] {
   background: linear-gradient(
     135deg,
     rgb(64 224 208 / 20%),
@@ -948,7 +948,7 @@
   border-color: #40e0d0;
 }
 
-.chat-option-btn[data-game="true"]:hover {
+.chat-option-btn[data-game='true']:hover {
   background: linear-gradient(
     135deg,
     rgb(64 224 208 / 30%),

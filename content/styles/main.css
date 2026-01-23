@@ -27,7 +27,7 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   transition:
     opacity 0.8s ease-in-out,
     visibility 0.8s ease-in-out;
@@ -57,7 +57,7 @@
 }
 
 .loader-logo::after {
-  content: "";
+  content: '';
   position: absolute;
   bottom: -5px;
   left: 0;
@@ -94,7 +94,7 @@
 }
 
 .progress-bar::after {
-  content: "";
+  content: '';
   position: absolute;
   top: 0;
   left: 0;
@@ -121,7 +121,7 @@
   font-size: 0.85rem;
   color: rgba(255, 255, 255, 0.6);
   margin-top: 0.5rem;
-  font-family: "Courier New", Courier, monospace;
+  font-family: 'Courier New', Courier, monospace;
 }
 
 .status-text {
@@ -148,7 +148,7 @@
 }
 
 .loader-spinner::before {
-  content: "";
+  content: '';
   position: absolute;
   top: -2px;
   left: 50%;
@@ -288,9 +288,9 @@ body {
   font-kerning: normal;
   font-variant-ligatures: common-ligatures contextual;
   font-feature-settings:
-    "kern" 1,
-    "liga" 1,
-    "calt" 1;
+    'kern' 1,
+    'liga' 1,
+    'calt' 1;
 }
 
 body {
@@ -366,7 +366,7 @@ body {
 }
 
 .section-title::after {
-  content: "";
+  content: '';
   position: absolute;
   bottom: -10px;
   left: 50%;

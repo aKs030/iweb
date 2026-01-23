@@ -33,7 +33,7 @@
 }
 
 .videos-main::before {
-  content: "";
+  content: '';
   position: absolute;
   top: 0;
   left: 0;
@@ -102,7 +102,7 @@ h1 {
 }
 
 .video-card::before {
-  content: "";
+  content: '';
   position: absolute;
   top: -2px;
   left: -2px;
@@ -373,7 +373,7 @@ h1 {
 
 .btn-subscribe::before,
 .btn-share::before {
-  content: "";
+  content: '';
   position: absolute;
   top: 50%;
   left: 50%;

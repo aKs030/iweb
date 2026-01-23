@@ -23,36 +23,36 @@ import {
   getElementById,
   EVENTS,
   addListener,
-} from "/content/utils/shared-utilities.js";
-import { upsertHeadLink } from "/content/utils/dom-helpers.js";
+} from '/content/utils/shared-utilities.js';
+import { upsertHeadLink } from '/content/utils/dom-helpers.js';
 
-const _log = createLogger("menu");
-const MENU_CSS_URL = "/content/components/menu/menu.css";
+const _log = createLogger('menu');
+const MENU_CSS_URL = '/content/components/menu/menu.css';
 
 // Load menu styles from the module so subpages don't need a separate link tag
 function ensureMenuStyles() {
-  if (typeof document === "undefined") return null;
+  if (typeof document === 'undefined') return null;
   const existing = document.head.querySelector(`link[href="${MENU_CSS_URL}"]`);
   if (existing) return existing;
   return upsertHeadLink({
-    rel: "stylesheet",
+    rel: 'stylesheet',
     href: MENU_CSS_URL,
-    attrs: { media: "all" },
-    dataset: { injectedBy: "menu-js" },
+    attrs: { media: 'all' },
+    dataset: { injectedBy: 'menu-js' },
   });
 }
 
 ensureMenuStyles();
 
 const initMenu = () => {
-  const menuContainer = getElementById("menu-container");
+  const menuContainer = getElementById('menu-container');
   if (!menuContainer) {
     // Wait for #menu-container to be injected (race with head-inline.js)
     // Use a MutationObserver to retry initialization once the element appears.
     try {
-      if (typeof MutationObserver !== "undefined" && document.body) {
+      if (typeof MutationObserver !== 'undefined' && document.body) {
         const observer = new MutationObserver((mutations, obs) => {
-          const el = getElementById("menu-container");
+          const el = getElementById('menu-container');
           if (el) {
             obs.disconnect();
             // retry initialization now that container exists
@@ -70,13 +70,13 @@ const initMenu = () => {
   }
 
   // Prevent double initialization
-  if (menuContainer.dataset.initialized === "true") return;
-  menuContainer.dataset.initialized = "true";
+  if (menuContainer.dataset.initialized === 'true') return;
+  menuContainer.dataset.initialized = 'true';
 
   menuContainer.innerHTML = getMenuHTML();
-  _log.info("Menu: injected into #menu-container");
+  _log.info('Menu: injected into #menu-container');
 
-  const yearEl = getElementById("current-year");
+  const yearEl = getElementById('current-year');
   if (yearEl) yearEl.textContent = new Date().getFullYear();
 
   initializeMenu(menuContainer);
@@ -87,26 +87,26 @@ const initMenu = () => {
   setActiveMenuLink();
 
   // Keep menu active state in sync when hash or history changes
-  window.addEventListener("hashchange", setActiveMenuLink);
-  window.addEventListener("popstate", setActiveMenuLink);
+  window.addEventListener('hashchange', setActiveMenuLink);
+  window.addEventListener('popstate', setActiveMenuLink);
 
   const _onMenuDocClick = (event) => {
     const isClickInside = menuContainer.contains(event.target);
-    const isMenuToggle = event.target.closest(".site-menu__toggle");
+    const isMenuToggle = event.target.closest('.site-menu__toggle');
     if (!isClickInside && !isMenuToggle) closeMenu(menuContainer);
   };
 
-  const _removeDocClick = addListener(document, "click", _onMenuDocClick);
+  const _removeDocClick = addListener(document, 'click', _onMenuDocClick);
   // store remover for potential cleanup
   menuContainer.__listenerRemovers = menuContainer.__listenerRemovers || [];
   menuContainer.__listenerRemovers.push(_removeDocClick);
 };
 
 // Use shared EVENTS.DOM_READY or fallback to DOMContentLoaded
-if (document.readyState !== "loading") {
+if (document.readyState !== 'loading') {
   initMenu();
 } else {
-  document.addEventListener("DOMContentLoaded", initMenu, { once: true });
+  document.addEventListener('DOMContentLoaded', initMenu, { once: true });
 }
 
 function getMenuHTML() {
@@ -262,42 +262,42 @@ function getMenuHTML() {
 
 function fixSubpageLinks(container) {
   const path = window.location.pathname;
-  const isHomePage = path === "/" || path === "/index.html";
+  const isHomePage = path === '/' || path === '/index.html';
   if (!isHomePage) {
     const links = container.querySelectorAll('.site-menu a[href^="#"]');
     links.forEach((link) => {
-      const hash = link.getAttribute("href");
-      link.setAttribute("href", `/${hash}`);
+      const hash = link.getAttribute('href');
+      link.setAttribute('href', `/${hash}`);
     });
   }
 }
 
 function initializeMenu(container) {
-  const menuToggle = container.querySelector(".site-menu__toggle");
-  const menu = container.querySelector(".site-menu");
+  const menuToggle = container.querySelector('.site-menu__toggle');
+  const menu = container.querySelector('.site-menu');
 
   if (menuToggle && menu) {
-    menu.setAttribute("role", "navigation");
-    menuToggle.setAttribute("aria-controls", menu.id || "navigation");
-    menuToggle.setAttribute("aria-expanded", "false");
-    menu.setAttribute("aria-hidden", "true");
+    menu.setAttribute('role', 'navigation');
+    menuToggle.setAttribute('aria-controls', menu.id || 'navigation');
+    menuToggle.setAttribute('aria-expanded', 'false');
+    menu.setAttribute('aria-hidden', 'true');
 
     const setState = (open) => {
-      menu.classList.toggle("open", open);
-      menuToggle.classList.toggle("active", open);
-      menuToggle.setAttribute("aria-expanded", String(!!open));
-      menu.setAttribute("aria-hidden", String(!open));
+      menu.classList.toggle('open', open);
+      menuToggle.classList.toggle('active', open);
+      menuToggle.setAttribute('aria-expanded', String(!!open));
+      menu.setAttribute('aria-hidden', String(!open));
     };
 
-    const toggle = () => setState(!menu.classList.contains("open"));
+    const toggle = () => setState(!menu.classList.contains('open'));
 
-    const _removeToggleClick = addListener(menuToggle, "click", toggle);
+    const _removeToggleClick = addListener(menuToggle, 'click', toggle);
     const _onMenuToggleKeydown = (event) => {
-      if (event.key === "Enter") toggle();
+      if (event.key === 'Enter') toggle();
     };
     const _removeToggleKeydown = addListener(
       menuToggle,
-      "keydown",
+      'keydown',
       _onMenuToggleKeydown,
     );
 
@@ -310,24 +310,24 @@ function initializeMenu(container) {
   }
 
   // Initialize Search Trigger
-  const searchTrigger = container.querySelector(".search-trigger");
+  const searchTrigger = container.querySelector('.search-trigger');
   if (searchTrigger) {
     const _onSearchClick = (e) => {
       e.preventDefault();
       closeMenu(container); // Close mobile menu
       // Dynamically import and open search
-      import("/content/components/search/search.js")
+      import('/content/components/search/search.js')
         .then((module) => {
           if (module.openSearch) {
             module.openSearch();
           }
         })
-        .catch((err) => _log.error("Failed to load search:", err));
+        .catch((err) => _log.error('Failed to load search:', err));
     };
 
     const _removeSearchClick = addListener(
       searchTrigger,
-      "click",
+      'click',
       _onSearchClick,
     );
     searchTrigger.__listenerRemovers = searchTrigger.__listenerRemovers || [];
@@ -335,12 +335,12 @@ function initializeMenu(container) {
   }
 
   // Close the mobile menu when any navigation link is clicked
-  container.querySelectorAll(".site-menu a[href]").forEach((a) => {
+  container.querySelectorAll('.site-menu a[href]').forEach((a) => {
     const _onNavLinkClick = (e) => {
       // Close the menu on mobile/compact view and delay navigation slightly so the close animation is visible
-      const href = a.getAttribute("href");
+      const href = a.getAttribute('href');
       const isExternal = /^https?:\/\//i.test(href);
-      const isAnchor = href && href.startsWith("#");
+      const isAnchor = href && href.startsWith('#');
 
       closeMenu(container);
 
@@ -348,7 +348,7 @@ function initializeMenu(container) {
         window.innerWidth <= 768 &&
         href &&
         !isExternal &&
-        !a.hasAttribute("target")
+        !a.hasAttribute('target')
       ) {
         // Prevent default to allow smooth close animation then navigate
         if (!isAnchor) {
@@ -360,7 +360,7 @@ function initializeMenu(container) {
       }
     };
 
-    const _removeNavClick = addListener(a, "click", _onNavLinkClick);
+    const _removeNavClick = addListener(a, 'click', _onNavLinkClick);
     // store ref to allow cleanup later
     a.__listenerRemovers = a.__listenerRemovers || [];
     a.__listenerRemovers.push(_removeNavClick);
@@ -371,17 +371,17 @@ function initializeMenu(container) {
 
 function initializeIcons() {
   const checkIcons = () => {
-    const icons = document.querySelectorAll(".nav-icon use");
+    const icons = document.querySelectorAll('.nav-icon use');
     icons.forEach((use) => {
-      const href = use.getAttribute("href");
+      const href = use.getAttribute('href');
       if (!href) return;
       const targetId = href.substring(1);
       const target = document.getElementById(targetId);
-      const svg = use.closest("svg");
+      const svg = use.closest('svg');
       const fallback = svg?.nextElementSibling;
-      if (!target && fallback?.classList.contains("icon-fallback")) {
-        svg.style.display = "none";
-        fallback.style.display = "inline-block";
+      if (!target && fallback?.classList.contains('icon-fallback')) {
+        svg.style.display = 'none';
+        fallback.style.display = 'inline-block';
       }
     });
   };
@@ -391,15 +391,15 @@ function initializeIcons() {
 }
 
 function initializeLogo(container) {
-  const logoContainer = container.querySelector(".site-logo__container");
+  const logoContainer = container.querySelector('.site-logo__container');
   if (logoContainer) {
     const _onLogoContext = (e) => {
       e.preventDefault?.();
-      window.location.href = "/";
+      window.location.href = '/';
     };
     const _removeLogoContext = addListener(
       logoContainer,
-      "contextmenu",
+      'contextmenu',
       _onLogoContext,
     );
     logoContainer.__listenerRemovers = logoContainer.__listenerRemovers || [];
@@ -409,41 +409,41 @@ function initializeLogo(container) {
 
 function initializeSubmenuLinks() {
   const submenuButtons = document.querySelectorAll(
-    ".has-submenu > .submenu-toggle",
+    '.has-submenu > .submenu-toggle',
   );
 
   submenuButtons.forEach((btn) => {
     const _onSubmenuToggle = () => {
       const submenu = btn.nextElementSibling;
-      const open = submenu.style.display === "block";
+      const open = submenu.style.display === 'block';
 
-      document.querySelectorAll(".submenu").forEach((sm) => {
-        if (sm !== submenu) sm.style.display = "none";
+      document.querySelectorAll('.submenu').forEach((sm) => {
+        if (sm !== submenu) sm.style.display = 'none';
       });
-      submenu.style.display = open ? "none" : "block";
-      btn.setAttribute("aria-expanded", String(!open));
+      submenu.style.display = open ? 'none' : 'block';
+      btn.setAttribute('aria-expanded', String(!open));
     };
 
-    const _removeToggle = addListener(btn, "click", _onSubmenuToggle);
+    const _removeToggle = addListener(btn, 'click', _onSubmenuToggle);
     btn.__listenerRemovers = btn.__listenerRemovers || [];
     btn.__listenerRemovers.push(_removeToggle);
   });
 
-  const isTouch = "ontouchstart" in window || navigator.maxTouchPoints > 0;
+  const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
   if (isTouch) {
-    document.querySelectorAll(".has-submenu > a").forEach((link) => {
+    document.querySelectorAll('.has-submenu > a').forEach((link) => {
       let tapped = false;
       link.addEventListener(
-        "touchend",
+        'touchend',
         function (e) {
           const parent = link.parentElement;
-          if (!parent.classList.contains("open")) {
+          if (!parent.classList.contains('open')) {
             e.preventDefault();
-            document.querySelectorAll(".has-submenu.open").forEach((el) => {
-              if (el !== parent) el.classList.remove("open");
+            document.querySelectorAll('.has-submenu.open').forEach((el) => {
+              if (el !== parent) el.classList.remove('open');
             });
-            parent.classList.add("open");
+            parent.classList.add('open');
             tapped = true;
             setTimeout(() => {
               tapped = false;
@@ -456,89 +456,89 @@ function initializeSubmenuLinks() {
       );
     });
 
-    document.addEventListener("touchstart", function (e) {
-      if (!e.target.closest(".site-menu")) {
+    document.addEventListener('touchstart', function (e) {
+      if (!e.target.closest('.site-menu')) {
         document
-          .querySelectorAll(".has-submenu.open")
-          .forEach((el) => el.classList.remove("open"));
+          .querySelectorAll('.has-submenu.open')
+          .forEach((el) => el.classList.remove('open'));
       }
     });
   }
 }
 
 function closeMenu(container) {
-  const menuToggle = container.querySelector(".site-menu__toggle");
-  const menu = container.querySelector(".site-menu");
+  const menuToggle = container.querySelector('.site-menu__toggle');
+  const menu = container.querySelector('.site-menu');
   if (menuToggle && menu) {
-    menu.classList.remove("open");
-    menuToggle.classList.remove("active");
+    menu.classList.remove('open');
+    menuToggle.classList.remove('active');
   }
 }
 
 function setSiteTitle() {
   const titleMap = {
-    "/index.html": "Startseite",
-    "/": "Startseite",
-    "/gallery/": "Fotos",
-    "/projekte/": "Projekte",
-    "/videos/": "Videos",
+    '/index.html': 'Startseite',
+    '/': 'Startseite',
+    '/gallery/': 'Fotos',
+    '/projekte/': 'Projekte',
+    '/videos/': 'Videos',
   };
 
   const path = window.location.pathname;
-  const pageTitle = titleMap[path] || document.title || "Website";
+  const pageTitle = titleMap[path] || document.title || 'Website';
 
-  const siteTitleEl = getElementById("site-title");
+  const siteTitleEl = getElementById('site-title');
   if (siteTitleEl) siteTitleEl.textContent = pageTitle;
 
-  if (path === "/" || path === "/index.html") {
+  if (path === '/' || path === '/index.html') {
     initializeScrollDetection();
   }
 }
 
 function extractSectionInfo(sectionId) {
   const fallbackTitleMap = {
-    hero: { title: "Startseite", subtitle: "" },
-    features: { title: "Projekte", subtitle: "Meine Arbeiten" },
-    section3: { title: "Über mich", subtitle: "Lerne mich kennen" },
-    contact: { title: "Kontakt", subtitle: "Schreiben Sie mir" },
+    hero: { title: 'Startseite', subtitle: '' },
+    features: { title: 'Projekte', subtitle: 'Meine Arbeiten' },
+    section3: { title: 'Über mich', subtitle: 'Lerne mich kennen' },
+    contact: { title: 'Kontakt', subtitle: 'Schreiben Sie mir' },
   };
 
   const section = document.querySelector(`#${sectionId}`);
   if (!section) {
-    return fallbackTitleMap[sectionId] || { title: "Startseite", subtitle: "" };
+    return fallbackTitleMap[sectionId] || { title: 'Startseite', subtitle: '' };
   }
 
-  if (["hero", "features", "section3", "contact"].includes(sectionId)) {
+  if (['hero', 'features', 'section3', 'contact'].includes(sectionId)) {
     const sectionElement = document.querySelector(`#${sectionId}`);
     if (sectionElement) {
       const headers = sectionElement.querySelectorAll(
-        ".section-header, .section-subtitle",
+        '.section-header, .section-subtitle',
       );
       headers.forEach((header) => {
-        header.style.display = "none";
-        header.style.visibility = "hidden";
+        header.style.display = 'none';
+        header.style.visibility = 'hidden';
       });
     }
 
-    return fallbackTitleMap[sectionId] || { title: "Startseite", subtitle: "" };
+    return fallbackTitleMap[sectionId] || { title: 'Startseite', subtitle: '' };
   }
 
-  const header = section.querySelector(".section-header");
+  const header = section.querySelector('.section-header');
   if (!header) {
-    return fallbackTitleMap[sectionId] || { title: "Startseite", subtitle: "" };
+    return fallbackTitleMap[sectionId] || { title: 'Startseite', subtitle: '' };
   }
 
-  const titleEl = header.querySelector(".section-title, h1, h2, h3");
-  const subtitleEl = header.querySelector(".section-subtitle");
+  const titleEl = header.querySelector('.section-title, h1, h2, h3');
+  const subtitleEl = header.querySelector('.section-subtitle');
 
   const title =
     titleEl?.textContent?.trim() ||
     fallbackTitleMap[sectionId]?.title ||
-    "Startseite";
+    'Startseite';
   const subtitle =
     subtitleEl?.textContent?.trim() ||
     fallbackTitleMap[sectionId]?.subtitle ||
-    "";
+    '';
 
   return { title, subtitle };
 }
@@ -550,31 +550,31 @@ function extractSectionInfo(sectionId) {
 function initializeScrollDetection() {
   let snapEventListener = null;
 
-  function updateTitleAndSubtitle(newTitle, newSubtitle = "") {
-    const siteTitleEl = getElementById("site-title");
-    const siteSubtitleEl = getElementById("site-subtitle");
+  function updateTitleAndSubtitle(newTitle, newSubtitle = '') {
+    const siteTitleEl = getElementById('site-title');
+    const siteSubtitleEl = getElementById('site-subtitle');
     if (!siteTitleEl) return;
 
     const currentTitle = siteTitleEl.textContent;
-    const currentSubtitle = siteSubtitleEl?.textContent || "";
+    const currentSubtitle = siteSubtitleEl?.textContent || '';
     if (currentTitle === newTitle && currentSubtitle === newSubtitle) return;
 
-    siteTitleEl.style.transition = "opacity 0.2s ease, transform 0.2s ease";
-    siteTitleEl.style.opacity = "0.6";
-    siteTitleEl.style.transform = "scale(0.95)";
+    siteTitleEl.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+    siteTitleEl.style.opacity = '0.6';
+    siteTitleEl.style.transform = 'scale(0.95)';
     if (siteSubtitleEl) {
-      siteSubtitleEl.classList.remove("show");
+      siteSubtitleEl.classList.remove('show');
     }
 
     setTimeout(() => {
       siteTitleEl.textContent = newTitle;
-      siteTitleEl.style.opacity = "1";
-      siteTitleEl.style.transform = "scale(1)";
+      siteTitleEl.style.opacity = '1';
+      siteTitleEl.style.transform = 'scale(1)';
 
       if (siteSubtitleEl && newSubtitle) {
         siteSubtitleEl.textContent = newSubtitle;
         setTimeout(() => {
-          siteSubtitleEl.classList.add("show");
+          siteSubtitleEl.classList.add('show');
         }, 100);
       }
     }, 200);
@@ -582,27 +582,27 @@ function initializeScrollDetection() {
 
   function initSnapEventListener() {
     if (snapEventListener) {
-      window.removeEventListener("snapSectionChange", snapEventListener);
+      window.removeEventListener('snapSectionChange', snapEventListener);
     }
 
     snapEventListener = (event) => {
       const { index, id } = event.detail || {};
       let sectionId = id;
 
-      if (sectionId === "site-footer") {
-        sectionId = "contact";
+      if (sectionId === 'site-footer') {
+        sectionId = 'contact';
       }
 
-      if (!sectionId && typeof index === "number") {
+      if (!sectionId && typeof index === 'number') {
         const sections = Array.from(
           document.querySelectorAll(
-            "main .section, .section, footer#site-footer",
+            'main .section, .section, footer#site-footer',
           ),
         );
         const section = sections[index];
         sectionId = section?.id;
-        if (sectionId === "site-footer") {
-          sectionId = "contact";
+        if (sectionId === 'site-footer') {
+          sectionId = 'contact';
         }
       }
 
@@ -612,59 +612,59 @@ function initializeScrollDetection() {
       }
     };
 
-    window.addEventListener("snapSectionChange", snapEventListener);
+    window.addEventListener('snapSectionChange', snapEventListener);
   }
 
   // Optimized: Wait for modules ready event instead of polling
   const start = () => {
     initSnapEventListener();
-    const { title, subtitle } = extractSectionInfo("hero");
+    const { title, subtitle } = extractSectionInfo('hero');
     updateTitleAndSubtitle(title, subtitle);
   };
 
   // Check if already ready
   if (
-    document.querySelector("#hero") &&
-    document.querySelector("#site-footer")
+    document.querySelector('#hero') &&
+    document.querySelector('#site-footer')
   ) {
     start();
   } else {
     // Listen for the ready event
     document.addEventListener(EVENTS.MODULES_READY, start, { once: true });
     // Backup listener in case footer loads late
-    document.addEventListener("footer:loaded", start, { once: true });
+    document.addEventListener('footer:loaded', start, { once: true });
   }
 }
 
 function setActiveMenuLink() {
-  const path = window.location.pathname.replace(/index\.html$/, "");
+  const path = window.location.pathname.replace(/index\.html$/, '');
   const hash = window.location.hash;
 
-  document.querySelectorAll(".site-menu a[href]").forEach((a) => {
-    const href = a.getAttribute("href");
+  document.querySelectorAll('.site-menu a[href]').forEach((a) => {
+    const href = a.getAttribute('href');
     if (!href) return;
 
-    if (href.startsWith("#")) {
+    if (href.startsWith('#')) {
       // Only consider in-page anchors active when we're on the index page (where those sections exist)
       // or when the href matches the current hash exactly.
-      const isIndexPath = path === "/" || path === "/index.html" || path === "";
-      if (href === hash || (isIndexPath && hash === "" && href === "#hero")) {
-        a.classList.add("active");
+      const isIndexPath = path === '/' || path === '/index.html' || path === '';
+      if (href === hash || (isIndexPath && hash === '' && href === '#hero')) {
+        a.classList.add('active');
       } else {
-        a.classList.remove("active");
+        a.classList.remove('active');
       }
 
       return;
     }
 
-    const norm = href.replace(/index\.html$/, "");
-    const linkPath = norm.split("#")[0];
+    const norm = href.replace(/index\.html$/, '');
+    const linkPath = norm.split('#')[0];
     const linkHash = a.hash;
 
     if (norm === path || (linkPath === path && linkHash === hash)) {
-      a.classList.add("active");
+      a.classList.add('active');
     } else {
-      a.classList.remove("active");
+      a.classList.remove('active');
     }
   });
 }

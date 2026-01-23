@@ -13,10 +13,10 @@
  * @last-modified 2025-12-19
  */
 
-import { createLogger, throttle } from "/content/utils/shared-utilities.js";
-import { THREE_PATHS } from "./config.js";
+import { createLogger, throttle } from '/content/utils/shared-utilities.js';
+import { THREE_PATHS } from './config.js';
 
-const log = createLogger("sharedParticleSystem");
+const log = createLogger('sharedParticleSystem');
 
 // ===== Shared Configuration =====
 
@@ -25,7 +25,7 @@ const SHARED_CONFIG = {
     THROTTLE_MS: 20,
   },
   SCROLL: {
-    CSS_PROPERTY_PREFIX: "--scroll-",
+    CSS_PROPERTY_PREFIX: '--scroll-',
   },
 };
 
@@ -60,7 +60,7 @@ class SharedParticleState {
   reset() {
     this.systems.clear();
     this.isInitialized = false;
-    log.debug("State reset");
+    log.debug('State reset');
   }
 }
 
@@ -75,8 +75,8 @@ class SharedParallaxManager {
     this.scrollHandler = null;
   }
 
-  addHandler(handler, name = "anonymous") {
-    if (typeof handler !== "function") {
+  addHandler(handler, name = 'anonymous') {
+    if (typeof handler !== 'function') {
       log.error(`Invalid handler for '${name}', must be a function`);
       return;
     }
@@ -129,27 +129,27 @@ class SharedParallaxManager {
       });
     }, SHARED_CONFIG.PERFORMANCE.THROTTLE_MS);
 
-    window.addEventListener("scroll", this.scrollHandler, { passive: true });
+    window.addEventListener('scroll', this.scrollHandler, { passive: true });
     this.isActive = true;
 
     // Initial call
     this.scrollHandler();
 
-    log.info("Parallax manager activated");
+    log.info('Parallax manager activated');
   }
 
   deactivate() {
     if (!this.isActive) return;
 
     if (this.scrollHandler) {
-      window.removeEventListener("scroll", this.scrollHandler);
+      window.removeEventListener('scroll', this.scrollHandler);
       this.scrollHandler = null;
     }
 
     this.isActive = false;
     this.handlers.clear();
 
-    log.info("Parallax manager deactivated");
+    log.info('Parallax manager deactivated');
   }
 }
 
@@ -160,8 +160,8 @@ class SharedCleanupManager {
     this.cleanupFunctions = new Map();
   }
 
-  addCleanupFunction(systemName, cleanupFn, description = "anonymous") {
-    if (typeof cleanupFn !== "function") {
+  addCleanupFunction(systemName, cleanupFn, description = 'anonymous') {
+    if (typeof cleanupFn !== 'function') {
       log.error(
         `Invalid cleanup function for '${systemName}', must be a function`,
       );
@@ -213,7 +213,7 @@ class SharedCleanupManager {
   }
 
   cleanupAll() {
-    log.info("Starting global cleanup of all systems");
+    log.info('Starting global cleanup of all systems');
 
     const systemNames = Array.from(this.cleanupFunctions.keys());
     systemNames.forEach((systemName) => this.cleanupSystem(systemName));
@@ -223,7 +223,7 @@ class SharedCleanupManager {
 
     sharedState.reset();
 
-    log.info("Global cleanup completed");
+    log.info('Global cleanup completed');
   }
 
   hasSystem(systemName) {
@@ -250,13 +250,13 @@ let threeLoadingPromise = null;
 export async function loadThreeJS() {
   // Return cached instance
   if (window.THREE?.WebGLRenderer) {
-    log.info("✅ Three.js already loaded (cached)");
+    log.info('✅ Three.js already loaded (cached)');
     return window.THREE;
   }
 
   // Return existing loading promise to prevent duplicate loads
   if (threeLoadingPromise) {
-    log.debug("Three.js load already in progress, waiting...");
+    log.debug('Three.js load already in progress, waiting...');
     return threeLoadingPromise;
   }
 
@@ -269,12 +269,12 @@ export async function loadThreeJS() {
         // If this is a same-origin (local) path, do a quick HEAD check to verify availability
         // and inspect Content-Encoding (precompressed .br/.gz served by the host).
         const isLocalPath =
-          src.startsWith("/") || src.startsWith(location.origin);
+          src.startsWith('/') || src.startsWith(location.origin);
         if (isLocalPath) {
           try {
             const headResp = await fetch(src, {
-              method: "HEAD",
-              cache: "no-store",
+              method: 'HEAD',
+              cache: 'no-store',
             });
             if (!headResp.ok) {
               log.warn(
@@ -282,13 +282,13 @@ export async function loadThreeJS() {
               );
               // Skip to next candidate (likely CDN)
               if (i === THREE_PATHS.length - 1) {
-                log.error("❌ Local Three.js missing and no further fallbacks");
-                throw new Error("Local Three.js not available");
+                log.error('❌ Local Three.js missing and no further fallbacks');
+                throw new Error('Local Three.js not available');
               }
               continue;
             }
 
-            const encoding = headResp.headers.get("content-encoding");
+            const encoding = headResp.headers.get('content-encoding');
             if (encoding) {
               log.info(
                 `Server serves precompressed Three.js at ${src} with Content-Encoding: ${encoding}`,
@@ -300,7 +300,7 @@ export async function loadThreeJS() {
             }
           } catch (headErr) {
             log.debug(
-              "HEAD check failed for local Three.js; will attempt import and fallback if needed",
+              'HEAD check failed for local Three.js; will attempt import and fallback if needed',
               headErr,
             );
           }
@@ -308,12 +308,12 @@ export async function loadThreeJS() {
           // For cross-origin candidates a HEAD check may be blocked by CORS; attempt HEAD but don't fail on error
           try {
             const headResp = await fetch(src, {
-              method: "HEAD",
-              mode: "cors",
-              cache: "no-store",
+              method: 'HEAD',
+              mode: 'cors',
+              cache: 'no-store',
             });
             if (headResp && headResp.ok) {
-              const encoding = headResp.headers.get("content-encoding");
+              const encoding = headResp.headers.get('content-encoding');
               if (encoding)
                 log.info(
                   `Remote precompressed Content-Encoding for ${src}: ${encoding}`,
@@ -321,7 +321,7 @@ export async function loadThreeJS() {
             }
           } catch (e) {
             log.debug(
-              "HEAD check for cross-origin resource failed or blocked by CORS; proceeding to import",
+              'HEAD check for cross-origin resource failed or blocked by CORS; proceeding to import',
               e,
             );
           }
@@ -334,19 +334,19 @@ export async function loadThreeJS() {
         const ThreeJS = THREE.default || THREE;
 
         if (!ThreeJS?.WebGLRenderer) {
-          throw new Error("Invalid Three.js module - missing WebGLRenderer");
+          throw new Error('Invalid Three.js module - missing WebGLRenderer');
         }
 
         window.THREE = ThreeJS;
-        log.info("✅ Three.js loaded successfully");
+        log.info('✅ Three.js loaded successfully');
         return ThreeJS;
       } catch (error) {
         log.warn(`Failed to load Three.js from ${src}:`, error.message);
 
         // If last attempt, throw error
         if (i === THREE_PATHS.length - 1) {
-          log.error("❌ Failed to load Three.js from all sources");
-          throw new Error("Three.js could not be loaded from any source");
+          log.error('❌ Failed to load Three.js from all sources');
+          throw new Error('Three.js could not be loaded from any source');
         }
       }
     }
@@ -375,8 +375,8 @@ export function unregisterParticleSystem(name) {
 
 // ===== Global Cleanup Hook =====
 
-if (typeof window !== "undefined") {
-  window.addEventListener("beforeunload", () => {
+if (typeof window !== 'undefined') {
+  window.addEventListener('beforeunload', () => {
     sharedCleanupManager.cleanupAll();
   });
 }

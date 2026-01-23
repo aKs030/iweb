@@ -1,1 +1,1 @@
-export default "***REMOVED***";
+export default '***REMOVED***';

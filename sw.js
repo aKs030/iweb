@@ -2,22 +2,22 @@
 // Version: 2026-01-23 - v3
 
 const CACHE_NAMES = {
-  APP_SHELL: "aks-portfolio-app-v3",
-  RUNTIME: "aks-portfolio-runtime-v3",
-  IMAGES: "aks-portfolio-images-v2",
-  TEXTURES: "aks-portfolio-textures-v2",
-  FONTS: "aks-portfolio-fonts-v2",
-  BUNDLES: "aks-portfolio-bundles-v2",
+  APP_SHELL: 'aks-portfolio-app-v3',
+  RUNTIME: 'aks-portfolio-runtime-v3',
+  IMAGES: 'aks-portfolio-images-v2',
+  TEXTURES: 'aks-portfolio-textures-v2',
+  FONTS: 'aks-portfolio-fonts-v2',
+  BUNDLES: 'aks-portfolio-bundles-v2',
 };
 
 const APP_SHELL = [
-  "/",
-  "/index.html",
-  "/content/styles/main.css",
-  "/content/styles/root.css",
-  "/content/main.js",
-  "/manifest.json",
-  "/content/assets/img/icons/favicon-512.png",
+  '/',
+  '/index.html',
+  '/content/styles/main.css',
+  '/content/styles/root.css',
+  '/content/main.js',
+  '/manifest.json',
+  '/content/assets/img/icons/favicon-512.png',
 ];
 
 // Helper: limit cache size
@@ -31,15 +31,15 @@ async function trimCache(cacheName, maxEntries = 60) {
 
 // Static Earth textures - pre-cache for offline reliability
 const STATIC_TEXTURES = [
-  "/content/assets/img/earth/earth_day.webp",
-  "/content/assets/img/earth/earth_night.webp",
-  "/content/assets/img/earth/earth_normal.webp",
-  "/content/assets/img/earth/earth_bump.webp",
-  "/content/assets/img/earth/textures/moon_texture.webp",
-  "/content/assets/img/earth/textures/moon_bump.webp",
+  '/content/assets/img/earth/earth_day.webp',
+  '/content/assets/img/earth/earth_night.webp',
+  '/content/assets/img/earth/earth_normal.webp',
+  '/content/assets/img/earth/earth_bump.webp',
+  '/content/assets/img/earth/textures/moon_texture.webp',
+  '/content/assets/img/earth/textures/moon_bump.webp',
 ];
 
-self.addEventListener("install", (event) => {
+self.addEventListener('install', (event) => {
   event.waitUntil(
     Promise.all([
       caches
@@ -55,7 +55,7 @@ self.addEventListener("install", (event) => {
   self.skipWaiting();
 });
 
-self.addEventListener("activate", (event) => {
+self.addEventListener('activate', (event) => {
   const CURRENT_CACHES = Object.values(CACHE_NAMES);
   event.waitUntil(
     caches.keys().then((keys) =>
@@ -70,7 +70,7 @@ self.addEventListener("activate", (event) => {
   );
 
   // Enable navigation preload if supported
-  if ("navigationPreload" in self.registration) {
+  if ('navigationPreload' in self.registration) {
     try {
       self.registration.navigationPreload.enable();
     } catch (e) {
@@ -81,14 +81,14 @@ self.addEventListener("activate", (event) => {
 });
 
 // Optimized fetch with per-asset-type caching strategies
-self.addEventListener("fetch", (event) => {
+self.addEventListener('fetch', (event) => {
   const req = event.request;
   const url = new URL(req.url);
 
-  if (req.method !== "GET") return;
+  if (req.method !== 'GET') return;
 
   // HTML: network-first (always try fresh content)
-  if (req.headers.get("accept")?.includes("text/html")) {
+  if (req.headers.get('accept')?.includes('text/html')) {
     event.respondWith(
       (async () => {
         const preloaded = await event.preloadResponse;
@@ -108,7 +108,7 @@ self.addEventListener("fetch", (event) => {
             return res;
           })
           .catch(() =>
-            caches.match(req).then((res) => res || caches.match("/index.html")),
+            caches.match(req).then((res) => res || caches.match('/index.html')),
           );
       })(),
     );

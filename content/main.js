@@ -4,7 +4,7 @@
  * @last-modified 2026-01-23
  */
 
-import { initHeroFeatureBundle } from "../pages/home/hero-manager.js";
+import { initHeroFeatureBundle } from '../pages/home/hero-manager.js';
 import {
   createLazyLoadObserver,
   createLogger,
@@ -16,12 +16,12 @@ import {
   AppLoadManager,
   SectionTracker,
   addListener,
-} from "/content/utils/shared-utilities.js";
-import { observeOnce } from "/content/utils/intersection-observer.js";
-import { a11y } from "./utils/accessibility-manager.js";
-import "./components/menu/menu.js";
+} from '/content/utils/shared-utilities.js';
+import { observeOnce } from '/content/utils/intersection-observer.js';
+import { a11y } from './utils/accessibility-manager.js';
+import './components/menu/menu.js';
 
-const log = createLogger("main");
+const log = createLogger('main');
 
 // Debug hooks for testing
 globalThis.__threeEarthCleanup = null;
@@ -29,11 +29,11 @@ globalThis.__threeEarthCleanup = null;
 // ===== Configuration & Environment =====
 const ENV = {
   isTest:
-    new URLSearchParams(globalThis.location.search).has("test") ||
-    navigator.userAgent.includes("HeadlessChrome") ||
-    (globalThis.location.hostname === "localhost" &&
+    new URLSearchParams(globalThis.location.search).has('test') ||
+    navigator.userAgent.includes('HeadlessChrome') ||
+    (globalThis.location.hostname === 'localhost' &&
       globalThis.navigator.webdriver),
-  debug: new URLSearchParams(globalThis.location.search).has("debug"),
+  debug: new URLSearchParams(globalThis.location.search).has('debug'),
 };
 
 // ===== Performance Tracking =====
@@ -45,32 +45,32 @@ const perfMarks = {
 };
 
 // ===== Service Worker Registration =====
-if ("serviceWorker" in navigator && window.isSecureContext) {
-  window.addEventListener("load", () => {
+if ('serviceWorker' in navigator && window.isSecureContext) {
+  window.addEventListener('load', () => {
     navigator.serviceWorker
-      .register("/sw.js")
+      .register('/sw.js')
       .then(async (reg) => {
-        log?.info?.("ServiceWorker registered", reg.scope || "");
+        log?.info?.('ServiceWorker registered', reg.scope || '');
 
         // Optional Background Sync
-        if ("sync" in reg) {
+        if ('sync' in reg) {
           try {
-            await reg.sync.register("sync-content");
-            log?.info?.("Background Sync registered");
+            await reg.sync.register('sync-content');
+            log?.info?.('Background Sync registered');
           } catch (e) {
             // Unsupported
           }
         }
 
         // Optional Periodic Background Sync
-        if ("periodicSync" in reg) {
+        if ('periodicSync' in reg) {
           try {
             const tags = await reg.periodicSync.getTags().catch(() => []);
-            if (!tags?.includes("fetch-updates")) {
-              await reg.periodicSync.register("fetch-updates", {
+            if (!tags?.includes('fetch-updates')) {
+              await reg.periodicSync.register('fetch-updates', {
                 minInterval: 24 * 60 * 60 * 1000,
               });
-              log?.info?.("Periodic Sync registered");
+              log?.info?.('Periodic Sync registered');
             }
           } catch (e) {
             // Unsupported
@@ -79,10 +79,10 @@ if ("serviceWorker" in navigator && window.isSecureContext) {
       })
       .catch((err) => {
         const details = {
-          name: err?.name || "UnknownError",
+          name: err?.name || 'UnknownError',
           message: err?.message || String(err),
         };
-        log?.warn?.("ServiceWorker registration failed", details);
+        log?.warn?.('ServiceWorker registration failed', details);
       });
   });
 }
@@ -101,16 +101,16 @@ const announce = (() => {
     }
 
     try {
-      const id = assertive ? "live-region-assertive" : "live-region-status";
+      const id = assertive ? 'live-region-assertive' : 'live-region-status';
       const region = getElementById(id);
       if (!region) return;
 
-      region.textContent = "";
+      region.textContent = '';
       requestAnimationFrame(() => {
         region.textContent = message;
       });
     } catch (error) {
-      log.debug("Announcement failed:", error);
+      log.debug('Announcement failed:', error);
     }
   };
 })();
@@ -125,7 +125,7 @@ sectionTracker.init();
 const SectionLoader = (() => {
   if (globalThis.SectionLoader) return globalThis.SectionLoader;
 
-  const SELECTOR = "section[data-section-src]";
+  const SELECTOR = 'section[data-section-src]';
   const loadedSections = new WeakSet();
   const retryAttempts = new WeakMap();
   const MAX_RETRIES = 2;
@@ -143,22 +143,22 @@ const SectionLoader = (() => {
   }
 
   function getSectionName(section) {
-    const labelId = section.getAttribute("aria-labelledby");
+    const labelId = section.getAttribute('aria-labelledby');
     if (labelId) {
       const label = getElementById(labelId);
       const text = label?.textContent?.trim();
       if (text) return text;
     }
-    return section.id || "Abschnitt";
+    return section.id || 'Abschnitt';
   }
 
   function getFetchCandidates(url) {
-    if (url?.endsWith(".html")) {
-      return [url.replace(/\.html$/, ""), url];
-    } else if (url?.startsWith("/pages/")) {
-      return [(url || "") + ".html", url];
+    if (url?.endsWith('.html')) {
+      return [url.replace(/\.html$/, ''), url];
+    } else if (url?.startsWith('/pages/')) {
+      return [(url || '') + '.html', url];
     } else {
-      return [url, (url || "") + ".html"];
+      return [url, (url || '') + '.html'];
     }
   }
 
@@ -175,8 +175,8 @@ const SectionLoader = (() => {
     }
     if (!response || !response.ok) {
       throw new Error(
-        `HTTP ${response ? response.status : "NO_RESPONSE"}: ${
-          response ? response.statusText : "no response"
+        `HTTP ${response ? response.status : 'NO_RESPONSE'}: ${
+          response ? response.statusText : 'no response'
         }`,
       );
     }
@@ -188,14 +188,14 @@ const SectionLoader = (() => {
 
     const url = section.dataset.sectionSrc;
     if (!url) {
-      section.removeAttribute("aria-busy");
+      section.removeAttribute('aria-busy');
       return;
     }
 
     // On subpages, skip eager loading non-critical sections
     const isHomePage =
-      (globalThis.location?.pathname || "").replace(/\/+$/g, "") === "";
-    const isEager = section.dataset.eager === "true";
+      (globalThis.location?.pathname || '').replace(/\/+$/g, '') === '';
+    const isEager = section.dataset.eager === 'true';
     if (!isHomePage && !isEager) {
       return;
     }
@@ -204,32 +204,32 @@ const SectionLoader = (() => {
     const sectionName = getSectionName(section);
     const attempts = retryAttempts.get(section) || 0;
 
-    section.setAttribute("aria-busy", "true");
-    section.dataset.state = "loading";
+    section.setAttribute('aria-busy', 'true');
+    section.dataset.state = 'loading';
 
     announce(`Lade ${sectionName}…`, { dedupe: true });
-    dispatchEvent("section:will-load", section, { url });
+    dispatchEvent('section:will-load', section, { url });
 
     try {
       const html = await fetchSectionContent(url);
-      section.insertAdjacentHTML("beforeend", html);
+      section.insertAdjacentHTML('beforeend', html);
 
-      const template = section.querySelector("template");
+      const template = section.querySelector('template');
       if (template) {
         section.appendChild(template.content.cloneNode(true));
       }
 
       section
-        .querySelectorAll(".section-skeleton")
+        .querySelectorAll('.section-skeleton')
         .forEach((el) => el.remove());
 
-      section.dataset.state = "loaded";
-      section.removeAttribute("aria-busy");
+      section.dataset.state = 'loaded';
+      section.removeAttribute('aria-busy');
 
       announce(`${sectionName} geladen`, { dedupe: true });
-      dispatchEvent("section:loaded", section, { state: "loaded" });
+      dispatchEvent('section:loaded', section, { state: 'loaded' });
 
-      if (section.id === "hero") {
+      if (section.id === 'hero') {
         fire(EVENTS.HERO_LOADED);
       }
     } catch (error) {
@@ -248,27 +248,27 @@ const SectionLoader = (() => {
         return loadSection(section);
       }
 
-      section.dataset.state = "error";
-      section.removeAttribute("aria-busy");
+      section.dataset.state = 'error';
+      section.removeAttribute('aria-busy');
 
       announce(`Fehler beim Laden von ${sectionName}`, { assertive: true });
-      dispatchEvent("section:error", section, { state: "error" });
+      dispatchEvent('section:error', section, { state: 'error' });
 
       // Inject retry UI
-      if (!section.querySelector(".section-retry")) {
-        const button = document.createElement("button");
-        button.type = "button";
-        button.className = "section-retry";
-        button.textContent = "Erneut laden";
+      if (!section.querySelector('.section-retry')) {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'section-retry';
+        button.textContent = 'Erneut laden';
         const _onRetryClick = () => retrySection(section);
-        const _removeRetry = addListener(button, "click", _onRetryClick, {
+        const _removeRetry = addListener(button, 'click', _onRetryClick, {
           once: true,
         });
         button.__listenerRemovers = button.__listenerRemovers || [];
         button.__listenerRemovers.push(_removeRetry);
 
-        const wrapper = document.createElement("div");
-        wrapper.className = "section-error-box";
+        const wrapper = document.createElement('div');
+        wrapper.className = 'section-error-box';
         wrapper.appendChild(button);
         section.appendChild(wrapper);
       }
@@ -276,8 +276,8 @@ const SectionLoader = (() => {
   }
 
   async function retrySection(section) {
-    section.querySelectorAll(".section-error-box").forEach((el) => el.remove());
-    section.dataset.state = "";
+    section.querySelectorAll('.section-error-box').forEach((el) => el.remove());
+    section.dataset.state = '';
     loadedSections.delete(section);
     retryAttempts.delete(section);
     await loadSection(section);
@@ -327,7 +327,7 @@ function _initApp() {
   }
 }
 
-if (document.readyState !== "loading") {
+if (document.readyState !== 'loading') {
   _initApp();
 } else {
   document.addEventListener(EVENTS.DOM_READY, _initApp, { once: true });
@@ -337,10 +337,10 @@ if (document.readyState !== "loading") {
 const ScrollSnapping = (() => {
   let snapTimer = null;
   const snapContainer =
-    document.querySelector(".snap-container") || document.documentElement;
+    document.querySelector('.snap-container') || document.documentElement;
 
-  const disableSnap = () => snapContainer.classList.add("no-snap");
-  const enableSnap = () => snapContainer.classList.remove("no-snap");
+  const disableSnap = () => snapContainer.classList.add('no-snap');
+  const enableSnap = () => snapContainer.classList.remove('no-snap');
 
   function handleScroll() {
     disableSnap();
@@ -350,13 +350,13 @@ const ScrollSnapping = (() => {
 
   function handleKey(event) {
     const scrollKeys = [
-      "PageDown",
-      "PageUp",
-      "Home",
-      "End",
-      "ArrowDown",
-      "ArrowUp",
-      "Space",
+      'PageDown',
+      'PageUp',
+      'Home',
+      'End',
+      'ArrowDown',
+      'ArrowUp',
+      'Space',
     ];
     if (scrollKeys.includes(event.key)) {
       handleScroll();
@@ -364,9 +364,9 @@ const ScrollSnapping = (() => {
   }
 
   function init() {
-    globalThis.addEventListener("wheel", handleScroll, { passive: true });
-    globalThis.addEventListener("touchmove", handleScroll, { passive: true });
-    globalThis.addEventListener("keydown", handleKey, { passive: true });
+    globalThis.addEventListener('wheel', handleScroll, { passive: true });
+    globalThis.addEventListener('touchmove', handleScroll, { passive: true });
+    globalThis.addEventListener('keydown', handleKey, { passive: true });
   }
 
   return { init };
@@ -386,13 +386,13 @@ const LoadingScreenManager = (() => {
     interval: null,
     messageIndex: 0,
     messages: [
-      "Initialisiere System...",
-      "Assets werden geladen...",
-      "Verbinde Neural Interface...",
-      "Rendere 3D-Umgebung...",
-      "Optimiere Shader...",
-      "Starte KI-Module...",
-      "Synchronisiere Daten...",
+      'Initialisiere System...',
+      'Assets werden geladen...',
+      'Verbinde Neural Interface...',
+      'Rendere 3D-Umgebung...',
+      'Optimiere Shader...',
+      'Starte KI-Module...',
+      'Synchronisiere Daten...',
     ],
   };
 
@@ -400,10 +400,10 @@ const LoadingScreenManager = (() => {
   let hasHidden = false;
 
   function bindElements() {
-    state.overlay = getElementById("app-loader");
-    state.bar = getElementById("loader-progress-bar");
-    state.text = getElementById("loader-status-text");
-    state.percent = getElementById("loader-percentage");
+    state.overlay = getElementById('app-loader');
+    state.bar = getElementById('loader-progress-bar');
+    state.text = getElementById('loader-status-text');
+    state.percent = getElementById('loader-percentage');
     return Boolean(state.overlay);
   }
 
@@ -427,9 +427,9 @@ const LoadingScreenManager = (() => {
     stopSimulation();
     state.progress = 0;
     state.messageIndex = 0;
-    state.overlay.classList.remove("fade-out");
-    state.overlay.style.display = "flex";
-    state.overlay.removeAttribute("aria-hidden");
+    state.overlay.classList.remove('fade-out');
+    state.overlay.style.display = 'flex';
+    state.overlay.removeAttribute('aria-hidden');
     updateUI(state.messages[state.messageIndex]);
 
     state.interval = setInterval(() => {
@@ -448,7 +448,7 @@ const LoadingScreenManager = (() => {
     }, 120);
   }
 
-  function finalizeProgress(statusText = "Bereit.") {
+  function finalizeProgress(statusText = 'Bereit.') {
     stopSimulation();
     state.progress = 100;
     updateUI(statusText);
@@ -466,36 +466,36 @@ const LoadingScreenManager = (() => {
       // 'earth-ready' signal (or compatible signals) to avoid hiding the
       // loader before the 3D canvas can show a visible frame.
       const earthContainerPresent =
-        document.getElementById("threeEarthContainer") ||
-        document.getElementById("earth-container");
+        document.getElementById('threeEarthContainer') ||
+        document.getElementById('earth-container');
 
       const proceedToHide = () => {
         if (hasHidden) return;
         hasHidden = true;
         finalizeProgress();
 
-        state.overlay.classList.add("fade-out");
-        state.overlay.setAttribute("aria-hidden", "true");
-        state.overlay.dataset.loaderDone = "true";
+        state.overlay.classList.add('fade-out');
+        state.overlay.setAttribute('aria-hidden', 'true');
+        state.overlay.dataset.loaderDone = 'true';
 
         const cleanup = () => {
-          state.overlay.style.display = "none";
-          state.overlay.removeEventListener("transitionend", cleanup);
+          state.overlay.style.display = 'none';
+          state.overlay.removeEventListener('transitionend', cleanup);
         };
 
-        state.overlay.addEventListener("transitionend", cleanup);
+        state.overlay.addEventListener('transitionend', cleanup);
         setTimeout(cleanup, 900);
 
         try {
-          document.body.classList.remove("global-loading-visible");
+          document.body.classList.remove('global-loading-visible');
         } catch {
           /* ignore */
         }
 
         perfMarks.loadingHidden = performance.now();
-        announce("Anwendung geladen", { dedupe: true });
+        announce('Anwendung geladen', { dedupe: true });
         fire(EVENTS.LOADING_HIDE);
-        globalThis.dispatchEvent(new Event("app-ready"));
+        globalThis.dispatchEvent(new Event('app-ready'));
       };
 
       if (!earthContainerPresent) {
@@ -507,7 +507,7 @@ const LoadingScreenManager = (() => {
       // No need to wait for events here - just proceed after a short grace period
       setTimeout(() => {
         if (ENV.debug) {
-          log.debug("Earth grace period completed - proceeding to hide loader");
+          log.debug('Earth grace period completed - proceeding to hide loader');
         }
         proceedToHide();
       }, 500);
@@ -519,7 +519,7 @@ const LoadingScreenManager = (() => {
     if (!bindElements()) return;
 
     try {
-      document.body.classList.add("global-loading-visible");
+      document.body.classList.add('global-loading-visible');
     } catch {
       /* ignore */
     }
@@ -530,7 +530,7 @@ const LoadingScreenManager = (() => {
   function setStatus(message, progress) {
     if (!state.overlay || hasHidden) return;
 
-    if (typeof progress === "number") {
+    if (typeof progress === 'number') {
       state.progress = Math.min(Math.max(progress, state.progress), 98);
     }
 
@@ -550,49 +550,49 @@ const ThreeEarthLoader = (() => {
 
     // Skip in test environment unless explicitly forced
     if (ENV.isTest && !globalThis.__FORCE_THREE_EARTH) {
-      log.info("Test environment - skipping Three.js Earth");
+      log.info('Test environment - skipping Three.js Earth');
       return;
     }
 
-    const container = getElementById("threeEarthContainer");
+    const container = getElementById('threeEarthContainer');
     if (!container) {
-      log.debug("Earth container not found");
+      log.debug('Earth container not found');
       return;
     }
 
     // Skip on save-data mode
     if (navigator.connection?.saveData) {
-      log.info("Three.js skipped: save-data mode");
+      log.info('Three.js skipped: save-data mode');
       return;
     }
 
     isLoading = true;
 
     try {
-      log.info("Loading Three.js Earth system...");
+      log.info('Loading Three.js Earth system...');
       const { initThreeEarth } =
-        await import("./components/particles/three-earth-system.js");
+        await import('./components/particles/three-earth-system.js');
 
-      if (typeof initThreeEarth !== "function") {
-        throw new Error("initThreeEarth not found in module exports");
+      if (typeof initThreeEarth !== 'function') {
+        throw new Error('initThreeEarth not found in module exports');
       }
 
       cleanupFn = await initThreeEarth();
 
-      if (typeof cleanupFn === "function") {
+      if (typeof cleanupFn === 'function') {
         globalThis.__threeEarthCleanup = cleanupFn;
-        log.info("Three.js Earth system initialized");
+        log.info('Three.js Earth system initialized');
         perfMarks.threeJsLoaded = performance.now();
       }
     } catch (error) {
-      log.warn("Three.js failed, using CSS fallback:", error);
+      log.warn('Three.js failed, using CSS fallback:', error);
     } finally {
       isLoading = false;
     }
   }
 
   function init() {
-    const container = getElementById("threeEarthContainer");
+    const container = getElementById('threeEarthContainer');
     if (!container) return;
 
     // Check if container is already visible or loader is active
@@ -601,7 +601,7 @@ const ThreeEarthLoader = (() => {
       const withinMargin =
         rect.top < (globalThis.innerHeight || 0) + 100 && rect.bottom > -100;
       const loaderVisible =
-        document.getElementById("app-loader")?.dataset?.loaderDone !== "true";
+        document.getElementById('app-loader')?.dataset?.loaderDone !== 'true';
 
       if (withinMargin || loaderVisible) {
         load();
@@ -616,7 +616,7 @@ const ThreeEarthLoader = (() => {
       () => {
         load();
       },
-      { rootMargin: "400px", threshold: 0.01 },
+      { rootMargin: '400px', threshold: 0.01 },
     );
   }
 
@@ -630,7 +630,7 @@ const ThreeEarthLoader = (() => {
 
 // ===== Application Bootstrap =====
 document.addEventListener(
-  "DOMContentLoaded",
+  'DOMContentLoaded',
   async () => {
     perfMarks.domReady = performance.now();
     LoadingScreenManager.init();
@@ -645,29 +645,29 @@ document.addEventListener(
     const checkReady = () => {
       if (!modulesReady || !windowLoaded) return;
       const blocked =
-        typeof AppLoadManager !== "undefined" &&
-        typeof AppLoadManager.isBlocked === "function" &&
+        typeof AppLoadManager !== 'undefined' &&
+        typeof AppLoadManager.isBlocked === 'function' &&
         AppLoadManager.isBlocked();
       if (blocked) return;
       // Ensure Three.js Earth signaled readiness if present
       const earthReady =
-        document.getElementById("threeEarthContainer")?.dataset?.threeReady ===
-        "1";
-      if (document.getElementById("threeEarthContainer") && !earthReady) {
+        document.getElementById('threeEarthContainer')?.dataset?.threeReady ===
+        '1';
+      if (document.getElementById('threeEarthContainer') && !earthReady) {
         return;
       }
-      LoadingScreenManager.setStatus("Starte Experience...", 98);
+      LoadingScreenManager.setStatus('Starte Experience...', 98);
       LoadingScreenManager.hide();
     };
 
     document.addEventListener(EVENTS.LOADING_UNBLOCKED, checkReady);
 
     globalThis.addEventListener(
-      "load",
+      'load',
       () => {
         perfMarks.windowLoaded = performance.now();
         windowLoaded = true;
-        LoadingScreenManager.setStatus("Finalisiere Assets...", 92);
+        LoadingScreenManager.setStatus('Finalisiere Assets...', 92);
         checkReady();
       },
       { once: true },
@@ -681,7 +681,7 @@ document.addEventListener(
 
     modulesReady = true;
     perfMarks.modulesReady = performance.now();
-    LoadingScreenManager.setStatus("Initialisiere 3D-Engine...", 90);
+    LoadingScreenManager.setStatus('Initialisiere 3D-Engine...', 90);
     fire(EVENTS.MODULES_READY);
     checkReady();
 
@@ -694,9 +694,9 @@ document.addEventListener(
 
       const computeDelay = () => {
         try {
-          if (typeof AppLoadManager?.getPending === "function") {
+          if (typeof AppLoadManager?.getPending === 'function') {
             const pending = AppLoadManager.getPending() || [];
-            if (pending.includes("three-earth")) return EXTENDED_DELAY;
+            if (pending.includes('three-earth')) return EXTENDED_DELAY;
           }
         } catch (err) {
           // Fallback to default
@@ -712,30 +712,30 @@ document.addEventListener(
 
           try {
             if (
-              typeof AppLoadManager?.isBlocked === "function" &&
+              typeof AppLoadManager?.isBlocked === 'function' &&
               AppLoadManager.isBlocked()
             ) {
               const pending = AppLoadManager.getPending?.() || [];
               log.warn(
-                `Deferring forced hide (attempt ${attempt}): blocking modules=${pending.join(", ")}`,
+                `Deferring forced hide (attempt ${attempt}): blocking modules=${pending.join(', ')}`,
               );
 
               if (attempt < MAX_ATTEMPTS) {
                 scheduleSmartForceHide(attempt + 1);
                 return;
               }
-              log.warn("Max attempts reached - forcing hide");
+              log.warn('Max attempts reached - forcing hide');
             }
           } catch (e) {
-            log.debug("AppLoadManager check failed", e);
+            log.debug('AppLoadManager check failed', e);
           }
 
           const pending = AppLoadManager?.getPending?.() || [];
           log.info(
-            "Forcing loading screen hide after timeout",
+            'Forcing loading screen hide after timeout',
             pending.length ? { pendingModules: pending } : undefined,
           );
-          LoadingScreenManager.setStatus("Schließe Ladebildschirm...");
+          LoadingScreenManager.setStatus('Schließe Ladebildschirm...');
           LoadingScreenManager.hide();
         },
         attempt === 1 ? initialDelay : RETRY_DELAY,
@@ -752,7 +752,7 @@ document.addEventListener(
         );
         links.forEach((link) => {
           try {
-            link.media = "all";
+            link.media = 'all';
             delete link.dataset.defer;
           } catch {
             // Ignore
@@ -766,14 +766,14 @@ document.addEventListener(
     try {
       activateDeferredStyles();
 
-      if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", activateDeferredStyles, {
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', activateDeferredStyles, {
           once: true,
         });
       } else {
         setTimeout(activateDeferredStyles, 0);
       }
-      globalThis.addEventListener("load", activateDeferredStyles);
+      globalThis.addEventListener('load', activateDeferredStyles);
 
       // Observe head for dynamically inserted deferred links
       const headObserver = new MutationObserver((mutations) => {
@@ -784,7 +784,7 @@ document.addEventListener(
                 node.nodeType === 1 &&
                 node.matches?.('link[rel="stylesheet"][data-defer="1"]')
               ) {
-                node.media = "all";
+                node.media = 'all';
                 delete node.dataset.defer;
               }
             } catch {
@@ -797,7 +797,7 @@ document.addEventListener(
         childList: true,
         subtree: true,
       });
-      globalThis.addEventListener("load", () => headObserver.disconnect(), {
+      globalThis.addEventListener('load', () => headObserver.disconnect(), {
         once: true,
       });
     } catch {
@@ -810,7 +810,7 @@ document.addEventListener(
       if (!target) return;
 
       // Retry/reload buttons
-      const retry = target?.closest(".retry-btn");
+      const retry = target?.closest('.retry-btn');
       if (retry) {
         event.preventDefault();
         try {
@@ -822,34 +822,34 @@ document.addEventListener(
       }
 
       // Share button
-      const share = target?.closest(".btn-share");
+      const share = target?.closest('.btn-share');
       if (share) {
         event.preventDefault();
         const shareUrl =
-          share.dataset.shareUrl || "https://www.youtube.com/@aks.030";
+          share.dataset.shareUrl || 'https://www.youtube.com/@aks.030';
         const shareData = {
           title: document.title,
-          text: "Schau dir diesen Kanal an",
+          text: 'Schau dir diesen Kanal an',
           url: shareUrl,
         };
 
         if (navigator.share) {
           navigator
             .share(shareData)
-            .catch((err) => log.warn("share failed", err));
+            .catch((err) => log.warn('share failed', err));
         } else if (navigator.clipboard) {
           navigator.clipboard.writeText(shareUrl).then(() => {
             try {
-              announce("Link kopiert", { dedupe: true });
+              announce('Link kopiert', { dedupe: true });
             } catch (err) {
-              log.warn("announce failed", err);
+              log.warn('announce failed', err);
             }
           });
         } else {
           try {
-            globalThis.prompt("Link kopieren", shareUrl);
+            globalThis.prompt('Link kopieren', shareUrl);
           } catch (err) {
-            log.warn("prompt failed", err);
+            log.warn('prompt failed', err);
           }
         }
         return;
@@ -857,12 +857,12 @@ document.addEventListener(
     };
     const _removeMainDelegated = addListener(
       document,
-      "click",
+      'click',
       _onDocDelegatedClick,
     );
     globalThis.__main_delegated_remove = _removeMainDelegated;
 
-    log.info("Performance:", {
+    log.info('Performance:', {
       domReady: Math.round(perfMarks.domReady - perfMarks.start),
       modulesReady: Math.round(perfMarks.modulesReady - perfMarks.start),
       windowLoaded: Math.round(perfMarks.windowLoaded - perfMarks.start),
@@ -872,17 +872,17 @@ document.addEventListener(
 );
 
 // ===== BFCache / Back Button Handling =====
-globalThis.addEventListener("pageshow", (event) => {
+globalThis.addEventListener('pageshow', (event) => {
   if (event.persisted) {
-    log.info("Page restored from bfcache");
-    globalThis.dispatchEvent(new CustomEvent("resize"));
+    log.info('Page restored from bfcache');
+    globalThis.dispatchEvent(new CustomEvent('resize'));
 
     if (
       !document.hidden &&
       globalThis.threeEarthSystem &&
       globalThis.threeEarthSystem.animate
     ) {
-      document.dispatchEvent(new CustomEvent("visibilitychange"));
+      document.dispatchEvent(new CustomEvent('visibilitychange'));
     }
   }
 });

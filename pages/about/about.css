@@ -88,7 +88,7 @@ a {
 }
 
 .btn-primary::before {
-  content: "";
+  content: '';
   position: absolute;
   top: 0;
   left: -100%;
@@ -267,7 +267,7 @@ header {
 }
 
 .timeline-item::before {
-  content: "";
+  content: '';
   position: absolute;
   left: -5px;
   top: 6px;

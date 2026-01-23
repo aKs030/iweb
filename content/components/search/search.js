@@ -7,9 +7,9 @@
 
 /* exported initSearch, openSearch, closeSearch, toggleSearch */
 /* eslint-disable import/no-unused-modules */
-import { createLogger } from "/content/utils/shared-utilities.js";
+import { createLogger } from '/content/utils/shared-utilities.js';
 
-const _log = createLogger("search");
+const _log = createLogger('search');
 
 /**
  * Search Index - Enthält alle durchsuchbaren Inhalte der Webseite
@@ -17,217 +17,217 @@ const _log = createLogger("search");
 const SEARCH_INDEX = [
   // Hauptseiten
   {
-    id: "home",
-    title: "Home",
+    id: 'home',
+    title: 'Home',
     description:
-      "Web Developer & Photographer in Berlin. Spezialisiert auf React, Three.js und Urban Photography.",
-    category: "Seite",
-    url: "/",
-    icon: "🏠",
-    keywords: ["home", "start", "hauptseite", "portfolio", "abdulkerim sesli"],
+      'Web Developer & Photographer in Berlin. Spezialisiert auf React, Three.js und Urban Photography.',
+    category: 'Seite',
+    url: '/',
+    icon: '🏠',
+    keywords: ['home', 'start', 'hauptseite', 'portfolio', 'abdulkerim sesli'],
     priority: 10,
   },
   {
-    id: "about",
-    title: "Über mich",
+    id: 'about',
+    title: 'Über mich',
     description:
-      "Erfahre mehr über meine Arbeit, Fähigkeiten und meinen Werdegang als Web Developer und Fotograf.",
-    category: "Seite",
-    url: "/pages/about/",
-    icon: "👤",
+      'Erfahre mehr über meine Arbeit, Fähigkeiten und meinen Werdegang als Web Developer und Fotograf.',
+    category: 'Seite',
+    url: '/pages/about/',
+    icon: '👤',
     keywords: [
-      "über",
-      "about",
-      "biografie",
-      "cv",
-      "lebenslauf",
-      "skills",
-      "fähigkeiten",
+      'über',
+      'about',
+      'biografie',
+      'cv',
+      'lebenslauf',
+      'skills',
+      'fähigkeiten',
     ],
     priority: 9,
   },
   {
-    id: "projekte",
-    title: "Projekte",
+    id: 'projekte',
+    title: 'Projekte',
     description:
-      "Eine Auswahl meiner Web-Entwicklungsprojekte mit React, Three.js und modernen Technologien.",
-    category: "Seite",
-    url: "/pages/projekte/",
-    icon: "💼",
+      'Eine Auswahl meiner Web-Entwicklungsprojekte mit React, Three.js und modernen Technologien.',
+    category: 'Seite',
+    url: '/pages/projekte/',
+    icon: '💼',
     keywords: [
-      "projekte",
-      "projects",
-      "portfolio",
-      "arbeiten",
-      "react",
-      "threejs",
-      "web development",
+      'projekte',
+      'projects',
+      'portfolio',
+      'arbeiten',
+      'react',
+      'threejs',
+      'web development',
     ],
     priority: 9,
   },
   {
-    id: "gallery",
-    title: "Galerie",
+    id: 'gallery',
+    title: 'Galerie',
     description:
-      "Fotografie-Portfolio mit Urban Photography und kreativen Aufnahmen aus Berlin.",
-    category: "Seite",
-    url: "/pages/gallery/",
-    icon: "📸",
+      'Fotografie-Portfolio mit Urban Photography und kreativen Aufnahmen aus Berlin.',
+    category: 'Seite',
+    url: '/pages/gallery/',
+    icon: '📸',
     keywords: [
-      "galerie",
-      "gallery",
-      "fotografie",
-      "photography",
-      "bilder",
-      "fotos",
-      "urban",
+      'galerie',
+      'gallery',
+      'fotografie',
+      'photography',
+      'bilder',
+      'fotos',
+      'urban',
     ],
     priority: 8,
   },
   {
-    id: "blog",
-    title: "Blog",
+    id: 'blog',
+    title: 'Blog',
     description:
-      "Artikel über Webentwicklung, Design, Fotografie und Technologie.",
-    category: "Seite",
-    url: "/pages/blog/",
-    icon: "📝",
-    keywords: ["blog", "artikel", "posts", "tutorials", "guides"],
+      'Artikel über Webentwicklung, Design, Fotografie und Technologie.',
+    category: 'Seite',
+    url: '/pages/blog/',
+    icon: '📝',
+    keywords: ['blog', 'artikel', 'posts', 'tutorials', 'guides'],
     priority: 8,
   },
   {
-    id: "videos",
-    title: "Videos",
-    description: "Video-Portfolio mit Tutorials und kreativen Projekten.",
-    category: "Seite",
-    url: "/pages/videos/",
-    icon: "🎬",
-    keywords: ["videos", "tutorials", "youtube", "film"],
+    id: 'videos',
+    title: 'Videos',
+    description: 'Video-Portfolio mit Tutorials und kreativen Projekten.',
+    category: 'Seite',
+    url: '/pages/videos/',
+    icon: '🎬',
+    keywords: ['videos', 'tutorials', 'youtube', 'film'],
     priority: 7,
   },
 
   // Blog Posts
   {
-    id: "blog-modern-ui",
-    title: "Modern UI Design",
+    id: 'blog-modern-ui',
+    title: 'Modern UI Design',
     description:
-      "Moderne UI-Design-Prinzipien und Best Practices für Web-Anwendungen.",
-    category: "Blog",
-    url: "/pages/blog/modern-ui-design/",
-    icon: "🎨",
+      'Moderne UI-Design-Prinzipien und Best Practices für Web-Anwendungen.',
+    category: 'Blog',
+    url: '/pages/blog/modern-ui-design/',
+    icon: '🎨',
     keywords: [
-      "ui",
-      "design",
-      "interface",
-      "ux",
-      "user experience",
-      "modern",
-      "glassmorphism",
+      'ui',
+      'design',
+      'interface',
+      'ux',
+      'user experience',
+      'modern',
+      'glassmorphism',
     ],
     priority: 6,
   },
   {
-    id: "blog-react-no-build",
-    title: "React ohne Build-Tools",
+    id: 'blog-react-no-build',
+    title: 'React ohne Build-Tools',
     description:
-      "Wie man React ohne komplexe Build-Prozesse direkt im Browser nutzt.",
-    category: "Blog",
-    url: "/pages/blog/react-no-build/",
-    icon: "⚛️",
-    keywords: ["react", "no build", "esm", "modules", "javascript", "frontend"],
+      'Wie man React ohne komplexe Build-Prozesse direkt im Browser nutzt.',
+    category: 'Blog',
+    url: '/pages/blog/react-no-build/',
+    icon: '⚛️',
+    keywords: ['react', 'no build', 'esm', 'modules', 'javascript', 'frontend'],
     priority: 6,
   },
   {
-    id: "blog-threejs-performance",
-    title: "Three.js Performance",
+    id: 'blog-threejs-performance',
+    title: 'Three.js Performance',
     description:
-      "Performance-Optimierung für Three.js Anwendungen und 3D-Grafik im Web.",
-    category: "Blog",
-    url: "/pages/blog/threejs-performance/",
-    icon: "🎮",
+      'Performance-Optimierung für Three.js Anwendungen und 3D-Grafik im Web.',
+    category: 'Blog',
+    url: '/pages/blog/threejs-performance/',
+    icon: '🎮',
     keywords: [
-      "threejs",
-      "three.js",
-      "3d",
-      "webgl",
-      "performance",
-      "optimization",
+      'threejs',
+      'three.js',
+      '3d',
+      'webgl',
+      'performance',
+      'optimization',
     ],
     priority: 6,
   },
   {
-    id: "blog-visual-storytelling",
-    title: "Visual Storytelling",
-    description: "Geschichten visuell erzählen mit Fotografie und Webdesign.",
-    category: "Blog",
-    url: "/pages/blog/visual-storytelling/",
-    icon: "📖",
-    keywords: ["storytelling", "visual", "fotografie", "design", "narrative"],
+    id: 'blog-visual-storytelling',
+    title: 'Visual Storytelling',
+    description: 'Geschichten visuell erzählen mit Fotografie und Webdesign.',
+    category: 'Blog',
+    url: '/pages/blog/visual-storytelling/',
+    icon: '📖',
+    keywords: ['storytelling', 'visual', 'fotografie', 'design', 'narrative'],
     priority: 5,
   },
 
   // Technologien
   {
-    id: "tech-react",
-    title: "React Entwicklung",
+    id: 'tech-react',
+    title: 'React Entwicklung',
     description:
-      "Moderne React-Anwendungen mit Hooks, Context und Performance-Optimierungen.",
-    category: "Technologie",
-    url: "/pages/projekte/#react",
-    icon: "⚛️",
-    keywords: ["react", "javascript", "frontend", "spa", "hooks", "jsx"],
+      'Moderne React-Anwendungen mit Hooks, Context und Performance-Optimierungen.',
+    category: 'Technologie',
+    url: '/pages/projekte/#react',
+    icon: '⚛️',
+    keywords: ['react', 'javascript', 'frontend', 'spa', 'hooks', 'jsx'],
     priority: 7,
   },
   {
-    id: "tech-threejs",
-    title: "Three.js & WebGL",
+    id: 'tech-threejs',
+    title: 'Three.js & WebGL',
     description:
-      "3D-Grafik und interaktive Visualisierungen mit Three.js im Browser.",
-    category: "Technologie",
-    url: "/pages/projekte/#threejs",
-    icon: "🌐",
-    keywords: ["threejs", "webgl", "3d", "graphics", "animation", "particles"],
+      '3D-Grafik und interaktive Visualisierungen mit Three.js im Browser.',
+    category: 'Technologie',
+    url: '/pages/projekte/#threejs',
+    icon: '🌐',
+    keywords: ['threejs', 'webgl', '3d', 'graphics', 'animation', 'particles'],
     priority: 7,
   },
   {
-    id: "tech-photography",
-    title: "Fotografie",
+    id: 'tech-photography',
+    title: 'Fotografie',
     description:
-      "Urban Photography, Portrait und kreative Fotografie in Berlin.",
-    category: "Technologie",
-    url: "/pages/gallery/",
-    icon: "📷",
+      'Urban Photography, Portrait und kreative Fotografie in Berlin.',
+    category: 'Technologie',
+    url: '/pages/gallery/',
+    icon: '📷',
     keywords: [
-      "fotografie",
-      "photography",
-      "kamera",
-      "bilder",
-      "urban",
-      "portrait",
+      'fotografie',
+      'photography',
+      'kamera',
+      'bilder',
+      'urban',
+      'portrait',
     ],
     priority: 6,
   },
 
   // Kontakt & Legal
   {
-    id: "impressum",
-    title: "Impressum",
-    description: "Rechtliche Informationen und Kontaktdaten.",
-    category: "Info",
-    url: "/content/components/footer/impressum.html",
-    icon: "ℹ️",
-    keywords: ["impressum", "legal", "kontakt", "contact", "anschrift"],
+    id: 'impressum',
+    title: 'Impressum',
+    description: 'Rechtliche Informationen und Kontaktdaten.',
+    category: 'Info',
+    url: '/content/components/footer/impressum.html',
+    icon: 'ℹ️',
+    keywords: ['impressum', 'legal', 'kontakt', 'contact', 'anschrift'],
     priority: 3,
   },
   {
-    id: "datenschutz",
-    title: "Datenschutz",
+    id: 'datenschutz',
+    title: 'Datenschutz',
     description:
-      "Datenschutzerklärung und Informationen zum Umgang mit personenbezogenen Daten.",
-    category: "Info",
-    url: "/content/components/footer/datenschutz.html",
-    icon: "🔒",
-    keywords: ["datenschutz", "privacy", "dsgvo", "gdpr", "cookies"],
+      'Datenschutzerklärung und Informationen zum Umgang mit personenbezogenen Daten.',
+    category: 'Info',
+    url: '/content/components/footer/datenschutz.html',
+    icon: '🔒',
+    keywords: ['datenschutz', 'privacy', 'dsgvo', 'gdpr', 'cookies'],
     priority: 3,
   },
 ];
@@ -254,29 +254,29 @@ class SearchComponent {
     this.createSearchOverlay();
     this.attachEventListeners();
     this.loadStyles();
-    _log.info("Search component initialized with Spotlight design");
+    _log.info('Search component initialized with Spotlight design');
   }
 
   loadStyles() {
-    const link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.href = "/content/components/search/search.css";
-    link.dataset.injectedBy = "search-js";
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = '/content/components/search/search.css';
+    link.dataset.injectedBy = 'search-js';
     document.head.appendChild(link);
   }
 
   createSearchOverlay() {
     // Entferne bestehende Overlays
-    const existing = document.getElementById("search-overlay");
+    const existing = document.getElementById('search-overlay');
     if (existing) existing.remove();
 
     // Erstelle neues Overlay
-    const overlay = document.createElement("div");
-    overlay.id = "search-overlay";
-    overlay.className = "search-overlay";
-    overlay.setAttribute("role", "dialog");
-    overlay.setAttribute("aria-label", "Suchfenster");
-    overlay.setAttribute("aria-modal", "true");
+    const overlay = document.createElement('div');
+    overlay.id = 'search-overlay';
+    overlay.className = 'search-overlay';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-label', 'Suchfenster');
+    overlay.setAttribute('aria-modal', 'true');
 
     overlay.innerHTML = `
       <div class="search-modal" role="document">
@@ -308,14 +308,14 @@ class SearchComponent {
     document.body.appendChild(overlay);
 
     this.overlay = overlay;
-    this.input = overlay.querySelector(".search-input");
-    this.resultsContainer = overlay.querySelector(".search-results");
+    this.input = overlay.querySelector('.search-input');
+    this.resultsContainer = overlay.querySelector('.search-results');
 
     // Event Listeners für Modal
     overlay
-      .querySelector(".search-close")
-      .addEventListener("click", () => this.close());
-    overlay.addEventListener("click", (e) => {
+      .querySelector('.search-close')
+      .addEventListener('click', () => this.close());
+    overlay.addEventListener('click', (e) => {
       if (e.target === overlay) this.close();
     });
   }
@@ -324,27 +324,27 @@ class SearchComponent {
 
   attachEventListeners() {
     // Globale Tastatur-Shortcuts
-    document.addEventListener("keydown", (e) => {
+    document.addEventListener('keydown', (e) => {
       // Cmd+K oder Ctrl+K zum Öffnen
-      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
         this.toggle();
       }
 
       // ESC zum Schließen
-      if (e.key === "Escape" && this.isOpen) {
+      if (e.key === 'Escape' && this.isOpen) {
         this.close();
       }
 
       // Pfeiltasten für Navigation (nur wenn Suche offen)
       if (this.isOpen && this.currentResults.length > 0) {
-        if (e.key === "ArrowDown") {
+        if (e.key === 'ArrowDown') {
           e.preventDefault();
           this.navigateResults(1);
-        } else if (e.key === "ArrowUp") {
+        } else if (e.key === 'ArrowUp') {
           e.preventDefault();
           this.navigateResults(-1);
-        } else if (e.key === "Enter" && this.selectedIndex >= 0) {
+        } else if (e.key === 'Enter' && this.selectedIndex >= 0) {
           e.preventDefault();
           this.selectResult(this.selectedIndex);
         }
@@ -353,7 +353,7 @@ class SearchComponent {
 
     // Such-Input mit Debouncing
     if (this.input) {
-      this.input.addEventListener("input", (e) => {
+      this.input.addEventListener('input', (e) => {
         clearTimeout(this.searchTimeout);
         this.searchTimeout = setTimeout(() => {
           this.handleSearch(e.target.value);
@@ -361,8 +361,8 @@ class SearchComponent {
       });
 
       // Sofortige Suche bei Enter
-      this.input.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") {
+      this.input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
           clearTimeout(this.searchTimeout);
           if (this.currentResults.length > 0) {
             const index = this.selectedIndex >= 0 ? this.selectedIndex : 0;
@@ -385,7 +385,7 @@ class SearchComponent {
     if (this.isOpen) return;
 
     this.isOpen = true;
-    this.overlay.classList.add("active");
+    this.overlay.classList.add('active');
     this.selectedIndex = -1;
 
     // Focus auf Input mit Verzögerung für Animation
@@ -399,28 +399,28 @@ class SearchComponent {
     });
 
     // Body Scroll verhindern
-    document.body.style.overflow = "hidden";
+    document.body.style.overflow = 'hidden';
 
     // Kein Empty State anzeigen – Modal bleibt leer wie bei macOS 26.2
     if (!this.input.value) {
-      this.resultsContainer.innerHTML = "";
+      this.resultsContainer.innerHTML = '';
       this.currentResults = [];
       this.selectedIndex = -1;
     }
 
-    _log.info("Search opened");
+    _log.info('Search opened');
   }
 
   close() {
     if (!this.isOpen) return;
 
     this.isOpen = false;
-    this.overlay.classList.remove("active");
+    this.overlay.classList.remove('active');
     this.selectedIndex = -1;
 
     // Input leeren
     if (this.input) {
-      this.input.value = "";
+      this.input.value = '';
     }
 
     // Clear timeout
@@ -429,9 +429,9 @@ class SearchComponent {
     }
 
     // Body Scroll wieder erlauben
-    document.body.style.overflow = "";
+    document.body.style.overflow = '';
 
-    _log.info("Search closed");
+    _log.info('Search closed');
   }
 
   navigateResults(direction) {
@@ -439,10 +439,10 @@ class SearchComponent {
 
     // Entferne vorherige Selektion
     const previousItem = this.resultsContainer.querySelector(
-      ".search-result-item.keyboard-selected",
+      '.search-result-item.keyboard-selected',
     );
     if (previousItem) {
-      previousItem.classList.remove("keyboard-selected");
+      previousItem.classList.remove('keyboard-selected');
     }
 
     // Berechne neuen Index
@@ -456,12 +456,12 @@ class SearchComponent {
     }
 
     // Markiere neues Element
-    const items = this.resultsContainer.querySelectorAll(".search-result-item");
+    const items = this.resultsContainer.querySelectorAll('.search-result-item');
     if (items[this.selectedIndex]) {
-      items[this.selectedIndex].classList.add("keyboard-selected");
+      items[this.selectedIndex].classList.add('keyboard-selected');
       items[this.selectedIndex].scrollIntoView({
-        block: "nearest",
-        behavior: "smooth",
+        block: 'nearest',
+        behavior: 'smooth',
       });
     }
   }
@@ -470,7 +470,7 @@ class SearchComponent {
     const trimmedQuery = query.trim().toLowerCase();
 
     if (trimmedQuery.length === 0) {
-      this.resultsContainer.innerHTML = "";
+      this.resultsContainer.innerHTML = '';
       this.currentResults = [];
       this.selectedIndex = -1;
       return;
@@ -579,7 +579,7 @@ class SearchComponent {
       <div class="search-stats">
         <span class="search-stats-icon">🔍</span>
         <span class="search-stats-count">${results.length}</span> 
-        ${results.length === 1 ? "Ergebnis" : "Ergebnisse"}
+        ${results.length === 1 ? 'Ergebnis' : 'Ergebnisse'}
       </div>
       ${Object.entries(grouped)
         .map(
@@ -591,33 +591,33 @@ class SearchComponent {
           </div>
           ${items
             .map((result) => this.createResultHTML(result, query))
-            .join("")}
+            .join('')}
         </div>
       `,
         )
-        .join("")}
+        .join('')}
     `;
 
     this.resultsContainer.innerHTML = html;
 
     // Event Listeners für Ergebnisse
     this.resultsContainer
-      .querySelectorAll(".search-result-item")
+      .querySelectorAll('.search-result-item')
       .forEach((item, index) => {
-        item.addEventListener("click", (e) => {
+        item.addEventListener('click', (e) => {
           e.preventDefault();
           this.selectResult(index);
         });
 
-        item.addEventListener("mouseenter", () => {
+        item.addEventListener('mouseenter', () => {
           // Entferne keyboard-selected von allen
           this.resultsContainer
-            .querySelectorAll(".search-result-item")
+            .querySelectorAll('.search-result-item')
             .forEach((el) => {
-              el.classList.remove("keyboard-selected");
+              el.classList.remove('keyboard-selected');
             });
           this.selectedIndex = index;
-          item.classList.add("keyboard-selected");
+          item.classList.add('keyboard-selected');
         });
       });
   }
@@ -630,7 +630,7 @@ class SearchComponent {
     return `
       <a href="${result.url}" class="search-result-item" data-id="${result.id}">
         <div class="search-result-icon-wrapper">
-          ${result.icon || "📄"}
+          ${result.icon || '📄'}
         </div>
         <div class="search-result-content">
           <div class="search-result-title-row">
@@ -652,7 +652,7 @@ class SearchComponent {
     let highlightedText = text;
 
     words.forEach((word) => {
-      const regex = new RegExp(`(${this.escapeRegex(word)})`, "gi");
+      const regex = new RegExp(`(${this.escapeRegex(word)})`, 'gi');
       highlightedText = highlightedText.replace(
         regex,
         '<span class="search-result-highlight">$1</span>',
@@ -663,13 +663,13 @@ class SearchComponent {
   }
 
   escapeRegex(str) {
-    return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 
   showEmptyState(message = null) {
     const html = `
       <div class="search-empty">
-        <div class="search-empty-text">${message || "Keine Ergebnisse"}</div>
+        <div class="search-empty-text">${message || 'Keine Ergebnisse'}</div>
       </div>
     `;
     this.resultsContainer.innerHTML = html;
@@ -702,7 +702,7 @@ let searchInstance = null;
  */
 export function initSearch() {
   if (searchInstance) {
-    _log.warn("Search already initialized");
+    _log.warn('Search already initialized');
     return searchInstance;
   }
 
@@ -749,8 +749,8 @@ export function toggleSearch() {
 }
 
 // Auto-Init wenn Dokument geladen ist
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", initSearch);
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initSearch);
 } else {
   initSearch();
 }

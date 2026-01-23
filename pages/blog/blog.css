@@ -14,8 +14,8 @@
   --blog-border: rgba(255, 255, 255, 0.08);
   --blog-border-hover: rgba(255, 255, 255, 0.15);
 
-  --font-heading: "Inter", system-ui, -apple-system, sans-serif;
-  --font-body: "Inter", system-ui, -apple-system, sans-serif;
+  --font-heading: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 html {
@@ -487,7 +487,7 @@ body {
   background: rgba(255, 255, 255, 0.1);
   padding: 0.2em 0.4em;
   border-radius: 4px;
-  font-family: "JetBrains Mono", "Fira Code", "Menlo", monospace;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Menlo', monospace;
   font-size: 0.85em;
   color: #ff79c6;
 }
@@ -504,7 +504,7 @@ body {
 
 /* MacOS Terminal dots decoration */
 .code-wrapper::before {
-  content: "";
+  content: '';
   display: block;
   height: 12px;
   width: 12px;
@@ -524,7 +524,7 @@ body {
   padding: 3rem 1.5rem 1.5rem; /* Top padding for dots */
   overflow-x: auto;
   background: transparent;
-  font-family: "JetBrains Mono", "Fira Code", "Menlo", monospace;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Menlo', monospace;
 }
 
 .code-wrapper pre code {
@@ -640,7 +640,7 @@ body {
 }
 
 .btn-primary::before {
-  content: "";
+  content: '';
   position: absolute;
   top: 0;
   left: -100%;

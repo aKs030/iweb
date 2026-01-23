@@ -1,7 +1,7 @@
-import { CONFIG } from "./config.js";
-import { createLogger } from "/content/utils/shared-utilities.js";
+import { CONFIG } from './config.js';
+import { createLogger } from '/content/utils/shared-utilities.js';
 
-const log = createLogger("EarthStars");
+const log = createLogger('EarthStars');
 
 export class StarManager {
   constructor(THREE, scene, camera, renderer) {
@@ -21,7 +21,7 @@ export class StarManager {
       rafId: null,
     };
 
-    this.isMobileDevice = window.matchMedia("(max-width: 768px)").matches;
+    this.isMobileDevice = window.matchMedia('(max-width: 768px)').matches;
     this.scrollUpdateEnabled = false;
     this.lastScrollUpdate = 0;
     this.scrollUpdateThrottle = 150;
@@ -74,18 +74,18 @@ export class StarManager {
 
     const starGeometry = new this.THREE.BufferGeometry();
     starGeometry.setAttribute(
-      "position",
+      'position',
       new this.THREE.BufferAttribute(positions, 3),
     );
     starGeometry.setAttribute(
-      "aTargetPosition",
+      'aTargetPosition',
       new this.THREE.BufferAttribute(targetPositions, 3),
     );
     starGeometry.setAttribute(
-      "color",
+      'color',
       new this.THREE.BufferAttribute(colors, 3),
     );
-    starGeometry.setAttribute("size", new this.THREE.BufferAttribute(sizes, 1));
+    starGeometry.setAttribute('size', new this.THREE.BufferAttribute(sizes, 1));
 
     const starMaterial = new this.THREE.ShaderMaterial({
       uniforms: {
@@ -275,7 +275,7 @@ export class StarManager {
     if (this.scrollUpdateEnabled || this.isDisposed) return;
     this.scrollUpdateEnabled = true;
     this.boundScrollHandler = this.handleScroll.bind(this);
-    window.addEventListener("scroll", this.boundScrollHandler, {
+    window.addEventListener('scroll', this.boundScrollHandler, {
       passive: true,
     });
   }
@@ -284,7 +284,7 @@ export class StarManager {
     if (!this.scrollUpdateEnabled) return;
     this.scrollUpdateEnabled = false;
     if (this.boundScrollHandler) {
-      window.removeEventListener("scroll", this.boundScrollHandler);
+      window.removeEventListener('scroll', this.boundScrollHandler);
       this.boundScrollHandler = null;
     }
   }
@@ -307,7 +307,7 @@ export class StarManager {
     if (!cardPositions || cardPositions.length === 0) return;
     // Validate flat array structure: must be multiple of 3 (x,y,z triplets)
     if (cardPositions.length % 3 !== 0) {
-      log.warn("Invalid cardPositions array length, must be divisible by 3");
+      log.warn('Invalid cardPositions array length, must be divisible by 3');
       return;
     }
 
@@ -321,13 +321,13 @@ export class StarManager {
     // Validate spread factors once before loop to avoid redundant checks (O(1) vs O(n))
     let spreadXY = CONFIG.STARS.ANIMATION.SPREAD_XY;
     if (!isFinite(spreadXY) || spreadXY < 0) {
-      log.warn("Invalid SPREAD_XY config, using default 2");
+      log.warn('Invalid SPREAD_XY config, using default 2');
       spreadXY = 2;
     }
 
     let spreadZ = CONFIG.STARS.ANIMATION.SPREAD_Z;
     if (!isFinite(spreadZ) || spreadZ < 0) {
-      log.warn("Invalid SPREAD_Z config, using default 2");
+      log.warn('Invalid SPREAD_Z config, using default 2');
       spreadZ = 2;
     }
 
@@ -347,7 +347,7 @@ export class StarManager {
         // Throttle warning to avoid log spam (only warn once per update cycle)
         if (i === 0) {
           log.warn(
-            "Invalid position values detected in cardPositions, skipping affected stars",
+            'Invalid position values detected in cardPositions, skipping affected stars',
           );
         }
         continue;
@@ -406,7 +406,7 @@ export class StarManager {
     // WebGL-only: use CardManager progress API if available
     if (
       this.cardManager &&
-      typeof this.cardManager.setProgress === "function"
+      typeof this.cardManager.setProgress === 'function'
     ) {
       this.cardManager.setProgress(transitionValue);
     }
@@ -508,7 +508,7 @@ export class ShootingStarManager {
         this.scene.add(star);
       }
     } catch (error) {
-      log.error("Failed to create shooting star:", error);
+      log.error('Failed to create shooting star:', error);
     }
   }
 
@@ -563,7 +563,7 @@ export class ShootingStarManager {
       return;
     this.isShowerActive = true;
     this.showerTimer = 0;
-    log.info("🌠 Meteor shower triggered!");
+    log.info('🌠 Meteor shower triggered!');
   }
 
   cleanup() {
