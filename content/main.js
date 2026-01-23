@@ -57,7 +57,7 @@ if ('serviceWorker' in navigator && window.isSecureContext) {
           try {
             await reg.sync.register('sync-content');
             log?.info?.('Background Sync registered');
-          } catch (e) {
+          } catch {
             // Unsupported
           }
         }
@@ -72,7 +72,7 @@ if ('serviceWorker' in navigator && window.isSecureContext) {
               });
               log?.info?.('Periodic Sync registered');
             }
-          } catch (e) {
+          } catch {
             // Unsupported
           }
         }
@@ -607,7 +607,7 @@ const ThreeEarthLoader = (() => {
         load();
         return;
       }
-    } catch (e) {
+    } catch {
       // Fallback to observer
     }
 
@@ -698,7 +698,7 @@ document.addEventListener(
             const pending = AppLoadManager.getPending() || [];
             if (pending.includes('three-earth')) return EXTENDED_DELAY;
           }
-        } catch (err) {
+        } catch {
           // Fallback to default
         }
         return DEFAULT_DELAY;

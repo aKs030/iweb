@@ -363,12 +363,12 @@ function renderVideoCard(grid, it, detailsMap) {
               Object.assign({ event: 'open_video_page' }, ga4Payload),
             );
           }
-        } catch (err) {
+        } catch {
           /* ignore analytics errors */
         }
       });
     }
-  } catch (err) {
+  } catch {
     /* ignore */
   }
 
@@ -562,7 +562,7 @@ async function loadFromApi(handle) {
           showInfoMessage(
             'Uploads playlist leer — lade Videos per Suche als Fallback.',
           );
-      } catch (e) {
+      } catch {
         /* ignore */
       }
       // Attempt search fallback when playlist is empty
@@ -575,7 +575,7 @@ async function loadFromApi(handle) {
         showInfoMessage(
           'Uploads playlist nicht vorhanden — lade Videos per Suche als Fallback.',
         );
-    } catch (e) {
+    } catch {
       /* ignore */
     }
     items = await searchChannelVideos(channelId);
