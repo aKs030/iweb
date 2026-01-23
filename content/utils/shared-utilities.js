@@ -16,7 +16,23 @@ const LOG_LEVELS = {
   debug: 3,
 };
 
-let globalLogLevel = LOG_LEVELS.warn;
+// Detect production environment
+function isProduction() {
+  if (typeof window === 'undefined') return false;
+  const hostname = window.location?.hostname || '';
+  // Production if on actual domain (not localhost, not file://)
+  return (
+    hostname &&
+    hostname !== 'localhost' &&
+    hostname !== '127.0.0.1' &&
+    !hostname.startsWith('192.168.') &&
+    !hostname.startsWith('10.') &&
+    window.location.protocol !== 'file:'
+  );
+}
+
+// Default to error-only in production, warn in development
+let globalLogLevel = isProduction() ? LOG_LEVELS.error : LOG_LEVELS.warn;
 
 function setGlobalLogLevel(level) {
   if (level in LOG_LEVELS) {
@@ -36,11 +52,13 @@ export function createLogger(category) {
       }
     },
     warn: (message, ...args) => {
+      // Skip warnings in production unless explicitly enabled
       if (globalLogLevel >= LOG_LEVELS.warn) {
         (console.warn || noop)(prefix, message, ...args);
       }
     },
     info: (message, ...args) => {
+      // Skip info in production unless explicitly enabled
       if (globalLogLevel >= LOG_LEVELS.info) {
         (console.info || noop)(prefix, message, ...args);
       }
@@ -55,7 +73,7 @@ export function createLogger(category) {
 
 const sharedLogger = createLogger('SharedUtilities');
 
-// Auto-enable debug mode
+// Auto-enable debug mode via URL param or localStorage
 if (typeof window !== 'undefined') {
   const urlParams = new URLSearchParams(window.location.search);
   const debugParam = urlParams.get('debug');

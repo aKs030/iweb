@@ -1,13 +1,13 @@
 import React from 'https://esm.sh/react@18.2.0?dev=false';
 import ReactDOM from 'https://esm.sh/react-dom@18.2.0/client?dev=false';
 import htm from 'https://cdn.jsdelivr.net/npm/htm@3.1.1/dist/htm.module.js';
-/* createLogger import removed (unused in this module) */
+import { createLogger } from '/content/utils/shared-utilities.js';
 import { marked } from 'https://cdn.jsdelivr.net/npm/marked@5.1.1/lib/marked.esm.js';
 import DOMPurify from 'https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.es.js';
 
 marked.setOptions({ mangle: false, headerIds: false });
 
-/* logger available via createLogger('BlogApp') if needed */
+const log = createLogger('BlogApp');
 const html = htm.bind(React.createElement);
 
 // --- Icons ---
@@ -138,7 +138,7 @@ async function loadPostsData(seedPosts = []) {
 
     return Array.from(map.values()).sort((a, b) => b.timestamp - a.timestamp);
   } catch (e) {
-    console.warn('Fallback to seed data', e);
+    log.warn('Fallback to seed data', e);
     return seedPosts;
   }
 }
