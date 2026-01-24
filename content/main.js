@@ -44,48 +44,7 @@ const perfMarks = {
   windowLoaded: 0,
 };
 
-// ===== Service Worker Registration =====
-if ('serviceWorker' in navigator && window.isSecureContext) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker
-      .register('/sw.js')
-      .then(async (reg) => {
-        log?.info?.('ServiceWorker registered', reg.scope || '');
-
-        // Optional Background Sync
-        if ('sync' in reg) {
-          try {
-            await reg.sync.register('sync-content');
-            log?.info?.('Background Sync registered');
-          } catch {
-            // Unsupported
-          }
-        }
-
-        // Optional Periodic Background Sync
-        if ('periodicSync' in reg) {
-          try {
-            const tags = await reg.periodicSync.getTags().catch(() => []);
-            if (!tags?.includes('fetch-updates')) {
-              await reg.periodicSync.register('fetch-updates', {
-                minInterval: 24 * 60 * 60 * 1000,
-              });
-              log?.info?.('Periodic Sync registered');
-            }
-          } catch {
-            // Unsupported
-          }
-        }
-      })
-      .catch((err) => {
-        const details = {
-          name: err?.name || 'UnknownError',
-          message: err?.message || String(err),
-        };
-        log?.warn?.('ServiceWorker registration failed', details);
-      });
-  });
-}
+// Service Worker removed - no longer needed
 
 // ===== Accessibility Announcements =====
 const announce = (() => {
