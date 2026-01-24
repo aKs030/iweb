@@ -97,9 +97,21 @@ const initMenu = () => {
   };
 
   const _removeDocClick = addListener(document, 'click', _onMenuDocClick);
+
+  // Escape-Taste schließt das Menü
+  const _onEscapeKey = (event) => {
+    if (event.key === 'Escape') {
+      closeMenu(menuContainer);
+      const menuToggle = menuContainer.querySelector('.site-menu__toggle');
+      if (menuToggle) menuToggle.focus();
+    }
+  };
+
+  const _removeEscapeKey = addListener(document, 'keydown', _onEscapeKey);
+
   // store remover for potential cleanup
   menuContainer.__listenerRemovers = menuContainer.__listenerRemovers || [];
-  menuContainer.__listenerRemovers.push(_removeDocClick);
+  menuContainer.__listenerRemovers.push(_removeDocClick, _removeEscapeKey);
 };
 
 // Use shared EVENTS.DOM_READY or fallback to DOMContentLoaded
@@ -134,6 +146,18 @@ function getMenuHTML() {
       <path
         fill="currentColor"
         d="M480 416V80a48 48 0 0 0-48-48H80a48 48 0 0 0-48 48v336H16a16 16 0 0 0 0 32h448a16 16 0 0 0 0-32ZM64 416V80a16 16 0 0 1 16-16h352a16 16 0 0 1 16 16v336Zm96-80 64-80 48 64 64-80 80 96H160Zm48-144a40 40 0 1 1-40-40 40 40 0 0 1 40 40Zm368-96v304a16 16 0 0 1-16 16h-16v-32h16V96H496V64h16a16 16 0 0 1 16 16Z"
+      />
+    </symbol>
+    <symbol id="icon-video" viewBox="0 0 576 512">
+      <path
+        fill="currentColor"
+        d="M336.2 64H47.8C21.4 64 0 85.4 0 111.8v288.4C0 426.6 21.4 448 47.8 448h288.4c26.4 0 47.8-21.4 47.8-47.8V111.8c0-26.4-21.4-47.8-47.8-47.8zm189.4 37.7L416 177.3v157.4l109.6 75.5c21.2 14.6 50.4-.3 50.4-25.8V127.5c0-25.4-29.1-40.4-50.4-25.8z"
+      />
+    </symbol>
+    <symbol id="icon-blog" viewBox="0 0 512 512">
+      <path
+        fill="currentColor"
+        d="M471.6 21.7c-21.9-21.9-57.3-21.9-79.2 0L362.3 51.7l97.9 97.9 30.1-30.1c21.9-21.9 21.9-57.3 0-79.2L471.6 21.7zm-299.2 220c-6.1 6.1-10.8 13.6-13.5 21.9l-29.6 88.8c-2.9 8.6-.6 18.1 5.8 24.6s15.9 8.7 24.6 5.8l88.8-29.6c8.2-2.7 15.7-7.4 21.9-13.5L437.7 172.3 339.7 74.3 172.4 241.7zM96 64C43 64 0 107 0 160V416c0 53 43 96 96 96H352c53 0 96-43 96-96V320c0-17.7-14.3-32-32-32s-32 14.3-32 32v96c0 17.7-14.3 32-32 32H96c-17.7 0-32-14.3-32-32V160c0-17.7 14.3-32 32-32h96c17.7 0 32-14.3 32-32s-14.3-32-32-32H96z"
       />
     </symbol>
     <symbol id="icon-user" viewBox="0 0 448 512">
@@ -208,7 +232,7 @@ function getMenuHTML() {
     <li>
       <a href="/videos/">
         <svg class="nav-icon" aria-hidden="true">
-          <use href="#icon-images"></use>
+          <use href="#icon-video"></use>
         </svg>
         <span class="icon-fallback" style="display: none">🎬</span>
         <span>Videos</span>
@@ -217,7 +241,7 @@ function getMenuHTML() {
     <li>
       <a href="/blog/">
         <svg class="nav-icon" aria-hidden="true">
-          <use href="#icon-mail"></use>
+          <use href="#icon-blog"></use>
         </svg>
         <span class="icon-fallback" style="display: none">📝</span>
         <span>Blog</span>
@@ -425,8 +449,23 @@ function initializeSubmenuLinks() {
     };
 
     const _removeToggle = addListener(btn, 'click', _onSubmenuToggle);
+
+    // Keyboard support für Submenu
+    const _onSubmenuKeydown = (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        _onSubmenuToggle();
+      } else if (e.key === 'Escape') {
+        const submenu = btn.nextElementSibling;
+        submenu.style.display = 'none';
+        btn.setAttribute('aria-expanded', 'false');
+        btn.focus();
+      }
+    };
+
+    const _removeKeydown = addListener(btn, 'keydown', _onSubmenuKeydown);
     btn.__listenerRemovers = btn.__listenerRemovers || [];
-    btn.__listenerRemovers.push(_removeToggle);
+    btn.__listenerRemovers.push(_removeToggle, _removeKeydown);
   });
 
   const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
@@ -549,6 +588,7 @@ function extractSectionInfo(sectionId) {
  */
 function initializeScrollDetection() {
   let snapEventListener = null;
+  let rafId = null;
 
   function updateTitleAndSubtitle(newTitle, newSubtitle = '') {
     const siteTitleEl = getElementById('site-title');
@@ -559,25 +599,30 @@ function initializeScrollDetection() {
     const currentSubtitle = siteSubtitleEl?.textContent || '';
     if (currentTitle === newTitle && currentSubtitle === newSubtitle) return;
 
-    siteTitleEl.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
-    siteTitleEl.style.opacity = '0.6';
-    siteTitleEl.style.transform = 'scale(0.95)';
-    if (siteSubtitleEl) {
-      siteSubtitleEl.classList.remove('show');
-    }
+    // Cancel any pending animation frame
+    if (rafId) cancelAnimationFrame(rafId);
 
-    setTimeout(() => {
-      siteTitleEl.textContent = newTitle;
-      siteTitleEl.style.opacity = '1';
-      siteTitleEl.style.transform = 'scale(1)';
-
-      if (siteSubtitleEl && newSubtitle) {
-        siteSubtitleEl.textContent = newSubtitle;
-        setTimeout(() => {
-          siteSubtitleEl.classList.add('show');
-        }, 100);
+    rafId = requestAnimationFrame(() => {
+      siteTitleEl.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+      siteTitleEl.style.opacity = '0.6';
+      siteTitleEl.style.transform = 'scale(0.95)';
+      if (siteSubtitleEl) {
+        siteSubtitleEl.classList.remove('show');
       }
-    }, 200);
+
+      setTimeout(() => {
+        siteTitleEl.textContent = newTitle;
+        siteTitleEl.style.opacity = '1';
+        siteTitleEl.style.transform = 'scale(1)';
+
+        if (siteSubtitleEl && newSubtitle) {
+          siteSubtitleEl.textContent = newSubtitle;
+          setTimeout(() => {
+            siteSubtitleEl.classList.add('show');
+          }, 100);
+        }
+      }, 200);
+    });
   }
 
   function initSnapEventListener() {

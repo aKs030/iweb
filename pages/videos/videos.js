@@ -1,10 +1,9 @@
-/* exported _shareChannel, _renderDemoVideos */
 import { createLogger } from '/content/utils/shared-utilities.js';
+import { escapeHTML } from '/content/utils/html-sanitizer.js';
 import { FAVICON_512 } from '../../content/config/site-config.js';
 
 const log = createLogger('videos');
 
-// Share function for YouTube channel
 function _shareChannel() {
   const channelId = globalThis.YOUTUBE_CHANNEL_ID;
   const handle = (globalThis.YOUTUBE_CHANNEL_HANDLE || 'aks.030').replace(
@@ -65,8 +64,6 @@ function activateThumb(btn) {
   btn.dataset.loaded = '1';
 }
 
-// Bind event handlers and accessible label for a thumb button
-// Bind event handlers and accessible label for a thumb button
 function bindThumb(btn) {
   if (btn.dataset.bound) return;
   if (btn.dataset.thumb)
@@ -94,7 +91,6 @@ function bindThumb(btn) {
   btn.dataset.bound = '1';
 }
 
-// Helper to fetch JSON and surface HTTP errors
 async function fetchJson(url) {
   const safeUrl = url.replaceAll(/([?&]key=)[^&]+/g, '$1[REDACTED]');
   log.warn(`Fetching ${safeUrl}`);
@@ -263,8 +259,8 @@ function renderVideoCard(grid, it, detailsMap) {
   const article = document.createElement('article');
   article.className = 'video-card';
   article.innerHTML = `
-    <h2>${escapeHtml(title)}</h2>
-    <p class="video-desc">${escapeHtml(desc)}</p>
+    <h2>${escapeHTML(title)}</h2>
+    <p class="video-desc">${escapeHTML(desc)}</p>
   `;
 
   const thumbBtn = document.createElement('button');
@@ -277,7 +273,7 @@ function renderVideoCard(grid, it, detailsMap) {
 
   const meta = document.createElement('div');
   meta.className = 'video-meta';
-  meta.innerHTML = `<div class="video-info"><small class="pub-date">${pub}</small></div><div class="video-actions u-row"><a href="https://youtu.be/${vid}" target="_blank" rel="noopener">Auf YouTube öffnen</a> <a href="/videos/${vid}/" class="page-link" title="Öffne Landing‑Page für dieses Video" data-video-id="${vid}" data-video-title="${escapeHtml(
+  meta.innerHTML = `<div class="video-info"><small class="pub-date">${pub}</small></div><div class="video-actions u-row"><a href="https://youtu.be/${vid}" target="_blank" rel="noopener">Auf YouTube öffnen</a> <a href="/videos/${vid}/" class="page-link" title="Öffne Landing‑Page für dieses Video" data-video-id="${vid}" data-video-title="${escapeHTML(
     title,
   )}">Seite öffnen</a></div>`;
 
@@ -447,16 +443,6 @@ async function loadLatestVideos() {
     log.error('Fehler beim Laden der Videos', err);
     showErrorMessage(err);
   }
-}
-
-// Top-level escapeHtml helper (shared)
-function escapeHtml(s) {
-  return String(s)
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#39;');
 }
 
 // Helper: clean titles for display (remove trailing channel suffixes like "- Abdulkerim Sesli" or "— Abdulkerim Berlin")

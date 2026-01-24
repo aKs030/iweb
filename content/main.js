@@ -44,8 +44,6 @@ const perfMarks = {
   windowLoaded: 0,
 };
 
-// Service Worker removed - no longer needed
-
 // ===== Accessibility Announcements =====
 const announce = (() => {
   const cache = new Map();
@@ -304,7 +302,7 @@ const ScrollSnapping = (() => {
   function handleScroll() {
     disableSnap();
     clearTimeout(snapTimer);
-    snapTimer = setTimeout(enableSnap, 180);
+    snapTimer = setTimeout(enableSnap, 150); // Reduziert von 180ms
   }
 
   function handleKey(event) {
@@ -335,7 +333,7 @@ ScrollSnapping.init();
 
 // ===== Loading Screen Manager =====
 const LoadingScreenManager = (() => {
-  const MIN_DISPLAY_TIME = 600;
+  const MIN_DISPLAY_TIME = 500; // Reduziert von 600ms
   const state = {
     overlay: null,
     bar: null,
@@ -347,11 +345,9 @@ const LoadingScreenManager = (() => {
     messages: [
       'Initialisiere System...',
       'Assets werden geladen...',
-      'Verbinde Neural Interface...',
       'Rendere 3D-Umgebung...',
-      'Optimiere Shader...',
-      'Starte KI-Module...',
-      'Synchronisiere Daten...',
+      'Optimiere Performance...',
+      'Starte Module...',
     ],
   };
 
@@ -392,19 +388,19 @@ const LoadingScreenManager = (() => {
     updateUI(state.messages[state.messageIndex]);
 
     state.interval = setInterval(() => {
-      const increment = Math.random() * (state.progress > 70 ? 2 : 5);
+      const increment = Math.random() * (state.progress > 70 ? 3 : 6); // Schnellerer Fortschritt
       const ceiling = 96;
       const next = Math.min(state.progress + increment, ceiling);
       state.progress = Math.max(state.progress, next);
 
       // Rotate messages for a subtle "system" feel
-      if (Math.random() > 0.8 && state.progress < 94) {
+      if (Math.random() > 0.85 && state.progress < 94) {
         state.messageIndex = (state.messageIndex + 1) % state.messages.length;
         updateUI(state.messages[state.messageIndex]);
       } else {
         updateUI();
       }
-    }, 120);
+    }, 100); // Reduziert von 120ms
   }
 
   function finalizeProgress(statusText = 'Bereit.') {
@@ -469,7 +465,7 @@ const LoadingScreenManager = (() => {
           log.debug('Earth grace period completed - proceeding to hide loader');
         }
         proceedToHide();
-      }, 500);
+      }, 300); // Reduziert von 500ms
     }, delay);
   }
 
@@ -646,9 +642,9 @@ document.addEventListener(
 
     // Smart force-hide with retry logic
     (function scheduleSmartForceHide(attempt = 1) {
-      const DEFAULT_DELAY = 5000;
-      const EXTENDED_DELAY = 8000;
-      const RETRY_DELAY = 5000;
+      const DEFAULT_DELAY = 4000; // Reduziert von 5000ms
+      const EXTENDED_DELAY = 6000; // Reduziert von 8000ms
+      const RETRY_DELAY = 3000; // Reduziert von 5000ms
       const MAX_ATTEMPTS = 3;
 
       const computeDelay = () => {
