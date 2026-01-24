@@ -34,26 +34,28 @@
   X-Frame-Options: DENY
   Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=()
   
-  # Content Security Policy - Report-Only Mode (Phase 1)
-  # Monitoring violations before enforcement
+  # Content Security Policy - ENFORCEMENT MODE (Phase 3) ✅
+  # Strict CSP without unsafe-inline
   # 
-  # CSP Directives Explained:
+  # Changes from Report-Only:
+  # - Removed 'unsafe-inline' from script-src and style-src
+  # - Added Gemini API to connect-src
+  # - Switched to enforcement mode (blocks violations)
+  #
+  # CSP Directives:
   # - default-src 'self': Only allow resources from same origin by default
-  # - script-src: Allow scripts from self, inline (temporary), jsDelivr CDN, Google Tag Manager, Google Analytics
-  # - style-src: Allow styles from self, inline (temporary for dynamic styles), Google Fonts
-  # - img-src: Allow images from self, YouTube thumbnails, Google Analytics, data URIs, blobs
+  # - script-src: Allow scripts from self, external CDNs (jsDelivr), Google services
+  # - style-src: Allow styles from self, Google Fonts
+  # - img-src: Allow images from self, YouTube, Google Analytics, data URIs, blobs
   # - font-src: Allow fonts from self and Google Fonts
-  # - connect-src: Allow connections to self, Google APIs (YouTube), Google Analytics
+  # - connect-src: Allow API calls to self, Google APIs, Gemini AI
   # - frame-src: Only allow YouTube embeds (privacy-enhanced mode)
   # - object-src 'none': Block all plugins (Flash, Java, etc.)
   # - base-uri 'self': Prevent base tag hijacking
   # - form-action 'self': Only allow form submissions to same origin
-  # - frame-ancestors 'none': Prevent site from being embedded in iframes (clickjacking protection)
+  # - frame-ancestors 'none': Prevent site from being embedded (clickjacking protection)
   # - upgrade-insecure-requests: Automatically upgrade HTTP to HTTPS
   #
-  # TODO Phase 2: Remove 'unsafe-inline' from script-src and style-src by:
-  #   1. Moving inline scripts to external files
-  #   2. Adding nonces to necessary inline scripts
-  #   3. Using CSS classes instead of inline styles
-  # TODO Phase 3: Switch from Content-Security-Policy-Report-Only to Content-Security-Policy (enforcement mode)
-  Content-Security-Policy-Report-Only: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' https://i.ytimg.com https://i9.ytimg.com https://www.youtube.com https://www.google-analytics.com data: blob:; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://www.googleapis.com https://www.google-analytics.com; frame-src https://www.youtube-nocookie.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
+  # Note: JSON-LD scripts are safe (type="application/ld+json" is not executable)
+  # Note: Module scripts with src are allowed (type="module" with external src)
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' https://fonts.googleapis.com; img-src 'self' https://i.ytimg.com https://i9.ytimg.com https://www.youtube.com https://www.google-analytics.com data: blob:; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://www.googleapis.com https://www.google-analytics.com https://generativelanguage.googleapis.com; frame-src https://www.youtube-nocookie.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
