@@ -858,16 +858,25 @@ function handleVisibilityChange() {
 function startAnimationLoop() {
   const clock = new THREE_INSTANCE.Clock();
   const capabilities = deviceCapabilities || detectDeviceCapabilities();
-  // const updateInterval = capabilities.isLowEnd ? 1 / 30 : 1 / 60; // seconds between heavy updates
-  // let updateAccumulator = 0;
+  let lastFrameTime = performance.now();
+  const targetFrameTime = capabilities.isLowEnd ? 33.33 : 16.67; // 30fps or 60fps
 
   animate = () => {
     if (!isSystemActive) return;
     animationFrameId = requestAnimationFrame(animate);
 
+    // Throttle frame rate for low-end devices
+    const now = performance.now();
+    const elapsed = now - lastFrameTime;
+    
+    if (capabilities.isLowEnd && elapsed < targetFrameTime) {
+      return; // Skip this frame
+    }
+    
+    lastFrameTime = now;
+
     // Always measure delta/elapsed each frame
     const delta = clock.getDelta();
-    // updateAccumulator += delta;
 
     // Use delta time for consistent speed across all frame rates (60Hz vs 120Hz)
     const elapsedTime = clock.getElapsedTime();

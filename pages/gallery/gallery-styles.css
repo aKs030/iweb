@@ -960,11 +960,6 @@ img {
   z-index: 9999;
 }
 
-.footer-trigger-zone {
-  width: 100%;
-  height: 1px;
-}
-
 .badge {
   padding: 0.25rem 0.75rem;
   background: rgb(11 13 17 / 36%);
