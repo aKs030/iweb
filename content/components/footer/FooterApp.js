@@ -1,157 +1,181 @@
 /**
- * Footer App - Kompakte Version
- * @version 2.0.0
- * Alle Footer-Funktionen in einer Datei
+ * Modern Footer App - Kompakte ES2024 Version
+ * @version 3.0.0
  */
 
 import {
   createLogger,
   CookieManager,
   debounce,
+  getElementById,
 } from '/content/utils/shared-utilities.js';
 import { a11y } from '/content/utils/accessibility-manager.js';
 
 const log = createLogger('FooterApp');
 
-// Polyfill for inert attribute (for older browsers)
-if (!('inert' in HTMLElement.prototype)) {
-  Object.defineProperty(HTMLElement.prototype, 'inert', {
-    enumerable: true,
-    get() {
-      return this.hasAttribute('inert');
-    },
-    set(value) {
-      if (value) {
-        this.setAttribute('inert', '');
-        this.setAttribute('aria-hidden', 'true');
-      } else {
-        this.removeAttribute('inert');
-        this.removeAttribute('aria-hidden');
-      }
-    },
-  });
-}
-
+// ===== Configuration =====
 const CONFIG = {
   SCROLL_MARK_DURATION: 1000,
-  RESIZE_DEBOUNCE: 150,
-  EXPAND_LOCK_MS: 1000,
-  COLLAPSE_DEBOUNCE_MS: 250,
+  RESIZE_DEBOUNCE: 120,
+  EXPAND_LOCK_MS: 800,
+  COLLAPSE_DEBOUNCE_MS: 200,
   FOOTER_HTML_PATH: '/content/components/footer/footer.html',
 };
 
-const dom = {
-  cache: new Map(),
-  get: (selector, parent = document) => {
-    const key = `${selector}-${parent === document ? 'doc' : 'parent'}`;
-    const cached = dom.cache.get(key);
-    if (cached && document.contains(cached)) return cached;
-    const element = parent.querySelector(selector);
-    if (element) dom.cache.set(key, element);
-    return element;
-  },
-  getAll: (selector) => {
-    const key = `all-${selector}`;
-    const cached = dom.cache.get(key);
-    if (cached?.length && cached.every((el) => document.contains(el)))
-      return cached;
-    const elements = Array.from(document.querySelectorAll(selector));
-    if (elements.length) dom.cache.set(key, elements);
-    return elements;
-  },
-  clear: () => dom.cache.clear(),
-};
+// ===== Modern DOM Cache =====
+class DOMCache {
+  #cache = new Map();
 
-const scrollManager = {
-  activeToken: null,
-  timer: null,
-  create: (duration = CONFIG.SCROLL_MARK_DURATION) => {
-    if (scrollManager.timer) clearTimeout(scrollManager.timer);
-    const token = Symbol('progScroll');
-    scrollManager.activeToken = token;
+  get(selector, parent = document) {
+    if (
+      selector.startsWith('#') &&
+      !selector.includes(' ') &&
+      parent === document
+    ) {
+      return getElementById(selector.slice(1));
+    }
+
+    const key = `${selector}-${parent === document ? 'doc' : 'parent'}`;
+    const cached = this.#cache.get(key);
+    if (cached?.isConnected) return cached;
+
+    const element = parent.querySelector(selector);
+    if (element) this.#cache.set(key, element);
+    return element;
+  }
+
+  getAll(selector) {
+    const key = `all-${selector}`;
+    const cached = this.#cache.get(key);
+    if (cached?.length && cached.every((el) => el.isConnected)) return cached;
+
+    const elements = [...document.querySelectorAll(selector)];
+    if (elements.length) this.#cache.set(key, elements);
+    return elements;
+  }
+
+  clear() {
+    this.#cache.clear();
+  }
+}
+
+// ===== Scroll Manager =====
+class ScrollManager {
+  #activeToken = null;
+  #timer = null;
+
+  create(duration = CONFIG.SCROLL_MARK_DURATION) {
+    this.#timer && clearTimeout(this.#timer);
+    const token = Symbol('scroll');
+    this.#activeToken = token;
+
     if (duration > 0) {
-      scrollManager.timer = setTimeout(() => {
-        if (scrollManager.activeToken === token)
-          scrollManager.activeToken = null;
-        scrollManager.timer = null;
+      this.#timer = setTimeout(() => {
+        if (this.#activeToken === token) this.#activeToken = null;
+        this.#timer = null;
       }, duration);
     }
-    return token;
-  },
-  clear: () => {
-    scrollManager.activeToken = null;
-    if (scrollManager.timer) clearTimeout(scrollManager.timer);
-    scrollManager.timer = null;
-  },
-  hasActive: () => !!scrollManager.activeToken,
-};
 
-const globalClose = {
-  closeHandler: null,
-  bound: false,
-  onDocClick: (e) => {
-    const footer = dom.get('#site-footer');
+    return token;
+  }
+
+  clear() {
+    this.#activeToken = null;
+    this.#timer && clearTimeout(this.#timer);
+    this.#timer = null;
+  }
+
+  hasActive() {
+    return !!this.#activeToken;
+  }
+}
+
+// ===== Global Close Handler =====
+class GlobalCloseHandler {
+  #closeHandler = null;
+  #abortController = null;
+
+  setCloseHandler(fn) {
+    this.#closeHandler = fn;
+  }
+
+  #onDocClick = (e) => {
+    const footer = this.dom.get('#site-footer');
     if (!footer?.classList.contains('footer-expanded')) return;
     if (e.target.closest('#site-footer')) return;
-    globalClose.closeHandler?.();
-  },
-  onUserScroll: () => {
-    if (scrollManager.hasActive()) return;
-    const footer = dom.get('#site-footer');
+    this.#closeHandler?.();
+  };
+
+  #onUserScroll = () => {
+    if (this.scrollManager.hasActive()) return;
+    const footer = this.dom.get('#site-footer');
     if (!footer?.classList.contains('footer-expanded')) return;
-    globalClose.closeHandler?.();
-  },
-  setCloseHandler: (fn) => (globalClose.closeHandler = fn),
-  bind: () => {
-    if (globalClose.bound) return;
-    const isMobile = globalThis.matchMedia?.('(max-width: 768px)')?.matches;
+    this.#closeHandler?.();
+  };
+
+  bind(dom, scrollManager) {
+    this.dom = dom;
+    this.scrollManager = scrollManager;
+
+    if (this.#abortController) return;
+
+    this.#abortController = new AbortController();
+    const { signal } = this.#abortController;
+    const isMobile = window.matchMedia('(max-width: 768px)').matches;
+
     if (isMobile) {
-      globalThis.addEventListener('scroll', globalClose.onUserScroll, {
+      window.addEventListener('scroll', this.#onUserScroll, {
         passive: true,
+        signal,
       });
-      globalThis.addEventListener('touchmove', globalClose.onUserScroll, {
+      window.addEventListener('touchmove', this.#onUserScroll, {
         passive: true,
+        signal,
       });
     } else {
-      document.addEventListener('click', globalClose.onDocClick, {
+      document.addEventListener('click', this.#onDocClick, {
         capture: true,
         passive: true,
+        signal,
       });
-      globalThis.addEventListener('wheel', globalClose.onUserScroll, {
+      window.addEventListener('wheel', this.#onUserScroll, {
         passive: true,
+        signal,
       });
     }
-    globalClose.bound = true;
-  },
-  unbind: () => {
-    if (!globalClose.bound) return;
-    document.removeEventListener('click', globalClose.onDocClick, true);
-    globalThis.removeEventListener('wheel', globalClose.onUserScroll);
-    globalThis.removeEventListener('scroll', globalClose.onUserScroll);
-    globalThis.removeEventListener('touchmove', globalClose.onUserScroll);
-    globalClose.bound = false;
-  },
-};
+  }
 
-const analytics = {
-  load: () => {
+  unbind() {
+    this.#abortController?.abort();
+    this.#abortController = null;
+  }
+}
+
+// ===== Analytics Manager =====
+class AnalyticsManager {
+  load() {
     document
       .querySelectorAll('script[data-consent="required"]')
       .forEach((script) => {
         const newScript = document.createElement('script');
-        [...script.attributes].forEach((attr) => {
+
+        for (const attr of script.attributes) {
           const name = attr.name === 'data-src' ? 'src' : attr.name;
           if (!['data-consent', 'type'].includes(attr.name)) {
             newScript.setAttribute(name, attr.value);
           }
-        });
+        }
+
         if (script.innerHTML.trim()) newScript.innerHTML = script.innerHTML;
-        script.parentNode.replaceChild(newScript, script);
+        script.replaceWith(newScript);
       });
+
     log.info('Analytics loaded');
-  },
-  updateConsent: (input = true) => {
+  }
+
+  updateConsent(input = true) {
     if (typeof gtag !== 'function') return;
+
     const status = (val) => (val ? 'granted' : 'denied');
     const payload =
       typeof input === 'boolean'
@@ -162,26 +186,37 @@ const analytics = {
             ad_personalization: status(input),
           }
         : {
-            ad_storage: input.ad_storage || status(input.granted),
-            analytics_storage: input.analytics_storage || status(input.granted),
-            ad_user_data: input.ad_user_data || status(input.granted),
+            ad_storage: input.ad_storage ?? status(input.granted),
+            analytics_storage: input.analytics_storage ?? status(input.granted),
+            ad_user_data: input.ad_user_data ?? status(input.granted),
             ad_personalization:
-              input.ad_personalization || status(input.granted),
+              input.ad_personalization ?? status(input.granted),
           };
+
     try {
       gtag('consent', 'update', payload);
     } catch {
-      /* ignore */
+      // Ignore
     }
-  },
-};
+  }
+}
 
-const consentBanner = {
-  handlers: new Map(),
-  init: () => {
-    const banner = dom.get('#cookie-consent-banner');
-    const acceptBtn = dom.get('#accept-cookies-btn');
-    const rejectBtn = dom.get('#reject-cookies-btn');
+// ===== Consent Banner Manager =====
+class ConsentBannerManager {
+  #handlers = new Map();
+  #dom = null;
+  #analytics = null;
+
+  constructor(dom, analytics) {
+    this.#dom = dom;
+    this.#analytics = analytics;
+  }
+
+  init() {
+    const banner = this.#dom.get('#cookie-consent-banner');
+    const acceptBtn = this.#dom.get('#accept-cookies-btn');
+    const rejectBtn = this.#dom.get('#reject-cookies-btn');
+
     if (!banner || !acceptBtn) return;
 
     const consent = CookieManager.get('cookie_consent');
@@ -191,97 +226,120 @@ const consentBanner = {
     );
 
     if (consent === 'accepted') {
-      analytics.updateConsent(true);
-      analytics.load();
+      this.#analytics.updateConsent(true);
+      this.#analytics.load();
     } else if (consent === 'rejected') {
-      analytics.updateConsent(false);
+      this.#analytics.updateConsent(false);
     }
 
-    // Remove old handlers
-    consentBanner.cleanup();
+    this.#cleanup();
 
-    // Store handlers for cleanup
-    const acceptHandler = () => consentBanner.accept();
-    const rejectHandler = () => consentBanner.reject();
+    const acceptHandler = () => this.#accept();
+    const rejectHandler = () => this.#reject();
 
     acceptBtn.addEventListener('click', acceptHandler);
     rejectBtn?.addEventListener('click', rejectHandler);
 
-    consentBanner.handlers.set('accept', {
+    this.#handlers.set('accept', {
       element: acceptBtn,
       handler: acceptHandler,
     });
     if (rejectBtn)
-      consentBanner.handlers.set('reject', {
+      this.#handlers.set('reject', {
         element: rejectBtn,
         handler: rejectHandler,
       });
-  },
-  cleanup: () => {
-    consentBanner.handlers.forEach(({ element, handler }) => {
+  }
+
+  #cleanup() {
+    this.#handlers.forEach(({ element, handler }) => {
       element?.removeEventListener('click', handler);
     });
-    consentBanner.handlers.clear();
-  },
-  accept: () => {
-    dom.get('#cookie-consent-banner')?.classList.add('hidden');
+    this.#handlers.clear();
+  }
+
+  #accept() {
+    this.#dom.get('#cookie-consent-banner')?.classList.add('hidden');
     CookieManager.set('cookie_consent', 'accepted');
     (globalThis.dataLayer = globalThis.dataLayer || []).push({
       event: 'consentGranted',
     });
-    analytics.updateConsent(true);
-    analytics.load();
+    this.#analytics.updateConsent(true);
+    this.#analytics.load();
     a11y?.announce('Alle Cookies akzeptiert', { priority: 'polite' });
-  },
-  reject: () => {
-    dom.get('#cookie-consent-banner')?.classList.add('hidden');
+  }
+
+  #reject() {
+    this.#dom.get('#cookie-consent-banner')?.classList.add('hidden');
     CookieManager.set('cookie_consent', 'rejected');
     a11y?.announce('Nur notwendige Cookies akzeptiert', { priority: 'polite' });
-  },
-};
+  }
+}
 
-const cookieSettings = {
-  elements: null,
-  handlers: new Map(),
-  getElements: () => ({
-    footer: dom.get('#site-footer'),
-    cookieView: dom.get('#footer-cookie-view'),
-    normalContent: dom.get('#footer-normal-content'),
-    analyticsToggle: dom.get('#footer-analytics-toggle'),
-    adPersonalizationToggle: dom.get('#footer-ad-personalization-toggle'),
-    closeBtn: dom.get('#close-cookie-footer'),
-    rejectAllBtn: dom.get('#footer-reject-all'),
-    acceptSelectedBtn: dom.get('#footer-accept-selected'),
-    acceptAllBtn: dom.get('#footer-accept-all'),
-    triggerBtn: dom.get('#footer-cookies-link'),
-  }),
+// ===== Cookie Settings Manager =====
+class CookieSettingsManager {
+  #elements = null;
+  #handlers = new Map();
+  #dom = null;
+  #analytics = null;
+  #scrollManager = null;
+  #globalClose = null;
+  #footerManager = null;
 
-  open: () => {
-    cookieSettings.elements = cookieSettings.getElements();
+  constructor(dom, analytics, scrollManager, globalClose) {
+    this.#dom = dom;
+    this.#analytics = analytics;
+    this.#scrollManager = scrollManager;
+    this.#globalClose = globalClose;
+  }
+
+  setFooterManager(footerManager) {
+    this.#footerManager = footerManager;
+  }
+
+  #getElements() {
+    return {
+      footer: this.#dom.get('#site-footer'),
+      cookieView: this.#dom.get('#footer-cookie-view'),
+      normalContent: this.#dom.get('#footer-normal-content'),
+      analyticsToggle: this.#dom.get('#footer-analytics-toggle'),
+      adPersonalizationToggle: this.#dom.get(
+        '#footer-ad-personalization-toggle',
+      ),
+      closeBtn: this.#dom.get('#close-cookie-footer'),
+      rejectAllBtn: this.#dom.get('#footer-reject-all'),
+      acceptSelectedBtn: this.#dom.get('#footer-accept-selected'),
+      acceptAllBtn: this.#dom.get('#footer-accept-all'),
+      triggerBtn: this.#dom.get('#footer-cookies-link'),
+    };
+  }
+
+  open() {
+    this.#elements = this.#getElements();
     const { footer, cookieView, normalContent, analyticsToggle, triggerBtn } =
-      cookieSettings.elements;
+      this.#elements;
+
     if (!footer || !cookieView) return;
 
-    if (analyticsToggle)
+    if (analyticsToggle) {
       analyticsToggle.checked =
         CookieManager.get('cookie_consent') === 'accepted';
+    }
 
     document.documentElement.style.scrollSnapType = 'none';
     footer.classList.add('footer-expanded');
     document.body.classList.add('footer-expanded');
 
-    // Ensure footer is maximized first
     const maxEl = footer.querySelector('.footer-maximized');
     const minEl = footer.querySelector('.footer-minimized');
 
-    if (maxEl) maxEl.classList.remove('footer-hidden');
+    maxEl?.classList.remove('footer-hidden');
     if (minEl) {
       minEl.classList.add('footer-hidden');
       minEl.setAttribute('inert', '');
       minEl.setAttribute('tabindex', '-1');
     }
 
-    // Update scroll handler state
     if (globalThis.footerScrollHandler) {
       globalThis.footerScrollHandler.expanded = true;
     }
@@ -291,63 +349,62 @@ const cookieSettings = {
     triggerBtn?.setAttribute('aria-expanded', 'true');
     footer.setAttribute('aria-expanded', 'true');
 
-    requestAnimationFrame(() =>
+    requestAnimationFrame(() => {
       globalThis.scrollTo({
         top: document.body.scrollHeight,
-        behavior: 'auto',
-      }),
-    );
-    scrollManager.create(CONFIG.SCROLL_MARK_DURATION);
-    globalClose.bind();
+        behavior: 'smooth',
+      });
+    });
+
+    this.#scrollManager.create(CONFIG.SCROLL_MARK_DURATION);
+    this.#globalClose.bind(this.#dom, this.#scrollManager);
     a11y?.trapFocus(cookieView);
 
-    cookieSettings.bindEvents();
-    cookieSettings.loadToggles();
-  },
-  close: () => {
-    if (!cookieSettings.elements)
-      cookieSettings.elements = cookieSettings.getElements();
-    const { cookieView, normalContent, triggerBtn } = cookieSettings.elements;
+    this.#bindEvents();
+    this.#loadToggles();
+  }
 
-    // Hide cookie view and show normal content
+  close() {
+    if (!this.#elements) this.#elements = this.#getElements();
+    const { cookieView, normalContent, triggerBtn } = this.#elements;
+
     cookieView?.classList.add('hidden');
     if (normalContent) normalContent.style.display = 'block';
     triggerBtn?.setAttribute('aria-expanded', 'false');
 
-    cookieSettings.cleanup();
+    this.#cleanup();
+    this.#footerManager?.closeFooter();
+  }
 
-    // Close footer completely
-    footerManager.closeFooter();
-  },
-
-  bindEvents: () => {
+  #bindEvents() {
     const { closeBtn, rejectAllBtn, acceptSelectedBtn, acceptAllBtn } =
-      cookieSettings.elements;
+      this.#elements;
     const hideBanner = () =>
-      dom.get('#cookie-consent-banner')?.classList.add('hidden');
+      this.#dom.get('#cookie-consent-banner')?.classList.add('hidden');
 
-    // Cleanup old handlers
-    cookieSettings.cleanup();
+    this.#cleanup();
 
     const handlers = {
-      close: () => cookieSettings.close(),
+      close: () => this.close(),
       rejectAll: () => {
         CookieManager.set('cookie_consent', 'rejected');
         CookieManager.set(
           'cookie_consent_detail',
-          JSON.stringify({ analytics: false, ad_personalization: false }),
+          JSON.stringify({
+            analytics: false,
+            ad_personalization: false,
+          }),
         );
         CookieManager.deleteAnalytics();
-        analytics.updateConsent(false);
+        this.#analytics.updateConsent(false);
         a11y?.announce('Nur notwendige Cookies aktiv', { priority: 'polite' });
-        cookieSettings.close();
+        this.close();
         hideBanner();
       },
       acceptSelected: () => {
-        const analyticsEnabled =
-          !!cookieSettings.elements.analyticsToggle?.checked;
+        const analyticsEnabled = !!this.#elements.analyticsToggle?.checked;
         const adPersonalizationEnabled =
-          !!cookieSettings.elements.adPersonalizationToggle?.checked;
+          !!this.#elements.adPersonalizationToggle?.checked;
         const detail = {
           analytics: analyticsEnabled,
           ad_personalization: adPersonalizationEnabled,
@@ -360,45 +417,54 @@ const cookieSettings = {
             ? 'accepted'
             : 'rejected',
         );
+
         (globalThis.dataLayer = globalThis.dataLayer || []).push({
           event: 'consentGranted',
           detail,
         });
 
-        analytics.updateConsent({
+        this.#analytics.updateConsent({
           analytics_storage: analyticsEnabled ? 'granted' : 'denied',
           ad_storage: adPersonalizationEnabled ? 'granted' : 'denied',
           ad_user_data: adPersonalizationEnabled ? 'granted' : 'denied',
           ad_personalization: adPersonalizationEnabled ? 'granted' : 'denied',
         });
 
-        analyticsEnabled ? analytics.load() : CookieManager.deleteAnalytics();
+        analyticsEnabled
+          ? this.#analytics.load()
+          : CookieManager.deleteAnalytics();
         a11y?.announce(
           analyticsEnabled ? 'Analyse aktiviert' : 'Analyse deaktiviert',
           { priority: 'polite' },
         );
-        cookieSettings.close();
+        this.close();
         hideBanner();
       },
       acceptAll: () => {
         CookieManager.set('cookie_consent', 'accepted');
         CookieManager.set(
           'cookie_consent_detail',
-          JSON.stringify({ analytics: true, ad_personalization: true }),
+          JSON.stringify({
+            analytics: true,
+            ad_personalization: true,
+          }),
         );
+
         (globalThis.dataLayer = globalThis.dataLayer || []).push({
           event: 'consentGranted',
           detail: { analytics: true, ad_personalization: true },
         });
-        analytics.updateConsent({
+
+        this.#analytics.updateConsent({
           analytics_storage: 'granted',
           ad_storage: 'granted',
           ad_user_data: 'granted',
           ad_personalization: 'granted',
         });
-        analytics.load();
+
+        this.#analytics.load();
         a11y?.announce('Alle Cookies aktiviert', { priority: 'polite' });
-        cookieSettings.close();
+        this.close();
         hideBanner();
       },
     };
@@ -408,50 +474,54 @@ const cookieSettings = {
     acceptSelectedBtn?.addEventListener('click', handlers.acceptSelected);
     acceptAllBtn?.addEventListener('click', handlers.acceptAll);
 
-    cookieSettings.handlers.set('close', {
-      element: closeBtn,
-      handler: handlers.close,
-    });
-    cookieSettings.handlers.set('rejectAll', {
+    this.#handlers.set('close', { element: closeBtn, handler: handlers.close });
+    this.#handlers.set('rejectAll', {
       element: rejectAllBtn,
       handler: handlers.rejectAll,
     });
-    cookieSettings.handlers.set('acceptSelected', {
+    this.#handlers.set('acceptSelected', {
       element: acceptSelectedBtn,
       handler: handlers.acceptSelected,
     });
-    cookieSettings.handlers.set('acceptAll', {
+    this.#handlers.set('acceptAll', {
       element: acceptAllBtn,
       handler: handlers.acceptAll,
     });
-  },
-  cleanup: () => {
-    cookieSettings.handlers.forEach(({ element, handler }) => {
+  }
+
+  #cleanup() {
+    this.#handlers.forEach(({ element, handler }) => {
       element?.removeEventListener('click', handler);
     });
-    cookieSettings.handlers.clear();
-  },
-  loadToggles: () => {
+    this.#handlers.clear();
+  }
+
+  #loadToggles() {
     try {
       const detail = JSON.parse(
         CookieManager.get('cookie_consent_detail') || '{}',
       );
-      const { analyticsToggle, adPersonalizationToggle } =
-        cookieSettings.elements;
+      const { analyticsToggle, adPersonalizationToggle } = this.#elements;
+
       if (analyticsToggle) analyticsToggle.checked = !!detail.analytics;
       if (adPersonalizationToggle)
         adPersonalizationToggle.checked = !!detail.ad_personalization;
     } catch {
-      /* ignore */
+      // Ignore
     }
-  },
-};
+  }
+}
 
-globalClose.setCloseHandler(cookieSettings.close);
+// ===== Footer Manager =====
+class FooterManager {
+  #dom = null;
 
-const footerManager = {
-  closeFooter: () => {
-    const footer = dom.get('#site-footer');
+  constructor(dom) {
+    this.#dom = dom;
+  }
+
+  closeFooter() {
+    const footer = this.#dom.get('#site-footer');
     if (!footer) return;
 
     footer.classList.remove('footer-expanded');
@@ -464,35 +534,46 @@ const footerManager = {
       minEl.removeAttribute('inert');
       minEl.setAttribute('tabindex', '0');
     }
+
     footer.setAttribute('aria-expanded', 'false');
 
-    const normal = dom.get('#footer-normal-content');
+    const normal = this.#dom.get('#footer-normal-content');
     if (normal) normal.style.display = 'block';
 
-    dom.get('#footer-cookie-view')?.classList.add('hidden');
+    this.#dom.get('#footer-cookie-view')?.classList.add('hidden');
     document.documentElement.style.removeProperty('scroll-snap-type');
 
-    if (globalThis.footerScrollHandler)
+    if (globalThis.footerScrollHandler) {
       globalThis.footerScrollHandler.expanded = false;
-    globalClose.unbind();
-    a11y?.releaseFocus();
-  },
-};
+    }
 
+    a11y?.releaseFocus();
+  }
+}
+
+// ===== Scroll Handler =====
 class ScrollHandler {
   expanded = false;
-  observer = null;
-  _resizeHandler = null;
-  _collapseTimer = null;
-  _lockUntil = 0;
+  #observer = null;
+  #resizeHandler = null;
+  #collapseTimer = null;
+  #lockUntil = 0;
+  #dom = null;
+  #scrollManager = null;
+  #globalClose = null;
+  #footerManager = null;
 
-  constructor() {
+  constructor(dom, scrollManager, globalClose, footerManager) {
+    this.#dom = dom;
+    this.#scrollManager = scrollManager;
+    this.#globalClose = globalClose;
+    this.#footerManager = footerManager;
     globalThis.footerScrollHandler = this;
   }
 
   init() {
-    const footer = dom.get('#site-footer');
-    let trigger = dom.get('#footer-trigger-zone');
+    const footer = this.#dom.get('#site-footer');
+    let trigger = this.#dom.get('#footer-trigger-zone');
 
     if (!trigger) {
       trigger = document.createElement('div');
@@ -508,7 +589,7 @@ class ScrollHandler {
         trigger,
         footer || null,
       );
-      dom.clear();
+      this.#dom.clear();
     }
 
     if (!footer || !trigger) return;
@@ -519,21 +600,23 @@ class ScrollHandler {
     minEl?.classList.remove('footer-hidden');
     maxEl?.classList.add('footer-hidden');
 
-    // Ensure minimized footer is interactive
     if (minEl) {
       minEl.removeAttribute('inert');
       minEl.setAttribute('tabindex', '0');
     }
 
-    const isDesktop = globalThis.matchMedia?.('(min-width: 769px)')?.matches;
+    const isDesktop = window.matchMedia('(min-width: 769px)').matches;
     const expandThreshold = isDesktop ? 0.003 : 0.05;
     const collapseThreshold = isDesktop ? 0.001 : 0.02;
     const rootMargin = isDesktop ? '0px 0px -2% 0px' : '0px 0px -10% 0px';
 
-    this.observer = new IntersectionObserver(
+    this.#observer = new IntersectionObserver(
       (entries) => {
         const entry = entries[0];
-        if (!entry || (!entry.isIntersecting && scrollManager.hasActive()))
+        if (
+          !entry ||
+          (!entry.isIntersecting && this.#scrollManager.hasActive())
+        )
           return;
 
         const shouldExpand =
@@ -545,87 +628,129 @@ class ScrollHandler {
         )
           return;
 
-        this.toggleExpansion(shouldExpand);
+        this.#toggleExpansion(shouldExpand);
       },
       { rootMargin, threshold: [collapseThreshold, expandThreshold] },
     );
 
-    this.observer.observe(trigger);
+    this.#observer.observe(trigger);
 
-    this._resizeHandler = debounce(() => {
+    this.#resizeHandler = debounce(() => {
       this.cleanup();
       this.init();
     }, CONFIG.RESIZE_DEBOUNCE);
-    globalThis.addEventListener('resize', this._resizeHandler, {
-      passive: true,
-    });
+
+    window.addEventListener('resize', this.#resizeHandler, { passive: true });
   }
 
-  toggleExpansion(shouldExpand) {
-    const footer = dom.get('#site-footer');
+  #toggleExpansion(shouldExpand) {
+    const footer = this.#dom.get('#site-footer');
     if (!footer) return;
 
     const min = footer.querySelector('.footer-minimized');
     const max = footer.querySelector('.footer-maximized');
 
     if (shouldExpand && !this.expanded) {
-      if (this._collapseTimer) {
-        clearTimeout(this._collapseTimer);
-        this._collapseTimer = null;
+      if (this.#collapseTimer) {
+        clearTimeout(this.#collapseTimer);
+        this.#collapseTimer = null;
       }
-      scrollManager.create(1000);
-      globalClose.bind();
+
+      this.#scrollManager.create(1000);
+      this.#globalClose.bind(this.#dom, this.#scrollManager);
       document.documentElement.style.scrollSnapType = 'none';
       footer.classList.add('footer-expanded');
       footer.setAttribute('aria-expanded', 'true');
       document.body.classList.add('footer-expanded');
       max?.classList.remove('footer-hidden');
       min?.classList.add('footer-hidden');
-      // Remove tabindex and set inert instead of aria-hidden to prevent focus issues
+
       if (min) {
         min.setAttribute('inert', '');
         min.setAttribute('tabindex', '-1');
       }
+
       this.expanded = true;
-      this._lockUntil = Date.now() + CONFIG.EXPAND_LOCK_MS;
+      this.#lockUntil = Date.now() + CONFIG.EXPAND_LOCK_MS;
       return;
     }
 
     if (!shouldExpand && this.expanded) {
       const delay =
-        Math.max(0, this._lockUntil - Date.now()) + CONFIG.COLLAPSE_DEBOUNCE_MS;
-      if (this._collapseTimer) clearTimeout(this._collapseTimer);
-      this._collapseTimer = setTimeout(() => {
-        footerManager.closeFooter();
+        Math.max(0, this.#lockUntil - Date.now()) + CONFIG.COLLAPSE_DEBOUNCE_MS;
+
+      if (this.#collapseTimer) clearTimeout(this.#collapseTimer);
+
+      this.#collapseTimer = setTimeout(() => {
+        this.#footerManager.closeFooter();
+        this.#globalClose.unbind();
         this.expanded = false;
-        this._collapseTimer = null;
+        this.#collapseTimer = null;
       }, delay);
     }
   }
 
+  toggleExpansion(shouldExpand) {
+    this.#toggleExpansion(shouldExpand);
+  }
+
   cleanup() {
-    if (this.observer) {
-      this.observer.disconnect();
-      this.observer = null;
+    this.#observer?.disconnect();
+    this.#observer = null;
+
+    if (this.#resizeHandler) {
+      window.removeEventListener('resize', this.#resizeHandler);
+      this.#resizeHandler = null;
     }
-    if (this._resizeHandler) {
-      globalThis.removeEventListener('resize', this._resizeHandler);
-      this._resizeHandler = null;
-    }
-    if (this._collapseTimer) {
-      clearTimeout(this._collapseTimer);
-      this._collapseTimer = null;
+
+    if (this.#collapseTimer) {
+      clearTimeout(this.#collapseTimer);
+      this.#collapseTimer = null;
     }
   }
 }
 
+// ===== Footer Loader =====
 class FooterLoader {
+  #dom = null;
+  #analytics = null;
+  #consentBanner = null;
+  #cookieSettings = null;
+  #footerManager = null;
+  #scrollHandler = null;
+
+  constructor() {
+    this.#dom = new DOMCache();
+    this.#analytics = new AnalyticsManager();
+
+    const scrollManager = new ScrollManager();
+    const globalClose = new GlobalCloseHandler();
+
+    this.#consentBanner = new ConsentBannerManager(this.#dom, this.#analytics);
+    this.#cookieSettings = new CookieSettingsManager(
+      this.#dom,
+      this.#analytics,
+      scrollManager,
+      globalClose,
+    );
+    this.#footerManager = new FooterManager(this.#dom);
+    this.#scrollHandler = new ScrollHandler(
+      this.#dom,
+      scrollManager,
+      globalClose,
+      this.#footerManager,
+    );
+
+    this.#cookieSettings.setFooterManager(this.#footerManager);
+    globalClose.setCloseHandler(() => this.#cookieSettings.close());
+  }
+
   async init() {
-    const container = dom.get('#footer-container');
-    const existingFooter = dom.get('#site-footer');
+    const container = this.#dom.get('#footer-container');
+    const existingFooter = this.#dom.get('#site-footer');
 
     if (existingFooter || container?.querySelector('#site-footer')) {
-      this.setup();
+      this.#setup();
       return true;
     }
 
@@ -638,11 +763,15 @@ class FooterLoader {
       if (!response?.ok) throw new Error('Footer load failed');
 
       container.innerHTML = await response.text();
-      dom.clear();
-      this.setup();
+      this.#dom.clear();
+      this.#setup();
+
       document.dispatchEvent(
-        new CustomEvent('footer:loaded', { detail: { timestamp: Date.now() } }),
+        new CustomEvent('footer:loaded', {
+          detail: { timestamp: Date.now() },
+        }),
       );
+
       return true;
     } catch (error) {
       log.error('Footer load failed', error);
@@ -650,22 +779,24 @@ class FooterLoader {
     }
   }
 
-  setup() {
-    this.updateYears();
-    this.setupInteractions();
-    consentBanner.init();
-    new ScrollHandler().init();
+  #setup() {
+    this.#updateYears();
+    this.#setupInteractions();
+    this.#consentBanner.init();
+    this.#scrollHandler.init();
   }
 
-  updateYears() {
+  #updateYears() {
     const year = new Date().getFullYear();
-    dom.getAll('.current-year').forEach((el) => (el.textContent = year));
+    this.#dom.getAll('.current-year').forEach((el) => (el.textContent = year));
   }
 
-  setupInteractions() {
-    const form = dom.get('.newsletter-form-enhanced');
+  #setupInteractions() {
+    const form = this.#dom.get('.newsletter-form-enhanced');
+
     form?.addEventListener('submit', (e) => {
       e.preventDefault();
+
       const input = form.querySelector('#newsletter-email');
       if (input && !input.checkValidity()) {
         a11y?.announce('Bitte gültige E-Mail eingeben', {
@@ -673,16 +804,19 @@ class FooterLoader {
         });
         return;
       }
+
       const btn = form.querySelector('button[type="submit"]');
       if (btn) {
         const originalText = btn.textContent;
         btn.textContent = '✓';
         btn.disabled = true;
+
         setTimeout(() => {
           btn.textContent = originalText;
           btn.disabled = false;
         }, 3000);
       }
+
       form.reset();
       a11y?.announce('Newsletter abonniert', { priority: 'polite' });
     });
@@ -690,32 +824,29 @@ class FooterLoader {
     document.addEventListener(
       'click',
       (e) => {
-        // Check if click is on cookie trigger
         const cookieTrigger = e.target.closest('[data-cookie-trigger]');
         if (cookieTrigger) {
           e.preventDefault();
           e.stopPropagation();
-          cookieSettings.open();
+          this.#cookieSettings.open();
           return;
         }
 
-        // Check if click is on minimized footer
         const footerMinClick = e.target.closest('.footer-minimized');
         if (footerMinClick) {
-          // Check if click is on a real link (not footer nav buttons)
           const isLink = e.target.closest('a[href^="http"], a[href^="/"]');
           const isFormElement = e.target.closest('input, textarea, select');
 
           if (!isLink && !isFormElement) {
             e.preventDefault();
-            globalThis.footerScrollHandler?.toggleExpansion(true);
+            this.#scrollHandler.toggleExpansion(true);
           }
         }
       },
       { passive: false },
     );
 
-    const showcaseBtn = dom.get('#threeShowcaseBtn');
+    const showcaseBtn = this.#dom.get('#threeShowcaseBtn');
     if (showcaseBtn && !showcaseBtn.dataset.init) {
       showcaseBtn.dataset.init = '1';
       showcaseBtn.addEventListener('click', () => {
@@ -731,4 +862,5 @@ class FooterLoader {
   }
 }
 
+// ===== Export =====
 export const initFooter = () => new FooterLoader().init();
