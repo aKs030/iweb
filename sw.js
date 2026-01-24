@@ -31,10 +31,10 @@ async function trimCache(cacheName, maxEntries = 60) {
 
 // Static Earth textures - pre-cache for offline reliability
 const STATIC_TEXTURES = [
-  '/content/assets/img/earth/earth_day.webp',
-  '/content/assets/img/earth/earth_night.webp',
-  '/content/assets/img/earth/earth_normal.webp',
-  '/content/assets/img/earth/earth_bump.webp',
+  '/content/assets/img/earth/textures/earth_day.webp',
+  '/content/assets/img/earth/textures/earth_night.webp',
+  '/content/assets/img/earth/textures/earth_normal.webp',
+  '/content/assets/img/earth/textures/earth_bump.webp',
   '/content/assets/img/earth/textures/moon_texture.webp',
   '/content/assets/img/earth/textures/moon_bump.webp',
 ];
@@ -93,23 +93,24 @@ self.addEventListener('fetch', (event) => {
       (async () => {
         const preloaded = await event.preloadResponse;
         if (preloaded) {
-          const copy = preloaded.clone();
           caches
             .open(CACHE_NAMES.RUNTIME)
-            .then((cache) => cache.put(req, copy));
+            .then((cache) => cache.put(req, preloaded.clone()))
+            .catch(() => {});
           return preloaded;
         }
-        return fetch(req)
-          .then((res) => {
-            const copy = res.clone();
+        try {
+          const res = await fetch(req);
+          if (res.ok) {
             caches
               .open(CACHE_NAMES.RUNTIME)
-              .then((cache) => cache.put(req, copy));
-            return res;
-          })
-          .catch(() =>
-            caches.match(req).then((res) => res || caches.match('/index.html')),
-          );
+              .then((cache) => cache.put(req, res.clone()))
+              .catch(() => {});
+          }
+          return res;
+        } catch {
+          return (await caches.match(req)) || caches.match('/index.html');
+        }
       })(),
     );
     return;
@@ -118,17 +119,22 @@ self.addEventListener('fetch', (event) => {
   // Earth textures: cache-first (static assets)
   if (url.pathname.match(/\/content\/assets\/img\/earth\/.*\.(webp|png)$/i)) {
     event.respondWith(
-      caches.match(req).then((cached) => {
+      (async () => {
+        const cached = await caches.match(req);
         if (cached) return cached;
-        return fetch(req).then((res) => {
+        try {
+          const res = await fetch(req);
           if (res.ok) {
             caches
               .open(CACHE_NAMES.TEXTURES)
-              .then((cache) => cache.put(req, res.clone()));
+              .then((cache) => cache.put(req, res.clone()))
+              .catch(() => {});
           }
           return res;
-        });
-      }),
+        } catch (err) {
+          throw err;
+        }
+      })(),
     );
     return;
   }
@@ -139,18 +145,25 @@ self.addEventListener('fetch', (event) => {
     url.origin !== self.location.origin
   ) {
     event.respondWith(
-      caches.match(req).then((cached) => {
+      (async () => {
+        const cached = await caches.match(req);
         if (cached) return cached;
-        return fetch(req).then((res) => {
+        try {
+          const res = await fetch(req);
           if (res.ok) {
             const cacheName = url.pathname.match(/\.(woff2?|ttf|otf|eot)$/i)
               ? CACHE_NAMES.FONTS
               : CACHE_NAMES.BUNDLES;
-            caches.open(cacheName).then((cache) => cache.put(req, res.clone()));
+            caches
+              .open(cacheName)
+              .then((cache) => cache.put(req, res.clone()))
+              .catch(() => {});
           }
           return res;
-        });
-      }),
+        } catch (err) {
+          throw err;
+        }
+      })(),
     );
     return;
   }
@@ -158,34 +171,44 @@ self.addEventListener('fetch', (event) => {
   // Images: cache-first
   if (url.pathname.match(/\.(jpg|jpeg|png|gif|svg|webp|ico|avif)$/i)) {
     event.respondWith(
-      caches.match(req).then((cached) => {
+      (async () => {
+        const cached = await caches.match(req);
         if (cached) return cached;
-        return fetch(req).then((res) => {
+        try {
+          const res = await fetch(req);
           if (res.ok) {
             caches
               .open(CACHE_NAMES.IMAGES)
-              .then((cache) => cache.put(req, res.clone()));
+              .then((cache) => cache.put(req, res.clone()))
+              .catch(() => {});
           }
           return res;
-        });
-      }),
+        } catch (err) {
+          throw err;
+        }
+      })(),
     );
     return;
   }
 
   // JS/CSS: network-first
   event.respondWith(
-    fetch(req)
-      .then((res) => {
+    (async () => {
+      try {
+        const res = await fetch(req);
         if (res.ok) {
-          const copy = res.clone();
-          caches.open(CACHE_NAMES.RUNTIME).then((cache) => {
-            cache.put(req, copy);
-            trimCache(CACHE_NAMES.RUNTIME, 80);
-          });
+          caches
+            .open(CACHE_NAMES.RUNTIME)
+            .then((cache) => {
+              cache.put(req, res.clone());
+              trimCache(CACHE_NAMES.RUNTIME, 80);
+            })
+            .catch(() => {});
         }
         return res;
-      })
-      .catch(() => caches.match(req)),
+      } catch {
+        return caches.match(req);
+      }
+    })(),
   );
 });
