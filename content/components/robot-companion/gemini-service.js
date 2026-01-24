@@ -4,6 +4,8 @@
  */
 
 const MODEL_NAME = 'gemini-2.5-flash-preview-09-2025';
+// Unused: kept for potential future server-side implementation
+// eslint-disable-next-line no-unused-vars
 const _getBaseUrl = (apiKey) =>
   `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${
     apiKey || ''
@@ -24,6 +26,8 @@ async function getGeminiResponse(
   systemInstruction = 'Du bist ein hilfreicher Roboter-Begleiter.',
   _options = {},
 ) {
+  // Payload structure kept for reference (currently unused but may be needed for future direct API calls)
+  // eslint-disable-next-line no-unused-vars
   const _payload = {
     contents: [{ parts: [{ text: prompt }] }],
     systemInstruction: { parts: [{ text: systemInstruction }] },
@@ -52,6 +56,8 @@ async function getGeminiResponse(
     return r.json();
   };
 
+  // DEPRECATED: Direct server-side requests are no longer supported for security.
+  // eslint-disable-next-line no-unused-vars
   const _doServerRequest = async () => {
     // DEPRECATED: Direct server-side requests are no longer supported for security.
     // All requests must go through the Cloudflare Worker proxy at /api/gemini
@@ -95,6 +101,7 @@ async function getGeminiResponse(
 
 // Provide a thin class wrapper so callers can use `new GeminiService()` in the app
 export class GeminiService {
+  // eslint-disable-next-line no-unused-vars
   async generateResponse(prompt, _history = [], options = {}) {
     // _history is available to craft system instructions later if needed
     const system = 'Du bist ein hilfreicher Roboter-Begleiter.';
