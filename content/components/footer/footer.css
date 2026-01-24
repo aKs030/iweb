@@ -1,70 +1,44 @@
 /**
- * Dynamic Footer System - Ultra Optimized
- * ✅ Reduzierte Redundanzen
- * ✅ Bessere CSS Custom Properties
- * ✅ Hardware-Acceleration
- * ✅ Zusammengefasste Media Queries
- * @version 8.0.0 OPTIMIZED
+ * Footer System v8.1
+ * Optimiert für Performance und Wartbarkeit
  */
-
-/* ===== CSS Variables (Optimiert) ===== */
 :root {
-  /* Base Unit System */
   --footer-unit: 2px;
   --footer-spacing-xs: calc(var(--footer-unit) * 3);
   --footer-spacing-sm: calc(var(--footer-unit) * 5);
   --footer-spacing-md: calc(var(--footer-unit) * 7);
-
-  /* Typography Scale */
   --footer-text-xs: 10px;
   --footer-text-sm: 12px;
   --footer-text-base: 13px;
-
-  /* Layout */
   --footer-horizontal-margin: clamp(8px, 2vw, 32px);
   --footer-card-gap: 16px;
   --footer-card-min-height: 140px;
-  /* Social brand colors */
   --youtube-red: #ff0000;
   --x-color: #1da1f2;
   --github-color: #24292e;
   --linkedin-blue: #0077b5;
   --instagram-start: #f58529;
   --instagram-end: #dd2a7b;
-
-  /* Transitions */
   --footer-transition-quick: 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   --footer-transition-smooth: 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-
-  /* Heights */
   --footer-max-height: calc(100dvh - 24px - env(safe-area-inset-bottom));
   --footer-actual-height: var(--footer-max-height);
-
-  /* Z-Index Scale */
   --z-footer: 1000;
-
-  /* Icon sizing */
   --footer-icon-size-sm: 12px;
   --footer-icon-size-md: 14px;
   --footer-icon-gap: 6px;
-
-  /* Modern chip styling */
-  --footer-chip-bg: linear-gradient(
-    140deg,
-    rgba(255, 255, 255, 0.08),
-    rgba(255, 255, 255, 0.02)
-  );
-  --footer-chip-bg-hover: linear-gradient(
-    140deg,
-    rgba(255, 255, 255, 0.12),
-    rgba(255, 255, 255, 0.05)
-  );
+  --footer-white-06: rgba(255, 255, 255, 0.06);
+  --footer-white-05: rgba(255, 255, 255, 0.05);
+  --footer-white-03: rgba(255, 255, 255, 0.03);
+  --footer-white-02: rgba(255, 255, 255, 0.02);
+  --footer-chip-bg: linear-gradient(140deg, rgba(255, 255, 255, 0.08), var(--footer-white-02));
+  --footer-chip-bg-hover: linear-gradient(140deg, rgba(255, 255, 255, 0.12), var(--footer-white-05));
   --footer-chip-border: rgba(255, 255, 255, 0.14);
   --footer-chip-border-strong: rgba(255, 255, 255, 0.26);
   --footer-chip-shadow: 0 10px 30px rgba(0, 0, 0, 0.14);
 }
 
-/* ===== Base Footer Container ===== */
+
 .site-footer-fixed {
   position: fixed;
   bottom: calc(12px + env(safe-area-inset-bottom));
@@ -84,9 +58,10 @@
   z-index: var(--z-footer);
   animation: footerEntrance 0.8s var(--dynamic-footer-spring-bounce) forwards;
   opacity: 0;
-  will-change: transform, opacity; /* Performance hint */
+  will-change: transform, opacity;
   content-visibility: auto;
   contain-intrinsic-size: auto 300px;
+  contain: layout style paint;
 
   /* Compact scale for footer variables (desktop-optimized) */
   --footer-text-xs: 9px;
@@ -97,8 +72,7 @@
   --footer-spacing-md: calc(var(--footer-unit) * 6);
 }
 
-/* Compact scale inside footer (desktop-first) */
-/* Compact scale for footer variables merged into base block to avoid duplicate selector */
+
 
 @keyframes footerEntrance {
   0% {
@@ -112,8 +86,6 @@
   }
 }
 
-/* ===== Body Padding ===== */
-
 body {
   padding-bottom: calc(70px + env(safe-area-inset-bottom));
   transition: padding-bottom var(--footer-transition-smooth);
@@ -123,12 +95,16 @@ body.footer-expanded {
   padding-bottom: calc(70vh + env(safe-area-inset-bottom));
 }
 
-/* ===== Hidden State ===== */
-.site-footer-fixed .footer-hidden {
+.footer-minimized.footer-hidden {
+  display: none;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.footer-maximized.footer-hidden {
   display: none;
 }
 
-/* ===== Minimized Footer ===== */
 .footer-minimized {
   padding: 4px var(--footer-spacing-sm);
   max-width: 1200px;
@@ -138,11 +114,14 @@ body.footer-expanded {
   align-items: center;
   opacity: 1;
   transform: translateY(0) translateZ(0);
-  transition:
-    transform 0.25s var(--dynamic-footer-spring-quick),
-    opacity 0.25s var(--dynamic-footer-spring-quick),
-    background-color 0.25s var(--dynamic-footer-spring-quick);
-  cursor: pointer; /* Affordance: area is interactive */
+  transition: transform 0.25s var(--dynamic-footer-spring-quick), opacity 0.25s var(--dynamic-footer-spring-quick), background-color 0.25s var(--dynamic-footer-spring-quick);
+  cursor: pointer;
+}
+
+.footer-minimized[inert] {
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
 }
 
 .footer-minimized:focus-visible {
@@ -176,7 +155,6 @@ body.footer-expanded {
   min-width: 0;
 }
 
-/* Shared Link Styles (DRY) */
 .footer-brand-link {
   color: var(--dynamic-footer-label-primary);
   font-weight: var(--dynamic-footer-font-weight-medium);
@@ -218,53 +196,27 @@ body.footer-expanded {
   border-radius: var(--radius-full);
   border: 1px solid var(--footer-chip-border);
   background: var(--footer-chip-bg);
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.05),
-    var(--footer-chip-shadow);
-  transition:
-    transform var(--footer-transition-quick),
-    box-shadow var(--footer-transition-quick),
-    background var(--footer-transition-quick),
-    border-color var(--footer-transition-quick),
-    color var(--footer-transition-quick);
+  box-shadow: 0 1px 0 var(--footer-white-05), var(--footer-chip-shadow);
+  transition: transform var(--footer-transition-quick), box-shadow var(--footer-transition-quick), background var(--footer-transition-quick), border-color var(--footer-transition-quick), color var(--footer-transition-quick);
   text-decoration: none;
-  will-change: transform, background-color;
+  will-change: transform;
 }
 .footer-nav-link svg,
 .footer-legal-link-enhanced svg,
 .footer-brand-link-enhanced svg,
 .footer-cookie-btn svg {
-  width: 14px;
-  height: 14px;
-  flex-shrink: 0;
-  opacity: 0.9;
-  display: inline-block;
-  vertical-align: middle;
-}
-
-.footer-legal-link-enhanced svg,
-.footer-brand-link-enhanced svg {
   width: var(--footer-icon-size-md);
   height: var(--footer-icon-size-md);
+  flex-shrink: 0;
+  opacity: 0.9;
 }
 
-/* Ensure icons use currentColor so hover color changes apply */
 .footer-nav-link svg *,
 .footer-legal-link-enhanced svg *,
 .footer-brand-link-enhanced svg *,
 .footer-cookie-btn svg * {
   stroke: currentcolor;
   fill: currentcolor;
-}
-
-/* Slightly increase gap between icon and text */
-.footer-nav-link,
-.footer-legal-link-enhanced,
-.footer-brand-link-enhanced,
-.footer-cookie-btn {
-  gap: var(--footer-icon-gap);
-  align-items: center;
-  line-height: 1;
 }
 .footer-nav-link:hover,
 .footer-legal-link-enhanced:hover,
@@ -282,7 +234,7 @@ body.footer-expanded {
   outline-offset: 3px;
 }
 
-/* Minimal cookie button specifics (icon button) */
+
 .footer-cookie-btn {
   font: inherit;
   cursor: pointer;
@@ -292,7 +244,7 @@ body.footer-expanded {
   border: none;
 }
 
-/* ===== Maximized Footer ===== */
+
 .footer-maximized {
   opacity: 0;
   transform: translateY(20px) translateZ(0);
@@ -309,7 +261,7 @@ body.footer-expanded {
   max-height: var(--footer-actual-height, 75vh);
   overflow: hidden auto;
   position: relative;
-  /* -webkit-overflow-scrolling: touch; deprecated — removed to avoid unsupported warnings */
+
   -ms-overflow-style: none;
   /* apply scrollbar-width only when supported */
   @supports (scrollbar-width: none) {
@@ -331,7 +283,7 @@ body.footer-expanded {
   align-items: center;
 }
 
-/* ===== Three Showcase Control ===== */
+
 .footer-three-control {
   position: absolute;
   bottom: 24px;
@@ -346,16 +298,10 @@ body.footer-expanded {
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.06),
-    rgba(255, 255, 255, 0.02)
-  );
+  background: linear-gradient(180deg, var(--footer-white-06), var(--footer-white-02));
   color: var(--dynamic-footer-label-primary);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  box-shadow:
-    0 6px 20px rgba(0, 0, 0, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--footer-white-06);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25), inset 0 1px 0 var(--footer-white-02);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -377,9 +323,7 @@ body.footer-expanded {
 
 .three-showcase-btn:hover {
   transform: translateY(-4px) rotate(-6deg);
-  box-shadow:
-    0 10px 30px rgba(0, 0, 0, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35), inset 0 1px 0 var(--footer-white-03);
 }
 
 .three-showcase-btn.active {
@@ -407,7 +351,7 @@ body.footer-expanded {
   }
 }
 
-/* ===== Footer Status Bar - Desktop Layout Fix ===== */
+
 .footer-status-bar {
   width: 100%;
   border-top: 1px solid var(--dynamic-footer-separator);
@@ -441,9 +385,7 @@ body.footer-expanded {
   align-items: center;
 }
 
-/* Prevent footer status from breaking into two lines on mid-sized desktops
-   - Hide social label text at <= 1200px and keep status row on a single line
-   - Keep a11y intact via existing aria-labels */
+
 @media (max-width: 1200px) {
   .footer-status-content {
     flex-wrap: nowrap;
@@ -486,7 +428,7 @@ body.footer-expanded {
   align-items: center;
 }
 
-/* ===== Mobile touch target improvements ===== */
+
 @media (max-width: 480px) {
   .footer-nav-link,
   .footer-cookie-btn,
@@ -497,7 +439,7 @@ body.footer-expanded {
     border-radius: 8px;
   }
 
-  /* Keep the footer centered on narrow viewports while keeping small side gaps */
+
   .site-footer-fixed {
     left: 50%;
     transform: translateX(-50%) translateZ(0);
@@ -515,15 +457,14 @@ body.footer-expanded {
   color: var(--dynamic-footer-label-primary);
 }
 
-/* ===== Card Grid ===== */
-/* Card Grid - improved sizing & performance */
+
 .footer-cards-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
   gap: var(--footer-card-gap);
   margin-bottom: var(--footer-spacing-md);
   width: 100%;
-  /* ensure full-width cards and consistent row sizing */
+
   grid-auto-rows: 1fr;
   align-items: start;
   justify-items: stretch;
@@ -547,18 +488,24 @@ body.footer-expanded {
     border-color var(--footer-transition-quick);
   will-change: transform;
   transform: translateZ(0);
-  /* Performance: lazy render off-screen cards */
+
   content-visibility: auto;
   contain-intrinsic-size: var(--footer-card-min-height);
+  contain: layout style;
 }
 
 .footer-card:hover {
   background: var(--dynamic-footer-fill-primary);
   border-color: var(--dynamic-footer-accent-blue);
   transform: translateY(-2px) translateZ(0);
-  /* Subtle shadow only on hover to reduce initial paint cost */
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-  flex-shrink: 0;
+}
+
+@media (hover: none) {
+  .footer-card:hover {
+    transform: none;
+    box-shadow: none;
+  }
 }
 
 .footer-card-title {
@@ -588,10 +535,10 @@ body.footer-expanded {
   flex-direction: column;
   font-size: var(--footer-text-xs);
   gap: var(--footer-spacing-xs);
-  min-height: 0; /* allow content to flex properly */
+  min-height: 0;
 }
 
-/* Make footer cards visually consistent with a small footer-action footer area */
+
 .footer-card-footer {
   margin-top: auto;
   display: flex;
@@ -600,7 +547,7 @@ body.footer-expanded {
   justify-content: flex-start;
 }
 
-/* ===== Profile Card ===== */
+
 .footer-profile-name {
   color: var(--dynamic-footer-label-primary);
   font-size: var(--footer-text-sm);
@@ -639,7 +586,13 @@ body.footer-expanded {
   transform: translateY(-1px) translateZ(0);
 }
 
-/* ===== Work Navigation ===== */
+@media (hover: none) {
+  .footer-contact-cta:hover {
+    transform: none;
+  }
+}
+
+
 .footer-work-nav {
   display: flex;
   flex-direction: column;
@@ -667,26 +620,24 @@ body.footer-expanded {
   transform: translateX(3px) translateZ(0);
 }
 
-/* ===== Newsletter Card ===== */
-
 .newsletter-form-enhanced {
   display: flex;
   flex-direction: row;
   gap: var(--footer-spacing-xs);
   margin-top: auto;
-  align-items: center; /* ensure vertical alignment inside card */
+  align-items: center;
 }
 
 .newsletter-input-wrapper {
   display: flex;
   gap: var(--footer-spacing-xs);
   width: 100%;
-  min-width: 0; /* allow children to shrink inside flex */
+  min-width: 0;
 }
 
 .newsletter-input-enhanced {
   flex: 1;
-  min-width: 0; /* prevent input's intrinsic min width from overflowing */
+  min-width: 0;
   padding: 8px 10px;
   border: 1px solid var(--dynamic-footer-separator);
   border-radius: var(--dynamic-footer-micro-radius);
@@ -742,8 +693,6 @@ body.footer-expanded {
   }
 }
 
-/* ===== Social Media Links in Status Bar ===== */
-
 .footer-social-links {
   display: flex;
   align-items: center;
@@ -791,7 +740,7 @@ body.footer-expanded {
 }
 
 .footer-social-btn.linkedin {
-  /* Use neutral label color by default for good contrast */
+
   color: var(--dynamic-footer-label-secondary);
   border-color: rgba(0, 119, 181, 0.12);
 }
@@ -807,19 +756,19 @@ body.footer-expanded {
 }
 .footer-social-btn.instagram:hover {
   color: #fff;
-  /* Adjusted to darker endpoints to meet WCAG contrast with white text */
+
   background: linear-gradient(135deg, #ab5d1c, #d12774);
   border-color: #d12774;
 }
 
 .footer-social-btn.youtube {
-  /* default uses neutral label color for contrast */
+
   color: var(--dynamic-footer-label-secondary);
   border-color: rgba(255, 0, 0, 0.12);
 }
 .footer-social-btn.youtube:hover {
   color: #fff;
-  /* Darkened YouTube endpoints for contrast */
+
   background: linear-gradient(135deg, #e50000, #c10000);
   border-color: #c10000;
 }
@@ -830,7 +779,7 @@ body.footer-expanded {
 }
 .footer-social-btn.x:hover {
   color: #fff;
-  /* Darkened X endpoints for contrast */
+
   background: linear-gradient(135deg, #1578b5, #0a77b9);
   border-color: #0a77b9;
 }
@@ -843,14 +792,14 @@ body.footer-expanded {
   color: var(--dynamic-footer-label-primary);
 }
 
-/* ===== Footer States ===== */
-.footer-expanded .footer-minimized {
+
+.site-footer-fixed.footer-expanded .footer-minimized {
   opacity: 0;
   transform: translateY(-10px) translateZ(0);
   pointer-events: none;
 }
 
-.footer-expanded .footer-maximized {
+.site-footer-fixed.footer-expanded .footer-maximized {
   opacity: 1;
   transform: translateY(0) translateZ(0);
   max-height: none;
@@ -860,9 +809,7 @@ body.footer-expanded {
   pointer-events: auto;
 }
 
-/* ===== Responsive Design (Konsolidiert) ===== */
 
-/* Tablet (landscape and portrait) */
 @media (width <= 1024px) {
   :root {
     --footer-card-gap: 12px;
@@ -878,7 +825,7 @@ body.footer-expanded {
   }
 }
 
-/* Mobile and small tablets */
+
 @media (width <= 768px) {
   :root {
     --footer-card-gap: var(--gap-xs);
@@ -898,7 +845,7 @@ body.footer-expanded {
     gap: 4px;
     overflow: auto hidden;
     -webkit-overflow-scrolling: touch;
-    /* apply scrollbar-width only when supported */
+
     @supports (scrollbar-width: none) {
       scrollbar-width: none;
     }
@@ -938,7 +885,7 @@ body.footer-expanded {
   }
 
   .footer-status-content {
-    /* Mobile: stack content and center social icons horizontally */
+
     display: flex;
     flex-direction: column;
     gap: var(--footer-spacing-sm);
@@ -952,7 +899,7 @@ body.footer-expanded {
     display: none;
   }
 
-  /* Hide social button text labels on mobile/small tablets to prevent layout shifts */
+
   .footer-social-links .footer-social-btn span:not(.visually-hidden) {
     display: none;
   }
@@ -987,23 +934,23 @@ body.footer-expanded {
     align-self: center;
   }
 
-  /* Make icon buttons compact and square on mobile */
+
   .footer-social-btn {
     padding: 8px;
     width: 44px;
     height: 44px;
     justify-content: center;
     gap: 0;
-    font-size: 0; /* visually hide inline text labels */
+    font-size: 0;
     border-radius: 10px;
   }
 
-  /* Hide the Three Showcase control on small viewports to avoid overlap */
+
   .footer-three-control {
     display: none;
   }
 
-  /* Mobile: keep newsletter input and submit on a single row */
+
   .newsletter-form-enhanced,
   .newsletter-input-wrapper {
     display: flex;
@@ -1012,12 +959,12 @@ body.footer-expanded {
     gap: var(--gap-xs);
   }
 
-  /* Input grows, button keeps intrinsic size */
+
   .newsletter-input-enhanced {
     flex: 1 1 auto;
     min-width: 0; /* allow shrinking properly in flex */
     width: auto;
-    font-size: 16px; /* Prevent iOS zoom on focus */
+    font-size: 16px;
   }
 
   .newsletter-submit-enhanced {
@@ -1033,7 +980,7 @@ body.footer-expanded {
   }
 }
 
-/* Small mobile devices */
+
 @media (width <= 480px) {
   :root {
     --footer-card-gap: var(--footer-spacing-xs);
@@ -1087,7 +1034,7 @@ body.footer-expanded {
   }
 }
 
-/* Extra small devices */
+
 @media (width <= 360px) {
   .site-footer-fixed {
     width: calc(100% - 12px);
@@ -1107,7 +1054,7 @@ body.footer-expanded {
   }
 }
 
-/* ===== Accessibility ===== */
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -1131,7 +1078,7 @@ body.footer-expanded {
   }
 }
 
-/* ===== Print ===== */
+
 @media print {
   .site-footer-fixed {
     display: none;

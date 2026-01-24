@@ -16,6 +16,7 @@
     tabindex="0"
     aria-label="Footer erweitern"
     aria-expanded="false"
+    onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}"
   >
     <div class="footer-minimal-content">
       <!-- Copyright -->
@@ -188,13 +189,6 @@
             <p class="cookie-category-description">
               Für Grundfunktionen dieser Seite.
             </p>
-            <div class="cookie-details">
-              <div class="cookie-item">
-                <strong>cookie_consent</strong>
-                <p>Merkt sich Ihre Auswahl.</p>
-                <span class="cookie-duration">365 Tage</span>
-              </div>
-            </div>
           </div>
 
           <!-- Analyse -->
@@ -210,13 +204,6 @@
             <p class="cookie-category-description">
               Hilft uns, Inhalte zu verbessern.
             </p>
-            <div class="cookie-details">
-              <div class="cookie-item">
-                <strong>Google Analytics</strong>
-                <p>Anonymisierte Nutzungsstatistik.</p>
-                <span class="cookie-duration">2 Jahre</span>
-              </div>
-            </div>
           </div>
 
           <!-- Werbung / Personalisierung -->
@@ -232,15 +219,8 @@
               </label>
             </div>
             <p class="cookie-category-description">
-              Erlaubt personalisierte Anzeigen und werbebezogene Messungen.
+              Erlaubt personalisierte Anzeigen und Messungen.
             </p>
-            <div class="cookie-details">
-              <div class="cookie-item">
-                <strong>Google Ads / personalisierte Anzeigen</strong>
-                <p>Dient zur Auslieferung relevanter Anzeigen.</p>
-                <span class="cookie-duration">1 Jahr</span>
-              </div>
-            </div>
           </div>
         </div>
 
