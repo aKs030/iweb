@@ -133,6 +133,24 @@ export default defineConfig(({ mode }) => {
       open: true,
       cors: true,
       
+      // Disable all caching for live development
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+      },
+      
+      // Force reload on changes
+      hmr: {
+        overlay: true,
+      },
+      
+      // Watch options for instant updates
+      watch: {
+        usePolling: true,
+        interval: 100,
+      },
+      
       // Proxy for Cloudflare Workers (local development)
       proxy: {
         '/api': {
