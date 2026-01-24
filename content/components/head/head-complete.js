@@ -1,12 +1,6 @@
 /**
  * Dynamic Head Loader - Ultimate Modern SEO & Schema Graph (@graph approach)
- * Version: 2025.3.4 (Identity Disambiguation & Abdul Berlin)
- * * Features:
- * - [GELB] Icon Fix: Re-Integration von 'Organization' für Logo-Support
- * - [ROT] Snippet Fill: Maximierte Descriptions & Knowledge-Injection
- * - [BLAU] FAQ Booster: Strict Mode + Whitespace Cleaner (gegen "Unbenanntes Element")
- * - [GRÜN] Geo Update: Explizite GeoCoordinates & HomeLocation
- * - [LILA] Identity Fix: Disambiguating Description & Alternate Names (Abdul Berlin)
+ * Version: 2025.3.4 (Identity Disambiguation & Abdul Berlin
  */
 
 import { createLogger } from '/content/utils/shared-utilities.js';
@@ -110,7 +104,6 @@ const ROUTES = {
     description_en:
       'A selection of my work, brief presentations and behind-the-scenes.',
     type: 'CollectionPage',
-    // NOTE: use WebP fallback for modern delivery
     image: `${BASE_URL}/content/assets/img/og/og-videos-800.webp`,
   },
   '/gallery/': {
@@ -1008,8 +1001,7 @@ async function loadSharedHead() {
   try {
     await import('../../utils/shared-utilities.js');
 
-    // NOTE: host-based automatic production detection removed — prefer explicit
-    // opt-in via `data-force-prod-canonical="true"` when production canonical is required.
+    // Prefer explicit opt-in via `data-force-prod-canonical="true"` when production canonical is required.
 
     // computeEffectiveCanonical has been moved to a top-level, exported helper (`computeEffectiveCanonical`).
     // Use: computeEffectiveCanonical(forceProdFlag, hostname, cleanPath, pageUrl, BASE_URL)
@@ -1243,7 +1235,7 @@ async function loadSharedHead() {
   }
 
   // --- 3. SCHEMA GRAPH GENERATION (moved to top-level helper) ---
-  // NOTE: the heavy graph generation has been extracted to `generateSchemaGraph` (exported at the top of this module).
+  // Schema graph generation has been extracted to `generateSchemaGraph` (exported at the top of this module).
   // Use canonical origin (prod or runtime origin) so JSON-LD stays consistent in local/dev
   const canonicalOrigin =
     document.documentElement.dataset.forceProdCanonical === 'true'

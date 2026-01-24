@@ -3,10 +3,13 @@
  * Provides safe HTML rendering to prevent XSS attacks
  *
  * @module html-sanitizer
- * @version 1.0.0
+ * @version 1.1.0
  */
 
 import DOMPurify from 'dompurify';
+import { createLogger } from './shared-utilities.js';
+
+const log = createLogger('html-sanitizer');
 
 /**
  * Default DOMPurify configuration for general content
@@ -88,7 +91,7 @@ export function sanitizeHTML(html, config = DEFAULT_CONFIG) {
   try {
     return DOMPurify.sanitize(html, config);
   } catch (error) {
-    console.error('HTML sanitization failed:', error);
+    log.error('HTML sanitization failed:', error);
     return ''; // Return empty string on error (fail-safe)
   }
 }
@@ -134,7 +137,7 @@ export function sanitizeHTMLMinimal(html) {
  */
 export function safeSetInnerHTML(element, html, config = DEFAULT_CONFIG) {
   if (!element || !(element instanceof HTMLElement)) {
-    console.error('safeSetInnerHTML: Invalid element provided');
+    log.error('safeSetInnerHTML: Invalid element provided');
     return;
   }
 

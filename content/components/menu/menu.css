@@ -321,31 +321,47 @@ body {
 .site-menu {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   transition: transform 0.4s var(--dynamic-menu-spring-smooth);
   overflow: visible;
   margin: 0 auto;
   width: auto;
-  position: relative; /* Basis-Position für Desktop */
+  position: relative;
   padding-left: 220px; /* Space for logo on the left */
-  padding-right: 60px; /* Space for hamburger on mobile */
+  padding-right: 20px; /* Reduced padding for more space on the right */
 }
 
 .site-menu__list {
   list-style: none;
   display: flex;
-  gap: clamp(8px, 1.2vw, 16px); /* Reduced gap for better fit */
+  gap: clamp(8px, 1.2vw, 16px);
   align-items: center;
   flex-wrap: nowrap;
   margin: 0;
   padding: 0;
-  justify-content: flex-start; /* Align items to start instead of center */
+  justify-content: flex-start;
+  width: 100%; /* Full width to enable space distribution */
 }
 
+/* General list item styling */
 .site-menu__list li {
   display: flex;
   flex-shrink: 0;
-  min-width: fit-content; /* Optimiert für bessere Browser-Kompatibilität */
+  min-width: fit-content;
+}
+
+/* Main navigation items container */
+.site-menu__list > li:not(:last-child) {
+  /* All items except the search button */
+  flex-shrink: 0;
+  min-width: fit-content;
+}
+
+/* Search button positioning - push to far right */
+.site-menu__list > li:last-child {
+  margin-left: auto; /* Push search button to the right */
+  flex-shrink: 0;
+  margin-right: -8px; /* Move even further right, closer to edge */
 }
 
 /* Main menu item base */
@@ -381,13 +397,11 @@ body {
   will-change: transform; /* Performance-Optimierung */
 }
 
-/* Consolidated Menu States */
+/* Consolidated Menu States - Updated for Enhanced Search */
 .site-menu__list li a:hover,
 .site-menu__list li a:focus,
 .site-menu__list li .submenu-toggle:hover,
-.site-menu__list li .submenu-toggle:focus,
-.site-menu__list li button.search-trigger:hover,
-.site-menu__list li button.search-trigger:focus {
+.site-menu__list li .submenu-toggle:focus {
   color: var(--dynamic-menu-accent-blue);
   background: var(--dynamic-menu-fill-primary);
   border-color: var(--dynamic-menu-separator);
@@ -396,14 +410,13 @@ body {
 }
 
 .site-menu__list li a:active,
-.site-menu__list li .submenu-toggle:active,
-.site-menu__list li button.search-trigger:active {
+.site-menu__list li .submenu-toggle:active {
   background: var(--dynamic-menu-fill-secondary);
   color: var(--dynamic-menu-accent-blue-hover);
   transform: translateY(0) scale(0.98);
 }
 
-/* Search Trigger Button */
+/* Search Trigger Button - Enhanced Design with Right Positioning */
 .site-menu__list button.search-trigger {
   text-decoration: none;
   color: var(--dynamic-menu-label-primary);
@@ -413,7 +426,7 @@ body {
   display: flex;
   align-items: center;
   flex-shrink: 0;
-  padding: 8px 14px; /* Konsistent mit anderen Links */
+  padding: 8px 12px; /* Slightly reduced right padding */
   min-height: 36px;
   min-width: fit-content;
   border-radius: 18px;
@@ -426,13 +439,124 @@ body {
     background 0.2s var(--dynamic-menu-spring-quick),
     color 0.2s var(--dynamic-menu-spring-quick),
     transform 0.15s var(--dynamic-menu-spring-quick),
-    border-color 0.2s var(--dynamic-menu-spring-quick);
+    border-color 0.2s var(--dynamic-menu-spring-quick),
+    box-shadow 0.2s var(--dynamic-menu-spring-quick);
   -webkit-tap-highlight-color: rgb(0 122 255 / 10%);
   -webkit-user-select: none;
   user-select: none;
   white-space: nowrap;
   cursor: pointer;
-  will-change: transform; /* Performance-Optimierung */
+  will-change: transform;
+  overflow: hidden;
+}
+
+/* Enhanced Search Icon Styling - Desktop Right Positioning */
+.site-menu__list button.search-trigger .nav-icon {
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  min-height: 18px;
+  margin-right: 0; /* No text, so no margin needed */
+  opacity: 0.9;
+  transition:
+    transform 0.3s var(--dynamic-menu-spring-smooth),
+    opacity 0.3s var(--dynamic-menu-spring-smooth),
+    filter 0.3s var(--dynamic-menu-spring-smooth);
+  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 10%));
+}
+
+/* Visual separator before search button on desktop */
+@media (width >= 901px) {
+  .site-menu__list > li:last-child::before {
+    content: '';
+    position: absolute;
+    left: -20px; /* Moved separator further left for more spacing */
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1px;
+    height: 20px;
+    background: var(--dynamic-menu-separator);
+    opacity: 0.3;
+  }
+  
+  .site-menu__list > li:last-child {
+    position: relative;
+    margin-left: auto;
+    margin-right: -8px; /* Even closer to the right edge */
+    padding-left: 24px; /* More space for the separator */
+  }
+}
+
+/* Enhanced Hover Effects for Search */
+.site-menu__list button.search-trigger:hover,
+.site-menu__list button.search-trigger:focus {
+  color: var(--dynamic-menu-accent-blue);
+  background: linear-gradient(135deg, 
+    var(--dynamic-menu-fill-primary) 0%, 
+    rgba(10, 132, 255, 0.08) 100%);
+  border-color: rgba(10, 132, 255, 0.2);
+  transform: translateY(-1px) scale(1.05);
+  box-shadow: 
+    0 4px 12px rgba(10, 132, 255, 0.15),
+    0 2px 4px rgba(0, 0, 0, 0.1);
+  outline: none;
+}
+
+.site-menu__list button.search-trigger:hover .nav-icon,
+.site-menu__list button.search-trigger:focus .nav-icon {
+  transform: scale(1.15) rotate(5deg);
+  opacity: 1;
+  filter: drop-shadow(0 2px 4px rgba(10, 132, 255, 0.3));
+}
+
+.site-menu__list button.search-trigger:active {
+  background: linear-gradient(135deg, 
+    var(--dynamic-menu-fill-secondary) 0%, 
+    rgba(10, 132, 255, 0.12) 100%);
+  color: var(--dynamic-menu-accent-blue-hover);
+  transform: translateY(0) scale(1.02);
+  box-shadow: 
+    0 2px 6px rgba(10, 132, 255, 0.2),
+    0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+.site-menu__list button.search-trigger:active .nav-icon {
+  transform: scale(1.1) rotate(0deg);
+}
+
+/* Pulse Animation on Focus */
+.site-menu__list button.search-trigger:focus-visible {
+  animation: search-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes search-pulse {
+  0%, 100% {
+    box-shadow: 
+      0 4px 12px rgba(10, 132, 255, 0.15),
+      0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  50% {
+    box-shadow: 
+      0 4px 16px rgba(10, 132, 255, 0.25),
+      0 2px 6px rgba(0, 0, 0, 0.15),
+      0 0 0 4px rgba(10, 132, 255, 0.1);
+  }
+}
+
+/* Mobile Search Button Enhancements */
+@media (width <= 900px) {
+  .site-menu__list button.search-trigger {
+    padding: 10px 14px;
+    min-height: 40px;
+    border-radius: 20px;
+  }
+  
+  .site-menu__list button.search-trigger .nav-icon {
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    min-height: 20px;
+  }
 }
 
 .site-menu__list .submenu li,
@@ -468,19 +592,15 @@ body {
   transform: scale(1.02);
 }
 
-/* Hover/focus transforms for icons and fallbacks */
+/* Hover/focus transforms for icons and fallbacks - Updated for Enhanced Search */
 .site-menu__list a:hover .nav-icon,
 .site-menu__list a:focus .nav-icon,
 button.submenu-toggle:hover .nav-icon,
 button.submenu-toggle:focus .nav-icon,
-button.search-trigger:hover .nav-icon,
-button.search-trigger:focus .nav-icon,
 .site-menu__list a:hover .icon-fallback,
 .site-menu__list a:focus .icon-fallback,
 button.submenu-toggle:hover .icon-fallback,
-button.submenu-toggle:focus .icon-fallback,
-button.search-trigger:hover .icon-fallback,
-button.search-trigger:focus .icon-fallback {
+button.submenu-toggle:focus .icon-fallback {
   transform: translateY(-1px) scale(1.1);
   opacity: 1;
   filter: drop-shadow(0 1px 2px rgb(0 0 0 / 25%));

@@ -695,7 +695,7 @@ export class CardManager {
     // Scale interpolation logic adjusted for base scale
     // We can't just lerp to 1 or 1.05 because resize sets a specific scale.
     // Instead we modify the scale set by resize.
-    // Note: Since _onResize runs infrequently, we should store baseScale in userData if we wanted perfect scalar lerp,
+    // Since _onResize runs infrequently, we should store baseScale in userData if we wanted perfect scalar lerp,
     // but here we are just adding a small factor or using the scale from resize.
     // Actually, simple addition is safer here to avoid fighting the resizer.
     // However, card.scale is set every frame by resize RAF if resizing.
