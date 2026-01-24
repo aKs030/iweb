@@ -12,7 +12,6 @@ body {
   margin: 0 auto;
 }
 
-
 h1 {
   font-size: 2.5rem;
   margin-bottom: 0.5rem;
@@ -56,7 +55,6 @@ li {
   margin-bottom: 0.5rem;
 }
 
-
 a {
   color: #0a84ff;
   text-decoration: none;
@@ -73,7 +71,6 @@ a:focus-visible {
   outline-offset: 2px;
   border-radius: 2px;
 }
-
 
 .highlight {
   background: rgb(10 132 255 / 10%);
@@ -107,7 +104,6 @@ a:focus-visible {
   font-style: italic;
 }
 
-
 .back-link {
   display: inline-block;
   margin-top: 2rem;
@@ -136,7 +132,6 @@ a:focus-visible {
   outline: 2px solid rgb(10 132 255 / 80%);
   outline-offset: 3px;
 }
-
 
 @media (width <= 768px) {
   body {
@@ -194,7 +189,6 @@ a:focus-visible {
   }
 }
 
-
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0s !important;
@@ -207,7 +201,6 @@ a:focus-visible {
   }
 }
 
-
 @media (prefers-contrast: more) {
   .highlight,
   .contact-box,
@@ -219,7 +212,6 @@ a:focus-visible {
     border: 2px solid currentcolor;
   }
 }
-
 
 @media print {
   body {

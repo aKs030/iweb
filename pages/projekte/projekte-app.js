@@ -192,7 +192,9 @@ function App() {
         const [, owner, repo, branch, path] = m;
         return `https://raw.githack.com/${owner}/${repo}/${branch}/${path}/index.html`;
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     return '';
   };
 
@@ -205,7 +207,9 @@ function App() {
         const [, owner, repo, branch, path] = m;
         return `https://cdn.jsdelivr.net/gh/${owner}/${repo}@${branch}/${path}/index.html`;
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     return '';
   };
 
@@ -240,7 +244,9 @@ function App() {
       setModalOpen(true);
       try {
         document.body.style.overflow = 'hidden';
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
       return;
     }
 
@@ -252,7 +258,9 @@ function App() {
       setModalOpen(true);
       try {
         document.body.style.overflow = 'hidden';
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
       return;
     }
 
@@ -277,7 +285,9 @@ function App() {
     setModalTitle('');
     try {
       document.body.style.overflow = '';
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   };
 
   // Project mockup component: tries to resolve an embed-friendly URL (raw.githack/jsDelivr/appPath)

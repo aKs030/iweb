@@ -57,22 +57,21 @@ SEO              ████████████████████ 10
 
 ### Frontend
 
-- **JavaScript** - ES6+ Modules
-- **React** - 18.2.0 (via ESM)
-- **Three.js** - 3D Graphics
+- **JavaScript** - ES6+ Modules (No Build Tools)
+- **React** - 19.2.3 (via ESM CDN)
+- **Three.js** - 0.182.0 (3D Graphics)
 - **HTML5/CSS3** - Semantic markup
 
 ### Tools
 
-- **Node.js** - Dev server
+- **Node.js** - Dev server only
 - **ESLint** - Code linting
 - **Prettier** - Code formatting
-- **Sharp** - Image optimization
 
 ### Deployment
 
-- **Cloudflare Pages** - Hosting
-- **Service Worker** - Offline support
+- **Cloudflare Pages** - Static hosting
+- **Cloudflare Workers** - API proxies
 - **PWA** - Progressive Web App
 
 ---
@@ -153,54 +152,10 @@ npm run dev
 
 ```bash
 npm run format           # Format code
-npm run lint             # Lint code
-npm run cleanup:check    # Check code quality
-npm run images:build     # Generate images
-npm run videos:schema    # Generate video schema
-npm run blog:pages       # Generate blog pages
+npm run format:check     # Check formatting
+npm run lint             # Lint & fix code
+npm run lint:check       # Check linting
 ```
-
-### Testing
-
-```bash
-# Run all tests
-npm test
-
-# Run tests with UI
-npm run test:ui
-
-# Run tests with coverage
-npm run test:coverage
-```
-
-**Test Coverage:**
-
-- ✅ **134 tests** (114 passing)
-- ✅ **60%+ coverage** (lines, functions, branches, statements)
-- ✅ **14 property-based tests** for correctness validation
-- ✅ **Unit tests** for specific examples and edge cases
-
-**Property-Based Testing:**
-
-This project uses [fast-check](https://github.com/dubzzz/fast-check) for property-based testing. Each property test runs with **100 iterations** to validate universal correctness properties.
-
-**Test Organization:**
-
-```
-content/utils/
-  shared-utilities.js
-  shared-utilities.test.js        # Unit tests
-  shared-utilities.properties.js  # Property tests
-```
-
-**Coverage Thresholds:**
-
-- Lines: 60%
-- Functions: 60%
-- Branches: 60%
-- Statements: 60%
-
-**See:** `docs/TESTING.md` for detailed testing guide (coming soon)
 
 ---
 
@@ -232,11 +187,12 @@ Production:   https://www.abdulkerimsesli.de
 
 ## 🎨 Design Philosophy
 
-- **No Build Tools** - Direct ES6 modules
+- **No Build Tools** - Direct ES6 modules, zero compilation
 - **Progressive Enhancement** - Works without JS
 - **Mobile First** - Responsive design
 - **Performance** - Optimized loading
 - **Accessibility** - Inclusive design
+- **Native Web** - Leverages browser capabilities
 
 ---
 
