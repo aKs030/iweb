@@ -61,11 +61,10 @@
   border: 1px solid var(--dynamic-footer-separator);
   box-shadow: var(--dynamic-footer-shadow-depth-2);
   font-family: var(--dynamic-footer-font-family);
-  transform: translateX(-50%) translateZ(0); /* Force GPU */
+  transform: translateX(-50%) translateZ(0);
   z-index: var(--z-footer);
-  animation: footerEntrance 0.6s var(--dynamic-footer-spring-bounce) forwards; /* Schneller */
+  animation: footerEntrance 0.6s var(--dynamic-footer-spring-bounce) forwards;
   opacity: 0;
-  will-change: transform, opacity;
   content-visibility: auto;
   contain-intrinsic-size: auto 300px;
   contain: layout style paint;
@@ -83,11 +82,13 @@
   0% {
     opacity: 0;
     transform: translateX(-50%) translateY(20px) scale(0.95);
+    will-change: transform, opacity;
   }
 
   100% {
     opacity: 1;
     transform: translateX(-50%) translateY(0) scale(1);
+    will-change: auto;
   }
 }
 
@@ -158,10 +159,9 @@ body.footer-expanded {
   transform: translateY(0) translateZ(0);
   transition:
     transform 0.2s var(--dynamic-footer-spring-quick),
-    /* Schneller */ opacity 0.2s var(--dynamic-footer-spring-quick),
-    /* Schneller */ background-color 0.2s var(--dynamic-footer-spring-quick); /* Schneller */
+    opacity 0.2s var(--dynamic-footer-spring-quick),
+    background-color 0.2s var(--dynamic-footer-spring-quick);
   cursor: pointer;
-  will-change: transform, opacity; /* Performance-Optimierung */
 }
 
 .footer-minimized[inert] {
@@ -212,7 +212,6 @@ body.footer-expanded {
     background-color var(--footer-transition-quick),
     transform var(--footer-transition-quick);
   text-decoration: none;
-  will-change: transform, background-color;
 }
 
 .footer-brand-link:hover {
@@ -252,7 +251,6 @@ body.footer-expanded {
     border-color var(--footer-transition-quick),
     color var(--footer-transition-quick);
   text-decoration: none;
-  will-change: transform;
 
   & svg {
     width: var(--footer-icon-size-md);
@@ -533,9 +531,7 @@ body.footer-expanded {
     transform var(--footer-transition-quick),
     background-color var(--footer-transition-quick),
     border-color var(--footer-transition-quick);
-  will-change: transform;
   transform: translateZ(0);
-
   content-visibility: auto;
   contain-intrinsic-size: var(--footer-card-min-height);
   contain: layout style;
@@ -569,7 +565,6 @@ body.footer-expanded {
   background: var(--dynamic-footer-accent-blue);
   border-radius: 2px;
   transition: width var(--footer-transition-smooth);
-  will-change: width;
 }
 
 .footer-card:hover .footer-card-accent {
@@ -621,7 +616,6 @@ body.footer-expanded {
   font-weight: var(--dynamic-footer-font-weight-medium);
   margin-top: auto;
   transition: all var(--footer-transition-quick);
-  will-change: transform, background-color;
   transform: translateZ(0);
 }
 
@@ -629,6 +623,7 @@ body.footer-expanded {
   background: var(--dynamic-footer-accent-blue);
   color: white;
   transform: translateY(-1px) translateZ(0);
+  will-change: transform, background-color;
 }
 
 @media (hover: none) {
@@ -654,7 +649,6 @@ body.footer-expanded {
   text-decoration: none;
   font-size: var(--footer-text-xs);
   transition: all var(--footer-transition-quick);
-  will-change: transform;
   transform: translateZ(0);
 }
 
@@ -662,6 +656,7 @@ body.footer-expanded {
   color: var(--dynamic-footer-label-primary);
   background: var(--dynamic-footer-fill-primary);
   transform: translateX(3px) translateZ(0);
+  will-change: transform;
 }
 
 .newsletter-form-enhanced {
@@ -716,13 +711,13 @@ body.footer-expanded {
   cursor: pointer;
   white-space: nowrap;
   transition: all var(--footer-transition-quick);
-  will-change: transform;
   transform: translateZ(0);
 }
 
 .newsletter-submit-enhanced:hover {
   background: var(--dynamic-footer-accent-purple);
   transform: translateY(-1px) translateZ(0);
+  will-change: transform;
 }
 
 @keyframes slideUpFade {
@@ -757,7 +752,6 @@ body.footer-expanded {
   font-weight: var(--dynamic-footer-font-weight-medium);
   white-space: nowrap;
   transition: all var(--footer-transition-quick);
-  will-change: transform, background-color;
   transform: translateZ(0);
 }
 
@@ -770,6 +764,7 @@ body.footer-expanded {
   border-color: var(--dynamic-footer-accent-blue);
   color: var(--dynamic-footer-label-primary);
   transform: translateY(-1px) translateZ(0);
+  will-change: transform, background-color;
 }
 
 .footer-social-btn.github {
