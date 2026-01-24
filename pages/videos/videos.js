@@ -357,7 +357,9 @@ function renderVideoCard(grid, it, detailsMap) {
             // optional UA-style event for compatibility (if using legacy setups)
             try {
               gtag('event', 'open_video_page_ua', uaPayload);
-            } catch (_e) {}
+            } catch {
+              // Ignore errors for legacy UA events
+            }
           } else if (Array.isArray(window.dataLayer)) {
             window.dataLayer.push(
               Object.assign({ event: 'open_video_page' }, ga4Payload),

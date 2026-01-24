@@ -3,7 +3,7 @@
  * Runs before all tests
  */
 
-import { expect, afterEach } from 'vitest';
+import { afterEach } from 'vitest';
 import { cleanup } from '@testing-library/react';
 
 // Cleanup after each test
@@ -12,12 +12,12 @@ afterEach(() => {
 });
 
 // Global test utilities
-global.testUtils = {
+globalThis.testUtils = {
   // Add custom test utilities here
 };
 
 // Mock console methods in tests to reduce noise
-global.console = {
+globalThis.console = {
   ...console,
   // Keep error and warn for debugging
   error: console.error,
@@ -29,14 +29,14 @@ global.console = {
 };
 
 // Mock window.matchMedia (used by many components)
+// Note: addListener/removeListener are deprecated and removed
+// Use addEventListener/removeEventListener instead
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
   value: (query) => ({
     matches: false,
     media: query,
     onchange: null,
-    addListener: () => {}, // deprecated
-    removeListener: () => {}, // deprecated
     addEventListener: () => {},
     removeEventListener: () => {},
     dispatchEvent: () => {},
@@ -44,7 +44,7 @@ Object.defineProperty(window, 'matchMedia', {
 });
 
 // Mock IntersectionObserver
-global.IntersectionObserver = class IntersectionObserver {
+globalThis.IntersectionObserver = class IntersectionObserver {
   constructor() {}
   disconnect() {}
   observe() {}
@@ -55,7 +55,7 @@ global.IntersectionObserver = class IntersectionObserver {
 };
 
 // Mock ResizeObserver
-global.ResizeObserver = class ResizeObserver {
+globalThis.ResizeObserver = class ResizeObserver {
   constructor() {}
   disconnect() {}
   observe() {}
@@ -63,11 +63,11 @@ global.ResizeObserver = class ResizeObserver {
 };
 
 // Mock requestIdleCallback
-global.requestIdleCallback = (cb) => {
+globalThis.requestIdleCallback = (cb) => {
   return setTimeout(cb, 0);
 };
 
-global.cancelIdleCallback = (id) => {
+globalThis.cancelIdleCallback = (id) => {
   clearTimeout(id);
 };
 
@@ -89,10 +89,10 @@ const localStorageMock = {
   },
 };
 
-global.localStorage = localStorageMock;
+globalThis.localStorage = localStorageMock;
 
 // Mock fetch (basic implementation)
-global.fetch = async (url, options) => {
+globalThis.fetch = async () => {
   return {
     ok: true,
     status: 200,

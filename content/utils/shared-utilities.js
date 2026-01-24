@@ -333,7 +333,10 @@ export function fire(type, detail = null, target = document) {
   try {
     target.dispatchEvent(new CustomEvent(type, { detail }));
   } catch (error) {
-    sharedLogger.warn(`Failed to dispatch event: ${type}`, error);
+    // Only log warnings in non-test environments
+    if (typeof process === 'undefined' || process.env.NODE_ENV !== 'test') {
+      sharedLogger.warn(`Failed to dispatch event: ${type}`, error);
+    }
   }
 }
 
