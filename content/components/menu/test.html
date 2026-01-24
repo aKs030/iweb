@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Menu System - Test Page</title>
+  <link rel="stylesheet" href="./menu.css">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+
+    .test-container {
+      max-width: 1200px;
+      margin: 120px auto 40px;
+      padding: 40px 20px;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .test-section {
+      margin-bottom: 40px;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 12px;
+    }
+
+    .test-section h2 {
+      margin-top: 0;
+      color: #333;
+    }
+
+    .test-button {
+      padding: 12px 24px;
+      margin: 8px;
+      background: #007aff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .test-button:hover {
+      background: #0051d5;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+    }
+
+    .test-result {
+      margin-top: 16px;
+      padding: 16px;
+      background: #fff;
+      border-radius: 8px;
+      border: 1px solid #e0e0e0;
+      font-family: 'Monaco', 'Courier New', monospace;
+      font-size: 13px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .test-result .success {
+      color: #34c759;
+    }
+
+    .test-result .error {
+      color: #ff3b30;
+    }
+
+    .test-result .info {
+      color: #007aff;
+    }
+
+    .checklist {
+      list-style: none;
+      padding: 0;
+    }
+
+    .checklist li {
+      padding: 12px;
+      margin: 8px 0;
+      background: white;
+      border-radius: 8px;
+      border-left: 4px solid #007aff;
+    }
+
+    .checklist li.done {
+      border-left-color: #34c759;
+      opacity: 0.7;
+    }
+
+    .checklist li::before {
+      content: '☐ ';
+      margin-right: 8px;
+      font-size: 18px;
+    }
+
+    .checklist li.done::before {
+      content: '✅ ';
+    }
+  </style>
+</head>
+<body>
+  <!-- Menu Container -->
+  <header class="site-header">
+    <div id="menu-container"></div>
+  </header>
+
+  <!-- Test Content -->
+  <main id="main-content">
+    <div class="test-container">
+      <h1>🧪 Menu System - Test Suite</h1>
+      <p>Teste alle Features des Menu Systems v3.1</p>
+
+      <!-- Test 1: Basic Functionality -->
+      <div class="test-section">
+        <h2>1. Basic Functionality</h2>
+        <button class="test-button" onclick="testBasicFunctionality()">Test Basic Functions</button>
+        <div id="test-basic-result" class="test-result" style="display:none;"></div>
+      </div>
+
+      <!-- Test 2: State Management -->
+      <div class="test-section">
+        <h2>2. State Management</h2>
+        <button class="test-button" onclick="testStateManagement()">Test State</button>
+        <button class="test-button" onclick="window.menuController?.state.setOpen(true)">Open Menu</button>
+        <button class="test-button" onclick="window.menuController?.state.setOpen(false)">Close Menu</button>
+        <button class="test-button" onclick="window.menuController?.state.setTitle('Test Title', 'Test Subtitle')">Change Title</button>
+        <div id="test-state-result" class="test-result" style="display:none;"></div>
+      </div>
+
+      <!-- Test 3: Theme System -->
+      <div class="test-section">
+        <h2>3. Theme System</h2>
+        <button class="test-button" onclick="testTheme('light')">Light Theme</button>
+        <button class="test-button" onclick="testTheme('dark')">Dark Theme</button>
+        <button class="test-button" onclick="testTheme('colorful')">Colorful Theme</button>
+        <button class="test-button" onclick="testTheme('default')">Default Theme</button>
+        <div id="test-theme-result" class="test-result" style="display:none;"></div>
+      </div>
+
+      <!-- Test 4: Performance -->
+      <div class="test-section">
+        <h2>4. Performance</h2>
+        <button class="test-button" onclick="testPerformance()">Test Performance</button>
+        <div id="test-perf-result" class="test-result" style="display:none;"></div>
+      </div>
+
+      <!-- Test 5: Accessibility -->
+      <div class="test-section">
+        <h2>5. Accessibility</h2>
+        <button class="test-button" onclick="testAccessibility()">Test A11y</button>
+        <div id="test-a11y-result" class="test-result" style="display:none;"></div>
+      </div>
+
+      <!-- Manual Test Checklist -->
+      <div class="test-section">
+        <h2>6. Manual Test Checklist</h2>
+        <ul class="checklist">
+          <li>Desktop Navigation funktioniert</li>
+          <li>Mobile Menu (Hamburger) funktioniert</li>
+          <li>Keyboard Navigation (Tab, Enter, Escape)</li>
+          <li>Search Button funktioniert</li>
+          <li>Active Link Highlighting</li>
+          <li>Smooth Animations</li>
+          <li>Responsive Design (Mobile/Tablet/Desktop)</li>
+          <li>Touch Interactions (Mobile)</li>
+          <li>Screen Reader Support</li>
+          <li>Theme Switching</li>
+        </ul>
+      </div>
+
+      <!-- Stats -->
+      <div class="test-section">
+        <h2>7. System Stats</h2>
+        <button class="test-button" onclick="showStats()">Show Stats</button>
+        <div id="test-stats-result" class="test-result" style="display:none;"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Menu System -->
+  <script type="module">
+    import { MenuController, MenuTheme, createConfig } from './modules/index.js';
+
+    // Initialize
+    const config = createConfig({ ENABLE_DEBUG: true });
+    const controller = new MenuController(config);
+    await controller.init();
+
+    const theme = new MenuTheme();
+
+    // Expose globally for tests
+    window.menuController = controller;
+    window.menuTheme = theme;
+
+    // Test Functions
+    window.testBasicFunctionality = () => {
+      const result = document.getElementById('test-basic-result');
+      result.style.display = 'block';
+      result.innerHTML = '';
+
+      const log = (msg, type = 'info') => {
+        result.innerHTML += `<div class="${type}">${msg}</div>`;
+      };
+
+      log('Testing basic functionality...', 'info');
+
+      // Test 1: Controller exists
+      if (window.menuController) {
+        log('✅ MenuController initialized', 'success');
+      } else {
+        log('❌ MenuController not found', 'error');
+        return;
+      }
+
+      // Test 2: State exists
+      if (window.menuController.state) {
+        log('✅ MenuState exists', 'success');
+      } else {
+        log('❌ MenuState not found', 'error');
+      }
+
+      // Test 3: Container exists
+      const container = document.getElementById('menu-container');
+      if (container && container.children.length > 0) {
+        log('✅ Menu rendered in DOM', 'success');
+      } else {
+        log('❌ Menu not rendered', 'error');
+      }
+
+      // Test 4: Menu items exist
+      const menuItems = document.querySelectorAll('.site-menu__list li');
+      log(`✅ Found ${menuItems.length} menu items`, 'success');
+
+      // Test 5: Icons loaded
+      const icons = document.querySelectorAll('.nav-icon');
+      log(`✅ Found ${icons.length} icons`, 'success');
+
+      log('Basic functionality test complete!', 'success');
+    };
+
+    window.testStateManagement = () => {
+      const result = document.getElementById('test-state-result');
+      result.style.display = 'block';
+      result.innerHTML = '';
+
+      const log = (msg, type = 'info') => {
+        result.innerHTML += `<div class="${type}">${msg}</div>`;
+      };
+
+      log('Testing state management...', 'info');
+
+      // Test state properties
+      const state = window.menuController.state;
+      log(`Current state:`, 'info');
+      log(`  - isOpen: ${state.isOpen}`, 'info');
+      log(`  - currentTitle: ${state.currentTitle}`, 'info');
+      log(`  - currentSubtitle: ${state.currentSubtitle}`, 'info');
+
+      // Test state changes
+      let eventFired = false;
+      const handler = () => { eventFired = true; };
+      state.on('openChange', handler);
+      
+      state.setOpen(true);
+      if (eventFired) {
+        log('✅ State events working', 'success');
+      } else {
+        log('❌ State events not working', 'error');
+      }
+
+      state.off('openChange', handler);
+      state.setOpen(false);
+
+      log('State management test complete!', 'success');
+    };
+
+    window.testTheme = (themeName) => {
+      const result = document.getElementById('test-theme-result');
+      result.style.display = 'block';
+      
+      const success = window.menuTheme.apply(themeName);
+      
+      if (success) {
+        result.innerHTML = `<div class="success">✅ Applied theme: ${themeName}</div>`;
+      } else {
+        result.innerHTML = `<div class="error">❌ Failed to apply theme: ${themeName}</div>`;
+      }
+    };
+
+    window.testPerformance = () => {
+      const result = document.getElementById('test-perf-result');
+      result.style.display = 'block';
+      result.innerHTML = '';
+
+      const log = (msg, type = 'info') => {
+        result.innerHTML += `<div class="${type}">${msg}</div>`;
+      };
+
+      log('Testing performance...', 'info');
+
+      // Test 1: Memory usage
+      if (performance.memory) {
+        const used = (performance.memory.usedJSHeapSize / 1048576).toFixed(2);
+        log(`Memory used: ${used} MB`, 'info');
+      }
+
+      // Test 2: Cache stats
+      const stats = window.menuController.getStats();
+      log(`Cache stats:`, 'info');
+      log(`  - Elements: ${stats.cache.elements}`, 'info');
+      log(`  - Computed: ${stats.cache.computed}`, 'info');
+      log(`  - Total: ${stats.cache.total}`, 'info');
+
+      // Test 3: Device capabilities
+      log(`Device:`, 'info');
+      log(`  - Mobile: ${stats.device.isMobile}`, 'info');
+      log(`  - Touch: ${stats.device.isTouch}`, 'info');
+      log(`  - Hover: ${stats.device.hasHover}`, 'info');
+
+      log('Performance test complete!', 'success');
+    };
+
+    window.testAccessibility = () => {
+      const result = document.getElementById('test-a11y-result');
+      result.style.display = 'block';
+      result.innerHTML = '';
+
+      const log = (msg, type = 'info') => {
+        result.innerHTML += `<div class="${type}">${msg}</div>`;
+      };
+
+      log('Testing accessibility...', 'info');
+
+      // Test 1: ARIA attributes
+      const menu = document.querySelector('.site-menu');
+      if (menu.getAttribute('role') === 'navigation') {
+        log('✅ Navigation role set', 'success');
+      } else {
+        log('❌ Navigation role missing', 'error');
+      }
+
+      // Test 2: Skip links
+      const skipLinks = document.querySelectorAll('.skip-link');
+      log(`✅ Found ${skipLinks.length} skip links`, 'success');
+
+      // Test 3: Keyboard focusable elements
+      const focusable = document.querySelectorAll('.site-menu a, .site-menu button');
+      log(`✅ Found ${focusable.length} focusable elements`, 'success');
+
+      // Test 4: ARIA labels
+      const toggle = document.querySelector('.site-menu__toggle');
+      if (toggle && toggle.getAttribute('aria-label')) {
+        log('✅ Toggle has aria-label', 'success');
+      } else {
+        log('⚠️ Toggle aria-label missing', 'error');
+      }
+
+      log('Accessibility test complete!', 'success');
+    };
+
+    window.showStats = () => {
+      const result = document.getElementById('test-stats-result');
+      result.style.display = 'block';
+      
+      const stats = window.menuController.getStats();
+      result.innerHTML = `<pre>${JSON.stringify(stats, null, 2)}</pre>`;
+    };
+
+    console.log('✅ Menu System Test Page Ready');
+    console.log('Available commands:');
+    console.log('  - window.menuController');
+    console.log('  - window.menuTheme');
+    console.log('  - testBasicFunctionality()');
+    console.log('  - testStateManagement()');
+    console.log('  - testTheme(name)');
+    console.log('  - testPerformance()');
+    console.log('  - testAccessibility()');
+  </script>
+</body>
+</html>
