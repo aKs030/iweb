@@ -130,37 +130,15 @@ function applyRedirects(url, rules) {
 
 /**
  * Get cache headers based on file type
+ * DEVELOPMENT MODE: All files served without cache for live updates
  */
 function getCacheHeaders(filePath) {
-  const ext = path.extname(filePath).toLowerCase();
-
-  // Static assets - long cache
-  if (
-    [
-      '.png',
-      '.jpg',
-      '.jpeg',
-      '.webp',
-      '.gif',
-      '.woff',
-      '.woff2',
-      '.ttf',
-    ].includes(ext)
-  ) {
-    return { 'Cache-Control': 'public, max-age=31536000, immutable' };
-  }
-
-  // JS/CSS - short cache
-  if (['.js', '.mjs', '.css'].includes(ext)) {
-    return { 'Cache-Control': 'public, max-age=3600' };
-  }
-
-  // HTML - no cache
-  if (ext === '.html') {
-    return { 'Cache-Control': 'no-cache, no-store, must-revalidate' };
-  }
-
-  return { 'Cache-Control': 'public, max-age=300' };
+  // Disable all caching in development for instant updates
+  return {
+    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+    'Pragma': 'no-cache',
+    'Expires': '0',
+  };
 }
 
 /**
