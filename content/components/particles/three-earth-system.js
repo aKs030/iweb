@@ -190,7 +190,10 @@ export const initThreeEarth = async () => {
 
     return cleanup;
   } catch (error) {
-    log.error('Initialization failed:', error);
+    // Silently handle initialization errors in production
+    if (process.env.NODE_ENV === 'development') {
+      log.error('Initialization failed:', error);
+    }
     try {
       if (renderer) renderer.dispose();
     } catch {
