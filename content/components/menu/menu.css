@@ -161,26 +161,25 @@ body {
   top: 12px;
   left: 50%;
   width: calc(100% - 32px);
-  max-width: 1400px; /* Increased for more menu space */
-  min-width: 900px; /* Reduziert für bessere Responsivität */
+  max-width: 1440px; /* Increased for more menu space */
+  min-width: 920px; /* Slightly increased for better fit */
   height: 52px;
-  padding: 0 24px;
+  padding: 0 20px; /* Reduziertes Padding für mehr Platz */
 
   /* Dynamic Menu Glassmorphismus */
-  background: var(--dynamic-menu-header-bg);
-  -webkit-backdrop-filter: blur(var(--dynamic-menu-blur-radius));
-  backdrop-filter: blur(var(--dynamic-menu-blur-radius));
+  background: var(--dynamic-menu-header-bg, rgba(0, 0, 0, 0.8));
+  backdrop-filter: blur(var(--dynamic-menu-blur-radius, 20px));
 
   /* Dynamic Island Shape */
-  border-radius: var(--dynamic-menu-pill-radius);
-  border: 1px solid var(--dynamic-menu-separator);
+  border-radius: var(--dynamic-menu-pill-radius, 26px);
+  border: 1px solid var(--dynamic-menu-separator, rgba(255, 255, 255, 0.1));
 
   /* Dynamic Menu Shadow System */
-  box-shadow: var(--dynamic-menu-shadow-depth-2);
+  box-shadow: var(--dynamic-menu-shadow-depth-2, 0 8px 32px rgba(0, 0, 0, 0.3));
 
   /* Layout - Improved spacing */
   display: flex;
-  justify-content: center;
+  justify-content: flex-end; /* Menu nach rechts */
   align-items: center;
   z-index: 9999;
 
@@ -207,20 +206,20 @@ body {
 /* ===== Dynamic Menu Logo System ===== */
 .site-logo__container {
   display: flex;
-  /* default for home; overridden for header on article pages */
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
+  flex-direction: row; /* Horizontal statt vertikal */
+  align-items: center; /* Zentriert */
+  gap: 8px; /* Abstand zwischen Titel und Untertitel */
   padding: 4px 0;
   position: absolute;
-  left: 24px;
-  z-index: 1; /* Ensure logo stays above other elements */
-  max-width: 200px; /* Prevent logo from taking too much space */
+  left: 20px;
+  z-index: 1;
+  max-width: 300px; /* Mehr Platz für Logo */
+  white-space: nowrap; /* Kein Umbruch */
 }
 
 /* Header variant: horizontal alignment for logo image + text */
 .site-header .site-logo__container {
-  flex-direction: row;
+  flex-direction: row; /* Immer horizontal */
   align-items: center;
   gap: 8px;
 }
@@ -250,74 +249,78 @@ body {
 
 .site-logo.elegant-logo {
   font-family: var(--font-primary);
-  font-size: clamp(20px, 2.2vw, 24px);
+  font-size: clamp(18px, 2vw, 22px); /* Etwas kleiner */
   font-weight: 700;
-  color: var(--dynamic-menu-label-primary);
+  color: var(--dynamic-menu-label-primary, #ffffff);
   letter-spacing: -0.03em;
+  white-space: nowrap; /* Kein Umbruch */
 }
 
 .site-logo:hover {
   transform: scale(1.02);
-  color: var(--dynamic-menu-accent-blue);
+  color: var(--dynamic-menu-accent-blue, #007aff);
 }
 
 .site-header .site-logo__container .site-logo {
   font-family: var(--font-primary);
   font-weight: 650;
-  color: var(--dynamic-menu-label-primary);
+  color: var(--dynamic-menu-label-primary, #ffffff);
 }
 
 /* ===== Dynamic Menu Subtitle System ===== */
 .site-subtitle {
   font-family: var(--font-primary);
-  font-size: clamp(11px, 1vw, 13px);
+  font-size: clamp(10px, 0.9vw, 12px); /* Etwas kleiner */
   font-weight: 450;
-  color: var(--dynamic-menu-label-secondary);
+  color: var(--dynamic-menu-label-secondary, rgba(255, 255, 255, 0.7));
   letter-spacing: 0.01em;
   opacity: 0;
-  transform: translateY(-4px) scale(0.95);
+  transform: translateX(-4px) scale(0.95); /* Von links statt oben */
   transition:
     opacity 0.4s var(--dynamic-menu-spring-smooth),
     transform 0.4s var(--dynamic-menu-spring-smooth);
   text-align: left;
   line-height: 1.1;
-  margin-top: -2px;
+  margin-top: 0; /* Kein Margin */
+  white-space: nowrap; /* Kein Umbruch */
 }
 
 .site-subtitle.show {
   opacity: 0.8;
-  transform: translateY(0) scale(1);
+  transform: translateX(0) scale(1); /* Von links */
 }
 
 .site-logo__container:hover .site-subtitle.show {
   opacity: 1;
-  color: var(--dynamic-menu-label-primary);
+  color: var(--dynamic-menu-label-primary, #ffffff);
 }
 
 /* ===== Dynamic Menu Desktop Navigation ===== */
 .site-menu {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end; /* Buttons nach rechts */
   transition: transform 0.4s var(--dynamic-menu-spring-smooth);
-  overflow: visible;
-  margin: 0 auto;
-  width: auto;
+  overflow: visible; /* Sichtbar für Hover-Effekte */
+  margin: 0;
+  width: 100%; /* Volle Breite nutzen */
   position: relative;
-  padding-left: 220px; /* Space for logo on the left */
-  padding-right: 20px; /* Reduced padding for more space on the right */
+  padding-left: 0;
+  padding-right: 0; /* Kein Padding */
 }
 
 .site-menu__list {
   list-style: none;
   display: flex;
-  gap: clamp(8px, 1.2vw, 16px);
+  gap: clamp(6px, 1vw, 10px); /* Kompakter Gap */
   align-items: center;
   flex-wrap: nowrap;
   margin: 0;
   padding: 0;
-  justify-content: flex-start;
-  width: 100%; /* Full width to enable space distribution */
+  justify-content: flex-end; /* Alle Items nach rechts */
+  width: auto;
+  margin-left: 0; /* Kein extra Margin */
+  margin-right: 0; /* Direkt am Rand */
 }
 
 /* General list item styling */
@@ -334,11 +337,11 @@ body {
   min-width: fit-content;
 }
 
-/* Search button positioning - push to far right */
+/* Search button positioning - at the end of the list */
 .site-menu__list > li:last-child {
-  margin-left: auto; /* Push search button to the right */
   flex-shrink: 0;
-  margin-right: -8px; /* Move even further right, closer to edge */
+  margin-left: 0; /* Kein extra Margin */
+  margin-right: 0; /* Keep within bounds */
 }
 
 /* Main menu item base - Consolidated styles for links and buttons */
@@ -346,14 +349,14 @@ body {
 .site-menu__list li .submenu-toggle,
 .site-menu__list button.search-trigger {
   text-decoration: none;
-  color: var(--dynamic-menu-label-primary);
+  color: var(--dynamic-menu-label-primary, #ffffff);
   font-family: var(--font-primary);
   font-weight: 510;
   position: relative;
   display: flex;
   align-items: center;
   flex-shrink: 0;
-  padding: 8px 12px;
+  padding: 8px 10px; /* Kompakteres Padding */
   min-height: 36px;
   min-width: fit-content;
   border-radius: 18px;
@@ -388,9 +391,9 @@ body {
 .site-menu__list li .submenu-toggle:focus,
 .site-menu__list button.search-trigger:hover,
 .site-menu__list button.search-trigger:focus {
-  color: var(--dynamic-menu-accent-blue);
-  background: var(--dynamic-menu-fill-primary);
-  border-color: var(--dynamic-menu-separator);
+  color: var(--dynamic-menu-accent-blue, #007aff);
+  background: var(--dynamic-menu-fill-primary, rgba(255, 255, 255, 0.1));
+  border-color: var(--dynamic-menu-separator, rgba(255, 255, 255, 0.1));
   transform: translateY(-1px) scale(1.02);
   outline: none;
 }
@@ -398,8 +401,8 @@ body {
 .site-menu__list li a:active,
 .site-menu__list li .submenu-toggle:active,
 .site-menu__list button.search-trigger:active {
-  background: var(--dynamic-menu-fill-secondary);
-  color: var(--dynamic-menu-accent-blue-hover);
+  background: var(--dynamic-menu-fill-secondary, rgba(255, 255, 255, 0.15));
+  color: var(--dynamic-menu-accent-blue-hover, #0051d5);
   transform: translateY(0) scale(0.98);
 }
 
@@ -407,7 +410,7 @@ body {
 .site-menu__list li a:focus-visible,
 .site-menu__list li .submenu-toggle:focus-visible,
 .site-menu__list button.search-trigger:focus-visible {
-  outline: 2px solid var(--dynamic-menu-accent-blue);
+  outline: 2px solid var(--dynamic-menu-accent-blue, #007aff);
   outline-offset: 2px;
   box-shadow: 0 0 0 4px rgb(0 122 255 / 20%);
 }
@@ -428,20 +431,18 @@ body {
   .site-menu__list > li:last-child::before {
     content: '';
     position: absolute;
-    left: -20px; /* Moved separator further left for more spacing */
+    left: -10px; /* Noch näher am Icon */
     top: 50%;
     transform: translateY(-50%);
     width: 1px;
     height: 20px;
-    background: var(--dynamic-menu-separator);
+    background: var(--dynamic-menu-separator, rgba(255, 255, 255, 0.1));
     opacity: 0.3;
   }
   
   .site-menu__list > li:last-child {
     position: relative;
-    margin-left: auto;
-    margin-right: -8px; /* Even closer to the right edge */
-    padding-left: 24px; /* More space for the separator */
+    padding-left: 14px; /* Reduziertes Padding */
   }
 }
 
@@ -500,7 +501,7 @@ body {
 
 .site-menu__list .submenu li,
 .site-menu__list .submenu li a {
-  color: var(--dynamic-menu-label-secondary);
+  color: var(--dynamic-menu-label-secondary, rgba(255, 255, 255, 0.7));
   display: block;
   transition:
     background 0.2s var(--dynamic-menu-spring-quick),
@@ -519,14 +520,14 @@ body {
 .site-menu__list .submenu li a:focus-visible {
   outline-offset: 2px;
   box-shadow: 0 0 0 4px rgb(0 122 255 / 20%);
-  background: var(--dynamic-menu-fill-primary);
-  border-radius: var(--dynamic-menu-micro-radius);
+  background: var(--dynamic-menu-fill-primary, rgba(255, 255, 255, 0.1));
+  border-radius: var(--dynamic-menu-micro-radius, 8px);
 }
 
 .site-menu__list .submenu li a:hover,
 .site-menu__list .submenu li a:focus {
-  color: var(--dynamic-menu-label-primary);
-  background: var(--dynamic-menu-fill-primary);
+  color: var(--dynamic-menu-label-primary, #ffffff);
+  background: var(--dynamic-menu-fill-primary, rgba(255, 255, 255, 0.1));
   text-decoration: none;
   transform: scale(1.02);
 }
@@ -548,8 +549,8 @@ button.submenu-toggle:focus .icon-fallback {
 /* ===== Dynamic Menu Hamburger System ===== */
 .site-menu__toggle {
   display: none;
-  background: var(--dynamic-menu-fill-primary);
-  border: 1px solid var(--dynamic-menu-separator);
+  background: var(--dynamic-menu-fill-primary, rgba(255, 255, 255, 0.1));
+  border: 1px solid var(--dynamic-menu-separator, rgba(255, 255, 255, 0.1));
   border-radius: 12px;
   cursor: pointer;
   width: 40px;
@@ -560,18 +561,17 @@ button.submenu-toggle:focus .icon-fallback {
     background 0.2s var(--dynamic-menu-spring-quick),
     transform 0.2s var(--dynamic-menu-spring-quick),
     opacity 0.2s var(--dynamic-menu-spring-quick);
-  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
 }
 
 .site-menu__toggle:hover {
-  background: var(--dynamic-menu-fill-secondary);
+  background: var(--dynamic-menu-fill-secondary, rgba(255, 255, 255, 0.15));
   transform: scale(1.05);
 }
 
 .site-menu__toggle:active {
   transform: scale(0.95);
-  background: var(--dynamic-menu-accent-blue);
+  background: var(--dynamic-menu-accent-blue, #007aff);
 }
 
 .site-menu__hamburger,
@@ -579,7 +579,7 @@ button.submenu-toggle:focus .icon-fallback {
 .site-menu__hamburger::after {
   content: '';
   display: block;
-  background: var(--dynamic-menu-label-primary);
+  background: var(--dynamic-menu-label-primary, #ffffff);
   width: 18px;
   height: 2px;
   margin: 4px auto;
@@ -591,7 +591,7 @@ button.submenu-toggle:focus .icon-fallback {
 }
 
 .site-menu__toggle:focus-visible {
-  outline: 2px solid var(--dynamic-menu-accent-blue);
+  outline: 2px solid var(--dynamic-menu-accent-blue, #007aff);
   outline-offset: 2px;
   box-shadow: 0 0 0 4px rgb(0 122 255 / 20%);
 }
@@ -602,12 +602,12 @@ button.submenu-toggle:focus .icon-fallback {
 
 .site-menu__toggle.active .site-menu__hamburger::before {
   transform: translateY(6px) rotate(45deg);
-  background: var(--dynamic-menu-label-primary);
+  background: var(--dynamic-menu-label-primary, #ffffff);
 }
 
 .site-menu__toggle.active .site-menu__hamburger::after {
   transform: translateY(-6px) rotate(-45deg);
-  background: var(--dynamic-menu-label-primary);
+  background: var(--dynamic-menu-label-primary, #ffffff);
 }
 
 /* ===== Dynamic Menu Submenu System ===== */
@@ -622,13 +622,12 @@ button.submenu-toggle:focus .icon-fallback {
   left: 0;
 
   /* Dynamic Menu Card Design */
-  background: var(--dynamic-menu-header-bg);
-  -webkit-backdrop-filter: blur(var(--dynamic-menu-blur-radius));
-  backdrop-filter: blur(var(--dynamic-menu-blur-radius));
+  background: var(--dynamic-menu-header-bg, rgba(0, 0, 0, 0.8));
+  backdrop-filter: blur(var(--dynamic-menu-blur-radius, 20px));
   min-width: 200px;
-  border-radius: var(--dynamic-menu-card-radius);
-  border: 1px solid var(--dynamic-menu-separator);
-  box-shadow: var(--dynamic-menu-shadow-depth-3);
+  border-radius: var(--dynamic-menu-card-radius, 16px);
+  border: 1px solid var(--dynamic-menu-separator, rgba(255, 255, 255, 0.1));
+  box-shadow: var(--dynamic-menu-shadow-depth-3, 0 12px 48px rgba(0, 0, 0, 0.4));
   padding: 8px;
   font-size: 15px;
 
@@ -682,151 +681,6 @@ button.submenu-toggle:focus .icon-fallback {
 main {
   margin-top: 88px; /* Account for Dynamic Menu floating header */
   padding: 1rem;
-}
-
-/* ===== Dynamic Menu Mobile Experience ===== */
-@media (width <= 900px) {
-  /* Optimierter Breakpoint */
-  .site-header {
-    display: flex;
-    justify-content: flex-start; /* Änderung für besseres mobiles Layout */
-    top: 8px;
-    width: calc(100% - 16px);
-    height: 48px;
-    padding: 0 20px;
-    border-radius: 20px;
-    min-width: auto; /* Remove min-width constraint on mobile */
-  }
-
-  .site-logo__container {
-    position: relative; /* Zurücksetzen der absoluten Positionierung */
-    left: 0;
-    max-width: none; /* Remove max-width on mobile */
-  }
-
-  .site-menu {
-    padding-left: 0; /* Remove left padding on mobile */
-    padding-right: 0; /* Remove right padding on mobile */
-  }
-
-  .site-menu__toggle {
-    display: block;
-    position: absolute;
-    right: 20px; /* Angepasst an das mobile Padding */
-    top: 50%;
-    transform: translateY(-50%);
-  }
-
-  /* Adjust page content for smaller floating header */
-  main {
-    margin-top: 72px;
-  }
-
-  /* Dynamic Menu Card-based Mobile Menu */
-  .site-menu {
-    position: fixed; /* Fixierte Position für Mobile-Menü */
-    top: 64px; /* Angepasst an die neue Header-Höhe */
-    right: 8px;
-    width: min(90vw, 320px);
-    padding: 0;
-    left: auto; /* Verhindert Konflikte mit der Desktop-Zentrierung */
-
-    /* Dynamic Menu Card Design */
-    background: var(--dynamic-menu-header-bg);
-    -webkit-backdrop-filter: blur(var(--dynamic-menu-blur-radius));
-    backdrop-filter: blur(var(--dynamic-menu-blur-radius));
-    border: 1px solid var(--dynamic-menu-separator);
-    border-radius: var(--dynamic-menu-card-radius);
-    box-shadow: var(--dynamic-menu-shadow-depth-3);
-
-    /* Animation */
-    transform: translateX(110%) scale(0.95);
-    transition:
-      transform 0.4s var(--dynamic-menu-spring-bounce),
-      opacity 0.4s var(--dynamic-menu-spring-bounce);
-    flex-direction: column;
-    gap: 0;
-    z-index: 9998;
-    opacity: 0;
-  }
-
-  .site-menu.open {
-    transform: translateX(0) scale(1);
-    opacity: 1;
-  }
-
-  .site-menu__list {
-    flex-direction: column;
-    align-items: stretch;
-    width: 100%;
-    padding: 12px;
-    gap: 4px;
-  }
-
-  .site-menu__list li a {
-    min-height: 44px;
-    font-size: 17px;
-    font-weight: 510;
-    padding: 12px 16px;
-    border-radius: 12px;
-    background: transparent;
-    border: none;
-    color: var(--dynamic-menu-label-primary);
-    touch-action: manipulation;
-    transition:
-      background 0.2s var(--dynamic-menu-spring-quick),
-      color 0.2s var(--dynamic-menu-spring-quick),
-      transform 0.2s var(--dynamic-menu-spring-quick);
-  }
-
-  .site-menu__list li a:hover,
-  .site-menu__list li a:active {
-    background: var(--dynamic-menu-fill-primary);
-    transform: none;
-  }
-
-  /* Dynamic Menu Mobile Submenu */
-  .site-menu.open .site-menu__list .submenu {
-    display: none;
-    position: static;
-    background: var(--dynamic-menu-fill-secondary);
-    border: none;
-    box-shadow: none;
-    border-radius: var(--dynamic-menu-micro-radius);
-    padding: 8px;
-    margin: 4px 0;
-    margin-left: 12px;
-    opacity: 1;
-    pointer-events: auto;
-    transform: none;
-    transition: none;
-  }
-
-  .site-menu__list .has-submenu.open .submenu {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-
-  .site-menu__list .submenu li a {
-    font-size: 15px;
-    font-weight: 450;
-    padding: 10px 12px;
-    min-height: 40px;
-    color: var(--dynamic-menu-label-secondary);
-  }
-
-  /* Mobile submenu indicator */
-  .site-menu__list .has-submenu > a::after,
-  .site-menu__list .has-submenu > .submenu-toggle::after {
-    content: '⌄';
-    transform: rotate(-90deg);
-  }
-
-  .site-menu__list .has-submenu.open > a::after,
-  .site-menu__list .has-submenu.open > .submenu-toggle::after {
-    transform: rotate(0deg);
-  }
 }
 
 /* ===== Dynamic Menu Mobile Experience ===== */
@@ -911,14 +765,14 @@ main {
     border-radius: 12px;
     background: transparent;
     border: none;
-    color: var(--dynamic-menu-label-primary);
+    color: var(--dynamic-menu-label-primary, #ffffff);
   }
 
   .site-menu__list li a:hover,
   .site-menu__list li a:active,
   .site-menu__list button.search-trigger:hover,
   .site-menu__list button.search-trigger:active {
-    background: var(--dynamic-menu-fill-primary);
+    background: var(--dynamic-menu-fill-primary, rgba(255, 255, 255, 0.1));
     transform: none;
   }
 
@@ -940,10 +794,10 @@ main {
   .site-menu.open .site-menu__list .submenu {
     display: none;
     position: static;
-    background: var(--dynamic-menu-fill-secondary);
+    background: var(--dynamic-menu-fill-secondary, rgba(255, 255, 255, 0.15));
     border: none;
     box-shadow: none;
-    border-radius: var(--dynamic-menu-micro-radius);
+    border-radius: var(--dynamic-menu-micro-radius, 8px);
     padding: 8px;
     margin: 4px 0 4px 12px;
     opacity: 1;
@@ -963,7 +817,7 @@ main {
     font-weight: 450;
     padding: 10px 12px;
     min-height: 40px;
-    color: var(--dynamic-menu-label-secondary);
+    color: var(--dynamic-menu-label-secondary, rgba(255, 255, 255, 0.7));
   }
 
   /* Mobile submenu indicator */
@@ -982,10 +836,10 @@ main {
 /* ===== Dynamic Menu Active Link States ===== */
 .site-menu__list li a.active,
 .site-menu__list li a[aria-current='page'] {
-  color: var(--dynamic-menu-accent-blue);
-  background: var(--dynamic-menu-fill-primary);
+  color: var(--dynamic-menu-accent-blue, #007aff);
+  background: var(--dynamic-menu-fill-primary, rgba(255, 255, 255, 0.1));
   font-weight: 590;
-  border: 1px solid var(--dynamic-menu-separator);
+  border: 1px solid var(--dynamic-menu-separator, rgba(255, 255, 255, 0.1));
 }
 
 /* ===== Dynamic Menu Submenu Indicators ===== */
