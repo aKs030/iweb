@@ -160,6 +160,48 @@ npm run videos:schema    # Generate video schema
 npm run blog:pages       # Generate blog pages
 ```
 
+### Testing
+
+```bash
+# Run all tests
+npm test
+
+# Run tests with UI
+npm run test:ui
+
+# Run tests with coverage
+npm run test:coverage
+```
+
+**Test Coverage:**
+
+- ✅ **134 tests** (114 passing)
+- ✅ **60%+ coverage** (lines, functions, branches, statements)
+- ✅ **14 property-based tests** for correctness validation
+- ✅ **Unit tests** for specific examples and edge cases
+
+**Property-Based Testing:**
+
+This project uses [fast-check](https://github.com/dubzzz/fast-check) for property-based testing. Each property test runs with **100 iterations** to validate universal correctness properties.
+
+**Test Organization:**
+
+```
+content/utils/
+  shared-utilities.js
+  shared-utilities.test.js        # Unit tests
+  shared-utilities.properties.js  # Property tests
+```
+
+**Coverage Thresholds:**
+
+- Lines: 60%
+- Functions: 60%
+- Branches: 60%
+- Statements: 60%
+
+**See:** `docs/TESTING.md` for detailed testing guide (coming soon)
+
 ---
 
 ## 🌐 URLs

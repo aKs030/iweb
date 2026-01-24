@@ -12,6 +12,13 @@ export default defineConfig({
     // Setup files
     setupFiles: ['./vitest.setup.js'],
     
+    // Property-based testing configuration
+    // fast-check will run at least 100 iterations per property test
+    propertyTesting: {
+      iterations: 100,
+      seed: Date.now(), // Reproducible randomness
+    },
+    
     // Coverage configuration
     coverage: {
       provider: 'v8',
@@ -23,16 +30,19 @@ export default defineConfig({
         'coverage/**',
         '**/*.test.js',
         '**/*.spec.js',
+        '**/*.properties.js', // Exclude property test files from coverage
         'vitest.config.js',
         'vite.config.js',
+        'vitest.setup.js',
         'scripts/**',
         'workers/**',
+        'content/utils/test-utils/**', // Exclude test utilities
       ],
       include: [
         'content/**/*.js',
         'pages/**/*.js',
       ],
-      // Coverage thresholds
+      // Coverage thresholds - 60% for all metrics
       thresholds: {
         lines: 60,
         functions: 60,
@@ -41,9 +51,10 @@ export default defineConfig({
       },
     },
     
-    // Test file patterns
+    // Test file patterns - include property test files
     include: [
       '**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}',
+      '**/*.properties.js', // Include property-based test files
     ],
     
     // Exclude patterns

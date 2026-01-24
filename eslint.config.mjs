@@ -42,6 +42,8 @@ export default [
         DOMParser: 'readonly',
         AbortController: 'readonly',
         OffscreenCanvas: 'readonly',
+        HTMLElement: 'readonly',
+        KeyboardEvent: 'readonly',
         // Node.js globals (for scripts)
         process: 'readonly',
         __dirname: 'readonly',
@@ -65,6 +67,49 @@ export default [
       'prefer-const': 'warn',
       'no-var': 'error',
       'no-empty': ['warn', { allowEmptyCatch: true }],
+      
+      // Deprecated API patterns
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'MemberExpression[object.name="matchMedia"] > Identifier[name="addListener"]',
+          message: 'matchMedia.addListener() is deprecated. Use addEventListener() instead.',
+        },
+        {
+          selector: 'MemberExpression[object.name="matchMedia"] > Identifier[name="removeListener"]',
+          message: 'matchMedia.removeListener() is deprecated. Use removeEventListener() instead.',
+        },
+      ],
+      
+      // Discourage direct globalThis usage (suggest window.AKS namespace)
+      'no-restricted-globals': [
+        'warn',
+        {
+          name: '__threeEarthCleanup',
+          message: 'Use window.AKS.threeEarthCleanup instead of globalThis.__threeEarthCleanup',
+        },
+        {
+          name: '__FORCE_THREE_EARTH',
+          message: 'Use window.AKS.forceThreeEarth instead of globalThis.__FORCE_THREE_EARTH',
+        },
+      ],
+    },
+  },
+  {
+    // Test files configuration
+    files: ['**/*.test.js', '**/*.spec.js', 'vitest.setup.js'],
+    languageOptions: {
+      globals: {
+        vi: 'readonly',
+        describe: 'readonly',
+        it: 'readonly',
+        expect: 'readonly',
+        beforeEach: 'readonly',
+        afterEach: 'readonly',
+        beforeAll: 'readonly',
+        afterAll: 'readonly',
+        test: 'readonly',
+      },
     },
   },
   {

@@ -1,5 +1,7 @@
 import { defineConfig } from 'vite';
 import { createHtmlPlugin } from 'vite-plugin-html';
+import { visualizer } from 'rollup-plugin-visualizer';
+import preact from '@preact/preset-vite';
 import { resolve } from 'path';
 
 export default defineConfig(({ mode }) => {
@@ -72,11 +74,18 @@ export default defineConfig(({ mode }) => {
               if (id.includes('three')) {
                 return 'vendor-three';
               }
+              // Preact chunks (replaces React)
+              if (id.includes('preact')) {
+                return 'vendor-preact';
+              }
               if (id.includes('react') || id.includes('react-dom')) {
-                return 'vendor-react';
+                return 'vendor-preact'; // React is aliased to Preact
               }
               if (id.includes('dompurify')) {
                 return 'vendor-dompurify';
+              }
+              if (id.includes('fast-check')) {
+                return 'vendor-test'; // Test dependencies
               }
               // Other node_modules go to vendor
               return 'vendor';
@@ -172,6 +181,7 @@ export default defineConfig(({ mode }) => {
     optimizeDeps: {
       include: [
         'dompurify',
+        'three',
       ],
       exclude: [
         // Exclude large dependencies that should be loaded on-demand
@@ -187,6 +197,8 @@ export default defineConfig(({ mode }) => {
     
     // Plugins
     plugins: [
+      // Preact plugin for React compatibility
+      preact(),
       createHtmlPlugin({
         minify: isProd,
         inject: {
@@ -196,7 +208,15 @@ export default defineConfig(({ mode }) => {
           },
         },
       }),
-    ],
+      // Bundle analyzer - generates stats.html
+      isProd && visualizer({
+        filename: 'dist/stats.html',
+        open: false,
+        gzipSize: true,
+        brotliSize: true,
+        template: 'treemap', // or 'sunburst', 'network'
+      }),
+    ].filter(Boolean),
     
     // CSS configuration
     css: {
