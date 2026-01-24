@@ -1,7 +1,7 @@
 /**
  * Main Application Entry Point
- * @version 4.2.0
- * @last-modified 2026-01-23
+ * @version 4.3.0
+ * @last-modified 2026-01-24
  */
 
 import { initHeroFeatureBundle } from '../pages/home/hero-manager.js';
@@ -19,7 +19,6 @@ import {
 } from '/content/utils/shared-utilities.js';
 import { observeOnce } from '/content/utils/intersection-observer.js';
 import { a11y } from './utils/accessibility-manager.js';
-import './components/menu/menu.js';
 
 const log = createLogger('main');
 
@@ -43,6 +42,32 @@ const perfMarks = {
   modulesReady: 0,
   windowLoaded: 0,
 };
+
+// ===== DOM Utilities =====
+const domCache = {
+  appLoader: null,
+  threeEarthContainer: null,
+  snapContainer: null,
+};
+
+function getCachedElement(id, fallback = null) {
+  const cacheKey = id.replace(/[^a-zA-Z]/g, '');
+  if (!domCache[cacheKey]) {
+    domCache[cacheKey] = getElementById(id) || fallback;
+  }
+  return domCache[cacheKey];
+}
+
+function getThreeEarthContainer() {
+  return (
+    getCachedElement('threeEarthContainer') ||
+    getCachedElement('earth-container')
+  );
+}
+
+function getAppLoader() {
+  return getCachedElement('app-loader');
+}
 
 // ===== Accessibility Announcements =====
 const announce = (() => {
@@ -293,8 +318,10 @@ if (document.readyState !== 'loading') {
 // ===== Scroll Snapping =====
 const ScrollSnapping = (() => {
   let snapTimer = null;
-  const snapContainer =
-    document.querySelector('.snap-container') || document.documentElement;
+  const snapContainer = getCachedElement(
+    'snap-container',
+    document.documentElement,
+  );
 
   const disableSnap = () => snapContainer.classList.add('no-snap');
   const enableSnap = () => snapContainer.classList.remove('no-snap');
@@ -302,7 +329,7 @@ const ScrollSnapping = (() => {
   function handleScroll() {
     disableSnap();
     clearTimeout(snapTimer);
-    snapTimer = setTimeout(enableSnap, 150); // Reduziert von 180ms
+    snapTimer = setTimeout(enableSnap, 150);
   }
 
   function handleKey(event) {
@@ -333,7 +360,7 @@ ScrollSnapping.init();
 
 // ===== Loading Screen Manager =====
 const LoadingScreenManager = (() => {
-  const MIN_DISPLAY_TIME = 500; // Reduziert von 600ms
+  const MIN_DISPLAY_TIME = 500;
   const state = {
     overlay: null,
     bar: null,
@@ -355,7 +382,7 @@ const LoadingScreenManager = (() => {
   let hasHidden = false;
 
   function bindElements() {
-    state.overlay = getElementById('app-loader');
+    state.overlay = getAppLoader();
     state.bar = getElementById('loader-progress-bar');
     state.text = getElementById('loader-status-text');
     state.percent = getElementById('loader-percentage');
@@ -388,19 +415,18 @@ const LoadingScreenManager = (() => {
     updateUI(state.messages[state.messageIndex]);
 
     state.interval = setInterval(() => {
-      const increment = Math.random() * (state.progress > 70 ? 3 : 6); // Schnellerer Fortschritt
+      const increment = Math.random() * (state.progress > 70 ? 3 : 6);
       const ceiling = 96;
       const next = Math.min(state.progress + increment, ceiling);
       state.progress = Math.max(state.progress, next);
 
-      // Rotate messages for a subtle "system" feel
       if (Math.random() > 0.85 && state.progress < 94) {
         state.messageIndex = (state.messageIndex + 1) % state.messages.length;
         updateUI(state.messages[state.messageIndex]);
       } else {
         updateUI();
       }
-    }, 100); // Reduziert von 120ms
+    }, 100);
   }
 
   function finalizeProgress(statusText = 'Bereit.') {
@@ -417,12 +443,7 @@ const LoadingScreenManager = (() => {
     const delay = Math.max(0, MIN_DISPLAY_TIME - elapsed);
 
     setTimeout(() => {
-      // If there's an Earth container on the page, wait up to 4s for the
-      // 'earth-ready' signal (or compatible signals) to avoid hiding the
-      // loader before the 3D canvas can show a visible frame.
-      const earthContainerPresent =
-        document.getElementById('threeEarthContainer') ||
-        document.getElementById('earth-container');
+      const earthContainerPresent = getThreeEarthContainer();
 
       const proceedToHide = () => {
         if (hasHidden) return;
@@ -458,14 +479,12 @@ const LoadingScreenManager = (() => {
         return;
       }
 
-      // Three.js Earth system now unblocks itself immediately after initialization
-      // No need to wait for events here - just proceed after a short grace period
       setTimeout(() => {
         if (ENV.debug) {
           log.debug('Earth grace period completed - proceeding to hide loader');
         }
         proceedToHide();
-      }, 300); // Reduziert von 500ms
+      }, 300);
     }, delay);
   }
 
@@ -503,19 +522,17 @@ const ThreeEarthLoader = (() => {
   async function load() {
     if (isLoading || cleanupFn) return;
 
-    // Skip in test environment unless explicitly forced
     if (ENV.isTest && !globalThis.__FORCE_THREE_EARTH) {
       log.info('Test environment - skipping Three.js Earth');
       return;
     }
 
-    const container = getElementById('threeEarthContainer');
+    const container = getThreeEarthContainer();
     if (!container) {
       log.debug('Earth container not found');
       return;
     }
 
-    // Skip on save-data mode
     if (navigator.connection?.saveData) {
       log.info('Three.js skipped: save-data mode');
       return;
@@ -547,16 +564,14 @@ const ThreeEarthLoader = (() => {
   }
 
   function init() {
-    const container = getElementById('threeEarthContainer');
+    const container = getThreeEarthContainer();
     if (!container) return;
 
-    // Check if container is already visible or loader is active
     try {
       const rect = container.getBoundingClientRect();
       const withinMargin =
         rect.top < (globalThis.innerHeight || 0) + 100 && rect.bottom > -100;
-      const loaderVisible =
-        document.getElementById('app-loader')?.dataset?.loaderDone !== 'true';
+      const loaderVisible = getAppLoader()?.dataset?.loaderDone !== 'true';
 
       if (withinMargin || loaderVisible) {
         load();
@@ -566,13 +581,10 @@ const ThreeEarthLoader = (() => {
       // Fallback to observer
     }
 
-    observeOnce(
-      container,
-      () => {
-        load();
-      },
-      { rootMargin: '400px', threshold: 0.01 },
-    );
+    observeOnce(container, () => load(), {
+      rootMargin: '400px',
+      threshold: 0.01,
+    });
   }
 
   function initDelayed() {
@@ -604,13 +616,14 @@ document.addEventListener(
         typeof AppLoadManager.isBlocked === 'function' &&
         AppLoadManager.isBlocked();
       if (blocked) return;
+
       // Ensure Three.js Earth signaled readiness if present
-      const earthReady =
-        document.getElementById('threeEarthContainer')?.dataset?.threeReady ===
-        '1';
-      if (document.getElementById('threeEarthContainer') && !earthReady) {
+      const earthContainer = getThreeEarthContainer();
+      const earthReady = earthContainer?.dataset?.threeReady === '1';
+      if (earthContainer && !earthReady) {
         return;
       }
+
       LoadingScreenManager.setStatus('Starte Experience...', 98);
       LoadingScreenManager.hide();
     };
