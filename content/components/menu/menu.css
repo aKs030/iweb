@@ -1,17 +1,18 @@
 /**
- * Dynamic Menu Navigations-System
+ * Modern Menu System - Styles
+ * 
  * Features:
- * - Dynamic Island-inspirierte Navigation
- * - Glassmorphismus 2.0 mit dynamischen Unschärfe-Effekten
- * - SF Pro Typography System
- * - Micro-Animationen und flüssige Übergänge
- * - Card-basierte Mobile Experience
- * - Skip-Links für WCAG 2.1 Level AA Compliance
+ * - Dynamic Island Navigation
+ * - Glassmorphism 2.0
+ * - Fluid Animations
+ * - Mobile-first Responsive
+ * - WCAG 2.1 AA Compliant
+ * 
  * @author Abdulkerim Sesli
- * @version 2.0.2 - Cleanup
+ * @version 3.0.0
  */
 
-/* ===== Skip-Links für Accessibility (WCAG 2.1 Level AA) ===== */
+/* ===== Skip Links (WCAG 2.1 AA) ===== */
 .skip-links {
   position: fixed;
   top: 0;
@@ -36,14 +37,10 @@
   border-radius: 8px;
   border: 2px solid var(--accent-primary, #0f8);
   box-shadow: 0 4px 16px rgb(0 0 0 / 30%);
-  transition:
-    clip-path 0.3s ease,
-    box-shadow 0.2s ease;
+  transition: clip-path 0.3s ease, box-shadow 0.2s ease;
   pointer-events: auto;
   white-space: nowrap;
   z-index: 10001;
-
-  /* Versteckt ohne negative Position (für Tap-Target Optimierung) */
   clip-path: inset(0 0 100% 0);
 }
 
@@ -65,7 +62,7 @@
   }
 }
 
-/* ===== Dynamic Menu Icons System ===== */
+/* ===== Icon System ===== */
 .nav-icon {
   width: 16px;
   height: 16px;
@@ -77,15 +74,14 @@
   margin-right: 8px;
   filter: drop-shadow(0 0.5px 1px rgb(0 0 0 / 15%));
   transition:
-    transform 0.2s var(--dynamic-menu-spring-quick),
-    opacity 0.2s var(--dynamic-menu-spring-quick),
-    filter 0.2s var(--dynamic-menu-spring-quick);
+    transform 0.2s var(--dynamic-menu-spring-quick, cubic-bezier(0.4, 0, 0.2, 1)),
+    opacity 0.2s var(--dynamic-menu-spring-quick, cubic-bezier(0.4, 0, 0.2, 1)),
+    filter 0.2s var(--dynamic-menu-spring-quick, cubic-bezier(0.4, 0, 0.2, 1));
   opacity: 0.85;
   display: inline-block;
   position: relative;
 }
 
-/* Fallback für defekte SVG Icons */
 .icon-fallback {
   font-size: 14px;
   margin-right: 8px;
@@ -95,25 +91,6 @@
   vertical-align: -1px;
 }
 
-/* Spezielle Abstände für Buttons und Submenus */
-button.submenu-toggle .nav-icon,
-button.submenu-toggle .icon-fallback,
-.site-menu__list .submenu .nav-icon {
-  width: 14px;
-  height: 14px;
-  min-width: 14px;
-  min-height: 14px;
-  margin-right: 6px;
-  opacity: 0.8;
-}
-
-.site-menu__list .submenu .icon-fallback {
-  font-size: 12px;
-  margin-right: 6px;
-  opacity: 0.8;
-}
-
-/* Icon Fallback Visibility */
 .nav-icon:not(:empty) + .icon-fallback {
   display: none;
 }
@@ -123,31 +100,11 @@ button.submenu-toggle .icon-fallback,
   display: inline-block;
 }
 
-/* ===== Dynamic Menu Base Styles ===== */
-*,
-*::before,
-*::after {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-html,
-body {
-  overflow-x: hidden;
-}
-
-.has-submenu > a {
-  cursor: pointer;
-}
-
-/* ===== Dynamic Menu Typography System ===== */
+/* ===== Typography ===== */
 .site-menu__list li,
 .site-menu__list li a {
-  font-family: var(--font-primary);
-  font-feature-settings:
-    'kern' 1,
-    'liga' 1;
+  font-family: var(--font-primary, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  font-feature-settings: 'kern' 1, 'liga' 1;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-size: 17px;
@@ -155,91 +112,59 @@ body {
   font-weight: 510;
 }
 
-/* ===== Dynamic Menu Dynamic Header System ===== */
+/* ===== Header ===== */
 .site-header {
   position: fixed;
   top: 12px;
   left: 50%;
   width: calc(100% - 32px);
-  max-width: 1440px; /* Increased for more menu space */
-  min-width: 920px; /* Slightly increased for better fit */
+  max-width: 1440px;
+  min-width: 920px;
   height: 52px;
-  padding: 0 20px; /* Reduziertes Padding für mehr Platz */
-
-  /* Dynamic Menu Glassmorphismus */
+  padding: 0 20px;
   background: var(--dynamic-menu-header-bg, rgba(0, 0, 0, 0.8));
   backdrop-filter: blur(var(--dynamic-menu-blur-radius, 20px));
-
-  /* Dynamic Island Shape */
   border-radius: var(--dynamic-menu-pill-radius, 26px);
   border: 1px solid var(--dynamic-menu-separator, rgba(255, 255, 255, 0.1));
-
-  /* Dynamic Menu Shadow System */
   box-shadow: var(--dynamic-menu-shadow-depth-2, 0 8px 32px rgba(0, 0, 0, 0.3));
-
-  /* Layout - Improved spacing */
   display: flex;
-  justify-content: flex-end; /* Menu nach rechts */
+  justify-content: flex-end;
   align-items: center;
   z-index: 9999;
-
-  /* Animation */
-  animation: dynamicMenuHeaderAppear 0.8s var(--dynamic-menu-spring-bounce)
-    forwards;
+  animation: headerAppear 0.8s var(--dynamic-menu-spring-bounce, cubic-bezier(0.68, -0.55, 0.265, 1.55)) forwards;
   opacity: 0;
   transform: translateX(-50%) translateY(-20px) scale(0.95);
-
-  /* Touch Optimization */
   touch-action: pan-y;
-  font-family: var(--font-primary);
+  font-family: var(--font-primary, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
   font-weight: 500;
   letter-spacing: -0.02em;
 }
 
-@keyframes dynamicMenuHeaderAppear {
+@keyframes headerAppear {
   to {
     opacity: 1;
     transform: translateX(-50%) translateY(0) scale(1);
   }
 }
 
-/* ===== Dynamic Menu Logo System ===== */
+/* ===== Logo ===== */
 .site-logo__container {
   display: flex;
-  flex-direction: row; /* Horizontal statt vertikal */
-  align-items: center; /* Zentriert */
-  gap: 8px; /* Abstand zwischen Titel und Untertitel */
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
   padding: 4px 0;
   position: absolute;
   left: 20px;
   z-index: 1;
-  max-width: 300px; /* Mehr Platz für Logo */
-  white-space: nowrap; /* Kein Umbruch */
+  max-width: 300px;
+  white-space: nowrap;
 }
-
-/* Header variant: horizontal alignment for logo image + text */
-.site-header .site-logo__container {
-  flex-direction: row; /* Immer horizontal */
-  align-items: center;
-  gap: 8px;
-}
-
-/* Inline SVG logo styling */
-.site-logo-svg {
-  display: inline-block;
-  width: 40px;
-  height: 40px;
-  border-radius: 6px;
-}
-
-
-
-
 
 .site-logo {
   transition:
-    transform 0.3s var(--dynamic-menu-spring-quick),
-    opacity 0.3s var(--dynamic-menu-spring-quick);
+    transform 0.3s var(--dynamic-menu-spring-quick, cubic-bezier(0.4, 0, 0.2, 1)),
+    opacity 0.3s var(--dynamic-menu-spring-quick, cubic-bezier(0.4, 0, 0.2, 1));
   cursor: pointer;
   text-decoration: none;
   display: inline-block;
@@ -248,12 +173,12 @@ body {
 }
 
 .site-logo.elegant-logo {
-  font-family: var(--font-primary);
-  font-size: clamp(18px, 2vw, 22px); /* Etwas kleiner */
+  font-family: var(--font-primary, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  font-size: clamp(18px, 2vw, 22px);
   font-weight: 700;
   color: var(--dynamic-menu-label-primary, #ffffff);
   letter-spacing: -0.03em;
-  white-space: nowrap; /* Kein Umbruch */
+  white-space: nowrap;
 }
 
 .site-logo:hover {
@@ -261,33 +186,25 @@ body {
   color: var(--dynamic-menu-accent-blue, #007aff);
 }
 
-.site-header .site-logo__container .site-logo {
-  font-family: var(--font-primary);
-  font-weight: 650;
-  color: var(--dynamic-menu-label-primary, #ffffff);
-}
-
-/* ===== Dynamic Menu Subtitle System ===== */
 .site-subtitle {
-  font-family: var(--font-primary);
-  font-size: clamp(10px, 0.9vw, 12px); /* Etwas kleiner */
+  font-family: var(--font-primary, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  font-size: clamp(10px, 0.9vw, 12px);
   font-weight: 450;
   color: var(--dynamic-menu-label-secondary, rgba(255, 255, 255, 0.7));
   letter-spacing: 0.01em;
   opacity: 0;
-  transform: translateX(-4px) scale(0.95); /* Von links statt oben */
+  transform: translateX(-4px) scale(0.95);
   transition:
-    opacity 0.4s var(--dynamic-menu-spring-smooth),
-    transform 0.4s var(--dynamic-menu-spring-smooth);
+    opacity 0.4s var(--dynamic-menu-spring-smooth, cubic-bezier(0.25, 0.46, 0.45, 0.94)),
+    transform 0.4s var(--dynamic-menu-spring-smooth, cubic-bezier(0.25, 0.46, 0.45, 0.94));
   text-align: left;
   line-height: 1.1;
-  margin-top: 0; /* Kein Margin */
-  white-space: nowrap; /* Kein Umbruch */
+  white-space: nowrap;
 }
 
 .site-subtitle.show {
   opacity: 0.8;
-  transform: translateX(0) scale(1); /* Von links */
+  transform: translateX(0) scale(1);
 }
 
 .site-logo__container:hover .site-subtitle.show {
@@ -295,68 +212,49 @@ body {
   color: var(--dynamic-menu-label-primary, #ffffff);
 }
 
-/* ===== Dynamic Menu Desktop Navigation ===== */
+/* ===== Navigation ===== */
 .site-menu {
   display: flex;
   align-items: center;
-  justify-content: flex-end; /* Buttons nach rechts */
-  transition: transform 0.4s var(--dynamic-menu-spring-smooth);
-  overflow: visible; /* Sichtbar für Hover-Effekte */
+  justify-content: flex-end;
+  transition: transform 0.4s var(--dynamic-menu-spring-smooth, cubic-bezier(0.25, 0.46, 0.45, 0.94));
+  overflow: visible;
   margin: 0;
-  width: 100%; /* Volle Breite nutzen */
+  width: 100%;
   position: relative;
-  padding-left: 0;
-  padding-right: 0; /* Kein Padding */
+  padding: 0;
 }
 
 .site-menu__list {
   list-style: none;
   display: flex;
-  gap: clamp(6px, 1vw, 10px); /* Kompakter Gap */
+  gap: clamp(6px, 1vw, 10px);
   align-items: center;
   flex-wrap: nowrap;
   margin: 0;
   padding: 0;
-  justify-content: flex-end; /* Alle Items nach rechts */
+  justify-content: flex-end;
   width: auto;
-  margin-left: 0; /* Kein extra Margin */
-  margin-right: 0; /* Direkt am Rand */
 }
 
-/* General list item styling */
 .site-menu__list li {
   display: flex;
   flex-shrink: 0;
   min-width: fit-content;
 }
 
-/* Main navigation items container */
-.site-menu__list > li:not(:last-child) {
-  /* All items except the search button */
-  flex-shrink: 0;
-  min-width: fit-content;
-}
-
-/* Search button positioning - at the end of the list */
-.site-menu__list > li:last-child {
-  flex-shrink: 0;
-  margin-left: 0; /* Kein extra Margin */
-  margin-right: 0; /* Keep within bounds */
-}
-
-/* Main menu item base - Consolidated styles for links and buttons */
+/* ===== Menu Items ===== */
 .site-menu__list li a,
-.site-menu__list li .submenu-toggle,
 .site-menu__list button.search-trigger {
   text-decoration: none;
   color: var(--dynamic-menu-label-primary, #ffffff);
-  font-family: var(--font-primary);
+  font-family: var(--font-primary, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
   font-weight: 510;
   position: relative;
   display: flex;
   align-items: center;
   flex-shrink: 0;
-  padding: 8px 10px; /* Kompakteres Padding */
+  padding: 8px 10px;
   min-height: 36px;
   min-width: fit-content;
   border-radius: 18px;
@@ -366,11 +264,11 @@ body {
   letter-spacing: -0.01em;
   touch-action: manipulation;
   transition:
-    background 0.2s var(--dynamic-menu-spring-quick),
-    color 0.2s var(--dynamic-menu-spring-quick),
-    transform 0.15s var(--dynamic-menu-spring-quick),
-    border-color 0.2s var(--dynamic-menu-spring-quick),
-    box-shadow 0.2s var(--dynamic-menu-spring-quick);
+    background 0.2s var(--dynamic-menu-spring-quick, cubic-bezier(0.4, 0, 0.2, 1)),
+    color 0.2s var(--dynamic-menu-spring-quick, cubic-bezier(0.4, 0, 0.2, 1)),
+    transform 0.15s var(--dynamic-menu-spring-quick, cubic-bezier(0.4, 0, 0.2, 1)),
+    border-color 0.2s var(--dynamic-menu-spring-quick, cubic-bezier(0.4, 0, 0.2, 1)),
+    box-shadow 0.2s var(--dynamic-menu-spring-quick, cubic-bezier(0.4, 0, 0.2, 1));
   -webkit-tap-highlight-color: rgb(0 122 255 / 10%);
   -webkit-user-select: none;
   user-select: none;
@@ -378,17 +276,8 @@ body {
   cursor: pointer;
 }
 
-/* Search button specific adjustments */
-.site-menu__list button.search-trigger {
-  font-size: clamp(14px, 1.2vw, 15px);
-  overflow: hidden;
-}
-
-/* Consolidated Menu States */
 .site-menu__list li a:hover,
 .site-menu__list li a:focus,
-.site-menu__list li .submenu-toggle:hover,
-.site-menu__list li .submenu-toggle:focus,
 .site-menu__list button.search-trigger:hover,
 .site-menu__list button.search-trigger:focus {
   color: var(--dynamic-menu-accent-blue, #007aff);
@@ -399,23 +288,24 @@ body {
 }
 
 .site-menu__list li a:active,
-.site-menu__list li .submenu-toggle:active,
 .site-menu__list button.search-trigger:active {
   background: var(--dynamic-menu-fill-secondary, rgba(255, 255, 255, 0.15));
   color: var(--dynamic-menu-accent-blue-hover, #0051d5);
   transform: translateY(0) scale(0.98);
 }
 
-/* Focus-visible for better keyboard navigation */
 .site-menu__list li a:focus-visible,
-.site-menu__list li .submenu-toggle:focus-visible,
 .site-menu__list button.search-trigger:focus-visible {
   outline: 2px solid var(--dynamic-menu-accent-blue, #007aff);
   outline-offset: 2px;
   box-shadow: 0 0 0 4px rgb(0 122 255 / 20%);
 }
 
-/* Enhanced Search Icon Styling */
+/* ===== Search Button ===== */
+.site-menu__list button.search-trigger {
+  font-size: clamp(14px, 1.2vw, 15px);
+}
+
 .site-menu__list button.search-trigger .nav-icon {
   width: 18px;
   height: 18px;
@@ -426,12 +316,11 @@ body {
   filter: drop-shadow(0 1px 2px rgb(0 0 0 / 10%));
 }
 
-/* Visual separator before search button on desktop */
 @media (width >= 901px) {
   .site-menu__list > li:last-child::before {
     content: '';
     position: absolute;
-    left: -10px; /* Noch näher am Icon */
+    left: -10px;
     top: 50%;
     transform: translateY(-50%);
     width: 1px;
@@ -442,15 +331,14 @@ body {
   
   .site-menu__list > li:last-child {
     position: relative;
-    padding-left: 14px; /* Reduziertes Padding */
+    padding-left: 14px;
   }
 }
 
-/* Enhanced Search Button Effects */
 .site-menu__list button.search-trigger:hover,
 .site-menu__list button.search-trigger:focus {
   background: linear-gradient(135deg, 
-    var(--dynamic-menu-fill-primary) 0%, 
+    var(--dynamic-menu-fill-primary, rgba(255, 255, 255, 0.1)) 0%, 
     rgba(10, 132, 255, 0.08) 100%);
   border-color: rgba(10, 132, 255, 0.2);
   transform: translateY(-1px) scale(1.05);
@@ -468,7 +356,7 @@ body {
 
 .site-menu__list button.search-trigger:active {
   background: linear-gradient(135deg, 
-    var(--dynamic-menu-fill-secondary) 0%, 
+    var(--dynamic-menu-fill-secondary, rgba(255, 255, 255, 0.15)) 0%, 
     rgba(10, 132, 255, 0.12) 100%);
   transform: translateY(0) scale(1.02);
   box-shadow: 
@@ -480,7 +368,6 @@ body {
   transform: scale(1.1);
 }
 
-/* Pulse Animation on Focus */
 .site-menu__list button.search-trigger:focus-visible {
   animation: search-pulse 1.5s ease-in-out infinite;
 }
@@ -499,54 +386,17 @@ body {
   }
 }
 
-.site-menu__list .submenu li,
-.site-menu__list .submenu li a {
-  color: var(--dynamic-menu-label-secondary, rgba(255, 255, 255, 0.7));
-  display: block;
-  transition:
-    background 0.2s var(--dynamic-menu-spring-quick),
-    color 0.2s var(--dynamic-menu-spring-quick),
-    transform 0.2s var(--dynamic-menu-spring-quick);
-  padding: 12px 20px;
-  min-width: 160px;
-  font-size: 15px;
-  font-weight: 450;
-  border-radius: var(--dynamic-menu-micro-radius);
-  margin: 2px 8px;
-  background: transparent;
-}
-
-/* Focus-visible for submenu items */
-.site-menu__list .submenu li a:focus-visible {
-  outline-offset: 2px;
-  box-shadow: 0 0 0 4px rgb(0 122 255 / 20%);
-  background: var(--dynamic-menu-fill-primary, rgba(255, 255, 255, 0.1));
-  border-radius: var(--dynamic-menu-micro-radius, 8px);
-}
-
-.site-menu__list .submenu li a:hover,
-.site-menu__list .submenu li a:focus {
-  color: var(--dynamic-menu-label-primary, #ffffff);
-  background: var(--dynamic-menu-fill-primary, rgba(255, 255, 255, 0.1));
-  text-decoration: none;
-  transform: scale(1.02);
-}
-
-/* Icon hover/focus transforms - Consolidated */
+/* ===== Icon Hover Effects ===== */
 .site-menu__list a:hover .nav-icon,
 .site-menu__list a:focus .nav-icon,
 .site-menu__list a:hover .icon-fallback,
-.site-menu__list a:focus .icon-fallback,
-button.submenu-toggle:hover .nav-icon,
-button.submenu-toggle:focus .nav-icon,
-button.submenu-toggle:hover .icon-fallback,
-button.submenu-toggle:focus .icon-fallback {
+.site-menu__list a:focus .icon-fallback {
   transform: translateY(-1px) scale(1.1);
   opacity: 1;
   filter: drop-shadow(0 1px 2px rgb(0 0 0 / 25%));
 }
 
-/* ===== Dynamic Menu Hamburger System ===== */
+/* ===== Hamburger Toggle ===== */
 .site-menu__toggle {
   display: none;
   background: var(--dynamic-menu-fill-primary, rgba(255, 255, 255, 0.1));
@@ -558,9 +408,9 @@ button.submenu-toggle:focus .icon-fallback {
   position: absolute;
   right: 24px;
   transition:
-    background 0.2s var(--dynamic-menu-spring-quick),
-    transform 0.2s var(--dynamic-menu-spring-quick),
-    opacity 0.2s var(--dynamic-menu-spring-quick);
+    background 0.2s var(--dynamic-menu-spring-quick, cubic-bezier(0.4, 0, 0.2, 1)),
+    transform 0.2s var(--dynamic-menu-spring-quick, cubic-bezier(0.4, 0, 0.2, 1)),
+    opacity 0.2s var(--dynamic-menu-spring-quick, cubic-bezier(0.4, 0, 0.2, 1));
   backdrop-filter: blur(10px);
 }
 
@@ -585,9 +435,9 @@ button.submenu-toggle:focus .icon-fallback {
   margin: 4px auto;
   border-radius: 2px;
   transition:
-    background 0.3s var(--dynamic-menu-spring-bounce),
-    transform 0.3s var(--dynamic-menu-spring-bounce),
-    opacity 0.3s var(--dynamic-menu-spring-bounce);
+    background 0.3s var(--dynamic-menu-spring-bounce, cubic-bezier(0.68, -0.55, 0.265, 1.55)),
+    transform 0.3s var(--dynamic-menu-spring-bounce, cubic-bezier(0.68, -0.55, 0.265, 1.55)),
+    opacity 0.3s var(--dynamic-menu-spring-bounce, cubic-bezier(0.68, -0.55, 0.265, 1.55));
 }
 
 .site-menu__toggle:focus-visible {
@@ -610,80 +460,22 @@ button.submenu-toggle:focus .icon-fallback {
   background: var(--dynamic-menu-label-primary, #ffffff);
 }
 
-/* ===== Dynamic Menu Submenu System ===== */
-.site-menu__list .has-submenu {
-  position: relative;
-}
-
-.site-menu__list .submenu {
-  display: none;
-  position: absolute;
-  top: calc(100% + 8px);
-  left: 0;
-
-  /* Dynamic Menu Card Design */
-  background: var(--dynamic-menu-header-bg, rgba(0, 0, 0, 0.8));
-  backdrop-filter: blur(var(--dynamic-menu-blur-radius, 20px));
-  min-width: 200px;
-  border-radius: var(--dynamic-menu-card-radius, 16px);
-  border: 1px solid var(--dynamic-menu-separator, rgba(255, 255, 255, 0.1));
-  box-shadow: var(--dynamic-menu-shadow-depth-3, 0 12px 48px rgba(0, 0, 0, 0.4));
-  padding: 8px;
-  font-size: 15px;
-
-  /* Intelligente Positionierung - verhindert Überlauf */
-  transform-origin: top left;
-  transition:
-    opacity 0.2s var(--dynamic-menu-spring-quick),
-    transform 0.2s var(--dynamic-menu-spring-quick);
-}
-
-/* Automatische rechts-Ausrichtung wenn nötig */
-.site-menu__list .has-submenu:last-child .submenu,
-.site-menu__list .has-submenu:nth-last-child(2) .submenu {
-  left: auto;
-  right: 0;
-  transform-origin: top right;
-}
-
-/* Verhindere Überlauf bei sehr schmalen Bildschirmen */
-@media (width <= 480px) {
-  .site-menu.open .site-menu__list .submenu {
-    left: -10px;
-    right: -10px;
-    min-width: auto;
-    width: auto;
-  }
-}
-
-/* Desktop Submenu Hover Logic */
-@media (width >= 769px) {
-  .site-menu__list .submenu {
-    opacity: 0;
-    pointer-events: none;
-    transform: translateY(-8px) scale(0.96);
-    transition:
-      opacity 0.25s var(--dynamic-menu-spring-smooth),
-      transform 0.25s var(--dynamic-menu-spring-smooth);
-    display: block; /* Always rendered for smooth transitions */
-  }
-
-  .site-menu__list .has-submenu:hover .submenu,
-  .site-menu__list .has-submenu:focus-within .submenu {
-    display: block;
-    opacity: 1;
-    pointer-events: auto;
-    transform: translateY(0) scale(1);
-  }
-}
-
-/* ===== Dynamic Menu Page Content Layout ===== */
+/* ===== Page Layout ===== */
 main {
-  margin-top: 88px; /* Account for Dynamic Menu floating header */
+  margin-top: 88px;
   padding: 1rem;
 }
 
-/* ===== Dynamic Menu Mobile Experience ===== */
+/* ===== Active Link States ===== */
+.site-menu__list li a.active,
+.site-menu__list li a[aria-current='page'] {
+  color: var(--dynamic-menu-accent-blue, #007aff);
+  background: var(--dynamic-menu-fill-primary, rgba(255, 255, 255, 0.1));
+  font-weight: 590;
+  border: 1px solid var(--dynamic-menu-separator, rgba(255, 255, 255, 0.1));
+}
+
+/* ===== Mobile Responsive ===== */
 @media (width <= 900px) {
   .site-header {
     display: flex;
@@ -727,16 +519,15 @@ main {
     width: min(90vw, 320px);
     padding: 0;
     left: auto;
-    background: var(--dynamic-menu-header-bg);
-    -webkit-backdrop-filter: blur(var(--dynamic-menu-blur-radius));
-    backdrop-filter: blur(var(--dynamic-menu-blur-radius));
-    border: 1px solid var(--dynamic-menu-separator);
-    border-radius: var(--dynamic-menu-card-radius);
-    box-shadow: var(--dynamic-menu-shadow-depth-3);
+    background: var(--dynamic-menu-header-bg, rgba(0, 0, 0, 0.8));
+    backdrop-filter: blur(var(--dynamic-menu-blur-radius, 20px));
+    border: 1px solid var(--dynamic-menu-separator, rgba(255, 255, 255, 0.1));
+    border-radius: var(--dynamic-menu-card-radius, 16px);
+    box-shadow: var(--dynamic-menu-shadow-depth-3, 0 12px 48px rgba(0, 0, 0, 0.4));
     transform: translateX(110%) scale(0.95);
     transition:
-      transform 0.4s var(--dynamic-menu-spring-bounce),
-      opacity 0.4s var(--dynamic-menu-spring-bounce);
+      transform 0.4s var(--dynamic-menu-spring-bounce, cubic-bezier(0.68, -0.55, 0.265, 1.55)),
+      opacity 0.4s var(--dynamic-menu-spring-bounce, cubic-bezier(0.68, -0.55, 0.265, 1.55));
     flex-direction: column;
     gap: 0;
     z-index: 9998;
@@ -789,76 +580,4 @@ main {
     min-width: 20px;
     min-height: 20px;
   }
-
-  /* Mobile Submenu */
-  .site-menu.open .site-menu__list .submenu {
-    display: none;
-    position: static;
-    background: var(--dynamic-menu-fill-secondary, rgba(255, 255, 255, 0.15));
-    border: none;
-    box-shadow: none;
-    border-radius: var(--dynamic-menu-micro-radius, 8px);
-    padding: 8px;
-    margin: 4px 0 4px 12px;
-    opacity: 1;
-    pointer-events: auto;
-    transform: none;
-    transition: none;
-  }
-
-  .site-menu__list .has-submenu.open .submenu {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-
-  .site-menu__list .submenu li a {
-    font-size: 15px;
-    font-weight: 450;
-    padding: 10px 12px;
-    min-height: 40px;
-    color: var(--dynamic-menu-label-secondary, rgba(255, 255, 255, 0.7));
-  }
-
-  /* Mobile submenu indicator */
-  .site-menu__list .has-submenu > a::after,
-  .site-menu__list .has-submenu > .submenu-toggle::after {
-    content: '⌄';
-    transform: rotate(-90deg);
-  }
-
-  .site-menu__list .has-submenu.open > a::after,
-  .site-menu__list .has-submenu.open > .submenu-toggle::after {
-    transform: rotate(0deg);
-  }
-}
-
-/* ===== Dynamic Menu Active Link States ===== */
-.site-menu__list li a.active,
-.site-menu__list li a[aria-current='page'] {
-  color: var(--dynamic-menu-accent-blue, #007aff);
-  background: var(--dynamic-menu-fill-primary, rgba(255, 255, 255, 0.1));
-  font-weight: 590;
-  border: 1px solid var(--dynamic-menu-separator, rgba(255, 255, 255, 0.1));
-}
-
-/* ===== Dynamic Menu Submenu Indicators ===== */
-.site-menu__list .has-submenu > a::after,
-.site-menu__list .has-submenu > .submenu-toggle::after {
-  content: '›';
-  display: inline-block;
-  margin-left: 8px;
-  font-size: 16px;
-  font-weight: 600;
-  vertical-align: middle;
-  transition: transform 0.2s var(--dynamic-menu-spring-quick);
-  opacity: 0.6;
-}
-
-.site-menu__list .has-submenu:hover > a::after,
-.site-menu__list .has-submenu:focus-within > a::after,
-.site-menu__list .has-submenu:hover > .submenu-toggle::after,
-.site-menu__list .has-submenu:focus-within > .submenu-toggle::after {
-  transform: rotate(90deg);
-  opacity: 1;
 }

@@ -19,6 +19,7 @@ import {
 } from '/content/utils/shared-utilities.js';
 import { observeOnce } from '/content/utils/intersection-observer.js';
 import { a11y } from './utils/accessibility-manager.js';
+import './components/menu/menu.js';
 
 const log = createLogger('main');
 
