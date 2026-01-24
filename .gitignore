@@ -32,4 +32,11 @@ Thumbs.db
 # Build outputs
 dist/
 build/
+coverage/
 
+# Vite
+.vite/
+*.local
+
+# Test
+.vitest/
