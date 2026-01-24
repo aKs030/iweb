@@ -339,7 +339,7 @@ function renderVideoCard(grid, it, detailsMap) {
   try {
     const pageLinkEl = meta.querySelector('.page-link');
     if (pageLinkEl) {
-      pageLinkEl.addEventListener('click', (_e) => {
+      pageLinkEl.addEventListener('click', () => {
         try {
           const ga4Payload = {
             video_id: vid,

@@ -196,6 +196,7 @@ export class TypeWriter {
     return (this._current = this.quotes[this._index]);
   }
 
+  // eslint-disable-next-line no-unused-vars
   _generateQueue(_lastIndex) {
     if (this.quotes.length <= 1) return [0];
     return this._createQueue();

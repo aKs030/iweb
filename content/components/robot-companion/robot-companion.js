@@ -412,6 +412,7 @@ class RobotCompanion {
       this.animationModule.startTypeWriterKnockbackAnimation();
     }, 1500);
 
+    // eslint-disable-next-line no-unused-vars
     this._onHeroTypingEnd = (_ev) => {
       try {
         const typeWriter = document.querySelector('.typewriter-title');
@@ -649,6 +650,7 @@ class RobotCompanion {
     return moodGreets[Math.floor(Math.random() * moodGreets.length)];
   }
 
+  // eslint-disable-next-line no-unused-vars
   trackInteraction(_type = 'general') {
     this.analytics.interactions++;
     localStorage.setItem('robot-interactions', this.analytics.interactions);

@@ -268,6 +268,7 @@ export class RobotCollision {
     }
   }
 
+  // eslint-disable-next-line no-unused-vars
   startTypewriterCollisionResponse(_twRect, _maxLeft) {
     if (!this.robot.dom || !this.robot.dom.container) return;
     const anim = this.robot.animationModule;
