@@ -143,7 +143,7 @@ const analytics = {
     const payload = typeof input === 'boolean'
       ? { ad_storage: status(input), analytics_storage: status(input), ad_user_data: status(input), ad_personalization: status(input) }
       : { ad_storage: input.ad_storage || status(input.granted), analytics_storage: input.analytics_storage || status(input.granted), ad_user_data: input.ad_user_data || status(input.granted), ad_personalization: input.ad_personalization || status(input.granted) };
-    try { gtag('consent', 'update', payload); } catch {}
+    try { gtag('consent', 'update', payload); } catch { /* ignore */ }
   },
 };
 
@@ -343,7 +343,7 @@ const cookieSettings = {
       const { analyticsToggle, adPersonalizationToggle } = cookieSettings.elements;
       if (analyticsToggle) analyticsToggle.checked = !!detail.analytics;
       if (adPersonalizationToggle) adPersonalizationToggle.checked = !!detail.ad_personalization;
-    } catch {}
+    } catch { /* ignore */ }
   },
 };
 

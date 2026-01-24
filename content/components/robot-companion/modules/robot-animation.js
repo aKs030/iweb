@@ -483,6 +483,7 @@ export class RobotAnimation {
     }, ms);
   }
 
+  // eslint-disable-next-line no-unused-vars
   triggerRandomIdleAnimation(_duration) {
     const r = Math.random();
     if (r < 0.3) {

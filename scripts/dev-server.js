@@ -137,6 +137,7 @@ function applyRedirects(url, rules) {
  * Get cache headers based on file type
  * DEVELOPMENT MODE: All files served without cache for live updates
  */
+// eslint-disable-next-line no-unused-vars
 function getCacheHeaders(_filePath) {
   // Disable all caching in development for instant updates
   return {

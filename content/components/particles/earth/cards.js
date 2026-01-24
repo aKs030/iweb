@@ -780,12 +780,12 @@ export class CardManager {
       this._lastPointerPos.y = y;
     };
 
-    this._boundPointerDown = (_e) => {
+    this._boundPointerDown = () => {
       this._pointerDown = true;
       this._pointerDownPos = { ...this._lastPointerPos };
     };
 
-    this._boundPointerUp = (_e) => {
+    this._boundPointerUp = () => {
       if (!this._pointerDown) return;
       this._pointerDown = false;
       if (!this._pointerDownPos) return;
@@ -850,7 +850,7 @@ export class CardManager {
     this._disposeCachedTextures();
     try {
       this.detachPointerHandlers();
-    } catch {}
+    } catch { /* ignore */ }
     this._removeResizeHandler();
   }
 
@@ -924,7 +924,7 @@ export class CardManager {
   _removeResizeHandler() {
     try {
       globalThis.removeEventListener('resize', this._onResize);
-    } catch {}
+    } catch { /* ignore */ }
     this._onResize = null;
     if (this._resizeRAF) {
       cancelAnimationFrame(this._resizeRAF);
