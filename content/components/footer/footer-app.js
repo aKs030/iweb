@@ -53,7 +53,8 @@ const dom = {
   getAll: (selector) => {
     const key = `all-${selector}`;
     const cached = dom.cache.get(key);
-    if (cached?.length && cached.every(el => document.contains(el))) return cached;
+    if (cached?.length && cached.every((el) => document.contains(el)))
+      return cached;
     const elements = Array.from(document.querySelectorAll(selector));
     if (elements.length) dom.cache.set(key, elements);
     return elements;
@@ -70,7 +71,8 @@ const scrollManager = {
     scrollManager.activeToken = token;
     if (duration > 0) {
       scrollManager.timer = setTimeout(() => {
-        if (scrollManager.activeToken === token) scrollManager.activeToken = null;
+        if (scrollManager.activeToken === token)
+          scrollManager.activeToken = null;
         scrollManager.timer = null;
       }, duration);
     }
@@ -104,11 +106,20 @@ const globalClose = {
     if (globalClose.bound) return;
     const isMobile = globalThis.matchMedia?.('(max-width: 768px)')?.matches;
     if (isMobile) {
-      globalThis.addEventListener('scroll', globalClose.onUserScroll, { passive: true });
-      globalThis.addEventListener('touchmove', globalClose.onUserScroll, { passive: true });
+      globalThis.addEventListener('scroll', globalClose.onUserScroll, {
+        passive: true,
+      });
+      globalThis.addEventListener('touchmove', globalClose.onUserScroll, {
+        passive: true,
+      });
     } else {
-      document.addEventListener('click', globalClose.onDocClick, { capture: true, passive: true });
-      globalThis.addEventListener('wheel', globalClose.onUserScroll, { passive: true });
+      document.addEventListener('click', globalClose.onDocClick, {
+        capture: true,
+        passive: true,
+      });
+      globalThis.addEventListener('wheel', globalClose.onUserScroll, {
+        passive: true,
+      });
     }
     globalClose.bound = true;
   },
@@ -124,26 +135,44 @@ const globalClose = {
 
 const analytics = {
   load: () => {
-    document.querySelectorAll('script[data-consent="required"]').forEach((script) => {
-      const newScript = document.createElement('script');
-      [...script.attributes].forEach((attr) => {
-        const name = attr.name === 'data-src' ? 'src' : attr.name;
-        if (!['data-consent', 'type'].includes(attr.name)) {
-          newScript.setAttribute(name, attr.value);
-        }
+    document
+      .querySelectorAll('script[data-consent="required"]')
+      .forEach((script) => {
+        const newScript = document.createElement('script');
+        [...script.attributes].forEach((attr) => {
+          const name = attr.name === 'data-src' ? 'src' : attr.name;
+          if (!['data-consent', 'type'].includes(attr.name)) {
+            newScript.setAttribute(name, attr.value);
+          }
+        });
+        if (script.innerHTML.trim()) newScript.innerHTML = script.innerHTML;
+        script.parentNode.replaceChild(newScript, script);
       });
-      if (script.innerHTML.trim()) newScript.innerHTML = script.innerHTML;
-      script.parentNode.replaceChild(newScript, script);
-    });
     log.info('Analytics loaded');
   },
   updateConsent: (input = true) => {
     if (typeof gtag !== 'function') return;
-    const status = (val) => val ? 'granted' : 'denied';
-    const payload = typeof input === 'boolean'
-      ? { ad_storage: status(input), analytics_storage: status(input), ad_user_data: status(input), ad_personalization: status(input) }
-      : { ad_storage: input.ad_storage || status(input.granted), analytics_storage: input.analytics_storage || status(input.granted), ad_user_data: input.ad_user_data || status(input.granted), ad_personalization: input.ad_personalization || status(input.granted) };
-    try { gtag('consent', 'update', payload); } catch { /* ignore */ }
+    const status = (val) => (val ? 'granted' : 'denied');
+    const payload =
+      typeof input === 'boolean'
+        ? {
+            ad_storage: status(input),
+            analytics_storage: status(input),
+            ad_user_data: status(input),
+            ad_personalization: status(input),
+          }
+        : {
+            ad_storage: input.ad_storage || status(input.granted),
+            analytics_storage: input.analytics_storage || status(input.granted),
+            ad_user_data: input.ad_user_data || status(input.granted),
+            ad_personalization:
+              input.ad_personalization || status(input.granted),
+          };
+    try {
+      gtag('consent', 'update', payload);
+    } catch {
+      /* ignore */
+    }
   },
 };
 
@@ -156,8 +185,11 @@ const consentBanner = {
     if (!banner || !acceptBtn) return;
 
     const consent = CookieManager.get('cookie_consent');
-    banner.classList.toggle('hidden', consent === 'accepted' || consent === 'rejected');
-    
+    banner.classList.toggle(
+      'hidden',
+      consent === 'accepted' || consent === 'rejected',
+    );
+
     if (consent === 'accepted') {
       analytics.updateConsent(true);
       analytics.load();
@@ -167,16 +199,23 @@ const consentBanner = {
 
     // Remove old handlers
     consentBanner.cleanup();
-    
+
     // Store handlers for cleanup
     const acceptHandler = () => consentBanner.accept();
     const rejectHandler = () => consentBanner.reject();
-    
+
     acceptBtn.addEventListener('click', acceptHandler);
     rejectBtn?.addEventListener('click', rejectHandler);
-    
-    consentBanner.handlers.set('accept', { element: acceptBtn, handler: acceptHandler });
-    if (rejectBtn) consentBanner.handlers.set('reject', { element: rejectBtn, handler: rejectHandler });
+
+    consentBanner.handlers.set('accept', {
+      element: acceptBtn,
+      handler: acceptHandler,
+    });
+    if (rejectBtn)
+      consentBanner.handlers.set('reject', {
+        element: rejectBtn,
+        handler: rejectHandler,
+      });
   },
   cleanup: () => {
     consentBanner.handlers.forEach(({ element, handler }) => {
@@ -187,7 +226,9 @@ const consentBanner = {
   accept: () => {
     dom.get('#cookie-consent-banner')?.classList.add('hidden');
     CookieManager.set('cookie_consent', 'accepted');
-    (globalThis.dataLayer = globalThis.dataLayer || []).push({ event: 'consentGranted' });
+    (globalThis.dataLayer = globalThis.dataLayer || []).push({
+      event: 'consentGranted',
+    });
     analytics.updateConsent(true);
     analytics.load();
     a11y?.announce('Alle Cookies akzeptiert', { priority: 'polite' });
@@ -217,37 +258,45 @@ const cookieSettings = {
 
   open: () => {
     cookieSettings.elements = cookieSettings.getElements();
-    const { footer, cookieView, normalContent, analyticsToggle, triggerBtn } = cookieSettings.elements;
+    const { footer, cookieView, normalContent, analyticsToggle, triggerBtn } =
+      cookieSettings.elements;
     if (!footer || !cookieView) return;
 
-    if (analyticsToggle) analyticsToggle.checked = CookieManager.get('cookie_consent') === 'accepted';
+    if (analyticsToggle)
+      analyticsToggle.checked =
+        CookieManager.get('cookie_consent') === 'accepted';
 
     document.documentElement.style.scrollSnapType = 'none';
     footer.classList.add('footer-expanded');
     document.body.classList.add('footer-expanded');
-    
+
     // Ensure footer is maximized first
     const maxEl = footer.querySelector('.footer-maximized');
     const minEl = footer.querySelector('.footer-minimized');
-    
+
     if (maxEl) maxEl.classList.remove('footer-hidden');
     if (minEl) {
       minEl.classList.add('footer-hidden');
       minEl.setAttribute('inert', '');
       minEl.setAttribute('tabindex', '-1');
     }
-    
+
     // Update scroll handler state
     if (globalThis.footerScrollHandler) {
       globalThis.footerScrollHandler.expanded = true;
     }
-    
+
     cookieView.classList.remove('hidden');
     if (normalContent) normalContent.style.display = 'none';
     triggerBtn?.setAttribute('aria-expanded', 'true');
     footer.setAttribute('aria-expanded', 'true');
 
-    requestAnimationFrame(() => globalThis.scrollTo({ top: document.body.scrollHeight, behavior: 'auto' }));
+    requestAnimationFrame(() =>
+      globalThis.scrollTo({
+        top: document.body.scrollHeight,
+        behavior: 'auto',
+      }),
+    );
     scrollManager.create(CONFIG.SCROLL_MARK_DURATION);
     globalClose.bind();
     a11y?.trapFocus(cookieView);
@@ -256,32 +305,38 @@ const cookieSettings = {
     cookieSettings.loadToggles();
   },
   close: () => {
-    if (!cookieSettings.elements) cookieSettings.elements = cookieSettings.getElements();
+    if (!cookieSettings.elements)
+      cookieSettings.elements = cookieSettings.getElements();
     const { cookieView, normalContent, triggerBtn } = cookieSettings.elements;
-    
+
     // Hide cookie view and show normal content
     cookieView?.classList.add('hidden');
     if (normalContent) normalContent.style.display = 'block';
     triggerBtn?.setAttribute('aria-expanded', 'false');
-    
+
     cookieSettings.cleanup();
-    
+
     // Close footer completely
     footerManager.closeFooter();
   },
 
   bindEvents: () => {
-    const { closeBtn, rejectAllBtn, acceptSelectedBtn, acceptAllBtn } = cookieSettings.elements;
-    const hideBanner = () => dom.get('#cookie-consent-banner')?.classList.add('hidden');
-    
+    const { closeBtn, rejectAllBtn, acceptSelectedBtn, acceptAllBtn } =
+      cookieSettings.elements;
+    const hideBanner = () =>
+      dom.get('#cookie-consent-banner')?.classList.add('hidden');
+
     // Cleanup old handlers
     cookieSettings.cleanup();
-    
+
     const handlers = {
       close: () => cookieSettings.close(),
       rejectAll: () => {
         CookieManager.set('cookie_consent', 'rejected');
-        CookieManager.set('cookie_consent_detail', JSON.stringify({ analytics: false, ad_personalization: false }));
+        CookieManager.set(
+          'cookie_consent_detail',
+          JSON.stringify({ analytics: false, ad_personalization: false }),
+        );
         CookieManager.deleteAnalytics();
         analytics.updateConsent(false);
         a11y?.announce('Nur notwendige Cookies aktiv', { priority: 'polite' });
@@ -289,47 +344,86 @@ const cookieSettings = {
         hideBanner();
       },
       acceptSelected: () => {
-        const analyticsEnabled = !!cookieSettings.elements.analyticsToggle?.checked;
-        const adPersonalizationEnabled = !!cookieSettings.elements.adPersonalizationToggle?.checked;
-        const detail = { analytics: analyticsEnabled, ad_personalization: adPersonalizationEnabled };
-        
+        const analyticsEnabled =
+          !!cookieSettings.elements.analyticsToggle?.checked;
+        const adPersonalizationEnabled =
+          !!cookieSettings.elements.adPersonalizationToggle?.checked;
+        const detail = {
+          analytics: analyticsEnabled,
+          ad_personalization: adPersonalizationEnabled,
+        };
+
         CookieManager.set('cookie_consent_detail', JSON.stringify(detail));
-        CookieManager.set('cookie_consent', analyticsEnabled || adPersonalizationEnabled ? 'accepted' : 'rejected');
-        (globalThis.dataLayer = globalThis.dataLayer || []).push({ event: 'consentGranted', detail });
-        
+        CookieManager.set(
+          'cookie_consent',
+          analyticsEnabled || adPersonalizationEnabled
+            ? 'accepted'
+            : 'rejected',
+        );
+        (globalThis.dataLayer = globalThis.dataLayer || []).push({
+          event: 'consentGranted',
+          detail,
+        });
+
         analytics.updateConsent({
           analytics_storage: analyticsEnabled ? 'granted' : 'denied',
           ad_storage: adPersonalizationEnabled ? 'granted' : 'denied',
           ad_user_data: adPersonalizationEnabled ? 'granted' : 'denied',
           ad_personalization: adPersonalizationEnabled ? 'granted' : 'denied',
         });
-        
+
         analyticsEnabled ? analytics.load() : CookieManager.deleteAnalytics();
-        a11y?.announce(analyticsEnabled ? 'Analyse aktiviert' : 'Analyse deaktiviert', { priority: 'polite' });
+        a11y?.announce(
+          analyticsEnabled ? 'Analyse aktiviert' : 'Analyse deaktiviert',
+          { priority: 'polite' },
+        );
         cookieSettings.close();
         hideBanner();
       },
       acceptAll: () => {
         CookieManager.set('cookie_consent', 'accepted');
-        CookieManager.set('cookie_consent_detail', JSON.stringify({ analytics: true, ad_personalization: true }));
-        (globalThis.dataLayer = globalThis.dataLayer || []).push({ event: 'consentGranted', detail: { analytics: true, ad_personalization: true } });
-        analytics.updateConsent({ analytics_storage: 'granted', ad_storage: 'granted', ad_user_data: 'granted', ad_personalization: 'granted' });
+        CookieManager.set(
+          'cookie_consent_detail',
+          JSON.stringify({ analytics: true, ad_personalization: true }),
+        );
+        (globalThis.dataLayer = globalThis.dataLayer || []).push({
+          event: 'consentGranted',
+          detail: { analytics: true, ad_personalization: true },
+        });
+        analytics.updateConsent({
+          analytics_storage: 'granted',
+          ad_storage: 'granted',
+          ad_user_data: 'granted',
+          ad_personalization: 'granted',
+        });
         analytics.load();
         a11y?.announce('Alle Cookies aktiviert', { priority: 'polite' });
         cookieSettings.close();
         hideBanner();
-      }
+      },
     };
-    
+
     closeBtn?.addEventListener('click', handlers.close);
     rejectAllBtn?.addEventListener('click', handlers.rejectAll);
     acceptSelectedBtn?.addEventListener('click', handlers.acceptSelected);
     acceptAllBtn?.addEventListener('click', handlers.acceptAll);
-    
-    cookieSettings.handlers.set('close', { element: closeBtn, handler: handlers.close });
-    cookieSettings.handlers.set('rejectAll', { element: rejectAllBtn, handler: handlers.rejectAll });
-    cookieSettings.handlers.set('acceptSelected', { element: acceptSelectedBtn, handler: handlers.acceptSelected });
-    cookieSettings.handlers.set('acceptAll', { element: acceptAllBtn, handler: handlers.acceptAll });
+
+    cookieSettings.handlers.set('close', {
+      element: closeBtn,
+      handler: handlers.close,
+    });
+    cookieSettings.handlers.set('rejectAll', {
+      element: rejectAllBtn,
+      handler: handlers.rejectAll,
+    });
+    cookieSettings.handlers.set('acceptSelected', {
+      element: acceptSelectedBtn,
+      handler: handlers.acceptSelected,
+    });
+    cookieSettings.handlers.set('acceptAll', {
+      element: acceptAllBtn,
+      handler: handlers.acceptAll,
+    });
   },
   cleanup: () => {
     cookieSettings.handlers.forEach(({ element, handler }) => {
@@ -339,11 +433,17 @@ const cookieSettings = {
   },
   loadToggles: () => {
     try {
-      const detail = JSON.parse(CookieManager.get('cookie_consent_detail') || '{}');
-      const { analyticsToggle, adPersonalizationToggle } = cookieSettings.elements;
+      const detail = JSON.parse(
+        CookieManager.get('cookie_consent_detail') || '{}',
+      );
+      const { analyticsToggle, adPersonalizationToggle } =
+        cookieSettings.elements;
       if (analyticsToggle) analyticsToggle.checked = !!detail.analytics;
-      if (adPersonalizationToggle) adPersonalizationToggle.checked = !!detail.ad_personalization;
-    } catch { /* ignore */ }
+      if (adPersonalizationToggle)
+        adPersonalizationToggle.checked = !!detail.ad_personalization;
+    } catch {
+      /* ignore */
+    }
   },
 };
 
@@ -357,7 +457,7 @@ const footerManager = {
     footer.classList.remove('footer-expanded');
     document.body.classList.remove('footer-expanded');
     footer.querySelector('.footer-maximized')?.classList.add('footer-hidden');
-    
+
     const minEl = footer.querySelector('.footer-minimized');
     if (minEl) {
       minEl.classList.remove('footer-hidden');
@@ -368,11 +468,12 @@ const footerManager = {
 
     const normal = dom.get('#footer-normal-content');
     if (normal) normal.style.display = 'block';
-    
+
     dom.get('#footer-cookie-view')?.classList.add('hidden');
     document.documentElement.style.removeProperty('scroll-snap-type');
-    
-    if (globalThis.footerScrollHandler) globalThis.footerScrollHandler.expanded = false;
+
+    if (globalThis.footerScrollHandler)
+      globalThis.footerScrollHandler.expanded = false;
     globalClose.unbind();
     a11y?.releaseFocus();
   },
@@ -398,8 +499,15 @@ class ScrollHandler {
       trigger.id = 'footer-trigger-zone';
       trigger.className = 'footer-trigger-zone';
       trigger.setAttribute('aria-hidden', 'true');
-      Object.assign(trigger.style, { pointerEvents: 'none', minHeight: '96px', width: '100%' });
-      (footer?.parentNode || document.body).insertBefore(trigger, footer || null);
+      Object.assign(trigger.style, {
+        pointerEvents: 'none',
+        minHeight: '96px',
+        width: '100%',
+      });
+      (footer?.parentNode || document.body).insertBefore(
+        trigger,
+        footer || null,
+      );
       dom.clear();
     }
 
@@ -407,10 +515,10 @@ class ScrollHandler {
 
     const minEl = footer.querySelector('.footer-minimized');
     const maxEl = footer.querySelector('.footer-maximized');
-    
+
     minEl?.classList.remove('footer-hidden');
     maxEl?.classList.add('footer-hidden');
-    
+
     // Ensure minimized footer is interactive
     if (minEl) {
       minEl.removeAttribute('inert');
@@ -425,10 +533,17 @@ class ScrollHandler {
     this.observer = new IntersectionObserver(
       (entries) => {
         const entry = entries[0];
-        if (!entry || (!entry.isIntersecting && scrollManager.hasActive())) return;
+        if (!entry || (!entry.isIntersecting && scrollManager.hasActive()))
+          return;
 
-        const shouldExpand = entry.isIntersecting && entry.intersectionRatio >= expandThreshold;
-        if (!shouldExpand && this.expanded && entry.intersectionRatio > collapseThreshold) return;
+        const shouldExpand =
+          entry.isIntersecting && entry.intersectionRatio >= expandThreshold;
+        if (
+          !shouldExpand &&
+          this.expanded &&
+          entry.intersectionRatio > collapseThreshold
+        )
+          return;
 
         this.toggleExpansion(shouldExpand);
       },
@@ -441,7 +556,9 @@ class ScrollHandler {
       this.cleanup();
       this.init();
     }, CONFIG.RESIZE_DEBOUNCE);
-    globalThis.addEventListener('resize', this._resizeHandler, { passive: true });
+    globalThis.addEventListener('resize', this._resizeHandler, {
+      passive: true,
+    });
   }
 
   toggleExpansion(shouldExpand) {
@@ -475,7 +592,8 @@ class ScrollHandler {
     }
 
     if (!shouldExpand && this.expanded) {
-      const delay = Math.max(0, this._lockUntil - Date.now()) + CONFIG.COLLAPSE_DEBOUNCE_MS;
+      const delay =
+        Math.max(0, this._lockUntil - Date.now()) + CONFIG.COLLAPSE_DEBOUNCE_MS;
       if (this._collapseTimer) clearTimeout(this._collapseTimer);
       this._collapseTimer = setTimeout(() => {
         footerManager.closeFooter();
@@ -514,13 +632,17 @@ class FooterLoader {
     if (!container) return false;
 
     try {
-      const response = await fetch(container.dataset.footerSrc || CONFIG.FOOTER_HTML_PATH);
+      const response = await fetch(
+        container.dataset.footerSrc || CONFIG.FOOTER_HTML_PATH,
+      );
       if (!response?.ok) throw new Error('Footer load failed');
 
       container.innerHTML = await response.text();
       dom.clear();
       this.setup();
-      document.dispatchEvent(new CustomEvent('footer:loaded', { detail: { timestamp: Date.now() } }));
+      document.dispatchEvent(
+        new CustomEvent('footer:loaded', { detail: { timestamp: Date.now() } }),
+      );
       return true;
     } catch (error) {
       log.error('Footer load failed', error);
@@ -546,7 +668,9 @@ class FooterLoader {
       e.preventDefault();
       const input = form.querySelector('#newsletter-email');
       if (input && !input.checkValidity()) {
-        a11y?.announce('Bitte gültige E-Mail eingeben', { priority: 'assertive' });
+        a11y?.announce('Bitte gültige E-Mail eingeben', {
+          priority: 'assertive',
+        });
         return;
       }
       const btn = form.querySelector('button[type="submit"]');
@@ -563,36 +687,44 @@ class FooterLoader {
       a11y?.announce('Newsletter abonniert', { priority: 'polite' });
     });
 
-    document.addEventListener('click', (e) => {
-      // Check if click is on cookie trigger
-      const cookieTrigger = e.target.closest('[data-cookie-trigger]');
-      if (cookieTrigger) {
-        e.preventDefault();
-        e.stopPropagation();
-        cookieSettings.open();
-        return;
-      }
-
-      // Check if click is on minimized footer
-      const footerMinClick = e.target.closest('.footer-minimized');
-      if (footerMinClick) {
-        // Check if click is on a real link (not footer nav buttons)
-        const isLink = e.target.closest('a[href^="http"], a[href^="/"]');
-        const isFormElement = e.target.closest('input, textarea, select');
-        
-        if (!isLink && !isFormElement) {
+    document.addEventListener(
+      'click',
+      (e) => {
+        // Check if click is on cookie trigger
+        const cookieTrigger = e.target.closest('[data-cookie-trigger]');
+        if (cookieTrigger) {
           e.preventDefault();
-          globalThis.footerScrollHandler?.toggleExpansion(true);
+          e.stopPropagation();
+          cookieSettings.open();
+          return;
         }
-      }
-    }, { passive: false });
+
+        // Check if click is on minimized footer
+        const footerMinClick = e.target.closest('.footer-minimized');
+        if (footerMinClick) {
+          // Check if click is on a real link (not footer nav buttons)
+          const isLink = e.target.closest('a[href^="http"], a[href^="/"]');
+          const isFormElement = e.target.closest('input, textarea, select');
+
+          if (!isLink && !isFormElement) {
+            e.preventDefault();
+            globalThis.footerScrollHandler?.toggleExpansion(true);
+          }
+        }
+      },
+      { passive: false },
+    );
 
     const showcaseBtn = dom.get('#threeShowcaseBtn');
     if (showcaseBtn && !showcaseBtn.dataset.init) {
       showcaseBtn.dataset.init = '1';
       showcaseBtn.addEventListener('click', () => {
         showcaseBtn.classList.add('active');
-        document.dispatchEvent(new CustomEvent('three-earth:showcase', { detail: { duration: 8000 } }));
+        document.dispatchEvent(
+          new CustomEvent('three-earth:showcase', {
+            detail: { duration: 8000 },
+          }),
+        );
         setTimeout(() => showcaseBtn.classList.remove('active'), 8000);
       });
     }

@@ -871,11 +871,11 @@ function startAnimationLoop() {
     // Throttle frame rate for low-end devices
     const now = performance.now();
     const elapsed = now - lastFrameTime;
-    
+
     if (capabilities.isLowEnd && elapsed < targetFrameTime) {
       return; // Skip this frame
     }
-    
+
     lastFrameTime = now;
 
     // Always measure delta/elapsed each frame

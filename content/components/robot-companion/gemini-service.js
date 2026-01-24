@@ -63,7 +63,7 @@ async function getGeminiResponse(
     // All requests must go through the Cloudflare Worker proxy at /api/gemini
     throw new Error(
       'Direct server-side Gemini API calls are disabled. ' +
-      'Use the browser proxy endpoint /api/gemini instead.'
+        'Use the browser proxy endpoint /api/gemini instead.',
     );
   };
 
@@ -72,11 +72,15 @@ async function getGeminiResponse(
       // SECURITY: Always use browser proxy endpoint (never direct API calls)
       if (!isRunningInBrowser()) {
         throw new Error(
-          'Gemini service must run in browser context. Use /api/gemini proxy.'
+          'Gemini service must run in browser context. Use /api/gemini proxy.',
         );
       }
 
-      const result = await doBrowserRequest(prompt, systemInstruction, _options);
+      const result = await doBrowserRequest(
+        prompt,
+        systemInstruction,
+        _options,
+      );
 
       const text =
         result.text || result.candidates?.[0]?.content?.parts?.[0]?.text;
