@@ -694,3 +694,14 @@ a:hover {
   visibility: hidden;
   position: relative;
 }
+
+/* ===== SVG SPRITE UTILITY ===== */
+/* Used for hidden SVG sprite containers (CSP-compliant) */
+.svg-sprite-hidden {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
+  visibility: hidden;
+}
