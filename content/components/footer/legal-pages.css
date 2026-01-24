@@ -1,13 +1,7 @@
 /**
- * Legal Pages Shared Styles
- * Used by datenschutz.html and impressum.html
- * ✓ UTF-8 encoding fixed
- * ✓ Better accessibility
- * ✓ Improved mobile support
- * @version 1.1.0 OPTIMIZED
+ * Legal Pages v1.2
+ * Kompakt und barrierefrei
  */
-
-/* Base Layout */
 body {
   font-family: var(--font-primary);
   line-height: 1.6;
@@ -18,7 +12,7 @@ body {
   margin: 0 auto;
 }
 
-/* Typography */
+
 h1 {
   font-size: 2.5rem;
   margin-bottom: 0.5rem;
@@ -62,7 +56,7 @@ li {
   margin-bottom: 0.5rem;
 }
 
-/* Links */
+
 a {
   color: #0a84ff;
   text-decoration: none;
@@ -80,7 +74,7 @@ a:focus-visible {
   border-radius: 2px;
 }
 
-/* Components */
+
 .highlight {
   background: rgb(10 132 255 / 10%);
   padding: 1rem;
@@ -113,7 +107,7 @@ a:focus-visible {
   font-style: italic;
 }
 
-/* Back Link Button */
+
 .back-link {
   display: inline-block;
   margin-top: 2rem;
@@ -143,7 +137,7 @@ a:focus-visible {
   outline-offset: 3px;
 }
 
-/* Mobile Responsiveness */
+
 @media (width <= 768px) {
   body {
     padding: 1.5rem 1rem;
@@ -200,7 +194,7 @@ a:focus-visible {
   }
 }
 
-/* Accessibility */
+
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0s !important;
@@ -213,7 +207,7 @@ a:focus-visible {
   }
 }
 
-/* removed prefers-contrast: high (replaced by the more-compliant 'more' value) */
+
 @media (prefers-contrast: more) {
   .highlight,
   .contact-box,
@@ -226,7 +220,7 @@ a:focus-visible {
   }
 }
 
-/* Print Styles */
+
 @media print {
   body {
     background: white;

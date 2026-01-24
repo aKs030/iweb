@@ -1,7 +1,7 @@
 /**
- * Footer App - Kompakte Version ohne Duplikate
- * @version 1.0.0
- * Vereint alle Footer-Funktionen in einer Datei
+ * Footer App - Kompakte Version
+ * @version 2.0.0
+ * Alle Footer-Funktionen in einer Datei
  */
 
 import {
@@ -13,419 +13,371 @@ import { a11y } from '/content/utils/accessibility-manager.js';
 
 const log = createLogger('FooterApp');
 
-// ===== Konstanten =====
-const CONSTANTS = {
+// Polyfill for inert attribute (for older browsers)
+if (!('inert' in HTMLElement.prototype)) {
+  Object.defineProperty(HTMLElement.prototype, 'inert', {
+    enumerable: true,
+    get() {
+      return this.hasAttribute('inert');
+    },
+    set(value) {
+      if (value) {
+        this.setAttribute('inert', '');
+        this.setAttribute('aria-hidden', 'true');
+      } else {
+        this.removeAttribute('inert');
+        this.removeAttribute('aria-hidden');
+      }
+    },
+  });
+}
+
+const CONFIG = {
   SCROLL_MARK_DURATION: 1000,
-  SCROLL_WATCH_TIMEOUT: 5000,
-  SCROLL_THRESHOLD: 6,
   RESIZE_DEBOUNCE: 150,
   EXPAND_LOCK_MS: 1000,
   COLLAPSE_DEBOUNCE_MS: 250,
+  FOOTER_HTML_PATH: '/content/components/footer/footer.html',
 };
 
-// ===== DOM Cache =====
-class DOMCache {
-  constructor() {
-    this.cache = new Map();
-  }
-
-  get(selector, parent = document) {
+const dom = {
+  cache: new Map(),
+  get: (selector, parent = document) => {
     const key = `${selector}-${parent === document ? 'doc' : 'parent'}`;
-    if (!this.cache.has(key)) {
-      this.cache.set(key, parent.querySelector(selector));
-    }
-    return this.cache.get(key);
-  }
-
-  getAll(selector, parent = document) {
+    const cached = dom.cache.get(key);
+    if (cached && document.contains(cached)) return cached;
+    const element = parent.querySelector(selector);
+    if (element) dom.cache.set(key, element);
+    return element;
+  },
+  getAll: (selector) => {
     const key = `all-${selector}`;
-    if (!this.cache.has(key)) {
-      this.cache.set(key, Array.from(parent.querySelectorAll(selector)));
+    const cached = dom.cache.get(key);
+    if (cached?.length && cached.every(el => document.contains(el))) return cached;
+    const elements = Array.from(document.querySelectorAll(selector));
+    if (elements.length) dom.cache.set(key, elements);
+    return elements;
+  },
+  clear: () => dom.cache.clear(),
+};
+
+const scrollManager = {
+  activeToken: null,
+  timer: null,
+  create: (duration = CONFIG.SCROLL_MARK_DURATION) => {
+    if (scrollManager.timer) clearTimeout(scrollManager.timer);
+    const token = Symbol('progScroll');
+    scrollManager.activeToken = token;
+    if (duration > 0) {
+      scrollManager.timer = setTimeout(() => {
+        if (scrollManager.activeToken === token) scrollManager.activeToken = null;
+        scrollManager.timer = null;
+      }, duration);
     }
-    return this.cache.get(key);
-  }
+    return token;
+  },
+  clear: () => {
+    scrollManager.activeToken = null;
+    if (scrollManager.timer) clearTimeout(scrollManager.timer);
+    scrollManager.timer = null;
+  },
+  hasActive: () => !!scrollManager.activeToken,
+};
 
-  invalidate(selector) {
-    if (selector) {
-      for (const key of this.cache.keys()) {
-        if (key.startsWith(selector)) this.cache.delete(key);
-      }
-    } else {
-      this.cache.clear();
-    }
-  }
-}
-
-const domCache = new DOMCache();
-
-// ===== Programmatic Scroll =====
-const ProgrammaticScroll = (() => {
-  let activeToken = null;
-  let timer = null;
-  const watchers = new Map();
-
-  return {
-    create(duration = CONSTANTS.SCROLL_MARK_DURATION) {
-      if (timer) clearTimeout(timer);
-      const token = Symbol('progScroll');
-      activeToken = token;
-      if (duration > 0) {
-        timer = setTimeout(() => {
-          if (activeToken === token) activeToken = null;
-          timer = null;
-        }, duration);
-      }
-      return token;
-    },
-
-    clear(token) {
-      if (!activeToken || (token && activeToken !== token)) return;
-      activeToken = null;
-      if (timer) clearTimeout(timer);
-      timer = null;
-      if (watchers.has(token)) {
-        const watcher = watchers.get(token);
-        watcher.observer?.disconnect();
-        if (watcher.listener) {
-          globalThis.removeEventListener('scroll', watcher.listener);
-        }
-        if (watcher.timeoutId) clearTimeout(watcher.timeoutId);
-        watchers.delete(token);
-      }
-    },
-
-    hasActive: () => !!activeToken,
-  };
-})();
-
-// ===== Global Close Handler =====
-const GlobalClose = (() => {
-  let closeHandler = null;
-  let bound = false;
-
-  const onDocClick = (e) => {
-    const footer = domCache.get('#site-footer');
+const globalClose = {
+  closeHandler: null,
+  bound: false,
+  onDocClick: (e) => {
+    const footer = dom.get('#site-footer');
     if (!footer?.classList.contains('footer-expanded')) return;
     if (e.target.closest('#site-footer')) return;
-    closeHandler?.();
-  };
-
-  const onUserScroll = () => {
-    if (ProgrammaticScroll.hasActive()) return;
-    const footer = domCache.get('#site-footer');
+    globalClose.closeHandler?.();
+  },
+  onUserScroll: () => {
+    if (scrollManager.hasActive()) return;
+    const footer = dom.get('#site-footer');
     if (!footer?.classList.contains('footer-expanded')) return;
-    closeHandler?.();
-  };
+    globalClose.closeHandler?.();
+  },
+  setCloseHandler: (fn) => (globalClose.closeHandler = fn),
+  bind: () => {
+    if (globalClose.bound) return;
+    const isMobile = globalThis.matchMedia?.('(max-width: 768px)')?.matches;
+    if (isMobile) {
+      globalThis.addEventListener('scroll', globalClose.onUserScroll, { passive: true });
+      globalThis.addEventListener('touchmove', globalClose.onUserScroll, { passive: true });
+    } else {
+      document.addEventListener('click', globalClose.onDocClick, { capture: true, passive: true });
+      globalThis.addEventListener('wheel', globalClose.onUserScroll, { passive: true });
+    }
+    globalClose.bound = true;
+  },
+  unbind: () => {
+    if (!globalClose.bound) return;
+    document.removeEventListener('click', globalClose.onDocClick, true);
+    globalThis.removeEventListener('wheel', globalClose.onUserScroll);
+    globalThis.removeEventListener('scroll', globalClose.onUserScroll);
+    globalThis.removeEventListener('touchmove', globalClose.onUserScroll);
+    globalClose.bound = false;
+  },
+};
 
-  return {
-    setCloseHandler: (fn) => (closeHandler = fn),
-    bind() {
-      if (bound) return;
-      const isMobile = globalThis.matchMedia?.('(max-width: 768px)')?.matches;
-      if (isMobile) {
-        globalThis.addEventListener('scroll', onUserScroll, { passive: true });
-        globalThis.addEventListener('touchmove', onUserScroll, {
-          passive: true,
-        });
-      } else {
-        document.addEventListener('click', onDocClick, {
-          capture: true,
-          passive: true,
-        });
-        globalThis.addEventListener('wheel', onUserScroll, { passive: true });
-      }
-      bound = true;
-    },
-    unbind() {
-      if (!bound) return;
-      document.removeEventListener('click', onDocClick, true);
-      globalThis.removeEventListener('wheel', onUserScroll);
-      globalThis.removeEventListener('scroll', onUserScroll);
-      globalThis.removeEventListener('touchmove', onUserScroll);
-      bound = false;
-    },
-  };
-})();
-
-// ===== Analytics =====
-const GoogleAnalytics = {
-  load() {
-    const blockedScripts = document.querySelectorAll(
-      'script[data-consent="required"]',
-    );
-    if (blockedScripts.length === 0) return;
-    blockedScripts.forEach((script) => {
+const analytics = {
+  load: () => {
+    document.querySelectorAll('script[data-consent="required"]').forEach((script) => {
       const newScript = document.createElement('script');
-      Array.from(script.attributes).forEach((attr) => {
-        if (attr.name === 'data-src') {
-          newScript.setAttribute('src', attr.value);
-        } else if (!['data-consent', 'type'].includes(attr.name)) {
-          newScript.setAttribute(attr.name, attr.value);
+      [...script.attributes].forEach((attr) => {
+        const name = attr.name === 'data-src' ? 'src' : attr.name;
+        if (!['data-consent', 'type'].includes(attr.name)) {
+          newScript.setAttribute(name, attr.value);
         }
       });
       if (script.innerHTML.trim()) newScript.innerHTML = script.innerHTML;
       script.parentNode.replaceChild(newScript, script);
     });
-    log.info('Google Analytics loaded');
+    log.info('Analytics loaded');
+  },
+  updateConsent: (input = true) => {
+    if (typeof gtag !== 'function') return;
+    const status = (val) => val ? 'granted' : 'denied';
+    const payload = typeof input === 'boolean'
+      ? { ad_storage: status(input), analytics_storage: status(input), ad_user_data: status(input), ad_personalization: status(input) }
+      : { ad_storage: input.ad_storage || status(input.granted), analytics_storage: input.analytics_storage || status(input.granted), ad_user_data: input.ad_user_data || status(input.granted), ad_personalization: input.ad_personalization || status(input.granted) };
+    try { gtag('consent', 'update', payload); } catch {}
   },
 };
 
-function updateGtagConsent(input = true) {
-  try {
-    if (typeof gtag !== 'function') return;
-    let payload = {};
-    if (typeof input === 'boolean') {
-      const v = input ? 'granted' : 'denied';
-      payload = {
-        ad_storage: v,
-        analytics_storage: v,
-        ad_user_data: v,
-        ad_personalization: v,
-      };
-    } else if (input && typeof input === 'object') {
-      const granted = input.granted === true;
-      const defaultV = granted ? 'granted' : 'denied';
-      payload = {
-        ad_storage: input.ad_storage || defaultV,
-        analytics_storage: input.analytics_storage || defaultV,
-        ad_user_data: input.ad_user_data || defaultV,
-        ad_personalization: input.ad_personalization || defaultV,
-      };
-    }
-    gtag('consent', 'update', payload);
-  } catch {
-    /* ignore */
-  }
-}
-
-// ===== Consent Banner =====
-class ConsentBanner {
-  constructor() {
-    this.elements = {
-      banner: domCache.get('#cookie-consent-banner'),
-      acceptBtn: domCache.get('#accept-cookies-btn'),
-      rejectBtn: domCache.get('#reject-cookies-btn'),
-    };
-  }
-
-  init() {
-    const { banner, acceptBtn, rejectBtn } = this.elements;
+const consentBanner = {
+  handlers: new Map(),
+  init: () => {
+    const banner = dom.get('#cookie-consent-banner');
+    const acceptBtn = dom.get('#accept-cookies-btn');
+    const rejectBtn = dom.get('#reject-cookies-btn');
     if (!banner || !acceptBtn) return;
 
     const consent = CookieManager.get('cookie_consent');
-
+    banner.classList.toggle('hidden', consent === 'accepted' || consent === 'rejected');
+    
     if (consent === 'accepted') {
-      updateGtagConsent(true);
-      GoogleAnalytics.load();
-      banner.classList.add('hidden');
+      analytics.updateConsent(true);
+      analytics.load();
     } else if (consent === 'rejected') {
-      updateGtagConsent(false);
-      banner.classList.add('hidden');
-    } else {
-      banner.classList.remove('hidden');
+      analytics.updateConsent(false);
     }
 
-    acceptBtn.addEventListener('click', () => this.accept(), { once: false });
-    if (rejectBtn) {
-      rejectBtn.addEventListener('click', () => this.reject(), { once: false });
-    }
-  }
-
-  accept() {
-    this.elements.banner.classList.add('hidden');
+    // Remove old handlers
+    consentBanner.cleanup();
+    
+    // Store handlers for cleanup
+    const acceptHandler = () => consentBanner.accept();
+    const rejectHandler = () => consentBanner.reject();
+    
+    acceptBtn.addEventListener('click', acceptHandler);
+    rejectBtn?.addEventListener('click', rejectHandler);
+    
+    consentBanner.handlers.set('accept', { element: acceptBtn, handler: acceptHandler });
+    if (rejectBtn) consentBanner.handlers.set('reject', { element: rejectBtn, handler: rejectHandler });
+  },
+  cleanup: () => {
+    consentBanner.handlers.forEach(({ element, handler }) => {
+      element?.removeEventListener('click', handler);
+    });
+    consentBanner.handlers.clear();
+  },
+  accept: () => {
+    dom.get('#cookie-consent-banner')?.classList.add('hidden');
     CookieManager.set('cookie_consent', 'accepted');
-    globalThis.dataLayer = globalThis.dataLayer || [];
-    globalThis.dataLayer.push({ event: 'consentGranted' });
-    updateGtagConsent(true);
-    GoogleAnalytics.load();
-    a11y?.announce('Cookie-Präferenz: Alle Cookies akzeptiert', {
-      priority: 'polite',
-    });
-  }
-
-  reject() {
-    this.elements.banner.classList.add('hidden');
+    (globalThis.dataLayer = globalThis.dataLayer || []).push({ event: 'consentGranted' });
+    analytics.updateConsent(true);
+    analytics.load();
+    a11y?.announce('Alle Cookies akzeptiert', { priority: 'polite' });
+  },
+  reject: () => {
+    dom.get('#cookie-consent-banner')?.classList.add('hidden');
     CookieManager.set('cookie_consent', 'rejected');
-    a11y?.announce('Cookie-Präferenz: Nur notwendige Cookies akzeptiert', {
-      priority: 'polite',
-    });
-  }
-}
+    a11y?.announce('Nur notwendige Cookies akzeptiert', { priority: 'polite' });
+  },
+};
 
-// ===== Cookie Settings =====
-const CookieSettings = (() => {
-  let elements = null;
+const cookieSettings = {
+  elements: null,
+  handlers: new Map(),
+  getElements: () => ({
+    footer: dom.get('#site-footer'),
+    cookieView: dom.get('#footer-cookie-view'),
+    normalContent: dom.get('#footer-normal-content'),
+    analyticsToggle: dom.get('#footer-analytics-toggle'),
+    adPersonalizationToggle: dom.get('#footer-ad-personalization-toggle'),
+    closeBtn: dom.get('#close-cookie-footer'),
+    rejectAllBtn: dom.get('#footer-reject-all'),
+    acceptSelectedBtn: dom.get('#footer-accept-selected'),
+    acceptAllBtn: dom.get('#footer-accept-all'),
+    triggerBtn: dom.get('#footer-cookies-link'),
+  }),
 
-  const getElements = () => ({
-    footer: domCache.get('#site-footer'),
-    cookieView: domCache.get('#footer-cookie-view'),
-    normalContent: domCache.get('#footer-normal-content'),
-    analyticsToggle: domCache.get('#footer-analytics-toggle'),
-    adPersonalizationToggle: domCache.get('#footer-ad-personalization-toggle'),
-    closeBtn: domCache.get('#close-cookie-footer'),
-    rejectAllBtn: domCache.get('#footer-reject-all'),
-    acceptSelectedBtn: domCache.get('#footer-accept-selected'),
-    acceptAllBtn: domCache.get('#footer-accept-all'),
-    triggerBtn: domCache.get('#footer-cookies-link'),
-  });
+  open: () => {
+    cookieSettings.elements = cookieSettings.getElements();
+    const { footer, cookieView, normalContent, analyticsToggle, triggerBtn } = cookieSettings.elements;
+    if (!footer || !cookieView) return;
 
-  const open = () => {
-    elements = getElements();
-    if (!elements.footer || !elements.cookieView) return;
-
-    const consent = CookieManager.get('cookie_consent');
-    if (elements.analyticsToggle) {
-      elements.analyticsToggle.checked = consent === 'accepted';
-    }
+    if (analyticsToggle) analyticsToggle.checked = CookieManager.get('cookie_consent') === 'accepted';
 
     document.documentElement.style.scrollSnapType = 'none';
-    elements.footer.classList.add('footer-expanded');
+    footer.classList.add('footer-expanded');
     document.body.classList.add('footer-expanded');
-    elements.cookieView.classList.remove('hidden');
-    if (elements.normalContent) elements.normalContent.style.display = 'none';
-    if (elements.triggerBtn)
-      elements.triggerBtn.setAttribute('aria-expanded', 'true');
-
-    requestAnimationFrame(() =>
-      globalThis.scrollTo({
-        top: document.body.scrollHeight,
-        behavior: 'auto',
-      }),
-    );
-
-    ProgrammaticScroll.create(CONSTANTS.SCROLL_MARK_DURATION);
-    GlobalClose.bind();
-    a11y?.trapFocus(elements.cookieView);
-
-    // Event Listeners
-    elements.closeBtn?.addEventListener('click', close);
-    elements.rejectAllBtn?.addEventListener('click', () => {
-      CookieManager.set('cookie_consent', 'rejected');
-      CookieManager.set(
-        'cookie_consent_detail',
-        JSON.stringify({ analytics: false, ad_personalization: false }),
-      );
-      CookieManager.deleteAnalytics();
-      updateGtagConsent(false);
-      a11y?.announce('Cookie-Einstellungen: Nur notwendige Cookies aktiv', {
-        priority: 'polite',
-      });
-      close();
-      domCache.get('#cookie-consent-banner')?.classList.add('hidden');
-    });
-    elements.acceptSelectedBtn?.addEventListener('click', () => {
-      const analyticsEnabled = !!elements.analyticsToggle?.checked;
-      const adPersonalizationEnabled =
-        !!elements.adPersonalizationToggle?.checked;
-      const detail = {
-        analytics: analyticsEnabled,
-        ad_personalization: adPersonalizationEnabled,
-      };
-      CookieManager.set('cookie_consent_detail', JSON.stringify(detail));
-      CookieManager.set(
-        'cookie_consent',
-        analyticsEnabled || adPersonalizationEnabled ? 'accepted' : 'rejected',
-      );
-      globalThis.dataLayer = globalThis.dataLayer || [];
-      globalThis.dataLayer.push({ event: 'consentGranted', detail });
-      updateGtagConsent({
-        analytics_storage: analyticsEnabled ? 'granted' : 'denied',
-        ad_storage: adPersonalizationEnabled ? 'granted' : 'denied',
-        ad_user_data: adPersonalizationEnabled ? 'granted' : 'denied',
-        ad_personalization: adPersonalizationEnabled ? 'granted' : 'denied',
-      });
-      if (analyticsEnabled) GoogleAnalytics.load();
-      else CookieManager.deleteAnalytics();
-      a11y?.announce(
-        analyticsEnabled
-          ? 'Cookie-Einstellungen gespeichert: Analyse aktiviert'
-          : 'Cookie-Einstellungen gespeichert: Analyse deaktiviert',
-        { priority: 'polite' },
-      );
-      close();
-      domCache.get('#cookie-consent-banner')?.classList.add('hidden');
-    });
-    elements.acceptAllBtn?.addEventListener('click', () => {
-      CookieManager.set('cookie_consent', 'accepted');
-      CookieManager.set(
-        'cookie_consent_detail',
-        JSON.stringify({ analytics: true, ad_personalization: true }),
-      );
-      globalThis.dataLayer = globalThis.dataLayer || [];
-      globalThis.dataLayer.push({
-        event: 'consentGranted',
-        detail: { analytics: true, ad_personalization: true },
-      });
-      updateGtagConsent({
-        analytics_storage: 'granted',
-        ad_storage: 'granted',
-        ad_user_data: 'granted',
-        ad_personalization: 'granted',
-      });
-      GoogleAnalytics.load();
-      a11y?.announce('Cookie-Einstellungen: Alle Cookies aktiviert', {
-        priority: 'polite',
-      });
-      close();
-      domCache.get('#cookie-consent-banner')?.classList.add('hidden');
-    });
-
-    // Initialize toggle states
-    try {
-      const raw = CookieManager.get('cookie_consent_detail');
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (elements.analyticsToggle)
-          elements.analyticsToggle.checked = !!parsed.analytics;
-        if (elements.adPersonalizationToggle)
-          elements.adPersonalizationToggle.checked =
-            !!parsed.ad_personalization;
-      }
-    } catch (e) {
-      /* ignore */
+    
+    // Ensure footer is maximized first
+    const maxEl = footer.querySelector('.footer-maximized');
+    const minEl = footer.querySelector('.footer-minimized');
+    
+    if (maxEl) maxEl.classList.remove('footer-hidden');
+    if (minEl) {
+      minEl.classList.add('footer-hidden');
+      minEl.setAttribute('inert', '');
+      minEl.setAttribute('tabindex', '-1');
     }
-  };
+    
+    // Update scroll handler state
+    if (globalThis.footerScrollHandler) {
+      globalThis.footerScrollHandler.expanded = true;
+    }
+    
+    cookieView.classList.remove('hidden');
+    if (normalContent) normalContent.style.display = 'none';
+    triggerBtn?.setAttribute('aria-expanded', 'true');
+    footer.setAttribute('aria-expanded', 'true');
 
-  const close = () => {
-    if (!elements) elements = getElements();
-    elements?.triggerBtn?.setAttribute('aria-expanded', 'false');
-    closeFooter();
-  };
+    requestAnimationFrame(() => globalThis.scrollTo({ top: document.body.scrollHeight, behavior: 'auto' }));
+    scrollManager.create(CONFIG.SCROLL_MARK_DURATION);
+    globalClose.bind();
+    a11y?.trapFocus(cookieView);
 
-  return { open, close };
-})();
+    cookieSettings.bindEvents();
+    cookieSettings.loadToggles();
+  },
+  close: () => {
+    if (!cookieSettings.elements) cookieSettings.elements = cookieSettings.getElements();
+    const { cookieView, normalContent, triggerBtn } = cookieSettings.elements;
+    
+    // Hide cookie view and show normal content
+    cookieView?.classList.add('hidden');
+    if (normalContent) normalContent.style.display = 'block';
+    triggerBtn?.setAttribute('aria-expanded', 'false');
+    
+    cookieSettings.cleanup();
+    
+    // Close footer completely
+    footerManager.closeFooter();
+  },
 
-GlobalClose.setCloseHandler(() => CookieSettings.close());
+  bindEvents: () => {
+    const { closeBtn, rejectAllBtn, acceptSelectedBtn, acceptAllBtn } = cookieSettings.elements;
+    const hideBanner = () => dom.get('#cookie-consent-banner')?.classList.add('hidden');
+    
+    // Cleanup old handlers
+    cookieSettings.cleanup();
+    
+    const handlers = {
+      close: () => cookieSettings.close(),
+      rejectAll: () => {
+        CookieManager.set('cookie_consent', 'rejected');
+        CookieManager.set('cookie_consent_detail', JSON.stringify({ analytics: false, ad_personalization: false }));
+        CookieManager.deleteAnalytics();
+        analytics.updateConsent(false);
+        a11y?.announce('Nur notwendige Cookies aktiv', { priority: 'polite' });
+        cookieSettings.close();
+        hideBanner();
+      },
+      acceptSelected: () => {
+        const analyticsEnabled = !!cookieSettings.elements.analyticsToggle?.checked;
+        const adPersonalizationEnabled = !!cookieSettings.elements.adPersonalizationToggle?.checked;
+        const detail = { analytics: analyticsEnabled, ad_personalization: adPersonalizationEnabled };
+        
+        CookieManager.set('cookie_consent_detail', JSON.stringify(detail));
+        CookieManager.set('cookie_consent', analyticsEnabled || adPersonalizationEnabled ? 'accepted' : 'rejected');
+        (globalThis.dataLayer = globalThis.dataLayer || []).push({ event: 'consentGranted', detail });
+        
+        analytics.updateConsent({
+          analytics_storage: analyticsEnabled ? 'granted' : 'denied',
+          ad_storage: adPersonalizationEnabled ? 'granted' : 'denied',
+          ad_user_data: adPersonalizationEnabled ? 'granted' : 'denied',
+          ad_personalization: adPersonalizationEnabled ? 'granted' : 'denied',
+        });
+        
+        analyticsEnabled ? analytics.load() : CookieManager.deleteAnalytics();
+        a11y?.announce(analyticsEnabled ? 'Analyse aktiviert' : 'Analyse deaktiviert', { priority: 'polite' });
+        cookieSettings.close();
+        hideBanner();
+      },
+      acceptAll: () => {
+        CookieManager.set('cookie_consent', 'accepted');
+        CookieManager.set('cookie_consent_detail', JSON.stringify({ analytics: true, ad_personalization: true }));
+        (globalThis.dataLayer = globalThis.dataLayer || []).push({ event: 'consentGranted', detail: { analytics: true, ad_personalization: true } });
+        analytics.updateConsent({ analytics_storage: 'granted', ad_storage: 'granted', ad_user_data: 'granted', ad_personalization: 'granted' });
+        analytics.load();
+        a11y?.announce('Alle Cookies aktiviert', { priority: 'polite' });
+        cookieSettings.close();
+        hideBanner();
+      }
+    };
+    
+    closeBtn?.addEventListener('click', handlers.close);
+    rejectAllBtn?.addEventListener('click', handlers.rejectAll);
+    acceptSelectedBtn?.addEventListener('click', handlers.acceptSelected);
+    acceptAllBtn?.addEventListener('click', handlers.acceptAll);
+    
+    cookieSettings.handlers.set('close', { element: closeBtn, handler: handlers.close });
+    cookieSettings.handlers.set('rejectAll', { element: rejectAllBtn, handler: handlers.rejectAll });
+    cookieSettings.handlers.set('acceptSelected', { element: acceptSelectedBtn, handler: handlers.acceptSelected });
+    cookieSettings.handlers.set('acceptAll', { element: acceptAllBtn, handler: handlers.acceptAll });
+  },
+  cleanup: () => {
+    cookieSettings.handlers.forEach(({ element, handler }) => {
+      element?.removeEventListener('click', handler);
+    });
+    cookieSettings.handlers.clear();
+  },
+  loadToggles: () => {
+    try {
+      const detail = JSON.parse(CookieManager.get('cookie_consent_detail') || '{}');
+      const { analyticsToggle, adPersonalizationToggle } = cookieSettings.elements;
+      if (analyticsToggle) analyticsToggle.checked = !!detail.analytics;
+      if (adPersonalizationToggle) adPersonalizationToggle.checked = !!detail.ad_personalization;
+    } catch {}
+  },
+};
 
-// ===== Footer Close Helper =====
-function closeFooter() {
-  const footer = domCache.get('#site-footer');
-  if (!footer) return;
+globalClose.setCloseHandler(cookieSettings.close);
 
-  footer.classList.remove('footer-expanded');
-  document.body.classList.remove('footer-expanded');
-  footer.querySelector('.footer-maximized')?.classList.add('footer-hidden');
-  const minEl = footer.querySelector('.footer-minimized');
-  if (minEl) {
-    minEl.classList.remove('footer-hidden');
-    minEl.setAttribute('aria-hidden', 'false');
-  }
-  footer.setAttribute('aria-expanded', 'false');
+const footerManager = {
+  closeFooter: () => {
+    const footer = dom.get('#site-footer');
+    if (!footer) return;
 
-  const normal = domCache.get('#footer-normal-content');
-  if (normal) normal.style.display = 'block';
+    footer.classList.remove('footer-expanded');
+    document.body.classList.remove('footer-expanded');
+    footer.querySelector('.footer-maximized')?.classList.add('footer-hidden');
+    
+    const minEl = footer.querySelector('.footer-minimized');
+    if (minEl) {
+      minEl.classList.remove('footer-hidden');
+      minEl.removeAttribute('inert');
+      minEl.setAttribute('tabindex', '0');
+    }
+    footer.setAttribute('aria-expanded', 'false');
 
-  const cookieView = domCache.get('#footer-cookie-view');
-  if (cookieView) cookieView.classList.add('hidden');
+    const normal = dom.get('#footer-normal-content');
+    if (normal) normal.style.display = 'block';
+    
+    dom.get('#footer-cookie-view')?.classList.add('hidden');
+    document.documentElement.style.removeProperty('scroll-snap-type');
+    
+    if (globalThis.footerScrollHandler) globalThis.footerScrollHandler.expanded = false;
+    globalClose.unbind();
+    a11y?.releaseFocus();
+  },
+};
 
-  document.documentElement.style.removeProperty('scroll-snap-type');
-  if (globalThis.footerScrollHandler)
-    globalThis.footerScrollHandler.expanded = false;
-  GlobalClose.unbind();
-  a11y?.releaseFocus();
-}
-
-// ===== Scroll Handler =====
 class ScrollHandler {
   expanded = false;
   observer = null;
@@ -438,33 +390,32 @@ class ScrollHandler {
   }
 
   init() {
-    const footer = domCache.get('#site-footer');
-    let trigger =
-      domCache.get('#footer-trigger-zone') ||
-      document.getElementById('footer-trigger-zone');
+    const footer = dom.get('#site-footer');
+    let trigger = dom.get('#footer-trigger-zone');
 
     if (!trigger) {
       trigger = document.createElement('div');
       trigger.id = 'footer-trigger-zone';
       trigger.className = 'footer-trigger-zone';
       trigger.setAttribute('aria-hidden', 'true');
-      trigger.style.pointerEvents = 'none';
-      trigger.style.minHeight = '96px';
-      trigger.style.width = '100%';
-      if (footer?.parentNode) {
-        footer.parentNode.insertBefore(trigger, footer);
-      } else if (document.body) {
-        document.body.appendChild(trigger);
-      }
-      domCache?.invalidate?.();
+      Object.assign(trigger.style, { pointerEvents: 'none', minHeight: '96px', width: '100%' });
+      (footer?.parentNode || document.body).insertBefore(trigger, footer || null);
+      dom.clear();
     }
 
     if (!footer || !trigger) return;
 
-    footer
-      .querySelector('.footer-minimized')
-      ?.classList.remove('footer-hidden');
-    footer.querySelector('.footer-maximized')?.classList.add('footer-hidden');
+    const minEl = footer.querySelector('.footer-minimized');
+    const maxEl = footer.querySelector('.footer-maximized');
+    
+    minEl?.classList.remove('footer-hidden');
+    maxEl?.classList.add('footer-hidden');
+    
+    // Ensure minimized footer is interactive
+    if (minEl) {
+      minEl.removeAttribute('inert');
+      minEl.setAttribute('tabindex', '0');
+    }
 
     const isDesktop = globalThis.matchMedia?.('(min-width: 769px)')?.matches;
     const expandThreshold = isDesktop ? 0.003 : 0.05;
@@ -474,17 +425,10 @@ class ScrollHandler {
     this.observer = new IntersectionObserver(
       (entries) => {
         const entry = entries[0];
-        if (!entry || (!entry.isIntersecting && ProgrammaticScroll.hasActive()))
-          return;
+        if (!entry || (!entry.isIntersecting && scrollManager.hasActive())) return;
 
-        const shouldExpand =
-          entry.isIntersecting && entry.intersectionRatio >= expandThreshold;
-        if (
-          !shouldExpand &&
-          this.expanded &&
-          entry.intersectionRatio > collapseThreshold
-        )
-          return;
+        const shouldExpand = entry.isIntersecting && entry.intersectionRatio >= expandThreshold;
+        if (!shouldExpand && this.expanded && entry.intersectionRatio > collapseThreshold) return;
 
         this.toggleExpansion(shouldExpand);
       },
@@ -494,17 +438,14 @@ class ScrollHandler {
     this.observer.observe(trigger);
 
     this._resizeHandler = debounce(() => {
-      this.observer?.disconnect();
+      this.cleanup();
       this.init();
-    }, 150);
-    globalThis.addEventListener('resize', this._resizeHandler, {
-      passive: true,
-    });
+    }, CONFIG.RESIZE_DEBOUNCE);
+    globalThis.addEventListener('resize', this._resizeHandler, { passive: true });
   }
 
   toggleExpansion(shouldExpand) {
-    const footer =
-      domCache.get('#site-footer') || document.querySelector('#site-footer');
+    const footer = dom.get('#site-footer');
     if (!footer) return;
 
     const min = footer.querySelector('.footer-minimized');
@@ -515,92 +456,71 @@ class ScrollHandler {
         clearTimeout(this._collapseTimer);
         this._collapseTimer = null;
       }
-      ProgrammaticScroll.create(1000);
-      GlobalClose.bind();
+      scrollManager.create(1000);
+      globalClose.bind();
       document.documentElement.style.scrollSnapType = 'none';
       footer.classList.add('footer-expanded');
       footer.setAttribute('aria-expanded', 'true');
       document.body.classList.add('footer-expanded');
       max?.classList.remove('footer-hidden');
       min?.classList.add('footer-hidden');
-      min?.setAttribute('aria-hidden', 'true');
+      // Remove tabindex and set inert instead of aria-hidden to prevent focus issues
+      if (min) {
+        min.setAttribute('inert', '');
+        min.setAttribute('tabindex', '-1');
+      }
       this.expanded = true;
-      this._lockUntil = Date.now() + CONSTANTS.EXPAND_LOCK_MS;
+      this._lockUntil = Date.now() + CONFIG.EXPAND_LOCK_MS;
       return;
     }
 
     if (!shouldExpand && this.expanded) {
-      const now = Date.now();
-      const delay =
-        now < this._lockUntil
-          ? this._lockUntil - now + CONSTANTS.COLLAPSE_DEBOUNCE_MS
-          : CONSTANTS.COLLAPSE_DEBOUNCE_MS;
+      const delay = Math.max(0, this._lockUntil - Date.now()) + CONFIG.COLLAPSE_DEBOUNCE_MS;
       if (this._collapseTimer) clearTimeout(this._collapseTimer);
       this._collapseTimer = setTimeout(() => {
-        closeFooter();
+        footerManager.closeFooter();
         this.expanded = false;
         this._collapseTimer = null;
       }, delay);
     }
   }
+
+  cleanup() {
+    if (this.observer) {
+      this.observer.disconnect();
+      this.observer = null;
+    }
+    if (this._resizeHandler) {
+      globalThis.removeEventListener('resize', this._resizeHandler);
+      this._resizeHandler = null;
+    }
+    if (this._collapseTimer) {
+      clearTimeout(this._collapseTimer);
+      this._collapseTimer = null;
+    }
+  }
 }
 
-// ===== Footer Loader =====
 class FooterLoader {
   async init() {
-    const container = domCache.get('#footer-container');
+    const container = dom.get('#footer-container');
+    const existingFooter = dom.get('#site-footer');
 
-    if (!container && domCache?.get?.('#site-footer')) {
-      this.updateYears();
-      this.setupInteractions();
-      new ConsentBanner().init();
-      new ScrollHandler().init();
+    if (existingFooter || container?.querySelector('#site-footer')) {
+      this.setup();
       return true;
     }
 
     if (!container) return false;
 
-    if (container.querySelector && container.querySelector('#site-footer')) {
-      this.updateYears();
-      this.setupInteractions();
-      new ConsentBanner().init();
-      new ScrollHandler().init();
-      return true;
-    }
-
     try {
-      const srcBase =
-        container.dataset.footerSrc || '/content/components/footer/footer';
-      const isLocal =
-        ['localhost', '127.0.0.1'].some((h) => location.hostname.includes(h)) ||
-        location.hostname.endsWith('.local');
-      const candidates = isLocal
-        ? [srcBase + '.html', srcBase]
-        : [srcBase, srcBase + '.html'];
-
-      let response;
-      for (const c of candidates) {
-        try {
-          response = await fetch(c);
-          if (response?.ok) break;
-        } catch {
-          response = null;
-        }
-      }
-
+      const response = await fetch(container.dataset.footerSrc || CONFIG.FOOTER_HTML_PATH);
       if (!response?.ok) throw new Error('Footer load failed');
 
       container.innerHTML = await response.text();
-      domCache?.invalidate?.();
-
-      this.updateYears();
-      this.setupInteractions();
-      new ConsentBanner().init();
-      new ScrollHandler().init();
-
-      document.dispatchEvent(
-        new CustomEvent('footer:loaded', { detail: { timestamp: Date.now() } }),
-      );
+      dom.clear();
+      this.setup();
+      document.dispatchEvent(new CustomEvent('footer:loaded', { detail: { timestamp: Date.now() } }));
       return true;
     } catch (error) {
       log.error('Footer load failed', error);
@@ -608,84 +528,75 @@ class FooterLoader {
     }
   }
 
+  setup() {
+    this.updateYears();
+    this.setupInteractions();
+    consentBanner.init();
+    new ScrollHandler().init();
+  }
+
   updateYears() {
     const year = new Date().getFullYear();
-    domCache.getAll('.current-year').forEach((el) => (el.textContent = year));
+    dom.getAll('.current-year').forEach((el) => (el.textContent = year));
   }
 
   setupInteractions() {
-    // Newsletter Form
-    const form = domCache.get('.newsletter-form-enhanced');
-    if (form) {
-      form.addEventListener('submit', (e) => {
+    const form = dom.get('.newsletter-form-enhanced');
+    form?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const input = form.querySelector('#newsletter-email');
+      if (input && !input.checkValidity()) {
+        a11y?.announce('Bitte gültige E-Mail eingeben', { priority: 'assertive' });
+        return;
+      }
+      const btn = form.querySelector('button[type="submit"]');
+      if (btn) {
+        const originalText = btn.textContent;
+        btn.textContent = '✓';
+        btn.disabled = true;
+        setTimeout(() => {
+          btn.textContent = originalText;
+          btn.disabled = false;
+        }, 3000);
+      }
+      form.reset();
+      a11y?.announce('Newsletter abonniert', { priority: 'polite' });
+    });
+
+    document.addEventListener('click', (e) => {
+      // Check if click is on cookie trigger
+      const cookieTrigger = e.target.closest('[data-cookie-trigger]');
+      if (cookieTrigger) {
         e.preventDefault();
-        const input = form.querySelector('#newsletter-email');
-        if (input && !input.checkValidity()) {
-          a11y?.announce('Bitte gültige E-Mail eingeben', {
-            priority: 'assertive',
-          });
-          return;
-        }
-        const btn = form.querySelector('button[type="submit"]');
-        if (btn) {
-          const originalText = btn.textContent;
-          btn.textContent = '✓';
-          btn.disabled = true;
-          setTimeout(() => {
-            btn.textContent = originalText;
-            btn.disabled = false;
-          }, 3000);
-        }
-        form.reset();
-        a11y?.announce('Newsletter abonniert', { priority: 'polite' });
-      });
-    }
+        e.stopPropagation();
+        cookieSettings.open();
+        return;
+      }
 
-    // Event Delegation
-    document.addEventListener(
-      'click',
-      (e) => {
-        const cookieTrigger = e.target.closest('[data-cookie-trigger]');
-        const footerMinClick = e.target.closest('.footer-minimized');
-
-        if (cookieTrigger) {
+      // Check if click is on minimized footer
+      const footerMinClick = e.target.closest('.footer-minimized');
+      if (footerMinClick) {
+        // Check if click is on a real link (not footer nav buttons)
+        const isLink = e.target.closest('a[href^="http"], a[href^="/"]');
+        const isFormElement = e.target.closest('input, textarea, select');
+        
+        if (!isLink && !isFormElement) {
           e.preventDefault();
-          CookieSettings.open();
-          return;
+          globalThis.footerScrollHandler?.toggleExpansion(true);
         }
+      }
+    }, { passive: false });
 
-        if (footerMinClick) {
-          const interactive = e.target.closest(
-            'a, button, input, textarea, select, [data-cookie-trigger]',
-          );
-          if (!interactive) {
-            e.preventDefault();
-            if (globalThis.footerScrollHandler) {
-              globalThis.footerScrollHandler.toggleExpansion(true);
-            }
-            return;
-          }
-        }
-      },
-      { passive: false },
-    );
-
-    // Three-Showcase Button
-    const showcaseBtn = domCache.get('#threeShowcaseBtn');
+    const showcaseBtn = dom.get('#threeShowcaseBtn');
     if (showcaseBtn && !showcaseBtn.dataset.init) {
       showcaseBtn.dataset.init = '1';
       showcaseBtn.addEventListener('click', () => {
         showcaseBtn.classList.add('active');
-        document.dispatchEvent(
-          new CustomEvent('three-earth:showcase', {
-            detail: { duration: 8000 },
-          }),
-        );
+        document.dispatchEvent(new CustomEvent('three-earth:showcase', { detail: { duration: 8000 } }));
         setTimeout(() => showcaseBtn.classList.remove('active'), 8000);
       });
     }
   }
 }
 
-// ===== Export =====
 export const initFooter = () => new FooterLoader().init();
