@@ -54,20 +54,16 @@
   max-width: 1400px;
   min-width: 320px;
   box-sizing: border-box;
-  background: var(--dynamic-footer-header-bg);
-  -webkit-backdrop-filter: blur(var(--dynamic-footer-blur-radius));
-  backdrop-filter: blur(var(--dynamic-footer-blur-radius));
-  border-radius: var(--dynamic-footer-pill-radius);
-  border: 1px solid var(--dynamic-footer-separator);
-  box-shadow: var(--dynamic-footer-shadow-depth-2);
+  background: var(--dynamic-footer-header-bg, rgba(0, 0, 0, 0.8));
+  backdrop-filter: blur(var(--dynamic-footer-blur-radius, 20px));
+  border-radius: var(--dynamic-footer-pill-radius, 26px);
+  border: 1px solid var(--dynamic-footer-separator, rgba(255, 255, 255, 0.1));
+  box-shadow: var(--dynamic-footer-shadow-depth-2, 0 8px 32px rgba(0, 0, 0, 0.3));
   font-family: var(--dynamic-footer-font-family);
   transform: translateX(-50%) translateZ(0);
   z-index: var(--z-footer);
-  animation: footerEntrance 0.6s var(--dynamic-footer-spring-bounce) forwards;
+  animation: footerEntrance 0.6s var(--dynamic-footer-spring-bounce, cubic-bezier(0.34, 1.56, 0.64, 1)) forwards;
   opacity: 0;
-  content-visibility: auto;
-  contain-intrinsic-size: auto 300px;
-  contain: layout style paint;
 
   /* Compact scale for footer variables (desktop-optimized) */
   --footer-text-xs: 9px;
@@ -104,6 +100,21 @@
 
   .footer-maximized {
     view-transition-name: footer-max;
+  }
+}
+
+/* Modern content-visibility Support */
+@supports (content-visibility: auto) {
+  .site-footer-fixed {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 300px;
+    contain: layout style paint;
+  }
+  
+  .footer-card {
+    content-visibility: auto;
+    contain-intrinsic-size: var(--footer-card-min-height);
+    contain: layout style;
   }
 }
 
@@ -516,9 +527,9 @@ body.footer-expanded {
 }
 
 .footer-card {
-  background: var(--dynamic-footer-fill-secondary);
-  border: 1px solid var(--dynamic-footer-separator);
-  border-radius: var(--dynamic-footer-card-radius);
+  background: var(--dynamic-footer-fill-secondary, rgba(255, 255, 255, 0.05));
+  border: 1px solid var(--dynamic-footer-separator, rgba(255, 255, 255, 0.1));
+  border-radius: var(--dynamic-footer-card-radius, 12px);
   padding: var(--footer-spacing-sm);
   display: flex;
   flex-direction: column;
@@ -532,14 +543,11 @@ body.footer-expanded {
     background-color var(--footer-transition-quick),
     border-color var(--footer-transition-quick);
   transform: translateZ(0);
-  content-visibility: auto;
-  contain-intrinsic-size: var(--footer-card-min-height);
-  contain: layout style;
 }
 
 .footer-card:hover {
-  background: var(--dynamic-footer-fill-primary);
-  border-color: var(--dynamic-footer-accent-blue);
+  background: var(--dynamic-footer-fill-primary, rgba(255, 255, 255, 0.1));
+  border-color: var(--dynamic-footer-accent-blue, #007aff);
   transform: translateY(-2px) translateZ(0);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
 }
@@ -620,10 +628,9 @@ body.footer-expanded {
 }
 
 .footer-contact-cta:hover {
-  background: var(--dynamic-footer-accent-blue);
+  background: var(--dynamic-footer-accent-blue, #007aff);
   color: white;
   transform: translateY(-1px) translateZ(0);
-  will-change: transform, background-color;
 }
 
 @media (hover: none) {
@@ -653,10 +660,9 @@ body.footer-expanded {
 }
 
 .footer-work-link:hover {
-  color: var(--dynamic-footer-label-primary);
-  background: var(--dynamic-footer-fill-primary);
+  color: var(--dynamic-footer-label-primary, #ffffff);
+  background: var(--dynamic-footer-fill-primary, rgba(255, 255, 255, 0.1));
   transform: translateX(3px) translateZ(0);
-  will-change: transform;
 }
 
 .newsletter-form-enhanced {
@@ -715,9 +721,8 @@ body.footer-expanded {
 }
 
 .newsletter-submit-enhanced:hover {
-  background: var(--dynamic-footer-accent-purple);
+  background: var(--dynamic-footer-accent-purple, #8b5cf6);
   transform: translateY(-1px) translateZ(0);
-  will-change: transform;
 }
 
 @keyframes slideUpFade {
@@ -760,11 +765,10 @@ body.footer-expanded {
 }
 
 .footer-social-btn:hover {
-  background: var(--dynamic-footer-fill-primary);
-  border-color: var(--dynamic-footer-accent-blue);
-  color: var(--dynamic-footer-label-primary);
+  background: var(--dynamic-footer-fill-primary, rgba(255, 255, 255, 0.1));
+  border-color: var(--dynamic-footer-accent-blue, #007aff);
+  color: var(--dynamic-footer-label-primary, #ffffff);
   transform: translateY(-1px) translateZ(0);
-  will-change: transform, background-color;
 }
 
 .footer-social-btn.github {

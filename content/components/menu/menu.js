@@ -193,7 +193,7 @@ function cleanupMenu() {
           _log.warn('Failed to remove event listener:', error);
         }
       });
-      element.__listenerRemovers = [];
+      element.__listenerRemovers = []; // Clear array after cleanup
     }
   });
 }
@@ -391,7 +391,13 @@ function fixSubpageLinks(container) {
 // ===== Component Initializers =====
 function initializeMenuToggle(container) {
   const { toggle, menu } = getMenuElements(container);
-  if (!toggle || !menu) return;
+  if (!toggle || !menu) {
+    _log.warn('Menu initialization failed: missing elements', {
+      hasToggle: !!toggle,
+      hasMenu: !!menu,
+    });
+    return;
+  }
 
   // Setup ARIA attributes
   menu.setAttribute('role', 'navigation');
@@ -429,7 +435,15 @@ function initializeSearchTrigger(container) {
       .then((module) => {
         if (module.openSearch) module.openSearch();
       })
-      .catch((err) => _log.error('Failed to load search:', err));
+      .catch((err) => {
+        _log.error('Failed to load search:', err);
+        // Optional: Show user feedback
+        const liveRegion = document.getElementById('live-region-status');
+        if (liveRegion) {
+          liveRegion.textContent = 'Suche konnte nicht geladen werden';
+          setTimeout(() => (liveRegion.textContent = ''), 3000);
+        }
+      });
   };
 
   const removeSearchClick = addListener(
@@ -472,6 +486,7 @@ function initializeNavigationLinks(container) {
 }
 
 function initializeIcons() {
+  // Check icons once after a short delay to ensure SVG sprite is loaded
   const checkIcons = () => {
     const icons = document.querySelectorAll('.nav-icon use');
     icons.forEach((use) => {
@@ -488,8 +503,12 @@ function initializeIcons() {
     });
   };
 
-  checkIcons();
-  setTimeout(checkIcons, 200);
+  // Single check after DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', checkIcons, { once: true });
+  } else {
+    setTimeout(checkIcons, 100);
+  }
 }
 
 function initializeLogo(container) {

@@ -718,6 +718,7 @@ class FooterLoader {
   #cookieSettings = null;
   #footerManager = null;
   #scrollHandler = null;
+  #initPromise = null;
 
   constructor() {
     this.#dom = new DOMCache();
@@ -746,6 +747,22 @@ class FooterLoader {
   }
 
   async init() {
+    // Prevent multiple simultaneous initializations
+    if (this.#initPromise) {
+      log.info('Init already in progress, returning existing promise');
+      return this.#initPromise;
+    }
+
+    this.#initPromise = this.#_init();
+
+    try {
+      return await this.#initPromise;
+    } finally {
+      this.#initPromise = null;
+    }
+  }
+
+  async #_init() {
     const container = this.#dom.get('#footer-container');
     const existingFooter = this.#dom.get('#site-footer');
 
@@ -775,6 +792,33 @@ class FooterLoader {
       return true;
     } catch (error) {
       log.error('Footer load failed', error);
+
+      // User feedback
+      if (container) {
+        container.innerHTML = `
+          <div class="footer-error" role="alert" style="
+            padding: 20px;
+            text-align: center;
+            color: var(--dynamic-footer-label-primary, #fff);
+            background: var(--dynamic-footer-fill-secondary, rgba(255, 0, 0, 0.1));
+            border-radius: 12px;
+            margin: 20px;
+          ">
+            <p style="margin: 0 0 10px;">Footer konnte nicht geladen werden</p>
+            <button type="button" onclick="location.reload()" style="
+              padding: 8px 16px;
+              background: var(--dynamic-footer-accent-blue, #007aff);
+              color: white;
+              border: none;
+              border-radius: 8px;
+              cursor: pointer;
+            ">
+              Seite neu laden
+            </button>
+          </div>
+        `;
+      }
+
       return false;
     }
   }
@@ -788,7 +832,15 @@ class FooterLoader {
 
   #updateYears() {
     const year = new Date().getFullYear();
-    this.#dom.getAll('.current-year').forEach((el) => (el.textContent = year));
+    const elements = this.#dom.getAll('.current-year');
+
+    if (elements.length === 0) return;
+
+    // Only update if year has changed
+    const currentYear = String(year);
+    if (elements[0].textContent !== currentYear) {
+      elements.forEach((el) => (el.textContent = currentYear));
+    }
   }
 
   #setupInteractions() {
