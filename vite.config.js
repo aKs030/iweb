@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 import { createHtmlPlugin } from 'vite-plugin-html';
 import { visualizer } from 'rollup-plugin-visualizer';
-import preact from '@preact/preset-vite';
+import viteCompression from 'vite-plugin-compression';
 import { resolve } from 'path';
 
 export default defineConfig(({ mode }) => {
@@ -74,18 +74,11 @@ export default defineConfig(({ mode }) => {
               if (id.includes('three')) {
                 return 'vendor-three';
               }
-              // Preact chunks (replaces React)
-              if (id.includes('preact')) {
-                return 'vendor-preact';
-              }
               if (id.includes('react') || id.includes('react-dom')) {
-                return 'vendor-preact'; // React is aliased to Preact
+                return 'vendor-react';
               }
               if (id.includes('dompurify')) {
                 return 'vendor-dompurify';
-              }
-              if (id.includes('fast-check')) {
-                return 'vendor-test'; // Test dependencies
               }
               // Other node_modules go to vendor
               return 'vendor';
@@ -197,8 +190,7 @@ export default defineConfig(({ mode }) => {
     
     // Plugins
     plugins: [
-      // Preact plugin for React compatibility
-      preact(),
+      // HTML plugin
       createHtmlPlugin({
         minify: isProd,
         inject: {
@@ -208,6 +200,25 @@ export default defineConfig(({ mode }) => {
           },
         },
       }),
+      
+
+      
+      // Compression - Brotli (best compression)
+      isProd && viteCompression({
+        algorithm: 'brotliCompress',
+        ext: '.br',
+        threshold: 10240, // Only compress files > 10KB
+        deleteOriginFile: false,
+      }),
+      
+      // Compression - Gzip (fallback for older browsers)
+      isProd && viteCompression({
+        algorithm: 'gzip',
+        ext: '.gz',
+        threshold: 10240, // Only compress files > 10KB
+        deleteOriginFile: false,
+      }),
+      
       // Bundle analyzer - generates stats.html
       isProd && visualizer({
         filename: 'dist/stats.html',

@@ -12,11 +12,16 @@
  * - Graceful shutdown
  */
 
-const http = require('http');
-const fs = require('fs').promises;
-const fsSync = require('fs');
-const path = require('path');
-const { exec } = require('child_process');
+import http from 'http';
+import fs from 'fs';
+import { promises as fsPromises } from 'fs';
+import path from 'path';
+import { exec } from 'child_process';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // Configuration
 const PORT = 8080;
@@ -58,12 +63,12 @@ const MIME_TYPES = {
 function parseRedirects() {
   try {
     const redirectsPath = path.join(ROOT, '_redirects');
-    if (!fsSync.existsSync(redirectsPath)) {
+    if (!fs.existsSync(redirectsPath)) {
       console.warn('⚠️  No _redirects file found');
       return [];
     }
 
-    const content = fsSync.readFileSync(redirectsPath, 'utf8');
+    const content = fs.readFileSync(redirectsPath, 'utf8');
     const rules = [];
 
     content.split('\n').forEach((line, index) => {
@@ -149,7 +154,7 @@ async function serveFile(filePath, res) {
   const mimeType = MIME_TYPES[ext] || 'application/octet-stream';
 
   try {
-    const content = await fs.readFile(filePath);
+    const content = await fsPromises.readFile(filePath);
     const cacheHeaders = getCacheHeaders(filePath);
 
     res.writeHead(200, {
@@ -191,7 +196,7 @@ async function serveFile(filePath, res) {
  */
 async function isDirectory(filePath) {
   try {
-    const stats = await fs.stat(filePath);
+    const stats = await fsPromises.stat(filePath);
     return stats.isDirectory();
   } catch {
     return false;
@@ -203,7 +208,7 @@ async function isDirectory(filePath) {
  */
 async function fileExists(filePath) {
   try {
-    await fs.access(filePath);
+    await fsPromises.access(filePath);
     return true;
   } catch {
     return false;

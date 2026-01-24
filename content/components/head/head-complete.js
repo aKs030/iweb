@@ -111,7 +111,7 @@ const ROUTES = {
       'A selection of my work, brief presentations and behind-the-scenes.',
     type: 'CollectionPage',
     // NOTE: use WebP fallback for modern delivery
-    image: `${BASE_URL}/content/assets/img/og/og-videos-2400.webp`,
+    image: `${BASE_URL}/content/assets/img/og/og-videos-800.webp`,
   },
   '/gallery/': {
     title: 'Fotografie Portfolio | Urban & Portrait Berlin',

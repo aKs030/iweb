@@ -4,17 +4,10 @@
   "description": "Portfolio website of Abdulkerim Sesli - Web Developer & Photographer in Berlin",
   "main": "index.js",
   "scripts": {
-    "dev": "vite",
-    "dev:legacy": "node scripts/dev-server.js",
-    "build": "vite build",
-    "preview": "vite preview",
-    "start": "vite",
+    "dev": "node scripts/dev-server.js",
     "format": "prettier --write \"**/*.{js,css,json,md,html}\"",
     "lint": "eslint \"**/*.js\" --fix",
-    "lint:check": "eslint \"**/*.js\"",
-    "test": "vitest",
-    "test:ui": "vitest --ui",
-    "test:coverage": "vitest --coverage"
+    "lint:check": "eslint \"**/*.js\""
   },
   "lint-staged": {
     "*.{js,ts}": [
@@ -27,25 +20,13 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",
-    "@preact/preset-vite": "^2.10.2",
-    "@testing-library/dom": "^10.4.1",
-    "@testing-library/react": "^16.3.2",
-    "@vitejs/plugin-react": "^5.1.2",
-    "@vitest/coverage-v8": "^4.0.18",
-    "@vitest/ui": "^4.0.18",
     "eslint": "^9.39.2",
-    "fast-check": "^4.5.3",
-    "gray-matter": "^4.0.3",
-    "happy-dom": "^20.3.7",
-    "jsdom": "^27.4.0",
     "lint-staged": "^16.2.7",
-    "marked": "^17.0.1",
     "prettier": "^3.8.1",
     "rollup-plugin-visualizer": "^6.0.5",
-    "sharp": "^0.34.5",
     "vite": "^7.3.1",
-    "vite-plugin-html": "^3.2.2",
-    "vitest": "^4.0.18"
+    "vite-plugin-compression": "^0.5.1",
+    "vite-plugin-html": "^3.2.2"
   },
   "repository": {
     "type": "git",
@@ -70,7 +51,6 @@
   "homepage": "https://github.com/aKs030/iweb#readme",
   "dependencies": {
     "dompurify": "^3.3.1",
-    "preact": "^10.28.2",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "three": "^0.182.0"

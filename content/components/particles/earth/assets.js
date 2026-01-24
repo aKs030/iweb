@@ -23,8 +23,12 @@ export async function createEarthSystem(
       textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.BUMP),
     ]);
   } catch (err) {
-    log.error('Texture loading failed:', err);
-    throw new Error('Texture loading failed: ' + (err?.message || String(err)));
+    // Silently handle texture loading errors in production
+    if (process.env.NODE_ENV === 'development') {
+      log.error('Texture loading failed:', err);
+    }
+    // Return null to indicate failure without throwing
+    return null;
   }
 
   const maxAniso = renderer.capabilities.getMaxAnisotropy();
