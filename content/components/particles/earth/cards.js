@@ -850,7 +850,9 @@ export class CardManager {
     this._disposeCachedTextures();
     try {
       this.detachPointerHandlers();
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     this._removeResizeHandler();
   }
 
@@ -924,7 +926,9 @@ export class CardManager {
   _removeResizeHandler() {
     try {
       globalThis.removeEventListener('resize', this._onResize);
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     this._onResize = null;
     if (this._resizeRAF) {
       cancelAnimationFrame(this._resizeRAF);

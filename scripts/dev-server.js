@@ -142,8 +142,8 @@ function getCacheHeaders(_filePath) {
   // Disable all caching in development for instant updates
   return {
     'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-    'Pragma': 'no-cache',
-    'Expires': '0',
+    Pragma: 'no-cache',
+    Expires: '0',
   };
 }
 

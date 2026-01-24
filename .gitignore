@@ -29,14 +29,5 @@ Thumbs.db
 .vscode/
 .idea/
 
-# Build outputs
-dist/
-build/
-coverage/
-
-# Vite
-.vite/
-*.local
-
 # Test
 .vitest/

@@ -109,10 +109,12 @@ export default [
     ignores: [
       'node_modules/**',
       'dist/**',
+      'build/**',
       '.git/**',
       '.vscode/**',
       'workers/**',
       '*.min.js',
+      'package-lock.json',
     ],
   },
 ];

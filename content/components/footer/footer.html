@@ -16,7 +16,12 @@
     tabindex="0"
     aria-label="Footer erweitern"
     aria-expanded="false"
-    onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click();}"
+    onkeydown="
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        this.click();
+      }
+    "
   >
     <div class="footer-minimal-content">
       <!-- Copyright -->

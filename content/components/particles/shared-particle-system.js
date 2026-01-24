@@ -250,7 +250,7 @@ export const sharedCleanupManager = new SharedCleanupManager();
 // - Pros: Smaller total bundle, likely cached across sites, fast CDN delivery
 // - Cons: External dependency, requires network request
 //
-// Bundled Tree-Shaking Approach (tested): 489KB minified in vendor-three chunk  
+// Bundled Tree-Shaking Approach (tested): 489KB minified in vendor-three chunk
 // - Pros: No external dependency, better offline support
 // - Cons: 158KB LARGER than CDN version, increases total bundle size
 //
@@ -280,7 +280,7 @@ export async function loadThreeJS() {
       const src = THREE_PATHS[i];
       try {
         log.info(`📦 Loading Three.js from: ${src}`);
-        
+
         const THREE = await import(/* @vite-ignore */ src);
         const ThreeJS = THREE.default || THREE;
 

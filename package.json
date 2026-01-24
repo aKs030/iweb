@@ -5,9 +5,12 @@
   "main": "index.js",
   "scripts": {
     "dev": "node scripts/dev-server.js",
-    "format": "prettier --write \"**/*.{js,css,json,md,html}\"",
+    "format": "prettier --write \"**/*.{js,css,json,md,html}\" --ignore-path .prettierignore",
+    "format:check": "prettier --check \"**/*.{js,css,json,md,html}\" --ignore-path .prettierignore",
     "lint": "eslint \"**/*.js\" --fix",
-    "lint:check": "eslint \"**/*.js\""
+    "lint:check": "eslint \"**/*.js\"",
+    "check": "npm run lint:check && npm run format:check",
+    "fix": "npm run lint && npm run format"
   },
   "lint-staged": {
     "*.{js,ts}": [
@@ -22,11 +25,7 @@
     "@eslint/js": "^9.39.2",
     "eslint": "^9.39.2",
     "lint-staged": "^16.2.7",
-    "prettier": "^3.8.1",
-    "rollup-plugin-visualizer": "^6.0.5",
-    "vite": "^7.3.1",
-    "vite-plugin-compression": "^0.5.1",
-    "vite-plugin-html": "^3.2.2"
+    "prettier": "^3.8.1"
   },
   "repository": {
     "type": "git",

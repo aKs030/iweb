@@ -13,12 +13,12 @@ export const config = {
   // Verwende stattdessen den Cloudflare Worker Proxy: /api/gemini
   model: 'gemini-2.5-flash-preview-09-2025',
   proxyEndpoint: '/api/gemini',
-  
+
   // Warnung für Entwickler
   getGeminiApiKey: () => {
     throw new Error(
       'SECURITY: Direct API key access removed. Use /api/gemini proxy endpoint instead. ' +
-      'Set GEMINI_API_KEY in Cloudflare Worker: wrangler secret put GEMINI_API_KEY'
+        'Set GEMINI_API_KEY in Cloudflare Worker: wrangler secret put GEMINI_API_KEY',
     );
   },
 };

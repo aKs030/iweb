@@ -628,7 +628,7 @@ class SearchComponent {
     const safeUrl = this.escapeHTML(result.url || '#');
     const safeId = this.escapeHTML(result.id || '');
     const safeIcon = this.escapeHTML(result.icon || '📄');
-    
+
     // Highlight Query in Titel und Beschreibung (after escaping)
     const highlightedTitle = this.highlightText(safeTitle, query);
     const highlightedDesc = this.highlightText(safeDesc, query);
@@ -647,7 +647,7 @@ class SearchComponent {
       </a>
     `;
   }
-  
+
   escapeHTML(text) {
     if (!text || typeof text !== 'string') return '';
     const div = document.createElement('div');
