@@ -4,7 +4,7 @@
  */
 
 const MODEL_NAME = 'gemini-2.5-flash-preview-09-2025';
-const getBaseUrl = (apiKey) =>
+const _getBaseUrl = (apiKey) =>
   `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${
     apiKey || ''
   }`; // server-only: pass API key when calling from server side
@@ -24,7 +24,7 @@ async function getGeminiResponse(
   systemInstruction = 'Du bist ein hilfreicher Roboter-Begleiter.',
   _options = {},
 ) {
-  const payload = {
+  const _payload = {
     contents: [{ parts: [{ text: prompt }] }],
     systemInstruction: { parts: [{ text: systemInstruction }] },
   };
@@ -52,7 +52,7 @@ async function getGeminiResponse(
     return r.json();
   };
 
-  const doServerRequest = async () => {
+  const _doServerRequest = async () => {
     // DEPRECATED: Direct server-side requests are no longer supported for security.
     // All requests must go through the Cloudflare Worker proxy at /api/gemini
     throw new Error(

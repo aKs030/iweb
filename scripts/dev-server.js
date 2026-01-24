@@ -132,7 +132,7 @@ function applyRedirects(url, rules) {
  * Get cache headers based on file type
  * DEVELOPMENT MODE: All files served without cache for live updates
  */
-function getCacheHeaders(filePath) {
+function getCacheHeaders(_filePath) {
   // Disable all caching in development for instant updates
   return {
     'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',

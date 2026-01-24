@@ -37,7 +37,7 @@ try {
     ad_user_data: 'denied',
     ad_personalization: 'denied',
   });
-} catch (e) {
+} catch {
   /* ignore */
 }
 
@@ -62,17 +62,17 @@ try {
                 ad_user_data: 'granted',
                 ad_personalization: 'granted',
               });
-            } catch (e) {
+            } catch {
               /* ignore */
             }
           }
         }
-      } catch (e) {
+      } catch {
         /* ignore */
       }
       return originalPush.apply(null, arguments);
     };
-  } catch (e) {
+  } catch {
     /* ignore */
   }
 })();
@@ -274,7 +274,7 @@ dataLayer.push({
               log?.warn?.('head-inline: import footer module failed', err),
             );
         }
-      } catch (e) {
+      } catch {
         /* ignore */
       }
     };
@@ -346,8 +346,8 @@ dataLayer.push({
           crossOrigin: 'anonymous',
           dataset: { injectedBy: 'head-inline' },
         });
-      } catch (err) {
-        /* ignore */
+      } catch {
+        /* ignore preconnect errors */
       }
     };
 
@@ -374,7 +374,7 @@ dataLayer.push({
           try {
             this.onload = null;
             this.rel = 'stylesheet';
-          } catch (e) {
+          } catch {
             /* ignore */
           }
         },
@@ -391,7 +391,7 @@ dataLayer.push({
               dataset: { injectedBy: 'head-inline' },
             });
           }
-        } catch (e) {
+        } catch {
           /* ignore */
         }
       }, 3000);
@@ -518,7 +518,7 @@ dataLayer.push({
               link.href +=
                 (link.href.includes('?') ? '&' : '?') + 'display=swap';
             }
-          } catch (e) {
+          } catch {
             /* ignore */
           }
         });

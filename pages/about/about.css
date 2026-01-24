@@ -213,7 +213,7 @@ header {
   margin-top: 1.5rem;
 }
 
-..social-item {
+.social-item {
   display: flex;
   align-items: center;
   gap: var(--gap-sm);

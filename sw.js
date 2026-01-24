@@ -122,18 +122,14 @@ self.addEventListener('fetch', (event) => {
       (async () => {
         const cached = await caches.match(req);
         if (cached) return cached;
-        try {
-          const res = await fetch(req);
-          if (res.ok) {
-            caches
-              .open(CACHE_NAMES.TEXTURES)
-              .then((cache) => cache.put(req, res.clone()))
-              .catch(() => {});
-          }
-          return res;
-        } catch (err) {
-          throw err;
+        const res = await fetch(req);
+        if (res.ok) {
+          caches
+            .open(CACHE_NAMES.TEXTURES)
+            .then((cache) => cache.put(req, res.clone()))
+            .catch(() => {});
         }
+        return res;
       })(),
     );
     return;
@@ -148,21 +144,17 @@ self.addEventListener('fetch', (event) => {
       (async () => {
         const cached = await caches.match(req);
         if (cached) return cached;
-        try {
-          const res = await fetch(req);
-          if (res.ok) {
-            const cacheName = url.pathname.match(/\.(woff2?|ttf|otf|eot)$/i)
-              ? CACHE_NAMES.FONTS
-              : CACHE_NAMES.BUNDLES;
-            caches
-              .open(cacheName)
-              .then((cache) => cache.put(req, res.clone()))
-              .catch(() => {});
-          }
-          return res;
-        } catch (err) {
-          throw err;
+        const res = await fetch(req);
+        if (res.ok) {
+          const cacheName = url.pathname.match(/\.(woff2?|ttf|otf|eot)$/i)
+            ? CACHE_NAMES.FONTS
+            : CACHE_NAMES.BUNDLES;
+          caches
+            .open(cacheName)
+            .then((cache) => cache.put(req, res.clone()))
+            .catch(() => {});
         }
+        return res;
       })(),
     );
     return;
@@ -174,18 +166,14 @@ self.addEventListener('fetch', (event) => {
       (async () => {
         const cached = await caches.match(req);
         if (cached) return cached;
-        try {
-          const res = await fetch(req);
-          if (res.ok) {
-            caches
-              .open(CACHE_NAMES.IMAGES)
-              .then((cache) => cache.put(req, res.clone()))
-              .catch(() => {});
-          }
-          return res;
-        } catch (err) {
-          throw err;
+        const res = await fetch(req);
+        if (res.ok) {
+          caches
+            .open(CACHE_NAMES.IMAGES)
+            .then((cache) => cache.put(req, res.clone()))
+            .catch(() => {});
         }
+        return res;
       })(),
     );
     return;

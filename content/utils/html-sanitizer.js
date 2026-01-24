@@ -45,6 +45,7 @@ const MINIMAL_CONFIG = {
   ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'br'],
   ALLOWED_ATTR: [],
   ALLOW_DATA_ATTR: false,
+  KEEP_CONTENT: true, // Keep text content when removing tags
 };
 
 /**
@@ -156,12 +157,18 @@ export function stripHTML(html) {
     return '';
   }
   
+  // Use DOMPurify to sanitize first (removes dangerous content)
   const sanitized = DOMPurify.sanitize(html, {
     ALLOWED_TAGS: [],
     KEEP_CONTENT: true,
   });
   
-  return sanitized.trim();
+  // Then use a simple regex to remove any remaining tags
+  // and clean up extra whitespace
+  return sanitized
+    .replace(/<[^>]*>/g, '') // Remove all HTML tags
+    .replace(/\s+/g, ' ')     // Normalize whitespace
+    .trim();
 }
 
 /**

@@ -291,7 +291,9 @@ function generateSchemaGraph(
         if (imgs.length > 1) {
           personNode.image = imgs.slice(0, 3);
         }
-      } catch (e) {}
+      } catch {
+        // Ignore image parsing errors
+      }
 
       // Agent interaction statistic: prefer server-side postsCount, fallback to counting <article> elements
       try {
@@ -305,7 +307,9 @@ function generateSchemaGraph(
             userInteractionCount: writeCount,
           };
         }
-      } catch (e) {}
+      } catch {
+        // Ignore interaction count errors
+      }
 
       // Interaction statistics (followers / likes) — prefer server-side BRAND_DATA values and fallback to DOM
       try {
@@ -364,9 +368,13 @@ function generateSchemaGraph(
             userInteractionCount: likes,
           });
         }
-      } catch (e) {}
+      } catch {
+        // Ignore like count errors
+      }
     }
-  } catch (e) {}
+  } catch {
+    // Ignore interaction statistics errors
+  }
 
   // Skills/ItemList
   if (
@@ -483,12 +491,15 @@ function generateSchemaGraph(
       if (created) {
         try {
           pageNode.dateCreated = new Date(created).toISOString();
-        } catch (e) {
+        } catch {
+          // If date parsing fails, use raw value
           pageNode.dateCreated = created;
         }
       }
     }
-  } catch (e) {}
+  } catch {
+    // Ignore date creation errors
+  }
 
   // ImageObject enrichment for richer image results (helps Image Pack / Image Carousel)
   try {
@@ -962,7 +973,8 @@ async function loadSharedHead() {
             'script[type="application/json"][data-partial-meta]',
           );
           return el ? JSON.parse(el.textContent) : null;
-        } catch (e) {
+        } catch {
+          // If JSON parsing fails, return null
           return null;
         }
       })();

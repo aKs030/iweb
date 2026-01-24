@@ -946,8 +946,8 @@ function _renderIfReady() {
         const container = getElementById('threeEarthContainer');
         try {
           log.info('First rendered frame — hiding loader');
-        } catch (e) {
-          /* ignore */
+        } catch {
+          /* ignore logging errors */
         }
         try {
           hideLoadingState(container);
