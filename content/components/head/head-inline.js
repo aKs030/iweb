@@ -3,16 +3,12 @@ import { upsertHeadLink } from '/content/utils/dom-helpers.js';
 
 const log = createLogger('head-inline');
 
-// Head inline helpers moved to external file to comply with CSP
-// 1) gtag configuration (kept separate from gtag.js external loader)
-//    NOTE: Host-based GTM/GA4 mapping: prefer `content/config/site-config.js` for host config.
 import { SITE_CONFIG } from '../../config/site-config.js';
 
 const detectHostConfig = (host) => {
   const h = (host || globalThis?.location?.hostname || '').toLowerCase();
   const cfg = SITE_CONFIG || {};
   if (!h) return cfg.default || {};
-  // exact match or strip www.
   if (cfg[h]) return cfg[h];
   const stripped = h.replace(/^www\./, '');
   if (cfg[stripped]) return cfg[stripped];
@@ -28,9 +24,8 @@ const dataLayer = (globalThis.dataLayer = globalThis.dataLayer || []);
 function gtag() {
   dataLayer.push(arguments);
 }
-// Consent Mode v2: set conservative defaults and react to user consent
+
 try {
-  // Default to denied so analytics/ads don't fire before consent
   gtag('consent', 'default', {
     ad_storage: 'denied',
     analytics_storage: 'denied',
@@ -41,7 +36,6 @@ try {
   /* ignore */
 }
 
-// Intercept dataLayer.push to handle consentGranted events reliably
 (function () {
   try {
     const originalPush = dataLayer.push.bind(dataLayer);
@@ -55,7 +49,6 @@ try {
             arg.event === 'consentGranted'
           ) {
             try {
-              // Update Google consent state to granted
               gtag('consent', 'update', {
                 ad_storage: 'granted',
                 analytics_storage: 'granted',
@@ -77,10 +70,7 @@ try {
   }
 })();
 gtag('js', Date.now());
-// ===== Migration note =====
-// Move all GA4 and Google Ads tags into Google Tag Manager (GTM) to avoid double-tracking.
-// Expose IDs to the dataLayer so GTM can read them and configure tags/variables centrally.
-// Ads conversion ID is host-dependent; use the mapping above.
+
 const hostCfg = detectHostConfig();
 const ADS_CONVERSION_ID = hostCfg?.aw ?? null;
 const ADS_CONVERSION_LABEL = hostCfg?.aw_label ?? null;
@@ -92,14 +82,9 @@ dataLayer.push({
   gtm_id: GTM_ID,
 });
 
-// IMPORTANT: Do NOT call `gtag('config', ...)` here when GTM is enabled — that causes double-tracking.
-// If GTM is not configured, the existing GA4 fallback will load gtag.js using `GA4_MEASUREMENT_ID`.
-
-// Direct GA4 fallback loader: only used if GTM is not enabled/configured
 (function injectGA4Fallback() {
   try {
     if (!GA4_MEASUREMENT_ID || GA4_MEASUREMENT_ID.indexOf('G-') !== 0) return;
-    // If GTM is configured, prefer GTM for GA4 (avoid double-tracking)
     if (GTM_ID && GTM_ID !== 'GTM-XXXXXXX') {
       log?.info?.(
         'GTM present — configure GA4 inside GTM instead of direct gtag load',
@@ -266,7 +251,7 @@ dataLayer.push({
       try {
         if (!globalThis.__footerModuleLoaded) {
           globalThis.__footerModuleLoaded = true;
-          import('/content/components/footer/footer-app.js')
+          import('/content/components/footer/FooterApp.js')
             .then((m) => {
               if (typeof m.initFooter === 'function') m.initFooter();
             })

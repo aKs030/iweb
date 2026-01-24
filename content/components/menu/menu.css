@@ -166,7 +166,7 @@ body {
   left: 50%;
   width: calc(100% - 32px);
   max-width: 1400px; /* Increased for more menu space */
-  min-width: 1000px; /* Ensure minimum width for all 4 menu items */
+  min-width: 900px; /* Reduziert für bessere Responsivität */
   height: 52px;
   padding: 0 24px;
 
@@ -218,6 +218,8 @@ body {
   padding: 4px 0;
   position: absolute;
   left: 24px;
+  z-index: 1; /* Ensure logo stays above other elements */
+  max-width: 200px; /* Prevent logo from taking too much space */
 }
 
 /* Header variant: horizontal alignment for logo image + text */
@@ -325,23 +327,25 @@ body {
   margin: 0 auto;
   width: auto;
   position: relative; /* Basis-Position für Desktop */
+  padding-left: 220px; /* Space for logo on the left */
+  padding-right: 60px; /* Space for hamburger on mobile */
 }
 
 .site-menu__list {
   list-style: none;
   display: flex;
-  gap: clamp(16px, 2vw, 24px); /* Größerer Abstand zwischen den Menüpunkten */
+  gap: clamp(8px, 1.2vw, 16px); /* Reduced gap for better fit */
   align-items: center;
   flex-wrap: nowrap;
   margin: 0;
   padding: 0;
-  justify-content: center; /* Zusätzliche Zentrierung der Menüpunkte */
+  justify-content: flex-start; /* Align items to start instead of center */
 }
 
 .site-menu__list li {
   display: flex;
   flex-shrink: 0;
-  min-width: max-content; /* Verhindert das Schrumpfen der Items */
+  min-width: fit-content; /* Optimiert für bessere Browser-Kompatibilität */
 }
 
 /* Main menu item base */
@@ -355,25 +359,26 @@ body {
   display: flex;
   align-items: center;
   flex-shrink: 0;
-  padding: 8px 16px; /* Größeres Padding für bessere Sichtbarkeit */
-  min-height: 36px; /* Leicht höher */
-  min-width: max-content; /* Verhindert Schrumpfung des Texts */
-  border-radius: 18px; /* Angepasst an neue Höhe */
+  padding: 8px 12px; /* Reduced padding for better fit */
+  min-height: 36px;
+  min-width: fit-content; /* Bessere Browser-Kompatibilität */
+  border-radius: 18px;
   background: transparent;
   border: 1px solid transparent;
-  font-size: clamp(14px, 1.3vw, 16px);
+  font-size: clamp(13px, 1.1vw, 14px); /* Smaller font for better fit */
   letter-spacing: -0.01em;
   touch-action: manipulation;
   transition:
     background 0.2s var(--dynamic-menu-spring-quick),
     color 0.2s var(--dynamic-menu-spring-quick),
-    transform 0.2s var(--dynamic-menu-spring-quick),
+    transform 0.15s var(--dynamic-menu-spring-quick),
     border-color 0.2s var(--dynamic-menu-spring-quick);
   -webkit-tap-highlight-color: rgb(0 122 255 / 10%);
   -webkit-user-select: none;
   user-select: none;
   white-space: nowrap;
   cursor: pointer;
+  will-change: transform; /* Performance-Optimierung */
 }
 
 /* Consolidated Menu States */
@@ -386,7 +391,7 @@ body {
   color: var(--dynamic-menu-accent-blue);
   background: var(--dynamic-menu-fill-primary);
   border-color: var(--dynamic-menu-separator);
-  transform: scale(1.05);
+  transform: translateY(-1px) scale(1.02); /* Subtilere Animation */
   outline: none;
 }
 
@@ -395,7 +400,7 @@ body {
 .site-menu__list li button.search-trigger:active {
   background: var(--dynamic-menu-fill-secondary);
   color: var(--dynamic-menu-accent-blue-hover);
-  transform: scale(0.98);
+  transform: translateY(0) scale(0.98);
 }
 
 /* Search Trigger Button */
@@ -408,25 +413,26 @@ body {
   display: flex;
   align-items: center;
   flex-shrink: 0;
-  padding: 8px 16px;
+  padding: 8px 14px; /* Konsistent mit anderen Links */
   min-height: 36px;
-  min-width: max-content;
+  min-width: fit-content;
   border-radius: 18px;
   background: transparent;
   border: 1px solid transparent;
-  font-size: clamp(14px, 1.3vw, 16px);
+  font-size: clamp(14px, 1.2vw, 15px);
   letter-spacing: -0.01em;
   touch-action: manipulation;
   transition:
     background 0.2s var(--dynamic-menu-spring-quick),
     color 0.2s var(--dynamic-menu-spring-quick),
-    transform 0.2s var(--dynamic-menu-spring-quick),
+    transform 0.15s var(--dynamic-menu-spring-quick),
     border-color 0.2s var(--dynamic-menu-spring-quick);
   -webkit-tap-highlight-color: rgb(0 122 255 / 10%);
   -webkit-user-select: none;
   user-select: none;
   white-space: nowrap;
   cursor: pointer;
+  will-change: transform; /* Performance-Optimierung */
 }
 
 .site-menu__list .submenu li,
@@ -624,8 +630,8 @@ main {
 }
 
 /* ===== Dynamic Menu Mobile Experience ===== */
-@media (width <= 1000px) {
-  /* Angepasst von 900px auf 1000px für mehr Desktop-Platz */
+@media (width <= 900px) {
+  /* Optimierter Breakpoint */
   .site-header {
     display: flex;
     justify-content: flex-start; /* Änderung für besseres mobiles Layout */
@@ -640,6 +646,12 @@ main {
   .site-logo__container {
     position: relative; /* Zurücksetzen der absoluten Positionierung */
     left: 0;
+    max-width: none; /* Remove max-width on mobile */
+  }
+
+  .site-menu {
+    padding-left: 0; /* Remove left padding on mobile */
+    padding-right: 0; /* Remove right padding on mobile */
   }
 
   .site-menu__toggle {

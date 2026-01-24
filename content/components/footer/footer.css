@@ -1,6 +1,6 @@
 /**
- * Footer System v8.1
- * Optimiert für Performance und Wartbarkeit
+ * Footer System v9.0 - Modern Edition
+ * Features: Modern CSS, Optimized Animations, Better Performance
  */
 :root {
   --footer-unit: 2px;
@@ -19,8 +19,8 @@
   --linkedin-blue: #0077b5;
   --instagram-start: #f58529;
   --instagram-end: #dd2a7b;
-  --footer-transition-quick: 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  --footer-transition-smooth: 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  --footer-transition-quick: 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  --footer-transition-smooth: 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   --footer-max-height: calc(100dvh - 24px - env(safe-area-inset-bottom));
   --footer-actual-height: var(--footer-max-height);
   --z-footer: 1000;
@@ -63,7 +63,7 @@
   font-family: var(--dynamic-footer-font-family);
   transform: translateX(-50%) translateZ(0); /* Force GPU */
   z-index: var(--z-footer);
-  animation: footerEntrance 0.8s var(--dynamic-footer-spring-bounce) forwards;
+  animation: footerEntrance 0.6s var(--dynamic-footer-spring-bounce) forwards; /* Schneller */
   opacity: 0;
   will-change: transform, opacity;
   content-visibility: auto;
@@ -91,6 +91,21 @@
   }
 }
 
+/* Modern View Transitions API Support */
+@supports (view-transition-name: auto) {
+  .site-footer-fixed {
+    view-transition-name: footer;
+  }
+
+  .footer-minimized {
+    view-transition-name: footer-min;
+  }
+
+  .footer-maximized {
+    view-transition-name: footer-max;
+  }
+}
+
 body {
   padding-bottom: calc(70px + env(safe-area-inset-bottom));
   transition: padding-bottom var(--footer-transition-smooth);
@@ -98,6 +113,28 @@ body {
 
 body.footer-expanded {
   padding-bottom: calc(70vh + env(safe-area-inset-bottom));
+}
+
+/* Modern Scroll-Driven Animation Support */
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .footer-card {
+      animation: fadeInUp linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 30%;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  }
 }
 
 .footer-minimized.footer-hidden {
@@ -120,10 +157,11 @@ body.footer-expanded {
   opacity: 1;
   transform: translateY(0) translateZ(0);
   transition:
-    transform 0.25s var(--dynamic-footer-spring-quick),
-    opacity 0.25s var(--dynamic-footer-spring-quick),
-    background-color 0.25s var(--dynamic-footer-spring-quick);
+    transform 0.2s var(--dynamic-footer-spring-quick),
+    /* Schneller */ opacity 0.2s var(--dynamic-footer-spring-quick),
+    /* Schneller */ background-color 0.2s var(--dynamic-footer-spring-quick); /* Schneller */
   cursor: pointer;
+  will-change: transform, opacity; /* Performance-Optimierung */
 }
 
 .footer-minimized[inert] {
@@ -215,38 +253,32 @@ body.footer-expanded {
     color var(--footer-transition-quick);
   text-decoration: none;
   will-change: transform;
-}
-.footer-nav-link svg,
-.footer-legal-link-enhanced svg,
-.footer-brand-link-enhanced svg,
-.footer-cookie-btn svg {
-  width: var(--footer-icon-size-md);
-  height: var(--footer-icon-size-md);
-  flex-shrink: 0;
-  opacity: 0.9;
-}
 
-.footer-nav-link svg *,
-.footer-legal-link-enhanced svg *,
-.footer-brand-link-enhanced svg *,
-.footer-cookie-btn svg * {
-  stroke: currentcolor;
-  fill: currentcolor;
-}
-.footer-nav-link:hover,
-.footer-legal-link-enhanced:hover,
-.footer-cookie-btn:hover {
-  color: var(--dynamic-footer-label-primary);
-  border-color: var(--footer-chip-border-strong);
-  background: var(--footer-chip-bg-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.18);
-}
-.footer-nav-link:focus-visible,
-.footer-legal-link-enhanced:focus-visible,
-.footer-cookie-btn:focus-visible {
-  outline: 2px solid var(--dynamic-footer-accent-blue);
-  outline-offset: 3px;
+  & svg {
+    width: var(--footer-icon-size-md);
+    height: var(--footer-icon-size-md);
+    flex-shrink: 0;
+    opacity: 0.9;
+
+    & * {
+      stroke: currentcolor;
+      fill: currentcolor;
+    }
+  }
+
+  &:hover,
+  &:focus-visible {
+    color: var(--dynamic-footer-label-primary);
+    border-color: var(--footer-chip-border-strong);
+    background: var(--footer-chip-bg-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 14px 32px rgba(0, 0, 0, 0.18);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--dynamic-footer-accent-blue);
+    outline-offset: 3px;
+  }
 }
 
 .footer-cookie-btn {

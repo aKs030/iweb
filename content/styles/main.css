@@ -29,8 +29,9 @@
   align-items: center;
   font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   transition:
-    opacity 0.8s ease-in-out,
-    visibility 0.8s ease-in-out;
+    opacity 0.6s ease-in-out,
+    visibility 0.6s ease-in-out; /* Schnellere Transition */
+  will-change: opacity, visibility; /* Performance-Optimierung */
 }
 
 #app-loader.fade-out {
@@ -90,7 +91,8 @@
   border-radius: 2px;
   position: relative;
   box-shadow: 0 0 15px var(--loader-accent);
-  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1); /* Schnellere Transition */
+  will-change: width; /* Performance-Optimierung */
 }
 
 .progress-bar::after {
@@ -144,7 +146,8 @@
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: -1;
-  animation: spin 10s linear infinite;
+  animation: spin 8s linear infinite; /* Schnellere Animation */
+  will-change: transform; /* Performance-Optimierung */
 }
 
 .loader-spinner::before {
@@ -262,7 +265,7 @@
     /* OPTIMIZATION: content-visibility allows browser to skip rendering work for off-screen sections */
     content-visibility: auto;
     /* Fallback size estimation to prevent scrollbar jumping */
-    contain-intrinsic-size: 100% 100vh;
+    contain-intrinsic-size: auto 100vh;
   }
 }
 
@@ -291,6 +294,8 @@ body {
     'kern' 1,
     'liga' 1,
     'calt' 1;
+  /* Performance-Optimierung */
+  will-change: scroll-position;
 }
 
 body {
@@ -329,8 +334,9 @@ body {
   scroll-snap-type: none;
   opacity: 0.8;
   transition:
-    opacity var(--transition-slow),
-    transform var(--transition-slow);
+    opacity var(--transition-smooth),
+    transform var(--transition-smooth);
+  will-change: opacity, transform; /* Performance-Optimierung */
 }
 
 .snap-section.in-view {
