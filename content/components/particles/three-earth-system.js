@@ -397,7 +397,7 @@ function _createLoadingManager(THREE, container) {
     // actual frame is rendered to avoid flashing/blank between loader and canvas
     assetsReady = true;
 
-    // Note: three-ready event is now dispatched after full initialization
+    // Three-ready event is now dispatched after full initialization
     // not here, to ensure all managers and handlers are set up first
     try {
       container.dataset.threeReady = '1';
@@ -473,7 +473,7 @@ function _finalizeInitialization(container) {
 
   log.info('Initialization complete');
 
-  // Note: three-ready event is now dispatched immediately after initialization
+  // Three-ready event is now dispatched immediately after initialization
   // in initThreeEarth() to prevent timeout issues in main.js
   // This fallback is kept for backwards compatibility
   try {
@@ -513,7 +513,7 @@ function _bindInteractionHandlers(onMove, onClick) {
   // Store handlers for later cleanup. These are STRONG references (not WeakMap);
   // we rely on the cleanup() call to properly dispose them.
   // If cleanup() never runs, the old handlers remain but new ones still work.
-  // Note: Handlers won't be GC'd while globalThis exists, but that's acceptable
+  // Handlers won't be GC'd while globalThis exists, but that's acceptable
   // because (1) there are at most 2 handlers, and (2) cleanup is called on page unload.
   globalThis._threeEarthMove = onMove;
   globalThis._threeEarthClick = onClick;

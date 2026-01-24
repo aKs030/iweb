@@ -85,7 +85,7 @@ dataLayer.push({
 (function injectGA4Fallback() {
   try {
     if (!GA4_MEASUREMENT_ID || GA4_MEASUREMENT_ID.indexOf('G-') !== 0) return;
-    if (GTM_ID && GTM_ID !== 'GTM-XXXXXXX') {
+    if (GTM_ID && GTM_ID !== 'GTM-PLACEHOLDER') {
       log?.info?.(
         'GTM present — configure GA4 inside GTM instead of direct gtag load',
       );
@@ -123,7 +123,7 @@ dataLayer.push({
 //     Create a GTM Container at tagmanager.google.com and add your GA4 and other tags there.
 (function injectGTM() {
   try {
-    if (!GTM_ID || GTM_ID === 'GTM-XXXXXXX') {
+    if (!GTM_ID || GTM_ID === 'GTM-PLACEHOLDER') {
       log?.info?.(
         'GTM not configured — set GTM_ID in content/config/site-config.js to enable',
       );
@@ -147,7 +147,7 @@ dataLayer.push({
 // Ensure GTM noscript iframe is placed immediately after the opening <body> for non-JS environments
 (function ensureGTMNoScript() {
   try {
-    if (!GTM_ID || GTM_ID === 'GTM-XXXXXXX') return;
+    if (!GTM_ID || GTM_ID === 'GTM-PLACEHOLDER') return;
     const insert = () => {
       try {
         if (document.getElementById('gtm-noscript')) return;
@@ -406,7 +406,7 @@ dataLayer.push({
 
     const performInjection = () => {
       // Hint to connect to important third-party origins early (only when needed)
-      const hasGtm = GTM_ID && GTM_ID !== 'GTM-XXXXXXX';
+      const hasGtm = GTM_ID && GTM_ID !== 'GTM-PLACEHOLDER';
       if (hasGtm) {
         upsertPreconnect('https://www.googletagmanager.com');
         upsertPreconnect('https://static.cloudflareinsights.com');
@@ -685,5 +685,5 @@ globalThis.__HEAD_INLINE_READY = true;
 // This ensures head-complete.js never starts before head-inline.js is finished
 // preventing the "timeout waiting for head-inline" warning
 import('/content/components/head/head-complete.js').catch((err) => {
-  console.error('[head-inline] Failed to load head-complete.js:', err);
+  log.error('[head-inline] Failed to load head-complete.js:', err);
 });

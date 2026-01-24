@@ -306,7 +306,7 @@ export const AppLoadManager = (() => {
   };
 })();
 
-// Note: Legacy global access to `AppLoadManager` via `window` has been removed
+// Legacy global access to `AppLoadManager` via `window` has been removed.
 // Prefer importing explicitly: `import {AppLoadManager} from './utils/shared-utilities.js'`
 
 // ===== Events System =====
