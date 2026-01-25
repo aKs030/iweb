@@ -108,32 +108,76 @@ async function loadPostsData(seedPosts = []) {
     const r = await fetch('/sitemap.xml');
     if (!r.ok) throw new Error('No sitemap');
     const xml = await r.text();
-    const ids = Array.from(
-      xml.matchAll(new RegExp('<loc>.*?/blog/([^/<>]+)/?.*?</loc>', 'g')),
-    ).map((m) => m[1]);
-    const uniqueIds = Array.from(new Set(ids));
+
+    // Parse Sitemap with DOMParser to get lastmod
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(xml, 'text/xml');
+    const sitemapData = {};
+
+    doc.querySelectorAll('url').forEach((urlNode) => {
+      const loc = urlNode.querySelector('loc')?.textContent;
+      const lastmod = urlNode.querySelector('lastmod')?.textContent;
+      if (loc) {
+        // Extract ID from URL: .../blog/some-id/ or .../blog/some-id
+        const match = loc.match(/\/blog\/([^/]+)\/?$/);
+        if (match) {
+          sitemapData[match[1]] = lastmod || '';
+        }
+      }
+    });
+
+    const uniqueIds = Object.keys(sitemapData);
+    const CACHE_KEY = 'blog_posts_cache_v1';
+    let cache = {};
+    try {
+      cache = JSON.parse(localStorage.getItem(CACHE_KEY) || '{}');
+    } catch (e) {
+      log.warn('Cache parse error', e);
+    }
+
+    const idsToFetch = uniqueIds.filter(
+      (id) => !cache[id] || cache[id]._lastmod !== sitemapData[id],
+    );
 
     const fetched = await Promise.all(
-      uniqueIds.map(async (id) => {
+      idsToFetch.map(async (id) => {
         try {
           const res = await fetch(`/pages/blog/${id}/index.html`);
-          if (res.ok) return parseArticleHtml(await res.text(), id);
+          if (res.ok) {
+            const post = parseArticleHtml(await res.text(), id);
+            // Attach lastmod for cache validation
+            post._lastmod = sitemapData[id];
+            return post;
+          }
         } catch {
           return null;
         }
       }),
     );
 
+    // Update Cache
+    fetched.filter(Boolean).forEach((p) => {
+      cache[p.id] = p;
+    });
+
+    try {
+      localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
+    } catch (e) {
+      log.warn('Cache write error', e);
+    }
+
     const map = new Map();
     // Seed Data Map
     seedPosts.forEach((p) => map.set(p.id, p));
 
-    // Merge Fetched Data
-    fetched.filter(Boolean).forEach((p) => {
-      const existing = map.get(p.id) || {};
-      // Re-normalize to ensure category overrides apply to merged data
-      const merged = normalizePost({ ...existing, ...p });
-      map.set(p.id, merged);
+    // Merge Cached Data (which includes newly fetched)
+    Object.values(cache).forEach((p) => {
+      if (uniqueIds.includes(p.id)) {
+        const existing = map.get(p.id) || {};
+        // Re-normalize to ensure category overrides apply to merged data
+        const merged = normalizePost({ ...existing, ...p });
+        map.set(p.id, merged);
+      }
     });
 
     return Array.from(map.values()).sort((a, b) => b.timestamp - a.timestamp);
