@@ -8,38 +8,6 @@ import { FAVICON_512 } from '../../content/config/site-config.js';
 
 const log = createLogger('videos');
 
-function _shareChannel() {
-  const channelId = globalThis.YOUTUBE_CHANNEL_ID;
-  const handle = (globalThis.YOUTUBE_CHANNEL_HANDLE || 'aks.030').replace(
-    /^@/,
-    '',
-  );
-  const url = channelId
-    ? `https://www.youtube.com/channel/${channelId}`
-    : `https://www.youtube.com/@${handle}`;
-  const title = channelId
-    ? 'Abdulkerim Berlin - YouTube Kanal'
-    : 'Abdulkerim Sesli - YouTube Kanal';
-  if (navigator.share) {
-    navigator.share({ title, url });
-    return;
-  }
-  // Fallback: copy to clipboard, then fallback to opening share dialog
-  navigator.clipboard
-    ?.writeText(url)
-    .then(() => {
-      alert('Link kopiert: ' + url);
-    })
-    .catch(() => {
-      window.open(
-        `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
-          url,
-        )}`,
-        '_blank',
-      );
-    });
-}
-
 // Helper: replace a thumbnail button with an autoplaying iframe
 function activateThumb(btn) {
   if (!btn || btn.dataset.loaded) return;
@@ -373,19 +341,7 @@ function renderVideoCard(grid, it, detailsMap) {
   bindThumb(thumbBtn);
 }
 
-async function _renderDemoVideos(grid, demo) {
-  grid.innerHTML = '';
-  demo.forEach((it) => renderVideoCard(grid, it, {}));
-}
-
-// Expose debug helpers to window for manual testing (safe when window is defined)
-if (typeof window !== 'undefined') {
-  window._shareChannel = _shareChannel;
-  window._renderDemoVideos = _renderDemoVideos;
-}
-
-// Videos page loader (moved from inline to avoid HTML parsing issues)
-// Shared status setter for all video functions
+// Videos page loader
 const setVideoStatus = (msg) => {
   const el = getElementById('videos-status');
   if (el) el.textContent = msg || '';

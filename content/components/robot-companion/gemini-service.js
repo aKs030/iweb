@@ -60,9 +60,9 @@ async function getGeminiResponse(
 }
 
 export class GeminiService {
+  // eslint-disable-next-line no-unused-vars
   async generateResponse(prompt, _history = [], options = {}) {
     const system = 'Du bist ein hilfreicher Roboter-Begleiter.';
-    // _history parameter kept for API compatibility but not used in current implementation
     return await getGeminiResponse(prompt, system, options);
   }
 

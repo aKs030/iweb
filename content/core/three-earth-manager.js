@@ -1,6 +1,6 @@
 /**
  * Three.js Earth Manager
- * @version 1.0.0
+ * @version 1.1.0
  */
 
 import { createLogger, getElementById } from './shared-utilities.js';
