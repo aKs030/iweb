@@ -1,29 +1,22 @@
-/* Accessibility Manager
- * Manages focus traps, prefers-reduced-motion / prefers-contrast and announcements for a11y
- */
+/* Accessibility Manager */
 
 class AccessibilityManager {
   constructor() {
     this.focusTrapStack = [];
     this.lastFocusedElement = null;
-    // resolve MQLs safely
     this.reducedMotionMQL = window.matchMedia(
       '(prefers-reduced-motion: reduce)',
     );
     this.highContrastMQL = window.matchMedia('(prefers-contrast: more)');
     this.reducedMotion = this.reducedMotionMQL.matches;
     this.highContrast = this.highContrastMQL.matches;
-
-    // Delay calling init so the user of this module can call init centrally if desired.
-    // The constructor still calls init to maintain previous behavior, but init is guarded.
     this._initialized = false;
     this.init();
   }
 
   init() {
-    if (this._initialized) return; // make idempotent, safe to call multiple times
+    if (this._initialized) return;
 
-    // Listen for preference changes (modern browsers support addEventListener on MediaQueryList)
     try {
       this._onReducedMotionChange = (e) => {
         this.reducedMotion = e.matches;
@@ -57,15 +50,12 @@ class AccessibilityManager {
         };
         this.highContrastMQL.addListener(this._onHighContrastChange);
       } catch {
-        /* ignored */
+        // Ignore if not supported
       }
     }
 
-    // Setup keyboard navigation and skip links
     this.setupKeyboardNav();
     this.setupSkipLinks();
-
-    // Ensure initial state
     this.updateAnimations();
     this.updateContrast();
     this._initialized = true;
@@ -84,7 +74,7 @@ class AccessibilityManager {
         this._onReducedMotionChange = null;
       }
     } catch {
-      /* ignore */
+      // Ignore cleanup errors
     }
     try {
       if (this._onHighContrastChange) {
@@ -98,19 +88,19 @@ class AccessibilityManager {
         this._onHighContrastChange = null;
       }
     } catch {
-      /* ignore */
+      // Ignore cleanup errors
     }
     try {
       if (this._onKeyboardNav)
         document.removeEventListener('keydown', this._onKeyboardNav);
     } catch {
-      /* ignore */
+      // Ignore cleanup errors
     }
     try {
       if (this._skipRemovers && this._skipRemovers.length)
         this._skipRemovers.forEach((r) => r());
     } catch {
-      /* ignore */
+      // Ignore cleanup errors
     }
   }
 
@@ -220,7 +210,6 @@ class AccessibilityManager {
   }
 
   handleEscape() {
-    // Close cookie modal
     const cookieModal = document.querySelector(
       '.footer-cookie-settings:not(.hidden)',
     );
@@ -230,13 +219,12 @@ class AccessibilityManager {
       return;
     }
 
-    // Close expanded footer (request close via event so footer module handles cleanup)
     const footer = document.getElementById('site-footer');
     if (footer && footer.classList.contains('footer-expanded')) {
       try {
         document.dispatchEvent(new CustomEvent('footer:requestClose'));
       } catch {
-        /* ignore */
+        // Ignore event dispatch errors
       }
     }
   }
@@ -247,8 +235,6 @@ class AccessibilityManager {
       document.documentElement.style.setProperty('--transition-base', '0s');
       document.documentElement.style.setProperty('--transition-smooth', '0s');
       document.documentElement.style.setProperty('--transition-slow', '0s');
-    } else {
-      // Reset if not reduced motion — values come from CSS variables; this is a no-op here
     }
   }
 
@@ -260,16 +246,14 @@ class AccessibilityManager {
     }
   }
 
-  // Announce method — accepts priority: 'polite' | 'assertive'
   announce(message, { priority = 'polite', clearPrevious = true } = {}) {
     if (!message) return;
-    // If a global announce helper exists, prefer it (keeps dedupe/assertive behaviours centralized)
     if (typeof window?.announce === 'function') {
       try {
         window.announce(message, { assertive: priority === 'assertive' });
         return;
       } catch {
-        /* continue fallback */
+        // Fallback to direct DOM manipulation
       }
     }
 
@@ -279,15 +263,12 @@ class AccessibilityManager {
         : document.getElementById('live-region-status');
     if (!region) return;
 
-    if (clearPrevious) {
-      region.textContent = '';
-    }
-    // small delay for screen reader compatibility
+    if (clearPrevious) region.textContent = '';
     setTimeout(() => {
       try {
         region.textContent = message;
       } catch {
-        /* ignored */
+        // Ignore errors
       }
     }, 100);
   }
@@ -298,10 +279,6 @@ const a11y = new AccessibilityManager();
 window.a11y = a11y;
 export { a11y };
 
-/**
- * Create an announcer function for screen readers
- * @returns {Function} Announcer function
- */
 export function createAnnouncer() {
   const cache = new Map();
 

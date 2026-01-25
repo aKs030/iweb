@@ -1,6 +1,5 @@
 /**
- * Section Manager Module
- * Handles dynamic section loading
+ * Section Manager
  * @version 1.0.0
  */
 

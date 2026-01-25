@@ -1,6 +1,5 @@
 /**
- * Three.js Earth Manager Module
- * Extracted from main.js for better maintainability
+ * Three.js Earth Manager
  * @version 1.0.0
  */
 

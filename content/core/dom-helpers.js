@@ -1,4 +1,4 @@
-// DOM helper utilities for head manipulation and link/meta upserts
+// DOM helper utilities
 
 export function upsertHeadLink({
   rel,
@@ -12,7 +12,6 @@ export function upsertHeadLink({
 } = {}) {
   if (!href || !rel) return null;
   try {
-    // Prefer unique match by rel+href (+as when given)
     const selector = as
       ? `link[rel="${rel}"][href="${href}"][as="${as}"]`
       : `link[rel="${rel}"][href="${href}"]`;
@@ -33,7 +32,6 @@ export function upsertHeadLink({
     document.head.appendChild(el);
     return el;
   } catch {
-    // Silent fallback
     return null;
   }
 }
