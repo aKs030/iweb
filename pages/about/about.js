@@ -7,10 +7,7 @@
  */
 import { FAVICON_512 } from '/content/config/site-config.js';
 import { fetchText } from '/content/core/fetch.js';
-
-function getElementById(id) {
-  return id ? document.getElementById(id) : null;
-}
+import { getElementById } from '/content/core/dom-utils.js';
 import { upsertHeadLink } from '/content/core/dom-helpers.js';
 
 (async function () {
