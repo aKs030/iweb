@@ -20,18 +20,12 @@ import { createLogger } from '/content/core/logger.js';
 
 const logger = createLogger('menu');
 
-// Global controller instance
-let globalController = null;
-
 // Initialize menu system
 const initializeMenu = async (customConfig = {}) => {
   try {
     const config = createConfig(customConfig);
     const controller = new MenuController(config);
     await controller.init();
-
-    // Store global reference
-    globalController = controller;
 
     // Expose API
     window.menuController = controller;
@@ -55,4 +49,4 @@ if (document.readyState !== 'loading') {
 }
 
 // Export for manual initialization
-export { initializeMenu, globalController };
+export { initializeMenu };
