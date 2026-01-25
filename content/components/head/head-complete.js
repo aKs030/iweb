@@ -4,63 +4,47 @@
  */
 
 import { createLogger } from '/content/core/shared-utilities.js';
-import { upsertHeadLink } from '/content/core/dom-helpers.js';
+import {
+  upsertHeadLink,
+  upsertMeta,
+  applyCanonicalLinks,
+} from '/content/core/dom-helpers.js';
 
 const log = createLogger('HeadLoader');
 
 // Static configuration data
 const BASE_URL = 'https://www.abdulkerimsesli.de';
 
-const BRAND_DATA = {
-  name: 'Abdulkerim Sesli',
-  legalName: 'Abdulkerim Sesli',
-  alternateName: ['Abdul Sesli', 'Abdul Berlin', 'Abdulkerim Berlin'],
-  logo: `${BASE_URL}/content/assets/img/icons/favicon-512.png`,
-  jobTitle: ['Web Developer', 'Photographer'],
-  email: 'kontakt@abdulkerimsesli.de',
-  areaServed: 'Berlin, Deutschland',
-  address: {
-    '@type': 'PostalAddress',
-    streetAddress: 'Sterkrader Str. 59',
-    addressLocality: 'Berlin',
-    postalCode: '13507',
-    addressCountry: 'DE',
-  },
-  geo: {
-    '@type': 'GeoCoordinates',
-    latitude: '52.5733',
-    longitude: '13.2911',
-  },
-  sameAs: [
-    'https://github.com/aKs030',
-    'https://linkedin.com/in/abdulkerim-s',
-    'https://x.com/kRm_030',
-    'https://instagram.com/abdul.codes',
-    'https://www.youtube.com/@aks.030',
-    'https://www.behance.net/abdulkerimsesli',
-    'https://dribbble.com/abdulkerimsesli',
-  ],
-  openingHours: ['Mo-Fr 09:00-18:00'],
-  contactPoint: [
-    {
+// Load BRAND_DATA from centralized config
+let BRAND_DATA = null;
+try {
+  const response = await fetch('/content/config/brand-data.json');
+  BRAND_DATA = await response.json();
+  // Add BASE_URL to logo if relative
+  if (BRAND_DATA.logo && !BRAND_DATA.logo.startsWith('http')) {
+    BRAND_DATA.logo = `${BASE_URL}${BRAND_DATA.logo}`;
+  }
+  // Add @type to nested objects for schema.org
+  if (BRAND_DATA.address) BRAND_DATA.address['@type'] = 'PostalAddress';
+  if (BRAND_DATA.geo) BRAND_DATA.geo['@type'] = 'GeoCoordinates';
+  if (BRAND_DATA.contactPoint) {
+    BRAND_DATA.contactPoint = BRAND_DATA.contactPoint.map((cp) => ({
       '@type': 'ContactPoint',
-      contactType: 'customer service',
-      email: 'kontakt@abdulkerimsesli.de',
-      url: `${BASE_URL}/#kontakt`,
-    },
-  ],
-  telephone: '+49-30-12345678',
-  paymentAccepted: 'Invoice',
-  currenciesAccepted: 'EUR',
-
-  // Optional social statistics (set server-side for accuracy)
-  // - followersCount: total followers on primary platform
-  // - likesCount: aggregate likes where meaningful
-  // - postsCount: number of authored posts or contributions (used for WriteAction)
-  followersCount: 5400, // example value: total followers across platforms
-  likesCount: 12000, // example aggregated likes
-  postsCount: 234, // example authored posts count
-};
+      ...cp,
+      url: cp.url || `${BASE_URL}/#kontakt`,
+    }));
+  }
+} catch (err) {
+  log.error('Failed to load brand-data.json, using fallback', err);
+  // Minimal fallback
+  BRAND_DATA = {
+    name: 'Abdulkerim Sesli',
+    legalName: 'Abdulkerim Sesli',
+    logo: `${BASE_URL}/content/assets/img/icons/favicon-512.png`,
+    email: 'kontakt@abdulkerimsesli.de',
+    sameAs: [],
+  };
+}
 
 const ROUTES = {
   default: {
@@ -759,83 +743,6 @@ function buildPageMeta(pageData, pageUrl, locationPath) {
   };
 }
 
-function upsertMeta(
-  nameOrProperty,
-  content,
-  isProperty = false,
-  doc = typeof document === 'undefined' ? null : document,
-) {
-  if (!doc?.head || !content) return;
-  const selector = isProperty
-    ? `meta[property="${nameOrProperty}"]`
-    : `meta[name="${nameOrProperty}"]`;
-  let el = doc?.head?.querySelector(selector);
-  if (el) {
-    el.setAttribute(isProperty ? 'property' : 'name', nameOrProperty);
-    el.setAttribute('content', content);
-  } else {
-    el = doc.createElement('meta');
-    el.setAttribute(isProperty ? 'property' : 'name', nameOrProperty);
-    el.setAttribute('content', content);
-    doc.head.appendChild(el);
-  }
-}
-
-function upsertLink(
-  rel,
-  href,
-  doc = typeof document === 'undefined' ? null : document,
-) {
-  if (!doc?.head || !href) return;
-  let el = doc?.head?.querySelector(`link[rel="${rel}"]`);
-  if (el) {
-    el.setAttribute('href', href);
-  } else {
-    el = doc.createElement('link');
-    el.setAttribute('rel', rel);
-    el.setAttribute('href', href);
-    doc.head.appendChild(el);
-  }
-}
-
-function applyCanonicalLinks(
-  doc = typeof document === 'undefined' ? null : document,
-  alternates = [],
-  effectiveCanonical = '',
-) {
-  if (!doc?.head) return;
-
-  // Upsert canonical
-  const canonicalEl = doc.head.querySelector('link[rel="canonical"]');
-  if (canonicalEl) {
-    if (typeof canonicalEl.setAttribute === 'function')
-      canonicalEl.setAttribute('href', effectiveCanonical);
-    else canonicalEl.href = effectiveCanonical;
-  } else {
-    const el = doc.createElement('link');
-    el.setAttribute('rel', 'canonical');
-    el.setAttribute('href', effectiveCanonical);
-    doc.head.appendChild(el);
-  }
-
-  // Upsert alternates
-  alternates.forEach(({ lang, href }) => {
-    if (!href) return;
-    const selector = `link[rel="alternate"][hreflang="${lang}"]`;
-    let el = doc.head.querySelector(selector);
-    if (el) {
-      if (typeof el.setAttribute === 'function') el.setAttribute('href', href);
-      else el.href = href;
-    } else {
-      el = doc.createElement('link');
-      el.setAttribute('rel', 'alternate');
-      el.setAttribute('hreflang', lang);
-      el.setAttribute('href', href);
-      doc.head.appendChild(el);
-    }
-  });
-}
-
 // Schedule schema injection using requestIdleCallback when available, otherwise fallback to setTimeout.
 function scheduleSchemaInjection(
   callback,
@@ -1080,12 +987,9 @@ async function loadSharedHead() {
       // Force Canonical to Production host by default for all public access.
       // We only disable this for local development (localhost, 127.0.0.1) or preview builds (*.pages.dev).
       // This strictly enforces https://www.abdulkerimsesli.de as the canonical origin to prevent duplicates (http/www).
-      const isLocalOrPreview =
-        hostname === 'localhost' ||
-        hostname === '127.0.0.1' ||
-        hostname.endsWith('.pages.dev');
-
-      const forceProdFlag = !isLocalOrPreview;
+      const { isLocalDevelopment, isPreviewEnvironment } =
+        await import('../../core/shared-utilities.js');
+      const forceProdFlag = !isLocalDevelopment() && !isPreviewEnvironment();
 
       // Compute cleanPath from pathname
       const rawPath = globalThis.location.pathname || '/';
@@ -1140,7 +1044,7 @@ async function loadSharedHead() {
       } else {
         // Fallback: no static canonical found, inject dynamically
         log?.warn?.('No static canonical tag found, injecting dynamically');
-        upsertLink('canonical', effectiveCanonical);
+        upsertHeadLink({ rel: 'canonical', href: effectiveCanonical });
       }
 
       // Apply canonical and hreflang alternates using pure, testable helper
@@ -1153,7 +1057,7 @@ async function loadSharedHead() {
         // Preserve existing canonical tag on error
         log?.info?.('Preserving existing canonical tag on error');
       } else {
-        upsertLink('canonical', pageUrl);
+        upsertHeadLink({ rel: 'canonical', href: pageUrl });
       }
     }
 
@@ -1164,7 +1068,7 @@ async function loadSharedHead() {
     // Ensure PWA manifest & Apple mobile settings
     try {
       const { links, iconLinks, metas } = buildPwaAssets(BASE_URL, BRAND_DATA);
-      links.forEach((l) => upsertLink(l.rel, l.href));
+      links.forEach((l) => upsertHeadLink({ rel: l.rel, href: l.href }));
       metas.forEach((m) => upsertMeta(m.name, m.content));
       const addIcon = (href, sizes, type) => {
         if (!href) return;
@@ -1224,205 +1128,7 @@ async function loadSharedHead() {
     log?.warn?.('lightweight head update failed:', e);
   }
 
-  // --- 3. SCHEMA GRAPH GENERATION (moved to top-level helper) ---
-  // Schema graph generation has been extracted to `generateSchemaGraph` (exported at the top of this module).
-  // Use canonical origin (prod or runtime origin) so JSON-LD stays consistent in local/dev
-  const canonicalOrigin =
-    document.documentElement.dataset.forceProdCanonical === 'true'
-      ? BASE_URL
-      : globalThis.location.origin;
-
-  const ID = {
-    person: `${canonicalOrigin}/#person`,
-    org: `${canonicalOrigin}/#organization`,
-    website: `${canonicalOrigin}/#website`,
-    webpage: `${pageUrl}#webpage`,
-    breadcrumb: `${pageUrl}#breadcrumb`,
-  };
-
-  const graph = [];
-  // 1. ORGANIZATION (Organization for Local SEO) + 2. PERSON (Die Haupt-Entität)
-  graph.push(
-    {
-      '@type': 'Organization',
-      '@id': ID.org,
-      name: BRAND_DATA.legalName,
-      url: BASE_URL,
-      logo: {
-        '@type': 'ImageObject',
-        url: BRAND_DATA.logo,
-        width: 512,
-        height: 512,
-        creditText: `Logo: ${BRAND_DATA.name}`,
-        copyrightNotice: `© ${new Date().getFullYear()} ${BRAND_DATA.name}`,
-        acquireLicensePage: `${BASE_URL}/#image-license`,
-      },
-      founder: { '@id': ID.person },
-      image: {
-        '@type': 'ImageObject',
-        url: pageData?.image || BRAND_DATA.logo,
-        width: 1200,
-        height: 630,
-        creditText: pageData.imageCredit || `Photo: ${BRAND_DATA.name}`,
-        copyrightNotice: `© ${new Date().getFullYear()} ${BRAND_DATA.name}`,
-        acquireLicensePage: `${BASE_URL}/#image-license`,
-      },
-      email: BRAND_DATA.email,
-      sameAs: BRAND_DATA.sameAs,
-      address: BRAND_DATA.address || {
-        '@type': 'PostalAddress',
-        addressLocality: 'Berlin',
-        addressCountry: 'DE',
-      },
-      geo: BRAND_DATA.geo,
-    },
-    {
-      '@type': ['Person', 'Photographer'],
-      '@id': ID.person,
-      name: BRAND_DATA.name,
-      alternateName: BRAND_DATA.alternateName,
-      jobTitle: BRAND_DATA.jobTitle,
-      worksFor: { '@id': ID.org },
-      url: BASE_URL,
-      image: {
-        '@type': 'ImageObject',
-        '@id': `${BASE_URL}/#personImage`,
-        url: 'https://commons.wikimedia.org/wiki/File:Abdulkerim_Sesli_portrait_2025.png',
-        caption: BRAND_DATA.name,
-      },
-      description: pageData.description,
-      // Identity Disambiguation
-      disambiguatingDescription:
-        "Webentwickler (React, Three.js) und Fotograf aus Berlin, nicht zu verwechseln mit 'Sesli Kitap' oder Hörbuch-Verlagen.",
-      sameAs: BRAND_DATA.sameAs,
-      homeLocation: {
-        '@type': 'Place',
-        name: 'Berlin',
-        address: BRAND_DATA.address,
-        geo: BRAND_DATA.geo,
-      },
-      knowsAbout: [
-        {
-          '@type': 'Thing',
-          name: 'Web Development',
-          sameAs: 'https://www.wikidata.org/wiki/Q386275',
-        },
-        {
-          '@type': 'Thing',
-          name: 'React',
-          sameAs: 'https://www.wikidata.org/wiki/Q19399674',
-        },
-        {
-          '@type': 'Thing',
-          name: 'Three.js',
-          sameAs: 'https://www.wikidata.org/wiki/Q28135934',
-        },
-        {
-          '@type': 'Thing',
-          name: 'JavaScript',
-          sameAs: 'https://www.wikidata.org/wiki/Q28865',
-        },
-        {
-          '@type': 'Thing',
-          name: 'Photography',
-          sameAs: 'https://www.wikidata.org/wiki/Q11633',
-        },
-        { '@type': 'Thing', name: 'Urban Photography' },
-        {
-          '@type': 'Place',
-          name: 'Berlin',
-          sameAs: 'https://www.wikidata.org/wiki/Q64',
-        },
-      ],
-    },
-  );
-
-  // 2.1 SPECIAL: FEATURE SNIPPET OPTIMIZATION (Skills as ItemList)
-  // Helps Google display "Skills: React, Three.js..." in snippets
-  if (
-    pageUrl.includes('/about') ||
-    pageUrl === BASE_URL ||
-    pageUrl === `${BASE_URL}/`
-  ) {
-    graph.push({
-      '@type': 'ItemList',
-      '@id': `${BASE_URL}/#skills`,
-      name: 'Technische Skills & Kompetenzen',
-      description:
-        'Kernkompetenzen in der Fullstack-Webentwicklung und Fotografie',
-      itemListElement: [
-        {
-          '@type': 'ListItem',
-          position: 1,
-          name: 'React & Next.js Ecosystem',
-        },
-        {
-          '@type': 'ListItem',
-          position: 2,
-          name: 'Three.js & WebGL 3D-Visualisierung',
-        },
-        {
-          '@type': 'ListItem',
-          position: 3,
-          name: 'Node.js & Backend Architecture',
-        },
-        {
-          '@type': 'ListItem',
-          position: 4,
-          name: 'UI/UX Design & Animation',
-        },
-        {
-          '@type': 'ListItem',
-          position: 5,
-          name: 'Urban & Portrait Photography',
-        },
-      ],
-    });
-  }
-
-  // (AI Context extraction moved to the top-level `generateSchemaGraph` for clarity and testability)
-
-  // (WebPage and WebSite graph nodes generated in `generateSchemaGraph` - removed duplicate here)
-
-  // 5. FAQ (STRICT MODE & WHITESPACE CLEANING)
-  // Filtert "schmutzige" Strings und setzt stabile IDs, um "Unbenanntes Element" zu verhindern.
-  /* FAQ generation is handled by generateSchemaGraph; no local placeholder needed */
-
-  // FAQ generation moved to `generateSchemaGraph` (no inline fallback here)
-
-  // 6. BREADCRUMBS
-  const segments = globalThis.location.pathname
-    .replace(/\/$/, '')
-    .split('/')
-    .filter(Boolean);
-  const crumbs = [
-    {
-      '@type': 'ListItem',
-      position: 1,
-      name: 'Home',
-      item: { '@id': BASE_URL, name: 'Home' },
-    },
-  ];
-  let pathAcc = canonicalOrigin;
-  segments.forEach((seg, i) => {
-    pathAcc += `/${seg}`;
-    const name = seg.charAt(0).toUpperCase() + seg.slice(1);
-    crumbs.push({
-      '@type': 'ListItem',
-      position: i + 2,
-      name: name,
-      item: { '@id': pathAcc, name: name },
-    });
-  });
-  graph.push({
-    '@type': 'BreadcrumbList',
-    '@id': ID.breadcrumb,
-    name: pageData?.title || document.title || 'Navigationspfad',
-    itemListElement: crumbs,
-  });
-
-  // (graph assembled inside generateSchemaGraph)
-
+  // --- 3. SCHEMA GRAPH GENERATION (use centralized helper) ---
   // Trigger schema generation via the exported scheduler (testable)
   const scheduleSchema = () =>
     scheduleSchemaInjection(

@@ -1,7 +1,43 @@
 {
   "name": "Abdulkerim Sesli",
   "legalName": "Abdulkerim Sesli",
+  "alternateName": ["Abdul Sesli", "Abdul Berlin", "Abdulkerim Berlin"],
   "logo": "/content/assets/img/icons/favicon-512.png",
+  "jobTitle": ["Web Developer", "Photographer"],
+  "email": "kontakt@abdulkerimsesli.de",
+  "areaServed": "Berlin, Deutschland",
+  "address": {
+    "streetAddress": "Sterkrader Str. 59",
+    "addressLocality": "Berlin",
+    "postalCode": "13507",
+    "addressCountry": "DE"
+  },
+  "geo": {
+    "latitude": "52.5733",
+    "longitude": "13.2911"
+  },
+  "sameAs": [
+    "https://github.com/aKs030",
+    "https://linkedin.com/in/abdulkerim-s",
+    "https://x.com/kRm_030",
+    "https://instagram.com/abdul.codes",
+    "https://www.youtube.com/@aks.030",
+    "https://www.behance.net/abdulkerimsesli",
+    "https://dribbble.com/abdulkerimsesli"
+  ],
+  "openingHours": ["Mo-Fr 09:00-18:00"],
+  "contactPoint": [
+    {
+      "contactType": "customer service",
+      "email": "kontakt@abdulkerimsesli.de"
+    }
+  ],
+  "telephone": "+49-30-12345678",
+  "paymentAccepted": "Invoice",
+  "currenciesAccepted": "EUR",
+  "followersCount": 5400,
+  "likesCount": 12000,
+  "postsCount": 234,
   "licensePage": "https://www.abdulkerimsesli.de/#image-license",
   "creditPrefix": "Photo: ",
   "copyrightHolder": "Abdulkerim Sesli"
