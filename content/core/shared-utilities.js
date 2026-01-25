@@ -1,13 +1,7 @@
 /**
- * Shared Utilities - Optimized Core Functions
- *
- * OPTIMIZATIONS v3.2:
- * - Added centralized CookieManager to avoid duplication in footer/main
- *
+ * Shared Utilities
  * @version 3.2.0
  */
-
-// ===== Logger System =====
 
 const LOG_LEVELS = {
   error: 0,
@@ -16,11 +10,9 @@ const LOG_LEVELS = {
   debug: 3,
 };
 
-// Detect production environment
 function isProduction() {
   if (typeof window === 'undefined') return false;
   const hostname = window.location?.hostname || '';
-  // Production if on actual domain (not localhost, not file://)
   return (
     hostname &&
     hostname !== 'localhost' &&
@@ -31,7 +23,6 @@ function isProduction() {
   );
 }
 
-// Default to error-only in production, warn in development
 let globalLogLevel = isProduction() ? LOG_LEVELS.error : LOG_LEVELS.warn;
 
 function setGlobalLogLevel(level) {
@@ -73,7 +64,6 @@ export function createLogger(category) {
 
 const sharedLogger = createLogger('SharedUtilities');
 
-// Auto-enable debug mode via URL param or localStorage
 if (typeof window !== 'undefined') {
   const urlParams = new URLSearchParams(window.location.search);
   const debugParam = urlParams.get('debug');
@@ -83,8 +73,6 @@ if (typeof window !== 'undefined') {
     setGlobalLogLevel('debug');
   }
 }
-
-// ===== DOM Utilities =====
 
 export async function fetchWithTimeout(url, timeout = 8000) {
   const controller = new AbortController();
@@ -103,39 +91,22 @@ export async function fetchWithTimeout(url, timeout = 8000) {
   }
 }
 
-/**
- * Fetch JSON with timeout and error handling
- * @param {string} url - URL to fetch
- * @param {number} timeout - Timeout in milliseconds
- * @returns {Promise<Object>} Parsed JSON response
- */
 export async function fetchJSON(url, timeout = 8000) {
   const response = await fetchWithTimeout(url, timeout);
-
   if (!response.ok) {
     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
   }
-
   return await response.json();
 }
 
-/**
- * Fetch text/HTML with timeout and error handling
- * @param {string} url - URL to fetch
- * @param {number} timeout - Timeout in milliseconds
- * @returns {Promise<string>} Response text
- */
 export async function fetchText(url, timeout = 8000) {
   const response = await fetchWithTimeout(url, timeout);
-
   if (!response.ok) {
     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
   }
-
   return await response.text();
 }
 
-// Convenience helper to create/expose an AbortController with optional auto-cancel
 export function makeAbortController(timeout) {
   const controller = new AbortController();
   let timeoutId = null;
@@ -158,8 +129,6 @@ export function makeAbortController(timeout) {
 export function getElementById(id) {
   return id ? document.getElementById(id) : null;
 }
-
-// ===== DOM Ready Utility =====
 export function onDOMReady(callback) {
   if (document.readyState !== 'loading') {
     callback();
@@ -168,14 +137,6 @@ export function onDOMReady(callback) {
   }
 }
 
-// ===== Error Handling Utilities =====
-
-/**
- * Safely execute a function with optional fallback
- * @param {Function} fn - Function to execute
- * @param {*} fallback - Fallback value if function throws
- * @returns {*} Result of function or fallback
- */
 export function safeExecute(fn, fallback = null) {
   try {
     return fn();
@@ -187,12 +148,6 @@ export function safeExecute(fn, fallback = null) {
   }
 }
 
-/**
- * Safely execute an async function with optional fallback
- * @param {Function} fn - Async function to execute
- * @param {*} fallback - Fallback value if function throws
- * @returns {Promise<*>} Result of function or fallback
- */
 export async function safeExecuteAsync(fn, fallback = null) {
   try {
     return await fn();
@@ -203,17 +158,13 @@ export async function safeExecuteAsync(fn, fallback = null) {
     return fallback;
   }
 }
-
-// ===== Cookie Manager (Centralized) =====
 export const CookieManager = {
   set(name, value, days = 365) {
     const date = new Date();
     date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
     const expires = `; expires=${date.toUTCString()}`;
     const secure = window.location.protocol === 'https:' ? '; Secure' : '';
-    document.cookie = `${name}=${
-      value || ''
-    }${expires}; path=/; SameSite=Lax${secure}`;
+    document.cookie = `${name}=${value || ''}${expires}; path=/; SameSite=Lax${secure}`;
   },
 
   get(name) {
@@ -247,8 +198,6 @@ export const CookieManager = {
   },
 };
 
-// ===== Array Utilities =====
-
 export function shuffle(array) {
   const arr = [...array];
   for (let i = arr.length - 1; i > 0; i--) {
@@ -257,8 +206,6 @@ export function shuffle(array) {
   }
   return arr;
 }
-
-// ===== Timing Utilities =====
 
 export function throttle(func, limit = 250) {
   let inThrottle = false;
@@ -278,8 +225,6 @@ export function debounce(func, wait = 100) {
     timeout = setTimeout(() => func.apply(this, args), wait);
   };
 }
-
-// ===== Timer Manager =====
 
 export class TimerManager {
   constructor() {
@@ -343,8 +288,6 @@ export class TimerManager {
   }
 }
 
-// ===== App Load Manager =====
-// Small singleton that tracks modules which block the global loading screen.
 export const AppLoadManager = (() => {
   const pending = new Set();
   const log = createLogger('AppLoadManager');
@@ -356,7 +299,7 @@ export const AppLoadManager = (() => {
       try {
         log.debug(`Blocked: ${name}`);
       } catch {
-        /* ignore logging errors */
+        // Ignore logging errors
       }
     },
 
@@ -369,7 +312,7 @@ export const AppLoadManager = (() => {
           fire(EVENTS.LOADING_UNBLOCKED);
         }
       } catch {
-        /* ignore logging errors */
+        // Ignore logging errors
       }
     },
 
@@ -382,11 +325,6 @@ export const AppLoadManager = (() => {
     },
   };
 })();
-
-// Legacy global access to `AppLoadManager` via `window` has been removed.
-// Prefer importing explicitly: `import {AppLoadManager} from './utils/shared-utilities.js'`
-
-// ===== Events System =====
 
 export const EVENTS = Object.freeze({
   HERO_LOADED: 'hero:loaded',
@@ -410,14 +348,11 @@ export function fire(type, detail = null, target = document) {
   try {
     target.dispatchEvent(new CustomEvent(type, { detail }));
   } catch (error) {
-    // Only log warnings in non-test environments
     if (typeof process === 'undefined' || process.env.NODE_ENV !== 'test') {
       sharedLogger.warn(`Failed to dispatch event: ${type}`, error);
     }
   }
 }
-
-// ===== Intersection Observer Utilities =====
 
 const OBSERVER_CONFIGS = {
   lazyLoad: {
@@ -456,8 +391,6 @@ export function createTriggerOnceObserver(callback, options = {}) {
     disconnect: () => observer.disconnect(),
   };
 }
-
-// ===== Persistent Storage Utilities =====
 
 let persistPromise = null;
 
@@ -508,24 +441,16 @@ export function schedulePersistentStorageRequest(delay = 2500) {
     setTimeout(() => {
       ensurePersistentStorage().catch((err) => {
         sharedLogger.warn('ensurePersistentStorage failed', err);
-        /* swallow after logging */ void 0;
       });
     }, delay);
   } catch {
-    void 0;
+    // Ignore scheduling errors
   }
 }
-
-// ===== Math Utilities =====
 
 export function randomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
-
-// ===== String Utilities =====
-// (none - removed splitTextIntoLines helper)
-
-// ===== Unified Event Listener Helper =====
 
 export function addListener(target, event, handler, options = {}) {
   if (!target?.addEventListener) return () => {};
@@ -541,16 +466,12 @@ export function addListener(target, event, handler, options = {}) {
   }
 }
 
-// ===== Window Event Helpers =====
-
 export function onResize(callback, delay = 100) {
   if (typeof window === 'undefined') return () => {};
 
   const debouncedCallback = debounce(callback, delay);
   return addListener(window, 'resize', debouncedCallback);
 }
-
-// ===== Section Tracker =====
 
 export class SectionTracker {
   constructor() {
@@ -634,8 +555,6 @@ export class SectionTracker {
     let bestEntry = null;
     let bestRatio = 0;
 
-    // Use this.sections to filter out stale entries in sectionRatios
-    // (e.g. removed sections or sections with changed IDs)
     for (const section of this.sections) {
       const data = this.sectionRatios.get(section.id);
       if (data && data.isIntersecting && data.ratio > bestRatio) {

@@ -1,7 +1,4 @@
-// Small helper utilities to centralize IntersectionObserver usage
-// Exports:
-// - createObserver(callback, options): returns { observe(el), unobserve(el), disconnect(), raw }.
-// - observeOnce(el, onIntersect, options): observes and disconnects after first intersect; returns a `disconnect` function.
+// IntersectionObserver utilities
 
 export function createObserver(callback, options = {}) {
   const observer = new IntersectionObserver(callback, options);

@@ -1,6 +1,5 @@
 /**
- * Event Delegator Module
- * Handles delegated event listeners
+ * Event Delegator
  * @version 1.0.0
  */
 

@@ -1087,38 +1087,28 @@ async function loadSharedHead() {
 
       const forceProdFlag = !isLocalOrPreview;
 
-      // Compute cleanPath using shared canonical util
-      let cleanPath;
-      try {
-        const { getCanonicalPathFromRoutes } =
-          await import('../../core/canonical-utils.js');
-        cleanPath = getCanonicalPathFromRoutes(
-          globalThis.location.pathname,
-          ROUTES,
+      // Compute cleanPath from pathname
+      const rawPath = globalThis.location.pathname || '/';
+      let pathForMatch = rawPath.replace(/\/\/+/g, '/');
+      pathForMatch = pathForMatch.replace(/\/index\.html$/i, '/');
+      pathForMatch = pathForMatch.replace(/\.html$/i, '/');
+      pathForMatch = pathForMatch.replace(/\/\/+/g, '/');
+      if (!pathForMatch.startsWith('/')) pathForMatch = '/' + pathForMatch;
+      pathForMatch = pathForMatch.endsWith('/')
+        ? pathForMatch
+        : pathForMatch + '/';
+      const lowerMatch = pathForMatch.toLowerCase();
+
+      let routeKey = Object.keys(ROUTES).find(
+        (k) => k !== 'default' && lowerMatch.startsWith(k),
+      );
+      if (!routeKey)
+        routeKey = Object.keys(ROUTES).find(
+          (k) => k !== 'default' && lowerMatch.includes(k),
         );
-      } catch {
-        // Fallback to previous inline behavior if import fails
-        const rawPath = globalThis.location.pathname || '/';
-        let pathForMatch = rawPath.replaceAll(/\/\/+/g, '/');
-        pathForMatch = pathForMatch.replaceAll(/\/index\.html$/i, '/');
-        pathForMatch = pathForMatch.replaceAll(/\.html$/i, '/');
-        pathForMatch = pathForMatch.replaceAll(/\/\/+/g, '/');
-        if (!pathForMatch.startsWith('/')) pathForMatch = '/' + pathForMatch;
-        pathForMatch = pathForMatch.endsWith('/')
-          ? pathForMatch
-          : pathForMatch + '/';
-        const lowerMatch = pathForMatch.toLowerCase();
-        let routeKey = Object.keys(ROUTES).find(
-          (k) => k !== 'default' && lowerMatch.startsWith(k),
-        );
-        if (!routeKey)
-          routeKey = Object.keys(ROUTES).find(
-            (k) => k !== 'default' && lowerMatch.includes(k),
-          );
-        cleanPath = routeKey || pathForMatch;
-        if (routeKey && !routeKey.endsWith('/')) {
-          cleanPath = routeKey + '/';
-        }
+      let cleanPath = routeKey || pathForMatch;
+      if (routeKey && !routeKey.endsWith('/')) {
+        cleanPath = routeKey + '/';
       }
 
       // Build canonical links and alternates

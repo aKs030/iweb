@@ -1,6 +1,5 @@
 /**
- * Scroll Manager Module
- * Handles scroll snapping behavior
+ * Scroll Manager
  * @version 1.0.0
  */
 

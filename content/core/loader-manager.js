@@ -1,6 +1,5 @@
 /**
- * Loading Screen Manager Module
- * Extracted from main.js for better maintainability
+ * Loading Screen Manager
  * @version 1.0.0
  */
 
