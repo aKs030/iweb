@@ -23,6 +23,24 @@ function isProduction() {
   );
 }
 
+export function isLocalDevelopment() {
+  if (typeof window === 'undefined') return false;
+  const hostname = window.location?.hostname || '';
+  return (
+    hostname === 'localhost' ||
+    hostname === '127.0.0.1' ||
+    hostname.startsWith('192.168.') ||
+    hostname.startsWith('10.') ||
+    window.location.protocol === 'file:'
+  );
+}
+
+export function isPreviewEnvironment() {
+  if (typeof window === 'undefined') return false;
+  const hostname = window.location?.hostname || '';
+  return hostname.endsWith('.pages.dev') || hostname.endsWith('.netlify.app');
+}
+
 let globalLogLevel = isProduction() ? LOG_LEVELS.error : LOG_LEVELS.warn;
 
 function setGlobalLogLevel(level) {
