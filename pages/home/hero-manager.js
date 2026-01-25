@@ -1,14 +1,53 @@
-import {
-  createTriggerOnceObserver,
-  EVENTS,
-  getElementById,
-  TimerManager,
-  createLogger,
-} from '/content/core/shared-utilities.js';
+import { observeOnce } from '/content/core/intersection-observer.js';
+import { createLogger } from '/content/core/logger.js';
 
 let typeWriterModule = null;
 
-const logger = createLogger('HeroManager');
+const log = createLogger('HeroManager');
+
+// Helper: getElementById
+function getElementById(id) {
+  return id ? document.getElementById(id) : null;
+}
+
+// Helper: TimerManager
+class TimerManager {
+  constructor() {
+    this.timers = new Set();
+    this.intervals = new Set();
+  }
+  setTimeout(fn, delay) {
+    const id = setTimeout(() => {
+      this.timers.delete(id);
+      fn();
+    }, delay);
+    this.timers.add(id);
+    return id;
+  }
+  setInterval(fn, delay) {
+    const id = setInterval(fn, delay);
+    this.intervals.add(id);
+    return id;
+  }
+  clearTimeout(id) {
+    clearTimeout(id);
+    this.timers.delete(id);
+  }
+  clearInterval(id) {
+    clearInterval(id);
+    this.intervals.delete(id);
+  }
+  clearAll() {
+    this.timers.forEach(clearTimeout);
+    this.intervals.forEach(clearInterval);
+    this.timers.clear();
+    this.intervals.clear();
+  }
+  sleep(ms) {
+    return new Promise((resolve) => this.setTimeout(resolve, ms));
+  }
+}
+
 const heroTimers = new TimerManager();
 
 // ===== Hero Management Module =====
@@ -31,7 +70,7 @@ const HeroManager = (() => {
         typeWriterModule =
           await import('../../content/components/typewriter/TypeWriter.js').catch(
             (err) => {
-              logger.warn('Failed to import TypeWriter module', err);
+              log.warn('Failed to import TypeWriter module', err);
               return null;
             },
           );
@@ -44,7 +83,7 @@ const HeroManager = (() => {
         return tw;
       }
     } catch (err) {
-      logger.warn('Failed to load TypeWriter modules', err);
+      log.warn('Failed to load TypeWriter modules', err);
     }
     return false;
   }
@@ -87,15 +126,14 @@ const HeroManager = (() => {
       return;
     }
 
-    observer = createTriggerOnceObserver(triggerLoad);
-    observer.observe(heroEl);
+    observer = observeOnce(heroEl, triggerLoad);
     heroTimers.setTimeout(triggerLoad, HERO_LAZY_FALLBACK_MS);
   }
 
   const ensureHeroData = async () =>
     heroData ||
     (heroData = await import('./GrussText.js').catch((err) => {
-      logger.warn('Failed to load GrussText.js', err);
+      log.warn('Failed to load GrussText.js', err);
       return {};
     }));
 
@@ -119,7 +157,7 @@ const HeroManager = (() => {
       el.dataset.last = next;
       el.textContent = next;
     } catch (e) {
-      logger.warn('Error setting greeting text', e);
+      log.warn('Error setting greeting text', e);
     }
   }
 
@@ -132,7 +170,7 @@ const HeroManager = (() => {
     try {
       typeWriterModule?.stopHeroSubtitle?.();
     } catch (err) {
-      logger.warn('HeroManager: stopHeroSubtitle failed', err);
+      log.warn('HeroManager: stopHeroSubtitle failed', err);
     }
     if (clickHandler) {
       document.removeEventListener('click', clickHandler);
@@ -142,7 +180,7 @@ const HeroManager = (() => {
       try {
         observer.disconnect();
       } catch (err) {
-        logger.warn('HeroManager: observer disconnect failed', err);
+        log.warn('HeroManager: observer disconnect failed', err);
       }
       observer = null;
     }
@@ -178,11 +216,11 @@ export function initHeroFeatureBundle() {
     }
   };
 
-  document.removeEventListener(EVENTS.HERO_LOADED, onHeroLoaded);
-  document.addEventListener(EVENTS.HERO_LOADED, onHeroLoaded, { once: true });
+  document.removeEventListener('hero:loaded', onHeroLoaded);
+  document.addEventListener('hero:loaded', onHeroLoaded, { once: true });
 
   document.addEventListener(
-    EVENTS.HERO_INIT_READY,
+    'hero:initReady',
     () => {
       const el = getElementById('greetingText');
       if (el?.textContent.trim()) return;
@@ -191,7 +229,7 @@ export function initHeroFeatureBundle() {
     { once: true },
   );
 
-  document.addEventListener(EVENTS.HERO_TYPING_END, (e) => {
+  document.addEventListener('hero:typingEnd', (e) => {
     window.announce?.(`Zitat vollständig: ${e.detail?.text ?? 'Text'}`);
   });
 
@@ -214,7 +252,7 @@ export function initHeroFeatureBundle() {
       try {
         target.scrollIntoView({ behavior: 'smooth' });
       } catch (err) {
-        logger.warn('HeroManager: scrollIntoView failed, using fallback', err);
+        log.warn('HeroManager: scrollIntoView failed, using fallback', err);
         const top = target.getBoundingClientRect().top + window.pageYOffset;
         window.scrollTo({ top, behavior: 'smooth' });
       }

@@ -1,4 +1,4 @@
-import { createLogger } from '/content/core/shared-utilities.js';
+import { createLogger } from '/content/core/logger.js';
 import { createObserver } from '/content/core/intersection-observer.js';
 const log = createLogger('RobotCollision');
 

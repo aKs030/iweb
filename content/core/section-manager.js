@@ -3,7 +3,9 @@
  * @version 2.0.0
  */
 
-import { createLogger, fetchText, fire, EVENTS } from './shared-utilities.js';
+import { createLogger } from './logger.js';
+import { fetchText } from './fetch.js';
+import { fire, EVENTS } from './events.js';
 import { createObserver } from './intersection-observer.js';
 
 const log = createLogger('SectionManager');

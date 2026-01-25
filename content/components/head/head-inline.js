@@ -1,4 +1,4 @@
-import { createLogger } from '/content/core/shared-utilities.js';
+import { createLogger } from '/content/core/logger.js';
 import { upsertHeadLink } from '/content/core/dom-helpers.js';
 
 const log = createLogger('head-inline');
