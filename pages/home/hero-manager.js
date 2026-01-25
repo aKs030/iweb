@@ -1,14 +1,10 @@
 import { observeOnce } from '/content/core/intersection-observer.js';
 import { createLogger } from '/content/core/logger.js';
+import { getElementById } from '/content/core/dom-utils.js';
 
 let typeWriterModule = null;
 
 const log = createLogger('HeroManager');
-
-// Helper: getElementById
-function getElementById(id) {
-  return id ? document.getElementById(id) : null;
-}
 
 // Helper: TimerManager
 class TimerManager {

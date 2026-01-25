@@ -518,7 +518,7 @@ dataLayer.push({
 // === Early Canonical Link injection (SEO-critical: set before bots parse)
 (function setEarlyCanonical() {
   try {
-    // Set a basic canonical immediately to avoid SEO gaps before head-complete.js runs
+    // Set a basic canonical immediately to avoid SEO gaps before head-manager.js runs
     const canonicalUrl = globalThis.location.href.split('#')[0].split('?')[0];
     if (!document.head.querySelector('link[rel="canonical"]')) {
       const link = document.createElement('link');
@@ -675,12 +675,12 @@ dataLayer.push({
 })();
 
 // === Signal that head-inline.js initialization is complete
-// This flag prevents race conditions with head-complete.js
+// This flag prevents race conditions with head-manager.js
 globalThis.__HEAD_INLINE_READY = true;
 
-// === Load head-complete.js dynamically after head-inline is ready
-// This ensures head-complete.js never starts before head-inline.js is finished
+// === Load head-manager.js dynamically after head-inline is ready
+// This ensures head-manager.js never starts before head-inline.js is finished
 // preventing the "timeout waiting for head-inline" warning
-import('/content/components/head/head-complete.js').catch((err) => {
-  log.error('[head-inline] Failed to load head-complete.js:', err);
+import('/content/components/head/head-manager.js').catch((err) => {
+  log.error('[head-inline] Failed to load head-manager.js:', err);
 });

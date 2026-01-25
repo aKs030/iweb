@@ -1,14 +1,10 @@
 import { createLogger } from '/content/core/logger.js';
 import { fetchJSON } from '/content/core/fetch.js';
 import { escapeHTML } from '/content/core/html-sanitizer.js';
+import { getElementById } from '/content/core/dom-utils.js';
 import { FAVICON_512 } from '../../content/config/site-config.js';
 
 const log = createLogger('videos');
-
-// Helper: getElementById
-function getElementById(id) {
-  return id ? document.getElementById(id) : null;
-}
 
 // Helper: replace a thumbnail button with an autoplaying iframe
 function activateThumb(btn) {

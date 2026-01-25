@@ -72,5 +72,32 @@ export {
   scheduleSchemaInjection,
 } from './schema.js';
 
+// DOM Utilities
+export {
+  getElementById,
+  querySelector,
+  querySelectorAll,
+  exists,
+  waitForElement,
+} from './dom-utils.js';
+
+// DOM Helpers
+export {
+  upsertHeadLink,
+  upsertMeta,
+  applyCanonicalLinks,
+} from './dom-helpers.js';
+
+// Canonical Manager
+export {
+  computeCanonicalUrl,
+  buildCanonicalLinks,
+  applyCanonicalLinks as applyCanonical,
+  setEarlyCanonical,
+} from './canonical-manager.js';
+
+// PWA Manager
+export { setupPWAAssets, buildPwaAssets } from './pwa-manager.js';
+
 // Types (re-export for convenience)
 // export type * from './types.js';

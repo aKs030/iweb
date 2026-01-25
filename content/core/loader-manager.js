@@ -5,13 +5,9 @@
 
 import { createLogger } from './logger.js';
 import { fire } from './events.js';
+import { getElementById } from './dom-utils.js';
 
 const log = createLogger('LoaderManager');
-
-// Helper: getElementById
-function getElementById(id) {
-  return id ? document.getElementById(id) : null;
-}
 
 // Helper: EVENTS constant
 const EVENTS = {

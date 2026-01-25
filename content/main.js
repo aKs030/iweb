@@ -11,14 +11,10 @@ import { a11y, createAnnouncer } from './core/accessibility-manager.js';
 import { SectionManager } from './core/section-manager.js';
 import { LoaderManager } from './core/loader-manager.js';
 import { ThreeEarthManager } from './core/three-earth-manager.js';
+import { getElementById } from './core/dom-utils.js';
 import './components/menu/menu.js';
 
 const log = createLogger('main');
-
-// Helper functions from shared-utilities
-function getElementById(id) {
-  return id ? document.getElementById(id) : null;
-}
 
 function schedulePersistentStorageRequest(delay = 2500) {
   try {

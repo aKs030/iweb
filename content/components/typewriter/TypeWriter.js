@@ -1,12 +1,8 @@
 // ===== TypeWriter (Final Optimiert) =====
 import { createLogger } from '/content/core/logger.js';
+import { getElementById } from '/content/core/dom-utils.js';
 
 const log = createLogger('TypeWriter');
-
-// Helper: getElementById
-function getElementById(id) {
-  return id ? document.getElementById(id) : null;
-}
 
 // Helper: shuffle
 function shuffle(array) {
