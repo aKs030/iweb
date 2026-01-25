@@ -115,6 +115,7 @@ export default [
       'workers/**',
       '*.min.js',
       'package-lock.json',
+      'content/components/ErrorBoundary.js', // JSX file
     ],
   },
 ];
