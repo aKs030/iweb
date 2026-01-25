@@ -9,7 +9,9 @@ import { MenuAccessibility } from './MenuAccessibility.js';
 import { MenuPerformance } from './MenuPerformance.js';
 import { MenuCache } from './MenuCache.js';
 import { MenuConfig } from './MenuConfig.js';
-import { getElementById } from '/content/core/shared-utilities.js';
+function getElementById(id) {
+  return id ? document.getElementById(id) : null;
+}
 import { upsertHeadLink } from '/content/core/dom-helpers.js';
 
 export class MenuController {

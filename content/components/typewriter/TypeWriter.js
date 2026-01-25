@@ -1,13 +1,65 @@
 // ===== TypeWriter (Final Optimiert) =====
-import {
-  createLogger,
-  getElementById,
-  shuffle,
-  TimerManager,
-  EVENTS,
-} from '/content/core/shared-utilities.js';
+import { createLogger } from '/content/core/logger.js';
 
 const log = createLogger('TypeWriter');
+
+// Helper: getElementById
+function getElementById(id) {
+  return id ? document.getElementById(id) : null;
+}
+
+// Helper: shuffle
+function shuffle(array) {
+  const arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+// Helper: TimerManager
+class TimerManager {
+  constructor() {
+    this.timers = new Set();
+    this.intervals = new Set();
+  }
+  setTimeout(fn, delay) {
+    const id = setTimeout(() => {
+      this.timers.delete(id);
+      fn();
+    }, delay);
+    this.timers.add(id);
+    return id;
+  }
+  setInterval(fn, delay) {
+    const id = setInterval(fn, delay);
+    this.intervals.add(id);
+    return id;
+  }
+  clearTimeout(id) {
+    clearTimeout(id);
+    this.timers.delete(id);
+  }
+  clearInterval(id) {
+    clearInterval(id);
+    this.intervals.delete(id);
+  }
+  clearAll() {
+    this.timers.forEach(clearTimeout);
+    this.intervals.forEach(clearInterval);
+    this.timers.clear();
+    this.intervals.clear();
+  }
+  sleep(ms) {
+    return new Promise((resolve) => this.setTimeout(resolve, ms));
+  }
+}
+
+// Helper: EVENTS constant
+const EVENTS = {
+  HERO_TYPING_END: 'hero:typingEnd',
+};
 
 // Internal instance reference and public helper
 let typeWriterInstance = null;

@@ -1,33 +1,46 @@
 # Dependencies
 node_modules/
-workers/**/node_modules/
+package-lock.json
 
-# Wrangler build artifacts
-.wrangler/
-workers/**/.wrangler/
-*.wrangler/
-
-# Environment files
+# Environment
 .env
 .env.local
-.dev.vars
+.env.*.local
+
+# Build output
+dist/
+build/
 
 # Logs
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-wrangler-*.log
 
-# OS files
-.DS_Store
-Thumbs.db
-*.swp
-*.swo
+# Testing
+coverage/
+.nyc_output/
 
 # IDE
 .vscode/
 .idea/
+*.swp
+*.swo
+*~
 
-# Test
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Vite
+.vite/
+vite.config.js.timestamp-*
+
+# Vitest
 .vitest/

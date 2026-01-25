@@ -5,15 +5,8 @@
  */
 
 import { initHeroFeatureBundle } from '../pages/home/hero-manager.js';
-import {
-  createLogger,
-  EVENTS,
-  fire,
-  schedulePersistentStorageRequest,
-  AppLoadManager,
-  SectionTracker,
-  getElementById,
-} from '/content/core/shared-utilities.js';
+import { createLogger } from './core/logger.js';
+import { EVENTS, fire } from './core/events.js';
 import { a11y, createAnnouncer } from './core/accessibility-manager.js';
 import { SectionManager } from './core/section-manager.js';
 import { LoaderManager } from './core/loader-manager.js';
@@ -21,6 +14,179 @@ import { ThreeEarthManager } from './core/three-earth-manager.js';
 import './components/menu/menu.js';
 
 const log = createLogger('main');
+
+// Helper functions from shared-utilities
+function getElementById(id) {
+  return id ? document.getElementById(id) : null;
+}
+
+function schedulePersistentStorageRequest(delay = 2500) {
+  try {
+    setTimeout(async () => {
+      if (!navigator?.storage) return;
+      try {
+        const persisted = await navigator.storage.persisted();
+        if (!persisted) await navigator.storage.persist();
+      } catch (error) {
+        log.warn('Persistent storage request failed:', error);
+      }
+    }, delay);
+  } catch {
+    // Ignore
+  }
+}
+
+const AppLoadManager = (() => {
+  const pending = new Set();
+  return {
+    block(name) {
+      if (!name) return;
+      pending.add(name);
+      log.debug(`Blocked: ${name}`);
+    },
+    unblock(name) {
+      if (!name) return;
+      pending.delete(name);
+      log.debug(`Unblocked: ${name}`);
+      if (pending.size === 0) {
+        fire(EVENTS.LOADING_UNBLOCKED);
+      }
+    },
+    isBlocked() {
+      return pending.size > 0;
+    },
+    getPending() {
+      return Array.from(pending);
+    },
+  };
+})();
+
+class SectionTracker {
+  constructor() {
+    this.sections = [];
+    this.sectionRatios = new Map();
+    this.currentSectionId = null;
+    this.observer = null;
+  }
+
+  init() {
+    if (document.readyState === 'loading') {
+      document.addEventListener(
+        'DOMContentLoaded',
+        () => this.setupObserver(),
+        { once: true },
+      );
+    } else {
+      setTimeout(() => this.setupObserver(), 100);
+    }
+    document.addEventListener('section:loaded', () => {
+      setTimeout(() => this.refreshSections(), 50);
+    });
+    document.addEventListener('footer:loaded', () => {
+      setTimeout(() => this.refreshSections(), 50);
+    });
+  }
+
+  setupObserver() {
+    this.refreshSections();
+    if (!window.IntersectionObserver || this.sections.length === 0) return;
+    this.observer = new IntersectionObserver(
+      (entries) => this.handleIntersections(entries),
+      { threshold: [0.1, 0.3, 0.5, 0.7], rootMargin: '-10% 0px -10% 0px' },
+    );
+    this.sections.forEach((section) => this.observer.observe(section));
+    this.checkInitialSection();
+  }
+
+  refreshSections() {
+    this.sections = Array.from(
+      document.querySelectorAll('main .section[id], footer#site-footer[id]'),
+    ).filter((section) => section.id);
+    if (this.observer) {
+      this.sections.forEach((section) => this.observer.observe(section));
+    }
+  }
+
+  handleIntersections(entries) {
+    entries.forEach((entry) => {
+      if (entry.target?.id) {
+        this.sectionRatios.set(entry.target.id, {
+          ratio: entry.intersectionRatio,
+          isIntersecting: entry.isIntersecting,
+          target: entry.target,
+        });
+      }
+    });
+    let bestEntry = null;
+    let bestRatio = 0;
+    for (const section of this.sections) {
+      const data = this.sectionRatios.get(section.id);
+      if (data && data.isIntersecting && data.ratio > bestRatio) {
+        bestRatio = data.ratio;
+        bestEntry = data;
+      }
+    }
+    if (bestEntry) {
+      const newSectionId = bestEntry.target.id;
+      if (newSectionId !== this.currentSectionId) {
+        this.currentSectionId = newSectionId;
+        this.dispatchSectionChange(newSectionId);
+      }
+    }
+  }
+
+  checkInitialSection() {
+    const viewportCenter = window.innerHeight / 2;
+    let activeSection = null;
+    let bestDistance = Infinity;
+    this.sections.forEach((section) => {
+      const rect = section.getBoundingClientRect();
+      const sectionCenter = rect.top + rect.height / 2;
+      const distance = Math.abs(sectionCenter - viewportCenter);
+      if (
+        distance < bestDistance &&
+        rect.top < viewportCenter &&
+        rect.bottom > viewportCenter
+      ) {
+        bestDistance = distance;
+        activeSection = section;
+      }
+    });
+    if (activeSection && activeSection.id !== this.currentSectionId) {
+      this.currentSectionId = activeSection.id;
+      this.dispatchSectionChange(activeSection.id);
+    }
+  }
+
+  dispatchSectionChange(sectionId) {
+    try {
+      const sectionIndex = this.sections.findIndex((s) => s.id === sectionId);
+      const section = getElementById(sectionId);
+      const detail = { id: sectionId, index: sectionIndex, section };
+      window.dispatchEvent(new CustomEvent('snapSectionChange', { detail }));
+      log.debug(`Section changed: ${sectionId}`);
+    } catch (error) {
+      log.warn('Failed to dispatch section change:', error);
+    }
+  }
+
+  updateCurrentSection(sectionId) {
+    if (this.sections.find((s) => s.id === sectionId)) {
+      this.currentSectionId = sectionId;
+      this.dispatchSectionChange(sectionId);
+    }
+  }
+
+  destroy() {
+    if (this.observer) {
+      this.observer.disconnect();
+      this.observer = null;
+    }
+    this.sections = [];
+    this.sectionRatios.clear();
+    this.currentSectionId = null;
+  }
+}
 
 // ===== Configuration & Environment =====
 const ENV = {

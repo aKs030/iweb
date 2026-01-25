@@ -6,7 +6,7 @@
  */
 
 /* exported initSearch, openSearch, closeSearch, toggleSearch */
-import { createLogger } from '/content/core/shared-utilities.js';
+import { createLogger } from '/content/core/logger.js';
 
 const _log = createLogger('search');
 

@@ -3,14 +3,20 @@
  * @version 2.0.0
  */
 
-import {
-  createLogger,
-  getElementById,
-  EVENTS,
-  fire,
-} from './shared-utilities.js';
+import { createLogger } from './logger.js';
+import { fire } from './events.js';
 
 const log = createLogger('LoaderManager');
+
+// Helper: getElementById
+function getElementById(id) {
+  return id ? document.getElementById(id) : null;
+}
+
+// Helper: EVENTS constant
+const EVENTS = {
+  LOADING_HIDE: 'loading:hide',
+};
 
 export class LoaderManager {
   constructor() {

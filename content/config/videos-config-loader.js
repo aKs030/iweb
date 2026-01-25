@@ -1,6 +1,11 @@
-import { createLogger, isLocalDevelopment } from '../core/shared-utilities.js';
+import { createLogger } from '../core/logger.js';
+import { ENV } from './env.config.js';
 
 const log = createLogger('VideosConfig');
+
+function isLocalDevelopment() {
+  return ENV.isDev;
+}
 
 // Set your YouTube API key here or via environment variable
 // For production, use environment variables or a secure backend proxy

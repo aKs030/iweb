@@ -13,7 +13,18 @@
  * @last-modified 2025-12-19
  */
 
-import { createLogger, throttle } from '/content/core/shared-utilities.js';
+import { createLogger } from '/content/core/logger.js';
+
+function throttle(func, limit = 250) {
+  let inThrottle = false;
+  return function (...args) {
+    if (!inThrottle) {
+      func.apply(this, args);
+      inThrottle = true;
+      setTimeout(() => (inThrottle = false), limit);
+    }
+  };
+}
 import { THREE_PATHS } from './config.js';
 
 const log = createLogger('sharedParticleSystem');
