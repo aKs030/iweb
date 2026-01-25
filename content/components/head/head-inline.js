@@ -1,9 +1,8 @@
 import { createLogger } from '/content/core/logger.js';
 import { upsertHeadLink } from '/content/core/dom-helpers.js';
+import { SITE_CONFIG } from '../../config/site-config.js';
 
 const log = createLogger('head-inline');
-
-import { SITE_CONFIG } from '../../config/site-config.js';
 
 const detectHostConfig = (host) => {
   const h = (host || globalThis?.location?.hostname || '').toLowerCase();
@@ -66,6 +65,7 @@ try {
     /* ignore */
   }
 })();
+
 gtag('js', Date.now());
 
 const hostCfg = detectHostConfig();
@@ -89,7 +89,6 @@ dataLayer.push({
       return;
     }
 
-    // Load gtag.js if not already present
     if (
       !document.querySelector(`script[src*="gtag/js?id=${GA4_MEASUREMENT_ID}"]`)
     ) {
@@ -100,7 +99,6 @@ dataLayer.push({
       document.head.appendChild(s);
     }
 
-    // Add font-display: swap to Google Fonts for instant text rendering
     const fontLinks = document.querySelectorAll(
       'link[href*="fonts.googleapis.com"]',
     );
@@ -116,8 +114,6 @@ dataLayer.push({
   }
 })();
 
-// 1b) Google Tag Manager loader (recommended): inject gtm.js if GTM_ID is set.
-//     Create a GTM Container at tagmanager.google.com and add your GA4 and other tags there.
 (function injectGTM() {
   try {
     if (!GTM_ID || GTM_ID === 'GTM-PLACEHOLDER') {
@@ -141,7 +137,6 @@ dataLayer.push({
   }
 })();
 
-// Ensure GTM noscript iframe is placed immediately after the opening <body> for non-JS environments
 (function ensureGTMNoScript() {
   try {
     if (!GTM_ID || GTM_ID === 'GTM-PLACEHOLDER') return;
@@ -171,18 +166,15 @@ dataLayer.push({
   }
 })();
 
-// 2) ensureTrigger helper: inject a footer trigger zone if missing
 (function ensureFooterAndTrigger() {
   try {
     const run = function () {
-      // Ensure menu container exists in a header - create header if missing
       let menuContainer = document.getElementById('menu-container');
       if (!menuContainer) {
         let headerEl = document.querySelector('header.site-header');
         if (!headerEl) {
           headerEl = document.createElement('header');
           headerEl.className = 'site-header';
-          // Insert at top of body for consistent layout
           document.body.insertBefore(headerEl, document.body.firstChild);
         }
         menuContainer = document.createElement('div');
@@ -191,48 +183,34 @@ dataLayer.push({
         headerEl.appendChild(menuContainer);
       }
 
-      // If both footer trigger and container already present, nothing else to do
       if (
         document.getElementById('footer-trigger-zone') &&
         document.getElementById('footer-container')
       )
         return;
 
-      // Ensure footer container exists so FooterLoader can attach
       let footerContainer = document.getElementById('footer-container');
       if (!footerContainer) {
         footerContainer = document.createElement('div');
         footerContainer.id = 'footer-container';
         footerContainer.dataset.footerSrc = '/content/components/footer/footer';
-        // Not hidden: the loaded footer will control visibility
         footerContainer.setAttribute('aria-hidden', 'false');
         document.body.appendChild(footerContainer);
       }
 
-      // Ensure trigger exists and is placed immediately before the footer container
       if (!document.getElementById('footer-trigger-zone')) {
         const trigger = document.createElement('div');
         trigger.id = 'footer-trigger-zone';
         trigger.className = 'footer-trigger-zone';
-
-        // Make the trigger non-interactive but detectable by IntersectionObserver
         trigger.setAttribute('aria-hidden', 'true');
         trigger.setAttribute('role', 'presentation');
         trigger.style.pointerEvents = 'none';
-        // Slightly larger minHeight to make intersection detection more robust on first scroll
         trigger.style.minHeight = '96px';
         trigger.style.width = '100%';
-
-        // Default thresholds (can be overridden per page by setting data attributes)
-        // Small numbers increase sensitivity so even the smallest scroll can trigger the footer on desktop
-        // Further reduce thresholds to improve first-scroll reliability in headless/CI and real browsers
         trigger.dataset.expandThreshold =
           trigger.dataset.expandThreshold || '0.002';
         trigger.dataset.collapseThreshold =
           trigger.dataset.collapseThreshold || '0.0008';
-
-        // Default lock and debounce (ms) — can be overridden per-page using data attributes
-        // Keep desktop more forgiving by default
         trigger.dataset.expandLockMs = trigger.dataset.expandLockMs || '1000';
         trigger.dataset.collapseDebounceMs =
           trigger.dataset.collapseDebounceMs || '250';
@@ -244,7 +222,6 @@ dataLayer.push({
         }
       }
 
-      // Ensure the footer module is loaded (dynamic import) so it can initialize the injected container
       try {
         if (!globalThis.__footerModuleLoaded) {
           globalThis.__footerModuleLoaded = true;
@@ -264,7 +241,6 @@ dataLayer.push({
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', run, { once: true });
     } else {
-      // If DOMContentLoaded already fired, run immediately
       setTimeout(run, 0);
     }
   } catch (err) {
@@ -272,15 +248,12 @@ dataLayer.push({
   }
 })();
 
-// --- 3) Asset helper: non-blocking injection of core CSS/JS used across pages
 (function injectCoreAssets() {
   try {
     const getStylesForPath = () => {
       const p =
         (globalThis.location?.pathname || '').replace(/\/+$/g, '') || '/';
-      // Base styles always useful
       const base = ['/content/styles/root.css', '/content/styles/main.css'];
-      // Page-specific additions (only for root to avoid extra blocking on subpages)
       if (p === '/') {
         return base.concat([
           '/pages/home/hero.css',
@@ -297,7 +270,6 @@ dataLayer.push({
       { src: '/content/components/menu/menu.js', module: true },
     ];
 
-    // Defer non-critical assets (loaded after idle to reduce blocking during LCP)
     const deferNonCriticalAssets = () => {
       try {
         const schedule = (cb) => {
@@ -309,7 +281,6 @@ dataLayer.push({
         };
 
         schedule(() => {
-          // Existing deferred assets (loaded everywhere)
           upsertScript({
             src: '/content/components/robot-companion/robot-companion.js',
             module: true,
@@ -336,7 +307,6 @@ dataLayer.push({
     const upsertStyle = (href, { critical = false } = {}) => {
       if (document.head.querySelector(`link[href="${href}"]`)) return;
 
-      // Critical styles must be inserted as stylesheet synchronously
       if (critical) {
         upsertHeadLink({
           rel: 'stylesheet',
@@ -346,7 +316,6 @@ dataLayer.push({
         return;
       }
 
-      // Use preload/as=style then switch to stylesheet onload to avoid render-blocking
       upsertHeadLink({
         rel: 'preload',
         href,
@@ -362,7 +331,6 @@ dataLayer.push({
         },
       });
 
-      // Add a small safety timeout to ensure stylesheet eventually applies in older browsers
       setTimeout(() => {
         try {
           const existing = document.head.querySelector(`link[href="${href}"]`);
@@ -402,18 +370,15 @@ dataLayer.push({
     };
 
     const performInjection = () => {
-      // Hint to connect to important third-party origins early (only when needed)
       const hasGtm = GTM_ID && GTM_ID !== 'GTM-PLACEHOLDER';
       if (hasGtm) {
         upsertPreconnect('https://www.googletagmanager.com');
         upsertPreconnect('https://static.cloudflareinsights.com');
       }
-      // gtag fallback only when GA4 fallback is used; harmless otherwise but keep conditional
       if (GA4_MEASUREMENT_ID && GA4_MEASUREMENT_ID.indexOf('G-') === 0) {
         upsertPreconnect('https://www.gstatic.com');
       }
 
-      // Insert styles (use critical flag only when strictly needed)
       const styles = getStylesForPath();
       const p =
         (globalThis.location?.pathname || '').replace(/\/+$/g, '') || '/';
@@ -435,15 +400,12 @@ dataLayer.push({
         upsertStyle(href, { critical: isCritical });
       });
 
-      // Preload module scripts we want parsed early (main app bundle)
       SCRIPTS.filter((s) => s.preload).forEach((s) =>
         upsertModulePreload(s.src),
       );
 
-      // Insert scripts (module scripts can be fetched/parsed in parallel when preloaded)
       SCRIPTS.forEach(upsertScript);
 
-      // Schedule deferring of non-critical assets after core injection
       try {
         deferNonCriticalAssets();
       } catch (err) {
@@ -463,7 +425,6 @@ dataLayer.push({
   }
 })();
 
-// === Progressive image defaults: lazy-load and async decode for content images ===
 (function addLazyLoadingDefaults() {
   try {
     const apply = () => {
@@ -488,7 +449,6 @@ dataLayer.push({
   }
 })();
 
-// === Ensure Google Fonts use display=swap globally (improves text rendering) ===
 (function ensureFontDisplaySwap() {
   try {
     const update = () => {
@@ -515,10 +475,8 @@ dataLayer.push({
   }
 })();
 
-// === Early Canonical Link injection (SEO-critical: set before bots parse)
 (function setEarlyCanonical() {
   try {
-    // Set a basic canonical immediately to avoid SEO gaps before head-manager.js runs
     const canonicalUrl = globalThis.location.href.split('#')[0].split('?')[0];
     if (!document.head.querySelector('link[rel="canonical"]')) {
       const link = document.createElement('link');
@@ -533,17 +491,14 @@ dataLayer.push({
   }
 })();
 
-// === Inject minimal critical CSS for the Hero on the Startseite
 (function injectHeroCriticalCSS() {
   try {
     const path =
       (globalThis.location?.pathname || '').replace(/\/+$|^$/, '') || '/';
-    // Only inline on the root path to avoid extra payload on subpages
     if (path !== '/') return;
     if (document.head.querySelector('#hero-critical-css')) return;
 
     const css = `
-  /***** Critical Hero CSS (inlined, minimal) *****/
   .hero{display:flex;align-items:center;justify-content:center;min-height:100dvh;padding:0 .5rem;box-sizing:border-box}
   .hero-title{font:800 clamp(3rem,6vw,4.5rem)/1.03 var(--font-inter);margin:0;padding:8px 12px;max-width:30ch;color:var(--color-text-main,#fff);text-align:center;white-space:normal}
   `;
@@ -558,7 +513,6 @@ dataLayer.push({
   }
 })();
 
-// === Hide branding (site name) from human users (keep it in server-rendered <title> for SEO/bots)
 (function hideBrandingFromUsers() {
   try {
     const ua = (navigator.userAgent || '').toLowerCase();
@@ -574,7 +528,6 @@ dataLayer.push({
         .replace(BRAND_REGEX, '')
         .trim();
 
-    // Small page→emoji mapping for concise tab titles
     const SHORT_MAP = {
       videos: 'Videos 🎬',
       video: 'Videos 🎬',
@@ -593,11 +546,9 @@ dataLayer.push({
       try {
         if (!s) return '';
         const low = s.toLowerCase();
-        // prefer exact/contains matches from mapping
         for (const k of Object.keys(SHORT_MAP)) {
           if (low.includes(k)) return SHORT_MAP[k];
         }
-        // fallback: first word with globe emoji
         const first =
           String(s)
             .split(/[—–\-|:]/)[0]
@@ -610,16 +561,13 @@ dataLayer.push({
       }
     };
 
-    // Sanitize existing title immediately (if not bot)
     if (!isBot) {
       const cleaned = sanitize(document.title);
       document.title = cleaned;
-      // Also set a short tab-friendly title (one word + emoji)
       const short = makeShortTitle(cleaned);
       if (short) document.title = short;
     }
 
-    // Observe <title> changes and sanitize for humans; also map to short tab title
     try {
       const titleEl = document.querySelector('title');
       if (titleEl && !isBot) {
@@ -639,7 +587,6 @@ dataLayer.push({
       // ignore errors in title observer
     }
 
-    // Sanitize visible headings on page and watch for added nodes
     const sanitizeHeadings = () => {
       document
         .querySelectorAll(
@@ -654,7 +601,6 @@ dataLayer.push({
 
     sanitizeHeadings();
 
-    // Watch for DOM additions and sanitize newly inserted headings
     const mo = new MutationObserver((mutations) => {
       let changed = false;
       for (const m of mutations) {
@@ -670,17 +616,12 @@ dataLayer.push({
       subtree: true,
     });
   } catch {
-    // ignore errors in hideBrandingFromUsers
+    /* ignore */
   }
 })();
 
-// === Signal that head-inline.js initialization is complete
-// This flag prevents race conditions with head-manager.js
 globalThis.__HEAD_INLINE_READY = true;
 
-// === Load head-manager.js dynamically after head-inline is ready
-// This ensures head-manager.js never starts before head-inline.js is finished
-// preventing the "timeout waiting for head-inline" warning
 import('/content/components/head/head-manager.js').catch((err) => {
   log.error('[head-inline] Failed to load head-manager.js:', err);
 });

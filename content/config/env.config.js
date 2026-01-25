@@ -1,9 +1,3 @@
-/**
- * Environment Configuration
- * Centralized environment variable management with fallbacks
- * @version 3.0.0
- */
-
 const ENV_DEFAULTS = {
   BASE_URL: 'https://www.abdulkerimsesli.de',
   GTM_ID: 'GTM-5F5ZSTTL',
@@ -23,35 +17,23 @@ const ENV_DEV = {
   AW_LABEL: 'AW-CONV-LABEL-DEV',
 };
 
-/**
- * Get environment variable with fallback
- * @param {string} key - Environment variable key
- * @returns {string} Environment variable value
- */
 function getEnv(key) {
-  // Try Vite env first
   if (import.meta.env?.[`VITE_${key}`]) {
     return import.meta.env[`VITE_${key}`];
   }
 
-  // Try window env (for runtime config)
   if (typeof window !== 'undefined' && window.__ENV__?.[key]) {
     return window.__ENV__[key];
   }
 
-  // Detect environment
   const isDev =
     typeof window !== 'undefined' &&
     (window.location?.hostname === 'localhost' ||
       window.location?.hostname === '127.0.0.1');
 
-  // Return dev or prod default
   return isDev ? ENV_DEV[key] || ENV_DEFAULTS[key] : ENV_DEFAULTS[key];
 }
 
-/**
- * Environment configuration object
- */
 export const ENV = {
   BASE_URL: getEnv('BASE_URL'),
   GTM_ID: getEnv('GTM_ID'),
@@ -62,7 +44,6 @@ export const ENV = {
   YOUTUBE_CHANNEL_ID: getEnv('YOUTUBE_CHANNEL_ID'),
   YOUTUBE_CHANNEL_HANDLE: getEnv('YOUTUBE_CHANNEL_HANDLE'),
 
-  // Environment detection
   get isDev() {
     return (
       typeof window !== 'undefined' &&
@@ -84,10 +65,6 @@ export const ENV = {
   },
 };
 
-/**
- * Validate required environment variables
- * @throws {Error} If required variables are missing
- */
 export function validateEnv() {
   const required = ['BASE_URL'];
   const missing = required.filter((key) => !ENV[key]);
@@ -99,7 +76,6 @@ export function validateEnv() {
   }
 }
 
-// Auto-validate in production
 if (ENV.isProd) {
   try {
     validateEnv();

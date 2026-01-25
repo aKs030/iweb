@@ -1,28 +1,15 @@
-/**
- * Modern Analytics Wrapper
- * @version 1.0.0
- */
-
 import { createLogger } from './logger.js';
 
 const log = createLogger('Analytics');
 
-/**
- * Analytics event queue
- */
 const eventQueue = [];
 let isInitialized = false;
 
-/**
- * Initialize analytics
- */
 export function initAnalytics() {
   if (isInitialized) return;
 
-  // Ensure dataLayer exists
   window.dataLayer = window.dataLayer || [];
 
-  // Process queued events
   eventQueue.forEach((event) => sendEvent(event));
   eventQueue.length = 0;
 
@@ -30,10 +17,6 @@ export function initAnalytics() {
   log.info('Analytics initialized');
 }
 
-/**
- * Send analytics event
- * @param {Object} event - Event data
- */
 export function sendEvent(event) {
   if (!isInitialized) {
     eventQueue.push(event);
@@ -48,10 +31,6 @@ export function sendEvent(event) {
   }
 }
 
-/**
- * Track page view
- * @param {Object} [data] - Additional page data
- */
 export function trackPageView(data = {}) {
   sendEvent({
     event: 'page_view',
@@ -62,11 +41,6 @@ export function trackPageView(data = {}) {
   });
 }
 
-/**
- * Track custom event
- * @param {string} eventName - Event name
- * @param {Object} [params] - Event parameters
- */
 export function trackEvent(eventName, params = {}) {
   sendEvent({
     event: eventName,
@@ -74,13 +48,6 @@ export function trackEvent(eventName, params = {}) {
   });
 }
 
-/**
- * Track user interaction
- * @param {string} action - Interaction action
- * @param {string} category - Interaction category
- * @param {string} [label] - Interaction label
- * @param {number} [value] - Interaction value
- */
 export function trackInteraction(action, category, label, value) {
   sendEvent({
     event: 'interaction',
@@ -91,11 +58,6 @@ export function trackInteraction(action, category, label, value) {
   });
 }
 
-/**
- * Track error
- * @param {Error} error - Error object
- * @param {Object} [context] - Error context
- */
 export function trackError(error, context = {}) {
   sendEvent({
     event: 'error',
@@ -106,12 +68,6 @@ export function trackError(error, context = {}) {
   });
 }
 
-/**
- * Track performance metric
- * @param {string} metric - Metric name
- * @param {number} value - Metric value
- * @param {Object} [data] - Additional data
- */
 export function trackPerformance(metric, value, data = {}) {
   sendEvent({
     event: 'performance',
@@ -121,11 +77,6 @@ export function trackPerformance(metric, value, data = {}) {
   });
 }
 
-/**
- * Track conversion
- * @param {string} conversionId - Conversion ID
- * @param {Object} [data] - Conversion data
- */
 export function trackConversion(conversionId, data = {}) {
   sendEvent({
     event: 'conversion',
@@ -134,10 +85,6 @@ export function trackConversion(conversionId, data = {}) {
   });
 }
 
-/**
- * Set user properties
- * @param {Object} properties - User properties
- */
 export function setUserProperties(properties) {
   sendEvent({
     event: 'set_user_properties',
@@ -145,10 +92,6 @@ export function setUserProperties(properties) {
   });
 }
 
-/**
- * Track scroll depth
- * @param {number} depth - Scroll depth percentage
- */
 export function trackScrollDepth(depth) {
   sendEvent({
     event: 'scroll_depth',
@@ -156,10 +99,6 @@ export function trackScrollDepth(depth) {
   });
 }
 
-/**
- * Setup scroll tracking
- * @param {number[]} [thresholds] - Scroll thresholds
- */
 export function setupScrollTracking(thresholds = [25, 50, 75, 90, 100]) {
   const tracked = new Set();
 
@@ -181,11 +120,6 @@ export function setupScrollTracking(thresholds = [25, 50, 75, 90, 100]) {
   return () => window.removeEventListener('scroll', checkScroll);
 }
 
-/**
- * Track outbound link
- * @param {string} url - Link URL
- * @param {string} [text] - Link text
- */
 export function trackOutboundLink(url, text) {
   sendEvent({
     event: 'outbound_link',
@@ -194,9 +128,6 @@ export function trackOutboundLink(url, text) {
   });
 }
 
-/**
- * Setup outbound link tracking
- */
 export function setupOutboundLinkTracking() {
   document.addEventListener('click', (event) => {
     const link = event.target.closest('a');
@@ -209,11 +140,6 @@ export function setupOutboundLinkTracking() {
   });
 }
 
-/**
- * Track file download
- * @param {string} url - File URL
- * @param {string} [fileName] - File name
- */
 export function trackDownload(url, fileName) {
   sendEvent({
     event: 'file_download',
@@ -222,10 +148,6 @@ export function trackDownload(url, fileName) {
   });
 }
 
-/**
- * Setup download tracking
- * @param {string[]} [extensions] - File extensions to track
- */
 export function setupDownloadTracking(
   extensions = ['pdf', 'zip', 'doc', 'docx', 'xls', 'xlsx'],
 ) {
@@ -244,7 +166,6 @@ export function setupDownloadTracking(
   });
 }
 
-// Auto-initialize on load
 if (typeof window !== 'undefined') {
   window.addEventListener('load', () => {
     initAnalytics();

@@ -1,33 +1,19 @@
-/**
- * PWA Assets Manager
- * Centralized PWA meta tags and icons management
- * @version 1.0.0
- */
-
 import { createLogger } from './logger.js';
 import { upsertHeadLink, upsertMeta } from './dom-helpers.js';
 
 const log = createLogger('PWAManager');
-
 const BASE_URL = 'https://www.abdulkerimsesli.de';
 
-/**
- * Setup PWA assets (manifest, icons, meta tags)
- * @param {Object} brandData - Brand data
- */
 export function setupPWAAssets(brandData) {
   try {
-    // Manifest
     upsertHeadLink({ rel: 'manifest', href: '/manifest.json' });
 
-    // Theme and mobile settings
     upsertMeta('theme-color', '#0d0d0d');
     upsertMeta('mobile-web-app-capable', 'yes');
     upsertMeta('apple-mobile-web-app-capable', 'yes');
     upsertMeta('apple-mobile-web-app-title', brandData.name);
     upsertMeta('apple-mobile-web-app-status-bar-style', 'default');
 
-    // Favicon sizes
     const iconSizes = [16, 32, 48, 64, 128, 192, 256, 512];
     iconSizes.forEach((size) => {
       upsertHeadLink({
@@ -37,28 +23,24 @@ export function setupPWAAssets(brandData) {
       });
     });
 
-    // Apple touch icon
     upsertHeadLink({
       rel: 'apple-touch-icon',
       href: `${BASE_URL}/content/assets/img/icons/apple-touch-icon.png`,
       attrs: { sizes: '180x180' },
     });
 
-    // SVG icon
     upsertHeadLink({
       rel: 'icon',
       href: `${BASE_URL}/content/assets/img/icons/favicon.svg`,
       attrs: { sizes: 'any', type: 'image/svg+xml' },
     });
 
-    // Safari pinned tab
     upsertHeadLink({
       rel: 'mask-icon',
       href: `${BASE_URL}/content/assets/img/icons/safari-pinned-tab.svg`,
       attrs: { color: '#0d0d0d' },
     });
 
-    // Shortcut icon
     const shortcutIcon = document.head.querySelector(
       'link[rel="shortcut icon"]',
     );
@@ -75,12 +57,6 @@ export function setupPWAAssets(brandData) {
   }
 }
 
-/**
- * Build PWA assets data (for legacy compatibility)
- * @param {string} baseUrl - Base URL
- * @param {Object} brandData - Brand data
- * @returns {Object} - { links, iconLinks, metas }
- */
 export function buildPwaAssets(baseUrl, brandData) {
   const links = [
     { rel: 'manifest', href: '/manifest.json' },
