@@ -1,22 +1,10 @@
-/**
- * Brand Data Loader
- * Centralized brand data loading with caching
- * @version 1.0.0
- */
-
 import { createLogger } from '../core/logger.js';
 
 const log = createLogger('BrandDataLoader');
-
 const BASE_URL = 'https://www.abdulkerimsesli.de';
 
-// Cache for brand data
 let BRAND_DATA_CACHE = null;
 
-/**
- * Load brand data with caching
- * @returns {Promise<BrandData>}
- */
 export async function loadBrandData() {
   if (BRAND_DATA_CACHE) return BRAND_DATA_CACHE;
 
@@ -24,12 +12,10 @@ export async function loadBrandData() {
     const response = await fetch('/content/config/brand-data.json');
     BRAND_DATA_CACHE = await response.json();
 
-    // Normalize URLs
     if (BRAND_DATA_CACHE.logo && !BRAND_DATA_CACHE.logo.startsWith('http')) {
       BRAND_DATA_CACHE.logo = `${BASE_URL}${BRAND_DATA_CACHE.logo}`;
     }
 
-    // Add @type to nested objects for schema.org
     if (BRAND_DATA_CACHE.address) {
       BRAND_DATA_CACHE.address['@type'] = 'PostalAddress';
     }
@@ -54,10 +40,6 @@ export async function loadBrandData() {
   }
 }
 
-/**
- * Get fallback brand data
- * @returns {BrandData}
- */
 function getFallbackBrandData() {
   return {
     name: 'Abdulkerim Sesli',
@@ -68,9 +50,6 @@ function getFallbackBrandData() {
   };
 }
 
-/**
- * Clear brand data cache (useful for testing)
- */
 export function clearBrandDataCache() {
   BRAND_DATA_CACHE = null;
 }

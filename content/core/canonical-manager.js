@@ -1,20 +1,9 @@
-/**
- * Canonical URL Manager
- * Centralized canonical URL handling
- * @version 1.0.0
- */
-
 import { createLogger } from './logger.js';
 import { upsertHeadLink } from './dom-helpers.js';
 
 const log = createLogger('CanonicalManager');
-
 const BASE_URL = 'https://www.abdulkerimsesli.de';
 
-/**
- * Check if running in local development
- * @returns {boolean}
- */
 function isLocalDevelopment() {
   const hostname = globalThis.location?.hostname?.toLowerCase() || '';
   return (
@@ -24,19 +13,11 @@ function isLocalDevelopment() {
   );
 }
 
-/**
- * Check if running in preview environment
- * @returns {boolean}
- */
 function isPreviewEnvironment() {
   const hostname = globalThis.location?.hostname?.toLowerCase() || '';
   return hostname.includes('.pages.dev') || hostname.includes('preview');
 }
 
-/**
- * Compute clean path from current pathname
- * @returns {string}
- */
 function computeCleanPath() {
   const rawPath = globalThis.location.pathname || '/';
   let cleanPath = rawPath
@@ -50,13 +31,6 @@ function computeCleanPath() {
   return cleanPath;
 }
 
-/**
- * Compute canonical URL
- * @param {Object} options - Options
- * @param {boolean} options.forceProd - Force production URL
- * @param {string} options.cleanPath - Clean path
- * @returns {string}
- */
 export function computeCanonicalUrl({ forceProd = false, cleanPath = null }) {
   const path = cleanPath || computeCleanPath();
 
@@ -75,11 +49,6 @@ export function computeCanonicalUrl({ forceProd = false, cleanPath = null }) {
   return globalThis.location.href.split('#')[0].split('?')[0];
 }
 
-/**
- * Build canonical links with alternates
- * @param {Object} options - Options
- * @returns {Object} - { canonical, alternates, origin }
- */
 export function buildCanonicalLinks(options = {}) {
   const forceProd =
     options.forceProd ?? (!isLocalDevelopment() && !isPreviewEnvironment());
@@ -96,15 +65,10 @@ export function buildCanonicalLinks(options = {}) {
   return { canonical, alternates, origin };
 }
 
-/**
- * Apply canonical and alternate links to document
- * @param {Object} options - Options
- */
 export function applyCanonicalLinks(options = {}) {
   try {
     const { canonical, alternates } = buildCanonicalLinks(options);
 
-    // Update or create canonical link
     const canonicalEl = document.head.querySelector('link[rel="canonical"]');
     if (canonicalEl) {
       const currentHref = canonicalEl.getAttribute('href');
@@ -118,7 +82,6 @@ export function applyCanonicalLinks(options = {}) {
       upsertHeadLink({ rel: 'canonical', href: canonical });
     }
 
-    // Apply alternate language links
     alternates.forEach(({ lang, href }) => {
       if (!href) return;
       const selector = `link[rel="alternate"][hreflang="${lang}"]`;
@@ -140,9 +103,6 @@ export function applyCanonicalLinks(options = {}) {
   }
 }
 
-/**
- * Set early canonical (for inline scripts)
- */
 export function setEarlyCanonical() {
   try {
     const canonicalUrl = globalThis.location.href.split('#')[0].split('?')[0];
