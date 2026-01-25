@@ -5,6 +5,7 @@
  */
 
 import { createLogger } from '/content/core/logger.js';
+import { getElementById } from '/content/core/dom-utils.js';
 import { createObserver } from '/content/core/intersection-observer.js';
 import {
   getSharedState,
@@ -33,11 +34,6 @@ import {
 } from './earth/ui.js';
 
 const log = createLogger('ThreeEarthSystem');
-
-// Helper: getElementById
-function getElementById(id) {
-  return id ? document.getElementById(id) : null;
-}
 
 // Helper: onResize
 function onResize(callback, delay = 100) {
