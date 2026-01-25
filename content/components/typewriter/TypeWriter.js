@@ -5,7 +5,7 @@ import {
   shuffle,
   TimerManager,
   EVENTS,
-} from '/content/utils/shared-utilities.js';
+} from '/content/core/shared-utilities.js';
 
 const log = createLogger('TypeWriter');
 
@@ -196,8 +196,7 @@ export class TypeWriter {
     return (this._current = this.quotes[this._index]);
   }
 
-  // eslint-disable-next-line no-unused-vars
-  _generateQueue(_lastIndex) {
+  _generateQueue() {
     if (this.quotes.length <= 1) return [0];
     return this._createQueue();
   }

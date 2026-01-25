@@ -1,5 +1,9 @@
-import { createLogger } from '/content/utils/shared-utilities.js';
-import { escapeHTML } from '/content/utils/html-sanitizer.js';
+import {
+  createLogger,
+  fetchJSON,
+  getElementById,
+} from '/content/core/shared-utilities.js';
+import { escapeHTML } from '/content/core/html-sanitizer.js';
 import { FAVICON_512 } from '../../content/config/site-config.js';
 
 const log = createLogger('videos');
@@ -94,23 +98,17 @@ function bindThumb(btn) {
 async function fetchJson(url) {
   const safeUrl = url.replaceAll(/([?&]key=)[^&]+/g, '$1[REDACTED]');
   log.warn(`Fetching ${safeUrl}`);
-  const res = await fetch(url, { credentials: 'omit', mode: 'cors' });
-  if (!res.ok) {
-    let text = '';
-    try {
-      text = await res.text();
-    } catch {
-      /* noop */
-    }
-    const err = new Error(
-      `Fetch failed: ${res.status} ${res.statusText} — ${text.slice(0, 200)}`,
-    );
-    err.status = res.status;
-    err.statusText = res.statusText;
-    err.body = text;
+
+  try {
+    return await fetchJSON(url);
+  } catch (error) {
+    // Enhance error with status info for better debugging
+    const err = new Error(error.message);
+    err.status = error.status || 0;
+    err.statusText = error.statusText || '';
+    err.body = error.body || '';
     throw err;
   }
-  return await res.json();
 }
 
 async function fetchChannelId(handle) {
@@ -387,6 +385,12 @@ if (typeof window !== 'undefined') {
 }
 
 // Videos page loader (moved from inline to avoid HTML parsing issues)
+// Shared status setter for all video functions
+const setVideoStatus = (msg) => {
+  const el = getElementById('videos-status');
+  if (el) el.textContent = msg || '';
+};
+
 async function loadLatestVideos() {
   const handle = (globalThis.YOUTUBE_CHANNEL_HANDLE || 'aks.030').replace(
     /^@/,
@@ -400,16 +404,7 @@ async function loadLatestVideos() {
     /* ignore */
   }
 
-  const setStatus = (msg) => {
-    try {
-      const el = document.getElementById('videos-status');
-      if (el) el.textContent = msg || '';
-    } catch {
-      // ignore
-    }
-  };
-
-  setStatus('');
+  setVideoStatus('');
 
   try {
     if (globalThis.location?.protocol === 'file:') {
@@ -419,7 +414,7 @@ async function loadLatestVideos() {
       return;
     }
 
-    setStatus('Videos werden geladen…');
+    setVideoStatus('Videos werden geladen…');
 
     const grid = document.querySelector('.video-grid');
     if (!grid) return;
@@ -431,14 +426,14 @@ async function loadLatestVideos() {
       showInfoMessage(
         'Keine öffentlichen Uploads auf YouTube gefunden — es werden die statisch eingebetteten Videos angezeigt.',
       );
-      setStatus('');
+      setVideoStatus('');
       return;
     }
 
     grid.innerHTML = '';
     items.forEach((it) => renderVideoCard(grid, it, detailsMap));
 
-    setStatus('');
+    setVideoStatus('');
   } catch (err) {
     log.error('Fehler beim Laden der Videos', err);
     showErrorMessage(err);
@@ -487,19 +482,7 @@ function showErrorMessage(err) {
     }
     el.textContent = message;
     container.insertBefore(el, container.firstChild);
-    try {
-      const setStatus = (msg) => {
-        try {
-          const el2 = document.getElementById('videos-status');
-          if (el2) el2.textContent = msg || '';
-        } catch {
-          // ignore
-        }
-      };
-      setStatus(el.textContent);
-    } catch {
-      /* ignore */
-    }
+    setVideoStatus(el.textContent);
   } catch {
     // ignore UI errors
   }
@@ -514,19 +497,7 @@ function showInfoMessage(msg) {
     el.className = 'video-note';
     el.textContent = msg;
     container.insertBefore(el, container.firstChild);
-    try {
-      const setStatus = (m) => {
-        try {
-          const el2 = document.getElementById('videos-status');
-          if (el2) el2.textContent = m || '';
-        } catch {
-          // ignore
-        }
-      };
-      setStatus(msg);
-    } catch {
-      /* ignore */
-    }
+    setVideoStatus(msg);
   } catch {
     // ignore UI errors
   }

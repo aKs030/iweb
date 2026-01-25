@@ -1,5 +1,5 @@
-import { createLogger } from '/content/utils/shared-utilities.js';
-import { upsertHeadLink } from '/content/utils/dom-helpers.js';
+import { createLogger } from '/content/core/shared-utilities.js';
+import { upsertHeadLink } from '/content/core/dom-helpers.js';
 
 const log = createLogger('head-inline');
 

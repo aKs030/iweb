@@ -31,6 +31,3 @@ export function observeOnce(target, onIntersect, options = {}) {
   obs.observe(target);
   return () => obs.disconnect();
 }
-
-// Higher-level convenience helpers removed — unused in the codebase.
-// If needed in future, reintroduce implementations similar to previous versions.

@@ -10,8 +10,8 @@ import {
   onResize,
   TimerManager,
   AppLoadManager,
-} from '/content/utils/shared-utilities.js';
-import { createObserver } from '/content/utils/intersection-observer.js';
+} from '/content/core/shared-utilities.js';
+import { createObserver } from '/content/core/intersection-observer.js';
 import {
   getSharedState,
   loadThreeJS,

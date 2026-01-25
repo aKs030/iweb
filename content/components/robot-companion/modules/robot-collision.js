@@ -1,5 +1,5 @@
-import { createLogger } from '/content/utils/shared-utilities.js';
-import { createObserver } from '/content/utils/intersection-observer.js';
+import { createLogger } from '/content/core/shared-utilities.js';
+import { createObserver } from '/content/core/intersection-observer.js';
 const log = createLogger('RobotCollision');
 
 export class RobotCollision {
@@ -268,8 +268,7 @@ export class RobotCollision {
     }
   }
 
-  // eslint-disable-next-line no-unused-vars
-  startTypewriterCollisionResponse(_twRect, _maxLeft) {
+  startTypewriterCollisionResponse() {
     if (!this.robot.dom || !this.robot.dom.container) return;
     const anim = this.robot.animationModule;
     // Prevent overlapping animations

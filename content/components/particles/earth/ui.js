@@ -1,5 +1,5 @@
 import { CONFIG } from './config.js';
-import { createLogger, throttle } from '/content/utils/shared-utilities.js';
+import { createLogger, throttle } from '/content/core/shared-utilities.js';
 import {
   calculateQualityLevel,
   calculateDynamicResolution,

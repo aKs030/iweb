@@ -16,7 +16,7 @@
 
 import { MenuController } from './modules/MenuController.js';
 import { createConfig } from './modules/MenuConfig.js';
-import { createLogger } from '/content/utils/shared-utilities.js';
+import { createLogger } from '/content/core/shared-utilities.js';
 
 const logger = createLogger('menu');
 

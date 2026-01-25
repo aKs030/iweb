@@ -1,4 +1,4 @@
-import { createLogger } from '/content/utils/shared-utilities.js';
+import { createLogger } from '/content/core/shared-utilities.js';
 const log = createLogger('RobotChat');
 
 export class RobotChat {
@@ -167,7 +167,7 @@ export class RobotChat {
     } else {
       // Bot messages may contain safe HTML (links, formatting)
       // Import sanitizer dynamically to avoid circular dependencies
-      import('/content/utils/html-sanitizer.js')
+      import('/content/core/html-sanitizer.js')
         .then(({ sanitizeHTMLMinimal }) => {
           msg.innerHTML = sanitizeHTMLMinimal(String(text || ''));
         })
