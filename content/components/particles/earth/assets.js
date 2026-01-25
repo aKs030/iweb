@@ -1,5 +1,5 @@
 import { CONFIG } from './config.js';
-import { createLogger } from '/content/core/shared-utilities.js';
+import { createLogger } from '/content/core/logger.js';
 
 const log = createLogger('EarthAssets');
 

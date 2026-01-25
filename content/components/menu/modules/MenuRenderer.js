@@ -3,7 +3,9 @@
  */
 
 import { MenuTemplate } from './MenuTemplate.js';
-import { getElementById } from '/content/core/shared-utilities.js';
+function getElementById(id) {
+  return id ? document.getElementById(id) : null;
+}
 
 export class MenuRenderer {
   constructor(state, config = {}) {

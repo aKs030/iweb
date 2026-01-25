@@ -1,10 +1,17 @@
-import {
-  createLogger,
-  makeAbortController,
-} from '/content/core/shared-utilities.js';
+import { createLogger } from '/content/core/logger.js';
 import { createProjectsData } from './projects-data.js';
 
 const log = createLogger('projekte-app');
+
+// Helper: makeAbortController
+function makeAbortController(timeout = 5000) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
+  return {
+    controller,
+    clearTimeout: () => clearTimeout(timeoutId),
+  };
+}
 
 /* global React, ReactDOM */
 /**

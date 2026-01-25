@@ -2,7 +2,18 @@
  * Menu Events - Event handling and interactions
  */
 
-import { addListener, EVENTS } from '/content/core/shared-utilities.js';
+import { EVENTS } from '/content/core/events.js';
+
+function addListener(target, event, handler, options = {}) {
+  if (!target?.addEventListener) return () => {};
+  const finalOptions = { passive: true, ...options };
+  try {
+    target.addEventListener(event, handler, finalOptions);
+    return () => target.removeEventListener(event, handler, finalOptions);
+  } catch {
+    return () => {};
+  }
+}
 
 const TITLE_MAP = {
   '/index.html': 'Startseite',

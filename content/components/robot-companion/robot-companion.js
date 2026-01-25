@@ -9,7 +9,7 @@ import { RobotCollision } from './modules/robot-collision.js';
 import { RobotAnimation } from './modules/robot-animation.js';
 import { RobotChat } from './modules/robot-chat.js';
 import { RobotIntelligence } from './modules/robot-intelligence.js';
-import { createLogger } from '/content/core/shared-utilities.js';
+import { createLogger } from '/content/core/logger.js';
 import { createObserver } from '/content/core/intersection-observer.js';
 
 const log = createLogger('RobotCompanion');

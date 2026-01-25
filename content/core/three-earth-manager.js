@@ -3,7 +3,11 @@
  * @version 1.1.0
  */
 
-import { createLogger, getElementById } from './shared-utilities.js';
+import { createLogger } from './logger.js';
+
+function getElementById(id) {
+  return id ? document.getElementById(id) : null;
+}
 import { observeOnce } from './intersection-observer.js';
 
 const log = createLogger('ThreeEarthManager');

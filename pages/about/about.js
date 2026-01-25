@@ -6,25 +6,24 @@
  * - Improved code structure
  */
 import { FAVICON_512 } from '/content/config/site-config.js';
-import { fetchText, getElementById } from '/content/core/shared-utilities.js';
+import { fetchText } from '/content/core/fetch.js';
+
+function getElementById(id) {
+  return id ? document.getElementById(id) : null;
+}
 import { upsertHeadLink } from '/content/core/dom-helpers.js';
 
 (async function () {
   const RETRY_ATTEMPTS = 2;
 
-  let logger;
+  let log;
 
-  let _addListener = null;
   try {
-    const { createLogger, addListener } =
-      await import('../../content/core/shared-utilities.js');
-    logger = createLogger('AboutModule');
-    // expose addListener locally for handlers
-    _addListener = addListener;
-  } catch (err) {
-    logger?.warn?.('AboutModule: failed to import createLogger', err);
+    const { createLogger } = await import('../../content/core/logger.js');
+    log = createLogger('AboutModule');
+  } catch {
     // Fallback to no-op logger if import fails
-    logger = {
+    log = {
       info: () => {},
       warn: () => {},
       error: () => {},
@@ -32,9 +31,8 @@ import { upsertHeadLink } from '/content/core/dom-helpers.js';
     };
   }
 
+  // Helper: addListener
   const safeAddListener = (target, event, handler, options = {}) => {
-    if (typeof _addListener === 'function')
-      return _addListener(target, event, handler, options);
     target.addEventListener(event, handler, options);
     return () => target.removeEventListener(event, handler, options);
   };
@@ -42,14 +40,14 @@ import { upsertHeadLink } from '/content/core/dom-helpers.js';
   const host = document.querySelector('section#about[data-about-src]');
 
   if (!host) {
-    logger.warn('About section host not found');
+    log.warn('About section host not found');
     return;
   }
 
   const src = host.getAttribute('data-about-src');
 
   if (!src) {
-    logger.error('data-about-src attribute is missing');
+    log.error('data-about-src attribute is missing');
     return;
   }
 
@@ -62,7 +60,7 @@ import { upsertHeadLink } from '/content/core/dom-helpers.js';
     for (let attempt = 0; attempt <= retries; attempt++) {
       try {
         if (attempt > 0) {
-          logger.info(`Retry attempt ${attempt}/${retries}`);
+          log.info(`Retry attempt ${attempt}/${retries}`);
           await new Promise((resolve) => setTimeout(resolve, 500 * attempt));
         }
 
@@ -155,7 +153,7 @@ import { upsertHeadLink } from '/content/core/dom-helpers.js';
             }
           } catch (e) {
             // Non-critical; don't break page
-            logger?.warn?.('about: could not set page meta', e);
+            log?.warn?.('about: could not set page meta', e);
           }
         })();
 
@@ -166,16 +164,16 @@ import { upsertHeadLink } from '/content/core/dom-helpers.js';
           }),
         );
 
-        logger.info('About content loaded successfully');
+        log.info('About content loaded successfully');
         return true;
       } catch (err) {
         lastError = err;
-        logger.warn(`Load attempt ${attempt + 1} failed:`, err.message);
+        log.warn(`Load attempt ${attempt + 1} failed:`, err.message);
       }
     }
 
     // All attempts failed
-    logger.error('Failed to load about content after retries', lastError);
+    log.error('Failed to load about content after retries', lastError);
 
     // Display fallback content (no inline handlers)
     host.innerHTML = `

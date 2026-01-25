@@ -1,7 +1,9 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
+import { redirectsPlugin, htmlRawPlugin } from './vite-plugin-redirects.js';
 
 export default defineConfig({
+  plugins: [htmlRawPlugin(), redirectsPlugin()],
   root: '.',
   publicDir: 'content/assets',
 
@@ -38,9 +40,11 @@ export default defineConfig({
 
           // Shared utilities
           utils: [
-            './content/core/shared-utilities.js',
             './content/core/dom-helpers.js',
             './content/core/intersection-observer.js',
+            './content/core/logger.js',
+            './content/core/fetch.js',
+            './content/core/events.js',
           ],
         },
 
@@ -84,6 +88,12 @@ export default defineConfig({
     port: 8080,
     open: true,
     cors: true,
+  },
+
+  // Preview server (for testing production builds)
+  preview: {
+    port: 4173,
+    open: true,
   },
 
   // Optimizations

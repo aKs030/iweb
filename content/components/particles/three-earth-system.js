@@ -4,13 +4,7 @@
  * @version 11.0.0 - REFACTOR: Pure WebGL Implementation
  */
 
-import {
-  createLogger,
-  getElementById,
-  onResize,
-  TimerManager,
-  AppLoadManager,
-} from '/content/core/shared-utilities.js';
+import { createLogger } from '/content/core/logger.js';
 import { createObserver } from '/content/core/intersection-observer.js';
 import {
   getSharedState,
@@ -39,6 +33,78 @@ import {
 } from './earth/ui.js';
 
 const log = createLogger('ThreeEarthSystem');
+
+// Helper: getElementById
+function getElementById(id) {
+  return id ? document.getElementById(id) : null;
+}
+
+// Helper: onResize
+function onResize(callback, delay = 100) {
+  let timeoutId;
+  const handler = () => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(callback, delay);
+  };
+  window.addEventListener('resize', handler, { passive: true });
+  return () => {
+    clearTimeout(timeoutId);
+    window.removeEventListener('resize', handler);
+  };
+}
+
+// Helper: TimerManager
+class TimerManager {
+  constructor() {
+    this.timers = new Set();
+    this.intervals = new Set();
+  }
+  setTimeout(fn, delay) {
+    const id = setTimeout(() => {
+      this.timers.delete(id);
+      fn();
+    }, delay);
+    this.timers.add(id);
+    return id;
+  }
+  setInterval(fn, delay) {
+    const id = setInterval(fn, delay);
+    this.intervals.add(id);
+    return id;
+  }
+  clearTimeout(id) {
+    clearTimeout(id);
+    this.timers.delete(id);
+  }
+  clearInterval(id) {
+    clearInterval(id);
+    this.intervals.delete(id);
+  }
+  clearAll() {
+    this.timers.forEach(clearTimeout);
+    this.intervals.forEach(clearInterval);
+    this.timers.clear();
+    this.intervals.clear();
+  }
+  sleep(ms) {
+    return new Promise((resolve) => this.setTimeout(resolve, ms));
+  }
+}
+
+// Helper: AppLoadManager
+const AppLoadManager = {
+  _blocked: new Set(),
+  block(key) {
+    this._blocked.add(key);
+  },
+  unblock(key) {
+    this._blocked.delete(key);
+  },
+  isBlocked() {
+    return this._blocked.size > 0;
+  },
+};
+
 const earthTimers = new TimerManager();
 
 // Global instances for this module scope

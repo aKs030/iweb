@@ -1,7 +1,7 @@
 import React from 'https://esm.sh/react@18.2.0?dev=false';
 import ReactDOM from 'https://esm.sh/react-dom@18.2.0/client?dev=false';
 import htm from 'https://cdn.jsdelivr.net/npm/htm@3.1.1/dist/htm.module.js';
-import { createLogger } from '/content/core/shared-utilities.js';
+import { createLogger } from '/content/core/logger.js';
 import { marked } from 'https://cdn.jsdelivr.net/npm/marked@5.1.1/lib/marked.esm.js';
 import DOMPurify from 'https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.es.js';
 

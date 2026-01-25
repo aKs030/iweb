@@ -3,7 +3,7 @@
  * Version: 2025.3.4 (Identity Disambiguation & Abdul Berlin
  */
 
-import { createLogger } from '/content/core/shared-utilities.js';
+import { createLogger } from '/content/core/logger.js';
 import {
   upsertHeadLink,
   upsertMeta,
@@ -17,34 +17,45 @@ const BASE_URL = 'https://www.abdulkerimsesli.de';
 
 // Load BRAND_DATA from centralized config
 let BRAND_DATA = null;
-try {
-  const response = await fetch('/content/config/brand-data.json');
-  BRAND_DATA = await response.json();
-  // Add BASE_URL to logo if relative
-  if (BRAND_DATA.logo && !BRAND_DATA.logo.startsWith('http')) {
-    BRAND_DATA.logo = `${BASE_URL}${BRAND_DATA.logo}`;
+
+// Async function to load brand data
+async function loadBrandData() {
+  if (BRAND_DATA) return BRAND_DATA;
+
+  try {
+    const response = await fetch('/content/config/brand-data.json');
+    BRAND_DATA = await response.json();
+    // Add BASE_URL to logo if relative
+    if (BRAND_DATA.logo && !BRAND_DATA.logo.startsWith('http')) {
+      BRAND_DATA.logo = `${BASE_URL}${BRAND_DATA.logo}`;
+    }
+    // Add @type to nested objects for schema.org
+    if (BRAND_DATA.address) BRAND_DATA.address['@type'] = 'PostalAddress';
+    if (BRAND_DATA.geo) BRAND_DATA.geo['@type'] = 'GeoCoordinates';
+    if (BRAND_DATA.contactPoint) {
+      BRAND_DATA.contactPoint = BRAND_DATA.contactPoint.map((cp) => ({
+        '@type': 'ContactPoint',
+        ...cp,
+        url: cp.url || `${BASE_URL}/#kontakt`,
+      }));
+    }
+    return BRAND_DATA;
+  } catch (err) {
+    log.error('Failed to load brand-data.json, using fallback', err);
+    // Minimal fallback
+    BRAND_DATA = {
+      name: 'Abdulkerim Sesli',
+      legalName: 'Abdulkerim Sesli',
+      logo: `${BASE_URL}/content/assets/img/icons/favicon-512.png`,
+      email: 'kontakt@abdulkerimsesli.de',
+      sameAs: [],
+    };
+    return BRAND_DATA;
   }
-  // Add @type to nested objects for schema.org
-  if (BRAND_DATA.address) BRAND_DATA.address['@type'] = 'PostalAddress';
-  if (BRAND_DATA.geo) BRAND_DATA.geo['@type'] = 'GeoCoordinates';
-  if (BRAND_DATA.contactPoint) {
-    BRAND_DATA.contactPoint = BRAND_DATA.contactPoint.map((cp) => ({
-      '@type': 'ContactPoint',
-      ...cp,
-      url: cp.url || `${BASE_URL}/#kontakt`,
-    }));
-  }
-} catch (err) {
-  log.error('Failed to load brand-data.json, using fallback', err);
-  // Minimal fallback
-  BRAND_DATA = {
-    name: 'Abdulkerim Sesli',
-    legalName: 'Abdulkerim Sesli',
-    logo: `${BASE_URL}/content/assets/img/icons/favicon-512.png`,
-    email: 'kontakt@abdulkerimsesli.de',
-    sameAs: [],
-  };
 }
+
+// Initialize brand data loading
+loadBrandData();
 
 const ROUTES = {
   default: {
@@ -831,6 +842,9 @@ async function loadSharedHead() {
 
   // --- 1. GLOBALE DATEN & KONFIGURATION ---
 
+  // Load brand data first (required for PWA assets and schema generation)
+  await loadBrandData();
+
   // B. INHALTS-STEUERUNG (Snippet Text Füllung)
   // [ROT] Hier füllen wir den Text-Bereich maximal auf (~160 Zeichen + Keywords)
 
@@ -906,8 +920,6 @@ async function loadSharedHead() {
 
   // --- 2. HTML HEAD UPDATES (lightweight, no heavy DOM replacement) ---
   try {
-    await import('../../core/shared-utilities.js');
-
     // Prefer explicit opt-in via `data-force-prod-canonical="true"` when production canonical is required.
 
     // computeEffectiveCanonical has been moved to a top-level, exported helper (`computeEffectiveCanonical`).
@@ -987,8 +999,18 @@ async function loadSharedHead() {
       // Force Canonical to Production host by default for all public access.
       // We only disable this for local development (localhost, 127.0.0.1) or preview builds (*.pages.dev).
       // This strictly enforces https://www.abdulkerimsesli.de as the canonical origin to prevent duplicates (http/www).
-      const { isLocalDevelopment, isPreviewEnvironment } =
-        await import('../../core/shared-utilities.js');
+      const isLocalDevelopment = () => {
+        const hostname = globalThis.location?.hostname?.toLowerCase() || '';
+        return (
+          hostname === 'localhost' ||
+          hostname === '127.0.0.1' ||
+          hostname.startsWith('192.168.')
+        );
+      };
+      const isPreviewEnvironment = () => {
+        const hostname = globalThis.location?.hostname?.toLowerCase() || '';
+        return hostname.includes('.pages.dev') || hostname.includes('preview');
+      };
       const forceProdFlag = !isLocalDevelopment() && !isPreviewEnvironment();
 
       // Compute cleanPath from pathname
@@ -1172,8 +1194,7 @@ async function loadSharedHead() {
   globalThis.SHARED_HEAD_LOADED = true;
 }
 
-try {
-  await loadSharedHead();
-} catch (e) {
+// Call loadSharedHead without await (it's async internally)
+loadSharedHead().catch((e) => {
   log?.warn?.('head-complete: loadSharedHead failed', e);
-}
+});
