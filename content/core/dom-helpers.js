@@ -1,5 +1,3 @@
-// DOM helper utilities
-
 export function upsertHeadLink({
   rel,
   href,
@@ -36,12 +34,6 @@ export function upsertHeadLink({
   }
 }
 
-/**
- * Upsert meta tag (supports both name and property attributes)
- * @param {string} nameOrProperty - Meta name or property
- * @param {string} content - Meta content
- * @param {boolean} isProperty - Use property attribute instead of name
- */
 export function upsertMeta(nameOrProperty, content, isProperty = false) {
   if (!content) return null;
   try {
@@ -63,12 +55,6 @@ export function upsertMeta(nameOrProperty, content, isProperty = false) {
   }
 }
 
-/**
- * Apply canonical and alternate language links
- * @param {Document} doc - Document object
- * @param {Array} alternates - Array of {lang, href} objects
- * @param {string} effectiveCanonical - Canonical URL
- */
 export function applyCanonicalLinks(
   doc = typeof document === 'undefined' ? null : document,
   alternates = [],

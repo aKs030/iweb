@@ -1,9 +1,3 @@
-/**
- * Routes Configuration
- * Centralized route definitions for SEO and meta tags
- * @version 1.0.0
- */
-
 const BASE_URL = 'https://www.abdulkerimsesli.de';
 
 export const ROUTES = {

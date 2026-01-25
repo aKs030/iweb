@@ -1,6 +1,5 @@
 /**
  * Head Manager - Unified Head Management
- * Replaces head-complete.js and head-loader.js with centralized modules
  * @version 1.0.0
  */
 
@@ -17,13 +16,8 @@ import { loadBrandData } from '/content/config/brand-data-loader.js';
 import { ROUTES } from '/content/config/routes-config.js';
 
 const log = createLogger('HeadManager');
-
 const BASE_URL = 'https://www.abdulkerimsesli.de';
 
-/**
- * Get page data for current route
- * @returns {PageData}
- */
 function getPageData() {
   const currentPath = globalThis.location.pathname.toLowerCase();
   const matchedKey = Object.keys(ROUTES).find(
@@ -32,7 +26,6 @@ function getPageData() {
 
   const rawPageData = matchedKey ? ROUTES[matchedKey] : ROUTES.default;
 
-  // i18n: Choose localized title/description
   const preferredLang = (
     document?.documentElement?.lang ||
     globalThis.navigator?.language ||
@@ -52,7 +45,6 @@ function getPageData() {
         : rawPageData.description,
   };
 
-  // Allow partials to override via window.PAGE_META
   try {
     const partialMeta =
       globalThis.PAGE_META ||
@@ -80,31 +72,22 @@ function getPageData() {
   return pageData;
 }
 
-/**
- * Update basic meta tags
- * @param {PageData} pageData
- * @param {string} pageUrl
- */
 function updateBasicMeta(pageData, pageUrl) {
-  // Title
   if (pageData.title?.trim()) {
     document.title = pageData.title;
   }
 
-  // Core meta tags
   upsertMeta('description', pageData.description);
   upsertMeta('robots', 'index, follow, max-image-preview:large');
   upsertMeta('viewport', 'width=device-width, initial-scale=1');
   upsertMeta('language', 'de-DE');
   upsertMeta('author', 'Abdulkerim Sesli');
 
-  // Geo tags for local SEO
   upsertMeta('geo.region', 'DE-BE');
   upsertMeta('geo.placename', 'Berlin');
   upsertMeta('geo.position', '52.5733;13.2911');
   upsertMeta('ICBM', '52.5733, 13.2911');
 
-  // Twitter
   upsertMeta('twitter:card', 'summary_large_image');
   upsertMeta('twitter:creator', '@abdulkerimsesli');
   upsertMeta('twitter:url', pageUrl);
@@ -113,7 +96,6 @@ function updateBasicMeta(pageData, pageUrl) {
     upsertMeta('twitter:image:alt', pageData.title || pageData.description);
   }
 
-  // OpenGraph
   upsertMeta('og:title', pageData.title, true);
   upsertMeta('og:description', pageData.description, true);
   upsertMeta('og:locale', 'de_DE', true);
@@ -121,7 +103,6 @@ function updateBasicMeta(pageData, pageUrl) {
   if (pageData.image) {
     upsertMeta('og:image', pageData.image, true);
 
-    // Try to get real image dimensions
     fetch('/content/core/og-image-dimensions.json')
       .then((r) => (r.ok ? r.json() : null))
       .then((map) => {
@@ -146,11 +127,6 @@ function updateBasicMeta(pageData, pageUrl) {
   }
 }
 
-/**
- * Push page metadata to dataLayer for GTM
- * @param {PageData} pageData
- * @param {string} pageUrl
- */
 function pushToDataLayer(pageData, pageUrl) {
   try {
     globalThis.dataLayer = globalThis.dataLayer || [];
@@ -170,14 +146,9 @@ function pushToDataLayer(pageData, pageUrl) {
   }
 }
 
-/**
- * Main head loading function
- */
 export async function loadHead() {
-  // Skip if already loaded
   if (globalThis.SHARED_HEAD_LOADED) return;
 
-  // Wait for head-inline.js to complete
   if (!globalThis.__HEAD_INLINE_READY) {
     await new Promise((resolve) => {
       const checkInterval = setInterval(() => {
@@ -197,24 +168,15 @@ export async function loadHead() {
   try {
     log.time('loadHead');
 
-    // Load data
     const brandData = await loadBrandData();
     const pageData = getPageData();
     const pageUrl = globalThis.location.href.split('#')[0];
 
-    // Update meta tags
     updateBasicMeta(pageData, pageUrl);
-
-    // Update canonical links
     applyCanonicalLinks();
-
-    // Setup PWA assets
     setupPWAAssets(brandData);
-
-    // Push to dataLayer
     pushToDataLayer(pageData, pageUrl);
 
-    // Schedule schema injection
     scheduleSchemaInjection(() => {
       const graph = generateSchemaGraph(pageData, pageUrl, brandData, {
         doc: document,
@@ -223,7 +185,6 @@ export async function loadHead() {
       injectSchema(graph, 'head-manager-ldjson');
     });
 
-    // Hide loader
     const hideLoader = () => {
       const el = document.getElementById('app-loader');
       if (!el) return;
@@ -251,7 +212,6 @@ export async function loadHead() {
   }
 }
 
-// Auto-load
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', loadHead, { once: true });
 } else {
