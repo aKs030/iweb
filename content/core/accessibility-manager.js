@@ -300,8 +300,8 @@ export function createAnnouncer() {
       requestAnimationFrame(() => {
         region.textContent = message;
       });
-    } catch (error) {
-      console.debug('Announcement failed:', error);
+    } catch {
+      // Ignore announcement errors
     }
   };
 }

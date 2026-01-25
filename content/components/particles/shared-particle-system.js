@@ -42,7 +42,6 @@ class SharedParticleState {
       log.warn(`System '${name}' already registered, overwriting`);
     }
     this.systems.set(name, instance);
-    log.debug(`System '${name}' registered`);
   }
 
   unregisterSystem(name) {
@@ -60,7 +59,6 @@ class SharedParticleState {
   reset() {
     this.systems.clear();
     this.isInitialized = false;
-    log.debug('State reset');
   }
 }
 
@@ -82,7 +80,6 @@ class SharedParallaxManager {
     }
 
     this.handlers.add({ handler, name });
-    log.debug(`Parallax handler '${name}' added`);
 
     if (!this.isActive) {
       this.activate();
@@ -173,9 +170,6 @@ class SharedCleanupManager {
     }
 
     this.cleanupFunctions.get(systemName).push({ fn: cleanupFn, description });
-    log.debug(
-      `Cleanup function '${description}' registered for '${systemName}'`,
-    );
   }
 
   cleanupSystem(systemName) {
@@ -271,7 +265,6 @@ export async function loadThreeJS() {
 
   // Return existing loading promise to prevent duplicate loads
   if (threeLoadingPromise) {
-    log.debug('Three.js load already in progress, waiting...');
     return threeLoadingPromise;
   }
 

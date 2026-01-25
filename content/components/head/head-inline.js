@@ -15,9 +15,6 @@ const detectHostConfig = (host) => {
   return cfg.default || {};
 };
 
-// Expose for tests/debug
-globalThis.__getGtmConfigForHost = detectHostConfig;
-
 const { gtm: GTM_ID, ga4: GA4_MEASUREMENT_ID } = detectHostConfig();
 
 const dataLayer = (globalThis.dataLayer = globalThis.dataLayer || []);
