@@ -23,7 +23,3 @@ export function getCanonicalPathFromRoutes(pathname, routes) {
   if (routeKey) return ensureTrailingSlash(routeKey);
   return pathForMatch;
 }
-
-// Removed unused helper: getCanonicalOrigin (local cleanup)
-// This helper was removed locally because it is not referenced anywhere in the codebase.
-// Reintroduce if external consumers require it.

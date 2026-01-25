@@ -9,8 +9,8 @@ import { RobotCollision } from './modules/robot-collision.js';
 import { RobotAnimation } from './modules/robot-animation.js';
 import { RobotChat } from './modules/robot-chat.js';
 import { RobotIntelligence } from './modules/robot-intelligence.js';
-import { createLogger } from '/content/utils/shared-utilities.js';
-import { createObserver } from '/content/utils/intersection-observer.js';
+import { createLogger } from '/content/core/shared-utilities.js';
+import { createObserver } from '/content/core/intersection-observer.js';
 
 const log = createLogger('RobotCompanion');
 
@@ -412,8 +412,7 @@ class RobotCompanion {
       this.animationModule.startTypeWriterKnockbackAnimation();
     }, 1500);
 
-    // eslint-disable-next-line no-unused-vars
-    this._onHeroTypingEnd = (_ev) => {
+    this._onHeroTypingEnd = () => {
       try {
         const typeWriter = document.querySelector('.typewriter-title');
         if (!typeWriter || !this.dom?.container) return;
@@ -650,8 +649,7 @@ class RobotCompanion {
     return moodGreets[Math.floor(Math.random() * moodGreets.length)];
   }
 
-  // eslint-disable-next-line no-unused-vars
-  trackInteraction(_type = 'general') {
+  trackInteraction() {
     this.analytics.interactions++;
     localStorage.setItem('robot-interactions', this.analytics.interactions);
     if (

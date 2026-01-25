@@ -9,8 +9,8 @@ import { MenuAccessibility } from './MenuAccessibility.js';
 import { MenuPerformance } from './MenuPerformance.js';
 import { MenuCache } from './MenuCache.js';
 import { MenuConfig } from './MenuConfig.js';
-import { getElementById } from '/content/utils/shared-utilities.js';
-import { upsertHeadLink } from '/content/utils/dom-helpers.js';
+import { getElementById } from '/content/core/shared-utilities.js';
+import { upsertHeadLink } from '/content/core/dom-helpers.js';
 
 export class MenuController {
   constructor(config = {}) {

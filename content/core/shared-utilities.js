@@ -103,6 +103,38 @@ export async function fetchWithTimeout(url, timeout = 8000) {
   }
 }
 
+/**
+ * Fetch JSON with timeout and error handling
+ * @param {string} url - URL to fetch
+ * @param {number} timeout - Timeout in milliseconds
+ * @returns {Promise<Object>} Parsed JSON response
+ */
+export async function fetchJSON(url, timeout = 8000) {
+  const response = await fetchWithTimeout(url, timeout);
+
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+  }
+
+  return await response.json();
+}
+
+/**
+ * Fetch text/HTML with timeout and error handling
+ * @param {string} url - URL to fetch
+ * @param {number} timeout - Timeout in milliseconds
+ * @returns {Promise<string>} Response text
+ */
+export async function fetchText(url, timeout = 8000) {
+  const response = await fetchWithTimeout(url, timeout);
+
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+  }
+
+  return await response.text();
+}
+
 // Convenience helper to create/expose an AbortController with optional auto-cancel
 export function makeAbortController(timeout) {
   const controller = new AbortController();
@@ -125,6 +157,51 @@ export function makeAbortController(timeout) {
 
 export function getElementById(id) {
   return id ? document.getElementById(id) : null;
+}
+
+// ===== DOM Ready Utility =====
+export function onDOMReady(callback) {
+  if (document.readyState !== 'loading') {
+    callback();
+  } else {
+    document.addEventListener('DOMContentLoaded', callback, { once: true });
+  }
+}
+
+// ===== Error Handling Utilities =====
+
+/**
+ * Safely execute a function with optional fallback
+ * @param {Function} fn - Function to execute
+ * @param {*} fallback - Fallback value if function throws
+ * @returns {*} Result of function or fallback
+ */
+export function safeExecute(fn, fallback = null) {
+  try {
+    return fn();
+  } catch (error) {
+    if (globalLogLevel >= LOG_LEVELS.debug) {
+      sharedLogger.debug('safeExecute caught error:', error);
+    }
+    return fallback;
+  }
+}
+
+/**
+ * Safely execute an async function with optional fallback
+ * @param {Function} fn - Async function to execute
+ * @param {*} fallback - Fallback value if function throws
+ * @returns {Promise<*>} Result of function or fallback
+ */
+export async function safeExecuteAsync(fn, fallback = null) {
+  try {
+    return await fn();
+  } catch (error) {
+    if (globalLogLevel >= LOG_LEVELS.debug) {
+      sharedLogger.debug('safeExecuteAsync caught error:', error);
+    }
+    return fallback;
+  }
 }
 
 // ===== Cookie Manager (Centralized) =====
@@ -352,47 +429,6 @@ const OBSERVER_CONFIGS = {
     rootMargin: '-10% 0px -10% 0px',
   },
 };
-
-function createObserverWrapper(callback, options, triggerOnce = false) {
-  if (!window.IntersectionObserver) {
-    sharedLogger.warn('IntersectionObserver not available - using fallback');
-    return {
-      observer: null,
-      observe: (element) => {
-        if (triggerOnce) {
-          setTimeout(() => callback(element), 0);
-        } else {
-          callback(element);
-        }
-      },
-      disconnect: () => {},
-    };
-  }
-
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting) {
-        if (triggerOnce) {
-          observer.unobserve(entry.target);
-        }
-        callback(entry.target);
-      }
-    });
-  }, options);
-
-  return {
-    observer,
-    observe: (element) => observer.observe(element),
-    disconnect: () => observer.disconnect(),
-  };
-}
-
-export function createLazyLoadObserver(
-  callback,
-  options = OBSERVER_CONFIGS.lazyLoad,
-) {
-  return createObserverWrapper(callback, options, true);
-}
 
 export function createTriggerOnceObserver(callback, options = {}) {
   if (!window.IntersectionObserver) {

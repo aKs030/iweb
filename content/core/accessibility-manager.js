@@ -297,3 +297,34 @@ class AccessibilityManager {
 const a11y = new AccessibilityManager();
 window.a11y = a11y;
 export { a11y };
+
+/**
+ * Create an announcer function for screen readers
+ * @returns {Function} Announcer function
+ */
+export function createAnnouncer() {
+  const cache = new Map();
+
+  return (message, { assertive = false, dedupe = false } = {}) => {
+    if (!message) return;
+
+    if (dedupe && cache.has(message)) return;
+    if (dedupe) {
+      cache.set(message, true);
+      setTimeout(() => cache.delete(message), 3000);
+    }
+
+    try {
+      const id = assertive ? 'live-region-assertive' : 'live-region-status';
+      const region = document.getElementById(id);
+      if (!region) return;
+
+      region.textContent = '';
+      requestAnimationFrame(() => {
+        region.textContent = message;
+      });
+    } catch (error) {
+      console.debug('Announcement failed:', error);
+    }
+  };
+}

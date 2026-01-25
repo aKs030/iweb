@@ -1,7 +1,7 @@
 import {
   createLogger,
   makeAbortController,
-} from '/content/utils/shared-utilities.js';
+} from '/content/core/shared-utilities.js';
 import { createProjectsData } from './projects-data.js';
 
 const log = createLogger('projekte-app');

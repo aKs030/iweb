@@ -3,8 +3,8 @@
  * Version: 2025.3.4 (Identity Disambiguation & Abdul Berlin
  */
 
-import { createLogger } from '/content/utils/shared-utilities.js';
-import { upsertHeadLink } from '/content/utils/dom-helpers.js';
+import { createLogger } from '/content/core/shared-utilities.js';
+import { upsertHeadLink } from '/content/core/dom-helpers.js';
 
 const log = createLogger('HeadLoader');
 
@@ -999,7 +999,7 @@ async function loadSharedHead() {
 
   // --- 2. HTML HEAD UPDATES (lightweight, no heavy DOM replacement) ---
   try {
-    await import('../../utils/shared-utilities.js');
+    await import('../../core/shared-utilities.js');
 
     // Prefer explicit opt-in via `data-force-prod-canonical="true"` when production canonical is required.
 
@@ -1047,7 +1047,7 @@ async function loadSharedHead() {
     if (imageAlt) upsertMeta('twitter:image:alt', imageAlt);
     if (pageData.image) {
       // Try to find real image dimensions from the generated JSON file
-      fetch('/content/utils/og-image-dimensions.json')
+      fetch('/content/core/og-image-dimensions.json')
         .then((r) => (r.ok ? r.json() : null))
         .then((map) => {
           if (!map) {
@@ -1091,7 +1091,7 @@ async function loadSharedHead() {
       let cleanPath;
       try {
         const { getCanonicalPathFromRoutes } =
-          await import('../../utils/canonical-utils.js');
+          await import('../../core/canonical-utils.js');
         cleanPath = getCanonicalPathFromRoutes(
           globalThis.location.pathname,
           ROUTES,
@@ -1475,14 +1475,6 @@ async function loadSharedHead() {
   document.addEventListener('app:loaderHide', hideLoader, { once: true });
   globalThis.SHARED_HEAD_LOADED = true;
 }
-
-// Removed unused helper: applyIconLink (local cleanup)
-// This helper was removed locally because it is not referenced anywhere in the repo.
-// Reintroduce if external consumers require it.
-
-// Removed unused export: orchestrateHead (local cleanup)
-// This helper was removed locally because it is not referenced anywhere in the repo.
-// Reintroduce if external consumers require it.
 
 try {
   await loadSharedHead();

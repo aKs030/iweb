@@ -13,7 +13,7 @@
  * @last-modified 2025-12-19
  */
 
-import { createLogger, throttle } from '/content/utils/shared-utilities.js';
+import { createLogger, throttle } from '/content/core/shared-utilities.js';
 import { THREE_PATHS } from './config.js';
 
 const log = createLogger('sharedParticleSystem');

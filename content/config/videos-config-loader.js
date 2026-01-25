@@ -15,7 +15,7 @@
 async function loadConfig() {
   let log;
   try {
-    const { createLogger } = await import('../utils/shared-utilities.js');
+    const { createLogger } = await import('../core/shared-utilities.js');
     log = createLogger('VideosConfig');
     let partA = '';
     let partB = '';

@@ -483,8 +483,7 @@ export class RobotAnimation {
     }, ms);
   }
 
-  // eslint-disable-next-line no-unused-vars
-  triggerRandomIdleAnimation(_duration) {
+  triggerRandomIdleAnimation() {
     const r = Math.random();
     if (r < 0.3) {
       this.robot.dom.avatar.classList.add('waving');

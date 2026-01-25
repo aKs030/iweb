@@ -1,4 +1,4 @@
-import { createLogger } from '/content/utils/shared-utilities.js';
+import { createLogger } from '/content/core/shared-utilities.js';
 
 const log = createLogger('CardManager');
 

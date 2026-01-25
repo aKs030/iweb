@@ -6,7 +6,7 @@
  */
 
 /* exported initSearch, openSearch, closeSearch, toggleSearch */
-import { createLogger } from '/content/utils/shared-utilities.js';
+import { createLogger } from '/content/core/shared-utilities.js';
 
 const _log = createLogger('search');
 
@@ -231,9 +231,6 @@ const SEARCH_INDEX = [
   },
 ];
 
-/* ===== Quick Actions - Removed (unused) ===== */
-/* The QUICK_ACTIONS constant was removed because Quick Actions are not currently injected by the UI. Keep a record here to reintroduce later if needed. */
-
 class SearchComponent {
   constructor() {
     this.overlay = null;
@@ -243,7 +240,6 @@ class SearchComponent {
     this.searchIndex = SEARCH_INDEX;
     this.currentResults = [];
     this.selectedIndex = -1;
-    /* Recent searches feature removed (unused). Previously stored in localStorage; methods removed below. */
     this.searchTimeout = null;
 
     this.init();
@@ -318,8 +314,6 @@ class SearchComponent {
       if (e.target === overlay) this.close();
     });
   }
-
-  /* Quick Actions generator removed (unused). Reintroduce similar method if Quick Actions are enabled in the UI. */
 
   attachEventListeners() {
     // Globale Tastatur-Shortcuts
@@ -702,9 +696,6 @@ class SearchComponent {
     // Schließe Search
     this.close();
   }
-
-  /* Recent Searches feature removed (unused)
-     The related methods were removed to reduce code surface. Restore from version history if needed. */
 }
 
 // Globale Instanz
