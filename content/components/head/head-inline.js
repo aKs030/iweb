@@ -1,20 +1,13 @@
 import { createLogger } from '/content/core/logger.js';
 import { upsertHeadLink } from '/content/core/dom-helpers.js';
-import { SITE_CONFIG } from '../../config/site-config.js';
+import { ENV } from '../../config/env.config.js';
 
 const log = createLogger('head-inline');
 
-const detectHostConfig = (host) => {
-  const h = (host || globalThis?.location?.hostname || '').toLowerCase();
-  const cfg = SITE_CONFIG || {};
-  if (!h) return cfg.default || {};
-  if (cfg[h]) return cfg[h];
-  const stripped = h.replace(/^www\./, '');
-  if (cfg[stripped]) return cfg[stripped];
-  return cfg.default || {};
-};
-
-const { gtm: GTM_ID, ga4: GA4_MEASUREMENT_ID } = detectHostConfig();
+const GTM_ID = ENV.GTM_ID;
+const GA4_MEASUREMENT_ID = ENV.GA4_ID;
+const ADS_CONVERSION_ID = ENV.AW_ID;
+const ADS_CONVERSION_LABEL = ENV.AW_LABEL;
 
 const dataLayer = (globalThis.dataLayer = globalThis.dataLayer || []);
 function gtag() {
@@ -68,9 +61,6 @@ try {
 
 gtag('js', Date.now());
 
-const hostCfg = detectHostConfig();
-const ADS_CONVERSION_ID = hostCfg?.aw ?? null;
-const ADS_CONVERSION_LABEL = hostCfg?.aw_label ?? null;
 dataLayer.push({
   gtm_autoconfig: true,
   ads_conversion_id: ADS_CONVERSION_ID,

@@ -15,26 +15,12 @@ function addListener(target, event, handler, options = {}) {
   }
 }
 
-const TITLE_MAP = {
-  '/index.html': 'Startseite',
-  '/': 'Startseite',
-  '/gallery/': 'Fotos',
-  '/projekte/': 'Projekte',
-  '/videos/': 'Videos',
-};
-
-const FALLBACK_TITLES = {
-  hero: { title: 'Startseite', subtitle: '' },
-  features: { title: 'Projekte', subtitle: 'Meine Arbeiten' },
-  section3: { title: 'Über mich', subtitle: 'Lerne mich kennen' },
-  contact: { title: 'Kontakt', subtitle: 'Schreiben Sie mir' },
-};
-
 export class MenuEvents {
-  constructor(container, state, renderer) {
+  constructor(container, state, renderer, config = {}) {
     this.container = container;
     this.state = state;
     this.renderer = renderer;
+    this.config = config;
     this.cleanupFns = [];
   }
 
@@ -174,7 +160,8 @@ export class MenuEvents {
 
   setSiteTitle() {
     const path = window.location.pathname;
-    const pageTitle = TITLE_MAP[path] || document.title || 'Website';
+    const titleMap = this.config.TITLE_MAP || {};
+    const pageTitle = titleMap[path] || document.title || 'Website';
     this.state.setTitle(pageTitle);
   }
 
@@ -217,11 +204,10 @@ export class MenuEvents {
   }
 
   extractSectionInfo(sectionId) {
+    const fallbackTitles = this.config.FALLBACK_TITLES || {};
     const section = document.querySelector(`#${sectionId}`);
     if (!section) {
-      return (
-        FALLBACK_TITLES[sectionId] || { title: 'Startseite', subtitle: '' }
-      );
+      return fallbackTitles[sectionId] || { title: 'Startseite', subtitle: '' };
     }
 
     if (['hero', 'features', 'section3', 'contact'].includes(sectionId)) {
@@ -232,16 +218,12 @@ export class MenuEvents {
         header.style.display = 'none';
         header.style.visibility = 'hidden';
       });
-      return (
-        FALLBACK_TITLES[sectionId] || { title: 'Startseite', subtitle: '' }
-      );
+      return fallbackTitles[sectionId] || { title: 'Startseite', subtitle: '' };
     }
 
     const header = section.querySelector('.section-header');
     if (!header) {
-      return (
-        FALLBACK_TITLES[sectionId] || { title: 'Startseite', subtitle: '' }
-      );
+      return fallbackTitles[sectionId] || { title: 'Startseite', subtitle: '' };
     }
 
     const titleEl = header.querySelector('.section-title, h1, h2, h3');
@@ -249,11 +231,11 @@ export class MenuEvents {
 
     const title =
       titleEl?.textContent?.trim() ||
-      FALLBACK_TITLES[sectionId]?.title ||
+      fallbackTitles[sectionId]?.title ||
       'Startseite';
     const subtitle =
       subtitleEl?.textContent?.trim() ||
-      FALLBACK_TITLES[sectionId]?.subtitle ||
+      fallbackTitles[sectionId]?.subtitle ||
       '';
 
     return { title, subtitle };
