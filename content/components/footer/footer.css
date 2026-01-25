@@ -941,66 +941,290 @@ body.footer-expanded {
   }
 
   .footer-max {
-    padding: 16px;
+    padding: 12px;
+    max-height: calc(100vh - 100px);
+  }
+
+  .footer-content {
+    gap: 8px;
   }
 
   .cookie-settings {
     max-width: 100%;
   }
 
+  .settings-content {
+    padding: 10px 12px;
+    gap: 6px;
+  }
+
+  .cookie-category {
+    padding: 8px 10px;
+  }
+
+  .settings-footer {
+    padding: 10px 12px;
+    gap: 6px;
+  }
+
   .cards {
     grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
+    gap: 6px;
   }
 
-  .skill-tags {
-    gap: 4px;
+  .card {
+    padding: 10px;
+    min-height: 100px;
   }
 
-  .tag {
+  .card h3 {
+    font-size: 11px;
+    margin: 0 0 6px;
+  }
+
+  .card .name {
+    font-size: 11px;
+    margin: 0 0 3px;
+  }
+
+  .card .role {
     font-size: 9px;
-    padding: 4px 8px;
+    margin: 0 0 6px;
+  }
+
+  .card .bio {
+    font-size: 9px;
+    line-height: 1.3;
+    margin: 0 0 6px;
+  }
+
+  .card .card-desc {
+    font-size: 9px;
+    line-height: 1.3;
+    margin: 0 0 6px;
   }
 
   .card-actions {
-    flex-direction: column;
+    gap: 4px;
   }
 
   .cta {
-    width: 100%;
+    padding: 5px 8px;
+    font-size: 9px;
+    gap: 3px;
+  }
+
+  .cta svg {
+    width: 10px;
+    height: 10px;
+  }
+
+  .links a,
+  .links-compact a {
+    padding: 4px 6px;
+    font-size: 9px;
+    gap: 4px;
+  }
+
+  .links a svg,
+  .links-compact a svg {
+    width: 10px;
+    height: 10px;
+  }
+
+  .skill-tags {
+    gap: 3px;
+  }
+
+  .tag {
+    font-size: 8px;
+    padding: 3px 6px;
+  }
+
+  .newsletter-form {
+    gap: 6px;
+  }
+
+  .newsletter-form input {
+    padding: 6px 10px;
+    font-size: 10px;
+  }
+
+  .newsletter-form button {
+    padding: 6px 12px;
+    font-size: 10px;
   }
 
   .status-bar {
-    flex-direction: column;
-    gap: 12px;
-    text-align: center;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 4px;
+    padding-top: 8px;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .copyright {
+    font-size: 8px;
+    flex-shrink: 1;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+  }
+
+  .social {
+    gap: 2px;
+    order: 2;
+    flex-shrink: 0;
+  }
+
+  .social-btn {
+    padding: 4px;
+    min-width: 28px;
+    min-height: 28px;
+    border-radius: 6px;
   }
 
   .social-btn span {
     display: none;
   }
 
-  .social-btn {
-    padding: 10px;
-    min-width: 44px;
-    min-height: 44px;
-    justify-content: center;
-    border-radius: 12px;
+  .social-btn svg {
+    width: 11px;
+    height: 11px;
+  }
+
+  .legal {
+    gap: 2px;
+    order: 3;
+    flex-shrink: 0;
+  }
+
+  .legal .nav-btn {
+    padding: 4px 6px;
+    font-size: 8px;
+    min-height: 28px;
+    border-radius: 6px;
   }
 }
 
 @media (max-width: 480px) {
-  .cards {
-    grid-template-columns: 1fr;
+  .footer-max {
+    padding: 10px;
+    max-height: calc(100vh - 80px);
   }
 
-  .skill-tags {
+  .footer-content {
+    gap: 6px;
+  }
+
+  .cards {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .card {
+    padding: 8px;
+    min-height: 80px;
+  }
+
+  .card h3 {
+    font-size: 10px;
+    margin: 0 0 5px;
+  }
+
+  .card .name {
+    font-size: 10px;
+    margin: 0 0 2px;
+  }
+
+  .card .role {
+    font-size: 8px;
+    margin: 0 0 5px;
+  }
+
+  .card .bio,
+  .card .card-desc {
+    font-size: 8px;
+    line-height: 1.3;
+    margin: 0 0 5px;
+  }
+
+  .card-actions {
     gap: 4px;
   }
 
-  .tag {
+  .cta {
+    padding: 4px 8px;
     font-size: 8px;
-    padding: 3px 6px;
+  }
+
+  .links a,
+  .links-compact a {
+    padding: 3px 5px;
+    font-size: 8px;
+  }
+
+  .skill-tags {
+    gap: 2px;
+  }
+
+  .tag {
+    font-size: 7px;
+    padding: 2px 5px;
+  }
+
+  .newsletter-form input {
+    padding: 5px 8px;
+    font-size: 9px;
+  }
+
+  .newsletter-form button {
+    padding: 5px 10px;
+    font-size: 9px;
+  }
+
+  .status-bar {
+    padding-top: 6px;
+    gap: 3px;
+    flex-wrap: nowrap;
+  }
+
+  .copyright {
+    font-size: 7px;
+    flex-shrink: 2;
+    min-width: 0;
+  }
+
+  .copyright a {
+    display: none;
+  }
+
+  .social {
+    gap: 2px;
+  }
+
+  .social-btn {
+    padding: 4px;
+    min-width: 24px;
+    min-height: 24px;
+  }
+
+  .social-btn svg {
+    width: 10px;
+    height: 10px;
+  }
+
+  .legal {
+    gap: 2px;
+  }
+
+  .legal .nav-btn {
+    padding: 3px 5px;
+    font-size: 7px;
+    min-height: 24px;
   }
 
   .footer-copyright {
@@ -1027,22 +1251,49 @@ body.footer-expanded {
     font-size: 11px;
   }
 
-  .footer-max {
-    padding: 12px;
-  }
-
   .cookie-settings {
     margin: 0;
   }
 
+  .settings-header {
+    padding: 10px 12px;
+  }
+
+  .settings-header h2 {
+    font-size: 12px;
+  }
+
+  .settings-content {
+    padding: 8px 12px;
+    gap: 5px;
+  }
+
+  .settings-intro {
+    font-size: 10px;
+    margin: 0 0 3px;
+  }
+
+  .cookie-category {
+    padding: 7px 9px;
+  }
+
+  .category-header h3 {
+    font-size: 11px;
+  }
+
+  .cookie-category > p {
+    font-size: 9px;
+  }
+
   .settings-footer {
-    flex-direction: column;
-    gap: 8px;
+    padding: 8px 12px;
+    gap: 6px;
   }
 
   .btn-secondary,
   .btn-primary {
-    width: 100%;
+    padding: 7px 10px;
+    font-size: 10px;
   }
 }
 
