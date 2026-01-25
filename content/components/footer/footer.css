@@ -271,11 +271,13 @@
 
 /* ===== Maximized State ===== */
 .footer-max {
-  padding: 20px;
+  padding: 16px 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  max-height: calc(100vh - 150px);
+  overflow: hidden;
 }
 
 .footer-max.hidden {
@@ -517,50 +519,89 @@
   max-width: 1200px;
   margin: 0 auto;
   width: 100%;
+  max-height: calc(100vh - 200px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 12px;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
+  flex-shrink: 0;
 }
 
 .card {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--dynamic-menu-separator, rgba(255, 255, 255, 0.1));
   border-radius: 12px;
-  padding: 16px;
+  padding: 14px;
   transition: all var(--footer-transition);
+  display: flex;
+  flex-direction: column;
+  min-height: 140px;
 }
 
 .card:hover {
   background: rgba(255, 255, 255, 0.05);
   border-color: var(--dynamic-menu-accent-blue, #007aff);
   transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.15);
 }
 
 .card h3 {
   font-size: 13px;
   font-weight: 600;
-  margin: 0 0 12px;
+  margin: 0 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--dynamic-menu-label-primary, #fff);
 }
 
 .card .name {
   font-size: 13px;
   font-weight: 600;
   margin: 0 0 4px;
+  color: var(--dynamic-menu-label-primary, #fff);
 }
 
 .card .role {
   font-size: 11px;
   color: rgba(255, 255, 255, 0.6);
-  margin: 0 0 12px;
+  margin: 0 0 8px;
+}
+
+.card .bio {
+  font-size: 11px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0 0 10px;
+  flex: 1;
+}
+
+.card .card-desc {
+  font-size: 11px;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0 0 10px;
+  flex: 1;
+}
+
+.card-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: auto;
 }
 
 .cta {
-  display: inline-block;
-  padding: 6px 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 7px 12px;
   background: var(--dynamic-menu-accent-blue, #007aff);
   color: #fff;
   text-decoration: none;
@@ -568,25 +609,53 @@
   font-size: 11px;
   font-weight: 600;
   transition: all var(--footer-transition);
+  flex: 1;
+  justify-content: center;
+  min-width: 0;
 }
 
 .cta:hover {
   background: var(--dynamic-menu-accent-blue-hover, #0051d5);
   transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+}
+
+.cta-secondary {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--dynamic-menu-separator, rgba(255, 255, 255, 0.2));
+}
+
+.cta-secondary:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
 }
 
 .links {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
+  flex: 1;
 }
 
 .links a {
-  padding: 6px 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 6px;
   color: rgba(255, 255, 255, 0.6);
   text-decoration: none;
-  border-radius: 6px;
-  font-size: 11px;
+  border-radius: 5px;
+  font-size: 10px;
+  transition: all var(--footer-transition);
+}
+
+.links a svg {
+  flex-shrink: 0;
+  width: 12px;
+  height: 12px;
+  opacity: 0.7;
   transition: all var(--footer-transition);
 }
 
@@ -596,10 +665,63 @@
   transform: translateX(3px);
 }
 
+.links a:hover svg {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+/* Compact Grid Layout for Work & Quick Links */
+.links-compact {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+  flex: 1;
+}
+
+.links-compact a {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 5px;
+  padding: 6px 8px;
+  color: rgba(255, 255, 255, 0.6);
+  text-decoration: none;
+  border-radius: 6px;
+  font-size: 10px;
+  transition: all var(--footer-transition);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid transparent;
+}
+
+.links-compact a svg {
+  flex-shrink: 0;
+  width: 12px;
+  height: 12px;
+  opacity: 0.7;
+  transition: all var(--footer-transition);
+}
+
+.links-compact a:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--dynamic-menu-separator, rgba(255, 255, 255, 0.1));
+  transform: scale(1.02);
+}
+
+.links-compact a:hover svg {
+  opacity: 1;
+  transform: scale(1.15);
+}
+
 /* ===== Newsletter Form ===== */
 .newsletter-form {
   display: flex;
+  flex-direction: column;
   gap: 8px;
+  margin-top: auto;
 }
 
 .newsletter-form input {
@@ -611,12 +733,14 @@
   color: #fff;
   font-size: 11px;
   font-family: inherit;
+  transition: all var(--footer-transition);
 }
 
 .newsletter-form input:focus {
   outline: none;
   border-color: var(--dynamic-menu-accent-blue, #007aff);
   background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
 }
 
 .newsletter-form button {
@@ -635,6 +759,37 @@
 .newsletter-form button:hover {
   background: var(--dynamic-menu-accent-blue-hover, #0051d5);
   transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+}
+
+/* ===== Skill Tags ===== */
+.skill-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  flex: 1;
+  align-content: flex-start;
+}
+
+.tag {
+  display: inline-block;
+  padding: 5px 10px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--dynamic-menu-separator, rgba(255, 255, 255, 0.15));
+  border-radius: 12px;
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+  transition: all var(--footer-transition);
+  cursor: default;
+  letter-spacing: 0.02em;
+}
+
+.tag:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: var(--dynamic-menu-accent-blue, #007aff);
+  color: var(--dynamic-menu-accent-blue, #007aff);
+  transform: translateY(-1px) scale(1.05);
 }
 
 /* ===== Status Bar ===== */
@@ -642,44 +797,62 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 16px;
-  padding-top: 16px;
+  gap: 12px;
+  padding-top: 12px;
   border-top: 1px solid var(--dynamic-menu-separator, rgba(255, 255, 255, 0.1));
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  min-height: 36px;
 }
 
 .copyright {
   font-size: 11px;
   color: rgba(255, 255, 255, 0.6);
+  white-space: nowrap;
+  flex-shrink: 1;
 }
 
 .copyright a {
   color: #fff;
   text-decoration: none;
   margin-left: 4px;
+  transition: color var(--footer-transition);
 }
 
 .copyright a:hover {
   color: var(--dynamic-menu-accent-blue, #007aff);
 }
 
+.legal {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.legal .nav-btn {
+  padding: 6px 10px;
+  font-size: 10px;
+  min-height: auto;
+  border-radius: 8px;
+}
+
 .social {
   display: flex;
   gap: 6px;
   align-items: center;
+  flex-shrink: 0;
 }
 
 .social-btn {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 6px 10px;
+  padding: 6px 8px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--dynamic-menu-separator, rgba(255, 255, 255, 0.1));
   border-radius: 8px;
   color: rgba(255, 255, 255, 0.6);
   text-decoration: none;
-  font-size: 11px;
+  font-size: 10px;
   transition: all var(--footer-transition);
 }
 
@@ -692,11 +865,8 @@
 
 .social-btn svg {
   flex-shrink: 0;
-}
-
-.legal {
-  display: flex;
-  gap: 6px;
+  width: 14px;
+  height: 14px;
 }
 
 /* ===== Expanded State ===== */
@@ -781,6 +951,23 @@ body.footer-expanded {
     gap: 8px;
   }
 
+  .skill-tags {
+    gap: 4px;
+  }
+
+  .tag {
+    font-size: 9px;
+    padding: 4px 8px;
+  }
+
+  .card-actions {
+    flex-direction: column;
+  }
+
+  .cta {
+    width: 100%;
+  }
+
   .status-bar {
     flex-direction: column;
     gap: 12px;
@@ -803,6 +990,15 @@ body.footer-expanded {
 @media (max-width: 480px) {
   .cards {
     grid-template-columns: 1fr;
+  }
+
+  .skill-tags {
+    gap: 4px;
+  }
+
+  .tag {
+    font-size: 8px;
+    padding: 3px 6px;
   }
 
   .footer-copyright {
