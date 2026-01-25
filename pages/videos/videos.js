@@ -61,22 +61,6 @@ function bindThumb(btn) {
   btn.dataset.bound = '1';
 }
 
-async function fetchJson(url) {
-  const safeUrl = url.replaceAll(/([?&]key=)[^&]+/g, '$1[REDACTED]');
-  log.warn(`Fetching ${safeUrl}`);
-
-  try {
-    return await fetchJSON(url);
-  } catch (error) {
-    // Enhance error with status info for better debugging
-    const err = new Error(error.message);
-    err.status = error.status || 0;
-    err.statusText = error.statusText || '';
-    err.body = error.body || '';
-    throw err;
-  }
-}
-
 async function fetchChannelId(handle) {
   // Prefer explicit channel id when set
   if (globalThis.YOUTUBE_CHANNEL_ID)
@@ -90,7 +74,7 @@ async function fetchChannelId(handle) {
   const url = `/api/youtube/search?part=snippet&type=channel&q=${encodeURIComponent(
     handle,
   )}&maxResults=5`;
-  const json = await fetchJson(url);
+  const json = await fetchJSON(url);
   const items = json?.items || [];
   if (!items.length) return null;
 
@@ -106,7 +90,7 @@ async function fetchChannelId(handle) {
     const chUrl = `/api/youtube/channels?part=statistics,contentDetails&id=${ids.join(
       ',',
     )}`;
-    const chJson = await fetchJson(chUrl);
+    const chJson = await fetchJSON(chUrl);
     const chItems = chJson?.items || [];
     const preferred = chItems.find(
       (c) => Number(c?.statistics?.videoCount) > 0,
@@ -124,7 +108,7 @@ async function fetchChannelId(handle) {
 
 async function fetchUploadsPlaylist(channelId) {
   const url = `/api/youtube/channels?part=contentDetails&id=${channelId}`;
-  const json = await fetchJson(url);
+  const json = await fetchJSON(url);
   return json?.items?.[0]?.contentDetails?.relatedPlaylists?.uploads;
 }
 
@@ -136,7 +120,7 @@ async function fetchPlaylistItems(uploads, maxResults = 50) {
       pageToken ? `&pageToken=${pageToken}` : ''
     }`;
     try {
-      const json = await fetchJson(url);
+      const json = await fetchJSON(url);
       allItems.push(...(json.items || []));
       pageToken = json.nextPageToken;
     } catch (e) {
@@ -163,7 +147,7 @@ async function searchChannelVideos(channelId, maxResults = 50) {
       pageToken ? `&pageToken=${pageToken}` : ''
     }`;
     try {
-      const json = await fetchJson(url);
+      const json = await fetchJSON(url);
       (json.items || []).forEach((it) => {
         // Normalize to playlistItem-like shape used elsewhere
         if (it && it.id && it.id.videoId)
@@ -193,7 +177,7 @@ async function fetchVideoDetailsMap(vidIds) {
     ',',
   )}`;
   try {
-    const json = await fetchJson(url);
+    const json = await fetchJSON(url);
     (json.items || []).forEach((v) => {
       map[v.id] = v;
     });
