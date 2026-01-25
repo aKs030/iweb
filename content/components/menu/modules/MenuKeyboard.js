@@ -40,14 +40,14 @@ export class MenuKeyboard {
 
   register(keys, callback) {
     if (!Array.isArray(keys)) keys = [keys];
-    keys.forEach(key => {
+    keys.forEach((key) => {
       this.shortcuts.set(key.toLowerCase(), callback);
     });
   }
 
   unregister(keys) {
     if (!Array.isArray(keys)) keys = [keys];
-    keys.forEach(key => {
+    keys.forEach((key) => {
       this.shortcuts.delete(key.toLowerCase());
     });
   }

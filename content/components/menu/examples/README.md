@@ -53,10 +53,10 @@ controller.state.on('openChange', (isOpen) => {
   // Google Analytics
   if (window.gtag) {
     window.gtag('event', 'menu_interaction', {
-      action: isOpen ? 'open' : 'close'
+      action: isOpen ? 'open' : 'close',
     });
   }
-  
+
   // Matomo
   if (window._paq) {
     window._paq.push(['trackEvent', 'Menu', isOpen ? 'Open' : 'Close']);
@@ -128,45 +128,45 @@ window.menuDebug.setTitle('Test', 'Subtitle');
 import { initWithFeatures } from './examples/advanced-usage.js';
 
 const controller = await initWithFeatures({
-  analytics: true,           // Google Analytics Integration
-  persistState: true,        // LocalStorage Sync
-  keyboardShortcuts: true,   // Cmd/Ctrl + M
-  debug: true,               // Debug Mode
+  analytics: true, // Google Analytics Integration
+  persistState: true, // LocalStorage Sync
+  keyboardShortcuts: true, // Cmd/Ctrl + M
+  debug: true, // Debug Mode
 });
 ```
 
 ## Verfügbare Events
 
-| Event | Payload | Beschreibung |
-|-------|---------|--------------|
-| `openChange` | `boolean` | Menu wurde geöffnet/geschlossen |
-| `titleChange` | `{ title, subtitle }` | Titel wurde geändert |
-| `activeLinkChange` | `string` | Aktiver Link wurde geändert |
+| Event              | Payload               | Beschreibung                    |
+| ------------------ | --------------------- | ------------------------------- |
+| `openChange`       | `boolean`             | Menu wurde geöffnet/geschlossen |
+| `titleChange`      | `{ title, subtitle }` | Titel wurde geändert            |
+| `activeLinkChange` | `string`              | Aktiver Link wurde geändert     |
 
 ## State Properties
 
 ```javascript
-controller.state.isOpen          // boolean
-controller.state.activeLink      // string
-controller.state.currentTitle    // string
-controller.state.currentSubtitle // string
+controller.state.isOpen; // boolean
+controller.state.activeLink; // string
+controller.state.currentTitle; // string
+controller.state.currentSubtitle; // string
 ```
 
 ## Methods
 
 ```javascript
 // State setzen
-controller.state.setOpen(boolean)
-controller.state.setTitle(title, subtitle)
-controller.state.setActiveLink(link)
+controller.state.setOpen(boolean);
+controller.state.setTitle(title, subtitle);
+controller.state.setActiveLink(link);
 
 // Events
-controller.state.on(event, callback)
-controller.state.off(event, callback)
-controller.state.emit(event, data)
+controller.state.on(event, callback);
+controller.state.off(event, callback);
+controller.state.emit(event, data);
 
 // Cleanup
-controller.destroy()
+controller.destroy();
 ```
 
 ## Best Practices

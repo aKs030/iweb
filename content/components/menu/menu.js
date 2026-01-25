@@ -1,6 +1,6 @@
 /**
  * Modern Menu System - Main Entry Point
- * 
+ *
  * Features:
  * - ES6 Module Architecture
  * - Performance Optimized
@@ -9,7 +9,7 @@
  * - Memory-efficient
  * - Analytics Ready
  * - Configurable
- * 
+ *
  * @author Abdulkerim Sesli
  * @version 3.1.0
  */
@@ -29,14 +29,14 @@ const initializeMenu = async (customConfig = {}) => {
     const config = createConfig(customConfig);
     const controller = new MenuController(config);
     await controller.init();
-    
+
     // Store global reference
     globalController = controller;
-    
+
     // Expose API
     window.menuController = controller;
     window.menuCleanup = () => controller.destroy();
-    
+
     logger.info('Menu system initialized');
     return controller;
   } catch (error) {
@@ -49,7 +49,9 @@ const initializeMenu = async (customConfig = {}) => {
 if (document.readyState !== 'loading') {
   initializeMenu();
 } else {
-  document.addEventListener('DOMContentLoaded', () => initializeMenu(), { once: true });
+  document.addEventListener('DOMContentLoaded', () => initializeMenu(), {
+    once: true,
+  });
 }
 
 // Export for manual initialization

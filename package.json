@@ -10,7 +10,8 @@
     "lint": "eslint \"**/*.js\" --fix",
     "lint:check": "eslint \"**/*.js\"",
     "check": "npm run lint:check && npm run format:check",
-    "fix": "npm run lint && npm run format"
+    "fix": "npm run lint && npm run format",
+    "prepare": "husky"
   },
   "lint-staged": {
     "*.{js,ts}": [
@@ -24,6 +25,7 @@
   "devDependencies": {
     "@eslint/js": "^9.39.2",
     "eslint": "^9.39.2",
+    "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
     "prettier": "^3.8.1"
   },

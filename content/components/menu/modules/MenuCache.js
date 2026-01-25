@@ -26,7 +26,7 @@ export class MenuCache {
   setComputed(key, value, ttl = this.ttl) {
     this.computed.set(key, value);
     this.timestamps.set(key, Date.now());
-    
+
     // Auto-expire
     if (ttl > 0) {
       setTimeout(() => {
@@ -55,7 +55,7 @@ export class MenuCache {
     if (this.computed.has(key) && !this.isExpired(key, ttl)) {
       return this.computed.get(key);
     }
-    
+
     const value = computeFn();
     this.setComputed(key, value, ttl);
     return value;
