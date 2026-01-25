@@ -1,6 +1,6 @@
 /**
  * Main Application Entry Point
- * @version 5.0.0
+ * @version 6.0.0
  * @last-modified 2026-01-25
  */
 
@@ -12,21 +12,15 @@ import {
   schedulePersistentStorageRequest,
   AppLoadManager,
   SectionTracker,
+  getElementById,
 } from '/content/core/shared-utilities.js';
 import { a11y, createAnnouncer } from './core/accessibility-manager.js';
-import { getThreeEarthContainer, getSnapContainer } from './core/dom-cache.js';
 import { SectionManager } from './core/section-manager.js';
 import { LoaderManager } from './core/loader-manager.js';
 import { ThreeEarthManager } from './core/three-earth-manager.js';
-import { EventDelegator } from './core/event-delegator.js';
-import { StyleActivator } from './core/style-activator.js';
-import { ScrollManager } from './core/scroll-manager.js';
 import './components/menu/menu.js';
 
 const log = createLogger('main');
-
-// Debug hooks for testing
-globalThis.__threeEarthCleanup = null;
 
 // ===== Configuration & Environment =====
 const ENV = {
@@ -35,7 +29,6 @@ const ENV = {
     navigator.userAgent.includes('HeadlessChrome') ||
     (globalThis.location.hostname === 'localhost' &&
       globalThis.navigator.webdriver),
-  debug: new URLSearchParams(globalThis.location.search).has('debug'),
 };
 
 // ===== Performance Tracking =====
@@ -82,13 +75,52 @@ if (document.readyState !== 'loading') {
 }
 
 // ===== Initialize Managers =====
-const scrollManager = new ScrollManager();
-scrollManager.init(getSnapContainer());
-
 const LoadingScreenManager = new LoaderManager();
 const ThreeEarthLoader = new ThreeEarthManager(ENV);
-const eventDelegator = new EventDelegator();
-const styleActivator = new StyleActivator();
+
+// ===== Event Handlers (inline) =====
+function handleRetryClick(event) {
+  const retry = event.target?.closest('.retry-btn');
+  if (retry) {
+    event.preventDefault();
+    try {
+      globalThis.location.reload();
+    } catch {
+      /* fallback */
+    }
+  }
+}
+
+function handleShareClick(event) {
+  const share = event.target?.closest('.btn-share');
+  if (!share) return;
+
+  event.preventDefault();
+  const shareUrl = share.dataset.shareUrl || 'https://www.youtube.com/@aks.030';
+  const shareData = {
+    title: document.title,
+    text: 'Schau dir diesen Kanal an',
+    url: shareUrl,
+  };
+
+  if (navigator.share) {
+    navigator.share(shareData).catch((err) => log.warn('share failed', err));
+  } else if (navigator.clipboard) {
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      try {
+        announce('Link kopiert', { dedupe: true });
+      } catch (err) {
+        log.warn('announce failed', err);
+      }
+    });
+  } else {
+    try {
+      globalThis.prompt('Link kopieren', shareUrl);
+    } catch (err) {
+      log.warn('prompt failed', err);
+    }
+  }
+}
 
 // ===== Application Bootstrap =====
 document.addEventListener(
@@ -104,6 +136,7 @@ document.addEventListener(
 
     const checkReady = () => {
       if (!modulesReady || !windowLoaded) return;
+
       const blocked =
         typeof AppLoadManager !== 'undefined' &&
         typeof AppLoadManager.isBlocked === 'function' &&
@@ -111,14 +144,15 @@ document.addEventListener(
       if (blocked) return;
 
       // Ensure Three.js Earth signaled readiness if present
-      const earthContainer = getThreeEarthContainer();
+      const earthContainer =
+        getElementById('threeEarthContainer') ||
+        getElementById('earth-container');
       const earthReady = earthContainer?.dataset?.threeReady === '1';
       if (earthContainer && !earthReady) {
         return;
       }
 
-      LoadingScreenManager.setStatus('Starte Experience...', 98);
-      LoadingScreenManager.hide({ debug: ENV.debug });
+      LoadingScreenManager.hide();
       announce('Anwendung geladen', { dedupe: true });
     };
 
@@ -129,7 +163,6 @@ document.addEventListener(
       () => {
         perfMarks.windowLoaded = performance.now();
         windowLoaded = true;
-        LoadingScreenManager.setStatus('Finalisiere Assets...', 92);
         checkReady();
       },
       { once: true },
@@ -143,72 +176,36 @@ document.addEventListener(
 
     modulesReady = true;
     perfMarks.modulesReady = performance.now();
-    LoadingScreenManager.setStatus('Initialisiere 3D-Engine...', 90);
     fire(EVENTS.MODULES_READY);
     checkReady();
 
-    // Smart force-hide with retry logic
-    (function scheduleSmartForceHide(attempt = 1) {
-      const DEFAULT_DELAY = 4000;
-      const EXTENDED_DELAY = 6000;
-      const RETRY_DELAY = 3000;
-      const MAX_ATTEMPTS = 3;
-
-      const computeDelay = () => {
-        try {
-          if (typeof AppLoadManager?.getPending === 'function') {
-            const pending = AppLoadManager.getPending() || [];
-            if (pending.includes('three-earth')) return EXTENDED_DELAY;
-          }
-        } catch {
-          // Fallback to default
-        }
-        return DEFAULT_DELAY;
-      };
-
-      const initialDelay = computeDelay();
-
-      setTimeout(
-        () => {
-          if (windowLoaded) return;
-
-          try {
-            if (
-              typeof AppLoadManager?.isBlocked === 'function' &&
-              AppLoadManager.isBlocked()
-            ) {
-              const pending = AppLoadManager.getPending?.() || [];
-              log.warn(
-                `Deferring forced hide (attempt ${attempt}): blocking modules=${pending.join(', ')}`,
-              );
-
-              if (attempt < MAX_ATTEMPTS) {
-                scheduleSmartForceHide(attempt + 1);
-                return;
-              }
-              log.warn('Max attempts reached - forcing hide');
-            }
-          } catch (e) {
-            log.debug('AppLoadManager check failed', e);
-          }
-
-          const pending = AppLoadManager?.getPending?.() || [];
-          log.info(
-            'Forcing loading screen hide after timeout',
-            pending.length ? { pendingModules: pending } : undefined,
-          );
-          LoadingScreenManager.setStatus('Schließe Ladebildschirm...');
-          LoadingScreenManager.hide({ debug: ENV.debug });
-        },
-        attempt === 1 ? initialDelay : RETRY_DELAY,
-      );
-    })();
+    // Force hide after timeout
+    setTimeout(() => {
+      if (!windowLoaded) {
+        log.info('Forcing loading screen hide after timeout');
+        LoadingScreenManager.hide();
+      }
+    }, 4000);
 
     schedulePersistentStorageRequest(2200);
 
-    // Initialize style activator and event delegator
-    styleActivator.init();
-    eventDelegator.init(announce);
+    // Activate deferred styles
+    try {
+      document
+        .querySelectorAll('link[rel="stylesheet"][data-defer="1"]')
+        .forEach((link) => {
+          link.media = 'all';
+          delete link.dataset.defer;
+        });
+    } catch {
+      /* ignore */
+    }
+
+    // Event delegation
+    document.addEventListener('click', (event) => {
+      handleRetryClick(event);
+      handleShareClick(event);
+    });
 
     log.info('Performance:', {
       domReady: Math.round(perfMarks.domReady - perfMarks.start),

@@ -393,9 +393,7 @@ export async function initHeroSubtitle(options = {}) {
       const onResize = () => requestAnimationFrame(pollOverlap);
       window.addEventListener('resize', onResize, { passive: true });
 
-      // Expose instance for imports (preferred) and keep debug window hook for quick manual debugging
       typeWriterInstance = tw;
-      // Register cleanup hooks for BFCache/SPA teardown
       typeWriterInstance.__teardown = () => {
         document.removeEventListener(EVENTS.HERO_TYPING_END, onHeroTypingEnd);
         window.removeEventListener('resize', onResize);

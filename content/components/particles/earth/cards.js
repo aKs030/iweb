@@ -76,8 +76,6 @@ export class CardManager {
     if (this.cards.length > 0) return;
     if (!Array.isArray(dataArray) || dataArray.length === 0) return;
 
-    log.debug(`Initializing ${dataArray.length} cards from data`);
-
     const cardCount = dataArray.length;
     // Base dimensions for the card plane
     const baseW = 2.2;
