@@ -3,18 +3,21 @@
 ## 🚀 Core Features
 
 ### ✅ ES6 Module Architecture
+
 - Modular, maintainable code structure
 - Tree-shakeable imports
 - Lazy loading support
 - TypeScript-ready
 
 ### ✅ State Management
+
 - Centralized state store
 - Event-driven updates
 - Reactive data flow
 - Predictable state changes
 
 ### ✅ Performance Optimized
+
 - RequestAnimationFrame animations
 - Debounced/throttled events
 - DOM read/write batching
@@ -22,12 +25,14 @@
 - Lazy resource loading
 
 ### ✅ Memory Safe
+
 - Automatic event listener cleanup
 - No memory leaks
 - Proper resource disposal
 - Garbage collection friendly
 
 ### ✅ Accessibility (WCAG 2.1 AA)
+
 - Full keyboard navigation
 - Screen reader support
 - ARIA attributes
@@ -36,6 +41,7 @@
 - High contrast support
 
 ### ✅ Mobile Optimized
+
 - Touch-friendly interactions
 - Responsive design
 - Hamburger menu
@@ -45,6 +51,7 @@
 ## 🎨 Advanced Features
 
 ### 🎯 Theme System
+
 ```javascript
 import { MenuTheme } from './modules/MenuTheme.js';
 
@@ -68,6 +75,7 @@ theme.watchSystemTheme();
 ```
 
 ### ⌨️ Keyboard Shortcuts
+
 ```javascript
 import { MenuKeyboard } from './modules/MenuKeyboard.js';
 
@@ -86,11 +94,12 @@ keyboard.register('Alt+n', () => {
 ```
 
 ### 💾 State Persistence
+
 ```javascript
 import { MenuPersistence } from './modules/MenuPersistence.js';
 
 const persistence = new MenuPersistence(state, {
-  ENABLE_PERSISTENCE: true
+  ENABLE_PERSISTENCE: true,
 });
 persistence.init();
 
@@ -99,11 +108,12 @@ persistence.init();
 ```
 
 ### 📊 Analytics Integration
+
 ```javascript
 import { MenuAnalytics } from './modules/MenuAnalytics.js';
 
 const analytics = new MenuAnalytics(state, {
-  ENABLE_ANALYTICS: true
+  ENABLE_ANALYTICS: true,
 });
 analytics.init();
 
@@ -115,6 +125,7 @@ analytics.init();
 ```
 
 ### ⚡ Performance Monitoring
+
 ```javascript
 import { MenuPerformance } from './modules/MenuPerformance.js';
 
@@ -143,6 +154,7 @@ const throttledFn = perf.throttle(fn, 100);
 ```
 
 ### 🗄️ Smart Caching
+
 ```javascript
 import { MenuCache } from './modules/MenuCache.js';
 
@@ -156,15 +168,20 @@ const header = cache.getElement('header');
 cache.setComputed('width', 1200, 5000); // 5s TTL
 
 // Get or compute
-const value = cache.getOrCompute('expensive', () => {
-  return expensiveCalculation();
-}, 10000);
+const value = cache.getOrCompute(
+  'expensive',
+  () => {
+    return expensiveCalculation();
+  },
+  10000,
+);
 
 // Stats
 console.log(cache.getStats());
 ```
 
 ### ⚙️ Configuration System
+
 ```javascript
 import { createConfig } from './modules/MenuConfig.js';
 
@@ -186,6 +203,7 @@ const controller = new MenuController(config);
 ## 🎯 Usage Patterns
 
 ### Basic Usage
+
 ```javascript
 import { initializeMenu } from './menu.js';
 
@@ -195,6 +213,7 @@ const controller = await initializeMenu();
 ```
 
 ### Advanced Usage
+
 ```javascript
 import { MenuController, createConfig } from './modules/index.js';
 
@@ -224,6 +243,7 @@ controller.destroy();
 ```
 
 ### With All Features
+
 ```javascript
 import {
   MenuController,
@@ -274,48 +294,49 @@ window.menu = {
 
 ## 📦 Bundle Sizes
 
-| Module | Size (minified) | Gzipped |
-|--------|----------------|---------|
-| MenuController | ~2KB | ~1KB |
-| MenuState | ~1.5KB | ~0.7KB |
-| MenuRenderer | ~2KB | ~1KB |
-| MenuTemplate | ~3KB | ~1.2KB |
-| MenuEvents | ~6KB | ~2.5KB |
-| MenuAccessibility | ~2KB | ~1KB |
-| MenuPerformance | ~3KB | ~1.3KB |
-| MenuCache | ~1.5KB | ~0.7KB |
-| MenuConfig | ~1KB | ~0.5KB |
-| MenuAnalytics | ~1.5KB | ~0.7KB |
-| MenuPersistence | ~1.5KB | ~0.7KB |
-| MenuKeyboard | ~2KB | ~1KB |
-| MenuTheme | ~2.5KB | ~1.1KB |
-| **Total** | **~30KB** | **~13KB** |
+| Module            | Size (minified) | Gzipped   |
+| ----------------- | --------------- | --------- |
+| MenuController    | ~2KB            | ~1KB      |
+| MenuState         | ~1.5KB          | ~0.7KB    |
+| MenuRenderer      | ~2KB            | ~1KB      |
+| MenuTemplate      | ~3KB            | ~1.2KB    |
+| MenuEvents        | ~6KB            | ~2.5KB    |
+| MenuAccessibility | ~2KB            | ~1KB      |
+| MenuPerformance   | ~3KB            | ~1.3KB    |
+| MenuCache         | ~1.5KB          | ~0.7KB    |
+| MenuConfig        | ~1KB            | ~0.5KB    |
+| MenuAnalytics     | ~1.5KB          | ~0.7KB    |
+| MenuPersistence   | ~1.5KB          | ~0.7KB    |
+| MenuKeyboard      | ~2KB            | ~1KB      |
+| MenuTheme         | ~2.5KB          | ~1.1KB    |
+| **Total**         | **~30KB**       | **~13KB** |
 
 ## 🎯 Performance Metrics
 
-| Metric | Value |
-|--------|-------|
-| Initial Load | ~35ms |
-| First Paint | ~50ms |
-| Interactive | ~80ms |
-| Memory Usage | ~2MB |
-| CPU Usage | <1% idle |
-| Bundle Size | 13KB gzipped |
+| Metric       | Value        |
+| ------------ | ------------ |
+| Initial Load | ~35ms        |
+| First Paint  | ~50ms        |
+| Interactive  | ~80ms        |
+| Memory Usage | ~2MB         |
+| CPU Usage    | <1% idle     |
+| Bundle Size  | 13KB gzipped |
 
 ## 🌐 Browser Support
 
-| Browser | Version | Status |
-|---------|---------|--------|
-| Chrome | 90+ | ✅ Full Support |
-| Edge | 90+ | ✅ Full Support |
-| Firefox | 88+ | ✅ Full Support |
-| Safari | 14+ | ✅ Full Support |
-| iOS Safari | 14+ | ✅ Full Support |
-| Chrome Mobile | 90+ | ✅ Full Support |
+| Browser       | Version | Status          |
+| ------------- | ------- | --------------- |
+| Chrome        | 90+     | ✅ Full Support |
+| Edge          | 90+     | ✅ Full Support |
+| Firefox       | 88+     | ✅ Full Support |
+| Safari        | 14+     | ✅ Full Support |
+| iOS Safari    | 14+     | ✅ Full Support |
+| Chrome Mobile | 90+     | ✅ Full Support |
 
 ## 🔮 Upcoming Features
 
 ### v3.2
+
 - [ ] Animation presets
 - [ ] Plugin system
 - [ ] Custom events API
@@ -323,6 +344,7 @@ window.menu = {
 - [ ] Voice commands
 
 ### v4.0
+
 - [ ] Web Components
 - [ ] Shadow DOM
 - [ ] CSS-in-JS option

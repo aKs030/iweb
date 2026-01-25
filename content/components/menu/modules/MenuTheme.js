@@ -44,7 +44,8 @@ export class MenuTheme {
 
     // Colorful theme
     this.register('colorful', {
-      '--dynamic-menu-header-bg': 'linear-gradient(135deg, rgba(102, 126, 234, 0.9), rgba(118, 75, 162, 0.9))',
+      '--dynamic-menu-header-bg':
+        'linear-gradient(135deg, rgba(102, 126, 234, 0.9), rgba(118, 75, 162, 0.9))',
       '--dynamic-menu-label-primary': '#ffffff',
       '--dynamic-menu-label-secondary': 'rgba(255, 255, 255, 0.8)',
       '--dynamic-menu-accent-blue': '#ffd700',
@@ -73,11 +74,13 @@ export class MenuTheme {
     });
 
     this.currentTheme = themeName;
-    
+
     // Dispatch event
-    window.dispatchEvent(new CustomEvent('menuThemeChange', {
-      detail: { theme: themeName }
-    }));
+    window.dispatchEvent(
+      new CustomEvent('menuThemeChange', {
+        detail: { theme: themeName },
+      }),
+    );
 
     return true;
   }

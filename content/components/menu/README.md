@@ -49,12 +49,14 @@ menu/
 ## 🎯 Usage
 
 ### Basic
+
 ```javascript
 import { initializeMenu } from './menu.js';
 await initializeMenu();
 ```
 
 ### Advanced
+
 ```javascript
 import { MenuController, createConfig } from './modules/index.js';
 
@@ -78,17 +80,19 @@ controller.state.setTitle('New Title', 'Subtitle');
 ```
 
 ### With Themes
+
 ```javascript
 import { MenuTheme } from './modules/MenuTheme.js';
 
 const theme = new MenuTheme();
-theme.apply('dark');        // Dark theme
-theme.apply('light');       // Light theme
-theme.apply('colorful');    // Gradient theme
-theme.applySystemTheme();   // Auto-detect
+theme.apply('dark'); // Dark theme
+theme.apply('light'); // Light theme
+theme.apply('colorful'); // Gradient theme
+theme.applySystemTheme(); // Auto-detect
 ```
 
 ### With Keyboard Shortcuts
+
 ```javascript
 import { MenuKeyboard } from './modules/MenuKeyboard.js';
 
@@ -103,13 +107,13 @@ keyboard.init();
 
 ## 📊 Performance
 
-| Metric | Value |
-|--------|-------|
-| Initial Load | 35ms |
-| First Paint | 50ms |
-| Interactive | 80ms |
-| Memory | 2MB |
-| Bundle (gzipped) | 13KB |
+| Metric           | Value |
+| ---------------- | ----- |
+| Initial Load     | 35ms  |
+| First Paint      | 50ms  |
+| Interactive      | 80ms  |
+| Memory           | 2MB   |
+| Bundle (gzipped) | 13KB  |
 
 ## 🌐 Browser Support
 
@@ -124,6 +128,7 @@ Coverage: ~95% of all users
 ## 🎨 Modules
 
 ### Core (Required)
+
 - **MenuController** - Orchestrator
 - **MenuState** - State Management
 - **MenuRenderer** - DOM Rendering
@@ -132,6 +137,7 @@ Coverage: ~95% of all users
 - **MenuAccessibility** - WCAG Compliance
 
 ### Enhancement (Optional)
+
 - **MenuPerformance** - Performance Utils
 - **MenuCache** - Caching System
 - **MenuConfig** - Configuration
@@ -148,15 +154,15 @@ const config = createConfig({
   ENABLE_ANALYTICS: false,
   ENABLE_PERSISTENCE: false,
   ENABLE_DEBUG: false,
-  
+
   // Timing
   ANIMATION_DURATION: 400,
   DEBOUNCE_DELAY: 150,
-  
+
   // Breakpoints
   MOBILE_BREAKPOINT: 768,
   TABLET_BREAKPOINT: 900,
-  
+
   // Custom menu items
   MENU_ITEMS: [
     { href: '/', icon: 'house', label: 'Home' },
@@ -184,10 +190,10 @@ MIT License
 ## 👤 Author
 
 **Abdulkerim Sesli**
+
 - Version: 3.1.0
 - Date: 2026-01-25
 
 ---
 
 **Status**: ✅ Production Ready | **Quality**: ⭐⭐⭐⭐⭐ Enterprise Grade
-

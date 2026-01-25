@@ -80,15 +80,28 @@ ${this.getNavigation()}
   getNavigation() {
     const menuItems = this.config?.MENU_ITEMS || [
       { href: '/', icon: 'house', fallback: '🏠', label: 'Startseite' },
-      { href: '/projekte/', icon: 'projects', fallback: '📁', label: 'Projekte' },
+      {
+        href: '/projekte/',
+        icon: 'projects',
+        fallback: '📁',
+        label: 'Projekte',
+      },
       { href: '/gallery/', icon: 'gallery', fallback: '📷', label: 'Fotos' },
       { href: '/videos/', icon: 'video', fallback: '🎬', label: 'Videos' },
       { href: '/blog/', icon: 'blog', fallback: '📝', label: 'Blog' },
       { href: '/about/', icon: 'user', fallback: '🧑', label: 'Über mich' },
-      { href: '#site-footer', icon: 'mail', fallback: '✉️', label: 'Kontakt', attrs: 'data-footer-trigger aria-expanded="false"' },
+      {
+        href: '#site-footer',
+        icon: 'mail',
+        fallback: '✉️',
+        label: 'Kontakt',
+        attrs: 'data-footer-trigger aria-expanded="false"',
+      },
     ];
 
-    const items = menuItems.map(item => `
+    const items = menuItems
+      .map(
+        (item) => `
     <li>
       <a href="${item.href}"${item.attrs ? ' ' + item.attrs : ''}>
         <svg class="nav-icon" aria-hidden="true">
@@ -97,7 +110,9 @@ ${this.getNavigation()}
         <span class="icon-fallback" style="display: none">${item.fallback}</span>
         <span>${item.label}</span>
       </a>
-    </li>`).join('');
+    </li>`,
+      )
+      .join('');
 
     return `
 <nav id="navigation" class="site-menu" aria-label="Hauptnavigation">

@@ -24,7 +24,8 @@ export class MenuState {
   }
 
   setTitle(title, subtitle = '') {
-    if (this.currentTitle === title && this.currentSubtitle === subtitle) return;
+    if (this.currentTitle === title && this.currentSubtitle === subtitle)
+      return;
     this.currentTitle = title;
     this.currentSubtitle = subtitle;
     this.emit('titleChange', { title, subtitle });
@@ -42,7 +43,7 @@ export class MenuState {
   }
 
   emit(event, data) {
-    this.listeners.get(event)?.forEach(callback => callback(data));
+    this.listeners.get(event)?.forEach((callback) => callback(data));
   }
 
   reset() {

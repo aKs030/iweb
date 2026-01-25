@@ -1,6 +1,6 @@
 /**
  * Advanced Menu Usage Examples
- * 
+ *
  * Zeigt wie man die neuen Features des Menu Systems nutzt
  */
 
@@ -14,11 +14,11 @@ export async function subscribeToMenuState() {
   // Menu öffnen/schließen tracken
   controller.state.on('openChange', (isOpen) => {
     console.log('Menu is now:', isOpen ? 'open' : 'closed');
-    
+
     // Analytics Event senden
     if (window.gtag) {
       window.gtag('event', 'menu_interaction', {
-        action: isOpen ? 'open' : 'close'
+        action: isOpen ? 'open' : 'close',
       });
     }
   });
@@ -26,7 +26,7 @@ export async function subscribeToMenuState() {
   // Titel-Änderungen tracken
   controller.state.on('titleChange', ({ title, subtitle }) => {
     console.log('Title changed to:', title, subtitle);
-    
+
     // Update Browser Title
     document.title = subtitle ? `${title} - ${subtitle}` : title;
   });
@@ -126,7 +126,7 @@ export async function animationCallbacks() {
     if (isOpen) {
       // Animation beim Öffnen
       console.log('Menu opening animation started');
-      
+
       // Nach Animation
       setTimeout(() => {
         console.log('Menu fully opened');
@@ -155,13 +155,13 @@ export class MenuManager {
   }
 
   closeAll() {
-    this.controllers.forEach(controller => {
+    this.controllers.forEach((controller) => {
       controller.state.setOpen(false);
     });
   }
 
   destroyAll() {
-    this.controllers.forEach(controller => {
+    this.controllers.forEach((controller) => {
       controller.destroy();
     });
     this.controllers.clear();
@@ -174,7 +174,7 @@ export async function enableDebugMode() {
   await controller.init();
 
   // Log alle State-Änderungen
-  ['openChange', 'titleChange', 'activeLinkChange'].forEach(event => {
+  ['openChange', 'titleChange', 'activeLinkChange'].forEach((event) => {
     controller.state.on(event, (data) => {
       console.log(`[Menu Debug] ${event}:`, data);
     });
@@ -202,7 +202,7 @@ export async function initWithFeatures(options = {}) {
   if (options.analytics) {
     controller.state.on('openChange', (isOpen) => {
       window.gtag?.('event', 'menu_interaction', {
-        action: isOpen ? 'open' : 'close'
+        action: isOpen ? 'open' : 'close',
       });
     });
   }

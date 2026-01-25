@@ -1,199 +1,219 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="de">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Menu System - Quick Start</title>
-  <link rel="stylesheet" href="../menu.css">
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      min-height: 100vh;
-    }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Menu System - Quick Start</title>
+    <link rel="stylesheet" href="../menu.css" />
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+      }
 
-    .demo-container {
-      max-width: 1200px;
-      margin: 120px auto 40px;
-      padding: 40px 20px;
-      background: rgba(255, 255, 255, 0.95);
-      border-radius: 20px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    }
+      .demo-container {
+        max-width: 1200px;
+        margin: 120px auto 40px;
+        padding: 40px 20px;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      }
 
-    .demo-section {
-      margin-bottom: 40px;
-      padding: 20px;
-      background: #f8f9fa;
-      border-radius: 12px;
-    }
+      .demo-section {
+        margin-bottom: 40px;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 12px;
+      }
 
-    .demo-section h2 {
-      margin-top: 0;
-      color: #333;
-    }
+      .demo-section h2 {
+        margin-top: 0;
+        color: #333;
+      }
 
-    .demo-button {
-      padding: 12px 24px;
-      margin: 8px;
-      background: #007aff;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
+      .demo-button {
+        padding: 12px 24px;
+        margin: 8px;
+        background: #007aff;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
 
-    .demo-button:hover {
-      background: #0051d5;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
-    }
+      .demo-button:hover {
+        background: #0051d5;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+      }
 
-    .demo-button:active {
-      transform: translateY(0);
-    }
+      .demo-button:active {
+        transform: translateY(0);
+      }
 
-    .demo-output {
-      margin-top: 16px;
-      padding: 16px;
-      background: #fff;
-      border-radius: 8px;
-      border: 1px solid #e0e0e0;
-      font-family: 'Monaco', 'Courier New', monospace;
-      font-size: 13px;
-      max-height: 200px;
-      overflow-y: auto;
-    }
+      .demo-output {
+        margin-top: 16px;
+        padding: 16px;
+        background: #fff;
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
+        font-family: 'Monaco', 'Courier New', monospace;
+        font-size: 13px;
+        max-height: 200px;
+        overflow-y: auto;
+      }
 
-    .demo-output .log-entry {
-      padding: 4px 0;
-      border-bottom: 1px solid #f0f0f0;
-    }
+      .demo-output .log-entry {
+        padding: 4px 0;
+        border-bottom: 1px solid #f0f0f0;
+      }
 
-    .demo-output .log-entry:last-child {
-      border-bottom: none;
-    }
+      .demo-output .log-entry:last-child {
+        border-bottom: none;
+      }
 
-    .demo-output .log-time {
-      color: #999;
-      margin-right: 8px;
-    }
+      .demo-output .log-time {
+        color: #999;
+        margin-right: 8px;
+      }
 
-    .demo-output .log-event {
-      color: #007aff;
-      font-weight: 600;
-      margin-right: 8px;
-    }
+      .demo-output .log-event {
+        color: #007aff;
+        font-weight: 600;
+        margin-right: 8px;
+      }
 
-    .demo-output .log-data {
-      color: #333;
-    }
+      .demo-output .log-data {
+        color: #333;
+      }
 
-    .state-display {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 16px;
-      margin-top: 16px;
-    }
+      .state-display {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-top: 16px;
+      }
 
-    .state-item {
-      padding: 16px;
-      background: #fff;
-      border-radius: 8px;
-      border: 1px solid #e0e0e0;
-    }
+      .state-item {
+        padding: 16px;
+        background: #fff;
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
+      }
 
-    .state-item label {
-      display: block;
-      font-size: 12px;
-      color: #666;
-      margin-bottom: 4px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
+      .state-item label {
+        display: block;
+        font-size: 12px;
+        color: #666;
+        margin-bottom: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
 
-    .state-item .value {
-      font-size: 18px;
-      font-weight: 600;
-      color: #333;
-    }
+      .state-item .value {
+        font-size: 18px;
+        font-weight: 600;
+        color: #333;
+      }
 
-    .state-item .value.true {
-      color: #34c759;
-    }
+      .state-item .value.true {
+        color: #34c759;
+      }
 
-    .state-item .value.false {
-      color: #ff3b30;
-    }
-  </style>
-</head>
-<body>
-  <!-- Menu Container -->
-  <header class="site-header">
-    <div id="menu-container"></div>
-  </header>
+      .state-item .value.false {
+        color: #ff3b30;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Menu Container -->
+    <header class="site-header">
+      <div id="menu-container"></div>
+    </header>
 
-  <!-- Demo Content -->
-  <main id="main-content">
-    <div class="demo-container">
-      <h1>🎯 Menu System - Interactive Demo</h1>
-      <p>Teste die neuen Features des modernisierten Menu Systems</p>
+    <!-- Demo Content -->
+    <main id="main-content">
+      <div class="demo-container">
+        <h1>🎯 Menu System - Interactive Demo</h1>
+        <p>Teste die neuen Features des modernisierten Menu Systems</p>
 
-      <!-- State Display -->
-      <div class="demo-section">
-        <h2>📊 Current State</h2>
-        <div class="state-display">
-          <div class="state-item">
-            <label>Menu Open</label>
-            <div class="value" id="state-open">false</div>
-          </div>
-          <div class="state-item">
-            <label>Current Title</label>
-            <div class="value" id="state-title">-</div>
-          </div>
-          <div class="state-item">
-            <label>Current Subtitle</label>
-            <div class="value" id="state-subtitle">-</div>
-          </div>
-          <div class="state-item">
-            <label>Active Link</label>
-            <div class="value" id="state-link">-</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Controls -->
-      <div class="demo-section">
-        <h2>🎮 Controls</h2>
-        <button class="demo-button" onclick="demoOpenMenu()">Open Menu</button>
-        <button class="demo-button" onclick="demoCloseMenu()">Close Menu</button>
-        <button class="demo-button" onclick="demoToggleMenu()">Toggle Menu</button>
-        <button class="demo-button" onclick="demoChangeTitle()">Change Title</button>
-        <button class="demo-button" onclick="demoResetTitle()">Reset Title</button>
-      </div>
-
-      <!-- Event Log -->
-      <div class="demo-section">
-        <h2>📝 Event Log</h2>
-        <button class="demo-button" onclick="demoClearLog()">Clear Log</button>
-        <div class="demo-output" id="event-log">
-          <div class="log-entry">
-            <span class="log-time">--:--:--</span>
-            <span class="log-event">READY</span>
-            <span class="log-data">Waiting for events...</span>
+        <!-- State Display -->
+        <div class="demo-section">
+          <h2>📊 Current State</h2>
+          <div class="state-display">
+            <div class="state-item">
+              <label>Menu Open</label>
+              <div class="value" id="state-open">false</div>
+            </div>
+            <div class="state-item">
+              <label>Current Title</label>
+              <div class="value" id="state-title">-</div>
+            </div>
+            <div class="state-item">
+              <label>Current Subtitle</label>
+              <div class="value" id="state-subtitle">-</div>
+            </div>
+            <div class="state-item">
+              <label>Active Link</label>
+              <div class="value" id="state-link">-</div>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Code Examples -->
-      <div class="demo-section">
-        <h2>💻 Code Examples</h2>
-        <pre style="background: #fff; padding: 16px; border-radius: 8px; overflow-x: auto;"><code>// State-Updates abonnieren
+        <!-- Controls -->
+        <div class="demo-section">
+          <h2>🎮 Controls</h2>
+          <button class="demo-button" onclick="demoOpenMenu()">
+            Open Menu
+          </button>
+          <button class="demo-button" onclick="demoCloseMenu()">
+            Close Menu
+          </button>
+          <button class="demo-button" onclick="demoToggleMenu()">
+            Toggle Menu
+          </button>
+          <button class="demo-button" onclick="demoChangeTitle()">
+            Change Title
+          </button>
+          <button class="demo-button" onclick="demoResetTitle()">
+            Reset Title
+          </button>
+        </div>
+
+        <!-- Event Log -->
+        <div class="demo-section">
+          <h2>📝 Event Log</h2>
+          <button class="demo-button" onclick="demoClearLog()">
+            Clear Log
+          </button>
+          <div class="demo-output" id="event-log">
+            <div class="log-entry">
+              <span class="log-time">--:--:--</span>
+              <span class="log-event">READY</span>
+              <span class="log-data">Waiting for events...</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Code Examples -->
+        <div class="demo-section">
+          <h2>💻 Code Examples</h2>
+          <pre
+            style="
+              background: #fff;
+              padding: 16px;
+              border-radius: 8px;
+              overflow-x: auto;
+            "
+          ><code>// State-Updates abonnieren
 controller.state.on('openChange', (isOpen) => {
   console.log('Menu is now:', isOpen ? 'open' : 'closed');
 });
@@ -204,119 +224,123 @@ controller.state.setTitle('Neuer Titel', 'Mit Untertitel');
 
 // Cleanup
 controller.destroy();</code></pre>
+        </div>
       </div>
-    </div>
-  </main>
+    </main>
 
-  <!-- Menu System -->
-  <script type="module">
-    import { MenuController } from '../modules/MenuController.js';
+    <!-- Menu System -->
+    <script type="module">
+      import { MenuController } from '../modules/MenuController.js';
 
-    let controller;
+      let controller;
 
-    // Initialize
-    async function init() {
-      controller = new MenuController();
-      await controller.init();
+      // Initialize
+      async function init() {
+        controller = new MenuController();
+        await controller.init();
 
-      // Subscribe to all events
-      controller.state.on('openChange', (isOpen) => {
-        logEvent('openChange', isOpen);
-        updateStateDisplay('open', isOpen);
-      });
+        // Subscribe to all events
+        controller.state.on('openChange', (isOpen) => {
+          logEvent('openChange', isOpen);
+          updateStateDisplay('open', isOpen);
+        });
 
-      controller.state.on('titleChange', ({ title, subtitle }) => {
-        logEvent('titleChange', { title, subtitle });
-        updateStateDisplay('title', title);
-        updateStateDisplay('subtitle', subtitle);
-      });
+        controller.state.on('titleChange', ({ title, subtitle }) => {
+          logEvent('titleChange', { title, subtitle });
+          updateStateDisplay('title', title);
+          updateStateDisplay('subtitle', subtitle);
+        });
 
-      controller.state.on('activeLinkChange', (link) => {
-        logEvent('activeLinkChange', link);
-        updateStateDisplay('link', link);
-      });
+        controller.state.on('activeLinkChange', (link) => {
+          logEvent('activeLinkChange', link);
+          updateStateDisplay('link', link);
+        });
 
-      // Initial state
-      updateStateDisplay('open', controller.state.isOpen);
-      updateStateDisplay('title', controller.state.currentTitle);
-      updateStateDisplay('subtitle', controller.state.currentSubtitle);
-      updateStateDisplay('link', controller.state.activeLink || 'none');
+        // Initial state
+        updateStateDisplay('open', controller.state.isOpen);
+        updateStateDisplay('title', controller.state.currentTitle);
+        updateStateDisplay('subtitle', controller.state.currentSubtitle);
+        updateStateDisplay('link', controller.state.activeLink || 'none');
 
-      // Expose for demo functions
-      window.menuController = controller;
+        // Expose for demo functions
+        window.menuController = controller;
 
-      logEvent('INIT', 'Menu system initialized');
-    }
+        logEvent('INIT', 'Menu system initialized');
+      }
 
-    function logEvent(event, data) {
-      const log = document.getElementById('event-log');
-      const time = new Date().toLocaleTimeString();
-      const entry = document.createElement('div');
-      entry.className = 'log-entry';
-      entry.innerHTML = `
+      function logEvent(event, data) {
+        const log = document.getElementById('event-log');
+        const time = new Date().toLocaleTimeString();
+        const entry = document.createElement('div');
+        entry.className = 'log-entry';
+        entry.innerHTML = `
         <span class="log-time">${time}</span>
         <span class="log-event">${event}</span>
         <span class="log-data">${JSON.stringify(data)}</span>
       `;
-      log.insertBefore(entry, log.firstChild);
+        log.insertBefore(entry, log.firstChild);
 
-      // Keep only last 20 entries
-      while (log.children.length > 20) {
-        log.removeChild(log.lastChild);
+        // Keep only last 20 entries
+        while (log.children.length > 20) {
+          log.removeChild(log.lastChild);
+        }
       }
-    }
 
-    function updateStateDisplay(key, value) {
-      const el = document.getElementById(`state-${key}`);
-      if (!el) return;
+      function updateStateDisplay(key, value) {
+        const el = document.getElementById(`state-${key}`);
+        if (!el) return;
 
-      el.textContent = value === null || value === undefined ? '-' : String(value);
-      el.className = 'value';
-      
-      if (typeof value === 'boolean') {
-        el.classList.add(value ? 'true' : 'false');
+        el.textContent =
+          value === null || value === undefined ? '-' : String(value);
+        el.className = 'value';
+
+        if (typeof value === 'boolean') {
+          el.classList.add(value ? 'true' : 'false');
+        }
       }
-    }
 
-    // Demo functions
-    window.demoOpenMenu = () => {
-      window.menuController.state.setOpen(true);
-    };
+      // Demo functions
+      window.demoOpenMenu = () => {
+        window.menuController.state.setOpen(true);
+      };
 
-    window.demoCloseMenu = () => {
-      window.menuController.state.setOpen(false);
-    };
+      window.demoCloseMenu = () => {
+        window.menuController.state.setOpen(false);
+      };
 
-    window.demoToggleMenu = () => {
-      window.menuController.state.setOpen(!window.menuController.state.isOpen);
-    };
+      window.demoToggleMenu = () => {
+        window.menuController.state.setOpen(
+          !window.menuController.state.isOpen,
+        );
+      };
 
-    window.demoChangeTitle = () => {
-      const titles = [
-        { title: 'Willkommen', subtitle: 'Schön dich zu sehen' },
-        { title: 'Portfolio', subtitle: 'Meine Arbeiten' },
-        { title: 'Kontakt', subtitle: 'Schreib mir' },
-        { title: 'Blog', subtitle: 'Neueste Artikel' },
-      ];
-      const random = titles[Math.floor(Math.random() * titles.length)];
-      window.menuController.state.setTitle(random.title, random.subtitle);
-    };
+      window.demoChangeTitle = () => {
+        const titles = [
+          { title: 'Willkommen', subtitle: 'Schön dich zu sehen' },
+          { title: 'Portfolio', subtitle: 'Meine Arbeiten' },
+          { title: 'Kontakt', subtitle: 'Schreib mir' },
+          { title: 'Blog', subtitle: 'Neueste Artikel' },
+        ];
+        const random = titles[Math.floor(Math.random() * titles.length)];
+        window.menuController.state.setTitle(random.title, random.subtitle);
+      };
 
-    window.demoResetTitle = () => {
-      window.menuController.state.setTitle('Startseite', '');
-    };
+      window.demoResetTitle = () => {
+        window.menuController.state.setTitle('Startseite', '');
+      };
 
-    window.demoClearLog = () => {
-      const log = document.getElementById('event-log');
-      log.innerHTML = '<div class="log-entry"><span class="log-time">--:--:--</span><span class="log-event">CLEARED</span><span class="log-data">Log cleared</span></div>';
-    };
+      window.demoClearLog = () => {
+        const log = document.getElementById('event-log');
+        log.innerHTML =
+          '<div class="log-entry"><span class="log-time">--:--:--</span><span class="log-event">CLEARED</span><span class="log-data">Log cleared</span></div>';
+      };
 
-    // Initialize on load
-    if (document.readyState !== 'loading') {
-      init();
-    } else {
-      document.addEventListener('DOMContentLoaded', init);
-    }
-  </script>
-</body>
+      // Initialize on load
+      if (document.readyState !== 'loading') {
+        init();
+      } else {
+        document.addEventListener('DOMContentLoaded', init);
+      }
+    </script>
+  </body>
 </html>

@@ -25,7 +25,7 @@ export class MenuPerformance {
       if (!inThrottle) {
         fn(...args);
         inThrottle = true;
-        setTimeout(() => inThrottle = false, limit);
+        setTimeout(() => (inThrottle = false), limit);
       }
     };
   }
@@ -38,14 +38,14 @@ export class MenuPerformance {
   // Batch DOM reads
   batchRead(reads) {
     return requestAnimationFrame(() => {
-      return reads.map(read => read());
+      return reads.map((read) => read());
     });
   }
 
   // Batch DOM writes
   batchWrite(writes) {
     return requestAnimationFrame(() => {
-      writes.forEach(write => write());
+      writes.forEach((write) => write());
     });
   }
 
@@ -111,7 +111,7 @@ export class MenuPerformance {
   // Cleanup
   destroy() {
     this.metrics.clear();
-    this.observers.forEach(observer => observer.disconnect());
+    this.observers.forEach((observer) => observer.disconnect());
     this.observers.clear();
   }
 }
