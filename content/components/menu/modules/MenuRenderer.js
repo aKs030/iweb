@@ -32,12 +32,12 @@ export class MenuRenderer {
       icons.forEach((use) => {
         const href = use.getAttribute('href');
         if (!href) return;
-        
+
         const targetId = href.substring(1);
         const target = document.getElementById(targetId);
         const svg = use.closest('svg');
         const fallback = svg?.nextElementSibling;
-        
+
         if (!target && fallback?.classList.contains('icon-fallback')) {
           svg.style.display = 'none';
           fallback.style.display = 'inline-block';
@@ -55,7 +55,7 @@ export class MenuRenderer {
   updateTitle(title, subtitle = '') {
     const siteTitleEl = getElementById('site-title');
     const siteSubtitleEl = getElementById('site-subtitle');
-    
+
     if (!siteTitleEl) return;
 
     // Cancel previous animation
@@ -65,11 +65,11 @@ export class MenuRenderer {
 
     this.rafId = requestAnimationFrame(() => {
       const transitionDelay = this.config.TITLE_TRANSITION_DELAY || 200;
-      
+
       siteTitleEl.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
       siteTitleEl.style.opacity = '0.6';
       siteTitleEl.style.transform = 'scale(0.95)';
-      
+
       if (siteSubtitleEl) siteSubtitleEl.classList.remove('show');
 
       setTimeout(() => {

@@ -3,7 +3,10 @@
  * Kompakt, optimiert, ES2024
  */
 
-import { createLogger, CookieManager, debounce } from '/content/utils/shared-utilities.js';
+import {
+  createLogger,
+  CookieManager,
+} from '/content/utils/shared-utilities.js';
 import { a11y } from '/content/utils/accessibility-manager.js';
 
 const log = createLogger('Footer');
@@ -41,17 +44,19 @@ class DOM {
 // Analytics Manager
 class Analytics {
   load() {
-    document.querySelectorAll('script[data-consent="required"]').forEach((script) => {
-      const newScript = document.createElement('script');
-      for (const attr of script.attributes) {
-        const name = attr.name === 'data-src' ? 'src' : attr.name;
-        if (!['data-consent', 'type'].includes(attr.name)) {
-          newScript.setAttribute(name, attr.value);
+    document
+      .querySelectorAll('script[data-consent="required"]')
+      .forEach((script) => {
+        const newScript = document.createElement('script');
+        for (const attr of script.attributes) {
+          const name = attr.name === 'data-src' ? 'src' : attr.name;
+          if (!['data-consent', 'type'].includes(attr.name)) {
+            newScript.setAttribute(name, attr.value);
+          }
         }
-      }
-      if (script.innerHTML.trim()) newScript.innerHTML = script.innerHTML;
-      script.replaceWith(newScript);
-    });
+        if (script.innerHTML.trim()) newScript.innerHTML = script.innerHTML;
+        script.replaceWith(newScript);
+      });
     log.info('Analytics loaded');
   }
 
@@ -87,7 +92,7 @@ class CookieBanner {
 
     const consent = CookieManager.get('cookie_consent');
     const shouldShow = consent !== 'accepted' && consent !== 'rejected';
-    
+
     banner.classList.toggle('hidden', !shouldShow);
 
     if (consent === 'accepted') {
@@ -160,7 +165,7 @@ class CookieSettings {
     document.body.classList.add('footer-expanded');
     footerMin?.classList.add('hidden');
     footerMax?.classList.remove('hidden');
-    
+
     settings.classList.remove('hidden');
     content?.classList.add('hidden');
 
@@ -203,7 +208,10 @@ class CookieSettings {
 
     acceptSelected.onclick = () => {
       const analyticsEnabled = this.dom.get('#analytics-toggle')?.checked;
-      CookieManager.set('cookie_consent', analyticsEnabled ? 'accepted' : 'rejected');
+      CookieManager.set(
+        'cookie_consent',
+        analyticsEnabled ? 'accepted' : 'rejected',
+      );
 
       if (analyticsEnabled) {
         this.analytics.updateConsent(true);
@@ -297,7 +305,7 @@ class ScrollHandler {
           this.footerManager.close();
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.1 },
     );
 
     this.observer.observe(trigger);
@@ -338,7 +346,9 @@ class FooterLoader {
     if (!container) return false;
 
     try {
-      const response = await fetch(container.dataset.footerSrc || CONFIG.FOOTER_PATH);
+      const response = await fetch(
+        container.dataset.footerSrc || CONFIG.FOOTER_PATH,
+      );
       if (!response.ok) throw new Error('Footer load failed');
 
       container.innerHTML = await response.text();

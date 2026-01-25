@@ -40,7 +40,7 @@ export class MenuAccessibility {
     if (!menu) return;
 
     const focusableElements = menu.querySelectorAll(
-      'a[href], button:not([disabled])'
+      'a[href], button:not([disabled])',
     );
 
     focusableElements.forEach((el, index) => {
@@ -77,19 +77,20 @@ export class MenuAccessibility {
 
   announce(message) {
     let liveRegion = document.getElementById('menu-live-region');
-    
+
     if (!liveRegion) {
       liveRegion = document.createElement('div');
       liveRegion.id = 'menu-live-region';
       liveRegion.setAttribute('role', 'status');
       liveRegion.setAttribute('aria-live', 'polite');
       liveRegion.setAttribute('aria-atomic', 'true');
-      liveRegion.style.cssText = 'position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden;';
+      liveRegion.style.cssText =
+        'position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden;';
       document.body.appendChild(liveRegion);
     }
 
     liveRegion.textContent = message;
-    setTimeout(() => liveRegion.textContent = '', 1000);
+    setTimeout(() => (liveRegion.textContent = ''), 1000);
   }
 
   destroy() {

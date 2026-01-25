@@ -42,7 +42,7 @@ export class MenuPersistence {
       if (!saved) return;
 
       const state = JSON.parse(saved);
-      
+
       // Check if state is not too old (24 hours)
       const maxAge = 24 * 60 * 60 * 1000;
       if (Date.now() - state.timestamp > maxAge) {
@@ -77,7 +77,7 @@ export class MenuPersistence {
       localStorage.setItem(test, test);
       localStorage.removeItem(test);
       return true;
-    } catch (e) {
+    } catch {
       return false;
     }
   }

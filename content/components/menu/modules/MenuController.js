@@ -27,13 +27,13 @@ export class MenuController {
 
   async init() {
     if (this.initialized) return;
-    
+
     this.performance.startMeasure('menu-init');
-    
+
     try {
       // Ensure styles are loaded
       this.ensureStyles();
-      
+
       // Get or wait for container
       this.container = await this.getContainer();
       if (!this.container) {
@@ -55,13 +55,18 @@ export class MenuController {
 
       // Initialize subsystems
       this.accessibility = new MenuAccessibility(this.container, this.state);
-      this.events = new MenuEvents(this.container, this.state, this.renderer, this.config);
-      
+      this.events = new MenuEvents(
+        this.container,
+        this.state,
+        this.renderer,
+        this.config,
+      );
+
       this.accessibility.init();
       this.events.init();
-      
+
       this.initialized = true;
-      
+
       const duration = this.performance.endMeasure('menu-init');
       if (this.config.ENABLE_DEBUG) {
         console.log(`[Menu] Initialized in ${duration.toFixed(2)}ms`);
@@ -74,11 +79,11 @@ export class MenuController {
 
   ensureStyles() {
     if (typeof document === 'undefined') return;
-    
+
     const cssUrl = this.config.CSS_URL;
     const existing = document.head.querySelector(`link[href="${cssUrl}"]`);
     if (existing) return;
-    
+
     upsertHeadLink({
       rel: 'stylesheet',
       href: cssUrl,
@@ -116,7 +121,7 @@ export class MenuController {
     this.cache?.clear();
     this.state.reset();
     this.initialized = false;
-    
+
     if (this.config.ENABLE_DEBUG) {
       console.log('[Menu] Destroyed');
     }

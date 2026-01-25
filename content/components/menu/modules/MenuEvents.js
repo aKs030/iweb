@@ -40,13 +40,13 @@ export class MenuEvents {
   setupToggle() {
     const toggle = this.container.querySelector('.site-menu__toggle');
     const menu = this.container.querySelector('.site-menu');
-    
+
     if (!toggle || !menu) return;
 
     const handleToggle = () => {
       const isOpen = !this.state.isOpen;
       this.state.setOpen(isOpen);
-      
+
       menu.classList.toggle('open', isOpen);
       toggle.classList.toggle('active', isOpen);
       toggle.setAttribute('aria-expanded', String(isOpen));
@@ -57,7 +57,7 @@ export class MenuEvents {
       addListener(toggle, 'click', handleToggle),
       addListener(toggle, 'keydown', (e) => {
         if (e.key === 'Enter') handleToggle();
-      })
+      }),
     );
   }
 
@@ -82,8 +82,8 @@ export class MenuEvents {
 
   setupNavigation() {
     const links = this.container.querySelectorAll('.site-menu a[href]');
-    
-    links.forEach(link => {
+
+    links.forEach((link) => {
       const handleClick = (e) => {
         const href = link.getAttribute('href');
         const isExternal = /^https?:\/\//i.test(href);
@@ -93,7 +93,7 @@ export class MenuEvents {
 
         if (window.innerWidth <= 768 && href && !isExternal && !isAnchor) {
           e.preventDefault();
-          setTimeout(() => window.location.href = href, 160);
+          setTimeout(() => (window.location.href = href), 160);
         }
       };
 
@@ -110,7 +110,9 @@ export class MenuEvents {
       window.location.href = '/';
     };
 
-    this.cleanupFns.push(addListener(logoContainer, 'contextmenu', handleContext));
+    this.cleanupFns.push(
+      addListener(logoContainer, 'contextmenu', handleContext),
+    );
   }
 
   setupGlobalListeners() {
@@ -129,7 +131,7 @@ export class MenuEvents {
 
     this.cleanupFns.push(
       addListener(document, 'click', handleDocClick),
-      addListener(document, 'keydown', handleEscape)
+      addListener(document, 'keydown', handleEscape),
     );
 
     window.addEventListener('hashchange', () => this.setActiveLink());
@@ -139,7 +141,7 @@ export class MenuEvents {
   setupPageSpecific() {
     this.fixSubpageLinks();
     this.setSiteTitle();
-    
+
     const path = window.location.pathname;
     if (path === '/' || path === '/index.html') {
       this.initScrollDetection();
@@ -149,10 +151,10 @@ export class MenuEvents {
   fixSubpageLinks() {
     const path = window.location.pathname;
     const isHomePage = path === '/' || path === '/index.html';
-    
+
     if (!isHomePage) {
       const links = this.container.querySelectorAll('.site-menu a[href^="#"]');
-      links.forEach(link => {
+      links.forEach((link) => {
         const hash = link.getAttribute('href');
         link.setAttribute('href', `/${hash}`);
       });
@@ -172,7 +174,9 @@ export class MenuEvents {
 
       if (!sectionId && typeof index === 'number') {
         const sections = Array.from(
-          document.querySelectorAll('main .section, .section, footer#site-footer')
+          document.querySelectorAll(
+            'main .section, .section, footer#site-footer',
+          ),
         );
         const section = sections[index];
         sectionId = section?.id === 'site-footer' ? 'contact' : section?.id;
@@ -190,7 +194,10 @@ export class MenuEvents {
       this.state.setTitle(title, subtitle);
     };
 
-    if (document.querySelector('#hero') && document.querySelector('#site-footer')) {
+    if (
+      document.querySelector('#hero') &&
+      document.querySelector('#site-footer')
+    ) {
       start();
     } else {
       document.addEventListener(EVENTS.MODULES_READY, start, { once: true });
@@ -201,28 +208,42 @@ export class MenuEvents {
   extractSectionInfo(sectionId) {
     const section = document.querySelector(`#${sectionId}`);
     if (!section) {
-      return FALLBACK_TITLES[sectionId] || { title: 'Startseite', subtitle: '' };
+      return (
+        FALLBACK_TITLES[sectionId] || { title: 'Startseite', subtitle: '' }
+      );
     }
 
     if (['hero', 'features', 'section3', 'contact'].includes(sectionId)) {
-      const headers = section.querySelectorAll('.section-header, .section-subtitle');
-      headers.forEach(header => {
+      const headers = section.querySelectorAll(
+        '.section-header, .section-subtitle',
+      );
+      headers.forEach((header) => {
         header.style.display = 'none';
         header.style.visibility = 'hidden';
       });
-      return FALLBACK_TITLES[sectionId] || { title: 'Startseite', subtitle: '' };
+      return (
+        FALLBACK_TITLES[sectionId] || { title: 'Startseite', subtitle: '' }
+      );
     }
 
     const header = section.querySelector('.section-header');
     if (!header) {
-      return FALLBACK_TITLES[sectionId] || { title: 'Startseite', subtitle: '' };
+      return (
+        FALLBACK_TITLES[sectionId] || { title: 'Startseite', subtitle: '' }
+      );
     }
 
     const titleEl = header.querySelector('.section-title, h1, h2, h3');
     const subtitleEl = header.querySelector('.section-subtitle');
 
-    const title = titleEl?.textContent?.trim() || FALLBACK_TITLES[sectionId]?.title || 'Startseite';
-    const subtitle = subtitleEl?.textContent?.trim() || FALLBACK_TITLES[sectionId]?.subtitle || '';
+    const title =
+      titleEl?.textContent?.trim() ||
+      FALLBACK_TITLES[sectionId]?.title ||
+      'Startseite';
+    const subtitle =
+      subtitleEl?.textContent?.trim() ||
+      FALLBACK_TITLES[sectionId]?.subtitle ||
+      '';
 
     return { title, subtitle };
   }
@@ -231,12 +252,13 @@ export class MenuEvents {
     const path = window.location.pathname.replace(/index\.html$/, '');
     const hash = window.location.hash;
 
-    document.querySelectorAll('.site-menu a[href]').forEach(a => {
+    document.querySelectorAll('.site-menu a[href]').forEach((a) => {
       const href = a.getAttribute('href');
       if (!href) return;
 
       if (href.startsWith('#')) {
-        const isIndexPath = path === '/' || path === '/index.html' || path === '';
+        const isIndexPath =
+          path === '/' || path === '/index.html' || path === '';
         if (href === hash || (isIndexPath && hash === '' && href === '#hero')) {
           a.classList.add('active');
         } else {
@@ -260,7 +282,7 @@ export class MenuEvents {
   closeMenu() {
     const toggle = this.container.querySelector('.site-menu__toggle');
     const menu = this.container.querySelector('.site-menu');
-    
+
     if (!toggle || !menu) return;
 
     this.state.setOpen(false);
@@ -271,7 +293,7 @@ export class MenuEvents {
   }
 
   destroy() {
-    this.cleanupFns.forEach(fn => fn());
+    this.cleanupFns.forEach((fn) => fn());
     this.cleanupFns = [];
   }
 }

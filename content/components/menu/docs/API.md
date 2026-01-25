@@ -5,6 +5,7 @@
 Main orchestrator for the menu system.
 
 ### Constructor
+
 ```javascript
 new MenuController(config?: object)
 ```
@@ -12,6 +13,7 @@ new MenuController(config?: object)
 ### Methods
 
 #### `async init()`
+
 Initialize the menu system.
 
 ```javascript
@@ -20,6 +22,7 @@ await controller.init();
 ```
 
 #### `destroy()`
+
 Cleanup and destroy the menu system.
 
 ```javascript
@@ -27,6 +30,7 @@ controller.destroy();
 ```
 
 #### `getStats()`
+
 Get current statistics.
 
 ```javascript
@@ -65,14 +69,16 @@ State management with event system.
 ### Methods
 
 #### `setOpen(value: boolean)`
+
 Set menu open state.
 
 ```javascript
-state.setOpen(true);  // Open menu
+state.setOpen(true); // Open menu
 state.setOpen(false); // Close menu
 ```
 
 #### `setTitle(title: string, subtitle?: string)`
+
 Set menu title and subtitle.
 
 ```javascript
@@ -80,6 +86,7 @@ state.setTitle('Home', 'Welcome');
 ```
 
 #### `setActiveLink(link: string)`
+
 Set active navigation link.
 
 ```javascript
@@ -87,6 +94,7 @@ state.setActiveLink('/about/');
 ```
 
 #### `on(event: string, callback: function)`
+
 Subscribe to state changes.
 
 ```javascript
@@ -96,6 +104,7 @@ state.on('openChange', (isOpen) => {
 ```
 
 #### `off(event: string, callback: function)`
+
 Unsubscribe from state changes.
 
 ```javascript
@@ -105,6 +114,7 @@ state.off('openChange', handler);
 ```
 
 #### `emit(event: string, data: any)`
+
 Emit custom event.
 
 ```javascript
@@ -112,6 +122,7 @@ state.emit('customEvent', { data: 'value' });
 ```
 
 #### `reset()`
+
 Reset state to defaults.
 
 ```javascript
@@ -120,11 +131,11 @@ state.reset();
 
 ### Events
 
-| Event | Payload | Description |
-|-------|---------|-------------|
-| `openChange` | `boolean` | Menu opened/closed |
-| `titleChange` | `{title, subtitle}` | Title changed |
-| `activeLinkChange` | `string` | Active link changed |
+| Event              | Payload             | Description         |
+| ------------------ | ------------------- | ------------------- |
+| `openChange`       | `boolean`           | Menu opened/closed  |
+| `titleChange`      | `{title, subtitle}` | Title changed       |
+| `activeLinkChange` | `string`            | Active link changed |
 
 ---
 
@@ -133,6 +144,7 @@ state.reset();
 Theme management system.
 
 ### Constructor
+
 ```javascript
 new MenuTheme(config?: object)
 ```
@@ -140,6 +152,7 @@ new MenuTheme(config?: object)
 ### Methods
 
 #### `register(name: string, variables: object)`
+
 Register a new theme.
 
 ```javascript
@@ -150,6 +163,7 @@ theme.register('custom', {
 ```
 
 #### `apply(themeName: string): boolean`
+
 Apply a theme.
 
 ```javascript
@@ -159,6 +173,7 @@ theme.apply('custom');
 ```
 
 #### `get(themeName: string): object`
+
 Get theme variables.
 
 ```javascript
@@ -166,6 +181,7 @@ const darkTheme = theme.get('dark');
 ```
 
 #### `getCurrent(): string`
+
 Get current theme name.
 
 ```javascript
@@ -173,6 +189,7 @@ const current = theme.getCurrent(); // 'dark'
 ```
 
 #### `getAll(): string[]`
+
 Get all theme names.
 
 ```javascript
@@ -180,6 +197,7 @@ const themes = theme.getAll(); // ['default', 'light', 'dark', 'colorful']
 ```
 
 #### `remove(themeName: string)`
+
 Remove a theme.
 
 ```javascript
@@ -187,6 +205,7 @@ theme.remove('custom');
 ```
 
 #### `detectSystemTheme(): string`
+
 Detect system theme preference.
 
 ```javascript
@@ -194,6 +213,7 @@ const systemTheme = theme.detectSystemTheme(); // 'dark' or 'light'
 ```
 
 #### `applySystemTheme()`
+
 Apply system theme.
 
 ```javascript
@@ -201,6 +221,7 @@ theme.applySystemTheme();
 ```
 
 #### `watchSystemTheme()`
+
 Watch for system theme changes.
 
 ```javascript
@@ -221,6 +242,7 @@ theme.watchSystemTheme();
 Keyboard shortcuts manager.
 
 ### Constructor
+
 ```javascript
 new MenuKeyboard(state: MenuState, config?: object)
 ```
@@ -228,6 +250,7 @@ new MenuKeyboard(state: MenuState, config?: object)
 ### Methods
 
 #### `init()`
+
 Initialize keyboard shortcuts.
 
 ```javascript
@@ -235,6 +258,7 @@ keyboard.init();
 ```
 
 #### `register(keys: string | string[], callback: function)`
+
 Register keyboard shortcut.
 
 ```javascript
@@ -248,6 +272,7 @@ keyboard.register(['Meta+s', 'Control+s'], () => {
 ```
 
 #### `unregister(keys: string | string[])`
+
 Unregister keyboard shortcut.
 
 ```javascript
@@ -255,6 +280,7 @@ keyboard.unregister('Alt+n');
 ```
 
 #### `enable()`
+
 Enable keyboard shortcuts.
 
 ```javascript
@@ -262,6 +288,7 @@ keyboard.enable();
 ```
 
 #### `disable()`
+
 Disable keyboard shortcuts.
 
 ```javascript
@@ -269,6 +296,7 @@ keyboard.disable();
 ```
 
 #### `destroy()`
+
 Cleanup keyboard shortcuts.
 
 ```javascript
@@ -277,10 +305,10 @@ keyboard.destroy();
 
 ### Default Shortcuts
 
-| Shortcut | Action |
-|----------|--------|
+| Shortcut       | Action      |
+| -------------- | ----------- |
 | `Cmd/Ctrl + M` | Toggle menu |
-| `Escape` | Close menu |
+| `Escape`       | Close menu  |
 | `Cmd/Ctrl + K` | Open search |
 
 ---
@@ -290,6 +318,7 @@ keyboard.destroy();
 State persistence to localStorage.
 
 ### Constructor
+
 ```javascript
 new MenuPersistence(state: MenuState, config?: object)
 ```
@@ -297,6 +326,7 @@ new MenuPersistence(state: MenuState, config?: object)
 ### Methods
 
 #### `init()`
+
 Initialize persistence.
 
 ```javascript
@@ -304,6 +334,7 @@ persistence.init();
 ```
 
 #### `save()`
+
 Save current state.
 
 ```javascript
@@ -311,6 +342,7 @@ persistence.save();
 ```
 
 #### `restore()`
+
 Restore saved state.
 
 ```javascript
@@ -318,6 +350,7 @@ persistence.restore();
 ```
 
 #### `clear()`
+
 Clear saved state.
 
 ```javascript
@@ -325,6 +358,7 @@ persistence.clear();
 ```
 
 #### `isStorageAvailable(): boolean`
+
 Check if localStorage is available.
 
 ```javascript
@@ -340,6 +374,7 @@ if (persistence.isStorageAvailable()) {
 Analytics integration.
 
 ### Constructor
+
 ```javascript
 new MenuAnalytics(state: MenuState, config?: object)
 ```
@@ -347,6 +382,7 @@ new MenuAnalytics(state: MenuState, config?: object)
 ### Methods
 
 #### `init()`
+
 Initialize analytics tracking.
 
 ```javascript
@@ -354,6 +390,7 @@ analytics.init();
 ```
 
 #### `trackEvent(eventName: string, data: object)`
+
 Track custom event.
 
 ```javascript
@@ -364,6 +401,7 @@ analytics.trackEvent('custom_action', {
 ```
 
 #### `trackTiming(category: string, variable: string, time: number)`
+
 Track timing.
 
 ```javascript
@@ -373,7 +411,7 @@ analytics.trackTiming('menu', 'init_time', 45);
 ### Supported Platforms
 
 - Google Analytics 4 (gtag)
-- Matomo (_paq)
+- Matomo (\_paq)
 - Custom analytics (window.analytics)
 
 ---
@@ -385,6 +423,7 @@ Performance utilities.
 ### Methods
 
 #### `debounce(fn: function, delay: number): function`
+
 Create debounced function.
 
 ```javascript
@@ -394,6 +433,7 @@ const debouncedFn = perf.debounce(() => {
 ```
 
 #### `throttle(fn: function, limit: number): function`
+
 Create throttled function.
 
 ```javascript
@@ -403,6 +443,7 @@ const throttledFn = perf.throttle(() => {
 ```
 
 #### `animate(callback: function): number`
+
 Request animation frame.
 
 ```javascript
@@ -412,6 +453,7 @@ perf.animate(() => {
 ```
 
 #### `startMeasure(name: string)`
+
 Start performance measurement.
 
 ```javascript
@@ -419,6 +461,7 @@ perf.startMeasure('operation');
 ```
 
 #### `endMeasure(name: string): number`
+
 End measurement and get duration.
 
 ```javascript
@@ -427,6 +470,7 @@ console.log(`Took ${duration}ms`);
 ```
 
 #### `getDeviceCapabilities(): object`
+
 Get device information.
 
 ```javascript
@@ -442,6 +486,7 @@ const caps = perf.getDeviceCapabilities();
 ```
 
 #### `prefersReducedMotion(): boolean`
+
 Check if user prefers reduced motion.
 
 ```javascript
@@ -459,6 +504,7 @@ Caching system.
 ### Methods
 
 #### `setElement(key: string, element: HTMLElement)`
+
 Cache DOM element.
 
 ```javascript
@@ -466,6 +512,7 @@ cache.setElement('header', headerEl);
 ```
 
 #### `getElement(key: string): HTMLElement`
+
 Get cached element.
 
 ```javascript
@@ -473,6 +520,7 @@ const header = cache.getElement('header');
 ```
 
 #### `setComputed(key: string, value: any, ttl?: number)`
+
 Cache computed value with TTL.
 
 ```javascript
@@ -480,6 +528,7 @@ cache.setComputed('width', 1200, 5000); // 5s TTL
 ```
 
 #### `getComputed(key: string): any`
+
 Get cached computed value.
 
 ```javascript
@@ -487,15 +536,21 @@ const width = cache.getComputed('width');
 ```
 
 #### `getOrCompute(key: string, computeFn: function, ttl?: number): any`
+
 Get cached or compute new value.
 
 ```javascript
-const value = cache.getOrCompute('expensive', () => {
-  return expensiveCalculation();
-}, 10000);
+const value = cache.getOrCompute(
+  'expensive',
+  () => {
+    return expensiveCalculation();
+  },
+  10000,
+);
 ```
 
 #### `invalidate(key: string)`
+
 Invalidate cache entry.
 
 ```javascript
@@ -503,6 +558,7 @@ cache.invalidate('width');
 ```
 
 #### `clear()`
+
 Clear all cache.
 
 ```javascript
@@ -510,6 +566,7 @@ cache.clear();
 ```
 
 #### `getStats(): object`
+
 Get cache statistics.
 
 ```javascript
