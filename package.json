@@ -4,13 +4,17 @@
   "description": "Portfolio website of Abdulkerim Sesli - Web Developer & Photographer in Berlin",
   "main": "index.js",
   "scripts": {
-    "dev": "node scripts/dev-server.js",
+    "dev": "vite",
+    "dev:legacy": "node scripts/dev-server.js",
+    "build": "vite build",
+    "preview": "vite preview",
     "format": "prettier --write \"**/*.{js,css,json,md,html}\" --ignore-path .prettierignore",
     "format:check": "prettier --check \"**/*.{js,css,json,md,html}\" --ignore-path .prettierignore",
     "lint": "eslint \"**/*.js\" --fix",
     "lint:check": "eslint \"**/*.js\"",
     "check": "npm run lint:check && npm run format:check",
     "fix": "npm run lint && npm run format",
+    "analyze": "vite-bundle-visualizer",
     "prepare": "husky"
   },
   "lint-staged": {
@@ -27,7 +31,10 @@
     "eslint": "^9.39.2",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
-    "prettier": "^3.8.1"
+    "prettier": "^3.8.1",
+    "vite": "^6.0.5",
+    "vite-bundle-visualizer": "^1.2.1",
+    "terser": "^5.37.0"
   },
   "repository": {
     "type": "git",

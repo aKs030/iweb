@@ -3,21 +3,7 @@
  * Implementiert Exponential Backoff und striktes Error-Handling.
  */
 
-const MODEL_NAME = 'gemini-2.5-flash-preview-09-2025';
-// Unused: kept for potential future server-side implementation
-// eslint-disable-next-line no-unused-vars
-const _getBaseUrl = (apiKey) =>
-  `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${
-    apiKey || ''
-  }`; // server-only: pass API key when calling from server side
-
-/**
- * Sendet eine Anfrage an die Gemini API mit Exponential Backoff.
- * @param {string} prompt - Die Benutzereingabe.
- * @param {string} systemInstruction - Anweisungen für das System.
- * @returns {Promise<string>} - Die Antwort der KI.
- */
-import { createLogger } from '/content/utils/shared-utilities.js';
+import { createLogger } from '/content/core/shared-utilities.js';
 
 const log = createLogger('GeminiService');
 
@@ -26,18 +12,8 @@ async function getGeminiResponse(
   systemInstruction = 'Du bist ein hilfreicher Roboter-Begleiter.',
   _options = {},
 ) {
-  // Payload structure kept for reference (currently unused but may be needed for future direct API calls)
-  // eslint-disable-next-line no-unused-vars
-  const _payload = {
-    contents: [{ parts: [{ text: prompt }] }],
-    systemInstruction: { parts: [{ text: systemInstruction }] },
-  };
-
   const maxRetries = 5;
-  let delay = 1000; // Start mit 1 Sekunde
-
-  const isRunningInBrowser = () =>
-    globalThis.fetch !== undefined && globalThis.window !== undefined;
+  let delay = 1000;
 
   const doBrowserRequest = async (promptArg, systemArg, opts) => {
     const r = await fetch('/api/gemini', {
@@ -56,26 +32,8 @@ async function getGeminiResponse(
     return r.json();
   };
 
-  // DEPRECATED: Direct server-side requests are no longer supported for security.
-  // eslint-disable-next-line no-unused-vars
-  const _doServerRequest = async () => {
-    // DEPRECATED: Direct server-side requests are no longer supported for security.
-    // All requests must go through the Cloudflare Worker proxy at /api/gemini
-    throw new Error(
-      'Direct server-side Gemini API calls are disabled. ' +
-        'Use the browser proxy endpoint /api/gemini instead.',
-    );
-  };
-
   for (let i = 0; i < maxRetries; i++) {
     try {
-      // SECURITY: Always use browser proxy endpoint (never direct API calls)
-      if (!isRunningInBrowser()) {
-        throw new Error(
-          'Gemini service must run in browser context. Use /api/gemini proxy.',
-        );
-      }
-
       const result = await doBrowserRequest(
         prompt,
         systemInstruction,
@@ -88,27 +46,23 @@ async function getGeminiResponse(
       return text;
     } catch (error) {
       if (i === maxRetries - 1) {
-        // Letzter Versuch fehlgeschlagen
         log.error(
           'Gemini API Fehler nach Max Retries: ' +
-            (error && error.message ? error.message : String(error)),
+            (error?.message || String(error)),
         );
         return 'Entschuldigung, ich habe gerade Verbindungsprobleme. Bitte versuche es später noch einmal.';
       }
 
-      // Exponential Backoff (1s, 2s, 4s, 8s, 16s)
       await new Promise((resolve) => setTimeout(resolve, delay));
       delay *= 2;
     }
   }
 }
 
-// Provide a thin class wrapper so callers can use `new GeminiService()` in the app
 export class GeminiService {
-  // eslint-disable-next-line no-unused-vars
   async generateResponse(prompt, _history = [], options = {}) {
-    // _history is available to craft system instructions later if needed
     const system = 'Du bist ein hilfreicher Roboter-Begleiter.';
+    // _history parameter kept for API compatibility but not used in current implementation
     return await getGeminiResponse(prompt, system, options);
   }
 

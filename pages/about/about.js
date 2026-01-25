@@ -6,8 +6,8 @@
  * - Improved code structure
  */
 import { FAVICON_512 } from '/content/config/site-config.js';
-import { fetchWithTimeout } from '/content/utils/shared-utilities.js';
-import { upsertHeadLink } from '/content/utils/dom-helpers.js';
+import { fetchText, getElementById } from '/content/core/shared-utilities.js';
+import { upsertHeadLink } from '/content/core/dom-helpers.js';
 
 (async function () {
   const RETRY_ATTEMPTS = 2;
@@ -17,7 +17,7 @@ import { upsertHeadLink } from '/content/utils/dom-helpers.js';
   let _addListener = null;
   try {
     const { createLogger, addListener } =
-      await import('../../content/utils/shared-utilities.js');
+      await import('../../content/core/shared-utilities.js');
     logger = createLogger('AboutModule');
     // expose addListener locally for handlers
     _addListener = addListener;
@@ -66,13 +66,7 @@ import { upsertHeadLink } from '/content/utils/dom-helpers.js';
           await new Promise((resolve) => setTimeout(resolve, 500 * attempt));
         }
 
-        const response = await fetchWithTimeout(src);
-
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-
-        const html = await response.text();
+        const html = await fetchText(src);
 
         if (!html.trim()) {
           throw new Error('Empty response received');
@@ -142,7 +136,7 @@ import { upsertHeadLink } from '/content/utils/dom-helpers.js';
 
             // Insert page-specific Person JSON-LD (mainEntityOfPage)
             const ldId = 'about-person-ld';
-            if (!document.getElementById(ldId)) {
+            if (!getElementById(ldId)) {
               const script = document.createElement('script');
               script.type = 'application/ld+json';
               script.id = ldId;

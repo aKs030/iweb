@@ -2,7 +2,7 @@
  * Menu Events - Event handling and interactions
  */
 
-import { addListener, EVENTS } from '/content/utils/shared-utilities.js';
+import { addListener, EVENTS } from '/content/core/shared-utilities.js';
 
 const TITLE_MAP = {
   '/index.html': 'Startseite',

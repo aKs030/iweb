@@ -3,11 +3,8 @@
  * Kompakt, optimiert, ES2024
  */
 
-import {
-  createLogger,
-  CookieManager,
-} from '/content/utils/shared-utilities.js';
-import { a11y } from '/content/utils/accessibility-manager.js';
+import { createLogger, CookieManager } from '/content/core/shared-utilities.js';
+import { a11y } from '/content/core/accessibility-manager.js';
 
 const log = createLogger('Footer');
 

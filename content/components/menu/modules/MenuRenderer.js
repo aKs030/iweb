@@ -3,7 +3,7 @@
  */
 
 import { MenuTemplate } from './MenuTemplate.js';
-import { getElementById } from '/content/utils/shared-utilities.js';
+import { getElementById } from '/content/core/shared-utilities.js';
 
 export class MenuRenderer {
   constructor(state, config = {}) {

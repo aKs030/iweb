@@ -1,5 +1,5 @@
 /* global React, ReactDOM */
-import { createLogger } from '/content/utils/shared-utilities.js';
+import { createLogger } from '/content/core/shared-utilities.js';
 
 const log = createLogger('gallery-app');
 
