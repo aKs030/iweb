@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Error Boundary Test</title>
+    <link rel="stylesheet" href="/content/components/ErrorBoundary.css" />
+    <style>
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu,
+          Cantarell, sans-serif;
+        margin: 0;
+        padding: 2rem;
+        background: #f5f5f5;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      h1 {
+        color: #333;
+        margin-bottom: 2rem;
+      }
+      .test-section {
+        background: white;
+        padding: 2rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .test-section h2 {
+        margin-top: 0;
+        color: #555;
+      }
+      .button-group {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-top: 1rem;
+      }
+      button {
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.2s;
+      }
+      .btn-primary {
+        background: #007bff;
+        color: white;
+      }
+      .btn-primary:hover {
+        background: #0056b3;
+      }
+      .btn-danger {
+        background: #dc3545;
+        color: white;
+      }
+      .btn-danger:hover {
+        background: #c82333;
+      }
+      .btn-success {
+        background: #28a745;
+        color: white;
+      }
+      .btn-success:hover {
+        background: #218838;
+      }
+      .component-container {
+        margin-top: 1.5rem;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 6px;
+        min-height: 100px;
+      }
+      .info-box {
+        background: #e7f3ff;
+        border-left: 4px solid #007bff;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border-radius: 4px;
+      }
+      .code {
+        background: #1e1e1e;
+        color: #d4d4d4;
+        padding: 1rem;
+        border-radius: 4px;
+        overflow-x: auto;
+        font-family: 'Courier New', monospace;
+        font-size: 0.875rem;
+        margin-top: 1rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🛡️ Error Boundary Test Suite</h1>
+
+      <div class="info-box">
+        <strong>Info:</strong> Diese Seite testet die Error Boundary Komponente
+        mit verschiedenen Fehlerszenarien. Öffne die Browser-Konsole für
+        detaillierte Logs.
+      </div>
+
+      <!-- Test 1: Normaler Betrieb -->
+      <div class="test-section">
+        <h2>✅ Test 1: Normaler Betrieb</h2>
+        <p>Komponente funktioniert ohne Fehler</p>
+        <div id="test1-root" class="component-container"></div>
+      </div>
+
+      <!-- Test 2: Render-Fehler -->
+      <div class="test-section">
+        <h2>❌ Test 2: Render-Fehler</h2>
+        <p>Komponente wirft einen Fehler beim Rendern</p>
+        <div class="button-group">
+          <button class="btn-danger" onclick="triggerRenderError()">
+            Fehler auslösen
+          </button>
+          <button class="btn-success" onclick="resetTest2()">Reset</button>
+        </div>
+        <div id="test2-root" class="component-container"></div>
+      </div>
+
+      <!-- Test 3: Event-Handler-Fehler -->
+      <div class="test-section">
+        <h2>⚠️ Test 3: Event-Handler-Fehler</h2>
+        <p>Fehler in Event-Handler (wird NICHT von Error Boundary gefangen)</p>
+        <div id="test3-root" class="component-container"></div>
+      </div>
+
+      <!-- Test 4: Custom Fallback -->
+      <div class="test-section">
+        <h2>🎨 Test 4: Custom Fallback UI</h2>
+        <p>Error Boundary mit benutzerdefiniertem Fallback</p>
+        <div class="button-group">
+          <button class="btn-danger" onclick="triggerCustomError()">
+            Fehler auslösen
+          </button>
+          <button class="btn-success" onclick="resetTest4()">Reset</button>
+        </div>
+        <div id="test4-root" class="component-container"></div>
+      </div>
+
+      <!-- Test 5: Mehrere Error Boundaries -->
+      <div class="test-section">
+        <h2>🔀 Test 5: Verschachtelte Error Boundaries</h2>
+        <p>Mehrere Error Boundaries isolieren Fehler</p>
+        <div id="test5-root" class="component-container"></div>
+      </div>
+
+      <!-- Code-Beispiel -->
+      <div class="test-section">
+        <h2>📝 Code-Beispiel</h2>
+        <div class="code">
+          import ErrorBoundary from '/content/components/ErrorBoundary.js'; //
+          Einfache Verwendung &lt;ErrorBoundary component="MyApp"&gt;
+          &lt;MyComponent /&gt; &lt;/ErrorBoundary&gt; // Mit Custom Fallback
+          &lt;ErrorBoundary component="MyApp" fallback={&lt;div&gt;Custom Error
+          UI&lt;/div&gt;} &gt; &lt;MyComponent /&gt; &lt;/ErrorBoundary&gt; //
+          Mit Error-Handler &lt;ErrorBoundary component="MyApp" onError={(error,
+          errorInfo) =&gt; { console.log('Error caught:', error); }} &gt;
+          &lt;MyComponent /&gt; &lt;/ErrorBoundary&gt;
+        </div>
+      </div>
+    </div>
+
+    <!-- React & Error Boundary -->
+    <script type="module">
+      import React from 'https://esm.sh/react@19.2.3?dev=false';
+      import ReactDOM from 'https://esm.sh/react-dom@19.2.3/client?dev=false';
+      import ErrorBoundary from '/content/components/ErrorBoundary.js';
+
+      const { createElement: h, useState } = React;
+
+      // Test 1: Normale Komponente
+      function NormalComponent() {
+        return h(
+          'div',
+          { style: { padding: '1rem' } },
+          h(
+            'h3',
+            { style: { margin: 0, color: '#28a745' } },
+            '✓ Komponente läuft normal',
+          ),
+          h(
+            'p',
+            { style: { margin: '0.5rem 0 0 0' } },
+            'Keine Fehler aufgetreten',
+          ),
+        );
+      }
+
+      // Test 2: Fehlerhafte Komponente
+      function BuggyComponent({ shouldThrow }) {
+        if (shouldThrow) {
+          throw new Error('Absichtlicher Render-Fehler für Test-Zwecke');
+        }
+        return h(
+          'div',
+          { style: { padding: '1rem' } },
+          h(
+            'h3',
+            { style: { margin: 0, color: '#28a745' } },
+            '✓ Komponente läuft',
+          ),
+          h(
+            'p',
+            { style: { margin: '0.5rem 0 0 0' } },
+            'Klicke "Fehler auslösen" um einen Fehler zu erzeugen',
+          ),
+        );
+      }
+
+      // Test 3: Event-Handler-Fehler
+      function EventHandlerComponent() {
+        const handleClick = () => {
+          throw new Error(
+            'Event-Handler-Fehler (wird NICHT von Error Boundary gefangen)',
+          );
+        };
+
+        return h(
+          'div',
+          { style: { padding: '1rem' } },
+          h('h3', { style: { margin: 0 } }, 'Event-Handler Test'),
+          h(
+            'p',
+            { style: { margin: '0.5rem 0' } },
+            'Event-Handler-Fehler werden NICHT von Error Boundaries gefangen.',
+          ),
+          h(
+            'button',
+            {
+              onClick: handleClick,
+              className: 'btn-danger',
+              style: { marginTop: '0.5rem' },
+            },
+            'Fehler in Event-Handler auslösen',
+          ),
+        );
+      }
+
+      // Test 4: Custom Fallback
+      function CustomFallback({ error, onReset, onReload }) {
+        return h(
+          'div',
+          {
+            style: {
+              padding: '2rem',
+              background: '#fff3cd',
+              border: '2px solid #ffc107',
+              borderRadius: '8px',
+              textAlign: 'center',
+            },
+          },
+          h('div', { style: { fontSize: '3rem', marginBottom: '1rem' } }, '🚨'),
+          h(
+            'h3',
+            { style: { margin: 0, color: '#856404' } },
+            'Custom Error UI',
+          ),
+          h(
+            'p',
+            { style: { margin: '1rem 0', color: '#856404' } },
+            error.message,
+          ),
+          h(
+            'div',
+            {
+              style: { display: 'flex', gap: '1rem', justifyContent: 'center' },
+            },
+            h(
+              'button',
+              { onClick: onReset, className: 'btn-primary' },
+              'Retry',
+            ),
+            h(
+              'button',
+              { onClick: onReload, className: 'btn-danger' },
+              'Reload',
+            ),
+          ),
+        );
+      }
+
+      // Test 5: Verschachtelte Komponenten
+      function ParentComponent() {
+        return h(
+          'div',
+          { style: { padding: '1rem' } },
+          h('h3', { style: { margin: '0 0 1rem 0' } }, 'Parent Component'),
+          h(
+            ErrorBoundary,
+            { component: 'ChildA' },
+            h(
+              'div',
+              {
+                style: {
+                  padding: '1rem',
+                  background: '#e7f3ff',
+                  borderRadius: '4px',
+                  marginBottom: '1rem',
+                },
+              },
+              h('strong', null, 'Child A: '),
+              'Funktioniert normal',
+            ),
+          ),
+          h(
+            ErrorBoundary,
+            { component: 'ChildB' },
+            h(BuggyComponent, { shouldThrow: true }),
+          ),
+          h(
+            ErrorBoundary,
+            { component: 'ChildC' },
+            h(
+              'div',
+              {
+                style: {
+                  padding: '1rem',
+                  background: '#e7f3ff',
+                  borderRadius: '4px',
+                },
+              },
+              h('strong', null, 'Child C: '),
+              'Funktioniert auch normal',
+            ),
+          ),
+        );
+      }
+
+      // Render Test 1
+      const root1 = ReactDOM.createRoot(document.getElementById('test1-root'));
+      root1.render(
+        h(
+          ErrorBoundary,
+          { component: 'Test1', showDetails: true },
+          h(NormalComponent),
+        ),
+      );
+
+      // Render Test 2
+      let shouldThrowTest2 = false;
+      const root2 = ReactDOM.createRoot(document.getElementById('test2-root'));
+      function renderTest2() {
+        root2.render(
+          h(
+            ErrorBoundary,
+            { component: 'Test2', showDetails: true },
+            h(BuggyComponent, { shouldThrow: shouldThrowTest2 }),
+          ),
+        );
+      }
+      renderTest2();
+
+      window.triggerRenderError = () => {
+        shouldThrowTest2 = true;
+        renderTest2();
+      };
+
+      window.resetTest2 = () => {
+        shouldThrowTest2 = false;
+        renderTest2();
+      };
+
+      // Render Test 3
+      const root3 = ReactDOM.createRoot(document.getElementById('test3-root'));
+      root3.render(
+        h(
+          ErrorBoundary,
+          { component: 'Test3', showDetails: true },
+          h(EventHandlerComponent),
+        ),
+      );
+
+      // Render Test 4
+      let shouldThrowTest4 = false;
+      const root4 = ReactDOM.createRoot(document.getElementById('test4-root'));
+      function renderTest4() {
+        root4.render(
+          h(
+            ErrorBoundary,
+            {
+              component: 'Test4',
+              fallbackComponent: CustomFallback,
+            },
+            h(BuggyComponent, { shouldThrow: shouldThrowTest4 }),
+          ),
+        );
+      }
+      renderTest4();
+
+      window.triggerCustomError = () => {
+        shouldThrowTest4 = true;
+        renderTest4();
+      };
+
+      window.resetTest4 = () => {
+        shouldThrowTest4 = false;
+        renderTest4();
+      };
+
+      // Render Test 5
+      const root5 = ReactDOM.createRoot(document.getElementById('test5-root'));
+      root5.render(
+        h(
+          ErrorBoundary,
+          { component: 'Test5Parent', showDetails: true },
+          h(ParentComponent),
+        ),
+      );
+
+      console.log('✅ Error Boundary Tests geladen');
+      console.log('Öffne die Browser-Konsole für detaillierte Logs');
+    </script>
+  </body>
+</html>
