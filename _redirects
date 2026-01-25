@@ -87,6 +87,9 @@
 /pages/home/hero.html     /pages/home/hero.html          200
 /content/components/footer/footer.html /content/components/footer/footer.html 200
 
+# Test pages (serve directly, no redirect)
+/test-error-boundary.html /test-error-boundary.html      200
+
 /*.html   /:splat/   301
 
 # Ensure root section names without trailing slash are redirected to the slash version
