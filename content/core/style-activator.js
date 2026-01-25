@@ -1,6 +1,5 @@
 /**
- * Style Activator Module
- * Handles deferred stylesheet activation
+ * Style Activator
  * @version 1.0.0
  */
 
