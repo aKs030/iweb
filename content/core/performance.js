@@ -292,7 +292,7 @@ export function monitorLongTasks(callback) {
 }
 
 // Auto-initialize Web Vitals tracking
-if (typeof window !== 'undefined') {
+if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
   window.addEventListener('load', () => {
     getWebVitals();
   });

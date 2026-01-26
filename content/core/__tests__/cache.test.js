@@ -77,6 +77,10 @@ describe('CacheManager', () => {
 });
 
 describe('cached decorator', () => {
+  beforeEach(() => {
+    getCache().clear();
+  });
+
   it('should cache function results', async () => {
     let callCount = 0;
 
