@@ -774,7 +774,7 @@ class RobotCompanion {
                 <div class="chat-messages" id="robot-messages"></div>
                 <div class="chat-controls" id="robot-controls"></div>
                 <div class="chat-input-area" id="robot-input-area">
-                    <input type="text" id="robot-chat-input" placeholder="Frag mich etwas oder wähle eine Option..." />
+                    <input type="text" id="robot-chat-input" name="robot-message" placeholder="Frag mich etwas oder wähle eine Option..." autocomplete="off" />
                     <button id="robot-chat-send">➤</button>
                 </div>
             </div>

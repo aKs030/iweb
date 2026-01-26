@@ -278,7 +278,9 @@ class SearchComponent {
         <div class="search-header">
           <div class="search-input-wrapper">
             <input 
-              type="text" 
+              type="text"
+              id="search-input"
+              name="search"
               class="search-input" 
               placeholder="Spotlight-Suche"
               aria-label="Suchfeld"
