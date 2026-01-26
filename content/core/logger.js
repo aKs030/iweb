@@ -15,7 +15,8 @@ class Logger {
   constructor(category, options = {}) {
     this.category = category;
     this.prefix = `[${category}]`;
-    this.level = options.level !== undefined ? options.level : this.detectLogLevel();
+    this.level =
+      options.level !== undefined ? options.level : this.detectLogLevel();
     this.performance = options.performance ?? true;
     this.timestamps = options.timestamps ?? false;
   }
