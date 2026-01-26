@@ -3,6 +3,7 @@
  */
 
 import { EVENTS } from '/content/core/events.js';
+import { debounce } from '/content/core/dom-utils.js';
 
 function addListener(target, event, handler, options = {}) {
   if (!target?.addEventListener) return () => {};
@@ -30,6 +31,7 @@ export class MenuEvents {
     this.setupNavigation();
     this.setupLogo();
     this.setupGlobalListeners();
+    this.setupResizeHandler();
     this.setupPageSpecific();
     this.setActiveLink();
   }
@@ -133,6 +135,17 @@ export class MenuEvents {
 
     window.addEventListener('hashchange', () => this.setActiveLink());
     window.addEventListener('popstate', () => this.setActiveLink());
+  }
+
+  setupResizeHandler() {
+    const handleResize = debounce(() => {
+      // Close mobile menu when resizing to desktop to prevent layout issues
+      if (window.innerWidth > 768 && this.state.isOpen) {
+        this.closeMenu();
+      }
+    }, 150);
+
+    this.cleanupFns.push(addListener(window, 'resize', handleResize));
   }
 
   setupPageSpecific() {
