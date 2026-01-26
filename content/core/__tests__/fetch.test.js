@@ -70,9 +70,15 @@ describe('fetchWithRetry', () => {
 
   it('should timeout after specified duration', async () => {
     global.fetch.mockImplementation(
-      () =>
-        new Promise((resolve) => {
-          setTimeout(() => resolve({ ok: true }), 1000);
+      (url, { signal } = {}) =>
+        new Promise((resolve, reject) => {
+          const timeout = setTimeout(() => resolve({ ok: true }), 1000);
+          if (signal) {
+            signal.addEventListener('abort', () => {
+              clearTimeout(timeout);
+              reject(new Error('Aborted'));
+            });
+          }
         }),
     );
 
