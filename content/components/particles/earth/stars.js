@@ -30,6 +30,8 @@ export class StarManager {
     // Cache for resize calculations
     this.areStarsFormingCards = false;
     this.tempVector = new this.THREE.Vector3(); // Reuse for calculations
+    this._combinedMatrix = new this.THREE.Matrix4(); // Optimization: Reuse matrix
+    this.randomOffsets = null; // Optimization: Stable randomness
   }
 
   createStarField() {
@@ -40,6 +42,8 @@ export class StarManager {
       : CONFIG.STARS.COUNT;
     const positions = new Float32Array(starCount * 3);
     const targetPositions = new Float32Array(starCount * 3);
+    // OPTIMIZATION: Pre-calculate random offsets to avoid Math.random() in loop and stabilize visual jitter
+    this.randomOffsets = new Float32Array(starCount * 3);
     const colors = new Float32Array(starCount * 3);
     const sizes = new Float32Array(starCount);
     const color = new this.THREE.Color();
@@ -63,6 +67,10 @@ export class StarManager {
       targetPositions[i3] = x; // Initialize target as current pos
       targetPositions[i3 + 1] = y;
       targetPositions[i3 + 2] = z;
+
+      this.randomOffsets[i3] = Math.random() - 0.5;
+      this.randomOffsets[i3 + 1] = Math.random() - 0.5;
+      this.randomOffsets[i3 + 2] = Math.random() - 0.5;
 
       color.setHSL(Math.random() * 0.1 + 0.5, 0.8, 0.8 + Math.random() * 0.2);
       colors[i3] = color.r;
@@ -197,6 +205,14 @@ export class StarManager {
     const surfaceStars = starsPerCard - perimeterStars;
     const starsPerEdge = Math.floor(perimeterStars / 4);
 
+    // OPTIMIZATION: Pre-calculate combined matrix to avoid matrix multiplication in loop
+    // unproject = applyMatrix4(projInv).applyMatrix4(world)
+    // We compute M = world * projInv once
+    this._combinedMatrix.multiplyMatrices(
+      this.camera.matrixWorld,
+      this.camera.projectionMatrixInverse,
+    );
+
     // Optimized screenToWorld: writes directly to an array or object to avoid allocation
     // We'll just return x,y,z components to push into a flat array
     const pushWorldPos = (x, y, outArray) => {
@@ -204,7 +220,9 @@ export class StarManager {
       const ndcY = -((y / viewportHeight) * 2 - 1);
 
       this.tempVector.set(ndcX, ndcY, 0);
-      this.tempVector.unproject(this.camera);
+      // OPTIMIZATION: Use pre-calculated matrix instead of unproject()
+      // Reduces 2 matrix multiplications per point to 1
+      this.tempVector.applyMatrix4(this._combinedMatrix);
       this.tempVector.sub(this.camera.position).normalize();
 
       const distance = (targetZ - this.camera.position.z) / this.tempVector.z;
@@ -353,9 +371,12 @@ export class StarManager {
         continue;
       }
 
-      array[i3] = tx + (Math.random() - 0.5) * spreadXY;
-      array[i3 + 1] = ty + (Math.random() - 0.5) * spreadXY;
-      array[i3 + 2] = tz + (Math.random() - 0.5) * spreadZ;
+      // OPTIMIZATION: Use pre-calculated offsets
+      // 1. Removes 9000 Math.random() calls per update
+      // 2. Stabilizes visual appearance (no jitter during scroll/resize)
+      array[i3] = tx + this.randomOffsets[i3] * spreadXY;
+      array[i3 + 1] = ty + this.randomOffsets[i3 + 1] * spreadXY;
+      array[i3 + 2] = tz + this.randomOffsets[i3 + 2] * spreadZ;
     }
 
     attr.needsUpdate = true;
