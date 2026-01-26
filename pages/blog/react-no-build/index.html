@@ -125,77 +125,8 @@
   </head>
   <body>
     <!-- Static header (for No-JS & better SEO/first-paint) -->
-    <header class="site-header">
-      <!-- SVG sprite (inlined for icons when JS is disabled) -->
-      <svg
-        aria-hidden="true"
-        class="svg-sprite-hidden"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <defs>
-          <symbol id="icon-house" viewBox="0 0 576 512">
-            <path
-              fill="currentColor"
-              d="M541 229.16 512 205.26V64a32 32 0 0 0-32-32h-64a32 32 0 0 0-32 32v24.6L314.52 43a35.93 35.93 0 0 0-45 0L35 229.16a16 16 0 0 0-2 22.59l21.4 25.76a16 16 0 0 0 22.59 2L96 264.86V456a32 32 0 0 0 32 32h128V344a16 16 0 0 1 16-16h64a16 16 0 0 1 16 16v144h128a32 32 0 0 0 32-32V264.86l19 14.65a16 16 0 0 0 22.59-2l21.4-25.76a16 16 0 0 0-2-22.59Z"
-            />
-          </symbol>
-          <symbol id="icon-images" viewBox="0 0 576 512">
-            <path
-              fill="currentColor"
-              d="M480 416V80a48 48 0 0 0-48-48H80a48 48 0 0 0-48 48v336H16a16 16 0 0 0 0 32h448a16 16 0 0 0 0-32ZM64 416V80a16 16 0 0 1 16-16h352a16 16 0 0 1 16 16v336Zm96-80 64-80 48 64 64-80 80 96H160Zm48-144a40 40 0 1 1-40-40 40 40 0 0 1 40 40Zm368-96v304a16 16 0 0 1-16 16h-16v-32h16V96H496V64h16a16 16 0 0 1 16 16Z"
-            />
-          </symbol>
-          <symbol id="icon-user" viewBox="0 0 448 512">
-            <path
-              fill="currentColor"
-              d="M224 256A128 128 0 1 0 96 128a128 128 0 0 0 128 128Zm89.6 32h-11.7a174.64 174.64 0 0 1-155.8 0h-11.7A134.4 134.4 0 0 0 0 422.4 57.6 57.6 0 0 0 57.6 480h332.8A57.6 57.6 0 0 0 448 422.4 134.4 134.4 0 0 0 313.6 288Z"
-            />
-          </symbol>
-          <symbol id="icon-mail" viewBox="0 0 512 512">
-            <path
-              fill="currentColor"
-              d="M48 64C21.5 64 0 85.5 0 112v288c0 26.5 21.5 48 48 48h416c26.5 0 48-21.5 48-48V112c0-26.5-21.5-48-48-48H48zM48 96h416c8.8 0 16 7.2 16 16v41.4L288 264.4c-11.3 8.5-26.7 8.5-38 0L32 153.4V112c0-8.8 7.2-16 16-16zm0 320v-222l176 132c22.5 16.9 53.5 16.9 76 0l176-132v222c0 8.8-7.2 16-16 16H64c-8.8 0-16-7.2-16-16z"
-            />
-          </symbol>
-        </defs>
-      </svg>
-
-      <div class="skip-links">
-        <a href="#main-content" class="skip-link">Zum Hauptinhalt springen</a>
-        <a href="#navigation" class="skip-link">Zur Navigation springen</a>
-      </div>
-
-      <a href="/" class="site-logo-link" title="Abdulkerim Sesli">
-        <span class="site-logo__container u-inline-center">
-          <!-- Inline SVG logo: AKS monogram for crisp LCP and scalability -->
-          <svg
-            class="site-logo-svg"
-            width="40"
-            height="40"
-            viewBox="0 0 100 100"
-            role="img"
-            aria-label="Abdulkerim Sesli logo"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <circle cx="50" cy="50" r="48" fill="#0B74DE" />
-            <text
-              x="50"
-              y="60"
-              text-anchor="middle"
-              font-family="var(--font-primary, system-ui, sans-serif)"
-              font-size="42"
-              fill="#fff"
-              font-weight="700"
-            >
-              AKS
-            </text>
-          </svg>
-          <span class="site-logo elegant-logo" id="site-title"
-            ><span class="visually-hidden">Startseite</span></span
-          >
-          <span class="site-subtitle" id="site-subtitle"></span>
-        </span>
-      </a>
+        <header class="site-header">
+      <div id="menu-container"></div>
     </header>
 
     <main id="main-content" class="container-article">
