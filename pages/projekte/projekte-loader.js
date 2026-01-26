@@ -38,9 +38,8 @@ globalThis.addEventListener('DOMContentLoaded', async () => {
     if (globalThis.__threeEarthLoaded) return;
     globalThis.__threeEarthLoaded = true;
     try {
-      const mod = await import(
-        '../../content/components/particles/three-earth-system.js'
-      );
+      const mod =
+        await import('../../content/components/particles/three-earth-system.js');
 
       // Allow module to expose API and adjust presets before init
       try {
