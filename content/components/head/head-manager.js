@@ -103,7 +103,7 @@ function updateBasicMeta(pageData, pageUrl) {
   if (pageData.image) {
     upsertMeta('og:image', pageData.image, true);
 
-    fetch('/content/core/og-image-dimensions.json')
+    fetch('/content/assets/img/og/og-images-meta.json')
       .then((r) => (r.ok ? r.json() : null))
       .then((map) => {
         if (!map) {
