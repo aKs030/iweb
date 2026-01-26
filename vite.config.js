@@ -88,6 +88,11 @@ export default defineConfig({
     port: 8080,
     open: true,
     cors: true,
+    headers: {
+      'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+      Pragma: 'no-cache',
+      Expires: '0',
+    },
   },
 
   // Preview server (for testing production builds)
