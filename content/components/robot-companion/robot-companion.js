@@ -1063,17 +1063,21 @@ class RobotCompanion {
 }
 
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => {
-    const robot = new RobotCompanion();
-    robot
-      .initialize()
-      .catch((e) =>
-        log.error(
-          'RobotCompanion init failed: ' +
-            (e && e.message ? e.message : String(e)),
-        ),
-      );
-  });
+  document.addEventListener(
+    'DOMContentLoaded',
+    () => {
+      const robot = new RobotCompanion();
+      robot
+        .initialize()
+        .catch((e) =>
+          log.error(
+            'RobotCompanion init failed: ' +
+              (e && e.message ? e.message : String(e)),
+          ),
+        );
+    },
+    { once: true },
+  );
 } else {
   const robot = new RobotCompanion();
   robot
