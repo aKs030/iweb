@@ -1,16 +1,7 @@
 import { CONFIG } from './config.js';
 import { createLogger } from '/content/core/logger.js';
+import { throttle } from '/content/core/dom-utils.js';
 
-function throttle(func, limit = 250) {
-  let inThrottle = false;
-  return function (...args) {
-    if (!inThrottle) {
-      func.apply(this, args);
-      inThrottle = true;
-      setTimeout(() => (inThrottle = false), limit);
-    }
-  };
-}
 import {
   calculateQualityLevel,
   calculateDynamicResolution,
