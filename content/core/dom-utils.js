@@ -100,3 +100,20 @@ export function debounce(fn, delay) {
     }, delay);
   };
 }
+
+/**
+ * Throttle a function
+ * @param {Function} func - Function to throttle
+ * @param {number} limit - Limit in ms
+ * @returns {Function} Throttled function
+ */
+export function throttle(func, limit = 250) {
+  let inThrottle = false;
+  return function (...args) {
+    if (!inThrottle) {
+      func.apply(this, args);
+      inThrottle = true;
+      setTimeout(() => (inThrottle = false), limit);
+    }
+  };
+}
