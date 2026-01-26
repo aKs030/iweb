@@ -35,17 +35,17 @@
   Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=()
   
   # Content Security Policy - ENFORCEMENT MODE (Phase 3) ✅
-  # Strict CSP without unsafe-inline
+  # Strict CSP (unsafe-inline allowed for styles)
   # 
   # Changes from Report-Only:
-  # - Removed 'unsafe-inline' from script-src and style-src
+  # - Allowed 'unsafe-inline' for style-src (required for animations/JS styling)
   # - Added Gemini API to connect-src
   # - Switched to enforcement mode (blocks violations)
   #
   # CSP Directives:
   # - default-src 'self': Only allow resources from same origin by default
   # - script-src: Allow scripts from self, external CDNs (jsDelivr), Google services
-  # - style-src: Allow styles from self, Google Fonts
+  # - style-src: Allow styles from self, Google Fonts, and inline styles
   # - img-src: Allow images from self, YouTube, Google Analytics, data URIs, blobs
   # - font-src: Allow fonts from self and Google Fonts
   # - connect-src: Allow API calls to self, Google APIs, Gemini AI
@@ -58,4 +58,4 @@
   #
   # Note: JSON-LD scripts are safe (type="application/ld+json" is not executable)
   # Note: Module scripts with src are allowed (type="module" with external src)
-  Content-Security-Policy: default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' https://fonts.googleapis.com; img-src 'self' https://i.ytimg.com https://i9.ytimg.com https://www.youtube.com https://www.google-analytics.com data: blob:; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://www.googleapis.com https://www.google-analytics.com https://generativelanguage.googleapis.com; frame-src https://www.youtube-nocookie.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://www.googletagmanager.com https://www.google-analytics.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' https://i.ytimg.com https://i9.ytimg.com https://www.youtube.com https://www.google-analytics.com https://www.abdulkerimsesli.de data: blob:; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://www.googleapis.com https://www.google-analytics.com https://generativelanguage.googleapis.com; frame-src https://www.youtube-nocookie.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
