@@ -16,7 +16,10 @@ export class SectionManager {
   }
 
   async loadSection(section) {
-    if (this.loadedSections.has(section)) return;
+    if (this.loadedSections.has(section)) {
+      log.debug(`Section already loaded: ${section.id}`);
+      return;
+    }
 
     const url = section.dataset.sectionSrc;
     if (!url) return;
@@ -33,6 +36,16 @@ export class SectionManager {
         html = await fetchText(url + '.html');
       }
 
+      // Remove ALL existing content before inserting new content
+      // This prevents duplicate content if the section was partially loaded
+      const children = Array.from(section.children);
+      if (children.length > 0) {
+        log.debug(
+          `Section ${section.id}: clearing ${children.length} existing elements`,
+        );
+        children.forEach((child) => child.remove());
+      }
+
       section.insertAdjacentHTML('beforeend', html);
 
       const template = section.querySelector('template');
@@ -40,9 +53,6 @@ export class SectionManager {
         section.appendChild(template.content.cloneNode(true));
       }
 
-      section
-        .querySelectorAll('.section-skeleton')
-        .forEach((el) => el.remove());
       section.removeAttribute('aria-busy');
 
       if (section.id === 'hero') {
@@ -89,6 +99,7 @@ export class SectionManager {
 
   reinit() {
     this._initialized = false;
+    this.loadedSections = new WeakSet();
     this.init();
   }
 

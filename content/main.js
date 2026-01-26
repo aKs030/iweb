@@ -11,7 +11,7 @@ import { a11y, createAnnouncer } from './core/accessibility-manager.js';
 import { SectionManager } from './core/section-manager.js';
 import { LoaderManager } from './core/loader-manager.js';
 import { ThreeEarthManager } from './core/three-earth-manager.js';
-import { getElementById } from './core/dom-utils.js';
+import { getElementById, onDOMReady } from './core/dom-utils.js';
 import './components/menu/menu.js';
 
 const log = createLogger('main');
@@ -57,6 +57,13 @@ const AppLoadManager = (() => {
   };
 })();
 
+// ===== Constants =====
+const REFRESH_DELAY_MS = 50;
+const SECTION_TRACKER_CONFIG = {
+  threshold: [0.1, 0.3, 0.5, 0.7],
+  rootMargin: '-10% 0px -10% 0px',
+};
+
 class SectionTracker {
   constructor() {
     this.sections = [];
@@ -66,21 +73,12 @@ class SectionTracker {
   }
 
   init() {
-    if (document.readyState === 'loading') {
-      document.addEventListener(
-        'DOMContentLoaded',
-        () => this.setupObserver(),
-        { once: true },
-      );
-    } else {
-      setTimeout(() => this.setupObserver(), 100);
-    }
-    document.addEventListener('section:loaded', () => {
-      setTimeout(() => this.refreshSections(), 50);
-    });
-    document.addEventListener('footer:loaded', () => {
-      setTimeout(() => this.refreshSections(), 50);
-    });
+    onDOMReady(() => this.setupObserver());
+
+    const refreshHandler = () =>
+      setTimeout(() => this.refreshSections(), REFRESH_DELAY_MS);
+    document.addEventListener('section:loaded', refreshHandler);
+    document.addEventListener('footer:loaded', refreshHandler);
   }
 
   setupObserver() {
@@ -88,7 +86,7 @@ class SectionTracker {
     if (!window.IntersectionObserver || this.sections.length === 0) return;
     this.observer = new IntersectionObserver(
       (entries) => this.handleIntersections(entries),
-      { threshold: [0.1, 0.3, 0.5, 0.7], rootMargin: '-10% 0px -10% 0px' },
+      SECTION_TRACKER_CONFIG,
     );
     this.sections.forEach((section) => this.observer.observe(section));
     this.checkInitialSection();
@@ -220,7 +218,15 @@ globalThis.SectionLoader = {
   retrySection: (section) => sectionManager.retrySection(section),
 };
 
+let _appInitialized = false;
+
 function _initApp() {
+  if (_appInitialized) {
+    log.debug('App already initialized, skipping duplicate init');
+    return;
+  }
+  _appInitialized = true;
+
   sectionManager.init();
   try {
     a11y?.updateAnimations?.();
@@ -230,59 +236,63 @@ function _initApp() {
   }
 }
 
-if (document.readyState !== 'loading') {
-  _initApp();
-} else {
-  document.addEventListener(EVENTS.DOM_READY, _initApp, { once: true });
-}
+onDOMReady(_initApp);
 
 // ===== Initialize Managers =====
 const LoadingScreenManager = new LoaderManager();
 const ThreeEarthLoader = new ThreeEarthManager(ENV);
 
-// ===== Event Handlers (inline) =====
-function handleRetryClick(event) {
-  const retry = event.target?.closest('.retry-btn');
-  if (retry) {
+// ===== Event Handlers =====
+const EventHandlers = {
+  handleRetry(event) {
+    const retry = event.target?.closest('.retry-btn');
+    if (!retry) return;
+
     event.preventDefault();
     try {
       globalThis.location.reload();
     } catch {
       /* fallback */
     }
-  }
-}
+  },
 
-function handleShareClick(event) {
-  const share = event.target?.closest('.btn-share');
-  if (!share) return;
+  handleShare(event) {
+    const share = event.target?.closest('.btn-share');
+    if (!share) return;
 
-  event.preventDefault();
-  const shareUrl = share.dataset.shareUrl || 'https://www.youtube.com/@aks.030';
-  const shareData = {
-    title: document.title,
-    text: 'Schau dir diesen Kanal an',
-    url: shareUrl,
-  };
+    event.preventDefault();
+    const shareUrl =
+      share.dataset.shareUrl || 'https://www.youtube.com/@aks.030';
+    const shareData = {
+      title: document.title,
+      text: 'Schau dir diesen Kanal an',
+      url: shareUrl,
+    };
 
-  if (navigator.share) {
-    navigator.share(shareData).catch((err) => log.warn('share failed', err));
-  } else if (navigator.clipboard) {
-    navigator.clipboard.writeText(shareUrl).then(() => {
+    if (navigator.share) {
+      navigator.share(shareData).catch((err) => log.warn('share failed', err));
+    } else if (navigator.clipboard) {
+      navigator.clipboard.writeText(shareUrl).then(() => {
+        try {
+          announce('Link kopiert', { dedupe: true });
+        } catch (err) {
+          log.warn('announce failed', err);
+        }
+      });
+    } else {
       try {
-        announce('Link kopiert', { dedupe: true });
+        globalThis.prompt('Link kopieren', shareUrl);
       } catch (err) {
-        log.warn('announce failed', err);
+        log.warn('prompt failed', err);
       }
-    });
-  } else {
-    try {
-      globalThis.prompt('Link kopieren', shareUrl);
-    } catch (err) {
-      log.warn('prompt failed', err);
     }
-  }
-}
+  },
+
+  handleClick(event) {
+    this.handleRetry(event);
+    this.handleShare(event);
+  },
+};
 
 // ===== Application Bootstrap =====
 document.addEventListener(
@@ -296,23 +306,17 @@ document.addEventListener(
     let modulesReady = false;
     let windowLoaded = false;
 
-    const checkReady = () => {
-      if (!modulesReady || !windowLoaded) return;
-
-      const blocked =
-        typeof AppLoadManager !== 'undefined' &&
-        typeof AppLoadManager.isBlocked === 'function' &&
-        AppLoadManager.isBlocked();
-      if (blocked) return;
-
-      // Ensure Three.js Earth signaled readiness if present
+    const isEarthReady = () => {
       const earthContainer =
         getElementById('threeEarthContainer') ||
         getElementById('earth-container');
-      const earthReady = earthContainer?.dataset?.threeReady === '1';
-      if (earthContainer && !earthReady) {
-        return;
-      }
+      return !earthContainer || earthContainer?.dataset?.threeReady === '1';
+    };
+
+    const checkReady = () => {
+      if (!modulesReady || !windowLoaded) return;
+      if (AppLoadManager?.isBlocked?.()) return;
+      if (!isEarthReady()) return;
 
       LoadingScreenManager.hide();
       announce('Anwendung geladen', { dedupe: true });
@@ -364,10 +368,9 @@ document.addEventListener(
     }
 
     // Event delegation
-    document.addEventListener('click', (event) => {
-      handleRetryClick(event);
-      handleShareClick(event);
-    });
+    document.addEventListener('click', (event) =>
+      EventHandlers.handleClick(event),
+    );
 
     log.info('Performance:', {
       domReady: Math.round(perfMarks.domReady - perfMarks.start),

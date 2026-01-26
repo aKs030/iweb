@@ -1197,19 +1197,6 @@ function _setupManagersAndCards(container) {
 
   // Initialize exclusively from built-in data (WebGL-only)
   cardManager.initFromData(DEFAULT_FEATURES);
-
-  // Keep a lightweight listener to ensure cards are present when the section is (no DOM parsing)
-  const onSectionLoaded = (e) => {
-    if (e.detail?.id === 'features' && cardManager) {
-      cardManager.initFromData(DEFAULT_FEATURES);
-    }
-  };
-  document.addEventListener('section:loaded', onSectionLoaded);
-  sharedCleanupManager.addCleanupFunction(
-    'three-earth',
-    () => document.removeEventListener('section:loaded', onSectionLoaded),
-    'section listener',
-  );
 }
 
 function triggerShowcase(duration = 8000) {
