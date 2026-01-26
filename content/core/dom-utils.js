@@ -117,3 +117,16 @@ export function throttle(func, limit = 250) {
     }
   };
 }
+
+/**
+ * Execute callback when DOM is ready
+ * @param {Function} callback - Function to execute
+ * @param {Object} options - Options for addEventListener
+ */
+export function onDOMReady(callback, options = { once: true }) {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', callback, options);
+  } else {
+    callback();
+  }
+}
