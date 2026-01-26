@@ -144,7 +144,11 @@
     </script>
 
     <!-- Icons -->
-    <script src="https://unpkg.com/lucide@0.263.1/dist/umd/lucide.min.js"></script>
+    <script
+      src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"
+      defer
+      crossorigin="anonymous"
+    ></script>
     <!-- Main application module -->
     <script
       type="module"
@@ -190,7 +194,7 @@
       </style>
     </noscript>
 
-        <header class="site-header">
+    <header class="site-header">
       <div id="menu-container"></div>
     </header>
 
@@ -362,8 +366,16 @@
     </main>
 
     <script>
-      // Initialize Lucide Icons
-      lucide.createIcons();
+      // Initialize Lucide Icons after library loads
+      if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+      } else {
+        window.addEventListener('DOMContentLoaded', () => {
+          if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+          }
+        });
+      }
     </script>
   </body>
 </html>
