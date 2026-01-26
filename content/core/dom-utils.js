@@ -84,3 +84,19 @@ export function waitForElement(selector, timeout = 5000) {
     }, timeout);
   });
 }
+
+/**
+ * Debounce a function
+ * @param {Function} fn - Function to debounce
+ * @param {number} delay - Delay in ms
+ * @returns {Function} Debounced function
+ */
+export function debounce(fn, delay) {
+  let timeoutId;
+  return function (...args) {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => {
+      fn.apply(this, args);
+    }, delay);
+  };
+}

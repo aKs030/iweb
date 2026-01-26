@@ -11,10 +11,14 @@ import { MenuCache } from './MenuCache.js';
 import { MenuConfig } from './MenuConfig.js';
 import { getElementById } from '/content/core/dom-utils.js';
 import { upsertHeadLink } from '/content/core/dom-helpers.js';
+import { createLogger } from '/content/core/logger.js';
 
 export class MenuController {
   constructor(config = {}) {
     this.config = { ...MenuConfig, ...config };
+    this.log = createLogger('Menu', {
+      level: this.config.ENABLE_DEBUG ? 3 : undefined, // 3 = debug
+    });
     this.state = new MenuState();
     this.renderer = new MenuRenderer(this.state, this.config);
     this.performance = new MenuPerformance();
@@ -68,11 +72,9 @@ export class MenuController {
       this.initialized = true;
 
       const duration = this.performance.endMeasure('menu-init');
-      if (this.config.ENABLE_DEBUG) {
-        console.log(`[Menu] Initialized in ${duration.toFixed(2)}ms`);
-      }
+      this.log.debug(`Initialized in ${duration.toFixed(2)}ms`);
     } catch (error) {
-      console.error('[Menu] Initialization failed:', error);
+      this.log.error('Initialization failed:', error);
       throw error;
     }
   }
@@ -122,9 +124,7 @@ export class MenuController {
     this.state.reset();
     this.initialized = false;
 
-    if (this.config.ENABLE_DEBUG) {
-      console.log('[Menu] Destroyed');
-    }
+    this.log.debug('Destroyed');
   }
 
   // Get current stats
