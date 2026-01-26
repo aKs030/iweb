@@ -5,7 +5,7 @@
  */
 
 import { createLogger } from '/content/core/logger.js';
-import { getElementById } from '/content/core/dom-utils.js';
+import { getElementById, debounce } from '/content/core/dom-utils.js';
 import { createObserver } from '/content/core/intersection-observer.js';
 import {
   getSharedState,
@@ -37,14 +37,9 @@ const log = createLogger('ThreeEarthSystem');
 
 // Helper: onResize
 function onResize(callback, delay = 100) {
-  let timeoutId;
-  const handler = () => {
-    clearTimeout(timeoutId);
-    timeoutId = setTimeout(callback, delay);
-  };
+  const handler = debounce(callback, delay);
   window.addEventListener('resize', handler, { passive: true });
   return () => {
-    clearTimeout(timeoutId);
     window.removeEventListener('resize', handler);
   };
 }
