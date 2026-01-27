@@ -214,7 +214,7 @@
   }
 }
 
-@media (max-width: 480px) {
+@media (width <= 480px) {
   .loader-content {
     width: 80%;
   }
