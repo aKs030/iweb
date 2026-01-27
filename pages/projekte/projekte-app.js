@@ -197,7 +197,7 @@ function App() {
       );
       if (m) {
         const [, owner, repo, branch, path] = m;
-        return `https://raw.githack.com/${owner}/${repo}/${branch}/${path}/index.html`;
+        return `https://rawcdn.githack.com/${owner}/${repo}/${branch}/${path}/index.html`;
       }
     } catch {
       /* ignore */
