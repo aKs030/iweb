@@ -21,7 +21,7 @@ function makeAbortController(timeout = 5000) {
  */
 
 // Use jsDelivr CDN (allowed by CSP in content/head/head.html) instead of unpkg
-import htm from 'https://cdn.jsdelivr.net/npm/htm@3.1.1/dist/htm.module.js';
+import htm from 'https://esm.sh/htm@3.1.1';
 
 // Bind htm to React's createElement function
 const html = htm.bind(React.createElement);

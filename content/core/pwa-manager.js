@@ -1,8 +1,8 @@
 import { createLogger } from './logger.js';
 import { upsertHeadLink, upsertMeta } from './dom-helpers.js';
+import { BASE_URL } from '../config/constants.js';
 
 const log = createLogger('PWAManager');
-const BASE_URL = 'https://www.abdulkerimsesli.de';
 
 export function setupPWAAssets(brandData) {
   try {

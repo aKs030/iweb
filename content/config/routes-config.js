@@ -1,4 +1,4 @@
-const BASE_URL = 'https://www.abdulkerimsesli.de';
+import { BASE_URL } from './constants.js';
 
 export const ROUTES = {
   default: {

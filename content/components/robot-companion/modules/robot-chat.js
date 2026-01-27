@@ -82,12 +82,8 @@ export class RobotChat {
     this.robot.trackInteraction('message');
 
     try {
-      // Enable server-side search augmentation (RAG)
-      const response = await this.robot.gemini.generateResponse(
-        text,
-        this.history,
-        { useSearch: true, topK: 3 },
-      );
+      // Server-side search augmentation (RAG) is handled by the worker
+      const response = await this.robot.gemini.generateResponse(text);
       this.removeTyping();
       this.robot.animationModule.stopThinking();
 
