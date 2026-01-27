@@ -29,10 +29,8 @@ body {
 
 /* Earth Background: Fixed position */
 .three-earth-container {
-  z-index: 0 !important;
+  z-index: 0;
   opacity: 0.7;
-  position: fixed;
-  inset: 0;
   pointer-events: none;
 }
 
