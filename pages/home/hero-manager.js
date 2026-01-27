@@ -255,9 +255,9 @@ export function initHeroFeatureBundle(sectionManager) {
     };
 
     if (sectionManager?.loadSection) {
-      sectionManager.loadSection(target).finally(() =>
-        requestAnimationFrame(doScroll),
-      );
+      sectionManager
+        .loadSection(target)
+        .finally(() => requestAnimationFrame(doScroll));
     } else {
       requestAnimationFrame(doScroll);
     }
