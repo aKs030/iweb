@@ -1,5 +1,6 @@
 import { createLogger } from '/content/core/logger.js';
-import { createProjectsData } from './projects-data.js';
+import { getStaticProjects, mergeProjects } from './projects-data.js';
+import { fetchDynamicProjects } from './github-fetcher.js';
 
 const log = createLogger('projekte-app');
 
@@ -136,16 +137,6 @@ const Check = (props) => html`
   <//>
 `;
 
-// --- DATA ---
-// Import project data with icons
-const projects = createProjectsData(html, {
-  Gamepad2,
-  Binary,
-  Palette,
-  ListTodo,
-  Check,
-});
-
 // --- APP ---
 function App() {
   const scrollToProjects = () => {
@@ -160,6 +151,39 @@ function App() {
   const [iframeLoading, setIframeLoading] = React.useState(true);
   const [toastMsg, setToastMsg] = React.useState('');
   const toastTimerRef = React.useRef(null);
+
+  // Dynamic Projects State
+  const [projects, setProjects] = React.useState(() => {
+    // Initial load: Static projects
+    return getStaticProjects(html, {
+      Gamepad2,
+      Binary,
+      Palette,
+      ListTodo,
+      Check,
+    });
+  });
+
+  React.useEffect(() => {
+    let mounted = true;
+    (async () => {
+      const icons = { Gamepad2, Binary, Palette, ListTodo, Check };
+      // Fetch dynamic projects
+      const dynamic = await fetchDynamicProjects(html, icons);
+
+      if (mounted) {
+        if (dynamic && dynamic.length > 0) {
+          // Merge with static overrides
+          const merged = mergeProjects(getStaticProjects(html, icons), dynamic);
+          setProjects(merged);
+        }
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   const showToast = (msg, ms = 2600) => {
     setToastMsg(msg);
     if (toastTimerRef.current) clearTimeout(toastTimerRef.current);

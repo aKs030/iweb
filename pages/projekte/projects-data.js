@@ -1,6 +1,6 @@
 /**
  * Projects Data Configuration
- * @version 1.0.0
+ * @version 1.1.0
  *
  * This file contains all project definitions for the interactive projects showcase.
  * Separated from the main app logic for better maintainability.
@@ -60,12 +60,12 @@ const createGradient = (colors) => ({
 });
 
 /**
- * Creates the projects array with icon and preview components
+ * Creates the static projects array (overrides)
  * @param {Function} html - htm template function bound to React.createElement
  * @param {Object} icons - Object containing icon components
  * @returns {Array} Array of project objects
  */
-export function createProjectsData(html, icons) {
+export function getStaticProjects(html, icons) {
   const { Gamepad2, Binary, Palette, ListTodo, Check } = icons;
 
   return [
@@ -169,4 +169,35 @@ export function createProjectsData(html, icons) {
       `,
     },
   ];
+}
+
+/**
+ * Merges dynamic projects with static overrides
+ * Prefers static configuration for presentation if the project exists in both.
+ * @param {Array} staticList - The hand-crafted project definitions
+ * @param {Array} dynamicList - The projects fetched from GitHub
+ * @returns {Array} Merged project list
+ */
+export function mergeProjects(staticList, dynamicList) {
+  // Create a map of static projects by GitHub Path (normalized)
+  const staticMap = new Map();
+  staticList.forEach((p) => {
+    if (p.githubPath) {
+      // remove trailing slash and standardize
+      const key = p.githubPath.replace(/\/$/, '').toLowerCase();
+      staticMap.set(key, p);
+    }
+  });
+
+  // Map dynamic projects, substituting with static override if available
+  const merged = dynamicList.map((dyn) => {
+    const key = dyn.githubPath.replace(/\/$/, '').toLowerCase();
+    if (staticMap.has(key)) {
+      // Use the static version (preserves custom icons, previews, colors)
+      return staticMap.get(key);
+    }
+    return dyn;
+  });
+
+  return merged;
 }
