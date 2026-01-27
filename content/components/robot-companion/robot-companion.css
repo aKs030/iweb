@@ -781,83 +781,6 @@
   }
 }
 
-/* AI Chat Extensions */
-.chat-actions {
-  display: flex;
-  gap: var(--gap-xs);
-}
-
-.chat-mode-btn {
-  background: none;
-  border: none;
-  color: #94a3b8;
-  font-size: 1.2rem;
-  cursor: pointer;
-  transition: color 0.2s;
-  padding: 0;
-}
-
-.chat-mode-btn:hover,
-.chat-mode-btn.active {
-  color: #40e0d0;
-}
-
-.chat-input-area {
-  display: flex;
-  padding: 10px;
-  border-top: 1px solid rgb(64 224 208 / 20%);
-  gap: var(--gap-xs);
-}
-
-#robot-chat-input {
-  flex: 1;
-  background: rgb(15 23 42 / 60%);
-  border: 1px solid rgb(64 224 208 / 30%);
-  border-radius: 15px;
-  padding: 8px 12px;
-  color: #e2e8f0;
-  font-family: inherit;
-  font-size: 0.9rem;
-  outline: none;
-}
-
-#robot-chat-input:focus {
-  border-color: #40e0d0;
-}
-
-#robot-chat-send {
-  background: none;
-  border: none;
-  color: #40e0d0;
-  font-size: 1.2rem;
-  cursor: pointer;
-  padding: 0 5px;
-  transition: transform 0.2s;
-}
-
-.chat-sources {
-  margin-top: 8px;
-  font-size: 0.85rem;
-  color: #cbd5e1;
-}
-
-.chat-sources ul {
-  margin: 6px 0 0 18px;
-}
-
-.chat-sources a {
-  color: #93c5fd;
-  text-decoration: none;
-}
-
-.chat-sources a:hover {
-  text-decoration: underline;
-}
-
-#robot-chat-send:hover {
-  transform: scale(1.1);
-}
-
 /* ========== MINI-GAMES STYLES ========== */
 
 .tic-tac-toe-game {
@@ -911,32 +834,6 @@
   overflow-x: auto;
 }
 
-/* Mood indicator animation */
-@keyframes moodPulse {
-  0%,
-  100% {
-    opacity: 0.8;
-  }
-
-  50% {
-    opacity: 1;
-  }
-}
-
-.robot-avatar.mood-energetic {
-  animation: moodPulse 1s ease-in-out infinite;
-}
-
-.robot-avatar.mood-sleepy {
-  opacity: 0.85;
-}
-
-.robot-avatar.mood-enthusiastic::after {
-  animation:
-    trailFlow 1s ease-in-out infinite,
-    moodPulse 0.8s ease-in-out infinite;
-}
-
 /* Game buttons special styling */
 .chat-option-btn[data-game='true'] {
   background: linear-gradient(
@@ -965,24 +862,6 @@
 @media (width <= 480px) {
   #robot-chat-input {
     font-size: 16px !important;
-  }
-}
-
-.robot-eyes.is-thinking .robot-pupil {
-  animation: thinkingPupil 1s infinite alternate ease-in-out;
-}
-
-@keyframes thinkingPupil {
-  0% {
-    transform: scale(0.8);
-    opacity: 0.6;
-  }
-
-  100% {
-    transform: scale(1.2);
-    opacity: 1;
-    fill: #ffff00;
-    filter: drop-shadow(0 0 6px #ffff00);
   }
 }
 

@@ -4,6 +4,7 @@
  */
 
 import { createLogger } from './logger.js';
+import { TimerManager } from './timer-utils.js';
 
 const log = createLogger('Fetch');
 
@@ -20,6 +21,9 @@ const log = createLogger('Fetch');
 // Simple in-memory cache
 const cache = new Map();
 
+// Timer manager for cache cleanup
+const timers = new TimerManager('FetchCache');
+
 /**
  * Clear expired cache entries
  */
@@ -34,7 +38,7 @@ function clearExpiredCache() {
 
 // Clear cache every 5 minutes
 if (typeof window !== 'undefined') {
-  setInterval(clearExpiredCache, 300000);
+  timers.setInterval(clearExpiredCache, 300000);
 }
 
 /**

@@ -489,5 +489,5 @@ async function loadFromApi(handle) {
 
 // Run (without await at top level)
 loadLatestVideos().catch((error) => {
-  console.error('Failed to load videos:', error);
+  log.error('Failed to load videos:', error);
 });

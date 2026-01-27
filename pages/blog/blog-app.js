@@ -1,9 +1,9 @@
-import React from 'https://esm.sh/react@18.2.0?dev=false';
-import ReactDOM from 'https://esm.sh/react-dom@18.2.0/client?dev=false';
-import htm from 'https://cdn.jsdelivr.net/npm/htm@3.1.1/dist/htm.module.js';
+import React from 'https://esm.sh/react@19.0.0';
+import { createRoot } from 'https://esm.sh/react-dom@19.0.0/client';
+import htm from 'https://esm.sh/htm@3.1.1';
 import { createLogger } from '/content/core/logger.js';
-import { marked } from 'https://cdn.jsdelivr.net/npm/marked@5.1.1/lib/marked.esm.js';
-import DOMPurify from 'https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.es.js';
+import { marked } from 'https://cdn.jsdelivr.net/npm/marked@11.1.1/lib/marked.esm.js';
+import DOMPurify from 'https://cdn.jsdelivr.net/npm/dompurify@3.0.8/dist/purify.es.mjs';
 
 marked.setOptions({ mangle: false, headerIds: false });
 
@@ -569,4 +569,4 @@ function BlogApp() {
 }
 
 const rootEl = document.getElementById('root');
-if (rootEl) ReactDOM.createRoot(rootEl).render(React.createElement(BlogApp));
+if (rootEl) createRoot(rootEl).render(React.createElement(BlogApp));

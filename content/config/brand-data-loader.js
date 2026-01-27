@@ -1,7 +1,7 @@
 import { createLogger } from '../core/logger.js';
+import { BASE_URL } from './constants.js';
 
 const log = createLogger('BrandDataLoader');
-const BASE_URL = 'https://www.abdulkerimsesli.de';
 
 let BRAND_DATA_CACHE = null;
 

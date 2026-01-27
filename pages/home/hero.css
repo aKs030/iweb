@@ -207,16 +207,7 @@
   left: -40px;
 }
 
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0) rotate(0deg);
-  }
-  50% {
-    transform: translateY(-20px) rotate(10deg);
-  }
-}
-
+/* Using shared floatRotate animation from animations.css */
 .hero-image-container {
   position: relative;
   width: 60vw;
@@ -262,28 +253,6 @@
 
 .three-earth-container:has(canvas) canvas {
   opacity: 1;
-}
-
-.three-earth-fallback__inner img {
-  width: 100%;
-  height: auto;
-  border-radius: 12px;
-  display: block;
-  margin: 0 auto 0.75rem;
-  box-shadow: 0 8px 28px rgba(2, 6, 23, 0.32);
-}
-
-.three-earth-fallback__text {
-  font-size: 0.95rem;
-  color: var(--muted-text, #9aa4b2);
-  margin: 0;
-}
-
-.hero-image-container svg {
-  position: relative;
-  z-index: 1;
-  display: block;
-  margin: 0 auto;
 }
 
 body:not(.hero-active) .floating-icon {

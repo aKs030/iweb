@@ -1,5 +1,7 @@
+import { BASE_URL, BASE_URL_DEV } from './constants.js';
+
 const ENV_DEFAULTS = {
-  BASE_URL: 'https://www.abdulkerimsesli.de',
+  BASE_URL,
   GTM_ID: 'GTM-5F5ZSTTL',
   GA4_ID: 'G-757KWG0PG4',
   AW_ID: 'AW-1036079663',
@@ -10,7 +12,7 @@ const ENV_DEFAULTS = {
 };
 
 const ENV_DEV = {
-  BASE_URL: 'http://localhost:8080',
+  BASE_URL: BASE_URL_DEV,
   GTM_ID: 'GT-TQTFN4NN',
   GA4_ID: 'G-S0587RQ4CN',
   AW_ID: 'AW-17819941793',

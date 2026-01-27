@@ -76,14 +76,6 @@ body {
   scroll-snap-stop: always;
 }
 
-.container-center {
-  position: relative;
-  z-index: 10;
-  max-width: 64rem;
-  margin: 0 auto;
-  text-align: center;
-}
-
 .badge {
   display: inline-flex;
   align-items: center;
@@ -403,11 +395,6 @@ body {
   max-width: 32rem;
   margin-left: auto;
   margin-right: auto;
-}
-.footer-note {
-  margin-top: 5rem;
-  color: var(--text-dim);
-  font-size: 0.875rem;
 }
 
 .glow-bg {

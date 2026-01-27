@@ -130,3 +130,77 @@ export function onDOMReady(callback, options = { once: true }) {
     callback();
   }
 }
+
+/**
+ * DOM Element Cache
+ * Cache frequently accessed DOM elements
+ */
+const domCache = new Map();
+
+/**
+ * Get cached element or query and cache it
+ * @param {string} selector - CSS selector
+ * @param {boolean} forceRefresh - Force refresh cache
+ * @returns {Element|null}
+ */
+export function getCachedElement(selector, forceRefresh = false) {
+  if (!forceRefresh && domCache.has(selector)) {
+    const el = domCache.get(selector);
+    // Check if element is still in DOM
+    if (el?.isConnected) return el;
+    // Remove stale cache entry
+    domCache.delete(selector);
+  }
+
+  const el = querySelector(selector);
+  if (el) domCache.set(selector, el);
+  return el;
+}
+
+/**
+ * Clear DOM cache
+ * @param {string} selector - Optional selector to clear specific entry
+ */
+export function clearDOMCache(selector = null) {
+  if (selector) {
+    domCache.delete(selector);
+  } else {
+    domCache.clear();
+  }
+}
+
+/**
+ * Get cache statistics
+ * @returns {Object} Cache stats
+ */
+export function getDOMCacheStats() {
+  const stats = {
+    size: domCache.size,
+    connected: 0,
+    disconnected: 0,
+  };
+
+  domCache.forEach((el) => {
+    if (el?.isConnected) {
+      stats.connected++;
+    } else {
+      stats.disconnected++;
+    }
+  });
+
+  return stats;
+}
+
+/**
+ * Clean up disconnected elements from cache
+ */
+export function cleanupDOMCache() {
+  const toDelete = [];
+  domCache.forEach((el, selector) => {
+    if (!el?.isConnected) {
+      toDelete.push(selector);
+    }
+  });
+  toDelete.forEach((selector) => domCache.delete(selector));
+  return toDelete.length;
+}
