@@ -77,9 +77,9 @@
   filter: drop-shadow(0 0.5px 1px rgb(0 0 0 / 15%));
   transition:
     transform 0.2s
-      var(--dynamic-menu-spring-quick, cubic-bezier(0.4, 0, 0.2, 1)),
-    opacity 0.2s var(--dynamic-menu-spring-quick, cubic-bezier(0.4, 0, 0.2, 1)),
-    filter 0.2s var(--dynamic-menu-spring-quick, cubic-bezier(0.4, 0, 0.2, 1));
+      var(--component-spring-quick, cubic-bezier(0.4, 0, 0.2, 1)),
+    opacity 0.2s var(--component-spring-quick, cubic-bezier(0.4, 0, 0.2, 1)),
+    filter 0.2s var(--component-spring-quick, cubic-bezier(0.4, 0, 0.2, 1));
   opacity: 0.85;
   display: inline-block;
   position: relative;
@@ -134,17 +134,17 @@
   min-width: 920px;
   height: 52px;
   padding: 0 20px;
-  background: var(--dynamic-menu-header-bg, rgba(0, 0, 0, 0.8));
-  backdrop-filter: blur(var(--dynamic-menu-blur-radius, 20px));
-  border-radius: var(--dynamic-menu-pill-radius, 26px);
-  border: 1px solid var(--dynamic-menu-separator, rgba(255, 255, 255, 0.1));
-  box-shadow: var(--dynamic-menu-shadow-depth-2, 0 8px 32px rgba(0, 0, 0, 0.3));
+  background: var(--component-header-bg, rgba(0, 0, 0, 0.8));
+  backdrop-filter: blur(var(--component-blur-radius, 20px));
+  border-radius: var(--component-pill-radius, 26px);
+  border: 1px solid var(--component-separator, rgba(255, 255, 255, 0.1));
+  box-shadow: var(--component-shadow-depth-2, 0 8px 32px rgba(0, 0, 0, 0.3));
   display: flex;
   justify-content: flex-end;
   align-items: center;
   z-index: 9999;
   animation: headerAppear 0.8s
-    var(--dynamic-menu-spring-bounce, cubic-bezier(0.68, -0.55, 0.265, 1.55))
+    var(--component-spring-bounce, cubic-bezier(0.68, -0.55, 0.265, 1.55))
     forwards;
   opacity: 0;
   transform: translateX(-50%) translateY(-20px) scale(0.95);
@@ -185,8 +185,8 @@
 .site-logo {
   transition:
     transform 0.3s
-      var(--dynamic-menu-spring-quick, cubic-bezier(0.4, 0, 0.2, 1)),
-    opacity 0.3s var(--dynamic-menu-spring-quick, cubic-bezier(0.4, 0, 0.2, 1));
+      var(--component-spring-quick, cubic-bezier(0.4, 0, 0.2, 1)),
+    opacity 0.3s var(--component-spring-quick, cubic-bezier(0.4, 0, 0.2, 1));
   cursor: pointer;
   text-decoration: none;
   display: inline-block;
@@ -205,14 +205,14 @@
   );
   font-size: clamp(18px, 2vw, 22px);
   font-weight: 700;
-  color: var(--dynamic-menu-label-primary, #ffffff);
+  color: var(--component-label-primary, #ffffff);
   letter-spacing: -0.03em;
   white-space: nowrap;
 }
 
 .site-logo:hover {
   transform: scale(1.02);
-  color: var(--dynamic-menu-accent-blue, #007aff);
+  color: var(--component-accent-blue, #007aff);
 }
 
 .site-subtitle {
@@ -226,15 +226,15 @@
   );
   font-size: clamp(10px, 0.9vw, 12px);
   font-weight: 450;
-  color: var(--dynamic-menu-label-secondary, rgba(255, 255, 255, 0.7));
+  color: var(--component-label-secondary, rgba(255, 255, 255, 0.7));
   letter-spacing: 0.01em;
   opacity: 0;
   transform: translateX(-4px) scale(0.95);
   transition:
     opacity 0.4s
-      var(--dynamic-menu-spring-smooth, cubic-bezier(0.25, 0.46, 0.45, 0.94)),
+      var(--component-spring-smooth, cubic-bezier(0.25, 0.46, 0.45, 0.94)),
     transform 0.4s
-      var(--dynamic-menu-spring-smooth, cubic-bezier(0.25, 0.46, 0.45, 0.94));
+      var(--component-spring-smooth, cubic-bezier(0.25, 0.46, 0.45, 0.94));
   text-align: left;
   line-height: 1.1;
   white-space: nowrap;
@@ -247,7 +247,7 @@
 
 .site-logo__container:hover .site-subtitle.show {
   opacity: 1;
-  color: var(--dynamic-menu-label-primary, #ffffff);
+  color: var(--component-label-primary, #ffffff);
 }
 
 /* ===== Navigation ===== */
@@ -256,7 +256,7 @@
   align-items: center;
   justify-content: flex-end;
   transition: transform 0.4s
-    var(--dynamic-menu-spring-smooth, cubic-bezier(0.25, 0.46, 0.45, 0.94));
+    var(--component-spring-smooth, cubic-bezier(0.25, 0.46, 0.45, 0.94));
   overflow: visible;
   margin: 0;
   width: 100%;
@@ -286,7 +286,7 @@
 .site-menu__list li a,
 .site-menu__list button.search-trigger {
   text-decoration: none;
-  color: var(--dynamic-menu-label-primary, #ffffff);
+  color: var(--component-label-primary, #ffffff);
   font-family: var(
     --font-primary,
     -apple-system,
@@ -311,14 +311,14 @@
   touch-action: manipulation;
   transition:
     background 0.2s
-      var(--dynamic-menu-spring-quick, cubic-bezier(0.4, 0, 0.2, 1)),
-    color 0.2s var(--dynamic-menu-spring-quick, cubic-bezier(0.4, 0, 0.2, 1)),
+      var(--component-spring-quick, cubic-bezier(0.4, 0, 0.2, 1)),
+    color 0.2s var(--component-spring-quick, cubic-bezier(0.4, 0, 0.2, 1)),
     transform 0.15s
-      var(--dynamic-menu-spring-quick, cubic-bezier(0.4, 0, 0.2, 1)),
+      var(--component-spring-quick, cubic-bezier(0.4, 0, 0.2, 1)),
     border-color 0.2s
-      var(--dynamic-menu-spring-quick, cubic-bezier(0.4, 0, 0.2, 1)),
+      var(--component-spring-quick, cubic-bezier(0.4, 0, 0.2, 1)),
     box-shadow 0.2s
-      var(--dynamic-menu-spring-quick, cubic-bezier(0.4, 0, 0.2, 1));
+      var(--component-spring-quick, cubic-bezier(0.4, 0, 0.2, 1));
   -webkit-tap-highlight-color: rgb(0 122 255 / 10%);
   -webkit-user-select: none;
   user-select: none;
@@ -330,23 +330,23 @@
 .site-menu__list li a:focus,
 .site-menu__list button.search-trigger:hover,
 .site-menu__list button.search-trigger:focus {
-  color: var(--dynamic-menu-accent-blue, #007aff);
-  background: var(--dynamic-menu-fill-primary, rgba(255, 255, 255, 0.1));
-  border-color: var(--dynamic-menu-separator, rgba(255, 255, 255, 0.1));
+  color: var(--component-accent-blue, #007aff);
+  background: var(--component-fill-primary, rgba(255, 255, 255, 0.1));
+  border-color: var(--component-separator, rgba(255, 255, 255, 0.1));
   transform: translateY(-1px) scale(1.02);
   outline: none;
 }
 
 .site-menu__list li a:active,
 .site-menu__list button.search-trigger:active {
-  background: var(--dynamic-menu-fill-secondary, rgba(255, 255, 255, 0.15));
-  color: var(--dynamic-menu-accent-blue-hover, #0051d5);
+  background: var(--component-fill-secondary, rgba(255, 255, 255, 0.15));
+  color: var(--component-accent-blue-hover, #0051d5);
   transform: translateY(0) scale(0.98);
 }
 
 .site-menu__list li a:focus-visible,
 .site-menu__list button.search-trigger:focus-visible {
-  outline: 2px solid var(--dynamic-menu-accent-blue, #007aff);
+  outline: 2px solid var(--component-accent-blue, #007aff);
   outline-offset: 2px;
   box-shadow: 0 0 0 4px rgb(0 122 255 / 20%);
 }
@@ -375,7 +375,7 @@
     transform: translateY(-50%);
     width: 1px;
     height: 20px;
-    background: var(--dynamic-menu-separator, rgba(255, 255, 255, 0.1));
+    background: var(--component-separator, rgba(255, 255, 255, 0.1));
     opacity: 0.3;
   }
 
@@ -389,7 +389,7 @@
 .site-menu__list button.search-trigger:focus {
   background: linear-gradient(
     135deg,
-    var(--dynamic-menu-fill-primary, rgba(255, 255, 255, 0.1)) 0%,
+    var(--component-fill-primary, rgba(255, 255, 255, 0.1)) 0%,
     rgba(10, 132, 255, 0.08) 100%
   );
   border-color: rgba(10, 132, 255, 0.2);
@@ -409,7 +409,7 @@
 .site-menu__list button.search-trigger:active {
   background: linear-gradient(
     135deg,
-    var(--dynamic-menu-fill-secondary, rgba(255, 255, 255, 0.15)) 0%,
+    var(--component-fill-secondary, rgba(255, 255, 255, 0.15)) 0%,
     rgba(10, 132, 255, 0.12) 100%
   );
   transform: translateY(0) scale(1.02);
@@ -454,8 +454,8 @@
 /* ===== Hamburger Toggle ===== */
 .site-menu__toggle {
   display: none;
-  background: var(--dynamic-menu-fill-primary, rgba(255, 255, 255, 0.1));
-  border: 1px solid var(--dynamic-menu-separator, rgba(255, 255, 255, 0.1));
+  background: var(--component-fill-primary, rgba(255, 255, 255, 0.1));
+  border: 1px solid var(--component-separator, rgba(255, 255, 255, 0.1));
   border-radius: 12px;
   cursor: pointer;
   width: 40px;
@@ -464,21 +464,21 @@
   right: 24px;
   transition:
     background 0.2s
-      var(--dynamic-menu-spring-quick, cubic-bezier(0.4, 0, 0.2, 1)),
+      var(--component-spring-quick, cubic-bezier(0.4, 0, 0.2, 1)),
     transform 0.2s
-      var(--dynamic-menu-spring-quick, cubic-bezier(0.4, 0, 0.2, 1)),
-    opacity 0.2s var(--dynamic-menu-spring-quick, cubic-bezier(0.4, 0, 0.2, 1));
+      var(--component-spring-quick, cubic-bezier(0.4, 0, 0.2, 1)),
+    opacity 0.2s var(--component-spring-quick, cubic-bezier(0.4, 0, 0.2, 1));
   backdrop-filter: blur(10px);
 }
 
 .site-menu__toggle:hover {
-  background: var(--dynamic-menu-fill-secondary, rgba(255, 255, 255, 0.15));
+  background: var(--component-fill-secondary, rgba(255, 255, 255, 0.15));
   transform: scale(1.05);
 }
 
 .site-menu__toggle:active {
   transform: scale(0.95);
-  background: var(--dynamic-menu-accent-blue, #007aff);
+  background: var(--component-accent-blue, #007aff);
 }
 
 .site-menu__hamburger,
@@ -486,22 +486,22 @@
 .site-menu__hamburger::after {
   content: '';
   display: block;
-  background: var(--dynamic-menu-label-primary, #ffffff);
+  background: var(--component-label-primary, #ffffff);
   width: 18px;
   height: 2px;
   margin: 4px auto;
   border-radius: 2px;
   transition:
     background 0.3s
-      var(--dynamic-menu-spring-bounce, cubic-bezier(0.68, -0.55, 0.265, 1.55)),
+      var(--component-spring-bounce, cubic-bezier(0.68, -0.55, 0.265, 1.55)),
     transform 0.3s
-      var(--dynamic-menu-spring-bounce, cubic-bezier(0.68, -0.55, 0.265, 1.55)),
+      var(--component-spring-bounce, cubic-bezier(0.68, -0.55, 0.265, 1.55)),
     opacity 0.3s
-      var(--dynamic-menu-spring-bounce, cubic-bezier(0.68, -0.55, 0.265, 1.55));
+      var(--component-spring-bounce, cubic-bezier(0.68, -0.55, 0.265, 1.55));
 }
 
 .site-menu__toggle:focus-visible {
-  outline: 2px solid var(--dynamic-menu-accent-blue, #007aff);
+  outline: 2px solid var(--component-accent-blue, #007aff);
   outline-offset: 2px;
   box-shadow: 0 0 0 4px rgb(0 122 255 / 20%);
 }
@@ -512,12 +512,12 @@
 
 .site-menu__toggle.active .site-menu__hamburger::before {
   transform: translateY(6px) rotate(45deg);
-  background: var(--dynamic-menu-label-primary, #ffffff);
+  background: var(--component-label-primary, #ffffff);
 }
 
 .site-menu__toggle.active .site-menu__hamburger::after {
   transform: translateY(-6px) rotate(-45deg);
-  background: var(--dynamic-menu-label-primary, #ffffff);
+  background: var(--component-label-primary, #ffffff);
 }
 
 /* ===== Page Layout ===== */
@@ -529,10 +529,10 @@ main {
 /* ===== Active Link States ===== */
 .site-menu__list li a.active,
 .site-menu__list li a[aria-current='page'] {
-  color: var(--dynamic-menu-accent-blue, #007aff);
-  background: var(--dynamic-menu-fill-primary, rgba(255, 255, 255, 0.1));
+  color: var(--component-accent-blue, #007aff);
+  background: var(--component-fill-primary, rgba(255, 255, 255, 0.1));
   font-weight: 590;
-  border: 1px solid var(--dynamic-menu-separator, rgba(255, 255, 255, 0.1));
+  border: 1px solid var(--component-separator, rgba(255, 255, 255, 0.1));
 }
 
 /* ===== Mobile Responsive ===== */
@@ -579,24 +579,24 @@ main {
     width: min(90vw, 320px);
     padding: 0;
     left: auto;
-    background: var(--dynamic-menu-header-bg, rgba(0, 0, 0, 0.8));
-    backdrop-filter: blur(var(--dynamic-menu-blur-radius, 20px));
-    border: 1px solid var(--dynamic-menu-separator, rgba(255, 255, 255, 0.1));
-    border-radius: var(--dynamic-menu-card-radius, 16px);
+    background: var(--component-header-bg, rgba(0, 0, 0, 0.8));
+    backdrop-filter: blur(var(--component-blur-radius, 20px));
+    border: 1px solid var(--component-separator, rgba(255, 255, 255, 0.1));
+    border-radius: var(--component-card-radius, 16px);
     box-shadow: var(
-      --dynamic-menu-shadow-depth-3,
+      --component-shadow-depth-3,
       0 12px 48px rgba(0, 0, 0, 0.4)
     );
     transform: translateX(110%) scale(0.95);
     transition:
       transform 0.4s
         var(
-          --dynamic-menu-spring-bounce,
+          --component-spring-bounce,
           cubic-bezier(0.68, -0.55, 0.265, 1.55)
         ),
       opacity 0.4s
         var(
-          --dynamic-menu-spring-bounce,
+          --component-spring-bounce,
           cubic-bezier(0.68, -0.55, 0.265, 1.55)
         );
     flex-direction: column;
@@ -627,14 +627,14 @@ main {
     border-radius: 12px;
     background: transparent;
     border: none;
-    color: var(--dynamic-menu-label-primary, #ffffff);
+    color: var(--component-label-primary, #ffffff);
   }
 
   .site-menu__list li a:hover,
   .site-menu__list li a:active,
   .site-menu__list button.search-trigger:hover,
   .site-menu__list button.search-trigger:active {
-    background: var(--dynamic-menu-fill-primary, rgba(255, 255, 255, 0.1));
+    background: var(--component-fill-primary, rgba(255, 255, 255, 0.1));
     transform: none;
   }
 

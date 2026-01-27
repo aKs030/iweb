@@ -19,11 +19,11 @@
   width: calc(100% - 32px);
   max-width: 1440px;
   min-width: 920px;
-  background: var(--dynamic-menu-header-bg, rgba(0, 0, 0, 0.8));
-  backdrop-filter: blur(var(--dynamic-menu-blur-radius, 20px));
-  border-radius: var(--dynamic-menu-pill-radius, 26px);
-  border: 1px solid var(--dynamic-menu-separator, rgba(255, 255, 255, 0.1));
-  box-shadow: var(--dynamic-menu-shadow-depth-2, 0 8px 32px rgba(0, 0, 0, 0.3));
+  background: var(--component-header-bg, rgba(0, 0, 0, 0.8));
+  backdrop-filter: blur(var(--component-blur-radius, 20px));
+  border-radius: var(--component-pill-radius, 26px);
+  border: 1px solid var(--component-separator, rgba(255, 255, 255, 0.1));
+  box-shadow: var(--component-shadow-depth-2, 0 8px 32px rgba(0, 0, 0, 0.3));
   z-index: 1000;
   font-family: var(
     --font-primary,
@@ -33,7 +33,7 @@
     Roboto,
     sans-serif
   );
-  color: var(--dynamic-menu-label-primary, #fff);
+  color: var(--component-label-primary, #fff);
   font-size: 13px;
   font-weight: 510;
   letter-spacing: -0.02em;
@@ -62,7 +62,7 @@
 }
 
 .footer-min:hover {
-  background: var(--dynamic-menu-fill-primary, rgba(255, 255, 255, 0.05));
+  background: var(--component-fill-primary, rgba(255, 255, 255, 0.05));
 }
 
 .footer-min.hidden {
@@ -75,7 +75,7 @@
 }
 
 .footer-copyright {
-  color: var(--dynamic-menu-label-secondary, rgba(255, 255, 255, 0.7));
+  color: var(--component-label-secondary, rgba(255, 255, 255, 0.7));
   font-size: clamp(11px, 1vw, 13px);
   font-weight: 510;
   white-space: nowrap;
@@ -83,7 +83,7 @@
 }
 
 .brand-link {
-  color: var(--dynamic-menu-label-primary, #fff);
+  color: var(--component-label-primary, #fff);
   text-decoration: none;
   margin-left: 6px;
   padding: 4px 8px;
@@ -93,8 +93,8 @@
 }
 
 .brand-link:hover {
-  color: var(--dynamic-menu-accent-blue, #007aff);
-  background: var(--dynamic-menu-fill-primary, rgba(255, 255, 255, 0.1));
+  color: var(--component-accent-blue, #007aff);
+  background: var(--component-fill-primary, rgba(255, 255, 255, 0.1));
   transform: scale(1.02);
 }
 
@@ -159,7 +159,7 @@
 .cookie-text {
   font-size: clamp(12px, 1.1vw, 14px);
   font-weight: 510;
-  color: var(--dynamic-menu-label-primary, #fff);
+  color: var(--component-label-primary, #fff);
   letter-spacing: -0.01em;
   white-space: nowrap;
   flex-shrink: 1;
@@ -186,27 +186,27 @@
 }
 
 .btn-accept {
-  background: var(--dynamic-menu-accent-blue, #007aff);
+  background: var(--component-accent-blue, #007aff);
   color: #fff;
-  border-color: var(--dynamic-menu-accent-blue, #007aff);
+  border-color: var(--component-accent-blue, #007aff);
 }
 
 .btn-accept:hover {
-  background: var(--dynamic-menu-accent-blue-hover, #0051d5);
-  border-color: var(--dynamic-menu-accent-blue-hover, #0051d5);
+  background: var(--component-accent-blue-hover, #0051d5);
+  border-color: var(--component-accent-blue-hover, #0051d5);
   transform: translateY(-1px) scale(1.02);
   box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
 }
 
 .btn-reject {
   background: transparent;
-  color: var(--dynamic-menu-label-secondary, rgba(255, 255, 255, 0.7));
-  border-color: var(--dynamic-menu-separator, rgba(255, 255, 255, 0.1));
+  color: var(--component-label-secondary, rgba(255, 255, 255, 0.7));
+  border-color: var(--component-separator, rgba(255, 255, 255, 0.1));
 }
 
 .btn-reject:hover {
-  color: var(--dynamic-menu-label-primary, #fff);
-  background: var(--dynamic-menu-fill-primary, rgba(255, 255, 255, 0.08));
+  color: var(--component-label-primary, #fff);
+  background: var(--component-fill-primary, rgba(255, 255, 255, 0.08));
   border-color: rgba(255, 255, 255, 0.2);
   transform: translateY(-1px) scale(1.02);
 }
@@ -218,7 +218,7 @@
 
 .btn-accept:focus-visible,
 .btn-reject:focus-visible {
-  outline: 2px solid var(--dynamic-menu-accent-blue, #007aff);
+  outline: 2px solid var(--component-accent-blue, #007aff);
   outline-offset: 2px;
   box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.2);
 }
@@ -239,7 +239,7 @@
   background: transparent;
   border: 1px solid transparent;
   border-radius: 18px;
-  color: var(--dynamic-menu-label-primary, #fff);
+  color: var(--component-label-primary, #fff);
   text-decoration: none;
   font-size: clamp(13px, 1.1vw, 14px);
   font-weight: 510;
@@ -252,20 +252,20 @@
 
 .nav-btn:hover,
 .nav-btn:focus {
-  color: var(--dynamic-menu-accent-blue, #007aff);
-  background: var(--dynamic-menu-fill-primary, rgba(255, 255, 255, 0.1));
-  border-color: var(--dynamic-menu-separator, rgba(255, 255, 255, 0.1));
+  color: var(--component-accent-blue, #007aff);
+  background: var(--component-fill-primary, rgba(255, 255, 255, 0.1));
+  border-color: var(--component-separator, rgba(255, 255, 255, 0.1));
   transform: translateY(-1px) scale(1.02);
   outline: none;
 }
 
 .nav-btn:active {
-  background: var(--dynamic-menu-fill-secondary, rgba(255, 255, 255, 0.15));
+  background: var(--component-fill-secondary, rgba(255, 255, 255, 0.15));
   transform: translateY(0) scale(0.98);
 }
 
 .nav-btn:focus-visible {
-  outline: 2px solid var(--dynamic-menu-accent-blue, #007aff);
+  outline: 2px solid var(--component-accent-blue, #007aff);
   outline-offset: 2px;
   box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.2);
 }
@@ -305,7 +305,7 @@
   width: 100%;
   margin: 0 auto;
   background: rgba(10, 10, 10, 0.95);
-  border: 1px solid var(--dynamic-menu-separator, rgba(255, 255, 255, 0.1));
+  border: 1px solid var(--component-separator, rgba(255, 255, 255, 0.1));
   border-radius: 12px;
   display: flex;
   flex-direction: column;
@@ -321,7 +321,7 @@
   align-items: center;
   padding: 12px 16px;
   border-bottom: 1px solid
-    var(--dynamic-menu-separator, rgba(255, 255, 255, 0.1));
+    var(--component-separator, rgba(255, 255, 255, 0.1));
   flex-shrink: 0;
 }
 
@@ -373,7 +373,7 @@
 
 .cookie-category {
   background: rgba(255, 255, 255, 0.03);
-  border: 1px solid var(--dynamic-menu-separator, rgba(255, 255, 255, 0.1));
+  border: 1px solid var(--component-separator, rgba(255, 255, 255, 0.1));
   border-radius: 8px;
   padding: 10px 12px;
   transition: all var(--footer-transition);
@@ -457,8 +457,8 @@
 }
 
 .toggle input:checked + .slider {
-  background: var(--dynamic-menu-accent-blue, #007aff);
-  border-color: var(--dynamic-menu-accent-blue, #007aff);
+  background: var(--component-accent-blue, #007aff);
+  border-color: var(--component-accent-blue, #007aff);
 }
 
 .toggle input:checked + .slider::before {
@@ -471,7 +471,7 @@
 }
 
 .toggle input:checked:hover + .slider {
-  background: var(--dynamic-menu-accent-blue-hover, #0051d5);
+  background: var(--component-accent-blue-hover, #0051d5);
 }
 
 .settings-footer {
@@ -479,7 +479,7 @@
   flex-wrap: wrap;
   gap: 6px;
   padding: 12px 16px;
-  border-top: 1px solid var(--dynamic-menu-separator, rgba(255, 255, 255, 0.1));
+  border-top: 1px solid var(--component-separator, rgba(255, 255, 255, 0.1));
   flex-shrink: 0;
 }
 
@@ -501,7 +501,7 @@
 .btn-secondary {
   background: rgba(255, 255, 255, 0.05);
   color: rgba(255, 255, 255, 0.6);
-  border: 1px solid var(--dynamic-menu-separator, rgba(255, 255, 255, 0.1));
+  border: 1px solid var(--component-separator, rgba(255, 255, 255, 0.1));
 }
 
 .btn-secondary:hover {
@@ -512,12 +512,12 @@
 }
 
 .btn-primary {
-  background: var(--dynamic-menu-accent-blue, #007aff);
+  background: var(--component-accent-blue, #007aff);
   color: #fff;
 }
 
 .btn-primary:hover {
-  background: var(--dynamic-menu-accent-blue-hover, #0051d5);
+  background: var(--component-accent-blue-hover, #0051d5);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
 }
@@ -552,7 +552,7 @@
 
 .card {
   background: rgba(255, 255, 255, 0.03);
-  border: 1px solid var(--dynamic-menu-separator, rgba(255, 255, 255, 0.1));
+  border: 1px solid var(--component-separator, rgba(255, 255, 255, 0.1));
   border-radius: 12px;
   padding: 14px;
   transition: all var(--footer-transition);
@@ -563,7 +563,7 @@
 
 .card:hover {
   background: rgba(255, 255, 255, 0.05);
-  border-color: var(--dynamic-menu-accent-blue, #007aff);
+  border-color: var(--component-accent-blue, #007aff);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 122, 255, 0.15);
 }
@@ -575,14 +575,14 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  color: var(--dynamic-menu-label-primary, #fff);
+  color: var(--component-label-primary, #fff);
 }
 
 .card .name {
   font-size: 13px;
   font-weight: 600;
   margin: 0 0 4px;
-  color: var(--dynamic-menu-label-primary, #fff);
+  color: var(--component-label-primary, #fff);
 }
 
 .card .role {
@@ -619,7 +619,7 @@
   align-items: center;
   gap: 4px;
   padding: 7px 12px;
-  background: var(--dynamic-menu-accent-blue, #007aff);
+  background: var(--component-accent-blue, #007aff);
   color: #fff;
   text-decoration: none;
   border-radius: 8px;
@@ -632,7 +632,7 @@
 }
 
 .cta:hover {
-  background: var(--dynamic-menu-accent-blue-hover, #0051d5);
+  background: var(--component-accent-blue-hover, #0051d5);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
 }
@@ -640,7 +640,7 @@
 .cta-secondary {
   background: rgba(255, 255, 255, 0.1);
   color: rgba(255, 255, 255, 0.9);
-  border: 1px solid var(--dynamic-menu-separator, rgba(255, 255, 255, 0.2));
+  border: 1px solid var(--component-separator, rgba(255, 255, 255, 0.2));
 }
 
 .cta-secondary:hover {
@@ -724,7 +724,7 @@
 .links-compact a:hover {
   color: #fff;
   background: rgba(255, 255, 255, 0.08);
-  border-color: var(--dynamic-menu-separator, rgba(255, 255, 255, 0.1));
+  border-color: var(--component-separator, rgba(255, 255, 255, 0.1));
   transform: scale(1.02);
 }
 
@@ -745,7 +745,7 @@
   flex: 1;
   padding: 8px 12px;
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--dynamic-menu-separator, rgba(255, 255, 255, 0.1));
+  border: 1px solid var(--component-separator, rgba(255, 255, 255, 0.1));
   border-radius: 8px;
   color: #fff;
   font-size: 11px;
@@ -755,14 +755,14 @@
 
 .newsletter-form input:focus {
   outline: none;
-  border-color: var(--dynamic-menu-accent-blue, #007aff);
+  border-color: var(--component-accent-blue, #007aff);
   background: rgba(255, 255, 255, 0.08);
   box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
 }
 
 .newsletter-form button {
   padding: 8px 16px;
-  background: var(--dynamic-menu-accent-blue, #007aff);
+  background: var(--component-accent-blue, #007aff);
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -774,7 +774,7 @@
 }
 
 .newsletter-form button:hover {
-  background: var(--dynamic-menu-accent-blue-hover, #0051d5);
+  background: var(--component-accent-blue-hover, #0051d5);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
 }
@@ -792,7 +792,7 @@
   display: inline-block;
   padding: 5px 10px;
   background: rgba(255, 255, 255, 0.08);
-  border: 1px solid var(--dynamic-menu-separator, rgba(255, 255, 255, 0.15));
+  border: 1px solid var(--component-separator, rgba(255, 255, 255, 0.15));
   border-radius: 12px;
   font-size: 10px;
   font-weight: 600;
@@ -804,8 +804,8 @@
 
 .tag:hover {
   background: rgba(255, 255, 255, 0.12);
-  border-color: var(--dynamic-menu-accent-blue, #007aff);
-  color: var(--dynamic-menu-accent-blue, #007aff);
+  border-color: var(--component-accent-blue, #007aff);
+  color: var(--component-accent-blue, #007aff);
   transform: translateY(-1px) scale(1.05);
 }
 
@@ -816,7 +816,7 @@
   align-items: center;
   gap: 12px;
   padding-top: 12px;
-  border-top: 1px solid var(--dynamic-menu-separator, rgba(255, 255, 255, 0.1));
+  border-top: 1px solid var(--component-separator, rgba(255, 255, 255, 0.1));
   flex-wrap: nowrap;
   min-height: 36px;
   flex-shrink: 0;
@@ -838,7 +838,7 @@
 }
 
 .copyright a:hover {
-  color: var(--dynamic-menu-accent-blue, #007aff);
+  color: var(--component-accent-blue, #007aff);
 }
 
 .legal {
@@ -867,7 +867,7 @@
   gap: 4px;
   padding: 6px 8px;
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--dynamic-menu-separator, rgba(255, 255, 255, 0.1));
+  border: 1px solid var(--component-separator, rgba(255, 255, 255, 0.1));
   border-radius: 8px;
   color: rgba(255, 255, 255, 0.6);
   text-decoration: none;
@@ -877,7 +877,7 @@
 
 .social-btn:hover {
   background: rgba(255, 255, 255, 0.1);
-  border-color: var(--dynamic-menu-accent-blue, #007aff);
+  border-color: var(--component-accent-blue, #007aff);
   color: #fff;
   transform: translateY(-1px);
 }
