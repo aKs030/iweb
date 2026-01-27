@@ -15,15 +15,11 @@ function makeAbortController(timeout = 5000) {
 
 /* global React, ReactDOM */
 /**
- * Interactive Projects Module
- * Refactored to use 'htm' for cleaner, JSX-like syntax without a build step.
- * @version 2.0.0
+ * Interactive Projects Module - Modernized & Compact
+ * @version 3.0.0
  */
 
-// Use jsDelivr CDN (allowed by CSP in content/head/head.html) instead of unpkg
 import htm from 'https://esm.sh/htm@3.1.1';
-
-// Bind htm to React's createElement function
 const html = htm.bind(React.createElement);
 
 // --- Components ---
@@ -136,21 +132,67 @@ const Check = (props) => html`
   <//>
 `;
 
-// --- DATA ---
-// Import project data with icons
-const projects = createProjectsData(html, {
-  Gamepad2,
-  Binary,
-  Palette,
-  ListTodo,
-  Check,
-});
+const Code = (props) => html`
+  <${IconBase} ...${props}>
+    <polyline points="16 18 22 12 16 6" />
+    <polyline points="8 6 2 12 8 18" />
+  <//>
+`;
+
+const Globe = (props) => html`
+  <${IconBase} ...${props}>
+    <circle cx="12" cy="12" r="10" />
+    <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
+    <path d="M2 12h20" />
+  <//>
+`;
+
+const Zap = (props) => html`
+  <${IconBase} ...${props}>
+    <path
+      d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"
+    />
+  <//>
+`;
 
 // --- APP ---
 function App() {
+  const [projects, setProjects] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState(null);
+
+  // Load projects on component mount
+  React.useEffect(() => {
+    async function loadProjects() {
+      try {
+        setLoading(true);
+        const loadedProjects = await createProjectsData(html, {
+          Gamepad2,
+          Binary,
+          Palette,
+          ListTodo,
+          Check,
+          Code,
+          Globe,
+          Zap,
+        });
+        setProjects(loadedProjects);
+      } catch (err) {
+        console.error('Failed to load projects:', err);
+        setError('Projekte konnten nicht geladen werden');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadProjects();
+  }, []);
+
   const scrollToProjects = () => {
     const firstProject = document.getElementById('project-1');
-    if (firstProject) firstProject.scrollIntoView({ behavior: 'smooth' });
+    if (firstProject) {
+      firstProject.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
   // Modal preview state for opening apps in a popup
@@ -390,7 +432,10 @@ function App() {
     <${React.Fragment}>
       <!-- Hero Section -->
       <section className="snap-section" id="hero">
-        <div className="container u-stack u-center">
+        <div
+          className="container"
+          style=${{ maxWidth: '1200px', margin: '0 auto', textAlign: 'center' }}
+        >
           <div className="badge">
             <span className="badge-dot-container">
               <span className="badge-dot-ping"></span>
@@ -405,17 +450,45 @@ function App() {
           <p className="description">
             Willkommen in meiner digitalen Werkstatt. Hier sammle ich meine
             Experimente, vom ersten console.log bis zu interaktiven Web-Apps.
+            ${loading ? 'Projekte werden dynamisch aus GitHub geladen...' : ''}
           </p>
-          <div className="btn-group u-row u-wrap">
-            <button onClick=${scrollToProjects} className="btn btn-primary">
-              Los geht's
+          <div className="btn-group">
+            <button
+              onClick=${scrollToProjects}
+              className="btn btn-primary"
+              disabled=${loading}
+            >
+              ${loading ? 'Lade...' : "Los geht's"}
               <${ArrowDown} style=${{ width: '1rem', height: '1rem' }} />
             </button>
           </div>
         </div>
       </section>
 
-      <!-- Project Sections -->
+      <!-- Loading State -->
+      ${loading
+        ? html`
+            <section className="snap-section">
+              <div className="loading-container">
+                <div className="loading-spinner"></div>
+                <p>Lade Projekte aus GitHub Repository...</p>
+              </div>
+            </section>
+          `
+        : null}
+
+      <!-- Error State -->
+      ${error
+        ? html`
+            <section className="snap-section">
+              <div className="loading-container">
+                <p className="error-message">${error}</p>
+              </div>
+            </section>
+          `
+        : null}
+
+      <!-- Projects Sections - Individual Snap Sections -->
       ${projects.map(
         (project) => html`
           <section
@@ -423,67 +496,59 @@ function App() {
             id=${`project-${project.id}`}
             className="snap-section"
           >
-            <div className="glow-bg" style=${project.bgStyle}></div>
-            <div className="project-grid">
-              <!-- Left Side (Mockup) -->
-              <div
-                className="group"
-                style=${{
-                  order: 2,
-                  display: 'flex',
-                  justifyContent: 'center',
-                  position: 'relative',
-                }}
-              >
-                <div
-                  className="back-glow"
-                  style=${{ backgroundColor: project.glowColor }}
-                ></div>
+            <div
+              style=${{ width: '100%', maxWidth: '1200px', margin: '0 auto' }}
+            >
+              <div className="project-card">
+                <!-- Project Preview -->
                 <div className="window-mockup">
-                  <div className="mockup-content u-center">
-                    <div className="mockup-bg-pattern"></div>
+                  <div className="mockup-content">
                     <${ProjectMockup} project=${project} />
                     <div className="mockup-icon">${project.icon}</div>
                   </div>
                 </div>
-              </div>
 
-              <!-- Right Side (Content) -->
-              <div className="project-info u-stack" style=${{ order: 1 }}>
-                <div className="project-header u-row">
-                  <h2 className="project-title">${project.title}</h2>
-                  <div className="divider"></div>
-                  <span className="project-category">${project.category}</span>
-                </div>
-                <p className="project-desc">${project.description}</p>
-                <div className="tags-container u-row u-wrap">
-                  ${project.tags.map(
-                    (tag, i) => html`
-                      <span key=${i} className="tag">${tag}</span>
-                    `,
-                  )}
-                </div>
-                <div className="project-actions u-row u-between u-wrap">
-                  <button
-                    className="btn btn-primary btn-small"
-                    onClick=${() => openDirect(project)}
-                    aria-label=${`App öffnen ${project.title}`}
-                  >
-                    <${ExternalLink}
-                      style=${{ width: '1rem', height: '1rem' }}
-                    />
-                    App öffnen
-                  </button>
-                  <a
-                    className="btn btn-outline btn-small"
-                    href=${project.githubPath}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label=${`Code ${project.title} auf GitHub`}
-                  >
-                    <${Github} style=${{ width: '1rem', height: '1rem' }} />
-                    Code
-                  </a>
+                <!-- Project Info -->
+                <div className="project-info">
+                  <div className="project-header">
+                    <h2 className="project-title">${project.title}</h2>
+                    <span className="project-category"
+                      >${project.category}</span
+                    >
+                  </div>
+
+                  <p className="project-desc">${project.description}</p>
+
+                  <div className="tags-container">
+                    ${project.tags.map(
+                      (tag, i) => html`
+                        <span key=${i} className="tag">${tag}</span>
+                      `,
+                    )}
+                  </div>
+
+                  <div className="project-actions">
+                    <button
+                      className="btn btn-primary btn-small"
+                      onClick=${() => openDirect(project)}
+                      aria-label=${`App öffnen ${project.title}`}
+                    >
+                      <${ExternalLink}
+                        style=${{ width: '1rem', height: '1rem' }}
+                      />
+                      App öffnen
+                    </button>
+                    <a
+                      className="btn btn-outline btn-small"
+                      href=${project.githubPath}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label=${`Code ${project.title} auf GitHub`}
+                    >
+                      <${Github} style=${{ width: '1rem', height: '1rem' }} />
+                      Code
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>
@@ -500,21 +565,24 @@ function App() {
               aria-modal="true"
               aria-label=${`Vorschau ${modalTitle}`}
               className="modal-overlay"
+              onClick=${(e) => e.target === e.currentTarget && closeAppModal()}
             >
               <div className="modal-wrapper">
                 <div className="modal-header">
-                  <div className="modal-header-title u-row u-inline-center">
+                  <div className="modal-header-title">
                     <strong>${modalTitle}</strong>
                   </div>
-                  <div className="modal-header-actions u-row">
+                  <div className="modal-header-actions">
                     <a
                       href=${modalUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="btn btn-outline btn-small"
-                      style=${{ marginRight: '0.5rem' }}
                     >
-                      In neuem Tab öffnen
+                      <${ExternalLink}
+                        style=${{ width: '0.875rem', height: '0.875rem' }}
+                      />
+                      Neuer Tab
                     </a>
                     <button
                       className="btn btn-primary btn-small"
@@ -528,7 +596,10 @@ function App() {
                 <div className="modal-body">
                   ${iframeLoading
                     ? html`
-                        <div className="iframe-loader">Lade Vorschau…</div>
+                        <div className="iframe-loader">
+                          <div className="loading-spinner"></div>
+                          <p style=${{ marginTop: '1rem' }}>Lade Vorschau…</p>
+                        </div>
                       `
                     : null}
                   <iframe
@@ -536,6 +607,7 @@ function App() {
                     onLoad=${() => setIframeLoading(false)}
                     className="modal-iframe"
                     sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+                    title=${`Vorschau von ${modalTitle}`}
                   ></iframe>
                 </div>
               </div>
@@ -544,24 +616,25 @@ function App() {
         : null}
 
       <!-- Contact Section -->
-      <section className="snap-section contact-section" id="contact">
-        <div className="container u-stack u-center">
-          <div style=${{ marginBottom: '2rem' }}>
-            <div className="contact-icon-wrapper">
-              <${MousePointerClick}
-                style=${{ width: '2.5rem', height: '2.5rem', color: '#60a5fa' }}
-              />
-            </div>
+      <section className="contact-section" id="contact">
+        <div style=${{ textAlign: 'center' }}>
+          <div className="contact-icon-wrapper">
+            <${MousePointerClick}
+              style=${{ width: '2rem', height: '2rem', color: '#60a5fa' }}
+            />
           </div>
           <h2 className="contact-title">Lust auf ein Spiel?</h2>
           <p className="contact-text">
             Ich lerne jeden Tag dazu. Hast du Ideen für mein nächstes kleines
             Projekt?
           </p>
-          <div className="btn-group u-row u-wrap">
+          <div className="btn-group">
             <button
               className="btn btn-primary"
-              style=${{ backgroundColor: '#2563eb', color: 'white' }}
+              style=${{
+                background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+                color: 'white',
+              }}
             >
               Schreib mir
             </button>
