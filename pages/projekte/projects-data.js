@@ -5,6 +5,54 @@
 
 import { GITHUB_CONFIG, PROJECT_CATEGORIES } from './github-config.js';
 
+// URL Conversion utilities
+export const GitHubUrlConverter = {
+  toRawGithack: (ghUrl) => {
+    try {
+      const m = /github\.com\/([^/]+)\/([^/]+)\/tree\/([^/]+)\/(.+)$/.exec(
+        ghUrl,
+      );
+      if (m) {
+        const [, owner, repo, branch, path] = m;
+        return `https://rawcdn.githack.com/${owner}/${repo}/${branch}/${path}/index.html`;
+      }
+    } catch {
+      /* ignore */
+    }
+    return '';
+  },
+
+  toJsDelivr: (ghUrl) => {
+    try {
+      const m = /github\.com\/([^/]+)\/([^/]+)\/tree\/([^/]+)\/(.+)$/.exec(
+        ghUrl,
+      );
+      if (m) {
+        const [, owner, repo, branch, path] = m;
+        return `https://cdn.jsdelivr.net/gh/${owner}/${repo}@${branch}/${path}/index.html`;
+      }
+    } catch {
+      /* ignore */
+    }
+    return '';
+  },
+
+  toRaw: (ghUrl) => {
+    try {
+      const m = /github\.com\/([^/]+)\/([^/]+)\/tree\/([^/]+)\/(.+)$/.exec(
+        ghUrl,
+      );
+      if (m) {
+        const [, owner, repo, branch, path] = m;
+        return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}/index.html`;
+      }
+    } catch {
+      /* ignore */
+    }
+    return '';
+  },
+};
+
 // Common styles for consistency
 const ICON_SIZE = { width: '32px', height: '32px' };
 
@@ -54,7 +102,6 @@ async function fetchGitHubContents(path = '') {
   const url = `${GITHUB_CONFIG.apiBase}/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`;
 
   try {
-    console.log(`🔍 Fetching GitHub contents from: ${url}`);
     const response = await fetch(url, {
       headers: {
         Accept: 'application/vnd.github.v3+json',
@@ -64,17 +111,15 @@ async function fetchGitHubContents(path = '') {
 
     if (!response.ok) {
       console.error(
-        `❌ GitHub API error: ${response.status} - ${response.statusText}`,
+        `GitHub API error: ${response.status} - ${response.statusText}`,
       );
-      console.error(`URL: ${url}`);
       throw new Error(`GitHub API error: ${response.status}`);
     }
 
     const data = await response.json();
-    console.log(`✅ GitHub API response:`, data);
     return data;
   } catch (error) {
-    console.error(`❌ Failed to fetch GitHub contents:`, error);
+    console.error(`Failed to fetch GitHub contents:`, error);
     return [];
   }
 }
