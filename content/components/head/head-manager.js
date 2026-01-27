@@ -14,9 +14,9 @@ import {
 } from '/content/core/schema.js';
 import { loadBrandData } from '/content/config/brand-data-loader.js';
 import { ROUTES } from '/content/config/routes-config.js';
+import { BASE_URL } from '/content/config/constants.js';
 
 const log = createLogger('HeadManager');
-const BASE_URL = 'https://www.abdulkerimsesli.de';
 
 function getPageData() {
   const currentPath = globalThis.location.pathname.toLowerCase();

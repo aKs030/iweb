@@ -1,6 +1,7 @@
 import { createLogger } from '/content/core/logger.js';
 import { upsertHeadLink } from '/content/core/dom-helpers.js';
 import { ENV } from '../../config/env.config.js';
+import { resourceHints } from '/content/core/resource-hints.js';
 
 const log = createLogger('head-inline');
 
@@ -243,7 +244,12 @@ dataLayer.push({
     const getStylesForPath = () => {
       const p =
         (globalThis.location?.pathname || '').replace(/\/+$/g, '') || '/';
-      const base = ['/content/styles/root.css', '/content/styles/main.css'];
+      const base = [
+        '/content/styles/root.css',
+        '/content/styles/main.css',
+        '/content/styles/animations.css',
+        '/content/styles/mobile-optimized.css',
+      ];
       if (p === '/') {
         return base.concat([
           '/pages/home/hero.css',
@@ -281,19 +287,6 @@ dataLayer.push({
         });
       } catch (err) {
         log?.warn?.('head-inline: deferNonCriticalAssets failed', err);
-      }
-    };
-
-    const upsertPreconnect = (origin) => {
-      try {
-        upsertHeadLink({
-          rel: 'preconnect',
-          href: origin,
-          crossOrigin: 'anonymous',
-          dataset: { injectedBy: 'head-inline' },
-        });
-      } catch {
-        /* ignore preconnect errors */
       }
     };
 
@@ -365,12 +358,16 @@ dataLayer.push({
     const performInjection = () => {
       const hasGtm = GTM_ID && GTM_ID !== 'GTM-PLACEHOLDER';
       if (hasGtm) {
-        upsertPreconnect('https://www.googletagmanager.com');
-        upsertPreconnect('https://static.cloudflareinsights.com');
+        resourceHints.preconnect('https://www.googletagmanager.com');
+        resourceHints.preconnect('https://static.cloudflareinsights.com');
       }
       if (GA4_MEASUREMENT_ID && GA4_MEASUREMENT_ID.indexOf('G-') === 0) {
-        upsertPreconnect('https://www.gstatic.com');
+        resourceHints.preconnect('https://www.gstatic.com');
       }
+
+      // Preconnect to CDNs
+      resourceHints.preconnect('https://cdn.jsdelivr.net');
+      resourceHints.preconnect('https://esm.sh');
 
       const styles = getStylesForPath();
       const p =
