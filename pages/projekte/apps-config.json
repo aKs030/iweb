@@ -1,0 +1,110 @@
+{
+  "apps": [
+    {
+      "name": "calculator",
+      "title": "Calculator",
+      "description": "Ein funktionaler Taschenrechner für mathematische Berechnungen",
+      "category": "utility",
+      "tags": ["JavaScript", "Math", "Calculator"],
+      "version": "1.0.0"
+    },
+    {
+      "name": "color-changer",
+      "title": "Color Changer",
+      "description": "Dynamische Hintergrundfarben per Klick",
+      "category": "ui",
+      "tags": ["DOM", "Events", "CSS"],
+      "version": "1.0.0"
+    },
+    {
+      "name": "memory-game",
+      "title": "Memory Game",
+      "description": "Klassisches Memory-Spiel zum Trainieren des Gedächtnisses",
+      "category": "game",
+      "tags": ["JavaScript", "Memory", "Cards"],
+      "version": "1.0.0"
+    },
+    {
+      "name": "password-generator",
+      "title": "Password Generator",
+      "description": "Sichere Passwörter generieren mit anpassbaren Optionen",
+      "category": "utility",
+      "tags": ["Security", "Generator", "Password"],
+      "version": "1.0.0"
+    },
+    {
+      "name": "pong-game",
+      "title": "Pong Game",
+      "description": "Der Klassiker Pong als interaktives Browser-Spiel",
+      "category": "game",
+      "tags": ["JavaScript", "Canvas", "Arcade"],
+      "version": "1.0.0"
+    },
+    {
+      "name": "quiz-app",
+      "title": "Quiz App",
+      "description": "Interaktive Quiz-Anwendung mit verschiedenen Fragen",
+      "category": "game",
+      "tags": ["JavaScript", "Quiz", "Knowledge"],
+      "version": "1.0.0"
+    },
+    {
+      "name": "schere-stein-papier",
+      "title": "Schere Stein Papier",
+      "description": "Der Klassiker gegen den Computer!",
+      "category": "game",
+      "tags": ["JavaScript", "Game Logic"],
+      "version": "1.0.0"
+    },
+    {
+      "name": "snake-game",
+      "title": "Snake Game",
+      "description": "Das beliebte Snake-Spiel im Browser spielen",
+      "category": "game",
+      "tags": ["JavaScript", "Canvas", "Arcade"],
+      "version": "1.0.0"
+    },
+    {
+      "name": "snake",
+      "title": "Snake",
+      "description": "Alternative Snake-Implementation",
+      "category": "game",
+      "tags": ["JavaScript", "Canvas", "Arcade"],
+      "version": "1.0.0"
+    },
+    {
+      "name": "timer-app",
+      "title": "Timer App",
+      "description": "Countdown-Timer und Stoppuhr für Zeitmanagement",
+      "category": "productivity",
+      "tags": ["JavaScript", "Timer", "Productivity"],
+      "version": "1.0.0"
+    },
+    {
+      "name": "todo-liste",
+      "title": "To-Do Liste",
+      "description": "Produktivitäts-Tool zum Verwalten von Aufgaben",
+      "category": "productivity",
+      "tags": ["CRUD", "Arrays", "Productivity"],
+      "version": "1.0.0"
+    },
+    {
+      "name": "weather-app",
+      "title": "Weather App",
+      "description": "Aktuelle Wetterinformationen und Vorhersagen",
+      "category": "web",
+      "tags": ["JavaScript", "API", "Weather"],
+      "version": "1.0.0"
+    },
+    {
+      "name": "zahlen-raten",
+      "title": "Zahlen Raten",
+      "description": "Finde die geheime Zahl zwischen 1 und 100",
+      "category": "puzzle",
+      "tags": ["Logic", "Input", "Numbers"],
+      "version": "1.0.0"
+    }
+  ],
+  "lastUpdated": "2025-01-27T00:00:00Z",
+  "source": "github-api-sync"
+}
