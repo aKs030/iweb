@@ -127,18 +127,11 @@ globalThis.addEventListener('DOMContentLoaded', async () => {
   // Also trigger on first user interaction to prioritise UX
   const userTrigger = () => {
     loadThreeEarth();
+    globalThis.removeEventListener('scroll', userTrigger);
+    globalThis.removeEventListener('touchstart', userTrigger);
+    globalThis.removeEventListener('pointerdown', userTrigger);
   };
-
-  globalThis.addEventListener('scroll', userTrigger, {
-    passive: true,
-    once: true,
-  });
-  globalThis.addEventListener('touchstart', userTrigger, {
-    passive: true,
-    once: true,
-  });
-  globalThis.addEventListener('pointerdown', userTrigger, {
-    passive: true,
-    once: true,
-  });
+  globalThis.addEventListener('scroll', userTrigger, { passive: true });
+  globalThis.addEventListener('touchstart', userTrigger, { passive: true });
+  globalThis.addEventListener('pointerdown', userTrigger, { passive: true });
 });
