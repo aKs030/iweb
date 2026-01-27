@@ -252,6 +252,9 @@ dataLayer.push({
           '/pages/home/section3.css',
         ]);
       }
+      if (p.includes('/projekte')) {
+        return base.concat(['/content/components/particles/three-earth.css']);
+      }
       return base;
     };
 
