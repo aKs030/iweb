@@ -156,6 +156,7 @@
       --greet-fs: var(--headline-fs);
       --greet-min-inline: clamp(14ch, 36vw, 28ch);
       --greet-max: clamp(14ch, 100vw, 26ch);
+      --card-min-width: 0; /* allow cards to shrink on small devices */
     }
   }
 
@@ -305,13 +306,6 @@ iframe {
   max-width: 100%;
   height: auto;
   display: block;
-}
-
-/* Mobile: allow cards to shrink */
-@media (width <= 420px) {
-  :root {
-    --card-min-width: 0; /* allow cards to shrink on small devices */
-  }
 }
 
 /* =======================
