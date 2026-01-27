@@ -54,6 +54,7 @@ async function fetchGitHubContents(path = '') {
   const url = `${GITHUB_CONFIG.apiBase}/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`;
 
   try {
+    console.log(`🔍 Fetching GitHub contents from: ${url}`);
     const response = await fetch(url, {
       headers: {
         Accept: 'application/vnd.github.v3+json',
@@ -62,11 +63,18 @@ async function fetchGitHubContents(path = '') {
     });
 
     if (!response.ok) {
+      console.error(
+        `❌ GitHub API error: ${response.status} - ${response.statusText}`,
+      );
+      console.error(`URL: ${url}`);
       throw new Error(`GitHub API error: ${response.status}`);
     }
 
-    return await response.json();
-  } catch {
+    const data = await response.json();
+    console.log(`✅ GitHub API response:`, data);
+    return data;
+  } catch (error) {
+    console.error(`❌ Failed to fetch GitHub contents:`, error);
     return [];
   }
 }
@@ -78,12 +86,14 @@ async function fetchProjectMetadata(projectPath) {
   const metadataUrl = `${GITHUB_CONFIG.rawBase}/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/${GITHUB_CONFIG.branch}/${projectPath}/package.json`;
 
   try {
+    console.log(`🔍 Checking metadata for: ${projectPath}`);
     const packageResponse = await fetch(metadataUrl, { method: 'HEAD' });
 
     if (packageResponse.ok) {
       const contentResponse = await fetch(metadataUrl);
       if (contentResponse.ok) {
         const packageData = await contentResponse.json();
+        console.log(`✅ Found package.json for ${projectPath}:`, packageData);
         return {
           title: packageData.name || projectPath.split('/').pop(),
           description:
@@ -94,12 +104,12 @@ async function fetchProjectMetadata(projectPath) {
         };
       }
     }
-  } catch {
-    // Silent error handling
+  } catch (error) {
+    console.warn(`⚠️ Could not fetch metadata for ${projectPath}:`, error);
   }
 
   // Default metadata
-  return {
+  const defaultMeta = {
     title: projectPath
       .split('/')
       .pop()
@@ -110,6 +120,9 @@ async function fetchProjectMetadata(projectPath) {
     category: 'App',
     version: '1.0.0',
   };
+
+  console.log(`📝 Using default metadata for ${projectPath}:`, defaultMeta);
+  return defaultMeta;
 }
 
 /**
@@ -157,14 +170,29 @@ function getProjectIconAndTheme(project, icons, html) {
  */
 async function loadDynamicProjects(html, icons) {
   try {
+    console.log(`🚀 Starting dynamic project loading...`);
     const contents = await fetchGitHubContents(GITHUB_CONFIG.appsPath);
-    const projects = [];
 
+    if (!contents || contents.length === 0) {
+      console.warn(`⚠️ No contents found in ${GITHUB_CONFIG.appsPath}`);
+      return [];
+    }
+
+    const projects = [];
     const directories = contents.filter((item) => item.type === 'dir');
+
+    console.log(
+      `📁 Found ${directories.length} directories:`,
+      directories.map((d) => d.name),
+    );
 
     for (let i = 0; i < directories.length; i++) {
       const dir = directories[i];
       const projectPath = `${GITHUB_CONFIG.appsPath}/${dir.name}`;
+
+      console.log(
+        `🔄 Processing project ${i + 1}/${directories.length}: ${dir.name}`,
+      );
 
       if (i > 0) {
         await new Promise((resolve) =>
@@ -194,14 +222,20 @@ async function loadDynamicProjects(html, icons) {
       };
 
       projects.push(project);
+      console.log(`✅ Added project: ${project.title}`);
     }
 
     if (projects.length > 0) {
-      console.log(`✅ Loaded ${projects.length} projects from GitHub`);
+      console.log(
+        `🎉 Successfully loaded ${projects.length} projects from GitHub`,
+      );
+    } else {
+      console.warn(`⚠️ No projects were loaded from GitHub`);
     }
 
     return projects;
-  } catch {
+  } catch (error) {
+    console.error(`❌ Failed to load dynamic projects:`, error);
     return [];
   }
 }
@@ -325,12 +359,17 @@ function getStaticFallbackProjects(html, icons) {
  * Creates the projects array with dynamic loading and static fallback
  */
 export async function createProjectsData(html, icons) {
+  console.log(`🎯 Starting createProjectsData...`);
+
   const dynamicProjects = await loadDynamicProjects(html, icons);
 
   if (dynamicProjects.length > 0) {
+    console.log(
+      `🎉 Using ${dynamicProjects.length} dynamic projects from GitHub`,
+    );
     return dynamicProjects;
   }
 
-  console.log('Using static fallback projects');
+  console.log(`⚠️ No dynamic projects found, falling back to static projects`);
   return getStaticFallbackProjects(html, icons);
 }
