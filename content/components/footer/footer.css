@@ -902,7 +902,7 @@ body.footer-expanded {
 }
 
 /* ===== Responsive ===== */
-@media (max-width: 900px) {
+@media (width <= 900px) {
   .site-footer {
     width: calc(100% - 16px);
     bottom: 8px;
@@ -1135,7 +1135,7 @@ body.footer-expanded {
   }
 }
 
-@media (max-width: 480px) {
+@media (width <= 480px) {
   .footer-max {
     padding: 10px;
     max-height: calc(100vh - 80px);
