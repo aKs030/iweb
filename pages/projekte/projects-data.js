@@ -166,6 +166,28 @@ function getProjectIconAndTheme(project, icons, html) {
 }
 
 /**
+ * Loads projects from local config as fallback
+ */
+async function loadLocalConfig() {
+  try {
+    console.log(`📁 Loading local apps config...`);
+    const response = await fetch('/pages/projekte/apps-config.json');
+
+    if (!response.ok) {
+      console.warn(`⚠️ Local config not found: ${response.status}`);
+      return null;
+    }
+
+    const config = await response.json();
+    console.log(`✅ Local config loaded:`, config);
+    return config.apps || [];
+  } catch (error) {
+    console.warn(`⚠️ Failed to load local config:`, error);
+    return null;
+  }
+}
+
+/**
  * Loads projects dynamically from GitHub repository
  */
 async function loadDynamicProjects(html, icons) {
@@ -174,7 +196,36 @@ async function loadDynamicProjects(html, icons) {
     const contents = await fetchGitHubContents(GITHUB_CONFIG.appsPath);
 
     if (!contents || contents.length === 0) {
-      console.warn(`⚠️ No contents found in ${GITHUB_CONFIG.appsPath}`);
+      console.warn(
+        `⚠️ No contents found in ${GITHUB_CONFIG.appsPath}, trying local config...`,
+      );
+
+      // Try local config as fallback
+      const localApps = await loadLocalConfig();
+      if (localApps && localApps.length > 0) {
+        console.log(`📁 Using local config with ${localApps.length} apps`);
+        return localApps.map((app, i) => {
+          const { icon, theme } = getProjectIconAndTheme(app, icons, html);
+          return {
+            id: i + 1,
+            title: app.title,
+            description: app.description,
+            tags: app.tags,
+            category: app.category,
+            datePublished: new Date().toISOString().split('T')[0],
+            image: DEFAULT_OG_IMAGE,
+            appPath: `/projekte/apps/${app.name}/`,
+            githubPath: `${GITHUB_CONFIG.repoBase}/${GITHUB_CONFIG.appsPath}/${app.name}`,
+            bgStyle: createGradient(theme.gradient),
+            glowColor: theme.icon,
+            icon: icon,
+            previewContent: html`
+              <div className="preview-container">${icon}</div>
+            `,
+          };
+        });
+      }
+
       return [];
     }
 
@@ -236,6 +287,35 @@ async function loadDynamicProjects(html, icons) {
     return projects;
   } catch (error) {
     console.error(`❌ Failed to load dynamic projects:`, error);
+
+    // Try local config as fallback
+    const localApps = await loadLocalConfig();
+    if (localApps && localApps.length > 0) {
+      console.log(
+        `📁 Falling back to local config with ${localApps.length} apps`,
+      );
+      return localApps.map((app, i) => {
+        const { icon, theme } = getProjectIconAndTheme(app, icons, html);
+        return {
+          id: i + 1,
+          title: app.title,
+          description: app.description,
+          tags: app.tags,
+          category: app.category,
+          datePublished: new Date().toISOString().split('T')[0],
+          image: DEFAULT_OG_IMAGE,
+          appPath: `/projekte/apps/${app.name}/`,
+          githubPath: `${GITHUB_CONFIG.repoBase}/${GITHUB_CONFIG.appsPath}/${app.name}`,
+          bgStyle: createGradient(theme.gradient),
+          glowColor: theme.icon,
+          icon: icon,
+          previewContent: html`
+            <div className="preview-container">${icon}</div>
+          `,
+        };
+      });
+    }
+
     return [];
   }
 }
