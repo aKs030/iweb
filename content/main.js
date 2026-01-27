@@ -210,14 +210,6 @@ sectionTracker.init();
 // ===== Section Manager =====
 const sectionManager = new SectionManager();
 
-// Expose as global for backward compatibility
-globalThis.SectionLoader = {
-  init: () => sectionManager.init(),
-  reinit: () => sectionManager.reinit(),
-  loadSection: (section) => sectionManager.loadSection(section),
-  retrySection: (section) => sectionManager.retrySection(section),
-};
-
 let _appInitialized = false;
 
 function _initApp() {
@@ -336,7 +328,7 @@ document.addEventListener(
 
     fire(EVENTS.CORE_INITIALIZED);
     fire(EVENTS.HERO_INIT_READY);
-    initHeroFeatureBundle();
+    initHeroFeatureBundle(sectionManager);
 
     ThreeEarthLoader.initDelayed();
 
