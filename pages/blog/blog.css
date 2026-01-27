@@ -35,22 +35,24 @@ body {
 }
 
 /* --- Custom Scrollbar (Webkit) --- */
-::-webkit-scrollbar {
-  width: 10px;
-}
+@media (min-width: 769px) {
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
 
-::-webkit-scrollbar-track {
-  background: var(--blog-bg);
-}
+  ::-webkit-scrollbar-track {
+    background: var(--blog-bg);
+  }
 
-::-webkit-scrollbar-thumb {
-  background: #333;
-  border-radius: 5px;
-  border: 2px solid var(--blog-bg);
-}
+  ::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 5px;
+    border: 2px solid var(--blog-bg);
+  }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #555;
+  ::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
 }
 
 /* --- Selection Color --- */

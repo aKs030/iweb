@@ -382,13 +382,13 @@ body:not(.hero-active) .hero-title {
   }
 
   .hero-title {
-    font-size: clamp(1.05rem, 4.8vw, 1.6rem) !important;
+    font-size: clamp(1.05rem, 4.8vw, 1.6rem);
     min-inline-size: clamp(10ch, 26vw, 22ch);
     max-width: 100%;
     padding: 6px 8px;
     line-height: 1.05;
     font-variation-settings: 'opsz' 14;
-    filter: none !important;
+    filter: none;
     will-change: text-shadow;
     overflow-wrap: break-word;
     hyphens: auto;
@@ -405,34 +405,22 @@ body:not(.hero-active) .hero-title {
   .hero-image-container {
     width: 84vw;
     max-width: 260px;
-    overflow: visible;
     padding-inline: clamp(6px, 2.8vw, 10px);
-    box-sizing: border-box;
   }
 
   .spotlight-bg {
-    position: relative;
-    top: auto;
-    left: auto;
-    transform: none;
     padding-block: clamp(4px, 1.2vw, 8px);
     padding-inline: clamp(6px, 2.2vw, 12px);
     border-radius: var(--radius-full);
-    max-width: 100%;
-    margin-inline: auto;
   }
 
   .hero-title {
-    font-size: clamp(0.95rem, 4.2vw, 1.2rem) !important;
+    font-size: clamp(0.95rem, 4.2vw, 1.2rem);
     min-inline-size: clamp(8ch, 22vw, 18ch);
-    max-width: 100%;
     padding: 4px 6px;
     line-height: 1.02;
     font-variation-settings: 'opsz' 12;
-    filter: none !important;
-    will-change: text-shadow;
     white-space: normal;
-    overflow-wrap: break-word;
   }
 
   .hero-buttons {
