@@ -1,7 +1,17 @@
 import { createLogger } from '/content/core/logger.js';
-import { createProjectsData, GitHubUrlConverter } from './projects-data.js';
+import { createProjectsData } from './projects-data.js';
 
 const log = createLogger('projekte-app');
+
+// Helper: makeAbortController
+function makeAbortController(timeout = 5000) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
+  return {
+    controller,
+    clearTimeout: () => clearTimeout(timeoutId),
+  };
+}
 
 /* global React, ReactDOM */
 /**
@@ -198,19 +208,71 @@ function App() {
     toastTimerRef.current = setTimeout(() => setToastMsg(''), ms);
   };
 
+  const getDirectUrl = (project) => {
+    if (project.githubPath) {
+      try {
+        const url = new URL(project.githubPath);
+        if (url.host === 'github.com') {
+          const pathname = url.pathname;
+          const m = /^\/([^/]+)\/([^/]+)\/tree\/([^/]+)\/(.+)$/.exec(pathname);
+          if (m) {
+            const [, owner, repo, branch, path] = m;
+            return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}/index.html`;
+          }
+        }
+      } catch {
+        // Invalid URL, fall through
+      }
+    }
+    // fallback
+    if (project.appPath)
+      return project.appPath.endsWith('/')
+        ? project.appPath + 'index.html'
+        : project.appPath;
+    return project.githubPath || '';
+  };
+
+  const toRawGithackUrl = (ghUrl) => {
+    try {
+      const m = /github\.com\/([^/]+)\/([^/]+)\/tree\/([^/]+)\/(.+)$/.exec(
+        ghUrl,
+      );
+      if (m) {
+        const [, owner, repo, branch, path] = m;
+        return `https://rawcdn.githack.com/${owner}/${repo}/${branch}/${path}/index.html`;
+      }
+    } catch {
+      /* ignore */
+    }
+    return '';
+  };
+
+  const toJsDelivrUrl = (ghUrl) => {
+    try {
+      const m = /github\.com\/([^/]+)\/([^/]+)\/tree\/([^/]+)\/(.+)$/.exec(
+        ghUrl,
+      );
+      if (m) {
+        const [, owner, repo, branch, path] = m;
+        return `https://cdn.jsdelivr.net/gh/${owner}/${repo}@${branch}/${path}/index.html`;
+      }
+    } catch {
+      /* ignore */
+    }
+    return '';
+  };
+
   const testUrl = async (url, timeout = 2500) => {
     if (!url) return false;
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), timeout);
-
+      const { controller, clearTimeout: clearCtrlTimeout } =
+        makeAbortController(timeout);
       const res = await fetch(url, {
-        method: 'HEAD',
+        method: 'GET',
         mode: 'cors',
         signal: controller.signal,
       });
-
-      clearTimeout(timeoutId);
+      clearCtrlTimeout();
       return res?.ok;
     } catch {
       return false;
@@ -218,64 +280,51 @@ function App() {
   };
 
   const openDirect = async (project) => {
+    // Try raw.githack first (embed-friendly), then jsDelivr, then fallback to raw.githubusercontent (new tab)
     const gh = project.githubPath || '';
-    const candidates = [];
+    const rawGithack = gh ? toRawGithackUrl(gh) : '';
+    const jsDelivr = gh ? toJsDelivrUrl(gh) : '';
 
-    if (gh) {
-      const rawGithack = GitHubUrlConverter.toRawGithack(gh);
-      const jsDelivr = GitHubUrlConverter.toJsDelivr(gh);
-      if (rawGithack) candidates.push(rawGithack);
-      if (jsDelivr) candidates.push(jsDelivr);
-    }
-
-    if (project.appPath) {
-      candidates.push(
-        project.appPath.endsWith('/')
-          ? project.appPath + 'index.html'
-          : project.appPath,
-      );
-    }
-
-    // Test URLs in parallel and use first successful one
-    try {
-      const results = await Promise.allSettled(
-        candidates.map(async (url) => {
-          const isValid = await testUrl(url, 2000);
-          return isValid ? url : null;
-        }),
-      );
-
-      const validUrl = results
-        .filter((result) => result.status === 'fulfilled' && result.value)
-        .map((result) => result.value)[0];
-
-      if (validUrl) {
-        setModalTitle(project.title);
-        setModalUrl(validUrl);
-        setIframeLoading(true);
-        setModalOpen(true);
-        try {
-          document.body.style.overflow = 'hidden';
-        } catch {
-          /* ignore */
-        }
-        return;
-      }
-    } catch (error) {
-      console.warn('URL testing failed:', error);
-    }
-
-    // Fallback: open in new tab
-    const fallbackUrl = candidates[0] || project.githubPath || '';
-    if (fallbackUrl) {
+    // prefer raw.githack
+    if (rawGithack && (await testUrl(rawGithack, 2500))) {
+      setModalTitle(project.title);
+      setModalUrl(rawGithack);
+      setIframeLoading(true);
+      setModalOpen(true);
       try {
-        window.open(fallbackUrl, '_blank', 'noopener');
-        showToast('App in neuem Tab geöffnet');
+        document.body.style.overflow = 'hidden';
       } catch {
-        showToast('Öffnen im Tab fehlgeschlagen');
+        /* ignore */
       }
-    } else {
+      return;
+    }
+
+    // next try jsDelivr
+    if (jsDelivr && (await testUrl(jsDelivr, 2500))) {
+      setModalTitle(project.title);
+      setModalUrl(jsDelivr);
+      setIframeLoading(true);
+      setModalOpen(true);
+      try {
+        document.body.style.overflow = 'hidden';
+      } catch {
+        /* ignore */
+      }
+      return;
+    }
+
+    // fallback: open raw.githubusercontent or appPath in new tab
+    const direct =
+      getDirectUrl(project) || project.githubPath || project.appPath || '';
+    if (!direct) {
       showToast('Keine gültige App-URL vorhanden');
+      return;
+    }
+    try {
+      window.open(direct, '_blank', 'noopener');
+      showToast('App in neuem Tab geöffnet');
+    } catch {
+      showToast('Öffnen im Tab fehlgeschlagen');
     }
   };
 
@@ -305,8 +354,8 @@ function App() {
           const gh = project.githubPath || '';
           const candidates = [];
           if (gh) {
-            const raw = GitHubUrlConverter.toRawGithack(gh);
-            const js = GitHubUrlConverter.toJsDelivr(gh);
+            const raw = toRawGithackUrl(gh);
+            const js = toJsDelivrUrl(gh);
             if (raw) candidates.push(raw);
             if (js) candidates.push(js);
           }
