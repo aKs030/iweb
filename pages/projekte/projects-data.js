@@ -1,26 +1,12 @@
 /**
- * Projects Data Configuration
- * @version 1.0.0
- *
- * This file contains all project definitions for the interactive projects showcase.
- * Separated from the main app logic for better maintainability.
+ * Projects Data Configuration - Modernized & Compact
+ * @version 3.0.0
  */
 
-// Note: htm is imported in projekte-app.js and passed via the html parameter
+import { GITHUB_CONFIG, PROJECT_CATEGORIES } from './github-config.js';
 
 // Common styles for consistency
 const ICON_SIZE = { width: '32px', height: '32px' };
-const LARGE_ICON_SIZE = { width: '4rem', height: '4rem' };
-
-// Preview font sizes
-const PREVIEW_FONT = {
-  large: '4rem',
-  medium: '3rem',
-  small: '1.5rem',
-};
-
-// GitHub repository base URL
-const GITHUB_BASE = 'https://github.com/aKs030/Webgame/tree/main/apps';
 
 // Default Open Graph image
 const DEFAULT_OG_IMAGE =
@@ -30,43 +16,201 @@ const DEFAULT_OG_IMAGE =
 const THEME_COLORS = {
   purple: {
     icon: '#c084fc',
-    preview: '#c084fc',
     gradient: ['rgba(99, 102, 241, 0.2)', 'rgba(168, 85, 247, 0.2)'],
   },
   green: {
     icon: '#34d399',
-    preview: '#6ee7b7',
     gradient: ['rgba(34, 197, 94, 0.2)', 'rgba(16, 185, 129, 0.2)'],
   },
   pink: {
     icon: '#f472b6',
-    preview: '#f472b6',
     gradient: ['rgba(249, 115, 22, 0.2)', 'rgba(236, 72, 153, 0.2)'],
   },
   cyan: {
     icon: '#22d3ee',
-    preview: '#22d3ee',
     gradient: ['rgba(59, 130, 246, 0.2)', 'rgba(6, 182, 212, 0.2)'],
+  },
+  orange: {
+    icon: '#fb923c',
+    gradient: ['rgba(251, 146, 60, 0.2)', 'rgba(249, 115, 22, 0.2)'],
+  },
+  indigo: {
+    icon: '#818cf8',
+    gradient: ['rgba(129, 140, 248, 0.2)', 'rgba(99, 102, 241, 0.2)'],
   },
 };
 
 /**
  * Helper function to create gradient backgrounds
- * @param {string[]} colors - Array of two gradient colors (rgba format)
- * @returns {Object} Style object with gradient background
  */
 const createGradient = (colors) => ({
   background: `linear-gradient(to bottom right, ${colors[0]}, ${colors[1]})`,
 });
 
 /**
- * Creates the projects array with icon and preview components
- * @param {Function} html - htm template function bound to React.createElement
- * @param {Object} icons - Object containing icon components
- * @returns {Array} Array of project objects
+ * Fetches repository contents from GitHub API
  */
-export function createProjectsData(html, icons) {
-  const { Gamepad2, Binary, Palette, ListTodo, Check } = icons;
+async function fetchGitHubContents(path = '') {
+  const url = `${GITHUB_CONFIG.apiBase}/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`;
+
+  try {
+    const response = await fetch(url, {
+      headers: {
+        Accept: 'application/vnd.github.v3+json',
+        'User-Agent': 'Projekte-Loader/1.0',
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`GitHub API error: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Fetches project metadata from package.json or README
+ */
+async function fetchProjectMetadata(projectPath) {
+  const metadataUrl = `${GITHUB_CONFIG.rawBase}/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/${GITHUB_CONFIG.branch}/${projectPath}/package.json`;
+
+  try {
+    const packageResponse = await fetch(metadataUrl, { method: 'HEAD' });
+
+    if (packageResponse.ok) {
+      const contentResponse = await fetch(metadataUrl);
+      if (contentResponse.ok) {
+        const packageData = await contentResponse.json();
+        return {
+          title: packageData.name || projectPath.split('/').pop(),
+          description:
+            packageData.description || 'Ein interaktives Web-Projekt',
+          tags: packageData.keywords || ['JavaScript'],
+          category: packageData.category || 'App',
+          version: packageData.version || '1.0.0',
+        };
+      }
+    }
+  } catch {
+    // Silent error handling
+  }
+
+  // Default metadata
+  return {
+    title: projectPath
+      .split('/')
+      .pop()
+      .replace(/-/g, ' ')
+      .replace(/\b\w/g, (l) => l.toUpperCase()),
+    description: 'Ein interaktives Web-Projekt',
+    tags: ['JavaScript'],
+    category: 'App',
+    version: '1.0.0',
+  };
+}
+
+/**
+ * Maps project to appropriate icon and theme
+ */
+function getProjectIconAndTheme(project, icons, html) {
+  const title = project.title.toLowerCase();
+  const tags = project.tags.map((tag) => tag.toLowerCase());
+  const category = project.category.toLowerCase();
+  const description = project.description.toLowerCase();
+
+  const allText = `${title} ${tags.join(' ')} ${category} ${description}`;
+
+  let bestMatch = PROJECT_CATEGORIES.default;
+  let maxMatches = 0;
+
+  for (const [categoryKey, categoryData] of Object.entries(
+    PROJECT_CATEGORIES,
+  )) {
+    if (categoryKey === 'default') continue;
+
+    const matches = categoryData.keywords.filter((keyword) =>
+      allText.includes(keyword),
+    ).length;
+
+    if (matches > maxMatches) {
+      maxMatches = matches;
+      bestMatch = categoryData;
+    }
+  }
+
+  const IconComponent = icons[bestMatch.icon] || icons.Code;
+  const theme = THEME_COLORS[bestMatch.theme] || THEME_COLORS.indigo;
+
+  return {
+    icon: html`<${IconComponent}
+      style=${{ color: theme.icon, ...ICON_SIZE }}
+    />`,
+    theme: theme,
+  };
+}
+
+/**
+ * Loads projects dynamically from GitHub repository
+ */
+async function loadDynamicProjects(html, icons) {
+  try {
+    const contents = await fetchGitHubContents(GITHUB_CONFIG.appsPath);
+    const projects = [];
+
+    const directories = contents.filter((item) => item.type === 'dir');
+
+    for (let i = 0; i < directories.length; i++) {
+      const dir = directories[i];
+      const projectPath = `${GITHUB_CONFIG.appsPath}/${dir.name}`;
+
+      if (i > 0) {
+        await new Promise((resolve) =>
+          setTimeout(resolve, GITHUB_CONFIG.requestDelay || 100),
+        );
+      }
+
+      const metadata = await fetchProjectMetadata(projectPath);
+      const { icon, theme } = getProjectIconAndTheme(metadata, icons, html);
+
+      const project = {
+        id: i + 1,
+        title: metadata.title,
+        description: metadata.description,
+        tags: metadata.tags,
+        category: metadata.category,
+        datePublished: new Date().toISOString().split('T')[0],
+        image: DEFAULT_OG_IMAGE,
+        appPath: `/projekte/apps/${dir.name}/`,
+        githubPath: `${GITHUB_CONFIG.repoBase}/${projectPath}`,
+        bgStyle: createGradient(theme.gradient),
+        glowColor: theme.icon,
+        icon: icon,
+        previewContent: html`
+          <div className="preview-container">${icon}</div>
+        `,
+      };
+
+      projects.push(project);
+    }
+
+    if (projects.length > 0) {
+      console.log(`✅ Loaded ${projects.length} projects from GitHub`);
+    }
+
+    return projects;
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Static fallback projects
+ */
+function getStaticFallbackProjects(html, icons) {
+  const { Gamepad2, Binary, Palette, ListTodo } = icons;
 
   return [
     {
@@ -78,19 +222,17 @@ export function createProjectsData(html, icons) {
       datePublished: '2023-07-05',
       image: DEFAULT_OG_IMAGE,
       appPath: '/projekte/apps/schere-stein-papier/',
-      githubPath: `${GITHUB_BASE}/schere-stein-papier`,
+      githubPath: `${GITHUB_CONFIG.repoBase}/${GITHUB_CONFIG.appsPath}/schere-stein-papier`,
       bgStyle: createGradient(THEME_COLORS.purple.gradient),
       glowColor: '#5586f7ff',
-      icon: html`
-        <${Gamepad2}
-          style=${{ color: THEME_COLORS.purple.icon, ...ICON_SIZE }}
-        />
-      `,
+      icon: html`<${Gamepad2}
+        style=${{ color: THEME_COLORS.purple.icon, ...ICON_SIZE }}
+      />`,
       previewContent: html`
         <div className="preview-container-vs">
-          <div style=${{ fontSize: PREVIEW_FONT.medium }}>🪨</div>
-          <div style=${{ fontSize: PREVIEW_FONT.small, opacity: 0.5 }}>VS</div>
-          <div style=${{ fontSize: PREVIEW_FONT.medium }}>✂️</div>
+          <div style=${{ fontSize: '3rem' }}>🪨</div>
+          <div style=${{ fontSize: '1.5rem', opacity: 0.5 }}>VS</div>
+          <div style=${{ fontSize: '3rem' }}>✂️</div>
         </div>
       `,
     },
@@ -103,18 +245,18 @@ export function createProjectsData(html, icons) {
       datePublished: '2024-08-01',
       image: DEFAULT_OG_IMAGE,
       appPath: '/projekte/apps/zahlen-raten/',
-      githubPath: `${GITHUB_BASE}/zahlen-raten`,
+      githubPath: `${GITHUB_CONFIG.repoBase}/${GITHUB_CONFIG.appsPath}/zahlen-raten`,
       bgStyle: createGradient(THEME_COLORS.green.gradient),
       glowColor: '#10b981',
-      icon: html`
-        <${Binary} style=${{ color: THEME_COLORS.green.icon, ...ICON_SIZE }} />
-      `,
+      icon: html`<${Binary}
+        style=${{ color: THEME_COLORS.green.icon, ...ICON_SIZE }}
+      />`,
       previewContent: html`
         <div className="preview-container">
           <span
             style=${{
-              fontSize: PREVIEW_FONT.large,
-              color: THEME_COLORS.green.preview,
+              fontSize: '4rem',
+              color: THEME_COLORS.green.icon,
               fontWeight: 'bold',
             }}
             >?</span
@@ -131,16 +273,20 @@ export function createProjectsData(html, icons) {
       datePublished: '2022-03-15',
       image: DEFAULT_OG_IMAGE,
       appPath: '/projekte/apps/color-changer/',
-      githubPath: `${GITHUB_BASE}/color-changer`,
+      githubPath: `${GITHUB_CONFIG.repoBase}/${GITHUB_CONFIG.appsPath}/color-changer`,
       bgStyle: createGradient(THEME_COLORS.pink.gradient),
       glowColor: '#ec4899',
-      icon: html`
-        <${Palette} style=${{ color: THEME_COLORS.pink.icon, ...ICON_SIZE }} />
-      `,
+      icon: html`<${Palette}
+        style=${{ color: THEME_COLORS.pink.icon, ...ICON_SIZE }}
+      />`,
       previewContent: html`
         <div className="preview-container">
           <${Palette}
-            style=${{ color: THEME_COLORS.pink.preview, ...LARGE_ICON_SIZE }}
+            style=${{
+              color: THEME_COLORS.pink.icon,
+              width: '4rem',
+              height: '4rem',
+            }}
           />
         </div>
       `,
@@ -154,19 +300,37 @@ export function createProjectsData(html, icons) {
       datePublished: '2021-11-05',
       image: DEFAULT_OG_IMAGE,
       appPath: '/projekte/apps/todo-liste/',
-      githubPath: `${GITHUB_BASE}/todo-liste`,
+      githubPath: `${GITHUB_CONFIG.repoBase}/${GITHUB_CONFIG.appsPath}/todo-liste`,
       bgStyle: createGradient(THEME_COLORS.cyan.gradient),
       glowColor: '#06b6d4',
-      icon: html`
-        <${ListTodo} style=${{ color: THEME_COLORS.cyan.icon, ...ICON_SIZE }} />
-      `,
+      icon: html`<${ListTodo}
+        style=${{ color: THEME_COLORS.cyan.icon, ...ICON_SIZE }}
+      />`,
       previewContent: html`
         <div className="preview-container">
-          <${Check}
-            style=${{ color: THEME_COLORS.cyan.preview, ...LARGE_ICON_SIZE }}
+          <${ListTodo}
+            style=${{
+              color: THEME_COLORS.cyan.icon,
+              width: '4rem',
+              height: '4rem',
+            }}
           />
         </div>
       `,
     },
   ];
+}
+
+/**
+ * Creates the projects array with dynamic loading and static fallback
+ */
+export async function createProjectsData(html, icons) {
+  const dynamicProjects = await loadDynamicProjects(html, icons);
+
+  if (dynamicProjects.length > 0) {
+    return dynamicProjects;
+  }
+
+  console.log('Using static fallback projects');
+  return getStaticFallbackProjects(html, icons);
 }
