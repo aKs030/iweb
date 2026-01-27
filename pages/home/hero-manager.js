@@ -200,7 +200,7 @@ const HeroManager = (() => {
 })();
 
 // ===== Public API =====
-export function initHeroFeatureBundle() {
+export function initHeroFeatureBundle(sectionManager) {
   HeroManager.cleanup();
 
   const onHeroLoaded = () => {
@@ -254,8 +254,8 @@ export function initHeroFeatureBundle() {
       }
     };
 
-    if (window.SectionLoader?.loadSection) {
-      window.SectionLoader.loadSection(target).finally(() =>
+    if (sectionManager?.loadSection) {
+      sectionManager.loadSection(target).finally(() =>
         requestAnimationFrame(doScroll),
       );
     } else {
