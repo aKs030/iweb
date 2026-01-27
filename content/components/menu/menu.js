@@ -27,10 +27,6 @@ const initializeMenu = async (customConfig = {}) => {
     const controller = new MenuController(config);
     await controller.init();
 
-    // Expose API
-    window.menuController = controller;
-    window.menuCleanup = () => controller.destroy();
-
     logger.info('Menu system initialized');
     return controller;
   } catch (error) {
