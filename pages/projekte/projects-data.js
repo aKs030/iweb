@@ -4,6 +4,7 @@
  */
 
 import { GITHUB_CONFIG, PROJECT_CATEGORIES } from './github-config.js';
+import localAppsConfig from './apps-config.json';
 
 // Common styles for consistency
 const ICON_SIZE = { width: '32px', height: '32px' };
@@ -51,6 +52,23 @@ const createGradient = (colors) => ({
  * Fetches repository contents from GitHub API
  */
 async function fetchGitHubContents(path = '') {
+  const cacheKey = `github_contents_${path}`;
+  const CACHE_DURATION = 3600 * 1000; // 1 hour
+
+  // Try cache first
+  try {
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) {
+      const { timestamp, data } = JSON.parse(cached);
+      if (Date.now() - timestamp < CACHE_DURATION) {
+        console.log(`📦 Using cached GitHub contents for: ${path}`);
+        return data;
+      }
+    }
+  } catch (e) {
+    console.warn('Failed to read cache:', e);
+  }
+
   const url = `${GITHUB_CONFIG.apiBase}/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`;
 
   try {
@@ -72,9 +90,35 @@ async function fetchGitHubContents(path = '') {
 
     const data = await response.json();
     console.log(`✅ GitHub API response:`, data);
+
+    // Save to cache
+    try {
+      localStorage.setItem(
+        cacheKey,
+        JSON.stringify({
+          timestamp: Date.now(),
+          data,
+        }),
+      );
+    } catch (e) {
+      console.warn('Failed to write cache:', e);
+    }
+
     return data;
   } catch (error) {
     console.error(`❌ Failed to fetch GitHub contents:`, error);
+
+    // Fallback to stale cache if available
+    try {
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        console.log(`⚠️ Using stale cache for: ${path}`);
+        return JSON.parse(cached).data;
+      }
+    } catch (err) {
+      console.warn('Failed to read stale cache:', err);
+    }
+
     return [];
   }
 }
@@ -170,17 +214,13 @@ function getProjectIconAndTheme(project, icons, html) {
  */
 async function loadLocalConfig() {
   try {
-    console.log(`📁 Loading local apps config...`);
-    const response = await fetch('/pages/projekte/apps-config.json');
+    console.log(`📁 Loading local apps config (embedded)...`);
 
-    if (!response.ok) {
-      console.warn(`⚠️ Local config not found: ${response.status}`);
-      return null;
+    if (localAppsConfig && localAppsConfig.apps) {
+      console.log(`✅ Local config loaded:`, localAppsConfig);
+      return localAppsConfig.apps;
     }
-
-    const config = await response.json();
-    console.log(`✅ Local config loaded:`, config);
-    return config.apps || [];
+    return [];
   } catch (error) {
     console.warn(`⚠️ Failed to load local config:`, error);
     return null;
