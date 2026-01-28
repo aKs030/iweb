@@ -1,10 +1,14 @@
 /**
  * Projects Data Configuration - Modernized & Compact
- * @version 3.0.0
+ * @version 3.1.0
  */
 
 import { GITHUB_CONFIG, PROJECT_CATEGORIES } from './github-config.js';
 import localAppsConfig from './apps-config.json' with { type: 'json' };
+import {
+  fetchGitHubContents as fetchGitHubContentsApi,
+  fetchProjectMetadata as fetchProjectMetadataApi,
+} from './project-utils.js';
 
 // Common styles for consistency
 const ICON_SIZE = { width: '32px', height: '32px' };
@@ -83,7 +87,7 @@ const createGradient = (colors) => ({
 });
 
 /**
- * Fetches repository contents from GitHub API
+ * Fetches repository contents from GitHub API (with Caching)
  */
 async function fetchGitHubContents(path = '') {
   const cacheKey = `contents_${path}`;
@@ -93,22 +97,9 @@ async function fetchGitHubContents(path = '') {
     return cached;
   }
 
-  const url = `${GITHUB_CONFIG.apiBase}/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`;
-
   try {
-    console.log(`🔍 Fetching GitHub contents from: ${url}`);
-    const response = await fetch(url, {
-      headers: {
-        Accept: 'application/vnd.github.v3+json',
-        'User-Agent': 'Projekte-Loader/1.0',
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`GitHub API error: ${response.status}`);
-    }
-
-    const data = await response.json();
+    console.log(`🔍 Fetching GitHub contents from: ${path}`);
+    const data = await fetchGitHubContentsApi(path);
     setCache(cacheKey, data);
     return data;
   } catch (error) {
@@ -118,7 +109,7 @@ async function fetchGitHubContents(path = '') {
 }
 
 /**
- * Fetches project metadata from package.json or README
+ * Fetches project metadata from package.json or README (with Caching)
  */
 async function fetchProjectMetadata(projectPath) {
   const cacheKey = `metadata_${projectPath}`;
@@ -128,43 +119,17 @@ async function fetchProjectMetadata(projectPath) {
     return cached;
   }
 
-  const metadataUrl = `${GITHUB_CONFIG.rawBase}/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/${GITHUB_CONFIG.branch}/${projectPath}/package.json`;
+  const metadata = await fetchProjectMetadataApi(projectPath);
 
-  try {
-    const packageResponse = await fetch(metadataUrl, { method: 'HEAD' });
-
-    if (packageResponse.ok) {
-      const contentResponse = await fetch(metadataUrl);
-      if (contentResponse.ok) {
-        const packageData = await contentResponse.json();
-        const metadata = {
-          title: packageData.name || projectPath.split('/').pop(),
-          description:
-            packageData.description || 'Ein interaktives Web-Projekt',
-          tags: packageData.keywords || ['JavaScript'],
-          category: packageData.category || 'App',
-          version: packageData.version || '1.0.0',
-        };
-        setCache(cacheKey, metadata);
-        return metadata;
-      }
-    }
-  } catch (error) {
-    console.warn(`⚠️ Could not fetch metadata for ${projectPath}:`, error);
+  // Only cache if we got real data (indicated by presence of 'raw' field from our utility)
+  if (metadata.raw) {
+    // eslint-disable-next-line no-unused-vars
+    const { raw, ...cleanMetadata } = metadata;
+    setCache(cacheKey, cleanMetadata);
+    return cleanMetadata;
   }
 
-  // Default metadata (not cached to allow retry)
-  return {
-    title: projectPath
-      .split('/')
-      .pop()
-      .replace(/-/g, ' ')
-      .replace(/\b\w/g, (l) => l.toUpperCase()),
-    description: 'Ein interaktives Web-Projekt',
-    tags: ['JavaScript'],
-    category: 'App',
-    version: '1.0.0',
-  };
+  return metadata;
 }
 
 /**
@@ -243,7 +208,10 @@ async function loadDynamicProjects(html, icons) {
 
       if (i > 0 && source === 'github') {
         // Only delay if we are actually fetching from GitHub (not needed if fully cached, but delay is safe)
-         await new Promise((resolve) =>
+        // Note: fetchProjectMetadataApi inside fetchProjectMetadata handles the network request,
+        // but since we check cache first, we might not need delay.
+        // However, to be safe and consistent with previous logic:
+        await new Promise((resolve) =>
           setTimeout(resolve, GITHUB_CONFIG.requestDelay || 50),
         );
       }
@@ -251,16 +219,15 @@ async function loadDynamicProjects(html, icons) {
       const metadata = await fetchProjectMetadata(projectPath);
       projectsList.push({ ...metadata, dirName: dir.name });
     }
-
   } catch (error) {
     console.error(`❌ Failed to load dynamic projects from GitHub:`, error);
     console.log(`⚠️ Falling back to local bundled config`);
     source = 'local';
 
     const localApps = loadLocalConfig();
-    projectsList = localApps.map(app => ({
+    projectsList = localApps.map((app) => ({
       ...app,
-      dirName: app.name // local config has 'name' which corresponds to directory
+      dirName: app.name, // local config has 'name' which corresponds to directory
     }));
   }
 
