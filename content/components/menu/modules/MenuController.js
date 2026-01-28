@@ -10,7 +10,7 @@ import { MenuPerformance } from './MenuPerformance.js';
 import { MenuCache } from './MenuCache.js';
 import { MenuConfig } from './MenuConfig.js';
 import { getElementById } from '/content/core/dom-utils.js';
-import { upsertHeadLink } from '/content/core/dom-helpers.js';
+import { upsertHeadLink } from '/content/core/dom-utils.js';
 import { createLogger } from '/content/core/logger.js';
 
 export class MenuController {
