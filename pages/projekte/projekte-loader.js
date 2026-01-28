@@ -1,6 +1,6 @@
 import { initProjectsApp } from './projekte-app.js';
 import { createLogger } from '/content/core/logger.js';
-import { upsertHeadLink } from '/content/core/dom-helpers.js';
+import { upsertHeadLink } from '/content/core/dom-utils.js';
 const log = createLogger('ProjektePage');
 
 // Load styles for Three Earth (Progressive Enhancement)

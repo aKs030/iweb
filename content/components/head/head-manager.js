@@ -4,7 +4,7 @@
  */
 
 import { createLogger } from '/content/core/logger.js';
-import { upsertMeta } from '/content/core/dom-helpers.js';
+import { upsertMeta } from '/content/core/dom-utils.js';
 import { applyCanonicalLinks } from '/content/core/canonical-manager.js';
 import { setupPWAAssets } from '/content/core/pwa-manager.js';
 import {

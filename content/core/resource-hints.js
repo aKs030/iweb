@@ -6,7 +6,7 @@
  */
 
 import { createLogger } from './logger.js';
-import { upsertHeadLink } from './dom-helpers.js';
+import { upsertHeadLink } from './dom-utils.js';
 
 const log = createLogger('ResourceHints');
 
