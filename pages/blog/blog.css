@@ -34,6 +34,42 @@ body {
   line-height: 1.6;
 }
 
+/* --- Utilities --- */
+.text-muted {
+  color: var(--blog-text-muted) !important;
+}
+
+.text-ccc {
+  color: #ccc;
+}
+
+.mb-0 {
+  margin-bottom: 0 !important;
+}
+
+.mb-8 {
+  margin-bottom: 2rem !important;
+}
+
+.pt-header-offset {
+  padding-top: 6rem !important;
+}
+
+.fs-sm {
+  font-size: 0.9rem !important;
+}
+
+.fs-md {
+  font-size: 1.1rem !important;
+}
+
+.cta-description {
+  color: #ccc;
+  margin-bottom: 1.5rem;
+  max-width: 600px;
+  margin: 0 auto 1.5rem;
+}
+
 /* --- Custom Scrollbar (Webkit) --- */
 @media (min-width: 769px) {
   ::-webkit-scrollbar {
@@ -108,15 +144,14 @@ body {
 /* --- Sticky Header --- */
 .blog-sticky-header {
   position: sticky;
-  top: 0;
-  z-index: 50;
-  background-color: rgba(3, 3, 3, 0.8);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  padding-top: 80px; /* Space for main nav */
-  padding-bottom: 1.5rem;
-  margin-bottom: 3rem;
+  top: 72px; /* Matches Site Header Height + Spacing */
+  z-index: 40;
+  background-color: rgba(3, 3, 3, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--blog-border);
+  margin: 0 -2rem 2.5rem -2rem;
+  padding: 1rem 2rem;
   transition: padding 0.3s ease;
 }
 

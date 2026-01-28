@@ -65,6 +65,13 @@
 }
 
 /* ===== Icon System ===== */
+.svg-sprite-hidden {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
 .nav-icon {
   width: 16px;
   height: 16px;

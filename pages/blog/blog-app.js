@@ -221,13 +221,10 @@ function RelatedPosts({ currentPost, allPosts }) {
               className="blog-card"
               onClick=${() => (window.location.hash = `/blog/${post.id}`)}
             >
-              <h4 className="card-title" style=${{ fontSize: '1.1rem' }}>
+              <h4 className="card-title fs-md">
                 ${post.title}
               </h4>
-              <p
-                className="card-excerpt"
-                style=${{ fontSize: '0.9rem', marginBottom: '0' }}
-              >
+              <p className="card-excerpt fs-sm mb-0">
                 ${post.excerpt.slice(0, 80)}...
               </p>
             </article>
@@ -338,7 +335,7 @@ function BlogApp() {
 
     if (!post)
       return html`<div className="container-blog pt-24">
-        <div style="color:#666">Lade Artikel...</div>
+        <div className="text-muted">Lade Artikel...</div>
       </div>`;
 
     const cleanHtml = activePostHtml;
@@ -391,12 +388,7 @@ function BlogApp() {
 
             <div className="article-cta">
               <h3>Unterstützung bei deinem Projekt?</h3>
-              <p style=${{
-                color: '#ccc',
-                marginBottom: '1.5rem',
-                maxWidth: '600px',
-                margin: '0 auto 1.5rem',
-              }}>
+              <p className="cta-description">
                 Benötigst du Hilfe bei Webdesign, Performance-Optimierung oder SEO? Lass uns unverbindlich darüber sprechen.
               </p>
               <a href="/#contact" className="btn-primary">Jetzt Kontakt aufnehmen</a>
@@ -409,11 +401,11 @@ function BlogApp() {
 
   // List View
   return html`
-    <div className="container-blog fade-in" style=${{ paddingTop: '6rem' }}>
+    <div className="container-blog fade-in pt-header-offset">
       <${ScrollToTop} />
 
       <!-- Static Header -->
-      <header style=${{ marginBottom: '2rem' }}>
+      <header className="mb-8">
         <h1 className="blog-headline">Wissen & Einblicke</h1>
         <p className="blog-subline">
           In unserem Blog teilen wir praxisnahe Tipps zu Webdesign, SEO,
@@ -423,20 +415,7 @@ function BlogApp() {
       </header>
 
       <!-- Sticky Controls: Optimized Top Position -->
-      <div
-        className="blog-sticky-header"
-        style=${{
-          position: 'sticky',
-          top: '72px' /* Matches Site Header Height + Spacing */,
-          zIndex: 40,
-          background: 'rgba(3, 3, 3, 0.85)',
-          backdropFilter: 'blur(12px)',
-          WebkitBackdropFilter: 'blur(12px)',
-          borderBottom: '1px solid var(--blog-border)',
-          margin: '0 -2rem 2.5rem -2rem',
-          padding: '1rem 2rem',
-        }}
-      >
+      <div className="blog-sticky-header">
         <div className="blog-header-content">
           <div className="blog-controls">
             <div className="filter-bar">
@@ -502,7 +481,7 @@ function BlogApp() {
           `;
         })}
         ${visiblePosts.length === 0 && !loading
-          ? html`<p style="color:#666">Keine Artikel gefunden.</p>`
+          ? html`<p className="text-muted">Keine Artikel gefunden.</p>`
           : ''}
       </div>
     </div>
