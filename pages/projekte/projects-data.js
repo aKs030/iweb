@@ -4,6 +4,7 @@
  */
 
 import { GITHUB_CONFIG, PROJECT_CATEGORIES } from './github-config.js';
+import localAppsConfig from './apps-config.json' with { type: 'json' };
 
 // Common styles for consistency
 const ICON_SIZE = { width: '32px', height: '32px' };
@@ -40,6 +41,40 @@ const THEME_COLORS = {
   },
 };
 
+// Cache Configuration
+const CACHE_PREFIX = 'github_contents_';
+const CACHE_DURATION = 60 * 60 * 1000; // 1 hour
+
+/**
+ * Cache Helpers
+ */
+function getCache(key) {
+  try {
+    const item = localStorage.getItem(CACHE_PREFIX + key);
+    if (!item) return null;
+
+    const { data, timestamp } = JSON.parse(item);
+    if (Date.now() - timestamp > CACHE_DURATION) {
+      localStorage.removeItem(CACHE_PREFIX + key);
+      return null;
+    }
+    return data;
+  } catch (e) {
+    return null;
+  }
+}
+
+function setCache(key, data) {
+  try {
+    localStorage.setItem(
+      CACHE_PREFIX + key,
+      JSON.stringify({ data, timestamp: Date.now() })
+    );
+  } catch (e) {
+    console.warn('Cache write failed:', e);
+  }
+}
+
 /**
  * Helper function to create gradient backgrounds
  */
@@ -51,6 +86,13 @@ const createGradient = (colors) => ({
  * Fetches repository contents from GitHub API
  */
 async function fetchGitHubContents(path = '') {
+  const cacheKey = `contents_${path}`;
+  const cached = getCache(cacheKey);
+  if (cached) {
+    console.log(`📦 Using cached GitHub contents for: ${path}`);
+    return cached;
+  }
+
   const url = `${GITHUB_CONFIG.apiBase}/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`;
 
   try {
@@ -63,19 +105,15 @@ async function fetchGitHubContents(path = '') {
     });
 
     if (!response.ok) {
-      console.error(
-        `❌ GitHub API error: ${response.status} - ${response.statusText}`,
-      );
-      console.error(`URL: ${url}`);
       throw new Error(`GitHub API error: ${response.status}`);
     }
 
     const data = await response.json();
-    console.log(`✅ GitHub API response:`, data);
+    setCache(cacheKey, data);
     return data;
   } catch (error) {
     console.error(`❌ Failed to fetch GitHub contents:`, error);
-    return [];
+    throw error;
   }
 }
 
@@ -83,18 +121,23 @@ async function fetchGitHubContents(path = '') {
  * Fetches project metadata from package.json or README
  */
 async function fetchProjectMetadata(projectPath) {
+  const cacheKey = `metadata_${projectPath}`;
+  const cached = getCache(cacheKey);
+  if (cached) {
+    console.log(`📦 Using cached metadata for: ${projectPath}`);
+    return cached;
+  }
+
   const metadataUrl = `${GITHUB_CONFIG.rawBase}/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/${GITHUB_CONFIG.branch}/${projectPath}/package.json`;
 
   try {
-    console.log(`🔍 Checking metadata for: ${projectPath}`);
     const packageResponse = await fetch(metadataUrl, { method: 'HEAD' });
 
     if (packageResponse.ok) {
       const contentResponse = await fetch(metadataUrl);
       if (contentResponse.ok) {
         const packageData = await contentResponse.json();
-        console.log(`✅ Found package.json for ${projectPath}:`, packageData);
-        return {
+        const metadata = {
           title: packageData.name || projectPath.split('/').pop(),
           description:
             packageData.description || 'Ein interaktives Web-Projekt',
@@ -102,14 +145,16 @@ async function fetchProjectMetadata(projectPath) {
           category: packageData.category || 'App',
           version: packageData.version || '1.0.0',
         };
+        setCache(cacheKey, metadata);
+        return metadata;
       }
     }
   } catch (error) {
     console.warn(`⚠️ Could not fetch metadata for ${projectPath}:`, error);
   }
 
-  // Default metadata
-  const defaultMeta = {
+  // Default metadata (not cached to allow retry)
+  return {
     title: projectPath
       .split('/')
       .pop()
@@ -120,19 +165,16 @@ async function fetchProjectMetadata(projectPath) {
     category: 'App',
     version: '1.0.0',
   };
-
-  console.log(`📝 Using default metadata for ${projectPath}:`, defaultMeta);
-  return defaultMeta;
 }
 
 /**
  * Maps project to appropriate icon and theme
  */
 function getProjectIconAndTheme(project, icons, html) {
-  const title = project.title.toLowerCase();
-  const tags = project.tags.map((tag) => tag.toLowerCase());
-  const category = project.category.toLowerCase();
-  const description = project.description.toLowerCase();
+  const title = (project.title || '').toLowerCase();
+  const tags = (project.tags || []).map((tag) => tag.toLowerCase());
+  const category = (project.category || '').toLowerCase();
+  const description = (project.description || '').toLowerCase();
 
   const allText = `${title} ${tags.join(' ')} ${category} ${description}`;
 
@@ -166,74 +208,32 @@ function getProjectIconAndTheme(project, icons, html) {
 }
 
 /**
- * Loads projects from local config as fallback
+ * Loads projects from local config (bundled)
  */
-async function loadLocalConfig() {
-  try {
-    console.log(`📁 Loading local apps config...`);
-    const response = await fetch('/pages/projekte/apps-config.json');
-
-    if (!response.ok) {
-      console.warn(`⚠️ Local config not found: ${response.status}`);
-      return null;
-    }
-
-    const config = await response.json();
-    console.log(`✅ Local config loaded:`, config);
-    return config.apps || [];
-  } catch (error) {
-    console.warn(`⚠️ Failed to load local config:`, error);
-    return null;
-  }
+function loadLocalConfig() {
+  console.log(`📁 Loading local apps config (bundled)...`);
+  return localAppsConfig.apps || [];
 }
 
 /**
  * Loads projects dynamically from GitHub repository
  */
 async function loadDynamicProjects(html, icons) {
+  let projectsList = [];
+  let source = 'github';
+
   try {
     console.log(`🚀 Starting dynamic project loading...`);
     const contents = await fetchGitHubContents(GITHUB_CONFIG.appsPath);
 
     if (!contents || contents.length === 0) {
-      console.warn(
-        `⚠️ No contents found in ${GITHUB_CONFIG.appsPath}, trying local config...`,
-      );
-
-      // Try local config as fallback
-      const localApps = await loadLocalConfig();
-      if (localApps && localApps.length > 0) {
-        console.log(`📁 Using local config with ${localApps.length} apps`);
-        return localApps.map((app, i) => {
-          const { icon, theme } = getProjectIconAndTheme(app, icons, html);
-          return {
-            id: i + 1,
-            title: app.title,
-            description: app.description,
-            tags: app.tags,
-            category: app.category,
-            datePublished: new Date().toISOString().split('T')[0],
-            image: DEFAULT_OG_IMAGE,
-            appPath: `/projekte/apps/${app.name}/`,
-            githubPath: `${GITHUB_CONFIG.repoBase}/${GITHUB_CONFIG.appsPath}/${app.name}`,
-            bgStyle: createGradient(theme.gradient),
-            glowColor: theme.icon,
-            icon: icon,
-            previewContent: html`
-              <div className="preview-container">${icon}</div>
-            `,
-          };
-        });
-      }
-
-      return [];
+      throw new Error('No contents found in GitHub');
     }
 
-    const projects = [];
     const directories = contents.filter((item) => item.type === 'dir');
 
     console.log(
-      `📁 Found ${directories.length} directories:`,
+      `📁 Found ${directories.length} directories on GitHub:`,
       directories.map((d) => d.name),
     );
 
@@ -241,198 +241,55 @@ async function loadDynamicProjects(html, icons) {
       const dir = directories[i];
       const projectPath = `${GITHUB_CONFIG.appsPath}/${dir.name}`;
 
-      console.log(
-        `🔄 Processing project ${i + 1}/${directories.length}: ${dir.name}`,
-      );
-
-      if (i > 0) {
-        await new Promise((resolve) =>
-          setTimeout(resolve, GITHUB_CONFIG.requestDelay || 100),
+      if (i > 0 && source === 'github') {
+        // Only delay if we are actually fetching from GitHub (not needed if fully cached, but delay is safe)
+         await new Promise((resolve) =>
+          setTimeout(resolve, GITHUB_CONFIG.requestDelay || 50),
         );
       }
 
       const metadata = await fetchProjectMetadata(projectPath);
-      const { icon, theme } = getProjectIconAndTheme(metadata, icons, html);
-
-      const project = {
-        id: i + 1,
-        title: metadata.title,
-        description: metadata.description,
-        tags: metadata.tags,
-        category: metadata.category,
-        datePublished: new Date().toISOString().split('T')[0],
-        image: DEFAULT_OG_IMAGE,
-        appPath: `/projekte/apps/${dir.name}/`,
-        githubPath: `${GITHUB_CONFIG.repoBase}/${projectPath}`,
-        bgStyle: createGradient(theme.gradient),
-        glowColor: theme.icon,
-        icon: icon,
-        previewContent: html`
-          <div className="preview-container">${icon}</div>
-        `,
-      };
-
-      projects.push(project);
-      console.log(`✅ Added project: ${project.title}`);
+      projectsList.push({ ...metadata, dirName: dir.name });
     }
 
-    if (projects.length > 0) {
-      console.log(
-        `🎉 Successfully loaded ${projects.length} projects from GitHub`,
-      );
-    } else {
-      console.warn(`⚠️ No projects were loaded from GitHub`);
-    }
-
-    return projects;
   } catch (error) {
-    console.error(`❌ Failed to load dynamic projects:`, error);
+    console.error(`❌ Failed to load dynamic projects from GitHub:`, error);
+    console.log(`⚠️ Falling back to local bundled config`);
+    source = 'local';
 
-    // Try local config as fallback
-    const localApps = await loadLocalConfig();
-    if (localApps && localApps.length > 0) {
-      console.log(
-        `📁 Falling back to local config with ${localApps.length} apps`,
-      );
-      return localApps.map((app, i) => {
-        const { icon, theme } = getProjectIconAndTheme(app, icons, html);
-        return {
-          id: i + 1,
-          title: app.title,
-          description: app.description,
-          tags: app.tags,
-          category: app.category,
-          datePublished: new Date().toISOString().split('T')[0],
-          image: DEFAULT_OG_IMAGE,
-          appPath: `/projekte/apps/${app.name}/`,
-          githubPath: `${GITHUB_CONFIG.repoBase}/${GITHUB_CONFIG.appsPath}/${app.name}`,
-          bgStyle: createGradient(theme.gradient),
-          glowColor: theme.icon,
-          icon: icon,
-          previewContent: html`
-            <div className="preview-container">${icon}</div>
-          `,
-        };
-      });
-    }
-
-    return [];
+    const localApps = loadLocalConfig();
+    projectsList = localApps.map(app => ({
+      ...app,
+      dirName: app.name // local config has 'name' which corresponds to directory
+    }));
   }
-}
 
-/**
- * Static fallback projects
- */
-function getStaticFallbackProjects(html, icons) {
-  const { Gamepad2, Binary, Palette, ListTodo } = icons;
+  // Process the projects list (from GitHub or Local) to create UI objects
+  const finalProjects = projectsList.map((data, i) => {
+    const { icon, theme } = getProjectIconAndTheme(data, icons, html);
+    const dirName = data.dirName || data.name;
 
-  return [
-    {
-      id: 1,
-      title: 'Schere Stein Papier',
-      description: 'Der Klassiker gegen den Computer!',
-      tags: ['JavaScript', 'Game Logic'],
-      category: 'Game',
-      datePublished: '2023-07-05',
+    return {
+      id: i + 1,
+      title: data.title,
+      description: data.description,
+      tags: data.tags,
+      category: data.category,
+      datePublished: new Date().toISOString().split('T')[0],
       image: DEFAULT_OG_IMAGE,
-      appPath: '/projekte/apps/schere-stein-papier/',
-      githubPath: `${GITHUB_CONFIG.repoBase}/${GITHUB_CONFIG.appsPath}/schere-stein-papier`,
-      bgStyle: createGradient(THEME_COLORS.purple.gradient),
-      glowColor: '#5586f7ff',
-      icon: html`<${Gamepad2}
-        style=${{ color: THEME_COLORS.purple.icon, ...ICON_SIZE }}
-      />`,
+      appPath: `/projekte/apps/${dirName}/`,
+      githubPath: `${GITHUB_CONFIG.repoBase}/${GITHUB_CONFIG.appsPath}/${dirName}`,
+      bgStyle: createGradient(theme.gradient),
+      glowColor: theme.icon,
+      icon: icon,
       previewContent: html`
-        <div className="preview-container-vs">
-          <div style=${{ fontSize: '3rem' }}>🪨</div>
-          <div style=${{ fontSize: '1.5rem', opacity: 0.5 }}>VS</div>
-          <div style=${{ fontSize: '3rem' }}>✂️</div>
-        </div>
+        <div className="preview-container">${icon}</div>
       `,
-    },
-    {
-      id: 2,
-      title: 'Zahlen Raten',
-      description: 'Finde die geheime Zahl zwischen 1 und 100.',
-      tags: ['Logic', 'Input'],
-      category: 'Puzzle',
-      datePublished: '2024-08-01',
-      image: DEFAULT_OG_IMAGE,
-      appPath: '/projekte/apps/zahlen-raten/',
-      githubPath: `${GITHUB_CONFIG.repoBase}/${GITHUB_CONFIG.appsPath}/zahlen-raten`,
-      bgStyle: createGradient(THEME_COLORS.green.gradient),
-      glowColor: '#10b981',
-      icon: html`<${Binary}
-        style=${{ color: THEME_COLORS.green.icon, ...ICON_SIZE }}
-      />`,
-      previewContent: html`
-        <div className="preview-container">
-          <span
-            style=${{
-              fontSize: '4rem',
-              color: THEME_COLORS.green.icon,
-              fontWeight: 'bold',
-            }}
-            >?</span
-          >
-        </div>
-      `,
-    },
-    {
-      id: 3,
-      title: 'Color Changer',
-      description: 'Dynamische Hintergrundfarben per Klick.',
-      tags: ['DOM', 'Events'],
-      category: 'UI',
-      datePublished: '2022-03-15',
-      image: DEFAULT_OG_IMAGE,
-      appPath: '/projekte/apps/color-changer/',
-      githubPath: `${GITHUB_CONFIG.repoBase}/${GITHUB_CONFIG.appsPath}/color-changer`,
-      bgStyle: createGradient(THEME_COLORS.pink.gradient),
-      glowColor: '#ec4899',
-      icon: html`<${Palette}
-        style=${{ color: THEME_COLORS.pink.icon, ...ICON_SIZE }}
-      />`,
-      previewContent: html`
-        <div className="preview-container">
-          <${Palette}
-            style=${{
-              color: THEME_COLORS.pink.icon,
-              width: '4rem',
-              height: '4rem',
-            }}
-          />
-        </div>
-      `,
-    },
-    {
-      id: 4,
-      title: 'To-Do Liste',
-      description: 'Produktivitäts-Tool zum Verwalten von Aufgaben.',
-      tags: ['CRUD', 'Arrays'],
-      category: 'App',
-      datePublished: '2021-11-05',
-      image: DEFAULT_OG_IMAGE,
-      appPath: '/projekte/apps/todo-liste/',
-      githubPath: `${GITHUB_CONFIG.repoBase}/${GITHUB_CONFIG.appsPath}/todo-liste`,
-      bgStyle: createGradient(THEME_COLORS.cyan.gradient),
-      glowColor: '#06b6d4',
-      icon: html`<${ListTodo}
-        style=${{ color: THEME_COLORS.cyan.icon, ...ICON_SIZE }}
-      />`,
-      previewContent: html`
-        <div className="preview-container">
-          <${ListTodo}
-            style=${{
-              color: THEME_COLORS.cyan.icon,
-              width: '4rem',
-              height: '4rem',
-            }}
-          />
-        </div>
-      `,
-    },
-  ];
+    };
+  });
+
+  console.log(`🎉 Loaded ${finalProjects.length} projects (Source: ${source})`);
+  return finalProjects;
 }
 
 /**
@@ -440,16 +297,5 @@ function getStaticFallbackProjects(html, icons) {
  */
 export async function createProjectsData(html, icons) {
   console.log(`🎯 Starting createProjectsData...`);
-
-  const dynamicProjects = await loadDynamicProjects(html, icons);
-
-  if (dynamicProjects.length > 0) {
-    console.log(
-      `🎉 Using ${dynamicProjects.length} dynamic projects from GitHub`,
-    );
-    return dynamicProjects;
-  }
-
-  console.log(`⚠️ No dynamic projects found, falling back to static projects`);
-  return getStaticFallbackProjects(html, icons);
+  return await loadDynamicProjects(html, icons);
 }
