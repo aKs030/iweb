@@ -40,7 +40,7 @@ export default defineConfig({
 
           // Shared utilities
           utils: [
-            './content/core/dom-helpers.js',
+            './content/core/dom-utils.js',
             './content/core/intersection-observer.js',
             './content/core/logger.js',
             './content/core/fetch.js',
