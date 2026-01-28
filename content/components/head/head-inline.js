@@ -1,5 +1,5 @@
 import { createLogger } from '/content/core/logger.js';
-import { upsertHeadLink } from '/content/core/dom-helpers.js';
+import { upsertHeadLink } from '/content/core/dom-utils.js';
 import { ENV } from '../../config/env.config.js';
 import { resourceHints } from '/content/core/resource-hints.js';
 
