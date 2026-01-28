@@ -1,17 +1,13 @@
 import { createLogger } from '/content/core/logger.js';
 import { createProjectsData } from './projects-data.js';
+import {
+  getDirectUrl,
+  toRawGithackUrl,
+  toJsDelivrUrl,
+  testUrl,
+} from './project-utils.js';
 
 const log = createLogger('projekte-app');
-
-// Helper: makeAbortController
-function makeAbortController(timeout = 5000) {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeout);
-  return {
-    controller,
-    clearTimeout: () => clearTimeout(timeoutId),
-  };
-}
 
 /**
  * Interactive Projects Module - Modernized & Compact
@@ -88,77 +84,6 @@ function App() {
     setToastMsg(msg);
     if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
     toastTimerRef.current = setTimeout(() => setToastMsg(''), ms);
-  };
-
-  const getDirectUrl = (project) => {
-    if (project.githubPath) {
-      try {
-        const url = new URL(project.githubPath);
-        if (url.host === 'github.com') {
-          const pathname = url.pathname;
-          const m = /^\/([^/]+)\/([^/]+)\/tree\/([^/]+)\/(.+)$/.exec(pathname);
-          if (m) {
-            const [, owner, repo, branch, path] = m;
-            return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}/index.html`;
-          }
-        }
-      } catch {
-        // Invalid URL, fall through
-      }
-    }
-    // fallback
-    if (project.appPath)
-      return project.appPath.endsWith('/')
-        ? project.appPath + 'index.html'
-        : project.appPath;
-    return project.githubPath || '';
-  };
-
-  const toRawGithackUrl = (ghUrl) => {
-    try {
-      const m = /github\.com\/([^/]+)\/([^/]+)\/tree\/([^/]+)\/(.+)$/.exec(
-        ghUrl,
-      );
-      if (m) {
-        const [, owner, repo, branch, path] = m;
-        return `https://rawcdn.githack.com/${owner}/${repo}/${branch}/${path}/index.html`;
-      }
-    } catch {
-      /* ignore */
-    }
-    return '';
-  };
-
-  const toJsDelivrUrl = (ghUrl) => {
-    try {
-      const m = /github\.com\/([^/]+)\/([^/]+)\/tree\/([^/]+)\/(.+)$/.exec(
-        ghUrl,
-      );
-      if (m) {
-        const [, owner, repo, branch, path] = m;
-        return `https://cdn.jsdelivr.net/gh/${owner}/${repo}@${branch}/${path}/index.html`;
-      }
-    } catch {
-      /* ignore */
-    }
-    return '';
-  };
-
-  const testUrl = async (url, timeout = 2500) => {
-    if (!url) return false;
-    try {
-      const { controller, clearTimeout: clearCtrlTimeout } =
-        makeAbortController(timeout);
-      const res = await fetch(url, {
-        method: 'GET',
-        mode: 'cors',
-        signal: controller.signal,
-      });
-      clearCtrlTimeout();
-      return res?.ok;
-    } catch {
-      return false;
-    }
   };
 
   const openDirect = async (project) => {
