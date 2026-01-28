@@ -4,75 +4,16 @@ import htm from 'https://esm.sh/htm@3.1.1';
 import { createLogger } from '/content/core/logger.js';
 import { marked } from 'https://cdn.jsdelivr.net/npm/marked@11.1.1/lib/marked.esm.js';
 import DOMPurify from 'https://cdn.jsdelivr.net/npm/dompurify@3.0.8/dist/purify.es.mjs';
+import {
+  Clock,
+  ArrowRight,
+  ArrowUp,
+} from '/content/components/ui/icons.js';
 
 marked.setOptions({ mangle: false, headerIds: false });
 
 const log = createLogger('BlogApp');
 const html = htm.bind(React.createElement);
-
-// --- Icons ---
-const Icons = {
-  Clock: () =>
-    html`<svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <circle cx="12" cy="12" r="10"></circle>
-      <polyline points="12 6 12 12 16 14"></polyline>
-    </svg>`,
-  ArrowRight: () =>
-    html`<svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <line x1="5" y1="12" x2="19" y2="12"></line>
-      <polyline points="12 5 19 12 12 19"></polyline>
-    </svg>`,
-  Search: () =>
-    html`<svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <circle cx="11" cy="11" r="8"></circle>
-      <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-    </svg>`,
-  ArrowUp: () =>
-    html`<svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <line x1="12" y1="19" x2="12" y2="5"></line>
-      <polyline points="5 12 12 5 19 12"></polyline>
-    </svg>`,
-};
 
 // --- Utilities ---
 const estimateReadTime = (text = '') =>
@@ -235,7 +176,7 @@ function ScrollToTop() {
       onClick=${scrollToTop}
       aria-label="Nach oben scrollen"
     >
-      <${Icons.ArrowUp} />
+      <${ArrowUp} />
     </button>
   `;
 }
@@ -417,7 +358,7 @@ function BlogApp() {
             <header>
               <div className="card-meta">
                 <span className="card-category">${post.category}</span>
-                <span className="card-read-time"><${Icons.Clock}/> ${
+                <span className="card-read-time"><${Clock}/> ${
                   post.readTime
                 }</span>
               </div>
@@ -551,10 +492,10 @@ function BlogApp() {
 
               <div className="card-footer">
                 <span className="card-read-time"
-                  ><${Icons.Clock} /> ${post.readTime}</span
+                  ><${Clock} /> ${post.readTime}</span
                 >
                 <button className="btn-read">
-                  Weiterlesen <${Icons.ArrowRight} />
+                  Weiterlesen <${ArrowRight} />
                 </button>
               </div>
             </article>
