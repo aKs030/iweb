@@ -21,6 +21,13 @@ export function htmlRawPlugin() {
 
     configureServer(server) {
       server.middlewares.use((req, res, next) => {
+        // Skip if it's a ?raw import request - let Vite handle it
+        if (req.url.includes('?raw')) {
+          console.log(`[htmlRawPlugin] Skipping ?raw request: ${req.url}`);
+          next();
+          return;
+        }
+
         const url = req.url.split('?')[0];
 
         // Skip entry point HTML files - let Vite handle them
@@ -29,8 +36,10 @@ export function htmlRawPlugin() {
           return;
         }
 
-        // Serve other HTML files from pages/ and content/components/ as raw HTML
-        if (url.match(/\/(pages|content\/components)\/.*\.html$/)) {
+        // Serve other HTML files from pages/ as raw HTML
+        // content/components are now bundled via ?raw import, so let Vite handle them
+        if (url.match(/\/pages\/.*\.html$/)) {
+          console.log(`[htmlRawPlugin] Intercepting HTML: ${url}`);
           try {
             const filePath = resolve(process.cwd(), url.substring(1));
             const content = readFileSync(filePath, 'utf-8');

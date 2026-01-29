@@ -12,7 +12,7 @@ import { SectionManager } from './core/section-manager.js';
 import { LoaderManager } from './core/loader-manager.js';
 import { ThreeEarthManager } from './core/three-earth-manager.js';
 import { getElementById, onDOMReady } from './core/dom-utils.js';
-import './components/menu/menu.js';
+import './components/menu/SiteMenu.js';
 import './components/footer/SiteFooter.js';
 
 const log = createLogger('main');

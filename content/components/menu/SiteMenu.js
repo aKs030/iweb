@@ -12,14 +12,15 @@ import { MenuAccessibility } from './modules/MenuAccessibility.js';
 import { MenuPerformance } from './modules/MenuPerformance.js';
 import { MenuCache } from './modules/MenuCache.js';
 import { MenuConfig } from './modules/MenuConfig.js';
-import { upsertHeadLink } from '/content/core/dom-utils.js';
 import { createLogger } from '/content/core/logger.js';
+import menuStyles from './menu-css.js';
 
 const logger = createLogger('SiteMenu');
 
 export class SiteMenu extends HTMLElement {
   constructor() {
     super();
+    this.attachShadow({ mode: 'open' });
     this.config = { ...MenuConfig };
     this.state = new MenuState();
     // @ts-ignore
@@ -39,7 +40,9 @@ export class SiteMenu extends HTMLElement {
     this.performance.startMeasure('menu-init');
 
     try {
-      this.ensureStyles();
+      // Styles are now injected into Shadow DOM
+      this.injectStyles();
+      this.injectGlobalStyles();
 
       // Prevent double initialization
       if (this.dataset.initialized === 'true') {
@@ -48,15 +51,15 @@ export class SiteMenu extends HTMLElement {
       }
       this.dataset.initialized = 'true';
 
-      // Render menu
+      // Render menu into Shadow DOM
       // @ts-ignore
-      this.renderer.render(this);
+      this.renderer.render(this.shadowRoot);
 
-      // Initialize subsystems
+      // Initialize subsystems with Shadow DOM context
       // @ts-ignore
-      this.accessibility = new MenuAccessibility(this, this.state);
+      this.accessibility = new MenuAccessibility(this.shadowRoot, this.state);
       this.events = new MenuEvents(
-        this,
+        this.shadowRoot,
         this.state,
         this.renderer,
         this.config,
@@ -87,19 +90,28 @@ export class SiteMenu extends HTMLElement {
     this.initialized = false;
   }
 
-  ensureStyles() {
-    if (typeof document === 'undefined') return;
+  injectStyles() {
+    // eslint-disable-next-line no-undef
+    const sheet = new CSSStyleSheet();
+    sheet.replaceSync(menuStyles);
+    // @ts-ignore
+    this.shadowRoot.adoptedStyleSheets = [sheet];
+  }
 
-    const cssUrl = this.config.CSS_URL || '/content/components/menu/menu.css';
-    const existing = document.head.querySelector(`link[href="${cssUrl}"]`);
-    if (existing) return;
+  injectGlobalStyles() {
+    const styleId = 'site-menu-global';
+    if (document.getElementById(styleId)) return;
 
-    upsertHeadLink({
-      rel: 'stylesheet',
-      href: cssUrl,
-      attrs: { media: 'all' },
-      dataset: { injectedBy: 'site-menu' },
-    });
+    const css = `
+      main { margin-top: 88px; padding: 1rem; }
+      @media (width <= 900px) {
+        main { margin-top: 72px; }
+      }
+    `;
+    const style = document.createElement('style');
+    style.id = styleId;
+    style.textContent = css;
+    document.head.appendChild(style);
   }
 
   // Get current stats

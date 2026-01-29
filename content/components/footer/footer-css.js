@@ -1,17 +1,17 @@
-/**
+export default `/**
  * Modern Footer System v10.0 - Final
  * Minimalistisches Design konsistent mit Menüleiste
  * @author Abdulkerim Sesli
  */
 
 /* ===== CSS Variables ===== */
-:root {
+:host {
   --footer-transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   --footer-spring: cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
 /* ===== Base Footer ===== */
-.site-footer {
+:host {
   position: fixed;
   bottom: 12px;
   left: 50%;
@@ -39,6 +39,8 @@
   letter-spacing: -0.02em;
   animation: footerAppear 0.8s var(--footer-spring) forwards;
   opacity: 0;
+  display: block;
+  box-sizing: border-box;
 }
 
 @keyframes footerAppear {
@@ -888,21 +890,19 @@
 }
 
 /* ===== Expanded State ===== */
-.site-footer.expanded .footer-min {
+:host(.expanded) .footer-min {
   display: none;
 }
 
-.site-footer.expanded .footer-max {
+:host(.expanded) .footer-max {
   display: flex;
 }
 
-body.footer-expanded {
-  padding-bottom: calc(80vh + 24px);
-}
+/* Removed body.footer-expanded, handled via JS */
 
 /* ===== Responsive ===== */
 @media (width <= 900px) {
-  .site-footer {
+  :host {
     width: calc(100% - 16px);
     bottom: 8px;
     border-radius: 20px;
@@ -1332,13 +1332,13 @@ body.footer-expanded {
 }
 
 @media (prefers-contrast: more) {
-  .site-footer {
+  :host {
     border-width: 2px;
   }
 }
 
 @media print {
-  .site-footer {
+  :host {
     display: none;
   }
 }
@@ -1359,3 +1359,4 @@ body.footer-expanded {
 .year::after {
   content: attr(data-year);
 }
+`;

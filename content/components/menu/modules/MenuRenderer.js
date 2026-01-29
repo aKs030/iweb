@@ -3,7 +3,6 @@
  */
 
 import { MenuTemplate } from './MenuTemplate.js';
-import { getElementById } from '/content/core/dom-utils.js';
 
 export class MenuRenderer {
   constructor(state, config = {}) {
@@ -11,30 +10,38 @@ export class MenuRenderer {
     this.config = config;
     this.template = new MenuTemplate(config);
     this.rafId = null;
+    this.container = null;
   }
 
   render(container) {
-    container.innerHTML = this.template.getHTML();
+    this.container = container;
+    // container is ShadowRoot or Element
+    this.container.innerHTML = this.template.getHTML();
     this.updateYear();
     this.initializeIcons();
     this.setupTitleUpdates();
   }
 
   updateYear() {
-    const yearEl = getElementById('current-year');
+    const yearEl = this.container.querySelector('#current-year');
     if (yearEl) yearEl.textContent = new Date().getFullYear();
   }
 
   initializeIcons() {
     const delay = this.config.ICON_CHECK_DELAY || 100;
     setTimeout(() => {
-      const icons = document.querySelectorAll('.nav-icon use');
+      // Use querySelectorAll on container to find icons inside Shadow DOM
+      const icons = this.container.querySelectorAll('.nav-icon use');
       icons.forEach((use) => {
         const href = use.getAttribute('href');
         if (!href) return;
 
         const targetId = href.substring(1);
-        const target = document.getElementById(targetId);
+        // IDs are scoped to Shadow DOM
+        const target = this.container.getElementById
+          ? this.container.getElementById(targetId)
+          : this.container.querySelector('#' + targetId);
+
         const svg = use.closest('svg');
         const fallback = svg?.nextElementSibling;
 
@@ -53,8 +60,10 @@ export class MenuRenderer {
   }
 
   updateTitle(title, subtitle = '') {
-    const siteTitleEl = getElementById('site-title');
-    const siteSubtitleEl = getElementById('site-subtitle');
+    if (!this.container) return;
+
+    const siteTitleEl = this.container.querySelector('#site-title');
+    const siteSubtitleEl = this.container.querySelector('#site-subtitle');
 
     if (!siteTitleEl) return;
 
@@ -89,5 +98,6 @@ export class MenuRenderer {
     if (this.rafId) {
       cancelAnimationFrame(this.rafId);
     }
+    this.container = null;
   }
 }

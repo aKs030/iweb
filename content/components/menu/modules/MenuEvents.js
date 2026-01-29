@@ -18,7 +18,7 @@ function addListener(target, event, handler, options = {}) {
 
 export class MenuEvents {
   constructor(container, state, renderer, config = {}) {
-    this.container = container;
+    this.container = container; // ShadowRoot
     this.state = state;
     this.renderer = renderer;
     this.config = config;
@@ -116,9 +116,18 @@ export class MenuEvents {
 
   setupGlobalListeners() {
     const handleDocClick = (e) => {
-      const isInside = this.container.contains(e.target);
-      const isToggle = e.target.closest('.site-menu__toggle');
-      if (!isInside && !isToggle) this.closeMenu();
+      // With Shadow DOM, events from inside are retargeted to the host.
+      // So if e.target is the host, it was a click inside (or on the host).
+      const host = this.container.host;
+      const isInside = e.target === host || (host && host.contains(e.target));
+
+      // We also need to check if the click was on the toggle specifically,
+      // but since toggle click has stopPropagation? No, the original code didn't have stopPropagation in handleToggle.
+      // But handleDocClick checks !isInside.
+      // If we click toggle (inside shadow), e.target is host. isInside is true.
+      // So we don't close. The toggle listener handles the toggle logic.
+
+      if (!isInside) this.closeMenu();
     };
 
     const handleEscape = (e) => {
@@ -207,7 +216,7 @@ export class MenuEvents {
 
     if (
       document.querySelector('#hero') &&
-      document.querySelector('#site-footer')
+      document.querySelector('site-footer') // Updated selector
     ) {
       start();
     } else {
@@ -218,6 +227,7 @@ export class MenuEvents {
 
   extractSectionInfo(sectionId) {
     const fallbackTitles = this.config.FALLBACK_TITLES || {};
+    // Sections are in Light DOM, so use document.querySelector
     const section = document.querySelector(`#${sectionId}`);
     if (!section) {
       return fallbackTitles[sectionId] || { title: 'Startseite', subtitle: '' };
@@ -258,7 +268,8 @@ export class MenuEvents {
     const path = window.location.pathname.replace(/index\.html$/, '');
     const hash = window.location.hash;
 
-    document.querySelectorAll('.site-menu a[href]').forEach((a) => {
+    // Use container querySelectorAll for Shadow DOM links
+    this.container.querySelectorAll('.site-menu a[href]').forEach((a) => {
       const href = a.getAttribute('href');
       if (!href) return;
 

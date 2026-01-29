@@ -1,4 +1,4 @@
-/**
+export default `/**
  * Modern Menu System - Styles
  * 
  * Features:
@@ -123,8 +123,8 @@
   font-weight: 510;
 }
 
-/* ===== Header ===== */
-.site-header {
+/* ===== Host (Header) ===== */
+:host {
   position: fixed;
   top: 12px;
   left: 50%;
@@ -158,6 +158,7 @@
   );
   font-weight: 500;
   letter-spacing: -0.02em;
+  box-sizing: border-box;
 }
 
 @keyframes headerAppear {
@@ -514,10 +515,15 @@
 }
 
 /* ===== Page Layout ===== */
-main {
+/* Note: Main layout adjustment should be global, but for encapsulation we might want to push content? */
+/* However, this selector targets 'main' which is outside shadow dom. It won't work in Shadow DOM. */
+/* I will leave it commented out or remove it, as main margin should be handled by main css or host context. */
+/* But 'menu.css' had it. If I remove it, the content might hide behind the fixed header. */
+/* For now, I'll rely on global styles for the main top margin. */
+/* main {
   margin-top: 88px;
   padding: 1rem;
-}
+} */
 
 /* ===== Active Link States ===== */
 .site-menu__list li a.active,
@@ -530,7 +536,7 @@ main {
 
 /* ===== Mobile Responsive ===== */
 @media (width <= 900px) {
-  .site-header {
+  :host {
     display: flex;
     justify-content: flex-start;
     top: 8px;
@@ -560,9 +566,9 @@ main {
     transform: translateY(-50%);
   }
 
-  main {
+  /* main {
     margin-top: 72px;
-  }
+  } */
 
   /* Mobile Menu Card */
   .site-menu {
@@ -636,3 +642,4 @@ main {
     min-height: 20px;
   }
 }
+`;

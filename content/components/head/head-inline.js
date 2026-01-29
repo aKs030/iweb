@@ -163,20 +163,21 @@ dataLayer.push({
       // Ensure <site-menu> exists
       let siteMenu = document.querySelector('site-menu');
       if (!siteMenu) {
-        let headerEl = document.querySelector('header.site-header');
-        if (!headerEl) {
-          headerEl = document.createElement('header');
-          headerEl.className = 'site-header';
-          document.body.insertBefore(headerEl, document.body.firstChild);
-        }
+        // Remove old wrappers if present to ensure clean state
+        const oldHeader = document.querySelector('header.site-header');
+        if (oldHeader) oldHeader.remove();
 
-        // Remove old container if present
         const oldContainer = document.getElementById('menu-container');
         if (oldContainer) oldContainer.remove();
 
         siteMenu = document.createElement('site-menu');
         siteMenu.dataset.injectedBy = 'head-inline';
-        headerEl.appendChild(siteMenu);
+        // Insert as first child of body
+        if (document.body.firstChild) {
+          document.body.insertBefore(siteMenu, document.body.firstChild);
+        } else {
+          document.body.appendChild(siteMenu);
+        }
       }
 
       // Ensure <site-footer> exists
@@ -242,7 +243,7 @@ dataLayer.push({
 
     const SCRIPTS = [
       { src: '/content/main.js', module: true, preload: false },
-      { src: '/content/components/menu/menu.js', module: true },
+      { src: '/content/components/menu/SiteMenu.js', module: true },
     ];
 
     const deferNonCriticalAssets = () => {

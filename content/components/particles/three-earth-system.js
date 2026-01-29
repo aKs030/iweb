@@ -989,7 +989,7 @@ export {
   // _detectAndEnsureWebGL is internal now
 };
 // Re-export specific helpers if needed by tests, but ideally tests should use the class instance or mocks
-// eslint-disable-next-line no-unused-vars
+
 export const _createLoadingManager = (_T, c) => { if(singleton) return singleton._createLoadingManager(c); return null; };
 export const _detectAndEnsureWebGL = (c) => { if(singleton) return singleton._detectAndEnsureWebGL(c); return true; };
 
