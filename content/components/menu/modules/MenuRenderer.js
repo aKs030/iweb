@@ -1,3 +1,4 @@
+// @ts-check
 /**
  * Menu Renderer - Handles DOM rendering
  */
@@ -5,14 +6,24 @@
 import { MenuTemplate } from './MenuTemplate.js';
 import { getElementById } from '/content/core/dom-utils.js';
 
+/** @typedef {import('./MenuState.js').MenuState} MenuState */
+
 export class MenuRenderer {
+  /**
+   * @param {MenuState} state
+   * @param {Object} [config]
+   */
   constructor(state, config = {}) {
     this.state = state;
     this.config = config;
     this.template = new MenuTemplate(config);
+    /** @type {number|null} */
     this.rafId = null;
   }
 
+  /**
+   * @param {HTMLElement} container
+   */
   render(container) {
     container.innerHTML = this.template.getHTML();
     this.updateYear();
@@ -22,10 +33,11 @@ export class MenuRenderer {
 
   updateYear() {
     const yearEl = getElementById('current-year');
-    if (yearEl) yearEl.textContent = new Date().getFullYear();
+    if (yearEl) yearEl.textContent = String(new Date().getFullYear());
   }
 
   initializeIcons() {
+    // @ts-ignore - access config property
     const delay = this.config.ICON_CHECK_DELAY || 100;
     setTimeout(() => {
       const icons = document.querySelectorAll('.nav-icon use');
@@ -35,8 +47,8 @@ export class MenuRenderer {
 
         const targetId = href.substring(1);
         const target = document.getElementById(targetId);
-        const svg = use.closest('svg');
-        const fallback = svg?.nextElementSibling;
+        const svg = /** @type {HTMLElement} */ (use.closest('svg'));
+        const fallback = /** @type {HTMLElement} */ (svg?.nextElementSibling);
 
         if (!target && fallback?.classList.contains('icon-fallback')) {
           svg.style.display = 'none';
@@ -52,6 +64,10 @@ export class MenuRenderer {
     });
   }
 
+  /**
+   * @param {string} title
+   * @param {string} subtitle
+   */
   updateTitle(title, subtitle = '') {
     const siteTitleEl = getElementById('site-title');
     const siteSubtitleEl = getElementById('site-subtitle');
@@ -64,6 +80,7 @@ export class MenuRenderer {
     }
 
     this.rafId = requestAnimationFrame(() => {
+      // @ts-ignore - access config property
       const transitionDelay = this.config.TITLE_TRANSITION_DELAY || 200;
 
       siteTitleEl.style.transition = 'opacity 0.2s ease, transform 0.2s ease';

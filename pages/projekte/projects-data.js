@@ -72,7 +72,7 @@ function setCache(key, data) {
   try {
     localStorage.setItem(
       CACHE_PREFIX + key,
-      JSON.stringify({ data, timestamp: Date.now() })
+      JSON.stringify({ data, timestamp: Date.now() }),
     );
   } catch (e) {
     console.warn('Cache write failed:', e);
@@ -249,9 +249,7 @@ async function loadDynamicProjects(html, icons) {
       bgStyle: createGradient(theme.gradient),
       glowColor: theme.icon,
       icon: icon,
-      previewContent: html`
-        <div className="preview-container">${icon}</div>
-      `,
+      previewContent: html` <div className="preview-container">${icon}</div> `,
     };
   });
 

@@ -22,7 +22,6 @@ export class SiteMenu extends HTMLElement {
     super();
     this.config = { ...MenuConfig };
     this.state = new MenuState();
-    // @ts-ignore
     this.renderer = new MenuRenderer(this.state, this.config);
     this.performance = new MenuPerformance();
     this.cache = new MenuCache();
@@ -49,11 +48,9 @@ export class SiteMenu extends HTMLElement {
       this.dataset.initialized = 'true';
 
       // Render menu
-      // @ts-ignore
       this.renderer.render(this);
 
       // Initialize subsystems
-      // @ts-ignore
       this.accessibility = new MenuAccessibility(this, this.state);
       this.events = new MenuEvents(
         this,
@@ -62,7 +59,6 @@ export class SiteMenu extends HTMLElement {
         this.config,
       );
 
-      // @ts-ignore
       this.accessibility.init();
       this.events.init();
 
@@ -79,7 +75,6 @@ export class SiteMenu extends HTMLElement {
 
   disconnectedCallback() {
     this.events?.destroy();
-    // @ts-ignore
     this.accessibility?.destroy();
     this.performance?.destroy();
     this.cache?.clear();

@@ -6,10 +6,7 @@
  */
 
 import { GITHUB_CONFIG } from './github-config.js';
-import {
-  fetchGitHubContents,
-  fetchProjectMetadata,
-} from './project-utils.js';
+import { fetchGitHubContents, fetchProjectMetadata } from './project-utils.js';
 import { fileURLToPath } from 'url';
 
 async function updateAppsConfig() {
