@@ -4,7 +4,7 @@ export default [
   js.configs.recommended,
   {
     languageOptions: {
-      ecmaVersion: 2022,
+      ecmaVersion: 'latest',
       sourceType: 'module',
       globals: {
         window: 'readonly',
@@ -97,6 +97,7 @@ export default [
         exports: 'readonly',
         global: 'readonly',
         Buffer: 'readonly',
+        customElements: 'readonly',
       },
     },
     rules: {

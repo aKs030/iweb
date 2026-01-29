@@ -29,10 +29,11 @@ export function htmlRawPlugin() {
           return;
         }
 
-        // Serve other HTML files from pages/ and content/components/ as raw HTML
-        if (url.match(/\/(pages|content\/components)\/.*\.html$/)) {
+        // Serve other HTML files from pages/ and components/ as raw HTML
+        if (url.match(/\/(pages|components)\/.*\.html$/)) {
           try {
-            const filePath = resolve(process.cwd(), url.substring(1));
+            // Adjust path to src/ since files are now there
+            const filePath = resolve(process.cwd(), 'src', url.substring(1));
             const content = readFileSync(filePath, 'utf-8');
 
             res.setHeader('Content-Type', 'text/html; charset=utf-8');
@@ -63,7 +64,8 @@ export function redirectsPlugin() {
     configResolved() {
       // Parse _redirects file
       try {
-        const redirectsPath = resolve(process.cwd(), '_redirects');
+        // Look in public/ folder
+        const redirectsPath = resolve(process.cwd(), 'public', '_redirects');
         const content = readFileSync(redirectsPath, 'utf-8');
 
         redirectRules = content
@@ -94,8 +96,8 @@ export function redirectsPlugin() {
       server.middlewares.use((req, res, next) => {
         const url = req.url.split('?')[0]; // Remove query params
 
-        // Serve HTML files from pages/ and content/components/ as raw files
-        if (url.match(/\/(pages|content\/components)\/.*\.html$/)) {
+        // Serve HTML files from pages/ and components/ as raw files
+        if (url.match(/\/(pages|components)\/.*\.html$/)) {
           // Let Vite handle it as a static file
           next();
           return;

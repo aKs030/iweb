@@ -7,10 +7,10 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "format": "prettier --write \"**/*.{js,css,json,md,html}\" --ignore-path .prettierignore",
-    "format:check": "prettier --check \"**/*.{js,css,json,md,html}\" --ignore-path .prettierignore",
-    "lint": "eslint \"**/*.js\" --fix",
-    "lint:check": "eslint \"**/*.js\"",
+    "format": "prettier --write \"**/*.{js,jsx,css,json,md,html}\" --ignore-path .prettierignore",
+    "format:check": "prettier --check \"**/*.{js,jsx,css,json,md,html}\" --ignore-path .prettierignore",
+    "lint": "eslint \"**/*.{js,jsx}\" --fix",
+    "lint:check": "eslint \"**/*.{js,jsx}\"",
     "check": "npm run lint:check && npm run format:check",
     "fix": "npm run lint && npm run format",
     "analyze": "vite-bundle-visualizer",
@@ -58,6 +58,8 @@
   "homepage": "https://github.com/aKs030/iweb#readme",
   "dependencies": {
     "dompurify": "^3.3.1",
+    "htm": "^3.1.1",
+    "marked": "^17.0.1",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "three": "^0.182.0"

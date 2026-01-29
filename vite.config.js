@@ -4,22 +4,31 @@ import { redirectsPlugin, htmlRawPlugin } from './vite-plugin-redirects.js';
 
 export default defineConfig({
   plugins: [htmlRawPlugin(), redirectsPlugin()],
-  root: '.',
-  publicDir: 'content/assets',
+  root: 'src',
+  publicDir: '../public',
+
+  resolve: {
+    alias: {
+      '/content': '/src',
+      '@': resolve(__dirname, './src'),
+    },
+  },
 
   build: {
-    outDir: 'dist',
+    outDir: '../dist',
     emptyOutDir: true,
 
     // Optimized chunking strategy
     rollupOptions: {
       input: {
-        main: resolve(__dirname, 'index.html'),
-        about: resolve(__dirname, 'pages/about/index.html'),
-        blog: resolve(__dirname, 'pages/blog/index.html'),
-        gallery: resolve(__dirname, 'pages/gallery/index.html'),
-        projekte: resolve(__dirname, 'pages/projekte/index.html'),
-        videos: resolve(__dirname, 'pages/videos/index.html'),
+        main: resolve(__dirname, 'src/index.html'),
+        about: resolve(__dirname, 'src/pages/about/index.html'),
+        blog: resolve(__dirname, 'src/pages/blog/index.html'),
+        gallery: resolve(__dirname, 'src/pages/gallery/index.html'),
+        projekte: resolve(__dirname, 'src/pages/projekte/index.html'),
+        videos: resolve(__dirname, 'src/pages/videos/index.html'),
+        impressum: resolve(__dirname, 'src/components/footer/impressum.html'),
+        datenschutz: resolve(__dirname, 'src/components/footer/datenschutz.html'),
       },
 
       output: {
@@ -30,21 +39,21 @@ export default defineConfig({
 
           // Feature chunks
           'three-earth': [
-            './content/components/particles/three-earth-system.js',
-            './content/components/particles/earth/scene.js',
-            './content/components/particles/earth/assets.js',
-            './content/components/particles/earth/camera.js',
-            './content/components/particles/earth/stars.js',
-            './content/components/particles/earth/cards.js',
+            './src/components/particles/three-earth-system.js',
+            './src/components/particles/earth/scene.js',
+            './src/components/particles/earth/assets.js',
+            './src/components/particles/earth/camera.js',
+            './src/components/particles/earth/stars.js',
+            './src/components/particles/earth/cards.js',
           ],
 
           // Shared utilities
           utils: [
-            './content/core/dom-utils.js',
-            './content/core/intersection-observer.js',
-            './content/core/logger.js',
-            './content/core/fetch.js',
-            './content/core/events.js',
+            './src/core/dom-utils.js',
+            './src/core/intersection-observer.js',
+            './src/core/logger.js',
+            './src/core/fetch.js',
+            './src/core/events.js',
           ],
         },
 
