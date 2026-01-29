@@ -2,11 +2,12 @@
 /**
  * Modern Site Footer Web Component
  * Encapsulates footer logic, cookies, and analytics.
- * @version 1.0.0
+ * @version 2.0.0 - Shadow DOM
  */
 
 import { createLogger } from '/content/core/logger.js';
 import { a11y } from '/content/core/accessibility-manager.js';
+import { footerStyles, globalFooterStyles } from './footer-css.js';
 
 const log = createLogger('SiteFooter');
 
@@ -117,6 +118,10 @@ class Analytics {
 export class SiteFooter extends HTMLElement {
   constructor() {
     super();
+
+    // Attach Shadow DOM
+    this.attachShadow({ mode: 'open' });
+
     this.analytics = new Analytics();
     this.observer = null;
     this.expanded = false;
@@ -130,15 +135,21 @@ export class SiteFooter extends HTMLElement {
     const src = this.getAttribute('src') || CONFIG.FOOTER_PATH;
 
     try {
-      if (!this.innerHTML.trim()) {
-        const response = await fetch(src);
-        if (!response.ok) throw new Error('Footer load failed');
-        this.innerHTML = await response.text();
-      }
+      // Inject styles into shadow root
+      this.injectStyles();
+      this.injectGlobalStyles();
+
+      // Load HTML content
+      const response = await fetch(src);
+      if (!response.ok) throw new Error('Footer load failed');
+      const html = await response.text();
+
+      // Render into shadow root
+      this.shadowRoot.innerHTML += html;
 
       this.init();
       this.initialized = true;
-      log.info('Footer initialized');
+      log.info('Footer initialized with Shadow DOM');
       this.dispatchEvent(new CustomEvent('footer:loaded', { bubbles: true }));
     } catch (error) {
       log.error('Footer load failed', error);
@@ -147,6 +158,29 @@ export class SiteFooter extends HTMLElement {
 
   disconnectedCallback() {
     this.observer?.disconnect();
+  }
+
+  injectStyles() {
+    if (!this.shadowRoot) return;
+
+    const styleEl = document.createElement('style');
+    styleEl.textContent = footerStyles;
+    this.shadowRoot.appendChild(styleEl);
+  }
+
+  injectGlobalStyles() {
+    if (typeof document === 'undefined') return;
+
+    // Check if global footer styles already injected
+    const existingGlobalStyles = document.head.querySelector(
+      'style[data-footer-global]',
+    );
+    if (existingGlobalStyles) return;
+
+    const globalStyleEl = document.createElement('style');
+    globalStyleEl.setAttribute('data-footer-global', 'true');
+    globalStyleEl.textContent = globalFooterStyles;
+    document.head.appendChild(globalStyleEl);
   }
 
   init() {
@@ -158,15 +192,15 @@ export class SiteFooter extends HTMLElement {
 
   setupDate() {
     const year = new Date().getFullYear();
-    this.querySelectorAll('.year').forEach(
-      (el) => (el.textContent = String(year)),
-    );
+    this.shadowRoot
+      .querySelectorAll('.year')
+      .forEach((el) => (el.textContent = String(year)));
   }
 
   setupCookieBanner() {
-    const banner = this.querySelector('#cookie-banner');
-    const acceptBtn = this.querySelector('#accept-cookies');
-    const rejectBtn = this.querySelector('#reject-cookies');
+    const banner = this.shadowRoot.querySelector('#cookie-banner');
+    const acceptBtn = this.shadowRoot.querySelector('#accept-cookies');
+    const rejectBtn = this.shadowRoot.querySelector('#reject-cookies');
 
     if (!banner || !acceptBtn || !rejectBtn) return;
 
@@ -221,7 +255,7 @@ export class SiteFooter extends HTMLElement {
   }
 
   setupScrollHandler() {
-    const footer = this.querySelector('#site-footer');
+    const footer = this.shadowRoot.querySelector('#site-footer');
     if (!footer) return;
 
     // Use existing trigger or create one
@@ -260,9 +294,9 @@ export class SiteFooter extends HTMLElement {
    * @param {boolean} [forceState]
    */
   toggleFooter(forceState) {
-    const footer = this.querySelector('#site-footer');
-    const min = this.querySelector('.footer-min');
-    const max = this.querySelector('.footer-max');
+    const footer = this.shadowRoot.querySelector('#site-footer');
+    const min = this.shadowRoot.querySelector('.footer-min');
+    const max = this.shadowRoot.querySelector('.footer-max');
 
     if (!footer) return;
 
@@ -285,15 +319,15 @@ export class SiteFooter extends HTMLElement {
   }
 
   openSettings() {
-    const settings = this.querySelector('#cookie-settings');
-    const content = this.querySelector('#footer-content');
+    const settings = this.shadowRoot.querySelector('#cookie-settings');
+    const content = this.shadowRoot.querySelector('#footer-content');
 
     if (!settings) return;
 
     // Load current settings
     const consent = CookieManager.get('cookie_consent');
-    const analyticsToggle = this.querySelector('#analytics-toggle');
-    const adsToggle = this.querySelector('#ads-toggle');
+    const analyticsToggle = this.shadowRoot.querySelector('#analytics-toggle');
+    const adsToggle = this.shadowRoot.querySelector('#ads-toggle');
 
     if (analyticsToggle) {
       // @ts-ignore
@@ -310,8 +344,8 @@ export class SiteFooter extends HTMLElement {
   }
 
   closeSettings() {
-    const settings = this.querySelector('#cookie-settings');
-    const content = this.querySelector('#footer-content');
+    const settings = this.shadowRoot.querySelector('#cookie-settings');
+    const content = this.shadowRoot.querySelector('#footer-content');
 
     settings?.classList.add('hidden');
     content?.classList.remove('hidden');
@@ -332,11 +366,11 @@ export class SiteFooter extends HTMLElement {
     });
 
     // Settings close button
-    const closeBtn = this.querySelector('#close-settings');
+    const closeBtn = this.shadowRoot.querySelector('#close-settings');
     closeBtn?.addEventListener('click', () => this.closeSettings());
 
     // Footer minimize click
-    const footerMin = this.querySelector('.footer-min');
+    const footerMin = this.shadowRoot.querySelector('.footer-min');
     footerMin?.addEventListener('click', (e) => {
       // Ignore clicks on interactive elements
       // @ts-ignore
@@ -347,7 +381,7 @@ export class SiteFooter extends HTMLElement {
     });
 
     // Newsletter form
-    const form = this.querySelector('.newsletter-form');
+    const form = this.shadowRoot.querySelector('.newsletter-form');
     form?.addEventListener('submit', (e) => {
       e.preventDefault();
       const btn = form.querySelector('button');
@@ -370,22 +404,22 @@ export class SiteFooter extends HTMLElement {
   }
 
   bindSettingsButtons() {
-    const rejectAll = this.querySelector('#reject-all');
-    const acceptSelected = this.querySelector('#accept-selected');
-    const acceptAll = this.querySelector('#accept-all');
+    const rejectAll = this.shadowRoot.querySelector('#reject-all');
+    const acceptSelected = this.shadowRoot.querySelector('#accept-selected');
+    const acceptAll = this.shadowRoot.querySelector('#accept-all');
 
     rejectAll?.addEventListener('click', () => {
       CookieManager.set('cookie_consent', 'rejected');
       CookieManager.deleteAnalytics();
       this.analytics.updateConsent(false);
-      this.querySelector('#cookie-banner')?.classList.add('hidden');
+      this.shadowRoot.querySelector('#cookie-banner')?.classList.add('hidden');
       a11y?.announce('Nur notwendige Cookies', { priority: 'polite' });
       this.closeSettings();
     });
 
     acceptSelected?.addEventListener('click', () => {
       const analyticsEnabled = /** @type {HTMLInputElement} */ (
-        this.querySelector('#analytics-toggle')
+        this.shadowRoot.querySelector('#analytics-toggle')
       )?.checked;
       CookieManager.set(
         'cookie_consent',
@@ -400,7 +434,7 @@ export class SiteFooter extends HTMLElement {
         CookieManager.deleteAnalytics();
       }
 
-      this.querySelector('#cookie-banner')?.classList.add('hidden');
+      this.shadowRoot.querySelector('#cookie-banner')?.classList.add('hidden');
       a11y?.announce('Einstellungen gespeichert', { priority: 'polite' });
       this.closeSettings();
     });
@@ -409,7 +443,7 @@ export class SiteFooter extends HTMLElement {
       CookieManager.set('cookie_consent', 'accepted');
       this.analytics.updateConsent(true);
       this.analytics.load();
-      this.querySelector('#cookie-banner')?.classList.add('hidden');
+      this.shadowRoot.querySelector('#cookie-banner')?.classList.add('hidden');
       a11y?.announce('Alle Cookies akzeptiert', { priority: 'polite' });
       this.closeSettings();
     });
