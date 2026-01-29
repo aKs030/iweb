@@ -625,6 +625,7 @@ const PhotoGallery = () => {
             {
               value: sortBy,
               onChange: (e) => setSortBy(e.target.value),
+              'aria-label': 'Sortierung auswählen',
               className:
                 'px-4 py-2.5 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-500',
             },
@@ -654,6 +655,8 @@ const PhotoGallery = () => {
               'button',
               {
                 onClick: () => setGridSize(2),
+                'aria-label': '2-Spalten-Ansicht',
+                'aria-pressed': gridSize === 2,
                 className: `p-2 rounded-lg transition-all ${
                   gridSize === 2
                     ? 'bg-purple-500 text-white'
@@ -666,6 +669,8 @@ const PhotoGallery = () => {
               'button',
               {
                 onClick: () => setGridSize(3),
+                'aria-label': '3-Spalten-Ansicht',
+                'aria-pressed': gridSize === 3,
                 className: `p-2 rounded-lg transition-all ${
                   gridSize === 3
                     ? 'bg-purple-500 text-white'
@@ -760,6 +765,10 @@ const PhotoGallery = () => {
                 'button',
                 {
                   onClick: (e) => toggleFavorite(photo.id, e),
+                  'aria-label': favorites.includes(photo.id)
+                    ? 'Von Favoriten entfernen'
+                    : 'Zu Favoriten hinzufügen',
+                  'aria-pressed': favorites.includes(photo.id),
                   className:
                     'p-2 bg-white/20 backdrop-blur-md rounded-full hover:bg-white/30 transition-all',
                 },
@@ -873,6 +882,10 @@ const PhotoGallery = () => {
                     e.stopPropagation();
                     setShowInfo(!showInfo);
                   },
+                  'aria-label': showInfo
+                    ? 'Foto-Details ausblenden'
+                    : 'Foto-Details anzeigen',
+                  'aria-pressed': showInfo,
                   className: `p-3 rounded-xl transition-all backdrop-blur-md ${
                     showInfo ? 'bg-purple-500' : 'bg-white/10 hover:bg-white/20'
                   }`,
@@ -886,6 +899,10 @@ const PhotoGallery = () => {
                     e.stopPropagation();
                     setIsSlideshow(!isSlideshow);
                   },
+                  'aria-label': isSlideshow
+                    ? 'Diashow pausieren'
+                    : 'Diashow starten',
+                  'aria-pressed': isSlideshow,
                   className: `p-3 rounded-xl transition-all backdrop-blur-md ${
                     isSlideshow
                       ? 'bg-purple-500'
@@ -906,6 +923,7 @@ const PhotoGallery = () => {
                     setZoom(1);
                     setIsSlideshow(false);
                   },
+                  'aria-label': 'Lightbox schließen',
                   className:
                     'p-3 bg-white/10 hover:bg-white/20 rounded-xl transition-all backdrop-blur-md',
                 },
@@ -1032,6 +1050,7 @@ const PhotoGallery = () => {
               e.stopPropagation();
               navigateImage(-1);
             },
+            'aria-label': 'Vorheriges Bild',
             className:
               'absolute left-6 top-1/2 -translate-y-1/2 p-4 bg-white/10 hover:bg-white/20 rounded-full transition-all backdrop-blur-md z-10 group',
           },
@@ -1047,6 +1066,7 @@ const PhotoGallery = () => {
               e.stopPropagation();
               navigateImage(1);
             },
+            'aria-label': 'Nächstes Bild',
             className:
               'absolute right-6 top-1/2 -translate-y-1/2 p-4 bg-white/10 hover:bg-white/20 rounded-full transition-all backdrop-blur-md z-10 group',
           },
@@ -1068,6 +1088,7 @@ const PhotoGallery = () => {
                 e.stopPropagation();
                 handleZoom(-0.25);
               },
+              'aria-label': 'Herauszoomen',
               className: 'p-3 hover:bg-white/10 rounded-xl transition-all',
             },
             ZoomOut({ size: 20, className: 'text-white' }),
@@ -1087,6 +1108,7 @@ const PhotoGallery = () => {
                 e.stopPropagation();
                 handleZoom(0.25);
               },
+              'aria-label': 'Hineinzoomen',
               className: 'p-3 hover:bg-white/10 rounded-xl transition-all',
             },
             ZoomIn({ size: 20, className: 'text-white' }),
@@ -1099,6 +1121,10 @@ const PhotoGallery = () => {
                 e.stopPropagation();
                 toggleFavorite(selectedImage.id, e);
               },
+              'aria-label': favorites.includes(selectedImage.id)
+                ? 'Von Favoriten entfernen'
+                : 'Zu Favoriten hinzufügen',
+              'aria-pressed': favorites.includes(selectedImage.id),
               className: 'p-3 hover:bg-white/10 rounded-xl transition-all',
             },
             Heart({
@@ -1117,6 +1143,7 @@ const PhotoGallery = () => {
                 e.stopPropagation();
                 handleShare();
               },
+              'aria-label': 'Foto teilen',
               className: 'p-3 hover:bg-white/10 rounded-xl transition-all',
             },
             Share2({ size: 20, className: 'text-white' }),
@@ -1128,6 +1155,7 @@ const PhotoGallery = () => {
                 e.stopPropagation();
                 handleDownload();
               },
+              'aria-label': 'Foto herunterladen',
               className: 'p-3 hover:bg-white/10 rounded-xl transition-all',
             },
             Download({ size: 20, className: 'text-white' }),

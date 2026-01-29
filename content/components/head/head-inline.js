@@ -185,7 +185,7 @@ dataLayer.push({
         // Check for old container to upgrade
         const oldContainer = document.getElementById('footer-container');
         if (oldContainer) {
-            oldContainer.remove();
+          oldContainer.remove();
         }
 
         siteFooter = document.createElement('site-footer');
@@ -197,8 +197,9 @@ dataLayer.push({
       try {
         if (!globalThis.__siteFooterLoaded) {
           globalThis.__siteFooterLoaded = true;
-          import('/content/components/footer/SiteFooter.js')
-            .catch((err) => log?.warn?.('head-inline: import SiteFooter failed', err));
+          import('/content/components/footer/SiteFooter.js').catch((err) =>
+            log?.warn?.('head-inline: import SiteFooter failed', err),
+          );
         }
       } catch {
         /* ignore */
@@ -465,7 +466,7 @@ dataLayer.push({
 
     const css = `
   .hero{display:flex;align-items:center;justify-content:center;min-height:100dvh;padding:0 .5rem;box-sizing:border-box}
-  .hero-title{font:800 clamp(3rem,6vw,4.5rem)/1.03 var(--font-inter);margin:0;padding:8px 12px;max-width:30ch;color:var(--color-text-main,#fff);text-align:center;white-space:normal}
+  .hero__title{font:800 clamp(3rem,6vw,4.5rem)/1.03 var(--font-inter);margin:0;padding:8px 12px;max-width:30ch;color:var(--color-text-main,#fff);text-align:center;white-space:normal}
   `;
 
     const s = document.createElement('style');
