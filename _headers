@@ -89,10 +89,8 @@
   # Permissions policy - restrict sensitive features
   Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()
   
-  # Cross-Origin policies for better isolation
-  Cross-Origin-Embedder-Policy: require-corp
-  Cross-Origin-Opener-Policy: same-origin
-  Cross-Origin-Resource-Policy: same-origin
+  # Content Security Policy (already configured, maintained)
+  # Note: CSP is already defined above in the default section
   
   # Content Security Policy - ENFORCEMENT MODE (Phase 3) ✅
   # Strict CSP (unsafe-inline allowed for styles and scripts)
