@@ -160,18 +160,23 @@ dataLayer.push({
 (function ensureFooterAndTrigger() {
   try {
     const run = function () {
-      // Ensure <site-menu> exists - inject directly without wrapper
+      // Ensure <site-menu> exists
       let siteMenu = document.querySelector('site-menu');
       if (!siteMenu) {
+        let headerEl = document.querySelector('header.site-header');
+        if (!headerEl) {
+          headerEl = document.createElement('header');
+          headerEl.className = 'site-header';
+          document.body.insertBefore(headerEl, document.body.firstChild);
+        }
+
+        // Remove old container if present
+        const oldContainer = document.getElementById('menu-container');
+        if (oldContainer) oldContainer.remove();
+
         siteMenu = document.createElement('site-menu');
         siteMenu.dataset.injectedBy = 'head-inline';
-        document.body.insertBefore(siteMenu, document.body.firstChild);
-      }
-
-      // Remove old header wrapper if present
-      const oldHeader = document.querySelector('header.site-header');
-      if (oldHeader && !oldHeader.querySelector('site-menu')) {
-        oldHeader.remove();
+        headerEl.appendChild(siteMenu);
       }
 
       // Ensure <site-footer> exists

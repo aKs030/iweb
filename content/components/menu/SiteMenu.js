@@ -12,7 +12,7 @@ import { MenuAccessibility } from './modules/MenuAccessibility.js';
 import { MenuPerformance } from './modules/MenuPerformance.js';
 import { MenuCache } from './modules/MenuCache.js';
 import { MenuConfig } from './modules/MenuConfig.js';
-import { menuStyles, globalLayoutStyles } from './menu-css.js';
+import { upsertHeadLink } from '/content/core/dom-utils.js';
 import { createLogger } from '/content/core/logger.js';
 
 const logger = createLogger('SiteMenu');
@@ -20,10 +20,6 @@ const logger = createLogger('SiteMenu');
 export class SiteMenu extends HTMLElement {
   constructor() {
     super();
-
-    // Attach Shadow DOM
-    this.attachShadow({ mode: 'open' });
-
     this.config = { ...MenuConfig };
     this.state = new MenuState();
     // @ts-ignore
@@ -43,8 +39,7 @@ export class SiteMenu extends HTMLElement {
     this.performance.startMeasure('menu-init');
 
     try {
-      this.injectStyles();
-      this.injectGlobalLayoutStyles();
+      this.ensureStyles();
 
       // Prevent double initialization
       if (this.dataset.initialized === 'true') {
@@ -53,9 +48,9 @@ export class SiteMenu extends HTMLElement {
       }
       this.dataset.initialized = 'true';
 
-      // Render menu into shadow root
+      // Render menu
       // @ts-ignore
-      this.renderer.render(this.shadowRoot);
+      this.renderer.render(this);
 
       // Initialize subsystems
       // @ts-ignore
@@ -92,27 +87,19 @@ export class SiteMenu extends HTMLElement {
     this.initialized = false;
   }
 
-  injectStyles() {
-    if (!this.shadowRoot) return;
-
-    const styleEl = document.createElement('style');
-    styleEl.textContent = menuStyles;
-    this.shadowRoot.appendChild(styleEl);
-  }
-
-  injectGlobalLayoutStyles() {
+  ensureStyles() {
     if (typeof document === 'undefined') return;
 
-    // Check if global layout styles already injected
-    const existingGlobalStyles = document.head.querySelector(
-      'style[data-menu-global-layout]',
-    );
-    if (existingGlobalStyles) return;
+    const cssUrl = this.config.CSS_URL || '/content/components/menu/menu.css';
+    const existing = document.head.querySelector(`link[href="${cssUrl}"]`);
+    if (existing) return;
 
-    const globalStyleEl = document.createElement('style');
-    globalStyleEl.setAttribute('data-menu-global-layout', 'true');
-    globalStyleEl.textContent = globalLayoutStyles;
-    document.head.appendChild(globalStyleEl);
+    upsertHeadLink({
+      rel: 'stylesheet',
+      href: cssUrl,
+      attrs: { media: 'all' },
+      dataset: { injectedBy: 'site-menu' },
+    });
   }
 
   // Get current stats
