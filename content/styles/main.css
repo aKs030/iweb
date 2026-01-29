@@ -597,3 +597,144 @@ a:hover {
   visibility: hidden;
   position: relative;
 }
+
+/* ===== Mobile-Optimized Overrides (Consolidated from mobile-optimized.css) ===== */
+
+/* ===== Mobile: 768px and below ===== */
+@media (max-width: 768px) {
+  /* Search Component */
+  .search-modal {
+    top: 60px;
+    max-width: calc(100% - 20px);
+    max-height: calc(100vh - 80px);
+  }
+
+  .search-input {
+    height: 52px;
+    font-size: 18px;
+    padding: 0 45px;
+  }
+
+  .search-icon {
+    left: 14px;
+    font-size: 16px;
+  }
+
+  .search-close {
+    right: 12px;
+  }
+
+  .search-results {
+    max-height: calc(100vh - 180px);
+  }
+
+  .search-result-item {
+    padding: 7px 14px;
+  }
+
+  .search-result-icon-wrapper {
+    width: 28px;
+    height: 28px;
+    font-size: 16px;
+  }
+
+  .search-result-title {
+    font-size: 13px;
+  }
+
+  .search-result-description {
+    font-size: 11px;
+  }
+}
+
+/* ===== Mobile: 600px and below ===== */
+@media (max-width: 600px) {
+  /* About Page */
+  .about-page main.container {
+    padding-top: calc(48px + 20px);
+  }
+
+  h1 {
+    font-size: 2.5rem;
+  }
+
+  .card {
+    padding: 1.5rem;
+  }
+}
+
+/* ===== Mobile: 480px and below ===== */
+@media (max-width: 480px) {
+  /* Search Component */
+  .search-overlay {
+    padding: 10px;
+  }
+
+  .search-modal {
+    border-radius: 12px;
+    max-height: calc(100vh - 20px);
+  }
+
+  .search-category-header {
+    font-size: 10px;
+  }
+}
+
+/* ===== Shared Animations (Consolidated from animations.css) ===== */
+
+/* ===== Fade In Animation ===== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Variant: Subtle fade in */
+@keyframes fadeInSubtle {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===== Float Animation ===== */
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* Variant: Float with rotation */
+@keyframes floatRotate {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-20px) rotate(10deg);
+  }
+}
+
+/* ===== Pulse Animation ===== */
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
