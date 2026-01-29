@@ -22,7 +22,7 @@ const CATEGORY_OVERRIDES = {
   'visual-storytelling': 'Online-Marketing',
 };
 
-function normalizePost(raw = {}) {
+const normalizePost = (raw = {}) => {
   const id = raw.id || raw.slug;
   if (!id) return null;
   // Ensure we get the specific category, defaulting to 'Artikel' only if no match found
@@ -37,10 +37,10 @@ function normalizePost(raw = {}) {
     dateDisplay: raw.dateDisplay || dateStr,
     readTime: raw.readTime || estimateReadTime(raw.content || raw.html || ''),
   };
-}
+};
 
 // Fetch Logic
-async function loadPostsData(seedPosts = []) {
+const loadPostsData = async (seedPosts = []) => {
   try {
     const r = await fetch('/sitemap.xml');
     if (!r.ok) throw new Error('No sitemap');
@@ -78,9 +78,9 @@ async function loadPostsData(seedPosts = []) {
     log.warn('Fallback to seed data', e);
     return seedPosts;
   }
-}
+};
 
-function parseArticleHtml(htmlText, id) {
+const parseArticleHtml = (htmlText, id) => {
   const doc = new DOMParser().parseFromString(htmlText, 'text/html');
   const title = doc.querySelector('h1')?.textContent || id;
   const bodyEl =
@@ -106,7 +106,7 @@ function parseArticleHtml(htmlText, id) {
     html: bodyEl ? bodyEl.innerHTML : '',
     // Category will be resolved by normalizePost via CATEGORY_OVERRIDES
   });
-}
+};
 
 // --- Components ---
 
@@ -157,7 +157,7 @@ const ProgressiveImage = React.memo(function ProgressiveImage({
   `;
 });
 
-function ScrollToTop() {
+const ScrollToTop = () => {
   const [visible, setVisible] = React.useState(false);
   React.useEffect(() => {
     const toggle = () => setVisible(window.scrollY > 400);
@@ -175,9 +175,9 @@ function ScrollToTop() {
       <${ArrowUp} />
     </button>
   `;
-}
+};
 
-function ReadingProgress() {
+const ReadingProgress = () => {
   const [width, setWidth] = React.useState(0);
   React.useEffect(() => {
     const onScroll = () => {
@@ -190,9 +190,9 @@ function ReadingProgress() {
   return html`<div className="reading-progress-container">
     <div className="reading-progress-bar" style=${{ width: width + '%' }}></div>
   </div>`;
-}
+};
 
-function RelatedPosts({ currentPost, allPosts }) {
+const RelatedPosts = ({ currentPost, allPosts }) => {
   const related = React.useMemo(() => {
     if (!currentPost || !allPosts.length) return [];
     return allPosts
@@ -232,10 +232,10 @@ function RelatedPosts({ currentPost, allPosts }) {
       </div>
     </div>
   `;
-}
+};
 
 // Main App
-function BlogApp() {
+const BlogApp = () => {
   const [posts, setPosts] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
   const [filter, setFilter] = React.useState('All');
@@ -505,7 +505,7 @@ function BlogApp() {
       </div>
     </div>
   `;
-}
+};
 
 const rootEl = document.getElementById('root');
 if (rootEl) createRoot(rootEl).render(React.createElement(BlogApp));
