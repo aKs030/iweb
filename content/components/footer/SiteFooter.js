@@ -158,7 +158,9 @@ export class SiteFooter extends HTMLElement {
 
   setupDate() {
     const year = new Date().getFullYear();
-    this.querySelectorAll('.year').forEach((el) => (el.textContent = String(year)));
+    this.querySelectorAll('.year').forEach(
+      (el) => (el.textContent = String(year)),
+    );
   }
 
   setupCookieBanner() {
@@ -382,7 +384,9 @@ export class SiteFooter extends HTMLElement {
     });
 
     acceptSelected?.addEventListener('click', () => {
-      const analyticsEnabled = /** @type {HTMLInputElement} */ (this.querySelector('#analytics-toggle'))?.checked;
+      const analyticsEnabled = /** @type {HTMLInputElement} */ (
+        this.querySelector('#analytics-toggle')
+      )?.checked;
       CookieManager.set(
         'cookie_consent',
         analyticsEnabled ? 'accepted' : 'rejected',
