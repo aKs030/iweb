@@ -1,5 +1,5 @@
 /* ===== Hero Title =====*/
-.hero-title {
+.hero__title {
   position: relative;
   font-family: var(--font-inter);
   font-size: var(--greet-fs);
@@ -39,7 +39,7 @@
   will-change: text-shadow;
 }
 
-.hero-title:hover {
+.hero__title:hover {
   text-shadow:
     0 0 26px rgb(37 99 235 / 45%),
     0 0 52px rgb(37 99 235 / 32%);
@@ -50,18 +50,18 @@
 
 /* Respect user prefer-reduced-motion */
 @media (prefers-reduced-motion: reduce) {
-  .hero-title,
-  .floating-icons,
-  .floating-icon,
-  .spotlight-bg,
-  .hero-buttons {
+  .hero__title,
+  .hero__floating-icons,
+  .hero__floating-icon,
+  .hero__spotlight-bg,
+  .hero__buttons {
     animation: none !important;
     transition: none !important;
   }
 }
 
 @supports (text-wrap: balance) {
-  .hero-title {
+  .hero__title {
     text-wrap: balance;
   }
 }
@@ -124,12 +124,12 @@
   }
 }
 
-.hero-title.fade {
+.hero__title.fade {
   opacity: 0;
   transform: var(--transform-scale-fade);
 }
 
-.hero-title:not(.fade) {
+.hero__title:not(.fade) {
   opacity: 1;
   transform: var(--transform-scale-none);
 }
@@ -153,16 +153,16 @@
   padding-bottom: 0;
 }
 
-.hero-content {
+.hero__content {
   max-width: 800px;
   width: 100%;
 }
-.hero-visual {
+.hero__visual {
   position: relative;
   animation: fadeInUp 1s ease-out 0.3s both;
 }
 
-.floating-icons {
+.hero__floating-icons {
   position: absolute;
   width: 100%;
   height: 100%;
@@ -171,44 +171,44 @@
   pointer-events: none;
 }
 
-.floating-icon {
+.hero__floating-icon {
   position: absolute;
   font-size: 2rem;
   animation: float 6s ease-in-out infinite;
 }
 
-.floating-icon.delay-0 {
+.hero__floating-icon--delay-0 {
   animation-delay: var(--delay-0);
 }
-.floating-icon.delay-1 {
+.hero__floating-icon--delay-1 {
   animation-delay: var(--delay-1);
 }
-.floating-icon.delay-2 {
+.hero__floating-icon--delay-2 {
   animation-delay: var(--delay-2);
 }
-.floating-icon.delay-3 {
+.hero__floating-icon--delay-3 {
   animation-delay: var(--delay-3);
 }
 
-.floating-icon:nth-child(1) {
+.hero__floating-icon:nth-child(1) {
   top: 10%;
   right: -50px;
 }
-.floating-icon:nth-child(2) {
+.hero__floating-icon:nth-child(2) {
   top: 70%;
   right: -40px;
 }
-.floating-icon:nth-child(3) {
+.hero__floating-icon:nth-child(3) {
   bottom: 20%;
   left: -50px;
 }
-.floating-icon:nth-child(4) {
+.hero__floating-icon:nth-child(4) {
   top: 40%;
   left: -40px;
 }
 
 /* Using shared floatRotate animation from animations.css */
-.hero-image-container {
+.hero__image-container {
   position: relative;
   width: 60vw;
   max-width: 340px;
@@ -217,7 +217,7 @@
 }
 
 /* Fallback when WebGL is not available */
-.three-earth-container.three-earth-unavailable .hero-image-container {
+.three-earth-container.three-earth-unavailable .hero__image-container {
   display: block;
   width: 72vw;
   max-width: 720px;
@@ -255,11 +255,11 @@
   opacity: 1;
 }
 
-body:not(.hero-active) .floating-icon {
+body:not(.hero-active) .hero__floating-icon {
   animation-play-state: paused;
 }
 
-.spotlight-bg {
+.hero__spotlight-bg {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -280,7 +280,7 @@ body:not(.hero-active) .floating-icon {
   max-width: 100%; /* do not exceed the hero-image-container width */
 }
 
-.spotlight-bg::before {
+.hero__spotlight-bg::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -301,20 +301,20 @@ body:not(.hero-active) .floating-icon {
 
 /* Reduce glow intensity on small screens */
 @media (width <= 420px) {
-  .spotlight-bg::before {
+  .hero__spotlight-bg::before {
     filter: blur(32px) saturate(1.04) contrast(1.02);
     transform: rotate(-8deg) scale(1.12);
   }
 }
 
 @media (width <= 360px) {
-  .spotlight-bg::before {
+  .hero__spotlight-bg::before {
     filter: blur(22px) saturate(1.04) contrast(1.02);
     transform: rotate(-8deg) scale(1.08);
   }
 }
 
-.spotlight-bg > .hero-title {
+.hero__spotlight-bg > .hero__title {
   z-index: 2;
   position: relative;
   display: inline-block; /* avoid baseline/flow issues inside flex */
@@ -324,13 +324,13 @@ body:not(.hero-active) .floating-icon {
 }
 
 /* paused state for global hero-inactive mode */
-body:not(.hero-active) .hero-title {
+body:not(.hero-active) .hero__title {
   animation-play-state: paused;
 }
 
 /* ===== Mobile: smaller type, tighter padding =====*/
 @media (width <= 420px) {
-  .hero-image-container {
+  .hero__image-container {
     width: 72vw;
     max-width: 300px;
     overflow: visible;
@@ -338,7 +338,7 @@ body:not(.hero-active) .hero-title {
     box-sizing: border-box;
   }
 
-  .spotlight-bg {
+  .hero__spotlight-bg {
     position: relative;
     top: auto;
     left: auto;
@@ -350,7 +350,7 @@ body:not(.hero-active) .hero-title {
     margin-inline: auto;
   }
 
-  .hero-title {
+  .hero__title {
     font-size: clamp(1.05rem, 4.8vw, 1.6rem);
     min-inline-size: clamp(10ch, 26vw, 22ch);
     max-width: 100%;
@@ -363,7 +363,7 @@ body:not(.hero-active) .hero-title {
     hyphens: auto;
   }
 
-  .spotlight-bg::before {
+  .hero__spotlight-bg::before {
     filter: blur(32px) saturate(1.04) contrast(1.02);
     transform: rotate(-8deg) scale(1.12);
   }
@@ -371,19 +371,19 @@ body:not(.hero-active) .hero-title {
 
 /* ===== Extra-small mobile breakpoint =====*/
 @media (width <= 360px) {
-  .hero-image-container {
+  .hero__image-container {
     width: 84vw;
     max-width: 260px;
     padding-inline: clamp(6px, 2.8vw, 10px);
   }
 
-  .spotlight-bg {
+  .hero__spotlight-bg {
     padding-block: clamp(4px, 1.2vw, 8px);
     padding-inline: clamp(6px, 2.2vw, 12px);
     border-radius: var(--radius-full);
   }
 
-  .hero-title {
+  .hero__title {
     font-size: clamp(0.95rem, 4.2vw, 1.2rem);
     min-inline-size: clamp(8ch, 22vw, 18ch);
     padding: 4px 6px;
@@ -392,29 +392,29 @@ body:not(.hero-active) .hero-title {
     white-space: normal;
   }
 
-  .hero-buttons {
+  .hero__buttons {
     bottom: clamp(2.2rem, 12vh, 6rem);
     gap: var(--gap-xs);
   }
 
-  .floating-icon {
+  .hero__floating-icon {
     opacity: 0.85;
     font-size: 1.6rem;
   }
 
-  .floating-icon:nth-child(1),
-  .floating-icon:nth-child(3) {
+  .hero__floating-icon:nth-child(1),
+  .hero__floating-icon:nth-child(3) {
     display: none;
   }
 
-  .spotlight-bg::before {
+  .hero__spotlight-bg::before {
     filter: blur(22px) saturate(1.04) contrast(1.02);
     transform: rotate(-8deg) scale(1.08);
   }
 }
 
 /* ===== Hero Buttons =====*/
-.hero-buttons {
+.hero__buttons {
   position: absolute;
   bottom: clamp(4rem, 20vh, 13rem);
   left: 50%;
@@ -424,7 +424,7 @@ body:not(.hero-active) .hero-title {
   z-index: 80;
 }
 
-.hero-buttons .btn {
+.hero__buttons .btn {
   padding: 0.5rem 1rem;
   font-size: 0.875rem;
 }

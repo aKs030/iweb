@@ -10,6 +10,11 @@
   --footer-spring: cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
+/* ===== Address Element Reset ===== */
+address {
+  font-style: normal;
+}
+
 /* ===== Base Footer ===== */
 .site-footer {
   position: fixed;
@@ -392,7 +397,7 @@
   align-items: center;
 }
 
-.category-header h3 {
+.category-header h2 {
   font-size: 13px;
   font-weight: 600;
   margin: 0;
@@ -567,7 +572,7 @@
   box-shadow: 0 4px 12px rgba(0, 122, 255, 0.15);
 }
 
-.card h3 {
+.card h2 {
   font-size: 13px;
   font-weight: 600;
   margin: 0 0 10px;
@@ -1001,7 +1006,7 @@ body.footer-expanded {
     min-height: 100px;
   }
 
-  .card h3 {
+  .card h2 {
     font-size: 11px;
     margin: 0 0 6px;
   }
@@ -1154,7 +1159,7 @@ body.footer-expanded {
     min-height: 80px;
   }
 
-  .card h3 {
+  .card h2 {
     font-size: 10px;
     margin: 0 0 5px;
   }
@@ -1301,7 +1306,7 @@ body.footer-expanded {
     padding: 7px 9px;
   }
 
-  .category-header h3 {
+  .category-header h2 {
     font-size: 11px;
   }
 

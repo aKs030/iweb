@@ -232,7 +232,7 @@ export function initHeroFeatureBundle(sectionManager) {
   HeroManager.initLazyHeroModules();
 
   const handleHeroClick = (event) => {
-    const link = event.target.closest('.hero-buttons a[href^="#"]');
+    const link = event.target.closest('.hero__buttons a[href^="#"]');
     if (!link) return;
 
     const href = link.getAttribute('href') || '';
