@@ -3,11 +3,14 @@
  * @version 3.1.0
  */
 
+import { createLogger } from '/content/core/logger.js';
 import { GITHUB_CONFIG, PROJECT_CATEGORIES } from './github-config.js';
 import {
   fetchGitHubContents as fetchGitHubContentsApi,
   fetchProjectMetadata as fetchProjectMetadataApi,
 } from './project-utils.js';
+
+const log = createLogger('ProjectsData');
 
 // Load apps config dynamically
 let localAppsConfig = { apps: [] };
@@ -15,7 +18,7 @@ try {
   const response = await fetch('./apps-config.json');
   localAppsConfig = await response.json();
 } catch (error) {
-  console.warn('Failed to load apps-config.json:', error);
+  log.warn('Failed to load apps-config.json:', error);
 }
 
 // Common styles for consistency
@@ -83,7 +86,7 @@ const setCache = (key, data) => {
       JSON.stringify({ data, timestamp: Date.now() }),
     );
   } catch (e) {
-    console.warn('Cache write failed:', e);
+    log.warn('Cache write failed:', e);
   }
 };
 
@@ -101,17 +104,17 @@ const fetchGitHubContents = async (path = '') => {
   const cacheKey = `contents_${path}`;
   const cached = getCache(cacheKey);
   if (cached) {
-    console.log(`📦 Using cached GitHub contents for: ${path}`);
+    log.debug(`Using cached GitHub contents for: ${path}`);
     return cached;
   }
 
   try {
-    console.log(`🔍 Fetching GitHub contents from: ${path}`);
+    log.debug(`Fetching GitHub contents from: ${path}`);
     const data = await fetchGitHubContentsApi(path);
     setCache(cacheKey, data);
     return data;
   } catch (error) {
-    console.error(`❌ Failed to fetch GitHub contents:`, error);
+    log.error(`Failed to fetch GitHub contents:`, error);
     throw error;
   }
 };
@@ -123,7 +126,7 @@ const fetchProjectMetadata = async (projectPath) => {
   const cacheKey = `metadata_${projectPath}`;
   const cached = getCache(cacheKey);
   if (cached) {
-    console.log(`📦 Using cached metadata for: ${projectPath}`);
+    log.debug(`Using cached metadata for: ${projectPath}`);
     return cached;
   }
 
@@ -184,7 +187,7 @@ const getProjectIconAndTheme = (project, icons, html) => {
  * Loads projects from local config (bundled)
  */
 const loadLocalConfig = () => {
-  console.log(`📁 Loading local apps config (bundled)...`);
+  log.info(`Loading local apps config (bundled)...`);
   return localAppsConfig.apps || [];
 };
 
@@ -196,7 +199,7 @@ const loadDynamicProjects = async (html, icons) => {
   let source = 'github';
 
   try {
-    console.log(`🚀 Starting dynamic project loading...`);
+    log.info(`Starting dynamic project loading...`);
     const contents = await fetchGitHubContents(GITHUB_CONFIG.appsPath);
 
     if (!contents || contents.length === 0) {
@@ -205,8 +208,8 @@ const loadDynamicProjects = async (html, icons) => {
 
     const directories = contents.filter((item) => item.type === 'dir');
 
-    console.log(
-      `📁 Found ${directories.length} directories on GitHub:`,
+    log.info(
+      `Found ${directories.length} directories on GitHub:`,
       directories.map((d) => d.name),
     );
 
@@ -227,8 +230,8 @@ const loadDynamicProjects = async (html, icons) => {
       projectsList.push({ ...metadata, dirName: dir.name });
     }
   } catch (error) {
-    console.error(`❌ Failed to load dynamic projects from GitHub:`, error);
-    console.log(`⚠️ Falling back to local bundled config`);
+    log.error(`Failed to load dynamic projects from GitHub:`, error);
+    log.info(`Falling back to local bundled config`);
     source = 'local';
 
     const localApps = loadLocalConfig();
@@ -239,6 +242,7 @@ const loadDynamicProjects = async (html, icons) => {
   }
 
   // Process the projects list (from GitHub or Local) to create UI objects
+  const currentDate = new Date().toISOString().split('T')[0]; // ✅ Create once, reuse
   const finalProjects = projectsList.map((data, i) => {
     const { icon, theme } = getProjectIconAndTheme(data, icons, html);
     const dirName = data.dirName || data.name;
@@ -249,7 +253,7 @@ const loadDynamicProjects = async (html, icons) => {
       description: data.description,
       tags: data.tags,
       category: data.category,
-      datePublished: new Date().toISOString().split('T')[0],
+      datePublished: currentDate,
       image: DEFAULT_OG_IMAGE,
       appPath: `/projekte/apps/${dirName}/`,
       githubPath: `${GITHUB_CONFIG.repoBase}/${GITHUB_CONFIG.appsPath}/${dirName}`,
@@ -260,7 +264,7 @@ const loadDynamicProjects = async (html, icons) => {
     };
   });
 
-  console.log(`🎉 Loaded ${finalProjects.length} projects (Source: ${source})`);
+  log.info(`Loaded ${finalProjects.length} projects (Source: ${source})`);
   return finalProjects;
 };
 
@@ -268,6 +272,6 @@ const loadDynamicProjects = async (html, icons) => {
  * Creates the projects array with dynamic loading and static fallback
  */
 export async function createProjectsData(html, icons) {
-  console.log(`🎯 Starting createProjectsData...`);
+  log.info(`Starting createProjectsData...`);
   return await loadDynamicProjects(html, icons);
 }

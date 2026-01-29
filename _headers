@@ -1,38 +1,98 @@
-# iweb _headers — Cache & Security recommendations
-# - Adjust TTLs for non-fingerprinted bundles to avoid long-term staleness.
-# - For assets bundled with a content hash, prefer long-term immutable caching.
+# ============================================================================
+# Cloudflare Pages Headers Configuration
+# ============================================================================
+# Optimized caching strategy and security headers for performance and protection
+# Last updated: 2025-01-30
 
-# Static assets (images, icons, fonts) — safe to cache long-term if fingerprinted
+# ============================================================================
+# Static Assets - Long-term Immutable Caching
+# ============================================================================
+# Images, icons, fonts, and other static assets with content hashing
 /content/assets/*
   Cache-Control: public, max-age=31536000, immutable
   Vary: Accept-Encoding
+  Cross-Origin-Resource-Policy: cross-origin
+  Timing-Allow-Origin: *
 
-# Large runtime bundle. If you add a fingerprint to filenames, consider making this 1 year.
+# Favicon and manifest files
+/favicon.ico
+  Cache-Control: public, max-age=2592000
+  Content-Type: image/x-icon
+
+/manifest.json
+  Cache-Control: public, max-age=86400
+  Content-Type: application/manifest+json
+
+# ============================================================================
+# JavaScript Bundles
+# ============================================================================
+# Large runtime bundle (rl8i) - 1 week browser cache, 30 days stale-while-revalidate
 /rl8i/*
   Cache-Control: public, max-age=604800, stale-while-revalidate=2592000
   Vary: Accept-Encoding
+  Cross-Origin-Resource-Policy: same-origin
 
-# Main application script (not fingerprinted) — keep short browser TTL but allow edge caching
+# Main application script (not fingerprinted) - fresh browser, 1 hour edge cache
 /content/main.js
   Cache-Control: public, max-age=0, s-maxage=3600, stale-while-revalidate=86400
   Vary: Accept-Encoding
 
-# CSS that is used across the site (if not fingerprinted) — short browser TTL, edge short cache
+# Component scripts - short browser TTL, edge caching
+/content/components/*
+  Cache-Control: public, max-age=0, s-maxage=3600, stale-while-revalidate=86400
+  Vary: Accept-Encoding
+
+# ============================================================================
+# CSS Stylesheets
+# ============================================================================
 /content/styles/*
   Cache-Control: public, max-age=0, s-maxage=3600, stale-while-revalidate=86400
   Vary: Accept-Encoding
 
-# Default: HTML & dynamic content — fresh at the browser, short edge cache
+# ============================================================================
+# API Routes - No Caching
+# ============================================================================
+/api/*
+  Cache-Control: no-store, no-cache, must-revalidate
+  Vary: Accept-Encoding, Accept
+
+# ============================================================================
+# HTML Pages - Fresh Content with Edge Caching
+# ============================================================================
+/*.html
+  Cache-Control: public, max-age=0, s-maxage=300, stale-while-revalidate=3600
+  Vary: Accept-Encoding
+
+# ============================================================================
+# Default - Dynamic Content
+# ============================================================================
 /*
   Cache-Control: public, max-age=0, s-maxage=60, stale-while-revalidate=86400
   Vary: Accept-Encoding
 
-  # Security headers (applied globally)
+  # ============================================================================
+  # Security Headers (Applied Globally)
+  # ============================================================================
+  
+  # Prevent MIME type sniffing
   X-Content-Type-Options: nosniff
+  
+  # Referrer policy for privacy
   Referrer-Policy: strict-origin-when-cross-origin
+  
+  # HSTS - Force HTTPS for 1 year including subdomains
   Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+  
+  # Prevent clickjacking
   X-Frame-Options: DENY
-  Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=()
+  
+  # Permissions policy - restrict sensitive features
+  Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()
+  
+  # Cross-Origin policies for better isolation
+  Cross-Origin-Embedder-Policy: require-corp
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Resource-Policy: same-origin
   
   # Content Security Policy - ENFORCEMENT MODE (Phase 3) ✅
   # Strict CSP (unsafe-inline allowed for styles and scripts)

@@ -196,7 +196,7 @@ const renderVideoCard = (grid, it, detailsMap) => {
     : `${title} — Video von Abdulkerim Sesli`;
   const thumb =
     it.snippet?.thumbnails?.high?.url || it.snippet?.thumbnails?.default?.url;
-  const pub = it.snippet.publishedAt || new Date().toISOString();
+  const pub = it.snippet.publishedAt || new Date().toISOString(); // ✅ Fallback only when needed
 
   const videoDetail = detailsMap[vid];
   const duration = videoDetail?.contentDetails?.duration;

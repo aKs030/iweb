@@ -27,7 +27,7 @@ const ensureThreeEarthStyles = async () => {
   });
 };
 
-globalThis.addEventListener('DOMContentLoaded', async () => {
+const initPage = async () => {
   // 1. React App starten
   initProjectsApp();
 
@@ -134,4 +134,11 @@ globalThis.addEventListener('DOMContentLoaded', async () => {
   globalThis.addEventListener('scroll', userTrigger, { passive: true });
   globalThis.addEventListener('touchstart', userTrigger, { passive: true });
   globalThis.addEventListener('pointerdown', userTrigger, { passive: true });
-});
+};
+
+// Initialize immediately if DOM is ready, otherwise wait for DOMContentLoaded
+if (document.readyState === 'loading') {
+  globalThis.addEventListener('DOMContentLoaded', initPage, { once: true });
+} else {
+  initPage();
+}

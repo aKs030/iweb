@@ -16,6 +16,10 @@ function addListener(target, event, handler, options = {}) {
   }
 }
 
+import { createLogger } from '/content/core/logger.js';
+
+const log = createLogger('MenuEvents');
+
 export class MenuEvents {
   constructor(container, state, renderer, config = {}) {
     this.container = container;
