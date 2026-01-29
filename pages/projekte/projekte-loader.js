@@ -4,7 +4,7 @@ import { upsertHeadLink } from '/content/core/dom-utils.js';
 const log = createLogger('ProjektePage');
 
 // Load styles for Three Earth (Progressive Enhancement)
-async function ensureThreeEarthStyles() {
+const ensureThreeEarthStyles = async () => {
   const href = '/content/components/particles/three-earth.css';
   if (document.querySelector(`link[href="${href}"]`)) return;
   return new Promise((resolve, reject) => {
@@ -25,7 +25,7 @@ async function ensureThreeEarthStyles() {
     // add a fallback to reject in case of persistent failure
     setTimeout(() => reject(new Error('stylesheet load timeout')), 5000);
   });
-}
+};
 
 globalThis.addEventListener('DOMContentLoaded', async () => {
   // 1. React App starten

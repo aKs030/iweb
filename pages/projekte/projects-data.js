@@ -60,7 +60,7 @@ const CACHE_DURATION = 60 * 60 * 1000; // 1 hour
 /**
  * Cache Helpers
  */
-function getCache(key) {
+const getCache = (key) => {
   try {
     const item = localStorage.getItem(CACHE_PREFIX + key);
     if (!item) return null;
@@ -74,9 +74,9 @@ function getCache(key) {
   } catch (e) {
     return null;
   }
-}
+};
 
-function setCache(key, data) {
+const setCache = (key, data) => {
   try {
     localStorage.setItem(
       CACHE_PREFIX + key,
@@ -85,7 +85,7 @@ function setCache(key, data) {
   } catch (e) {
     console.warn('Cache write failed:', e);
   }
-}
+};
 
 /**
  * Helper function to create gradient backgrounds
@@ -97,7 +97,7 @@ const createGradient = (colors) => ({
 /**
  * Fetches repository contents from GitHub API (with Caching)
  */
-async function fetchGitHubContents(path = '') {
+const fetchGitHubContents = async (path = '') => {
   const cacheKey = `contents_${path}`;
   const cached = getCache(cacheKey);
   if (cached) {
@@ -114,12 +114,12 @@ async function fetchGitHubContents(path = '') {
     console.error(`❌ Failed to fetch GitHub contents:`, error);
     throw error;
   }
-}
+};
 
 /**
  * Fetches project metadata from package.json or README (with Caching)
  */
-async function fetchProjectMetadata(projectPath) {
+const fetchProjectMetadata = async (projectPath) => {
   const cacheKey = `metadata_${projectPath}`;
   const cached = getCache(cacheKey);
   if (cached) {
@@ -138,12 +138,12 @@ async function fetchProjectMetadata(projectPath) {
   }
 
   return metadata;
-}
+};
 
 /**
  * Maps project to appropriate icon and theme
  */
-function getProjectIconAndTheme(project, icons, html) {
+const getProjectIconAndTheme = (project, icons, html) => {
   const title = (project.title || '').toLowerCase();
   const tags = (project.tags || []).map((tag) => tag.toLowerCase());
   const category = (project.category || '').toLowerCase();
@@ -178,20 +178,20 @@ function getProjectIconAndTheme(project, icons, html) {
     />`,
     theme: theme,
   };
-}
+};
 
 /**
  * Loads projects from local config (bundled)
  */
-function loadLocalConfig() {
+const loadLocalConfig = () => {
   console.log(`📁 Loading local apps config (bundled)...`);
   return localAppsConfig.apps || [];
-}
+};
 
 /**
  * Loads projects dynamically from GitHub repository
  */
-async function loadDynamicProjects(html, icons) {
+const loadDynamicProjects = async (html, icons) => {
   let projectsList = [];
   let source = 'github';
 
@@ -210,8 +210,7 @@ async function loadDynamicProjects(html, icons) {
       directories.map((d) => d.name),
     );
 
-    for (let i = 0; i < directories.length; i++) {
-      const dir = directories[i];
+    for (const [i, dir] of directories.entries()) {
       const projectPath = `${GITHUB_CONFIG.appsPath}/${dir.name}`;
 
       if (i > 0 && source === 'github') {
@@ -263,7 +262,7 @@ async function loadDynamicProjects(html, icons) {
 
   console.log(`🎉 Loaded ${finalProjects.length} projects (Source: ${source})`);
   return finalProjects;
-}
+};
 
 /**
  * Creates the projects array with dynamic loading and static fallback

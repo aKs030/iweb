@@ -34,7 +34,7 @@ import {
 const html = htm.bind(React.createElement);
 
 // --- APP ---
-function App() {
+const App = () => {
   const [projects, setProjects] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState(null);
@@ -450,10 +450,10 @@ function App() {
       </section>
     <//>
   `;
-}
+};
 
 // Init Function to be called from HTML
-export function initProjectsApp() {
+export const initProjectsApp = () => {
   const rootEl = document.getElementById('root');
   if (rootEl) {
     const root = createRoot(rootEl);
@@ -463,4 +463,4 @@ export function initProjectsApp() {
       log.error('Root element missing');
     }
   }
-}
+};

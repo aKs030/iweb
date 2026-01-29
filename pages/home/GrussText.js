@@ -1,6 +1,6 @@
-function randomInt(min, max) {
+const randomInt = (min, max) => {
   return Math.floor(Math.random() * (max - min + 1)) + min;
-}
+};
 
 const GREETINGS = {
   morning: [
@@ -29,15 +29,15 @@ const GREETINGS = {
   ],
 };
 
-export function getGreetingSet(date = new Date()) {
+export const getGreetingSet = (date = new Date()) => {
   const hour = date.getHours();
   if (hour >= 5 && hour < 11) return GREETINGS.morning;
   if (hour >= 11 && hour < 17) return GREETINGS.day;
   if (hour >= 17 && hour < 22) return GREETINGS.evening;
   return GREETINGS.night;
-}
+};
 
-export function pickGreeting(lastValue = null, set = null) {
+export const pickGreeting = (lastValue = null, set = null) => {
   const greetingSet = set ?? getGreetingSet();
   if (!Array.isArray(greetingSet) || greetingSet.length === 0) return '';
   if (greetingSet.length === 1) return greetingSet[0];
@@ -53,4 +53,4 @@ export function pickGreeting(lastValue = null, set = null) {
   }
 
   return candidate;
-}
+};

@@ -7,7 +7,7 @@ import { FAVICON_512 } from '../../content/config/site-config.js';
 const log = createLogger('videos');
 
 // Helper: replace a thumbnail button with an autoplaying iframe
-function activateThumb(btn) {
+const activateThumb = (btn) => {
   if (!btn || btn.dataset.loaded) return;
   const vid = btn.dataset.videoId;
   const title = btn.getAttribute('aria-label') || '';
@@ -32,9 +32,9 @@ function activateThumb(btn) {
     /* ignore */
   }
   btn.dataset.loaded = '1';
-}
+};
 
-function bindThumb(btn) {
+const bindThumb = (btn) => {
   if (btn.dataset.bound) return;
   if (btn.dataset.thumb)
     btn.style.backgroundImage = `url('${btn.dataset.thumb}')`;
@@ -59,9 +59,9 @@ function bindThumb(btn) {
   // store handlers for potential cleanup
   btn.__thumbHandlers = { click: _onThumbClick, keydown: _onThumbKeydown };
   btn.dataset.bound = '1';
-}
+};
 
-async function fetchChannelId(handle) {
+const fetchChannelId = async (handle) => {
   // Prefer explicit channel id when set
   if (globalThis.YOUTUBE_CHANNEL_ID)
     return String(globalThis.YOUTUBE_CHANNEL_ID).trim();
@@ -104,15 +104,15 @@ async function fetchChannelId(handle) {
   }
 
   return ids[0];
-}
+};
 
-async function fetchUploadsPlaylist(channelId) {
+const fetchUploadsPlaylist = async (channelId) => {
   const url = `/api/youtube/channels?part=contentDetails&id=${channelId}`;
   const json = await fetchJSON(url);
   return json?.items?.[0]?.contentDetails?.relatedPlaylists?.uploads;
-}
+};
 
-async function fetchPlaylistItems(uploads, maxResults = 50) {
+const fetchPlaylistItems = async (uploads, maxResults = 50) => {
   const allItems = [];
   let pageToken = '';
   do {
@@ -136,10 +136,10 @@ async function fetchPlaylistItems(uploads, maxResults = 50) {
     }
   } while (pageToken);
   return allItems;
-}
+};
 
 // Fallback: search for recent videos from a channel when playlist is missing/empty
-async function searchChannelVideos(channelId, maxResults = 50) {
+const searchChannelVideos = async (channelId, maxResults = 50) => {
   const items = [];
   let pageToken = '';
   do {
@@ -168,9 +168,9 @@ async function searchChannelVideos(channelId, maxResults = 50) {
     }
   } while (pageToken);
   return items;
-}
+};
 
-async function fetchVideoDetailsMap(vidIds) {
+const fetchVideoDetailsMap = async (vidIds) => {
   const map = {};
   if (!vidIds.length) return map;
   const url = `/api/youtube/videos?part=contentDetails,statistics&id=${vidIds.join(
@@ -185,9 +185,9 @@ async function fetchVideoDetailsMap(vidIds) {
     log.warn('Could not fetch video details: ' + e.message);
   }
   return map;
-}
+};
 
-function renderVideoCard(grid, it, detailsMap) {
+const renderVideoCard = (grid, it, detailsMap) => {
   const vid = it.snippet.resourceId.videoId;
   const rawTitle = it.snippet.title;
   const title = cleanTitle(rawTitle);
@@ -321,7 +321,7 @@ function renderVideoCard(grid, it, detailsMap) {
   article.appendChild(ld);
 
   bindThumb(thumbBtn);
-}
+};
 
 // Videos page loader
 const setVideoStatus = (msg) => {
@@ -329,7 +329,7 @@ const setVideoStatus = (msg) => {
   if (el) el.textContent = msg || '';
 };
 
-async function loadLatestVideos() {
+const loadLatestVideos = async () => {
   const handle = (globalThis.YOUTUBE_CHANNEL_HANDLE || 'aks.030').replace(
     /^@/,
     '',
@@ -376,19 +376,19 @@ async function loadLatestVideos() {
     log.error('Fehler beim Laden der Videos', err);
     showErrorMessage(err);
   }
-}
+};
 
 // Helper: clean titles for display (remove trailing channel suffixes like "- Abdulkerim Sesli" or "— Abdulkerim Berlin")
-function cleanTitle(s) {
+const cleanTitle = (s) => {
   if (!s) return s;
   // Remove trailing separator and channel name starting with Abdulkerim
   return String(s)
     .replace(/\s*([-–—|])\s*(Abdulkerim[\s\S]*)$/i, '')
     .trim();
-}
+};
 
 // Helper: show friendly error message in page
-function showErrorMessage(err) {
+const showErrorMessage = (err) => {
   try {
     const container =
       document.querySelector('.videos-main .container') || document.body;
@@ -424,10 +424,10 @@ function showErrorMessage(err) {
   } catch {
     // ignore UI errors
   }
-}
+};
 
 // Helper: show non-error informational message in page
-function showInfoMessage(msg) {
+const showInfoMessage = (msg) => {
   try {
     const container =
       document.querySelector('.videos-main .container') || document.body;
@@ -439,10 +439,10 @@ function showInfoMessage(msg) {
   } catch {
     // ignore UI errors
   }
-}
+};
 
 // Extracted API loader (top-level to reduce nested complexity)
-async function loadFromApi(handle) {
+const loadFromApi = async (handle) => {
   const channelId = await fetchChannelId(handle);
   if (!channelId) return { items: [], detailsMap: {} };
 
@@ -485,7 +485,7 @@ async function loadFromApi(handle) {
     .filter(Boolean);
   const detailsMap = await fetchVideoDetailsMap(vidIds);
   return { items, detailsMap };
-}
+};
 
 // Run (without await at top level)
 loadLatestVideos().catch((error) => {
