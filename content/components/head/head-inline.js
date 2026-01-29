@@ -224,7 +224,6 @@ dataLayer.push({
         '/content/styles/root.css',
         '/content/styles/main.css',
         '/content/styles/animations.css',
-        '/content/styles/mobile-optimized.css',
       ];
       if (p === '/') {
         return base.concat([
