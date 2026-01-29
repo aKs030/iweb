@@ -185,7 +185,7 @@ dataLayer.push({
         // Check for old container to upgrade
         const oldContainer = document.getElementById('footer-container');
         if (oldContainer) {
-            oldContainer.remove();
+          oldContainer.remove();
         }
 
         siteFooter = document.createElement('site-footer');
@@ -197,8 +197,9 @@ dataLayer.push({
       try {
         if (!globalThis.__siteFooterLoaded) {
           globalThis.__siteFooterLoaded = true;
-          import('/content/components/footer/SiteFooter.js')
-            .catch((err) => log?.warn?.('head-inline: import SiteFooter failed', err));
+          import('/content/components/footer/SiteFooter.js').catch((err) =>
+            log?.warn?.('head-inline: import SiteFooter failed', err),
+          );
         }
       } catch {
         /* ignore */

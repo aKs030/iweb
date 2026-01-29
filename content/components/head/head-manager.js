@@ -72,7 +72,7 @@ function getPageData() {
   return pageData;
 }
 
-function updateBasicMeta(pageData, pageUrl) {
+async function updateBasicMeta(pageData, pageUrl) {
   if (pageData.title?.trim()) {
     document.title = pageData.title;
   }
@@ -103,27 +103,27 @@ function updateBasicMeta(pageData, pageUrl) {
   if (pageData.image) {
     upsertMeta('og:image', pageData.image, true);
 
-    fetch('/content/assets/img/og/og-images-meta.json')
-      .then((r) => (r.ok ? r.json() : null))
-      .then((map) => {
-        if (!map) {
-          upsertMeta('og:image:width', '1200', true);
-          upsertMeta('og:image:height', '630', true);
-          return;
-        }
-        const dims = map[pageData.image] || null;
-        if (dims) {
-          upsertMeta('og:image:width', String(dims.width), true);
-          upsertMeta('og:image:height', String(dims.height), true);
-        } else {
-          upsertMeta('og:image:width', '1200', true);
-          upsertMeta('og:image:height', '630', true);
-        }
-      })
-      .catch(() => {
+    try {
+      const r = await fetch('/content/assets/img/og/og-images-meta.json');
+      const map = r.ok ? await r.json() : null;
+
+      if (!map) {
         upsertMeta('og:image:width', '1200', true);
         upsertMeta('og:image:height', '630', true);
-      });
+        return;
+      }
+      const dims = map[pageData.image] || null;
+      if (dims) {
+        upsertMeta('og:image:width', String(dims.width), true);
+        upsertMeta('og:image:height', String(dims.height), true);
+      } else {
+        upsertMeta('og:image:width', '1200', true);
+        upsertMeta('og:image:height', '630', true);
+      }
+    } catch {
+      upsertMeta('og:image:width', '1200', true);
+      upsertMeta('og:image:height', '630', true);
+    }
   }
 }
 

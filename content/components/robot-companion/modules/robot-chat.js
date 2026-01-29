@@ -50,15 +50,14 @@ export class RobotChat {
     }
   }
 
-  handleAvatarClick() {
+  async handleAvatarClick() {
     if (this.isOpen) {
       this.toggleChat(false);
       return;
     }
 
-    this.robot.animationModule.playPokeAnimation().then(() => {
-      this.toggleChat(true);
-    });
+    await this.robot.animationModule.playPokeAnimation();
+    this.toggleChat(true);
   }
 
   async handleUserMessage() {

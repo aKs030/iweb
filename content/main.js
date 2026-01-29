@@ -249,7 +249,7 @@ const EventHandlers = {
     }
   },
 
-  handleShare(event) {
+  async handleShare(event) {
     const share = event.target?.closest('.btn-share');
     if (!share) return;
 
@@ -263,15 +263,18 @@ const EventHandlers = {
     };
 
     if (navigator.share) {
-      navigator.share(shareData).catch((err) => log.warn('share failed', err));
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        log.warn('share failed', err);
+      }
     } else if (navigator.clipboard) {
-      navigator.clipboard.writeText(shareUrl).then(() => {
-        try {
-          announce('Link kopiert', { dedupe: true });
-        } catch (err) {
-          log.warn('announce failed', err);
-        }
-      });
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        announce('Link kopiert', { dedupe: true });
+      } catch (err) {
+        log.warn('clipboard/announce failed', err);
+      }
     } else {
       try {
         globalThis.prompt('Link kopieren', shareUrl);
