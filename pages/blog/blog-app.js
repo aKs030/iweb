@@ -4,11 +4,7 @@ import htm from 'https://esm.sh/htm@3.1.1';
 import { createLogger } from '/content/core/logger.js';
 import { marked } from 'https://cdn.jsdelivr.net/npm/marked@11.1.1/lib/marked.esm.js';
 import DOMPurify from 'https://cdn.jsdelivr.net/npm/dompurify@3.0.8/dist/purify.es.mjs';
-import {
-  Clock,
-  ArrowRight,
-  ArrowUp,
-} from '/content/components/ui/icons.js';
+import { Clock, ArrowRight, ArrowUp } from '/content/components/ui/icons.js';
 
 marked.setOptions({ mangle: false, headerIds: false });
 

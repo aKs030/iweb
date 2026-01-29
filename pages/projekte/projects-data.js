@@ -4,7 +4,7 @@
  */
 
 import { GITHUB_CONFIG, PROJECT_CATEGORIES } from './github-config.js';
-import localAppsConfig from './apps-config.json' with { type: 'json' };
+import localAppsConfig from './apps-config.json';
 import {
   fetchGitHubContents as fetchGitHubContentsApi,
   fetchProjectMetadata as fetchProjectMetadataApi,
@@ -63,7 +63,7 @@ function getCache(key) {
       return null;
     }
     return data;
-  } catch (e) {
+  } catch {
     return null;
   }
 }
@@ -72,7 +72,7 @@ function setCache(key, data) {
   try {
     localStorage.setItem(
       CACHE_PREFIX + key,
-      JSON.stringify({ data, timestamp: Date.now() })
+      JSON.stringify({ data, timestamp: Date.now() }),
     );
   } catch (e) {
     console.warn('Cache write failed:', e);
@@ -202,8 +202,7 @@ async function loadDynamicProjects(html, icons) {
       directories.map((d) => d.name),
     );
 
-    for (let i = 0; i < directories.length; i++) {
-      const dir = directories[i];
+    for (const [i, dir] of directories.entries()) {
       const projectPath = `${GITHUB_CONFIG.appsPath}/${dir.name}`;
 
       if (i > 0 && source === 'github') {
@@ -249,9 +248,7 @@ async function loadDynamicProjects(html, icons) {
       bgStyle: createGradient(theme.gradient),
       glowColor: theme.icon,
       icon: icon,
-      previewContent: html`
-        <div className="preview-container">${icon}</div>
-      `,
+      previewContent: html` <div className="preview-container">${icon}</div> `,
     };
   });
 
