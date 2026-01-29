@@ -160,69 +160,45 @@ dataLayer.push({
 (function ensureFooterAndTrigger() {
   try {
     const run = function () {
-      let menuContainer = document.getElementById('menu-container');
-      if (!menuContainer) {
+      // Ensure <site-menu> exists
+      let siteMenu = document.querySelector('site-menu');
+      if (!siteMenu) {
         let headerEl = document.querySelector('header.site-header');
         if (!headerEl) {
           headerEl = document.createElement('header');
           headerEl.className = 'site-header';
           document.body.insertBefore(headerEl, document.body.firstChild);
         }
-        menuContainer = document.createElement('div');
-        menuContainer.id = 'menu-container';
-        menuContainer.dataset.injectedBy = 'head-inline';
-        headerEl.appendChild(menuContainer);
+
+        // Remove old container if present
+        const oldContainer = document.getElementById('menu-container');
+        if (oldContainer) oldContainer.remove();
+
+        siteMenu = document.createElement('site-menu');
+        siteMenu.dataset.injectedBy = 'head-inline';
+        headerEl.appendChild(siteMenu);
       }
 
-      if (
-        document.getElementById('footer-trigger-zone') &&
-        document.getElementById('footer-container')
-      )
-        return;
-
-      let footerContainer = document.getElementById('footer-container');
-      if (!footerContainer) {
-        footerContainer = document.createElement('div');
-        footerContainer.id = 'footer-container';
-        footerContainer.dataset.footerSrc = '/content/components/footer/footer';
-        footerContainer.setAttribute('aria-hidden', 'false');
-        document.body.appendChild(footerContainer);
-      }
-
-      if (!document.getElementById('footer-trigger-zone')) {
-        const trigger = document.createElement('div');
-        trigger.id = 'footer-trigger-zone';
-        trigger.className = 'footer-trigger-zone';
-        trigger.setAttribute('aria-hidden', 'true');
-        trigger.setAttribute('role', 'presentation');
-        trigger.style.pointerEvents = 'none';
-        trigger.style.minHeight = '96px';
-        trigger.style.width = '100%';
-        trigger.dataset.expandThreshold =
-          trigger.dataset.expandThreshold || '0.002';
-        trigger.dataset.collapseThreshold =
-          trigger.dataset.collapseThreshold || '0.0008';
-        trigger.dataset.expandLockMs = trigger.dataset.expandLockMs || '1000';
-        trigger.dataset.collapseDebounceMs =
-          trigger.dataset.collapseDebounceMs || '250';
-
-        if (footerContainer?.parentNode) {
-          footerContainer.parentNode.insertBefore(trigger, footerContainer);
-        } else {
-          document.body.appendChild(trigger);
+      // Ensure <site-footer> exists
+      let siteFooter = document.querySelector('site-footer');
+      if (!siteFooter) {
+        // Check for old container to upgrade
+        const oldContainer = document.getElementById('footer-container');
+        if (oldContainer) {
+            oldContainer.remove();
         }
+
+        siteFooter = document.createElement('site-footer');
+        siteFooter.setAttribute('id', 'site-footer-component');
+        document.body.appendChild(siteFooter);
       }
 
+      // Load component definition
       try {
-        if (!globalThis.__footerModuleLoaded) {
-          globalThis.__footerModuleLoaded = true;
-          import('/content/components/footer/FooterApp.js')
-            .then((m) => {
-              if (typeof m.initFooter === 'function') m.initFooter();
-            })
-            .catch((err) =>
-              log?.warn?.('head-inline: import footer module failed', err),
-            );
+        if (!globalThis.__siteFooterLoaded) {
+          globalThis.__siteFooterLoaded = true;
+          import('/content/components/footer/SiteFooter.js')
+            .catch((err) => log?.warn?.('head-inline: import SiteFooter failed', err));
         }
       } catch {
         /* ignore */
