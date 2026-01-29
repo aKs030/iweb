@@ -221,7 +221,6 @@ dataLayer.push({
       const p =
         (globalThis.location?.pathname || '').replace(/\/+$/g, '') || '/';
       const base = [
-        '/content/styles/root.css',
         '/content/styles/main.css',
       ];
       if (p === '/') {
@@ -348,7 +347,6 @@ dataLayer.push({
         (globalThis.location?.pathname || '').replace(/\/+$/g, '') || '/';
 
       const criticalStyles = new Set([
-        '/content/styles/root.css',
         '/content/styles/main.css',
       ]);
       const homeCritical = new Set([
