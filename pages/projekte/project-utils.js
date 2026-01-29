@@ -30,21 +30,16 @@ export async function fetchGitHubContents(path = '', options = {}) {
     'User-Agent': 'Projekte-Loader/1.0',
   };
 
-  try {
-    const response = await fetch(url, {
-      ...options,
-      headers: { ...defaultHeaders, ...options.headers },
-    });
+  const response = await fetch(url, {
+    ...options,
+    headers: { ...defaultHeaders, ...options.headers },
+  });
 
-    if (!response.ok) {
-      throw new Error(`GitHub API error: ${response.status}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    // We re-throw so the caller can handle logging or fallbacks
-    throw error;
+  if (!response.ok) {
+    throw new Error(`GitHub API error: ${response.status}`);
   }
+
+  return await response.json();
 }
 
 /**
@@ -96,9 +91,7 @@ export async function fetchProjectMetadata(projectPath) {
  */
 export const toRawGithackUrl = (ghUrl) => {
   try {
-    const m = /github\.com\/([^/]+)\/([^/]+)\/tree\/([^/]+)\/(.+)$/.exec(
-      ghUrl,
-    );
+    const m = /github\.com\/([^/]+)\/([^/]+)\/tree\/([^/]+)\/(.+)$/.exec(ghUrl);
     if (m) {
       const [, owner, repo, branch, path] = m;
       return `https://rawcdn.githack.com/${owner}/${repo}/${branch}/${path}/index.html`;
@@ -114,9 +107,7 @@ export const toRawGithackUrl = (ghUrl) => {
  */
 export const toJsDelivrUrl = (ghUrl) => {
   try {
-    const m = /github\.com\/([^/]+)\/([^/]+)\/tree\/([^/]+)\/(.+)$/.exec(
-      ghUrl,
-    );
+    const m = /github\.com\/([^/]+)\/([^/]+)\/tree\/([^/]+)\/(.+)$/.exec(ghUrl);
     if (m) {
       const [, owner, repo, branch, path] = m;
       return `https://cdn.jsdelivr.net/gh/${owner}/${repo}@${branch}/${path}/index.html`;
