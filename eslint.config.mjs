@@ -96,7 +96,9 @@ export default [
         require: 'readonly',
         exports: 'readonly',
         global: 'readonly',
+        globalThis: 'readonly',
         Buffer: 'readonly',
+        customElements: 'readonly',
       },
     },
     rules: {
