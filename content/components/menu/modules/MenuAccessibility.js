@@ -5,7 +5,6 @@
 export class MenuAccessibility {
   constructor(container, state) {
     this.container = container;
-    this.shadowRoot = container.shadowRoot;
     this.state = state;
   }
 
@@ -16,8 +15,8 @@ export class MenuAccessibility {
   }
 
   setupARIA() {
-    const menu = this.shadowRoot.querySelector('.site-menu');
-    const toggle = this.shadowRoot.querySelector('.site-menu__toggle');
+    const menu = this.container.querySelector('.site-menu');
+    const toggle = this.container.querySelector('.site-menu__toggle');
 
     if (menu) {
       menu.setAttribute('role', 'navigation');
@@ -37,7 +36,7 @@ export class MenuAccessibility {
   }
 
   setupKeyboardNav() {
-    const menu = this.shadowRoot.querySelector('.site-menu');
+    const menu = this.container.querySelector('.site-menu');
     if (!menu) return;
 
     const focusableElements = menu.querySelectorAll(

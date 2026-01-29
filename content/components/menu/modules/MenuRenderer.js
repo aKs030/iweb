@@ -3,6 +3,7 @@
  */
 
 import { MenuTemplate } from './MenuTemplate.js';
+import { getElementById } from '/content/core/dom-utils.js';
 
 export class MenuRenderer {
   constructor(state, config = {}) {
@@ -13,28 +14,27 @@ export class MenuRenderer {
   }
 
   render(container) {
-    // Container is now shadowRoot
     container.innerHTML = this.template.getHTML();
-    this.updateYear(container);
-    this.initializeIcons(container);
-    this.setupTitleUpdates(container);
+    this.updateYear();
+    this.initializeIcons();
+    this.setupTitleUpdates();
   }
 
-  updateYear(container = document) {
-    const yearEl = container.querySelector('#current-year');
+  updateYear() {
+    const yearEl = getElementById('current-year');
     if (yearEl) yearEl.textContent = new Date().getFullYear();
   }
 
-  initializeIcons(container = document) {
+  initializeIcons() {
     const delay = this.config.ICON_CHECK_DELAY || 100;
     setTimeout(() => {
-      const icons = container.querySelectorAll('.nav-icon use');
+      const icons = document.querySelectorAll('.nav-icon use');
       icons.forEach((use) => {
         const href = use.getAttribute('href');
         if (!href) return;
 
         const targetId = href.substring(1);
-        const target = container.querySelector(`#${targetId}`);
+        const target = document.getElementById(targetId);
         const svg = use.closest('svg');
         const fallback = svg?.nextElementSibling;
 
@@ -46,15 +46,15 @@ export class MenuRenderer {
     }, delay);
   }
 
-  setupTitleUpdates(container = document) {
+  setupTitleUpdates() {
     this.state.on('titleChange', ({ title, subtitle }) => {
-      this.updateTitle(title, subtitle, container);
+      this.updateTitle(title, subtitle);
     });
   }
 
-  updateTitle(title, subtitle = '', container = document) {
-    const siteTitleEl = container.querySelector('#site-title');
-    const siteSubtitleEl = container.querySelector('#site-subtitle');
+  updateTitle(title, subtitle = '') {
+    const siteTitleEl = getElementById('site-title');
+    const siteSubtitleEl = getElementById('site-subtitle');
 
     if (!siteTitleEl) return;
 

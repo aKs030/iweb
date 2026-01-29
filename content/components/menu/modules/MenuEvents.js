@@ -19,7 +19,6 @@ function addListener(target, event, handler, options = {}) {
 export class MenuEvents {
   constructor(container, state, renderer, config = {}) {
     this.container = container;
-    this.shadowRoot = container.shadowRoot;
     this.state = state;
     this.renderer = renderer;
     this.config = config;
@@ -38,8 +37,8 @@ export class MenuEvents {
   }
 
   setupToggle() {
-    const toggle = this.shadowRoot.querySelector('.site-menu__toggle');
-    const menu = this.shadowRoot.querySelector('.site-menu');
+    const toggle = this.container.querySelector('.site-menu__toggle');
+    const menu = this.container.querySelector('.site-menu');
 
     if (!toggle || !menu) return;
 
@@ -62,7 +61,7 @@ export class MenuEvents {
   }
 
   setupSearch() {
-    const searchTrigger = this.shadowRoot.querySelector('.search-trigger');
+    const searchTrigger = this.container.querySelector('.search-trigger');
     if (!searchTrigger) return;
 
     const handleSearch = async (e) => {
@@ -81,7 +80,7 @@ export class MenuEvents {
   }
 
   setupNavigation() {
-    const links = this.shadowRoot.querySelectorAll('.site-menu a[href]');
+    const links = this.container.querySelectorAll('.site-menu a[href]');
 
     links.forEach((link) => {
       const handleClick = (e) => {
@@ -102,9 +101,7 @@ export class MenuEvents {
   }
 
   setupLogo() {
-    const logoContainer = this.shadowRoot.querySelector(
-      '.site-logo__container',
-    );
+    const logoContainer = this.container.querySelector('.site-logo__container');
     if (!logoContainer) return;
 
     const handleContext = (e) => {
@@ -119,19 +116,15 @@ export class MenuEvents {
 
   setupGlobalListeners() {
     const handleDocClick = (e) => {
-      // Check if click is inside shadow root
-      const path = e.composedPath();
-      const isInside = path.includes(this.container);
-      const isToggle = path.some((el) =>
-        el.classList?.contains('site-menu__toggle'),
-      );
+      const isInside = this.container.contains(e.target);
+      const isToggle = e.target.closest('.site-menu__toggle');
       if (!isInside && !isToggle) this.closeMenu();
     };
 
     const handleEscape = (e) => {
       if (e.key === 'Escape') {
         this.closeMenu();
-        this.shadowRoot.querySelector('.site-menu__toggle')?.focus();
+        this.container.querySelector('.site-menu__toggle')?.focus();
       }
     };
 
@@ -170,7 +163,7 @@ export class MenuEvents {
     const isHomePage = path === '/' || path === '/index.html';
 
     if (!isHomePage) {
-      const links = this.shadowRoot.querySelectorAll('.site-menu a[href^="#"]');
+      const links = this.container.querySelectorAll('.site-menu a[href^="#"]');
       links.forEach((link) => {
         const hash = link.getAttribute('href');
         link.setAttribute('href', `/${hash}`);
@@ -265,7 +258,7 @@ export class MenuEvents {
     const path = window.location.pathname.replace(/index\.html$/, '');
     const hash = window.location.hash;
 
-    this.shadowRoot.querySelectorAll('.site-menu a[href]').forEach((a) => {
+    document.querySelectorAll('.site-menu a[href]').forEach((a) => {
       const href = a.getAttribute('href');
       if (!href) return;
 
@@ -293,8 +286,8 @@ export class MenuEvents {
   }
 
   closeMenu() {
-    const toggle = this.shadowRoot.querySelector('.site-menu__toggle');
-    const menu = this.shadowRoot.querySelector('.site-menu');
+    const toggle = this.container.querySelector('.site-menu__toggle');
+    const menu = this.container.querySelector('.site-menu');
 
     if (!toggle || !menu) return;
 
