@@ -200,7 +200,7 @@ const HeroManager = (() => {
 })();
 
 // ===== Public API =====
-export function initHeroFeatureBundle(sectionManager) {
+export const initHeroFeatureBundle = (sectionManager) => {
   HeroManager.cleanup();
 
   const onHeroLoaded = () => {
@@ -264,4 +264,4 @@ export function initHeroFeatureBundle(sectionManager) {
   };
 
   HeroManager.setClickHandler(handleHeroClick);
-}
+};

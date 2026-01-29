@@ -9,7 +9,7 @@ import { GITHUB_CONFIG } from './github-config.js';
 import { fetchGitHubContents, fetchProjectMetadata } from './project-utils.js';
 import { fileURLToPath } from 'url';
 
-async function updateAppsConfig() {
+const updateAppsConfig = async () => {
   console.log('🚀 Updating apps config from GitHub...');
 
   try {
@@ -24,8 +24,7 @@ async function updateAppsConfig() {
 
     const apps = [];
 
-    for (let i = 0; i < directories.length; i++) {
-      const dir = directories[i];
+    for (const [i, dir] of directories.entries()) {
       const projectPath = `${GITHUB_CONFIG.appsPath}/${dir.name}`;
 
       console.log(`🔄 Processing: ${dir.name}`);
@@ -66,7 +65,7 @@ async function updateAppsConfig() {
   } catch (error) {
     console.error('❌ Failed to update apps config:', error);
   }
-}
+};
 
 // Run if called directly
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
