@@ -1,6 +1,8 @@
+// @ts-check
 /**
  * KI Roboter Begleiter - Extended Edition (Optimized)
  * Performance-Optimierungen: DOM-Caching, RequestAnimationFrame-Nutzung, Refactoring.
+ * @version 2.0.0
  */
 
 import { GeminiService } from './gemini-service.js';
@@ -14,8 +16,13 @@ import { createObserver } from '/content/core/intersection-observer.js';
 
 const log = createLogger('RobotCompanion');
 
-class RobotCompanion {
+/**
+ * Robot Companion Class
+ * Main controller for the AI robot companion
+ */
+export class RobotCompanion {
   containerId = 'robot-companion-container';
+  /** @type {Object} */
   texts = {};
 
   constructor() {
@@ -24,28 +31,35 @@ class RobotCompanion {
       this.texts ||
       {};
 
+    /** @type {GeminiService} */
     this.gemini = new GeminiService();
+    /** @type {RobotGames} */
     this.gameModule = new RobotGames(this);
+    /** @type {RobotAnimation} */
     this.animationModule = new RobotAnimation(this);
+    /** @type {RobotCollision} */
     this.collisionModule = new RobotCollision(this);
+    /** @type {RobotChat} */
     this.chatModule = new RobotChat(this);
+    /** @type {RobotIntelligence} */
     this.intelligenceModule = new RobotIntelligence(this);
 
-    // State
+    /** @type {Object} */
     this.state = {};
 
-    // Flag to prevent footer overlap check from overriding keyboard adjustment
+    /** @type {boolean} Flag to prevent footer overlap check from overriding keyboard adjustment */
     this.isKeyboardAdjustmentActive = false;
 
-    // Store initial layout height for detecting keyboard even when layout viewport shrinks
+    /** @type {number} Store initial layout height for detecting keyboard */
     this.initialLayoutHeight =
       typeof globalThis !== 'undefined' ? globalThis.innerHeight : 0;
 
-    // Context greeting dedupe & observed section tracking
+    /** @type {import('/content/core/types.js').PageContext|null} */
     this.currentObservedContext = null;
+    /** @type {IntersectionObserver|null} */
     this._sectionObserver = null;
 
-    // Zentrale Event-Listener Verwaltung für sauberes Cleanup
+    /** @type {import('/content/core/types.js').EventListenerRegistry} */
     this._eventListeners = {
       scroll: [],
       resize: [],
@@ -54,18 +68,18 @@ class RobotCompanion {
       inputFocus: null,
       inputBlur: null,
       heroTypingEnd: null,
-      // DOM element listeners (target, event, handler)
       dom: [],
     };
 
-    // Zentrale Timeout/Interval Verwaltung
+    /** @type {import('/content/core/types.js').TimerRegistry} */
     this._timers = {
       timeouts: new Set(),
       intervals: new Set(),
       scrollTimeout: null,
     };
 
-    // Mood & Analytics System
+    const now = new Date(); // ✅ Create once, reuse
+    /** @type {import('/content/core/types.js').RobotAnalytics} */
     this.analytics = {
       sessions:
         Number.parseInt(localStorage.getItem('robot-sessions') || '0', 10) + 1,
@@ -74,23 +88,30 @@ class RobotCompanion {
         localStorage.getItem('robot-interactions') || '0',
         10,
       ),
-      lastVisit:
-        localStorage.getItem('robot-last-visit') || new Date().toISOString(),
+      lastVisit: localStorage.getItem('robot-last-visit') || now.toISOString(),
     };
-    localStorage.setItem('robot-sessions', this.analytics.sessions);
-    localStorage.setItem('robot-last-visit', new Date().toISOString());
+    localStorage.setItem('robot-sessions', String(this.analytics.sessions));
+    localStorage.setItem('robot-last-visit', now.toISOString());
 
+    /** @type {import('/content/core/types.js').RobotMood} */
     this.mood = this.calculateMood();
+    /** @type {Set<string>} */
     this.easterEggFound = new Set(
       JSON.parse(localStorage.getItem('robot-easter-eggs') || '[]'),
     );
 
+    /** @type {import('/content/core/types.js').DOMCache} */
     this.dom = {};
 
     this.applyTexts();
   }
 
-  // Sichere Timeout/Interval-Wrapper für automatisches Cleanup
+  /**
+   * Safe timeout wrapper for automatic cleanup
+   * @param {Function} callback - Callback function
+   * @param {number} delay - Delay in milliseconds
+   * @returns {number} Timeout ID
+   */
   _setTimeout(callback, delay) {
     const id = setTimeout(() => {
       this._timers.timeouts.delete(id);
@@ -100,17 +121,31 @@ class RobotCompanion {
     return id;
   }
 
+  /**
+   * Safe interval wrapper for automatic cleanup
+   * @param {Function} callback - Callback function
+   * @param {number} delay - Delay in milliseconds
+   * @returns {number} Interval ID
+   */
   _setInterval(callback, delay) {
     const id = setInterval(callback, delay);
     this._timers.intervals.add(id);
     return id;
   }
 
+  /**
+   * Clear timeout and remove from registry
+   * @param {number} id - Timeout ID
+   */
   _clearTimeout(id) {
     clearTimeout(id);
     this._timers.timeouts.delete(id);
   }
 
+  /**
+   * Clear interval and remove from registry
+   * @param {number} id - Interval ID
+   */
   _clearInterval(id) {
     clearInterval(id);
     this._timers.intervals.delete(id);
@@ -625,6 +660,10 @@ class RobotCompanion {
     }
   }
 
+  /**
+   * Calculate current mood based on time and analytics
+   * @returns {import('/content/core/types.js').RobotMood}
+   */
   calculateMood() {
     const hour = new Date().getHours();
     const { sessions, interactions } = this.analytics;
@@ -637,6 +676,10 @@ class RobotCompanion {
     return 'normal';
   }
 
+  /**
+   * Get mood-based greeting message
+   * @returns {string}
+   */
   getMoodGreeting() {
     const greetings =
       this.chatModule.moodGreetings ||
@@ -672,6 +715,11 @@ class RobotCompanion {
     }
   }
 
+  /**
+   * Unlock easter egg achievement
+   * @param {string} id - Easter egg ID
+   * @param {string} message - Achievement message
+   */
   unlockEasterEgg(id, message) {
     this.easterEggFound.add(id);
     localStorage.setItem(
@@ -682,6 +730,10 @@ class RobotCompanion {
     this._setTimeout(() => this.chatModule.hideBubble(), 10000);
   }
 
+  /**
+   * Track section visit for analytics
+   * @param {import('/content/core/types.js').PageContext} context - Page context
+   */
   trackSectionVisit(context) {
     if (!this.analytics.sectionsVisited.includes(context)) {
       this.analytics.sectionsVisited.push(context);
@@ -901,6 +953,10 @@ class RobotCompanion {
     }
   }
 
+  /**
+   * Get current page context based on URL and visible sections
+   * @returns {import('/content/core/types.js').PageContext}
+   */
   getPageContext() {
     try {
       if (this.currentObservedContext) return this.currentObservedContext;
@@ -910,6 +966,10 @@ class RobotCompanion {
       const lower = path.toLowerCase();
       const midY = (window.innerHeight || 0) / 2;
 
+      /**
+       * @param {string} selector
+       * @returns {boolean}
+       */
       const sectionCheck = (selector) => {
         try {
           const el = document.querySelector(selector);
@@ -921,6 +981,7 @@ class RobotCompanion {
         }
       };
 
+      /** @type {import('/content/core/types.js').PageContext} */
       let context = 'default';
 
       if (sectionCheck('#hero')) context = 'hero';
@@ -1016,45 +1077,102 @@ class RobotCompanion {
     this._setTimeout(() => this.chatModule.handleAction('start'), 2000);
   }
 
-  // Delegated methods
+  // Delegated methods to chat module
+  /**
+   * Fetch and show AI suggestion
+   * @returns {Promise<void>}
+   */
   fetchAndShowSuggestion() {
     return this.chatModule.fetchAndShowSuggestion();
   }
+
+  /**
+   * Toggle chat window
+   * @param {boolean} [force] - Force open/close state
+   */
   toggleChat(force) {
     return this.chatModule.toggleChat(force);
   }
+
+  /**
+   * Handle avatar click event
+   */
   handleAvatarClick() {
     return this.chatModule.handleAvatarClick();
   }
+
+  /**
+   * Handle user message submission
+   */
   handleUserMessage() {
     return this.chatModule.handleUserMessage();
   }
+
+  /**
+   * Add message to chat
+   * @param {string} text - Message text
+   * @param {'user'|'bot'} type - Message type
+   */
   addMessage(text, type) {
     return this.chatModule.addMessage(text, type);
   }
+
+  /**
+   * Add option buttons to chat
+   * @param {import('/content/core/types.js').ChatOption[]} options - Chat options
+   */
   addOptions(options) {
     return this.chatModule.addOptions(options);
   }
+
+  /**
+   * Handle chat action
+   * @param {string} action - Action identifier
+   */
   handleAction(action) {
     return this.chatModule.handleAction(action);
   }
+
+  /**
+   * Show bubble message
+   * @param {string} text - Bubble text
+   */
   showBubble(text) {
     return this.chatModule.showBubble(text);
   }
+
+  /**
+   * Hide bubble message
+   */
   hideBubble() {
     return this.chatModule.hideBubble();
   }
+
+  /**
+   * Scroll chat to bottom
+   */
   scrollToBottom() {
     return this.chatModule.scrollToBottom();
   }
+
+  /**
+   * Start initial bubble sequence
+   */
   startInitialBubbleSequence() {
     return this.chatModule.startInitialBubbleSequence();
   }
+
+  /**
+   * Clear bubble sequence
+   */
   clearBubbleSequence() {
     return this.chatModule.clearBubbleSequence();
   }
 
-  // Async init moved out of constructor to keep constructor sync and testable
+  /**
+   * Async initialization - moved out of constructor for testability
+   * @returns {Promise<void>}
+   */
   async initialize() {
     await this.loadTexts();
     this.applyTexts();

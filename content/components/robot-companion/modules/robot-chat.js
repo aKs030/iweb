@@ -56,9 +56,10 @@ export class RobotChat {
       return;
     }
 
-    this.robot.animationModule.playPokeAnimation().then(() => {
+    (async () => {
+      await this.robot.animationModule.playPokeAnimation();
       this.toggleChat(true);
-    });
+    })();
   }
 
   async handleUserMessage() {
@@ -163,14 +164,16 @@ export class RobotChat {
     } else {
       // Bot messages may contain safe HTML (links, formatting)
       // Import sanitizer dynamically to avoid circular dependencies
-      import('/content/core/html-sanitizer.js')
-        .then(({ sanitizeHTMLMinimal }) => {
+      (async () => {
+        try {
+          const { sanitizeHTMLMinimal } =
+            await import('/content/core/html-sanitizer.js');
           msg.innerHTML = sanitizeHTMLMinimal(String(text || ''));
-        })
-        .catch(() => {
+        } catch {
           // Fallback: use textContent if sanitizer fails
           msg.textContent = String(text || '');
-        });
+        }
+      })();
     }
 
     this.robot.dom.messages.appendChild(msg);

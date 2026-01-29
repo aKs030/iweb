@@ -437,10 +437,10 @@ const PhotoGallery = () => {
     const focusableSelector =
       'a[href], area[href], input:not([disabled]):not([type=hidden]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), iframe, object, embed, [tabindex]:not([tabindex="-1"]), [contenteditable]';
 
-    function getFocusableElements(modal) {
+    const getFocusableElements = (modal) => {
       const nodes = modal.querySelectorAll(focusableSelector);
-      return Array.prototype.slice.call(nodes);
-    }
+      return Array.from(nodes);
+    };
 
     function handleKeyTrap(e) {
       if (e.key === 'Escape') {

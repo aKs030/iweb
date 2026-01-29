@@ -26,18 +26,13 @@ try {
   /* ignore */
 }
 
-(function () {
+const setupDataLayerProxy = () => {
   try {
     const originalPush = dataLayer.push.bind(dataLayer);
-    dataLayer.push = function () {
+    dataLayer.push = (...args) => {
       try {
-        for (let i = 0; i < arguments.length; i++) {
-          const arg = arguments[i];
-          if (
-            arg &&
-            typeof arg === 'object' &&
-            arg.event === 'consentGranted'
-          ) {
+        args.forEach((arg) => {
+          if (arg?.event === 'consentGranted') {
             try {
               gtag('consent', 'update', {
                 ad_storage: 'granted',
@@ -49,16 +44,18 @@ try {
               /* ignore */
             }
           }
-        }
+        });
       } catch {
         /* ignore */
       }
-      return originalPush.apply(null, arguments);
+      return originalPush(...args);
     };
   } catch {
     /* ignore */
   }
-})();
+};
+
+setupDataLayerProxy();
 
 gtag('js', Date.now());
 
@@ -70,7 +67,7 @@ dataLayer.push({
   gtm_id: GTM_ID,
 });
 
-(function injectGA4Fallback() {
+const injectGA4Fallback = () => {
   try {
     if (!GA4_MEASUREMENT_ID || GA4_MEASUREMENT_ID.indexOf('G-') !== 0) return;
     if (GTM_ID && GTM_ID !== 'GTM-PLACEHOLDER') {
@@ -103,9 +100,11 @@ dataLayer.push({
   } catch (err) {
     log?.warn?.('head-inline: GA4 fallback failed', err);
   }
-})();
+};
 
-(function injectGTM() {
+injectGA4Fallback();
+
+const injectGTM = () => {
   try {
     if (!GTM_ID || GTM_ID === 'GTM-PLACEHOLDER') {
       log?.info?.(
@@ -114,21 +113,22 @@ dataLayer.push({
       return;
     }
 
-    (function (w, d, s, l, i) {
-      w[l] = w[l] || [];
-      w[l].push({ 'gtm.start': Date.now(), event: 'gtm.js' });
-      const f = d.getElementsByTagName(s)[0];
-      const j = d.createElement(s);
-      j.async = true;
-      j.src = 'https://www.googletagmanager.com/gtm.js?id=' + i + '&l=' + l;
-      f.parentNode.insertBefore(j, f);
-    })(globalThis, document, 'script', 'dataLayer', GTM_ID);
+    globalThis.dataLayer = globalThis.dataLayer || [];
+    globalThis.dataLayer.push({ 'gtm.start': Date.now(), event: 'gtm.js' });
+
+    const firstScript = document.getElementsByTagName('script')[0];
+    const gtmScript = document.createElement('script');
+    gtmScript.async = true;
+    gtmScript.src = `https://www.googletagmanager.com/gtm.js?id=${GTM_ID}&l=dataLayer`;
+    firstScript.parentNode.insertBefore(gtmScript, firstScript);
   } catch (err) {
     log?.warn?.('head-inline: GTM injection failed', err);
   }
-})();
+};
 
-(function ensureGTMNoScript() {
+injectGTM();
+
+const ensureGTMNoScript = () => {
   try {
     if (!GTM_ID || GTM_ID === 'GTM-PLACEHOLDER') return;
     const insert = () => {
@@ -155,11 +155,13 @@ dataLayer.push({
   } catch (err) {
     log?.warn?.('head-inline: GTM noscript setup failed', err);
   }
-})();
+};
 
-(function ensureFooterAndTrigger() {
+ensureGTMNoScript();
+
+const ensureFooterAndTrigger = () => {
   try {
-    const run = function () {
+    const run = () => {
       // Ensure <site-menu> exists
       let siteMenu = document.querySelector('site-menu');
       if (!siteMenu) {
@@ -209,14 +211,16 @@ dataLayer.push({
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', run, { once: true });
     } else {
-      setTimeout(run, 0);
+      globalThis.queueMicrotask(run);
     }
   } catch (err) {
     log?.warn?.('head-inline: ensure footer/trigger setup failed', err);
   }
-})();
+};
 
-(function injectCoreAssets() {
+ensureFooterAndTrigger();
+
+const injectCoreAssets = () => {
   try {
     const getStylesForPath = () => {
       const p =
@@ -389,9 +393,11 @@ dataLayer.push({
   } catch (err) {
     log?.warn?.('head-inline: injectCoreAssets failed', err);
   }
-})();
+};
 
-(function addLazyLoadingDefaults() {
+injectCoreAssets();
+
+const addLazyLoadingDefaults = () => {
   try {
     const apply = () => {
       document
@@ -413,9 +419,11 @@ dataLayer.push({
   } catch (err) {
     log?.warn?.('head-inline: addLazyLoadingDefaults failed', err);
   }
-})();
+};
 
-(function ensureFontDisplaySwap() {
+addLazyLoadingDefaults();
+
+const ensureFontDisplaySwap = () => {
   try {
     const update = () => {
       document
@@ -439,9 +447,11 @@ dataLayer.push({
   } catch (err) {
     log?.warn?.('head-inline: ensureFontDisplaySwap failed', err);
   }
-})();
+};
 
-(function setEarlyCanonical() {
+ensureFontDisplaySwap();
+
+const setEarlyCanonical = () => {
   try {
     const canonicalUrl = globalThis.location.href.split('#')[0].split('?')[0];
     if (!document.head.querySelector('link[rel="canonical"]')) {
@@ -455,9 +465,11 @@ dataLayer.push({
   } catch (err) {
     log?.warn?.('head-inline: setEarlyCanonical failed', err);
   }
-})();
+};
 
-(function injectHeroCriticalCSS() {
+setEarlyCanonical();
+
+const injectHeroCriticalCSS = () => {
   try {
     const path =
       (globalThis.location?.pathname || '').replace(/\/+$|^$/, '') || '/';
@@ -477,9 +489,11 @@ dataLayer.push({
   } catch (err) {
     log?.warn?.('head-inline: injectHeroCriticalCSS failed', err);
   }
-})();
+};
 
-(function hideBrandingFromUsers() {
+injectHeroCriticalCSS();
+
+const hideBrandingFromUsers = () => {
   try {
     const ua = (navigator.userAgent || '').toLowerCase();
     const isBot =
@@ -512,8 +526,8 @@ dataLayer.push({
       try {
         if (!s) return '';
         const low = s.toLowerCase();
-        for (const k of Object.keys(SHORT_MAP)) {
-          if (low.includes(k)) return SHORT_MAP[k];
+        for (const [key, value] of Object.entries(SHORT_MAP)) {
+          if (low.includes(key)) return value;
         }
         const first =
           String(s)
@@ -584,7 +598,9 @@ dataLayer.push({
   } catch {
     /* ignore */
   }
-})();
+};
+
+hideBrandingFromUsers();
 
 globalThis.__HEAD_INLINE_READY = true;
 

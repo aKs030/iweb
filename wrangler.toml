@@ -1,9 +1,14 @@
 #:schema node_modules/wrangler/config-schema.json
+
+# ============================================================================
+# Main Worker: AI Search & Gemini Proxy
+# ============================================================================
 name = "ai-search-proxy"
-main = "workers/throbbing-mode-6fe1-nlweb/index.js"
+main = "workers/ai-search-proxy/index.js"
 compatibility_date = "2025-01-23"
 compatibility_flags = ["nodejs_compat"]
 
+# Route both www and apex domain for /api/search and /api/gemini
 routes = [
   { pattern = "www.abdulkerimsesli.de/api/search", zone_name = "abdulkerimsesli.de" },
   { pattern = "abdulkerimsesli.de/api/search", zone_name = "abdulkerimsesli.de" },
@@ -13,21 +18,43 @@ routes = [
 
 [vars]
 RAG_ID = "throbbing-mode-6fe1"
+# Cache TTL in seconds (default: 1 hour)
+CACHE_TTL = "3600"
+# Max search results to return
+MAX_SEARCH_RESULTS = "10"
 
 [triggers]
+# Daily cache refresh at 3 AM UTC
 crons = ["0 3 * * *"]
 
-# Deploy: wrangler deploy --env=""
-# Secrets: wrangler secret put GEMINI_API_KEY --env=""
+# ============================================================================
+# Deployment & Secrets
+# ============================================================================
+# Deploy: wrangler deploy
+# Secrets: wrangler secret put GEMINI_API_KEY
 
+# ============================================================================
+# YouTube API Proxy Worker
+# ============================================================================
 [env.youtube]
 name = "youtube-api-proxy"
 main = "workers/youtube-api-proxy/index.js"
 compatibility_date = "2025-01-23"
+
+# Route both www and apex domain for /api/youtube/*
 routes = [
   { pattern = "www.abdulkerimsesli.de/api/youtube/*", zone_name = "abdulkerimsesli.de" },
   { pattern = "abdulkerimsesli.de/api/youtube/*", zone_name = "abdulkerimsesli.de" }
 ]
 
+[env.youtube.vars]
+# Cache TTL in seconds (default: 1 hour)
+CACHE_TTL = "3600"
+# Rate limit: max requests per minute per IP
+RATE_LIMIT_PER_MINUTE = "60"
+
+# ============================================================================
+# Deployment & Secrets
+# ============================================================================
 # Deploy: wrangler deploy --env youtube
 # Secrets: wrangler secret put YOUTUBE_API_KEY --env youtube

@@ -1,3 +1,4 @@
+// @ts-check
 /**
  * Search Component
  * Mac Spotlight-Inspired Search with Advanced Features
@@ -12,6 +13,7 @@ const _log = createLogger('search');
 
 /**
  * Search Index - Enthält alle durchsuchbaren Inhalte der Webseite
+ * @type {import('/content/core/types.js').SearchResult[]}
  */
 const SEARCH_INDEX = [
   // Hauptseiten
@@ -231,15 +233,27 @@ const SEARCH_INDEX = [
   },
 ];
 
+/**
+ * Search Component Class
+ * Manages search overlay, input, and results
+ */
 class SearchComponent {
   constructor() {
+    /** @type {HTMLElement|null} */
     this.overlay = null;
+    /** @type {HTMLInputElement|null} */
     this.input = null;
+    /** @type {HTMLElement|null} */
     this.resultsContainer = null;
+    /** @type {boolean} */
     this.isOpen = false;
+    /** @type {import('/content/core/types.js').SearchResult[]} */
     this.searchIndex = SEARCH_INDEX;
+    /** @type {import('/content/core/types.js').SearchResult[]} */
     this.currentResults = [];
+    /** @type {number} */
     this.selectedIndex = -1;
+    /** @type {number|null} */
     this.searchTimeout = null;
 
     this.init();

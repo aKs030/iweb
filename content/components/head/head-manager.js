@@ -18,7 +18,7 @@ import { BASE_URL } from '/content/config/constants.js';
 
 const log = createLogger('HeadManager');
 
-function getPageData() {
+const getPageData = () => {
   const currentPath = globalThis.location.pathname.toLowerCase();
   const matchedKey = Object.keys(ROUTES).find(
     (key) => key !== 'default' && currentPath.includes(key),
@@ -46,18 +46,18 @@ function getPageData() {
   };
 
   try {
-    const partialMeta =
-      globalThis.PAGE_META ||
-      (function () {
-        try {
-          const el = document.querySelector(
-            'script[type="application/json"][data-partial-meta]',
-          );
-          return el ? JSON.parse(el.textContent) : null;
-        } catch {
-          return null;
-        }
-      })();
+    const getPartialMeta = () => {
+      try {
+        const el = document.querySelector(
+          'script[type="application/json"][data-partial-meta]',
+        );
+        return el ? JSON.parse(el.textContent) : null;
+      } catch {
+        return null;
+      }
+    };
+
+    const partialMeta = globalThis.PAGE_META || getPartialMeta();
 
     if (partialMeta && typeof partialMeta === 'object') {
       if (partialMeta.image && partialMeta.image.startsWith('/')) {
@@ -70,9 +70,9 @@ function getPageData() {
   }
 
   return pageData;
-}
+};
 
-function updateBasicMeta(pageData, pageUrl) {
+const updateBasicMeta = (pageData, pageUrl) => {
   if (pageData.title?.trim()) {
     document.title = pageData.title;
   }
@@ -103,15 +103,16 @@ function updateBasicMeta(pageData, pageUrl) {
   if (pageData.image) {
     upsertMeta('og:image', pageData.image, true);
 
-    fetch('/content/assets/img/og/og-images-meta.json')
-      .then((r) => (r.ok ? r.json() : null))
-      .then((map) => {
-        if (!map) {
-          upsertMeta('og:image:width', '1200', true);
-          upsertMeta('og:image:height', '630', true);
-          return;
-        }
+    (async () => {
+      try {
+        const response = await fetch(
+          '/content/assets/img/og/og-images-meta.json',
+        );
+        if (!response.ok) throw new Error('Failed to fetch');
+
+        const map = await response.json();
         const dims = map[pageData.image] || null;
+
         if (dims) {
           upsertMeta('og:image:width', String(dims.width), true);
           upsertMeta('og:image:height', String(dims.height), true);
@@ -119,15 +120,15 @@ function updateBasicMeta(pageData, pageUrl) {
           upsertMeta('og:image:width', '1200', true);
           upsertMeta('og:image:height', '630', true);
         }
-      })
-      .catch(() => {
+      } catch {
         upsertMeta('og:image:width', '1200', true);
         upsertMeta('og:image:height', '630', true);
-      });
+      }
+    })();
   }
-}
+};
 
-function pushToDataLayer(pageData, pageUrl) {
+const pushToDataLayer = (pageData, pageUrl) => {
   try {
     globalThis.dataLayer = globalThis.dataLayer || [];
     globalThis.dataLayer.push({
@@ -144,7 +145,7 @@ function pushToDataLayer(pageData, pageUrl) {
   } catch (e) {
     log.warn('Failed to push page metadata to dataLayer:', e);
   }
-}
+};
 
 export async function loadHead() {
   if (globalThis.SHARED_HEAD_LOADED) return;

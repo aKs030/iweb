@@ -91,15 +91,13 @@ export function waitForElement(selector, timeout = 5000) {
  * @param {number} delay - Delay in ms
  * @returns {Function} Debounced function
  */
-export function debounce(fn, delay) {
+export const debounce = (fn, delay) => {
   let timeoutId;
-  return function (...args) {
+  return (...args) => {
     clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => {
-      fn.apply(this, args);
-    }, delay);
+    timeoutId = setTimeout(() => fn(...args), delay);
   };
-}
+};
 
 /**
  * Throttle a function
@@ -107,16 +105,16 @@ export function debounce(fn, delay) {
  * @param {number} limit - Limit in ms
  * @returns {Function} Throttled function
  */
-export function throttle(func, limit = 250) {
+export const throttle = (func, limit = 250) => {
   let inThrottle = false;
-  return function (...args) {
+  return (...args) => {
     if (!inThrottle) {
-      func.apply(this, args);
+      func(...args);
       inThrottle = true;
       setTimeout(() => (inThrottle = false), limit);
     }
   };
-}
+};
 
 /**
  * Execute callback when DOM is ready
@@ -234,10 +232,12 @@ export function upsertHeadLink({
     if (as) el.as = as;
     if (crossOrigin) el.crossOrigin = crossOrigin;
     if (id) el.id = id;
-    Object.keys(dataset || {}).forEach((k) => {
-      el.dataset[k] = dataset[k];
+    Object.entries(dataset || {}).forEach(([key, value]) => {
+      el.dataset[key] = value;
     });
-    Object.keys(attrs || {}).forEach((k) => el.setAttribute(k, attrs[k]));
+    Object.entries(attrs || {}).forEach(([key, value]) =>
+      el.setAttribute(key, value),
+    );
     if (typeof onload === 'function') el.onload = onload;
     document.head.appendChild(el);
     return el;

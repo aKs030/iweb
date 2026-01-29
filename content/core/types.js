@@ -101,4 +101,143 @@
  * @property {Array<{name: string, content: string}>} metas - Meta tags
  */
 
+/**
+ * Component Configuration Types
+ */
+
+/**
+ * @typedef {Object} ComponentConfig
+ * @property {string} [CSS_URL] - CSS file URL
+ * @property {number} [DEBOUNCE_MS] - Debounce delay in milliseconds
+ * @property {number} [ICON_CHECK_DELAY] - Icon check delay
+ * @property {number} [TITLE_TRANSITION_DELAY] - Title transition delay
+ */
+
+/**
+ * @typedef {Object} MenuState
+ * @property {boolean} isOpen - Menu open state
+ * @property {HTMLElement|null} activeLink - Currently active link
+ * @property {string} currentTitle - Current menu title
+ * @property {string} currentSubtitle - Current menu subtitle
+ */
+
+/**
+ * @typedef {Object} RobotState
+ * @property {boolean} isOpen - Chat window open state
+ * @property {string} mood - Current mood state
+ * @property {number} interactions - Total interactions count
+ * @property {number} sessions - Total sessions count
+ * @property {string[]} sectionsVisited - Visited sections
+ * @property {Set<string>} easterEggFound - Found easter eggs
+ */
+
+/**
+ * @typedef {Object} RobotAnalytics
+ * @property {number} sessions - Total sessions
+ * @property {string[]} sectionsVisited - Visited sections
+ * @property {number} interactions - Total interactions
+ * @property {string} lastVisit - Last visit timestamp
+ */
+
+/**
+ * @typedef {Object} DOMCache
+ * @property {HTMLElement} [container] - Container element
+ * @property {HTMLElement} [window] - Window element
+ * @property {HTMLElement} [bubble] - Bubble element
+ * @property {HTMLElement} [bubbleText] - Bubble text element
+ * @property {HTMLElement} [messages] - Messages container
+ * @property {HTMLElement} [controls] - Controls container
+ * @property {HTMLInputElement} [input] - Input element
+ * @property {HTMLButtonElement} [sendBtn] - Send button
+ * @property {HTMLElement} [avatar] - Avatar element
+ * @property {SVGElement} [svg] - SVG element
+ * @property {Element} [footer] - Footer element
+ */
+
+/**
+ * @typedef {Object} EventListenerRegistry
+ * @property {Array<{target: EventTarget, handler: Function}>} scroll - Scroll listeners
+ * @property {Array<{target: EventTarget, handler: Function}>} resize - Resize listeners
+ * @property {Array<{target: Element, event: string, handler: Function}>} dom - DOM listeners
+ */
+
+/**
+ * @typedef {Object} TimerRegistry
+ * @property {Set<number>} timeouts - Active timeouts
+ * @property {Set<number>} intervals - Active intervals
+ * @property {number|null} scrollTimeout - Scroll debounce timeout
+ */
+
+/**
+ * @typedef {'hero'|'features'|'about'|'footer'|'projects'|'gallery'|'home'|'default'} PageContext
+ */
+
+/**
+ * @typedef {'night-owl'|'sleepy'|'energetic'|'relaxed'|'enthusiastic'|'normal'} RobotMood
+ */
+
+/**
+ * @typedef {Object} ChatOption
+ * @property {string} text - Option text
+ * @property {string} action - Action identifier
+ */
+
+/**
+ * @typedef {Object} KnowledgeBaseNode
+ * @property {string} text - Response text
+ * @property {ChatOption[]} [options] - Available options
+ * @property {string} [action] - Action to perform
+ */
+
+/**
+ * @typedef {Object.<string, KnowledgeBaseNode>} KnowledgeBase
+ */
+
+/**
+ * @typedef {Object} SectionData
+ * @property {string} id - Section ID
+ * @property {number} index - Section index
+ * @property {HTMLElement} section - Section element
+ */
+
+/**
+ * TypeWriter Types
+ */
+
+/**
+ * @typedef {Object} TypeWriterQuote
+ * @property {string} text - Quote text
+ * @property {string} [author] - Quote author
+ */
+
+/**
+ * @typedef {Object} TypeWriterConfig
+ * @property {HTMLElement} textEl - Text container
+ * @property {HTMLElement} authorEl - Author container
+ * @property {TypeWriterQuote[]} quotes - Quotes array
+ * @property {number} [wait] - Wait time in ms
+ * @property {number} [typeSpeed] - Type speed in ms
+ * @property {number} [deleteSpeed] - Delete speed in ms
+ * @property {boolean} [shuffle] - Shuffle quotes
+ * @property {boolean} [loop] - Loop quotes
+ * @property {Function} [onBeforeType] - Before type callback
+ */
+
+/**
+ * Search Types
+ */
+
+/**
+ * @typedef {Object} SearchResult
+ * @property {string} id - Result ID
+ * @property {string} title - Result title
+ * @property {string} description - Result description
+ * @property {string} category - Result category
+ * @property {string} url - Result URL
+ * @property {string} icon - Result icon
+ * @property {string[]} keywords - Search keywords
+ * @property {number} priority - Search priority
+ * @property {number} [score] - Search score
+ */
+
 export {};

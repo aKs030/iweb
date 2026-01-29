@@ -93,11 +93,16 @@ export class LazyLoader {
       this.observers.set(selector, observer);
 
       // Timeout fallback
-      this.timers.setTimeout(() => {
+      this.timers.setTimeout(async () => {
         if (!this.loaded.has(selector) && !this.loading.has(selector)) {
           log.warn(`Timeout loading ${selector}, forcing load`);
           observer.disconnect();
-          this.loadWithRetry(loader, options).then(resolve).catch(reject);
+          try {
+            const result = await this.loadWithRetry(loader, options);
+            resolve(result);
+          } catch (err) {
+            reject(err);
+          }
         }
       }, options.timeout || this.options.timeout);
     });

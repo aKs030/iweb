@@ -42,6 +42,10 @@ export function generateSchemaGraph(
 ) {
   const { doc = document, forceProdCanonical = false } = options;
 
+  // ✅ Create Date object once at the beginning
+  const now = new Date();
+  const currentYear = now.getFullYear();
+
   // Use canonical origin (prod or runtime origin)
   const canonicalOrigin =
     forceProdCanonical ||
@@ -65,7 +69,7 @@ export function generateSchemaGraph(
     '@id': ID.org,
     name: brandData.legalName,
     url: ENV.BASE_URL,
-    logo: createImageObject(brandData.logo, brandData.name),
+    logo: createImageObject(brandData.logo, brandData.name, currentYear),
     email: brandData.email,
     sameAs: brandData.sameAs,
     contactPoint: brandData.contactPoint,
@@ -122,7 +126,7 @@ export function generateSchemaGraph(
     mainEntity: { '@id': ID.person },
     publisher: { '@id': ID.org },
     inLanguage: 'de-DE',
-    dateModified: new Date().toISOString(),
+    dateModified: now.toISOString(),
   };
 
   // Try to add dateCreated
@@ -155,7 +159,12 @@ export function generateSchemaGraph(
 
   // Image enrichment
   if (pageData.image) {
-    const imageNode = generateImageObject(pageUrl, pageData, brandData);
+    const imageNode = generateImageObject(
+      pageUrl,
+      pageData,
+      brandData,
+      currentYear,
+    );
     graph.push(imageNode);
     webPageNode.primaryImageOfPage = { '@id': imageNode['@id'] };
   }
@@ -186,7 +195,7 @@ export function generateSchemaGraph(
  * @param {string} name
  * @returns {Object}
  */
-function createImageObject(url, name) {
+function createImageObject(url, name, currentYear) {
   return {
     '@type': 'ImageObject',
     url,
@@ -195,7 +204,7 @@ function createImageObject(url, name) {
     creator: { '@type': 'Person', name },
     license: `${ENV.BASE_URL}/#image-license`,
     creditText: `Logo: ${name}`,
-    copyrightNotice: `© ${new Date().getFullYear()} ${name}`,
+    copyrightNotice: `© ${currentYear} ${name}`,
   };
 }
 
@@ -492,7 +501,7 @@ function generateSkillsList(baseUrl) {
  * @param {Object} brandData
  * @returns {Object}
  */
-function generateImageObject(pageUrl, pageData, brandData) {
+function generateImageObject(pageUrl, pageData, brandData, currentYear) {
   return {
     '@type': 'ImageObject',
     '@id': `${pageUrl}#primaryImage`,
@@ -502,7 +511,7 @@ function generateImageObject(pageUrl, pageData, brandData) {
     creator: { '@type': 'Person', name: brandData.name },
     license: `${ENV.BASE_URL}/#image-license`,
     creditText: pageData.imageCredit || `Photo: ${brandData.name}`,
-    copyrightNotice: `© ${new Date().getFullYear()} ${brandData.name}`,
+    copyrightNotice: `© ${currentYear} ${brandData.name}`,
     acquireLicensePage: `${ENV.BASE_URL}/#image-license`,
   };
 }

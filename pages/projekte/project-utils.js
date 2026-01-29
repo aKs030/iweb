@@ -4,7 +4,10 @@
  * Shared between frontend (projects-data.js, projekte-app.js) and maintenance scripts.
  */
 
+import { createLogger } from '/content/core/logger.js';
 import { GITHUB_CONFIG } from './github-config.js';
+
+const log = createLogger('ProjectUtils');
 
 /**
  * Helper: Create an AbortController with timeout
@@ -69,7 +72,7 @@ export async function fetchProjectMetadata(projectPath) {
       }
     }
   } catch (error) {
-    console.warn(`Could not fetch metadata for ${projectPath}:`, error);
+    log.warn(`Could not fetch metadata for ${projectPath}:`, error);
   }
 
   // Default metadata if fetch fails

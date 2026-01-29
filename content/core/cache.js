@@ -266,22 +266,22 @@ export function getCache(options) {
  * @param {Object} [options] - Cache options
  * @returns {Function} Cached function
  */
-export function cached(fn, options = {}) {
+export const cached = (fn, options = {}) => {
   const cache = getCache();
   const { ttl = 300000, keyFn = (...args) => JSON.stringify(args) } = options;
 
-  return async function (...args) {
+  return async (...args) => {
     const key = `fn:${fn.name}:${keyFn(...args)}`;
-    const cached = await cache.get(key);
+    const cachedValue = await cache.get(key);
 
-    if (cached !== null) {
-      return cached;
+    if (cachedValue !== null) {
+      return cachedValue;
     }
 
     const result = await fn(...args);
     await cache.set(key, result, { ttl });
     return result;
   };
-}
+};
 
 export { CacheManager, MemoryCache, IndexedDBCache };

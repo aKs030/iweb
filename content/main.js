@@ -17,7 +17,7 @@ import './components/footer/SiteFooter.js';
 
 const log = createLogger('main');
 
-function schedulePersistentStorageRequest(delay = 2500) {
+const schedulePersistentStorageRequest = (delay = 2500) => {
   try {
     setTimeout(async () => {
       if (!navigator?.storage) return;
@@ -31,7 +31,7 @@ function schedulePersistentStorageRequest(delay = 2500) {
   } catch {
     // Ignore
   }
-}
+};
 
 const AppLoadManager = (() => {
   const pending = new Set();
@@ -213,7 +213,7 @@ const sectionManager = new SectionManager();
 
 let _appInitialized = false;
 
-function _initApp() {
+const _initApp = () => {
   if (_appInitialized) {
     log.debug('App already initialized, skipping duplicate init');
     return;
@@ -227,7 +227,7 @@ function _initApp() {
   } catch {
     // Ignore
   }
-}
+};
 
 onDOMReady(_initApp);
 
@@ -249,7 +249,7 @@ const EventHandlers = {
     }
   },
 
-  handleShare(event) {
+  async handleShare(event) {
     const share = event.target?.closest('.btn-share');
     if (!share) return;
 
@@ -263,15 +263,18 @@ const EventHandlers = {
     };
 
     if (navigator.share) {
-      navigator.share(shareData).catch((err) => log.warn('share failed', err));
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        log.warn('share failed', err);
+      }
     } else if (navigator.clipboard) {
-      navigator.clipboard.writeText(shareUrl).then(() => {
-        try {
-          announce('Link kopiert', { dedupe: true });
-        } catch (err) {
-          log.warn('announce failed', err);
-        }
-      });
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        announce('Link kopiert', { dedupe: true });
+      } catch (err) {
+        log.warn('Copy failed', err);
+      }
     } else {
       try {
         globalThis.prompt('Link kopieren', shareUrl);

@@ -22,7 +22,7 @@ export class MenuRenderer {
 
   updateYear() {
     const yearEl = getElementById('current-year');
-    if (yearEl) yearEl.textContent = new Date().getFullYear();
+    if (yearEl) yearEl.textContent = new Date().getFullYear(); // ✅ Called once on render
   }
 
   initializeIcons() {
