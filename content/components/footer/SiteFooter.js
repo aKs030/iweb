@@ -157,7 +157,7 @@ export class SiteFooter extends HTMLElement {
   }
 
   setupDate() {
-    const year = new Date().getFullYear();
+    const year = new Date().getFullYear(); // ✅ Create once, reuse
     this.querySelectorAll('.year').forEach(
       (el) => (el.textContent = String(year)),
     );

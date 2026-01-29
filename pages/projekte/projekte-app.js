@@ -43,6 +43,7 @@ const App = () => {
   React.useEffect(() => {
     async function loadProjects() {
       try {
+        log.info('Starting to load projects...');
         setLoading(true);
         const loadedProjects = await createProjectsData(html, {
           Gamepad2,
@@ -54,10 +55,11 @@ const App = () => {
           Globe,
           Zap,
         });
+        log.info(`Loaded ${loadedProjects.length} projects`);
         setProjects(loadedProjects);
       } catch (err) {
-        console.error('Failed to load projects:', err);
-        setError('Projekte konnten nicht geladen werden');
+        log.error('Failed to load projects:', err);
+        setError(`Projekte konnten nicht geladen werden: ${err.message}`);
       } finally {
         setLoading(false);
       }
@@ -256,7 +258,7 @@ const App = () => {
           </h1>
           <p className="description">
             Willkommen in meiner digitalen Werkstatt. Hier sammle ich meine
-            Experimente, vom ersten console.log bis zu interaktiven Web-Apps.
+            Experimente, vom ersten Code bis zu interaktiven Web-Apps.
             ${loading ? 'Projekte werden dynamisch aus GitHub geladen...' : ''}
           </p>
           <div className="btn-group">
@@ -455,12 +457,29 @@ const App = () => {
 // Init Function to be called from HTML
 export const initProjectsApp = () => {
   const rootEl = document.getElementById('root');
-  if (rootEl) {
+  if (!rootEl) {
+    log.error('Root element #root not found in DOM');
+    console.error('Root element #root not found in DOM');
+    return;
+  }
+
+  try {
+    log.info('Initializing Projects App...');
     const root = createRoot(rootEl);
     root.render(html` <${App} /> `);
-  } else {
-    if (typeof console !== 'undefined' && log.error) {
-      log.error('Root element missing');
-    }
+    log.info('Projects App rendered successfully');
+  } catch (error) {
+    log.error('Failed to render Projects App:', error);
+    console.error('Failed to render Projects App:', error);
+    // Show error in UI
+    rootEl.innerHTML = `
+      <div style="padding: 2rem; text-align: center; color: #ef4444;">
+        <h2>Fehler beim Laden der Projekte</h2>
+        <p>${error.message}</p>
+        <button onclick="location.reload()" style="margin-top: 1rem; padding: 0.5rem 1rem; cursor: pointer;">
+          Seite neu laden
+        </button>
+      </div>
+    `;
   }
 };

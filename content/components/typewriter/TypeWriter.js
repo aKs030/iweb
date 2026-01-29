@@ -1,10 +1,20 @@
-// ===== TypeWriter (Final Optimiert) =====
+// @ts-check
+/**
+ * TypeWriter Component
+ * Animated text typing effect with multi-line support
+ * @version 2.0.0
+ */
 import { createLogger } from '/content/core/logger.js';
 import { getElementById } from '/content/core/dom-utils.js';
 
 const log = createLogger('TypeWriter');
 
-// Helper: shuffle
+/**
+ * Shuffle array using Fisher-Yates algorithm
+ * @template T
+ * @param {T[]} array - Array to shuffle
+ * @returns {T[]} Shuffled array
+ */
 const shuffle = (array) => {
   const arr = [...array];
   for (let i = arr.length - 1; i > 0; i--) {
@@ -14,12 +24,23 @@ const shuffle = (array) => {
   return arr;
 };
 
-// Helper: TimerManager
+/**
+ * Timer Manager for automatic cleanup
+ * @class
+ */
 class TimerManager {
   constructor() {
+    /** @type {Set<number>} */
     this.timers = new Set();
+    /** @type {Set<number>} */
     this.intervals = new Set();
   }
+
+  /**
+   * @param {Function} fn - Callback function
+   * @param {number} delay - Delay in milliseconds
+   * @returns {number} Timer ID
+   */
   setTimeout(fn, delay) {
     const id = setTimeout(() => {
       this.timers.delete(id);
@@ -28,25 +49,49 @@ class TimerManager {
     this.timers.add(id);
     return id;
   }
+
+  /**
+   * @param {Function} fn - Callback function
+   * @param {number} delay - Delay in milliseconds
+   * @returns {number} Interval ID
+   */
   setInterval(fn, delay) {
     const id = setInterval(fn, delay);
     this.intervals.add(id);
     return id;
   }
+
+  /**
+   * @param {number} id - Timer ID
+   */
   clearTimeout(id) {
     clearTimeout(id);
     this.timers.delete(id);
   }
+
+  /**
+   * @param {number} id - Interval ID
+   */
   clearInterval(id) {
     clearInterval(id);
     this.intervals.delete(id);
   }
+
+  /**
+   * Clear all timers and intervals
+   */
   clearAll() {
     this.timers.forEach(clearTimeout);
     this.intervals.forEach(clearInterval);
     this.timers.clear();
     this.intervals.clear();
   }
+
+  /**
+   * Sleep for specified milliseconds
+   * @param {number} ms - Milliseconds to sleep
+   * @returns {Promise<void>}
+   */
   sleep(ms) {
     return new Promise((resolve) => this.setTimeout(resolve, ms));
   }
@@ -57,8 +102,13 @@ const EVENTS = {
   HERO_TYPING_END: 'hero:typingEnd',
 };
 
-// Internal instance reference and public helper
+/** @type {TypeWriter|null} Internal instance reference */
 let typeWriterInstance = null;
+
+/**
+ * Stop hero subtitle animation
+ * @returns {boolean} Success status
+ */
 export function stopHeroSubtitle() {
   if (!typeWriterInstance) return false;
   try {
@@ -172,7 +222,23 @@ function makeLineMeasurer(subtitleEl) {
   };
 }
 
+/**
+ * TypeWriter Class
+ * Animated typing effect with configurable speed and behavior
+ */
 export class TypeWriter {
+  /**
+   * @param {Object} config - Configuration object
+   * @param {HTMLElement} config.textEl - Text container element
+   * @param {HTMLElement} config.authorEl - Author container element
+   * @param {import('/content/core/types.js').TypeWriterQuote[]} config.quotes - Array of quotes
+   * @param {number} [config.wait=2400] - Wait time after typing
+   * @param {number} [config.typeSpeed=85] - Typing speed in ms
+   * @param {number} [config.deleteSpeed=40] - Delete speed in ms
+   * @param {boolean} [config.shuffle=true] - Shuffle quotes
+   * @param {boolean} [config.loop=true] - Loop quotes
+   * @param {Function} [config.onBeforeType] - Callback before typing
+   */
   constructor({
     textEl,
     authorEl,
@@ -340,9 +406,13 @@ export async function initHeroSubtitle(options = {}) {
 
     if (!subtitleEl || !typedText || !typedAuthor) return false;
 
-    const quotes = await fetch('/content/config/typewriter-quotes.json')
-      .then((r) => r.json())
-      .catch(() => null);
+    let quotes = null;
+    try {
+      const response = await fetch('/content/config/typewriter-quotes.json');
+      quotes = await response.json();
+    } catch {
+      quotes = null;
+    }
 
     if (!quotes?.length) return false;
 

@@ -67,9 +67,12 @@ class TimerManager {
   setTimeout(fn, delay) {
     const id = /** @type {unknown} */ (
       setTimeout(() => {
-        // @ts-ignore
-        this.timers.delete(id);
-        fn();
+        // ✅ Guard clause: Check if timer is still active before executing
+        if (this.timers.has(id)) {
+          // @ts-ignore
+          this.timers.delete(id);
+          fn();
+        }
       }, delay)
     );
     // @ts-ignore
@@ -290,8 +293,17 @@ class ThreeEarthSystem {
     this.shootingStarManager?.cleanup();
     this.cameraManager?.cleanup();
     this.starManager?.cleanup();
-    this.sectionObserver?.disconnect();
-    this.viewportObserver?.disconnect();
+
+    // ✅ Explicit null assignment after disconnect
+    if (this.sectionObserver) {
+      this.sectionObserver.disconnect();
+      this.sectionObserver = null;
+    }
+    if (this.viewportObserver) {
+      this.viewportObserver.disconnect();
+      this.viewportObserver = null;
+    }
+
     this.timers.clearAll();
     sharedCleanupManager.cleanupSystem('three-earth');
 

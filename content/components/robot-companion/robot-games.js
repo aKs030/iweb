@@ -26,12 +26,21 @@ export class RobotGames {
     const gameContainer = document.createElement('div');
     gameContainer.className = 'tic-tac-toe-game';
 
-    for (let i = 0; i < 9; i++) {
+    const createCell = (index) => {
       const cell = document.createElement('button');
       cell.className = 'ttt-cell';
-      cell.onclick = () => this.playTicTacToeMove(i, gameContainer);
-      gameContainer.appendChild(cell);
-    }
+      cell.dataset.index = String(index);
+      cell.textContent = '';
+      cell.setAttribute('aria-label', `Feld ${index + 1}`);
+      cell.addEventListener('click', () =>
+        this.playTicTacToeMove(index, gameContainer),
+      );
+      return cell;
+    };
+
+    Array.from({ length: 9 }, (_, i) => createCell(i)).forEach((cell) =>
+      gameContainer.appendChild(cell),
+    );
 
     this.robot.dom.messages.appendChild(gameContainer);
     this.robot.scrollToBottom();
@@ -88,27 +97,29 @@ export class RobotGames {
     const board = this.state.ticTacToe.board;
 
     // Check for winning move
-    for (let i = 0; i < 9; i++) {
-      if (!board[i]) {
-        board[i] = 'O';
-        if (this.checkTicTacToeWin('O')) {
-          board[i] = null;
-          return i;
-        }
-        board[i] = null;
-      }
+    const winningMove = board.findIndex((cell, i) => {
+      if (cell) return false;
+      board[i] = 'O';
+      const isWinning = this.checkTicTacToeWin('O');
+      board[i] = null;
+      return isWinning;
+    });
+
+    if (winningMove !== -1) {
+      return winningMove;
     }
 
     // Block player winning move
-    for (let i = 0; i < 9; i++) {
-      if (!board[i]) {
-        board[i] = 'X';
-        if (this.checkTicTacToeWin('X')) {
-          board[i] = null;
-          return i;
-        }
-        board[i] = null;
-      }
+    const blockingMove = board.findIndex((cell, i) => {
+      if (cell) return false;
+      board[i] = 'X';
+      const needsBlock = this.checkTicTacToeWin('X');
+      board[i] = null;
+      return needsBlock;
+    });
+
+    if (blockingMove !== -1) {
+      return blockingMove;
     }
 
     // Take center if available
