@@ -1,9 +1,8 @@
-/* global React, ReactDOM */
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { createRoot } from 'react-dom/client';
 import { createLogger } from '/content/core/logger.js';
 
 const log = createLogger('gallery-app');
-
-const { useState, useEffect, useRef, useMemo, useCallback } = React;
 
 // Utility für Debouncing
 const useDebounce = (value, delay) => {
@@ -1195,5 +1194,5 @@ const PhotoGallery = () => {
   );
 };
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
+const root = createRoot(document.getElementById('root'));
 root.render(React.createElement(PhotoGallery));

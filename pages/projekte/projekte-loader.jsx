@@ -1,4 +1,4 @@
-import { initProjectsApp } from './projekte-app.js';
+import { initProjectsApp } from './ProjekteApp.jsx';
 import { createLogger } from '/content/core/logger.js';
 import { upsertHeadLink } from '/content/core/dom-utils.js';
 const log = createLogger('ProjektePage');

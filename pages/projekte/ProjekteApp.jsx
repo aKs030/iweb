@@ -1,0 +1,430 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { createRoot } from 'react-dom/client';
+import { createLogger } from '/content/core/logger.js';
+import { createProjectsData } from './projects-data.jsx';
+import {
+  getDirectUrl,
+  toRawGithackUrl,
+  toJsDelivrUrl,
+  testUrl,
+} from './project-utils.js';
+
+import {
+  ExternalLink,
+  Github,
+  ArrowDown,
+  MousePointerClick,
+} from '/content/components/ui/icons.jsx';
+
+const log = createLogger('projekte-app');
+
+/**
+ * Interactive Projects Module - Modernized & Compact
+ * @version 3.0.0
+ */
+
+// --- APP ---
+function App() {
+  const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Load projects on component mount
+  useEffect(() => {
+    async function loadProjects() {
+      try {
+        setLoading(true);
+        const loadedProjects = await createProjectsData();
+        setProjects(loadedProjects);
+      } catch (err) {
+        console.error('Failed to load projects:', err);
+        setError('Projekte konnten nicht geladen werden');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadProjects();
+  }, []);
+
+  const scrollToProjects = () => {
+    const firstProject = document.getElementById('project-1');
+    if (firstProject) {
+      firstProject.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  // Modal preview state for opening apps in a popup
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalUrl, setModalUrl] = useState('');
+  const [modalTitle, setModalTitle] = useState('');
+  const [iframeLoading, setIframeLoading] = useState(true);
+  const [toastMsg, setToastMsg] = useState('');
+  const toastTimerRef = useRef(null);
+
+  const showToast = (msg, ms = 2600) => {
+    setToastMsg(msg);
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    toastTimerRef.current = setTimeout(() => setToastMsg(''), ms);
+  };
+
+  const openDirect = async (project) => {
+    // Try raw.githack first (embed-friendly), then jsDelivr, then fallback to raw.githubusercontent (new tab)
+    const gh = project.githubPath || '';
+    const rawGithack = gh ? toRawGithackUrl(gh) : '';
+    const jsDelivr = gh ? toJsDelivrUrl(gh) : '';
+
+    // prefer raw.githack
+    if (rawGithack && (await testUrl(rawGithack, 2500))) {
+      setModalTitle(project.title);
+      setModalUrl(rawGithack);
+      setIframeLoading(true);
+      setModalOpen(true);
+      try {
+        document.body.style.overflow = 'hidden';
+      } catch {
+        /* ignore */
+      }
+      return;
+    }
+
+    // next try jsDelivr
+    if (jsDelivr && (await testUrl(jsDelivr, 2500))) {
+      setModalTitle(project.title);
+      setModalUrl(jsDelivr);
+      setIframeLoading(true);
+      setModalOpen(true);
+      try {
+        document.body.style.overflow = 'hidden';
+      } catch {
+        /* ignore */
+      }
+      return;
+    }
+
+    // fallback: open raw.githubusercontent or appPath in new tab
+    const direct =
+      getDirectUrl(project) || project.githubPath || project.appPath || '';
+    if (!direct) {
+      showToast('Keine gültige App-URL vorhanden');
+      return;
+    }
+    try {
+      window.open(direct, '_blank', 'noopener');
+      showToast('App in neuem Tab geöffnet');
+    } catch {
+      showToast('Öffnen im Tab fehlgeschlagen');
+    }
+  };
+
+  const closeAppModal = () => {
+    setModalOpen(false);
+    setModalUrl('');
+    setModalTitle('');
+    try {
+      document.body.style.overflow = '';
+    } catch {
+      /* ignore */
+    }
+  };
+
+  // Project mockup component: tries to resolve an embed-friendly URL (raw.githack/jsDelivr/appPath)
+  // and renders an iframe scaled to fit the mockup box (no internal scroll). Falls back to the
+  // project's existing `previewContent` when no embed URL is available.
+  const ProjectMockup = ({ project }) => {
+    const wrapperRef = useRef(null);
+    const iframeRef = useRef(null);
+    const [previewUrl, setPreviewUrl] = useState(null);
+
+    useEffect(() => {
+      let canceled = false;
+      (async () => {
+        try {
+          const gh = project.githubPath || '';
+          const candidates = [];
+          if (gh) {
+            const raw = toRawGithackUrl(gh);
+            const js = toJsDelivrUrl(gh);
+            if (raw) candidates.push(raw);
+            if (js) candidates.push(js);
+          }
+          if (project.appPath)
+            candidates.push(
+              project.appPath.endsWith('/')
+                ? project.appPath + 'index.html'
+                : project.appPath,
+            );
+
+          for (const url of candidates) {
+            if (!url) continue;
+            if (await testUrl(url, 2500)) {
+              if (!canceled) setPreviewUrl(url);
+              return;
+            }
+          }
+        } catch {
+          // ignore
+        }
+      })();
+      return () => {
+        canceled = true;
+      };
+    }, [project]);
+
+    // Scale iframe to fit wrapper while keeping aspect ratio
+    useEffect(() => {
+      if (!previewUrl) return;
+      const wrapper = wrapperRef.current;
+      const iframe = iframeRef.current;
+      if (!wrapper || !iframe) return;
+      const baseW = 1024;
+      const baseH = 768;
+      const apply = () => {
+        const w = wrapper.clientWidth;
+        const h = wrapper.clientHeight;
+        const scale = Math.min(1, w / baseW, h / baseH);
+        iframe.style.transform = `scale(${scale})`;
+      };
+      apply();
+      const ro = new ResizeObserver(apply);
+      ro.observe(wrapper);
+      return () => ro.disconnect();
+    }, [previewUrl]);
+
+    return (
+      <div className="mockup-iframe-wrapper u-center" ref={wrapperRef}>
+        {previewUrl ? (
+          <iframe
+            className="mockup-iframe"
+            ref={iframeRef}
+            src={previewUrl}
+            scrolling="no"
+            sandbox="allow-scripts allow-same-origin allow-forms"
+            frameBorder="0"
+            title={project.title}
+          ></iframe>
+        ) : (
+          project.previewContent
+        )}
+      </div>
+    );
+  };
+
+  // Cleanup toast timer on unmount
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    };
+  }, []);
+
+  return (
+    <React.Fragment>
+      {/* Hero Section */}
+      <section className="snap-section" id="hero">
+        <div
+          className="container"
+          style={{ maxWidth: '1200px', margin: '0 auto', textAlign: 'center' }}
+        >
+          <div className="badge">
+            <span className="badge-dot-container">
+              <span className="badge-dot-ping"></span>
+              <span className="badge-dot"></span>
+            </span>
+            JavaScript & React
+          </div>
+          <h1 className="headline">
+            <span className="text-gradient-main">Meine</span>
+            <span className="text-gradient-accent">Projekte.</span>
+          </h1>
+          <p className="description">
+            Willkommen in meiner digitalen Werkstatt. Hier sammle ich meine
+            Experimente, vom ersten console.log bis zu interaktiven Web-Apps.
+            {loading ? 'Projekte werden dynamisch aus GitHub geladen...' : ''}
+          </p>
+          <div className="btn-group">
+            <button
+              onClick={scrollToProjects}
+              className="btn btn-primary"
+              disabled={loading}
+            >
+              {loading ? 'Lade...' : "Los geht's"}
+              <ArrowDown style={{ width: '1rem', height: '1rem' }} />
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Loading State */}
+      {loading ? (
+        <section className="snap-section">
+          <div className="loading-container">
+            <div className="loading-spinner"></div>
+            <p>Lade Projekte aus GitHub Repository...</p>
+          </div>
+        </section>
+      ) : null}
+
+      {/* Error State */}
+      {error ? (
+        <section className="snap-section">
+          <div className="loading-container">
+            <p className="error-message">{error}</p>
+          </div>
+        </section>
+      ) : null}
+
+      {/* Projects Sections - Individual Snap Sections */}
+      {projects.map((project) => (
+        <section
+          key={project.id}
+          id={`project-${project.id}`}
+          className="snap-section"
+        >
+          <div style={{ width: '100%', maxWidth: '1200px', margin: '0 auto' }}>
+            <div className="project-card">
+              {/* Project Preview */}
+              <div className="window-mockup">
+                <div className="mockup-content">
+                  <ProjectMockup project={project} />
+                  <div className="mockup-icon">{project.icon}</div>
+                </div>
+              </div>
+
+              {/* Project Info */}
+              <div className="project-info">
+                <div className="project-header">
+                  <h2 className="project-title">{project.title}</h2>
+                  <span className="project-category">{project.category}</span>
+                </div>
+
+                <p className="project-desc">{project.description}</p>
+
+                <div className="tags-container">
+                  {project.tags.map((tag, i) => (
+                    <span key={i} className="tag">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+
+                <div className="project-actions">
+                  <button
+                    className="btn btn-primary btn-small"
+                    onClick={() => openDirect(project)}
+                    aria-label={`App öffnen ${project.title}`}
+                  >
+                    <ExternalLink style={{ width: '1rem', height: '1rem' }} />
+                    App öffnen
+                  </button>
+                  <a
+                    className="btn btn-outline btn-small"
+                    href={project.githubPath}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`Code ${project.title} auf GitHub`}
+                  >
+                    <Github style={{ width: '1rem', height: '1rem' }} />
+                    Code
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      ))}
+      {toastMsg ? <div className="toast-notification">{toastMsg}</div> : null}
+      {modalOpen ? (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={`Vorschau ${modalTitle}`}
+          className="modal-overlay"
+          onClick={(e) => e.target === e.currentTarget && closeAppModal()}
+        >
+          <div className="modal-wrapper">
+            <div className="modal-header">
+              <div className="modal-header-title">
+                <strong>{modalTitle}</strong>
+              </div>
+              <div className="modal-header-actions">
+                <a
+                  href={modalUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-outline btn-small"
+                >
+                  <ExternalLink
+                    style={{ width: '0.875rem', height: '0.875rem' }}
+                  />
+                  Neuer Tab
+                </a>
+                <button
+                  className="btn btn-primary btn-small"
+                  onClick={closeAppModal}
+                  aria-label="Schließen"
+                >
+                  Schließen
+                </button>
+              </div>
+            </div>
+            <div className="modal-body">
+              {iframeLoading ? (
+                <div className="iframe-loader">
+                  <div className="loading-spinner"></div>
+                  <p style={{ marginTop: '1rem' }}>Lade Vorschau…</p>
+                </div>
+              ) : null}
+              <iframe
+                src={modalUrl}
+                onLoad={() => setIframeLoading(false)}
+                className="modal-iframe"
+                sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+                title={`Vorschau von ${modalTitle}`}
+              ></iframe>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {/* Contact Section */}
+      <section className="contact-section" id="contact">
+        <div style={{ textAlign: 'center' }}>
+          <div className="contact-icon-wrapper">
+            <MousePointerClick
+              style={{ width: '2rem', height: '2rem', color: '#60a5fa' }}
+            />
+          </div>
+          <h2 className="contact-title">Lust auf ein Spiel?</h2>
+          <p className="contact-text">
+            Ich lerne jeden Tag dazu. Hast du Ideen für mein nächstes kleines
+            Projekt?
+          </p>
+          <div className="btn-group">
+            <button
+              className="btn btn-primary"
+              style={{
+                background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)',
+                color: 'white',
+              }}
+            >
+              Schreib mir
+            </button>
+          </div>
+        </div>
+      </section>
+    </React.Fragment>
+  );
+}
+
+// Init Function to be called from HTML
+export function initProjectsApp() {
+  const rootEl = document.getElementById('root');
+  if (rootEl) {
+    const root = createRoot(rootEl);
+    root.render(<App />);
+  } else {
+    if (typeof console !== 'undefined' && log.error) {
+      log.error('Root element missing');
+    }
+  }
+}

@@ -3,12 +3,23 @@
  * @version 3.1.0
  */
 
+import React from 'react';
 import { GITHUB_CONFIG, PROJECT_CATEGORIES } from './github-config.js';
 import localAppsConfig from './apps-config.json' with { type: 'json' };
 import {
   fetchGitHubContents as fetchGitHubContentsApi,
   fetchProjectMetadata as fetchProjectMetadataApi,
 } from './project-utils.js';
+import {
+  Code,
+  Gamepad2,
+  Binary,
+  Palette,
+  ListTodo,
+  Check,
+  Globe,
+  Zap,
+} from '/content/components/ui/icons.jsx';
 
 // Common styles for consistency
 const ICON_SIZE = { width: '32px', height: '32px' };
@@ -135,7 +146,7 @@ async function fetchProjectMetadata(projectPath) {
 /**
  * Maps project to appropriate icon and theme
  */
-function getProjectIconAndTheme(project, icons, html) {
+function getProjectIconAndTheme(project) {
   const title = (project.title || '').toLowerCase();
   const tags = (project.tags || []).map((tag) => tag.toLowerCase());
   const category = (project.category || '').toLowerCase();
@@ -161,13 +172,23 @@ function getProjectIconAndTheme(project, icons, html) {
     }
   }
 
-  const IconComponent = icons[bestMatch.icon] || icons.Code;
+  // Icons map
+  const icons = {
+      Code,
+      Gamepad2,
+      Binary,
+      Palette,
+      ListTodo,
+      Check,
+      Globe,
+      Zap
+  };
+
+  const IconComponent = icons[bestMatch.icon] || Code;
   const theme = THEME_COLORS[bestMatch.theme] || THEME_COLORS.indigo;
 
   return {
-    icon: html`<${IconComponent}
-      style=${{ color: theme.icon, ...ICON_SIZE }}
-    />`,
+    icon: <IconComponent style={{ color: theme.icon, ...ICON_SIZE }} />,
     theme: theme,
   };
 }
@@ -183,7 +204,7 @@ function loadLocalConfig() {
 /**
  * Loads projects dynamically from GitHub repository
  */
-async function loadDynamicProjects(html, icons) {
+async function loadDynamicProjects() {
   let projectsList = [];
   let source = 'github';
 
@@ -233,7 +254,7 @@ async function loadDynamicProjects(html, icons) {
 
   // Process the projects list (from GitHub or Local) to create UI objects
   const finalProjects = projectsList.map((data, i) => {
-    const { icon, theme } = getProjectIconAndTheme(data, icons, html);
+    const { icon, theme } = getProjectIconAndTheme(data);
     const dirName = data.dirName || data.name;
 
     return {
@@ -249,9 +270,7 @@ async function loadDynamicProjects(html, icons) {
       bgStyle: createGradient(theme.gradient),
       glowColor: theme.icon,
       icon: icon,
-      previewContent: html`
-        <div className="preview-container">${icon}</div>
-      `,
+      previewContent: <div className="preview-container">{icon}</div>,
     };
   });
 
@@ -262,7 +281,7 @@ async function loadDynamicProjects(html, icons) {
 /**
  * Creates the projects array with dynamic loading and static fallback
  */
-export async function createProjectsData(html, icons) {
+export async function createProjectsData() {
   console.log(`🎯 Starting createProjectsData...`);
-  return await loadDynamicProjects(html, icons);
+  return await loadDynamicProjects();
 }

@@ -1,19 +1,17 @@
-import React from 'https://esm.sh/react@19.0.0';
-import { createRoot } from 'https://esm.sh/react-dom@19.0.0/client';
-import htm from 'https://esm.sh/htm@3.1.1';
+import React, { useState, useEffect, useRef, useMemo, memo } from 'react';
+import { createRoot } from 'react-dom/client';
 import { createLogger } from '/content/core/logger.js';
-import { marked } from 'https://cdn.jsdelivr.net/npm/marked@11.1.1/lib/marked.esm.js';
-import DOMPurify from 'https://cdn.jsdelivr.net/npm/dompurify@3.0.8/dist/purify.es.mjs';
+import { marked } from 'marked';
+import DOMPurify from 'dompurify';
 import {
   Clock,
   ArrowRight,
   ArrowUp,
-} from '/content/components/ui/icons.js';
+} from '/content/components/ui/icons.jsx';
 
 marked.setOptions({ mangle: false, headerIds: false });
 
 const log = createLogger('BlogApp');
-const html = htm.bind(React.createElement);
 
 // --- Utilities ---
 const estimateReadTime = (text = '') =>
@@ -115,7 +113,7 @@ function parseArticleHtml(htmlText, id) {
 // --- Components ---
 
 // Progressive Image Component mit Blur-up Effekt
-const ProgressiveImage = React.memo(function ProgressiveImage({
+const ProgressiveImage = memo(function ProgressiveImage({
   src,
   alt,
   className,
@@ -124,11 +122,11 @@ const ProgressiveImage = React.memo(function ProgressiveImage({
   width,
   height,
 }) {
-  const [loaded, setLoaded] = React.useState(false);
-  const [error, setError] = React.useState(false);
-  const imgRef = React.useRef(null);
+  const [loaded, setLoaded] = useState(false);
+  const [error, setError] = useState(false);
+  const imgRef = useRef(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!imgRef.current) return;
 
     // Wenn Bild bereits im Cache ist, sofort anzeigen
@@ -142,48 +140,49 @@ const ProgressiveImage = React.memo(function ProgressiveImage({
 
   if (error) return null;
 
-  return html`
-    <div className="progressive-image-wrapper ${loaded ? 'loaded' : ''}">
+  return (
+    <div className={`progressive-image-wrapper ${loaded ? 'loaded' : ''}`}>
       <img
-        ref=${imgRef}
-        src=${src}
-        alt=${alt}
-        className=${className}
-        loading=${loading}
-        fetchpriority=${fetchpriority}
-        width=${width}
-        height=${height}
+        ref={imgRef}
+        src={src}
+        alt={alt}
+        className={className}
+        loading={loading}
+        // @ts-ignore
+        fetchPriority={fetchpriority}
+        width={width}
+        height={height}
         decoding="async"
-        onLoad=${handleLoad}
-        onError=${handleError}
+        onLoad={handleLoad}
+        onError={handleError}
       />
     </div>
-  `;
+  );
 });
 
 function ScrollToTop() {
-  const [visible, setVisible] = React.useState(false);
-  React.useEffect(() => {
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
     const toggle = () => setVisible(window.scrollY > 400);
     window.addEventListener('scroll', toggle);
     return () => window.removeEventListener('scroll', toggle);
   }, []);
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
-  return html`
+  return (
     <button
-      className=${`scroll-to-top-btn ${visible ? 'visible' : ''}`}
-      onClick=${scrollToTop}
+      className={`scroll-to-top-btn ${visible ? 'visible' : ''}`}
+      onClick={scrollToTop}
       aria-label="Nach oben scrollen"
     >
-      <${ArrowUp} />
+      <ArrowUp />
     </button>
-  `;
+  );
 }
 
 function ReadingProgress() {
-  const [width, setWidth] = React.useState(0);
-  React.useEffect(() => {
+  const [width, setWidth] = useState(0);
+  useEffect(() => {
     const onScroll = () => {
       const h = document.body.scrollHeight - window.innerHeight;
       if (h > 0) setWidth((window.scrollY / h) * 100);
@@ -191,13 +190,15 @@ function ReadingProgress() {
     window.addEventListener('scroll', onScroll);
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
-  return html`<div className="reading-progress-container">
-    <div className="reading-progress-bar" style=${{ width: width + '%' }}></div>
-  </div>`;
+  return (
+    <div className="reading-progress-container">
+      <div className="reading-progress-bar" style={{ width: width + '%' }}></div>
+    </div>
+  );
 }
 
 function RelatedPosts({ currentPost, allPosts }) {
-  const related = React.useMemo(() => {
+  const related = useMemo(() => {
     if (!currentPost || !allPosts.length) return [];
     return allPosts
       .filter(
@@ -208,45 +209,43 @@ function RelatedPosts({ currentPost, allPosts }) {
 
   if (related.length === 0) return null;
 
-  return html`
+  return (
     <div className="related-posts-section">
       <h3 className="related-posts-title">
         Das könnte dich auch interessieren
       </h3>
       <div className="blog-grid">
-        ${related.map(
-          (post) => html`
-            <article
-              key=${post.id}
-              className="blog-card"
-              onClick=${() => (window.location.hash = `/blog/${post.id}`)}
+        {related.map((post) => (
+          <article
+            key={post.id}
+            className="blog-card"
+            onClick={() => (window.location.hash = `/blog/${post.id}`)}
+          >
+            <h4 className="card-title" style={{ fontSize: '1.1rem' }}>
+              {post.title}
+            </h4>
+            <p
+              className="card-excerpt"
+              style={{ fontSize: '0.9rem', marginBottom: '0' }}
             >
-              <h4 className="card-title" style=${{ fontSize: '1.1rem' }}>
-                ${post.title}
-              </h4>
-              <p
-                className="card-excerpt"
-                style=${{ fontSize: '0.9rem', marginBottom: '0' }}
-              >
-                ${post.excerpt.slice(0, 80)}...
-              </p>
-            </article>
-          `,
-        )}
+              {post.excerpt.slice(0, 80)}...
+            </p>
+          </article>
+        ))}
       </div>
     </div>
-  `;
+  );
 }
 
 // Main App
 function BlogApp() {
-  const [posts, setPosts] = React.useState([]);
-  const [loading, setLoading] = React.useState(true);
-  const [filter, setFilter] = React.useState('All');
-  const [currentPostId, setCurrentPostId] = React.useState(null);
-  const [ogMeta, setOgMeta] = React.useState(null);
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState('All');
+  const [currentPostId, setCurrentPostId] = useState(null);
+  const [ogMeta, setOgMeta] = useState(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const seedEl = document.getElementById('blog-list-json');
     const seed = seedEl
       ? JSON.parse(seedEl.textContent || '[]').map(normalizePost)
@@ -264,7 +263,7 @@ function BlogApp() {
       .catch(() => {});
   }, []);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const handleRoute = () => {
       const hash = window.location.hash;
       if (hash.startsWith('#/blog/')) {
@@ -286,12 +285,12 @@ function BlogApp() {
     };
   }, [currentPostId]);
 
-  const categories = React.useMemo(
+  const categories = useMemo(
     () => ['All', ...new Set(posts.map((p) => p.category).filter(Boolean))],
     [posts],
   );
 
-  const visiblePosts = React.useMemo(
+  const visiblePosts = useMemo(
     () =>
       posts.filter((p) => {
         const matchCat = filter === 'All' || p.category === filter;
@@ -302,12 +301,12 @@ function BlogApp() {
 
   const getOg = (id) => (ogMeta ? ogMeta[id] : null);
 
-  const activePost = React.useMemo(
+  const activePost = useMemo(
     () => (currentPostId ? posts.find((p) => p.id === currentPostId) : null),
     [posts, currentPostId],
   );
 
-  const activePostHtml = React.useMemo(
+  const activePostHtml = useMemo(
     () =>
       activePost
         ? DOMPurify.sanitize(
@@ -324,74 +323,68 @@ function BlogApp() {
     const post = activePost;
 
     if (!post && !loading)
-      return html`
+      return (
         <div className="container-blog pt-24 fade-in">
           <p>Artikel nicht gefunden.</p>
           <button
             className="btn-back"
-            onClick=${() => (window.location.hash = '')}
+            onClick={() => (window.location.hash = '')}
           >
             ← Zurück
           </button>
         </div>
-      `;
+      );
 
     if (!post)
-      return html`<div className="container-blog pt-24">
-        <div style="color:#666">Lade Artikel...</div>
-      </div>`;
+      return (
+        <div className="container-blog pt-24">
+          <div style={{ color: '#666' }}>Lade Artikel...</div>
+        </div>
+      );
 
     const cleanHtml = activePostHtml;
     const og = getOg(post.id);
     const heroSrc = post.image || (og ? og.fallback || og.url : null);
 
-    return html`
-      <${React.Fragment}>
-        <${ReadingProgress} />
-        <${ScrollToTop} />
+    return (
+      <React.Fragment>
+        <ReadingProgress />
+        <ScrollToTop />
         
         <div className="container-blog pt-24 fade-in">
-          <button className="btn-back" onClick=${() =>
-            (window.location.hash = '')}>← Übersicht (ESC)</button>
+          <button className="btn-back" onClick={() => (window.location.hash = '')}>← Übersicht (ESC)</button>
           
           <article className="blog-article">
             <header>
               <div className="card-meta">
-                <span className="card-category">${post.category}</span>
-                <span className="card-read-time"><${Clock}/> ${
-                  post.readTime
-                }</span>
+                <span className="card-category">{post.category}</span>
+                <span className="card-read-time"><Clock/> {post.readTime}</span>
               </div>
-              <h1>${post.title}</h1>
-              <div className="meta">${post.dateDisplay}</div>
+              <h1>{post.title}</h1>
+              <div className="meta">{post.dateDisplay}</div>
             </header>
 
-            ${
-              heroSrc &&
-              html`
-                <figure className="article-hero">
-                  <${ProgressiveImage}
-                    src=${heroSrc}
-                    alt=${post.title}
-                    className="article-hero-img"
-                    loading="eager"
-                    fetchpriority="high"
-                    width=${og?.width || 800}
-                    height=${og?.height || 420}
-                  />
-                </figure>
-              `
-            }
+            {heroSrc && (
+              <figure className="article-hero">
+                <ProgressiveImage
+                  src={heroSrc}
+                  alt={post.title}
+                  className="article-hero-img"
+                  loading="eager"
+                  fetchpriority="high"
+                  width={og?.width || 800}
+                  height={og?.height || 420}
+                />
+              </figure>
+            )}
 
-            <div className="article-body" dangerouslySetInnerHTML=${{
-              __html: cleanHtml,
-            }}></div>
+            <div className="article-body" dangerouslySetInnerHTML={{ __html: cleanHtml }}></div>
             
-            <${RelatedPosts} currentPost=${post} allPosts=${posts} />
+            <RelatedPosts currentPost={post} allPosts={posts} />
 
             <div className="article-cta">
               <h3>Unterstützung bei deinem Projekt?</h3>
-              <p style=${{
+              <p style={{
                 color: '#ccc',
                 marginBottom: '1.5rem',
                 maxWidth: '600px',
@@ -403,17 +396,17 @@ function BlogApp() {
             </div>
           </article>
         </div>
-      </${React.Fragment}>
-    `;
+      </React.Fragment>
+    );
   }
 
   // List View
-  return html`
-    <div className="container-blog fade-in" style=${{ paddingTop: '6rem' }}>
-      <${ScrollToTop} />
+  return (
+    <div className="container-blog fade-in" style={{ paddingTop: '6rem' }}>
+      <ScrollToTop />
 
-      <!-- Static Header -->
-      <header style=${{ marginBottom: '2rem' }}>
+      {/* Static Header */}
+      <header style={{ marginBottom: '2rem' }}>
         <h1 className="blog-headline">Wissen & Einblicke</h1>
         <p className="blog-subline">
           In unserem Blog teilen wir praxisnahe Tipps zu Webdesign, SEO,
@@ -422,10 +415,10 @@ function BlogApp() {
         </p>
       </header>
 
-      <!-- Sticky Controls: Optimized Top Position -->
+      {/* Sticky Controls: Optimized Top Position */}
       <div
         className="blog-sticky-header"
-        style=${{
+        style={{
           position: 'sticky',
           top: '72px' /* Matches Site Header Height + Spacing */,
           zIndex: 40,
@@ -440,74 +433,72 @@ function BlogApp() {
         <div className="blog-header-content">
           <div className="blog-controls">
             <div className="filter-bar">
-              ${categories.map(
-                (cat) => html`
-                  <button
-                    key=${cat}
-                    className=${`filter-btn ${filter === cat ? 'active' : ''}`}
-                    onClick=${() => setFilter(cat)}
-                  >
-                    ${cat}
-                  </button>
-                `,
-              )}
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  className={`filter-btn ${filter === cat ? 'active' : ''}`}
+                  onClick={() => setFilter(cat)}
+                >
+                  {cat}
+                </button>
+              ))}
             </div>
           </div>
         </div>
       </div>
 
       <div className="blog-grid">
-        ${visiblePosts.map((post, idx) => {
+        {visiblePosts.map((post, idx) => {
           const og = getOg(post.id);
           const fallbackImg = post.image || (og ? og.fallback || og.url : null);
           // Eager loading für erste 2 Bilder (Above the Fold)
           const loadingStrategy = idx < 2 ? 'eager' : 'lazy';
           const fetchPriority = idx === 0 ? 'high' : undefined;
 
-          return html`
+          return (
             <article
-              key=${post.id}
+              key={post.id}
               className="blog-card"
-              onClick=${() => (window.location.hash = `/blog/${post.id}`)}
+              onClick={() => (window.location.hash = `/blog/${post.id}`)}
             >
-              ${fallbackImg
-                ? html`<${ProgressiveImage}
-                    src=${fallbackImg}
-                    alt=${post.title}
-                    className="blog-card-image"
-                    loading=${loadingStrategy}
-                    fetchpriority=${fetchPriority}
-                    width=${og?.width || 800}
-                    height=${og?.height || 420}
-                  />`
-                : ''}
+              {fallbackImg && (
+                <ProgressiveImage
+                  src={fallbackImg}
+                  alt={post.title}
+                  className="blog-card-image"
+                  loading={loadingStrategy}
+                  fetchpriority={fetchPriority}
+                  width={og?.width || 800}
+                  height={og?.height || 420}
+                />
+              )}
 
               <div className="card-meta">
-                <span className="card-category">${post.category}</span>
-                <span className="card-date">${post.dateDisplay}</span>
+                <span className="card-category">{post.category}</span>
+                <span className="card-date">{post.dateDisplay}</span>
               </div>
 
-              <h2 className="card-title">${post.title}</h2>
-              <p className="card-excerpt">${post.excerpt}</p>
+              <h2 className="card-title">{post.title}</h2>
+              <p className="card-excerpt">{post.excerpt}</p>
 
               <div className="card-footer">
-                <span className="card-read-time"
-                  ><${Clock} /> ${post.readTime}</span
-                >
+                <span className="card-read-time">
+                  <Clock /> {post.readTime}
+                </span>
                 <button className="btn-read">
-                  Weiterlesen <${ArrowRight} />
+                  Weiterlesen <ArrowRight />
                 </button>
               </div>
             </article>
-          `;
+          );
         })}
-        ${visiblePosts.length === 0 && !loading
-          ? html`<p style="color:#666">Keine Artikel gefunden.</p>`
-          : ''}
+        {visiblePosts.length === 0 && !loading && (
+          <p style={{ color: '#666' }}>Keine Artikel gefunden.</p>
+        )}
       </div>
     </div>
-  `;
+  );
 }
 
 const rootEl = document.getElementById('root');
-if (rootEl) createRoot(rootEl).render(React.createElement(BlogApp));
+if (rootEl) createRoot(rootEl).render(<BlogApp />);
