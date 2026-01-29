@@ -4,11 +4,7 @@ import htm from 'https://esm.sh/htm@3.1.1';
 import { createLogger } from '/content/core/logger.js';
 import { marked } from 'https://cdn.jsdelivr.net/npm/marked@11.1.1/lib/marked.esm.js';
 import DOMPurify from 'https://cdn.jsdelivr.net/npm/dompurify@3.0.8/dist/purify.es.mjs';
-import {
-  Clock,
-  ArrowRight,
-  ArrowUp,
-} from '/content/components/ui/icons.js';
+import { Clock, ArrowRight, ArrowUp } from '/content/components/ui/icons.js';
 
 marked.setOptions({ mangle: false, headerIds: false });
 
@@ -363,7 +359,7 @@ function BlogApp() {
                 }</span>
               </div>
               <h1>${post.title}</h1>
-              <div className="meta">${post.dateDisplay}</div>
+              <time className="meta" datetime=${post.date}>${post.dateDisplay}</time>
             </header>
 
             ${
@@ -484,7 +480,9 @@ function BlogApp() {
 
               <div className="card-meta">
                 <span className="card-category">${post.category}</span>
-                <span className="card-date">${post.dateDisplay}</span>
+                <time className="card-date" datetime=${post.date}
+                  >${post.dateDisplay}</time
+                >
               </div>
 
               <h2 className="card-title">${post.title}</h2>
