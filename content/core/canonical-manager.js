@@ -1,5 +1,5 @@
 import { createLogger } from './logger.js';
-import { upsertHeadLink } from './dom-utils.js';
+import { upsertHeadLink } from './utils.js';
 
 const log = createLogger('CanonicalManager');
 const BASE_URL = 'https://www.abdulkerimsesli.de';
@@ -31,7 +31,7 @@ function computeCleanPath() {
   return cleanPath;
 }
 
-export function computeCanonicalUrl({ forceProd = false, cleanPath = null }) {
+function computeCanonicalUrl({ forceProd = false, cleanPath = null }) {
   const path = cleanPath || computeCleanPath();
 
   if (forceProd) {
@@ -49,7 +49,7 @@ export function computeCanonicalUrl({ forceProd = false, cleanPath = null }) {
   return globalThis.location.href.split('#')[0].split('?')[0];
 }
 
-export function buildCanonicalLinks(options = {}) {
+function buildCanonicalLinks(options = {}) {
   const forceProd =
     options.forceProd ?? (!isLocalDevelopment() && !isPreviewEnvironment());
   const cleanPath = options.cleanPath || computeCleanPath();
@@ -100,20 +100,5 @@ export function applyCanonicalLinks(options = {}) {
     log.debug('Canonical links applied:', canonical);
   } catch (error) {
     log.error('Failed to apply canonical links:', error);
-  }
-}
-
-export function setEarlyCanonical() {
-  try {
-    const canonicalUrl = globalThis.location.href.split('#')[0].split('?')[0];
-    if (!document.head.querySelector('link[rel="canonical"]')) {
-      const link = document.createElement('link');
-      link.rel = 'canonical';
-      link.href = canonicalUrl;
-      link.dataset.early = 'true';
-      document.head.appendChild(link);
-    }
-  } catch (error) {
-    log.error('Failed to set early canonical:', error);
   }
 }

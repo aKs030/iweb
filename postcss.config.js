@@ -15,6 +15,11 @@ export default {
                 normalizeWhitespace: true,
                 minifyFontValues: true,
                 minifyGradients: true,
+                reduceIdents: false, // Safer for CSS variables
+                mergeRules: true,
+                minifySelectors: true,
+                colormin: true,
+                convertValues: true,
               },
             ],
           },

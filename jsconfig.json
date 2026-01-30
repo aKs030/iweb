@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "checkJs": true,
+    "module": "esnext",
+    "target": "ES2022",
+    "moduleResolution": "bundler",
+    "baseUrl": ".",
+    "paths": {
+      "/content/*": ["content/*"],
+      "/pages/*": ["pages/*"]
+    },
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true
+  },
+  "include": ["content/**/*", "pages/**/*", "workers/**/*", "*.js"],
+  "exclude": ["node_modules", "dist", ".git"]
+}

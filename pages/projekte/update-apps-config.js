@@ -6,6 +6,7 @@
  */
 
 import { createLogger } from '../../content/core/logger.js';
+import { sleep } from '../../content/core/utils.js';
 import { GITHUB_CONFIG } from './github-config.js';
 import { fetchGitHubContents, fetchProjectMetadata } from './project-utils.js';
 import { fileURLToPath } from 'url';
@@ -33,7 +34,7 @@ const updateAppsConfig = async () => {
       console.log(`🔄 Processing: ${dir.name}`);
 
       if (i > 0) {
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        await sleep(100);
       }
 
       const metadata = await fetchProjectMetadata(projectPath);

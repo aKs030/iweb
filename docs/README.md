@@ -15,6 +15,10 @@ Essential documentation for the portfolio website project.
 - **[ARCHITECTURE.md](ARCHITECTURE.md)** - System architecture and design decisions
 - **[CSS_GUIDE.md](CSS_GUIDE.md)** - CSS architecture and best practices
 
+### Image Optimization
+
+- **[IMAGE_OPTIMIZATION.md](IMAGE_OPTIMIZATION.md)** - Bildoptimierung mit AVIF/WebP & Lazy Loading
+
 ## 🔧 Component Documentation
 
 - **[../content/components/robot-companion/README.md](../content/components/robot-companion/README.md)** - AI Robot Companion
@@ -53,6 +57,7 @@ npm run fix              # Auto-fix issues
 ```bash
 npm run css:check        # CSS statistics
 npm run size:check       # Bundle size
+npm run optimize:images  # Optimize all images
 ```
 
 ## 📖 External Resources

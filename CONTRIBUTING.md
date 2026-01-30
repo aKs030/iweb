@@ -298,9 +298,7 @@ Bevor du einen PR öffnest:
 
 ### Dokumentation
 
-- [CSS Optimization](CSS_OPTIMIZATION_FINAL.md)
-- [PostCSS Setup](docs/POSTCSS_SETUP.md)
-- [CSS Nesting Guide](docs/CSS_NESTING_MIGRATION_GUIDE.md)
+- [CSS Guide](docs/CSS_GUIDE.md)
 - [Architecture](docs/ARCHITECTURE.md)
 
 ### Externe Ressourcen

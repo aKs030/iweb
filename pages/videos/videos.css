@@ -1,16 +1,4 @@
 /* Modern dark theme for videos page with animations */
-:root {
-  --card-radius: 20px;
-  --accent: #ff6b6b;
-  --accent-glow: rgba(255, 107, 107, 0.4);
-  --bg-main: #0a0a0a;
-  --bg-card: linear-gradient(145deg, #1a1a1a, #252525);
-  --text-primary: #ffffff;
-  --text-secondary: #b0b0b0;
-  --shadow: rgba(0, 0, 0, 0.5);
-  --youtube-red: #ff0000;
-  --share-blue: #1877f2;
-}
 
 @keyframes gradientShift {
   0%,
@@ -81,7 +69,7 @@ h1 {
 }
 .video-card {
   background: var(--bg-card);
-  border-radius: var(--card-radius);
+  border-radius: var(--radius-xl);
   padding: 2rem;
   box-shadow:
     0 20px 40px var(--shadow),
@@ -109,7 +97,7 @@ h1 {
   right: -2px;
   bottom: -2px;
   background: linear-gradient(135deg, var(--accent), #ffd93d, #42a5f5);
-  border-radius: var(--card-radius);
+  border-radius: var(--radius-xl);
   opacity: 0;
   z-index: -1;
   transition: opacity 0.4s ease;
@@ -156,7 +144,7 @@ h1 {
   padding: 2rem;
   background: var(--bg-card);
   border-left: 4px solid var(--accent);
-  border-radius: var(--card-radius);
+  border-radius: var(--radius-xl);
   color: var(--text-secondary);
 }
 .video-error {
@@ -165,7 +153,7 @@ h1 {
   background: #2a1a1a;
   border-left: 4px solid #f87171;
   color: #fca5a5;
-  border-radius: var(--card-radius);
+  border-radius: var(--radius-xl);
 }
 .video-note {
   margin: 2rem 0;
@@ -173,7 +161,7 @@ h1 {
   background: #162022;
   border-left: 4px solid #ffd93d;
   color: var(--text-secondary);
-  border-radius: var(--card-radius);
+  border-radius: var(--radius-xl);
 }
 .video-thumb {
   position: relative;
@@ -183,7 +171,7 @@ h1 {
   padding-bottom: 56.25%;
   background-size: cover;
   background-position: center center;
-  border-radius: var(--card-radius);
+  border-radius: var(--radius-xl);
   cursor: pointer;
   outline: none;
   transition: transform 0.3s ease;

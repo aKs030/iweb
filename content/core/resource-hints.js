@@ -6,7 +6,7 @@
  */
 
 import { createLogger } from './logger.js';
-import { upsertHeadLink } from './dom-utils.js';
+import { upsertHeadLink } from './utils.js';
 
 const log = createLogger('ResourceHints');
 
@@ -89,9 +89,9 @@ export class ResourceHintsManager {
         rel: 'preload',
         href,
         as,
-        type,
         crossOrigin: crossOrigin ? 'anonymous' : undefined,
         dataset: { injectedBy: 'resource-hints' },
+        attrs: type ? { type } : {},
       });
 
       this.hints.set(`preload:${href}`, { type: 'preload', href, as });

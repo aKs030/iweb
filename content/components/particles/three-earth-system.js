@@ -6,7 +6,7 @@
  */
 
 import { createLogger } from '/content/core/logger.js';
-import { getElementById, debounce } from '/content/core/dom-utils.js';
+import { getElementById, debounce } from '/content/core/utils.js';
 import { createObserver } from '/content/core/intersection-observer.js';
 import {
   getSharedState,

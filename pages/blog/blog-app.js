@@ -1,3 +1,5 @@
+// @ts-nocheck
+// External CDN imports - type definitions not available
 import React from 'https://esm.sh/react@19.0.0';
 import { createRoot } from 'https://esm.sh/react-dom@19.0.0/client';
 import htm from 'https://esm.sh/htm@3.1.1';
@@ -253,12 +255,17 @@ const BlogApp = () => {
     (async () => {
       try {
         // Parallel execution for better performance
-        const [final, ogResponse] = await Promise.all([
+        // Load posts data and OG images metadata in parallel
+        const [final, ogData] = await Promise.all([
           loadPostsData(seed),
-          fetch('/content/assets/img/og/og-images-meta.json').then((r) =>
-            r.json(),
-          ),
+          (async () => {
+            const response = await fetch(
+              '/content/assets/img/og/og-images-meta.json',
+            );
+            return response.json();
+          })(),
         ]);
+        const ogResponse = ogData; // Keep variable name for compatibility
 
         setPosts(final);
         setLoading(false);
@@ -268,7 +275,7 @@ const BlogApp = () => {
         setLoading(false);
 
         // Log errors in development for debugging
-        if (import.meta.env.DEV) {
+        if (import.meta.env?.DEV) {
           console.warn('Failed to load blog data:', error);
         }
       }

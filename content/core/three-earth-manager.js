@@ -4,7 +4,7 @@
  */
 
 import { createLogger } from './logger.js';
-import { getElementById } from './dom-utils.js';
+import { getElementById } from './utils.js';
 import { observeOnce } from './intersection-observer.js';
 
 const log = createLogger('ThreeEarthManager');
