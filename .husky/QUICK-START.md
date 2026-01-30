@@ -109,6 +109,10 @@ git commit --amend -m "feat(scope): correct message"
 
 ---
 
-## 📚 Mehr Infos
+## 📚 Weitere Informationen
 
-Siehe: `HUSKY-SETUP.md` für detaillierte Dokumentation
+Für detaillierte Informationen zu Husky und Git Hooks, siehe:
+
+- [Husky Documentation](https://typicode.github.io/husky/)
+- [Conventional Commits](https://www.conventionalcommits.org/)
+- [lint-staged](https://github.com/okonet/lint-staged)

@@ -48,6 +48,7 @@ const updateAppsConfig = async () => {
     }
 
     // Clean up 'raw' property if it exists, as we don't need it in the config file
+    // eslint-disable-next-line no-unused-vars
     const cleanApps = apps.map(({ raw, ...app }) => app);
 
     const now = new Date(); // ✅ Create once

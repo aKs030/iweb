@@ -116,7 +116,7 @@ const initPage = async () => {
         loadThreeEarth();
         ioDisconnect();
       }
-    } catch (e) {
+    } catch {
       // ignore and rely on IntersectionObserver
     }
   } else {

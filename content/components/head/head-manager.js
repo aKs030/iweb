@@ -33,7 +33,7 @@ const getPageData = () => {
   ).toLowerCase();
   const isEnglish = preferredLang.startsWith('en');
 
-  const pageData = {
+  let pageData = {
     ...rawPageData,
     title:
       isEnglish && rawPageData.title_en
@@ -63,7 +63,7 @@ const getPageData = () => {
       if (partialMeta.image && partialMeta.image.startsWith('/')) {
         partialMeta.image = `${BASE_URL}${partialMeta.image}`;
       }
-      Object.assign(pageData, partialMeta);
+      pageData = { ...pageData, ...partialMeta };
     }
   } catch (e) {
     log.warn('Failed to merge partial PAGE_META:', e);

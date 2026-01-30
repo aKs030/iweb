@@ -1,0 +1,285 @@
+/* ===== CSS NESTING EXAMPLES (PostCSS) ===== */
+
+/* 
+  Mit PostCSS Nesting kannst du jetzt verschachtelte Styles schreiben.
+  Das macht den Code lesbarer und wartbarer.
+*/
+
+/* BEISPIEL 1: Button mit Nesting */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition:
+    transform var(--transition-base),
+    box-shadow var(--transition-base);
+
+  /* Nested hover state */
+  &:hover {
+    transform: var(--transform-lift-sm);
+  }
+
+  /* Nested focus state */
+  &:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+  }
+
+  /* Nested disabled state */
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* Nested modifier: primary */
+  &.btn-primary {
+    background: linear-gradient(
+      135deg,
+      var(--primary-color),
+      var(--primary-dark)
+    );
+    color: #fff;
+
+    &:hover {
+      box-shadow: 0 0 18px rgb(9 139 255 / 55%);
+    }
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: rgb(255 255 255 / 20%);
+      transition: left 0.3s;
+    }
+
+    &:hover::before {
+      left: 100%;
+    }
+  }
+
+  /* Nested modifier: secondary */
+  &.btn-secondary {
+    background: transparent;
+    border: 2px solid var(--primary-color);
+
+    &:hover {
+      background: var(--primary-color);
+      color: #fff;
+    }
+  }
+}
+
+/* BEISPIEL 2: Card mit Nesting */
+.card {
+  padding: var(--card-pad);
+  border-radius: var(--radius-lg);
+  background: var(--bg-secondary);
+  transition: transform var(--transition-smooth);
+
+  &:hover {
+    transform: var(--transform-hover-card);
+
+    .card-image {
+      transform: scale(1.05);
+    }
+  }
+
+  .card-header {
+    margin-bottom: var(--spacing-md);
+
+    .card-title {
+      font-size: var(--project-title-fs);
+      font-weight: 700;
+      margin-bottom: var(--spacing-xs);
+    }
+
+    .card-subtitle {
+      font-size: var(--muted-fs);
+      color: var(--text-muted);
+    }
+  }
+
+  .card-body {
+    .card-description {
+      line-height: var(--body-lh);
+      color: var(--text-secondary);
+    }
+  }
+
+  .card-footer {
+    margin-top: var(--spacing-md);
+    display: flex;
+    gap: var(--spacing-sm);
+
+    .card-action {
+      flex: 1;
+    }
+  }
+}
+
+/* BEISPIEL 3: Media Queries mit Nesting */
+.container {
+  width: min(100%, var(--container-width));
+  margin-inline: auto;
+  padding-inline: var(--pad-x);
+
+  /* Nested media query */
+  @media (width <= 768px) {
+    padding-inline: max(0.5rem, env(safe-area-inset-left));
+
+    .container-title {
+      font-size: clamp(1.5rem, 4vw, 2rem);
+    }
+  }
+
+  @media (width <= 480px) {
+    padding-inline: max(0.25rem, env(safe-area-inset-left));
+  }
+}
+
+/* BEISPIEL 4: Komplexe Verschachtelung */
+.search-modal {
+  position: fixed;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 600px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+
+  .search-input {
+    width: 100%;
+    padding: 1rem;
+    border: none;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+
+    &:focus {
+      outline: 2px solid var(--primary-color);
+      outline-offset: -2px;
+    }
+
+    &::placeholder {
+      color: var(--text-muted);
+    }
+  }
+
+  .search-results {
+    max-height: 400px;
+    overflow-y: auto;
+
+    .search-result-item {
+      padding: 0.75rem 1rem;
+      cursor: pointer;
+      transition: background var(--transition-fast);
+
+      &:hover {
+        background: var(--bg-interactive);
+      }
+
+      &:focus-visible {
+        background: var(--bg-interactive);
+        outline: 2px solid var(--primary-color);
+        outline-offset: -2px;
+      }
+
+      .search-result-title {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+      }
+
+      .search-result-description {
+        font-size: 0.875rem;
+        color: var(--text-muted);
+      }
+    }
+  }
+
+  /* Nested media query */
+  @media (width <= 768px) {
+    top: 20px;
+    width: calc(100% - 40px);
+
+    .search-input {
+      padding: 0.75rem;
+      font-size: 16px; /* Prevent zoom on iOS */
+    }
+
+    .search-results {
+      max-height: calc(100vh - 200px);
+    }
+  }
+}
+
+/* ===== VORTEILE VON CSS NESTING ===== */
+
+/*
+1. BESSERE LESBARKEIT
+   - Alle Styles eines Elements sind zusammen
+   - Klare Hierarchie sichtbar
+   - Weniger Wiederholung von Selektoren
+
+2. EINFACHERE WARTUNG
+   - Änderungen an einem Element sind an einer Stelle
+   - Keine verstreuten Styles
+   - Einfacher zu refactoren
+
+3. WENIGER CODE
+   - Keine Wiederholung von Parent-Selektoren
+   - Kompaktere Syntax
+   - Bessere Organisation
+
+4. SCOPING
+   - Styles sind klar einem Element zugeordnet
+   - Weniger Konflikte
+   - Bessere Modularität
+
+5. MEDIA QUERIES
+   - Können direkt im Element definiert werden
+   - Keine separaten Media Query Blöcke
+   - Besserer Überblick
+*/
+
+/* ===== WIE MAN ES NUTZT ===== */
+
+/*
+1. Einfach & verwenden für Pseudo-Klassen:
+   .btn {
+     &:hover { ... }
+     &:focus { ... }
+   }
+
+2. Verschachtelte Elemente:
+   .card {
+     .card-title { ... }
+     .card-body { ... }
+   }
+
+3. Modifier mit &:
+   .btn {
+     &.btn-primary { ... }
+     &.btn-secondary { ... }
+   }
+
+4. Media Queries:
+   .container {
+     @media (width <= 768px) { ... }
+   }
+
+5. Pseudo-Elemente:
+   .btn {
+     &::before { ... }
+     &::after { ... }
+   }
+*/

@@ -258,19 +258,18 @@ export class TypeWriter {
     this.quotes = quotes.filter((q) => q?.text);
     if (!this.quotes.length) return log.error('No valid quotes');
 
-    Object.assign(this, {
-      textEl,
-      authorEl,
-      wait,
-      typeSpeed,
-      deleteSpeed,
-      shuffle: doShuffle,
-      loop,
-      onBeforeType,
-      timerManager: new TimerManager(),
-      _isDeleting: false,
-      _txt: '',
-    });
+    // Initialize instance properties
+    this.textEl = textEl;
+    this.authorEl = authorEl;
+    this.wait = wait;
+    this.typeSpeed = typeSpeed;
+    this.deleteSpeed = deleteSpeed;
+    this.shuffle = doShuffle;
+    this.loop = loop;
+    this.onBeforeType = onBeforeType;
+    this.timerManager = new TimerManager();
+    this._isDeleting = false;
+    this._txt = '';
 
     this._queue = this._createQueue();
     this._index = this._queue.shift();
