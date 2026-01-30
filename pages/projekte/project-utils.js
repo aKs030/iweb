@@ -90,7 +90,9 @@ export async function fetchProjectMetadata(projectPath) {
 }
 
 /**
- * URL Helper: Get RawGit URL
+ * URL Helper: Convert GitHub URL to RawCDN Githack URL
+ * @param {string} ghUrl - GitHub tree URL
+ * @returns {string} RawCDN Githack URL or empty string
  */
 export const toRawGithackUrl = (ghUrl) => {
   try {
@@ -103,49 +105,6 @@ export const toRawGithackUrl = (ghUrl) => {
     /* ignore */
   }
   return '';
-};
-
-/**
- * URL Helper: Get jsDelivr URL
- */
-export const toJsDelivrUrl = (ghUrl) => {
-  try {
-    const m = /github\.com\/([^/]+)\/([^/]+)\/tree\/([^/]+)\/(.+)$/.exec(ghUrl);
-    if (m) {
-      const [, owner, repo, branch, path] = m;
-      return `https://cdn.jsdelivr.net/gh/${owner}/${repo}@${branch}/${path}/index.html`;
-    }
-  } catch {
-    /* ignore */
-  }
-  return '';
-};
-
-/**
- * URL Helper: Get Direct URL (GitHub Raw or App Path)
- */
-export const getDirectUrl = (project) => {
-  if (project.githubPath) {
-    try {
-      const url = new URL(project.githubPath);
-      if (url.host === 'github.com') {
-        const pathname = url.pathname;
-        const m = /^\/([^/]+)\/([^/]+)\/tree\/([^/]+)\/(.+)$/.exec(pathname);
-        if (m) {
-          const [, owner, repo, branch, path] = m;
-          return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}/index.html`;
-        }
-      }
-    } catch {
-      // Invalid URL, fall through
-    }
-  }
-  // fallback
-  if (project.appPath)
-    return project.appPath.endsWith('/')
-      ? project.appPath + 'index.html'
-      : project.appPath;
-  return project.githubPath || '';
 };
 
 /**
