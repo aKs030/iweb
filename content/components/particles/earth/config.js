@@ -145,7 +145,7 @@ export const CONFIG = {
       NIGHT: '/content/assets/img/earth/textures/earth_night.webp',
       NORMAL: '/content/assets/img/earth/textures/earth_normal.webp',
       BUMP: '/content/assets/img/earth/textures/earth_bump.webp',
-      CLOUDS: '/content/assets/img/earth/textures/earth_clouds_1024.png',
+      CLOUDS: '/content/assets/img/earth/textures/earth_clouds_1024.webp',
       MOON: '/content/assets/img/earth/textures/moon_texture.webp',
       MOON_BUMP: '/content/assets/img/earth/textures/moon_bump.webp',
     },

@@ -5,29 +5,6 @@
  * @version 2.0.0
  */
 
-/* ===== CSS Custom Properties ===== */
-:root {
-  /* Material */
-  --sp-bg: rgba(28, 28, 30, 0.82);
-  --sp-border: rgba(255, 255, 255, 0.14);
-  --sp-divider: rgba(255, 255, 255, 0.08);
-
-  /* Text */
-  --sp-text: rgba(255, 255, 255, 0.92);
-  --sp-text-secondary: rgba(255, 255, 255, 0.55);
-
-  /* Accent */
-  --sp-accent: rgb(10, 132, 255);
-
-  /* Interaction */
-  --sp-hover: rgba(255, 255, 255, 0.06);
-
-  /* Radius & Motion */
-  --sp-radius: 16px;
-  --sp-ease: cubic-bezier(0.28, 0.11, 0.32, 1);
-  --sp-blur: 100px;
-}
-
 /* ===== Search Container ===== */
 .search-overlay {
   position: fixed;

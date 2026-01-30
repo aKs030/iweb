@@ -44,8 +44,12 @@
     <!-- Preconnect to Critical Resources -->
     <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
     <link rel="dns-prefetch" href="https://www.google-analytics.com" />
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
+    <link rel="dns-prefetch" href="https://esm.sh" />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    <link rel="preconnect" href="https://esm.sh" crossorigin />
 
-    <!-- Preload Critical Assets - Removed earth_day.webp as it's loaded dynamically by Three.js -->
+    <!-- Note: CSS preload removed - Vite handles this automatically with modulepreload -->
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />

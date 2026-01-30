@@ -12,18 +12,18 @@
 import SEARCH_INDEX from './search-index.json' assert { type: 'json' };
 import { searchHandler } from './handlers/search.js';
 import { geminiHandler } from './handlers/gemini.js';
-import { corsHeaders, errorResponse } from './utils/response.js';
+import {
+  handleCORSPreflight,
+  errorResponse,
+} from '../shared/response-utils.js';
 
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
 
-    // Add CORS headers for all responses
-    const headers = { ...corsHeaders };
-
     // Handle OPTIONS preflight requests
     if (request.method === 'OPTIONS') {
-      return new Response(null, { status: 204, headers });
+      return handleCORSPreflight();
     }
 
     try {
@@ -36,10 +36,10 @@ export default {
         return await geminiHandler(request, env, SEARCH_INDEX);
       }
 
-      return errorResponse('Not Found', 404);
+      return errorResponse('Not Found', null, 404);
     } catch (error) {
       console.error('Worker error:', error);
-      return errorResponse(error.message, 500);
+      return errorResponse('Worker error', error.message, 500);
     }
   },
 

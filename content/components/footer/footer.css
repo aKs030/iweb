@@ -4,12 +4,6 @@
  * @author Abdulkerim Sesli
  */
 
-/* ===== CSS Variables ===== */
-:root {
-  --footer-transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  --footer-spring: cubic-bezier(0.68, -0.55, 0.265, 1.55);
-}
-
 /* ===== Address Element Reset ===== */
 address {
   font-style: normal;
@@ -42,7 +36,7 @@ address {
   font-size: 13px;
   font-weight: 510;
   letter-spacing: -0.02em;
-  animation: footerAppear 0.8s var(--footer-spring) forwards;
+  animation: footerAppear 0.8s var(--ease-spring) forwards;
   opacity: 0;
 }
 
@@ -62,7 +56,7 @@ address {
   padding: 0 20px;
   min-height: 52px;
   cursor: pointer;
-  transition: background var(--footer-transition);
+  transition: background var(--transition-base);
   user-select: none;
 }
 
@@ -94,7 +88,7 @@ address {
   padding: 4px 8px;
   border-radius: 8px;
   font-weight: 590;
-  transition: all var(--footer-transition);
+  transition: all var(--transition-base);
 }
 
 .brand-link:hover {
@@ -109,7 +103,7 @@ address {
   align-items: center;
   gap: clamp(8px, 1vw, 12px);
   flex-shrink: 0;
-  animation: cookieSlideIn 0.4s var(--footer-spring) forwards;
+  animation: cookieSlideIn 0.4s var(--ease-spring) forwards;
   pointer-events: auto;
   cursor: default;
 }
@@ -183,7 +177,7 @@ address {
   font-size: clamp(12px, 1vw, 13px);
   font-weight: 600;
   cursor: pointer;
-  transition: all var(--footer-transition);
+  transition: all var(--transition-base);
   letter-spacing: -0.01em;
   white-space: nowrap;
   flex-shrink: 0;
@@ -251,7 +245,7 @@ address {
   letter-spacing: -0.01em;
   cursor: pointer;
   white-space: nowrap;
-  transition: all var(--footer-transition);
+  transition: all var(--transition-base);
   -webkit-tap-highlight-color: rgba(0, 122, 255, 0.1);
 }
 
@@ -280,7 +274,7 @@ address {
   width: 14px;
   height: 14px;
   opacity: 0.85;
-  transition: all var(--footer-transition);
+  transition: all var(--transition-base);
 }
 
 .nav-btn:hover svg {
@@ -348,7 +342,7 @@ address {
   font-size: 20px;
   line-height: 1;
   cursor: pointer;
-  transition: all var(--footer-transition);
+  transition: all var(--transition-base);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -380,7 +374,7 @@ address {
   border: 1px solid var(--component-separator, rgba(255, 255, 255, 0.1));
   border-radius: 8px;
   padding: 10px 12px;
-  transition: all var(--footer-transition);
+  transition: all var(--transition-base);
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -497,7 +491,7 @@ address {
   font-weight: 600;
   cursor: pointer;
   border: none;
-  transition: all var(--footer-transition);
+  transition: all var(--transition-base);
   font-family: inherit;
   letter-spacing: -0.01em;
 }
@@ -559,7 +553,7 @@ address {
   border: 1px solid var(--component-separator, rgba(255, 255, 255, 0.1));
   border-radius: 12px;
   padding: 14px;
-  transition: all var(--footer-transition);
+  transition: all var(--transition-base);
   display: flex;
   flex-direction: column;
   min-height: 140px;
@@ -629,7 +623,7 @@ address {
   border-radius: 8px;
   font-size: 11px;
   font-weight: 600;
-  transition: all var(--footer-transition);
+  transition: all var(--transition-base);
   flex: 1;
   justify-content: center;
   min-width: 0;
@@ -669,7 +663,7 @@ address {
   text-decoration: none;
   border-radius: 5px;
   font-size: 10px;
-  transition: all var(--footer-transition);
+  transition: all var(--transition-base);
 }
 
 .links a svg {
@@ -677,7 +671,7 @@ address {
   width: 12px;
   height: 12px;
   opacity: 0.7;
-  transition: all var(--footer-transition);
+  transition: all var(--transition-base);
 }
 
 .links a:hover {
@@ -709,7 +703,7 @@ address {
   text-decoration: none;
   border-radius: 6px;
   font-size: 10px;
-  transition: all var(--footer-transition);
+  transition: all var(--transition-base);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -722,7 +716,7 @@ address {
   width: 12px;
   height: 12px;
   opacity: 0.7;
-  transition: all var(--footer-transition);
+  transition: all var(--transition-base);
 }
 
 .links-compact a:hover {
@@ -754,7 +748,7 @@ address {
   color: #fff;
   font-size: 11px;
   font-family: inherit;
-  transition: all var(--footer-transition);
+  transition: all var(--transition-base);
 }
 
 .newsletter-form input:focus {
@@ -774,7 +768,7 @@ address {
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
-  transition: all var(--footer-transition);
+  transition: all var(--transition-base);
 }
 
 .newsletter-form button:hover {
@@ -801,7 +795,7 @@ address {
   font-size: 10px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.8);
-  transition: all var(--footer-transition);
+  transition: all var(--transition-base);
   cursor: default;
   letter-spacing: 0.02em;
 }
@@ -838,7 +832,7 @@ address {
   color: #fff;
   text-decoration: none;
   margin-left: 4px;
-  transition: color var(--footer-transition);
+  transition: color var(--transition-base);
 }
 
 .copyright a:hover {
@@ -876,7 +870,7 @@ address {
   color: rgba(255, 255, 255, 0.6);
   text-decoration: none;
   font-size: 10px;
-  transition: all var(--footer-transition);
+  transition: all var(--transition-base);
 }
 
 .social-btn:hover {
