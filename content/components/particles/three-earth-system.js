@@ -1004,6 +1004,7 @@ class ThreeEarthSystem {
     [this.dayMaterial, this.nightMaterial].forEach(disposeMaterial);
   }
 
+  // eslint-disable-next-line no-unused-vars
   _detectAndEnsureWebGL(container) {
     try {
       this._applyDeviceConfigSafely();

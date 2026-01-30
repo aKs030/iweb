@@ -1,10 +1,10 @@
 /**
  * Modern Fetch Utilities with Retry & Caching
- * @version 3.0.0
+ * @version 3.1.0
  */
 
 import { createLogger } from './logger.js';
-import { TimerManager } from './timer-utils.js';
+import { getCache } from './cache.js';
 
 const log = createLogger('Fetch');
 
@@ -18,28 +18,8 @@ const log = createLogger('Fetch');
  * @property {RequestInit} [fetchOptions] - Native fetch options
  */
 
-// Simple in-memory cache
-const cache = new Map();
-
-// Timer manager for cache cleanup
-const timers = new TimerManager('FetchCache');
-
-/**
- * Clear expired cache entries
- */
-function clearExpiredCache() {
-  const now = Date.now();
-  for (const [key, value] of cache.entries()) {
-    if (value.expires < now) {
-      cache.delete(key);
-    }
-  }
-}
-
-// Clear cache every 5 minutes
-if (typeof window !== 'undefined') {
-  timers.setInterval(clearExpiredCache, 300000);
-}
+// Use unified CacheManager instead of simple Map
+const cacheManager = getCache({ memorySize: 100 });
 
 /**
  * Modern fetch with timeout, retry, and caching
@@ -57,12 +37,12 @@ export async function fetchWithRetry(url, config = {}) {
     fetchOptions = {},
   } = config;
 
-  // Check cache first
+  // Check cache first using CacheManager
   if (useCache) {
-    const cached = cache.get(url);
-    if (cached && cached.expires > Date.now()) {
+    const cached = await cacheManager.get(url);
+    if (cached) {
       log.debug(`Cache hit: ${url}`);
-      return cached.response.clone();
+      return cached.clone();
     }
   }
 
@@ -85,12 +65,9 @@ export async function fetchWithRetry(url, config = {}) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
-      // Cache successful response
+      // Cache successful response using CacheManager
       if (useCache) {
-        cache.set(url, {
-          response: response.clone(),
-          expires: Date.now() + cacheTTL,
-        });
+        await cacheManager.set(url, response.clone(), cacheTTL);
       }
 
       return response;
@@ -158,22 +135,20 @@ export async function fetchAll(urls, config = {}) {
  */
 export function clearCache(url) {
   if (url) {
-    cache.delete(url);
+    cacheManager.delete(url);
   } else {
-    cache.clear();
+    cacheManager.clear();
   }
 }
 
 /**
  * Get cache statistics
- * @returns {{size: number, entries: Array<{url: string, expires: number}>}}
+ * @returns {{size: number, entries: Array<{url: string}>}}
  */
 export function getCacheStats() {
+  const stats = cacheManager.getStats();
   return {
-    size: cache.size,
-    entries: Array.from(cache.entries()).map(([url, { expires }]) => ({
-      url,
-      expires: new Date(expires).toISOString(),
-    })),
+    size: stats.memory.size,
+    entries: stats.memory.keys.map((url) => ({ url })),
   };
 }

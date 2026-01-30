@@ -1,14 +1,16 @@
 /**
- * Gemini API Configuration
+ * AI API Configuration (using Groq - Free!)
  *
  * SECURITY: API key is stored securely in Cloudflare Worker
  * All client requests use the /api/gemini proxy endpoint
+ * (Endpoint name kept for backward compatibility, but uses Groq now)
  *
  * Setup:
- * - Set API key: wrangler secret put GEMINI_API_KEY
+ * - Get free key: https://console.groq.com/keys
+ * - Set API key: wrangler secret put GROQ_API_KEY
  * - Configure in: wrangler.toml
  */
 export const config = {
-  model: 'gemini-2.5-flash-preview-09-2025',
-  proxyEndpoint: '/api/gemini',
+  model: 'llama-3.3-70b-versatile', // Groq model (free, fast!)
+  proxyEndpoint: '/api/gemini', // Kept for backward compatibility
 };

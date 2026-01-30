@@ -1,25 +1,76 @@
-# 🎨 Abdulkerim Sesli — Portfolio
+# Portfolio Website - Abdulkerim Sesli
 
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-abdulkerim--sesli-0077B5?logo=linkedin)](https://linkedin.com/in/abdulkerim-s) [![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](https://opensource.org/licenses/ISC) [![Status](https://img.shields.io/badge/Status-Production--Ready-success)](https://www.abdulkerimsesli.de)
+Modern portfolio website mit React, Three.js und kostenloser AI-Integration.
 
-**Portfolio website of Abdulkerim Sesli — Web Developer & Photographer in Berlin.**  
-PWA-ready, accessible, and featuring interactive Three.js visualizations.
+## 🚀 Features
 
----
+- **3D Earth Visualization** - Interaktive Three.js Earth mit WebGL
+- **AI Robot Companion** - Groq-powered Chat (100% kostenlos)
+- **RAG Search** - Retrieval-Augmented Generation für kontextbezogene Antworten
+- **PWA** - Progressive Web App mit Offline-Support
+- **Performance** - Optimiert für schnelle Ladezeiten
+- **SEO** - Vollständig optimiert für Suchmaschinen
 
-## ✨ Features
+## 📦 Tech Stack
 
-- 🎨 **Modern Design** - Clean, responsive UI
-- ⚡ **No Build Tools** - Pure ES6 modules
-- 🌍 **3D Earth** - Interactive Three.js visualization
-- ♿ **Accessible** - WCAG 2.1 AA compliant
-- 📱 **PWA** - Offline-capable with Service Worker
-- 🔍 **SEO-Optimized** - Schema.org structured data
-- 🚀 **Fast** - Optimized loading & caching
+### Frontend
 
----
+- **Vanilla JavaScript** - Kein Framework-Overhead
+- **Three.js** - 3D Graphics
+- **Web Components** - Wiederverwendbare Komponenten
+- **CSS3 + PostCSS** - Modern styling mit CSS Nesting & Autoprefixer
+
+### Backend (Cloudflare Workers)
+
+- **Groq AI** - Kostenlose AI-Inference (Llama 3.3 70B)
+- **YouTube API Proxy** - Caching & Rate Limiting
+- **Search API** - Volltextsuche mit Relevanz-Scoring
+
+### Infrastructure
+
+- **Cloudflare Pages** - Hosting & CDN
+- **Cloudflare Workers** - Serverless Functions
+- **Vite** - Build Tool
+- **PostCSS** - CSS Nesting, Autoprefixer, Minification
+
+## 🏗️ Projekt-Struktur
+
+```
+.
+├── content/                    # Frontend Code
+│   ├── components/            # Web Components
+│   │   ├── robot-companion/  # AI Chat Bot
+│   │   ├── particles/        # Three.js Earth
+│   │   ├── menu/             # Navigation
+│   │   └── footer/           # Footer
+│   ├── core/                 # Core Utilities
+│   ├── config/               # Configuration
+│   └── styles/               # CSS Architecture
+│       ├── components/       # Modular Components (Search, Card)
+│       ├── root.css          # CSS Variables & Theme
+│       ├── main.css          # Base Styles
+│       └── animations.css    # Keyframes
+│
+├── pages/                     # Page Content
+│   ├── home/                 # Homepage
+│   ├── projekte/             # Projects
+│   ├── gallery/              # Photo Gallery
+│   ├── blog/                 # Blog
+│   └── videos/               # Video Gallery
+│
+├── workers/                   # Cloudflare Workers
+│   ├── ai-search-proxy/      # AI & Search API
+│   └── youtube-api-proxy/    # YouTube Proxy
+│
+└── docs/                      # Documentation
+    ├── GROQ_AI_INTEGRATION.md
+    ├── CLOUDFLARE_OPTIMIZATION.md
+    └── ARCHITECTURE.md
+```
 
 ## 🚀 Quick Start
+
+### Development
 
 ```bash
 # Install dependencies
@@ -27,246 +78,143 @@ npm install
 
 # Start dev server
 npm run dev
-# → Opens http://localhost:8080
 
-# Format code
-npm run format
+# Open browser
+open http://localhost:5173
+```
 
-# Lint code
+### Build
+
+```bash
+# Production build
+npm run build
+
+# Preview build
+npm run preview
+```
+
+### Deploy
+
+```bash
+# Deploy to Cloudflare Pages
+git push
+
+# Deploy Workers
+./workers/deploy.sh
+```
+
+## 🔧 Configuration
+
+### Environment Variables
+
+```bash
+# Groq AI (kostenlos!)
+GROQ_API_KEY=your_groq_api_key
+
+# YouTube API
+YOUTUBE_API_KEY=your_youtube_api_key
+```
+
+### Secrets Setup
+
+```bash
+# AI Search Proxy
+wrangler secret put GROQ_API_KEY
+
+# YouTube Proxy
+wrangler secret put YOUTUBE_API_KEY --env youtube
+```
+
+## 📡 API Endpoints
+
+### AI Chat
+
+```bash
+POST /api/gemini
+{
+  "prompt": "Deine Frage",
+  "options": {"useSearch": true}
+}
+```
+
+### Search
+
+```bash
+POST /api/search
+{
+  "query": "Suchbegriff",
+  "topK": 5
+}
+```
+
+### YouTube Proxy
+
+```bash
+GET /api/youtube/search?part=snippet&q=react&type=video
+```
+
+## 🧪 Testing
+
+```bash
+# Run tests
+npm test
+
+# Lint
 npm run lint
+
+# Format
+npm run format
 ```
-
----
-
-## 📊 Project Status
-
-**Bewertung:** 🟢 **A+** (Exzellent)
-
-```
-Code-Qualität    ████████████████████ 100%
-Performance      ███████████████████░  95%
-Sicherheit       ████████████████████ 100%
-SEO              ████████████████████ 100%
-```
-
-**Details:** Siehe `PROJEKT-STATUS.md`
-
----
-
-## 🛠️ Tech Stack
-
-### Frontend
-
-- **JavaScript** - ES6+ Modules (No Build Tools)
-- **React** - 19.2.3 (via ESM CDN)
-- **Three.js** - 0.182.0 (3D Graphics)
-- **HTML5/CSS3** - Semantic markup
-- **Web Components** - Native Custom Elements
-- **JSDoc** - Type safety without TypeScript
-
-### Code Quality
-
-- **JSDoc Coverage:** 85%
-- **Type Definitions:** 30+ types
-- **Web Components:** 4 components
-- **ES6+ Patterns:** 95% modern code
-- **Performance Score:** 89% (Three.js)
-
-### Tools
-
-- **Node.js** - Dev server only
-- **ESLint** - Code linting
-- **Prettier** - Code formatting
-- **Vitest** - Testing framework (ready)
-
-### Deployment
-
-- **Cloudflare Pages** - Static hosting
-- **Cloudflare Workers** - API proxies
-- **PWA** - Progressive Web App
-
----
-
-## 📁 Structure
-
-```
-iweb/
-├── content/          # Core application
-│   ├── assets/       # Images, icons, fonts
-│   ├── components/   # Reusable components
-│   ├── config/       # Configuration
-│   ├── styles/       # Global styles
-│   └── utils/        # Utilities
-├── pages/            # Page-specific code
-├── scripts/          # Build & dev scripts
-└── workers/          # Cloudflare Workers
-```
-
----
-
-## 🎯 Key Features
-
-### 🌍 Interactive 3D Earth
-
-Real-time Earth visualization with:
-
-- Day/night textures
-- Cloud layer
-- Bump mapping
-- Atmospheric glow
-- Camera controls
-
-### ♿ Accessibility
-
-- ARIA labels & roles
-- Keyboard navigation
-- Screen reader support
-- Focus management
-- Skip links
-
-### 🔍 SEO
-
-- Schema.org JSON-LD
-- Open Graph tags
-- Twitter Cards
-- Sitemap.xml
-- robots.txt
-
-### 📱 PWA
-
-- Service Worker caching
-- Offline support
-- Install prompt
-- App shortcuts
-- Background sync
-
----
-
-## 🚀 Development
-
-### Dev Server
-
-```bash
-npm run dev
-```
-
-**Features:**
-
-- ⚡ Async I/O
-- 🛡️ Error handling
-- 📦 25 MIME types
-- 💾 Cache headers
-- 🎨 Custom 404
-- 📊 Request timing
-
-### Scripts
-
-```bash
-npm run format           # Format code
-npm run format:check     # Check formatting
-npm run lint             # Lint & fix code
-npm run lint:check       # Check linting
-```
-
----
-
-## 🌐 URLs
-
-```
-Development:  http://localhost:8080
-Production:   https://www.abdulkerimsesli.de
-```
-
----
-
-## 📚 Documentation
-
-### General Documentation
-
-| Document                            | Description          |
-| ----------------------------------- | -------------------- |
-| `docs/PROJEKT-STATUS.md`            | Compact overview     |
-| `docs/QUICK-REFERENCE.md`           | Commands & structure |
-| `docs/OPTIMIERUNGEN.md`             | Optimization guide   |
-| `docs/MAINTENANCE.md`               | Maintenance guide    |
-| `docs/ANALYTICS.md`                 | Analytics setup      |
-| `docs/SEO-OPTIMIERUNG.md`           | SEO optimization     |
-| `docs/SECURITY.md`                  | Security guide       |
-| `docs/SECURITY-CSP.md`              | CSP implementation   |
-| `docs/SCHEMA-VALIDATOR-GUIDE.md`    | Schema validation    |
-| `docs/VALIDATOR-QUICK-REFERENCE.md` | Validator reference  |
-
-### Code Modernization
-
-| Document                               | Description                    |
-| -------------------------------------- | ------------------------------ |
-| `MODERNIZATION_SUMMARY.md`             | Complete modernization summary |
-| `docs/MODERNIZATION_GUIDE.md`          | Detailed guide (all phases)    |
-| `docs/ES6_MODERNIZATION_REPORT.md`     | ES6+ pattern analysis          |
-| `docs/THREEJS_PERFORMANCE_ANALYSIS.md` | Three.js performance review    |
-| `docs/ARCHITECTURE.md`                 | Architecture documentation     |
-| `content/components/*/README.md`       | Component-specific docs        |
-| `tests/README.md`                      | Testing infrastructure guide   |
-
----
-
-## 🎨 Design Philosophy
-
-- **No Build Tools** - Direct ES6 modules, zero compilation
-- **Progressive Enhancement** - Works without JS
-- **Mobile First** - Responsive design
-- **Performance** - Optimized loading
-- **Accessibility** - Inclusive design
-- **Native Web** - Leverages browser capabilities
-
----
 
 ## 📊 Performance
 
 - **Lighthouse Score:** 95+
 - **First Contentful Paint:** < 1.5s
-- **Time to Interactive:** < 3.5s
-- **Total Bundle Size:** ~2 MB (with assets)
-
----
+- **Time to Interactive:** < 3s
+- **AI Response Time:** ~100-500ms
 
 ## 🔒 Security
 
-- ✅ **HTTPS enforced** - Strict Transport Security enabled
-- ✅ **Content Security Policy** - Report-only mode active
-- ✅ **API Key Protection** - Cloudflare Worker proxy for YouTube API
-- ✅ **XSS Protection** - DOMPurify sanitization
-- ✅ **Security Headers** - X-Frame-Options, X-Content-Type-Options, etc.
-- ✅ **Production Logging** - No sensitive data in console
-- ✅ **0 Vulnerabilities** - All dependencies audited
+- ✅ Content Security Policy (CSP)
+- ✅ HSTS with Preload
+- ✅ API Keys server-side
+- ✅ Rate Limiting
+- ✅ Input Validation
 
-**See:** `docs/SECURITY.md` for detailed security documentation
+## 📚 Documentation
 
----
+- **[Project Status](PROJECT_STATUS.md)** - Current project status & metrics
+- **[CSS Guide](docs/CSS_GUIDE.md)** - CSS architecture & best practices
+- **[Architecture](docs/ARCHITECTURE.md)** - System design & architecture
+- **[Workers README](workers/README.md)** - Cloudflare Workers documentation
+- **[AI Search Proxy](workers/ai-search-proxy/README.md)** - Groq AI integration
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create your feature branch
+3. Commit your changes
+4. Push to the branch
+5. Open a Pull Request
 
 ## 📝 License
 
-**ISC License** - See LICENSE file
-
----
+MIT License - see [LICENSE](LICENSE) file
 
 ## 👤 Author
 
 **Abdulkerim Sesli**
 
-- Website: [abdulkerimsesli.de](https://www.abdulkerimsesli.de)
-- LinkedIn: [abdulkerim-s](https://linkedin.com/in/abdulkerim-s)
-- GitHub: [@aKs030](https://github.com/aKs030)
-
----
+- Website: https://www.abdulkerimsesli.de
+- GitHub: [@abdulkerimsesli](https://github.com/abdulkerimsesli)
 
 ## 🙏 Acknowledgments
 
-- Three.js community
-- React team
-- Cloudflare Pages
-- Open source contributors
+- **Groq** - Kostenlose AI-Inference
+- **Cloudflare** - Hosting & Workers
+- **Three.js** - 3D Graphics
+- **Vite** - Build Tool
 
 ---
 
-**Status:** 🟢 Production-Ready • **Version:** 1.0.0 • **Updated:** Jan 2026
+Made with ❤️ in Berlin

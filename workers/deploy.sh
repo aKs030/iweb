@@ -31,11 +31,15 @@ check_secrets() {
   echo -e "${YELLOW}🔐 Checking secrets...${NC}"
   
   # Check AI Search Proxy secret
-  if wrangler secret list 2>/dev/null | grep -q "GEMINI_API_KEY"; then
-    echo -e "${GREEN}✓ GEMINI_API_KEY configured${NC}"
+  if wrangler secret list 2>/dev/null | grep -q "GROQ_API_KEY"; then
+    echo -e "${GREEN}✓ GROQ_API_KEY configured${NC}"
+  elif wrangler secret list 2>/dev/null | grep -q "GEMINI_API_KEY"; then
+    echo -e "${YELLOW}⚠ GEMINI_API_KEY found (deprecated)${NC}"
+    echo "  Consider migrating to Groq (free): wrangler secret put GROQ_API_KEY"
   else
-    echo -e "${RED}✗ GEMINI_API_KEY missing${NC}"
-    echo "  Run: wrangler secret put GEMINI_API_KEY"
+    echo -e "${RED}✗ GROQ_API_KEY missing${NC}"
+    echo "  Get free key at: https://console.groq.com/keys"
+    echo "  Run: wrangler secret put GROQ_API_KEY"
   fi
   
   # Check YouTube Proxy secret

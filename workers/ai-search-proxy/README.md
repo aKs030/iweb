@@ -1,15 +1,23 @@
-# AI Search & Gemini Proxy Worker
+# AI Search & Groq Proxy Worker
 
-Cloudflare Worker für Server-side Search und Gemini API mit RAG-Augmentation.
+Cloudflare Worker für Server-side Search und **Groq AI** (kostenlos!) mit RAG-Augmentation.
 
 ## 🎯 Features
 
 - **Full-Text Search**: Server-side Suche mit Relevanz-Scoring
 - **RAG Integration**: Retrieval-Augmented Generation für kontextbezogene Antworten
-- **Gemini API Proxy**: Sichere API-Key-Verwaltung
+- **Groq AI Proxy**: Kostenlose, schnelle AI-Inference (Llama 3.3 70B)
 - **Request Validation**: Input-Validierung und Sanitization
 - **CORS Support**: Cross-Origin Resource Sharing
 - **Error Handling**: Strukturierte Error-Responses
+
+## 🆓 Warum Groq?
+
+- ✅ **100% Kostenlos** - Keine Kreditkarte erforderlich
+- ✅ **Sehr schnell** - Bis zu 10x schneller als andere APIs
+- ✅ **Gute Models** - Llama 3.3 70B, Mixtral, etc.
+- ✅ **14,400 requests/day** - Großzügige Limits
+- ✅ **OpenAI-kompatibel** - Einfache Integration
 
 ## 📡 API Endpoints
 
@@ -46,7 +54,9 @@ Führt eine Volltextsuche im Index durch.
 
 ### POST /api/gemini
 
-Proxied Gemini API mit optionaler RAG-Augmentation.
+Proxied Groq AI API (kostenlos!) mit optionaler RAG-Augmentation.
+
+**Note:** Endpoint heißt noch `/api/gemini` für Backward Compatibility, nutzt aber jetzt Groq.
 
 **Request:**
 
@@ -87,9 +97,9 @@ ai-search-proxy/
 ├── search-index.json     # Search index data
 ├── handlers/
 │   ├── search.js         # Search endpoint logic
-│   └── gemini.js         # Gemini API logic
+│   └── gemini.js         # AI API logic (uses Groq)
 ├── services/
-│   └── gemini.js         # Gemini API client
+│   └── groq.js           # Groq AI client (FREE!)
 └── utils/
     ├── response.js       # Response helpers
     └── validation.js     # Request validation
@@ -107,6 +117,11 @@ MAX_SEARCH_RESULTS = "10"
 ```
 
 **Secrets:**
+
+```bash
+# Get free API key at: https://console.groq.com/keys
+wrangler secret put GROQ_API_KEY
+```
 
 ```bash
 wrangler secret put GEMINI_API_KEY
@@ -166,9 +181,19 @@ Der Scoring-Algorithmus bewertet Treffer nach Relevanz:
 ## 📈 Performance
 
 - Search: < 10ms (in-memory)
-- Gemini API: ~500-2000ms (abhängig von Prompt-Länge)
+- Groq AI: ~100-500ms (sehr schnell! 🚀)
 - RAG-Augmentation: +5-10ms
 - Caching: Cloudflare Edge Cache
+
+## 🆚 Groq vs Gemini
+
+| Feature             | Gemini                 | Groq              |
+| ------------------- | ---------------------- | ----------------- |
+| **Kosten**          | Kostenlos (mit Limits) | 100% Kostenlos    |
+| **Rate Limits**     | 60 req/min             | 10 req/min        |
+| **Geschwindigkeit** | ~500-2000ms            | ~100-500ms        |
+| **Qualität**        | Sehr gut               | Gut               |
+| **API Key**         | Kreditkarte nötig      | Keine Kreditkarte |
 
 ## 🐛 Debugging
 

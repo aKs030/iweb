@@ -48,6 +48,6 @@ git commit -m "feat(menu): add search"
 git commit --no-verify -m "emergency fix"
 ```
 
-## 📚 Mehr Infos
+## 📚 Weitere Informationen
 
-Siehe: `HUSKY-SETUP.md`
+Siehe [QUICK-START.md](QUICK-START.md) für eine detaillierte Anleitung.

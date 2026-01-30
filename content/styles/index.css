@@ -1,0 +1,26 @@
+/* ===== MODULAR CSS ENTRY POINT ===== */
+/* 
+  Diese Datei importiert alle CSS-Module in der richtigen Reihenfolge.
+  PostCSS wird die @imports automatisch auflösen und optimieren.
+*/
+
+/* 1. CSS Variables & Theme System */
+@import './root.css';
+
+/* 2. Base Styles & Layout */
+@import './main.css';
+
+/* 3. Animations (lazy loaded, optional hier) */
+/* @import './animations.css'; */
+
+/* 
+  VORTEILE:
+  - Klare Struktur durch @import
+  - PostCSS löst imports auf
+  - Einfach zu erweitern
+  - Bessere Organisation
+  
+  VERWENDUNG:
+  In HTML: <link rel="stylesheet" href="/content/styles/index.css">
+  Oder in JS: import '/content/styles/index.css'
+*/

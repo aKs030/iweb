@@ -1,14 +1,15 @@
 /**
- * Gemini Handler
- * Proxies requests to Google Gemini API with optional RAG augmentation
+ * AI Handler
+ * Proxies requests to Groq API (free) with optional RAG augmentation
+ * Previously used Google Gemini - now using Groq for free inference
  */
 
 import { jsonResponse, errorResponse } from '../utils/response.js';
 import { validateGeminiRequest } from '../utils/validation.js';
-import { callGeminiAPI } from '../services/gemini.js';
+import { callGroqAPI } from '../services/groq.js';
 
 /**
- * Performs search for RAG context
+ * Performs search for RAG context (using same algorithm as search handler)
  */
 function searchForContext(query, topK, searchIndex) {
   const q = String(query || '')
@@ -16,27 +17,51 @@ function searchForContext(query, topK, searchIndex) {
     .trim();
   if (!q) return [];
 
-  const results = searchIndex
-    .map((item) => {
-      let score = 0;
-      const title = (item.title || '').toLowerCase();
-      const desc = (item.description || '').toLowerCase();
+  const words = q.split(/\s+/).filter(Boolean);
 
-      if (title.includes(q)) score += 100;
-      if (desc.includes(q)) score += 50;
+  const results = searchIndex.map((item) => {
+    let score = item.priority || 0;
+    const title = (item.title || '').toLowerCase();
+    const desc = (item.description || '').toLowerCase();
 
-      return { ...item, score };
-    })
+    // Exact title match - highest priority
+    if (title === q) score += 1000;
+    else if (title.startsWith(q)) score += 500;
+    else if (title.includes(q)) score += 200;
+
+    // Description match
+    if (desc.includes(q)) score += 100;
+
+    // Keyword matching
+    (item.keywords || []).forEach((k) => {
+      const kl = (k || '').toLowerCase();
+      if (kl === q) score += 150;
+      else if (kl.startsWith(q)) score += 80;
+      else if (kl.includes(q)) score += 40;
+    });
+
+    // Multi-word matching
+    words.forEach((w) => {
+      if (title.includes(w)) score += 30;
+      if (desc.includes(w)) score += 15;
+      (item.keywords || []).forEach((k) => {
+        if ((k || '').toLowerCase().includes(w)) score += 20;
+      });
+    });
+
+    return { ...item, score };
+  });
+
+  return results
     .filter((r) => r.score > 0)
     .sort((a, b) => b.score - a.score)
-    .slice(0, topK);
-
-  return results.map((r) => ({
-    id: r.id,
-    title: r.title,
-    description: r.description,
-    url: r.url,
-  }));
+    .slice(0, topK)
+    .map((r) => ({
+      id: r.id,
+      title: r.title,
+      description: r.description,
+      url: r.url,
+    }));
 }
 
 /**
@@ -53,7 +78,7 @@ function augmentPromptWithRAG(prompt, sources) {
 }
 
 /**
- * Handles /api/gemini requests
+ * Handles /api/gemini requests (now using Groq)
  */
 export async function geminiHandler(request, env, searchIndex) {
   if (request.method !== 'POST') {
@@ -71,8 +96,8 @@ export async function geminiHandler(request, env, searchIndex) {
     const { prompt, systemInstruction, options = {} } = body;
 
     // Check API key
-    if (!env.GEMINI_API_KEY) {
-      return errorResponse('GEMINI_API_KEY not configured', 500);
+    if (!env.GROQ_API_KEY) {
+      return errorResponse('GROQ_API_KEY not configured', 500);
     }
 
     // Perform RAG search if requested
@@ -86,22 +111,23 @@ export async function geminiHandler(request, env, searchIndex) {
       augmentedPrompt = augmentPromptWithRAG(prompt, sources);
     }
 
-    // Call Gemini API
+    // Call Groq API (free, fast inference)
     const defaultSystemInstruction =
       'Du bist ein hilfreicher Assistent, antworte prägnant und informativ.';
-    const text = await callGeminiAPI(
+    const text = await callGroqAPI(
       augmentedPrompt,
       systemInstruction || defaultSystemInstruction,
-      env.GEMINI_API_KEY,
+      env.GROQ_API_KEY,
     );
 
     return jsonResponse({
       text,
       sources,
       usedRAG: sources.length > 0,
+      model: 'llama-3.3-70b-versatile', // Info about which model was used
     });
   } catch (error) {
-    console.error('Gemini error:', error);
-    return errorResponse(`Gemini request failed: ${error.message}`, 500);
+    console.error('AI API error:', error);
+    return errorResponse(`AI request failed: ${error.message}`, 500);
   }
 }

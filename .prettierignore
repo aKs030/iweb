@@ -2,32 +2,23 @@
 node_modules/
 package-lock.json
 
-# Workers
-workers/**/node_modules/
-workers/**/.wrangler/
-
-# Build outputs (if any)
+# Build output
 dist/
 build/
 
 # Logs
 *.log
 
-# OS files
-.DS_Store
-Thumbs.db
+# Cache
+.cache/
+.vite/
 
-# IDE
-.vscode/
-.idea/
+# Wrangler
+.wrangler/
 
-# Git
-.git/
+# Documentation archive
+docs/archive/
 
-# Large assets
-*.pdf
-*.zip
-*.tar.gz
-
-# Sitemaps (auto-generated)
-sitemap*.xml
+# Generated files
+*.min.js
+*.min.css

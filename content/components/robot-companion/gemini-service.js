@@ -1,11 +1,11 @@
 /**
- * Gemini API Service
+ * AI API Service (using Groq - Free!)
  * Handles AI chat responses via Cloudflare Worker proxy
  */
 
 import { createLogger } from '/content/core/logger.js';
 
-const log = createLogger('GeminiService');
+const log = createLogger('AIService');
 
 const MAX_RETRIES = 3;
 const INITIAL_DELAY = 1000;
@@ -13,12 +13,13 @@ const FALLBACK_MESSAGE =
   'Entschuldigung, ich habe gerade Verbindungsprobleme. Bitte versuche es später noch einmal.';
 
 /**
- * Makes a request to the Gemini API via proxy with retry logic
+ * Makes a request to the AI API via proxy with retry logic
+ * Note: Endpoint is still /api/gemini for backward compatibility, but uses Groq now
  * @param {string} prompt - User prompt
  * @param {string} systemInstruction - System instruction for the AI
  * @returns {Promise<string>} AI response text
  */
-async function callGeminiAPI(prompt, systemInstruction) {
+async function callAIAPI(prompt, systemInstruction) {
   let delay = INITIAL_DELAY;
 
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
@@ -47,11 +48,11 @@ async function callGeminiAPI(prompt, systemInstruction) {
       const isLastAttempt = attempt === MAX_RETRIES - 1;
 
       if (isLastAttempt) {
-        log.error('Gemini API failed after retries:', error?.message);
+        log.error('AI API failed after retries:', error?.message);
         return FALLBACK_MESSAGE;
       }
 
-      log.warn(`Gemini API attempt ${attempt + 1} failed, retrying...`);
+      log.warn(`AI API attempt ${attempt + 1} failed, retrying...`);
       await new Promise((resolve) => setTimeout(resolve, delay));
       delay *= 2; // Exponential backoff
     }
@@ -61,7 +62,8 @@ async function callGeminiAPI(prompt, systemInstruction) {
 }
 
 /**
- * Gemini Service - Provides AI chat functionality
+ * AI Service - Provides AI chat functionality (using Groq)
+ * Note: Class name kept as "GeminiService" for backward compatibility
  */
 export class GeminiService {
   /**
@@ -70,7 +72,7 @@ export class GeminiService {
    * @returns {Promise<string>} AI response
    */
   async generateResponse(prompt) {
-    return await callGeminiAPI(
+    return await callAIAPI(
       prompt,
       'Du bist ein hilfreicher Roboter-Begleiter.',
     );
@@ -84,7 +86,7 @@ export class GeminiService {
   async summarizePage(content) {
     const trimmed = String(content || '').slice(0, 4800);
     const prompt = `Fasse den folgenden Text kurz und präzise zusammen:\n\n${trimmed}`;
-    return await callGeminiAPI(prompt, 'Fasse kurz zusammen. Maximal 3 Sätze.');
+    return await callAIAPI(prompt, 'Fasse kurz zusammen. Maximal 3 Sätze.');
   }
 
   /**
@@ -96,6 +98,6 @@ export class GeminiService {
     const prompt = `Gib eine kurze, konkrete Empfehlung für den Nutzer basierend auf:\n${JSON.stringify(
       behavior,
     )}`;
-    return await callGeminiAPI(prompt, 'Sei prägnant, maximal 2 Sätze.');
+    return await callAIAPI(prompt, 'Sei prägnant, maximal 2 Sätze.');
   }
 }

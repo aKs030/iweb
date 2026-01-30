@@ -11,6 +11,9 @@ export default defineConfig({
     outDir: 'dist',
     emptyOutDir: true,
 
+    // Support top-level await
+    target: 'esnext',
+
     // Optimized chunking strategy
     rollupOptions: {
       input: {

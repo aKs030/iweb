@@ -249,15 +249,30 @@ const BlogApp = () => {
       : [];
     setPosts(seed);
 
-    loadPostsData(seed).then((final) => {
-      setPosts(final);
-      setLoading(false);
-    });
+    // IIFE for async/await in useEffect
+    (async () => {
+      try {
+        // Parallel execution for better performance
+        const [final, ogResponse] = await Promise.all([
+          loadPostsData(seed),
+          fetch('/content/assets/img/og/og-images-meta.json').then((r) =>
+            r.json(),
+          ),
+        ]);
 
-    fetch('/content/assets/img/og/og-images-meta.json')
-      .then((r) => r.json())
-      .then(setOgMeta)
-      .catch(() => {});
+        setPosts(final);
+        setLoading(false);
+        setOgMeta(ogResponse);
+      } catch (error) {
+        // Ensure loading state is reset even on error
+        setLoading(false);
+
+        // Log errors in development for debugging
+        if (import.meta.env.DEV) {
+          console.warn('Failed to load blog data:', error);
+        }
+      }
+    })();
   }, []);
 
   React.useEffect(() => {

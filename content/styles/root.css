@@ -392,24 +392,6 @@ iframe {
   }
 }
 
-/* Focus Indicator for all interactive elements */
-button:focus-visible,
-a:focus-visible,
-[tabindex]:focus-visible,
-input:focus-visible,
-select:focus-visible,
-textarea:focus-visible {
-  outline: 2px solid #fff;
-  outline-offset: 3px;
-  box-shadow: 0 0 0 4px
-    color-mix(in srgb, var(--primary-color) 55%, transparent);
-  background: rgb(0 119 255 / 12%);
-  border-radius: 6px;
-  transition:
-    box-shadow 0.15s,
-    outline-color 0.15s;
-}
-
 /* Hide scrollbars on mobile while keeping scroll intact */
 @media (width <= 768px) {
   html,
@@ -433,101 +415,5 @@ textarea:focus-visible {
     width: 0;
     height: 0;
     background: transparent;
-  }
-}
-
-/* Accessibility Helper Classes */
-.visually-hidden {
-  position: absolute !important;
-  width: 1px !important;
-  height: 1px !important;
-  padding: 0 !important;
-  margin: -1px !important;
-  overflow: hidden !important;
-  clip-path: inset(50%) !important;
-  white-space: nowrap !important;
-  border: 0 !important;
-}
-
-/* Utility class used throughout site */
-.hidden {
-  display: none !important;
-}
-
-/* Button Styles */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  padding: 0.75rem 1.5rem;
-  font-size: 1rem;
-  font-weight: 500;
-  border: none;
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  transition:
-    transform var(--transition-base),
-    box-shadow var(--transition-base),
-    background-color var(--transition-base);
-  text-decoration: none;
-  position: relative;
-  overflow: hidden;
-  min-width: 160px;
-  text-align: center;
-}
-
-/* Loading UI consolidated — using global spinner only */
-
-.btn-primary {
-  background: linear-gradient(
-    135deg,
-    var(--primary-color),
-    var(--primary-dark)
-  );
-  color: #fff;
-  box-shadow: 0 0 12px rgb(9 139 255 / 30%);
-  position: relative;
-  overflow: hidden;
-}
-
-.btn-primary:hover {
-  box-shadow: 0 0 18px rgb(9 139 255 / 55%);
-  transform: var(--transform-lift-sm);
-}
-
-.btn-primary::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: rgb(255 255 255 / 20%);
-  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  pointer-events: none;
-}
-
-.btn-primary:hover::before {
-  left: 100%;
-}
-
-.btn-secondary {
-  background: transparent;
-  color: var(--text-primary);
-  border: 2px solid var(--primary-color);
-}
-
-.btn-secondary:hover {
-  border-color: var(--primary-color);
-  color: var(--primary-color);
-}
-
-@media (width <= 480px) {
-  /* Smaller button minimum width */
-  .btn,
-  .btn-primary,
-  .btn-secondary,
-  .btn-outline {
-    min-width: 120px;
   }
 }
