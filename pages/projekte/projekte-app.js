@@ -1,11 +1,6 @@
 import { createLogger } from '/content/core/logger.js';
 import { createProjectsData } from './projects-data.js';
-import {
-  getDirectUrl,
-  toRawGithackUrl,
-  toJsDelivrUrl,
-  testUrl,
-} from './project-utils.js';
+import { toRawGithackUrl, testUrl } from './project-utils.js';
 
 const log = createLogger('projekte-app');
 
@@ -89,12 +84,10 @@ const App = () => {
   };
 
   const openDirect = async (project) => {
-    // Try raw.githack first (embed-friendly), then jsDelivr, then fallback to raw.githubusercontent (new tab)
+    // Try rawcdn.githack.com for embed-friendly preview
     const gh = project.githubPath || '';
     const rawGithack = gh ? toRawGithackUrl(gh) : '';
-    const jsDelivr = gh ? toJsDelivrUrl(gh) : '';
 
-    // prefer raw.githack
     if (rawGithack && (await testUrl(rawGithack, 2500))) {
       setModalTitle(project.title);
       setModalUrl(rawGithack);
@@ -108,29 +101,14 @@ const App = () => {
       return;
     }
 
-    // next try jsDelivr
-    if (jsDelivr && (await testUrl(jsDelivr, 2500))) {
-      setModalTitle(project.title);
-      setModalUrl(jsDelivr);
-      setIframeLoading(true);
-      setModalOpen(true);
-      try {
-        document.body.style.overflow = 'hidden';
-      } catch {
-        /* ignore */
-      }
-      return;
-    }
-
-    // fallback: open raw.githubusercontent or appPath in new tab
-    const direct =
-      getDirectUrl(project) || project.githubPath || project.appPath || '';
-    if (!direct) {
+    // Fallback: open appPath or githubPath in new tab
+    const fallbackUrl = project.appPath || project.githubPath || '';
+    if (!fallbackUrl) {
       showToast('Keine gültige App-URL vorhanden');
       return;
     }
     try {
-      window.open(direct, '_blank', 'noopener');
+      window.open(fallbackUrl, '_blank', 'noopener');
       showToast('App in neuem Tab geöffnet');
     } catch {
       showToast('Öffnen im Tab fehlgeschlagen');
@@ -148,9 +126,8 @@ const App = () => {
     }
   };
 
-  // Project mockup component: tries to resolve an embed-friendly URL (raw.githack/jsDelivr/appPath)
-  // and renders an iframe scaled to fit the mockup box (no internal scroll). Falls back to the
-  // project's existing `previewContent` when no embed URL is available.
+  // Project mockup component: tries to resolve an embed-friendly URL and renders
+  // an iframe scaled to fit the mockup box. Falls back to previewContent when unavailable.
   const ProjectMockup = ({ project }) => {
     const wrapperRef = React.useRef(null);
     const iframeRef = React.useRef(null);
@@ -162,18 +139,21 @@ const App = () => {
         try {
           const gh = project.githubPath || '';
           const candidates = [];
+
+          // Try rawcdn.githack.com first
           if (gh) {
             const raw = toRawGithackUrl(gh);
-            const js = toJsDelivrUrl(gh);
             if (raw) candidates.push(raw);
-            if (js) candidates.push(js);
           }
-          if (project.appPath)
+
+          // Fallback to appPath
+          if (project.appPath) {
             candidates.push(
               project.appPath.endsWith('/')
                 ? project.appPath + 'index.html'
                 : project.appPath,
             );
+          }
 
           for (const url of candidates) {
             if (!url) continue;
@@ -459,7 +439,6 @@ export const initProjectsApp = () => {
   const rootEl = document.getElementById('root');
   if (!rootEl) {
     log.error('Root element #root not found in DOM');
-    console.error('Root element #root not found in DOM');
     return;
   }
 
@@ -470,7 +449,6 @@ export const initProjectsApp = () => {
     log.info('Projects App rendered successfully');
   } catch (error) {
     log.error('Failed to render Projects App:', error);
-    console.error('Failed to render Projects App:', error);
     // Show error in UI
     rootEl.innerHTML = `
       <div style="padding: 2rem; text-align: center; color: #ef4444;">
