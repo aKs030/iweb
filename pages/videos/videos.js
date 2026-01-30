@@ -305,9 +305,10 @@ const renderVideoCard = (grid, it, detailsMap) => {
               // Ignore errors for legacy UA events
             }
           } else if (Array.isArray(window.dataLayer)) {
-            window.dataLayer.push(
-              Object.assign({ event: 'open_video_page' }, ga4Payload),
-            );
+            window.dataLayer.push({
+              event: 'open_video_page',
+              ...ga4Payload,
+            });
           }
         } catch {
           /* ignore analytics errors */

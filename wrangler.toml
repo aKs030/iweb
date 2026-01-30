@@ -1,7 +1,7 @@
 #:schema node_modules/wrangler/config-schema.json
 
 # ============================================================================
-# Main Worker: AI Search & Gemini Proxy
+# Main Worker: AI Search & Groq Proxy (Free AI Inference)
 # ============================================================================
 name = "ai-search-proxy"
 main = "workers/ai-search-proxy/index.js"
@@ -9,6 +9,7 @@ compatibility_date = "2025-01-23"
 compatibility_flags = ["nodejs_compat"]
 
 # Route both www and apex domain for /api/search and /api/gemini
+# Note: /api/gemini endpoint name kept for backward compatibility, but now uses Groq
 routes = [
   { pattern = "www.abdulkerimsesli.de/api/search", zone_name = "abdulkerimsesli.de" },
   { pattern = "abdulkerimsesli.de/api/search", zone_name = "abdulkerimsesli.de" },
@@ -22,6 +23,8 @@ RAG_ID = "throbbing-mode-6fe1"
 CACHE_TTL = "3600"
 # Max search results to return
 MAX_SEARCH_RESULTS = "10"
+# AI Model (Groq)
+AI_MODEL = "llama-3.3-70b-versatile"
 
 [triggers]
 # Daily cache refresh at 3 AM UTC
@@ -31,7 +34,8 @@ crons = ["0 3 * * *"]
 # Deployment & Secrets
 # ============================================================================
 # Deploy: wrangler deploy
-# Secrets: wrangler secret put GEMINI_API_KEY
+# Secrets: wrangler secret put GROQ_API_KEY
+# Get free API key at: https://console.groq.com/keys
 
 # ============================================================================
 # YouTube API Proxy Worker

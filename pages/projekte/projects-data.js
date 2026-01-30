@@ -74,7 +74,7 @@ const getCache = (key) => {
       return null;
     }
     return data;
-  } catch (e) {
+  } catch {
     return null;
   }
 };
