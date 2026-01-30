@@ -1,7 +1,7 @@
 import { createLogger } from '/content/core/logger.js';
 import { fetchJSON } from '/content/core/fetch.js';
 import { escapeHTML } from '/content/core/html-sanitizer.js';
-import { getElementById } from '/content/core/dom-utils.js';
+import { getElementById } from '/content/core/utils.js';
 import { FAVICON_512 } from '../../content/config/site-config.js';
 
 const log = createLogger('videos');
@@ -187,7 +187,7 @@ const fetchVideoDetailsMap = async (vidIds) => {
   return map;
 };
 
-const renderVideoCard = (grid, it, detailsMap) => {
+const renderVideoCard = async (grid, it, detailsMap, index = 0) => {
   const vid = it.snippet.resourceId.videoId;
   const rawTitle = it.snippet.title;
   const title = cleanTitle(rawTitle);
@@ -195,7 +195,9 @@ const renderVideoCard = (grid, it, detailsMap) => {
     ? it.snippet.description
     : `${title} — Video von Abdulkerim Sesli`;
   const thumb =
-    it.snippet?.thumbnails?.high?.url || it.snippet?.thumbnails?.default?.url;
+    it.snippet?.thumbnails?.maxres?.url ||
+    it.snippet?.thumbnails?.high?.url ||
+    it.snippet?.thumbnails?.default?.url;
   const pub = it.snippet.publishedAt || new Date().toISOString(); // ✅ Fallback only when needed
 
   const videoDetail = detailsMap[vid];
@@ -216,8 +218,25 @@ const renderVideoCard = (grid, it, detailsMap) => {
   thumbBtn.setAttribute('aria-label', `Play ${title}`);
   thumbBtn.dataset.videoId = vid;
   thumbBtn.dataset.thumb = thumb;
+
+  // Optimiere Thumbnail-URL für bessere Performance
+  const optimizedThumb = thumb.includes('ytimg.com')
+    ? thumb.replace(/\/maxresdefault\.jpg$/, '/hqdefault.jpg')
+    : thumb;
+  thumbBtn.dataset.thumb = optimizedThumb;
+
+  // Lazy loading für Thumbnails
+  const thumbImg = document.createElement('img');
+  thumbImg.src = optimizedThumb;
+  thumbImg.alt = `Thumbnail: ${title}`;
+  thumbImg.loading = index < 4 ? 'eager' : 'lazy';
+  thumbImg.decoding = 'async';
+  thumbImg.style.cssText =
+    'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;';
+
   thumbBtn.innerHTML =
     '<span class="play-button" aria-hidden="true"><svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><polygon points="70,55 70,145 145,100"/></svg></span>';
+  thumbBtn.appendChild(thumbImg);
 
   const meta = document.createElement('div');
   meta.className = 'video-meta';
@@ -370,7 +389,7 @@ const loadLatestVideos = async () => {
     }
 
     grid.innerHTML = '';
-    items.forEach((it) => renderVideoCard(grid, it, detailsMap));
+    items.forEach((it, index) => renderVideoCard(grid, it, detailsMap, index));
 
     setVideoStatus('');
   } catch (err) {

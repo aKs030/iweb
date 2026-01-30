@@ -14,7 +14,7 @@
  */
 
 import { createLogger } from '/content/core/logger.js';
-import { throttle } from '/content/core/dom-utils.js';
+import { throttle } from '/content/core/utils.js';
 import { THREE_PATHS } from './config.js';
 
 const log = createLogger('sharedParticleSystem');

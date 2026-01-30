@@ -1,3 +1,5 @@
+import { sleep } from '/content/core/utils.js';
+
 export class RobotAnimation {
   constructor(robot) {
     this.robot = robot;
@@ -468,6 +470,7 @@ export class RobotAnimation {
     if (this.robot.dom.flame) this.robot.dom.flame.style.opacity = '0';
     if (this.robot.dom.particles) this.robot.dom.particles.style.opacity = '0';
 
+    // @ts-ignore - Function doesn't use ms parameter but it's harmless
     this.triggerRandomIdleAnimation(ms);
 
     if (this.robot.dom.thinking && Math.random() < 0.3) {
@@ -608,47 +611,49 @@ export class RobotAnimation {
     setTimeout(() => el.remove(), 600);
   }
 
-  playPokeAnimation() {
-    return new Promise((resolve) => {
-      if (!this.robot.dom.avatar) {
-        resolve();
-        return;
-      }
+  async playPokeAnimation() {
+    if (!this.robot.dom.avatar) {
+      return;
+    }
 
-      const effects = ['jump', 'shake', 'flash'];
-      const effect = effects[Math.floor(Math.random() * effects.length)];
+    const effects = ['jump', 'shake', 'flash'];
+    const effect = effects[Math.floor(Math.random() * effects.length)];
 
-      if (effect === 'jump') {
-        this.robot.dom.avatar.style.transition =
-          'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-        this.robot.dom.avatar.style.transform = 'translateY(-20px) scale(1.1)';
+    if (effect === 'jump') {
+      this.robot.dom.avatar.style.transition =
+        'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+      this.robot.dom.avatar.style.transform = 'translateY(-20px) scale(1.1)';
+
+      await new Promise((resolve) => {
         setTimeout(() => {
           this.robot.dom.avatar.style.transform = '';
           setTimeout(resolve, 200);
         }, 200);
-      } else if (effect === 'shake') {
-        this.robot.dom.avatar.animate(
-          [
-            { transform: 'translateX(0)' },
-            { transform: 'translateX(-5px) rotate(-5deg)' },
-            { transform: 'translateX(5px) rotate(5deg)' },
-            { transform: 'translateX(-5px) rotate(-5deg)' },
-            { transform: 'translateX(0)' },
-          ],
-          { duration: 300 },
-        );
-        setTimeout(resolve, 350);
-      } else {
-        if (this.robot.dom.svg) {
-          this.robot.dom.svg.style.filter =
-            'brightness(2) drop-shadow(0 0 10px #fff)';
-        }
+      });
+    } else if (effect === 'shake') {
+      this.robot.dom.avatar.animate(
+        [
+          { transform: 'translateX(0)' },
+          { transform: 'translateX(-5px) rotate(-5deg)' },
+          { transform: 'translateX(5px) rotate(5deg)' },
+          { transform: 'translateX(-5px) rotate(-5deg)' },
+          { transform: 'translateX(0)' },
+        ],
+        { duration: 300 },
+      );
+      await sleep(350);
+    } else {
+      if (this.robot.dom.svg) {
+        this.robot.dom.svg.style.filter =
+          'brightness(2) drop-shadow(0 0 10px #fff)';
+      }
+      await new Promise((resolve) => {
         setTimeout(() => {
           if (this.robot.dom.svg) this.robot.dom.svg.style.filter = '';
           setTimeout(resolve, 100);
         }, 150);
-      }
-    });
+      });
+    }
   }
 
   startIdleEyeMovement() {

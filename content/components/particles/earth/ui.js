@@ -1,6 +1,6 @@
 import { CONFIG } from './config.js';
 import { createLogger } from '/content/core/logger.js';
-import { throttle } from '/content/core/dom-utils.js';
+import { throttle } from '/content/core/utils.js';
 
 import {
   calculateQualityLevel,

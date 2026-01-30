@@ -561,9 +561,10 @@ const PhotoGallery = () => {
             React.createElement('img', {
               src: photo.url,
               alt: photo.title,
-              loading: 'lazy',
+              loading: index < 6 ? 'eager' : 'lazy',
               decoding: 'async',
-              fetchpriority: index < 3 ? 'high' : 'low',
+              fetchpriority: index < 3 ? 'high' : 'auto',
+              sizes: '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw',
               className:
                 'w-full h-full object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-110',
               onLoad: () =>

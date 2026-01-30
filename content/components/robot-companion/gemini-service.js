@@ -4,6 +4,7 @@
  */
 
 import { createLogger } from '/content/core/logger.js';
+import { sleep } from '/content/core/utils.js';
 
 const log = createLogger('AIService');
 
@@ -53,7 +54,7 @@ async function callAIAPI(prompt, systemInstruction) {
       }
 
       log.warn(`AI API attempt ${attempt + 1} failed, retrying...`);
-      await new Promise((resolve) => setTimeout(resolve, delay));
+      await sleep(delay);
       delay *= 2; // Exponential backoff
     }
   }

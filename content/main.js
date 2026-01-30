@@ -11,7 +11,8 @@ import { a11y, createAnnouncer } from './core/accessibility-manager.js';
 import { SectionManager } from './core/section-manager.js';
 import { LoaderManager } from './core/loader-manager.js';
 import { ThreeEarthManager } from './core/three-earth-manager.js';
-import { getElementById, onDOMReady } from './core/dom-utils.js';
+import { getElementById, onDOMReady } from './core/utils.js';
+import { initImageOptimization } from './core/image-loader-helper.js';
 import './components/menu/menu.js';
 import './components/footer/SiteFooter.js';
 
@@ -335,6 +336,15 @@ document.addEventListener(
     initHeroFeatureBundle(sectionManager);
 
     ThreeEarthLoader.initDelayed();
+
+    // Initialize image optimization
+    initImageOptimization({
+      autoOptimize: true,
+      preloadCritical: true,
+      lazyLoadSelector: 'img[loading="lazy"]',
+    }).catch((error) => {
+      log.warn('Image optimization init failed:', error);
+    });
 
     modulesReady = true;
     perfMarks.modulesReady = performance.now();

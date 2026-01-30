@@ -44,9 +44,11 @@
     "postcss-import": "^16.1.1",
     "postcss-nesting": "^14.0.0",
     "prettier": "^3.8.1",
+    "sharp": "^0.34.5",
     "terser": "^5.37.0",
     "vite": "^6.0.5",
-    "vite-bundle-visualizer": "^1.2.1"
+    "vite-bundle-visualizer": "^1.2.1",
+    "vite-plugin-compression": "^0.5.1"
   },
   "repository": {
     "type": "git",
@@ -62,8 +64,8 @@
   "license": "ISC",
   "type": "module",
   "engines": {
-    "node": ">=18.0.0",
-    "npm": ">=9.0.0"
+    "node": ">=22.0.0",
+    "npm": ">=10.0.0"
   },
   "bugs": {
     "url": "https://github.com/aKs030/iweb/issues"

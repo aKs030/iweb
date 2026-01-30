@@ -3,7 +3,7 @@
  */
 
 import { EVENTS } from '/content/core/events.js';
-import { debounce } from '/content/core/dom-utils.js';
+import { debounce } from '/content/core/utils.js';
 
 function addListener(target, event, handler, options = {}) {
   if (!target?.addEventListener) return () => {};

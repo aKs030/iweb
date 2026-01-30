@@ -1,0 +1,163 @@
+/**
+ * CSS Variables - Consolidated
+ * Single source of truth for all CSS custom properties
+ * @version 1.0.0
+ * @date 2025-01-30
+ */
+
+:root {
+  /* ========================================
+     CORE THEME
+     ======================================== */
+
+  --theme-mode: 'dark';
+
+  /* Colors - Primary */
+  --bg-primary: #030303;
+  --bg-secondary: #0a0b10;
+  --bg-tertiary: #141414;
+  --bg-interactive: rgba(255, 255, 255, 0.06);
+
+  --text-primary: #e0e0e0;
+  --text-secondary: rgba(255, 255, 255, 0.75);
+  --text-muted: rgba(255, 255, 255, 0.55);
+
+  /* Colors - Accent */
+  --primary-color: #098bff;
+  --primary-dark: #0066cc;
+  --accent: #00f3ff;
+  --accent-secondary: #7000ff;
+
+  /* ========================================
+     SPACING & LAYOUT
+     ======================================== */
+
+  --gap-xs: 8px;
+  --gap-sm: 1rem;
+  --gap-md: 2rem;
+  --gap-lg: 4rem;
+
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+
+  --pad-x: max(1rem, env(safe-area-inset-left));
+  --pad-y: 1rem;
+
+  /* ========================================
+     BORDERS & RADIUS
+     ======================================== */
+
+  --card-border: rgba(255, 255, 255, 0.08);
+  --border-color: rgba(255, 255, 255, 0.1);
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+
+  /* ========================================
+     SHADOWS
+     ======================================== */
+
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.15);
+  --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.2);
+  --shadow-xl: 0 12px 24px rgba(0, 0, 0, 0.25);
+  --shadow-2xl: 0 24px 48px rgba(0, 0, 0, 0.3);
+
+  /* ========================================
+     TRANSITIONS & ANIMATIONS
+     ======================================== */
+
+  --transition-fast: 0.15s ease;
+  --transition-base: 0.2s ease;
+  --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-spring: 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+  /* ========================================
+     Z-INDEX LAYERS
+     ======================================== */
+
+  --z-base: 1;
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal-backdrop: 1040;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1070;
+
+  /* ========================================
+     COMPONENT: LOADER
+     ======================================== */
+
+  --loader-bg: #0a0b10;
+  --loader-text: #e0e0e0;
+  --loader-accent: #00f3ff;
+  --loader-accent-secondary: #7000ff;
+
+  /* ========================================
+     COMPONENT: SEARCH (Spotlight-inspired)
+     ======================================== */
+
+  /* Material */
+  --sp-bg: rgba(28, 28, 30, 0.82);
+  --sp-border: rgba(255, 255, 255, 0.14);
+  --sp-divider: rgba(255, 255, 255, 0.08);
+
+  /* Text */
+  --sp-text: rgba(255, 255, 255, 0.92);
+  --sp-text-secondary: rgba(255, 255, 255, 0.55);
+
+  /* Accent */
+  --sp-accent: rgb(10, 132, 255);
+
+  /* Interaction */
+  --sp-hover: rgba(255, 255, 255, 0.06);
+
+  /* Radius & Motion */
+  --sp-radius: 16px;
+  --sp-ease: cubic-bezier(0.28, 0.11, 0.32, 1);
+  --sp-blur: 100px;
+
+  /* ========================================
+     COMPONENT: FOOTER
+     ======================================== */
+
+  --footer-hover-lift: translateY(-2px);
+  --footer-hover-scale: scale(1.05);
+
+  /* ========================================
+     PAGE: BLOG
+     ======================================== */
+
+  --blog-bg: #030303;
+  --blog-card-bg: #0a0a0a;
+  --blog-border: rgba(255, 255, 255, 0.08);
+  --blog-accent: #00f3ff;
+  --blog-text: #e0e0e0;
+  --blog-text-muted: rgba(255, 255, 255, 0.6);
+
+  /* ========================================
+     PAGE: VIDEOS
+     ======================================== */
+
+  --videos-accent: #ff6b6b;
+  --videos-bg: #0a0a0a;
+  --videos-card-bg: #141414;
+
+  /* ========================================
+     PAGE: HOME - SECTION 3
+     ======================================== */
+
+  --section3-leading-lg: 1.5;
+  --section3-leading-md: 1.4;
+  --section3-leading-sm: 1.3;
+}

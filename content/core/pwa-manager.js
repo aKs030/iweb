@@ -1,5 +1,5 @@
 import { createLogger } from './logger.js';
-import { upsertHeadLink, upsertMeta } from './dom-utils.js';
+import { upsertHeadLink, upsertMeta } from './utils.js';
 import { BASE_URL } from '../config/constants.js';
 
 const log = createLogger('PWAManager');

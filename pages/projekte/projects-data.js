@@ -4,6 +4,7 @@
  */
 
 import { createLogger } from '/content/core/logger.js';
+import { sleep } from '/content/core/utils.js';
 import { GITHUB_CONFIG, PROJECT_CATEGORIES } from './github-config.js';
 import {
   fetchGitHubContents as fetchGitHubContentsApi,
@@ -221,9 +222,7 @@ const loadDynamicProjects = async (html, icons) => {
         // Note: fetchProjectMetadataApi inside fetchProjectMetadata handles the network request,
         // but since we check cache first, we might not need delay.
         // However, to be safe and consistent with previous logic:
-        await new Promise((resolve) =>
-          setTimeout(resolve, GITHUB_CONFIG.requestDelay || 50),
-        );
+        await sleep(GITHUB_CONFIG.requestDelay || 50);
       }
 
       const metadata = await fetchProjectMetadata(projectPath);

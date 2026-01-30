@@ -12,7 +12,7 @@ import { MenuAccessibility } from './modules/MenuAccessibility.js';
 import { MenuPerformance } from './modules/MenuPerformance.js';
 import { MenuCache } from './modules/MenuCache.js';
 import { MenuConfig } from './modules/MenuConfig.js';
-import { upsertHeadLink } from '/content/core/dom-utils.js';
+import { upsertHeadLink } from '/content/core/utils.js';
 import { createLogger } from '/content/core/logger.js';
 
 const logger = createLogger('SiteMenu');

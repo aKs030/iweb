@@ -1,21 +1,10 @@
 /* ===== OPTIMIZED INDEX.CSS v3.1 ===== */
 
 /* Import Components (with nesting) */
-@import './components/search.css';
 @import './components/card.css';
+@import './components/image-loading.css';
 
 /* ===== LOADER STYLES (with CSS Nesting) ===== */
-:root {
-  --loader-bg: #0a0b10;
-  --loader-text: #e0e0e0;
-  --loader-accent: #00f3ff;
-  --loader-accent-secondary: #7000ff;
-  --gap-xs: 8px;
-  --gap-sm: 1rem;
-  --gap-md: 2rem;
-  --gap-lg: 4rem;
-  --card-border: rgba(255, 255, 255, 0.08);
-}
 
 #app-loader {
   position: fixed;

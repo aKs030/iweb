@@ -11,14 +11,15 @@
 
 ```
 content/styles/
-├── root.css         423 lines  # CSS Variables & Theme
-├── main.css         779 lines  # Base Styles & Components
-├── animations.css    63 lines  # Keyframe Animations
+├── root.css         ~300 lines  # CSS Variables & Theme
+├── variables.css    ~100 lines  # Additional Variables
+├── main.css         ~330 lines  # Base Styles & Components
+├── animations.css    ~25 lines  # Keyframe Animations
 └── components/
     ├── card.css                # Card component
-    └── search.css              # Search component
+    └── image-loading.css       # Image loading states
 
-Total: 1,265 lines
+Total: ~755 lines
 ```
 
 ### Build Configuration
@@ -60,10 +61,6 @@ PostCSS Nesting is configured and ready to use.
   }
 }
 ```
-
-### See Full Examples
-
-- [content/styles/NESTING_EXAMPLE.css](../content/styles/NESTING_EXAMPLE.css) - Complete examples
 
 ---
 
@@ -174,18 +171,10 @@ npm run css:check
 
 ## 📚 Related Documentation
 
-### Detailed Guides
-
-- [CSS_OPTIMIZATION_ANALYSIS.md](CSS_OPTIMIZATION_ANALYSIS.md) - Complete optimization history
-- [CSS_NESTING_MIGRATION_GUIDE.md](CSS_NESTING_MIGRATION_GUIDE.md) - Migration guide with examples
-- [POSTCSS_SETUP.md](POSTCSS_SETUP.md) - PostCSS configuration details
-
-### Quick Reference
-
-- **CSS Variables:** See `content/styles/root.css`
+- **CSS Variables:** See `content/styles/root.css` & `content/styles/variables.css`
 - **Base Styles:** See `content/styles/main.css`
 - **Animations:** See `content/styles/animations.css`
-- **Examples:** See `content/styles/NESTING_EXAMPLE.css`
+- **PostCSS Config:** See `postcss.config.js`
 
 ---
 
@@ -250,8 +239,8 @@ npm run css:check
 
 For CSS-related questions:
 
-- Check [NESTING_EXAMPLE.css](../content/styles/NESTING_EXAMPLE.css)
-- Review detailed guides in this directory
+- Review CSS files in `content/styles/`
+- Check `postcss.config.js` for build configuration
 - See [PostCSS documentation](https://postcss.org/)
 
 ---

@@ -1,6 +1,12 @@
 #:schema node_modules/wrangler/config-schema.json
 
 # ============================================================================
+# Cloudflare Workers Configuration
+# ============================================================================
+# Optimized multi-worker setup with shared utilities
+# Last updated: 2025-01-30
+
+# ============================================================================
 # Main Worker: AI Search & Groq Proxy (Free AI Inference)
 # ============================================================================
 name = "ai-search-proxy"
@@ -18,17 +24,31 @@ routes = [
 ]
 
 [vars]
+# RAG Vectorize ID (Cloudflare Vectorize for future semantic search)
 RAG_ID = "throbbing-mode-6fe1"
-# Cache TTL in seconds (default: 1 hour)
-CACHE_TTL = "3600"
+
+# Cache TTL in seconds (5 minutes for search results)
+CACHE_TTL = "300"
+
 # Max search results to return
 MAX_SEARCH_RESULTS = "10"
-# AI Model (Groq)
+
+# AI Model (Groq - free tier)
 AI_MODEL = "llama-3.3-70b-versatile"
+
+# Environment
+ENVIRONMENT = "production"
 
 [triggers]
 # Daily cache refresh at 3 AM UTC
 crons = ["0 3 * * *"]
+
+# ============================================================================
+# Observability (Optional - requires Cloudflare Workers Analytics)
+# ============================================================================
+# [observability]
+# enabled = true
+# head_sampling_rate = 1.0
 
 # ============================================================================
 # Deployment & Secrets
@@ -36,6 +56,12 @@ crons = ["0 3 * * *"]
 # Deploy: wrangler deploy
 # Secrets: wrangler secret put GROQ_API_KEY
 # Get free API key at: https://console.groq.com/keys
+# 
+# Deployment commands:
+#   wrangler deploy                    # Deploy main worker
+#   wrangler deploy --env youtube      # Deploy YouTube worker
+#   wrangler tail                      # View logs
+#   wrangler secret put GROQ_API_KEY   # Set secret
 
 # ============================================================================
 # YouTube API Proxy Worker
@@ -44,6 +70,7 @@ crons = ["0 3 * * *"]
 name = "youtube-api-proxy"
 main = "workers/youtube-api-proxy/index.js"
 compatibility_date = "2025-01-23"
+compatibility_flags = ["nodejs_compat"]
 
 # Route both www and apex domain for /api/youtube/*
 routes = [
@@ -52,13 +79,31 @@ routes = [
 ]
 
 [env.youtube.vars]
-# Cache TTL in seconds (default: 1 hour)
+# Cache TTL in seconds (1 hour for video metadata)
 CACHE_TTL = "3600"
+
 # Rate limit: max requests per minute per IP
 RATE_LIMIT_PER_MINUTE = "60"
+
+# Environment
+ENVIRONMENT = "production"
 
 # ============================================================================
 # Deployment & Secrets
 # ============================================================================
 # Deploy: wrangler deploy --env youtube
 # Secrets: wrangler secret put YOUTUBE_API_KEY --env youtube
+# Get API key at: https://console.cloud.google.com/apis/credentials
+
+# ============================================================================
+# Development Environment (Optional)
+# ============================================================================
+# [env.dev]
+# name = "ai-search-proxy-dev"
+# main = "workers/ai-search-proxy/index.js"
+# compatibility_date = "2025-01-23"
+# 
+# [env.dev.vars]
+# ENVIRONMENT = "development"
+# CACHE_TTL = "60"
+# MAX_SEARCH_RESULTS = "5"

@@ -1,9 +1,31 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
 import { redirectsPlugin, htmlRawPlugin } from './vite-plugin-redirects.js';
+import viteCompression from 'vite-plugin-compression';
 
 export default defineConfig({
-  plugins: [htmlRawPlugin(), redirectsPlugin()],
+  plugins: [
+    htmlRawPlugin(),
+    redirectsPlugin(),
+
+    // Gzip compression
+    viteCompression({
+      algorithm: 'gzip',
+      ext: '.gz',
+      threshold: 1024, // Only compress files > 1KB
+      deleteOriginFile: false,
+      filter: /\.(js|mjs|json|css|html|svg)$/i,
+    }),
+
+    // Brotli compression - better than gzip
+    viteCompression({
+      algorithm: 'brotliCompress',
+      ext: '.br',
+      threshold: 1024,
+      deleteOriginFile: false,
+      filter: /\.(js|mjs|json|css|html|svg)$/i,
+    }),
+  ],
   root: '.',
   publicDir: 'content/assets',
 
@@ -13,6 +35,9 @@ export default defineConfig({
 
     // Support top-level await
     target: 'esnext',
+
+    // Faster builds - disable gzip size reporting
+    reportCompressedSize: false,
 
     // Optimized chunking strategy
     rollupOptions: {
@@ -26,30 +51,8 @@ export default defineConfig({
       },
 
       output: {
-        manualChunks: {
-          // Vendor chunks
-          'vendor-react': ['react', 'react-dom'],
-          'vendor-three': ['three'],
-
-          // Feature chunks
-          'three-earth': [
-            './content/components/particles/three-earth-system.js',
-            './content/components/particles/earth/scene.js',
-            './content/components/particles/earth/assets.js',
-            './content/components/particles/earth/camera.js',
-            './content/components/particles/earth/stars.js',
-            './content/components/particles/earth/cards.js',
-          ],
-
-          // Shared utilities
-          utils: [
-            './content/core/dom-utils.js',
-            './content/core/intersection-observer.js',
-            './content/core/logger.js',
-            './content/core/fetch.js',
-            './content/core/events.js',
-          ],
-        },
+        // Let Vite handle chunking automatically with smart defaults
+        // This avoids circular dependency warnings and empty chunks
 
         // Optimized file naming
         chunkFileNames: 'assets/js/[name]-[hash].js',
@@ -67,6 +70,13 @@ export default defineConfig({
           return `assets/[name]-[hash][extname]`;
         },
       },
+
+      // Better tree-shaking
+      treeshake: {
+        moduleSideEffects: false,
+        propertyReadSideEffects: false,
+        tryCatchDeoptimization: false,
+      },
     },
 
     // Performance optimizations
@@ -75,15 +85,30 @@ export default defineConfig({
       compress: {
         drop_console: true,
         drop_debugger: true,
-        pure_funcs: ['console.log', 'console.debug'],
+        pure_funcs: ['console.log', 'console.debug', 'console.info'],
+        passes: 2, // Multiple passes for better compression
+        unsafe_arrows: true,
+        unsafe_methods: true,
+      },
+      mangle: {
+        safari10: true, // Safari 10 compatibility
+      },
+      format: {
+        comments: false, // Remove all comments
       },
     },
 
-    // Chunk size warnings
-    chunkSizeWarningLimit: 500,
+    // Chunk size warnings - stricter limit
+    chunkSizeWarningLimit: 400,
 
-    // Source maps for production debugging
-    sourcemap: true,
+    // Source maps - hidden for production (only for error reporting)
+    sourcemap: 'hidden',
+
+    // CSS code splitting
+    cssCodeSplit: true,
+
+    // Minify CSS
+    cssMinify: true,
   },
 
   // Development server
@@ -107,6 +132,12 @@ export default defineConfig({
   // Optimizations
   optimizeDeps: {
     include: ['react', 'react-dom', 'three', 'dompurify'],
+    exclude: [],
+    esbuildOptions: {
+      target: 'esnext',
+      treeShaking: true,
+      minify: true,
+    },
   },
 
   // CSS optimization

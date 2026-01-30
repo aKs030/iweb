@@ -1,6 +1,6 @@
 import { observeOnce } from '/content/core/intersection-observer.js';
 import { createLogger } from '/content/core/logger.js';
-import { getElementById } from '/content/core/dom-utils.js';
+import { getElementById } from '/content/core/utils.js';
 
 let typeWriterModule = null;
 
@@ -39,9 +39,7 @@ class TimerManager {
     this.timers.clear();
     this.intervals.clear();
   }
-  sleep(ms) {
-    return new Promise((resolve) => this.setTimeout(resolve, ms));
-  }
+  // sleep() method removed - use imported sleep from async-utils.js
 }
 
 const heroTimers = new TimerManager();
@@ -138,7 +136,9 @@ const HeroManager = (() => {
     let el = null;
 
     for (const d of delays) {
-      if (d) await heroTimers.sleep(d);
+      if (d) {
+        await new Promise((resolve) => heroTimers.setTimeout(resolve, d));
+      }
       el = getElementById('greetingText');
       if (el) break;
     }
@@ -225,9 +225,12 @@ export const initHeroFeatureBundle = (sectionManager) => {
     { once: true },
   );
 
-  document.addEventListener('hero:typingEnd', (e) => {
-    window.announce?.(`Zitat vollständig: ${e.detail?.text ?? 'Text'}`);
-  });
+  document.addEventListener(
+    'hero:typingEnd',
+    (/** @type {CustomEvent} */ e) => {
+      window.announce?.(`Zitat vollständig: ${e.detail?.text ?? 'Text'}`);
+    },
+  );
 
   HeroManager.initLazyHeroModules();
 

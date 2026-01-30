@@ -5,7 +5,7 @@
 
 import { createLogger } from './logger.js';
 import { fire } from './events.js';
-import { getElementById } from './dom-utils.js';
+import { getElementById } from './utils.js';
 
 const log = createLogger('LoaderManager');
 

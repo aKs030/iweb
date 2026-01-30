@@ -5,6 +5,7 @@
 
 import { createLogger } from './logger.js';
 import { getCache } from './cache.js';
+import { sleep } from './utils.js';
 
 const log = createLogger('Fetch');
 
@@ -76,9 +77,7 @@ export async function fetchWithRetry(url, config = {}) {
 
       if (attempt < retries) {
         log.warn(`Fetch attempt ${attempt + 1} failed, retrying...`, error);
-        await new Promise((resolve) =>
-          setTimeout(resolve, retryDelay * (attempt + 1)),
-        );
+        await sleep(retryDelay * (attempt + 1));
       }
     }
   }
@@ -107,48 +106,4 @@ export async function fetchJSON(url, config = {}) {
 export async function fetchText(url, config = {}) {
   const response = await fetchWithRetry(url, config);
   return response.text();
-}
-
-/**
- * Fetch HTML with retry and caching
- * @param {string} url - URL to fetch
- * @param {FetchConfig} [config] - Fetch configuration
- * @returns {Promise<string>} HTML text
- */
-export async function fetchHTML(url, config = {}) {
-  return fetchText(url, { ...config, cache: true });
-}
-
-/**
- * Parallel fetch multiple URLs
- * @param {string[]} urls - URLs to fetch
- * @param {FetchConfig} [config] - Fetch configuration
- * @returns {Promise<Response[]>} Array of responses
- */
-export async function fetchAll(urls, config = {}) {
-  return Promise.all(urls.map((url) => fetchWithRetry(url, config)));
-}
-
-/**
- * Clear fetch cache
- * @param {string} [url] - Specific URL to clear, or all if omitted
- */
-export function clearCache(url) {
-  if (url) {
-    cacheManager.delete(url);
-  } else {
-    cacheManager.clear();
-  }
-}
-
-/**
- * Get cache statistics
- * @returns {{size: number, entries: Array<{url: string}>}}
- */
-export function getCacheStats() {
-  const stats = cacheManager.getStats();
-  return {
-    size: stats.memory.size,
-    entries: stats.memory.keys.map((url) => ({ url })),
-  };
 }

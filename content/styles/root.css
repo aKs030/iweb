@@ -2,10 +2,11 @@
    Global CSS Variables - Dark & Light Mode System
 ======================= */
 
+/* Import consolidated variables */
+@import './variables.css';
+
 /* Default: Dark Mode */
 :root {
-  --theme-mode: 'dark';
-
   /* ============================================
      COLOR SYSTEM
      ============================================ */

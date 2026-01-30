@@ -83,9 +83,8 @@ export class TimerManager {
     this.rafIds.clear();
   }
 
-  sleep(ms) {
-    return new Promise((resolve) => this.setTimeout(resolve, ms));
-  }
+  // sleep() method removed - use imported sleep from async-utils.js instead
+  // import { sleep } from '/content/core/utils.js';
 
   get activeTimers() {
     return {

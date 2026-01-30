@@ -7,6 +7,7 @@ Modern portfolio website mit React, Three.js und kostenloser AI-Integration.
 - **3D Earth Visualization** - Interaktive Three.js Earth mit WebGL
 - **AI Robot Companion** - Groq-powered Chat (100% kostenlos)
 - **RAG Search** - Retrieval-Augmented Generation für kontextbezogene Antworten
+- **Image Optimization** - AVIF/WebP mit Lazy Loading & Performance-Monitoring
 - **PWA** - Progressive Web App mit Offline-Support
 - **Performance** - Optimiert für schnelle Ladezeiten
 - **SEO** - Vollständig optimiert für Suchmaschinen
@@ -42,11 +43,16 @@ Modern portfolio website mit React, Three.js und kostenloser AI-Integration.
 │   │   ├── robot-companion/  # AI Chat Bot
 │   │   ├── particles/        # Three.js Earth
 │   │   ├── menu/             # Navigation
-│   │   └── footer/           # Footer
+│   │   ├── footer/           # Footer
+│   │   └── ui/               # UI Components (OptimizedImage)
 │   ├── core/                 # Core Utilities
+│   │   ├── image-optimizer.js           # Bildoptimierung
+│   │   ├── image-loader-helper.js       # Vereinfachte API
+│   │   ├── image-performance-monitor.js # Performance-Tracking
+│   │   └── ...
 │   ├── config/               # Configuration
 │   └── styles/               # CSS Architecture
-│       ├── components/       # Modular Components (Search, Card)
+│       ├── components/       # Modular Components (Search, Card, Image Loading)
 │       ├── root.css          # CSS Variables & Theme
 │       ├── main.css          # Base Styles
 │       └── animations.css    # Keyframes
@@ -62,7 +68,14 @@ Modern portfolio website mit React, Three.js und kostenloser AI-Integration.
 │   ├── ai-search-proxy/      # AI & Search API
 │   └── youtube-api-proxy/    # YouTube Proxy
 │
+├── scripts/                   # Build & Optimization Scripts
+│   └── optimize-images.sh    # Bildkonvertierung
+│
+├── examples/                  # Live-Beispiele
+│   └── image-optimization-examples.html
+│
 └── docs/                      # Documentation
+    ├── IMAGE_OPTIMIZATION.md
     ├── GROQ_AI_INTEGRATION.md
     ├── CLOUDFLARE_OPTIMIZATION.md
     └── ARCHITECTURE.md
@@ -91,6 +104,9 @@ npm run build
 
 # Preview build
 npm run preview
+
+# Optimize images
+npm run optimize:images
 ```
 
 ### Deploy
@@ -183,6 +199,9 @@ npm run format
 
 ## 📚 Documentation
 
+- **[Image Optimization](docs/IMAGE_OPTIMIZATION.md)** - Bildoptimierung mit AVIF/WebP & Lazy Loading
+- **[Architecture](docs/ARCHITECTURE.md)** - System-Architektur
+- **[CSS Guide](docs/CSS_GUIDE.md)** - CSS-Architektur & Best Practices
 - **[Project Status](PROJECT_STATUS.md)** - Current project status & metrics
 - **[CSS Guide](docs/CSS_GUIDE.md)** - CSS architecture & best practices
 - **[Architecture](docs/ARCHITECTURE.md)** - System design & architecture

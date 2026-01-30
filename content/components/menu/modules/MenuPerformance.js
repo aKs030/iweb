@@ -3,31 +3,22 @@
  * Optimizations for better performance
  */
 
+import { debounce, throttle } from '/content/core/utils.js';
+
 export class MenuPerformance {
   constructor() {
     this.metrics = new Map();
     this.observers = new Map();
   }
 
-  // Debounce function
+  // Use shared debounce from utils
   debounce(fn, delay) {
-    let timeoutId;
-    return (...args) => {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => fn(...args), delay);
-    };
+    return debounce(fn, delay);
   }
 
-  // Throttle function
+  // Use shared throttle from utils
   throttle(fn, limit) {
-    let inThrottle;
-    return (...args) => {
-      if (!inThrottle) {
-        fn(...args);
-        inThrottle = true;
-        setTimeout(() => (inThrottle = false), limit);
-      }
-    };
+    return throttle(fn, limit);
   }
 
   // RAF-based animation

@@ -50,11 +50,25 @@
   Vary: Accept-Encoding
 
 # ============================================================================
-# API Routes - No Caching
+# API Routes - Strategic Caching
 # ============================================================================
-/api/*
-  Cache-Control: no-store, no-cache, must-revalidate
+# Search API - Cache for 5 minutes (search results change infrequently)
+/api/search
+  Cache-Control: public, max-age=300, stale-while-revalidate=600
   Vary: Accept-Encoding, Accept
+  X-Robots-Tag: noindex
+
+# AI/Gemini API - No caching (dynamic responses)
+/api/gemini
+  Cache-Control: no-store, no-cache, must-revalidate, private
+  Vary: Accept-Encoding, Accept
+  X-Robots-Tag: noindex
+
+# YouTube API - Cache for 1 hour (video metadata rarely changes)
+/api/youtube/*
+  Cache-Control: public, max-age=3600, stale-while-revalidate=7200
+  Vary: Accept-Encoding, Accept
+  X-Robots-Tag: noindex
 
 # ============================================================================
 # HTML Pages - Fresh Content with Edge Caching
@@ -87,7 +101,12 @@
   X-Frame-Options: DENY
   
   # Permissions policy - restrict sensitive features
-  Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()
+  Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=(), interest-cohort=()
+  
+  # Additional security headers
+  X-XSS-Protection: 1; mode=block
+  Cross-Origin-Embedder-Policy: unsafe-none
+  Cross-Origin-Opener-Policy: same-origin-allow-popups
   
   # Content Security Policy (already configured, maintained)
   # Note: CSP is already defined above in the default section
