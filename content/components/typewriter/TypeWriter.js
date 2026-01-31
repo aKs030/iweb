@@ -42,14 +42,22 @@ class TimerManager {
    * @returns {ReturnType<typeof setTimeout>} Timer ID
    */
   setTimeout(fn, delay) {
-    // @ts-ignore - Node vs Browser timer types compatibility
     const id = setTimeout(() => {
-      this.timers.delete(id);
+      this.timers.delete(
+        /** @type {ReturnType<typeof setTimeout>} */ (
+          /** @type {unknown} */ (id)
+        ),
+      );
       fn();
     }, delay);
-    // @ts-ignore - Node vs Browser timer types compatibility
-    this.timers.add(id);
-    return id;
+    this.timers.add(
+      /** @type {ReturnType<typeof setTimeout>} */ (
+        /** @type {unknown} */ (id)
+      ),
+    );
+    return /** @type {ReturnType<typeof setTimeout>} */ (
+      /** @type {unknown} */ (id)
+    );
   }
 
   /**
@@ -58,20 +66,22 @@ class TimerManager {
    * @returns {ReturnType<typeof setInterval>} Interval ID
    */
   setInterval(fn, delay) {
-    // @ts-ignore - Node vs Browser timer types compatibility
     const id = setInterval(fn, delay);
-    // @ts-ignore - Node vs Browser timer types compatibility
-    this.intervals.add(id);
-    // @ts-ignore - Node vs Browser timer types compatibility
-    return id;
+    this.intervals.add(
+      /** @type {ReturnType<typeof setInterval>} */ (
+        /** @type {unknown} */ (id)
+      ),
+    );
+    return /** @type {ReturnType<typeof setInterval>} */ (
+      /** @type {unknown} */ (id)
+    );
   }
 
   /**
    * @param {ReturnType<typeof setTimeout>} id - Timer ID
    */
   clearTimeout(id) {
-    // @ts-ignore - Node vs Browser timer types compatibility
-    clearTimeout(id);
+    clearTimeout(/** @type {any} */ (id));
     this.timers.delete(id);
   }
 
@@ -79,8 +89,7 @@ class TimerManager {
    * @param {ReturnType<typeof setInterval>} id - Interval ID
    */
   clearInterval(id) {
-    // @ts-ignore - Node vs Browser timer types compatibility
-    clearInterval(id);
+    clearInterval(/** @type {any} */ (id));
     this.intervals.delete(id);
   }
 
@@ -275,13 +284,14 @@ export class TypeWriter {
   }) {
     if (!textEl || !authorEl || !quotes?.length) {
       log.error('TypeWriter: Missing required parameters');
-      // @ts-ignore - Early return in constructor for validation
-      return;
+      return /** @type {any} */ (undefined);
     }
 
     this.quotes = quotes.filter((q) => q?.text);
-    // @ts-ignore - Early return in constructor for validation
-    if (!this.quotes.length) return log.error('No valid quotes');
+    if (!this.quotes.length) {
+      log.error('No valid quotes');
+      return /** @type {any} */ (undefined);
+    }
 
     // Initialize instance properties
     this.textEl = textEl;
@@ -361,13 +371,11 @@ export class TypeWriter {
   }
 
   _tick() {
-    // @ts-ignore - Optional chaining handles undefined
     if (!this._current?.text || !this.timerManager)
       return this._handleQuoteTransition();
 
     const full = String(this._current.text);
-    // @ts-ignore - Optional chaining handles undefined
-    const author = String(this._current.author || '');
+    const author = String(this._current.author ?? '');
 
     this._txt = this._isDeleting
       ? full.substring(0, Math.max(0, this._txt.length - 1))
@@ -404,7 +412,6 @@ export class TypeWriter {
       } catch (err) {
         log.warn('TypeWriter: dispatch hero:typingEnd failed', err);
       }
-      // @ts-ignore - wait can be undefined, fallback to 2400
       delay = this.wait ?? 2400;
       this._isDeleting = true;
     } else if (this._isDeleting && !this._txt) {
@@ -570,8 +577,8 @@ export async function initHeroSubtitle(options = {}) {
 
       typeWriterInstance = tw;
       // Add teardown method for cleanup
-      // @ts-ignore - Dynamic property for cleanup
-      typeWriterInstance.__teardown = () => {
+      const instance = /** @type {any} */ (typeWriterInstance);
+      instance.__teardown = () => {
         document.removeEventListener(EVENTS.HERO_TYPING_END, onHeroTypingEnd);
         window.removeEventListener('resize', onResize);
       };
