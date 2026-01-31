@@ -6,11 +6,6 @@ export default [
     languageOptions: {
       ecmaVersion: 2024,
       sourceType: 'module',
-      parserOptions: {
-        ecmaFeatures: {
-          importAttributes: true,
-        },
-      },
       globals: {
         window: 'readonly',
         document: 'readonly',

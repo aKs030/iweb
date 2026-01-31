@@ -32,7 +32,7 @@ export class ThreeEarthManager {
 
     const container = this.getContainer();
     if (!container) {
-      log.warn('Earth container not found - cannot load Three.js');
+      log.debug('Earth container not found');
       return;
     }
 
@@ -52,17 +52,14 @@ export class ThreeEarthManager {
         throw new Error('initThreeEarth not found in module exports');
       }
 
-      log.info('Calling initThreeEarth()...');
       this.cleanupFn = await initThreeEarth();
 
       if (typeof this.cleanupFn === 'function') {
         globalThis.__threeEarthCleanup = this.cleanupFn;
-        log.info('Three.js Earth system initialized successfully');
-      } else {
-        log.warn('initThreeEarth did not return cleanup function');
+        log.info('Three.js Earth system initialized');
       }
     } catch (error) {
-      log.error('Three.js failed, using CSS fallback:', error);
+      log.warn('Three.js failed, using CSS fallback:', error);
       // Unblock loader even on error
       const AppLoadManager = globalThis.__appLoadManager;
       if (AppLoadManager) {
