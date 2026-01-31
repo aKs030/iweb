@@ -14,6 +14,9 @@ Essential documentation for the portfolio website project.
 
 - **[ARCHITECTURE.md](ARCHITECTURE.md)** - System architecture and design decisions
 - **[CSS_GUIDE.md](CSS_GUIDE.md)** - CSS architecture and best practices
+- **[LOADER_COMPLETE_GUIDE.md](LOADER_COMPLETE_GUIDE.md)** - Complete loading screen guide (all pages)
+- **[LOADER_IMPROVEMENTS.md](LOADER_IMPROVEMENTS.md)** - Loading screen improvements and implementation
+- **[LOADER_USAGE.md](LOADER_USAGE.md)** - Global loader utility usage guide
 
 ### Image Optimization
 
@@ -70,5 +73,5 @@ npm run optimize:images  # Optimize all images
 
 ---
 
-**Last Updated:** January 30, 2025  
+**Last Updated:** January 31, 2026  
 **Status:** ✅ Complete and up-to-date

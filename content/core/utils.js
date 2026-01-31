@@ -69,67 +69,6 @@ export function debounce(fn, delay, options = {}) {
 }
 
 /**
- * Debounce an async function
- * @param {Function} fn - Async function to debounce
- * @param {number} delay - Delay in milliseconds
- * @param {Object} options - Debounce options
- * @param {boolean} [options.leading=false] - Execute on leading edge
- * @returns {Function} Debounced async function with cancel method
- * @example
- * const debouncedSearch = debounceAsync(searchAPI, 300);
- * await debouncedSearch('query');
- */
-export function debounceAsync(fn, delay, options = {}) {
-  const { leading = false } = options;
-  let timeoutId = null;
-  let pendingPromise = null;
-  let lastCallTime = 0;
-
-  const debounced = function (...args) {
-    const now = Date.now();
-    const timeSinceLastCall = now - lastCallTime;
-
-    if (timeoutId) {
-      clearTimeout(timeoutId);
-    }
-
-    // Leading edge execution
-    if (leading && timeSinceLastCall > delay && !pendingPromise) {
-      lastCallTime = now;
-      return fn.apply(this, args);
-    }
-
-    // Trailing edge execution
-    if (!pendingPromise) {
-      pendingPromise = new Promise((resolve, reject) => {
-        timeoutId = setTimeout(async () => {
-          try {
-            lastCallTime = Date.now();
-            const result = await fn.apply(this, args);
-            resolve(result);
-          } catch (error) {
-            reject(error);
-          } finally {
-            pendingPromise = null;
-            timeoutId = null;
-          }
-        }, delay);
-      });
-    }
-
-    return pendingPromise;
-  };
-
-  debounced.cancel = () => {
-    clearTimeout(timeoutId);
-    timeoutId = null;
-    pendingPromise = null;
-  };
-
-  return debounced;
-}
-
-/**
  * Throttle a function
  * @param {Function} func - Function to throttle
  * @param {number} limit - Limit in milliseconds

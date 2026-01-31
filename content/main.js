@@ -35,7 +35,7 @@ import { createLogger } from './core/logger.js';
 import { EVENTS, fire } from './core/events.js';
 import { a11y, createAnnouncer } from './core/accessibility-manager.js';
 import { SectionManager } from './core/section-manager.js';
-import { LoaderManager } from './core/loader-manager.js';
+import { updateLoader, hideLoader } from './core/global-loader.js';
 import { ThreeEarthManager } from './core/three-earth-manager.js';
 import { getElementById, onDOMReady } from './core/utils.js';
 import { initImageOptimization } from './core/image-loader-helper.js';
@@ -344,8 +344,10 @@ const _initApp = () => {
 onDOMReady(_initApp);
 
 // ===== Initialize Managers =====
-const LoadingScreenManager = new LoaderManager();
 const ThreeEarthLoader = new ThreeEarthManager(ENV);
+
+// Track if loader has been hidden
+let loaderHidden = false;
 
 // ===== Event Handlers =====
 const EventHandlers = {
@@ -407,7 +409,7 @@ document.addEventListener(
   'DOMContentLoaded',
   async () => {
     perfMarks.domReady = performance.now();
-    LoadingScreenManager.init();
+    updateLoader(0.1, 'Initialisiere System...');
 
     fire(EVENTS.DOM_READY);
 
@@ -434,8 +436,12 @@ document.addEventListener(
       if (AppLoadManager?.isBlocked?.()) return;
       if (!isEarthReady()) return;
 
-      LoadingScreenManager.hide();
-      announce('Anwendung geladen', { dedupe: true });
+      if (!loaderHidden) {
+        loaderHidden = true;
+        updateLoader(1, 'Bereit!');
+        setTimeout(() => hideLoader(), 100);
+        announce('Anwendung geladen', { dedupe: true });
+      }
     };
 
     document.addEventListener(EVENTS.LOADING_UNBLOCKED, checkReady);
@@ -445,17 +451,23 @@ document.addEventListener(
       () => {
         perfMarks.windowLoaded = performance.now();
         windowLoaded = true;
+        updateLoader(0.7, 'Lade Ressourcen...');
         checkReady();
       },
       { once: true },
     );
 
+    updateLoader(0.2, 'Lade Kern-Module...');
     fire(EVENTS.CORE_INITIALIZED);
     fire(EVENTS.HERO_INIT_READY);
+
+    updateLoader(0.3, 'Initialisiere Hero...');
     initHeroFeatureBundle(sectionManager);
 
+    updateLoader(0.4, 'Lade 3D-System...');
     ThreeEarthLoader.initDelayed();
 
+    updateLoader(0.5, 'Optimiere Bilder...');
     // Initialize image optimization
     initImageOptimization({
       autoOptimize: true,
@@ -467,14 +479,17 @@ document.addEventListener(
 
     modulesReady = true;
     perfMarks.modulesReady = performance.now();
+    updateLoader(0.6, 'Module geladen');
     fire(EVENTS.MODULES_READY);
     checkReady();
 
     // Force hide after timeout
     setTimeout(() => {
-      if (!LoadingScreenManager.hasHidden) {
+      if (!loaderHidden) {
         log.info('Forcing loading screen hide after timeout');
-        LoadingScreenManager.hide();
+        loaderHidden = true;
+        updateLoader(1, 'Timeout erreicht');
+        hideLoader();
       }
     }, LOADING_TIMEOUT_MS);
 
