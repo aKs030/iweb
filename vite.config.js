@@ -9,8 +9,6 @@ export default defineConfig({
     react({
       // Use automatic JSX runtime (React 17+)
       jsxRuntime: 'automatic',
-      // Include .jsx files
-      include: '**/*.{jsx,tsx,js,ts}',
     }),
     htmlRawPlugin(),
     redirectsPlugin(),
@@ -127,6 +125,10 @@ export default defineConfig({
       Pragma: 'no-cache',
       Expires: '0',
     },
+    fs: {
+      // Allow serving files from project root
+      strict: false,
+    },
   },
 
   // Preview server (for testing production builds)
@@ -145,11 +147,6 @@ export default defineConfig({
       minify: true,
       jsx: 'automatic',
     },
-  },
-
-  // Ensure JSX files are handled correctly
-  esbuild: {
-    jsxInject: `import React from 'react'`,
   },
 
   // Resolve extensions
