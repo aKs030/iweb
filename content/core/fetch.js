@@ -50,10 +50,10 @@ export async function fetchWithRetry(url, config = {}) {
   let lastError;
 
   for (let attempt = 0; attempt <= retries; attempt++) {
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), timeout);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
 
+    try {
       const response = await fetch(url, {
         ...fetchOptions,
         signal: controller.signal,
@@ -68,12 +68,21 @@ export async function fetchWithRetry(url, config = {}) {
 
       // Cache successful response using CacheManager
       if (useCache) {
-        await cacheManager.set(url, response.clone(), cacheTTL);
+        await cacheManager.set(url, response.clone(), { ttl: cacheTTL });
       }
 
       return response;
     } catch (error) {
+      clearTimeout(timeoutId);
       lastError = error;
+
+      // Don't retry on abort or 4xx errors
+      if (
+        error.name === 'AbortError' ||
+        (error.message && error.message.includes('HTTP 4'))
+      ) {
+        break;
+      }
 
       if (attempt < retries) {
         log.warn(`Fetch attempt ${attempt + 1} failed, retrying...`, error);

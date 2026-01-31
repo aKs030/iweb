@@ -279,6 +279,7 @@ const injectCoreAssets = () => {
         },
       });
 
+      // Fallback with shorter timeout
       setTimeout(() => {
         try {
           const existing = document.head.querySelector(`link[href="${href}"]`);
@@ -292,10 +293,14 @@ const injectCoreAssets = () => {
         } catch {
           /* ignore */
         }
-      }, 3000);
+      }, 2000);
     };
 
     const upsertModulePreload = (href) => {
+      if (
+        document.head.querySelector(`link[rel="modulepreload"][href="${href}"]`)
+      )
+        return;
       upsertHeadLink({
         rel: 'modulepreload',
         href,
@@ -346,16 +351,19 @@ const injectCoreAssets = () => {
         '/pages/home/section3.css',
       ]);
 
+      // Batch inject styles
       styles.forEach((href) => {
         const isCritical =
           criticalStyles.has(href) || (p === '/' && homeCritical.has(href));
         upsertStyle(href, { critical: isCritical });
       });
 
+      // Batch inject module preloads
       SCRIPTS.filter((s) => s.preload).forEach((s) =>
         upsertModulePreload(s.src),
       );
 
+      // Batch inject scripts
       SCRIPTS.forEach(upsertScript);
 
       try {
