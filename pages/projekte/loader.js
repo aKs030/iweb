@@ -4,7 +4,7 @@
  * @last-modified 2026-01-31
  */
 
-import { initProjectsApp } from './app.js';
+import { initReactProjectsApp } from './app.js';
 import { createLogger } from '/content/core/logger.js';
 import { updateLoader, hideLoader } from '/content/core/global-loader.js';
 
@@ -88,11 +88,17 @@ const initPage = async () => {
   try {
     updateLoader(0.1, 'Initialisiere Projekte...');
 
-    // 1. Initialize React App
-    updateLoader(0.3, 'Lade Komponenten...');
-    initProjectsApp();
+    // Initialize React Projects App
+    updateLoader(0.4, 'Lade Projekte App...');
 
-    // 2. Apply Three.js presets when loaded
+    try {
+      initReactProjectsApp();
+    } catch (reactError) {
+      log.error(`React App failed: ${reactError.message}`);
+      throw reactError;
+    }
+
+    // Apply Three.js presets when loaded
     updateLoader(0.6, 'Konfiguriere 3D-Ansicht...');
     if (document.readyState === 'complete') {
       await applyPresetsToThreeJS();
@@ -118,6 +124,21 @@ const initPage = async () => {
     log.error('Projects page initialization failed:', error);
     updateLoader(1, 'Fehler beim Laden');
     hideLoader(500);
+
+    // Show error in the root element if app failed to initialize
+    const rootEl = document.getElementById('root');
+    if (rootEl && !rootEl.innerHTML.trim()) {
+      rootEl.innerHTML = `
+        <div style="padding: 2rem; text-align: center; color: #ef4444; background: rgba(0,0,0,0.8); border-radius: 1rem; margin: 2rem;">
+          <h2>Fehler beim Laden der Projekte</h2>
+          <p><strong>Details:</strong> ${error.message}</p>
+          <p><strong>Zeitpunkt:</strong> ${new Date().toLocaleTimeString()}</p>
+          <button onclick="location.reload()" style="margin-top: 1rem; padding: 0.5rem 1rem; cursor: pointer; background: #4444ff; color: white; border: none; border-radius: 4px;">
+            Seite neu laden
+          </button>
+        </div>
+      `;
+    }
   }
 };
 

@@ -147,7 +147,7 @@ const loadDynamicProjects = async (icons) => {
       category: data.category,
       datePublished: currentDate,
       image: DEFAULT_OG_IMAGE,
-      appPath: `/projekte/apps/${dirName}/`,
+      appPath: `https://rawcdn.githack.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/${GITHUB_CONFIG.branch}/${GITHUB_CONFIG.appsPath}/${dirName}/index.html`,
       githubPath: `${GITHUB_CONFIG.repoBase}/${GITHUB_CONFIG.appsPath}/${dirName}`,
       bgStyle: createGradient(theme.gradient),
       glowColor: theme.icon,
