@@ -9,8 +9,8 @@ const log = createLogger('projekte-app');
  * @version 3.0.0
  */
 
-import React from 'https://esm.sh/react@19.0.0';
-import { createRoot } from 'https://esm.sh/react-dom@19.0.0/client';
+import React from 'react';
+import { createRoot } from 'react-dom/client';
 import htm from 'https://esm.sh/htm@3.1.1';
 import {
   ExternalLink,
