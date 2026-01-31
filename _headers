@@ -32,14 +32,19 @@
   Vary: Accept-Encoding
   Cross-Origin-Resource-Policy: same-origin
 
-# Main application script (not fingerprinted) - fresh browser, 1 hour edge cache
+# Main application script (not fingerprinted) - NO CACHE for debugging
 /content/main.js
-  Cache-Control: public, max-age=0, s-maxage=3600, stale-while-revalidate=86400
+  Cache-Control: no-cache, no-store, must-revalidate
   Vary: Accept-Encoding
 
-# Component scripts - short browser TTL, edge caching
+# Component scripts - NO CACHE for debugging
 /content/components/*
-  Cache-Control: public, max-age=0, s-maxage=3600, stale-while-revalidate=86400
+  Cache-Control: no-cache, no-store, must-revalidate
+  Vary: Accept-Encoding
+
+# Built assets with hashes - can cache
+/assets/js/*
+  Cache-Control: public, max-age=31536000, immutable
   Vary: Accept-Encoding
 
 # ============================================================================
