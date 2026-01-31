@@ -4,6 +4,20 @@
  * @last-modified 2026-01-31
  */
 
+/**
+ * @typedef {Object} GtagEvent
+ * @property {string} video_id
+ * @property {string} video_title
+ * @property {string} page_location
+ */
+
+/**
+ * @typedef {Window & {
+ *   gtag?: (command: string, eventName: string, params: any) => void;
+ *   dataLayer?: any[];
+ * }} ExtendedWindow
+ */
+
 import { createLogger } from '/content/core/logger.js';
 import { fetchJSON } from '/content/core/fetch.js';
 import { escapeHTML } from '/content/core/html-sanitizer.js';
@@ -321,17 +335,18 @@ const renderVideoCard = async (grid, it, detailsMap, index = 0) => {
             event_label: title,
             video_id: vid,
           };
-          if (typeof gtag === 'function') {
+          const win = /** @type {ExtendedWindow} */ (window);
+          if (typeof win.gtag === 'function') {
             // GA4 event
-            gtag('event', 'open_video_page', ga4Payload);
+            win.gtag('event', 'open_video_page', ga4Payload);
             // optional UA-style event for compatibility (if using legacy setups)
             try {
-              gtag('event', 'open_video_page_ua', uaPayload);
+              win.gtag('event', 'open_video_page_ua', uaPayload);
             } catch {
               // Ignore errors for legacy UA events
             }
-          } else if (Array.isArray(window.dataLayer)) {
-            window.dataLayer.push({
+          } else if (Array.isArray(win.dataLayer)) {
+            win.dataLayer.push({
               event: 'open_video_page',
               ...ga4Payload,
             });
