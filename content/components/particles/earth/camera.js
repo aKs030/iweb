@@ -41,12 +41,9 @@ export class CameraManager {
           : sectionName;
     const preset = CONFIG.CAMERA.PRESETS[presetKey];
     if (preset) {
-      log.info(`Flying to preset: ${presetKey}`);
       this.flyToPreset(presetKey);
     } else {
-      log.warn(
-        `No preset for '${sectionName}' (tried '${presetKey}'), using hero`,
-      );
+      log.warn(`No preset for '${sectionName}', using hero`);
       this.flyToPreset('hero');
     }
   }
