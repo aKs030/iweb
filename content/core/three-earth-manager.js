@@ -6,6 +6,7 @@
 import { createLogger } from './logger.js';
 import { getElementById } from './utils.js';
 import { observeOnce } from './intersection-observer.js';
+import { showErrorState } from '../components/particles/earth/ui.js';
 
 const log = createLogger('ThreeEarthManager');
 
@@ -45,14 +46,32 @@ export class ThreeEarthManager {
 
     try {
       log.info('Loading Three.js Earth system...');
-      const { initThreeEarth } =
-        await import('../components/particles/three-earth-system.js');
 
-      if (typeof initThreeEarth !== 'function') {
-        throw new Error('initThreeEarth not found in module exports');
-      }
+      // Timeout wrapper for initialization
+      const loadPromise = async () => {
+        const { initThreeEarth } = await import(
+          '../components/particles/three-earth-system.js'
+        );
 
-      this.cleanupFn = await initThreeEarth();
+        if (typeof initThreeEarth !== 'function') {
+          throw new Error('initThreeEarth not found in module exports');
+        }
+
+        return initThreeEarth();
+      };
+
+      const TIMEOUT_MS = 6000;
+      const cleanupFn = await Promise.race([
+        loadPromise(),
+        new Promise((_, reject) =>
+          setTimeout(
+            () => reject(new Error('Three.js initialization timed out')),
+            TIMEOUT_MS,
+          ),
+        ),
+      ]);
+
+      this.cleanupFn = cleanupFn;
 
       if (typeof this.cleanupFn === 'function') {
         globalThis.__threeEarthCleanup = this.cleanupFn;
@@ -60,6 +79,7 @@ export class ThreeEarthManager {
       }
     } catch (error) {
       log.warn('Three.js failed, using CSS fallback:', error);
+      showErrorState(container, error);
     } finally {
       this.isLoading = false;
     }
