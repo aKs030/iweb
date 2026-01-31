@@ -261,12 +261,12 @@ export function getCache(options) {
 }
 
 /**
- * Cache decorator for functions
+ * Cache decorator for functions (currently unused - kept for future use)
  * @param {Function} fn - Function to cache
  * @param {Object} [options] - Cache options
  * @returns {Function} Cached function
  */
-export const cached = (fn, options = {}) => {
+const _cached = (fn, options = {}) => {
   const cache = getCache();
   const { ttl = 300000, keyFn = (...args) => JSON.stringify(args) } = options;
 
@@ -284,4 +284,10 @@ export const cached = (fn, options = {}) => {
   };
 };
 
-export { CacheManager, MemoryCache, IndexedDBCache };
+// Export removed - not used anywhere in codebase
+// export { _cached as cached };
+
+// Export for compatibility - removed unused exports:
+// - cached (decorator function - not used)
+// - CacheManager, MemoryCache, IndexedDBCache (internal classes - not exported directly)
+// These are used internally by getCache() but don't need to be exported

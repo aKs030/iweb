@@ -1,9 +1,16 @@
+/**
+ * Blog App with Progress Tracking
+ * @version 3.0.0
+ * @last-modified 2026-01-31
+ */
+
 // @ts-nocheck
 // External CDN imports - type definitions not available
 import React from 'https://esm.sh/react@19.0.0';
 import { createRoot } from 'https://esm.sh/react-dom@19.0.0/client';
 import htm from 'https://esm.sh/htm@3.1.1';
 import { createLogger } from '/content/core/logger.js';
+import { updateLoader, hideLoader } from '/content/core/global-loader.js';
 import { marked } from 'https://cdn.jsdelivr.net/npm/marked@11.1.1/lib/marked.esm.js';
 import DOMPurify from 'https://cdn.jsdelivr.net/npm/dompurify@3.0.8/dist/purify.es.mjs';
 import { Clock, ArrowRight, ArrowUp } from '/content/components/ui/icons.js';
@@ -41,27 +48,47 @@ const normalizePost = (raw = {}) => {
   };
 };
 
-// Fetch Logic
+// Fetch Logic with Progress Tracking
 const loadPostsData = async (seedPosts = []) => {
   try {
+    updateLoader(0.2, 'Lese Sitemap...');
     const r = await fetch('/sitemap.xml');
     if (!r.ok) throw new Error('No sitemap');
+
     const xml = await r.text();
     const ids = Array.from(
       xml.matchAll(new RegExp('<loc>.*?/blog/([^/<>]+)/?.*?</loc>', 'g')),
     ).map((m) => m[1]);
     const uniqueIds = Array.from(new Set(ids));
 
+    updateLoader(0.3, `${uniqueIds.length} Artikel gefunden...`);
+
+    // Fetch articles with progress updates
+    let loaded = 0;
+    const total = uniqueIds.length;
+
     const fetched = await Promise.all(
       uniqueIds.map(async (id) => {
         try {
           const res = await fetch(`/pages/blog/${id}/index.html`);
-          if (res.ok) return parseArticleHtml(await res.text(), id);
+          if (res.ok) {
+            const result = await parseArticleHtml(await res.text(), id);
+            loaded++;
+
+            const progress = 0.3 + (loaded / total) * 0.4;
+            updateLoader(progress, `Lade Artikel ${loaded}/${total}...`, {
+              silent: true,
+            });
+
+            return result;
+          }
         } catch {
           return null;
         }
       }),
     );
+
+    updateLoader(0.75, 'Verarbeite Artikel...');
 
     const map = new Map();
     // Seed Data Map
@@ -70,14 +97,20 @@ const loadPostsData = async (seedPosts = []) => {
     // Merge Fetched Data
     fetched.filter(Boolean).forEach((p) => {
       const existing = map.get(p.id) || {};
-      // Re-normalize to ensure category overrides apply to merged data
       const merged = normalizePost({ ...existing, ...p });
       map.set(p.id, merged);
     });
 
-    return Array.from(map.values()).sort((a, b) => b.timestamp - a.timestamp);
+    const result = Array.from(map.values()).sort(
+      (a, b) => b.timestamp - a.timestamp,
+    );
+
+    updateLoader(0.9, `${result.length} Artikel geladen`);
+
+    return result;
   } catch (e) {
     log.warn('Fallback to seed data', e);
+    updateLoader(0.9, 'Verwende Seed-Daten');
     return seedPosts;
   }
 };
@@ -254,27 +287,35 @@ const BlogApp = () => {
     // IIFE for async/await in useEffect
     (async () => {
       try {
+        updateLoader(0.1, 'Lade Blog...');
+
         // Parallel execution for better performance
-        // Load posts data and OG images metadata in parallel
         const [final, ogData] = await Promise.all([
           loadPostsData(seed),
           (async () => {
+            updateLoader(0.15, 'Lade Metadaten...', { silent: true });
             const response = await fetch(
               '/content/assets/img/og/og-images-meta.json',
             );
             return response.json();
           })(),
         ]);
-        const ogResponse = ogData; // Keep variable name for compatibility
 
         setPosts(final);
         setLoading(false);
-        setOgMeta(ogResponse);
-      } catch (error) {
-        // Ensure loading state is reset even on error
-        setLoading(false);
+        setOgMeta(ogData);
 
-        // Log errors in development for debugging
+        setTimeout(() => {
+          updateLoader(1, 'Blog bereit!');
+          hideLoader(100);
+        }, 100);
+
+        log.info(`Successfully loaded ${final.length} blog posts`);
+      } catch (error) {
+        setLoading(false);
+        updateLoader(1, 'Fehler beim Laden');
+        hideLoader(500);
+
         if (import.meta.env?.DEV) {
           console.warn('Failed to load blog data:', error);
         }

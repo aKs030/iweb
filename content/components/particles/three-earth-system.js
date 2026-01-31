@@ -394,18 +394,28 @@ class ThreeEarthSystem {
   _createLoadingManager(container) {
     const manager = new this.THREE.LoadingManager();
 
+    manager.onStart = (
+      /** @type {string} */ _url,
+      /** @type {number} */ _loaded,
+      /** @type {number} */ _total,
+    ) => {
+      showLoadingState(container, 0);
+    };
+
     manager.onProgress = (
       /** @type {string} */ _url,
       /** @type {number} */ loaded,
       /** @type {number} */ total,
     ) => {
       if (!this.active) return;
-      showLoadingState(container, Math.min(1, loaded / Math.max(1, total)));
+      const progress = Math.min(1, loaded / Math.max(1, total));
+      showLoadingState(container, progress);
     };
 
     manager.onLoad = () => {
       if (!this.active) return;
       this.assetsReady = true;
+      showLoadingState(container, 1);
       try {
         container.dataset.threeReady = '1';
       } catch {
@@ -717,7 +727,8 @@ class ThreeEarthSystem {
     };
 
     document.addEventListener('visibilitychange', this.handleVisibilityChange);
-    if (document.visibilityState === 'visible') this.animate();
+    // Start animation immediately, regardless of visibility state
+    this.animate();
   }
 
   handleVisibilityChange() {
@@ -827,14 +838,18 @@ class ThreeEarthSystem {
       if (this.assetsReady && !this.firstFrameRendered) {
         this.firstFrameRendered = true;
         const container = getElementById('threeEarthContainer');
-        hideLoadingState(container);
-        const AppLoadManager = getAppLoadManager();
-        AppLoadManager.unblock('three-earth');
-        document.dispatchEvent(
-          new CustomEvent('three-first-frame', {
-            detail: { containerId: container?.id },
-          }),
-        );
+
+        // Small delay to ensure the first frame is visible before hiding loader
+        requestAnimationFrame(() => {
+          hideLoadingState(container);
+          const AppLoadManager = getAppLoadManager();
+          AppLoadManager.unblock('three-earth');
+          document.dispatchEvent(
+            new CustomEvent('three-first-frame', {
+              detail: { containerId: container?.id },
+            }),
+          );
+        });
       }
     }
   }
@@ -1131,11 +1146,7 @@ export const initThreeEarth = () => {
   return singleton.init();
 };
 
-export const cleanup = () => {
-  if (singleton) singleton.cleanup();
-};
-
-const ThreeEarthManager = { initThreeEarth, cleanup };
+const ThreeEarthManager = { initThreeEarth };
 
 // --- Helpers copied from original (kept for compatibility) ---
 
@@ -1261,28 +1272,8 @@ function _getSectionConfig(sectionName) {
 }
 
 // Export for compatibility with other modules if they import these
-export {
-  detectDeviceCapabilities,
-  _mapId,
-  // _createLoadingManager is internal now
-  // _onSectionObserverEntries is internal now
-  // _detectAndEnsureWebGL is internal now
-};
-// Re-export specific helpers if needed by tests, but ideally tests should use the class instance or mocks
-
-/**
- * @param {any} _T
- * @param {any} c
- */
-export const _createLoadingManager = (_T, c) => {
-  if (singleton) return singleton._createLoadingManager(c);
-  return null;
-};
-
-export const _detectAndEnsureWebGL = () => {
-  if (singleton) return singleton._detectAndEnsureWebGL();
-  return true;
-};
+// Removed unused exports: detectDeviceCapabilities, _mapId, _createLoadingManager, _detectAndEnsureWebGL
+// These were not used anywhere in the codebase
 
 export const EarthSystemAPI = {
   /**

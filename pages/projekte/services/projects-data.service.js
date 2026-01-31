@@ -1,10 +1,11 @@
 /**
  * Projects Data Service
- * @version 6.0.0
+ * @version 7.0.0
  */
 
 import React from 'react';
 import { createLogger } from '/content/core/logger.js';
+import { updateLoader } from '/content/core/global-loader.js';
 import { sleep } from '/content/core/utils.js';
 import { GITHUB_CONFIG, PROJECT_CATEGORIES } from '../config/github.config.js';
 import { DEFAULT_OG_IMAGE, THEME_COLORS } from '../config/constants.js';
@@ -88,6 +89,8 @@ const loadDynamicProjects = async (icons) => {
 
   try {
     log.info('Starting dynamic project loading...');
+    updateLoader(0.1, 'Verbinde mit GitHub...');
+
     const contents = await fetchGitHubContents(GITHUB_CONFIG.appsPath);
 
     if (!contents || contents.length === 0) {
@@ -97,8 +100,14 @@ const loadDynamicProjects = async (icons) => {
     const directories = contents.filter((item) => item.type === 'dir');
     log.info(`Found ${directories.length} directories on GitHub`);
 
+    updateLoader(0.2, `${directories.length} Projekte gefunden...`);
+
     for (const [i, dir] of directories.entries()) {
       const projectPath = `${GITHUB_CONFIG.appsPath}/${dir.name}`;
+
+      // Update progress for each project
+      const progress = 0.2 + (i / directories.length) * 0.6;
+      updateLoader(progress, `Lade Projekt ${i + 1}/${directories.length}...`);
 
       if (i > 0 && source === 'github') {
         await sleep(GITHUB_CONFIG.requestDelay || 50);
@@ -107,10 +116,14 @@ const loadDynamicProjects = async (icons) => {
       const metadata = await fetchProjectMetadata(projectPath);
       projectsList.push({ ...metadata, dirName: dir.name });
     }
+
+    updateLoader(0.85, 'Verarbeite Projektdaten...');
   } catch (error) {
     log.error('Failed to load dynamic projects from GitHub:', error);
     log.info('Falling back to local bundled config');
     source = 'local';
+
+    updateLoader(0.5, 'Lade lokale Projekte...');
 
     // Fallback to local config
     const localApps = localAppsConfig.apps || [];
@@ -148,6 +161,8 @@ const loadDynamicProjects = async (icons) => {
   });
 
   log.info(`Loaded ${finalProjects.length} projects (Source: ${source})`);
+  updateLoader(1, `${finalProjects.length} Projekte bereit`);
+
   return finalProjects;
 };
 
