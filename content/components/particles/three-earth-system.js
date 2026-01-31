@@ -198,7 +198,6 @@ class ThreeEarthSystem {
     // Observers
     this.sectionObserver = null;
     this.viewportObserver = null;
-    this.scrollCleanup = null;
   }
 
   async init() {
@@ -207,10 +206,6 @@ class ThreeEarthSystem {
       .__projectCameraPresets;
     if (globalPresets) {
       Object.assign(CONFIG.CAMERA.PRESETS, globalPresets);
-      log.info(
-        'Loaded project camera presets from global:',
-        Object.keys(globalPresets),
-      );
     }
 
     const sharedState = getSharedState();
@@ -321,12 +316,6 @@ class ThreeEarthSystem {
     if (this.viewportObserver) {
       this.viewportObserver.disconnect();
       this.viewportObserver = null;
-    }
-
-    // Cleanup scroll listener
-    if (this.scrollCleanup) {
-      this.scrollCleanup();
-      this.scrollCleanup = null;
     }
 
     this.timers.clearAll();
@@ -853,108 +842,28 @@ class ThreeEarthSystem {
   // --- Observers ---
 
   _setupSectionDetection() {
-    let retryCount = 0;
-    const maxRetries = 5;
-    let scrollTimeout = 0;
+    const sections = Array.from(
+      document.querySelectorAll('section[id], div#footer-trigger-zone'),
+    );
+    if (!sections.length || !('IntersectionObserver' in window)) return;
 
-    const setupObserver = () => {
-      const sections = Array.from(
-        document.querySelectorAll('section[id], div#footer-trigger-zone'),
-      );
-
-      if (!sections.length) {
-        retryCount++;
-        log.debug(
-          `No sections found yet (attempt ${retryCount}/${maxRetries}), will retry...`,
-        );
-
-        if (retryCount < maxRetries) {
-          // Retry with increasing delays
-          this.timers.setTimeout(() => setupObserver(), 500 * retryCount);
+    const thresholds = Array.from({ length: 21 }, (_, i) => i / 20);
+    this.sectionObserver = createObserver(
+      (/** @type {any[]} */ entries) => {
+        let best = null;
+        for (const entry of entries) {
+          if (!best || entry.intersectionRatio > best.intersectionRatio)
+            best = entry;
         }
-        return false;
-      }
 
-      if (!('IntersectionObserver' in window)) return true;
-
-      log.info(
-        `Setting up section detection for ${sections.length} sections:`,
-        sections.map((s) => s.id),
-      );
-
-      // Disconnect existing observer if any
-      if (this.sectionObserver) {
-        try {
-          this.sectionObserver.disconnect();
-        } catch (e) {
-          // ignore
+        if (best?.isIntersecting) {
+          this._handleSectionChange(best);
         }
-      }
+      },
+      { rootMargin: '-20% 0px -20% 0px', threshold: thresholds },
+    );
 
-      const thresholds = Array.from({ length: 21 }, (_, i) => i / 20);
-      this.sectionObserver = createObserver(
-        (/** @type {any[]} */ entries) => {
-          // Process all entries to catch rapid scroll-snap changes
-          for (const entry of entries) {
-            if (entry.isIntersecting && entry.intersectionRatio > 0.3) {
-              this._handleSectionChange(entry);
-              break; // Only handle the first qualifying entry
-            }
-          }
-        },
-        { rootMargin: '0px 0px 0px 0px', threshold: thresholds },
-      );
-
-      sections.forEach((s) => this.sectionObserver?.observe(s));
-
-      // Add scroll-based fallback for snap-scroll sections
-      const handleScroll = () => {
-        clearTimeout(scrollTimeout);
-        scrollTimeout = window.setTimeout(() => {
-          // Find the section closest to viewport center
-          const viewportCenter = window.innerHeight / 2;
-          let closestSection = null;
-          let closestDistance = Infinity;
-
-          sections.forEach((section) => {
-            const rect = section.getBoundingClientRect();
-            const sectionCenter = rect.top + rect.height / 2;
-            const distance = Math.abs(sectionCenter - viewportCenter);
-
-            if (
-              distance < closestDistance &&
-              rect.top < window.innerHeight &&
-              rect.bottom > 0
-            ) {
-              closestDistance = distance;
-              closestSection = section;
-            }
-          });
-
-          if (closestSection) {
-            const mockEntry = {
-              target: closestSection,
-              isIntersecting: true,
-              intersectionRatio: 0.5,
-            };
-            this._handleSectionChange(mockEntry);
-          }
-        }, 150);
-      };
-
-      window.addEventListener('scroll', handleScroll, { passive: true });
-
-      // Store cleanup function
-      this.scrollCleanup = () => {
-        window.removeEventListener('scroll', handleScroll);
-        clearTimeout(scrollTimeout);
-      };
-
-      return true;
-    };
-
-    // Try immediately
-    setupObserver();
+    sections.forEach((s) => this.sectionObserver?.observe(s));
   }
 
   /**
@@ -970,8 +879,6 @@ class ThreeEarthSystem {
 
     const prev = this.currentSection;
     this.currentSection = newSection;
-
-    log.info(`Section changed: ${prev} → ${newSection}`);
 
     this.cameraManager?.updateCameraForSection(newSection);
 
