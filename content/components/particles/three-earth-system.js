@@ -201,6 +201,14 @@ class ThreeEarthSystem {
   }
 
   async init() {
+    // Load project-specific camera presets if available (for projekte page)
+    const globalPresets = /** @type {any} */ (globalThis)
+      .__projectCameraPresets;
+    if (globalPresets) {
+      Object.assign(CONFIG.CAMERA.PRESETS, globalPresets);
+      log.info('Loaded project camera presets from global');
+    }
+
     const sharedState = getSharedState();
     if (sharedState.systems.has('three-earth')) {
       log.debug('System already initialized');
