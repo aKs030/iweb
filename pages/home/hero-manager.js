@@ -93,6 +93,7 @@ const HeroManager = (() => {
         const dataModule = await ensureHeroData().catch(() => ({}));
         await loadTyped(dataModule);
         setRandomGreetingHTML();
+
         isInitialized = true;
       };
     }
@@ -116,6 +117,7 @@ const HeroManager = (() => {
 
     const rect = heroEl.getBoundingClientRect();
     if (rect.top < innerHeight && rect.bottom > 0) {
+      // Hero is visible, trigger immediately
       triggerLoad();
       return;
     }

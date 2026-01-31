@@ -173,33 +173,35 @@ export function fire(type, detail = null, target = document) {
 }
 
 /**
- * Listen to event
+ * Listen to event (currently unused - kept for API completeness)
  * @param {string} event - Event name
  * @param {Function} callback - Callback function
  * @param {Object} [options] - Options
  * @returns {Function} Unsubscribe function
  */
-export function on(event, callback, options) {
+const _on = (event, callback, options) => {
   return emitter.on(event, callback, options);
-}
+};
 
 /**
- * Listen to event once
+ * Listen to event once (currently unused - kept for API completeness)
  * @param {string} event - Event name
  * @param {Function} callback - Callback function
  * @returns {Function} Unsubscribe function
  */
-export function once(event, callback) {
+const _once = (event, callback) => {
   return emitter.once(event, callback);
-}
+};
 
 /**
- * Remove event listener
+ * Remove event listener (currently unused - kept for API completeness)
  * @param {string} event - Event name
  * @param {Function} callback - Callback function
  */
-export function off(event, callback) {
+const _off = (event, callback) => {
   emitter.off(event, callback);
-}
+};
 
-export { EventEmitter };
+// Exports removed - not used anywhere in codebase
+// Kept as internal functions for potential future use
+// export { _on as on, _once as once, _off as off, EventEmitter };

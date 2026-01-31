@@ -1,7 +1,14 @@
+/**
+ * Videos Page with Progress Tracking
+ * @version 3.0.0
+ * @last-modified 2026-01-31
+ */
+
 import { createLogger } from '/content/core/logger.js';
 import { fetchJSON } from '/content/core/fetch.js';
 import { escapeHTML } from '/content/core/html-sanitizer.js';
 import { getElementById } from '/content/core/utils.js';
+import { updateLoader, hideLoader } from '/content/core/global-loader.js';
 import { FAVICON_512 } from '../../content/config/site-config.js';
 
 const log = createLogger('videos');
@@ -369,32 +376,70 @@ const loadLatestVideos = async () => {
       log.warn(
         'Running from file:// — network requests may be blocked. Serve site via http://localhost for proper API requests.',
       );
+      updateLoader(1, 'Lokaler Modus');
+      hideLoader(500);
       return;
     }
 
+    updateLoader(0.1, 'Lade Videos...');
     setVideoStatus('Videos werden geladen…');
 
     const grid = document.querySelector('.video-grid');
-    if (!grid) return;
+    if (!grid) {
+      updateLoader(1, 'Fehler: Grid nicht gefunden');
+      hideLoader(500);
+      return;
+    }
 
+    updateLoader(0.3, 'Verbinde mit YouTube...');
     const { items, detailsMap } = await loadFromApi(handle);
+
     if (!items.length) {
       log.warn('Keine Videos gefunden');
-      // Show a friendly informational message and keep any static entries on the page
       showInfoMessage(
         'Keine öffentlichen Uploads auf YouTube gefunden — es werden die statisch eingebetteten Videos angezeigt.',
       );
       setVideoStatus('');
+      updateLoader(1, 'Keine Videos gefunden');
+      hideLoader(500);
       return;
     }
 
+    updateLoader(0.6, `Verarbeite ${items.length} Videos...`);
     grid.innerHTML = '';
-    items.forEach((it, index) => renderVideoCard(grid, it, detailsMap, index));
 
+    // Render videos with progress updates
+    const batchSize = 5;
+    for (let i = 0; i < items.length; i += batchSize) {
+      const batch = items.slice(i, i + batchSize);
+      batch.forEach((it, idx) =>
+        renderVideoCard(grid, it, detailsMap, i + idx),
+      );
+
+      const progress = 0.6 + ((i + batchSize) / items.length) * 0.3;
+      updateLoader(
+        progress,
+        `Lade Videos ${Math.min(i + batchSize, items.length)}/${items.length}...`,
+      );
+
+      // Allow UI to update
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    }
+
+    updateLoader(0.95, `${items.length} Videos geladen`);
     setVideoStatus('');
+
+    setTimeout(() => {
+      updateLoader(1, 'Videos bereit!');
+      hideLoader(100);
+    }, 100);
+
+    log.info(`Successfully loaded ${items.length} videos`);
   } catch (err) {
     log.error('Fehler beim Laden der Videos', err);
     showErrorMessage(err);
+    updateLoader(1, 'Fehler beim Laden');
+    hideLoader(500);
   }
 };
 

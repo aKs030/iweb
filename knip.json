@@ -1,0 +1,34 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": [
+    "index.html",
+    "pages/**/index.html",
+    "content/main.js",
+    "pages/**/app.js",
+    "pages/**/*-app.js",
+    "pages/**/videos.js",
+    "pages/**/loader.js",
+    "pages/**/*-loader.js",
+    "pages/**/*-manager.js",
+    "workers/**/index.js"
+  ],
+  "project": ["**/*.js", "**/*.mjs"],
+  "ignore": [
+    "node_modules/**",
+    "dist/**",
+    ".git/**",
+    "**/*.md",
+    "**/*.css",
+    "**/*.html"
+  ],
+  "ignoreDependencies": [
+    "dompurify",
+    "react",
+    "react-dom",
+    "three",
+    "@types/three",
+    "cssnano",
+    "husky",
+    "lint-staged"
+  ]
+}

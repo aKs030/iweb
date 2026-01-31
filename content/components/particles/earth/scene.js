@@ -34,6 +34,10 @@ export function setupScene(THREE, container) {
 
   container.appendChild(renderer.domElement);
 
+  // Ensure canvas is visible immediately
+  renderer.domElement.style.opacity = '1';
+  renderer.domElement.style.visibility = 'visible';
+
   // Mark that the renderer DOM element has been attached so tests or other code can detect presence
   try {
     container.dataset.threeAttached = '1';

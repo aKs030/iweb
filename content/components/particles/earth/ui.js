@@ -1,6 +1,7 @@
 import { CONFIG } from './config.js';
 import { createLogger } from '/content/core/logger.js';
 import { throttle } from '/content/core/utils.js';
+import { updateLoader } from '/content/core/global-loader.js';
 
 import {
   calculateQualityLevel,
@@ -26,42 +27,38 @@ function getGlobalLoaderElements() {
 export function showLoadingState(container, progress) {
   if (!container) return;
 
-  // Prefer the global page loader when available
-  const globals = getGlobalLoaderElements();
-  if (globals?.overlay) {
-    if (globals.overlay.dataset.loaderDone === 'true') return;
+  // Use the new global loader utility
+  if (typeof progress === 'number') {
+    const pct = Math.round(progress * 100);
+    updateLoader(progress, `Lädt 3D‑Ansicht… ${pct}%`);
+  } else {
+    updateLoader(0, 'Initialisiere 3D-Engine...');
+  }
 
-    globals.overlay.classList.remove('fade-out', 'hidden');
-    globals.overlay.removeAttribute('aria-hidden');
-    globals.overlay.setAttribute('aria-live', 'polite');
-    globals.overlay.setAttribute('role', 'status');
-    Object.assign(globals.overlay.style, {
+  // Legacy support: Update overlay directly if needed
+  const overlay = document.getElementById('app-loader');
+  if (overlay && overlay.dataset.loaderDone === 'true') return;
+
+  if (overlay) {
+    overlay.classList.remove('fade-out', 'hidden');
+    overlay.removeAttribute('aria-hidden');
+    overlay.setAttribute('aria-live', 'polite');
+    overlay.setAttribute('role', 'status');
+    Object.assign(overlay.style, {
       display: 'flex',
       opacity: '1',
       pointerEvents: 'auto',
       visibility: 'visible',
     });
 
-    if (globals.text) {
-      if (typeof progress === 'number') {
-        const pct = Math.round(progress * 100);
-        globals.text.textContent = `Lädt 3D‑Ansicht… (${pct}%)`;
-      } else {
-        globals.text.textContent = 'Initialisiere 3D-Engine...';
-      }
-    }
-
     if (typeof progress === 'number') {
-      globals.overlay.setAttribute(
-        'aria-valuenow',
-        String(Math.round(progress * 100)),
-      );
-      globals.overlay.setAttribute('aria-valuemin', '0');
-      globals.overlay.setAttribute('aria-valuemax', '100');
+      overlay.setAttribute('aria-valuenow', String(Math.round(progress * 100)));
+      overlay.setAttribute('aria-valuemin', '0');
+      overlay.setAttribute('aria-valuemax', '100');
     } else {
-      globals.overlay.removeAttribute('aria-valuenow');
-      globals.overlay.removeAttribute('aria-valuemin');
-      globals.overlay.removeAttribute('aria-valuemax');
+      overlay.removeAttribute('aria-valuenow');
+      overlay.removeAttribute('aria-valuemin');
+      overlay.removeAttribute('aria-valuemax');
     }
 
     try {
@@ -69,8 +66,6 @@ export function showLoadingState(container, progress) {
     } catch (err) {
       log.warn('EarthUI: add global-loading-visible failed', err);
     }
-  } else {
-    // Fallback: no local progress UI; do nothing.
   }
 }
 

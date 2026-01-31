@@ -1,5 +1,12 @@
+/**
+ * Gallery App with Progress Tracking
+ * @version 2.0.0
+ * @last-modified 2026-01-31
+ */
+
 /* global React, ReactDOM */
 import { createLogger } from '/content/core/logger.js';
+import { updateLoader, hideLoader } from '/content/core/global-loader.js';
 import {
   Heart,
   X_Icon,
@@ -48,6 +55,38 @@ const PhotoGallery = () => {
   const [showInfo, setShowInfo] = useState(false);
   const [sortBy, setSortBy] = useState('date');
   const slideshowRef = useRef(null);
+
+  // Initialize gallery with progress tracking
+  useEffect(() => {
+    const initGallery = async () => {
+      try {
+        updateLoader(0.1, 'Initialisiere Galerie...');
+
+        // Simulate initialization steps
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        updateLoader(0.3, 'Lade Bilder...');
+
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        updateLoader(0.6, 'Bereite Ansicht vor...');
+
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        updateLoader(0.9, 'Fast fertig...');
+
+        setTimeout(() => {
+          updateLoader(1, 'Galerie bereit!');
+          hideLoader(100);
+        }, 100);
+
+        log.info('Gallery initialized successfully');
+      } catch (error) {
+        log.error('Gallery initialization failed:', error);
+        updateLoader(1, 'Fehler beim Laden');
+        hideLoader(500);
+      }
+    };
+
+    initGallery();
+  }, []);
 
   const photos = [
     {

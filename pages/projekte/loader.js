@@ -1,10 +1,12 @@
 /**
  * Projects Page Loader
- * @version 2.0.0
+ * @version 3.0.0
+ * @last-modified 2026-01-31
  */
 
 import { initProjectsApp } from './app.js';
 import { createLogger } from '/content/core/logger.js';
+import { updateLoader, hideLoader } from '/content/core/global-loader.js';
 
 const log = createLogger('ProjectsLoader');
 
@@ -80,17 +82,42 @@ const applyPresetsToThreeJS = async () => {
 };
 
 /**
- * Initialize page
+ * Initialize page with progress tracking
  */
 const initPage = async () => {
-  // 1. Initialize React App
-  initProjectsApp();
+  try {
+    updateLoader(0.1, 'Initialisiere Projekte...');
 
-  // 2. Apply Three.js presets when loaded
-  if (document.readyState === 'complete') {
-    await applyPresetsToThreeJS();
-  } else {
-    globalThis.addEventListener('load', applyPresetsToThreeJS, { once: true });
+    // 1. Initialize React App
+    updateLoader(0.3, 'Lade Komponenten...');
+    initProjectsApp();
+
+    // 2. Apply Three.js presets when loaded
+    updateLoader(0.6, 'Konfiguriere 3D-Ansicht...');
+    if (document.readyState === 'complete') {
+      await applyPresetsToThreeJS();
+    } else {
+      globalThis.addEventListener(
+        'load',
+        async () => {
+          await applyPresetsToThreeJS();
+        },
+        { once: true },
+      );
+    }
+
+    updateLoader(0.9, 'Fast fertig...');
+
+    setTimeout(() => {
+      updateLoader(1, 'Projekte bereit!');
+      hideLoader(100);
+    }, 100);
+
+    log.info('Projects page initialized successfully');
+  } catch (error) {
+    log.error('Projects page initialization failed:', error);
+    updateLoader(1, 'Fehler beim Laden');
+    hideLoader(500);
   }
 };
 

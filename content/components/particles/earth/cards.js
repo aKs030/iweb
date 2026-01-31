@@ -793,9 +793,15 @@ export class CardManager {
       this._pointerDownPos = null;
     };
 
-    el.addEventListener('pointermove', this._boundPointerMove);
-    el.addEventListener('pointerdown', this._boundPointerDown);
-    el.addEventListener('pointerup', this._boundPointerUp);
+    el.addEventListener('pointermove', this._boundPointerMove, {
+      passive: true,
+    });
+    el.addEventListener('pointerdown', this._boundPointerDown, {
+      passive: true,
+    });
+    el.addEventListener('pointerup', this._boundPointerUp, {
+      passive: true,
+    });
     this._pointerElement = el;
   }
 
