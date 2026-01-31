@@ -9,7 +9,7 @@
  * - Error handling and validation
  */
 
-import SEARCH_INDEX from './search-index.json' with { type: 'json' };
+import SEARCH_INDEX from './search-index.json' assert { type: 'json' };
 import { searchHandler } from './handlers/search.js';
 import { geminiHandler } from './handlers/gemini.js';
 import {
