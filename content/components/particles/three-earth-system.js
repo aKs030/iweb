@@ -11,7 +11,6 @@ import { getElementById, debounce } from '/content/core/utils.js';
 import { createObserver } from '/content/core/intersection-observer.js';
 import {
   getSharedState,
-  loadThreeJS,
   registerParticleSystem,
   unregisterParticleSystem,
   sharedCleanupManager,
@@ -45,12 +44,12 @@ const log = createLogger('ThreeEarthSystem');
 
 // Helper: onResize
 /**
- * @param {function} callback
+ * @param {Function} callback
  * @param {number} delay
- * @returns {function} cleanup function
+ * @returns {Function} cleanup function
  */
 function onResize(callback, delay = 100) {
-  const handler = debounce(callback, delay);
+  const handler = /** @type {EventListener} */ (debounce(callback, delay));
   window.addEventListener('resize', handler, { passive: true });
   return () => {
     window.removeEventListener('resize', handler);
@@ -69,31 +68,35 @@ class TimerManager {
   }
 
   /**
-   * @param {function} fn
+   * @param {Function} fn
    * @param {number} delay
    * @returns {TimerID}
    */
   setTimeout(fn, delay) {
     const id = /** @type {TimerID} */ (
-      setTimeout(() => {
-        // ✅ Guard clause: Check if timer is still active before executing
-        if (this.timers.has(id)) {
-          this.timers.delete(id);
-          fn();
-        }
-      }, delay)
+      /** @type {unknown} */ (
+        setTimeout(() => {
+          // ✅ Guard clause: Check if timer is still active before executing
+          if (this.timers.has(id)) {
+            this.timers.delete(id);
+            fn();
+          }
+        }, delay)
+      )
     );
     this.timers.add(id);
     return id;
   }
 
   /**
-   * @param {function} fn
+   * @param {Function} fn
    * @param {number} delay
    * @returns {TimerID}
    */
   setInterval(fn, delay) {
-    const id = /** @type {TimerID} */ (setInterval(fn, delay));
+    const id = /** @type {TimerID} */ (
+      /** @type {unknown} */ (setInterval(fn, delay))
+    );
     this.intervals.add(id);
     return id;
   }
@@ -220,7 +223,7 @@ class ThreeEarthSystem {
     try {
       log.info('Initializing Three.js Earth System v12.0.0 (Pure WebGL)');
 
-      if (!this._detectAndEnsureWebGL(container)) return () => this.cleanup();
+      if (!this._detectAndEnsureWebGL()) return () => this.cleanup();
 
       this._registerAndBlock();
 
@@ -247,8 +250,12 @@ class ThreeEarthSystem {
         await this._loadAssets(loadingManager);
 
       if (!this.active) {
-        if (earthAssets.dayMaterial) earthAssets.dayMaterial.dispose();
+        if (earthAssets?.dayMaterial) earthAssets.dayMaterial.dispose();
         return () => this.cleanup();
+      }
+
+      if (!earthAssets) {
+        throw new Error('Failed to load earth assets');
       }
 
       this.earthMesh = earthAssets.earthMesh;
@@ -330,26 +337,30 @@ class ThreeEarthSystem {
 
   // --- Internals ---
 
+  /**
+   * @param {HTMLElement} container
+   */
   _clearFallbacks(container) {
     try {
       container.classList.remove('three-earth-unavailable');
       container
         .querySelectorAll('.three-earth-fallback')
-        .forEach((el) => el.remove());
+        .forEach((el) => /** @type {HTMLElement} */ (el).remove());
     } catch {
       /* ignore */
     }
   }
 
   _detectDevice() {
-    const caps = /** @type {DeviceCapabilities|undefined} */ (
-      this.deviceCapabilities
-    );
+    const caps = /** @type {any} */ (this.deviceCapabilities);
     this.isMobileDevice =
       !!caps?.isMobile ||
       (globalThis.matchMedia?.('(max-width: 768px)')?.matches ?? false);
   }
 
+  /**
+   * @param {HTMLElement} container
+   */
   async _loadThreeWithWatchdog(container) {
     const THREE_LOAD_WATCH = 8000;
     let loaded = false;
@@ -366,16 +377,24 @@ class ThreeEarthSystem {
       }
     }, THREE_LOAD_WATCH);
 
-    const THREE = await loadThreeJS();
+    // Three.js is already imported at the top, just use it directly
+    this.THREE = THREE;
     loaded = true;
     this.timers.clearTimeout(timer);
     return THREE;
   }
 
+  /**
+   * @param {HTMLElement} container
+   */
   _createLoadingManager(container) {
     const manager = new this.THREE.LoadingManager();
 
-    manager.onProgress = (_url, loaded, total) => {
+    manager.onProgress = (
+      /** @type {string} */ _url,
+      /** @type {number} */ loaded,
+      /** @type {number} */ total,
+    ) => {
       if (!this.active) return;
       showLoadingState(container, Math.min(1, loaded / Math.max(1, total)));
     };
@@ -390,7 +409,7 @@ class ThreeEarthSystem {
       }
     };
 
-    manager.onError = (url) => {
+    manager.onError = (/** @type {string} */ url) => {
       log.warn('Error loading texture:', url);
       AppLoadManager.unblock('three-earth');
     };
@@ -403,6 +422,9 @@ class ThreeEarthSystem {
     AppLoadManager.block('three-earth');
   }
 
+  /**
+   * @param {any} loadingManager
+   */
   async _loadAssets(loadingManager) {
     return Promise.all([
       createEarthSystem(
@@ -438,7 +460,7 @@ class ThreeEarthSystem {
       );
       const starField = this.starManager.createStarField();
 
-      sharedParallaxManager.addHandler((progress) => {
+      sharedParallaxManager.addHandler((/** @type {number} */ progress) => {
         if (
           !starField ||
           !this.starManager ||
@@ -467,11 +489,14 @@ class ThreeEarthSystem {
     this.earthMesh.add(atmosphere);
   }
 
+  /**
+   * @param {HTMLElement} container
+   */
   _initManagers(container) {
     this.cameraManager = new CameraManager(this.THREE, this.camera);
     this.cameraManager.setupCameraSystem();
 
-    const onWheel = (e) => {
+    const onWheel = (/** @type {any} */ e) => {
       if (this.active) this.cameraManager?.handleWheel(e);
     };
     container.addEventListener('wheel', onWheel, { passive: true });
@@ -484,6 +509,9 @@ class ThreeEarthSystem {
     );
   }
 
+  /**
+   * @param {HTMLElement} container
+   */
   _setupManagersAndCards(container) {
     this._setupSectionDetection();
     this._setupViewportObserver(container);
@@ -493,9 +521,9 @@ class ThreeEarthSystem {
     this.performanceMonitor = new PerformanceMonitor(
       container,
       this.renderer,
-      (level) => {
+      (/** @type {string} */ level) => {
         this.currentQualityLevel = level;
-        const cfg = CONFIG.QUALITY_LEVELS[level];
+        const cfg = /** @type {any} */ (CONFIG.QUALITY_LEVELS)[level];
         if (this.cloudMesh) this.cloudMesh.visible = cfg.cloudLayer;
         if (this.shootingStarManager)
           this.shootingStarManager.disabled = !cfg.meteorShowers;
@@ -563,6 +591,9 @@ class ThreeEarthSystem {
     ];
   }
 
+  /**
+   * @param {HTMLElement} container
+   */
   _finalizeInitialization(container) {
     this._startAnimationLoop();
     this._setupResizeHandler(container);
@@ -602,6 +633,9 @@ class ThreeEarthSystem {
     window.removeEventListener('click', this.onClick);
   }
 
+  /**
+   * @param {MouseEvent} event
+   */
   onMove(event) {
     if (!this.active) return;
     const global =
@@ -614,6 +648,9 @@ class ThreeEarthSystem {
     }
   }
 
+  /**
+   * @param {MouseEvent} event
+   */
   onClick(event) {
     if (!this.active || !this.cardManager) return;
     const mouse = new this.THREE.Vector2();
@@ -622,6 +659,9 @@ class ThreeEarthSystem {
     this.cardManager.handleClick(mouse);
   }
 
+  /**
+   * @param {HTMLElement} container
+   */
   _setupResizeHandler(container) {
     const handler = () => {
       if (!this.camera || !this.renderer) return;
@@ -634,7 +674,9 @@ class ThreeEarthSystem {
       this.camera.fov = this.isMobileDevice ? 55 : CONFIG.CAMERA.FOV;
       this.camera.updateProjectionMatrix();
       this.renderer.setSize(width, height);
-      this.starManager?.handleResize(width, height);
+      if (this.starManager && 'handleResize' in this.starManager) {
+        /** @type {any} */ (this.starManager).handleResize(width, height);
+      }
     };
 
     const cleanup = onResize(handler, 100);
@@ -651,7 +693,7 @@ class ThreeEarthSystem {
       if (!this.active) return;
       this.animationFrameId = requestAnimationFrame(this.animate);
 
-      const cap = /** @type {DeviceCapabilities} */ (
+      const cap = /** @type {any} */ (
         this.deviceCapabilities || detectDeviceCapabilities()
       );
       const targetFrameTime = cap.isLowEnd ? 33.33 : 16.67;
@@ -690,6 +732,11 @@ class ThreeEarthSystem {
     }
   }
 
+  /**
+   * @param {number} totalTime
+   * @param {number} delta
+   * @param {any} capabilities
+   */
   _updateFrame(totalTime, delta, capabilities) {
     if (this.cloudMesh) {
       this.cloudMesh.rotation.y += CONFIG.CLOUDS.ROTATION_SPEED * 30 * delta;
@@ -718,6 +765,10 @@ class ThreeEarthSystem {
     this._render();
   }
 
+  /**
+   * @param {number} time
+   * @param {any} capabilities
+   */
   _updateNightPulse(time, capabilities) {
     if (
       this.earthMesh?.userData.currentMode === 'night' &&
@@ -791,7 +842,7 @@ class ThreeEarthSystem {
 
     const thresholds = Array.from({ length: 21 }, (_, i) => i / 20);
     this.sectionObserver = createObserver(
-      (entries) => {
+      (/** @type {any[]} */ entries) => {
         let best = null;
         for (const entry of entries) {
           if (!best || entry.intersectionRatio > best.intersectionRatio)
@@ -805,9 +856,12 @@ class ThreeEarthSystem {
       { rootMargin: '-20% 0px -20% 0px', threshold: thresholds },
     );
 
-    sections.forEach((s) => this.sectionObserver.observe(s));
+    sections.forEach((s) => this.sectionObserver?.observe(s));
   }
 
+  /**
+   * @param {any} entry
+   */
   _handleSectionChange(entry) {
     if (entry.target.id === 'features' && this.cardManager) {
       this.cardManager.setProgress(entry.intersectionRatio || 0);
@@ -835,6 +889,10 @@ class ThreeEarthSystem {
     if (datasetContainer) datasetContainer.dataset.section = newSection;
   }
 
+  /**
+   * @param {string} sectionName
+   * @param {boolean} allowModeSwitch
+   */
   _updateEarthForSection(sectionName, allowModeSwitch) {
     if (!this.earthMesh || !this.active) return;
 
@@ -864,6 +922,9 @@ class ThreeEarthSystem {
     }
   }
 
+  /**
+   * @param {any} config
+   */
   _applyConfigToMeshes(config) {
     if (!config) return;
     const em = this.earthMesh;
@@ -886,6 +947,9 @@ class ThreeEarthSystem {
     }
   }
 
+  /**
+   * @param {HTMLElement} container
+   */
   _setupViewportObserver(container) {
     if (!('IntersectionObserver' in window)) {
       this.isVisible = true;
@@ -893,7 +957,7 @@ class ThreeEarthSystem {
     }
 
     this.viewportObserver = createObserver(
-      (entries) => {
+      (/** @type {any[]} */ entries) => {
         this.isVisible = entries[0].isIntersecting;
         if (this.isVisible) {
           if (!this.animationFrameId && this.animate && this.active) {
@@ -920,15 +984,16 @@ class ThreeEarthSystem {
     document.addEventListener('three-earth:showcase', this.onShowcaseTrigger);
   }
 
+  /**
+   * @param {any} e
+   */
   onShowcaseTrigger(e) {
     const duration = e?.detail?.duration ?? 8000;
     this.triggerShowcase(duration);
   }
 
   triggerShowcase(duration = 8000) {
-    const caps = /** @type {DeviceCapabilities|undefined} */ (
-      this.deviceCapabilities
-    );
+    const caps = /** @type {any} */ (this.deviceCapabilities);
     if (!this.active || this.showcaseActive || caps?.isLowEnd) return;
 
     this.showcaseActive = true;
@@ -985,6 +1050,10 @@ class ThreeEarthSystem {
 
   // --- Utilities ---
 
+  /**
+   * @param {HTMLElement} container
+   * @param {any} error
+   */
   _handleInitError(container, error) {
     if (this.renderer) {
       try {
@@ -1002,11 +1071,11 @@ class ThreeEarthSystem {
 
   _disposeScene() {
     if (this.scene) {
-      this.scene.traverse((obj) => {
+      this.scene.traverse((/** @type {any} */ obj) => {
         if (obj.geometry) obj.geometry.dispose();
         if (obj.material) {
           if (Array.isArray(obj.material)) {
-            obj.material.forEach((m) => disposeMaterial(m));
+            obj.material.forEach((/** @type {any} */ m) => disposeMaterial(m));
           } else {
             disposeMaterial(obj.material);
           }
@@ -1029,7 +1098,7 @@ class ThreeEarthSystem {
     const urlParams = new URL(location.href).searchParams;
     const forceThree =
       urlParams.get('forceThree') === '1' ||
-      Boolean(globalThis.__FORCE_THREE_EARTH);
+      Boolean(/** @type {any} */ (globalThis).__FORCE_THREE_EARTH);
 
     if (!supportsWebGL() && !forceThree) {
       log.warn('WebGL not supported');
@@ -1063,6 +1132,9 @@ const ThreeEarthManager = { initThreeEarth, cleanup };
 
 // --- Helpers copied from original (kept for compatibility) ---
 
+/**
+ * @param {any} material
+ */
 function disposeMaterial(material) {
   if (!material) return;
   const textureProps = [
@@ -1111,6 +1183,9 @@ function detectDeviceCapabilities() {
   }
 }
 
+/**
+ * @param {any} capabilities
+ */
 function getOptimizedConfig(capabilities) {
   if (!capabilities) return {};
   if (capabilities.isLowEnd) {
@@ -1134,10 +1209,16 @@ function getOptimizedConfig(capabilities) {
   return {};
 }
 
+/**
+ * @param {string} id
+ */
 function _mapId(id) {
   return id === 'footer-trigger-zone' ? 'site-footer' : id;
 }
 
+/**
+ * @param {string} sectionName
+ */
 function _getSectionConfig(sectionName) {
   const configs = {
     hero: {
@@ -1166,8 +1247,9 @@ function _getSectionConfig(sectionName) {
     },
   };
   return (
-    configs[sectionName === 'site-footer' ? 'contact' : sectionName] ||
-    configs.hero
+    /** @type {any} */ (configs)[
+      sectionName === 'site-footer' ? 'contact' : sectionName
+    ] || configs.hero
   );
 }
 
@@ -1181,16 +1263,24 @@ export {
 };
 // Re-export specific helpers if needed by tests, but ideally tests should use the class instance or mocks
 
+/**
+ * @param {any} _T
+ * @param {any} c
+ */
 export const _createLoadingManager = (_T, c) => {
   if (singleton) return singleton._createLoadingManager(c);
   return null;
 };
-export const _detectAndEnsureWebGL = (c) => {
-  if (singleton) return singleton._detectAndEnsureWebGL(c);
+
+export const _detectAndEnsureWebGL = () => {
+  if (singleton) return singleton._detectAndEnsureWebGL();
   return true;
 };
 
 export const EarthSystemAPI = {
+  /**
+   * @param {any} presetName
+   */
   flyToPreset: (presetName) => {
     if (singleton?.cameraManager)
       singleton.cameraManager.flyToPreset(presetName);
@@ -1199,6 +1289,9 @@ export const EarthSystemAPI = {
     singleton?.shootingStarManager?.triggerShower();
   },
   getConfig: () => CONFIG,
+  /**
+   * @param {any} updates
+   */
   updateConfig: (updates) => {
     Object.assign(CONFIG, updates);
   },

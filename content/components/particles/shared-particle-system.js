@@ -37,6 +37,10 @@ class SharedParticleState {
     this.isInitialized = false;
   }
 
+  /**
+   * @param {string} name
+   * @param {any} instance
+   */
   registerSystem(name, instance) {
     if (this.systems.has(name)) {
       log.warn(`System '${name}' already registered, overwriting`);
@@ -44,6 +48,9 @@ class SharedParticleState {
     this.systems.set(name, instance);
   }
 
+  /**
+   * @param {string} name
+   */
   unregisterSystem(name) {
     const deleted = this.systems.delete(name);
     if (deleted) {
@@ -52,6 +59,9 @@ class SharedParticleState {
     return deleted;
   }
 
+  /**
+   * @param {string} name
+   */
   hasSystem(name) {
     return this.systems.has(name);
   }
@@ -64,6 +74,14 @@ class SharedParticleState {
 
 const sharedState = new SharedParticleState();
 
+/**
+ * Get shared state instance
+ * @returns {SharedParticleState}
+ */
+export function getSharedState() {
+  return sharedState;
+}
+
 // ===== Parallax Manager =====
 
 class SharedParallaxManager {
@@ -73,6 +91,10 @@ class SharedParallaxManager {
     this.scrollHandler = null;
   }
 
+  /**
+   * @param {Function} handler
+   * @param {string} name
+   */
   addHandler(handler, name = 'anonymous') {
     if (typeof handler !== 'function') {
       log.error(`Invalid handler for '${name}', must be a function`);
@@ -86,6 +108,9 @@ class SharedParallaxManager {
     }
   }
 
+  /**
+   * @param {Function} handler
+   */
   removeHandler(handler) {
     const handlerObj = Array.from(this.handlers).find(
       (h) => h.handler === handler,
@@ -103,34 +128,36 @@ class SharedParallaxManager {
   activate() {
     if (this.isActive) return;
 
-    this.scrollHandler = throttle(() => {
-      const scrollY = window.pageYOffset;
-      const windowHeight = window.innerHeight;
-      const documentHeight = document.documentElement.scrollHeight;
-      const scrollableHeight = Math.max(1, documentHeight - windowHeight);
-      const progress = Math.min(1, Math.max(0, scrollY / scrollableHeight));
+    this.scrollHandler = /** @type {EventListener} */ (
+      throttle(() => {
+        const scrollY = window.pageYOffset;
+        const windowHeight = window.innerHeight;
+        const documentHeight = document.documentElement.scrollHeight;
+        const scrollableHeight = Math.max(1, documentHeight - windowHeight);
+        const progress = Math.min(1, Math.max(0, scrollY / scrollableHeight));
 
-      // Update CSS variable
-      document.documentElement.style.setProperty(
-        `${SHARED_CONFIG.SCROLL.CSS_PROPERTY_PREFIX}progress`,
-        progress.toFixed(4),
-      );
+        // Update CSS variable
+        document.documentElement.style.setProperty(
+          `${SHARED_CONFIG.SCROLL.CSS_PROPERTY_PREFIX}progress`,
+          progress.toFixed(4),
+        );
 
-      // Call all handlers
-      this.handlers.forEach(({ handler, name }) => {
-        try {
-          handler(progress);
-        } catch (error) {
-          log.error(`Error in parallax handler '${name}':`, error);
-        }
-      });
-    }, SHARED_CONFIG.PERFORMANCE.THROTTLE_MS);
+        // Call all handlers
+        this.handlers.forEach(({ handler, name }) => {
+          try {
+            handler(progress);
+          } catch (error) {
+            log.error(`Error in parallax handler '${name}':`, error);
+          }
+        });
+      }, SHARED_CONFIG.PERFORMANCE.THROTTLE_MS)
+    );
 
     window.addEventListener('scroll', this.scrollHandler, { passive: true });
     this.isActive = true;
 
-    // Initial call
-    this.scrollHandler();
+    // Initial call - trigger manually with a synthetic scroll
+    this.scrollHandler(/** @type {Event} */ (new Event('scroll')));
 
     log.info('Parallax manager activated');
   }
@@ -157,6 +184,11 @@ class SharedCleanupManager {
     this.cleanupFunctions = new Map();
   }
 
+  /**
+   * @param {string} systemName
+   * @param {Function} cleanupFn
+   * @param {string} description
+   */
   addCleanupFunction(systemName, cleanupFn, description = 'anonymous') {
     if (typeof cleanupFn !== 'function') {
       log.error(
@@ -172,6 +204,9 @@ class SharedCleanupManager {
     this.cleanupFunctions.get(systemName).push({ fn: cleanupFn, description });
   }
 
+  /**
+   * @param {string} systemName
+   */
   cleanupSystem(systemName) {
     const systemCleanups = this.cleanupFunctions.get(systemName);
     if (!systemCleanups || systemCleanups.length === 0) {
@@ -186,18 +221,21 @@ class SharedCleanupManager {
     let successCount = 0;
     let errorCount = 0;
 
-    systemCleanups.forEach(({ fn, description }) => {
-      try {
-        fn();
-        successCount++;
-      } catch (error) {
-        errorCount++;
-        log.error(
-          `Error in cleanup '${description}' for '${systemName}':`,
-          error,
-        );
-      }
-    });
+    systemCleanups.forEach(
+      /** @param {{fn: Function, description: string}} param0 */
+      ({ fn, description }) => {
+        try {
+          fn();
+          successCount++;
+        } catch (error) {
+          errorCount++;
+          log.error(
+            `Error in cleanup '${description}' for '${systemName}':`,
+            error,
+          );
+        }
+      },
+    );
 
     this.cleanupFunctions.delete(systemName);
 
@@ -220,6 +258,9 @@ class SharedCleanupManager {
     log.info('Global cleanup completed');
   }
 
+  /**
+   * @param {string} systemName
+   */
   hasSystem(systemName) {
     return this.cleanupFunctions.has(systemName);
   }
@@ -237,75 +278,18 @@ export const sharedCleanupManager = new SharedCleanupManager();
 // ===== Shared Three.js Loading =====
 
 // Three.js loading strategy:
-// After evaluation, we determined that loading Three.js from CDN provides better
-// performance than bundling it locally. Here's why:
-//
-// CDN Approach (current): 331KB minified from jsdelivr CDN
-// - Pros: Smaller total bundle, likely cached across sites, fast CDN delivery
-// - Cons: External dependency, requires network request
-//
-// Bundled Tree-Shaking Approach (tested): 489KB minified in vendor-three chunk
-// - Pros: No external dependency, better offline support
-// - Cons: 158KB LARGER than CDN version, increases total bundle size
-//
-// Three.js doesn't tree-shake effectively because of internal dependencies between
-// modules. Even when importing only specific classes, the bundler must include
-// shared utilities, math libraries, and core systems that cascade dependencies.
-//
-// Decision: Use importmap for consistent Three.js version
 
-let threeLoadingPromise = null;
-
-export async function loadThreeJS() {
-  // Return cached instance
-  if (window.THREE?.WebGLRenderer) {
-    log.info('✅ Three.js already loaded (cached)');
-    return window.THREE;
-  }
-
-  // Return existing loading promise to prevent duplicate loads
-  if (threeLoadingPromise) {
-    return threeLoadingPromise;
-  }
-
-  threeLoadingPromise = (async () => {
-    try {
-      log.info('📦 Loading Three.js from importmap');
-
-      // Use the importmap version (same as three-earth-system.js)
-      const THREE = await import('three');
-      const ThreeJS = THREE.default || THREE;
-
-      if (!ThreeJS?.WebGLRenderer) {
-        throw new Error('Invalid Three.js module - missing WebGLRenderer');
-      }
-
-      window.THREE = ThreeJS;
-      log.info('✅ Three.js loaded successfully');
-      return ThreeJS;
-    } catch (error) {
-      log.error('❌ Failed to load Three.js:', error);
-      throw new Error('Three.js could not be loaded');
-    }
-  })();
-
-  try {
-    return await threeLoadingPromise;
-  } finally {
-    threeLoadingPromise = null;
-  }
-}
-
-// ===== Public API =====
-
-export function getSharedState() {
-  return sharedState;
-}
-
+/**
+ * @param {string} name
+ * @param {any} instance
+ */
 export function registerParticleSystem(name, instance) {
   sharedState.registerSystem(name, instance);
 }
 
+/**
+ * @param {string} name
+ */
 export function unregisterParticleSystem(name) {
   return sharedState.unregisterSystem(name);
 }
