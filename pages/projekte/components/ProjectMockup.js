@@ -4,6 +4,7 @@
  */
 
 import React from 'react';
+// @ts-ignore - External CDN module
 import htm from 'https://esm.sh/htm@3.1.1';
 import { createLogger } from '/content/core/logger.js';
 import { toRawGithackUrl, testUrl } from '../utils/url.utils.js';

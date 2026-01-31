@@ -4,6 +4,32 @@
  * @last-modified 2026-01-25
  */
 
+// Filter iframe console warnings in development
+// @ts-ignore - Vite-specific import.meta.env
+if (import.meta.env?.DEV) {
+  const originalWarn = console.warn;
+  const originalError = console.error;
+
+  const shouldFilter = (message) => {
+    const msg = String(message || '');
+    return (
+      msg.includes('touchstart') ||
+      msg.includes('touchmove') ||
+      msg.includes('non-passive event listener')
+    );
+  };
+
+  console.warn = (...args) => {
+    if (shouldFilter(args[0])) return;
+    originalWarn.apply(console, args);
+  };
+
+  console.error = (...args) => {
+    if (shouldFilter(args[0])) return;
+    originalError.apply(console, args);
+  };
+}
+
 import { initHeroFeatureBundle } from '../pages/home/hero-manager.js';
 import { createLogger } from './core/logger.js';
 import { EVENTS, fire } from './core/events.js';
