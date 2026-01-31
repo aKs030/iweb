@@ -29,11 +29,9 @@ body {
 }
 
 /* Background Elements */
+/* Note: .three-earth-container base styles are in /content/components/particles/three-earth.css */
 .three-earth-container {
-  z-index: 0;
-  opacity: 0.6;
-  pointer-events: none;
-  will-change: transform;
+  opacity: 0.6 !important; /* Dimmed for projekte page */
 }
 
 .bg-orb {
