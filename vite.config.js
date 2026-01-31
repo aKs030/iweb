@@ -152,6 +152,11 @@ export default defineConfig({
     jsxInject: `import React from 'react'`,
   },
 
+  // Resolve extensions
+  resolve: {
+    extensions: ['.mjs', '.js', '.jsx', '.ts', '.tsx', '.json'],
+  },
+
   // CSS optimization
   css: {
     devSourcemap: true,
