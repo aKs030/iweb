@@ -375,12 +375,7 @@ document.addEventListener(
     // Force hide after timeout
     setTimeout(() => {
       if (!LoadingScreenManager.hasHidden) {
-        log.warn('Forcing loading screen hide after timeout', {
-          modulesReady,
-          windowLoaded,
-          isBlocked: AppLoadManager?.isBlocked?.(),
-          pending: AppLoadManager?.getPending?.(),
-        });
+        log.info('Forcing loading screen hide after timeout');
         LoadingScreenManager.hide();
       }
     }, LOADING_TIMEOUT_MS);
