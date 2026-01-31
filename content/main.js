@@ -363,10 +363,10 @@ document.addEventListener(
 
     // Force hide after timeout
     setTimeout(() => {
-      if (!windowLoaded) {
-        log.info('Forcing loading screen hide after timeout');
-        LoadingScreenManager.hide();
-      }
+      // Force hide if still visible, regardless of windowLoaded state
+      // This prevents hanging if Three.js fails or assets don't load
+      log.info('Forcing loading screen hide after timeout');
+      LoadingScreenManager.hide();
     }, LOADING_TIMEOUT_MS);
 
     schedulePersistentStorageRequest(STORAGE_REQUEST_DELAY_MS);
