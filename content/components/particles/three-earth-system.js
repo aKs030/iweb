@@ -206,7 +206,10 @@ class ThreeEarthSystem {
       .__projectCameraPresets;
     if (globalPresets) {
       Object.assign(CONFIG.CAMERA.PRESETS, globalPresets);
-      log.info('Loaded project camera presets from global');
+      log.info(
+        'Loaded project camera presets from global:',
+        Object.keys(globalPresets),
+      );
     }
 
     const sharedState = getSharedState();
@@ -880,6 +883,8 @@ class ThreeEarthSystem {
 
     const prev = this.currentSection;
     this.currentSection = newSection;
+
+    log.info(`Section changed: ${prev} → ${newSection}`);
 
     this.cameraManager?.updateCameraForSection(newSection);
 
