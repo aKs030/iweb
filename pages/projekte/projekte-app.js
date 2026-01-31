@@ -279,9 +279,9 @@ const App = () => {
 
       <!-- Projects Sections - Individual Snap Sections -->
       ${projects.map(
-        (project) => html`
+        (project, index) => html`
           <section
-            key=${project.id}
+            key=${`project-${project.id}`}
             id=${`project-${project.id}`}
             className="snap-section"
           >
@@ -292,7 +292,10 @@ const App = () => {
                 <!-- Project Preview -->
                 <div className="window-mockup">
                   <div className="mockup-content">
-                    <${ProjectMockup} project=${project} />
+                    <${ProjectMockup}
+                      project=${project}
+                      key=${`mockup-${project.id}`}
+                    />
                     <div className="mockup-icon">${project.icon}</div>
                   </div>
                 </div>
@@ -311,7 +314,9 @@ const App = () => {
                   <div className="tags-container">
                     ${project.tags.map(
                       (tag, i) => html`
-                        <span key=${i} className="tag">${tag}</span>
+                        <span key=${`tag-${project.id}-${i}`} className="tag"
+                          >${tag}</span
+                        >
                       `,
                     )}
                   </div>

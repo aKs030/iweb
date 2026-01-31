@@ -846,13 +846,24 @@ class ThreeEarthSystem {
   // --- Observers ---
 
   _setupSectionDetection() {
+    let retryCount = 0;
+    const maxRetries = 5;
+
     const setupObserver = () => {
       const sections = Array.from(
         document.querySelectorAll('section[id], div#footer-trigger-zone'),
       );
 
       if (!sections.length) {
-        log.debug('No sections found yet, will retry...');
+        retryCount++;
+        log.debug(
+          `No sections found yet (attempt ${retryCount}/${maxRetries}), will retry...`,
+        );
+
+        if (retryCount < maxRetries) {
+          // Retry with increasing delays
+          this.timers.setTimeout(() => setupObserver(), 500 * retryCount);
+        }
         return false;
       }
 
@@ -862,6 +873,15 @@ class ThreeEarthSystem {
         `Setting up section detection for ${sections.length} sections:`,
         sections.map((s) => s.id),
       );
+
+      // Disconnect existing observer if any
+      if (this.sectionObserver) {
+        try {
+          this.sectionObserver.disconnect();
+        } catch (e) {
+          // ignore
+        }
+      }
 
       const thresholds = Array.from({ length: 21 }, (_, i) => i / 20);
       this.sectionObserver = createObserver(
@@ -884,25 +904,7 @@ class ThreeEarthSystem {
     };
 
     // Try immediately
-    if (setupObserver()) return;
-
-    // If no sections found, retry after React renders (use MutationObserver)
-    const retryObserver = new MutationObserver(() => {
-      if (setupObserver()) {
-        retryObserver.disconnect();
-      }
-    });
-
-    retryObserver.observe(document.body, {
-      childList: true,
-      subtree: true,
-    });
-
-    // Also retry after a delay as fallback
-    this.timers.setTimeout(() => {
-      setupObserver();
-      retryObserver.disconnect();
-    }, 2000);
+    setupObserver();
   }
 
   /**
