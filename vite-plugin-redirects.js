@@ -3,6 +3,7 @@ import { resolve } from 'path';
 
 /**
  * Vite plugin to serve HTML files as raw content (not as entry points)
+ * @returns {import('vite').Plugin}
  */
 export function htmlRawPlugin() {
   // Entry point HTML files that Vite should process normally
@@ -15,12 +16,18 @@ export function htmlRawPlugin() {
     '/pages/videos/index.html',
   ];
 
-  return {
+  /** @type {import('vite').Plugin} */
+  const plugin = {
     name: 'vite-plugin-html-raw',
     enforce: 'pre',
 
     configureServer(server) {
       server.middlewares.use((req, res, next) => {
+        if (!req.url) {
+          next();
+          return;
+        }
+
         const url = req.url.split('?')[0];
 
         // Skip entry point HTML files - let Vite handle them
@@ -48,16 +55,20 @@ export function htmlRawPlugin() {
       });
     },
   };
+
+  return plugin;
 }
 
 /**
  * Vite plugin to handle _redirects file (Netlify/Cloudflare Pages format)
  * Supports 301 redirects and 200 rewrites
+ * @returns {import('vite').Plugin}
  */
 export function redirectsPlugin() {
   let redirectRules = [];
 
-  return {
+  /** @type {import('vite').Plugin} */
+  const plugin = {
     name: 'vite-plugin-redirects',
 
     configResolved() {
@@ -92,6 +103,11 @@ export function redirectsPlugin() {
 
     configureServer(server) {
       server.middlewares.use((req, res, next) => {
+        if (!req.url) {
+          next();
+          return;
+        }
+
         const url = req.url.split('?')[0]; // Remove query params
 
         // Serve HTML files from pages/ and content/components/ as raw files
@@ -141,4 +157,6 @@ export function redirectsPlugin() {
       });
     },
   };
+
+  return plugin;
 }

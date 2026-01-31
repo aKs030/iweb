@@ -9,8 +9,8 @@ export default defineConfig({
     react({
       // Use automatic JSX runtime (React 17+)
       jsxRuntime: 'automatic',
-      // Fast refresh for better DX
-      fastRefresh: true,
+      // Include .jsx files
+      include: '**/*.{jsx,tsx,js,ts}',
     }),
     htmlRawPlugin(),
     redirectsPlugin(),
@@ -65,7 +65,7 @@ export default defineConfig({
         chunkFileNames: 'assets/js/[name]-[hash].js',
         entryFileNames: 'assets/js/[name]-[hash].js',
         assetFileNames: (assetInfo) => {
-          const info = assetInfo.name.split('.');
+          const info = assetInfo.name?.split('.') || [];
           const ext = info[info.length - 1];
 
           if (/png|jpe?g|svg|gif|tiff|bmp|ico|webp/i.test(ext)) {
@@ -82,7 +82,6 @@ export default defineConfig({
       treeshake: {
         moduleSideEffects: false,
         propertyReadSideEffects: false,
-        tryCatchDeoptimization: false,
       },
     },
 
@@ -144,7 +143,13 @@ export default defineConfig({
       target: 'esnext',
       treeShaking: true,
       minify: true,
+      jsx: 'automatic',
     },
+  },
+
+  // Ensure JSX files are handled correctly
+  esbuild: {
+    jsxInject: `import React from 'react'`,
   },
 
   // CSS optimization
