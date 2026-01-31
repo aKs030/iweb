@@ -846,28 +846,63 @@ class ThreeEarthSystem {
   // --- Observers ---
 
   _setupSectionDetection() {
-    const sections = Array.from(
-      document.querySelectorAll('section[id], div#footer-trigger-zone'),
-    );
-    if (!sections.length || !('IntersectionObserver' in window)) return;
+    const setupObserver = () => {
+      const sections = Array.from(
+        document.querySelectorAll('section[id], div#footer-trigger-zone'),
+      );
 
-    const thresholds = Array.from({ length: 21 }, (_, i) => i / 20);
-    this.sectionObserver = createObserver(
-      (/** @type {any[]} */ entries) => {
-        let best = null;
-        for (const entry of entries) {
-          if (!best || entry.intersectionRatio > best.intersectionRatio)
-            best = entry;
-        }
+      if (!sections.length) {
+        log.debug('No sections found yet, will retry...');
+        return false;
+      }
 
-        if (best?.isIntersecting) {
-          this._handleSectionChange(best);
-        }
-      },
-      { rootMargin: '-20% 0px -20% 0px', threshold: thresholds },
-    );
+      if (!('IntersectionObserver' in window)) return true;
 
-    sections.forEach((s) => this.sectionObserver?.observe(s));
+      log.info(
+        `Setting up section detection for ${sections.length} sections:`,
+        sections.map((s) => s.id),
+      );
+
+      const thresholds = Array.from({ length: 21 }, (_, i) => i / 20);
+      this.sectionObserver = createObserver(
+        (/** @type {any[]} */ entries) => {
+          let best = null;
+          for (const entry of entries) {
+            if (!best || entry.intersectionRatio > best.intersectionRatio)
+              best = entry;
+          }
+
+          if (best?.isIntersecting) {
+            this._handleSectionChange(best);
+          }
+        },
+        { rootMargin: '-20% 0px -20% 0px', threshold: thresholds },
+      );
+
+      sections.forEach((s) => this.sectionObserver?.observe(s));
+      return true;
+    };
+
+    // Try immediately
+    if (setupObserver()) return;
+
+    // If no sections found, retry after React renders (use MutationObserver)
+    const retryObserver = new MutationObserver(() => {
+      if (setupObserver()) {
+        retryObserver.disconnect();
+      }
+    });
+
+    retryObserver.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+
+    // Also retry after a delay as fallback
+    this.timers.setTimeout(() => {
+      setupObserver();
+      retryObserver.disconnect();
+    }, 2000);
   }
 
   /**
