@@ -1,6 +1,9 @@
-/* Projekte Seite - Modern & Compact */
+/* Projekte Seite - Modern & Optimized v4.0 */
 
-/* Base Styles */
+/* ============================================================================
+   BASE STYLES & LAYOUT
+   ============================================================================ */
+
 body {
   margin: 0;
   background-color: var(--bg-primary);
@@ -9,6 +12,7 @@ body {
   overflow-x: hidden;
   overflow-y: auto;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   scroll-behavior: smooth;
   scroll-snap-type: y mandatory;
 }
@@ -28,10 +32,13 @@ body {
   width: 100%;
 }
 
-/* Background Elements */
-/* Note: .three-earth-container base styles are in /content/components/particles/three-earth.css */
+/* ============================================================================
+   BACKGROUND ELEMENTS
+   ============================================================================ */
+
 .three-earth-container {
-  opacity: 0.6 !important; /* Dimmed for projekte page */
+  opacity: 0.6 !important;
+  transition: opacity 0.6s ease;
 }
 
 .bg-orb {
@@ -69,7 +76,22 @@ body {
   animation-delay: 2s;
 }
 
-/* Sections */
+@keyframes pulse-slow {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
+/* ============================================================================
+   SECTIONS
+   ============================================================================ */
+
 .snap-section {
   width: 100%;
   display: flex;
@@ -94,11 +116,21 @@ body {
   padding: 3rem 1.5rem;
 }
 
-/* Badge */
+/* Hero Section Specific */
+.hero-section .container {
+  max-width: 1200px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+/* ============================================================================
+   BADGE
+   ============================================================================ */
+
 .badge {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.625rem;
   padding: 0.5rem 1rem;
   border-radius: 2rem;
   background: rgba(255, 255, 255, 0.05);
@@ -108,12 +140,13 @@ body {
   font-weight: 600;
   margin-bottom: 1.5rem;
   backdrop-filter: blur(20px);
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .badge:hover {
   background: rgba(255, 255, 255, 0.08);
   border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
 }
 
 .badge-dot-container {
@@ -130,7 +163,7 @@ body {
   border-radius: 50%;
   background-color: #60a5fa;
   opacity: 0.75;
-  animation: ping 1s infinite;
+  animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
 }
 
 .badge-dot {
@@ -141,7 +174,18 @@ body {
   background-color: #3b82f6;
 }
 
-/* Typography */
+@keyframes ping {
+  75%,
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+/* ============================================================================
+   TYPOGRAPHY
+   ============================================================================ */
+
 .headline {
   font-size: clamp(2.5rem, 8vw, 4rem);
   line-height: 1.1;
@@ -166,7 +210,17 @@ body {
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  animation: pulse-slow 4s infinite;
+  animation: gradient-shift 4s ease infinite;
+}
+
+@keyframes gradient-shift {
+  0%,
+  100% {
+    filter: hue-rotate(0deg);
+  }
+  50% {
+    filter: hue-rotate(10deg);
+  }
 }
 
 .description {
@@ -179,7 +233,106 @@ body {
   text-align: center;
 }
 
-/* Buttons */
+/* Hero Stats */
+.hero-stats {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  margin: 2rem auto;
+  padding: 1.5rem 2rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 1rem;
+  backdrop-filter: blur(10px);
+  max-width: fit-content;
+  animation: fadeIn 0.6s ease-out 0.3s both;
+}
+
+.hero-stats.loading {
+  gap: 1rem;
+  padding: 1rem 2rem;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.95);
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.stat-divider {
+  width: 1px;
+  height: 2.5rem;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-stats {
+    gap: 1.5rem;
+    padding: 1.25rem 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .stat-divider {
+    display: none;
+  }
+
+  .stat-value {
+    font-size: 1.5rem;
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+  }
+}
+
+.loading-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  color: rgba(96, 165, 250, 0.9);
+  font-size: 0.9em;
+  font-weight: 500;
+}
+
+/* ============================================================================
+   BUTTONS
+   ============================================================================ */
+
 .btn-group {
   display: flex;
   gap: 1rem;
@@ -202,6 +355,24 @@ body {
   text-decoration: none;
   position: relative;
   overflow: hidden;
+  white-space: nowrap;
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1),
+    rgba(255, 255, 255, 0)
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.btn:hover::before {
+  opacity: 1;
 }
 
 .btn-primary {
@@ -210,9 +381,13 @@ body {
   box-shadow: 0 4px 20px rgba(255, 255, 255, 0.2);
 }
 
-.btn-primary:hover {
+.btn-primary:hover:not(:disabled) {
   transform: translateY(-2px);
   box-shadow: 0 8px 30px rgba(255, 255, 255, 0.3);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translateY(0);
 }
 
 .btn-primary:disabled {
@@ -234,7 +409,6 @@ body {
   transform: translateY(-1px);
 }
 
-/* Buttons - Compact */
 .btn-small {
   padding: 0.5rem 1rem;
   font-size: 0.8rem;
@@ -244,7 +418,10 @@ body {
   justify-content: center;
 }
 
-/* Project Card - Very Compact Layout */
+/* ============================================================================
+   PROJECT CARD
+   ============================================================================ */
+
 .project-card {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -258,13 +435,6 @@ body {
   max-width: 450px;
   width: 100%;
   margin: 0 auto;
-}
-
-.project-card:hover {
-  transform: translateY(-8px);
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.15);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
 }
 
 .project-card::before {
@@ -282,7 +452,17 @@ body {
   );
 }
 
-/* Window Mockup - Very Compact */
+.project-card:hover {
+  transform: translateY(-8px);
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+/* ============================================================================
+   WINDOW MOCKUP
+   ============================================================================ */
+
 .window-mockup {
   position: relative;
   width: 100%;
@@ -323,6 +503,7 @@ body {
   border: none;
   transform-origin: center center;
   will-change: transform;
+  pointer-events: none;
 }
 
 .mockup-icon {
@@ -342,7 +523,10 @@ body {
   transform: scale(1.1) rotate(5deg);
 }
 
-/* Project Info - Compact */
+/* ============================================================================
+   PROJECT INFO
+   ============================================================================ */
+
 .project-info {
   text-align: left;
 }
@@ -398,6 +582,12 @@ body {
   border-radius: 0.75rem;
   border: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
+  transition: all 0.2s ease;
+}
+
+.tag:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .project-actions {
@@ -406,7 +596,10 @@ body {
   flex-wrap: wrap;
 }
 
-/* Loading & Error States */
+/* ============================================================================
+   LOADING & ERROR STATES
+   ============================================================================ */
+
 .loading-container {
   display: flex;
   flex-direction: column;
@@ -440,10 +633,19 @@ body {
   font-size: 1.1rem;
 }
 
-/* Contact Section */
+/* ============================================================================
+   CONTACT SECTION
+   ============================================================================ */
+
 .contact-section {
   background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.3));
   padding: 4rem 1.5rem;
+}
+
+.contact-content {
+  text-align: center;
+  max-width: 600px;
+  margin: 0 auto;
 }
 
 .contact-icon-wrapper {
@@ -458,7 +660,7 @@ body {
 }
 
 .contact-icon-wrapper:hover {
-  transform: scale(1.05);
+  transform: scale(1.05) rotate(5deg);
 }
 
 .contact-title {
@@ -479,7 +681,10 @@ body {
   line-height: 1.6;
 }
 
-/* Modal */
+/* ============================================================================
+   MODAL
+   ============================================================================ */
+
 .toast-notification {
   position: fixed;
   right: 1rem;
@@ -494,6 +699,18 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.1);
   font-size: 0.9rem;
   font-weight: 500;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
 .modal-overlay {
@@ -506,6 +723,16 @@ body {
   background: rgba(0, 0, 0, 0.8);
   backdrop-filter: blur(10px);
   padding: 1rem;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .modal-wrapper {
@@ -519,6 +746,18 @@ body {
   box-shadow: 0 25px 50px rgba(0, 0, 0, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(20px);
+  animation: scaleIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .modal-header {
@@ -567,7 +806,10 @@ body {
   border: 0;
 }
 
-/* Utility Classes */
+/* ============================================================================
+   UTILITY CLASSES
+   ============================================================================ */
+
 .preview-container {
   display: flex;
   align-items: center;
@@ -584,14 +826,26 @@ body {
   height: 100%;
 }
 
-/* Footer */
+.u-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ============================================================================
+   FOOTER
+   ============================================================================ */
+
 #footer-container {
   position: relative;
   z-index: 10;
   background: rgba(0, 0, 0, 0.9);
 }
 
-/* Responsive Design */
+/* ============================================================================
+   RESPONSIVE DESIGN
+   ============================================================================ */
+
 @media (min-width: 768px) {
   .btn-small {
     flex: none;
@@ -632,34 +886,44 @@ body {
     max-width: 100%;
     margin: 0 1rem;
   }
+
   .window-mockup {
     height: 120px;
   }
+
   .project-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.4rem;
   }
+
   .project-title {
     font-size: 1.1rem;
   }
+
   .project-desc {
     font-size: 0.8rem;
   }
+
   .modal-wrapper {
     height: 95%;
     margin: 0.5rem;
   }
+
   .modal-header {
     padding: 0.75rem 1rem;
   }
+
   .modal-header-actions {
     flex-direction: column;
     gap: 0.5rem;
   }
 }
 
-/* Accessibility */
+/* ============================================================================
+   ACCESSIBILITY
+   ============================================================================ */
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -671,7 +935,21 @@ body {
 }
 
 .btn:focus-visible,
-.project-card:focus-visible {
+.project-card:focus-visible,
+a:focus-visible {
   outline: 2px solid #60a5fa;
   outline-offset: 2px;
+}
+
+/* Screen reader only */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
 }

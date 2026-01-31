@@ -1,10 +1,17 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
+import react from '@vitejs/plugin-react';
 import { redirectsPlugin, htmlRawPlugin } from './vite-plugin-redirects.js';
 import viteCompression from 'vite-plugin-compression';
 
 export default defineConfig({
   plugins: [
+    react({
+      // Use automatic JSX runtime (React 17+)
+      jsxRuntime: 'automatic',
+      // Fast refresh for better DX
+      fastRefresh: true,
+    }),
     htmlRawPlugin(),
     redirectsPlugin(),
 

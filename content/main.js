@@ -69,12 +69,28 @@ const SECTION_TRACKER_CONFIG = {
   rootMargin: '-10% 0px -10% 0px',
 };
 
+/**
+ * @typedef {Object} SectionData
+ * @property {number} ratio
+ * @property {boolean} isIntersecting
+ * @property {HTMLElement} target
+ */
+
+/**
+ * Section Tracker for scroll-based navigation
+ */
 class SectionTracker {
   constructor() {
+    /** @type {Array<HTMLElement>} */
     this.sections = [];
+    /** @type {Map<string, SectionData>} */
     this.sectionRatios = new Map();
+    /** @type {string|null} */
     this.currentSectionId = null;
+    /** @type {IntersectionObserver|null} */
     this.observer = null;
+    /** @type {(() => void)|null} */
+    this.refreshHandler = null;
   }
 
   init() {
@@ -94,39 +110,80 @@ class SectionTracker {
       (entries) => this.handleIntersections(entries),
       SECTION_TRACKER_CONFIG,
     );
-    this.sections.forEach((section) => this.observer.observe(section));
-    this.checkInitialSection();
+    this.sections.forEach((section) => {
+      if (this.observer) this.observer.observe(section);
+    });
+
+    // Use requestIdleCallback for initial check
+    if (typeof window.requestIdleCallback === 'function') {
+      requestIdleCallback(() => this.checkInitialSection(), { timeout: 1000 });
+    } else {
+      setTimeout(() => this.checkInitialSection(), 100);
+    }
   }
 
   refreshSections() {
-    this.sections = Array.from(
+    const elements = Array.from(
       document.querySelectorAll('main .section[id], footer#site-footer[id]'),
-    ).filter((section) => section.id);
-    if (this.observer) {
-      this.sections.forEach((section) => this.observer.observe(section));
+    );
+
+    /** @type {HTMLElement[]} */
+    const newSections = [];
+    for (const el of elements) {
+      if (el instanceof HTMLElement && el.id) {
+        newSections.push(el);
+      }
+    }
+
+    // Only update if sections changed
+    if (newSections.length !== this.sections.length) {
+      this.sections = newSections;
+      if (this.observer) {
+        this.sections.forEach((section) => {
+          if (this.observer) this.observer.observe(section);
+        });
+      }
     }
   }
 
   handleIntersections(entries) {
+    let hasChanges = false;
+
     entries.forEach((entry) => {
-      if (entry.target?.id) {
-        this.sectionRatios.set(entry.target.id, {
+      const target = /** @type {HTMLElement} */ (entry.target);
+      if (target?.id) {
+        const prevData = this.sectionRatios.get(target.id);
+        const newData = {
           ratio: entry.intersectionRatio,
           isIntersecting: entry.isIntersecting,
-          target: entry.target,
-        });
+          target: target,
+        };
+
+        // Only update if changed
+        if (
+          !prevData ||
+          prevData.ratio !== newData.ratio ||
+          prevData.isIntersecting !== newData.isIntersecting
+        ) {
+          this.sectionRatios.set(target.id, newData);
+          hasChanges = true;
+        }
       }
     });
+
+    if (!hasChanges) return;
+
     let bestEntry = null;
     let bestRatio = 0;
     for (const section of this.sections) {
+      if (!section || !section.id) continue;
       const data = this.sectionRatios.get(section.id);
       if (data && data.isIntersecting && data.ratio > bestRatio) {
         bestRatio = data.ratio;
         bestEntry = data;
       }
     }
-    if (bestEntry) {
+    if (bestEntry && bestEntry.target?.id) {
       const newSectionId = bestEntry.target.id;
       if (newSectionId !== this.currentSectionId) {
         this.currentSectionId = newSectionId;
@@ -140,7 +197,9 @@ class SectionTracker {
     /** @type {HTMLElement|null} */
     let activeSection = null;
     let bestDistance = Infinity;
-    this.sections.forEach((section) => {
+
+    for (const section of this.sections) {
+      if (!section) continue;
       const rect = section.getBoundingClientRect();
       const sectionCenter = rect.top + rect.height / 2;
       const distance = Math.abs(sectionCenter - viewportCenter);
@@ -152,8 +211,9 @@ class SectionTracker {
         bestDistance = distance;
         activeSection = section;
       }
-    });
-    if (activeSection && activeSection.id !== this.currentSectionId) {
+    }
+
+    if (activeSection?.id && activeSection.id !== this.currentSectionId) {
       this.currentSectionId = activeSection.id;
       this.dispatchSectionChange(activeSection.id);
     }
@@ -161,7 +221,12 @@ class SectionTracker {
 
   dispatchSectionChange(sectionId) {
     try {
-      const sectionIndex = this.sections.findIndex((s) => s.id === sectionId);
+      const sectionIndex = this.sections.findIndex((s) => {
+        if (s && typeof s.id === 'string') {
+          return s.id === sectionId;
+        }
+        return false;
+      });
       const section = getElementById(sectionId);
       const detail = {
         id: /** @type {string} */ (sectionId),
@@ -176,7 +241,13 @@ class SectionTracker {
   }
 
   updateCurrentSection(sectionId) {
-    if (this.sections.find((s) => s.id === sectionId)) {
+    const foundSection = this.sections.find((s) => {
+      if (s && typeof s.id === 'string') {
+        return s.id === sectionId;
+      }
+      return false;
+    });
+    if (foundSection) {
       this.currentSectionId = sectionId;
       this.dispatchSectionChange(sectionId);
     }
@@ -190,6 +261,7 @@ class SectionTracker {
     if (this.refreshHandler) {
       document.removeEventListener('section:loaded', this.refreshHandler);
       document.removeEventListener('footer:loaded', this.refreshHandler);
+      this.refreshHandler = null;
     }
     this.sections = [];
     this.sectionRatios.clear();
