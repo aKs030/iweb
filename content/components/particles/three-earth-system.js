@@ -37,6 +37,20 @@ import {
 const log = createLogger('ThreeEarthSystem');
 
 /**
+ * Get global AppLoadManager from window
+ * @returns {any}
+ */
+function getAppLoadManager() {
+  return (
+    /** @type {any} */ (globalThis).__appLoadManager || {
+      block: () => {},
+      unblock: () => {},
+      isBlocked: () => false,
+    }
+  );
+}
+
+/**
  * @typedef {import('/content/core/types.js').TimerID} TimerID
  * @typedef {import('/content/core/types.js').Vector2} Vector2
  * @typedef {import('/content/core/types.js').DeviceCapabilities} DeviceCapabilities
@@ -120,24 +134,6 @@ class TimerManager {
     this.intervals.clear();
   }
 }
-
-/**
- * App Load Manager
- */
-const AppLoadManager = {
-  _blocked: new Set(),
-  /** @param {string} key */
-  block(key) {
-    this._blocked.add(key);
-  },
-  /** @param {string} key */
-  unblock(key) {
-    this._blocked.delete(key);
-  },
-  isBlocked() {
-    return this._blocked.size > 0;
-  },
-};
 
 /**
  * Main Three Earth System Class
@@ -369,6 +365,7 @@ class ThreeEarthSystem {
       if (!loaded) {
         log.warn('Three.js load timeout');
         try {
+          const AppLoadManager = getAppLoadManager();
           AppLoadManager.unblock('three-earth');
         } catch {
           /* ignore */
@@ -411,6 +408,7 @@ class ThreeEarthSystem {
 
     manager.onError = (/** @type {string} */ url) => {
       log.warn('Error loading texture:', url);
+      const AppLoadManager = getAppLoadManager();
       AppLoadManager.unblock('three-earth');
     };
 
@@ -419,6 +417,7 @@ class ThreeEarthSystem {
 
   _registerAndBlock() {
     registerParticleSystem('three-earth', { type: 'three-earth' });
+    const AppLoadManager = getAppLoadManager();
     AppLoadManager.block('three-earth');
   }
 
@@ -822,6 +821,7 @@ class ThreeEarthSystem {
         this.firstFrameRendered = true;
         const container = getElementById('threeEarthContainer');
         hideLoadingState(container);
+        const AppLoadManager = getAppLoadManager();
         AppLoadManager.unblock('three-earth');
         document.dispatchEvent(
           new CustomEvent('three-first-frame', {
