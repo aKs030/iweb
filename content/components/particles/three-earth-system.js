@@ -886,17 +886,15 @@ class ThreeEarthSystem {
       const thresholds = Array.from({ length: 21 }, (_, i) => i / 20);
       this.sectionObserver = createObserver(
         (/** @type {any[]} */ entries) => {
-          let best = null;
+          // Process all entries to catch rapid scroll-snap changes
           for (const entry of entries) {
-            if (!best || entry.intersectionRatio > best.intersectionRatio)
-              best = entry;
-          }
-
-          if (best?.isIntersecting) {
-            this._handleSectionChange(best);
+            if (entry.isIntersecting && entry.intersectionRatio > 0.3) {
+              this._handleSectionChange(entry);
+              break; // Only handle the first qualifying entry
+            }
           }
         },
-        { rootMargin: '-20% 0px -20% 0px', threshold: thresholds },
+        { rootMargin: '0px 0px 0px 0px', threshold: thresholds },
       );
 
       sections.forEach((s) => this.sectionObserver?.observe(s));
