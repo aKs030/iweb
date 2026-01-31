@@ -57,6 +57,9 @@ const AppLoadManager = (() => {
   };
 })();
 
+// Make AppLoadManager globally available for three-earth-system
+/** @type {any} */ (globalThis).__appLoadManager = AppLoadManager;
+
 // ===== Constants =====
 const REFRESH_DELAY_MS = 50;
 const LOADING_TIMEOUT_MS = 4000;
