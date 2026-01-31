@@ -678,6 +678,14 @@ body {
   display: flex;
   gap: 0.6rem;
   flex-wrap: wrap;
+  position: relative;
+  z-index: 100;
+}
+
+.project-actions .btn {
+  position: relative;
+  z-index: 101;
+  pointer-events: auto;
 }
 
 /* ============================================================================
