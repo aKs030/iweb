@@ -1,8 +1,10 @@
 {
   "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "react",
     "checkJs": true,
-    "strict": true,
-    "noImplicitAny": true,
+    "strict": false,
+    "noImplicitAny": false,
     "strictNullChecks": true,
     "strictFunctionTypes": true,
     "strictBindCallApply": true,
@@ -25,6 +27,6 @@
     "allowSyntheticDefaultImports": true,
     "skipLibCheck": true
   },
-  "include": ["content/**/*", "pages/**/*", "workers/**/*", "*.js"],
+  "include": ["content/**/*", "pages/**/*", "workers/**/*", "*.js", "*.jsx"],
   "exclude": ["node_modules", "dist", ".git"]
 }

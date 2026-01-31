@@ -203,14 +203,16 @@ export function lazyLoadImages(target, options = {}) {
     elements = [target];
   }
 
-  elements.forEach((el) => {
-    // Type guard: ensure element is HTMLElement
-    if (!(el instanceof HTMLElement)) return;
+  // Batch process images
+  const imagesToLoad = elements.filter((el) => {
+    if (!(el instanceof HTMLElement)) return false;
+    return el.dataset.loaded !== 'true';
+  });
 
+  if (imagesToLoad.length === 0) return;
+
+  imagesToLoad.forEach((el) => {
     const element = el;
-
-    // Skip wenn bereits geladen
-    if (element.dataset.loaded === 'true') return;
 
     // Placeholder setzen
     if (placeholder === 'blur' && !element.style.filter) {
@@ -238,6 +240,8 @@ export function lazyLoadImages(target, options = {}) {
           await new Promise((resolve, reject) => {
             img.onload = resolve;
             img.onerror = reject;
+            // Timeout nach 10 Sekunden
+            setTimeout(reject, 10000);
           });
 
           // Entferne Blur
@@ -252,6 +256,10 @@ export function lazyLoadImages(target, options = {}) {
         } catch (error) {
           log.error('Failed to load image:', error);
           img.dataset.loaded = 'error';
+          // Remove blur even on error
+          if (placeholder === 'blur') {
+            img.style.filter = 'none';
+          }
         }
       },
       { rootMargin, threshold },

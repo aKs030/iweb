@@ -36,6 +36,7 @@
   "devDependencies": {
     "@eslint/js": "^9.39.2",
     "@types/three": "^0.182.0",
+    "@vitejs/plugin-react": "^5.1.2",
     "autoprefixer": "^10.4.23",
     "cssnano": "^7.1.2",
     "eslint": "^9.39.2",
@@ -74,6 +75,7 @@
   "homepage": "https://github.com/aKs030/iweb#readme",
   "dependencies": {
     "dompurify": "^3.3.1",
+    "prop-types": "^15.8.1",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "three": "^0.182.0"
