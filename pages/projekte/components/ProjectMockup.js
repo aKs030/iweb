@@ -1,9 +1,10 @@
 /**
- * Project Mockup Component - JSX Version
- * @version 2.0.0
+ * Project Mockup Component - htm Version
+ * @version 3.0.0
  */
 
 import React from 'react';
+import htm from 'https://esm.sh/htm@3.1.1';
 import { createLogger } from '/content/core/logger.js';
 import { toRawGithackUrl, testUrl } from '../utils/url.utils.js';
 import {
@@ -12,6 +13,7 @@ import {
   IFRAME_BASE_HEIGHT,
 } from '../config/constants.js';
 
+const html = htm.bind(React.createElement);
 const log = createLogger('ProjectMockup');
 
 /**
@@ -78,7 +80,8 @@ function ProjectMockup({ project }) {
     const scaleIframe = () => {
       const { clientWidth: w, clientHeight: h } = wrapper;
       const scale = Math.min(1, w / IFRAME_BASE_WIDTH, h / IFRAME_BASE_HEIGHT);
-      /** @type {HTMLIFrameElement} */ (iframe).style.transform = `scale(${scale})`;
+      /** @type {HTMLIFrameElement} */ (iframe).style.transform =
+        `scale(${scale})`;
     };
 
     scaleIframe();
@@ -88,24 +91,24 @@ function ProjectMockup({ project }) {
     return () => resizeObserver.disconnect();
   }, [previewUrl]);
 
-  return (
-    <div className="mockup-iframe-wrapper u-center" ref={wrapperRef}>
-      {previewUrl ? (
-        <iframe
-          className="mockup-iframe"
-          ref={iframeRef}
-          src={previewUrl}
-          scrolling="no"
-          sandbox="allow-scripts allow-same-origin allow-forms"
-          frameBorder="0"
-          title={`Preview: ${project.title}`}
-          loading="lazy"
-        />
-      ) : (
-        project.previewContent
-      )}
+  return html`
+    <div className="mockup-iframe-wrapper u-center" ref=${wrapperRef}>
+      ${previewUrl
+        ? html`
+            <iframe
+              className="mockup-iframe"
+              ref=${iframeRef}
+              src=${previewUrl}
+              scrolling="no"
+              sandbox="allow-scripts allow-same-origin allow-forms"
+              frameborder="0"
+              title=${`Preview: ${project.title}`}
+              loading="lazy"
+            />
+          `
+        : project.previewContent}
     </div>
-  );
+  `;
 }
 
 export { ProjectMockup };
