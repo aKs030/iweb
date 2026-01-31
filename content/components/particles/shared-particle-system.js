@@ -15,7 +15,6 @@
 
 import { createLogger } from '/content/core/logger.js';
 import { throttle } from '/content/core/utils.js';
-import { THREE_PATHS } from './config.js';
 
 const log = createLogger('sharedParticleSystem');
 
@@ -253,7 +252,7 @@ export const sharedCleanupManager = new SharedCleanupManager();
 // modules. Even when importing only specific classes, the bundler must include
 // shared utilities, math libraries, and core systems that cascade dependencies.
 //
-// Decision: Keep CDN approach for optimal bundle size and performance.
+// Decision: Use importmap for consistent Three.js version
 
 let threeLoadingPromise = null;
 
@@ -270,30 +269,23 @@ export async function loadThreeJS() {
   }
 
   threeLoadingPromise = (async () => {
-    for (let i = 0; i < THREE_PATHS.length; i++) {
-      const src = THREE_PATHS[i];
-      try {
-        log.info(`📦 Loading Three.js from: ${src}`);
+    try {
+      log.info('📦 Loading Three.js from importmap');
 
-        const THREE = await import(/* @vite-ignore */ src);
-        const ThreeJS = THREE.default || THREE;
+      // Use the importmap version (same as three-earth-system.js)
+      const THREE = await import('three');
+      const ThreeJS = THREE.default || THREE;
 
-        if (!ThreeJS?.WebGLRenderer) {
-          throw new Error('Invalid Three.js module - missing WebGLRenderer');
-        }
-
-        window.THREE = ThreeJS;
-        log.info('✅ Three.js loaded successfully from CDN');
-        return ThreeJS;
-      } catch (error) {
-        log.warn(`Failed to load Three.js from ${src}:`, error.message);
-
-        // If last attempt, throw error
-        if (i === THREE_PATHS.length - 1) {
-          log.error('❌ Failed to load Three.js from all sources');
-          throw new Error('Three.js could not be loaded from any source');
-        }
+      if (!ThreeJS?.WebGLRenderer) {
+        throw new Error('Invalid Three.js module - missing WebGLRenderer');
       }
+
+      window.THREE = ThreeJS;
+      log.info('✅ Three.js loaded successfully');
+      return ThreeJS;
+    } catch (error) {
+      log.error('❌ Failed to load Three.js:', error);
+      throw new Error('Three.js could not be loaded');
     }
   })();
 

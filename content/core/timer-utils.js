@@ -100,8 +100,7 @@ export class TimerManager {
  * Optimized scroll handler with requestAnimationFrame
  */
 export function createScrollHandler(callback, options = {}) {
-  // eslint-disable-next-line no-unused-vars
-  const { passive = true, throttle = false } = options;
+  const { passive = true } = options;
   let ticking = false;
   let lastScrollY = window.scrollY;
 

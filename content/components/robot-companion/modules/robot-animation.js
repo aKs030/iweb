@@ -470,8 +470,7 @@ export class RobotAnimation {
     if (this.robot.dom.flame) this.robot.dom.flame.style.opacity = '0';
     if (this.robot.dom.particles) this.robot.dom.particles.style.opacity = '0';
 
-    // @ts-ignore - Function doesn't use ms parameter but it's harmless
-    this.triggerRandomIdleAnimation(ms);
+    this.triggerRandomIdleAnimation();
 
     if (this.robot.dom.thinking && Math.random() < 0.3) {
       this.robot.dom.thinking.style.opacity = '1';

@@ -18,7 +18,6 @@ function addListener(target, event, handler, options = {}) {
 
 import { createLogger } from '/content/core/logger.js';
 
-// eslint-disable-next-line no-unused-vars
 const log = createLogger('MenuEvents');
 
 export class MenuEvents {

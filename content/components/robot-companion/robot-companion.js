@@ -1,9 +1,9 @@
-// @ts-nocheck
 /**
  * KI Roboter Begleiter - Extended Edition (Optimized)
  * Performance-Optimierungen: DOM-Caching, RequestAnimationFrame-Nutzung, Refactoring.
  * @version 2.0.0
  */
+// @ts-check
 
 import { GeminiService } from './gemini-service.js';
 import { RobotGames } from './robot-games.js';
@@ -15,6 +15,17 @@ import { createLogger } from '/content/core/logger.js';
 import { createObserver } from '/content/core/intersection-observer.js';
 
 const log = createLogger('RobotCompanion');
+
+/**
+ * @typedef {import('/content/core/types.js').TimerID} TimerID
+ * @typedef {import('/content/core/types.js').RobotState} RobotState
+ * @typedef {import('/content/core/types.js').RobotAnalytics} RobotAnalytics
+ * @typedef {import('/content/core/types.js').DOMCache} DOMCache
+ * @typedef {import('/content/core/types.js').EventListenerRegistry} EventListenerRegistry
+ * @typedef {import('/content/core/types.js').TimerRegistry} TimerRegistry
+ * @typedef {import('/content/core/types.js').PageContext} PageContext
+ * @typedef {import('/content/core/types.js').RobotMood} RobotMood
+ */
 
 /**
  * Robot Companion Class
@@ -44,7 +55,7 @@ export class RobotCompanion {
     /** @type {RobotIntelligence} */
     this.intelligenceModule = new RobotIntelligence(this);
 
-    /** @type {Object} */
+    /** @type {RobotState} */
     this.state = {};
 
     /** @type {boolean} Flag to prevent footer overlap check from overriding keyboard adjustment */
@@ -125,33 +136,28 @@ export class RobotCompanion {
    * Safe interval wrapper for automatic cleanup
    * @param {Function} callback - Callback function
    * @param {number} delay - Delay in milliseconds
-   * @returns {ReturnType<typeof setInterval>} Interval ID
+   * @returns {TimerID} Interval ID
    */
   _setInterval(callback, delay) {
-    // @ts-ignore - Node vs Browser timer types compatibility
-    const id = setInterval(callback, delay);
-    // @ts-ignore - Node vs Browser timer types compatibility
+    const id = /** @type {TimerID} */ (setInterval(callback, delay));
     this._timers.intervals.add(id);
-    // @ts-ignore - Node vs Browser timer types compatibility
     return id;
   }
 
   /**
    * Clear timeout and remove from registry
-   * @param {ReturnType<typeof setTimeout>} id - Timeout ID
+   * @param {TimerID} id - Timeout ID
    */
   _clearTimeout(id) {
-    // @ts-ignore - Node vs Browser timer types compatibility
     clearTimeout(id);
     this._timers.timeouts.delete(id);
   }
 
   /**
    * Clear interval and remove from registry
-   * @param {ReturnType<typeof setInterval>} id - Interval ID
+   * @param {TimerID} id - Interval ID
    */
   _clearInterval(id) {
-    // @ts-ignore - Node vs Browser timer types compatibility
     clearInterval(id);
     this._timers.intervals.delete(id);
   }
@@ -161,29 +167,22 @@ export class RobotCompanion {
       (typeof globalThis !== 'undefined' && globalThis.robotCompanionTexts) ||
       this.texts ||
       {};
-    const chat = this.chatModule;
+    const chat = /** @type {any} */ (this.chatModule);
 
-    // @ts-ignore - Dynamic properties set from external text configuration
     chat.knowledgeBase = src.knowledgeBase ||
       chat.knowledgeBase || { start: { text: 'Hallo!', options: [] } };
-    // @ts-ignore - Dynamic properties set from external text configuration
     chat.contextGreetings = src.contextGreetings ||
       chat.contextGreetings || { default: [] };
-    // @ts-ignore - Dynamic properties set from external text configuration
     chat.moodGreetings = src.moodGreetings ||
       chat.moodGreetings || {
         normal: ['Hey! Wie kann ich helfen?', 'Hi! Was brauchst du?'],
       };
-    // @ts-ignore - Dynamic properties set from external text configuration
     chat.startMessageSuffix =
       src.startMessageSuffix || chat.startMessageSuffix || {};
-    // @ts-ignore - Dynamic properties set from external text configuration
     chat.initialBubbleGreetings = src.initialBubbleGreetings ||
       chat.initialBubbleGreetings || ['Psst! Brauchst du Hilfe?'];
-    // @ts-ignore - Dynamic properties set from external text configuration
     chat.initialBubblePools =
       src.initialBubblePools || chat.initialBubblePools || [];
-    // @ts-ignore - Dynamic properties set from external text configuration
     chat.initialBubbleSequenceConfig = src.initialBubbleSequenceConfig ||
       chat.initialBubbleSequenceConfig || {
         steps: 4,
@@ -418,30 +417,23 @@ export class RobotCompanion {
       const ctx = this.getPageContext();
       if (!this.chatModule.isOpen && !this.chatModule.lastGreetedContext) {
         const showSequenceChance = 0.9;
-        // @ts-ignore - Dynamic properties set from external text configuration
+        const chat = /** @type {any} */ (this.chatModule);
         if (
-          this.chatModule.initialBubblePools &&
-          this.chatModule.initialBubblePools.length > 0 &&
+          chat.initialBubblePools &&
+          chat.initialBubblePools.length > 0 &&
           Math.random() < showSequenceChance
         ) {
           this.chatModule.startInitialBubbleSequence();
         } else {
-          // @ts-ignore - Dynamic properties set from external text configuration
           const greet =
-            this.chatModule.initialBubbleGreetings &&
-            this.chatModule.initialBubbleGreetings.length > 0
-              ? this.chatModule.initialBubbleGreetings[
-                  Math.floor(
-                    Math.random() *
-                      this.chatModule.initialBubbleGreetings.length,
-                  )
+            chat.initialBubbleGreetings &&
+            chat.initialBubbleGreetings.length > 0
+              ? chat.initialBubbleGreetings[
+                  Math.floor(Math.random() * chat.initialBubbleGreetings.length)
                 ]
               : 'Hallo!';
-          // @ts-ignore - Dynamic properties set from external text configuration
           const ctxArr =
-            this.chatModule.contextGreetings[ctx] ||
-            this.chatModule.contextGreetings.default ||
-            [];
+            chat.contextGreetings[ctx] || chat.contextGreetings.default || [];
           let finalGreet = greet;
           if (ctxArr.length && Math.random() < 0.7) {
             const ctxMsg = String(
@@ -512,28 +504,31 @@ export class RobotCompanion {
       if (this._timers.scrollTimeout) {
         this._clearTimeout(this._timers.scrollTimeout);
       }
-      // @ts-ignore - Node vs Browser timer types compatibility
-      this._timers.scrollTimeout = this._setTimeout(() => {
-        checkContextChange();
-        try {
-          const tw = document.querySelector('.typewriter-title');
-          if (tw && this.dom.container) {
-            const twRect = tw.getBoundingClientRect();
-            const robotWidth = 80;
-            const initialLeft =
-              (typeof globalThis !== 'undefined' ? globalThis.innerWidth : 0) -
-              30 -
-              robotWidth;
-            const maxLeft = initialLeft - 20;
-            this.collisionModule.checkForTypewriterCollision(twRect, maxLeft);
+      this._timers.scrollTimeout = /** @type {TimerID} */ (
+        this._setTimeout(() => {
+          checkContextChange();
+          try {
+            const tw = document.querySelector('.typewriter-title');
+            if (tw && this.dom.container) {
+              const twRect = tw.getBoundingClientRect();
+              const robotWidth = 80;
+              const initialLeft =
+                (typeof globalThis !== 'undefined'
+                  ? globalThis.innerWidth
+                  : 0) -
+                30 -
+                robotWidth;
+              const maxLeft = initialLeft - 20;
+              this.collisionModule.checkForTypewriterCollision(twRect, maxLeft);
+            }
+          } catch (err) {
+            log.warn(
+              'RobotCompanion: scroll handler collision check failed',
+              err,
+            );
           }
-        } catch (err) {
-          log.warn(
-            'RobotCompanion: scroll handler collision check failed',
-            err,
-          );
-        }
-      }, 500);
+        }, 500)
+      );
     };
     if (typeof globalThis !== 'undefined') {
       globalThis.addEventListener('scroll', this._scrollListener, {
@@ -554,10 +549,9 @@ export class RobotCompanion {
       this.chatModule.destroy();
     }
     this.chatModule?.clearBubbleSequence();
-    // @ts-ignore - Method exists in RobotAnimation module
-    this.animationModule?.stopIdleEyeMovement();
-    // @ts-ignore - Method exists in RobotAnimation module
-    this.animationModule?.stopBlinkLoop();
+    const anim = /** @type {any} */ (this.animationModule);
+    anim?.stopIdleEyeMovement();
+    anim?.stopBlinkLoop();
 
     // Intelligence Modul Cleanup (Event-Listener entfernen)
     if (this.intelligenceModule?.destroy) {
@@ -698,9 +692,9 @@ export class RobotCompanion {
    * @returns {string}
    */
   getMoodGreeting() {
-    // @ts-ignore - Dynamic properties set from external text configuration
+    const chat = /** @type {any} */ (this.chatModule);
     const greetings =
-      this.chatModule.moodGreetings ||
+      chat.moodGreetings ||
       (typeof globalThis !== 'undefined' &&
         globalThis.robotCompanionTexts &&
         globalThis.robotCompanionTexts.moodGreetings) ||
@@ -884,8 +878,8 @@ export class RobotCompanion {
     this.dom.thinking = container.querySelector('.robot-thinking');
     this.dom.closeBtn = container.querySelector('.chat-close-btn');
 
-    // @ts-ignore - Method exists in RobotAnimation module
-    requestAnimationFrame(() => this.animationModule.startIdleEyeMovement());
+    const anim = /** @type {any} */ (this.animationModule);
+    requestAnimationFrame(() => anim.startIdleEyeMovement());
   }
 
   attachEvents() {

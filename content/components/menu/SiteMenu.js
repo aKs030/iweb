@@ -22,8 +22,9 @@ export class SiteMenu extends HTMLElement {
     super();
     this.config = { ...MenuConfig };
     this.state = new MenuState();
-    // @ts-ignore
-    this.renderer = new MenuRenderer(this.state, this.config);
+    this.renderer = /** @type {any} */ (
+      new MenuRenderer(this.state, this.config)
+    );
     this.performance = new MenuPerformance();
     this.cache = new MenuCache();
     /** @type {MenuEvents|null} */
@@ -34,27 +35,20 @@ export class SiteMenu extends HTMLElement {
   }
 
   async connectedCallback() {
-    if (this.initialized) return;
-
     this.performance.startMeasure('menu-init');
 
     try {
       this.ensureStyles();
 
-      // Prevent double initialization
-      if (this.dataset.initialized === 'true') {
-        this.initialized = true;
-        return;
-      }
-      this.dataset.initialized = 'true';
-
       // Render menu
-      // @ts-ignore
-      this.renderer.render(this);
+      const renderer = /** @type {any} */ (this.renderer);
+      renderer.render(this);
 
       // Initialize subsystems
-      // @ts-ignore
-      this.accessibility = new MenuAccessibility(this, this.state);
+      const accessibility = /** @type {any} */ (
+        new MenuAccessibility(this, this.state)
+      );
+      this.accessibility = accessibility;
       this.events = new MenuEvents(
         this,
         this.state,
@@ -62,8 +56,7 @@ export class SiteMenu extends HTMLElement {
         this.config,
       );
 
-      // @ts-ignore
-      this.accessibility.init();
+      accessibility.init();
       this.events.init();
 
       this.initialized = true;
@@ -79,8 +72,8 @@ export class SiteMenu extends HTMLElement {
 
   disconnectedCallback() {
     this.events?.destroy();
-    // @ts-ignore
-    this.accessibility?.destroy();
+    const accessibility = /** @type {any} */ (this.accessibility);
+    accessibility?.destroy();
     this.performance?.destroy();
     this.cache?.clear();
     this.state.reset();
