@@ -38,24 +38,23 @@
 /datenschutz.html                            /datenschutz/             301
 
 # ============================================================================
-# 2. Canonical URL Redirects (Remove index.html) - Permanent & Cacheable
+# 2. Canonical URL Redirects (Remove index.html) - Permanent
 # ============================================================================
-/index.html          /              301!
-/blog/index.html     /blog/         301!
-/projekte/index.html /projekte/     301!
-/gallery/index.html  /gallery/      301!
-/videos/index.html   /videos/       301!
-/about/index.html    /about/        301!
+/index.html          /              301
+/blog/index.html     /blog/         301
+/projekte/index.html /projekte/     301
+/gallery/index.html  /gallery/      301
+/videos/index.html   /videos/       301
+/about/index.html    /about/        301
 
 # ============================================================================
-# 3. Trailing Slash Canonicalization (with caching)
+# 3. Trailing Slash Canonicalization
 # ============================================================================
-# Cache redirects for 1 year (these URLs won't change)
-/about    /about/     301!
-/blog     /blog/      301!
-/gallery  /gallery/   301!
-/projekte /projekte/  301!
-/videos   /videos/    301!
+/about    /about/     301
+/blog     /blog/      301
+/gallery  /gallery/   301
+/projekte /projekte/  301
+/videos   /videos/    301
 
 # ============================================================================
 # 4. Old File Locations to Clean URLs
