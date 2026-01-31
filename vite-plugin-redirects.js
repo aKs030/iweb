@@ -36,7 +36,7 @@ export function htmlRawPlugin() {
           return;
         }
 
-        // Serve other HTML files from pages/ and content/components/ as raw HTML
+        // Only serve .html files as raw - let Vite handle everything else (including .jsx)
         if (url.match(/\/(pages|content\/components)\/.*\.html$/)) {
           try {
             const filePath = resolve(process.cwd(), url.substring(1));
