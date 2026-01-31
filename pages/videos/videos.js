@@ -39,7 +39,7 @@ const activateThumb = (btn) => {
   iframe.height = '315';
   iframe.src = `https://www.youtube-nocookie.com/embed/${vid}?autoplay=1&rel=0`;
   iframe.title = title;
-  iframe.setAttribute('frameborder', '0');
+  iframe.setAttribute('frameBorder', '0');
   iframe.setAttribute(
     'allow',
     'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture',
