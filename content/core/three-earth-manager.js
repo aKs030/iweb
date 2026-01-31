@@ -49,9 +49,8 @@ export class ThreeEarthManager {
 
       // Timeout wrapper for initialization
       const loadPromise = async () => {
-        const { initThreeEarth } = await import(
-          '../components/particles/three-earth-system.js'
-        );
+        const { initThreeEarth } =
+          await import('../components/particles/three-earth-system.js');
 
         if (typeof initThreeEarth !== 'function') {
           throw new Error('initThreeEarth not found in module exports');
