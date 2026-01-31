@@ -3,7 +3,7 @@
  * @version 2.0.0
  */
 
-import { initProjectsApp } from './app.jsx';
+import { initProjectsApp } from './app.js';
 import { createLogger } from '/content/core/logger.js';
 
 const log = createLogger('ProjectsLoader');
