@@ -87,15 +87,6 @@ const injectGA4Fallback = () => {
       document.head.appendChild(s);
     }
 
-    const fontLinks = document.querySelectorAll(
-      'link[href*="fonts.googleapis.com"]',
-    );
-    fontLinks.forEach((link) => {
-      if (!link.href.includes('display=swap')) {
-        link.href += (link.href.includes('?') ? '&' : '?') + 'display=swap';
-      }
-    });
-
     gtag('config', GA4_MEASUREMENT_ID);
   } catch (err) {
     log?.warn?.('head-inline: GA4 fallback failed', err);
@@ -195,17 +186,7 @@ const ensureFooterAndTrigger = () => {
         document.body.appendChild(siteFooter);
       }
 
-      // Load component definition
-      try {
-        if (!globalThis.__siteFooterLoaded) {
-          globalThis.__siteFooterLoaded = true;
-          import('/content/components/footer/SiteFooter.js').catch((err) =>
-            log?.warn?.('head-inline: import SiteFooter failed', err),
-          );
-        }
-      } catch {
-        /* ignore */
-      }
+      // Component definitions werden durch SCRIPTS array geladen - nicht hier doppelt
     };
 
     if (document.readyState === 'loading') {
@@ -247,6 +228,7 @@ const injectCoreAssets = () => {
     const SCRIPTS = [
       { src: '/content/main.js', module: true, preload: false },
       { src: '/content/components/menu/menu.js', module: true },
+      { src: '/content/components/footer/SiteFooter.js', module: true },
     ];
 
     const deferNonCriticalAssets = () => {

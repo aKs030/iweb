@@ -13,8 +13,6 @@ import { LoaderManager } from './core/loader-manager.js';
 import { ThreeEarthManager } from './core/three-earth-manager.js';
 import { getElementById, onDOMReady } from './core/utils.js';
 import { initImageOptimization } from './core/image-loader-helper.js';
-import './components/menu/menu.js';
-import './components/footer/SiteFooter.js';
 
 const log = createLogger('main');
 
@@ -61,6 +59,8 @@ const AppLoadManager = (() => {
 
 // ===== Constants =====
 const REFRESH_DELAY_MS = 50;
+const LOADING_TIMEOUT_MS = 4000;
+const STORAGE_REQUEST_DELAY_MS = 2200;
 const SECTION_TRACKER_CONFIG = {
   threshold: [0.1, 0.3, 0.5, 0.7],
   rootMargin: '-10% 0px -10% 0px',
@@ -77,10 +77,11 @@ class SectionTracker {
   init() {
     onDOMReady(() => this.setupObserver());
 
-    const refreshHandler = () =>
+    // Reuse single handler for both events
+    this.refreshHandler = () =>
       setTimeout(() => this.refreshSections(), REFRESH_DELAY_MS);
-    document.addEventListener('section:loaded', refreshHandler);
-    document.addEventListener('footer:loaded', refreshHandler);
+    document.addEventListener('section:loaded', this.refreshHandler);
+    document.addEventListener('footer:loaded', this.refreshHandler);
   }
 
   setupObserver() {
@@ -133,6 +134,7 @@ class SectionTracker {
 
   checkInitialSection() {
     const viewportCenter = window.innerHeight / 2;
+    /** @type {HTMLElement|null} */
     let activeSection = null;
     let bestDistance = Infinity;
     this.sections.forEach((section) => {
@@ -158,7 +160,11 @@ class SectionTracker {
     try {
       const sectionIndex = this.sections.findIndex((s) => s.id === sectionId);
       const section = getElementById(sectionId);
-      const detail = { id: sectionId, index: sectionIndex, section };
+      const detail = {
+        id: /** @type {string} */ (sectionId),
+        index: sectionIndex,
+        section,
+      };
       window.dispatchEvent(new CustomEvent('snapSectionChange', { detail }));
       log.debug(`Section changed: ${sectionId}`);
     } catch (error) {
@@ -177,6 +183,10 @@ class SectionTracker {
     if (this.observer) {
       this.observer.disconnect();
       this.observer = null;
+    }
+    if (this.refreshHandler) {
+      document.removeEventListener('section:loaded', this.refreshHandler);
+      document.removeEventListener('footer:loaded', this.refreshHandler);
     }
     this.sections = [];
     this.sectionRatios.clear();
@@ -357,17 +367,19 @@ document.addEventListener(
         log.info('Forcing loading screen hide after timeout');
         LoadingScreenManager.hide();
       }
-    }, 4000);
+    }, LOADING_TIMEOUT_MS);
 
-    schedulePersistentStorageRequest(2200);
+    schedulePersistentStorageRequest(STORAGE_REQUEST_DELAY_MS);
 
     // Activate deferred styles
     try {
       document
         .querySelectorAll('link[rel="stylesheet"][data-defer="1"]')
         .forEach((link) => {
-          link.media = 'all';
-          delete link.dataset.defer;
+          const linkEl = /** @type {HTMLLinkElement} */ (link);
+          linkEl.media = 'all';
+          const datasetEl = /** @type {HTMLElement} */ (link);
+          delete datasetEl.dataset.defer;
         });
     } catch {
       /* ignore */

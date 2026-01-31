@@ -240,4 +240,118 @@
  * @property {number} [score] - Search score
  */
 
+/**
+ * Timer Types
+ */
+
+/**
+ * @typedef {number} TimerID
+ * Browser timer ID (can be number or NodeJS.Timeout in Node)
+ */
+
+/**
+ * @typedef {Object} TimerManager
+ * @property {Set<TimerID>} timers - Active setTimeout IDs
+ * @property {Set<TimerID>} intervals - Active setInterval IDs
+ * @property {function(Function, number): TimerID} setTimeout - Set timeout
+ * @property {function(Function, number): TimerID} setInterval - Set interval
+ * @property {function(TimerID): void} clearTimeout - Clear timeout
+ * @property {function(TimerID): void} clearInterval - Clear interval
+ * @property {function(): void} clearAll - Clear all timers
+ */
+
+/**
+ * DOM Types
+ */
+
+/**
+ * @typedef {HTMLElement & {style: CSSStyleDeclaration}} StyledHTMLElement
+ * HTML Element with guaranteed style property
+ */
+
+/**
+ * @typedef {HTMLElement & {dataset: DOMStringMap}} DatasetHTMLElement
+ * HTML Element with guaranteed dataset property
+ */
+
+/**
+ * @typedef {HTMLFormElement & {reset: () => void}} FormElement
+ * Form element with reset method
+ */
+
+/**
+ * Global Types
+ */
+
+/**
+ * @typedef {Object} WindowWithGtag
+ * @property {Function} [gtag] - Google Analytics gtag function
+ */
+
+/**
+ * @typedef {Window & WindowWithGtag} GlobalWindow
+ */
+
+/**
+ * @typedef {Object} Vector2
+ * @property {number} x - X coordinate
+ * @property {number} y - Y coordinate
+ */
+
+/**
+ * @typedef {Object} GlobalThisExtended
+ * @property {Vector2} [lastMousePos] - Last mouse position
+ * @property {boolean} [__FORCE_THREE_EARTH] - Force Three.js Earth
+ * @property {any} [robotCompanionTexts] - Robot companion texts
+ * @property {any} [__ENV__] - Environment variables
+ */
+
+/**
+ * Three.js Types (minimal definitions)
+ */
+
+/**
+ * @typedef {Object} ThreeMaterial
+ * @property {boolean} [needsUpdate] - Material needs update flag
+ * @property {Object} [uniforms] - Shader uniforms
+ * @property {Function} [dispose] - Dispose method
+ */
+
+/**
+ * @typedef {Object} ThreeMesh
+ * @property {ThreeMaterial} material - Mesh material
+ * @property {Object} userData - User data
+ */
+
+/**
+ * @typedef {Object} DeviceCapabilities
+ * @property {boolean} isMobile - Is mobile device
+ * @property {boolean} isLowEnd - Is low-end device
+ * @property {number} pixelRatio - Device pixel ratio
+ * @property {boolean} supportsWebGL - Supports WebGL
+ */
+
+/**
+ * Footer Types
+ */
+
+/**
+ * @typedef {Object} FooterElements
+ * @property {HTMLElement|null} footer - Footer element
+ * @property {HTMLElement|null} footerMin - Footer minimized view
+ * @property {HTMLElement|null} footerMax - Footer expanded view
+ * @property {HTMLElement|null} cookieBanner - Cookie banner
+ * @property {HTMLElement|null} cookieSettings - Cookie settings
+ * @property {HTMLElement|null} footerContent - Footer content
+ * @property {HTMLButtonElement|null} acceptBtn - Accept button
+ * @property {HTMLButtonElement|null} rejectBtn - Reject button
+ * @property {HTMLButtonElement|null} closeBtn - Close button
+ * @property {HTMLInputElement|null} analyticsToggle - Analytics toggle
+ * @property {HTMLInputElement|null} adsToggle - Ads toggle
+ * @property {HTMLButtonElement|null} rejectAll - Reject all button
+ * @property {HTMLButtonElement|null} acceptSelected - Accept selected button
+ * @property {HTMLButtonElement|null} acceptAll - Accept all button
+ * @property {HTMLFormElement|null} newsletterForm - Newsletter form
+ */
+
 export {};

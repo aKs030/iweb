@@ -16,6 +16,10 @@ const CONFIG = {
 };
 
 /**
+ * @typedef {import('/content/core/types.js').FooterElements} FooterElements
+ */
+
+/**
  * Cookie Management Utility
  */
 const CookieManager = {
@@ -94,12 +98,13 @@ class Analytics {
    * @param {boolean} granted
    */
   updateConsent(granted) {
-    // @ts-ignore
-    if (typeof gtag !== 'function') return;
+    const win = /** @type {import('/content/core/types.js').GlobalWindow} */ (
+      window
+    );
+    if (typeof win.gtag !== 'function') return;
     const status = granted ? 'granted' : 'denied';
     try {
-      // @ts-ignore
-      gtag('consent', 'update', {
+      win.gtag('consent', 'update', {
         ad_storage: status,
         analytics_storage: status,
         ad_user_data: status,
@@ -118,14 +123,31 @@ export class SiteFooter extends HTMLElement {
   constructor() {
     super();
     this.analytics = new Analytics();
+    /** @type {IntersectionObserver|null} */
     this.observer = null;
     this.expanded = false;
     this.initialized = false;
+    /** @type {FooterElements} */
+    this.elements = {
+      footer: null,
+      footerMin: null,
+      footerMax: null,
+      cookieBanner: null,
+      cookieSettings: null,
+      footerContent: null,
+      acceptBtn: null,
+      rejectBtn: null,
+      closeBtn: null,
+      analyticsToggle: null,
+      adsToggle: null,
+      rejectAll: null,
+      acceptSelected: null,
+      acceptAll: null,
+      newsletterForm: null,
+    };
   }
 
   async connectedCallback() {
-    if (this.initialized) return;
-
     // Allow for manual source override via attribute
     const src = this.getAttribute('src') || CONFIG.FOOTER_PATH;
 
@@ -150,6 +172,25 @@ export class SiteFooter extends HTMLElement {
   }
 
   init() {
+    // Cache DOM elements
+    this.elements = {
+      footer: this.querySelector('#site-footer'),
+      footerMin: this.querySelector('.footer-min'),
+      footerMax: this.querySelector('.footer-max'),
+      cookieBanner: this.querySelector('#cookie-banner'),
+      cookieSettings: this.querySelector('#cookie-settings'),
+      footerContent: this.querySelector('#footer-content'),
+      acceptBtn: this.querySelector('#accept-cookies'),
+      rejectBtn: this.querySelector('#reject-cookies'),
+      closeBtn: this.querySelector('#close-settings'),
+      analyticsToggle: this.querySelector('#analytics-toggle'),
+      adsToggle: this.querySelector('#ads-toggle'),
+      rejectAll: this.querySelector('#reject-all'),
+      acceptSelected: this.querySelector('#accept-selected'),
+      acceptAll: this.querySelector('#accept-all'),
+      newsletterForm: this.querySelector('.newsletter-form'),
+    };
+
     this.setupDate();
     this.setupCookieBanner();
     this.setupScrollHandler();
@@ -164,16 +205,14 @@ export class SiteFooter extends HTMLElement {
   }
 
   setupCookieBanner() {
-    const banner = this.querySelector('#cookie-banner');
-    const acceptBtn = this.querySelector('#accept-cookies');
-    const rejectBtn = this.querySelector('#reject-cookies');
+    const { cookieBanner, acceptBtn, rejectBtn } = this.elements;
 
-    if (!banner || !acceptBtn || !rejectBtn) return;
+    if (!cookieBanner || !acceptBtn || !rejectBtn) return;
 
     const consent = CookieManager.get('cookie_consent');
     const shouldShow = consent !== 'accepted' && consent !== 'rejected';
 
-    banner.classList.toggle('hidden', !shouldShow);
+    cookieBanner.classList.toggle('hidden', !shouldShow);
 
     if (consent === 'accepted') {
       this.analytics.updateConsent(true);
@@ -184,21 +223,24 @@ export class SiteFooter extends HTMLElement {
 
     acceptBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      this.acceptCookies(banner);
+      this.acceptCookies(cookieBanner);
     });
 
     rejectBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      this.rejectCookies(banner);
+      this.rejectCookies(cookieBanner);
     });
   }
 
   /**
-   * @param {Element} banner
+   * @param {HTMLElement} banner
    */
   acceptCookies(banner) {
-    // @ts-ignore
-    banner.style.animation = 'cookieSlideOut 0.3s ease-out forwards';
+    const styledBanner =
+      /** @type {import('/content/core/types.js').StyledHTMLElement} */ (
+        banner
+      );
+    styledBanner.style.animation = 'cookieSlideOut 0.3s ease-out forwards';
     setTimeout(() => banner.classList.add('hidden'), 300);
 
     CookieManager.set('cookie_consent', 'accepted');
@@ -208,11 +250,14 @@ export class SiteFooter extends HTMLElement {
   }
 
   /**
-   * @param {Element} banner
+   * @param {HTMLElement} banner
    */
   rejectCookies(banner) {
-    // @ts-ignore
-    banner.style.animation = 'cookieSlideOut 0.3s ease-out forwards';
+    const styledBanner =
+      /** @type {import('/content/core/types.js').StyledHTMLElement} */ (
+        banner
+      );
+    styledBanner.style.animation = 'cookieSlideOut 0.3s ease-out forwards';
     setTimeout(() => banner.classList.add('hidden'), 300);
 
     CookieManager.set('cookie_consent', 'rejected');
@@ -221,7 +266,7 @@ export class SiteFooter extends HTMLElement {
   }
 
   setupScrollHandler() {
-    const footer = this.querySelector('#site-footer');
+    const { footer } = this.elements;
     if (!footer) return;
 
     // Use existing trigger or create one
@@ -249,8 +294,8 @@ export class SiteFooter extends HTMLElement {
 
     // Close on outside click
     document.addEventListener('click', (e) => {
-      // @ts-ignore
-      if (this.expanded && !e.target.closest('#site-footer')) {
+      const target = /** @type {Element} */ (e.target);
+      if (this.expanded && !target.closest('#site-footer')) {
         this.toggleFooter(false);
       }
     });
@@ -260,9 +305,7 @@ export class SiteFooter extends HTMLElement {
    * @param {boolean} [forceState]
    */
   toggleFooter(forceState) {
-    const footer = this.querySelector('#site-footer');
-    const min = this.querySelector('.footer-min');
-    const max = this.querySelector('.footer-max');
+    const { footer, footerMin, footerMax } = this.elements;
 
     if (!footer) return;
 
@@ -272,59 +315,60 @@ export class SiteFooter extends HTMLElement {
     if (this.expanded) {
       footer.classList.add('expanded');
       document.body.classList.add('footer-expanded');
-      min?.classList.add('hidden');
-      max?.classList.remove('hidden');
-      min?.setAttribute('aria-expanded', 'true');
+      footerMin?.classList.add('hidden');
+      footerMax?.classList.remove('hidden');
+      footerMin?.setAttribute('aria-expanded', 'true');
     } else {
       footer.classList.remove('expanded');
       document.body.classList.remove('footer-expanded');
-      min?.classList.remove('hidden');
-      max?.classList.add('hidden');
-      min?.setAttribute('aria-expanded', 'false');
+      footerMin?.classList.remove('hidden');
+      footerMax?.classList.add('hidden');
+      footerMin?.setAttribute('aria-expanded', 'false');
     }
   }
 
   openSettings() {
-    const settings = this.querySelector('#cookie-settings');
-    const content = this.querySelector('#footer-content');
+    const { cookieSettings, footerContent, analyticsToggle, adsToggle } =
+      this.elements;
 
-    if (!settings) return;
+    if (!cookieSettings) return;
 
     // Load current settings
     const consent = CookieManager.get('cookie_consent');
-    const analyticsToggle = this.querySelector('#analytics-toggle');
-    const adsToggle = this.querySelector('#ads-toggle');
 
     if (analyticsToggle) {
-      // @ts-ignore
-      analyticsToggle.checked = consent === 'accepted';
+      const toggle = /** @type {HTMLInputElement} */ (analyticsToggle);
+      toggle.checked = consent === 'accepted';
     }
-    // @ts-ignore
-    if (adsToggle) adsToggle.checked = false;
+    if (adsToggle) {
+      const toggle = /** @type {HTMLInputElement} */ (adsToggle);
+      toggle.checked = false;
+    }
 
     // Force expand footer
     this.toggleFooter(true);
 
-    settings.classList.remove('hidden');
-    content?.classList.add('hidden');
+    cookieSettings.classList.remove('hidden');
+    footerContent?.classList.add('hidden');
   }
 
   closeSettings() {
-    const settings = this.querySelector('#cookie-settings');
-    const content = this.querySelector('#footer-content');
+    const { cookieSettings, footerContent } = this.elements;
 
-    settings?.classList.add('hidden');
-    content?.classList.remove('hidden');
+    cookieSettings?.classList.add('hidden');
+    footerContent?.classList.remove('hidden');
 
     // Reset footer to normal state
     this.toggleFooter(false);
   }
 
   bindEvents() {
+    const { closeBtn, footerMin, newsletterForm } = this.elements;
+
     // Cookie trigger buttons
     this.addEventListener('click', (e) => {
-      // @ts-ignore
-      if (e.target.closest('[data-cookie-trigger]')) {
+      const target = /** @type {Element} */ (e.target);
+      if (target.closest('[data-cookie-trigger]')) {
         e.preventDefault();
         e.stopPropagation();
         this.openSettings();
@@ -332,24 +376,22 @@ export class SiteFooter extends HTMLElement {
     });
 
     // Settings close button
-    const closeBtn = this.querySelector('#close-settings');
     closeBtn?.addEventListener('click', () => this.closeSettings());
 
     // Footer minimize click
-    const footerMin = this.querySelector('.footer-min');
     footerMin?.addEventListener('click', (e) => {
       // Ignore clicks on interactive elements
-      // @ts-ignore
-      if (e.target.closest('a, button, input, .cookie-inline')) {
+      const target = /** @type {Element} */ (e.target);
+      if (target.closest('a, button, input, .cookie-inline')) {
         return;
       }
       this.toggleFooter();
     });
 
     // Newsletter form
-    const form = this.querySelector('.newsletter-form');
-    form?.addEventListener('submit', (e) => {
+    newsletterForm?.addEventListener('submit', (e) => {
       e.preventDefault();
+      const form = /** @type {HTMLFormElement} */ (newsletterForm);
       const btn = form.querySelector('button');
       if (btn) {
         const original = btn.textContent;
@@ -360,7 +402,6 @@ export class SiteFooter extends HTMLElement {
           btn.disabled = false;
         }, 2000);
       }
-      // @ts-ignore
       form.reset();
       a11y?.announce('Newsletter abonniert', { priority: 'polite' });
     });
@@ -370,23 +411,26 @@ export class SiteFooter extends HTMLElement {
   }
 
   bindSettingsButtons() {
-    const rejectAll = this.querySelector('#reject-all');
-    const acceptSelected = this.querySelector('#accept-selected');
-    const acceptAll = this.querySelector('#accept-all');
+    const {
+      rejectAll,
+      acceptSelected,
+      acceptAll,
+      analyticsToggle,
+      cookieBanner,
+    } = this.elements;
 
     rejectAll?.addEventListener('click', () => {
       CookieManager.set('cookie_consent', 'rejected');
       CookieManager.deleteAnalytics();
       this.analytics.updateConsent(false);
-      this.querySelector('#cookie-banner')?.classList.add('hidden');
+      cookieBanner?.classList.add('hidden');
       a11y?.announce('Nur notwendige Cookies', { priority: 'polite' });
       this.closeSettings();
     });
 
     acceptSelected?.addEventListener('click', () => {
-      const analyticsEnabled = /** @type {HTMLInputElement} */ (
-        this.querySelector('#analytics-toggle')
-      )?.checked;
+      const toggle = /** @type {HTMLInputElement|null} */ (analyticsToggle);
+      const analyticsEnabled = toggle?.checked ?? false;
       CookieManager.set(
         'cookie_consent',
         analyticsEnabled ? 'accepted' : 'rejected',
@@ -400,7 +444,7 @@ export class SiteFooter extends HTMLElement {
         CookieManager.deleteAnalytics();
       }
 
-      this.querySelector('#cookie-banner')?.classList.add('hidden');
+      cookieBanner?.classList.add('hidden');
       a11y?.announce('Einstellungen gespeichert', { priority: 'polite' });
       this.closeSettings();
     });
@@ -409,7 +453,7 @@ export class SiteFooter extends HTMLElement {
       CookieManager.set('cookie_consent', 'accepted');
       this.analytics.updateConsent(true);
       this.analytics.load();
-      this.querySelector('#cookie-banner')?.classList.add('hidden');
+      cookieBanner?.classList.add('hidden');
       a11y?.announce('Alle Cookies akzeptiert', { priority: 'polite' });
       this.closeSettings();
     });

@@ -5,6 +5,7 @@
  * @version 12.0.0 - MODERNIZED: Class-based Architecture
  */
 
+import * as THREE from 'three';
 import { createLogger } from '/content/core/logger.js';
 import { getElementById, debounce } from '/content/core/utils.js';
 import { createObserver } from '/content/core/intersection-observer.js';
@@ -36,6 +37,12 @@ import {
 
 const log = createLogger('ThreeEarthSystem');
 
+/**
+ * @typedef {import('/content/core/types.js').TimerID} TimerID
+ * @typedef {import('/content/core/types.js').Vector2} Vector2
+ * @typedef {import('/content/core/types.js').DeviceCapabilities} DeviceCapabilities
+ */
+
 // Helper: onResize
 /**
  * @param {function} callback
@@ -55,54 +62,51 @@ function onResize(callback, delay = 100) {
  */
 class TimerManager {
   constructor() {
+    /** @type {Set<TimerID>} */
     this.timers = new Set();
+    /** @type {Set<TimerID>} */
     this.intervals = new Set();
   }
 
   /**
    * @param {function} fn
    * @param {number} delay
-   * @returns {number}
+   * @returns {TimerID}
    */
   setTimeout(fn, delay) {
-    const id = /** @type {unknown} */ (
+    const id = /** @type {TimerID} */ (
       setTimeout(() => {
         // ✅ Guard clause: Check if timer is still active before executing
         if (this.timers.has(id)) {
-          // @ts-ignore
           this.timers.delete(id);
           fn();
         }
       }, delay)
     );
-    // @ts-ignore
     this.timers.add(id);
-    return /** @type {number} */ (id);
+    return id;
   }
 
   /**
    * @param {function} fn
    * @param {number} delay
-   * @returns {number}
+   * @returns {TimerID}
    */
   setInterval(fn, delay) {
-    const id = /** @type {unknown} */ (setInterval(fn, delay));
-    // @ts-ignore
+    const id = /** @type {TimerID} */ (setInterval(fn, delay));
     this.intervals.add(id);
-    return /** @type {number} */ (id);
+    return id;
   }
 
-  /** @param {number} id */
+  /** @param {TimerID} id */
   clearTimeout(id) {
     clearTimeout(id);
-    // @ts-ignore
     this.timers.delete(id);
   }
 
-  /** @param {number} id */
+  /** @param {TimerID} id */
   clearInterval(id) {
     clearInterval(id);
-    // @ts-ignore
     this.intervals.delete(id);
   }
 
@@ -338,9 +342,11 @@ class ThreeEarthSystem {
   }
 
   _detectDevice() {
-    // @ts-ignore
+    const caps = /** @type {DeviceCapabilities|undefined} */ (
+      this.deviceCapabilities
+    );
     this.isMobileDevice =
-      !!this.deviceCapabilities?.isMobile ||
+      !!caps?.isMobile ||
       (globalThis.matchMedia?.('(max-width: 768px)')?.matches ?? false);
   }
 
@@ -505,8 +511,7 @@ class ThreeEarthSystem {
       this.renderer,
     );
 
-    // @ts-ignore
-    if (this.starManager?.setCardManager) {
+    if (this.starManager && 'setCardManager' in this.starManager) {
       this.starManager.setCardManager(this.cardManager);
     }
 
@@ -580,8 +585,11 @@ class ThreeEarthSystem {
   // --- Interaction & Events ---
 
   _setupInteraction() {
-    // @ts-ignore
-    globalThis.lastMousePos = new this.THREE.Vector2(-999, -999);
+    const global =
+      /** @type {import('/content/core/types.js').GlobalThisExtended & typeof globalThis} */ (
+        globalThis
+      );
+    global.lastMousePos = new this.THREE.Vector2(-999, -999);
 
     window.addEventListener('mousemove', this.onMove);
     window.addEventListener('click', this.onClick);
@@ -596,10 +604,14 @@ class ThreeEarthSystem {
 
   onMove(event) {
     if (!this.active) return;
-    // @ts-ignore
-    globalThis.lastMousePos.x = (event.clientX / window.innerWidth) * 2 - 1;
-    // @ts-ignore
-    globalThis.lastMousePos.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    const global =
+      /** @type {import('/content/core/types.js').GlobalThisExtended & typeof globalThis} */ (
+        globalThis
+      );
+    if (global.lastMousePos) {
+      global.lastMousePos.x = (event.clientX / window.innerWidth) * 2 - 1;
+      global.lastMousePos.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    }
   }
 
   onClick(event) {
@@ -639,8 +651,9 @@ class ThreeEarthSystem {
       if (!this.active) return;
       this.animationFrameId = requestAnimationFrame(this.animate);
 
-      // @ts-ignore
-      const cap = this.deviceCapabilities || detectDeviceCapabilities();
+      const cap = /** @type {DeviceCapabilities} */ (
+        this.deviceCapabilities || detectDeviceCapabilities()
+      );
       const targetFrameTime = cap.isLowEnd ? 33.33 : 16.67;
 
       const now = performance.now();
@@ -691,10 +704,12 @@ class ThreeEarthSystem {
     this.cameraManager?.updateCameraPosition(delta);
     this._updateTransforms();
 
-    // @ts-ignore
-    if (this.cardManager && globalThis.lastMousePos) {
-      // @ts-ignore
-      this.cardManager.update(totalTime * 1000, globalThis.lastMousePos);
+    const global =
+      /** @type {import('/content/core/types.js').GlobalThisExtended & typeof globalThis} */ (
+        globalThis
+      );
+    if (this.cardManager && global.lastMousePos) {
+      this.cardManager.update(totalTime * 1000, global.lastMousePos);
     }
 
     if (!capabilities.isLowEnd) this.shootingStarManager?.update(delta);
@@ -813,8 +828,11 @@ class ThreeEarthSystem {
     else if (prev === 'features') this.cardManager?.setProgress(0);
 
     const container = document.querySelector('.three-earth-container');
-    // @ts-ignore
-    if (container) container.dataset.section = newSection;
+    const datasetContainer =
+      /** @type {import('/content/core/types.js').DatasetHTMLElement|null} */ (
+        container
+      );
+    if (datasetContainer) datasetContainer.dataset.section = newSection;
   }
 
   _updateEarthForSection(sectionName, allowModeSwitch) {
@@ -828,8 +846,10 @@ class ThreeEarthSystem {
         this.earthMesh.userData.currentMode === 'night' ? 'day' : 'night';
       this.earthMesh.material =
         newMode === 'day' ? this.dayMaterial : this.nightMaterial;
-      // @ts-ignore
-      this.earthMesh.material.needsUpdate = true;
+      const material = /** @type {THREE.Material & {needsUpdate?: boolean}} */ (
+        this.earthMesh.material
+      );
+      material.needsUpdate = true;
       this.earthMesh.userData.currentMode = newMode;
       this.cameraManager?.setTargetOrbitAngle(newMode === 'day' ? 0 : Math.PI);
     }
@@ -906,13 +926,10 @@ class ThreeEarthSystem {
   }
 
   triggerShowcase(duration = 8000) {
-    // @ts-ignore
-    if (
-      !this.active ||
-      this.showcaseActive ||
-      this.deviceCapabilities?.isLowEnd
-    )
-      return;
+    const caps = /** @type {DeviceCapabilities|undefined} */ (
+      this.deviceCapabilities
+    );
+    if (!this.active || this.showcaseActive || caps?.isLowEnd) return;
 
     this.showcaseActive = true;
     this.showcaseOriginals = {
@@ -924,8 +941,7 @@ class ThreeEarthSystem {
     CONFIG.EARTH.EMISSIVE_PULSE_AMPLITUDE *= 3;
 
     try {
-      // @ts-ignore
-      const cur = this.cameraManager?.cameraOrbitAngle || 0;
+      const cur = this.cameraManager?.cameraOrbitAngle ?? 0;
       this.cameraManager?.setTargetOrbitAngle(cur + Math.PI / 2);
     } catch {
       /* ignore */
@@ -955,16 +971,15 @@ class ThreeEarthSystem {
   }
 
   _revertShowcaseConfig() {
-    // @ts-ignore
-    if (this.showcaseOriginals.cloudSpeed !== undefined) {
-      // @ts-ignore
-      CONFIG.CLOUDS.ROTATION_SPEED = this.showcaseOriginals.cloudSpeed;
+    const originals =
+      /** @type {{cloudSpeed?: number, emissiveAmp?: number}} */ (
+        this.showcaseOriginals
+      );
+    if (originals.cloudSpeed !== undefined) {
+      CONFIG.CLOUDS.ROTATION_SPEED = originals.cloudSpeed;
     }
-    // @ts-ignore
-    if (this.showcaseOriginals.emissiveAmp !== undefined) {
-      // @ts-ignore
-      CONFIG.EARTH.EMISSIVE_PULSE_AMPLITUDE =
-        this.showcaseOriginals.emissiveAmp;
+    if (originals.emissiveAmp !== undefined) {
+      CONFIG.EARTH.EMISSIVE_PULSE_AMPLITUDE = originals.emissiveAmp;
     }
   }
 
@@ -1004,8 +1019,7 @@ class ThreeEarthSystem {
     [this.dayMaterial, this.nightMaterial].forEach(disposeMaterial);
   }
 
-  // eslint-disable-next-line no-unused-vars
-  _detectAndEnsureWebGL(container) {
+  _detectAndEnsureWebGL() {
     try {
       this._applyDeviceConfigSafely();
     } catch (err) {
@@ -1067,10 +1081,9 @@ function disposeMaterial(material) {
   });
   if (material.uniforms) {
     Object.values(material.uniforms).forEach((uniform) => {
-      // @ts-ignore
-      if (uniform?.value && typeof uniform.value.dispose === 'function') {
-        // @ts-ignore
-        uniform.value.dispose();
+      const u = /** @type {any} */ (uniform);
+      if (u?.value && typeof u.value.dispose === 'function') {
+        u.value.dispose();
       }
     });
   }
