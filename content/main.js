@@ -324,6 +324,14 @@ document.addEventListener(
     };
 
     const checkReady = () => {
+      log.debug('checkReady called', {
+        modulesReady,
+        windowLoaded,
+        isBlocked: AppLoadManager?.isBlocked?.(),
+        isEarthReady: isEarthReady(),
+        pending: AppLoadManager?.getPending?.(),
+      });
+
       if (!modulesReady || !windowLoaded) return;
       if (AppLoadManager?.isBlocked?.()) return;
       if (!isEarthReady()) return;
@@ -366,8 +374,13 @@ document.addEventListener(
 
     // Force hide after timeout
     setTimeout(() => {
-      if (!windowLoaded) {
-        log.info('Forcing loading screen hide after timeout');
+      if (!LoadingScreenManager.hasHidden) {
+        log.warn('Forcing loading screen hide after timeout', {
+          modulesReady,
+          windowLoaded,
+          isBlocked: AppLoadManager?.isBlocked?.(),
+          pending: AppLoadManager?.getPending?.(),
+        });
         LoadingScreenManager.hide();
       }
     }, LOADING_TIMEOUT_MS);
