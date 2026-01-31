@@ -5,6 +5,7 @@
 
 import { createLogger } from '/content/core/logger.js';
 import { sleep } from '/content/core/utils.js';
+import localAppsConfig from './apps-config.json';
 import { GITHUB_CONFIG, PROJECT_CATEGORIES } from './github-config.js';
 import {
   fetchGitHubContents as fetchGitHubContentsApi,
@@ -12,15 +13,6 @@ import {
 } from './project-utils.js';
 
 const log = createLogger('ProjectsData');
-
-// Load apps config dynamically
-let localAppsConfig = { apps: [] };
-try {
-  const response = await fetch('./apps-config.json');
-  localAppsConfig = await response.json();
-} catch (error) {
-  log.warn('Failed to load apps-config.json:', error);
-}
 
 // Common styles for consistency
 const ICON_SIZE = { width: '32px', height: '32px' };
