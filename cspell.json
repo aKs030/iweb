@@ -143,7 +143,14 @@
     "Unbekannter",
     "Fehler",
     "beim",
-    "Seite"
+    "Seite",
+
+    // Technical terms for web development
+    "xsmall",
+    "xlarge",
+    "noopener",
+    "noreferrer",
+    "labelledby"
   ],
   "ignorePaths": [
     "node_modules",
