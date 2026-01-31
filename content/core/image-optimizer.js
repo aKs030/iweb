@@ -230,6 +230,10 @@ export function lazyLoadImages(target, options = {}) {
           if (img.dataset.src) {
             const optimizedSrc = await getOptimizedImageUrl(img.dataset.src);
             img.src = optimizedSrc;
+          } else if (!img.src) {
+            // Skip if no src is available
+            log.warn('Image has no src or data-src attribute');
+            return;
           }
 
           if (img.dataset.srcset) {

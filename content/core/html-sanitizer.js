@@ -3,7 +3,8 @@
  * @version 2.0.0
  */
 
-import DOMPurify from 'dompurify';
+import dompurify from 'dompurify';
+const DOMPurify = dompurify;
 
 const MINIMAL_CONFIG = {
   ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'br'],
