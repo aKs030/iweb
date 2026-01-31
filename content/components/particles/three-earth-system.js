@@ -198,6 +198,7 @@ class ThreeEarthSystem {
     // Observers
     this.sectionObserver = null;
     this.viewportObserver = null;
+    this.scrollCleanup = null;
   }
 
   async init() {
@@ -320,6 +321,12 @@ class ThreeEarthSystem {
     if (this.viewportObserver) {
       this.viewportObserver.disconnect();
       this.viewportObserver = null;
+    }
+
+    // Cleanup scroll listener
+    if (this.scrollCleanup) {
+      this.scrollCleanup();
+      this.scrollCleanup = null;
     }
 
     this.timers.clearAll();
@@ -848,6 +855,7 @@ class ThreeEarthSystem {
   _setupSectionDetection() {
     let retryCount = 0;
     const maxRetries = 5;
+    let scrollTimeout = 0;
 
     const setupObserver = () => {
       const sections = Array.from(
@@ -898,6 +906,50 @@ class ThreeEarthSystem {
       );
 
       sections.forEach((s) => this.sectionObserver?.observe(s));
+
+      // Add scroll-based fallback for snap-scroll sections
+      const handleScroll = () => {
+        clearTimeout(scrollTimeout);
+        scrollTimeout = window.setTimeout(() => {
+          // Find the section closest to viewport center
+          const viewportCenter = window.innerHeight / 2;
+          let closestSection = null;
+          let closestDistance = Infinity;
+
+          sections.forEach((section) => {
+            const rect = section.getBoundingClientRect();
+            const sectionCenter = rect.top + rect.height / 2;
+            const distance = Math.abs(sectionCenter - viewportCenter);
+
+            if (
+              distance < closestDistance &&
+              rect.top < window.innerHeight &&
+              rect.bottom > 0
+            ) {
+              closestDistance = distance;
+              closestSection = section;
+            }
+          });
+
+          if (closestSection) {
+            const mockEntry = {
+              target: closestSection,
+              isIntersecting: true,
+              intersectionRatio: 0.5,
+            };
+            this._handleSectionChange(mockEntry);
+          }
+        }, 150);
+      };
+
+      window.addEventListener('scroll', handleScroll, { passive: true });
+
+      // Store cleanup function
+      this.scrollCleanup = () => {
+        window.removeEventListener('scroll', handleScroll);
+        clearTimeout(scrollTimeout);
+      };
+
       return true;
     };
 
