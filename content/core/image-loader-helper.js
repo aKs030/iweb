@@ -15,11 +15,7 @@ const log = createLogger('ImageLoaderHelper');
  * @param {Object} options - Optionen
  */
 export async function initImageOptimization(options = {}) {
-  const {
-    autoOptimize = true,
-    lazyLoadSelector = 'img[loading="lazy"]',
-    preloadCritical = true,
-  } = options;
+  const { autoOptimize = true, preloadCritical = true } = options;
 
   if (!autoOptimize) return;
 
