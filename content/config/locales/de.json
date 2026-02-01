@@ -52,6 +52,7 @@
       "text": "Entdecke meine interaktiven Web-Projekte – von experimentellen Prototypen bis zu vollständigen Anwendungen. Alle Projekte werden dynamisch aus meinem GitHub Repository geladen.",
       "loading": "Lade Projekte...",
       "stats_projects": "Projekte",
+      "stats_project": "Projekt",
       "stats_tech": "Technologien",
       "stats_apps": "Apps offen",
       "stats_source": "Source",
@@ -78,7 +79,8 @@
     "cta_title": "Unterstützung bei deinem Projekt?",
     "cta_text": "Benötigst du Hilfe bei Webdesign, Performance-Optimierung oder SEO? Lass uns unverbindlich darüber sprechen.",
     "cta_btn": "Jetzt Kontakt aufnehmen",
-    "filter_all": "Alle"
+    "filter_all": "Alle",
+    "not_found": "Artikel nicht gefunden."
   },
   "common": {
     "loading": "Lade...",

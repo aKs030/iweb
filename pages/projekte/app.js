@@ -666,7 +666,9 @@ const App = () => {
                 h(
                   'span',
                   { className: 'stat-label' },
-                  t('projects.hero.stats_projects'),
+                  projects.length === 1
+                    ? t('projects.hero.stats_project')
+                    : t('projects.hero.stats_projects'),
                 ),
               ),
               h('div', { className: 'stat-divider' }),
