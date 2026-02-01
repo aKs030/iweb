@@ -25,9 +25,9 @@ Beim Shooting hilft eine klare Vorbereitung: Moodboards, Farbschemata und eine k
 
 #### Takeaways:
 
-*   Nutze Leading Lines und Negative Space gezielt.
-*   Reduktion schafft Fokus, Licht formt Stimmung.
-*   Entwickle ein klares Konzept vor dem Shooting.
+- Nutze Leading Lines und Negative Space gezielt.
+- Reduktion schafft Fokus, Licht formt Stimmung.
+- Entwickle ein klares Konzept vor dem Shooting.
 
 Gerade in der Street- und Urban-Fotografie entscheidet oft der richtige Moment über die Wirkung eines Fotos. Geduld, Beobachtung und ein klares Konzept helfen dabei, aus einer Alltagsszene ein aussagekräftiges Bild zu machen.
 

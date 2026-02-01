@@ -25,9 +25,9 @@ Praktische Maßnahmen sind: Farbaudits (Kontrastprüfungen), automatisierte Acce
 
 #### Takeaways:
 
-*   Denke Accessibility früh mit (Semantik, Kontrast, Tastatur).
-*   Nutze Mikro-Interaktionen sparsam und sinnvoll.
-*   Dokumentiere Patterns in einem Design-System.
+- Denke Accessibility früh mit (Semantik, Kontrast, Tastatur).
+- Nutze Mikro-Interaktionen sparsam und sinnvoll.
+- Dokumentiere Patterns in einem Design-System.
 
 🔗 Ebenfalls interessant: Im Artikel „Optimierung von Three.js für das Web" zeige ich, wie visuelle Qualität und technische Performance kombiniert werden können.
 
