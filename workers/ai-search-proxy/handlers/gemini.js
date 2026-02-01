@@ -66,7 +66,13 @@ export async function geminiHandler(request, env, searchIndex) {
       model: 'llama-3.3-70b-versatile', // Info about which model was used
     });
   } catch (error) {
-    console.error('AI API error:', error);
+    // Log error in development only
+    if (
+      typeof env?.ENVIRONMENT !== 'undefined' &&
+      env.ENVIRONMENT === 'development'
+    ) {
+      console.error('AI API error:', error);
+    }
     return errorResponse('AI request failed', error.message, 500);
   }
 }
