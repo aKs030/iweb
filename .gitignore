@@ -59,3 +59,11 @@ vite.config.js.timestamp-*
 *_ABGESCHLOSSEN.md
 *_COMPLETE.md
 *_SUMMARY.md
+
+# Code Quality Reports
+reports/
+complexity-report/
+dependency-graph.svg
+knip-report.json
+jscpd-report/
+.jscpd/

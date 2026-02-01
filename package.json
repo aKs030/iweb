@@ -20,7 +20,18 @@
     "deploy:workers": "./workers/deploy.sh",
     "analyze:bundle": "npm run build && open dist/stats.html",
     "css:check": "echo 'CSS Stats:' && wc -l content/styles/*.css content/styles/components/*.css 2>/dev/null || wc -l content/styles/*.css",
-    "docs": "echo 'Documentation:' && ls -1 docs/*.md && echo '' && echo 'Root docs:' && ls -1 *.md | grep -E 'CSS|PROJEKT|README'"
+    "docs": "echo 'Documentation:' && ls -1 docs/*.md && echo '' && echo 'Root docs:' && ls -1 *.md | grep -E 'CSS|PROJEKT|README'",
+    "knip": "knip",
+    "knip:production": "knip --production",
+    "quality": "npm run knip && npm run check:duplicates && npm run check:circular",
+    "check:duplicates": "jscpd content/ pages/ workers/ --min-lines 10 --min-tokens 50 --format javascript",
+    "check:circular": "madge --circular --extensions js content/ pages/ workers/",
+    "check:complexity": "es6-plato -r -d complexity-report content/ pages/ workers/",
+    "check:console": "! grep -r 'console\\.log' content/ pages/ --include='*.js' --exclude-dir=node_modules",
+    "deps:graph": "madge --extensions js --image dependency-graph.svg content/main.js",
+    "deps:cost": "cost-of-modules",
+    "deps:check": "npm outdated",
+    "audit:full": "npm run security && npm run quality && npm run check:console"
   },
   "lint-staged": {
     "*.{js,ts}": [
