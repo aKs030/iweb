@@ -20,7 +20,7 @@ export class RobotChat {
       this.history = JSON.parse(
         localStorage.getItem('robot-chat-history') || '[]',
       );
-    } catch (e) {
+    } catch {
       this.history = [];
     }
   }
@@ -299,7 +299,7 @@ export class RobotChat {
   saveHistory() {
     try {
       localStorage.setItem('robot-chat-history', JSON.stringify(this.history));
-    } catch (e) {
+    } catch {
       // ignore
     }
   }
