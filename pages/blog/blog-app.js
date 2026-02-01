@@ -27,12 +27,82 @@ hljs.registerLanguage('xml', xml);
 hljs.registerLanguage('css', css);
 hljs.registerLanguage('bash', bash);
 
-// Inject Highlight.js CSS
-const link = document.createElement('link');
-link.rel = 'stylesheet';
-link.href =
-  'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css';
-document.head.appendChild(link);
+// Inject Highlight.js CSS (inline to comply with CSP: style-src 'self' 'unsafe-inline' ...)
+const hljsStyle = document.createElement('style');
+hljsStyle.type = 'text/css';
+hljsStyle.setAttribute('data-hljs-theme', 'github-dark');
+hljsStyle.textContent = `
+.hljs {
+  color: #c9d1d9;
+  background: #0d1117;
+  display: block;
+  overflow-x: auto;
+  padding: 0.5em;
+  border-radius: 6px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.9em;
+}
+.hljs-comment,
+.hljs-quote {
+  color: #8b949e;
+  font-style: italic;
+}
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-subst {
+  color: #ff7b72;
+}
+.hljs-literal,
+.hljs-number {
+  color: #79c0ff;
+}
+.hljs-string,
+.hljs-doctag,
+.hljs-template-tag,
+.hljs-template-variable {
+  color: #a5d6ff;
+}
+.hljs-attr,
+.hljs-attribute,
+.hljs-title,
+.hljs-section,
+.hljs-selector-id {
+  color: #d2a8ff;
+}
+.hljs-name,
+.hljs-selector-class,
+.hljs-built_in {
+  color: #ffa657;
+}
+.hljs-variable,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-link {
+  color: #79c0ff;
+}
+.hljs-meta {
+  color: #8b949e;
+}
+.hljs-addition {
+  color: #aff5b4;
+  background-color: #033a16;
+}
+.hljs-deletion {
+  color: #ffdcd7;
+  background-color: #67060c;
+}
+.hljs-emphasis {
+  font-style: italic;
+}
+.hljs-strong {
+  font-weight: 600;
+}
+pre code.hljs {
+  padding: 0;
+  background: transparent;
+}
+`;
+document.head.appendChild(hljsStyle);
 
 // Configure Marked
 const renderer = new marked.Renderer();
