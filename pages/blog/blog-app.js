@@ -1,11 +1,10 @@
 /**
- * Blog App with Progress Tracking
- * @version 4.1.0
+ * Blog App with 3D Particle System
+ * @version 5.0.0 - 3D DESIGN SYSTEM
  * @last-modified 2026-02-01
  */
 
 // @ts-nocheck
-// External CDN imports - type definitions not available
 import React from 'https://esm.sh/react@19.0.0';
 import { createRoot } from 'https://esm.sh/react-dom@19.0.0/client';
 import htm from 'https://esm.sh/htm@3.1.1';
@@ -15,70 +14,181 @@ import { updateLoader, hideLoader } from '/content/core/global-loader.js';
 import { marked } from 'https://cdn.jsdelivr.net/npm/marked@11.1.1/lib/marked.esm.js';
 import DOMPurify from 'https://cdn.jsdelivr.net/npm/dompurify@3.0.8/dist/purify.es.mjs';
 import { Clock, ArrowRight, ArrowUp } from '/content/components/ui/icons.js';
-import hljs from 'https://esm.sh/highlight.js@11.9.0/lib/core';
-import javascript from 'https://esm.sh/highlight.js@11.9.0/lib/languages/javascript';
-import typescript from 'https://esm.sh/highlight.js@11.9.0/lib/languages/typescript';
-import xml from 'https://esm.sh/highlight.js@11.9.0/lib/languages/xml';
-import css from 'https://esm.sh/highlight.js@11.9.0/lib/languages/css';
-import bash from 'https://esm.sh/highlight.js@11.9.0/lib/languages/bash';
-import json from 'https://esm.sh/highlight.js@11.9.0/lib/languages/json';
-import plaintext from 'https://esm.sh/highlight.js@11.9.0/lib/languages/plaintext';
 
-// Register languages
-hljs.registerLanguage('javascript', javascript);
-hljs.registerLanguage('typescript', typescript);
-hljs.registerLanguage('xml', xml);
-hljs.registerLanguage('html', xml);
-hljs.registerLanguage('css', css);
-hljs.registerLanguage('bash', bash);
-hljs.registerLanguage('json', json);
-hljs.registerLanguage('text', plaintext);
-hljs.registerLanguage('plaintext', plaintext);
-
-// Inject Highlight.js CSS
-const link = document.createElement('link');
-link.rel = 'stylesheet';
-link.href =
-  'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css';
-document.head.appendChild(link);
+const log = createLogger('BlogApp3D');
+const html = htm.bind(React.createElement);
 
 // Configure Marked
 const renderer = new marked.Renderer();
-renderer.code = (code, language) => {
-  if (!language || !hljs.getLanguage(language)) {
-    // No highlighting for unknown languages
-    const escaped = code
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#039;');
-    return `<pre><code class="hljs">${escaped}</code></pre>`;
-  }
-  return `<pre><code class="hljs language-${language}">${hljs.highlight(code, { language }).value}</code></pre>`;
-};
 renderer.heading = (text, level) => {
   const slug = text.toLowerCase().replace(/[^\w]+/g, '-');
   return `<h${level} id="${slug}">${text}</h${level}>`;
 };
-
 marked.setOptions({ renderer, mangle: false, headerIds: false });
-
-const log = createLogger('BlogApp');
-const html = htm.bind(React.createElement);
 
 // Translation Hook
 const useTranslation = () => {
   const [lang, setLang] = React.useState(i18n.currentLang);
-
   React.useEffect(() => {
     const onLangChange = (e) => setLang(e.detail.lang);
     i18n.addEventListener('language-changed', onLangChange);
     return () => i18n.removeEventListener('language-changed', onLangChange);
   }, []);
-
   return { t: (key, params) => i18n.t(key, params), lang };
 };
+
+// --- 3D Particle System ---
+class ParticleSystem {
+  constructor(canvas) {
+    this.canvas = canvas;
+    this.ctx = canvas.getContext('2d');
+    this.particles = [];
+    this.mouse = { x: 0, y: 0 };
+    this.animationId = null;
+    this.resize();
+    this.init();
+    this.setupEvents();
+  }
+
+  resize() {
+    this.canvas.width = window.innerWidth;
+    this.canvas.height = window.innerHeight;
+  }
+
+  init() {
+    const particleCount = window.innerWidth < 768 ? 50 : 100;
+    this.particles = [];
+
+    for (let i = 0; i < particleCount; i++) {
+      this.particles.push({
+        x: Math.random() * this.canvas.width,
+        y: Math.random() * this.canvas.height,
+        z: Math.random() * 1000,
+        vx: (Math.random() - 0.5) * 0.5,
+        vy: (Math.random() - 0.5) * 0.5,
+        vz: (Math.random() - 0.5) * 2,
+        size: Math.random() * 2 + 1,
+        color: this.getRandomColor(),
+        alpha: Math.random() * 0.5 + 0.3,
+      });
+    }
+  }
+
+  getRandomColor() {
+    const colors = [
+      'rgba(59, 130, 246, ',
+      'rgba(139, 92, 246, ',
+      'rgba(236, 72, 153, ',
+      'rgba(16, 185, 129, ',
+    ];
+    return colors[Math.floor(Math.random() * colors.length)];
+  }
+
+  setupEvents() {
+    window.addEventListener('mousemove', (e) => {
+      this.mouse.x = e.clientX;
+      this.mouse.y = e.clientY;
+    });
+
+    window.addEventListener('resize', () => {
+      this.resize();
+      this.init();
+    });
+  }
+
+  update() {
+    this.particles.forEach((p) => {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.z += p.vz;
+
+      const dx = this.mouse.x - p.x;
+      const dy = this.mouse.y - p.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      if (dist < 150) {
+        const force = (150 - dist) / 150;
+        p.vx -= (dx / dist) * force * 0.1;
+        p.vy -= (dy / dist) * force * 0.1;
+      }
+
+      if (p.x < 0 || p.x > this.canvas.width) p.vx *= -1;
+      if (p.y < 0 || p.y > this.canvas.height) p.vy *= -1;
+      if (p.z < 0 || p.z > 1000) p.vz *= -1;
+
+      p.vx *= 0.99;
+      p.vy *= 0.99;
+      p.vz *= 0.99;
+    });
+  }
+
+  draw() {
+    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+    this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+    this.ctx.strokeStyle = 'rgba(59, 130, 246, 0.1)';
+    this.ctx.lineWidth = 1;
+
+    for (let i = 0; i < this.particles.length; i++) {
+      for (let j = i + 1; j < this.particles.length; j++) {
+        const dx = this.particles[i].x - this.particles[j].x;
+        const dy = this.particles[i].y - this.particles[j].y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist < 150) {
+          this.ctx.beginPath();
+          this.ctx.moveTo(this.particles[i].x, this.particles[i].y);
+          this.ctx.lineTo(this.particles[j].x, this.particles[j].y);
+          this.ctx.globalAlpha = ((150 - dist) / 150) * 0.3;
+          this.ctx.stroke();
+        }
+      }
+    }
+
+    this.particles.forEach((p) => {
+      const scale = 1000 / (1000 + p.z);
+      const size = p.size * scale;
+
+      this.ctx.beginPath();
+      this.ctx.arc(p.x, p.y, size, 0, Math.PI * 2);
+      this.ctx.fillStyle = p.color + p.alpha + ')';
+      this.ctx.globalAlpha = p.alpha * scale;
+      this.ctx.fill();
+
+      const gradient = this.ctx.createRadialGradient(
+        p.x,
+        p.y,
+        0,
+        p.x,
+        p.y,
+        size * 3,
+      );
+      gradient.addColorStop(0, p.color + p.alpha * 0.5 + ')');
+      gradient.addColorStop(1, p.color + '0)');
+      this.ctx.fillStyle = gradient;
+      this.ctx.fill();
+    });
+
+    this.ctx.globalAlpha = 1;
+  }
+
+  animate() {
+    this.update();
+    this.draw();
+    this.animationId = requestAnimationFrame(() => this.animate());
+  }
+
+  start() {
+    this.animate();
+  }
+
+  stop() {
+    if (this.animationId) {
+      cancelAnimationFrame(this.animationId);
+      this.animationId = null;
+    }
+  }
+}
 
 // --- Utilities ---
 const estimateReadTime = (text = '') =>
@@ -112,7 +222,6 @@ const CATEGORY_OVERRIDES = {
 const normalizePost = (raw = {}) => {
   const id = raw.id || raw.slug;
   if (!id) return null;
-  // Ensure we get the specific category, defaulting to 'Artikel' only if no match found
   const category = CATEGORY_OVERRIDES[id] || raw.category || 'Artikel';
   const dateStr = raw.date || '';
 
@@ -120,34 +229,30 @@ const normalizePost = (raw = {}) => {
     ...raw,
     id,
     category,
-    timestamp: dateStr ? new Date(dateStr).getTime() : 0, // Pre-calc for sorting
+    timestamp: dateStr ? new Date(dateStr).getTime() : 0,
     dateDisplay: raw.dateDisplay || dateStr,
     readTime: raw.readTime || estimateReadTime(raw.content || raw.html || ''),
     file: raw.file || null,
   };
 };
 
-// Fetch Logic with Progress Tracking
+// Fetch Logic
 const loadPostsData = async (seedPosts = []) => {
   try {
-    updateLoader(0.2, 'Lese Index...');
+    updateLoader(0.2, 'Lade Blog-Daten...');
 
-    // Fetch index.json
     let fetchedPosts = [];
     try {
       const indexRes = await fetch('/pages/blog/posts/index.json');
       if (indexRes.ok) {
         fetchedPosts = await indexRes.json();
         updateLoader(0.4, `${fetchedPosts.length} Artikel gefunden...`);
-      } else {
-        throw new Error('Index not found');
       }
     } catch (e) {
       log.warn('Could not load index.json', e);
       return seedPosts;
     }
 
-    // Now fetch content for each post
     let loaded = 0;
     const total = fetchedPosts.length;
 
@@ -182,9 +287,7 @@ const loadPostsData = async (seedPosts = []) => {
     updateLoader(0.85, 'Verarbeite Artikel...');
 
     const map = new Map();
-    // Seed Data
     seedPosts.forEach((p) => map.set(p.id, p));
-    // Merged Fetched
     populated.filter(Boolean).forEach((p) => {
       map.set(p.id, { ...(map.get(p.id) || {}), ...p });
     });
@@ -203,7 +306,6 @@ const loadPostsData = async (seedPosts = []) => {
 
 // --- Components ---
 
-// Progressive Image Component
 const ProgressiveImage = React.memo(function ProgressiveImage({
   src,
   alt,
@@ -283,131 +385,36 @@ const ReadingProgress = () => {
   </div>`;
 };
 
-const TableOfContents = ({ htmlContent }) => {
-  const [activeId, setActiveId] = React.useState('');
-
-  const headings = React.useMemo(() => {
-    const doc = new DOMParser().parseFromString(htmlContent, 'text/html');
-    return Array.from(doc.querySelectorAll('h2, h3'))
-      .map((el) => ({
-        id: el.id,
-        text: el.textContent,
-        level: Number(el.tagName.substring(1)),
-      }))
-      .filter((h) => h.id);
-  }, [htmlContent]);
-
-  React.useEffect(() => {
-    if (headings.length === 0) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setActiveId(entry.target.id);
-          }
-        });
-      },
-      { rootMargin: '-100px 0px -66%' },
-    );
-
-    const handle = requestAnimationFrame(() => {
-      headings.forEach((h) => {
-        const el = document.getElementById(h.id);
-        if (el) observer.observe(el);
-      });
-    });
-
-    return () => {
-      observer.disconnect();
-      cancelAnimationFrame(handle);
-    };
-  }, [headings]);
-
-  if (headings.length === 0) return null;
-
-  return html`
-    <nav className="toc-nav fade-in">
-      <h4 className="toc-title">Inhalt</h4>
-      <ul>
-        ${headings.map(
-          (h) => html`
-            <li
-              key=${h.id}
-              className=${`toc-item level-${h.level} ${activeId === h.id ? 'active' : ''}`}
-            >
-              <a
-                href="#${h.id}"
-                onClick=${(e) => {
-                  e.preventDefault();
-                  const el = document.getElementById(h.id);
-                  if (el) {
-                    el.scrollIntoView({ behavior: 'smooth' });
-                    setActiveId(h.id);
-                    window.history.replaceState(null, null, `#${h.id}`);
-                  }
-                }}
-              >
-                ${h.text}
-              </a>
-            </li>
-          `,
-        )}
-      </ul>
-    </nav>
-  `;
-};
-
-const RelatedPosts = ({ currentPost, allPosts }) => {
-  const { t } = useTranslation();
-
-  const related = React.useMemo(() => {
-    if (!currentPost || !allPosts.length) return [];
-    return allPosts
-      .filter(
-        (p) => p.id !== currentPost.id && p.category === currentPost.category,
-      )
-      .slice(0, 2);
-  }, [currentPost, allPosts]);
-
-  if (related.length === 0) return null;
-
-  return html`
-    <div className="related-posts-section">
-      <h3 className="related-posts-title">${t('blog.related_title')}</h3>
-      <div className="blog-grid">
-        ${related.map(
-          (post) => html`
-            <article
-              key=${post.id}
-              className="blog-card"
-              onClick=${() => (window.location.hash = `/blog/${post.id}`)}
-            >
-              <h4 className="card-title" style=${{ fontSize: '1.1rem' }}>
-                ${post.title}
-              </h4>
-              <p
-                className="card-excerpt"
-                style=${{ fontSize: '0.9rem', marginBottom: '0' }}
-              >
-                ${post.excerpt.slice(0, 80)}...
-              </p>
-            </article>
-          `,
-        )}
-      </div>
-    </div>
-  `;
-};
-
 // Main App
 const BlogApp = () => {
   const [posts, setPosts] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
   const [filter, setFilter] = React.useState('All');
   const [currentPostId, setCurrentPostId] = React.useState(null);
-  const [ogMeta, setOgMeta] = React.useState(null);
+  const [particleSystem, setParticleSystem] = React.useState(null);
   const { t } = useTranslation();
+
+  // Initialize Particle System
+  React.useEffect(() => {
+    // Add blog-page class to body
+    document.body.classList.add('blog-page');
+
+    const canvas = document.getElementById('blog-particles-canvas');
+    if (canvas && !particleSystem) {
+      const ps = new ParticleSystem(canvas);
+      ps.start();
+      setParticleSystem(ps);
+
+      return () => {
+        ps.stop();
+        document.body.classList.remove('blog-page');
+      };
+    }
+
+    return () => {
+      document.body.classList.remove('blog-page');
+    };
+  }, []);
 
   React.useEffect(() => {
     const seedEl = document.getElementById('blog-list-json');
@@ -418,26 +425,12 @@ const BlogApp = () => {
 
     (async () => {
       try {
-        updateLoader(0.1, 'Lade Blog...');
+        updateLoader(0.1, 'Initialisiere 3D-System...');
 
-        const [final, ogData] = await Promise.all([
-          loadPostsData(seed),
-          (async () => {
-            updateLoader(0.15, 'Lade Metadaten...', { silent: true });
-            try {
-              const response = await fetch(
-                '/content/assets/img/og/og-images-meta.json',
-              );
-              return response.ok ? response.json() : {};
-            } catch {
-              return {};
-            }
-          })(),
-        ]);
+        const final = await loadPostsData(seed);
 
         setPosts(final);
         setLoading(false);
-        setOgMeta(ogData);
 
         setTimeout(() => {
           updateLoader(1, 'Blog bereit!');
@@ -449,10 +442,6 @@ const BlogApp = () => {
         setLoading(false);
         updateLoader(1, 'Fehler beim Laden');
         hideLoader(500);
-
-        if (import.meta.env?.DEV) {
-          console.warn('Failed to load blog data:', error);
-        }
       }
     })();
   }, []);
@@ -493,8 +482,6 @@ const BlogApp = () => {
     [posts, filter],
   );
 
-  const getOg = (id) => (ogMeta ? ogMeta[id] : null);
-
   const activePost = React.useMemo(
     () => (currentPostId ? posts.find((p) => p.id === currentPostId) : null),
     [posts, currentPostId],
@@ -512,8 +499,7 @@ const BlogApp = () => {
     [activePost],
   );
 
-  // --- Views ---
-
+  // --- Article Detail View ---
   if (currentPostId) {
     const post = activePost;
 
@@ -536,10 +522,7 @@ const BlogApp = () => {
       </div>`;
 
     const cleanHtml = activePostHtml;
-    const og = getOg(post.id);
-    const heroSrc = post.image || (og ? og.fallback || og.url : null);
 
-    // Apply layout wrapper for TOC
     return html`
       <${React.Fragment}>
         <${ReadingProgress} />
@@ -549,159 +532,242 @@ const BlogApp = () => {
           <button className="btn-back" onClick=${() =>
             (window.location.hash = '')}>← ${t('blog.back')} (ESC)</button>
           
-          <div className="blog-layout-wrapper">
-             <article className="blog-article">
-                <header>
-                <div className="card-meta">
-                    <span className="card-category">${post.category}</span>
-                    <span className="card-read-time"><${Clock}/> ${
-                      post.readTime
-                    }</span>
-                </div>
-                <h1>${post.title}</h1>
-                <time className="meta" datetime=${post.date}>${post.dateDisplay}</time>
-                </header>
+          <article className="blog-article">
+            <header>
+              <div className="card-meta">
+                <span className="card-category">${post.category}</span>
+                <span className="card-read-time"><${Clock}/> ${
+                  post.readTime
+                }</span>
+              </div>
+              <h1>${post.title}</h1>
+              <time className="meta" datetime=${post.date}>${post.dateDisplay}</time>
+            </header>
 
-                ${
-                  heroSrc &&
-                  html`
-                    <figure className="article-hero">
-                      <${ProgressiveImage}
-                        src=${heroSrc}
-                        alt=${post.title}
-                        className="article-hero-img"
-                        loading="eager"
-                        fetchpriority="high"
-                        width=${og?.width || 800}
-                        height=${og?.height || 420}
-                      />
-                    </figure>
-                  `
-                }
+            ${
+              post.image &&
+              html`
+                <figure className="article-hero">
+                  <${ProgressiveImage}
+                    src=${post.image}
+                    alt=${post.title}
+                    className="article-hero-img"
+                    loading="eager"
+                    fetchpriority="high"
+                  />
+                </figure>
+              `
+            }
 
-                <div className="article-body" dangerouslySetInnerHTML=${{
-                  __html: cleanHtml,
-                }}></div>
-
-                <${RelatedPosts} currentPost=${post} allPosts=${posts} />
-
-                <div className="article-cta">
-                <h3>${t('blog.cta_title')}</h3>
-                <p style=${{
-                  color: '#ccc',
-                  marginBottom: '1.5rem',
-                  maxWidth: '600px',
-                  margin: '0 auto 1.5rem',
-                }}>
-                    ${t('blog.cta_text')}
-                </p>
-                <a href="/#contact" className="btn-primary">${t('blog.cta_btn')}</a>
-                </div>
-            </article>
-
-            <aside className="blog-sidebar">
-                <${TableOfContents} htmlContent=${cleanHtml} />
-            </aside>
-          </div>
+            <div className="article-body" dangerouslySetInnerHTML=${{
+              __html: cleanHtml,
+            }}></div>
+          </article>
         </div>
       </${React.Fragment}>
     `;
   }
 
-  // List View (unchanged logic)
+  // Check if we should show filters in menu (mobile)
+  const [showFiltersInMenu, setShowFiltersInMenu] = React.useState(false);
+
+  React.useEffect(() => {
+    const checkScreenSize = () => {
+      setShowFiltersInMenu(window.innerWidth <= 900);
+    };
+
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
+
+  // Add filters to menu when in mobile mode
+  React.useEffect(() => {
+    if (showFiltersInMenu) {
+      const siteHeader = document.querySelector('.site-header');
+      if (siteHeader) {
+        // Remove existing filter container
+        const existingFilters = siteHeader.querySelector('.blog-menu-filters');
+        if (existingFilters) {
+          existingFilters.remove();
+        }
+
+        // Create new filter container
+        const filterContainer = document.createElement('div');
+        filterContainer.className = 'blog-menu-filters';
+        filterContainer.style.cssText = `
+          display: flex;
+          align-items: center;
+          gap: 0.3rem;
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          transform: translate(-50%, -50%);
+          z-index: 10001;
+          pointer-events: auto;
+        `;
+
+        // Add filter buttons
+        categories.forEach((cat) => {
+          const btn = document.createElement('button');
+          btn.textContent = cat;
+          btn.className = `filter-btn ${filter === cat ? 'active' : ''}`;
+          btn.style.cssText = `
+            background: transparent;
+            border: none;
+            color: rgba(255, 255, 255, 0.85);
+            padding: 0.35rem 0.6rem;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 510;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            letter-spacing: -0.03em;
+            white-space: nowrap;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: auto;
+          `;
+
+          if (filter === cat) {
+            btn.style.background = 'rgba(0, 122, 255, 0.2)';
+            btn.style.color = '#007aff';
+            btn.style.fontWeight = '600';
+          }
+
+          btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setFilter(cat);
+          });
+
+          btn.addEventListener('mouseenter', () => {
+            if (filter !== cat) {
+              btn.style.color = '#ffffff';
+              btn.style.background = 'rgba(255, 255, 255, 0.08)';
+            }
+          });
+
+          btn.addEventListener('mouseleave', () => {
+            if (filter !== cat) {
+              btn.style.color = 'rgba(255, 255, 255, 0.85)';
+              btn.style.background = 'transparent';
+            }
+          });
+
+          filterContainer.appendChild(btn);
+        });
+
+        siteHeader.appendChild(filterContainer);
+      }
+    } else {
+      // Remove filters from menu when not in mobile mode
+      const siteHeader = document.querySelector('.site-header');
+      if (siteHeader) {
+        const existingFilters = siteHeader.querySelector('.blog-menu-filters');
+        if (existingFilters) {
+          existingFilters.remove();
+        }
+      }
+    }
+
+    return () => {
+      const siteHeader = document.querySelector('.site-header');
+      if (siteHeader) {
+        const existingFilters = siteHeader.querySelector('.blog-menu-filters');
+        if (existingFilters) {
+          existingFilters.remove();
+        }
+      }
+    };
+  }, [showFiltersInMenu, categories, filter]);
+
+  // --- List View ---
   return html`
-    <div className="container-blog fade-in" style=${{ paddingTop: '6rem' }}>
-      <${ScrollToTop} />
+    <${React.Fragment}>
+      ${
+        !showFiltersInMenu
+          ? html`
+              <div className="blog-sticky-filter">
+                <div className="blog-controls">
+                  <div className="filter-bar">
+                    ${categories.map(
+                      (cat) => html`
+                        <button
+                          key=${cat}
+                          className=${`filter-btn ${filter === cat ? 'active' : ''}`}
+                          onClick=${() => setFilter(cat)}
+                        >
+                          ${cat}
+                        </button>
+                      `,
+                    )}
+                  </div>
+                </div>
+              </div>
+            `
+          : ''
+      }
 
-      <header style=${{ marginBottom: '2rem' }}>
-        <h1 className="blog-headline">${t('blog.headline')}</h1>
-        <p className="blog-subline">${t('blog.subline')}</p>
-      </header>
+      <div className="container-blog fade-in" style=${{ paddingTop: '2rem' }}>
+        <${ScrollToTop} />
 
-      <div
-        className="blog-sticky-header"
-        style=${{
-          position: 'sticky',
-          top: '72px',
-          zIndex: 40,
-          background: 'rgba(3, 3, 3, 0.85)',
-          backdropFilter: 'blur(12px)',
-          WebkitBackdropFilter: 'blur(12px)',
-          borderBottom: '1px solid var(--blog-border)',
-          margin: '0 -2rem 2.5rem -2rem',
-          padding: '1rem 2rem',
-        }}
-      >
-        <div className="blog-header-content">
-          <div className="blog-controls">
-            <div className="filter-bar">
-              ${categories.map(
-                (cat) => html`
-                  <button
-                    key=${cat}
-                    className=${`filter-btn ${filter === cat ? 'active' : ''}`}
-                    onClick=${() => setFilter(cat)}
-                  >
-                    ${cat}
-                  </button>
-                `,
-              )}
-            </div>
-          </div>
+        <div className="blog-header-section">
+          <h1 className="blog-headline">${t('blog.headline')}</h1>
+          <p className="blog-subline">${t('blog.subline')}</p>
+        </div>
+
+        <div className="blog-grid">
+          ${visiblePosts.map((post, idx) => {
+            const loadingStrategy = idx < 2 ? 'eager' : 'lazy';
+            const fetchPriority = idx === 0 ? 'high' : undefined;
+
+            return html`
+              <article
+                key=${post.id}
+                className="blog-card"
+                onClick=${() => (window.location.hash = `/blog/${post.id}`)}
+              >
+                ${post.image
+                  ? html`<${ProgressiveImage}
+                      src=${post.image}
+                      alt=${post.title}
+                      className="blog-card-image"
+                      loading=${loadingStrategy}
+                      fetchpriority=${fetchPriority}
+                    />`
+                  : ''}
+
+                <div className="card-content-wrapper">
+                  <div className="card-meta">
+                    <span className="card-category">${post.category}</span>
+                    <time className="card-date" datetime=${post.date}
+                      >${post.dateDisplay}</time
+                    >
+                  </div>
+
+                  <h2 className="card-title">${post.title}</h2>
+                  <p className="card-excerpt">${post.excerpt}</p>
+
+                  <div className="card-footer">
+                    <span className="card-read-time"
+                      ><${Clock} /> ${post.readTime}</span
+                    >
+                    <button className="btn-read">
+                      ${t('blog.read_more')} <${ArrowRight} />
+                    </button>
+                  </div>
+                </div>
+              </article>
+            `;
+          })}
+        ${
+          visiblePosts.length === 0 && !loading
+            ? html`<p style="color:#666">${t('blog.not_found')}</p>`
+            : ''
+        }
         </div>
       </div>
-
-      <div className="blog-grid">
-        ${visiblePosts.map((post, idx) => {
-          const og = getOg(post.id);
-          const fallbackImg = post.image || (og ? og.fallback || og.url : null);
-          const loadingStrategy = idx < 2 ? 'eager' : 'lazy';
-          const fetchPriority = idx === 0 ? 'high' : undefined;
-
-          return html`
-            <article
-              key=${post.id}
-              className="blog-card"
-              onClick=${() => (window.location.hash = `/blog/${post.id}`)}
-            >
-              ${fallbackImg
-                ? html`<${ProgressiveImage}
-                    src=${fallbackImg}
-                    alt=${post.title}
-                    className="blog-card-image"
-                    loading=${loadingStrategy}
-                    fetchpriority=${fetchPriority}
-                    width=${og?.width || 800}
-                    height=${og?.height || 420}
-                  />`
-                : ''}
-
-              <div className="card-meta">
-                <span className="card-category">${post.category}</span>
-                <time className="card-date" datetime=${post.date}
-                  >${post.dateDisplay}</time
-                >
-              </div>
-
-              <h2 className="card-title">${post.title}</h2>
-              <p className="card-excerpt">${post.excerpt}</p>
-
-              <div className="card-footer">
-                <span className="card-read-time"
-                  ><${Clock} /> ${post.readTime}</span
-                >
-                <button className="btn-read">
-                  ${t('blog.read_more')} <${ArrowRight} />
-                </button>
-              </div>
-            </article>
-          `;
-        })}
-        ${visiblePosts.length === 0 && !loading
-          ? html`<p style="color:#666">${t('blog.not_found')}</p>`
-          : ''}
-      </div>
-    </div>
+    </${React.Fragment}>
   `;
 };
 
