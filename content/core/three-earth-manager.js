@@ -90,10 +90,10 @@ export class ThreeEarthManager {
   preloadTextures() {
     // Preload critical earth textures programmatically
     const texturePaths = [
-      '/img/earth/textures/earth_day.webp',
-      '/img/earth/textures/earth_night.webp',
-      '/img/earth/textures/earth_normal.webp',
-      '/img/earth/textures/earth_bump.webp',
+      '/content/assets/img/earth/textures/earth_day.webp',
+      '/content/assets/img/earth/textures/earth_night.webp',
+      '/content/assets/img/earth/textures/earth_normal.webp',
+      '/content/assets/img/earth/textures/earth_bump.webp',
     ];
 
     texturePaths.forEach((path) => {
