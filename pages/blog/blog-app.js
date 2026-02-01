@@ -214,7 +214,21 @@ const loadPostsData = async (seedPosts = []) => {
             if (res.ok) {
               const text = await res.text();
               const { content, data } = parseFrontmatter(text);
-              postData = { ...postData, ...data, content };
+              // Merge frontmatter metadata without silently overriding index.json fields
+              const merged = { ...postData };
+              if (data && typeof data === 'object') {
+                for (const [key, value] of Object.entries(data)) {
+                  // Ignore undefined/null frontmatter values
+                  if (value === undefined || value === null) continue;
+                  const existing = merged[key];
+                  // Only set if the field is missing/empty, or values match (no effective change)
+                  if (existing === undefined || existing === null || existing === value) {
+                    merged[key] = value;
+                  }
+                }
+              }
+              merged.content = content;
+              postData = merged;
             }
           }
 
