@@ -19,11 +19,17 @@
  */
 
 import { createLogger } from '/content/core/logger.js';
-import { fetchJSON } from '/content/core/fetch.js';
 import { escapeHTML } from '/content/core/html-sanitizer.js';
 import { getElementById } from '/content/core/utils.js';
 import { updateLoader, hideLoader } from '/content/core/global-loader.js';
 import { FAVICON_512 } from '../../content/config/site-config.js';
+import {
+  fetchChannelId,
+  fetchUploadsPlaylist,
+  fetchPlaylistItems,
+  searchChannelVideos,
+  fetchVideoDetailsMap,
+} from './services/youtube-api.service.js';
 
 const log = createLogger('videos');
 
@@ -80,132 +86,6 @@ const bindThumb = (btn) => {
   // store handlers for potential cleanup
   btn.__thumbHandlers = { click: _onThumbClick, keydown: _onThumbKeydown };
   btn.dataset.bound = '1';
-};
-
-const fetchChannelId = async (handle) => {
-  // Prefer explicit channel id when set
-  if (globalThis.YOUTUBE_CHANNEL_ID)
-    return String(globalThis.YOUTUBE_CHANNEL_ID).trim();
-
-  // If handle looks like a channel id already (starts with UC), return it
-  if (/^UC[0-9A-Za-z_-]{22,}$/.test(String(handle || '')))
-    return String(handle).trim();
-
-  // Try searching for the handle (allow up to 5 results to disambiguate)
-  const url = `/api/youtube/search?part=snippet&type=channel&q=${encodeURIComponent(
-    handle,
-  )}&maxResults=5`;
-  const json = await fetchJSON(url);
-  const items = json?.items || [];
-  if (!items.length) return null;
-
-  // Collect candidate channelIds
-  const ids = items
-    .map((i) => i?.id?.channelId || i?.snippet?.channelId)
-    .filter(Boolean);
-  if (!ids.length) return null;
-  if (ids.length === 1) return ids[0];
-
-  // If multiple candidates, fetch their statistics and prefer one with videoCount > 0
-  try {
-    const chUrl = `/api/youtube/channels?part=statistics,contentDetails&id=${ids.join(
-      ',',
-    )}`;
-    const chJson = await fetchJSON(chUrl);
-    const chItems = chJson?.items || [];
-    const preferred = chItems.find(
-      (c) => Number(c?.statistics?.videoCount) > 0,
-    );
-    if (preferred && preferred.id) return preferred.id;
-  } catch (e) {
-    log.warn(
-      'Could not disambiguate channel via statistics: ' + (e?.message || e),
-    );
-    // fall back to first id
-  }
-
-  return ids[0];
-};
-
-const fetchUploadsPlaylist = async (channelId) => {
-  const url = `/api/youtube/channels?part=contentDetails&id=${channelId}`;
-  const json = await fetchJSON(url);
-  return json?.items?.[0]?.contentDetails?.relatedPlaylists?.uploads;
-};
-
-const fetchPlaylistItems = async (uploads, maxResults = 50) => {
-  const allItems = [];
-  let pageToken = '';
-  do {
-    const url = `/api/youtube/playlistItems?part=snippet&playlistId=${uploads}&maxResults=${maxResults}${
-      pageToken ? `&pageToken=${pageToken}` : ''
-    }`;
-    try {
-      const json = await fetchJSON(url);
-      allItems.push(...(json.items || []));
-      pageToken = json.nextPageToken;
-    } catch (e) {
-      // If the uploads playlist cannot be found (e.g., private or empty), treat as no videos
-      if (
-        e?.status === 404 &&
-        /playlistNotFound|playlistId/.test(e?.body || '')
-      ) {
-        log.warn(`Uploads playlist not found or inaccessible: ${uploads}`);
-        return [];
-      }
-      throw e;
-    }
-  } while (pageToken);
-  return allItems;
-};
-
-// Fallback: search for recent videos from a channel when playlist is missing/empty
-const searchChannelVideos = async (channelId, maxResults = 50) => {
-  const items = [];
-  let pageToken = '';
-  do {
-    const url = `/api/youtube/search?part=snippet&channelId=${channelId}&order=date&type=video&maxResults=${maxResults}${
-      pageToken ? `&pageToken=${pageToken}` : ''
-    }`;
-    try {
-      const json = await fetchJSON(url);
-      (json.items || []).forEach((it) => {
-        // Normalize to playlistItem-like shape used elsewhere
-        if (it && it.id && it.id.videoId)
-          items.push({
-            snippet: {
-              resourceId: { videoId: it.id.videoId },
-              title: it.snippet.title,
-              description: it.snippet.description,
-              thumbnails: it.snippet.thumbnails,
-              publishedAt: it.snippet.publishedAt,
-            },
-          });
-      });
-      pageToken = json.nextPageToken;
-    } catch (e) {
-      log.warn('searchChannelVideos failed: ' + (e?.message || e));
-      return items;
-    }
-  } while (pageToken);
-  return items;
-};
-
-const fetchVideoDetailsMap = async (vidIds) => {
-  const map = {};
-  if (!vidIds.length) return map;
-  const url = `/api/youtube/videos?part=contentDetails,statistics&id=${vidIds.join(
-    ',',
-  )}`;
-  try {
-    const json = await fetchJSON(url);
-    (json.items || []).forEach((v) => {
-      map[v.id] = v;
-    });
-  } catch (e) {
-    log.warn('Could not fetch video details: ' + e.message);
-  }
-  return map;
 };
 
 const renderVideoCard = async (grid, it, detailsMap, index = 0) => {

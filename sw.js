@@ -16,6 +16,11 @@ const PRECACHE_ASSETS = [
   '/index.html',
   '/manifest.json',
   '/content/assets/img/icons/favicon.svg',
+  // Critical earth textures for faster loading
+  '/img/earth/textures/earth_day.webp',
+  '/img/earth/textures/earth_night.webp',
+  '/img/earth/textures/earth_normal.webp',
+  '/img/earth/textures/earth_bump.webp',
 ];
 
 // Cache strategies

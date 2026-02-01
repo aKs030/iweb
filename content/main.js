@@ -90,7 +90,6 @@ const AppLoadManager = (() => {
 
 // ===== Constants =====
 const REFRESH_DELAY_MS = 50;
-const LOADING_TIMEOUT_MS = 4000;
 const STORAGE_REQUEST_DELAY_MS = 2200;
 const SECTION_TRACKER_CONFIG = {
   threshold: [0.1, 0.3, 0.5, 0.7],
@@ -306,6 +305,13 @@ const ENV = {
       globalThis.navigator.webdriver),
 };
 
+// ===== Loading Configuration =====
+const LOADING_CONFIG = {
+  TIMEOUT_MS: 8000, // Increased from 4000ms to 8000ms for slower networks
+  EARTH_INIT_DELAY: 500, // Reduced from 2000ms to 500ms
+  MODULE_READY_DELAY: 300, // Reduced from 600ms to 300ms
+};
+
 // ===== Performance Tracking =====
 const perfMarks = {
   start: performance.now(),
@@ -335,6 +341,12 @@ const _initApp = () => {
   _appInitialized = true;
 
   sectionManager.init();
+
+  // Start earth loading in next frame to avoid blocking DOM ready
+  requestAnimationFrame(() => {
+    ThreeEarthLoader.init();
+  });
+
   try {
     a11y?.updateAnimations?.();
     a11y?.updateContrast?.();
@@ -471,7 +483,7 @@ document.addEventListener(
     initHeroFeatureBundle(sectionManager);
 
     updateLoader(0.4, i18n.t('loader.system_3d'));
-    ThreeEarthLoader.initDelayed();
+    // Earth loading already started in _initApp
 
     updateLoader(0.5, i18n.t('loader.optimize_images'));
     // Initialize image optimization
@@ -497,7 +509,7 @@ document.addEventListener(
         updateLoader(1, i18n.t('loader.timeout'));
         hideLoader();
       }
-    }, LOADING_TIMEOUT_MS);
+    }, LOADING_CONFIG.TIMEOUT_MS);
 
     schedulePersistentStorageRequest(STORAGE_REQUEST_DELAY_MS);
 

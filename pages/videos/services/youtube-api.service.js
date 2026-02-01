@@ -71,13 +71,13 @@ export const fetchUploadsPlaylist = async (channelId) => {
 /**
  * Fetch all items from a playlist with pagination
  * @param {string} playlistId - YouTube playlist ID
- * @param {Function} onProgress - Progress callback (progress, message)
+ * @param {Function|null} [onProgress] - Progress callback (progress, message)
  * @param {number} maxResults - Max results per page
  * @returns {Promise<Array>} - Array of playlist items
  */
 export const fetchPlaylistItems = async (
   playlistId,
-  onProgress,
+  onProgress = null,
   maxResults = 50,
 ) => {
   const allItems = [];

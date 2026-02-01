@@ -32,7 +32,7 @@ pages/projekte/
 │
 ├── 📂 utils/               # Utilities
 │   ├── cache.utils.js      # LocalStorage caching
-│   └── url.utils.js        # URL helpers
+│   └──          # URL helpers
 │
 ├── 📂 styles/              # Stylesheets
 │   └── main.css            # Main styles
