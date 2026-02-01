@@ -36,9 +36,15 @@ export default {
         return await geminiHandler(request, env, SEARCH_INDEX);
       }
 
-      return errorResponse('Not Found', null, 404);
+      return errorResponse('Not Found', undefined, 404);
     } catch (error) {
-      console.error('Worker error:', error);
+      // Log error in development only
+      if (
+        typeof env?.ENVIRONMENT !== 'undefined' &&
+        env.ENVIRONMENT === 'development'
+      ) {
+        console.error('Worker error:', error);
+      }
       return errorResponse('Worker error', error.message, 500);
     }
   },
