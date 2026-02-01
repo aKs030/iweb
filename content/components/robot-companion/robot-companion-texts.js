@@ -107,13 +107,6 @@ window.robotCompanionTexts = {
     },
   },
 
-  initialBubbleGreetings: [
-    'Psst! Brauchst du Hilfe?',
-    'Hi! Ich bin Cyber',
-    'Hey! Fragen? Ich bin für dich da!',
-    'Klick mich für einen Rundgang!',
-  ],
-
   moodGreetings: {
     'night-owl': [
       'Noch wach um diese Uhrzeit? Ich auch!',

@@ -40,25 +40,11 @@ async function callAIAPI(prompt, systemInstruction, onChunk) {
       if (!response.ok) {
         // In development, use mock response if API is not available
         if (isDev && response.status === 404) {
-          const mockText = `Das ist eine **Mock-Antwort** für deine Frage: _"${prompt}"_.
-
-In der Produktionsumgebung würde hier die echte KI-Antwort erscheinen.
-
-Features:
-- **Markdown** Support
-- Streaming _Simulation_
-- \`Code\` Highlighting
-
-\`\`\`javascript
-console.log("Hello Robot!");
-\`\`\`
-`;
-
+          const mockText = `(Dev-Mode) Mock-Antwort für: "${prompt}". API 404.`;
           if (onChunk && typeof onChunk === 'function') {
             await simulateStreaming(mockText, onChunk);
             return mockText;
           }
-
           return mockText;
         }
 
@@ -139,14 +125,15 @@ export class GeminiService {
    * Generate a chat response
    * @param {string} prompt - User message
    * @param {Function} [onChunk] - Optional callback for streaming chunks
+   * @param {string} [systemInstruction] - Optional system instruction
    * @returns {Promise<string>} AI response
    */
-  async generateResponse(prompt, onChunk) {
+  async generateResponse(prompt, onChunk, systemInstruction) {
     const hasCallback = onChunk && typeof onChunk === 'function';
 
     return await callAIAPI(
       prompt,
-      'Du bist ein hilfreicher Roboter-Begleiter.',
+      systemInstruction || 'Du bist ein hilfreicher Roboter-Begleiter.',
       hasCallback ? onChunk : undefined,
     );
   }
