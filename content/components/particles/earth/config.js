@@ -141,13 +141,13 @@ export const CONFIG = {
   },
   PATHS: {
     TEXTURES: {
-      DAY: '/img/earth/textures/earth_day.webp',
-      NIGHT: '/img/earth/textures/earth_night.webp',
-      NORMAL: '/img/earth/textures/earth_normal.webp',
-      BUMP: '/img/earth/textures/earth_bump.webp',
-      CLOUDS: '/img/earth/textures/earth_clouds_1024.webp',
-      MOON: '/img/earth/textures/moon_texture.webp',
-      MOON_BUMP: '/img/earth/textures/moon_bump.webp',
+      DAY: '/content/assets/img/earth/textures/earth_day.webp',
+      NIGHT: '/content/assets/img/earth/textures/earth_night.webp',
+      NORMAL: '/content/assets/img/earth/textures/earth_normal.webp',
+      BUMP: '/content/assets/img/earth/textures/earth_bump.webp',
+      CLOUDS: '/content/assets/img/earth/textures/earth_clouds_1024.webp',
+      MOON: '/content/assets/img/earth/textures/moon_texture.webp',
+      MOON_BUMP: '/content/assets/img/earth/textures/moon_bump.webp',
     },
   },
 };

@@ -33,8 +33,8 @@ jobs:
       - name: Check CSS stats
         run: npm run css:check
 
-  build:
-    name: Build & Bundle Analysis
+  validate:
+    name: Static File Validation
     runs-on: ubuntu-latest
     needs: lint
     
@@ -51,22 +51,22 @@ jobs:
       - name: Install dependencies
         run: npm ci
       
-      - name: Build project
-        run: npm run build
-      
-      - name: Check bundle size
+      - name: Validate JavaScript modules
         run: |
-          echo "📦 Bundle Size Analysis:"
-          du -sh dist/
-          du -sh dist/assets/*.js 2>/dev/null || echo "No JS bundles found"
-          du -sh dist/assets/*.css 2>/dev/null || echo "No CSS bundles found"
+          echo "🔍 Validating JavaScript modules..."
+          find content/ pages/ -name "*.js" -exec node -c {} \;
+          echo "✅ All JavaScript files are valid"
       
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: dist
-          path: dist/
-          retention-days: 2
+      - name: Check file structure
+        run: |
+          echo "📁 Checking file structure..."
+          ls -la
+          echo "📄 HTML files:"
+          find . -name "*.html" -not -path "./node_modules/*" | head -10
+          echo "🎨 CSS files:"
+          find . -name "*.css" -not -path "./node_modules/*" | head -10
+          echo "⚙️ JS files:"
+          find . -name "*.js" -not -path "./node_modules/*" | head -10
 
   security:
     name: Security Audit

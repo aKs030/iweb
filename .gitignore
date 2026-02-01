@@ -7,10 +7,6 @@ package-lock.json
 .env.local
 .env.*.local
 
-# Build output (Cloudflare Pages builds automatically)
-dist/
-build/
-
 # Logs
 logs/
 *.log
@@ -43,13 +39,6 @@ desktop.ini
 *.bak
 *.backup
 .cache/
-
-# Vite
-.vite/
-vite.config.js.timestamp-*
-
-# Vitest
-.vitest/
 
 # Wrangler
 .wrangler/

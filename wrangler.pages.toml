@@ -2,10 +2,10 @@
 # https://developers.cloudflare.com/pages/configuration/
 
 name = "iweb"
-pages_build_output_dir = "dist"
+pages_build_output_dir = "."
 
 [build]
-command = "npm run build"
+command = "echo 'No build step required - serving static files directly'"
 cwd = ""
 
 [build.environment]
