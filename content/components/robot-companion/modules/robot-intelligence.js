@@ -49,8 +49,26 @@ export class RobotIntelligence {
 
     // Keyword map for intelligent scanning
     this.interestMap = {
-      tech: ['react', 'javascript', 'typescript', 'three.js', 'webgl', 'css', 'html', 'node.js', 'api'],
-      creative: ['photography', 'design', 'art', 'music', 'creative', 'ui/ux', 'animation'],
+      tech: [
+        'react',
+        'javascript',
+        'typescript',
+        'three.js',
+        'webgl',
+        'css',
+        'html',
+        'node.js',
+        'api',
+      ],
+      creative: [
+        'photography',
+        'design',
+        'art',
+        'music',
+        'creative',
+        'ui/ux',
+        'animation',
+      ],
       gaming: ['game', 'play', 'score', 'unity', 'unreal', 'godot'],
       backend: ['database', 'sql', 'server', 'cloud', 'docker', 'kubernetes'],
     };
@@ -432,8 +450,9 @@ export class RobotIntelligence {
       };
 
       const categoryTips = keywordTips[detectedCategory];
-      if (categoryTips && Math.random() < 0.6) { // 60% chance to use keyword tip
-         tip = categoryTips[Math.floor(Math.random() * categoryTips.length)];
+      if (categoryTips && Math.random() < 0.6) {
+        // 60% chance to use keyword tip
+        tip = categoryTips[Math.floor(Math.random() * categoryTips.length)];
       }
     }
 

@@ -52,16 +52,13 @@ export class MarkdownRenderer {
     html = html.replace(/_(.*?)_/g, '<em>$1</em>');
 
     // 5. Links - with sanitization
-    html = html.replace(
-      /\[([^\]]+)\]\(([^)]+)\)/g,
-      (match, label, url) => {
-        // Prevent javascript: protocol
-        if (url.trim().toLowerCase().startsWith('javascript:')) {
-          return label; // Return just text if unsafe
-        }
-        return `<a href="${url}" target="_blank" rel="noopener noreferrer">${label}</a>`;
+    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, label, url) => {
+      // Prevent javascript: protocol
+      if (url.trim().toLowerCase().startsWith('javascript:')) {
+        return label; // Return just text if unsafe
       }
-    );
+      return `<a href="${url}" target="_blank" rel="noopener noreferrer">${label}</a>`;
+    });
 
     // 6. Lists
     // Unordered lists
