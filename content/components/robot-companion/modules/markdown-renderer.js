@@ -75,10 +75,18 @@ export class MarkdownRenderer {
     // 7. Paragraphs / Line Breaks
     // Replace double newlines with paragraphs, single with br
 
+    // Protect structural newlines in lists so they are not converted to <br>
+    const LIST_NEWLINE_PLACEHOLDER = '[[[NO_BR_NEWLINE]]]';
+    html = html.replace(/(<\/li>)\s*\n\s*(<li>)/g, `$1${LIST_NEWLINE_PLACEHOLDER}$2`);
+    html = html.replace(/(<\/ul>)\s*\n\s*(<ul>)/g, `$1${LIST_NEWLINE_PLACEHOLDER}$2`);
+    html = html.replace(/(<\/ol>)\s*\n\s*(<ol>)/g, `$1${LIST_NEWLINE_PLACEHOLDER}$2`);
+
     // Simple line processing
     html = html.replace(/\n\n/g, '<br><br>');
     html = html.replace(/\n/g, '<br>');
 
+    // Restore protected structural newlines (remove placeholder so lists stay intact)
+    html = html.replace(new RegExp(LIST_NEWLINE_PLACEHOLDER, 'g'), '');
     // Restore Inline Code
     inlineCodes.forEach((code, i) => {
       html = html.replace(
