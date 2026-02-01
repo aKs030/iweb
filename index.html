@@ -49,7 +49,7 @@
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
     <link rel="preconnect" href="https://esm.sh" crossorigin />
 
-    <!-- Import Map for ES Modules -->
+    <!-- Import Map for ES Modules - Must come before modulepreload -->
     <script type="importmap">
       {
         "imports": {
@@ -61,6 +61,9 @@
         }
       }
     </script>
+
+    <!-- Modulepreload for critical Three.js components -->
+    <link rel="modulepreload" href="/content/core/three-earth-manager.js" />
 
     <!-- Note: CSS preload removed - Vite handles this automatically with modulepreload -->
 

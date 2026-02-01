@@ -5,11 +5,13 @@
 
 import { createLogger } from './logger.js';
 import { getElementById } from './utils.js';
-import { observeOnce } from './intersection-observer.js';
 
 const log = createLogger('ThreeEarthManager');
 
 export class ThreeEarthManager {
+  /**
+   * @param {Object} env - Environment configuration object
+   */
   constructor(env) {
     this.env = env;
     this.cleanupFn = null;
@@ -36,12 +38,25 @@ export class ThreeEarthManager {
       return;
     }
 
+    // @ts-ignore - connection is not in standard Navigator type but exists in some browsers
     if (navigator.connection?.saveData) {
       log.info('Three.js skipped: save-data mode');
       return;
     }
 
     this.isLoading = true;
+
+    // Preload critical textures immediately when earth loading starts
+    this.preloadTextures();
+
+    // Set loading timeout to prevent indefinite blocking
+    const loadingTimeout = setTimeout(() => {
+      log.warn('Three.js Earth loading timeout, unblocking loader');
+      const AppLoadManager = globalThis.__appLoadManager;
+      if (AppLoadManager) {
+        AppLoadManager.unblock('three-earth');
+      }
+    }, 6000); // 6 second timeout for earth loading
 
     try {
       log.info('Loading Three.js Earth system...');
@@ -57,9 +72,11 @@ export class ThreeEarthManager {
       if (typeof this.cleanupFn === 'function') {
         globalThis.__threeEarthCleanup = this.cleanupFn;
         log.info('Three.js Earth system initialized');
+        clearTimeout(loadingTimeout); // Clear timeout on success
       }
     } catch (error) {
       log.warn('Three.js failed, using CSS fallback:', error);
+      clearTimeout(loadingTimeout);
       // Unblock loader even on error
       const AppLoadManager = globalThis.__appLoadManager;
       if (AppLoadManager) {
@@ -70,34 +87,33 @@ export class ThreeEarthManager {
     }
   }
 
+  preloadTextures() {
+    // Preload critical earth textures programmatically
+    const texturePaths = [
+      '/img/earth/textures/earth_day.webp',
+      '/img/earth/textures/earth_night.webp',
+      '/img/earth/textures/earth_normal.webp',
+      '/img/earth/textures/earth_bump.webp',
+    ];
+
+    texturePaths.forEach((path) => {
+      const img = new Image();
+      img.src = path;
+      // Don't wait for loading, just start the download
+    });
+  }
+
   init() {
     const container = this.getContainer();
     if (!container) return;
 
-    try {
-      const rect = container.getBoundingClientRect();
-      const withinMargin =
-        rect.top < (globalThis.innerHeight || 0) + 100 && rect.bottom > -100;
-      const loaderVisible =
-        getElementById('app-loader')?.dataset?.loaderDone !== 'true';
-
-      if (withinMargin || loaderVisible) {
-        this.load();
-        return;
-      }
-    } catch {
-      // Fallback to observer
-    }
-
-    observeOnce(container, () => this.load(), {
-      rootMargin: '400px',
-      threshold: 0.01,
-    });
+    // Start loading immediately if container exists, don't wait for viewport
+    this.load();
   }
 
   initDelayed() {
     const idleCallback = globalThis.requestIdleCallback || setTimeout;
-    idleCallback(() => this.init(), { timeout: 2000 });
+    idleCallback(() => this.init(), { timeout: 500 }); // Reduced from 2000ms to 500ms
   }
 
   cleanup() {
