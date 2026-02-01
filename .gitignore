@@ -7,9 +7,9 @@ package-lock.json
 .env.local
 .env.*.local
 
-# Build output (not used - no-build deployment)
-# dist/
-# build/
+# Build output (Cloudflare Pages builds automatically)
+dist/
+build/
 
 # Logs
 logs/
