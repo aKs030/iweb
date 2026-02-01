@@ -20,3 +20,16 @@ Instead of /content/assets/img/og/og-images-meta.json, use /img/og/og-images-met
 8:33:08 PM [vite] (client) page reload pages/videos/index.html
 Files in the public directory are served at the root path.
 Instead of /content/assets/img/og/og-images-meta.json, use /img/og/og-images-meta.json.
+8:34:59 PM [vite] (client) hmr update /content/styles/root.css?direct
+8:35:07 PM [vite] (client) hmr update /content/styles/root.css?direct
+8:35:24 PM [vite] (client) page reload index.html
+8:35:28 PM [vite] (client) page reload pages/about/index.html
+8:35:32 PM [vite] (client) page reload pages/blog/index.html
+8:35:37 PM [vite] (client) page reload pages/gallery/index.html
+8:35:41 PM [vite] (client) page reload pages/projekte/index.html
+8:35:53 PM [vite] (client) page reload pages/videos/index.html
+8:36:19 PM [vite] (client) page reload content/core/pwa-manager.js
+Files in the public directory are served at the root path.
+Instead of /content/assets/img/og/og-images-meta.json, use /img/og/og-images-meta.json.
+Files in the public directory are served at the root path.
+Instead of /content/assets/img/og/og-images-meta.json, use /img/og/og-images-meta.json.
