@@ -62,20 +62,28 @@ export default defineConfig({
       compress: {
         drop_console: true,
         drop_debugger: true,
-        pure_funcs: ['console.log', 'console.debug'],
+        pure_funcs: [
+          'console.log',
+          'console.debug',
+          'console.info',
+          'console.warn',
+          'console.trace',
+        ],
       },
       format: {
         comments: false,
       },
     },
     rollupOptions: {
+      external: [
+        'three',
+        'react',
+        'react-dom',
+        'react-dom/client',
+        'dompurify',
+      ],
       output: {
         manualChunks: {
-          // Vendor chunks
-          'vendor-three': ['three'],
-          'vendor-react': ['react', 'react-dom'],
-          'vendor-utils': ['dompurify'],
-
           // Feature chunks
           'feature-earth': [
             '/content/components/particles/three-earth-system.js',
