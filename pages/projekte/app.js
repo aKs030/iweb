@@ -7,14 +7,12 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { createLogger } from '/content/core/logger.js';
-import { toRawGithackUrl, testUrl } from './utils/url.utils.js';
 import {
   useToast,
   useModal,
   useProjects,
   useAppManager,
 } from './hooks/index.js';
-import { URL_TEST_TIMEOUT } from './config/constants.js';
 
 const log = createLogger('react-projekte-app');
 const { createElement: h, Fragment } = React;
@@ -166,113 +164,71 @@ const ICONS = {
 };
 
 /**
- * Project Mockup Component
+ * Project Mockup Component - Shows SVG preview image
  */
-const ProjectMockup = ({ project, isAppOpen, appUrl }) => {
-  const wrapperRef = React.useRef(null);
-  const iframeRef = React.useRef(null);
-  const [previewUrl, setPreviewUrl] = React.useState(null);
-  const [iframeLoaded, setIframeLoaded] = React.useState(false);
+const ProjectMockup = ({ project }) => {
+  const [imageLoaded, setImageLoaded] = React.useState(false);
+  const [imageError, setImageError] = React.useState(false);
 
-  React.useEffect(() => {
-    let canceled = false;
+  // Generate preview image path based on project name
+  const projectName = project.dirName || project.name || project.id;
+  const previewImageUrl = `${window.location.origin}/content/assets/img/previews/${projectName}.svg`;
+  const fallbackImageUrl = `${window.location.origin}/content/assets/img/previews/default.svg`;
 
-    const findPreviewUrl = async () => {
-      try {
-        const candidates = [];
-        const gh = project.githubPath || '';
-        if (gh) {
-          const raw = toRawGithackUrl(gh);
-          if (raw) candidates.push(raw);
-        }
-        if (project.appPath) {
-          const appUrl = project.appPath.endsWith('/')
-            ? `${project.appPath}index.html`
-            : project.appPath;
-          candidates.push(appUrl);
-        }
+  const handleImageLoad = React.useCallback(() => {
+    setImageLoaded(true);
+  }, []);
 
-        for (const url of candidates) {
-          if (!url || canceled) continue;
-          if (await testUrl(url, URL_TEST_TIMEOUT)) {
-            if (!canceled) setPreviewUrl(url);
-            return;
-          }
-        }
-      } catch (err) {
-        log.debug('Preview URL resolution failed:', err);
-      }
-    };
-
-    findPreviewUrl();
-    return () => {
-      canceled = true;
-    };
-  }, [project]);
-
-  // Show full app if opened, otherwise show preview
-  const displayUrl = isAppOpen && appUrl ? appUrl : previewUrl;
-  const iframeClass = isAppOpen ? 'mockup-iframe-full' : 'mockup-iframe';
-
-  const handleIframeLoad = React.useCallback(() => {
-    setIframeLoaded(true);
-    const iframe = iframeRef.current;
-    if (iframe && isAppOpen) {
-      // Focus iframe for better interactivity
-      setTimeout(() => {
-        if ('focus' in iframe && typeof iframe.focus === 'function') {
-          iframe.focus();
-        }
-      }, 100);
-    }
-  }, [isAppOpen]);
+  const handleImageError = React.useCallback(() => {
+    setImageError(true);
+    setImageLoaded(true);
+  }, []);
 
   return h(
     'div',
     {
-      className: 'mockup-iframe-wrapper u-center',
-      ref: wrapperRef,
+      className: 'mockup-preview-wrapper',
     },
-    displayUrl
-      ? h(
-          Fragment,
-          null,
-          !iframeLoaded &&
-            isAppOpen &&
-            h('div', { className: 'app-loading' }, 'App wird geladen...'),
-          h('iframe', {
-            className: iframeClass,
-            ref: iframeRef,
-            src: displayUrl,
-            scrolling: isAppOpen ? 'auto' : 'auto',
-            sandbox:
-              'allow-scripts allow-same-origin allow-forms allow-popups allow-modals',
-            frameBorder: '0',
-            title: `${isAppOpen ? 'App' : 'Preview'}: ${project.title}`,
-            loading: isAppOpen ? 'eager' : 'eager',
-            allow: isAppOpen
-              ? 'fullscreen; clipboard-read; clipboard-write'
-              : '',
-            style: isAppOpen
-              ? {
-                  width: '100%',
-                  height: '100%',
-                  minHeight: '500px',
-                  border: 'none',
-                  background: '#ffffff',
-                }
-              : {},
-            onLoad: handleIframeLoad,
-            onError: () => {
-              log.warn(
-                `Failed to load ${isAppOpen ? 'app' : 'preview'} for ${project.title}`,
-              );
-              setIframeLoaded(true);
-            },
-          }),
-        )
-      : project.previewContent ||
-          h('div', { className: 'app-loading' }, 'Keine Vorschau verfügbar'),
+    h('img', {
+      className: 'mockup-preview-image',
+      src: imageError ? fallbackImageUrl : previewImageUrl,
+      alt: `Vorschau von ${project.title}`,
+      loading: 'eager',
+      onLoad: handleImageLoad,
+      onError: handleImageError,
+      style: {
+        width: '100%',
+        height: '100%',
+        objectFit: 'cover',
+        objectPosition: 'top center',
+        display: 'block',
+        opacity: imageLoaded ? 1 : 0,
+        transition: 'opacity 0.3s ease',
+      },
+    }),
+    imageError &&
+      imageLoaded &&
+      h(
+        'div',
+        {
+          className: 'mockup-placeholder',
+          style: {
+            position: 'absolute',
+            inset: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '0.5rem',
+            color: 'rgba(255, 255, 255, 0.5)',
+            fontSize: '0.875rem',
+            background:
+              'linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.95))',
+          },
+        },
+        h(Code, { style: { width: '2rem', height: '2rem', opacity: 0.5 } }),
+        'Keine Vorschau verfügbar',
+      ),
   );
 };
 
@@ -355,7 +311,6 @@ const App = () => {
 
   const projectSections = React.useMemo(() => {
     return projects.map((project, index) => {
-      const isVisible = index < 3;
       const isAppOpenState = isAppOpen(project.id);
       const appUrl = project?.appPath;
 
@@ -584,13 +539,7 @@ const App = () => {
                     h(
                       'div',
                       { className: 'mockup-content' },
-                      isVisible
-                        ? h(ProjectMockup, {
-                            project,
-                            isAppOpen: false,
-                            appUrl: null,
-                          })
-                        : h('div', { className: 'u-center' }, 'Loading...'),
+                      h(ProjectMockup, { project }),
                       h('div', { className: 'mockup-icon' }, project.icon),
                     ),
                   ),

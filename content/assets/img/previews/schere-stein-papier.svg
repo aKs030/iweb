@@ -1,0 +1,43 @@
+<svg width="800" height="600" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <defs>
+    <linearGradient id="rspBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f093fb;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f5576c;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <rect width="800" height="600" fill="url(#rspBg)"/>
+  
+  <!-- Title -->
+  <text x="400" y="80" font-family="sans-serif" font-size="42" fill="white" text-anchor="middle" font-weight="bold">Schere Stein Papier</text>
+  
+  <!-- Rock (Stein) -->
+  <g transform="translate(150, 200)">
+    <circle cx="75" cy="75" r="70" fill="#4a5568" stroke="white" stroke-width="4"/>
+    <text x="75" y="95" font-family="sans-serif" font-size="60" text-anchor="middle">✊</text>
+    <text x="75" y="180" font-family="sans-serif" font-size="24" fill="white" text-anchor="middle" font-weight="600">Stein</text>
+  </g>
+  
+  <!-- Paper (Papier) -->
+  <g transform="translate(325, 200)">
+    <circle cx="75" cy="75" r="70" fill="#48bb78" stroke="white" stroke-width="4"/>
+    <text x="75" y="95" font-family="sans-serif" font-size="60" text-anchor="middle">✋</text>
+    <text x="75" y="180" font-family="sans-serif" font-size="24" fill="white" text-anchor="middle" font-weight="600">Papier</text>
+  </g>
+  
+  <!-- Scissors (Schere) -->
+  <g transform="translate(500, 200)">
+    <circle cx="75" cy="75" r="70" fill="#ed8936" stroke="white" stroke-width="4"/>
+    <text x="75" y="95" font-family="sans-serif" font-size="60" text-anchor="middle">✌️</text>
+    <text x="75" y="180" font-family="sans-serif" font-size="24" fill="white" text-anchor="middle" font-weight="600">Schere</text>
+  </g>
+  
+  <!-- VS indicator -->
+  <circle cx="400" cy="450" r="50" fill="white" opacity="0.9"/>
+  <text x="400" y="470" font-family="sans-serif" font-size="36" fill="#f5576c" text-anchor="middle" font-weight="bold">VS</text>
+  
+  <!-- Score display -->
+  <rect x="300" y="510" width="200" height="60" rx="10" fill="white" opacity="0.9"/>
+  <text x="400" y="550" font-family="sans-serif" font-size="28" fill="#2d3748" text-anchor="middle" font-weight="600">0 : 0</text>
+</svg>
