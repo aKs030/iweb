@@ -4,15 +4,12 @@
  * @description React app using createElement directly
  */
 
+/* global HTMLIFrameElement */
+
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { createLogger } from '/content/core/logger.js';
-import {
-  useToast,
-  useModal,
-  useProjects,
-  useAppManager,
-} from './hooks/index.js';
+import { useToast, useProjects, useAppManager } from './hooks/index.js';
 
 const log = createLogger('react-projekte-app');
 const { createElement: h, Fragment } = React;
@@ -36,19 +33,6 @@ const createIcon = (paths, props = {}) => {
     ...paths,
   );
 };
-
-const ExternalLink = (props) =>
-  createIcon(
-    [
-      h('path', {
-        key: 1,
-        d: 'M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6',
-      }),
-      h('polyline', { key: 2, points: '15,3 21,3 21,9' }),
-      h('line', { key: 3, x1: '10', y1: '14', x2: '21', y2: '3' }),
-    ],
-    props,
-  );
 
 const Github = (props) =>
   createIcon(
@@ -238,9 +222,7 @@ const ProjectMockup = ({ project }) => {
 const App = () => {
   const { projects, loading, error } = useProjects(ICONS);
   const toast = useToast();
-  const modal = useModal();
-  const { openApps, toggleApp, closeApp, isAppOpen, openAppCount } =
-    useAppManager();
+  const { toggleApp, isAppOpen, openAppCount } = useAppManager();
 
   const scrollToProjects = React.useCallback(() => {
     const firstProject = document.getElementById('project-1');
@@ -288,15 +270,6 @@ const App = () => {
     [toggleApp, isAppOpen, toast],
   );
 
-  const handleModalOverlayClick = React.useCallback(
-    (e) => {
-      if (e.target === e.currentTarget) {
-        modal.close();
-      }
-    },
-    [modal],
-  );
-
   if (error) {
     return h(
       'section',
@@ -310,7 +283,7 @@ const App = () => {
   }
 
   const projectSections = React.useMemo(() => {
-    return projects.map((project, index) => {
+    return projects.map((project) => {
       const isAppOpenState = isAppOpen(project.id);
       const appUrl = project?.appPath;
 
@@ -415,7 +388,7 @@ const App = () => {
                           // Ensure iframe gets focus when clicked
                           const iframe =
                             e.currentTarget.querySelector('.app-iframe');
-                          if (iframe) {
+                          if (iframe && iframe instanceof HTMLIFrameElement) {
                             setTimeout(() => {
                               if (
                                 'focus' in iframe &&
@@ -426,11 +399,13 @@ const App = () => {
                               try {
                                 if (
                                   iframe.contentWindow &&
-                                  'focus' in iframe.contentWindow
+                                  'focus' in iframe.contentWindow &&
+                                  typeof iframe.contentWindow.focus ===
+                                    'function'
                                 ) {
                                   iframe.contentWindow.focus();
                                 }
-                              } catch (e) {
+                              } catch {
                                 // Cross-origin restriction, ignore
                               }
                             }, 10);
@@ -464,7 +439,7 @@ const App = () => {
                           // Ensure iframe is properly loaded and interactive
                           const iframe = e.target;
                           try {
-                            if (iframe && 'contentWindow' in iframe) {
+                            if (iframe && iframe instanceof HTMLIFrameElement) {
                               // Force focus to make iframe interactive - multiple attempts
                               const focusIframe = () => {
                                 if (
@@ -477,11 +452,13 @@ const App = () => {
                                 try {
                                   if (
                                     iframe.contentWindow &&
-                                    'focus' in iframe.contentWindow
+                                    'focus' in iframe.contentWindow &&
+                                    typeof iframe.contentWindow.focus ===
+                                      'function'
                                   ) {
                                     iframe.contentWindow.focus();
                                   }
-                                } catch (e) {
+                                } catch {
                                   // Cross-origin restriction, ignore
                                 }
                               };
@@ -506,7 +483,11 @@ const App = () => {
                           log.error(`Failed to load app ${project.title}:`, e);
                           // Show error state without trying to access iframe content
                           const iframe = e.target;
-                          if (iframe && iframe.parentElement) {
+                          if (
+                            iframe &&
+                            iframe instanceof HTMLIFrameElement &&
+                            iframe.parentElement
+                          ) {
                             // Create error message element
                             const errorDiv = document.createElement('div');
                             errorDiv.className = 'app-error';
@@ -775,75 +756,6 @@ const App = () => {
       ),
 
     // Modal Preview
-    modal.isOpen &&
-      h(
-        'div',
-        {
-          role: 'dialog',
-          'aria-modal': 'true',
-          'aria-labelledby': 'modal-title',
-          className: 'modal-overlay',
-          onClick: handleModalOverlayClick,
-        },
-        h(
-          'div',
-          { className: 'modal-wrapper' },
-          h(
-            'div',
-            { className: 'modal-header' },
-            h(
-              'div',
-              { className: 'modal-header-title' },
-              h('strong', { id: 'modal-title' }, modal.title),
-            ),
-            h(
-              'div',
-              { className: 'modal-header-actions' },
-              h(
-                'a',
-                {
-                  href: modal.url,
-                  target: '_blank',
-                  rel: 'noopener noreferrer',
-                  className: 'btn btn-outline btn-small',
-                  'aria-label': 'In neuem Tab öffnen',
-                },
-                h(ExternalLink, { style: ICON_SIZES.xsmall }),
-                'Neuer Tab',
-              ),
-              h(
-                'button',
-                {
-                  className: 'btn btn-primary btn-small',
-                  onClick: modal.close,
-                  'aria-label': 'Modal schließen',
-                },
-                'Schließen',
-              ),
-            ),
-          ),
-          h(
-            'div',
-            { className: 'modal-body' },
-            modal.isLoading &&
-              h(
-                'div',
-                { className: 'iframe-loader', 'aria-live': 'polite' },
-                h('div', { className: 'loading-spinner' }),
-                h('p', { style: { marginTop: '1rem' } }, 'Lade Vorschau…'),
-              ),
-            h('iframe', {
-              src: modal.url,
-              onLoad: modal.handleLoad,
-              className: 'modal-iframe',
-              sandbox:
-                'allow-scripts allow-same-origin allow-forms allow-popups',
-              title: `Vorschau: ${modal.title}`,
-              loading: 'lazy',
-            }),
-          ),
-        ),
-      ),
   );
 };
 
