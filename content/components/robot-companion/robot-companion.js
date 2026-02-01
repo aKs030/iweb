@@ -5,7 +5,6 @@
  */
 // @ts-check
 
-import { GeminiService } from './gemini-service.js';
 import { RobotGames } from './robot-games.js';
 import { RobotCollision } from './modules/robot-collision.js';
 import { RobotAnimation } from './modules/robot-animation.js';
@@ -42,8 +41,8 @@ export class RobotCompanion {
       this.texts ||
       {};
 
-    /** @type {GeminiService} */
-    this.gemini = new GeminiService();
+    /** @type {import('./gemini-service.js').GeminiService|null} */
+    this.gemini = null;
     /** @type {RobotGames} */
     this.gameModule = new RobotGames(this);
     /** @type {RobotAnimation} */
@@ -179,8 +178,6 @@ export class RobotCompanion {
       };
     chat.startMessageSuffix =
       src.startMessageSuffix || chat.startMessageSuffix || {};
-    chat.initialBubbleGreetings = src.initialBubbleGreetings ||
-      chat.initialBubbleGreetings || ['Psst! Brauchst du Hilfe?'];
     chat.initialBubblePools =
       src.initialBubblePools || chat.initialBubblePools || [];
     chat.initialBubbleSequenceConfig = src.initialBubbleSequenceConfig ||
@@ -189,6 +186,18 @@ export class RobotCompanion {
         displayDuration: 10000,
         pausesAfter: [0, 20000, 20000, 0],
       };
+  }
+
+  /**
+   * Lazy load the Gemini Service
+   * @returns {Promise<import('./gemini-service.js').GeminiService>}
+   */
+  async getGemini() {
+    if (!this.gemini) {
+      const { GeminiService } = await import('./gemini-service.js');
+      this.gemini = new GeminiService();
+    }
+    return this.gemini;
   }
 
   async loadTexts() {
@@ -425,16 +434,9 @@ export class RobotCompanion {
         ) {
           this.chatModule.startInitialBubbleSequence();
         } else {
-          const greet =
-            chat.initialBubbleGreetings &&
-            chat.initialBubbleGreetings.length > 0
-              ? chat.initialBubbleGreetings[
-                  Math.floor(Math.random() * chat.initialBubbleGreetings.length)
-                ]
-              : 'Hallo!';
           const ctxArr =
             chat.contextGreetings[ctx] || chat.contextGreetings.default || [];
-          let finalGreet = greet;
+          let finalGreet = 'Hallo!';
           if (ctxArr.length && Math.random() < 0.7) {
             const ctxMsg = String(
               ctxArr[Math.floor(Math.random() * ctxArr.length)] || '',
