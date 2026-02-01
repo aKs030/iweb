@@ -71,6 +71,8 @@ export class RAGService {
       const resp = await fetch('/content/posts/index.json');
       if (resp.ok) {
         this.blogData = await resp.json();
+      } else {
+        this.blogData = [];
       }
     } catch (e) {
       console.warn('RAGService: Could not load blog data', e);
