@@ -46,7 +46,6 @@ export class RobotIntelligence {
       () => this.checkProactiveTips(),
       15000,
     );
-
   }
 
   setupListeners() {
