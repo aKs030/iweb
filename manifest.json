@@ -16,8 +16,8 @@
     "browser"
   ],
   "orientation": "portrait-primary",
-  "background_color": "#ffffff",
-  "theme_color": "#0d0d0d",
+  "background_color": "#1a1a2e",
+  "theme_color": "#1a1a2e",
   "icons": [
     {
       "src": "/content/assets/img/icons/favicon-128.png",

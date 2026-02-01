@@ -13,7 +13,7 @@
   --theme-mode: 'dark';
 
   /* Colors - Primary */
-  --bg-primary: #030303;
+  --bg-primary: #1a1a2e;
   --bg-secondary: #0a0b10;
   --bg-tertiary: #141414;
   --bg-interactive: rgba(255, 255, 255, 0.06);
@@ -98,7 +98,7 @@
      COMPONENT: LOADER
      ======================================== */
 
-  --loader-bg: #0a0b10;
+  --loader-bg: #1a1a2e;
   --loader-text: #e0e0e0;
   --loader-accent: #00f3ff;
   --loader-accent-secondary: #7000ff;
@@ -138,7 +138,7 @@
      PAGE: BLOG
      ======================================== */
 
-  --blog-bg: #030303;
+  --blog-bg: #1a1a2e;
   --blog-card-bg: #0a0a0a;
   --blog-border: rgba(255, 255, 255, 0.08);
   --blog-accent: #00f3ff;

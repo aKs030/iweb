@@ -8,7 +8,7 @@ export function setupPWAAssets(brandData) {
   try {
     upsertHeadLink({ rel: 'manifest', href: '/manifest.json' });
 
-    upsertMeta('theme-color', '#0d0d0d');
+    upsertMeta('theme-color', '#1a1a2e');
     upsertMeta('mobile-web-app-capable', 'yes');
     upsertMeta('apple-mobile-web-app-capable', 'yes');
     upsertMeta('apple-mobile-web-app-title', brandData.name);
@@ -38,7 +38,7 @@ export function setupPWAAssets(brandData) {
     upsertHeadLink({
       rel: 'mask-icon',
       href: `${BASE_URL}/content/assets/img/icons/safari-pinned-tab.svg`,
-      attrs: { color: '#0d0d0d' },
+      attrs: { color: '#1a1a2e' },
     });
 
     const shortcutIcon = document.head.querySelector(
@@ -63,7 +63,7 @@ export function buildPwaAssets(baseUrl, brandData) {
     {
       rel: 'mask-icon',
       href: `${baseUrl}/content/assets/img/icons/safari-pinned-tab.svg`,
-      color: '#0d0d0d',
+      color: '#1a1a2e',
     },
   ];
 
@@ -134,7 +134,7 @@ export function buildPwaAssets(baseUrl, brandData) {
   ];
 
   const metas = [
-    { name: 'theme-color', content: '#0d0d0d' },
+    { name: 'theme-color', content: '#1a1a2e' },
     { name: 'mobile-web-app-capable', content: 'yes' },
     { name: 'apple-mobile-web-app-capable', content: 'yes' },
     { name: 'apple-mobile-web-app-title', content: brandData.name },
