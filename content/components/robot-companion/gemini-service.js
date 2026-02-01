@@ -160,13 +160,18 @@ export class GeminiService {
     Beschreibung: "${contextData.description || ''}"
     URL: "${contextData.url || ''}"
 
+    Inhaltlicher Kontext (Auszug):
+    "${contextData.contentSnippet || 'Kein Text verfügbar'}"
+
     Generiere einen kurzen, hilfreichen Tipp, einen interessanten Fakt oder eine Frage zu diesem Inhalt, um den Nutzer einzuladen.
-    Sprich den Nutzer freundlich als Roboter-Assistent an.
+    Nutze das "Seiten-Wissen" (Inhaltlicher Kontext), um spezifisch zu sein, aber fasse dich kurz.
+    Antworte IMMER auf DEUTSCH.
+    Sprich den Nutzer freundlich als Roboter-Assistent an (Cyber).
     Maximal 2 kurze Sätze.`;
 
     return await callAIAPI(
       prompt,
-      'Du bist ein proaktiver, hilfreicher Roboter-Assistent.',
+      'Du bist Cyber, ein proaktiver, hilfreicher Roboter-Assistent. Antworte immer auf Deutsch.',
     );
   }
 }
