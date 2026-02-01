@@ -738,3 +738,90 @@ body {
     color: #000;
   }
 }
+
+/* --- New Layout for Sidebar/TOC --- */
+.blog-layout-wrapper {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 3rem;
+  position: relative;
+}
+
+@media (min-width: 1024px) {
+  .blog-layout-wrapper {
+    grid-template-columns: 1fr 250px;
+    align-items: start;
+  }
+}
+
+.blog-sidebar {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .blog-sidebar {
+    display: block;
+    position: sticky;
+    top: 140px; /* Offset for header + space */
+  }
+}
+
+/* --- Table of Contents --- */
+.toc-nav {
+  border-left: 1px solid var(--blog-border);
+  padding-left: 1.5rem;
+  font-size: 0.9rem;
+}
+
+.toc-title {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  color: var(--blog-text-muted);
+  letter-spacing: 0.1em;
+  margin-bottom: 1rem;
+  font-weight: 700;
+}
+
+.toc-nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.toc-item {
+  margin-bottom: 0.75rem;
+  line-height: 1.4;
+}
+
+.toc-item.level-3 {
+  padding-left: 1rem;
+  font-size: 0.85rem;
+}
+
+.toc-item a {
+  text-decoration: none;
+  color: var(--blog-text-muted);
+  transition: color 0.2s;
+  display: block;
+}
+
+.toc-item a:hover {
+  color: #fff;
+}
+
+.toc-item.active a {
+  color: var(--blog-accent);
+  font-weight: 500;
+  transform: translateX(4px);
+  transition:
+    transform 0.2s,
+    color 0.2s;
+}
+
+/* --- Syntax Highlighting Overrides --- */
+/* Ensure highlight.js fits our design system */
+pre code.hljs {
+  background: transparent !important;
+  padding: 0 !important;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Menlo', monospace;
+}
