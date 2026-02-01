@@ -26,9 +26,7 @@ export class RobotChat {
   }
 
   destroy() {
-    // Cleanup aller Bubble-Sequence Timers
     this.clearBubbleSequence();
-
     this._bubbleSequenceTimers = [];
   }
 
@@ -102,17 +100,12 @@ export class RobotChat {
     let typingRemoved = false;
 
     try {
-      // Start speaking animation
       this.robot.animationModule.startSpeaking();
-
-      // Get Gemini Service (lazy loaded)
       const gemini = await this.robot.getGemini();
 
-      // Server-side search augmentation (RAG) is handled by the worker
       const response = await gemini.generateResponse(
         text,
         (chunk) => {
-          // Streaming callback - remove typing indicator on first chunk
           if (!typingRemoved) {
             this.removeTyping();
             typingRemoved = true;
@@ -128,7 +121,6 @@ export class RobotChat {
       );
 
       this.robot.animationModule.stopThinking();
-      // Note: stopSpeaking is handled in finalizeStreamingMessage or here if no streaming
 
       // If no streaming occurred, add message normally
       if (!streamingMessageEl) {
@@ -137,11 +129,10 @@ export class RobotChat {
         }
         this.robot.animationModule.stopSpeaking();
 
-        // Response may be either string or { text, sources }
         if (typeof response === 'string') {
           this.addMessage(response, 'bot');
         } else if (response && response.text) {
-          // Basic rendering: show answer + source list (if present)
+          // Response object handling
           const safeText = String(response.text || '');
           let html = MarkdownRenderer.parse(safeText);
 
@@ -153,12 +144,11 @@ export class RobotChat {
                 .join('') +
               '</ul></div>';
           }
-          this.addMessage(html, 'bot', true); // true = skip markdown parsing (already done)
+          this.addMessage(html, 'bot', true);
         } else {
           this.addMessage('Entschuldigung, keine Antwort erhalten.', 'bot');
         }
       } else {
-        // Finalize streaming message
         this.finalizeStreamingMessage(streamingMessageEl);
       }
     } catch (e) {
@@ -190,8 +180,6 @@ export class RobotChat {
   updateStreamingMessage(messageEl, text) {
     const textSpan = messageEl.querySelector('.streaming-text');
     if (textSpan) {
-      // Use Markdown parser for live preview
-      // Note: This might be slightly expensive for very long texts, but for chat it's fine
       textSpan.innerHTML = MarkdownRenderer.parse(text);
       this.scrollToBottom();
     }
@@ -203,9 +191,8 @@ export class RobotChat {
     messageEl.classList.remove('streaming');
     this.robot.animationModule.stopSpeaking();
 
-    // Update history
     const textSpan = messageEl.querySelector('.streaming-text');
-    const text = textSpan?.innerText || textSpan?.textContent || ''; // innerText preserves newlines better
+    const text = textSpan?.innerText || textSpan?.textContent || '';
 
     this.history.push({
       role: 'model',
@@ -257,12 +244,6 @@ export class RobotChat {
     this.isTyping = false;
   }
 
-  /**
-   * Render a message to the DOM without saving to history
-   * @param {string} text
-   * @param {'user'|'bot'} type
-   * @param {boolean} skipParsing
-   */
   renderMessage(text, type = 'bot', skipParsing = false) {
     const msg = document.createElement('div');
     msg.className = `message ${type}`;
@@ -273,7 +254,6 @@ export class RobotChat {
       if (skipParsing) {
         msg.innerHTML = String(text || '');
       } else {
-        // Use Markdown Renderer
         msg.innerHTML = MarkdownRenderer.parse(String(text || ''));
       }
     }
@@ -285,7 +265,6 @@ export class RobotChat {
   addMessage(text, type = 'bot', skipParsing = false) {
     this.renderMessage(text, type, skipParsing);
 
-    // Update history
     this.history.push({
       role: type === 'user' ? 'user' : 'model',
       text: String(text || ''),
@@ -307,11 +286,8 @@ export class RobotChat {
   restoreMessages() {
     this.history.forEach((item) => {
       const type = item.role === 'user' ? 'user' : 'bot';
-      // Assume historic messages are already markdown-ready, but we re-parse them
-      // to ensure consistency. Note: "skipParsing" context is lost, but usually fine.
       this.renderMessage(item.text, type, false);
     });
-    // Add a small divider or system message to indicate restored session? Optional.
   }
 
   clearHistory() {
@@ -324,11 +300,14 @@ export class RobotChat {
   }
 
   clearControls() {
-    this.robot.dom.controls.innerHTML = '';
+    if (this.robot.dom.controls) {
+      this.robot.dom.controls.innerHTML = '';
+    }
   }
 
   addOptions(options) {
     this.clearControls();
+    if (!this.robot.dom.controls) return;
     options.forEach((opt) => {
       const btn = document.createElement('button');
       btn.className = 'chat-option-btn';
@@ -356,39 +335,26 @@ export class RobotChat {
   handleAction(actionKey) {
     this.robot.trackInteraction('action');
 
-    if (actionKey === 'summarizePage') {
-      this.handleSummarize();
-      return;
-    }
-    if (actionKey === 'scrollFooter') {
-      this.robot.dom.footer?.scrollIntoView({ behavior: 'smooth' });
-      this.showTyping();
-      setTimeout(() => {
-        this.removeTyping();
-        this.addMessage('Ich habe dich nach unten gebracht! 👇', 'bot');
-        setTimeout(() => this.handleAction('start'), 2000);
-      }, 1000);
-      return;
-    }
-    if (actionKey === 'randomProject') {
-      this.addMessage('Ich suche ein Projekt...', 'bot');
-      return;
-    }
+    const actions = {
+      summarizePage: () => this.handleSummarize(),
+      scrollFooter: () => {
+        this.robot.dom.footer?.scrollIntoView({ behavior: 'smooth' });
+        this.showTyping();
+        setTimeout(() => {
+          this.removeTyping();
+          this.addMessage('Ich habe dich nach unten gebracht! 👇', 'bot');
+          setTimeout(() => this.handleAction('start'), 2000);
+        }, 1000);
+      },
+      randomProject: () => this.addMessage('Ich suche ein Projekt...', 'bot'),
+      playTicTacToe: () => this.robot.gameModule.startTicTacToe(),
+      playTrivia: () => this.robot.gameModule.startTrivia(),
+      playGuessNumber: () => this.robot.gameModule.startGuessNumber(),
+      showMood: () => this.robot.showMoodInfo(),
+    };
 
-    if (actionKey === 'playTicTacToe') {
-      this.robot.gameModule.startTicTacToe();
-      return;
-    }
-    if (actionKey === 'playTrivia') {
-      this.robot.gameModule.startTrivia();
-      return;
-    }
-    if (actionKey === 'playGuessNumber') {
-      this.robot.gameModule.startGuessNumber();
-      return;
-    }
-    if (actionKey === 'showMood') {
-      this.robot.showMoodInfo();
+    if (actions[actionKey]) {
+      actions[actionKey]();
       return;
     }
 
@@ -403,13 +369,17 @@ export class RobotChat {
       ? data.text[Math.floor(Math.random() * data.text.length)]
       : data.text;
 
-    if (actionKey === 'start' && Math.random() < 0.3) {
-      responseText = this.robot.getMoodGreeting();
-    } else if (actionKey === 'start') {
-      const ctx = this.robot.getPageContext();
-      const suffix = String(this.startMessageSuffix?.[ctx] ?? '').trim();
-      if (suffix)
-        responseText = `${String(responseText || '').trim()} ${suffix}`.trim();
+    if (actionKey === 'start') {
+      if (Math.random() < 0.3) {
+        responseText = this.robot.getMoodGreeting();
+      } else {
+        const ctx = this.robot.getPageContext();
+        const suffix = String(this.startMessageSuffix?.[ctx] ?? '').trim();
+        if (suffix) {
+          responseText =
+            `${String(responseText || '').trim()} ${suffix}`.trim();
+        }
+      }
     }
 
     const typingTime = Math.min(Math.max(responseText.length * 15, 800), 2000);
@@ -421,10 +391,11 @@ export class RobotChat {
   }
 
   scrollToBottom() {
-    this.robot.dom.messages.scrollTop = this.robot.dom.messages.scrollHeight;
+    if (this.robot.dom.messages) {
+      this.robot.dom.messages.scrollTop = this.robot.dom.messages.scrollHeight;
+    }
   }
 
-  // Bubble Sequence Logic
   clearBubbleSequence() {
     if (!this._bubbleSequenceTimers) return;
     this._bubbleSequenceTimers.forEach((t) => clearTimeout(t));
@@ -490,6 +461,7 @@ export class RobotChat {
 
     return picks;
   }
+
   startInitialBubbleSequence() {
     this.clearBubbleSequence();
     const ctx = this.robot.getPageContext();
@@ -535,22 +507,16 @@ export class RobotChat {
 
     const ctx = this.robot.getPageContext();
 
-    // Gather richer context for the AI
     const pageTitle = document.title;
     const metaDesc =
       document.querySelector('meta[name="description"]')?.content || '';
     const h1 = document.querySelector('h1')?.textContent || '';
 
-    // Capture visible text content for real page knowledge
-    // Using textContent for better performance (no layout/reflow calculations)
-    // Preserve paragraph structure while normalizing whitespace
-    // Limiting to first 3000 chars to balance context richness with API token limits
-    // Apply transformations after substring for better performance
     const contentSnippet = (document.body.textContent || '')
       .substring(0, 3000)
-      .replace(/\r\n/g, '\n') // normalize Windows newlines
-      .replace(/[ \t]+/g, ' ') // collapse spaces and tabs, keep line breaks
-      .replace(/\n{3,}/g, '\n\n') // limit excessive blank lines
+      .replace(/\r\n/g, '\n')
+      .replace(/[ \t]+/g, ' ')
+      .replace(/\n{3,}/g, '\n\n')
       .trim();
 
     const contextData = {
@@ -567,16 +533,14 @@ export class RobotChat {
       const suggestion = await gemini.getSuggestion(contextData);
       if (suggestion && !this.isOpen) {
         this.showBubble(suggestion);
-        // Mark slot as shown in intelligence module only on success
         if (tipKey) {
           this.robot.intelligenceModule.contextTipsShown.add(tipKey);
         }
-        setTimeout(() => this.hideBubble(), 12000); // Give user time to read
+        setTimeout(() => this.hideBubble(), 12000);
         return true;
       }
     } catch (e) {
       log.warn('fetchAndShowSuggestion failed', e);
-      // Silent fail for UX reasons
     }
   }
 }

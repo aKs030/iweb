@@ -130,10 +130,14 @@ export class GeminiService {
    */
   async generateResponse(prompt, onChunk, systemInstruction) {
     const hasCallback = onChunk && typeof onChunk === 'function';
+    // Force German language in system instruction
+    const baseInstruction =
+      systemInstruction || 'Du bist ein hilfreicher Roboter-Begleiter.';
+    const finalSystemInstruction = `${baseInstruction} Antworte IMMER auf DEUTSCH.`;
 
     return await callAIAPI(
       prompt,
-      systemInstruction || 'Du bist ein hilfreicher Roboter-Begleiter.',
+      finalSystemInstruction,
       hasCallback ? onChunk : undefined,
     );
   }
@@ -145,8 +149,11 @@ export class GeminiService {
    */
   async summarizePage(content) {
     const trimmed = String(content || '').slice(0, 4800);
-    const prompt = `Fasse den folgenden Text kurz und präzise zusammen:\n\n${trimmed}`;
-    return await callAIAPI(prompt, 'Fasse kurz zusammen. Maximal 3 Sätze.');
+    const prompt = `Fasse den folgenden Text kurz und präzise auf DEUTSCH zusammen:\n\n${trimmed}`;
+    return await callAIAPI(
+      prompt,
+      'Fasse kurz auf Deutsch zusammen. Maximal 3 Sätze.',
+    );
   }
 
   /**
@@ -166,7 +173,7 @@ export class GeminiService {
     Generiere einen kurzen, hilfreichen Tipp, einen interessanten Fakt oder eine Frage zu diesem Inhalt, um den Nutzer einzuladen.
     Nutze das "Seiten-Wissen" (Inhaltlicher Kontext), um spezifisch zu sein, aber fasse dich kurz.
     Sprich den Nutzer freundlich als Roboter-Assistent an (Cyber).
-    Maximal 2 kurze Sätze.`;
+    Maximal 2 kurze Sätze. Antworte IMMER auf DEUTSCH.`;
 
     return await callAIAPI(
       prompt,
