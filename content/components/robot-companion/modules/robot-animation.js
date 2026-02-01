@@ -49,6 +49,7 @@ export class RobotAnimation {
 
     // Idle eye animation
     this.eyeIdleOffset = { x: 0, y: 0 };
+    /** @type {ReturnType<typeof setTimeout> | null} */
     this._eyeIdleTimer = null;
     this.eyeIdleConfig = {
       intervalMin: 3000,
@@ -64,6 +65,7 @@ export class RobotAnimation {
       intervalMax: 7000,
       duration: 120,
     };
+    /** @type {ReturnType<typeof setTimeout> | null} */
     this._blinkTimer = null;
 
     // Bind loop
@@ -72,6 +74,7 @@ export class RobotAnimation {
 
     this.thinkingActive = false;
     this.speakingActive = false;
+    /** @type {ReturnType<typeof setTimeout> | null} */
     this._speakingTimer = null;
   }
 
@@ -159,6 +162,21 @@ export class RobotAnimation {
       this.robot.dom.eyes.classList.remove('is-thinking');
       this.startIdleEyeMovement();
     }
+  }
+
+  triggerKnockback() {
+    if (!this.robot.dom.container) return;
+    if (this.startAnimation.active) return;
+
+    const now = performance.now();
+    this.startAnimation.active = true;
+    this.startAnimation.phase = 'knockback';
+    this.startAnimation.knockbackStartTime = now;
+    this.startAnimation.knockbackDuration = 700;
+    this.startAnimation.knockbackStartX = this.patrol.x;
+    this.startAnimation.knockbackStartY = this.patrol.y;
+
+    requestAnimationFrame(this.updateStartAnimation);
   }
 
   startTypeWriterKnockbackAnimation() {
@@ -564,6 +582,10 @@ export class RobotAnimation {
     }
   }
 
+  /**
+   * @param {number} count
+   * @param {{direction?: number, strength?: number, spread?: number | null}} options
+   */
   spawnParticleBurst(
     count = 6,
     { direction = 0, strength = 1, spread = null } = {},
@@ -727,6 +749,7 @@ export class RobotAnimation {
           this.updateEyesTransform();
           scheduleNext();
         }, cfg.moveDuration);
+        // @ts-ignore - setTimeout return type compatibility
         this._eyeIdleTimer = t || this._eyeIdleTimer;
       }, delay);
     };
