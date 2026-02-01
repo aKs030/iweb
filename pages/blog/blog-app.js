@@ -118,7 +118,7 @@ const loadPostsData = async (seedPosts = []) => {
     // Fetch index.json
     let fetchedPosts = [];
     try {
-      const indexRes = await fetch('/content/posts/index.json');
+      const indexRes = await fetch('/pages/blog/posts/index.json');
       if (indexRes.ok) {
         fetchedPosts = await indexRes.json();
         updateLoader(0.4, `${fetchedPosts.length} Artikel gefunden...`);
