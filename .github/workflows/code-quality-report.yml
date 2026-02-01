@@ -83,7 +83,7 @@ jobs:
           path: |
             quality-report.md
             complexity-report/
-          retention-days: 30
+          retention-days: 2
       
       - name: Create Issue with Report
         uses: actions/github-script@v7
