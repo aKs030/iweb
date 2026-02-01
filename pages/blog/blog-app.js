@@ -30,7 +30,8 @@ hljs.registerLanguage('bash', bash);
 // Inject Highlight.js CSS
 const link = document.createElement('link');
 link.rel = 'stylesheet';
-link.href = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css';
+link.href =
+  'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css';
 document.head.appendChild(link);
 
 // Configure Marked
@@ -74,7 +75,7 @@ const parseFrontmatter = (text) => {
   const content = text.slice(match[0].length);
   const data = {};
 
-  frontmatter.split('\n').forEach(line => {
+  frontmatter.split('\n').forEach((line) => {
     const [key, ...val] = line.split(':');
     if (key && val) {
       data[key.trim()] = val.join(':').trim();
@@ -105,7 +106,7 @@ const normalizePost = (raw = {}) => {
     timestamp: dateStr ? new Date(dateStr).getTime() : 0, // Pre-calc for sorting
     dateDisplay: raw.dateDisplay || dateStr,
     readTime: raw.readTime || estimateReadTime(raw.content || raw.html || ''),
-    file: raw.file || null
+    file: raw.file || null,
   };
 };
 
@@ -117,16 +118,16 @@ const loadPostsData = async (seedPosts = []) => {
     // Fetch index.json
     let fetchedPosts = [];
     try {
-        const indexRes = await fetch('/content/posts/index.json');
-        if (indexRes.ok) {
-            fetchedPosts = await indexRes.json();
-            updateLoader(0.4, `${fetchedPosts.length} Artikel gefunden...`);
-        } else {
-            throw new Error('Index not found');
-        }
+      const indexRes = await fetch('/content/posts/index.json');
+      if (indexRes.ok) {
+        fetchedPosts = await indexRes.json();
+        updateLoader(0.4, `${fetchedPosts.length} Artikel gefunden...`);
+      } else {
+        throw new Error('Index not found');
+      }
     } catch (e) {
-        log.warn('Could not load index.json', e);
-        return seedPosts;
+      log.warn('Could not load index.json', e);
+      return seedPosts;
     }
 
     // Now fetch content for each post
@@ -139,25 +140,26 @@ const loadPostsData = async (seedPosts = []) => {
           let postData = { ...p };
 
           if (p.file) {
-             const res = await fetch(p.file);
-             if (res.ok) {
-                 const text = await res.text();
-                 const { content, data } = parseFrontmatter(text);
-                 postData = { ...postData, ...data, content };
-             }
+            const res = await fetch(p.file);
+            if (res.ok) {
+              const text = await res.text();
+              const { content, data } = parseFrontmatter(text);
+              postData = { ...postData, ...data, content };
+            }
           }
 
           loaded++;
           const progress = 0.4 + (loaded / total) * 0.4;
-          updateLoader(progress, `Lade Artikel ${loaded}/${total}...`, { silent: true });
+          updateLoader(progress, `Lade Artikel ${loaded}/${total}...`, {
+            silent: true,
+          });
 
           return normalizePost(postData);
-
         } catch (e) {
           log.warn(`Failed to load ${p.id}`, e);
           return null;
         }
-      })
+      }),
     );
 
     updateLoader(0.85, 'Verarbeite Artikel...');
@@ -167,7 +169,7 @@ const loadPostsData = async (seedPosts = []) => {
     seedPosts.forEach((p) => map.set(p.id, p));
     // Merged Fetched
     populated.filter(Boolean).forEach((p) => {
-        map.set(p.id, { ...(map.get(p.id) || {}), ...p });
+      map.set(p.id, { ...(map.get(p.id) || {}), ...p });
     });
 
     const result = Array.from(map.values()).sort(
@@ -176,7 +178,6 @@ const loadPostsData = async (seedPosts = []) => {
 
     updateLoader(0.95, `${result.length} Artikel geladen`);
     return result;
-
   } catch (e) {
     log.warn('Fatal error loading posts', e);
     return seedPosts;
@@ -266,62 +267,74 @@ const ReadingProgress = () => {
 };
 
 const TableOfContents = ({ htmlContent }) => {
-    const [headings, setHeadings] = React.useState([]);
-    const [activeId, setActiveId] = React.useState('');
+  const [headings, setHeadings] = React.useState([]);
+  const [activeId, setActiveId] = React.useState('');
 
-    React.useEffect(() => {
-        // Simple regex to find headers since we don't want to parse HTML string fully if possible,
-        // but DOMParser is safer.
-        const doc = new DOMParser().parseFromString(htmlContent, 'text/html');
-        const elements = Array.from(doc.querySelectorAll('h2, h3'));
+  React.useEffect(() => {
+    // Simple regex to find headers since we don't want to parse HTML string fully if possible,
+    // but DOMParser is safer.
+    const doc = new DOMParser().parseFromString(htmlContent, 'text/html');
+    const elements = Array.from(doc.querySelectorAll('h2, h3'));
 
-        const items = elements.map(el => ({
-            id: el.id,
-            text: el.textContent,
-            level: Number(el.tagName.substring(1))
-        })).filter(h => h.id); // Only those with IDs (generated by marked)
+    const items = elements
+      .map((el) => ({
+        id: el.id,
+        text: el.textContent,
+        level: Number(el.tagName.substring(1)),
+      }))
+      .filter((h) => h.id); // Only those with IDs (generated by marked)
 
-        setHeadings(items);
+    setHeadings(items);
 
-        const observer = new IntersectionObserver(
-            (entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        setActiveId(entry.target.id);
-                    }
-                });
-            },
-            { rootMargin: '-100px 0px -66%' }
-        );
-
-        items.forEach(h => {
-            const el = document.getElementById(h.id);
-            if (el) observer.observe(el);
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActiveId(entry.target.id);
+          }
         });
+      },
+      { rootMargin: '-100px 0px -66%' },
+    );
 
-        return () => observer.disconnect();
-    }, [htmlContent]);
+    items.forEach((h) => {
+      const el = document.getElementById(h.id);
+      if (el) observer.observe(el);
+    });
 
-    if (headings.length === 0) return null;
+    return () => observer.disconnect();
+  }, [htmlContent]);
 
-    return html`
-        <nav className="toc-nav fade-in">
-            <h4 className="toc-title">Inhalt</h4>
-            <ul>
-                ${headings.map(h => html`
-                    <li key=${h.id} className=${`toc-item level-${h.level} ${activeId === h.id ? 'active' : ''}`}>
-                        <a href="#${h.id}" onClick=${(e) => {
-                            e.preventDefault();
-                            document.getElementById(h.id)?.scrollIntoView({ behavior: 'smooth' });
-                            setActiveId(h.id);
-                        }}>
-                            ${h.text}
-                        </a>
-                    </li>
-                `)}
-            </ul>
-        </nav>
-    `;
+  if (headings.length === 0) return null;
+
+  return html`
+    <nav className="toc-nav fade-in">
+      <h4 className="toc-title">Inhalt</h4>
+      <ul>
+        ${headings.map(
+          (h) => html`
+            <li
+              key=${h.id}
+              className=${`toc-item level-${h.level} ${activeId === h.id ? 'active' : ''}`}
+            >
+              <a
+                href="#${h.id}"
+                onClick=${(e) => {
+                  e.preventDefault();
+                  document
+                    .getElementById(h.id)
+                    ?.scrollIntoView({ behavior: 'smooth' });
+                  setActiveId(h.id);
+                }}
+              >
+                ${h.text}
+              </a>
+            </li>
+          `,
+        )}
+      </ul>
+    </nav>
+  `;
 };
 
 const RelatedPosts = ({ currentPost, allPosts }) => {
@@ -390,9 +403,13 @@ const BlogApp = () => {
           (async () => {
             updateLoader(0.15, 'Lade Metadaten...', { silent: true });
             try {
-               const response = await fetch('/content/assets/img/og/og-images-meta.json');
-               return response.ok ? response.json() : {};
-            } catch { return {}; }
+              const response = await fetch(
+                '/content/assets/img/og/og-images-meta.json',
+              );
+              return response.ok ? response.json() : {};
+            } catch {
+              return {};
+            }
           })(),
         ]);
 
@@ -467,7 +484,7 @@ const BlogApp = () => {
         ? DOMPurify.sanitize(
             activePost.html ||
               (activePost.content ? marked.parse(activePost.content) : ''),
-            { ADD_ATTR: ['id', 'class'] }
+            { ADD_ATTR: ['id', 'class'] },
           )
         : '',
     [activePost],
@@ -516,7 +533,7 @@ const BlogApp = () => {
                 <div className="card-meta">
                     <span className="card-category">${post.category}</span>
                     <span className="card-read-time"><${Clock}/> ${
-                    post.readTime
+                      post.readTime
                     }</span>
                 </div>
                 <h1>${post.title}</h1>
@@ -524,10 +541,10 @@ const BlogApp = () => {
                 </header>
 
                 ${
-                heroSrc &&
-                html`
+                  heroSrc &&
+                  html`
                     <figure className="article-hero">
-                    <${ProgressiveImage}
+                      <${ProgressiveImage}
                         src=${heroSrc}
                         alt=${post.title}
                         className="article-hero-img"
@@ -535,13 +552,13 @@ const BlogApp = () => {
                         fetchpriority="high"
                         width=${og?.width || 800}
                         height=${og?.height || 420}
-                    />
+                      />
                     </figure>
-                `
+                  `
                 }
 
                 <div className="article-body" dangerouslySetInnerHTML=${{
-                __html: cleanHtml,
+                  __html: cleanHtml,
                 }}></div>
 
                 <${RelatedPosts} currentPost=${post} allPosts=${posts} />
@@ -549,10 +566,10 @@ const BlogApp = () => {
                 <div className="article-cta">
                 <h3>${t('blog.cta_title')}</h3>
                 <p style=${{
-                    color: '#ccc',
-                    marginBottom: '1.5rem',
-                    maxWidth: '600px',
-                    margin: '0 auto 1.5rem',
+                  color: '#ccc',
+                  marginBottom: '1.5rem',
+                  maxWidth: '600px',
+                  margin: '0 auto 1.5rem',
                 }}>
                     ${t('blog.cta_text')}
                 </p>
