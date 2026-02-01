@@ -125,7 +125,8 @@ async function simulateStreaming(text, onChunk) {
   for (const token of tokens) {
     accumulated += token;
     onChunk(accumulated);
-    await sleep(30); // Slightly slower to maintain smooth visual effect
+    // Add jitter for more natural typing effect (15ms - 50ms)
+    await sleep(Math.floor(Math.random() * 35) + 15);
   }
 }
 
@@ -162,14 +163,23 @@ export class GeminiService {
   }
 
   /**
-   * Get AI suggestion based on user behavior
-   * @param {Object} behavior - User behavior data
+   * Get AI suggestion based on page context
+   * @param {Object} contextData - Context data (title, headline, etc.)
    * @returns {Promise<string>} Suggestion
    */
-  async getSuggestion(behavior) {
-    const prompt = `Gib eine kurze, konkrete Empfehlung für den Nutzer basierend auf:\n${JSON.stringify(
-      behavior,
-    )}`;
-    return await callAIAPI(prompt, 'Sei prägnant, maximal 2 Sätze.');
+  async getSuggestion(contextData) {
+    const prompt = `Der Nutzer betrachtet gerade die Seite: "${contextData.title || ''}".
+    Überschrift: "${contextData.headline || ''}"
+    Beschreibung: "${contextData.description || ''}"
+    URL: "${contextData.url || ''}"
+
+    Generiere einen kurzen, hilfreichen Tipp, einen interessanten Fakt oder eine Frage zu diesem Inhalt, um den Nutzer einzuladen.
+    Sprich den Nutzer freundlich als Roboter-Assistent an.
+    Maximal 2 kurze Sätze.`;
+
+    return await callAIAPI(
+      prompt,
+      'Du bist ein proaktiver, hilfreicher Roboter-Assistent.',
+    );
   }
 }
