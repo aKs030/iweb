@@ -4,6 +4,7 @@
 
 import { MenuTemplate } from './MenuTemplate.js';
 import { getElementById } from '/content/core/utils.js';
+import { i18n } from '/content/core/i18n.js';
 
 export class MenuRenderer {
   constructor(state, config = {}) {
@@ -18,6 +19,7 @@ export class MenuRenderer {
     this.updateYear();
     this.initializeIcons();
     this.setupTitleUpdates();
+    this.setupLanguageUpdates();
   }
 
   updateYear() {
@@ -52,11 +54,48 @@ export class MenuRenderer {
     });
   }
 
+  setupLanguageUpdates() {
+    i18n.subscribe((lang) => {
+      this.updateLanguage(lang);
+    });
+  }
+
+  updateLanguage(lang) {
+    // Update Toggle Text
+    const langText = document.querySelector('.lang-text');
+    if (langText) {
+      langText.textContent = lang.toUpperCase();
+    }
+
+    // Update Menu Items
+    const menuItems = document.querySelectorAll(
+      '.site-menu__list a span[data-i18n]',
+    );
+
+    menuItems.forEach((span) => {
+      const key = span.getAttribute('data-i18n');
+      if (key) {
+        span.textContent = i18n.t(key);
+      }
+    });
+
+    // Update Title if it matches a known key
+    // We use the state's current title which should be the key
+    if (this.state) {
+      this.updateTitle(this.state.currentTitle, this.state.currentSubtitle);
+    }
+  }
+
   updateTitle(title, subtitle = '') {
     const siteTitleEl = getElementById('site-title');
     const siteSubtitleEl = getElementById('site-subtitle');
 
     if (!siteTitleEl) return;
+
+    // Check if title/subtitle are translation keys
+    // This is a naive check, but robust enough for now
+    const translatedTitle = i18n.t(title);
+    const translatedSubtitle = i18n.t(subtitle);
 
     // Cancel previous animation
     if (this.rafId) {
@@ -73,12 +112,12 @@ export class MenuRenderer {
       if (siteSubtitleEl) siteSubtitleEl.classList.remove('show');
 
       setTimeout(() => {
-        siteTitleEl.textContent = title;
+        siteTitleEl.textContent = translatedTitle;
         siteTitleEl.style.opacity = '1';
         siteTitleEl.style.transform = 'scale(1)';
 
-        if (siteSubtitleEl && subtitle) {
-          siteSubtitleEl.textContent = subtitle;
+        if (siteSubtitleEl && translatedSubtitle) {
+          siteSubtitleEl.textContent = translatedSubtitle;
           setTimeout(() => siteSubtitleEl.classList.add('show'), 100);
         }
       }, transitionDelay);
