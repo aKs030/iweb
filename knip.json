@@ -10,7 +10,10 @@
     "pages/**/loader.js",
     "pages/**/*-loader.js",
     "pages/**/*-manager.js",
-    "workers/**/index.js"
+    "workers/**/index.js",
+    "sw.js",
+    "content/components/**/*.js",
+    "content/core/**/*.js"
   ],
   "project": ["**/*.js", "**/*.mjs"],
   "ignore": [
@@ -19,16 +22,17 @@
     ".git/**",
     "**/*.md",
     "**/*.css",
-    "**/*.html"
+    "**/*.html",
+    "scripts/**",
+    "docs/**"
   ],
   "ignoreDependencies": [
     "dompurify",
-    "react",
-    "react-dom",
-    "three",
-    "@types/three",
     "cssnano",
     "husky",
-    "lint-staged"
-  ]
+    "lint-staged",
+    "rollup-plugin-visualizer",
+    "terser"
+  ],
+  "ignoreBinaries": ["jscpd", "madge", "es6-plato", "cost-of-modules", "open"]
 }

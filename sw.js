@@ -98,6 +98,18 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Skip Cloudflare analytics/insights - let it handle its own requests
+  // cspell:ignore cloudflareinsights
+  if (url.hostname === 'static.cloudflareinsights.com') {
+    return;
+  }
+
+  // Skip external analytics and tracking scripts
+  // cspell:ignore googletagmanager
+  if (url.hostname.includes('googletagmanager.com') || url.hostname.includes('google-analytics.com')) {
+    return;
+  }
+
   // Determine strategy based on request type
   const strategy = getStrategy(url, request);
 
