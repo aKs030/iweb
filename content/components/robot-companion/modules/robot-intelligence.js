@@ -185,9 +185,9 @@ export class RobotIntelligence {
   checkElementsInViewport() {
     if (this.robot.chatModule.isOpen) return;
 
-    // Throttle checks - only run every 500ms
+    // Throttle checks - only run every 1000ms (Optimized from 500ms)
     const now = Date.now();
-    if (this._lastElementCheck && now - this._lastElementCheck < 500) return;
+    if (this._lastElementCheck && now - this._lastElementCheck < 1000) return;
     this._lastElementCheck = now;
 
     // Define interesting selectors based on context
@@ -204,7 +204,7 @@ export class RobotIntelligence {
         const rect = element.getBoundingClientRect();
         const isInViewport = rect.top >= 0 && rect.bottom <= viewportHeight;
         const isNearMiddle =
-          Math.abs(rect.top + rect.height / 2 - viewportMiddle) < 100;
+          Math.abs(rect.top + rect.height / 2 - viewportMiddle) < 150; // Increased threshold
 
         // Element is in viewport and near middle
         if (isInViewport && isNearMiddle) {
@@ -244,15 +244,11 @@ export class RobotIntelligence {
           message: '👀 Schau dir dieses Projekt an! Es ist richtig cool!',
           animation: 'excitement',
         },
-        {
-          selector: '.tech-stack:not(.robot-highlighted)',
-          message: '⚡ Interessante Technologien hier!',
-          animation: 'point',
-        },
       ],
       gallery: [
         {
-          selector: '.gallery-item:not(.robot-highlighted)',
+          // Updated selector for React gallery
+          selector: '[data-test="photo-card"]:not(.robot-highlighted)',
           message: '📸 Wow, tolles Bild!',
           animation: 'excitement',
         },
@@ -266,7 +262,8 @@ export class RobotIntelligence {
       ],
       about: [
         {
-          selector: '.skill-item:not(.robot-highlighted)',
+          // Updated selector for About page skills
+          selector: '.stack-tag:not(.robot-highlighted)',
           message: '💪 Beeindruckende Skills!',
           animation: 'point',
         },

@@ -1,7 +1,7 @@
 // Text resources for the Robot Companion
-// This file exports a single global `robotCompanionTexts` object on the window.
+// Exported as a constant module
 
-window.robotCompanionTexts = {
+export const robotCompanionTexts = {
   knowledgeBase: {
     start: {
       text: [
