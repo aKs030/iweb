@@ -10,6 +10,7 @@ import { RobotCollision } from './modules/robot-collision.js';
 import { RobotAnimation } from './modules/robot-animation.js';
 import { RobotChat } from './modules/robot-chat.js';
 import { RobotIntelligence } from './modules/robot-intelligence.js';
+import { robotCompanionTexts } from './robot-companion-texts.js';
 import { createLogger } from '/content/core/logger.js';
 import { createObserver } from '/content/core/intersection-observer.js';
 
@@ -36,10 +37,7 @@ export class RobotCompanion {
   texts = {};
 
   constructor() {
-    this.texts =
-      (typeof globalThis !== 'undefined' && globalThis.robotCompanionTexts) ||
-      this.texts ||
-      {};
+    this.texts = robotCompanionTexts;
 
     /** @type {import('./gemini-service.js').GeminiService|null} */
     this.gemini = null;
@@ -162,10 +160,7 @@ export class RobotCompanion {
   }
 
   applyTexts() {
-    const src =
-      (typeof globalThis !== 'undefined' && globalThis.robotCompanionTexts) ||
-      this.texts ||
-      {};
+    const src = this.texts || {};
     const chat = /** @type {any} */ (this.chatModule);
 
     chat.knowledgeBase = src.knowledgeBase ||
@@ -198,33 +193,6 @@ export class RobotCompanion {
       this.gemini = new GeminiService();
     }
     return this.gemini;
-  }
-
-  async loadTexts() {
-    if (typeof globalThis !== 'undefined' && globalThis.robotCompanionTexts) {
-      this.texts = globalThis.robotCompanionTexts;
-      return;
-    }
-    if (document.querySelector('script[src*="robot-companion-texts.js"]')) {
-      return;
-    }
-
-    return new Promise((resolve) => {
-      const script = document.createElement('script');
-      script.src =
-        '/content/components/robot-companion/robot-companion-texts.js';
-      script.async = true;
-      script.onload = () => {
-        this.texts =
-          (typeof globalThis !== 'undefined' &&
-            globalThis.robotCompanionTexts) ||
-          this.texts ||
-          {};
-        resolve(undefined);
-      };
-      script.onerror = () => resolve(undefined);
-      document.head.appendChild(script);
-    });
   }
 
   setupFooterOverlapCheck() {
@@ -1189,7 +1157,6 @@ export class RobotCompanion {
    * @returns {Promise<void>}
    */
   async initialize() {
-    await this.loadTexts();
     this.applyTexts();
     if (!this.dom.container) this.init();
   }
