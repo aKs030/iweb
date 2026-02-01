@@ -434,6 +434,19 @@ export class RobotIntelligence {
     // 20% chance to show tip
     if (Math.random() > 0.2) return;
 
+    // Smart Proactivity: Chance for dynamic content-aware tip
+    // If on page > 15s and no dynamic tip shown yet
+    if (
+      timeOnPage > 15000 &&
+      !this.contextTipsShown.has(`dynamic-${context}`)
+    ) {
+      // 30% chance to try dynamic fetch instead of static
+      if (Math.random() < 0.3) {
+        this.robot.fetchAndShowSuggestion();
+        return;
+      }
+    }
+
     // Try intelligent keyword scan first
     const detectedCategory = this.scanForKeywords();
     let tip = null;
