@@ -38,6 +38,57 @@ export default defineConfig({
     open: true,
   },
 
+  // Build optimizations
+  build: {
+    target: 'es2020',
+    cssCodeSplit: true,
+    sourcemap: false,
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
+        pure_funcs: ['console.log', 'console.debug'],
+      },
+      format: {
+        comments: false,
+      },
+    },
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Vendor chunks
+          'vendor-three': ['three'],
+          'vendor-react': ['react', 'react-dom'],
+          'vendor-utils': ['dompurify'],
+
+          // Feature chunks
+          'feature-earth': [
+            '/content/components/particles/three-earth-system.js',
+            '/content/components/particles/shared-particle-system.js',
+          ],
+          'feature-robot': [
+            '/content/components/robot-companion/robot-companion.js',
+            '/content/components/robot-companion/gemini-service.js',
+          ],
+          'feature-search': ['/content/components/search/search.js'],
+
+          // Core utilities
+          'core-utils': [
+            '/content/core/utils.js',
+            '/content/core/logger.js',
+            '/content/core/events.js',
+            '/content/core/cache.js',
+          ],
+        },
+        chunkFileNames: 'assets/[name]-[hash].js',
+        entryFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]',
+      },
+    },
+    chunkSizeWarningLimit: 500,
+  },
+
   // Optimizations for dev
   optimizeDeps: {
     include: ['react', 'react-dom', 'three', 'dompurify'],
