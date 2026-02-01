@@ -101,7 +101,10 @@ const loadDynamicProjects = async (icons) => {
     const directories = contents.filter((item) => item.type === 'dir');
     log.info(`Found ${directories.length} directories on GitHub`);
 
-    updateLoader(0.2, i18n.t('loader.found_projects', { count: directories.length }));
+    updateLoader(
+      0.2,
+      i18n.t('loader.found_projects', { count: directories.length }),
+    );
 
     for (const [i, dir] of directories.entries()) {
       const projectPath = `${GITHUB_CONFIG.appsPath}/${dir.name}`;
@@ -169,7 +172,10 @@ const loadDynamicProjects = async (icons) => {
   });
 
   log.info(`Loaded ${finalProjects.length} projects (Source: ${source})`);
-  updateLoader(1, i18n.t('loader.projects_ready', { count: finalProjects.length }));
+  updateLoader(
+    1,
+    i18n.t('loader.projects_ready', { count: finalProjects.length }),
+  );
 
   return finalProjects;
 };
