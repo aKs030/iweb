@@ -48,7 +48,7 @@ export class RobotCollision {
 
     // Cache relevant elements
     const currentObstacles = document.querySelectorAll(
-      'img, .card, button.btn, h2, .gallery-item',
+      'img, .card, button.btn, h2, .project-card, [data-test="photo-card"]',
     );
 
     currentObstacles.forEach((el) => {
