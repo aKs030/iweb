@@ -1123,8 +1123,13 @@ class ThreeEarthSystem {
       Boolean(/** @type {any} */ (globalThis).__FORCE_THREE_EARTH);
 
     if (!supportsWebGL() && !forceThree) {
-      log.warn('WebGL not supported');
-      return true; // We return true to attempt anyway as per original logic, but usually this fails
+      log.warn('WebGL not supported, falling back to CSS');
+      const container = this.getContainer();
+      if (container) {
+        container.classList.add('three-earth-unavailable');
+        showErrorState(container, new Error('WebGL not supported'), null);
+      }
+      return false;
     }
     return true;
   }
@@ -1181,22 +1186,50 @@ function disposeMaterial(material) {
 }
 
 function supportsWebGL() {
-  return true;
+  try {
+    const canvas = document.createElement('canvas');
+    const gl =
+      canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+
+    if (!gl) {
+      log.warn('WebGL context not available');
+      return false;
+    }
+
+    // Basic WebGL is enough - don't require specific extensions
+    // Most mobile devices support basic WebGL
+    log.debug('WebGL is supported');
+    return true;
+  } catch (e) {
+    log.warn('WebGL detection failed:', e);
+    return false;
+  }
 }
 
 function detectDeviceCapabilities() {
   try {
     const ua = (navigator.userAgent || '').toLowerCase();
     const isMobile = /mobile|tablet|android|ios|iphone|ipad/i.test(ua);
+
+    // More lenient low-end detection - only flag very old devices
     const isLowEnd =
       /android 4|android 5|cpu iphone os 9|cpu iphone os 10/i.test(ua) ||
-      (navigator.hardwareConcurrency || 4) <= 2;
+      (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 2);
+
     let recommendedQuality;
     if (isLowEnd) recommendedQuality = 'LOW';
     else if (isMobile) recommendedQuality = 'MEDIUM';
     else recommendedQuality = 'HIGH';
+
+    log.debug('Device capabilities:', {
+      isMobile,
+      isLowEnd,
+      recommendedQuality,
+    });
+
     return { isMobile, isLowEnd, recommendedQuality };
-  } catch {
+  } catch (err) {
+    log.warn('Device detection failed:', err);
     return { isMobile: false, isLowEnd: false, recommendedQuality: 'MEDIUM' };
   }
 }
