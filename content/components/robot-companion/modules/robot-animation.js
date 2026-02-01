@@ -118,6 +118,9 @@ export class RobotAnimation {
       }
     }
 
+    // Check again before scheduling to prevent race condition
+    if (!this.speakingActive) return;
+
     this._speakingTimer = setTimeout(
       () => this.startSpeakingLoop(),
       duration + 50,
