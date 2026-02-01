@@ -16,12 +16,22 @@ export async function createEarthSystem(
 
   let dayTexture, nightTexture, normalTexture, bumpTexture;
   try {
-    [dayTexture, nightTexture, normalTexture, bumpTexture] = await Promise.all([
+    // Start texture loading immediately with higher priority
+    const texturePromises = [
       textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.DAY),
       textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.NIGHT),
       textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.NORMAL),
       textureLoader.loadAsync(CONFIG.PATHS.TEXTURES.BUMP),
-    ]);
+    ];
+
+    // Load textures in parallel with timeout fallback
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Texture loading timeout')), 10000),
+    );
+
+    [dayTexture, nightTexture, normalTexture, bumpTexture] = await Promise.race(
+      [Promise.all(texturePromises), timeoutPromise],
+    );
   } catch (err) {
     // Silently handle texture loading errors in production
     if (process.env.NODE_ENV === 'development') {
