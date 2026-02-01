@@ -161,6 +161,21 @@ export class RobotAnimation {
     }
   }
 
+  triggerKnockback() {
+    if (!this.robot.dom.container) return;
+    if (this.startAnimation.active) return;
+
+    const now = performance.now();
+    this.startAnimation.active = true;
+    this.startAnimation.phase = 'knockback';
+    this.startAnimation.knockbackStartTime = now;
+    this.startAnimation.knockbackDuration = 700;
+    this.startAnimation.knockbackStartX = this.patrol.x;
+    this.startAnimation.knockbackStartY = this.patrol.y;
+
+    requestAnimationFrame(this.updateStartAnimation);
+  }
+
   startTypeWriterKnockbackAnimation() {
     const typeWriter = document.querySelector('.typewriter-title');
     if (!typeWriter || !this.robot.dom.container) {

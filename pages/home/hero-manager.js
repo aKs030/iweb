@@ -2,48 +2,13 @@ import { observeOnce } from '/content/core/intersection-observer.js';
 import { createLogger } from '/content/core/logger.js';
 import { getElementById } from '/content/core/utils.js';
 import { i18n } from '/content/core/i18n.js';
+import { TimerManager } from '/content/core/timer-utils.js';
 
 let typeWriterModule = null;
 
 const log = createLogger('HeroManager');
 
-// Helper: TimerManager
-class TimerManager {
-  constructor() {
-    this.timers = new Set();
-    this.intervals = new Set();
-  }
-  setTimeout(fn, delay) {
-    const id = setTimeout(() => {
-      this.timers.delete(id);
-      fn();
-    }, delay);
-    this.timers.add(id);
-    return id;
-  }
-  setInterval(fn, delay) {
-    const id = setInterval(fn, delay);
-    this.intervals.add(id);
-    return id;
-  }
-  clearTimeout(id) {
-    clearTimeout(id);
-    this.timers.delete(id);
-  }
-  clearInterval(id) {
-    clearInterval(id);
-    this.intervals.delete(id);
-  }
-  clearAll() {
-    this.timers.forEach(clearTimeout);
-    this.intervals.forEach(clearInterval);
-    this.timers.clear();
-    this.intervals.clear();
-  }
-  // sleep() method removed - use imported sleep from async-utils.js
-}
-
-const heroTimers = new TimerManager();
+const heroTimers = new TimerManager('HeroTimers');
 
 // ===== Hero Management Module =====
 const HERO_LAZY_FALLBACK_MS = 6000;

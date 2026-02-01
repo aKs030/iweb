@@ -10,23 +10,14 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { createLogger } from '/content/core/logger.js';
 import { i18n } from '/content/core/i18n.js';
+import { createUseTranslation } from '/content/core/react-utils.js';
 import { useToast, useProjects, useAppManager } from './hooks/index.js';
 
 const log = createLogger('react-projekte-app');
 const { createElement: h, Fragment } = React;
 
 // Translation Hook
-const useTranslation = () => {
-  const [lang, setLang] = React.useState(i18n.currentLang);
-
-  React.useEffect(() => {
-    const onLangChange = (e) => setLang(e.detail.lang);
-    i18n.addEventListener('language-changed', onLangChange);
-    return () => i18n.removeEventListener('language-changed', onLangChange);
-  }, []);
-
-  return { t: (key, params) => i18n.t(key, params), lang };
-};
+const useTranslation = createUseTranslation(React);
 
 // Simple SVG Icons (without HTM dependency)
 const createIcon = (paths, props = {}) => {

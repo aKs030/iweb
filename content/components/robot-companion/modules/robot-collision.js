@@ -258,7 +258,7 @@ export class RobotCollision {
       const anim = this.robot.animationModule;
       if (!anim.startAnimation || !anim.startAnimation.active) {
         // Pass the actual typewriter rect so the response can compute safely
-        this.startTypewriterCollisionResponse(twRect, _maxLeft);
+        anim.triggerKnockback();
       }
 
       return true;
@@ -266,24 +266,5 @@ export class RobotCollision {
       log.warn('checkForTypewriterCollision failed', err);
       return false;
     }
-  }
-
-  startTypewriterCollisionResponse() {
-    if (!this.robot.dom || !this.robot.dom.container) return;
-    const anim = this.robot.animationModule;
-    // Prevent overlapping animations
-    if (anim.startAnimation && anim.startAnimation.active) return;
-    const now = performance.now();
-
-    // Setup knockback animation parameters (re-use existing startAnimation workflow)
-    anim.startAnimation.active = true;
-    anim.startAnimation.phase = 'knockback';
-    anim.startAnimation.knockbackStartTime = now;
-    anim.startAnimation.knockbackDuration = 700; // slightly longer for drama
-    anim.startAnimation.knockbackStartX = anim.patrol.x;
-    anim.startAnimation.knockbackStartY = anim.patrol.y;
-
-    // Kick off the animation loop
-    requestAnimationFrame(anim.updateStartAnimation);
   }
 }
