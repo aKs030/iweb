@@ -53,7 +53,7 @@ class LanguageManager extends EventTarget {
 
       // Initial translation of the page
       if (typeof document !== 'undefined') {
-        const ready = document.readyState !== 'loading' || document.body;
+        const ready = document.readyState !== 'loading' && document.body;
         if (ready) {
           this.translatePage();
           this.updateMetadata();
