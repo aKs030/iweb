@@ -439,6 +439,7 @@ const BlogApp = () => {
 
         log.info(`Successfully loaded ${final.length} blog posts`);
       } catch (error) {
+        log.error('Error loading blog posts:', error);
         setLoading(false);
         updateLoader(1, 'Fehler beim Laden');
         hideLoader(500);
