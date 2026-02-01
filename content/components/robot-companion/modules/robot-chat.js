@@ -530,7 +530,7 @@ export class RobotChat {
     schedule(0);
   }
 
-  async fetchAndShowSuggestion() {
+  async fetchAndShowSuggestion(tipKey = null) {
     if (this.isOpen) return;
 
     const ctx = this.robot.getPageContext();
@@ -541,12 +541,25 @@ export class RobotChat {
       document.querySelector('meta[name="description"]')?.content || '';
     const h1 = document.querySelector('h1')?.textContent || '';
 
+    // Capture visible text content for real page knowledge
+    // Using textContent for better performance (no layout/reflow calculations)
+    // Preserve paragraph structure while normalizing whitespace
+    // Limiting to first 3000 chars to balance context richness with API token limits
+    // Apply transformations after substring for better performance
+    const contentSnippet = (document.body.textContent || '')
+      .substring(0, 3000)
+      .replace(/\r\n/g, '\n') // normalize Windows newlines
+      .replace(/[ \t]+/g, ' ') // collapse spaces and tabs, keep line breaks
+      .replace(/\n{3,}/g, '\n\n') // limit excessive blank lines
+      .trim();
+
     const contextData = {
       pageId: ctx,
       title: pageTitle,
       description: metaDesc.substring(0, 150),
       headline: h1,
       url: window.location.pathname,
+      contentSnippet: contentSnippet,
     };
 
     try {
@@ -554,9 +567,12 @@ export class RobotChat {
       const suggestion = await gemini.getSuggestion(contextData);
       if (suggestion && !this.isOpen) {
         this.showBubble(suggestion);
-        // Mark as shown in intelligence module to prevent repetition
-        this.robot.intelligenceModule.contextTipsShown.add(`dynamic-${ctx}`);
+        // Mark slot as shown in intelligence module only on success
+        if (tipKey) {
+          this.robot.intelligenceModule.contextTipsShown.add(tipKey);
+        }
         setTimeout(() => this.hideBubble(), 12000); // Give user time to read
+        return true;
       }
     } catch (e) {
       log.warn('fetchAndShowSuggestion failed', e);
