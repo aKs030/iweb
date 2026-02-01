@@ -1,0 +1,34 @@
+<svg width="800" height="600" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <defs>
+    <linearGradient id="numberBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ff9a56;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ff6a88;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <rect width="800" height="600" fill="url(#numberBg)"/>
+
+  <!-- Title -->
+  <text x="400" y="80" font-family="sans-serif" font-size="48" fill="white" text-anchor="middle" font-weight="bold">Zahlen Raten</text>
+
+  <!-- Range display -->
+  <rect x="250" y="120" width="300" height="60" rx="15" fill="white" opacity="0.95"/>
+  <text x="400" y="160" font-family="sans-serif" font-size="28" fill="#2d3748" text-anchor="middle" font-weight="600">1 - 100</text>
+
+  <!-- Hint display -->
+  <rect x="200" y="220" width="400" height="50" rx="10" fill="white" opacity="0.9"/>
+  <text x="400" y="253" font-family="sans-serif" font-size="22" fill="#2d3748" text-anchor="middle" font-weight="500">Zu niedrig! Versuche es nochmal</text>
+
+  <!-- Question mark circle -->
+  <circle cx="400" cy="320" r="100" fill="white" opacity="0.95"/>
+  <text x="400" y="360" font-family="sans-serif" font-size="120" fill="#ff6a88" text-anchor="middle" font-weight="bold">?</text>
+
+  <!-- Input field -->
+  <rect x="275" y="450" width="250" height="60" rx="12" fill="white" opacity="0.95" stroke="#4a5568" stroke-width="2"/>
+  <text x="400" y="490" font-family="sans-serif" font-size="32" fill="#718096" text-anchor="middle" font-weight="500">50</text>
+
+  <!-- Guess button -->
+  <rect x="325" y="540" width="150" height="45" rx="12" fill="white" opacity="0.95"/>
+  <text x="400" y="570" font-family="sans-serif" font-size="24" fill="#ff6a88" text-anchor="middle" font-weight="bold">Raten!</text>
+</svg>
