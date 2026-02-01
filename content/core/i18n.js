@@ -85,7 +85,7 @@ class LanguageManager extends EventTarget {
         try {
           // Attempt to load the default language if not already loaded
           await this.loadTranslations(defaultLang);
-        } catch (fallbackError) {
+        } catch {
           // Logged in recursive call
         }
         // Use default lang or empty object
@@ -156,6 +156,11 @@ class LanguageManager extends EventTarget {
     }
 
     if (typeof value !== 'string') return key;
+
+    // Check params validity before interpolation
+    if (!params || typeof params !== 'object') {
+      return value;
+    }
 
     // Simple interpolation: "Hello {{name}}"
     return value.replace(/\{\{(\w+)\}\}/g, (_, k) => {

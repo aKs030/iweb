@@ -37,7 +37,7 @@ export const MenuConfig = {
     hero: { title: 'menu.home', subtitle: '' },
     features: { title: 'menu.projects', subtitle: 'footer.work.projects' },
     section3: { title: 'menu.about', subtitle: 'footer.about.title' },
-    contact: { title: 'menu.contact', subtitle: 'blog.cta_btn' },
+    contact: { title: 'menu.contact', subtitle: 'menu.contact_subtitle' },
   },
 
   // Menu Items Configuration

@@ -10,23 +10,11 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { createLogger } from '/content/core/logger.js';
 import { i18n } from '/content/core/i18n.js';
+import { useTranslation } from '/content/core/hooks/useTranslation.js';
 import { useToast, useProjects, useAppManager } from './hooks/index.js';
 
 const log = createLogger('react-projekte-app');
 const { createElement: h, Fragment } = React;
-
-// Translation Hook
-const useTranslation = () => {
-  const [lang, setLang] = React.useState(i18n.currentLang);
-
-  React.useEffect(() => {
-    const onLangChange = (e) => setLang(e.detail.lang);
-    i18n.addEventListener('language-changed', onLangChange);
-    return () => i18n.removeEventListener('language-changed', onLangChange);
-  }, []);
-
-  return { t: (key, params) => i18n.t(key, params), lang };
-};
 
 // Simple SVG Icons (without HTM dependency)
 const createIcon = (paths, props = {}) => {
@@ -804,15 +792,23 @@ export const initReactProjectsApp = () => {
     log.info('React Projects App rendered successfully');
   } catch (error) {
     log.error('Failed to render React Projects App:', error);
+
+    // Check if translations are loaded, provide hardcoded fallbacks for critical error messages
+    const hasTranslations =
+      i18n.translations && i18n.translations[i18n.currentLang];
     const errorMessage =
-      error instanceof Error ? error.message : i18n.t('error.unknown');
+      error instanceof Error
+        ? error.message
+        : hasTranslations
+          ? i18n.t('error.unknown')
+          : 'Unknown error';
 
     rootEl.innerHTML = `
       <div style="padding: 2rem; text-align: center; color: #ef4444; background: rgba(0,0,0,0.8); border-radius: 1rem; margin: 2rem;">
-        <h2>${i18n.t('error.load_failed_title')}</h2>
-        <p><strong>${i18n.t('error.details')}:</strong> ${errorMessage}</p>
+        <h2>${hasTranslations ? i18n.t('error.load_failed_title') : 'Error loading projects'}</h2>
+        <p><strong>${hasTranslations ? i18n.t('error.details') : 'Details'}:</strong> ${errorMessage}</p>
         <button onclick="location.reload()" style="margin-top: 1rem; padding: 0.5rem 1rem; cursor: pointer; background: #4444ff; color: white; border: none; border-radius: 4px;">
-          ${i18n.t('error.reload_page')}
+          ${hasTranslations ? i18n.t('error.reload_page') : 'Reload page'}
         </button>
       </div>
     `;
