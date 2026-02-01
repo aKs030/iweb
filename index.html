@@ -173,14 +173,19 @@
     <div id="app-loader" aria-live="polite" aria-label="Anwendung wird geladen">
       <div class="loader-spinner" aria-hidden="true"></div>
       <div class="loader-content">
-        <div class="loader-logo" aria-hidden="true">AKS | WEB</div>
+        <div class="loader-logo" aria-hidden="true" data-i18n="loader.logo">
+          AKS | WEB
+        </div>
 
         <div class="progress-container" role="presentation">
           <div class="progress-bar" id="loader-progress-bar"></div>
         </div>
 
         <div class="loader-info" aria-live="polite">
-          <span class="status-text" id="loader-status-text"
+          <span
+            class="status-text"
+            id="loader-status-text"
+            data-i18n="loader.status_init"
             >Initialisiere System...</span
           >
           <span class="percentage" id="loader-percentage">0%</span>
@@ -242,7 +247,7 @@
         id="hero"
         class="section hero u-center"
         aria-label="Abdulkerim — Digital Creator Portfolio"
-        data-section-src="/pages/home/hero"
+        data-section-src="/pages/home/hero.html"
         data-eager="true"
       >
         <div class="section-skeleton" aria-hidden="true"></div>
@@ -266,7 +271,8 @@
         id="section3"
         class="section section3"
         aria-label="Weitere Inhalte"
-        data-section-src="/pages/home/section3"
+        data-section-src="/pages/home/section3.html"
+        data-eager="true"
       ></section>
     </main>
   </body>

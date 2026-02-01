@@ -7,6 +7,7 @@ import { createLogger } from './logger.js';
 import { fetchText } from './fetch.js';
 import { fire, EVENTS } from './events.js';
 import { createObserver } from './intersection-observer.js';
+import { i18n } from '/content/core/i18n.js';
 
 const log = createLogger('SectionManager');
 
@@ -54,6 +55,9 @@ export class SectionManager {
       }
 
       section.removeAttribute('aria-busy');
+
+      // Translate loaded content
+      i18n.translateElement(section);
 
       if (section.id === 'hero') {
         fire(EVENTS.HERO_LOADED);

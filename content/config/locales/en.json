@@ -98,7 +98,17 @@
     "loading_project": "Loading project {{current}}/{{total}}...",
     "processing": "Processing project data...",
     "fallback_local": "Loading local projects...",
-    "projects_ready": "{{count}} projects ready"
+    "projects_ready": "{{count}} projects ready",
+    "logo": "AKS | WEB",
+    "status_init": "Initializing System...",
+    "ready_system": "Ready!",
+    "resources": "Loading resources...",
+    "modules_core": "Loading core modules...",
+    "hero_init": "Initializing Hero...",
+    "system_3d": "Loading 3D system...",
+    "optimize_images": "Optimizing images...",
+    "modules_loaded": "Modules loaded",
+    "timeout": "Timeout reached"
   },
   "error": {
     "load_failed_title": "Error loading projects",
@@ -116,5 +126,28 @@
     "closed": "{{title}} closed",
     "opened_github": "{{title}} opened on GitHub",
     "loading_github": "Loading projects from GitHub repository..."
+  },
+  "meta": {
+    "title": "Abdulkerim Sesli — Digital Creator Portfolio",
+    "description": "Abdulkerim Sesli — Web Developer & Photographer in Berlin. Specialized in React, Three.js and Urban Photography. Portfolio, References & Contact."
+  },
+  "hero": {
+    "greeting": "Welcome",
+    "btn_next": "Next",
+    "aria_next": "Scroll to features section",
+    "btn_contact": "Contact"
+  },
+  "farewell": {
+    "heading": "Goodbye!",
+    "p1": "Thank you very much for taking the time to visit my website! I am <strong>Abdulkerim</strong>, a passionate web developer from Berlin who loves turning digital visions into reality.",
+    "p2": "As a Digital Creator, I combine modern technologies with creative design to create websites that not only work efficiently but also delight and inspire visitors. My mission is to make the internet more accessible and aesthetic.",
+    "p3": "I hope my projects and ideas have fascinated you. Every line of code I write carries a piece of my passion - from the first idea to the final release.",
+    "p4": "Do you have questions, interest in a collaboration, or just want to chat? Do not hesitate to contact me via my channels. It was a real pleasure having you here!",
+    "strong": "Thank you for your interest – I look forward to your next visit!",
+    "nav_aria": "Navigation options",
+    "btn_top": "To Top",
+    "aria_top": "To Hero Section",
+    "btn_about": "About Me",
+    "aria_about": "Go to About"
   }
 }

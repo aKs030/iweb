@@ -1,7 +1,7 @@
 /**
  * Internationalization (i18n) Manager
  * Handles language state, translation loading, and event broadcasting.
- * @version 1.0.0
+ * @version 1.1.0
  */
 
 import { createLogger } from '/content/core/logger.js';
@@ -50,6 +50,10 @@ class LanguageManager extends EventTarget {
       document.documentElement.lang =
         this.currentLang === 'de' ? 'de-DE' : 'en-US';
       log.info(`Initialized with language: ${this.currentLang}`);
+
+      // Initial translation of the page
+      this.translatePage();
+      this.updateMetadata();
 
       // Dispatch initial event for eager subscribers
       this.dispatchEvent(
@@ -117,6 +121,9 @@ class LanguageManager extends EventTarget {
     localStorage.setItem('app_language', lang);
     document.documentElement.lang = lang === 'de' ? 'de-DE' : 'en-US';
 
+    this.translatePage();
+    this.updateMetadata();
+
     this.dispatchEvent(
       new CustomEvent('language-changed', {
         detail: { lang: this.currentLang },
@@ -161,6 +168,94 @@ class LanguageManager extends EventTarget {
     return value.replace(/\{\{(\w+)\}\}/g, (_, k) => {
       return params[k] !== undefined ? params[k] : `{{${k}}}`;
     });
+  }
+
+  /**
+   * Translates an entire page or checks the body
+   */
+  translatePage() {
+    this.translateElement(document.body);
+  }
+
+  /**
+   * Translates a specific element and its children using data-i18n attributes
+   * @param {HTMLElement|Element} element
+   */
+  translateElement(element) {
+    if (!element) return;
+
+    // 1. Text Content: data-i18n
+    const textElements = element.querySelectorAll
+      ? Array.from(element.querySelectorAll('[data-i18n]'))
+      : [];
+
+    // Include the root element itself if it matches
+    if (element.hasAttribute?.('data-i18n')) {
+      textElements.push(element);
+    }
+
+    textElements.forEach((el) => {
+      const key = el.getAttribute('data-i18n');
+      if (key) {
+        el.textContent = this.t(key);
+      }
+    });
+
+    // 2. Inner HTML: data-i18n-html (Use with caution)
+    const htmlElements = element.querySelectorAll
+      ? Array.from(element.querySelectorAll('[data-i18n-html]'))
+      : [];
+
+    if (element.hasAttribute?.('data-i18n-html')) {
+      htmlElements.push(element);
+    }
+
+    htmlElements.forEach((el) => {
+      const key = el.getAttribute('data-i18n-html');
+      if (key) {
+        el.innerHTML = this.t(key);
+      }
+    });
+
+    // 3. Attributes: data-i18n-attrs="placeholder:key,title:key2"
+    const attrElements = element.querySelectorAll
+      ? Array.from(element.querySelectorAll('[data-i18n-attrs]'))
+      : [];
+
+    if (element.hasAttribute?.('data-i18n-attrs')) {
+      attrElements.push(element);
+    }
+
+    attrElements.forEach((el) => {
+      const config = el.getAttribute('data-i18n-attrs');
+      if (!config) return;
+
+      const mappings = config.split(',');
+      mappings.forEach((mapping) => {
+        const [attr, key] = mapping.split(':').map((s) => s.trim());
+        if (attr && key) {
+          el.setAttribute(attr, this.t(key));
+        }
+      });
+    });
+  }
+
+  /**
+   * Updates document title and meta description based on current language
+   */
+  updateMetadata() {
+    // Title
+    const title = this.t('meta.title');
+    if (title !== 'meta.title') {
+      document.title = title;
+    }
+
+    // Meta Description
+    const metaDesc = document.querySelector('meta[name="description"]');
+    const desc = this.t('meta.description');
+    if (metaDesc && desc !== 'meta.description') {
+      metaDesc.setAttribute('content', desc);
+    }
   }
 
   /**

@@ -98,7 +98,17 @@
     "loading_project": "Lade Projekt {{current}}/{{total}}...",
     "processing": "Verarbeite Projektdaten...",
     "fallback_local": "Lade lokale Projekte...",
-    "projects_ready": "{{count}} Projekte bereit"
+    "projects_ready": "{{count}} Projekte bereit",
+    "logo": "AKS | WEB",
+    "status_init": "Initialisiere System...",
+    "ready_system": "Bereit!",
+    "resources": "Lade Ressourcen...",
+    "modules_core": "Lade Kern-Module...",
+    "hero_init": "Initialisiere Hero...",
+    "system_3d": "Lade 3D-System...",
+    "optimize_images": "Optimiere Bilder...",
+    "modules_loaded": "Module geladen",
+    "timeout": "Timeout erreicht"
   },
   "error": {
     "load_failed_title": "Fehler beim Laden der Projekte",
@@ -116,5 +126,28 @@
     "closed": "{{title}} geschlossen",
     "opened_github": "{{title}} auf GitHub geöffnet",
     "loading_github": "Lade Projekte aus GitHub Repository..."
+  },
+  "meta": {
+    "title": "Abdulkerim Sesli — Digital Creator Portfolio",
+    "description": "Abdulkerim Sesli — Web Developer & Photographer in Berlin. Spezialisiert auf React, Three.js und Urban Photography. Portfolio, Referenzen & Kontakt."
+  },
+  "hero": {
+    "greeting": "Willkommen",
+    "btn_next": "Weiter",
+    "aria_next": "Zu Features-Sektion scrollen",
+    "btn_contact": "Kontakt"
+  },
+  "farewell": {
+    "heading": "Auf Wiedersehen!",
+    "p1": "Vielen herzlichen Dank, dass Sie sich die Zeit genommen haben, meine Website zu besuchen! Ich bin <strong>Abdulkerim</strong>, ein passionierter Webentwickler aus Berlin, der es liebt, digitale Visionen in die Realität umzusetzen.",
+    "p2": "Als Digital Creator kombiniere ich moderne Technologien mit kreativem Design, um Websites zu schaffen, die nicht nur effizient funktionieren, sondern auch die Besucher begeistern und inspirieren. Meine Mission ist es, das Internet zugänglicher und ästhetischer zu gestalten.",
+    "p3": "Ich hoffe, meine Projekte und Ideen haben Sie fasziniert. Jede Zeile Code, die ich schreibe, trägt ein Stück meiner Leidenschaft in sich – von der ersten Idee bis zur finalen Veröffentlichung.",
+    "p4": "Haben Sie Fragen, Interesse an einer Zusammenarbeit oder möchten Sie einfach nur plaudern? Zögern Sie nicht, mich über meine Kanäle zu kontaktieren. Es war mir eine echte Freude, Sie hier zu haben!",
+    "strong": "Herzlichen Dank für Ihr Interesse – ich freue mich auf Ihren nächsten Besuch!",
+    "nav_aria": "Navigationsoptionen",
+    "btn_top": "Nach oben",
+    "aria_top": "Zur Hero-Sektion",
+    "btn_about": "Über mich",
+    "aria_about": "Zu About gehen"
   }
 }
