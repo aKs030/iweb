@@ -229,13 +229,21 @@ async function networkFirst(request) {
 async function staleWhileRevalidate(request) {
   const cached = await caches.match(request);
 
-  const fetchPromise = fetch(request).then((response) => {
-    if (response.ok) {
-      const cache = caches.open(CACHE_NAME);
-      cache.then((c) => c.put(request, response.clone()));
-    }
-    return response;
-  });
+  const fetchPromise = fetch(request)
+    .then((response) => {
+      if (response.ok) {
+        // Clone before any other operations
+        const responseToCache = response.clone();
+        caches.open(CACHE_NAME).then((cache) => {
+          cache.put(request, responseToCache);
+        });
+      }
+      return response;
+    })
+    .catch((error) => {
+      console.error('[SW] Stale while revalidate fetch failed:', error);
+      return cached;
+    });
 
   return cached || fetchPromise;
 }
