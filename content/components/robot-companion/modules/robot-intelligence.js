@@ -374,9 +374,8 @@ export class RobotIntelligence {
     if (Math.random() > 0.3) return;
 
     // Always fetch dynamic suggestion based on real page content
-    // Mark as shown only after fetchAndShowSuggestion is called (handled in robot-chat.js)
-    this.contextTipsShown.add(tipKey);
-    this.robot.fetchAndShowSuggestion();
+    // Pass tipKey so it can be marked as shown only on success
+    this.robot.fetchAndShowSuggestion(tipKey);
   }
 
   /**
