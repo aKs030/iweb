@@ -17,15 +17,23 @@ import DOMPurify from 'https://cdn.jsdelivr.net/npm/dompurify@3.0.8/dist/purify.
 import { Clock, ArrowRight, ArrowUp } from '/content/components/ui/icons.js';
 import hljs from 'https://esm.sh/highlight.js@11.9.0/lib/core';
 import javascript from 'https://esm.sh/highlight.js@11.9.0/lib/languages/javascript';
+import typescript from 'https://esm.sh/highlight.js@11.9.0/lib/languages/typescript';
 import xml from 'https://esm.sh/highlight.js@11.9.0/lib/languages/xml';
 import css from 'https://esm.sh/highlight.js@11.9.0/lib/languages/css';
 import bash from 'https://esm.sh/highlight.js@11.9.0/lib/languages/bash';
+import json from 'https://esm.sh/highlight.js@11.9.0/lib/languages/json';
+import plaintext from 'https://esm.sh/highlight.js@11.9.0/lib/languages/plaintext';
 
 // Register languages
 hljs.registerLanguage('javascript', javascript);
+hljs.registerLanguage('typescript', typescript);
 hljs.registerLanguage('xml', xml);
+hljs.registerLanguage('html', xml);
 hljs.registerLanguage('css', css);
 hljs.registerLanguage('bash', bash);
+hljs.registerLanguage('json', json);
+hljs.registerLanguage('text', plaintext);
+hljs.registerLanguage('plaintext', plaintext);
 
 // Inject Highlight.js CSS
 const link = document.createElement('link');
@@ -37,8 +45,17 @@ document.head.appendChild(link);
 // Configure Marked
 const renderer = new marked.Renderer();
 renderer.code = (code, language) => {
-  const validLang = hljs.getLanguage(language) ? language : 'plaintext';
-  return `<pre><code class="hljs language-${validLang}">${hljs.highlight(code, { language: validLang }).value}</code></pre>`;
+  if (!language || !hljs.getLanguage(language)) {
+    // No highlighting for unknown languages
+    const escaped = code
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+    return `<pre><code class="hljs">${escaped}</code></pre>`;
+  }
+  return `<pre><code class="hljs language-${language}">${hljs.highlight(code, { language }).value}</code></pre>`;
 };
 renderer.heading = (text, level) => {
   const slug = text.toLowerCase().replace(/[^\w]+/g, '-');
@@ -343,6 +360,7 @@ const TableOfContents = ({ htmlContent }) => {
 
 const RelatedPosts = ({ currentPost, allPosts }) => {
   const { t } = useTranslation();
+
   const related = React.useMemo(() => {
     if (!currentPost || !allPosts.length) return [];
     return allPosts

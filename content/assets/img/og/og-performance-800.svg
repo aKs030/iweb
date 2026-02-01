@@ -1,0 +1,63 @@
+<svg width="800" height="420" viewBox="0 0 800 420" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="perfGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a2e;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0f3460;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#00d4ff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0099ff;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="800" height="420" fill="url(#perfGrad)"/>
+  
+  <!-- Grid Pattern -->
+  <g opacity="0.1">
+    <line x1="0" y1="140" x2="800" y2="140" stroke="#00d4ff" stroke-width="1"/>
+    <line x1="0" y1="280" x2="800" y2="280" stroke="#00d4ff" stroke-width="1"/>
+    <line x1="200" y1="0" x2="200" y2="420" stroke="#00d4ff" stroke-width="1"/>
+    <line x1="400" y1="0" x2="400" y2="420" stroke="#00d4ff" stroke-width="1"/>
+    <line x1="600" y1="0" x2="600" y2="420" stroke="#00d4ff" stroke-width="1"/>
+  </g>
+  
+  <!-- Performance Graph -->
+  <g transform="translate(100, 150)">
+    <!-- Bars representing performance metrics -->
+    <rect x="0" y="80" width="60" height="100" fill="#ff6b6b" opacity="0.3" rx="4"/>
+    <rect x="80" y="40" width="60" height="140" fill="#ffd93d" opacity="0.3" rx="4"/>
+    <rect x="160" y="10" width="60" height="170" fill="#6bcf7f" opacity="0.3" rx="4"/>
+    <rect x="240" y="0" width="60" height="180" fill="url(#accentGrad)" opacity="0.8" rx="4"/>
+    
+    <!-- Trend line -->
+    <polyline points="30,130 110,90 190,60 270,40" 
+              fill="none" stroke="#00d4ff" stroke-width="3" 
+              stroke-linecap="round" stroke-linejoin="round"/>
+    
+    <!-- Data points -->
+    <circle cx="30" cy="130" r="5" fill="#00d4ff"/>
+    <circle cx="110" cy="90" r="5" fill="#00d4ff"/>
+    <circle cx="190" cy="60" r="5" fill="#00d4ff"/>
+    <circle cx="270" cy="40" r="6" fill="#00d4ff">
+      <animate attributeName="r" values="6;8;6" dur="2s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  
+  <!-- Speed Icon -->
+  <g transform="translate(520, 120)">
+    <circle cx="60" cy="60" r="50" fill="none" stroke="url(#accentGrad)" stroke-width="4" opacity="0.3"/>
+    <circle cx="60" cy="60" r="50" fill="none" stroke="url(#accentGrad)" stroke-width="4" 
+            stroke-dasharray="157 157" stroke-dashoffset="39.25" opacity="0.8">
+      <animateTransform attributeName="transform" type="rotate" from="0 60 60" to="360 60 60" 
+                        dur="3s" repeatCount="indefinite"/>
+    </circle>
+    <path d="M 60 30 L 70 60 L 60 55 L 50 60 Z" fill="#00d4ff"/>
+  </g>
+  
+  <!-- Title -->
+  <text x="400" y="340" font-family="Arial, sans-serif" font-size="42" font-weight="bold" 
+        fill="#ffffff" text-anchor="middle">Performance</text>
+  <text x="400" y="375" font-family="Arial, sans-serif" font-size="24" 
+        fill="#00d4ff" text-anchor="middle">Optimization</text>
+</svg>
