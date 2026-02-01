@@ -484,19 +484,31 @@ export class RobotChat {
   }
 
   async fetchAndShowSuggestion() {
-    if (this.lastGreetedContext || this.isOpen) return;
+    if (this.isOpen) return;
 
     const ctx = this.robot.getPageContext();
-    const behavior = {
-      page: ctx,
-      interests: [ctx],
+
+    // Gather richer context for the AI
+    const pageTitle = document.title;
+    const metaDesc =
+      document.querySelector('meta[name="description"]')?.content || '';
+    const h1 = document.querySelector('h1')?.textContent || '';
+
+    const contextData = {
+      pageId: ctx,
+      title: pageTitle,
+      description: metaDesc.substring(0, 150),
+      headline: h1,
+      url: window.location.pathname,
     };
 
     try {
-      const suggestion = await this.robot.gemini.getSuggestion(behavior);
+      const suggestion = await this.robot.gemini.getSuggestion(contextData);
       if (suggestion && !this.isOpen) {
         this.showBubble(suggestion);
-        setTimeout(() => this.hideBubble(), 8000);
+        // Mark as shown in intelligence module to prevent repetition
+        this.robot.intelligenceModule.contextTipsShown.add(`dynamic-${ctx}`);
+        setTimeout(() => this.hideBubble(), 12000); // Give user time to read
       }
     } catch (e) {
       log.warn('fetchAndShowSuggestion failed', e);
