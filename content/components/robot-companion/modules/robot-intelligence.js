@@ -356,7 +356,8 @@ export class RobotIntelligence {
     const timeOnPage =
       Date.now() - (this.pageTimeTracking[context] || Date.now());
     // Create a key for this "slot" (e.g. "projects-0", "projects-1" for 30s blocks)
-    const tipKey = `${context}-${Math.floor(timeOnPage / 30000)}`;
+    const timeSlotIndex = Math.floor(timeOnPage / 30000);
+    const tipKey = `${context}-${timeSlotIndex}`;
 
     // If we already showed a tip in this time slot, skip
     if (this.contextTipsShown.has(tipKey)) return;
@@ -364,12 +365,23 @@ export class RobotIntelligence {
     // Only show tips after user has been on page for at least 15 seconds
     if (timeOnPage < 15000) return;
 
-    // 30% chance to show tip per check (checks every 15s)
+    // Check if we are in the "second half" of the 30s slot (e.g. 15-30s check vs 0-15s check)
+    // Since interval is 15s, we might hit 15s (index 0.5) and 30s (index 1.0).
+    // Logic: 0-30s is slot 0. We might check at ~15s and ~30s.
+    // If we check at 15s (slot 0), we roll. If we fail, we might check at 30s (slot 1).
+    // To enable "one chance per slot", we can track attempted slots or rely on probability.
+    // Given the simplicity, we'll stick to probability but ensure the call is handled correctly.
+
+    // 30% chance to show tip per check
     if (Math.random() > 0.3) return;
 
     // Always fetch dynamic suggestion based on real page content
-    this.robot.fetchAndShowSuggestion();
-    this.contextTipsShown.add(tipKey);
+    // Only mark as shown if the fetch was successful (async)
+    this.robot.fetchAndShowSuggestion().then((success) => {
+      if (success) {
+        this.contextTipsShown.add(tipKey);
+      }
+    });
   }
 
   /**

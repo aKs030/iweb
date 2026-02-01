@@ -542,16 +542,15 @@ export class RobotChat {
     const h1 = document.querySelector('h1')?.textContent || '';
 
     // Capture visible text content for real page knowledge
-    // Using textContent is lighter than innerText, but innerText is more "visual"
-    // limiting to first 1500 chars to stay within reasonable token limits for quick tips
-    const contentSnippet = (
-      document.body.innerText ||
-      document.body.textContent ||
-      ''
-    )
-      .replace(/\s+/g, ' ')
+    // Using textContent for better performance (no reflow)
+    // Preserving some structure (newlines) for better AI context
+    const contentSnippet = (document.body.textContent || '')
+      .replace(/\r\n/g, '\n')
+      .replace(/\t/g, ' ')
+      .replace(/\n{3,}/g, '\n\n') // Limit excessive newlines
+      .replace(/ {2,}/g, ' ') // Limit excessive spaces
       .trim()
-      .substring(0, 1500);
+      .substring(0, 2000); // Increased limit for textContent
 
     const contextData = {
       pageId: ctx,
@@ -570,6 +569,7 @@ export class RobotChat {
         // Mark as shown in intelligence module to prevent repetition
         this.robot.intelligenceModule.contextTipsShown.add(`dynamic-${ctx}`);
         setTimeout(() => this.hideBubble(), 12000); // Give user time to read
+        return true;
       }
     } catch (e) {
       log.warn('fetchAndShowSuggestion failed', e);
