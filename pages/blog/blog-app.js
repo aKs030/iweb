@@ -1,7 +1,7 @@
 /**
  * Blog App with Progress Tracking
- * @version 3.0.0
- * @last-modified 2026-01-31
+ * @version 4.1.0
+ * @last-modified 2026-02-01
  */
 
 // @ts-nocheck
@@ -15,8 +15,37 @@ import { updateLoader, hideLoader } from '/content/core/global-loader.js';
 import { marked } from 'https://cdn.jsdelivr.net/npm/marked@11.1.1/lib/marked.esm.js';
 import DOMPurify from 'https://cdn.jsdelivr.net/npm/dompurify@3.0.8/dist/purify.es.mjs';
 import { Clock, ArrowRight, ArrowUp } from '/content/components/ui/icons.js';
+import hljs from 'https://esm.sh/highlight.js@11.9.0/lib/core';
+import javascript from 'https://esm.sh/highlight.js@11.9.0/lib/languages/javascript';
+import xml from 'https://esm.sh/highlight.js@11.9.0/lib/languages/xml';
+import css from 'https://esm.sh/highlight.js@11.9.0/lib/languages/css';
+import bash from 'https://esm.sh/highlight.js@11.9.0/lib/languages/bash';
 
-marked.setOptions({ mangle: false, headerIds: false });
+// Register languages
+hljs.registerLanguage('javascript', javascript);
+hljs.registerLanguage('xml', xml);
+hljs.registerLanguage('css', css);
+hljs.registerLanguage('bash', bash);
+
+// Inject Highlight.js CSS
+const link = document.createElement('link');
+link.rel = 'stylesheet';
+link.href =
+  'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css';
+document.head.appendChild(link);
+
+// Configure Marked
+const renderer = new marked.Renderer();
+renderer.code = (code, language) => {
+  const validLang = hljs.getLanguage(language) ? language : 'plaintext';
+  return `<pre><code class="hljs language-${validLang}">${hljs.highlight(code, { language: validLang }).value}</code></pre>`;
+};
+renderer.heading = (text, level) => {
+  const slug = text.toLowerCase().replace(/[^\w]+/g, '-');
+  return `<h${level} id="${slug}">${text}</h${level}>`;
+};
+
+marked.setOptions({ renderer, mangle: false, headerIds: false });
 
 const log = createLogger('BlogApp');
 const html = htm.bind(React.createElement);
@@ -37,6 +66,24 @@ const useTranslation = () => {
 // --- Utilities ---
 const estimateReadTime = (text = '') =>
   `${Math.max(1, Math.round(text.split(/\s+/).length / 200))} min`;
+
+const parseFrontmatter = (text) => {
+  const match = text.match(/^---\n([\s\S]*?)\n---/);
+  if (!match) return { content: text, data: {} };
+
+  const frontmatter = match[1];
+  const content = text.slice(match[0].length);
+  const data = {};
+
+  frontmatter.split('\n').forEach((line) => {
+    const [key, ...val] = line.split(':');
+    if (key && val) {
+      data[key.trim()] = val.join(':').trim();
+    }
+  });
+
+  return { content, data };
+};
 
 const CATEGORY_OVERRIDES = {
   'threejs-performance': 'Performance',
@@ -59,107 +106,87 @@ const normalizePost = (raw = {}) => {
     timestamp: dateStr ? new Date(dateStr).getTime() : 0, // Pre-calc for sorting
     dateDisplay: raw.dateDisplay || dateStr,
     readTime: raw.readTime || estimateReadTime(raw.content || raw.html || ''),
+    file: raw.file || null,
   };
 };
 
 // Fetch Logic with Progress Tracking
 const loadPostsData = async (seedPosts = []) => {
   try {
-    updateLoader(0.2, 'Lese Sitemap...');
-    const r = await fetch('/sitemap.xml');
-    if (!r.ok) throw new Error('No sitemap');
+    updateLoader(0.2, 'Lese Index...');
 
-    const xml = await r.text();
-    const ids = Array.from(
-      xml.matchAll(new RegExp('<loc>.*?/blog/([^/<>]+)/?.*?</loc>', 'g')),
-    ).map((m) => m[1]);
-    const uniqueIds = Array.from(new Set(ids));
+    // Fetch index.json
+    let fetchedPosts = [];
+    try {
+      const indexRes = await fetch('/content/posts/index.json');
+      if (indexRes.ok) {
+        fetchedPosts = await indexRes.json();
+        updateLoader(0.4, `${fetchedPosts.length} Artikel gefunden...`);
+      } else {
+        throw new Error('Index not found');
+      }
+    } catch (e) {
+      log.warn('Could not load index.json', e);
+      return seedPosts;
+    }
 
-    updateLoader(0.3, `${uniqueIds.length} Artikel gefunden...`);
-
-    // Fetch articles with progress updates
+    // Now fetch content for each post
     let loaded = 0;
-    const total = uniqueIds.length;
+    const total = fetchedPosts.length;
 
-    const fetched = await Promise.all(
-      uniqueIds.map(async (id) => {
+    const populated = await Promise.all(
+      fetchedPosts.map(async (p) => {
         try {
-          const res = await fetch(`/pages/blog/${id}/index.html`);
-          if (res.ok) {
-            const result = await parseArticleHtml(await res.text(), id);
-            loaded++;
+          let postData = { ...p };
 
-            const progress = 0.3 + (loaded / total) * 0.4;
-            updateLoader(progress, `Lade Artikel ${loaded}/${total}...`, {
-              silent: true,
-            });
-
-            return result;
+          if (p.file) {
+            const res = await fetch(p.file);
+            if (res.ok) {
+              const text = await res.text();
+              const { content, data } = parseFrontmatter(text);
+              postData = { ...postData, ...data, content };
+            }
           }
-        } catch {
+
+          loaded++;
+          const progress = 0.4 + (loaded / total) * 0.4;
+          updateLoader(progress, `Lade Artikel ${loaded}/${total}...`, {
+            silent: true,
+          });
+
+          return normalizePost(postData);
+        } catch (e) {
+          log.warn(`Failed to load ${p.id}`, e);
           return null;
         }
       }),
     );
 
-    updateLoader(0.75, 'Verarbeite Artikel...');
+    updateLoader(0.85, 'Verarbeite Artikel...');
 
     const map = new Map();
-    // Seed Data Map
+    // Seed Data
     seedPosts.forEach((p) => map.set(p.id, p));
-
-    // Merge Fetched Data
-    fetched.filter(Boolean).forEach((p) => {
-      const existing = map.get(p.id) || {};
-      const merged = normalizePost({ ...existing, ...p });
-      map.set(p.id, merged);
+    // Merged Fetched
+    populated.filter(Boolean).forEach((p) => {
+      map.set(p.id, { ...(map.get(p.id) || {}), ...p });
     });
 
     const result = Array.from(map.values()).sort(
       (a, b) => b.timestamp - a.timestamp,
     );
 
-    updateLoader(0.9, `${result.length} Artikel geladen`);
-
+    updateLoader(0.95, `${result.length} Artikel geladen`);
     return result;
   } catch (e) {
-    log.warn('Fallback to seed data', e);
-    updateLoader(0.9, 'Verwende Seed-Daten');
+    log.warn('Fatal error loading posts', e);
     return seedPosts;
   }
 };
 
-const parseArticleHtml = (htmlText, id) => {
-  const doc = new DOMParser().parseFromString(htmlText, 'text/html');
-  const title = doc.querySelector('h1')?.textContent || id;
-  const bodyEl =
-    doc.querySelector('.article-body') || doc.querySelector('article');
-  if (bodyEl)
-    bodyEl
-      .querySelectorAll('script, style, .skip-links')
-      .forEach((e) => e.remove());
-
-  const heroImg = doc.querySelector('.article-hero img')?.getAttribute('src');
-  const metaImg = doc
-    .querySelector('meta[property="og:image"]')
-    ?.getAttribute('content');
-
-  return normalizePost({
-    id,
-    title,
-    date: doc.querySelector('.meta')?.textContent || '',
-    image: heroImg || metaImg || null,
-    excerpt:
-      doc.querySelector('meta[name="description"]')?.getAttribute('content') ||
-      '',
-    html: bodyEl ? bodyEl.innerHTML : '',
-    // Category will be resolved by normalizePost via CATEGORY_OVERRIDES
-  });
-};
-
 // --- Components ---
 
-// Progressive Image Component mit Blur-up Effekt
+// Progressive Image Component
 const ProgressiveImage = React.memo(function ProgressiveImage({
   src,
   alt,
@@ -175,8 +202,6 @@ const ProgressiveImage = React.memo(function ProgressiveImage({
 
   React.useEffect(() => {
     if (!imgRef.current) return;
-
-    // Wenn Bild bereits im Cache ist, sofort anzeigen
     if (imgRef.current.complete && imgRef.current.naturalHeight !== 0) {
       setLoaded(true);
     }
@@ -241,6 +266,81 @@ const ReadingProgress = () => {
   </div>`;
 };
 
+const TableOfContents = ({ htmlContent }) => {
+  const [activeId, setActiveId] = React.useState('');
+
+  const headings = React.useMemo(() => {
+    const doc = new DOMParser().parseFromString(htmlContent, 'text/html');
+    return Array.from(doc.querySelectorAll('h2, h3'))
+      .map((el) => ({
+        id: el.id,
+        text: el.textContent,
+        level: Number(el.tagName.substring(1)),
+      }))
+      .filter((h) => h.id);
+  }, [htmlContent]);
+
+  React.useEffect(() => {
+    if (headings.length === 0) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setActiveId(entry.target.id);
+          }
+        });
+      },
+      { rootMargin: '-100px 0px -66%' },
+    );
+
+    const handle = requestAnimationFrame(() => {
+      headings.forEach((h) => {
+        const el = document.getElementById(h.id);
+        if (el) observer.observe(el);
+      });
+    });
+
+    return () => {
+      observer.disconnect();
+      cancelAnimationFrame(handle);
+    };
+  }, [headings]);
+
+  if (headings.length === 0) return null;
+
+  return html`
+    <nav className="toc-nav fade-in">
+      <h4 className="toc-title">Inhalt</h4>
+      <ul>
+        ${headings.map(
+          (h) => html`
+            <li
+              key=${h.id}
+              className=${`toc-item level-${h.level} ${activeId === h.id ? 'active' : ''}`}
+            >
+              <a
+                href="#${h.id}"
+                onClick=${(e) => {
+                  e.preventDefault();
+                  const el = document.getElementById(h.id);
+                  if (el) {
+                    el.scrollIntoView({ behavior: 'smooth' });
+                    setActiveId(h.id);
+                    window.history.replaceState(null, null, `#${h.id}`);
+                  }
+                }}
+              >
+                ${h.text}
+              </a>
+            </li>
+          `,
+        )}
+      </ul>
+    </nav>
+  `;
+};
+
 const RelatedPosts = ({ currentPost, allPosts }) => {
   const { t } = useTranslation();
   const related = React.useMemo(() => {
@@ -298,20 +398,22 @@ const BlogApp = () => {
       : [];
     setPosts(seed);
 
-    // IIFE for async/await in useEffect
     (async () => {
       try {
         updateLoader(0.1, 'Lade Blog...');
 
-        // Parallel execution for better performance
         const [final, ogData] = await Promise.all([
           loadPostsData(seed),
           (async () => {
             updateLoader(0.15, 'Lade Metadaten...', { silent: true });
-            const response = await fetch(
-              '/content/assets/img/og/og-images-meta.json',
-            );
-            return response.json();
+            try {
+              const response = await fetch(
+                '/content/assets/img/og/og-images-meta.json',
+              );
+              return response.ok ? response.json() : {};
+            } catch {
+              return {};
+            }
           })(),
         ]);
 
@@ -386,6 +488,7 @@ const BlogApp = () => {
         ? DOMPurify.sanitize(
             activePost.html ||
               (activePost.content ? marked.parse(activePost.content) : ''),
+            { ADD_ATTR: ['id', 'class'] },
           )
         : '',
     [activePost],
@@ -418,6 +521,7 @@ const BlogApp = () => {
     const og = getOg(post.id);
     const heroSrc = post.image || (og ? og.fallback || og.url : null);
 
+    // Apply layout wrapper for TOC
     return html`
       <${React.Fragment}>
         <${ReadingProgress} />
@@ -427,76 +531,80 @@ const BlogApp = () => {
           <button className="btn-back" onClick=${() =>
             (window.location.hash = '')}>← ${t('blog.back')} (ESC)</button>
           
-          <article className="blog-article">
-            <header>
-              <div className="card-meta">
-                <span className="card-category">${post.category}</span>
-                <span className="card-read-time"><${Clock}/> ${
-                  post.readTime
-                }</span>
-              </div>
-              <h1>${post.title}</h1>
-              <time className="meta" datetime=${post.date}>${post.dateDisplay}</time>
-            </header>
+          <div className="blog-layout-wrapper">
+             <article className="blog-article">
+                <header>
+                <div className="card-meta">
+                    <span className="card-category">${post.category}</span>
+                    <span className="card-read-time"><${Clock}/> ${
+                      post.readTime
+                    }</span>
+                </div>
+                <h1>${post.title}</h1>
+                <time className="meta" datetime=${post.date}>${post.dateDisplay}</time>
+                </header>
 
-            ${
-              heroSrc &&
-              html`
-                <figure className="article-hero">
-                  <${ProgressiveImage}
-                    src=${heroSrc}
-                    alt=${post.title}
-                    className="article-hero-img"
-                    loading="eager"
-                    fetchpriority="high"
-                    width=${og?.width || 800}
-                    height=${og?.height || 420}
-                  />
-                </figure>
-              `
-            }
+                ${
+                  heroSrc &&
+                  html`
+                    <figure className="article-hero">
+                      <${ProgressiveImage}
+                        src=${heroSrc}
+                        alt=${post.title}
+                        className="article-hero-img"
+                        loading="eager"
+                        fetchpriority="high"
+                        width=${og?.width || 800}
+                        height=${og?.height || 420}
+                      />
+                    </figure>
+                  `
+                }
 
-            <div className="article-body" dangerouslySetInnerHTML=${{
-              __html: cleanHtml,
-            }}></div>
-            
-            <${RelatedPosts} currentPost=${post} allPosts=${posts} />
+                <div className="article-body" dangerouslySetInnerHTML=${{
+                  __html: cleanHtml,
+                }}></div>
 
-            <div className="article-cta">
-              <h3>${t('blog.cta_title')}</h3>
-              <p style=${{
-                color: '#ccc',
-                marginBottom: '1.5rem',
-                maxWidth: '600px',
-                margin: '0 auto 1.5rem',
-              }}>
-                ${t('blog.cta_text')}
-              </p>
-              <a href="/#contact" className="btn-primary">${t('blog.cta_btn')}</a>
-            </div>
-          </article>
+                <${RelatedPosts} currentPost=${post} allPosts=${posts} />
+
+                <div className="article-cta">
+                <h3>${t('blog.cta_title')}</h3>
+                <p style=${{
+                  color: '#ccc',
+                  marginBottom: '1.5rem',
+                  maxWidth: '600px',
+                  margin: '0 auto 1.5rem',
+                }}>
+                    ${t('blog.cta_text')}
+                </p>
+                <a href="/#contact" className="btn-primary">${t('blog.cta_btn')}</a>
+                </div>
+            </article>
+
+            <aside className="blog-sidebar">
+                <${TableOfContents} htmlContent=${cleanHtml} />
+            </aside>
+          </div>
         </div>
       </${React.Fragment}>
     `;
   }
 
-  // List View
+  // List View (unchanged logic)
   return html`
     <div className="container-blog fade-in" style=${{ paddingTop: '6rem' }}>
       <${ScrollToTop} />
 
-      <!-- Static Header -->
       <header style=${{ marginBottom: '2rem' }}>
         <h1 className="blog-headline">${t('blog.headline')}</h1>
         <p className="blog-subline">${t('blog.subline')}</p>
       </header>
 
-      <!-- Sticky Controls: Optimized Top Position -->
       <div
         className="blog-sticky-header"
         style=${{
           position: 'sticky',
-          top: '72px' /* Matches Site Header Height + Spacing */,
+          top: '72px',
           zIndex: 40,
           background: 'rgba(3, 3, 3, 0.85)',
           backdropFilter: 'blur(12px)',
@@ -529,7 +637,6 @@ const BlogApp = () => {
         ${visiblePosts.map((post, idx) => {
           const og = getOg(post.id);
           const fallbackImg = post.image || (og ? og.fallback || og.url : null);
-          // Eager loading für erste 2 Bilder (Above the Fold)
           const loadingStrategy = idx < 2 ? 'eager' : 'lazy';
           const fetchPriority = idx === 0 ? 'high' : undefined;
 
