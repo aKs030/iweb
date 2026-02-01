@@ -333,24 +333,6 @@ textarea:focus-visible {
   .section.about {
     padding-block: clamp(2.5rem, 8vw, 3.5rem);
   }
-
-  /* Ensure features section is visible on mobile */
-  .section.features {
-    min-height: 100vh;
-    min-height: 100dvh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    position: relative;
-    z-index: 1;
-  }
-
-  .features-content {
-    min-height: 50vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-  }
 }
 
 /* ===== END LAYOUT & SECTIONS ===== */
@@ -360,8 +342,8 @@ textarea:focus-visible {
 /* Base Styles */
 html,
 body {
-  min-height: 100vh;
-  height: 100vh;
+  min-height: 100%;
+  height: 100%;
   overflow-x: hidden;
   touch-action: pan-y;
   scroll-behavior: smooth;
@@ -375,8 +357,6 @@ body {
     'kern' 1,
     'liga' 1,
     'calt' 1;
-  margin: 0;
-  padding: 0;
 }
 
 body {
@@ -384,7 +364,6 @@ body {
   background: var(--bg-primary);
   color: var(--text-primary);
   margin: 0;
-  padding: 0;
   text-rendering: optimizelegibility;
   scroll-snap-align: start;
   scroll-snap-stop: always;
