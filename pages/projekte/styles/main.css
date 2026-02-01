@@ -186,6 +186,15 @@ body {
   padding: 3rem 1.5rem;
 }
 
+/* Special styling for sections with expanded apps */
+.snap-section:has(.project-card-expanded),
+.snap-section-expanded {
+  padding: 1rem 0.5rem;
+  justify-content: flex-start;
+  padding-top: 2rem;
+  min-height: 100vh;
+}
+
 .hero-section .container {
   max-width: 1200px;
   margin: 0 auto;
@@ -492,6 +501,18 @@ body {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
+.project-card-expanded {
+  max-width: min(95vw, 1400px);
+  padding: 0;
+  height: min(85vh, 800px);
+  display: flex;
+  flex-direction: column;
+  margin: 0 auto;
+  position: relative;
+  transform: none !important;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+}
+
 .project-card::before {
   content: '';
   position: absolute;
@@ -539,8 +560,221 @@ body {
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
 }
 
+.project-card-expanded:hover {
+  transform: scale(1.01);
+}
+
 .project-card:hover::after {
   opacity: 1;
+}
+
+/* ============================================================================
+   FULLSCREEN APP
+   ============================================================================ */
+
+.app-fullscreen {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  border-radius: 2rem;
+  overflow: hidden;
+  min-height: 0;
+  position: relative;
+  background: rgba(0, 0, 0, 0.95);
+}
+
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1.5rem;
+  background: rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  z-index: 10;
+  flex-shrink: 0;
+  min-height: 70px;
+}
+
+.app-header-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.app-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: white;
+  margin: 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.app-close-btn,
+.app-fullscreen-btn {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.app-close-btn:hover,
+.app-fullscreen-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.app-content {
+  flex: 1;
+  position: relative;
+  background: #ffffff;
+  border-radius: 0 0 2rem 2rem;
+  overflow: hidden;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  height: calc(100% - 70px);
+  pointer-events: auto;
+  user-select: auto;
+}
+
+.app-iframe-wrapper {
+  flex: 1;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #ffffff;
+  pointer-events: auto;
+  user-select: auto;
+}
+
+.app-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: white;
+  flex: 1;
+  min-height: 0;
+  display: block;
+  border-radius: 0 0 2rem 2rem;
+  pointer-events: auto;
+  touch-action: auto;
+  user-select: auto;
+  -webkit-user-select: auto;
+  -moz-user-select: auto;
+  -ms-user-select: auto;
+}
+
+/* Loading state for app iframe */
+.app-content::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top: 3px solid #60a5fa;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.app-iframe[src=''] ~ .app-content::before,
+.app-iframe:not([src]) ~ .app-content::before {
+  opacity: 1;
+}
+
+/* Ensure iframe content is responsive */
+.app-iframe {
+  transform-origin: top left;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+/* Better iframe interaction */
+.app-iframe:focus {
+  outline: none;
+}
+
+.app-iframe:hover {
+  cursor: auto;
+}
+
+/* Ensure iframe is above any overlays */
+.app-content .app-iframe {
+  position: relative;
+  z-index: 10;
+  pointer-events: auto;
+}
+
+/* Remove any potential interaction blockers */
+.app-content::after,
+.app-content::before {
+  pointer-events: none !important;
+}
+
+/* Ensure the wrapper doesn't interfere */
+.app-iframe-wrapper {
+  isolation: isolate;
+}
+
+/* Force iframe to be interactive */
+.app-iframe-wrapper .app-iframe {
+  pointer-events: auto !important;
+  touch-action: auto !important;
+  user-select: auto !important;
+}
+
+/* Card integration styles */
+.card-integrated-iframe {
+  background: white;
+  border-radius: 0 0 2rem 2rem;
+}
+
+/* Ensure apps can use full space */
+.project-card-expanded .app-iframe {
+  min-height: calc(100vh - 200px);
+}
+
+/* Hide scrollbars in iframe for cleaner look */
+.app-iframe::-webkit-scrollbar {
+  width: 8px;
+}
+
+.app-iframe::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.app-iframe::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+}
+
+.app-iframe::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* Ensure proper scaling on different screen sizes */
+@media (max-width: 768px) {
+  .project-card-expanded .app-iframe {
+    min-height: calc(100vh - 150px);
+  }
 }
 
 /* ============================================================================
@@ -550,18 +784,27 @@ body {
 .window-mockup {
   position: relative;
   width: 100%;
-  height: 140px;
+  height: 220px;
   border-radius: 0.75rem;
   background: rgba(0, 0, 0, 0.4);
   border: 1px solid rgba(255, 255, 255, 0.1);
   overflow: hidden;
   margin-bottom: 1rem;
-  transition: transform 0.3s ease;
+  transition: all 0.3s ease;
   will-change: transform;
+}
+
+.window-mockup-expanded {
+  height: 400px;
+  border-radius: 1rem;
 }
 
 .window-mockup:hover {
   transform: scale(1.02);
+}
+
+.window-mockup-expanded:hover {
+  transform: none;
 }
 
 .mockup-content {
@@ -588,6 +831,13 @@ body {
   transform-origin: center center;
   will-change: transform;
   pointer-events: none;
+}
+
+.mockup-iframe-full {
+  width: 100%;
+  height: 100%;
+  border: none;
+  pointer-events: auto;
 }
 
 .mockup-icon {
@@ -836,7 +1086,7 @@ body {
   }
 
   .window-mockup {
-    height: 160px;
+    height: 180px;
   }
 
   .project-title {
@@ -854,7 +1104,7 @@ body {
   }
 
   .window-mockup {
-    height: 170px;
+    height: 190px;
   }
 }
 
@@ -905,8 +1155,14 @@ body {
     margin: 0 1rem;
   }
 
+  .project-card-expanded {
+    max-width: calc(100vw - 0.5rem);
+    height: min(85vh, 700px);
+    margin: 0 0.25rem;
+  }
+
   .window-mockup {
-    height: 120px;
+    height: 160px;
   }
 
   .project-header {
@@ -921,6 +1177,31 @@ body {
 
   .project-desc {
     font-size: 0.8rem;
+  }
+
+  .app-header {
+    padding: 0.75rem 1rem;
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: stretch;
+  }
+
+  .app-header-actions {
+    justify-content: flex-end;
+    gap: 0.5rem;
+  }
+
+  .app-title {
+    font-size: 1.1rem;
+    text-align: center;
+  }
+
+  .app-close-btn,
+  .app-fullscreen-btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+    flex: 1;
+    max-width: 120px;
   }
 
   .modal-wrapper {
@@ -969,4 +1250,261 @@ a:focus-visible {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border-width: 0;
+}
+
+/* ============================================================================
+   IFRAME STYLES
+   ============================================================================ */
+
+.app-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 0;
+  background: #ffffff;
+  display: block;
+  min-height: 500px;
+  flex: 1;
+  pointer-events: auto !important;
+  user-select: auto !important;
+  touch-action: auto !important;
+}
+
+.card-integrated-iframe {
+  border-radius: 0 0 2rem 2rem;
+  overflow: hidden;
+}
+
+/* Mockup iframe styles for preview */
+.mockup-iframe {
+  width: 100%;
+  height: 200px;
+  border: none;
+  border-radius: 0.75rem;
+  background: #f8fafc;
+  pointer-events: auto;
+  transform: scale(0.9);
+  transform-origin: top left;
+  overflow: hidden;
+  cursor: pointer;
+  transition:
+    transform 0.3s ease,
+    height 0.3s ease;
+}
+
+.mockup-iframe:hover {
+  transform: scale(0.95);
+}
+
+.mockup-iframe-full {
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 0;
+  background: #ffffff;
+  pointer-events: auto;
+  transform: none;
+  min-height: 400px;
+}
+
+.mockup-iframe-wrapper {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+  border-radius: 0.75rem;
+  background: #f8fafc;
+  transition: height 0.3s ease;
+}
+
+/* Responsive iframe adjustments */
+@media (max-width: 768px) {
+  .project-card-expanded {
+    max-width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+    margin: 0;
+  }
+
+  .app-fullscreen {
+    border-radius: 0;
+  }
+
+  .app-content {
+    border-radius: 0;
+  }
+
+  .card-integrated-iframe {
+    border-radius: 0;
+  }
+
+  .app-header {
+    padding: 1rem;
+    min-height: 80px;
+  }
+
+  .app-content {
+    height: calc(100% - 80px);
+  }
+}
+
+/* ============================================================================
+   LOADING AND ERROR STATES
+   ============================================================================ */
+
+.app-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 0.875rem;
+}
+
+.app-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  background: #fef2f2;
+  color: #dc2626;
+  font-size: 0.875rem;
+  text-align: center;
+  padding: 1rem;
+}
+
+/* ============================================================================
+   PERFORMANCE OPTIMIZATIONS
+   ============================================================================ */
+
+.project-card {
+  contain: layout style paint;
+  will-change: transform;
+}
+
+.app-iframe {
+  contain: strict;
+  will-change: auto;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  .project-card {
+    transition: none;
+  }
+
+  .btn {
+    transition: none;
+  }
+
+  .app-close-btn,
+  .app-fullscreen-btn {
+    transition: none;
+  }
+}
+/* Responsive iframe heights */
+@media (max-width: 1200px) {
+  .mockup-iframe {
+    height: 180px;
+  }
+
+  .mockup-iframe-wrapper {
+    height: 180px;
+  }
+}
+
+@media (max-width: 768px) {
+  .mockup-iframe {
+    height: 160px;
+    transform: scale(0.85);
+  }
+
+  .mockup-iframe-wrapper {
+    height: 160px;
+  }
+}
+
+@media (max-width: 480px) {
+  .mockup-iframe {
+    height: 140px;
+    transform: scale(0.8);
+  }
+
+  .mockup-iframe-wrapper {
+    height: 140px;
+  }
+}
+/* Interactive preview indicator */
+.mockup-iframe-wrapper::after {
+  content: '🎮 Interaktiv - Klicken zum Verwenden';
+  position: absolute;
+  bottom: 0.5rem;
+  right: 0.5rem;
+  background: rgba(59, 130, 246, 0.9);
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.mockup-iframe-wrapper:hover::after {
+  opacity: 1;
+}
+
+@media (max-width: 768px) {
+  .mockup-iframe-wrapper::after {
+    font-size: 0.625rem;
+    padding: 0.2rem 0.4rem;
+  }
+}
+/* ============================================================================
+   INTERACTION FIXES
+   ============================================================================ */
+
+/* Ensure expanded cards allow all interactions */
+.project-card-expanded,
+.project-card-expanded *,
+.project-card-expanded .app-fullscreen,
+.project-card-expanded .app-content,
+.project-card-expanded .app-iframe-wrapper,
+.project-card-expanded .app-iframe {
+  pointer-events: auto !important;
+  user-select: auto !important;
+  touch-action: auto !important;
+}
+
+/* Remove any potential overlay issues */
+.project-card-expanded::before,
+.project-card-expanded::after {
+  pointer-events: none !important;
+}
+
+/* Ensure iframe is fully interactive */
+.project-card-expanded .app-iframe {
+  position: relative;
+  z-index: 1;
+  isolation: isolate;
+}
+
+/* Fix any potential stacking context issues */
+.app-fullscreen {
+  isolation: isolate;
+  z-index: 1;
+}
+
+.app-content {
+  isolation: isolate;
+  z-index: 1;
+}
+
+/* Ensure clicks pass through to iframe */
+.app-iframe-wrapper {
+  isolation: isolate;
+  z-index: 1;
 }
