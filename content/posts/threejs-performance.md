@@ -25,14 +25,14 @@ Zusätzlich ist ein sauberes Asset-Management entscheidend für langfristige Per
 
 #### Takeaways:
 
-*   Priorisieren Sie Draw‑Call‑Reduktion (InstancedMesh / merged geometry).
-*   Nutze komprimierte Texturformate (KTX2) und implementiere LOD für entfernte Szeneninhalte.
+- Priorisieren Sie Draw‑Call‑Reduktion (InstancedMesh / merged geometry).
+- Nutze komprimierte Texturformate (KTX2) und implementiere LOD für entfernte Szeneninhalte.
 
 ### Praktische Checkliste
 
-*   Prüfe Draw Calls mit DevTools / Spector.js und priorisiere die größten Kostenpunkte.
-*   Verwende Instancing oder `mergeGeometry` bzw. BufferGeometry‑Merges, um Draw Calls zu reduzieren.
-*   Automatisieren Sie Profiling und Messläufe (DevTools, Spector.js, Lighthouse).
+- Prüfe Draw Calls mit DevTools / Spector.js und priorisiere die größten Kostenpunkte.
+- Verwende Instancing oder `mergeGeometry` bzw. BufferGeometry‑Merges, um Draw Calls zu reduzieren.
+- Automatisieren Sie Profiling und Messläufe (DevTools, Spector.js, Lighthouse).
 
 🔗 Passend dazu: Auch der Artikel „Modernes UI-Design: Mehr als nur Dark Mode" zeigt, wie Performance und Nutzererlebnis Hand in Hand gehen.
 
