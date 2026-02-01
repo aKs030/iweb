@@ -3,7 +3,9 @@
   <div class="hero__visual">
     <div class="hero__image-container u-center">
       <div class="hero__spotlight-bg">
-        <div class="hero__title" id="greetingText">Willkommen</div>
+        <div class="hero__title" id="greetingText" data-i18n="hero.greeting">
+          Willkommen
+        </div>
       </div>
       <div class="hero__floating-icons">
         <div class="hero__floating-icon hero__floating-icon--delay-0">
@@ -28,6 +30,8 @@
     href="#features"
     class="btn btn-primary hero__button--crt"
     aria-label="Zu Features-Sektion scrollen"
+    data-i18n="hero.btn_next"
+    data-i18n-attrs="aria-label:hero.aria_next"
   >
     Weiter
   </a>
@@ -36,6 +40,7 @@
     class="btn btn-secondary hero__button--crt"
     data-footer-trigger
     aria-expanded="false"
+    data-i18n="hero.btn_contact"
   >
     Kontakt
   </a>

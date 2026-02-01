@@ -39,6 +39,7 @@ import { updateLoader, hideLoader } from './core/global-loader.js';
 import { ThreeEarthManager } from './core/three-earth-manager.js';
 import { getElementById, onDOMReady } from './core/utils.js';
 import { initImageOptimization } from './core/image-loader-helper.js';
+import { i18n } from './core/i18n.js';
 
 const log = createLogger('main');
 
@@ -408,8 +409,9 @@ const EventHandlers = {
 document.addEventListener(
   'DOMContentLoaded',
   async () => {
+    await i18n.init();
     perfMarks.domReady = performance.now();
-    updateLoader(0.1, 'Initialisiere System...');
+    updateLoader(0.1, i18n.t('loader.status_init'));
 
     fire(EVENTS.DOM_READY);
 
@@ -438,7 +440,7 @@ document.addEventListener(
 
       if (!loaderHidden) {
         loaderHidden = true;
-        updateLoader(1, 'Bereit!');
+        updateLoader(1, i18n.t('loader.ready_system'));
         setTimeout(() => hideLoader(), 100);
         announce('Anwendung geladen', { dedupe: true });
       }
@@ -451,23 +453,23 @@ document.addEventListener(
       () => {
         perfMarks.windowLoaded = performance.now();
         windowLoaded = true;
-        updateLoader(0.7, 'Lade Ressourcen...');
+        updateLoader(0.7, i18n.t('loader.resources'));
         checkReady();
       },
       { once: true },
     );
 
-    updateLoader(0.2, 'Lade Kern-Module...');
+    updateLoader(0.2, i18n.t('loader.modules_core'));
     fire(EVENTS.CORE_INITIALIZED);
     fire(EVENTS.HERO_INIT_READY);
 
-    updateLoader(0.3, 'Initialisiere Hero...');
+    updateLoader(0.3, i18n.t('loader.hero_init'));
     initHeroFeatureBundle(sectionManager);
 
-    updateLoader(0.4, 'Lade 3D-System...');
+    updateLoader(0.4, i18n.t('loader.system_3d'));
     ThreeEarthLoader.initDelayed();
 
-    updateLoader(0.5, 'Optimiere Bilder...');
+    updateLoader(0.5, i18n.t('loader.optimize_images'));
     // Initialize image optimization
     initImageOptimization({
       autoOptimize: true,
@@ -479,7 +481,7 @@ document.addEventListener(
 
     modulesReady = true;
     perfMarks.modulesReady = performance.now();
-    updateLoader(0.6, 'Module geladen');
+    updateLoader(0.6, i18n.t('loader.modules_loaded'));
     fire(EVENTS.MODULES_READY);
     checkReady();
 
@@ -488,7 +490,7 @@ document.addEventListener(
       if (!loaderHidden) {
         log.info('Forcing loading screen hide after timeout');
         loaderHidden = true;
-        updateLoader(1, 'Timeout erreicht');
+        updateLoader(1, i18n.t('loader.timeout'));
         hideLoader();
       }
     }, LOADING_TIMEOUT_MS);
