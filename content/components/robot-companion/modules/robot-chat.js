@@ -542,16 +542,18 @@ export class RobotChat {
     const h1 = document.querySelector('h1')?.textContent || '';
 
     // Capture visible text content for real page knowledge
-    // Using textContent is lighter than innerText, but innerText is more "visual"
-    // limiting to first 1500 chars to stay within reasonable token limits for quick tips
+    // Using textContent for better performance (no layout/reflow calculations)
+    // Preserve paragraph structure while normalizing whitespace
+    // Limiting to first 3000 chars to balance context richness with API token limits
     const contentSnippet = (
-      document.body.innerText ||
       document.body.textContent ||
       ''
     )
-      .replace(/\s+/g, ' ')
+      .replace(/\r\n/g, '\n') // normalize Windows newlines
+      .replace(/[ \t]+/g, ' ') // collapse spaces and tabs, keep line breaks
+      .replace(/\n{3,}/g, '\n\n') // limit excessive blank lines
       .trim()
-      .substring(0, 1500);
+      .substring(0, 3000);
 
     const contextData = {
       pageId: ctx,
