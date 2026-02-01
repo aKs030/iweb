@@ -89,7 +89,7 @@ class LanguageManager extends EventTarget {
         try {
           // Attempt to load the default language if not already loaded
           await this.loadTranslations(defaultLang);
-        } catch (fallbackError) {
+        } catch {
           // Logged in recursive call
         }
         // Use default lang or empty object
