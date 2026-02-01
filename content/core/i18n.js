@@ -26,33 +26,42 @@ class LanguageManager extends EventTarget {
    */
   async init() {
     if (this.initialized) return;
+    if (this.loadingPromise) return this.loadingPromise;
 
-    // 1. Check LocalStorage
-    let savedLang = localStorage.getItem('app_language');
+    this.loadingPromise = (async () => {
+      // 1. Check LocalStorage
+      let savedLang = localStorage.getItem('app_language');
 
-    // 2. Check Browser Language if no preference saved
-    if (!savedLang) {
-      const browserLang = navigator.language.slice(0, 2);
-      savedLang = browserLang === 'de' ? 'de' : 'en'; // Default fallback to EN for non-DE
-    }
+      // 2. Check Browser Language if no preference saved
+      if (!savedLang) {
+        const browserLang = navigator.language.slice(0, 2);
+        savedLang = browserLang === 'de' ? 'de' : 'en'; // Default fallback to EN for non-DE
+      }
 
-    // Validate
-    if (!['de', 'en'].includes(savedLang)) {
-      savedLang = 'de';
-    }
+      // Validate
+      if (!['de', 'en'].includes(savedLang)) {
+        savedLang = 'de';
+      }
 
-    this.currentLang = savedLang;
-    await this.loadTranslations(this.currentLang);
+      this.currentLang = savedLang;
+      await this.loadTranslations(this.currentLang);
 
-    this.initialized = true;
-    log.info(`Initialized with language: ${this.currentLang}`);
+      this.initialized = true;
+      document.documentElement.lang =
+        this.currentLang === 'de' ? 'de-DE' : 'en-US';
+      log.info(`Initialized with language: ${this.currentLang}`);
 
-    // Dispatch initial event for eager subscribers
-    this.dispatchEvent(
-      new CustomEvent('language-changed', {
-        detail: { lang: this.currentLang },
-      }),
-    );
+      // Dispatch initial event for eager subscribers
+      this.dispatchEvent(
+        new CustomEvent('language-changed', {
+          detail: { lang: this.currentLang },
+        }),
+      );
+    })().finally(() => {
+      this.loadingPromise = null;
+    });
+
+    return this.loadingPromise;
   }
 
   /**
@@ -69,7 +78,22 @@ class LanguageManager extends EventTarget {
       log.debug(`Loaded translations for ${lang}`);
     } catch (error) {
       log.error(`Error loading translations for ${lang}`, error);
-      // Fallback: if EN fails, try DE, etc. (prevent infinite loop though)
+
+      // Fallback strategy:
+      const defaultLang = 'de';
+      if (lang !== defaultLang) {
+        try {
+          // Attempt to load the default language if not already loaded
+          await this.loadTranslations(defaultLang);
+        } catch (fallbackError) {
+          // Logged in recursive call
+        }
+        // Use default lang or empty object
+        this.translations[lang] = this.translations[defaultLang] || {};
+      } else {
+        // Default failed, empty object to prevent crashes
+        this.translations[lang] = {};
+      }
     }
   }
 
@@ -133,9 +157,9 @@ class LanguageManager extends EventTarget {
 
     if (typeof value !== 'string') return key;
 
-    // Simple interpolation: "Hello {name}"
-    return value.replace(/\{(\w+)\}/g, (_, k) => {
-      return params[k] !== undefined ? params[k] : `{${k}}`;
+    // Simple interpolation: "Hello {{name}}"
+    return value.replace(/\{\{(\w+)\}\}/g, (_, k) => {
+      return params[k] !== undefined ? params[k] : `{{${k}}}`;
     });
   }
 

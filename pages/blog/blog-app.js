@@ -399,7 +399,7 @@ const BlogApp = () => {
     if (!post && !loading)
       return html`
         <div className="container-blog pt-24 fade-in">
-          <p>${t('blog.not_found', 'Artikel nicht gefunden.')}</p>
+          <p>${t('blog.not_found')}</p>
           <button
             className="btn-back"
             onClick=${() => (window.location.hash = '')}
@@ -573,9 +573,7 @@ const BlogApp = () => {
           `;
         })}
         ${visiblePosts.length === 0 && !loading
-          ? html`<p style="color:#666">
-              ${t('blog.not_found', 'Keine Artikel gefunden.')}
-            </p>`
+          ? html`<p style="color:#666">${t('blog.not_found')}</p>`
           : ''}
       </div>
     </div>

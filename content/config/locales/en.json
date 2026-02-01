@@ -52,6 +52,7 @@
       "text": "Discover my interactive web projects – from experimental prototypes to full applications. All projects are dynamically loaded from my GitHub repository.",
       "loading": "Loading projects...",
       "stats_projects": "Projects",
+      "stats_project": "Project",
       "stats_tech": "Technologies",
       "stats_apps": "Apps open",
       "stats_source": "Source",
@@ -78,7 +79,8 @@
     "cta_title": "Need help with your project?",
     "cta_text": "Do you need help with web design, performance optimization, or SEO? Let's talk about it without obligation.",
     "cta_btn": "Get in touch",
-    "filter_all": "All"
+    "filter_all": "All",
+    "not_found": "Article not found."
   },
   "common": {
     "loading": "Loading...",
