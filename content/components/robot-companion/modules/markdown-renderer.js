@@ -83,7 +83,7 @@ export class MarkdownRenderer {
     inlineCodes.forEach((code, i) => {
       html = html.replace(
         `[[[INLINECODE${i}]]]`,
-        `<code class="inline-code">${code}</code>`,
+        `<code>${code}</code>`,
       );
     });
 
