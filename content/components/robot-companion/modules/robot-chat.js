@@ -376,7 +376,8 @@ export class RobotChat {
         const ctx = this.robot.getPageContext();
         const suffix = String(this.startMessageSuffix?.[ctx] ?? '').trim();
         if (suffix) {
-          responseText = `${String(responseText || '').trim()} ${suffix}`.trim();
+          responseText =
+            `${String(responseText || '').trim()} ${suffix}`.trim();
         }
       }
     }
