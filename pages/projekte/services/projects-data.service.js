@@ -141,6 +141,7 @@ const loadDynamicProjects = async (icons) => {
 
     return {
       id: i + 1,
+      name: dirName,
       title: data.title,
       description: data.description,
       tags: Array.isArray(data.tags) ? data.tags : [],
