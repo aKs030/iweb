@@ -116,19 +116,16 @@ console.log("Hello Robot!");
  * @param {Function} onChunk - Callback for each chunk
  */
 async function simulateStreaming(text, onChunk) {
-  // Split by spaces but preserve newlines for better simulation
-  const tokens = text.match(/[\s\S]/g) || []; // Char by char for smooth typing
-  // Or word by word? Word by word is better for markdown parsing stability during stream
-  // Let's do small chunks of characters
+  // Use word-based chunking for better performance with markdown parsing
+  // Split on word boundaries while preserving whitespace and newlines
+  const tokens = text.match(/\S+\s*/g) || [];
 
   let accumulated = '';
-  const chunkSize = 3; // chars per chunk
 
-  for (let i = 0; i < tokens.length; i += chunkSize) {
-    const chunk = tokens.slice(i, i + chunkSize).join('');
-    accumulated += chunk;
+  for (const token of tokens) {
+    accumulated += token;
     onChunk(accumulated);
-    await sleep(20); // Faster, smoother typing
+    await sleep(30); // Slightly slower to maintain smooth visual effect
   }
 }
 
