@@ -51,6 +51,9 @@ export class RAGService {
       const resp = await fetch('/pages/projekte/apps-config.json');
       if (resp.ok) {
         this.projectsData = await resp.json();
+      } else {
+        // Ensure a consistent, non-null value even when the response is not OK
+        this.projectsData = [];
       }
     } catch (e) {
       console.warn('RAGService: Could not load projects data', e);
