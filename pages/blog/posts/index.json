@@ -6,7 +6,7 @@
     "category": "Webdesign",
     "excerpt": "React ohne Build-Tools: Praktische Setups mit ES Modules und htm für schnelle Prototypen.",
     "image": "/content/assets/img/og/og-react-800.webp",
-    "file": "/content/posts/react-no-build.md"
+    "file": "/pages/blog/posts/react-no-build.md"
   },
   {
     "id": "modern-ui-design",
@@ -15,7 +15,7 @@
     "category": "Webdesign",
     "excerpt": "Modernes UI-Design bedeutet mehr als visuelle Trends: Es vereint Accessibility, Mikro‑Interaktionen und konsistente Nutzerführung.",
     "image": "/content/assets/img/og/og-design-800.webp",
-    "file": "/content/posts/modern-ui-design.md"
+    "file": "/pages/blog/posts/modern-ui-design.md"
   },
   {
     "id": "visual-storytelling",
@@ -24,7 +24,7 @@
     "category": "Online-Marketing",
     "excerpt": "Visuelles Storytelling: Komposition, Licht und Reduktion als Mittel, um Emotionen und klare Botschaften zu transportieren.",
     "image": "/content/assets/img/og/og-photography-800.webp",
-    "file": "/content/posts/visual-storytelling.md"
+    "file": "/pages/blog/posts/visual-storytelling.md"
   },
   {
     "id": "threejs-performance",
@@ -33,6 +33,6 @@
     "category": "Performance",
     "excerpt": "Praxisnahe Techniken zur Performance-Optimierung von Three.js: InstancedMesh, LOD-Strategien, Texturkompression und mehr.",
     "image": "/content/assets/img/og/og-threejs-800.webp",
-    "file": "/content/posts/threejs-performance.md"
+    "file": "/pages/blog/posts/threejs-performance.md"
   }
 ]
