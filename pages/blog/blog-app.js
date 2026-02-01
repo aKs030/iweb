@@ -1,6 +1,6 @@
 /**
  * Blog App with Progress Tracking
- * @version 4.0.0
+ * @version 4.1.0
  * @last-modified 2026-02-01
  */
 
@@ -30,8 +30,7 @@ hljs.registerLanguage('bash', bash);
 // Inject Highlight.js CSS
 const link = document.createElement('link');
 link.rel = 'stylesheet';
-link.href =
-  'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css';
+link.href = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css';
 document.head.appendChild(link);
 
 // Configure Marked
@@ -75,7 +74,7 @@ const parseFrontmatter = (text) => {
   const content = text.slice(match[0].length);
   const data = {};
 
-  frontmatter.split('\n').forEach((line) => {
+  frontmatter.split('\n').forEach(line => {
     const [key, ...val] = line.split(':');
     if (key && val) {
       data[key.trim()] = val.join(':').trim();
@@ -106,7 +105,7 @@ const normalizePost = (raw = {}) => {
     timestamp: dateStr ? new Date(dateStr).getTime() : 0, // Pre-calc for sorting
     dateDisplay: raw.dateDisplay || dateStr,
     readTime: raw.readTime || estimateReadTime(raw.content || raw.html || ''),
-    file: raw.file || null,
+    file: raw.file || null
   };
 };
 
@@ -115,35 +114,19 @@ const loadPostsData = async (seedPosts = []) => {
   try {
     updateLoader(0.2, 'Lese Index...');
 
-    // Try to fetch new index.json first
+    // Fetch index.json
     let fetchedPosts = [];
     try {
-      const indexRes = await fetch('/content/posts/index.json');
-      if (indexRes.ok) {
-        fetchedPosts = await indexRes.json();
-        updateLoader(
-          0.4,
-          `${fetchedPosts.length} Markdown-Artikel gefunden...`,
-        );
-      }
+        const indexRes = await fetch('/content/posts/index.json');
+        if (indexRes.ok) {
+            fetchedPosts = await indexRes.json();
+            updateLoader(0.4, `${fetchedPosts.length} Artikel gefunden...`);
+        } else {
+            throw new Error('Index not found');
+        }
     } catch (e) {
-      log.warn('Could not load index.json', e);
-    }
-
-    // Fallback to sitemap if no index or mixed content (optional, but good for migration)
-    if (fetchedPosts.length === 0) {
-      updateLoader(0.2, 'Lese Sitemap (Fallback)...');
-      const r = await fetch('/sitemap.xml');
-      if (r.ok) {
-        const xml = await r.text();
-        const ids = Array.from(
-          xml.matchAll(new RegExp('<loc>.*?/blog/([^/<>]+)/?.*?</loc>', 'g')),
-        ).map((m) => m[1]);
-        const uniqueIds = Array.from(new Set(ids));
-
-        // Convert to stub objects
-        fetchedPosts = uniqueIds.map((id) => ({ id }));
-      }
+        log.warn('Could not load index.json', e);
+        return seedPosts;
     }
 
     // Now fetch content for each post
@@ -156,35 +139,25 @@ const loadPostsData = async (seedPosts = []) => {
           let postData = { ...p };
 
           if (p.file) {
-            // It's a Markdown post
-            const res = await fetch(p.file);
-            if (res.ok) {
-              const text = await res.text();
-              const { content, data } = parseFrontmatter(text);
-              postData = { ...postData, ...data, content };
-            }
-          } else {
-            // It's a legacy HTML post (from sitemap)
-            // Check if we have a migrated markdown file anyway? No, assume legacy.
-            const res = await fetch(`/pages/blog/${p.id}/index.html`);
-            if (res.ok) {
-              const result = await parseArticleHtml(await res.text(), p.id);
-              postData = { ...postData, ...result };
-            }
+             const res = await fetch(p.file);
+             if (res.ok) {
+                 const text = await res.text();
+                 const { content, data } = parseFrontmatter(text);
+                 postData = { ...postData, ...data, content };
+             }
           }
 
           loaded++;
           const progress = 0.4 + (loaded / total) * 0.4;
-          updateLoader(progress, `Lade Artikel ${loaded}/${total}...`, {
-            silent: true,
-          });
+          updateLoader(progress, `Lade Artikel ${loaded}/${total}...`, { silent: true });
 
           return normalizePost(postData);
+
         } catch (e) {
           log.warn(`Failed to load ${p.id}`, e);
           return null;
         }
-      }),
+      })
     );
 
     updateLoader(0.85, 'Verarbeite Artikel...');
@@ -194,7 +167,7 @@ const loadPostsData = async (seedPosts = []) => {
     seedPosts.forEach((p) => map.set(p.id, p));
     // Merged Fetched
     populated.filter(Boolean).forEach((p) => {
-      map.set(p.id, { ...(map.get(p.id) || {}), ...p });
+        map.set(p.id, { ...(map.get(p.id) || {}), ...p });
     });
 
     const result = Array.from(map.values()).sort(
@@ -203,37 +176,11 @@ const loadPostsData = async (seedPosts = []) => {
 
     updateLoader(0.95, `${result.length} Artikel geladen`);
     return result;
+
   } catch (e) {
     log.warn('Fatal error loading posts', e);
     return seedPosts;
   }
-};
-
-const parseArticleHtml = (htmlText, id) => {
-  const doc = new DOMParser().parseFromString(htmlText, 'text/html');
-  const title = doc.querySelector('h1')?.textContent || id;
-  const bodyEl =
-    doc.querySelector('.article-body') || doc.querySelector('article');
-  if (bodyEl)
-    bodyEl
-      .querySelectorAll('script, style, .skip-links')
-      .forEach((e) => e.remove());
-
-  const heroImg = doc.querySelector('.article-hero img')?.getAttribute('src');
-  const metaImg = doc
-    .querySelector('meta[property="og:image"]')
-    ?.getAttribute('content');
-
-  return {
-    id,
-    title,
-    date: doc.querySelector('.meta')?.textContent || '',
-    image: heroImg || metaImg || null,
-    excerpt:
-      doc.querySelector('meta[name="description"]')?.getAttribute('content') ||
-      '',
-    html: bodyEl ? bodyEl.innerHTML : '',
-  };
 };
 
 // --- Components ---
@@ -319,74 +266,62 @@ const ReadingProgress = () => {
 };
 
 const TableOfContents = ({ htmlContent }) => {
-  const [headings, setHeadings] = React.useState([]);
-  const [activeId, setActiveId] = React.useState('');
+    const [headings, setHeadings] = React.useState([]);
+    const [activeId, setActiveId] = React.useState('');
 
-  React.useEffect(() => {
-    // Simple regex to find headers since we don't want to parse HTML string fully if possible,
-    // but DOMParser is safer.
-    const doc = new DOMParser().parseFromString(htmlContent, 'text/html');
-    const elements = Array.from(doc.querySelectorAll('h2, h3'));
+    React.useEffect(() => {
+        // Simple regex to find headers since we don't want to parse HTML string fully if possible,
+        // but DOMParser is safer.
+        const doc = new DOMParser().parseFromString(htmlContent, 'text/html');
+        const elements = Array.from(doc.querySelectorAll('h2, h3'));
 
-    const items = elements
-      .map((el) => ({
-        id: el.id,
-        text: el.textContent,
-        level: Number(el.tagName.substring(1)),
-      }))
-      .filter((h) => h.id); // Only those with IDs (generated by marked)
+        const items = elements.map(el => ({
+            id: el.id,
+            text: el.textContent,
+            level: Number(el.tagName.substring(1))
+        })).filter(h => h.id); // Only those with IDs (generated by marked)
 
-    setHeadings(items);
+        setHeadings(items);
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setActiveId(entry.target.id);
-          }
+        const observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        setActiveId(entry.target.id);
+                    }
+                });
+            },
+            { rootMargin: '-100px 0px -66%' }
+        );
+
+        items.forEach(h => {
+            const el = document.getElementById(h.id);
+            if (el) observer.observe(el);
         });
-      },
-      { rootMargin: '-100px 0px -66%' },
-    );
 
-    items.forEach((h) => {
-      const el = document.getElementById(h.id);
-      if (el) observer.observe(el);
-    });
+        return () => observer.disconnect();
+    }, [htmlContent]);
 
-    return () => observer.disconnect();
-  }, [htmlContent]);
+    if (headings.length === 0) return null;
 
-  if (headings.length === 0) return null;
-
-  return html`
-    <nav className="toc-nav fade-in">
-      <h4 className="toc-title">Inhalt</h4>
-      <ul>
-        ${headings.map(
-          (h) => html`
-            <li
-              key=${h.id}
-              className=${`toc-item level-${h.level} ${activeId === h.id ? 'active' : ''}`}
-            >
-              <a
-                href="#${h.id}"
-                onClick=${(e) => {
-                  e.preventDefault();
-                  document
-                    .getElementById(h.id)
-                    ?.scrollIntoView({ behavior: 'smooth' });
-                  setActiveId(h.id);
-                }}
-              >
-                ${h.text}
-              </a>
-            </li>
-          `,
-        )}
-      </ul>
-    </nav>
-  `;
+    return html`
+        <nav className="toc-nav fade-in">
+            <h4 className="toc-title">Inhalt</h4>
+            <ul>
+                ${headings.map(h => html`
+                    <li key=${h.id} className=${`toc-item level-${h.level} ${activeId === h.id ? 'active' : ''}`}>
+                        <a href="#${h.id}" onClick=${(e) => {
+                            e.preventDefault();
+                            document.getElementById(h.id)?.scrollIntoView({ behavior: 'smooth' });
+                            setActiveId(h.id);
+                        }}>
+                            ${h.text}
+                        </a>
+                    </li>
+                `)}
+            </ul>
+        </nav>
+    `;
 };
 
 const RelatedPosts = ({ currentPost, allPosts }) => {
@@ -455,13 +390,9 @@ const BlogApp = () => {
           (async () => {
             updateLoader(0.15, 'Lade Metadaten...', { silent: true });
             try {
-              const response = await fetch(
-                '/content/assets/img/og/og-images-meta.json',
-              );
-              return response.ok ? response.json() : {};
-            } catch {
-              return {};
-            }
+               const response = await fetch('/content/assets/img/og/og-images-meta.json');
+               return response.ok ? response.json() : {};
+            } catch { return {}; }
           })(),
         ]);
 
@@ -536,7 +467,7 @@ const BlogApp = () => {
         ? DOMPurify.sanitize(
             activePost.html ||
               (activePost.content ? marked.parse(activePost.content) : ''),
-            { ADD_ATTR: ['id', 'class'] },
+            { ADD_ATTR: ['id', 'class'] }
           )
         : '',
     [activePost],
@@ -585,7 +516,7 @@ const BlogApp = () => {
                 <div className="card-meta">
                     <span className="card-category">${post.category}</span>
                     <span className="card-read-time"><${Clock}/> ${
-                      post.readTime
+                    post.readTime
                     }</span>
                 </div>
                 <h1>${post.title}</h1>
@@ -593,10 +524,10 @@ const BlogApp = () => {
                 </header>
 
                 ${
-                  heroSrc &&
-                  html`
+                heroSrc &&
+                html`
                     <figure className="article-hero">
-                      <${ProgressiveImage}
+                    <${ProgressiveImage}
                         src=${heroSrc}
                         alt=${post.title}
                         className="article-hero-img"
@@ -604,13 +535,13 @@ const BlogApp = () => {
                         fetchpriority="high"
                         width=${og?.width || 800}
                         height=${og?.height || 420}
-                      />
+                    />
                     </figure>
-                  `
+                `
                 }
 
                 <div className="article-body" dangerouslySetInnerHTML=${{
-                  __html: cleanHtml,
+                __html: cleanHtml,
                 }}></div>
 
                 <${RelatedPosts} currentPost=${post} allPosts=${posts} />
@@ -618,10 +549,10 @@ const BlogApp = () => {
                 <div className="article-cta">
                 <h3>${t('blog.cta_title')}</h3>
                 <p style=${{
-                  color: '#ccc',
-                  marginBottom: '1.5rem',
-                  maxWidth: '600px',
-                  margin: '0 auto 1.5rem',
+                    color: '#ccc',
+                    marginBottom: '1.5rem',
+                    maxWidth: '600px',
+                    margin: '0 auto 1.5rem',
                 }}>
                     ${t('blog.cta_text')}
                 </p>
