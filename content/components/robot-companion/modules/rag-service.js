@@ -133,7 +133,11 @@ export class RAGService {
       if (posts && Array.isArray(posts)) {
         context += `Neueste Blog-Artikel:\n${posts
           .slice(0, 5)
-          .map((p) => `- ${p.title} (${p.date})`)
+          .map((p) => {
+            const title = p?.title ?? 'Unbenannter Artikel';
+            const date = p?.date ?? 'Datum unbekannt';
+            return `- ${title} (${date})`;
+          })
           .join('\n')}\n\n`;
       }
     }
