@@ -43,7 +43,12 @@ export async function createEarthSystem(
 
   const maxAniso = renderer.capabilities.getMaxAnisotropy();
   [dayTexture, nightTexture, normalTexture, bumpTexture].forEach((tex) => {
-    if (tex) tex.anisotropy = Math.min(maxAniso, isMobileDevice ? 4 : 16);
+    if (tex) {
+      tex.anisotropy = Math.min(maxAniso, isMobileDevice ? 4 : 16);
+      // Fix WebGL error: FLIP_Y and PREMULTIPLY_ALPHA not allowed for 3D textures
+      tex.flipY = false;
+      tex.premultiplyAlpha = false;
+    }
   });
 
   const dayMaterial = new THREE.MeshStandardMaterial({
@@ -105,10 +110,16 @@ export async function createMoonSystem(
   ]);
 
   const maxAniso = renderer.capabilities.getMaxAnisotropy();
-  if (moonTexture)
+  if (moonTexture) {
     moonTexture.anisotropy = Math.min(maxAniso, isMobileDevice ? 4 : 16);
-  if (moonBumpTexture)
+    moonTexture.flipY = false;
+    moonTexture.premultiplyAlpha = false;
+  }
+  if (moonBumpTexture) {
     moonBumpTexture.anisotropy = Math.min(maxAniso, isMobileDevice ? 4 : 16);
+    moonBumpTexture.flipY = false;
+    moonBumpTexture.premultiplyAlpha = false;
+  }
 
   const moonMaterial = new THREE.MeshStandardMaterial({
     map: moonTexture,
@@ -163,6 +174,8 @@ export async function createCloudLayer(
     cloudTexture.wrapS = THREE.RepeatWrapping;
     cloudTexture.wrapT = THREE.RepeatWrapping;
     cloudTexture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+    cloudTexture.flipY = false;
+    cloudTexture.premultiplyAlpha = false;
 
     const cloudMaterial = new THREE.MeshStandardMaterial({
       map: cloudTexture,
