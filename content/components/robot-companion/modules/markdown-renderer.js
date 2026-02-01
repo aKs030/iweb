@@ -20,7 +20,7 @@ export class MarkdownRenderer {
     // 1. Code Blocks
     // Note: We handle code blocks first to avoid parsing markdown inside them
     const codeBlocks = [];
-    html = html.replace(/```(\w*)([\s\S]*?)```/g, (match, lang, code) => {
+    html = html.replace(/```([\w-]*)([\s\S]*?)```/g, (match, lang, code) => {
       // Use a placeholder WITHOUT underscores or asterisks to avoid conflict
       const placeholder = `[[[CODEBLOCK${codeBlocks.length}]]]`;
       codeBlocks.push({
@@ -89,7 +89,11 @@ export class MarkdownRenderer {
 
     // Restore Code Blocks with Syntax Highlighting styling hooks
     codeBlocks.forEach((block, i) => {
-      const langClass = block.lang ? ` class="language-${block.lang}"` : '';
+      // Sanitize lang to prevent attribute injection - only allow alphanumeric and hyphens
+      const sanitizedLang = block.lang.replace(/[^a-zA-Z0-9-]/g, '');
+      const langClass = sanitizedLang
+        ? ` class="language-${sanitizedLang}"`
+        : '';
       const content = `<pre><code${langClass}>${block.code}</code></pre>`;
       html = html.replace(`[[[CODEBLOCK${i}]]]`, content);
     });
