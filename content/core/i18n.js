@@ -52,8 +52,23 @@ class LanguageManager extends EventTarget {
       log.info(`Initialized with language: ${this.currentLang}`);
 
       // Initial translation of the page
-      this.translatePage();
-      this.updateMetadata();
+      if (typeof document !== 'undefined') {
+        const ready = document.readyState !== 'loading' || document.body;
+        if (ready) {
+          this.translatePage();
+          this.updateMetadata();
+        } else if (typeof window !== 'undefined') {
+          // Defer until DOM is ready to ensure document.body exists
+          window.addEventListener(
+            'DOMContentLoaded',
+            () => {
+              this.translatePage();
+              this.updateMetadata();
+            },
+            { once: true },
+          );
+        }
+      }
 
       // Dispatch initial event for eager subscribers
       this.dispatchEvent(
@@ -197,11 +212,14 @@ class LanguageManager extends EventTarget {
     textElements.forEach((el) => {
       const key = el.getAttribute('data-i18n');
       if (key) {
+        // Note: textContent assignment overwrites all child elements,
+        // including any existing fallback HTML structure.
         el.textContent = this.t(key);
       }
     });
 
-    // 2. Inner HTML: data-i18n-html (Use with caution)
+    // 2. Inner HTML: data-i18n-html (Use with caution - Potential XSS risk)
+    // Ensure translation keys used here come from trusted sources.
     const htmlElements = element.querySelectorAll
       ? Array.from(element.querySelectorAll('[data-i18n-html]'))
       : [];

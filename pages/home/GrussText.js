@@ -70,7 +70,7 @@ export const getGreetingSet = (date = new Date(), lang = 'de') => {
 
 export const pickGreeting = (lastValue = null, set = null) => {
   // Note: set is passed from outside, so it should already be localized
-  const greetingSet = set;
+  const greetingSet = set == null ? getGreetingSet() : set;
   if (!Array.isArray(greetingSet) || greetingSet.length === 0) return '';
   if (greetingSet.length === 1) return greetingSet[0];
 

@@ -442,7 +442,7 @@ document.addEventListener(
         loaderHidden = true;
         updateLoader(1, i18n.t('loader.ready_system'));
         setTimeout(() => hideLoader(), 100);
-        announce('Anwendung geladen', { dedupe: true });
+        announce(i18n.t('loader.app_loaded'), { dedupe: true });
       }
     };
 
