@@ -13,7 +13,7 @@
     />
 
     <!-- Server-side favicons for crawlers and browsers -->
-    <link rel="icon" href="/content/assets/img/icons/favicon.ico" />
+    <link rel="icon" href="/assets/favicon-CWBtrNyM.ico" />
     <link
       rel="icon"
       type="image/png"
@@ -39,7 +39,7 @@
     <meta name="dateCreated" content="2025-12-31T12:00:00Z" />
     <!-- Canonical and Sitemap Discovery -->
     <link rel="canonical" href="https://www.abdulkerimsesli.de/" />
-    <link rel="sitemap" href="/sitemap.xml" type="application/xml" />
+    <link rel="sitemap" href="/assets/sitemap-Kz5k4n9J.xml" type="application/xml" />
 
     <!-- Preconnect to Critical Resources -->
     <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
@@ -50,17 +50,7 @@
     <link rel="preconnect" href="https://esm.sh" crossorigin />
 
     <!-- Import Map for ES Modules -->
-    <script type="importmap">
-      {
-        "imports": {
-          "react": "https://esm.sh/react@19.2.3",
-          "react-dom": "https://esm.sh/react-dom@19.2.3",
-          "react-dom/client": "https://esm.sh/react-dom@19.2.3/client",
-          "three": "https://cdn.jsdelivr.net/npm/three@0.171.0/build/three.module.js",
-          "dompurify": "https://esm.sh/dompurify@3.3.1"
-        }
-      }
-    </script>
+
 
     <!-- Note: CSS preload removed - Vite handles this automatically with modulepreload -->
 
@@ -116,7 +106,7 @@
     <meta property="twitter:image:type" content="image/webp" />
 
     <!-- PWA & Icons -->
-    <link rel="manifest" href="/manifest.json" />
+    <link rel="manifest" href="/assets/manifest-BUY5XkrQ.json" />
     <meta
       name="theme-color"
       media="(prefers-color-scheme: dark)"
@@ -129,17 +119,7 @@
     />
 
     <!-- head-manager.js is now loaded dynamically by head-inline.js -->
-    <script
-      type="module"
-      src="/content/components/head/head-inline.js"
-    ></script>
 
-    <script
-      type="module"
-      src="/content/main.js"
-      crossorigin="anonymous"
-      defer
-    ></script>
 
     <!-- Server-side JSON-LD for SEO -->
     <script type="application/ld+json">
@@ -168,6 +148,18 @@
         ]
       }
     </script>
+    <script type="importmap">
+      {
+        "imports": {
+          "react": "https://esm.sh/react@19.2.3",
+          "react-dom": "https://esm.sh/react-dom@19.2.3",
+          "react-dom/client": "https://esm.sh/react-dom@19.2.3/client",
+          "three": "https://cdn.jsdelivr.net/npm/three@0.171.0/build/three.module.js",
+          "dompurify": "https://esm.sh/dompurify@3.3.1"
+        }
+      }
+    </script>
+    <script type="module" crossorigin src="/assets/index-CljN-mWj.js"></script>
   </head>
   <body>
     <div id="app-loader" aria-live="polite" aria-label="Anwendung wird geladen">
@@ -194,11 +186,7 @@
     </div>
 
     <noscript>
-      <style>
-        #app-loader {
-          display: none !important;
-        }
-      </style>
+      <style>#app-loader{display:none!important}</style>
     </noscript>
 
     <!-- Advanced Three.js Earth System -->
