@@ -126,6 +126,7 @@ export class GeminiService {
    * @param {string} prompt - User message
    * @param {Function} [onChunk] - Optional callback for streaming chunks
    * @param {string} [systemInstruction] - Optional system instruction
+   * @param {string} [context] - Optional additional context information for the AI
    * @returns {Promise<string>} AI response
    */
   async generateResponse(prompt, onChunk, systemInstruction, context = '') {
