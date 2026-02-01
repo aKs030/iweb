@@ -44,23 +44,7 @@ export class MarkdownRenderer {
     html = html.replace(/^## (.*$)/gm, '<h2>$1</h2>');
     html = html.replace(/^# (.*$)/gm, '<h1>$1</h1>');
 
-    // 4. Bold & Italic
-    // Use non-greedy matchers
-    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
-    html = html.replace(/__(.*?)__/g, '<strong>$1</strong>');
-    html = html.replace(/_(.*?)_/g, '<em>$1</em>');
-
-    // 5. Links - with sanitization
-    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, label, url) => {
-      // Prevent javascript: protocol
-      if (url.trim().toLowerCase().startsWith('javascript:')) {
-        return label; // Return just text if unsafe
-      }
-      return `<a href="${url}" target="_blank" rel="noopener noreferrer">${label}</a>`;
-    });
-
-    // 6. Lists
+    // 4. Lists (process before inline formatting to avoid conflicts)
     // Unordered lists
     html = html.replace(/^\s*-\s+(.*)/gm, '<ul><li>$1</li></ul>');
     html = html.replace(/^\s*\*\s+(.*)/gm, '<ul><li>$1</li></ul>');
@@ -71,6 +55,22 @@ export class MarkdownRenderer {
     html = html.replace(/^\s*\d+\.\s+(.*)/gm, '<ol><li>$1</li></ol>');
     // Fix consecutive ordered lists
     html = html.replace(/<\/ol>\s*<ol>/g, '');
+
+    // 5. Bold & Italic (after lists to prevent asterisk conflicts)
+    // Use non-greedy matchers
+    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+    html = html.replace(/__(.*?)__/g, '<strong>$1</strong>');
+    html = html.replace(/_(.*?)_/g, '<em>$1</em>');
+
+    // 6. Links - with sanitization
+    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, label, url) => {
+      // Prevent javascript: protocol
+      if (url.trim().toLowerCase().startsWith('javascript:')) {
+        return label; // Return just text if unsafe
+      }
+      return `<a href="${url}" target="_blank" rel="noopener noreferrer">${label}</a>`;
+    });
 
     // 7. Paragraphs / Line Breaks
     // Replace double newlines with paragraphs, single with br
