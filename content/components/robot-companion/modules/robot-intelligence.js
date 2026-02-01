@@ -72,6 +72,15 @@ export class RobotIntelligence {
       gaming: ['game', 'play', 'score', 'unity', 'unreal', 'godot'],
       backend: ['database', 'sql', 'server', 'cloud', 'docker', 'kubernetes'],
     };
+
+    // Pre-compile regex patterns for performance
+    this.keywordRegexMap = {};
+    for (const [category, keywords] of Object.entries(this.interestMap)) {
+      this.keywordRegexMap[category] = keywords.map((keyword) => {
+        const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        return new RegExp(`\\b${escapedKeyword}\\b`, 'i');
+      });
+    }
   }
 
   setupListeners() {
@@ -381,12 +390,10 @@ export class RobotIntelligence {
     let maxScore = 0;
     let bestCategory = null;
 
-    for (const [category, keywords] of Object.entries(this.interestMap)) {
-      for (const keyword of keywords) {
-        // Use word boundary regex to match whole words only
-        // Escape special characters and handle non-word chars like dots and slashes
-        const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const regex = new RegExp(`\\b${escapedKeyword}\\b`, 'i');
+    for (const [category, regexPatterns] of Object.entries(
+      this.keywordRegexMap,
+    )) {
+      for (const regex of regexPatterns) {
         if (regex.test(visibleText)) {
           scores[category]++;
         }
