@@ -5,7 +5,6 @@
   "main": "index.js",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && cp sw.js dist/sw.js",
     "preview": "vite preview",
     "format": "prettier --write \"**/*.{js,css,json,md,html}\" --ignore-path .prettierignore",
     "format:check": "prettier --check \"**/*.{js,css,json,md,html}\" --ignore-path .prettierignore",
@@ -18,7 +17,6 @@
     "clean:all": "rm -rf node_modules",
     "reinstall": "npm run clean:all && npm install",
     "deploy:workers": "./workers/deploy.sh",
-    "analyze:bundle": "npm run build && open dist/stats.html",
     "css:check": "echo 'CSS Stats:' && wc -l content/styles/*.css content/styles/components/*.css 2>/dev/null || wc -l content/styles/*.css",
     "docs": "echo 'Documentation:' && ls -1 docs/*.md && echo '' && echo 'Root docs:' && ls -1 *.md | grep -E 'CSS|PROJEKT|README'",
     "knip": "knip",
@@ -56,8 +54,6 @@
     "postcss-import": "^16.1.1",
     "postcss-nesting": "^14.0.0",
     "prettier": "^3.8.1",
-    "rollup-plugin-visualizer": "^6.0.5",
-    "terser": "^5.46.0",
     "typescript": "^5.9.3",
     "vite": "^6.0.5"
   },
