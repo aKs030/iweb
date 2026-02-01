@@ -572,6 +572,7 @@ export class RobotChat {
           this.robot.intelligenceModule.contextTipsShown.add(tipKey);
         }
         setTimeout(() => this.hideBubble(), 12000); // Give user time to read
+        return true;
       }
     } catch (e) {
       log.warn('fetchAndShowSuggestion failed', e);
