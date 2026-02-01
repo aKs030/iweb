@@ -71,6 +71,57 @@ export class RobotAnimation {
     this.updateStartAnimation = this.updateStartAnimation.bind(this);
 
     this.thinkingActive = false;
+    this.speakingActive = false;
+    this._speakingTimer = null;
+  }
+
+  startSpeaking() {
+    if (this.speakingActive) return;
+    this.speakingActive = true;
+    this.startSpeakingLoop();
+  }
+
+  stopSpeaking() {
+    if (!this.speakingActive) return;
+    this.speakingActive = false;
+    if (this._speakingTimer) {
+      clearTimeout(this._speakingTimer);
+      this._speakingTimer = null;
+    }
+    // Reset antenna color
+    if (this.robot.dom.svg) {
+      const antenna = this.robot.dom.svg.querySelector('.robot-antenna-light');
+      if (antenna) {
+        antenna.style.fill = '';
+        antenna.style.filter = '';
+      }
+    }
+  }
+
+  startSpeakingLoop() {
+    if (!this.speakingActive) return;
+
+    // Simulate "talking" by flashing antenna randomly
+    const duration = 100 + Math.random() * 150;
+    const isLit = Math.random() > 0.3;
+
+    if (this.robot.dom.svg) {
+      const antenna = this.robot.dom.svg.querySelector('.robot-antenna-light');
+      if (antenna) {
+        if (isLit) {
+          antenna.style.fill = '#40e0d0'; // Cyan
+          antenna.style.filter = 'drop-shadow(0 0 8px #40e0d0)';
+        } else {
+          antenna.style.fill = '';
+          antenna.style.filter = '';
+        }
+      }
+    }
+
+    this._speakingTimer = setTimeout(
+      () => this.startSpeakingLoop(),
+      duration + 50,
+    );
   }
 
   startThinking() {

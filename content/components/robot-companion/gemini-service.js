@@ -40,7 +40,19 @@ async function callAIAPI(prompt, systemInstruction, onChunk) {
       if (!response.ok) {
         // In development, use mock response if API is not available
         if (isDev && response.status === 404) {
-          const mockText = `Das ist eine Mock-Antwort für deine Frage: "${prompt}". In der Produktionsumgebung würde hier die echte KI-Antwort erscheinen. Diese Mock-Antwort demonstriert den Streaming-Effekt, bei dem der Text Wort für Wort erscheint.`;
+          const mockText = `Das ist eine **Mock-Antwort** für deine Frage: _"${prompt}"_.
+
+In der Produktionsumgebung würde hier die echte KI-Antwort erscheinen.
+
+Features:
+- **Markdown** Support
+- Streaming _Simulation_
+- \`Code\` Highlighting
+
+\`\`\`javascript
+console.log("Hello Robot!");
+\`\`\`
+`;
 
           if (onChunk && typeof onChunk === 'function') {
             await simulateStreaming(mockText, onChunk);
@@ -75,7 +87,7 @@ async function callAIAPI(prompt, systemInstruction, onChunk) {
       if (isLastAttempt) {
         // In development, use mock response as fallback
         if (isDev) {
-          const mockText = `Mock-Antwort: Ich kann dir helfen! (API nicht verfügbar im Dev-Modus)`;
+          const mockText = `**Mock-Antwort**: Ich kann dir helfen! (API nicht verfügbar im _Dev-Modus_)`;
 
           if (onChunk && typeof onChunk === 'function') {
             await simulateStreaming(mockText, onChunk);
@@ -104,16 +116,19 @@ async function callAIAPI(prompt, systemInstruction, onChunk) {
  * @param {Function} onChunk - Callback for each chunk
  */
 async function simulateStreaming(text, onChunk) {
-  const words = text.split(' ');
+  // Split by spaces but preserve newlines for better simulation
+  const tokens = text.match(/[\s\S]/g) || []; // Char by char for smooth typing
+  // Or word by word? Word by word is better for markdown parsing stability during stream
+  // Let's do small chunks of characters
+
   let accumulated = '';
+  const chunkSize = 3; // chars per chunk
 
-  for (let i = 0; i < words.length; i++) {
-    accumulated += (i > 0 ? ' ' : '') + words[i];
+  for (let i = 0; i < tokens.length; i += chunkSize) {
+    const chunk = tokens.slice(i, i + chunkSize).join('');
+    accumulated += chunk;
     onChunk(accumulated);
-
-    // Variable delay for natural feel
-    const delay = words[i].length > 10 ? 80 : 50;
-    await sleep(delay);
+    await sleep(20); // Faster, smoother typing
   }
 }
 
