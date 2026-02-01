@@ -383,7 +383,11 @@ export class RobotIntelligence {
 
     for (const [category, keywords] of Object.entries(this.interestMap)) {
       for (const keyword of keywords) {
-        if (visibleText.includes(keyword)) {
+        // Use word boundary regex to match whole words only
+        // Escape special characters and handle non-word chars like dots and slashes
+        const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const regex = new RegExp(`\\b${escapedKeyword}\\b`, 'i');
+        if (regex.test(visibleText)) {
           scores[category]++;
         }
       }
