@@ -108,7 +108,8 @@
     "system_3d": "Lade 3D-System...",
     "optimize_images": "Optimiere Bilder...",
     "modules_loaded": "Module geladen",
-    "timeout": "Timeout erreicht"
+    "timeout": "Timeout erreicht",
+    "app_loaded": "Anwendung geladen"
   },
   "error": {
     "load_failed_title": "Fehler beim Laden der Projekte",
