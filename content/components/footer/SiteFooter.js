@@ -7,6 +7,7 @@
 
 import { createLogger } from '/content/core/logger.js';
 import { a11y } from '/content/core/accessibility-manager.js';
+import { i18n } from '/content/core/i18n.js';
 
 const log = createLogger('SiteFooter');
 
@@ -159,6 +160,7 @@ export class SiteFooter extends HTMLElement {
       }
 
       this.init();
+      this.setupLanguageUpdates(); // ✅ Add language support
       this.initialized = true;
       log.info('Footer initialized');
       this.dispatchEvent(new CustomEvent('footer:loaded', { bubbles: true }));
@@ -457,6 +459,28 @@ export class SiteFooter extends HTMLElement {
       a11y?.announce('Alle Cookies akzeptiert', { priority: 'polite' });
       this.closeSettings();
     });
+  }
+
+  setupLanguageUpdates() {
+    i18n.subscribe((_lang) => {
+      this.updateLanguage(_lang);
+    });
+  }
+
+  updateLanguage(_lang) {
+    const elements = this.querySelectorAll('[data-i18n]');
+    elements.forEach((el) => {
+      const key = el.getAttribute('data-i18n');
+      if (key) {
+        el.textContent = i18n.t(key);
+      }
+    });
+
+    // Special case for newsletter placeholder
+    const emailInput = this.querySelector('#newsletter-email');
+    if (emailInput) {
+      emailInput.placeholder = i18n.t('footer.newsletter.placeholder');
+    }
   }
 }
 

@@ -27,6 +27,7 @@ export class MenuEvents {
 
   init() {
     this.setupToggle();
+    this.setupLanguageToggle();
     this.setupSearch();
     this.setupNavigation();
     this.setupLogo();
@@ -34,6 +35,19 @@ export class MenuEvents {
     this.setupResizeHandler();
     this.setupPageSpecific();
     this.setActiveLink();
+  }
+
+  setupLanguageToggle() {
+    const langToggle = this.container.querySelector('.lang-toggle');
+    if (!langToggle) return;
+
+    const handleLangClick = async (e) => {
+      e.preventDefault();
+      const { i18n } = await import('/content/core/i18n.js');
+      i18n.toggleLanguage();
+    };
+
+    this.cleanupFns.push(addListener(langToggle, 'click', handleLangClick));
   }
 
   setupToggle() {
