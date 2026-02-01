@@ -1,0 +1,11 @@
+[
+  {
+    "id": "react-no-build",
+    "title": "React ohne Build-Tools nutzen",
+    "date": "2025-09-05",
+    "category": "Webdesign",
+    "excerpt": "React ohne Build-Tools: Praktische Setups mit ES Modules und htm für schnelle Prototypen.",
+    "image": "/content/assets/img/og/og-react-800.webp",
+    "file": "/content/posts/react-no-build.md"
+  }
+]
