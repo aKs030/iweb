@@ -1,5 +1,6 @@
 import { createLogger } from '/content/core/logger.js';
 import { MarkdownRenderer } from './markdown-renderer.js';
+import { ROBOT_PERSONA } from './robot-persona.js';
 
 const log = createLogger('RobotChat');
 
@@ -13,15 +14,21 @@ export class RobotChat {
     this._bubbleSequenceTimers = [];
     this.contextGreetingHistory = {};
     this.initialBubblePoolCursor = [];
-    this.history = [];
+
+    // Load history from local storage
+    try {
+      this.history = JSON.parse(
+        localStorage.getItem('robot-chat-history') || '[]',
+      );
+    } catch (e) {
+      this.history = [];
+    }
   }
 
   destroy() {
     // Cleanup aller Bubble-Sequence Timers
     this.clearBubbleSequence();
 
-    // Clear History
-    this.history = [];
     this._bubbleSequenceTimers = [];
   }
 
@@ -36,8 +43,14 @@ export class RobotChat {
       this.robot.animationModule.stopBlinkLoop();
       const ctx = this.robot.getPageContext();
       this.lastGreetedContext = ctx;
-      if (this.robot.dom.messages.children.length === 0)
-        this.handleAction('start');
+
+      if (this.robot.dom.messages.children.length === 0) {
+        if (this.history.length > 0) {
+          this.restoreMessages();
+        } else {
+          this.handleAction('start');
+        }
+      }
 
       // Focus Trap
       globalThis?.a11y?.trapFocus(this.robot.dom.window);
@@ -92,8 +105,11 @@ export class RobotChat {
       // Start speaking animation
       this.robot.animationModule.startSpeaking();
 
+      // Get Gemini Service (lazy loaded)
+      const gemini = await this.robot.getGemini();
+
       // Server-side search augmentation (RAG) is handled by the worker
-      const response = await this.robot.gemini.generateResponse(
+      const response = await gemini.generateResponse(
         text,
         (chunk) => {
           // Streaming callback - remove typing indicator on first chunk
@@ -108,6 +124,7 @@ export class RobotChat {
 
           this.updateStreamingMessage(streamingMessageEl, chunk);
         },
+        ROBOT_PERSONA,
       );
 
       this.robot.animationModule.stopThinking();
@@ -188,24 +205,24 @@ export class RobotChat {
 
     // Update history
     const textSpan = messageEl.querySelector('.streaming-text');
-    // We want the plain text for history, so we might need to strip HTML or use the last raw text chunk if we stored it.
-    // Simpler: use textContent which approximates the raw text
-    const text = textSpan?.textContent || '';
+    const text = textSpan?.innerText || textSpan?.textContent || ''; // innerText preserves newlines better
 
     this.history.push({
       role: 'model',
       text: text,
     });
-    if (this.history.length > 20) {
-      this.history = this.history.slice(-20);
+    if (this.history.length > 30) {
+      this.history = this.history.slice(-30);
     }
+    this.saveHistory();
   }
 
   async handleSummarize() {
     this.toggleChat(true);
     this.showTyping();
     const content = document.body.innerText;
-    const summary = await this.robot.gemini.summarizePage(content);
+    const gemini = await this.robot.getGemini();
+    const summary = await gemini.summarizePage(content);
     this.removeTyping();
     this.addMessage('Zusammenfassung dieser Seite:', 'bot');
     this.addMessage(summary, 'bot');
@@ -240,7 +257,13 @@ export class RobotChat {
     this.isTyping = false;
   }
 
-  addMessage(text, type = 'bot', skipParsing = false) {
+  /**
+   * Render a message to the DOM without saving to history
+   * @param {string} text
+   * @param {'user'|'bot'} type
+   * @param {boolean} skipParsing
+   */
+  renderMessage(text, type = 'bot', skipParsing = false) {
     const msg = document.createElement('div');
     msg.className = `message ${type}`;
 
@@ -257,15 +280,47 @@ export class RobotChat {
 
     this.robot.dom.messages.appendChild(msg);
     this.scrollToBottom();
+  }
+
+  addMessage(text, type = 'bot', skipParsing = false) {
+    this.renderMessage(text, type, skipParsing);
 
     // Update history
     this.history.push({
       role: type === 'user' ? 'user' : 'model',
       text: String(text || ''),
     });
-    if (this.history.length > 20) {
-      this.history = this.history.slice(-20);
+    if (this.history.length > 30) {
+      this.history = this.history.slice(-30);
     }
+    this.saveHistory();
+  }
+
+  saveHistory() {
+    try {
+      localStorage.setItem('robot-chat-history', JSON.stringify(this.history));
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  restoreMessages() {
+    this.history.forEach((item) => {
+      const type = item.role === 'user' ? 'user' : 'bot';
+      // Assume historic messages are already markdown-ready, but we re-parse them
+      // to ensure consistency. Note: "skipParsing" context is lost, but usually fine.
+      this.renderMessage(item.text, type, false);
+    });
+    // Add a small divider or system message to indicate restored session? Optional.
+  }
+
+  clearHistory() {
+    this.history = [];
+    localStorage.removeItem('robot-chat-history');
+    if (this.robot.dom.messages) {
+      this.robot.dom.messages.innerHTML = '';
+    }
+    this.handleAction('start');
   }
 
   clearControls() {
@@ -429,16 +484,8 @@ export class RobotChat {
       fillFromPools(0);
     }
 
-    if (
-      picks.length === 0 &&
-      this.initialBubbleGreetings &&
-      this.initialBubbleGreetings.length > 0
-    ) {
-      const fallback =
-        this.initialBubbleGreetings[
-          Math.floor(Math.random() * this.initialBubbleGreetings.length)
-        ];
-      picks.push(String(fallback || '').trim());
+    if (picks.length === 0) {
+      picks.push('Hallo!');
     }
 
     return picks;
@@ -503,7 +550,8 @@ export class RobotChat {
     };
 
     try {
-      const suggestion = await this.robot.gemini.getSuggestion(contextData);
+      const gemini = await this.robot.getGemini();
+      const suggestion = await gemini.getSuggestion(contextData);
       if (suggestion && !this.isOpen) {
         this.showBubble(suggestion);
         // Mark as shown in intelligence module to prevent repetition
