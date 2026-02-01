@@ -2,109 +2,182 @@
   "apps": [
     {
       "name": "calculator",
-      "title": "Calculator",
-      "description": "Ein funktionaler Taschenrechner für mathematische Berechnungen",
+      "title": "calculator",
+      "description": "Moderner Taschenrechner mit erweiterten Funktionen. Grundrechenarten und wissenschaftliche Operationen.",
+      "tags": [
+        "utility",
+        "calculator",
+        "math",
+        "tool",
+        "scientific",
+        "computation"
+      ],
       "category": "utility",
-      "tags": ["JavaScript", "Math", "Calculator"],
       "version": "1.0.0"
     },
     {
       "name": "color-changer",
-      "title": "Color Changer",
-      "description": "Dynamische Hintergrundfarben per Klick",
+      "title": "color-changer",
+      "description": "Dynamische Hintergrundfarben per Klick. Entdecke schöne Farbkombinationen und Gradienten.",
+      "tags": [
+        "ui",
+        "design",
+        "color",
+        "css",
+        "theme",
+        "gradient",
+        "interactive"
+      ],
       "category": "ui",
-      "tags": ["DOM", "Events", "CSS"],
       "version": "1.0.0"
     },
     {
       "name": "memory-game",
-      "title": "Memory Game",
-      "description": "Klassisches Memory-Spiel zum Trainieren des Gedächtnisses",
+      "title": "memory-game",
+      "description": "Klassisches Memory-Spiel mit verschiedenen Schwierigkeitsgraden. Trainiere dein Gedächtnis!",
+      "tags": [
+        "game",
+        "memory",
+        "cards",
+        "brain-training",
+        "puzzle",
+        "concentration"
+      ],
       "category": "game",
-      "tags": ["JavaScript", "Memory", "Cards"],
+      "version": "1.0.0"
+    },
+    {
+      "name": "paint-app",
+      "title": "paint-app",
+      "description": "Einfaches Zeichenprogramm mit verschiedenen Farben und Pinselgrößen.",
+      "tags": ["ui", "drawing", "canvas", "paint", "art"],
+      "category": "ui",
       "version": "1.0.0"
     },
     {
       "name": "password-generator",
-      "title": "Password Generator",
-      "description": "Sichere Passwörter generieren mit anpassbaren Optionen",
+      "title": "password-generator",
+      "description": "Sicherer Passwort-Generator mit anpassbaren Optionen. Erstelle starke Passwörter für maximale Sicherheit.",
+      "tags": [
+        "utility",
+        "security",
+        "password",
+        "generator",
+        "encryption",
+        "safety"
+      ],
       "category": "utility",
-      "tags": ["Security", "Generator", "Password"],
       "version": "1.0.0"
     },
     {
       "name": "pong-game",
-      "title": "Pong Game",
-      "description": "Der Klassiker Pong als interaktives Browser-Spiel",
+      "title": "pong-game",
+      "description": "Klassisches Pong-Spiel mit KI-Gegner, Physics Engine und Canvas-Rendering",
+      "tags": ["pong", "game", "canvas", "retro", "arcade", "ai", "physics"],
       "category": "game",
-      "tags": ["JavaScript", "Canvas", "Arcade"],
       "version": "1.0.0"
     },
     {
       "name": "quiz-app",
-      "title": "Quiz App",
-      "description": "Interaktive Quiz-Anwendung mit verschiedenen Fragen",
+      "title": "quiz-app",
+      "description": "Interaktive Quiz-App mit verschiedenen Kategorien und Schwierigkeitsgraden",
+      "tags": ["quiz", "game", "trivia", "education", "javascript", "wissen"],
       "category": "game",
-      "tags": ["JavaScript", "Quiz", "Knowledge"],
       "version": "1.0.0"
     },
     {
       "name": "schere-stein-papier",
-      "title": "Schere Stein Papier",
-      "description": "Der Klassiker gegen den Computer!",
+      "title": "schere-stein-papier",
+      "description": "Der Klassiker gegen den Computer! Wähle Schere, Stein oder Papier und tritt gegen die KI an.",
+      "tags": [
+        "game",
+        "spiel",
+        "rock-paper-scissors",
+        "javascript",
+        "entertainment"
+      ],
       "category": "game",
-      "tags": ["JavaScript", "Game Logic"],
-      "version": "1.0.0"
-    },
-    {
-      "name": "snake-game",
-      "title": "Snake Game",
-      "description": "Das beliebte Snake-Spiel im Browser spielen",
-      "category": "game",
-      "tags": ["JavaScript", "Canvas", "Arcade"],
       "version": "1.0.0"
     },
     {
       "name": "snake",
-      "title": "Snake",
-      "description": "Alternative Snake-Implementation",
+      "title": "snake",
+      "description": "Kleines Snake‑Spiel (Canvas) — Lernprojekt für Spiel‑Loop und Kollisionserkennung.",
+      "tags": ["game", "snake", "canvas", "javascript", "html"],
       "category": "game",
-      "tags": ["JavaScript", "Canvas", "Arcade"],
+      "version": "1.0.0"
+    },
+    {
+      "name": "snake-game",
+      "title": "snake-game",
+      "description": "Klassisches Snake-Spiel mit Canvas, Game Loop und fortgeschrittener Kollisionserkennung",
+      "tags": ["snake", "game", "canvas", "retro", "arcade", "javascript"],
+      "category": "game",
+      "version": "1.0.0"
+    },
+    {
+      "name": "tic-tac-toe",
+      "title": "tic-tac-toe",
+      "description": "Klassisches Tic-Tac-Toe Spiel für zwei Spieler.",
+      "tags": ["game", "strategy", "tic-tac-toe", "2-player"],
+      "category": "game",
       "version": "1.0.0"
     },
     {
       "name": "timer-app",
-      "title": "Timer App",
-      "description": "Countdown-Timer und Stoppuhr für Zeitmanagement",
+      "title": "timer-app",
+      "description": "Vielseitige Timer-App mit Countdown, Stoppuhr und Pomodoro-Technik",
+      "tags": [
+        "timer",
+        "countdown",
+        "stopwatch",
+        "pomodoro",
+        "productivity",
+        "utility"
+      ],
       "category": "productivity",
-      "tags": ["JavaScript", "Timer", "Productivity"],
       "version": "1.0.0"
     },
     {
       "name": "todo-liste",
-      "title": "To-Do Liste",
-      "description": "Produktivitäts-Tool zum Verwalten von Aufgaben",
+      "title": "todo-liste",
+      "description": "Produktivitäts-Tool zum Verwalten von Aufgaben. Erstelle, bearbeite und organisiere deine To-Dos.",
+      "tags": [
+        "productivity",
+        "todo",
+        "tasks",
+        "crud",
+        "organization",
+        "planner"
+      ],
       "category": "productivity",
-      "tags": ["CRUD", "Arrays", "Productivity"],
+      "version": "1.0.0"
+    },
+    {
+      "name": "typing-speed-test",
+      "title": "typing-speed-test",
+      "description": "Teste deine Tippgeschwindigkeit (WPM) mit zufälligen Sätzen.",
+      "tags": ["productivity", "typing", "wpm", "speed-test", "keyboard"],
+      "category": "productivity",
       "version": "1.0.0"
     },
     {
       "name": "weather-app",
-      "title": "Weather App",
-      "description": "Aktuelle Wetterinformationen und Vorhersagen",
+      "title": "weather-app",
+      "description": "Moderne Wetter-App mit aktuellen Wetterdaten und 5-Tage-Vorhersage. Standortbasierte Wetterinformationen.",
+      "tags": ["web", "weather", "api", "forecast", "location", "temperature"],
       "category": "web",
-      "tags": ["JavaScript", "API", "Weather"],
       "version": "1.0.0"
     },
     {
       "name": "zahlen-raten",
-      "title": "Zahlen Raten",
-      "description": "Finde die geheime Zahl zwischen 1 und 100",
-      "category": "puzzle",
-      "tags": ["Logic", "Input", "Numbers"],
+      "title": "zahlen-raten",
+      "description": "Finde die geheime Zahl zwischen 1 und 100. Ein klassisches Ratespiel mit Hinweisen.",
+      "tags": ["puzzle", "logic", "guessing", "numbers", "math", "brain"],
+      "category": "game",
       "version": "1.0.0"
     }
   ],
-  "lastUpdated": "2025-01-27T00:00:00Z",
+  "lastUpdated": "2026-01-31T21:58:23.286Z",
   "source": "github-api-sync"
 }

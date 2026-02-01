@@ -6,8 +6,6 @@
 // UI Constants
 export const TOAST_DURATION = 2600;
 export const URL_TEST_TIMEOUT = 2500;
-export const IFRAME_BASE_WIDTH = 1024;
-export const IFRAME_BASE_HEIGHT = 768;
 
 // Cache Configuration
 export const CACHE_PREFIX = 'github_contents_';
