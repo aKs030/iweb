@@ -23,36 +23,46 @@ export const MenuConfig = {
 
   // Title Mapping
   TITLE_MAP: {
-    '/index.html': 'Startseite',
-    '/': 'Startseite',
-    '/gallery/': 'Fotos',
-    '/projekte/': 'Projekte',
-    '/videos/': 'Videos',
-    '/blog/': 'Blog',
-    '/about/': 'Über mich',
+    '/index.html': 'menu.home',
+    '/': 'menu.home',
+    '/gallery/': 'menu.gallery',
+    '/projekte/': 'menu.projects',
+    '/videos/': 'menu.videos',
+    '/blog/': 'menu.blog',
+    '/about/': 'menu.about',
   },
 
   // Fallback Titles
   FALLBACK_TITLES: {
-    hero: { title: 'Startseite', subtitle: '' },
-    features: { title: 'Projekte', subtitle: 'Meine Arbeiten' },
-    section3: { title: 'Über mich', subtitle: 'Lerne mich kennen' },
-    contact: { title: 'Kontakt', subtitle: 'Schreiben Sie mir' },
+    hero: { title: 'menu.home', subtitle: '' },
+    features: { title: 'menu.projects', subtitle: 'footer.work.projects' },
+    section3: { title: 'menu.about', subtitle: 'footer.about.title' },
+    contact: { title: 'menu.contact', subtitle: 'blog.cta_btn' },
   },
 
   // Menu Items Configuration
   MENU_ITEMS: [
-    { href: '/', icon: 'house', fallback: '🏠', label: 'Startseite' },
-    { href: '/projekte/', icon: 'projects', fallback: '📁', label: 'Projekte' },
-    { href: '/gallery/', icon: 'gallery', fallback: '📷', label: 'Fotos' },
-    { href: '/videos/', icon: 'video', fallback: '🎬', label: 'Videos' },
-    { href: '/blog/', icon: 'blog', fallback: '📝', label: 'Blog' },
-    { href: '/about/', icon: 'user', fallback: '🧑', label: 'Über mich' },
+    { href: '/', icon: 'house', fallback: '🏠', label: 'menu.home' },
+    {
+      href: '/projekte/',
+      icon: 'projects',
+      fallback: '📁',
+      label: 'menu.projects',
+    },
+    {
+      href: '/gallery/',
+      icon: 'gallery',
+      fallback: '📷',
+      label: 'menu.gallery',
+    },
+    { href: '/videos/', icon: 'video', fallback: '🎬', label: 'menu.videos' },
+    { href: '/blog/', icon: 'blog', fallback: '📝', label: 'menu.blog' },
+    { href: '/about/', icon: 'user', fallback: '🧑', label: 'menu.about' },
     {
       href: '#site-footer',
       icon: 'mail',
       fallback: '✉️',
-      label: 'Kontakt',
+      label: 'menu.contact',
       attrs: 'data-footer-trigger aria-expanded="false"',
     },
   ],
