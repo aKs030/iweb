@@ -26,6 +26,8 @@
     "rafs",
     "fetchpriority",
     "bfcache",
+    "TTFB",
+    "Precaching",
 
     // Custom/Special terms
     "Gruss",

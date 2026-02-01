@@ -126,7 +126,13 @@ export async function youtubeHandler(request, env) {
     const cacheTTL = parseInt(env.CACHE_TTL || '3600', 10);
     return await cacheResponse(cacheKey, response, cacheTTL);
   } catch (error) {
-    console.error('YouTube API fetch error:', error);
+    // Log error in development only
+    if (
+      typeof env?.ENVIRONMENT !== 'undefined' &&
+      env.ENVIRONMENT === 'development'
+    ) {
+      console.error('YouTube API fetch error:', error);
+    }
     return errorResponse(
       'Proxy error',
       `Failed to fetch from YouTube API: ${error.message}`,

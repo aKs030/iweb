@@ -40,6 +40,7 @@ import { ThreeEarthManager } from './core/three-earth-manager.js';
 import { getElementById, onDOMReady } from './core/utils.js';
 import { initImageOptimization } from './core/image-loader-helper.js';
 import { i18n } from './core/i18n.js';
+import { initPerformanceMonitoring } from './core/performance-monitor.js';
 
 const log = createLogger('main');
 
@@ -413,6 +414,9 @@ document.addEventListener(
     perfMarks.domReady = performance.now();
     updateLoader(0.1, i18n.t('loader.status_init'));
 
+    // Initialize performance monitoring
+    initPerformanceMonitoring();
+
     fire(EVENTS.DOM_READY);
 
     let modulesReady = false;
@@ -540,3 +544,34 @@ globalThis.addEventListener('pageshow', (event) => {
     }
   }
 });
+
+// ===== Service Worker Registration =====
+if ('serviceWorker' in navigator && !ENV.isTest) {
+  globalThis.addEventListener('load', () => {
+    navigator.serviceWorker
+      .register('/sw.js')
+      .then((registration) => {
+        log.info('Service Worker registered:', registration.scope);
+
+        // Check for updates
+        registration.addEventListener('updatefound', () => {
+          const newWorker = registration.installing;
+          if (newWorker) {
+            newWorker.addEventListener('statechange', () => {
+              if (
+                newWorker.state === 'installed' &&
+                navigator.serviceWorker.controller
+              ) {
+                // New service worker available
+                log.info('New service worker available');
+                // Optional: Show update notification to user
+              }
+            });
+          }
+        });
+      })
+      .catch((error) => {
+        log.warn('Service Worker registration failed:', error);
+      });
+  });
+}

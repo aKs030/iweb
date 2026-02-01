@@ -7,10 +7,11 @@ Modern portfolio website mit React, Three.js und kostenloser AI-Integration.
 - **3D Earth Visualization** - Interaktive Three.js Earth mit WebGL
 - **AI Robot Companion** - Groq-powered Chat (100% kostenlos)
 - **RAG Search** - Retrieval-Augmented Generation für kontextbezogene Antworten
-- **Image Optimization** - AVIF/WebP mit Lazy Loading & Performance-Monitoring
-- **PWA** - Progressive Web App mit Offline-Support
-- **Performance** - Optimiert für schnelle Ladezeiten
+- **PWA Support** - Progressive Web App mit Service Worker & Offline-Support
+- **Performance Monitoring** - Core Web Vitals Tracking (FCP, LCP, FID, CLS)
+- **Image Optimization** - WebP mit Lazy Loading & Performance-Monitoring
 - **SEO** - Vollständig optimiert für Suchmaschinen
+- **Performance** - Code Splitting, Terser Minification, optimierte Ladezeiten
 
 ## 📦 Tech Stack
 
