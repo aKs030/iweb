@@ -46,41 +46,6 @@ export class RobotIntelligence {
       () => this.checkProactiveTips(),
       15000,
     );
-
-    // Keyword map for intelligent scanning
-    this.interestMap = {
-      tech: [
-        'react',
-        'javascript',
-        'typescript',
-        'three.js',
-        'webgl',
-        'css',
-        'html',
-        'node.js',
-        'api',
-      ],
-      creative: [
-        'photography',
-        'design',
-        'art',
-        'music',
-        'creative',
-        'ui/ux',
-        'animation',
-      ],
-      gaming: ['game', 'play', 'score', 'unity', 'unreal', 'godot'],
-      backend: ['database', 'sql', 'server', 'cloud', 'docker', 'kubernetes'],
-    };
-
-    // Pre-compile regex patterns for performance
-    this.keywordRegexMap = {};
-    for (const [category, keywords] of Object.entries(this.interestMap)) {
-      this.keywordRegexMap[category] = keywords.map((keyword) => {
-        const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&');
-        return new RegExp(`\\b${escapedKeyword}\\b`, 'i');
-      });
-    }
   }
 
   setupListeners() {
@@ -375,39 +340,6 @@ export class RobotIntelligence {
   }
 
   /**
-   * Scan visible text for keywords
-   * @returns {string|null} detected category
-   */
-  scanForKeywords() {
-    // Optimization: Use textContent instead of innerText to avoid reflow
-    // We assume the relevant keywords are in the first 10k characters
-    const visibleText = (document.body.textContent || '')
-      .slice(0, 10000)
-      .toLowerCase();
-
-    // Count matches
-    const scores = { tech: 0, creative: 0, gaming: 0, backend: 0 };
-    let maxScore = 0;
-    let bestCategory = null;
-
-    for (const [category, regexPatterns] of Object.entries(
-      this.keywordRegexMap,
-    )) {
-      for (const regex of regexPatterns) {
-        if (regex.test(visibleText)) {
-          scores[category]++;
-        }
-      }
-      if (scores[category] > maxScore) {
-        maxScore = scores[category];
-        bestCategory = category;
-      }
-    }
-
-    return maxScore > 0 ? bestCategory : null;
-  }
-
-  /**
    * Check for proactive tips based on context and user behavior
    */
   checkProactiveTips() {
@@ -423,123 +355,27 @@ export class RobotIntelligence {
 
     const timeOnPage =
       Date.now() - (this.pageTimeTracking[context] || Date.now());
-    const tipKey = `${context}-${Math.floor(timeOnPage / 30000)}`; // Every 30 seconds
+    // Create a key for this "slot" (e.g. "projects-0", "projects-1" for 30s blocks)
+    // Align checks to 30s boundaries to ensure one check per slot
+    const slotIndex = Math.floor(timeOnPage / 30000);
+    const tipKey = `${context}-${slotIndex}`;
 
-    // Don't show same tip twice
+    // If we already showed a tip in this time slot, skip
     if (this.contextTipsShown.has(tipKey)) return;
 
-    // Only show tips after user has been on page for at least 20 seconds
-    if (timeOnPage < 20000) return;
+    // Only show tips after user has been on page for at least 15 seconds
+    if (timeOnPage < 15000) return;
 
-    // 20% chance to show tip
-    if (Math.random() > 0.2) return;
+    // Check if we're at the start of a new 30s slot (within first 15s of the slot)
+    const timeInSlot = timeOnPage % 30000;
+    if (timeInSlot >= 15000) return; // Already checked this slot
 
-    // Smart Proactivity: Chance for dynamic content-aware tip
-    // If on page > 15s and no dynamic tip shown yet
-    if (
-      timeOnPage > 15000 &&
-      !this.contextTipsShown.has(`dynamic-${context}`)
-    ) {
-      // 30% chance to try dynamic fetch instead of static
-      if (Math.random() < 0.3) {
-        this.robot.fetchAndShowSuggestion();
-        return;
-      }
-    }
+    // 30% chance to show tip per check (checks every 15s, but only once per 30s slot)
+    if (Math.random() > 0.3) return;
 
-    // Try intelligent keyword scan first
-    const detectedCategory = this.scanForKeywords();
-    let tip = null;
-
-    if (detectedCategory) {
-      const keywordTips = {
-        tech: [
-          '⚡ Ich sehe, du interessierst dich für Tech! Frag mich nach dem Stack dieser Seite.',
-          '💻 React, WebGL, Node.js... ich liebe diese Themen! Soll ich dir mehr erzählen?',
-          '🔍 Wusstest du, dass dieser Bot auf einer modernen Microservices-Architektur läuft?',
-        ],
-        creative: [
-          '🎨 Scheint, als hättest du ein Auge für Design! Gefallen dir die Animationen?',
-          '✨ Diese UI wurde mit viel Liebe zum Detail gestaltet. Frag mich nach den CSS-Tricks!',
-          '📸 Fotografie ist Kunst. Möchtest du wissen, wie die Galerie optimiert ist?',
-        ],
-        gaming: [
-          '🎮 Gamer erkannt! Hast du schon das versteckte Minispiel gefunden?',
-          '🕹️ Lust auf eine Runde Tic-Tac-Toe? Sag einfach "Spiel Tic Tac Toe"!',
-        ],
-        backend: [
-          '⚙️ Backend-Interesse? Ich laufe auf Cloudflare Workers!',
-          '☁️ Skalierbarkeit ist wichtig. Frag mich, wie diese Seite gehostet wird.',
-        ],
-      };
-
-      const categoryTips = keywordTips[detectedCategory];
-      if (categoryTips && Math.random() < 0.6) {
-        // 60% chance to use keyword tip
-        tip = categoryTips[Math.floor(Math.random() * categoryTips.length)];
-      }
-    }
-
-    // Fallback to context-based tip
-    if (!tip) {
-      tip = this.getContextualTip(context, timeOnPage);
-    }
-
-    if (tip) {
-      this.contextTipsShown.add(tipKey);
-      this.robot.chatModule.showBubble(tip);
-      setTimeout(() => this.robot.chatModule.hideBubble(), 8000);
-    }
-  }
-
-  /**
-   * Get contextual tip based on current page context
-   */
-  getContextualTip(context, timeOnPage) {
-    const tips = {
-      projects: [
-        '💡 Tipp: Klick auf ein Projekt für mehr Details und den Source Code!',
-        '🔍 Wusstest du? Du kannst die Projekte nach Technologie filtern!',
-        '⚡ Diese Projekte nutzen moderne Web-Technologien wie React und Three.js!',
-        '🎯 Suchst du nach einem bestimmten Projekt? Frag mich einfach!',
-      ],
-      gallery: [
-        '📸 Tipp: Alle Bilder sind optimiert für schnelles Laden!',
-        '🎨 Die Galerie nutzt Lazy Loading für beste Performance!',
-        '🖼️ Möchtest du mehr über die Fotografie-Techniken erfahren?',
-        '✨ Jedes Bild wurde sorgfältig ausgewählt und bearbeitet!',
-      ],
-      hero: [
-        '👋 Willkommen! Ich kann dir helfen, die Seite zu erkunden!',
-        '🚀 Scroll nach unten, um mehr über die Projekte zu erfahren!',
-        '💬 Hast du Fragen? Klick einfach auf mich!',
-        '🎯 Diese Seite wurde mit modernen Web-Technologien gebaut!',
-      ],
-      about: [
-        '📚 Hier erfährst du mehr über den Entwickler!',
-        '💼 Interessiert an den Skills und Erfahrungen?',
-        '🎓 Möchtest du mehr über den Werdegang erfahren?',
-      ],
-      footer: [
-        '📧 Du kannst über das Kontaktformular Kontakt aufnehmen!',
-        '🔗 Vergiss nicht, die Social-Media-Links zu checken!',
-        '⬆️ Möchtest du zurück nach oben? Ich kann dir helfen!',
-      ],
-    };
-
-    const contextTips = tips[context] || tips.hero;
-
-    // For longer page visits, show more advanced tips
-    if (timeOnPage > 60000) {
-      const advancedTips = [
-        '🤖 Ich lerne ständig dazu! Frag mich nach technischen Details!',
-        '💡 Wusstest du? Ich kann dir Code-Beispiele erklären!',
-        '🎮 Ich habe auch ein paar Mini-Games! Frag mich danach!',
-      ];
-      return advancedTips[Math.floor(Math.random() * advancedTips.length)];
-    }
-
-    return contextTips[Math.floor(Math.random() * contextTips.length)];
+    // Always fetch dynamic suggestion based on real page content
+    // Pass tipKey so it can be marked as shown only on success
+    this.robot.fetchAndShowSuggestion(tipKey);
   }
 
   /**
