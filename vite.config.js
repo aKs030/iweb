@@ -44,6 +44,20 @@ export default defineConfig({
     cssCodeSplit: true,
     sourcemap: false,
     minify: 'terser',
+    modulePreload: {
+      // Only preload critical chunks, not lazy-loaded features
+      polyfill: true,
+      resolveDependencies: (filename, deps, { hostId, hostType }) => {
+        // Filter out lazy-loaded feature chunks from preload
+        return deps.filter((dep) => {
+          const shouldPreload =
+            !dep.includes('feature-robot') &&
+            !dep.includes('feature-earth') &&
+            !dep.includes('vendor-three');
+          return shouldPreload;
+        });
+      },
+    },
     terserOptions: {
       compress: {
         drop_console: true,
