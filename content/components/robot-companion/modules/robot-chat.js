@@ -1,4 +1,6 @@
 import { createLogger } from '/content/core/logger.js';
+import { MarkdownRenderer } from './markdown-renderer.js';
+
 const log = createLogger('RobotChat');
 
 export class RobotChat {
@@ -87,6 +89,9 @@ export class RobotChat {
     let typingRemoved = false;
 
     try {
+      // Start speaking animation
+      this.robot.animationModule.startSpeaking();
+
       // Server-side search augmentation (RAG) is handled by the worker
       const response = await this.robot.gemini.generateResponse(
         text,
@@ -106,12 +111,14 @@ export class RobotChat {
       );
 
       this.robot.animationModule.stopThinking();
+      // Note: stopSpeaking is handled in finalizeStreamingMessage or here if no streaming
 
       // If no streaming occurred, add message normally
       if (!streamingMessageEl) {
         if (!typingRemoved) {
           this.removeTyping();
         }
+        this.robot.animationModule.stopSpeaking();
 
         // Response may be either string or { text, sources }
         if (typeof response === 'string') {
@@ -119,7 +126,8 @@ export class RobotChat {
         } else if (response && response.text) {
           // Basic rendering: show answer + source list (if present)
           const safeText = String(response.text || '');
-          let html = safeText;
+          let html = MarkdownRenderer.parse(safeText);
+
           if (Array.isArray(response.sources) && response.sources.length) {
             html +=
               '<div class="chat-sources"><strong>Quellen:</strong><ul>' +
@@ -128,7 +136,7 @@ export class RobotChat {
                 .join('') +
               '</ul></div>';
           }
-          this.addMessage(html, 'bot');
+          this.addMessage(html, 'bot', true); // true = skip markdown parsing (already done)
         } else {
           this.addMessage('Entschuldigung, keine Antwort erhalten.', 'bot');
         }
@@ -142,6 +150,7 @@ export class RobotChat {
         this.removeTyping();
       }
       this.robot.animationModule.stopThinking();
+      this.robot.animationModule.stopSpeaking();
 
       if (streamingMessageEl) {
         streamingMessageEl.remove();
@@ -155,7 +164,7 @@ export class RobotChat {
     const msg = document.createElement('div');
     msg.className = 'message bot streaming';
     msg.innerHTML =
-      '<span class="streaming-text"></span><span class="streaming-cursor">▋</span>';
+      '<span class="streaming-text"></span><span class="streaming-cursor"></span>';
     this.robot.dom.messages.appendChild(msg);
     this.scrollToBottom();
     return msg;
@@ -164,7 +173,9 @@ export class RobotChat {
   updateStreamingMessage(messageEl, text) {
     const textSpan = messageEl.querySelector('.streaming-text');
     if (textSpan) {
-      textSpan.textContent = text;
+      // Use Markdown parser for live preview
+      // Note: This might be slightly expensive for very long texts, but for chat it's fine
+      textSpan.innerHTML = MarkdownRenderer.parse(text);
       this.scrollToBottom();
     }
   }
@@ -173,9 +184,14 @@ export class RobotChat {
     const cursor = messageEl.querySelector('.streaming-cursor');
     if (cursor) cursor.remove();
     messageEl.classList.remove('streaming');
+    this.robot.animationModule.stopSpeaking();
 
     // Update history
-    const text = messageEl.querySelector('.streaming-text')?.textContent || '';
+    const textSpan = messageEl.querySelector('.streaming-text');
+    // We want the plain text for history, so we might need to strip HTML or use the last raw text chunk if we stored it.
+    // Simpler: use textContent which approximates the raw text
+    const text = textSpan?.textContent || '';
+
     this.history.push({
       role: 'model',
       text: text,
@@ -224,26 +240,19 @@ export class RobotChat {
     this.isTyping = false;
   }
 
-  addMessage(text, type = 'bot') {
+  addMessage(text, type = 'bot', skipParsing = false) {
     const msg = document.createElement('div');
     msg.className = `message ${type}`;
 
-    // Security: Use textContent for user messages, sanitize bot messages
     if (type === 'user') {
       msg.textContent = String(text || '');
     } else {
-      // Bot messages may contain safe HTML (links, formatting)
-      // Import sanitizer dynamically to avoid circular dependencies
-      (async () => {
-        try {
-          const { sanitizeHTMLMinimal } =
-            await import('/content/core/html-sanitizer.js');
-          msg.innerHTML = sanitizeHTMLMinimal(String(text || ''));
-        } catch {
-          // Fallback: use textContent if sanitizer fails
-          msg.textContent = String(text || '');
-        }
-      })();
+      if (skipParsing) {
+        msg.innerHTML = String(text || '');
+      } else {
+        // Use Markdown Renderer
+        msg.innerHTML = MarkdownRenderer.parse(String(text || ''));
+      }
     }
 
     this.robot.dom.messages.appendChild(msg);
