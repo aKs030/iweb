@@ -80,38 +80,108 @@ export class RobotChat {
 
     this.showTyping();
     this.robot.animationModule.startThinking();
-    this.robot.trackInteraction('message');
+    this.robot.trackInteraction();
+
+    // Create streaming message element
+    let streamingMessageEl = null;
+    let typingRemoved = false;
 
     try {
       // Server-side search augmentation (RAG) is handled by the worker
-      const response = await this.robot.gemini.generateResponse(text);
-      this.removeTyping();
+      const response = await this.robot.gemini.generateResponse(
+        text,
+        (chunk) => {
+          // Streaming callback - remove typing indicator on first chunk
+          if (!typingRemoved) {
+            this.removeTyping();
+            typingRemoved = true;
+          }
+
+          if (!streamingMessageEl) {
+            streamingMessageEl = this.createStreamingMessage();
+          }
+
+          this.updateStreamingMessage(streamingMessageEl, chunk);
+        },
+      );
+
       this.robot.animationModule.stopThinking();
 
-      // Response may be either string or { text, sources }
-      if (typeof response === 'string') {
-        this.addMessage(response, 'bot');
-      } else if (response && response.text) {
-        // Basic rendering: show answer + source list (if present)
-        const safeText = String(response.text || '');
-        let html = safeText;
-        if (Array.isArray(response.sources) && response.sources.length) {
-          html +=
-            '<div class="chat-sources"><strong>Quellen:</strong><ul>' +
-            response.sources
-              .map((s) => `<li><a href="${s.url}">${s.title}</a></li>`)
-              .join('') +
-            '</ul></div>';
+      // If no streaming occurred, add message normally
+      if (!streamingMessageEl) {
+        if (!typingRemoved) {
+          this.removeTyping();
         }
-        this.addMessage(html, 'bot');
+
+        // Response may be either string or { text, sources }
+        if (typeof response === 'string') {
+          this.addMessage(response, 'bot');
+        } else if (response && response.text) {
+          // Basic rendering: show answer + source list (if present)
+          const safeText = String(response.text || '');
+          let html = safeText;
+          if (Array.isArray(response.sources) && response.sources.length) {
+            html +=
+              '<div class="chat-sources"><strong>Quellen:</strong><ul>' +
+              response.sources
+                .map((s) => `<li><a href="${s.url}">${s.title}</a></li>`)
+                .join('') +
+              '</ul></div>';
+          }
+          this.addMessage(html, 'bot');
+        } else {
+          this.addMessage('Entschuldigung, keine Antwort erhalten.', 'bot');
+        }
       } else {
-        this.addMessage('Entschuldigung, keine Antwort erhalten.', 'bot');
+        // Finalize streaming message
+        this.finalizeStreamingMessage(streamingMessageEl);
       }
     } catch (e) {
       log.error('generateResponse failed', e);
-      this.removeTyping();
+      if (!typingRemoved) {
+        this.removeTyping();
+      }
       this.robot.animationModule.stopThinking();
+
+      if (streamingMessageEl) {
+        streamingMessageEl.remove();
+      }
+
       this.addMessage('Fehler bei der Verbindung.', 'bot');
+    }
+  }
+
+  createStreamingMessage() {
+    const msg = document.createElement('div');
+    msg.className = 'message bot streaming';
+    msg.innerHTML =
+      '<span class="streaming-text"></span><span class="streaming-cursor">▋</span>';
+    this.robot.dom.messages.appendChild(msg);
+    this.scrollToBottom();
+    return msg;
+  }
+
+  updateStreamingMessage(messageEl, text) {
+    const textSpan = messageEl.querySelector('.streaming-text');
+    if (textSpan) {
+      textSpan.textContent = text;
+      this.scrollToBottom();
+    }
+  }
+
+  finalizeStreamingMessage(messageEl) {
+    const cursor = messageEl.querySelector('.streaming-cursor');
+    if (cursor) cursor.remove();
+    messageEl.classList.remove('streaming');
+
+    // Update history
+    const text = messageEl.querySelector('.streaming-text')?.textContent || '';
+    this.history.push({
+      role: 'model',
+      text: text,
+    });
+    if (this.history.length > 20) {
+      this.history = this.history.slice(-20);
     }
   }
 
