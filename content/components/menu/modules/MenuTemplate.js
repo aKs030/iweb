@@ -139,7 +139,7 @@ ${this.getNavigation()}
       </button>
     </li>
     <li>
-      <button type="button" class="lang-toggle" aria-label="Sprache wechseln" title="DE / EN">
+      <button type="button" class="lang-toggle" aria-label="${i18n.t('menu.lang_toggle_aria')}" title="${i18n.t('menu.lang_toggle_title')}">
         <svg class="nav-icon" aria-hidden="true">
           <use href="#icon-globe"></use>
         </svg>

@@ -6,7 +6,10 @@
     "videos": "Videos",
     "blog": "Blog",
     "about": "Über mich",
-    "contact": "Kontakt"
+    "contact": "Kontakt",
+    "contact_subtitle": "Lass uns über dein Projekt sprechen",
+    "lang_toggle_aria": "Sprache wechseln",
+    "lang_toggle_title": "DE / EN"
   },
   "footer": {
     "about": {
