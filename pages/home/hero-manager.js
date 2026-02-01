@@ -1,6 +1,7 @@
 import { observeOnce } from '/content/core/intersection-observer.js';
 import { createLogger } from '/content/core/logger.js';
 import { getElementById } from '/content/core/utils.js';
+import { i18n } from '/content/core/i18n.js';
 
 let typeWriterModule = null;
 
@@ -148,7 +149,7 @@ const HeroManager = (() => {
 
     try {
       const mod = await ensureHeroData();
-      const set = mod.getGreetingSet?.() ?? [];
+      const set = mod.getGreetingSet?.(new Date(), i18n.currentLang) ?? [];
       const next = mod.pickGreeting?.(el.dataset.last, set) ?? '';
       if (!next) return;
 
