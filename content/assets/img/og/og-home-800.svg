@@ -1,0 +1,57 @@
+<svg width="800" height="420" viewBox="0 0 800 420" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="homeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f172a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#1e293b;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="accentHomeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#06b6d4;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#3b82f6;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <rect width="800" height="420" fill="url(#homeGrad)"/>
+  
+  <!-- Code Window -->
+  <g transform="translate(150, 80)">
+    <rect x="0" y="0" width="500" height="220" rx="12" 
+          fill="#1e293b" stroke="url(#accentHomeGrad)" stroke-width="2"/>
+    
+    <!-- Window controls -->
+    <circle cx="20" cy="20" r="6" fill="#ef4444"/>
+    <circle cx="40" cy="20" r="6" fill="#f59e0b"/>
+    <circle cx="60" cy="20" r="6" fill="#10b981"/>
+    
+    <!-- Code lines -->
+    <g transform="translate(20, 50)">
+      <rect x="0" y="0" width="120" height="12" rx="6" fill="#06b6d4" opacity="0.4"/>
+      <rect x="130" y="0" width="80" height="12" rx="6" fill="#3b82f6" opacity="0.3"/>
+      
+      <rect x="20" y="30" width="100" height="12" rx="6" fill="#3b82f6" opacity="0.4"/>
+      <rect x="130" y="30" width="140" height="12" rx="6" fill="#06b6d4" opacity="0.3"/>
+      
+      <rect x="20" y="60" width="160" height="12" rx="6" fill="#06b6d4" opacity="0.4"/>
+      <rect x="190" y="60" width="60" height="12" rx="6" fill="#3b82f6" opacity="0.3"/>
+      
+      <rect x="0" y="90" width="90" height="12" rx="6" fill="#3b82f6" opacity="0.4"/>
+      
+      <rect x="20" y="120" width="140" height="12" rx="6" fill="#06b6d4" opacity="0.3"/>
+      <rect x="170" y="120" width="100" height="12" rx="6" fill="#3b82f6" opacity="0.3"/>
+    </g>
+  </g>
+  
+  <!-- Floating elements -->
+  <g opacity="0.3">
+    <circle cx="100" cy="150" r="20" fill="url(#accentHomeGrad)">
+      <animate attributeName="cy" values="150;130;150" dur="3s" repeatCount="indefinite"/>
+    </circle>
+    <circle cx="700" cy="200" r="15" fill="#3b82f6">
+      <animate attributeName="cy" values="200;220;200" dur="4s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+  
+  <text x="400" y="345" font-family="Arial, sans-serif" font-size="42" font-weight="bold" 
+        fill="#ffffff" text-anchor="middle">Portfolio</text>
+  <text x="400" y="380" font-family="Arial, sans-serif" font-size="24" 
+        fill="url(#accentHomeGrad)" text-anchor="middle">Web Development</text>
+</svg>

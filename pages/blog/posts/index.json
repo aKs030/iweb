@@ -5,7 +5,7 @@
     "date": "2025-09-05",
     "category": "Webdesign",
     "excerpt": "React ohne Build-Tools: Praktische Setups mit ES Modules und htm für schnelle Prototypen.",
-    "image": "/content/assets/img/og/og-react-800.webp",
+    "image": "/content/assets/img/og/og-react-800.svg",
     "file": "/pages/blog/posts/react-no-build.md"
   },
   {
@@ -14,7 +14,7 @@
     "date": "2025-10-10",
     "category": "Webdesign",
     "excerpt": "Modernes UI-Design bedeutet mehr als visuelle Trends: Es vereint Accessibility, Mikro‑Interaktionen und konsistente Nutzerführung.",
-    "image": "/content/assets/img/og/og-design-800.webp",
+    "image": "/content/assets/img/og/og-design-800.svg",
     "file": "/pages/blog/posts/modern-ui-design.md"
   },
   {
@@ -23,7 +23,7 @@
     "date": "2025-11-02",
     "category": "Online-Marketing",
     "excerpt": "Visuelles Storytelling: Komposition, Licht und Reduktion als Mittel, um Emotionen und klare Botschaften zu transportieren.",
-    "image": "/content/assets/img/og/og-photography-800.webp",
+    "image": "/content/assets/img/og/og-photography-800.svg",
     "file": "/pages/blog/posts/visual-storytelling.md"
   },
   {
@@ -32,7 +32,61 @@
     "date": "2025-12-15",
     "category": "Performance",
     "excerpt": "Praxisnahe Techniken zur Performance-Optimierung von Three.js: InstancedMesh, LOD-Strategien, Texturkompression und mehr.",
-    "image": "/content/assets/img/og/og-threejs-800.webp",
+    "image": "/content/assets/img/og/og-threejs-800.svg",
     "file": "/pages/blog/posts/threejs-performance.md"
+  },
+  {
+    "id": "seo-technische-optimierung",
+    "title": "Technische SEO: Core Web Vitals und strukturierte Daten",
+    "date": "2026-01-08",
+    "category": "Online-Marketing",
+    "excerpt": "Technische SEO 2026: Core Web Vitals optimieren, strukturierte Daten implementieren, Crawling verbessern. Messbare Rankings durch technische Exzellenz.",
+    "image": "/content/assets/img/og/og-seo-800.svg",
+    "file": "/pages/blog/posts/seo-technische-optimierung.md"
+  },
+  {
+    "id": "progressive-web-apps-2026",
+    "title": "Progressive Web Apps 2026: Native Features im Browser",
+    "date": "2026-01-15",
+    "category": "Performance",
+    "excerpt": "PWAs 2026 bieten native Features wie Push Notifications, Offline-Funktionalität, App-Installation und mehr. Die Lücke zwischen Web und Native schließt sich.",
+    "image": "/content/assets/img/og/og-pwa-800.svg",
+    "file": "/pages/blog/posts/progressive-web-apps-2026.md"
+  },
+  {
+    "id": "web-components-zukunft",
+    "title": "Web Components: Die Zukunft der wiederverwendbaren UI-Elemente",
+    "date": "2026-01-20",
+    "category": "Webdesign",
+    "excerpt": "Web Components bieten framework-unabhängige, native Wiederverwendbarkeit. Custom Elements, Shadow DOM und HTML Templates revolutionieren moderne Webentwicklung.",
+    "image": "/content/assets/img/og/og-webcomponents-800.svg",
+    "file": "/pages/blog/posts/web-components-zukunft.md"
+  },
+  {
+    "id": "css-container-queries",
+    "title": "CSS Container Queries: Responsive Design neu gedacht",
+    "date": "2026-01-28",
+    "category": "Webdesign",
+    "excerpt": "Container Queries revolutionieren Responsive Design. Komponenten reagieren auf ihre Container-Größe statt auf den Viewport – echte komponentenbasierte Responsivität.",
+    "image": "/content/assets/img/og/og-css-800.svg",
+    "file": "/pages/blog/posts/css-container-queries.md"
+  },
+  {
+    "id": "javascript-performance-patterns",
+    "title": "JavaScript Performance Patterns für moderne Web-Apps",
+    "date": "2026-02-05",
+    "category": "Performance",
+    "excerpt": "Praktische Performance-Patterns für JavaScript: Lazy Loading, Code Splitting, Memoization, Web Workers und mehr. Messbare Optimierungen für schnellere Web-Apps.",
+    "image": "/content/assets/img/og/og-performance-800.svg",
+    "file": "/pages/blog/posts/javascript-performance-patterns.md"
+  },
+  {
+    "id": "typescript-advanced-patterns",
+    "title": "TypeScript Advanced Patterns für robusteren Code",
+    "date": "2026-02-10",
+    "category": "Webdesign",
+    "excerpt": "Fortgeschrittene TypeScript-Patterns: Conditional Types, Template Literals, Branded Types und mehr. Typsicherheit auf dem nächsten Level.",
+    "image": "/content/assets/img/og/og-typescript-800.svg",
+    "file": "/pages/blog/posts/typescript-advanced-patterns.md"
   }
 ]

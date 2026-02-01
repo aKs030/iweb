@@ -4,7 +4,7 @@ title: Modernes UI-Design: Mehr als nur Dark Mode
 date: 2025-10-10
 category: Webdesign
 author: Abdulkerim Sesli
-image: /content/assets/img/og/og-design-800.webp
+image: /content/assets/img/og/og-design-800.svg
 excerpt: Modernes UI-Design bedeutet mehr als visuelle Trends: Es vereint Accessibility, Mikro‑Interaktionen und konsistente Nutzerführung.
 readTime: 4 min
 ---
