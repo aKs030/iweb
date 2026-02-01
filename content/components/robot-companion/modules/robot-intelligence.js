@@ -77,7 +77,7 @@ export class RobotIntelligence {
     this.keywordRegexMap = {};
     for (const [category, keywords] of Object.entries(this.interestMap)) {
       this.keywordRegexMap[category] = keywords.map((keyword) => {
-        const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&');
         return new RegExp(`\\b${escapedKeyword}\\b`, 'i');
       });
     }
