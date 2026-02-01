@@ -46,6 +46,41 @@ export class RobotIntelligence {
       () => this.checkProactiveTips(),
       15000,
     );
+
+    // Keyword map for intelligent scanning
+    this.interestMap = {
+      tech: [
+        'react',
+        'javascript',
+        'typescript',
+        'three.js',
+        'webgl',
+        'css',
+        'html',
+        'node.js',
+        'api',
+      ],
+      creative: [
+        'photography',
+        'design',
+        'art',
+        'music',
+        'creative',
+        'ui/ux',
+        'animation',
+      ],
+      gaming: ['game', 'play', 'score', 'unity', 'unreal', 'godot'],
+      backend: ['database', 'sql', 'server', 'cloud', 'docker', 'kubernetes'],
+    };
+
+    // Pre-compile regex patterns for performance
+    this.keywordRegexMap = {};
+    for (const [category, keywords] of Object.entries(this.interestMap)) {
+      this.keywordRegexMap[category] = keywords.map((keyword) => {
+        const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\/]/g, '\\$&');
+        return new RegExp(`\\b${escapedKeyword}\\b`, 'i');
+      });
+    }
   }
 
   setupListeners() {
@@ -340,6 +375,39 @@ export class RobotIntelligence {
   }
 
   /**
+   * Scan visible text for keywords
+   * @returns {string|null} detected category
+   */
+  scanForKeywords() {
+    // Optimization: Use textContent instead of innerText to avoid reflow
+    // We assume the relevant keywords are in the first 10k characters
+    const visibleText = (document.body.textContent || '')
+      .slice(0, 10000)
+      .toLowerCase();
+
+    // Count matches
+    const scores = { tech: 0, creative: 0, gaming: 0, backend: 0 };
+    let maxScore = 0;
+    let bestCategory = null;
+
+    for (const [category, regexPatterns] of Object.entries(
+      this.keywordRegexMap,
+    )) {
+      for (const regex of regexPatterns) {
+        if (regex.test(visibleText)) {
+          scores[category]++;
+        }
+      }
+      if (scores[category] > maxScore) {
+        maxScore = scores[category];
+        bestCategory = category;
+      }
+    }
+
+    return maxScore > 0 ? bestCategory : null;
+  }
+
+  /**
    * Check for proactive tips based on context and user behavior
    */
   checkProactiveTips() {
@@ -366,7 +434,43 @@ export class RobotIntelligence {
     // 20% chance to show tip
     if (Math.random() > 0.2) return;
 
-    const tip = this.getContextualTip(context, timeOnPage);
+    // Try intelligent keyword scan first
+    const detectedCategory = this.scanForKeywords();
+    let tip = null;
+
+    if (detectedCategory) {
+      const keywordTips = {
+        tech: [
+          '⚡ Ich sehe, du interessierst dich für Tech! Frag mich nach dem Stack dieser Seite.',
+          '💻 React, WebGL, Node.js... ich liebe diese Themen! Soll ich dir mehr erzählen?',
+          '🔍 Wusstest du, dass dieser Bot auf einer modernen Microservices-Architektur läuft?',
+        ],
+        creative: [
+          '🎨 Scheint, als hättest du ein Auge für Design! Gefallen dir die Animationen?',
+          '✨ Diese UI wurde mit viel Liebe zum Detail gestaltet. Frag mich nach den CSS-Tricks!',
+          '📸 Fotografie ist Kunst. Möchtest du wissen, wie die Galerie optimiert ist?',
+        ],
+        gaming: [
+          '🎮 Gamer erkannt! Hast du schon das versteckte Minispiel gefunden?',
+          '🕹️ Lust auf eine Runde Tic-Tac-Toe? Sag einfach "Spiel Tic Tac Toe"!',
+        ],
+        backend: [
+          '⚙️ Backend-Interesse? Ich laufe auf Cloudflare Workers!',
+          '☁️ Skalierbarkeit ist wichtig. Frag mich, wie diese Seite gehostet wird.',
+        ],
+      };
+
+      const categoryTips = keywordTips[detectedCategory];
+      if (categoryTips && Math.random() < 0.6) {
+        // 60% chance to use keyword tip
+        tip = categoryTips[Math.floor(Math.random() * categoryTips.length)];
+      }
+    }
+
+    // Fallback to context-based tip
+    if (!tip) {
+      tip = this.getContextualTip(context, timeOnPage);
+    }
 
     if (tip) {
       this.contextTipsShown.add(tipKey);
