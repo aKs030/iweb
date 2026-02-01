@@ -2,6 +2,8 @@
  * Menu Template - HTML generation
  */
 
+import { i18n } from '/content/core/i18n.js';
+
 export class MenuTemplate {
   constructor(config = {}) {
     this.config = config;
@@ -53,6 +55,11 @@ ${this.getNavigation()}
     <symbol id="icon-search" viewBox="0 0 24 24">
       <circle cx="11" cy="11" r="8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       <path d="m21 21-4.35-4.35" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+    <symbol id="icon-globe" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
+      <line x1="2" y1="12" x2="22" y2="12" stroke="currentColor" stroke-width="2"/>
+      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" fill="none" stroke="currentColor" stroke-width="2"/>
     </symbol>
   </defs>
 </svg>`;
@@ -113,7 +120,7 @@ ${this.getNavigation()}
           <use href="#icon-${item.icon}"></use>
         </svg>
         <span class="icon-fallback" style="display: none">${item.fallback}</span>
-        <span>${item.label}</span>
+        <span data-i18n="${item.label}">${i18n.t(item.label)}</span>
       </a>
     </li>`,
       )
@@ -129,6 +136,14 @@ ${this.getNavigation()}
           <use href="#icon-search"></use>
         </svg>
         <span class="icon-fallback" style="display: none">🔍</span>
+      </button>
+    </li>
+    <li>
+      <button type="button" class="lang-toggle" aria-label="Sprache wechseln" title="DE / EN">
+        <svg class="nav-icon" aria-hidden="true">
+          <use href="#icon-globe"></use>
+        </svg>
+        <span class="lang-text" style="font-weight: 600; font-size: 0.9em; margin-left: 4px;">DE</span>
       </button>
     </li>
   </ul>
