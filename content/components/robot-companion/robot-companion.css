@@ -871,13 +871,13 @@
 .streaming-cursor {
   display: inline-block;
   color: #40e0d0;
-  width: 8px;
-  height: 16px;
+  width: 0.5em;
+  height: 1em;
   background: #40e0d0;
   vertical-align: middle;
-  margin-left: 4px;
+  margin-left: 0.25em;
   animation: cursor-blink 0.8s infinite;
-  box-shadow: 0 0 8px #40e0d0;
+  box-shadow: 0 0 0.5em #40e0d0;
 }
 
 @keyframes cursor-blink {
