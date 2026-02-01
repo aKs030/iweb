@@ -8,7 +8,12 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { createLogger } from '/content/core/logger.js';
 import { toRawGithackUrl, testUrl } from './utils/url.utils.js';
-import { useToast, useModal, useProjects } from './hooks/index.js';
+import {
+  useToast,
+  useModal,
+  useProjects,
+  useAppManager,
+} from './hooks/index.js';
 import { URL_TEST_TIMEOUT } from './config/constants.js';
 
 const log = createLogger('react-projekte-app');
@@ -163,10 +168,11 @@ const ICONS = {
 /**
  * Project Mockup Component
  */
-const ProjectMockup = ({ project }) => {
+const ProjectMockup = ({ project, isAppOpen, appUrl }) => {
   const wrapperRef = React.useRef(null);
   const iframeRef = React.useRef(null);
   const [previewUrl, setPreviewUrl] = React.useState(null);
+  const [iframeLoaded, setIframeLoaded] = React.useState(false);
 
   React.useEffect(() => {
     let canceled = false;
@@ -204,24 +210,69 @@ const ProjectMockup = ({ project }) => {
     };
   }, [project]);
 
+  // Show full app if opened, otherwise show preview
+  const displayUrl = isAppOpen && appUrl ? appUrl : previewUrl;
+  const iframeClass = isAppOpen ? 'mockup-iframe-full' : 'mockup-iframe';
+
+  const handleIframeLoad = React.useCallback(() => {
+    setIframeLoaded(true);
+    const iframe = iframeRef.current;
+    if (iframe && isAppOpen) {
+      // Focus iframe for better interactivity
+      setTimeout(() => {
+        if ('focus' in iframe && typeof iframe.focus === 'function') {
+          iframe.focus();
+        }
+      }, 100);
+    }
+  }, [isAppOpen]);
+
   return h(
     'div',
     {
       className: 'mockup-iframe-wrapper u-center',
       ref: wrapperRef,
     },
-    previewUrl
-      ? h('iframe', {
-          className: 'mockup-iframe',
-          ref: iframeRef,
-          src: previewUrl,
-          scrolling: 'no',
-          sandbox: 'allow-scripts allow-same-origin allow-forms',
-          frameBorder: '0',
-          title: `Preview: ${project.title}`,
-          loading: 'lazy',
-        })
-      : project.previewContent,
+    displayUrl
+      ? h(
+          Fragment,
+          null,
+          !iframeLoaded &&
+            isAppOpen &&
+            h('div', { className: 'app-loading' }, 'App wird geladen...'),
+          h('iframe', {
+            className: iframeClass,
+            ref: iframeRef,
+            src: displayUrl,
+            scrolling: isAppOpen ? 'auto' : 'auto',
+            sandbox:
+              'allow-scripts allow-same-origin allow-forms allow-popups allow-modals',
+            frameBorder: '0',
+            title: `${isAppOpen ? 'App' : 'Preview'}: ${project.title}`,
+            loading: isAppOpen ? 'eager' : 'eager',
+            allow: isAppOpen
+              ? 'fullscreen; clipboard-read; clipboard-write'
+              : '',
+            style: isAppOpen
+              ? {
+                  width: '100%',
+                  height: '100%',
+                  minHeight: '500px',
+                  border: 'none',
+                  background: '#ffffff',
+                }
+              : {},
+            onLoad: handleIframeLoad,
+            onError: () => {
+              log.warn(
+                `Failed to load ${isAppOpen ? 'app' : 'preview'} for ${project.title}`,
+              );
+              setIframeLoaded(true);
+            },
+          }),
+        )
+      : project.previewContent ||
+          h('div', { className: 'app-loading' }, 'Keine Vorschau verfügbar'),
   );
 };
 
@@ -232,34 +283,53 @@ const App = () => {
   const { projects, loading, error } = useProjects(ICONS);
   const toast = useToast();
   const modal = useModal();
+  const { openApps, toggleApp, closeApp, isAppOpen, openAppCount } =
+    useAppManager();
 
   const scrollToProjects = React.useCallback(() => {
     const firstProject = document.getElementById('project-1');
     firstProject?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, []);
 
-  const openProject = React.useCallback(
+  const handleToggleProject = React.useCallback(
     (project) => {
-      // Try app path first
       const appUrl = project?.appPath;
-      if (appUrl) {
-        window.open(appUrl, '_blank', 'noopener,noreferrer');
+
+      if (!appUrl) {
+        // Fallback to GitHub if no app URL
+        const githubUrl = project?.githubPath;
+        if (githubUrl) {
+          window.open(githubUrl, '_blank', 'noopener,noreferrer');
+          toast.show(`✓ ${project?.title} auf GitHub geöffnet`);
+        } else {
+          toast.show('⚠️ Keine URL gefunden');
+        }
+        return;
+      }
+
+      const wasOpen = isAppOpen(project.id);
+      toggleApp(project);
+
+      if (wasOpen) {
+        toast.show(`✓ ${project?.title} geschlossen`);
+      } else {
         toast.show(`✓ ${project?.title} geöffnet`);
-        return;
-      }
 
-      // Fallback to GitHub
-      const githubUrl = project?.githubPath;
-      if (githubUrl) {
-        window.open(githubUrl, '_blank', 'noopener,noreferrer');
-        toast.show(`✓ ${project?.title} auf GitHub geöffnet`);
-        return;
+        // Scroll to app after opening
+        setTimeout(() => {
+          const projectElement = document.getElementById(
+            `project-${project.id}`,
+          );
+          if (projectElement) {
+            projectElement.scrollIntoView({
+              behavior: 'smooth',
+              block: 'center',
+            });
+          }
+        }, 100);
       }
-
-      // No URL found
-      toast.show('⚠️ Keine URL gefunden');
     },
-    [toast],
+    [toggleApp, isAppOpen, toast],
   );
 
   const handleModalOverlayClick = React.useCallback(
@@ -286,94 +356,305 @@ const App = () => {
   const projectSections = React.useMemo(() => {
     return projects.map((project, index) => {
       const isVisible = index < 3;
+      const isAppOpenState = isAppOpen(project.id);
+      const appUrl = project?.appPath;
 
       return h(
         'section',
         {
           key: `project-${project.id}`,
           id: `project-${project.id}`,
-          className: 'snap-section',
+          className: `snap-section ${isAppOpenState ? 'snap-section-expanded' : ''}`,
         },
         h(
           'div',
           {
             style: {
               width: '100%',
-              maxWidth: '1200px',
+              maxWidth: isAppOpenState ? 'none' : '1200px',
               margin: '0 auto',
             },
           },
           h(
             'div',
-            { className: 'project-card' },
-            h(
-              'div',
-              { className: 'window-mockup' },
-              h(
-                'div',
-                { className: 'mockup-content' },
-                isVisible
-                  ? h(ProjectMockup, { project })
-                  : h('div', { className: 'u-center' }, 'Loading...'),
-                h('div', { className: 'mockup-icon' }, project.icon),
-              ),
-            ),
-            h(
-              'div',
-              { className: 'project-info' },
-              h(
-                'div',
-                { className: 'project-header' },
-                h('h2', { className: 'project-title' }, project.title),
-                h('span', { className: 'project-category' }, project.category),
-              ),
-              h('p', { className: 'project-desc' }, project.description),
-              h(
-                'div',
-                { className: 'tags-container' },
-                ...(project.tags?.map((tag, i) =>
+            {
+              className: `project-card ${isAppOpenState ? 'project-card-expanded' : ''}`,
+            },
+            // Show full app or normal card content
+            isAppOpenState
+              ? // Full App View
+                h(
+                  'div',
+                  { className: 'app-fullscreen' },
                   h(
-                    'span',
-                    {
-                      key: `tag-${project.id}-${i}-${tag}`,
-                      className: 'tag',
-                    },
-                    tag,
+                    'div',
+                    { className: 'app-header' },
+                    h('h2', { className: 'app-title' }, project.title),
+                    h(
+                      'div',
+                      { className: 'app-header-actions' },
+                      h(
+                        'button',
+                        {
+                          className:
+                            'btn btn-outline btn-small app-fullscreen-btn',
+                          onClick: () => {
+                            const iframe = document.querySelector(
+                              `#project-${project.id} .app-iframe`,
+                            );
+                            if (iframe) {
+                              try {
+                                const element = iframe;
+                                if (
+                                  'requestFullscreen' in element &&
+                                  typeof element.requestFullscreen ===
+                                    'function'
+                                ) {
+                                  element.requestFullscreen();
+                                } else if (
+                                  'webkitRequestFullscreen' in element &&
+                                  typeof element.webkitRequestFullscreen ===
+                                    'function'
+                                ) {
+                                  element.webkitRequestFullscreen();
+                                } else if (
+                                  'msRequestFullscreen' in element &&
+                                  typeof element.msRequestFullscreen ===
+                                    'function'
+                                ) {
+                                  element.msRequestFullscreen();
+                                }
+                              } catch (error) {
+                                console.warn(
+                                  'Fullscreen not supported:',
+                                  error,
+                                );
+                              }
+                            }
+                          },
+                          'aria-label': `${project.title} im Vollbild öffnen`,
+                        },
+                        'Vollbild',
+                      ),
+                      h(
+                        'button',
+                        {
+                          className: 'btn btn-outline btn-small app-close-btn',
+                          onClick: () => handleToggleProject(project),
+                          'aria-label': `${project.title} schließen`,
+                        },
+                        'Schließen',
+                      ),
+                    ),
                   ),
-                ) || []),
-              ),
-              h(
-                'div',
-                { className: 'project-actions' },
+                  h(
+                    'div',
+                    {
+                      className: 'app-content',
+                    },
+                    h(
+                      'div',
+                      {
+                        className: 'app-iframe-wrapper',
+                        onMouseDown: (e) => {
+                          // Ensure iframe gets focus when clicked
+                          const iframe =
+                            e.currentTarget.querySelector('.app-iframe');
+                          if (iframe) {
+                            setTimeout(() => {
+                              if (
+                                'focus' in iframe &&
+                                typeof iframe.focus === 'function'
+                              ) {
+                                iframe.focus();
+                              }
+                              try {
+                                if (
+                                  iframe.contentWindow &&
+                                  'focus' in iframe.contentWindow
+                                ) {
+                                  iframe.contentWindow.focus();
+                                }
+                              } catch (e) {
+                                // Cross-origin restriction, ignore
+                              }
+                            }, 10);
+                          }
+                        },
+                      },
+                      h('iframe', {
+                        className: 'app-iframe card-integrated-iframe',
+                        src: appUrl,
+                        scrolling: 'auto',
+                        sandbox:
+                          'allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-downloads allow-pointer-lock allow-top-navigation-by-user-activation',
+                        frameBorder: '0',
+                        title: `App: ${project.title}`,
+                        loading: 'eager',
+                        allow:
+                          'fullscreen; clipboard-read; clipboard-write; autoplay',
+                        referrerPolicy: 'strict-origin-when-cross-origin',
+                        tabIndex: 0,
+                        style: {
+                          width: '100%',
+                          height: '100%',
+                          minHeight: '500px',
+                          border: 'none',
+                          borderRadius: '0 0 2rem 2rem',
+                          background: '#ffffff',
+                          pointerEvents: 'auto',
+                          userSelect: 'auto',
+                        },
+                        onLoad: (e) => {
+                          // Ensure iframe is properly loaded and interactive
+                          const iframe = e.target;
+                          try {
+                            if (iframe && 'contentWindow' in iframe) {
+                              // Force focus to make iframe interactive - multiple attempts
+                              const focusIframe = () => {
+                                if (
+                                  'focus' in iframe &&
+                                  typeof iframe.focus === 'function'
+                                ) {
+                                  iframe.focus();
+                                }
+                                // Also try to focus the content window
+                                try {
+                                  if (
+                                    iframe.contentWindow &&
+                                    'focus' in iframe.contentWindow
+                                  ) {
+                                    iframe.contentWindow.focus();
+                                  }
+                                } catch (e) {
+                                  // Cross-origin restriction, ignore
+                                }
+                              };
+
+                              // Focus immediately and after a delay
+                              focusIframe();
+                              setTimeout(focusIframe, 100);
+                              setTimeout(focusIframe, 500);
+
+                              log.debug(
+                                `App ${project.title} loaded successfully`,
+                              );
+                            }
+                          } catch (error) {
+                            log.warn(
+                              `App ${project.title} may have loading issues:`,
+                              error,
+                            );
+                          }
+                        },
+                        onError: (e) => {
+                          log.error(`Failed to load app ${project.title}:`, e);
+                          // Show error state without trying to access iframe content
+                          const iframe = e.target;
+                          if (iframe && iframe.parentElement) {
+                            // Create error message element
+                            const errorDiv = document.createElement('div');
+                            errorDiv.className = 'app-error';
+                            errorDiv.innerHTML = `
+                            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; padding: 2rem; text-align: center;">
+                              <p style="margin: 0 0 1rem 0; color: #dc2626;">Fehler beim Laden der App</p>
+                              <button 
+                                onclick="this.parentElement.parentElement.previousElementSibling.src = this.parentElement.parentElement.previousElementSibling.src; this.parentElement.parentElement.remove();"
+                                style="padding: 0.5rem 1rem; background: #3b82f6; color: white; border: none; border-radius: 0.5rem; cursor: pointer;"
+                              >
+                                Erneut versuchen
+                              </button>
+                            </div>
+                          `;
+                            iframe.style.display = 'none';
+                            iframe.parentElement.appendChild(errorDiv);
+                          }
+                        },
+                      }),
+                    ),
+                  ),
+                )
+              : // Normal Card View
                 h(
-                  'button',
-                  {
-                    className: 'btn btn-primary btn-small',
-                    onClick: () => openProject(project),
-                    'aria-label': `${project.title} öffnen`,
-                  },
-                  h(Rocket, { style: ICON_SIZES.small }),
-                  'App öffnen',
+                  Fragment,
+                  null,
+                  h(
+                    'div',
+                    { className: 'window-mockup' },
+                    h(
+                      'div',
+                      { className: 'mockup-content' },
+                      isVisible
+                        ? h(ProjectMockup, {
+                            project,
+                            isAppOpen: false,
+                            appUrl: null,
+                          })
+                        : h('div', { className: 'u-center' }, 'Loading...'),
+                      h('div', { className: 'mockup-icon' }, project.icon),
+                    ),
+                  ),
+                  h(
+                    'div',
+                    { className: 'project-info' },
+                    h(
+                      'div',
+                      { className: 'project-header' },
+                      h('h2', { className: 'project-title' }, project.title),
+                      h(
+                        'span',
+                        { className: 'project-category' },
+                        project.category,
+                      ),
+                    ),
+                    h('p', { className: 'project-desc' }, project.description),
+                    h(
+                      'div',
+                      { className: 'tags-container' },
+                      ...(project.tags?.map((tag, i) =>
+                        h(
+                          'span',
+                          {
+                            key: `tag-${project.id}-${i}-${tag}`,
+                            className: 'tag',
+                          },
+                          tag,
+                        ),
+                      ) || []),
+                    ),
+                    h(
+                      'div',
+                      { className: 'project-actions' },
+                      h(
+                        'button',
+                        {
+                          className: 'btn btn-primary btn-small',
+                          onClick: () => handleToggleProject(project),
+                          'aria-label': `${project.title} öffnen`,
+                        },
+                        h(Rocket, { style: ICON_SIZES.small }),
+                        'App öffnen',
+                      ),
+                      h(
+                        'a',
+                        {
+                          className: 'btn btn-outline btn-small',
+                          href: project.githubPath,
+                          target: '_blank',
+                          rel: 'noopener noreferrer',
+                          'aria-label': `Quellcode von ${project.title} auf GitHub ansehen`,
+                        },
+                        h(Github, { style: ICON_SIZES.small }),
+                        'Code',
+                      ),
+                    ),
+                  ),
                 ),
-                h(
-                  'a',
-                  {
-                    className: 'btn btn-outline btn-small',
-                    href: project.githubPath,
-                    target: '_blank',
-                    rel: 'noopener noreferrer',
-                    'aria-label': `Quellcode von ${project.title} auf GitHub ansehen`,
-                  },
-                  h(Github, { style: ICON_SIZES.small }),
-                  'Code',
-                ),
-              ),
-            ),
           ),
         ),
       );
     });
-  }, [projects, openProject]);
+  }, [projects, isAppOpen, handleToggleProject]);
 
   return h(
     Fragment,
@@ -461,8 +742,12 @@ const App = () => {
                 h(Github, {
                   style: { ...ICON_SIZES.medium, color: '#a78bfa' },
                 }),
-                h('span', { className: 'stat-value' }, 'Open'),
-                h('span', { className: 'stat-label' }, 'Source'),
+                h('span', { className: 'stat-value' }, openAppCount || 'Open'),
+                h(
+                  'span',
+                  { className: 'stat-label' },
+                  openAppCount > 0 ? 'Apps offen' : 'Source',
+                ),
               ),
             ),
 

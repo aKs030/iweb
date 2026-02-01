@@ -78,20 +78,3 @@ function setMemoryCache(key, data, timestamp) {
 
   memoryCache.set(key, { data, timestamp });
 }
-
-/**
- * Clear all caches
- */
-export const clearCache = () => {
-  memoryCache.clear();
-  try {
-    const keys = Object.keys(localStorage);
-    keys.forEach((key) => {
-      if (key.startsWith(CACHE_PREFIX)) {
-        localStorage.removeItem(key);
-      }
-    });
-  } catch (e) {
-    console.warn('Cache clear failed:', e);
-  }
-};

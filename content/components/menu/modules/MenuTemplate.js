@@ -73,7 +73,12 @@ ${this.getNavigation()}
   getToggleButton() {
     return `
 <button type="button" class="site-menu__toggle" aria-label="Menü" aria-controls="navigation" aria-expanded="false">
-  <span class="site-menu__hamburger"></span>
+  <div class="hamburger-container">
+    <span class="hamburger-line hamburger-line--top"></span>
+    <span class="hamburger-line hamburger-line--middle"></span>
+    <span class="hamburger-line hamburger-line--bottom"></span>
+  </div>
+  <div class="menu-ripple"></div>
 </button>`;
   }
 
