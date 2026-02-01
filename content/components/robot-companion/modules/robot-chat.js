@@ -541,12 +541,25 @@ export class RobotChat {
       document.querySelector('meta[name="description"]')?.content || '';
     const h1 = document.querySelector('h1')?.textContent || '';
 
+    // Capture visible text content for real page knowledge
+    // Using textContent is lighter than innerText, but innerText is more "visual"
+    // limiting to first 1500 chars to stay within reasonable token limits for quick tips
+    const contentSnippet = (
+      document.body.innerText ||
+      document.body.textContent ||
+      ''
+    )
+      .replace(/\s+/g, ' ')
+      .trim()
+      .substring(0, 1500);
+
     const contextData = {
       pageId: ctx,
       title: pageTitle,
       description: metaDesc.substring(0, 150),
       headline: h1,
       url: window.location.pathname,
+      contentSnippet: contentSnippet,
     };
 
     try {
