@@ -35,7 +35,13 @@ export async function searchHandler(request, env, searchIndex) {
       count: results.length,
     });
   } catch (error) {
-    console.error('Search error:', error);
+    // Log error in development only
+    if (
+      typeof env?.ENVIRONMENT !== 'undefined' &&
+      env.ENVIRONMENT === 'development'
+    ) {
+      console.error('Search error:', error);
+    }
     return errorResponse('Search failed', error.message, 500);
   }
 }
