@@ -90,7 +90,9 @@ export class MarkdownRenderer {
     // Restore Code Blocks with Syntax Highlighting styling hooks
     codeBlocks.forEach((block, i) => {
       // Sanitize lang to prevent attribute injection - only allow alphanumeric and hyphens
-      const sanitizedLang = block.lang.replace(/[^a-zA-Z0-9-]/g, '');
+      const sanitizedLang = block.lang
+        ? block.lang.replace(/[^a-zA-Z0-9-]/g, '')
+        : '';
       const langClass = sanitizedLang
         ? ` class="language-${sanitizedLang}"`
         : '';
