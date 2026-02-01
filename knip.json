@@ -13,7 +13,8 @@
     "workers/**/index.js",
     "sw.js",
     "content/components/**/*.js",
-    "content/core/**/*.js"
+    "content/core/**/*.js",
+    "vite.config.js"
   ],
   "project": ["**/*.js", "**/*.mjs"],
   "ignore": [
@@ -24,7 +25,9 @@
     "**/*.css",
     "**/*.html",
     "scripts/**",
-    "docs/**"
+    "docs/**",
+    "reports/**",
+    "complexity-report/**"
   ],
   "ignoreDependencies": [
     "dompurify",
@@ -34,5 +37,8 @@
     "rollup-plugin-visualizer",
     "terser"
   ],
-  "ignoreBinaries": ["jscpd", "madge", "es6-plato", "cost-of-modules", "open"]
+  "ignoreBinaries": ["jscpd", "madge", "es6-plato", "cost-of-modules", "open"],
+  "paths": {
+    "/content/*": ["content/*"]
+  }
 }
