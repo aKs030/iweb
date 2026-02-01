@@ -680,6 +680,142 @@
   animation-delay: 0s;
 }
 
+/* Streaming message styles */
+.message.streaming {
+  position: relative;
+}
+
+.streaming-text {
+  display: inline;
+}
+
+.streaming-cursor {
+  display: inline-block;
+  color: var(--accent-color);
+  animation: cursor-blink 1s infinite;
+  margin-left: 2px;
+  font-weight: bold;
+}
+
+@keyframes cursor-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Chat sources styling */
+.chat-sources {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(64, 224, 208, 0.2);
+  font-size: 0.9em;
+}
+
+.chat-sources strong {
+  color: var(--accent-color);
+  display: block;
+  margin-bottom: 6px;
+}
+
+.chat-sources ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.chat-sources li {
+  margin: 4px 0;
+}
+
+.chat-sources a {
+  color: var(--accent-color);
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.chat-sources a:hover {
+  opacity: 0.8;
+  text-decoration: underline;
+}
+
+/* Extended animations */
+.robot-avatar.pointing {
+  animation: pointing 0.5s ease-in-out;
+}
+
+@keyframes pointing {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.robot-avatar.celebrating {
+  animation: celebrate 0.6s ease-in-out;
+}
+
+@keyframes celebrate {
+  0%,
+  100% {
+    transform: rotate(0deg) translateY(0);
+  }
+  25% {
+    transform: rotate(-15deg) translateY(-10px);
+  }
+  75% {
+    transform: rotate(15deg) translateY(-10px);
+  }
+}
+
+/* Highlight pulse for elements being pointed at */
+.robot-highlight {
+  animation: highlight-pulse 2s ease-in-out;
+  position: relative;
+}
+
+.robot-highlight::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border: 2px solid var(--accent-color);
+  border-radius: 8px;
+  pointer-events: none;
+  animation: highlight-glow 2s ease-in-out;
+}
+
+@keyframes highlight-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+}
+
+@keyframes highlight-glow {
+  0% {
+    opacity: 0;
+    box-shadow: 0 0 0 rgba(64, 224, 208, 0);
+  }
+  50% {
+    opacity: 1;
+    box-shadow: 0 0 20px rgba(64, 224, 208, 0.6);
+  }
+  100% {
+    opacity: 0;
+    box-shadow: 0 0 0 rgba(64, 224, 208, 0);
+  }
+}
+
 .chat-controls {
   padding: 15px;
   border-top: 1px solid rgb(255 255 255 / 10%);

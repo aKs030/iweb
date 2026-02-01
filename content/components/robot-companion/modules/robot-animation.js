@@ -741,4 +741,195 @@ export class RobotAnimation {
       (this.blinkConfig.duration || 120) + 20,
     );
   }
+
+  /**
+   * Show excitement animation (jumping with particles)
+   */
+  async playExcitementAnimation() {
+    if (!this.robot.dom.avatar) return;
+
+    // Jump animation
+    this.robot.dom.avatar.style.transition =
+      'transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
+    this.robot.dom.avatar.style.transform =
+      'translateY(-30px) scale(1.15) rotate(5deg)';
+
+    // Spawn particles
+    this.spawnParticleBurst(12, { strength: 1.5, spread: 360 });
+
+    // Flash antenna
+    if (this.robot.dom.svg) {
+      const antenna = this.robot.dom.svg.querySelector('.robot-antenna-light');
+      if (antenna) {
+        antenna.style.fill = '#ffff00';
+        antenna.style.filter = 'drop-shadow(0 0 8px #ffff00)';
+      }
+    }
+
+    await sleep(300);
+
+    this.robot.dom.avatar.style.transform = 'translateY(0) scale(1) rotate(0)';
+
+    await sleep(200);
+
+    // Reset antenna
+    if (this.robot.dom.svg) {
+      const antenna = this.robot.dom.svg.querySelector('.robot-antenna-light');
+      if (antenna) {
+        antenna.style.fill = '';
+        antenna.style.filter = '';
+      }
+    }
+  }
+
+  /**
+   * Show surprise animation (eyes wide, jump back)
+   */
+  async playSurpriseAnimation() {
+    if (!this.robot.dom.avatar) return;
+
+    // Jump back
+    this.robot.dom.avatar.style.transition = 'transform 0.2s ease-out';
+    this.robot.dom.avatar.style.transform = 'translateX(-15px) scale(1.1)';
+
+    // Wide eyes
+    if (this.robot.dom.eyes) {
+      const pupils = this.robot.dom.eyes.querySelectorAll('.robot-pupil');
+      pupils.forEach((p) => {
+        p.style.transform = 'scale(1.5)';
+        p.style.transition = 'transform 0.2s';
+      });
+    }
+
+    await sleep(400);
+
+    this.robot.dom.avatar.style.transform = '';
+
+    // Reset eyes
+    if (this.robot.dom.eyes) {
+      const pupils = this.robot.dom.eyes.querySelectorAll('.robot-pupil');
+      pupils.forEach((p) => {
+        p.style.transform = '';
+      });
+    }
+  }
+
+  /**
+   * Point to a specific element on the page
+   * @param {HTMLElement} element - Element to point at
+   */
+  async pointAtElement(element) {
+    if (!this.robot.dom.avatar || !element) return;
+
+    const robotRect = this.robot.dom.avatar.getBoundingClientRect();
+    const targetRect = element.getBoundingClientRect();
+
+    // Calculate direction
+    const isAbove = targetRect.top < robotRect.top;
+    const isLeft = targetRect.left < robotRect.left;
+
+    // Rotate towards target
+    const angle = isAbove ? (isLeft ? -25 : -15) : isLeft ? 15 : 25;
+
+    this.robot.dom.avatar.style.transition = 'transform 0.4s ease-out';
+    this.robot.dom.avatar.style.transform = `rotate(${angle}deg) scale(1.05)`;
+
+    // Move eyes towards target
+    if (this.robot.dom.eyes) {
+      const eyeX = isLeft ? -3 : 3;
+      const eyeY = isAbove ? -2 : 2;
+      this.robot.dom.eyes.style.transform = `translate(${eyeX}px, ${eyeY}px)`;
+    }
+
+    // Add pointing arm animation
+    this.robot.dom.avatar.classList.add('pointing');
+
+    await sleep(2000);
+
+    // Reset
+    this.robot.dom.avatar.style.transform = '';
+    this.robot.dom.avatar.classList.remove('pointing');
+
+    if (this.robot.dom.eyes) {
+      this.robot.dom.eyes.style.transform = '';
+    }
+  }
+
+  /**
+   * Dance animation (celebration)
+   */
+  async playDanceAnimation() {
+    if (!this.robot.dom.avatar) return;
+
+    const moves = [
+      { transform: 'rotate(-10deg) translateY(-5px)', duration: 200 },
+      { transform: 'rotate(10deg) translateY(-10px)', duration: 200 },
+      { transform: 'rotate(-10deg) translateY(-5px)', duration: 200 },
+      { transform: 'rotate(10deg) translateY(-10px)', duration: 200 },
+      { transform: 'rotate(0deg) translateY(0)', duration: 200 },
+    ];
+
+    for (const move of moves) {
+      this.robot.dom.avatar.style.transition = `transform ${move.duration}ms ease-in-out`;
+      this.robot.dom.avatar.style.transform = move.transform;
+
+      // Spawn particles during dance
+      if (Math.random() > 0.5) {
+        this.spawnParticleBurst(3, { strength: 0.8, spread: 180 });
+      }
+
+      await sleep(move.duration);
+    }
+  }
+
+  /**
+   * Sad animation (head down)
+   */
+  async playSadAnimation() {
+    if (!this.robot.dom.avatar) return;
+
+    this.robot.dom.avatar.style.transition = 'transform 0.5s ease-out';
+    this.robot.dom.avatar.style.transform = 'translateY(5px) rotate(0deg)';
+
+    // Eyes look down
+    if (this.robot.dom.eyes) {
+      this.robot.dom.eyes.style.transform = 'translate(0, 3px)';
+    }
+
+    await sleep(2000);
+
+    this.robot.dom.avatar.style.transform = '';
+    if (this.robot.dom.eyes) {
+      this.robot.dom.eyes.style.transform = '';
+    }
+  }
+
+  /**
+   * Confused animation (head tilt with question mark)
+   */
+  async playConfusedAnimation() {
+    if (!this.robot.dom.avatar) return;
+
+    // Show thinking bubble
+    if (this.robot.dom.thinking) {
+      this.robot.dom.thinking.style.opacity = '1';
+    }
+
+    // Tilt head
+    this.robot.dom.avatar.style.transition = 'transform 0.3s ease-in-out';
+    this.robot.dom.avatar.style.transform = 'rotate(-15deg)';
+
+    await sleep(500);
+
+    this.robot.dom.avatar.style.transform = 'rotate(15deg)';
+
+    await sleep(500);
+
+    this.robot.dom.avatar.style.transform = '';
+
+    // Hide thinking bubble
+    if (this.robot.dom.thinking) {
+      this.robot.dom.thinking.style.opacity = '0';
+    }
+  }
 }
