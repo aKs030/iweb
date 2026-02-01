@@ -18,10 +18,16 @@ const FALLBACK_MESSAGE =
  * Note: Endpoint is still /api/gemini for backward compatibility, but uses Groq now
  * @param {string} prompt - User prompt
  * @param {string} systemInstruction - System instruction for the AI
+ * @param {Function} [onChunk] - Optional callback for streaming chunks
  * @returns {Promise<string>} AI response text
  */
-async function callAIAPI(prompt, systemInstruction) {
+async function callAIAPI(prompt, systemInstruction, onChunk) {
   let delay = INITIAL_DELAY;
+
+  // Check if we're in development mode and API is not available
+  const isDev =
+    window.location.hostname === 'localhost' ||
+    window.location.hostname === '127.0.0.1';
 
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
     try {
@@ -32,6 +38,18 @@ async function callAIAPI(prompt, systemInstruction) {
       });
 
       if (!response.ok) {
+        // In development, use mock response if API is not available
+        if (isDev && response.status === 404) {
+          const mockText = `Das ist eine Mock-Antwort für deine Frage: "${prompt}". In der Produktionsumgebung würde hier die echte KI-Antwort erscheinen. Diese Mock-Antwort demonstriert den Streaming-Effekt, bei dem der Text Wort für Wort erscheint.`;
+
+          if (onChunk && typeof onChunk === 'function') {
+            await simulateStreaming(mockText, onChunk);
+            return mockText;
+          }
+
+          return mockText;
+        }
+
         const errorText = await response.text();
         throw new Error(`API Error ${response.status}: ${errorText}`);
       }
@@ -44,11 +62,29 @@ async function callAIAPI(prompt, systemInstruction) {
         throw new Error('Empty response from AI model');
       }
 
+      // If streaming callback provided, simulate streaming effect
+      if (onChunk && typeof onChunk === 'function') {
+        await simulateStreaming(text, onChunk);
+        return text; // Return after streaming is complete
+      }
+
       return text;
     } catch (error) {
       const isLastAttempt = attempt === MAX_RETRIES - 1;
 
       if (isLastAttempt) {
+        // In development, use mock response as fallback
+        if (isDev) {
+          const mockText = `Mock-Antwort: Ich kann dir helfen! (API nicht verfügbar im Dev-Modus)`;
+
+          if (onChunk && typeof onChunk === 'function') {
+            await simulateStreaming(mockText, onChunk);
+            return mockText;
+          }
+
+          return mockText;
+        }
+
         log.error('AI API failed after retries:', error?.message);
         return FALLBACK_MESSAGE;
       }
@@ -63,6 +99,25 @@ async function callAIAPI(prompt, systemInstruction) {
 }
 
 /**
+ * Simulate streaming effect by sending text in chunks
+ * @param {string} text - Full text to stream
+ * @param {Function} onChunk - Callback for each chunk
+ */
+async function simulateStreaming(text, onChunk) {
+  const words = text.split(' ');
+  let accumulated = '';
+
+  for (let i = 0; i < words.length; i++) {
+    accumulated += (i > 0 ? ' ' : '') + words[i];
+    onChunk(accumulated);
+
+    // Variable delay for natural feel
+    const delay = words[i].length > 10 ? 80 : 50;
+    await sleep(delay);
+  }
+}
+
+/**
  * AI Service - Provides AI chat functionality (using Groq)
  * Note: Class name kept as "GeminiService" for backward compatibility
  */
@@ -70,12 +125,16 @@ export class GeminiService {
   /**
    * Generate a chat response
    * @param {string} prompt - User message
+   * @param {Function} [onChunk] - Optional callback for streaming chunks
    * @returns {Promise<string>} AI response
    */
-  async generateResponse(prompt) {
+  async generateResponse(prompt, onChunk) {
+    const hasCallback = onChunk && typeof onChunk === 'function';
+
     return await callAIAPI(
       prompt,
       'Du bist ein hilfreicher Roboter-Begleiter.',
+      hasCallback ? onChunk : undefined,
     );
   }
 
