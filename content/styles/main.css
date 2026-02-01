@@ -333,6 +333,24 @@ textarea:focus-visible {
   .section.about {
     padding-block: clamp(2.5rem, 8vw, 3.5rem);
   }
+
+  /* Ensure features section is visible on mobile */
+  .section.features {
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  .features-content {
+    min-height: 50vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
 }
 
 /* ===== END LAYOUT & SECTIONS ===== */

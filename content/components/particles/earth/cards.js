@@ -53,9 +53,20 @@ export class CardManager {
   // Convert a vertical pixel offset to world-space Y delta at z ~= 0 using the current camera
   _pixelsToWorldY(pixels) {
     if (!this.renderer || !this.camera) return 0;
-    const canvasRect = this.renderer.domElement.getBoundingClientRect();
-    const height = canvasRect.height || (globalThis.window?.innerHeight ?? 800);
+
+    // Use visual viewport on mobile to handle keyboard appearance
+    const isMobile = globalThis.window?.innerWidth < 768;
+    let height;
+
+    if (isMobile && globalThis.window?.visualViewport) {
+      height = globalThis.window.visualViewport.height;
+    } else {
+      const canvasRect = this.renderer.domElement.getBoundingClientRect();
+      height = canvasRect.height || (globalThis.window?.innerHeight ?? 800);
+    }
+
     if (!height) return 0;
+
     // NDC delta (top/bottom range is -1..1 => total 2 units)
     const ndcDelta = (pixels / height) * 2;
 
@@ -145,9 +156,17 @@ export class CardManager {
             const rowSpacing = 2.4;
             const y = (1 - row) * rowSpacing; // Top to bottom
 
-            // Header offset
+            // Header offset - account for mobile safe areas
             const headerPixels = 20;
-            const headerWorldOffset = this._pixelsToWorldY(headerPixels);
+            const safeAreaTop =
+              isMobile &&
+              globalThis.window?.CSS?.supports?.(
+                'padding: env(safe-area-inset-top)',
+              )
+                ? 20
+                : 0; // Additional offset for notched devices
+            const totalHeaderOffset = headerPixels + safeAreaTop;
+            const headerWorldOffset = this._pixelsToWorldY(totalHeaderOffset);
 
             card.scale.setScalar(scale);
             card.position.x = x;
