@@ -100,14 +100,18 @@ export class RAGService {
       const projects = await this.getProjectsData();
       if (projects && Array.isArray(projects)) {
         const relevantProjects = projects
-          .filter(
-            (p) =>
-              p.title.toLowerCase().includes(lowerQuery) ||
-              p.description.toLowerCase().includes(lowerQuery) ||
-              JSON.stringify(p.technologies || [])
-                .toLowerCase()
-                .includes(lowerQuery),
-          )
+          .filter((p) => {
+            const title = typeof p.title === 'string' ? p.title.toLowerCase() : '';
+            const description =
+              typeof p.description === 'string' ? p.description.toLowerCase() : '';
+            const technologies = JSON.stringify(p.technologies || []).toLowerCase();
+
+            return (
+              title.includes(lowerQuery) ||
+              description.includes(lowerQuery) ||
+              technologies.includes(lowerQuery)
+            );
+          })
           .slice(0, 3); // Top 3 matches
 
         if (relevantProjects.length > 0) {
