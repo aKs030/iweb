@@ -134,7 +134,7 @@ export function getElementById(id) {
  * @param {Function} callback - Function to execute
  * @param {Object} [options={ once: true }] - Options for addEventListener
  * @example
- * onDOMReady(() => console.log('DOM ready!'));
+ * onDOMReady(() => log.info('DOM ready!'));
  */
 export function onDOMReady(callback, options = { once: true }) {
   if (document.readyState === 'loading') {

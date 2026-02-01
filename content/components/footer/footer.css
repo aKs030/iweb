@@ -17,7 +17,7 @@ address {
   transform: translateX(-50%);
   width: calc(100% - 32px);
   max-width: 1440px;
-  min-width: 920px;
+  min-width: 320px;
   background: var(--component-header-bg, rgba(0, 0, 0, 0.8));
   backdrop-filter: blur(var(--component-blur-radius, 20px));
   border-radius: var(--component-pill-radius, 26px);
@@ -58,6 +58,7 @@ address {
   cursor: pointer;
   transition: background var(--transition-base);
   user-select: none;
+  overflow: hidden;
 }
 
 .footer-min:hover {
@@ -79,6 +80,10 @@ address {
   font-weight: 510;
   white-space: nowrap;
   letter-spacing: -0.01em;
+  flex-shrink: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .brand-link {
@@ -89,12 +94,22 @@ address {
   border-radius: 8px;
   font-weight: 590;
   transition: all var(--transition-base);
+  white-space: nowrap;
 }
 
 .brand-link:hover {
   color: var(--component-accent-blue, #007aff);
   background: var(--component-fill-primary, rgba(255, 255, 255, 0.1));
   transform: scale(1.02);
+}
+
+/* Mobile brand name shortening */
+.brand-link .full-name {
+  display: inline;
+}
+
+.brand-link .short-name {
+  display: none;
 }
 
 /* ===== Cookie Banner (Inline) ===== */
@@ -912,16 +927,25 @@ body.footer-expanded {
     padding: 0 16px;
     min-height: 48px;
     gap: 8px;
-    overflow-x: auto;
-    scrollbar-width: none;
+    overflow: visible;
   }
 
-  .footer-min::-webkit-scrollbar {
+  .footer-copyright {
+    flex-shrink: 2;
+    min-width: 0;
+  }
+
+  .brand-link .full-name {
     display: none;
+  }
+
+  .brand-link .short-name {
+    display: inline;
   }
 
   .cookie-inline {
     gap: 8px;
+    flex-shrink: 0;
   }
 
   .cookie-emoji {
@@ -949,6 +973,10 @@ body.footer-expanded {
     padding: 8px 12px;
     min-width: 36px;
     min-height: 36px;
+  }
+
+  .footer-nav {
+    flex-shrink: 0;
   }
 
   .nav-btn span:not(.visually-hidden) {
@@ -1134,6 +1162,41 @@ body.footer-expanded {
 }
 
 @media (width <= 480px) {
+  .footer-min {
+    padding: 0 12px;
+    gap: 6px;
+  }
+
+  .footer-copyright {
+    font-size: 10px;
+    flex-shrink: 3;
+  }
+
+  .brand-link {
+    padding: 3px 6px;
+    font-size: 10px;
+  }
+
+  .cookie-inline {
+    gap: 6px;
+  }
+
+  .cookie-text {
+    font-size: 11px;
+  }
+
+  .btn-accept,
+  .btn-reject {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+
+  .nav-btn {
+    padding: 8px;
+    min-width: 40px;
+    min-height: 40px;
+  }
+
   .footer-max {
     padding: 10px;
     max-height: calc(100vh - 80px);
