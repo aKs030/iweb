@@ -1,0 +1,120 @@
+{
+  "menu": {
+    "home": "Startseite",
+    "projects": "Projekte",
+    "gallery": "Fotos",
+    "videos": "Videos",
+    "blog": "Blog",
+    "about": "Über mich",
+    "contact": "Kontakt"
+  },
+  "footer": {
+    "about": {
+      "title": "About",
+      "text": "Kreative Web-Lösungen mit modernen Technologien. Spezialisiert auf React, Three.js und Performance-Optimierung."
+    },
+    "work": {
+      "title": "Work",
+      "portfolio": "Portfolio",
+      "projects": "Projekte",
+      "blog": "Blog",
+      "github": "GitHub"
+    },
+    "skills": {
+      "title": "Skills"
+    },
+    "newsletter": {
+      "title": "Newsletter",
+      "text": "Bleib auf dem Laufenden über neue Projekte und Artikel.",
+      "placeholder": "mail@example.com",
+      "button": "Abonnieren"
+    },
+    "quick_links": {
+      "title": "Quick Links",
+      "gallery": "Galerie",
+      "videos": "Videos",
+      "about": "About",
+      "sitemap": "Sitemap"
+    },
+    "legal": {
+      "impressum": "Impressum",
+      "privacy": "Datenschutz",
+      "cookies": "Cookies"
+    },
+    "cookie_banner": {
+      "text": "Wir nutzen Analytics",
+      "accept": "Akzeptieren",
+      "decline": "Ablehnen"
+    }
+  },
+  "projects": {
+    "hero": {
+      "text": "Entdecke meine interaktiven Web-Projekte – von experimentellen Prototypen bis zu vollständigen Anwendungen. Alle Projekte werden dynamisch aus meinem GitHub Repository geladen.",
+      "loading": "Lade Projekte...",
+      "stats_projects": "Projekte",
+      "stats_project": "Projekt",
+      "stats_tech": "Technologien",
+      "stats_apps": "Apps offen",
+      "stats_source": "Source",
+      "stat_open_fallback": "Offen",
+      "btn_view": "Projekte ansehen",
+      "btn_github": "Alle auf GitHub"
+    },
+    "card": {
+      "btn_open": "App öffnen",
+      "btn_code": "Code",
+      "preview_unavailable": "Keine Vorschau verfügbar"
+    },
+    "app": {
+      "fullscreen": "Vollbild",
+      "close": "Schließen"
+    }
+  },
+  "blog": {
+    "headline": "Wissen & Einblicke",
+    "subline": "In unserem Blog teilen wir praxisnahe Tipps zu Webdesign, SEO, Performance und Online-Marketing – verständlich erklärt und direkt umsetzbar.",
+    "read_more": "Weiterlesen",
+    "back": "Zurück",
+    "related_title": "Das könnte dich auch interessieren",
+    "cta_title": "Unterstützung bei deinem Projekt?",
+    "cta_text": "Benötigst du Hilfe bei Webdesign, Performance-Optimierung oder SEO? Lass uns unverbindlich darüber sprechen.",
+    "cta_btn": "Jetzt Kontakt aufnehmen",
+    "filter_all": "Alle",
+    "not_found": "Artikel nicht gefunden."
+  },
+  "common": {
+    "loading": "Lade...",
+    "error": "Fehler"
+  },
+  "loader": {
+    "init": "Initialisiere Projekte...",
+    "loading_app": "Lade Projekte App...",
+    "config_3d": "Konfiguriere 3D-Ansicht...",
+    "almost_ready": "Fast fertig...",
+    "ready": "Projekte bereit!",
+    "failed": "Fehler beim Laden",
+    "connect_github": "Verbinde mit GitHub...",
+    "found_projects": "{{count}} Projekte gefunden...",
+    "loading_project": "Lade Projekt {{current}}/{{total}}...",
+    "processing": "Verarbeite Projektdaten...",
+    "fallback_local": "Lade lokale Projekte...",
+    "projects_ready": "{{count}} Projekte bereit"
+  },
+  "error": {
+    "load_failed_title": "Fehler beim Laden der Projekte",
+    "app_load_failed": "Fehler beim Laden der App",
+    "retry": "Erneut versuchen",
+    "reload_page": "Seite neu laden",
+    "details": "Details",
+    "time": "Zeitpunkt",
+    "unknown": "Unbekannter Fehler",
+    "no_content": "Keine Inhalte auf GitHub gefunden"
+  },
+  "app": {
+    "no_url": "Keine URL gefunden",
+    "opened": "{{title}} geöffnet",
+    "closed": "{{title}} geschlossen",
+    "opened_github": "{{title}} auf GitHub geöffnet",
+    "loading_github": "Lade Projekte aus GitHub Repository..."
+  }
+}

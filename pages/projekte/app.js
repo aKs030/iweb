@@ -9,10 +9,24 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { createLogger } from '/content/core/logger.js';
+import { i18n } from '/content/core/i18n.js';
 import { useToast, useProjects, useAppManager } from './hooks/index.js';
 
 const log = createLogger('react-projekte-app');
 const { createElement: h, Fragment } = React;
+
+// Translation Hook
+const useTranslation = () => {
+  const [lang, setLang] = React.useState(i18n.currentLang);
+
+  React.useEffect(() => {
+    const onLangChange = (e) => setLang(e.detail.lang);
+    i18n.addEventListener('language-changed', onLangChange);
+    return () => i18n.removeEventListener('language-changed', onLangChange);
+  }, []);
+
+  return { t: (key, params) => i18n.t(key, params), lang };
+};
 
 // Simple SVG Icons (without HTM dependency)
 const createIcon = (paths, props = {}) => {
@@ -153,6 +167,7 @@ const ICONS = {
 const ProjectMockup = ({ project }) => {
   const [imageLoaded, setImageLoaded] = React.useState(false);
   const [imageError, setImageError] = React.useState(false);
+  const { t } = useTranslation();
 
   // Generate preview image path based on project name
   const projectName = project.dirName || project.name || project.id;
@@ -211,7 +226,7 @@ const ProjectMockup = ({ project }) => {
           },
         },
         h(Code, { style: { width: '2rem', height: '2rem', opacity: 0.5 } }),
-        'Keine Vorschau verfügbar',
+        t('projects.card.preview_unavailable'),
       ),
   );
 };
@@ -223,6 +238,7 @@ const App = () => {
   const { projects, loading, error } = useProjects(ICONS);
   const toast = useToast();
   const { toggleApp, isAppOpen, openAppCount } = useAppManager();
+  const { t } = useTranslation();
 
   const scrollToProjects = React.useCallback(() => {
     const firstProject = document.getElementById('project-1');
@@ -238,9 +254,9 @@ const App = () => {
         const githubUrl = project?.githubPath;
         if (githubUrl) {
           window.open(githubUrl, '_blank', 'noopener,noreferrer');
-          toast.show(`✓ ${project?.title} auf GitHub geöffnet`);
+          toast.show('✓ ' + t('app.opened_github', { title: project?.title }));
         } else {
-          toast.show('⚠️ Keine URL gefunden');
+          toast.show('⚠️ ' + t('app.no_url'));
         }
         return;
       }
@@ -249,9 +265,9 @@ const App = () => {
       toggleApp(project);
 
       if (wasOpen) {
-        toast.show(`✓ ${project?.title} geschlossen`);
+        toast.show('✓ ' + t('app.closed', { title: project?.title }));
       } else {
-        toast.show(`✓ ${project?.title} geöffnet`);
+        toast.show('✓ ' + t('app.opened', { title: project?.title }));
 
         // Scroll to app after opening
         setTimeout(() => {
@@ -362,7 +378,7 @@ const App = () => {
                           },
                           'aria-label': `${project.title} im Vollbild öffnen`,
                         },
-                        'Vollbild',
+                        t('projects.app.fullscreen'),
                       ),
                       h(
                         'button',
@@ -371,7 +387,7 @@ const App = () => {
                           onClick: () => handleToggleProject(project),
                           'aria-label': `${project.title} schließen`,
                         },
-                        'Schließen',
+                        t('projects.app.close'),
                       ),
                     ),
                   ),
@@ -493,12 +509,12 @@ const App = () => {
                             errorDiv.className = 'app-error';
                             errorDiv.innerHTML = `
                             <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; padding: 2rem; text-align: center;">
-                              <p style="margin: 0 0 1rem 0; color: #dc2626;">Fehler beim Laden der App</p>
+                              <p style="margin: 0 0 1rem 0; color: #dc2626;">${t('error.app_load_failed')}</p>
                               <button 
                                 onclick="this.parentElement.parentElement.previousElementSibling.src = this.parentElement.parentElement.previousElementSibling.src; this.parentElement.parentElement.remove();"
                                 style="padding: 0.5rem 1rem; background: #3b82f6; color: white; border: none; border-radius: 0.5rem; cursor: pointer;"
                               >
-                                Erneut versuchen
+                                ${t('error.retry')}
                               </button>
                             </div>
                           `;
@@ -563,7 +579,7 @@ const App = () => {
                           'aria-label': `${project.title} öffnen`,
                         },
                         h(Rocket, { style: ICON_SIZES.small }),
-                        'App öffnen',
+                        t('projects.card.btn_open'),
                       ),
                       h(
                         'a',
@@ -575,7 +591,7 @@ const App = () => {
                           'aria-label': `Quellcode von ${project.title} auf GitHub ansehen`,
                         },
                         h(Github, { style: ICON_SIZES.small }),
-                        'Code',
+                        t('projects.card.btn_code'),
                       ),
                     ),
                   ),
@@ -619,11 +635,7 @@ const App = () => {
               style: ICON_SIZES.xlarge,
             }),
           ),
-          h(
-            'p',
-            { className: 'headline-text' },
-            'Entdecke meine interaktiven Web-Projekte – von experimentellen Prototypen bis zu vollständigen Anwendungen. Alle Projekte werden dynamisch aus meinem GitHub Repository geladen.',
-          ),
+          h('p', { className: 'headline-text' }, t('projects.hero.text')),
         ),
 
         loading
@@ -634,7 +646,11 @@ const App = () => {
                 'div',
                 { className: 'stat-item' },
                 h(Sparkles, { style: ICON_SIZES.medium }),
-                h('span', { className: 'stat-label' }, 'Lade Projekte...'),
+                h(
+                  'span',
+                  { className: 'stat-label' },
+                  t('projects.hero.loading'),
+                ),
               ),
             )
           : h(
@@ -650,7 +666,9 @@ const App = () => {
                 h(
                   'span',
                   { className: 'stat-label' },
-                  projects.length === 1 ? 'Projekt' : 'Projekte',
+                  projects.length === 1
+                    ? t('projects.hero.stats_project')
+                    : t('projects.hero.stats_projects'),
                 ),
               ),
               h('div', { className: 'stat-divider' }),
@@ -663,7 +681,11 @@ const App = () => {
                   { className: 'stat-value' },
                   new Set(projects.flatMap((p) => p.tags || [])).size,
                 ),
-                h('span', { className: 'stat-label' }, 'Technologien'),
+                h(
+                  'span',
+                  { className: 'stat-label' },
+                  t('projects.hero.stats_tech'),
+                ),
               ),
               h('div', { className: 'stat-divider' }),
               h(
@@ -672,11 +694,17 @@ const App = () => {
                 h(Github, {
                   style: { ...ICON_SIZES.medium, color: '#a78bfa' },
                 }),
-                h('span', { className: 'stat-value' }, openAppCount || 'Open'),
+                h(
+                  'span',
+                  { className: 'stat-value' },
+                  openAppCount || t('projects.hero.stat_open_fallback'),
+                ),
                 h(
                   'span',
                   { className: 'stat-label' },
-                  openAppCount > 0 ? 'Apps offen' : 'Source',
+                  openAppCount > 0
+                    ? t('projects.hero.stats_apps')
+                    : t('projects.hero.stats_source'),
                 ),
               ),
             ),
@@ -692,7 +720,7 @@ const App = () => {
               disabled: loading,
               'aria-label': 'Zu den Projekten scrollen',
             },
-            loading ? 'Lade...' : 'Projekte ansehen',
+            loading ? t('common.loading') : t('projects.hero.btn_view'),
             loading
               ? h(Sparkles, { style: ICON_SIZES.small })
               : h(ArrowDown, { style: ICON_SIZES.small }),
@@ -709,7 +737,7 @@ const App = () => {
                 'aria-label': 'GitHub Repositories ansehen',
               },
               h(Github, { style: ICON_SIZES.small }),
-              'Alle auf GitHub',
+              t('projects.hero.btn_github'),
             ),
         ),
       ),
@@ -724,7 +752,7 @@ const App = () => {
           'div',
           { className: 'loading-container' },
           h('div', { className: 'loading-spinner' }),
-          h('p', null, 'Lade Projekte aus GitHub Repository...'),
+          h('p', null, t('app.loading_github')),
         ),
       ),
 
@@ -777,14 +805,14 @@ export const initReactProjectsApp = () => {
   } catch (error) {
     log.error('Failed to render React Projects App:', error);
     const errorMessage =
-      error instanceof Error ? error.message : 'Unbekannter Fehler';
+      error instanceof Error ? error.message : i18n.t('error.unknown');
 
     rootEl.innerHTML = `
       <div style="padding: 2rem; text-align: center; color: #ef4444; background: rgba(0,0,0,0.8); border-radius: 1rem; margin: 2rem;">
-        <h2>Fehler beim Laden der Projekte</h2>
-        <p><strong>Details:</strong> ${errorMessage}</p>
+        <h2>${i18n.t('error.load_failed_title')}</h2>
+        <p><strong>${i18n.t('error.details')}:</strong> ${errorMessage}</p>
         <button onclick="location.reload()" style="margin-top: 1rem; padding: 0.5rem 1rem; cursor: pointer; background: #4444ff; color: white; border: none; border-radius: 4px;">
-          Seite neu laden
+          ${i18n.t('error.reload_page')}
         </button>
       </div>
     `;

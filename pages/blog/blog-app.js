@@ -10,6 +10,7 @@ import React from 'https://esm.sh/react@19.0.0';
 import { createRoot } from 'https://esm.sh/react-dom@19.0.0/client';
 import htm from 'https://esm.sh/htm@3.1.1';
 import { createLogger } from '/content/core/logger.js';
+import { i18n } from '/content/core/i18n.js';
 import { updateLoader, hideLoader } from '/content/core/global-loader.js';
 import { marked } from 'https://cdn.jsdelivr.net/npm/marked@11.1.1/lib/marked.esm.js';
 import DOMPurify from 'https://cdn.jsdelivr.net/npm/dompurify@3.0.8/dist/purify.es.mjs';
@@ -19,6 +20,19 @@ marked.setOptions({ mangle: false, headerIds: false });
 
 const log = createLogger('BlogApp');
 const html = htm.bind(React.createElement);
+
+// Translation Hook
+const useTranslation = () => {
+  const [lang, setLang] = React.useState(i18n.currentLang);
+
+  React.useEffect(() => {
+    const onLangChange = (e) => setLang(e.detail.lang);
+    i18n.addEventListener('language-changed', onLangChange);
+    return () => i18n.removeEventListener('language-changed', onLangChange);
+  }, []);
+
+  return { t: (key, params) => i18n.t(key, params), lang };
+};
 
 // --- Utilities ---
 const estimateReadTime = (text = '') =>
@@ -228,6 +242,7 @@ const ReadingProgress = () => {
 };
 
 const RelatedPosts = ({ currentPost, allPosts }) => {
+  const { t } = useTranslation();
   const related = React.useMemo(() => {
     if (!currentPost || !allPosts.length) return [];
     return allPosts
@@ -241,9 +256,7 @@ const RelatedPosts = ({ currentPost, allPosts }) => {
 
   return html`
     <div className="related-posts-section">
-      <h3 className="related-posts-title">
-        Das könnte dich auch interessieren
-      </h3>
+      <h3 className="related-posts-title">${t('blog.related_title')}</h3>
       <div className="blog-grid">
         ${related.map(
           (post) => html`
@@ -276,6 +289,7 @@ const BlogApp = () => {
   const [filter, setFilter] = React.useState('All');
   const [currentPostId, setCurrentPostId] = React.useState(null);
   const [ogMeta, setOgMeta] = React.useState(null);
+  const { t } = useTranslation();
 
   React.useEffect(() => {
     const seedEl = document.getElementById('blog-list-json');
@@ -385,19 +399,19 @@ const BlogApp = () => {
     if (!post && !loading)
       return html`
         <div className="container-blog pt-24 fade-in">
-          <p>Artikel nicht gefunden.</p>
+          <p>${t('blog.not_found')}</p>
           <button
             className="btn-back"
             onClick=${() => (window.location.hash = '')}
           >
-            ← Zurück
+            ← ${t('blog.back')}
           </button>
         </div>
       `;
 
     if (!post)
       return html`<div className="container-blog pt-24">
-        <div style="color:#666">Lade Artikel...</div>
+        <div style="color:#666">${t('common.loading')}</div>
       </div>`;
 
     const cleanHtml = activePostHtml;
@@ -411,7 +425,7 @@ const BlogApp = () => {
         
         <div className="container-blog pt-24 fade-in">
           <button className="btn-back" onClick=${() =>
-            (window.location.hash = '')}>← Übersicht (ESC)</button>
+            (window.location.hash = '')}>← ${t('blog.back')} (ESC)</button>
           
           <article className="blog-article">
             <header>
@@ -449,16 +463,16 @@ const BlogApp = () => {
             <${RelatedPosts} currentPost=${post} allPosts=${posts} />
 
             <div className="article-cta">
-              <h3>Unterstützung bei deinem Projekt?</h3>
+              <h3>${t('blog.cta_title')}</h3>
               <p style=${{
                 color: '#ccc',
                 marginBottom: '1.5rem',
                 maxWidth: '600px',
                 margin: '0 auto 1.5rem',
               }}>
-                Benötigst du Hilfe bei Webdesign, Performance-Optimierung oder SEO? Lass uns unverbindlich darüber sprechen.
+                ${t('blog.cta_text')}
               </p>
-              <a href="/#contact" className="btn-primary">Jetzt Kontakt aufnehmen</a>
+              <a href="/#contact" className="btn-primary">${t('blog.cta_btn')}</a>
             </div>
           </article>
         </div>
@@ -473,12 +487,8 @@ const BlogApp = () => {
 
       <!-- Static Header -->
       <header style=${{ marginBottom: '2rem' }}>
-        <h1 className="blog-headline">Wissen & Einblicke</h1>
-        <p className="blog-subline">
-          In unserem Blog teilen wir praxisnahe Tipps zu Webdesign, SEO,
-          Performance und Online-Marketing – verständlich erklärt und direkt
-          umsetzbar.
-        </p>
+        <h1 className="blog-headline">${t('blog.headline')}</h1>
+        <p className="blog-subline">${t('blog.subline')}</p>
       </header>
 
       <!-- Sticky Controls: Optimized Top Position -->
@@ -556,14 +566,14 @@ const BlogApp = () => {
                   ><${Clock} /> ${post.readTime}</span
                 >
                 <button className="btn-read">
-                  Weiterlesen <${ArrowRight} />
+                  ${t('blog.read_more')} <${ArrowRight} />
                 </button>
               </div>
             </article>
           `;
         })}
         ${visiblePosts.length === 0 && !loading
-          ? html`<p style="color:#666">Keine Artikel gefunden.</p>`
+          ? html`<p style="color:#666">${t('blog.not_found')}</p>`
           : ''}
       </div>
     </div>
