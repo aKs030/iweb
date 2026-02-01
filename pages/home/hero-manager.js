@@ -23,6 +23,7 @@ const HeroManager = (() => {
   let loaded = false;
   let triggerLoad = null;
   let heroLookupAttempts = 0;
+  let languageChangeHandler = null;
 
   async function loadTyped(heroDataModule) {
     try {
@@ -140,6 +141,10 @@ const HeroManager = (() => {
       document.removeEventListener('click', clickHandler);
       clickHandler = null;
     }
+    if (languageChangeHandler) {
+      i18n.removeEventListener('language-changed', languageChangeHandler);
+      languageChangeHandler = null;
+    }
     if (observer) {
       try {
         observer.disconnect();
@@ -164,6 +169,16 @@ const HeroManager = (() => {
     ensureHeroData,
     cleanup,
     setClickHandler,
+    setupLanguageListener: () => {
+      if (languageChangeHandler) {
+        i18n.removeEventListener('language-changed', languageChangeHandler);
+      }
+      languageChangeHandler = () => {
+        // Update greeting when language changes
+        setRandomGreetingHTML();
+      };
+      i18n.addEventListener('language-changed', languageChangeHandler);
+    },
   };
 })();
 
@@ -197,6 +212,9 @@ export const initHeroFeatureBundle = (sectionManager) => {
     const detail = /** @type {CustomEvent} */ (e).detail;
     window.announce?.(`Zitat vollständig: ${detail?.text ?? 'Text'}`);
   });
+
+  // Setup language change listener
+  HeroManager.setupLanguageListener();
 
   HeroManager.initLazyHeroModules();
 
