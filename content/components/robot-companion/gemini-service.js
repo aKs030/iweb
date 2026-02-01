@@ -165,7 +165,6 @@ export class GeminiService {
 
     Generiere einen kurzen, hilfreichen Tipp, einen interessanten Fakt oder eine Frage zu diesem Inhalt, um den Nutzer einzuladen.
     Nutze das "Seiten-Wissen" (Inhaltlicher Kontext), um spezifisch zu sein, aber fasse dich kurz.
-    Antworte IMMER auf DEUTSCH.
     Sprich den Nutzer freundlich als Roboter-Assistent an (Cyber).
     Maximal 2 kurze Sätze.`;
 
