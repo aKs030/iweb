@@ -1124,7 +1124,7 @@ class ThreeEarthSystem {
 
     if (!supportsWebGL() && !forceThree) {
       log.warn('WebGL not supported, falling back to CSS');
-      const container = this.getContainer();
+      const container = getElementById('threeEarthContainer');
       if (container) {
         container.classList.add('three-earth-unavailable');
         showErrorState(container, new Error('WebGL not supported'), null);
