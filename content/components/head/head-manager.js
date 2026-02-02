@@ -79,7 +79,10 @@ const updateBasicMeta = (pageData, pageUrl) => {
 
   upsertMeta('description', pageData.description);
   upsertMeta('robots', 'index, follow, max-image-preview:large');
-  upsertMeta('viewport', 'width=device-width, initial-scale=1');
+  upsertMeta(
+    'viewport',
+    'width=device-width, initial-scale=1, viewport-fit=cover',
+  );
   upsertMeta('language', 'de-DE');
   upsertMeta('author', 'Abdulkerim Sesli');
 

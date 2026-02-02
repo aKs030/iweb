@@ -8,7 +8,39 @@ export function setupPWAAssets(brandData) {
   try {
     upsertHeadLink({ rel: 'manifest', href: '/manifest.json' });
 
-    upsertMeta('theme-color', '#030303');
+    // Dynamic Theme Colors (Dark & Light) matching root.css
+    const lightTheme = '#1e3a8a'; // Blue
+    const darkTheme = '#030303'; // Dark
+
+    // Ensure correct colors are enforced (updates existing or creates new)
+    let metaDark = document.head.querySelector(
+      'meta[name="theme-color"][media="(prefers-color-scheme: dark)"]',
+    );
+    if (!metaDark) {
+      metaDark = document.createElement('meta');
+      metaDark.name = 'theme-color';
+      metaDark.media = '(prefers-color-scheme: dark)';
+      document.head.appendChild(metaDark);
+    }
+    metaDark.content = darkTheme;
+
+    let metaLight = document.head.querySelector(
+      'meta[name="theme-color"][media="(prefers-color-scheme: light)"]',
+    );
+    if (!metaLight) {
+      metaLight = document.createElement('meta');
+      metaLight.name = 'theme-color';
+      metaLight.media = '(prefers-color-scheme: light)';
+      document.head.appendChild(metaLight);
+    }
+    metaLight.content = lightTheme;
+
+    // Remove legacy single-color tag if it interferes (optional, but cleaner)
+    const legacyMeta = document.head.querySelector(
+      'meta[name="theme-color"]:not([media])',
+    );
+    if (legacyMeta) legacyMeta.remove();
+
     upsertMeta('mobile-web-app-capable', 'yes');
     upsertMeta('apple-mobile-web-app-capable', 'yes');
     upsertMeta('apple-mobile-web-app-title', brandData.name);
@@ -134,7 +166,7 @@ export function buildPwaAssets(baseUrl, brandData) {
   ];
 
   const metas = [
-    { name: 'theme-color', content: '#030303' },
+    { name: 'theme-color', content: '#030303' }, // Default for static analysis tools
     { name: 'mobile-web-app-capable', content: 'yes' },
     { name: 'apple-mobile-web-app-capable', content: 'yes' },
     { name: 'apple-mobile-web-app-title', content: brandData.name },
