@@ -14,8 +14,8 @@
 
   /* Colors - Primary */
   --bg-primary: #030303;
-  --bg-secondary: #0a0b10;
-  --bg-tertiary: #141414;
+  --bg-secondary: #030303;
+  --bg-tertiary: #030303;
   --bg-interactive: rgba(255, 255, 255, 0.06);
 
   --text-primary: #e0e0e0;
@@ -140,7 +140,7 @@
      ======================================== */
 
   --blog-bg: #030303;
-  --blog-card-bg: #0a0a0a;
+  --blog-card-bg: #030303;
   --blog-border: rgba(255, 255, 255, 0.08);
   --blog-accent: #00f3ff;
   --blog-text: #e0e0e0;
@@ -151,8 +151,8 @@
      ======================================== */
 
   --videos-accent: #ff6b6b;
-  --videos-bg: #0a0a0a;
-  --videos-card-bg: #141414;
+  --videos-bg: #030303;
+  --videos-card-bg: #030303;
 
   /* ========================================
      PAGE: HOME - SECTION 3
