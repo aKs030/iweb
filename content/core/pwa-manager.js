@@ -138,7 +138,10 @@ export function buildPwaAssets(baseUrl, brandData) {
     { name: 'mobile-web-app-capable', content: 'yes' },
     { name: 'apple-mobile-web-app-capable', content: 'yes' },
     { name: 'apple-mobile-web-app-title', content: brandData.name },
-    { name: 'apple-mobile-web-app-status-bar-style', content: 'black-translucent' },
+    {
+      name: 'apple-mobile-web-app-status-bar-style',
+      content: 'black-translucent',
+    },
   ];
 
   return { links, iconLinks, metas };
