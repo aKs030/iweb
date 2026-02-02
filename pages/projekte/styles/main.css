@@ -170,20 +170,20 @@ body {
   justify-content: center;
   position: relative;
   z-index: 10;
-  padding: 4rem 1.5rem;
+  padding: min(3rem, 5vh) 1.5rem;
   box-sizing: border-box;
-  scroll-snap-align: start;
+  scroll-snap-align: center;
   scroll-snap-stop: always;
 }
 
 .snap-section:first-child {
   min-height: 100vh;
-  padding: 6rem 1.5rem;
+  padding: min(5rem, 10vh) 1.5rem;
 }
 
 .snap-section:not(:first-child) {
   min-height: 100vh;
-  padding: 3rem 1.5rem;
+  padding: min(2rem, 5vh) 1.5rem;
 }
 
 /* Special styling for sections with expanded apps */
@@ -206,13 +206,13 @@ body {
    ============================================================================ */
 
 .headline-animation {
-  margin-bottom: 3rem;
+  margin-bottom: 2rem;
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 280px;
+  min-height: 20vh;
   position: relative;
-  padding: 2rem 1rem;
+  padding: 1.5rem 1rem;
 }
 
 .floating-icons {
@@ -304,9 +304,9 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 2.5rem;
-  margin: 2.5rem auto;
-  padding: 2rem 2.5rem;
+  gap: 1.5rem;
+  margin: 1.5rem auto;
+  padding: 1.5rem 2rem;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 1.5rem;
@@ -489,13 +489,16 @@ body {
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 2rem;
-  padding: 1.75rem;
+  padding: 1.5rem;
   backdrop-filter: blur(30px);
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
   will-change: transform;
   max-width: 480px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
   width: 100%;
   margin: 0 auto;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
@@ -784,7 +787,7 @@ body {
 .window-mockup {
   position: relative;
   width: 100%;
-  height: 280px;
+  height: clamp(160px, 25vh, 280px);
   border-radius: 0.75rem;
   background: linear-gradient(135deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.7));
   border: 1px solid rgba(255, 255, 255, 0.15);
@@ -798,7 +801,7 @@ body {
 }
 
 .window-mockup-expanded {
-  height: 400px;
+  height: clamp(250px, 40vh, 400px);
   border-radius: 1rem;
 }
 
@@ -902,6 +905,10 @@ body {
 
 .project-info {
   text-align: left;
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+  padding-right: 0.25rem;
 }
 
 .project-header {
@@ -912,7 +919,7 @@ body {
 }
 
 .project-title {
-  font-size: 1.25rem;
+  font-size: clamp(1.1rem, 2.5vh, 1.4rem);
   font-weight: 700;
   color: white;
   margin: 0;
@@ -935,16 +942,16 @@ body {
 
 .project-desc {
   color: rgba(255, 255, 255, 0.7);
-  font-size: 0.875rem;
-  line-height: 1.4;
-  margin-bottom: 1rem;
+  font-size: clamp(0.8rem, 2vh, 0.95rem);
+  line-height: 1.35;
+  margin-bottom: 0.75rem;
 }
 
 .tags-container {
   display: flex;
   flex-wrap: wrap;
   gap: 0.4rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
 }
 
 .tag {
