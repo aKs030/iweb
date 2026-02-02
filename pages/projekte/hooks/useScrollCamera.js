@@ -1,6 +1,4 @@
-
 import { useEffect, useState } from 'react';
-import * as THREE from 'three';
 
 /**
  * Hook to manage scroll position and calculate camera position on a path
@@ -26,7 +24,8 @@ export const useScrollCamera = (camera, projects) => {
     const handleScroll = () => {
       // Calculate scroll progress based on total document height
       // docHeight - windowHeight = scrollable area
-      const scrollableHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const scrollableHeight =
+        document.documentElement.scrollHeight - window.innerHeight;
       const scrollY = window.scrollY;
 
       // Safety check to avoid division by zero

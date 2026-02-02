@@ -1,4 +1,3 @@
-
 import * as THREE from 'three';
 
 /**
@@ -25,7 +24,7 @@ export class ProjectGallery {
     const frameMaterial = new THREE.MeshStandardMaterial({
       color: 0x222222,
       roughness: 0.4,
-      metalness: 0.8
+      metalness: 0.8,
     });
 
     this.projects.forEach((project, index) => {
@@ -54,13 +53,14 @@ export class ProjectGallery {
       textureLoader.load(
         imageUrl,
         (texture) => {
-          projectGroup.getObjectByName('screen').material = new THREE.MeshBasicMaterial({ map: texture });
+          projectGroup.getObjectByName('screen').material =
+            new THREE.MeshBasicMaterial({ map: texture });
         },
         undefined,
         () => {
-           // On error, maybe show a "code" pattern or text
-           // For now, stick to default dark grey
-        }
+          // On error, maybe show a "code" pattern or text
+          // For now, stick to default dark grey
+        },
       );
 
       const screen = new THREE.Mesh(geometry, material);
@@ -80,7 +80,7 @@ export class ProjectGallery {
         group: projectGroup,
         originalPos: projectGroup.position.clone(),
         index: index,
-        zPos: zPos
+        zPos: zPos,
       });
     });
   }
@@ -88,12 +88,12 @@ export class ProjectGallery {
   /**
    * Updates object animations (e.g. floating, glowing)
    * @param {number} time - Global time for sine waves
-   * @param {number} cameraZ - Current camera Z position to optimize rendering (frustum culling logic if needed)
    */
-  update(time, cameraZ) {
+  update(time) {
     this.objects.forEach((obj) => {
       // Gentle floating animation
-      obj.group.position.y = obj.originalPos.y + Math.sin(time + obj.index) * 0.1;
+      obj.group.position.y =
+        obj.originalPos.y + Math.sin(time + obj.index) * 0.1;
 
       // Optional: Fade out/in based on distance to camera
       // Dist: obj.zPos - cameraZ
@@ -114,7 +114,7 @@ export class ProjectGallery {
     let closestIndex = 0;
     let minDiff = Infinity;
 
-    this.objects.forEach(obj => {
+    this.objects.forEach((obj) => {
       const diff = Math.abs(obj.zPos - focusZ);
       if (diff < minDiff) {
         minDiff = diff;

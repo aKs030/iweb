@@ -1,4 +1,3 @@
-
 import * as THREE from 'three';
 import React from 'react';
 import { ProjectGallery } from './ProjectGallery.js';
@@ -40,7 +39,7 @@ export const ThreeScene = ({ projects, onScrollUpdate, onReady }) => {
       60, // Slightly wider FOV for speed sensation
       window.innerWidth / window.innerHeight,
       0.1,
-      1000
+      1000,
     );
     // Initial position
     camera.position.set(0, 0, 5);
@@ -50,7 +49,7 @@ export const ThreeScene = ({ projects, onScrollUpdate, onReady }) => {
     const renderer = new THREE.WebGLRenderer({
       alpha: true,
       antialias: true,
-      powerPreference: "high-performance"
+      powerPreference: 'high-performance',
     });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -61,10 +60,13 @@ export const ThreeScene = ({ projects, onScrollUpdate, onReady }) => {
     const starGeometry = new THREE.BufferGeometry();
     const starCount = 4000;
     const posArray = new Float32Array(starCount * 3);
-    for(let i = 0; i < starCount * 3; i++) {
+    for (let i = 0; i < starCount * 3; i++) {
       posArray[i] = (Math.random() - 0.5) * 150;
     }
-    starGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+    starGeometry.setAttribute(
+      'position',
+      new THREE.BufferAttribute(posArray, 3),
+    );
     const starMaterial = new THREE.PointsMaterial({
       size: 0.08,
       color: 0xffffff,
@@ -104,7 +106,7 @@ export const ThreeScene = ({ projects, onScrollUpdate, onReady }) => {
       // Move Camera based on Scroll
       // Total path length depends on projects count (approx 15 units per project)
       const totalPathLength = projects.length * 15 + 10;
-      const targetZ = 5 - (scrollRef.current * totalPathLength);
+      const targetZ = 5 - scrollRef.current * totalPathLength;
 
       // Smooth camera movement (Lerp)
       // We lerp the camera position to the target position
@@ -127,9 +129,11 @@ export const ThreeScene = ({ projects, onScrollUpdate, onReady }) => {
         galleryRef.current.update(t, camera.position.z);
 
         // Check active project
-        const activeIndex = galleryRef.current.getActiveIndex(camera.position.z);
+        const activeIndex = galleryRef.current.getActiveIndex(
+          camera.position.z,
+        );
         if (onScrollUpdate) {
-           onScrollUpdate(activeIndex);
+          onScrollUpdate(activeIndex);
         }
       }
 
@@ -154,6 +158,6 @@ export const ThreeScene = ({ projects, onScrollUpdate, onReady }) => {
 
   return React.createElement('div', {
     ref: containerRef,
-    style: { width: '100%', height: '100%' }
+    style: { width: '100%', height: '100%' },
   });
 };
