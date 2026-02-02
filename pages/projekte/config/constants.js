@@ -1,11 +1,7 @@
 /**
  * Project Constants
- * @version 4.0.0
+ * @version 5.0.0 - Cleaned up
  */
-
-// UI Constants
-export const TOAST_DURATION = 2600;
-export const URL_TEST_TIMEOUT = 2500;
 
 // Cache Configuration
 export const CACHE_PREFIX = 'github_contents_';

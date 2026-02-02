@@ -30,7 +30,18 @@ export const useProjects = (icons) => {
         log.info('Loading projects from GitHub...');
         setLoading(true);
 
-        const loadedProjects = await createProjectsData(icons);
+        // Add a timeout to prevent infinite loading
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(
+            () => reject(new Error('Loading timeout after 30 seconds')),
+            30000,
+          );
+        });
+
+        const loadedProjects = await Promise.race([
+          createProjectsData(icons),
+          timeoutPromise,
+        ]);
 
         log.info(`Successfully loaded ${loadedProjects.length} projects`);
 

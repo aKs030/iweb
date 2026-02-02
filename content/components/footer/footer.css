@@ -38,6 +38,8 @@ address {
   letter-spacing: -0.02em;
   animation: footerAppear 0.8s var(--ease-spring) forwards;
   opacity: 0;
+  transition: all 0.3s var(--ease-spring);
+  will-change: transform, opacity;
 }
 
 @keyframes footerAppear {
@@ -56,13 +58,20 @@ address {
   padding: 0 20px;
   min-height: 52px;
   cursor: pointer;
-  transition: background var(--transition-base);
+  transition: all var(--transition-base);
   user-select: none;
   overflow: hidden;
+  position: relative;
+  touch-action: manipulation; /* Improve touch responsiveness */
 }
 
 .footer-min:hover {
   background: var(--component-fill-primary, rgba(255, 255, 255, 0.05));
+  transform: translateY(-1px);
+}
+
+.footer-min:active {
+  transform: translateY(0);
 }
 
 .footer-min.hidden {
@@ -72,6 +81,26 @@ address {
 .footer-min .cookie-inline,
 .footer-min .footer-nav {
   pointer-events: auto;
+}
+
+/* Add visual feedback for touch interactions */
+.footer-min::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+.footer-min:active::before {
+  width: 100%;
+  height: 100%;
 }
 
 .footer-copyright {
@@ -307,10 +336,43 @@ address {
   max-height: calc(100vh - 150px);
   overflow-y: auto;
   overflow-x: hidden;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.3s var(--ease-spring);
 }
 
 .footer-max.hidden {
   display: none;
+}
+
+/* Show animation for maximized state */
+.site-footer.expanded .footer-max {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Smooth scrolling for footer content */
+.footer-max {
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+.footer-max::-webkit-scrollbar {
+  width: 6px;
+}
+
+.footer-max::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.footer-max::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.footer-max::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
 }
 
 /* ===== Cookie Settings ===== */
@@ -746,52 +808,6 @@ address {
   transform: scale(1.15);
 }
 
-/* ===== Newsletter Form ===== */
-.newsletter-form {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: auto;
-}
-
-.newsletter-form input {
-  flex: 1;
-  padding: 8px 12px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--component-separator, rgba(255, 255, 255, 0.1));
-  border-radius: 8px;
-  color: #fff;
-  font-size: 11px;
-  font-family: inherit;
-  transition: all var(--transition-base);
-}
-
-.newsletter-form input:focus {
-  outline: none;
-  border-color: var(--component-accent-blue, #007aff);
-  background: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
-}
-
-.newsletter-form button {
-  padding: 8px 16px;
-  background: var(--component-accent-blue, #007aff);
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  font-size: 11px;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all var(--transition-base);
-}
-
-.newsletter-form button:hover {
-  background: var(--component-accent-blue-hover, #0051d5);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
-}
-
 /* ===== Skill Tags ===== */
 .skill-tags {
   display: flex;
@@ -910,8 +926,36 @@ address {
   display: flex;
 }
 
+.site-footer.expanded {
+  transform: translateX(-50%) translateY(-10px);
+  box-shadow: var(--component-shadow-depth-3, 0 16px 64px rgba(0, 0, 0, 0.4));
+}
+
 body.footer-expanded {
   padding-bottom: calc(80vh + 24px);
+  overflow-x: hidden; /* Prevent horizontal scroll issues */
+}
+
+/* Prevent body scroll when footer is expanded on mobile */
+@media (width <= 768px) {
+  body.footer-expanded {
+    position: fixed;
+    width: 100%;
+    top: 0;
+    left: 0;
+  }
+
+  body.footer-expanded .site-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-width: none;
+    border-radius: 20px 20px 0 0;
+    transform: none;
+    max-height: 90vh;
+  }
 }
 
 /* ===== Responsive ===== */
@@ -928,6 +972,11 @@ body.footer-expanded {
     min-height: 48px;
     gap: 8px;
     overflow: visible;
+  }
+
+  /* Improve touch targets */
+  .footer-min {
+    min-height: 52px; /* Ensure minimum touch target size */
   }
 
   .footer-copyright {
@@ -971,8 +1020,8 @@ body.footer-expanded {
   .btn-accept,
   .btn-reject {
     padding: 8px 12px;
-    min-width: 36px;
-    min-height: 36px;
+    min-width: 44px; /* Improved touch target */
+    min-height: 44px;
   }
 
   .footer-nav {
@@ -1063,6 +1112,7 @@ body.footer-expanded {
     padding: 5px 8px;
     font-size: 9px;
     gap: 3px;
+    min-height: 32px; /* Ensure touch target */
   }
 
   .cta svg {
@@ -1075,6 +1125,7 @@ body.footer-expanded {
     padding: 4px 6px;
     font-size: 9px;
     gap: 4px;
+    min-height: 32px; /* Ensure touch target */
   }
 
   .links a svg,
@@ -1090,20 +1141,7 @@ body.footer-expanded {
   .tag {
     font-size: 8px;
     padding: 3px 6px;
-  }
-
-  .newsletter-form {
-    gap: 6px;
-  }
-
-  .newsletter-form input {
-    padding: 6px 10px;
-    font-size: 10px;
-  }
-
-  .newsletter-form button {
-    padding: 6px 12px;
-    font-size: 10px;
+    min-height: 24px; /* Ensure touch target */
   }
 
   .status-bar {
@@ -1133,8 +1171,8 @@ body.footer-expanded {
 
   .social-btn {
     padding: 4px;
-    min-width: 28px;
-    min-height: 28px;
+    min-width: 32px; /* Improved touch target */
+    min-height: 32px;
     border-radius: 6px;
   }
 
@@ -1156,7 +1194,7 @@ body.footer-expanded {
   .legal .nav-btn {
     padding: 4px 6px;
     font-size: 8px;
-    min-height: 28px;
+    min-height: 32px; /* Improved touch target */
     border-radius: 6px;
   }
 }
@@ -1260,16 +1298,6 @@ body.footer-expanded {
   .tag {
     font-size: 7px;
     padding: 2px 5px;
-  }
-
-  .newsletter-form input {
-    padding: 5px 8px;
-    font-size: 9px;
-  }
-
-  .newsletter-form button {
-    padding: 5px 10px;
-    font-size: 9px;
   }
 
   .status-bar {
