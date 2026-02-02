@@ -1,3 +1,4 @@
+
 import * as THREE from 'three';
 import React from 'react';
 import { ProjectGallery } from './ProjectGallery.js';
@@ -12,14 +13,15 @@ const { useEffect, useRef } = React;
 export const ThreeScene = ({ projects, onScrollUpdate, onReady }) => {
   const containerRef = useRef(null);
   const sceneRef = useRef(null);
-  const cameraRef = useRef(null);
   const rendererRef = useRef(null);
   const starsRef = useRef(null);
   const galleryRef = useRef(null);
-  const scrollRef = useRef(0); // Mutable ref to hold latest scroll value for loop
+  const frameIdRef = useRef(null);
+  const scrollRef = useRef(0);
+  const isMountedRef = useRef(true);
 
   // Use the hook to track scroll
-  const normalizedScroll = useScrollCamera(cameraRef.current, projects);
+  const normalizedScroll = useScrollCamera(new THREE.Camera(), projects);
 
   // Update ref whenever state changes so animation loop sees it
   useEffect(() => {
@@ -27,23 +29,22 @@ export const ThreeScene = ({ projects, onScrollUpdate, onReady }) => {
   }, [normalizedScroll]);
 
   useEffect(() => {
+    isMountedRef.current = true;
     if (!containerRef.current) return;
 
     // 1. Setup Scene
     const scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(0x000000, 0.035); // Deep space fog
+    scene.fog = new THREE.FogExp2(0x000000, 0.035);
     sceneRef.current = scene;
 
     // 2. Setup Camera
     const camera = new THREE.PerspectiveCamera(
-      60, // Slightly wider FOV for speed sensation
+      60,
       window.innerWidth / window.innerHeight,
       0.1,
-      1000,
+      1000
     );
-    // Initial position
     camera.position.set(0, 0, 5);
-    cameraRef.current = camera;
 
     // 3. Setup Renderer
     const renderer = new THREE.WebGLRenderer({
@@ -53,6 +54,13 @@ export const ThreeScene = ({ projects, onScrollUpdate, onReady }) => {
     });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+    // Explicitly handle context loss
+    renderer.domElement.addEventListener("webglcontextlost", function(event) {
+        event.preventDefault();
+        console.warn('WebGL context lost');
+    }, false);
+
     containerRef.current.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
@@ -63,10 +71,7 @@ export const ThreeScene = ({ projects, onScrollUpdate, onReady }) => {
     for (let i = 0; i < starCount * 3; i++) {
       posArray[i] = (Math.random() - 0.5) * 150;
     }
-    starGeometry.setAttribute(
-      'position',
-      new THREE.BufferAttribute(posArray, 3),
-    );
+    starGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
     const starMaterial = new THREE.PointsMaterial({
       size: 0.08,
       color: 0xffffff,
@@ -78,10 +83,9 @@ export const ThreeScene = ({ projects, onScrollUpdate, onReady }) => {
     starsRef.current = stars;
 
     // 5. Lighting
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.2); // Low ambient
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
     scene.add(ambientLight);
 
-    // Camera light (moves with camera)
     const cameraLight = new THREE.PointLight(0x60a5fa, 1.5, 30);
     scene.add(cameraLight);
 
@@ -91,6 +95,7 @@ export const ThreeScene = ({ projects, onScrollUpdate, onReady }) => {
 
     // 7. Handle Resize
     const handleResize = () => {
+      if (!isMountedRef.current || !rendererRef.current) return;
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
@@ -99,60 +104,101 @@ export const ThreeScene = ({ projects, onScrollUpdate, onReady }) => {
 
     // 8. Animation Loop
     const animate = (time) => {
-      requestAnimationFrame(animate);
+      if (!isMountedRef.current) return;
 
-      const t = time * 0.001; // Seconds
+      frameIdRef.current = requestAnimationFrame(animate);
+
+      const t = time * 0.001;
 
       // Move Camera based on Scroll
-      // Total path length depends on projects count (approx 15 units per project)
       const totalPathLength = projects.length * 15 + 10;
       const targetZ = 5 - scrollRef.current * totalPathLength;
 
-      // Smooth camera movement (Lerp)
-      // We lerp the camera position to the target position
+      // Smooth camera movement
       camera.position.z += (targetZ - camera.position.z) * 0.05;
 
-      // Add slight camera sway based on mouse/time could go here
+      // Sway
       camera.position.x = Math.sin(t * 0.5) * 0.5;
       camera.position.y = Math.cos(t * 0.3) * 0.3;
 
-      // Update Lighting to follow camera
       cameraLight.position.copy(camera.position);
 
-      // Rotate stars
       if (starsRef.current) {
-        starsRef.current.rotation.z = t * 0.02; // Rotate view
+        starsRef.current.rotation.z = t * 0.02;
       }
 
-      // Update Project Animations
       if (galleryRef.current) {
-        galleryRef.current.update(t, camera.position.z);
+        galleryRef.current.update(t);
 
-        // Check active project
-        const activeIndex = galleryRef.current.getActiveIndex(
-          camera.position.z,
-        );
+        // Update active index
+        const activeIndex = galleryRef.current.getActiveIndex(camera.position.z);
         if (onScrollUpdate) {
           onScrollUpdate(activeIndex);
         }
       }
 
-      renderer.render(scene, camera);
+      if (rendererRef.current) {
+        rendererRef.current.render(scene, camera);
+      }
     };
     animate(0);
 
     if (onReady) onReady();
 
-    // Cleanup
+    // Cleanup Function
     return () => {
-      window.removeEventListener('resize', handleResize);
-      if (containerRef.current && renderer.domElement) {
-        containerRef.current.removeChild(renderer.domElement);
+      isMountedRef.current = false;
+
+      // Stop loop
+      if (frameIdRef.current) {
+        cancelAnimationFrame(frameIdRef.current);
       }
-      renderer.dispose();
-      starGeometry.dispose();
-      starMaterial.dispose();
-      if (galleryRef.current) galleryRef.current.dispose();
+
+      window.removeEventListener('resize', handleResize);
+
+      // Clean up Gallery (if it has a dispose method)
+      if (galleryRef.current && typeof galleryRef.current.dispose === 'function') {
+        galleryRef.current.dispose();
+      }
+
+      // Clean up Scene Objects
+      scene.traverse((object) => {
+        if (!object.isMesh) return;
+
+        if (object.geometry) {
+          object.geometry.dispose();
+        }
+
+        if (object.material) {
+          if (Array.isArray(object.material)) {
+            object.material.forEach((material) => {
+                if (material.map) material.map.dispose();
+                material.dispose();
+            });
+          } else {
+            if (object.material.map) object.material.map.dispose();
+            object.material.dispose();
+          }
+        }
+      });
+
+      // Clean up Stars specific (if not caught by traverse)
+      if (starGeometry) starGeometry.dispose();
+      if (starMaterial) starMaterial.dispose();
+
+      // Dispose Renderer
+      if (rendererRef.current) {
+        // Remove canvas from DOM
+        if (containerRef.current && rendererRef.current.domElement) {
+            containerRef.current.removeChild(rendererRef.current.domElement);
+        }
+
+        rendererRef.current.dispose();
+        rendererRef.current.forceContextLoss();
+        rendererRef.current = null;
+      }
+
+      sceneRef.current = null;
     };
   }, []); // Run once
 
