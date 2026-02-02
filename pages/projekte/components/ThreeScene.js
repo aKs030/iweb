@@ -31,6 +31,9 @@ export const ThreeScene = ({ projects, onScrollUpdate, onReady }) => {
     isMountedRef.current = true;
     if (!containerRef.current) return;
 
+    // Check for existing renderer to prevent double-init (React StrictMode)
+    if (rendererRef.current) return;
+
     // 1. Setup Scene
     const scene = new THREE.Scene();
     scene.fog = new THREE.FogExp2(0x000000, 0.035);
@@ -45,27 +48,45 @@ export const ThreeScene = ({ projects, onScrollUpdate, onReady }) => {
     );
     camera.position.set(0, 0, 5);
 
-    // 3. Setup Renderer
-    const renderer = new THREE.WebGLRenderer({
-      alpha: true,
-      antialias: true,
-      powerPreference: 'high-performance',
-    });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    // 3. Setup Renderer with Error Handling
+    let renderer;
+    try {
+      renderer = new THREE.WebGLRenderer({
+        alpha: true,
+        antialias: true,
+        powerPreference: 'high-performance',
+        failIfMajorPerformanceCaveat: false, // Try to run even if slow
+      });
 
-    // Explicitly handle context loss
-    renderer.domElement.addEventListener(
-      'webglcontextlost',
-      function (event) {
-        event.preventDefault();
-        console.warn('WebGL context lost');
-      },
-      false,
-    );
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
-    containerRef.current.appendChild(renderer.domElement);
-    rendererRef.current = renderer;
+      // Handle context loss events
+      renderer.domElement.addEventListener(
+        'webglcontextlost',
+        (event) => {
+          event.preventDefault();
+          console.warn('WebGL context lost - attempting to recover');
+          if (frameIdRef.current) cancelAnimationFrame(frameIdRef.current);
+        },
+        false,
+      );
+
+      renderer.domElement.addEventListener(
+        'webglcontextrestored',
+        () => {
+          console.log('WebGL context restored - restarting loop');
+          if (isMountedRef.current) animate(0);
+        },
+        false,
+      );
+
+      containerRef.current.appendChild(renderer.domElement);
+      rendererRef.current = renderer;
+    } catch (e) {
+      console.error('Failed to create WebGLRenderer:', e);
+      return;
+    }
 
     // 4. Create Starfield
     const starGeometry = new THREE.BufferGeometry();
@@ -164,7 +185,7 @@ export const ThreeScene = ({ projects, onScrollUpdate, onReady }) => {
 
       window.removeEventListener('resize', handleResize);
 
-      // Clean up Gallery (if it has a dispose method)
+      // Clean up Gallery
       if (
         galleryRef.current &&
         typeof galleryRef.current.dispose === 'function'
@@ -193,19 +214,29 @@ export const ThreeScene = ({ projects, onScrollUpdate, onReady }) => {
         }
       });
 
-      // Clean up Stars specific (if not caught by traverse)
+      // Clean up Stars
       if (starGeometry) starGeometry.dispose();
       if (starMaterial) starMaterial.dispose();
 
       // Dispose Renderer
       if (rendererRef.current) {
-        // Remove canvas from DOM
+        // Explicitly clear DOM first
         if (containerRef.current && rendererRef.current.domElement) {
-          containerRef.current.removeChild(rendererRef.current.domElement);
+          try {
+            containerRef.current.removeChild(rendererRef.current.domElement);
+          } catch (e) {
+            console.warn('Could not remove canvas from DOM:', e);
+          }
         }
 
-        rendererRef.current.dispose();
-        rendererRef.current.forceContextLoss();
+        try {
+          rendererRef.current.dispose();
+          // Optional: Force context loss to ensure cleanup on older browsers
+          // rendererRef.current.forceContextLoss();
+        } catch (e) {
+          console.warn('Error disposing renderer:', e);
+        }
+
         rendererRef.current = null;
       }
 
