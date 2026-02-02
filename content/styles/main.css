@@ -340,6 +340,10 @@ textarea:focus-visible {
 /* ===== BASE STYLES ===== */
 
 /* Base Styles */
+html {
+  background-color: var(--bg-primary); /* iOS Status Bar Fix */
+}
+
 html,
 body {
   min-height: 100%;
