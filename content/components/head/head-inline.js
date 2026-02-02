@@ -173,7 +173,7 @@ const ensureFooterAndTrigger = () => {
       }
 
       // Ensure <site-footer> exists
-      let siteFooter = document.querySelector('site-footer');
+      let siteFooter = document.querySelector('site-footer') || document.getElementById('site-footer');
       if (!siteFooter) {
         // Check for old container to upgrade
         const oldContainer = document.getElementById('footer-container');
