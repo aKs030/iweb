@@ -23,12 +23,6 @@
     "skills": {
       "title": "Skills"
     },
-    "newsletter": {
-      "title": "Newsletter",
-      "text": "Bleib auf dem Laufenden über neue Projekte und Artikel.",
-      "placeholder": "mail@example.com",
-      "button": "Abonnieren"
-    },
     "quick_links": {
       "title": "Quick Links",
       "gallery": "Galerie",

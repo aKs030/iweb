@@ -1304,31 +1304,4 @@ function _getSectionConfig(sectionName) {
   );
 }
 
-// Export for compatibility with other modules if they import these
-// Removed unused exports: detectDeviceCapabilities, _mapId, _createLoadingManager, _detectAndEnsureWebGL
-// These were not used anywhere in the codebase
-
-export const EarthSystemAPI = {
-  /**
-   * @param {any} presetName
-   */
-  flyToPreset: (presetName) => {
-    if (singleton?.cameraManager)
-      singleton.cameraManager.flyToPreset(presetName);
-  },
-  triggerMeteorShower: () => {
-    singleton?.shootingStarManager?.triggerShower();
-  },
-  getConfig: () => CONFIG,
-  /**
-   * @param {any} updates
-   */
-  updateConfig: (updates) => {
-    Object.assign(CONFIG, updates);
-  },
-  get shootingStarManager() {
-    return singleton?.shootingStarManager;
-  },
-};
-
 export default ThreeEarthManager;

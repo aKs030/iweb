@@ -111,7 +111,10 @@ self.addEventListener('fetch', (event) => {
 
   // Skip external analytics and tracking scripts
   // cspell:ignore googletagmanager
-  if (url.hostname.includes('googletagmanager.com') || url.hostname.includes('google-analytics.com')) {
+  if (
+    url.hostname.includes('googletagmanager.com') ||
+    url.hostname.includes('google-analytics.com')
+  ) {
     return;
   }
 
