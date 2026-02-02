@@ -313,9 +313,15 @@ textarea:focus-visible {
 
 /* ===== LAYOUT & SECTIONS ===== */
 
+main {
+  margin-top: 0 !important;
+  padding: 0 !important;
+}
+
 .section {
   scroll-snap-align: start;
   scroll-snap-stop: always;
+  scroll-margin-top: var(--header-height);
   min-height: 100vh;
 }
 
@@ -341,15 +347,19 @@ textarea:focus-visible {
 /* ===== BASE STYLES ===== */
 
 /* Base Styles */
-html,
-body {
-  min-height: 100dvh;
-  /* Ensure full height on mobile with dynamic toolbars */
+html {
+  height: 100%;
+  overflow-y: scroll;
   overflow-x: hidden;
-  touch-action: pan-y;
-  scroll-behavior: smooth;
   scroll-snap-type: y mandatory;
   scroll-padding-top: var(--header-height);
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100dvh;
+  overflow: visible; /* Ensure body is not a scroll container */
+  touch-action: pan-y;
   transition: padding-bottom var(--transition-base);
   -webkit-font-smoothing: antialiased;
   font-kerning: normal;
@@ -358,9 +368,6 @@ body {
     'kern' 1,
     'liga' 1,
     'calt' 1;
-}
-
-body {
   font-family: var(--font-inter);
   background: var(--bg-primary);
   color: var(--text-primary);
