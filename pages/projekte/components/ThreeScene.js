@@ -1,4 +1,3 @@
-
 import * as THREE from 'three';
 import React from 'react';
 import { ProjectGallery } from './ProjectGallery.js';
@@ -42,7 +41,7 @@ export const ThreeScene = ({ projects, onScrollUpdate, onReady }) => {
       60,
       window.innerWidth / window.innerHeight,
       0.1,
-      1000
+      1000,
     );
     camera.position.set(0, 0, 5);
 
@@ -56,10 +55,14 @@ export const ThreeScene = ({ projects, onScrollUpdate, onReady }) => {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
     // Explicitly handle context loss
-    renderer.domElement.addEventListener("webglcontextlost", function(event) {
+    renderer.domElement.addEventListener(
+      'webglcontextlost',
+      function (event) {
         event.preventDefault();
         console.warn('WebGL context lost');
-    }, false);
+      },
+      false,
+    );
 
     containerRef.current.appendChild(renderer.domElement);
     rendererRef.current = renderer;
@@ -71,7 +74,10 @@ export const ThreeScene = ({ projects, onScrollUpdate, onReady }) => {
     for (let i = 0; i < starCount * 3; i++) {
       posArray[i] = (Math.random() - 0.5) * 150;
     }
-    starGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+    starGeometry.setAttribute(
+      'position',
+      new THREE.BufferAttribute(posArray, 3),
+    );
     const starMaterial = new THREE.PointsMaterial({
       size: 0.08,
       color: 0xffffff,
@@ -131,7 +137,9 @@ export const ThreeScene = ({ projects, onScrollUpdate, onReady }) => {
         galleryRef.current.update(t);
 
         // Update active index
-        const activeIndex = galleryRef.current.getActiveIndex(camera.position.z);
+        const activeIndex = galleryRef.current.getActiveIndex(
+          camera.position.z,
+        );
         if (onScrollUpdate) {
           onScrollUpdate(activeIndex);
         }
@@ -157,7 +165,10 @@ export const ThreeScene = ({ projects, onScrollUpdate, onReady }) => {
       window.removeEventListener('resize', handleResize);
 
       // Clean up Gallery (if it has a dispose method)
-      if (galleryRef.current && typeof galleryRef.current.dispose === 'function') {
+      if (
+        galleryRef.current &&
+        typeof galleryRef.current.dispose === 'function'
+      ) {
         galleryRef.current.dispose();
       }
 
@@ -172,8 +183,8 @@ export const ThreeScene = ({ projects, onScrollUpdate, onReady }) => {
         if (object.material) {
           if (Array.isArray(object.material)) {
             object.material.forEach((material) => {
-                if (material.map) material.map.dispose();
-                material.dispose();
+              if (material.map) material.map.dispose();
+              material.dispose();
             });
           } else {
             if (object.material.map) object.material.map.dispose();
@@ -190,7 +201,7 @@ export const ThreeScene = ({ projects, onScrollUpdate, onReady }) => {
       if (rendererRef.current) {
         // Remove canvas from DOM
         if (containerRef.current && rendererRef.current.domElement) {
-            containerRef.current.removeChild(rendererRef.current.domElement);
+          containerRef.current.removeChild(rendererRef.current.domElement);
         }
 
         rendererRef.current.dispose();
