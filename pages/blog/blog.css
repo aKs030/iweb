@@ -8,7 +8,7 @@ html {
 }
 
 body {
-  background-color: #000000;
+  background-color: var(--bg-primary, #030303);
   color: var(--blog-text-main, #e2e8f0);
   margin: 0;
   font-family: var(
@@ -47,7 +47,11 @@ body {
       rgba(139, 92, 246, 0.15) 0%,
       transparent 50%
     ),
-    radial-gradient(ellipse at 50% 0%, #1a1a3e 0%, #000000 70%);
+    radial-gradient(
+      ellipse at 50% 0%,
+      var(--bg-primary, #030303) 0%,
+      var(--bg-primary, #030303) 70%
+    );
 }
 
 #blog-particles-canvas {
@@ -853,7 +857,12 @@ body.blog-page #main-content {
   overflow: hidden;
   border-radius: 20px 20px 0 0;
   background:
-    linear-gradient(135deg, #0a0a1a 0%, #1a1a3e 50%, #0a0a1a 100%),
+    linear-gradient(
+      135deg,
+      var(--bg-primary, #030303) 0%,
+      var(--bg-primary, #030303) 50%,
+      var(--bg-primary, #030303) 100%
+    ),
     radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.1), transparent);
   background-size:
     200% 100%,
@@ -867,7 +876,7 @@ body.blog-page #main-content {
   background: radial-gradient(
     circle at 50% 0%,
     rgba(59, 130, 246, 0.1),
-    #1a1a2a
+    var(--bg-primary, #030303)
   );
 }
 

@@ -14,7 +14,11 @@
   padding: 4rem 2rem;
   font-family: var(--font-inter);
   color: var(--text-primary);
-  background: radial-gradient(ellipse at top, #1a1a2e 0%, var(--bg-main) 50%);
+  background: radial-gradient(
+    ellipse at top,
+    var(--bg-primary, #030303) 0%,
+    var(--bg-primary, #030303) 50%
+  );
   background-attachment: fixed;
   min-height: 100vh;
   position: relative;
@@ -68,7 +72,7 @@ h1 {
   margin-top: 3rem;
 }
 .video-card {
-  background: var(--bg-card);
+  background: var(--bg-primary, #030303);
   border-radius: var(--radius-xl);
   padding: 2rem;
   box-shadow:
@@ -142,7 +146,7 @@ h1 {
 .gmb-note {
   margin-top: 3rem;
   padding: 2rem;
-  background: var(--bg-card);
+  background: var(--bg-primary, #030303);
   border-left: 4px solid var(--accent);
   border-radius: var(--radius-xl);
   color: var(--text-secondary);
@@ -150,7 +154,7 @@ h1 {
 .video-error {
   margin: 2rem 0;
   padding: 1.5rem;
-  background: #2a1a1a;
+  background: var(--bg-primary, #030303);
   border-left: 4px solid #f87171;
   color: #fca5a5;
   border-radius: var(--radius-xl);
@@ -158,7 +162,7 @@ h1 {
 .video-note {
   margin: 2rem 0;
   padding: 1.25rem;
-  background: #162022;
+  background: var(--bg-primary, #030303);
   border-left: 4px solid #ffd93d;
   color: var(--text-secondary);
   border-radius: var(--radius-xl);

@@ -8,27 +8,13 @@ export function setupPWAAssets(brandData) {
   try {
     upsertHeadLink({ rel: 'manifest', href: '/manifest.json' });
 
-    upsertMeta('theme-color', '#000000');
+    upsertMeta('theme-color', '#030303');
     upsertMeta('mobile-web-app-capable', 'yes');
     upsertMeta('apple-mobile-web-app-capable', 'yes');
     upsertMeta('apple-mobile-web-app-title', brandData.name);
     upsertMeta('apple-mobile-web-app-status-bar-style', 'black-translucent');
 
-    const iconSizes = [16, 32, 48, 64, 128, 192, 256, 512];
-    iconSizes.forEach((size) => {
-      upsertHeadLink({
-        rel: 'icon',
-        href: `${BASE_URL}/content/assets/img/icons/favicon-${size}.png`,
-        attrs: { sizes: `${size}x${size}`, type: 'image/png' },
-      });
-    });
-
-    upsertHeadLink({
-      rel: 'apple-touch-icon',
-      href: `${BASE_URL}/content/assets/img/icons/apple-touch-icon.png`,
-      attrs: { sizes: '180x180' },
-    });
-
+    // Optimierte Icon-Konfiguration für existierende Dateien
     upsertHeadLink({
       rel: 'icon',
       href: `${BASE_URL}/content/assets/img/icons/favicon.svg`,
@@ -36,9 +22,21 @@ export function setupPWAAssets(brandData) {
     });
 
     upsertHeadLink({
+      rel: 'icon',
+      href: `${BASE_URL}/content/assets/img/icons/favicon-512.webp`,
+      attrs: { sizes: '512x512', type: 'image/webp' },
+    });
+
+    upsertHeadLink({
+      rel: 'apple-touch-icon',
+      href: `${BASE_URL}/content/assets/img/icons/apple-touch-icon.webp`,
+      attrs: { sizes: '180x180' },
+    });
+
+    upsertHeadLink({
       rel: 'mask-icon',
       href: `${BASE_URL}/content/assets/img/icons/safari-pinned-tab.svg`,
-      attrs: { color: '#000000' },
+      attrs: { color: '#030303' },
     });
 
     const shortcutIcon = document.head.querySelector(
@@ -63,64 +61,22 @@ export function buildPwaAssets(baseUrl, brandData) {
     {
       rel: 'mask-icon',
       href: `${baseUrl}/content/assets/img/icons/safari-pinned-tab.svg`,
-      color: '#1a1a2e',
+      color: '#030303',
     },
   ];
 
   const iconLinks = [
     {
       rel: 'icon',
-      sizes: '16x16',
-      href: `${baseUrl}/content/assets/img/icons/favicon-16.png`,
-      type: 'image/png',
-    },
-    {
-      rel: 'icon',
-      sizes: '32x32',
-      href: `${baseUrl}/content/assets/img/icons/favicon-32.png`,
-      type: 'image/png',
-    },
-    {
-      rel: 'icon',
-      sizes: '48x48',
-      href: `${baseUrl}/content/assets/img/icons/favicon-48.png`,
-      type: 'image/png',
-    },
-    {
-      rel: 'icon',
-      sizes: '64x64',
-      href: `${baseUrl}/content/assets/img/icons/favicon-64.png`,
-      type: 'image/png',
-    },
-    {
-      rel: 'icon',
-      sizes: '128x128',
-      href: `${baseUrl}/content/assets/img/icons/favicon-128.png`,
-      type: 'image/png',
-    },
-    {
-      rel: 'icon',
-      sizes: '192x192',
-      href: `${baseUrl}/content/assets/img/icons/favicon-192.png`,
-      type: 'image/png',
-    },
-    {
-      rel: 'icon',
-      sizes: '256x256',
-      href: `${baseUrl}/content/assets/img/icons/favicon-256.png`,
-      type: 'image/png',
+      sizes: 'any',
+      href: `${baseUrl}/content/assets/img/icons/favicon.svg`,
+      type: 'image/svg+xml',
     },
     {
       rel: 'icon',
       sizes: '512x512',
-      href: `${baseUrl}/content/assets/img/icons/favicon-512.png`,
-      type: 'image/png',
-    },
-    {
-      rel: 'icon',
-      sizes: 'any',
-      href: `${baseUrl}/content/assets/img/icons/favicon.svg`,
-      type: 'image/svg+xml',
+      href: `${baseUrl}/content/assets/img/icons/favicon-512.webp`,
+      type: 'image/webp',
     },
     {
       rel: 'shortcut icon',
@@ -129,12 +85,12 @@ export function buildPwaAssets(baseUrl, brandData) {
     {
       rel: 'apple-touch-icon',
       sizes: '180x180',
-      href: `${baseUrl}/content/assets/img/icons/apple-touch-icon.png`,
+      href: `${baseUrl}/content/assets/img/icons/apple-touch-icon.webp`,
     },
   ];
 
   const metas = [
-    { name: 'theme-color', content: '#000000' },
+    { name: 'theme-color', content: '#030303' },
     { name: 'mobile-web-app-capable', content: 'yes' },
     { name: 'apple-mobile-web-app-capable', content: 'yes' },
     { name: 'apple-mobile-web-app-title', content: brandData.name },

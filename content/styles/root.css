@@ -21,9 +21,9 @@
 
   /* Background Colors - Dark Mode */
   --bg-primary: #030303;
-  --bg-secondary: #161616;
-  --bg-tertiary: #262626;
-  --bg-interactive: #404040;
+  --bg-secondary: #030303;
+  --bg-tertiary: #030303;
+  --bg-interactive: #030303;
 
   /* Text Colors - Optimized for Dark Mode */
   --text-primary: #f5f5f5;

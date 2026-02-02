@@ -7,7 +7,7 @@
 .img-container {
   position: relative;
   overflow: hidden;
-  background-color: var(--color-bg-secondary, #1e293b);
+  background-color: var(--bg-primary, #030303);
 }
 
 /* Aspect Ratio Helper */
@@ -40,9 +40,9 @@
   position: relative;
   background: linear-gradient(
     90deg,
-    var(--color-bg-secondary, #1e293b) 0%,
-    var(--color-bg-tertiary, #334155) 50%,
-    var(--color-bg-secondary, #1e293b) 100%
+    var(--bg-primary, #030303) 0%,
+    var(--bg-primary, #030303) 50%,
+    var(--bg-primary, #030303) 100%
   );
   background-size: 200% 100%;
   animation: shimmer 1.5s ease-in-out infinite;
@@ -134,7 +134,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--color-bg-secondary, #1e293b);
+  background-color: var(--bg-primary, #030303);
   color: var(--color-text-secondary, #94a3b8);
   font-size: 0.875rem;
   padding: 1rem;
@@ -190,7 +190,7 @@ img[fetchpriority='high'] {
 
   .img-loading {
     animation: none;
-    background: var(--color-bg-secondary, #1e293b);
+    background: var(--bg-primary, #030303);
   }
 
   .img-spinner {
@@ -201,15 +201,20 @@ img[fetchpriority='high'] {
 /* Dark Mode Support */
 @media (prefers-color-scheme: dark) {
   .img-container {
-    background-color: #0f172a;
+    background-color: var(--bg-primary, #030303);
   }
 
   .img-loading {
-    background: linear-gradient(90deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+    background: linear-gradient(
+      90deg,
+      var(--bg-primary, #030303) 0%,
+      var(--bg-primary, #030303) 50%,
+      var(--bg-primary, #030303) 100%
+    );
   }
 
   .img-error {
-    background-color: #0f172a;
+    background-color: var(--bg-primary, #030303);
     color: #64748b;
   }
 }

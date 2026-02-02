@@ -376,7 +376,7 @@ img {
 }
 
 .bg-slate-900 {
-  background-color: #0f172a;
+  background-color: var(--bg-primary, #030303);
 }
 
 .to-pink-500 {
