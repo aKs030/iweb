@@ -12,7 +12,7 @@ address {
 /* ===== Base Footer ===== */
 .site-footer {
   position: fixed;
-  bottom: 12px;
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
   left: 50%;
   transform: translateX(-50%);
   width: calc(100% - 32px);
@@ -918,7 +918,7 @@ body.footer-expanded {
 @media (width <= 900px) {
   .site-footer {
     width: calc(100% - 16px);
-    bottom: 8px;
+    bottom: calc(8px + env(safe-area-inset-bottom, 0px));
     border-radius: 20px;
     min-width: auto;
   }
