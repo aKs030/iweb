@@ -6,7 +6,10 @@ body {
   font-family: var(--font-inter);
   line-height: 1.6;
   overflow-x: hidden;
-  min-height: 100vh;
+  min-height: calc(100vh - 88px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   background-image:
     radial-gradient(
       circle at 15% 50%,
@@ -417,4 +420,10 @@ header {
 }
 .about__error .btn {
   margin-top: 0.5rem;
+}
+/* Mobile adjustments for header height */
+@media (width <= 900px) {
+  body {
+    min-height: calc(100vh - 72px);
+  }
 }

@@ -49,7 +49,3 @@ function getFallbackBrandData() {
     sameAs: [],
   };
 }
-
-export function clearBrandDataCache() {
-  BRAND_DATA_CACHE = null;
-}

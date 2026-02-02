@@ -351,7 +351,8 @@
  * @property {HTMLButtonElement|null} rejectAll - Reject all button
  * @property {HTMLButtonElement|null} acceptSelected - Accept selected button
  * @property {HTMLButtonElement|null} acceptAll - Accept all button
- * @property {HTMLFormElement|null} newsletterForm - Newsletter form
  */
 
-export {};
+// This file contains JSDoc type definitions
+// Minimal export to make TypeScript happy
+export const __types__ = true;

@@ -1,6 +1,6 @@
 /**
  * Projects Data Service
- * @version 7.0.0
+ * @version 8.0.0 - Cleaned up
  */
 
 import React from 'react';
@@ -19,12 +19,19 @@ const log = createLogger('ProjectsDataService');
 
 // Load local apps config
 let localAppsConfig = {};
-try {
-  const response = await fetch('/pages/projekte/apps-config.json');
-  localAppsConfig = await response.json();
-} catch (error) {
-  log.warn('Failed to load apps-config.json:', error);
-}
+
+const loadLocalConfig = async () => {
+  try {
+    const response = await fetch('/pages/projekte/apps-config.json');
+    localAppsConfig = await response.json();
+  } catch (error) {
+    log.warn('Failed to load apps-config.json:', error);
+    localAppsConfig = { apps: [] };
+  }
+};
+
+// Initialize config loading
+loadLocalConfig();
 
 /**
  * Helper function to create gradient backgrounds
@@ -123,8 +130,23 @@ const loadDynamicProjects = async (icons) => {
         await sleep(GITHUB_CONFIG.requestDelay || 50);
       }
 
-      const metadata = await fetchProjectMetadata(projectPath);
-      projectsList.push({ ...metadata, dirName: dir.name });
+      try {
+        const metadata = await fetchProjectMetadata(projectPath);
+        projectsList.push({ ...metadata, dirName: dir.name });
+      } catch (metadataError) {
+        log.warn(`Failed to load metadata for ${dir.name}:`, metadataError);
+        // Add project with default metadata
+        projectsList.push({
+          title: dir.name
+            .replace(/-/g, ' ')
+            .replace(/\b\w/g, (l) => l.toUpperCase()),
+          description: 'Ein interaktives Web-Projekt',
+          tags: ['JavaScript'],
+          category: 'app',
+          version: '1.0.0',
+          dirName: dir.name,
+        });
+      }
     }
 
     updateLoader(0.85, i18n.t('loader.processing'));
@@ -134,6 +156,11 @@ const loadDynamicProjects = async (icons) => {
     source = 'local';
 
     updateLoader(0.5, i18n.t('loader.fallback_local'));
+
+    // Ensure local config is loaded
+    if (!localAppsConfig.apps) {
+      await loadLocalConfig();
+    }
 
     // Fallback to local config
     const localApps = localAppsConfig.apps || [];
@@ -163,11 +190,7 @@ const loadDynamicProjects = async (icons) => {
       bgStyle: createGradient(theme.gradient),
       glowColor: theme.icon,
       icon: icon,
-      previewContent: React.createElement(
-        'div',
-        { className: 'preview-container' },
-        icon,
-      ),
+      previewContent: React.createElement('div', null, icon),
     };
   });
 
@@ -187,5 +210,12 @@ const loadDynamicProjects = async (icons) => {
  */
 export async function createProjectsData(icons) {
   log.info('Starting createProjectsData...');
-  return await loadDynamicProjects(icons);
+
+  try {
+    const result = await loadDynamicProjects(icons);
+    return result;
+  } catch (error) {
+    log.error('createProjectsData failed:', error);
+    throw error;
+  }
 }

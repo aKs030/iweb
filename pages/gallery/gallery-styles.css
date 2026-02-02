@@ -52,7 +52,10 @@ img {
 
 /* Layout utilities */
 .min-h-screen {
-  min-height: 100vh;
+  min-height: calc(100vh - 88px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .p-4 {
@@ -871,5 +874,11 @@ img {
   .backdrop-blur-md,
   .backdrop-blur-xl {
     background-color: rgb(0 0 0 / 35%);
+  }
+}
+/* Mobile adjustments for header height */
+@media (width <= 900px) {
+  .min-h-screen {
+    min-height: calc(100vh - 72px);
   }
 }

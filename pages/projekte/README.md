@@ -1,50 +1,43 @@
-# Projekte - Portfolio Showcase
+# Projects Page - 3D Gallery
 
-> Modern React JSX-based project showcase with dynamic GitHub integration
+> Modern React-based 3D project gallery using Three.js for immersive project browsing
 
-**Version**: 6.0.0  
+**Version**: 7.0.0 - Cleaned up  
 **Status**: ✅ Production Ready  
-**Tech**: React 18 + JSX + Vite
+**Tech**: React 19 + Three.js + 3D Scroll Navigation
 
 ---
 
-## 📁 Projekt-Struktur
+## 📁 Project Structure
 
 ```
 pages/projekte/
 │
 ├── 📂 components/          # React Components
-│   └── ProjectMockup.jsx   # Project preview component
+│   ├── ProjectGallery.js   # 3D project objects management
+│   └── ThreeScene.js       # Main Three.js scene component
 │
 ├── 📂 config/              # Configuration
-│   ├── constants.js        # App constants
-│   └── github.config.js    # GitHub API config
+│   ├── constants.js        # App constants & theme colors
+│   └── github.config.js    # GitHub API & project categories
 │
 ├── 📂 hooks/               # Custom React Hooks
-│   ├── index.js            # Barrel export
-│   ├── useToast.js         # Toast notifications
-│   ├── useModal.js         # Modal management
-│   └── useProjects.js      # Projects data loading
+│   ├── index.js            # Hook exports
+│   ├── useProjects.js      # Project data loading
+│   └── useScrollCamera.js  # Scroll-based camera control
 │
-├── 📂 services/            # Business Logic
+├── 📂 services/            # Data Services
 │   ├── github-api.service.js       # GitHub API client
-│   └── projects-data.service.js    # Data processing
-│
-├── 📂 utils/               # Utilities
-│   ├── cache.utils.js      # LocalStorage caching
-│   └──          # URL helpers
+│   └── projects-data.service.js    # Project data processing
 │
 ├── 📂 styles/              # Stylesheets
-│   └── main.css            # Main styles
+│   └── main.css            # 3D gallery styles
 │
-├── 📂 scripts/             # Maintenance Scripts
-│   └── update-apps-config.js   # Update apps config
+├── 📂 utils/               # Utilities
+│   └── cache.utils.js      # Memory + LocalStorage caching
 │
-├── 📂 types/               # Type Definitions
-│   └── index.d.js          # JSDoc type definitions
-│
-├── 📄 app.jsx              # Main React app (JSX)
-├── 📄 loader.js            # App loader/initializer
+├── 📄 app.js               # Main React app
+├── 📄 loader.js            # Page initialization
 ├── 📄 index.html           # Entry point
 ├── 📄 apps-config.json     # Fallback project data
 └── 📄 README.md            # This file
@@ -54,83 +47,62 @@ pages/projekte/
 
 ## 🚀 Features
 
-### Core Features
+### 3D Experience
 
-- ✅ **Modern JSX** - Native React JSX syntax (no htm)
+- ✅ **3D Scroll Navigation** - Fly through projects in 3D space
+- ✅ **Three.js Integration** - WebGL-powered 3D rendering
+- ✅ **Smooth Camera Movement** - Responsive scroll-based camera
+- ✅ **Starfield Background** - Immersive space environment
+- ✅ **Project Positioning** - Smart 3D object placement
+
+### Data & Performance
+
 - ✅ **Dynamic GitHub Loading** - Projects loaded from GitHub API
-- ✅ **Smart Caching** - 1-hour cache for API responses
+- ✅ **Smart Caching** - Memory + LocalStorage dual caching
 - ✅ **Fallback System** - Local config if GitHub fails
-- ✅ **Modal Preview** - In-page project previews
-- ✅ **Responsive Design** - Mobile-first approach
-- ✅ **SEO Optimized** - JSON-LD structured data
-
-### Modern React Patterns
-
-- ✅ **Custom Hooks** - Reusable logic (useToast, useModal, useProjects)
-- ✅ **React.memo** - Performance optimization
-- ✅ **PropTypes** - Runtime type checking
-- ✅ **useCallback** - Memoized callbacks
-- ✅ **Error Boundaries** - Graceful error handling
+- ✅ **Error Handling** - Graceful degradation
+- ✅ **Performance Optimized** - Efficient rendering & caching
 
 ### UI/UX
 
-- ✅ **Glassmorphism Design** - Modern glass effects
-- ✅ **Smooth Animations** - Fade-in, slide-in effects
-- ✅ **Loading States** - Skeleton screens & spinners
-- ✅ **Toast Notifications** - User feedback
-- ✅ **Accessibility** - ARIA labels, semantic HTML
+- ✅ **HUD Overlay** - Project information display
+- ✅ **Responsive Design** - Works on desktop and mobile
+- ✅ **Loading States** - Space-themed loading screen
+- ✅ **Scroll Hints** - Visual guidance for navigation
+- ✅ **Glassmorphism** - Modern glass effect panels
 
 ---
 
 ## 🛠️ Tech Stack
 
-| Category          | Technology                              |
-| ----------------- | --------------------------------------- |
-| **Framework**     | React 18                                |
-| **Syntax**        | JSX (Native)                            |
-| **Styling**       | CSS3 (Custom Properties, Grid, Flexbox) |
-| **API**           | GitHub REST API v3                      |
-| **Caching**       | LocalStorage                            |
-| **Build**         | Vite 6.4.1 + @vitejs/plugin-react       |
-| **Icons**         | Lucide React                            |
-| **Type Checking** | PropTypes + JSDoc                       |
+| Category          | Technology                        |
+| ----------------- | --------------------------------- |
+| **Framework**     | React 19                          |
+| **3D Graphics**   | Three.js                          |
+| **Styling**       | CSS3 (Custom Properties, Flexbox) |
+| **API**           | GitHub REST API v3                |
+| **Caching**       | Memory + LocalStorage             |
+| **Icons**         | Custom SVG icon system            |
+| **Type Checking** | JSDoc                             |
 
 ---
 
-## 📦 Installation & Development
+## 🎮 How It Works
 
-### Prerequisites
+### 3D Navigation
 
-```bash
-Node.js >= 18.x
-npm >= 9.x
-```
+1. **Scroll to Explore** - Use mouse wheel or touch scroll
+2. **Camera Movement** - Smooth flight through 3D space
+3. **Project Focus** - Active project updates based on camera position
+4. **HUD Updates** - Project information displays in overlay
 
-### Install Dependencies
+### Data Flow
 
-```bash
-npm install
-```
-
-### Development Server
-
-```bash
-npm run dev
-# Opens at http://localhost:8080/pages/projekte/
-```
-
-### Production Build
-
-```bash
-npm run build
-# Output: dist/pages/projekte/
-```
-
-### Update Apps Config
-
-```bash
-node pages/projekte/scripts/update-apps-config.js
-```
+1. **GitHub API** - Fetch project directories
+2. **Metadata Loading** - Load package.json for each project
+3. **3D Positioning** - Calculate positions in 3D space
+4. **Rendering** - Display projects as 3D objects
+5. **Interaction** - Handle scroll events and camera updates
 
 ---
 
@@ -140,44 +112,45 @@ node pages/projekte/scripts/update-apps-config.js
 
 ```javascript
 export const GITHUB_CONFIG = {
-  owner: 'Abdulkader-Safi',
-  repo: 'iweb',
+  owner: 'aKs030',
+  repo: 'Webgame',
   branch: 'main',
-  appsPath: 'projekte/apps',
-  // ...
+  appsPath: 'apps',
+  requestDelay: 100, // ms between requests
 };
 ```
 
-### Constants (`config/constants.js`)
+### Theme Colors (`config/constants.js`)
 
 ```javascript
-export const TOAST_DURATION = 2600; // Toast display time
-export const URL_TEST_TIMEOUT = 2500; // URL test timeout
-export const CACHE_DURATION = 3600000; // 1 hour cache
+export const THEME_COLORS = {
+  purple: { icon: '#c084fc', gradient: [...] },
+  green: { icon: '#34d399', gradient: [...] },
+  // ... more themes
+};
 ```
 
 ---
 
 ## 🐛 Troubleshooting
 
+### 3D Scene not loading?
+
+1. Check WebGL support in browser
+2. Check browser console for Three.js errors
+3. Verify projects data is loading
+
+### Scrolling not working?
+
+1. Check document height (should be 500vh)
+2. Verify scroll event listeners are attached
+3. Check camera position updates
+
 ### Projects not loading?
 
-1. Check GitHub API rate limit (60 req/hour unauthenticated)
-2. Check browser console for errors
-3. Clear LocalStorage cache
-4. Verify `apps-config.json` exists
-
-### Modal not opening?
-
-1. Check CORS headers
-2. Verify URL is accessible
-3. Check browser console for errors
-
-### Build fails?
-
-1. Clear `node_modules` and reinstall
-2. Check Node.js version (>= 18.x)
-3. Run `npm run build` with verbose flag
+1. Check GitHub API rate limit
+2. Verify apps-config.json fallback
+3. Check network requests in DevTools
 
 ---
 
@@ -192,31 +165,29 @@ This project is part of the personal portfolio of Abdulkerim Sesli.
 **Abdulkerim Sesli**
 
 - Website: [abdulkerimsesli.de](https://www.abdulkerimsesli.de)
-- GitHub: [@Abdulkader-Safi](https://github.com/Abdulkader-Safi)
+- GitHub: [@aKs030](https://github.com/aKs030)
 
 ---
 
 ## 📝 Changelog
 
-### v6.0.0 (2025-01-31)
+### v7.0.0 (2026-02-02) - Cleanup
 
-- 🎉 **Complete migration to JSX** - Removed htm dependency
-- ⚛️ Native React JSX syntax with Vite plugin
-- ✅ Fixed all React key warnings
-- 🔧 Added PropTypes for type safety
-- 📝 Updated jsconfig.json for JSX support
-- 🧹 Cleaned up old htm-based code
+- 🧹 **Removed unused hooks** - useAppManager, useToast
+- 🔧 **Simplified loader** - Removed unused Three.js Earth integration
+- ⚡ **Performance improvements** - Better scroll handling
+- 📝 **Code cleanup** - Removed debug code and comments
+- 🎯 **Focused functionality** - Streamlined to core 3D gallery features
 
-### v5.1.0 (2025-01-31)
+### v6.0.0 (Previous)
 
-- ✨ Improved hero section with stats cards
-- 🗂️ Reorganized folder structure
-- 📝 Added comprehensive type definitions
-- 🎨 Enhanced glassmorphism design
-- ♿ Improved accessibility
+- 🎉 Complete 3D gallery implementation
+- ⚛️ React + Three.js integration
+- 🎮 Scroll-based navigation
+- 🌟 Starfield background
 
 ---
 
-**Last Updated**: 2025-01-31  
-**Version**: 6.0.0  
+**Last Updated**: 2026-02-02  
+**Version**: 7.0.0  
 **Status**: ✅ Production Ready

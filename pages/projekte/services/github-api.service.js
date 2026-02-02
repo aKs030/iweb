@@ -31,7 +31,7 @@ export async function fetchGitHubContents(path = '', options = {}) {
   };
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 10000);
+  const timeoutId = setTimeout(() => controller.abort(), 5000);
 
   try {
     const response = await fetch(url, {
@@ -47,7 +47,7 @@ export async function fetchGitHubContents(path = '', options = {}) {
     }
 
     const data = await response.json();
-    setCache(cacheKey, data); // Uses default TTL from cache.utils
+    setCache(cacheKey, data);
     return data;
   } catch (error) {
     clearTimeout(timeoutId);
@@ -72,7 +72,7 @@ export async function fetchProjectMetadata(projectPath) {
   const metadataUrl = `${GITHUB_CONFIG.rawBase}/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/${GITHUB_CONFIG.branch}/${projectPath}/package.json`;
 
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 8000);
+  const timeoutId = setTimeout(() => controller.abort(), 5000); // Reduced timeout
 
   try {
     const contentResponse = await fetch(metadataUrl, {
