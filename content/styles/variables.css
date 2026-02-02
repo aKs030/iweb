@@ -43,6 +43,7 @@
   --spacing-lg: 1.5rem;
   --spacing-xl: 2rem;
 
+  --header-height: 64px; /* Default approximation */
   --pad-x: max(1rem, env(safe-area-inset-left));
   --pad-y: 1rem;
 
