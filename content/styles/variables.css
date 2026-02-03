@@ -58,8 +58,12 @@
   --footer-height-base: 52px;
 
   /* Total Spacing for Content (Offset + Height + Gap) */
-  --header-total-height: calc(var(--header-offset-top) + var(--header-height-base) + 24px);
-  --footer-total-height: calc(var(--footer-offset-bottom) + var(--footer-height-base) + 24px);
+  --header-total-height: calc(
+    var(--header-offset-top) + var(--header-height-base) + 24px
+  );
+  --footer-total-height: calc(
+    var(--footer-offset-bottom) + var(--footer-height-base) + 24px
+  );
 
   --header-height: var(--header-total-height); /* Legacy compat */
   --pad-x: max(1rem, env(safe-area-inset-left));
