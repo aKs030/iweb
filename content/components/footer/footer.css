@@ -979,6 +979,11 @@ body.footer-expanded {
 
   /* The actual content wrapper inside the footer */
   .site-footer.expanded .footer-max {
+    display: flex !important; /* Ensure it is visible */
+    flex-direction: column;
+    opacity: 1 !important; /* Force visibility override */
+    visibility: visible !important;
+
     /* Restore the visual style for the content block */
     background: var(--component-header-bg, rgba(0, 0, 0, 0.95));
     backdrop-filter: blur(var(--component-blur-radius, 20px));
@@ -994,7 +999,8 @@ body.footer-expanded {
     padding-bottom: env(safe-area-inset-bottom, 20px);
 
     /* Slide up animation */
-    animation: slideUpMobile 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    transform: translateY(100%); /* Start position */
+    animation: slideUpMobile 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
   /* Add a backdrop dimmer */
