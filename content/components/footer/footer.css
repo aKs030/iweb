@@ -937,7 +937,7 @@ body.footer-expanded {
 }
 
 /* Prevent body scroll when footer is expanded on mobile */
-@media (width <= 768px) {
+@media (max-width: 768px) {
   body.footer-expanded {
     position: fixed;
     width: 100%;
@@ -954,12 +954,14 @@ body.footer-expanded {
     max-width: none;
     border-radius: 20px 20px 0 0;
     transform: none;
+    animation: none !important;
+    opacity: 1 !important;
     max-height: 90vh;
   }
 }
 
 /* ===== Responsive ===== */
-@media (width <= 900px) {
+@media (max-width: 900px) {
   .site-footer {
     width: calc(100% - 16px);
     bottom: 8px;
@@ -1199,7 +1201,7 @@ body.footer-expanded {
   }
 }
 
-@media (width <= 480px) {
+@media (max-width: 480px) {
   .footer-min {
     padding: 0 12px;
     gap: 6px;
