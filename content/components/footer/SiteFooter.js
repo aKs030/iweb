@@ -320,22 +320,17 @@ export class SiteFooter extends HTMLElement {
     if (!trigger) {
       trigger = document.createElement('div');
       trigger.id = 'footer-trigger-zone';
-      // Make the trigger zone larger and position it after some additional space
-      trigger.style.cssText =
-        'height: 200px; pointer-events: none; margin-top: 1vh;';
 
-      // Try different insertion strategies based on page structure
-      const main =
-        document.getElementById('main-content') ||
-        document.querySelector('main') ||
-        document.querySelector('#root');
-
-      if (main) {
-        main.insertAdjacentElement('afterend', trigger);
-      } else {
-        // Fallback: insert before footer
-        this.parentElement?.insertBefore(trigger, this);
+      // Ensure body is relative for absolute positioning of trigger
+      if (getComputedStyle(document.body).position === 'static') {
+        document.body.style.position = 'relative';
       }
+
+      // Position trigger at the absolute bottom of the document
+      trigger.style.cssText =
+        'position: absolute; bottom: 0; left: 0; width: 100%; height: 300px; pointer-events: none; z-index: -1;';
+
+      document.body.appendChild(trigger);
     }
 
     // Create section3 minimize trigger for homepage
@@ -344,7 +339,17 @@ export class SiteFooter extends HTMLElement {
     this.observer = new IntersectionObserver(
       (entries) => {
         const entry = entries[0];
-        if (entry.isIntersecting && !this.expanded && !this.isTransitioning) {
+        // Check if page is actually scrollable (content taller than viewport)
+        // Add a small buffer (50px) to handle rounding errors
+        const isScrollable =
+          document.documentElement.scrollHeight > window.innerHeight + 50;
+
+        if (
+          entry.isIntersecting &&
+          isScrollable &&
+          !this.expanded &&
+          !this.isTransitioning
+        ) {
           this.toggleFooter(true);
         } else if (
           !entry.isIntersecting &&
