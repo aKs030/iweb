@@ -939,20 +939,20 @@ body.footer-expanded {
 /* Prevent body scroll when footer is expanded on mobile */
 @media (width <= 768px) {
   body.footer-expanded {
-    width: 100%;
     overflow: hidden;
   }
 
   body.footer-expanded .site-footer {
     position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    width: 100%;
-    max-width: none;
-    border-radius: 20px 20px 0 0;
-    transform: none !important;
-    animation: none;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    border-radius: 20px 20px 0 0 !important;
+    transform: translate(0, 0) !important;
+    animation: none !important;
     max-height: 90vh;
   }
 }
