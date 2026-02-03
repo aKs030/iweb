@@ -2,7 +2,7 @@
 /**
  * Modern Site Footer Web Component
  * Encapsulates footer logic, cookies, and analytics.
- * @version 1.0.0
+ * @version 2.0.0
  */
 
 import { createLogger } from '/content/core/logger.js';
@@ -124,10 +124,6 @@ export class SiteFooter extends HTMLElement {
   constructor() {
     super();
     this.analytics = new Analytics();
-    /** @type {IntersectionObserver|null} */
-    this.observer = null;
-    /** @type {IntersectionObserver|null} */
-    this.section3Observer = null;
     this.expanded = false;
     this.initialized = false;
     this.isTransitioning = false;
@@ -155,8 +151,11 @@ export class SiteFooter extends HTMLElement {
     this.handleOutsideClick = this.handleOutsideClick.bind(this);
     this.handleKeyDown = this.handleKeyDown.bind(this);
     this.handleTouchStart = this.handleTouchStart.bind(this);
+    this.handleTouchMove = this.handleTouchMove.bind(this);
     this.handleTouchEnd = this.handleTouchEnd.bind(this);
     this.handleResize = this.handleResize.bind(this);
+    this.handleScroll = this.handleScroll.bind(this);
+    this.handleWheel = this.handleWheel.bind(this);
   }
 
   async connectedCallback() {
@@ -186,8 +185,6 @@ export class SiteFooter extends HTMLElement {
   }
 
   cleanup() {
-    this.observer?.disconnect();
-    this.section3Observer?.disconnect();
     this.removeGlobalEventListeners();
 
     // Clear any pending timeouts
@@ -311,97 +308,42 @@ export class SiteFooter extends HTMLElement {
       return; // Exit early, no scroll-based trigger
     }
 
-    // For all other pages, set up scroll-based trigger
-    this.setupScrollTrigger();
+    // Initialize Scroll Behavior (Chaining)
+    this.setupScrollBehavior();
   }
 
-  setupScrollTrigger() {
-    let trigger = document.getElementById('footer-trigger-zone');
-    if (!trigger) {
-      trigger = document.createElement('div');
-      trigger.id = 'footer-trigger-zone';
-      // Make the trigger zone larger and position it after some additional space
-      trigger.style.cssText =
-        'height: 200px; pointer-events: none; margin-top: 1vh;';
+  setupScrollBehavior() {
+    // Listen for window scroll to trigger expansion at bottom
+    window.addEventListener('scroll', this.handleScroll, { passive: true });
 
-      // Try different insertion strategies based on page structure
-      const main =
-        document.getElementById('main-content') ||
-        document.querySelector('main') ||
-        document.querySelector('#root');
-
-      if (main) {
-        main.insertAdjacentElement('afterend', trigger);
-      } else {
-        // Fallback: insert before footer
-        this.parentElement?.insertBefore(trigger, this);
-      }
-    }
-
-    // Create section3 minimize trigger for homepage
-    this.setupSection3MinimizeTrigger();
-
-    this.observer = new IntersectionObserver(
-      (entries) => {
-        const entry = entries[0];
-        if (entry.isIntersecting && !this.expanded && !this.isTransitioning) {
-          this.toggleFooter(true);
-        } else if (
-          !entry.isIntersecting &&
-          this.expanded &&
-          !this.isTransitioning
-        ) {
-          this.toggleFooter(false);
-        }
-      },
-      { threshold: 0.1 },
-    );
-
-    this.observer.observe(trigger);
+    // Listen for wheel/touch interaction to trigger minimization (Scroll Chaining)
+    document.addEventListener('wheel', this.handleWheel, { passive: true });
+    // touchmove is also added in setupGlobalEventListeners but logic is separate
   }
 
-  setupSection3MinimizeTrigger() {
-    // Only on homepage - check if we're on the root path
-    const isHomepage =
-      window.location.pathname === '/' ||
-      window.location.pathname === '/index.html';
-    if (!isHomepage) return;
+  handleScroll() {
+    if (this.expanded || this.isTransitioning) return;
 
-    // Only if section3 exists
-    const section3 = document.getElementById('section3');
-    if (!section3) return;
+    // Check if near bottom of page
+    // Using Math.ceil to avoid sub-pixel precision issues
+    const scrollPosition = Math.ceil(window.innerHeight + window.scrollY);
+    const bodyHeight = document.documentElement.scrollHeight;
+    const threshold = 10; // Trigger slightly before exact bottom
 
-    // Create a minimize trigger zone in the upper part of section3
-    let minimizeTrigger = document.getElementById('section3-minimize-trigger');
-    if (!minimizeTrigger) {
-      minimizeTrigger = document.createElement('div');
-      minimizeTrigger.id = 'section3-minimize-trigger';
-      minimizeTrigger.style.cssText =
-        'height: 100px; pointer-events: none; position: absolute; top: 0; left: 0; right: 0; z-index: -1;';
-
-      // Position it at the top of section3
-      section3.style.position = 'relative';
-      section3.appendChild(minimizeTrigger);
+    if (bodyHeight - scrollPosition <= threshold) {
+      this.toggleFooter(true);
     }
+  }
 
-    // Create separate observer for section3 minimize trigger
-    this.section3Observer = new IntersectionObserver(
-      (entries) => {
-        const entry = entries[0];
-        // When scrolling back up and section3 becomes visible, minimize footer
-        if (entry.isIntersecting && this.expanded && !this.isTransitioning) {
-          log.info('Section3 visible - minimizing footer');
-          this.toggleFooter(false);
-        }
-      },
-      {
-        threshold: 0.3, // Trigger when 30% of the minimize zone is visible
-        rootMargin: '0px 0px -50px 0px', // Trigger a bit before fully visible
-      },
-    );
+  handleWheel(e) {
+    if (!this.expanded || this.isTransitioning) return;
 
-    this.section3Observer.observe(minimizeTrigger);
-    log.info('Section3 minimize trigger set up for homepage');
+    const footerContent = this.elements.footerMax;
+    // e.deltaY < 0 means scrolling up
+    // Check if user is scrolling UP and footer content is already at the top
+    if (e.deltaY < 0 && footerContent && footerContent.scrollTop <= 0) {
+      this.toggleFooter(false);
+    }
   }
 
   setupGlobalEventListeners() {
@@ -415,6 +357,9 @@ export class SiteFooter extends HTMLElement {
     document.addEventListener('touchstart', this.handleTouchStart, {
       passive: true,
     });
+    document.addEventListener('touchmove', this.handleTouchMove, {
+      passive: true,
+    });
     document.addEventListener('touchend', this.handleTouchEnd, {
       passive: false,
     });
@@ -425,8 +370,11 @@ export class SiteFooter extends HTMLElement {
     document.removeEventListener('click', this.handleOutsideClick);
     document.removeEventListener('keydown', this.handleKeyDown);
     document.removeEventListener('touchstart', this.handleTouchStart);
+    document.removeEventListener('touchmove', this.handleTouchMove);
     document.removeEventListener('touchend', this.handleTouchEnd);
     window.removeEventListener('resize', this.handleResize);
+    window.removeEventListener('scroll', this.handleScroll);
+    document.removeEventListener('wheel', this.handleWheel);
   }
 
   handleOutsideClick(e) {
@@ -457,15 +405,30 @@ export class SiteFooter extends HTMLElement {
   }
 
   handleTouchStart(e) {
-    if (!this.elements.footerMin?.contains(e.target)) return;
-
+    // Always track touch start for scroll calculations
     this.touchStartY = e.touches[0].clientY;
     this.touchStartTime = Date.now();
   }
 
+  handleTouchMove(e) {
+    if (!this.expanded || this.isTransitioning) return;
+
+    const currentY = e.touches[0].clientY;
+    const deltaY = currentY - this.touchStartY; // positive = swipe down (scroll up)
+
+    const footerContent = this.elements.footerMax;
+    const isAtTop = footerContent ? footerContent.scrollTop <= 0 : true;
+
+    // If pulling down (scrolling up intent) significantly and at top of footer
+    if (deltaY > 50 && isAtTop) {
+      this.toggleFooter(false);
+    }
+  }
+
   handleTouchEnd(e) {
+    // Interaction logic for Minimized Footer (Swipe up to expand)
     if (!this.elements.footerMin?.contains(e.target)) return;
-    if (this.isTransitioning) return;
+    if (this.expanded || this.isTransitioning) return;
 
     const touchEndY = e.changedTouches[0].clientY;
     const touchDuration = Date.now() - this.touchStartTime;
