@@ -217,6 +217,7 @@ const injectCoreAssets = () => {
           '/content/components/typewriter/typewriter.css',
           '/content/components/particles/three-earth.css',
           '/pages/home/section3.css',
+          '/pages/home/section4.css',
         ]);
       }
       return base;
@@ -346,6 +347,7 @@ const injectCoreAssets = () => {
         '/content/components/typewriter/typewriter.css',
         '/content/components/particles/three-earth.css',
         '/pages/home/section3.css',
+        '/pages/home/section4.css',
       ]);
 
       // Batch inject styles

@@ -596,15 +596,6 @@ a:hover {
   color: white;
 }
 
-.footer-trigger-zone {
-  display: block;
-  width: 100%;
-  height: 1px;
-  pointer-events: none;
-  visibility: hidden;
-  position: relative;
-}
-
 /* ===== END GLOBAL COMPONENTS ===== */
 
 /* ===== RESPONSIVE: MOBILE & TABLET ===== */

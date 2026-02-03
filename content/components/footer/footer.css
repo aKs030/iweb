@@ -1,6 +1,6 @@
 /**
- * Modern Footer System v10.0 - Final
- * Minimalistisches Design konsistent mit Menüleiste
+ * Modern Footer System v2.0.1
+ * Scroll-based auto-expand/collapse footer
  * @author Abdulkerim Sesli
  */
 
@@ -66,7 +66,7 @@ address {
 }
 
 .footer-min.hidden {
-  display: none;
+  display: none !important;
 }
 
 .footer-min .cookie-inline,
@@ -124,7 +124,7 @@ address {
 }
 
 .cookie-inline.hidden {
-  display: none;
+  display: none !important;
 }
 
 .cookie-inline * {
@@ -310,7 +310,7 @@ address {
 }
 
 .footer-max.hidden {
-  display: none;
+  display: none !important;
 }
 
 /* ===== Cookie Settings ===== */
@@ -326,7 +326,7 @@ address {
 }
 
 .cookie-settings.hidden {
-  display: none;
+  display: none !important;
 }
 
 .settings-header {
