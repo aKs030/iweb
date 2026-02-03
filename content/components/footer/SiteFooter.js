@@ -2,7 +2,7 @@
 /**
  * Modern Site Footer Web Component
  * Encapsulates footer logic, cookies, and analytics.
- * @version 1.0.0
+ * @version 2.0.0
  */
 
 import { createLogger } from '/content/core/logger.js';
@@ -14,6 +14,7 @@ const log = createLogger('SiteFooter');
 const CONFIG = {
   FOOTER_PATH: '/content/components/footer/footer.html',
   DEBOUNCE_MS: 150,
+  SCROLL_THRESHOLD: 10, // px threshold for scroll chaining actions
 };
 
 /**
@@ -124,15 +125,12 @@ export class SiteFooter extends HTMLElement {
   constructor() {
     super();
     this.analytics = new Analytics();
-    /** @type {IntersectionObserver|null} */
-    this.observer = null;
-    /** @type {IntersectionObserver|null} */
-    this.section3Observer = null;
     this.expanded = false;
     this.initialized = false;
     this.isTransitioning = false;
     this.touchStartY = 0;
-    this.touchStartTime = 0;
+    this.lastScrollY = 0;
+
     /** @type {FooterElements} */
     this.elements = {
       footer: null,
@@ -154,9 +152,10 @@ export class SiteFooter extends HTMLElement {
     // Bind methods to preserve context
     this.handleOutsideClick = this.handleOutsideClick.bind(this);
     this.handleKeyDown = this.handleKeyDown.bind(this);
-    this.handleTouchStart = this.handleTouchStart.bind(this);
-    this.handleTouchEnd = this.handleTouchEnd.bind(this);
     this.handleResize = this.handleResize.bind(this);
+    this.handleWheel = this.handleWheel.bind(this);
+    this.handleTouchStart = this.handleTouchStart.bind(this);
+    this.handleTouchMove = this.handleTouchMove.bind(this);
   }
 
   async connectedCallback() {
@@ -186,8 +185,6 @@ export class SiteFooter extends HTMLElement {
   }
 
   cleanup() {
-    this.observer?.disconnect();
-    this.section3Observer?.disconnect();
     this.removeGlobalEventListeners();
 
     // Clear any pending timeouts
@@ -218,7 +215,7 @@ export class SiteFooter extends HTMLElement {
 
     this.setupDate();
     this.setupCookieBanner();
-    this.setupScrollHandler();
+    this.setupScrollChaining();
     this.bindEvents();
   }
 
@@ -290,118 +287,11 @@ export class SiteFooter extends HTMLElement {
     a11y?.announce('Cookies abgelehnt', { priority: 'polite' });
   }
 
-  setupScrollHandler() {
-    const { footer } = this.elements;
-    if (!footer) return;
+  setupScrollChaining() {
+    // Add wheel listener for desktop
+    window.addEventListener('wheel', this.handleWheel, { passive: false });
 
-    // Improved page detection logic
-    const currentPath = window.location.pathname;
-
-    // Pages that should NOT auto-expand footer (explicit list)
-    const noAutoExpandPages = ['/projekte/', '/projekte/index.html'];
-
-    // Check if current page should not auto-expand
-    const shouldNotAutoExpand = noAutoExpandPages.some((path) =>
-      currentPath.includes(path),
-    );
-
-    // On pages that shouldn't auto-expand, only allow manual footer toggle
-    if (shouldNotAutoExpand) {
-      log.info('Auto-expand disabled for this page:', currentPath);
-      return; // Exit early, no scroll-based trigger
-    }
-
-    // For all other pages, set up scroll-based trigger
-    this.setupScrollTrigger();
-  }
-
-  setupScrollTrigger() {
-    let trigger = document.getElementById('footer-trigger-zone');
-    if (!trigger) {
-      trigger = document.createElement('div');
-      trigger.id = 'footer-trigger-zone';
-      // Make the trigger zone larger and position it after some additional space
-      trigger.style.cssText =
-        'height: 200px; pointer-events: none; margin-top: 1vh;';
-
-      // Try different insertion strategies based on page structure
-      const main =
-        document.getElementById('main-content') ||
-        document.querySelector('main') ||
-        document.querySelector('#root');
-
-      if (main) {
-        main.insertAdjacentElement('afterend', trigger);
-      } else {
-        // Fallback: insert before footer
-        this.parentElement?.insertBefore(trigger, this);
-      }
-    }
-
-    // Create section3 minimize trigger for homepage
-    this.setupSection3MinimizeTrigger();
-
-    this.observer = new IntersectionObserver(
-      (entries) => {
-        const entry = entries[0];
-        if (entry.isIntersecting && !this.expanded && !this.isTransitioning) {
-          this.toggleFooter(true);
-        } else if (
-          !entry.isIntersecting &&
-          this.expanded &&
-          !this.isTransitioning
-        ) {
-          this.toggleFooter(false);
-        }
-      },
-      { threshold: 0.1 },
-    );
-
-    this.observer.observe(trigger);
-  }
-
-  setupSection3MinimizeTrigger() {
-    // Only on homepage - check if we're on the root path
-    const isHomepage =
-      window.location.pathname === '/' ||
-      window.location.pathname === '/index.html';
-    if (!isHomepage) return;
-
-    // Only if section3 exists
-    const section3 = document.getElementById('section3');
-    if (!section3) return;
-
-    // Create a minimize trigger zone in the upper part of section3
-    let minimizeTrigger = document.getElementById('section3-minimize-trigger');
-    if (!minimizeTrigger) {
-      minimizeTrigger = document.createElement('div');
-      minimizeTrigger.id = 'section3-minimize-trigger';
-      minimizeTrigger.style.cssText =
-        'height: 100px; pointer-events: none; position: absolute; top: 0; left: 0; right: 0; z-index: -1;';
-
-      // Position it at the top of section3
-      section3.style.position = 'relative';
-      section3.appendChild(minimizeTrigger);
-    }
-
-    // Create separate observer for section3 minimize trigger
-    this.section3Observer = new IntersectionObserver(
-      (entries) => {
-        const entry = entries[0];
-        // When scrolling back up and section3 becomes visible, minimize footer
-        if (entry.isIntersecting && this.expanded && !this.isTransitioning) {
-          log.info('Section3 visible - minimizing footer');
-          this.toggleFooter(false);
-        }
-      },
-      {
-        threshold: 0.3, // Trigger when 30% of the minimize zone is visible
-        rootMargin: '0px 0px -50px 0px', // Trigger a bit before fully visible
-      },
-    );
-
-    this.section3Observer.observe(minimizeTrigger);
-    log.info('Section3 minimize trigger set up for homepage');
+    // Touch listeners are added in setupGlobalEventListeners
   }
 
   setupGlobalEventListeners() {
@@ -412,21 +302,107 @@ export class SiteFooter extends HTMLElement {
     document.addEventListener('keydown', this.handleKeyDown, {
       passive: false,
     });
-    document.addEventListener('touchstart', this.handleTouchStart, {
+
+    // Global touch listeners for scroll chaining on mobile
+    window.addEventListener('touchstart', this.handleTouchStart, {
       passive: true,
     });
-    document.addEventListener('touchend', this.handleTouchEnd, {
-      passive: false,
+    window.addEventListener('touchmove', this.handleTouchMove, {
+      passive: false, // passive: false needed to potentially prevent default if we want to lock scroll
     });
+
     window.addEventListener('resize', this.handleResize, { passive: true });
   }
 
   removeGlobalEventListeners() {
     document.removeEventListener('click', this.handleOutsideClick);
     document.removeEventListener('keydown', this.handleKeyDown);
-    document.removeEventListener('touchstart', this.handleTouchStart);
-    document.removeEventListener('touchend', this.handleTouchEnd);
+    window.removeEventListener('wheel', this.handleWheel);
+    window.removeEventListener('touchstart', this.handleTouchStart);
+    window.removeEventListener('touchmove', this.handleTouchMove);
     window.removeEventListener('resize', this.handleResize);
+  }
+
+  /**
+   * @returns {boolean}
+   */
+  isAtBottom() {
+    // Allow a small buffer (e.g. 2px) for calculation errors
+    return (
+      window.innerHeight + window.scrollY >=
+      document.documentElement.scrollHeight - 2
+    );
+  }
+
+  /**
+   * @param {WheelEvent} e
+   */
+  handleWheel(e) {
+    if (this.isTransitioning) return;
+
+    // SCENARIO 1: Footer NOT expanded
+    if (!this.expanded) {
+      if (e.deltaY > 0 && this.isAtBottom()) {
+        // User scrolling DOWN at BOTTOM of page -> EXPAND
+        // Prevent default only if we are strictly at the bottom to avoid rubber banding interfering
+        this.toggleFooter(true);
+      }
+    }
+    // SCENARIO 2: Footer EXPANDED
+    else {
+      // Check if we are at the top of the footer content
+      // We assume footer-max is the scrollable container or if it overlays, we check if internal scroll is at top
+      const scrollContainer = this.elements.footerMax;
+
+      if (scrollContainer && e.deltaY < 0 && scrollContainer.scrollTop <= 0) {
+        // User scrolling UP at TOP of footer -> COLLAPSE
+        // Use a small threshold to avoid accidental triggers
+        if (Math.abs(e.deltaY) > CONFIG.SCROLL_THRESHOLD) {
+          this.toggleFooter(false);
+        }
+      }
+    }
+  }
+
+  /**
+   * @param {TouchEvent} e
+   */
+  handleTouchStart(e) {
+    this.touchStartY = e.touches[0].clientY;
+  }
+
+  /**
+   * @param {TouchEvent} e
+   */
+  handleTouchMove(e) {
+    if (this.isTransitioning) return;
+
+    const currentY = e.touches[0].clientY;
+    const deltaY = this.touchStartY - currentY; // > 0 means scrolling DOWN
+
+    // SCENARIO 1: Footer NOT expanded
+    if (!this.expanded) {
+      if (deltaY > CONFIG.SCROLL_THRESHOLD && this.isAtBottom()) {
+        // Swipe UP (scrolling down) at bottom of page
+        this.toggleFooter(true);
+      }
+    }
+    // SCENARIO 2: Footer EXPANDED
+    else {
+      const scrollContainer = this.elements.footerMax;
+      if (
+        scrollContainer &&
+        deltaY < -CONFIG.SCROLL_THRESHOLD &&
+        scrollContainer.scrollTop <= 0
+      ) {
+        // Swipe DOWN (scrolling up) at top of footer
+        // We allow the natural scroll if they are not at the top, but if they are at top, we collapse
+
+        // Prevent default to avoid refreshing or other behaviors if necessary, but typically standard behavior is fine
+        // If we want "immediate collapse", we do it here.
+        this.toggleFooter(false);
+      }
+    }
   }
 
   handleOutsideClick(e) {
@@ -453,31 +429,6 @@ export class SiteFooter extends HTMLElement {
       if (trigger && typeof trigger.focus === 'function') {
         trigger.focus();
       }
-    }
-  }
-
-  handleTouchStart(e) {
-    if (!this.elements.footerMin?.contains(e.target)) return;
-
-    this.touchStartY = e.touches[0].clientY;
-    this.touchStartTime = Date.now();
-  }
-
-  handleTouchEnd(e) {
-    if (!this.elements.footerMin?.contains(e.target)) return;
-    if (this.isTransitioning) return;
-
-    const touchEndY = e.changedTouches[0].clientY;
-    const touchDuration = Date.now() - this.touchStartTime;
-    const touchDistance = Math.abs(touchEndY - this.touchStartY);
-
-    // Detect swipe up gesture or tap
-    if (
-      touchDuration < 300 &&
-      (touchDistance < 10 || this.touchStartY - touchEndY > 30)
-    ) {
-      e.preventDefault();
-      this.toggleFooter(true);
     }
   }
 
