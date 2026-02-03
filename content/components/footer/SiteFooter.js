@@ -293,7 +293,13 @@ export class SiteFooter extends HTMLElement {
     if (!existingTrigger) {
       const triggerZone = document.createElement('div');
       triggerZone.id = 'footer-trigger-zone';
-      triggerZone.style.cssText = 'position: absolute; bottom: 0; left: 0; width: 1px; height: 1px; pointer-events: none; opacity: 0;';
+      triggerZone.style.position = 'absolute';
+      triggerZone.style.bottom = '0';
+      triggerZone.style.left = '0';
+      triggerZone.style.width = '1px';
+      triggerZone.style.height = '1px';
+      triggerZone.style.pointerEvents = 'none';
+      triggerZone.style.opacity = '0';
       document.body.appendChild(triggerZone);
     }
 
