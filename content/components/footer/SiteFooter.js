@@ -287,8 +287,18 @@ export class SiteFooter extends HTMLElement {
   }
 
   setupScrollChaining() {
+    // Create a minimal footer-trigger-zone sentinel for backwards compatibility
+    // with section detection logic in other components (e.g., three-earth-system.js)
+    const existingTrigger = document.getElementById('footer-trigger-zone');
+    if (!existingTrigger) {
+      const triggerZone = document.createElement('div');
+      triggerZone.id = 'footer-trigger-zone';
+      triggerZone.style.cssText = 'position: absolute; bottom: 0; left: 0; width: 1px; height: 1px; pointer-events: none; opacity: 0;';
+      document.body.appendChild(triggerZone);
+    }
+
     // Add wheel listener for desktop
-    window.addEventListener('wheel', this.handleWheel, { passive: false });
+    window.addEventListener('wheel', this.handleWheel, { passive: true });
 
     // Touch listeners are added in setupGlobalEventListeners
   }
@@ -307,7 +317,7 @@ export class SiteFooter extends HTMLElement {
       passive: true,
     });
     window.addEventListener('touchmove', this.handleTouchMove, {
-      passive: false, // passive: false needed to potentially prevent default if we want to lock scroll
+      passive: true,
     });
 
     window.addEventListener('resize', this.handleResize, { passive: true });
