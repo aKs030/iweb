@@ -129,7 +129,6 @@ export class SiteFooter extends HTMLElement {
     this.initialized = false;
     this.isTransitioning = false;
     this.touchStartY = 0;
-    this.lastScrollY = 0;
 
     /** @type {FooterElements} */
     this.elements = {
