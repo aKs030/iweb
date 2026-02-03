@@ -126,7 +126,7 @@
 /* ===== Header ===== */
 .site-header {
   position: fixed;
-  top: 12px;
+  top: var(--header-offset-top, 12px);
   left: 50%;
   width: calc(100% - 32px);
   max-width: 1440px;
@@ -721,7 +721,7 @@
 
 /* ===== Page Layout ===== */
 main {
-  margin-top: 88px;
+  margin-top: var(--header-total-height, 88px);
   padding: 1rem;
 }
 
@@ -739,7 +739,7 @@ main {
   .site-header {
     display: flex;
     justify-content: flex-start;
-    top: 8px;
+    top: var(--header-offset-top, 8px); /* Ensure safe area respect even on mobile */
     width: calc(100% - 16px);
     height: 48px;
     padding: 0 20px;
@@ -767,7 +767,7 @@ main {
   }
 
   main {
-    margin-top: 72px;
+    margin-top: var(--header-total-height, 72px);
   }
 
   /* Mobile Menu Card */

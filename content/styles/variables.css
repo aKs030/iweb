@@ -43,7 +43,25 @@
   --spacing-lg: 1.5rem;
   --spacing-xl: 2rem;
 
-  --header-height: 64px; /* Default approximation */
+  /* ========================================
+     SAFE AREA & DYNAMIC SPACING
+     ======================================== */
+  --safe-area-top: env(safe-area-inset-top, 0px);
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+
+  /* Dynamic Header/Footer Offsets (Floating) */
+  --header-offset-top: max(12px, var(--safe-area-top));
+  --footer-offset-bottom: max(12px, var(--safe-area-bottom));
+
+  /* Component Heights (Base) */
+  --header-height-base: 52px;
+  --footer-height-base: 52px;
+
+  /* Total Spacing for Content (Offset + Height + Gap) */
+  --header-total-height: calc(var(--header-offset-top) + var(--header-height-base) + 24px);
+  --footer-total-height: calc(var(--footer-offset-bottom) + var(--footer-height-base) + 24px);
+
+  --header-height: var(--header-total-height); /* Legacy compat */
   --pad-x: max(1rem, env(safe-area-inset-left));
   --pad-y: 1rem;
 
