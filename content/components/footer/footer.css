@@ -939,10 +939,8 @@ body.footer-expanded {
 /* Prevent body scroll when footer is expanded on mobile */
 @media (width <= 768px) {
   body.footer-expanded {
-    position: fixed;
     width: 100%;
-    top: 0;
-    left: 0;
+    overflow: hidden;
   }
 
   body.footer-expanded .site-footer {
@@ -953,7 +951,8 @@ body.footer-expanded {
     width: 100%;
     max-width: none;
     border-radius: 20px 20px 0 0;
-    transform: none;
+    transform: none !important;
+    animation: none;
     max-height: 90vh;
   }
 }
