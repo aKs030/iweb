@@ -129,6 +129,7 @@ export class SiteFooter extends HTMLElement {
     this.initialized = false;
     this.isTransitioning = false;
     this.touchStartY = 0;
+    this.lastScrollY = 0;
 
     /** @type {FooterElements} */
     this.elements = {
@@ -288,7 +289,7 @@ export class SiteFooter extends HTMLElement {
 
   setupScrollChaining() {
     // Add wheel listener for desktop
-    window.addEventListener('wheel', this.handleWheel, { passive: false });
+    window.addEventListener('wheel', this.handleWheel, { passive: true });
 
     // Touch listeners are added in setupGlobalEventListeners
   }
@@ -307,7 +308,7 @@ export class SiteFooter extends HTMLElement {
       passive: true,
     });
     window.addEventListener('touchmove', this.handleTouchMove, {
-      passive: false, // passive: false needed to potentially prevent default if we want to lock scroll
+      passive: true,
     });
 
     window.addEventListener('resize', this.handleResize, { passive: true });
