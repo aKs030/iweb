@@ -11,7 +11,8 @@
     "no-trailing-whitespace": "off",
     "attribute-boolean-style": "off",
     "element-required-attributes": "warn",
-    "no-unknown-elements": "warn"
+    "no-unknown-elements": "warn",
+    "prefer-native-element": "warn"
   },
   "elements": ["html5"]
 }

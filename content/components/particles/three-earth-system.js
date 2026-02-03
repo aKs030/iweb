@@ -857,9 +857,7 @@ class ThreeEarthSystem {
   // --- Observers ---
 
   _setupSectionDetection() {
-    const sections = Array.from(
-      document.querySelectorAll('section[id], div#footer-trigger-zone'),
-    );
+    const sections = Array.from(document.querySelectorAll('section[id]'));
     if (!sections.length || !('IntersectionObserver' in window)) return;
 
     const thresholds = Array.from({ length: 21 }, (_, i) => i / 20);
@@ -1264,7 +1262,7 @@ function getOptimizedConfig(capabilities) {
  * @param {string} id
  */
 function _mapId(id) {
-  return id === 'footer-trigger-zone' ? 'site-footer' : id;
+  return id;
 }
 
 /**

@@ -1,12 +1,7 @@
-<!-- Modern Footer System v10.0 -->
+<!-- Modern Footer System v2.0.1 - Scroll-based auto-expand/collapse -->
 <link rel="stylesheet" href="/content/components/footer/footer.css" />
 
-<footer
-  id="site-footer"
-  class="site-footer"
-  role="contentinfo"
-  aria-label="Website Footer"
->
+<footer id="site-footer" class="site-footer">
   <!-- Minimized State -->
   <div
     class="footer-min"
@@ -32,13 +27,23 @@
         >
         <span class="short">Analytics?</span>
       </span>
-      <button id="accept-cookies" class="btn-accept" aria-label="Akzeptieren">
+      <button
+        id="accept-cookies"
+        class="btn-accept"
+        type="button"
+        aria-label="Akzeptieren"
+      >
         <span class="full" data-i18n="footer.cookie_banner.accept"
           >Akzeptieren</span
         >
         <span class="short">✓</span>
       </button>
-      <button id="reject-cookies" class="btn-reject" aria-label="Ablehnen">
+      <button
+        id="reject-cookies"
+        class="btn-reject"
+        type="button"
+        aria-label="Ablehnen"
+      >
         <span class="full" data-i18n="footer.cookie_banner.decline"
           >Ablehnen</span
         >
@@ -50,6 +55,7 @@
       <button
         id="cookie-btn"
         class="nav-btn"
+        type="button"
         data-cookie-trigger
         aria-label="Cookie-Einstellungen"
       >
@@ -109,7 +115,12 @@
     <div id="cookie-settings" class="cookie-settings hidden">
       <div class="settings-header">
         <h2>🍪 Cookie-Einstellungen</h2>
-        <button id="close-settings" class="btn-close" aria-label="Schließen">
+        <button
+          id="close-settings"
+          class="btn-close"
+          type="button"
+          aria-label="Schließen"
+        >
           ×
         </button>
       </div>
@@ -149,9 +160,13 @@
         </div>
       </div>
       <div class="settings-footer">
-        <button id="reject-all" class="btn-secondary">Nur nötig</button>
-        <button id="accept-selected" class="btn-primary">Speichern</button>
-        <button id="accept-all" class="btn-primary">Alle</button>
+        <button id="reject-all" class="btn-secondary" type="button">
+          Nur nötig
+        </button>
+        <button id="accept-selected" class="btn-primary" type="button">
+          Speichern
+        </button>
+        <button id="accept-all" class="btn-primary" type="button">Alle</button>
       </div>
     </div>
 
@@ -177,7 +192,7 @@
         <!-- Work -->
         <article class="card">
           <h2 data-i18n="footer.work.title">Work</h2>
-          <nav class="links links-compact">
+          <nav class="links links-compact" aria-label="Work Links">
             <a href="#features">
               <svg
                 width="12"
@@ -261,7 +276,7 @@
         <!-- Quick Links -->
         <article class="card">
           <h2 data-i18n="footer.quick_links.title">Quick Links</h2>
-          <nav class="links links-compact">
+          <nav class="links links-compact" aria-label="Quick Links Navigation">
             <a href="/pages/gallery/">
               <svg
                 width="12"
@@ -438,6 +453,7 @@
           >
           <button
             class="nav-btn"
+            type="button"
             data-cookie-trigger
             data-i18n="footer.legal.cookies"
           >
@@ -448,6 +464,3 @@
     </div>
   </div>
 </footer>
-
-<!-- Footer initialization is handled by head-inline.js -->
-<!-- No need to import FooterApp.js here again -->
