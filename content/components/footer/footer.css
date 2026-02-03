@@ -933,33 +933,96 @@ address {
 
 body.footer-expanded {
   padding-bottom: calc(80vh + 24px);
-  overflow-x: hidden; /* Prevent horizontal scroll issues */
+  /* overflow removed here - handled via overlay strategy */
 }
 
-/* Prevent body scroll when footer is expanded on mobile */
-@media (width <= 768px) {
-  body.footer-expanded {
-    overflow: hidden;
-  }
+/* ===== Responsive Overlay Strategy ===== */
+/* This completely replaces the previous mobile logic */
 
-  body.footer-expanded .site-footer {
-    position: fixed;
+@media (width <= 768px) {
+  /*
+   * OVERLAY STRATEGY
+   * When expanded on mobile, the footer becomes a fixed overlay
+   * that sits on top of the content, independent of the body flow.
+   */
+  .site-footer.expanded {
+    /* Reset all transform/positioning logic */
+    transform: none !important;
+    animation: none !important;
+
+    /* Fixed overlay positioning */
+    position: fixed !important;
+    inset: 0 !important; /* covers entire viewport */
+    top: auto !important; /* align to bottom initially or handle via flex */
     bottom: 0 !important;
     left: 0 !important;
     right: 0 !important;
     width: 100% !important;
+    height: 100% !important; /* Full height overlay */
     max-width: none !important;
     margin: 0 !important;
-    border-radius: 20px 20px 0 0 !important;
-    transform: translate(0, 0) !important;
-    animation: none !important;
-    max-height: 90vh;
+    border-radius: 0 !important; /* Remove rounded corners at bottom */
+
+    /* Flex layout to push content to bottom */
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-end !important;
+
+    /* Transparent background for the container (the content has bg) */
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+
+    z-index: 9999 !important;
+  }
+
+  /* The actual content wrapper inside the footer */
+  .site-footer.expanded .footer-max {
+    /* Restore the visual style for the content block */
+    background: var(--component-header-bg, rgba(0, 0, 0, 0.95));
+    backdrop-filter: blur(var(--component-blur-radius, 20px));
+    border-top: 1px solid var(--component-separator, rgba(255, 255, 255, 0.1));
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
+
+    /* Sizing */
+    width: 100%;
+    max-height: 90vh; /* Leave some space at top */
+    overflow-y: auto;
+    overscroll-behavior: contain; /* Prevent body scroll chaining */
+    padding-bottom: env(safe-area-inset-bottom, 20px);
+
+    /* Slide up animation */
+    animation: slideUpMobile 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  /* Add a backdrop dimmer */
+  .site-footer.expanded::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: -1;
+    animation: fadeIn 0.3s ease forwards;
   }
 }
 
-/* ===== Responsive ===== */
+@keyframes slideUpMobile {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+
+/* ===== Responsive (Standard) ===== */
 @media (width <= 900px) {
-  .site-footer {
+  .site-footer:not(.expanded) {
     width: calc(100% - 16px);
     bottom: 8px;
     border-radius: 20px;
@@ -1236,7 +1299,7 @@ body.footer-expanded {
 
   .footer-max {
     padding: 10px;
-    max-height: calc(100vh - 80px);
+    /* max-height handled by overlay now */
   }
 
   .footer-content {

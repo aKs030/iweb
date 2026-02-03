@@ -527,7 +527,8 @@ export class SiteFooter extends HTMLElement {
 
     if (this.expanded) {
       footer.classList.add('expanded');
-      document.body.classList.add('footer-expanded');
+      // No global body class modification to avoid scroll/layout conflicts
+      // document.body.classList.add('footer-expanded');
       footerMin?.classList.add('hidden');
       footerMax?.classList.remove('hidden');
       footerMin?.setAttribute('aria-expanded', 'true');
@@ -552,7 +553,7 @@ export class SiteFooter extends HTMLElement {
       }
     } else {
       footer.classList.remove('expanded');
-      document.body.classList.remove('footer-expanded');
+      // document.body.classList.remove('footer-expanded');
       footerMin?.classList.remove('hidden');
       footerMax?.classList.add('hidden');
       footerMin?.setAttribute('aria-expanded', 'false');
