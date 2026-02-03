@@ -929,6 +929,7 @@ address {
 .site-footer.expanded {
   transform: translateX(-50%) translateY(-10px);
   box-shadow: var(--component-shadow-depth-3, 0 16px 64px rgba(0, 0, 0, 0.4));
+  animation: none; /* Disable animation to prevent transform override */
 }
 
 body.footer-expanded {
