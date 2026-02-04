@@ -30,6 +30,16 @@ export function htmlRawPlugin() {
 
         const url = req.url.split('?')[0];
 
+        // Skip static file extensions - let Vite handle them
+        if (
+          url.match(
+            /\.(css|js|mjs|json|png|jpg|jpeg|webp|svg|ico|woff|woff2|ttf|eot|map)$/i,
+          )
+        ) {
+          next();
+          return;
+        }
+
         // Skip entry point HTML files - let Vite handle them
         if (entryPoints.some((entry) => url === entry || url.endsWith(entry))) {
           next();
@@ -109,6 +119,16 @@ export function redirectsPlugin() {
         }
 
         const url = req.url.split('?')[0]; // Remove query params
+
+        // Skip static file extensions entirely - let Vite handle them
+        if (
+          url.match(
+            /\.(css|js|mjs|json|png|jpg|jpeg|webp|svg|ico|woff|woff2|ttf|eot|map)$/i,
+          )
+        ) {
+          next();
+          return;
+        }
 
         // Serve HTML files from pages/ and content/components/ as raw files
         if (url.match(/\/(pages|content\/components)\/.*\.html$/)) {

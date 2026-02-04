@@ -97,13 +97,15 @@
 /*.html   /:splat/   301
 
 # ============================================================================
-# 8. Section Rewrites (Map clean URLs to physical files)
+# 8. SPA Fallbacks (Serve index.html for client-side routing)
 # ============================================================================
-/gallery/*      /pages/gallery/:splat     200
-/projekte/*     /pages/projekte/:splat    200
-/videos/*       /pages/videos/:splat      200
-/blog/*         /pages/blog/:splat        200
-/about/*        /pages/about/:splat       200
+# Note: Static assets (css, js, json, etc.) are served directly by default
+# These rules only catch routes that don't match actual files
+/gallery/*      /pages/gallery/index.html 200
+/projekte/*     /pages/projekte/index.html 200
+/videos/*       /pages/videos/index.html  200
+/blog/*         /pages/blog/index.html    200
+/about/*        /pages/about/index.html   200
 
 # ============================================================================
 # Notes

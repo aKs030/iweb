@@ -64,7 +64,6 @@ export const robotCompanionTexts = {
         { label: 'Witz erzählen', action: 'joke' },
         { label: 'Weltraum Fakt', action: 'fact' },
         { label: 'Mini-Games', action: 'games' },
-        { label: 'Meine Stimmung', action: 'showMood' },
         { label: 'Zurück', action: 'start' },
       ],
     },

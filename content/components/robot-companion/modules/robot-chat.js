@@ -385,7 +385,6 @@ export class RobotChat {
       [ROBOT_ACTIONS.PLAY_TRIVIA]: () => this.robot.gameModule.startTrivia(),
       [ROBOT_ACTIONS.PLAY_GUESS_NUMBER]: () =>
         this.robot.gameModule.startGuessNumber(),
-      [ROBOT_ACTIONS.SHOW_MOOD]: () => this.robot.showMoodInfo(),
     };
 
     if (actions[actionKey]) {

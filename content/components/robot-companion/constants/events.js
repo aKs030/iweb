@@ -50,5 +50,4 @@ export const ROBOT_ACTIONS = {
   PLAY_TIC_TAC_TOE: 'playTicTacToe',
   PLAY_TRIVIA: 'playTrivia',
   PLAY_GUESS_NUMBER: 'playGuessNumber',
-  SHOW_MOOD: 'showMood',
 };

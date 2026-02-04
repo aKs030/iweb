@@ -163,7 +163,7 @@ export const fetchVideoDetailsMap = async (videoIds) => {
   const map = {};
   if (!videoIds.length) return map;
 
-  const url = `/api/youtube/videos?part=contentDetails,statistics&id=${videoIds.join(
+  const url = `/api/youtube/videos?part=snippet,contentDetails,statistics&id=${videoIds.join(
     ',',
   )}`;
 
