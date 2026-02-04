@@ -1,12 +1,16 @@
 import { createLogger } from '/content/core/logger.js';
 import { MarkdownRenderer } from './markdown-renderer.js';
 import { ROBOT_PERSONA } from './robot-persona.js';
+import { ROBOT_ACTIONS } from '../constants/events.js';
 
 const log = createLogger('RobotChat');
 
 export class RobotChat {
   constructor(robot) {
     this.robot = robot;
+
+    // Use state manager for chat state
+    // Legacy properties for backward compatibility (deprecated)
     this.isOpen = false;
     this.isTyping = false;
     this.lastGreetedContext = null;
@@ -35,6 +39,10 @@ export class RobotChat {
     if (newState) {
       this.robot.dom.window.classList.add('open');
       this.isOpen = true;
+
+      // Update state manager
+      this.robot.stateManager.setState({ isChatOpen: true });
+
       this.clearBubbleSequence();
       this.hideBubble();
       this.robot.animationModule.stopIdleEyeMovement();
@@ -46,7 +54,7 @@ export class RobotChat {
         if (this.history.length > 0) {
           this.restoreMessages();
         } else {
-          this.handleAction('start');
+          this.handleAction(ROBOT_ACTIONS.START);
         }
       }
 
@@ -55,6 +63,10 @@ export class RobotChat {
     } else {
       this.robot.dom.window.classList.remove('open');
       this.isOpen = false;
+
+      // Update state manager
+      this.robot.stateManager.setState({ isChatOpen: false });
+
       this.robot.animationModule.startIdleEyeMovement();
       this.robot.animationModule.startBlinkLoop();
 
@@ -170,8 +182,14 @@ export class RobotChat {
   createStreamingMessage() {
     const msg = document.createElement('div');
     msg.className = 'message bot streaming';
-    msg.innerHTML =
-      '<span class="streaming-text"></span><span class="streaming-cursor"></span>';
+
+    const textSpan = document.createElement('span');
+    textSpan.className = 'streaming-text';
+
+    const cursor = document.createElement('span');
+    cursor.className = 'streaming-cursor';
+
+    msg.append(textSpan, cursor);
     this.robot.dom.messages.appendChild(msg);
     this.scrollToBottom();
     return msg;
@@ -230,10 +248,12 @@ export class RobotChat {
   showTyping() {
     if (this.isTyping) return;
     this.isTyping = true;
-    const typingDiv = document.createElement('div');
-    typingDiv.className = 'typing-indicator';
-    typingDiv.id = 'robot-typing';
-    typingDiv.innerHTML = `<span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span>`;
+
+    // Update state manager
+    this.robot.stateManager.setState({ isTyping: true });
+
+    // Use DOM Builder for XSS-safe creation
+    const typingDiv = this.robot.domBuilder.createTypingIndicator();
     this.robot.dom.messages.appendChild(typingDiv);
     this.scrollToBottom();
   }
@@ -242,6 +262,9 @@ export class RobotChat {
     const typingDiv = document.getElementById('robot-typing');
     if (typingDiv) typingDiv.remove();
     this.isTyping = false;
+
+    // Update state manager
+    this.robot.stateManager.setState({ isTyping: false });
   }
 
   renderMessage(text, type = 'bot', skipParsing = false) {
@@ -249,11 +272,14 @@ export class RobotChat {
     msg.className = `message ${type}`;
 
     if (type === 'user') {
+      // User messages are always plain text (XSS-safe)
       msg.textContent = String(text || '');
     } else {
       if (skipParsing) {
+        // Already sanitized HTML (from streaming or other sources)
         msg.innerHTML = String(text || '');
       } else {
+        // Parse markdown (MarkdownRenderer sanitizes output)
         msg.innerHTML = MarkdownRenderer.parse(String(text || ''));
       }
     }
@@ -294,14 +320,20 @@ export class RobotChat {
     this.history = [];
     localStorage.removeItem('robot-chat-history');
     if (this.robot.dom.messages) {
-      this.robot.dom.messages.innerHTML = '';
+      // Clear messages safely
+      while (this.robot.dom.messages.firstChild) {
+        this.robot.dom.messages.removeChild(this.robot.dom.messages.firstChild);
+      }
     }
-    this.handleAction('start');
+    this.handleAction(ROBOT_ACTIONS.START);
   }
 
   clearControls() {
     if (this.robot.dom.controls) {
-      this.robot.dom.controls.innerHTML = '';
+      // Clear controls safely
+      while (this.robot.dom.controls.firstChild) {
+        this.robot.dom.controls.removeChild(this.robot.dom.controls.firstChild);
+      }
     }
   }
 
@@ -317,7 +349,7 @@ export class RobotChat {
         setTimeout(() => {
           if (opt.url) {
             globalThis?.open?.(opt.url, opt.target || '_self');
-            if (opt.target === '_blank') this.handleAction('start');
+            if (opt.target === '_blank') this.handleAction(ROBOT_ACTIONS.START);
           } else if (opt.action) {
             if (opt.action.startsWith('triviaAnswer_')) {
               const answerIdx = Number.parseInt(opt.action.split('_')[1], 10);
@@ -336,21 +368,24 @@ export class RobotChat {
     this.robot.trackInteraction('action');
 
     const actions = {
-      summarizePage: () => this.handleSummarize(),
-      scrollFooter: () => {
+      [ROBOT_ACTIONS.SUMMARIZE_PAGE]: () => this.handleSummarize(),
+      [ROBOT_ACTIONS.SCROLL_FOOTER]: () => {
         this.robot.dom.footer?.scrollIntoView({ behavior: 'smooth' });
         this.showTyping();
         setTimeout(() => {
           this.removeTyping();
           this.addMessage('Ich habe dich nach unten gebracht! 👇', 'bot');
-          setTimeout(() => this.handleAction('start'), 2000);
+          setTimeout(() => this.handleAction(ROBOT_ACTIONS.START), 2000);
         }, 1000);
       },
-      randomProject: () => this.addMessage('Ich suche ein Projekt...', 'bot'),
-      playTicTacToe: () => this.robot.gameModule.startTicTacToe(),
-      playTrivia: () => this.robot.gameModule.startTrivia(),
-      playGuessNumber: () => this.robot.gameModule.startGuessNumber(),
-      showMood: () => this.robot.showMoodInfo(),
+      [ROBOT_ACTIONS.RANDOM_PROJECT]: () =>
+        this.addMessage('Ich suche ein Projekt...', 'bot'),
+      [ROBOT_ACTIONS.PLAY_TIC_TAC_TOE]: () =>
+        this.robot.gameModule.startTicTacToe(),
+      [ROBOT_ACTIONS.PLAY_TRIVIA]: () => this.robot.gameModule.startTrivia(),
+      [ROBOT_ACTIONS.PLAY_GUESS_NUMBER]: () =>
+        this.robot.gameModule.startGuessNumber(),
+      [ROBOT_ACTIONS.SHOW_MOOD]: () => this.robot.showMoodInfo(),
     };
 
     if (actions[actionKey]) {
@@ -369,7 +404,7 @@ export class RobotChat {
       ? data.text[Math.floor(Math.random() * data.text.length)]
       : data.text;
 
-    if (actionKey === 'start') {
+    if (actionKey === ROBOT_ACTIONS.START) {
       if (Math.random() < 0.3) {
         responseText = this.robot.getMoodGreeting();
       } else {
