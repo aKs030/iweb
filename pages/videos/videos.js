@@ -163,41 +163,35 @@ const renderVideoCard = async (grid, it, detailsMap, index = 0) => {
   thumbImg.style.cssText =
     'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;';
 
-  // Fallback-Kette für Thumbnails
-  const tryLoadThumbnail = async () => {
-    const fallbacks = [
-      optimizedThumb,
-      thumb, // Original URL
-      `https://i.ytimg.com/vi/${vid}/mqdefault.jpg`, // Medium quality
-      `https://i.ytimg.com/vi/${vid}/default.jpg`, // Low quality
-    ];
+  // Fallback-Kette für Thumbnails (ohne fetch, nur img.onerror)
+  const fallbackUrls = [
+    optimizedThumb,
+    thumb, // Original URL
+    `https://i.ytimg.com/vi/${vid}/mqdefault.jpg`, // Medium quality
+    `https://i.ytimg.com/vi/${vid}/default.jpg`, // Low quality
+  ];
 
-    for (const url of fallbacks) {
-      try {
-        const response = await fetch(url, { method: 'HEAD' });
-        if (response.ok) {
-          thumbImg.src = url;
-          thumbImg.dataset.loaded = 'true';
-          return;
-        }
-      } catch {
-        // Try next fallback
-      }
-    }
-
-    // Alle Fallbacks fehlgeschlagen - verwende Platzhalter
-    thumbImg.style.backgroundColor = '#1a1a1a';
-    thumbImg.alt = `Video: ${title}`;
-    thumbImg.dataset.loaded = 'error';
-  };
+  let currentFallbackIndex = 0;
 
   // Fehlerbehandlung für Thumbnail-Laden
   thumbImg.onerror = (e) => {
     e.stopPropagation(); // Prevent event bubbling
-    tryLoadThumbnail().catch(() => {
+    currentFallbackIndex++;
+
+    if (currentFallbackIndex < fallbackUrls.length) {
+      // Try next fallback
+      thumbImg.src = fallbackUrls[currentFallbackIndex];
+    } else {
+      // Alle Fallbacks fehlgeschlagen - verwende Platzhalter
       thumbImg.style.backgroundColor = '#1a1a1a';
+      thumbImg.style.opacity = '0';
+      thumbImg.alt = `Video: ${title}`;
       thumbImg.dataset.loaded = 'error';
-    });
+    }
+  };
+
+  thumbImg.onload = () => {
+    thumbImg.dataset.loaded = 'true';
   };
 
   // Initiales Laden
