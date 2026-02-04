@@ -180,10 +180,19 @@ h1 {
   padding-bottom: 56.25%;
   background-size: cover;
   background-position: center center;
+  background-color: #1a1a1a;
   border-radius: var(--radius-xl);
   cursor: pointer;
   outline: none;
   transition: transform 0.3s ease;
+}
+
+.video-thumb img {
+  transition: opacity 0.3s ease;
+}
+
+.video-thumb img[data-loaded='error'] {
+  opacity: 0;
 }
 .video-thumb:focus {
   box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.3);
