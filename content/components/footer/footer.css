@@ -12,10 +12,10 @@ address {
 /* ===== Base Footer ===== */
 .site-footer {
   position: fixed;
-  bottom: 12px;
+  bottom: calc(12px + var(--safe-bottom));
   left: 50%;
   transform: translateX(-50%);
-  width: calc(100% - 32px);
+  width: calc(100% - 32px - var(--safe-left) - var(--safe-right));
   max-width: 1440px;
   min-width: 320px;
   background: var(--component-header-bg, rgba(0, 0, 0, 0.8));

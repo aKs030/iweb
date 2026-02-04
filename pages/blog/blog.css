@@ -68,7 +68,9 @@ body {
 #main-content {
   position: relative;
   z-index: 1;
-  min-height: calc(100vh - 88px);
+  min-height: calc(
+    100vh - var(--content-top-offset) - var(--content-bottom-offset)
+  );
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -409,7 +411,7 @@ body {
   }
 
   body.blog-page #main-content {
-    padding-top: 80px;
+    padding-top: 1rem;
   }
 }
 
@@ -493,9 +495,9 @@ body {
   }
 }
 
-/* Adjust main content padding */
+/* Adjust main content padding - now handled globally by body padding */
 body.blog-page #main-content {
-  padding-top: 140px;
+  padding-top: 2rem; /* Additional spacing for blog content */
 }
 
 @media (max-width: 1024px) {
@@ -505,11 +507,11 @@ body.blog-page #main-content {
     height: auto;
     min-height: 44px;
     padding: 0.5rem 1rem;
-    top: 72px;
+    top: var(--content-top-offset);
   }
 
   body.blog-page #main-content {
-    padding-top: 130px;
+    padding-top: 1.5rem;
   }
 }
 

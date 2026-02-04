@@ -6,7 +6,7 @@ body {
   font-family: var(--font-inter);
   line-height: 1.6;
   overflow-x: hidden;
-  min-height: calc(100vh - 88px);
+  /* min-height wird jetzt global durch main.css gesteuert */
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -55,9 +55,9 @@ a {
   padding: 0 1.5rem;
 }
 
-/* Ensure about page content starts below the fixed header so the menu's background remains empty */
+/* Ensure about page content starts below the fixed header - now handled globally by body padding */
 .about-page main.container {
-  padding-top: calc(52px + 24px); /* header top spacing + header height */
+  padding-top: 2rem; /* Additional spacing for content */
 }
 
 .btn {
