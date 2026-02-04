@@ -117,6 +117,7 @@ export default [
       'build/**',
       '.git/**',
       '.vscode/**',
+      '.wrangler/**',
       'workers/**',
       '*.min.js',
       'package-lock.json',
