@@ -1,6 +1,4 @@
-import { createLogger } from '/content/core/logger.js';
 import { createObserver } from '/content/core/intersection-observer.js';
-const log = createLogger('RobotCollisionV2');
 
 export class RobotCollisionV2 {
   constructor(api) {
@@ -43,7 +41,7 @@ export class RobotCollisionV2 {
     this._lastObstacleUpdate = now;
 
     const currentObstacles = document.querySelectorAll(
-      'img, .card, button.btn, h2, .project-card, [data-test="photo-card"]'
+      'img, .card, button.btn, h2, .project-card, [data-test="photo-card"]',
     );
 
     currentObstacles.forEach((el) => {
@@ -96,12 +94,7 @@ export class RobotCollisionV2 {
     }
   }
 
-  triggerCollisionReaction(obs, obsRect) {
-    const robotRect = this.api.avatar.getBoundingClientRect();
-    const robotCX = robotRect.left + robotRect.width / 2;
-    const obsCX = obsRect.left + obsRect.width / 2;
-    const hitFromRight = robotCX > obsCX;
-
+  triggerCollisionReaction(_obs, _obsRect) {
     const texts = ['Huch!', 'Oha!', 'Eng hier!', 'Platz da!'];
     this.api.showBubble(texts[Math.floor(Math.random() * texts.length)]);
     setTimeout(() => this.api.hideBubble(), 1500);
@@ -132,8 +125,10 @@ export class RobotCollisionV2 {
 
     if (!intersects) return false;
 
-    const overlapX = Math.min(twRect.right, rRect.right) - Math.max(twRect.left, rRect.left);
-    const overlapY = Math.min(twRect.bottom, rRect.bottom) - Math.max(twRect.top, rRect.top);
+    const overlapX =
+      Math.min(twRect.right, rRect.right) - Math.max(twRect.left, rRect.left);
+    const overlapY =
+      Math.min(twRect.bottom, rRect.bottom) - Math.max(twRect.top, rRect.top);
 
     if (overlapX < 6 || overlapY < 6) return false;
 

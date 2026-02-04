@@ -1,7 +1,13 @@
 import { useEffect, useRef } from 'react';
 import { RobotCollisionV2 } from '../utils/RobotCollisionV2.js';
 
-export const useCollisionDetection = (avatarRef, containerRef, setBubble, triggerKnockback, isOpen) => {
+export const useCollisionDetection = (
+  avatarRef,
+  containerRef,
+  setBubble,
+  triggerKnockback,
+  isOpen,
+) => {
   const collisionRef = useRef(null);
 
   useEffect(() => {
@@ -16,7 +22,8 @@ export const useCollisionDetection = (avatarRef, containerRef, setBubble, trigge
     // We can query selector the avatar if needed or pass a ref.
 
     // Let's assume avatarRef points to the button or SVG container
-    const avatarEl = avatarRef.current || containerRef.current.querySelector('.robot-avatar');
+    const avatarEl =
+      avatarRef.current || containerRef.current.querySelector('.robot-avatar');
 
     if (!avatarEl) return;
 
@@ -25,7 +32,7 @@ export const useCollisionDetection = (avatarRef, containerRef, setBubble, trigge
       container: containerRef.current,
       showBubble: (text) => setBubble(text),
       hideBubble: () => setBubble(''),
-      triggerKnockback
+      triggerKnockback,
     };
 
     collisionRef.current = new RobotCollisionV2(api);
@@ -44,9 +51,11 @@ export const useCollisionDetection = (avatarRef, containerRef, setBubble, trigge
       try {
         const tw = document.querySelector('.typewriter-title');
         if (tw && collisionRef.current) {
-          collisionRef.current.checkForTypewriterCollision(tw.getBoundingClientRect());
+          collisionRef.current.checkForTypewriterCollision(
+            tw.getBoundingClientRect(),
+          );
         }
-      } catch (e) {
+      } catch {
         // ignore
       }
     };

@@ -1,12 +1,12 @@
 import { useEffect, useRef, useCallback } from 'react';
 
-export const useRobotAnimation = (mood) => {
+export const useRobotAnimation = (_mood) => {
   const containerRef = useRef(null);
   const eyesRef = useRef(null);
   const leftPupilRef = useRef(null);
   const rightPupilRef = useRef(null);
 
-  const idleTimerRef = useRef(null);
+  const _idleTimerRef = useRef(null);
   const blinkTimerRef = useRef(null);
 
   // Eye tracking
@@ -63,7 +63,8 @@ export const useRobotAnimation = (mood) => {
     if (containerRef.current) {
       containerRef.current.classList.add('knockback');
       setTimeout(() => {
-        if (containerRef.current) containerRef.current.classList.remove('knockback');
+        if (containerRef.current)
+          containerRef.current.classList.remove('knockback');
       }, 500);
     }
   }, []);
@@ -73,6 +74,6 @@ export const useRobotAnimation = (mood) => {
     eyesRef,
     leftPupilRef,
     rightPupilRef,
-    triggerKnockback
+    triggerKnockback,
   };
 };

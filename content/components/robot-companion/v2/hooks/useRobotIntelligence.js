@@ -3,7 +3,7 @@ import { createLogger } from '/content/core/logger.js';
 
 const log = createLogger('useRobotIntelligence');
 
-export const useRobotIntelligence = (state, chat) => {
+export const useRobotIntelligence = (state, _chat) => {
   const { isOpen, context, setBubble } = state;
   const timerRef = useRef(null);
 
@@ -19,24 +19,29 @@ export const useRobotIntelligence = (state, chat) => {
         // Lazy load service
         // @ts-ignore
         if (!window._geminiService) {
-          const { GeminiService } = await import('/content/components/robot-companion/gemini-service.js');
+          const { GeminiService } =
+            await import('/content/components/robot-companion/gemini-service.js');
           // @ts-ignore
           window._geminiService = new GeminiService();
         }
 
         const pageTitle = document.title;
         const h1 = document.querySelector('h1')?.textContent || '';
-        const contentSnippet = (document.body.textContent || '').substring(0, 3000);
+        const contentSnippet = (document.body.textContent || '').substring(
+          0,
+          3000,
+        );
 
         const contextData = {
           title: pageTitle,
           headline: h1,
           url: window.location.pathname,
-          contentSnippet: contentSnippet
+          contentSnippet: contentSnippet,
         };
 
         // @ts-ignore
-        const suggestion = await window._geminiService.getSuggestion(contextData);
+        const suggestion =
+          await window._geminiService.getSuggestion(contextData);
         if (suggestion) {
           setBubble(suggestion, 12000); // Show for 12s
         }

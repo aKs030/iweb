@@ -16,16 +16,26 @@ export const useRobotState = () => {
     sessions: 0,
     interactions: 0,
     sectionsVisited: [],
-    lastVisit: new Date().toISOString()
+    lastVisit: new Date().toISOString(),
   });
 
   useEffect(() => {
     try {
-      const sessions = parseInt(localStorage.getItem('robot-sessions') || '0', 10) + 1;
-      const interactions = parseInt(localStorage.getItem('robot-interactions') || '0', 10);
-      const lastVisit = localStorage.getItem('robot-last-visit') || new Date().toISOString();
+      const sessions =
+        parseInt(localStorage.getItem('robot-sessions') || '0', 10) + 1;
+      const interactions = parseInt(
+        localStorage.getItem('robot-interactions') || '0',
+        10,
+      );
+      const lastVisit =
+        localStorage.getItem('robot-last-visit') || new Date().toISOString();
 
-      analyticsRef.current = { sessions, interactions, sectionsVisited: [], lastVisit };
+      analyticsRef.current = {
+        sessions,
+        interactions,
+        sectionsVisited: [],
+        lastVisit,
+      };
 
       localStorage.setItem('robot-sessions', sessions.toString());
       localStorage.setItem('robot-last-visit', new Date().toISOString());
@@ -39,13 +49,13 @@ export const useRobotState = () => {
           // Convert stored history to message format
           const historyItems = JSON.parse(savedHistory);
           // Only last 30
-          const validItems = historyItems.slice(-30).map(item => ({
-             text: item.text,
-             type: item.role === 'user' ? 'user' : 'bot',
-             timestamp: Date.now()
+          const validItems = historyItems.slice(-30).map((item) => ({
+            text: item.text,
+            type: item.role === 'user' ? 'user' : 'bot',
+            timestamp: Date.now(),
           }));
           setMessages(validItems);
-        } catch (e) {
+        } catch {
           // ignore
         }
       }
@@ -71,25 +81,35 @@ export const useRobotState = () => {
 
   const trackInteraction = useCallback(() => {
     analyticsRef.current.interactions++;
-    localStorage.setItem('robot-interactions', analyticsRef.current.interactions.toString());
+    localStorage.setItem(
+      'robot-interactions',
+      analyticsRef.current.interactions.toString(),
+    );
   }, []);
 
-  const addMessage = useCallback((text, type = 'bot', options = []) => {
-    const msg = { text, type, options, timestamp: Date.now() };
-    setMessages(prev => {
-      const next = [...prev, msg];
-      // Persist
-      try {
-        const history = next.map(m => ({
-          role: m.type === 'user' ? 'user' : 'model',
-          text: m.text
-        })).slice(-30);
-        localStorage.setItem('robot-chat-history', JSON.stringify(history));
-      } catch (e) {}
-      return next;
-    });
-    if (type === 'user') trackInteraction();
-  }, [trackInteraction]);
+  const addMessage = useCallback(
+    (text, type = 'bot', options = []) => {
+      const msg = { text, type, options, timestamp: Date.now() };
+      setMessages((prev) => {
+        const next = [...prev, msg];
+        // Persist
+        try {
+          const history = next
+            .map((m) => ({
+              role: m.type === 'user' ? 'user' : 'model',
+              text: m.text,
+            }))
+            .slice(-30);
+          localStorage.setItem('robot-chat-history', JSON.stringify(history));
+        } catch {
+          // ignore
+        }
+        return next;
+      });
+      if (type === 'user') trackInteraction();
+    },
+    [trackInteraction],
+  );
 
   const setBubble = useCallback((text, duration = 0) => {
     setBubbleText(text);
@@ -129,6 +149,6 @@ export const useRobotState = () => {
     streamingText,
     setStreamingText,
     context,
-    trackInteraction
+    trackInteraction,
   };
 };

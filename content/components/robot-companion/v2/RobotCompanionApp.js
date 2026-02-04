@@ -35,7 +35,7 @@ export const RobotCompanionApp = () => {
     animationRefs.containerRef,
     state.setBubble,
     animationRefs.triggerKnockback,
-    state.isOpen
+    state.isOpen,
   );
 
   useEffect(() => {
@@ -59,7 +59,8 @@ export const RobotCompanionApp = () => {
         onOptionClick=${chat.handleOptionClick}
       />
 
-      ${!state.isOpen && html`
+      ${!state.isOpen &&
+      html`
         <${ChatBubble}
           text=${state.bubbleText}
           onClose=${() => state.setBubble('')}

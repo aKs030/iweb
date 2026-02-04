@@ -11,7 +11,10 @@ export const ChatBubble = ({ text, onClose, onClick }) => {
       <span>${text}</span>
       <div
         className="robot-bubble-close"
-        onClick=${(e) => { e.stopPropagation(); onClose(); }}
+        onClick=${(e) => {
+          e.stopPropagation();
+          onClose();
+        }}
       >
         &times;
       </div>
