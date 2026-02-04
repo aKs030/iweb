@@ -22,6 +22,7 @@ import { createLogger } from '/content/core/logger.js';
 import { escapeHTML } from '/content/core/html-sanitizer.js';
 import { getElementById } from '/content/core/utils.js';
 import { updateLoader, hideLoader } from '/content/core/global-loader.js';
+import { i18n } from '/content/core/i18n.js';
 import { FAVICON_512 } from '../../content/config/site-config.js';
 import {
   fetchChannelId,
@@ -141,9 +142,13 @@ const renderVideoCard = async (grid, it, detailsMap, index = 0) => {
 
   const meta = document.createElement('div');
   meta.className = 'video-meta';
-  meta.innerHTML = `<div class="video-info"><small class="pub-date">${pub}</small></div><div class="video-actions u-row"><a href="https://youtu.be/${vid}" target="_blank" rel="noopener">Auf YouTube öffnen</a> <a href="/videos/${vid}/" class="page-link" title="Öffne Landing‑Page für dieses Video" data-video-id="${vid}" data-video-title="${escapeHTML(
+  meta.innerHTML = `<div class="video-info"><small class="pub-date">${pub}</small></div><div class="video-actions u-row"><a href="https://youtu.be/${vid}" target="_blank" rel="noopener">${i18n.t(
+    'videos.open_youtube',
+  )}</a> <a href="/videos/${vid}/" class="page-link" title="${i18n.t(
+    'videos.open_landing',
+  )}" data-video-id="${vid}" data-video-title="${escapeHTML(
     title,
-  )}">Seite öffnen</a></div>`;
+  )}">${i18n.t('videos.open_page')}</a></div>`;
 
   const publisherName =
     globalThis.YOUTUBE_CHANNEL_ID === 'UCTGRherjM4iuIn86xxubuPg'
@@ -271,22 +276,22 @@ const loadLatestVideos = async () => {
       log.warn(
         'Running from file:// — network requests may be blocked. Serve site via http://localhost for proper API requests.',
       );
-      updateLoader(1, 'Lokaler Modus');
+      updateLoader(1, i18n.t('videos.local_mode'));
       hideLoader(500);
       return;
     }
 
-    updateLoader(0.1, 'Lade Videos...');
-    setVideoStatus('Videos werden geladen…');
+    updateLoader(0.1, i18n.t('videos.loading'));
+    setVideoStatus(i18n.t('videos.loading'));
 
     const grid = document.querySelector('.video-grid');
     if (!grid) {
-      updateLoader(1, 'Fehler: Grid nicht gefunden');
+      updateLoader(1, i18n.t('videos.error'));
       hideLoader(500);
       return;
     }
 
-    updateLoader(0.3, 'Verbinde mit YouTube...');
+    updateLoader(0.3, i18n.t('videos.connecting'));
     const { items, detailsMap } = await loadFromApi(handle);
 
     if (!items.length) {
@@ -295,12 +300,12 @@ const loadLatestVideos = async () => {
         'Keine öffentlichen Uploads auf YouTube gefunden — es werden die statisch eingebetteten Videos angezeigt.',
       );
       setVideoStatus('');
-      updateLoader(1, 'Keine Videos gefunden');
+      updateLoader(1, i18n.t('videos.not_found'));
       hideLoader(500);
       return;
     }
 
-    updateLoader(0.6, `Verarbeite ${items.length} Videos...`);
+    updateLoader(0.6, i18n.t('videos.processing', { count: items.length }));
     grid.innerHTML = '';
 
     // Render videos with progress updates
@@ -314,7 +319,9 @@ const loadLatestVideos = async () => {
       const progress = 0.6 + ((i + batchSize) / items.length) * 0.3;
       updateLoader(
         progress,
-        `Lade Videos ${Math.min(i + batchSize, items.length)}/${items.length}...`,
+        i18n.t('videos.processing', {
+          count: Math.min(i + batchSize, items.length),
+        }),
       );
 
       // Allow UI to update
@@ -325,7 +332,7 @@ const loadLatestVideos = async () => {
     setVideoStatus('');
 
     setTimeout(() => {
-      updateLoader(1, 'Videos bereit!');
+      updateLoader(1, i18n.t('videos.ready'));
       hideLoader(100);
     }, 100);
 
@@ -333,7 +340,7 @@ const loadLatestVideos = async () => {
   } catch (err) {
     log.error('Fehler beim Laden der Videos', err);
     showErrorMessage(err);
-    updateLoader(1, 'Fehler beim Laden');
+    updateLoader(1, i18n.t('videos.error'));
     hideLoader(500);
   }
 };
@@ -354,7 +361,7 @@ const showErrorMessage = (err) => {
       document.querySelector('.videos-main .container') || document.body;
     const el = document.createElement('aside');
     el.className = 'video-error';
-    let message = 'Fehler beim Laden der Videos.';
+    let message = i18n.t('videos.error');
     if (err?.status === 400) {
       message +=
         ' API-Key ungültig (400). Prüfe in der Google Cloud Console, ob der Key aktiv ist und die YouTube Data API v3 freigeschaltet ist.';

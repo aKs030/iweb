@@ -7,6 +7,7 @@
 
 import { createLogger } from './logger.js';
 import { fire } from './events.js';
+import { i18n } from '/content/core/i18n.js';
 
 const log = createLogger('GlobalLoader');
 
@@ -103,7 +104,8 @@ export function updateLoader(progress, message, options = {}) {
  * @param {Object} [options] - Additional options
  * @param {number} [options.initialProgress] - Initial progress (0-1)
  */
-export function showLoader(message = 'Lädt...', options = {}) {
+export function showLoader(message, options = {}) {
+  const msg = message || i18n.t('common.loading');
   try {
     clearCache(); // Clear cache when showing loader
     const elements = getLoaderElements();
@@ -125,10 +127,10 @@ export function showLoader(message = 'Lädt...', options = {}) {
     });
 
     const initialProgress = options.initialProgress ?? 0;
-    updateLoader(initialProgress, message, { silent: true });
+    updateLoader(initialProgress, msg, { silent: true });
     document.body.classList.add('global-loading-visible');
 
-    fire(EVENTS.LOADING_SHOW, { message });
+    fire(EVENTS.LOADING_SHOW, { message: msg });
     log.debug('Loader shown');
   } catch (err) {
     log.warn('Could not show loader:', err);
