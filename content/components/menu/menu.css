@@ -133,11 +133,11 @@
   min-width: 920px;
   height: 52px;
   padding: 0 20px;
-  background: var(--glass-bg-strong);
-  backdrop-filter: blur(var(--glass-blur-lg));
+  background: var(--component-header-bg, rgba(0, 0, 0, 0.8));
+  backdrop-filter: blur(var(--component-blur-radius, 20px));
   border-radius: var(--component-pill-radius, 26px);
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--glass-shadow);
+  border: 1px solid var(--component-separator, rgba(255, 255, 255, 0.1));
+  box-shadow: var(--component-shadow-depth-2, 0 8px 32px rgba(0, 0, 0, 0.3));
   display: flex;
   justify-content: flex-end;
   align-items: center;
@@ -771,11 +771,11 @@
     width: min(90vw, 320px);
     padding: 0;
     left: auto;
-    background: var(--glass-bg-strong);
-    backdrop-filter: blur(var(--glass-blur-lg));
-    border: 1px solid var(--glass-border);
+    background: var(--component-header-bg, rgba(0, 0, 0, 0.8));
+    backdrop-filter: blur(var(--component-blur-radius, 20px));
+    border: 1px solid var(--component-separator, rgba(255, 255, 255, 0.1));
     border-radius: var(--component-card-radius, 16px);
-    box-shadow: var(--glass-shadow);
+    box-shadow: var(--component-shadow-depth-2, 0 8px 32px rgba(0, 0, 0, 0.3));
     transform: translateX(110%) scale(0.95);
     transition:
       transform 0.4s
