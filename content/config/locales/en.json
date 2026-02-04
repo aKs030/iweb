@@ -37,8 +37,48 @@
     },
     "cookie_banner": {
       "text": "We use analytics",
+      "text_short": "Analytics?",
       "accept": "Accept",
-      "decline": "Decline"
+      "accept_short": "✓",
+      "decline": "Decline",
+      "decline_short": "✗"
+    },
+    "cookie_settings": {
+      "title": "Cookie Settings",
+      "close": "Close",
+      "intro": "We use necessary cookies and optional analytics.",
+      "required": {
+        "title": "Required",
+        "status": "Active",
+        "desc": "For basic functions of this site."
+      },
+      "analytics": {
+        "title": "Analytics",
+        "desc": "Helps us improve content."
+      },
+      "ads": {
+        "title": "Ads",
+        "desc": "Allows personalized ads."
+      },
+      "buttons": {
+        "necessary": "Necessary only",
+        "save": "Save",
+        "all": "All"
+      }
+    },
+    "messages": {
+      "accepted": "Cookies accepted",
+      "rejected": "Cookies rejected",
+      "necessary_only": "Necessary cookies only",
+      "saved": "Settings saved",
+      "all_accepted": "All cookies accepted",
+      "opened": "Cookie settings opened",
+      "closed": "Cookie settings closed"
+    },
+    "actions": {
+      "expand": "Expand footer",
+      "minimize": "Footer minimized",
+      "expanded": "Footer expanded"
     }
   },
   "projects": {
@@ -63,6 +103,68 @@
       "fullscreen": "Fullscreen",
       "close": "Close"
     }
+  },
+  "gallery": {
+    "title": "Premium Photo Gallery",
+    "subtitle": "Professional photography in highest quality",
+    "search_placeholder": "Search by title, tags or location...",
+    "found": "{{count}} photo found",
+    "found_plural": "{{count}} photos found",
+    "loading": {
+      "init": "Initializing gallery...",
+      "images": "Loading images...",
+      "prepare": "Preparing view...",
+      "almost": "Almost ready...",
+      "ready": "Gallery ready!",
+      "error": "Error loading"
+    },
+    "sort": {
+      "label": "Select sorting",
+      "latest": "Latest",
+      "title": "Title",
+      "popular": "Popular"
+    },
+    "categories": {
+      "all": "All",
+      "nature": "Nature",
+      "urban": "Urban",
+      "travel": "Travel",
+      "landscape": "Landscape"
+    },
+    "details": {
+      "title": "Photo Details",
+      "camera": "Camera",
+      "aperture": "Aperture",
+      "iso": "ISO",
+      "location": "Location",
+      "date": "Date",
+      "tags": "Tags"
+    },
+    "actions": {
+      "toggle_info": "Toggle photo details",
+      "toggle_slideshow": "Toggle slideshow",
+      "close": "Close",
+      "prev": "Previous image",
+      "next": "Next image",
+      "zoom_out": "Zoom out",
+      "zoom_in": "Zoom in",
+      "share": "Share",
+      "download": "Download",
+      "favorite_add": "Add to favorites",
+      "favorite_remove": "Remove from favorites"
+    }
+  },
+  "videos": {
+    "local_mode": "Local mode",
+    "loading": "Loading videos...",
+    "connecting": "Connecting to YouTube...",
+    "not_found": "No videos found",
+    "processing": "Processing {{count}} videos...",
+    "ready": "Videos ready!",
+    "error": "Error loading videos",
+    "open_youtube": "Open on YouTube",
+    "open_page": "Open page",
+    "open_landing": "Open landing page for this video"
   },
   "blog": {
     "headline": "Knowledge & Insights",

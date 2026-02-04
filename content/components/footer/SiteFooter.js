@@ -228,6 +228,8 @@ export class SiteFooter extends HTMLElement {
     this.setupCookieBanner();
     this.setupScrollHandler();
     this.bindEvents();
+    // Initial translation
+    this.updateLanguage(i18n.currentLang);
   }
 
   setupDate() {
@@ -279,7 +281,7 @@ export class SiteFooter extends HTMLElement {
     CookieManager.set('cookie_consent', 'accepted');
     this.analytics.updateConsent(true);
     this.analytics.load();
-    a11y?.announce('Cookies akzeptiert', { priority: 'polite' });
+    a11y?.announce(i18n.t('footer.messages.accepted'), { priority: 'polite' });
   }
 
   /**
@@ -295,7 +297,7 @@ export class SiteFooter extends HTMLElement {
 
     CookieManager.set('cookie_consent', 'rejected');
     this.analytics.updateConsent(false);
-    a11y?.announce('Cookies abgelehnt', { priority: 'polite' });
+    a11y?.announce(i18n.t('footer.messages.rejected'), { priority: 'polite' });
   }
 
   setupScrollHandler() {
@@ -456,7 +458,7 @@ export class SiteFooter extends HTMLElement {
       footerMax?.classList.remove('hidden');
       footerMin?.setAttribute('aria-expanded', 'true');
       footerTriggers.forEach((t) => t.setAttribute('aria-expanded', 'true'));
-      a11y?.announce('Footer erweitert', { priority: 'polite' });
+      a11y?.announce(i18n.t('footer.actions.expanded'), { priority: 'polite' });
 
       const firstFocusable = /** @type {HTMLElement|null} */ (
         footerMax?.querySelector(
@@ -473,7 +475,7 @@ export class SiteFooter extends HTMLElement {
       footerMax?.classList.add('hidden');
       footerMin?.setAttribute('aria-expanded', 'false');
       footerTriggers.forEach((t) => t.setAttribute('aria-expanded', 'false'));
-      a11y?.announce('Footer minimiert', { priority: 'polite' });
+      a11y?.announce(i18n.t('footer.actions.minimize'), { priority: 'polite' });
     }
 
     setTimeout(() => {
@@ -508,14 +510,14 @@ export class SiteFooter extends HTMLElement {
       setTimeout(() => closeBtn.focus(), 100);
     }
 
-    a11y?.announce('Cookie-Einstellungen geöffnet', { priority: 'polite' });
+    a11y?.announce(i18n.t('footer.messages.opened'), { priority: 'polite' });
   }
 
   closeSettings() {
     const { cookieSettings, footerContent } = this.elements;
     cookieSettings?.classList.add('hidden');
     footerContent?.classList.remove('hidden');
-    a11y?.announce('Cookie-Einstellungen geschlossen', { priority: 'polite' });
+    a11y?.announce(i18n.t('footer.messages.closed'), { priority: 'polite' });
   }
 
   bindEvents() {
@@ -595,7 +597,9 @@ export class SiteFooter extends HTMLElement {
       CookieManager.deleteAnalytics();
       this.analytics.updateConsent(false);
       cookieBanner?.classList.add('hidden');
-      a11y?.announce('Nur notwendige Cookies', { priority: 'polite' });
+      a11y?.announce(i18n.t('footer.messages.necessary_only'), {
+        priority: 'polite',
+      });
       this.closeSettings();
     });
 
@@ -616,7 +620,7 @@ export class SiteFooter extends HTMLElement {
       }
 
       cookieBanner?.classList.add('hidden');
-      a11y?.announce('Einstellungen gespeichert', { priority: 'polite' });
+      a11y?.announce(i18n.t('footer.messages.saved'), { priority: 'polite' });
       this.closeSettings();
     });
 
@@ -625,7 +629,9 @@ export class SiteFooter extends HTMLElement {
       this.analytics.updateConsent(true);
       this.analytics.load();
       cookieBanner?.classList.add('hidden');
-      a11y?.announce('Alle Cookies akzeptiert', { priority: 'polite' });
+      a11y?.announce(i18n.t('footer.messages.all_accepted'), {
+        priority: 'polite',
+      });
       this.closeSettings();
     });
   }
@@ -637,13 +643,7 @@ export class SiteFooter extends HTMLElement {
   }
 
   updateLanguage(_lang) {
-    const elements = this.querySelectorAll('[data-i18n]');
-    elements.forEach((el) => {
-      const key = el.getAttribute('data-i18n');
-      if (key) {
-        el.textContent = i18n.t(key);
-      }
-    });
+    i18n.translateElement(this);
   }
 }
 
