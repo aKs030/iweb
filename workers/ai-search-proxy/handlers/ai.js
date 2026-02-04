@@ -5,7 +5,7 @@
  */
 
 import { jsonResponse, errorResponse } from '../../shared/response-utils.js';
-import { validateGeminiRequest } from '../utils/validation.js';
+import { validateAIRequest } from '../utils/validation.js';
 import { callGroqAPI } from '../services/groq.js';
 import {
   performSearch,
@@ -13,16 +13,16 @@ import {
 } from '../../shared/search-utils.js';
 
 /**
- * Handles /api/gemini requests (now using Groq)
+ * Handles AI requests (now using Groq)
  */
-export async function geminiHandler(request, env, searchIndex) {
+export async function aiHandler(request, env, searchIndex) {
   if (request.method !== 'POST') {
     return errorResponse('Method not allowed', 'Use POST.', 405);
   }
 
   try {
     const body = await request.json();
-    const validation = validateGeminiRequest(body);
+    const validation = validateAIRequest(body);
 
     if (!validation.valid) {
       return errorResponse('Validation failed', validation.error, 400);

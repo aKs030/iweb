@@ -49,7 +49,7 @@
 ┌─────────────────────────────────────────────────────────────┐
 │                   External Services                          │
 ├─────────────────────────────────────────────────────────────┤
-│  ├─ GeminiService       (Google AI)                         │
+│  ├─ AIService           (Groq AI)                           │
 │  ├─ Analytics           (Google Analytics)                  │
 │  └─ LocalStorage        (Browser storage)                   │
 └─────────────────────────────────────────────────────────────┘
@@ -151,7 +151,7 @@
                     ┌─────────┴─────────┐
                     ▼                   ▼
         ┌───────────────────┐   ┌───────────────────┐
-        │ KnowledgeBase     │   │ GeminiService     │
+        │ KnowledgeBase     │   │ AIService         │
         │ (Local)           │   │ (AI)              │
         └───────────────────┘   └───────────────────┘
                     │                   │
@@ -182,7 +182,7 @@
 
 ```
 RobotCompanion
-├── GeminiService (AI)
+├── AIService (AI)
 ├── RobotGames (Games)
 ├── RobotAnimation (Visual)
 │   └── DOM manipulation
@@ -230,7 +230,7 @@ content/
 │       ├── robot-companion.css
 │       ├── README.md                             ⭐ NEW
 │       ├── example-usage.html                    ⭐ NEW
-│       ├── gemini-service.js
+│       ├── ai-service.js
 │       ├── robot-games.js
 │       └── modules/
 │           ├── robot-animation.js
@@ -329,7 +329,7 @@ Deferred Load (Non-critical)
 └── Section content (intersection observer)
 
 On-Demand Load
-├── GeminiService (when chat opens)
+├── AIService (when chat opens)
 ├── RobotGames (when activated)
 └── Analytics (after consent)
 ```
