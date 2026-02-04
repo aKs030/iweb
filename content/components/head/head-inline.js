@@ -241,7 +241,7 @@ const injectCoreAssets = () => {
 
         schedule(() => {
           upsertScript({
-            src: '/content/components/robot-companion/robot-companion.js',
+            src: '/content/components/robot-companion/v2/index.js',
             module: true,
           });
         });

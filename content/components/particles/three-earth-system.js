@@ -887,7 +887,7 @@ class ThreeEarthSystem {
       this.cardManager.setProgress(entry.intersectionRatio || 0);
     }
 
-    const newSection = _mapId(entry.target.id || '');
+    const newSection = entry.target.id || '';
     if (!newSection || newSection === this.currentSection) return;
 
     const prev = this.currentSection;
@@ -1139,7 +1139,7 @@ class ThreeEarthSystem {
   }
 }
 
-// --- Legacy Export Adapters ---
+// --- Export ---
 
 /** @type {ThreeEarthSystem|null} */
 let singleton = null;
@@ -1149,9 +1149,7 @@ export const initThreeEarth = () => {
   return singleton.init();
 };
 
-const ThreeEarthManager = { initThreeEarth };
-
-// --- Helpers copied from original (kept for compatibility) ---
+// --- Helpers ---
 
 /**
  * @param {any} material
@@ -1259,13 +1257,6 @@ function getOptimizedConfig(capabilities) {
 }
 
 /**
- * @param {string} id
- */
-function _mapId(id) {
-  return id;
-}
-
-/**
  * @param {string} sectionName
  */
 function _getSectionConfig(sectionName) {
@@ -1301,5 +1292,3 @@ function _getSectionConfig(sectionName) {
     ] || configs.hero
   );
 }
-
-export default ThreeEarthManager;
