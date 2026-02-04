@@ -37,8 +37,48 @@
     },
     "cookie_banner": {
       "text": "Wir nutzen Analytics",
+      "text_short": "Analytics?",
       "accept": "Akzeptieren",
-      "decline": "Ablehnen"
+      "accept_short": "✓",
+      "decline": "Ablehnen",
+      "decline_short": "✗"
+    },
+    "cookie_settings": {
+      "title": "Cookie-Einstellungen",
+      "close": "Schließen",
+      "intro": "Wir nutzen notwendige Cookies und optionale Analyse.",
+      "required": {
+        "title": "Erforderlich",
+        "status": "Aktiv",
+        "desc": "Für Grundfunktionen dieser Seite."
+      },
+      "analytics": {
+        "title": "Analyse",
+        "desc": "Hilft uns, Inhalte zu verbessern."
+      },
+      "ads": {
+        "title": "Werbung",
+        "desc": "Erlaubt personalisierte Anzeigen."
+      },
+      "buttons": {
+        "necessary": "Nur nötig",
+        "save": "Speichern",
+        "all": "Alle"
+      }
+    },
+    "messages": {
+      "accepted": "Cookies akzeptiert",
+      "rejected": "Cookies abgelehnt",
+      "necessary_only": "Nur notwendige Cookies",
+      "saved": "Einstellungen gespeichert",
+      "all_accepted": "Alle Cookies akzeptiert",
+      "opened": "Cookie-Einstellungen geöffnet",
+      "closed": "Cookie-Einstellungen geschlossen"
+    },
+    "actions": {
+      "expand": "Footer erweitern",
+      "minimize": "Footer minimiert",
+      "expanded": "Footer erweitert"
     }
   },
   "projects": {
@@ -63,6 +103,68 @@
       "fullscreen": "Vollbild",
       "close": "Schließen"
     }
+  },
+  "gallery": {
+    "title": "Premium Fotogalerie",
+    "subtitle": "Professionelle Fotografie in höchster Qualität",
+    "search_placeholder": "Suche nach Titel, Tags oder Orten...",
+    "found": "{{count}} Foto gefunden",
+    "found_plural": "{{count}} Fotos gefunden",
+    "loading": {
+      "init": "Initialisiere Galerie...",
+      "images": "Lade Bilder...",
+      "prepare": "Bereite Ansicht vor...",
+      "almost": "Fast fertig...",
+      "ready": "Galerie bereit!",
+      "error": "Fehler beim Laden"
+    },
+    "sort": {
+      "label": "Sortierung auswählen",
+      "latest": "Neueste",
+      "title": "Titel",
+      "popular": "Beliebt"
+    },
+    "categories": {
+      "all": "Alle",
+      "nature": "Natur",
+      "urban": "Urban",
+      "travel": "Reisen",
+      "landscape": "Landschaft"
+    },
+    "details": {
+      "title": "Foto-Details",
+      "camera": "Kamera",
+      "aperture": "Blende",
+      "iso": "ISO",
+      "location": "Ort",
+      "date": "Datum",
+      "tags": "Tags"
+    },
+    "actions": {
+      "toggle_info": "Foto-Details umschalten",
+      "toggle_slideshow": "Diashow umschalten",
+      "close": "Schließen",
+      "prev": "Vorheriges Bild",
+      "next": "Nächstes Bild",
+      "zoom_out": "Herauszoomen",
+      "zoom_in": "Hineinzoomen",
+      "share": "Teilen",
+      "download": "Herunterladen",
+      "favorite_add": "Zu Favoriten hinzufügen",
+      "favorite_remove": "Von Favoriten entfernen"
+    }
+  },
+  "videos": {
+    "local_mode": "Lokaler Modus",
+    "loading": "Lade Videos...",
+    "connecting": "Verbinde mit YouTube...",
+    "not_found": "Keine Videos gefunden",
+    "processing": "Verarbeite {{count}} Videos...",
+    "ready": "Videos bereit!",
+    "error": "Fehler beim Laden der Videos",
+    "open_youtube": "Auf YouTube öffnen",
+    "open_page": "Seite öffnen",
+    "open_landing": "Öffne Landing-Page für dieses Video"
   },
   "blog": {
     "headline": "Wissen & Einblicke",
