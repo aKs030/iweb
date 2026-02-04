@@ -29,7 +29,7 @@ export default defineConfig({
 
   // Optimizations for dev
   optimizeDeps: {
-    include: ['react', 'react-dom', 'three', 'dompurify'],
+    include: ['react', 'react-dom', 'three', 'dompurify', 'htm'],
   },
 
   // Resolve extensions
