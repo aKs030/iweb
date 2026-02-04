@@ -18,7 +18,7 @@ import { ROBOT_EVENTS, ROBOT_ACTIONS } from './constants/events.js';
 import { RobotDOMBuilder } from './dom/RobotDOMBuilder.js';
 
 // Services
-import { GeminiService } from './gemini-service.js';
+import { AIService } from './ai-service.js';
 
 // Modules
 import { RobotAnimation } from './modules/robot-animation.js';
@@ -42,7 +42,7 @@ export {
   ROBOT_EVENTS,
   ROBOT_ACTIONS,
   RobotDOMBuilder,
-  GeminiService,
+  AIService,
   RobotAnimation,
   RobotChat,
   RobotCollision,
@@ -106,7 +106,7 @@ export default {
   RobotDOMBuilder,
 
   // Services
-  GeminiService,
+  AIService,
 
   // Modules
   RobotAnimation,
