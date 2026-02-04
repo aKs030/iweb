@@ -259,22 +259,19 @@ export function lazyLoadImages(target, options = {}) {
 
           log.debug(`Image loaded: ${img.src}`);
         } catch (error) {
-          // Only log error if we have a valid src and it's not a YouTube thumbnail 503
+          // Only log error if we have a valid src and it's not a YouTube thumbnail issue
           const isYouTubeThumbnail = img.src && img.src.includes('ytimg.com');
-          const is503Error =
-            error?.message?.includes('503') ||
-            img.src?.includes('hqdefault.jpg');
+          const hasValidSrc =
+            img.src && img.src !== 'undefined' && img.src !== '';
 
-          if (
-            img.src &&
-            img.src !== 'undefined' &&
-            !(isYouTubeThumbnail && is503Error)
-          ) {
-            log.error('Failed to load image:', error);
-          } else if (isYouTubeThumbnail && is503Error) {
+          if (isYouTubeThumbnail) {
+            // YouTube thumbnails have their own fallback handling, just debug log
             log.debug(
-              'YouTube thumbnail temporarily unavailable (503), fallback should handle this',
+              'YouTube thumbnail load failed, fallback handler will retry',
             );
+          } else if (hasValidSrc && error) {
+            // Only log real errors with actual error objects
+            log.error('Failed to load image:', error);
           }
 
           img.dataset.loaded = 'error';
