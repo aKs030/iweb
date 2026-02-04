@@ -7,6 +7,7 @@
 /* global React, ReactDOM */
 import { createLogger } from '/content/core/logger.js';
 import { updateLoader, hideLoader } from '/content/core/global-loader.js';
+import { createUseTranslation } from '/content/core/react-utils.js';
 import {
   Heart,
   X_Icon,
@@ -44,6 +45,7 @@ const useDebounce = (value, delay) => {
 };
 
 const PhotoGallery = () => {
+  const { t, lang } = createUseTranslation(React)();
   const [selectedImage, setSelectedImage] = useState(null);
   const [filter, setFilter] = useState('all');
   const [zoom, setZoom] = useState(1);
@@ -60,33 +62,33 @@ const PhotoGallery = () => {
   useEffect(() => {
     const initGallery = async () => {
       try {
-        updateLoader(0.1, 'Initialisiere Galerie...');
+        updateLoader(0.1, t('gallery.loading.init'));
 
         // Simulate initialization steps
         await new Promise((resolve) => setTimeout(resolve, 100));
-        updateLoader(0.3, 'Lade Bilder...');
+        updateLoader(0.3, t('gallery.loading.images'));
 
         await new Promise((resolve) => setTimeout(resolve, 100));
-        updateLoader(0.6, 'Bereite Ansicht vor...');
+        updateLoader(0.6, t('gallery.loading.prepare'));
 
         await new Promise((resolve) => setTimeout(resolve, 100));
-        updateLoader(0.9, 'Fast fertig...');
+        updateLoader(0.9, t('gallery.loading.almost'));
 
         setTimeout(() => {
-          updateLoader(1, 'Galerie bereit!');
+          updateLoader(1, t('gallery.loading.ready'));
           hideLoader(100);
         }, 100);
 
         log.info('Gallery initialized successfully');
       } catch (error) {
         log.error('Gallery initialization failed:', error);
-        updateLoader(1, 'Fehler beim Laden');
+        updateLoader(1, t('gallery.loading.error'));
         hideLoader(500);
       }
     };
 
     initGallery();
-  }, []);
+  }, [t]); // Re-run messages if language changes during init (rare but safe)
 
   const photos = [
     {
@@ -431,12 +433,12 @@ const PhotoGallery = () => {
             className:
               'text-5xl sm:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 mb-3',
           },
-          'Premium Fotogalerie',
+          t('gallery.title'),
         ),
         React.createElement(
           'p',
           { className: 'text-indigo-200 text-lg' },
-          'Professionelle Fotografie in höchster Qualität',
+          t('gallery.subtitle'),
         ),
       ),
       React.createElement(
@@ -452,7 +454,7 @@ const PhotoGallery = () => {
           }),
           React.createElement('input', {
             type: 'text',
-            placeholder: 'Suche nach Titel, Tags oder Orten...',
+            placeholder: t('gallery.search_placeholder'),
             value: searchQuery,
             onChange: (e) => setSearchQuery(e.target.value),
             className:
@@ -482,7 +484,7 @@ const PhotoGallery = () => {
                     : 'bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm border border-white/10'
                 }`,
               },
-              cat.charAt(0).toUpperCase() + cat.slice(1),
+              t('gallery.categories.' + cat),
             ),
           ),
         ),
@@ -494,24 +496,24 @@ const PhotoGallery = () => {
             {
               value: sortBy,
               onChange: (e) => setSortBy(e.target.value),
-              'aria-label': 'Sortierung auswählen',
+              'aria-label': t('gallery.sort.label'),
               className:
                 'px-4 py-2.5 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-purple-500',
             },
             React.createElement(
               'option',
               { value: 'date', className: 'bg-slate-900' },
-              'Neueste',
+              t('gallery.sort.latest'),
             ),
             React.createElement(
               'option',
               { value: 'title', className: 'bg-slate-900' },
-              'Titel',
+              t('gallery.sort.title'),
             ),
             React.createElement(
               'option',
               { value: 'popular', className: 'bg-slate-900' },
-              'Beliebt',
+              t('gallery.sort.popular'),
             ),
           ),
           React.createElement(
@@ -554,9 +556,12 @@ const PhotoGallery = () => {
       React.createElement(
         'div',
         { className: 'text-center text-indigo-300 mb-6' },
-        `${filteredPhotos.length} ${
-          filteredPhotos.length === 1 ? 'Foto' : 'Fotos'
-        } gefunden`,
+        t(
+          filteredPhotos.length === 1
+            ? 'gallery.found'
+            : 'gallery.found_plural',
+          { count: filteredPhotos.length },
+        ),
       ),
     ),
     React.createElement(
@@ -635,9 +640,11 @@ const PhotoGallery = () => {
                 'button',
                 {
                   onClick: (e) => toggleFavorite(photo.id, e),
-                  'aria-label': favorites.includes(photo.id)
-                    ? 'Von Favoriten entfernen'
-                    : 'Zu Favoriten hinzufügen',
+                  'aria-label': t(
+                    favorites.includes(photo.id)
+                      ? 'gallery.actions.favorite_remove'
+                      : 'gallery.actions.favorite_add',
+                  ),
                   'aria-pressed': favorites.includes(photo.id),
                   className:
                     'p-2 bg-white/20 backdrop-blur-md rounded-full hover:bg-white/30 transition-all',
@@ -739,7 +746,7 @@ const PhotoGallery = () => {
                 { className: 'text-indigo-300' },
                 `${selectedImage.location} • ${new Date(
                   selectedImage.date,
-                ).toLocaleDateString('de-DE')}`,
+                ).toLocaleDateString(lang === 'de' ? 'de-DE' : 'en-US')}`,
               ),
             ),
             React.createElement(
@@ -752,9 +759,7 @@ const PhotoGallery = () => {
                     e.stopPropagation();
                     setShowInfo(!showInfo);
                   },
-                  'aria-label': showInfo
-                    ? 'Foto-Details ausblenden'
-                    : 'Foto-Details anzeigen',
+                  'aria-label': t('gallery.actions.toggle_info'),
                   'aria-pressed': showInfo,
                   className: `p-3 rounded-xl transition-all backdrop-blur-md ${
                     showInfo ? 'bg-purple-500' : 'bg-white/10 hover:bg-white/20'
@@ -769,9 +774,7 @@ const PhotoGallery = () => {
                     e.stopPropagation();
                     setIsSlideshow(!isSlideshow);
                   },
-                  'aria-label': isSlideshow
-                    ? 'Diashow pausieren'
-                    : 'Diashow starten',
+                  'aria-label': t('gallery.actions.toggle_slideshow'),
                   'aria-pressed': isSlideshow,
                   className: `p-3 rounded-xl transition-all backdrop-blur-md ${
                     isSlideshow
@@ -793,7 +796,7 @@ const PhotoGallery = () => {
                     setZoom(1);
                     setIsSlideshow(false);
                   },
-                  'aria-label': 'Lightbox schließen',
+                  'aria-label': t('gallery.actions.close'),
                   className:
                     'p-3 bg-white/10 hover:bg-white/20 rounded-xl transition-all backdrop-blur-md',
                 },
@@ -812,7 +815,7 @@ const PhotoGallery = () => {
             React.createElement(
               'h3',
               { className: 'text-white font-bold text-lg mb-4' },
-              'Foto-Details',
+              t('gallery.details.title'),
             ),
             React.createElement(
               'div',
@@ -823,7 +826,7 @@ const PhotoGallery = () => {
                 React.createElement(
                   'span',
                   { className: 'text-indigo-300' },
-                  'Kamera:',
+                  t('gallery.details.camera') + ':',
                 ),
                 React.createElement(
                   'span',
@@ -837,7 +840,7 @@ const PhotoGallery = () => {
                 React.createElement(
                   'span',
                   { className: 'text-indigo-300' },
-                  'Blende:',
+                  t('gallery.details.aperture') + ':',
                 ),
                 React.createElement(
                   'span',
@@ -851,7 +854,7 @@ const PhotoGallery = () => {
                 React.createElement(
                   'span',
                   { className: 'text-indigo-300' },
-                  'ISO:',
+                  t('gallery.details.iso') + ':',
                 ),
                 React.createElement(
                   'span',
@@ -865,7 +868,7 @@ const PhotoGallery = () => {
                 React.createElement(
                   'span',
                   { className: 'text-indigo-300' },
-                  'Ort:',
+                  t('gallery.details.location') + ':',
                 ),
                 React.createElement(
                   'span',
@@ -879,12 +882,14 @@ const PhotoGallery = () => {
                 React.createElement(
                   'span',
                   { className: 'text-indigo-300' },
-                  'Datum:',
+                  t('gallery.details.date') + ':',
                 ),
                 React.createElement(
                   'span',
                   { className: 'text-white font-medium' },
-                  new Date(selectedImage.date).toLocaleDateString('de-DE'),
+                  new Date(selectedImage.date).toLocaleDateString(
+                    lang === 'de' ? 'de-DE' : 'en-US',
+                  ),
                 ),
               ),
               React.createElement(
@@ -893,7 +898,7 @@ const PhotoGallery = () => {
                 React.createElement(
                   'span',
                   { className: 'text-indigo-300 block mb-2' },
-                  'Tags:',
+                  t('gallery.details.tags') + ':',
                 ),
                 React.createElement(
                   'div',
@@ -920,7 +925,7 @@ const PhotoGallery = () => {
               e.stopPropagation();
               navigateImage(-1);
             },
-            'aria-label': 'Vorheriges Bild',
+            'aria-label': t('gallery.actions.prev'),
             className:
               'absolute left-6 top-1/2 -translate-y-1/2 p-4 bg-white/10 hover:bg-white/20 rounded-full transition-all backdrop-blur-md z-10 group',
           },
@@ -936,7 +941,7 @@ const PhotoGallery = () => {
               e.stopPropagation();
               navigateImage(1);
             },
-            'aria-label': 'Nächstes Bild',
+            'aria-label': t('gallery.actions.next'),
             className:
               'absolute right-6 top-1/2 -translate-y-1/2 p-4 bg-white/10 hover:bg-white/20 rounded-full transition-all backdrop-blur-md z-10 group',
           },
@@ -958,7 +963,7 @@ const PhotoGallery = () => {
                 e.stopPropagation();
                 handleZoom(-0.25);
               },
-              'aria-label': 'Herauszoomen',
+              'aria-label': t('gallery.actions.zoom_out'),
               className: 'p-3 hover:bg-white/10 rounded-xl transition-all',
             },
             ZoomOut({ size: 20, className: 'text-white' }),
@@ -978,7 +983,7 @@ const PhotoGallery = () => {
                 e.stopPropagation();
                 handleZoom(0.25);
               },
-              'aria-label': 'Hineinzoomen',
+              'aria-label': t('gallery.actions.zoom_in'),
               className: 'p-3 hover:bg-white/10 rounded-xl transition-all',
             },
             ZoomIn({ size: 20, className: 'text-white' }),
@@ -991,9 +996,11 @@ const PhotoGallery = () => {
                 e.stopPropagation();
                 toggleFavorite(selectedImage.id, e);
               },
-              'aria-label': favorites.includes(selectedImage.id)
-                ? 'Von Favoriten entfernen'
-                : 'Zu Favoriten hinzufügen',
+              'aria-label': t(
+                favorites.includes(selectedImage.id)
+                  ? 'gallery.actions.favorite_remove'
+                  : 'gallery.actions.favorite_add',
+              ),
               'aria-pressed': favorites.includes(selectedImage.id),
               className: 'p-3 hover:bg-white/10 rounded-xl transition-all',
             },
@@ -1013,7 +1020,7 @@ const PhotoGallery = () => {
                 e.stopPropagation();
                 handleShare();
               },
-              'aria-label': 'Foto teilen',
+              'aria-label': t('gallery.actions.share'),
               className: 'p-3 hover:bg-white/10 rounded-xl transition-all',
             },
             Share2({ size: 20, className: 'text-white' }),
@@ -1025,7 +1032,7 @@ const PhotoGallery = () => {
                 e.stopPropagation();
                 handleDownload();
               },
-              'aria-label': 'Foto herunterladen',
+              'aria-label': t('gallery.actions.download'),
               className: 'p-3 hover:bg-white/10 rounded-xl transition-all',
             },
             Download({ size: 20, className: 'text-white' }),
