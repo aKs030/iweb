@@ -213,13 +213,18 @@ export class RobotCompanion {
       const footer = this.dom.footer;
       if (!footer) return;
 
-      this.dom.container.style.bottom = '';
-      const rect = this.dom.container.getBoundingClientRect();
+      // OPTIMIZATION: Avoid resetting bottom to '' before reading rect to prevent layout thrashing.
+      // Assumes default CSS bottom is 30px.
+      const defaultBottom = 30;
+      const viewportBottom = window.innerHeight;
+      const robotBottom = viewportBottom - defaultBottom;
       const fRect = footer.getBoundingClientRect();
-      const overlap = Math.max(0, rect.bottom - fRect.top);
+      const overlap = robotBottom - fRect.top;
 
       if (overlap > 0) {
-        this.dom.container.style.bottom = `${30 + overlap}px`;
+        this.dom.container.style.bottom = `${defaultBottom + overlap}px`;
+      } else if (this.dom.container.style.bottom) {
+        this.dom.container.style.bottom = '';
       }
 
       if (!this.chatModule.isOpen) {
