@@ -154,14 +154,50 @@ const renderVideoCard = async (grid, it, detailsMap, index = 0) => {
     : thumb;
   thumbBtn.dataset.thumb = optimizedThumb;
 
-  // Lazy loading für Thumbnails
+  // Lazy loading für Thumbnails mit Fehlerbehandlung
   const thumbImg = document.createElement('img');
-  thumbImg.src = optimizedThumb;
   thumbImg.alt = `Thumbnail: ${title}`;
   thumbImg.loading = index < 4 ? 'eager' : 'lazy';
   thumbImg.decoding = 'async';
   thumbImg.style.cssText =
     'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;';
+
+  // Fallback-Kette für Thumbnails
+  const tryLoadThumbnail = async () => {
+    const fallbacks = [
+      optimizedThumb,
+      thumb, // Original URL
+      `https://i.ytimg.com/vi/${vid}/mqdefault.jpg`, // Medium quality
+      `https://i.ytimg.com/vi/${vid}/default.jpg`, // Low quality
+    ];
+
+    for (const url of fallbacks) {
+      try {
+        const response = await fetch(url, { method: 'HEAD' });
+        if (response.ok) {
+          thumbImg.src = url;
+          return;
+        }
+      } catch {
+        // Try next fallback
+      }
+    }
+
+    // Alle Fallbacks fehlgeschlagen - verwende Platzhalter
+    thumbImg.style.backgroundColor = '#1a1a1a';
+    thumbImg.alt = `Video: ${title}`;
+  };
+
+  // Fehlerbehandlung für Thumbnail-Laden
+  thumbImg.onerror = () => {
+    log.warn(`Failed to load thumbnail for video ${vid}, trying fallback`);
+    tryLoadThumbnail().catch(() => {
+      thumbImg.style.backgroundColor = '#1a1a1a';
+    });
+  };
+
+  // Initiales Laden
+  thumbImg.src = optimizedThumb;
 
   thumbBtn.innerHTML =
     '<span class="play-button" aria-hidden="true"><svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><polygon points="70,55 70,145 145,100"/></svg></span>';
