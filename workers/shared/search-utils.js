@@ -2,6 +2,10 @@
  * Shared Search Utilities
  * Reusable full-text search with relevance scoring
  */
+import { SearchEngine } from './search-engine.js';
+
+let cachedEngine = null;
+let lastIndexRef = null;
 
 /**
  * Performs full-text search on the index with relevance scoring
@@ -12,53 +16,16 @@
  * @returns {Array} Sorted search results
  */
 export function performSearch(query, topK, searchIndex, includeScore = false) {
-  const q = String(query || '')
-    .toLowerCase()
-    .trim();
-  if (!q) return [];
+  // Check if we need to (re)build the index
+  if (searchIndex !== lastIndexRef) {
+    cachedEngine = new SearchEngine(searchIndex);
+    lastIndexRef = searchIndex;
+  }
 
-  const words = q.split(/\s+/).filter(Boolean);
-
-  const results = searchIndex.map((item) => {
-    let score = item.priority || 0;
-    const title = (item.title || '').toLowerCase();
-    const desc = (item.description || '').toLowerCase();
-
-    // Exact title match - highest priority
-    if (title === q) score += 1000;
-    else if (title.startsWith(q)) score += 500;
-    else if (title.includes(q)) score += 200;
-
-    // Description match
-    if (desc.includes(q)) score += 100;
-
-    // Keyword matching
-    (item.keywords || []).forEach((k) => {
-      const kl = (k || '').toLowerCase();
-      if (kl === q) score += 150;
-      else if (kl.startsWith(q)) score += 80;
-      else if (kl.includes(q)) score += 40;
-    });
-
-    // Multi-word matching
-    words.forEach((w) => {
-      if (title.includes(w)) score += 30;
-      if (desc.includes(w)) score += 15;
-      (item.keywords || []).forEach((k) => {
-        if ((k || '').toLowerCase().includes(w)) score += 20;
-      });
-    });
-
-    return { ...item, score };
-  });
-
-  const filtered = results
-    .filter((r) => r.score > 0)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, topK);
+  const results = cachedEngine.search(query, topK);
 
   // Return with or without score
-  return filtered.map((r) => {
+  return results.map((r) => {
     const result = {
       id: r.id,
       title: r.title,
