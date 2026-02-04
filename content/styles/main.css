@@ -1,5 +1,8 @@
 /* ===== OPTIMIZED INDEX.CSS v3.1 ===== */
 
+/* Import Animations */
+@import './animations.css';
+
 /* Import Components (with nesting) */
 @import './components/card.css';
 @import './components/image-loading.css';
