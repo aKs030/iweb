@@ -447,27 +447,65 @@ const BlogApp = () => {
     })();
   }, []);
 
+  // SEO & Routing Logic
   React.useEffect(() => {
-    const handleRoute = () => {
+    const checkRoute = () => {
+      const path = window.location.pathname;
       const hash = window.location.hash;
+
+      // Handle clean URLs: /blog/post-id/
+      if (path.startsWith('/blog/') && path.length > 6) {
+        const id = path.replace(/\/$/, '').split('/').pop();
+        if (id && id !== 'index.html') {
+          setCurrentPostId(id);
+          return;
+        }
+      }
+
+      // Handle legacy hash URLs
       if (hash.startsWith('#/blog/')) {
         setCurrentPostId(hash.replace('#/blog/', ''));
-        window.scrollTo(0, 0);
-      } else {
+      } else if (
+        !path.startsWith('/blog/') ||
+        path === '/blog/' ||
+        path === '/blog/index.html'
+      ) {
         setCurrentPostId(null);
       }
     };
+
     const handleKey = (e) => {
-      if (e.key === 'Escape' && currentPostId) window.location.hash = '#/blog/';
+      if (e.key === 'Escape' && currentPostId) {
+        handleBack();
+      }
     };
-    window.addEventListener('hashchange', handleRoute);
+
+    window.addEventListener('popstate', checkRoute);
+    window.addEventListener('hashchange', checkRoute);
     window.addEventListener('keydown', handleKey);
-    if (window.location.hash) handleRoute();
+
+    // Initial check
+    checkRoute();
+
     return () => {
-      window.removeEventListener('hashchange', handleRoute);
+      window.removeEventListener('popstate', checkRoute);
+      window.removeEventListener('hashchange', checkRoute);
       window.removeEventListener('keydown', handleKey);
     };
   }, [currentPostId]);
+
+  const handleBack = () => {
+    window.history.pushState(null, '', '/blog/');
+    setCurrentPostId(null);
+    window.scrollTo(0, 0);
+  };
+
+  const handlePostClick = (e, postId) => {
+    e.preventDefault();
+    window.history.pushState(null, '', `/blog/${postId}/`);
+    setCurrentPostId(postId);
+    window.scrollTo(0, 0);
+  };
 
   const categories = React.useMemo(
     () => ['All', ...new Set(posts.map((p) => p.category).filter(Boolean))],
@@ -500,74 +538,38 @@ const BlogApp = () => {
     [activePost],
   );
 
-  // --- Article Detail View ---
-  if (currentPostId) {
-    const post = activePost;
-
-    if (!post && !loading)
-      return html`
-        <div className="container-blog pt-24 fade-in">
-          <p>${t('blog.not_found')}</p>
-          <button
-            className="btn-back"
-            onClick=${() => (window.location.hash = '')}
-          >
-            ← ${t('blog.back')}
-          </button>
-        </div>
-      `;
-
-    if (!post)
-      return html`<div className="container-blog pt-24">
-        <div style="color:#666">${t('common.loading')}</div>
-      </div>`;
-
-    const cleanHtml = activePostHtml;
-
-    return html`
-      <${React.Fragment}>
-        <${ReadingProgress} />
-        <${ScrollToTop} />
-        
-        <div className="container-blog pt-24 fade-in">
-          <button className="btn-back" onClick=${() =>
-            (window.location.hash = '')}>← ${t('blog.back')} (ESC)</button>
-          
-          <article className="blog-article">
-            <header>
-              <div className="card-meta">
-                <span className="card-category">${post.category}</span>
-                <span className="card-read-time"><${Clock}/> ${
-                  post.readTime
-                }</span>
-              </div>
-              <h1>${post.title}</h1>
-              <time className="meta" datetime=${post.date}>${post.dateDisplay}</time>
-            </header>
-
-            ${
-              post.image &&
-              html`
-                <figure className="article-hero">
-                  <${ProgressiveImage}
-                    src=${post.image}
-                    alt=${post.title}
-                    className="article-hero-img"
-                    loading="eager"
-                    fetchpriority="high"
-                  />
-                </figure>
-              `
-            }
-
-            <div className="article-body" dangerouslySetInnerHTML=${{
-              __html: cleanHtml,
-            }}></div>
-          </article>
-        </div>
-      </${React.Fragment}>
-    `;
-  }
+  // Inject JSON-LD for SEO
+  React.useEffect(() => {
+    if (activePost) {
+      document.title = `${activePost.title} — Abdulkerim Sesli`;
+      const script = document.createElement('script');
+      script.type = 'application/ld+json';
+      script.textContent = JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'BlogPosting',
+        headline: activePost.title,
+        image: activePost.image
+          ? [`https://www.abdulkerimsesli.de${activePost.image}`]
+          : [],
+        datePublished: activePost.date,
+        dateModified: activePost.date,
+        author: [
+          {
+            '@type': 'Person',
+            name: 'Abdulkerim Sesli',
+            url: 'https://www.abdulkerimsesli.de/',
+          },
+        ],
+      });
+      document.head.appendChild(script);
+      return () => {
+        if (document.head.contains(script)) {
+          document.head.removeChild(script);
+        }
+        document.title = 'Blog — Abdulkerim Sesli';
+      };
+    }
+  }, [activePost]);
 
   // Check if we should show filters in menu (mobile)
   const [showFiltersInMenu, setShowFiltersInMenu] = React.useState(false);
@@ -682,6 +684,78 @@ const BlogApp = () => {
     };
   }, [showFiltersInMenu, categories, filter]);
 
+  // --- Article Detail View ---
+  if (currentPostId) {
+    const post = activePost;
+
+    if (!post && !loading)
+      return html`
+        <div className="container-blog pt-24 fade-in">
+          <p>${t('blog.not_found')}</p>
+          <button
+            className="btn-back"
+            onClick=${handleBack}
+          >
+            ← ${t('blog.back')}
+          </button>
+        </div>
+      `;
+
+    if (!post)
+      return html`<div className="container-blog pt-24">
+        <div style="color:#666">${t('common.loading')}</div>
+      </div>`;
+
+    const cleanHtml = activePostHtml;
+
+    return html`
+      <${React.Fragment}>
+        <${ReadingProgress} />
+        <${ScrollToTop} />
+
+        <div className="container-blog pt-24 fade-in">
+          <button className="btn-back" onClick=${handleBack}>← ${t(
+        'blog.back',
+      )} (ESC)</button>
+
+          <article className="blog-article">
+            <header>
+              <div className="card-meta">
+                <span className="card-category">${post.category}</span>
+                <span className="card-read-time"><${Clock}/> ${
+        post.readTime
+      }</span>
+              </div>
+              <h1>${post.title}</h1>
+              <time className="meta" datetime=${post.date}>${
+        post.dateDisplay
+      }</time>
+            </header>
+
+            ${
+              post.image &&
+              html`
+                <figure className="article-hero">
+                  <${ProgressiveImage}
+                    src=${post.image}
+                    alt=${post.title}
+                    className="article-hero-img"
+                    loading="eager"
+                    fetchpriority="high"
+                  />
+                </figure>
+              `
+            }
+
+            <div className="article-body" dangerouslySetInnerHTML=${{
+              __html: cleanHtml,
+            }}></div>
+          </article>
+        </div>
+      </${React.Fragment}>
+    `;
+  }
+
   // --- List View ---
   return html`
     <${React.Fragment}>
@@ -726,7 +800,7 @@ const BlogApp = () => {
               <article
                 key=${post.id}
                 className="blog-card"
-                onClick=${() => (window.location.hash = `/blog/${post.id}`)}
+                onClick=${(e) => handlePostClick(e, post.id)}
               >
                 ${post.image
                   ? html`<${ProgressiveImage}

@@ -321,6 +321,45 @@ const loadLatestVideos = async () => {
     updateLoader(0.3, i18n.t('videos.connecting'));
     const { items, detailsMap } = await loadFromApi(handle);
 
+    // Check for deep link /videos/VIDEO_ID
+    const path = window.location.pathname;
+    let targetVideoId = null;
+    if (path.startsWith('/videos/') && path.length > 8) {
+      const possibleId = path.replace(/^\/videos\//, '').replace(/\/$/, '');
+      if (possibleId && possibleId !== 'index.html') {
+        targetVideoId = possibleId;
+      }
+    }
+
+    // Ensure deep-linked video is in the list
+    if (targetVideoId) {
+      const exists = items.some(
+        (it) => it.snippet?.resourceId?.videoId === targetVideoId,
+      );
+      if (!exists) {
+        try {
+          const extraMap = await fetchVideoDetailsMap([targetVideoId]);
+          const detail = extraMap[targetVideoId];
+          if (detail && detail.snippet) {
+            // Create fake playlist item
+            const fakeItem = {
+              snippet: {
+                resourceId: { videoId: targetVideoId },
+                title: detail.snippet.title,
+                description: detail.snippet.description,
+                thumbnails: detail.snippet.thumbnails,
+                publishedAt: detail.snippet.publishedAt,
+              },
+            };
+            items.unshift(fakeItem);
+            detailsMap[targetVideoId] = detail;
+          }
+        } catch (e) {
+          log.warn('Could not fetch deep-linked video', e);
+        }
+      }
+    }
+
     if (!items.length) {
       log.warn('Keine Videos gefunden');
       showInfoMessage(
@@ -339,9 +378,26 @@ const loadLatestVideos = async () => {
     const batchSize = 5;
     for (let i = 0; i < items.length; i += batchSize) {
       const batch = items.slice(i, i + batchSize);
-      batch.forEach((it, idx) =>
-        renderVideoCard(grid, it, detailsMap, i + idx),
-      );
+      batch.forEach((it, idx) => {
+        renderVideoCard(grid, it, detailsMap, i + idx);
+
+        // Auto-play deep-linked video
+        if (
+          targetVideoId &&
+          it.snippet?.resourceId?.videoId === targetVideoId
+        ) {
+          setTimeout(() => {
+            const btn = grid.querySelector(
+              `button[data-video-id="${targetVideoId}"]`,
+            );
+            if (btn) {
+              activateThumb(btn);
+              btn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              document.title = `${it.snippet.title} — Videos`;
+            }
+          }, 800);
+        }
+      });
 
       const progress = 0.6 + ((i + batchSize) / items.length) * 0.3;
       updateLoader(
