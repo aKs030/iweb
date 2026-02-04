@@ -1,151 +1,298 @@
-# Robot Companion Component
+# Robot Companion
 
-Modern AI robot companion with Web Component architecture.
+Ein interaktiver KI-Roboter-Begleiter für die Website mit Chat-Funktionalität, Animationen und Spielen.
 
-## New Features (v2.2.0)
+## ✨ Features
 
-### 🎯 Scroll-Position-Based Hints
+- 🤖 **Interaktiver Chat** - KI-gestützte Konversation mit Gemini API
+- 🎨 **Animationen** - Flüssige SVG-Animationen und Bewegungen
+- 🎮 **Mini-Games** - Tic-Tac-Toe, Trivia Quiz, Zahlenraten
+- 📊 **Analytics** - Session-Tracking und Interaktions-Statistiken
+- 🌙 **Mood System** - Zeitbasierte Stimmungen und Grüße
+- 🎯 **Context-Aware** - Reagiert auf verschiedene Seitenbereiche
+- ♿ **Accessibility** - ARIA-Labels und Screen-Reader Support
+- 🔒 **Security** - XSS-sicher durch DOM Builder
 
-- **Smart Element Detection**: Automatically detects interesting elements in viewport
-- **Context-Aware Highlighting**: Different elements highlighted based on page section
-- **Visual Feedback**: Glowing border animation on highlighted elements
-- **Intelligent Timing**: Only highlights elements near viewport center
-- **No Spam**: Maximum 3 highlights, each element highlighted only once per session
+## 🏗️ Architektur
 
-### 🎭 Extended Animations
+### Moderne Architektur (Post-Migration)
 
-- **Excitement**: Jumping with particle burst (for cool discoveries)
-- **Surprise**: Jump back with wide eyes (for unexpected content)
-- **Point**: Points at specific elements with body rotation
-- **Dance**: Celebration animation with multiple moves
-- **Sad**: Head down animation (for errors or sad moments)
-- **Confused**: Head tilt with thinking bubble
-
-### 🎯 Streaming AI Responses (v2.1.0)
-
-- **Typewriter Effect**: AI responses now stream in word-by-word for a more natural feel
-- **Visual Cursor**: Animated cursor during streaming shows the robot is "typing"
-- **Smooth Experience**: Variable delays create natural reading rhythm
-
-### 🤖 Proactive Context-Based Tips (v2.1.0)
-
-- **Smart Context Detection**: Robot recognizes which page section you're viewing
-- **Time-Based Tips**: Shows helpful tips after 20+ seconds on a page
-- **Context-Specific Advice**: Different tips for projects, gallery, hero, about, and footer sections
-- **Advanced Tips**: After 60+ seconds, shows more detailed technical tips
-- **No Repetition**: Each tip is shown only once per session
-
-### 🔍 Frustration Detection (v2.1.0)
-
-- **Scroll Pattern Analysis**: Detects rapid back-and-forth scrolling
-- **Proactive Help**: Offers assistance when user seems to be searching for something
-- **Smart Timing**: Only triggers after 5+ direction changes to avoid false positives
-
-## Architecture
-
-### Core Files
-
-- **robot-companion.js** - Main RobotCompanion class (business logic)
-- **robot-companion-web-component.js** - Web Component wrapper
-- **robot-companion-texts.js** - Localized text content
-- **robot-companion.css** - Component styles
-
-### Modules
-
-- **modules/robot-animation.js** - Animation controller
-- **modules/robot-chat.js** - Chat interface logic
-- **modules/robot-collision.js** - Collision detection
-- **modules/robot-intelligence.js** - AI intelligence layer
-
-### Services
-
-- **gemini-service.js** - Google Gemini AI integration
-- **robot-games.js** - Mini-games functionality
-
-## Usage
-
-### As Web Component (Recommended)
-
-```javascript
-import './robot-companion-web-component.js';
-
-// Use in HTML
-<robot-companion></robot-companion>;
-
-// Access programmatically
-const robotEl = document.querySelector('robot-companion');
-const robot = robotEl.getRobot();
-robot.toggleChat(true);
+```
+robot-companion/
+├── constants/
+│   └── events.js              # Event & Action Constants
+├── state/
+│   └── RobotStateManager.js   # Zentrales State Management
+├── dom/
+│   └── RobotDOMBuilder.js     # XSS-sichere DOM-Erstellung
+├── modules/
+│   ├── robot-animation.js     # Animationen
+│   ├── robot-chat.js          # Chat-Logik
+│   ├── robot-collision.js     # Kollisionserkennung
+│   ├── robot-intelligence.js  # KI-Integration
+│   ├── robot-persona.js       # Persönlichkeit
+│   └── markdown-renderer.js   # Markdown-Parsing
+├── robot-companion.js         # Hauptkomponente
+├── robot-companion.css        # Styling
+├── robot-games.js             # Spiele-Logik
+├── gemini-service.js          # Gemini API Service
+└── index.js                   # Exports
 ```
 
-### As Class Instance (Legacy)
+## 🚀 Verwendung
+
+### Basic Setup
 
 ```javascript
 import { RobotCompanion } from './robot-companion.js';
 
+// Automatische Initialisierung beim DOMContentLoaded
+// Oder manuell:
 const robot = new RobotCompanion();
 await robot.initialize();
 ```
 
-## Type Safety
+### Mit Web Component
 
-All components use JSDoc with `@ts-check` for type safety:
+```html
+<robot-companion></robot-companion>
+
+<script type="module">
+  import './robot-companion-web-component.js';
+</script>
+```
+
+### Event Handling
 
 ```javascript
-/**
- * @param {import('/content/core/types.js').PageContext} context
- */
-trackSectionVisit(context) { ... }
+import { ROBOT_EVENTS } from './constants/events.js';
+
+// State Changes abonnieren
+document.addEventListener(ROBOT_EVENTS.CHAT_OPENED, (event) => {
+  console.log('Chat opened:', event.detail);
+});
+
+document.addEventListener(ROBOT_EVENTS.STATE_CHANGED, (event) => {
+  console.log('State changed:', event.detail.changes);
+});
 ```
 
-## Events
-
-- `robot:loaded` - Fired when robot is initialized
-- `robot:error` - Fired on initialization error
-
-## API
-
-### Methods
-
-- `toggleChat(force?: boolean)` - Toggle chat window
-- `showBubble(text: string)` - Show bubble message
-- `getStats()` - Get analytics stats
-
-### Animation Methods (New in v2.2.0)
+### State Management
 
 ```javascript
-const robot = document.querySelector('robot-companion').getRobot();
+// State abrufen
+const state = robot.stateManager.getState();
+console.log(state.isChatOpen);
+console.log(state.mood);
+console.log(state.analytics);
 
-// Play different animations
-await robot.animationModule.playExcitementAnimation();
-await robot.animationModule.playSurpriseAnimation();
-await robot.animationModule.playDanceAnimation();
-await robot.animationModule.playSadAnimation();
-await robot.animationModule.playConfusedAnimation();
+// State ändern
+robot.stateManager.setState({ mood: 'energetic' });
 
-// Point at a specific element
-const element = document.querySelector('.my-element');
-await robot.animationModule.pointAtElement(element);
+// State Changes abonnieren
+const unsubscribe = robot.stateManager.subscribe(
+  ROBOT_EVENTS.MOOD_CHANGED,
+  (data) => {
+    console.log('Mood changed to:', data.mood);
+  },
+);
 ```
 
-### Properties
+## 🔧 Konfiguration
 
-- `mood: RobotMood` - Current mood state
-- `analytics: RobotAnalytics` - Analytics data
-- `easterEggFound: Set<string>` - Found easter eggs
+### Texte anpassen
 
-## Development
+```javascript
+import { robotCompanionTexts } from './robot-companion-texts.js';
 
-### Adding New Features
-
-1. Add types to `content/core/types.js`
-2. Implement logic in appropriate module
-3. Add JSDoc comments with type annotations
-4. Update this README
-
-### Testing
-
-```bash
-npm run lint:check  # Check for errors
-npm run format      # Format code
+// Texte können vor der Initialisierung angepasst werden
+robotCompanionTexts.knowledgeBase.start.text = [
+  'Eigene Begrüßung 1',
+  'Eigene Begrüßung 2',
+];
 ```
+
+### Gemini API
+
+```javascript
+// .env Datei
+VITE_GEMINI_API_KEY = your_api_key_here;
+```
+
+## 📦 Dependencies
+
+- **Gemini API** - KI-Konversation
+- **Markdown Renderer** - Markdown-Parsing
+- **Logger** - Logging-System
+- **Intersection Observer** - Scroll-Detection
+
+## 🔒 Sicherheit
+
+### XSS-Schutz
+
+- ✅ Alle DOM-Elemente werden programmatisch erstellt
+- ✅ User Input verwendet immer `textContent`
+- ✅ Markdown wird vor innerHTML sanitized
+- ✅ Keine String-Konkatenation in HTML
+
+### Best Practices
+
+```javascript
+// ❌ Unsicher
+element.innerHTML = `<div>${userInput}</div>`;
+
+// ✅ Sicher
+const div = document.createElement('div');
+div.textContent = userInput;
+element.appendChild(div);
+```
+
+## 📊 State Management
+
+Der Robot Companion verwendet einen zentralen State Manager:
+
+```javascript
+{
+  isInitialized: false,
+  isChatOpen: false,
+  isTyping: false,
+  isPatrolling: false,
+  isAnimating: false,
+  mood: 'normal',
+  currentContext: 'default',
+  analytics: {
+    sessions: 0,
+    interactions: 0,
+    sectionsVisited: [],
+    lastVisit: null,
+  },
+  position: {
+    x: 0,
+    y: 0,
+    direction: 1,
+  }
+}
+```
+
+## 🎯 Events
+
+### Verfügbare Events
+
+```javascript
+ROBOT_EVENTS = {
+  // Lifecycle
+  INITIALIZED: 'robot:initialized',
+  DESTROYED: 'robot:destroyed',
+
+  // Chat
+  CHAT_OPENED: 'robot:chat:opened',
+  CHAT_CLOSED: 'robot:chat:closed',
+  CHAT_MESSAGE_SENT: 'robot:chat:message:sent',
+  CHAT_MESSAGE_RECEIVED: 'robot:chat:message:received',
+
+  // Animation
+  ANIMATION_START: 'robot:animation:start',
+  ANIMATION_END: 'robot:animation:end',
+
+  // State
+  STATE_CHANGED: 'robot:state:changed',
+  MOOD_CHANGED: 'robot:mood:changed',
+
+  // External
+  HERO_TYPING_END: 'hero:typingEnd',
+
+  // Games
+  GAME_STARTED: 'robot:game:started',
+  GAME_ENDED: 'robot:game:ended',
+};
+```
+
+### Verfügbare Actions
+
+```javascript
+ROBOT_ACTIONS = {
+  START: 'start',
+  SUMMARIZE_PAGE: 'summarizePage',
+  SCROLL_FOOTER: 'scrollFooter',
+  RANDOM_PROJECT: 'randomProject',
+  PLAY_TIC_TAC_TOE: 'playTicTacToe',
+  PLAY_TRIVIA: 'playTrivia',
+  PLAY_GUESS_NUMBER: 'playGuessNumber',
+  SHOW_MOOD: 'showMood',
+};
+```
+
+## 🎨 Styling
+
+Das Styling ist in `robot-companion.css` definiert und verwendet CSS Custom Properties für einfache Anpassung:
+
+```css
+:root {
+  --robot-primary: #40e0d0;
+  --robot-bg: #1e293b;
+  --robot-text: #ffffff;
+}
+```
+
+## 📝 Migration History
+
+Das Projekt wurde durch eine umfassende Refactoring-Migration modernisiert:
+
+### Phase 1: Magic Strings → Constants ✅
+
+- Alle Event- und Action-Strings durch typsichere Konstanten ersetzt
+- Zentrale Definition in `constants/events.js`
+
+### Phase 2: Scattered State → State Manager ✅
+
+- Verstreuter State in zentralen `RobotStateManager` migriert
+- Observer Pattern für State-Änderungen
+- Automatische Persistenz in localStorage
+
+### Phase 3: innerHTML → DOM Builder ✅
+
+- Alle unsicheren `innerHTML` Verwendungen eliminiert
+- XSS-sichere DOM-Erstellung durch `RobotDOMBuilder`
+- Programmatische Element-Erstellung
+
+## 🤝 Contributing
+
+1. Fork das Repository
+2. Erstelle einen Feature Branch
+3. Committe deine Änderungen
+4. Push zum Branch
+5. Erstelle einen Pull Request
+
+## 📄 License
+
+Siehe LICENSE Datei im Root-Verzeichnis.
+
+## 🔗 Links
+
+- [Quick Reference](./QUICK_REFERENCE.md) - Schnellreferenz
+- [Changelog](./CHANGELOG.md) - Versionshistorie
+
+## 💡 Tipps
+
+### Performance
+
+- Der Robot lädt lazy beim ersten Scroll
+- SVG-Animationen nutzen CSS transforms
+- State wird in localStorage gecached
+
+### Accessibility
+
+- Alle interaktiven Elemente haben ARIA-Labels
+- Chat-Fenster ist keyboard-navigierbar
+- Screen-Reader Support durch ARIA live regions
+
+### Mobile
+
+- Responsive Design für alle Bildschirmgrößen
+- Touch-optimierte Interaktionen
+- Keyboard-Anpassung für mobile Geräte
+
+---
+
+**Version**: 2.0.0 (Post-Migration)  
+**Status**: Production Ready 🚀

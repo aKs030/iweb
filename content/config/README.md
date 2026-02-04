@@ -7,9 +7,11 @@ To use the YouTube API features, set your API key via environment variable:
 ```bash
 # .env.local
 VITE_YOUTUBE_API_KEY=your_api_key_here
+VITE_YOUTUBE_CHANNEL_ID=UCTGRherjM4iuIn86xxubuPg
+VITE_YOUTUBE_CHANNEL_HANDLE=aks.030
 ```
 
-Or directly in `videos-config-loader.js` (not recommended for production).
+The configuration is automatically loaded from `env.config.js` and applied in the videos page.
 
 ### Mock Mode
 

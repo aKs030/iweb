@@ -24,6 +24,7 @@ import { getElementById } from '/content/core/utils.js';
 import { updateLoader, hideLoader } from '/content/core/global-loader.js';
 import { i18n } from '/content/core/i18n.js';
 import { FAVICON_512 } from '../../content/config/site-config.js';
+import { ENV } from '../../content/config/env.config.js';
 import {
   fetchChannelId,
   fetchUploadsPlaylist,
@@ -33,6 +34,32 @@ import {
 } from './services/youtube-api.service.js';
 
 const log = createLogger('videos');
+
+// Initialize YouTube configuration
+const YOUTUBE_API_KEY = ENV.YOUTUBE_API_KEY || '';
+const YOUTUBE_CHANNEL_ID = ENV.YOUTUBE_CHANNEL_ID || 'UCTGRherjM4iuIn86xxubuPg';
+const YOUTUBE_CHANNEL_HANDLE = ENV.YOUTUBE_CHANNEL_HANDLE || 'aks.030';
+
+// Set global variables for compatibility
+if (typeof globalThis !== 'undefined') {
+  if (YOUTUBE_API_KEY) {
+    globalThis.YOUTUBE_API_KEY = YOUTUBE_API_KEY;
+  }
+  globalThis.YOUTUBE_CHANNEL_ID = YOUTUBE_CHANNEL_ID;
+  globalThis.YOUTUBE_CHANNEL_HANDLE = YOUTUBE_CHANNEL_HANDLE;
+
+  // Mock mode for development/testing
+  const forceMock = new URLSearchParams(location.search).has('mockVideos');
+  if (forceMock) {
+    globalThis.YOUTUBE_USE_MOCK = true;
+    log.warn('Using mock data due to ?mockVideos=1 (forced).');
+  } else if (!YOUTUBE_API_KEY && ENV.isDev) {
+    globalThis.YOUTUBE_USE_MOCK = true;
+    log.warn('No API key found — using mock data for development/testing.');
+  } else {
+    globalThis.YOUTUBE_USE_MOCK = false;
+  }
+}
 
 // Helper: replace a thumbnail button with an autoplaying iframe
 const activateThumb = (btn) => {

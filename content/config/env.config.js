@@ -66,22 +66,3 @@ export const ENV = {
     );
   },
 };
-
-export function validateEnv() {
-  const required = ['BASE_URL'];
-  const missing = required.filter((key) => !ENV[key]);
-
-  if (missing.length > 0) {
-    throw new Error(
-      `Missing required environment variables: ${missing.join(', ')}`,
-    );
-  }
-}
-
-if (ENV.isProd) {
-  try {
-    validateEnv();
-  } catch (error) {
-    console.error('[ENV] Validation failed:', error);
-  }
-}
