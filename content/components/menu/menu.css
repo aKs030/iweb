@@ -126,9 +126,9 @@
 /* ===== Header ===== */
 .site-header {
   position: fixed;
-  top: 12px;
+  top: calc(12px + var(--safe-top));
   left: 50%;
-  width: calc(100% - 32px);
+  width: calc(100% - 32px - var(--safe-left) - var(--safe-right));
   max-width: 1440px;
   min-width: 920px;
   height: 52px;
@@ -720,10 +720,7 @@
 }
 
 /* ===== Page Layout ===== */
-main {
-  margin-top: 88px;
-  padding: 1rem;
-}
+/* Entfernt - wird jetzt global über body padding in main.css gesteuert */
 
 /* ===== Active Link States ===== */
 .site-menu__list li a.active,
@@ -739,8 +736,8 @@ main {
   .site-header {
     display: flex;
     justify-content: flex-start;
-    top: 8px;
-    width: calc(100% - 16px);
+    top: calc(8px + var(--safe-top));
+    width: calc(100% - 16px - var(--safe-left) - var(--safe-right));
     height: 48px;
     padding: 0 20px;
     border-radius: 20px;
@@ -766,15 +763,11 @@ main {
     transform: translateY(-50%);
   }
 
-  main {
-    margin-top: 72px;
-  }
-
   /* Mobile Menu Card */
   .site-menu {
     position: fixed;
-    top: 64px;
-    right: 8px;
+    top: calc(64px + var(--safe-top));
+    right: calc(8px + var(--safe-right));
     width: min(90vw, 320px);
     padding: 0;
     left: auto;

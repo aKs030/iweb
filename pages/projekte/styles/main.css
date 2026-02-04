@@ -15,11 +15,12 @@ body {
 
 #root {
   position: fixed;
-  top: 0;
+  top: var(--content-top-offset);
   left: 0;
   width: 100%;
-  height: calc(100vh - 88px);
-  margin-top: 88px;
+  height: calc(
+    100vh - var(--content-top-offset) - var(--content-bottom-offset)
+  );
   z-index: 10;
   pointer-events: none; /* Allow scroll to pass through to body */
 }
@@ -29,10 +30,12 @@ body {
    ============================================================================ */
 #canvas-container {
   position: fixed;
-  top: 88px;
+  top: var(--content-top-offset);
   left: 0;
   width: 100vw;
-  height: calc(100vh - 88px);
+  height: calc(
+    100vh - var(--content-top-offset) - var(--content-bottom-offset)
+  );
   z-index: 10; /* Higher z-index so 3D objects appear above HUD background */
   background: radial-gradient(circle at center, #0b0b15 0%, #000 100%);
   pointer-events: none; /* Allow interactions to pass through to HUD buttons */
@@ -223,12 +226,16 @@ canvas {
 /* Mobile adjustments for header height */
 @media (width <= 900px) {
   #root {
-    height: calc(100vh - 72px);
-    margin-top: 72px;
+    height: calc(
+      100vh - var(--content-top-offset) - var(--content-bottom-offset)
+    );
+    top: var(--content-top-offset);
   }
 
   #canvas-container {
-    top: 72px;
-    height: calc(100vh - 72px);
+    top: var(--content-top-offset);
+    height: calc(
+      100vh - var(--content-top-offset) - var(--content-bottom-offset)
+    );
   }
 }
