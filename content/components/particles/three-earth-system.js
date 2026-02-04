@@ -27,6 +27,7 @@ import {
 import { CameraManager } from './earth/camera.js';
 import { StarManager, ShootingStarManager } from './earth/stars.js';
 import { CardManager } from './earth/cards.js';
+import { GridManager } from './earth/grid.js';
 import {
   showLoadingState,
   hideLoadingState,
@@ -168,6 +169,7 @@ class ThreeEarthSystem {
     /** @type {ShootingStarManager|null} */ this.shootingStarManager = null;
     /** @type {PerformanceMonitor|null} */ this.performanceMonitor = null;
     /** @type {CardManager|null} */ this.cardManager = null;
+    /** @type {GridManager|null} */ this.gridManager = null;
 
     // State
     this.currentSection = 'hero';
@@ -307,6 +309,7 @@ class ThreeEarthSystem {
     this.shootingStarManager?.cleanup();
     this.cameraManager?.cleanup();
     this.starManager?.cleanup();
+    this.gridManager?.cleanup();
 
     // ✅ Explicit null assignment after disconnect
     if (this.sectionObserver) {
@@ -548,6 +551,9 @@ class ThreeEarthSystem {
 
     this.shootingStarManager = new ShootingStarManager(this.scene, this.THREE);
 
+    this.gridManager = new GridManager(this.THREE, this.scene);
+    this.gridManager.init();
+
     this.cardManager = new CardManager(
       this.THREE,
       this.scene,
@@ -777,6 +783,7 @@ class ThreeEarthSystem {
     }
 
     if (!capabilities.isLowEnd) this.shootingStarManager?.update(delta);
+    if (!capabilities.isLowEnd) this.gridManager?.update(totalTime, delta);
     this.performanceMonitor?.update();
 
     this._render();
@@ -892,6 +899,15 @@ class ThreeEarthSystem {
 
     const prev = this.currentSection;
     this.currentSection = newSection;
+
+    // Grid Visibility Logic
+    if (this.gridManager) {
+      if (newSection === 'hero') {
+        this.gridManager.hide();
+      } else {
+        this.gridManager.show();
+      }
+    }
 
     this.cameraManager?.updateCameraForSection(newSection);
 

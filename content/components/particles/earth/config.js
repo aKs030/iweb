@@ -110,6 +110,18 @@ export const CONFIG = {
     SHOWER_COOLDOWN: 1200,
     MAX_SIMULTANEOUS: 3,
   },
+  GRID: {
+    ENABLED: true,
+    COLOR: 0x00f3ff, // Cyan
+    OPACITY: 0.12, // Subtle
+    SIZE: 200, // Large coverage
+    DIVISIONS: 40, // Grid density
+    SPEED: 0.2, // Slow scroll
+    FOG_NEAR: 10, // Start fading out
+    FOG_FAR: 80, // Fully transparent
+    Y_POS: -10, // Below the earth
+    FADE_SPEED: 0.05, // Opacity transition speed
+  },
   PERFORMANCE: {
     PIXEL_RATIO: Math.min(window.devicePixelRatio || 1, 1.5),
     TARGET_FPS: 30,
