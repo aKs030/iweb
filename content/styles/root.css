@@ -237,6 +237,7 @@
   --component-pill-radius: 24px;
   --component-card-radius: 16px;
   --component-micro-radius: 8px;
+  /* Use unified glass shadow for consistent glassmorphism effect */
   --component-shadow-depth-2: var(--glass-shadow);
   --component-shadow-depth-3: var(--glass-shadow);
   --component-spring-bounce: cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -247,7 +248,7 @@
   --component-label-primary: rgb(255 255 255 / 95%);
   --component-label-secondary: rgb(255 255 255 / 70%);
   --component-label-tertiary: rgb(255 255 255 / 50%);
-  --component-separator: rgb(255 255 255 / 15%);
+  --component-separator: var(--glass-border-light);
   --component-fill-primary: rgb(255 255 255 / 10%);
   --component-fill-secondary: rgb(255 255 255 / 12%);
   --component-font-family:
