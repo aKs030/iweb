@@ -612,11 +612,6 @@ a:hover {
 
 /* Tablet & Mobile: 768px and below */
 @media (width <= 768px) {
-  :root {
-    --menu-height: 64px; /* 48px + 8px top + 8px spacing */
-    --footer-height: 64px; /* 48px + 8px bottom + 8px spacing */
-  }
-
   html {
     font-size: 15px;
   }
@@ -687,7 +682,7 @@ a:hover {
   }
 
   .container {
-    padding-inline: max(0.25rem, env(safe-area-inset-left, 0px));
+    padding-inline: max(0.25rem, var(--safe-left));
   }
 
   .section {
