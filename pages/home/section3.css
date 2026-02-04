@@ -151,7 +151,7 @@
     padding: 1rem 0;
   }
   .section3__container {
-    padding: 1.5rem 0.8rem calc(2.25rem + env(safe-area-inset-bottom, 0px));
+    padding: 1.5rem 0.8rem calc(2.25rem + var(--safe-bottom));
     font-size: 0.85rem;
     min-height: 100%;
   }
