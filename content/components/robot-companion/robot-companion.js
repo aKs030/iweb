@@ -1,7 +1,7 @@
 /**
  * KI Roboter Begleiter - Extended Edition (Optimized)
  * Performance-Optimierungen: DOM-Caching, RequestAnimationFrame-Nutzung, Refactoring.
- * @version 2.0.0
+ * @version 2.0.1
  */
 // @ts-check
 
@@ -13,7 +13,7 @@ import { RobotIntelligence } from './modules/robot-intelligence.js';
 import { robotCompanionTexts } from './robot-companion-texts.js';
 import { createLogger } from '/content/core/logger.js';
 import { createObserver } from '/content/core/intersection-observer.js';
-import { ROBOT_EVENTS, ROBOT_ACTIONS } from './constants/events.js';
+import { ROBOT_EVENTS } from './constants/events.js';
 import { RobotStateManager } from './state/RobotStateManager.js';
 import { RobotDOMBuilder } from './dom/RobotDOMBuilder.js';
 
@@ -981,45 +981,6 @@ export class RobotCompanion {
       const el = document.querySelector(s.selector);
       if (el && this._sectionObserver) this._sectionObserver.observe(el);
     });
-  }
-
-  showMoodInfo() {
-    const moodEmojis = {
-      'night-owl': '🦉',
-      sleepy: '😴',
-      energetic: '⚡',
-      relaxed: '😊',
-      enthusiastic: '🤩',
-      normal: '🤖',
-    };
-
-    const moodDescriptions = {
-      'night-owl': 'Nachteule-Modus aktiv! Ich bin hellwach! 🌙',
-      sleepy: 'Etwas verschlafen heute... ☕',
-      energetic: 'Voller Energie und bereit für Action! 💪',
-      relaxed: 'Entspannt und gelassen unterwegs! 🌅',
-      enthusiastic: 'Super enthusiastisch - du bist ja Power-User! 🎉',
-      normal: 'Ganz normaler Roboter-Modus! 🤖',
-    };
-
-    const state = this.stateManager.getState();
-    const currentMood = state.mood;
-    const emoji = moodEmojis[currentMood] || '🤖';
-    const desc = moodDescriptions[currentMood] || 'Normaler Modus';
-    const stats = `
-      📊 Deine Stats:
-      • Sessions: ${state.analytics.sessions}
-      • Interaktionen: ${state.analytics.interactions}
-      • Easter Eggs: ${this.easterEggFound.size}
-      • Mood: ${emoji} ${currentMood}
-    `;
-
-    this.chatModule.addMessage(desc, 'bot');
-    this.chatModule.addMessage(stats, 'bot');
-    this._setTimeout(
-      () => this.chatModule.handleAction(ROBOT_ACTIONS.START),
-      2000,
-    );
   }
 
   // Delegated methods to chat module

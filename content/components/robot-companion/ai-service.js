@@ -161,22 +161,25 @@ export class AIService {
    * @returns {Promise<string>} Suggestion
    */
   async getSuggestion(contextData) {
-    const prompt = `Der Nutzer betrachtet gerade die Seite: "${contextData.title || ''}".
-    Überschrift: "${contextData.headline || ''}"
-    Beschreibung: "${contextData.description || ''}"
-    URL: "${contextData.url || ''}"
+    // Clean and limit content snippet to avoid API payload issues
+    const cleanContent = String(contextData.contentSnippet || '')
+      .replace(/<[^>]*>/g, ' ') // Remove HTML tags
+      .replace(/\s+/g, ' ') // Normalize whitespace
+      .trim()
+      .slice(0, 500); // Limit to 500 chars
 
-    Inhaltlicher Kontext (Auszug):
-    "${contextData.contentSnippet || 'Kein Text verfügbar'}"
+    const prompt = `Seite: "${contextData.title || 'Unbekannt'}"
+Überschrift: "${contextData.headline || ''}"
+URL: "${contextData.url || ''}"
+Kontext: "${cleanContent || 'Kein Text verfügbar'}"
 
-    Generiere einen kurzen, hilfreichen Tipp, einen interessanten Fakt oder eine Frage zu diesem Inhalt, um den Nutzer einzuladen.
-    Nutze das "Seiten-Wissen" (Inhaltlicher Kontext), um spezifisch zu sein, aber fasse dich kurz.
-    Sprich den Nutzer freundlich als Roboter-Assistent an (Cyber).
-    Maximal 2 kurze Sätze. Antworte IMMER auf DEUTSCH.`;
+Generiere einen kurzen, hilfreichen Tipp oder eine Frage zu diesem Inhalt.
+Sprich den Nutzer freundlich als Roboter-Assistent an (Cyber).
+Maximal 2 kurze Sätze.`;
 
     return await callAIAPI(
       prompt,
-      'Du bist Cyber, ein proaktiver, hilfreicher Roboter-Assistent. Antworte immer auf Deutsch.',
+      'Du bist Cyber, ein hilfreicher Roboter-Assistent. Antworte immer auf Deutsch.',
     );
   }
 }
