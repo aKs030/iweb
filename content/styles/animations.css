@@ -65,12 +65,24 @@
 /* ===== Glitch Interactions ===== */
 
 @keyframes glitch-skew {
-  0% { transform: skew(0deg); }
-  20% { transform: skew(-10deg); }
-  40% { transform: skew(10deg); }
-  60% { transform: skew(-5deg); }
-  80% { transform: skew(5deg); }
-  100% { transform: skew(0deg); }
+  0% {
+    transform: skew(0deg);
+  }
+  20% {
+    transform: skew(-10deg);
+  }
+  40% {
+    transform: skew(10deg);
+  }
+  60% {
+    transform: skew(-5deg);
+  }
+  80% {
+    transform: skew(5deg);
+  }
+  100% {
+    transform: skew(0deg);
+  }
 }
 
 @keyframes glitch-rgb {
@@ -78,16 +90,24 @@
     text-shadow: none;
   }
   20% {
-    text-shadow: -3px 0 var(--primary-color), 3px 0 var(--accent-secondary);
+    text-shadow:
+      -3px 0 var(--primary-color),
+      3px 0 var(--accent-secondary);
   }
   40% {
-    text-shadow: 3px 0 var(--primary-color), -3px 0 var(--accent-secondary);
+    text-shadow:
+      3px 0 var(--primary-color),
+      -3px 0 var(--accent-secondary);
   }
   60% {
-    text-shadow: -1px 0 var(--primary-color), 1px 0 var(--accent-secondary);
+    text-shadow:
+      -1px 0 var(--primary-color),
+      1px 0 var(--accent-secondary);
   }
   80% {
-    text-shadow: 1px 0 var(--primary-color), -1px 0 var(--accent-secondary);
+    text-shadow:
+      1px 0 var(--primary-color),
+      -1px 0 var(--accent-secondary);
   }
   100% {
     text-shadow: none;
@@ -95,19 +115,43 @@
 }
 
 @keyframes glitch-anim-1 {
-  0% { clip-path: inset(20% 0 80% 0); }
-  20% { clip-path: inset(60% 0 10% 0); }
-  40% { clip-path: inset(10% 0 50% 0); }
-  60% { clip-path: inset(80% 0 5% 0); }
-  80% { clip-path: inset(30% 0 40% 0); }
-  100% { clip-path: inset(10% 0 60% 0); }
+  0% {
+    clip-path: inset(20% 0 80% 0);
+  }
+  20% {
+    clip-path: inset(60% 0 10% 0);
+  }
+  40% {
+    clip-path: inset(10% 0 50% 0);
+  }
+  60% {
+    clip-path: inset(80% 0 5% 0);
+  }
+  80% {
+    clip-path: inset(30% 0 40% 0);
+  }
+  100% {
+    clip-path: inset(10% 0 60% 0);
+  }
 }
 
 @keyframes glitch-anim-2 {
-  0% { clip-path: inset(10% 0 60% 0); }
-  20% { clip-path: inset(30% 0 40% 0); }
-  40% { clip-path: inset(80% 0 5% 0); }
-  60% { clip-path: inset(10% 0 50% 0); }
-  80% { clip-path: inset(60% 0 10% 0); }
-  100% { clip-path: inset(20% 0 80% 0); }
+  0% {
+    clip-path: inset(10% 0 60% 0);
+  }
+  20% {
+    clip-path: inset(30% 0 40% 0);
+  }
+  40% {
+    clip-path: inset(80% 0 5% 0);
+  }
+  60% {
+    clip-path: inset(10% 0 50% 0);
+  }
+  80% {
+    clip-path: inset(60% 0 10% 0);
+  }
+  100% {
+    clip-path: inset(20% 0 80% 0);
+  }
 }
