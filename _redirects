@@ -97,15 +97,25 @@
 /*.html   /:splat/   301
 
 # ============================================================================
-# 8. SPA Fallbacks (Serve index.html for client-side routing)
+# 8. Main Page Routes (Serve index.html for subpages)
+# ============================================================================
+# Serve the actual index.html files for main navigation routes
+/gallery/       /pages/gallery/index.html   200
+/projekte/      /pages/projekte/index.html  200
+/videos/        /pages/videos/index.html    200
+/blog/          /pages/blog/index.html      200
+/about/         /pages/about/index.html     200
+
+# ============================================================================
+# 9. SPA Fallbacks (Serve index.html for client-side routing)
 # ============================================================================
 # Note: Static assets (css, js, json, etc.) are served directly by default
 # These rules only catch routes that don't match actual files
-/gallery/*      /pages/gallery/index.html 200
-/projekte/*     /pages/projekte/index.html 200
-/videos/*       /pages/videos/index.html  200
-/blog/*         /pages/blog/index.html    200
-/about/*        /pages/about/index.html   200
+/gallery/*      /pages/gallery/index.html   200
+/projekte/*     /pages/projekte/index.html  200
+/videos/*       /pages/videos/index.html    200
+/blog/*         /pages/blog/index.html      200
+/about/*        /pages/about/index.html     200
 
 # ============================================================================
 # Notes
