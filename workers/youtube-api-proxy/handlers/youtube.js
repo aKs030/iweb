@@ -8,7 +8,13 @@ import { getCachedResponse, cacheResponse } from '../utils/cache.js';
 import { isRateLimited, getRateLimitInfo } from '../utils/rate-limit.js';
 
 const YOUTUBE_API_BASE = 'https://www.googleapis.com/youtube/v3';
-const ALLOWED_ENDPOINTS = ['search', 'videos', 'channels', 'playlists'];
+const ALLOWED_ENDPOINTS = [
+  'search',
+  'videos',
+  'channels',
+  'playlists',
+  'playlistItems',
+];
 
 /**
  * Validates endpoint is allowed

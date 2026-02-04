@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "dev:python": "python3 -m http.server 8080",
+    "dev:worker": "cd workers/youtube-api-proxy && wrangler dev --env youtube --port 8788",
+    "dev:all": "concurrently \"npm run dev\" \"npm run dev:worker\" --names \"vite,worker\" --prefix-colors \"cyan,magenta\"",
     "format": "prettier --write \"**/*.{js,css,json,md,html}\" --ignore-path .prettierignore",
     "format:check": "prettier --check \"**/*.{js,css,json,md,html}\" --ignore-path .prettierignore",
     "lint": "eslint \"**/*.js\" --fix",

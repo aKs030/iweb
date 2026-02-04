@@ -23,6 +23,7 @@ Proxied YouTube Data API v3 Requests.
 - `videos` - Video Details
 - `channels` - Channel Details
 - `playlists` - Playlist Details
+- `playlistItems` - Playlist Items (Videos in einer Playlist)
 
 **Beispiele:**
 
@@ -35,6 +36,9 @@ GET /api/youtube/videos?part=snippet,statistics&id=VIDEO_ID
 
 # Channel Details
 GET /api/youtube/channels?part=snippet,statistics&id=CHANNEL_ID
+
+# Playlist Items
+GET /api/youtube/playlistItems?part=snippet&playlistId=PLAYLIST_ID&maxResults=10
 ```
 
 **Response:**

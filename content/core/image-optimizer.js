@@ -233,6 +233,7 @@ export function lazyLoadImages(target, options = {}) {
           } else if (!img.src) {
             // Skip if no src is available
             log.warn('Image has no src or data-src attribute');
+            img.dataset.loaded = 'skipped';
             return;
           }
 
@@ -258,7 +259,10 @@ export function lazyLoadImages(target, options = {}) {
 
           log.debug(`Image loaded: ${img.src}`);
         } catch (error) {
-          log.error('Failed to load image:', error);
+          // Only log error if we have a valid src
+          if (img.src && img.src !== 'undefined') {
+            log.error('Failed to load image:', error);
+          }
           img.dataset.loaded = 'error';
           // Remove blur even on error
           if (placeholder === 'blur') {
