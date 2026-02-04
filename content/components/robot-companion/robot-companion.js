@@ -50,8 +50,8 @@ export class RobotCompanion {
     /** @type {RobotStateManager} */
     this.stateManager = new RobotStateManager();
 
-    /** @type {import('./gemini-service.js').GeminiService|null} */
-    this.gemini = null;
+    /** @type {import('./ai-service.js').AIService|null} */
+    this.aiService = null;
     /** @type {RobotGames} */
     this.gameModule = new RobotGames(this);
     /** @type {RobotAnimation} */
@@ -188,15 +188,15 @@ export class RobotCompanion {
   }
 
   /**
-   * Lazy load the Gemini Service
-   * @returns {Promise<import('./gemini-service.js').GeminiService>}
+   * Lazy load the AI Service
+   * @returns {Promise<import('./ai-service.js').AIService>}
    */
-  async getGemini() {
-    if (!this.gemini) {
-      const { GeminiService } = await import('./gemini-service.js');
-      this.gemini = new GeminiService();
+  async getAIService() {
+    if (!this.aiService) {
+      const { AIService } = await import('./ai-service.js');
+      this.aiService = new AIService();
     }
-    return this.gemini;
+    return this.aiService;
   }
 
   setupFooterOverlapCheck() {

@@ -34,9 +34,9 @@ export function validateSearchRequest(body) {
 }
 
 /**
- * Validates Gemini request body
+ * Validates AI request body
  */
-export function validateGeminiRequest(body) {
+export function validateAIRequest(body) {
   if (!body || typeof body !== 'object') {
     return { valid: false, error: 'Invalid request body' };
   }

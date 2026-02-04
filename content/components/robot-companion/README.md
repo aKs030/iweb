@@ -4,7 +4,7 @@ Ein interaktiver KI-Roboter-Begleiter für die Website mit Chat-Funktionalität,
 
 ## ✨ Features
 
-- 🤖 **Interaktiver Chat** - KI-gestützte Konversation mit Gemini API
+- 🤖 **Interaktiver Chat** - KI-gestützte Konversation mit AI Service (Groq)
 - 🎨 **Animationen** - Flüssige SVG-Animationen und Bewegungen
 - 🎮 **Mini-Games** - Tic-Tac-Toe, Trivia Quiz, Zahlenraten
 - 📊 **Analytics** - Session-Tracking und Interaktions-Statistiken
@@ -35,7 +35,7 @@ robot-companion/
 ├── robot-companion.js         # Hauptkomponente
 ├── robot-companion.css        # Styling
 ├── robot-games.js             # Spiele-Logik
-├── gemini-service.js          # Gemini API Service
+├── ai-service.js              # AI API Service
 └── index.js                   # Exports
 ```
 
@@ -112,16 +112,16 @@ robotCompanionTexts.knowledgeBase.start.text = [
 ];
 ```
 
-### Gemini API
+### AI Service (Groq)
 
 ```javascript
 // .env Datei
-VITE_GEMINI_API_KEY = your_api_key_here;
+VITE_GROQ_API_KEY = your_api_key_here;
 ```
 
 ## 📦 Dependencies
 
-- **Gemini API** - KI-Konversation
+- **AI Service** - KI-Konversation (Groq)
 - **Markdown Renderer** - Markdown-Parsing
 - **Logger** - Logging-System
 - **Intersection Observer** - Scroll-Detection

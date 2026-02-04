@@ -113,9 +113,9 @@ export class RobotChat {
 
     try {
       this.robot.animationModule.startSpeaking();
-      const gemini = await this.robot.getGemini();
+      const aiService = await this.robot.getAIService();
 
-      const response = await gemini.generateResponse(
+      const response = await aiService.generateResponse(
         text,
         (chunk) => {
           if (!typingRemoved) {
@@ -226,8 +226,8 @@ export class RobotChat {
     this.toggleChat(true);
     this.showTyping();
     const content = document.body.innerText;
-    const gemini = await this.robot.getGemini();
-    const summary = await gemini.summarizePage(content);
+    const aiService = await this.robot.getAIService();
+    const summary = await aiService.summarizePage(content);
     this.removeTyping();
     this.addMessage('Zusammenfassung dieser Seite:', 'bot');
     this.addMessage(summary, 'bot');
@@ -564,8 +564,8 @@ export class RobotChat {
     };
 
     try {
-      const gemini = await this.robot.getGemini();
-      const suggestion = await gemini.getSuggestion(contextData);
+      const aiService = await this.robot.getAIService();
+      const suggestion = await aiService.getSuggestion(contextData);
       if (suggestion && !this.isOpen) {
         this.showBubble(suggestion);
         if (tipKey) {
