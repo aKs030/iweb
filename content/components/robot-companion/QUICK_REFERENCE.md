@@ -254,15 +254,15 @@ globalThis?.a11y?.releaseFocus();
 
 ## 🔧 Konfiguration
 
-### Gemini API
+### AI Service (Groq)
 
 ```javascript
 // .env
-VITE_GEMINI_API_KEY = your_api_key_here;
+VITE_GROQ_API_KEY = your_api_key_here;
 
 // Verwendung
-const gemini = await robot.getGemini();
-const response = await gemini.generateResponse('Hello');
+const aiService = await robot.getAIService();
+const response = await aiService.generateResponse('Hello');
 ```
 
 ### CSS Anpassung

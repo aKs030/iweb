@@ -11,7 +11,7 @@
 
 import SEARCH_INDEX from './search-index.json' with { type: 'json' };
 import { searchHandler } from './handlers/search.js';
-import { geminiHandler } from './handlers/gemini.js';
+import { aiHandler } from './handlers/ai.js'; // Handler for legacy /api/gemini endpoint
 import {
   handleCORSPreflight,
   errorResponse,
@@ -32,8 +32,9 @@ export default {
         return await searchHandler(request, env, SEARCH_INDEX);
       }
 
+      // Legacy endpoint name kept for backward compatibility with older clients/config
       if (url.pathname === '/api/gemini') {
-        return await geminiHandler(request, env, SEARCH_INDEX);
+        return await aiHandler(request, env, SEARCH_INDEX);
       }
 
       return errorResponse('Not Found', undefined, 404);

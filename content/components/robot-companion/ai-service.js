@@ -118,9 +118,8 @@ async function simulateStreaming(text, onChunk) {
 
 /**
  * AI Service - Provides AI chat functionality (using Groq)
- * Note: Class name kept as "GeminiService" for backward compatibility
  */
-export class GeminiService {
+export class AIService {
   /**
    * Generate a chat response
    * @param {string} prompt - User message
