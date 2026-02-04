@@ -38,17 +38,7 @@
 /datenschutz.html                            /datenschutz/             301
 
 # ============================================================================
-# 2. Main Page Routes (Serve index.html for subpages) - HIGHEST PRIORITY
-# ============================================================================
-# These MUST come first to prevent other rules from interfering
-/gallery/       /pages/gallery/index.html   200
-/projekte/      /pages/projekte/index.html  200
-/videos/        /pages/videos/index.html    200
-/blog/          /pages/blog/index.html      200
-/about/         /pages/about/index.html     200
-
-# ============================================================================
-# 3. Canonical URL Redirects (Remove index.html) - Permanent
+# 2. Canonical URL Redirects (Remove index.html) - Permanent
 # ============================================================================
 /index.html          /              301
 /blog/index.html     /blog/         301
@@ -58,7 +48,7 @@
 /about/index.html    /about/        301
 
 # ============================================================================
-# 4. Trailing Slash Canonicalization
+# 3. Trailing Slash Canonicalization
 # ============================================================================
 /about    /about/     301
 /blog     /blog/      301
@@ -67,7 +57,7 @@
 /videos   /videos/    301
 
 # ============================================================================
-# 5. Old File Locations to Clean URLs
+# 4. Old File Locations to Clean URLs
 # ============================================================================
 /pages/gallery/gallery.html     /gallery/     301
 /pages/projekte/projekte.html   /projekte/    301
@@ -76,7 +66,7 @@
 /pages/blog/blog.html           /blog/        301
 
 # ============================================================================
-# 6. Legal Pages (Impressum & Datenschutz)
+# 5. Legal Pages (Impressum & Datenschutz)
 # ============================================================================
 # Canonicalize to trailing slash and serve actual footer pages
 /datenschutz    /datenschutz/                                      301
@@ -85,7 +75,7 @@
 /impressum/     /content/components/footer/impressum.html         200
 
 # ============================================================================
-# 7. Dynamic Content Rewrites (200 Status)
+# 6. Dynamic Content Rewrites (200 Status)
 # ============================================================================
 # Serve /pages/ and /content/components/ directly (no redirect)
 /pages/*                  /pages/:splat                   200
@@ -102,20 +92,18 @@
 /test-error-boundary.html /test-error-boundary.html      200
 
 # ============================================================================
-# 8. Generic .html Removal (Must be after specific rules but before SPA fallbacks)
+# 7. Generic .html Removal (Must be after specific rules)
 # ============================================================================
 /*.html   /:splat/   301
 
 # ============================================================================
-# 9. SPA Fallbacks (Serve index.html for client-side routing)
+# 8. Section Rewrites (Map clean URLs to physical files)
 # ============================================================================
-# Note: Static assets (css, js, json, etc.) are served directly by default
-# These rules only catch routes that don't match actual files
-/gallery/*      /pages/gallery/index.html   200
-/projekte/*     /pages/projekte/index.html  200
-/videos/*       /pages/videos/index.html    200
-/blog/*         /pages/blog/index.html      200
-/about/*        /pages/about/index.html     200
+/gallery/*      /pages/gallery/:splat     200
+/projekte/*     /pages/projekte/:splat    200
+/videos/*       /pages/videos/:splat      200
+/blog/*         /pages/blog/:splat        200
+/about/*        /pages/about/:splat       200
 
 # ============================================================================
 # Notes
