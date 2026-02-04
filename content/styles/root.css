@@ -231,15 +231,14 @@
   --card-glow-color: rgb(7 161 255 / 40%);
 
   /* Unified Component Variables (Menu & Footer) */
-  --component-header-bg: rgb(28 28 30 / 72%);
-  --component-blur-radius: 16px;
+  /* Wire component tokens to glassmorphism variables for consistency */
+  --component-header-bg: var(--glass-bg-strong);
+  --component-blur-radius: var(--glass-blur-lg);
   --component-pill-radius: 24px;
   --component-card-radius: 16px;
   --component-micro-radius: 8px;
-  --component-shadow-depth-2:
-    0 4px 12px rgb(0 0 0 / 15%), 0 2px 4px rgb(0 0 0 / 12%);
-  --component-shadow-depth-3:
-    0 8px 32px rgb(0 0 0 / 18%), 0 4px 8px rgb(0 0 0 / 15%);
+  --component-shadow-depth-2: var(--glass-shadow);
+  --component-shadow-depth-3: var(--glass-shadow);
   --component-spring-bounce: cubic-bezier(0.175, 0.885, 0.32, 1.275);
   --component-spring-smooth: cubic-bezier(0.25, 0.46, 0.45, 0.94);
   --component-spring-quick: cubic-bezier(0.4, 0, 0.2, 1);
