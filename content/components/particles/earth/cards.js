@@ -159,12 +159,11 @@ export class CardManager {
             // Header offset - account for mobile safe areas
             const headerPixels = 20;
             const safeAreaTop =
-              isMobile &&
-              globalThis.window?.CSS?.supports?.(
-                'padding: env(safe-area-inset-top)',
-              )
-                ? 20
-                : 0; // Additional offset for notched devices
+              parseFloat(
+                getComputedStyle(document.documentElement).getPropertyValue(
+                  '--safe-top',
+                ),
+              ) || 0;
             const totalHeaderOffset = headerPixels + safeAreaTop;
             const headerWorldOffset = this._pixelsToWorldY(totalHeaderOffset);
 
