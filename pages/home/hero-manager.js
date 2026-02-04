@@ -121,6 +121,7 @@ const HeroManager = (() => {
 
       el.dataset.last = next;
       el.textContent = next;
+      el.dataset.text = next;
     } catch (e) {
       log.warn('Error setting greeting text', e);
     }
