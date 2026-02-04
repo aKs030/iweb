@@ -206,7 +206,13 @@ export function lazyLoadImages(target, options = {}) {
   // Batch process images
   const imagesToLoad = elements.filter((el) => {
     if (!(el instanceof HTMLElement)) return false;
-    return el.dataset.loaded !== 'true';
+    // Skip images that are already loaded or being handled by other code
+    const loadedState = el.dataset.loaded;
+    return (
+      loadedState !== 'true' &&
+      loadedState !== 'handling' &&
+      loadedState !== 'error'
+    );
   });
 
   if (imagesToLoad.length === 0) return;

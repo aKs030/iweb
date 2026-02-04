@@ -159,6 +159,7 @@ const renderVideoCard = async (grid, it, detailsMap, index = 0) => {
   thumbImg.alt = `Thumbnail: ${title}`;
   thumbImg.loading = index < 4 ? 'eager' : 'lazy';
   thumbImg.decoding = 'async';
+  thumbImg.dataset.loaded = 'handling'; // Prevent image-optimizer from interfering
   thumbImg.style.cssText =
     'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;';
 
@@ -176,6 +177,7 @@ const renderVideoCard = async (grid, it, detailsMap, index = 0) => {
         const response = await fetch(url, { method: 'HEAD' });
         if (response.ok) {
           thumbImg.src = url;
+          thumbImg.dataset.loaded = 'true';
           return;
         }
       } catch {
@@ -186,13 +188,15 @@ const renderVideoCard = async (grid, it, detailsMap, index = 0) => {
     // Alle Fallbacks fehlgeschlagen - verwende Platzhalter
     thumbImg.style.backgroundColor = '#1a1a1a';
     thumbImg.alt = `Video: ${title}`;
+    thumbImg.dataset.loaded = 'error';
   };
 
   // Fehlerbehandlung für Thumbnail-Laden
-  thumbImg.onerror = () => {
-    log.warn(`Failed to load thumbnail for video ${vid}, trying fallback`);
+  thumbImg.onerror = (e) => {
+    e.stopPropagation(); // Prevent event bubbling
     tryLoadThumbnail().catch(() => {
       thumbImg.style.backgroundColor = '#1a1a1a';
+      thumbImg.dataset.loaded = 'error';
     });
   };
 
