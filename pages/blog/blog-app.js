@@ -692,10 +692,7 @@ const BlogApp = () => {
       return html`
         <div className="container-blog pt-24 fade-in">
           <p>${t('blog.not_found')}</p>
-          <button
-            className="btn-back"
-            onClick=${handleBack}
-          >
+          <button className="btn-back" onClick=${handleBack}>
             ← ${t('blog.back')}
           </button>
         </div>
@@ -715,21 +712,21 @@ const BlogApp = () => {
 
         <div className="container-blog pt-24 fade-in">
           <button className="btn-back" onClick=${handleBack}>← ${t(
-        'blog.back',
-      )} (ESC)</button>
+            'blog.back',
+          )} (ESC)</button>
 
           <article className="blog-article">
             <header>
               <div className="card-meta">
                 <span className="card-category">${post.category}</span>
                 <span className="card-read-time"><${Clock}/> ${
-        post.readTime
-      }</span>
+                  post.readTime
+                }</span>
               </div>
               <h1>${post.title}</h1>
               <time className="meta" datetime=${post.date}>${
-        post.dateDisplay
-      }</time>
+                post.dateDisplay
+              }</time>
             </header>
 
             ${
