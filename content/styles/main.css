@@ -316,13 +316,21 @@ textarea:focus-visible {
 main {
   margin-top: 0 !important;
   padding: 0 !important;
+  /* Inhalt zwischen Menü und Footer */
+  min-height: calc(
+    100vh - var(--content-top-offset) - var(--content-bottom-offset)
+  );
 }
 
 .section {
   scroll-snap-align: start;
   scroll-snap-stop: always;
-  min-height: calc(100vh - 88px);
-  height: calc(100vh - 88px);
+  min-height: calc(
+    100vh - var(--content-top-offset) - var(--content-bottom-offset)
+  );
+  height: calc(
+    100vh - var(--content-top-offset) - var(--content-bottom-offset)
+  );
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -355,7 +363,7 @@ html {
   overflow-y: scroll;
   overflow-x: hidden;
   scroll-snap-type: y mandatory;
-  scroll-padding-top: var(--header-height);
+  scroll-padding-top: var(--content-top-offset);
   scroll-behavior: smooth;
 }
 
@@ -376,6 +384,11 @@ body {
   color: var(--text-primary);
   margin: 0;
   text-rendering: optimizelegibility;
+  /* Safe-Area: Dynamischer Abstand für Menü und Footer */
+  padding-top: var(--content-top-offset);
+  padding-bottom: var(--content-bottom-offset);
+  padding-left: var(--safe-left);
+  padding-right: var(--safe-right);
 }
 
 *,
@@ -388,10 +401,7 @@ body {
 .container {
   width: min(100%, var(--container-width));
   margin-inline: auto;
-  padding-inline: max(
-    clamp(0.5rem, 4vw, 1.5rem),
-    env(safe-area-inset-left, 0px)
-  );
+  padding-inline: max(clamp(0.5rem, 4vw, 1.5rem), var(--safe-left));
   box-sizing: border-box;
 }
 
@@ -602,13 +612,22 @@ a:hover {
 
 /* Tablet & Mobile: 768px and below */
 @media (width <= 768px) {
+  :root {
+    --menu-height: 64px; /* 48px + 8px top + 8px spacing */
+    --footer-height: 64px; /* 48px + 8px bottom + 8px spacing */
+  }
+
   html {
     font-size: 15px;
   }
 
   .section {
-    min-height: calc(100svh - 72px);
-    height: calc(100svh - 72px);
+    min-height: calc(
+      100svh - var(--content-top-offset) - var(--content-bottom-offset)
+    );
+    height: calc(
+      100svh - var(--content-top-offset) - var(--content-bottom-offset)
+    );
     padding: var(--spacing-xl) 0;
     display: flex;
     flex-direction: column;
@@ -617,14 +636,13 @@ a:hover {
 
   @supports (min-height: 100dvh) {
     .section {
-      min-height: calc(100dvh - 72px);
-      height: calc(100dvh - 72px);
+      min-height: calc(
+        100dvh - var(--content-top-offset) - var(--content-bottom-offset)
+      );
+      height: calc(
+        100dvh - var(--content-top-offset) - var(--content-bottom-offset)
+      );
     }
-  }
-
-  .section .container {
-    padding-top: calc(var(--header-height) + env(safe-area-inset-top, 0px));
-    padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
   }
 }
 
@@ -647,7 +665,7 @@ a:hover {
 @media (width <= 480px) {
   .container {
     max-width: 100%;
-    padding-inline: max(0.5rem, env(safe-area-inset-left, 0px));
+    padding-inline: max(0.5rem, var(--safe-left));
   }
 
   .container p,
@@ -659,10 +677,6 @@ a:hover {
   .container h6 {
     overflow-wrap: break-word;
     overflow-wrap: anywhere;
-  }
-
-  body {
-    padding-top: calc(var(--header-height) + env(safe-area-inset-top, 0px));
   }
 }
 
