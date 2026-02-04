@@ -145,27 +145,41 @@
  * @property {HTMLElement} [window] - Window element
  * @property {HTMLElement} [bubble] - Bubble element
  * @property {HTMLElement} [bubbleText] - Bubble text element
+ * @property {HTMLElement} [bubbleClose] - Bubble close button
  * @property {HTMLElement} [messages] - Messages container
  * @property {HTMLElement} [controls] - Controls container
+ * @property {HTMLElement} [inputArea] - Input area container
  * @property {HTMLInputElement} [input] - Input element
  * @property {HTMLButtonElement} [sendBtn] - Send button
  * @property {HTMLElement} [avatar] - Avatar element
  * @property {SVGElement} [svg] - SVG element
+ * @property {SVGElement} [eyes] - Robot eyes SVG element
+ * @property {SVGElement} [flame] - Robot flame SVG element
+ * @property {SVGElement} [legs] - Robot legs SVG element
+ * @property {{left: Element|null, right: Element|null}} [arms] - Robot arms
+ * @property {HTMLElement} [particles] - Particles element
+ * @property {HTMLElement} [thinking] - Thinking indicator element
+ * @property {HTMLElement} [closeBtn] - Close button element
  * @property {Element} [footer] - Footer element
  */
 
 /**
  * @typedef {Object} EventListenerRegistry
- * @property {Array<{target: EventTarget, handler: Function}>} scroll - Scroll listeners
- * @property {Array<{target: EventTarget, handler: Function}>} resize - Resize listeners
- * @property {Array<{target: Element, event: string, handler: Function}>} dom - DOM listeners
+ * @property {Array<{target: EventTarget, handler: EventListenerOrEventListenerObject}>} scroll - Scroll listeners
+ * @property {Array<{target: EventTarget, handler: EventListenerOrEventListenerObject}>} resize - Resize listeners
+ * @property {Array<{target: EventTarget, handler: EventListenerOrEventListenerObject}>} [visualViewportResize] - Visual viewport resize listeners
+ * @property {Array<{target: EventTarget, handler: EventListenerOrEventListenerObject}>} [visualViewportScroll] - Visual viewport scroll listeners
+ * @property {{target: EventTarget, handler: EventListenerOrEventListenerObject}|null} [inputFocus] - Input focus listener
+ * @property {{target: EventTarget, handler: EventListenerOrEventListenerObject}|null} [inputBlur] - Input blur listener
+ * @property {{target: EventTarget, handler: EventListenerOrEventListenerObject}|null} [heroTypingEnd] - Hero typing end listener
+ * @property {Array<{target: Element, event: string, handler: EventListenerOrEventListenerObject}>} dom - DOM listeners
  */
 
 /**
  * @typedef {Object} TimerRegistry
- * @property {Set<number>} timeouts - Active timeouts
- * @property {Set<number>} intervals - Active intervals
- * @property {number|null} scrollTimeout - Scroll debounce timeout
+ * @property {Set<ReturnType<typeof setTimeout>>} timeouts - Active timeouts
+ * @property {Set<ReturnType<typeof setInterval>>} intervals - Active intervals
+ * @property {ReturnType<typeof setTimeout>|null} scrollTimeout - Scroll debounce timeout
  */
 
 /**
@@ -245,8 +259,8 @@
  */
 
 /**
- * @typedef {number} TimerID
- * Browser timer ID (can be number or NodeJS.Timeout in Node)
+ * @typedef {ReturnType<typeof setTimeout>} TimerID
+ * Browser timer ID (handles both number and Timeout types)
  */
 
 /**

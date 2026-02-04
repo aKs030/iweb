@@ -13,6 +13,9 @@ import { RobotIntelligence } from './modules/robot-intelligence.js';
 import { robotCompanionTexts } from './robot-companion-texts.js';
 import { createLogger } from '/content/core/logger.js';
 import { createObserver } from '/content/core/intersection-observer.js';
+import { ROBOT_EVENTS, ROBOT_ACTIONS } from './constants/events.js';
+import { RobotStateManager } from './state/RobotStateManager.js';
+import { RobotDOMBuilder } from './dom/RobotDOMBuilder.js';
 
 const log = createLogger('RobotCompanion');
 
@@ -39,6 +42,14 @@ export class RobotCompanion {
   constructor() {
     this.texts = robotCompanionTexts;
 
+    // Initialize DOM Builder
+    /** @type {RobotDOMBuilder} */
+    this.domBuilder = new RobotDOMBuilder();
+
+    // Initialize State Manager
+    /** @type {RobotStateManager} */
+    this.stateManager = new RobotStateManager();
+
     /** @type {import('./gemini-service.js').GeminiService|null} */
     this.gemini = null;
     /** @type {RobotGames} */
@@ -52,9 +63,6 @@ export class RobotCompanion {
     /** @type {RobotIntelligence} */
     this.intelligenceModule = new RobotIntelligence(this);
 
-    /** @type {RobotState} */
-    this.state = {};
-
     /** @type {boolean} Flag to prevent footer overlap check from overriding keyboard adjustment */
     this.isKeyboardAdjustmentActive = false;
 
@@ -64,7 +72,7 @@ export class RobotCompanion {
 
     /** @type {import('/content/core/types.js').PageContext|null} */
     this.currentObservedContext = null;
-    /** @type {IntersectionObserver|null} */
+    /** @type {ReturnType<typeof createObserver>|null} */
     this._sectionObserver = null;
 
     /** @type {import('/content/core/types.js').EventListenerRegistry} */
@@ -86,23 +94,17 @@ export class RobotCompanion {
       scrollTimeout: null,
     };
 
-    const now = new Date(); // ✅ Create once, reuse
-    /** @type {import('/content/core/types.js').RobotAnalytics} */
-    this.analytics = {
-      sessions:
-        Number.parseInt(localStorage.getItem('robot-sessions') || '0', 10) + 1,
-      sectionsVisited: [],
-      interactions: Number.parseInt(
-        localStorage.getItem('robot-interactions') || '0',
-        10,
-      ),
-      lastVisit: localStorage.getItem('robot-last-visit') || now.toISOString(),
-    };
-    localStorage.setItem('robot-sessions', String(this.analytics.sessions));
-    localStorage.setItem('robot-last-visit', now.toISOString());
+    // Load analytics from storage and calculate mood
+    this.stateManager.loadFromStorage();
+    const mood = this.calculateMood();
+    this.stateManager.setState({ mood });
 
+    // Legacy properties for backward compatibility (deprecated)
+    /** @type {import('/content/core/types.js').RobotAnalytics} */
+    this.analytics = this.stateManager.getState().analytics;
     /** @type {import('/content/core/types.js').RobotMood} */
-    this.mood = this.calculateMood();
+    this.mood = mood;
+
     /** @type {Set<string>} */
     this.easterEggFound = new Set(
       JSON.parse(localStorage.getItem('robot-easter-eggs') || '[]'),
@@ -133,17 +135,19 @@ export class RobotCompanion {
    * Safe interval wrapper for automatic cleanup
    * @param {Function} callback - Callback function
    * @param {number} delay - Delay in milliseconds
-   * @returns {TimerID} Interval ID
+   * @returns {ReturnType<typeof setInterval>} Interval ID
    */
   _setInterval(callback, delay) {
-    const id = /** @type {TimerID} */ (setInterval(callback, delay));
+    const id = setInterval(callback, delay);
+    // @ts-ignore - Type compatibility between Node and Browser
     this._timers.intervals.add(id);
+    // @ts-ignore - Type compatibility between Node and Browser
     return id;
   }
 
   /**
    * Clear timeout and remove from registry
-   * @param {TimerID} id - Timeout ID
+   * @param {ReturnType<typeof setTimeout>} id - Timeout ID
    */
   _clearTimeout(id) {
     clearTimeout(id);
@@ -152,7 +156,7 @@ export class RobotCompanion {
 
   /**
    * Clear interval and remove from registry
-   * @param {TimerID} id - Interval ID
+   * @param {ReturnType<typeof setInterval>} id - Interval ID
    */
   _clearInterval(id) {
     clearInterval(id);
@@ -439,7 +443,10 @@ export class RobotCompanion {
         log.warn('RobotCompanion: hero typing end handler failed', err);
       }
     };
-    document.addEventListener('hero:typingEnd', this._onHeroTypingEnd);
+    document.addEventListener(
+      ROBOT_EVENTS.HERO_TYPING_END,
+      this._onHeroTypingEnd,
+    );
     this._eventListeners.heroTypingEnd = {
       target: document,
       handler: this._onHeroTypingEnd,
@@ -539,6 +546,11 @@ export class RobotCompanion {
       this._sectionObserver = null;
     }
 
+    // State Manager Cleanup
+    if (this.stateManager) {
+      this.stateManager.destroy();
+    }
+
     // Zentrale Event-Listener Cleanup
     if (this._eventListeners) {
       // Scroll Listeners
@@ -576,7 +588,7 @@ export class RobotCompanion {
       // Hero Typing End Listener
       if (this._eventListeners.heroTypingEnd) {
         const { target, handler } = this._eventListeners.heroTypingEnd;
-        target.removeEventListener('hero:typingEnd', handler);
+        target.removeEventListener(ROBOT_EVENTS.HERO_TYPING_END, handler);
       }
 
       // DOM element listeners
@@ -647,7 +659,9 @@ export class RobotCompanion {
    */
   calculateMood() {
     const hour = new Date().getHours();
-    const { sessions, interactions } = this.analytics;
+    const state = this.stateManager.getState();
+    const { sessions, interactions } = state.analytics;
+
     if (hour >= 0 && hour < 6) return 'night-owl';
     if (hour >= 6 && hour < 10) return 'sleepy';
     if (hour >= 10 && hour < 17) return 'energetic';
@@ -669,27 +683,29 @@ export class RobotCompanion {
         globalThis.robotCompanionTexts &&
         globalThis.robotCompanionTexts.moodGreetings) ||
       {};
-    const moodGreets = greetings[this.mood] ||
+
+    // Get current mood from state manager
+    const currentMood = this.stateManager.getState().mood;
+    const moodGreets = greetings[currentMood] ||
       greetings['normal'] || ['Hey! Wie kann ich helfen?'];
     return moodGreets[Math.floor(Math.random() * moodGreets.length)];
   }
 
   trackInteraction() {
-    this.analytics.interactions++;
-    localStorage.setItem('robot-interactions', this.analytics.interactions);
-    if (
-      this.analytics.interactions === 10 &&
-      !this.easterEggFound.has('first-10')
-    ) {
+    this.stateManager.trackInteraction();
+
+    // Update legacy property for backward compatibility
+    this.analytics = this.stateManager.getState().analytics;
+
+    const interactions = this.analytics.interactions;
+
+    if (interactions === 10 && !this.easterEggFound.has('first-10')) {
       this.unlockEasterEgg(
         'first-10',
         '🎉 Wow, 10 Interaktionen! Du bist hartnäckig! Hier ist ein Geschenk: Ein geheimes Mini-Game wurde freigeschaltet! 🎮',
       );
     }
-    if (
-      this.analytics.interactions === 50 &&
-      !this.easterEggFound.has('first-50')
-    ) {
+    if (interactions === 50 && !this.easterEggFound.has('first-50')) {
       this.unlockEasterEgg(
         'first-50',
         '🏆 50 Interaktionen! Du bist ein echter Power-User! Respekt! 💪',
@@ -717,25 +733,27 @@ export class RobotCompanion {
    * @param {import('/content/core/types.js').PageContext} context - Page context
    */
   trackSectionVisit(context) {
-    if (!this.analytics.sectionsVisited.includes(context)) {
-      this.analytics.sectionsVisited.push(context);
-      const allSections = [
-        'hero',
-        'features',
-        'section3',
-        'projects',
-        'gallery',
-        'footer',
-      ];
-      const visitedAll = allSections.every((s) =>
-        this.analytics.sectionsVisited.includes(s),
+    this.stateManager.trackSectionVisit(context);
+
+    // Update legacy property for backward compatibility
+    this.analytics = this.stateManager.getState().analytics;
+
+    const allSections = [
+      'hero',
+      'features',
+      'section3',
+      'projects',
+      'gallery',
+      'footer',
+    ];
+    const visitedAll = allSections.every((s) =>
+      this.analytics.sectionsVisited.includes(s),
+    );
+    if (visitedAll && !this.easterEggFound.has('explorer')) {
+      this.unlockEasterEgg(
+        'explorer',
+        '🗺️ Du hast alle Bereiche erkundet! Echter Explorer! 🧭',
       );
-      if (visitedAll && !this.easterEggFound.has('explorer')) {
-        this.unlockEasterEgg(
-          'explorer',
-          '🗺️ Du hast alle Bereiche erkundet! Echter Explorer! 🧭',
-        );
-      }
     }
   }
 
@@ -749,82 +767,12 @@ export class RobotCompanion {
   }
 
   createDOM() {
-    const container = document.createElement('div');
-    container.id = this.containerId;
+    // Use DOM Builder for XSS-safe element creation
+    const container = this.domBuilder.createContainer();
 
-    const robotSVG = `
-        <svg viewBox="0 0 100 100" class="robot-svg">
-            <defs>
-              <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-                <feGaussianBlur stdDeviation="2" result="blur"/>
-                <feComposite in="SourceGraphic" in2="blur" operator="over"/>
-              </filter>
-              <filter id="lidShadow" x="-50%" y="-50%" width="200%" height="200%">
-                <feDropShadow dx="0" dy="1" stdDeviation="1.2" flood-color="#000000" flood-opacity="0.35" />
-              </filter>
-              <linearGradient id="lidGradient" x1="0" x2="0" y1="0" y2="1">
-                <stop offset="0%" stop-color="#0b1220" stop-opacity="0.95" />
-                <stop offset="100%" stop-color="#0f172a" stop-opacity="1" />
-              </linearGradient>
-            </defs>
-            <line x1="50" y1="15" x2="50" y2="25" stroke="#40e0d0" stroke-width="2" />
-            <circle cx="50" cy="15" r="3" class="robot-antenna-light" fill="#ff4444" />
-            <path d="M30,40 a20,20 0 0,1 40,0" fill="#1e293b" stroke="#40e0d0" stroke-width="2" />
-            <rect x="30" y="40" width="40" height="15" fill="#1e293b" stroke="#40e0d0" stroke-width="2" />
-            <g class="robot-eyes">
-              <circle class="robot-pupil" cx="40" cy="42" r="4" fill="#40e0d0" filter="url(#glow)" />
-              <path class="robot-lid" d="M34 36 C36 30 44 30 46 36 L46 44 C44 38 36 38 34 44 Z" fill="url(#lidGradient)" filter="url(#lidShadow)" />
-              <circle class="robot-pupil" cx="60" cy="42" r="4" fill="#40e0d0" filter="url(#glow)" />
-              <path class="robot-lid" d="M54 36 C56 30 64 30 66 36 L66 44 C64 38 56 38 54 44 Z" fill="url(#lidGradient)" filter="url(#lidShadow)" />
-            </g>
-            <path class="robot-legs" d="M30,60 L70,60 L65,90 L35,90 Z" fill="#0f172a" stroke="#40e0d0" stroke-width="2" />
-            <g class="robot-arms">
-                <path class="robot-arm left" d="M30,62 Q20,70 25,80" fill="none" stroke="#40e0d0" stroke-width="3" stroke-linecap="round" />
-                <path class="robot-arm right" d="M70,62 Q80,70 75,80" fill="none" stroke="#40e0d0" stroke-width="3" stroke-linecap="round" />
-            </g>
-            <g class="robot-flame" style="opacity: 0;">
-                <path d="M40,90 Q50,120 60,90 Q50,110 40,90" fill="#ff9900" />
-                <path d="M45,90 Q50,110 55,90" fill="#ffff00" />
-            </g>
-            <g class="robot-particles" style="opacity: 0;">
-                <circle class="particle" cx="20" cy="50" r="2" fill="#40e0d0" opacity="0.6"><animate attributeName="cy" values="50;30;50" dur="2s" repeatCount="indefinite" /></circle>
-                <circle class="particle" cx="80" cy="60" r="1.5" fill="#40e0d0" opacity="0.5"><animate attributeName="cy" values="60;40;60" dur="2.5s" repeatCount="indefinite" /></circle>
-                <circle class="particle" cx="15" cy="70" r="1" fill="#40e0d0" opacity="0.7"><animate attributeName="cy" values="70;50;70" dur="1.8s" repeatCount="indefinite" /></circle>
-            </g>
-            <g class="robot-thinking" style="opacity: 0;">
-                <circle cx="70" cy="20" r="8" fill="rgba(64, 224, 208, 0.2)" stroke="#40e0d0" stroke-width="1" />
-                <text x="70" y="25" font-size="12" fill="#40e0d0" text-anchor="middle">?</text>
-            </g>
-            <circle cx="50" cy="70" r="5" fill="#2563eb" opacity="0.8"><animate attributeName="opacity" values="0.4;1;0.4" dur="2s" repeatCount="indefinite" /></circle>
-        </svg>
-    `;
-
-    container.innerHTML = `
-            <div class="robot-chat-window" id="robot-chat-window">
-                <div class="chat-header u-inline-center">
-                    <div class="chat-title"><span class="chat-status-dot"></span>Cyber Assistant</div>
-                    <button class="chat-close-btn">&times;</button>
-                </div>
-                <div class="chat-messages" id="robot-messages"></div>
-                <div class="chat-controls" id="robot-controls"></div>
-                <div class="chat-input-area" id="robot-input-area">
-                    <input type="text" id="robot-chat-input" name="robot-message" placeholder="Frag mich etwas oder wähle eine Option..." autocomplete="off" />
-                    <button id="robot-chat-send">➤</button>
-                </div>
-            </div>
-            <div class="robot-float-wrapper">
-                <div class="robot-bubble" id="robot-bubble">
-                    <span id="robot-bubble-text">Hallo!</span>
-                    <div class="robot-bubble-close">&times;</div>
-                </div>
-                <button class="robot-avatar" aria-label="Chat öffnen">${robotSVG}</button>
-            </div>
-        `;
-
-    container.style.opacity = '0';
-    container.style.transition = 'opacity 220ms ease';
     document.body.appendChild(container);
 
+    // Cache DOM references
     this.dom.container = container;
     this.dom.window = document.getElementById('robot-chat-window');
     this.dom.bubble = document.getElementById('robot-bubble');
@@ -833,8 +781,12 @@ export class RobotCompanion {
     this.dom.messages = document.getElementById('robot-messages');
     this.dom.controls = document.getElementById('robot-controls');
     this.dom.inputArea = document.getElementById('robot-input-area');
-    this.dom.input = document.getElementById('robot-chat-input');
-    this.dom.sendBtn = document.getElementById('robot-chat-send');
+    this.dom.input = /** @type {HTMLInputElement} */ (
+      document.getElementById('robot-chat-input')
+    );
+    this.dom.sendBtn = /** @type {HTMLButtonElement} */ (
+      document.getElementById('robot-chat-send')
+    );
     this.dom.avatar = container.querySelector('.robot-avatar');
     this.dom.svg = container.querySelector('.robot-svg');
     this.dom.eyes = container.querySelector('.robot-eyes');
@@ -998,6 +950,7 @@ export class RobotCompanion {
 
   setupSectionObservers() {
     if (this._sectionObserver) return;
+    /** @type {Array<{selector: string, ctx: import('/content/core/types.js').PageContext}>} */
     const sectionMap = [
       { selector: '#hero', ctx: 'hero' },
       { selector: '#features', ctx: 'features' },
@@ -1013,7 +966,11 @@ export class RobotCompanion {
             const match = sectionMap.find((s) =>
               entry.target.matches(s.selector),
             );
-            if (match) this.currentObservedContext = match.ctx;
+            if (match) {
+              this.currentObservedContext = match.ctx;
+              // Update state manager
+              this.stateManager.setState({ currentContext: match.ctx });
+            }
           }
         });
       },
@@ -1045,25 +1002,30 @@ export class RobotCompanion {
       normal: 'Ganz normaler Roboter-Modus! 🤖',
     };
 
-    const emoji = moodEmojis[this.mood] || '🤖';
-    const desc = moodDescriptions[this.mood] || 'Normaler Modus';
+    const state = this.stateManager.getState();
+    const currentMood = state.mood;
+    const emoji = moodEmojis[currentMood] || '🤖';
+    const desc = moodDescriptions[currentMood] || 'Normaler Modus';
     const stats = `
       📊 Deine Stats:
-      • Sessions: ${this.analytics.sessions}
-      • Interaktionen: ${this.analytics.interactions}
+      • Sessions: ${state.analytics.sessions}
+      • Interaktionen: ${state.analytics.interactions}
       • Easter Eggs: ${this.easterEggFound.size}
-      • Mood: ${emoji} ${this.mood}
+      • Mood: ${emoji} ${currentMood}
     `;
 
     this.chatModule.addMessage(desc, 'bot');
     this.chatModule.addMessage(stats, 'bot');
-    this._setTimeout(() => this.chatModule.handleAction('start'), 2000);
+    this._setTimeout(
+      () => this.chatModule.handleAction(ROBOT_ACTIONS.START),
+      2000,
+    );
   }
 
   // Delegated methods to chat module
   /**
    * Fetch and show AI suggestion
-   * @returns {Promise<void>}
+   * @returns {Promise<boolean | void>}
    */
   fetchAndShowSuggestion() {
     return this.chatModule.fetchAndShowSuggestion();

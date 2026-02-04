@@ -7,6 +7,7 @@
 
 import { RobotCompanion } from './robot-companion.js';
 import { createLogger } from '/content/core/logger.js';
+import { ROBOT_EVENTS } from './constants/events.js';
 
 const log = createLogger('RobotCompanionElement');
 
@@ -34,7 +35,7 @@ export class RobotCompanionElement extends HTMLElement {
       log.info('Robot Companion initialized');
 
       this.dispatchEvent(
-        new CustomEvent('robot:loaded', {
+        new CustomEvent(ROBOT_EVENTS.INITIALIZED, {
           bubbles: true,
           detail: { robot: this.robot },
         }),
@@ -42,7 +43,7 @@ export class RobotCompanionElement extends HTMLElement {
     } catch (error) {
       log.error('Robot Companion initialization failed:', error);
       this.dispatchEvent(
-        new CustomEvent('robot:error', {
+        new CustomEvent(ROBOT_EVENTS.ERROR, {
           bubbles: true,
           detail: { error },
         }),

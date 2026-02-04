@@ -171,37 +171,3 @@ export function fire(type, detail = null, target = document) {
     log.error(`Failed to dispatch event: ${type}`, error);
   }
 }
-
-/**
- * Listen to event (currently unused - kept for API completeness)
- * @param {string} event - Event name
- * @param {Function} callback - Callback function
- * @param {Object} [options] - Options
- * @returns {Function} Unsubscribe function
- */
-const _on = (event, callback, options) => {
-  return emitter.on(event, callback, options);
-};
-
-/**
- * Listen to event once (currently unused - kept for API completeness)
- * @param {string} event - Event name
- * @param {Function} callback - Callback function
- * @returns {Function} Unsubscribe function
- */
-const _once = (event, callback) => {
-  return emitter.once(event, callback);
-};
-
-/**
- * Remove event listener (currently unused - kept for API completeness)
- * @param {string} event - Event name
- * @param {Function} callback - Callback function
- */
-const _off = (event, callback) => {
-  emitter.off(event, callback);
-};
-
-// Exports removed - not used anywhere in codebase
-// Kept as internal functions for potential future use
-// export { _on as on, _once as once, _off as off, EventEmitter };

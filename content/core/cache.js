@@ -259,35 +259,3 @@ export function getCache(options) {
   }
   return globalCache;
 }
-
-/**
- * Cache decorator for functions (currently unused - kept for future use)
- * @param {Function} fn - Function to cache
- * @param {Object} [options] - Cache options
- * @returns {Function} Cached function
- */
-const _cached = (fn, options = {}) => {
-  const cache = getCache();
-  const { ttl = 300000, keyFn = (...args) => JSON.stringify(args) } = options;
-
-  return async (...args) => {
-    const key = `fn:${fn.name}:${keyFn(...args)}`;
-    const cachedValue = await cache.get(key);
-
-    if (cachedValue !== null) {
-      return cachedValue;
-    }
-
-    const result = await fn(...args);
-    await cache.set(key, result, { ttl });
-    return result;
-  };
-};
-
-// Export removed - not used anywhere in codebase
-// export { _cached as cached };
-
-// Export for compatibility - removed unused exports:
-// - cached (decorator function - not used)
-// - CacheManager, MemoryCache, IndexedDBCache (internal classes - not exported directly)
-// These are used internally by getCache() but don't need to be exported
