@@ -540,49 +540,58 @@
 
 /* --- GLASSMORPHISM & MODERN CHAT --- */
 .robot-chat-window {
-  position: absolute;
-  bottom: 100px;
-  right: 0;
-  width: 380px;
-  height: 550px;
+  /* Positioning: Centered on Screen */
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.95);
+  bottom: auto; /* Override bottom positioning */
+  right: auto; /* Override right positioning */
+
+  /* Compact Dimensions */
+  width: 340px;
+  height: 480px;
+
   /* Advanced Glass Effect */
-  background: rgba(15, 23, 42, 0.8);
-  border: 1px solid rgba(64, 224, 208, 0.2);
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(64, 224, 208, 0.25);
   box-shadow:
-    0 25px 60px rgba(0, 0, 0, 0.6),
-    0 0 0 1px rgba(255, 255, 255, 0.05) inset,
-    0 0 20px rgba(64, 224, 208, 0.05);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border-radius: 24px;
+    0 25px 60px rgba(0, 0, 0, 0.7),
+    0 0 0 1px rgba(255, 255, 255, 0.08) inset,
+    0 0 30px rgba(64, 224, 208, 0.1);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border-radius: 28px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   opacity: 0;
-  transform: translateY(20px) scale(0.95);
-  transform-origin: bottom right;
+  visibility: hidden;
+  pointer-events: none; /* Ignore pointer events when hidden */
+
+  /* Smooth Animation */
   transition:
     opacity 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
     transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
-    box-shadow 0.4s ease;
-  pointer-events: auto;
-  visibility: hidden;
+    visibility 0.4s;
+  z-index: 10000; /* Ensure it's above everything */
 }
 
 .robot-chat-window.open {
   opacity: 1;
-  transform: translateY(0) scale(1);
+  transform: translate(-50%, -50%) scale(1);
   visibility: visible;
+  pointer-events: auto;
 }
 
 .chat-header {
-  background: rgba(255, 255, 255, 0.02);
-  padding: 20px 24px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 18px 22px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid rgba(64, 224, 208, 0.15);
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(12px);
 }
 
 .chat-title {
@@ -649,11 +658,11 @@
 
 .chat-messages {
   flex: 1;
-  padding: 24px;
+  padding: 20px 22px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 16px;
   scroll-behavior: smooth;
   background: linear-gradient(
     180deg,
@@ -680,11 +689,11 @@
 }
 
 .message {
-  max-width: 85%;
-  padding: 14px 18px;
-  border-radius: 18px;
+  max-width: 88%;
+  padding: 12px 16px;
+  border-radius: 16px;
   font-size: 0.95rem;
-  line-height: 1.6;
+  line-height: 1.55;
   animation: messageFadeIn 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
   overflow-wrap: break-word;
   position: relative;
@@ -692,7 +701,7 @@
 }
 
 .message.bot {
-  background: rgba(30, 41, 59, 0.6);
+  background: rgba(30, 41, 59, 0.7);
   color: #e2e8f0;
   align-self: flex-start;
   border-bottom-left-radius: 4px;
@@ -713,22 +722,22 @@
 .message h1,
 .message h2,
 .message h3 {
-  margin: 12px 0 6px 0;
+  margin: 10px 0 6px 0;
   font-weight: 700;
   color: #f8fafc;
   line-height: 1.3;
 }
 
 .message h1 {
-  font-size: 1.25rem;
+  font-size: 1.2rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   padding-bottom: 4px;
 }
 .message h2 {
-  font-size: 1.15rem;
+  font-size: 1.1rem;
 }
 .message h3 {
-  font-size: 1.05rem;
+  font-size: 1rem;
 }
 
 .message p {
@@ -813,9 +822,9 @@
 
 /* --- INPUT AREA --- */
 .chat-input-area {
-  padding: 20px 24px;
+  padding: 18px 22px;
   border-top: 1px solid rgba(64, 224, 208, 0.1);
-  background: rgba(15, 23, 42, 0.3);
+  background: rgba(15, 23, 42, 0.4);
   display: flex;
   gap: 12px;
   align-items: center;
@@ -827,7 +836,7 @@
   background: rgba(15, 23, 42, 0.6);
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: #f1f5f9;
-  padding: 12px 16px;
+  padding: 10px 16px;
   border-radius: 24px;
   font-family: inherit;
   font-size: 0.95rem;
@@ -852,8 +861,8 @@
 #robot-chat-send {
   background: linear-gradient(135deg, #40e0d0, #2563eb);
   border: none;
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   color: white;
   font-size: 1.1rem;
@@ -1018,7 +1027,7 @@
 }
 
 .chat-controls {
-  padding: 16px 24px;
+  padding: 16px 22px;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
   background: rgba(15, 23, 42, 0.2);
   display: flex;
@@ -1110,11 +1119,14 @@
   }
 
   .robot-chat-window {
-    width: calc(100vw - 30px);
+    width: 90vw; /* Responsive width for mobile */
     max-width: 360px;
-    bottom: 90px;
-    right: -7px;
-    height: 70vh;
+    height: 60vh; /* Shorter on mobile */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    bottom: auto;
+    right: auto;
     border-radius: 20px;
   }
 
