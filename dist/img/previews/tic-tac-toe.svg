@@ -1,0 +1,46 @@
+<svg width="800" height="600" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <defs>
+    <linearGradient id="tttBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4facfe;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#00f2fe;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <rect width="800" height="600" fill="url(#tttBg)"/>
+
+  <!-- Title -->
+  <text x="400" y="80" font-family="sans-serif" font-size="48" fill="white" text-anchor="middle" font-weight="bold">Tic Tac Toe</text>
+
+  <!-- Game board background -->
+  <rect x="225" y="150" width="350" height="350" rx="20" fill="white" opacity="0.95"/>
+
+  <!-- Grid lines -->
+  <line x1="225" y1="266" x2="575" y2="266" stroke="#2d3748" stroke-width="6" stroke-linecap="round"/>
+  <line x1="225" y1="383" x2="575" y2="383" stroke="#2d3748" stroke-width="6" stroke-linecap="round"/>
+  <line x1="341" y1="150" x2="341" y2="500" stroke="#2d3748" stroke-width="6" stroke-linecap="round"/>
+  <line x1="458" y1="150" x2="458" y2="500" stroke="#2d3748" stroke-width="6" stroke-linecap="round"/>
+
+  <!-- X marks -->
+  <!-- Top left X -->
+  <line x1="255" y1="180" x2="311" y2="236" stroke="#e53e3e" stroke-width="8" stroke-linecap="round"/>
+  <line x1="311" y1="180" x2="255" y2="236" stroke="#e53e3e" stroke-width="8" stroke-linecap="round"/>
+
+  <!-- Center X -->
+  <line x1="371" y1="296" x2="428" y2="353" stroke="#e53e3e" stroke-width="8" stroke-linecap="round"/>
+  <line x1="428" y1="296" x2="371" y2="353" stroke="#e53e3e" stroke-width="8" stroke-linecap="round"/>
+
+  <!-- O marks -->
+  <!-- Top center O -->
+  <circle cx="400" cy="208" r="35" fill="none" stroke="#3182ce" stroke-width="8"/>
+
+  <!-- Middle left O -->
+  <circle cx="283" cy="324" r="35" fill="none" stroke="#3182ce" stroke-width="8"/>
+
+  <!-- Bottom right O -->
+  <circle cx="516" cy="441" r="35" fill="none" stroke="#3182ce" stroke-width="8"/>
+
+  <!-- Player turn indicator -->
+  <rect x="300" y="530" width="200" height="50" rx="10" fill="white" opacity="0.9"/>
+  <text x="400" y="565" font-family="sans-serif" font-size="28" fill="#2d3748" text-anchor="middle" font-weight="600">Player X</text>
+</svg>
