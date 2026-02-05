@@ -591,7 +591,9 @@ const hideBrandingFromUsers = () => {
 
 hideBrandingFromUsers();
 
-globalThis.__HEAD_INLINE_READY = true;
+// Signal that head-inline is ready
+import { headState } from './head-state.js';
+headState.setInlineReady();
 
 import('/content/components/head/head-manager.js').catch((err) => {
   log.error('[head-inline] Failed to load head-manager.js:', err);

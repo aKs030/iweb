@@ -315,11 +315,8 @@ globalThis.addEventListener('pageshow', (event) => {
     log.info('Page restored from bfcache');
     globalThis.dispatchEvent(new CustomEvent('resize'));
 
-    if (
-      !document.hidden &&
-      globalThis.threeEarthSystem &&
-      globalThis.threeEarthSystem.animate
-    ) {
+    // Trigger visibility change to resume animations
+    if (!document.hidden) {
       document.dispatchEvent(new CustomEvent('visibilitychange'));
     }
   }
