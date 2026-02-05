@@ -25,7 +25,10 @@ describe('Basis-Hilfsprogramme (Core Utilities)', () => {
       vi.setSystemTime(new Date('2024-01-01')); // Sicherstellen, dass now > 0 ist
 
       const func = vi.fn();
-      const debouncedFunc = debounce(func, 100, { leading: true, trailing: false });
+      const debouncedFunc = debounce(func, 100, {
+        leading: true,
+        trailing: false,
+      });
 
       // Erster Aufruf: Zeit seit letztem Aufruf (riesig) > Verzögerung. Führt aus.
       debouncedFunc();
