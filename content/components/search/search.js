@@ -3,11 +3,12 @@
  * Search Component
  * Mac Spotlight-Inspired Search with Server-Side Optimization
  * @author Abdulkerim Sesli
- * @version 2.1.0
+ * @version 2.2.0
  */
 
 /* exported initSearch, openSearch, closeSearch, toggleSearch */
 import { createLogger } from '/content/core/logger.js';
+import { upsertHeadLink } from '/content/core/utils.js';
 
 const _log = createLogger('search');
 
@@ -43,11 +44,12 @@ class SearchComponent {
   }
 
   loadStyles() {
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = '/content/components/search/search.css';
-    link.dataset.injectedBy = 'search-js';
-    document.head.appendChild(link);
+    // Use upsertHeadLink to prevent duplicate injections and allow cleaner management
+    upsertHeadLink({
+      rel: 'stylesheet',
+      href: '/content/components/search/search.css',
+      dataset: { injectedBy: 'search-js' },
+    });
   }
 
   createSearchOverlay() {
