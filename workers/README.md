@@ -12,7 +12,7 @@ workers/
 ├── ai-search-proxy/          # Main AI & Search worker
 │   ├── handlers/             # Request handlers
 │   │   ├── search.js        # Search endpoint
-│   │   └── gemini.js        # AI endpoint (Groq)
+│   │   └── ai.js            # AI endpoint (Groq)
 │   ├── services/            # External API services
 │   │   └── groq.js          # Groq API client
 │   ├── utils/               # Worker-specific utilities
@@ -35,7 +35,8 @@ workers/
 **Endpoints:**
 
 - `POST /api/search` - Full-text search with relevance scoring
-- `POST /api/gemini` - AI chat with optional RAG augmentation
+- `POST /api/ai` - AI chat with optional RAG augmentation
+- `POST /api/gemini` - **[DEPRECATED]** Legacy endpoint (redirects to `/api/ai`)
 
 **Features:**
 
@@ -149,7 +150,7 @@ curl -X POST https://abdulkerimsesli.de/api/search \
 **AI API (with RAG):**
 
 ```bash
-curl -X POST https://abdulkerimsesli.de/api/gemini \
+curl -X POST https://abdulkerimsesli.de/api/ai \
   -H "Content-Type: application/json" \
   -d '{
     "prompt": "Was sind deine React-Projekte?",

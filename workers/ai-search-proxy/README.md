@@ -52,11 +52,11 @@ Führt eine Volltextsuche im Index durch.
 }
 ```
 
-### POST /api/gemini
+### POST /api/ai
 
 Proxied Groq AI API (kostenlos!) mit optionaler RAG-Augmentation.
 
-**Note:** Endpoint heißt noch `/api/gemini` für Backward Compatibility, nutzt aber jetzt Groq.
+> **Note:** The legacy `/api/gemini` endpoint is deprecated but still supported for backward compatibility. It redirects to `/api/ai`. Please update your code to use `/api/ai` instead.
 
 **Request:**
 
@@ -97,7 +97,7 @@ ai-search-proxy/
 ├── search-index.json     # Search index data
 ├── handlers/
 │   ├── search.js         # Search endpoint logic
-│   └── gemini.js         # AI API logic (uses Groq)
+│   └── ai.js             # AI API logic (uses Groq)
 ├── services/
 │   └── groq.js           # Groq AI client (FREE!)
 └── utils/
@@ -148,8 +148,8 @@ curl -X POST https://abdulkerimsesli.de/api/search \
   -H "Content-Type: application/json" \
   -d '{"query": "react", "topK": 5}'
 
-# Gemini endpoint
-curl -X POST https://abdulkerimsesli.de/api/gemini \
+# AI endpoint
+curl -X POST https://abdulkerimsesli.de/api/ai \
   -H "Content-Type: application/json" \
   -d '{
     "prompt": "Was ist React?",
