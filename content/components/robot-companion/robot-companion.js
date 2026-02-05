@@ -774,6 +774,7 @@ export class RobotCompanion {
 
     // Cache DOM references
     this.dom.container = container;
+    this.dom.floatWrapper = container.querySelector('.robot-float-wrapper');
     this.dom.window = document.getElementById('robot-chat-window');
     this.dom.bubble = document.getElementById('robot-bubble');
     this.dom.bubbleText = document.getElementById('robot-bubble-text');
