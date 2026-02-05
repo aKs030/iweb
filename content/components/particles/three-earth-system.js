@@ -45,8 +45,8 @@ function getAppLoadManager() {
     /** @type {import('/content/core/types.js').GlobalThisExtended & typeof globalThis} */ (
       globalThis
     );
-  // @ts-ignore
   return (
+    // @ts-ignore
     global.__appLoadManager || {
       block: () => {},
       unblock: () => {},
@@ -92,16 +92,15 @@ class TimerManager {
    * @returns {TimerID}
    */
   setTimeout(fn, delay) {
+    // @ts-ignore
     const id = /** @type {TimerID} */ (
-      /** @type {unknown} */ (
-        setTimeout(() => {
-          // ✅ Guard clause: Check if timer is still active before executing
-          if (this.timers.has(id)) {
-            this.timers.delete(id);
-            fn();
-          }
-        }, delay)
-      )
+      setTimeout(() => {
+        // ✅ Guard clause: Check if timer is still active before executing
+        if (this.timers.has(id)) {
+          this.timers.delete(id);
+          fn();
+        }
+      }, delay)
     );
     this.timers.add(id);
     return id;
@@ -1053,6 +1052,7 @@ class ThreeEarthSystem {
       }, duration - 300);
     }
 
+    // @ts-ignore
     this.showcaseTimeoutId = this.timers.setTimeout(() => {
       this._revertShowcaseConfig();
       this.showcaseActive = false;

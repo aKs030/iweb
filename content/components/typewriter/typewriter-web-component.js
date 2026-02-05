@@ -96,8 +96,8 @@ export class TypeWriterElement extends HTMLElement {
 
     // Parse config
     const config = {
-      textEl,
-      authorEl,
+      textEl: /** @type {HTMLElement} */ (textEl),
+      authorEl: /** @type {HTMLElement} */ (authorEl),
       quotes,
       typeSpeed: parseInt(this.getAttribute('type-speed') || '85', 10),
       deleteSpeed: parseInt(this.getAttribute('delete-speed') || '40', 10),

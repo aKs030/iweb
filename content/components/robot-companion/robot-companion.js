@@ -779,6 +779,7 @@ export class RobotCompanion {
 
     // Cache DOM references
     this.dom.container = container;
+    // @ts-ignore - floatWrapper missing in DOMCache type but exists in DOM
     this.dom.floatWrapper = container.querySelector('.robot-float-wrapper');
     this.dom.window = chatWindow;
     this.dom.bubble = document.getElementById('robot-bubble');
