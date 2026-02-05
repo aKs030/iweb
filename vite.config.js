@@ -42,9 +42,7 @@ export default defineConfig({
             console.log(
               'AI/Search Worker Proxy Error - Make sure worker is running on port 8787',
             );
-            console.log(
-              'Start with: npm run dev:search-worker',
-            );
+            console.log('Start with: npm run dev:search-worker');
           });
         },
       },
