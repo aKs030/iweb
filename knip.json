@@ -1,35 +1,7 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
-  "entry": [
-    "index.html",
-    "pages/**/index.html",
-    "content/main.js",
-    "pages/**/app.js",
-    "pages/**/*-app.js",
-    "pages/**/videos.js",
-    "pages/**/loader.js",
-    "pages/**/*-loader.js",
-    "pages/**/*-manager.js",
-    "workers/**/index.js",
-    "sw.js",
-    "content/components/**/*.js",
-    "content/core/**/*.js"
-  ],
-  "project": ["**/*.js", "**/*.mjs"],
-  "ignore": [
-    "node_modules/**",
-    "dist/**",
-    ".git/**",
-    "**/*.md",
-    "**/*.css",
-    "**/*.html",
-    "scripts/**",
-    "docs/**",
-    "reports/**",
-    "complexity-report/**"
-  ],
-  "ignoreBinaries": ["jscpd", "madge", "es6-plato", "cost-of-modules"],
-  "paths": {
-    "/content/*": ["content/*"]
-  }
+  "entry": ["content/main.js", "pages/**/*.js", "workers/**/*.js"],
+  "ignore": ["pages/home/GrussText.js"],
+  "ignoreBinaries": ["jscpd", "madge"],
+  "project": ["**/*.{js,ts}"]
 }

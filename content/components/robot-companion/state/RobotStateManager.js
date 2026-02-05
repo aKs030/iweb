@@ -25,7 +25,22 @@ const log = createLogger('RobotStateManager');
 export class RobotStateManager {
   constructor() {
     /** @type {RobotState} */
-    this._state = {
+    this._state = this._getInitialState();
+
+    /** @type {Map<string, Set<Function>>} */
+    this._listeners = new Map();
+
+    /** @type {RobotState} */
+    this._previousState = { ...this._state };
+  }
+
+  /**
+   * Get initial state object
+   * @returns {RobotState}
+   * @private
+   */
+  _getInitialState() {
+    return {
       isInitialized: false,
       isChatOpen: false,
       isTyping: false,
@@ -45,12 +60,6 @@ export class RobotStateManager {
         direction: 1,
       },
     };
-
-    /** @type {Map<string, Set<Function>>} */
-    this._listeners = new Map();
-
-    /** @type {RobotState} */
-    this._previousState = { ...this._state };
   }
 
   /**
@@ -237,26 +246,7 @@ export class RobotStateManager {
    * Reset state
    */
   reset() {
-    this._state = {
-      isInitialized: false,
-      isChatOpen: false,
-      isTyping: false,
-      isPatrolling: false,
-      isAnimating: false,
-      mood: 'normal',
-      currentContext: 'default',
-      analytics: {
-        sessions: 0,
-        interactions: 0,
-        sectionsVisited: [],
-        lastVisit: null,
-      },
-      position: {
-        x: 0,
-        y: 0,
-        direction: 1,
-      },
-    };
+    this._state = this._getInitialState();
   }
 
   /**

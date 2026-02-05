@@ -60,6 +60,12 @@ export default defineConfig({
     include: ['react', 'react-dom', 'three', 'dompurify'],
   },
 
+  // Test configuration
+  test: {
+    environment: 'jsdom',
+    globals: true,
+  },
+
   // Resolve extensions
   resolve: {
     extensions: ['.mjs', '.js', '.ts', '.json'],

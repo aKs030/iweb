@@ -10,6 +10,7 @@ import { createRoot } from 'https://esm.sh/react-dom@19.0.0/client';
 import htm from 'https://esm.sh/htm@3.1.1';
 import { createLogger } from '/content/core/logger.js';
 import { i18n } from '/content/core/i18n.js';
+import { createUseTranslation } from '/content/core/react-utils.js';
 import { updateLoader, hideLoader } from '/content/core/global-loader.js';
 import { marked } from 'https://cdn.jsdelivr.net/npm/marked@11.1.1/lib/marked.esm.js';
 import DOMPurify from 'https://cdn.jsdelivr.net/npm/dompurify@3.0.8/dist/purify.es.mjs';
@@ -27,15 +28,7 @@ renderer.heading = (text, level) => {
 marked.setOptions({ renderer, mangle: false, headerIds: false });
 
 // Translation Hook
-const useTranslation = () => {
-  const [lang, setLang] = React.useState(i18n.currentLang);
-  React.useEffect(() => {
-    const onLangChange = (e) => setLang(e.detail.lang);
-    i18n.addEventListener('language-changed', onLangChange);
-    return () => i18n.removeEventListener('language-changed', onLangChange);
-  }, []);
-  return { t: (key, params) => i18n.t(key, params), lang };
-};
+const useTranslation = createUseTranslation(React);
 
 // --- 3D Particle System ---
 class ParticleSystem {
