@@ -1,0 +1,39 @@
+<svg width="800" height="600" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="memBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f093fb;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f5576c;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <rect width="800" height="600" fill="url(#memBg)"/>
+
+  <!-- Memory Cards Grid -->
+  <g transform="translate(200, 150)">
+    <!-- Row 1 -->
+    <rect x="0" y="0" width="90" height="120" rx="10" fill="#fff" opacity="0.9"/>
+    <text x="45" y="70" font-size="48" text-anchor="middle">🎮</text>
+
+    <rect x="110" y="0" width="90" height="120" rx="10" fill="#4a5568"/>
+    <text x="155" y="70" font-size="36" fill="#fff" text-anchor="middle">?</text>
+
+    <rect x="220" y="0" width="90" height="120" rx="10" fill="#fff" opacity="0.9"/>
+    <text x="265" y="70" font-size="48" text-anchor="middle">⭐</text>
+
+    <rect x="330" y="0" width="90" height="120" rx="10" fill="#4a5568"/>
+    <text x="375" y="70" font-size="36" fill="#fff" text-anchor="middle">?</text>
+
+    <!-- Row 2 -->
+    <rect x="0" y="140" width="90" height="120" rx="10" fill="#4a5568"/>
+    <text x="45" y="210" font-size="36" fill="#fff" text-anchor="middle">?</text>
+
+    <rect x="110" y="140" width="90" height="120" rx="10" fill="#fff" opacity="0.9"/>
+    <text x="155" y="210" font-size="48" text-anchor="middle">🎮</text>
+
+    <rect x="220" y="140" width="90" height="120" rx="10" fill="#4a5568"/>
+    <text x="265" y="210" font-size="36" fill="#fff" text-anchor="middle">?</text>
+
+    <rect x="330" y="140" width="90" height="120" rx="10" fill="#fff" opacity="0.9"/>
+    <text x="375" y="210" font-size="48" text-anchor="middle">⭐</text>
+  </g>
+</svg>

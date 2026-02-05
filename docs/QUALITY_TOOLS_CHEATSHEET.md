@@ -13,7 +13,6 @@ npm run audit:full           # Security + Quality + Console
 npm run knip                 # Unused code
 npm run check:duplicates     # Duplicate code
 npm run check:circular       # Circular dependencies
-npm run check:complexity     # Code complexity
 npm run check:console        # Console.log detection
 ```
 
@@ -24,9 +23,7 @@ npm run check:console        # Console.log detection
 | **Knip**            | Unused code   | `npm run knip`             | Console + JSON |
 | **JSCPD**           | Duplicates    | `npm run check:duplicates` | Console        |
 | **Madge**           | Circular deps | `npm run check:circular`   | Console        |
-| **ES6-Plato**       | Complexity    | `npm run check:complexity` | HTML Report    |
 | **Grep**            | Console.log   | `npm run check:console`    | Console        |
-| **Cost-of-Modules** | Bundle impact | `npm run deps:cost`        | Console        |
 
 ## 🔍 Knip - Unused Code
 
@@ -111,27 +108,6 @@ content/core/utils.js > content/core/events.js > content/core/utils.js
 - Dependency Injection nutzen
 - Architektur überdenken
 
-## 📊 ES6-Plato - Complexity
-
-### Basic Usage
-
-```bash
-npm run check:complexity        # Generate report
-open complexity-report/index.html
-```
-
-### Metriken
-
-- **Cyclomatic Complexity:** < 10 (gut), > 20 (schlecht)
-- **Maintainability Index:** > 65 (gut), < 40 (schlecht)
-- **Lines of Code:** < 50 pro Funktion
-
-### Fix
-
-- Funktionen aufteilen
-- Early returns nutzen
-- Verschachtelung reduzieren
-
 ## 🔍 Console.log Detection
 
 ### Basic Usage
@@ -152,29 +128,6 @@ import { logger } from './core/logger.js';
 logger.debug('message');
 ```
 
-## 📦 Cost of Modules
-
-### Basic Usage
-
-```bash
-npm run deps:cost               # Show all
-npx cost-of-modules --less 1MB # Filter
-```
-
-### Output verstehen
-
-```
-three: 500 KB
-react: 120 KB
-dompurify: 45 KB
-```
-
-### Fix
-
-- Große Dependencies durch kleinere ersetzen
-- Tree-shaking nutzen
-- Dynamic imports für Code-Splitting
-
 ## 🎯 CI/CD Integration
 
 ### GitHub Actions Jobs
@@ -185,19 +138,16 @@ jobs:
   code-quality:
     - Knip
     - JSCPD
-    - Complexity
     - Console.log
 
   dependency-analysis:
     - Madge
-    - Cost-of-Modules
 ```
 
 ### Artifacts
 
 - `knip-report.json` - Knip results
 - `dependency-graph.svg` - Dependency visualization
-- `complexity-report/` - Complexity HTML report
 
 ## 🔧 Configuration Files
 
@@ -245,13 +195,6 @@ npm run audit:full              # Security + Quality
 npm run deps:check              # Update check
 ```
 
-### Monatlich
-
-```bash
-npm run check:complexity        # Complexity review
-npm run deps:cost               # Bundle review
-```
-
 ## 🐛 Troubleshooting
 
 ### Knip findet zu viel
@@ -277,19 +220,11 @@ jscpd --min-lines 20 --min-tokens 100
 madge --circular --extensions js,mjs content/
 ```
 
-### Complexity-Report leer
-
-```bash
-# Pfade prüfen
-es6-plato -r -d complexity-report content/**/*.js
-```
-
 ## 📚 Weitere Infos
 
 - [Knip Docs](https://github.com/webpro/knip)
 - [JSCPD Docs](https://github.com/kucherenko/jscpd)
 - [Madge Docs](https://github.com/pahen/madge)
-- [Plato Docs](https://github.com/es-analysis/plato)
 
 ## 🎓 Tipps & Tricks
 
@@ -311,14 +246,7 @@ es6-plato -r -d complexity-report content/**/*.js
 - Graph visualisieren für Verständnis
 - Architektur-Probleme identifizieren
 
-### Complexity
-
-- Trends über Zeit beobachten
-- Refactoring priorisieren
-- Limits definieren und einhalten
-
 ---
 
-**Setup:** `./scripts/setup-quality-tools.sh`  
 **Docs:** `docs/CODE_QUALITY.md`  
 **Dev Guide:** `DEVELOPMENT.md`
