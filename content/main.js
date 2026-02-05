@@ -42,6 +42,7 @@ import { initImageOptimization } from './core/image-loader-helper.js';
 import { i18n } from './core/i18n.js';
 import { initPerformanceMonitoring } from './core/performance-monitor.js';
 import { SectionTracker } from './core/section-tracker.js';
+import { AppLoadManager } from './core/load-manager.js';
 
 const log = createLogger('main');
 
@@ -60,34 +61,6 @@ const schedulePersistentStorageRequest = (delay = 2500) => {
     // Ignore
   }
 };
-
-const AppLoadManager = (() => {
-  const pending = new Set();
-  return {
-    block(name) {
-      if (!name) return;
-      pending.add(name);
-      log.debug(`Blocked: ${name}`);
-    },
-    unblock(name) {
-      if (!name) return;
-      pending.delete(name);
-      log.debug(`Unblocked: ${name}`);
-      if (pending.size === 0) {
-        fire(EVENTS.LOADING_UNBLOCKED);
-      }
-    },
-    isBlocked() {
-      return pending.size > 0;
-    },
-    getPending() {
-      return Array.from(pending);
-    },
-  };
-})();
-
-// Make AppLoadManager globally available for three-earth-system
-/** @type {any} */ (globalThis).__appLoadManager = AppLoadManager;
 
 // ===== Configuration & Environment =====
 const ENV = {
