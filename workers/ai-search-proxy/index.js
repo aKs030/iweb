@@ -37,6 +37,11 @@ export default {
         return await aiHandler(request, env, SEARCH_INDEX);
       }
 
+      // Legacy endpoint - redirect to /api/ai (deprecated)
+      if (url.pathname === '/api/gemini') {
+        return await aiHandler(request, env, SEARCH_INDEX);
+      }
+
       return errorResponse('Not Found', undefined, 404);
     } catch (error) {
       // Log error in development only

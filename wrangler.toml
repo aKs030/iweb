@@ -14,12 +14,14 @@ main = "workers/ai-search-proxy/index.js"
 compatibility_date = "2025-01-23"
 compatibility_flags = ["nodejs_compat"]
 
-# Route both www and apex domain for /api/search and /api/ai
+# Route both www and apex domain for /api/search, /api/ai, and /api/gemini (legacy)
 routes = [
   { pattern = "www.abdulkerimsesli.de/api/search", zone_name = "abdulkerimsesli.de" },
   { pattern = "abdulkerimsesli.de/api/search", zone_name = "abdulkerimsesli.de" },
   { pattern = "www.abdulkerimsesli.de/api/ai", zone_name = "abdulkerimsesli.de" },
-  { pattern = "abdulkerimsesli.de/api/ai", zone_name = "abdulkerimsesli.de" }
+  { pattern = "abdulkerimsesli.de/api/ai", zone_name = "abdulkerimsesli.de" },
+  { pattern = "www.abdulkerimsesli.de/api/gemini", zone_name = "abdulkerimsesli.de" },
+  { pattern = "abdulkerimsesli.de/api/gemini", zone_name = "abdulkerimsesli.de" }
 ]
 
 [vars]
