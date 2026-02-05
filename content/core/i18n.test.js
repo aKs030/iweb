@@ -7,16 +7,16 @@ describe('i18n LanguageManager', () => {
       hello: 'Hallo',
       welcome: 'Willkommen {{name}}',
       nested: {
-        key: 'Verschachtelter Wert'
-      }
+        key: 'Verschachtelter Wert',
+      },
     },
     en: {
       hello: 'Hello',
       welcome: 'Welcome {{name}}',
       nested: {
-        key: 'Nested Value'
-      }
-    }
+        key: 'Nested Value',
+      },
+    },
   };
 
   beforeEach(() => {
@@ -29,7 +29,7 @@ describe('i18n LanguageManager', () => {
     // Mock Navigator
     Object.defineProperty(window.navigator, 'language', {
       value: 'de-DE',
-      configurable: true
+      configurable: true,
     });
 
     // Mock fetch
@@ -39,7 +39,7 @@ describe('i18n LanguageManager', () => {
       const lang = urlStr.includes('de.json') ? 'de' : 'en';
       return Promise.resolve({
         ok: true,
-        json: () => Promise.resolve(mockTranslations[lang])
+        json: () => Promise.resolve(mockTranslations[lang]),
       });
     });
 
@@ -47,7 +47,9 @@ describe('i18n LanguageManager', () => {
     const store = {};
     vi.stubGlobal('localStorage', {
       getItem: vi.fn((key) => store[key] || null),
-      setItem: vi.fn((key, value) => { store[key] = String(value); }),
+      setItem: vi.fn((key, value) => {
+        store[key] = String(value);
+      }),
     });
   });
 
@@ -58,7 +60,9 @@ describe('i18n LanguageManager', () => {
   it('sollte Standard-Initialisierung durchführen', async () => {
     await i18n.init();
     expect(i18n.currentLang).toBe('de'); // Default oder Browser-Mock dependent
-    expect(global.fetch).toHaveBeenCalledWith('/content/config/locales/de.json');
+    expect(global.fetch).toHaveBeenCalledWith(
+      '/content/config/locales/de.json',
+    );
   });
 
   it('sollte Sprache wechseln', async () => {
@@ -67,7 +71,9 @@ describe('i18n LanguageManager', () => {
 
     expect(i18n.currentLang).toBe('en');
     expect(localStorage.setItem).toHaveBeenCalledWith('app_language', 'en');
-    expect(global.fetch).toHaveBeenCalledWith('/content/config/locales/en.json');
+    expect(global.fetch).toHaveBeenCalledWith(
+      '/content/config/locales/en.json',
+    );
   });
 
   it('sollte einfache Schlüssel übersetzen', async () => {
