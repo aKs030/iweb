@@ -67,14 +67,15 @@ describe('SearchEngine (MiniSearch)', () => {
   });
 
   it('should support fuzzy search (typos)', () => {
-    // 'photgraphy' (missing 'o') vs 'Photography' -> Should match with fuzzy: 0.2
-    const results = engine.search('photgraphy', 5);
+    const results = engine.search('photgraphy', 5); // Single-character typo (missing 'o')
     expect(results.length).toBeGreaterThan(0);
     expect(results[0].title).toBe('Photography Tips');
   });
 
   it('should prioritize items correctly (score + priority)', () => {
-    // Setup two items that are identical except for priority
+    // Use a separate SearchEngine instance with two otherwise identical items
+    // that differ only by priority. The higher-priority item should rank higher
+    // and have a higher score when searching for a matching term.
     const localItems = [
       {
         id: 'high',
@@ -93,14 +94,13 @@ describe('SearchEngine (MiniSearch)', () => {
         keywords: ['common'],
       },
     ];
+
     const localEngine = new SearchEngine(localItems);
     const res = localEngine.search('common', 2);
 
     expect(res).toHaveLength(2);
-    // High priority item should be first
     expect(res[0].id).toBe('high');
     expect(res[1].id).toBe('low');
-    // High priority item should have a strictly higher score
     expect(res[0].score).toBeGreaterThan(res[1].score);
   });
 
@@ -112,5 +112,19 @@ describe('SearchEngine (MiniSearch)', () => {
   it('should handle null/undefined queries', () => {
     expect(engine.search(null, 5)).toEqual([]);
     expect(engine.search(undefined, 5)).toEqual([]);
+  });
+
+  it('should perform case-insensitive search', () => {
+    const resultsLower = engine.search('berlin', 5);
+    const resultsUpper = engine.search('BERLIN', 5);
+    const resultsMixed = engine.search('BeRLiN', 5);
+
+    expect(resultsLower).toHaveLength(1);
+    expect(resultsUpper).toHaveLength(1);
+    expect(resultsMixed).toHaveLength(1);
+
+    expect(resultsLower[0].id).toBe('1');
+    expect(resultsUpper[0].id).toBe('1');
+    expect(resultsMixed[0].id).toBe('1');
   });
 });
