@@ -147,7 +147,7 @@ wrangler secret put YOUTUBE_API_KEY --env youtube
 ### AI Chat
 
 ```bash
-POST /api/gemini
+POST /api/ai
 {
   "prompt": "Deine Frage",
   "options": {"useSearch": true}

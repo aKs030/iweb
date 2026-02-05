@@ -10,7 +10,7 @@
 │  │  AI Search Proxy │         │ YouTube API Proxy│         │
 │  │                  │         │                  │         │
 │  │  /api/search     │         │  /api/youtube/*  │         │
-│  │  /api/gemini     │         │                  │         │
+│  │  /api/ai         │         │                  │         │
 │  └────────┬─────────┘         └────────┬─────────┘         │
 │           │                            │                    │
 │           └────────────┬───────────────┘                    │
@@ -62,8 +62,8 @@ workers/ai-search-proxy/
 │   ├── search.js              # Search Endpoint
 │   │   └── searchHandler()   # POST /api/search
 │   │
-│   └── gemini.js              # AI Endpoint
-│       └── geminiHandler()   # POST /api/gemini
+│   └── ai.js                  # AI Endpoint
+│       └── aiHandler()       # POST /api/ai
 │
 ├── services/
 │   └── groq.js                # Groq API Client
@@ -72,7 +72,7 @@ workers/ai-search-proxy/
 ├── utils/
 │   └── validation.js          # Request Validation
 │       ├── validateSearchRequest()
-│       └── validateGeminiRequest()
+│       └── validateAIRequest()
 │
 └── search-index.json          # Search Index Data
 ```
@@ -132,15 +132,15 @@ Client
 ```
 Client
   │
-  ├─→ POST /api/gemini
+  ├─→ POST /api/ai
   │   {"prompt": "Was sind deine Projekte?", "options": {"useSearch": true}}
   │
   ▼
 AI Search Proxy (index.js)
   │
-  ├─→ geminiHandler()
+  ├─→ aiHandler()
   │   │
-  │   ├─→ validateGeminiRequest()  [validation.js]
+  │   ├─→ validateAIRequest()      [validation.js]
   │   │
   │   ├─→ performSearch()          [shared/search-utils.js]
   │   │   └─ Find relevant context
