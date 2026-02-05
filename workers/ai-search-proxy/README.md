@@ -56,6 +56,8 @@ Führt eine Volltextsuche im Index durch.
 
 Proxied Groq AI API (kostenlos!) mit optionaler RAG-Augmentation.
 
+> **Note:** The legacy `/api/gemini` endpoint is deprecated but still supported for backward compatibility. It redirects to `/api/ai`. Please update your code to use `/api/ai` instead.
+
 **Request:**
 
 ```json
