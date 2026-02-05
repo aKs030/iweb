@@ -2,35 +2,11 @@
 <html lang="de">
   <head>
     <!-- Google Tag Manager: dynamically injected via /content/components/head/head-inline.js using /content/config/site-config.js. Remove hard-coded IDs and maintain configuration in site-config.js. -->
-    <meta name="mobile-web-app-capable" content="yes" />
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+
     <!-- Mobile: disable auto-detection of phone numbers and email addresses -->
-    <meta name="format-detection" content="telephone=no,email=no" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, viewport-fit=cover"
-    />
 
     <!-- Server-side favicons for crawlers and browsers -->
-    <link rel="icon" href="/content/assets/img/icons/favicon.ico" />
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="32x32"
-      href="/content/assets/img/icons/favicon-32.png"
-    />
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="192x192"
-      href="/content/assets/img/icons/favicon-192.png"
-    />
-    <link
-      rel="apple-touch-icon"
-      sizes="180x180"
-      href="/content/assets/img/icons/apple-touch-icon.png"
-    />
+
     <title>Abdulkerim Sesli — Digital Creator Portfolio</title>
     <meta
       name="description"
@@ -39,15 +15,8 @@
     <meta name="dateCreated" content="2025-12-31T12:00:00Z" />
     <!-- Canonical and Sitemap Discovery -->
     <link rel="canonical" href="https://www.abdulkerimsesli.de/" />
-    <link rel="sitemap" href="/sitemap.xml" type="application/xml" />
 
     <!-- Preconnect to Critical Resources -->
-    <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
-    <link rel="dns-prefetch" href="https://www.google-analytics.com" />
-    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
-    <link rel="dns-prefetch" href="https://esm.sh" />
-    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
-    <link rel="preconnect" href="https://esm.sh" crossorigin />
 
     <!-- Import Map for ES Modules - Must come before modulepreload -->
     <script type="importmap">
@@ -89,11 +58,6 @@
     />
 
     <!-- Apple Mobile Web App Settings -->
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta
-      name="apple-mobile-web-app-status-bar-style"
-      content="black-translucent"
-    />
     <meta name="apple-mobile-web-app-title" content="Abdulkerim — Portfolio" />
 
     <!-- Twitter -->
@@ -115,31 +79,7 @@
     <meta property="twitter:image:height" content="630" />
     <meta property="twitter:image:type" content="image/webp" />
 
-    <!-- PWA & Icons -->
-    <link rel="manifest" href="/manifest.json" />
-    <meta
-      name="theme-color"
-      media="(prefers-color-scheme: dark)"
-      content="#000000"
-    />
-    <meta
-      name="theme-color"
-      media="(prefers-color-scheme: light)"
-      content="#ffffff"
-    />
-
-    <!-- head-manager.js is now loaded dynamically by head-inline.js -->
-    <script
-      type="module"
-      src="/content/components/head/head-inline.js"
-    ></script>
-
-    <script
-      type="module"
-      src="/content/main.js"
-      crossorigin="anonymous"
-      defer
-    ></script>
+    <!-- PWA & Icons (theme-color in base-head.html) -->
 
     <!-- Server-side JSON-LD for SEO -->
     <script type="application/ld+json">
@@ -168,35 +108,10 @@
         ]
       }
     </script>
+    <!-- INJECT:BASE-HEAD -->
   </head>
   <body>
-    <div id="app-loader" aria-live="polite" aria-label="Anwendung wird geladen">
-      <div class="loader-spinner" aria-hidden="true"></div>
-      <div class="loader-content">
-        <div class="loader-logo" aria-hidden="true" data-i18n="loader.logo">
-          AKS | WEB
-        </div>
-
-        <div class="progress-container" role="presentation">
-          <div class="progress-bar" id="loader-progress-bar"></div>
-        </div>
-
-        <div class="loader-info" aria-live="polite">
-          <span class="status-text" id="loader-status-text"
-            >Initialisiere System...</span
-          >
-          <span class="percentage" id="loader-percentage">0%</span>
-        </div>
-      </div>
-    </div>
-
-    <noscript>
-      <style>
-        #app-loader {
-          display: none !important;
-        }
-      </style>
-    </noscript>
+    <!-- INJECT:BASE-LOADER -->
 
     <!-- Advanced Three.js Earth System -->
     <div

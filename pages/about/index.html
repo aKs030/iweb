@@ -1,23 +1,18 @@
 <!doctype html>
 <html lang="de">
   <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <!-- Mobile: disable auto-detection of phone numbers and email addresses -->
-    <meta name="format-detection" content="telephone=no,email=no" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
     <title>Über mich | Abdulkerim Sesli</title>
     <meta name="dateCreated" content="2025-12-31T12:00:00Z" />
     <meta
       name="description"
       content="Der Mensch hinter dem Code. Detaillierter Lebenslauf, Tech-Stack Übersicht und direkte Kontaktmöglichkeiten für Projektanfragen und Kooperationen."
     />
-    <!-- Canonical and Sitemap Discovery -->
     <link rel="canonical" href="https://www.abdulkerimsesli.de/about/" />
-    <link rel="sitemap" href="/sitemap.xml" type="application/xml" />
+
     <!-- Preconnect to Critical Resources -->
-    <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
-    <link rel="dns-prefetch" href="https://www.google-analytics.com" />
+
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="profile" />
     <meta property="og:url" content="https://www.abdulkerimsesli.de/about/" />
@@ -35,12 +30,6 @@
     <meta property="og:image:type" content="image/webp" />
     <meta property="og:locale" content="de_DE" />
 
-    <!-- Apple Mobile Web App Settings -->
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta
-      name="apple-mobile-web-app-status-bar-style"
-      content="black-translucent"
-    />
     <meta name="apple-mobile-web-app-title" content="Über mich — Abdulkerim" />
 
     <!-- Twitter -->
@@ -66,29 +55,11 @@
     <meta property="twitter:image:type" content="image/webp" />
 
     <!-- PWA & Icons -->
-    <link rel="manifest" href="/manifest.json" />
-    <link rel="icon" href="/content/assets/img/icons/favicon.ico" />
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="32x32"
-      href="/content/assets/img/icons/favicon-32.png"
-    />
     <link
       rel="icon"
       sizes="any"
       href="/content/assets/img/icons/favicon.svg"
       type="image/svg+xml"
-    />
-    <meta
-      name="theme-color"
-      media="(prefers-color-scheme: dark)"
-      content="#030303"
-    />
-    <meta
-      name="theme-color"
-      media="(prefers-color-scheme: light)"
-      content="#ffffff"
     />
 
     <!-- Breadcrumb Schema for SEO -->
@@ -121,14 +92,6 @@
       rel="stylesheet"
     />
 
-    <script
-      type="module"
-      src="/content/components/head/head-inline.js"
-      crossorigin="anonymous"
-    ></script>
-
-    <!-- head-manager.js is now loaded dynamically by head-inline.js -->
-
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
@@ -150,11 +113,7 @@
       crossorigin="anonymous"
     ></script>
     <!-- Main application module -->
-    <script
-      type="module"
-      src="/content/main.js"
-      crossorigin="anonymous"
-    ></script>
+
     <!-- About page loader -->
     <script
       type="module"
@@ -162,43 +121,18 @@
       crossorigin="anonymous"
     ></script>
     <link rel="stylesheet" href="/pages/about/about.css" />
-    <link rel="stylesheet" href="/content/styles/root.css" />
+
     <link
       rel="stylesheet"
       href="/content/styles/main.css"
       media="print"
       data-defer="1"
     />
-    <noscript
-      ><link rel="stylesheet" href="/content/styles/main.css"
-    /></noscript>
+    <noscript></noscript>
+    <!-- INJECT:BASE-HEAD -->
   </head>
   <body class="about-page">
-    <div id="app-loader" aria-live="polite" aria-label="Anwendung wird geladen">
-      <div class="loader-spinner" aria-hidden="true"></div>
-      <div class="loader-content">
-        <div class="loader-logo" aria-hidden="true">AKS | WEB</div>
-
-        <div class="progress-container" role="presentation">
-          <div class="progress-bar" id="loader-progress-bar"></div>
-        </div>
-
-        <div class="loader-info" aria-live="polite">
-          <span class="status-text" id="loader-status-text"
-            >Initialisiere System...</span
-          >
-          <span class="percentage" id="loader-percentage">0%</span>
-        </div>
-      </div>
-    </div>
-
-    <noscript>
-      <style>
-        #app-loader {
-          display: none !important;
-        }
-      </style>
-    </noscript>
+    <!-- INJECT:BASE-LOADER -->
 
     <!-- Header und Footer werden dynamisch von head-inline.js erstellt -->
 

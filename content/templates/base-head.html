@@ -1,0 +1,77 @@
+<!-- Base Head Template - Shared across all pages -->
+<!-- Usage: Include this in all HTML pages -->
+
+<!-- Critical CSS - Loaded immediately to prevent FOUC -->
+<link rel="stylesheet" href="/content/styles/root.css" />
+<link rel="stylesheet" href="/content/styles/main.css" />
+<link rel="stylesheet" href="/content/styles/animations.css" />
+
+<!-- Meta Tags -->
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+<meta name="format-detection" content="telephone=no,email=no" />
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1, viewport-fit=cover"
+/>
+<meta name="mobile-web-app-capable" content="yes" />
+
+<!-- Favicons -->
+<link rel="icon" href="/content/assets/img/icons/favicon.ico" />
+<link
+  rel="icon"
+  type="image/png"
+  sizes="32x32"
+  href="/content/assets/img/icons/favicon-32.png"
+/>
+<link
+  rel="icon"
+  type="image/png"
+  sizes="192x192"
+  href="/content/assets/img/icons/favicon-192.png"
+/>
+<link
+  rel="apple-touch-icon"
+  sizes="180x180"
+  href="/content/assets/img/icons/apple-touch-icon.png"
+/>
+
+<!-- PWA -->
+<link rel="manifest" href="/manifest.json" />
+<meta
+  name="theme-color"
+  media="(prefers-color-scheme: dark)"
+  content="#030303"
+/>
+<meta
+  name="theme-color"
+  media="(prefers-color-scheme: light)"
+  content="#ffffff"
+/>
+
+<!-- Apple Mobile Web App -->
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta
+  name="apple-mobile-web-app-status-bar-style"
+  content="black-translucent"
+/>
+
+<!-- Sitemap -->
+<link rel="sitemap" href="/sitemap.xml" type="application/xml" />
+
+<!-- Preconnect to Critical Resources -->
+<link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+<link rel="dns-prefetch" href="https://www.google-analytics.com" />
+<link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
+<link rel="dns-prefetch" href="https://esm.sh" />
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+<link rel="preconnect" href="https://esm.sh" crossorigin />
+
+<!-- Core Scripts -->
+<script type="module" src="/content/components/head/head-inline.js"></script>
+<script
+  type="module"
+  src="/content/main.js"
+  crossorigin="anonymous"
+  defer
+></script>

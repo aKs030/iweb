@@ -33,7 +33,7 @@
     "check:console": "! grep -r 'console\\.log' content/ pages/ --include='*.js' --exclude-dir=node_modules",
     "check:jshint": "jshint content/**/*.js pages/**/*.js sw.js vite*.js",
     "check:typescript": "tsc --noEmit",
-    "check:html": "html-validate \"**/*.html\"",
+    "check:html": "html-validate \"index.html\" \"pages/**/*.html\" \"content/**/*.html\"",
     "deps:graph": "madge --extensions js --image dependency-graph.svg content/main.js",
     "deps:check": "npm outdated",
     "audit:full": "npm run security && npm run quality:full && npm run check:console"

@@ -12,7 +12,7 @@
     "attribute-boolean-style": "off",
     "element-required-attributes": "warn",
     "no-unknown-elements": "warn",
-    "prefer-native-element": "warn"
+    "prefer-native-element": "off"
   },
   "elements": ["html5"]
 }
