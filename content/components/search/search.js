@@ -146,8 +146,8 @@ class SearchComponent {
             const index = this.selectedIndex >= 0 ? this.selectedIndex : 0;
             this.selectResult(index);
           } else {
-             // Force search if enter is pressed and no results yet
-             this.handleSearch(this.input.value);
+            // Force search if enter is pressed and no results yet
+            this.handleSearch(this.input.value);
           }
         }
       });
@@ -201,8 +201,10 @@ class SearchComponent {
     if (previousItem) previousItem.classList.remove('keyboard-selected');
 
     this.selectedIndex += direction;
-    if (this.selectedIndex < 0) this.selectedIndex = this.currentResults.length - 1;
-    else if (this.selectedIndex >= this.currentResults.length) this.selectedIndex = 0;
+    if (this.selectedIndex < 0)
+      this.selectedIndex = this.currentResults.length - 1;
+    else if (this.selectedIndex >= this.currentResults.length)
+      this.selectedIndex = 0;
 
     const items = this.resultsContainer.querySelectorAll('.search-result-item');
     if (items[this.selectedIndex]) {
@@ -238,7 +240,9 @@ class SearchComponent {
       }
     } catch (error) {
       _log.error('Search failed', error);
-      this.showEmptyState('Fehler bei der Suche. Bitte versuchen Sie es später erneut.');
+      this.showEmptyState(
+        'Fehler bei der Suche. Bitte versuchen Sie es später erneut.',
+      );
     } finally {
       this.showLoader(false);
     }
@@ -258,10 +262,10 @@ class SearchComponent {
       const data = await response.json();
 
       // Enrich results with icons/metadata that might be missing from the lean index
-      return (data.results || []).map(item => ({
+      return (data.results || []).map((item) => ({
         ...item,
         // Map common IDs to icons if not returned by API
-        icon: item.icon || this.getIconForCategory(item.category || 'Seite')
+        icon: item.icon || this.getIconForCategory(item.category || 'Seite'),
       }));
     } catch (e) {
       console.error('API Search Error:', e);
@@ -271,11 +275,11 @@ class SearchComponent {
 
   getIconForCategory(category) {
     const icons = {
-      'Seite': '📄',
-      'Blog': '📝',
-      'Technologie': '💻',
-      'Info': 'ℹ️',
-      'Videos': '🎬'
+      Seite: '📄',
+      Blog: '📝',
+      Technologie: '💻',
+      Info: 'ℹ️',
+      Videos: '🎬',
     };
     return icons[category] || '🔍';
   }
@@ -372,7 +376,10 @@ class SearchComponent {
 
   highlightText(text, query) {
     if (!query) return text;
-    const words = query.toLowerCase().split(/\s+/).filter(w => w.length > 0);
+    const words = query
+      .toLowerCase()
+      .split(/\s+/)
+      .filter((w) => w.length > 0);
     let highlightedText = text;
     words.forEach((word) => {
       const regex = new RegExp(`(${this.escapeRegex(word)})`, 'gi');
@@ -421,7 +428,10 @@ export function initSearch() {
 
 export function openSearch() {
   if (searchInstance) searchInstance.open();
-  else { initSearch(); if (searchInstance) searchInstance.open(); }
+  else {
+    initSearch();
+    if (searchInstance) searchInstance.open();
+  }
 }
 
 export function closeSearch() {
