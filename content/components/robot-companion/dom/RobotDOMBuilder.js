@@ -19,10 +19,9 @@ export class RobotDOMBuilder {
     container.style.opacity = '0';
     container.style.transition = 'opacity 220ms ease';
 
-    const chatWindow = this.createChatWindow();
     const floatWrapper = this.createFloatWrapper();
 
-    container.append(chatWindow, floatWrapper);
+    container.append(floatWrapper);
 
     return container;
   }

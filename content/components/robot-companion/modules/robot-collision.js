@@ -197,6 +197,12 @@ export class RobotCollision {
     }
   }
 
+  /**
+   * Check for collision with the typewriter title
+   * @param {DOMRect} twRect - Bounding rect of typewriter
+   * @param {number} [_maxLeft] - Optional max left limit
+   * @returns {boolean} True if collision occurred
+   */
   checkForTypewriterCollision(twRect, _maxLeft) {
     if (!twRect) return false;
     // Allow collisions even if the robot recently changed direction.

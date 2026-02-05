@@ -219,7 +219,10 @@ export class RobotAnimation {
     this.patrol.direction = 1;
     this.patrol.bouncePhase = 0;
 
-    this.robot.dom.container.style.transform = `translate3d(-${this.patrol.x}px, ${this.patrol.y}px, 0) rotate(0deg)`;
+    this.robot.dom.container.style.transform = `translate3d(-${this.patrol.x}px, ${this.patrol.y}px, 0)`;
+    if (this.robot.dom.floatWrapper) {
+      this.robot.dom.floatWrapper.style.transform = 'rotate(0deg)';
+    }
     this.robot.dom.container.style.opacity = '1';
     requestAnimationFrame(this.updateStartAnimation);
   }
@@ -264,7 +267,10 @@ export class RobotAnimation {
         this.robot.dom.svg.style.transform = `rotate(-5deg)`;
       }
 
-      this.robot.dom.container.style.transform = `translate3d(-${this.patrol.x}px, ${this.patrol.y}px, 0) rotate(-4deg)`;
+      this.robot.dom.container.style.transform = `translate3d(-${this.patrol.x}px, ${this.patrol.y}px, 0)`;
+      if (this.robot.dom.floatWrapper) {
+        this.robot.dom.floatWrapper.style.transform = 'rotate(-4deg)';
+      }
 
       if (t >= 1) {
         this.startAnimation.phase = 'pause';
@@ -317,7 +323,10 @@ export class RobotAnimation {
       }
 
       const containerRot = 15 * Math.sin(t * Math.PI * 2);
-      this.robot.dom.container.style.transform = `translate3d(-${this.patrol.x}px, ${this.patrol.y}px, 0) rotate(${containerRot}deg)`;
+      this.robot.dom.container.style.transform = `translate3d(-${this.patrol.x}px, ${this.patrol.y}px, 0)`;
+      if (this.robot.dom.floatWrapper) {
+        this.robot.dom.floatWrapper.style.transform = `rotate(${containerRot}deg)`;
+      }
 
       if (this.robot.dom.flame) {
         this.robot.dom.flame.style.opacity = '0.2';
@@ -337,6 +346,9 @@ export class RobotAnimation {
           this.patrol.y = 0;
           if (this.robot.dom.svg) {
             this.robot.dom.svg.style.transform = 'rotate(0deg)';
+          }
+          if (this.robot.dom.floatWrapper) {
+            this.robot.dom.floatWrapper.style.transform = 'rotate(0deg)';
           }
           this.startPatrol();
         }, 300);
@@ -529,7 +541,10 @@ export class RobotAnimation {
             : 4
           : 0;
 
-    this.robot.dom.container.style.transform = `translate3d(-${this.patrol.x}px, ${this.patrol.y}px, 0) rotate(${containerRotation}deg)`;
+    this.robot.dom.container.style.transform = `translate3d(-${this.patrol.x}px, ${this.patrol.y}px, 0)`;
+    if (this.robot.dom.floatWrapper) {
+      this.robot.dom.floatWrapper.style.transform = `rotate(${containerRotation}deg)`;
+    }
 
     requestAnimationFrame(this.updatePatrol);
   }
