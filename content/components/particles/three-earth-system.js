@@ -41,8 +41,13 @@ const log = createLogger('ThreeEarthSystem');
  * @returns {any}
  */
 function getAppLoadManager() {
+  const global =
+    /** @type {import('/content/core/types.js').GlobalThisExtended & typeof globalThis} */ (
+      globalThis
+    );
+  // @ts-ignore
   return (
-    /** @type {any} */ (globalThis).__appLoadManager || {
+    global.__appLoadManager || {
       block: () => {},
       unblock: () => {},
       isBlocked: () => false,
