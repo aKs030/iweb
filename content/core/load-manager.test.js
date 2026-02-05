@@ -56,4 +56,26 @@ describe('AppLoadManager', () => {
     AppLoadManager.unblock('A');
     expect(AppLoadManager.isBlocked()).toBe(false);
   });
+
+  it('should handle null or undefined names as no-ops', () => {
+    AppLoadManager.block(null);
+    expect(AppLoadManager.isBlocked()).toBe(false);
+    expect(AppLoadManager.getPending()).toEqual([]);
+
+    AppLoadManager.block(undefined);
+    expect(AppLoadManager.isBlocked()).toBe(false);
+    expect(AppLoadManager.getPending()).toEqual([]);
+
+    AppLoadManager.block('test');
+    expect(AppLoadManager.isBlocked()).toBe(true);
+
+    AppLoadManager.unblock(null);
+    expect(AppLoadManager.isBlocked()).toBe(true);
+
+    AppLoadManager.unblock(undefined);
+    expect(AppLoadManager.isBlocked()).toBe(true);
+
+    AppLoadManager.unblock('test');
+    expect(AppLoadManager.isBlocked()).toBe(false);
+  });
 });
