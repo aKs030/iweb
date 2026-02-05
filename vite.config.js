@@ -19,8 +19,9 @@ export default defineConfig({
     fs: {
       strict: false,
     },
-    // Proxy YouTube API requests to local worker (if running)
+    // Proxy API requests to local workers
     proxy: {
+      // YouTube Proxy
       '/api/youtube': {
         target: 'http://localhost:8788',
         changeOrigin: true,
@@ -29,9 +30,19 @@ export default defineConfig({
             console.log(
               'YouTube Worker Proxy Error - Make sure worker is running on port 8788',
             );
+          });
+        },
+      },
+      // AI Search Proxy (Search + Gemini)
+      '/api': {
+        target: 'http://localhost:8787',
+        changeOrigin: true,
+        configure: (proxy) => {
+          proxy.on('error', () => {
             console.log(
-              'Start with: cd workers/youtube-api-proxy && wrangler dev --env youtube --port 8788',
+              'AI/Search Worker Proxy Error - Make sure worker is running on port 8787',
             );
+            console.log('Start with: npm run dev:search-worker');
           });
         },
       },
