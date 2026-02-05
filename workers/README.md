@@ -36,6 +36,7 @@ workers/
 
 - `POST /api/search` - Full-text search with relevance scoring
 - `POST /api/ai` - AI chat with optional RAG augmentation
+- `POST /api/gemini` - **[DEPRECATED]** Legacy endpoint (redirects to `/api/ai`)
 
 **Features:**
 
