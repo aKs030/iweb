@@ -1,10 +1,30 @@
 import { defineConfig } from 'vite';
 import { redirectsPlugin, htmlRawPlugin } from './vite-plugin-redirects.js';
+import htmlTemplatesPlugin from './vite-plugin-html-templates.js';
+import { resolve } from 'path';
 
 export default defineConfig({
-  plugins: [htmlRawPlugin(), redirectsPlugin()],
+  plugins: [
+    htmlTemplatesPlugin(), // Auto-inject shared HTML templates
+    htmlRawPlugin(),
+    redirectsPlugin(),
+  ],
   root: '.',
   publicDir: 'content/assets',
+
+  // Multi-page app configuration
+  build: {
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, 'index.html'),
+        blog: resolve(__dirname, 'pages/blog/index.html'),
+        projekte: resolve(__dirname, 'pages/projekte/index.html'),
+        videos: resolve(__dirname, 'pages/videos/index.html'),
+        gallery: resolve(__dirname, 'pages/gallery/index.html'),
+        about: resolve(__dirname, 'pages/about/index.html'),
+      },
+    },
+  },
 
   // Development server
   server: {
