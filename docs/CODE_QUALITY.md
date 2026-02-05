@@ -52,33 +52,13 @@ npm run deps:graph
 
 **Output:** `dependency-graph.svg`
 
-### 4. **ES6-Plato** - Code Complexity
-
-Analysiert Code-Komplexität (Cyclomatic Complexity, Maintainability).
-
-```bash
-# Komplexität analysieren
-npm run check:complexity
-```
-
-**Output:** `complexity-report/index.html`
-
-### 5. **Console.log Detection**
+### 4. **Console.log Detection**
 
 Findet vergessene console.log Statements.
 
 ```bash
 # Console.log finden
 npm run check:console
-```
-
-### 6. **Cost of Modules**
-
-Zeigt Bundle-Impact von Dependencies.
-
-```bash
-# Bundle-Impact analysieren
-npm run deps:cost
 ```
 
 ## 🚀 Kombinierte Checks
@@ -107,8 +87,8 @@ npm run audit:full
 
 Alle Tools laufen automatisch in der CI-Pipeline:
 
-- **code-quality** Job: Knip, JSCPD, Complexity, Console-Check
-- **dependency-analysis** Job: Madge, Cost-of-Modules
+- **code-quality** Job: Knip, JSCPD, Console-Check
+- **dependency-analysis** Job: Madge
 
 ## 🎯 Best Practices
 
@@ -128,6 +108,7 @@ Alle Tools laufen automatisch in der CI-Pipeline:
 **Threshold anpassen:**
 
 ```bash
+# via CLI arguments
 jscpd --min-lines 15 --min-tokens 100
 ```
 
@@ -163,17 +144,10 @@ Empfohlene Extensions:
 
 ## 📈 Metriken
 
-### Code Complexity Limits
-
-- **Cyclomatic Complexity:** < 10
-- **Maintainability Index:** > 65
-- **Lines per Function:** < 50
-
 ### Bundle Size Limits
 
-- **Main Bundle:** < 200 KB
-- **Vendor Bundle:** < 500 KB
-- **CSS Bundle:** < 50 KB
+- **Main Bundle:** < 300 KB (gzip)
+- **CSS Bundle:** < 10 KB (gzip)
 
 ## 🐛 Troubleshooting
 
@@ -205,15 +179,13 @@ madge --circular --extensions js,mjs content/
 - [Knip Documentation](https://github.com/webpro/knip)
 - [JSCPD Documentation](https://github.com/kucherenko/jscpd)
 - [Madge Documentation](https://github.com/pahen/madge)
-- [ES6-Plato Documentation](https://github.com/es-analysis/plato)
 
 ## 🎓 Tipps
 
 1. **Regelmäßig ausführen:** `npm run quality` vor jedem PR
 2. **CI-Reports prüfen:** Artifacts in GitHub Actions
-3. **Trends beobachten:** Complexity über Zeit tracken
-4. **Refactoring:** Bei hoher Complexity refactoren
-5. **Dependencies aufräumen:** Ungenutzte Dependencies entfernen
+3. **Refactoring:** Bei Duplikaten Code extrahieren
+4. **Dependencies aufräumen:** Ungenutzte Dependencies entfernen
 
 ---
 

@@ -17,7 +17,8 @@ Modern portfolio website mit React, Three.js und kostenloser AI-Integration.
 
 ### Frontend
 
-- **Vanilla JavaScript** - Kein Framework-Overhead
+- **Vanilla JavaScript** - Kein Framework-Overhead (Core)
+- **React 19** - UI Components (Projects, Blog)
 - **Three.js** - 3D Graphics
 - **Web Components** - Wiederverwendbare Komponenten
 - **CSS3 + PostCSS** - Modern styling mit CSS Nesting & Autoprefixer
@@ -69,9 +70,6 @@ Modern portfolio website mit React, Three.js und kostenloser AI-Integration.
 │   ├── ai-search-proxy/      # AI & Search API
 │   └── youtube-api-proxy/    # YouTube Proxy
 │
-├── scripts/                   # Build & Optimization Scripts
-│   └── optimize-images.sh    # Bildkonvertierung
-│
 ├── examples/                  # Live-Beispiele
 │   └── image-optimization-examples.html
 │
@@ -94,7 +92,7 @@ npm install
 npm run dev
 
 # Open browser
-open http://localhost:5173
+open http://localhost:8080
 ```
 
 ### Build
@@ -105,9 +103,6 @@ npm run build
 
 # Preview build
 npm run preview
-
-# Optimize images
-npm run optimize:images
 ```
 
 ### Deploy
@@ -204,10 +199,7 @@ npm run format
 - **[Architecture](docs/ARCHITECTURE.md)** - System-Architektur
 - **[CSS Guide](docs/CSS_GUIDE.md)** - CSS-Architektur & Best Practices
 - **[Project Status](PROJECT_STATUS.md)** - Current project status & metrics
-- **[CSS Guide](docs/CSS_GUIDE.md)** - CSS architecture & best practices
-- **[Architecture](docs/ARCHITECTURE.md)** - System design & architecture
 - **[Workers README](workers/README.md)** - Cloudflare Workers documentation
-- **[AI Search Proxy](workers/ai-search-proxy/README.md)** - Groq AI integration
 
 ## 🤝 Contributing
 

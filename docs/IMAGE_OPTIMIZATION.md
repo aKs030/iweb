@@ -14,17 +14,7 @@ Vollständige Bildoptimierungsstrategie mit modernen Formaten, Lazy Loading und 
 
 ## Quick Start
 
-### 1. Bilder konvertieren
-
-```bash
-# Alle Bilder zu AVIF/WebP konvertieren
-npm run optimize:images
-
-# Oder mit Node.js (inkl. responsive Größen)
-npm run optimize:images:node content/assets/img
-```
-
-### 2. In HTML verwenden
+### 1. In HTML verwenden
 
 ```html
 <!-- Einfaches Lazy Loading -->
@@ -54,7 +44,7 @@ npm run optimize:images:node content/assets/img
 </picture>
 ```
 
-### 3. In JavaScript verwenden
+### 2. In JavaScript verwenden
 
 ```javascript
 import ImageOptimizer from '/content/core/image-optimizer.js';
@@ -71,7 +61,7 @@ await ImageOptimizer.preloadImages(['/img/hero.jpg'], {
 });
 ```
 
-### 4. Automatische Initialisierung
+### 3. Automatische Initialisierung
 
 Die Bildoptimierung wird automatisch beim Seitenload aktiviert (siehe `content/main.js`).
 
@@ -134,7 +124,6 @@ Die Bildoptimierung läuft automatisch im Hintergrund. Prüfe die Performance mi
 ## Checkliste für neue Bilder
 
 - [ ] Original in höchster Qualität speichern
-- [ ] `npm run optimize:images` ausführen
 - [ ] `<picture>` Element mit AVIF/WebP verwenden
 - [ ] `loading` und `fetchpriority` Attribute setzen
 - [ ] `sizes` Attribut für responsive Bilder
