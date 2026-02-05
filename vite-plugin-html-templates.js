@@ -54,7 +54,7 @@ export default function htmlTemplatesPlugin(options = {}) {
     },
 
     transformIndexHtml: {
-      order: 'post', // Run after Vite's built-in transforms
+      order: 'pre', // Run before Vite's built-in transforms to allow asset resolution
       handler(html, ctx) {
         let transformed = html;
         let headInjected = false;
