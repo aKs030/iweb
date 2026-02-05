@@ -15,7 +15,7 @@ import {
 /**
  * Handles AI requests (now using Groq)
  */
-export async function aiHandler(request, env, searchIndex) {
+export async function aiHandler(request, env, ctx) {
   if (request.method !== 'POST') {
     return errorResponse('Method not allowed', 'Use POST.', 405);
   }
@@ -46,7 +46,8 @@ export async function aiHandler(request, env, searchIndex) {
     if (options.useSearch) {
       const query = options.searchQuery || prompt;
       const topK = Math.min(options.topK || 3, 5);
-      sources = performSearch(query, topK, searchIndex, false);
+      // Use D1 search
+      sources = await performSearch(query, topK, env, false);
       augmentedPrompt = augmentPromptWithRAG(prompt, sources);
     }
 

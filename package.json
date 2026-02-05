@@ -22,6 +22,7 @@
     "prepare": "husky",
     "clean": "echo 'No build artifacts to clean'",
     "deploy:workers": "./workers/deploy.sh",
+    "db:setup": "node workers/ai-search-proxy/seed-db.js && wrangler d1 execute search-db --file=workers/ai-search-proxy/schema.sql --local && wrangler d1 execute search-db --file=workers/ai-search-proxy/seed.sql --local",
     "css:check": "echo 'CSS Stats:' && wc -l content/styles/*.css content/styles/components/*.css 2>/dev/null || wc -l content/styles/*.css",
     "docs": "echo 'Documentation:' && ls -1 docs/*.md && echo '' && echo 'Root docs:' && ls -1 *.md | grep -E 'CSS|PROJEKT|README'",
     "knip": "knip",

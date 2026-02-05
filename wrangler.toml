@@ -65,6 +65,14 @@ crons = ["0 3 * * *"]
 #   wrangler secret put GROQ_API_KEY   # Set secret
 
 # ============================================================================
+# D1 Database Binding (Search Index)
+# ============================================================================
+[[d1_databases]]
+binding = "DB"
+database_name = "search-db"
+database_id = "search-db-local" # Placeholder for local dev, replace with real ID for prod
+
+# ============================================================================
 # YouTube API Proxy Worker
 # ============================================================================
 [env.youtube]

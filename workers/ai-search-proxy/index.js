@@ -9,7 +9,6 @@
  * - Error handling and validation
  */
 
-import SEARCH_INDEX from './search-index.json' with { type: 'json' };
 import { searchHandler } from './handlers/search.js';
 import { aiHandler } from './handlers/ai.js';
 import {
@@ -29,17 +28,17 @@ export default {
     try {
       // Route to appropriate handler
       if (url.pathname === '/api/search') {
-        return await searchHandler(request, env, SEARCH_INDEX);
+        return await searchHandler(request, env, ctx);
       }
 
       // AI endpoint
       if (url.pathname === '/api/ai') {
-        return await aiHandler(request, env, SEARCH_INDEX);
+        return await aiHandler(request, env, ctx);
       }
 
       // Legacy endpoint - redirect to /api/ai (deprecated)
       if (url.pathname === '/api/gemini') {
-        return await aiHandler(request, env, SEARCH_INDEX);
+        return await aiHandler(request, env, ctx);
       }
 
       return errorResponse('Not Found', undefined, 404);
