@@ -5,7 +5,6 @@
 
 /* Import Components (with nesting) */
 @import './components/card.css';
-@import './components/image-loading.css';
 @import '../components/particles/three-earth.css';
 
 /* ===== LOADER STYLES (with CSS Nesting) ===== */

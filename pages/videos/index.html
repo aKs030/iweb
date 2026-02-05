@@ -1,49 +1,18 @@
 <!doctype html>
 <html lang="de">
   <head>
-    <!-- Google Tag Manager: dynamically injected via /content/components/head/head-inline.js using /content/config/site-config.js. Remove hard-coded IDs and maintain configuration in site-config.js. -->
-    <meta name="mobile-web-app-capable" content="yes" />
-    <!-- Content-Security-Policy removed per user request (less restrictive) -->
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <!-- Mobile: disable auto-detection of phone numbers and email addresses -->
-    <meta name="format-detection" content="telephone=no,email=no" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-    <link rel="stylesheet" href="/pages/videos/videos.css" />
-
-    <!-- Server-side favicons for crawlers and browsers -->
-    <link rel="icon" href="/content/assets/img/icons/favicon.ico" />
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="32x32"
-      href="/content/assets/img/icons/favicon-32.png"
-    />
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="192x192"
-      href="/content/assets/img/icons/favicon-192.png"
-    />
-    <link
-      rel="apple-touch-icon"
-      sizes="180x180"
-      href="/content/assets/img/icons/apple-touch-icon.png"
-    />
     <title>Videos — Abdulkerim Sesli</title>
     <meta
       name="description"
       content="Eine Auswahl meiner Arbeiten, kurzen Vorstellungen und Behind-the-Scenes."
     />
     <meta name="dateCreated" content="2025-12-31T12:00:00Z" />
-    <!-- Canonical and Sitemap Discovery -->
-    <link rel="canonical" href="https://www.abdulkerimsesli.de/videos/" />
-    <link rel="sitemap" href="/sitemap.xml" type="application/xml" />
 
-    <!-- Preconnect to Critical Resources -->
-    <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
-    <link rel="dns-prefetch" href="https://www.google-analytics.com" />
+    <!-- Canonical -->
+    <link rel="canonical" href="https://www.abdulkerimsesli.de/videos/" />
+
+    <!-- Page-specific CSS -->
+    <link rel="stylesheet" href="/pages/videos/videos.css" />
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
@@ -66,12 +35,7 @@
       content="Abdulkerim — Digital Creator Portfolio"
     />
 
-    <!-- Apple Mobile Web App Settings -->
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta
-      name="apple-mobile-web-app-status-bar-style"
-      content="black-translucent"
-    />
+    <!-- Apple Mobile Web App -->
     <meta name="apple-mobile-web-app-title" content="Videos — Abdulkerim" />
 
     <!-- Twitter -->
@@ -93,18 +57,7 @@
     <meta property="twitter:image:height" content="630" />
     <meta property="twitter:image:type" content="image/webp" />
 
-    <!-- PWA & Icons -->
-    <link rel="manifest" href="/manifest.json" />
-    <meta
-      name="theme-color"
-      media="(prefers-color-scheme: dark)"
-      content="#030303"
-    />
-    <meta
-      name="theme-color"
-      media="(prefers-color-scheme: light)"
-      content="#ffffff"
-    />
+    <!-- PWA & Icons (theme-color in base-head.html) -->
 
     <!-- Import Map for ES Modules -->
     <script type="importmap">
@@ -119,17 +72,8 @@
       }
     </script>
 
-    <!-- head-manager.js is now loaded dynamically by head-inline.js -->
-    <script
-      type="module"
-      src="/content/components/head/head-inline.js"
-    ></script>
-
-    <script
-      type="module"
-      src="/content/main.js"
-      crossorigin="anonymous"
-    ></script>
+    <!-- Page-specific CSS -->
+    <link rel="stylesheet" href="/pages/videos/videos.css" />
 
     <!-- Server-side Breadcrumbs JSON-LD and WebPage (mainEntity) -->
     <script type="application/ld+json">
@@ -311,38 +255,9 @@
         ]
       }
     </script>
+    <!-- INJECT:BASE-HEAD -->
   </head>
   <body>
-    <div id="app-loader" aria-live="polite" aria-label="Anwendung wird geladen">
-      <div class="loader-spinner" aria-hidden="true"></div>
-      <div class="loader-content">
-        <div class="loader-logo" aria-hidden="true">AKS | WEB</div>
-
-        <div class="progress-container" role="presentation">
-          <div class="progress-bar" id="loader-progress-bar"></div>
-        </div>
-
-        <div class="loader-info" aria-live="polite">
-          <span class="status-text" id="loader-status-text"
-            >Initialisiere System...</span
-          >
-          <span class="percentage" id="loader-percentage">0%</span>
-        </div>
-      </div>
-    </div>
-
-    <noscript>
-      <style>
-        #app-loader {
-          display: none !important;
-        }
-      </style>
-    </noscript>
-
-    <!-- Google Tag Manager (noscript) removed — noscript iframe is injected dynamically by head-inline.js if GTM is configured (see content/config/site-config.js) -->
-
-    <!-- Header und Footer werden dynamisch von head-inline.js erstellt -->
-
     <main class="videos-main">
       <div class="container">
         <figure class="visually-hidden" aria-hidden="true">
@@ -381,7 +296,11 @@
               </svg>
               YouTube Abonnieren
             </a>
-            <button class="btn-share" data-share="youtube-channel">
+            <button
+              type="button"
+              class="btn-share"
+              data-share="youtube-channel"
+            >
               <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path
                   d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"
@@ -454,6 +373,7 @@
             </header>
             <figure class="thumb-wrapper">
               <button
+                type="button"
                 class="video-thumb"
                 data-video-id="1bL8bZd6cpY"
                 data-thumb="https://i.ytimg.com/vi/1bL8bZd6cpY/hqdefault.jpg"
@@ -532,6 +452,7 @@
             </header>
             <figure class="thumb-wrapper">
               <button
+                type="button"
                 class="video-thumb"
                 data-video-id="rXMLVt9vhxQ"
                 data-thumb="https://i.ytimg.com/vi/rXMLVt9vhxQ/hqdefault.jpg"
@@ -601,6 +522,7 @@
             </header>
             <figure class="thumb-wrapper">
               <button
+                type="button"
                 class="video-thumb"
                 data-video-id="tImMPQKiQVk"
                 data-thumb="https://i.ytimg.com/vi/tImMPQKiQVk/hqdefault.jpg"
@@ -655,6 +577,7 @@
             </header>
             <figure class="thumb-wrapper">
               <button
+                type="button"
                 class="video-thumb"
                 data-video-id="z8W9UJbUSo4"
                 data-thumb="https://i.ytimg.com/vi/z8W9UJbUSo4/hqdefault.jpg"
@@ -710,6 +633,7 @@
             </header>
             <figure class="thumb-wrapper">
               <button
+                type="button"
                 class="video-thumb"
                 data-video-id="clbOHUT4w5o"
                 data-thumb="https://i.ytimg.com/vi/clbOHUT4w5o/hqdefault.jpg"
@@ -762,6 +686,7 @@
             </header>
             <figure class="thumb-wrapper">
               <button
+                type="button"
                 class="video-thumb"
                 data-video-id="UorHOTKWtK4"
                 data-thumb="https://i.ytimg.com/vi/UorHOTKWtK4/hqdefault.jpg"
@@ -814,6 +739,7 @@
             </header>
             <figure class="thumb-wrapper">
               <button
+                type="button"
                 class="video-thumb"
                 data-video-id="lpictttLoEk"
                 data-thumb="https://i.ytimg.com/vi/lpictttLoEk/hqdefault.jpg"
