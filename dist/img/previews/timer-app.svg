@@ -1,0 +1,49 @@
+<svg width="800" height="600" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <defs>
+    <linearGradient id="timerBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fa709a;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#fee140;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <rect width="800" height="600" fill="url(#timerBg)"/>
+
+  <!-- Timer circle background -->
+  <circle cx="400" cy="280" r="160" fill="white" opacity="0.95"/>
+
+  <!-- Timer circle progress -->
+  <circle cx="400" cy="280" r="140" fill="none" stroke="#e2e8f0" stroke-width="20"/>
+  <circle cx="400" cy="280" r="140" fill="none" stroke="#48bb78" stroke-width="20"
+          stroke-dasharray="440 880" stroke-dashoffset="0"
+          transform="rotate(-90 400 280)" stroke-linecap="round"/>
+
+  <!-- Timer display -->
+  <text x="400" y="300" font-family="monospace" font-size="72" fill="#2d3748" text-anchor="middle" font-weight="bold">15:30</text>
+
+  <!-- Control buttons -->
+  <g transform="translate(400, 480)">
+    <!-- Play button -->
+    <circle cx="-80" cy="0" r="40" fill="#48bb78" opacity="0.9"/>
+    <path d="M -90 -15 L -90 15 L -65 0 Z" fill="white"/>
+
+    <!-- Pause button -->
+    <circle cx="0" cy="0" r="40" fill="#ed8936" opacity="0.9"/>
+    <rect x="-12" y="-15" width="8" height="30" rx="2" fill="white"/>
+    <rect x="4" y="-15" width="8" height="30" rx="2" fill="white"/>
+
+    <!-- Reset button -->
+    <circle cx="80" cy="0" r="40" fill="#e53e3e" opacity="0.9"/>
+    <path d="M 70 -5 L 90 -5 L 90 -15 L 70 -15 Z M 90 -10 L 95 -10 L 85 5 L 75 -10 L 80 -10" fill="white"/>
+  </g>
+
+  <!-- Mode tabs -->
+  <rect x="250" y="80" width="100" height="45" rx="10" fill="white" opacity="0.9"/>
+  <text x="300" y="110" font-family="sans-serif" font-size="20" fill="#2d3748" text-anchor="middle" font-weight="600">Timer</text>
+
+  <rect x="360" y="80" width="120" height="45" rx="10" fill="white" opacity="0.6"/>
+  <text x="420" y="110" font-family="sans-serif" font-size="20" fill="#2d3748" text-anchor="middle" font-weight="500">Stopwatch</text>
+
+  <rect x="490" y="80" width="120" height="45" rx="10" fill="white" opacity="0.6"/>
+  <text x="550" y="110" font-family="sans-serif" font-size="20" fill="#2d3748" text-anchor="middle" font-weight="500">Pomodoro</text>
+</svg>
