@@ -1,7 +1,5 @@
 import { createLogger } from '/content/core/logger.js';
-import { upsertHeadLink } from '/content/core/utils.js';
 import { ENV } from '../../config/env.config.js';
-import { resourceHints } from '/content/core/resource-hints.js';
 
 const log = createLogger('head-inline');
 
@@ -150,241 +148,43 @@ const ensureGTMNoScript = () => {
 
 ensureGTMNoScript();
 
-const ensureFooterAndTrigger = () => {
+// Defer non-critical assets (e.g. Robot Companion)
+const loadDeferredAssets = () => {
   try {
-    const run = () => {
-      // Ensure <site-menu> exists
-      let siteMenu = document.querySelector('site-menu');
-      if (!siteMenu) {
-        let headerEl = document.querySelector('header.site-header');
-        if (!headerEl) {
-          headerEl = document.createElement('header');
-          headerEl.className = 'site-header';
-          document.body.insertBefore(headerEl, document.body.firstChild);
-        }
-
-        // Remove old container if present
-        const oldContainer = document.getElementById('menu-container');
-        if (oldContainer) oldContainer.remove();
-
-        siteMenu = document.createElement('site-menu');
-        siteMenu.dataset.injectedBy = 'head-inline';
-        headerEl.appendChild(siteMenu);
-      }
-
-      // Ensure <site-footer> exists
-      let siteFooter = document.querySelector('site-footer');
-      if (!siteFooter) {
-        // Check for old container to upgrade
-        const oldContainer = document.getElementById('footer-container');
-        if (oldContainer) {
-          oldContainer.remove();
-        }
-
-        siteFooter = document.createElement('site-footer');
-        siteFooter.setAttribute('id', 'site-footer-component');
-        document.body.appendChild(siteFooter);
-      }
-
-      // Component definitions werden durch SCRIPTS array geladen - nicht hier doppelt
-    };
-
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', run, { once: true });
-    } else {
-      globalThis.queueMicrotask(run);
-    }
-  } catch (err) {
-    log?.warn?.('head-inline: ensure footer/trigger setup failed', err);
-  }
-};
-
-ensureFooterAndTrigger();
-
-const injectCoreAssets = () => {
-  try {
-    const getStylesForPath = () => {
-      const p =
-        (globalThis.location?.pathname || '').replace(/\/+$/g, '') || '/';
-      const base = [
-        '/content/styles/root.css',
-        '/content/styles/main.css',
-        '/content/styles/animations.css',
-      ];
-      if (p === '/') {
-        return base.concat([
-          '/pages/home/hero.css',
-          '/content/components/typewriter/typewriter.css',
-          '/content/components/particles/three-earth.css',
-          '/pages/home/section3.css',
-          '/pages/home/section4.css',
-        ]);
-      }
-      return base;
-    };
-
-    const SCRIPTS = [
-      { src: '/content/main.js', module: true, preload: false },
-      { src: '/content/components/menu/menu.js', module: true },
-      { src: '/content/components/footer/SiteFooter.js', module: true },
-    ];
-
-    const deferNonCriticalAssets = () => {
-      try {
-        const schedule = (cb) => {
-          if (globalThis.requestIdleCallback) {
-            requestIdleCallback(cb, { timeout: 2000 });
-          } else {
-            setTimeout(cb, 1500);
-          }
-        };
-
-        schedule(() => {
-          upsertScript({
-            src: '/content/components/robot-companion/robot-companion.js',
-            module: true,
-          });
-        });
-      } catch (err) {
-        log?.warn?.('head-inline: deferNonCriticalAssets failed', err);
+    const schedule = (cb) => {
+      if (globalThis.requestIdleCallback) {
+        requestIdleCallback(cb, { timeout: 2000 });
+      } else {
+        setTimeout(cb, 1500);
       }
     };
 
-    const upsertStyle = (href, { critical = false } = {}) => {
-      if (document.head.querySelector(`link[href="${href}"]`)) return;
-
-      if (critical) {
-        upsertHeadLink({
-          rel: 'stylesheet',
-          href,
-          dataset: { injectedBy: 'head-inline' },
-        });
-        return;
-      }
-
-      upsertHeadLink({
-        rel: 'preload',
-        href,
-        as: 'style',
-        dataset: { injectedBy: 'head-inline' },
-        onload() {
-          try {
-            this.onload = null;
-            this.rel = 'stylesheet';
-          } catch {
-            /* ignore */
-          }
-        },
-      });
-
-      // Fallback with shorter timeout
-      setTimeout(() => {
-        try {
-          const existing = document.head.querySelector(`link[href="${href}"]`);
-          if (!existing || existing.rel === 'preload') {
-            upsertHeadLink({
-              rel: 'stylesheet',
-              href,
-              dataset: { injectedBy: 'head-inline' },
-            });
-          }
-        } catch {
-          /* ignore */
-        }
-      }, 2000);
-    };
-
-    const upsertModulePreload = (href) => {
-      if (
-        document.head.querySelector(`link[rel="modulepreload"][href="${href}"]`)
-      )
-        return;
-      upsertHeadLink({
-        rel: 'modulepreload',
-        href,
-        crossOrigin: 'anonymous',
-        dataset: { injectedBy: 'head-inline' },
-      });
-    };
-
-    const upsertScript = ({ src, module }) => {
+    const loadScript = (src) => {
       if (!document.head.querySelector(`script[src="${src}"]`)) {
         const s = document.createElement('script');
         s.src = src;
-        if (module) {
-          s.type = 'module';
-          s.crossOrigin = 'anonymous';
-        } else s.defer = true;
-        s.dataset.injectedBy = 'head-inline';
+        s.type = 'module';
+        s.crossOrigin = 'anonymous';
+        s.dataset.injectedBy = 'head-inline-deferred';
         document.head.appendChild(s);
       }
     };
 
-    const performInjection = () => {
-      const hasGtm = GTM_ID && GTM_ID !== 'GTM-PLACEHOLDER';
-      if (hasGtm) {
-        resourceHints.preconnect('https://www.googletagmanager.com');
-        resourceHints.preconnect('https://static.cloudflareinsights.com');
-      }
-      if (GA4_MEASUREMENT_ID && GA4_MEASUREMENT_ID.indexOf('G-') === 0) {
-        resourceHints.preconnect('https://www.gstatic.com');
-      }
-
-      // Preconnect to CDNs
-      resourceHints.preconnect('https://cdn.jsdelivr.net');
-      resourceHints.preconnect('https://esm.sh');
-
-      const styles = getStylesForPath();
-      const p =
-        (globalThis.location?.pathname || '').replace(/\/+$/g, '') || '/';
-
-      const criticalStyles = new Set([
-        '/content/styles/root.css',
-        '/content/styles/main.css',
-      ]);
-      const homeCritical = new Set([
-        '/pages/home/hero.css',
-        '/content/components/typewriter/typewriter.css',
-        '/content/components/particles/three-earth.css',
-        '/pages/home/section3.css',
-        '/pages/home/section4.css',
-      ]);
-
-      // Batch inject styles
-      styles.forEach((href) => {
-        const isCritical =
-          criticalStyles.has(href) || (p === '/' && homeCritical.has(href));
-        upsertStyle(href, { critical: isCritical });
-      });
-
-      // Batch inject module preloads
-      SCRIPTS.filter((s) => s.preload).forEach((s) =>
-        upsertModulePreload(s.src),
-      );
-
-      // Batch inject scripts
-      SCRIPTS.forEach(upsertScript);
-
-      try {
-        deferNonCriticalAssets();
-      } catch (err) {
-        log?.warn?.('head-inline: deferNonCriticalAssets call failed', err);
-      }
-    };
-
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', performInjection, {
-        once: true,
-      });
-    } else {
-      performInjection();
-    }
+    schedule(() => {
+      loadScript('/content/components/robot-companion/robot-companion.js');
+    });
   } catch (err) {
-    log?.warn?.('head-inline: injectCoreAssets failed', err);
+    log?.warn?.('head-inline: loadDeferredAssets failed', err);
   }
 };
 
-injectCoreAssets();
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', loadDeferredAssets, {
+    once: true,
+  });
+} else {
+  loadDeferredAssets();
+}
 
 const addLazyLoadingDefaults = () => {
   try {
@@ -457,30 +257,6 @@ const setEarlyCanonical = () => {
 };
 
 setEarlyCanonical();
-
-const injectHeroCriticalCSS = () => {
-  try {
-    const path =
-      (globalThis.location?.pathname || '').replace(/\/+$|^$/, '') || '/';
-    if (path !== '/') return;
-    if (document.head.querySelector('#hero-critical-css')) return;
-
-    const css = `
-  .hero{display:flex;align-items:center;justify-content:center;min-height:100dvh;padding:0 .5rem;box-sizing:border-box}
-  .hero__title{font:800 clamp(3rem,6vw,4.5rem)/1.03 var(--font-inter);margin:0;padding:8px 12px;max-width:30ch;color:var(--color-text-main,#fff);text-align:center;white-space:normal}
-  `;
-
-    const s = document.createElement('style');
-    s.id = 'hero-critical-css';
-    s.dataset.injectedBy = 'head-inline';
-    s.appendChild(document.createTextNode(css));
-    document.head.appendChild(s);
-  } catch (err) {
-    log?.warn?.('head-inline: injectHeroCriticalCSS failed', err);
-  }
-};
-
-injectHeroCriticalCSS();
 
 const hideBrandingFromUsers = () => {
   try {
