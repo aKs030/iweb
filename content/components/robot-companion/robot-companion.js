@@ -651,6 +651,9 @@ export class RobotCompanion {
     if (this.dom.container && this.dom.container.parentNode) {
       this.dom.container?.remove();
     }
+    if (this.dom.window && this.dom.window.parentNode) {
+      this.dom.window?.remove();
+    }
   }
 
   /**
@@ -769,12 +772,15 @@ export class RobotCompanion {
   createDOM() {
     // Use DOM Builder for XSS-safe element creation
     const container = this.domBuilder.createContainer();
+    const chatWindow = this.domBuilder.createChatWindow();
 
     document.body.appendChild(container);
+    document.body.appendChild(chatWindow);
 
     // Cache DOM references
     this.dom.container = container;
-    this.dom.window = document.getElementById('robot-chat-window');
+    this.dom.floatWrapper = container.querySelector('.robot-float-wrapper');
+    this.dom.window = chatWindow;
     this.dom.bubble = document.getElementById('robot-bubble');
     this.dom.bubbleText = document.getElementById('robot-bubble-text');
     this.dom.bubbleClose = container.querySelector('.robot-bubble-close');
@@ -798,7 +804,7 @@ export class RobotCompanion {
     };
     this.dom.particles = container.querySelector('.robot-particles');
     this.dom.thinking = container.querySelector('.robot-thinking');
-    this.dom.closeBtn = container.querySelector('.chat-close-btn');
+    this.dom.closeBtn = chatWindow.querySelector('.chat-close-btn');
 
     const anim = /** @type {any} */ (this.animationModule);
     requestAnimationFrame(() => anim.startIdleEyeMovement());
