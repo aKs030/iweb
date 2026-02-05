@@ -1,11 +1,12 @@
 /**
  * Three.js Earth Manager
- * @version 1.1.0
+ * @version 1.2.0
  */
 
 import { createLogger } from './logger.js';
 import { getElementById } from './utils.js';
 import { AppLoadManager } from './load-manager.js';
+import { threeEarthState } from '../components/particles/three-earth-state.js';
 
 const log = createLogger('ThreeEarthManager');
 
@@ -28,7 +29,7 @@ export class ThreeEarthManager {
   async load() {
     if (this.isLoading || this.cleanupFn) return;
 
-    if (this.env.isTest && !globalThis.__FORCE_THREE_EARTH) {
+    if (this.env.isTest && !threeEarthState.isForceEnabled()) {
       log.info('Test environment - skipping Three.js Earth');
       return;
     }
@@ -68,7 +69,7 @@ export class ThreeEarthManager {
       this.cleanupFn = await initThreeEarth();
 
       if (typeof this.cleanupFn === 'function') {
-        globalThis.__threeEarthCleanup = this.cleanupFn;
+        threeEarthState.setCleanupFunction(this.cleanupFn);
         log.info('Three.js Earth system initialized');
         clearTimeout(loadingTimeout); // Clear timeout on success
       }
@@ -107,7 +108,7 @@ export class ThreeEarthManager {
   }
 
   initDelayed() {
-    const idleCallback = globalThis.requestIdleCallback || setTimeout;
+    const idleCallback = window.requestIdleCallback || setTimeout;
     idleCallback(() => this.init(), { timeout: 500 }); // Reduced from 2000ms to 500ms
   }
 

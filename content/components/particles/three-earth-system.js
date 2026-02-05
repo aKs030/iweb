@@ -17,6 +17,7 @@ import {
   sharedCleanupManager,
   sharedParallaxManager,
 } from './shared-particle-system.js';
+import { threeEarthState } from './three-earth-state.js';
 
 import { CONFIG } from './earth/config.js';
 import { setupScene, setupLighting, createAtmosphere } from './earth/scene.js';
@@ -187,10 +188,9 @@ class ThreeEarthSystem {
 
   async init() {
     // Load project-specific camera presets if available (for projekte page)
-    const globalPresets = /** @type {any} */ (globalThis)
-      .__projectCameraPresets;
-    if (globalPresets) {
-      Object.assign(CONFIG.CAMERA.PRESETS, globalPresets);
+    const customPresets = threeEarthState.getCameraPresets();
+    if (customPresets && Object.keys(customPresets).length > 0) {
+      Object.assign(CONFIG.CAMERA.PRESETS, customPresets);
     }
 
     const sharedState = getSharedState();
@@ -343,7 +343,7 @@ class ThreeEarthSystem {
     const caps = /** @type {any} */ (this.deviceCapabilities);
     this.isMobileDevice =
       !!caps?.isMobile ||
-      (globalThis.matchMedia?.('(max-width: 768px)')?.matches ?? false);
+      (window.matchMedia?.('(max-width: 768px)')?.matches ?? false);
   }
 
   /**
@@ -641,7 +641,7 @@ class ThreeEarthSystem {
       const width = container.clientWidth;
       const height = container.clientHeight;
       this.isMobileDevice =
-        globalThis.matchMedia?.('(max-width: 768px)')?.matches ?? false;
+        window.matchMedia?.('(max-width: 768px)')?.matches ?? false;
 
       this.camera.aspect = width / height;
       this.camera.fov = this.isMobileDevice ? 55 : CONFIG.CAMERA.FOV;
@@ -1070,8 +1070,7 @@ class ThreeEarthSystem {
 
     const urlParams = new URL(location.href).searchParams;
     const forceThree =
-      urlParams.get('forceThree') === '1' ||
-      Boolean(/** @type {any} */ (globalThis).__FORCE_THREE_EARTH);
+      urlParams.get('forceThree') === '1' || threeEarthState.isForceEnabled();
 
     if (!supportsWebGL() && !forceThree) {
       log.warn('WebGL not supported, falling back to CSS');
@@ -1204,7 +1203,7 @@ function getOptimizedConfig(capabilities) {
       STARS: { ...CONFIG.STARS, COUNT: 2000 },
       PERFORMANCE: {
         ...CONFIG.PERFORMANCE,
-        PIXEL_RATIO: Math.min(globalThis.devicePixelRatio || 1, 2),
+        PIXEL_RATIO: Math.min(window.devicePixelRatio || 1, 2),
       },
     };
   }

@@ -1,6 +1,6 @@
 /**
  * Head Manager - Unified Head Management
- * @version 1.0.0
+ * @version 1.1.0
  */
 
 import { createLogger } from '/content/core/logger.js';
@@ -15,6 +15,7 @@ import {
 import { loadBrandData } from '/content/config/brand-data-loader.js';
 import { ROUTES } from '/content/config/routes-config.js';
 import { BASE_URL } from '/content/config/constants.js';
+import { headState } from './head-state.js';
 
 const log = createLogger('HeadManager');
 
@@ -148,23 +149,10 @@ const pushToDataLayer = (pageData, pageUrl) => {
 };
 
 export async function loadHead() {
-  if (globalThis.SHARED_HEAD_LOADED) return;
+  if (headState.isManagerLoaded()) return;
 
-  if (!globalThis.__HEAD_INLINE_READY) {
-    await new Promise((resolve) => {
-      const checkInterval = setInterval(() => {
-        if (globalThis.__HEAD_INLINE_READY) {
-          clearInterval(checkInterval);
-          resolve();
-        }
-      }, 50);
-      setTimeout(() => {
-        clearInterval(checkInterval);
-        log.warn('Timeout waiting for head-inline, proceeding anyway');
-        resolve();
-      }, 5000);
-    });
-  }
+  // Wait for head-inline to be ready
+  await headState.waitForInlineReady(5000);
 
   try {
     log.time('loadHead');
@@ -205,7 +193,7 @@ export async function loadHead() {
 
     document.addEventListener('app:loaderHide', hideLoader, { once: true });
 
-    globalThis.SHARED_HEAD_LOADED = true;
+    headState.setManagerLoaded();
     log.timeEnd('loadHead');
     log.info('Head loaded successfully');
   } catch (error) {
