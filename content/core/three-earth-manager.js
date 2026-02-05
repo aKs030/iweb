@@ -5,6 +5,7 @@
 
 import { createLogger } from './logger.js';
 import { getElementById } from './utils.js';
+import { AppLoadManager } from './load-manager.js';
 
 const log = createLogger('ThreeEarthManager');
 
@@ -52,10 +53,7 @@ export class ThreeEarthManager {
     // Set loading timeout to prevent indefinite blocking
     const loadingTimeout = setTimeout(() => {
       log.warn('Three.js Earth loading timeout, unblocking loader');
-      const AppLoadManager = globalThis.__appLoadManager;
-      if (AppLoadManager) {
-        AppLoadManager.unblock('three-earth');
-      }
+      AppLoadManager.unblock('three-earth');
     }, 6000); // 6 second timeout for earth loading
 
     try {
@@ -78,10 +76,7 @@ export class ThreeEarthManager {
       log.warn('Three.js failed, using CSS fallback:', error);
       clearTimeout(loadingTimeout);
       // Unblock loader even on error
-      const AppLoadManager = globalThis.__appLoadManager;
-      if (AppLoadManager) {
-        AppLoadManager.unblock('three-earth');
-      }
+      AppLoadManager.unblock('three-earth');
     } finally {
       this.isLoading = false;
     }

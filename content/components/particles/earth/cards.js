@@ -620,31 +620,14 @@ export class CardManager {
     return intersects.length > 0 ? intersects[0].object : null;
   }
 
-  update(time, mousePos) {
+  update(time) {
     if (!this.cardGroup.visible) return;
 
-    const pos = mousePos || this._lastPointerPos || { x: 0, y: 0 };
-    const candidate = this.getHoveredCardFromScreen(pos);
-
-    if (candidate === this._hoverCandidate) {
-      this._hoverFrames++;
-      if (this._hoverFrames >= 3) {
-        if (candidate !== this._hovered) {
-          this._hovered = candidate;
-          document.body.style.cursor = candidate ? 'pointer' : '';
-        }
-      }
-    } else {
-      this._hoverCandidate = candidate;
-      this._hoverFrames = 0;
-    }
-
-    const hoveredCard = this._hovered;
     this.camera.getWorldPosition(this._tmpVec);
 
     this.cards.forEach((card) => {
       this._updateCardEntranceAndOpacity(card);
-      this._updateCardHoverTiltAndMotion(card, pos, hoveredCard, time);
+      // Removed hover tilt/motion as mouse tracking is disabled
       this._applyOrientation(card);
       this._updateCardGlow(card, time);
     });
