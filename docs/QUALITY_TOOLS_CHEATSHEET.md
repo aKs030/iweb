@@ -18,12 +18,12 @@ npm run check:console        # Console.log detection
 
 ## 📊 Tool-Übersicht
 
-| Tool                | Zweck         | Command                    | Output         |
-| ------------------- | ------------- | -------------------------- | -------------- |
-| **Knip**            | Unused code   | `npm run knip`             | Console + JSON |
-| **JSCPD**           | Duplicates    | `npm run check:duplicates` | Console        |
-| **Madge**           | Circular deps | `npm run check:circular`   | Console        |
-| **Grep**            | Console.log   | `npm run check:console`    | Console        |
+| Tool      | Zweck         | Command                    | Output         |
+| --------- | ------------- | -------------------------- | -------------- |
+| **Knip**  | Unused code   | `npm run knip`             | Console + JSON |
+| **JSCPD** | Duplicates    | `npm run check:duplicates` | Console        |
+| **Madge** | Circular deps | `npm run check:circular`   | Console        |
+| **Grep**  | Console.log   | `npm run check:console`    | Console        |
 
 ## 🔍 Knip - Unused Code
 
