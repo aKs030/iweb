@@ -155,20 +155,22 @@ describe('Basis-Hilfsprogramme (Core Utilities)', () => {
   });
 
   describe('DOM Hilfsprogramme', () => {
-    it('getElementById sollte das Element zurückgeben, wenn es existiert', () => {
-      const div = document.createElement('div');
-      div.id = 'test-id';
-      document.body.appendChild(div);
+    describe('getElementById', () => {
+      it('sollte das Element zurückgeben, wenn es existiert', () => {
+        const div = document.createElement('div');
+        div.id = 'test-id';
+        document.body.appendChild(div);
 
-      expect(getElementById('test-id')).toBe(div);
-      expect(getElementById('nicht-existent')).toBeNull();
+        expect(getElementById('test-id')).toBe(div);
+        expect(getElementById('nicht-existent')).toBeNull();
 
-      document.body.removeChild(div);
-    });
+        document.body.removeChild(div);
+      });
 
-    it('getElementById sollte null zurückgeben, wenn id leer ist', () => {
-      expect(getElementById('')).toBeNull();
-      expect(getElementById(null)).toBeNull();
+      it('sollte null zurückgeben, wenn id leer ist', () => {
+        expect(getElementById('')).toBeNull();
+        expect(getElementById(null)).toBeNull();
+      });
     });
   });
 
@@ -425,9 +427,9 @@ describe('Basis-Hilfsprogramme (Core Utilities)', () => {
       });
 
       it('sollte nichts tun, wenn doc oder doc.head null ist', () => {
-        applyCanonicalLinks(null, [], 'https://example.com');
-        // Sollte keinen Fehler werfen
-        expect(true).toBe(true);
+        expect(() =>
+          applyCanonicalLinks(null, [], 'https://example.com'),
+        ).not.toThrow();
       });
     });
   });
