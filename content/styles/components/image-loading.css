@@ -1,0 +1,305 @@
+/**
+ * Image Loading Styles
+ * Optimierte Styles für Bildlade-Zustände
+ */
+
+/* Basis-Bild-Container */
+.img-container {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--bg-primary, #030303);
+}
+
+/* Aspect Ratio Helper */
+.img-container[data-aspect='16/9'] {
+  aspect-ratio: 16 / 9;
+}
+
+.img-container[data-aspect='4/3'] {
+  aspect-ratio: 4 / 3;
+}
+
+.img-container[data-aspect='1/1'] {
+  aspect-ratio: 1 / 1;
+}
+
+.img-container[data-aspect='3/2'] {
+  aspect-ratio: 3 / 2;
+}
+
+/* Bild-Element */
+.img-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Loading State */
+.img-loading {
+  position: relative;
+  background: linear-gradient(
+    90deg,
+    var(--bg-primary, #030303) 0%,
+    var(--bg-primary, #030303) 50%,
+    var(--bg-primary, #030303) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Blur Placeholder */
+.img-blur-placeholder {
+  filter: blur(10px);
+  transform: scale(1.1);
+  transition:
+    filter 0.3s ease-out,
+    transform 0.3s ease-out;
+}
+
+.img-blur-placeholder.loaded {
+  filter: blur(0);
+  transform: scale(1);
+}
+
+/* Fade In Animation */
+.img-fade-in {
+  opacity: 0;
+  transition: opacity 0.3s ease-out;
+}
+
+.img-fade-in.loaded {
+  opacity: 1;
+}
+
+/* Progressive Loading */
+.img-progressive {
+  position: relative;
+}
+
+.img-progressive::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(99, 102, 241, 0.1) 0%,
+    rgba(168, 85, 247, 0.1) 100%
+  );
+  opacity: 1;
+  transition: opacity 0.3s ease-out;
+  pointer-events: none;
+}
+
+.img-progressive.loaded::before {
+  opacity: 0;
+}
+
+/* Loading Spinner */
+.img-spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top-color: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes spin {
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+.img-spinner.hidden {
+  display: none;
+}
+
+/* Error State */
+.img-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-primary, #030303);
+  color: var(--color-text-secondary, #94a3b8);
+  font-size: 0.875rem;
+  padding: 1rem;
+  text-align: center;
+}
+
+.img-error::before {
+  content: '⚠️';
+  display: block;
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Lazy Loading Optimization */
+img[loading='lazy'] {
+  content-visibility: auto;
+}
+
+/* Picture Element Optimization */
+picture {
+  display: contents;
+}
+
+/* Responsive Image Utilities */
+.img-cover {
+  object-fit: cover;
+}
+
+.img-contain {
+  object-fit: contain;
+}
+
+.img-fill {
+  object-fit: fill;
+}
+
+/* Performance Hints */
+img[decoding='async'] {
+  /* Browser hint for async decoding */
+}
+
+img[fetchpriority='high'] {
+  /* Browser hint for high priority */
+}
+
+/* Reduce Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .img-blur-placeholder,
+  .img-fade-in,
+  .img-progressive::before {
+    transition: none;
+  }
+
+  .img-loading {
+    animation: none;
+    background: var(--bg-primary, #030303);
+  }
+
+  .img-spinner {
+    animation: none;
+  }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .img-container {
+    background-color: var(--bg-primary, #030303);
+  }
+
+  .img-loading {
+    background: linear-gradient(
+      90deg,
+      var(--bg-primary, #030303) 0%,
+      var(--bg-primary, #030303) 50%,
+      var(--bg-primary, #030303) 100%
+    );
+  }
+
+  .img-error {
+    background-color: var(--bg-primary, #030303);
+    color: #64748b;
+  }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  .img-error {
+    border: 2px solid currentColor;
+  }
+}
+
+/* Print Optimization */
+@media print {
+  .img-spinner,
+  .img-loading {
+    display: none;
+  }
+
+  img {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}
+
+/* Container Queries (wenn unterstützt) */
+@container (max-width: 400px) {
+  .img-spinner {
+    width: 30px;
+    height: 30px;
+  }
+}
+
+/* Utility Classes */
+.img-rounded {
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.img-rounded-lg {
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
+.img-rounded-full {
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.img-shadow {
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.img-shadow-lg {
+  box-shadow:
+    0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Hover Effects */
+.img-hover-zoom {
+  transition: transform 0.3s ease-out;
+}
+
+.img-hover-zoom:hover {
+  transform: scale(1.05);
+}
+
+.img-hover-brightness {
+  transition: filter 0.3s ease-out;
+}
+
+.img-hover-brightness:hover {
+  filter: brightness(1.1);
+}
+
+/* Accessibility */
+img:not([alt]) {
+  outline: 2px solid red;
+  outline-offset: 2px;
+}
+
+/* Focus Styles */
+img:focus-visible {
+  outline: 2px solid var(--color-primary, #6366f1);
+  outline-offset: 2px;
+}

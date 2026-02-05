@@ -42,6 +42,12 @@ describe('SearchEngine (MiniSearch)', () => {
     expect(results[0].title).toBe('Berlin Weather');
   });
 
+  it('should be case-insensitive', () => {
+    const results = engine.search('BERLIN', 5);
+    expect(results).toHaveLength(1);
+    expect(results[0].id).toBe('1');
+  });
+
   it('should find matches in description', () => {
     const results = engine.search('cold', 5);
     expect(results).toHaveLength(1);
@@ -61,21 +67,41 @@ describe('SearchEngine (MiniSearch)', () => {
   });
 
   it('should support fuzzy search (typos)', () => {
-    const results = engine.search('photogaphy', 5); // Typo
+    // 'photgraphy' (missing 'o') vs 'Photography' -> Should match with fuzzy: 0.2
+    const results = engine.search('photgraphy', 5);
     expect(results.length).toBeGreaterThan(0);
     expect(results[0].title).toBe('Photography Tips');
   });
 
   it('should prioritize items correctly (score + priority)', () => {
-    // Both items match "The" (stop word usually, but assuming it's indexed or we use other words)
-    // Let's use a word that might appear in multiple places or test explicit priority
-    // "Berlin" (prio 10) vs "React" (prio 5).
-    // If we search for something common?
-    // Let's rely on the fact that priority is added.
+    // Setup two items that are identical except for priority
+    const localItems = [
+      {
+        id: 'high',
+        title: 'Common Term Article',
+        description: 'An article about a common term.',
+        url: '/high',
+        priority: 10,
+        keywords: ['common'],
+      },
+      {
+        id: 'low',
+        title: 'Common Term Article',
+        description: 'An article about a common term.',
+        url: '/low',
+        priority: 1,
+        keywords: ['common'],
+      },
+    ];
+    const localEngine = new SearchEngine(localItems);
+    const res = localEngine.search('common', 2);
 
-    // We can check if score > 0
-    const res = engine.search('Berlin', 1);
-    expect(res[0].score).toBeGreaterThan(10); // Base score + priority 10
+    expect(res).toHaveLength(2);
+    // High priority item should be first
+    expect(res[0].id).toBe('high');
+    expect(res[1].id).toBe('low');
+    // High priority item should have a strictly higher score
+    expect(res[0].score).toBeGreaterThan(res[1].score);
   });
 
   it('should handle empty queries gracefully', () => {

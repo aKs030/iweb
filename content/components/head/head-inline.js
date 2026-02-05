@@ -206,25 +206,25 @@ const injectCoreAssets = () => {
     const getStylesForPath = () => {
       const p =
         (globalThis.location?.pathname || '').replace(/\/+$/g, '') || '/';
-
-      // Critical styles (root.css, main.css, animations.css) are in base-head.html template
-      // Only return page-specific styles here
-      const pageSpecific = [];
-
+      const base = [
+        '/content/styles/root.css',
+        '/content/styles/main.css',
+        '/content/styles/animations.css',
+      ];
       if (p === '/') {
-        pageSpecific.push(
+        return base.concat([
           '/pages/home/hero.css',
           '/content/components/typewriter/typewriter.css',
           '/content/components/particles/three-earth.css',
           '/pages/home/section3.css',
           '/pages/home/section4.css',
-        );
+        ]);
       }
-
-      return pageSpecific;
+      return base;
     };
 
     const SCRIPTS = [
+      { src: '/content/main.js', module: true, preload: false },
       { src: '/content/components/menu/menu.js', module: true },
       { src: '/content/components/footer/SiteFooter.js', module: true },
     ];
@@ -250,10 +250,18 @@ const injectCoreAssets = () => {
       }
     };
 
-    const upsertStyle = (href) => {
+    const upsertStyle = (href, { critical = false } = {}) => {
       if (document.head.querySelector(`link[href="${href}"]`)) return;
 
-      // Load page-specific styles via preload for better performance
+      if (critical) {
+        upsertHeadLink({
+          rel: 'stylesheet',
+          href,
+          dataset: { injectedBy: 'head-inline' },
+        });
+        return;
+      }
+
       upsertHeadLink({
         rel: 'preload',
         href,
@@ -269,7 +277,7 @@ const injectCoreAssets = () => {
         },
       });
 
-      // Fallback
+      // Fallback with shorter timeout
       setTimeout(() => {
         try {
           const existing = document.head.querySelector(`link[href="${href}"]`);
@@ -322,15 +330,31 @@ const injectCoreAssets = () => {
         resourceHints.preconnect('https://www.gstatic.com');
       }
 
-      // Preconnect to CDNs (dns-prefetch already in base-head.html)
+      // Preconnect to CDNs
       resourceHints.preconnect('https://cdn.jsdelivr.net');
       resourceHints.preconnect('https://esm.sh');
 
       const styles = getStylesForPath();
+      const p =
+        (globalThis.location?.pathname || '').replace(/\/+$/g, '') || '/';
 
-      // Inject page-specific styles only
+      const criticalStyles = new Set([
+        '/content/styles/root.css',
+        '/content/styles/main.css',
+      ]);
+      const homeCritical = new Set([
+        '/pages/home/hero.css',
+        '/content/components/typewriter/typewriter.css',
+        '/content/components/particles/three-earth.css',
+        '/pages/home/section3.css',
+        '/pages/home/section4.css',
+      ]);
+
+      // Batch inject styles
       styles.forEach((href) => {
-        upsertStyle(href);
+        const isCritical =
+          criticalStyles.has(href) || (p === '/' && homeCritical.has(href));
+        upsertStyle(href, { critical: isCritical });
       });
 
       // Batch inject module preloads
