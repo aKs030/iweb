@@ -17,7 +17,7 @@ describe('AppLoadManager', () => {
     vi.clearAllMocks();
     // Clear any existing blocks
     const pending = AppLoadManager.getPending();
-    pending.forEach(name => AppLoadManager.unblock(name));
+    pending.forEach((name) => AppLoadManager.unblock(name));
   });
 
   it('should start unblocked', () => {
