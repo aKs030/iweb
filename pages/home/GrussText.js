@@ -57,7 +57,7 @@ const GREETINGS = {
   },
 };
 
-export const getGreetingSet = (date = new Date(), lang = 'de') => {
+const getGreetingSet = (date = new Date(), lang = 'de') => {
   const hour = date.getHours();
   // Fallback to 'de' if lang not found
   const localizedGreetings = GREETINGS[lang] || GREETINGS['de'];
@@ -68,7 +68,7 @@ export const getGreetingSet = (date = new Date(), lang = 'de') => {
   return localizedGreetings.night;
 };
 
-export const pickGreeting = (lastValue = null, set = null) => {
+const pickGreeting = (lastValue = null, set = null) => {
   // Note: set is passed from outside, so it should already be localized
   const greetingSet = set == null ? getGreetingSet() : set;
   if (!Array.isArray(greetingSet) || greetingSet.length === 0) return '';
@@ -86,3 +86,6 @@ export const pickGreeting = (lastValue = null, set = null) => {
 
   return candidate;
 };
+
+/* Exported for tests but primarily used via global assignment in this file */
+export { getGreetingSet, pickGreeting };
