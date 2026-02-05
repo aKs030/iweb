@@ -61,21 +61,41 @@ describe('SearchEngine (MiniSearch)', () => {
   });
 
   it('should support fuzzy search (typos)', () => {
-    const results = engine.search('photogaphy', 5); // Typo
+    const results = engine.search('photgraphy', 5); // Single-character typo (missing 'o')
     expect(results.length).toBeGreaterThan(0);
     expect(results[0].title).toBe('Photography Tips');
   });
 
   it('should prioritize items correctly (score + priority)', () => {
-    // Both items match "The" (stop word usually, but assuming it's indexed or we use other words)
-    // Let's use a word that might appear in multiple places or test explicit priority
-    // "Berlin" (prio 10) vs "React" (prio 5).
-    // If we search for something common?
-    // Let's rely on the fact that priority is added.
+    // Use a separate SearchEngine instance with two otherwise identical items
+    // that differ only by priority. The higher-priority item should rank higher
+    // and have a higher score when searching for a matching term.
+    const localItems = [
+      {
+        id: 'high',
+        title: 'Common Term Article',
+        description: 'An article about a common term.',
+        url: '/high',
+        priority: 10,
+        keywords: ['common'],
+      },
+      {
+        id: 'low',
+        title: 'Common Term Article',
+        description: 'An article about a common term.',
+        url: '/low',
+        priority: 1,
+        keywords: ['common'],
+      },
+    ];
 
-    // We can check if score > 0
-    const res = engine.search('Berlin', 1);
-    expect(res[0].score).toBeGreaterThan(10); // Base score + priority 10
+    const localEngine = new SearchEngine(localItems);
+    const res = localEngine.search('common', 2);
+
+    expect(res).toHaveLength(2);
+    expect(res[0].id).toBe('high');
+    expect(res[1].id).toBe('low');
+    expect(res[0].score).toBeGreaterThan(res[1].score);
   });
 
   it('should handle empty queries gracefully', () => {
@@ -86,5 +106,19 @@ describe('SearchEngine (MiniSearch)', () => {
   it('should handle null/undefined queries', () => {
     expect(engine.search(null, 5)).toEqual([]);
     expect(engine.search(undefined, 5)).toEqual([]);
+  });
+
+  it('should perform case-insensitive search', () => {
+    const resultsLower = engine.search('berlin', 5);
+    const resultsUpper = engine.search('BERLIN', 5);
+    const resultsMixed = engine.search('BeRLiN', 5);
+
+    expect(resultsLower).toHaveLength(1);
+    expect(resultsUpper).toHaveLength(1);
+    expect(resultsMixed).toHaveLength(1);
+
+    expect(resultsLower[0].id).toBe('1');
+    expect(resultsUpper[0].id).toBe('1');
+    expect(resultsMixed[0].id).toBe('1');
   });
 });
