@@ -20,9 +20,6 @@ export class CardManager {
     this._sharedGeometry = null;
     this._sharedGlowTexture = null;
     this._tmpVec = new THREE.Vector3();
-    this._tmpQuat = new THREE.Quaternion();
-    this._tmpQuat2 = new THREE.Quaternion();
-    this._tmpEuler = new THREE.Euler();
     this._orientDummy = new THREE.Object3D();
 
     // Group to hold all cards
@@ -620,31 +617,14 @@ export class CardManager {
     return intersects.length > 0 ? intersects[0].object : null;
   }
 
-  update(time, mousePos) {
+  update(time) {
     if (!this.cardGroup.visible) return;
 
-    const pos = mousePos || this._lastPointerPos || { x: 0, y: 0 };
-    const candidate = this.getHoveredCardFromScreen(pos);
-
-    if (candidate === this._hoverCandidate) {
-      this._hoverFrames++;
-      if (this._hoverFrames >= 3) {
-        if (candidate !== this._hovered) {
-          this._hovered = candidate;
-          document.body.style.cursor = candidate ? 'pointer' : '';
-        }
-      }
-    } else {
-      this._hoverCandidate = candidate;
-      this._hoverFrames = 0;
-    }
-
-    const hoveredCard = this._hovered;
     this.camera.getWorldPosition(this._tmpVec);
 
     this.cards.forEach((card) => {
       this._updateCardEntranceAndOpacity(card);
-      this._updateCardHoverTiltAndMotion(card, pos, hoveredCard, time);
+      // Removed hover tilt/motion as mouse tracking is disabled
       this._applyOrientation(card);
       this._updateCardGlow(card, time);
     });
@@ -672,89 +652,10 @@ export class CardManager {
       baseOpacity * (0.05 + 0.95 * card.userData.entranceProgress);
   }
 
-  _updateCardHoverTiltAndMotion(card, pos, hoveredCard, time) {
-    const floatY =
-      Math.sin(time * 0.001 + card.userData.id) *
-      0.06 *
-      (1 - card.userData.hoverProgress * 0.7);
-
-    const isHovered = card === hoveredCard;
-    let hoverTarget = isHovered ? 1 : 0;
-    if (!isHovered && card.userData.hoverProgress > 0.5) {
-      hoverTarget = card.userData.hoverProgress;
-    }
-    card.userData.hoverProgress +=
-      (hoverTarget - card.userData.hoverProgress) * 0.05; // Slightly snappier
-
-    const parallax = card.userData.parallaxStrength || 0.12;
-    const targetTiltX = -pos.y * parallax * card.userData.hoverProgress;
-    const targetTiltY = pos.x * parallax * card.userData.hoverProgress * 0.8;
-
-    card.userData.currentTiltX +=
-      (targetTiltX - card.userData.currentTiltX) * 0.05;
-    card.userData.currentTiltY +=
-      (targetTiltY - card.userData.currentTiltY) * 0.05;
-
-    let targetY = card.userData.originalY;
-    let targetZ = card.userData.originalZ || 0;
-    let targetScale = 1;
-
-    if (card === hoveredCard) {
-      targetY = card.userData.hoverY;
-      targetZ = (card.userData.originalZ || 0) + 0.5; // Bring closer on hover
-      targetScale = 1.05;
-    }
-
-    card.position.y += (targetY + floatY - card.position.y) * 0.05;
-    card.position.z += (targetZ - card.position.z) * 0.05;
-
-    // Scale interpolation logic adjusted for base scale
-    // We can't just lerp to 1 or 1.05 because resize sets a specific scale.
-    // Instead we modify the scale set by resize.
-    // Since _onResize runs infrequently, we should store baseScale in userData if we wanted perfect scalar lerp,
-    // but here we are just adding a small factor or using the scale from resize.
-    // Actually, simple addition is safer here to avoid fighting the resizer.
-    // However, card.scale is set every frame by resize RAF if resizing.
-    // Let's assume resize is not active.
-    // Current approach in `update`:
-    // card.scale.x += (targetScale - card.scale.x) * 0.04
-    // This assumes targetScale is the absolute target.
-    // But `_onResize` sets `card.scale` based on screen width.
-    // We should treat the scale from resize as the "base".
-    // For now, let's just multiply the current scale slightly.
-    // This is complex without storing baseScale.
-    // Let's rely on the fact that if NOT resizing, scale is stable.
-    // We will just scale X, Y, Z by a factor.
-
-    // Simpler: Apply hover scale on top of base scale is hard without hierarchy.
-    // Current implementation overwrites scale.
-    // We will fix this by storing baseScale in userData during resize.
-    // (Added to resize logic: card.userData.baseScale = finalScale)
-    // If not present, default to current.
-
-    const baseScale = card.userData.baseScale || card.scale.x;
-    const finalTargetScale = baseScale * targetScale;
-
-    card.scale.setScalar(
-      card.scale.x + (finalTargetScale - card.scale.x) * 0.05,
-    );
-  }
-
   _applyOrientation(card) {
     this._orientDummy.position.copy(card.position);
     this._orientDummy.lookAt(this._tmpVec.x, card.position.y, this._tmpVec.z);
-    this._tmpQuat.copy(this._orientDummy.quaternion);
-
-    this._tmpEuler.set(
-      card.userData.currentTiltX,
-      card.userData.currentTiltY,
-      0,
-      'XYZ',
-    );
-    this._tmpQuat2.setFromEuler(this._tmpEuler);
-
-    this._tmpQuat.multiply(this._tmpQuat2);
-    card.quaternion.slerp(this._tmpQuat, 0.05);
+    card.quaternion.slerp(this._orientDummy.quaternion, 0.05);
   }
 
   _updateCardGlow(card, time) {
@@ -852,8 +753,6 @@ export class CardManager {
       this._orientDummy.position.copy(card.position);
       this._orientDummy.lookAt(this._tmpVec.x, card.position.y, this._tmpVec.z);
       card.quaternion.copy(this._orientDummy.quaternion);
-      card.userData.currentTiltX = 0;
-      card.userData.currentTiltY = 0;
     });
   }
 
@@ -988,8 +887,6 @@ export class CardManager {
       entranceProgress: 0,
       hoverProgress: 0,
       parallaxStrength: 0.14,
-      currentTiltX: 0,
-      currentTiltY: 0,
     };
 
     const glowMat = new this.THREE.SpriteMaterial({
