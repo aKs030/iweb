@@ -33,7 +33,7 @@ export default defineConfig({
           });
         },
       },
-      // AI Search Proxy (Search + Gemini)
+      // AI Search Proxy (Search + AI)
       '/api': {
         target: 'http://localhost:8787',
         changeOrigin: true,

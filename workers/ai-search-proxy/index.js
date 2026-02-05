@@ -1,17 +1,17 @@
 /**
- * AI Search & Gemini Proxy Worker
- * Handles /api/search and /api/gemini endpoints with RAG augmentation
+ * AI Search & AI Proxy Worker
+ * Handles /api/search and /api/ai endpoints with RAG augmentation
  *
  * Features:
  * - Server-side full-text search with scoring
- * - Gemini API proxy with RAG context injection
+ * - AI API proxy (Groq) with RAG context injection
  * - Response caching
  * - Error handling and validation
  */
 
 import SEARCH_INDEX from './search-index.json' with { type: 'json' };
 import { searchHandler } from './handlers/search.js';
-import { aiHandler } from './handlers/ai.js'; // Handler for legacy /api/gemini endpoint
+import { aiHandler } from './handlers/ai.js';
 import {
   handleCORSPreflight,
   errorResponse,
@@ -32,7 +32,12 @@ export default {
         return await searchHandler(request, env, SEARCH_INDEX);
       }
 
-      // Legacy endpoint name kept for backward compatibility with older clients/config
+      // AI endpoint
+      if (url.pathname === '/api/ai') {
+        return await aiHandler(request, env, SEARCH_INDEX);
+      }
+
+      // Legacy endpoint - redirect to /api/ai (deprecated)
       if (url.pathname === '/api/gemini') {
         return await aiHandler(request, env, SEARCH_INDEX);
       }

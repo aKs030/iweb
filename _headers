@@ -63,8 +63,8 @@
   Vary: Accept-Encoding, Accept
   X-Robots-Tag: noindex
 
-# AI/Gemini API - No caching (dynamic responses)
-/api/gemini
+# AI API - No caching (dynamic responses)
+/api/ai
   Cache-Control: no-store, no-cache, must-revalidate, private
   Vary: Accept-Encoding, Accept
   X-Robots-Tag: noindex

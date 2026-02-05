@@ -58,7 +58,7 @@ Integration:
 
 Workers:
 ├── workers/ai-search-proxy/handlers/search.js
-├── workers/ai-search-proxy/handlers/gemini.js
+├── workers/ai-search-proxy/handlers/ai.js
 ├── workers/youtube-api-proxy/handlers/youtube.js
 └── workers/ai-search-proxy/index.js
 ```
