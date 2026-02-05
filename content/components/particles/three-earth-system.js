@@ -9,6 +9,7 @@ import * as THREE from 'three';
 import { createLogger } from '/content/core/logger.js';
 import { getElementById, debounce } from '/content/core/utils.js';
 import { createObserver } from '/content/core/intersection-observer.js';
+import { AppLoadManager } from '/content/core/load-manager.js';
 import {
   getSharedState,
   registerParticleSystem,
@@ -35,25 +36,6 @@ import {
 } from './earth/ui.js';
 
 const log = createLogger('ThreeEarthSystem');
-
-/**
- * Get global AppLoadManager from window
- * @returns {any}
- */
-function getAppLoadManager() {
-  const global =
-    /** @type {import('/content/core/types.js').GlobalThisExtended & typeof globalThis} */ (
-      globalThis
-    );
-  return (
-    // @ts-ignore
-    global.__appLoadManager || {
-      block: () => {},
-      unblock: () => {},
-      isBlocked: () => false,
-    }
-  );
-}
 
 /**
  * @typedef {import('/content/core/types.js').TimerID} TimerID
@@ -195,7 +177,6 @@ class ThreeEarthSystem {
 
     // Handlers (bound)
     this.handleVisibilityChange = this.handleVisibilityChange.bind(this);
-    this.onMove = this.onMove.bind(this);
     this.onClick = this.onClick.bind(this);
     this.onShowcaseTrigger = this.onShowcaseTrigger.bind(this);
 
@@ -376,7 +357,6 @@ class ThreeEarthSystem {
       if (!loaded) {
         log.warn('Three.js load timeout');
         try {
-          const AppLoadManager = getAppLoadManager();
           AppLoadManager.unblock('three-earth');
         } catch {
           /* ignore */
@@ -429,7 +409,6 @@ class ThreeEarthSystem {
 
     manager.onError = (/** @type {string} */ url) => {
       log.warn('Error loading texture:', url);
-      const AppLoadManager = getAppLoadManager();
       AppLoadManager.unblock('three-earth');
     };
 
@@ -438,7 +417,6 @@ class ThreeEarthSystem {
 
   _registerAndBlock() {
     registerParticleSystem('three-earth', { type: 'three-earth' });
-    const AppLoadManager = getAppLoadManager();
     AppLoadManager.block('three-earth');
   }
 
@@ -636,36 +614,11 @@ class ThreeEarthSystem {
   // --- Interaction & Events ---
 
   _setupInteraction() {
-    const global =
-      /** @type {import('/content/core/types.js').GlobalThisExtended & typeof globalThis} */ (
-        globalThis
-      );
-    global.lastMousePos = new this.THREE.Vector2(-999, -999);
-
-    window.addEventListener('mousemove', this.onMove);
     window.addEventListener('click', this.onClick);
-
-    // We don't use globalThis._threeEarthMove anymore
   }
 
   _removeInteractionHandlers() {
-    window.removeEventListener('mousemove', this.onMove);
     window.removeEventListener('click', this.onClick);
-  }
-
-  /**
-   * @param {MouseEvent} event
-   */
-  onMove(event) {
-    if (!this.active) return;
-    const global =
-      /** @type {import('/content/core/types.js').GlobalThisExtended & typeof globalThis} */ (
-        globalThis
-      );
-    if (global.lastMousePos) {
-      global.lastMousePos.x = (event.clientX / window.innerWidth) * 2 - 1;
-      global.lastMousePos.y = -(event.clientY / window.innerHeight) * 2 + 1;
-    }
   }
 
   /**
@@ -772,12 +725,8 @@ class ThreeEarthSystem {
     this.cameraManager?.updateCameraPosition(delta);
     this._updateTransforms();
 
-    const global =
-      /** @type {import('/content/core/types.js').GlobalThisExtended & typeof globalThis} */ (
-        globalThis
-      );
-    if (this.cardManager && global.lastMousePos) {
-      this.cardManager.update(totalTime * 1000, global.lastMousePos);
+    if (this.cardManager) {
+      this.cardManager.update(totalTime * 1000);
     }
 
     if (!capabilities.isLowEnd) this.shootingStarManager?.update(delta);
@@ -846,7 +795,6 @@ class ThreeEarthSystem {
         // Small delay to ensure the first frame is visible before hiding loader
         requestAnimationFrame(() => {
           hideLoadingState(container);
-          const AppLoadManager = getAppLoadManager();
           AppLoadManager.unblock('three-earth');
           document.dispatchEvent(
             new CustomEvent('three-first-frame', {

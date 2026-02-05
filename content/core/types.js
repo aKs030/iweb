@@ -314,7 +314,6 @@
 
 /**
  * @typedef {Object} GlobalThisExtended
- * @property {Vector2} [lastMousePos] - Last mouse position
  * @property {boolean} [__FORCE_THREE_EARTH] - Force Three.js Earth
  * @property {any} [robotCompanionTexts] - Robot companion texts
  * @property {any} [__ENV__] - Environment variables
