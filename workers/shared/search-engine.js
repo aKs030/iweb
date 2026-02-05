@@ -28,8 +28,7 @@ export class SearchEngine {
    * @param {number} topK - Anzahl der Ergebnisse
    */
   search(query, topK) {
-    const q = String(query || '')
-      .trim();
+    const q = String(query || '').trim();
 
     if (!q) return [];
 

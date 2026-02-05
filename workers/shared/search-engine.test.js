@@ -9,7 +9,7 @@ describe('SearchEngine (MiniSearch)', () => {
       description: 'The weather in Berlin is cold.',
       url: '/weather',
       priority: 10,
-      keywords: ['weather', 'forecast']
+      keywords: ['weather', 'forecast'],
     },
     {
       id: '2',
@@ -17,7 +17,7 @@ describe('SearchEngine (MiniSearch)', () => {
       description: 'Learn React from scratch.',
       url: '/react',
       priority: 5,
-      keywords: ['react', 'js', 'javascript']
+      keywords: ['react', 'js', 'javascript'],
     },
     {
       id: '3',
@@ -25,8 +25,8 @@ describe('SearchEngine (MiniSearch)', () => {
       description: 'How to take good photos.',
       url: '/photo',
       priority: 8,
-      keywords: ['photo', 'camera']
-    }
+      keywords: ['photo', 'camera'],
+    },
   ];
 
   let engine;
