@@ -15,7 +15,6 @@ const FALLBACK_MESSAGE =
 
 /**
  * Makes a request to the AI API via proxy with retry logic
- * Note: Endpoint is still /api/gemini for backward compatibility, but uses Groq now
  * @param {string} prompt - User prompt
  * @param {string} systemInstruction - System instruction for the AI
  * @param {Function} [onChunk] - Optional callback for streaming chunks
@@ -31,7 +30,7 @@ async function callAIAPI(prompt, systemInstruction, onChunk) {
 
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
     try {
-      const response = await fetch('/api/gemini', {
+      const response = await fetch('/api/ai', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt, systemInstruction }),
