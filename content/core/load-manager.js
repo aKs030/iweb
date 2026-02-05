@@ -50,6 +50,6 @@ export const AppLoadManager = (() => {
      */
     getPending() {
       return Array.from(pending);
-    }
+    },
   };
 })();
