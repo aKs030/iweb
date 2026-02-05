@@ -42,6 +42,12 @@ describe('SearchEngine (MiniSearch)', () => {
     expect(results[0].title).toBe('Berlin Weather');
   });
 
+  it('should be case-insensitive', () => {
+    const results = engine.search('BERLIN', 5);
+    expect(results).toHaveLength(1);
+    expect(results[0].id).toBe('1');
+  });
+
   it('should find matches in description', () => {
     const results = engine.search('cold', 5);
     expect(results).toHaveLength(1);

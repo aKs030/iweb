@@ -384,6 +384,6 @@ timeout-minutes: 10
 
 ---
 
-**Erstellt:** Februar 2026  
-**Version:** 1.0  
+**Erstellt:** Februar 2026
+**Version:** 1.0
 **Autor:** Abdulkerim Sesli
