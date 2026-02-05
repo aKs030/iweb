@@ -25,13 +25,15 @@ export async function performSearch(query, topK, env, includeScore = false) {
   try {
     // Select results using FTS5 match
     // We order by rank (default BM25, lower is better)
-    const stmt = env.DB.prepare(`
+    const stmt = env.DB.prepare(
+      `
       SELECT id, title, description, url, category, rank
       FROM search_index
       WHERE search_index MATCH ?
       ORDER BY rank
       LIMIT ?
-    `).bind(ftsQuery, topK);
+    `,
+    ).bind(ftsQuery, topK);
 
     const { results } = await stmt.all();
 

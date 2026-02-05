@@ -17,7 +17,7 @@ try {
 DELETE FROM search_index;
 `;
 
-  items.forEach(item => {
+  items.forEach((item) => {
     const id = escape(item.id);
     const title = escape(item.title);
     const description = escape(item.description);
@@ -31,8 +31,9 @@ DELETE FROM search_index;
 
   fs.writeFileSync(OUTPUT_FILE, sql);
   console.log(`✅ Seed file generated at: ${OUTPUT_FILE}`);
-  console.log(`Run: wrangler d1 execute search-db --file=${OUTPUT_FILE} --local`);
-
+  console.log(
+    `Run: wrangler d1 execute search-db --file=${OUTPUT_FILE} --local`,
+  );
 } catch (err) {
   console.error('Error generating seed file:', err);
   process.exit(1);

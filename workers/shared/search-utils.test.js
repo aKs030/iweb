@@ -15,8 +15,15 @@ describe('performSearch (D1)', () => {
   it('should execute SQL query with correct params', async () => {
     const mockAll = vi.fn().mockResolvedValue({
       results: [
-        { id: '1', title: 'Test', description: 'Desc', url: '/test', category: 'Page', rank: -5.1 }
-      ]
+        {
+          id: '1',
+          title: 'Test',
+          description: 'Desc',
+          url: '/test',
+          category: 'Page',
+          rank: -5.1,
+        },
+      ],
     });
     const mockBind = vi.fn().mockReturnValue({ all: mockAll });
     const mockPrepare = vi.fn().mockReturnValue({ bind: mockBind });
@@ -25,9 +32,17 @@ describe('performSearch (D1)', () => {
     const results = await performSearch('hello world', 5, mockEnv, true);
 
     // Check SQL preparation
-    expect(mockPrepare).toHaveBeenCalledWith(expect.stringContaining('SELECT id, title, description, url, category, rank'));
-    expect(mockPrepare).toHaveBeenCalledWith(expect.stringContaining('FROM search_index'));
-    expect(mockPrepare).toHaveBeenCalledWith(expect.stringContaining('WHERE search_index MATCH ?'));
+    expect(mockPrepare).toHaveBeenCalledWith(
+      expect.stringContaining(
+        'SELECT id, title, description, url, category, rank',
+      ),
+    );
+    expect(mockPrepare).toHaveBeenCalledWith(
+      expect.stringContaining('FROM search_index'),
+    );
+    expect(mockPrepare).toHaveBeenCalledWith(
+      expect.stringContaining('WHERE search_index MATCH ?'),
+    );
 
     // Check binding: "hello"* AND "world"*
     // Note: The implementation splits by space and joins with AND.
@@ -42,7 +57,7 @@ describe('performSearch (D1)', () => {
       title: 'Test',
       description: 'Desc',
       url: '/test',
-      score: -5.1
+      score: -5.1,
     });
   });
 
