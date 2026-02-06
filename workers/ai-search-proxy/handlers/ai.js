@@ -1,7 +1,6 @@
 /**
  * AI Handler
  * Proxies requests to Groq API (free) with optional RAG augmentation
- * Previously used Google Gemini - now using Groq for free inference
  */
 
 import { jsonResponse, errorResponse } from '../../shared/response-utils.js';

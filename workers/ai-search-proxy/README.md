@@ -56,8 +56,6 @@ Führt eine Volltextsuche im Index durch.
 
 Proxied Groq AI API (kostenlos!) mit optionaler RAG-Augmentation.
 
-> **Note:** The legacy `/api/gemini` endpoint is deprecated but still supported for backward compatibility. It redirects to `/api/ai`. Please update your code to use `/api/ai` instead.
-
 **Request:**
 
 ```json
@@ -123,10 +121,6 @@ MAX_SEARCH_RESULTS = "10"
 wrangler secret put GROQ_API_KEY
 ```
 
-```bash
-wrangler secret put GEMINI_API_KEY
-```
-
 ## 🚀 Deployment
 
 ```bash
@@ -173,7 +167,7 @@ Der Scoring-Algorithmus bewertet Treffer nach Relevanz:
 ## 🔒 Security
 
 - API Keys als Secrets (nicht im Code)
-- Request-Validierung (max. 500 chars für Search, 10k für Gemini)
+- Request-Validierung (max. 500 chars für Search, 10k für AI)
 - CORS-Konfiguration
 - Error-Sanitization
 - Rate Limiting (über Cloudflare)
@@ -184,16 +178,6 @@ Der Scoring-Algorithmus bewertet Treffer nach Relevanz:
 - Groq AI: ~100-500ms (sehr schnell! 🚀)
 - RAG-Augmentation: +5-10ms
 - Caching: Cloudflare Edge Cache
-
-## 🆚 Groq vs Gemini
-
-| Feature             | Gemini                 | Groq              |
-| ------------------- | ---------------------- | ----------------- |
-| **Kosten**          | Kostenlos (mit Limits) | 100% Kostenlos    |
-| **Rate Limits**     | 60 req/min             | 10 req/min        |
-| **Geschwindigkeit** | ~500-2000ms            | ~100-500ms        |
-| **Qualität**        | Sehr gut               | Gut               |
-| **API Key**         | Kreditkarte nötig      | Keine Kreditkarte |
 
 ## 🐛 Debugging
 
