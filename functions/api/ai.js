@@ -43,6 +43,18 @@ export async function onRequestPost(context) {
     try {
         const { request, env } = context;
 
+        // Diagnostic mode: POST /api/ai with ?test=1 → skip Groq call
+        const url = new URL(request.url);
+        if (url.searchParams.get('test') === '1') {
+            return jsonResponse({
+                ok: true,
+                method: 'POST',
+                keyConfigured: !!(env && env.GROQ_API_KEY),
+                timestamp: new Date().toISOString(),
+                note: 'POST handler reached — Groq call skipped (test mode)',
+            });
+        }
+
         // Parse body safely
         let body;
         try {
