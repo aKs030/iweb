@@ -70,7 +70,9 @@ const PhotoGallery = () => {
       setTimeout(() => {
         if (imgEl) {
           const separator = imgEl.src.includes('?') ? '&' : '?';
-          imgEl.src = imgEl.src.replace(/&_retry=\d+/, '') + `${separator}_retry=${count}`;
+          imgEl.src =
+            imgEl.src.replace(/&_retry=\d+/, '') +
+            `${separator}_retry=${count}`;
         }
       }, delay);
     } else {
@@ -120,7 +122,8 @@ const PhotoGallery = () => {
     {
       id: 1,
       url: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200',
-      thumb: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=75',
+      thumb:
+        'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=75',
       category: 'nature',
       title: 'Berglandschaft im Morgengrauen',
       tags: ['berge', 'natur', 'landschaft'],
@@ -133,7 +136,8 @@ const PhotoGallery = () => {
     {
       id: 2,
       url: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=1200',
-      thumb: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=600&q=75',
+      thumb:
+        'https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=600&q=75',
       category: 'nature',
       title: 'Mystischer Nebelwald',
       tags: ['wald', 'nebel', 'natur'],
@@ -146,7 +150,8 @@ const PhotoGallery = () => {
     {
       id: 3,
       url: 'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=1200',
-      thumb: 'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=600&q=75',
+      thumb:
+        'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=600&q=75',
       category: 'urban',
       title: 'Urbane Architektur',
       tags: ['stadt', 'architektur', 'modern'],
@@ -159,7 +164,8 @@ const PhotoGallery = () => {
     {
       id: 4,
       url: 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=1200',
-      thumb: 'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=600&q=75',
+      thumb:
+        'https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=600&q=75',
       category: 'nature',
       title: 'Goldener Sonnenuntergang',
       tags: ['sunset', 'himmel', 'natur'],
@@ -172,7 +178,8 @@ const PhotoGallery = () => {
     {
       id: 5,
       url: 'https://images.unsplash.com/photo-1444464666168-49d633b86797?w=1200',
-      thumb: 'https://images.unsplash.com/photo-1444464666168-49d633b86797?w=600&q=75',
+      thumb:
+        'https://images.unsplash.com/photo-1444464666168-49d633b86797?w=600&q=75',
       category: 'travel',
       title: 'Reise ans Ende der Welt',
       tags: ['reise', 'abenteuer', 'landschaft'],
@@ -185,7 +192,8 @@ const PhotoGallery = () => {
     {
       id: 6,
       url: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=1200',
-      thumb: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=600&q=75',
+      thumb:
+        'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=600&q=75',
       category: 'nature',
       title: 'Stille am Bergsee',
       tags: ['see', 'berge', 'ruhe'],
@@ -198,7 +206,8 @@ const PhotoGallery = () => {
     {
       id: 7,
       url: 'https://images.unsplash.com/photo-1477346611705-65d1883cee1e?w=1200',
-      thumb: 'https://images.unsplash.com/photo-1477346611705-65d1883cee1e?w=600&q=75',
+      thumb:
+        'https://images.unsplash.com/photo-1477346611705-65d1883cee1e?w=600&q=75',
       category: 'travel',
       title: 'Küstenstraße am Pazifik',
       tags: ['küste', 'reise', 'straße'],
@@ -211,7 +220,8 @@ const PhotoGallery = () => {
     {
       id: 8,
       url: 'https://images.unsplash.com/photo-1511593358241-7eea1f3c84e5?w=1200',
-      thumb: 'https://images.unsplash.com/photo-1511593358241-7eea1f3c84e5?w=600&q=75',
+      thumb:
+        'https://images.unsplash.com/photo-1511593358241-7eea1f3c84e5?w=600&q=75',
       category: 'urban',
       title: 'Moderne Skyline',
       tags: ['architektur', 'stadt', 'skyline'],
@@ -224,7 +234,8 @@ const PhotoGallery = () => {
     {
       id: 9,
       url: 'https://images.unsplash.com/photo-1426604966848-d7adac402bff?w=1200',
-      thumb: 'https://images.unsplash.com/photo-1426604966848-d7adac402bff?w=600&q=75',
+      thumb:
+        'https://images.unsplash.com/photo-1426604966848-d7adac402bff?w=600&q=75',
       category: 'nature',
       title: 'Unberührte Wildnis',
       tags: ['wildnis', 'natur', 'wald'],
@@ -237,7 +248,8 @@ const PhotoGallery = () => {
     {
       id: 10,
       url: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&h=600',
-      thumb: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=75',
+      thumb:
+        'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=75',
       category: 'landscape',
       title: 'Panorama der Alpen',
       tags: ['panorama', 'alpen', 'weitwinkel'],
@@ -250,7 +262,8 @@ const PhotoGallery = () => {
     {
       id: 11,
       url: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=1200',
-      thumb: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=600&q=75',
+      thumb:
+        'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=600&q=75',
       category: 'nature',
       title: 'Herbstlicher Waldweg',
       tags: ['herbst', 'wald', 'pfad'],
@@ -263,7 +276,8 @@ const PhotoGallery = () => {
     {
       id: 12,
       url: 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=1200',
-      thumb: 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=600&q=75',
+      thumb:
+        'https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=600&q=75',
       category: 'urban',
       title: 'Nächtliche Stadtansicht',
       tags: ['nacht', 'stadt', 'lichter'],
@@ -1107,7 +1121,8 @@ const PhotoGallery = () => {
             transform: `scale(${zoom})`,
             filter: 'drop-shadow(0 25px 50px rgba(0,0,0,0.5))',
           },
-          onError: (e) => handleImageError(`lb-${selectedImage.id}`, e.target),
+          onError: (e) =>
+            handleImageError(`lb-${selectedImage.id}`, e.target),
         }),
       ),
       isSlideshow &&

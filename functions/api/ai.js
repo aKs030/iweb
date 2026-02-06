@@ -73,7 +73,7 @@ export async function onRequestPost(context) {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + diagKey,
+                        Authorization: 'Bearer ' + diagKey,
                     },
                     body: diagPayload,
                 });
@@ -90,13 +90,16 @@ export async function onRequestPost(context) {
                     timestamp: new Date().toISOString(),
                 });
             } catch (e) {
-                return jsonResponse({
-                    ok: false,
-                    step: diagStep,
-                    error: String(e),
-                    message: e && e.message ? e.message : 'unknown',
-                    timestamp: new Date().toISOString(),
-                }, 500);
+                return jsonResponse(
+                    {
+                        ok: false,
+                        step: diagStep,
+                        error: String(e),
+                        message: e && e.message ? e.message : 'unknown',
+                        timestamp: new Date().toISOString(),
+                    },
+                    500,
+                );
             }
         }
 
@@ -109,17 +112,31 @@ export async function onRequestPost(context) {
         }
 
         // Validate
-        if (!body || !body.prompt || typeof body.prompt !== 'string' || body.prompt.trim().length === 0) {
-            return jsonResponse({ error: 'Missing or invalid prompt', status: 400 }, 400);
+        if (
+            !body ||
+            !body.prompt ||
+            typeof body.prompt !== 'string' ||
+            body.prompt.trim().length === 0
+        ) {
+            return jsonResponse(
+                { error: 'Missing or invalid prompt', status: 400 },
+                400,
+            );
         }
         if (body.prompt.length > 10000) {
-            return jsonResponse({ error: 'Prompt too long (max 10000 chars)', status: 400 }, 400);
+            return jsonResponse(
+                { error: 'Prompt too long (max 10000 chars)', status: 400 },
+                400,
+            );
         }
 
         // Check API key
         const apiKey = env && env.GROQ_API_KEY;
         if (!apiKey) {
-            return jsonResponse({ error: 'GROQ_API_KEY not configured', status: 500 }, 500);
+            return jsonResponse(
+                { error: 'GROQ_API_KEY not configured', status: 500 },
+                500,
+            );
         }
 
         const systemInstruction =
@@ -139,7 +156,7 @@ export async function onRequestPost(context) {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${apiKey}`,
+                    Authorization: `Bearer ${apiKey}`,
                 },
                 body: JSON.stringify({
                     model: GROQ_MODEL,
@@ -152,7 +169,11 @@ export async function onRequestPost(context) {
             });
         } catch (fetchErr) {
             return jsonResponse(
-                { error: 'Failed to reach Groq API', message: fetchErr.message, status: 502 },
+                {
+                    error: 'Failed to reach Groq API',
+                    message: fetchErr.message,
+                    status: 502,
+                },
                 502,
             );
         }
@@ -160,7 +181,11 @@ export async function onRequestPost(context) {
         if (!groqRes.ok) {
             const errText = await groqRes.text().catch(() => 'unknown error');
             return jsonResponse(
-                { error: 'Groq API error', message: `${groqRes.status}: ${errText.slice(0, 500)}`, status: 502 },
+                {
+                    error: 'Groq API error',
+                    message: `${groqRes.status}: ${errText.slice(0, 500)}`,
+                    status: 502,
+                },
                 502,
             );
         }
@@ -175,9 +200,10 @@ export async function onRequestPost(context) {
             );
         }
 
-        const text = groqData.choices && groqData.choices[0] && groqData.choices[0].message
-            ? groqData.choices[0].message.content
-            : 'No response generated';
+        const text =
+            groqData.choices && groqData.choices[0] && groqData.choices[0].message
+                ? groqData.choices[0].message.content
+                : 'No response generated';
 
         return jsonResponse({
             text,
@@ -187,7 +213,11 @@ export async function onRequestPost(context) {
         });
     } catch (error) {
         return jsonResponse(
-            { error: 'Unexpected server error', message: String(error && error.message || error), status: 500 },
+            {
+                error: 'Unexpected server error',
+                message: String((error && error.message) || error),
+                status: 500,
+            },
             500,
         );
     }

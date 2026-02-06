@@ -67,4 +67,3 @@ export async function callGroqAPI(prompt, systemInstruction, apiKey) {
 
   return text;
 }
-
