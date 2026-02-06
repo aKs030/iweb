@@ -5,18 +5,20 @@
  */
 
 // @ts-nocheck
-import React from 'https://esm.sh/react@19.0.0';
-import { createRoot } from 'https://esm.sh/react-dom@19.0.0/client';
+import React from 'https://esm.sh/react@19.2.3';
+import { createRoot } from 'https://esm.sh/react-dom@19.2.3/client';
 import htm from 'https://esm.sh/htm@3.1.1';
 import { createLogger } from '/content/core/logger.js';
 import { createUseTranslation } from '/content/core/react-utils.js';
 import { updateLoader, hideLoader } from '/content/core/global-loader.js';
 import { marked } from 'https://cdn.jsdelivr.net/npm/marked@11.1.1/lib/marked.esm.js';
-import DOMPurify from 'https://cdn.jsdelivr.net/npm/dompurify@3.0.8/dist/purify.es.mjs';
+import DOMPurify from 'https://cdn.jsdelivr.net/npm/dompurify@3.3.1/dist/purify.es.mjs';
 import { Clock, ArrowRight, ArrowUp } from '/content/components/ui/icons.js';
+import { createErrorBoundary } from '/content/components/ui/ErrorBoundary.js';
 
 const log = createLogger('BlogApp3D');
 const html = htm.bind(React.createElement);
+const ErrorBoundary = createErrorBoundary(React);
 
 // Configure Marked
 const renderer = new marked.Renderer();
@@ -77,15 +79,18 @@ class ParticleSystem {
   }
 
   setupEvents() {
-    window.addEventListener('mousemove', (e) => {
+    this._onMouseMove = (e) => {
       this.mouse.x = e.clientX;
       this.mouse.y = e.clientY;
-    });
+    };
 
-    window.addEventListener('resize', () => {
+    this._onResize = () => {
       this.resize();
       this.init();
-    });
+    };
+
+    window.addEventListener('mousemove', this._onMouseMove);
+    window.addEventListener('resize', this._onResize);
   }
 
   update() {
@@ -121,18 +126,47 @@ class ParticleSystem {
     this.ctx.strokeStyle = 'rgba(59, 130, 246, 0.1)';
     this.ctx.lineWidth = 1;
 
-    for (let i = 0; i < this.particles.length; i++) {
-      for (let j = i + 1; j < this.particles.length; j++) {
-        const dx = this.particles[i].x - this.particles[j].x;
-        const dy = this.particles[i].y - this.particles[j].y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
+    // Grid-based spatial partitioning for O(n) neighbor lookup
+    const CONNECT_DIST = 150;
+    const cellSize = CONNECT_DIST;
+    const grid = new Map();
 
-        if (dist < 150) {
-          this.ctx.beginPath();
-          this.ctx.moveTo(this.particles[i].x, this.particles[i].y);
-          this.ctx.lineTo(this.particles[j].x, this.particles[j].y);
-          this.ctx.globalAlpha = ((150 - dist) / 150) * 0.3;
-          this.ctx.stroke();
+    for (const p of this.particles) {
+      const cx = Math.floor(p.x / cellSize);
+      const cy = Math.floor(p.y / cellSize);
+      const key = `${cx},${cy}`;
+      if (!grid.has(key)) grid.set(key, []);
+      grid.get(key).push(p);
+    }
+
+    for (const [key, cell] of grid) {
+      const [cx, cy] = key.split(',').map(Number);
+      // Check this cell and neighboring cells
+      for (let dx = 0; dx <= 1; dx++) {
+        for (let dy = -1; dy <= 1; dy++) {
+          if (dx === 0 && dy < 0) continue; // avoid duplicate checks
+          const neighborKey = `${cx + dx},${cy + dy}`;
+          const neighbor = grid.get(neighborKey);
+          if (!neighbor) continue;
+
+          const isSameCell = dx === 0 && dy === 0;
+          for (let i = 0; i < cell.length; i++) {
+            const jStart = isSameCell ? i + 1 : 0;
+            for (let j = jStart; j < neighbor.length; j++) {
+              const ddx = cell[i].x - neighbor[j].x;
+              const ddy = cell[i].y - neighbor[j].y;
+              const dist = Math.sqrt(ddx * ddx + ddy * ddy);
+
+              if (dist < CONNECT_DIST) {
+                this.ctx.beginPath();
+                this.ctx.moveTo(cell[i].x, cell[i].y);
+                this.ctx.lineTo(neighbor[j].x, neighbor[j].y);
+                this.ctx.globalAlpha =
+                  ((CONNECT_DIST - dist) / CONNECT_DIST) * 0.3;
+                this.ctx.stroke();
+              }
+            }
+          }
         }
       }
     }
@@ -178,6 +212,14 @@ class ParticleSystem {
     if (this.animationId) {
       cancelAnimationFrame(this.animationId);
       this.animationId = null;
+    }
+    if (this._onMouseMove) {
+      window.removeEventListener('mousemove', this._onMouseMove);
+      this._onMouseMove = null;
+    }
+    if (this._onResize) {
+      window.removeEventListener('resize', this._onResize);
+      this._onResize = null;
     }
   }
 }
@@ -836,4 +878,7 @@ const BlogApp = () => {
 };
 
 const rootEl = document.getElementById('root');
-if (rootEl) createRoot(rootEl).render(React.createElement(BlogApp));
+if (rootEl)
+  createRoot(rootEl).render(
+    React.createElement(ErrorBoundary, null, React.createElement(BlogApp)),
+  );

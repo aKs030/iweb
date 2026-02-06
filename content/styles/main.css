@@ -26,6 +26,28 @@
   border: 0 !important;
 }
 
+/* Skip-to-main-content link (visible on focus for keyboard users) */
+.skip-link:focus {
+  position: fixed !important;
+  top: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100000;
+  width: auto !important;
+  height: auto !important;
+  padding: 0.75rem 1.5rem;
+  margin: 0 !important;
+  clip-path: none !important;
+  white-space: normal !important;
+  background: var(--primary-color, #0077ff);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 8px;
+  text-decoration: none;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
 /* Utility: Hide element completely */
 .hidden {
   display: none !important;

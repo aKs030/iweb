@@ -2,6 +2,7 @@ import { createLogger } from '/content/core/logger.js';
 import { upsertHeadLink } from '/content/core/utils.js';
 import { ENV } from '../../config/env.config.js';
 import { resourceHints } from '/content/core/resource-hints.js';
+import { headState } from './head-state.js';
 
 const log = createLogger('head-inline');
 
@@ -322,7 +323,7 @@ const injectCoreAssets = () => {
         resourceHints.preconnect('https://www.gstatic.com');
       }
 
-      // Preconnect to CDNs (dns-prefetch already in base-head.html)
+      // Preconnect to CDNs for analytics (dns-prefetch already in base-head.html)
       resourceHints.preconnect('https://cdn.jsdelivr.net');
       resourceHints.preconnect('https://esm.sh');
 
@@ -568,7 +569,6 @@ const hideBrandingFromUsers = () => {
 hideBrandingFromUsers();
 
 // Signal that head-inline is ready
-import { headState } from './head-state.js';
 headState.setInlineReady();
 
 import('/content/components/head/head-manager.js').catch((err) => {

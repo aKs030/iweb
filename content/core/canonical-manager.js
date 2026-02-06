@@ -59,6 +59,7 @@ function buildCanonicalLinks(options = {}) {
 
   const alternates = [
     { lang: 'de', href: `${origin}${cleanPath}` },
+    { lang: 'en', href: `${origin}${cleanPath}` },
     { lang: 'x-default', href: `${origin}${cleanPath}` },
   ];
 

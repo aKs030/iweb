@@ -8,9 +8,10 @@ Sitemap: https://www.abdulkerimsesli.de/sitemap-videos.xml
 User-agent: *
 Allow: /
 
-# Block raw internal fragments
+# Block raw internal fragments and page partials
 Disallow: /content/components/*.html
 Disallow: /content/components/*/*.html
+Disallow: /pages/
 
 # Allow footer pages so Google sees the 301 redirects
 Allow: /content/components/footer/datenschutz.html
