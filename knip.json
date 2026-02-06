@@ -1,8 +1,17 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
-  "entry": ["content/main.js", "pages/**/*.js", "workers/**/*.js", "sw.js"],
+  "entry": [
+    "content/main.js",
+    "content/components/head/head-inline.js",
+    "content/components/menu/menu.js",
+    "content/components/footer/SiteFooter.js",
+    "content/components/robot-companion/robot-companion.js",
+    "functions/_middleware.js",
+    "pages/**/*.js",
+    "workers/**/*.js",
+    "sw.js"
+  ],
   "ignore": ["pages/home/GrussText.js"],
-  "ignoreBinaries": ["jscpd", "madge"],
-  "ignoreDependencies": ["husky", "lint-staged", "prettier", "@eslint/js"],
+  "ignoreBinaries": ["jscpd", "madge", "es6-plato"],
   "project": ["**/*.{js,ts}"]
 }

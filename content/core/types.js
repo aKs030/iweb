@@ -366,6 +366,4 @@
  * @property {HTMLButtonElement|null} acceptAll - Accept all button
  */
 
-// This file contains JSDoc type definitions
-// Minimal export to make TypeScript happy
-export const __types__ = true;
+// This file contains JSDoc type definitions only

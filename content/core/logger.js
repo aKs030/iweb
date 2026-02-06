@@ -132,5 +132,3 @@ class Logger {
 export function createLogger(category, options) {
   return new Logger(category, options);
 }
-
-export { Logger, LOG_LEVELS };

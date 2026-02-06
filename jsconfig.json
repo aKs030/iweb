@@ -28,5 +28,5 @@
     "skipLibCheck": true
   },
   "include": ["content/**/*", "pages/**/*", "workers/**/*", "*.js", "*.jsx"],
-  "exclude": ["node_modules", "dist", ".git"]
+  "exclude": ["node_modules", ".git"]
 }

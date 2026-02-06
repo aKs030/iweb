@@ -5,7 +5,6 @@
  */
 
 // Filter iframe console warnings in development
-// @ts-ignore - Vite-specific import.meta.env
 if (import.meta.env?.DEV) {
   const originalWarn = console.warn;
   const originalError = console.error;
