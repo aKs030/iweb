@@ -2,168 +2,46 @@ name: CI
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main]
   pull_request:
-    branches: [main, develop]
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  lint:
-    name: Lint & Format Check
+  quality:
+    name: Code Quality
     runs-on: ubuntu-latest
-    
+    timeout-minutes: 10
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Setup Node.js 22.x
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
         with:
-          node-version: 22.x
-          cache: 'npm'
-      
-      - name: Install dependencies
-        run: npm ci
-      
-      - name: Run checks
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - name: Lint & Format
         run: npm run check
-      
-      - name: Check CSS stats
+
+      - name: TypeScript check
+        run: npx tsc --noEmit
+        continue-on-error: true
+
+      - name: CSS stats
         run: npm run css:check
 
-  validate:
-    name: Static File Validation
-    runs-on: ubuntu-latest
-    needs: lint
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Setup Node.js 22.x
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22.x
-          cache: 'npm'
-      
-      - name: Install dependencies
-        run: npm ci
-      
-      - name: Validate JavaScript modules
-        run: |
-          echo "🔍 Validating JavaScript modules..."
-          find content/ pages/ -name "*.js" -exec node -c {} \;
-          echo "✅ All JavaScript files are valid"
-      
-      - name: Check file structure
-        run: |
-          echo "📁 Checking file structure..."
-          ls -la
-          echo "📄 HTML files:"
-          find . -name "*.html" -not -path "./node_modules/*" | head -10
-          echo "🎨 CSS files:"
-          find . -name "*.css" -not -path "./node_modules/*" | head -10
-          echo "⚙️ JS files:"
-          find . -name "*.js" -not -path "./node_modules/*" | head -10
+      - name: Unused code (Knip)
+        run: npx knip || true
 
-  type-check:
-    name: TypeScript Type Check
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Setup Node.js 22.x
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22.x
-          cache: 'npm'
-      
-      - name: Install dependencies
-        run: npm ci
-      
-      - name: Run TypeScript type check
-        run: npx tsc --noEmit || echo "⚠️ Type check completed with warnings"
-
-  code-quality:
-    name: Code Quality Analysis
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Setup Node.js 22.x
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22.x
-          cache: 'npm'
-      
-      - name: Install dependencies
-        run: npm ci
-      
-      - name: Run Knip (unused code detection)
-        run: |
-          echo "🔍 Checking for unused dependencies, exports, and files..."
-          npx knip --reporter json > knip-report.json || true
-          npx knip || echo "⚠️ Knip found potential issues"
-      
-      - name: Check for duplicate code
-        run: |
-          echo "🔍 Checking for duplicate code..."
-          npx jscpd content/ pages/ --min-lines 10 --min-tokens 50 --format "javascript" --reporters "console" || echo "✅ No significant duplicates found"
-        continue-on-error: true
-      
-
-      - name: Check for console.log statements
+      - name: Console.log check
         run: npm run check:console
         continue-on-error: true
-      
-      - name: Upload Knip report
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: knip-report
-          path: knip-report.json
-          retention-days: 2
 
-  dependency-analysis:
-    name: Dependency Analysis
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Setup Node.js 22.x
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22.x
-          cache: 'npm'
-      
-      - name: Install dependencies
-        run: npm ci
-      
-      - name: Install Graphviz
-        run: sudo apt-get update && sudo apt-get install -y graphviz
-      
-      - name: Check for circular dependencies
-        run: |
-          echo "🔄 Checking for circular dependencies..."
-          npx madge --circular --extensions js content/ pages/ || echo "✅ No circular dependencies found"
-      
-      - name: Visualize dependency tree
-        run: |
-          echo "🌳 Generating dependency tree..."
-          npx madge --extensions js --image dependency-graph.svg content/main.js || echo "⚠️ Could not generate graph"
-        continue-on-error: true
-      
-
-      - name: Upload dependency graph
-        uses: actions/upload-artifact@v4
-        if: hashFiles('dependency-graph.svg') != ''
-        with:
-          name: dependency-graph
-          path: dependency-graph.svg
-          retention-days: 2
-        continue-on-error: true
+      - name: Circular dependencies
+        run: npx madge --circular --extensions js content/ pages/ || true

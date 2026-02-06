@@ -21,7 +21,6 @@ coverage/
 test-results/
 
 # IDE
-.vscode/
 .idea/
 *.swp
 *.swo
