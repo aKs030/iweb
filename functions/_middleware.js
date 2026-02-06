@@ -39,10 +39,23 @@ async function getTemplate(context, path) {
 
 /**
  * Middleware entry point — runs on every request.
+ * Skips API routes (handled by their own functions).
  * @param {import("@cloudflare/workers-types").EventContext} context
  */
 export async function onRequest(context) {
-  const response = await context.next();
+  // Skip API routes — they have their own handlers and don't need template injection
+  const url = new URL(context.request.url);
+  if (url.pathname.startsWith('/api/')) {
+    return await context.next();
+  }
+
+  let response;
+  try {
+    response = await context.next();
+  } catch (err) {
+    console.error('[middleware] context.next() failed:', err);
+    return new Response('Internal Server Error', { status: 500 });
+  }
 
   // Only process HTML responses
   const contentType = response.headers.get('content-type') || '';
