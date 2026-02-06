@@ -1169,7 +1169,7 @@ body.footer-expanded {
 
   .footer-copyright {
     font-size: 10px;
-    flex-shrink: 3;
+    flex-shrink: 2;
   }
 
   .brand-link {
@@ -1311,30 +1311,6 @@ body.footer-expanded {
     padding: 3px 5px;
     font-size: 7px;
     min-height: 24px;
-  }
-
-  .footer-copyright {
-    font-size: 10px;
-    flex-shrink: 2;
-  }
-
-  .footer-min {
-    padding: 0 12px;
-    gap: 6px;
-  }
-
-  .cookie-inline {
-    gap: 6px;
-  }
-
-  .cookie-text {
-    font-size: 11px;
-  }
-
-  .btn-accept,
-  .btn-reject {
-    padding: 6px 10px;
-    font-size: 11px;
   }
 
   .cookie-settings {

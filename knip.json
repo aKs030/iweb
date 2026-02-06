@@ -3,7 +3,7 @@
   "entry": [
     "content/main.js",
     "content/components/head/head-inline.js",
-    "content/components/menu/menu.js",
+    "content/components/menu/SiteMenu.js",
     "content/components/footer/SiteFooter.js",
     "content/components/robot-companion/robot-companion.js",
     "content/components/typewriter/TypeWriter.js",
