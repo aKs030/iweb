@@ -5,7 +5,13 @@
     "description": "Web Developer & Photographer in Berlin. Spezialisiert auf React, Three.js und Urban Photography.",
     "category": "Seite",
     "url": "/",
-    "keywords": ["home", "start", "hauptseite", "portfolio", "abdulkerim sesli"],
+    "keywords": [
+      "home",
+      "start",
+      "hauptseite",
+      "portfolio",
+      "abdulkerim sesli"
+    ],
     "priority": 10
   },
   {
@@ -14,7 +20,15 @@
     "description": "Erfahre mehr über meine Arbeit, Fähigkeiten und meinen Werdegang als Web Developer und Fotograf.",
     "category": "Seite",
     "url": "/pages/about/",
-    "keywords": ["über", "about", "biografie", "cv", "lebenslauf", "skills", "fähigkeiten"],
+    "keywords": [
+      "über",
+      "about",
+      "biografie",
+      "cv",
+      "lebenslauf",
+      "skills",
+      "fähigkeiten"
+    ],
     "priority": 9
   },
   {
@@ -23,7 +37,15 @@
     "description": "Eine Auswahl meiner Web-Entwicklungsprojekte mit React, Three.js und modernen Technologien.",
     "category": "Seite",
     "url": "/pages/projekte/",
-    "keywords": ["projekte", "projects", "portfolio", "arbeiten", "react", "threejs", "web development"],
+    "keywords": [
+      "projekte",
+      "projects",
+      "portfolio",
+      "arbeiten",
+      "react",
+      "threejs",
+      "web development"
+    ],
     "priority": 9
   },
   {
@@ -32,7 +54,15 @@
     "description": "Fotografie-Portfolio mit Urban Photography und kreativen Aufnahmen aus Berlin.",
     "category": "Seite",
     "url": "/pages/gallery/",
-    "keywords": ["galerie", "gallery", "fotografie", "photography", "bilder", "fotos", "urban"],
+    "keywords": [
+      "galerie",
+      "gallery",
+      "fotografie",
+      "photography",
+      "bilder",
+      "fotos",
+      "urban"
+    ],
     "priority": 8
   },
   {
@@ -60,7 +90,15 @@
     "description": "React ohne Build-Tools: Praktische Setups mit ES Modules und htm für schnelle Prototypen.",
     "category": "Blog",
     "url": "/pages/blog/?post=react-no-build",
-    "keywords": ["react", "build tools", "es modules", "htm", "prototyp", "vite", "webpack"],
+    "keywords": [
+      "react",
+      "build tools",
+      "es modules",
+      "htm",
+      "prototyp",
+      "vite",
+      "webpack"
+    ],
     "priority": 5
   },
   {
@@ -69,7 +107,15 @@
     "description": "Modernes UI-Design vereint Accessibility, Mikro-Interaktionen und konsistente Nutzerführung.",
     "category": "Blog",
     "url": "/pages/blog/?post=modern-ui-design",
-    "keywords": ["ui", "design", "dark mode", "accessibility", "ux", "interaktionen", "nutzerführung"],
+    "keywords": [
+      "ui",
+      "design",
+      "dark mode",
+      "accessibility",
+      "ux",
+      "interaktionen",
+      "nutzerführung"
+    ],
     "priority": 5
   },
   {
@@ -78,7 +124,14 @@
     "description": "Komposition, Licht und Reduktion als Mittel, um Emotionen und klare Botschaften zu transportieren.",
     "category": "Blog",
     "url": "/pages/blog/?post=visual-storytelling",
-    "keywords": ["storytelling", "fotografie", "komposition", "licht", "emotionen", "bildgestaltung"],
+    "keywords": [
+      "storytelling",
+      "fotografie",
+      "komposition",
+      "licht",
+      "emotionen",
+      "bildgestaltung"
+    ],
     "priority": 5
   },
   {
@@ -87,7 +140,16 @@
     "description": "Praxisnahe Techniken zur Performance-Optimierung von Three.js: InstancedMesh, LOD-Strategien, Texturkompression.",
     "category": "Blog",
     "url": "/pages/blog/?post=threejs-performance",
-    "keywords": ["threejs", "three.js", "3d", "performance", "webgl", "instanced mesh", "lod", "textur"],
+    "keywords": [
+      "threejs",
+      "three.js",
+      "3d",
+      "performance",
+      "webgl",
+      "instanced mesh",
+      "lod",
+      "textur"
+    ],
     "priority": 5
   },
   {
@@ -96,7 +158,15 @@
     "description": "Core Web Vitals optimieren, strukturierte Daten implementieren, Crawling verbessern. Messbare Rankings durch technische Exzellenz.",
     "category": "Blog",
     "url": "/pages/blog/?post=seo-technische-optimierung",
-    "keywords": ["seo", "core web vitals", "strukturierte daten", "schema", "crawling", "google", "ranking"],
+    "keywords": [
+      "seo",
+      "core web vitals",
+      "strukturierte daten",
+      "schema",
+      "crawling",
+      "google",
+      "ranking"
+    ],
     "priority": 5
   },
   {
@@ -105,7 +175,14 @@
     "description": "PWAs bieten Push Notifications, Offline-Funktionalität und App-Installation. Die Lücke zwischen Web und Native schließt sich.",
     "category": "Blog",
     "url": "/pages/blog/?post=progressive-web-apps-2026",
-    "keywords": ["pwa", "progressive web app", "service worker", "offline", "push notifications", "installierbar"],
+    "keywords": [
+      "pwa",
+      "progressive web app",
+      "service worker",
+      "offline",
+      "push notifications",
+      "installierbar"
+    ],
     "priority": 5
   },
   {
@@ -114,7 +191,14 @@
     "description": "Framework-unabhängige, native Wiederverwendbarkeit mit Custom Elements, Shadow DOM und HTML Templates.",
     "category": "Blog",
     "url": "/pages/blog/?post=web-components-zukunft",
-    "keywords": ["web components", "custom elements", "shadow dom", "html templates", "framework", "slots"],
+    "keywords": [
+      "web components",
+      "custom elements",
+      "shadow dom",
+      "html templates",
+      "framework",
+      "slots"
+    ],
     "priority": 5
   },
   {
@@ -123,7 +207,15 @@
     "description": "Komponenten reagieren auf ihre Container-Größe statt auf den Viewport – echte komponentenbasierte Responsivität.",
     "category": "Blog",
     "url": "/pages/blog/?post=css-container-queries",
-    "keywords": ["css", "container queries", "responsive", "design", "viewport", "komponenten", "layout"],
+    "keywords": [
+      "css",
+      "container queries",
+      "responsive",
+      "design",
+      "viewport",
+      "komponenten",
+      "layout"
+    ],
     "priority": 5
   },
   {
@@ -132,7 +224,15 @@
     "description": "Lazy Loading, Code Splitting, Memoization, Web Workers und mehr. Messbare Optimierungen für schnellere Web-Apps.",
     "category": "Blog",
     "url": "/pages/blog/?post=javascript-performance-patterns",
-    "keywords": ["javascript", "performance", "lazy loading", "code splitting", "memoization", "web workers", "optimierung"],
+    "keywords": [
+      "javascript",
+      "performance",
+      "lazy loading",
+      "code splitting",
+      "memoization",
+      "web workers",
+      "optimierung"
+    ],
     "priority": 5
   },
   {
@@ -141,7 +241,14 @@
     "description": "Conditional Types, Template Literals, Branded Types und mehr. Typsicherheit auf dem nächsten Level.",
     "category": "Blog",
     "url": "/pages/blog/?post=typescript-advanced-patterns",
-    "keywords": ["typescript", "types", "conditional types", "template literals", "branded types", "generics"],
+    "keywords": [
+      "typescript",
+      "types",
+      "conditional types",
+      "template literals",
+      "branded types",
+      "generics"
+    ],
     "priority": 5
   },
 
@@ -151,7 +258,13 @@
     "description": "Moderner Taschenrechner mit erweiterten Funktionen. Grundrechenarten und wissenschaftliche Operationen.",
     "category": "Projekt",
     "url": "/pages/projekte/?app=calculator",
-    "keywords": ["taschenrechner", "calculator", "math", "rechner", "wissenschaftlich"],
+    "keywords": [
+      "taschenrechner",
+      "calculator",
+      "math",
+      "rechner",
+      "wissenschaftlich"
+    ],
     "priority": 3
   },
   {
@@ -214,7 +327,15 @@
     "description": "Der Klassiker gegen den Computer! Wähle Schere, Stein oder Papier und tritt gegen die KI an.",
     "category": "Projekt",
     "url": "/pages/projekte/?app=schere-stein-papier",
-    "keywords": ["schere", "stein", "papier", "spiel", "game", "ki", "rock paper scissors"],
+    "keywords": [
+      "schere",
+      "stein",
+      "papier",
+      "spiel",
+      "game",
+      "ki",
+      "rock paper scissors"
+    ],
     "priority": 3
   },
   {
@@ -250,7 +371,14 @@
     "description": "Produktivitäts-Tool zum Verwalten von Aufgaben. Erstelle, bearbeite und organisiere deine To-Dos.",
     "category": "Projekt",
     "url": "/pages/projekte/?app=todo-liste",
-    "keywords": ["todo", "aufgaben", "tasks", "liste", "produktivität", "planer"],
+    "keywords": [
+      "todo",
+      "aufgaben",
+      "tasks",
+      "liste",
+      "produktivität",
+      "planer"
+    ],
     "priority": 3
   },
   {
@@ -259,7 +387,14 @@
     "description": "Teste deine Tippgeschwindigkeit (WPM) mit zufälligen Sätzen.",
     "category": "Projekt",
     "url": "/pages/projekte/?app=typing-speed-test",
-    "keywords": ["tippen", "typing", "wpm", "geschwindigkeit", "tastatur", "speed test"],
+    "keywords": [
+      "tippen",
+      "typing",
+      "wpm",
+      "geschwindigkeit",
+      "tastatur",
+      "speed test"
+    ],
     "priority": 3
   },
   {
@@ -268,7 +403,14 @@
     "description": "Moderne Wetter-App mit aktuellen Wetterdaten und 5-Tage-Vorhersage. Standortbasierte Wetterinformationen.",
     "category": "Projekt",
     "url": "/pages/projekte/?app=weather-app",
-    "keywords": ["wetter", "weather", "vorhersage", "temperatur", "standort", "api"],
+    "keywords": [
+      "wetter",
+      "weather",
+      "vorhersage",
+      "temperatur",
+      "standort",
+      "api"
+    ],
     "priority": 3
   },
   {

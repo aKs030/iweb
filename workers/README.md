@@ -29,18 +29,18 @@ workers/
 
 ### AI Search Proxy
 
-| Endpoint | Methode | Beschreibung |
-|---|---|---|
-| `/api/search` | POST | Volltextsuche mit Relevanz-Scoring |
-| `/api/ai` | POST | Groq AI (Llama 3.3 70B) mit optionalem RAG |
+| Endpoint      | Methode | Beschreibung                               |
+| ------------- | ------- | ------------------------------------------ |
+| `/api/search` | POST    | Volltextsuche mit Relevanz-Scoring         |
+| `/api/ai`     | POST    | Groq AI (Llama 3.3 70B) mit optionalem RAG |
 
 **Secrets:** `GROQ_API_KEY` — [Kostenlos bei Groq](https://console.groq.com/keys)
 
 ### YouTube API Proxy
 
-| Endpoint | Methode | Beschreibung |
-|---|---|---|
-| `/api/youtube/{endpoint}` | GET | YouTube Data API v3 Proxy |
+| Endpoint                  | Methode | Beschreibung              |
+| ------------------------- | ------- | ------------------------- |
+| `/api/youtube/{endpoint}` | GET     | YouTube Data API v3 Proxy |
 
 Erlaubte Endpoints: `search`, `videos`, `channels`, `playlists`, `playlistItems`
 
