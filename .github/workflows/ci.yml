@@ -24,11 +24,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
       
-      - name: Run ESLint
-        run: npm run lint:check
-      
-      - name: Run Prettier
-        run: npm run format:check
+      - name: Run checks
+        run: npm run check
       
       - name: Check CSS stats
         run: npm run css:check
@@ -174,16 +171,9 @@ jobs:
           npx jscpd content/ pages/ workers/ --min-lines 10 --min-tokens 50 --format "javascript" --reporters "console" || echo "✅ No significant duplicates found"
         continue-on-error: true
       
-      - name: Analyze code complexity
-        run: |
-          echo "📊 Analyzing code complexity..."
-          npx es6-plato -r -d complexity-report content/ pages/ workers/ || echo "⚠️ Complexity analysis completed"
-        continue-on-error: true
-      
+
       - name: Check for console.log statements
-        run: |
-          echo "🔍 Checking for console.log in production code..."
-          ! grep -r "console\.log" content/ pages/ --include="*.js" --exclude-dir=node_modules || echo "⚠️ Found console.log statements"
+        run: npm run check:console
         continue-on-error: true
       
       - name: Upload Knip report
@@ -225,12 +215,7 @@ jobs:
           npx madge --extensions js --image dependency-graph.svg content/main.js || echo "⚠️ Could not generate graph"
         continue-on-error: true
       
-      - name: Check bundle impact
-        run: |
-          echo "📦 Analyzing bundle impact..."
-          npx cost-of-modules || echo "✅ Analysis complete"
-        continue-on-error: true
-      
+
       - name: Upload dependency graph
         uses: actions/upload-artifact@v4
         if: hashFiles('dependency-graph.svg') != ''

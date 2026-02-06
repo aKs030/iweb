@@ -8,11 +8,12 @@ Entwickler-Dokumentation für das Projekt.
 # Installation
 npm install
 
-# Development Server
+# Development Server (Python)
 npm run dev
 
-# Production Build
-npm run build
+# Workers Development
+npm run dev:worker         # YouTube API Proxy
+npm run dev:search-worker  # AI Search Proxy
 ```
 
 ## 📋 Verfügbare Commands
@@ -20,9 +21,9 @@ npm run build
 ### Development
 
 ```bash
-npm run dev              # Vite Dev Server starten
-npm run build            # Production Build
-npm run preview          # Build Preview
+npm run dev              # Python HTTP Server (Port 8080)
+npm run dev:worker       # YouTube Worker Dev Server
+npm run dev:search-worker # AI Search Worker Dev Server
 ```
 
 ### Code Quality
@@ -43,10 +44,9 @@ npm run knip                  # Unused code detection
 npm run knip:production       # Nur Production Dependencies
 npm run check:duplicates      # Duplicate code detection
 npm run check:circular        # Circular dependencies
-npm run check:complexity      # Code complexity analysis
 npm run check:console         # Console.log detection
 npm run quality               # Alle Quality-Checks
-npm run audit:full            # Security + Quality + Console
+npm run audit:full            # Quality + Console
 ```
 
 ### Dependencies
@@ -57,19 +57,10 @@ npm run deps:cost        # Bundle-Impact analysieren
 npm run deps:check       # Outdated Dependencies
 ```
 
-### Bundle Analysis
+### CSS Analysis
 
 ```bash
-npm run analyze:bundle   # Bundle-Größe visualisieren
 npm run css:check        # CSS Stats anzeigen
-```
-
-### Maintenance
-
-```bash
-npm run clean            # Vite Cache löschen
-npm run clean:all        # node_modules löschen
-npm run reinstall        # Clean + Install
 ```
 
 ### Deployment
@@ -126,15 +117,7 @@ npm run deps:graph
 
 Findet zirkuläre Dependencies und erstellt Dependency-Graph.
 
-### 4. ES6-Plato - Complexity
-
-```bash
-npm run check:complexity
-```
-
-Analysiert Code-Komplexität und Maintainability.
-
-### 5. Console.log Detection
+### 4. Console.log Detection
 
 ```bash
 npm run check:console
@@ -147,19 +130,17 @@ Findet vergessene console.log Statements.
 ### Jobs
 
 1. **lint** - ESLint + Prettier + CSS Check
-2. **build** - Vite Build + Bundle Analysis
+2. **validate** - JavaScript Syntax + File Structure
 3. **security** - npm audit + Outdated Check
 4. **workers-validation** - Cloudflare Workers Syntax
 5. **type-check** - TypeScript Type Check
-6. **code-quality** - Knip + JSCPD + Complexity + Console
-7. **dependency-analysis** - Madge + Cost-of-Modules
+6. **code-quality** - Knip + JSCPD + Console.log
+7. **dependency-analysis** - Circular Dependencies + Dependency Graph
 
 ### Artifacts
 
-- Build Output (`dist/`)
 - Knip Report (JSON)
 - Dependency Graph (SVG)
-- Complexity Report (HTML)
 
 ## 🎯 Best Practices
 
@@ -174,7 +155,7 @@ npm run check:console   # Console.log Check
 
 ```bash
 npm run quality         # Alle Quality-Checks
-npm run build           # Build testen
+npm run check           # Lint + Format Check
 ```
 
 ### Wöchentlich
@@ -219,30 +200,24 @@ npm run deps:check      # Dependencies aktualisieren
 
 ## 🔍 Debugging
 
-### Vite Dev Server
+### Python Dev Server
 
 ```bash
-# Mit Debug-Logs
-DEBUG=vite:* npm run dev
-
 # Spezifischer Port
-npm run dev -- --port 3000
+python3 -m http.server 3000
 
-# Netzwerk-Zugriff
-npm run dev -- --host
+# Netzwerk-Zugriff (Standard)
+npm run dev
 ```
 
-### Build Issues
+### Worker Issues
 
 ```bash
-# Cache löschen
-npm run clean
+# Worker Logs anzeigen
+wrangler tail
 
-# Komplett neu installieren
-npm run reinstall
-
-# Build mit Logs
-npm run build -- --debug
+# Worker mit Debug
+wrangler dev --log-level debug
 ```
 
 ## 🌐 Environment Variables
@@ -277,13 +252,11 @@ wrangler secret put YOUTUBE_API_KEY --env youtube
 ### Performance
 
 - Lazy Loading für Bilder nutzen
-- Code Splitting für große Bundles
 - Service Worker für Offline-Support
 
 ### Code Quality
 
 - Regelmäßig `npm run quality` ausführen
-- Complexity < 10 halten
 - Duplicates vermeiden
 - Console.log vor Commit entfernen
 
