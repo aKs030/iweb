@@ -14,10 +14,6 @@
     opacity 0.6s ease-in-out,
     visibility 0.6s ease-in-out;
   overflow: hidden;
-  will-change: opacity, visibility;
-  transform: translateZ(0);
-  backface-visibility: hidden;
-
   &.fade-out {
     opacity: 0;
     visibility: hidden;
@@ -296,8 +292,6 @@
   box-shadow: 0 0 15px var(--loader-accent, #00f3ff);
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   animation: gradient-shift 2s ease infinite;
-  will-change: width;
-  transform: translateZ(0);
 
   &::after {
     content: '';
@@ -436,78 +430,6 @@
   }
 }
 
-/* Warning Message */
-.loader-warning {
-  margin-top: 2rem;
-  padding: 0.75rem 1rem;
-  background: rgba(255, 193, 7, 0.1);
-  border: 1px solid rgba(255, 193, 7, 0.3);
-  border-radius: 6px;
-  color: #ffc107;
-  font-size: 0.875rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  animation: warning-fade-in 0.3s ease-out;
-
-  &.hidden {
-    display: none;
-  }
-}
-
-.loader-warning-icon {
-  flex-shrink: 0;
-  animation: warning-pulse 2s ease-in-out infinite;
-}
-
-@keyframes warning-fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes warning-pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.6;
-  }
-}
-
-/* Performance Hint */
-.loader-hint {
-  position: absolute;
-  bottom: 2rem;
-  left: 50%;
-  transform: translateX(-50%);
-  color: rgba(255, 255, 255, 0.4);
-  font-size: 0.75rem;
-  font-family: 'Courier New', Courier, monospace;
-  opacity: 0;
-  animation: hint-fade 3s ease-in-out infinite;
-
-  &[aria-hidden='false'] {
-    opacity: 1;
-  }
-}
-
-@keyframes hint-fade {
-  0%,
-  100% {
-    opacity: 0.3;
-  }
-  50% {
-    opacity: 0.6;
-  }
-}
-
 /* Responsive */
 @media (width <= 768px) {
   .loader-spinner {
@@ -546,14 +468,6 @@
   .loader-info {
     font-size: 0.8rem;
   }
-  .loader-warning {
-    font-size: 0.8rem;
-    padding: 0.5rem 0.75rem;
-  }
-  .loader-hint {
-    bottom: 1rem;
-    font-size: 0.7rem;
-  }
 }
 
 /* Accessibility: Reduced Motion */
@@ -568,9 +482,7 @@
   .progress-bar::after,
   .progress-bar-glow,
   .progress-track-glow,
-  .loader-dot,
-  .loader-warning-icon,
-  .loader-hint {
+  .loader-dot {
     animation: none !important;
     transition: none !important;
   }

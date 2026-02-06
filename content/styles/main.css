@@ -1,12 +1,6 @@
 /* ===== OPTIMIZED INDEX.CSS v3.1 ===== */
 
-/* Import Animations */
-@import './animations.css';
-
-/* Import Loader Styles */
-@import './loader.css';
-
-/* Import Components (with nesting) */
+/* Import Components */
 @import './components/card.css';
 @import '../components/particles/three-earth.css';
 
