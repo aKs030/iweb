@@ -164,6 +164,3 @@ class ThreeEarthStateManager {
 
 // Export singleton instance
 export const threeEarthState = new ThreeEarthStateManager();
-
-// Export class for testing purposes
-export { ThreeEarthStateManager };

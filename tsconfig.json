@@ -36,8 +36,8 @@
     "pages/**/*.js",
     "workers/**/*.js",
     "sw.js",
-    "vite.config.js",
-    "vite-plugin-redirects.js"
+    "server.js",
+    "functions/**/*.js"
   ],
-  "exclude": ["node_modules", "dist", "build", "complexity-report", "reports"]
+  "exclude": ["node_modules", "build", "complexity-report", "reports"]
 }
