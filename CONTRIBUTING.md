@@ -6,8 +6,8 @@ Vielen Dank für dein Interesse an diesem Projekt! 🎉
 
 ### Prerequisites
 
-- Node.js >= 18.0.0
-- npm >= 9.0.0
+- Node.js >= 22.0.0
+- npm >= 10.0.0
 - Git
 
 ### Setup
@@ -38,9 +38,8 @@ git checkout -b fix/dein-bugfix
 
 ```bash
 # Code schreiben
-# Tests durchführen
-npm run build
-npm run preview
+# Lokal testen
+npm run dev
 ```
 
 ### 3. Code Quality prüfen
@@ -164,23 +163,16 @@ function fetchData() {
 
 ## 🧪 Testing
 
-### Build testen
+### Lokal testen
 
 ```bash
-npm run build
-npm run preview
+npm run dev
 ```
 
 ### CSS Stats prüfen
 
 ```bash
 npm run css:check
-```
-
-### Bundle Size prüfen
-
-```bash
-npm run size:check
 ```
 
 ## 📚 Dokumentation
@@ -195,17 +187,13 @@ Wenn du Features hinzufügst oder änderst:
 
 ### Dokumentation anzeigen
 
-```bash
-npm run docs
-```
+Siehe `docs/` Verzeichnis und [DEVELOPMENT.md](DEVELOPMENT.md).
 
 ## 🔧 Nützliche Commands
 
 ```bash
 # Development
 npm run dev              # Dev Server
-npm run build            # Production Build
-npm run preview          # Preview Build
 
 # Code Quality
 npm run lint             # ESLint (auto-fix)
@@ -213,10 +201,10 @@ npm run format           # Prettier (auto-fix)
 npm run check            # Lint + Format Check
 npm run fix              # Lint + Format Fix
 
-# Utilities
-npm run clean            # Clean dist & cache
-npm run clean:all        # Clean everything
-npm run reinstall        # Reinstall dependencies
+# Analysis
+npm run quality          # Knip + Duplicates + Circular
+npm run quality:full     # Quality + TypeScript + HTML
+npm run check:console    # Console.log Check
 npm run css:check        # CSS Statistics
 npm run size:check       # Bundle Size
 npm run docs             # List documentation
