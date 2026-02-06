@@ -29,19 +29,16 @@ deploy_youtube() {
 # Function to check secrets
 check_secrets() {
   echo -e "${YELLOW}🔐 Checking secrets...${NC}"
-  
+
   # Check AI Search Proxy secret
   if wrangler secret list 2>/dev/null | grep -q "GROQ_API_KEY"; then
     echo -e "${GREEN}✓ GROQ_API_KEY configured${NC}"
-  elif wrangler secret list 2>/dev/null | grep -q "GEMINI_API_KEY"; then
-    echo -e "${YELLOW}⚠ GEMINI_API_KEY found (deprecated)${NC}"
-    echo "  Consider migrating to Groq (free): wrangler secret put GROQ_API_KEY"
   else
     echo -e "${RED}✗ GROQ_API_KEY missing${NC}"
     echo "  Get free key at: https://console.groq.com/keys"
     echo "  Run: wrangler secret put GROQ_API_KEY"
   fi
-  
+
   # Check YouTube Proxy secret
   if wrangler secret list --env youtube 2>/dev/null | grep -q "YOUTUBE_API_KEY"; then
     echo -e "${GREEN}✓ YOUTUBE_API_KEY configured${NC}"
@@ -49,7 +46,7 @@ check_secrets() {
     echo -e "${RED}✗ YOUTUBE_API_KEY missing${NC}"
     echo "  Run: wrangler secret put YOUTUBE_API_KEY --env youtube"
   fi
-  
+
   echo ""
 }
 
