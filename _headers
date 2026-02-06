@@ -92,32 +92,32 @@
   # ============================================================================
   # Security Headers (Applied Globally)
   # ============================================================================
-  
+
   # Prevent MIME type sniffing
   X-Content-Type-Options: nosniff
-  
+
   # Referrer policy for privacy
   Referrer-Policy: strict-origin-when-cross-origin
-  
+
   # HSTS - Force HTTPS for 1 year including subdomains
   Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
-  
+
   # Prevent clickjacking
   X-Frame-Options: DENY
-  
+
   # Permissions policy - restrict sensitive features
   Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=(), interest-cohort=()
-  
+
   # Additional security headers
   Cross-Origin-Embedder-Policy: unsafe-none
   Cross-Origin-Opener-Policy: same-origin-allow-popups
-  
+
   # Content Security Policy (already configured, maintained)
   # Note: CSP is already defined above in the default section
-  
+
   # Content Security Policy - ENFORCEMENT MODE ✅
   # Strict CSP with unsafe-inline for compatibility
-  # 
+  #
   # CSP Directives:
   # - default-src 'self': Only allow resources from same origin by default
   # - script-src: Allow scripts from self, external CDNs, Google services, and inline
