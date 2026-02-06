@@ -202,7 +202,7 @@ class ThreeEarthSystem {
     const container = getElementById('threeEarthContainer');
     if (!container) {
       log.warn('Container not found');
-      return () => {};
+      return () => { };
     }
 
     this._clearFallbacks(container);
@@ -261,7 +261,7 @@ class ThreeEarthSystem {
       return () => this.cleanup();
     } catch (error) {
       this._handleInitError(container, error);
-      return () => {};
+      return () => { };
     }
   }
 
@@ -333,7 +333,7 @@ class ThreeEarthSystem {
       container.classList.remove('three-earth-unavailable');
       container
         .querySelectorAll('.three-earth-fallback')
-        .forEach((el) => /** @type {HTMLElement} */ (el).remove());
+        .forEach((el) => /** @type {HTMLElement} */(el).remove());
     } catch {
       /* ignore */
     }
@@ -1247,7 +1247,7 @@ function _getSectionConfig(sectionName) {
   };
   return (
     /** @type {any} */ (configs)[
-      sectionName === 'site-footer' ? 'contact' : sectionName
+    sectionName === 'site-footer' ? 'contact' : sectionName
     ] || configs.hero
   );
 }

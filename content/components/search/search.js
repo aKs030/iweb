@@ -68,11 +68,11 @@ class SearchComponent {
       <div class="search-modal" role="document">
         <div class="search-header">
           <div class="search-input-wrapper">
-            <input 
+            <input
               type="text"
               id="search-input"
               name="search"
-              class="search-input" 
+              class="search-input"
               placeholder="Suche... (Powered by AI Search)"
               aria-label="Suchfeld"
               autocomplete="off"
@@ -89,7 +89,7 @@ class SearchComponent {
             </svg>
           </button>
         </div>
-        
+
         <div class="search-results" role="region" aria-live="polite" aria-atomic="false"></div>
       </div>
     `;
@@ -308,7 +308,7 @@ class SearchComponent {
     const html = `
       <div class="search-stats">
         <span class="search-stats-icon">⚡</span>
-        <span class="search-stats-count">${results.length}</span> 
+        <span class="search-stats-count">${results.length}</span>
         ${results.length === 1 ? 'Ergebnis' : 'Ergebnisse'}
       </div>
       ${Object.entries(grouped)
@@ -320,8 +320,8 @@ class SearchComponent {
             <div class="search-category-divider"></div>
           </div>
           ${items
-            .map((result) => this.createResultHTML(result, query))
-            .join('')}
+              .map((result) => this.createResultHTML(result, query))
+              .join('')}
         </div>
       `,
         )
