@@ -1,6 +1,11 @@
 #:schema node_modules/wrangler/config-schema.json
 
 # ============================================================================
+# Cloudflare Pages Configuration
+# ============================================================================
+pages_build_output_dir = "."
+
+# ============================================================================
 # Cloudflare Workers Configuration
 # ============================================================================
 # Optimized multi-worker setup with shared utilities
