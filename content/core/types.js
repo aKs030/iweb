@@ -367,4 +367,4 @@
  */
 
 // This file contains JSDoc type definitions only
-export {};
+export { };
