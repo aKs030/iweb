@@ -160,6 +160,8 @@ export class SiteFooter extends HTMLElement {
     this.handleTouchStart = this.handleTouchStart.bind(this);
     this.handleTouchEnd = this.handleTouchEnd.bind(this);
     this.handleResize = this.handleResize.bind(this);
+    this._boundFooterTrigger = null;
+    this._boundCookieTrigger = null;
   }
 
   async connectedCallback() {
@@ -189,6 +191,19 @@ export class SiteFooter extends HTMLElement {
 
   cleanup() {
     this.removeGlobalEventListeners();
+
+    if (this._boundFooterTrigger) {
+      document.removeEventListener('click', this._boundFooterTrigger);
+      this._boundFooterTrigger = null;
+    }
+
+    if (this._boundCookieTrigger) {
+      this.removeEventListener('click', this._boundCookieTrigger);
+      this._boundCookieTrigger = null;
+    }
+
+    this._eventsbound = false;
+    this._settingsEventsbound = false;
 
     if (this.scrollHandler) {
       window.removeEventListener('scroll', this.scrollHandler);
@@ -528,7 +543,7 @@ export class SiteFooter extends HTMLElement {
     this._eventsbound = true;
 
     // Footer-Trigger (außerhalb des Footers)
-    const handleFooterTrigger = (e) => {
+    this._boundFooterTrigger = (e) => {
       const target = /** @type {Element} */ (e.target);
       const trigger = target.closest('[data-footer-trigger]');
       if (trigger) {
@@ -538,10 +553,10 @@ export class SiteFooter extends HTMLElement {
         trigger.setAttribute('aria-expanded', 'true');
       }
     };
-    document.addEventListener('click', handleFooterTrigger);
+    document.addEventListener('click', this._boundFooterTrigger);
 
     // Cookie-Trigger
-    const handleCookieTrigger = (e) => {
+    this._boundCookieTrigger = (e) => {
       const target = /** @type {Element} */ (e.target);
       if (target.closest('[data-cookie-trigger]')) {
         e.preventDefault();
@@ -549,7 +564,7 @@ export class SiteFooter extends HTMLElement {
         this.openSettings();
       }
     };
-    this.addEventListener('click', handleCookieTrigger);
+    this.addEventListener('click', this._boundCookieTrigger);
 
     // Settings schließen
     closeBtn?.addEventListener('click', () => this.closeSettings());

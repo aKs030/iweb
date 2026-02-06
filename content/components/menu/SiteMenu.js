@@ -10,7 +10,6 @@ import { MenuState } from './modules/MenuState.js';
 import { MenuEvents } from './modules/MenuEvents.js';
 import { MenuAccessibility } from './modules/MenuAccessibility.js';
 import { MenuPerformance } from './modules/MenuPerformance.js';
-import { MenuCache } from './modules/MenuCache.js';
 import { MenuConfig } from './modules/MenuConfig.js';
 import { upsertHeadLink } from '/content/core/utils.js';
 import { createLogger } from '/content/core/logger.js';
@@ -26,7 +25,6 @@ class SiteMenu extends HTMLElement {
       new MenuRenderer(this.state, this.config)
     );
     this.performance = new MenuPerformance();
-    this.cache = new MenuCache();
     /** @type {MenuEvents|null} */
     this.events = null;
     /** @type {MenuAccessibility|null} */
@@ -75,7 +73,6 @@ class SiteMenu extends HTMLElement {
     const accessibility = /** @type {any} */ (this.accessibility);
     accessibility?.destroy();
     this.performance?.destroy();
-    this.cache?.clear();
     this.state.reset();
     this.initialized = false;
   }
@@ -104,7 +101,6 @@ class SiteMenu extends HTMLElement {
         title: this.state.currentTitle,
         subtitle: this.state.currentSubtitle,
       },
-      cache: this.cache.getStats(),
       device: this.performance.getDeviceCapabilities(),
     };
   }
