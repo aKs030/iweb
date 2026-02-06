@@ -57,42 +57,42 @@ export async function onRequestPost(context) {
 
         // Diagnostic mode: ?test=2 → actually call Groq with minimal prompt
         if (url.searchParams.get('test') === '2') {
-            var step = 'init';
+            let diagStep = 'init';
             try {
-                step = 'building-request';
-                var apiKey = env && env.GROQ_API_KEY;
-                var payload = JSON.stringify({
+                diagStep = 'building-request';
+                const diagKey = env && env.GROQ_API_KEY;
+                const diagPayload = JSON.stringify({
                     model: GROQ_MODEL,
                     messages: [{ role: 'user', content: 'Say hello in one word' }],
                     max_tokens: 10,
                     stream: false,
                 });
 
-                step = 'calling-fetch';
-                var groqRes = await fetch(GROQ_API_URL, {
+                diagStep = 'calling-fetch';
+                const diagRes = await fetch(GROQ_API_URL, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + apiKey,
+                        'Authorization': 'Bearer ' + diagKey,
                     },
-                    body: payload,
+                    body: diagPayload,
                 });
 
-                step = 'reading-response';
-                var status = groqRes.status;
-                var resText = await groqRes.text();
+                diagStep = 'reading-response';
+                const diagStatus = diagRes.status;
+                const diagText = await diagRes.text();
 
                 return jsonResponse({
-                    ok: groqRes.ok,
-                    step: step,
-                    groqStatus: status,
-                    groqResponse: resText.slice(0, 500),
+                    ok: diagRes.ok,
+                    step: diagStep,
+                    groqStatus: diagStatus,
+                    groqResponse: diagText.slice(0, 500),
                     timestamp: new Date().toISOString(),
                 });
             } catch (e) {
                 return jsonResponse({
                     ok: false,
-                    step: step,
+                    step: diagStep,
                     error: String(e),
                     message: e && e.message ? e.message : 'unknown',
                     timestamp: new Date().toISOString(),
