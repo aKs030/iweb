@@ -2,7 +2,9 @@
   "compilerOptions": {
     "target": "ES2022",
     "module": "ESNext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "jsxImportSource": "react",
     "allowJs": true,
     "checkJs": false,
     "noEmit": true,
@@ -12,7 +14,6 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
-    "noResolve": false,
     "types": ["node"],
     "lib": ["ES2022", "DOM", "DOM.Iterable", "WebWorker"],
     "baseUrl": ".",
@@ -20,19 +21,11 @@
       "/content/*": ["content/*"],
       "/pages/*": ["pages/*"],
       "/workers/*": ["workers/*"]
-    },
-    "noImplicitAny": false,
-    "noImplicitReturns": false,
-    "noImplicitThis": false,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "exactOptionalPropertyTypes": false,
-    "noImplicitOverride": false,
-    "noPropertyAccessFromIndexSignature": false,
-    "noUncheckedIndexedAccess": false
+    }
   },
   "include": [
     "content/**/*.js",
+    "content/**/*.jsx",
     "pages/**/*.js",
     "workers/**/*.js",
     "sw.js",

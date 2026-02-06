@@ -1,53 +1,24 @@
-# 🐶 Husky Git Hooks
+# Husky Git Hooks
 
-Automatische Code-Qualitätschecks für dieses Projekt.
+## Hooks
 
-## 🎯 Hooks
+| Hook | Was passiert |
+|------|-------------|
+| `pre-commit` | `lint-staged` → ESLint --fix + Prettier --write (nur staged files) |
+| `pre-push` | `npm run check` + `npm audit` |
 
-### pre-commit
+## Commit-Typen
 
-Läuft vor jedem Commit:
-
-- ESLint --fix (nur staged files)
-- Prettier --write (nur staged files)
-
-### pre-push
-
-Läuft vor jedem Push:
-
-- npm run check (lint + format)
-- npm audit (security)
-
-### commit-msg
-
-Validiert Commit-Messages:
-
-- Format: `type(scope): subject`
-- Beispiel: `feat(menu): add dark mode`
-
-## 📝 Gültige Commit-Typen
-
-- `feat` - Neues Feature
-- `fix` - Bugfix
-- `docs` - Dokumentation
-- `style` - Formatierung
-- `refactor` - Code-Refactoring
-- `perf` - Performance
-- `test` - Tests
-- `build` - Build-System
-- `ci` - CI/CD
-- `chore` - Maintenance
-
-## 🚀 Verwendung
+`feat` `fix` `docs` `style` `refactor` `perf` `test` `build` `ci` `chore`
 
 ```bash
-# Normal committen
 git commit -m "feat(menu): add search"
-
-# Hook überspringen (Notfall)
-git commit --no-verify -m "emergency fix"
+git commit --no-verify -m "emergency fix"   # Hook überspringen
 ```
 
-## 📚 Weitere Informationen
+## Troubleshooting
 
-Siehe [QUICK-START.md](QUICK-START.md) für eine detaillierte Anleitung.
+```bash
+npm run prepare        # Hooks neu installieren
+chmod +x .husky/*      # Ausführbar machen
+```

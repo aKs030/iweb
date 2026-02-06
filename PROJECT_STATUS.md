@@ -130,7 +130,7 @@ Configuration:
 - Optional Chaining mit Nullish Coalescing
 - Type Guards statt @ts-ignore
 - Zentrale Type-Definitionen für Wiederverwendbarkeit
-- Strikte Type-Checking in jsconfig.json aktiviert
+- Strikte Type-Checking in tsconfig.json aktiviert
 
 ---
 
