@@ -109,7 +109,6 @@
   Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=(), interest-cohort=()
   
   # Additional security headers
-  X-XSS-Protection: 1; mode=block
   Cross-Origin-Embedder-Policy: unsafe-none
   Cross-Origin-Opener-Policy: same-origin-allow-popups
   
