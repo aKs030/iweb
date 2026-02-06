@@ -55,6 +55,51 @@ export async function onRequestPost(context) {
             });
         }
 
+        // Diagnostic mode: ?test=2 → actually call Groq with minimal prompt
+        if (url.searchParams.get('test') === '2') {
+            var step = 'init';
+            try {
+                step = 'building-request';
+                var apiKey = env && env.GROQ_API_KEY;
+                var payload = JSON.stringify({
+                    model: GROQ_MODEL,
+                    messages: [{ role: 'user', content: 'Say hello in one word' }],
+                    max_tokens: 10,
+                    stream: false,
+                });
+
+                step = 'calling-fetch';
+                var groqRes = await fetch(GROQ_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + apiKey,
+                    },
+                    body: payload,
+                });
+
+                step = 'reading-response';
+                var status = groqRes.status;
+                var resText = await groqRes.text();
+
+                return jsonResponse({
+                    ok: groqRes.ok,
+                    step: step,
+                    groqStatus: status,
+                    groqResponse: resText.slice(0, 500),
+                    timestamp: new Date().toISOString(),
+                });
+            } catch (e) {
+                return jsonResponse({
+                    ok: false,
+                    step: step,
+                    error: String(e),
+                    message: e && e.message ? e.message : 'unknown',
+                    timestamp: new Date().toISOString(),
+                }, 500);
+            }
+        }
+
         // Parse body safely
         let body;
         try {
