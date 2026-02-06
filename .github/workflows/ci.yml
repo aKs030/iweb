@@ -116,13 +116,22 @@ jobs:
           node -c workers/youtube-api-proxy/index.js
           echo "✅ YouTube API Proxy syntax OK"
       
-      - name: Check wrangler.toml
+      - name: Check wrangler.toml (Pages)
         run: |
           if [ -f wrangler.toml ]; then
-            echo "✅ wrangler.toml found"
+            echo "✅ wrangler.toml (Pages) found"
             cat wrangler.toml
           else
-            echo "⚠️ wrangler.toml not found"
+            echo "⚠️ wrangler.toml (Pages) not found"
+          fi
+
+      - name: Check wrangler.workers.toml (Workers)
+        run: |
+          if [ -f wrangler.workers.toml ]; then
+            echo "✅ wrangler.workers.toml found"
+            cat wrangler.workers.toml
+          else
+            echo "⚠️ wrangler.workers.toml not found"
           fi
 
   type-check:

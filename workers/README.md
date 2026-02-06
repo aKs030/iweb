@@ -99,30 +99,30 @@ Reusable search algorithms:
 
 ```bash
 # Deploy main AI search worker
-wrangler deploy
+wrangler deploy --config wrangler.workers.toml
 
 # Deploy YouTube proxy worker
-wrangler deploy --env youtube
+wrangler deploy --config wrangler.workers.toml --env youtube
 ```
 
 ### Set Secrets
 
 ```bash
 # AI Search worker
-wrangler secret put GROQ_API_KEY
+wrangler secret put GROQ_API_KEY --config wrangler.workers.toml
 
 # YouTube worker
-wrangler secret put YOUTUBE_API_KEY --env youtube
+wrangler secret put YOUTUBE_API_KEY --config wrangler.workers.toml --env youtube
 ```
 
 ### View Logs
 
 ```bash
 # Main worker
-wrangler tail
+wrangler tail --config wrangler.workers.toml
 
 # YouTube worker
-wrangler tail --env youtube
+wrangler tail --config wrangler.workers.toml --env youtube
 ```
 
 ## 🧪 Development
@@ -131,10 +131,10 @@ wrangler tail --env youtube
 
 ```bash
 # Test main worker
-wrangler dev
+wrangler dev --config wrangler.workers.toml
 
 # Test YouTube worker
-wrangler dev --env youtube
+wrangler dev --config wrangler.workers.toml --env youtube
 ```
 
 ### Testing Endpoints

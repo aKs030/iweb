@@ -15,14 +15,14 @@ echo -e "${GREEN}🚀 Cloudflare Workers Deployment${NC}\n"
 # Function to deploy AI Search Proxy
 deploy_ai_search() {
   echo -e "${YELLOW}📦 Deploying AI Search Proxy...${NC}"
-  wrangler deploy
+  wrangler deploy --config wrangler.workers.toml
   echo -e "${GREEN}✅ AI Search Proxy deployed${NC}\n"
 }
 
 # Function to deploy YouTube Proxy
 deploy_youtube() {
   echo -e "${YELLOW}📺 Deploying YouTube API Proxy...${NC}"
-  wrangler deploy --env youtube
+  wrangler deploy --config wrangler.workers.toml --env youtube
   echo -e "${GREEN}✅ YouTube API Proxy deployed${NC}\n"
 }
 
@@ -31,23 +31,23 @@ check_secrets() {
   echo -e "${YELLOW}🔐 Checking secrets...${NC}"
   
   # Check AI Search Proxy secret
-  if wrangler secret list 2>/dev/null | grep -q "GROQ_API_KEY"; then
+  if wrangler secret list --config wrangler.workers.toml 2>/dev/null | grep -q "GROQ_API_KEY"; then
     echo -e "${GREEN}✓ GROQ_API_KEY configured${NC}"
-  elif wrangler secret list 2>/dev/null | grep -q "GEMINI_API_KEY"; then
+  elif wrangler secret list --config wrangler.workers.toml 2>/dev/null | grep -q "GEMINI_API_KEY"; then
     echo -e "${YELLOW}⚠ GEMINI_API_KEY found (deprecated)${NC}"
-    echo "  Consider migrating to Groq (free): wrangler secret put GROQ_API_KEY"
+    echo "  Consider migrating to Groq (free): wrangler secret put GROQ_API_KEY --config wrangler.workers.toml"
   else
     echo -e "${RED}✗ GROQ_API_KEY missing${NC}"
     echo "  Get free key at: https://console.groq.com/keys"
-    echo "  Run: wrangler secret put GROQ_API_KEY"
+    echo "  Run: wrangler secret put GROQ_API_KEY --config wrangler.workers.toml"
   fi
   
   # Check YouTube Proxy secret
-  if wrangler secret list --env youtube 2>/dev/null | grep -q "YOUTUBE_API_KEY"; then
+  if wrangler secret list --config wrangler.workers.toml --env youtube 2>/dev/null | grep -q "YOUTUBE_API_KEY"; then
     echo -e "${GREEN}✓ YOUTUBE_API_KEY configured${NC}"
   else
     echo -e "${RED}✗ YOUTUBE_API_KEY missing${NC}"
-    echo "  Run: wrangler secret put YOUTUBE_API_KEY --env youtube"
+    echo "  Run: wrangler secret put YOUTUBE_API_KEY --config wrangler.workers.toml --env youtube"
   fi
   
   echo ""

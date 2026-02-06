@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "vite",
     "dev:python": "python3 -m http.server 8080",
-    "dev:worker": "cd workers/youtube-api-proxy && wrangler dev --env youtube --port 8788",
-    "dev:search-worker": "cd workers/ai-search-proxy && wrangler dev --port 8787",
+    "dev:worker": "wrangler dev --config wrangler.workers.toml --env youtube --port 8788",
+    "dev:search-worker": "wrangler dev --config wrangler.workers.toml --port 8787",
     "dev:all": "concurrently \"npm run dev\" \"npm run dev:worker\" \"npm run dev:search-worker\" --names \"vite,yt,search\" --prefix-colors \"cyan,magenta,yellow\"",
     "build": "vite build",
     "preview": "vite preview",

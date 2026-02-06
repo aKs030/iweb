@@ -131,10 +131,10 @@ YOUTUBE_API_KEY=your_youtube_api_key
 
 ```bash
 # AI Search Proxy
-wrangler secret put GROQ_API_KEY
+wrangler secret put GROQ_API_KEY --config wrangler.workers.toml
 
 # YouTube Proxy
-wrangler secret put YOUTUBE_API_KEY --env youtube
+wrangler secret put YOUTUBE_API_KEY --config wrangler.workers.toml --env youtube
 ```
 
 ## 📡 API Endpoints
