@@ -4,7 +4,6 @@
 
 import { createLogger } from './logger.js';
 import { EVENTS as CORE_EVENTS, fire } from './events.js';
-import { i18n } from '/content/core/i18n.js';
 
 const log = createLogger('GlobalLoader');
 
@@ -18,12 +17,6 @@ const EVENTS = {
 let cachedElements = null;
 let cacheTime = 0;
 const CACHE_DURATION = 5000;
-
-let loadingStartTime = 0;
-let timeoutWarningTimer = null;
-let performanceHintTimer = null;
-const TIMEOUT_WARNING_DELAY = 8000;
-const PERFORMANCE_HINT_DELAY = 3000;
 
 function getLoaderElements() {
   const now = Date.now();
@@ -61,39 +54,6 @@ function clearCache() {
   cacheTime = 0;
 }
 
-function clearTimers() {
-  if (timeoutWarningTimer) {
-    clearTimeout(timeoutWarningTimer);
-    timeoutWarningTimer = null;
-  }
-  if (performanceHintTimer) {
-    clearTimeout(performanceHintTimer);
-    performanceHintTimer = null;
-  }
-}
-
-function showTimeoutWarning() {
-  try {
-    const elements = getLoaderElements();
-    if (!elements || !elements.warning) return;
-    elements.warning.classList.remove('hidden');
-    fire(EVENTS.LOADING_TIMEOUT);
-    log.warn('Loading timeout warning displayed');
-  } catch (err) {
-    log.warn('Could not show timeout warning:', err);
-  }
-}
-
-function showPerformanceHint() {
-  try {
-    const elements = getLoaderElements();
-    if (!elements || !elements.hint) return;
-    elements.hint.setAttribute('aria-hidden', 'false');
-  } catch (err) {
-    log.warn('Could not show performance hint:', err);
-  }
-}
-
 export function updateLoader(progress, message, options = {}) {
   try {
     const elements = getLoaderElements();
@@ -125,70 +85,12 @@ export function updateLoader(progress, message, options = {}) {
   }
 }
 
-export function showLoader(message, options = {}) {
-  const msg = message || i18n.t('common.loading');
-  try {
-    clearCache();
-    clearTimers();
-    const elements = getLoaderElements();
-    if (!elements) return;
-
-    const { overlay, warning, hint } = elements;
-
-    if (warning) warning.classList.add('hidden');
-    if (hint) hint.setAttribute('aria-hidden', 'true');
-
-    overlay.classList.remove('fade-out', 'hidden');
-    overlay.removeAttribute('aria-hidden');
-    overlay.setAttribute('aria-live', 'polite');
-    overlay.setAttribute('role', 'status');
-    overlay.dataset.loaderDone = 'false';
-
-    Object.assign(overlay.style, {
-      display: 'flex',
-      opacity: '1',
-      pointerEvents: 'auto',
-      visibility: 'visible',
-    });
-
-    const initialProgress = options.initialProgress ?? 0;
-    updateLoader(initialProgress, msg, { silent: true });
-    document.body.classList.add('global-loading-visible');
-
-    loadingStartTime = Date.now();
-
-    if (options.showWarning !== false) {
-      timeoutWarningTimer = setTimeout(
-        showTimeoutWarning,
-        TIMEOUT_WARNING_DELAY,
-      );
-    }
-
-    performanceHintTimer = setTimeout(
-      showPerformanceHint,
-      PERFORMANCE_HINT_DELAY,
-    );
-
-    fire(EVENTS.LOADING_SHOW, { message: msg });
-    log.debug('Loader shown');
-  } catch (err) {
-    log.warn('Could not show loader:', err);
-  }
-}
-
 export function hideLoader(delay = 0, options = {}) {
   try {
     const elements = getLoaderElements();
     if (!elements) return;
 
     const { overlay } = elements;
-
-    clearTimers();
-
-    const loadingDuration = Date.now() - loadingStartTime;
-    if (loadingDuration > 0) {
-      log.debug(`Loading completed in ${loadingDuration}ms`);
-    }
 
     setTimeout(() => {
       if (options.immediate) {
@@ -220,18 +122,5 @@ export function hideLoader(delay = 0, options = {}) {
     }, delay);
   } catch (err) {
     log.warn('Could not hide loader:', err);
-  }
-}
-
-export function isLoaderVisible() {
-  try {
-    const elements = getLoaderElements();
-    if (!elements) return false;
-    const { overlay } = elements;
-    return (
-      overlay.style.display !== 'none' && overlay.dataset.loaderDone !== 'true'
-    );
-  } catch {
-    return false;
   }
 }

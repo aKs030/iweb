@@ -15,7 +15,7 @@ const templateCache = new Map();
 
 /**
  * Fetch a static asset and cache it in memory.
- * @param {import("@cloudflare/workers-types").EventContext} context
+ * @param {Object} context - Cloudflare Pages context
  * @param {string} path
  * @returns {Promise<string>}
  */
@@ -40,7 +40,7 @@ async function getTemplate(context, path) {
 /**
  * Middleware entry point — runs on every request.
  * Skips API routes (handled by their own functions).
- * @param {import("@cloudflare/workers-types").EventContext} context
+ * @param {Object} context - Cloudflare Pages context
  */
 export async function onRequest(context) {
   // Skip API routes — they have their own handlers and don't need template injection

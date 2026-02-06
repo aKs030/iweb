@@ -147,7 +147,7 @@ const pushToDataLayer = (pageData, pageUrl) => {
   }
 };
 
-export async function loadHead() {
+async function loadHead() {
   if (headState.isManagerLoaded()) return;
 
   // Wait for head-inline to be ready

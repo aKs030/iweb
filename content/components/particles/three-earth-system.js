@@ -1101,8 +1101,6 @@ export const initThreeEarth = () => {
   return singleton.init();
 };
 
-const ThreeEarthManager = { initThreeEarth };
-
 // --- Helpers copied from original (kept for compatibility) ---
 
 /**
@@ -1253,5 +1251,3 @@ function _getSectionConfig(sectionName) {
     ] || configs.hero
   );
 }
-
-export default ThreeEarthManager;

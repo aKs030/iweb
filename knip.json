@@ -6,12 +6,14 @@
     "content/components/menu/menu.js",
     "content/components/footer/SiteFooter.js",
     "content/components/robot-companion/robot-companion.js",
+    "content/components/typewriter/TypeWriter.js",
     "functions/_middleware.js",
+    "functions/api/**/*.js",
     "pages/**/*.js",
     "workers/**/*.js",
     "sw.js"
   ],
   "ignore": ["pages/home/GrussText.js"],
-  "ignoreBinaries": ["jscpd", "madge", "es6-plato"],
+  "ignoreBinaries": [],
   "project": ["**/*.{js,ts}"]
 }

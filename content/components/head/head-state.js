@@ -176,6 +176,3 @@ class HeadStateManager {
 
 // Export singleton instance
 export const headState = new HeadStateManager();
-
-// Export class for testing purposes
-export { HeadStateManager };

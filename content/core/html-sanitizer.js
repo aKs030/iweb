@@ -3,28 +3,6 @@
  * @version 2.0.0
  */
 
-import dompurify from 'dompurify';
-const DOMPurify = dompurify;
-
-const MINIMAL_CONFIG = {
-  ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'br'],
-  ALLOWED_ATTR: [],
-  ALLOW_DATA_ATTR: false,
-  KEEP_CONTENT: true,
-};
-
-/**
- * Sanitizes HTML with minimal formatting (basic text styling only)
- */
-export function sanitizeHTMLMinimal(html) {
-  if (!html || typeof html !== 'string') return '';
-  try {
-    return DOMPurify.sanitize(html, MINIMAL_CONFIG);
-  } catch {
-    return '';
-  }
-}
-
 /**
  * Escapes HTML special characters (for plain text display)
  */

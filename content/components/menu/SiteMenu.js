@@ -17,7 +17,7 @@ import { createLogger } from '/content/core/logger.js';
 
 const logger = createLogger('SiteMenu');
 
-export class SiteMenu extends HTMLElement {
+class SiteMenu extends HTMLElement {
   constructor() {
     super();
     this.config = { ...MenuConfig };
