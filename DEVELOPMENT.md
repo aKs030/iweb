@@ -8,12 +8,8 @@ Entwickler-Dokumentation für das Projekt.
 # Installation
 npm install
 
-# Development Server (Python)
+# Development Server (Node.js)
 npm run dev
-
-# Workers Development
-npm run dev:worker         # YouTube API Proxy
-npm run dev:search-worker  # AI Search Proxy
 ```
 
 ## 📋 Verfügbare Commands
@@ -21,9 +17,7 @@ npm run dev:search-worker  # AI Search Proxy
 ### Development
 
 ```bash
-npm run dev              # Python HTTP Server (Port 8080)
-npm run dev:worker       # YouTube Worker Dev Server
-npm run dev:search-worker # AI Search Worker Dev Server
+npm run dev              # Node.js Dev Server (Port 8080)
 ```
 
 ### Code Quality
@@ -53,7 +47,6 @@ npm run audit:full            # Quality + Console
 
 ```bash
 npm run deps:graph       # Dependency-Graph erstellen
-npm run deps:cost        # Bundle-Impact analysieren
 npm run deps:check       # Outdated Dependencies
 ```
 
@@ -63,10 +56,12 @@ npm run deps:check       # Outdated Dependencies
 npm run css:check        # CSS Stats anzeigen
 ```
 
-### Deployment
+### Validation
 
 ```bash
-npm run deploy:workers   # Cloudflare Workers deployen
+npm run check:typescript  # TypeScript Type Check
+npm run check:html        # HTML-Validierung
+npm run quality:full      # Alle Checks (Quality + TS + HTML)
 ```
 
 ## 🔧 Git Hooks
@@ -127,20 +122,17 @@ Findet vergessene console.log Statements.
 
 ## 📊 CI/CD Pipeline
 
-### Jobs
+### Unified CI Job
 
-1. **lint** - ESLint + Prettier + CSS Check
-2. **validate** - JavaScript Syntax + File Structure
-3. **security** - npm audit + Outdated Check
-4. **workers-validation** - Cloudflare Workers Syntax
-5. **type-check** - TypeScript Type Check
-6. **code-quality** - Knip + JSCPD + Console.log
-7. **dependency-analysis** - Circular Dependencies + Dependency Graph
+Ein einzelner CI-Job führt alle Checks sequenziell aus:
 
-### Artifacts
-
-- Knip Report (JSON)
-- Dependency Graph (SVG)
+1. **Lint** — ESLint + Prettier
+2. **Format Check** — Code-Formatierung
+3. **TypeScript** — Type Check
+4. **HTML Validation** — html-validate
+5. **Security** — npm audit
+6. **Workers Validation** — Cloudflare Workers Syntax
+7. **Code Quality** — Knip + JSCPD + Console.log + Circular Dependencies
 
 ## 🎯 Best Practices
 
@@ -200,14 +192,13 @@ npm run deps:check      # Dependencies aktualisieren
 
 ## 🔍 Debugging
 
-### Python Dev Server
+### Dev Server
 
 ```bash
-# Spezifischer Port
-python3 -m http.server 3000
-
-# Netzwerk-Zugriff (Standard)
+# Standard Port (8080)
 npm run dev
+
+# Server-Optionen siehe server.js
 ```
 
 ### Worker Issues
