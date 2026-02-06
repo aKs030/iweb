@@ -9,6 +9,8 @@ export default defineConfig({
     htmlRawPlugin(),
     redirectsPlugin(),
   ],
+  // Use relative base path to ensure assets load correctly in any deployment context
+  base: './',
   root: '.',
   publicDir: 'content/assets',
 
