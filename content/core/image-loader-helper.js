@@ -50,7 +50,3 @@ export async function initImageOptimization(options = {}) {
 
   log.info('Image optimization initialized');
 }
-
-export default {
-  initImageOptimization,
-};

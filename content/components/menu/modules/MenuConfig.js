@@ -72,16 +72,3 @@ export const MenuConfig = {
   ICON_CHECK_DELAY: 100,
   TITLE_TRANSITION_DELAY: 200,
 };
-
-// Merge with custom config
-export function createConfig(customConfig = {}) {
-  return {
-    ...MenuConfig,
-    ...customConfig,
-    TITLE_MAP: { ...MenuConfig.TITLE_MAP, ...customConfig.TITLE_MAP },
-    FALLBACK_TITLES: {
-      ...MenuConfig.FALLBACK_TITLES,
-      ...customConfig.FALLBACK_TITLES,
-    },
-  };
-}

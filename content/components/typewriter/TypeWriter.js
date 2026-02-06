@@ -175,7 +175,7 @@ function makeLineMeasurer(subtitleEl) {
  * TypeWriter Class
  * Animated typing effect with configurable speed and behavior
  */
-export class TypeWriter {
+class TypeWriter {
   /**
    * @param {Object} config - Configuration object
    * @param {HTMLElement} config.textEl - Text container element
