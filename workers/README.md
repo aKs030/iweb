@@ -36,7 +36,6 @@ workers/
 
 - `POST /api/search` - Full-text search with relevance scoring
 - `POST /api/ai` - AI chat with optional RAG augmentation
-- `POST /api/gemini` - **[DEPRECATED]** Legacy endpoint (redirects to `/api/ai`)
 
 **Features:**
 
@@ -222,8 +221,9 @@ curl "https://abdulkerimsesli.de/api/youtube/videos?part=snippet&id=VIDEO_ID"
 - Monolithic code → Modular with shared utilities
 - Basic caching → Optimized caching with strategic TTLs
 - Gemini API → Groq API (free tier)
+- Worker-only → Pages Functions + Worker Architektur
 
 **Breaking Changes:**
 
-- None - API compatibility maintained
+- `/api/gemini` Endpoint entfernt (war deprecated)
 - Response format extended with additional metadata
