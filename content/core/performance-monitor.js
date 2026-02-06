@@ -232,8 +232,13 @@ class PerformanceMonitor {
   /**
    * Send metrics to analytics (optional)
    * @param {string} endpoint - Analytics endpoint
+   * @returns {Promise<void>}
    */
   async sendMetrics(endpoint) {
+    if (!endpoint) {
+      log.warn('sendMetrics: No endpoint provided');
+      return;
+    }
     try {
       await fetch(endpoint, {
         method: 'POST',
@@ -241,7 +246,6 @@ class PerformanceMonitor {
         body: JSON.stringify({
           metrics: this.metrics,
           url: window.location.href,
-          userAgent: navigator.userAgent,
           timestamp: Date.now(),
         }),
       });

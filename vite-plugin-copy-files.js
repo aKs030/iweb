@@ -12,8 +12,12 @@ import { join, dirname, relative } from 'path';
 
 /**
  * Recursively copy directory
+ * @param {string} src - Source directory
+ * @param {string} dest - Destination directory
+ * @param {Set<string>} [skipPaths] - Set of relative paths to skip (Vite entry points)
+ * @param {string} [baseDir] - Base directory for computing relative paths
  */
-function copyDir(src, dest) {
+function copyDir(src, dest, skipPaths = new Set(), baseDir = src) {
   mkdirSync(dest, { recursive: true });
 
   const entries = readdirSync(src, { withFileTypes: true });
@@ -23,14 +27,21 @@ function copyDir(src, dest) {
     const destPath = join(dest, entry.name);
 
     if (entry.isDirectory()) {
-      copyDir(srcPath, destPath);
+      copyDir(srcPath, destPath, skipPaths, baseDir);
     } else {
       // Copy HTML and CSS files, skip JS (handled by Vite)
       const ext = entry.name.split('.').pop()?.toLowerCase();
-      if (!['js', 'jsx', 'ts', 'tsx'].includes(ext || '')) {
-        mkdirSync(dirname(destPath), { recursive: true });
-        copyFileSync(srcPath, destPath);
+      if (['js', 'jsx', 'ts', 'tsx'].includes(ext || '')) continue;
+
+      // Skip HTML files that are Vite entry points (already processed by Vite)
+      const relPath = relative(join(baseDir, '..'), srcPath);
+      if (ext === 'html' && skipPaths.has(relPath)) {
+        console.log(`[copy-files] ⊘ Skipped ${relPath} (Vite entry point)`);
+        continue;
       }
+
+      mkdirSync(dirname(destPath), { recursive: true });
+      copyFileSync(srcPath, destPath);
     }
   }
 }
@@ -44,8 +55,21 @@ export default function copyFilesPlugin(options = {}) {
     exclude = ['node_modules', '.git', 'dist'],
   } = options;
 
+  /** @type {Set<string>} Vite entry point paths to skip during copy */
+  let entryPaths = new Set();
+
   return {
     name: 'vite-plugin-copy-files',
+
+    configResolved(config) {
+      // Collect Vite entry points so we don't overwrite processed HTML files
+      const input = config.build?.rollupOptions?.input;
+      if (input && typeof input === 'object') {
+        for (const val of Object.values(input)) {
+          entryPaths.add(String(val));
+        }
+      }
+    },
 
     closeBundle() {
       console.log('[copy-files] Copying additional files to dist...');
@@ -56,7 +80,7 @@ export default function copyFilesPlugin(options = {}) {
           const dest = join(process.cwd(), 'dist', dir);
 
           if (statSync(src).isDirectory()) {
-            copyDir(src, dest);
+            copyDir(src, dest, entryPaths, src);
             console.log(`[copy-files] ✓ Copied ${dir}/ to dist/${dir}/`);
           }
         } catch (error) {

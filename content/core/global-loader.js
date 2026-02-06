@@ -3,13 +3,13 @@
  */
 
 import { createLogger } from './logger.js';
-import { fire } from './events.js';
+import { EVENTS as CORE_EVENTS, fire } from './events.js';
 import { i18n } from '/content/core/i18n.js';
 
 const log = createLogger('GlobalLoader');
 
 const EVENTS = {
-  LOADING_HIDE: 'loading:hide',
+  LOADING_HIDE: CORE_EVENTS.LOADING_HIDE,
   LOADING_SHOW: 'loading:show',
   LOADING_UPDATE: 'loading:update',
   LOADING_TIMEOUT: 'loading:timeout',

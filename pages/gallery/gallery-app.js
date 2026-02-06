@@ -8,6 +8,7 @@
 import { createLogger } from '/content/core/logger.js';
 import { updateLoader, hideLoader } from '/content/core/global-loader.js';
 import { createUseTranslation } from '/content/core/react-utils.js';
+import { createErrorBoundary } from '/content/components/ui/ErrorBoundary.js';
 import {
   Heart,
   X_Icon,
@@ -1101,4 +1102,7 @@ const PhotoGallery = () => {
 };
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(React.createElement(PhotoGallery));
+const ErrorBoundary = createErrorBoundary(React);
+root.render(
+  React.createElement(ErrorBoundary, null, React.createElement(PhotoGallery)),
+);

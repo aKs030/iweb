@@ -56,22 +56,9 @@ export function addPassiveListeners(target, eventTypes, handler, options = {}) {
 
 /**
  * Check if passive event listeners are supported
+ * @deprecated All modern browsers support passive listeners. This check is no longer needed.
  * @returns {boolean}
  */
 export function supportsPassive() {
-  let supported = false;
-  try {
-    const options = Object.defineProperty({}, 'passive', {
-      get() {
-        supported = true;
-        return false;
-      },
-    });
-    const noop = () => {};
-    window.addEventListener('test', noop, options);
-    window.removeEventListener('test', noop, options);
-  } catch {
-    supported = false;
-  }
-  return supported;
+  return true;
 }

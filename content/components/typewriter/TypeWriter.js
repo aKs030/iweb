@@ -6,6 +6,7 @@
  */
 import { createLogger } from '/content/core/logger.js';
 import { getElementById } from '/content/core/utils.js';
+import { TimerManager } from '/content/core/timer-utils.js';
 
 const log = createLogger('TypeWriter');
 
@@ -23,90 +24,6 @@ const shuffle = (array) => {
   }
   return arr;
 };
-
-/**
- * Timer Manager for automatic cleanup
- * @class
- */
-class TimerManager {
-  constructor() {
-    /** @type {Set<ReturnType<typeof setTimeout>>} */
-    this.timers = new Set();
-    /** @type {Set<ReturnType<typeof setInterval>>} */
-    this.intervals = new Set();
-  }
-
-  /**
-   * @param {Function} fn - Callback function
-   * @param {number} delay - Delay in milliseconds
-   * @returns {ReturnType<typeof setTimeout>} Timer ID
-   */
-  setTimeout(fn, delay) {
-    const id = setTimeout(() => {
-      this.timers.delete(
-        /** @type {ReturnType<typeof setTimeout>} */ (
-          /** @type {unknown} */ (id)
-        ),
-      );
-      fn();
-    }, delay);
-    this.timers.add(
-      /** @type {ReturnType<typeof setTimeout>} */ (
-        /** @type {unknown} */ (id)
-      ),
-    );
-    return /** @type {ReturnType<typeof setTimeout>} */ (
-      /** @type {unknown} */ (id)
-    );
-  }
-
-  /**
-   * @param {Function} fn - Callback function
-   * @param {number} delay - Delay in milliseconds
-   * @returns {ReturnType<typeof setInterval>} Interval ID
-   */
-  setInterval(fn, delay) {
-    const id = setInterval(fn, delay);
-    this.intervals.add(
-      /** @type {ReturnType<typeof setInterval>} */ (
-        /** @type {unknown} */ (id)
-      ),
-    );
-    return /** @type {ReturnType<typeof setInterval>} */ (
-      /** @type {unknown} */ (id)
-    );
-  }
-
-  /**
-   * @param {ReturnType<typeof setTimeout>} id - Timer ID
-   */
-  clearTimeout(id) {
-    clearTimeout(/** @type {any} */ (id));
-    this.timers.delete(id);
-  }
-
-  /**
-   * @param {ReturnType<typeof setInterval>} id - Interval ID
-   */
-  clearInterval(id) {
-    clearInterval(/** @type {any} */ (id));
-    this.intervals.delete(id);
-  }
-
-  /**
-   * Clear all timers and intervals
-   */
-  clearAll() {
-    this.timers.forEach(clearTimeout);
-    this.intervals.forEach(clearInterval);
-    this.timers.clear();
-    this.intervals.clear();
-  }
-
-  // Note: sleep() method was removed
-  // For async sleep, use: import { sleep } from '/content/core/utils.js';
-  // This TimerManager uses internal setTimeout tracking for automatic cleanup
-}
 // Helper: EVENTS constant
 const EVENTS = {
   HERO_TYPING_END: 'hero:typingEnd',
