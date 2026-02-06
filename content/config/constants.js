@@ -6,5 +6,5 @@
  */
 
 // Base URLs
-export const BASE_URL = 'https://www.abdulkerimsesli.de';
+export const BASE_URL = 'https://abdulkerimsesli.de';
 export const BASE_URL_DEV = 'http://localhost:8080';

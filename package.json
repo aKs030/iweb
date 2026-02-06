@@ -9,7 +9,7 @@
     "dev:worker": "cd workers/youtube-api-proxy && wrangler dev --env youtube --port 8788",
     "dev:search-worker": "cd workers/ai-search-proxy && wrangler dev --port 8787",
     "dev:all": "concurrently \"npm run dev\" \"npm run dev:worker\" \"npm run dev:search-worker\" --names \"vite,yt,search\" --prefix-colors \"cyan,magenta,yellow\"",
-    "build": "vite build",
+    "build": "vite build && mkdir -p dist/content dist/pages && cp -r content/* dist/content/ && cp -r pages/* dist/pages/",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",

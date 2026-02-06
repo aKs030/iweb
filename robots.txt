@@ -1,9 +1,9 @@
 # robots.txt – abdulkerimsesli.de
 # Clean, Google-first configuration
 
-Sitemap: https://www.abdulkerimsesli.de/sitemap.xml
-Sitemap: https://www.abdulkerimsesli.de/sitemap-images.xml
-Sitemap: https://www.abdulkerimsesli.de/sitemap-videos.xml
+Sitemap: https://abdulkerimsesli.de/sitemap.xml
+Sitemap: https://abdulkerimsesli.de/sitemap-images.xml
+Sitemap: https://abdulkerimsesli.de/sitemap-videos.xml
 
 User-agent: *
 Allow: /

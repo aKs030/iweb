@@ -2,6 +2,11 @@
 # Cloudflare Pages Redirects Configuration
 # ============================================================================
 # Optimized redirect rules for canonical URLs and legacy path cleanup
+
+# ============================================================================
+# 0. Domain Canonicalization (www -> apex)
+# ============================================================================
+https://www.abdulkerimsesli.de/* https://abdulkerimsesli.de/:splat 301
 # Last updated: 2025-01-30
 #
 # Rule Priority (Cloudflare processes top to bottom):
