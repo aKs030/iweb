@@ -1,6 +1,6 @@
 /**
  * AI API Service (using Groq - Free!)
- * Handles AI chat responses via Cloudflare Worker proxy
+ * Handles AI chat responses via Cloudflare Pages Function
  */
 
 import { createLogger } from '/content/core/logger.js';
@@ -23,11 +23,6 @@ const FALLBACK_MESSAGE =
 async function callAIAPI(prompt, systemInstruction, onChunk) {
   let delay = INITIAL_DELAY;
 
-  // Check if we're in development mode and API is not available
-  const isDev =
-    window.location.hostname === 'localhost' ||
-    window.location.hostname === '127.0.0.1';
-
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
     try {
       const response = await fetch('/api/ai', {
@@ -37,51 +32,27 @@ async function callAIAPI(prompt, systemInstruction, onChunk) {
       });
 
       if (!response.ok) {
-        // In development, use mock response if API is not available
-        if (isDev && (response.status === 404 || response.status === 405)) {
-          const mockText = `(Dev-Mode) Mock-Antwort für: "${prompt}". API ${response.status}.`;
-          if (onChunk && typeof onChunk === 'function') {
-            await simulateStreaming(mockText, onChunk);
-            return mockText;
-          }
-          return mockText;
-        }
-
         const errorText = await response.text();
         throw new Error(`API Error ${response.status}: ${errorText}`);
       }
 
       const result = await response.json();
-      const text =
-        result.text || result.candidates?.[0]?.content?.parts?.[0]?.text;
 
-      if (!text) {
+      if (!result.text) {
         throw new Error('Empty response from AI model');
       }
 
       // If streaming callback provided, simulate streaming effect
       if (onChunk && typeof onChunk === 'function') {
-        await simulateStreaming(text, onChunk);
-        return text; // Return after streaming is complete
+        await simulateStreaming(result.text, onChunk);
+        return result.text;
       }
 
-      return text;
+      return result.text;
     } catch (error) {
       const isLastAttempt = attempt === MAX_RETRIES - 1;
 
       if (isLastAttempt) {
-        // In development, use mock response as fallback
-        if (isDev) {
-          const mockText = `**Mock-Antwort**: Ich kann dir helfen! (API nicht verfügbar im _Dev-Modus_)`;
-
-          if (onChunk && typeof onChunk === 'function') {
-            await simulateStreaming(mockText, onChunk);
-            return mockText;
-          }
-
-          return mockText;
-        }
-
         log.error('AI API failed after retries:', error?.message);
         return FALLBACK_MESSAGE;
       }
