@@ -29,8 +29,6 @@ function getLoaderElements() {
   const statusText = document.getElementById('loader-status-text');
   const progressBar = document.getElementById('loader-progress-bar');
   const percentage = document.getElementById('loader-percentage');
-  const warning = document.getElementById('loader-warning');
-  const hint = document.getElementById('loader-hint');
 
   if (!overlay || !statusText || !progressBar || !percentage) {
     cachedElements = null;
@@ -42,8 +40,6 @@ function getLoaderElements() {
     statusText,
     progressBar,
     percentage,
-    warning,
-    hint,
   };
   cacheTime = now;
   return cachedElements;
@@ -123,4 +119,16 @@ export function hideLoader(delay = 0, options = {}) {
   } catch (err) {
     log.warn('Could not hide loader:', err);
   }
+}
+/**
+ * Check if the loader is currently visible
+ * @returns {boolean}
+ */
+export function isLoaderVisible() {
+  const elements = getLoaderElements();
+  if (!elements) return false;
+  return (
+    elements.overlay.style.display !== 'none' &&
+    !elements.overlay.classList.contains('fade-out')
+  );
 }

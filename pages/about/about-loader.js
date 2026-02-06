@@ -56,6 +56,8 @@ async function initAboutPage() {
  */
 async function initializeLucideIcons() {
   return new Promise((resolve) => {
+    let attempts = 0;
+    const MAX_ATTEMPTS = 60; // 3s max (60 * 50ms)
     const tryInit = () => {
       // Check if lucide is available globally
       if (typeof window !== 'undefined' && window.lucide) {
@@ -67,6 +69,9 @@ async function initializeLucideIcons() {
           log.warn('Failed to initialize Lucide icons:', error);
           resolve(); // Continue anyway
         }
+      } else if (++attempts >= MAX_ATTEMPTS) {
+        log.warn('Lucide icons not available after timeout');
+        resolve();
       } else {
         // Retry after a short delay
         setTimeout(tryInit, 50);
