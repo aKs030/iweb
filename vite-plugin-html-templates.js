@@ -4,11 +4,11 @@
  * Eliminates code duplication across HTML files
  *
  * @author Abdulkerim Sesli
- * @version 1.0.0
+ * @version 1.1.0
  */
 
 import { readFileSync } from 'fs';
-import { resolve } from 'path';
+import { resolve, relative, dirname, sep } from 'path';
 
 /**
  * Load template file content
@@ -107,6 +107,26 @@ export default function htmlTemplatesPlugin(options = {}) {
             `[html-templates] ⚠ Auto-injected base-loader (no marker found)`,
           );
         }
+
+        // --- PATH CORRECTION ---
+        // Calculate relative root path based on current file location
+        let rootPath = './';
+        if (ctx.filename) {
+            const currentDir = dirname(ctx.filename);
+            const relativePath = relative(currentDir, process.cwd());
+            if (relativePath) {
+                // Join with forward slash for URLs and ensure trailing slash
+                rootPath = relativePath.split(sep).join('/') + '/';
+            }
+        }
+
+        // Replace absolute paths with relative paths to support nested pages and file:// protocol
+        // Targets: content/, pages/, assets/, manifest.json, sitemap.xml, sw.js
+        const pathRegex = /(href|src)=(["'])\/(content|pages|assets|manifest\.json|sitemap\.xml|sw\.js)/g;
+
+        transformed = transformed.replace(pathRegex, (match, attr, quote, path) => {
+            return `${attr}=${quote}${rootPath}${path}`;
+        });
 
         return transformed;
       },
