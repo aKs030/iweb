@@ -38,8 +38,8 @@ async function callAIAPI(prompt, systemInstruction, onChunk) {
 
       if (!response.ok) {
         // In development, use mock response if API is not available
-        if (isDev && response.status === 404) {
-          const mockText = `(Dev-Mode) Mock-Antwort für: "${prompt}". API 404.`;
+        if (isDev && (response.status === 404 || response.status === 405)) {
+          const mockText = `(Dev-Mode) Mock-Antwort für: "${prompt}". API ${response.status}.`;
           if (onChunk && typeof onChunk === 'function') {
             await simulateStreaming(mockText, onChunk);
             return mockText;
