@@ -1,7 +1,8 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
-  "entry": ["content/main.js", "pages/**/*.js", "workers/**/*.js"],
+  "entry": ["content/main.js", "pages/**/*.js", "workers/**/*.js", "sw.js"],
   "ignore": ["pages/home/GrussText.js"],
   "ignoreBinaries": ["jscpd", "madge"],
+  "ignoreDependencies": ["husky", "lint-staged", "prettier", "@eslint/js"],
   "project": ["**/*.{js,ts}"]
 }

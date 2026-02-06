@@ -4,15 +4,9 @@
   "description": "Portfolio website of Abdulkerim Sesli - Web Developer & Photographer in Berlin",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "dev:python": "python3 -m http.server 8080",
+    "dev": "python3 -m http.server 8080",
     "dev:worker": "cd workers/youtube-api-proxy && wrangler dev --env youtube --port 8788",
     "dev:search-worker": "cd workers/ai-search-proxy && wrangler dev --port 8787",
-    "dev:all": "concurrently \"npm run dev\" \"npm run dev:worker\" \"npm run dev:search-worker\" --names \"vite,yt,search\" --prefix-colors \"cyan,magenta,yellow\"",
-    "build": "vite build",
-    "preview": "vite preview",
-    "test": "vitest run",
-    "test:watch": "vitest",
     "format": "prettier --write \"**/*.{js,css,json,md,html}\" --ignore-path .prettierignore",
     "format:check": "prettier --check \"**/*.{js,css,json,md,html}\" --ignore-path .prettierignore",
     "lint": "eslint \"**/*.js\" --fix",
@@ -20,10 +14,8 @@
     "check": "npm run lint:check && npm run format:check",
     "fix": "npm run lint && npm run format",
     "prepare": "husky",
-    "clean": "echo 'No build artifacts to clean'",
     "deploy:workers": "./workers/deploy.sh",
     "css:check": "echo 'CSS Stats:' && wc -l content/styles/*.css content/styles/components/*.css 2>/dev/null || wc -l content/styles/*.css",
-    "docs": "echo 'Documentation:' && ls -1 docs/*.md && echo '' && echo 'Root docs:' && ls -1 *.md | grep -E 'CSS|PROJEKT|README'",
     "knip": "knip",
     "knip:production": "knip --production",
     "quality": "npm run knip && npm run check:duplicates && npm run check:circular",
@@ -31,12 +23,12 @@
     "check:duplicates": "jscpd content/ pages/ workers/ --min-lines 10 --min-tokens 50 --format javascript",
     "check:circular": "madge --circular --extensions js content/ pages/ workers/",
     "check:console": "! grep -r 'console\\.log' content/ pages/ --include='*.js' --exclude-dir=node_modules",
-    "check:jshint": "jshint content/**/*.js pages/**/*.js sw.js vite*.js",
+    "check:jshint": "jshint content/**/*.js pages/**/*.js sw.js",
     "check:typescript": "tsc --noEmit",
     "check:html": "html-validate \"index.html\" \"pages/**/*.html\" \"content/**/*.html\"",
     "deps:graph": "madge --extensions js --image dependency-graph.svg content/main.js",
     "deps:check": "npm outdated",
-    "audit:full": "npm run security && npm run quality:full && npm run check:console"
+    "audit:full": "npm run quality:full && npm run check:console"
   },
   "lint-staged": {
     "*.{js,ts}": [
@@ -55,15 +47,12 @@
     "html-validate": "^10.7.0",
     "husky": "^9.1.7",
     "jscpd": "^4.0.8",
-    "jsdom": "^28.0.0",
     "jshint": "^2.13.6",
     "knip": "^5.82.1",
     "lint-staged": "^16.2.7",
     "madge": "^8.0.0",
     "prettier": "^3.8.1",
-    "typescript": "^5.9.3",
-    "vite": "^6.0.7",
-    "vitest": "^4.0.18"
+    "typescript": "^5.9.3"
   },
   "repository": {
     "type": "git",
