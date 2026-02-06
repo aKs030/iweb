@@ -1,3 +1,25 @@
 {
-  "editor.linkedEditing": true
+  "editor.linkedEditing": true,
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "css.lint.duplicateProperties": "warning",
+  "css.lint.emptyRules": "warning",
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "files.associations": {
+    "*.css": "css",
+    "_headers": "plaintext",
+    "_redirects": "plaintext"
+  },
+  "search.exclude": {
+    "node_modules": true,
+    "package-lock.json": true,
+    ".wrangler": true
+  },
+  "[markdown]": {
+    "files.trimTrailingWhitespace": false
+  }
 }
