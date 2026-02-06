@@ -130,7 +130,7 @@ class HeadStateManager {
       } catch (error) {
         log.warn('Ready listener failed:', error);
       }
-      return () => {};
+      return () => { };
     }
 
     this.readyListeners.add(listener);
