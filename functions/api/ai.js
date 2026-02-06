@@ -27,81 +27,10 @@ export async function onRequestOptions() {
     return new Response(null, { status: 204, headers: CORS_HEADERS });
 }
 
-/** Health check — GET /api/ai */
-export async function onRequestGet(context) {
-    const hasKey = !!(context.env && context.env.GROQ_API_KEY);
-    return jsonResponse({
-        ok: hasKey,
-        model: GROQ_MODEL,
-        keyConfigured: hasKey,
-        timestamp: new Date().toISOString(),
-    });
-}
-
 /** Handle POST /api/ai */
 export async function onRequestPost(context) {
     try {
         const { request, env } = context;
-
-        // Diagnostic mode: POST /api/ai with ?test=1 → skip Groq call
-        const url = new URL(request.url);
-        if (url.searchParams.get('test') === '1') {
-            return jsonResponse({
-                ok: true,
-                method: 'POST',
-                keyConfigured: !!(env && env.GROQ_API_KEY),
-                timestamp: new Date().toISOString(),
-                note: 'POST handler reached — Groq call skipped (test mode)',
-            });
-        }
-
-        // Diagnostic mode: ?test=2 → actually call Groq with minimal prompt
-        if (url.searchParams.get('test') === '2') {
-            let diagStep = 'init';
-            try {
-                diagStep = 'building-request';
-                const diagKey = env && env.GROQ_API_KEY;
-                const diagPayload = JSON.stringify({
-                    model: GROQ_MODEL,
-                    messages: [{ role: 'user', content: 'Say hello in one word' }],
-                    max_tokens: 10,
-                    stream: false,
-                });
-
-                diagStep = 'calling-fetch';
-                const diagRes = await fetch(GROQ_API_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: 'Bearer ' + diagKey,
-                    },
-                    body: diagPayload,
-                });
-
-                diagStep = 'reading-response';
-                const diagStatus = diagRes.status;
-                const diagText = await diagRes.text();
-
-                return jsonResponse({
-                    ok: diagRes.ok,
-                    step: diagStep,
-                    groqStatus: diagStatus,
-                    groqResponse: diagText.slice(0, 500),
-                    timestamp: new Date().toISOString(),
-                });
-            } catch (e) {
-                return jsonResponse(
-                    {
-                        ok: false,
-                        step: diagStep,
-                        error: String(e),
-                        message: e && e.message ? e.message : 'unknown',
-                        timestamp: new Date().toISOString(),
-                    },
-                    500,
-                );
-            }
-        }
 
         // Parse body safely
         let body;
