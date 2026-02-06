@@ -62,8 +62,6 @@ export class MenuEvents {
 
       menu.classList.toggle('open', isOpen);
       toggle.classList.toggle('active', isOpen);
-      toggle.setAttribute('aria-expanded', String(isOpen));
-      menu.setAttribute('aria-hidden', String(!isOpen));
     };
 
     this.cleanupFns.push(
@@ -308,8 +306,6 @@ export class MenuEvents {
     this.state.setOpen(false);
     menu.classList.remove('open');
     toggle.classList.remove('active');
-    toggle.setAttribute('aria-expanded', 'false');
-    menu.setAttribute('aria-hidden', 'true');
   }
 
   destroy() {

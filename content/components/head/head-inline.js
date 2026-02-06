@@ -226,7 +226,7 @@ const injectCoreAssets = () => {
     };
 
     const SCRIPTS = [
-      { src: '/content/components/menu/menu.js', module: true },
+      { src: '/content/components/menu/SiteMenu.js', module: true },
       { src: '/content/components/footer/SiteFooter.js', module: true },
     ];
 

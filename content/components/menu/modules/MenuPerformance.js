@@ -3,41 +3,9 @@
  * Optimizations for better performance
  */
 
-import { debounce, throttle } from '/content/core/utils.js';
-
 export class MenuPerformance {
   constructor() {
     this.metrics = new Map();
-    this.observers = new Map();
-  }
-
-  // Use shared debounce from utils
-  debounce(fn, delay) {
-    return debounce(fn, delay);
-  }
-
-  // Use shared throttle from utils
-  throttle(fn, limit) {
-    return throttle(fn, limit);
-  }
-
-  // RAF-based animation
-  animate(callback) {
-    return requestAnimationFrame(callback);
-  }
-
-  // Batch DOM reads
-  batchRead(reads) {
-    return requestAnimationFrame(() => {
-      return reads.map((read) => read());
-    });
-  }
-
-  // Batch DOM writes
-  batchWrite(writes) {
-    return requestAnimationFrame(() => {
-      writes.forEach((write) => write());
-    });
   }
 
   // Measure performance
@@ -53,33 +21,6 @@ export class MenuPerformance {
       return duration;
     }
     return 0;
-  }
-
-  // Intersection Observer for lazy loading
-  createIntersectionObserver(callback, options = {}) {
-    const observer = new IntersectionObserver(callback, {
-      rootMargin: '50px',
-      threshold: 0.1,
-      ...options,
-    });
-    return observer;
-  }
-
-  // Prefetch resources
-  prefetch(url) {
-    const link = document.createElement('link');
-    link.rel = 'prefetch';
-    link.href = url;
-    document.head.appendChild(link);
-  }
-
-  // Preload critical resources
-  preload(url, as = 'script') {
-    const link = document.createElement('link');
-    link.rel = 'preload';
-    link.href = url;
-    link.as = as;
-    document.head.appendChild(link);
   }
 
   // Check if reduced motion is preferred
@@ -102,7 +43,5 @@ export class MenuPerformance {
   // Cleanup
   destroy() {
     this.metrics.clear();
-    this.observers.forEach((observer) => observer.disconnect());
-    this.observers.clear();
   }
 }
