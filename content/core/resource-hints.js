@@ -13,7 +13,7 @@ const log = createLogger('ResourceHints');
 /**
  * Resource Hints Manager
  */
-export class ResourceHintsManager {
+class ResourceHintsManager {
   constructor() {
     this.hints = new Map();
     this.initialized = false;
@@ -194,7 +194,7 @@ let instance = null;
  * Get ResourceHintsManager instance
  * @returns {ResourceHintsManager}
  */
-export function getResourceHintsManager() {
+function getResourceHintsManager() {
   if (!instance) {
     instance = new ResourceHintsManager();
   }

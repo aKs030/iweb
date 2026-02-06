@@ -423,7 +423,7 @@ class SearchComponent {
 
 let searchInstance = null;
 
-export function initSearch() {
+function initSearch() {
   if (searchInstance) return searchInstance;
   searchInstance = new SearchComponent();
   // @ts-ignore
@@ -441,15 +441,6 @@ export function openSearch() {
     initSearch();
     if (searchInstance) searchInstance.open();
   }
-}
-
-export function closeSearch() {
-  if (searchInstance) searchInstance.close();
-}
-
-export function toggleSearch() {
-  if (searchInstance) searchInstance.toggle();
-  else openSearch();
 }
 
 if (document.readyState === 'loading') {
