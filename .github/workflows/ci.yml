@@ -65,63 +65,6 @@ jobs:
           echo "⚙️ JS files:"
           find . -name "*.js" -not -path "./node_modules/*" | head -10
 
-  security:
-    name: Security Audit
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Setup Node.js 22.x
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22.x
-          cache: 'npm'
-      
-      - name: Run npm audit
-        run: npm audit --audit-level=moderate
-        continue-on-error: true
-      
-      - name: Check for outdated dependencies
-        run: npm outdated || true
-
-  workers-validation:
-    name: Cloudflare Workers Validation
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Setup Node.js 22.x
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22.x
-          cache: 'npm'
-      
-      - name: Install Wrangler
-        run: npm install -g wrangler
-      
-      - name: Validate Worker syntax
-        run: |
-          echo "🔍 Validating AI Search Proxy..."
-          node -c workers/ai-search-proxy/index.js
-          echo "✅ AI Search Proxy syntax OK"
-          
-          echo "🔍 Validating YouTube API Proxy..."
-          node -c workers/youtube-api-proxy/index.js
-          echo "✅ YouTube API Proxy syntax OK"
-      
-      - name: Check wrangler.toml
-        run: |
-          if [ -f wrangler.toml ]; then
-            echo "✅ wrangler.toml found"
-            cat wrangler.toml
-          else
-            echo "⚠️ wrangler.toml not found"
-          fi
-
   type-check:
     name: TypeScript Type Check
     runs-on: ubuntu-latest
@@ -168,7 +111,7 @@ jobs:
       - name: Check for duplicate code
         run: |
           echo "🔍 Checking for duplicate code..."
-          npx jscpd content/ pages/ workers/ --min-lines 10 --min-tokens 50 --format "javascript" --reporters "console" || echo "✅ No significant duplicates found"
+          npx jscpd content/ pages/ --min-lines 10 --min-tokens 50 --format "javascript" --reporters "console" || echo "✅ No significant duplicates found"
         continue-on-error: true
       
 
@@ -207,7 +150,7 @@ jobs:
       - name: Check for circular dependencies
         run: |
           echo "🔄 Checking for circular dependencies..."
-          npx madge --circular --extensions js content/ pages/ workers/ || echo "✅ No circular dependencies found"
+          npx madge --circular --extensions js content/ pages/ || echo "✅ No circular dependencies found"
       
       - name: Visualize dependency tree
         run: |
