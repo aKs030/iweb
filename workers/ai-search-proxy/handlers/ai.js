@@ -1,77 +1,48 @@
 /**
- * AI Handler
- * Proxies requests to Groq API (free) with optional RAG augmentation
+ * AI Handler – POST /api/ai
+ * Groq API proxy with optional RAG augmentation
  */
 
 import { jsonResponse, errorResponse } from '../../shared/response-utils.js';
-import { validateAIRequest } from '../utils/validation.js';
-import { callGroqAPI } from '../services/groq.js';
-import {
-  performSearch,
-  augmentPromptWithRAG,
-} from '../../shared/search-utils.js';
+import { validateAIRequest } from '../validation.js';
+import { callGroqAPI, MODEL } from '../services/groq.js';
+import { performSearch, augmentPromptWithRAG } from '../../shared/search-utils.js';
 
-/**
- * Handles AI requests (now using Groq)
- */
+const DEFAULT_SYSTEM = 'Du bist ein hilfreicher Assistent, antworte prägnant und informativ.';
+
 export async function aiHandler(request, env, searchIndex) {
   if (request.method !== 'POST') {
-    return errorResponse('Method not allowed', 'Use POST.', 405);
+    return errorResponse('Method not allowed', 'Use POST.', 405, request);
   }
 
   try {
     const body = await request.json();
     const validation = validateAIRequest(body);
-
-    if (!validation.valid) {
-      return errorResponse('Validation failed', validation.error, 400);
-    }
+    if (!validation.valid) return errorResponse('Validation failed', validation.error, 400, request);
 
     const { prompt, systemInstruction, options = {} } = body;
 
-    // Check API key
     if (!env.GROQ_API_KEY) {
-      return errorResponse(
-        'Configuration error',
-        'GROQ_API_KEY not configured',
-        500,
-      );
+      return errorResponse('Configuration error', 'GROQ_API_KEY not configured', 500, request);
     }
 
-    // Perform RAG search if requested
+    // Optional RAG augmentation
     let sources = [];
-    let augmentedPrompt = prompt;
+    let finalPrompt = prompt;
 
     if (options.useSearch) {
-      const query = options.searchQuery || prompt;
-      const topK = Math.min(options.topK || 3, 5);
-      sources = performSearch(query, topK, searchIndex, false);
-      augmentedPrompt = augmentPromptWithRAG(prompt, sources);
+      sources = performSearch(options.searchQuery || prompt, Math.min(options.topK || 3, 5), searchIndex, false);
+      finalPrompt = augmentPromptWithRAG(prompt, sources);
     }
 
-    // Call Groq API (free, fast inference)
-    const defaultSystemInstruction =
-      'Du bist ein hilfreicher Assistent, antworte prägnant und informativ.';
-    const text = await callGroqAPI(
-      augmentedPrompt,
-      systemInstruction || defaultSystemInstruction,
-      env.GROQ_API_KEY,
+    const text = await callGroqAPI(finalPrompt, systemInstruction || DEFAULT_SYSTEM, env.GROQ_API_KEY);
+
+    return jsonResponse(
+      { text, sources, usedRAG: sources.length > 0, model: MODEL },
+      200, {}, request,
     );
-
-    return jsonResponse({
-      text,
-      sources,
-      usedRAG: sources.length > 0,
-      model: 'llama-3.3-70b-versatile', // Info about which model was used
-    });
   } catch (error) {
-    // Log error in development only
-    if (
-      typeof env?.ENVIRONMENT !== 'undefined' &&
-      env.ENVIRONMENT === 'development'
-    ) {
-      console.error('AI API error:', error);
-    }
-    return errorResponse('AI request failed', error.message, 500);
+    if (env.ENVIRONMENT === 'development') console.error('AI error:', error);
+    return errorResponse('AI request failed', error.message, 500, request);
   }
 }

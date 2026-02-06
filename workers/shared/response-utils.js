@@ -1,61 +1,61 @@
 /**
  * Shared Response Utilities
- * Standardized response helpers for consistent API responses across workers
+ * Standardized response helpers with domain-restricted CORS
  */
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
-  'Access-Control-Max-Age': '86400',
-};
+const ALLOWED_ORIGINS = [
+  'https://abdulkerimsesli.de',
+  'https://www.abdulkerimsesli.de',
+];
+
+/** @param {Request} [request] */
+function getCorsHeaders(request) {
+  const origin = request?.headers?.get('Origin') || '';
+  const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+
+  return {
+    'Access-Control-Allow-Origin': allowedOrigin,
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Max-Age': '86400',
+    Vary: 'Origin',
+  };
+}
 
 /**
- * Creates a JSON response with CORS headers
- * @param {Object} data - Response data
- * @param {number} status - HTTP status code
- * @param {Object} additionalHeaders - Additional headers to include
- * @returns {Response} JSON response
+ * JSON response with CORS headers
+ * @param {Object} data
+ * @param {number} [status=200]
+ * @param {Object} [extra={}] - Additional headers
+ * @param {Request} [request] - Original request (for Origin check)
  */
-export function jsonResponse(data, status = 200, additionalHeaders = {}) {
+export function jsonResponse(data, status = 200, extra = {}, request) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: {
-      'Content-Type': 'application/json',
-      ...corsHeaders,
-      ...additionalHeaders,
-    },
+    headers: { 'Content-Type': 'application/json', ...getCorsHeaders(request), ...extra },
   });
 }
 
 /**
- * Creates an error response
- * @param {string} error - Error message
- * @param {string} message - Detailed message
- * @param {number} status - HTTP status code
- * @returns {Response} Error response
+ * Structured error response
+ * @param {string} error
+ * @param {string} [message]
+ * @param {number} [status=500]
+ * @param {Request} [request]
  */
-export function errorResponse(error, message = null, status = 500) {
-  const body = {
-    error,
+export function errorResponse(error, message, status = 500, request) {
+  return jsonResponse(
+    { error, status, ...(message && { message }) },
     status,
-    timestamp: new Date().toISOString(),
-  };
-
-  if (message) {
-    body.message = message;
-  }
-
-  return jsonResponse(body, status);
+    {},
+    request,
+  );
 }
 
 /**
- * Handles CORS preflight requests
- * @returns {Response} CORS preflight response
+ * CORS preflight response
+ * @param {Request} [request]
  */
-export function handleCORSPreflight() {
-  return new Response(null, {
-    status: 204,
-    headers: corsHeaders,
-  });
+export function handleCORSPreflight(request) {
+  return new Response(null, { status: 204, headers: getCorsHeaders(request) });
 }

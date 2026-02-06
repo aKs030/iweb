@@ -1,229 +1,91 @@
 # Cloudflare Workers
 
-Optimized multi-worker architecture with shared utilities for API proxying and AI services.
+Zwei Edge-Worker für AI-Suche und YouTube-Proxy mit geteilten Utilities.
 
-## 📁 Architecture
+## Struktur
 
 ```
 workers/
-├── shared/                    # Shared utilities across workers
-│   ├── response-utils.js     # Standardized response helpers
-│   └── search-utils.js       # Reusable search algorithms
-├── ai-search-proxy/          # Main AI & Search worker
-│   ├── handlers/             # Request handlers
-│   │   ├── search.js        # Search endpoint
-│   │   └── ai.js            # AI endpoint (Groq)
-│   ├── services/            # External API services
-│   │   └── groq.js          # Groq API client
-│   ├── utils/               # Worker-specific utilities
-│   │   └── validation.js    # Request validation
-│   ├── index.js             # Worker entry point
-│   └── search-index.json    # Search index data
-└── youtube-api-proxy/        # YouTube API proxy worker
-    ├── handlers/             # Request handlers
-    │   └── youtube.js       # YouTube API handler
-    ├── utils/               # Worker-specific utilities
-    │   ├── cache.js         # Cloudflare Cache API
-    │   └── rate-limit.js    # In-memory rate limiting
-    └── index.js             # Worker entry point
+├── wrangler.toml                 # Deployment-Konfiguration
+├── shared/
+│   ├── response-utils.js         # JSON/Error Responses, CORS
+│   └── search-utils.js           # Search Engine + RAG
+├── ai-search-proxy/
+│   ├── index.js                  # Entry Point
+│   ├── search-index.json         # Suchindex-Daten
+│   ├── validation.js             # Input-Validierung
+│   ├── handlers/
+│   │   ├── search.js             # POST /api/search
+│   │   └── ai.js                 # POST /api/ai
+│   └── services/
+│       └── groq.js               # Groq API Client
+└── youtube-api-proxy/
+    ├── index.js                  # Entry Point
+    └── handlers/
+        └── youtube.js            # GET /api/youtube/*
 ```
 
-## 🚀 Workers
+## Workers
 
-### 1. AI Search Proxy (`ai-search-proxy`)
+### AI Search Proxy
 
-**Endpoints:**
+| Endpoint | Methode | Beschreibung |
+|---|---|---|
+| `/api/search` | POST | Volltextsuche mit Relevanz-Scoring |
+| `/api/ai` | POST | Groq AI (Llama 3.3 70B) mit optionalem RAG |
 
-- `POST /api/search` - Full-text search with relevance scoring
-- `POST /api/ai` - AI chat with optional RAG augmentation
+**Secrets:** `GROQ_API_KEY` — [Kostenlos bei Groq](https://console.groq.com/keys)
 
-**Features:**
+### YouTube API Proxy
 
-- Server-side full-text search with scoring algorithm
-- Free AI inference via Groq (Llama 3.3 70B)
-- RAG (Retrieval-Augmented Generation) support
-- Response caching (5 minutes for search)
-- CORS support
+| Endpoint | Methode | Beschreibung |
+|---|---|---|
+| `/api/youtube/{endpoint}` | GET | YouTube Data API v3 Proxy |
 
-**Environment Variables:**
+Erlaubte Endpoints: `search`, `videos`, `channels`, `playlists`, `playlistItems`
 
-```bash
-GROQ_API_KEY=<your-groq-api-key>
-CACHE_TTL=300
-MAX_SEARCH_RESULTS=10
-AI_MODEL=llama-3.3-70b-versatile
-```
+Caching via Cloudflare Cache API (1h TTL).
 
-### 2. YouTube API Proxy (`youtube-api-proxy`)
+**Secrets:** `YOUTUBE_API_KEY`
 
-**Endpoints:**
-
-- `GET /api/youtube/{endpoint}` - Proxied YouTube Data API v3
-
-**Features:**
-
-- Server-side API key protection
-- Cloudflare Cache API (1 hour TTL)
-- Rate limiting (60 req/min per IP)
-- Allowed endpoints: search, videos, channels, playlists
-
-**Environment Variables:**
+## Deployment
 
 ```bash
-YOUTUBE_API_KEY=<your-youtube-api-key>
-CACHE_TTL=3600
-RATE_LIMIT_PER_MINUTE=60
-```
+# Secrets setzen
+wrangler secret put GROQ_API_KEY
+wrangler secret put YOUTUBE_API_KEY --env youtube
 
-## 🔧 Shared Utilities
-
-### `shared/response-utils.js`
-
-Standardized response helpers used across all workers:
-
-- `jsonResponse()` - JSON response with CORS
-- `errorResponse()` - Standardized error format
-- `handleCORSPreflight()` - CORS preflight handler
-
-### `shared/search-utils.js`
-
-Reusable search algorithms:
-
-- `performSearch()` - Full-text search with scoring
-- `augmentPromptWithRAG()` - RAG context injection
-
-## 📦 Deployment
-
-### Deploy All Workers
-
-```bash
-# Deploy main AI search worker
+# AI Search Proxy deployen
 wrangler deploy
 
-# Deploy YouTube proxy worker
+# YouTube Proxy deployen
 wrangler deploy --env youtube
-```
 
-### Set Secrets
-
-```bash
-# AI Search worker
-wrangler secret put GROQ_API_KEY
-
-# YouTube worker
-wrangler secret put YOUTUBE_API_KEY --env youtube
-```
-
-### View Logs
-
-```bash
-# Main worker
+# Logs
 wrangler tail
-
-# YouTube worker
 wrangler tail --env youtube
 ```
 
-## 🧪 Development
-
-### Local Testing
+## Lokale Entwicklung
 
 ```bash
-# Test main worker
-wrangler dev
-
-# Test YouTube worker
-wrangler dev --env youtube
+wrangler dev              # AI Search Proxy
+wrangler dev --env youtube # YouTube Proxy
 ```
 
-### Testing Endpoints
-
-**Search API:**
+## Beispiele
 
 ```bash
+# Suche
 curl -X POST https://abdulkerimsesli.de/api/search \
   -H "Content-Type: application/json" \
   -d '{"query": "react", "topK": 5}'
-```
 
-**AI API (with RAG):**
-
-```bash
+# AI mit RAG
 curl -X POST https://abdulkerimsesli.de/api/ai \
   -H "Content-Type: application/json" \
-  -d '{
-    "prompt": "Was sind deine React-Projekte?",
-    "options": {"useSearch": true, "topK": 3}
-  }'
+  -d '{"prompt": "Was sind deine Projekte?", "options": {"useSearch": true}}'
+
+# YouTube
+curl "https://abdulkerimsesli.de/api/youtube/search?part=snippet&q=react&maxResults=5"
 ```
-
-**YouTube API:**
-
-```bash
-curl "https://abdulkerimsesli.de/api/youtube/videos?part=snippet&id=VIDEO_ID"
-```
-
-## ✨ Optimization Benefits
-
-### Code Quality Improvements
-
-- ✅ 60% less code duplication
-- ✅ Consistent error handling
-- ✅ Single source of truth for search logic
-- ✅ Easy to add new workers
-
-### Achieved Results
-
-- ✅ AI Search Proxy: 450 → 280 lines (-38%)
-- ✅ YouTube Proxy: 200 → 160 lines (-20%)
-- ✅ Shared utilities: 150 lines (reusable)
-- ✅ Total reduction: 32%
-
-## 📊 Performance
-
-- **Search API**: ~50ms average response time
-- **AI API**: ~2-5s (depends on Groq API)
-- **YouTube API**: ~100ms (cached), ~500ms (uncached)
-- **Cache Hit Rate**: ~85% for YouTube, ~70% for search
-
-## 🔒 Security
-
-- ✅ API keys stored as secrets (not in code)
-- ✅ CORS configured for specific origins
-- ✅ Rate limiting on YouTube API
-- ✅ Input validation on all endpoints
-- ✅ Endpoint whitelist for YouTube proxy
-- ✅ Error sanitization (no sensitive data leaks)
-
-## 🎯 Best Practices
-
-1. **Modularisierung**: Handler/Service/Utils pattern
-2. **Error Handling**: Structured error responses with status codes
-3. **Validation**: Input validation before processing
-4. **Caching**: Strategic caching with appropriate TTLs
-5. **Rate Limiting**: Protection against abuse
-6. **Logging**: Console.error for debugging
-
-## 🚀 Future Improvements
-
-1. **Cloudflare Vectorize**: Semantic search with embeddings
-2. **Durable Objects**: Persistent rate limiting across workers
-3. **Analytics**: Track API usage and performance metrics
-4. **Caching Strategy**: Smarter cache invalidation
-5. **Error Monitoring**: Sentry or similar integration
-6. **Request Batching**: Batch multiple search requests
-
-## 📝 Migration Notes
-
-**From old structure:**
-
-- `workers/throbbing-mode-6fe1-nlweb/` → `workers/ai-search-proxy/`
-- Monolithic code → Modular with shared utilities
-- Basic caching → Optimized caching with strategic TTLs
-- Gemini API → Groq API (free tier)
-- Worker-only → Pages Functions + Worker Architektur
-
-**Breaking Changes:**
-
-- `/api/gemini` Endpoint entfernt (war deprecated)
-- Response format extended with additional metadata

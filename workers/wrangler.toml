@@ -1,0 +1,20 @@
+# Cloudflare Workers Configuration
+# Docs: https://developers.cloudflare.com/workers/wrangler/configuration/
+
+name = "ai-search-proxy"
+main = "ai-search-proxy/index.js"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+ENVIRONMENT = "production"
+MAX_SEARCH_RESULTS = "10"
+
+# YouTube API Proxy (deploy with: wrangler deploy --env youtube)
+[env.youtube]
+name = "youtube-api-proxy"
+main = "youtube-api-proxy/index.js"
+
+[env.youtube.vars]
+ENVIRONMENT = "production"
+CACHE_TTL = "3600"
