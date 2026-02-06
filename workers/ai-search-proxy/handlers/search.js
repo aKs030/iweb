@@ -1,18 +1,14 @@
 /**
- * Search Handler
- * Implements server-side full-text search with scoring algorithm
+ * Search Handler – POST /api/search
  */
 
 import { jsonResponse, errorResponse } from '../../shared/response-utils.js';
-import { validateSearchRequest } from '../utils/validation.js';
+import { validateSearchRequest } from '../validation.js';
 import { performSearch } from '../../shared/search-utils.js';
 
-/**
- * Handles /api/search requests
- */
 export async function searchHandler(request, env, searchIndex) {
   if (request.method !== 'POST') {
-    return errorResponse('Method not allowed', 'Use POST.', 405);
+    return errorResponse('Method not allowed', 'Use POST.', 405, request);
   }
 
   try {
@@ -20,28 +16,16 @@ export async function searchHandler(request, env, searchIndex) {
     const validation = validateSearchRequest(body);
 
     if (!validation.valid) {
-      return errorResponse('Validation failed', validation.error, 400);
+      return errorResponse('Validation failed', validation.error, 400, request);
     }
 
     const { query, topK } = body;
     const maxResults = parseInt(env.MAX_SEARCH_RESULTS || '10', 10);
-    const limitedTopK = Math.min(topK || 5, maxResults);
+    const results = performSearch(query, Math.min(topK || 5, maxResults), searchIndex, true);
 
-    const results = performSearch(query, limitedTopK, searchIndex, true);
-
-    return jsonResponse({
-      results,
-      query,
-      count: results.length,
-    });
+    return jsonResponse({ results, query, count: results.length }, 200, {}, request);
   } catch (error) {
-    // Log error in development only
-    if (
-      typeof env?.ENVIRONMENT !== 'undefined' &&
-      env.ENVIRONMENT === 'development'
-    ) {
-      console.error('Search error:', error);
-    }
-    return errorResponse('Search failed', error.message, 500);
+    if (env.ENVIRONMENT === 'development') console.error('Search error:', error);
+    return errorResponse('Search failed', error.message, 500, request);
   }
 }

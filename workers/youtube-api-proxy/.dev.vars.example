@@ -1,5 +1,0 @@
-# Local Development Secrets
-# Copy this file to .dev.vars and add your actual API key
-# .dev.vars is gitignored and will be used by wrangler dev
-
-YOUTUBE_API_KEY=your_youtube_api_key_here

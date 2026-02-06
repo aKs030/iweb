@@ -1,10 +1,1 @@
-echo "🔍 Running pre-push checks..."
-
-# Run full quality checks
-npm run check
-
-# Security audit
-echo "🔒 Running security audit..."
-npm audit
-
-echo "✅ All pre-push checks passed!"
+npm run lint:check
