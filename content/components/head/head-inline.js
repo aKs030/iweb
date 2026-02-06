@@ -216,7 +216,6 @@ const injectCoreAssets = () => {
         pageSpecific.push(
           '/pages/home/hero.css',
           '/content/components/typewriter/typewriter.css',
-          '/content/components/particles/three-earth.css',
           '/pages/home/section3.css',
           '/pages/home/section4.css',
         );
