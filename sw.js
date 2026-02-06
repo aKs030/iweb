@@ -118,6 +118,14 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Skip Google Fonts - let the CDN handle caching directly
+  if (
+    url.hostname === 'fonts.googleapis.com' ||
+    url.hostname === 'fonts.gstatic.com'
+  ) {
+    return;
+  }
+
   // Determine strategy based on request type
   const strategy = getStrategy(url, request);
 
@@ -245,7 +253,7 @@ async function staleWhileRevalidate(request) {
     })
     .catch((error) => {
       console.error('[SW] Stale while revalidate fetch failed:', error);
-      return cached;
+      return cached || new Response('Offline', { status: 503 });
     });
 
   return cached || fetchPromise;
