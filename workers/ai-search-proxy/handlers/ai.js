@@ -6,9 +6,13 @@
 import { jsonResponse, errorResponse } from '../../shared/response-utils.js';
 import { validateAIRequest } from '../validation.js';
 import { callGroqAPI, MODEL } from '../services/groq.js';
-import { performSearch, augmentPromptWithRAG } from '../../shared/search-utils.js';
+import {
+  performSearch,
+  augmentPromptWithRAG,
+} from '../../shared/search-utils.js';
 
-const DEFAULT_SYSTEM = 'Du bist ein hilfreicher Assistent, antworte prägnant und informativ.';
+const DEFAULT_SYSTEM =
+  'Du bist ein hilfreicher Assistent, antworte prägnant und informativ.';
 
 export async function aiHandler(request, env, searchIndex) {
   if (request.method !== 'POST') {
@@ -18,12 +22,18 @@ export async function aiHandler(request, env, searchIndex) {
   try {
     const body = await request.json();
     const validation = validateAIRequest(body);
-    if (!validation.valid) return errorResponse('Validation failed', validation.error, 400, request);
+    if (!validation.valid)
+      return errorResponse('Validation failed', validation.error, 400, request);
 
     const { prompt, systemInstruction, options = {} } = body;
 
     if (!env.GROQ_API_KEY) {
-      return errorResponse('Configuration error', 'GROQ_API_KEY not configured', 500, request);
+      return errorResponse(
+        'Configuration error',
+        'GROQ_API_KEY not configured',
+        500,
+        request,
+      );
     }
 
     // Optional RAG augmentation
@@ -31,15 +41,26 @@ export async function aiHandler(request, env, searchIndex) {
     let finalPrompt = prompt;
 
     if (options.useSearch) {
-      sources = performSearch(options.searchQuery || prompt, Math.min(options.topK || 3, 5), searchIndex, false);
+      sources = performSearch(
+        options.searchQuery || prompt,
+        Math.min(options.topK || 3, 5),
+        searchIndex,
+        false,
+      );
       finalPrompt = augmentPromptWithRAG(prompt, sources);
     }
 
-    const text = await callGroqAPI(finalPrompt, systemInstruction || DEFAULT_SYSTEM, env.GROQ_API_KEY);
+    const text = await callGroqAPI(
+      finalPrompt,
+      systemInstruction || DEFAULT_SYSTEM,
+      env.GROQ_API_KEY,
+    );
 
     return jsonResponse(
       { text, sources, usedRAG: sources.length > 0, model: MODEL },
-      200, {}, request,
+      200,
+      {},
+      request,
     );
   } catch (error) {
     if (env.ENVIRONMENT === 'development') console.error('AI error:', error);

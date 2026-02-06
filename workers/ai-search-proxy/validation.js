@@ -6,9 +6,11 @@ const fail = (error) => ({ valid: false, error });
 const ok = { valid: true };
 
 function validateString(value, name, maxLen) {
-  if (!value || typeof value !== 'string') return fail(`Missing or invalid ${name}`);
+  if (!value || typeof value !== 'string')
+    return fail(`Missing or invalid ${name}`);
   if (!value.trim()) return fail(`${name} cannot be empty`);
-  if (value.length > maxLen) return fail(`${name} too long (max ${maxLen} chars)`);
+  if (value.length > maxLen)
+    return fail(`${name} too long (max ${maxLen} chars)`);
   return null;
 }
 
@@ -18,7 +20,8 @@ export function validateSearchRequest(body) {
   if (err) return err;
   if (body.topK !== undefined) {
     const topK = parseInt(body.topK, 10);
-    if (isNaN(topK) || topK < 1 || topK > 50) return fail('topK must be between 1 and 50');
+    if (isNaN(topK) || topK < 1 || topK > 50)
+      return fail('topK must be between 1 and 50');
   }
   return ok;
 }

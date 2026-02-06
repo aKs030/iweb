@@ -11,7 +11,9 @@ const ALLOWED_ORIGINS = [
 /** @param {Request} [request] */
 function getCorsHeaders(request) {
   const origin = request?.headers?.get('Origin') || '';
-  const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  const allowedOrigin = ALLOWED_ORIGINS.includes(origin)
+    ? origin
+    : ALLOWED_ORIGINS[0];
 
   return {
     'Access-Control-Allow-Origin': allowedOrigin,
@@ -32,7 +34,11 @@ function getCorsHeaders(request) {
 export function jsonResponse(data, status = 200, extra = {}, request) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { 'Content-Type': 'application/json', ...getCorsHeaders(request), ...extra },
+    headers: {
+      'Content-Type': 'application/json',
+      ...getCorsHeaders(request),
+      ...extra,
+    },
   });
 }
 

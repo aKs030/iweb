@@ -10,14 +10,17 @@
 class SearchEngine {
   constructor(items) {
     this.items = items;
-    this.index = new Map();   // token → Set<id>
-    this.ids = new Map();     // id → item
+    this.index = new Map(); // token → Set<id>
+    this.ids = new Map(); // id → item
     this.sortedTokens = [];
     this.#buildIndex();
   }
 
   #tokenize(text) {
-    return String(text || '').toLowerCase().split(/\s+/).filter(Boolean);
+    return String(text || '')
+      .toLowerCase()
+      .split(/\s+/)
+      .filter(Boolean);
   }
 
   #buildIndex() {
@@ -34,7 +37,9 @@ class SearchEngine {
   }
 
   search(query, topK) {
-    const q = String(query || '').toLowerCase().trim();
+    const q = String(query || '')
+      .toLowerCase()
+      .trim();
     if (!q) return [];
 
     const words = this.#tokenize(q);
@@ -42,11 +47,15 @@ class SearchEngine {
 
     // Candidate generation via prefix matching (binary search)
     for (const word of words) {
-      let lo = 0, hi = this.sortedTokens.length - 1, idx = -1;
+      let lo = 0,
+        hi = this.sortedTokens.length - 1,
+        idx = -1;
       while (lo <= hi) {
         const mid = (lo + hi) >>> 1;
-        if (this.sortedTokens[mid] >= word) { idx = mid; hi = mid - 1; }
-        else lo = mid + 1;
+        if (this.sortedTokens[mid] >= word) {
+          idx = mid;
+          hi = mid - 1;
+        } else lo = mid + 1;
       }
       if (idx === -1) continue;
       for (let i = idx; i < this.sortedTokens.length; i++) {
@@ -89,7 +98,9 @@ class SearchEngine {
     for (const w of words) {
       if (title.includes(w)) s += 30;
       if (desc.includes(w)) s += 15;
-      for (const k of kws) { if (k.includes(w)) s += 20; }
+      for (const k of kws) {
+        if (k.includes(w)) s += 20;
+      }
     }
 
     return s;
@@ -116,10 +127,15 @@ export function performSearch(query, topK, searchIndex, includeScore = false) {
     lastIndexRef = searchIndex;
   }
 
-  return cachedEngine.search(query, topK).map(({ id, title, description, url, score }) => ({
-    id, title, description, url,
-    ...(includeScore && { score }),
-  }));
+  return cachedEngine
+    .search(query, topK)
+    .map(({ id, title, description, url, score }) => ({
+      id,
+      title,
+      description,
+      url,
+      ...(includeScore && { score }),
+    }));
 }
 
 /**
