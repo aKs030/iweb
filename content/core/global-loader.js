@@ -235,13 +235,3 @@ export function isLoaderVisible() {
     return false;
   }
 }
-
-export default {
-  updateLoader,
-  showLoader,
-  hideLoader,
-  isLoaderVisible,
-  clearCache,
-  clearTimers,
-  EVENTS,
-};

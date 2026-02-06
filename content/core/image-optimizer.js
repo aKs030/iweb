@@ -50,7 +50,7 @@ const checkFormatSupport = (() => {
  * @param {Object} options - Optionen
  * @returns {Promise<string>}
  */
-export async function getOptimizedImageUrl(src, options = {}) {
+async function getOptimizedImageUrl(src, options = {}) {
   const { width, quality = 85, format = 'auto' } = options;
 
   // Für externe URLs (Unsplash, etc.) Parameter anhängen
@@ -108,7 +108,7 @@ async function imageExists(url) {
  * @param {Object} config - Image configuration
  * @returns {Promise<HTMLPictureElement>}
  */
-export async function createResponsiveImage(config) {
+async function createResponsiveImage(config) {
   const {
     src,
     alt = '',
@@ -187,7 +187,7 @@ async function generateSrcset(src, widths, format) {
  * @param {string|HTMLElement|HTMLElement[]|NodeListOf<HTMLElement>} target - Selector or element(s)
  * @param {Object} options - Options
  */
-export function lazyLoadImages(target, options = {}) {
+function lazyLoadImages(target, options = {}) {
   const {
     rootMargin = '50px',
     threshold = 0.01,
@@ -297,7 +297,7 @@ export function lazyLoadImages(target, options = {}) {
  * @param {string} containerSelector - Container Selector
  * @param {Object} options - Options
  */
-export function lazyLoadImagesInContainer(containerSelector, options = {}) {
+function lazyLoadImagesInContainer(containerSelector, options = {}) {
   const container = document.querySelector(containerSelector);
   if (!container) {
     log.warn(`Container not found: ${containerSelector}`);
@@ -325,7 +325,7 @@ export function lazyLoadImagesInContainer(containerSelector, options = {}) {
  * @param {Array<string>} urls - Bild-URLs
  * @param {Object} options - Optionen
  */
-export async function preloadImages(urls, options = {}) {
+async function preloadImages(urls, options = {}) {
   const { as = 'image', fetchpriority = 'high' } = options;
 
   const promises = urls.map(async (url) => {

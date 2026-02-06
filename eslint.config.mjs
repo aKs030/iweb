@@ -98,6 +98,8 @@ export default [
         global: 'readonly',
         globalThis: 'readonly',
         Buffer: 'readonly',
+        TextEncoder: 'readonly',
+        TextDecoder: 'readonly',
         customElements: 'readonly',
       },
     },
@@ -113,7 +115,6 @@ export default [
   {
     ignores: [
       'node_modules/**',
-      'dist/**',
       'build/**',
       '.git/**',
       '.vscode/**',

@@ -35,7 +35,6 @@ class PerformanceMonitor {
     this.initialized = true;
 
     // Only in production
-    // @ts-ignore - Vite-specific import.meta.env
     if (import.meta.env?.DEV) {
       log.debug('Performance monitoring disabled in development');
       return;
@@ -258,11 +257,7 @@ class PerformanceMonitor {
 // Singleton instance
 let instance = null;
 
-/**
- * Get performance monitor instance
- * @returns {PerformanceMonitor}
- */
-export function getPerformanceMonitor() {
+function getPerformanceMonitor() {
   if (!instance) {
     instance = new PerformanceMonitor();
   }

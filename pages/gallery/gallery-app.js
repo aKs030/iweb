@@ -4,7 +4,9 @@
  * @last-modified 2026-01-31
  */
 
-/* global React, ReactDOM */
+import React from 'https://esm.sh/react@19.2.3';
+import ReactDOM from 'https://esm.sh/react-dom@19.2.3/client';
+
 import { createLogger } from '/content/core/logger.js';
 import { updateLoader, hideLoader } from '/content/core/global-loader.js';
 import { createUseTranslation } from '/content/core/react-utils.js';

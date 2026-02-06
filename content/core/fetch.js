@@ -28,7 +28,7 @@ const cacheManager = getCache({ memorySize: 100 });
  * @param {FetchConfig} [config] - Fetch configuration
  * @returns {Promise<Response>} Fetch response
  */
-export async function fetchWithRetry(url, config = {}) {
+async function fetchWithRetry(url, config = {}) {
   const {
     timeout = 8000,
     retries = 3,

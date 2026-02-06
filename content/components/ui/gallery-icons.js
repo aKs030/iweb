@@ -1,4 +1,4 @@
-/* global React */
+import React from 'https://esm.sh/react@19.2.3';
 
 /**
  * Gallery Icon Components
