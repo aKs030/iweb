@@ -103,10 +103,186 @@
 
     <!-- Gallery styles -->
     <link rel="stylesheet" href="/pages/gallery/gallery-styles.css" />
-    <!-- INJECT:BASE-HEAD -->
+    <!-- Critical CSS - Loaded immediately to prevent FOUC -->
+    <link rel="stylesheet" href="/content/styles/root.css" />
+    <link rel="stylesheet" href="/content/styles/main.css" />
+    <link rel="stylesheet" href="/content/styles/animations.css" />
+    <link rel="stylesheet" href="/content/styles/loader.css" />
+
+    <!-- Meta Tags -->
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <meta name="format-detection" content="telephone=no,email=no" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="mobile-web-app-capable" content="yes" />
+
+    <!-- Favicons -->
+    <link rel="icon" href="/content/assets/img/icons/favicon.ico" />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="/content/assets/img/icons/favicon.svg"
+    />
+    <link
+      rel="icon"
+      type="image/webp"
+      sizes="512x512"
+      href="/content/assets/img/icons/favicon-512.webp"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="/content/assets/img/icons/apple-touch-icon.webp"
+    />
+
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta
+      name="theme-color"
+      media="(prefers-color-scheme: dark)"
+      content="#030303"
+    />
+    <meta
+      name="theme-color"
+      media="(prefers-color-scheme: light)"
+      content="#ffffff"
+    />
+
+    <!-- Apple Mobile Web App -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+
+    <!-- Sitemap -->
+    <link rel="sitemap" href="/sitemap.xml" type="application/xml" />
+
+    <!-- Preconnect to Critical Resources -->
+    <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+    <link rel="dns-prefetch" href="https://www.google-analytics.com" />
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
+    <link rel="dns-prefetch" href="https://esm.sh" />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    <link rel="preconnect" href="https://esm.sh" crossorigin />
+
+    <!-- Core Scripts -->
+    <script
+      type="module"
+      src="/content/components/head/head-inline.js"
+    ></script>
+    <script
+      type="module"
+      src="/content/main.js"
+      crossorigin="anonymous"
+      defer
+    ></script>
   </head>
   <body>
-    <!-- INJECT:BASE-LOADER -->
+    <!-- Loader v2.0 -->
+    <div
+      id="app-loader"
+      aria-live="polite"
+      role="status"
+      aria-label="Anwendung wird geladen"
+    >
+      <!-- Background Effects -->
+      <div class="loader-bg-effects" aria-hidden="true">
+        <div class="loader-grid"></div>
+        <div class="loader-gradient-orb loader-gradient-orb--1"></div>
+        <div class="loader-gradient-orb loader-gradient-orb--2"></div>
+      </div>
+
+      <!-- Spinner Rings -->
+      <div class="loader-spinner" aria-hidden="true">
+        <div class="loader-spinner-ring"></div>
+        <div class="loader-spinner-ring loader-spinner-ring--delayed"></div>
+      </div>
+
+      <!-- Content -->
+      <div class="loader-content">
+        <div class="loader-logo" aria-hidden="true" data-i18n="loader.logo">
+          <span class="loader-logo-text">AKS | WEB</span>
+          <div class="loader-logo-pulse"></div>
+        </div>
+
+        <div class="progress-container" role="presentation">
+          <div class="progress-bar" id="loader-progress-bar">
+            <div class="progress-bar-glow"></div>
+          </div>
+          <div class="progress-track-glow"></div>
+        </div>
+
+        <div class="loader-info" aria-live="polite" aria-atomic="true">
+          <span class="status-text" id="loader-status-text"
+            >Initialisiere System...</span
+          >
+          <span
+            class="percentage"
+            id="loader-percentage"
+            aria-label="Fortschritt"
+            >0%</span
+          >
+        </div>
+
+        <div class="loader-dots" aria-hidden="true">
+          <span class="loader-dot"></span>
+          <span class="loader-dot"></span>
+          <span class="loader-dot"></span>
+        </div>
+
+        <div
+          class="loader-warning hidden"
+          id="loader-warning"
+          role="alert"
+          aria-live="assertive"
+        >
+          <svg
+            class="loader-warning-icon"
+            width="20"
+            height="20"
+            viewBox="0 0 20 20"
+            fill="none"
+            aria-hidden="true"
+          >
+            <path
+              d="M10 0C4.48 0 0 4.48 0 10s4.48 10 10 10 10-4.48 10-10S15.52 0 10 0zm1 15H9v-2h2v2zm0-4H9V5h2v6z"
+              fill="currentColor"
+            />
+          </svg>
+          <span id="loader-warning-text"
+            >Laden dauert länger als erwartet...</span
+          >
+        </div>
+      </div>
+
+      <div class="loader-hint" id="loader-hint" aria-hidden="true">
+        <small>Optimiere Ressourcen...</small>
+      </div>
+    </div>
+
+    <noscript>
+      <style>
+        #app-loader {
+          display: none !important;
+        }
+        body::before {
+          content: 'JavaScript ist erforderlich. Bitte aktivieren Sie JavaScript in Ihrem Browser.';
+          display: block;
+          padding: 2rem;
+          text-align: center;
+          background: #1a1a1a;
+          color: #fff;
+          font-family:
+            system-ui,
+            -apple-system,
+            sans-serif;
+        }
+      </style>
+    </noscript>
 
     <!-- Google Tag Manager (noscript) removed — noscript iframe is injected dynamically by head-inline.js if GTM is configured (see content/config/site-config.js) -->
 
