@@ -1,6 +1,21 @@
 #:schema node_modules/wrangler/config-schema.json
 
 # ============================================================================
+# Cloudflare Pages Configuration (Frontend)
+# ============================================================================
+# Added to ensure correct build execution on deployment
+# This fixes the "White Screen" / Missing CSS issue
+pages_build_output_dir = "dist"
+
+[build]
+command = "npm run build"
+cwd = ""
+
+[build.environment]
+NODE_VERSION = "20"
+NPM_VERSION = "10"
+
+# ============================================================================
 # Cloudflare Workers Configuration
 # ============================================================================
 # Optimized multi-worker setup with shared utilities
