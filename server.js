@@ -157,8 +157,73 @@ function tryServe(filePath, res) {
   return true;
 }
 
+// ─── API Mock Handlers (Dev-Mode) ────────────────────────────
+function handleAPIMock(req, res, url) {
+  // Only handle API routes
+  if (!url.startsWith('/api/')) return false;
+
+  // CORS preflight
+  if (req.method === 'OPTIONS') {
+    res.writeHead(204, {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Max-Age': '86400',
+    });
+    res.end();
+    return true;
+  }
+
+  const corsHeaders = {
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*',
+  };
+
+  if (req.method !== 'POST') {
+    res.writeHead(405, corsHeaders);
+    res.end(JSON.stringify({ error: 'Method not allowed', status: 405 }));
+    return true;
+  }
+
+  let body = '';
+  req.on('data', (chunk) => (body += chunk));
+  req.on('end', () => {
+    try {
+      const data = JSON.parse(body || '{}');
+
+      if (url === '/api/ai') {
+        const prompt = data.prompt || '';
+        res.writeHead(200, corsHeaders);
+        res.end(
+          JSON.stringify({
+            text: `(Dev-Mode) Mock-Antwort für: "${prompt.slice(0, 80)}". Die Groq-API ist nur in Produktion verfügbar.`,
+            sources: [],
+            usedRAG: false,
+            model: 'mock-dev',
+          }),
+        );
+      } else if (url === '/api/search') {
+        res.writeHead(200, corsHeaders);
+        res.end(
+          JSON.stringify({ results: [], query: data.query || '', count: 0 }),
+        );
+      } else {
+        res.writeHead(404, corsHeaders);
+        res.end(JSON.stringify({ error: 'Not found', status: 404 }));
+      }
+    } catch {
+      res.writeHead(400, corsHeaders);
+      res.end(JSON.stringify({ error: 'Invalid JSON', status: 400 }));
+    }
+  });
+  return true;
+}
+
 const server = createServer((req, res) => {
   const url = req.url?.split('?')[0] || '/';
+
+  // 0. API mock endpoints (Dev-Mode → kein Worker nötig)
+  if (handleAPIMock(req, res, url)) return;
 
   // 1. Check redirects
   for (const [from, to, status] of REDIRECTS) {
