@@ -21,11 +21,22 @@ export async function searchHandler(request, env, searchIndex) {
 
     const { query, topK } = body;
     const maxResults = parseInt(env.MAX_SEARCH_RESULTS || '10', 10);
-    const results = performSearch(query, Math.min(topK || 5, maxResults), searchIndex, true);
+    const results = performSearch(
+      query,
+      Math.min(topK || 5, maxResults),
+      searchIndex,
+      true,
+    );
 
-    return jsonResponse({ results, query, count: results.length }, 200, {}, request);
+    return jsonResponse(
+      { results, query, count: results.length },
+      200,
+      {},
+      request,
+    );
   } catch (error) {
-    if (env.ENVIRONMENT === 'development') console.error('Search error:', error);
+    if (env.ENVIRONMENT === 'development')
+      console.error('Search error:', error);
     return errorResponse('Search failed', error.message, 500, request);
   }
 }

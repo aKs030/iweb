@@ -14,14 +14,25 @@ const API_URL = 'https://api.groq.com/openai/v1/chat/completions';
  */
 export async function callGroqAPI(prompt, systemInstruction, apiKey) {
   const messages = [
-    ...(systemInstruction ? [{ role: 'system', content: systemInstruction }] : []),
+    ...(systemInstruction
+      ? [{ role: 'system', content: systemInstruction }]
+      : []),
     { role: 'user', content: prompt },
   ];
 
   const res = await fetch(API_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
-    body: JSON.stringify({ model: MODEL, messages, temperature: 0.7, max_tokens: 2048, top_p: 0.95 }),
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: MODEL,
+      messages,
+      temperature: 0.7,
+      max_tokens: 2048,
+      top_p: 0.95,
+    }),
   });
 
   if (!res.ok) {
