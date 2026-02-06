@@ -108,30 +108,6 @@ export default function htmlTemplatesPlugin(options = {}) {
           );
         }
 
-        // --- PATH CORRECTION ---
-        // Calculate relative root path based on current file location
-        let rootPath = './';
-        if (ctx.filename) {
-          const currentDir = dirname(ctx.filename);
-          const relativePath = relative(currentDir, process.cwd());
-          if (relativePath) {
-            // Join with forward slash for URLs and ensure trailing slash
-            rootPath = relativePath.split(sep).join('/') + '/';
-          }
-        }
-
-        // Replace absolute paths with relative paths to support nested pages and file:// protocol
-        // Targets: content/, pages/, assets/, manifest.json, sitemap.xml, sw.js
-        const pathRegex =
-          /(href|src)=(["'])\/(content|pages|assets|manifest\.json|sitemap\.xml|sw\.js)/g;
-
-        transformed = transformed.replace(
-          pathRegex,
-          (match, attr, quote, path) => {
-            return `${attr}=${quote}${rootPath}${path}`;
-          },
-        );
-
         return transformed;
       },
     },

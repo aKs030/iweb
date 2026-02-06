@@ -1,19 +1,27 @@
 import { defineConfig } from 'vite';
 import { redirectsPlugin, htmlRawPlugin } from './vite-plugin-redirects.js';
 import htmlTemplatesPlugin from './vite-plugin-html-templates.js';
+import copyFilesPlugin from './vite-plugin-copy-files.js';
+import serveStaticPlugin from './vite-plugin-serve-static.js';
 import { resolve } from 'path';
 
 export default defineConfig({
   plugins: [
+    serveStaticPlugin(), // Serve static files with correct MIME types
     htmlTemplatesPlugin(), // Auto-inject shared HTML templates
     htmlRawPlugin(),
     redirectsPlugin(),
+    copyFilesPlugin(), // Copy content/ and pages/ to dist
   ],
   root: '.',
+  base: '/', // Ensure absolute paths work correctly
   publicDir: 'content/assets',
 
   // Multi-page app configuration
   build: {
+    outDir: 'dist',
+    assetsDir: 'assets',
+    emptyOutDir: true,
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html'),
@@ -23,7 +31,15 @@ export default defineConfig({
         gallery: resolve(__dirname, 'pages/gallery/index.html'),
         about: resolve(__dirname, 'pages/about/index.html'),
       },
+      output: {
+        // Ensure consistent asset naming
+        assetFileNames: 'assets/[name]-[hash][extname]',
+        chunkFileNames: 'assets/[name]-[hash].js',
+        entryFileNames: 'assets/[name]-[hash].js',
+      },
     },
+    // Copy additional files that aren't processed by Vite
+    copyPublicDir: true,
   },
 
   // Development server
