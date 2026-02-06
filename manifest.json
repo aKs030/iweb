@@ -23,7 +23,13 @@
       "src": "/content/assets/img/icons/favicon-512.webp",
       "sizes": "512x512",
       "type": "image/webp",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/content/assets/img/icons/favicon-512.webp",
+      "sizes": "512x512",
+      "type": "image/webp",
+      "purpose": "maskable"
     },
     {
       "src": "/content/assets/img/icons/apple-touch-icon.webp",

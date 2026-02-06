@@ -4,7 +4,10 @@
   "description": "Portfolio website of Abdulkerim Sesli - Web Developer & Photographer in Berlin",
   "type": "module",
   "scripts": {
-    "dev": "python3 -m http.server 8080",
+    "dev": "vite",
+    "dev:simple": "python3 -m http.server 8080",
+    "build": "vite build",
+    "preview": "vite preview",
     "format": "prettier --write \"**/*.{js,css,json,md,html}\" --ignore-path .prettierignore",
     "format:check": "prettier --check \"**/*.{js,css,json,md,html}\" --ignore-path .prettierignore",
     "lint": "eslint \"**/*.js\" --fix",
@@ -49,7 +52,8 @@
     "lint-staged": "^16.2.7",
     "madge": "^8.0.0",
     "prettier": "^3.8.1",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1"
   },
   "repository": {
     "type": "git",

@@ -231,7 +231,13 @@ class LanguageManager extends EventTarget {
     htmlElements.forEach((el) => {
       const key = el.getAttribute('data-i18n-html');
       if (key) {
-        el.innerHTML = this.t(key);
+        const translated = this.t(key);
+        // Sanitize HTML to prevent XSS
+        const clean = translated
+          .replace(/<script[\s>]/gi, '&lt;script')
+          .replace(/on\w+\s*=/gi, '')
+          .replace(/javascript:/gi, '');
+        el.innerHTML = clean;
       }
     });
 

@@ -235,7 +235,7 @@ const renderVideoCard = async (grid, it, detailsMap, index = 0) => {
         creator: { '@type': 'Person', name: 'Abdulkerim Sesli' },
         license: 'https://www.abdulkerimsesli.de/#image-license',
         creditText: 'Logo: Abdulkerim Sesli',
-        copyrightNotice: '© 2025 Abdulkerim Sesli',
+        copyrightNotice: `© ${new Date().getFullYear()} Abdulkerim Sesli`,
         acquireLicensePage: 'https://www.abdulkerimsesli.de/#image-license',
       },
       address: {

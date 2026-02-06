@@ -246,14 +246,11 @@ export function upsertMeta(nameOrProperty, content, isProperty = false) {
 
 /**
  * Apply canonical links and alternates
+ * @deprecated Use applyCanonicalLinks from '/content/core/canonical-manager.js' instead.
+ * Kept for backward compatibility with existing tests.
  * @param {Document} [doc=document] - Document object
  * @param {Array} [alternates=[]] - Alternate links array
  * @param {string} [effectiveCanonical=''] - Canonical URL
- * @example
- * applyCanonicalLinks(document, [
- *   { lang: 'en', href: 'https://example.com/en' },
- *   { lang: 'de', href: 'https://example.com/de' }
- * ], 'https://example.com');
  */
 export function applyCanonicalLinks(
   doc = typeof document === 'undefined' ? null : document,
