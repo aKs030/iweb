@@ -26,7 +26,7 @@ class SearchComponent {
     this.resultsContainer = null;
     /** @type {boolean} */
     this.isOpen = false;
-    /** @type {import('/content/core/types.js').SearchResult[]} */
+    /** @type {Array} */
     this.currentResults = [];
     /** @type {number} */
     this.selectedIndex = -1;
@@ -320,8 +320,8 @@ class SearchComponent {
             <div class="search-category-divider"></div>
           </div>
           ${items
-              .map((result) => this.createResultHTML(result, query))
-              .join('')}
+            .map((result) => this.createResultHTML(result, query))
+            .join('')}
         </div>
       `,
         )

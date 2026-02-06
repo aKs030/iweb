@@ -37,7 +37,7 @@ export async function initImageOptimization(options = {}) {
       const urls = Array.from(criticalImages)
         .map(
           (img) =>
-            /** @type {HTMLImageElement} */(img).src ||
+            /** @type {HTMLImageElement} */ (img).src ||
             /** @type {HTMLImageElement} */ (img).dataset.src,
         )
         .filter(Boolean);
