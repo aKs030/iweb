@@ -14,7 +14,7 @@ import {
 const DEFAULT_SYSTEM =
   'Du bist ein hilfreicher Assistent, antworte prägnant und informativ.';
 
-export async function aiHandler(request, env, searchIndex) {
+export async function aiHandler(request, env) {
   if (request.method !== 'POST') {
     return errorResponse('Method not allowed', 'Use POST.', 405, request);
   }
@@ -41,11 +41,18 @@ export async function aiHandler(request, env, searchIndex) {
     let finalPrompt = prompt;
 
     if (options.useSearch) {
-      sources = performSearch(
+      // Coerce topK to valid integer and clamp between 1 and 5
+      let topK = parseInt(options.topK, 10);
+      if (isNaN(topK) || topK <= 0) {
+        topK = 3;
+      }
+      topK = Math.min(topK, 5);
+
+      // Async performSearch using AI_SEARCH binding
+      sources = await performSearch(
         options.searchQuery || prompt,
-        Math.min(options.topK || 3, 5),
-        searchIndex,
-        false,
+        topK,
+        env.AI_SEARCH,
       );
       finalPrompt = augmentPromptWithRAG(prompt, sources);
     }

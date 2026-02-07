@@ -6,7 +6,7 @@ import { jsonResponse, errorResponse } from '../../shared/response-utils.js';
 import { validateSearchRequest } from '../validation.js';
 import { performSearch } from '../../shared/search-utils.js';
 
-export async function searchHandler(request, env, searchIndex) {
+export async function searchHandler(request, env) {
   if (request.method !== 'POST') {
     return errorResponse('Method not allowed', 'Use POST.', 405, request);
   }
@@ -21,11 +21,12 @@ export async function searchHandler(request, env, searchIndex) {
 
     const { query, topK } = body;
     const maxResults = parseInt(env.MAX_SEARCH_RESULTS || '10', 10);
-    const results = performSearch(
+
+    // Call asynchronous performSearch using the AI_SEARCH binding
+    const results = await performSearch(
       query,
       Math.min(topK || 5, maxResults),
-      searchIndex,
-      true,
+      env.AI_SEARCH,
     );
 
     return jsonResponse(
