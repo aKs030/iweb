@@ -37,6 +37,7 @@ export class RobotChat {
   toggleChat(forceState) {
     const newState = forceState ?? !this.isOpen;
     if (newState) {
+      this.robot.ensureChatWindowCreated();
       this.robot.dom.window.classList.add('open');
       this.isOpen = true;
 
