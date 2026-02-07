@@ -137,19 +137,28 @@ export class RobotCollision {
     const hitFromRight = robotCX > obsCX; // Robot is to the right of object center
 
     // Show bubble
-    const texts = ['Huch!', 'Oha!', 'Eng hier!', 'Platz da!'];
+    const texts = ['Huch!', 'Oha!', 'Eng hier!', 'Platz da!', 'Boing!'];
     this.robot.showBubble(texts[Math.floor(Math.random() * texts.length)]);
     setTimeout(() => this.robot.hideBubble(), 1500);
 
     const anim = this.robot.animationModule;
 
+    // Trigger Screen Shake (Robot specific)
+    this.triggerRobotShake(type === 'short_circuit' ? 15 : 8);
+
     if (type === 'dizzy') {
       anim.pausePatrol(2000);
+      anim.visualState.targetScaleX = 1.2;
+      anim.visualState.targetScaleY = 0.8;
+
       if (this.robot.dom.svg) {
-        this.robot.dom.svg.style.transition = 'transform 1s ease';
-        this.robot.dom.svg.style.transform = 'rotate(720deg)';
+        this.robot.dom.svg.animate(
+          [{ transform: 'rotate(0deg)' }, { transform: 'rotate(720deg)' }],
+          { duration: 1000, easing: 'ease-in-out' },
+        );
       }
       if (this.robot.dom.eyes) {
+        const originalHTML = this.robot.dom.eyes.innerHTML;
         // Temporarily change eyes to 'X'
         this.robot.dom.eyes.innerHTML = `
             <path d="M35,38 L45,46 M45,38 L35,46" stroke="#40e0d0" stroke-width="3" />
@@ -158,43 +167,84 @@ export class RobotCollision {
         setTimeout(() => {
           // Restore eyes
           if (this.robot.dom.eyes) {
-            this.robot.dom.eyes.innerHTML = `
-                <circle class="robot-pupil" cx="40" cy="42" r="4" fill="#40e0d0" filter="url(#glow)" />
-                <path class="robot-lid" d="M34 36 C36 30 44 30 46 36 L46 44 C44 38 36 38 34 44 Z" fill="url(#lidGradient)" filter="url(#lidShadow)" />
-                <circle class="robot-pupil" cx="60" cy="42" r="4" fill="#40e0d0" filter="url(#glow)" />
-                <path class="robot-lid" d="M54 36 C56 30 64 30 66 36 L66 44 C64 38 56 38 54 44 Z" fill="url(#lidGradient)" filter="url(#lidShadow)" />
-             `;
+            this.robot.dom.eyes.innerHTML = originalHTML;
           }
-          if (this.robot.dom.svg) this.robot.dom.svg.style.transform = '';
         }, 2000);
       }
     } else if (type === 'short_circuit') {
       anim.pausePatrol(1500);
-      anim.spawnParticleBurst(10, { spread: 360, strength: 1.5 });
-      this.robot.dom.avatar.style.animation = 'none'; // reset
-      // Trigger CSS jitter
+      anim.spawnParticleBurst(15, { spread: 360, strength: 2 });
+
+      // Jitter animation via WAAPI
       this.robot.dom.avatar.animate(
         [
-          { transform: 'translate(2px, 2px)' },
-          { transform: 'translate(-2px, -2px)' },
-          { transform: 'translate(2px, -2px)' },
-          { transform: 'translate(-2px, 2px)' },
+          { transform: 'translate(4px, 4px) rotate(5deg)' },
+          { transform: 'translate(-4px, -4px) rotate(-5deg)' },
+          { transform: 'translate(4px, -4px) rotate(5deg)' },
+          { transform: 'translate(-4px, 4px) rotate(-5deg)' },
+          { transform: 'translate(0, 0) rotate(0)' },
         ],
-        { duration: 100, iterations: 10 },
+        { duration: 80, iterations: 15 },
       );
+
+      // Antenna flash
+      const antenna = this.robot.dom.svg.querySelector('.robot-antenna-light');
+      if (antenna) {
+        antenna.animate(
+          [
+            { fill: '#ff4444', filter: 'drop-shadow(0 0 2px #ff4444)' },
+            { fill: '#ffff00', filter: 'drop-shadow(0 0 15px #ffff00)' },
+            { fill: '#ff4444', filter: 'drop-shadow(0 0 2px #ff4444)' },
+          ],
+          { duration: 100, iterations: 10 },
+        );
+      }
     } else if (type === 'knockback') {
       // Push away
-      anim.patrol.direction = hitFromRight ? -1 : 1;
-      anim.spawnParticleBurst(5, { direction: anim.patrol.direction });
-      // Force move immediately
-      anim.patrol.x += anim.patrol.direction * 50;
-      anim.patrol.x = Math.max(0, anim.patrol.x); // Clamp
+      anim.patrol.direction = hitFromRight ? 1 : -1;
+      anim.spawnParticleBurst(8, { direction: -anim.patrol.direction });
+      anim.patrol.x += anim.patrol.direction * 60;
+
+      anim.visualState.targetScaleX = 0.7;
+      anim.visualState.targetScaleY = 1.3;
+      anim.visualState.rotation = anim.patrol.direction * 15;
     } else {
       // Bounce
       anim.patrol.direction *= -1;
-      anim.patrol.x += anim.patrol.direction * 20; // Clear collision
-      anim.spawnParticleBurst(3);
+      anim.patrol.x += anim.patrol.direction * 30; // Clear collision
+      anim.spawnParticleBurst(6, { strength: 1.2 });
+
+      anim.visualState.targetScaleX = 1.3;
+      anim.visualState.targetScaleY = 0.7;
+      anim.visualState.rotation = -anim.patrol.direction * 10;
     }
+  }
+
+  /**
+   * Triggers a shake effect on the robot container
+   * @param {number} intensity
+   */
+  triggerRobotShake(intensity = 10) {
+    if (!this.robot.dom.container) return;
+    const keyframes = [];
+    for (let i = 0; i < 10; i++) {
+      keyframes.push({
+        transform: `translate3d(${
+          -this.robot.animationModule.patrol.x +
+          (Math.random() - 0.5) * intensity
+        }px, ${
+          this.robot.animationModule.patrol.y +
+          (Math.random() - 0.5) * intensity
+        }px, 0)`,
+      });
+    }
+    keyframes.push({
+      transform: `translate3d(-${this.robot.animationModule.patrol.x}px, ${this.robot.animationModule.patrol.y}px, 0)`,
+    });
+    this.robot.dom.container.animate(keyframes, {
+      duration: 300,
+      easing: 'ease-out',
+    });
   }
 
   /**
@@ -255,10 +305,12 @@ export class RobotCollision {
       const reaction = reactions[Math.floor(Math.random() * reactions.length)];
       this.robot.showBubble(reaction);
       setTimeout(() => this.robot.hideBubble(), 2500);
-      this.robot.animationModule.spawnParticleBurst(18, {
-        strength: 2.0,
+      this.robot.animationModule.spawnParticleBurst(22, {
+        strength: 2.5,
         spread: 180,
       });
+
+      this.triggerRobotShake(15);
 
       const anim = this.robot.animationModule;
       if (!anim.startAnimation || !anim.startAnimation.active) {

@@ -778,6 +778,15 @@ export class RobotCompanion {
 
     const anim = /** @type {any} */ (this.animationModule);
     requestAnimationFrame(() => anim.startIdleEyeMovement());
+
+    // Register mousemove for eye tracking
+    const _onMouseMove = (e) => this.animationModule.handleMouseMove(e);
+    document.addEventListener('mousemove', _onMouseMove, { passive: true });
+    this._eventListeners.dom.push({
+      target: document,
+      event: 'mousemove',
+      handler: _onMouseMove,
+    });
   }
 
   ensureChatWindowCreated() {

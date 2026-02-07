@@ -13,7 +13,22 @@ export class RobotAnimation {
       speed: 0.3,
       isPaused: false,
       bouncePhase: 0,
+      noiseOffset: Math.random() * 1000,
     };
+
+    // Squash & Stretch State
+    this.visualState = {
+      scaleX: 1,
+      scaleY: 1,
+      rotation: 0,
+      targetScaleX: 1,
+      targetScaleY: 1,
+      lerpSpeed: 0.15,
+    };
+
+    // Mouse Tracking
+    this.mousePos = { x: 0, y: 0 };
+    this.isTrackingMouse = false;
 
     // Start Animation State
     this.startAnimation = {
@@ -71,6 +86,7 @@ export class RobotAnimation {
     // Bind loop
     this.updatePatrol = this.updatePatrol.bind(this);
     this.updateStartAnimation = this.updateStartAnimation.bind(this);
+    this.handleMouseMove = this.handleMouseMove.bind(this);
 
     this.thinkingActive = false;
     this.speakingActive = false;
@@ -128,6 +144,12 @@ export class RobotAnimation {
       () => this.startSpeakingLoop(),
       duration + 50,
     );
+  }
+
+  handleMouseMove(e) {
+    this.mousePos.x = e.clientX;
+    this.mousePos.y = e.clientY;
+    this.isTrackingMouse = true;
   }
 
   startThinking() {
@@ -219,12 +241,40 @@ export class RobotAnimation {
     this.patrol.direction = 1;
     this.patrol.bouncePhase = 0;
 
-    this.robot.dom.container.style.transform = `translate3d(-${this.patrol.x}px, ${this.patrol.y}px, 0)`;
-    if (this.robot.dom.floatWrapper) {
-      this.robot.dom.floatWrapper.style.transform = 'rotate(0deg)';
-    }
+    this.applyTransform();
     this.robot.dom.container.style.opacity = '1';
     requestAnimationFrame(this.updateStartAnimation);
+  }
+
+  /**
+   * Simple multi-octave sine noise
+   * @param {number} t - Time/Phase
+   * @returns {number} Value between -1 and 1
+   */
+  getNoise(t) {
+    return (
+      Math.sin(t) * 0.5 + Math.sin(t * 2.1) * 0.3 + Math.sin(t * 0.7) * 0.2
+    );
+  }
+
+  applyTransform() {
+    if (!this.robot.dom.container) return;
+
+    // Apply Squash & Stretch Lerp
+    this.visualState.scaleX +=
+      (this.visualState.targetScaleX - this.visualState.scaleX) *
+      this.visualState.lerpSpeed;
+    this.visualState.scaleY +=
+      (this.visualState.targetScaleY - this.visualState.scaleY) *
+      this.visualState.lerpSpeed;
+
+    const transform = `translate3d(-${this.patrol.x}px, ${this.patrol.y}px, 0)`;
+    this.robot.dom.container.style.transform = transform;
+
+    if (this.robot.dom.floatWrapper) {
+      const visualTransform = `rotate(${this.visualState.rotation}deg) scale(${this.visualState.scaleX}, ${this.visualState.scaleY})`;
+      this.robot.dom.floatWrapper.style.transform = visualTransform;
+    }
   }
 
   updateStartAnimation() {
@@ -245,7 +295,12 @@ export class RobotAnimation {
         (this.startAnimation.targetX - this.startAnimation.startX) * eased;
 
       this.patrol.bouncePhase += 0.08;
-      this.patrol.y = Math.sin(this.patrol.bouncePhase) * 4;
+      this.patrol.y = this.getNoise(this.patrol.bouncePhase) * 5;
+
+      // Squash & Stretch for approach
+      this.visualState.targetScaleX = 0.85;
+      this.visualState.targetScaleY = 1.15;
+      this.visualState.rotation = -5;
 
       const flameIntensity = 0.8 + 0.6 * eased;
       if (this.robot.dom.flame) {
@@ -267,15 +322,15 @@ export class RobotAnimation {
         this.robot.dom.svg.style.transform = `rotate(-5deg)`;
       }
 
-      this.robot.dom.container.style.transform = `translate3d(-${this.patrol.x}px, ${this.patrol.y}px, 0)`;
-      if (this.robot.dom.floatWrapper) {
-        this.robot.dom.floatWrapper.style.transform = 'rotate(-4deg)';
-      }
+      this.applyTransform();
 
       if (t >= 1) {
         this.startAnimation.phase = 'pause';
         this.startAnimation.pauseUntil = now + 200;
         this.setAvatarState({ moving: false, dashing: false });
+        this.visualState.targetScaleX = 1.25; // Landing squash
+        this.visualState.targetScaleY = 0.75;
+        this.visualState.rotation = 0;
       }
 
       requestAnimationFrame(this.updateStartAnimation);
@@ -317,16 +372,22 @@ export class RobotAnimation {
       const eased = 1 - Math.pow(1 - t, 3);
       this.patrol.x = this.startAnimation.knockbackStartX - 200 * eased;
 
+      // Squash & Stretch for knockback
+      if (t < 0.2) {
+        this.visualState.targetScaleX = 1.3;
+        this.visualState.targetScaleY = 0.7;
+      } else {
+        this.visualState.targetScaleX = 0.8;
+        this.visualState.targetScaleY = 1.2;
+      }
+
       const rotation = -20 + t * 40;
       if (this.robot.dom.svg) {
         this.robot.dom.svg.style.transform = `rotate(${rotation}deg)`;
       }
 
-      const containerRot = 15 * Math.sin(t * Math.PI * 2);
-      this.robot.dom.container.style.transform = `translate3d(-${this.patrol.x}px, ${this.patrol.y}px, 0)`;
-      if (this.robot.dom.floatWrapper) {
-        this.robot.dom.floatWrapper.style.transform = `rotate(${containerRot}deg)`;
-      }
+      this.visualState.rotation = 15 * Math.sin(t * Math.PI * 2);
+      this.applyTransform();
 
       if (this.robot.dom.flame) {
         this.robot.dom.flame.style.opacity = '0.2';
@@ -339,16 +400,18 @@ export class RobotAnimation {
       if (t >= 1) {
         this.startAnimation.phase = 'landing';
         this.spawnParticleBurst(8, { strength: 1.5 });
+        this.visualState.targetScaleX = 1.2;
+        this.visualState.targetScaleY = 0.8;
 
         setTimeout(() => {
           this.startAnimation.active = false;
           this.patrol.active = true;
           this.patrol.y = 0;
+          this.visualState.targetScaleX = 1;
+          this.visualState.targetScaleY = 1;
+          this.visualState.rotation = 0;
           if (this.robot.dom.svg) {
             this.robot.dom.svg.style.transform = 'rotate(0deg)';
-          }
-          if (this.robot.dom.floatWrapper) {
-            this.robot.dom.floatWrapper.style.transform = 'rotate(0deg)';
           }
           this.startPatrol();
         }, 300);
@@ -404,6 +467,17 @@ export class RobotAnimation {
       if (this.robot.dom.flame) this.robot.dom.flame.style.opacity = '0';
       if (this.robot.dom.particles)
         this.robot.dom.particles.style.opacity = '0';
+
+      // Still apply noise even when "paused" for a living feel
+      this.patrol.bouncePhase += 0.02;
+      this.patrol.y = this.getNoise(this.patrol.bouncePhase) * 3;
+      this.visualState.targetScaleX = 1;
+      this.visualState.targetScaleY = 1;
+      this.visualState.rotation = 0;
+
+      this.applyTransform();
+      if (this.robot.dom.eyes) this.updateEyesTransform();
+
       requestAnimationFrame(this.updatePatrol);
       return;
     }
@@ -464,25 +538,35 @@ export class RobotAnimation {
     }
     this._prevDashActive = dashActive;
 
+    if (dashActive && Math.random() < 0.4) {
+      this.spawnDashTrail();
+    }
+
     const baseSpeed = this.motion.baseSpeed + Math.sin(now / 800) * 0.2;
     const currentSpeed = baseSpeed * (dashActive ? this.motion.dashSpeed : 1);
 
     this.patrol.x += currentSpeed * this.patrol.direction;
 
-    this.patrol.bouncePhase += dashActive ? 0.08 : 0.05;
-    this.patrol.y = Math.sin(this.patrol.bouncePhase) * (dashActive ? 4 : 3);
+    this.patrol.bouncePhase += dashActive ? 0.08 : 0.04;
+    this.patrol.y =
+      this.getNoise(this.patrol.bouncePhase + this.patrol.noiseOffset) *
+      (dashActive ? 6 : 4);
     this.robot.animationState = 'moving';
 
     this.setAvatarState({ moving: true, dashing: dashActive });
 
+    // Squash & Stretch based on speed and direction
+    if (dashActive) {
+      this.visualState.targetScaleX = 1.1;
+      this.visualState.targetScaleY = 0.9;
+    } else {
+      this.visualState.targetScaleX = 0.95;
+      this.visualState.targetScaleY = 1.05;
+    }
+
     if (this.robot.dom.svg) {
       const baseTilt = this.patrol.direction > 0 ? -5 : 5;
-      const tiltIntensity =
-        this.startAnimation && this.startAnimation.active
-          ? 1.6
-          : dashActive
-            ? 1.2
-            : 1;
+      const tiltIntensity = dashActive ? 1.5 : 1;
       this.robot.dom.svg.style.transform = `rotate(${
         baseTilt * tiltIntensity
       }deg)`;
@@ -530,21 +614,13 @@ export class RobotAnimation {
       }
     }
 
-    const containerRotation =
-      this.startAnimation && this.startAnimation.active
-        ? this.patrol.direction > 0
-          ? -6
-          : 6
-        : dashActive
-          ? this.patrol.direction > 0
-            ? -4
-            : 4
-          : 0;
+    this.visualState.rotation = dashActive
+      ? this.patrol.direction > 0
+        ? -4
+        : 4
+      : 0;
 
-    this.robot.dom.container.style.transform = `translate3d(-${this.patrol.x}px, ${this.patrol.y}px, 0)`;
-    if (this.robot.dom.floatWrapper) {
-      this.robot.dom.floatWrapper.style.transform = `rotate(${containerRotation}deg)`;
-    }
+    this.applyTransform();
 
     requestAnimationFrame(this.updatePatrol);
   }
@@ -618,10 +694,7 @@ export class RobotAnimation {
         4 + Math.round(3 + Math.random() * 4) * Math.min(1.2, strength);
       el.style.width = `${size}px`;
       el.style.height = `${size}px`;
-      if (strength > 1.5 && Math.random() < 0.35) {
-        el.style.filter = 'blur(0.9px)';
-        el.style.opacity = '0.9';
-      }
+
       this.robot.dom.container.appendChild(el);
 
       let angle;
@@ -640,22 +713,26 @@ export class RobotAnimation {
         angle = baseAngle + (Math.random() - 0.5) * angleSpread;
       }
 
-      const distance = 40 + Math.random() * 30;
-      const dx = Math.cos(angle) * distance * strength;
-      const dy = Math.sin(angle) * distance * strength - 10 * strength;
+      const distance = (40 + Math.random() * 30) * strength;
+      const dx = Math.cos(angle) * distance;
+      const dy = Math.sin(angle) * distance;
 
       el.style.left = baseX - cRect.left - size / 2 + 'px';
       el.style.top = baseY - cRect.top - size / 2 + 'px';
 
-      requestAnimationFrame(() => {
-        el.style.transform = `translate(${dx}px, ${dy}px) scale(${
-          0.5 + Math.random() * 0.6
-        })`;
-        el.style.opacity = '0';
-        if (Math.random() < 0.15) el.style.filter = 'blur(1px)';
-      });
-
-      setTimeout(() => el.remove(), 900 + Math.random() * 600);
+      el.animate(
+        [
+          { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+          {
+            transform: `translate(${dx}px, ${dy}px) scale(0)`,
+            opacity: 0,
+          },
+        ],
+        {
+          duration: 600 + Math.random() * 400,
+          easing: 'cubic-bezier(0.1, 0.8, 0.2, 1)',
+        },
+      ).onfinish = () => el.remove();
     }
   }
 
@@ -671,12 +748,11 @@ export class RobotAnimation {
     el.style.cssText = `
         position: absolute;
         width: 4px; height: 4px;
-        background: #ff9900;
+        background: #40e0d0;
         border-radius: 50%;
         pointer-events: none;
-        opacity: 0.7;
+        opacity: 0.8;
         mix-blend-mode: screen;
-        transition: transform 0.6s ease-out, opacity 0.6s ease-out;
         will-change: transform, opacity;
     `;
 
@@ -691,14 +767,52 @@ export class RobotAnimation {
 
     this.robot.dom.container.appendChild(el);
 
-    requestAnimationFrame(() => {
-      const dx = (Math.random() - 0.5) * 10;
-      const dy = 15 + Math.random() * 15;
-      el.style.transform = `translate(${dx}px, ${dy}px) scale(0)`;
-      el.style.opacity = '0';
-    });
+    el.animate(
+      [
+        { transform: 'translate(0, 0) scale(1)', opacity: 0.8 },
+        {
+          transform: `translate(${(Math.random() - 0.5) * 15}px, ${
+            15 + Math.random() * 15
+          }px) scale(0)`,
+          opacity: 0,
+        },
+      ],
+      { duration: 600, easing: 'ease-out' },
+    ).onfinish = () => el.remove();
+  }
 
-    setTimeout(() => el.remove(), 600);
+  spawnDashTrail() {
+    if (!this.robot.dom.container || !this.robot.dom.avatar) return;
+
+    const el = this.robot.dom.avatar.cloneNode(true);
+    el.classList.remove('is-moving', 'is-dashing', 'waving', 'check-watch');
+    el.classList.add('robot-dash-trail');
+    el.style.position = 'absolute';
+    el.style.pointerEvents = 'none';
+    el.style.zIndex = '-1';
+    el.style.opacity = '0.4';
+    el.style.filter = 'brightness(1.5) blur(1px) saturate(2)';
+
+    const rect = this.robot.dom.avatar.getBoundingClientRect();
+    const cRect = this.robot.dom.container.getBoundingClientRect();
+
+    el.style.left = rect.left - cRect.left + 'px';
+    el.style.top = rect.top - cRect.top + 'px';
+    el.style.width = rect.width + 'px';
+    el.style.height = rect.height + 'px';
+
+    this.robot.dom.container.appendChild(el);
+
+    el.animate(
+      [
+        { opacity: 0.4, scale: 1 },
+        { opacity: 0, scale: 0.8 },
+      ],
+      {
+        duration: 500,
+        easing: 'ease-out',
+      },
+    ).onfinish = () => el.remove();
   }
 
   async playPokeAnimation() {
@@ -783,20 +897,44 @@ export class RobotAnimation {
 
   updateEyesTransform() {
     if (!this.robot.dom || !this.robot.dom.eyes) return;
-    const eyeOffset =
-      typeof this.patrol !== 'undefined' && this.patrol.direction > 0 ? -3 : 3;
-    const eyeIntensity =
-      (this.startAnimation && this.startAnimation.active) ||
-      this.patrol.isPaused
-        ? 1.4
-        : this.motion && this.motion.dashUntil > performance.now()
-          ? 1.2
-          : 1;
-    const baseX = eyeOffset * eyeIntensity;
-    const totalX = baseX + (this.eyeIdleOffset.x || 0);
-    const totalY = this.eyeIdleOffset.y || 0;
+
+    let totalX = 0;
+    let totalY = 0;
+
+    if (this.isTrackingMouse) {
+      const eyesRect = this.robot.dom.eyes.getBoundingClientRect();
+      const eyesCX = eyesRect.left + eyesRect.width / 2;
+      const eyesCY = eyesRect.top + eyesRect.height / 2;
+
+      const dx = this.mousePos.x - eyesCX;
+      const dy = this.mousePos.y - eyesCY;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      const maxMove = 5;
+      const moveX = (dx / (dist + 100)) * maxMove;
+      const moveY = (dy / (dist + 100)) * maxMove;
+
+      totalX = moveX;
+      totalY = moveY;
+    } else {
+      const eyeOffset =
+        typeof this.patrol !== 'undefined' && this.patrol.direction > 0
+          ? -3
+          : 3;
+      const eyeIntensity =
+        (this.startAnimation && this.startAnimation.active) ||
+        this.patrol.isPaused
+          ? 1.4
+          : this.motion && this.motion.dashUntil > performance.now()
+            ? 1.2
+            : 1;
+      const baseX = eyeOffset * eyeIntensity;
+      totalX = baseX + (this.eyeIdleOffset.x || 0);
+      totalY = this.eyeIdleOffset.y || 0;
+    }
+
     this.robot.dom.eyes.style.transform = `translate(${totalX}px, ${totalY}px)`;
-    this.robot.dom.eyes.style.transition = 'transform 0.6s ease';
+    this.robot.dom.eyes.style.transition = 'transform 0.2s ease-out';
   }
 
   startBlinkLoop() {
