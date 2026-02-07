@@ -659,22 +659,24 @@ class ThreeEarthSystem {
     }
 
     const resizeObserver = new ResizeObserver(
-      debounce((entries) => {
-        if (!this.active || !this.camera || !this.renderer) return;
-        for (const entry of entries) {
-          const { width, height } = entry.contentRect;
-          this.isMobileDevice =
-            window.matchMedia?.('(max-width: 768px)')?.matches ?? false;
+      /** @type {ResizeObserverCallback} */ (
+        debounce((entries) => {
+          if (!this.active || !this.camera || !this.renderer) return;
+          for (const entry of entries) {
+            const { width, height } = entry.contentRect;
+            this.isMobileDevice =
+              window.matchMedia?.('(max-width: 768px)')?.matches ?? false;
 
-          this.camera.aspect = width / height;
-          this.camera.fov = this.isMobileDevice ? 55 : CONFIG.CAMERA.FOV;
-          this.camera.updateProjectionMatrix();
-          this.renderer.setSize(width, height);
-          if (this.starManager && 'handleResize' in this.starManager) {
-            /** @type {any} */ (this.starManager).handleResize(width, height);
+            this.camera.aspect = width / height;
+            this.camera.fov = this.isMobileDevice ? 55 : CONFIG.CAMERA.FOV;
+            this.camera.updateProjectionMatrix();
+            this.renderer.setSize(width, height);
+            if (this.starManager && 'handleResize' in this.starManager) {
+              /** @type {any} */ (this.starManager).handleResize(width, height);
+            }
           }
-        }
-      }, 100),
+        }, 100)
+      ),
     );
 
     resizeObserver.observe(container);
