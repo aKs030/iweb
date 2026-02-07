@@ -533,10 +533,11 @@ const PhotoGallery = () => {
                 key: cat,
                 onClick: () => setFilter(cat),
                 'data-filter': cat,
-                className: `px-5 py-2.5 rounded-xl font-medium transition-all duration-300 ${filter === cat
+                className: `px-5 py-2.5 rounded-xl font-medium transition-all duration-300 ${
+                  filter === cat
                     ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg shadow-purple-500/50 scale-105'
                     : 'bg-white/10 text-white hover:bg-white/20 backdrop-blur-sm border border-white/10'
-                  }`,
+                }`,
               },
               t('gallery.categories.' + cat),
             ),
@@ -582,10 +583,11 @@ const PhotoGallery = () => {
                 onClick: () => setGridSize(2),
                 'aria-label': '2-Spalten-Ansicht',
                 'aria-pressed': gridSize === 2,
-                className: `p-2 rounded-lg transition-all ${gridSize === 2
+                className: `p-2 rounded-lg transition-all ${
+                  gridSize === 2
                     ? 'bg-purple-500 text-white'
                     : 'text-white hover:bg-white/10'
-                  }`,
+                }`,
               },
               Grid2x2({ size: 18 }),
             ),
@@ -595,10 +597,11 @@ const PhotoGallery = () => {
                 onClick: () => setGridSize(3),
                 'aria-label': '3-Spalten-Ansicht',
                 'aria-pressed': gridSize === 3,
-                className: `p-2 rounded-lg transition-all ${gridSize === 3
+                className: `p-2 rounded-lg transition-all ${
+                  gridSize === 3
                     ? 'bg-purple-500 text-white'
                     : 'text-white hover:bg-white/10'
-                  }`,
+                }`,
               },
               Grid3x3({ size: 18 }),
             ),
@@ -667,27 +670,27 @@ const PhotoGallery = () => {
               onError: (e) => handleImageError(photo.id, e.target),
             }),
             imageErrors[photo.id] &&
-            React.createElement(
-              'div',
-              {
-                className:
-                  'absolute inset-0 bg-gradient-to-br from-purple-900/80 via-slate-800/80 to-indigo-900/80 flex items-center justify-center',
-              },
               React.createElement(
                 'div',
-                { className: 'text-center p-4' },
+                {
+                  className:
+                    'absolute inset-0 bg-gradient-to-br from-purple-900/80 via-slate-800/80 to-indigo-900/80 flex items-center justify-center',
+                },
                 React.createElement(
                   'div',
-                  { className: 'text-4xl mb-2 opacity-50' },
-                  '🖼️',
-                ),
-                React.createElement(
-                  'p',
-                  { className: 'text-white/60 text-sm' },
-                  t('gallery.image_unavailable') || 'Bild nicht verfügbar',
+                  { className: 'text-center p-4' },
+                  React.createElement(
+                    'div',
+                    { className: 'text-4xl mb-2 opacity-50' },
+                    '🖼️',
+                  ),
+                  React.createElement(
+                    'p',
+                    { className: 'text-white/60 text-sm' },
+                    t('gallery.image_unavailable') || 'Bild nicht verfügbar',
+                  ),
                 ),
               ),
-            ),
             React.createElement('div', {
               className:
                 'absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60',
@@ -725,10 +728,11 @@ const PhotoGallery = () => {
                 },
                 Heart({
                   size: 18,
-                  className: `${favorites.includes(photo.id)
+                  className: `${
+                    favorites.includes(photo.id)
                       ? 'fill-red-500 text-red-500'
                       : 'text-white'
-                    }`,
+                  }`,
                 }),
               ),
             ),
@@ -750,337 +754,261 @@ const PhotoGallery = () => {
             ),
           ),
           !imageLoaded[photo.id] &&
-          React.createElement(
-            'div',
-            {
-              className: 'absolute inset-0 bg-slate-900 u-row u-center',
-            },
             React.createElement(
               'div',
-              { className: 'relative' },
-              React.createElement('div', {
-                className:
-                  'w-16 h-16 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin',
-              }),
+              {
+                className: 'absolute inset-0 bg-slate-900 u-row u-center',
+              },
               React.createElement(
                 'div',
-                {
-                  className: 'absolute inset-0 u-row u-center',
-                },
+                { className: 'relative' },
                 React.createElement('div', {
                   className:
-                    'w-8 h-8 border-4 border-pink-500/30 border-t-pink-500 rounded-full animate-spin',
-                  style: { animationDirection: 'reverse' },
+                    'w-16 h-16 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin',
                 }),
+                React.createElement(
+                  'div',
+                  {
+                    className: 'absolute inset-0 u-row u-center',
+                  },
+                  React.createElement('div', {
+                    className:
+                      'w-8 h-8 border-4 border-pink-500/30 border-t-pink-500 rounded-full animate-spin',
+                    style: { animationDirection: 'reverse' },
+                  }),
+                ),
               ),
             ),
-          ),
         ),
       ),
     ),
     selectedImage &&
-    React.createElement(
-      'div',
-      {
-        id: 'lightbox',
-        'data-test': 'lightbox',
-        role: 'dialog',
-        'aria-modal': 'true',
-        'aria-labelledby': 'lightbox-title',
-        className:
-          'fixed inset-0 bg-black/98 backdrop-blur-sm z-50 u-row u-center',
-        onClick: () => {
-          setSelectedImage(null);
-          setZoom(1);
-          setIsSlideshow(false);
-        },
-      },
       React.createElement(
         'div',
         {
+          id: 'lightbox',
+          'data-test': 'lightbox',
+          role: 'dialog',
+          'aria-modal': 'true',
+          'aria-labelledby': 'lightbox-title',
           className:
-            'absolute top-0 left-0 right-0 p-6 bg-gradient-to-b from-black/80 to-transparent z-10',
-        },
-        React.createElement(
-          'div',
-          {
-            className: 'max-w-7xl mx-auto u-row u-between',
+            'fixed inset-0 bg-black/98 backdrop-blur-sm z-50 u-row u-center',
+          onClick: () => {
+            setSelectedImage(null);
+            setZoom(1);
+            setIsSlideshow(false);
           },
-          React.createElement(
-            'div',
-            { className: 'text-white' },
-            React.createElement(
-              'h2',
-              { id: 'lightbox-title', className: 'text-2xl font-bold mb-1' },
-              selectedImage.title,
-            ),
-            React.createElement(
-              'p',
-              { className: 'text-indigo-300' },
-              `${selectedImage.location} • ${new Date(
-                selectedImage.date,
-              ).toLocaleDateString(lang === 'de' ? 'de-DE' : 'en-US')}`,
-            ),
-          ),
-          React.createElement(
-            'div',
-            { className: 'u-row' },
-            React.createElement(
-              'button',
-              {
-                onClick: (e) => {
-                  e.stopPropagation();
-                  setShowInfo(!showInfo);
-                },
-                'aria-label': t('gallery.actions.toggle_info'),
-                'aria-pressed': showInfo,
-                className: `p-3 rounded-xl transition-all backdrop-blur-md ${showInfo ? 'bg-purple-500' : 'bg-white/10 hover:bg-white/20'
-                  }`,
-              },
-              Info({ size: 20, className: 'text-white' }),
-            ),
-            React.createElement(
-              'button',
-              {
-                onClick: (e) => {
-                  e.stopPropagation();
-                  setIsSlideshow(!isSlideshow);
-                },
-                'aria-label': t('gallery.actions.toggle_slideshow'),
-                'aria-pressed': isSlideshow,
-                className: `p-3 rounded-xl transition-all backdrop-blur-md ${isSlideshow
-                    ? 'bg-purple-500'
-                    : 'bg-white/10 hover:bg-white/20'
-                  }`,
-              },
-              isSlideshow
-                ? Pause({ size: 20, className: 'text-white' })
-                : Play({ size: 20, className: 'text-white' }),
-            ),
-            React.createElement(
-              'button',
-              {
-                id: 'lightbox-close',
-                onClick: (e) => {
-                  e.stopPropagation();
-                  setSelectedImage(null);
-                  setZoom(1);
-                  setIsSlideshow(false);
-                },
-                'aria-label': t('gallery.actions.close'),
-                className:
-                  'p-3 bg-white/10 hover:bg-white/20 rounded-xl transition-all backdrop-blur-md',
-              },
-              X_Icon({ size: 20, className: 'text-white' }),
-            ),
-          ),
-        ),
-      ),
-      showInfo &&
-      React.createElement(
-        'div',
-        {
-          className:
-            'absolute top-24 right-6 w-80 bg-black/90 backdrop-blur-xl rounded-2xl p-6 border border-white/10 z-10',
         },
-        React.createElement(
-          'h3',
-          { className: 'text-white font-bold text-lg mb-4' },
-          t('gallery.details.title'),
-        ),
-        React.createElement(
-          'div',
-          { className: 'u-stack text-sm' },
-          React.createElement(
-            'div',
-            { className: 'u-row u-between' },
-            React.createElement(
-              'span',
-              { className: 'text-indigo-300' },
-              t('gallery.details.camera') + ':',
-            ),
-            React.createElement(
-              'span',
-              { className: 'text-white font-medium' },
-              selectedImage.camera,
-            ),
-          ),
-          React.createElement(
-            'div',
-            { className: 'u-row u-between' },
-            React.createElement(
-              'span',
-              { className: 'text-indigo-300' },
-              t('gallery.details.aperture') + ':',
-            ),
-            React.createElement(
-              'span',
-              { className: 'text-white font-medium' },
-              selectedImage.aperture,
-            ),
-          ),
-          React.createElement(
-            'div',
-            { className: 'u-row u-between' },
-            React.createElement(
-              'span',
-              { className: 'text-indigo-300' },
-              t('gallery.details.iso') + ':',
-            ),
-            React.createElement(
-              'span',
-              { className: 'text-white font-medium' },
-              selectedImage.iso,
-            ),
-          ),
-          React.createElement(
-            'div',
-            { className: 'u-row u-between' },
-            React.createElement(
-              'span',
-              { className: 'text-indigo-300' },
-              t('gallery.details.location') + ':',
-            ),
-            React.createElement(
-              'span',
-              { className: 'text-white font-medium' },
-              selectedImage.location,
-            ),
-          ),
-          React.createElement(
-            'div',
-            { className: 'u-row u-between' },
-            React.createElement(
-              'span',
-              { className: 'text-indigo-300' },
-              t('gallery.details.date') + ':',
-            ),
-            React.createElement(
-              'span',
-              { className: 'text-white font-medium' },
-              new Date(selectedImage.date).toLocaleDateString(
-                lang === 'de' ? 'de-DE' : 'en-US',
-              ),
-            ),
-          ),
-          React.createElement(
-            'div',
-            { className: 'pt-3 border-t border-white/10' },
-            React.createElement(
-              'span',
-              { className: 'text-indigo-300 block mb-2' },
-              t('gallery.details.tags') + ':',
-            ),
-            React.createElement(
-              'div',
-              { className: 'u-row u-wrap' },
-              selectedImage.tags.map((tag) =>
-                React.createElement(
-                  'span',
-                  {
-                    key: tag,
-                    className:
-                      'px-2 py-1 bg-purple-500/20 text-purple-300 rounded-lg text-xs',
-                  },
-                  `#${tag}`,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-      React.createElement(
-        'button',
-        {
-          onClick: (e) => {
-            e.stopPropagation();
-            navigateImage(-1);
-          },
-          'aria-label': t('gallery.actions.prev'),
-          className:
-            'absolute left-6 top-1/2 -translate-y-1/2 p-4 bg-white/10 hover:bg-white/20 rounded-full transition-all backdrop-blur-md z-10 group',
-        },
-        ChevronLeft({
-          size: 32,
-          className: 'text-white group-hover:scale-110 transition-transform',
-        }),
-      ),
-      React.createElement(
-        'button',
-        {
-          onClick: (e) => {
-            e.stopPropagation();
-            navigateImage(1);
-          },
-          'aria-label': t('gallery.actions.next'),
-          className:
-            'absolute right-6 top-1/2 -translate-y-1/2 p-4 bg-white/10 hover:bg-white/20 rounded-full transition-all backdrop-blur-md z-10 group',
-        },
-        ChevronRight({
-          size: 32,
-          className: 'text-white group-hover:scale-110 transition-transform',
-        }),
-      ),
-      React.createElement(
-        'div',
-        {
-          className:
-            'absolute bottom-6 left-1/2 -translate-x-1/2 u-row bg-black/80 backdrop-blur-xl rounded-2xl p-3 border border-white/10',
-        },
-        React.createElement(
-          'button',
-          {
-            onClick: (e) => {
-              e.stopPropagation();
-              handleZoom(-0.25);
-            },
-            'aria-label': t('gallery.actions.zoom_out'),
-            className: 'p-3 hover:bg-white/10 rounded-xl transition-all',
-          },
-          ZoomOut({ size: 20, className: 'text-white' }),
-        ),
         React.createElement(
           'div',
           {
             className:
-              'px-4 py-3 text-white font-semibold min-w-[80px] text-center bg-white/5 rounded-xl',
+              'absolute top-0 left-0 right-0 p-6 bg-gradient-to-b from-black/80 to-transparent z-10',
           },
-          `${Math.round(zoom * 100)}%`,
-        ),
-        React.createElement(
-          'button',
-          {
-            onClick: (e) => {
-              e.stopPropagation();
-              handleZoom(0.25);
+          React.createElement(
+            'div',
+            {
+              className: 'max-w-7xl mx-auto u-row u-between',
             },
-            'aria-label': t('gallery.actions.zoom_in'),
-            className: 'p-3 hover:bg-white/10 rounded-xl transition-all',
-          },
-          ZoomIn({ size: 20, className: 'text-white' }),
-        ),
-        React.createElement('div', { className: 'w-px bg-white/20' }),
-        React.createElement(
-          'button',
-          {
-            onClick: (e) => {
-              e.stopPropagation();
-              toggleFavorite(selectedImage.id, e);
-            },
-            'aria-label': t(
-              favorites.includes(selectedImage.id)
-                ? 'gallery.actions.favorite_remove'
-                : 'gallery.actions.favorite_add',
+            React.createElement(
+              'div',
+              { className: 'text-white' },
+              React.createElement(
+                'h2',
+                { id: 'lightbox-title', className: 'text-2xl font-bold mb-1' },
+                selectedImage.title,
+              ),
+              React.createElement(
+                'p',
+                { className: 'text-indigo-300' },
+                `${selectedImage.location} • ${new Date(
+                  selectedImage.date,
+                ).toLocaleDateString(lang === 'de' ? 'de-DE' : 'en-US')}`,
+              ),
             ),
-            'aria-pressed': favorites.includes(selectedImage.id),
-            className: 'p-3 hover:bg-white/10 rounded-xl transition-all',
+            React.createElement(
+              'div',
+              { className: 'u-row' },
+              React.createElement(
+                'button',
+                {
+                  onClick: (e) => {
+                    e.stopPropagation();
+                    setShowInfo(!showInfo);
+                  },
+                  'aria-label': t('gallery.actions.toggle_info'),
+                  'aria-pressed': showInfo,
+                  className: `p-3 rounded-xl transition-all backdrop-blur-md ${
+                    showInfo ? 'bg-purple-500' : 'bg-white/10 hover:bg-white/20'
+                  }`,
+                },
+                Info({ size: 20, className: 'text-white' }),
+              ),
+              React.createElement(
+                'button',
+                {
+                  onClick: (e) => {
+                    e.stopPropagation();
+                    setIsSlideshow(!isSlideshow);
+                  },
+                  'aria-label': t('gallery.actions.toggle_slideshow'),
+                  'aria-pressed': isSlideshow,
+                  className: `p-3 rounded-xl transition-all backdrop-blur-md ${
+                    isSlideshow
+                      ? 'bg-purple-500'
+                      : 'bg-white/10 hover:bg-white/20'
+                  }`,
+                },
+                isSlideshow
+                  ? Pause({ size: 20, className: 'text-white' })
+                  : Play({ size: 20, className: 'text-white' }),
+              ),
+              React.createElement(
+                'button',
+                {
+                  id: 'lightbox-close',
+                  onClick: (e) => {
+                    e.stopPropagation();
+                    setSelectedImage(null);
+                    setZoom(1);
+                    setIsSlideshow(false);
+                  },
+                  'aria-label': t('gallery.actions.close'),
+                  className:
+                    'p-3 bg-white/10 hover:bg-white/20 rounded-xl transition-all backdrop-blur-md',
+                },
+                X_Icon({ size: 20, className: 'text-white' }),
+              ),
+            ),
+          ),
+        ),
+        showInfo &&
+          React.createElement(
+            'div',
+            {
+              className:
+                'absolute top-24 right-6 w-80 bg-black/90 backdrop-blur-xl rounded-2xl p-6 border border-white/10 z-10',
+            },
+            React.createElement(
+              'h3',
+              { className: 'text-white font-bold text-lg mb-4' },
+              t('gallery.details.title'),
+            ),
+            React.createElement(
+              'div',
+              { className: 'u-stack text-sm' },
+              React.createElement(
+                'div',
+                { className: 'u-row u-between' },
+                React.createElement(
+                  'span',
+                  { className: 'text-indigo-300' },
+                  t('gallery.details.camera') + ':',
+                ),
+                React.createElement(
+                  'span',
+                  { className: 'text-white font-medium' },
+                  selectedImage.camera,
+                ),
+              ),
+              React.createElement(
+                'div',
+                { className: 'u-row u-between' },
+                React.createElement(
+                  'span',
+                  { className: 'text-indigo-300' },
+                  t('gallery.details.aperture') + ':',
+                ),
+                React.createElement(
+                  'span',
+                  { className: 'text-white font-medium' },
+                  selectedImage.aperture,
+                ),
+              ),
+              React.createElement(
+                'div',
+                { className: 'u-row u-between' },
+                React.createElement(
+                  'span',
+                  { className: 'text-indigo-300' },
+                  t('gallery.details.iso') + ':',
+                ),
+                React.createElement(
+                  'span',
+                  { className: 'text-white font-medium' },
+                  selectedImage.iso,
+                ),
+              ),
+              React.createElement(
+                'div',
+                { className: 'u-row u-between' },
+                React.createElement(
+                  'span',
+                  { className: 'text-indigo-300' },
+                  t('gallery.details.location') + ':',
+                ),
+                React.createElement(
+                  'span',
+                  { className: 'text-white font-medium' },
+                  selectedImage.location,
+                ),
+              ),
+              React.createElement(
+                'div',
+                { className: 'u-row u-between' },
+                React.createElement(
+                  'span',
+                  { className: 'text-indigo-300' },
+                  t('gallery.details.date') + ':',
+                ),
+                React.createElement(
+                  'span',
+                  { className: 'text-white font-medium' },
+                  new Date(selectedImage.date).toLocaleDateString(
+                    lang === 'de' ? 'de-DE' : 'en-US',
+                  ),
+                ),
+              ),
+              React.createElement(
+                'div',
+                { className: 'pt-3 border-t border-white/10' },
+                React.createElement(
+                  'span',
+                  { className: 'text-indigo-300 block mb-2' },
+                  t('gallery.details.tags') + ':',
+                ),
+                React.createElement(
+                  'div',
+                  { className: 'u-row u-wrap' },
+                  selectedImage.tags.map((tag) =>
+                    React.createElement(
+                      'span',
+                      {
+                        key: tag,
+                        className:
+                          'px-2 py-1 bg-purple-500/20 text-purple-300 rounded-lg text-xs',
+                      },
+                      `#${tag}`,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        React.createElement(
+          'button',
+          {
+            onClick: (e) => {
+              e.stopPropagation();
+              navigateImage(-1);
+            },
+            'aria-label': t('gallery.actions.prev'),
+            className:
+              'absolute left-6 top-1/2 -translate-y-1/2 p-4 bg-white/10 hover:bg-white/20 rounded-full transition-all backdrop-blur-md z-10 group',
           },
-          Heart({
-            size: 20,
-            className: `${favorites.includes(selectedImage.id)
-                ? 'fill-red-500 text-red-500'
-                : 'text-white'
-              }`,
+          ChevronLeft({
+            size: 32,
+            className: 'text-white group-hover:scale-110 transition-transform',
           }),
         ),
         React.createElement(
@@ -1088,65 +1016,144 @@ const PhotoGallery = () => {
           {
             onClick: (e) => {
               e.stopPropagation();
-              handleShare();
+              navigateImage(1);
             },
-            'aria-label': t('gallery.actions.share'),
-            className: 'p-3 hover:bg-white/10 rounded-xl transition-all',
+            'aria-label': t('gallery.actions.next'),
+            className:
+              'absolute right-6 top-1/2 -translate-y-1/2 p-4 bg-white/10 hover:bg-white/20 rounded-full transition-all backdrop-blur-md z-10 group',
           },
-          Share2({ size: 20, className: 'text-white' }),
+          ChevronRight({
+            size: 32,
+            className: 'text-white group-hover:scale-110 transition-transform',
+          }),
         ),
         React.createElement(
-          'button',
+          'div',
           {
-            onClick: (e) => {
-              e.stopPropagation();
-              handleDownload();
+            className:
+              'absolute bottom-6 left-1/2 -translate-x-1/2 u-row bg-black/80 backdrop-blur-xl rounded-2xl p-3 border border-white/10',
+          },
+          React.createElement(
+            'button',
+            {
+              onClick: (e) => {
+                e.stopPropagation();
+                handleZoom(-0.25);
+              },
+              'aria-label': t('gallery.actions.zoom_out'),
+              className: 'p-3 hover:bg-white/10 rounded-xl transition-all',
             },
-            'aria-label': t('gallery.actions.download'),
-            className: 'p-3 hover:bg-white/10 rounded-xl transition-all',
-          },
-          Download({ size: 20, className: 'text-white' }),
+            ZoomOut({ size: 20, className: 'text-white' }),
+          ),
+          React.createElement(
+            'div',
+            {
+              className:
+                'px-4 py-3 text-white font-semibold min-w-[80px] text-center bg-white/5 rounded-xl',
+            },
+            `${Math.round(zoom * 100)}%`,
+          ),
+          React.createElement(
+            'button',
+            {
+              onClick: (e) => {
+                e.stopPropagation();
+                handleZoom(0.25);
+              },
+              'aria-label': t('gallery.actions.zoom_in'),
+              className: 'p-3 hover:bg-white/10 rounded-xl transition-all',
+            },
+            ZoomIn({ size: 20, className: 'text-white' }),
+          ),
+          React.createElement('div', { className: 'w-px bg-white/20' }),
+          React.createElement(
+            'button',
+            {
+              onClick: (e) => {
+                e.stopPropagation();
+                toggleFavorite(selectedImage.id, e);
+              },
+              'aria-label': t(
+                favorites.includes(selectedImage.id)
+                  ? 'gallery.actions.favorite_remove'
+                  : 'gallery.actions.favorite_add',
+              ),
+              'aria-pressed': favorites.includes(selectedImage.id),
+              className: 'p-3 hover:bg-white/10 rounded-xl transition-all',
+            },
+            Heart({
+              size: 20,
+              className: `${
+                favorites.includes(selectedImage.id)
+                  ? 'fill-red-500 text-red-500'
+                  : 'text-white'
+              }`,
+            }),
+          ),
+          React.createElement(
+            'button',
+            {
+              onClick: (e) => {
+                e.stopPropagation();
+                handleShare();
+              },
+              'aria-label': t('gallery.actions.share'),
+              className: 'p-3 hover:bg-white/10 rounded-xl transition-all',
+            },
+            Share2({ size: 20, className: 'text-white' }),
+          ),
+          React.createElement(
+            'button',
+            {
+              onClick: (e) => {
+                e.stopPropagation();
+                handleDownload();
+              },
+              'aria-label': t('gallery.actions.download'),
+              className: 'p-3 hover:bg-white/10 rounded-xl transition-all',
+            },
+            Download({ size: 20, className: 'text-white' }),
+          ),
         ),
-      ),
-      React.createElement(
-        'div',
-        {
-          className: 'relative max-w-full max-h-full overflow-hidden',
-          onClick: (e) => e.stopPropagation(),
-        },
-        React.createElement('img', {
-          src: selectedImage.url,
-          alt: selectedImage.title,
-          fetchpriority: 'high',
-          className:
-            'max-w-full max-h-[80vh] object-contain transition-all duration-300',
-          style: {
-            transform: `scale(${zoom})`,
-            filter: 'drop-shadow(0 25px 50px rgba(0,0,0,0.5))',
+        React.createElement(
+          'div',
+          {
+            className: 'relative max-w-full max-h-full overflow-hidden',
+            onClick: (e) => e.stopPropagation(),
           },
-          onError: (e) =>
-            handleImageError(`lb-${selectedImage.id}`, e.target),
-        }),
-      ),
-      isSlideshow &&
-      React.createElement(
-        'div',
-        {
-          className:
-            'absolute bottom-32 left-1/2 -translate-x-1/2 w-64 h-1 bg-white/20 rounded-full overflow-hidden',
-        },
-        React.createElement('div', {
-          className:
-            'h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full',
-          style: {
-            animation: 'progress 3s linear infinite',
-          },
-        }),
-      ),
-      React.createElement(
-        'style',
-        null,
-        `
+          React.createElement('img', {
+            src: selectedImage.url,
+            alt: selectedImage.title,
+            fetchpriority: 'high',
+            className:
+              'max-w-full max-h-[80vh] object-contain transition-all duration-300',
+            style: {
+              transform: `scale(${zoom})`,
+              filter: 'drop-shadow(0 25px 50px rgba(0,0,0,0.5))',
+            },
+            onError: (e) =>
+              handleImageError(`lb-${selectedImage.id}`, e.target),
+          }),
+        ),
+        isSlideshow &&
+          React.createElement(
+            'div',
+            {
+              className:
+                'absolute bottom-32 left-1/2 -translate-x-1/2 w-64 h-1 bg-white/20 rounded-full overflow-hidden',
+            },
+            React.createElement('div', {
+              className:
+                'h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full',
+              style: {
+                animation: 'progress 3s linear infinite',
+              },
+            }),
+          ),
+        React.createElement(
+          'style',
+          null,
+          `
         @keyframes fadeInScale {
           from {
             opacity: 0;
@@ -1167,8 +1174,8 @@ const PhotoGallery = () => {
           }
         }
       `,
+        ),
       ),
-    ),
   );
 };
 

@@ -6,6 +6,7 @@
 
 import { createLogger } from '/content/core/logger.js';
 import { updateLoader, hideLoader } from '/content/core/global-loader.js';
+import { i18n } from '/content/core/i18n.js';
 
 const log = createLogger('AboutLoader');
 
@@ -14,7 +15,7 @@ const log = createLogger('AboutLoader');
  */
 async function initAboutPage() {
   try {
-    updateLoader(0.1, 'Lade Seite...');
+    updateLoader(0.1, i18n.t('loader.loading_page'));
 
     // Step 1: Wait for DOM
     if (document.readyState === 'loading') {
@@ -23,22 +24,22 @@ async function initAboutPage() {
       });
     }
 
-    updateLoader(0.3, 'Initialisiere Komponenten...');
+    updateLoader(0.3, i18n.t('loader.init_components'));
 
     // Step 2: Initialize Lucide Icons
     await initializeLucideIcons();
-    updateLoader(0.5, 'Lade Icons...');
+    updateLoader(0.5, i18n.t('loader.loading_icons'));
 
     // Step 3: Animate cards
     await animateCards();
-    updateLoader(0.7, 'Animiere Elemente...');
+    updateLoader(0.7, i18n.t('loader.animating'));
 
     // Step 4: Setup interactions
     setupInteractions();
-    updateLoader(0.9, 'Aktiviere Interaktionen...');
+    updateLoader(0.9, i18n.t('loader.activating'));
 
     // Complete
-    updateLoader(0.95, 'Seite bereit');
+    updateLoader(0.95, i18n.t('loader.page_ready'));
 
     setTimeout(() => {
       hideLoader(100);
@@ -47,7 +48,7 @@ async function initAboutPage() {
     log.info('About page initialized successfully');
   } catch (error) {
     log.error('Failed to initialize about page:', error);
-    updateLoader(0.95, 'Fehler beim Laden');
+    updateLoader(0.95, i18n.t('loader.failed'));
   }
 }
 

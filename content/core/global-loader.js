@@ -4,6 +4,7 @@
 
 import { createLogger } from './logger.js';
 import { EVENTS as CORE_EVENTS, fire } from './events.js';
+import { i18n } from './i18n.js';
 
 const log = createLogger('GlobalLoader');
 
@@ -29,6 +30,7 @@ function getLoaderElements() {
   const statusText = document.getElementById('loader-status-text');
   const progressBar = document.getElementById('loader-progress-bar');
   const percentage = document.getElementById('loader-percentage');
+  const announcement = document.getElementById('loader-announcement');
 
   if (!overlay || !statusText || !progressBar || !percentage) {
     cachedElements = null;
@@ -40,6 +42,7 @@ function getLoaderElements() {
     statusText,
     progressBar,
     percentage,
+    announcement,
   };
   cacheTime = now;
   return cachedElements;
@@ -55,7 +58,7 @@ export function updateLoader(progress, message, options = {}) {
     const elements = getLoaderElements();
     if (!elements) return;
 
-    const { statusText, progressBar, percentage } = elements;
+    const { statusText, progressBar, percentage, announcement } = elements;
     const pct = Math.round(Math.max(0, Math.min(100, progress * 100)));
 
     if (statusText && statusText.textContent !== message) {
@@ -69,6 +72,11 @@ export function updateLoader(progress, message, options = {}) {
 
     if (percentage && percentage.textContent !== widthValue) {
       percentage.textContent = widthValue;
+    }
+
+    const announcementText = `${message} ${widthValue}`;
+    if (announcement && announcement.textContent !== announcementText) {
+      announcement.textContent = announcementText;
     }
 
     fire(EVENTS.LOADING_UPDATE, { progress: pct, message });
@@ -90,6 +98,10 @@ export function hideLoader(delay = 0, options = {}) {
 
     setTimeout(() => {
       if (options.immediate) {
+        if (elements.announcement) {
+          elements.announcement.textContent = i18n.t('loader.app_loaded');
+        }
+
         overlay.style.display = 'none';
         overlay.setAttribute('aria-hidden', 'true');
         overlay.dataset.loaderDone = 'true';
@@ -105,6 +117,10 @@ export function hideLoader(delay = 0, options = {}) {
       overlay.setAttribute('aria-hidden', 'true');
       overlay.removeAttribute('aria-live');
       overlay.dataset.loaderDone = 'true';
+
+      if (elements.announcement) {
+        elements.announcement.textContent = i18n.t('loader.app_loaded');
+      }
 
       setTimeout(() => {
         overlay.style.display = 'none';

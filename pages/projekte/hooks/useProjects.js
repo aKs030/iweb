@@ -6,6 +6,7 @@
 import React from 'react';
 import { createLogger } from '/content/core/logger.js';
 import { updateLoader } from '/content/core/global-loader.js';
+import { i18n } from '/content/core/i18n.js';
 import { createProjectsData } from '../services/projects-data.service.js';
 
 const log = createLogger('useProjects');
@@ -49,14 +50,14 @@ export const useProjects = (icons) => {
 
         // Final update
         setTimeout(() => {
-          updateLoader(1, 'Bereit!');
+          updateLoader(1, i18n.t('loader.ready_system'));
         }, 100);
       } catch (err) {
         log.error('Failed to load projects:', err);
         const errorMessage =
-          err instanceof Error ? err.message : 'Unbekannter Fehler';
-        setError(`Projekte konnten nicht geladen werden: ${errorMessage}`);
-        updateLoader(1, 'Fehler beim Laden');
+          err instanceof Error ? err.message : i18n.t('error.unknown');
+        setError(`${i18n.t('error.load_failed_title')}: ${errorMessage}`);
+        updateLoader(1, i18n.t('loader.failed'));
       } finally {
         setLoading(false);
       }

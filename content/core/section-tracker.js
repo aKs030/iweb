@@ -86,7 +86,11 @@ export class SectionTracker {
       // Unobserve old sections before re-observing
       if (this.observer) {
         this.sections.forEach((section) => {
-          try { this.observer.unobserve(section); } catch { /* ignore */ }
+          try {
+            this.observer.unobserve(section);
+          } catch {
+            /* ignore */
+          }
         });
       }
       this.sections = newSections;

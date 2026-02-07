@@ -2,6 +2,7 @@ import { CONFIG } from './config.js';
 import { createLogger } from '/content/core/logger.js';
 import { throttle } from '/content/core/utils.js';
 import { updateLoader } from '/content/core/global-loader.js';
+import { i18n } from '/content/core/i18n.js';
 
 import {
   calculateQualityLevel,
@@ -30,9 +31,9 @@ export function showLoadingState(container, progress) {
   // Use the new global loader utility
   if (typeof progress === 'number') {
     const pct = Math.round(progress * 100);
-    updateLoader(progress, `Lädt 3D‑Ansicht… ${pct}%`);
+    updateLoader(progress, i18n.t('loader.loading_3d', { pct }));
   } else {
-    updateLoader(0, 'Initialisiere 3D-Engine...');
+    updateLoader(0, i18n.t('loader.init_3d_engine'));
   }
 
   // Legacy support: Update overlay directly if needed

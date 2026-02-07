@@ -70,7 +70,14 @@ export class RobotGames {
     gameContainer.children[index].textContent = 'X';
     gameContainer.children[index].style.cursor = 'not-allowed';
 
-    if (this._checkGameEnd('X', '🏆 Du hast gewonnen! Glückwunsch! 🎉', gameContainer)) return;
+    if (
+      this._checkGameEnd(
+        'X',
+        '🏆 Du hast gewonnen! Glückwunsch! 🎉',
+        gameContainer,
+      )
+    )
+      return;
 
     // Bot move
     setTimeout(() => {
@@ -80,7 +87,11 @@ export class RobotGames {
         gameContainer.children[botMove].textContent = 'O';
         gameContainer.children[botMove].style.cursor = 'not-allowed';
 
-        this._checkGameEnd('O', '🤖 Ich habe gewonnen! Nochmal versuchen? 😏', gameContainer);
+        this._checkGameEnd(
+          'O',
+          '🤖 Ich habe gewonnen! Nochmal versuchen? 😏',
+          gameContainer,
+        );
       }
     }, 500);
   }
@@ -230,7 +241,8 @@ export class RobotGames {
       }
     } else {
       this.robot.addMessage(
-        `❌ Leider falsch! Die richtige Antwort war: ${this.state.currentTrivia.options[this.state.currentTrivia.answer]
+        `❌ Leider falsch! Die richtige Antwort war: ${
+          this.state.currentTrivia.options[this.state.currentTrivia.answer]
         }`,
         'bot',
       );

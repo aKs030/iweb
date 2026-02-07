@@ -100,11 +100,15 @@ class PerformanceMonitor {
       observer.observe({ type: 'largest-contentful-paint', buffered: true });
 
       // Disconnect LCP observer when page becomes hidden (final value)
-      window.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'hidden') {
-          observer.disconnect();
-        }
-      }, { once: true });
+      window.addEventListener(
+        'visibilitychange',
+        () => {
+          if (document.visibilityState === 'hidden') {
+            observer.disconnect();
+          }
+        },
+        { once: true },
+      );
     } catch (error) {
       log.warn('LCP observer failed:', error);
     }

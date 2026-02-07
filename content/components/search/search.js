@@ -321,8 +321,8 @@ class SearchComponent {
             <div class="search-category-divider"></div>
           </div>
           ${items
-              .map((result) => this.createResultHTML(result, query))
-              .join('')}
+            .map((result) => this.createResultHTML(result, query))
+            .join('')}
         </div>
       `,
         )
@@ -376,7 +376,17 @@ class SearchComponent {
 
   escapeHTML(text) {
     if (!text || typeof text !== 'string') return '';
-    return text.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+    return text.replace(
+      /[&<>"']/g,
+      (c) =>
+        ({
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#39;',
+        })[c],
+    );
   }
 
   highlightText(text, query) {
