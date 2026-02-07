@@ -38,9 +38,20 @@ export class RobotChat {
 
   toggleChat(forceState) {
     const newState = forceState ?? !this.isOpen;
+    if (newState === this.isOpen) return;
+
     if (newState) {
       this.robot.ensureChatWindowCreated();
-      this.robot.dom.window.classList.add('open');
+      this.robot.dom.window.style.display = 'flex';
+      this.robot.dom.window.style.visibility = 'visible';
+      this.robot.dom.window.animate(
+        [
+          { opacity: 0, transform: 'translateY(20px) scale(0.95)' },
+          { opacity: 1, transform: 'translateY(0) scale(1)' },
+        ],
+        { duration: 300, easing: 'cubic-bezier(0.4, 0, 0.2, 1)' },
+      );
+
       this.isOpen = true;
 
       // Update state manager
@@ -64,7 +75,19 @@ export class RobotChat {
       // Focus Trap
       globalThis?.a11y?.trapFocus(this.robot.dom.window);
     } else {
-      this.robot.dom.window.classList.remove('open');
+      const anim = this.robot.dom.window.animate(
+        [
+          { opacity: 1, transform: 'translateY(0) scale(1)' },
+          { opacity: 0, transform: 'translateY(20px) scale(0.95)' },
+        ],
+        { duration: 250, easing: 'cubic-bezier(0.4, 0, 0.2, 1)' },
+      );
+
+      anim.onfinish = () => {
+        this.robot.dom.window.style.display = 'none';
+        this.robot.dom.window.style.visibility = 'hidden';
+      };
+
       this.isOpen = false;
 
       // Update state manager
@@ -274,13 +297,62 @@ export class RobotChat {
   showBubble(text) {
     if (this.isOpen) return;
     if (!this.robot.dom.bubble || !this.robot.dom.bubbleText) return;
+
     this.robot.dom.bubbleText.textContent = String(text || '').trim();
-    this.robot.dom.bubble.classList.add('visible');
+
+    if (!this.robot.dom.bubble.classList.contains('visible')) {
+      this.robot.dom.bubble.classList.add('visible');
+      this.robot.dom.bubble.animate(
+        [
+          { opacity: 0, transform: 'scale(0)' },
+          { opacity: 1, transform: 'scale(1.1)', offset: 0.6 },
+          { opacity: 1, transform: 'scale(1)' },
+        ],
+        { duration: 400, easing: 'cubic-bezier(0.175, 0.885, 0.32, 1.275)' },
+      );
+
+      // Start hologram pulse using WAAPI
+      if (!this._hologramAnim) {
+        this._hologramAnim = this.robot.dom.bubble.animate(
+          [
+            {
+              boxShadow: '0 4px 20px rgba(0,0,0,0.4), 0 0 0 rgba(64,224,208,0)',
+              borderColor: 'rgba(64,224,208,0.4)',
+            },
+            {
+              boxShadow:
+                '0 8px 25px rgba(0,0,0,0.5), 0 0 15px rgba(64,224,208,0.25)',
+              borderColor: 'rgba(64,224,208,0.7)',
+            },
+          ],
+          { duration: 2000, iterations: Infinity, direction: 'alternate' },
+        );
+      }
+    }
   }
 
   hideBubble() {
-    if (this.robot.dom.bubble)
+    if (
+      !this.robot.dom.bubble ||
+      !this.robot.dom.bubble.classList.contains('visible')
+    )
+      return;
+
+    const anim = this.robot.dom.bubble.animate(
+      [
+        { opacity: 1, transform: 'scale(1)' },
+        { opacity: 0, transform: 'scale(0)' },
+      ],
+      { duration: 300, easing: 'ease-in' },
+    );
+
+    anim.onfinish = () => {
       this.robot.dom.bubble.classList.remove('visible');
+      if (this._hologramAnim) {
+        this._hologramAnim.cancel();
+        this._hologramAnim = null;
+      }
+    };
   }
 
   showTyping() {
@@ -444,8 +516,15 @@ export class RobotChat {
     } else if (actionKey === 'about' || actionKey === 'skills') {
       anim.playConfusedAnimation();
     } else {
-      this.robot.dom.avatar.classList.add('nod');
-      setTimeout(() => this.robot.dom.avatar.classList.remove('nod'), 650);
+      this.robot.dom.avatar.animate(
+        [
+          { transform: 'translateY(0) rotate(0)' },
+          { transform: 'translateY(-3px) rotate(-3deg)', offset: 0.35 },
+          { transform: 'translateY(1px) rotate(1deg)', offset: 0.7 },
+          { transform: 'translateY(0) rotate(0)' },
+        ],
+        { duration: 600, easing: 'cubic-bezier(0.2, 0.9, 0.2, 1)' },
+      );
     }
 
     let responseText = Array.isArray(data.text)

@@ -143,6 +143,9 @@ export class RobotCollision {
 
     const anim = this.robot.animationModule;
 
+    // Trigger Shield Effect
+    anim.triggerShieldEffect();
+
     // Trigger Screen Shake (Robot specific)
     this.triggerRobotShake(type === 'short_circuit' ? 15 : 8);
 
@@ -280,6 +283,7 @@ export class RobotCollision {
         strength: 2.5,
         spread: 180,
       });
+      this.robot.animationModule.triggerShieldEffect();
 
       // High speed collision causes dizzy state
       if (this.robot.animationModule.motion.dashUntil > performance.now()) {

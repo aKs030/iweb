@@ -409,7 +409,8 @@ export class RobotCompanion {
 
     this.setupSectionChangeDetection();
 
-    this._setTimeout(() => {
+    this._setTimeout(async () => {
+      await this.animationModule.playFlyInAnimation();
       this.animationModule.startTypeWriterKnockbackAnimation();
     }, 50);
 
@@ -778,7 +779,9 @@ export class RobotCompanion {
       right: container.querySelector('.robot-arm.right'),
     };
     this.dom.particles = container.querySelector('.robot-particles');
+    this.dom.particleCircles = container.querySelectorAll('.particle');
     this.dom.thinking = container.querySelector('.robot-thinking');
+    this.dom.coreLight = container.querySelector('.robot-core-light');
 
     const anim = /** @type {any} */ (this.animationModule);
     requestAnimationFrame(() => anim.startIdleEyeMovement());
@@ -1101,6 +1104,7 @@ if (document.readyState === 'loading') {
           log.error(
             'RobotCompanion init failed: ' +
               (e && e.message ? e.message : String(e)),
+            e,
           ),
         );
     },
@@ -1114,6 +1118,7 @@ if (document.readyState === 'loading') {
       log.error(
         'RobotCompanion init failed: ' +
           (e && e.message ? e.message : String(e)),
+        e,
       ),
     );
 }

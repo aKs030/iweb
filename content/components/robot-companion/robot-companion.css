@@ -94,18 +94,9 @@
   filter: drop-shadow(0 0 28px rgb(64 224 208 / 80%));
 }
 
-.robot-avatar.nod {
-  animation: robotNod 600ms cubic-bezier(0.2, 0.9, 0.2, 1) both;
-}
-
 /* Antenna Light (base) */
 .robot-antenna-light {
   animation: pulseRed 2s infinite;
-}
-
-/* Antenna Signal when communicating */
-.robot-bubble.visible + .robot-avatar .robot-antenna-light {
-  animation: signalTransmit 0.8s infinite;
 }
 
 /* Eyes & Pupils base styles */
@@ -130,10 +121,6 @@
   opacity: 1;
 }
 
-.robot-eyes .robot-lid.is-blink {
-  transform: translateY(6px) scaleY(1.6);
-}
-
 .robot-eyes.is-dizzy .robot-pupil,
 .robot-eyes.is-dizzy .robot-lid {
   opacity: 0 !important;
@@ -152,19 +139,6 @@
     filter 0.2s ease,
     fill 0.2s ease,
     transform 0.2s ease;
-}
-
-@keyframes signalTransmit {
-  0%,
-  100% {
-    fill: #ff4444;
-    filter: drop-shadow(0 0 2px #ff4444);
-  }
-
-  50% {
-    fill: #40e0d0; /* Cyan/Turquoise flash */
-    filter: drop-shadow(0 0 8px #40e0d0);
-  }
 }
 
 @keyframes cyberGlitch {
@@ -189,24 +163,6 @@
 
   98% {
     filter: drop-shadow(-2px 0 15px rgb(0 255 0 / 60%));
-  }
-}
-
-@keyframes robotNod {
-  0% {
-    transform: translateY(0) rotate(0);
-  }
-
-  35% {
-    transform: translateY(-3px) rotate(-3deg);
-  }
-
-  70% {
-    transform: translateY(1px) rotate(1deg);
-  }
-
-  100% {
-    transform: translateY(0) rotate(0);
   }
 }
 
@@ -248,21 +204,6 @@
   }
   100% {
     transform: rotate(0);
-  }
-}
-
-.robot-antenna-light.is-speaking {
-  animation: antenna-speaking 0.4s infinite alternate ease-in-out !important;
-}
-
-@keyframes antenna-speaking {
-  from {
-    fill: #40e0d0;
-    filter: drop-shadow(0 0 4px #40e0d0);
-  }
-  to {
-    fill: #ffffff;
-    filter: drop-shadow(0 0 12px #40e0d0) brightness(1.5);
   }
 }
 
@@ -492,9 +433,6 @@
   opacity: 0;
   transform: scale(0);
   transform-origin: calc(100% - 40px) bottom;
-  transition:
-    opacity 0.3s ease,
-    transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   pointer-events: auto;
   -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
@@ -523,43 +461,6 @@
 .robot-bubble.visible {
   opacity: 1;
   transform: scale(1);
-  animation:
-    bubblePop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards,
-    hologramPulse 4s ease-in-out infinite 0.5s;
-}
-
-@keyframes bubblePop {
-  0% {
-    opacity: 0;
-    transform: scale(0);
-  }
-
-  60% {
-    opacity: 1;
-    transform: scale(1.05);
-  }
-
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes hologramPulse {
-  0%,
-  100% {
-    box-shadow:
-      0 4px 20px rgba(0, 0, 0, 0.4),
-      0 0 0 rgba(64, 224, 208, 0);
-    border-color: rgba(64, 224, 208, 0.4);
-  }
-
-  50% {
-    box-shadow:
-      0 8px 25px rgba(0, 0, 0, 0.5),
-      0 0 15px rgba(64, 224, 208, 0.25);
-    border-color: rgba(64, 224, 208, 0.7);
-  }
 }
 
 .robot-bubble-close {
@@ -624,11 +525,7 @@
   visibility: hidden;
   pointer-events: none; /* Ignore pointer events when hidden */
 
-  /* Smooth Animation */
-  transition:
-    opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1),
-    transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
-    visibility 0.5s;
+  /* Smooth Animation handled by WAAPI */
   z-index: 10000; /* Ensure it's above everything */
 }
 
@@ -645,9 +542,6 @@
 }
 
 .robot-chat-window.open {
-  opacity: 1;
-  transform: translate(-50%, -50%) scale(1);
-  visibility: visible;
   pointer-events: auto;
 }
 
@@ -1312,4 +1206,55 @@
     fill: #ffff00;
     filter: drop-shadow(0 0 8px #ffff00);
   }
+}
+
+/* Force Field / Shield Effect */
+.robot-shield {
+  position: absolute;
+  inset: -15px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    transparent 40%,
+    rgba(64, 224, 208, 0.2) 60%,
+    rgba(64, 224, 208, 0.5) 85%,
+    transparent 100%
+  );
+  border: 1px solid rgba(64, 224, 208, 0.4);
+  opacity: 0;
+  pointer-events: none;
+  z-index: -1;
+  will-change: transform, opacity;
+  box-shadow: 0 0 20px rgba(64, 224, 208, 0.3) inset;
+}
+
+/* Sleep Mode Styles */
+.robot-avatar.is-sleeping {
+  filter: grayscale(0.4) brightness(0.8)
+    drop-shadow(0 0 5px rgba(64, 224, 208, 0.2));
+}
+
+.robot-zzz-particle {
+  position: absolute;
+  color: #40e0d0;
+  font-family: 'Inter', sans-serif;
+  font-weight: bold;
+  font-size: 14px;
+  pointer-events: none;
+  user-select: none;
+  z-index: 1000;
+  will-change: transform, opacity;
+  text-shadow: 0 0 5px rgba(64, 224, 208, 0.5);
+}
+
+/* Wind / Trail Particles */
+.robot-wind-particle {
+  position: absolute;
+  background: white;
+  height: 2px;
+  border-radius: 1px;
+  pointer-events: none;
+  opacity: 0.6;
+  z-index: -1;
+  will-change: transform, opacity;
 }

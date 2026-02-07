@@ -88,7 +88,7 @@ export class RobotIntelligence {
     this.lastInteractionTime = Date.now();
     if (this.isIdle) {
       this.isIdle = false;
-      // Optional: Wake up reaction?
+      this.robot.animationModule.setSleeping(false);
     }
   }
 
@@ -98,9 +98,10 @@ export class RobotIntelligence {
     const now = Date.now();
     const idleTime = now - this.lastInteractionTime;
 
-    // If idle for > 60 seconds
-    if (idleTime > 60000 && !this.isIdle) {
+    // If idle for > 30 seconds
+    if (idleTime > 30000 && !this.isIdle) {
       this.isIdle = true;
+      this.robot.animationModule.setSleeping(true);
       this.triggerIdleReaction();
     }
   }
@@ -412,14 +413,21 @@ export class RobotIntelligence {
   }
 
   triggerIdleReaction() {
-    // 30% chance to react on idle
-    if (Math.random() > 0.3) return;
+    // 40% chance to react on idle
+    if (Math.random() > 0.4) return;
+
+    // 50% chance to trigger proactive help instead of just text
+    if (Math.random() < 0.5) {
+      this.robot.animationModule.triggerProactiveHelp();
+      return;
+    }
 
     const texts = [
       'Bist du noch da? 😴',
       'Langweilig... 🎵',
       'Brauchst du Hilfe? 👋',
       'Psst... ich bin noch hier! 🤖',
+      'Ich schlafe gleich ein... 💤',
     ];
     const text = texts[Math.floor(Math.random() * texts.length)];
     this.robot.chatModule.showBubble(text);

@@ -542,7 +542,7 @@ export class RobotDOMBuilder {
   }
 
   /**
-   * Create particles
+   * Create particles (prepared for WAAPI)
    * @returns {SVGGElement}
    */
   createParticles() {
@@ -550,11 +550,10 @@ export class RobotDOMBuilder {
     g.classList.add('robot-particles');
     g.style.opacity = '0';
 
-    // Create 3 animated particles
     const particles = [
-      { cx: 20, cy: 50, r: 2, dur: '2s' },
-      { cx: 80, cy: 60, r: 1.5, dur: '2.5s' },
-      { cx: 15, cy: 70, r: 1, dur: '1.8s' },
+      { cx: 20, cy: 50, r: 2 },
+      { cx: 80, cy: 60, r: 1.5 },
+      { cx: 15, cy: 70, r: 1 },
     ];
 
     particles.forEach((p) => {
@@ -568,17 +567,6 @@ export class RobotDOMBuilder {
       circle.setAttribute('r', String(p.r));
       circle.setAttribute('fill', '#40e0d0');
       circle.setAttribute('opacity', '0.6');
-
-      const animate = document.createElementNS(
-        'http://www.w3.org/2000/svg',
-        'animate',
-      );
-      animate.setAttribute('attributeName', 'cy');
-      animate.setAttribute('values', `${p.cy};${p.cy - 20};${p.cy}`);
-      animate.setAttribute('dur', p.dur);
-      animate.setAttribute('repeatCount', 'indefinite');
-
-      circle.appendChild(animate);
       g.appendChild(circle);
     });
 
@@ -619,7 +607,7 @@ export class RobotDOMBuilder {
   }
 
   /**
-   * Create core light
+   * Create core light (WAAPI-controlled)
    * @returns {SVGCircleElement}
    */
   createCoreLight() {
@@ -627,31 +615,12 @@ export class RobotDOMBuilder {
       'http://www.w3.org/2000/svg',
       'circle',
     );
+    circle.classList.add('robot-core-light');
     circle.setAttribute('cx', '50');
     circle.setAttribute('cy', '70');
     circle.setAttribute('r', '5');
     circle.setAttribute('fill', '#2563eb');
     circle.setAttribute('opacity', '0.8');
-
-    const animate = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'animate',
-    );
-    animate.setAttribute('attributeName', 'opacity');
-    animate.setAttribute('values', '0.5;1;0.5');
-    animate.setAttribute('dur', '1.5s');
-    animate.setAttribute('repeatCount', 'indefinite');
-
-    const animateScale = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'animate',
-    );
-    animateScale.setAttribute('attributeName', 'r');
-    animateScale.setAttribute('values', '4.5;5.5;4.5');
-    animateScale.setAttribute('dur', '3s');
-    animateScale.setAttribute('repeatCount', 'indefinite');
-
-    circle.append(animate, animateScale);
 
     return circle;
   }
