@@ -20,6 +20,9 @@ import { SectionTracker } from './core/section-tracker.js';
 import { AppLoadManager } from './core/load-manager.js';
 import { GlobalEventHandlers } from './core/global-events.js';
 
+// Search Component (Cmd+K / Ctrl+K Spotlight)
+import './components/search/search.js';
+
 // Initialize console filter for development
 initConsoleFilter();
 
