@@ -1,8 +1,8 @@
 import { CONFIG } from './config.js';
-import { createLogger } from '/content/core/logger.js';
-import { throttle } from '/content/core/utils.js';
-import { updateLoader } from '/content/core/global-loader.js';
-import { i18n } from '/content/core/i18n.js';
+import { createLogger } from '../../../core/logger.js';
+import { throttle } from '../../../core/utils.js';
+import { updateLoader } from '../../../core/global-loader.js';
+import { i18n } from '../../../core/i18n.js';
 
 import {
   calculateQualityLevel,
