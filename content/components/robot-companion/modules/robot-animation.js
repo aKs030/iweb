@@ -20,6 +20,7 @@ export class RobotAnimation {
       scrollVelocity: 0,
       scrollTilt: 0,
       verticalLag: 0,
+      lastTrailTime: 0,
     };
 
     // Squash & Stretch State
@@ -557,12 +558,18 @@ export class RobotAnimation {
     }
 
     const now = performance.now();
+    // Throttle DOM lookups and layout reads (getBoundingClientRect)
     if (
       now - this.cacheConfig.lastTypeWriterCheck >
       this.cacheConfig.typeWriterCheckInterval
     ) {
       this.robot.dom.typeWriter = document.querySelector('.typewriter-title');
       this.cacheConfig.lastTypeWriterCheck = now;
+
+      // Reset rect cache when we re-check for the element
+      if (!this.robot.dom.typeWriter) {
+        this.cacheConfig.typeWriterRect = null;
+      }
     }
 
     const isHovering =
@@ -606,9 +613,15 @@ export class RobotAnimation {
       robotWidth;
     let maxLeft = initialLeft - 20;
 
-    let twRect = null;
+    let twRect = this.cacheConfig.typeWriterRect;
     if (this.robot.dom.typeWriter) {
-      twRect = this.robot.dom.typeWriter.getBoundingClientRect();
+      // Update rect cache every 150ms to avoid forced reflows every frame
+      if (!twRect || now - (this.cacheConfig.lastRectUpdate || 0) > 150) {
+        twRect = this.robot.dom.typeWriter.getBoundingClientRect();
+        this.cacheConfig.typeWriterRect = twRect;
+        this.cacheConfig.lastRectUpdate = now;
+      }
+
       const limit = initialLeft - twRect.right - 50;
       if (limit < maxLeft) maxLeft = limit;
     }
@@ -655,8 +668,9 @@ export class RobotAnimation {
     }
     this._prevDashActive = dashActive;
 
-    if (dashActive && Math.random() < 0.4) {
+    if (dashActive && now - this.patrol.lastTrailTime > 120) {
       this.spawnDashTrail();
+      this.patrol.lastTrailTime = now;
     }
 
     const baseSpeed = this.motion.baseSpeed + Math.sin(now / 800) * 0.2;
@@ -902,6 +916,10 @@ export class RobotAnimation {
     if (!this.robot.dom.container || !this.robot.dom.avatar) return;
 
     const el = this.robot.dom.avatar.cloneNode(true);
+
+    // Remove IDs to prevent duplicates; references will point to the original SVG defs
+    el.querySelectorAll('[id]').forEach((node) => node.removeAttribute('id'));
+
     el.classList.remove('is-moving', 'is-dashing', 'waving', 'check-watch');
     el.classList.add('robot-dash-trail');
     el.style.position = 'absolute';
