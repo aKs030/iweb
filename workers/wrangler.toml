@@ -28,6 +28,10 @@ bindings = [
   { name = "MCP_OBJECT", class_name = "NLWebMcp" }
 ]
 
+[[migrations]]
+tag = "v1"
+new_classes = [ "NLWebMcp" ]
+
 [observability]
 enabled = false
 head_sampling_rate = 1
