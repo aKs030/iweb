@@ -148,10 +148,24 @@ export class RobotCollision {
 
     if (type === 'dizzy') {
       anim.pausePatrol(2000);
-      anim.visualState.targetScaleX = 1.2;
-      anim.visualState.targetScaleY = 0.8;
 
-      if (this.robot.dom.svg) {
+      // Apply dizzy squash/stretch via DOM animation instead of visualState,
+      // because the animation module resets visualState scale/rotation while paused.
+      if (this.robot.dom.avatar && this.robot.dom.avatar.animate) {
+        this.robot.dom.avatar.animate(
+          [
+            { transform: 'scale(1, 1)' },
+            { transform: 'scale(1.2, 0.8)' },
+            { transform: 'scale(1, 1)' },
+          ],
+          {
+            duration: 1000,
+            easing: 'ease-in-out',
+          },
+        );
+      }
+
+      if (this.robot.dom.svg && this.robot.dom.svg.animate) {
         this.robot.dom.svg.animate(
           [{ transform: 'rotate(0deg)' }, { transform: 'rotate(720deg)' }],
           { duration: 1000, easing: 'ease-in-out' },
