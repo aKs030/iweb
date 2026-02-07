@@ -173,18 +173,18 @@ export class RobotCompanion {
       chat.contextGreetings || { default: [] };
     chat.moodGreetings = src.moodGreetings ||
       chat.moodGreetings || {
-        normal: ['Hey! Wie kann ich helfen?', 'Hi! Was brauchst du?'],
-      };
+      normal: ['Hey! Wie kann ich helfen?', 'Hi! Was brauchst du?'],
+    };
     chat.startMessageSuffix =
       src.startMessageSuffix || chat.startMessageSuffix || {};
     chat.initialBubblePools =
       src.initialBubblePools || chat.initialBubblePools || [];
     chat.initialBubbleSequenceConfig = src.initialBubbleSequenceConfig ||
       chat.initialBubbleSequenceConfig || {
-        steps: 4,
-        displayDuration: 10000,
-        pausesAfter: [0, 20000, 20000, 0],
-      };
+      steps: 4,
+      displayDuration: 10000,
+      pausesAfter: [0, 20000, 20000, 0],
+    };
   }
 
   /**
@@ -1190,7 +1190,7 @@ if (document.readyState === 'loading') {
         .catch((e) =>
           log.error(
             'RobotCompanion init failed: ' +
-              (e && e.message ? e.message : String(e)),
+            (e && e.message ? e.message : String(e)),
           ),
         );
     },
@@ -1203,7 +1203,7 @@ if (document.readyState === 'loading') {
     .catch((e) =>
       log.error(
         'RobotCompanion init failed: ' +
-          (e && e.message ? e.message : String(e)),
+        (e && e.message ? e.message : String(e)),
       ),
     );
 }
