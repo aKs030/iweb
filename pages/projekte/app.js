@@ -6,12 +6,10 @@
 
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import { createLogger } from '/content/core/logger.js';
 import { useProjects } from './hooks/useProjects.js';
 import { ThreeScene } from './components/ThreeScene.js';
 import * as Icons from '/content/components/ui/icons.js';
 
-const log = createLogger('react-projekte-app');
 const { createElement: h, Fragment, useState } = React;
 
 /**
@@ -123,6 +121,6 @@ export const initReactProjectsApp = () => {
     const root = createRoot(rootEl);
     root.render(h(App));
   } catch (error) {
-    log.error('Failed to init app:', error);
+    console.error('Failed to init projekte app:', error);
   }
 };

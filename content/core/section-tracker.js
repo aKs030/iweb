@@ -83,6 +83,12 @@ export class SectionTracker {
 
     // Only update if sections changed
     if (newSections.length !== this.sections.length) {
+      // Unobserve old sections before re-observing
+      if (this.observer) {
+        this.sections.forEach((section) => {
+          try { this.observer.unobserve(section); } catch { /* ignore */ }
+        });
+      }
       this.sections = newSections;
       if (this.observer) {
         this.sections.forEach((section) => {

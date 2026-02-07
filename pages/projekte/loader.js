@@ -17,12 +17,14 @@ const initPage = () => {
       root.innerHTML = `
         <div style="padding: 2rem; text-align: center; color: #ef4444; background: rgba(0,0,0,0.8); border-radius: 1rem; margin: 2rem;">
           <h2>Fehler beim Laden</h2>
-          <p><strong>Details:</strong> ${error.message}</p>
+          <p><strong>Details:</strong> <span id="error-detail"></span></p>
           <button onclick="location.reload()" style="margin-top: 1rem; padding: 0.5rem 1rem; cursor: pointer; background: #4444ff; color: white; border: none; border-radius: 4px;">
             Seite neu laden
           </button>
         </div>
       `;
+      const errorSpan = root.querySelector('#error-detail');
+      if (errorSpan) errorSpan.textContent = error.message;
     }
   }
 };

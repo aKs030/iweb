@@ -241,6 +241,16 @@ class TypeWriter {
     if (!this.timerManager) return;
     this.timerManager.clearAll();
     document.body.classList.remove('has-typingjs');
+    // Call teardown for external event listeners
+    try {
+      const instance = /** @type {any} */ (this);
+      if (typeof instance.__teardown === 'function') {
+        instance.__teardown();
+        instance.__teardown = null;
+      }
+    } catch {
+      /* ignore */
+    }
     // Clear internal instance if this is the active one
     try {
       if (typeWriterInstance === this) typeWriterInstance = null;

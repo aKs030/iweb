@@ -80,13 +80,13 @@ const activateThumb = (btn) => {
   );
   iframe.setAttribute('allowfullscreen', '');
   wrapper.appendChild(iframe);
+  btn.dataset.loaded = '1';
   btn.replaceWith(wrapper);
   try {
     iframe.focus();
   } catch {
     /* ignore */
   }
-  btn.dataset.loaded = '1';
 };
 
 const bindThumb = (btn) => {

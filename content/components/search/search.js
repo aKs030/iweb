@@ -110,7 +110,7 @@ class SearchComponent {
   }
 
   attachEventListeners() {
-    document.addEventListener('keydown', (e) => {
+    this._handleKeydown = (e) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
         this.toggle();
@@ -132,7 +132,8 @@ class SearchComponent {
           this.selectResult(this.selectedIndex);
         }
       }
-    });
+    };
+    document.addEventListener('keydown', this._handleKeydown);
 
     if (this.input) {
       this.input.addEventListener('input', (e) => {
@@ -375,9 +376,7 @@ class SearchComponent {
 
   escapeHTML(text) {
     if (!text || typeof text !== 'string') return '';
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
+    return text.replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
   }
 
   highlightText(text, query) {
@@ -418,6 +417,24 @@ class SearchComponent {
     _log.info(`Navigating to: ${result.url}`);
     window.location.href = result.url;
     this.close();
+  }
+
+  destroy() {
+    if (this._handleKeydown) {
+      document.removeEventListener('keydown', this._handleKeydown);
+      this._handleKeydown = null;
+    }
+    if (this.searchTimeout) {
+      clearTimeout(this.searchTimeout);
+      this.searchTimeout = null;
+    }
+    this.close();
+    if (this.overlay?.parentNode) {
+      this.overlay.parentNode.removeChild(this.overlay);
+    }
+    this.overlay = null;
+    this.input = null;
+    this.resultsContainer = null;
   }
 }
 

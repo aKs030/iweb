@@ -53,8 +53,10 @@ export function debounce(fn, delay, options = {}) {
 
     if (trailing) {
       timeoutId = setTimeout(() => {
-        if (!leading || timeSinceLastCall <= delay) {
-          execute();
+        const elapsed = Date.now() - lastCallTime;
+        if (!leading || elapsed >= delay) {
+          lastCallTime = Date.now();
+          fn.apply(this, args);
         }
       }, delay);
     }
@@ -93,7 +95,7 @@ export function throttle(func, limit = 250, options = {}) {
       }
       inThrottle = true;
 
-      setTimeout(() => {
+      timeoutId = setTimeout(() => {
         inThrottle = false;
         if (trailing && lastArgs) {
           func.apply(this, lastArgs);

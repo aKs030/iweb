@@ -25,6 +25,10 @@ class MemoryCache {
       return null;
     }
 
+    // Move to end for LRU ordering
+    this.cache.delete(key);
+    this.cache.set(key, item);
+
     return item.value;
   }
 
@@ -85,6 +89,14 @@ class IndexedDBCache {
     });
   }
 
+  /** Wraps an IDBRequest in a Promise */
+  _requestToPromise(request, successValue) {
+    return new Promise((resolve, reject) => {
+      request.onsuccess = () => resolve(successValue ?? request.result);
+      request.onerror = () => reject(request.error);
+    });
+  }
+
   async get(key) {
     try {
       await this.init();
@@ -120,19 +132,15 @@ class IndexedDBCache {
   async set(key, value, ttl = 3600000) {
     try {
       await this.init();
-      return new Promise((resolve, reject) => {
-        const transaction = this.db.transaction(['cache'], 'readwrite');
-        const store = transaction.objectStore('cache');
-        const request = store.put({
-          key,
-          value,
-          expires: ttl ? Date.now() + ttl : null,
-          created: Date.now(),
-        });
-
-        request.onsuccess = () => resolve(true);
-        request.onerror = () => reject(request.error);
+      const transaction = this.db.transaction(['cache'], 'readwrite');
+      const store = transaction.objectStore('cache');
+      const request = store.put({
+        key,
+        value,
+        expires: ttl ? Date.now() + ttl : null,
+        created: Date.now(),
       });
+      return await this._requestToPromise(request, true);
     } catch (error) {
       log.warn('IndexedDB set failed:', error);
       return false;
@@ -142,14 +150,9 @@ class IndexedDBCache {
   async delete(key) {
     try {
       await this.init();
-      return new Promise((resolve, reject) => {
-        const transaction = this.db.transaction(['cache'], 'readwrite');
-        const store = transaction.objectStore('cache');
-        const request = store.delete(key);
-
-        request.onsuccess = () => resolve(true);
-        request.onerror = () => reject(request.error);
-      });
+      const transaction = this.db.transaction(['cache'], 'readwrite');
+      const store = transaction.objectStore('cache');
+      return await this._requestToPromise(store.delete(key), true);
     } catch (error) {
       log.warn('IndexedDB delete failed:', error);
       return false;
@@ -159,14 +162,9 @@ class IndexedDBCache {
   async clear() {
     try {
       await this.init();
-      return new Promise((resolve, reject) => {
-        const transaction = this.db.transaction(['cache'], 'readwrite');
-        const store = transaction.objectStore('cache');
-        const request = store.clear();
-
-        request.onsuccess = () => resolve(true);
-        request.onerror = () => reject(request.error);
-      });
+      const transaction = this.db.transaction(['cache'], 'readwrite');
+      const store = transaction.objectStore('cache');
+      return await this._requestToPromise(store.clear(), true);
     } catch (error) {
       log.warn('IndexedDB clear failed:', error);
       return false;

@@ -45,17 +45,23 @@ export const ChevronRight = createIcon(
   React.createElement('polyline', { points: '9 18 15 12 9 6' }),
 );
 
+// Shared search glass base elements for ZoomIn/ZoomOut/Search
+const searchGlassElements = () => [
+  React.createElement('circle', { key: 'c', cx: '11', cy: '11', r: '8' }),
+  React.createElement('line', {
+    key: 'l',
+    x1: '21',
+    y1: '21',
+    x2: '16.65',
+    y2: '16.65',
+  }),
+];
+
 export const ZoomIn = createIcon(
   React.createElement(
     React.Fragment,
     null,
-    React.createElement('circle', { cx: '11', cy: '11', r: '8' }),
-    React.createElement('line', {
-      x1: '21',
-      y1: '21',
-      x2: '16.65',
-      y2: '16.65',
-    }),
+    ...searchGlassElements(),
     React.createElement('line', { x1: '11', y1: '8', x2: '11', y2: '14' }),
     React.createElement('line', { x1: '8', y1: '11', x2: '14', y2: '11' }),
   ),
@@ -65,13 +71,7 @@ export const ZoomOut = createIcon(
   React.createElement(
     React.Fragment,
     null,
-    React.createElement('circle', { cx: '11', cy: '11', r: '8' }),
-    React.createElement('line', {
-      x1: '21',
-      y1: '21',
-      x2: '16.65',
-      y2: '16.65',
-    }),
+    ...searchGlassElements(),
     React.createElement('line', { x1: '8', y1: '11', x2: '14', y2: '11' }),
   ),
 );
@@ -116,17 +116,7 @@ export const Grid3x3 = createIcon(
 );
 
 export const Search = createIcon(
-  React.createElement(
-    React.Fragment,
-    null,
-    React.createElement('circle', { cx: '11', cy: '11', r: '8' }),
-    React.createElement('line', {
-      x1: '21',
-      y1: '21',
-      x2: '16.65',
-      y2: '16.65',
-    }),
-  ),
+  React.createElement(React.Fragment, null, ...searchGlassElements()),
 );
 
 export const Share2 = createIcon(
