@@ -230,8 +230,7 @@ export class RobotGames {
       }
     } else {
       this.robot.addMessage(
-        `❌ Leider falsch! Die richtige Antwort war: ${
-          this.state.currentTrivia.options[this.state.currentTrivia.answer]
+        `❌ Leider falsch! Die richtige Antwort war: ${this.state.currentTrivia.options[this.state.currentTrivia.answer]
         }`,
         'bot',
       );
