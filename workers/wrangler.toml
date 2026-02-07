@@ -10,6 +10,10 @@ compatibility_flags = ["nodejs_compat"]
 ENVIRONMENT = "production"
 MAX_SEARCH_RESULTS = "10"
 
+[[ai_search]]
+binding = "AI_SEARCH"
+index_name = "ai-search-round-haze-39bb-15a977"
+
 # YouTube API Proxy (deploy with: wrangler deploy --env youtube)
 [env.youtube]
 name = "youtube-api-proxy"

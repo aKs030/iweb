@@ -19,6 +19,7 @@ import { initPerformanceMonitoring } from './core/performance-monitor.js';
 import { SectionTracker } from './core/section-tracker.js';
 import { AppLoadManager } from './core/load-manager.js';
 import { GlobalEventHandlers } from './core/global-events.js';
+import { initSearch } from './components/search/search.js';
 
 // Initialize console filter for development
 initConsoleFilter();
@@ -221,6 +222,9 @@ document.addEventListener(
 
     // Initialize global event handlers
     GlobalEventHandlers.init(announce);
+
+    // Initialize search component (Cmd+K / Ctrl+K)
+    initSearch();
 
     log.info('Performance:', {
       domReady: Math.round(perfMarks.domReady - perfMarks.start),

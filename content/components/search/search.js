@@ -450,7 +450,7 @@ class SearchComponent {
 
 let searchInstance = null;
 
-function initSearch() {
+export function initSearch() {
   if (searchInstance) return searchInstance;
   searchInstance = new SearchComponent();
   // @ts-ignore
