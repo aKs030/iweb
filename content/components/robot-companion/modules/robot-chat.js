@@ -434,8 +434,19 @@ export class RobotChat {
     if (!data) return;
 
     this.showTyping();
-    this.robot.dom.avatar.classList.add('nod');
-    setTimeout(() => this.robot.dom.avatar.classList.remove('nod'), 650);
+
+    // Context-aware animations
+    const anim = this.robot.animationModule;
+    if (actionKey === 'joke') {
+      anim.playDanceAnimation();
+    } else if (actionKey === 'fact') {
+      anim.playExcitementAnimation();
+    } else if (actionKey === 'about' || actionKey === 'skills') {
+      anim.playConfusedAnimation();
+    } else {
+      this.robot.dom.avatar.classList.add('nod');
+      setTimeout(() => this.robot.dom.avatar.classList.remove('nod'), 650);
+    }
 
     let responseText = Array.isArray(data.text)
       ? data.text[Math.floor(Math.random() * data.text.length)]

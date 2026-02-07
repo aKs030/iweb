@@ -17,6 +17,8 @@ export class RobotAnimation {
       isPaused: false,
       bouncePhase: 0,
       noiseOffset: Math.random() * 1000,
+      scrollVelocity: 0,
+      scrollTilt: 0,
     };
 
     // Squash & Stretch State
@@ -240,13 +242,50 @@ export class RobotAnimation {
       (this.visualState.targetScaleY - this.visualState.scaleY) *
       this.visualState.lerpSpeed;
 
-    const transform = `translate3d(-${this.patrol.x}px, ${this.patrol.y}px, 0)`;
+    // Smoothly decay scroll velocity impact
+    this.patrol.scrollVelocity *= 0.92;
+    this.patrol.scrollTilt +=
+      (this.patrol.scrollVelocity * 0.1 - this.patrol.scrollTilt) * 0.1;
+
+    const scrollYOffset = this.patrol.scrollVelocity * 0.5;
+    const transform = `translate3d(-${this.patrol.x}px, ${this.patrol.y + scrollYOffset}px, 0)`;
     this.robot.dom.container.style.transform = transform;
 
     if (this.robot.dom.floatWrapper) {
-      const visualTransform = `rotate(${this.visualState.rotation}deg) scale(${this.visualState.scaleX}, ${this.visualState.scaleY})`;
+      const totalRotation = this.visualState.rotation + this.patrol.scrollTilt;
+      const visualTransform = `rotate(${totalRotation}deg) scale(${this.visualState.scaleX}, ${this.visualState.scaleY})`;
       this.robot.dom.floatWrapper.style.transform = visualTransform;
     }
+  }
+
+  handleScrollImpact(velocity) {
+    // Limit impact
+    const cappedVelocity = Math.max(-30, Math.min(30, velocity));
+    this.patrol.scrollVelocity = cappedVelocity;
+
+    // Tiny squash impact on scroll
+    this.visualState.scaleY = 1 + Math.abs(cappedVelocity) * 0.005;
+    this.visualState.scaleX = 1 - Math.abs(cappedVelocity) * 0.003;
+  }
+
+  handleResizePanic() {
+    if (this.startAnimation.active) return;
+
+    // Detect significant resize
+    const now = performance.now();
+    if (now - (this._lastResizePanic || 0) < 1000) return;
+    this._lastResizePanic = now;
+
+    this.visualState.targetScaleX = 1.3;
+    this.visualState.targetScaleY = 0.7;
+    this.robot.showBubble('Whoa! Alles ändert sich! 😱');
+    this.spawnParticleBurst(5, { strength: 1.2 });
+
+    setTimeout(() => {
+      this.visualState.targetScaleX = 1;
+      this.visualState.targetScaleY = 1;
+      this.robot.hideBubble();
+    }, 1500);
   }
 
   updateStartAnimation() {

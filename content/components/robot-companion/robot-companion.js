@@ -232,10 +232,13 @@ export class RobotCompanion {
       ticking = false;
     };
 
-    const requestTick = () => {
+    const requestTick = (e) => {
       if (!ticking) {
         requestAnimationFrame(checkOverlap);
         ticking = true;
+      }
+      if (e && e.type === 'resize') {
+        this.animationModule.handleResizePanic();
       }
     };
 

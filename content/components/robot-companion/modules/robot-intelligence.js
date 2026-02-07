@@ -166,6 +166,10 @@ export class RobotIntelligence {
       this.scroll.lastY = scrollY;
       this.scroll.lastScrollTime = now;
 
+      // Notify animation module of scroll impact (velocity)
+      const rawVelocity = (scrollY - this.scroll.lastY) / (dt || 1);
+      this.robot.animationModule.handleScrollImpact(rawVelocity * 15);
+
       if (speed > 5) {
         this.triggerScrollReaction();
       }
