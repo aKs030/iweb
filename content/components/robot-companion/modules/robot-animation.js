@@ -1167,6 +1167,15 @@ export class RobotAnimation {
     this.updateEyesTransform();
   }
 
+  /**
+   * Updates the eye position transform. Called every animation frame during patrol.
+   *
+   * Performance note: If adding mouse tracking to this method, avoid calling
+   * getBoundingClientRect() every frame as it forces layout reflow. Instead:
+   * - Cache the eye center position and update only on resize/transform changes
+   * - OR throttle rect reads (e.g., max once every N ms)
+   * - OR derive eye position from known geometry + patrol/transform offsets
+   */
   updateEyesTransform() {
     if (!this.robot.dom || !this.robot.dom.eyes) return;
 
