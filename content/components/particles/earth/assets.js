@@ -34,7 +34,7 @@ export async function createEarthSystem(
     );
   } catch (err) {
     // Silently handle texture loading errors in production
-    if (process.env.NODE_ENV === 'development') {
+    if (typeof process !== 'undefined' && process.env?.NODE_ENV === 'development') {
       log.error('Texture loading failed:', err);
     }
     // Return null to indicate failure without throwing

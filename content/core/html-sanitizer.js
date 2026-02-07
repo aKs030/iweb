@@ -6,9 +6,10 @@
 /**
  * Escapes HTML special characters (for plain text display)
  */
+const HTML_ESCAPES = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+const ESCAPE_RE = /[&<>"']/g;
+
 export function escapeHTML(text) {
   if (!text || typeof text !== 'string') return '';
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
+  return text.replace(ESCAPE_RE, (c) => HTML_ESCAPES[c]);
 }

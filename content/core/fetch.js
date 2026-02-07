@@ -102,7 +102,7 @@ async function fetchWithRetry(url, config = {}) {
  * @returns {Promise<any>} Parsed JSON
  */
 export async function fetchJSON(url, config = {}) {
-  const response = await fetchWithRetry(url, { ...config, cache: true });
+  const response = await fetchWithRetry(url, { cache: true, ...config });
   return response.json();
 }
 

@@ -232,11 +232,17 @@ class LanguageManager extends EventTarget {
       const key = el.getAttribute('data-i18n-html');
       if (key) {
         const translated = this.t(key);
-        // Sanitize HTML to prevent XSS
+        // Sanitize HTML to prevent XSS - strict allowlist approach
+        const ALLOWED_TAGS = /^(b|i|em|strong|a|br|span|p|ul|ol|li|small|sub|sup)$/i;
         const clean = translated
-          .replace(/<script[\s>]/gi, '&lt;script')
-          .replace(/on\w+\s*=/gi, '')
-          .replace(/javascript:/gi, '');
+          .replace(/<\/?([a-z][a-z0-9]*)\b[^>]*>/gi, (match, tag) => {
+            if (!ALLOWED_TAGS.test(tag)) return '';
+            // Remove event handlers and javascript: from allowed tags
+            return match
+              .replace(/\s+on\w+\s*=\s*(["'])[^"']*\1/gi, '')
+              .replace(/\s+on\w+\s*=[^\s>]*/gi, '')
+              .replace(/javascript\s*:/gi, '');
+          });
         el.innerHTML = clean;
       }
     });
@@ -287,13 +293,14 @@ class LanguageManager extends EventTarget {
    * @param {Function} callback
    */
   subscribe(callback) {
-    this.addEventListener('language-changed', (e) => {
-      callback(e.detail.lang);
-    });
+    const handler = (e) => callback(e.detail.lang);
+    this.addEventListener('language-changed', handler);
     // Immediately invoke with current state if initialized
     if (this.initialized) {
       callback(this.currentLang);
     }
+    // Return unsubscribe function
+    return () => this.removeEventListener('language-changed', handler);
   }
 }
 

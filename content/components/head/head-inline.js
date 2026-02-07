@@ -286,19 +286,6 @@ const injectCoreAssets = () => {
       }, 2000);
     };
 
-    const upsertModulePreload = (href) => {
-      if (
-        document.head.querySelector(`link[rel="modulepreload"][href="${href}"]`)
-      )
-        return;
-      upsertHeadLink({
-        rel: 'modulepreload',
-        href,
-        crossOrigin: 'anonymous',
-        dataset: { injectedBy: 'head-inline' },
-      });
-    };
-
     const upsertScript = ({ src, module }) => {
       if (!document.head.querySelector(`script[src="${src}"]`)) {
         const s = document.createElement('script');
@@ -332,11 +319,6 @@ const injectCoreAssets = () => {
       styles.forEach((href) => {
         upsertStyle(href);
       });
-
-      // Batch inject module preloads
-      SCRIPTS.filter((s) => s.preload).forEach((s) =>
-        upsertModulePreload(s.src),
-      );
 
       // Batch inject scripts
       SCRIPTS.forEach(upsertScript);
@@ -546,6 +528,7 @@ const hideBrandingFromUsers = () => {
 
     sanitizeHeadings();
 
+    let sanitizeTimeout = null;
     const mo = new MutationObserver((mutations) => {
       let changed = false;
       for (const m of mutations) {
@@ -554,7 +537,10 @@ const hideBrandingFromUsers = () => {
           break;
         }
       }
-      if (changed) sanitizeHeadings();
+      if (changed) {
+        clearTimeout(sanitizeTimeout);
+        sanitizeTimeout = setTimeout(sanitizeHeadings, 150);
+      }
     });
     mo.observe(document.documentElement || document.body, {
       childList: true,

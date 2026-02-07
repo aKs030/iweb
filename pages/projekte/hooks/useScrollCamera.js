@@ -12,32 +12,38 @@ export const useScrollCamera = (projects) => {
     // Only run if we have projects
     if (!projects || projects.length === 0) return;
 
+    let rafId = null;
+
     const handleScroll = () => {
-      // Get current scroll position
-      const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+      if (rafId) return; // Already scheduled
+      rafId = requestAnimationFrame(() => {
+        rafId = null;
+        // Get current scroll position
+        const scrollY = window.pageYOffset || document.documentElement.scrollTop;
 
-      // Calculate total scrollable height
-      const documentHeight = Math.max(
-        document.body.scrollHeight,
-        document.body.offsetHeight,
-        document.documentElement.clientHeight,
-        document.documentElement.scrollHeight,
-        document.documentElement.offsetHeight,
-      );
+        // Calculate total scrollable height
+        const documentHeight = Math.max(
+          document.body.scrollHeight,
+          document.body.offsetHeight,
+          document.documentElement.clientHeight,
+          document.documentElement.scrollHeight,
+          document.documentElement.offsetHeight,
+        );
 
-      const windowHeight = window.innerHeight;
-      const scrollableHeight = documentHeight - windowHeight;
+        const windowHeight = window.innerHeight;
+        const scrollableHeight = documentHeight - windowHeight;
 
-      // Calculate progress (0 to 1)
-      let progress = 0;
-      if (scrollableHeight > 0) {
-        progress = scrollY / scrollableHeight;
-      }
+        // Calculate progress (0 to 1)
+        let progress = 0;
+        if (scrollableHeight > 0) {
+          progress = scrollY / scrollableHeight;
+        }
 
-      // Clamp between 0 and 1
-      const clampedProgress = Math.max(0, Math.min(1, progress));
+        // Clamp between 0 and 1
+        const clampedProgress = Math.max(0, Math.min(1, progress));
 
-      setNormalizedScroll(clampedProgress);
+        setNormalizedScroll(clampedProgress);
+      });
     };
 
     // Add scroll listener with passive option for better performance
@@ -49,6 +55,7 @@ export const useScrollCamera = (projects) => {
     // Cleanup
     return () => {
       window.removeEventListener('scroll', handleScroll);
+      if (rafId) cancelAnimationFrame(rafId);
     };
   }, [projects]); // Removed unused camera parameter
 

@@ -46,6 +46,22 @@ export class RobotGames {
     this.robot.scrollToBottom();
   }
 
+  /** Check for win or draw after a move; returns true if game ended */
+  _checkGameEnd(symbol, winMsg, gameContainer) {
+    if (this.checkTicTacToeWin(symbol)) {
+      this.robot.addMessage(winMsg, 'bot');
+      this.disableTicTacToeBoard(gameContainer);
+      setTimeout(() => this.robot.handleAction('games'), 2000);
+      return true;
+    }
+    if (this.state.ticTacToe.board.every((cell) => cell !== null)) {
+      this.robot.addMessage('🤝 Unentschieden! Gut gespielt!', 'bot');
+      setTimeout(() => this.robot.handleAction('games'), 2000);
+      return true;
+    }
+    return false;
+  }
+
   playTicTacToeMove(index, gameContainer) {
     if (this.state.ticTacToe.board[index]) return;
 
@@ -54,18 +70,7 @@ export class RobotGames {
     gameContainer.children[index].textContent = 'X';
     gameContainer.children[index].style.cursor = 'not-allowed';
 
-    if (this.checkTicTacToeWin('X')) {
-      this.robot.addMessage('🏆 Du hast gewonnen! Glückwunsch! 🎉', 'bot');
-      this.disableTicTacToeBoard(gameContainer);
-      setTimeout(() => this.robot.handleAction('games'), 2000);
-      return;
-    }
-
-    if (this.state.ticTacToe.board.every((cell) => cell !== null)) {
-      this.robot.addMessage('🤝 Unentschieden! Gut gespielt!', 'bot');
-      setTimeout(() => this.robot.handleAction('games'), 2000);
-      return;
-    }
+    if (this._checkGameEnd('X', '🏆 Du hast gewonnen! Glückwunsch! 🎉', gameContainer)) return;
 
     // Bot move
     setTimeout(() => {
@@ -75,20 +80,7 @@ export class RobotGames {
         gameContainer.children[botMove].textContent = 'O';
         gameContainer.children[botMove].style.cursor = 'not-allowed';
 
-        if (this.checkTicTacToeWin('O')) {
-          this.robot.addMessage(
-            '🤖 Ich habe gewonnen! Nochmal versuchen? 😏',
-            'bot',
-          );
-          this.disableTicTacToeBoard(gameContainer);
-          setTimeout(() => this.robot.handleAction('games'), 2000);
-          return;
-        }
-
-        if (this.state.ticTacToe.board.every((cell) => cell !== null)) {
-          this.robot.addMessage('🤝 Unentschieden! Gut gespielt!', 'bot');
-          setTimeout(() => this.robot.handleAction('games'), 2000);
-        }
+        this._checkGameEnd('O', '🤖 Ich habe gewonnen! Nochmal versuchen? 😏', gameContainer);
       }
     }, 500);
   }

@@ -98,6 +98,13 @@ class PerformanceMonitor {
         log.info(`LCP: ${Math.round(lastEntry.startTime)}ms`);
       });
       observer.observe({ type: 'largest-contentful-paint', buffered: true });
+
+      // Disconnect LCP observer when page becomes hidden (final value)
+      window.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') {
+          observer.disconnect();
+        }
+      }, { once: true });
     } catch (error) {
       log.warn('LCP observer failed:', error);
     }
@@ -141,12 +148,13 @@ class PerformanceMonitor {
       });
       observer.observe({ type: 'layout-shift', buffered: true });
 
-      // Log final CLS on page unload
+      // Log final CLS on page unload and disconnect observer
       window.addEventListener(
         'visibilitychange',
         () => {
           if (document.visibilityState === 'hidden') {
             log.info(`CLS: ${clsValue.toFixed(3)}`);
+            observer.disconnect();
           }
         },
         { once: true },
@@ -161,7 +169,7 @@ class PerformanceMonitor {
    */
   trackNavigationTiming() {
     try {
-      window.addEventListener('load', () => {
+      const measure = () => {
         const entries = performance.getEntriesByType('navigation');
         /** @type {PerformanceNavigationTiming} */
         const navigation = /** @type {any} */ (entries[0]);
@@ -181,7 +189,13 @@ class PerformanceMonitor {
           const loadComplete = navigation.loadEventEnd - navigation.fetchStart;
           log.info(`Load Complete: ${Math.round(loadComplete)}ms`);
         }
-      });
+      };
+
+      if (document.readyState === 'complete') {
+        measure();
+      } else {
+        window.addEventListener('load', measure, { once: true });
+      }
     } catch (error) {
       log.warn('Navigation timing failed:', error);
     }
@@ -192,7 +206,7 @@ class PerformanceMonitor {
    */
   trackResourceTiming() {
     try {
-      window.addEventListener('load', () => {
+      const measure = () => {
         const resources = performance.getEntriesByType('resource');
         const stats = {
           total: resources.length,
@@ -214,7 +228,13 @@ class PerformanceMonitor {
         });
 
         log.info('Resource Stats:', stats);
-      });
+      };
+
+      if (document.readyState === 'complete') {
+        measure();
+      } else {
+        window.addEventListener('load', measure, { once: true });
+      }
     } catch (error) {
       log.warn('Resource timing failed:', error);
     }
