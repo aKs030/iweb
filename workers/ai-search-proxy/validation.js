@@ -30,8 +30,15 @@ export function validateAIRequest(body) {
   if (!body || typeof body !== 'object') return fail('Invalid request body');
   const err = validateString(body.prompt, 'prompt', 10000);
   if (err) return err;
-  if (body.systemInstruction && typeof body.systemInstruction !== 'string') {
-    return fail('Invalid systemInstruction');
+
+  if (body.systemInstruction !== undefined) {
+    if (typeof body.systemInstruction !== 'string') {
+      return fail('Invalid systemInstruction');
+    }
+    if (body.systemInstruction.length > 1000) {
+      return fail('systemInstruction too long (max 1000 chars)');
+    }
   }
+
   return ok;
 }
