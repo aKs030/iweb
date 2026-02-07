@@ -575,10 +575,10 @@ const BlogApp = () => {
     () =>
       activePost
         ? DOMPurify.sanitize(
-            activePost.html ||
-              (activePost.content ? marked.parse(activePost.content) : ''),
-            { ADD_ATTR: ['id', 'class'] },
-          )
+          activePost.html ||
+          (activePost.content ? marked.parse(activePost.content) : ''),
+          { ADD_ATTR: ['id', 'class'] },
+        )
         : '',
     [activePost],
   );
@@ -754,29 +754,26 @@ const BlogApp = () => {
       <${React.Fragment}>
         <${ReadingProgress} />
         <${ScrollToTop} />
-        
+
         <div className="container-blog pt-24 fade-in">
           <button className="btn-back" onClick=${handleBack}>← ${t(
-            'blog.back',
-          )} (ESC)</button>
-          
+      'blog.back',
+    )} (ESC)</button>
+
           <article className="blog-article">
             <header>
               <div className="card-meta">
                 <span className="card-category">${post.category}</span>
-                <span className="card-read-time"><${Clock}/> ${
-                  post.readTime
-                }</span>
+                <span className="card-read-time"><${Clock}/> ${post.readTime
+      }</span>
               </div>
               <h1>${post.title}</h1>
-              <time className="meta" datetime=${post.date}>${
-                post.dateDisplay
-              }</time>
+              <time className="meta" datetime=${post.date}>${post.dateDisplay
+      }</time>
             </header>
 
-            ${
-              post.image &&
-              html`
+            ${post.image &&
+      html`
                 <figure className="article-hero">
                   <${ProgressiveImage}
                     src=${post.image}
@@ -787,11 +784,11 @@ const BlogApp = () => {
                   />
                 </figure>
               `
-            }
+      }
 
             <div className="article-body" dangerouslySetInnerHTML=${{
-              __html: cleanHtml,
-            }}></div>
+        __html: cleanHtml,
+      }}></div>
           </article>
         </div>
       </${React.Fragment}>
@@ -801,14 +798,13 @@ const BlogApp = () => {
   // --- List View ---
   return html`
     <${React.Fragment}>
-      ${
-        !showFiltersInMenu
-          ? html`
+      ${!showFiltersInMenu
+      ? html`
               <div className="blog-sticky-filter">
                 <div className="blog-controls">
                   <div className="filter-bar">
                     ${categories.map(
-                      (cat) => html`
+        (cat) => html`
                         <button
                           key=${cat}
                           className=${`filter-btn ${filter === cat ? 'active' : ''}`}
@@ -817,13 +813,13 @@ const BlogApp = () => {
                           ${cat}
                         </button>
                       `,
-                    )}
+      )}
                   </div>
                 </div>
               </div>
             `
-          : ''
-      }
+      : ''
+    }
 
       <div className="container-blog fade-in" style=${{ paddingTop: '2rem' }}>
         <${ScrollToTop} />
@@ -835,24 +831,24 @@ const BlogApp = () => {
 
         <div className="blog-grid">
           ${visiblePosts.map((post, idx) => {
-            const loadingStrategy = idx < 2 ? 'eager' : 'lazy';
-            const fetchPriority = idx === 0 ? 'high' : undefined;
+      const loadingStrategy = idx < 2 ? 'eager' : 'lazy';
+      const fetchPriority = idx === 0 ? 'high' : undefined;
 
-            return html`
+      return html`
               <article
                 key=${post.id}
                 className="blog-card"
                 onClick=${(e) => handlePostClick(e, post.id)}
               >
                 ${post.image
-                  ? html`<${ProgressiveImage}
+          ? html`<${ProgressiveImage}
                       src=${post.image}
                       alt=${post.title}
                       className="blog-card-image"
                       loading=${loadingStrategy}
                       fetchpriority=${fetchPriority}
                     />`
-                  : ''}
+          : ''}
 
                 <div className="card-content-wrapper">
                   <div className="card-meta">
@@ -876,12 +872,11 @@ const BlogApp = () => {
                 </div>
               </article>
             `;
-          })}
-        ${
-          visiblePosts.length === 0 && !loading
-            ? html`<p style="color:#666">${t('blog.not_found')}</p>`
-            : ''
-        }
+    })}
+        ${visiblePosts.length === 0 && !loading
+      ? html`<p style="color:#666">${t('blog.not_found')}</p>`
+      : ''
+    }
         </div>
       </div>
     </${React.Fragment}>
