@@ -3,8 +3,8 @@
  * Handles AI chat responses via Cloudflare Pages Function
  */
 
-import { createLogger } from '/content/core/logger.js';
-import { sleep } from '/content/core/utils.js';
+import { createLogger } from '../../core/logger.js';
+import { sleep } from '../../core/utils.js';
 
 const log = createLogger('AIService');
 

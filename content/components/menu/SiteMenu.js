@@ -11,8 +11,8 @@ import { MenuEvents } from './modules/MenuEvents.js';
 import { MenuAccessibility } from './modules/MenuAccessibility.js';
 import { MenuPerformance } from './modules/MenuPerformance.js';
 import { MenuConfig } from './modules/MenuConfig.js';
-import { upsertHeadLink } from '/content/core/utils.js';
-import { createLogger } from '/content/core/logger.js';
+import { upsertHeadLink } from '../../core/utils.js';
+import { createLogger } from '../../core/logger.js';
 
 const logger = createLogger('SiteMenu');
 

@@ -11,8 +11,8 @@ import { RobotAnimation } from './modules/robot-animation.js';
 import { RobotChat } from './modules/robot-chat.js';
 import { RobotIntelligence } from './modules/robot-intelligence.js';
 import { robotCompanionTexts } from './robot-companion-texts.js';
-import { createLogger } from '/content/core/logger.js';
-import { createObserver } from '/content/core/intersection-observer.js';
+import { createLogger } from '../../core/logger.js';
+import { createObserver } from '../../core/intersection-observer.js';
 import { ROBOT_EVENTS } from './constants/events.js';
 import { RobotStateManager } from './state/RobotStateManager.js';
 import { RobotDOMBuilder } from './dom/RobotDOMBuilder.js';
@@ -173,18 +173,18 @@ export class RobotCompanion {
       chat.contextGreetings || { default: [] };
     chat.moodGreetings = src.moodGreetings ||
       chat.moodGreetings || {
-      normal: ['Hey! Wie kann ich helfen?', 'Hi! Was brauchst du?'],
-    };
+        normal: ['Hey! Wie kann ich helfen?', 'Hi! Was brauchst du?'],
+      };
     chat.startMessageSuffix =
       src.startMessageSuffix || chat.startMessageSuffix || {};
     chat.initialBubblePools =
       src.initialBubblePools || chat.initialBubblePools || [];
     chat.initialBubbleSequenceConfig = src.initialBubbleSequenceConfig ||
       chat.initialBubbleSequenceConfig || {
-      steps: 4,
-      displayDuration: 10000,
-      pausesAfter: [0, 20000, 20000, 0],
-    };
+        steps: 4,
+        displayDuration: 10000,
+        pausesAfter: [0, 20000, 20000, 0],
+      };
   }
 
   /**
@@ -772,17 +772,28 @@ export class RobotCompanion {
   createDOM() {
     // Use DOM Builder for XSS-safe element creation
     const container = this.domBuilder.createContainer();
+    const chatWindow = this.domBuilder.createChatWindow();
 
-    // Append only the floating container for now — chat window is created lazily
     document.body.appendChild(container);
+    document.body.appendChild(chatWindow);
 
-    // Cache DOM references for container-related elements
+    // Cache DOM references
     this.dom.container = container;
     // @ts-ignore - floatWrapper missing in DOMCache type but exists in DOM
     this.dom.floatWrapper = container.querySelector('.robot-float-wrapper');
+    this.dom.window = chatWindow;
     this.dom.bubble = document.getElementById('robot-bubble');
     this.dom.bubbleText = document.getElementById('robot-bubble-text');
     this.dom.bubbleClose = container.querySelector('.robot-bubble-close');
+    this.dom.messages = document.getElementById('robot-messages');
+    this.dom.controls = document.getElementById('robot-controls');
+    this.dom.inputArea = document.getElementById('robot-input-area');
+    this.dom.input = /** @type {HTMLInputElement} */ (
+      document.getElementById('robot-chat-input')
+    );
+    this.dom.sendBtn = /** @type {HTMLButtonElement} */ (
+      document.getElementById('robot-chat-send')
+    );
     this.dom.avatar = container.querySelector('.robot-avatar');
     this.dom.svg = container.querySelector('.robot-svg');
     this.dom.eyes = container.querySelector('.robot-eyes');
@@ -794,103 +805,10 @@ export class RobotCompanion {
     };
     this.dom.particles = container.querySelector('.robot-particles');
     this.dom.thinking = container.querySelector('.robot-thinking');
-
-    // Chat window is not created/attached yet; it will be created on first click
-    this.dom.window = null;
-    this.dom.messages = null;
-    this.dom.controls = null;
-    this.dom.inputArea = null;
-    this.dom.input = null;
-    this.dom.sendBtn = null;
-    this.dom.closeBtn = null;
+    this.dom.closeBtn = chatWindow.querySelector('.chat-close-btn');
 
     const anim = /** @type {any} */ (this.animationModule);
     requestAnimationFrame(() => anim.startIdleEyeMovement());
-  }
-
-  /**
-   * Ensure the chat window DOM is created and attached (lazy)
-   * @returns {Promise<void>}
-   */
-  async ensureChatWindow() {
-    if (this.dom.window) return;
-
-    // Create and append chat window
-    const chatWindow = this.domBuilder.createChatWindow();
-    document.body.appendChild(chatWindow);
-
-    // Cache chat related elements
-    this.dom.window = chatWindow;
-    this.dom.messages = document.getElementById('robot-messages');
-    this.dom.controls = document.getElementById('robot-controls');
-    this.dom.inputArea = document.getElementById('robot-input-area');
-    this.dom.input = /** @type {HTMLInputElement} */ (
-      document.getElementById('robot-chat-input')
-    );
-    this.dom.sendBtn = /** @type {HTMLButtonElement} */ (
-      document.getElementById('robot-chat-send')
-    );
-    this.dom.closeBtn = chatWindow.querySelector('.chat-close-btn');
-
-    // Register chat-specific event handlers now that elements exist
-    const _onCloseBtnClick = (e) => {
-      e.stopPropagation();
-      this.toggleChat(false);
-    };
-    this.dom.closeBtn.addEventListener('click', _onCloseBtnClick);
-    this._eventListeners.dom.push({
-      target: this.dom.closeBtn,
-      event: 'click',
-      handler: _onCloseBtnClick,
-    });
-
-    if (this.dom.sendBtn) {
-      const _onSendBtn = () => this.handleUserMessage();
-      this.dom.sendBtn.addEventListener('click', _onSendBtn);
-      this._eventListeners.dom.push({
-        target: this.dom.sendBtn,
-        event: 'click',
-        handler: _onSendBtn,
-      });
-    }
-
-    if (this.dom.input) {
-      const _onInputKeypress = (e) => {
-        if (e.key === 'Enter') this.handleUserMessage();
-      };
-      this.dom.input.addEventListener('keypress', _onInputKeypress);
-      this._eventListeners.dom.push({
-        target: this.dom.input,
-        event: 'keypress',
-        handler: _onInputKeypress,
-      });
-
-      const _onInputFocus = () => {
-        if (this.dom.controls) {
-          this.dom.controls.classList.add('hide-controls-mobile');
-        }
-      };
-      this.dom.input.addEventListener('focus', _onInputFocus);
-      this._eventListeners.dom.push({
-        target: this.dom.input,
-        event: 'focus',
-        handler: _onInputFocus,
-      });
-
-      const _onInputBlur = () => {
-        setTimeout(() => {
-          if (this.dom.controls) {
-            this.dom.controls.classList.remove('hide-controls-mobile');
-          }
-        }, 200);
-      };
-      this.dom.input.addEventListener('blur', _onInputBlur);
-      this._eventListeners.dom.push({
-        target: this.dom.input,
-        event: 'blur',
-        handler: _onInputBlur,
-      });
-    }
   }
 
   attachEvents() {
@@ -903,19 +821,16 @@ export class RobotCompanion {
       handler: _onAvatarClick,
     });
 
-    // Close button lives in chat window — register lazily when window is created
     const _onCloseBtnClick = (e) => {
       e.stopPropagation();
       this.toggleChat(false);
     };
-    if (this.dom.closeBtn) {
-      this.dom.closeBtn.addEventListener('click', _onCloseBtnClick);
-      this._eventListeners.dom.push({
-        target: this.dom.closeBtn,
-        event: 'click',
-        handler: _onCloseBtnClick,
-      });
-    }
+    this.dom.closeBtn.addEventListener('click', _onCloseBtnClick);
+    this._eventListeners.dom.push({
+      target: this.dom.closeBtn,
+      event: 'click',
+      handler: _onCloseBtnClick,
+    });
 
     const _onBubbleClose = (e) => {
       e.stopPropagation();
@@ -924,16 +839,13 @@ export class RobotCompanion {
       this.chatModule.clearBubbleSequence();
       this.chatModule.hideBubble();
     };
-    if (this.dom.bubbleClose) {
-      this.dom.bubbleClose.addEventListener('click', _onBubbleClose);
-      this._eventListeners.dom.push({
-        target: this.dom.bubbleClose,
-        event: 'click',
-        handler: _onBubbleClose,
-      });
-    }
+    this.dom.bubbleClose.addEventListener('click', _onBubbleClose);
+    this._eventListeners.dom.push({
+      target: this.dom.bubbleClose,
+      event: 'click',
+      handler: _onBubbleClose,
+    });
 
-    // Send button and input handlers are registered lazily when chat window is created
     if (this.dom.sendBtn) {
       const _onSendBtn = () => this.handleUserMessage();
       this.dom.sendBtn.addEventListener('click', _onSendBtn);
@@ -1190,7 +1102,7 @@ if (document.readyState === 'loading') {
         .catch((e) =>
           log.error(
             'RobotCompanion init failed: ' +
-            (e && e.message ? e.message : String(e)),
+              (e && e.message ? e.message : String(e)),
           ),
         );
     },
@@ -1203,7 +1115,7 @@ if (document.readyState === 'loading') {
     .catch((e) =>
       log.error(
         'RobotCompanion init failed: ' +
-        (e && e.message ? e.message : String(e)),
+          (e && e.message ? e.message : String(e)),
       ),
     );
 }
