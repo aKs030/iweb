@@ -64,6 +64,12 @@ export class RobotAnimation {
 
     this._prevDashActive = false;
 
+    // Dash trail throttling
+    this._lastDashTrailTime = 0;
+    this._dashTrailMinInterval = 100; // ms between trail spawns
+    this._activeDashTrails = 0;
+    this._maxDashTrails = 5;
+
     // Idle eye animation
     this.eyeIdleOffset = { x: 0, y: 0 };
     /** @type {ReturnType<typeof setTimeout> | null} */
@@ -655,7 +661,13 @@ export class RobotAnimation {
     }
     this._prevDashActive = dashActive;
 
-    if (dashActive && Math.random() < 0.4) {
+    // Throttle dash trail spawning by time and cap concurrent trails
+    if (
+      dashActive &&
+      this._activeDashTrails < this._maxDashTrails &&
+      now - this._lastDashTrailTime >= this._dashTrailMinInterval
+    ) {
+      this._lastDashTrailTime = now;
       this.spawnDashTrail();
     }
 
@@ -901,35 +913,46 @@ export class RobotAnimation {
   spawnDashTrail() {
     if (!this.robot.dom.container || !this.robot.dom.avatar) return;
 
-    const el = this.robot.dom.avatar.cloneNode(true);
-    el.classList.remove('is-moving', 'is-dashing', 'waving', 'check-watch');
-    el.classList.add('robot-dash-trail');
-    el.style.position = 'absolute';
-    el.style.pointerEvents = 'none';
-    el.style.zIndex = '-1';
-    el.style.opacity = '0.4';
-    el.style.filter = 'brightness(1.5) blur(1px) saturate(2)';
+    // Track active trails
+    this._activeDashTrails++;
+
+    // Create a lightweight trail element instead of cloning avatar
+    // to avoid duplicate SVG IDs
+    const el = document.createElement('div');
+    el.className = 'robot-dash-trail';
+    el.style.cssText = `
+      position: absolute;
+      pointer-events: none;
+      z-index: -1;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(64, 224, 208, 0.4) 0%, rgba(64, 224, 208, 0) 70%);
+      filter: blur(2px);
+      mix-blend-mode: screen;
+    `;
 
     const rect = this.robot.dom.avatar.getBoundingClientRect();
     const cRect = this.robot.dom.container.getBoundingClientRect();
 
     el.style.left = rect.left - cRect.left + 'px';
     el.style.top = rect.top - cRect.top + 'px';
-    el.style.width = rect.width + 'px';
-    el.style.height = rect.height + 'px';
 
     this.robot.dom.container.appendChild(el);
 
     el.animate(
       [
-        { opacity: 0.4, scale: 1 },
+        { opacity: 0.6, scale: 1 },
         { opacity: 0, scale: 0.8 },
       ],
       {
         duration: 500,
         easing: 'ease-out',
       },
-    ).onfinish = () => el.remove();
+    ).onfinish = () => {
+      el.remove();
+      this._activeDashTrails--;
+    };
   }
 
   async playPokeAnimation() {
