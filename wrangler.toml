@@ -1,0 +1,5 @@
+# Top-level Wrangler config to satisfy CI (points to worker in /workers)
+name = "suche-nlweb"
+main = "workers/ai-search-proxy/index.js"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
