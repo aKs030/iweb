@@ -259,7 +259,7 @@ export class RobotCompanion {
   setupMobileViewportHandler() {
     if (typeof globalThis === 'undefined' || !globalThis.visualViewport) return;
 
-    const handleResize = () => {
+    this._handleViewportResize = () => {
       if (!this.dom.window || !this.dom.container) return;
 
       // If chat is closed, ensure we clean up state and do nothing else
@@ -296,37 +296,9 @@ export class RobotCompanion {
           this.dom.controls.classList.add('hide-controls-mobile');
         }
 
-        // Manually lift the container to be above the keyboard
-        // We use visualViewport height to determine the safe area
-
-        // Calculate vertical centering in the available space above keyboard
-        // Available space = visualHeight
-        // Desired window height = min(visualHeight - 20, 500) (approx)
-        // But we are setting 'bottom'.
-
-        // Let's assume max window height is constrained.
         const safeMargin = 10;
-        const maxWindowHeight = visualHeight - safeMargin * 2; // Top and bottom margin
+        const maxWindowHeight = visualHeight - safeMargin * 2;
         this.dom.window.style.maxHeight = `${maxWindowHeight}px`;
-
-        // To center it:
-        // The space occupied by keyboard is 'heightDiff'.
-        // The space remaining is 'visualHeight'.
-        // We want the window to be centered in 'visualHeight'.
-        // Bottom position relative to layout viewport = heightDiff + (visualHeight - actualWindowHeight) / 2
-
-        // However, actualWindowHeight is dynamic.
-        // Simplified centering:
-        // Position bottom at: heightDiff + (visualHeight / 2) - (windowHeight / 2)
-        // Better: Use flexbox or CSS transform?
-        // No, we are using absolute/fixed positioning.
-
-        // Let's rely on CSS 'bottom' relative to the visual viewport being 'heightDiff'.
-        // Then add padding to center.
-
-        // Actually, easiest way to center vertically in the available space:
-        // bottom = heightDiff + (visualHeight - this.dom.window.offsetHeight) / 2
-        // We need to read offsetHeight.
 
         requestAnimationFrame(() => {
           if (!this.dom.window) return;
@@ -356,20 +328,31 @@ export class RobotCompanion {
     };
 
     if (typeof globalThis !== 'undefined' && globalThis.visualViewport) {
-      globalThis.visualViewport.addEventListener('resize', handleResize);
-      globalThis.visualViewport.addEventListener('scroll', handleResize);
+      globalThis.visualViewport.addEventListener(
+        'resize',
+        this._handleViewportResize,
+      );
+      globalThis.visualViewport.addEventListener(
+        'scroll',
+        this._handleViewportResize,
+      );
       // Registriere Listener für Cleanup
       this._eventListeners.visualViewportResize.push({
         target: globalThis.visualViewport,
-        handler: handleResize,
+        handler: this._handleViewportResize,
       });
       this._eventListeners.visualViewportScroll.push({
         target: globalThis.visualViewport,
-        handler: handleResize,
+        handler: this._handleViewportResize,
       });
     }
 
-    if (this.dom.input) {
+    this.setupChatInputViewportHandlers();
+  }
+
+  setupChatInputViewportHandlers() {
+    if (this.dom.input && this._handleViewportResize) {
+      const handleResize = this._handleViewportResize;
       const blurHandler = () => setTimeout(handleResize, 200);
       this.dom.input.addEventListener('focus', handleResize);
       this.dom.input.addEventListener('blur', blurHandler);
@@ -425,7 +408,7 @@ export class RobotCompanion {
 
     this._setTimeout(() => {
       this.animationModule.startTypeWriterKnockbackAnimation();
-    }, 1500);
+    }, 50);
 
     this._onHeroTypingEnd = () => {
       try {
@@ -772,28 +755,15 @@ export class RobotCompanion {
   createDOM() {
     // Use DOM Builder for XSS-safe element creation
     const container = this.domBuilder.createContainer();
-    const chatWindow = this.domBuilder.createChatWindow();
-
     document.body.appendChild(container);
-    document.body.appendChild(chatWindow);
 
     // Cache DOM references
     this.dom.container = container;
     // @ts-ignore - floatWrapper missing in DOMCache type but exists in DOM
     this.dom.floatWrapper = container.querySelector('.robot-float-wrapper');
-    this.dom.window = chatWindow;
     this.dom.bubble = document.getElementById('robot-bubble');
     this.dom.bubbleText = document.getElementById('robot-bubble-text');
     this.dom.bubbleClose = container.querySelector('.robot-bubble-close');
-    this.dom.messages = document.getElementById('robot-messages');
-    this.dom.controls = document.getElementById('robot-controls');
-    this.dom.inputArea = document.getElementById('robot-input-area');
-    this.dom.input = /** @type {HTMLInputElement} */ (
-      document.getElementById('robot-chat-input')
-    );
-    this.dom.sendBtn = /** @type {HTMLButtonElement} */ (
-      document.getElementById('robot-chat-send')
-    );
     this.dom.avatar = container.querySelector('.robot-avatar');
     this.dom.svg = container.querySelector('.robot-svg');
     this.dom.eyes = container.querySelector('.robot-eyes');
@@ -805,31 +775,40 @@ export class RobotCompanion {
     };
     this.dom.particles = container.querySelector('.robot-particles');
     this.dom.thinking = container.querySelector('.robot-thinking');
-    this.dom.closeBtn = chatWindow.querySelector('.chat-close-btn');
 
     const anim = /** @type {any} */ (this.animationModule);
     requestAnimationFrame(() => anim.startIdleEyeMovement());
   }
 
+  ensureChatWindowCreated() {
+    if (this.dom.window) return;
+
+    const chatWindow = this.domBuilder.createChatWindow();
+    document.body.appendChild(chatWindow);
+
+    this.dom.window = chatWindow;
+    this.dom.messages = document.getElementById('robot-messages');
+    this.dom.controls = document.getElementById('robot-controls');
+    this.dom.inputArea = document.getElementById('robot-input-area');
+    this.dom.input = /** @type {HTMLInputElement} */ (
+      document.getElementById('robot-chat-input')
+    );
+    this.dom.sendBtn = /** @type {HTMLButtonElement} */ (
+      document.getElementById('robot-chat-send')
+    );
+    this.dom.closeBtn = chatWindow.querySelector('.chat-close-btn');
+
+    this.attachChatEvents();
+    this.setupChatInputViewportHandlers();
+  }
+
   attachEvents() {
-    // Use named handlers so we can remove them during cleanup
     const _onAvatarClick = () => this.handleAvatarClick();
     this.dom.avatar.addEventListener('click', _onAvatarClick);
     this._eventListeners.dom.push({
       target: this.dom.avatar,
       event: 'click',
       handler: _onAvatarClick,
-    });
-
-    const _onCloseBtnClick = (e) => {
-      e.stopPropagation();
-      this.toggleChat(false);
-    };
-    this.dom.closeBtn.addEventListener('click', _onCloseBtnClick);
-    this._eventListeners.dom.push({
-      target: this.dom.closeBtn,
-      event: 'click',
-      handler: _onCloseBtnClick,
     });
 
     const _onBubbleClose = (e) => {
@@ -844,6 +823,21 @@ export class RobotCompanion {
       target: this.dom.bubbleClose,
       event: 'click',
       handler: _onBubbleClose,
+    });
+  }
+
+  attachChatEvents() {
+    if (!this.dom.window) return;
+
+    const _onCloseBtnClick = (e) => {
+      e.stopPropagation();
+      this.toggleChat(false);
+    };
+    this.dom.closeBtn.addEventListener('click', _onCloseBtnClick);
+    this._eventListeners.dom.push({
+      target: this.dom.closeBtn,
+      event: 'click',
+      handler: _onCloseBtnClick,
     });
 
     if (this.dom.sendBtn) {
