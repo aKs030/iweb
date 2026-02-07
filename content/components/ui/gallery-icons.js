@@ -7,20 +7,20 @@ import React from 'https://esm.sh/react@19.2.3';
 
 const createIcon =
   (paths) =>
-  ({ size = 20, className = '' } = {}) =>
-    React.createElement(
-      'svg',
-      {
-        width: size,
-        height: size,
-        viewBox: '0 0 24 24',
-        fill: 'none',
-        stroke: 'currentColor',
-        strokeWidth: '2',
-        className,
-      },
-      paths,
-    );
+    ({ size = 20, className = '' } = {}) =>
+      React.createElement(
+        'svg',
+        {
+          width: size,
+          height: size,
+          viewBox: '0 0 24 24',
+          fill: 'none',
+          stroke: 'currentColor',
+          strokeWidth: '2',
+          className,
+        },
+        paths,
+      );
 
 export const Heart = createIcon(
   React.createElement('path', {
