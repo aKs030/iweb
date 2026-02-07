@@ -1,7 +1,7 @@
-import { createLogger } from '/content/core/logger.js';
-import { upsertHeadLink } from '/content/core/utils.js';
+import { createLogger } from '../../core/logger.js';
+import { upsertHeadLink } from '../../core/utils.js';
 import { ENV } from '../../config/env.config.js';
-import { resourceHints } from '/content/core/resource-hints.js';
+import { resourceHints } from '../../core/resource-hints.js';
 import { headState } from './head-state.js';
 
 const log = createLogger('head-inline');

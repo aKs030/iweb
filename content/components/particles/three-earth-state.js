@@ -5,7 +5,7 @@
  * @version 1.0.0
  */
 
-import { createLogger } from '/content/core/logger.js';
+import { createLogger } from '../../core/logger.js';
 
 const log = createLogger('ThreeEarthState');
 

@@ -5,7 +5,7 @@
  */
 
 import { ROBOT_EVENTS } from '../constants/events.js';
-import { createLogger } from '/content/core/logger.js';
+import { createLogger } from '../../../core/logger.js';
 
 const log = createLogger('RobotStateManager');
 

@@ -4,31 +4,7 @@
  * @last-modified 2026-02-05
  */
 
-// Filter iframe console warnings in development
-if (import.meta.env?.DEV) {
-  const originalWarn = console.warn;
-  const originalError = console.error;
-
-  const shouldFilter = (message) => {
-    const msg = String(message || '');
-    return (
-      msg.includes('touchstart') ||
-      msg.includes('touchmove') ||
-      msg.includes('non-passive event listener')
-    );
-  };
-
-  console.warn = (...args) => {
-    if (shouldFilter(args[0])) return;
-    originalWarn.apply(console, args);
-  };
-
-  console.error = (...args) => {
-    if (shouldFilter(args[0])) return;
-    originalError.apply(console, args);
-  };
-}
-
+import { initConsoleFilter } from './core/console-filter.js';
 import { initHeroFeatureBundle } from '../pages/home/hero-manager.js';
 import { createLogger } from './core/logger.js';
 import { EVENTS, fire } from './core/events.js';
@@ -42,6 +18,10 @@ import { i18n } from './core/i18n.js';
 import { initPerformanceMonitoring } from './core/performance-monitor.js';
 import { SectionTracker } from './core/section-tracker.js';
 import { AppLoadManager } from './core/load-manager.js';
+import { GlobalEventHandlers } from './core/global-events.js';
+
+// Initialize console filter for development
+initConsoleFilter();
 
 const log = createLogger('main');
 
@@ -129,61 +109,6 @@ const ThreeEarthLoader = new ThreeEarthManager(ENV);
 
 // Track if loader has been hidden
 let loaderHidden = false;
-
-// ===== Event Handlers =====
-const EventHandlers = {
-  handleRetry(event) {
-    const retry = event.target?.closest('.retry-btn');
-    if (!retry) return;
-
-    event.preventDefault();
-    try {
-      globalThis.location.reload();
-    } catch {
-      /* fallback */
-    }
-  },
-
-  async handleShare(event) {
-    const share = event.target?.closest('.btn-share');
-    if (!share) return;
-
-    event.preventDefault();
-    const shareUrl =
-      share.dataset.shareUrl || 'https://www.youtube.com/@aks.030';
-    const shareData = {
-      title: document.title,
-      text: 'Schau dir diesen Kanal an',
-      url: shareUrl,
-    };
-
-    if (navigator.share) {
-      try {
-        await navigator.share(shareData);
-      } catch (err) {
-        log.warn('share failed', err);
-      }
-    } else if (navigator.clipboard) {
-      try {
-        await navigator.clipboard.writeText(shareUrl);
-        announce('Link kopiert', { dedupe: true });
-      } catch (err) {
-        log.warn('Copy failed', err);
-      }
-    } else {
-      try {
-        globalThis.prompt('Link kopieren', shareUrl);
-      } catch (err) {
-        log.warn('prompt failed', err);
-      }
-    }
-  },
-
-  handleClick(event) {
-    this.handleRetry(event);
-    this.handleShare(event);
-  },
-};
 
 // ===== Application Bootstrap =====
 document.addEventListener(
@@ -294,10 +219,8 @@ document.addEventListener(
       /* ignore */
     }
 
-    // Event delegation
-    document.addEventListener('click', (event) =>
-      EventHandlers.handleClick(event),
-    );
+    // Initialize global event handlers
+    GlobalEventHandlers.init(announce);
 
     log.info('Performance:', {
       domReady: Math.round(perfMarks.domReady - perfMarks.start),
