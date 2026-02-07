@@ -1278,7 +1278,9 @@ function _getSectionConfig(sectionName) {
   };
   return (
     /** @type {any} */ (configs)[
-      sectionName === 'site-footer' ? 'contact' : sectionName
+      sectionName === 'site-footer' || sectionName === 'section4'
+        ? 'contact'
+        : sectionName
     ] || configs.hero
   );
 }
