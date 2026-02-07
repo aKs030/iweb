@@ -437,7 +437,28 @@ export class RobotDOMBuilder {
     rightLid.setAttribute('fill', 'url(#lidGradient)');
     rightLid.setAttribute('filter', 'url(#lidShadow)');
 
-    g.append(leftPupil, leftLid, rightPupil, rightLid);
+    // Dizzy eyes (X)
+    const leftX = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'path',
+    );
+    leftX.classList.add('robot-eye-x');
+    leftX.setAttribute('d', 'M35,38 L45,46 M45,38 L35,46');
+    leftX.setAttribute('stroke', '#40e0d0');
+    leftX.setAttribute('stroke-width', '2.5');
+    leftX.style.opacity = '0';
+
+    const rightX = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'path',
+    );
+    rightX.classList.add('robot-eye-x');
+    rightX.setAttribute('d', 'M55,38 L65,46 M65,38 L55,46');
+    rightX.setAttribute('stroke', '#40e0d0');
+    rightX.setAttribute('stroke-width', '2.5');
+    rightX.style.opacity = '0';
+
+    g.append(leftPupil, leftLid, rightPupil, rightLid, leftX, rightX);
 
     return g;
   }
@@ -617,11 +638,20 @@ export class RobotDOMBuilder {
       'animate',
     );
     animate.setAttribute('attributeName', 'opacity');
-    animate.setAttribute('values', '0.4;1;0.4');
-    animate.setAttribute('dur', '2s');
+    animate.setAttribute('values', '0.5;1;0.5');
+    animate.setAttribute('dur', '1.5s');
     animate.setAttribute('repeatCount', 'indefinite');
 
-    circle.appendChild(animate);
+    const animateScale = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'animate',
+    );
+    animateScale.setAttribute('attributeName', 'r');
+    animateScale.setAttribute('values', '4.5;5.5;4.5');
+    animateScale.setAttribute('dur', '3s');
+    animateScale.setAttribute('repeatCount', 'indefinite');
+
+    circle.append(animate, animateScale);
 
     return circle;
   }

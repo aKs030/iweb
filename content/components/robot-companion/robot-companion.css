@@ -134,6 +134,16 @@
   transform: translateY(6px) scaleY(1.6);
 }
 
+.robot-eyes.is-dizzy .robot-pupil,
+.robot-eyes.is-dizzy .robot-lid {
+  opacity: 0 !important;
+}
+
+.robot-eyes.is-dizzy .robot-eye-x {
+  opacity: 1 !important;
+  transition: opacity 0.2s ease;
+}
+
 /* Pupil Focus on Hover */
 .robot-avatar:hover .robot-pupil {
   fill: #fff;
@@ -217,6 +227,43 @@
   pointer-events: none;
   filter: brightness(2) blur(2px) saturate(2);
   mix-blend-mode: screen;
+}
+
+.robot-avatar.is-dizzy .robot-svg {
+  animation: robot-dizzy-shake 0.5s infinite;
+}
+
+@keyframes robot-dizzy-shake {
+  0% {
+    transform: rotate(0);
+  }
+  25% {
+    transform: rotate(-10deg) translate(-2px, 2px);
+  }
+  50% {
+    transform: rotate(10deg) translate(2px, -2px);
+  }
+  75% {
+    transform: rotate(-5deg) translate(1px, 1px);
+  }
+  100% {
+    transform: rotate(0);
+  }
+}
+
+.robot-antenna-light.is-speaking {
+  animation: antenna-speaking 0.4s infinite alternate ease-in-out !important;
+}
+
+@keyframes antenna-speaking {
+  from {
+    fill: #40e0d0;
+    filter: drop-shadow(0 0 4px #40e0d0);
+  }
+  to {
+    fill: #ffffff;
+    filter: drop-shadow(0 0 12px #40e0d0) brightness(1.5);
+  }
 }
 
 /* SVG Styling */
@@ -357,17 +404,21 @@
 
 .robot-thinking {
   transition: opacity 0.3s ease;
-  animation: thinkingPulse 2s ease-in-out infinite;
+  transform-origin: 70px 20px;
+  animation: thinkingHologram 2s ease-in-out infinite;
 }
 
-@keyframes thinkingPulse {
+@keyframes thinkingHologram {
   0%,
   100% {
-    transform: scale(1);
+    transform: scale(1) translateY(0) rotate(0);
+    filter: drop-shadow(0 0 2px rgba(64, 224, 208, 0.5));
+    opacity: 0.7;
   }
-
   50% {
-    transform: scale(1.1);
+    transform: scale(1.15) translateY(-3px) rotate(5deg);
+    filter: drop-shadow(0 0 10px rgba(64, 224, 208, 0.8));
+    opacity: 1;
   }
 }
 
@@ -1161,9 +1212,14 @@
 .tic-tac-toe-game {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+  gap: 12px;
+  padding: 15px;
+  background: rgba(15, 23, 42, 0.4);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   margin: 12px 0;
-  max-width: 240px;
+  max-width: 260px;
+  backdrop-filter: blur(8px);
 }
 
 .ttt-cell {
@@ -1171,34 +1227,38 @@
   font-size: 32px;
   font-weight: bold;
   background: rgba(30, 41, 59, 0.7);
-  border: 2px solid rgba(64, 224, 208, 0.4);
+  border: 2px solid rgba(64, 224, 208, 0.3);
   border-radius: 14px;
   color: #40e0d0;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.2);
+  text-shadow: 0 0 8px rgba(64, 224, 208, 0.5);
 }
 
-.ttt-cell:hover:not([disabled]) {
+.ttt-cell:hover:not([disabled]):not([style*='cursor: not-allowed']) {
   background: rgba(64, 224, 208, 0.15);
   transform: scale(1.08);
+  border-color: #40e0d0;
   box-shadow:
     0 0 20px rgba(64, 224, 208, 0.3),
     inset 0 0 10px rgba(64, 224, 208, 0.1);
   z-index: 1;
 }
 
-.ttt-cell:active:not([disabled]) {
+.ttt-cell:active:not([disabled]):not([style*='cursor: not-allowed']) {
   transform: scale(0.95);
 }
 
-.ttt-cell[disabled] {
-  cursor: not-allowed;
+.ttt-cell[disabled],
+.ttt-cell[style*='cursor: not-allowed'] {
+  cursor: not-allowed !important;
   opacity: 0.7;
   border-color: rgba(148, 163, 184, 0.2);
+  filter: grayscale(0.5);
 }
 
 /* Game buttons special styling */

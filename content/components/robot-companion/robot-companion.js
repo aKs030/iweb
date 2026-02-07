@@ -781,12 +781,18 @@ export class RobotCompanion {
 
     // Register mousemove for eye tracking
     const _onMouseMove = (e) => this.animationModule.handleMouseMove(e);
+    const _onMouseLeave = () => (this.animationModule.isTrackingMouse = false);
+    const _onMouseEnter = () => (this.animationModule.isTrackingMouse = true);
+
     document.addEventListener('mousemove', _onMouseMove, { passive: true });
-    this._eventListeners.dom.push({
-      target: document,
-      event: 'mousemove',
-      handler: _onMouseMove,
-    });
+    document.addEventListener('mouseleave', _onMouseLeave, { passive: true });
+    document.addEventListener('mouseenter', _onMouseEnter, { passive: true });
+
+    this._eventListeners.dom.push(
+      { target: document, event: 'mousemove', handler: _onMouseMove },
+      { target: document, event: 'mouseleave', handler: _onMouseLeave },
+      { target: document, event: 'mouseenter', handler: _onMouseEnter },
+    );
   }
 
   ensureChatWindowCreated() {

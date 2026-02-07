@@ -1,8 +1,11 @@
 import { sleep } from '../../../core/utils.js';
 
+import { createObserver } from '../../../core/intersection-observer.js';
+
 export class RobotAnimation {
   constructor(robot) {
     this.robot = robot;
+    this.isVisible = true;
 
     // Patrol State
     this.patrol = {
@@ -79,6 +82,7 @@ export class RobotAnimation {
       intervalMin: 2500,
       intervalMax: 7000,
       duration: 120,
+      doubleBlinkChance: 0.15,
     };
     /** @type {ReturnType<typeof setTimeout> | null} */
     this._blinkTimer = null;
@@ -97,53 +101,21 @@ export class RobotAnimation {
   startSpeaking() {
     if (this.speakingActive) return;
     this.speakingActive = true;
-    this.startSpeakingLoop();
+
+    if (this.robot.dom.svg) {
+      const antenna = this.robot.dom.svg.querySelector('.robot-antenna-light');
+      if (antenna) antenna.classList.add('is-speaking');
+    }
   }
 
   stopSpeaking() {
     if (!this.speakingActive) return;
     this.speakingActive = false;
-    if (this._speakingTimer) {
-      clearTimeout(this._speakingTimer);
-      this._speakingTimer = null;
-    }
-    // Reset antenna color
-    if (this.robot.dom.svg) {
-      const antenna = this.robot.dom.svg.querySelector('.robot-antenna-light');
-      if (antenna) {
-        antenna.style.fill = '';
-        antenna.style.filter = '';
-      }
-    }
-  }
-
-  startSpeakingLoop() {
-    if (!this.speakingActive) return;
-
-    // Simulate "talking" by flashing antenna randomly
-    const duration = 100 + Math.random() * 150;
-    const isLit = Math.random() > 0.3;
 
     if (this.robot.dom.svg) {
       const antenna = this.robot.dom.svg.querySelector('.robot-antenna-light');
-      if (antenna) {
-        if (isLit) {
-          antenna.style.fill = '#40e0d0'; // Cyan
-          antenna.style.filter = 'drop-shadow(0 0 8px #40e0d0)';
-        } else {
-          antenna.style.fill = '';
-          antenna.style.filter = '';
-        }
-      }
+      if (antenna) antenna.classList.remove('is-speaking');
     }
-
-    // Check again before scheduling to prevent race condition
-    if (!this.speakingActive) return;
-
-    this._speakingTimer = setTimeout(
-      () => this.startSpeakingLoop(),
-      duration + 50,
-    );
   }
 
   handleMouseMove(e) {
@@ -279,7 +251,6 @@ export class RobotAnimation {
 
   updateStartAnimation() {
     if (!this.startAnimation.active || !this.robot.dom.container) {
-      requestAnimationFrame(this.updateStartAnimation);
       return;
     }
 
@@ -429,14 +400,21 @@ export class RobotAnimation {
 
   startPatrol() {
     this.patrol.active = true;
-    if (this.robot.dom && this.robot.dom.container)
+    if (this.robot.dom && this.robot.dom.container) {
       this.robot.dom.container.style.opacity = '1';
+
+      // Setup Visibility Observer
+      this._visibilityObserver = createObserver((entries) => {
+        this.isVisible = entries[0].isIntersecting;
+      });
+      this._visibilityObserver.observe(this.robot.dom.container);
+    }
     requestAnimationFrame(this.updatePatrol);
   }
 
   updatePatrol() {
-    if (document.hidden) {
-      setTimeout(() => requestAnimationFrame(this.updatePatrol), 500);
+    if (document.hidden || !this.isVisible) {
+      setTimeout(() => requestAnimationFrame(this.updatePatrol), 1000);
       return;
     }
 
@@ -963,13 +941,47 @@ export class RobotAnimation {
     if (!this.robot.dom || !this.robot.dom.eyes) return;
     const lids = this.robot.dom.eyes.querySelectorAll('.robot-lid');
     if (!lids.length) return;
-    lids.forEach((l) => l.classList.add('is-blink'));
-    setTimeout(
-      () => {
-        lids.forEach((l) => l.classList.remove('is-blink'));
-      },
-      (this.blinkConfig.duration || 120) + 20,
-    );
+
+    const executeBlink = () => {
+      lids.forEach((l) => l.classList.add('is-blink'));
+      setTimeout(
+        () => {
+          lids.forEach((l) => l.classList.remove('is-blink'));
+        },
+        (this.blinkConfig.duration || 120) + 20,
+      );
+    };
+
+    executeBlink();
+
+    // Occasional double blink
+    if (Math.random() < this.blinkConfig.doubleBlinkChance) {
+      setTimeout(() => executeBlink(), this.blinkConfig.duration + 150);
+    }
+  }
+
+  setDizzy(active = true) {
+    if (!this.robot.dom.avatar) return;
+    this.robot.dom.avatar.classList.toggle('is-dizzy', active);
+
+    if (this.robot.dom.eyes) {
+      this.robot.dom.eyes.classList.toggle('is-dizzy', active);
+    }
+
+    if (active) {
+      this.robot.showBubble('😵 Woah...');
+      this.spawnParticleBurst(8, { strength: 1.2, spread: 360 });
+      this.pausePatrol(2500);
+
+      if (this.robot.dom.eyes) {
+        this.robot.dom.eyes.style.transform = 'rotate(180deg) scale(0.8)';
+      }
+
+      setTimeout(() => {
+        this.setDizzy(false);
+        if (this.robot.dom.eyes) this.robot.dom.eyes.style.transform = '';
+      }, 2500);
+    }
   }
 
   /**

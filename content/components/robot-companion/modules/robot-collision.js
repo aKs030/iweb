@@ -147,44 +147,7 @@ export class RobotCollision {
     this.triggerRobotShake(type === 'short_circuit' ? 15 : 8);
 
     if (type === 'dizzy') {
-      anim.pausePatrol(2000);
-
-      // Apply dizzy squash/stretch via DOM animation instead of visualState,
-      // because the animation module resets visualState scale/rotation while paused.
-      if (this.robot.dom.avatar && this.robot.dom.avatar.animate) {
-        this.robot.dom.avatar.animate(
-          [
-            { transform: 'scale(1, 1)' },
-            { transform: 'scale(1.2, 0.8)' },
-            { transform: 'scale(1, 1)' },
-          ],
-          {
-            duration: 1000,
-            easing: 'ease-in-out',
-          },
-        );
-      }
-
-      if (this.robot.dom.svg && this.robot.dom.svg.animate) {
-        this.robot.dom.svg.animate(
-          [{ transform: 'rotate(0deg)' }, { transform: 'rotate(720deg)' }],
-          { duration: 1000, easing: 'ease-in-out' },
-        );
-      }
-      if (this.robot.dom.eyes) {
-        const originalHTML = this.robot.dom.eyes.innerHTML;
-        // Temporarily change eyes to 'X'
-        this.robot.dom.eyes.innerHTML = `
-            <path d="M35,38 L45,46 M45,38 L35,46" stroke="#40e0d0" stroke-width="3" />
-            <path d="M55,38 L65,46 M65,38 L55,46" stroke="#40e0d0" stroke-width="3" />
-        `;
-        setTimeout(() => {
-          // Restore eyes
-          if (this.robot.dom.eyes) {
-            this.robot.dom.eyes.innerHTML = originalHTML;
-          }
-        }, 2000);
-      }
+      anim.setDizzy(true);
     } else if (type === 'short_circuit') {
       anim.pausePatrol(1500);
       anim.spawnParticleBurst(15, { spread: 360, strength: 2 });
@@ -239,23 +202,17 @@ export class RobotCollision {
    * @param {number} intensity
    */
   triggerRobotShake(intensity = 10) {
-    if (!this.robot.dom.container) return;
+    if (!this.robot.dom.avatar) return;
     const keyframes = [];
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 12; i++) {
       keyframes.push({
-        transform: `translate3d(${
-          -this.robot.animationModule.patrol.x +
+        transform: `translate(${(Math.random() - 0.5) * intensity}px, ${
           (Math.random() - 0.5) * intensity
-        }px, ${
-          this.robot.animationModule.patrol.y +
-          (Math.random() - 0.5) * intensity
-        }px, 0)`,
+        }px)`,
       });
     }
-    keyframes.push({
-      transform: `translate3d(-${this.robot.animationModule.patrol.x}px, ${this.robot.animationModule.patrol.y}px, 0)`,
-    });
-    this.robot.dom.container.animate(keyframes, {
+    keyframes.push({ transform: 'translate(0, 0)' });
+    this.robot.dom.avatar.animate(keyframes, {
       duration: 300,
       easing: 'ease-out',
     });
@@ -323,6 +280,11 @@ export class RobotCollision {
         strength: 2.5,
         spread: 180,
       });
+
+      // High speed collision causes dizzy state
+      if (this.robot.animationModule.motion.dashUntil > performance.now()) {
+        this.robot.animationModule.setDizzy(true);
+      }
 
       this.triggerRobotShake(15);
 

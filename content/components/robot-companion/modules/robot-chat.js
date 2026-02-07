@@ -18,6 +18,8 @@ export class RobotChat {
     this._bubbleSequenceTimers = [];
     this.contextGreetingHistory = {};
     this.initialBubblePoolCursor = [];
+    this._pokeCount = 0;
+    this._lastPokeTime = 0;
 
     // Load history from local storage
     try {
@@ -82,9 +84,44 @@ export class RobotChat {
       return;
     }
 
+    const now = performance.now();
+    const timeSinceLastPoke = now - this._lastPokeTime;
+    this._lastPokeTime = now;
+
+    if (timeSinceLastPoke < 350) {
+      this._pokeCount++;
+    } else {
+      this._pokeCount = 1;
+    }
+
     (async () => {
+      if (this._pokeCount >= 5) {
+        // Spam protection / Secret reaction
+        this.robot.animationModule.setDizzy(true);
+        this._pokeCount = 0;
+        return;
+      }
+
       await this.robot.animationModule.playPokeAnimation();
-      this.toggleChat(true);
+
+      if (this._pokeCount === 1) {
+        const reactions = [
+          'Hehe! Das kitzelt! 😊',
+          'Hey! Ich bin kitzelig! 😂',
+          'Na du? Wie kann ich helfen? 👋',
+          'Pieks! 🤖',
+          'Ouch! Sei vorsichtig! 😅',
+        ];
+        this.showBubble(
+          reactions[Math.floor(Math.random() * reactions.length)],
+        );
+        // Automatically open chat after a short delay on first poke
+        setTimeout(() => {
+          if (!this.isOpen && this._pokeCount === 1) this.toggleChat(true);
+        }, 800);
+      } else {
+        this.toggleChat(true);
+      }
     })();
   }
 
