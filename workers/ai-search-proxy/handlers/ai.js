@@ -14,7 +14,7 @@ import {
 const DEFAULT_SYSTEM =
   'Du bist ein hilfreicher Assistent, antworte prägnant und informativ.';
 
-export async function aiHandler(request, env, searchIndex) {
+export async function aiHandler(request, env) {
   if (request.method !== 'POST') {
     return errorResponse('Method not allowed', 'Use POST.', 405, request);
   }
@@ -36,17 +36,31 @@ export async function aiHandler(request, env, searchIndex) {
       );
     }
 
-    // Optional RAG augmentation
+    // Optional RAG augmentation via Cloudflare AI Search
     let sources = [];
     let finalPrompt = prompt;
 
     if (options.useSearch) {
-      sources = performSearch(
-        options.searchQuery || prompt,
-        Math.min(options.topK || 3, 5),
-        searchIndex,
-        false,
-      );
+      if (!env.AI) {
+        return errorResponse('Cloudflare AI binding missing', undefined, 500, request);
+      }
+
+      const maxResults = Math.min(options.topK || 3, 5);
+      const aiResp = await env.AI.autorag(env.RAG_ID || 'suche').search({
+        query: options.searchQuery || prompt,
+        max_num_results: maxResults,
+      });
+
+      sources = (aiResp.data || []).map((item) => {
+        const text = item.content?.map((c) => c.text).filter(Boolean).join(' ') || '';
+        return {
+          id: item.file_id || '',
+          title: item.filename || item.file_id || '',
+          description: text.slice(0, 300),
+          url: item.attributes?.url || `/${item.filename || ''}`,
+        };
+      });
+
       finalPrompt = augmentPromptWithRAG(prompt, sources);
     }
 
