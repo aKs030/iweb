@@ -4,9 +4,9 @@
  * Animated text typing effect with multi-line support
  * @version 2.0.0
  */
-import { createLogger } from '/content/core/logger.js';
-import { getElementById } from '/content/core/utils.js';
-import { TimerManager } from '/content/core/timer-utils.js';
+import { createLogger } from '../../core/logger.js';
+import { getElementById } from '../../core/utils.js';
+import { TimerManager } from '../../core/timer-utils.js';
 
 const log = createLogger('TypeWriter');
 

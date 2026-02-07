@@ -5,9 +5,9 @@
  * @version 2.0.1
  */
 
-import { createLogger } from '/content/core/logger.js';
-import { a11y } from '/content/core/accessibility-manager.js';
-import { i18n } from '/content/core/i18n.js';
+import { createLogger } from '../../core/logger.js';
+import { a11y } from '../../core/accessibility-manager.js';
+import { i18n } from '../../core/i18n.js';
 
 const log = createLogger('SiteFooter');
 
