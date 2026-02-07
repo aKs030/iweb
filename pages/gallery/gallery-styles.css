@@ -1,14 +1,5 @@
 /* Gallery utility styles */
-* {
-  box-sizing: border-box;
-}
-
-html {
-  scroll-behavior: smooth;
-}
-
 body {
-  margin: 0;
   font-family: var(--font-inter);
   background: transparent;
   color: #e5e7eb;
@@ -25,16 +16,6 @@ button {
   background: none;
   color: inherit;
   font: inherit;
-}
-
-button:focus,
-input:focus,
-select:focus {
-  outline: none;
-}
-
-.focus\:outline-none:focus {
-  outline: none;
 }
 
 img {

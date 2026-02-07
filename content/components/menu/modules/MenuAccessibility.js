@@ -43,8 +43,10 @@ export class MenuAccessibility {
       'a[href], button:not([disabled])',
     );
 
+    this._keydownHandlers = [];
+
     focusableElements.forEach((el, index) => {
-      el.addEventListener('keydown', (e) => {
+      const handler = (e) => {
         if (e.key === 'Tab') {
           // Trap focus within menu when open
           if (this.state.isOpen) {
@@ -57,7 +59,9 @@ export class MenuAccessibility {
             }
           }
         }
-      });
+      };
+      el.addEventListener('keydown', handler);
+      this._keydownHandlers.push({ el, handler });
     });
   }
 
@@ -94,6 +98,13 @@ export class MenuAccessibility {
   }
 
   destroy() {
+    // Remove keyboard event listeners
+    if (this._keydownHandlers) {
+      this._keydownHandlers.forEach(({ el, handler }) => {
+        el.removeEventListener('keydown', handler);
+      });
+      this._keydownHandlers = null;
+    }
     const liveRegion = document.getElementById('menu-live-region');
     if (liveRegion) liveRegion.remove();
   }

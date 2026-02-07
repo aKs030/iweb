@@ -56,7 +56,7 @@
   border-radius: 50%;
   filter: blur(80px);
   opacity: 0.15;
-  animation: float 8s ease-in-out infinite;
+  animation: floatOrb 8s ease-in-out infinite;
   pointer-events: none;
   will-change: transform;
 }
@@ -88,7 +88,7 @@
   animation-duration: 10s;
 }
 
-@keyframes float {
+@keyframes floatOrb {
   0%,
   100% {
     transform: translate(0, 0) scale(1);

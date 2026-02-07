@@ -454,9 +454,6 @@ a:hover {
       100svh - var(--content-top-offset) - var(--content-bottom-offset)
     );
     padding: var(--spacing-xl) 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
   }
 
   @supports (min-height: 100dvh) {
@@ -519,9 +516,6 @@ a:hover {
     padding: var(--spacing-lg) 0;
     min-height: calc(100vh - 72px);
     height: calc(100vh - 72px);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
   }
 }
 

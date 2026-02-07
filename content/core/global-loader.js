@@ -109,26 +109,13 @@ export function hideLoader(delay = 0, options = {}) {
       setTimeout(() => {
         overlay.style.display = 'none';
         document.body.classList.remove('global-loading-visible');
+        fire(EVENTS.LOADING_HIDE);
+        globalThis.dispatchEvent(new Event('app-ready'));
         clearCache();
+        log.debug('Loader hidden');
       }, 800);
-
-      fire(EVENTS.LOADING_HIDE);
-      globalThis.dispatchEvent(new Event('app-ready'));
-      log.debug('Loader hidden');
     }, delay);
   } catch (err) {
     log.warn('Could not hide loader:', err);
   }
-}
-/**
- * Check if the loader is currently visible
- * @returns {boolean}
- */
-export function isLoaderVisible() {
-  const elements = getLoaderElements();
-  if (!elements) return false;
-  return (
-    elements.overlay.style.display !== 'none' &&
-    !elements.overlay.classList.contains('fade-out')
-  );
 }

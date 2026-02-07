@@ -32,6 +32,9 @@ const log = createLogger('gallery-app');
 
 const { useState, useEffect, useRef, useMemo, useCallback } = React;
 
+// Create translation hook once at module level
+const useTranslation = createUseTranslation(React);
+
 // Utility für Debouncing
 const useDebounce = (value, delay) => {
   const [debouncedValue, setDebouncedValue] = useState(value);
@@ -48,7 +51,7 @@ const useDebounce = (value, delay) => {
 };
 
 const PhotoGallery = () => {
-  const { t, lang } = createUseTranslation(React)();
+  const { t, lang } = useTranslation();
   const [selectedImage, setSelectedImage] = useState(null);
   const [filter, setFilter] = useState('all');
   const [zoom, setZoom] = useState(1);

@@ -25,6 +25,7 @@ export const ThreeScene = ({ projects, onScrollUpdate, onReady }) => {
   const frameIdRef = useRef(null);
   const scrollRef = useRef(0);
   const isMountedRef = useRef(true);
+  const prevActiveIndexRef = useRef(-1);
 
   // Use the hook to track scroll
   const normalizedScroll = useScrollCamera(projects);
@@ -176,7 +177,8 @@ export const ThreeScene = ({ projects, onScrollUpdate, onReady }) => {
         const activeIndex = globalGallery.getActiveIndex(
           globalCamera.position.z,
         );
-        if (onScrollUpdate) {
+        if (onScrollUpdate && activeIndex !== prevActiveIndexRef.current) {
+          prevActiveIndexRef.current = activeIndex;
           onScrollUpdate(activeIndex);
         }
       }

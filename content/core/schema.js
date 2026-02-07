@@ -452,7 +452,7 @@ function extractPageContent(doc) {
       clone.querySelectorAll?.(sel).forEach((el) => el.remove()),
     );
 
-    let text = clone.innerText || clone.textContent || '';
+    let text = clone.textContent || '';
     text = text.replace(/\s+/g, ' ').trim();
     return text.length > 5000 ? text.substring(0, 5000) + '...' : text;
   } catch {

@@ -192,6 +192,11 @@ export class SiteFooter extends HTMLElement {
   cleanup() {
     this.removeGlobalEventListeners();
 
+    if (typeof this._unsubscribeI18n === 'function') {
+      this._unsubscribeI18n();
+      this._unsubscribeI18n = null;
+    }
+
     if (this._boundFooterTrigger) {
       document.removeEventListener('click', this._boundFooterTrigger);
       this._boundFooterTrigger = null;
@@ -652,7 +657,7 @@ export class SiteFooter extends HTMLElement {
   }
 
   setupLanguageUpdates() {
-    i18n.subscribe((_lang) => {
+    this._unsubscribeI18n = i18n.subscribe((_lang) => {
       this.updateLanguage(_lang);
     });
   }

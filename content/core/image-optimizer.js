@@ -94,11 +94,17 @@ async function getOptimizedImageUrl(src, options = {}) {
 /**
  * Prüfe ob Bild existiert
  */
+const imageExistsCache = new Map();
+
 async function imageExists(url) {
+  if (imageExistsCache.has(url)) return imageExistsCache.get(url);
   try {
     const response = await fetch(url, { method: 'HEAD' });
-    return response.ok;
+    const result = response.ok;
+    imageExistsCache.set(url, result);
+    return result;
   } catch {
+    imageExistsCache.set(url, false);
     return false;
   }
 }
@@ -249,10 +255,9 @@ function lazyLoadImages(target, options = {}) {
 
           // Warte auf Laden
           await new Promise((resolve, reject) => {
-            img.onload = resolve;
-            img.onerror = reject;
-            // Timeout nach 10 Sekunden
-            setTimeout(reject, 10000);
+            const timeoutId = setTimeout(() => reject(new Error('Image load timeout')), 10000);
+            img.onload = () => { clearTimeout(timeoutId); img.onload = null; img.onerror = null; resolve(); };
+            img.onerror = () => { clearTimeout(timeoutId); img.onload = null; img.onerror = null; reject(new Error('Image load failed')); };
           });
 
           // Entferne Blur

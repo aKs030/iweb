@@ -145,8 +145,10 @@ export class MenuEvents {
       addListener(document, 'keydown', handleEscape),
     );
 
-    window.addEventListener('hashchange', () => this.setActiveLink());
-    window.addEventListener('popstate', () => this.setActiveLink());
+    this.cleanupFns.push(
+      addListener(window, 'hashchange', () => this.setActiveLink()),
+      addListener(window, 'popstate', () => this.setActiveLink()),
+    );
   }
 
   setupResizeHandler() {

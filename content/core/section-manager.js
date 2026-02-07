@@ -86,7 +86,7 @@ export class SectionManager {
     eagerSections.forEach((section) => this.loadSection(section));
 
     if (lazySections.length) {
-      const observer = createObserver(
+      this._observer = createObserver(
         (entries) => {
           entries.forEach((entry) => {
             if (entry.isIntersecting) {
@@ -97,11 +97,15 @@ export class SectionManager {
         { rootMargin: '100px' },
       );
 
-      lazySections.forEach((section) => observer.observe(section));
+      lazySections.forEach((section) => this._observer.observe(section));
     }
   }
 
   reinit() {
+    if (this._observer) {
+      this._observer.disconnect();
+      this._observer = null;
+    }
     this._initialized = false;
     this.loadedSections = new WeakSet();
     this.init();

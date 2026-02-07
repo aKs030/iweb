@@ -71,14 +71,13 @@ export class ThreeEarthManager {
       if (typeof this.cleanupFn === 'function') {
         threeEarthState.setCleanupFunction(this.cleanupFn);
         log.info('Three.js Earth system initialized');
-        clearTimeout(loadingTimeout); // Clear timeout on success
       }
     } catch (error) {
       log.warn('Three.js failed, using CSS fallback:', error);
-      clearTimeout(loadingTimeout);
       // Unblock loader even on error
       AppLoadManager.unblock('three-earth');
     } finally {
+      clearTimeout(loadingTimeout);
       this.isLoading = false;
     }
   }
@@ -92,10 +91,10 @@ export class ThreeEarthManager {
       '/content/assets/img/earth/textures/earth_bump.webp',
     ];
 
-    texturePaths.forEach((path) => {
+    this._preloadedImages = texturePaths.map((path) => {
       const img = new Image();
       img.src = path;
-      // Don't wait for loading, just start the download
+      return img;
     });
   }
 

@@ -187,10 +187,10 @@ canvas {
   writing-mode: vertical-rl;
   pointer-events: none;
   z-index: 15; /* Higher z-index to stay above 3D objects */
-  animation: pulse 2s infinite;
+  animation: pulseHint 2s infinite;
 }
 
-@keyframes pulse {
+@keyframes pulseHint {
   0%,
   100% {
     opacity: 0.6;
