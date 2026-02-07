@@ -30,3 +30,17 @@ export default {
     }
   },
 };
+
+// Minimal Durable Object export to satisfy existing remote bindings
+export class NLWebMcp {
+  constructor(state, env) {
+    this.state = state;
+    this.env = env;
+  }
+
+  // Optional fetch method (keeps compatibility)
+  async fetch(request) {
+    return new Response('NLWebMcp placeholder', { status: 200 });
+  }
+}
+

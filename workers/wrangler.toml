@@ -7,18 +7,26 @@ compatibility_date = "2025-01-01"
 compatibility_flags = ["nodejs_compat"]
 
 workers_dev = true
-route = "suche-nlweb.httpsgithubcomaks030website.workers.dev"
-preview_urls = ["*-suche-nlweb.httpsgithubcomaks030website.workers.dev"]
+# route is not needed for workers_dev; remove to avoid route conflicts
+preview_urls = true
 
 [ai]
 binding = "AI"
 
-[r2_buckets]
+[[r2_buckets]]
 binding = "R2"
 bucket_name = "ai-search-suche-748559"
 
-[vector_database]
-index_name = "ai-search-suche"
+[vars]
+ENVIRONMENT = "production"
+MAX_SEARCH_RESULTS = "10"
+RAG_ID = "suche"
+AI_SEARCH_INDEX = "ai-search-suche"
+
+[durable_objects]
+bindings = [
+  { name = "MCP_OBJECT", class_name = "NLWebMcp" }
+]
 
 [observability]
 enabled = false
