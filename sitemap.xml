@@ -103,18 +103,4 @@
     <priority>0.6</priority>
   </url>
 
-  <url>
-    <loc>https://www.abdulkerimsesli.de/impressum/</loc>
-    <lastmod>2026-02-06</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-  </url>
-
-  <url>
-    <loc>https://www.abdulkerimsesli.de/datenschutz/</loc>
-    <lastmod>2026-02-06</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-  </url>
-
 </urlset>

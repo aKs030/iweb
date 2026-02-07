@@ -15,6 +15,7 @@
 # ============================================================================
 # Old /pages/* structure
 /pages/album.html                    /gallery/                 301
+/pages/album                         /gallery/                 301
 /pages/ubermich.html                 /about/                   301
 /pages/index-game.html               /                         301
 /pages/features/wetter.html          /                         301
@@ -23,7 +24,38 @@
 /pages/kontakt/                      /#kontakt                 301
 /pages/kontakt                       /#kontakt                 301
 
-# Old footer paths
+# Additional legacy paths found by Google crawler
+/pages/tools/                        /projekte/                301
+/pages/tools                         /projekte/                301
+/pages/fotogalerie                   /gallery/                 301
+/pages/fotogalerie/                  /gallery/                 301
+/pages/card/wetter.html              /                         301
+/pages/card/wetter                   /                         301
+/pages/ueber-mich/ueber-mich        /about/                   301
+/pages/ueber-mich/ueber-mich.html   /about/                   301
+/pages/design/pages/ueber-mich/ueber-mich.html  /about/       301
+/pages/design/pages/ueber-mich/ueber-mich       /about/       301
+/pages/ueber-mich/                   /about/                   301
+/pages/ueber-mich                    /about/                   301
+/pages/features/snake                /                         301
+/pages/features/snake/               /                         301
+/pages/card/karten.html              /                         301
+/pages/card/karten                   /                         301
+/pages/komponente/menu.html          /                         301
+/pages/komponente/menu               /                         301
+/pages/komponente/pages/ueber-mich/index.html   /about/       301
+/pages/komponente/pages/ueber-mich/  /about/                   301
+/pages/komponente/pages/fotogalerie/index.html  /gallery/     301
+/pages/komponente/pages/fotogalerie/ /gallery/                 301
+/pages/pages/fotogalerie/index.html  /gallery/                 301
+/pages/pages/fotogalerie/            /gallery/                 301
+/pages/blog/pages/fotos/fotos.html   /gallery/                 301
+/pages/blog/pages/fotos/fotos        /gallery/                 301
+/pages/webentwicklung/project-1.html /projekte/                301
+/pages/webentwicklung/project-1      /projekte/                301
+/pages/projekte/                     /projekte/                301
+
+# Old footer & content directory paths
 /content/footer/datenschutz.html             /datenschutz/             301
 /content/footer/datenschutz/                 /datenschutz/             301
 /content/footer/impressum.html               /impressum/               301
@@ -32,10 +64,18 @@
 /content/components/footer/datenschutz/      /datenschutz/             301
 /content/components/footer/impressum.html    /impressum/               301
 /content/components/footer/impressum/        /impressum/               301
+/content/webentwicklung/footer/datenschutz.html  /datenschutz/        301
+/content/webentwicklung/footer/datenschutz       /datenschutz/        301
+/content/kontakt/                            /#kontakt                 301
+/content/kontakt                             /#kontakt                 301
+/content/impressum/                          /impressum/               301
+/content/impressum                           /impressum/               301
 
-# Old direct .html access
+# Old direct .html access & root-level legacy
 /impressum.html                              /impressum/               301
 /datenschutz.html                            /datenschutz/             301
+/album.html                                  /gallery/                 301
+/album                                       /gallery/                 301
 
 # ============================================================================
 # 2. Canonical URL Redirects (Remove index.html) - Permanent
@@ -68,28 +108,19 @@
 # ============================================================================
 # 5. Legal Pages (Impressum & Datenschutz)
 # ============================================================================
-# Canonicalize to trailing slash and serve actual footer pages
+# Canonicalize to trailing slash — actual pages served from /impressum/index.html
+# and /datenschutz/index.html directly (no rewrite needed)
 /datenschutz    /datenschutz/                                      301
-/datenschutz/   /content/components/footer/datenschutz.html       200
 /impressum      /impressum/                                        301
-/impressum/     /content/components/footer/impressum.html         200
 
 # ============================================================================
 # 6. Dynamic Content Rewrites (200 Status)
 # ============================================================================
-# Explicitly serve known partials (MUST be above splat rules for performance)
-/pages/home/hero          /pages/home/hero.html          200
-/pages/home/hero.html     /pages/home/hero.html          200
-/content/components/footer/footer.html /content/components/footer/footer.html 200
-
-# Test pages
-/test-error-boundary.html /test-error-boundary.html      200
-
 # Serve /pages/ and /content/components/ directly (no redirect)
+# Splat rules handle all partials — explicit .html rewrites removed
+# to prevent 308 redirect loops with Cloudflare Pretty URLs
 /pages/*                  /pages/:splat                   200
-/pages/*.html             /pages/:splat.html              200
 /content/components/*     /content/components/:splat      200
-/content/components/*.html /content/components/:splat.html 200
 
 # ============================================================================
 # 7. Generic .html Removal (Must be after specific rules)

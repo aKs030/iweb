@@ -43,8 +43,17 @@ async function getTemplate(context, path) {
  * @param {Object} context - Cloudflare Pages context
  */
 export async function onRequest(context) {
-  // Skip API routes — they have their own handlers and don't need template injection
   const url = new URL(context.request.url);
+
+  // Redirect non-www → www (301 permanent)
+  // Cloudflare Pages _redirects doesn't support host-based redirects,
+  // so we handle it here in the middleware.
+  if (url.hostname === 'abdulkerimsesli.de') {
+    url.hostname = 'www.abdulkerimsesli.de';
+    return Response.redirect(url.href, 301);
+  }
+
+  // Skip API routes — they have their own handlers and don't need template injection
   if (url.pathname.startsWith('/api/')) {
     return await context.next();
   }
