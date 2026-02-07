@@ -2,8 +2,8 @@
  * Menu Events - Event handling and interactions
  */
 
-import { EVENTS } from '/content/core/events.js';
-import { debounce } from '/content/core/utils.js';
+import { EVENTS } from '../../../core/events.js';
+import { debounce } from '../../../core/utils.js';
 
 function addListener(target, event, handler, options = {}) {
   if (!target?.addEventListener) return () => {};

@@ -3,7 +3,7 @@
  * Shared hooks and helpers for React applications
  */
 
-import { i18n } from '/content/core/i18n.js';
+import { i18n } from '../core/i18n.js';
 
 /**
  * Creates a translation hook using the provided React instance

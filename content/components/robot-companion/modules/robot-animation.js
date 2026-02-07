@@ -1,4 +1,4 @@
-import { sleep } from '/content/core/utils.js';
+import { sleep } from '../../../core/utils.js';
 
 export class RobotAnimation {
   constructor(robot) {

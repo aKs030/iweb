@@ -7,8 +7,8 @@
  */
 
 /* exported initSearch, openSearch, closeSearch, toggleSearch */
-import { createLogger } from '/content/core/logger.js';
-import { upsertHeadLink } from '/content/core/utils.js';
+import { createLogger } from '../../core/logger.js';
+import { upsertHeadLink } from '../../core/utils.js';
 
 const _log = createLogger('search');
 

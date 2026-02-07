@@ -3,18 +3,18 @@
  * @version 1.1.0
  */
 
-import { createLogger } from '/content/core/logger.js';
-import { upsertMeta } from '/content/core/utils.js';
-import { applyCanonicalLinks } from '/content/core/canonical-manager.js';
-import { setupPWAAssets } from '/content/core/pwa-manager.js';
+import { createLogger } from '../../core/logger.js';
+import { upsertMeta } from '../../core/utils.js';
+import { applyCanonicalLinks } from '../../core/canonical-manager.js';
+import { setupPWAAssets } from '../../core/pwa-manager.js';
 import {
   generateSchemaGraph,
   injectSchema,
   scheduleSchemaInjection,
-} from '/content/core/schema.js';
-import { loadBrandData } from '/content/config/brand-data-loader.js';
-import { ROUTES } from '/content/config/routes-config.js';
-import { BASE_URL } from '/content/config/constants.js';
+} from '../../core/schema.js';
+import { loadBrandData } from '../../config/brand-data-loader.js';
+import { ROUTES } from '../../config/routes-config.js';
+import { BASE_URL } from '../../config/constants.js';
 import { headState } from './head-state.js';
 
 const log = createLogger('HeadManager');
