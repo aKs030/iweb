@@ -3,7 +3,6 @@
  * Endpoints: POST /api/search, POST /api/ai
  */
 
-import SEARCH_INDEX from './search-index.json' with { type: 'json' };
 import { searchHandler } from './handlers/search.js';
 import { aiHandler } from './handlers/ai.js';
 import {
