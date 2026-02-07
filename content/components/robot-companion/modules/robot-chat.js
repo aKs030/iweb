@@ -34,9 +34,12 @@ export class RobotChat {
     this._bubbleSequenceTimers = [];
   }
 
-  toggleChat(forceState) {
+  async toggleChat(forceState) {
     const newState = forceState ?? !this.isOpen;
     if (newState) {
+      // Ensure DOM exists before opening
+      await this.robot.ensureChatWindow();
+
       this.robot.dom.window.classList.add('open');
       this.isOpen = true;
 
@@ -61,7 +64,7 @@ export class RobotChat {
       // Focus Trap
       globalThis?.a11y?.trapFocus(this.robot.dom.window);
     } else {
-      this.robot.dom.window.classList.remove('open');
+      if (this.robot.dom.window) this.robot.dom.window.classList.remove('open');
       this.isOpen = false;
 
       // Update state manager
@@ -83,7 +86,7 @@ export class RobotChat {
 
     (async () => {
       await this.robot.animationModule.playPokeAnimation();
-      this.toggleChat(true);
+      await this.toggleChat(true);
     })();
   }
 

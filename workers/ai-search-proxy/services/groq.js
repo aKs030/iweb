@@ -12,7 +12,10 @@ const API_URL = 'https://api.groq.com/openai/v1/chat/completions';
  * @param {string} apiKey
  * @returns {Promise<string>}
  */
-export async function callGroqAPI(prompt, systemInstruction, apiKey) {
+export async function callGroqAPI(prompt, systemInstruction, apiKey, timeout = 30000) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
+
   const messages = [
     ...(systemInstruction
       ? [{ role: 'system', content: systemInstruction }]
@@ -20,20 +23,29 @@ export async function callGroqAPI(prompt, systemInstruction, apiKey) {
     { role: 'user', content: prompt },
   ];
 
-  const res = await fetch(API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: MODEL,
-      messages,
-      temperature: 0.7,
-      max_tokens: 2048,
-      top_p: 0.95,
-    }),
-  });
+  let res;
+  try {
+    res = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: MODEL,
+        messages,
+        temperature: 0.7,
+        max_tokens: 2048,
+        top_p: 0.95,
+      }),
+      signal: controller.signal,
+    });
+  } catch (e) {
+    if (e.name === 'AbortError') throw new Error('Groq API request timed out');
+    throw e;
+  } finally {
+    clearTimeout(timeoutId);
+  }
 
   if (!res.ok) {
     const text = await res.text();
