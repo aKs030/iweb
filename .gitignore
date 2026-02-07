@@ -42,6 +42,7 @@ desktop.ini
 # Wrangler
 .wrangler/
 .dev.vars
+.vscode/
 
 # Documentation (temporary)
 *_ABGESCHLOSSEN.md

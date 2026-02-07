@@ -90,6 +90,55 @@ function injectTemplates(html) {
 
 // ─── Redirect Rules (from _redirects) ───────────────────────
 const REDIRECTS = [
+  // Legacy URL cleanup
+  ['/pages/album.html', '/gallery/', 301],
+  ['/pages/album', '/gallery/', 301],
+  ['/pages/ubermich.html', '/about/', 301],
+  ['/pages/tools/', '/projekte/', 301],
+  ['/pages/tools', '/projekte/', 301],
+  ['/pages/fotogalerie', '/gallery/', 301],
+  ['/pages/fotogalerie/', '/gallery/', 301],
+  ['/pages/card/wetter.html', '/', 301],
+  ['/pages/card/wetter', '/', 301],
+  ['/pages/card/karten.html', '/', 301],
+  ['/pages/card/karten', '/', 301],
+  ['/pages/ueber-mich/ueber-mich', '/about/', 301],
+  ['/pages/ueber-mich/ueber-mich.html', '/about/', 301],
+  ['/pages/ueber-mich/', '/about/', 301],
+  ['/pages/ueber-mich', '/about/', 301],
+  ['/pages/design/pages/ueber-mich/ueber-mich.html', '/about/', 301],
+  ['/pages/design/pages/ueber-mich/ueber-mich', '/about/', 301],
+  ['/pages/index-game.html', '/', 301],
+  ['/pages/features/wetter.html', '/', 301],
+  ['/pages/features/snake.html', '/', 301],
+  ['/pages/features/snake', '/', 301],
+  ['/pages/features/snake/', '/', 301],
+  ['/pages/komponente/footer.html', '/', 301],
+  ['/pages/komponente/menu.html', '/', 301],
+  ['/pages/komponente/menu', '/', 301],
+  ['/pages/komponente/pages/ueber-mich/index.html', '/about/', 301],
+  ['/pages/komponente/pages/ueber-mich/', '/about/', 301],
+  ['/pages/komponente/pages/fotogalerie/index.html', '/gallery/', 301],
+  ['/pages/komponente/pages/fotogalerie/', '/gallery/', 301],
+  ['/pages/pages/fotogalerie/index.html', '/gallery/', 301],
+  ['/pages/pages/fotogalerie/', '/gallery/', 301],
+  ['/pages/blog/pages/fotos/fotos.html', '/gallery/', 301],
+  ['/pages/blog/pages/fotos/fotos', '/gallery/', 301],
+  ['/pages/webentwicklung/project-1.html', '/projekte/', 301],
+  ['/pages/webentwicklung/project-1', '/projekte/', 301],
+  ['/pages/kontakt/', '/#kontakt', 301],
+  ['/pages/kontakt', '/#kontakt', 301],
+  ['/pages/projekte/', '/projekte/', 301],
+  // Old content directory paths
+  ['/content/webentwicklung/footer/datenschutz.html', '/datenschutz/', 301],
+  ['/content/webentwicklung/footer/datenschutz', '/datenschutz/', 301],
+  ['/content/kontakt/', '/#kontakt', 301],
+  ['/content/kontakt', '/#kontakt', 301],
+  ['/content/impressum/', '/impressum/', 301],
+  ['/content/impressum', '/impressum/', 301],
+  // Root-level legacy
+  ['/album.html', '/gallery/', 301],
+  ['/album', '/gallery/', 301],
   // Trailing slash canonicalization
   ['/about', '/about/', 301],
   ['/blog', '/blog/', 301],
@@ -106,12 +155,7 @@ const REDIRECTS = [
 ];
 
 // ─── Rewrite Rules (serve file without changing URL) ────────
-const REWRITES = [
-  ['/datenschutz/', 'content/components/footer/datenschutz.html'],
-  ['/datenschutz', 'content/components/footer/datenschutz.html'],
-  ['/impressum/', 'content/components/footer/impressum.html'],
-  ['/impressum', 'content/components/footer/impressum.html'],
-];
+const REWRITES = [];
 
 // ─── Clean URL mapping ──────────────────────────────────────
 const CLEAN_URLS = {
@@ -121,6 +165,8 @@ const CLEAN_URLS = {
   '/gallery/': 'pages/gallery/index.html',
   '/projekte/': 'pages/projekte/index.html',
   '/videos/': 'pages/videos/index.html',
+  '/impressum/': 'impressum/index.html',
+  '/datenschutz/': 'datenschutz/index.html',
 };
 
 function tryServe(filePath, res) {
