@@ -21,7 +21,7 @@ const log = createLogger('useProjects');
  * }}
  */
 export const useProjects = (icons) => {
-  const [projects, setProjects] = React.useState(/** @type {any[]} */ ([]));
+  const [projects, setProjects] = React.useState(/** @type {any[]} */([]));
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState('');
 
