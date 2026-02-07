@@ -29,12 +29,15 @@ export class SectionManager {
     section.setAttribute('aria-busy', 'true');
 
     try {
-      // Try with and without .html extension
+      // Fetch section HTML — URL should NOT end in .html to avoid
+      // Cloudflare Pretty URLs 308 redirect loops
+      const cleanUrl = url.endsWith('.html') ? url.slice(0, -5) : url;
       let html;
       try {
-        html = await fetchText(url);
+        html = await fetchText(cleanUrl);
       } catch {
-        html = await fetchText(url + '.html');
+        // Fallback: try the original URL as-is
+        html = await fetchText(url);
       }
 
       // Remove ALL existing content before inserting new content

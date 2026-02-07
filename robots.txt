@@ -8,16 +8,31 @@ Sitemap: https://www.abdulkerimsesli.de/sitemap-videos.xml
 User-agent: *
 Allow: /
 
-# Block raw internal fragments and page partials
+# Block raw internal HTML fragments (not needed for indexing)
 Disallow: /content/components/*.html
 Disallow: /content/components/*/*.html
-Disallow: /pages/
 
-# Allow footer pages so Google sees the 301 redirects
+# Allow resources Googlebot needs for rendering (CSS, JS, XHR partials)
+Allow: /content/components/footer/footer.html
+Allow: /content/components/footer/footer
 Allow: /content/components/footer/datenschutz.html
 Allow: /content/components/footer/impressum.html
 Allow: /content/components/footer/datenschutz/
 Allow: /content/components/footer/impressum/
+
+# Block page HTML partials but allow CSS/JS assets needed for rendering
+Disallow: /pages/*.html
+Disallow: /pages/*/*.html
+Allow: /pages/*.css
+Allow: /pages/*/*.css
+Allow: /pages/*.js
+Allow: /pages/*/*.js
+
+# Block non-HTML resources that shouldn't be indexed
+Disallow: /manifest.json
+Disallow: /files/
+Disallow: /*?search=
+Disallow: /*?q=
 
 # Block internal/system paths
 # Note: Allowing /content/config and /content/utils so Google can load scripts required for rendering

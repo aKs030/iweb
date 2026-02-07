@@ -94,6 +94,10 @@ export function generateSchemaGraph(
       '@id': `${ENV.BASE_URL}/#personImage`,
       url: 'https://commons.wikimedia.org/wiki/File:Abdulkerim_Sesli_portrait_2025.png',
       caption: brandData.name,
+      license: `${ENV.BASE_URL}/#image-license`,
+      acquireLicensePage: `${ENV.BASE_URL}/#image-license`,
+      creditText: `Photo: ${brandData.name}`,
+      copyrightNotice: `© ${currentYear} ${brandData.name}`,
     },
     description: pageData.description,
     disambiguatingDescription:
@@ -203,6 +207,7 @@ function createImageObject(url, name, currentYear) {
     height: 512,
     creator: { '@type': 'Person', name },
     license: `${ENV.BASE_URL}/#image-license`,
+    acquireLicensePage: `${ENV.BASE_URL}/#image-license`,
     creditText: `Logo: ${name}`,
     copyrightNotice: `© ${currentYear} ${name}`,
   };
