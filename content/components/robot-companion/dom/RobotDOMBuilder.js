@@ -16,8 +16,6 @@ export class RobotDOMBuilder {
   createContainer() {
     const container = document.createElement('div');
     container.id = 'robot-companion-container';
-    container.style.opacity = '0';
-    container.style.transition = 'opacity 220ms ease';
 
     const floatWrapper = this.createFloatWrapper();
 
