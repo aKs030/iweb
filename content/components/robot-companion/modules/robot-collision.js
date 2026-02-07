@@ -1,5 +1,5 @@
-import { createLogger } from '/content/core/logger.js';
-import { createObserver } from '/content/core/intersection-observer.js';
+import { createLogger } from '../../../core/logger.js';
+import { createObserver } from '../../../core/intersection-observer.js';
 const log = createLogger('RobotCollision');
 
 export class RobotCollision {

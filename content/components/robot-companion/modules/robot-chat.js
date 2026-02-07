@@ -1,4 +1,4 @@
-import { createLogger } from '/content/core/logger.js';
+import { createLogger } from '../../../core/logger.js';
 import { MarkdownRenderer } from './markdown-renderer.js';
 import { ROBOT_PERSONA } from './robot-persona.js';
 import { ROBOT_ACTIONS } from '../constants/events.js';
@@ -34,12 +34,9 @@ export class RobotChat {
     this._bubbleSequenceTimers = [];
   }
 
-  async toggleChat(forceState) {
+  toggleChat(forceState) {
     const newState = forceState ?? !this.isOpen;
     if (newState) {
-      // Ensure DOM exists before opening
-      await this.robot.ensureChatWindow();
-
       this.robot.dom.window.classList.add('open');
       this.isOpen = true;
 
@@ -64,7 +61,7 @@ export class RobotChat {
       // Focus Trap
       globalThis?.a11y?.trapFocus(this.robot.dom.window);
     } else {
-      if (this.robot.dom.window) this.robot.dom.window.classList.remove('open');
+      this.robot.dom.window.classList.remove('open');
       this.isOpen = false;
 
       // Update state manager
@@ -86,7 +83,7 @@ export class RobotChat {
 
     (async () => {
       await this.robot.animationModule.playPokeAnimation();
-      await this.toggleChat(true);
+      this.toggleChat(true);
     })();
   }
 

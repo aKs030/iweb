@@ -39,9 +39,9 @@ import {
 const log = createLogger('ThreeEarthSystem');
 
 /**
- * @typedef {import('/content/core/types.js').TimerID} TimerID
- * @typedef {import('/content/core/types.js').Vector2} Vector2
- * @typedef {import('/content/core/types.js').DeviceCapabilities} DeviceCapabilities
+ * @typedef {import('../../core/types.js').TimerID} TimerID
+ * @typedef {import('../../core/types.js').Vector2} Vector2
+ * @typedef {import('../../core/types.js').DeviceCapabilities} DeviceCapabilities
  */
 
 // Helper: onResize
@@ -886,7 +886,7 @@ class ThreeEarthSystem {
 
     const container = document.querySelector('.three-earth-container');
     const datasetContainer =
-      /** @type {import('/content/core/types.js').DatasetHTMLElement|null} */ (
+      /** @type {import('../../core/types.js').DatasetHTMLElement|null} */ (
         container
       );
     if (datasetContainer) datasetContainer.dataset.section = newSection;
