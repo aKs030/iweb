@@ -445,7 +445,7 @@ const loadLatestVideos = async () => {
       await new Promise((resolve) => setTimeout(resolve, 0));
     }
 
-    updateLoader(0.95, `${items.length} Videos geladen`);
+    updateLoader(0.95, i18n.t('loader.videos_loaded', { count: items.length }));
     setVideoStatus('');
 
     setTimeout(() => {

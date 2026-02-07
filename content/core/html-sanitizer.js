@@ -6,7 +6,13 @@
 /**
  * Escapes HTML special characters (for plain text display)
  */
-const HTML_ESCAPES = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+const HTML_ESCAPES = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#39;',
+};
 const ESCAPE_RE = /[&<>"']/g;
 
 export function escapeHTML(text) {

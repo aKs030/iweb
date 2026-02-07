@@ -52,11 +52,11 @@ const App = () => {
       'div',
       { id: 'canvas-container' },
       projects.length > 0 &&
-      h(ThreeScene, {
-        projects,
-        onScrollUpdate: handleScrollUpdate,
-        onReady: () => { }, // Empty callback since we don't need scene ready state
-      }),
+        h(ThreeScene, {
+          projects,
+          onScrollUpdate: handleScrollUpdate,
+          onReady: () => {}, // Empty callback since we don't need scene ready state
+        }),
     ),
 
     // HUD Overlay
@@ -66,46 +66,46 @@ const App = () => {
 
       // Active Project Info Panel
       activeProject &&
-      h(
-        'div',
-        {
-          className: 'hud-panel visible',
-          key: activeProject.id,
-        },
-        h(
-          'span',
-          { className: 'hud-category' },
-          activeProject.category || 'Project',
-        ),
-        h('h1', { className: 'hud-title' }, activeProject.title),
-        h('p', { className: 'hud-desc' }, activeProject.description),
-
         h(
           'div',
-          { className: 'hud-actions' },
-          activeProject.appPath &&
+          {
+            className: 'hud-panel visible',
+            key: activeProject.id,
+          },
           h(
-            'a',
-            {
-              href: activeProject.appPath,
-              target: '_blank',
-              className: 'btn btn-primary',
-            },
-            'Open App',
+            'span',
+            { className: 'hud-category' },
+            activeProject.category || 'Project',
           ),
+          h('h1', { className: 'hud-title' }, activeProject.title),
+          h('p', { className: 'hud-desc' }, activeProject.description),
 
-          activeProject.githubPath &&
           h(
-            'a',
-            {
-              href: activeProject.githubPath,
-              target: '_blank',
-              className: 'btn btn-outline',
-            },
-            'GitHub',
+            'div',
+            { className: 'hud-actions' },
+            activeProject.appPath &&
+              h(
+                'a',
+                {
+                  href: activeProject.appPath,
+                  target: '_blank',
+                  className: 'btn btn-primary',
+                },
+                'Open App',
+              ),
+
+            activeProject.githubPath &&
+              h(
+                'a',
+                {
+                  href: activeProject.githubPath,
+                  target: '_blank',
+                  className: 'btn btn-outline',
+                },
+                'GitHub',
+              ),
           ),
         ),
-      ),
 
       // Scroll Indicator
       h('div', { className: 'scroll-hint' }, 'SCROLL TO EXPLORE'),

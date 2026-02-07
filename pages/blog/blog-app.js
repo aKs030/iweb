@@ -11,6 +11,7 @@ import htm from 'https://esm.sh/htm@3.1.1';
 import { createLogger } from '/content/core/logger.js';
 import { createUseTranslation } from '/content/core/react-utils.js';
 import { updateLoader, hideLoader } from '/content/core/global-loader.js';
+import { i18n } from '/content/core/i18n.js';
 import { marked } from 'https://cdn.jsdelivr.net/npm/marked@11.1.1/lib/marked.esm.js';
 import DOMPurify from 'https://cdn.jsdelivr.net/npm/dompurify@3.3.1/dist/purify.es.mjs';
 import { Clock, ArrowRight, ArrowUp } from '/content/components/ui/icons.js';
@@ -273,14 +274,17 @@ const normalizePost = (raw = {}) => {
 // Fetch Logic
 const loadPostsData = async (seedPosts = []) => {
   try {
-    updateLoader(0.2, 'Lade Blog-Daten...');
+    updateLoader(0.2, i18n.t('loader.loading_blog'));
 
     let fetchedPosts = [];
     try {
       const indexRes = await fetch('/pages/blog/posts/index.json');
       if (indexRes.ok) {
         fetchedPosts = await indexRes.json();
-        updateLoader(0.4, `${fetchedPosts.length} Artikel gefunden...`);
+        updateLoader(
+          0.4,
+          i18n.t('loader.articles_found', { count: fetchedPosts.length }),
+        );
       }
     } catch (e) {
       log.warn('Could not load index.json', e);
@@ -306,9 +310,13 @@ const loadPostsData = async (seedPosts = []) => {
 
           loaded++;
           const progress = 0.4 + (loaded / total) * 0.4;
-          updateLoader(progress, `Lade Artikel ${loaded}/${total}...`, {
-            silent: true,
-          });
+          updateLoader(
+            progress,
+            i18n.t('loader.loading_article', { current: loaded, total }),
+            {
+              silent: true,
+            },
+          );
 
           return normalizePost(postData);
         } catch (e) {
@@ -318,7 +326,7 @@ const loadPostsData = async (seedPosts = []) => {
       }),
     );
 
-    updateLoader(0.85, 'Verarbeite Artikel...');
+    updateLoader(0.85, i18n.t('loader.processing_articles'));
 
     const map = new Map();
     seedPosts.forEach((p) => map.set(p.id, p));
@@ -330,7 +338,10 @@ const loadPostsData = async (seedPosts = []) => {
       (a, b) => b.timestamp - a.timestamp,
     );
 
-    updateLoader(0.95, `${result.length} Artikel geladen`);
+    updateLoader(
+      0.95,
+      i18n.t('loader.articles_loaded', { count: result.length }),
+    );
     return result;
   } catch (e) {
     log.warn('Fatal error loading posts', e);
@@ -459,7 +470,7 @@ const BlogApp = () => {
 
     (async () => {
       try {
-        updateLoader(0.1, 'Initialisiere 3D-System...');
+        updateLoader(0.1, i18n.t('loader.init_3d_system'));
 
         const final = await loadPostsData(seed);
 
@@ -467,7 +478,7 @@ const BlogApp = () => {
         setLoading(false);
 
         setTimeout(() => {
-          updateLoader(1, 'Blog bereit!');
+          updateLoader(1, i18n.t('loader.blog_ready'));
           hideLoader(100);
         }, 100);
 
@@ -475,7 +486,7 @@ const BlogApp = () => {
       } catch (error) {
         log.error('Error loading blog posts:', error);
         setLoading(false);
-        updateLoader(1, 'Fehler beim Laden');
+        updateLoader(1, i18n.t('loader.failed'));
         hideLoader(500);
       }
     })();

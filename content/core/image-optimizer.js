@@ -255,9 +255,22 @@ function lazyLoadImages(target, options = {}) {
 
           // Warte auf Laden
           await new Promise((resolve, reject) => {
-            const timeoutId = setTimeout(() => reject(new Error('Image load timeout')), 10000);
-            img.onload = () => { clearTimeout(timeoutId); img.onload = null; img.onerror = null; resolve(); };
-            img.onerror = () => { clearTimeout(timeoutId); img.onload = null; img.onerror = null; reject(new Error('Image load failed')); };
+            const timeoutId = setTimeout(
+              () => reject(new Error('Image load timeout')),
+              10000,
+            );
+            img.onload = () => {
+              clearTimeout(timeoutId);
+              img.onload = null;
+              img.onerror = null;
+              resolve();
+            };
+            img.onerror = () => {
+              clearTimeout(timeoutId);
+              img.onload = null;
+              img.onerror = null;
+              reject(new Error('Image load failed'));
+            };
           });
 
           // Entferne Blur

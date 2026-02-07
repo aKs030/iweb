@@ -233,16 +233,19 @@ class LanguageManager extends EventTarget {
       if (key) {
         const translated = this.t(key);
         // Sanitize HTML to prevent XSS - strict allowlist approach
-        const ALLOWED_TAGS = /^(b|i|em|strong|a|br|span|p|ul|ol|li|small|sub|sup)$/i;
-        const clean = translated
-          .replace(/<\/?([a-z][a-z0-9]*)\b[^>]*>/gi, (match, tag) => {
+        const ALLOWED_TAGS =
+          /^(b|i|em|strong|a|br|span|p|ul|ol|li|small|sub|sup)$/i;
+        const clean = translated.replace(
+          /<\/?([a-z][a-z0-9]*)\b[^>]*>/gi,
+          (match, tag) => {
             if (!ALLOWED_TAGS.test(tag)) return '';
             // Remove event handlers and javascript: from allowed tags
             return match
               .replace(/\s+on\w+\s*=\s*(["'])[^"']*\1/gi, '')
               .replace(/\s+on\w+\s*=[^\s>]*/gi, '')
               .replace(/javascript\s*:/gi, '');
-          });
+          },
+        );
         el.innerHTML = clean;
       }
     });
