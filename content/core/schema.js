@@ -49,7 +49,7 @@ export function generateSchemaGraph(
   // Use canonical origin (prod or runtime origin)
   const canonicalOrigin =
     forceProdCanonical ||
-    doc?.documentElement?.dataset?.forceProdCanonical === 'true'
+      doc?.documentElement?.dataset?.forceProdCanonical === 'true'
       ? ENV.BASE_URL
       : globalThis.location?.origin || ENV.BASE_URL;
 
@@ -355,11 +355,11 @@ function enrichPersonNode(personNode, brandData, doc) {
         brandFollowers > 0
           ? brandFollowers
           : findCount([
-              '[data-followers]',
-              '[data-followers-count]',
-              '.followers-count',
-              '.follower-count',
-            ]);
+            '[data-followers]',
+            '[data-followers-count]',
+            '.followers-count',
+            '.follower-count',
+          ]);
 
       if (followers > 0) {
         personNode.interactionStatistic = personNode.interactionStatistic || [];
@@ -375,11 +375,11 @@ function enrichPersonNode(personNode, brandData, doc) {
         brandLikes > 0
           ? brandLikes
           : findCount([
-              '[data-likes]',
-              '[data-likes-count]',
-              '.likes-count',
-              '.like-count',
-            ]);
+            '[data-likes]',
+            '[data-likes-count]',
+            '.likes-count',
+            '.like-count',
+          ]);
 
       if (likes > 0) {
         personNode.interactionStatistic = personNode.interactionStatistic || [];
