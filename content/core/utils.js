@@ -142,7 +142,7 @@ export function onDOMReady(callback, options = { once: true }) {
   if (document.readyState === 'loading') {
     document.addEventListener(
       'DOMContentLoaded',
-      /** @type {EventListener} */ (callback),
+      /** @type {EventListener} */(callback),
       options,
     );
   } else {
