@@ -469,9 +469,3 @@ export function openSearch() {
     if (searchInstance) searchInstance.open();
   }
 }
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initSearch);
-} else {
-  initSearch();
-}

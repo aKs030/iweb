@@ -41,10 +41,17 @@ export async function aiHandler(request, env) {
     let finalPrompt = prompt;
 
     if (options.useSearch) {
+      // Coerce topK to valid integer and clamp between 1 and 5
+      let topK = parseInt(options.topK, 10);
+      if (isNaN(topK) || topK <= 0) {
+        topK = 3;
+      }
+      topK = Math.min(topK, 5);
+
       // Async performSearch using AI_SEARCH binding
       sources = await performSearch(
         options.searchQuery || prompt,
-        Math.min(options.topK || 3, 5),
+        topK,
         env.AI_SEARCH,
       );
       finalPrompt = augmentPromptWithRAG(prompt, sources);

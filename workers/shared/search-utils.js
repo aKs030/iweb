@@ -32,7 +32,7 @@ export async function performSearch(query, topK, aiSearchBinding) {
     }));
   } catch (error) {
     console.error('AI Search Error:', error);
-    return [];
+    throw error;
   }
 }
 
