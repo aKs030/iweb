@@ -6,10 +6,10 @@
  */
 
 import * as THREE from 'three';
-import { createLogger } from '/content/core/logger.js';
-import { getElementById, debounce } from '/content/core/utils.js';
-import { createObserver } from '/content/core/intersection-observer.js';
-import { AppLoadManager } from '/content/core/load-manager.js';
+import { createLogger } from '../../core/logger.js';
+import { getElementById, debounce } from '../../core/utils.js';
+import { createObserver } from '../../core/intersection-observer.js';
+import { AppLoadManager } from '../../core/load-manager.js';
 import {
   getSharedState,
   registerParticleSystem,
@@ -39,9 +39,9 @@ import {
 const log = createLogger('ThreeEarthSystem');
 
 /**
- * @typedef {import('/content/core/types.js').TimerID} TimerID
- * @typedef {import('/content/core/types.js').Vector2} Vector2
- * @typedef {import('/content/core/types.js').DeviceCapabilities} DeviceCapabilities
+ * @typedef {import('../../core/types.js').TimerID} TimerID
+ * @typedef {import('../../core/types.js').Vector2} Vector2
+ * @typedef {import('../../core/types.js').DeviceCapabilities} DeviceCapabilities
  */
 
 // Helper: onResize
@@ -636,24 +636,55 @@ class ThreeEarthSystem {
    * @param {HTMLElement} container
    */
   _setupResizeHandler(container) {
-    const handler = () => {
-      if (!this.camera || !this.renderer) return;
-      const width = container.clientWidth;
-      const height = container.clientHeight;
-      this.isMobileDevice =
-        window.matchMedia?.('(max-width: 768px)')?.matches ?? false;
+    if (!('ResizeObserver' in window)) {
+      // Fallback to window resize
+      const handler = () => {
+        if (!this.camera || !this.renderer) return;
+        const width = container.clientWidth;
+        const height = container.clientHeight;
+        this.isMobileDevice =
+          window.matchMedia?.('(max-width: 768px)')?.matches ?? false;
 
-      this.camera.aspect = width / height;
-      this.camera.fov = this.isMobileDevice ? 55 : CONFIG.CAMERA.FOV;
-      this.camera.updateProjectionMatrix();
-      this.renderer.setSize(width, height);
-      if (this.starManager && 'handleResize' in this.starManager) {
-        /** @type {any} */ (this.starManager).handleResize(width, height);
-      }
-    };
+        this.camera.aspect = width / height;
+        this.camera.fov = this.isMobileDevice ? 55 : CONFIG.CAMERA.FOV;
+        this.camera.updateProjectionMatrix();
+        this.renderer.setSize(width, height);
+        if (this.starManager && 'handleResize' in this.starManager) {
+          /** @type {any} */ (this.starManager).handleResize(width, height);
+        }
+      };
+      const cleanup = onResize(handler, 100);
+      sharedCleanupManager.addCleanupFunction('three-earth', cleanup, 'resize');
+      return;
+    }
 
-    const cleanup = onResize(handler, 100);
-    sharedCleanupManager.addCleanupFunction('three-earth', cleanup, 'resize');
+    const resizeObserver = new ResizeObserver(
+      /** @type {ResizeObserverCallback} */ (
+        debounce((entries) => {
+          if (!this.active || !this.camera || !this.renderer) return;
+          for (const entry of entries) {
+            const { width, height } = entry.contentRect;
+            this.isMobileDevice =
+              window.matchMedia?.('(max-width: 768px)')?.matches ?? false;
+
+            this.camera.aspect = width / height;
+            this.camera.fov = this.isMobileDevice ? 55 : CONFIG.CAMERA.FOV;
+            this.camera.updateProjectionMatrix();
+            this.renderer.setSize(width, height);
+            if (this.starManager && 'handleResize' in this.starManager) {
+              /** @type {any} */ (this.starManager).handleResize(width, height);
+            }
+          }
+        }, 100)
+      ),
+    );
+
+    resizeObserver.observe(container);
+    sharedCleanupManager.addCleanupFunction(
+      'three-earth',
+      () => resizeObserver.disconnect(),
+      'ResizeObserver',
+    );
   }
 
   // --- Animation Loop ---
@@ -855,7 +886,7 @@ class ThreeEarthSystem {
 
     const container = document.querySelector('.three-earth-container');
     const datasetContainer =
-      /** @type {import('/content/core/types.js').DatasetHTMLElement|null} */ (
+      /** @type {import('../../core/types.js').DatasetHTMLElement|null} */ (
         container
       );
     if (datasetContainer) datasetContainer.dataset.section = newSection;
@@ -1247,7 +1278,9 @@ function _getSectionConfig(sectionName) {
   };
   return (
     /** @type {any} */ (configs)[
-      sectionName === 'site-footer' ? 'contact' : sectionName
+      sectionName === 'site-footer' || sectionName === 'section4'
+        ? 'contact'
+        : sectionName
     ] || configs.hero
   );
 }

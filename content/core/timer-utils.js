@@ -84,7 +84,7 @@ export class TimerManager {
   }
 
   // sleep() method removed - use imported sleep from async-utils.js instead
-  // import { sleep } from '/content/core/utils.js';
+  // import { sleep } from '../core/utils.js';
 
   get activeTimers() {
     return {

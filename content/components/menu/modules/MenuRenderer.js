@@ -3,8 +3,8 @@
  */
 
 import { MenuTemplate } from './MenuTemplate.js';
-import { getElementById } from '/content/core/utils.js';
-import { i18n } from '/content/core/i18n.js';
+import { getElementById } from '../../../core/utils.js';
+import { i18n } from '../../../core/i18n.js';
 
 export class MenuRenderer {
   constructor(state, config = {}) {

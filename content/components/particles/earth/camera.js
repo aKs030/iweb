@@ -1,5 +1,5 @@
 import { CONFIG } from './config.js';
-import { createLogger } from '/content/core/logger.js';
+import { createLogger } from '../../../core/logger.js';
 
 const log = createLogger('EarthCamera');
 
@@ -34,7 +34,7 @@ export class CameraManager {
   updateCameraForSection(sectionName) {
     // Map certain section ids to existing preset keys
     const presetKey =
-      sectionName === 'site-footer'
+      sectionName === 'site-footer' || sectionName === 'section4'
         ? 'contact'
         : sectionName === 'section3'
           ? 'about'

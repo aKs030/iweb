@@ -13,8 +13,8 @@
  * @last-modified 2025-12-19
  */
 
-import { createLogger } from '/content/core/logger.js';
-import { throttle } from '/content/core/utils.js';
+import { createLogger } from '../../core/logger.js';
+import { throttle } from '../../core/utils.js';
 
 const log = createLogger('sharedParticleSystem');
 
