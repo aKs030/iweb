@@ -110,7 +110,6 @@ const ThreeEarthLoader = new ThreeEarthManager(ENV);
 // Track if loader has been hidden
 let loaderHidden = false;
 
-
 // ===== Application Bootstrap =====
 document.addEventListener(
   'DOMContentLoaded',
