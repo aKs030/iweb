@@ -1,24 +1,36 @@
 # Cloudflare Workers Configuration
-# Docs: https://developers.cloudflare.com/workers/wrangler/configuration/
+# Minimal für neue Instanz
 
-name = "ai-search-proxy"
+name = "suche-nlweb"
 main = "ai-search-proxy/index.js"
 compatibility_date = "2025-01-01"
 compatibility_flags = ["nodejs_compat"]
 
-[vars]
-ENVIRONMENT = "production"
-MAX_SEARCH_RESULTS = "10"
+workers_dev = true
+route = "suche-nlweb.httpsgithubcomaks030website.workers.dev"
+preview_urls = ["*-suche-nlweb.httpsgithubcomaks030website.workers.dev"]
 
-# Cloudflare AI Binding (includes AI Search / AutoRAG)
 [ai]
 binding = "AI"
 
-# YouTube API Proxy (deploy with: wrangler deploy --env youtube)
-[env.youtube]
-name = "youtube-api-proxy"
-main = "youtube-api-proxy/index.js"
+[r2_buckets]
+binding = "R2"
+bucket_name = "ai-search-suche-748559"
 
-[env.youtube.vars]
-ENVIRONMENT = "production"
-CACHE_TTL = "3600"
+[vector_database]
+index_name = "ai-search-suche"
+
+[observability]
+enabled = false
+head_sampling_rate = 1
+
+[observability.logs]
+enabled = true
+head_sampling_rate = 1
+persist = true
+invocation_logs = true
+
+[observability.traces]
+enabled = false
+persist = true
+head_sampling_rate = 1
