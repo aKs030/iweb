@@ -65,7 +65,7 @@ export class RobotAnimation {
     this._prevDashActive = false;
 
     // Dash trail throttling
-    this._lastDashTrailTime = 0;
+    this._lastDashTrailTime = -Infinity; // Allow first trail to spawn immediately
     this._dashTrailMinInterval = 100; // ms between trail spawns
     this._activeDashTrails = 0;
     this._maxDashTrails = 5;
@@ -940,7 +940,16 @@ export class RobotAnimation {
 
     this.robot.dom.container.appendChild(el);
 
-    el.animate(
+    // Use both onfinish and oncancel to ensure counter is decremented
+    const cleanup = () => {
+      try {
+        el.remove();
+      } finally {
+        this._activeDashTrails = Math.max(0, this._activeDashTrails - 1);
+      }
+    };
+
+    const animation = el.animate(
       [
         { opacity: 0.6, scale: 1 },
         { opacity: 0, scale: 0.8 },
@@ -949,10 +958,9 @@ export class RobotAnimation {
         duration: 500,
         easing: 'ease-out',
       },
-    ).onfinish = () => {
-      el.remove();
-      this._activeDashTrails--;
-    };
+    );
+    animation.onfinish = cleanup;
+    animation.oncancel = cleanup;
   }
 
   async playPokeAnimation() {
