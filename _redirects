@@ -77,19 +77,19 @@
 # ============================================================================
 # 6. Dynamic Content Rewrites (200 Status)
 # ============================================================================
-# Serve /pages/ and /content/components/ directly (no redirect)
-/pages/*                  /pages/:splat                   200
-/pages/*.html             /pages/:splat.html              200
-/content/components/*     /content/components/:splat      200
-/content/components/*.html /content/components/:splat.html 200
-
-# Explicitly serve known partials
+# Explicitly serve known partials (MUST be above splat rules for performance)
 /pages/home/hero          /pages/home/hero.html          200
 /pages/home/hero.html     /pages/home/hero.html          200
 /content/components/footer/footer.html /content/components/footer/footer.html 200
 
 # Test pages
 /test-error-boundary.html /test-error-boundary.html      200
+
+# Serve /pages/ and /content/components/ directly (no redirect)
+/pages/*                  /pages/:splat                   200
+/pages/*.html             /pages/:splat.html              200
+/content/components/*     /content/components/:splat      200
+/content/components/*.html /content/components/:splat.html 200
 
 # ============================================================================
 # 7. Generic .html Removal (Must be after specific rules)

@@ -1,5 +1,5 @@
 <!-- Loader v2.0 -->
-<div id="app-loader" role="status" aria-label="Anwendung wird geladen">
+<div id="app-loader" role="status">
   <!-- Background Effects -->
   <div class="loader-bg-effects" aria-hidden="true">
     <div class="loader-grid"></div>
@@ -31,9 +31,16 @@
       <span class="status-text" id="loader-status-text"
         >Initialisiere System...</span
       >
-      <span class="percentage" id="loader-percentage" aria-label="Fortschritt"
-        >0%</span
+      <span
+        id="loader-announcement"
+        class="sr-only"
+        aria-live="polite"
+        aria-atomic="true"
+        data-i18n="loader.status_init"
+        >Initialisiere System... 0%</span
       >
+
+      <span class="percentage" id="loader-percentage">0%</span>
     </div>
 
     <div class="loader-dots" aria-hidden="true">
