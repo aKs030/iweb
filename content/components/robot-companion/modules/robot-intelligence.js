@@ -1,7 +1,7 @@
 export class RobotIntelligence {
   constructor(robot) {
     this.robot = robot;
-    this.mouse = { x: 0, y: 0, lastX: 0, lastY: 0, speed: 0 };
+    this.mouse = { lastX: 0, lastY: 0, speed: 0 };
     this.lastMoveTime = Date.now();
 
     this.scroll = { lastY: 0, speed: 0, direction: 'down' };
@@ -19,7 +19,6 @@ export class RobotIntelligence {
 
     // Scroll-based element tracking
     this.elementHighlights = new Map();
-    this.lastHighlightedElement = null;
     this.scrollPositionTracking = {
       lastPosition: 0,
       direction: 'down',

@@ -2,6 +2,8 @@
  * Lightweight Markdown Renderer for Robot Companion
  * Supports: Bold, Italic, Links, Lists, Inline Code, Code Blocks
  */
+import DOMPurify from 'dompurify';
+
 export class MarkdownRenderer {
   /**
    * Parse markdown text to HTML
@@ -100,6 +102,8 @@ export class MarkdownRenderer {
       html = html.replace(`[[[CODEBLOCK${i}]]]`, content);
     });
 
-    return html;
+    return DOMPurify.sanitize(html, {
+      ADD_ATTR: ['target'],
+    });
   }
 }

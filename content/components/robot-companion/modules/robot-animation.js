@@ -31,10 +31,6 @@ export class RobotAnimation {
       lerpSpeed: 0.15,
     };
 
-    // Mouse Tracking
-    this.mousePos = { x: 0, y: 0 };
-    this.isTrackingMouse = false;
-
     // Start Animation State
     this.startAnimation = {
       active: false,
@@ -92,10 +88,13 @@ export class RobotAnimation {
     // Bind loop
     this.updatePatrol = this.updatePatrol.bind(this);
     this.updateStartAnimation = this.updateStartAnimation.bind(this);
-    this.handleMouseMove = this.handleMouseMove.bind(this);
 
     this.thinkingActive = false;
     this.speakingActive = false;
+
+    this._visibilityObserver = null;
+    this._lastResizePanic = 0;
+
     /** @type {ReturnType<typeof setTimeout> | null} */
     this._speakingTimer = null;
   }
@@ -118,12 +117,6 @@ export class RobotAnimation {
       const antenna = this.robot.dom.svg.querySelector('.robot-antenna-light');
       if (antenna) antenna.classList.remove('is-speaking');
     }
-  }
-
-  handleMouseMove(e) {
-    this.mousePos.x = e.clientX;
-    this.mousePos.y = e.clientY;
-    this.isTrackingMouse = true;
   }
 
   startThinking() {
@@ -918,37 +911,18 @@ export class RobotAnimation {
     let totalX = 0;
     let totalY = 0;
 
-    if (this.isTrackingMouse) {
-      const eyesRect = this.robot.dom.eyes.getBoundingClientRect();
-      const eyesCX = eyesRect.left + eyesRect.width / 2;
-      const eyesCY = eyesRect.top + eyesRect.height / 2;
-
-      const dx = this.mousePos.x - eyesCX;
-      const dy = this.mousePos.y - eyesCY;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-
-      const maxMove = 5;
-      const moveX = (dx / (dist + 100)) * maxMove;
-      const moveY = (dy / (dist + 100)) * maxMove;
-
-      totalX = moveX;
-      totalY = moveY;
-    } else {
-      const eyeOffset =
-        typeof this.patrol !== 'undefined' && this.patrol.direction > 0
-          ? -3
-          : 3;
-      const eyeIntensity =
-        (this.startAnimation && this.startAnimation.active) ||
-        this.patrol.isPaused
-          ? 1.4
-          : this.motion && this.motion.dashUntil > performance.now()
-            ? 1.2
-            : 1;
-      const baseX = eyeOffset * eyeIntensity;
-      totalX = baseX + (this.eyeIdleOffset.x || 0);
-      totalY = this.eyeIdleOffset.y || 0;
-    }
+    const eyeOffset =
+      typeof this.patrol !== 'undefined' && this.patrol.direction > 0 ? -3 : 3;
+    const eyeIntensity =
+      (this.startAnimation && this.startAnimation.active) ||
+      this.patrol.isPaused
+        ? 1.4
+        : this.motion && this.motion.dashUntil > performance.now()
+          ? 1.2
+          : 1;
+    const baseX = eyeOffset * eyeIntensity;
+    totalX = baseX + (this.eyeIdleOffset.x || 0);
+    totalY = this.eyeIdleOffset.y || 0;
 
     this.robot.dom.eyes.style.transform = `translate(${totalX}px, ${totalY}px)`;
     this.robot.dom.eyes.style.transition = 'transform 0.2s ease-out';
@@ -974,6 +948,18 @@ export class RobotAnimation {
       clearTimeout(this._blinkTimer);
       this._blinkTimer = null;
     }
+  }
+
+  destroy() {
+    this.stopIdleEyeMovement();
+    this.stopBlinkLoop();
+    if (this._visibilityObserver) {
+      this._visibilityObserver.disconnect();
+      this._visibilityObserver = null;
+    }
+    this.speakingActive = false;
+    this.thinkingActive = false;
+    this.patrol.active = false;
   }
 
   doBlink() {
