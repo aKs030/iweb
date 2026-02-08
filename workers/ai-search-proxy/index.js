@@ -53,7 +53,8 @@ export default {
     const { pathname } = new URL(request.url);
 
     try {
-      if (pathname === '/api/search') return await searchHandler(request, this_env);
+      if (pathname === '/api/search')
+        return await searchHandler(request, this_env);
       if (pathname === '/api/ai') return await aiHandler(request, this_env);
       return errorResponse('Not Found', undefined, 404, request);
     } catch (error) {

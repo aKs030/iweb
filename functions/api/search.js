@@ -13,13 +13,16 @@ export async function onRequestPost(context) {
     const topK = body.topK || 20;
 
     if (!query) {
-      return new Response(JSON.stringify({ results: [], count: 0, query: '' }), {
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
+      return new Response(
+        JSON.stringify({ results: [], count: 0, query: '' }),
+        {
+          status: 200,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+          },
         },
-      });
+      );
     }
 
     // Nutze das zentrale Utility für die Suche (via RPC Binding)
