@@ -1,232 +1,177 @@
-# Portfolio Website - Abdulkerim Sesli
+# AI Search Proxy - Cloudflare Worker
 
-Modern portfolio website mit React, Three.js und kostenloser AI-Integration.
+Cloudflare Worker für AI-gestützte Suche und Groq API Proxy mit RAG Support.
 
-## 🚀 Features
+## Features
 
-- **3D Earth Visualization** - Interaktive Three.js Earth mit WebGL
-- **AI Robot Companion** - Groq-powered Chat (100% kostenlos)
-- **RAG Search** - Retrieval-Augmented Generation für kontextbezogene Antworten
-- **PWA Support** - Progressive Web App mit Service Worker & Offline-Support
-- **Performance Monitoring** - Core Web Vitals Tracking (FCP, LCP, FID, CLS)
-- **Image Optimization** - WebP mit Lazy Loading & Performance-Monitoring
-- **SEO** - Vollständig optimiert für Suchmaschinen
-- **Performance** - Code Splitting, Terser Minification, optimierte Ladezeiten
+- **AI Search**: Volltextsuche via Cloudflare AI Search (Workers AI)
+- **AI Chat**: Groq API Proxy (Llama 3.3 70B) mit optionalem RAG
+- **CORS**: Domain-restricted CORS für sichere API-Nutzung
+- **Validation**: Input-Validierung für alle Endpoints
 
-## 📦 Tech Stack
+## Endpoints
 
-### Frontend
+### POST /api/search
 
-- **Vanilla JavaScript** - Kein Framework-Overhead (Core)
-- **React 19** - UI Components (Projects, Blog)
-- **Three.js** - 3D Graphics
-- **Web Components** - Wiederverwendbare Komponenten
-- **CSS3 + PostCSS** - Modern styling mit CSS Nesting & Autoprefixer
+Volltextsuche mit Cloudflare AI Search.
 
-### Backend (Cloudflare Workers)
+**Request:**
 
-- **Groq AI** - Kostenlose AI-Inference (Llama 3.3 70B)
-- **YouTube API Proxy** - Caching & Rate Limiting
-- **Search API** - Volltextsuche mit Relevanz-Scoring
-
-### Infrastructure
-
-- **Cloudflare Pages** - Hosting & CDN
-- **Cloudflare Workers** - Serverless Functions
-- **Vite** - Build Tool
-- **PostCSS** - CSS Nesting, Autoprefixer, Minification
-
-## 🏗️ Projekt-Struktur
-
-```
-.
-├── content/                    # Frontend Code
-│   ├── components/            # Web Components
-│   │   ├── robot-companion/  # AI Chat Bot
-│   │   ├── particles/        # Three.js Earth
-│   │   ├── menu/             # Navigation
-│   │   ├── footer/           # Footer
-│   │   └── ui/               # UI Components (OptimizedImage)
-│   ├── core/                 # Core Utilities
-│   │   ├── image-optimizer.js           # Bildoptimierung
-│   │   ├── image-loader-helper.js       # Vereinfachte API
-│   │   ├── image-performance-monitor.js # Performance-Tracking
-│   │   └── ...
-│   ├── config/               # Configuration
-│   └── styles/               # CSS Architecture
-│       ├── components/       # Modular Components (Search, Card, Image Loading)
-│       ├── root.css          # CSS Variables & Theme
-│       ├── main.css          # Base Styles
-│       └── animations.css    # Keyframes
-│
-├── pages/                     # Page Content
-│   ├── home/                 # Homepage
-│   ├── projekte/             # Projects
-│   ├── gallery/              # Photo Gallery
-│   ├── blog/                 # Blog
-│   └── videos/               # Video Gallery
-│
-├── workers/                   # Cloudflare Workers
-│   ├── ai-search-proxy/      # AI & Search API
-│   └── youtube-api-proxy/    # YouTube Proxy
-│
-├── examples/                  # Live-Beispiele
-│   └── image-optimization-examples.html
-│
-└── docs/                      # Documentation
-    ├── IMAGE_OPTIMIZATION.md
-    ├── GROQ_AI_INTEGRATION.md
-    ├── CLOUDFLARE_OPTIMIZATION.md
-    └── ARCHITECTURE.md
-```
-
-## 🚀 Quick Start
-
-### Development
-
-```bash
-# Install dependencies
-npm install
-
-# Start dev server
-npm run dev
-
-# Open browser
-open http://localhost:8080
-```
-
-### Build
-
-```bash
-# Production build
-npm run build
-
-# Preview build
-npm run preview
-```
-
-### Deploy
-
-```bash
-# Deploy to Cloudflare Pages
-git push
-
-# Deploy Workers
-./workers/deploy.sh
-```
-
-## 🔧 Configuration
-
-### Environment Variables
-
-```bash
-# Groq AI (kostenlos!)
-GROQ_API_KEY=your_groq_api_key
-
-# YouTube API
-YOUTUBE_API_KEY=your_youtube_api_key
-```
-
-### Secrets Setup
-
-```bash
-# AI Search Proxy
-wrangler secret put GROQ_API_KEY
-
-# YouTube Proxy
-wrangler secret put YOUTUBE_API_KEY --env youtube
-```
-
-## 📡 API Endpoints
-
-### AI Chat
-
-```bash
-POST /api/ai
+```json
 {
-  "prompt": "Deine Frage",
-  "options": {"useSearch": true}
-}
-```
-
-### Search
-
-```bash
-POST /api/search
-{
-  "query": "Suchbegriff",
+  "query": "react hooks",
   "topK": 5
 }
 ```
 
-### YouTube Proxy
+**Response:**
 
-```bash
-GET /api/youtube/search?part=snippet&q=react&type=video
+```json
+{
+  "results": [
+    {
+      "id": "...",
+      "title": "React Hooks Tutorial",
+      "description": "...",
+      "url": "/blog/react-hooks",
+      "category": "Blog",
+      "score": 0.95
+    }
+  ],
+  "query": "react hooks",
+  "count": 5,
+  "source": "cloudflare-ai-search"
+}
 ```
 
-## 🧪 Testing
+### POST /api/ai
 
-```bash
-# Run tests
-npm test
+AI Chat mit Groq API und optionalem RAG.
 
-# Lint
-npm run lint
+**Request:**
 
-# Format
-npm run format
+```json
+{
+  "prompt": "Was sind deine React Projekte?",
+  "systemInstruction": "Du bist ein Portfolio-Assistent",
+  "options": {
+    "useSearch": true,
+    "searchQuery": "react projekte",
+    "topK": 3
+  }
+}
 ```
 
-## 📊 Performance
+**Response:**
 
-- **Lighthouse Score:** 95+
-- **First Contentful Paint:** < 1.5s
-- **Time to Interactive:** < 3s
-- **AI Response Time:** ~100-500ms
+```json
+{
+  "text": "Ich habe mehrere React Projekte...",
+  "sources": [...],
+  "usedRAG": true,
+  "model": "llama-3.3-70b-versatile"
+}
+```
 
-## 🔒 Security
+## Setup
 
-- ✅ Content Security Policy (CSP)
-- ✅ HSTS with Preload
-- ✅ API Keys server-side
-- ✅ Rate Limiting
-- ✅ Input Validation
+### 1. Wrangler installieren
 
-## 📚 Documentation
+```bash
+npm install
+```
 
-- **[Image Optimization](docs/IMAGE_OPTIMIZATION.md)** - Bildoptimierung mit AVIF/WebP & Lazy Loading
-- **[Architecture](docs/ARCHITECTURE.md)** - System-Architektur
-- **[CSS Guide](docs/CSS_GUIDE.md)** - CSS-Architektur & Best Practices
-- **[Project Status](PROJECT_STATUS.md)** - Current project status & metrics
-- **[Workers README](workers/README.md)** - Cloudflare Workers documentation
+### 2. Cloudflare AI Search
 
-## 🤝 Contributing
+Der AI Search Index ist bereits konfiguriert:
 
-1. Fork the repository
-2. Create your feature branch
-3. Commit your changes
-4. Push to the branch
-5. Open a Pull Request
+- **Index ID**: `suche`
+- **Type**: Web Crawler
+- **Source**: www.abdulkerimsesli.de
+- **R2 Bucket**: ai-search-suche-748559
 
-## 📝 License
+Der Worker nutzt automatisch diesen Index für Suche und RAG.
 
-MIT License - see [LICENSE](LICENSE) file
+### 3. Secrets setzen
 
-## 👤 Author
+```bash
+# Groq API Key (kostenlos bei https://console.groq.com/keys)
+npm run secret:groq
+```
 
-**Abdulkerim Sesli**
+### 4. Deployment
 
-- Website: https://www.abdulkerimsesli.de
-- GitHub: [@abdulkerimsesli](https://github.com/abdulkerimsesli)
+```bash
+# Development
+npm run dev
 
-## 🙏 Acknowledgments
+# Production
+npm run deploy
 
-- **Groq** - Kostenlose AI-Inference
-- **Cloudflare** - Hosting & Workers
-- **Three.js** - 3D Graphics
-- **Vite** - Build Tool
+# Logs anschauen
+npm run tail
+```
 
----
+## Konfiguration
 
-Made with ❤️ in Berlin
+Alle Einstellungen in `wrangler.toml`:
+
+```toml
+[vars]
+ENVIRONMENT = "production"
+MAX_SEARCH_RESULTS = "10"
+RAG_ID = "suche"
+```
+
+## CORS
+
+Erlaubte Origins:
+
+- `https://abdulkerimsesli.de`
+- `https://www.abdulkerimsesli.de`
+- `http://localhost:3000` (Development)
+
+## Entwicklung
+
+```bash
+# Worker lokal starten
+npm run dev
+
+# Test Search
+curl -X POST http://localhost:8787/api/search \
+  -H "Content-Type: application/json" \
+  -d '{"query": "react", "topK": 5}'
+
+# Test AI
+curl -X POST http://localhost:8787/api/ai \
+  -H "Content-Type: application/json" \
+  -d '{"prompt": "Hallo", "options": {"useSearch": false}}'
+```
+
+## Struktur
+
+```
+.
+├── wrangler.toml           # Cloudflare Worker Config
+├── package.json            # Dependencies & Scripts
+├── src/
+│   ├── index.js           # Entry Point & Routing
+│   ├── handlers/
+│   │   ├── search.js      # Search Handler
+│   │   └── ai.js          # AI Handler
+│   └── utils/
+│       ├── response.js    # Response Utilities
+│       └── validation.js  # Input Validation
+└── README.md
+```
+
+## Limits
+
+- Query: max 500 Zeichen
+- Prompt: max 10.000 Zeichen
+- Search Results: max 50 (default 10)
+- RAG Sources: max 5
+
+## License
+
+ISC
