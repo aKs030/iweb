@@ -1,29 +1,43 @@
 /**
  * Cloudflare Pages Function - POST /api/ai
- * Proxy zu Cloudflare AI Worker mit Groq
+ * Modern AI Chat/RAG with Service Binding (RPC)
+ * @version 3.0.0
  */
 
-const WORKER_URL =
-  'https://ai-search-proxy.httpsgithubcomaks030website.workers.dev/api/ai';
+// Neue Worker URL als Fallback
+const WORKER_URL = 'https://api.abdulkerimsesli.de/api/ai';
 
 export async function onRequestPost(context) {
   try {
-    const body = await context.request.json();
+    const { request, env } = context;
+    const body = await request.json();
 
-    // Proxy zum Worker
-    const response = await fetch(WORKER_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-    });
+    let data;
 
-    const data = await response.json();
+    // 1. Priorität: Service Binding (RPC) - Modernste Option
+    if (env.AI_SEARCH && typeof env.AI_SEARCH.chat === 'function') {
+      data = await env.AI_SEARCH.chat(body.prompt || body.message, {
+        ragId: env.RAG_ID || 'suche',
+        maxResults: parseInt(env.MAX_SEARCH_RESULTS || '10'),
+      });
+    }
+    // 2. Fallback: Direkter Fetch zum Worker
+    else {
+      const response = await fetch(WORKER_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok)
+        throw new Error(`Worker responded with ${response.status}`);
+      data = await response.json();
+    }
 
     // CORS Headers
     return new Response(JSON.stringify(data), {
-      status: response.status,
       headers: {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
@@ -32,6 +46,7 @@ export async function onRequestPost(context) {
       },
     });
   } catch (error) {
+    console.error('AI error:', error);
     return new Response(
       JSON.stringify({
         error: 'AI request failed',
