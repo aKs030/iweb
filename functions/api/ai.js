@@ -1,29 +1,35 @@
 /**
  * Cloudflare Pages Function - POST /api/ai
- * Proxy zu Cloudflare AI Worker mit Groq
+ * Nutzt nun direkt das AI_SEARCH Service Binding (RPC) für RAG
+ * @version 2.5.0
  */
 
-const WORKER_URL =
-  'https://ai-search-proxy.httpsgithubcomaks030website.workers.dev/api/ai';
+import { performAIQuery } from './search-utils.js';
 
 export async function onRequestPost(context) {
   try {
     const body = await context.request.json();
+    const prompt = body.prompt || body.query || '';
 
-    // Proxy zum Worker
-    const response = await fetch(WORKER_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-    });
+    if (!prompt) {
+      return new Response(
+        JSON.stringify({ error: 'Missing prompt', status: 400 }),
+        {
+          status: 400,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+          },
+        },
+      );
+    }
 
-    const data = await response.json();
+    // Nutze das zentrale Utility für AI/RAG (via RPC Binding)
+    const data = await performAIQuery(context.env, prompt);
 
     // CORS Headers
     return new Response(JSON.stringify(data), {
-      status: response.status,
+      status: 200,
       headers: {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
@@ -32,6 +38,7 @@ export async function onRequestPost(context) {
       },
     });
   } catch (error) {
+    console.error('[api/ai] Error:', error);
     return new Response(
       JSON.stringify({
         error: 'AI request failed',
