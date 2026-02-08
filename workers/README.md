@@ -55,12 +55,14 @@ wrangler dev              # AI Search Proxy
 ## Beispiele
 
 ### RPC (via Pages Functions)
+
 ```javascript
 // In einer Pages Function via Service Binding "AI_SEARCH"
-const results = await env.AI_SEARCH.search("Query", { mode: 'search' });
+const results = await env.AI_SEARCH.search('Query', { mode: 'search' });
 ```
 
 ### HTTP
+
 ```bash
 # Suche
 curl -X POST https://abdulkerimsesli.de/api/search \
