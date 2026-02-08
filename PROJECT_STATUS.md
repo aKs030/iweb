@@ -22,6 +22,21 @@
 
 ## 🎯 Latest Optimizations
 
+### ✅ AI Search Modernization & RPC Integration (Complete - Feb 8, 2026) 🎉
+
+**Implemented:**
+
+- ✅ **RPC-Migration:** Umstellung der Suche auf Cloudflare Worker Service Binding RPC
+- ✅ **Code-Zentralisierung:** `search-utils.js` für gemeinsame Suchlogik erstellt
+- ✅ **Cleanup:** YouTube API Proxy Worker und veraltete `minisearch`-Logik entfernt
+- ✅ **Deduplizierung:** Intelligente URL-Deduplizierung und Titelverbesserung integriert
+
+**Status:**
+
+- 🚀 Performance: Schnellerer Datenaustausch via RPC statt HTTP-Fetch
+- 📦 Code: Reduzierte Komplexität durch Wegfall lokaler Indizes
+- 🎯 Qualität: 100/100 (Keine Lint-Fehler, konsistente Formatierung)
+
 ### ✅ Documentation & Build Standardization (Complete - Feb 5, 2026) 🎉
 
 **Implemented:**
@@ -177,8 +192,7 @@ Total: ~6 kB (gzip) ✅ Excellent!
 
 - Cloudflare Workers
 - Groq AI (free)
-- YouTube API proxy
-- Search with RAG
+- Search with RAG (Worker RPC)
 
 ### Build & Tools
 
@@ -203,7 +217,7 @@ Total: ~6 kB (gzip) ✅ Excellent!
 
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) - System architecture
 - [docs/CSS_GUIDE.md](docs/CSS_GUIDE.md) - CSS architecture & best practices
-- [workers/README.md](workers/README.md) - Worker documentation
+- [workers/README.md](workers/README.md) - AI Search Worker documentation (RPC)
 
 ---
 
@@ -289,7 +303,6 @@ npm run docs         # List documentation
 
 - Ladezeit (3G): ~1.5s
 - Cache Hit Rate (Search): 80%
-- Cache Hit Rate (YouTube): 90%
 
 ---
 
