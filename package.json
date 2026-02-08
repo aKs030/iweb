@@ -1,77 +1,24 @@
 {
-  "name": "iweb",
+  "name": "ai-search-proxy",
   "version": "1.0.0",
-  "description": "Portfolio website of Abdulkerim Sesli - Web Developer & Photographer in Berlin",
+  "description": "Cloudflare Worker für AI Search und Groq API Proxy",
   "type": "module",
   "scripts": {
-    "dev": "node server.js",
-    "format": "prettier --write \"**/*.{js,css,json,md,html}\" --ignore-path .prettierignore",
-    "format:check": "prettier --check \"**/*.{js,css,json,md,html}\" --ignore-path .prettierignore",
-    "lint": "eslint \"**/*.js\" --fix",
-    "lint:check": "eslint \"**/*.js\"",
-    "check": "npm run lint:check && npm run format:check",
-    "fix": "npm run lint && npm run format",
-    "prepare": "husky",
-    "css:check": "echo 'CSS Stats:' && wc -l content/styles/*.css content/styles/components/*.css 2>/dev/null || wc -l content/styles/*.css",
-    "knip": "knip",
-    "knip:production": "knip --production",
-    "quality": "npm run knip && npm run check:duplicates && npm run check:circular",
-    "quality:full": "npm run quality && npm run check:typescript && npm run check:html",
-    "check:duplicates": "jscpd content/ pages/ --min-lines 10 --min-tokens 50 --format javascript",
-    "check:circular": "madge --circular --extensions js content/ pages/",
-    "check:console": "! grep -r 'console\\.log' content/ pages/ --include='*.js' --exclude-dir=node_modules",
-    "check:typescript": "tsc --noEmit",
-    "check:html": "html-validate \"index.html\" \"pages/**/*.html\" \"content/**/*.html\"",
-    "deps:graph": "madge --extensions js --image dependency-graph.svg content/main.js",
-    "deps:check": "npm outdated",
-    "audit:full": "npm run quality:full && npm run check:console"
-  },
-  "lint-staged": {
-    "*.{js,ts}": [
-      "eslint --fix",
-      "prettier --write"
-    ],
-    "*.{css,md,json,html}": [
-      "prettier --write"
-    ]
-  },
-  "devDependencies": {
-    "@eslint/js": "^9.39.2",
-    "@types/node": "^25.1.0",
-    "@types/three": "^0.182.0",
-    "eslint": "^9.39.2",
-    "html-validate": "^10.7.0",
-    "husky": "^9.1.7",
-    "jscpd": "^4.0.8",
-    "knip": "^5.82.1",
-    "lint-staged": "^16.2.7",
-    "madge": "^8.0.0",
-    "prettier": "^3.8.1",
-    "typescript": "^5.9.3"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/aKs030/iweb.git"
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "tail": "wrangler tail",
+    "secret:groq": "wrangler secret put GROQ_API_KEY"
   },
   "keywords": [
-    "portfolio",
-    "webdev",
-    "photography",
-    "berlin"
+    "cloudflare",
+    "workers",
+    "ai",
+    "search",
+    "groq"
   ],
   "author": "Abdulkerim Sesli",
   "license": "ISC",
-  "engines": {
-    "node": ">=22.0.0",
-    "npm": ">=10.0.0"
-  },
-  "bugs": {
-    "url": "https://github.com/aKs030/iweb/issues"
-  },
-  "homepage": "https://github.com/aKs030/iweb#readme",
-  "dependencies": {
-    "react": "^19.2.3",
-    "react-dom": "^19.2.3",
-    "three": "^0.182.0"
+  "devDependencies": {
+    "wrangler": "^3.100.0"
   }
 }
