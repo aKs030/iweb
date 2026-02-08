@@ -11,12 +11,6 @@
 # 4. Rewrites (200 status)
 
 # ============================================================================
-# 0. API Proxy to Cloudflare Worker
-# ============================================================================
-/api/search    https://ai-search-proxy.httpsgithubcomaks030website.workers.dev/api/search    200
-/api/ai        https://ai-search-proxy.httpsgithubcomaks030website.workers.dev/api/ai        200
-
-# ============================================================================
 # 1. Legacy URL Cleanup (Pre-Refactoring)
 # ============================================================================
 # Old /pages/* structure
