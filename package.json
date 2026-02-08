@@ -1,0 +1,40 @@
+{
+  "name": "aks-website",
+  "version": "1.0.0",
+  "description": "Portfolio Website mit Cloudflare AI Search",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node server.js",
+    "build": "vite build && mkdir -p dist/content dist/pages && cp -r content/* dist/content/ && cp -r pages/* dist/pages/ && cp -r impressum dist/ && cp -r datenschutz dist/",
+    "preview": "vite preview",
+    "lint": "eslint . --fix",
+    "lint:check": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "npm run lint:check && npm run format:check",
+    "fix": "npm run lint && npm run format",
+    "knip": "knip",
+    "quality": "npm run check && npm run knip",
+    "css:check": "echo 'Checking CSS stats...'",
+    "clean": "rm -rf dist .vite .wrangler",
+    "deploy": "wrangler pages deploy dist",
+    "deploy:workers": "./workers/deploy.sh"
+  },
+  "dependencies": {
+    "three": "^0.170.0",
+    "dompurify": "^3.2.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.14.0",
+    "eslint": "^9.14.0",
+    "globals": "^15.12.0",
+    "html-validate": "^8.20.1",
+    "jscpd": "^3.5.10",
+    "knip": "^5.36.0",
+    "madge": "^8.0.0",
+    "prettier": "^3.3.3",
+    "vite": "^5.4.10",
+    "wrangler": "^3.114.17"
+  }
+}
