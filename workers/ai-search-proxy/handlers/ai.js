@@ -1,0 +1,76 @@
+/**
+ * AI Handler – POST /api/ai
+ * Groq API proxy with optional RAG augmentation
+ */
+
+import { jsonResponse, errorResponse } from '../../shared/response-utils.js';
+import { validateAIRequest } from '../validation.js';
+import { callGroqAPI, MODEL } from '../services/groq.js';
+import {
+  performSearch,
+  augmentPromptWithRAG,
+} from '../../shared/search-utils.js';
+
+const DEFAULT_SYSTEM =
+  'Du bist ein hilfreicher Assistent, antworte prägnant und informativ.';
+
+export async function aiHandler(request, env) {
+  if (request.method !== 'POST') {
+    return errorResponse('Method not allowed', 'Use POST.', 405, request);
+  }
+
+  try {
+    const body = await request.json();
+    const validation = validateAIRequest(body);
+    if (!validation.valid)
+      return errorResponse('Validation failed', validation.error, 400, request);
+
+    const { prompt, systemInstruction, options = {} } = body;
+
+    if (!env.GROQ_API_KEY) {
+      return errorResponse(
+        'Configuration error',
+        'GROQ_API_KEY not configured',
+        500,
+        request,
+      );
+    }
+
+    // Optional RAG augmentation
+    let sources = [];
+    let finalPrompt = prompt;
+
+    if (options.useSearch) {
+      // Coerce topK to valid integer and clamp between 1 and 5
+      let topK = parseInt(options.topK, 10);
+      if (isNaN(topK) || topK <= 0) {
+        topK = 3;
+      }
+      topK = Math.min(topK, 5);
+
+      // Async performSearch using AI_SEARCH binding
+      sources = await performSearch(
+        options.searchQuery || prompt,
+        topK,
+        env.AI_SEARCH,
+      );
+      finalPrompt = augmentPromptWithRAG(prompt, sources);
+    }
+
+    const text = await callGroqAPI(
+      finalPrompt,
+      systemInstruction || DEFAULT_SYSTEM,
+      env.GROQ_API_KEY,
+    );
+
+    return jsonResponse(
+      { text, sources, usedRAG: sources.length > 0, model: MODEL },
+      200,
+      {},
+      request,
+    );
+  } catch (error) {
+    if (env.ENVIRONMENT === 'development') console.error('AI error:', error);
+    return errorResponse('AI request failed', error.message, 500, request);
+  }
+}
