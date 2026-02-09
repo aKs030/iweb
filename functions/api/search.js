@@ -83,58 +83,97 @@ function deduplicateResults(results) {
 }
 
 export async function onRequestPost(context) {
+  const corsHeaders = {
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*',
+  };
+
   try {
     const { request, env } = context;
-    const body = await request.json();
+
+    // Safety check for body parsing
+    let body = {};
+    try {
+      body = await request.json();
+    } catch (e) {
+      console.warn('Could not parse request JSON:', e.message);
+    }
+
     const query = body.query || '';
     const topK = body.topK || parseInt(env.MAX_SEARCH_RESULTS || '10');
 
     let data = { results: [], count: 0 };
 
-    // 1. Try Service Binding
-    if (env.AI_SEARCH && typeof env.AI_SEARCH.search === 'function') {
+    if (!query) {
+      return new Response(JSON.stringify(data), { headers: corsHeaders });
+    }
+
+    // 1. Try Service Binding (RPC or fallback fetch)
+    // Check multiple possible binding names for resilience
+    const binding = env.AI_SEARCH || env.SEARCH_SERVICE || env.SEARCH;
+
+    if (binding) {
       try {
-        console.log(`Searching via binding for: "${query}"`);
-        const bindingData = await env.AI_SEARCH.search(query, {
-          index: env.AI_SEARCH_INDEX || 'suche',
-          limit: topK,
-          ragId: env.RAG_ID || 'suche',
-        });
-        if (
-          bindingData &&
-          bindingData.results &&
-          bindingData.results.length > 0
-        ) {
-          data = bindingData;
-          console.log(`Binding returned ${data.results.length} results`);
+        if (typeof binding.search === 'function') {
+          console.log(`Searching via binding RPC for: "${query}"`);
+          const bindingData = await binding.search(query, {
+            index: env.AI_SEARCH_INDEX || 'suche',
+            limit: topK,
+            ragId: env.RAG_ID || 'suche',
+          });
+          if (
+            bindingData &&
+            bindingData.results &&
+            bindingData.results.length > 0
+          ) {
+            data = bindingData;
+            console.log(`Binding RPC returned ${data.results.length} results`);
+          }
+        } else if (typeof binding.fetch === 'function') {
+          console.log(`Searching via binding fetch for: "${query}"`);
+          const response = await binding.fetch(request.clone());
+          if (response.ok) {
+            data = await response.json();
+            console.log('Binding fetch successful');
+          }
         }
       } catch (e) {
-        console.error('AI_SEARCH binding search error:', e);
-        // Fallback to worker fetch
+        console.error('Service binding search error:', e);
       }
     }
 
     // 2. Fallback to Worker Fetch if binding failed or returned empty
     if (!data.results || data.results.length === 0) {
-      console.log(`Falling back to Worker fetch for: "${query}"`);
-      const response = await fetch(WORKER_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          query,
-          topK,
-          index: env.AI_SEARCH_INDEX || 'suche',
-        }),
-      });
+      try {
+        console.log(`Falling back to Worker fetch for: "${query}"`);
+        // Use a 5-second timeout for the fallback fetch
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-      if (response.ok) {
-        const workerData = await response.json();
-        if (workerData) {
-          data = workerData;
-          console.log('Worker fetch successful');
+        const response = await fetch(WORKER_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            query,
+            topK,
+            index: env.AI_SEARCH_INDEX || 'suche',
+          }),
+          signal: controller.signal,
+        });
+
+        clearTimeout(timeoutId);
+
+        if (response.ok) {
+          const workerData = await response.json();
+          if (workerData) {
+            data = workerData;
+            console.log('Worker fetch successful');
+          }
+        } else {
+          console.error(`Worker fetch failed with status: ${response.status}`);
         }
-      } else {
-        console.error(`Worker fetch failed with status: ${response.status}`);
+      } catch (e) {
+        console.error('Fallback worker fetch failed:', e.message);
       }
     }
 
@@ -151,10 +190,7 @@ export async function onRequestPost(context) {
     }
 
     return new Response(JSON.stringify(data), {
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-      },
+      headers: corsHeaders,
     });
   } catch (error) {
     console.error('Search function error:', error);
@@ -164,7 +200,7 @@ export async function onRequestPost(context) {
         message: error.message,
         results: [],
       }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } },
+      { status: 500, headers: corsHeaders },
     );
   }
 }
