@@ -17,10 +17,14 @@ export async function onRequestPost(context) {
     // 1. Try Service Binding (RPC)
     if (env.AI_SEARCH && typeof env.AI_SEARCH.chat === 'function') {
       try {
+        console.log('AI Chat via binding started');
         data = await env.AI_SEARCH.chat(prompt, {
           ragId: env.RAG_ID || 'suche',
           maxResults: parseInt(env.MAX_SEARCH_RESULTS || '10'),
         });
+        if (data && (data.text || data.response || data.answer)) {
+          console.log('Binding chat successful');
+        }
       } catch (e) {
         console.error('AI_SEARCH binding chat error:', e);
       }
@@ -28,6 +32,7 @@ export async function onRequestPost(context) {
 
     // 2. Fallback: Fetch to Worker
     if (!data || (!data.text && !data.response && !data.answer)) {
+      console.log('Falling back to Worker chat fetch');
       const response = await fetch(WORKER_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -36,6 +41,11 @@ export async function onRequestPost(context) {
 
       if (response.ok) {
         data = await response.json();
+        console.log('Worker chat fetch successful');
+      } else {
+        console.error(
+          `Worker chat fetch failed with status: ${response.status}`,
+        );
       }
     }
 

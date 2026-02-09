@@ -94,12 +94,20 @@ export async function onRequestPost(context) {
     // 1. Try Service Binding
     if (env.AI_SEARCH && typeof env.AI_SEARCH.search === 'function') {
       try {
+        console.log(`Searching via binding for: "${query}"`);
         const bindingData = await env.AI_SEARCH.search(query, {
           index: env.AI_SEARCH_INDEX || 'suche',
           limit: topK,
           ragId: env.RAG_ID || 'suche',
         });
-        if (bindingData) data = bindingData;
+        if (
+          bindingData &&
+          bindingData.results &&
+          bindingData.results.length > 0
+        ) {
+          data = bindingData;
+          console.log(`Binding returned ${data.results.length} results`);
+        }
       } catch (e) {
         console.error('AI_SEARCH binding search error:', e);
         // Fallback to worker fetch
@@ -108,6 +116,7 @@ export async function onRequestPost(context) {
 
     // 2. Fallback to Worker Fetch if binding failed or returned empty
     if (!data.results || data.results.length === 0) {
+      console.log(`Falling back to Worker fetch for: "${query}"`);
       const response = await fetch(WORKER_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -120,7 +129,12 @@ export async function onRequestPost(context) {
 
       if (response.ok) {
         const workerData = await response.json();
-        if (workerData) data = workerData;
+        if (workerData) {
+          data = workerData;
+          console.log('Worker fetch successful');
+        }
+      } else {
+        console.error(`Worker fetch failed with status: ${response.status}`);
       }
     }
 
