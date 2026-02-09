@@ -283,9 +283,11 @@ class SearchComponent {
     const icons = {
       Seite: '📄',
       Blog: '📝',
-      Technologie: '💻',
-      Info: 'ℹ️',
-      Videos: '🎬',
+      Projekt: '💻',
+      Video: '🎬',
+      Galerie: '🖼️',
+      About: 'ℹ️',
+      Home: '🏠',
     };
     return icons[category] || '🔍';
   }
