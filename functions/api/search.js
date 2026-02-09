@@ -1,34 +1,31 @@
 /**
  * Cloudflare Pages Function - POST /api/search
  * Modern AI Search with Service Binding (RPC) and Deduplication
- * @version 3.0.0
+ * @version 3.1.0
  */
 
-// Neue Worker URL als Fallback
 const WORKER_URL = 'https://api.abdulkerimsesli.de/api/search';
 
-/**
- * Normalisiert eine URL für die Deduplizierung
- */
 function normalizeUrl(url) {
   if (!url) return '';
-  return (
-    url
-      .split(/[?#]/)[0] // Entferne Query & Fragmente
-      .replace(/\/index\.html$/, '/') // Normalisiere index.html
-      .replace(/\/$/, '') || '/'
-  ); // Entferne Trailing Slash, '/' für Root
+  try {
+    return (
+      url
+        .split(/[?#]/)[0]
+        .replace(/\/index\.html$/, '/')
+        .replace(/\/$/, '') || '/'
+    );
+  } catch {
+    return url;
+  }
 }
 
-/**
- * Verbessert Titel basierend auf URL
- */
 function improveResult(result) {
   const url = result.url || '';
-  let title = result.title;
+  let title = result.title || 'Seite';
   let category = result.category || 'Seite';
+  let description = result.description || '';
 
-  // Extrahiere Seitennamen aus URL
   if (url.includes('/blog/')) {
     const slug = url.split('/blog/')[1]?.replace(/\/$/, '');
     if (slug && slug !== 'index.html') {
@@ -62,18 +59,14 @@ function improveResult(result) {
   } else if (url.endsWith('/') || url.endsWith('/index.html')) {
     const parts = url.replace(/\/$/, '').split('/');
     if (parts.length <= 4) {
-      // http(s)://domain.tld/
       title = 'Startseite';
       category = 'Home';
     }
   }
 
-  return { ...result, title, category };
+  return { ...result, title, category, description };
 }
 
-/**
- * Dedupliziert Ergebnisse basierend auf normalisierter URL
- */
 function deduplicateResults(results) {
   const seen = new Set();
   const deduplicated = [];
@@ -96,23 +89,28 @@ export async function onRequestPost(context) {
     const query = body.query || '';
     const topK = body.topK || parseInt(env.MAX_SEARCH_RESULTS || '10');
 
-    let data;
+    let data = { results: [], count: 0 };
 
-    // 1. Priorität: Service Binding (RPC) - Modernste Option
+    // 1. Try Service Binding
     if (env.AI_SEARCH && typeof env.AI_SEARCH.search === 'function') {
-      data = await env.AI_SEARCH.search(query, {
-        index: env.AI_SEARCH_INDEX || 'suche',
-        limit: topK,
-        ragId: env.RAG_ID || 'suche',
-      });
+      try {
+        const bindingData = await env.AI_SEARCH.search(query, {
+          index: env.AI_SEARCH_INDEX || 'suche',
+          limit: topK,
+          ragId: env.RAG_ID || 'suche',
+        });
+        if (bindingData) data = bindingData;
+      } catch (e) {
+        console.error('AI_SEARCH binding search error:', e);
+        // Fallback to worker fetch
+      }
     }
-    // 2. Fallback: Direkter Fetch zum Worker
-    else {
+
+    // 2. Fallback to Worker Fetch if binding failed or returned empty
+    if (!data.results || data.results.length === 0) {
       const response = await fetch(WORKER_URL, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           query,
           topK,
@@ -120,45 +118,43 @@ export async function onRequestPost(context) {
         }),
       });
 
-      if (!response.ok)
-        throw new Error(`Worker responded with ${response.status}`);
-      data = await response.json();
+      if (response.ok) {
+        const workerData = await response.json();
+        if (workerData) data = workerData;
+      }
     }
 
-    // Dedupliziere und verbessere Ergebnisse
+    // Ensure results is always an array and deduplicated
     if (data && data.results && Array.isArray(data.results)) {
       data.results = deduplicateResults(data.results);
       data.count = data.results.length;
+    } else if (data && Array.isArray(data)) {
+      // Handle cases where API returns array directly
+      data = {
+        results: deduplicateResults(data),
+        count: data.length,
+      };
     }
 
-    // Response mit CORS
     return new Response(JSON.stringify(data), {
       headers: {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
       },
     });
   } catch (error) {
-    console.error('Search error:', error);
+    console.error('Search function error:', error);
     return new Response(
       JSON.stringify({
         error: 'Search failed',
         message: error.message,
+        results: [],
       }),
-      {
-        status: 500,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-        },
-      },
+      { status: 500, headers: { 'Content-Type': 'application/json' } },
     );
   }
 }
 
-// CORS Preflight
 export async function onRequestOptions() {
   return new Response(null, {
     status: 204,
