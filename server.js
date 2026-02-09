@@ -238,20 +238,38 @@ function handleAPIMock(req, res, url) {
       const data = JSON.parse(body || '{}');
 
       if (url === '/api/ai') {
-        const prompt = data.prompt || '';
+        const prompt = data.prompt || data.message || '';
         res.writeHead(200, corsHeaders);
         res.end(
           JSON.stringify({
-            text: `(Dev-Mode) Mock-Antwort für: "${prompt.slice(0, 80)}". Die Groq-API ist nur in Produktion verfügbar.`,
+            text: `(Dev-Mode) Mock-Antwort für: "${prompt.slice(0, 80)}". Die Cloudflare AI ist nur in Produktion verfügbar.`,
             sources: [],
             usedRAG: false,
             model: 'mock-dev',
           }),
         );
       } else if (url === '/api/search') {
+        const query = data.query || '';
         res.writeHead(200, corsHeaders);
         res.end(
-          JSON.stringify({ results: [], query: data.query || '', count: 0 }),
+          JSON.stringify({
+            results: [
+              {
+                title: 'Startseite',
+                url: '/',
+                category: 'Home',
+                description: 'Willkommen auf meiner Webseite.',
+              },
+              {
+                title: `Suche nach "${query}"`,
+                url: '/search',
+                category: 'Seite',
+                description: `Ergebnisse für ${query} werden hier simuliert.`,
+              },
+            ],
+            query,
+            count: 2,
+          }),
         );
       } else {
         res.writeHead(404, corsHeaders);
