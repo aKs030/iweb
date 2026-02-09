@@ -7,45 +7,106 @@
 const WORKER_URL = 'https://api.abdulkerimsesli.de/api/ai';
 
 export async function onRequestPost(context) {
+  const corsHeaders = {
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*',
+  };
+
   try {
     const { request, env } = context;
-    const body = await request.json();
+
+    // Safety check for body parsing
+    let body = {};
+    try {
+      body = await request.json();
+    } catch (e) {
+      console.warn('Could not parse request JSON:', e.message);
+    }
+
     const prompt = body.prompt || body.message || '';
+    const systemInstruction = body.systemInstruction || '';
 
     let data = null;
 
-    // 1. Try Service Binding (RPC)
-    if (env.AI_SEARCH && typeof env.AI_SEARCH.chat === 'function') {
+    // 1. Try Service Binding (RPC or fallback fetch)
+    // Check multiple possible binding names for resilience
+    const binding = env.AI_SEARCH || env.SEARCH_SERVICE || env.SEARCH;
+
+    if (binding) {
       try {
-        console.log('AI Chat via binding started');
-        data = await env.AI_SEARCH.chat(prompt, {
-          ragId: env.RAG_ID || 'suche',
-          maxResults: parseInt(env.MAX_SEARCH_RESULTS || '10'),
-        });
-        if (data && (data.text || data.response || data.answer)) {
-          console.log('Binding chat successful');
+        if (typeof binding.chat === 'function') {
+          console.log('AI Chat via binding RPC started');
+          data = await binding.chat(prompt, {
+            ragId: env.RAG_ID || 'suche',
+            maxResults: parseInt(env.MAX_SEARCH_RESULTS || '10'),
+          });
+        } else if (typeof binding.fetch === 'function') {
+          console.log('AI Chat via binding fetch started');
+          const response = await binding.fetch(request.clone());
+          if (response.ok) {
+            data = await response.json();
+            console.log('Binding fetch successful');
+          }
         }
       } catch (e) {
-        console.error('AI_SEARCH binding chat error:', e);
+        console.error('Service binding chat error:', e);
       }
     }
 
     // 2. Fallback: Fetch to Worker
     if (!data || (!data.text && !data.response && !data.answer)) {
-      console.log('Falling back to Worker chat fetch');
-      const response = await fetch(WORKER_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
+      try {
+        console.log('Falling back to Worker chat fetch');
+        // Use an 8-second timeout for the fallback fetch
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
 
-      if (response.ok) {
-        data = await response.json();
-        console.log('Worker chat fetch successful');
-      } else {
-        console.error(
-          `Worker chat fetch failed with status: ${response.status}`,
-        );
+        const response = await fetch(WORKER_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+          signal: controller.signal,
+        });
+
+        clearTimeout(timeoutId);
+
+        if (response.ok) {
+          data = await response.json();
+          console.log('Worker chat fetch successful');
+        } else {
+          console.error(
+            `Worker chat fetch failed with status: ${response.status}`,
+          );
+        }
+      } catch (e) {
+        console.error('Fallback worker chat fetch failed:', e.message);
+      }
+    }
+
+    // 3. Last Resort: Direct Cloudflare Workers AI (if binding 'AI' exists)
+    if ((!data || (!data.text && !data.response && !data.answer)) && env.AI) {
+      try {
+        console.log('Using direct Workers AI fallback');
+        const aiResponse = await env.AI.run('@cf/meta/llama-3-8b-instruct', {
+          messages: [
+            {
+              role: 'system',
+              content:
+                systemInstruction ||
+                'Du bist ein hilfreicher Assistent. Antworte auf Deutsch.',
+            },
+            { role: 'user', content: prompt },
+          ],
+        });
+        if (aiResponse && (aiResponse.response || aiResponse.text)) {
+          data = {
+            text: aiResponse.response || aiResponse.text,
+            model: 'llama-3-8b-direct',
+          };
+          console.log('Direct Workers AI successful');
+        }
+      } catch (e) {
+        console.error('Direct Workers AI failed:', e);
       }
     }
 
@@ -55,14 +116,13 @@ export async function onRequestPost(context) {
         data.text = data.response || data.answer || '';
       }
     } else {
-      data = { text: 'Keine Antwort erhalten.' };
+      data = {
+        text: 'Keine Antwort erhalten. Bitte versuchen Sie es später erneut.',
+      };
     }
 
     return new Response(JSON.stringify(data), {
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-      },
+      headers: corsHeaders,
     });
   } catch (error) {
     console.error('AI function error:', error);
@@ -72,7 +132,7 @@ export async function onRequestPost(context) {
         message: error.message,
         text: 'Verbindung fehlgeschlagen.',
       }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } },
+      { status: 500, headers: corsHeaders },
     );
   }
 }
