@@ -1,139 +1,160 @@
 /**
  * Cloudflare Pages Function - POST /api/search
- * Proxy zu Cloudflare AI Search Worker mit Deduplizierung
+ * Modern AI Search with Service Binding (RPC) and Deduplication
+ * @version 3.1.0
  */
 
-const WORKER_URL =
-  'https://ai-search-proxy.httpsgithubcomaks030website.workers.dev/api/search';
+const WORKER_URL = 'https://api.abdulkerimsesli.de/api/search';
 
-/**
- * Dedupliziert Ergebnisse basierend auf URL
- */
+function normalizeUrl(url) {
+  if (!url) return '';
+  try {
+    return (
+      url
+        .split(/[?#]/)[0]
+        .replace(/\/index\.html$/, '/')
+        .replace(/\/$/, '') || '/'
+    );
+  } catch {
+    return url;
+  }
+}
+
+function improveResult(result) {
+  const url = result.url || '';
+  let title = result.title || 'Seite';
+  let category = result.category || 'Seite';
+  let description = result.description || '';
+
+  if (url.includes('/blog/')) {
+    const slug = url.split('/blog/')[1]?.replace(/\/$/, '');
+    if (slug && slug !== 'index.html') {
+      title = `Blog: ${slug.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}`;
+      category = 'Blog';
+    }
+  } else if (url.includes('/projekte/')) {
+    const slug = url.split('/projekte/')[1]?.replace(/\/$/, '');
+    if (slug && slug !== 'index.html') {
+      title = `Projekt: ${slug.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}`;
+      category = 'Projekt';
+    } else {
+      title = 'Projekte Übersicht';
+      category = 'Projekte';
+    }
+  } else if (url.includes('/videos/')) {
+    const slug = url.split('/videos/')[1]?.replace(/\/$/, '');
+    if (slug && slug !== 'index.html') {
+      title = `Video: ${slug.toUpperCase()}`;
+      category = 'Video';
+    } else {
+      title = 'Videos Übersicht';
+      category = 'Videos';
+    }
+  } else if (url.includes('/gallery/')) {
+    title = 'Fotogalerie';
+    category = 'Galerie';
+  } else if (url.includes('/about/')) {
+    title = 'Über mich';
+    category = 'About';
+  } else if (url.endsWith('/') || url.endsWith('/index.html')) {
+    const parts = url.replace(/\/$/, '').split('/');
+    if (parts.length <= 4) {
+      title = 'Startseite';
+      category = 'Home';
+    }
+  }
+
+  return { ...result, title, category, description };
+}
+
 function deduplicateResults(results) {
   const seen = new Set();
   const deduplicated = [];
 
   for (const result of results) {
-    // Normalisiere URL (entferne trailing slash)
-    const normalizedUrl = result.url.replace(/\/$/, '');
-
-    if (!seen.has(normalizedUrl)) {
-      seen.add(normalizedUrl);
-      deduplicated.push(result);
+    const key = normalizeUrl(result.url);
+    if (!seen.has(key)) {
+      seen.add(key);
+      deduplicated.push(improveResult(result));
     }
   }
 
   return deduplicated;
 }
 
-/**
- * Verbessert Titel basierend auf URL
- */
-function improveTitle(result) {
-  const url = result.url;
-
-  // Extrahiere Seitennamen aus URL
-  if (url.includes('/blog/')) {
-    const slug = url.split('/blog/')[1]?.replace(/\/$/, '');
-    if (slug) {
-      return {
-        ...result,
-        title: `Blog: ${slug.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}`,
-        category: 'Blog',
-      };
-    }
-  }
-
-  if (url.includes('/projekte/')) {
-    const slug = url.split('/projekte/')[1]?.replace(/\/$/, '');
-    if (slug) {
-      return {
-        ...result,
-        title: `Projekt: ${slug.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}`,
-        category: 'Projekt',
-      };
-    }
-    return { ...result, title: 'Projekte Übersicht', category: 'Projekte' };
-  }
-
-  if (url.includes('/videos/')) {
-    const slug = url.split('/videos/')[1]?.replace(/\/$/, '');
-    if (slug) {
-      return {
-        ...result,
-        title: `Video: ${slug.toUpperCase()}`,
-        category: 'Video',
-      };
-    }
-    return { ...result, title: 'Videos Übersicht', category: 'Videos' };
-  }
-
-  if (url.includes('/gallery/')) {
-    return { ...result, title: 'Fotogalerie', category: 'Galerie' };
-  }
-
-  if (url.includes('/about/')) {
-    return { ...result, title: 'Über mich', category: 'About' };
-  }
-
-  if (url.endsWith('/') && url.split('/').length === 4) {
-    return { ...result, title: 'Startseite', category: 'Home' };
-  }
-
-  return result;
-}
-
 export async function onRequestPost(context) {
   try {
-    const body = await context.request.json();
+    const { request, env } = context;
+    const body = await request.json();
+    const query = body.query || '';
+    const topK = body.topK || parseInt(env.MAX_SEARCH_RESULTS || '10');
 
-    // Proxy zum Worker
-    const response = await fetch(WORKER_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-    });
+    let data = { results: [], count: 0 };
 
-    const data = await response.json();
-
-    // Dedupliziere und verbessere Ergebnisse
-    if (data.results && Array.isArray(data.results)) {
-      let improved = data.results.map(improveTitle);
-      improved = deduplicateResults(improved);
-      data.results = improved;
-      data.count = improved.length;
+    // 1. Try Service Binding
+    if (env.AI_SEARCH && typeof env.AI_SEARCH.search === 'function') {
+      try {
+        const bindingData = await env.AI_SEARCH.search(query, {
+          index: env.AI_SEARCH_INDEX || 'suche',
+          limit: topK,
+          ragId: env.RAG_ID || 'suche',
+        });
+        if (bindingData) data = bindingData;
+      } catch (e) {
+        console.error('AI_SEARCH binding search error:', e);
+        // Fallback to worker fetch
+      }
     }
 
-    // CORS Headers
+    // 2. Fallback to Worker Fetch if binding failed or returned empty
+    if (!data.results || data.results.length === 0) {
+      const response = await fetch(WORKER_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query,
+          topK,
+          index: env.AI_SEARCH_INDEX || 'suche',
+        }),
+      });
+
+      if (response.ok) {
+        const workerData = await response.json();
+        if (workerData) data = workerData;
+      }
+    }
+
+    // Ensure results is always an array and deduplicated
+    if (data && data.results && Array.isArray(data.results)) {
+      data.results = deduplicateResults(data.results);
+      data.count = data.results.length;
+    } else if (data && Array.isArray(data)) {
+      // Handle cases where API returns array directly
+      data = {
+        results: deduplicateResults(data),
+        count: data.length,
+      };
+    }
+
     return new Response(JSON.stringify(data), {
-      status: response.status,
       headers: {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
       },
     });
   } catch (error) {
+    console.error('Search function error:', error);
     return new Response(
       JSON.stringify({
         error: 'Search failed',
         message: error.message,
+        results: [],
       }),
-      {
-        status: 500,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-        },
-      },
+      { status: 500, headers: { 'Content-Type': 'application/json' } },
     );
   }
 }
 
-// CORS Preflight
 export async function onRequestOptions() {
   return new Response(null, {
     status: 204,
