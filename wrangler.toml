@@ -1,0 +1,13 @@
+name = "aks-website"
+pages_build_output_dir = "dist"
+compatibility_date = "2024-11-01"
+account_id = "652ca9f4abc93203c1ecd059dc00d1da"
+
+[[services]]
+binding = "AI_SEARCH"
+service = "ai-search-proxy"
+
+[vars]
+AI_SEARCH_INDEX = "ai-search-suche"
+RAG_ID = "ai-search-suche"
+MAX_SEARCH_RESULTS = "10"
