@@ -44,11 +44,10 @@ export async function onRequestPost(context) {
     let data = null;
 
     // 1. Try Service Binding (RPC or fallback fetch)
-    const binding = env.AI_SEARCH || env.SEARCH_SERVICE || env.SEARCH;
+    const binding = env.AI_SEARCH;
 
     // Direct binding status logs
     if (env.VECTOR_INDEX) console.log('Vectorize binding available');
-    if (env.BUCKET) console.log('R2 binding available');
 
     if (binding) {
       try {
