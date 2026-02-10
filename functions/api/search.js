@@ -4,7 +4,8 @@
  * @version 3.2.0
  */
 
-const WORKER_URL =
+const CANONICAL_WORKER_URL = 'https://api.abdulkerimsesli.de/api/search';
+const FALLBACK_WORKER_URL =
   'https://ai-search-proxy.httpsgithubcomaks030website.workers.dev/api/search';
 
 function normalizeUrl(url) {
@@ -146,34 +147,44 @@ export async function onRequestPost(context) {
       }
     }
 
-    // 2. Fallback to Worker Fetch
+    // 2. Fallback to Worker Fetch (Try Canonical then Fallback URL)
     if (!data.results || data.results.length === 0) {
-      try {
-        console.log(`Falling back to Worker fetch for: "${query}"`);
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 8000);
+      const urlsToTry = [CANONICAL_WORKER_URL, FALLBACK_WORKER_URL];
 
-        const response = await fetch(WORKER_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            query,
-            topK,
-            index: env.AI_SEARCH_INDEX || 'ai-search-suche',
-          }),
-          signal: controller.signal,
-        });
+      for (const url of urlsToTry) {
+        try {
+          console.log(`Falling back to Worker fetch: ${url} for: "${query}"`);
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 8000);
 
-        clearTimeout(timeoutId);
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              query,
+              topK,
+              index: env.AI_SEARCH_INDEX || 'ai-search-suche',
+            }),
+            signal: controller.signal,
+          });
 
-        if (response.ok) {
-          const workerData = await response.json();
-          if (workerData) {
-            data = workerData;
+          clearTimeout(timeoutId);
+
+          if (response.ok) {
+            const workerData = await response.json();
+            if (workerData && Array.isArray(workerData.results)) {
+              data = workerData;
+              console.log(`Successfully received search results from ${url}`);
+              break;
+            }
+          } else {
+            console.error(
+              `Worker fetch failed for ${url} with status: ${response.status}`,
+            );
           }
+        } catch (e) {
+          console.error(`Fallback fetch failed for ${url}:`, e.message);
         }
-      } catch (e) {
-        console.error('Fallback worker fetch failed:', e.message);
       }
     }
 
