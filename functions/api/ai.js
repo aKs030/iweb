@@ -4,7 +4,8 @@
  * @version 3.2.0
  */
 
-const WORKER_URL =
+const CANONICAL_WORKER_URL = 'https://api.abdulkerimsesli.de/api/ai';
+const FALLBACK_WORKER_URL =
   'https://ai-search-proxy.httpsgithubcomaks030website.workers.dev/api/ai';
 
 export async function onRequestPost(context) {
@@ -74,31 +75,44 @@ export async function onRequestPost(context) {
       }
     }
 
-    // 2. Fallback: Fetch to Worker
+    // 2. Fallback: Fetch to Worker (Try Canonical then Fallback URL)
     if (!data || (!data.text && !data.response && !data.answer)) {
-      try {
-        console.log('Falling back to Worker chat fetch');
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000); // Increased timeout
+      const urlsToTry = [CANONICAL_WORKER_URL, FALLBACK_WORKER_URL];
 
-        const response = await fetch(WORKER_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: bodyText,
-          signal: controller.signal,
-        });
+      for (const url of urlsToTry) {
+        try {
+          console.log(`Falling back to Worker chat fetch: ${url}`);
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-        clearTimeout(timeoutId);
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              ...body,
+              ragId: env.RAG_ID || 'ai-search-suche',
+              maxResults: parseInt(env.MAX_SEARCH_RESULTS || '10'),
+              gatewayId: 'default',
+            }),
+            signal: controller.signal,
+          });
 
-        if (response.ok) {
-          data = await response.json();
-        } else {
-          console.error(
-            `Worker chat fetch failed with status: ${response.status}`,
-          );
+          clearTimeout(timeoutId);
+
+          if (response.ok) {
+            data = await response.json();
+            if (data && (data.text || data.response || data.answer)) {
+              console.log(`Successfully received response from ${url}`);
+              break;
+            }
+          } else {
+            console.error(
+              `Worker chat fetch failed for ${url} with status: ${response.status}`,
+            );
+          }
+        } catch (e) {
+          console.error(`Fetch failed for ${url}:`, e.message);
         }
-      } catch (e) {
-        console.error('Fallback worker chat fetch failed:', e.message);
       }
     }
 
