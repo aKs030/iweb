@@ -167,9 +167,9 @@ export async function onRequestPost(context) {
         if (typeof binding.search === 'function') {
           console.log(`Searching via binding RPC for: "${query}"`);
           const bindingData = await binding.search(query, {
-            index: env.AI_SEARCH_INDEX || 'ai-search-suche',
+            index: env.AI_SEARCH_INDEX || 'suche',
             limit: topK,
-            ragId: env.RAG_ID || 'ai-search-suche',
+            ragId: env.RAG_ID || 'suche',
           });
           if (bindingData && Array.isArray(bindingData.results)) {
             data = bindingData;
@@ -207,7 +207,7 @@ export async function onRequestPost(context) {
             body: JSON.stringify({
               query,
               topK,
-              index: env.AI_SEARCH_INDEX || 'ai-search-suche',
+              index: env.AI_SEARCH_INDEX || 'suche',
             }),
             signal: controller.signal,
           });
