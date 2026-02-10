@@ -1,28 +1,30 @@
 import { defineConfig } from 'vite';
-import { resolve, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { resolve } from 'path';
 import fs from 'fs';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
 /**
  * Vite Plugin for HTML Template Injection
- * Emulates Cloudflare Pages Middleware / server.js behavior during build
+ * Emuliert das Verhalten von Cloudflare Pages Middleware während des Builds
  */
 function htmlTemplatesPlugin() {
   return {
     name: 'html-templates',
     transformIndexHtml(html) {
+      const root = process.cwd();
       try {
-        const head = fs.readFileSync(
-          resolve(__dirname, 'content/templates/base-head.html'),
-          'utf-8',
-        );
-        const loader = fs.readFileSync(
-          resolve(__dirname, 'content/templates/base-loader.html'),
-          'utf-8',
-        );
+        const headPath = resolve(root, 'content/templates/base-head.html');
+        const loaderPath = resolve(root, 'content/templates/base-loader.html');
+
+        let head = '';
+        let loader = '';
+
+        if (fs.existsSync(headPath)) {
+          head = fs.readFileSync(headPath, 'utf-8');
+        }
+        if (fs.existsSync(loaderPath)) {
+          loader = fs.readFileSync(loaderPath, 'utf-8');
+        }
+
         return html
           .replace(/<!--\s*INJECT:BASE-HEAD\s*-->/g, head)
           .replace(/<!--\s*INJECT:BASE-LOADER\s*-->/g, loader);
@@ -42,18 +44,14 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       input: {
-        main: resolve(__dirname, 'index.html'),
+        main: resolve(process.cwd(), 'index.html'),
       },
     },
   },
-  server: {
-    port: 8080,
-    open: true,
-  },
   resolve: {
     alias: {
-      '/content': resolve(__dirname, 'content'),
-      '/pages': resolve(__dirname, 'pages'),
+      '/content': resolve(process.cwd(), 'content'),
+      '/pages': resolve(process.cwd(), 'pages'),
     },
   },
 });
