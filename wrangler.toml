@@ -1,7 +1,7 @@
-name = "aks-website"
+name = "1web"
 pages_build_output_dir = "dist"
 compatibility_date = "2024-11-01"
-account_id = "652ca9f4abc93203c1ecd059dc00d1da"
+compatibility_flags = ["nodejs_compat"]
 
 [[services]]
 binding = "AI_SEARCH"
