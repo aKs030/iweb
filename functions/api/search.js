@@ -105,7 +105,7 @@ export async function onRequestPost(context) {
     }
 
     const query = body.query || '';
-    const topK = body.topK || parseInt(env.MAX_SEARCH_RESULTS || '10');
+    const topK = parseInt(body.topK || env.MAX_SEARCH_RESULTS || '10');
 
     if (!query) {
       return new Response(JSON.stringify({ results: [], count: 0 }), {
