@@ -1,7 +1,7 @@
 /**
  * Cloudflare Pages Function - POST /api/search
  * Modern AI Search with Service Binding (RPC) and Deduplication
- * @version 3.1.0
+ * @version 3.2.0
  */
 
 const WORKER_URL =
@@ -92,13 +92,13 @@ export async function onRequestPost(context) {
   try {
     const { request, env } = context;
 
-    // CRITICAL: Clone request before reading body to avoid "body used" errors in binding.fetch
-    const clonedRequest = request.clone();
-
-    // Safety check for body parsing
+    // Read body as text first to be safe
+    const bodyText = await request.text();
     let body = {};
     try {
-      body = await request.json();
+      if (bodyText) {
+        body = JSON.parse(bodyText);
+      }
     } catch (e) {
       console.warn('Could not parse request JSON:', e.message);
     }
@@ -106,14 +106,15 @@ export async function onRequestPost(context) {
     const query = body.query || '';
     const topK = body.topK || parseInt(env.MAX_SEARCH_RESULTS || '10');
 
-    let data = { results: [], count: 0 };
-
     if (!query) {
-      return new Response(JSON.stringify(data), { headers: corsHeaders });
+      return new Response(JSON.stringify({ results: [], count: 0 }), {
+        headers: corsHeaders,
+      });
     }
 
+    let data = { results: [], count: 0 };
+
     // 1. Try Service Binding (RPC or fallback fetch)
-    // Check multiple possible binding names for resilience
     const binding = env.AI_SEARCH || env.SEARCH_SERVICE || env.SEARCH;
 
     if (binding) {
@@ -125,20 +126,19 @@ export async function onRequestPost(context) {
             limit: topK,
             ragId: env.RAG_ID || 'ai-search-suche',
           });
-          if (
-            bindingData &&
-            bindingData.results &&
-            bindingData.results.length > 0
-          ) {
+          if (bindingData && Array.isArray(bindingData.results)) {
             data = bindingData;
-            console.log(`Binding RPC returned ${data.results.length} results`);
           }
         } else if (typeof binding.fetch === 'function') {
           console.log(`Searching via binding fetch for: "${query}"`);
-          const response = await binding.fetch(clonedRequest);
+          const serviceRequest = new Request(request.url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: bodyText,
+          });
+          const response = await binding.fetch(serviceRequest);
           if (response.ok) {
             data = await response.json();
-            console.log('Binding fetch successful');
           }
         }
       } catch (e) {
@@ -146,13 +146,12 @@ export async function onRequestPost(context) {
       }
     }
 
-    // 2. Fallback to Worker Fetch if binding failed or returned empty
+    // 2. Fallback to Worker Fetch
     if (!data.results || data.results.length === 0) {
       try {
         console.log(`Falling back to Worker fetch for: "${query}"`);
-        // Use a 5-second timeout for the fallback fetch
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000);
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
 
         const response = await fetch(WORKER_URL, {
           method: 'POST',
@@ -171,10 +170,7 @@ export async function onRequestPost(context) {
           const workerData = await response.json();
           if (workerData) {
             data = workerData;
-            console.log('Worker fetch successful');
           }
-        } else {
-          console.error(`Worker fetch failed with status: ${response.status}`);
         }
       } catch (e) {
         console.error('Fallback worker fetch failed:', e.message);
@@ -182,15 +178,19 @@ export async function onRequestPost(context) {
     }
 
     // Ensure results is always an array and deduplicated
-    if (data && data.results && Array.isArray(data.results)) {
-      data.results = deduplicateResults(data.results);
-      data.count = data.results.length;
-    } else if (data && Array.isArray(data)) {
-      // Handle cases where API returns array directly
-      data = {
-        results: deduplicateResults(data),
-        count: data.length,
-      };
+    if (data) {
+      if (Array.isArray(data.results)) {
+        data.results = deduplicateResults(data.results);
+        data.count = data.results.length;
+      } else if (Array.isArray(data)) {
+        data = {
+          results: deduplicateResults(data),
+          count: data.length,
+        };
+      } else if (!data.results) {
+        data.results = [];
+        data.count = 0;
+      }
     }
 
     return new Response(JSON.stringify(data), {
