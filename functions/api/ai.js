@@ -55,7 +55,7 @@ export async function onRequestPost(context) {
         if (typeof binding.chat === 'function') {
           console.log('AI Chat via binding RPC started');
           data = await binding.chat(prompt, {
-            ragId: env.RAG_ID || 'ai-search-suche',
+            ragId: env.RAG_ID || 'suche',
             maxResults: parseInt(env.MAX_SEARCH_RESULTS || '10'),
             gatewayId: 'default',
             systemInstruction:
@@ -95,7 +95,7 @@ export async function onRequestPost(context) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               ...body,
-              ragId: env.RAG_ID || 'ai-search-suche',
+              ragId: env.RAG_ID || 'suche',
               maxResults: parseInt(env.MAX_SEARCH_RESULTS || '10'),
               gatewayId: 'default',
             }),
