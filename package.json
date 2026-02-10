@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "node server.js",
-    "build": "vite build && mkdir -p dist/content dist/pages dist/impressum dist/datenschutz && cp -r content/* dist/content/ && cp -r pages/* dist/pages/ && cp -r impressum/* dist/impressum/ && cp -r datenschutz/* dist/datenschutz/",
+    "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
