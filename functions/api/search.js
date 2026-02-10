@@ -122,7 +122,43 @@ export async function onRequestPost(context) {
     if (env.VECTOR_INDEX) console.log('Direct Vectorize binding detected');
     if (env.BUCKET) console.log('Direct R2 binding detected');
 
-    if (binding) {
+    // 1a. Try Direct Vectorize Search if enabled and bindings available
+    if (env.VECTOR_INDEX && env.AI && (!data.results || data.results.length === 0)) {
+      try {
+        console.log(`Direct Vectorize search for: "${query}"`);
+        // Generate embedding for the query
+        const embeddingResponse = await env.AI.run(
+          '@cf/baai/bge-small-en-v1.5',
+          { text: [query] },
+        );
+        const vector = embeddingResponse.data[0];
+
+        if (vector) {
+          const vectorMatches = await env.VECTOR_INDEX.query(vector, {
+            topK: topK,
+            returnMetadata: 'all',
+          });
+
+          if (vectorMatches && vectorMatches.matches) {
+            data.results = vectorMatches.matches.map((match) => ({
+              title: match.metadata?.title || 'Suchergebnis',
+              url: match.metadata?.url || '',
+              category: match.metadata?.category || 'Seite',
+              description: match.metadata?.description || '',
+              score: match.score,
+            }));
+            data.count = data.results.length;
+            console.log(
+              `Direct Vectorize search returned ${data.count} results`,
+            );
+          }
+        }
+      } catch (e) {
+        console.error('Direct Vectorize search error:', e.message);
+      }
+    }
+
+    if (binding && (!data.results || data.results.length === 0)) {
       try {
         if (typeof binding.search === 'function') {
           console.log(`Searching via binding RPC for: "${query}"`);
