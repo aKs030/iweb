@@ -1,0 +1,16 @@
+name = "1web"
+compatibility_date = "2024-11-01"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = "dist"
+
+[vars]
+AI_SEARCH_INDEX = "ai-search-suche"
+RAG_ID = "ai-search-suche"
+MAX_SEARCH_RESULTS = "10"
+
+[[services]]
+binding = "AI_SEARCH"
+service = "ai-search-proxy"
+
+[ai]
+binding = "AI"

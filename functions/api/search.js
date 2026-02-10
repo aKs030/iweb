@@ -4,7 +4,8 @@
  * @version 3.1.0
  */
 
-const WORKER_URL = 'https://api.abdulkerimsesli.de/api/search';
+const WORKER_URL =
+  'https://ai-search-proxy.httpsgithubcomaks030website.workers.dev/api/search';
 
 function normalizeUrl(url) {
   if (!url) return '';
@@ -91,6 +92,9 @@ export async function onRequestPost(context) {
   try {
     const { request, env } = context;
 
+    // CRITICAL: Clone request before reading body to avoid "body used" errors in binding.fetch
+    const clonedRequest = request.clone();
+
     // Safety check for body parsing
     let body = {};
     try {
@@ -117,9 +121,9 @@ export async function onRequestPost(context) {
         if (typeof binding.search === 'function') {
           console.log(`Searching via binding RPC for: "${query}"`);
           const bindingData = await binding.search(query, {
-            index: env.AI_SEARCH_INDEX || 'suche',
+            index: env.AI_SEARCH_INDEX || 'ai-search-suche',
             limit: topK,
-            ragId: env.RAG_ID || 'suche',
+            ragId: env.RAG_ID || 'ai-search-suche',
           });
           if (
             bindingData &&
@@ -131,7 +135,7 @@ export async function onRequestPost(context) {
           }
         } else if (typeof binding.fetch === 'function') {
           console.log(`Searching via binding fetch for: "${query}"`);
-          const response = await binding.fetch(request.clone());
+          const response = await binding.fetch(clonedRequest);
           if (response.ok) {
             data = await response.json();
             console.log('Binding fetch successful');
@@ -156,7 +160,7 @@ export async function onRequestPost(context) {
           body: JSON.stringify({
             query,
             topK,
-            index: env.AI_SEARCH_INDEX || 'suche',
+            index: env.AI_SEARCH_INDEX || 'ai-search-suche',
           }),
           signal: controller.signal,
         });
