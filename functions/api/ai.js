@@ -4,7 +4,8 @@
  * @version 3.1.0
  */
 
-const WORKER_URL = 'https://api.abdulkerimsesli.de/api/ai';
+const WORKER_URL =
+  'https://ai-search-proxy.httpsgithubcomaks030website.workers.dev/api/ai';
 
 export async function onRequestPost(context) {
   const corsHeaders = {
@@ -37,7 +38,7 @@ export async function onRequestPost(context) {
         if (typeof binding.chat === 'function') {
           console.log('AI Chat via binding RPC started');
           data = await binding.chat(prompt, {
-            ragId: env.RAG_ID || 'suche',
+            ragId: env.RAG_ID || 'ai-search-suche',
             maxResults: parseInt(env.MAX_SEARCH_RESULTS || '10'),
           });
         } else if (typeof binding.fetch === 'function') {

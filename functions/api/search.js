@@ -4,7 +4,8 @@
  * @version 3.1.0
  */
 
-const WORKER_URL = 'https://api.abdulkerimsesli.de/api/search';
+const WORKER_URL =
+  'https://ai-search-proxy.httpsgithubcomaks030website.workers.dev/api/search';
 
 function normalizeUrl(url) {
   if (!url) return '';
@@ -117,9 +118,9 @@ export async function onRequestPost(context) {
         if (typeof binding.search === 'function') {
           console.log(`Searching via binding RPC for: "${query}"`);
           const bindingData = await binding.search(query, {
-            index: env.AI_SEARCH_INDEX || 'suche',
+            index: env.AI_SEARCH_INDEX || 'ai-search-suche',
             limit: topK,
-            ragId: env.RAG_ID || 'suche',
+            ragId: env.RAG_ID || 'ai-search-suche',
           });
           if (
             bindingData &&
@@ -156,7 +157,7 @@ export async function onRequestPost(context) {
           body: JSON.stringify({
             query,
             topK,
-            index: env.AI_SEARCH_INDEX || 'suche',
+            index: env.AI_SEARCH_INDEX || 'ai-search-suche',
           }),
           signal: controller.signal,
         });
