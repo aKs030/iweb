@@ -92,6 +92,9 @@ export async function onRequestPost(context) {
   try {
     const { request, env } = context;
 
+    // CRITICAL: Clone request before reading body to avoid "body used" errors in binding.fetch
+    const clonedRequest = request.clone();
+
     // Safety check for body parsing
     let body = {};
     try {
@@ -132,7 +135,7 @@ export async function onRequestPost(context) {
           }
         } else if (typeof binding.fetch === 'function') {
           console.log(`Searching via binding fetch for: "${query}"`);
-          const response = await binding.fetch(request.clone());
+          const response = await binding.fetch(clonedRequest);
           if (response.ok) {
             data = await response.json();
             console.log('Binding fetch successful');
