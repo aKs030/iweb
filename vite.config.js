@@ -37,6 +37,16 @@ function htmlTemplatesPlugin() {
       const root = process.cwd();
       const dist = resolve(root, 'dist');
       const dirs = ['content', 'pages', 'impressum', 'datenschutz'];
+      const files = [
+        '_redirects',
+        '_headers',
+        'robots.txt',
+        'sitemap.xml',
+        'sitemap-images.xml',
+        'sitemap-videos.xml',
+        'manifest.json',
+        'sw.js',
+      ];
 
       dirs.forEach((dir) => {
         const src = resolve(root, dir);
@@ -46,6 +56,14 @@ function htmlTemplatesPlugin() {
             fs.mkdirSync(dest, { recursive: true });
           }
           fs.cpSync(src, dest, { recursive: true });
+        }
+      });
+
+      files.forEach((file) => {
+        const src = resolve(root, file);
+        const dest = resolve(dist, file);
+        if (fs.existsSync(src)) {
+          fs.copyFileSync(src, dest);
         }
       });
     },
