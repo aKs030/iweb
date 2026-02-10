@@ -14,6 +14,7 @@ function normalizeUrl(url) {
     return (
       url
         .split(/[?#]/)[0]
+        .replace(/^https?:\/\/(www\.)?abdulkerimsesli\.de/, '')
         .replace(/\/index\.html$/, '/')
         .replace(/\/$/, '') || '/'
     );
@@ -128,13 +129,10 @@ const URL_MAPPINGS = {
 
 function improveResult(result) {
   const url = result.url || '';
-  const normalizedUrl = normalizeUrl(url);
+  const path = normalizeUrl(url);
 
   // 1. Check for specific URL mappings first (highest priority)
-  // Ensure we check both the full URL and the absolute path
-  const path =
-    normalizedUrl.replace('https://www.abdulkerimsesli.de', '') || '/';
-  const mapping = URL_MAPPINGS[normalizedUrl] || URL_MAPPINGS[path];
+  const mapping = URL_MAPPINGS[path];
 
   let title = result.title || 'Seite';
   let category = result.category || 'Seite';
@@ -144,14 +142,24 @@ function improveResult(result) {
   const isGeneric =
     title.includes('Initialisiere System') ||
     title.includes('AKS | WEB') ||
+    title.includes('Digital Creator Portfolio') ||
+    title.includes('Abdulkerim') ||
     title === 'Suchergebnis' ||
-    title === 'Seite';
+    title === 'Seite' ||
+    !title;
 
   if (mapping) {
-    if (isGeneric || !result.title) title = mapping.title;
+    if (isGeneric) title = mapping.title;
     category = mapping.category;
-    if (mapping.description && (isGeneric || !description))
+    if (
+      mapping.description &&
+      (isGeneric ||
+        !description ||
+        description.includes('Initialisiere System') ||
+        description.includes('Erfahren Sie mehr auf dieser Seite'))
+    ) {
       description = mapping.description;
+    }
   } else {
     // Dynamische Verbesserung basierend auf URL-Struktur (Fallback)
     if (url.includes('/blog/')) {
@@ -186,14 +194,18 @@ function improveResult(result) {
     } else if (url.includes('/about/')) {
       title = 'Über mich';
       category = 'About';
-    } else if (normalizedUrl === '' || normalizedUrl === '/') {
+    } else if (path === '' || path === '/') {
       title = 'Startseite';
       category = 'Home';
     }
   }
 
-  // Final cleanup: Remove the loader text from description if it's still there
-  if (description.includes('Initialisiere System')) {
+  // Final cleanup: Remove the loader text or generic description
+  if (
+    description.includes('Initialisiere System') ||
+    !description ||
+    description.length < 10
+  ) {
     description = 'Erfahren Sie mehr auf dieser Seite meines Portfolios.';
   }
 
