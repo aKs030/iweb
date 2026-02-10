@@ -33,6 +33,22 @@ function htmlTemplatesPlugin() {
         return html;
       }
     },
+    closeBundle() {
+      const root = process.cwd();
+      const dist = resolve(root, 'dist');
+      const dirs = ['content', 'pages', 'impressum', 'datenschutz'];
+
+      dirs.forEach((dir) => {
+        const src = resolve(root, dir);
+        const dest = resolve(dist, dir);
+        if (fs.existsSync(src)) {
+          if (!fs.existsSync(dest)) {
+            fs.mkdirSync(dest, { recursive: true });
+          }
+          fs.cpSync(src, dest, { recursive: true });
+        }
+      });
+    },
   };
 }
 

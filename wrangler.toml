@@ -1,20 +1,33 @@
-name = "1web"
-account_id = "652ca9f4abc93203c1ecd059dc00d1da"
+#:schema node_modules/wrangler/config-schema.json
+name = "iweb"
+pages_build_output_dir = "dist"
 compatibility_date = "2024-11-01"
 compatibility_flags = ["nodejs_compat"]
-pages_build_output_dir = "dist"
 
 [build]
 command = "npm run build"
 
+# Umgebungsvariablen für die AI-Suche
 [vars]
 AI_SEARCH_INDEX = "ai-search-suche"
 RAG_ID = "ai-search-suche"
 MAX_SEARCH_RESULTS = "10"
 
+# R2 Bucket für die Quelldaten (www.abdulkerimsesli.de)
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "ai-search-suche-92e832"
+
+# Vectorize Index für die KI-Suche
+[[vectorize]]
+binding = "VECTOR_INDEX"
+index_name = "ai-search-suche"
+
+# AI Gateway / AI Modell Zugriff
+[ai]
+binding = "AI"
+
+# Legacy/Fallback Service Binding
 [[services]]
 binding = "AI_SEARCH"
 service = "ai-search-proxy"
-
-[ai]
-binding = "AI"

@@ -4,7 +4,8 @@
  * @version 3.2.0
  */
 
-const WORKER_URL =
+const CANONICAL_WORKER_URL = 'https://api.abdulkerimsesli.de/api/search';
+const FALLBACK_WORKER_URL =
   'https://ai-search-proxy.httpsgithubcomaks030website.workers.dev/api/search';
 
 function normalizeUrl(url) {
@@ -104,7 +105,7 @@ export async function onRequestPost(context) {
     }
 
     const query = body.query || '';
-    const topK = body.topK || parseInt(env.MAX_SEARCH_RESULTS || '10');
+    const topK = parseInt(body.topK || env.MAX_SEARCH_RESULTS || '10');
 
     if (!query) {
       return new Response(JSON.stringify({ results: [], count: 0 }), {
@@ -117,7 +118,51 @@ export async function onRequestPost(context) {
     // 1. Try Service Binding (RPC or fallback fetch)
     const binding = env.AI_SEARCH || env.SEARCH_SERVICE || env.SEARCH;
 
-    if (binding) {
+    // Log presence of direct bindings for debug
+    if (env.VECTOR_INDEX) console.log('Direct Vectorize binding detected');
+    if (env.BUCKET) console.log('Direct R2 binding detected');
+
+    // 1a. Try Direct Vectorize Search if enabled and bindings available
+    if (
+      env.VECTOR_INDEX &&
+      env.AI &&
+      (!data.results || data.results.length === 0)
+    ) {
+      try {
+        console.log(`Direct Vectorize search for: "${query}"`);
+        // Generate embedding for the query
+        const embeddingResponse = await env.AI.run(
+          '@cf/baai/bge-small-en-v1.5',
+          { text: [query] },
+        );
+        const vector = embeddingResponse.data[0];
+
+        if (vector) {
+          const vectorMatches = await env.VECTOR_INDEX.query(vector, {
+            topK: topK,
+            returnMetadata: 'all',
+          });
+
+          if (vectorMatches && vectorMatches.matches) {
+            data.results = vectorMatches.matches.map((match) => ({
+              title: match.metadata?.title || 'Suchergebnis',
+              url: match.metadata?.url || '',
+              category: match.metadata?.category || 'Seite',
+              description: match.metadata?.description || '',
+              score: match.score,
+            }));
+            data.count = data.results.length;
+            console.log(
+              `Direct Vectorize search returned ${data.count} results`,
+            );
+          }
+        }
+      } catch (e) {
+        console.error('Direct Vectorize search error:', e.message);
+      }
+    }
+
+    if (binding && (!data.results || data.results.length === 0)) {
       try {
         if (typeof binding.search === 'function') {
           console.log(`Searching via binding RPC for: "${query}"`);
@@ -146,39 +191,58 @@ export async function onRequestPost(context) {
       }
     }
 
-    // 2. Fallback to Worker Fetch
+    // 2. Fallback to Worker Fetch (Try Canonical then Fallback URL)
     if (!data.results || data.results.length === 0) {
-      try {
-        console.log(`Falling back to Worker fetch for: "${query}"`);
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 8000);
+      const urlsToTry = [CANONICAL_WORKER_URL, FALLBACK_WORKER_URL];
 
-        const response = await fetch(WORKER_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            query,
-            topK,
-            index: env.AI_SEARCH_INDEX || 'ai-search-suche',
-          }),
-          signal: controller.signal,
-        });
+      for (const url of urlsToTry) {
+        try {
+          console.log(`Falling back to Worker fetch: ${url} for: "${query}"`);
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 8000);
 
-        clearTimeout(timeoutId);
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              query,
+              topK,
+              index: env.AI_SEARCH_INDEX || 'ai-search-suche',
+            }),
+            signal: controller.signal,
+          });
 
-        if (response.ok) {
-          const workerData = await response.json();
-          if (workerData) {
-            data = workerData;
+          clearTimeout(timeoutId);
+
+          if (response.ok) {
+            const workerData = await response.json();
+            if (workerData && Array.isArray(workerData.results)) {
+              data = workerData;
+              console.log(`Successfully received search results from ${url}`);
+              break;
+            }
+          } else {
+            console.error(
+              `Worker fetch failed for ${url} with status: ${response.status}`,
+            );
           }
+        } catch (e) {
+          console.error(`Fallback fetch failed for ${url}:`, e.message);
         }
-      } catch (e) {
-        console.error('Fallback worker fetch failed:', e.message);
       }
     }
 
     // Ensure results is always an array and deduplicated
     if (data) {
+      // Handle cases where data might be a JSON string
+      if (typeof data === 'string') {
+        try {
+          data = JSON.parse(data);
+        } catch {
+          data = { results: [], count: 0 };
+        }
+      }
+
       if (Array.isArray(data.results)) {
         data.results = deduplicateResults(data.results);
         data.count = data.results.length;
