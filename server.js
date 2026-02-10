@@ -88,76 +88,89 @@ function injectTemplates(html) {
   return html;
 }
 
-// ─── Redirect Rules (from _redirects) ───────────────────────
-const REDIRECTS = [
-  // Legacy URL cleanup
-  ['/pages/album.html', '/gallery/', 301],
-  ['/pages/album', '/gallery/', 301],
-  ['/pages/ubermich.html', '/about/', 301],
-  ['/pages/tools/', '/projekte/', 301],
-  ['/pages/tools', '/projekte/', 301],
-  ['/pages/fotogalerie', '/gallery/', 301],
-  ['/pages/fotogalerie/', '/gallery/', 301],
-  ['/pages/card/wetter.html', '/', 301],
-  ['/pages/card/wetter', '/', 301],
-  ['/pages/card/karten.html', '/', 301],
-  ['/pages/card/karten', '/', 301],
-  ['/pages/ueber-mich/ueber-mich', '/about/', 301],
-  ['/pages/ueber-mich/ueber-mich.html', '/about/', 301],
-  ['/pages/ueber-mich/', '/about/', 301],
-  ['/pages/ueber-mich', '/about/', 301],
-  ['/pages/design/pages/ueber-mich/ueber-mich.html', '/about/', 301],
-  ['/pages/design/pages/ueber-mich/ueber-mich', '/about/', 301],
-  ['/pages/index-game.html', '/', 301],
-  ['/pages/features/wetter.html', '/', 301],
-  ['/pages/features/snake.html', '/', 301],
-  ['/pages/features/snake', '/', 301],
-  ['/pages/features/snake/', '/', 301],
-  ['/pages/komponente/footer.html', '/', 301],
-  ['/pages/komponente/menu.html', '/', 301],
-  ['/pages/komponente/menu', '/', 301],
-  ['/pages/komponente/pages/ueber-mich/index.html', '/about/', 301],
-  ['/pages/komponente/pages/ueber-mich/', '/about/', 301],
-  ['/pages/komponente/pages/fotogalerie/index.html', '/gallery/', 301],
-  ['/pages/komponente/pages/fotogalerie/', '/gallery/', 301],
-  ['/pages/pages/fotogalerie/index.html', '/gallery/', 301],
-  ['/pages/pages/fotogalerie/', '/gallery/', 301],
-  ['/pages/blog/pages/fotos/fotos.html', '/gallery/', 301],
-  ['/pages/blog/pages/fotos/fotos', '/gallery/', 301],
-  ['/pages/webentwicklung/project-1.html', '/projekte/', 301],
-  ['/pages/webentwicklung/project-1', '/projekte/', 301],
-  ['/pages/kontakt/', '/#kontakt', 301],
-  ['/pages/kontakt', '/#kontakt', 301],
-  ['/pages/projekte/', '/projekte/', 301],
-  // Old content directory paths
-  ['/content/webentwicklung/footer/datenschutz.html', '/datenschutz/', 301],
-  ['/content/webentwicklung/footer/datenschutz', '/datenschutz/', 301],
-  ['/content/kontakt/', '/#kontakt', 301],
-  ['/content/kontakt', '/#kontakt', 301],
-  ['/content/impressum/', '/impressum/', 301],
-  ['/content/impressum', '/impressum/', 301],
-  // Root-level legacy
-  ['/album.html', '/gallery/', 301],
-  ['/album', '/gallery/', 301],
-  // Trailing slash canonicalization
-  ['/about', '/about/', 301],
-  ['/blog', '/blog/', 301],
-  ['/gallery', '/gallery/', 301],
-  ['/projekte', '/projekte/', 301],
-  ['/videos', '/videos/', 301],
-  // index.html removal
-  ['/index.html', '/', 301],
-  ['/blog/index.html', '/blog/', 301],
-  ['/projekte/index.html', '/projekte/', 301],
-  ['/gallery/index.html', '/gallery/', 301],
-  ['/videos/index.html', '/videos/', 301],
-  ['/about/index.html', '/about/', 301],
-];
+// ─── Redirect Rules (dynamisch aus _redirects) ──────────────
+let REDIRECTS = [];
+let REWRITES = [];
 
-// ─── Rewrite Rules (serve file without changing URL) ────────
-const REWRITES = [];
+function loadRedirects() {
+  try {
+    const path = resolve(ROOT, '_redirects');
+    if (!existsSync(path)) return;
 
-// ─── Clean URL mapping ──────────────────────────────────────
+    const content = readFileSync(path, 'utf-8');
+    const lines = content.split('\n');
+
+    REDIRECTS = [];
+    REWRITES = [];
+
+    for (let line of lines) {
+      line = line.trim();
+      if (!line || line.startsWith('#')) continue;
+
+      const [from, to, statusStr] = line.split(/\s+/);
+      if (!from || !to) continue;
+
+      const status = parseInt(statusStr) || 301;
+      if (status === 200) {
+        REWRITES.push({ from, to });
+      } else {
+        REDIRECTS.push({ from, to, status });
+      }
+    }
+    console.log(
+      `  ✓ _redirects geladen (${REDIRECTS.length} Redirects, ${REWRITES.length} Rewrites)`,
+    );
+  } catch (err) {
+    console.warn('  ⚠ Fehler beim Laden von _redirects:', err.message);
+  }
+}
+
+loadRedirects();
+
+// Watch _redirects for changes
+if (existsSync(resolve(ROOT, '_redirects'))) {
+  watchFile(resolve(ROOT, '_redirects'), { interval: 1000 }, () => {
+    console.log('\n  🔄 _redirects geändert — neu geladen');
+    loadRedirects();
+  });
+}
+
+/**
+ * Matcht eine URL gegen eine _redirects-Regel (inkl. Wildcards)
+ */
+function matchRule(url, ruleFrom) {
+  // 1. Exakter Match
+  if (url === ruleFrom) return { matched: true, splat: '' };
+
+  // 2. Wildcard /* am Ende
+  if (ruleFrom.endsWith('/*')) {
+    const prefix = ruleFrom.slice(0, -1); // e.g., /gallery/
+    if (url.startsWith(prefix)) {
+      return { matched: true, splat: url.slice(prefix.length) };
+    }
+    // Auch den Prefix ohne Slash matchen wenn es genau passt
+    if (url === prefix.slice(0, -1)) return { matched: true, splat: '' };
+  }
+
+  // 3. Dateiendung-Wildcard /*.html
+  if (ruleFrom.startsWith('/*.')) {
+    const ext = ruleFrom.slice(1); // e.g., .html
+    if (url.endsWith(ext)) {
+      return { matched: true, splat: url.slice(1, -ext.length) };
+    }
+  }
+
+  return { matched: false };
+}
+
+/**
+ * Wendet Splat auf das Ziel an
+ */
+function applySplat(to, splat) {
+  return to.replace(':splat', splat);
+}
+
+// ─── Clean URL mapping (Fallback wenn _redirects fehlt) ─────
 const CLEAN_URLS = {
   '/': 'index.html',
   '/about/': 'pages/about/index.html',
@@ -284,28 +297,38 @@ function handleAPIMock(req, res, url) {
 }
 
 const server = createServer((req, res) => {
-  const url = req.url?.split('?')[0] || '/';
+  let url = req.url?.split('?')[0] || '/';
 
   // 0. API mock endpoints (Dev-Mode → kein Worker nötig)
   if (handleAPIMock(req, res, url)) return;
 
-  // 1. Check redirects
-  for (const [from, to, status] of REDIRECTS) {
-    if (url === from) {
-      res.writeHead(status, { Location: to });
+  // 1. Check redirects (from _redirects)
+  for (const rule of REDIRECTS) {
+    const { matched, splat } = matchRule(url, rule.from);
+    if (matched) {
+      const target = applySplat(rule.to, splat);
+      res.writeHead(rule.status, { Location: target });
       res.end();
       return;
     }
   }
 
-  // 2. Check rewrites
-  for (const [pattern, target] of REWRITES) {
-    if (url === pattern) {
-      if (tryServe(resolve(ROOT, target), res)) return;
+  // 2. Check rewrites (from _redirects)
+  for (const rule of REWRITES) {
+    const { matched, splat } = matchRule(url, rule.from);
+    if (matched) {
+      const target = applySplat(rule.to, splat);
+      if (
+        tryServe(
+          resolve(ROOT, target.startsWith('/') ? target.slice(1) : target),
+          res,
+        )
+      )
+        return;
     }
   }
 
-  // 3. Clean URLs (e.g., /about/ → pages/about/index.html)
+  // 3. Clean URLs (Fallback mapping)
   if (CLEAN_URLS[url]) {
     if (tryServe(resolve(ROOT, CLEAN_URLS[url]), res)) return;
   }
