@@ -123,7 +123,11 @@ export async function onRequestPost(context) {
     if (env.BUCKET) console.log('Direct R2 binding detected');
 
     // 1a. Try Direct Vectorize Search if enabled and bindings available
-    if (env.VECTOR_INDEX && env.AI && (!data.results || data.results.length === 0)) {
+    if (
+      env.VECTOR_INDEX &&
+      env.AI &&
+      (!data.results || data.results.length === 0)
+    ) {
       try {
         console.log(`Direct Vectorize search for: "${query}"`);
         // Generate embedding for the query
