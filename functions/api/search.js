@@ -127,9 +127,9 @@ const URL_MAPPINGS = {
   '/videos/rXMLVt9vhxQ': { title: 'Logo Animation Test 1', category: 'Video' },
 };
 
-function improveResult(result) {
+function improveResult(result, path = null) {
   const url = result.url || '';
-  const path = normalizeUrl(url);
+  if (!path) path = normalizeUrl(url);
 
   // 1. Check for specific URL mappings first (highest priority)
   const mapping = URL_MAPPINGS[path];
@@ -217,10 +217,10 @@ function deduplicateResults(results) {
   const deduplicated = [];
 
   for (const result of results) {
-    const key = normalizeUrl(result.url);
-    if (!seen.has(key)) {
-      seen.add(key);
-      deduplicated.push(improveResult(result));
+    const path = normalizeUrl(result.url);
+    if (!seen.has(path)) {
+      seen.add(path);
+      deduplicated.push(improveResult(result, path));
     }
   }
 
@@ -258,14 +258,9 @@ export async function onRequestPost(context) {
 
     let data = { results: [], count: 0 };
 
-    // 1. Try Service Binding (RPC or fallback fetch)
-    const binding = env.AI_SEARCH || env.SEARCH_SERVICE || env.SEARCH;
-
-    // Log presence of direct bindings for debug
+    // 1. Try Direct Vectorize Search if enabled and bindings available
     if (env.VECTOR_INDEX) console.log('Direct Vectorize binding detected');
-    if (env.BUCKET) console.log('Direct R2 binding detected');
 
-    // 1a. Try Direct Vectorize Search if enabled and bindings available
     if (
       env.VECTOR_INDEX &&
       env.AI &&
@@ -281,8 +276,11 @@ export async function onRequestPost(context) {
         const vector = embeddingResponse.data[0];
 
         if (vector) {
+          // Cloudflare Vectorize limits topK to 20 when returning all metadata
+          const safeTopK = Math.min(topK, 20);
+
           const vectorMatches = await env.VECTOR_INDEX.query(vector, {
-            topK: topK,
+            topK: safeTopK,
             returnMetadata: 'all',
           });
 
@@ -304,6 +302,9 @@ export async function onRequestPost(context) {
         console.error('Direct Vectorize search error:', e.message);
       }
     }
+
+    // 2. Try Service Binding (RPC or fallback fetch)
+    const binding = env.AI_SEARCH;
 
     if (binding && (!data.results || data.results.length === 0)) {
       try {
@@ -334,7 +335,7 @@ export async function onRequestPost(context) {
       }
     }
 
-    // 2. Fallback to Worker Fetch (Try Canonical then Fallback URL)
+    // 3. Fallback to Worker Fetch (Try Canonical then Fallback URL)
     if (!data.results || data.results.length === 0) {
       const urlsToTry = [CANONICAL_WORKER_URL, FALLBACK_WORKER_URL];
 
