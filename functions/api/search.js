@@ -14,6 +14,7 @@ function normalizeUrl(url) {
     return (
       url
         .split(/[?#]/)[0]
+        .replace(/^https?:\/\/(www\.)?abdulkerimsesli\.de/, '')
         .replace(/\/index\.html$/, '/')
         .replace(/\/$/, '') || '/'
     );
@@ -22,48 +23,190 @@ function normalizeUrl(url) {
   }
 }
 
+/**
+ * Statische Mappings für bessere Suchergebnisse
+ * Hilft dabei, generische Titel ("Initialisiere System") durch echte Inhalte zu ersetzen.
+ */
+const URL_MAPPINGS = {
+  // Hauptseiten
+  '/': {
+    title: 'Startseite',
+    category: 'Home',
+    description: 'Willkommen auf dem Portfolio von Abdulkerim Sesli.',
+  },
+  '/projekte': {
+    title: 'Projekte Übersicht',
+    category: 'Projekte',
+    description:
+      'Entdecken Sie meine Webentwicklungsprojekte und Coding-Arbeiten.',
+  },
+  '/blog': {
+    title: 'Blog Übersicht',
+    category: 'Blog',
+    description:
+      'Technische Artikel über Webentwicklung, Design und Fotografie.',
+  },
+  '/gallery': {
+    title: 'Fotogalerie',
+    category: 'Galerie',
+    description: 'Urban Photography und visuelles Storytelling aus Berlin.',
+  },
+  '/about': {
+    title: 'Über mich',
+    category: 'About',
+    description:
+      'Erfahren Sie mehr über meinen Werdegang und kontaktieren Sie mich.',
+  },
+  '/videos': {
+    title: 'Videos Übersicht',
+    category: 'Videos',
+    description: 'Motion Design und Video-Produktionen.',
+  },
+
+  // Blog Posts
+  '/blog/react-no-build': {
+    title: 'React ohne Build-Tools nutzen',
+    category: 'Blog',
+  },
+  '/blog/modern-ui-design': {
+    title: 'Modernes UI-Design: Mehr als nur Dark Mode',
+    category: 'Blog',
+  },
+  '/blog/visual-storytelling': {
+    title: 'Visuelles Storytelling in der Fotografie',
+    category: 'Blog',
+  },
+  '/blog/threejs-performance': {
+    title: 'Optimierung von Three.js für das Web',
+    category: 'Blog',
+  },
+  '/blog/seo-technische-optimierung': {
+    title: 'Technische SEO: Core Web Vitals',
+    category: 'Blog',
+  },
+  '/blog/progressive-web-apps-2026': {
+    title: 'Progressive Web Apps 2026',
+    category: 'Blog',
+  },
+  '/blog/web-components-zukunft': {
+    title: 'Web Components: Die Zukunft',
+    category: 'Blog',
+  },
+  '/blog/css-container-queries': {
+    title: 'CSS Container Queries',
+    category: 'Blog',
+  },
+  '/blog/javascript-performance-patterns': {
+    title: 'JS Performance Patterns',
+    category: 'Blog',
+  },
+  '/blog/typescript-advanced-patterns': {
+    title: 'TypeScript Advanced Patterns',
+    category: 'Blog',
+  },
+
+  // Videos
+  '/videos/tImMPQKiQVk': {
+    title: 'Logo Animation (Software Style)',
+    category: 'Video',
+  },
+  '/videos/z8W9UJbUSo4': {
+    title: 'Lunar Surface — Astrophotography',
+    category: 'Video',
+  },
+  '/videos/clbOHUT4w5o': { title: 'Future Bot Animation', category: 'Video' },
+  '/videos/UorHOTKWtK4': { title: 'Neon Robot Animation', category: 'Video' },
+  '/videos/1bL8bZd6cpY': {
+    title: 'Motion Design: Neon Bot Experiment',
+    category: 'Video',
+  },
+  '/videos/lpictttLoEk': {
+    title: 'Motion Graphics Test | After Effects',
+    category: 'Video',
+  },
+  '/videos/rXMLVt9vhxQ': { title: 'Logo Animation Test 1', category: 'Video' },
+};
+
 function improveResult(result) {
   const url = result.url || '';
+  const path = normalizeUrl(url);
+
+  // 1. Check for specific URL mappings first (highest priority)
+  const mapping = URL_MAPPINGS[path];
+
   let title = result.title || 'Seite';
   let category = result.category || 'Seite';
   let description = result.description || '';
 
-  if (url.includes('/blog/')) {
-    const slug = url.split('/blog/')[1]?.replace(/\/$/, '');
-    if (slug && slug !== 'index.html') {
-      title = `Blog: ${slug.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}`;
-      category = 'Blog';
+  // Wenn der Titel generisch ist oder den Lade-Text enthält, versuchen wir ihn zu verbessern
+  const isGeneric =
+    title.includes('Initialisiere System') ||
+    title.includes('AKS | WEB') ||
+    title.includes('Digital Creator Portfolio') ||
+    title.includes('Abdulkerim') ||
+    title === 'Suchergebnis' ||
+    title === 'Seite' ||
+    !title;
+
+  if (mapping) {
+    if (isGeneric) title = mapping.title;
+    category = mapping.category;
+    if (
+      mapping.description &&
+      (isGeneric ||
+        !description ||
+        description.includes('Initialisiere System') ||
+        description.includes('Erfahren Sie mehr auf dieser Seite'))
+    ) {
+      description = mapping.description;
     }
-  } else if (url.includes('/projekte/')) {
-    const slug = url.split('/projekte/')[1]?.replace(/\/$/, '');
-    if (slug && slug !== 'index.html') {
-      title = `Projekt: ${slug.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}`;
-      category = 'Projekt';
-    } else {
-      title = 'Projekte Übersicht';
-      category = 'Projekte';
-    }
-  } else if (url.includes('/videos/')) {
-    const slug = url.split('/videos/')[1]?.replace(/\/$/, '');
-    if (slug && slug !== 'index.html') {
-      title = `Video: ${slug.toUpperCase()}`;
-      category = 'Video';
-    } else {
-      title = 'Videos Übersicht';
-      category = 'Videos';
-    }
-  } else if (url.includes('/gallery/')) {
-    title = 'Fotogalerie';
-    category = 'Galerie';
-  } else if (url.includes('/about/')) {
-    title = 'Über mich';
-    category = 'About';
-  } else if (url.endsWith('/') || url.endsWith('/index.html')) {
-    const parts = url.replace(/\/$/, '').split('/');
-    if (parts.length <= 4) {
+  } else {
+    // Dynamische Verbesserung basierend auf URL-Struktur (Fallback)
+    if (url.includes('/blog/')) {
+      const slug = url.split('/blog/')[1]?.replace(/\/$/, '');
+      if (slug && slug !== 'index.html') {
+        if (isGeneric)
+          title = `Blog: ${slug.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}`;
+        category = 'Blog';
+      }
+    } else if (url.includes('/projekte/')) {
+      const slug = url.split('/projekte/')[1]?.replace(/\/$/, '');
+      if (slug && slug !== 'index.html') {
+        if (isGeneric)
+          title = `Projekt: ${slug.replace(/-/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase())}`;
+        category = 'Projekt';
+      } else {
+        title = 'Projekte Übersicht';
+        category = 'Projekte';
+      }
+    } else if (url.includes('/videos/')) {
+      const slug = url.split('/videos/')[1]?.replace(/\/$/, '');
+      if (slug && slug !== 'index.html') {
+        if (isGeneric) title = `Video: ${slug.toUpperCase()}`;
+        category = 'Video';
+      } else {
+        title = 'Videos Übersicht';
+        category = 'Videos';
+      }
+    } else if (url.includes('/gallery/')) {
+      title = 'Fotogalerie';
+      category = 'Galerie';
+    } else if (url.includes('/about/')) {
+      title = 'Über mich';
+      category = 'About';
+    } else if (path === '' || path === '/') {
       title = 'Startseite';
       category = 'Home';
     }
+  }
+
+  // Final cleanup: Remove the loader text or generic description
+  if (
+    description.includes('Initialisiere System') ||
+    !description ||
+    description.length < 10
+  ) {
+    description = 'Erfahren Sie mehr auf dieser Seite meines Portfolios.';
   }
 
   return { ...result, title, category, description };
