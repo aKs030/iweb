@@ -24,6 +24,8 @@ class SearchComponent {
     this.input = null;
     /** @type {HTMLElement|null} */
     this.resultsContainer = null;
+    /** @type {HTMLElement|null} */
+    this.loader = null;
     /** @type {boolean} */
     this.isOpen = false;
     /** @type {Array} */
@@ -392,20 +394,41 @@ class SearchComponent {
   }
 
   highlightText(text, query) {
-    if (!query) return text;
+    if (!query || !text) return text;
+
     const words = query
       .toLowerCase()
       .split(/\s+/)
       .filter((w) => w.length > 0);
-    let highlightedText = text;
-    words.forEach((word) => {
-      const regex = new RegExp(`(${this.escapeRegex(word)})`, 'gi');
-      highlightedText = highlightedText.replace(
-        regex,
-        '<span class="search-result-highlight">$1</span>',
-      );
-    });
-    return highlightedText;
+
+    if (words.length === 0) return text;
+
+    // Create a single regex that matches any of the words (OR-condition)
+    // to avoid nested highlighting of tags created in previous iterations.
+    // We sort words by length (longest first) to ensure that longer phrases
+    // are matched before shorter sub-words.
+    const pattern = words
+      .sort((a, b) => b.length - a.length)
+      .map((w) => this.escapeRegex(w))
+      .join('|');
+    const regex = new RegExp(`(${pattern})`, 'gi');
+
+    // To prevent highlighting inside HTML tags (like <span class="...">),
+    // we split the text into parts (tags and text content)
+    const parts = text.split(/(<[^>]+>)/g);
+
+    return parts
+      .map((part) => {
+        // If it's a tag, return it as is
+        if (part.startsWith('<')) return part;
+
+        // If it's text, apply the single-pass regex
+        return part.replace(
+          regex,
+          '<span class="search-result-highlight">$1</span>',
+        );
+      })
+      .join('');
   }
 
   escapeRegex(str) {
