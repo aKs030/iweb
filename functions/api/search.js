@@ -190,6 +190,15 @@ export async function onRequestPost(context) {
 
     // Ensure results is always an array and deduplicated
     if (data) {
+      // Handle cases where data might be a JSON string
+      if (typeof data === 'string') {
+        try {
+          data = JSON.parse(data);
+        } catch {
+          data = { results: [], count: 0 };
+        }
+      }
+
       if (Array.isArray(data.results)) {
         data.results = deduplicateResults(data.results);
         data.count = data.results.length;

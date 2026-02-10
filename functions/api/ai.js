@@ -53,6 +53,7 @@ export async function onRequestPost(context) {
           data = await binding.chat(prompt, {
             ragId: env.RAG_ID || 'ai-search-suche',
             maxResults: parseInt(env.MAX_SEARCH_RESULTS || '10'),
+            gatewayId: 'default',
             systemInstruction:
               systemInstruction ||
               'Du bist ein hilfreicher Assistent. Antworte auf Deutsch.',
@@ -144,6 +145,11 @@ export async function onRequestPost(context) {
 
     // Standardize response for frontend
     if (data) {
+      // If data is just a string (some models might return this)
+      if (typeof data === 'string') {
+        data = { text: data };
+      }
+
       if (!data.text) {
         data.text = data.response || data.answer || '';
       }
