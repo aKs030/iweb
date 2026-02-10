@@ -3,13 +3,18 @@ compatibility_date = "2024-11-01"
 compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = "dist"
 
-[build]
-command = "npm run build"
-
 [vars]
 AI_SEARCH_INDEX = "ai-search-suche"
 RAG_ID = "ai-search-suche"
 MAX_SEARCH_RESULTS = "10"
+
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "ai-search-suche-92e832"
+
+[[vectorize]]
+binding = "VECTOR_INDEX"
+index_name = "ai-search-suche"
 
 [[services]]
 binding = "AI_SEARCH"
