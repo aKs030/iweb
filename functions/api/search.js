@@ -1,7 +1,7 @@
 /**
  * Cloudflare Pages Function - POST /api/search
- * Optimized AI Search using NLWeb-Worker
- * @version 4.1.0
+ * Modern AI Search using Service Binding - Optimized & Reduced
+ * @version 5.0.0
  */
 
 function normalizeUrl(url) {
@@ -21,8 +21,10 @@ function normalizeUrl(url) {
 
 /**
  * Statische Mappings für bessere Suchergebnisse
+ * Hilft dabei, generische Titel ("Initialisiere System") durch echte Inhalte zu ersetzen.
  */
 const URL_MAPPINGS = {
+  // Hauptseiten
   '/': {
     title: 'Startseite',
     category: 'Home',
@@ -56,11 +58,74 @@ const URL_MAPPINGS = {
     category: 'Videos',
     description: 'Motion Design und Video-Produktionen.',
   },
+
+  // Blog Posts
+  '/blog/react-no-build': {
+    title: 'React ohne Build-Tools nutzen',
+    category: 'Blog',
+  },
+  '/blog/modern-ui-design': {
+    title: 'Modernes UI-Design: Mehr als nur Dark Mode',
+    category: 'Blog',
+  },
+  '/blog/visual-storytelling': {
+    title: 'Visuelles Storytelling in der Fotografie',
+    category: 'Blog',
+  },
+  '/blog/threejs-performance': {
+    title: 'Optimierung von Three.js für das Web',
+    category: 'Blog',
+  },
+  '/blog/seo-technische-optimierung': {
+    title: 'Technische SEO: Core Web Vitals',
+    category: 'Blog',
+  },
+  '/blog/progressive-web-apps-2026': {
+    title: 'Progressive Web Apps 2026',
+    category: 'Blog',
+  },
+  '/blog/web-components-zukunft': {
+    title: 'Web Components: Die Zukunft',
+    category: 'Blog',
+  },
+  '/blog/css-container-queries': {
+    title: 'CSS Container Queries',
+    category: 'Blog',
+  },
+  '/blog/javascript-performance-patterns': {
+    title: 'JS Performance Patterns',
+    category: 'Blog',
+  },
+  '/blog/typescript-advanced-patterns': {
+    title: 'TypeScript Advanced Patterns',
+    category: 'Blog',
+  },
+
+  // Videos
+  '/videos/tImMPQKiQVk': {
+    title: 'Logo Animation (Software Style)',
+    category: 'Video',
+  },
+  '/videos/z8W9UJbUSo4': {
+    title: 'Lunar Surface — Astrophotography',
+    category: 'Video',
+  },
+  '/videos/clbOHUT4w5o': { title: 'Future Bot Animation', category: 'Video' },
+  '/videos/UorHOTKWtK4': { title: 'Neon Robot Animation', category: 'Video' },
+  '/videos/1bL8bZd6cpY': {
+    title: 'Motion Design: Neon Bot Experiment',
+    category: 'Video',
+  },
+  '/videos/lpictttLoEk': {
+    title: 'Motion Graphics Test | After Effects',
+    category: 'Video',
+  },
+  '/videos/rXMLVt9vhxQ': { title: 'Logo Animation Test 1', category: 'Video' },
 };
 
-function improveResult(result, path = null) {
+function improveResult(result) {
   const url = result.url || '';
-  if (!path) path = normalizeUrl(url);
+  const path = normalizeUrl(url);
 
   const mapping = URL_MAPPINGS[path];
   let title = result.title || 'Seite';
@@ -107,7 +172,7 @@ function deduplicateResults(results) {
     const path = normalizeUrl(result.url);
     if (!seen.has(path)) {
       seen.add(path);
-      deduplicated.push(improveResult(result, path));
+      deduplicated.push(improveResult(result));
     }
   }
 
@@ -132,50 +197,33 @@ export async function onRequestPost(context) {
       });
     }
 
-    const workerUrl = env.AI_SEARCH_WORKER_URL;
-    const apiToken = env.AI_SEARCH_TOKEN;
-
-    // Wir versuchen zwei mögliche Endpunkte am Worker
-    const endpoints = [`${workerUrl}/api/search`, workerUrl];
-    let lastError = null;
-    let data = null;
-
-    for (const url of endpoints) {
-      try {
-        const response = await fetch(url, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${apiToken}`,
-          },
-          body: JSON.stringify({
-            query,
-            limit: topK, // Standardmäßig limit statt topK für viele Worker
-            topK: topK,
-            index: env.AI_SEARCH_INDEX || 'suche',
-            ragId: env.RAG_ID || 'suche',
-            gatewayId: 'default',
-            embeddingModel: '@cf/qwen/qwen3-embedding-0.6b',
-            rerankingModel: '@cf/baai/bge-reranker-base',
-          }),
-        });
-
-        if (response.ok) {
-          data = await response.json();
-          if (data) break;
-        } else {
-          lastError = `Worker ${url} returned ${response.status}`;
-        }
-      } catch (e) {
-        lastError = e.message;
-      }
+    // Modern Method: Use Service Binding exclusively
+    const binding = env.AI_SEARCH;
+    if (!binding) {
+      throw new Error('AI_SEARCH Service Binding not configured');
     }
 
-    if (!data) {
-      throw new Error(lastError || 'Keine Daten vom Worker empfangen');
+    const serviceResponse = await binding.fetch(
+      new Request('http://ai-search/api/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query,
+          limit: topK,
+          topK: topK,
+          index: env.AI_SEARCH_INDEX || 'suche',
+          ragId: env.RAG_ID || 'suche',
+        }),
+      }),
+    );
+
+    if (!serviceResponse.ok) {
+      throw new Error(`AI Search Worker returned ${serviceResponse.status}`);
     }
 
-    // Robuste Extraktion der Ergebnisse (handhabt verschiedene Formate)
+    const data = await serviceResponse.json();
+
+    // Robust extraction of results
     let results = [];
     if (Array.isArray(data.results)) {
       results = data.results;
@@ -204,7 +252,7 @@ export async function onRequestPost(context) {
       { headers: corsHeaders },
     );
   } catch (error) {
-    console.error('Search Optimization Error:', error);
+    console.error('Search API Error:', error);
     return new Response(
       JSON.stringify({
         error: 'Search failed',
