@@ -46,6 +46,8 @@ function htmlTemplatesPlugin() {
         'sitemap-videos.xml',
         'manifest.json',
         'sw.js',
+        'favicon.ico',
+        'favicon.svg',
       ];
 
       dirs.forEach((dir) => {
