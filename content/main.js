@@ -1,7 +1,7 @@
 /**
  * Main Application Entry Point
- * @version 6.1.0
- * @last-modified 2026-02-05
+ * @version 6.2.0
+ * @last-modified 2026-02-11
  */
 
 import { initConsoleFilter } from './core/console-filter.js';
