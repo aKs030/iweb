@@ -29,7 +29,7 @@ Allow: /pages/*.js
 Allow: /pages/*/*.js
 
 # Block non-HTML resources that shouldn't be indexed
-Disallow: /manifest.json
+Allow: /manifest.json
 Disallow: /files/
 Disallow: /*?search=
 Disallow: /*?q=
