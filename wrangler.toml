@@ -9,8 +9,6 @@ compatibility_flags = ["nodejs_compat"]
 AI_SEARCH_INDEX = "suche"
 RAG_ID = "suche"
 MAX_SEARCH_RESULTS = "10"
-AI_SEARCH_TOKEN = "AI Search Token - 2026-02-07"
-AI_SEARCH_WORKER_URL = "https://suche-nlweb.httpsgithubcomaks030website.workers.dev"
 
 # R2 Bucket für die Quelldaten (www.abdulkerimsesli.de)
 [[r2_buckets]]
@@ -26,7 +24,7 @@ index_name = "ai-search-suche"
 [ai]
 binding = "AI"
 
-# Legacy/Fallback Service Binding
+# Modern Service Binding (Exklusiv genutzt)
 [[services]]
 binding = "AI_SEARCH"
 service = "ai-search-proxy"

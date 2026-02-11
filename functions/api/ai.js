@@ -1,7 +1,7 @@
 /**
  * Cloudflare Pages Function - POST /api/ai
- * Optimized AI Chat using NLWeb-Worker
- * @version 4.1.0
+ * Modern AI Chat using Service Binding - Optimized & Reduced
+ * @version 5.0.0
  */
 
 export async function onRequestPost(context) {
@@ -26,52 +26,36 @@ export async function onRequestPost(context) {
       );
     }
 
-    const workerUrl = env.AI_SEARCH_WORKER_URL;
-    const apiToken = env.AI_SEARCH_TOKEN;
-
-    // Wir versuchen zwei mögliche Endpunkte am Worker
-    const endpoints = [`${workerUrl}/api/ai`, workerUrl];
-    let lastError = null;
-    let data = null;
-
-    for (const url of endpoints) {
-      try {
-        const response = await fetch(url, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${apiToken}`,
-          },
-          body: JSON.stringify({
-            prompt,
-            message: prompt,
-            systemInstruction:
-              systemInstruction ||
-              'Du bist ein hilfreicher Assistent. Antworte auf Deutsch.',
-            ragId: env.RAG_ID || 'suche',
-            maxResults: parseInt(env.MAX_SEARCH_RESULTS || '10'),
-            limit: parseInt(env.MAX_SEARCH_RESULTS || '10'),
-            gatewayId: 'default',
-            model: '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
-          }),
-        });
-
-        if (response.ok) {
-          data = await response.json();
-          if (data) break;
-        } else {
-          lastError = `Worker ${url} returned ${response.status}`;
-        }
-      } catch (e) {
-        lastError = e.message;
-      }
+    // Modern Method: Use Service Binding exclusively
+    const binding = env.AI_SEARCH;
+    if (!binding) {
+      throw new Error('AI_SEARCH Service Binding not configured');
     }
 
-    if (!data) {
-      throw new Error(lastError || 'Keine Antwort vom Worker empfangen');
+    const serviceResponse = await binding.fetch(
+      new Request('http://ai-search/api/ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt,
+          message: prompt,
+          systemInstruction:
+            systemInstruction ||
+            'Du bist ein hilfreicher Assistent. Antworte auf Deutsch.',
+          ragId: env.RAG_ID || 'suche',
+          maxResults: parseInt(env.MAX_SEARCH_RESULTS || '10'),
+          gatewayId: 'default',
+        }),
+      }),
+    );
+
+    if (!serviceResponse.ok) {
+      throw new Error(`AI Worker returned ${serviceResponse.status}`);
     }
 
-    // Robuste Standardisierung der Antwort für das Frontend
+    const data = await serviceResponse.json();
+
+    // Standardize response for frontend
     let responseText = '';
     if (typeof data === 'string') {
       responseText = data;
@@ -82,20 +66,21 @@ export async function onRequestPost(context) {
       }
     }
 
-    if (!responseText) {
-      responseText =
-        'Keine Antwort erhalten. Bitte versuchen Sie es später erneut.';
+    if (!responseText && data.error) {
+      responseText = `Fehler: ${data.error}`;
     }
 
     return new Response(
       JSON.stringify({
-        text: responseText,
-        model: data.model || 'llama-3.3',
+        text:
+          responseText ||
+          'Keine Antwort erhalten. Bitte versuchen Sie es später erneut.',
+        model: data.model || 'ai-search-proxy',
       }),
       { headers: corsHeaders },
     );
   } catch (error) {
-    console.error('AI Optimization Error:', error);
+    console.error('AI API Error:', error);
     return new Response(
       JSON.stringify({
         error: 'AI request failed',
