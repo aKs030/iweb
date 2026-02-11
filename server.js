@@ -280,6 +280,7 @@ function handleAPIMock(req, res, url) {
                 description: `Ergebnisse für ${query} werden hier simuliert.`,
               },
             ],
+            summary: `Dies ist eine KI-gestützte Zusammenfassung für deine Suche nach "${query}". Ich habe Informationen über Startseite und Projekte gefunden.`,
             query,
             count: 2,
           }),
