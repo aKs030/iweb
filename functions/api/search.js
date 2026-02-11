@@ -1,7 +1,7 @@
 /**
  * Cloudflare Pages Function - POST /api/search
  * Optimized AI Search using NLWeb-Worker
- * @version 4.0.0
+ * @version 4.1.0
  */
 
 function normalizeUrl(url) {
@@ -56,47 +56,6 @@ const URL_MAPPINGS = {
     category: 'Videos',
     description: 'Motion Design und Video-Produktionen.',
   },
-  // Blog Posts
-  '/blog/react-no-build': {
-    title: 'React ohne Build-Tools nutzen',
-    category: 'Blog',
-  },
-  '/blog/modern-ui-design': {
-    title: 'Modernes UI-Design: Mehr als nur Dark Mode',
-    category: 'Blog',
-  },
-  '/blog/visual-storytelling': {
-    title: 'Visuelles Storytelling in der Fotografie',
-    category: 'Blog',
-  },
-  '/blog/threejs-performance': {
-    title: 'Optimierung von Three.js für das Web',
-    category: 'Blog',
-  },
-  '/blog/seo-technische-optimierung': {
-    title: 'Technische SEO: Core Web Vitals',
-    category: 'Blog',
-  },
-  '/blog/progressive-web-apps-2026': {
-    title: 'Progressive Web Apps 2026',
-    category: 'Blog',
-  },
-  '/blog/web-components-zukunft': {
-    title: 'Web Components: Die Zukunft',
-    category: 'Blog',
-  },
-  '/blog/css-container-queries': {
-    title: 'CSS Container Queries',
-    category: 'Blog',
-  },
-  '/blog/javascript-performance-patterns': {
-    title: 'JS Performance Patterns',
-    category: 'Blog',
-  },
-  '/blog/typescript-advanced-patterns': {
-    title: 'TypeScript Advanced Patterns',
-    category: 'Blog',
-  },
 };
 
 function improveResult(result, path = null) {
@@ -140,6 +99,7 @@ function improveResult(result, path = null) {
 }
 
 function deduplicateResults(results) {
+  if (!Array.isArray(results)) return [];
   const seen = new Set();
   const deduplicated = [];
 
@@ -175,39 +135,74 @@ export async function onRequestPost(context) {
     const workerUrl = env.AI_SEARCH_WORKER_URL;
     const apiToken = env.AI_SEARCH_TOKEN;
 
-    // Call NLWeb-Worker directly (Modern & Single Source of Truth)
-    const response = await fetch(`${workerUrl}/api/search`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiToken}`,
-      },
-      body: JSON.stringify({
-        query,
-        topK,
-        index: env.AI_SEARCH_INDEX || 'suche',
-        ragId: env.RAG_ID || 'suche',
-        // Optional: Pass the new models from user config if the worker supports overrides
-        models: {
-          embedding: '@cf/qwen/qwen3-embedding-0.6b',
-          reranking: '@cf/baai/bge-reranker-base',
-        },
+    // Wir versuchen zwei mögliche Endpunkte am Worker
+    const endpoints = [`${workerUrl}/api/search`, workerUrl];
+    let lastError = null;
+    let data = null;
+
+    for (const url of endpoints) {
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${apiToken}`,
+          },
+          body: JSON.stringify({
+            query,
+            limit: topK, // Standardmäßig limit statt topK für viele Worker
+            topK: topK,
+            index: env.AI_SEARCH_INDEX || 'suche',
+            ragId: env.RAG_ID || 'suche',
+            gatewayId: 'default',
+            embeddingModel: '@cf/qwen/qwen3-embedding-0.6b',
+            rerankingModel: '@cf/baai/bge-reranker-base',
+          }),
+        });
+
+        if (response.ok) {
+          data = await response.json();
+          if (data) break;
+        } else {
+          lastError = `Worker ${url} returned ${response.status}`;
+        }
+      } catch (e) {
+        lastError = e.message;
+      }
+    }
+
+    if (!data) {
+      throw new Error(lastError || 'Keine Daten vom Worker empfangen');
+    }
+
+    // Robuste Extraktion der Ergebnisse (handhabt verschiedene Formate)
+    let results = [];
+    if (Array.isArray(data.results)) {
+      results = data.results;
+    } else if (Array.isArray(data.matches)) {
+      results = data.matches.map((m) => ({
+        url: m.metadata?.url || m.url,
+        title: m.metadata?.title || m.title,
+        description: m.metadata?.description || m.description,
+        category: m.metadata?.category || m.category,
+        score: m.score,
+      }));
+    } else if (data.data && Array.isArray(data.data.results)) {
+      results = data.data.results;
+    } else if (Array.isArray(data)) {
+      results = data;
+    }
+
+    const finalResults = deduplicateResults(results);
+
+    return new Response(
+      JSON.stringify({
+        results: finalResults,
+        count: finalResults.length,
+        query: query,
       }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Worker responded with ${response.status}`);
-    }
-
-    let data = await response.json();
-
-    // Ensure data format and apply improvements
-    if (data && Array.isArray(data.results)) {
-      data.results = deduplicateResults(data.results);
-      data.count = data.results.length;
-    }
-
-    return new Response(JSON.stringify(data), { headers: corsHeaders });
+      { headers: corsHeaders },
+    );
   } catch (error) {
     console.error('Search Optimization Error:', error);
     return new Response(
