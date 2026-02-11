@@ -1,9 +1,9 @@
 // @ts-check
 /**
  * Search Component
- * Mac Spotlight-Inspired Search with Server-Side Optimization
+ * Mac Spotlight-Inspired Search with Server-Side Optimization & AI Overview
  * @author Abdulkerim Sesli
- * @version 2.2.0
+ * @version 3.0.0
  */
 
 /* exported initSearch, openSearch, closeSearch, toggleSearch */
@@ -42,11 +42,10 @@ class SearchComponent {
     this.createSearchOverlay();
     this.attachEventListeners();
     this.loadStyles();
-    _log.info('Search component initialized with Server-Side API');
+    _log.info('Search component initialized with AI Search & Summary');
   }
 
   loadStyles() {
-    // Use upsertHeadLink to prevent duplicate injections and allow cleaner management
     upsertHeadLink({
       rel: 'stylesheet',
       href: '/content/components/search/search.css',
@@ -75,7 +74,7 @@ class SearchComponent {
               id="search-input"
               name="search"
               class="search-input"
-              placeholder="Suche... (Powered by AI Search)"
+              placeholder="Suche... (KI-gestützt)"
               aria-label="Suchfeld"
               autocomplete="off"
               autocorrect="off"
@@ -144,7 +143,7 @@ class SearchComponent {
         this.searchTimeout = setTimeout(() => {
           // @ts-ignore
           this.handleSearch(e.target.value);
-        }, 300); // 300ms Debounce for API
+        }, 300);
       });
 
       this.input.addEventListener('keydown', (e) => {
@@ -154,7 +153,7 @@ class SearchComponent {
             const index = this.selectedIndex >= 0 ? this.selectedIndex : 0;
             this.selectResult(index);
           } else {
-            // Force search if enter is pressed and no results yet
+            // @ts-ignore
             this.handleSearch(this.input.value);
           }
         }
@@ -237,12 +236,12 @@ class SearchComponent {
     this.showLoader(true);
 
     try {
-      const results = await this.fetchResults(trimmedQuery);
-      this.currentResults = results;
+      const data = await this.fetchResults(trimmedQuery);
+      this.currentResults = data.results;
       this.selectedIndex = -1;
 
-      if (results.length > 0) {
-        this.displayResults(results, trimmedQuery);
+      if (data.results.length > 0 || data.summary) {
+        this.displayResults(data.results, trimmedQuery, data.summary);
       } else {
         this.showEmptyState(`Keine Ergebnisse für "${trimmedQuery}"`);
       }
@@ -269,15 +268,16 @@ class SearchComponent {
       if (!response.ok) throw new Error('Network response was not ok');
       const data = await response.json();
 
-      // Enrich results with icons/metadata that might be missing from the lean index
-      return (data.results || []).map((item) => ({
-        ...item,
-        // Map common IDs to icons if not returned by API
-        icon: item.icon || this.getIconForCategory(item.category || 'Seite'),
-      }));
+      return {
+        results: (data.results || []).map((item) => ({
+          ...item,
+          icon: item.icon || this.getIconForCategory(item.category || 'Seite'),
+        })),
+        summary: data.summary || '',
+      };
     } catch (e) {
       console.error('API Search Error:', e);
-      return [];
+      return { results: [], summary: '' };
     }
   }
 
@@ -298,11 +298,10 @@ class SearchComponent {
     if (this.loader) {
       // @ts-ignore
       this.loader.style.display = show ? 'block' : 'none';
-      // Optional: Add simple rotation or pulse CSS if needed
     }
   }
 
-  displayResults(results, query) {
+  displayResults(results, query, summary = '') {
     const grouped = {};
     results.forEach((result) => {
       const cat = result.category || 'Allgemein';
@@ -310,28 +309,45 @@ class SearchComponent {
       grouped[cat].push(result);
     });
 
-    const html = `
-      <div class="search-stats">
-        <span class="search-stats-icon">⚡</span>
-        <span class="search-stats-count">${results.length}</span>
-        ${results.length === 1 ? 'Ergebnis' : 'Ergebnisse'}
-      </div>
-      ${Object.entries(grouped)
-        .map(
-          ([category, items]) => `
-        <div class="search-category-group">
-          <div class="search-category-header">
-            <span>${category}</span>
-            <div class="search-category-divider"></div>
+    let html = '';
+
+    // Modern Extension: AI Summary
+    if (summary) {
+      html += `
+        <div class="search-ai-summary">
+          <div class="search-ai-header">
+            <span class="search-ai-icon">✨</span>
+            <span class="search-ai-title">AI OVERVIEW</span>
           </div>
-          ${items
-            .map((result) => this.createResultHTML(result, query))
-            .join('')}
+          <div class="search-ai-content">${this.escapeHTML(summary)}</div>
         </div>
-      `,
-        )
-        .join('')}
-    `;
+      `;
+    }
+
+    if (results.length > 0) {
+      html += `
+        <div class="search-stats">
+          <span class="search-stats-icon">⚡</span>
+          <span class="search-stats-count">${results.length}</span>
+          ${results.length === 1 ? 'Ergebnis' : 'Ergebnisse'}
+        </div>
+        ${Object.entries(grouped)
+          .map(
+            ([category, items]) => `
+          <div class="search-category-group">
+            <div class="search-category-header">
+              <span>${category}</span>
+              <div class="search-category-divider"></div>
+            </div>
+            ${items
+              .map((result) => this.createResultHTML(result, query))
+              .join('')}
+          </div>
+        `,
+          )
+          .join('')}
+      `;
+    }
 
     this.resultsContainer.innerHTML = html;
 
@@ -403,26 +419,17 @@ class SearchComponent {
 
     if (words.length === 0) return text;
 
-    // Create a single regex that matches any of the words (OR-condition)
-    // to avoid nested highlighting of tags created in previous iterations.
-    // We sort words by length (longest first) to ensure that longer phrases
-    // are matched before shorter sub-words.
     const pattern = words
       .sort((a, b) => b.length - a.length)
       .map((w) => this.escapeRegex(w))
       .join('|');
     const regex = new RegExp(`(${pattern})`, 'gi');
 
-    // To prevent highlighting inside HTML tags (like <span class="...">),
-    // we split the text into parts (tags and text content)
     const parts = text.split(/(<[^>]+>)/g);
 
     return parts
       .map((part) => {
-        // If it's a tag, return it as is
         if (part.startsWith('<')) return part;
-
-        // If it's text, apply the single-pass regex
         return part.replace(
           regex,
           '<span class="search-result-highlight">$1</span>',
