@@ -182,12 +182,17 @@ function deduplicateResults(results) {
     const improved = improveResult(result);
 
     // If duplicate path, keep the one with higher score or already existing improved one
-    if (!pathMap.has(path) || (result.score || 0) > (pathMap.get(path).score || 0)) {
+    if (
+      !pathMap.has(path) ||
+      (result.score || 0) > (pathMap.get(path).score || 0)
+    ) {
       pathMap.set(path, improved);
     }
   }
 
-  return Array.from(pathMap.values()).sort((a, b) => (b.score || 0) - (a.score || 0));
+  return Array.from(pathMap.values()).sort(
+    (a, b) => (b.score || 0) - (a.score || 0),
+  );
 }
 
 export async function onRequestPost(context) {
@@ -236,7 +241,7 @@ export async function onRequestPost(context) {
             prompt: `Beantworte kurz die Suchanfrage: "${query}" basierend auf dem Portfolio von Abdulkerim.`,
             message: query,
             systemInstruction:
-              'Du bist Abdulkerim\'s Portfolio-Assistent. Antworte extrem kurz (max 2 Sätze) auf Deutsch. Wenn die Frage nichts mit dem Portfolio zu tun hat, bleib höflich. Nutze Informationen über Projekte, Blog und Erfahrung.',
+              "Du bist Abdulkerim's Portfolio-Assistent. Antworte extrem kurz (max 2 Sätze) auf Deutsch. Wenn die Frage nichts mit dem Portfolio zu tun hat, bleib höflich. Nutze Informationen über Projekte, Blog und Erfahrung.",
             ragId: env.RAG_ID || 'suche',
             maxResults: 5,
           }),
