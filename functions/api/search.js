@@ -1,12 +1,23 @@
 /**
  * Cloudflare Pages Function - POST /api/search
  * Modern AI Search using Service Binding - Optimized & Reduced
- * @version 5.0.0
+ * @version 6.0.0
  */
 
 function normalizeUrl(url) {
   if (!url) return '';
   try {
+    // Handle relative and absolute URLs
+    const base = 'https://abdulkerimsesli.de';
+    const urlObj = new URL(url.startsWith('/') ? base + url : url);
+    let path = urlObj.pathname;
+
+    // Normalize: remove index.html, trailing slashes
+    path = path.replace(/\/index\.html$/, '/').replace(/\/+$/, '') || '/';
+
+    return path;
+  } catch {
+    // Robust fallback for unusual strings
     return (
       url
         .split(/[?#]/)[0]
@@ -14,8 +25,6 @@ function normalizeUrl(url) {
         .replace(/\/index\.html$/, '/')
         .replace(/\/$/, '') || '/'
     );
-  } catch {
-    return url;
   }
 }
 
@@ -160,23 +169,25 @@ function improveResult(result) {
     description = 'Erfahren Sie mehr auf dieser Seite meines Portfolios.';
   }
 
-  return { ...result, title, category, description };
+  return { ...result, title, category, description, url: path };
 }
 
 function deduplicateResults(results) {
   if (!Array.isArray(results)) return [];
-  const seen = new Set();
-  const deduplicated = [];
+
+  const pathMap = new Map();
 
   for (const result of results) {
     const path = normalizeUrl(result.url);
-    if (!seen.has(path)) {
-      seen.add(path);
-      deduplicated.push(improveResult(result));
+    const improved = improveResult(result);
+
+    // If duplicate path, keep the one with higher score or already existing improved one
+    if (!pathMap.has(path) || (result.score || 0) > (pathMap.get(path).score || 0)) {
+      pathMap.set(path, improved);
     }
   }
 
-  return deduplicated;
+  return Array.from(pathMap.values()).sort((a, b) => (b.score || 0) - (a.score || 0));
 }
 
 export async function onRequestPost(context) {
@@ -197,48 +208,65 @@ export async function onRequestPost(context) {
       });
     }
 
-    // Modern Method: Use Service Binding exclusively
     const binding = env.AI_SEARCH;
     if (!binding) {
       throw new Error('AI_SEARCH Service Binding not configured');
     }
 
-    const serviceResponse = await binding.fetch(
-      new Request('http://ai-search/api/search', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          query,
-          limit: topK,
-          topK: topK,
-          index: env.AI_SEARCH_INDEX || 'suche',
-          ragId: env.RAG_ID || 'suche',
+    // Parallel fetch for results and AI summary (Modern RAG approach)
+    const [searchResponse, aiResponse] = await Promise.allSettled([
+      binding.fetch(
+        new Request('http://ai-search/api/search', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            query,
+            limit: topK,
+            topK: topK,
+            index: env.AI_SEARCH_INDEX || 'suche',
+            ragId: env.RAG_ID || 'suche',
+          }),
         }),
-      }),
-    );
+      ),
+      binding.fetch(
+        new Request('http://ai-search/api/ai', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            prompt: `Beantworte kurz die Suchanfrage: "${query}" basierend auf dem Portfolio von Abdulkerim.`,
+            message: query,
+            systemInstruction:
+              'Du bist Abdulkerim\'s Portfolio-Assistent. Antworte extrem kurz (max 2 Sätze) auf Deutsch. Wenn die Frage nichts mit dem Portfolio zu tun hat, bleib höflich. Nutze Informationen über Projekte, Blog und Erfahrung.',
+            ragId: env.RAG_ID || 'suche',
+            maxResults: 5,
+          }),
+        }),
+      ),
+    ]);
 
-    if (!serviceResponse.ok) {
-      throw new Error(`AI Search Worker returned ${serviceResponse.status}`);
+    // Handle Search Results
+    let results = [];
+    if (searchResponse.status === 'fulfilled' && searchResponse.value.ok) {
+      const data = await searchResponse.value.json();
+      if (Array.isArray(data.results)) {
+        results = data.results;
+      } else if (Array.isArray(data.matches)) {
+        results = data.matches.map((m) => ({
+          url: m.metadata?.url || m.url,
+          title: m.metadata?.title || m.title,
+          description: m.metadata?.description || m.description,
+          category: m.metadata?.category || m.category,
+          score: m.score,
+        }));
+      }
     }
 
-    const data = await serviceResponse.json();
-
-    // Robust extraction of results
-    let results = [];
-    if (Array.isArray(data.results)) {
-      results = data.results;
-    } else if (Array.isArray(data.matches)) {
-      results = data.matches.map((m) => ({
-        url: m.metadata?.url || m.url,
-        title: m.metadata?.title || m.title,
-        description: m.metadata?.description || m.description,
-        category: m.metadata?.category || m.category,
-        score: m.score,
-      }));
-    } else if (data.data && Array.isArray(data.data.results)) {
-      results = data.data.results;
-    } else if (Array.isArray(data)) {
-      results = data;
+    // Handle AI Summary
+    let summary = '';
+    if (aiResponse.status === 'fulfilled' && aiResponse.value.ok) {
+      const aiData = await aiResponse.value.json();
+      summary = aiData.text || aiData.response || aiData.answer || '';
+      if (!summary && aiData.data) summary = aiData.data.text || '';
     }
 
     const finalResults = deduplicateResults(results);
@@ -246,6 +274,7 @@ export async function onRequestPost(context) {
     return new Response(
       JSON.stringify({
         results: finalResults,
+        summary: summary,
         count: finalResults.length,
         query: query,
       }),
