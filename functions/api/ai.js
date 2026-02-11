@@ -1,7 +1,7 @@
 /**
  * Cloudflare Pages Function - POST /api/ai
  * Optimized AI Chat using NLWeb-Worker
- * @version 4.0.0
+ * @version 4.1.0
  */
 
 export async function onRequestPost(context) {
@@ -29,48 +29,71 @@ export async function onRequestPost(context) {
     const workerUrl = env.AI_SEARCH_WORKER_URL;
     const apiToken = env.AI_SEARCH_TOKEN;
 
-    // Call NLWeb-Worker directly
-    const response = await fetch(`${workerUrl}/api/ai`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiToken}`,
-      },
-      body: JSON.stringify({
-        prompt,
-        systemInstruction:
-          systemInstruction ||
-          'Du bist ein hilfreicher Assistent. Antworte auf Deutsch.',
-        ragId: env.RAG_ID || 'suche',
-        maxResults: parseInt(env.MAX_SEARCH_RESULTS || '10'),
-        // Model specification from user config
-        model: '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
+    // Wir versuchen zwei mögliche Endpunkte am Worker
+    const endpoints = [`${workerUrl}/api/ai`, workerUrl];
+    let lastError = null;
+    let data = null;
+
+    for (const url of endpoints) {
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${apiToken}`,
+          },
+          body: JSON.stringify({
+            prompt,
+            message: prompt,
+            systemInstruction:
+              systemInstruction ||
+              'Du bist ein hilfreicher Assistent. Antworte auf Deutsch.',
+            ragId: env.RAG_ID || 'suche',
+            maxResults: parseInt(env.MAX_SEARCH_RESULTS || '10'),
+            limit: parseInt(env.MAX_SEARCH_RESULTS || '10'),
+            gatewayId: 'default',
+            model: '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
+          }),
+        });
+
+        if (response.ok) {
+          data = await response.json();
+          if (data) break;
+        } else {
+          lastError = `Worker ${url} returned ${response.status}`;
+        }
+      } catch (e) {
+        lastError = e.message;
+      }
+    }
+
+    if (!data) {
+      throw new Error(lastError || 'Keine Antwort vom Worker empfangen');
+    }
+
+    // Robuste Standardisierung der Antwort für das Frontend
+    let responseText = '';
+    if (typeof data === 'string') {
+      responseText = data;
+    } else {
+      responseText = data.text || data.response || data.answer || '';
+      if (!responseText && data.data) {
+        responseText = data.data.text || data.data.response || '';
+      }
+    }
+
+    if (!responseText) {
+      responseText =
+        'Keine Antwort erhalten. Bitte versuchen Sie es später erneut.';
+    }
+
+    return new Response(
+      JSON.stringify({
+        text: responseText,
+        model: data.model || 'llama-3.3',
       }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Worker responded with ${response.status}`);
-    }
-
-    let data = await response.json();
-
-    // Standardize response for frontend
-    if (data) {
-      if (typeof data === 'string') {
-        data = { text: data };
-      }
-      if (!data.text) {
-        data.text = data.response || data.answer || '';
-      }
-    }
-
-    if (!data || !data.text) {
-      data = {
-        text: 'Keine Antwort erhalten. Bitte versuchen Sie es später erneut.',
-      };
-    }
-
-    return new Response(JSON.stringify(data), { headers: corsHeaders });
+      { headers: corsHeaders },
+    );
   } catch (error) {
     console.error('AI Optimization Error:', error);
     return new Response(
