@@ -13,7 +13,6 @@ export class MenuEvents {
     this.setupLanguageToggle();
     this.setupSearch();
     this.setupNavigation();
-    this.setupLogo();
     this.setupGlobalListeners();
     this.setupResizeHandler();
     this.setupPageSpecific();
@@ -87,18 +86,11 @@ export class MenuEvents {
     const links = this.container.querySelectorAll('.site-menu a[href]');
 
     links.forEach((link) => {
-      const handleClick = (e) => {
+      const handleClick = () => {
         const href = link.getAttribute('href');
         const isExternal = /^https?:\/\//i.test(href);
-        const isAnchor = href?.startsWith('#');
 
         this.closeMenu();
-
-        if (window.innerWidth <= 768 && href && !isExternal && !isAnchor) {
-          // Allow default navigation but maybe delay for animation
-          // e.preventDefault();
-          // setTimeout(() => (window.location.href = href), 160);
-        }
 
         // Update active link immediately for better UX
         if (!isExternal) {
@@ -108,26 +100,6 @@ export class MenuEvents {
 
       this.cleanupFns.push(this.addListener(link, 'click', handleClick));
     });
-  }
-
-  setupLogo() {
-    const logoContainer = this.container.querySelector('.site-logo__container');
-    if (!logoContainer) return;
-
-    const handleContext = (_e) => {
-      // Optional: Prevent default context menu on logo
-      // e.preventDefault?.();
-    };
-
-    const handleClick = (_e) => {
-      // Logo click usually goes to home
-      this.closeMenu();
-    };
-
-    this.cleanupFns.push(
-      this.addListener(logoContainer, 'contextmenu', handleContext),
-      this.addListener(logoContainer, 'click', handleClick),
-    );
   }
 
   setupGlobalListeners() {
