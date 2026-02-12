@@ -9,7 +9,7 @@ export class MenuTemplate {
     return `
 ${this.getSkipLinks()}
 ${this.getSVGSprite()}
-${this.getLogo()}
+${this.getBrand()}
 ${this.getNavigation()}
 ${this.getToggleButton()}
 `;
@@ -20,6 +20,13 @@ ${this.getToggleButton()}
 <div class="skip-links">
   <a href="#main-content" class="skip-link">${i18n.t('menu.skip_main')}</a>
   <a href="#navigation" class="skip-link">${i18n.t('menu.skip_nav')}</a>
+</div>`;
+  }
+
+  getBrand() {
+    return `
+<div class="site-logo__container">
+  <span class="site-subtitle">Abdulkerim</span>
 </div>`;
   }
 
@@ -62,18 +69,6 @@ ${this.getToggleButton()}
 </svg>`;
   }
 
-  getLogo() {
-    return `
-<a href="/" class="site-logo-link" style="text-decoration: none;">
-  <span class="site-logo__container u-inline-center">
-    <span class="site-logo elegant-logo">
-      Abdulkerim
-    </span>
-    <span class="site-subtitle" id="site-title" style="margin-left: 8px; opacity: 1; transform: none;"></span>
-    <span class="site-subtitle" id="site-subtitle" style="display: none;"></span>
-  </span>
-</a>`;
-  }
 
   getToggleButton() {
     return `
