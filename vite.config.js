@@ -1,10 +1,12 @@
 import { defineConfig } from 'vite';
-import { resolve } from 'path';
+import { resolve, relative, extname } from 'path';
 import fs from 'fs';
+import fg from 'fast-glob';
+import { viteStaticCopy } from 'vite-plugin-static-copy';
 
 /**
  * Vite Plugin for HTML Template Injection
- * Emuliert das Verhalten von Cloudflare Pages Middleware während des Builds
+ * Inject base-head and base-loader into all HTML entry points at build time.
  */
 function htmlTemplatesPlugin() {
   return {
@@ -33,61 +35,59 @@ function htmlTemplatesPlugin() {
         return html;
       }
     },
-    closeBundle() {
-      const root = process.cwd();
-      const dist = resolve(root, 'dist');
-      const dirs = ['content', 'pages', 'impressum', 'datenschutz'];
-      const files = [
-        '_redirects',
-        '_headers',
-        'robots.txt',
-        'sitemap.xml',
-        'sitemap-images.xml',
-        'sitemap-videos.xml',
-        'manifest.json',
-        'sw.js',
-        'favicon.ico',
-        'favicon.svg',
-      ];
-
-      dirs.forEach((dir) => {
-        const src = resolve(root, dir);
-        const dest = resolve(dist, dir);
-        if (fs.existsSync(src)) {
-          if (!fs.existsSync(dest)) {
-            fs.mkdirSync(dest, { recursive: true });
-          }
-          fs.cpSync(src, dest, { recursive: true });
-        }
-      });
-
-      files.forEach((file) => {
-        const src = resolve(root, file);
-        const dest = resolve(dist, file);
-        if (fs.existsSync(src)) {
-          fs.copyFileSync(src, dest);
-        }
-      });
-    },
   };
 }
 
+// Dynamically find all HTML entry points
+const root = process.cwd();
+const htmlFiles = fg.sync([
+  'index.html',
+  'pages/**/*.html',
+  'impressum/**/*.html',
+  'datenschutz/**/*.html'
+], { cwd: root });
+
+const input = htmlFiles.reduce((acc, file) => {
+  // Use relative path without extension as entry name to preserve structure
+  // e.g. 'pages/blog/index.html' -> 'pages/blog/index'
+  const name = relative(root, file).slice(0, -extname(file).length).replace(/\\/g, '/');
+  acc[name] = resolve(root, file);
+  return acc;
+}, {});
+
 export default defineConfig({
-  base: './',
-  plugins: [htmlTemplatesPlugin()],
+  base: './', // Keep relative paths for flexibility
+  plugins: [
+    htmlTemplatesPlugin(),
+    viteStaticCopy({
+      targets: [
+        {
+          src: 'content/config/locales',
+          dest: 'content/config'
+        },
+        {
+          src: 'content/assets',
+          dest: 'content'
+        },
+        {
+          src: 'pages/blog/posts',
+          dest: 'pages/blog'
+        }
+      ]
+    })
+  ],
   build: {
     outDir: 'dist',
     emptyOutDir: true,
     rollupOptions: {
-      input: {
-        main: resolve(process.cwd(), 'index.html'),
-      },
+      input, // Use dynamic input
     },
   },
   resolve: {
     alias: {
-      '/content': resolve(process.cwd(), 'content'),
-      '/pages': resolve(process.cwd(), 'pages'),
+      '/content': resolve(root, 'content'),
+      '/pages': resolve(root, 'pages'),
     },
   },
+  publicDir: 'public', // Ensure public assets are copied
 });

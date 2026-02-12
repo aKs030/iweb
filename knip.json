@@ -8,9 +8,9 @@
     "content/components/robot-companion/robot-companion.js",
     "content/components/typewriter/TypeWriter.js",
     "functions/_middleware.js",
+    "functions/api/**/*.js",
     "pages/**/*.js",
-    "workers/**/*.js",
-    "sw.js"
+    "public/sw.js"
   ],
   "ignore": ["pages/home/GrussText.js"],
   "ignoreBinaries": [],

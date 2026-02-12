@@ -5,15 +5,15 @@
  */
 
 // @ts-nocheck
-import React from 'https://esm.sh/react@19.2.3';
-import { createRoot } from 'https://esm.sh/react-dom@19.2.3/client';
-import htm from 'https://esm.sh/htm@3.1.1';
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import htm from 'htm';
 import { createLogger } from '/content/core/logger.js';
 import { createUseTranslation } from '/content/core/react-utils.js';
 import { updateLoader, hideLoader } from '/content/core/global-loader.js';
 import { i18n } from '/content/core/i18n.js';
-import { marked } from 'https://cdn.jsdelivr.net/npm/marked@11.1.1/lib/marked.esm.js';
-import DOMPurify from 'https://cdn.jsdelivr.net/npm/dompurify@3.3.1/dist/purify.es.mjs';
+import { marked } from 'marked';
+import DOMPurify from 'dompurify';
 import { Clock, ArrowRight, ArrowUp } from '/content/components/ui/icons.js';
 import { createErrorBoundary } from '/content/components/ui/ErrorBoundary.js';
 
@@ -745,7 +745,7 @@ const BlogApp = () => {
 
     if (!post)
       return html`<div className="container-blog pt-24">
-        <div style="color:#666">${t('common.loading')}</div>
+        <div style=${{ color: '#666' }}>${t('common.loading')}</div>
       </div>`;
 
     const cleanHtml = activePostHtml;
@@ -879,7 +879,7 @@ const BlogApp = () => {
           })}
         ${
           visiblePosts.length === 0 && !loading
-            ? html`<p style="color:#666">${t('blog.not_found')}</p>`
+            ? html`<p style=${{ color: '#666' }}>${t('blog.not_found')}</p>`
             : ''
         }
         </div>
