@@ -1,7 +1,3 @@
-/**
- * Menu Template - HTML generation
- */
-
 import { i18n } from '../../../core/i18n.js';
 
 export class MenuTemplate {
@@ -14,20 +10,21 @@ export class MenuTemplate {
 ${this.getSkipLinks()}
 ${this.getSVGSprite()}
 ${this.getLogo()}
-${this.getToggleButton()}
 ${this.getNavigation()}
+${this.getToggleButton()}
 `;
   }
 
   getSkipLinks() {
     return `
 <div class="skip-links">
-  <a href="#main-content" class="skip-link">Zum Hauptinhalt springen</a>
-  <a href="#navigation" class="skip-link">Zur Navigation springen</a>
+  <a href="#main-content" class="skip-link">${i18n.t('menu.skip_main')}</a>
+  <a href="#navigation" class="skip-link">${i18n.t('menu.skip_nav')}</a>
 </div>`;
   }
 
   getSVGSprite() {
+    // Keeping existing SVG definitions but ensuring they are complete
     return `
 <svg aria-hidden="true" style="position: absolute; width: 0; height: 0; overflow: hidden" xmlns="http://www.w3.org/2000/svg">
   <defs>
@@ -67,19 +64,20 @@ ${this.getNavigation()}
 
   getLogo() {
     return `
-<a href="/" class="site-logo-link">
+<a href="/" class="site-logo-link" style="text-decoration: none;">
   <span class="site-logo__container u-inline-center">
-    <span class="site-logo elegant-logo" id="site-title">
-      <span class="visually-hidden">Startseite</span>
+    <span class="site-logo elegant-logo">
+      Abdulkerim
     </span>
-    <span class="site-subtitle" id="site-subtitle"></span>
+    <span class="site-subtitle" id="site-title" style="margin-left: 8px; opacity: 1; transform: none;"></span>
+    <span class="site-subtitle" id="site-subtitle" style="display: none;"></span>
   </span>
 </a>`;
   }
 
   getToggleButton() {
     return `
-<button type="button" class="site-menu__toggle" aria-label="Menü" aria-controls="navigation" aria-expanded="false">
+<button type="button" class="site-menu__toggle" aria-label="${i18n.t('menu.toggle')}" aria-controls="navigation" aria-expanded="false">
   <div class="hamburger-container">
     <span class="hamburger-line hamburger-line--top"></span>
     <span class="hamburger-line hamburger-line--middle"></span>
@@ -90,36 +88,20 @@ ${this.getNavigation()}
   }
 
   getNavigation() {
-    const menuItems = this.config?.MENU_ITEMS || [
-      { href: '/', icon: 'house', fallback: '🏠', label: 'Startseite' },
-      {
-        href: '/projekte/',
-        icon: 'projects',
-        fallback: '📁',
-        label: 'Projekte',
-      },
-      { href: '/gallery/', icon: 'gallery', fallback: '📷', label: 'Fotos' },
-      { href: '/videos/', icon: 'video', fallback: '🎬', label: 'Videos' },
-      { href: '/blog/', icon: 'blog', fallback: '📝', label: 'Blog' },
-      { href: '/about/', icon: 'user', fallback: '🧑', label: 'Über mich' },
-      {
-        href: '#site-footer',
-        icon: 'mail',
-        fallback: '✉️',
-        label: 'Kontakt',
-        attrs: 'data-footer-trigger aria-expanded="false"',
-      },
-    ];
+    // Generate menu items dynamically from config
+    const menuItems = this.config?.MENU_ITEMS || [];
 
     const items = menuItems
       .map(
         (item) => `
     <li>
       <a href="${item.href}"${item.attrs ? ' ' + item.attrs : ''}>
-        <svg class="nav-icon" aria-hidden="true">
-          <use href="#icon-${item.icon}"></use>
-        </svg>
-        <span class="icon-fallback" style="display: none">${item.fallback}</span>
+        <span class="nav-icon-wrapper">
+             <svg class="nav-icon" aria-hidden="true">
+               <use href="#icon-${item.icon}"></use>
+             </svg>
+             <span class="icon-fallback" style="display: none">${item.fallback}</span>
+        </span>
         <span data-i18n="${item.label}">${i18n.t(item.label)}</span>
       </a>
     </li>`,
@@ -127,11 +109,11 @@ ${this.getNavigation()}
       .join('');
 
     return `
-<nav id="navigation" class="site-menu" aria-label="Hauptnavigation">
+<nav id="navigation" class="site-menu" aria-label="${i18n.t('menu.main_nav')}">
   <ul class="site-menu__list">
     ${items}
     <li>
-      <button type="button" class="search-trigger" aria-label="Suche öffnen" title="Spotlight-Suche (⌘K / Ctrl+K)">
+      <button type="button" class="search-trigger" aria-label="${i18n.t('menu.search_label')}" title="${i18n.t('menu.search_tooltip')}">
         <svg class="nav-icon" aria-hidden="true">
           <use href="#icon-search"></use>
         </svg>
@@ -139,7 +121,7 @@ ${this.getNavigation()}
       </button>
     </li>
     <li>
-      <button type="button" class="lang-toggle" aria-label="Sprache wechseln" title="DE / EN">
+      <button type="button" class="lang-toggle" aria-label="${i18n.t('menu.lang_toggle')}" title="DE / EN">
         <svg class="nav-icon" aria-hidden="true">
           <use href="#icon-globe"></use>
         </svg>
