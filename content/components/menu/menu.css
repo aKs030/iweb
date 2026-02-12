@@ -222,29 +222,27 @@
     Roboto,
     sans-serif
   );
-  font-size: clamp(10px, 0.9vw, 12px);
+  font-size: clamp(12px, 1vw, 14px);
   font-weight: 450;
   color: var(--component-label-secondary, rgba(255, 255, 255, 0.7));
   letter-spacing: 0.01em;
-  opacity: 0;
-  transform: translateX(-4px) scale(0.95);
-  transition:
-    opacity 0.4s
-      var(--component-spring-smooth, cubic-bezier(0.25, 0.46, 0.45, 0.94)),
-    transform 0.4s
-      var(--component-spring-smooth, cubic-bezier(0.25, 0.46, 0.45, 0.94));
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.3s ease;
   text-align: left;
   line-height: 1.1;
   white-space: nowrap;
+  margin-left: 8px;
+  border-left: 1px solid rgba(255, 255, 255, 0.3);
+  padding-left: 12px;
+  display: inline-block;
 }
 
-.site-subtitle.show {
-  opacity: 0.8;
-  transform: translateX(0) scale(1);
+.site-subtitle:empty {
+  display: none;
 }
 
-.site-logo__container:hover .site-subtitle.show {
-  opacity: 1;
+.site-logo__container:hover .site-subtitle {
   color: var(--component-label-primary, #ffffff);
 }
 
