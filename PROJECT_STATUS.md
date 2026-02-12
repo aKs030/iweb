@@ -5,14 +5,14 @@
 
 ## 📊 Quick Overview
 
-| Metric        | Status       | Score/Value     |
-| ------------- | ------------ | --------------- |
-| Code Quality  | ✅ Excellent | 100/100         |
-| Build System  | ✅ Modern    | Vite MPA        |
-| Bundle Size   | ✅ Optimized | ~240 kB (gzip)  |
-| CSS Size      | ✅ Optimized | ~6 kB (gzip)    |
-| PWA           | ✅ Active    | Service Worker  |
-| Performance   | ✅ Monitored | Core Web Vitals |
+| Metric       | Status       | Score/Value     |
+| ------------ | ------------ | --------------- |
+| Code Quality | ✅ Excellent | 100/100         |
+| Build System | ✅ Modern    | Vite MPA        |
+| Bundle Size  | ✅ Optimized | ~240 kB (gzip)  |
+| CSS Size     | ✅ Optimized | ~6 kB (gzip)    |
+| PWA          | ✅ Active    | Service Worker  |
+| Performance  | ✅ Monitored | Core Web Vitals |
 
 ---
 

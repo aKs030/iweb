@@ -77,6 +77,7 @@ npm run dev
 ```bash
 npm run preview
 ```
+
 Dies baut das Projekt und startet `wrangler pages dev`, um die Production-Umgebung inklusive Functions zu simulieren.
 
 ## 🤝 Contributing

@@ -40,17 +40,22 @@ function htmlTemplatesPlugin() {
 
 // Dynamically find all HTML entry points
 const root = process.cwd();
-const htmlFiles = fg.sync([
-  'index.html',
-  'pages/**/*.html',
-  'impressum/**/*.html',
-  'datenschutz/**/*.html'
-], { cwd: root });
+const htmlFiles = fg.sync(
+  [
+    'index.html',
+    'pages/**/*.html',
+    'impressum/**/*.html',
+    'datenschutz/**/*.html',
+  ],
+  { cwd: root },
+);
 
 const input = htmlFiles.reduce((acc, file) => {
   // Use relative path without extension as entry name to preserve structure
   // e.g. 'pages/blog/index.html' -> 'pages/blog/index'
-  const name = relative(root, file).slice(0, -extname(file).length).replace(/\\/g, '/');
+  const name = relative(root, file)
+    .slice(0, -extname(file).length)
+    .replace(/\\/g, '/');
   acc[name] = resolve(root, file);
   return acc;
 }, {});
@@ -63,18 +68,18 @@ export default defineConfig({
       targets: [
         {
           src: 'content/config/locales',
-          dest: 'content/config'
+          dest: 'content/config',
         },
         {
           src: 'content/assets',
-          dest: 'content'
+          dest: 'content',
         },
         {
           src: 'pages/blog/posts',
-          dest: 'pages/blog'
-        }
-      ]
-    })
+          dest: 'pages/blog',
+        },
+      ],
+    }),
   ],
   build: {
     outDir: 'dist',
