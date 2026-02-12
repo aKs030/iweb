@@ -4,6 +4,12 @@
  * @last-modified 2026-02-11
  */
 
+// Global Styles
+import './styles/root.css';
+import './styles/main.css';
+import './styles/animations.css';
+import './styles/loader.css';
+
 import { initConsoleFilter } from './core/console-filter.js';
 import { initHeroFeatureBundle } from '../pages/home/hero-manager.js';
 import { createLogger } from './core/logger.js';

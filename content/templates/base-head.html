@@ -2,10 +2,7 @@
 <!-- Usage: Include this in all HTML pages -->
 
 <!-- Critical CSS - Loaded immediately to prevent FOUC -->
-<link rel="stylesheet" href="/content/styles/root.css" />
-<link rel="stylesheet" href="/content/styles/main.css" />
-<link rel="stylesheet" href="/content/styles/animations.css" />
-<link rel="stylesheet" href="/content/styles/loader.css" />
+<!-- CSS is injected by Vite during build -->
 
 <!-- Meta Tags -->
 <meta charset="utf-8" />
@@ -64,10 +61,4 @@
 <link rel="preconnect" href="https://esm.sh" crossorigin />
 
 <!-- Core Scripts -->
-<script type="module" src="/content/components/head/head-inline.js"></script>
-<script
-  type="module"
-  src="/content/main.js"
-  crossorigin="anonymous"
-  defer
-></script>
+<!-- Scripts injected by vite.config.js -->

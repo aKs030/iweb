@@ -1,5 +1,5 @@
 import { defineConfig } from 'vite';
-import { resolve, relative, extname } from 'path';
+import { resolve, relative, extname, dirname } from 'path';
 import fs from 'fs';
 import fg from 'fast-glob';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
@@ -11,7 +11,8 @@ import { viteStaticCopy } from 'vite-plugin-static-copy';
 function htmlTemplatesPlugin() {
   return {
     name: 'html-templates',
-    transformIndexHtml(html) {
+    enforce: 'pre',
+    transformIndexHtml(html, ctx) {
       const root = process.cwd();
       try {
         const headPath = resolve(root, 'content/templates/base-head.html');
@@ -27,9 +28,23 @@ function htmlTemplatesPlugin() {
           loader = fs.readFileSync(loaderPath, 'utf-8');
         }
 
-        return html
+        // Calculate relative path to root
+        let relativeRoot = '.';
+        if (ctx.filename) {
+          const fileDir = dirname(ctx.filename);
+          relativeRoot = relative(fileDir, root);
+          if (relativeRoot === '') relativeRoot = '.';
+        }
+
+        // Replace {{ROOT}} placeholder in templates
+        head = head.replace(/{{ROOT}}/g, relativeRoot);
+        loader = loader.replace(/{{ROOT}}/g, relativeRoot);
+
+        const transformedHtml = html
           .replace(/<!--\s*INJECT:BASE-HEAD\s*-->/g, head)
           .replace(/<!--\s*INJECT:BASE-LOADER\s*-->/g, loader);
+
+        return transformedHtml;
       } catch (e) {
         console.warn('Template injection failed:', e.message);
         return html;
