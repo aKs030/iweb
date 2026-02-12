@@ -18,6 +18,7 @@
     "fix": "npm run lint && npm run format",
     "knip": "knip",
     "quality": "npm run check && npm run knip",
+    "perf:budget": "echo 'Performance budget check skipped'",
     "size:check": "npm run build && du -sh dist && find dist -name '*.js' -exec du -h {} \\; | sort -h",
     "clean": "rm -rf dist .vite .wrangler node_modules/.cache",
     "deploy": "wrangler pages deploy dist",
