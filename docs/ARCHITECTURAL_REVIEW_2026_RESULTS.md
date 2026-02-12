@@ -16,7 +16,7 @@ The repository demonstrates a high level of maturity and technical excellence. T
 - **Modularity:** Components like `RobotCompanion` and `ThreeEarthSystem` are well-isolated and follow clear architectural patterns.
 - **Performance:** Advanced techniques such as viewport-based pausing for 3D rendering, adaptive quality levels, and modern image formats (AVIF/WebP) are implemented.
 - **Separation of Concerns:** Clear distinction between core services, UI components, and page content.
-- **Cloudflare Integration:** Efficient use of Cloudflare Workers and middleware for dynamic content injection.
+- **Cloudflare Integration:** Efficient use of Cloudflare Pages Functions and middleware for dynamic content injection.
 
 ### 2.2 Discrepancies & Issues
 

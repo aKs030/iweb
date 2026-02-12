@@ -43,7 +43,7 @@ export class ProjectGallery {
       projectGroup.lookAt(0, 0, zPos + 10);
 
       // 1. Image Screen
-      let material = defaultMaterial;
+      const material = defaultMaterial;
       const projectName = project.dirName || project.name || project.id;
       // We assume previews exist at this path as per previous code
       const imageUrl = `/content/assets/img/previews/${projectName}.svg`;

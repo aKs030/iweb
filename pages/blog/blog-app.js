@@ -10,7 +10,7 @@ import { createRoot } from 'https://esm.sh/react-dom@19.2.3/client';
 import htm from 'https://esm.sh/htm@3.1.1';
 import { createLogger } from '/content/core/logger.js';
 import { createUseTranslation } from '/content/core/react-utils.js';
-import { updateLoader, hideLoader } from '/content/core/global-loader.js';
+import { AppLoadManager } from '/content/core/load-manager.js';
 import { i18n } from '/content/core/i18n.js';
 import { marked } from 'https://cdn.jsdelivr.net/npm/marked@11.1.1/lib/marked.esm.js';
 import DOMPurify from 'https://cdn.jsdelivr.net/npm/dompurify@3.3.1/dist/purify.es.mjs';
@@ -274,14 +274,14 @@ const normalizePost = (raw = {}) => {
 // Fetch Logic
 const loadPostsData = async (seedPosts = []) => {
   try {
-    updateLoader(0.2, i18n.t('loader.loading_blog'));
+    AppLoadManager.updateLoader(0.2, i18n.t('loader.loading_blog'));
 
     let fetchedPosts = [];
     try {
       const indexRes = await fetch('/pages/blog/posts/index.json');
       if (indexRes.ok) {
         fetchedPosts = await indexRes.json();
-        updateLoader(
+        AppLoadManager.updateLoader(
           0.4,
           i18n.t('loader.articles_found', { count: fetchedPosts.length }),
         );
@@ -310,7 +310,7 @@ const loadPostsData = async (seedPosts = []) => {
 
           loaded++;
           const progress = 0.4 + (loaded / total) * 0.4;
-          updateLoader(
+          AppLoadManager.updateLoader(
             progress,
             i18n.t('loader.loading_article', { current: loaded, total }),
             {
@@ -326,7 +326,7 @@ const loadPostsData = async (seedPosts = []) => {
       }),
     );
 
-    updateLoader(0.85, i18n.t('loader.processing_articles'));
+    AppLoadManager.updateLoader(0.85, i18n.t('loader.processing_articles'));
 
     const map = new Map();
     seedPosts.forEach((p) => map.set(p.id, p));
@@ -338,7 +338,7 @@ const loadPostsData = async (seedPosts = []) => {
       (a, b) => b.timestamp - a.timestamp,
     );
 
-    updateLoader(
+    AppLoadManager.updateLoader(
       0.95,
       i18n.t('loader.articles_loaded', { count: result.length }),
     );
@@ -470,7 +470,7 @@ const BlogApp = () => {
 
     (async () => {
       try {
-        updateLoader(0.1, i18n.t('loader.init_3d_system'));
+        AppLoadManager.updateLoader(0.1, i18n.t('loader.init_3d_system'));
 
         const final = await loadPostsData(seed);
 
@@ -478,16 +478,16 @@ const BlogApp = () => {
         setLoading(false);
 
         setTimeout(() => {
-          updateLoader(1, i18n.t('loader.blog_ready'));
-          hideLoader(100);
+          AppLoadManager.updateLoader(1, i18n.t('loader.blog_ready'));
+          AppLoadManager.hideLoader(100);
         }, 100);
 
         log.info(`Successfully loaded ${final.length} blog posts`);
       } catch (error) {
         log.error('Error loading blog posts:', error);
         setLoading(false);
-        updateLoader(1, i18n.t('loader.failed'));
-        hideLoader(500);
+        AppLoadManager.updateLoader(1, i18n.t('loader.failed'));
+        AppLoadManager.hideLoader(500);
       }
     })();
   }, []);

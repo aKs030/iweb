@@ -209,8 +209,9 @@ npm run css:check        # CSS Statistics
 npm run size:check       # Bundle Size
 npm run docs             # List documentation
 
-# Deployment
-npm run deploy:workers   # Deploy Cloudflare Workers
+# Build & Deploy
+npm run build            # Production build
+npm run deploy           # Deploy to Cloudflare Pages
 ```
 
 ## 🐛 Bug Reports

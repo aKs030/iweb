@@ -2,10 +2,11 @@
  * Timer Utilities
  * Centralized timer management with automatic cleanup
  * @author Abdulkerim Sesli
- * @version 1.0.0
+ * @version 1.1.0
  */
 
 import { createLogger } from './logger.js';
+import { sleep } from './utils.js'; // Import sleep from utils
 
 const log = createLogger('TimerUtils');
 
@@ -83,8 +84,14 @@ export class TimerManager {
     this.rafIds.clear();
   }
 
-  // sleep() method removed - use imported sleep from async-utils.js instead
-  // import { sleep } from '../core/utils.js';
+  /**
+   * Sleep using the shared utility function
+   * @param {number} ms - Milliseconds to sleep
+   * @returns {Promise<void>}
+   */
+  async sleep(ms) {
+    return sleep(ms);
+  }
 
   get activeTimers() {
     return {
@@ -95,3 +102,6 @@ export class TimerManager {
     };
   }
 }
+
+// Re-export sleep for convenience
+export { sleep };

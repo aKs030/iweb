@@ -82,6 +82,10 @@ export default [
       ],
       'no-console': 'off',
       'no-undef': 'error',
+      'no-constant-condition': 'warn',
+      'no-empty': ['error', { allowEmptyCatch: true }],
+      'prefer-const': 'warn',
+      'no-var': 'error',
     },
   },
   {

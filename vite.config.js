@@ -1,6 +1,8 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
 import fs from 'fs';
+import { visualizer } from 'rollup-plugin-visualizer';
+import viteCompression from 'vite-plugin-compression';
 
 /**
  * Vite Plugin for HTML Template Injection
@@ -72,22 +74,86 @@ function htmlTemplatesPlugin() {
   };
 }
 
-export default defineConfig({
-  base: './',
-  plugins: [htmlTemplatesPlugin()],
-  build: {
-    outDir: 'dist',
-    emptyOutDir: true,
-    rollupOptions: {
-      input: {
-        main: resolve(process.cwd(), 'index.html'),
+export default defineConfig(({ mode }) => {
+  const isAnalyze = mode === 'analyze';
+
+  return {
+    base: './',
+    plugins: [
+      htmlTemplatesPlugin(),
+      viteCompression({
+        algorithm: 'gzip',
+        ext: '.gz',
+      }),
+      viteCompression({
+        algorithm: 'brotliCompress',
+        ext: '.br',
+      }),
+      isAnalyze &&
+        visualizer({
+          open: true,
+          filename: 'dist/stats.html',
+          gzipSize: true,
+          brotliSize: true,
+        }),
+    ].filter(Boolean),
+    build: {
+      outDir: 'dist',
+      emptyOutDir: true,
+      sourcemap: false,
+      minify: 'terser',
+      terserOptions: {
+        compress: {
+          drop_console: true,
+          drop_debugger: true,
+          pure_funcs: ['console.log', 'console.debug', 'console.info'],
+        },
+        format: {
+          comments: false,
+        },
+      },
+      rollupOptions: {
+        input: {
+          main: resolve(process.cwd(), 'index.html'),
+        },
+        output: {
+          manualChunks(id) {
+            // Three.js vendor chunk
+            if (id.includes('node_modules/three')) {
+              return 'three-vendor';
+            }
+            // Three-earth system
+            if (id.includes('three-earth-system')) {
+              return 'three-earth';
+            }
+            // DOMPurify
+            if (id.includes('node_modules/dompurify')) {
+              return 'dompurify';
+            }
+            // Core utilities
+            if (
+              id.includes('content/core') &&
+              !id.includes('three-earth-manager')
+            ) {
+              return 'core';
+            }
+          },
+          chunkFileNames: 'assets/[name]-[hash].js',
+          entryFileNames: 'assets/[name]-[hash].js',
+          assetFileNames: 'assets/[name]-[hash].[ext]',
+        },
+      },
+      chunkSizeWarningLimit: 500,
+      reportCompressedSize: true,
+    },
+    resolve: {
+      alias: {
+        '/content': resolve(process.cwd(), 'content'),
+        '/pages': resolve(process.cwd(), 'pages'),
       },
     },
-  },
-  resolve: {
-    alias: {
-      '/content': resolve(process.cwd(), 'content'),
-      '/pages': resolve(process.cwd(), 'pages'),
+    optimizeDeps: {
+      include: ['three', 'dompurify'],
     },
-  },
+  };
 });

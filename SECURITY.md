@@ -22,10 +22,10 @@ This project implements multiple security measures:
 - ✅ **Subresource Integrity** - SRI for external resources
 - ✅ **No Inline Scripts** - All JavaScript in external files
 
-### Backend Security (Cloudflare Workers)
+### Backend Security (Cloudflare Pages Functions)
 
-- ✅ **API Key Protection** - All API keys stored as secrets
-- ✅ **Rate Limiting** - Protection against abuse (60 req/min)
+- ✅ **API Key Protection** - All API keys stored as environment secrets
+- ✅ **Service Bindings** - Secure inter-service communication
 - ✅ **Request Validation** - Input validation and sanitization
 - ✅ **Endpoint Whitelist** - Only allowed endpoints accessible
 - ✅ **Error Sanitization** - No sensitive data in error messages
@@ -106,8 +106,8 @@ If you're contributing to this project, please follow these security guidelines:
 ### API Security
 
 - ✅ Never expose API keys in client-side code
-- ✅ Use Cloudflare Workers for API proxying
-- ✅ Implement rate limiting
+- ✅ Use Cloudflare Pages Functions for API endpoints
+- ✅ Use Service Bindings for secure communication
 - ✅ Validate all API inputs
 - ✅ Use HTTPS only
 
@@ -118,12 +118,11 @@ If you're contributing to this project, please follow these security guidelines:
 This project uses the following third-party services:
 
 - **Cloudflare Pages** - Hosting and CDN
-- **Cloudflare Workers** - Serverless functions
-- **Groq AI** - AI inference (API key protected)
-- **YouTube API** - Video data (API key protected)
+- **Cloudflare Pages Functions** - Serverless API endpoints
+- **Cloudflare AI** - AI-powered search with RAG
 - **Google Analytics** - Analytics (optional, user consent)
 
-All API keys are stored as Cloudflare Worker secrets and never exposed to the client.
+All API keys and secrets are stored as environment variables and never exposed to the client.
 
 ### Browser Security
 
