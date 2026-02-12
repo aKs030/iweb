@@ -201,16 +201,34 @@
     Roboto,
     sans-serif
   );
-  font-size: clamp(18px, 2vw, 22px);
-  font-weight: 700;
-  color: var(--component-label-primary, #ffffff);
-  letter-spacing: -0.03em;
+  font-size: clamp(20px, 2.2vw, 24px);
+  font-weight: 800;
+  color: transparent;
+  background: linear-gradient(
+    135deg,
+    #ffffff 0%,
+    #e0e0e0 50%,
+    var(--component-accent-blue, #007aff) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  letter-spacing: -0.04em;
   white-space: nowrap;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  padding-right: 2px; /* Prevent crop on italic/effects */
 }
 
 .site-logo:hover {
-  transform: scale(1.02);
-  color: var(--component-accent-blue, #007aff);
+  transform: scale(1.05) translateY(-1px);
+  filter: drop-shadow(0 4px 8px rgba(0, 122, 255, 0.4));
+  background: linear-gradient(
+    135deg,
+    #ffffff 0%,
+    var(--component-accent-blue, #007aff) 80%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
 }
 
 .site-subtitle {
