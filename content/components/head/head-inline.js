@@ -1,5 +1,4 @@
 import { createLogger } from '../../core/logger.js';
-import { upsertHeadLink } from '../../core/utils.js';
 import { ENV } from '../../config/env.config.js';
 import { resourceHints } from '../../core/resource-hints.js';
 import { headState } from './head-state.js';
@@ -7,6 +6,12 @@ import { headState } from './head-state.js';
 // Import Critical Components for bundling
 import '../menu/SiteMenu.js';
 import '../footer/SiteFooter.js';
+
+// Import Home Page Critical CSS for bundling
+import '../../components/typewriter/typewriter.css';
+import '../../../pages/home/hero.css';
+import '../../../pages/home/section3.css';
+import '../../../pages/home/section4.css';
 
 const log = createLogger('head-inline');
 
@@ -208,25 +213,9 @@ ensureFooterAndTrigger();
 
 const injectCoreAssets = () => {
   try {
-    const getStylesForPath = () => {
-      const p =
-        (globalThis.location?.pathname || '').replace(/\/+$/g, '') || '/';
-
-      // Critical styles (root.css, main.css, animations.css) are in base-head.html template
-      // Only return page-specific styles here
-      const pageSpecific = [];
-
-      if (p === '/') {
-        pageSpecific.push(
-          '/pages/home/hero.css',
-          '/content/components/typewriter/typewriter.css',
-          '/pages/home/section3.css',
-          '/pages/home/section4.css',
-        );
-      }
-
-      return pageSpecific;
-    };
+    // Styles are now imported statically at the top of the file
+    // to allow Vite to bundle them correctly.
+    // The previous dynamic injection logic relied on paths that do not exist in the build output.
 
     const deferNonCriticalAssets = () => {
       try {
@@ -248,42 +237,6 @@ const injectCoreAssets = () => {
       }
     };
 
-    const upsertStyle = (href) => {
-      if (document.head.querySelector(`link[href="${href}"]`)) return;
-
-      // Load page-specific styles via preload for better performance
-      upsertHeadLink({
-        rel: 'preload',
-        href,
-        as: 'style',
-        dataset: { injectedBy: 'head-inline' },
-        onload() {
-          try {
-            this.onload = null;
-            this.rel = 'stylesheet';
-          } catch {
-            /* ignore */
-          }
-        },
-      });
-
-      // Fallback
-      setTimeout(() => {
-        try {
-          const existing = document.head.querySelector(`link[href="${href}"]`);
-          if (!existing || existing.rel === 'preload') {
-            upsertHeadLink({
-              rel: 'stylesheet',
-              href,
-              dataset: { injectedBy: 'head-inline' },
-            });
-          }
-        } catch {
-          /* ignore */
-        }
-      }, 2000);
-    };
-
     const performInjection = () => {
       const hasGtm = GTM_ID && GTM_ID !== 'GTM-PLACEHOLDER';
       if (hasGtm) {
@@ -298,12 +251,7 @@ const injectCoreAssets = () => {
       resourceHints.preconnect('https://cdn.jsdelivr.net');
       resourceHints.preconnect('https://esm.sh');
 
-      const styles = getStylesForPath();
-
-      // Inject page-specific styles only
-      styles.forEach((href) => {
-        upsertStyle(href);
-      });
+      // Styles are handled via static imports
 
       try {
         deferNonCriticalAssets();
