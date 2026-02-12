@@ -8,18 +8,16 @@
 import { createLogger } from '../../core/logger.js';
 import { a11y } from '../../core/accessibility-manager.js';
 import { i18n } from '../../core/i18n.js';
+import footerHtml from './footer.html?raw';
+import './footer.css';
 
 const log = createLogger('SiteFooter');
 
 const CONFIG = {
-  FOOTER_PATH: '/content/components/footer/footer',
-  FOOTER_PATH_FALLBACK: '/content/components/footer/footer.html',
   SCROLL_DEBOUNCE_MS: 100,
   EXPAND_THRESHOLD: 100,
   COLLAPSE_THRESHOLD: 300,
   TRANSITION_DURATION: 300,
-  LOAD_RETRY_ATTEMPTS: 2,
-  LOAD_RETRY_DELAY_MS: 500,
 };
 
 /**
@@ -168,13 +166,10 @@ export class SiteFooter extends HTMLElement {
   }
 
   async connectedCallback() {
-    const src = this.getAttribute('src') || CONFIG.FOOTER_PATH;
-
     try {
       if (!this.innerHTML.trim()) {
-        const html = await this._fetchFooterHTML(src);
-        if (!this.isConnected) return;
-        this.innerHTML = html;
+        // Use bundled HTML content
+        this.innerHTML = footerHtml;
       }
 
       this.init();
@@ -186,41 +181,6 @@ export class SiteFooter extends HTMLElement {
     } catch (error) {
       log.error('Footer load failed', error);
     }
-  }
-
-  /**
-   * Fetch footer HTML with retry logic and fallback path.
-   * @param {string} primarySrc - Primary URL to fetch
-   * @returns {Promise<string>} The footer HTML content
-   */
-  async _fetchFooterHTML(primarySrc) {
-    const urls = [primarySrc];
-    // Add .html fallback if primary doesn't end with .html
-    if (!primarySrc.endsWith('.html')) {
-      urls.push(primarySrc + '.html');
-    } else if (primarySrc !== CONFIG.FOOTER_PATH) {
-      urls.push(CONFIG.FOOTER_PATH);
-    }
-
-    for (const url of urls) {
-      for (let attempt = 0; attempt <= CONFIG.LOAD_RETRY_ATTEMPTS; attempt++) {
-        try {
-          const response = await fetch(url, { redirect: 'follow' });
-          if (response.ok) return await response.text();
-          log.warn(
-            `Footer fetch ${url} returned ${response.status} (attempt ${attempt + 1})`,
-          );
-        } catch (err) {
-          log.warn(`Footer fetch ${url} failed (attempt ${attempt + 1})`, err);
-        }
-        if (attempt < CONFIG.LOAD_RETRY_ATTEMPTS) {
-          await new Promise((r) =>
-            setTimeout(r, CONFIG.LOAD_RETRY_DELAY_MS * (attempt + 1)),
-          );
-        }
-      }
-    }
-    throw new Error(`Footer load failed — all URLs exhausted`);
   }
 
   disconnectedCallback() {

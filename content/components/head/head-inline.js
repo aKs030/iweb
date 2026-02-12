@@ -4,6 +4,10 @@ import { ENV } from '../../config/env.config.js';
 import { resourceHints } from '../../core/resource-hints.js';
 import { headState } from './head-state.js';
 
+// Import Critical Components for bundling
+import '../menu/SiteMenu.js';
+import '../footer/SiteFooter.js';
+
 const log = createLogger('head-inline');
 
 const GTM_ID = ENV.GTM_ID;
@@ -224,11 +228,6 @@ const injectCoreAssets = () => {
       return pageSpecific;
     };
 
-    const SCRIPTS = [
-      { src: '/content/components/menu/SiteMenu.js', module: true },
-      { src: '/content/components/footer/SiteFooter.js', module: true },
-    ];
-
     const deferNonCriticalAssets = () => {
       try {
         const schedule = (cb) => {
@@ -240,9 +239,8 @@ const injectCoreAssets = () => {
         };
 
         schedule(() => {
-          upsertScript({
-            src: '/content/components/robot-companion/robot-companion.js',
-            module: true,
+          import('../robot-companion/robot-companion.js').catch((err) => {
+            log.error('Failed to load Robot Companion:', err);
           });
         });
       } catch (err) {
@@ -286,19 +284,6 @@ const injectCoreAssets = () => {
       }, 2000);
     };
 
-    const upsertScript = ({ src, module }) => {
-      if (!document.head.querySelector(`script[src="${src}"]`)) {
-        const s = document.createElement('script');
-        s.src = src;
-        if (module) {
-          s.type = 'module';
-          s.crossOrigin = 'anonymous';
-        } else s.defer = true;
-        s.dataset.injectedBy = 'head-inline';
-        document.head.appendChild(s);
-      }
-    };
-
     const performInjection = () => {
       const hasGtm = GTM_ID && GTM_ID !== 'GTM-PLACEHOLDER';
       if (hasGtm) {
@@ -319,9 +304,6 @@ const injectCoreAssets = () => {
       styles.forEach((href) => {
         upsertStyle(href);
       });
-
-      // Batch inject scripts
-      SCRIPTS.forEach(upsertScript);
 
       try {
         deferNonCriticalAssets();

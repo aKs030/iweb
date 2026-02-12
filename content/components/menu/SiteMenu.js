@@ -11,8 +11,8 @@ import { MenuEvents } from './modules/MenuEvents.js';
 import { MenuAccessibility } from './modules/MenuAccessibility.js';
 import { MenuPerformance } from './modules/MenuPerformance.js';
 import { MenuConfig } from './modules/MenuConfig.js';
-import { upsertHeadLink } from '../../core/utils.js';
 import { createLogger } from '../../core/logger.js';
+import './menu.css';
 
 const logger = createLogger('SiteMenu');
 
@@ -78,18 +78,7 @@ class SiteMenu extends HTMLElement {
   }
 
   ensureStyles() {
-    if (typeof document === 'undefined') return;
-
-    const cssUrl = this.config.CSS_URL || '/content/components/menu/menu.css';
-    const existing = document.head.querySelector(`link[href="${cssUrl}"]`);
-    if (existing) return;
-
-    upsertHeadLink({
-      rel: 'stylesheet',
-      href: cssUrl,
-      attrs: { media: 'all' },
-      dataset: { injectedBy: 'site-menu' },
-    });
+    // Styles are imported via JS bundle
   }
 
   // Get current stats
