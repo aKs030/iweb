@@ -47,12 +47,12 @@ Das Repository befindet sich technisch auf einem exzellenten Niveau (Production 
 
 ### Search
 
-- **Architektur:** Auslagerung der Suchlogik in einen Cloudflare Worker (`/api/search`).
+- **Architektur:** Auslagerung der Suchlogik in eine Cloudflare Pages Function (`/api/search`).
 - **UX:** Spotlight-ähnliches UI mit gutem Accessibility-Support.
 
-## 4. Backend & Worker
+## 4. Backend & API
 
-- **AI Search Proxy:** Sauberer Cloudflare Worker Code.
+- **AI Search API:** Sauberer Cloudflare Pages Function Code.
 - **Security:** CORS-Headers und Error-Handling sind implementiert.
 
 ## 5. Verbesserungsvorschläge (Minor)

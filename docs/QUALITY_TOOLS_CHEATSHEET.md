@@ -202,7 +202,7 @@ npm run deps:check              # Update check
 ```json
 // knip.json - Mehr entry-points
 {
-  "entry": ["pages/**/app.js", "workers/**/index.js"]
+  "entry": ["pages/**/app.js", "functions/**/*.js"]
 }
 ```
 

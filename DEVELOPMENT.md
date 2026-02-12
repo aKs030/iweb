@@ -131,7 +131,7 @@ Ein einzelner CI-Job führt alle Checks sequenziell aus:
 3. **TypeScript** — Type Check
 4. **HTML Validation** — html-validate
 5. **Security** — npm audit
-6. **Workers Validation** — Cloudflare Workers Syntax
+6. **Functions Validation** — Cloudflare Pages Functions Syntax
 7. **Code Quality** — Knip + JSCPD + Console.log + Circular Dependencies
 
 ## 🎯 Best Practices
@@ -174,9 +174,9 @@ npm run deps:check      # Dependencies aktualisieren
 │   ├── blog/           # Blog
 │   └── videos/         # Video Gallery
 │
-├── workers/             # Cloudflare Workers
-│   ├── ai-search-proxy/
-│   └── youtube-api-proxy/
+├── functions/           # Cloudflare Pages Functions
+│   ├── api/            # API endpoints (search, ai)
+│   └── _middleware.js  # Request middleware
 │
 ├── docs/                # Documentation
 │   ├── ARCHITECTURE.md
@@ -201,14 +201,14 @@ npm run dev
 # Server-Optionen siehe server.js
 ```
 
-### Worker Issues
+### API Issues
 
 ```bash
-# Worker Logs anzeigen
-wrangler tail
+# Check API logs
+wrangler pages deployment tail
 
-# Worker mit Debug
-wrangler dev --log-level debug
+# Local API testing
+npm run dev
 ```
 
 ## 🌐 Environment Variables
@@ -217,9 +217,8 @@ wrangler dev --log-level debug
 # .env.example kopieren
 cp .env.example .env
 
-# Secrets für Workers
+# Secrets für Cloudflare (if needed)
 wrangler secret put GROQ_API_KEY
-wrangler secret put YOUTUBE_API_KEY --env youtube
 ```
 
 ## 📚 Weitere Dokumentation
@@ -228,7 +227,6 @@ wrangler secret put YOUTUBE_API_KEY --env youtube
 - [Code Quality](docs/CODE_QUALITY.md) - Quality-Tools
 - [CSS Guide](docs/CSS_GUIDE.md) - CSS-Architektur
 - [Image Optimization](docs/IMAGE_OPTIMIZATION.md) - Bildoptimierung
-- [Workers](workers/README.md) - Cloudflare Workers
 
 ## 🤝 Contributing
 

@@ -28,15 +28,10 @@ Essential documentation for the portfolio website project.
 - **[../content/components/typewriter/README.md](../content/components/typewriter/README.md)** - TypeWriter Component
 - **[../content/config/README.md](../content/config/README.md)** - Configuration Files
 
-## 🔧 Workers Documentation
+## 🔧 API Documentation
 
-- **[../workers/README.md](../workers/README.md)** - Cloudflare Workers overview
-- **[../workers/ai-search-proxy/README.md](../workers/ai-search-proxy/README.md)** - AI Search & Groq proxy
-- **[../workers/youtube-api-proxy/README.md](../workers/youtube-api-proxy/README.md)** - YouTube API proxy
-
-## 🧪 Testing
-
-- **[../tests/README.md](../tests/README.md)** - Testing guide and setup
+- **[../functions/README.md](../functions/README.md)** - Cloudflare Pages Functions overview
+- API endpoints: `/api/search`, `/api/ai`
 
 ## 🎯 Quick Links
 
@@ -68,8 +63,8 @@ npm run optimize:images  # Optimize all images
 - [Vite Documentation](https://vitejs.dev/)
 - [PostCSS Documentation](https://postcss.org/)
 - [Three.js Documentation](https://threejs.org/docs/)
-- [Cloudflare Workers](https://developers.cloudflare.com/workers/)
-- [Groq API](https://console.groq.com/docs)
+- [Cloudflare Pages Functions](https://developers.cloudflare.com/pages/functions/)
+- [Cloudflare AI](https://developers.cloudflare.com/workers-ai/)
 
 ---
 
