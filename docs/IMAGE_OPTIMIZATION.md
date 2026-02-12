@@ -2,31 +2,36 @@
 
 ## Übersicht
 
-Vollständige Bildoptimierungsstrategie mit modernen Formaten, Lazy Loading und Performance-Monitoring.
+Native Browser-Features für Bildoptimierung nutzen - keine zusätzlichen JavaScript-Module erforderlich.
 
 ## Features
 
-- ✅ **AVIF/WebP Support** - Automatische Format-Erkennung mit Fallbacks
-- ✅ **Lazy Loading** - Intersection Observer mit Blur-Placeholder
-- ✅ **Responsive Images** - Automatische srcset-Generierung
-- ✅ **Performance-Monitoring** - Live-Tracking von LCP, CLS
-- ✅ **Automatische Konvertierung** - Batch-Processing für alle Bilder
+- ✅ **Native Lazy Loading** - Browser-integriert mit `loading="lazy"`
+- ✅ **Fetchpriority** - Kritische Bilder priorisieren
+- ✅ **Picture Element** - Moderne Formate (AVIF/WebP) mit Fallbacks
+- ✅ **Responsive Images** - Native srcset und sizes
+- ✅ **Decoding Async** - Non-blocking Bildverarbeitung
 
 ## Quick Start
 
-### 1. In HTML verwenden
+### 1. Einfaches Lazy Loading
 
 ```html
-<!-- Einfaches Lazy Loading -->
-<img
-  src="photo.webp"
-  alt="Beschreibung"
-  loading="lazy"
-  decoding="async"
-  fetchpriority="auto"
-/>
+<!-- Standard Lazy Loading -->
+<img src="photo.webp" alt="Beschreibung" loading="lazy" decoding="async" />
+```
 
-<!-- Responsive mit srcset -->
+### 2. Kritische Bilder
+
+```html
+<!-- Hero/Above-the-fold Bilder -->
+<img src="hero.jpg" alt="Hero" fetchpriority="high" decoding="async" />
+```
+
+### 3. Responsive Images
+
+```html
+<!-- Mit srcset für verschiedene Bildschirmgrößen -->
 <img
   srcset="photo-320.webp 320w, photo-640.webp 640w, photo-960.webp 960w"
   sizes="(max-width: 640px) 100vw, 50vw"
@@ -35,46 +40,28 @@ Vollständige Bildoptimierungsstrategie mit modernen Formaten, Lazy Loading und 
   loading="lazy"
   decoding="async"
 />
+```
 
-<!-- Picture mit modernen Formaten -->
+### 4. Moderne Formate mit Fallback
+
+```html
+<!-- Picture Element für AVIF/WebP mit JPEG Fallback -->
 <picture>
   <source type="image/avif" srcset="photo.avif" />
   <source type="image/webp" srcset="photo.webp" />
-  <img src="photo.jpg" alt="Beschreibung" loading="lazy" />
+  <img src="photo.jpg" alt="Beschreibung" loading="lazy" decoding="async" />
 </picture>
 ```
 
-### 2. In JavaScript verwenden
+## Browser Support
 
-```javascript
-import ImageOptimizer from '/content/core/image-optimizer.js';
+Alle Features werden von modernen Browsern unterstützt:
 
-// Lazy Loading aktivieren
-ImageOptimizer.lazyLoadImagesInContainer('.gallery', {
-  rootMargin: '50px',
-  placeholder: 'blur',
-});
-
-// Kritische Bilder preloaden
-await ImageOptimizer.preloadImages(['/img/hero.jpg'], {
-  fetchpriority: 'high',
-});
-```
-
-### 3. Automatische Initialisierung
-
-Die Bildoptimierung wird automatisch beim Seitenload aktiviert (siehe `content/main.js`).
-
-## Module
-
-### Core
-
-- `image-optimizer.js` - Hauptmodul mit AVIF/WebP Support (319 Zeilen)
-- `image-loader-helper.js` - Minimale API für Initialisierung (52 Zeilen)
-
-### Components
-
-- `image-loading.css` - Optimierte Styles für Loading-States
+- **loading="lazy"**: Chrome 77+, Firefox 75+, Safari 15.4+
+- **fetchpriority**: Chrome 101+, Edge 101+
+- **decoding="async"**: Chrome 65+, Firefox 63+, Safari 14+
+- **AVIF**: Chrome 85+, Firefox 93+, Safari 16+
+- **WebP**: Chrome 23+, Firefox 65+, Safari 14+
 
 ## Best Practices
 

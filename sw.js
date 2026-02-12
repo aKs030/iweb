@@ -41,21 +41,29 @@ const CACHE_STRATEGIES = {
  * Install event - precache assets
  */
 self.addEventListener('install', (event) => {
-  console.log('[SW] Installing service worker...');
+  if (self.location.hostname === 'localhost') {
+    console.log('[SW] Installing service worker...');
+  }
 
   event.waitUntil(
     caches
       .open(CACHE_NAME)
       .then((cache) => {
-        console.log('[SW] Precaching assets');
+        if (self.location.hostname === 'localhost') {
+          console.log('[SW] Precaching assets');
+        }
         return cache.addAll(PRECACHE_ASSETS);
       })
       .then(() => {
-        console.log('[SW] Installation complete');
+        if (self.location.hostname === 'localhost') {
+          console.log('[SW] Installation complete');
+        }
         return self.skipWaiting();
       })
       .catch((error) => {
-        console.error('[SW] Installation failed:', error);
+        if (self.location.hostname === 'localhost') {
+          console.error('[SW] Installation failed:', error);
+        }
       }),
   );
 });
@@ -64,7 +72,9 @@ self.addEventListener('install', (event) => {
  * Activate event - cleanup old caches
  */
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Activating service worker...');
+  if (self.location.hostname === 'localhost') {
+    console.log('[SW] Activating service worker...');
+  }
 
   event.waitUntil(
     caches
@@ -73,14 +83,18 @@ self.addEventListener('activate', (event) => {
         return Promise.all(
           cacheNames.map((cacheName) => {
             if (cacheName !== CACHE_NAME) {
-              console.log('[SW] Deleting old cache:', cacheName);
+              if (self.location.hostname === 'localhost') {
+                console.log('[SW] Deleting old cache:', cacheName);
+              }
               return caches.delete(cacheName);
             }
           }),
         );
       })
       .then(() => {
-        console.log('[SW] Activation complete');
+        if (self.location.hostname === 'localhost') {
+          console.log('[SW] Activation complete');
+        }
         return self.clients.claim();
       }),
   );
@@ -208,7 +222,9 @@ async function cacheFirst(request) {
     }
     return response;
   } catch (error) {
-    console.error('[SW] Cache first failed:', error);
+    if (self.location.hostname === 'localhost') {
+      console.error('[SW] Cache first failed:', error);
+    }
     return new Response('Offline', { status: 503 });
   }
 }
@@ -229,7 +245,9 @@ async function networkFirst(request) {
     if (cached) {
       return cached;
     }
-    console.error('[SW] Network first failed:', error);
+    if (self.location.hostname === 'localhost') {
+      console.error('[SW] Network first failed:', error);
+    }
     return new Response('Offline', { status: 503 });
   }
 }
@@ -245,14 +263,23 @@ async function staleWhileRevalidate(request) {
       if (response.ok) {
         // Clone before any other operations
         const responseToCache = response.clone();
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(request, responseToCache);
-        });
+        caches
+          .open(CACHE_NAME)
+          .then((cache) => {
+            cache.put(request, responseToCache);
+          })
+          .catch((error) => {
+            if (self.location.hostname === 'localhost') {
+              console.error('[SW] Cache put failed:', error);
+            }
+          });
       }
       return response;
     })
     .catch((error) => {
-      console.error('[SW] Stale while revalidate fetch failed:', error);
+      if (self.location.hostname === 'localhost') {
+        console.error('[SW] Stale while revalidate fetch failed:', error);
+      }
       return cached || new Response('Offline', { status: 503 });
     });
 

@@ -49,7 +49,7 @@ const TEMPLATE_PATHS = {
   loader: resolve(ROOT, 'content/templates/base-loader.html'),
 };
 
-let templates = { head: '', loader: '' };
+const templates = { head: '', loader: '' };
 
 function loadTemplates() {
   try {
@@ -298,7 +298,7 @@ function handleAPIMock(req, res, url) {
 }
 
 const server = createServer((req, res) => {
-  let url = req.url?.split('?')[0] || '/';
+  const url = req.url?.split('?')[0] || '/';
 
   // 0. API mock endpoints (Dev-Mode → kein Worker nötig)
   if (handleAPIMock(req, res, url)) return;

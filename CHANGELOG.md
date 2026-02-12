@@ -59,8 +59,7 @@ und dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/).
 - AI Robot Companion mit Groq
 - RAG Search System
 - PWA Support
-- Cloudflare Workers Integration
-- YouTube API Proxy
+- Cloudflare Pages Functions Integration
 - Responsive Design
 - SEO Optimierung
 

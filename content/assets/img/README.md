@@ -67,9 +67,21 @@ hero-640.avif
 
 ## Verwendung im Code
 
-### HTML
+### Native Browser Features
 
 ```html
+<!-- Lazy Loading mit nativem Browser-Feature -->
+<img
+  src="/content/assets/img/photo.jpg"
+  alt="Beschreibung"
+  loading="lazy"
+  decoding="async"
+/>
+
+<!-- Kritische Bilder mit Fetchpriority -->
+<img src="/content/assets/img/hero.jpg" alt="Hero" fetchpriority="high" />
+
+<!-- Responsive Bilder mit Picture Element -->
 <picture>
   <source
     type="image/avif"
@@ -96,22 +108,6 @@ hero-640.avif
     decoding="async"
   />
 </picture>
-```
-
-### JavaScript
-
-```javascript
-import ImageOptimizer from '/content/core/image-optimizer.js';
-
-// Responsive Bild erstellen
-const picture = await ImageOptimizer.createResponsiveImage({
-  src: '/content/assets/img/photo.jpg',
-  alt: 'Mein Bild',
-  sizes: '(max-width: 768px) 100vw, 50vw',
-  loading: 'lazy',
-});
-
-document.body.appendChild(picture);
 ```
 
 ## Richtlinien

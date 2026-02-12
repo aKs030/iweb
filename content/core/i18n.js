@@ -155,9 +155,10 @@ class LanguageManager extends EventTarget {
   }
 
   /**
-   * Get a translation string
+   * Get a translation string with pluralization support
    * @param {string} key Dot-notation key (e.g., 'menu.home')
-   * @param {Object} params Optional parameters for interpolation
+   * @param {Object} params Optional parameters for interpolation and pluralization
+   * @param {number} params.count Optional count for pluralization
    * @returns {string} Translated string or key if missing
    */
   t(key, params = {}) {
@@ -177,12 +178,34 @@ class LanguageManager extends EventTarget {
       }
     }
 
+    // Handle pluralization
+    if (typeof value === 'object' && params.count !== undefined) {
+      value = this._pluralize(value, params.count);
+    }
+
     if (typeof value !== 'string') return key;
 
     // Simple interpolation: "Hello {{name}}"
     return value.replace(/\{\{(\w+)\}\}/g, (_, k) => {
       return params[k] !== undefined ? params[k] : `{{${k}}}`;
     });
+  }
+
+  /**
+   * Handle pluralization
+   * @param {Object} pluralObj - Object with plural forms (zero, one, other)
+   * @param {number} count - Count for pluralization
+   * @returns {string} Appropriate plural form
+   * @private
+   */
+  _pluralize(pluralObj, count) {
+    // Support for zero, one, other
+    if (count === 0 && pluralObj.zero) return pluralObj.zero;
+    if (count === 1 && pluralObj.one) return pluralObj.one;
+    if (pluralObj.other) return pluralObj.other;
+
+    // Fallback
+    return pluralObj.one || pluralObj.other || '';
   }
 
   /**

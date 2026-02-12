@@ -1,7 +1,7 @@
 import { CONFIG } from './config.js';
 import { createLogger } from '../../../core/logger.js';
 import { throttle } from '../../../core/utils.js';
-import { updateLoader } from '../../../core/global-loader.js';
+import { AppLoadManager } from '../../../core/load-manager.js';
 import { i18n } from '../../../core/i18n.js';
 
 import {
@@ -31,9 +31,9 @@ export function showLoadingState(container, progress) {
   // Use the new global loader utility
   if (typeof progress === 'number') {
     const pct = Math.round(progress * 100);
-    updateLoader(progress, i18n.t('loader.loading_3d', { pct }));
+    AppLoadManager.updateLoader(progress, i18n.t('loader.loading_3d', { pct }));
   } else {
-    updateLoader(0, i18n.t('loader.init_3d_engine'));
+    AppLoadManager.updateLoader(0, i18n.t('loader.init_3d_engine'));
   }
 
   // Legacy support: Update overlay directly if needed

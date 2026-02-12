@@ -182,7 +182,7 @@ npm run quality
 ```json
 // knip.json - Entry-points erweitern
 {
-  "entry": ["index.html", "pages/**/app.js", "workers/**/index.js"]
+  "entry": ["index.html", "pages/**/app.js", "functions/**/*.js"]
 }
 ```
 

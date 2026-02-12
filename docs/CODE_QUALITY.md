@@ -156,7 +156,7 @@ Empfohlene Extensions:
 ```json
 // knip.json - Entry-Points hinzufügen
 {
-  "entry": ["pages/**/app.js", "workers/**/index.js"]
+  "entry": ["pages/**/app.js", "functions/**/*.js"]
 }
 ```
 

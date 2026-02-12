@@ -4,14 +4,14 @@
  */
 
 import { initReactProjectsApp } from './app.js';
-import { hideLoader } from '/content/core/global-loader.js';
+import { AppLoadManager } from '/content/core/load-manager.js';
 
 const initPage = () => {
   try {
     initReactProjectsApp();
-    hideLoader(100);
+    AppLoadManager.hideLoader(100);
   } catch (error) {
-    hideLoader(500);
+    AppLoadManager.hideLoader(500);
     const root = document.getElementById('root');
     if (root && !root.innerHTML.trim()) {
       root.innerHTML = `

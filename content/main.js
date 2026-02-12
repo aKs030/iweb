@@ -10,15 +10,13 @@ import { createLogger } from './core/logger.js';
 import { EVENTS, fire } from './core/events.js';
 import { a11y, createAnnouncer } from './core/accessibility-manager.js';
 import { SectionManager } from './core/section-manager.js';
-import { updateLoader, hideLoader } from './core/global-loader.js';
+import { AppLoadManager } from './core/load-manager.js';
 import { ThreeEarthManager } from './core/three-earth-manager.js';
 import { getElementById, onDOMReady } from './core/utils.js';
-import { initImageOptimization } from './core/image-loader-helper.js';
 import { i18n } from './core/i18n.js';
 import { initPerformanceMonitoring } from './core/performance-monitor.js';
 import { SectionTracker } from './core/section-tracker.js';
-import { AppLoadManager } from './core/load-manager.js';
-import { GlobalEventHandlers } from './core/global-events.js';
+import { GlobalEventHandlers } from './core/events.js';
 
 // Search Component (Cmd+K / Ctrl+K Spotlight)
 import './components/search/search.js';
@@ -119,7 +117,7 @@ document.addEventListener(
   async () => {
     await i18n.init();
     perfMarks.domReady = performance.now();
-    updateLoader(0.1, i18n.t('loader.status_init'));
+    AppLoadManager.updateLoader(0.1, i18n.t('loader.status_init'));
 
     // Initialize performance monitoring
     initPerformanceMonitoring();
@@ -137,6 +135,9 @@ document.addEventListener(
     };
 
     const checkReady = () => {
+      // Prevent multiple executions
+      if (loaderHidden) return;
+
       log.debug('checkReady called', {
         modulesReady,
         windowLoaded,
@@ -149,12 +150,10 @@ document.addEventListener(
       if (AppLoadManager?.isBlocked?.()) return;
       if (!isEarthReady()) return;
 
-      if (!loaderHidden) {
-        loaderHidden = true;
-        updateLoader(1, i18n.t('loader.ready_system'));
-        setTimeout(() => hideLoader(), 100);
-        announce(i18n.t('loader.app_loaded'), { dedupe: true });
-      }
+      loaderHidden = true;
+      AppLoadManager.updateLoader(1, i18n.t('loader.ready_system'));
+      setTimeout(() => AppLoadManager.hideLoader(), 100);
+      announce(i18n.t('loader.app_loaded'), { dedupe: true });
     };
 
     document.addEventListener(EVENTS.LOADING_UNBLOCKED, checkReady);
@@ -164,35 +163,29 @@ document.addEventListener(
       () => {
         perfMarks.windowLoaded = performance.now();
         windowLoaded = true;
-        updateLoader(0.7, i18n.t('loader.resources'));
+        AppLoadManager.updateLoader(0.7, i18n.t('loader.resources'));
         checkReady();
       },
       { once: true },
     );
 
-    updateLoader(0.2, i18n.t('loader.modules_core'));
+    AppLoadManager.updateLoader(0.2, i18n.t('loader.modules_core'));
     fire(EVENTS.CORE_INITIALIZED);
     fire(EVENTS.HERO_INIT_READY);
 
-    updateLoader(0.3, i18n.t('loader.hero_init'));
+    AppLoadManager.updateLoader(0.3, i18n.t('loader.hero_init'));
     initHeroFeatureBundle(sectionManager);
 
-    updateLoader(0.4, i18n.t('loader.system_3d'));
+    AppLoadManager.updateLoader(0.4, i18n.t('loader.system_3d'));
     // Earth loading already started in _initApp
 
-    updateLoader(0.5, i18n.t('loader.optimize_images'));
-    // Initialize image optimization
-    initImageOptimization({
-      autoOptimize: true,
-      preloadCritical: true,
-      lazyLoadSelector: 'img[loading="lazy"]',
-    }).catch((error) => {
-      log.warn('Image optimization init failed:', error);
-    });
+    AppLoadManager.updateLoader(0.5, i18n.t('loader.optimize_images'));
+    // Native browser lazy loading is sufficient
+    // No custom image optimization needed
 
     modulesReady = true;
     perfMarks.modulesReady = performance.now();
-    updateLoader(0.6, i18n.t('loader.modules_loaded'));
+    AppLoadManager.updateLoader(0.6, i18n.t('loader.modules_loaded'));
     fire(EVENTS.MODULES_READY);
     checkReady();
 
@@ -201,8 +194,8 @@ document.addEventListener(
       if (!loaderHidden) {
         log.info('Forcing loading screen hide after timeout');
         loaderHidden = true;
-        updateLoader(1, i18n.t('loader.timeout'));
-        hideLoader();
+        AppLoadManager.updateLoader(1, i18n.t('loader.timeout'));
+        AppLoadManager.hideLoader();
       }
     }, LOADING_CONFIG.TIMEOUT_MS);
 
@@ -266,7 +259,7 @@ if ('serviceWorker' in navigator && !ENV.isTest) {
               ) {
                 // New service worker available
                 log.info('New service worker available');
-                // Optional: Show update notification to user
+                showUpdateNotification();
               }
             });
           }
@@ -276,4 +269,121 @@ if ('serviceWorker' in navigator && !ENV.isTest) {
         log.warn('Service Worker registration failed:', error);
       });
   });
+}
+
+/**
+ * Show update notification to user
+ */
+function showUpdateNotification() {
+  const notification = document.createElement('div');
+  notification.id = 'sw-update-notification';
+  notification.className = 'sw-update-notification';
+  notification.innerHTML = `
+    <div class="sw-update-content">
+      <span class="sw-update-icon">🔄</span>
+      <span class="sw-update-text">Neue Version verfügbar!</span>
+      <button class="sw-update-button" id="sw-update-reload">Aktualisieren</button>
+      <button class="sw-update-close" id="sw-update-dismiss" aria-label="Schließen">×</button>
+    </div>
+  `;
+
+  // Add styles
+  const style = document.createElement('style');
+  style.textContent = `
+    .sw-update-notification {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--color-surface, #1a1a1a);
+      color: var(--color-text, #ffffff);
+      padding: 16px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      z-index: 10000;
+      animation: slideIn 0.3s ease-out;
+      max-width: 400px;
+    }
+    .sw-update-content {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .sw-update-icon {
+      font-size: 24px;
+    }
+    .sw-update-text {
+      flex: 1;
+      font-size: 14px;
+    }
+    .sw-update-button {
+      background: var(--color-primary, #0066cc);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+    .sw-update-button:hover {
+      background: var(--color-primary-hover, #0052a3);
+    }
+    .sw-update-close {
+      background: transparent;
+      border: none;
+      color: var(--color-text-secondary, #999);
+      font-size: 24px;
+      cursor: pointer;
+      padding: 0;
+      width: 24px;
+      height: 24px;
+      line-height: 1;
+    }
+    .sw-update-close:hover {
+      color: var(--color-text, #ffffff);
+    }
+    @keyframes slideIn {
+      from {
+        transform: translateY(100px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+    @media (max-width: 640px) {
+      .sw-update-notification {
+        bottom: 10px;
+        right: 10px;
+        left: 10px;
+        max-width: none;
+      }
+    }
+  `;
+
+  document.head.appendChild(style);
+  document.body.appendChild(notification);
+
+  // Handle reload button
+  document.getElementById('sw-update-reload')?.addEventListener('click', () => {
+    window.location.reload();
+  });
+
+  // Handle dismiss button
+  document
+    .getElementById('sw-update-dismiss')
+    ?.addEventListener('click', () => {
+      notification.remove();
+      style.remove();
+    });
+
+  // Auto-dismiss after 30 seconds
+  setTimeout(() => {
+    if (notification.parentNode) {
+      notification.remove();
+      style.remove();
+    }
+  }, 30000);
 }

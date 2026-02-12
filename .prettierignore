@@ -1,17 +1,42 @@
-node_modules
-.git
-.husky
-.wrangler
-*.min.js
-*.min.css
-package-lock.json
-.DS_Store
-coverage
-.vscode
-.idea
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+build/
+.vite/
+.wrangler/
+
+# Cache
+.cache/
+*.cache
+
+# Logs
 *.log
-.env
-.env.local
-.env.*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Generated files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Service Worker (auto-generated)
 sw.js
-*_SUMMARY.md
+
+# Documentation summaries (auto-generated)
+OPTIMIZATION_REPORT.md
+OPTIMIZATION_SUMMARY.md
+
+# Git
+.git/

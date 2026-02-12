@@ -21,7 +21,7 @@
 import { createLogger } from '/content/core/logger.js';
 import { escapeHTML } from '/content/core/html-sanitizer.js';
 import { getElementById } from '/content/core/utils.js';
-import { updateLoader, hideLoader } from '/content/core/global-loader.js';
+import { AppLoadManager } from '/content/core/load-manager.js';
 import { i18n } from '/content/core/i18n.js';
 import { FAVICON_512 } from '../../content/config/site-config.js';
 import { ENV } from '../../content/config/env.config.js';
@@ -159,7 +159,7 @@ const renderVideoCard = async (grid, it, detailsMap, index = 0) => {
   thumbImg.alt = `Thumbnail: ${title}`;
   thumbImg.loading = index < 4 ? 'eager' : 'lazy';
   thumbImg.decoding = 'async';
-  thumbImg.dataset.loaded = 'handling'; // Prevent image-optimizer from interfering
+  thumbImg.dataset.loaded = 'handling'; // Mark as handled
   thumbImg.style.cssText =
     'position:absolute;inset:0;width:100%;height:100%;object-fit:cover;';
 
@@ -337,22 +337,22 @@ const loadLatestVideos = async () => {
       log.warn(
         'Running from file:// — network requests may be blocked. Serve site via http://localhost for proper API requests.',
       );
-      updateLoader(1, i18n.t('videos.local_mode'));
-      hideLoader(500);
+      AppLoadManager.updateLoader(1, i18n.t('videos.local_mode'));
+      AppLoadManager.hideLoader(500);
       return;
     }
 
-    updateLoader(0.1, i18n.t('videos.loading'));
+    AppLoadManager.updateLoader(0.1, i18n.t('videos.loading'));
     setVideoStatus(i18n.t('videos.loading'));
 
     const grid = document.querySelector('.video-grid');
     if (!grid) {
-      updateLoader(1, i18n.t('videos.error'));
-      hideLoader(500);
+      AppLoadManager.updateLoader(1, i18n.t('videos.error'));
+      AppLoadManager.hideLoader(500);
       return;
     }
 
-    updateLoader(0.3, i18n.t('videos.connecting'));
+    AppLoadManager.updateLoader(0.3, i18n.t('videos.connecting'));
     const { items, detailsMap } = await loadFromApi(handle);
 
     // Check for deep link /videos/VIDEO_ID
@@ -400,12 +400,15 @@ const loadLatestVideos = async () => {
         'Keine öffentlichen Uploads auf YouTube gefunden — es werden die statisch eingebetteten Videos angezeigt.',
       );
       setVideoStatus('');
-      updateLoader(1, i18n.t('videos.not_found'));
-      hideLoader(500);
+      AppLoadManager.updateLoader(1, i18n.t('videos.not_found'));
+      AppLoadManager.hideLoader(500);
       return;
     }
 
-    updateLoader(0.6, i18n.t('videos.processing', { count: items.length }));
+    AppLoadManager.updateLoader(
+      0.6,
+      i18n.t('videos.processing', { count: items.length }),
+    );
     grid.innerHTML = '';
 
     // Render videos with progress updates
@@ -434,7 +437,7 @@ const loadLatestVideos = async () => {
       });
 
       const progress = 0.6 + ((i + batchSize) / items.length) * 0.3;
-      updateLoader(
+      AppLoadManager.updateLoader(
         progress,
         i18n.t('videos.processing', {
           count: Math.min(i + batchSize, items.length),
@@ -445,20 +448,23 @@ const loadLatestVideos = async () => {
       await new Promise((resolve) => setTimeout(resolve, 0));
     }
 
-    updateLoader(0.95, i18n.t('loader.videos_loaded', { count: items.length }));
+    AppLoadManager.updateLoader(
+      0.95,
+      i18n.t('loader.videos_loaded', { count: items.length }),
+    );
     setVideoStatus('');
 
     setTimeout(() => {
-      updateLoader(1, i18n.t('videos.ready'));
-      hideLoader(100);
+      AppLoadManager.updateLoader(1, i18n.t('videos.ready'));
+      AppLoadManager.hideLoader(100);
     }, 100);
 
     log.info(`Successfully loaded ${items.length} videos`);
   } catch (err) {
     log.error('Fehler beim Laden der Videos', err);
     showErrorMessage(err);
-    updateLoader(1, i18n.t('videos.error'));
-    hideLoader(500);
+    AppLoadManager.updateLoader(1, i18n.t('videos.error'));
+    AppLoadManager.hideLoader(500);
   }
 };
 

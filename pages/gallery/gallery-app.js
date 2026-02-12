@@ -8,7 +8,7 @@ import React from 'https://esm.sh/react@19.2.3';
 import ReactDOM from 'https://esm.sh/react-dom@19.2.3/client';
 
 import { createLogger } from '/content/core/logger.js';
-import { updateLoader, hideLoader } from '/content/core/global-loader.js';
+import { AppLoadManager } from '/content/core/load-manager.js';
 import { createUseTranslation } from '/content/core/react-utils.js';
 import { createErrorBoundary } from '/content/components/ui/ErrorBoundary.js';
 import {
@@ -93,28 +93,28 @@ const PhotoGallery = () => {
   useEffect(() => {
     const initGallery = async () => {
       try {
-        updateLoader(0.1, t('gallery.loading.init'));
+        AppLoadManager.updateLoader(0.1, t('gallery.loading.init'));
 
         // Simulate initialization steps
         await new Promise((resolve) => setTimeout(resolve, 100));
-        updateLoader(0.3, t('gallery.loading.images'));
+        AppLoadManager.updateLoader(0.3, t('gallery.loading.images'));
 
         await new Promise((resolve) => setTimeout(resolve, 100));
-        updateLoader(0.6, t('gallery.loading.prepare'));
+        AppLoadManager.updateLoader(0.6, t('gallery.loading.prepare'));
 
         await new Promise((resolve) => setTimeout(resolve, 100));
-        updateLoader(0.9, t('gallery.loading.almost'));
+        AppLoadManager.updateLoader(0.9, t('gallery.loading.almost'));
 
         setTimeout(() => {
-          updateLoader(1, t('gallery.loading.ready'));
-          hideLoader(100);
+          AppLoadManager.updateLoader(1, t('gallery.loading.ready'));
+          AppLoadManager.hideLoader(100);
         }, 100);
 
         log.info('Gallery initialized successfully');
       } catch (error) {
         log.error('Gallery initialization failed:', error);
-        updateLoader(1, t('gallery.loading.error'));
-        hideLoader(500);
+        AppLoadManager.updateLoader(1, t('gallery.loading.error'));
+        AppLoadManager.hideLoader(500);
       }
     };
 

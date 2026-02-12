@@ -197,9 +197,18 @@ function deduplicateResults(results) {
 
 export async function onRequestPost(context) {
   const { request, env } = context;
+  const allowedOrigins = [
+    'https://abdulkerimsesli.de',
+    'https://www.abdulkerimsesli.de',
+  ];
+  const origin = request.headers.get('Origin');
+  const corsOrigin =
+    origin && allowedOrigins.includes(origin) ? origin : allowedOrigins[0];
+
   const corsHeaders = {
     'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Origin': corsOrigin,
+    'Access-Control-Allow-Credentials': 'true',
   };
 
   try {
@@ -219,72 +228,87 @@ export async function onRequestPost(context) {
     }
 
     // Parallel fetch for results and AI summary (Modern RAG approach)
-    const [searchResponse, aiResponse] = await Promise.allSettled([
-      binding.fetch(
-        new Request('http://ai-search/api/search', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            query,
-            limit: topK,
-            topK: topK,
-            index: env.AI_SEARCH_INDEX || 'suche',
-            ragId: env.RAG_ID || 'suche',
-          }),
-        }),
-      ),
-      binding.fetch(
-        new Request('http://ai-search/api/ai', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            prompt: `Beantworte kurz die Suchanfrage: "${query}" basierend auf dem Portfolio von Abdulkerim.`,
-            message: query,
-            systemInstruction:
-              "Du bist Abdulkerim's Portfolio-Assistent. Antworte extrem kurz (max 2 Sätze) auf Deutsch. Wenn die Frage nichts mit dem Portfolio zu tun hat, bleib höflich. Nutze Informationen über Projekte, Blog und Erfahrung.",
-            ragId: env.RAG_ID || 'suche',
-            maxResults: 5,
-          }),
-        }),
-      ),
-    ]);
+    const TIMEOUT_MS = 5000; // 5 second timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
-    // Handle Search Results
-    let results = [];
-    if (searchResponse.status === 'fulfilled' && searchResponse.value.ok) {
-      const data = await searchResponse.value.json();
-      if (Array.isArray(data.results)) {
-        results = data.results;
-      } else if (Array.isArray(data.matches)) {
-        results = data.matches.map((m) => ({
-          url: m.metadata?.url || m.url,
-          title: m.metadata?.title || m.title,
-          description: m.metadata?.description || m.description,
-          category: m.metadata?.category || m.category,
-          score: m.score,
-        }));
+    try {
+      const [searchResponse, aiResponse] = await Promise.allSettled([
+        binding.fetch(
+          new Request('http://ai-search/api/search', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              query,
+              limit: topK,
+              topK: topK,
+              index: env.AI_SEARCH_INDEX || 'suche',
+              ragId: env.RAG_ID || 'suche',
+            }),
+            signal: controller.signal,
+          }),
+        ),
+        binding.fetch(
+          new Request('http://ai-search/api/ai', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              prompt: `Beantworte kurz die Suchanfrage: "${query}" basierend auf dem Portfolio von Abdulkerim.`,
+              message: query,
+              systemInstruction:
+                "Du bist Abdulkerim's Portfolio-Assistent. Antworte extrem kurz (max 2 Sätze) auf Deutsch. Wenn die Frage nichts mit dem Portfolio zu tun hat, bleib höflich. Nutze Informationen über Projekte, Blog und Erfahrung.",
+              ragId: env.RAG_ID || 'suche',
+              maxResults: 5,
+            }),
+            signal: controller.signal,
+          }),
+        ),
+      ]);
+
+      clearTimeout(timeoutId);
+
+      clearTimeout(timeoutId);
+
+      // Handle Search Results
+      let results = [];
+      if (searchResponse.status === 'fulfilled' && searchResponse.value.ok) {
+        const data = await searchResponse.value.json();
+        if (Array.isArray(data.results)) {
+          results = data.results;
+        } else if (Array.isArray(data.matches)) {
+          results = data.matches.map((m) => ({
+            url: m.metadata?.url || m.url,
+            title: m.metadata?.title || m.title,
+            description: m.metadata?.description || m.description,
+            category: m.metadata?.category || m.category,
+            score: m.score,
+          }));
+        }
       }
+
+      // Handle AI Summary
+      let summary = '';
+      if (aiResponse.status === 'fulfilled' && aiResponse.value.ok) {
+        const aiData = await aiResponse.value.json();
+        summary = aiData.text || aiData.response || aiData.answer || '';
+        if (!summary && aiData.data) summary = aiData.data.text || '';
+      }
+
+      const finalResults = deduplicateResults(results);
+
+      return new Response(
+        JSON.stringify({
+          results: finalResults,
+          summary: summary,
+          count: finalResults.length,
+          query: query,
+        }),
+        { headers: corsHeaders },
+      );
+    } catch (fetchError) {
+      clearTimeout(timeoutId);
+      throw fetchError;
     }
-
-    // Handle AI Summary
-    let summary = '';
-    if (aiResponse.status === 'fulfilled' && aiResponse.value.ok) {
-      const aiData = await aiResponse.value.json();
-      summary = aiData.text || aiData.response || aiData.answer || '';
-      if (!summary && aiData.data) summary = aiData.data.text || '';
-    }
-
-    const finalResults = deduplicateResults(results);
-
-    return new Response(
-      JSON.stringify({
-        results: finalResults,
-        summary: summary,
-        count: finalResults.length,
-        query: query,
-      }),
-      { headers: corsHeaders },
-    );
   } catch (error) {
     console.error('Search API Error:', error);
     return new Response(

@@ -2,10 +2,10 @@
 
 ## Hooks
 
-| Hook | Was passiert |
-|------|-------------|
+| Hook         | Was passiert                                                       |
+| ------------ | ------------------------------------------------------------------ |
 | `pre-commit` | `lint-staged` → ESLint --fix + Prettier --write (nur staged files) |
-| `pre-push` | `npm run check` + `npm audit` |
+| `pre-push`   | `npm run check` + `npm audit`                                      |
 
 ## Commit-Typen
 

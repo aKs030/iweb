@@ -20,7 +20,7 @@ import {
   showLoader,
   updateLoader,
   hideLoader,
-} from '/content/core/global-loader.js';
+} from '/content/core/load-manager.js';
 
 // Anzeigen
 showLoader('Lade Daten...');
@@ -46,7 +46,7 @@ hideLoader(500, { immediate: false });
 ## Events
 
 ```javascript
-import { EVENTS } from '/content/core/global-loader.js';
+import { EVENTS } from '/content/core/load-manager.js';
 
 document.addEventListener(EVENTS.LOADING_SHOW, () => {});
 document.addEventListener(EVENTS.LOADING_UPDATE, (e) => {});

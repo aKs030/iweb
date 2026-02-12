@@ -180,6 +180,15 @@ class CacheManager {
     this.memory = new MemoryCache(options.memorySize || 100);
     this.idb = new IndexedDBCache(options.dbName, options.dbVersion);
     this.useIndexedDB = options.useIndexedDB ?? true;
+    this.initPromise = null;
+
+    // Pre-initialize IndexedDB if enabled
+    if (this.useIndexedDB) {
+      this.initPromise = this.idb.init().catch((error) => {
+        log.warn('IndexedDB initialization failed, using memory only:', error);
+        this.useIndexedDB = false;
+      });
+    }
   }
 
   async get(key) {
@@ -192,6 +201,9 @@ class CacheManager {
 
     // Try IndexedDB
     if (this.useIndexedDB) {
+      // Ensure IndexedDB is initialized
+      if (this.initPromise) await this.initPromise;
+
       const idbValue = await this.idb.get(key);
       if (idbValue !== null) {
         log.debug(`Cache hit (IndexedDB): ${key}`);
@@ -213,10 +225,22 @@ class CacheManager {
 
     // Set in IndexedDB if persistent
     if (persistent && this.useIndexedDB) {
+      // Ensure IndexedDB is initialized
+      if (this.initPromise) await this.initPromise;
       await this.idb.set(key, value, ttl);
     }
 
     log.debug(`Cache set: ${key}`);
+  }
+
+  /**
+   * Batch set multiple cache entries
+   * @param {Array<{key: string, value: any, options?: Object}>} entries
+   */
+  async setMany(entries) {
+    for (const entry of entries) {
+      await this.set(entry.key, entry.value, entry.options);
+    }
   }
 
   async delete(key) {

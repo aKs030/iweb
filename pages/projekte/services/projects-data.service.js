@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { createLogger } from '/content/core/logger.js';
-import { updateLoader } from '/content/core/global-loader.js';
+import { AppLoadManager } from '/content/core/load-manager.js';
 import { i18n } from '/content/core/i18n.js';
 import { sleep } from '/content/core/utils.js';
 import { GITHUB_CONFIG, PROJECT_CATEGORIES } from '../config/github.config.js';
@@ -97,7 +97,7 @@ const loadDynamicProjects = async (icons) => {
 
   try {
     log.info('Starting dynamic project loading...');
-    updateLoader(0.1, i18n.t('loader.connect_github'));
+    AppLoadManager.updateLoader(0.1, i18n.t('loader.connect_github'));
 
     const contents = await fetchGitHubContents(GITHUB_CONFIG.appsPath);
 
@@ -108,7 +108,7 @@ const loadDynamicProjects = async (icons) => {
     const directories = contents.filter((item) => item.type === 'dir');
     log.info(`Found ${directories.length} directories on GitHub`);
 
-    updateLoader(
+    AppLoadManager.updateLoader(
       0.2,
       i18n.t('loader.found_projects', { count: directories.length }),
     );
@@ -118,7 +118,7 @@ const loadDynamicProjects = async (icons) => {
 
       // Update progress for each project
       const progress = 0.2 + (i / directories.length) * 0.6;
-      updateLoader(
+      AppLoadManager.updateLoader(
         progress,
         i18n.t('loader.loading_project', {
           current: i + 1,
@@ -149,13 +149,13 @@ const loadDynamicProjects = async (icons) => {
       }
     }
 
-    updateLoader(0.85, i18n.t('loader.processing'));
+    AppLoadManager.updateLoader(0.85, i18n.t('loader.processing'));
   } catch (error) {
     log.error('Failed to load dynamic projects from GitHub:', error);
     log.info('Falling back to local bundled config');
     source = 'local';
 
-    updateLoader(0.5, i18n.t('loader.fallback_local'));
+    AppLoadManager.updateLoader(0.5, i18n.t('loader.fallback_local'));
 
     // Ensure local config is loaded
     if (!localAppsConfig.apps) {
@@ -195,7 +195,7 @@ const loadDynamicProjects = async (icons) => {
   });
 
   log.info(`Loaded ${finalProjects.length} projects (Source: ${source})`);
-  updateLoader(
+  AppLoadManager.updateLoader(
     1,
     i18n.t('loader.projects_ready', { count: finalProjects.length }),
   );
