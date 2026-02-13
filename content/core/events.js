@@ -232,4 +232,4 @@ export const GlobalEventHandlers = {
 };
 
 // Export emitter for advanced usage
-export { emitter };
+// export { emitter };
