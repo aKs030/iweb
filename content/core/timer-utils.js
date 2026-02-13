@@ -84,15 +84,6 @@ export class TimerManager {
     this.rafIds.clear();
   }
 
-  /**
-   * Sleep using the shared utility function
-   * @param {number} ms - Milliseconds to sleep
-   * @returns {Promise<void>}
-   */
-  async sleep(ms) {
-    return sleep(ms);
-  }
-
   get activeTimers() {
     return {
       timeouts: this.timers.size,
