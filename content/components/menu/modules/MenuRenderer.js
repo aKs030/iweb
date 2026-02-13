@@ -130,7 +130,12 @@ export class MenuRenderer {
 
     // Translate if possible
     const translatedTitle = i18n.t(title);
-    const translatedSubtitle = i18n.t(subtitle);
+    let translatedSubtitle = i18n.t(subtitle);
+
+    // Prevent duplicate subtitle if it matches title
+    if (translatedTitle === translatedSubtitle) {
+      translatedSubtitle = '';
+    }
 
     // Cancel previous animation
     if (this.rafId) {

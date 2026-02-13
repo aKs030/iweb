@@ -9,8 +9,13 @@
  * - WCAG 2.1 AA Compliant
  * 
  * @author Abdulkerim Sesli
- * @version 3.0.0
+ * @version 3.1.0
  */
+
+/* ===== Custom Element Layout ===== */
+site-menu {
+  display: contents;
+}
 
 /* ===== Skip Links (WCAG 2.1 AA) ===== */
 .skip-links {
@@ -132,12 +137,12 @@
   max-width: 1440px;
   min-width: 920px;
   height: 52px;
-  padding: 0 20px;
-  background: var(--component-header-bg, rgba(0, 0, 0, 0.8));
-  backdrop-filter: blur(var(--component-blur-radius, 20px));
+  padding: 0 16px;
+  background: var(--component-header-bg, rgba(0, 0, 0, 0.6));
+  backdrop-filter: blur(24px);
   border-radius: var(--component-pill-radius, 26px);
-  border: 1px solid var(--component-separator, rgba(255, 255, 255, 0.1));
-  box-shadow: var(--component-shadow-depth-2, 0 8px 32px rgba(0, 0, 0, 0.3));
+  border: 1px solid var(--component-separator, rgba(255, 255, 255, 0.08));
+  box-shadow: var(--component-shadow-depth-2, 0 8px 32px rgba(0, 0, 0, 0.2));
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -174,7 +179,9 @@
   text-decoration: none;
   cursor: default;
   padding-right: 16px;
-  /* Ensure it has a bit of left padding or margin if needed, but flex justify handles positioning */
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .site-title,
@@ -199,13 +206,15 @@
   opacity: 0.8;
   margin-left: 8px;
   display: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .site-subtitle.show {
   display: inline-block;
 }
 
-@media (width <= 600px) {
+@media (width <= 1024px) {
   .site-subtitle {
     display: none !important;
   }
@@ -220,7 +229,7 @@
     var(--component-spring-smooth, cubic-bezier(0.25, 0.46, 0.45, 0.94));
   overflow: visible;
   margin: 0;
-  width: 100%;
+  flex: 1 0 auto;
   position: relative;
   padding: 0;
 }
@@ -228,7 +237,7 @@
 .site-menu__list {
   list-style: none;
   display: flex;
-  gap: clamp(6px, 1vw, 10px);
+  gap: clamp(4px, 0.8vw, 8px);
   align-items: center;
   flex-wrap: nowrap;
   margin: 0;
@@ -261,7 +270,7 @@
   display: flex;
   align-items: center;
   flex-shrink: 0;
-  padding: 8px 10px;
+  padding: 8px 12px;
   min-height: 36px;
   min-width: fit-content;
   border-radius: 18px;
