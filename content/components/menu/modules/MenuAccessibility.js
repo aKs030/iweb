@@ -6,106 +6,94 @@ export class MenuAccessibility {
   constructor(container, state) {
     this.container = container;
     this.state = state;
+    this._cleanupFns = [];
   }
 
   init() {
-    this.setupARIA();
-    this.setupKeyboardNav();
-    this.setupFocusManagement();
+    this.setupFocusTrap();
+    this.setupAnnouncements();
   }
 
-  setupARIA() {
-    const menu = this.container.querySelector('.site-menu');
-    const toggle = this.container.querySelector('.site-menu__toggle');
+  setupFocusTrap() {
+    const handleKeydown = (e) => {
+      if (e.key !== 'Tab') return;
 
-    if (menu) {
-      menu.setAttribute('role', 'navigation');
-      menu.setAttribute('aria-hidden', 'true');
-    }
+      // Only trap focus if menu is open AND we are in mobile view
+      if (!this.state.isOpen || window.innerWidth > 900) return;
 
-    if (toggle) {
-      toggle.setAttribute('aria-controls', menu?.id || 'navigation');
-      toggle.setAttribute('aria-expanded', 'false');
-    }
+      const menu = this.container.querySelector('.site-menu');
+      const toggle = this.container.querySelector('.site-menu__toggle');
 
-    // Update ARIA on state changes
-    this.state.on('openChange', (isOpen) => {
-      if (toggle) toggle.setAttribute('aria-expanded', String(isOpen));
-      if (menu) menu.setAttribute('aria-hidden', String(!isOpen));
-    });
-  }
+      if (!menu || !toggle) return;
 
-  setupKeyboardNav() {
-    const menu = this.container.querySelector('.site-menu');
-    if (!menu) return;
+      // Get all focusable elements inside the navigation list
+      const menuItems = Array.from(
+        menu.querySelectorAll('a[href], button:not([disabled])'),
+      );
 
-    const focusableElements = menu.querySelectorAll(
-      'a[href], button:not([disabled])',
-    );
+      // In our DOM structure, the Menu (<nav>) comes before the Toggle (<button>)
+      // So the natural tab order is: [Menu Item 1, ... Menu Item N, Toggle]
+      const focusables = [...menuItems, toggle];
 
-    this._keydownHandlers = [];
+      if (focusables.length === 0) return;
 
-    focusableElements.forEach((el, index) => {
-      const handler = (e) => {
-        if (e.key === 'Tab') {
-          // Trap focus within menu when open
-          if (this.state.isOpen) {
-            if (e.shiftKey && index === 0) {
-              e.preventDefault();
-              focusableElements[focusableElements.length - 1].focus();
-            } else if (!e.shiftKey && index === focusableElements.length - 1) {
-              e.preventDefault();
-              focusableElements[0].focus();
-            }
-          }
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+
+      if (e.shiftKey) {
+        // Shift + Tab (Backward)
+        if (document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
         }
-      };
-      el.addEventListener('keydown', handler);
-      this._keydownHandlers.push({ el, handler });
-    });
+      } else {
+        // Tab (Forward)
+        if (document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+
+    this.container.addEventListener('keydown', handleKeydown);
+    this._cleanupFns.push(() =>
+      this.container.removeEventListener('keydown', handleKeydown),
+    );
   }
 
-  setupFocusManagement() {
-    // Announce menu state changes to screen readers
+  setupAnnouncements() {
     this.state.on('openChange', (isOpen) => {
-      this.announce(isOpen ? 'Menü geöffnet' : 'Menü geschlossen');
-    });
-
-    this.state.on('titleChange', ({ title }) => {
-      // Update document title for screen readers
-      if (document.title !== title) {
-        document.title = title;
+      if (window.innerWidth <= 900) {
+        this.announce(isOpen ? 'Hauptmenü geöffnet' : 'Hauptmenü geschlossen');
       }
     });
   }
 
   announce(message) {
-    let liveRegion = document.getElementById('menu-live-region');
+    let liveRegion = document.getElementById('a11y-live-region');
 
     if (!liveRegion) {
       liveRegion = document.createElement('div');
-      liveRegion.id = 'menu-live-region';
+      liveRegion.id = 'a11y-live-region';
       liveRegion.setAttribute('role', 'status');
       liveRegion.setAttribute('aria-live', 'polite');
-      liveRegion.setAttribute('aria-atomic', 'true');
+      liveRegion.className = 'sr-only';
       liveRegion.style.cssText =
-        'position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden;';
+        'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;';
       document.body.appendChild(liveRegion);
     }
 
-    liveRegion.textContent = message;
-    setTimeout(() => (liveRegion.textContent = ''), 1000);
+    liveRegion.textContent = '';
+    setTimeout(() => {
+      liveRegion.textContent = message;
+    }, 100);
   }
 
   destroy() {
-    // Remove keyboard event listeners
-    if (this._keydownHandlers) {
-      this._keydownHandlers.forEach(({ el, handler }) => {
-        el.removeEventListener('keydown', handler);
-      });
-      this._keydownHandlers = null;
-    }
-    const liveRegion = document.getElementById('menu-live-region');
+    this._cleanupFns.forEach((fn) => fn());
+    this._cleanupFns = [];
+
+    const liveRegion = document.getElementById('a11y-live-region');
     if (liveRegion) liveRegion.remove();
   }
 }
