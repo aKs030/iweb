@@ -1,8 +1,10 @@
 /**
  * Cloudflare Pages Function - POST /api/search
  * Modern AI Search using Service Binding - Optimized & Reduced
- * @version 6.0.0
+ * @version 6.1.0
  */
+
+import { getCorsHeaders, handleOptions } from './_cors.js';
 
 function normalizeUrl(url) {
   if (!url) return '';
@@ -197,19 +199,7 @@ function deduplicateResults(results) {
 
 export async function onRequestPost(context) {
   const { request, env } = context;
-  const allowedOrigins = [
-    'https://abdulkerimsesli.de',
-    'https://www.abdulkerimsesli.de',
-  ];
-  const origin = request.headers.get('Origin');
-  const corsOrigin =
-    origin && allowedOrigins.includes(origin) ? origin : allowedOrigins[0];
-
-  const corsHeaders = {
-    'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': corsOrigin,
-    'Access-Control-Allow-Credentials': 'true',
-  };
+  const corsHeaders = getCorsHeaders(request, env);
 
   try {
     const body = await request.json().catch(() => ({}));
@@ -322,14 +312,4 @@ export async function onRequestPost(context) {
   }
 }
 
-export async function onRequestOptions() {
-  return new Response(null, {
-    status: 204,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
-      'Access-Control-Max-Age': '86400',
-    },
-  });
-}
+export const onRequestOptions = handleOptions;
