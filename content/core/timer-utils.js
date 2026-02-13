@@ -6,7 +6,6 @@
  */
 
 import { createLogger } from './logger.js';
-import { sleep } from './utils.js'; // Import sleep from utils
 
 const log = createLogger('TimerUtils');
 
@@ -93,6 +92,3 @@ export class TimerManager {
     };
   }
 }
-
-// Re-export sleep for convenience
-export { sleep };
