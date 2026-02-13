@@ -60,4 +60,18 @@ export const ROUTES = {
     type: 'AboutPage',
     image: `${BASE_URL}/content/assets/img/og/og-home-800.webp`,
   },
+  '/datenschutz/': {
+    title: 'Datenschutzerklärung | Abdulkerim Sesli',
+    description:
+      'Informationen zum Datenschutz und zur Verarbeitung personenbezogener Daten gemäß DSGVO.',
+    type: 'WebPage',
+    image: `${BASE_URL}/content/assets/img/og/og-home-800.webp`,
+  },
+  '/impressum/': {
+    title: 'Impressum | Abdulkerim Sesli',
+    description:
+      'Rechtliche Anbieterkennzeichnung und Kontaktinformationen gemäß TMG.',
+    type: 'WebPage',
+    image: `${BASE_URL}/content/assets/img/og/og-home-800.webp`,
+  },
 };
