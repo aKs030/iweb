@@ -28,14 +28,23 @@ const GalleryApp = () => {
       try {
         log.info('Initializing 3D Gallery...');
 
-        AppLoadManager.updateLoader(0.2, t('gallery.loading.init') || 'Initializing...');
-        await new Promise(r => setTimeout(r, 300));
+        AppLoadManager.updateLoader(
+          0.2,
+          t('gallery.loading.init') || 'Initializing...',
+        );
+        await new Promise((r) => setTimeout(r, 300));
 
-        AppLoadManager.updateLoader(0.5, t('gallery.loading.prepare') || 'Preparing Scene...');
-        await new Promise(r => setTimeout(r, 300));
+        AppLoadManager.updateLoader(
+          0.5,
+          t('gallery.loading.prepare') || 'Preparing Scene...',
+        );
+        await new Promise((r) => setTimeout(r, 300));
 
-        AppLoadManager.updateLoader(0.8, t('gallery.loading.assets') || 'Loading Assets...');
-        await new Promise(r => setTimeout(r, 200));
+        AppLoadManager.updateLoader(
+          0.8,
+          t('gallery.loading.assets') || 'Loading Assets...',
+        );
+        await new Promise((r) => setTimeout(r, 200));
 
         AppLoadManager.updateLoader(1, t('gallery.loading.ready') || 'Ready');
         AppLoadManager.hideLoader(100);
@@ -53,38 +62,53 @@ const GalleryApp = () => {
 
   if (!isReady) return null;
 
-  return h('div', { className: 'w-full h-screen bg-black overflow-hidden relative' },
+  return h(
+    'div',
+    { className: 'w-full h-screen bg-black overflow-hidden relative' },
     h(ThreeGalleryScene, { items: GALLERY_ITEMS }),
 
     // Title Overlay
-    h('div', {
-      className: 'absolute top-24 left-1/2 -translate-x-1/2 z-10 pointer-events-none text-center'
-    },
-      h('h1', {
-        className: 'text-4xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 drop-shadow-lg'
-      }, t('gallery.title') || 'Gallery'),
+    h(
+      'div',
+      {
+        className:
+          'absolute top-24 left-1/2 -translate-x-1/2 z-10 pointer-events-none text-center',
+      },
+      h(
+        'h1',
+        {
+          className:
+            'text-4xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 drop-shadow-lg',
+        },
+        t('gallery.title') || 'Gallery',
+      ),
 
-      h('p', {
-        className: 'text-indigo-200 mt-2 text-lg drop-shadow-md'
-      }, t('gallery.subtitle') || 'Explore visual moments')
+      h(
+        'p',
+        {
+          className: 'text-indigo-200 mt-2 text-lg drop-shadow-md',
+        },
+        t('gallery.subtitle') || 'Explore visual moments',
+      ),
     ),
 
     // Instructions
-    h('div', {
-      className: 'absolute bottom-8 left-1/2 -translate-x-1/2 z-10 pointer-events-none animate-pulse'
-    },
-      h('p', { className: 'text-white/40 text-sm' },
-        'Scroll to explore • Click to view'
-      )
-    )
+    h(
+      'div',
+      {
+        className:
+          'absolute bottom-8 left-1/2 -translate-x-1/2 z-10 pointer-events-none animate-pulse',
+      },
+      h(
+        'p',
+        { className: 'text-white/40 text-sm' },
+        'Scroll to explore • Click to view',
+      ),
+    ),
   );
 };
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 const ErrorBoundary = createErrorBoundary(React);
 
-root.render(
-  h(ErrorBoundary, null,
-    h(GalleryApp)
-  )
-);
+root.render(h(ErrorBoundary, null, h(GalleryApp)));

@@ -7,7 +7,7 @@ import * as THREE from 'three';
 export class Gallery3DSystem {
   constructor(container, items, onSelect) {
     this.container = container;
-    this.items = items.map(item => ({ ...item })); // Clone items to avoid mutation side effects
+    this.items = items.map((item) => ({ ...item })); // Clone items to avoid mutation side effects
     this.onSelect = onSelect;
 
     // Core components
@@ -56,7 +56,7 @@ export class Gallery3DSystem {
       60,
       window.innerWidth / window.innerHeight,
       0.1,
-      1000
+      1000,
     );
     // Camera starts at center, looking out
     this.camera.position.set(0, 0, 0);
@@ -65,7 +65,7 @@ export class Gallery3DSystem {
     this.renderer = new THREE.WebGLRenderer({
       alpha: true,
       antialias: true,
-      powerPreference: 'high-performance'
+      powerPreference: 'high-performance',
     });
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -101,7 +101,7 @@ export class Gallery3DSystem {
 
     const geometry = new THREE.PlaneGeometry(
       this.params.itemWidth,
-      this.params.itemHeight
+      this.params.itemHeight,
     );
 
     this.items.forEach((item, index) => {
@@ -131,7 +131,7 @@ export class Gallery3DSystem {
         video.loop = true;
         video.muted = true;
         video.playsInline = true;
-        video.play().catch(e => console.warn('Autoplay prevented:', e));
+        video.play().catch((e) => console.warn('Autoplay prevented:', e));
 
         const videoTexture = new THREE.VideoTexture(video);
         videoTexture.colorSpace = THREE.SRGBColorSpace;
@@ -158,7 +158,7 @@ export class Gallery3DSystem {
       // 2. Glass Frame
       const frameGeo = new THREE.PlaneGeometry(
         this.params.itemWidth + 0.2,
-        this.params.itemHeight + 0.2
+        this.params.itemHeight + 0.2,
       );
       const frameMat = new THREE.MeshPhysicalMaterial({
         color: 0xffffff,
@@ -167,7 +167,7 @@ export class Gallery3DSystem {
         transmission: 0.5, // Glass effect
         transparent: true,
         opacity: 0.2,
-        side: THREE.DoubleSide
+        side: THREE.DoubleSide,
       });
       const frame = new THREE.Mesh(frameGeo, frameMat);
       frame.position.z = -0.05; // Slightly behind
@@ -186,7 +186,7 @@ export class Gallery3DSystem {
     const count = 3000;
     const pos = new Float32Array(count * 3);
 
-    for(let i=0; i<count*3; i++) {
+    for (let i = 0; i < count * 3; i++) {
       pos[i] = (Math.random() - 0.5) * 200; // Wide field
     }
 
@@ -196,7 +196,7 @@ export class Gallery3DSystem {
       size: 0.15,
       transparent: true,
       opacity: 0.6,
-      sizeAttenuation: true
+      sizeAttenuation: true,
     });
 
     this.stars = new THREE.Points(starGeo, starMat);
@@ -216,12 +216,20 @@ export class Gallery3DSystem {
     window.addEventListener('mouseup', this.onMouseUp);
 
     // Touch events for mobile
-    this.container.addEventListener('touchstart', (e) => {
-      this.onMouseDown({ clientY: e.touches[0].clientY });
-    }, { passive: false });
-    this.container.addEventListener('touchmove', (e) => {
-      this.onMouseMove({ clientY: e.touches[0].clientY });
-    }, { passive: false });
+    this.container.addEventListener(
+      'touchstart',
+      (e) => {
+        this.onMouseDown({ clientY: e.touches[0].clientY });
+      },
+      { passive: false },
+    );
+    this.container.addEventListener(
+      'touchmove',
+      (e) => {
+        this.onMouseMove({ clientY: e.touches[0].clientY });
+      },
+      { passive: false },
+    );
     this.container.addEventListener('touchend', this.onMouseUp);
 
     // Click
@@ -237,7 +245,10 @@ export class Gallery3DSystem {
   clampScroll() {
     const maxScroll = (this.items.length - 1) * this.params.verticalStep;
     // Allow slight overscroll
-    this.targetScrollPos = Math.max(-2, Math.min(this.targetScrollPos, maxScroll + 2));
+    this.targetScrollPos = Math.max(
+      -2,
+      Math.min(this.targetScrollPos, maxScroll + 2),
+    );
   }
 
   onMouseDown(e) {
@@ -271,7 +282,7 @@ export class Gallery3DSystem {
     this.raycaster.setFromCamera(this.mouse, this.camera);
 
     // Intersect with meshes only (not frames/stars)
-    const meshes = this.objects.map(o => o.mesh);
+    const meshes = this.objects.map((o) => o.mesh);
     const intersects = this.raycaster.intersectObjects(meshes);
 
     if (intersects.length > 0) {
@@ -306,7 +317,8 @@ export class Gallery3DSystem {
 
     // Camera Rotation (Look outwards)
     // One full rotation per X items?
-    const angle = (this.scrollPos / this.params.verticalStep) * this.params.rotationStep;
+    const angle =
+      (this.scrollPos / this.params.verticalStep) * this.params.rotationStep;
     this.camera.rotation.y = -angle - Math.PI / 2; // Offset to face "front"
 
     // 3. Object Animation (Float & Hover)
@@ -314,18 +326,21 @@ export class Gallery3DSystem {
 
     // Raycaster for hover effect
     this.raycaster.setFromCamera(this.mouse, this.camera);
-    const meshes = this.objects.map(o => o.mesh);
+    const meshes = this.objects.map((o) => o.mesh);
     const intersects = this.raycaster.intersectObjects(meshes);
     const hoveredMesh = intersects.length > 0 ? intersects[0].object : null;
 
-    this.objects.forEach(obj => {
+    this.objects.forEach((obj) => {
       // Floating sine wave
       obj.group.position.y = obj.baseY + Math.sin(time + obj.index) * 0.1;
 
       // Hover scale
-      const isHovered = (obj.mesh === hoveredMesh);
+      const isHovered = obj.mesh === hoveredMesh;
       const targetScale = isHovered ? 1.1 : 1.0;
-      obj.group.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 0.1);
+      obj.group.scale.lerp(
+        new THREE.Vector3(targetScale, targetScale, targetScale),
+        0.1,
+      );
 
       // Look at camera? No, they face center.
     });
@@ -353,7 +368,7 @@ export class Gallery3DSystem {
       this.container.removeChild(this.renderer.domElement);
     }
 
-    this.objects.forEach(obj => {
+    this.objects.forEach((obj) => {
       if (obj.item.videoElement) {
         obj.item.videoElement.pause();
         obj.item.videoElement.src = '';
