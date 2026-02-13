@@ -27,7 +27,9 @@ export class MenuAccessibility {
       if (!menu || !toggle) return;
 
       // Get all focusable elements inside the navigation list
-      const menuItems = Array.from(menu.querySelectorAll('a[href], button:not([disabled])'));
+      const menuItems = Array.from(
+        menu.querySelectorAll('a[href], button:not([disabled])'),
+      );
 
       // In our DOM structure, the Menu (<nav>) comes before the Toggle (<button>)
       // So the natural tab order is: [Menu Item 1, ... Menu Item N, Toggle]
@@ -38,12 +40,14 @@ export class MenuAccessibility {
       const first = focusables[0];
       const last = focusables[focusables.length - 1];
 
-      if (e.shiftKey) { // Shift + Tab (Backward)
+      if (e.shiftKey) {
+        // Shift + Tab (Backward)
         if (document.activeElement === first) {
           e.preventDefault();
           last.focus();
         }
-      } else { // Tab (Forward)
+      } else {
+        // Tab (Forward)
         if (document.activeElement === last) {
           e.preventDefault();
           first.focus();
@@ -52,7 +56,9 @@ export class MenuAccessibility {
     };
 
     this.container.addEventListener('keydown', handleKeydown);
-    this._cleanupFns.push(() => this.container.removeEventListener('keydown', handleKeydown));
+    this._cleanupFns.push(() =>
+      this.container.removeEventListener('keydown', handleKeydown),
+    );
   }
 
   setupAnnouncements() {
@@ -72,18 +78,19 @@ export class MenuAccessibility {
       liveRegion.setAttribute('role', 'status');
       liveRegion.setAttribute('aria-live', 'polite');
       liveRegion.className = 'sr-only';
-      liveRegion.style.cssText = 'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;';
+      liveRegion.style.cssText =
+        'position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;';
       document.body.appendChild(liveRegion);
     }
 
     liveRegion.textContent = '';
     setTimeout(() => {
-        liveRegion.textContent = message;
+      liveRegion.textContent = message;
     }, 100);
   }
 
   destroy() {
-    this._cleanupFns.forEach(fn => fn());
+    this._cleanupFns.forEach((fn) => fn());
     this._cleanupFns = [];
 
     const liveRegion = document.getElementById('a11y-live-region');
