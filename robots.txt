@@ -8,11 +8,27 @@ Sitemap: https://www.abdulkerimsesli.de/sitemap-videos.xml
 User-agent: *
 Allow: /
 
-# Block raw internal HTML fragments (not needed for indexing)
-Disallow: /content/components/*.html
-Disallow: /content/components/*/*.html
+# Block internal implementation directories
+Disallow: /content/components/
+Disallow: /pages/
 
-# Allow resources Googlebot needs for rendering (CSS, JS, XHR partials)
+# Allow resources Googlebot needs for rendering (CSS, JS, Fonts, Images globally)
+Allow: /*.css$
+Allow: /*.js$
+Allow: /*.png$
+Allow: /*.jpg$
+Allow: /*.jpeg$
+Allow: /*.gif$
+Allow: /*.svg$
+Allow: /*.webp$
+Allow: /*.woff$
+Allow: /*.woff2$
+Allow: /*.ttf$
+Allow: /*.eot$
+Allow: /*.ico$
+Allow: /*.json$
+
+# Explicitly allow footer partials required for JS rendering (overrides Disallow /content/components/)
 Allow: /content/components/footer/footer.html
 Allow: /content/components/footer/footer
 Allow: /content/components/footer/datenschutz.html
@@ -20,25 +36,17 @@ Allow: /content/components/footer/impressum.html
 Allow: /content/components/footer/datenschutz/
 Allow: /content/components/footer/impressum/
 
-# Block page HTML partials but allow CSS/JS assets needed for rendering
-Disallow: /pages/*.html
-Disallow: /pages/*/*.html
-Allow: /pages/*.css
-Allow: /pages/*/*.css
-Allow: /pages/*.js
-Allow: /pages/*/*.js
-
-# Block non-HTML resources that shouldn't be indexed
-Allow: /manifest.json
-Disallow: /files/
+# Block non-HTML resources that shouldn't be indexed but technically allowed above? No, Allow wins.
+# But allow json is good (manifest.json).
+# Disallow specific query params
 Disallow: /*?search=
 Disallow: /*?q=
 
 # Block internal/system paths
-# Note: Allowing /content/config and /content/utils so Google can load scripts required for rendering
 Disallow: /node_modules/
 Disallow: /tmp/
 Disallow: /dev/
+Disallow: /files/
 
 # Block aggressive crawlers
 User-agent: AhrefsBot
