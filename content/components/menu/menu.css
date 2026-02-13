@@ -177,6 +177,7 @@
   /* Ensure it has a bit of left padding or margin if needed, but flex justify handles positioning */
 }
 
+.site-title,
 .site-subtitle {
   font-family: var(
     --font-primary,
@@ -191,6 +192,23 @@
   color: var(--text-primary, #ffffff);
   letter-spacing: -0.01em;
   white-space: nowrap;
+}
+
+.site-subtitle {
+  font-weight: 400;
+  opacity: 0.8;
+  margin-left: 8px;
+  display: none;
+}
+
+.site-subtitle.show {
+  display: inline-block;
+}
+
+@media (width <= 600px) {
+  .site-subtitle {
+    display: none !important;
+  }
 }
 
 /* ===== Navigation ===== */

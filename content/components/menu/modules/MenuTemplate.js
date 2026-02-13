@@ -26,7 +26,8 @@ ${this.getToggleButton()}
   getBrand() {
     return `
 <div class="site-logo__container">
-  <span class="site-subtitle">Abdulkerim</span>
+  <span id="site-title" class="site-title"></span>
+  <span id="site-subtitle" class="site-subtitle"></span>
 </div>`;
   }
 
