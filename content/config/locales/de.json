@@ -6,7 +6,14 @@
     "videos": "Videos",
     "blog": "Blog",
     "about": "Über mich",
-    "contact": "Kontakt"
+    "contact": "Kontakt",
+    "home_sub": "Start",
+    "projects_sub": "Portfolio",
+    "gallery_sub": "Eindrücke",
+    "videos_sub": "Motion",
+    "blog_sub": "Wissen",
+    "about_sub": "Profil",
+    "contact_sub": "Anfrage"
   },
   "footer": {
     "about": {

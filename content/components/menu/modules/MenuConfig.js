@@ -23,21 +23,21 @@ export const MenuConfig = {
 
   // Title Mapping
   TITLE_MAP: {
-    '/index.html': 'menu.home',
-    '/': 'menu.home',
-    '/gallery/': 'menu.gallery',
-    '/projekte/': 'menu.projects',
-    '/videos/': 'menu.videos',
-    '/blog/': 'menu.blog',
-    '/about/': 'menu.about',
+    '/index.html': { title: 'menu.home', subtitle: 'menu.home_sub' },
+    '/': { title: 'menu.home', subtitle: 'menu.home_sub' },
+    '/gallery/': { title: 'menu.gallery', subtitle: 'menu.gallery_sub' },
+    '/projekte/': { title: 'menu.projects', subtitle: 'menu.projects_sub' },
+    '/videos/': { title: 'menu.videos', subtitle: 'menu.videos_sub' },
+    '/blog/': { title: 'menu.blog', subtitle: 'menu.blog_sub' },
+    '/about/': { title: 'menu.about', subtitle: 'menu.about_sub' },
   },
 
   // Fallback Titles
   FALLBACK_TITLES: {
-    hero: { title: 'menu.home', subtitle: '' },
-    features: { title: 'menu.projects', subtitle: 'footer.work.projects' },
-    section3: { title: 'menu.about', subtitle: 'footer.about.title' },
-    contact: { title: 'menu.contact', subtitle: 'blog.cta_btn' },
+    hero: { title: 'menu.home', subtitle: 'menu.home_sub' },
+    features: { title: 'menu.projects', subtitle: 'menu.projects_sub' },
+    section3: { title: 'menu.about', subtitle: 'menu.about_sub' },
+    contact: { title: 'menu.contact', subtitle: 'menu.contact_sub' },
   },
 
   // Menu Items Configuration
