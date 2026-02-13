@@ -1,7 +1,7 @@
 /**
  * Cloudflare Pages Function - POST /api/search
  * Modern AI Search using Service Binding - Optimized & Reduced
- * @version 6.1.0
+ * @version 6.1.1
  */
 
 import { getCorsHeaders, handleOptions } from './_cors.js';
@@ -212,6 +212,20 @@ export async function onRequestPost(context) {
       });
     }
 
+    // Check for VECTOR_INDEX (Requested Feature)
+    if (!env.VECTOR_INDEX) {
+      console.error(
+        'VECTOR_INDEX binding is not configured in wrangler.toml or environment',
+      );
+      return new Response(
+        JSON.stringify({
+          error: 'Configuration Error',
+          message: 'VECTOR_INDEX binding is missing',
+        }),
+        { status: 503, headers: corsHeaders },
+      );
+    }
+
     const binding = env.AI_SEARCH;
     if (!binding) {
       throw new Error('AI_SEARCH Service Binding not configured');
@@ -254,8 +268,6 @@ export async function onRequestPost(context) {
           }),
         ),
       ]);
-
-      clearTimeout(timeoutId);
 
       clearTimeout(timeoutId);
 
