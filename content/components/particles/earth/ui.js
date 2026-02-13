@@ -160,14 +160,15 @@ export class PerformanceMonitor {
     // Throttled adjustment to avoid rapid fluctuating changes
     this.throttledAdjustResolution = throttle(
       () => this.adjustResolution(),
-      1000,
+      2000,
     );
   }
 
   update() {
     this.frame++;
     const time = performance.now();
-    if (time >= this.lastTime + 1000) {
+    // Check every 2 seconds to stabilize readings and avoid ping-pong
+    if (time >= this.lastTime + 2000) {
       this.fps = (this.frame * 1000) / (time - this.lastTime);
       this.lastTime = time;
       this.frame = 0;
