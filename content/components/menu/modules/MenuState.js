@@ -44,7 +44,8 @@ export class MenuState {
    */
   setTitle(title, subtitle = '') {
     // Only update if changed to prevent unnecessary re-renders
-    if (this.currentTitle === title && this.currentSubtitle === subtitle) return;
+    if (this.currentTitle === title && this.currentSubtitle === subtitle)
+      return;
 
     this.currentTitle = title;
     this.currentSubtitle = subtitle;

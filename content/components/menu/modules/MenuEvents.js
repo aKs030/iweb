@@ -103,7 +103,7 @@ export class MenuEvents {
     const links = this.container.querySelectorAll('.site-menu a[href]');
 
     links.forEach((link) => {
-      const handleClick = (e) => {
+      const handleClick = (_e) => {
         const href = link.getAttribute('href');
         if (!href) return;
 
@@ -117,7 +117,7 @@ export class MenuEvents {
           const isSamePage = href.split('#')[0] === window.location.pathname;
 
           if (!isHash || !isSamePage) {
-             // Let normal navigation happen
+            // Let normal navigation happen
           }
         }
       };
@@ -206,7 +206,7 @@ export class MenuEvents {
 
     const callback = (entries) => {
       // Find the "most important" entry
-      const visibleEntries = entries.filter(e => e.isIntersecting);
+      const visibleEntries = entries.filter((e) => e.isIntersecting);
       if (visibleEntries.length === 0) return;
 
       const entry = visibleEntries[0]; // Usually the first one that intersects based on margin
@@ -214,9 +214,12 @@ export class MenuEvents {
       if (entry.target.id) {
         this.updateTitleFromSection(entry.target.id);
         // Optionally sync active link for scrolling on homepage
-        if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
-             // We could update state here, but let's be careful not to spam
-             // this.state.setActiveLink(`/#${entry.target.id}`);
+        if (
+          window.location.pathname === '/' ||
+          window.location.pathname === '/index.html'
+        ) {
+          // We could update state here, but let's be careful not to spam
+          // this.state.setActiveLink(`/#${entry.target.id}`);
         }
       }
     };
@@ -242,21 +245,22 @@ export class MenuEvents {
   calculateAndSetActiveLink() {
     const currentPath = window.location.pathname.replace(/\/$/, '') || '/';
     const currentHash = window.location.hash;
-    const fullUrl = currentPath + currentHash;
 
-    const links = Array.from(this.container.querySelectorAll('.site-menu a[href]'));
+    const links = Array.from(
+      this.container.querySelectorAll('.site-menu a[href]'),
+    );
 
     let bestMatch = null;
     let matchScore = 0; // 3=Hash, 2=ExactPath, 1=Prefix
 
-    links.forEach(link => {
+    links.forEach((link) => {
       const rawHref = link.getAttribute('href');
       if (!rawHref) return;
 
       // Normalize link href
       // e.g. "/projekte/" -> "/projekte", "/#contact" -> "/#contact"
-      let linkPath = rawHref.split('#')[0].replace(/\/$/, '') || '/';
-      let linkHash = rawHref.includes('#') ? '#' + rawHref.split('#')[1] : '';
+      const linkPath = rawHref.split('#')[0].replace(/\/$/, '') || '/';
+      const linkHash = rawHref.includes('#') ? '#' + rawHref.split('#')[1] : '';
 
       // Check 1: Exact Hash Match (Highest Priority)
       // Must match path AND hash
@@ -270,11 +274,11 @@ export class MenuEvents {
 
       // Check 2: Exact Path Match (ignoring hash on current page if link has no hash)
       if (!linkHash && linkPath === currentPath) {
-         if (matchScore < 2) {
-           bestMatch = rawHref;
-           matchScore = 2;
-         }
-         return;
+        if (matchScore < 2) {
+          bestMatch = rawHref;
+          matchScore = 2;
+        }
+        return;
       }
 
       // Check 3: Prefix Match (Subpages)
@@ -284,8 +288,8 @@ export class MenuEvents {
         // Verify it's a real segment match (/blog matches /blog/x, but /b does not match /blog)
         const nextChar = currentPath[linkPath.length];
         if (linkPath === '/' || nextChar === '/') {
-           bestMatch = rawHref;
-           matchScore = 1;
+          bestMatch = rawHref;
+          matchScore = 1;
         }
       }
     });
@@ -310,9 +314,11 @@ export class MenuEvents {
     const titleMap = this.config.TITLE_MAP || {};
 
     // Sort by length to find most specific match first
-    const sortedKeys = Object.keys(titleMap).sort((a, b) => b.length - a.length);
+    const sortedKeys = Object.keys(titleMap).sort(
+      (a, b) => b.length - a.length,
+    );
 
-    const matchedKey = sortedKeys.find(key => {
+    const matchedKey = sortedKeys.find((key) => {
       if (key === '/') return path === '/' || path === '/index.html';
       return path.startsWith(key);
     });
@@ -367,7 +373,7 @@ export class MenuEvents {
   }
 
   destroy() {
-    this.cleanupFns.forEach(fn => fn());
+    this.cleanupFns.forEach((fn) => fn());
     this.cleanupFns = [];
     if (this.sectionObserver) {
       this.sectionObserver.disconnect();

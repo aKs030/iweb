@@ -39,7 +39,9 @@ export class MenuRenderer {
     this.updateTitle(this.state.currentTitle, this.state.currentSubtitle);
 
     // Initial Language Sync
-    const currentLang = i18n.getCurrentLanguage ? i18n.getCurrentLanguage() : 'de';
+    const currentLang = i18n.getCurrentLanguage
+      ? i18n.getCurrentLanguage()
+      : 'de';
     this.updateLanguage(currentLang);
   }
 
@@ -59,7 +61,9 @@ export class MenuRenderer {
         const targetId = href.substring(1);
         const target = document.getElementById(targetId);
         const svg = use.closest('svg');
-        const fallback = svg?.closest('a, button')?.querySelector('.icon-fallback');
+        const fallback = svg
+          ?.closest('a, button')
+          ?.querySelector('.icon-fallback');
 
         // If SVG symbol is missing, show fallback emoji/text
         if (!target && fallback) {
@@ -140,8 +144,8 @@ export class MenuRenderer {
       }
       // Aria-label translation (for buttons)
       if (el.hasAttribute('aria-label') && el.getAttribute('data-i18n-aria')) {
-          const key = el.getAttribute('data-i18n-aria');
-          el.setAttribute('aria-label', i18n.t(key));
+        const key = el.getAttribute('data-i18n-aria');
+        el.setAttribute('aria-label', i18n.t(key));
       }
     });
 
@@ -167,14 +171,16 @@ export class MenuRenderer {
     }
 
     // Optimize: Check if text content is already correct
-    if (siteTitleEl.textContent === translatedTitle &&
-       (!siteSubtitleEl || siteSubtitleEl.textContent === translatedSubtitle)) {
-         // Just ensure subtitle visibility is correct
-         if (siteSubtitleEl) {
-            if (translatedSubtitle) siteSubtitleEl.classList.add('show');
-            else siteSubtitleEl.classList.remove('show');
-         }
-         return;
+    if (
+      siteTitleEl.textContent === translatedTitle &&
+      (!siteSubtitleEl || siteSubtitleEl.textContent === translatedSubtitle)
+    ) {
+      // Just ensure subtitle visibility is correct
+      if (siteSubtitleEl) {
+        if (translatedSubtitle) siteSubtitleEl.classList.add('show');
+        else siteSubtitleEl.classList.remove('show');
+      }
+      return;
     }
 
     if (this.rafId) {
