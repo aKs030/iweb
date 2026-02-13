@@ -2,7 +2,7 @@
 # Cloudflare Pages Redirects Configuration
 # ============================================================================
 # Optimized redirect rules for canonical URLs and legacy path cleanup
-# Last updated: 2025-01-30
+# Last updated: 2026-02-13
 #
 # Rule Priority (Cloudflare processes top to bottom):
 # 1. Specific redirects (exact paths)
