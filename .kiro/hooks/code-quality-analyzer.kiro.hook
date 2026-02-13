@@ -1,0 +1,21 @@
+{
+  "enabled": true,
+  "name": "Code Quality Analyzer",
+  "description": "Analyzes modified source code for potential improvements including code smells, design patterns, best practices, readability, maintainability, and performance optimizations",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "*.js",
+      "*.mjs",
+      "*.css",
+      "*.html"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "Analyze the modified code for potential improvements. Check for:\n1. Code smells and anti-patterns\n2. Opportunities to apply design patterns\n3. Best practices violations (based on project tech stack: vanilla JS, ES6+, Web Components)\n4. Readability improvements (naming, structure, comments)\n5. Maintainability concerns (complexity, coupling, duplication)\n6. Performance optimizations (bundle size, runtime efficiency)\n\nProvide specific, actionable suggestions while respecting the existing architecture and functionality. Keep suggestions concise and prioritize high-impact improvements."
+  },
+  "workspaceFolderName": "iweb",
+  "shortName": "code-quality-analyzer"
+}
