@@ -14,23 +14,23 @@ export async function onRequestPost(context) {
     const ragId = env.RAG_ID; // Used for context/logging or metadata filter if applicable
 
     if (!category) {
-      return new Response(
-        JSON.stringify({ error: 'Category is required' }),
-        { status: 400, headers: corsHeaders }
-      );
+      return new Response(JSON.stringify({ error: 'Category is required' }), {
+        status: 400,
+        headers: corsHeaders,
+      });
     }
 
     if (!env.VECTOR_INDEX) {
       return new Response(
         JSON.stringify({ error: 'VECTOR_INDEX not configured' }),
-        { status: 503, headers: corsHeaders }
+        { status: 503, headers: corsHeaders },
       );
     }
 
     if (!env.AI) {
       return new Response(
         JSON.stringify({ error: 'AI binding not configured for embeddings' }),
-        { status: 503, headers: corsHeaders }
+        { status: 503, headers: corsHeaders },
       );
     }
 
@@ -65,30 +65,35 @@ export async function onRequestPost(context) {
     const matches = await env.VECTOR_INDEX.query(vector, {
       topK: limit || 10,
       filter: filter,
-      returnMetadata: true
+      returnMetadata: true,
     });
 
     // 4. Format Results
-    const results = matches.matches.map(match => ({
+    const results = matches.matches.map((match) => ({
       score: match.score,
       title: match.metadata?.title || 'Unknown',
       url: match.metadata?.url || '',
       description: match.metadata?.description || '',
       category: match.metadata?.category || category,
-      ragId: ragId // Echo back the used RAG_ID
+      ragId: ragId, // Echo back the used RAG_ID
     }));
 
-    return new Response(JSON.stringify({
-      results,
-      count: results.length,
-      filter: { category, ragId }
-    }), { headers: corsHeaders });
-
+    return new Response(
+      JSON.stringify({
+        results,
+        count: results.length,
+        filter: { category, ragId },
+      }),
+      { headers: corsHeaders },
+    );
   } catch (error) {
     console.error('Filter API Error:', error);
     return new Response(
-      JSON.stringify({ error: 'Internal Server Error', message: error.message }),
-      { status: 500, headers: corsHeaders }
+      JSON.stringify({
+        error: 'Internal Server Error',
+        message: error.message,
+      }),
+      { status: 500, headers: corsHeaders },
     );
   }
 }
