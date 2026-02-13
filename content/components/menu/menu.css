@@ -139,7 +139,7 @@
   border: 1px solid var(--component-separator, rgba(255, 255, 255, 0.1));
   box-shadow: var(--component-shadow-depth-2, 0 8px 32px rgba(0, 0, 0, 0.3));
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
   align-items: center;
   z-index: 9999;
   animation: headerAppear 0.8s
@@ -167,52 +167,17 @@
   }
 }
 
-/* ===== Logo ===== */
+/* ===== Brand / Subtitle ===== */
 .site-logo__container {
   display: flex;
-  flex-direction: row;
   align-items: center;
-  gap: 8px;
-  padding: 4px 0;
-  position: absolute;
-  left: 20px;
-  z-index: 1;
-  max-width: 300px;
-  white-space: nowrap;
-}
-
-.site-logo {
-  transition:
-    transform 0.3s var(--component-spring-quick, cubic-bezier(0.4, 0, 0.2, 1)),
-    opacity 0.3s var(--component-spring-quick, cubic-bezier(0.4, 0, 0.2, 1));
-  cursor: pointer;
   text-decoration: none;
-  display: inline-block;
-  position: relative;
-  margin: 0;
+  cursor: default;
+  padding-right: 16px;
+  /* Ensure it has a bit of left padding or margin if needed, but flex justify handles positioning */
 }
 
-.site-logo.elegant-logo {
-  font-family: var(
-    --font-primary,
-    -apple-system,
-    BlinkMacSystemFont,
-    'Segoe UI',
-    Roboto,
-    sans-serif
-  );
-  font-size: clamp(18px, 2vw, 22px);
-  font-weight: 700;
-  color: var(--component-label-primary, #ffffff);
-  letter-spacing: -0.03em;
-  white-space: nowrap;
-}
-
-.site-logo:hover {
-  transform: scale(1.02);
-  color: var(--component-accent-blue, #007aff);
-}
-
+.site-title,
 .site-subtitle {
   font-family: var(
     --font-primary,
@@ -222,30 +187,28 @@
     Roboto,
     sans-serif
   );
-  font-size: clamp(10px, 0.9vw, 12px);
-  font-weight: 450;
-  color: var(--component-label-secondary, rgba(255, 255, 255, 0.7));
-  letter-spacing: 0.01em;
-  opacity: 0;
-  transform: translateX(-4px) scale(0.95);
-  transition:
-    opacity 0.4s
-      var(--component-spring-smooth, cubic-bezier(0.25, 0.46, 0.45, 0.94)),
-    transform 0.4s
-      var(--component-spring-smooth, cubic-bezier(0.25, 0.46, 0.45, 0.94));
-  text-align: left;
-  line-height: 1.1;
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--text-primary, #ffffff);
+  letter-spacing: -0.01em;
   white-space: nowrap;
 }
 
-.site-subtitle.show {
+.site-subtitle {
+  font-weight: 400;
   opacity: 0.8;
-  transform: translateX(0) scale(1);
+  margin-left: 8px;
+  display: none;
 }
 
-.site-logo__container:hover .site-subtitle.show {
-  opacity: 1;
-  color: var(--component-label-primary, #ffffff);
+.site-subtitle.show {
+  display: inline-block;
+}
+
+@media (width <= 600px) {
+  .site-subtitle {
+    display: none !important;
+  }
 }
 
 /* ===== Navigation ===== */

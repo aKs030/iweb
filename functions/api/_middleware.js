@@ -17,12 +17,15 @@ const RATE_LIMIT = {
 class RateLimiter {
   constructor() {
     this.requests = new Map();
-    // Cleanup old entries every 5 minutes
-    setInterval(() => this.cleanup(), 300000);
+    this.lastCleanup = Date.now();
   }
 
   cleanup() {
     const now = Date.now();
+    // Only cleanup if 5 minutes have passed since last cleanup
+    if (now - this.lastCleanup < 300000) return;
+
+    this.lastCleanup = now;
     for (const [key, data] of this.requests.entries()) {
       if (now - data.resetTime > RATE_LIMIT.WINDOW_MS) {
         this.requests.delete(key);
@@ -31,6 +34,7 @@ class RateLimiter {
   }
 
   check(identifier, maxRequests = RATE_LIMIT.MAX_REQUESTS) {
+    this.cleanup();
     const now = Date.now();
     const data = this.requests.get(identifier);
 
