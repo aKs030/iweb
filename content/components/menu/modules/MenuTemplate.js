@@ -69,7 +69,6 @@ ${this.getToggleButton()}
 </svg>`;
   }
 
-
   getToggleButton() {
     return `
 <button type="button" class="site-menu__toggle" aria-label="${i18n.t('menu.toggle')}" aria-controls="navigation" aria-expanded="false">
