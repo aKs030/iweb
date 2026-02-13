@@ -150,4 +150,42 @@ export const CONFIG = {
       MOON_BUMP: '/content/assets/img/earth/textures/moon_bump.webp',
     },
   },
+  MARKERS: [
+    {
+      lat: 50.1109,
+      lon: 8.6821,
+      title: 'Frankfurt',
+      desc: 'Home Base & Creative Hub',
+    },
+    {
+      lat: 40.7128,
+      lon: -74.006,
+      title: 'New York',
+      desc: 'Inspiration & Design',
+    },
+    {
+      lat: 35.6762,
+      lon: 139.6503,
+      title: 'Tokyo',
+      desc: 'Future Tech & Innovation',
+    },
+    {
+      lat: 37.7749,
+      lon: -122.4194,
+      title: 'San Francisco',
+      desc: 'Silicon Valley Vibes',
+    },
+    {
+      lat: 25.2048,
+      lon: 55.2708,
+      title: 'Dubai',
+      desc: 'Visionary Architecture',
+    },
+  ],
+  INTERACTION: {
+    DRAG_SENSITIVITY: 0.005,
+    INERTIA_DAMPING: 0.95,
+    AUTO_ROTATE_DELAY: 3000,
+    MAX_ROTATION_SPEED: 0.1,
+  },
 };

@@ -199,7 +199,31 @@ export async function createCloudLayer(
       segments,
       segments,
     );
-    return new THREE.Mesh(cloudGeometry, cloudMaterial);
+    const cloudMesh = new THREE.Mesh(cloudGeometry, cloudMaterial);
+
+    // NEW: Shadow Layer for depth
+    const shadowMaterial = new THREE.MeshBasicMaterial({
+      map: cloudTexture,
+      transparent: true,
+      opacity: 0.25,
+      blending: THREE.NormalBlending,
+      color: 0x000000,
+      depthWrite: false,
+      side: THREE.DoubleSide,
+    });
+
+    const shadowGeometry = new THREE.SphereGeometry(
+      CONFIG.EARTH.RADIUS + CONFIG.CLOUDS.ALTITUDE * 0.3,
+      segments,
+      segments,
+    );
+    const shadowMesh = new THREE.Mesh(shadowGeometry, shadowMaterial);
+
+    const group = new THREE.Group();
+    group.add(shadowMesh);
+    group.add(cloudMesh);
+
+    return group;
   } catch (error) {
     log.warn('Cloud texture failed to load:', error);
     return new THREE.Object3D();

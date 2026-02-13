@@ -29,6 +29,7 @@ import {
 import { CameraManager } from './earth/camera.js';
 import { StarManager, ShootingStarManager } from './earth/stars.js';
 import { CardManager } from './earth/cards.js';
+import { MarkerManager } from './earth/markers.js'; // NEW
 import {
   showLoadingState,
   hideLoadingState,
@@ -155,6 +156,7 @@ class ThreeEarthSystem {
     /** @type {ShootingStarManager|null} */ this.shootingStarManager = null;
     /** @type {PerformanceMonitor|null} */ this.performanceMonitor = null;
     /** @type {CardManager|null} */ this.cardManager = null;
+    /** @type {MarkerManager|null} */ this.markerManager = null; // NEW
 
     // State
     this.currentSection = 'hero';
@@ -180,6 +182,7 @@ class ThreeEarthSystem {
     this.handleVisibilityChange = this.handleVisibilityChange.bind(this);
     this.onClick = this.onClick.bind(this);
     this.onShowcaseTrigger = this.onShowcaseTrigger.bind(this);
+    this.onMarkerClick = this.onMarkerClick.bind(this); // NEW
 
     // Observers
     this.sectionObserver = null;
@@ -292,6 +295,7 @@ class ThreeEarthSystem {
     this.shootingStarManager?.cleanup();
     this.cameraManager?.cleanup();
     this.starManager?.cleanup();
+    this.markerManager?.cleanup(); // NEW
 
     // ✅ Explicit null assignment after disconnect
     if (this.sectionObserver) {
@@ -493,6 +497,7 @@ class ThreeEarthSystem {
   _initManagers(container) {
     this.cameraManager = new CameraManager(this.THREE, this.camera);
     this.cameraManager.setupCameraSystem();
+    this.cameraManager.enableDragRotation(container); // NEW
 
     const onWheel = (/** @type {any} */ e) => {
       if (this.active) this.cameraManager?.handleWheel(e);
@@ -542,6 +547,26 @@ class ThreeEarthSystem {
     }
 
     this.cardManager.initFromData(this._getCardData());
+
+    // NEW: Setup Markers
+    if (CONFIG.MARKERS && this.earthMesh) {
+      this.markerManager = new MarkerManager(
+        this.THREE,
+        this.scene,
+        this.camera,
+        this.renderer,
+        container,
+      );
+      const markers = this.markerManager.createMarkers(
+        CONFIG.MARKERS,
+        CONFIG.EARTH.RADIUS,
+      );
+      // Add markers to Earth so they rotate with it
+      markers.forEach((m) => {
+        this.earthMesh.add(m.mesh);
+        if (m.ring) this.earthMesh.add(m.ring);
+      });
+    }
   }
 
   _getCardData() {
@@ -615,10 +640,12 @@ class ThreeEarthSystem {
 
   _setupInteraction() {
     window.addEventListener('click', this.onClick);
+    document.addEventListener('earth-marker-click', this.onMarkerClick); // NEW
   }
 
   _removeInteractionHandlers() {
     window.removeEventListener('click', this.onClick);
+    document.removeEventListener('earth-marker-click', this.onMarkerClick); // NEW
   }
 
   /**
@@ -630,6 +657,14 @@ class ThreeEarthSystem {
     mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
     this.cardManager.handleClick(mouse);
+  }
+
+  onMarkerClick(event) {
+    // NEW
+    if (this.cameraManager) {
+      const { lat, lon } = event.detail;
+      this.cameraManager.flyToCoordinates(lat, lon);
+    }
   }
 
   /**
@@ -758,6 +793,11 @@ class ThreeEarthSystem {
 
     if (this.cardManager) {
       this.cardManager.update(totalTime * 1000);
+    }
+
+    // NEW: Update Marker Manager
+    if (this.markerManager) {
+      this.markerManager.update(totalTime);
     }
 
     if (!capabilities.isLowEnd) this.shootingStarManager?.update(delta);

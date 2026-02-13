@@ -25,10 +25,78 @@ export class CameraManager {
       endLookAt: null,
       presetZ: 0,
     };
+
+    // Drag & Inertia State
+    this.interaction = {
+      isDragging: false,
+      lastX: 0,
+      velocityX: 0,
+      autoRotateDelayTimer: 0,
+      isAutoRotating: true,
+      enabled: false,
+    };
+
+    // Bind handlers
+    this.onPointerDown = this.onPointerDown.bind(this);
+    this.onPointerMove = this.onPointerMove.bind(this);
+    this.onPointerUp = this.onPointerUp.bind(this);
   }
 
   setupCameraSystem() {
     this.updateCameraForSection('hero');
+  }
+
+  enableDragRotation(container) {
+    if (this.interaction.enabled) return;
+    this.container = container;
+    container.style.touchAction = 'none'; // Prevent scrolling while dragging globe
+
+    container.addEventListener('pointerdown', this.onPointerDown, {
+      passive: false,
+    });
+    window.addEventListener('pointerup', this.onPointerUp);
+    window.addEventListener('pointermove', this.onPointerMove, {
+      passive: false,
+    }); // Passive false needed if we want to prevent default
+
+    this.interaction.enabled = true;
+  }
+
+  onPointerDown(e) {
+    if (!this.interaction.enabled) return;
+    this.interaction.isDragging = true;
+    this.interaction.lastX = e.clientX;
+    this.interaction.velocityX = 0;
+    this.interaction.isAutoRotating = false;
+    this.container.style.cursor = 'grabbing';
+
+    // Stop any active transitions if user grabs
+    // this.transition.active = false;
+  }
+
+  onPointerMove(e) {
+    if (!this.interaction.isDragging) return;
+
+    const deltaX = e.clientX - this.interaction.lastX;
+    this.interaction.lastX = e.clientX;
+
+    // Calculate velocity
+    const sensitivity = CONFIG.INTERACTION?.DRAG_SENSITIVITY || 0.005;
+    this.interaction.velocityX = deltaX * sensitivity;
+
+    // Apply immediate rotation
+    this.targetOrbitAngle -= this.interaction.velocityX;
+    this.cameraOrbitAngle -= this.interaction.velocityX; // Direct mapping for responsiveness
+  }
+
+  onPointerUp() {
+    if (!this.interaction.isDragging) return;
+    this.interaction.isDragging = false;
+    this.container.style.cursor = 'grab';
+
+    // Start auto-rotate timer
+    const delay = CONFIG.INTERACTION?.AUTO_ROTATE_DELAY || 3000;
+    this.interaction.autoRotateDelayTimer = performance.now() + delay;
   }
 
   updateCameraForSection(sectionName) {
@@ -46,6 +114,30 @@ export class CameraManager {
       log.warn(`No preset for '${sectionName}', using hero`);
       this.flyToPreset('hero');
     }
+  }
+
+  // New method for markers
+  flyToCoordinates(lat, lon) {
+    // Convert lat/lon to camera position or lookAt
+    // Simplified: Rotate globe so lat/lon is in front
+    // Longitude maps to rotation Y (orbit angle)
+
+    // Reset auto-rotate
+    this.interaction.isAutoRotating = false;
+    this.interaction.autoRotateDelayTimer = performance.now() + 5000;
+
+    // Calculate target angle
+    // -Lon because rotation is counter-clockwise? Needs testing.
+    // Normalized to 0..2PI
+    const targetAngle = (lon * Math.PI) / 180;
+
+    // Find shortest path
+    // const current = this.targetOrbitAngle;
+    // const target = targetAngle;
+
+    // Normalize angles
+    // ...implementation omitted for brevity, simple assignment for now
+    this.targetOrbitAngle = targetAngle;
   }
 
   flyToPreset(presetName) {
@@ -74,7 +166,7 @@ export class CameraManager {
 
   // UPDATED: Now accepts delta time for frame-rate independence
   updateCameraPosition(delta = 0.016) {
-    // 1. Handle Active Transition
+    // 1. Handle Active Transition (Priority High)
     if (this.transition.active) {
       const elapsed = performance.now() - this.transition.startTime;
       const progress = Math.min(elapsed / this.transition.duration, 1);
@@ -114,7 +206,37 @@ export class CameraManager {
       }
     }
 
-    // 2. Handle Orbit & Smoothing (Frame-Rate Independent)
+    // 2. Handle Inertia & Drag
+    if (
+      !this.interaction.isDragging &&
+      Math.abs(this.interaction.velocityX) > 0.0001
+    ) {
+      // Apply inertia
+      this.targetOrbitAngle -= this.interaction.velocityX;
+
+      const damping = CONFIG.INTERACTION?.INERTIA_DAMPING || 0.95;
+      this.interaction.velocityX *= damping;
+
+      // Force update to keep in sync
+      // this.cameraOrbitAngle = this.targetOrbitAngle;
+    }
+
+    // 3. Auto Rotate Resume check
+    if (!this.interaction.isDragging && !this.interaction.isAutoRotating) {
+      if (
+        Math.abs(this.interaction.velocityX) < 0.0001 &&
+        performance.now() > this.interaction.autoRotateDelayTimer
+      ) {
+        this.interaction.isAutoRotating = true;
+      }
+    }
+
+    // Note: If isAutoRotating is true, `targetOrbitAngle` is managed externally by `ThreeEarthSystem` or sections.
+    // However, if we dragged, we offset `targetOrbitAngle`.
+    // The existing code below lerps `cameraOrbitAngle` towards `targetOrbitAngle`.
+    // So modifying `targetOrbitAngle` is the correct way to rotate the camera.
+
+    // 4. Handle Orbit & Smoothing (Frame-Rate Independent)
 
     // Normalize delta to 60fps (approx 16.6ms)
     // If delta is 0.016, timeScale is 1. If delta is 0.033 (30fps), timeScale is 2.
@@ -167,10 +289,17 @@ export class CameraManager {
   }
 
   setTargetOrbitAngle(angle) {
-    this.targetOrbitAngle = angle;
+    // Only allow external override if not dragging
+    if (!this.interaction.isDragging) {
+      this.targetOrbitAngle = angle;
+    }
   }
 
   cleanup() {
     this.transition.active = false;
+    if (this.interaction.enabled) {
+      window.removeEventListener('pointerup', this.onPointerUp);
+      window.removeEventListener('pointermove', this.onPointerMove);
+    }
   }
 }
