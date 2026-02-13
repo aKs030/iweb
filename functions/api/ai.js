@@ -1,15 +1,14 @@
 /**
  * Cloudflare Pages Function - POST /api/ai
  * Modern AI Chat using Service Binding - Optimized & Reduced
- * @version 5.0.0
+ * @version 6.0.0
  */
+
+import { getCorsHeaders, handleOptions } from './_cors.js';
 
 export async function onRequestPost(context) {
   const { request, env } = context;
-  const corsHeaders = {
-    'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': '*',
-  };
+  const corsHeaders = getCorsHeaders(request, env);
 
   try {
     const body = await request.json().catch(() => ({}));
@@ -92,14 +91,4 @@ export async function onRequestPost(context) {
   }
 }
 
-export async function onRequestOptions() {
-  return new Response(null, {
-    status: 204,
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
-      'Access-Control-Max-Age': '86400',
-    },
-  });
-}
+export const onRequestOptions = handleOptions;
