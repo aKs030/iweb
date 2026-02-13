@@ -113,8 +113,9 @@ export const CONFIG = {
   PERFORMANCE: {
     PIXEL_RATIO: Math.min(window.devicePixelRatio || 1, 1.5),
     TARGET_FPS: 30,
-    DRS_DOWN_THRESHOLD: 25,
-    DRS_UP_THRESHOLD: 35,
+    DRS_DOWN_THRESHOLD: 25, // Drop quality if FPS < 25
+    DRS_UP_THRESHOLD: 45, // Raise quality if FPS > 45 (Wider hysteresis)
+    STABILITY_FRAMES: 2, // Require consecutive checks before changing
   },
   QUALITY_LEVELS: {
     HIGH: {
