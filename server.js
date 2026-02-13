@@ -180,6 +180,7 @@ const CLEAN_URLS = {
   '/videos/': 'pages/videos/index.html',
   '/impressum/': 'impressum/index.html',
   '/datenschutz/': 'datenschutz/index.html',
+  '/contact/': 'pages/contact/index.html',
 };
 
 function tryServe(filePath, res) {
