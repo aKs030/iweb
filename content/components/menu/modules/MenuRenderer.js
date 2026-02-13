@@ -6,15 +6,27 @@ import { MenuTemplate } from './MenuTemplate.js';
 import { getElementById } from '../../../core/utils.js';
 import { i18n } from '../../../core/i18n.js';
 
+/**
+ * @typedef {import('./MenuState.js').MenuState} MenuState
+ */
+
 export class MenuRenderer {
+  /**
+   * @param {MenuState} state
+   * @param {Object} config
+   */
   constructor(state, config = {}) {
     this.state = state;
     this.config = config;
     this.template = new MenuTemplate(config);
     this.rafId = null;
-    this.container = null; // Store reference to container
+    this.container = null;
   }
 
+  /**
+   * Renders the initial menu structure
+   * @param {HTMLElement} container
+   */
   render(container) {
     this.container = container;
     container.innerHTML = this.template.getHTML();
@@ -25,6 +37,10 @@ export class MenuRenderer {
     // Initial State Sync
     this.updateActiveLink(this.state.activeLink);
     this.updateTitle(this.state.currentTitle, this.state.currentSubtitle);
+
+    // Initial Language Sync
+    const currentLang = i18n.getCurrentLanguage ? i18n.getCurrentLanguage() : 'de';
+    this.updateLanguage(currentLang);
   }
 
   updateYear() {
@@ -43,10 +59,11 @@ export class MenuRenderer {
         const targetId = href.substring(1);
         const target = document.getElementById(targetId);
         const svg = use.closest('svg');
-        const fallback = svg?.nextElementSibling;
+        const fallback = svg?.closest('a, button')?.querySelector('.icon-fallback');
 
-        if (!target && fallback?.classList.contains('icon-fallback')) {
-          svg.style.display = 'none';
+        // If SVG symbol is missing, show fallback emoji/text
+        if (!target && fallback) {
+          if (svg) svg.style.display = 'none';
           fallback.style.display = 'inline-block';
         }
       });
@@ -61,6 +78,9 @@ export class MenuRenderer {
 
       if (menu) menu.classList.toggle('open', isOpen);
       if (toggle) toggle.classList.toggle('active', isOpen);
+
+      // Accessibility update
+      if (toggle) toggle.setAttribute('aria-expanded', String(isOpen));
     });
 
     // Active Link State
@@ -85,9 +105,10 @@ export class MenuRenderer {
     const links = this.container.querySelectorAll('.site-menu a');
     links.forEach((link) => {
       const href = link.getAttribute('href');
+      // Simple string comparison usually works due to normalization in Events
+      const isActive = href === activeHref;
 
-      // Check for match
-      if (href === activeHref) {
+      if (isActive) {
         link.classList.add('active');
         link.setAttribute('aria-current', 'page');
       } else {
@@ -98,26 +119,35 @@ export class MenuRenderer {
   }
 
   updateLanguage(lang) {
+    if (typeof lang !== 'string') return;
+
     // Update Toggle Text
-    const langText = document.querySelector('.lang-text');
+    const langText = this.container.querySelector('.lang-text');
     if (langText) {
       langText.textContent = lang.toUpperCase();
     }
 
     // Update Menu Items
-    const menuItems = document.querySelectorAll(
-      '.site-menu__list a span[data-i18n]',
+    const menuItems = this.container.querySelectorAll(
+      '.site-menu__list a span[data-i18n], .site-menu__list button[aria-label]',
     );
 
-    menuItems.forEach((span) => {
-      const key = span.getAttribute('data-i18n');
-      if (key) {
-        span.textContent = i18n.t(key);
+    menuItems.forEach((el) => {
+      // Text content translation
+      if (el.hasAttribute('data-i18n')) {
+        const key = el.getAttribute('data-i18n');
+        el.textContent = i18n.t(key);
+      }
+      // Aria-label translation (for buttons)
+      if (el.hasAttribute('aria-label') && el.getAttribute('data-i18n-aria')) {
+          const key = el.getAttribute('data-i18n-aria');
+          el.setAttribute('aria-label', i18n.t(key));
       }
     });
 
-    // Update Title if it matches a known key
+    // Re-render title with new language
     if (this.state) {
+      // Force update by temporarily clearing to ensure animation or text update triggers
       this.updateTitle(this.state.currentTitle, this.state.currentSubtitle);
     }
   }
@@ -128,44 +158,56 @@ export class MenuRenderer {
 
     if (!siteTitleEl) return;
 
-    // Translate if possible
     const translatedTitle = i18n.t(title);
     let translatedSubtitle = i18n.t(subtitle);
 
-    // Prevent duplicate subtitle if it matches title
+    // Prevent duplicate subtitle
     if (translatedTitle === translatedSubtitle) {
       translatedSubtitle = '';
     }
 
-    // Cancel previous animation
+    // Optimize: Check if text content is already correct
+    if (siteTitleEl.textContent === translatedTitle &&
+       (!siteSubtitleEl || siteSubtitleEl.textContent === translatedSubtitle)) {
+         // Just ensure subtitle visibility is correct
+         if (siteSubtitleEl) {
+            if (translatedSubtitle) siteSubtitleEl.classList.add('show');
+            else siteSubtitleEl.classList.remove('show');
+         }
+         return;
+    }
+
     if (this.rafId) {
       cancelAnimationFrame(this.rafId);
     }
 
+    // Animate change
     this.rafId = requestAnimationFrame(() => {
       const transitionDelay = this.config.TITLE_TRANSITION_DELAY || 200;
 
-      // Start exit animation
+      // Exit
       siteTitleEl.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
-      siteTitleEl.style.opacity = '0.6';
-      siteTitleEl.style.transform = 'scale(0.95)';
+      siteTitleEl.style.opacity = '0';
+      siteTitleEl.style.transform = 'translateY(5px)';
 
       if (siteSubtitleEl) {
+        siteSubtitleEl.style.opacity = '0';
         siteSubtitleEl.classList.remove('show');
       }
 
       setTimeout(() => {
-        // Update content
+        // Update
         siteTitleEl.textContent = translatedTitle;
 
-        // Start enter animation
+        // Enter
         siteTitleEl.style.opacity = '1';
-        siteTitleEl.style.transform = 'scale(1)';
+        siteTitleEl.style.transform = 'translateY(0)';
 
         if (siteSubtitleEl && translatedSubtitle) {
           siteSubtitleEl.textContent = translatedSubtitle;
-          // Small delay for subtitle entrance
-          setTimeout(() => siteSubtitleEl.classList.add('show'), 100);
+          siteSubtitleEl.style.opacity = ''; // Let CSS handle it via class
+          // Small delay for subtitle cascade
+          setTimeout(() => siteSubtitleEl.classList.add('show'), 50);
         }
       }, transitionDelay);
     });
@@ -175,5 +217,6 @@ export class MenuRenderer {
     if (this.rafId) {
       cancelAnimationFrame(this.rafId);
     }
+    this.container = null;
   }
 }
