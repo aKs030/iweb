@@ -2,12 +2,14 @@
 /**
  * Modern Site Footer Web Component
  * Scroll-based auto-expand/collapse footer with cookie management
- * @version 2.0.1
+ * @version 2.0.2
  */
 
 import { createLogger } from '../../core/logger.js';
 import { a11y } from '../../core/accessibility-manager.js';
 import { i18n } from '../../core/i18n.js';
+import { TimerManager } from '../../core/timer-utils.js';
+import { EVENTS } from '../../core/events.js';
 
 const log = createLogger('SiteFooter');
 
@@ -130,13 +132,13 @@ export class SiteFooter extends HTMLElement {
   constructor() {
     super();
     this.analytics = new Analytics();
+    this.timers = new TimerManager('SiteFooter');
     this.expanded = false;
     this.initialized = false;
     this.isTransitioning = false;
     this.lastScrollY = 0;
     this.touchStartY = 0;
     this.touchStartTime = 0;
-    this.resizeTimeout = null;
     this.scrollTimeout = null;
     this.scrollHandler = null;
 
@@ -182,7 +184,9 @@ export class SiteFooter extends HTMLElement {
       this.setupGlobalEventListeners();
       this.initialized = true;
       log.info('Footer initialized');
-      this.dispatchEvent(new CustomEvent('footer:loaded', { bubbles: true }));
+      this.dispatchEvent(
+        new CustomEvent(EVENTS.FOOTER_LOADED, { bubbles: true }),
+      );
     } catch (error) {
       log.error('Footer load failed', error);
     }
@@ -229,6 +233,7 @@ export class SiteFooter extends HTMLElement {
 
   cleanup() {
     this.removeGlobalEventListeners();
+    this.timers.clearAll();
 
     if (typeof this._unsubscribeI18n === 'function') {
       this._unsubscribeI18n();
@@ -251,16 +256,6 @@ export class SiteFooter extends HTMLElement {
     if (this.scrollHandler) {
       window.removeEventListener('scroll', this.scrollHandler);
       this.scrollHandler = null;
-    }
-
-    if (this.resizeTimeout) {
-      clearTimeout(this.resizeTimeout);
-      this.resizeTimeout = null;
-    }
-
-    if (this.scrollTimeout) {
-      clearTimeout(this.scrollTimeout);
-      this.scrollTimeout = null;
     }
   }
 
@@ -334,7 +329,7 @@ export class SiteFooter extends HTMLElement {
         banner
       );
     styledBanner.style.animation = 'cookieSlideOut 0.3s ease-out forwards';
-    setTimeout(() => banner.classList.add('hidden'), 300);
+    this.timers.setTimeout(() => banner.classList.add('hidden'), 300);
 
     CookieManager.set('cookie_consent', 'accepted');
     this.analytics.updateConsent(true);
@@ -351,7 +346,7 @@ export class SiteFooter extends HTMLElement {
         banner
       );
     styledBanner.style.animation = 'cookieSlideOut 0.3s ease-out forwards';
-    setTimeout(() => banner.classList.add('hidden'), 300);
+    this.timers.setTimeout(() => banner.classList.add('hidden'), 300);
 
     CookieManager.set('cookie_consent', 'rejected');
     this.analytics.updateConsent(false);
@@ -372,8 +367,8 @@ export class SiteFooter extends HTMLElement {
     this.lastScrollY = window.scrollY;
 
     this.scrollHandler = () => {
-      if (this.scrollTimeout) clearTimeout(this.scrollTimeout);
-      this.scrollTimeout = setTimeout(
+      if (this.scrollTimeout) this.timers.clearTimeout(this.scrollTimeout);
+      this.scrollTimeout = this.timers.setTimeout(
         () => this.checkScrollPosition(),
         CONFIG.SCROLL_DEBOUNCE_MS,
       );
@@ -480,9 +475,16 @@ export class SiteFooter extends HTMLElement {
   }
 
   handleResize() {
-    if (this.resizeTimeout) clearTimeout(this.resizeTimeout);
+    // Note: TimerManager creates a new ID each time, so we just set a new timeout
+    // and rely on clearAll() or specific clearing if needed.
+    // However, here we want debounce behavior, so we need to clear the previous one.
+    // We didn't store resizeTimeout ID in 'this' in the original code properly
+    // (it was this.resizeTimeout = null in constructor).
+    // Let's use a property for it.
 
-    this.resizeTimeout = setTimeout(() => {
+    if (this.resizeTimeout) this.timers.clearTimeout(this.resizeTimeout);
+
+    this.resizeTimeout = this.timers.setTimeout(() => {
       if (this.expanded) this.updateFooterPosition();
     }, 150);
   }
@@ -517,6 +519,9 @@ export class SiteFooter extends HTMLElement {
       footerMin?.setAttribute('aria-expanded', 'true');
       footerTriggers.forEach((t) => t.setAttribute('aria-expanded', 'true'));
       a11y?.announce(i18n.t('footer.actions.expanded'), { priority: 'polite' });
+      this.dispatchEvent(
+        new CustomEvent(EVENTS.FOOTER_EXPANDED, { bubbles: true }),
+      );
 
       const firstFocusable = /** @type {HTMLElement|null} */ (
         footerMax?.querySelector(
@@ -524,7 +529,7 @@ export class SiteFooter extends HTMLElement {
         )
       );
       if (firstFocusable?.focus) {
-        setTimeout(() => firstFocusable.focus(), 100);
+        this.timers.setTimeout(() => firstFocusable.focus(), 100);
       }
     } else {
       footer.classList.remove('expanded');
@@ -534,9 +539,12 @@ export class SiteFooter extends HTMLElement {
       footerMin?.setAttribute('aria-expanded', 'false');
       footerTriggers.forEach((t) => t.setAttribute('aria-expanded', 'false'));
       a11y?.announce(i18n.t('footer.actions.minimize'), { priority: 'polite' });
+      this.dispatchEvent(
+        new CustomEvent(EVENTS.FOOTER_COLLAPSED, { bubbles: true }),
+      );
     }
 
-    setTimeout(() => {
+    this.timers.setTimeout(() => {
       this.isTransitioning = false;
     }, CONFIG.TRANSITION_DURATION);
   }
@@ -565,7 +573,7 @@ export class SiteFooter extends HTMLElement {
       cookieSettings.querySelector('#close-settings')
     );
     if (closeBtn?.focus) {
-      setTimeout(() => closeBtn.focus(), 100);
+      this.timers.setTimeout(() => closeBtn.focus(), 100);
     }
 
     a11y?.announce(i18n.t('footer.messages.opened'), { priority: 'polite' });
