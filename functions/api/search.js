@@ -246,10 +246,21 @@ export async function onRequestPost(context) {
 
           const improvedResults = deduplicateResults(results);
 
-          // Generate AI summary
+          // Generate AI summary with actual results context
           let summary = `Suchergebnisse für "${query}"`;
           try {
-            const summaryPrompt = `Basierend auf der Suchanfrage "${query}" wurden ${improvedResults.length} Ergebnisse gefunden. Erstelle eine kurze, hilfreiche Zusammenfassung (max. 2 Sätze) auf Deutsch.`;
+            // Include top 3 results in the prompt for better context
+            const topResults = improvedResults.slice(0, 3);
+            const resultsContext = topResults
+              .map((r) => `- ${r.title}: ${r.description}`)
+              .join('\n');
+
+            const summaryPrompt = `Basierend auf der Suchanfrage "${query}" wurden folgende Ergebnisse gefunden:
+
+${resultsContext}
+
+Erstelle eine kurze, hilfreiche Zusammenfassung (max. 2 Sätze) auf Deutsch, die erklärt, was der Nutzer auf diesen Seiten finden kann.`;
+
             const summaryResponse = await env.AI.run(
               '@cf/meta/llama-3.1-8b-instruct',
               {
@@ -257,7 +268,7 @@ export async function onRequestPost(context) {
                   {
                     role: 'system',
                     content:
-                      'Du bist ein hilfreicher Assistent. Antworte kurz und präzise auf Deutsch.',
+                      'Du bist ein hilfreicher Assistent für eine Portfolio-Website. Antworte kurz und präzise auf Deutsch. Beziehe dich auf die konkreten Suchergebnisse.',
                   },
                   { role: 'user', content: summaryPrompt },
                 ],
