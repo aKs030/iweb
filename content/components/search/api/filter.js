@@ -1,4 +1,7 @@
-import { getCorsHeaders, handleOptions } from './_cors.js';
+import {
+  getCorsHeaders,
+  handleOptions,
+} from '../../../core/api-helpers/_cors.js';
 
 /**
  * Filter API Endpoint

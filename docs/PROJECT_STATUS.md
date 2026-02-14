@@ -266,10 +266,10 @@ Total: ~6 kB (gzip) ✅ Excellent!
 
 ### Main Guides
 
-- [README.md](README.md) - Project overview
+- [README.md](../README.md) - Project overview
 - [PROJECT_STATUS.md](PROJECT_STATUS.md) - Current project status (this file)
-- [CONTRIBUTING.md](CONTRIBUTING.md) - Contributing guide
-- [SECURITY.md](SECURITY.md) - Security policy
+- [CONTRIBUTING.md](../CONTRIBUTING.md) - Contributing guide
+- [SECURITY.md](../SECURITY.md) - Security policy
 
 ### Technical Docs
 

@@ -1,5 +1,5 @@
 import { Resend } from 'resend';
-import { getCorsHeaders, handleOptions } from './_cors.js';
+import { getCorsHeaders, handleOptions } from '../../../content/core/api-helpers/_cors.js';
 
 /**
  * Handles contact form submissions.
