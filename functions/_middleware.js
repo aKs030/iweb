@@ -1,15 +1,38 @@
 /**
  * Cloudflare Pages Middleware — Dynamic HTML Template Injection
  *
- * Uses shared template injection utility for consistency.
+ * Injects base-head and base-loader templates into HTML responses.
  *
- * @version 1.2.0
+ * @version 1.3.0
  */
 
-import {
-  injectTemplates,
-  loadTemplateFromURL,
-} from './content/core/template-injector.js';
+/**
+ * Inject templates into HTML
+ */
+function injectTemplates(html, templates) {
+  if (templates.head) {
+    html = html.replace(/<!--\s*INJECT:BASE-HEAD\s*-->/g, templates.head);
+  }
+  if (templates.loader) {
+    html = html.replace(/<!--\s*INJECT:BASE-LOADER\s*-->/g, templates.loader);
+  }
+  return html;
+}
+
+/**
+ * Load template from URL
+ */
+async function loadTemplateFromURL(context, path) {
+  try {
+    const url = new URL(path, context.request.url);
+    const response = await context.env.ASSETS.fetch(url);
+    if (!response.ok) return '';
+    return await response.text();
+  } catch (err) {
+    console.error(`[middleware] Failed to load template ${path}:`, err);
+    return '';
+  }
+}
 
 /**
  * Middleware entry point — runs on every request.
