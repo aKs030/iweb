@@ -50,13 +50,13 @@
 - `index.html`: Main HTML entry point
 - `sw.js`: Service Worker for PWA
 - `server.js`: Local development server (Node.js)
-- `vite.config.js`: Vite build configuration
 - `eslint.config.mjs`: ESLint flat config
 - `tsconfig.json`: TypeScript/JSDoc type checking
 - `.prettierrc.json`: Prettier formatting rules
 - `manifest.json`: PWA manifest
 - `robots.txt`, `sitemap.xml`: SEO files
 - `_headers`, `_redirects`: Cloudflare Pages config
+- `wrangler.toml`: Cloudflare configuration
 
 ## Architecture Patterns
 
@@ -118,31 +118,34 @@ Each exports an `onRequest` or `onRequestPost` handler.
 
 ## Import Paths
 
-Vite aliases configured:
-
-- `/content/*` → `content/*`
-- `/pages/*` → `pages/*`
-
-Example:
+All imports use relative or absolute paths:
 
 ```javascript
 import { i18n } from '/content/core/i18n.js';
 import { router } from '/content/core/router.js';
 ```
 
-## Build Output
+External dependencies via Import Maps (in index.html):
 
-The `dist/` directory mirrors the source structure:
+- `react` → esm.sh
+- `three` → cdn.jsdelivr.net
+- `dompurify` → esm.sh
 
-```
-dist/
-├── assets/              # Hashed JS/CSS bundles
-├── content/             # Copied content directory
-├── pages/               # Copied pages directory
-├── functions/           # Cloudflare Functions (not bundled)
-├── index.html           # Processed HTML
-└── [static files]       # sw.js, manifest.json, etc.
-```
+## Deployment
+
+Source files are deployed directly to Cloudflare Pages:
+
+1. Push to GitHub
+2. Cloudflare Pages automatically deploys
+3. `functions/_middleware.js` injects templates at runtime
+4. No build step required
+
+Files excluded via `.cfignore`:
+
+- `node_modules/`
+- `docs/`
+- `.kiro/`
+- Development files (`server.js`, etc.)
 
 ## Code Organization Principles
 

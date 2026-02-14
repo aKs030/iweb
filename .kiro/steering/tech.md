@@ -11,15 +11,15 @@
 ## Backend
 
 - **Cloudflare Pages Functions**: Serverless API endpoints
-- **Cloudflare AI**: AI-powered search with RAG
-- **Service Bindings**: Secure inter-service communication
+- **Cloudflare AI Search Beta**: AI-powered search with automatic crawling (`wispy-pond-1055`)
+- **Groq API**: Free LLM for robot chat (`llama-3.3-70b-versatile`)
+- **Resend API**: Email service for contact form
 
-## Build System
+## Deployment
 
-- **Vite 5.4+**: Fast build tool and dev server
-- **Terser**: JavaScript minification with console removal in production
-- **Rollup**: Module bundling with code splitting
-- **PostCSS**: CSS processing (implicit via Vite)
+- **No Build System**: Source files deployed directly
+- **Cloudflare Pages**: Automatic deployment from GitHub
+- **CDN Dependencies**: React, Three.js, DOMPurify via Import Maps
 
 ## Code Quality Tools
 
@@ -44,13 +44,10 @@
 npm run dev              # Start dev server (port 8080)
 ```
 
-### Build & Deploy
+### Deployment
 
 ```bash
-npm run build            # Production build
-npm run preview          # Preview production build
-npm run deploy           # Deploy to Cloudflare Pages
-npm run build:analyze    # Build with bundle visualizer
+npm run push             # Git add + commit + push (triggers Cloudflare deployment)
 ```
 
 ### Code Quality
@@ -77,21 +74,26 @@ npm run size:check       # Check bundle sizes
 
 ## Environment Variables
 
-Required in `wrangler.toml`:
+**Cloudflare Pages Secrets (via Dashboard or wrangler CLI):**
+
+```bash
+GROQ_API_KEY=<your-groq-api-key>
+RESEND_API_KEY=<your-resend-api-key>
+```
+
+**wrangler.toml (non-secrets):**
 
 ```bash
 MAX_SEARCH_RESULTS=10
 ```
 
-For Cloudflare Pages secrets (via Dashboard):
+**Bindings (automatic from wrangler.toml):**
 
-```bash
-GROQ_API_KEY=<your-groq-api-key>
-```
+- `AI` → Cloudflare Workers AI
+- `GALLERY_BUCKET` → R2 Bucket `img`
 
 ## Performance Targets
 
-- Bundle size: ~240 kB (gzip)
-- CSS size: ~6 kB (gzip)
-- Build time: ~3-4 seconds
+- No build time (source files deployed directly)
 - Lighthouse score: 95+
+- Core Web Vitals optimized
