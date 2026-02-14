@@ -4,10 +4,7 @@
  * @version 6.0.0
  */
 
-import {
-  getCorsHeaders,
-  handleOptions,
-} from '../../../core/api-helpers/_cors.js';
+import { getCorsHeaders, handleOptions } from './_cors.js';
 
 export async function onRequestPost(context) {
   const { request, env } = context;
