@@ -59,3 +59,7 @@ pnpm-lock.yaml
 # Auto-generated documentation
 OPTIMIZATION_REPORT.md
 OPTIMIZATION_SUMMARY.md
+
+# Cloudflare
+.wrangler/
+wrangler.toml.backup

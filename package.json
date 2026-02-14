@@ -21,7 +21,7 @@
     "perf:budget": "echo 'Performance budget check skipped'",
     "size:check": "npm run build && du -sh dist && find dist -name '*.js' -exec du -h {} \\; | sort -h",
     "clean": "rm -rf dist .vite .wrangler node_modules/.cache",
-    "deploy": "wrangler pages deploy dist",
+    "deploy": "npm run build && wrangler pages deploy dist",
     "audit:fix": "npm audit fix",
     "update": "npm update && npm audit fix"
   },
