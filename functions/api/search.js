@@ -2,7 +2,7 @@
  * Cloudflare Pages Function - POST /api/search
  * AI Search using Cloudflare AI Search Beta via Workers Binding
  * Enhanced with query expansion, fuzzy matching, relevance scoring, and caching
- * @version 10.0.0
+ * @version 11.0.0
  */
 
 import { getCorsHeaders, handleOptions } from './_cors.js';
@@ -33,7 +33,7 @@ export async function onRequestPost(context) {
     }
 
     // Generate cache key with version to bust old cache
-    const CACHE_VERSION = 'v4'; // Increment when search logic changes
+    const CACHE_VERSION = 'v5'; // Increment when search logic changes
     const topK = parseInt(body.topK || env.MAX_SEARCH_RESULTS || '10');
     const cacheKey = `${CACHE_VERSION}:${getCacheKey(query, topK)}`;
 
@@ -95,6 +95,34 @@ export async function onRequestPost(context) {
         .replace(/\s+/g, ' ') // Normalize whitespace
         .trim();
 
+      // Clean up technical content and metadata
+      if (textContent) {
+        // Remove common navigation/menu patterns
+        textContent = textContent
+          .replace(/:menu\.[^\s]+/g, '') // Remove :menu.skip_mainmenu etc.
+          .replace(/Zum Hauptinhalt springen/gi, '')
+          .replace(/Nach oben/gi, '')
+          .replace(/Startseite/gi, '')
+          .replace(/Start/gi, '')
+          .replace(/Weiter/gi, '')
+          .replace(/Auf Wiedersehen!/gi, '')
+          .replace(/--- description:/gi, '')
+          .replace(/--- title:/gi, '')
+          .replace(/image: https?:\/\/[^\s]+/gi, '')
+          .replace(/@type[^}]+}/gi, '')
+          .replace(/\{[^}]*@id[^}]*}/gi, '')
+          .replace(/WebPage|BreadcrumbList|ListItem/gi, '')
+          .replace(/© \d{4} Abdulkerim Sesli/gi, '')
+          .replace(/Impressum|Datenschutz|Cookies/gi, '')
+          .replace(/Wir nutzen Analytics/gi, '')
+          .replace(/Akzeptieren|Ablehnen/gi, '')
+          .replace(/\s+/g, ' ') // Normalize whitespace again
+          .trim();
+
+        // Remove leading special characters and cleanup
+        textContent = textContent.replace(/^[:\-—,.\s]+/, '').trim();
+      }
+
       // Smart truncation: don't cut words in half
       if (textContent && textContent.length > 200) {
         // Find a good breaking point (space, comma, period)
@@ -112,6 +140,17 @@ export async function onRequestPost(context) {
         }
 
         textContent = textContent.substring(0, breakPoint).trim();
+      }
+
+      // Final cleanup: if description is too short or still contains technical markers, skip it
+      if (
+        textContent &&
+        (textContent.length < 20 ||
+          textContent.includes('---') ||
+          textContent.includes('@type') ||
+          textContent.includes(':menu'))
+      ) {
+        textContent = '';
       }
 
       // Determine category from URL
