@@ -27,12 +27,16 @@ Navigiere zu: **Settings** → **Builds & deployments**
 ```
 Framework preset:        None
 Build command:           (leer lassen)
-Build output directory:  .
+Build output directory:  /
 Root directory:          (leer lassen)
 Node version:            18 (oder höher)
 ```
 
-**Wichtig:**
+**WICHTIG - Build output directory:**
+
+- Setze auf `/` (Root-Verzeichnis)
+- NICHT `.` (Punkt) oder `dist`
+- Das bedeutet: Cloudflare deployed alle Dateien aus dem Repository-Root
 
 - Build command MUSS leer sein oder `echo "No build needed"`
 - Build output directory MUSS `.` sein (aktuelles Verzeichnis)
