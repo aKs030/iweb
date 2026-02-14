@@ -13,15 +13,16 @@ export const ThreeGalleryScene = ({ items }) => {
   useEffect(() => {
     if (!containerRef.current) return;
 
-    // Initialize 3D System
-    const system = new Gallery3DSystem(containerRef.current, items, (item) => {
-      setSelectedItem(item);
-    });
+    systemRef.current = new Gallery3DSystem(
+      containerRef.current,
+      items,
+      (item) => {
+        setSelectedItem(item);
+      },
+    );
 
-    systemRef.current = system;
     setIsLoading(false);
 
-    // Cleanup
     return () => {
       if (systemRef.current) {
         systemRef.current.dispose();
@@ -39,13 +40,11 @@ export const ThreeGalleryScene = ({ items }) => {
         background: '#000',
       },
     },
-    // 3D Container
-    h('div', {
-      ref: containerRef,
-      style: { width: '100%', height: '100%' },
-    }),
 
-    // Loading Overlay
+    // 3D Canvas Container
+    h('div', { ref: containerRef, style: { width: '100%', height: '100%' } }),
+
+    // Loader
     isLoading &&
       h(
         'div',
@@ -59,7 +58,7 @@ export const ThreeGalleryScene = ({ items }) => {
         }),
       ),
 
-    // Detail Overlay (Lightbox)
+    // Lightbox Overlay
     selectedItem &&
       h(
         'div',
@@ -73,7 +72,7 @@ export const ThreeGalleryScene = ({ items }) => {
             className:
               'relative max-w-4xl w-full bg-slate-900/90 border border-white/10 rounded-2xl overflow-hidden shadow-2xl',
           },
-          // Close Button
+
           h(
             'button',
             {
@@ -84,11 +83,10 @@ export const ThreeGalleryScene = ({ items }) => {
             h(X_Icon, { size: 24, className: 'text-white' }),
           ),
 
-          // Content Grid
           h(
             'div',
             { className: 'grid md:grid-cols-2 gap-0' },
-            // Media Column
+            // Image / Video Viewer
             h(
               'div',
               {
@@ -111,7 +109,7 @@ export const ThreeGalleryScene = ({ items }) => {
                   }),
             ),
 
-            // Info Column
+            // Details
             h(
               'div',
               { className: 'p-8 flex flex-col justify-center' },
@@ -123,13 +121,11 @@ export const ThreeGalleryScene = ({ items }) => {
                 },
                 selectedItem.title,
               ),
-
               h(
                 'p',
                 { className: 'text-slate-300 leading-relaxed text-lg' },
                 selectedItem.description,
               ),
-
               h(
                 'div',
                 { className: 'mt-8 flex gap-4' },
@@ -141,7 +137,6 @@ export const ThreeGalleryScene = ({ items }) => {
                   },
                   'Details',
                 ),
-
                 h(
                   'a',
                   {
@@ -159,19 +154,5 @@ export const ThreeGalleryScene = ({ items }) => {
           ),
         ),
       ),
-
-    // Hint UI
-    h(
-      'div',
-      {
-        className:
-          'absolute bottom-8 left-0 right-0 text-center pointer-events-none',
-      },
-      h(
-        'p',
-        { className: 'text-white/50 text-sm animate-pulse' },
-        'Scroll to explore • Click to view details',
-      ),
-    ),
   );
 };
