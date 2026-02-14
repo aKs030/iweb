@@ -307,10 +307,57 @@ address {
   max-height: calc(100vh - 150px);
   overflow-y: auto;
   overflow-x: hidden;
+  position: relative;
 }
 
 .footer-max.hidden {
   display: none !important;
+}
+
+/* ===== Minimize Button ===== */
+.btn-minimize {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--component-separator, rgba(255, 255, 255, 0.1));
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  font-family: inherit;
+}
+
+.btn-minimize:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border-color: var(--component-accent-blue, #007aff);
+  transform: scale(1.1);
+}
+
+.btn-minimize:active {
+  transform: scale(0.95);
+}
+
+.btn-minimize:focus-visible {
+  outline: 2px solid var(--component-accent-blue, #007aff);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.2);
+}
+
+.btn-minimize svg {
+  flex-shrink: 0;
+  transition: transform var(--transition-base);
+}
+
+.btn-minimize:hover svg {
+  transform: translateY(2px);
 }
 
 /* ===== Cookie Settings ===== */
@@ -996,6 +1043,18 @@ body.footer-expanded {
     max-height: calc(100vh - 100px);
   }
 
+  .btn-minimize {
+    top: 8px;
+    right: 8px;
+    width: 28px;
+    height: 28px;
+  }
+
+  .btn-minimize svg {
+    width: 16px;
+    height: 16px;
+  }
+
   .footer-content {
     gap: 8px;
   }
@@ -1200,6 +1259,18 @@ body.footer-expanded {
   .footer-max {
     padding: 10px;
     max-height: calc(100vh - 80px);
+  }
+
+  .btn-minimize {
+    top: 6px;
+    right: 6px;
+    width: 24px;
+    height: 24px;
+  }
+
+  .btn-minimize svg {
+    width: 14px;
+    height: 14px;
   }
 
   .footer-content {

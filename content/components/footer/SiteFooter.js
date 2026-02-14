@@ -356,6 +356,14 @@ export class SiteFooter extends HTMLElement {
   setupScrollHandler() {
     if (!this.elements.footer) return;
 
+    // Prüfe ob wir auf einer Section-Seite sind (z.B. Homepage mit #features)
+    const isHomePage =
+      window.location.pathname === '/' ||
+      window.location.pathname === '/index.html';
+    const hasHashSection = window.location.hash.length > 0;
+
+    this.isSectionPage = isHomePage || hasHashSection;
+
     // Prüfe ob Seite überhaupt scrollbar ist
     const isScrollable =
       document.documentElement.scrollHeight > window.innerHeight;
@@ -376,8 +384,15 @@ export class SiteFooter extends HTMLElement {
 
     window.addEventListener('scroll', this.scrollHandler, { passive: true });
 
-    // NICHT beim initialen Laden prüfen - nur bei tatsächlichem Scroll
-    log.info('Scroll handler initialized');
+    if (this.isSectionPage) {
+      log.info(
+        'Scroll handler initialized for section page (auto-expand enabled)',
+      );
+    } else {
+      log.info(
+        'Scroll handler initialized for static page (auto-minimize only)',
+      );
+    }
   }
 
   checkScrollPosition() {
@@ -392,18 +407,26 @@ export class SiteFooter extends HTMLElement {
     const isMobile = window.innerWidth <= 900;
     const expandThreshold = isMobile ? 30 : CONFIG.EXPAND_THRESHOLD;
 
-    if (
-      scrollDirection === 'down' &&
-      distanceFromBottom < expandThreshold &&
-      !this.expanded
-    ) {
-      this.toggleFooter(true);
-    } else if (
-      scrollDirection === 'up' &&
-      distanceFromBottom > CONFIG.COLLAPSE_THRESHOLD &&
-      this.expanded
-    ) {
-      this.toggleFooter(false);
+    // Auf Section-Pages: Auto-Expand beim Runterscrollen
+    if (this.isSectionPage) {
+      if (
+        scrollDirection === 'down' &&
+        distanceFromBottom < expandThreshold &&
+        !this.expanded
+      ) {
+        this.toggleFooter(true);
+      } else if (
+        scrollDirection === 'up' &&
+        distanceFromBottom > CONFIG.COLLAPSE_THRESHOLD &&
+        this.expanded
+      ) {
+        this.toggleFooter(false);
+      }
+    } else {
+      // Auf statischen Pages: Auto-Minimize bei jedem Scroll (hoch oder runter)
+      if (this.expanded) {
+        this.toggleFooter(false);
+      }
     }
 
     this.lastScrollY = scrollY;
@@ -439,6 +462,7 @@ export class SiteFooter extends HTMLElement {
     const target = /** @type {Element} */ (e.target);
     const clickedInFooter = target.closest('site-footer');
 
+    // Minimiere Footer bei Klick außerhalb
     if (!clickedInFooter) {
       this.toggleFooter(false);
     }
@@ -544,7 +568,9 @@ export class SiteFooter extends HTMLElement {
       footerMax?.classList.add('hidden');
       footerMin?.setAttribute('aria-expanded', 'false');
       footerTriggers.forEach((t) => t.setAttribute('aria-expanded', 'false'));
-      a11y?.announce(i18n.t('footer.actions.minimize'), { priority: 'polite' });
+      a11y?.announce(i18n.t('footer.actions.minimized'), {
+        priority: 'polite',
+      });
       this.dispatchEvent(
         new CustomEvent(EVENTS.FOOTER_COLLAPSED, { bubbles: true }),
       );
@@ -625,6 +651,14 @@ export class SiteFooter extends HTMLElement {
 
     // Settings schließen
     closeBtn?.addEventListener('click', () => this.closeSettings());
+
+    // Minimize Button
+    const minimizeBtn = this.querySelector('#minimize-footer');
+    minimizeBtn?.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      this.toggleFooter(false);
+    });
 
     // Footer minimiert - Klick zum Erweitern
     footerMin?.addEventListener('click', (e) => {
