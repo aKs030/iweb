@@ -1,5 +1,4 @@
-# robots.txt – abdulkerimsesli.de
-# Clean, Google-first configuration
+# robots.txt – abdulkerimsesli.de (Optimiert für Cloudflare Pages & Googlebot)
 
 Sitemap: https://www.abdulkerimsesli.de/sitemap.xml
 Sitemap: https://www.abdulkerimsesli.de/sitemap-images.xml
@@ -7,56 +6,27 @@ Sitemap: https://www.abdulkerimsesli.de/sitemap-videos.xml
 
 User-agent: *
 Allow: /
+# Erlaube Zugriff auf den Pages-Ordner für korrektes Rendering und Indexierung
+Allow: /pages/
 
-# Block internal implementation directories
+# Blockiere nur rein technische Komponenten und System-Pfade
 Disallow: /content/components/
-Disallow: /pages/
-
-# Allow resources Googlebot needs for rendering (CSS, JS, Fonts, Images globally)
-Allow: /*.css$
-Allow: /*.js$
-Allow: /*.png$
-Allow: /*.jpg$
-Allow: /*.jpeg$
-Allow: /*.gif$
-Allow: /*.svg$
-Allow: /*.webp$
-Allow: /*.woff$
-Allow: /*.woff2$
-Allow: /*.ttf$
-Allow: /*.eot$
-Allow: /*.ico$
-Allow: /*.json$
-
-# Explicitly allow footer partials required for JS rendering (overrides Disallow /content/components/)
-Allow: /content/components/footer/footer.html
-Allow: /content/components/footer/footer
-Allow: /content/components/footer/datenschutz.html
-Allow: /content/components/footer/impressum.html
-Allow: /content/components/footer/datenschutz/
-Allow: /content/components/footer/impressum/
-
-# Block non-HTML resources that shouldn't be indexed but technically allowed above? No, Allow wins.
-# But allow json is good (manifest.json).
-# Disallow specific query params
-Disallow: /*?search=
-Disallow: /*?q=
-
-# Block internal/system paths
 Disallow: /node_modules/
 Disallow: /tmp/
 Disallow: /dev/
-Disallow: /files/
+Disallow: /pages/about/about-loader.js
+Disallow: /pages/design/
 
-# Block aggressive crawlers
+# Spezifische Sperre für Suchparameter (verhindert Duplicate Content)
+Disallow: /*?search=
+Disallow: /*?q=
+
+# Aggressive Crawler blockieren
 User-agent: AhrefsBot
 Disallow: /
-
 User-agent: SemrushBot
 Disallow: /
-
 User-agent: MJ12bot
 Disallow: /
-
 User-agent: DotBot
 Disallow: /
