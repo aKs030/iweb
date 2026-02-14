@@ -149,3 +149,80 @@ export function isCacheValid(cached, maxAge = 3600) {
   const age = Date.now() - cached.timestamp;
   return age < maxAge * 1000;
 }
+
+/**
+ * Normalize URL to prevent duplicates
+ * removes domain, protocol, trailing slashes, index.html, and ensures leading slash
+ * @param {string} url - Original URL
+ * @returns {string} Normalized URL path
+ */
+export function normalizeUrl(url) {
+  if (!url) return '/';
+
+  // Remove protocol and domain
+  let normalized = url.replace(/^https?:\/\/[^/]+/, '');
+
+  // Remove query parameters and hash
+  normalized = normalized.split(/[?#]/)[0];
+
+  // Ensure leading slash
+  if (!normalized.startsWith('/')) {
+    normalized = '/' + normalized;
+  }
+
+  // Remove /index.html suffix
+  if (normalized.endsWith('/index.html')) {
+    normalized = normalized.substring(0, normalized.length - 11);
+  }
+
+  // Remove trailing slash (unless root)
+  if (normalized !== '/' && normalized.endsWith('/')) {
+    normalized = normalized.slice(0, -1);
+  }
+
+  // Handle empty string resulting from stripping index.html from root
+  if (normalized === '') {
+    normalized = '/';
+  }
+
+  return normalized;
+}
+
+/**
+ * Clean description text by removing HTML tags and metadata artifacts
+ * @param {string} text - Raw text content
+ * @returns {string} Cleaned plain text
+ */
+export function cleanDescription(text) {
+  if (!text) return '';
+
+  let cleaned = text;
+
+  // 1. Remove script and style blocks content
+  cleaned = cleaned.replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gim, '');
+  cleaned = cleaned.replace(/<style\b[^>]*>([\s\S]*?)<\/style>/gim, '');
+
+  // 2. Remove HTML tags
+  cleaned = cleaned.replace(/<[^>]+>/g, ' ');
+
+  // 3. Decode common HTML entities
+  const entities = {
+    '&nbsp;': ' ',
+    '&amp;': '&',
+    '&lt;': '<',
+    '&gt;': '>',
+    '&quot;': '"',
+    '&#39;': "'",
+    '&copy;': '(c)',
+  };
+  cleaned = cleaned.replace(/&[a-z0-9#]+;/gi, (match) => entities[match] || '');
+
+  // 4. Remove metadata JSON-like structures often indexed by mistake
+  // Matches {"key": "value"} patterns that might appear in text
+  cleaned = cleaned.replace(/\{"[^"]+":\s*"[^"]+"\}/g, '');
+
+  // 5. Normalize whitespace
+  cleaned = cleaned.replace(/\s+/g, ' ').trim();
+
+  return cleaned;
+}
