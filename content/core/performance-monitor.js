@@ -35,7 +35,10 @@ class PerformanceMonitor {
     this.initialized = true;
 
     // Only in production
-    if (import.meta.env?.DEV) {
+    if (
+      location.hostname === 'localhost' ||
+      location.hostname === '127.0.0.1'
+    ) {
       log.debug('Performance monitoring disabled in development');
       return;
     }
