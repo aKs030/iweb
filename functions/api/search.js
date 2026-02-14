@@ -1,10 +1,17 @@
 /**
  * Cloudflare Pages Function - POST /api/search
  * AI Search using Cloudflare AI Search Beta via Workers Binding
- * @version 9.0.0
+ * Enhanced with query expansion, fuzzy matching, relevance scoring, and caching
+ * @version 10.0.0
  */
 
 import { getCorsHeaders, handleOptions } from './_cors.js';
+import {
+  expandQuery,
+  calculateRelevanceScore,
+  getCacheKey,
+  isCacheValid,
+} from './_search-utils.js';
 
 export async function onRequestPost(context) {
   const { request, env } = context;
@@ -25,13 +32,39 @@ export async function onRequestPost(context) {
       throw new Error('AI binding not configured');
     }
 
-    console.log('Using Cloudflare AI Search Beta for query:', query);
+    // Generate cache key
+    const topK = parseInt(body.topK || env.MAX_SEARCH_RESULTS || '10');
+    const cacheKey = getCacheKey(query, topK);
+
+    // Try to get from cache (KV or in-memory fallback)
+    if (env.SEARCH_CACHE) {
+      try {
+        const cached = await env.SEARCH_CACHE.get(cacheKey, 'json');
+        if (cached && isCacheValid(cached, 3600)) {
+          console.log('Cache hit for query:', query);
+          return new Response(JSON.stringify(cached.data), {
+            headers: {
+              ...corsHeaders,
+              'X-Cache': 'HIT',
+              'Cache-Control': 'public, max-age=3600',
+            },
+          });
+        }
+      } catch (cacheError) {
+        console.warn('Cache read error:', cacheError);
+      }
+    }
+
+    // Expand query with synonyms and fuzzy matching
+    const expandedQuery = expandQuery(query);
+    console.log('Original query:', query);
+    console.log('Expanded query:', expandedQuery);
+    console.log('Using Cloudflare AI Search Beta');
 
     // Use Workers Binding to call AI Search Beta
-    // This is more secure and doesn't require API tokens
     const searchData = await env.AI.autorag('wispy-pond-1055').aiSearch({
-      query: query,
-      max_num_results: parseInt(body.topK || env.MAX_SEARCH_RESULTS || '10'),
+      query: expandedQuery,
+      max_num_results: topK,
       rewrite_query: true,
       stream: false,
       system_prompt:
@@ -39,7 +72,6 @@ export async function onRequestPost(context) {
     });
 
     // Transform AI Search Beta response to our format
-    // Response structure: { object: "vector_store.search_results.page", data: [...], response: "..." }
     const results = (searchData.data || []).map((item) => {
       // Extract URL from filename
       let url = item.filename || '/';
@@ -61,28 +93,67 @@ export async function onRequestPost(context) {
         .join(' ')
         .substring(0, 200);
 
+      // Determine category from URL
+      let category = 'Seite';
+      if (url.includes('/projekte')) category = 'Projekte';
+      else if (url.includes('/blog')) category = 'Blog';
+      else if (url.includes('/gallery')) category = 'Gallery';
+      else if (url.includes('/videos')) category = 'Videos';
+      else if (url.includes('/about')) category = 'About';
+      else if (url.includes('/contact')) category = 'Contact';
+
       return {
         url: url,
         title: item.filename?.split('/').pop()?.replace('.html', '') || 'Seite',
-        category: 'Seite',
+        category: category,
         description: textContent || '',
         score: item.score || 0,
       };
     });
 
-    return new Response(
-      JSON.stringify({
-        results: results,
-        summary:
-          (searchData.response || `Suchergebnisse für "${query}"`).substring(
-            0,
-            200,
-          ) + '...',
-        count: results.length,
-        query: query,
-      }),
-      { headers: corsHeaders },
-    );
+    // Calculate enhanced relevance scores and sort
+    const scoredResults = results
+      .map((result) => ({
+        ...result,
+        score: calculateRelevanceScore(result, query),
+      }))
+      .sort((a, b) => b.score - a.score);
+
+    const responseData = {
+      results: scoredResults,
+      summary:
+        (searchData.response || `Suchergebnisse für "${query}"`).substring(
+          0,
+          200,
+        ) + '...',
+      count: scoredResults.length,
+      query: query,
+      expandedQuery: expandedQuery !== query ? expandedQuery : undefined,
+    };
+
+    // Cache the result
+    if (env.SEARCH_CACHE) {
+      try {
+        await env.SEARCH_CACHE.put(
+          cacheKey,
+          JSON.stringify({
+            data: responseData,
+            timestamp: Date.now(),
+          }),
+          { expirationTtl: 3600 }, // 1 hour
+        );
+      } catch (cacheError) {
+        console.warn('Cache write error:', cacheError);
+      }
+    }
+
+    return new Response(JSON.stringify(responseData), {
+      headers: {
+        ...corsHeaders,
+        'X-Cache': 'MISS',
+        'Cache-Control': 'public, max-age=3600',
+      },
+    });
   } catch (error) {
     console.error('Search API Error:', error);
     return new Response(

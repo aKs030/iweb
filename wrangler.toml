@@ -13,6 +13,11 @@ bucket_name = "img"
 [ai]
 binding = "AI"
 
+# KV Namespace für Search Cache
+[[kv_namespaces]]
+binding = "SEARCH_CACHE"
+id = "87763b0924a446fa961f2e500f227af3"
+
 # Umgebungsvariablen für Production
 [env.production]
 vars = { MAX_SEARCH_RESULTS = "10" }
@@ -26,6 +31,11 @@ bucket_name = "img"
 [env.production.ai]
 binding = "AI"
 
+# KV Namespace für Search Cache (Production)
+[[env.production.kv_namespaces]]
+binding = "SEARCH_CACHE"
+id = "87763b0924a446fa961f2e500f227af3"
+
 # Umgebungsvariablen für Preview
 [env.preview]
 vars = { MAX_SEARCH_RESULTS = "10" }
@@ -38,3 +48,8 @@ bucket_name = "img"
 # Workers AI Binding (Preview)
 [env.preview.ai]
 binding = "AI"
+
+# KV Namespace für Search Cache (Preview)
+[[env.preview.kv_namespaces]]
+binding = "SEARCH_CACHE"
+id = "6028ef0f481e4cf3b314c20ee80f06b0"
