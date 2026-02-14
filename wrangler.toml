@@ -1,6 +1,9 @@
 name = "1web"
 compatibility_date = "2024-01-01"
 
+# Pages Build Output - Root-Verzeichnis (kein Build)
+pages_build_output_dir = "."
+
 # R2 Bucket für Gallery
 [[r2_buckets]]
 binding = "GALLERY_BUCKET"

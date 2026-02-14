@@ -1,4 +1,3 @@
-import { Resend } from 'resend';
 import { getCorsHeaders, handleOptions } from './_cors.js';
 
 /**
@@ -9,6 +8,8 @@ export async function onRequestPost({ request, env }) {
   const corsHeaders = getCorsHeaders(request, env);
 
   try {
+    // Dynamic import of Resend (provided by Cloudflare)
+    const { Resend } = await import('resend');
     // Check if body is JSON
     const contentType = request.headers.get('content-type');
     if (!contentType || !contentType.includes('application/json')) {
@@ -126,4 +127,7 @@ export async function onRequestPost({ request, env }) {
   }
 }
 
-export const onRequestOptions = handleOptions;
+export async function onRequestOptions({ request, env }) {
+  const { handleOptions } = await import('./_cors.js');
+  return handleOptions({ request, env });
+}
