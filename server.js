@@ -127,11 +127,124 @@ function loadRedirects() {
 
 loadRedirects();
 
+// ─── Header Rules (dynamisch aus _headers) ───────────────────
+let HEADER_RULES = [];
+
+function loadHeaders() {
+  try {
+    const path = resolve(ROOT, '_headers');
+    if (!existsSync(path)) return;
+
+    const content = readFileSync(path, 'utf-8');
+    const lines = content.split('\n');
+
+    HEADER_RULES = [];
+    let currentRule = null;
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+
+      // Skip empty lines and comments
+      if (!trimmed || trimmed.startsWith('#')) continue;
+
+      // Check if line starts a new path rule (no leading whitespace)
+      if (!line.startsWith(' ') && !line.startsWith('\t')) {
+        // Save previous rule if exists
+        if (currentRule) {
+          HEADER_RULES.push(currentRule);
+        }
+        // Start new rule
+        currentRule = {
+          path: trimmed,
+          headers: {},
+        };
+      } else if (currentRule && trimmed.includes(':')) {
+        // Parse header line (indented, contains colon)
+        const colonIndex = trimmed.indexOf(':');
+        const headerName = trimmed.substring(0, colonIndex).trim();
+        const headerValue = trimmed.substring(colonIndex + 1).trim();
+        if (headerName && headerValue) {
+          currentRule.headers[headerName] = headerValue;
+        }
+      }
+    }
+
+    // Don't forget the last rule
+    if (currentRule) {
+      HEADER_RULES.push(currentRule);
+    }
+
+    // Sort rules by specificity (most specific first)
+    HEADER_RULES.sort((a, b) => {
+      const aSpec =
+        a.path.split('/').length + (a.path.includes('*') ? -0.5 : 0);
+      const bSpec =
+        b.path.split('/').length + (b.path.includes('*') ? -0.5 : 0);
+      return bSpec - aSpec;
+    });
+
+    console.log(`  ✓ _headers geladen (${HEADER_RULES.length} Regeln)`);
+  } catch (err) {
+    console.warn('  ⚠ Fehler beim Laden von _headers:', err.message);
+  }
+}
+
+loadHeaders();
+
+/**
+ * Findet passende Header-Regel für eine URL
+ */
+function getHeadersForPath(url) {
+  const headers = {};
+
+  // Apply matching rules (most specific first)
+  for (const rule of HEADER_RULES) {
+    if (matchPath(url, rule.path)) {
+      Object.assign(headers, rule.headers);
+    }
+  }
+
+  return headers;
+}
+
+/**
+ * Matcht eine URL gegen einen Header-Pfad (mit Wildcards)
+ */
+function matchPath(url, pattern) {
+  // Exact match
+  if (url === pattern) return true;
+
+  // Wildcard at end: /path/*
+  if (pattern.endsWith('/*')) {
+    const prefix = pattern.slice(0, -1);
+    return url.startsWith(prefix);
+  }
+
+  // Wildcard at start: /*.ext
+  if (pattern.startsWith('/*.')) {
+    const ext = pattern.slice(2);
+    return url.endsWith('.' + ext);
+  }
+
+  // Catch-all: /*
+  if (pattern === '/*') return true;
+
+  return false;
+}
+
 // Watch _redirects for changes
 if (existsSync(resolve(ROOT, '_redirects'))) {
   watchFile(resolve(ROOT, '_redirects'), { interval: 1000 }, () => {
     console.log('\n  🔄 _redirects geändert — neu geladen');
     loadRedirects();
+  });
+}
+
+// Watch _headers for changes
+if (existsSync(resolve(ROOT, '_headers'))) {
+  watchFile(resolve(ROOT, '_headers'), { interval: 1000 }, () => {
+    console.log('\n  🔄 _headers geändert — neu geladen');
+    loadHeaders();
   });
 }
 
@@ -183,13 +296,16 @@ const CLEAN_URLS = {
   '/contact/': 'pages/contact/index.html',
 };
 
-function tryServe(filePath, res) {
+function tryServe(filePath, res, url = '/') {
   if (!existsSync(filePath)) return false;
   const stat = statSync(filePath);
   if (!stat.isFile()) return false;
 
   const ext = extname(filePath).toLowerCase();
   const mime = MIME[ext] || 'application/octet-stream';
+
+  // Get headers from _headers file
+  const customHeaders = getHeadersForPath(url);
 
   // HTML → dynamische Template-Injection
   if (ext === '.html') {
@@ -201,6 +317,7 @@ function tryServe(filePath, res) {
       'Content-Length': buf.length,
       'Cache-Control': 'no-cache',
       'Access-Control-Allow-Origin': '*',
+      ...customHeaders,
     });
     res.end(buf);
     return true;
@@ -212,6 +329,7 @@ function tryServe(filePath, res) {
     'Content-Length': content.length,
     'Cache-Control': 'no-cache',
     'Access-Control-Allow-Origin': '*',
+    ...customHeaders,
   });
   res.end(content);
   return true;
@@ -324,6 +442,7 @@ const server = createServer((req, res) => {
         tryServe(
           resolve(ROOT, target.startsWith('/') ? target.slice(1) : target),
           res,
+          url,
         )
       )
         return;
@@ -332,22 +451,22 @@ const server = createServer((req, res) => {
 
   // 3. Clean URLs (Fallback mapping)
   if (CLEAN_URLS[url]) {
-    if (tryServe(resolve(ROOT, CLEAN_URLS[url]), res)) return;
+    if (tryServe(resolve(ROOT, CLEAN_URLS[url]), res, url)) return;
   }
 
   // 4. Direct file serving
   const filePath = resolve(ROOT, url.substring(1));
-  if (tryServe(filePath, res)) return;
+  if (tryServe(filePath, res, url)) return;
 
   // 5. Try adding index.html for directories
   if (url.endsWith('/')) {
     const indexPath = resolve(ROOT, url.substring(1), 'index.html');
-    if (tryServe(indexPath, res)) return;
+    if (tryServe(indexPath, res, url)) return;
   }
 
   // 6. Try .html extension
   const htmlPath = resolve(ROOT, url.substring(1) + '.html');
-  if (tryServe(htmlPath, res)) return;
+  if (tryServe(htmlPath, res, url)) return;
 
   // 404
   res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
