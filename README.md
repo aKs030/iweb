@@ -161,7 +161,7 @@ npm run deploy
 ## 📚 Documentation
 
 - [DEVELOPMENT.md](DEVELOPMENT.md) - Development guide
-- [PROJECT_STATUS.md](PROJECT_STATUS.md) - Current project status
+- [PROJECT_STATUS.md](docs/PROJECT_STATUS.md) - Current project status
 - [CONTRIBUTING.md](CONTRIBUTING.md) - Contributing guidelines
 - [SECURITY.md](SECURITY.md) - Security policy
 

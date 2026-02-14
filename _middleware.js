@@ -9,7 +9,7 @@
 import {
   injectTemplates,
   loadTemplateFromURL,
-} from '../content/core/template-injector.js';
+} from './content/core/template-injector.js';
 
 /**
  * Middleware entry point — runs on every request.

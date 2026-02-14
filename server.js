@@ -291,8 +291,8 @@ const CLEAN_URLS = {
   '/gallery/': 'pages/gallery/index.html',
   '/projekte/': 'pages/projekte/index.html',
   '/videos/': 'pages/videos/index.html',
-  '/impressum/': 'impressum/index.html',
-  '/datenschutz/': 'datenschutz/index.html',
+  '/impressum/': 'pages/impressum/index.html',
+  '/datenschutz/': 'pages/datenschutz/index.html',
   '/contact/': 'pages/contact/index.html',
 };
 
