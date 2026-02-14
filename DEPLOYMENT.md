@@ -34,7 +34,18 @@ git push origin main
 
 Cloudflare deployed **direkt die Source-Dateien** ohne Build.
 
-**WICHTIG:** Die Build-Konfiguration wird NUR im Cloudflare Dashboard gesetzt, NICHT in `wrangler.toml`!
+**WICHTIG:** Die Build-Konfiguration wird NUR im Cloudflare Dashboard gesetzt:
+
+**Build Settings (Cloudflare Dashboard):**
+
+```
+Framework preset:        None
+Build command:           (leer lassen)
+Build output directory:  /
+Root directory:          (leer lassen)
+```
+
+**Build output directory muss `/` sein** (Root-Verzeichnis), nicht `.` oder `dist`!
 
 **Was passiert:**
 
