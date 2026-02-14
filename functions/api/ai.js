@@ -1,7 +1,7 @@
 /**
  * Cloudflare Pages Function - POST /api/ai
- * Modern AI Chat with RAG (Retrieval-Augmented Generation) using Groq
- * @version 8.0.0
+ * Modern AI Chat with RAG (Retrieval-Augmented Generation) using Groq + AI Search Beta
+ * @version 9.0.0
  */
 
 import { getCorsHeaders, handleOptions } from './_cors.js';
@@ -10,39 +10,42 @@ const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const GROQ_MODEL = 'llama-3.3-70b-versatile';
 
 /**
- * Search for relevant context using Vectorize
+ * Search for relevant context using AI Search Beta
  */
 async function getRelevantContext(query, env) {
-  if (!env.VECTOR_INDEX || !env.AI) {
+  if (!env.AI) {
     return null;
   }
 
   try {
-    // Generate embedding for the query
-    // Using bge-large for 1024 dimensions (Cloudflare Managed AI Search)
-    const embeddingResponse = await env.AI.run('@cf/baai/bge-large-en-v1.5', {
-      text: query,
+    // Use AI Search Beta to get relevant context
+    const searchData = await env.AI.autorag('wispy-pond-1055').aiSearch({
+      query: query,
+      max_num_results: 3,
+      rewrite_query: false,
+      stream: false,
     });
 
-    const queryVector = embeddingResponse.data[0];
-
-    // Search in Vectorize (top 3 most relevant results)
-    const vectorResults = await env.VECTOR_INDEX.query(queryVector, {
-      topK: 3,
-      returnMetadata: true,
-    });
-
-    if (!vectorResults.matches || vectorResults.matches.length === 0) {
+    if (!searchData.data || searchData.data.length === 0) {
       return null;
     }
 
     // Format context from search results
-    const contextParts = vectorResults.matches.map((match) => {
-      const meta = match.metadata || {};
-      return `Seite: ${meta.title || 'Unbekannt'}
-URL: ${meta.url || '/'}
-Kategorie: ${meta.category || 'Allgemein'}
-Beschreibung: ${meta.description || 'Keine Beschreibung verfügbar'}`;
+    const contextParts = searchData.data.map((item) => {
+      const url =
+        item.filename?.replace(/^https?:\/\/(www\.)?abdulkerimsesli\.de/, '') ||
+        '/';
+      const title =
+        item.filename?.split('/').pop()?.replace('.html', '') || 'Unbekannt';
+      const content =
+        item.content
+          ?.map((c) => c.text)
+          .join(' ')
+          .substring(0, 200) || '';
+
+      return `Seite: ${title}
+URL: ${url}
+Inhalt: ${content}`;
     });
 
     return contextParts.join('\n\n---\n\n');
@@ -76,7 +79,7 @@ export async function onRequestPost(context) {
       throw new Error('GROQ_API_KEY not configured');
     }
 
-    // Try to get relevant context from Vectorize
+    // Try to get relevant context from AI Search Beta
     const context = await getRelevantContext(prompt, env);
 
     // Build system message with context if available

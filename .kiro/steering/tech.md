@@ -77,18 +77,16 @@ npm run size:check       # Check bundle sizes
 
 ## Environment Variables
 
-Required in `.env` file:
+Required in `wrangler.toml`:
 
 ```bash
-AI_SEARCH_INDEX=suche
-RAG_ID=suche
 MAX_SEARCH_RESULTS=10
 ```
 
-For Cloudflare secrets:
+For Cloudflare Pages secrets (via Dashboard):
 
 ```bash
-wrangler secret put GROQ_API_KEY
+GROQ_API_KEY=<your-groq-api-key>
 ```
 
 ## Performance Targets
