@@ -64,15 +64,20 @@ const GalleryApp = () => {
 
   return h(
     'div',
-    { className: 'w-full h-screen bg-black overflow-hidden relative' },
+    {
+      // 'fixed inset-0' fixiert das Element genau im sichtbaren Bildschirmbereich
+      className: 'fixed inset-0 w-screen h-screen bg-black overflow-hidden',
+      style: { touchAction: 'none' }, // Verhindert Mobile-Swipes auf App-Ebene
+    },
     h(ThreeGalleryScene, { items: GALLERY_ITEMS }),
 
-    // Title Overlay
+    // Title Overlay - Safe Area zwischen Menu (top: 76px) und Footer (bottom: 76px)
     h(
       'div',
       {
         className:
-          'absolute top-24 left-1/2 -translate-x-1/2 z-10 pointer-events-none text-center',
+          'absolute left-1/2 -translate-x-1/2 z-10 pointer-events-none text-center w-full px-4',
+        style: { top: '100px' }, // 76px Menu + 24px Abstand
       },
       h(
         'h1',
@@ -92,12 +97,13 @@ const GalleryApp = () => {
       ),
     ),
 
-    // Instructions
+    // Instructions - Safe Area über Footer (min-height: 52px + bottom: 12px + safe-bottom)
     h(
       'div',
       {
         className:
-          'absolute bottom-8 left-1/2 -translate-x-1/2 z-10 pointer-events-none animate-pulse',
+          'absolute left-1/2 -translate-x-1/2 z-10 pointer-events-none animate-pulse w-full text-center',
+        style: { bottom: '120px' }, // 52px Footer + 56px Abstand + 12px bottom offset
       },
       h(
         'p',
