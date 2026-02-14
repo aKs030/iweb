@@ -32,9 +32,10 @@ export async function onRequestPost(context) {
       throw new Error('AI binding not configured');
     }
 
-    // Generate cache key
+    // Generate cache key with version to bust old cache
+    const CACHE_VERSION = 'v2'; // Increment when search logic changes
     const topK = parseInt(body.topK || env.MAX_SEARCH_RESULTS || '10');
-    const cacheKey = getCacheKey(query, topK);
+    const cacheKey = `${CACHE_VERSION}:${getCacheKey(query, topK)}`;
 
     // Try to get from cache (KV or in-memory fallback)
     if (env.SEARCH_CACHE) {
@@ -91,17 +92,26 @@ export async function onRequestPost(context) {
       let textContent = item.content
         ?.map((c) => c.text)
         .join(' ')
+        .replace(/\s+/g, ' ') // Normalize whitespace
         .trim();
 
       // Smart truncation: don't cut words in half
       if (textContent && textContent.length > 200) {
-        textContent = textContent.substring(0, 200);
-        const lastSpace = textContent.lastIndexOf(' ');
-        if (lastSpace > 150) {
-          // Only truncate at word boundary if we're not losing too much
-          textContent = textContent.substring(0, lastSpace);
+        // Find a good breaking point (space, comma, period)
+        let breakPoint = 200;
+        const lastSpace = textContent.lastIndexOf(' ', 200);
+        const lastComma = textContent.lastIndexOf(',', 200);
+        const lastPeriod = textContent.lastIndexOf('.', 200);
+
+        // Use the best breaking point
+        breakPoint = Math.max(lastSpace, lastComma, lastPeriod);
+
+        // If no good breaking point found or too far back, just use space
+        if (breakPoint < 150) {
+          breakPoint = lastSpace > 0 ? lastSpace : 200;
         }
-        textContent = textContent.trim();
+
+        textContent = textContent.substring(0, breakPoint).trim();
       }
 
       // Determine category from URL
