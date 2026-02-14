@@ -26,7 +26,30 @@ npm install
 npm run vectorize:setup
 ```
 
-### 3. Umgebungsvariablen setzen
+Dies erstellt den Index `website-search-index` in deinem Cloudflare Account.
+
+### 3. Vectorize Bindings aktivieren
+
+Entferne die Kommentare in `wrangler.toml`:
+
+```toml
+# Zeile ~10
+[[vectorize]]
+binding = "VECTORIZE"
+index_name = "website-search-index"
+
+# Zeile ~30 (Production)
+[[env.production.vectorize]]
+binding = "VECTORIZE"
+index_name = "website-search-index"
+
+# Zeile ~45 (Preview)
+[[env.preview.vectorize]]
+binding = "VECTORIZE"
+index_name = "website-search-index"
+```
+
+### 4. Umgebungsvariablen setzen
 
 ```bash
 export CLOUDFLARE_ACCOUNT_ID="deine-account-id"
@@ -42,7 +65,7 @@ export CLOUDFLARE_API_TOKEN="dein-api-token"
 - Cloudflare Dashboard → My Profile → API Tokens → Create Token
 - Permissions: Workers AI (Edit) + Vectorize (Edit)
 
-### 4. Content crawlen und indexieren
+### 5. Content crawlen und indexieren
 
 ```bash
 npm run vectorize:full
@@ -50,11 +73,23 @@ npm run vectorize:full
 
 Das dauert ca. 1-2 Minuten für ~20 Seiten.
 
-### 5. Deployen
+### 6. Deployen
 
 ```bash
 npm run push
 ```
+
+## ⚠️ Wichtig: Reihenfolge beachten!
+
+**Du musst den Vectorize Index ERST erstellen (Schritt 2), BEVOR du die Bindings in wrangler.toml aktivierst (Schritt 3)!**
+
+Sonst schlägt das Deployment mit diesem Fehler fehl:
+
+```
+Error: No index was found with name 'website-search-index'
+```
+
+Die Bindings sind aktuell auskommentiert, damit das Deployment funktioniert. Nach dem Index-Setup kannst du sie aktivieren.
 
 ## Hybrid Search testen
 
