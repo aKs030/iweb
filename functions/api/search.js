@@ -34,6 +34,8 @@ export async function onRequestPost(context) {
       max_num_results: parseInt(body.topK || env.MAX_SEARCH_RESULTS || '10'),
       rewrite_query: true,
       stream: false,
+      system_prompt:
+        'Du bist ein hilfreicher Assistent. Antworte SEHR KURZ in maximal 1-2 Sätzen (max. 150 Zeichen). Sei präzise und direkt.',
     });
 
     // Transform AI Search Beta response to our format
@@ -71,7 +73,11 @@ export async function onRequestPost(context) {
     return new Response(
       JSON.stringify({
         results: results,
-        summary: searchData.response || `Suchergebnisse für "${query}"`,
+        summary:
+          (searchData.response || `Suchergebnisse für "${query}"`).substring(
+            0,
+            200,
+          ) + '...',
         count: results.length,
         query: query,
       }),
