@@ -8,9 +8,10 @@
  * - Clean URLs, Redirects, Rewrites
  * - Korrekte MIME-Types
  * - Automatischer Reload bei Template-Änderungen
+ * - Lädt und wendet `_headers` an (CSP, Cache-Control, etc.)
  *
  * Run: node server.js
- * @version 2.0.0
+ * @version 2.1.0
  */
 
 import { createServer } from 'http';
@@ -135,6 +136,54 @@ if (existsSync(resolve(ROOT, '_redirects'))) {
   });
 }
 
+// ─── Headers Rules (dynamisch aus _headers) ────────────────
+let HEADER_RULES = [];
+
+function loadHeaders() {
+  try {
+    const path = resolve(ROOT, '_headers');
+    if (!existsSync(path)) return;
+
+    const content = readFileSync(path, 'utf-8');
+    const lines = content.split('\n');
+
+    HEADER_RULES = [];
+    let currentRule = null;
+
+    for (let line of lines) {
+      line = line.trim();
+
+      // Skip empty lines and comments (start with #)
+      if (!line || line.startsWith('#')) continue;
+
+      // Check if line is a header (contains colon) AND we have an active rule
+      // Note: This simple check assumes paths don't contain colons, which is true for relative paths in _headers
+      if (line.includes(':') && currentRule) {
+        const parts = line.split(':');
+        const key = parts[0].trim();
+        const value = parts.slice(1).join(':').trim();
+        currentRule.headers[key] = value;
+      } else {
+        // New path rule
+        currentRule = { path: line, headers: {} };
+        HEADER_RULES.push(currentRule);
+      }
+    }
+    console.log(`  ✓ _headers geladen (${HEADER_RULES.length} Regeln)`);
+  } catch (err) {
+    console.warn('  ⚠ Fehler beim Laden von _headers:', err.message);
+  }
+}
+
+loadHeaders();
+
+if (existsSync(resolve(ROOT, '_headers'))) {
+  watchFile(resolve(ROOT, '_headers'), { interval: 1000 }, () => {
+    console.log('\n  🔄 _headers geändert — neu geladen');
+    loadHeaders();
+  });
+}
+
 /**
  * Matcht eine URL gegen eine _redirects-Regel (inkl. Wildcards)
  */
@@ -160,6 +209,9 @@ function matchRule(url, ruleFrom) {
     }
   }
 
+  // 4. Einfacher * Wildcard (nur am Ende unterstützt in dieser Implementierung)
+  if (ruleFrom === '*') return { matched: true, splat: url };
+
   return { matched: false };
 }
 
@@ -183,7 +235,22 @@ const CLEAN_URLS = {
   '/contact/': 'pages/contact/index.html',
 };
 
-function tryServe(filePath, res) {
+function getHeadersForUrl(url) {
+  const headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Cache-Control': 'no-cache',
+  };
+
+  for (const rule of HEADER_RULES) {
+    const { matched } = matchRule(url, rule.path);
+    if (matched) {
+      Object.assign(headers, rule.headers);
+    }
+  }
+  return headers;
+}
+
+function tryServe(filePath, res, reqUrl) {
   if (!existsSync(filePath)) return false;
   const stat = statSync(filePath);
   if (!stat.isFile()) return false;
@@ -191,16 +258,19 @@ function tryServe(filePath, res) {
   const ext = extname(filePath).toLowerCase();
   const mime = MIME[ext] || 'application/octet-stream';
 
+  // Custom headers from _headers
+  const customHeaders = getHeadersForUrl(reqUrl);
+
   // HTML → dynamische Template-Injection
   if (ext === '.html') {
     let html = readFileSync(filePath, 'utf-8');
     html = injectTemplates(html);
     const buf = Buffer.from(html, 'utf-8');
+
     res.writeHead(200, {
       'Content-Type': mime,
       'Content-Length': buf.length,
-      'Cache-Control': 'no-cache',
-      'Access-Control-Allow-Origin': '*',
+      ...customHeaders
     });
     res.end(buf);
     return true;
@@ -210,8 +280,7 @@ function tryServe(filePath, res) {
   res.writeHead(200, {
     'Content-Type': mime,
     'Content-Length': content.length,
-    'Cache-Control': 'no-cache',
-    'Access-Control-Allow-Origin': '*',
+    ...customHeaders
   });
   res.end(content);
   return true;
@@ -324,6 +393,7 @@ const server = createServer((req, res) => {
         tryServe(
           resolve(ROOT, target.startsWith('/') ? target.slice(1) : target),
           res,
+          url // Pass original URL for header matching
         )
       )
         return;
@@ -332,22 +402,22 @@ const server = createServer((req, res) => {
 
   // 3. Clean URLs (Fallback mapping)
   if (CLEAN_URLS[url]) {
-    if (tryServe(resolve(ROOT, CLEAN_URLS[url]), res)) return;
+    if (tryServe(resolve(ROOT, CLEAN_URLS[url]), res, url)) return;
   }
 
   // 4. Direct file serving
   const filePath = resolve(ROOT, url.substring(1));
-  if (tryServe(filePath, res)) return;
+  if (tryServe(filePath, res, url)) return;
 
   // 5. Try adding index.html for directories
   if (url.endsWith('/')) {
     const indexPath = resolve(ROOT, url.substring(1), 'index.html');
-    if (tryServe(indexPath, res)) return;
+    if (tryServe(indexPath, res, url)) return;
   }
 
   // 6. Try .html extension
   const htmlPath = resolve(ROOT, url.substring(1) + '.html');
-  if (tryServe(htmlPath, res)) return;
+  if (tryServe(htmlPath, res, url)) return;
 
   // 404
   res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
@@ -361,6 +431,7 @@ server.listen(PORT, () => {
   console.log(
     '  📄 Templates werden dynamisch injiziert (kein Build, kein Duplicate)',
   );
+  console.log('  🛡️  _headers werden geladen und angewendet (CSP, Security)');
   console.log('  👀 Template-Änderungen werden automatisch erkannt');
   console.log('  Strg+C zum Beenden\n');
 });
