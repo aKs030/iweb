@@ -32,13 +32,9 @@ git push origin main
 
 ### Cloudflare Pages Deployment
 
-Cloudflare deployed **direkt die Source-Dateien** ohne Build:
+Cloudflare deployed **direkt die Source-Dateien** ohne Build.
 
-**Konfiguration in `wrangler.toml`:**
-
-```toml
-pages_build_output_dir = "."
-```
+**WICHTIG:** Die Build-Konfiguration wird NUR im Cloudflare Dashboard gesetzt, NICHT in `wrangler.toml`!
 
 **Was passiert:**
 
