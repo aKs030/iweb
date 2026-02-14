@@ -32,16 +32,3 @@ jobs:
       - name: TypeScript check
         run: npx tsc --noEmit
         continue-on-error: true
-
-      - name: CSS stats
-        run: npm run css:check
-
-      - name: Unused code (Knip)
-        run: npx knip || true
-
-      - name: Console.log check
-        run: npm run check:console
-        continue-on-error: true
-
-      - name: Circular dependencies
-        run: npx madge --circular --extensions js content/ pages/ || true

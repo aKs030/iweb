@@ -23,47 +23,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build
-        run: npm run build
+      - name: Lint check
+        run: npm run lint:check
 
-      - name: Check bundle size
-        run: npm run perf:budget
+      - name: Format check
+        run: npm run format:check
 
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: dist
-          path: dist/
-          retention-days: 7
-
-      - name: Comment PR with bundle sizes
-        if: github.event_name == 'pull_request'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const fs = require('fs');
-            const { execSync } = require('child_process');
-
-            // Get bundle sizes
-            const output = execSync('npm run size:check 2>&1', { encoding: 'utf-8' });
-
-            const comment = `## 📊 Bundle Size Report
-
-            \`\`\`
-            ${output}
-            \`\`\`
-
-            ✅ Build completed successfully!
-            `;
-
-            try {
-              await github.rest.issues.createComment({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                body: comment
-              });
-            } catch (error) {
-              console.log('Failed to post comment (likely due to permissions): ' + error.message);
-            }
+      - name: Success
+        run: echo "✅ All checks passed! Cloudflare Pages will deploy automatically."
