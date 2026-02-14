@@ -2,7 +2,8 @@
 /**
  * Modern Site Footer Web Component
  * Scroll-based auto-expand/collapse footer with cookie management
- * @version 2.0.2
+ * Optimized with IntersectionObserver
+ * @version 2.1.0
  */
 
 import { createLogger } from '../../core/logger.js';
@@ -16,12 +17,10 @@ const log = createLogger('SiteFooter');
 const CONFIG = {
   FOOTER_PATH: '/content/components/footer/footer',
   FOOTER_PATH_FALLBACK: '/content/components/footer/footer.html',
-  SCROLL_DEBOUNCE_MS: 100,
-  EXPAND_THRESHOLD: 100,
-  COLLAPSE_THRESHOLD: 300,
   TRANSITION_DURATION: 300,
   LOAD_RETRY_ATTEMPTS: 2,
   LOAD_RETRY_DELAY_MS: 500,
+  SENTINEL_ID: 'footer-sentinel'
 };
 
 /**
@@ -136,11 +135,9 @@ export class SiteFooter extends HTMLElement {
     this.expanded = false;
     this.initialized = false;
     this.isTransitioning = false;
-    this.lastScrollY = 0;
     this.touchStartY = 0;
     this.touchStartTime = 0;
-    this.scrollTimeout = null;
-    this.scrollHandler = null;
+    this.observer = null;
 
     /** @type {FooterElements} */
     this.elements = {
@@ -250,13 +247,13 @@ export class SiteFooter extends HTMLElement {
       this._boundCookieTrigger = null;
     }
 
+    if (this.observer) {
+      this.observer.disconnect();
+      this.observer = null;
+    }
+
     this._eventsbound = false;
     this._settingsEventsbound = false;
-
-    if (this.scrollHandler) {
-      window.removeEventListener('scroll', this.scrollHandler);
-      this.scrollHandler = null;
-    }
   }
 
   init() {
@@ -279,7 +276,7 @@ export class SiteFooter extends HTMLElement {
 
     this.setupDate();
     this.setupCookieBanner();
-    this.setupScrollHandler();
+    this.setupIntersectionObserver();
     this.bindEvents();
     // Initial translation
     this.updateLanguage(i18n.currentLang);
@@ -353,61 +350,57 @@ export class SiteFooter extends HTMLElement {
     a11y?.announce(i18n.t('footer.messages.rejected'), { priority: 'polite' });
   }
 
-  setupScrollHandler() {
-    if (!this.elements.footer) return;
+  setupIntersectionObserver() {
+    // Clean up existing observer
+    if (this.observer) {
+      this.observer.disconnect();
+    }
 
-    // Prüfe ob Seite überhaupt scrollbar ist
-    const isScrollable =
-      document.documentElement.scrollHeight > window.innerHeight;
-    if (!isScrollable) {
-      log.info('Page not scrollable - scroll handler disabled');
+    // Create or find sentinel
+    let sentinel = document.getElementById(CONFIG.SENTINEL_ID);
+    if (!sentinel) {
+      sentinel = document.createElement('div');
+      sentinel.id = CONFIG.SENTINEL_ID;
+      Object.assign(sentinel.style, {
+        position: 'relative', // Keep in flow to stay at bottom of content
+        width: '100%',
+        height: '1px',
+        pointerEvents: 'none',
+        opacity: '0',
+        zIndex: '-1',
+      });
+      document.body.appendChild(sentinel);
+    }
+
+    if (!('IntersectionObserver' in window)) {
+      log.warn('IntersectionObserver not supported - auto-expand disabled');
       return;
     }
 
-    this.lastScrollY = window.scrollY;
+    this.observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        const hasSections = document.querySelector('section[id]') !== null;
 
-    this.scrollHandler = () => {
-      if (this.scrollTimeout) this.timers.clearTimeout(this.scrollTimeout);
-      this.scrollTimeout = this.timers.setTimeout(
-        () => this.checkScrollPosition(),
-        CONFIG.SCROLL_DEBOUNCE_MS,
-      );
-    };
+        if (entry.isIntersecting && hasSections) {
+          if (!this.expanded && !this.isTransitioning) {
+            this.toggleFooter(true);
+          }
+        } else if (!entry.isIntersecting && this.expanded) {
+          if (!this.isTransitioning) {
+            this.toggleFooter(false);
+          }
+        }
+      },
+      {
+        root: null, // viewport
+        rootMargin: '0px',
+        threshold: 0.1,
+      },
+    );
 
-    window.addEventListener('scroll', this.scrollHandler, { passive: true });
-
-    // NICHT beim initialen Laden prüfen - nur bei tatsächlichem Scroll
-    log.info('Scroll handler initialized');
-  }
-
-  checkScrollPosition() {
-    if (this.isTransitioning) return;
-
-    const scrollY = window.scrollY;
-    const windowHeight = window.innerHeight;
-    const documentHeight = document.documentElement.scrollHeight;
-    const scrollBottom = scrollY + windowHeight;
-    const distanceFromBottom = documentHeight - scrollBottom;
-    const scrollDirection = scrollY > this.lastScrollY ? 'down' : 'up';
-    // Check if we are on a page with sections (like the home page)
-    const hasSections = document.querySelector('section[id]') !== null;
-
-    if (
-      hasSections &&
-      scrollDirection === 'down' &&
-      distanceFromBottom < CONFIG.EXPAND_THRESHOLD &&
-      !this.expanded
-    ) {
-      this.toggleFooter(true);
-    } else if (
-      scrollDirection === 'up' &&
-      distanceFromBottom > CONFIG.COLLAPSE_THRESHOLD &&
-      this.expanded
-    ) {
-      this.toggleFooter(false);
-    }
-
-    this.lastScrollY = scrollY;
+    this.observer.observe(sentinel);
+    log.info('IntersectionObserver initialized');
   }
 
   setupGlobalEventListeners() {
@@ -482,13 +475,6 @@ export class SiteFooter extends HTMLElement {
   }
 
   handleResize() {
-    // Note: TimerManager creates a new ID each time, so we just set a new timeout
-    // and rely on clearAll() or specific clearing if needed.
-    // However, here we want debounce behavior, so we need to clear the previous one.
-    // We didn't store resizeTimeout ID in 'this' in the original code properly
-    // (it was this.resizeTimeout = null in constructor).
-    // Let's use a property for it.
-
     if (this.resizeTimeout) this.timers.clearTimeout(this.resizeTimeout);
 
     this.resizeTimeout = this.timers.setTimeout(() => {
@@ -500,6 +486,9 @@ export class SiteFooter extends HTMLElement {
     const { footer } = this.elements;
     if (!footer) return;
 
+    // With fixed positioning, we usually don't need to scrollIntoView
+    // unless the footer is absolutely positioned or part of flow.
+    // Keeping this logic as it was in original, but it might be redundant now.
     const rect = footer.getBoundingClientRect();
     if (rect.bottom > window.innerHeight) {
       footer.scrollIntoView({ behavior: 'smooth', block: 'end' });
@@ -596,11 +585,9 @@ export class SiteFooter extends HTMLElement {
   bindEvents() {
     const { closeBtn, footerMin } = this.elements;
 
-    // Verhindere mehrfache Event-Registrierung
     if (this._eventsbound) return;
     this._eventsbound = true;
 
-    // Footer-Trigger (außerhalb des Footers)
     this._boundFooterTrigger = (e) => {
       const target = /** @type {Element} */ (e.target);
       const trigger = target.closest('[data-footer-trigger]');
@@ -613,7 +600,6 @@ export class SiteFooter extends HTMLElement {
     };
     document.addEventListener('click', this._boundFooterTrigger);
 
-    // Cookie-Trigger
     this._boundCookieTrigger = (e) => {
       const target = /** @type {Element} */ (e.target);
       if (target.closest('[data-cookie-trigger]')) {
@@ -624,10 +610,8 @@ export class SiteFooter extends HTMLElement {
     };
     this.addEventListener('click', this._boundCookieTrigger);
 
-    // Settings schließen
     closeBtn?.addEventListener('click', () => this.closeSettings());
 
-    // Footer minimiert - Klick zum Erweitern
     footerMin?.addEventListener('click', (e) => {
       const target = /** @type {Element} */ (e.target);
       if (target.closest('a, button, input, .cookie-inline')) return;
@@ -638,7 +622,6 @@ export class SiteFooter extends HTMLElement {
       this.toggleFooter();
     });
 
-    // Keyboard Support
     footerMin?.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' || e.key === ' ') {
         const target = /** @type {Element} */ (e.target);
@@ -661,7 +644,6 @@ export class SiteFooter extends HTMLElement {
       cookieBanner,
     } = this.elements;
 
-    // Verhindere mehrfache Event-Registrierung
     if (this._settingsEventsbound) return;
     this._settingsEventsbound = true;
 
