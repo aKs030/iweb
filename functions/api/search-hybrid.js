@@ -23,8 +23,16 @@ export async function onRequestPost(context) {
     }
 
     // Check bindings
-    if (!env.AI || !env.VECTORIZE) {
-      throw new Error('AI or VECTORIZE binding not configured');
+    if (!env.AI) {
+      throw new Error('AI binding not configured');
+    }
+
+    // Fallback to AI Search Beta if Vectorize not available yet
+    if (!env.VECTORIZE) {
+      console.warn('VECTORIZE not configured, falling back to AI Search Beta');
+      // Redirect to regular search
+      const searchModule = await import('./search.js');
+      return searchModule.onRequestPost(context);
     }
 
     // Cache check
