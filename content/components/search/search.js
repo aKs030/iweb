@@ -107,28 +107,6 @@ class SearchComponent {
 
         <div class="search-autocomplete" style="display: none;"></div>
 
-        <div class="search-filters">
-          <button class="search-filter-btn active" data-filter="all">
-            <span>Alle</span>
-          </button>
-          <button class="search-filter-btn" data-filter="Projekte">
-            <span>💻</span>
-            <span>Projekte</span>
-          </button>
-          <button class="search-filter-btn" data-filter="Blog">
-            <span>📝</span>
-            <span>Blog</span>
-          </button>
-          <button class="search-filter-btn" data-filter="Gallery">
-            <span>🖼️</span>
-            <span>Galerie</span>
-          </button>
-          <button class="search-filter-btn" data-filter="Videos">
-            <span>🎬</span>
-            <span>Videos</span>
-          </button>
-        </div>
-
         <div class="search-results" role="region" aria-live="polite" aria-atomic="false"></div>
       </div>
     `;
@@ -146,17 +124,6 @@ class SearchComponent {
       .addEventListener('click', () => this.close());
     overlay.addEventListener('click', (e) => {
       if (e.target === overlay) this.close();
-    });
-
-    // Filter buttons
-    overlay.querySelectorAll('.search-filter-btn').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        this.activeFilter = btn.dataset.filter;
-        overlay.querySelectorAll('.search-filter-btn').forEach((b) => {
-          b.classList.toggle('active', b === btn);
-        });
-        this.applyFilter();
-      });
     });
   }
 
@@ -239,13 +206,6 @@ class SearchComponent {
 
     document.body.style.overflow = 'hidden';
 
-    // Show trending searches and quick actions if input is empty
-    if (!this.input.value) {
-      this.showTrendingAndQuickActions();
-      this.currentResults = [];
-      this.selectedIndex = -1;
-    }
-
     _log.info('Search opened');
   }
 
@@ -287,7 +247,7 @@ class SearchComponent {
     const trimmedQuery = query.trim();
 
     if (trimmedQuery.length === 0) {
-      this.showTrendingAndQuickActions();
+      this.resultsContainer.innerHTML = '';
       this.currentResults = [];
       this.selectedIndex = -1;
       return;
@@ -665,143 +625,10 @@ class SearchComponent {
   }
 
   /**
-   * Show trending searches and quick actions when input is empty
-   */
-  showTrendingAndQuickActions() {
-    let html = '';
-
-    // Quick Actions
-    html += `
-      <div class="search-section">
-        <div class="search-section-header">
-          <span class="search-section-icon">⚡</span>
-          <span class="search-section-title">Quick Actions</span>
-        </div>
-        <div class="search-quick-actions">
-          ${findQuickAction('home') ? this.createQuickActionHTML(findQuickAction('home')) : ''}
-          ${findQuickAction('projekte') ? this.createQuickActionHTML(findQuickAction('projekte')) : ''}
-          ${findQuickAction('blog') ? this.createQuickActionHTML(findQuickAction('blog')) : ''}
-          ${findQuickAction('galerie') ? this.createQuickActionHTML(findQuickAction('galerie')) : ''}
-        </div>
-      </div>
-    `;
-
-    // Trending Searches
-    html += `
-      <div class="search-section">
-        <div class="search-section-header">
-          <span class="search-section-icon">🔥</span>
-          <span class="search-section-title">Beliebte Suchen</span>
-        </div>
-        <div class="search-trending">
-          ${TRENDING_SEARCHES.map((item) => this.createTrendingItemHTML(item)).join('')}
-        </div>
-      </div>
-    `;
-
-    // Recent Searches
-    if (this.searchHistory.length > 0) {
-      html += `
-        <div class="search-section">
-          <div class="search-section-header">
-            <span class="search-section-icon">🕐</span>
-            <span class="search-section-title">Letzte Suchen</span>
-          </div>
-          <div class="search-recent">
-            ${this.searchHistory
-              .slice(0, 5)
-              .map((query) => this.createRecentSearchHTML(query))
-              .join('')}
-          </div>
-        </div>
-      `;
-    }
-
-    this.resultsContainer.innerHTML = html;
-
-    // Add event listeners
-    this.resultsContainer
-      .querySelectorAll('.search-quick-action')
-      .forEach((item) => {
-        item.addEventListener('click', (e) => {
-          e.preventDefault();
-          window.location.href = item.dataset.url;
-          this.close();
-        });
-      });
-
-    this.resultsContainer
-      .querySelectorAll('.search-trending-item, .search-recent-item')
-      .forEach((item) => {
-        item.addEventListener('click', () => {
-          const query = item.dataset.query;
-          this.input.value = query;
-          this.handleSearch(query);
-        });
-      });
-  }
-
-  /**
-   * Create Quick Action HTML
-   */
-  createQuickActionHTML(action) {
-    return `
-      <div class="search-quick-action" data-url="${this.escapeHTML(action.url)}">
-        <span class="search-quick-action-icon">${action.icon}</span>
-        <div class="search-quick-action-content">
-          <div class="search-quick-action-label">${this.escapeHTML(action.label)}</div>
-          <div class="search-quick-action-desc">${this.escapeHTML(action.description)}</div>
-        </div>
-      </div>
-    `;
-  }
-
-  /**
-   * Create Trending Item HTML
-   */
-  createTrendingItemHTML(item) {
-    return `
-      <div class="search-trending-item" data-query="${this.escapeHTML(item.query)}">
-        <span class="search-trending-icon">${item.icon}</span>
-        <span class="search-trending-text">${this.escapeHTML(item.query)}</span>
-      </div>
-    `;
-  }
-
-  /**
-   * Create Recent Search HTML
-   */
-  createRecentSearchHTML(query) {
-    return `
-      <div class="search-recent-item" data-query="${this.escapeHTML(query)}">
-        <span class="search-recent-icon">🕐</span>
-        <span class="search-recent-text">${this.escapeHTML(query)}</span>
-      </div>
-    `;
-  }
-
-  /**
    * Apply active filter to results
    */
   applyFilter() {
-    if (this.activeFilter === 'all') {
-      // Show all results
-      this.resultsContainer
-        .querySelectorAll('.search-category-group')
-        .forEach((group) => {
-          group.style.display = 'block';
-        });
-    } else {
-      // Filter by category
-      this.resultsContainer
-        .querySelectorAll('.search-category-group')
-        .forEach((group) => {
-          const header = group.querySelector('.search-category-header span');
-          const category = header ? header.textContent.trim() : '';
-          group.style.display =
-            category === this.activeFilter ? 'block' : 'none';
-        });
-    }
+    // Filter functionality removed - showing all results
   }
 
   destroy() {
