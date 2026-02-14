@@ -87,11 +87,22 @@ export async function onRequestPost(context) {
         url = url.slice(0, -1);
       }
 
-      // Extract text content from content array
-      const textContent = item.content
+      // Extract text content from content array with smart truncation
+      let textContent = item.content
         ?.map((c) => c.text)
         .join(' ')
-        .substring(0, 200);
+        .trim();
+
+      // Smart truncation: don't cut words in half
+      if (textContent && textContent.length > 200) {
+        textContent = textContent.substring(0, 200);
+        const lastSpace = textContent.lastIndexOf(' ');
+        if (lastSpace > 150) {
+          // Only truncate at word boundary if we're not losing too much
+          textContent = textContent.substring(0, lastSpace);
+        }
+        textContent = textContent.trim();
+      }
 
       // Determine category from URL
       let category = 'Seite';
@@ -111,8 +122,19 @@ export async function onRequestPost(context) {
       };
     });
 
+    // Remove duplicates based on URL
+    const uniqueResults = [];
+    const seenUrls = new Set();
+
+    for (const result of results) {
+      if (!seenUrls.has(result.url)) {
+        seenUrls.add(result.url);
+        uniqueResults.push(result);
+      }
+    }
+
     // Calculate enhanced relevance scores and sort
-    const scoredResults = results
+    const scoredResults = uniqueResults
       .map((result) => ({
         ...result,
         score: calculateRelevanceScore(result, query),
