@@ -38,7 +38,7 @@ function htmlTemplatesPlugin() {
     closeBundle() {
       const root = process.cwd();
       const dist = resolve(root, 'dist');
-      const dirs = ['content', 'pages', 'impressum', 'datenschutz'];
+      const dirs = ['content', 'pages'];
       const files = [
         '_redirects',
         '_headers',

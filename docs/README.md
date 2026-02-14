@@ -8,7 +8,7 @@ Essential documentation for the portfolio website project.
 
 - **[../README.md](../README.md)** - Project overview, installation, and quick start
 - **[../CONTRIBUTING.md](../CONTRIBUTING.md)** - Contributing guidelines and development workflow
-- **[../PROJECT_STATUS.md](../PROJECT_STATUS.md)** - Current project status and metrics
+- **[PROJECT_STATUS.md](PROJECT_STATUS.md)** - Current project status and metrics
 
 ### Architecture & Design
 
