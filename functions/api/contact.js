@@ -1,12 +1,10 @@
 /**
  * Handles contact form submissions.
  * POST /api/contact
+ * Uses Resend API directly (no package needed)
  */
 export async function onRequestPost({ request, env }) {
-  // Dynamische Imports
   const { getCorsHeaders } = await import('./_cors.js');
-  const { Resend } = await import('resend');
-
   const corsHeaders = getCorsHeaders(request, env);
 
   try {
@@ -72,29 +70,35 @@ export async function onRequestPost({ request, env }) {
       );
     }
 
-    const resend = new Resend(env.RESEND_API_KEY);
-
-    // Send email via Resend
-    const { data, error } = await resend.emails.send({
-      from: 'Contact Form <onboarding@resend.dev>',
-      to: ['krm19030@gmail.com'],
-      reply_to: email,
-      subject: `Kontaktformular: ${subject || 'Kein Betreff'}`,
-      html: `
-        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2>Neue Nachricht von ${name}</h2>
-          <p><strong>Absender:</strong> ${name} (<a href="mailto:${email}">${email}</a>)</p>
-          <p><strong>Betreff:</strong> ${subject || 'Kein Betreff'}</p>
-          <hr style="border: 1px solid #eee; margin: 20px 0;">
-          <div style="white-space: pre-wrap; background: #f9f9f9; padding: 15px; border-radius: 5px;">${message}</div>
-          <hr style="border: 1px solid #eee; margin: 20px 0;">
-          <p style="font-size: 12px; color: #666;">Diese E-Mail wurde über das Kontaktformular auf abdulkerimsesli.de gesendet.</p>
-        </div>
-      `,
+    // Call Resend API directly
+    const resendResponse = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${env.RESEND_API_KEY}`,
+      },
+      body: JSON.stringify({
+        from: 'Contact Form <onboarding@resend.dev>',
+        to: ['krm19030@gmail.com'],
+        reply_to: email,
+        subject: `Kontaktformular: ${subject || 'Kein Betreff'}`,
+        html: `
+          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+            <h2>Neue Nachricht von ${name}</h2>
+            <p><strong>Absender:</strong> ${name} (<a href="mailto:${email}">${email}</a>)</p>
+            <p><strong>Betreff:</strong> ${subject || 'Kein Betreff'}</p>
+            <hr style="border: 1px solid #eee; margin: 20px 0;">
+            <div style="white-space: pre-wrap; background: #f9f9f9; padding: 15px; border-radius: 5px;">${message}</div>
+            <hr style="border: 1px solid #eee; margin: 20px 0;">
+            <p style="font-size: 12px; color: #666;">Diese E-Mail wurde über das Kontaktformular auf abdulkerimsesli.de gesendet.</p>
+          </div>
+        `,
+      }),
     });
 
-    if (error) {
-      console.error('Resend API Error:', error);
+    if (!resendResponse.ok) {
+      const errorText = await resendResponse.text();
+      console.error('Resend API Error:', errorText);
       return new Response(
         JSON.stringify({
           error:
@@ -106,6 +110,8 @@ export async function onRequestPost({ request, env }) {
         },
       );
     }
+
+    const data = await resendResponse.json();
 
     return new Response(JSON.stringify({ success: true, id: data.id }), {
       status: 200,
