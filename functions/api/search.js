@@ -28,8 +28,9 @@ export async function onRequestPost(context) {
     console.log('Using Cloudflare AI Search Beta for query:', query);
 
     // Call Cloudflare AI Search Beta API
+    // Using /ai-search endpoint which returns both search results AND AI-generated answer
     const searchResponse = await fetch(
-      'https://api.cloudflare.com/client/v4/accounts/652ca9f4abc93203c1ecd059dc00d1da/ai-search/plain-mountain-d6d0/search',
+      'https://api.cloudflare.com/client/v4/accounts/652ca9f4abc93203c1ecd059dc00d1da/autorag/rags/plain-mountain-d6d0/ai-search',
       {
         method: 'POST',
         headers: {
@@ -38,7 +39,11 @@ export async function onRequestPost(context) {
         },
         body: JSON.stringify({
           query: query,
-          max_results: parseInt(body.topK || env.MAX_SEARCH_RESULTS || '10'),
+          max_num_results: parseInt(
+            body.topK || env.MAX_SEARCH_RESULTS || '10',
+          ),
+          rewrite_query: true,
+          stream: false,
         }),
       },
     );
@@ -52,18 +57,35 @@ export async function onRequestPost(context) {
     const searchData = await searchResponse.json();
 
     // Transform AI Search Beta response to our format
-    const results = (searchData.result?.results || []).map((item) => ({
-      url: item.url || '/',
-      title: item.title || 'Seite',
-      category: item.category || 'Seite',
-      description: item.description || item.snippet || '',
-      score: item.score || 0,
-    }));
+    // Response structure: { success: true, result: { data: [...], response: "..." } }
+    const results = (searchData.result?.data || []).map((item) => {
+      // Extract URL from filename (e.g., "pages/blog/react.html" -> "/blog/react")
+      let url = item.filename || '/';
+      url = url
+        .replace(/^pages/, '')
+        .replace(/\.html$/, '')
+        .replace(/\/index$/, '');
+      if (!url.startsWith('/')) url = '/' + url;
+
+      // Extract text content from content array
+      const textContent = item.content
+        ?.map((c) => c.text)
+        .join(' ')
+        .substring(0, 200);
+
+      return {
+        url: url,
+        title: item.filename?.split('/').pop()?.replace('.html', '') || 'Seite',
+        category: 'Seite',
+        description: textContent || '',
+        score: item.score || 0,
+      };
+    });
 
     return new Response(
       JSON.stringify({
         results: results,
-        summary: searchData.result?.answer || `Suchergebnisse für "${query}"`,
+        summary: searchData.result?.response || `Suchergebnisse für "${query}"`,
         count: results.length,
         query: query,
       }),
