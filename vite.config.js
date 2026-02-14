@@ -52,6 +52,12 @@ function htmlTemplatesPlugin() {
         'favicon.svg',
       ];
 
+      // Critical files that must exist
+      const criticalFiles = ['sitemap.xml'];
+      const copiedFiles = [];
+      const missingFiles = [];
+
+      // Copy directories
       dirs.forEach((dir) => {
         const src = resolve(root, dir);
         const dest = resolve(dist, dir);
@@ -63,13 +69,37 @@ function htmlTemplatesPlugin() {
         }
       });
 
+      // Copy files with validation and logging
       files.forEach((file) => {
         const src = resolve(root, file);
         const dest = resolve(dist, file);
         if (fs.existsSync(src)) {
-          fs.copyFileSync(src, dest);
+          try {
+            fs.copyFileSync(src, dest);
+            copiedFiles.push(file);
+            console.log(`✓ Copied: ${file}`);
+          } catch (error) {
+            console.error(`✗ Failed to copy ${file}: ${error.message}`);
+            if (criticalFiles.includes(file)) {
+              missingFiles.push(file);
+            }
+          }
+        } else if (criticalFiles.includes(file)) {
+          missingFiles.push(file);
+          console.error(`✗ CRITICAL: Missing ${file}`);
         }
       });
+
+      // Throw error if critical files are missing
+      if (missingFiles.length > 0) {
+        throw new Error(
+          `Build failed: Critical files missing: ${missingFiles.join(', ')}`,
+        );
+      }
+
+      console.log(
+        `\n✓ Build complete: ${copiedFiles.length} files copied successfully`,
+      );
     },
   };
 }
