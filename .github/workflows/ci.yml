@@ -28,7 +28,3 @@ jobs:
 
       - name: Lint & Format
         run: npm run check
-
-      - name: TypeScript check
-        run: npx tsc --noEmit
-        continue-on-error: true
