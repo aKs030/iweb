@@ -212,13 +212,50 @@ export async function onRequestPost(context) {
       });
     }
 
-    // Fallback: Return static results
-    // Note: VECTOR_INDEX binding may not be available in production yet
+    // Try AI_SEARCH service binding first (preferred method)
+    if (env.AI_SEARCH) {
+      try {
+        console.log('Using AI_SEARCH service binding for query:', query);
+
+        const searchRequest = new Request('https://ai-search-proxy/search', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query, topK }),
+        });
+
+        const searchResponse = await env.AI_SEARCH.fetch(searchRequest);
+
+        if (searchResponse.ok) {
+          const data = await searchResponse.json();
+          const improvedResults = deduplicateResults(data.results || []);
+
+          return new Response(
+            JSON.stringify({
+              results: improvedResults,
+              summary: data.summary || `Suchergebnisse für "${query}"`,
+              count: improvedResults.length,
+              query: query,
+            }),
+            { headers: corsHeaders },
+          );
+        } else {
+          console.warn(
+            'AI_SEARCH service returned error:',
+            searchResponse.status,
+          );
+        }
+      } catch (error) {
+        console.error('AI_SEARCH service error:', error.message);
+        // Fall through to static results
+      }
+    }
+
+    // Fallback: Return static results if AI_SEARCH is not available
     console.log(
-      'Search query:',
+      'Using static fallback for query:',
       query,
-      'VECTOR_INDEX available:',
-      !!env.VECTOR_INDEX,
+      'AI_SEARCH available:',
+      !!env.AI_SEARCH,
     );
 
     const staticResults = [
@@ -275,7 +312,7 @@ export async function onRequestPost(context) {
     return new Response(
       JSON.stringify({
         results: finalResults,
-        summary: `Suchergebnisse für "${query}". Die KI-gestützte Suche wird derzeit konfiguriert.`,
+        summary: `Suchergebnisse für "${query}"`,
         count: finalResults.length,
         query: query,
       }),
