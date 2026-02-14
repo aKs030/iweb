@@ -1,0 +1,60 @@
+# Cloudflare Pages Ignore File
+# Diese Dateien werden NICHT deployed
+
+# Development
+node_modules/
+.git/
+.github/
+.vscode/
+.idea/
+
+# Documentation
+docs/
+*.md
+!README.md
+
+# Config files
+.editorconfig
+.prettierrc.json
+.prettierignore
+eslint.config.mjs
+tsconfig.json
+.htmlvalidate.json
+.lighthouserc.json
+
+# Development server
+server.js
+
+# Build tools (nicht mehr benötigt)
+vite.config.js
+
+# Environment
+.env
+.env.local
+.env.*.local
+.dev.vars
+
+# Cache
+.cache/
+*.cache
+.wrangler/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+.Spotlight-V100
+.Trashes
+Thumbs.db
+
+# IDE
+*.swp
+*.swo
+*~
+
+# Kiro AI
+.kiro/
+
+# Husky
+.husky/

@@ -20,8 +20,9 @@ const ENV_DEV = {
 };
 
 function getEnv(key) {
-  if (import.meta.env?.[`VITE_${key}`]) {
-    return import.meta.env[`VITE_${key}`];
+  // Kein Vite mehr - direkt aus window oder defaults
+  if (typeof window !== 'undefined' && window.ENV?.[key]) {
+    return window.ENV[key];
   }
 
   if (typeof window !== 'undefined' && window.__ENV__?.[key]) {

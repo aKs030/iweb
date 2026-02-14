@@ -5,7 +5,9 @@
  */
 
 export function initConsoleFilter() {
-  if (!import.meta.env?.DEV) return;
+  // Production check ohne Vite
+  if (location.hostname !== 'localhost' && location.hostname !== '127.0.0.1')
+    return;
 
   const originalWarn = console.warn;
   const originalError = console.error;
