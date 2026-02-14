@@ -33,7 +33,7 @@ export async function onRequestPost(context) {
     }
 
     // Generate cache key with version to bust old cache
-    const CACHE_VERSION = 'v5'; // Increment when search logic changes
+    const CACHE_VERSION = 'v6'; // Increment when search logic changes
     const topK = parseInt(body.topK || env.MAX_SEARCH_RESULTS || '10');
     const cacheKey = `${CACHE_VERSION}:${getCacheKey(query, topK)}`;
 
@@ -142,11 +142,10 @@ export async function onRequestPost(context) {
         textContent = textContent.substring(0, breakPoint).trim();
       }
 
-      // Final cleanup: if description is too short or still contains technical markers, skip it
+      // Final cleanup: if description still contains technical markers after cleaning, skip it
       if (
         textContent &&
-        (textContent.length < 20 ||
-          textContent.includes('---') ||
+        (textContent.includes('---') ||
           textContent.includes('@type') ||
           textContent.includes(':menu'))
       ) {
