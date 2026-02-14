@@ -3,7 +3,7 @@
  * Search Component
  * Mac Spotlight-Inspired Search with Server-Side Optimization & AI Overview
  * @author Abdulkerim Sesli
- * @version 3.1.0 - Added History & Voice Search
+ * @version 3.2.0 - Added Autocomplete, Quick Actions, and Intelligent UX
  */
 
 /* exported initSearch, openSearch, closeSearch, toggleSearch */
@@ -55,7 +55,9 @@ class SearchComponent {
     this.createSearchOverlay();
     this.attachEventListeners();
     this.loadStyles();
-    _log.info('Search component initialized with AI Search & Summary');
+    _log.info(
+      'Search component initialized with AI Search, Summary & Intelligence',
+    );
   }
 
   loadStyles() {
@@ -75,8 +77,8 @@ class SearchComponent {
       if (stored) {
         this.searchHistory = JSON.parse(stored);
       }
-    } catch (e) {
-      _log.warn('Failed to load search history', e);
+    } catch {
+      _log.warn('Failed to load search history');
     }
   }
 
@@ -148,6 +150,7 @@ class SearchComponent {
         </div>
 
         <div class="search-results" role="region" aria-live="polite" aria-atomic="false"></div>
+        <div class="search-suggestions" style="display:none"></div>
       </div>
     `;
 
@@ -215,7 +218,7 @@ class SearchComponent {
         const val = e.target.value;
         this.searchTimeout = /** @type {any} */ (
           setTimeout(() => {
-            this.handleSearch(val);
+            this.handleInput(val);
           }, 300)
         );
       });
@@ -343,6 +346,94 @@ class SearchComponent {
   }
 
   /**
+   * Handles user input (Quick Actions check + Search)
+   * @param {string} query
+   */
+  handleInput(query) {
+    const trimmed = query.trim().toLowerCase();
+
+    // Quick Actions
+    if (trimmed.startsWith('go to') || trimmed.startsWith('öffne')) {
+      this.showQuickActions(trimmed);
+      return;
+    }
+
+    this.handleSearch(query);
+  }
+
+  /**
+   * Shows quick action buttons based on input
+   * @param {string} query
+   */
+  showQuickActions(query) {
+    if (!this.resultsContainer) return;
+    const term = query
+      .replace('go to', '')
+      .replace('öffne', '')
+      .trim()
+      .toLowerCase();
+
+    const actions = [
+      {
+        label: 'Startseite',
+        url: '/',
+        icon: '🏠',
+        match: ['home', 'start', 'main'],
+      },
+      {
+        label: 'Projekte',
+        url: '/projekte/',
+        icon: '💻',
+        match: ['projekte', 'projects', 'arbeit'],
+      },
+      {
+        label: 'Galerie',
+        url: '/gallery/',
+        icon: '🖼️',
+        match: ['galerie', 'gallery', 'fotos', 'bilder'],
+      },
+      {
+        label: 'Kontakt',
+        url: '/contact/',
+        icon: '✉️',
+        match: ['kontakt', 'contact', 'email'],
+      },
+    ];
+
+    const matches = actions.filter(
+      (a) => !term || a.match.some((m) => m.includes(term)),
+    );
+
+    if (matches.length > 0) {
+      const html = `
+        <div class="search-category-group">
+          <div class="search-category-header">
+            <span>Schnellzugriff</span>
+            <div class="search-category-divider"></div>
+          </div>
+          <div class="search-quick-actions">
+            ${matches
+              .map(
+                (action) => `
+              <a href="${action.url}" class="search-action-btn">
+                <span class="search-action-icon">${action.icon}</span>
+                <span class="search-action-label">${action.label}</span>
+              </a>
+            `,
+              )
+              .join('')}
+          </div>
+        </div>
+      `;
+      this.resultsContainer.innerHTML = html;
+      this.currentResults = []; // Actions are clickable links, not results in the list array
+      this.selectedIndex = -1;
+    } else {
+      this.handleSearch(query); // Fallback to normal search
+    }
+  }
+
+  /**
    * @param {string} query
    */
   async handleSearch(query) {
@@ -363,10 +454,19 @@ class SearchComponent {
       this.selectedIndex = -1;
 
       if (data.results.length > 0) {
-        this._saveToHistory(trimmedQuery); // Save successful search
+        this._saveToHistory(trimmedQuery);
         this.displayResults(data.results, trimmedQuery, data.summary);
       } else {
-        this.showEmptyState(`Keine Ergebnisse für "${trimmedQuery}"`);
+        // Did you mean logic (mocked for now, or based on expandedQuery from backend if returned)
+        const expanded = /** @type {any} */ (data).expandedQuery;
+        if (expanded && expanded !== trimmedQuery) {
+          this.showEmptyState(
+            `Keine exakten Ergebnisse für "${trimmedQuery}".`,
+            expanded,
+          );
+        } else {
+          this.showEmptyState(`Keine Ergebnisse für "${trimmedQuery}"`);
+        }
       }
     } catch (error) {
       _log.error('Search failed', error);
@@ -380,7 +480,7 @@ class SearchComponent {
 
   /**
    * @param {string} query
-   * @returns {Promise<{results: SearchResult[], summary: string}>}
+   * @returns {Promise<{results: SearchResult[], summary: string, expandedQuery?: string}>}
    */
   async fetchResults(query) {
     try {
@@ -401,6 +501,7 @@ class SearchComponent {
           icon: item.icon || this.getIconForCategory(item.category || 'Seite'),
         })),
         summary: data.summary || '',
+        expandedQuery: data.expandedQuery,
       };
     } catch (e) {
       console.error('API Search Error:', e);
@@ -441,9 +542,8 @@ class SearchComponent {
     if (!this.resultsContainer) return;
 
     if (this.searchHistory.length === 0) {
-      this.resultsContainer.innerHTML = '';
-      this.currentResults = [];
-      this.selectedIndex = -1;
+      // Show Trending if no history
+      this.showTrending();
       return;
     }
 
@@ -474,12 +574,59 @@ class SearchComponent {
     this.currentResults = []; // History is not a "result" set for navigation yet
     this.selectedIndex = -1;
 
-    // Attach click handlers for history items
+    this._attachHistoryClickHandlers();
+  }
+
+  showTrending() {
+    if (!this.resultsContainer) return;
+    const trending = [
+      'Portfolio Projekte',
+      'Kontakt Email',
+      'Galerie Fotos',
+      'Web Development',
+    ];
+
+    const html = `
+      <div class="search-category-group">
+        <div class="search-category-header">
+          <span>Beliebte Suchanfragen 🚀</span>
+          <div class="search-category-divider"></div>
+        </div>
+        ${trending
+          .map(
+            (query) => `
+          <div class="search-result-item history-item trending-item" role="button" tabindex="0">
+            <div class="search-result-icon-wrapper history-icon">
+              🔥
+            </div>
+            <div class="search-result-content">
+              <div class="search-result-title">${this.escapeHTML(query)}</div>
+            </div>
+          </div>
+        `,
+          )
+          .join('')}
+      </div>
+    `;
+
+    this.resultsContainer.innerHTML = html;
+    this.currentResults = [];
+    this.selectedIndex = -1;
+    this._attachHistoryClickHandlers(trending);
+  }
+
+  /**
+   * @param {string[]} [sourceArray]
+   */
+  _attachHistoryClickHandlers(sourceArray) {
+    if (!this.resultsContainer) return;
+    const source = sourceArray || this.searchHistory;
+
     this.resultsContainer
       .querySelectorAll('.history-item')
       .forEach((item, index) => {
         item.addEventListener('click', () => {
-          const query = this.searchHistory[index];
+          const query = source[index];
           if (this.input) {
             this.input.value = query;
             this.handleSearch(query);
@@ -655,15 +802,38 @@ class SearchComponent {
 
   /**
    * @param {string} message
+   * @param {string} [suggestion]
    */
-  showEmptyState(message) {
+  showEmptyState(message, suggestion) {
     if (!this.resultsContainer) return;
-    const html = `
+    let html = `
       <div class="search-empty">
         <div class="search-empty-text">${message || 'Keine Ergebnisse'}</div>
-      </div>
     `;
+
+    if (suggestion) {
+      html += `
+        <div class="search-did-you-mean">
+          Meinten Sie: <button class="search-suggestion-btn">${this.escapeHTML(suggestion)}</button>?
+        </div>
+      `;
+    }
+
+    html += `</div>`;
     this.resultsContainer.innerHTML = html;
+
+    if (suggestion) {
+      const btn = this.resultsContainer.querySelector('.search-suggestion-btn');
+      if (btn && this.input) {
+        btn.addEventListener('click', () => {
+          if (this.input) {
+            this.input.value = suggestion;
+            this.handleSearch(suggestion);
+          }
+        });
+      }
+    }
+
     this.currentResults = [];
     this.selectedIndex = -1;
   }
