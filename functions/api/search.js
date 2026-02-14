@@ -69,7 +69,7 @@ export async function onRequestPost(context) {
       rewrite_query: true,
       stream: false,
       system_prompt:
-        'Du bist ein hilfreicher Assistent. Antworte SEHR KURZ in maximal 1-2 Sätzen (max. 150 Zeichen). Sei präzise und direkt.',
+        'Du bist ein Assistent für die Website von Abdulkerim Sesli, einem Web-Entwickler und Fotografen aus Berlin. Antworte SEHR KURZ in maximal 1-2 Sätzen (max. 150 Zeichen). Sei präzise und fokussiere dich auf die Hauptinhalte.',
     });
 
     // Transform AI Search Beta response to our format
