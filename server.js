@@ -270,7 +270,7 @@ function tryServe(filePath, res, reqUrl) {
     res.writeHead(200, {
       'Content-Type': mime,
       'Content-Length': buf.length,
-      ...customHeaders
+      ...customHeaders,
     });
     res.end(buf);
     return true;
@@ -280,7 +280,7 @@ function tryServe(filePath, res, reqUrl) {
   res.writeHead(200, {
     'Content-Type': mime,
     'Content-Length': content.length,
-    ...customHeaders
+    ...customHeaders,
   });
   res.end(content);
   return true;
@@ -393,7 +393,7 @@ const server = createServer((req, res) => {
         tryServe(
           resolve(ROOT, target.startsWith('/') ? target.slice(1) : target),
           res,
-          url // Pass original URL for header matching
+          url, // Pass original URL for header matching
         )
       )
         return;
