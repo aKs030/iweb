@@ -204,12 +204,19 @@ function getHeadersForPath(url) {
     }
   }
 
-  // Remove CSP upgrade-insecure-requests for localhost
+  // Remove security headers that force HTTPS for localhost
   if (headers['Content-Security-Policy']) {
     headers['Content-Security-Policy'] = headers['Content-Security-Policy']
       .replace(/upgrade-insecure-requests;?\s*/gi, '')
       .trim();
   }
+
+  // Remove HSTS header for localhost (forces HTTPS)
+  delete headers['Strict-Transport-Security'];
+
+  // Remove CORS headers that might interfere
+  delete headers['Cross-Origin-Embedder-Policy'];
+  delete headers['Cross-Origin-Opener-Policy'];
 
   return headers;
 }
@@ -342,6 +349,50 @@ function tryServe(filePath, res, url = '/') {
   return true;
 }
 
+// ─── R2 Proxy Handler (Dev-Mode für CORS) ────────────────────
+async function handleR2Proxy(req, res, url) {
+  // Proxy für img.abdulkerimsesli.de → löst CORS-Probleme auf localhost
+  if (!url.startsWith('/r2-proxy/')) return false;
+
+  const imagePath = url.replace('/r2-proxy/', '');
+  const r2Url = `https://img.abdulkerimsesli.de/${imagePath}`;
+
+  try {
+    const https = await import('https');
+
+    https
+      .get(r2Url, (r2Res) => {
+        const contentType =
+          r2Res.headers['content-type'] || 'application/octet-stream';
+        const chunks = [];
+
+        r2Res.on('data', (chunk) => chunks.push(chunk));
+        r2Res.on('end', () => {
+          const buffer = Buffer.concat(chunks);
+          res.writeHead(200, {
+            'Content-Type': contentType,
+            'Content-Length': buffer.length,
+            'Cache-Control': 'public, max-age=3600',
+            'Access-Control-Allow-Origin': '*',
+          });
+          res.end(buffer);
+        });
+      })
+      .on('error', (error) => {
+        console.error('[R2 Proxy] Fetch failed:', error.message);
+        res.writeHead(500, { 'Content-Type': 'text/plain' });
+        res.end('R2 Proxy Error');
+      });
+
+    return true;
+  } catch (error) {
+    console.error('[R2 Proxy] Error:', error.message);
+    res.writeHead(500, { 'Content-Type': 'text/plain' });
+    res.end('Proxy Error');
+    return true;
+  }
+}
+
 // ─── API Mock Handlers (Dev-Mode) ────────────────────────────
 function handleAPIMock(req, res, url) {
   // Only handle API routes
@@ -423,10 +474,13 @@ function handleAPIMock(req, res, url) {
   return true;
 }
 
-const server = createServer((req, res) => {
+const server = createServer(async (req, res) => {
   const url = req.url?.split('?')[0] || '/';
 
-  // 0. API mock endpoints (Dev-Mode → kein Worker nötig)
+  // 0. R2 Proxy (löst CORS-Probleme auf localhost)
+  if (await handleR2Proxy(req, res, url)) return;
+
+  // 1. API mock endpoints (Dev-Mode → kein Worker nötig)
   if (handleAPIMock(req, res, url)) return;
 
   // 1. Check redirects (from _redirects)
