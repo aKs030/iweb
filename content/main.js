@@ -201,15 +201,14 @@ document.addEventListener(
 
     schedulePersistentStorageRequest(STORAGE_REQUEST_DELAY_MS);
 
-    // Activate deferred styles
+    // Activate deferred styles (DOM-schonend optimiert)
     try {
       document
         .querySelectorAll('link[rel="stylesheet"][data-defer="1"]')
         .forEach((link) => {
           const linkEl = /** @type {HTMLLinkElement} */ (link);
           linkEl.media = 'all';
-          const datasetEl = /** @type {HTMLElement} */ (link);
-          delete datasetEl.dataset.defer;
+          linkEl.removeAttribute('data-defer'); // Saubere Methode statt delete dataset
         });
     } catch {
       /* ignore */
@@ -240,6 +239,118 @@ globalThis.addEventListener('pageshow', (event) => {
   }
 });
 
+// ===== Service Worker Web Component =====
+class SWUpdateNotification extends HTMLElement {
+  constructor() {
+    super();
+    this.attachShadow({ mode: 'open' });
+    this.shadowRoot.innerHTML = `
+      <style>
+        :host {
+          display: block;
+          position: fixed;
+          bottom: 20px;
+          right: 20px;
+          background: var(--color-surface, #1a1a1a);
+          color: var(--color-text, #ffffff);
+          padding: 16px 20px;
+          border-radius: 8px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+          z-index: 10000;
+          animation: slideIn 0.3s ease-out;
+          max-width: 400px;
+        }
+        .sw-update-content {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+        .sw-update-icon {
+          font-size: 24px;
+        }
+        .sw-update-text {
+          flex: 1;
+          font-size: 14px;
+        }
+        .sw-update-button {
+          background: var(--color-primary, #0066cc);
+          color: white;
+          border: none;
+          padding: 8px 16px;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 14px;
+          font-weight: 500;
+          transition: background 0.2s;
+        }
+        .sw-update-button:hover {
+          background: var(--color-primary-hover, #0052a3);
+        }
+        .sw-update-close {
+          background: transparent;
+          border: none;
+          color: var(--color-text-secondary, #999);
+          font-size: 24px;
+          cursor: pointer;
+          padding: 0;
+          width: 24px;
+          height: 24px;
+          line-height: 1;
+        }
+        .sw-update-close:hover {
+          color: var(--color-text, #ffffff);
+        }
+        @keyframes slideIn {
+          from {
+            transform: translateY(100px);
+            opacity: 0;
+          }
+          to {
+            transform: translateY(0);
+            opacity: 1;
+          }
+        }
+        @media (max-width: 640px) {
+          :host {
+            bottom: 10px;
+            right: 10px;
+            left: 10px;
+            max-width: none;
+          }
+        }
+      </style>
+      <div class="sw-update-content">
+        <span class="sw-update-icon">🔄</span>
+        <span class="sw-update-text">Neue Version verfügbar!</span>
+        <button class="sw-update-button" id="sw-update-reload">Aktualisieren</button>
+        <button class="sw-update-close" id="sw-update-dismiss" aria-label="Schließen">×</button>
+      </div>
+    `;
+  }
+
+  connectedCallback() {
+    this.shadowRoot
+      .getElementById('sw-update-reload')
+      .addEventListener('click', () => {
+        window.location.reload();
+      });
+
+    this.shadowRoot
+      .getElementById('sw-update-dismiss')
+      .addEventListener('click', () => {
+        this.remove();
+      });
+
+    // Auto-dismiss after 30 seconds
+    setTimeout(() => {
+      if (this.parentNode) this.remove();
+    }, 30000);
+  }
+}
+
+// Registriere die neue Web Component
+customElements.define('sw-update-notification', SWUpdateNotification);
+
 // ===== Service Worker Registration =====
 if ('serviceWorker' in navigator && !ENV.isTest) {
   globalThis.addEventListener('load', () => {
@@ -259,7 +370,10 @@ if ('serviceWorker' in navigator && !ENV.isTest) {
               ) {
                 // New service worker available
                 log.info('New service worker available');
-                showUpdateNotification();
+                // Nutze die neue Web Component anstatt DOM Injection
+                document.body.appendChild(
+                  document.createElement('sw-update-notification'),
+                );
               }
             });
           }
@@ -269,121 +383,4 @@ if ('serviceWorker' in navigator && !ENV.isTest) {
         log.warn('Service Worker registration failed:', error);
       });
   });
-}
-
-/**
- * Show update notification to user
- */
-function showUpdateNotification() {
-  const notification = document.createElement('div');
-  notification.id = 'sw-update-notification';
-  notification.className = 'sw-update-notification';
-  notification.innerHTML = `
-    <div class="sw-update-content">
-      <span class="sw-update-icon">🔄</span>
-      <span class="sw-update-text">Neue Version verfügbar!</span>
-      <button class="sw-update-button" id="sw-update-reload">Aktualisieren</button>
-      <button class="sw-update-close" id="sw-update-dismiss" aria-label="Schließen">×</button>
-    </div>
-  `;
-
-  // Add styles
-  const style = document.createElement('style');
-  style.textContent = `
-    .sw-update-notification {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: var(--color-surface, #1a1a1a);
-      color: var(--color-text, #ffffff);
-      padding: 16px 20px;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-      z-index: 10000;
-      animation: slideIn 0.3s ease-out;
-      max-width: 400px;
-    }
-    .sw-update-content {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    .sw-update-icon {
-      font-size: 24px;
-    }
-    .sw-update-text {
-      flex: 1;
-      font-size: 14px;
-    }
-    .sw-update-button {
-      background: var(--color-primary, #0066cc);
-      color: white;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 14px;
-      font-weight: 500;
-      transition: background 0.2s;
-    }
-    .sw-update-button:hover {
-      background: var(--color-primary-hover, #0052a3);
-    }
-    .sw-update-close {
-      background: transparent;
-      border: none;
-      color: var(--color-text-secondary, #999);
-      font-size: 24px;
-      cursor: pointer;
-      padding: 0;
-      width: 24px;
-      height: 24px;
-      line-height: 1;
-    }
-    .sw-update-close:hover {
-      color: var(--color-text, #ffffff);
-    }
-    @keyframes slideIn {
-      from {
-        transform: translateY(100px);
-        opacity: 0;
-      }
-      to {
-        transform: translateY(0);
-        opacity: 1;
-      }
-    }
-    @media (max-width: 640px) {
-      .sw-update-notification {
-        bottom: 10px;
-        right: 10px;
-        left: 10px;
-        max-width: none;
-      }
-    }
-  `;
-
-  document.head.appendChild(style);
-  document.body.appendChild(notification);
-
-  // Handle reload button
-  document.getElementById('sw-update-reload')?.addEventListener('click', () => {
-    window.location.reload();
-  });
-
-  // Handle dismiss button
-  document
-    .getElementById('sw-update-dismiss')
-    ?.addEventListener('click', () => {
-      notification.remove();
-      style.remove();
-    });
-
-  // Auto-dismiss after 30 seconds
-  setTimeout(() => {
-    if (notification.parentNode) {
-      notification.remove();
-      style.remove();
-    }
-  }, 30000);
 }
