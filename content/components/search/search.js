@@ -3,7 +3,7 @@
  * Search Component
  * Mac Spotlight-Inspired Search with Server-Side Optimization & AI Overview
  * @author Abdulkerim Sesli
- * @version 3.0.0
+ * @version 3.1.0 - Added History & Voice Search
  */
 
 /* exported initSearch, openSearch, closeSearch, toggleSearch */
@@ -11,6 +11,16 @@ import { createLogger } from '../../core/logger.js';
 import { upsertHeadLink } from '../../core/utils.js';
 
 const _log = createLogger('search');
+
+/**
+ * @typedef {Object} SearchResult
+ * @property {string} url
+ * @property {string} title
+ * @property {string} category
+ * @property {string} description
+ * @property {string} [icon]
+ * @property {string} [id]
+ */
 
 /**
  * Search Component Class
@@ -28,13 +38,16 @@ class SearchComponent {
     this.loader = null;
     /** @type {boolean} */
     this.isOpen = false;
-    /** @type {Array} */
+    /** @type {SearchResult[]} */
     this.currentResults = [];
     /** @type {number} */
     this.selectedIndex = -1;
     /** @type {number|null} */
     this.searchTimeout = null;
+    /** @type {string[]} */
+    this.searchHistory = [];
 
+    this._loadHistory();
     this.init();
   }
 
@@ -53,17 +66,55 @@ class SearchComponent {
     });
   }
 
+  /**
+   * Loads search history from localStorage
+   */
+  _loadHistory() {
+    try {
+      const stored = localStorage.getItem('search_history');
+      if (stored) {
+        this.searchHistory = JSON.parse(stored);
+      }
+    } catch (e) {
+      _log.warn('Failed to load search history', e);
+    }
+  }
+
+  /**
+   * Saves a query to history
+   * @param {string} query
+   */
+  _saveToHistory(query) {
+    if (!query || query.length < 2) return;
+    // Remove duplicates and keep top 5
+    this.searchHistory = [
+      query,
+      ...this.searchHistory.filter((q) => q !== query),
+    ].slice(0, 5);
+
+    try {
+      localStorage.setItem(
+        'search_history',
+        JSON.stringify(this.searchHistory),
+      );
+    } catch {
+      /* ignore */
+    }
+  }
+
   createSearchOverlay() {
     const existing = document.getElementById('search-overlay');
     if (existing) existing.remove();
 
     const overlay = document.createElement('div');
     overlay.id = 'search-overlay';
-    // @ts-ignore
     overlay.className = 'search-overlay';
     overlay.setAttribute('role', 'dialog');
     overlay.setAttribute('aria-label', 'Suchfenster');
     overlay.setAttribute('aria-modal', 'true');
+
+    const voiceSupported =
+      'webkitSpeechRecognition' in window || 'SpeechRecognition' in window;
 
     overlay.innerHTML = `
       <div class="search-modal" role="document">
@@ -83,6 +134,11 @@ class SearchComponent {
             >
             <span class="search-icon" aria-hidden="true">🔍</span>
             <div class="search-loader" style="display: none;"></div>
+            ${
+              voiceSupported
+                ? `<button class="search-voice-btn" aria-label="Sprachsuche" title="Sprachsuche">🎤</button>`
+                : ''
+            }
           </div>
           <button class="search-close" aria-label="Suche schließen" title="ESC">
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -98,19 +154,35 @@ class SearchComponent {
     document.body.appendChild(overlay);
 
     this.overlay = overlay;
-    this.input = overlay.querySelector('.search-input');
-    this.resultsContainer = overlay.querySelector('.search-results');
-    this.loader = overlay.querySelector('.search-loader');
+    this.input = /** @type {HTMLInputElement} */ (
+      overlay.querySelector('.search-input')
+    );
+    this.resultsContainer = /** @type {HTMLElement} */ (
+      overlay.querySelector('.search-results')
+    );
+    this.loader = /** @type {HTMLElement} */ (
+      overlay.querySelector('.search-loader')
+    );
 
-    overlay
-      .querySelector('.search-close')
-      .addEventListener('click', () => this.close());
+    const closeBtn = overlay.querySelector('.search-close');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', () => this.close());
+    }
+
     overlay.addEventListener('click', (e) => {
       if (e.target === overlay) this.close();
     });
+
+    if (voiceSupported) {
+      const voiceBtn = overlay.querySelector('.search-voice-btn');
+      if (voiceBtn) {
+        voiceBtn.addEventListener('click', () => this.startVoiceSearch());
+      }
+    }
   }
 
   attachEventListeners() {
+    // @ts-ignore - Keeping specific event typing internal
     this._handleKeydown = (e) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
@@ -140,20 +212,21 @@ class SearchComponent {
       this.input.addEventListener('input', (e) => {
         if (this.searchTimeout) clearTimeout(this.searchTimeout);
         // @ts-ignore
-        this.searchTimeout = setTimeout(() => {
-          // @ts-ignore
-          this.handleSearch(e.target.value);
-        }, 300);
+        const val = e.target.value;
+        this.searchTimeout = /** @type {any} */ (
+          setTimeout(() => {
+            this.handleSearch(val);
+          }, 300)
+        );
       });
 
       this.input.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
-          clearTimeout(this.searchTimeout);
+          if (this.searchTimeout) clearTimeout(this.searchTimeout);
           if (this.currentResults.length > 0) {
             const index = this.selectedIndex >= 0 ? this.selectedIndex : 0;
             this.selectResult(index);
-          } else {
-            // @ts-ignore
+          } else if (this.input) {
             this.handleSearch(this.input.value);
           }
         }
@@ -161,12 +234,55 @@ class SearchComponent {
     }
   }
 
+  startVoiceSearch() {
+    const SpeechRecognition =
+      // @ts-ignore
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) return;
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'de-DE';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.start();
+
+    if (this.input) {
+      this.input.placeholder = 'Sprechen Sie jetzt...';
+      this.input.parentElement?.classList.add('listening');
+    }
+
+    recognition.onresult = (/** @type {any} */ event) => {
+      const transcript = event.results[0][0].transcript;
+      if (this.input) {
+        this.input.value = transcript;
+        this.handleSearch(transcript);
+      }
+    };
+
+    recognition.onend = () => {
+      if (this.input) {
+        this.input.placeholder = 'Suche... (KI-gestützt)';
+        this.input.parentElement?.classList.remove('listening');
+        this.input.focus();
+      }
+    };
+
+    recognition.onerror = (/** @type {any} */ event) => {
+      _log.warn('Speech recognition error', event.error);
+      if (this.input) {
+        this.input.placeholder = 'Fehler bei der Spracheingabe';
+        this.input.parentElement?.classList.remove('listening');
+      }
+    };
+  }
+
   toggle() {
     this.isOpen ? this.close() : this.open();
   }
 
   open() {
-    if (this.isOpen) return;
+    if (this.isOpen || !this.overlay) return;
     this.isOpen = true;
     this.overlay.classList.add('active');
     this.selectedIndex = -1;
@@ -181,16 +297,16 @@ class SearchComponent {
     });
 
     document.body.style.overflow = 'hidden';
-    if (!this.input.value) {
-      this.resultsContainer.innerHTML = '';
-      this.currentResults = [];
-      this.selectedIndex = -1;
+
+    // Reset view or show history
+    if (this.input && !this.input.value) {
+      this._showHistory();
     }
     _log.info('Search opened');
   }
 
   close() {
-    if (!this.isOpen) return;
+    if (!this.isOpen || !this.overlay) return;
     this.isOpen = false;
     this.overlay.classList.remove('active');
     this.selectedIndex = -1;
@@ -200,8 +316,11 @@ class SearchComponent {
     _log.info('Search closed');
   }
 
+  /**
+   * @param {number} direction
+   */
   navigateResults(direction) {
-    if (this.currentResults.length === 0) return;
+    if (this.currentResults.length === 0 || !this.resultsContainer) return;
     const previousItem = this.resultsContainer.querySelector(
       '.search-result-item.keyboard-selected',
     );
@@ -223,13 +342,16 @@ class SearchComponent {
     }
   }
 
+  /**
+   * @param {string} query
+   */
   async handleSearch(query) {
     const trimmedQuery = query.trim();
 
+    if (!this.resultsContainer) return;
+
     if (trimmedQuery.length === 0) {
-      this.resultsContainer.innerHTML = '';
-      this.currentResults = [];
-      this.selectedIndex = -1;
+      this._showHistory();
       return;
     }
 
@@ -240,7 +362,8 @@ class SearchComponent {
       this.currentResults = data.results;
       this.selectedIndex = -1;
 
-      if (data.results.length > 0 || data.summary) {
+      if (data.results.length > 0) {
+        this._saveToHistory(trimmedQuery); // Save successful search
         this.displayResults(data.results, trimmedQuery, data.summary);
       } else {
         this.showEmptyState(`Keine Ergebnisse für "${trimmedQuery}"`);
@@ -255,6 +378,10 @@ class SearchComponent {
     }
   }
 
+  /**
+   * @param {string} query
+   * @returns {Promise<{results: SearchResult[], summary: string}>}
+   */
   async fetchResults(query) {
     try {
       const response = await fetch('/api/search', {
@@ -269,7 +396,7 @@ class SearchComponent {
       const data = await response.json();
 
       return {
-        results: (data.results || []).map((item) => ({
+        results: (data.results || []).map((/** @type {any} */ item) => ({
           ...item,
           icon: item.icon || this.getIconForCategory(item.category || 'Seite'),
         })),
@@ -281,6 +408,10 @@ class SearchComponent {
     }
   }
 
+  /**
+   * @param {string} category
+   * @returns {string}
+   */
   getIconForCategory(category) {
     const icons = {
       Seite: '📄',
@@ -290,18 +421,82 @@ class SearchComponent {
       Galerie: '🖼️',
       About: 'ℹ️',
       Home: '🏠',
+      Rechtliches: '⚖️',
+      Kontakt: '✉️',
     };
+    // @ts-ignore
     return icons[category] || '🔍';
   }
 
+  /**
+   * @param {boolean} show
+   */
   showLoader(show) {
     if (this.loader) {
-      // @ts-ignore
       this.loader.style.display = show ? 'block' : 'none';
     }
   }
 
+  _showHistory() {
+    if (!this.resultsContainer) return;
+
+    if (this.searchHistory.length === 0) {
+      this.resultsContainer.innerHTML = '';
+      this.currentResults = [];
+      this.selectedIndex = -1;
+      return;
+    }
+
+    const html = `
+      <div class="search-category-group">
+        <div class="search-category-header">
+          <span>Zuletzt gesucht</span>
+          <div class="search-category-divider"></div>
+        </div>
+        ${this.searchHistory
+          .map(
+            (query) => `
+          <div class="search-result-item history-item" role="button" tabindex="0">
+            <div class="search-result-icon-wrapper history-icon">
+              🕒
+            </div>
+            <div class="search-result-content">
+              <div class="search-result-title">${this.escapeHTML(query)}</div>
+            </div>
+          </div>
+        `,
+          )
+          .join('')}
+      </div>
+    `;
+
+    this.resultsContainer.innerHTML = html;
+    this.currentResults = []; // History is not a "result" set for navigation yet
+    this.selectedIndex = -1;
+
+    // Attach click handlers for history items
+    this.resultsContainer
+      .querySelectorAll('.history-item')
+      .forEach((item, index) => {
+        item.addEventListener('click', () => {
+          const query = this.searchHistory[index];
+          if (this.input) {
+            this.input.value = query;
+            this.handleSearch(query);
+          }
+        });
+      });
+  }
+
+  /**
+   * @param {SearchResult[]} results
+   * @param {string} query
+   * @param {string} [summary]
+   */
   displayResults(results, query, summary = '') {
+    if (!this.resultsContainer) return;
+
+    /** @type {Record<string, SearchResult[]>} */
     const grouped = {};
     results.forEach((result) => {
       const cat = result.category || 'Allgemein';
@@ -360,15 +555,21 @@ class SearchComponent {
         });
 
         item.addEventListener('mouseenter', () => {
-          this.resultsContainer
-            .querySelectorAll('.search-result-item')
-            .forEach((el) => el.classList.remove('keyboard-selected'));
+          if (this.resultsContainer) {
+            this.resultsContainer
+              .querySelectorAll('.search-result-item')
+              .forEach((el) => el.classList.remove('keyboard-selected'));
+          }
           this.selectedIndex = index;
           item.classList.add('keyboard-selected');
         });
       });
   }
 
+  /**
+   * @param {SearchResult} result
+   * @param {string} query
+   */
   createResultHTML(result, query) {
     const safeTitle = this.escapeHTML(result.title || '');
     const safeDesc = this.escapeHTML(result.description || '');
@@ -394,6 +595,9 @@ class SearchComponent {
     `;
   }
 
+  /**
+   * @param {string} text
+   */
   escapeHTML(text) {
     if (!text || typeof text !== 'string') return '';
     return text.replace(
@@ -405,10 +609,14 @@ class SearchComponent {
           '>': '&gt;',
           '"': '&quot;',
           "'": '&#39;',
-        })[c],
+        })[c] || c,
     );
   }
 
+  /**
+   * @param {string} text
+   * @param {string} query
+   */
   highlightText(text, query) {
     if (!query || !text) return text;
 
@@ -438,11 +646,18 @@ class SearchComponent {
       .join('');
   }
 
+  /**
+   * @param {string} str
+   */
   escapeRegex(str) {
     return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 
+  /**
+   * @param {string} message
+   */
   showEmptyState(message) {
+    if (!this.resultsContainer) return;
     const html = `
       <div class="search-empty">
         <div class="search-empty-text">${message || 'Keine Ergebnisse'}</div>
@@ -453,6 +668,9 @@ class SearchComponent {
     this.selectedIndex = -1;
   }
 
+  /**
+   * @param {number} index
+   */
   selectResult(index) {
     if (index < 0 || index >= this.currentResults.length) return;
     const result = this.currentResults[index];
@@ -464,6 +682,7 @@ class SearchComponent {
   destroy() {
     if (this._handleKeydown) {
       document.removeEventListener('keydown', this._handleKeydown);
+      // @ts-ignore
       this._handleKeydown = null;
     }
     if (this.searchTimeout) {
@@ -480,17 +699,18 @@ class SearchComponent {
   }
 }
 
+/** @type {SearchComponent|null} */
 let searchInstance = null;
 
 function initSearch() {
   if (searchInstance) return searchInstance;
   searchInstance = new SearchComponent();
   // @ts-ignore
-  window.openSearch = () => searchInstance.open();
+  window.openSearch = () => searchInstance?.open();
   // @ts-ignore
-  window.closeSearch = () => searchInstance.close();
+  window.closeSearch = () => searchInstance?.close();
   // @ts-ignore
-  window.toggleSearch = () => searchInstance.toggle();
+  window.toggleSearch = () => searchInstance?.toggle();
   return searchInstance;
 }
 

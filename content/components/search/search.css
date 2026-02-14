@@ -309,3 +309,66 @@
 .search-results::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.2);
 }
+
+/* Voice Search Button */
+.search-voice-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 1.2rem;
+  padding: 8px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 8px;
+  border-radius: 50%;
+}
+
+.search-voice-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  transform: scale(1.1);
+}
+
+.search-voice-btn:active {
+  transform: scale(0.95);
+}
+
+/* Listening State Pulse Animation */
+.search-input-wrapper.listening::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, #ff0000, #ff5555, #ff0000);
+  background-size: 200% 100%;
+  animation: voice-pulse 1.5s infinite linear;
+}
+
+@keyframes voice-pulse {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
+
+/* History Items */
+.history-item {
+  /* Inherits base styles */
+}
+
+.history-icon {
+  font-size: 1rem !important;
+  opacity: 0.8;
+}
+
+/* Ensure placeholder text changes color when listening */
+.listening .search-input::placeholder {
+  color: rgba(255, 100, 100, 0.8);
+}
