@@ -10,7 +10,6 @@
 import { createLogger } from '../../core/logger.js';
 import { upsertHeadLink } from '../../core/utils.js';
 import {
-  TRENDING_SEARCHES,
   findQuickAction,
   getAutocompleteSuggestions,
   getDidYouMeanSuggestions,
