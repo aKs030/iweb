@@ -33,7 +33,7 @@ export async function onRequestPost(context) {
     }
 
     // Generate cache key with version to bust old cache
-    const CACHE_VERSION = 'v3'; // Increment when search logic changes
+    const CACHE_VERSION = 'v4'; // Increment when search logic changes
     const topK = parseInt(body.topK || env.MAX_SEARCH_RESULTS || '10');
     const cacheKey = `${CACHE_VERSION}:${getCacheKey(query, topK)}`;
 
@@ -132,15 +132,32 @@ export async function onRequestPost(context) {
       };
     });
 
-    // Remove duplicates based on URL
+    // Remove duplicates based on URL and normalize similar descriptions
     const uniqueResults = [];
     const seenUrls = new Set();
+    const seenDescriptions = new Set();
 
     for (const result of results) {
-      if (!seenUrls.has(result.url)) {
-        seenUrls.add(result.url);
-        uniqueResults.push(result);
+      // Skip if URL already seen
+      if (seenUrls.has(result.url)) {
+        continue;
       }
+
+      // Normalize description for comparison (first 50 chars)
+      const descNormalized = result.description
+        .substring(0, 50)
+        .toLowerCase()
+        .trim();
+
+      // Skip if very similar description already exists for same category
+      const descKey = `${result.category}:${descNormalized}`;
+      if (seenDescriptions.has(descKey)) {
+        continue;
+      }
+
+      seenUrls.add(result.url);
+      seenDescriptions.add(descKey);
+      uniqueResults.push(result);
     }
 
     // Calculate enhanced relevance scores and sort
@@ -151,14 +168,23 @@ export async function onRequestPost(context) {
       }))
       .sort((a, b) => b.score - a.score);
 
+    // Limit results per category to avoid spam
+    const categoryCount = {};
+    const MAX_PER_CATEGORY = 3;
+    const finalResults = scoredResults.filter((result) => {
+      const cat = result.category || 'Seite';
+      categoryCount[cat] = (categoryCount[cat] || 0) + 1;
+      return categoryCount[cat] <= MAX_PER_CATEGORY;
+    });
+
     const responseData = {
-      results: scoredResults,
+      results: finalResults,
       summary:
         (searchData.response || `Suchergebnisse für "${query}"`).substring(
           0,
           200,
         ) + '...',
-      count: scoredResults.length,
+      count: finalResults.length,
       query: query,
       expandedQuery: expandedQuery !== query ? expandedQuery : undefined,
     };
