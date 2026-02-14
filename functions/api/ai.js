@@ -25,56 +25,37 @@ export async function onRequestPost(context) {
       );
     }
 
-    // Modern Method: Use Service Binding exclusively
-    const binding = env.AI_SEARCH;
-    if (!binding) {
-      throw new Error('AI_SEARCH Service Binding not configured');
+    // Use Cloudflare AI directly
+    if (!env.AI) {
+      throw new Error('AI binding not configured');
     }
 
-    const serviceResponse = await binding.fetch(
-      new Request('http://ai-search/api/ai', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          prompt,
-          message: prompt,
-          systemInstruction:
-            systemInstruction ||
-            'Du bist ein hilfreicher Assistent. Antworte auf Deutsch.',
-          ragId: env.RAG_ID || 'suche',
-          maxResults: parseInt(env.MAX_SEARCH_RESULTS || '10'),
-          gatewayId: 'default',
-        }),
-      }),
-    );
+    const messages = [
+      {
+        role: 'system',
+        content:
+          systemInstruction ||
+          'Du bist ein hilfreicher Assistent. Antworte auf Deutsch.',
+      },
+      { role: 'user', content: prompt },
+    ];
 
-    if (!serviceResponse.ok) {
-      throw new Error(`AI Worker returned ${serviceResponse.status}`);
-    }
+    const serviceResponse = await env.AI.run('@cf/meta/llama-3.1-8b-instruct', {
+      messages,
+    });
 
-    const data = await serviceResponse.json();
+    // Extract response text from Cloudflare AI
+    const responseText =
+      serviceResponse?.response || serviceResponse?.result?.response || '';
 
-    // Standardize response for frontend
-    let responseText = '';
-    if (typeof data === 'string') {
-      responseText = data;
-    } else {
-      responseText = data.text || data.response || data.answer || '';
-      if (!responseText && data.data) {
-        responseText = data.data.text || data.data.response || '';
-      }
-    }
-
-    if (!responseText && data.error) {
-      responseText = `Fehler: ${data.error}`;
+    if (!responseText) {
+      throw new Error('Empty response from AI model');
     }
 
     return new Response(
       JSON.stringify({
-        text:
-          responseText ||
-          'Keine Antwort erhalten. Bitte versuchen Sie es später erneut.',
-        model: data.model || 'ai-search-proxy',
+        text: responseText,
+        model: '@cf/meta/llama-3.1-8b-instruct',
       }),
       { headers: corsHeaders },
     );
