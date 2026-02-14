@@ -1,0 +1,14 @@
+[
+  {
+    "AllowedOrigins": [
+      "https://localhost:8080",
+      "https://www.abdulkerimsesli.de",
+      "https://abdulkerimsesli.de",
+      "https://1web.pages.dev"
+    ],
+    "AllowedMethods": ["GET", "HEAD"],
+    "AllowedHeaders": ["*"],
+    "ExposeHeaders": ["ETag"],
+    "MaxAgeSeconds": 3600
+  }
+]
