@@ -13,10 +13,10 @@ bucket_name = "img"
 [ai]
 binding = "AI"
 
-# Vectorize Index für Semantic Search (uncomment after creating index)
-# [[vectorize]]
-# binding = "VECTORIZE"
-# index_name = "website-search-index"
+# Vectorize Index für Semantic Search
+[[vectorize]]
+binding = "VECTORIZE"
+index_name = "website-search-index"
 
 # KV Namespace für Search Cache
 [[kv_namespaces]]
@@ -36,10 +36,10 @@ bucket_name = "img"
 [env.production.ai]
 binding = "AI"
 
-# Vectorize Index (Production) - uncomment after creating index
-# [[env.production.vectorize]]
-# binding = "VECTORIZE"
-# index_name = "website-search-index"
+# Vectorize Index (Production)
+[[env.production.vectorize]]
+binding = "VECTORIZE"
+index_name = "website-search-index"
 
 # KV Namespace für Search Cache (Production)
 [[env.production.kv_namespaces]]
@@ -59,10 +59,10 @@ bucket_name = "img"
 [env.preview.ai]
 binding = "AI"
 
-# Vectorize Index (Preview) - uncomment after creating index
-# [[env.preview.vectorize]]
-# binding = "VECTORIZE"
-# index_name = "website-search-index"
+# Vectorize Index (Preview)
+[[env.preview.vectorize]]
+binding = "VECTORIZE"
+index_name = "website-search-index"
 
 # KV Namespace für Search Cache (Preview)
 [[env.preview.kv_namespaces]]
