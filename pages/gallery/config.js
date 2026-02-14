@@ -1,10 +1,18 @@
 /**
  * Gallery Configuration
  * Assets are hosted on Cloudflare R2 via custom domain (img.abdulkerimsesli.de).
- * Ensure the R2 bucket has the CORS policy defined in `content/config/R2_CORS.json`.
+ *
+ * Localhost: Uses /r2-proxy/ to avoid CORS issues
+ * Production: Direct R2 custom domain access
  */
-// Production R2 URL mit Custom Domain
-const R2_BASE_URL = 'https://img.abdulkerimsesli.de';
+const isLocalhost =
+  typeof window !== 'undefined' &&
+  (window.location.hostname === 'localhost' ||
+    window.location.hostname === '127.0.0.1');
+
+const R2_BASE_URL = isLocalhost
+  ? '/r2-proxy'
+  : 'https://img.abdulkerimsesli.de';
 
 export const GALLERY_ITEMS = [
   {
