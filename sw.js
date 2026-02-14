@@ -41,6 +41,12 @@ const CACHE_STRATEGIES = {
  * Install event - precache assets
  */
 self.addEventListener('install', (event) => {
+  // Skip service worker on localhost to avoid HTTPS caching issues
+  if (self.location.hostname === 'localhost' || self.location.hostname === '127.0.0.1') {
+    console.log('[SW] Skipping service worker on localhost');
+    return self.skipWaiting();
+  }
+
   if (self.location.hostname === 'localhost') {
     console.log('[SW] Installing service worker...');
   }
@@ -104,6 +110,11 @@ self.addEventListener('activate', (event) => {
  * Fetch event - handle requests with caching strategies
  */
 self.addEventListener('fetch', (event) => {
+  // Skip service worker completely on localhost
+  if (self.location.hostname === 'localhost' || self.location.hostname === '127.0.0.1') {
+    return;
+  }
+
   const { request } = event;
   const url = new URL(request.url);
 
