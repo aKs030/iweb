@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "include": [
+    "/*"
+  ],
+  "exclude": [
+    "/content/*",
+    "/assets/*",
+    "/*.png",
+    "/*.jpg",
+    "/*.jpeg",
+    "/*.gif",
+    "/*.svg",
+    "/*.ico",
+    "/*.json",
+    "/*.xml",
+    "/*.txt",
+    "/*.css",
+    "/*.js",
+    "/*.woff",
+    "/*.woff2",
+    "/*.ttf",
+    "/*.eot",
+    "/*.mp4",
+    "/*.webm",
+    "/sw.js",
+    "/manifest.json",
+    "/robots.txt",
+    "/sitemap.xml",
+    "/sitemap-images.xml",
+    "/sitemap-videos.xml"
+  ]
+}
