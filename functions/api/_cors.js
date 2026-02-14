@@ -2,6 +2,7 @@
  * Shared CORS Utility for Cloudflare Pages Functions
  * Centralizes origin validation and header management.
  * @version 1.0.0
+ * Verified existence for deployment: Feb 14, 2026
  */
 
 /**
