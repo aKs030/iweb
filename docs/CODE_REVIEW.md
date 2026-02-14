@@ -33,15 +33,21 @@ The component architecture is modular, with `particles/earth/` containing the bu
 - No clear "dead code" (e.g., `*.old`, `*.bak`, or unreferenced test files) was found in the `content/components/` directory.
 - All files in `content/components/particles/earth/` appear to be referenced by the system.
 
-## 3. New API Endpoint (`functions/api/filter.js`)
+## 3. API Endpoints
 
-**Goal:** Filter categories using `RAG_ID` and Vectorize.
+### Search API (`functions/api/search.js`)
 
 **Implementation:**
 
-- Created `POST /api/filter` endpoint.
-- **Logic:**
-  1.  Generates embeddings for the input query (or category name) using `env.AI`.
-  2.  Queries `env.VECTOR_INDEX` directly for performance.
-  3.  Applies a metadata filter for `category`.
-  4.  Applies an optional metadata filter for `rag_id` (matching `RAG_ID` from `wrangler.toml`) to ensure data isolation/context integrity, as requested.
+- Uses Cloudflare AI Search Beta via Workers Binding
+- AI Search Instance: `wispy-pond-1055`
+- No API tokens required (secure Workers Binding)
+- Returns AI-generated summaries (max 150 characters)
+
+### Robot Chat API (`functions/api/ai.js`)
+
+**Implementation:**
+
+- Uses Groq API (`llama-3.3-70b-versatile`) for chat responses
+- RAG context retrieval via AI Search Beta
+- GROQ_API_KEY stored as Cloudflare Pages Secret
