@@ -391,8 +391,8 @@ export class SiteFooter extends HTMLElement {
       },
       {
         root: null,
-        threshold: 0.1, // Löst aus, wenn die Section zu 10% sichtbar ist
-        rootMargin: '0px 0px 50px 0px',
+        threshold: 0.5, // Löst aus, wenn die Section zu 50% sichtbar ist
+        rootMargin: '0px',
       },
     );
 
