@@ -1,13 +1,13 @@
 /**
  * Service Worker for PWA
  * Provides offline support and caching strategies
- * @version 1.1.0
+ * @version 1.2.0
  */
 
 // @ts-nocheck
 /* global self, caches */
 
-const CACHE_VERSION = 'v1.1.0';
+const CACHE_VERSION = 'v1.2.0';
 const CACHE_NAME = `iweb-${CACHE_VERSION}`;
 
 // Assets to cache on install
