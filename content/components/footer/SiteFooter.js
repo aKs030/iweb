@@ -16,9 +16,6 @@ const log = createLogger('SiteFooter');
 const CONFIG = {
   FOOTER_PATH: '/content/components/footer/footer',
   FOOTER_PATH_FALLBACK: '/content/components/footer/footer.html',
-  SCROLL_DEBOUNCE_MS: 100,
-  EXPAND_THRESHOLD: 100,
-  COLLAPSE_THRESHOLD: 300,
   TRANSITION_DURATION: 300,
   LOAD_RETRY_ATTEMPTS: 2,
   LOAD_RETRY_DELAY_MS: 500,
@@ -136,11 +133,8 @@ export class SiteFooter extends HTMLElement {
     this.expanded = false;
     this.initialized = false;
     this.isTransitioning = false;
-    this.lastScrollY = 0;
     this.touchStartY = 0;
     this.touchStartTime = 0;
-    this.scrollTimeout = null;
-    this.scrollHandler = null;
 
     /** @type {FooterElements} */
     this.elements = {
@@ -253,11 +247,7 @@ export class SiteFooter extends HTMLElement {
     this._eventsbound = false;
     this._settingsEventsbound = false;
 
-    // ALTEN ScrollHandler entfernen, neuen Observer aufräumen
-    if (this.scrollHandler) {
-      window.removeEventListener('scroll', this.scrollHandler);
-      this.scrollHandler = null;
-    }
+    // Observer aufräumen
     if (this.sectionObserver) {
       this.sectionObserver.disconnect();
       this.sectionObserver = null;
@@ -411,8 +401,6 @@ export class SiteFooter extends HTMLElement {
       'IntersectionObserver for footer auto-expand initialized on section',
     );
   }
-
-  // Die alte checkScrollPosition() kann komplett gelöscht werden!
 
   setupGlobalEventListeners() {
     document.addEventListener('click', this.handleOutsideClick, {
