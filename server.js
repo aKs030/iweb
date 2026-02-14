@@ -204,6 +204,13 @@ function getHeadersForPath(url) {
     }
   }
 
+  // Remove CSP upgrade-insecure-requests for localhost
+  if (headers['Content-Security-Policy']) {
+    headers['Content-Security-Policy'] = headers['Content-Security-Policy']
+      .replace(/upgrade-insecure-requests;?\s*/gi, '')
+      .trim();
+  }
+
   return headers;
 }
 
