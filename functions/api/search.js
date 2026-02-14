@@ -2,7 +2,7 @@
  * Cloudflare Pages Function - POST /api/search
  * AI Search using Cloudflare AI Search Beta via Workers Binding
  * Enhanced with query expansion, fuzzy matching, relevance scoring, and caching
- * @version 10.1.0
+ * @version 10.2.0
  */
 
 import { getCorsHeaders, handleOptions } from './_cors.js';
