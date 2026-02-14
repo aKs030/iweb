@@ -118,7 +118,9 @@
     <link rel="stylesheet" href="/pages/gallery/gallery-styles.css" />
     <!-- INJECT:BASE-HEAD -->
   </head>
-  <body>
+  <body
+    class="m-0 p-0 overflow-hidden bg-black overscroll-none w-screen h-screen"
+  >
     <a href="#main-content" class="skip-link sr-only"
       >Zum Hauptinhalt springen</a
     >
@@ -129,8 +131,11 @@
 
     <!-- Header und Footer werden dynamisch von head-inline.js erstellt -->
 
-    <main id="main-content" class="h-screen w-screen overflow-hidden m-0 p-0">
-      <div id="root"></div>
+    <main
+      id="main-content"
+      class="absolute inset-0 w-screen h-screen overflow-hidden m-0 p-0"
+    >
+      <div id="root" class="w-full h-full"></div>
     </main>
 
     <!-- Lucide Icons removed — using inline/local icons to avoid many ESM module requests -->
