@@ -9,28 +9,18 @@ pages_build_output_dir = "dist"
 binding = "GALLERY_BUCKET"
 bucket_name = "img"
 
-# Vectorize Binding (für direkten Zugriff auf Vector Index)
-[[vectorize]]
-binding = "VECTOR_INDEX"
-index_name = "ai-search-plain-mountain-d6d0"
-
 # Workers AI Binding
 [ai]
 binding = "AI"
 
 # Umgebungsvariablen für Production
 [env.production]
-vars = { AI_SEARCH_INDEX = "ai-search-plain-mountain-d6d0", RAG_ID = "suche", MAX_SEARCH_RESULTS = "10" }
+vars = { MAX_SEARCH_RESULTS = "10" }
 
 # R2 Bucket für Gallery (Production)
 [[env.production.r2_buckets]]
 binding = "GALLERY_BUCKET"
 bucket_name = "img"
-
-# Vectorize Binding (Production)
-[[env.production.vectorize]]
-binding = "VECTOR_INDEX"
-index_name = "ai-search-plain-mountain-d6d0"
 
 # Workers AI Binding (Production)
 [env.production.ai]
@@ -38,17 +28,12 @@ binding = "AI"
 
 # Umgebungsvariablen für Preview
 [env.preview]
-vars = { AI_SEARCH_INDEX = "ai-search-plain-mountain-d6d0", RAG_ID = "suche", MAX_SEARCH_RESULTS = "10" }
+vars = { MAX_SEARCH_RESULTS = "10" }
 
 # R2 Bucket für Gallery (Preview)
 [[env.preview.r2_buckets]]
 binding = "GALLERY_BUCKET"
 bucket_name = "img"
-
-# Vectorize Binding (Preview)
-[[env.preview.vectorize]]
-binding = "VECTOR_INDEX"
-index_name = "ai-search-plain-mountain-d6d0"
 
 # Workers AI Binding (Preview)
 [env.preview.ai]
