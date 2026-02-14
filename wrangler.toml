@@ -13,6 +13,11 @@ bucket_name = "img"
 [ai]
 binding = "AI"
 
+# Vectorize Index für Semantic Search
+[[vectorize]]
+binding = "VECTORIZE"
+index_name = "website-search-index"
+
 # KV Namespace für Search Cache
 [[kv_namespaces]]
 binding = "SEARCH_CACHE"
@@ -31,6 +36,11 @@ bucket_name = "img"
 [env.production.ai]
 binding = "AI"
 
+# Vectorize Index (Production)
+[[env.production.vectorize]]
+binding = "VECTORIZE"
+index_name = "website-search-index"
+
 # KV Namespace für Search Cache (Production)
 [[env.production.kv_namespaces]]
 binding = "SEARCH_CACHE"
@@ -48,6 +58,11 @@ bucket_name = "img"
 # Workers AI Binding (Preview)
 [env.preview.ai]
 binding = "AI"
+
+# Vectorize Index (Preview)
+[[env.preview.vectorize]]
+binding = "VECTORIZE"
+index_name = "website-search-index"
 
 # KV Namespace für Search Cache (Preview)
 [[env.preview.kv_namespaces]]
