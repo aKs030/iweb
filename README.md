@@ -124,9 +124,7 @@ npm run build:analyze    # Visual bundle analysis
 Create a `.env` file based on `.env.example`:
 
 ```bash
-# Cloudflare AI Search (Service Binding)
-AI_SEARCH_INDEX=suche
-RAG_ID=suche
+# Cloudflare Configuration
 MAX_SEARCH_RESULTS=10
 ```
 
