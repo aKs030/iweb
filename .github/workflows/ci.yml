@@ -7,24 +7,44 @@ on:
     branches: [main]
 
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  quality:
-    name: Code Quality
+  lint:
+    name: Lint & Format
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 5
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
           cache: npm
 
-      - run: npm ci
+      - name: Install dependencies
+        run: npm ci
 
-      - name: Lint & Format
-        run: npm run check
+      - name: Run ESLint
+        run: npm run lint:check
+
+      - name: Run Prettier
+        run: npm run format:check
+
+  deploy-info:
+    name: Deployment Info
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: lint
+
+    steps:
+      - name: Deployment Status
+        run: |
+          echo "✅ Code quality checks passed!"
+          echo "🚀 Cloudflare Pages will automatically deploy this commit"
+          echo "📦 No build step required - source files deployed directly"
+          echo "🌐 Production: https://abdulkerimsesli.de"
