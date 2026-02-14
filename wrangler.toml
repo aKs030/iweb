@@ -14,11 +14,6 @@ bucket_name = "img"
 binding = "VECTOR_INDEX"
 index_name = "ai-search-plain-mountain-d6d0"
 
-# Service Binding (für AI Search Worker)
-[[services]]
-binding = "AI_SEARCH"
-service = "ai-search-proxy"
-
 # Workers AI Binding
 [ai]
 binding = "AI"
@@ -37,11 +32,6 @@ bucket_name = "img"
 binding = "VECTOR_INDEX"
 index_name = "ai-search-plain-mountain-d6d0"
 
-# Service Binding (Production)
-[[env.production.services]]
-binding = "AI_SEARCH"
-service = "ai-search-proxy"
-
 # Workers AI Binding (Production)
 [env.production.ai]
 binding = "AI"
@@ -59,11 +49,6 @@ bucket_name = "img"
 [[env.preview.vectorize]]
 binding = "VECTOR_INDEX"
 index_name = "ai-search-plain-mountain-d6d0"
-
-# Service Binding (Preview)
-[[env.preview.services]]
-binding = "AI_SEARCH"
-service = "ai-search-proxy"
 
 # Workers AI Binding (Preview)
 [env.preview.ai]
