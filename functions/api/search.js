@@ -226,71 +226,68 @@ export async function onRequestPost(context) {
       );
     }
 
-    // Direct Vectorize search without Service Binding
-    let results = [];
-    let summary = '';
+    // Fallback: Return static results without Vectorize
+    // This is a temporary solution until Vectorize binding is properly configured
+    const staticResults = [
+      {
+        url: '/',
+        title: 'Startseite',
+        category: 'Home',
+        description: 'Willkommen auf dem Portfolio von Abdulkerim Sesli.',
+        score: 1.0,
+      },
+      {
+        url: '/projekte',
+        title: 'Projekte',
+        category: 'Projekte',
+        description: 'Webentwicklungsprojekte und Coding-Arbeiten.',
+        score: 0.9,
+      },
+      {
+        url: '/blog',
+        title: 'Blog',
+        category: 'Blog',
+        description: 'Technische Artikel über Webentwicklung und Design.',
+        score: 0.8,
+      },
+      {
+        url: '/gallery',
+        title: 'Galerie',
+        category: 'Galerie',
+        description: 'Urban Photography aus Berlin.',
+        score: 0.7,
+      },
+      {
+        url: '/videos',
+        title: 'Videos',
+        category: 'Videos',
+        description: 'Motion Design und Video-Produktionen.',
+        score: 0.6,
+      },
+    ];
 
-    try {
-      // Query Vectorize directly
-      const vectorResults = await env.VECTOR_INDEX.query(query, {
-        topK: topK,
-        returnMetadata: true,
-      });
+    // Filter results based on query
+    const lowerQuery = query.toLowerCase();
+    const filteredResults = staticResults.filter(
+      (r) =>
+        r.title.toLowerCase().includes(lowerQuery) ||
+        r.description.toLowerCase().includes(lowerQuery) ||
+        r.category.toLowerCase().includes(lowerQuery),
+    );
 
-      if (vectorResults && vectorResults.matches) {
-        results = vectorResults.matches.map((m) => ({
-          url: m.metadata?.url || m.url || '',
-          title: m.metadata?.title || m.title || 'Seite',
-          description: m.metadata?.description || m.description || '',
-          category: m.metadata?.category || m.category || 'Seite',
-          score: m.score || 0,
-        }));
-      }
+    const results =
+      filteredResults.length > 0 ? filteredResults : staticResults;
+    const finalResults = deduplicateResults(results.slice(0, topK));
 
-      // Generate AI summary using Workers AI
-      if (env.AI && results.length > 0) {
-        try {
-          const contextText = results
-            .slice(0, 3)
-            .map((r) => `${r.title}: ${r.description}`)
-            .join('\n');
-
-          const aiResult = await env.AI.run('@cf/meta/llama-2-7b-chat-int8', {
-            messages: [
-              {
-                role: 'system',
-                content:
-                  "Du bist Abdulkerim's Portfolio-Assistent. Antworte extrem kurz (max 2 Sätze) auf Deutsch.",
-              },
-              {
-                role: 'user',
-                content: `Basierend auf diesen Informationen:\n${contextText}\n\nBeantworte: ${query}`,
-              },
-            ],
-          });
-
-          summary = aiResult?.response || '';
-        } catch (aiError) {
-          console.error('AI Summary Error:', aiError);
-          // Continue without summary
-        }
-      }
-
-      const finalResults = deduplicateResults(results);
-
-      return new Response(
-        JSON.stringify({
-          results: finalResults,
-          summary: summary,
-          count: finalResults.length,
-          query: query,
-        }),
-        { headers: corsHeaders },
-      );
-    } catch (searchError) {
-      console.error('Vectorize Search Error:', searchError);
-      throw searchError;
-    }
+    return new Response(
+      JSON.stringify({
+        results: finalResults,
+        summary: `Suchergebnisse für "${query}". Die KI-gestützte Suche wird derzeit konfiguriert.`,
+        count: finalResults.length,
+        query: query,
+      }),
+      { headers: corsHeaders },
+    );
   } catch (error) {
     console.error('Search API Error:', error);
     return new Response(
