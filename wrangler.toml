@@ -15,6 +15,11 @@ MAX_SEARCH_RESULTS = "10"
 binding = "BUCKET"
 bucket_name = "ai-search-suche-92e832"
 
+# R2 Bucket für die Galerie-Bilder (img.abdulkerimsesli.de)
+[[r2_buckets]]
+binding = "GALLERY_BUCKET"
+bucket_name = "img"
+
 # Vectorize Index für die KI-Suche
 [[vectorize]]
 binding = "VECTOR_INDEX"

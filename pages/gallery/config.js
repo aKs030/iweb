@@ -1,3 +1,8 @@
+/**
+ * Gallery Configuration
+ * Assets are hosted on Cloudflare R2 via custom domain (img.abdulkerimsesli.de).
+ * Ensure the R2 bucket has the CORS policy defined in `content/config/R2_CORS.json`.
+ */
 export const GALLERY_ITEMS = [
   {
     id: 'mond',
