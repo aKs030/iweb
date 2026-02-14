@@ -212,22 +212,15 @@ export async function onRequestPost(context) {
       });
     }
 
-    // Check for VECTOR_INDEX (Requested Feature)
-    if (!env.VECTOR_INDEX) {
-      console.error(
-        'VECTOR_INDEX binding is not configured in wrangler.toml or environment',
-      );
-      return new Response(
-        JSON.stringify({
-          error: 'Configuration Error',
-          message: 'VECTOR_INDEX binding is missing',
-        }),
-        { status: 503, headers: corsHeaders },
-      );
-    }
+    // Fallback: Return static results
+    // Note: VECTOR_INDEX binding may not be available in production yet
+    console.log(
+      'Search query:',
+      query,
+      'VECTOR_INDEX available:',
+      !!env.VECTOR_INDEX,
+    );
 
-    // Fallback: Return static results without Vectorize
-    // This is a temporary solution until Vectorize binding is properly configured
     const staticResults = [
       {
         url: '/',
