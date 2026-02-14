@@ -33,7 +33,7 @@ export async function onRequestPost(context) {
     }
 
     // Generate cache key with version to bust old cache
-    const CACHE_VERSION = 'v2'; // Increment when search logic changes
+    const CACHE_VERSION = 'v3'; // Increment when search logic changes
     const topK = parseInt(body.topK || env.MAX_SEARCH_RESULTS || '10');
     const cacheKey = `${CACHE_VERSION}:${getCacheKey(query, topK)}`;
 
