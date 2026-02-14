@@ -212,50 +212,84 @@ export async function onRequestPost(context) {
       });
     }
 
-    // Try AI_SEARCH service binding first (preferred method)
-    if (env.AI_SEARCH) {
+    // Try Vectorize + AI for intelligent search
+    if (env.VECTOR_INDEX && env.AI) {
       try {
-        console.log('Using AI_SEARCH service binding for query:', query);
+        console.log('Using Vectorize + AI for query:', query);
 
-        const searchRequest = new Request('https://ai-search-proxy/search', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ query, topK }),
+        // Generate embedding for the query using Cloudflare AI
+        const embeddingResponse = await env.AI.run(
+          '@cf/baai/bge-base-en-v1.5',
+          {
+            text: query,
+          },
+        );
+
+        const queryVector = embeddingResponse.data[0];
+
+        // Search in Vectorize
+        const vectorResults = await env.VECTOR_INDEX.query(queryVector, {
+          topK: topK,
+          returnMetadata: true,
         });
 
-        const searchResponse = await env.AI_SEARCH.fetch(searchRequest);
+        if (vectorResults.matches && vectorResults.matches.length > 0) {
+          // Convert Vectorize results to our format
+          const results = vectorResults.matches.map((match) => ({
+            url: match.metadata?.url || '/',
+            title: match.metadata?.title || 'Seite',
+            category: match.metadata?.category || 'Seite',
+            description: match.metadata?.description || '',
+            score: match.score || 0,
+          }));
 
-        if (searchResponse.ok) {
-          const data = await searchResponse.json();
-          const improvedResults = deduplicateResults(data.results || []);
+          const improvedResults = deduplicateResults(results);
+
+          // Generate AI summary
+          let summary = `Suchergebnisse für "${query}"`;
+          try {
+            const summaryPrompt = `Basierend auf der Suchanfrage "${query}" wurden ${improvedResults.length} Ergebnisse gefunden. Erstelle eine kurze, hilfreiche Zusammenfassung (max. 2 Sätze) auf Deutsch.`;
+            const summaryResponse = await env.AI.run(
+              '@cf/meta/llama-3.1-8b-instruct',
+              {
+                messages: [
+                  {
+                    role: 'system',
+                    content:
+                      'Du bist ein hilfreicher Assistent. Antworte kurz und präzise auf Deutsch.',
+                  },
+                  { role: 'user', content: summaryPrompt },
+                ],
+              },
+            );
+            summary =
+              summaryResponse?.response || `Suchergebnisse für "${query}"`;
+          } catch (summaryError) {
+            console.warn('AI summary generation failed:', summaryError.message);
+          }
 
           return new Response(
             JSON.stringify({
               results: improvedResults,
-              summary: data.summary || `Suchergebnisse für "${query}"`,
+              summary: summary,
               count: improvedResults.length,
               query: query,
             }),
             { headers: corsHeaders },
           );
-        } else {
-          console.warn(
-            'AI_SEARCH service returned error:',
-            searchResponse.status,
-          );
         }
       } catch (error) {
-        console.error('AI_SEARCH service error:', error.message);
+        console.error('Vectorize search error:', error.message);
         // Fall through to static results
       }
     }
 
-    // Fallback: Return static results if AI_SEARCH is not available
+    // Fallback: Return static results if Vectorize is not available or empty
     console.log(
       'Using static fallback for query:',
       query,
-      'AI_SEARCH available:',
-      !!env.AI_SEARCH,
+      'Vectorize available:',
+      !!env.VECTOR_INDEX,
     );
 
     const staticResults = [
