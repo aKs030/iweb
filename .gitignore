@@ -8,6 +8,10 @@ build/
 .vite/
 .wrangler/
 
+# Worker directories (temporary)
+worker/
+ai-search-worker/
+
 # Environment
 .env
 .env.local
