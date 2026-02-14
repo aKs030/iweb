@@ -1,7 +1,7 @@
 /**
  * Cloudflare Pages Function - POST /api/search
  * AI Search using Cloudflare AI Search Beta via Workers Binding
- * @version 8.0.0
+ * @version 9.0.0
  */
 
 import { getCorsHeaders, handleOptions } from './_cors.js';
@@ -29,7 +29,7 @@ export async function onRequestPost(context) {
 
     // Use Workers Binding to call AI Search Beta
     // This is more secure and doesn't require API tokens
-    const searchData = await env.AI.autorag('plain-mountain-d6d0').aiSearch({
+    const searchData = await env.AI.autorag('wispy-pond-1055').aiSearch({
       query: query,
       max_num_results: parseInt(body.topK || env.MAX_SEARCH_RESULTS || '10'),
       rewrite_query: true,
