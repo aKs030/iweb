@@ -1,10 +1,13 @@
 /**
  * Cloudflare Pages Function - POST /api/ai
- * Modern AI Chat with RAG (Retrieval-Augmented Generation)
- * @version 7.0.0
+ * Modern AI Chat with RAG (Retrieval-Augmented Generation) using Groq
+ * @version 8.0.0
  */
 
 import { getCorsHeaders, handleOptions } from './_cors.js';
+
+const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
+const GROQ_MODEL = 'llama-3.3-70b-versatile';
 
 /**
  * Search for relevant context using Vectorize
@@ -68,9 +71,9 @@ export async function onRequestPost(context) {
       );
     }
 
-    // Use Cloudflare AI directly
-    if (!env.AI) {
-      throw new Error('AI binding not configured');
+    // Check for Groq API key
+    if (!env.GROQ_API_KEY) {
+      throw new Error('GROQ_API_KEY not configured');
     }
 
     // Try to get relevant context from Vectorize
@@ -92,22 +95,38 @@ export async function onRequestPost(context) {
       { role: 'user', content: prompt },
     ];
 
-    const serviceResponse = await env.AI.run('@cf/meta/llama-3.1-8b-instruct', {
-      messages,
+    // Call Groq API
+    const groqResponse = await fetch(GROQ_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${env.GROQ_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: GROQ_MODEL,
+        messages: messages,
+        temperature: 0.7,
+        max_tokens: 1024,
+      }),
     });
 
-    // Extract response text from Cloudflare AI
-    const responseText =
-      serviceResponse?.response || serviceResponse?.result?.response || '';
+    if (!groqResponse.ok) {
+      const errorText = await groqResponse.text();
+      console.error('Groq API error:', errorText);
+      throw new Error(`Groq API error: ${groqResponse.status}`);
+    }
+
+    const groqData = await groqResponse.json();
+    const responseText = groqData.choices?.[0]?.message?.content || '';
 
     if (!responseText) {
-      throw new Error('Empty response from AI model');
+      throw new Error('Empty response from Groq');
     }
 
     return new Response(
       JSON.stringify({
         text: responseText,
-        model: '@cf/meta/llama-3.1-8b-instruct',
+        model: GROQ_MODEL,
         hasContext: !!context,
       }),
       { headers: corsHeaders },
