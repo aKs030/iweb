@@ -218,8 +218,9 @@ export async function onRequestPost(context) {
         console.log('Using Vectorize + AI for query:', query);
 
         // Generate embedding for the query using Cloudflare AI
+        // Using bge-large for 1024 dimensions (Cloudflare Managed AI Search)
         const embeddingResponse = await env.AI.run(
-          '@cf/baai/bge-base-en-v1.5',
+          '@cf/baai/bge-large-en-v1.5',
           {
             text: query,
           },
