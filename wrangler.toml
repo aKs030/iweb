@@ -8,11 +8,7 @@ pages_build_output_dir = "dist"
 [build]
 command = "npm run build"
 
-# R2 Buckets
-[[r2_buckets]]
-binding = "BUCKET"
-bucket_name = "ai-search-suche-92e832"
-
+# R2 Bucket für Gallery
 [[r2_buckets]]
 binding = "GALLERY_BUCKET"
 bucket_name = "img"
