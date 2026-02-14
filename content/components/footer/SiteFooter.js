@@ -389,12 +389,13 @@ export class SiteFooter extends HTMLElement {
     const scrollBottom = scrollY + windowHeight;
     const distanceFromBottom = documentHeight - scrollBottom;
     const scrollDirection = scrollY > this.lastScrollY ? 'down' : 'up';
-    const isMobile = window.innerWidth <= 900;
-    const expandThreshold = isMobile ? 30 : CONFIG.EXPAND_THRESHOLD;
+    // Check if we are on a page with sections (like the home page)
+    const hasSections = document.querySelector('section[id]') !== null;
 
     if (
+      hasSections &&
       scrollDirection === 'down' &&
-      distanceFromBottom < expandThreshold &&
+      distanceFromBottom < CONFIG.EXPAND_THRESHOLD &&
       !this.expanded
     ) {
       this.toggleFooter(true);
