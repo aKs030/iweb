@@ -1,7 +1,7 @@
 /**
  * Cloudflare Pages Function - POST /api/search
- * AI Search using Cloudflare AI Search Beta
- * @version 7.0.0
+ * AI Search using Cloudflare AI Search Beta via Workers Binding
+ * @version 8.0.0
  */
 
 import { getCorsHeaders, handleOptions } from './_cors.js';
@@ -20,45 +20,25 @@ export async function onRequestPost(context) {
       });
     }
 
-    // Check for AI Search Beta token
-    if (!env.AI_SEARCH_TOKEN) {
-      throw new Error('AI_SEARCH_TOKEN not configured');
+    // Check for AI binding
+    if (!env.AI) {
+      throw new Error('AI binding not configured');
     }
 
     console.log('Using Cloudflare AI Search Beta for query:', query);
 
-    // Call Cloudflare AI Search Beta API
-    // Using /ai-search endpoint which returns both search results AND AI-generated answer
-    const searchResponse = await fetch(
-      'https://api.cloudflare.com/client/v4/accounts/652ca9f4abc93203c1ecd059dc00d1da/autorag/rags/plain-mountain-d6d0/ai-search',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${env.AI_SEARCH_TOKEN}`,
-        },
-        body: JSON.stringify({
-          query: query,
-          max_num_results: parseInt(
-            body.topK || env.MAX_SEARCH_RESULTS || '10',
-          ),
-          rewrite_query: true,
-          stream: false,
-        }),
-      },
-    );
-
-    if (!searchResponse.ok) {
-      const errorText = await searchResponse.text();
-      console.error('AI Search Beta error:', errorText);
-      throw new Error(`AI Search Beta error: ${searchResponse.status}`);
-    }
-
-    const searchData = await searchResponse.json();
+    // Use Workers Binding to call AI Search Beta
+    // This is more secure and doesn't require API tokens
+    const searchData = await env.AI.autorag('plain-mountain-d6d0').aiSearch({
+      query: query,
+      max_num_results: parseInt(body.topK || env.MAX_SEARCH_RESULTS || '10'),
+      rewrite_query: true,
+      stream: false,
+    });
 
     // Transform AI Search Beta response to our format
-    // Response structure: { success: true, result: { data: [...], response: "..." } }
-    const results = (searchData.result?.data || []).map((item) => {
+    // Response structure: { object: "vector_store.search_results.page", data: [...], response: "..." }
+    const results = (searchData.data || []).map((item) => {
       // Extract URL from filename (e.g., "pages/blog/react.html" -> "/blog/react")
       let url = item.filename || '/';
       url = url
@@ -85,7 +65,7 @@ export async function onRequestPost(context) {
     return new Response(
       JSON.stringify({
         results: results,
-        summary: searchData.result?.response || `Suchergebnisse für "${query}"`,
+        summary: searchData.response || `Suchergebnisse für "${query}"`,
         count: results.length,
         query: query,
       }),
