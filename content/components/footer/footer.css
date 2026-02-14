@@ -307,6 +307,7 @@ address {
   max-height: calc(100vh - 150px);
   overflow-y: auto;
   overflow-x: hidden;
+  animation: contentFadeIn var(--transition-duration, 0.3s) ease-out forwards;
 }
 
 .footer-max.hidden {
@@ -1396,4 +1397,15 @@ body.footer-expanded {
 
 .year::after {
   content: attr(data-year);
+}
+
+@keyframes contentFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

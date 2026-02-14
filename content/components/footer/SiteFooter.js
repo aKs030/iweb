@@ -253,9 +253,14 @@ export class SiteFooter extends HTMLElement {
     this._eventsbound = false;
     this._settingsEventsbound = false;
 
+    // ALTEN ScrollHandler entfernen, neuen Observer aufräumen
     if (this.scrollHandler) {
       window.removeEventListener('scroll', this.scrollHandler);
       this.scrollHandler = null;
+    }
+    if (this.sectionObserver) {
+      this.sectionObserver.disconnect();
+      this.sectionObserver = null;
     }
   }
 
@@ -356,58 +361,58 @@ export class SiteFooter extends HTMLElement {
   setupScrollHandler() {
     if (!this.elements.footer) return;
 
-    // Prüfe ob Seite überhaupt scrollbar ist
-    const isScrollable =
-      document.documentElement.scrollHeight > window.innerHeight;
-    if (!isScrollable) {
-      log.info('Page not scrollable - scroll handler disabled');
+    // 1. Prüfen, ob wir auf der Startseite sind
+    const path = window.location.pathname;
+    const isHomePage = path === '/' || path === '/index.html';
+
+    // AUF PAGES (Unterseiten): Kein automatisches Maximieren
+    if (!isHomePage) {
+      log.info('Auto-expand disabled on subpages. Footer needs manual click.');
       return;
     }
 
-    this.lastScrollY = window.scrollY;
+    // AUF STARTSEITE: Nur bei einer bestimmten Section auslösen
+    // Sucht z.B. die letzte Section im Main-Bereich oder ein Element mit [data-auto-footer]
+    const targetSection =
+      document.querySelector('[data-auto-footer]') ||
+      document.querySelector('main > section:last-of-type');
 
-    this.scrollHandler = () => {
-      if (this.scrollTimeout) this.timers.clearTimeout(this.scrollTimeout);
-      this.scrollTimeout = this.timers.setTimeout(
-        () => this.checkScrollPosition(),
-        CONFIG.SCROLL_DEBOUNCE_MS,
-      );
-    };
-
-    window.addEventListener('scroll', this.scrollHandler, { passive: true });
-
-    // NICHT beim initialen Laden prüfen - nur bei tatsächlichem Scroll
-    log.info('Scroll handler initialized');
-  }
-
-  checkScrollPosition() {
-    if (this.isTransitioning) return;
-
-    const scrollY = window.scrollY;
-    const windowHeight = window.innerHeight;
-    const documentHeight = document.documentElement.scrollHeight;
-    const scrollBottom = scrollY + windowHeight;
-    const distanceFromBottom = documentHeight - scrollBottom;
-    const scrollDirection = scrollY > this.lastScrollY ? 'down' : 'up';
-    const isMobile = window.innerWidth <= 900;
-    const expandThreshold = isMobile ? 30 : CONFIG.EXPAND_THRESHOLD;
-
-    if (
-      scrollDirection === 'down' &&
-      distanceFromBottom < expandThreshold &&
-      !this.expanded
-    ) {
-      this.toggleFooter(true);
-    } else if (
-      scrollDirection === 'up' &&
-      distanceFromBottom > CONFIG.COLLAPSE_THRESHOLD &&
-      this.expanded
-    ) {
-      this.toggleFooter(false);
+    if (!targetSection) {
+      log.info('No target section found for footer auto-expand.');
+      return;
     }
 
-    this.lastScrollY = scrollY;
+    // 2. Performanter IntersectionObserver statt Scroll-Events
+    this.sectionObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (this.isTransitioning) return;
+
+          if (entry.isIntersecting) {
+            // Section ist im sichtbaren Bereich -> Maximieren
+            if (!this.expanded) this.toggleFooter(true);
+          } else {
+            // Nutzer scrollt wieder hoch -> Minimieren
+            if (this.expanded && entry.boundingClientRect.top > 0) {
+              this.toggleFooter(false);
+            }
+          }
+        });
+      },
+      {
+        root: null,
+        threshold: 0.1, // Löst aus, wenn die Section zu 10% sichtbar ist
+        rootMargin: '0px 0px 50px 0px',
+      },
+    );
+
+    this.sectionObserver.observe(targetSection);
+    log.info(
+      'IntersectionObserver for footer auto-expand initialized on section',
+    );
   }
+
+  // Die alte checkScrollPosition() kann komplett gelöscht werden!
 
   setupGlobalEventListeners() {
     document.addEventListener('click', this.handleOutsideClick, {
@@ -518,10 +523,15 @@ export class SiteFooter extends HTMLElement {
     const footerTriggers = document.querySelectorAll('[data-footer-trigger]');
 
     if (this.expanded) {
+      // Status: Maximiert
       footer.classList.add('expanded');
       document.body.classList.add('footer-expanded');
+
+      // Sichtbarkeiten toggeln
       footerMin?.classList.add('hidden');
       footerMax?.classList.remove('hidden');
+
+      // Accessibility Updates
       footerMin?.setAttribute('aria-expanded', 'true');
       footerTriggers.forEach((t) => t.setAttribute('aria-expanded', 'true'));
       a11y?.announce(i18n.t('footer.actions.expanded'), { priority: 'polite' });
@@ -529,19 +539,25 @@ export class SiteFooter extends HTMLElement {
         new CustomEvent(EVENTS.FOOTER_EXPANDED, { bubbles: true }),
       );
 
+      // Fokus-Management optimiert
       const firstFocusable = /** @type {HTMLElement|null} */ (
         footerMax?.querySelector(
           'button, a, input, [tabindex]:not([tabindex="-1"])',
         )
       );
       if (firstFocusable?.focus) {
-        this.timers.setTimeout(() => firstFocusable.focus(), 100);
+        this.timers.setTimeout(() => firstFocusable.focus(), 150);
       }
     } else {
+      // Status: Minimiert
       footer.classList.remove('expanded');
       document.body.classList.remove('footer-expanded');
+
+      // Sichtbarkeiten toggeln
       footerMin?.classList.remove('hidden');
       footerMax?.classList.add('hidden');
+
+      // Accessibility Updates
       footerMin?.setAttribute('aria-expanded', 'false');
       footerTriggers.forEach((t) => t.setAttribute('aria-expanded', 'false'));
       a11y?.announce(i18n.t('footer.actions.minimize'), { priority: 'polite' });
@@ -550,6 +566,7 @@ export class SiteFooter extends HTMLElement {
       );
     }
 
+    // Transition-Sperre aufheben
     this.timers.setTimeout(() => {
       this.isTransitioning = false;
     }, CONFIG.TRANSITION_DURATION);
