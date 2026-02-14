@@ -16,7 +16,8 @@ async function getRelevantContext(query, env) {
 
   try {
     // Generate embedding for the query
-    const embeddingResponse = await env.AI.run('@cf/baai/bge-base-en-v1.5', {
+    // Using bge-large for 1024 dimensions (Cloudflare Managed AI Search)
+    const embeddingResponse = await env.AI.run('@cf/baai/bge-large-en-v1.5', {
       text: query,
     });
 
