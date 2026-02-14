@@ -226,74 +226,54 @@ export async function onRequestPost(context) {
       );
     }
 
-    const binding = env.AI_SEARCH;
-    if (!binding) {
-      throw new Error('AI_SEARCH Service Binding not configured');
-    }
-
-    // Parallel fetch for results and AI summary (Modern RAG approach)
-    const TIMEOUT_MS = 5000; // 5 second timeout
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
+    // Direct Vectorize search without Service Binding
+    let results = [];
+    let summary = '';
 
     try {
-      const [searchResponse, aiResponse] = await Promise.allSettled([
-        binding.fetch(
-          new Request('http://ai-search/api/search', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              query,
-              limit: topK,
-              topK: topK,
-              index: env.AI_SEARCH_INDEX || 'suche',
-              ragId: env.RAG_ID || 'suche',
-            }),
-            signal: controller.signal,
-          }),
-        ),
-        binding.fetch(
-          new Request('http://ai-search/api/ai', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              prompt: `Beantworte kurz die Suchanfrage: "${query}" basierend auf dem Portfolio von Abdulkerim.`,
-              message: query,
-              systemInstruction:
-                "Du bist Abdulkerim's Portfolio-Assistent. Antworte extrem kurz (max 2 Sätze) auf Deutsch. Wenn die Frage nichts mit dem Portfolio zu tun hat, bleib höflich. Nutze Informationen über Projekte, Blog und Erfahrung.",
-              ragId: env.RAG_ID || 'suche',
-              maxResults: 5,
-            }),
-            signal: controller.signal,
-          }),
-        ),
-      ]);
+      // Query Vectorize directly
+      const vectorResults = await env.VECTOR_INDEX.query(query, {
+        topK: topK,
+        returnMetadata: true,
+      });
 
-      clearTimeout(timeoutId);
-
-      // Handle Search Results
-      let results = [];
-      if (searchResponse.status === 'fulfilled' && searchResponse.value.ok) {
-        const data = await searchResponse.value.json();
-        if (Array.isArray(data.results)) {
-          results = data.results;
-        } else if (Array.isArray(data.matches)) {
-          results = data.matches.map((m) => ({
-            url: m.metadata?.url || m.url,
-            title: m.metadata?.title || m.title,
-            description: m.metadata?.description || m.description,
-            category: m.metadata?.category || m.category,
-            score: m.score,
-          }));
-        }
+      if (vectorResults && vectorResults.matches) {
+        results = vectorResults.matches.map((m) => ({
+          url: m.metadata?.url || m.url || '',
+          title: m.metadata?.title || m.title || 'Seite',
+          description: m.metadata?.description || m.description || '',
+          category: m.metadata?.category || m.category || 'Seite',
+          score: m.score || 0,
+        }));
       }
 
-      // Handle AI Summary
-      let summary = '';
-      if (aiResponse.status === 'fulfilled' && aiResponse.value.ok) {
-        const aiData = await aiResponse.value.json();
-        summary = aiData.text || aiData.response || aiData.answer || '';
-        if (!summary && aiData.data) summary = aiData.data.text || '';
+      // Generate AI summary using Workers AI
+      if (env.AI && results.length > 0) {
+        try {
+          const contextText = results
+            .slice(0, 3)
+            .map((r) => `${r.title}: ${r.description}`)
+            .join('\n');
+
+          const aiResult = await env.AI.run('@cf/meta/llama-2-7b-chat-int8', {
+            messages: [
+              {
+                role: 'system',
+                content:
+                  "Du bist Abdulkerim's Portfolio-Assistent. Antworte extrem kurz (max 2 Sätze) auf Deutsch.",
+              },
+              {
+                role: 'user',
+                content: `Basierend auf diesen Informationen:\n${contextText}\n\nBeantworte: ${query}`,
+              },
+            ],
+          });
+
+          summary = aiResult?.response || '';
+        } catch (aiError) {
+          console.error('AI Summary Error:', aiError);
+          // Continue without summary
+        }
       }
 
       const finalResults = deduplicateResults(results);
@@ -307,9 +287,9 @@ export async function onRequestPost(context) {
         }),
         { headers: corsHeaders },
       );
-    } catch (fetchError) {
-      clearTimeout(timeoutId);
-      throw fetchError;
+    } catch (searchError) {
+      console.error('Vectorize Search Error:', searchError);
+      throw searchError;
     }
   } catch (error) {
     console.error('Search API Error:', error);
