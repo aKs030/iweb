@@ -1,15 +1,15 @@
-import { getCorsHeaders, handleOptions } from './_cors.js';
-
 /**
  * Handles contact form submissions.
  * POST /api/contact
  */
 export async function onRequestPost({ request, env }) {
+  // Dynamische Imports
+  const { getCorsHeaders } = await import('./_cors.js');
+  const { Resend } = await import('resend');
+
   const corsHeaders = getCorsHeaders(request, env);
 
   try {
-    // Dynamic import of Resend (provided by Cloudflare)
-    const { Resend } = await import('resend');
     // Check if body is JSON
     const contentType = request.headers.get('content-type');
     if (!contentType || !contentType.includes('application/json')) {
@@ -27,7 +27,6 @@ export async function onRequestPost({ request, env }) {
 
     // Honeypot check (anti-spam)
     if (_gotcha) {
-      // Return success to confuse bots, but don't send email
       return new Response(
         JSON.stringify({ success: true, message: 'Message received' }),
         {
@@ -76,9 +75,6 @@ export async function onRequestPost({ request, env }) {
     const resend = new Resend(env.RESEND_API_KEY);
 
     // Send email via Resend
-    // Note: 'onboarding@resend.dev' works only for testing.
-    // In production, you should verify a domain and use it.
-    // If using the free tier without a domain, you can only send to your own email address.
     const { data, error } = await resend.emails.send({
       from: 'Contact Form <onboarding@resend.dev>',
       to: ['krm19030@gmail.com'],
