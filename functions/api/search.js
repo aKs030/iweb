@@ -39,13 +39,19 @@ export async function onRequestPost(context) {
     // Transform AI Search Beta response to our format
     // Response structure: { object: "vector_store.search_results.page", data: [...], response: "..." }
     const results = (searchData.data || []).map((item) => {
-      // Extract URL from filename (e.g., "pages/blog/react.html" -> "/blog/react")
+      // Extract URL from filename
       let url = item.filename || '/';
-      url = url
-        .replace(/^pages/, '')
-        .replace(/\.html$/, '')
-        .replace(/\/index$/, '');
+
+      // Remove domain if present
+      url = url.replace(/^https?:\/\/(www\.)?abdulkerimsesli\.de/, '');
+
+      // Ensure URL starts with /
       if (!url.startsWith('/')) url = '/' + url;
+
+      // Remove trailing slash except for root
+      if (url !== '/' && url.endsWith('/')) {
+        url = url.slice(0, -1);
+      }
 
       // Extract text content from content array
       const textContent = item.content
