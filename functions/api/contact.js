@@ -1,10 +1,13 @@
 import { Resend } from 'resend';
+import { getCorsHeaders, handleOptions } from './_cors.js';
 
 /**
  * Handles contact form submissions.
  * POST /api/contact
  */
 export async function onRequestPost({ request, env }) {
+  const corsHeaders = getCorsHeaders(request, env);
+
   try {
     // Check if body is JSON
     const contentType = request.headers.get('content-type');
@@ -13,7 +16,7 @@ export async function onRequestPost({ request, env }) {
         JSON.stringify({ error: 'Content-Type must be application/json' }),
         {
           status: 400,
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', ...corsHeaders },
         },
       );
     }
@@ -28,7 +31,7 @@ export async function onRequestPost({ request, env }) {
         JSON.stringify({ success: true, message: 'Message received' }),
         {
           status: 200,
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', ...corsHeaders },
         },
       );
     }
@@ -39,7 +42,7 @@ export async function onRequestPost({ request, env }) {
         JSON.stringify({ error: 'Bitte füllen Sie alle Pflichtfelder aus.' }),
         {
           status: 400,
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', ...corsHeaders },
         },
       );
     }
@@ -53,7 +56,7 @@ export async function onRequestPost({ request, env }) {
         }),
         {
           status: 400,
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', ...corsHeaders },
         },
       );
     }
@@ -64,7 +67,7 @@ export async function onRequestPost({ request, env }) {
         JSON.stringify({ error: 'Server configuration error.' }),
         {
           status: 500,
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', ...corsHeaders },
         },
       );
     }
@@ -102,14 +105,14 @@ export async function onRequestPost({ request, env }) {
         }),
         {
           status: 500,
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', ...corsHeaders },
         },
       );
     }
 
     return new Response(JSON.stringify({ success: true, id: data.id }), {
       status: 200,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...corsHeaders },
     });
   } catch (err) {
     console.error('Unexpected Error in /api/contact:', err);
@@ -117,8 +120,10 @@ export async function onRequestPost({ request, env }) {
       JSON.stringify({ error: 'Ein unerwarteter Fehler ist aufgetreten.' }),
       {
         status: 500,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
       },
     );
   }
 }
+
+export const onRequestOptions = handleOptions;
