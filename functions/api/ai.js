@@ -1,10 +1,52 @@
 /**
  * Cloudflare Pages Function - POST /api/ai
- * Modern AI Chat using Service Binding - Optimized & Reduced
- * @version 6.0.0
+ * Modern AI Chat with RAG (Retrieval-Augmented Generation)
+ * @version 7.0.0
  */
 
 import { getCorsHeaders, handleOptions } from './_cors.js';
+
+/**
+ * Search for relevant context using Vectorize
+ */
+async function getRelevantContext(query, env) {
+  if (!env.VECTOR_INDEX || !env.AI) {
+    return null;
+  }
+
+  try {
+    // Generate embedding for the query
+    const embeddingResponse = await env.AI.run('@cf/baai/bge-base-en-v1.5', {
+      text: query,
+    });
+
+    const queryVector = embeddingResponse.data[0];
+
+    // Search in Vectorize (top 3 most relevant results)
+    const vectorResults = await env.VECTOR_INDEX.query(queryVector, {
+      topK: 3,
+      returnMetadata: true,
+    });
+
+    if (!vectorResults.matches || vectorResults.matches.length === 0) {
+      return null;
+    }
+
+    // Format context from search results
+    const contextParts = vectorResults.matches.map((match) => {
+      const meta = match.metadata || {};
+      return `Seite: ${meta.title || 'Unbekannt'}
+URL: ${meta.url || '/'}
+Kategorie: ${meta.category || 'Allgemein'}
+Beschreibung: ${meta.description || 'Keine Beschreibung verfügbar'}`;
+    });
+
+    return contextParts.join('\n\n---\n\n');
+  } catch (error) {
+    console.error('Context retrieval error:', error.message);
+    return null;
+  }
+}
 
 export async function onRequestPost(context) {
   const { request, env } = context;
@@ -30,13 +72,22 @@ export async function onRequestPost(context) {
       throw new Error('AI binding not configured');
     }
 
+    // Try to get relevant context from Vectorize
+    const context = await getRelevantContext(prompt, env);
+
+    // Build system message with context if available
+    let systemMessage =
+      systemInstruction ||
+      'Du bist Cyber, ein hilfreicher Roboter-Assistent auf der Portfolio-Website von Abdulkerim Sesli. Antworte freundlich und präzise auf Deutsch.';
+
+    if (context) {
+      systemMessage += `\n\nRELEVANTE INFORMATIONEN VON DER WEBSITE:\n${context}\n\nNutze diese Informationen, um präzise und hilfreiche Antworten zu geben. Wenn die Frage sich auf die Website bezieht, verweise auf die relevanten Seiten.`;
+    } else {
+      systemMessage += `\n\nDu bist auf der Portfolio-Website von Abdulkerim Sesli, einem Webentwickler aus Berlin. Die Website zeigt Projekte, Blog-Artikel, Fotografie und Videos. Wenn du nach spezifischen Inhalten gefragt wirst, empfehle die Suche-Funktion.`;
+    }
+
     const messages = [
-      {
-        role: 'system',
-        content:
-          systemInstruction ||
-          'Du bist ein hilfreicher Assistent. Antworte auf Deutsch.',
-      },
+      { role: 'system', content: systemMessage },
       { role: 'user', content: prompt },
     ];
 
@@ -56,6 +107,7 @@ export async function onRequestPost(context) {
       JSON.stringify({
         text: responseText,
         model: '@cf/meta/llama-3.1-8b-instruct',
+        hasContext: !!context,
       }),
       { headers: corsHeaders },
     );
