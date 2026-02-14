@@ -20,7 +20,7 @@ const CONFIG = {
   TRANSITION_DURATION: 300,
   LOAD_RETRY_ATTEMPTS: 2,
   LOAD_RETRY_DELAY_MS: 500,
-  SENTINEL_ID: 'footer-sentinel'
+  SENTINEL_ID: 'footer-sentinel',
 };
 
 /**
