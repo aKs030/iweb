@@ -18,8 +18,8 @@ import {
 export async function onRequest(context) {
   const url = new URL(context.request.url);
 
-  // Skip API routes - they have their own middleware
-  if (url.pathname.startsWith('/api/')) {
+  // Skip API routes and GTM proxy - they have their own middleware/logic
+  if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/5dwc/')) {
     return await context.next();
   }
 
