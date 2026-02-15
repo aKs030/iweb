@@ -209,8 +209,9 @@ export class RobotDOMBuilder {
     const body = this.createBody();
     svg.appendChild(body);
 
-    // Magnifying Glass (initially hidden)
-    // Render before arms so the handle appears to be held
+    // Arms (rendered first so hand can be overlaid if needed, but usually glass handle is held)
+    // Actually, to make it look like held *in* hand, handle should be behind fingers or simply attached.
+    // The previous code had glass BEFORE arms. Let's keep that.
     const magnifyingGlass = this.createMagnifyingGlass();
     svg.appendChild(magnifyingGlass);
 
@@ -475,35 +476,38 @@ export class RobotDOMBuilder {
       'path',
     );
     leftArm.classList.add('robot-arm', 'left');
-    leftArm.setAttribute('d', 'M30,62 Q20,70 25,80');
+    // Adjusted grip to wrap around the handle at approx (22, 82) - Viewer's Left
+    // Mirrored from old right arm: M30,62 Q18,72 22,82
+    leftArm.setAttribute('d', 'M30,62 Q18,72 22,82');
     leftArm.setAttribute('fill', 'none');
     leftArm.setAttribute('stroke', '#40e0d0');
     leftArm.setAttribute('stroke-width', '3');
     leftArm.setAttribute('stroke-linecap', 'round');
+
+    // Left Hand (Grip Circle) - Viewer's Left
+    const leftHand = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'circle',
+    );
+    leftHand.setAttribute('cx', '22');
+    leftHand.setAttribute('cy', '82');
+    leftHand.setAttribute('r', '3'); // Simple round grip
+    leftHand.setAttribute('fill', '#40e0d0');
 
     const rightArm = document.createElementNS(
       'http://www.w3.org/2000/svg',
       'path',
     );
     rightArm.classList.add('robot-arm', 'right');
-    // Adjusted grip to wrap around the handle at approx (78, 82)
-    rightArm.setAttribute('d', 'M70,62 Q82,72 78,82');
+    // Normal arm for right side (Viewer's Right)
+    // Mirrored from old left arm: M70,62 Q80,70 75,80
+    rightArm.setAttribute('d', 'M70,62 Q80,70 75,80');
     rightArm.setAttribute('fill', 'none');
     rightArm.setAttribute('stroke', '#40e0d0');
     rightArm.setAttribute('stroke-width', '3');
     rightArm.setAttribute('stroke-linecap', 'round');
 
-    // Hand (Grip Circle)
-    const rightHand = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'circle',
-    );
-    rightHand.setAttribute('cx', '78');
-    rightHand.setAttribute('cy', '82');
-    rightHand.setAttribute('r', '3'); // Simple round grip
-    rightHand.setAttribute('fill', '#40e0d0');
-
-    g.append(leftArm, rightArm, rightHand);
+    g.append(leftArm, leftHand, rightArm);
 
     return g;
   }
@@ -621,15 +625,19 @@ export class RobotDOMBuilder {
     const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     g.classList.add('robot-magnifying-glass');
     g.style.opacity = '0';
-    g.style.transformBox = 'fill-box';
-    g.style.transformOrigin = 'center';
-    // Position adjusted to be held by the right hand
-    // Right arm ends around 78, 82. We rotate -45deg so it points up-left.
-    g.setAttribute('transform', 'translate(78, 82) rotate(-45) scale(0.9)');
+    // Remove transformBox: fill-box and transformOrigin: center to rely on coordinate system origin (0,0)
+    // which we will position at the hand grip.
+    // g.style.transformBox = 'fill-box'; // Removed to avoid rotation around bounding box center
+    // g.style.transformOrigin = 'center'; // Removed
+
+    // Position adjusted to be held by the LEFT hand (Viewer's Left)
+    // Left arm ends around 22, 82.
+    // We want to rotate it so it points towards the left/top-left.
+    // Handle (0,0) is at grip. Handle extends UP (0, -12).
+    // Rotation -45 deg: Handle points Top-Left.
+    g.setAttribute('transform', 'translate(22, 82) rotate(-45) scale(0.9)');
 
     // Handle - extending from hand (0,0) UPWARDS/OUTWARDS to the lens center
-    // Previous was x2=-8, y2=8 which goes DOWN-LEFT.
-    // We want it to go UP-RIGHT relative to the hand rotation, or simply align with the arm.
     // Let's define the handle going straight UP relative to the group's local coords (0,-10).
     const handle = document.createElementNS(
       'http://www.w3.org/2000/svg',
