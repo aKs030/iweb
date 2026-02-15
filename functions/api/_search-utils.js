@@ -217,7 +217,25 @@ export function cleanDescription(text) {
   // Matches {"key": "value"} patterns that might appear in text
   cleaned = cleaned.replace(/\{"[^"]+":\s*"[^"]+"\}/g, '');
 
-  // 5. Normalize whitespace
+  // 5. Remove Front Matter and Metadata artifacts
+  // Remove standard Jekyll/Hugo front matter (between --- and ---)
+  cleaned = cleaned.replace(/^---[\s\S]*?---\s*/, '');
+
+  // Remove the specific pattern reported by user ":--- description:"
+  // and potentially surrounding metadata if it looks like key-value pairs
+  // This regex tries to catch lines looking like "key: value" around the description
+  cleaned = cleaned.replace(/title:\s*[^:]+:--- description:\s*/i, '');
+
+  // Also just remove ":--- description:" if it remains
+  cleaned = cleaned.replace(/:--- description:\s*/gi, '');
+
+  // Remove other common front matter keys if they appear as artifacts
+  cleaned = cleaned.replace(
+    /\b(layout|permalink|date|author):\s*[^ \n]+\s*/gi,
+    '',
+  );
+
+  // 6. Normalize whitespace
   cleaned = cleaned.replace(/\s+/g, ' ').trim();
 
   return cleaned;
