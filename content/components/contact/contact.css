@@ -39,10 +39,20 @@ body.contact-page {
   align-items: center;
 }
 
-.contact-page main .container {
+..contact-page main .container {
   /* keep the container's responsive padding while preventing it from stretching */
   width: min(100%, var(--container-width));
   box-sizing: border-box;
+}
+
+/* Add safe bottom spacing so fixed footer / cookie bar never overlap form controls */
+.contact-page main {
+  padding-bottom: 3.5rem; /* baseline safe area for controls */
+}
+
+/* When cookie banner is visible (set by SiteFooter.js), add extra space */
+:root.footer-cookie-visible .contact-page main {
+  padding-bottom: calc(3.5rem + env(safe-area-inset-bottom, 0));
 }
 
 .contact-header {
