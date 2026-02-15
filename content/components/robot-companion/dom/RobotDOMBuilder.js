@@ -205,6 +205,10 @@ export class RobotDOMBuilder {
     const eyes = this.createEyes();
     svg.appendChild(eyes);
 
+    // Mouth
+    const mouth = this.createMouth();
+    svg.appendChild(mouth);
+
     // Body
     const body = this.createBody();
     svg.appendChild(body);
@@ -459,6 +463,202 @@ export class RobotDOMBuilder {
   }
 
   /**
+   * Create mouth with different expressions (LED-Display style)
+   * @returns {SVGGElement}
+   */
+  createMouth() {
+    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    g.classList.add('robot-mouth');
+
+    // Neutral expression - horizontal line
+    const neutralMouth = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'rect',
+    );
+    neutralMouth.classList.add('mouth-neutral');
+    neutralMouth.setAttribute('x', '42');
+    neutralMouth.setAttribute('y', '51');
+    neutralMouth.setAttribute('width', '16');
+    neutralMouth.setAttribute('height', '2');
+    neutralMouth.setAttribute('rx', '1');
+    neutralMouth.setAttribute('fill', '#40e0d0');
+    neutralMouth.setAttribute('filter', 'url(#glow)');
+
+    // Happy smile - curved segments (LED style)
+    const happyMouth = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'g',
+    );
+    happyMouth.classList.add('mouth-happy');
+    happyMouth.style.opacity = '0';
+
+    // Left segment
+    const happyLeft = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'rect',
+    );
+    happyLeft.setAttribute('x', '40');
+    happyLeft.setAttribute('y', '50');
+    happyLeft.setAttribute('width', '8');
+    happyLeft.setAttribute('height', '2');
+    happyLeft.setAttribute('rx', '1');
+    happyLeft.setAttribute('fill', '#40e0d0');
+    happyLeft.setAttribute('transform', 'rotate(-15 44 51)');
+    happyLeft.setAttribute('filter', 'url(#glow)');
+
+    // Center segment
+    const happyCenter = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'rect',
+    );
+    happyCenter.setAttribute('x', '46');
+    happyCenter.setAttribute('y', '52');
+    happyCenter.setAttribute('width', '8');
+    happyCenter.setAttribute('height', '2');
+    happyCenter.setAttribute('rx', '1');
+    happyCenter.setAttribute('fill', '#40e0d0');
+    happyCenter.setAttribute('filter', 'url(#glow)');
+
+    // Right segment
+    const happyRight = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'rect',
+    );
+    happyRight.setAttribute('x', '52');
+    happyRight.setAttribute('y', '50');
+    happyRight.setAttribute('width', '8');
+    happyRight.setAttribute('height', '2');
+    happyRight.setAttribute('rx', '1');
+    happyRight.setAttribute('fill', '#40e0d0');
+    happyRight.setAttribute('transform', 'rotate(15 56 51)');
+    happyRight.setAttribute('filter', 'url(#glow)');
+
+    happyMouth.append(happyLeft, happyCenter, happyRight);
+
+    // Sad mouth - inverted curve
+    const sadMouth = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'g',
+    );
+    sadMouth.classList.add('mouth-sad');
+    sadMouth.style.opacity = '0';
+
+    // Left segment (down)
+    const sadLeft = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'rect',
+    );
+    sadLeft.setAttribute('x', '40');
+    sadLeft.setAttribute('y', '52');
+    sadLeft.setAttribute('width', '8');
+    sadLeft.setAttribute('height', '2');
+    sadLeft.setAttribute('rx', '1');
+    sadLeft.setAttribute('fill', '#40e0d0');
+    sadLeft.setAttribute('transform', 'rotate(15 44 53)');
+    sadLeft.setAttribute('filter', 'url(#glow)');
+
+    // Center segment
+    const sadCenter = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'rect',
+    );
+    sadCenter.setAttribute('x', '46');
+    sadCenter.setAttribute('y', '50');
+    sadCenter.setAttribute('width', '8');
+    sadCenter.setAttribute('height', '2');
+    sadCenter.setAttribute('rx', '1');
+    sadCenter.setAttribute('fill', '#40e0d0');
+    sadCenter.setAttribute('filter', 'url(#glow)');
+
+    // Right segment (down)
+    const sadRight = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'rect',
+    );
+    sadRight.setAttribute('x', '52');
+    sadRight.setAttribute('y', '52');
+    sadRight.setAttribute('width', '8');
+    sadRight.setAttribute('height', '2');
+    sadRight.setAttribute('rx', '1');
+    sadRight.setAttribute('fill', '#40e0d0');
+    sadRight.setAttribute('transform', 'rotate(-15 56 53)');
+    sadRight.setAttribute('filter', 'url(#glow)');
+
+    sadMouth.append(sadLeft, sadCenter, sadRight);
+
+    // Surprised mouth - O shape with segments
+    const surprisedMouth = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'g',
+    );
+    surprisedMouth.classList.add('mouth-surprised');
+    surprisedMouth.style.opacity = '0';
+
+    // Top segment
+    const surprisedTop = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'rect',
+    );
+    surprisedTop.setAttribute('x', '46');
+    surprisedTop.setAttribute('y', '48');
+    surprisedTop.setAttribute('width', '8');
+    surprisedTop.setAttribute('height', '2');
+    surprisedTop.setAttribute('rx', '1');
+    surprisedTop.setAttribute('fill', '#40e0d0');
+    surprisedTop.setAttribute('filter', 'url(#glow)');
+
+    // Bottom segment
+    const surprisedBottom = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'rect',
+    );
+    surprisedBottom.setAttribute('x', '46');
+    surprisedBottom.setAttribute('y', '54');
+    surprisedBottom.setAttribute('width', '8');
+    surprisedBottom.setAttribute('height', '2');
+    surprisedBottom.setAttribute('rx', '1');
+    surprisedBottom.setAttribute('fill', '#40e0d0');
+    surprisedBottom.setAttribute('filter', 'url(#glow)');
+
+    // Left segment
+    const surprisedLeft = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'rect',
+    );
+    surprisedLeft.setAttribute('x', '44');
+    surprisedLeft.setAttribute('y', '50');
+    surprisedLeft.setAttribute('width', '2');
+    surprisedLeft.setAttribute('height', '6');
+    surprisedLeft.setAttribute('rx', '1');
+    surprisedLeft.setAttribute('fill', '#40e0d0');
+    surprisedLeft.setAttribute('filter', 'url(#glow)');
+
+    // Right segment
+    const surprisedRight = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'rect',
+    );
+    surprisedRight.setAttribute('x', '54');
+    surprisedRight.setAttribute('y', '50');
+    surprisedRight.setAttribute('width', '2');
+    surprisedRight.setAttribute('height', '6');
+    surprisedRight.setAttribute('rx', '1');
+    surprisedRight.setAttribute('fill', '#40e0d0');
+    surprisedRight.setAttribute('filter', 'url(#glow)');
+
+    surprisedMouth.append(
+      surprisedTop,
+      surprisedBottom,
+      surprisedLeft,
+      surprisedRight,
+    );
+
+    g.append(neutralMouth, happyMouth, sadMouth, surprisedMouth);
+
+    return g;
+  }
+
+  /**
    * Create body/legs
    * @returns {SVGPathElement}
    */
@@ -500,20 +700,54 @@ export class RobotDOMBuilder {
     leftArm.setAttribute('stroke-width', '3');
     leftArm.setAttribute('stroke-linecap', 'round');
 
-    // Left Hand (Grip Circle) - Viewer's Left
-    const leftHand = document.createElementNS(
+    // Left Hand (Detailed with fingers) - Viewer's Left
+    const leftHandGroup = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'g',
+    );
+    leftHandGroup.classList.add('robot-hand', 'left');
+
+    // Palm
+    const leftPalm = document.createElementNS(
       'http://www.w3.org/2000/svg',
       'circle',
     );
-    leftHand.setAttribute('cx', '22');
-    leftHand.setAttribute('cy', '82');
-    leftHand.setAttribute('r', '3'); // Simple round grip
-    leftHand.setAttribute('fill', '#40e0d0');
+    leftPalm.setAttribute('cx', '22');
+    leftPalm.setAttribute('cy', '82');
+    leftPalm.setAttribute('r', '4');
+    leftPalm.setAttribute('fill', '#40e0d0');
+
+    // Fingers (5 small lines)
+    const fingers = [
+      { x1: 20, y1: 79, x2: 18, y2: 76 }, // Thumb
+      { x1: 21, y1: 78, x2: 20, y2: 75 }, // Index
+      { x1: 22, y1: 78, x2: 22, y2: 74 }, // Middle
+      { x1: 23, y1: 78, x2: 24, y2: 75 }, // Ring
+      { x1: 24, y1: 79, x2: 26, y2: 76 }, // Pinky
+    ];
+
+    fingers.forEach((finger, index) => {
+      const fingerLine = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'line',
+      );
+      fingerLine.classList.add('robot-finger', `finger-${index}`);
+      fingerLine.setAttribute('x1', String(finger.x1));
+      fingerLine.setAttribute('y1', String(finger.y1));
+      fingerLine.setAttribute('x2', String(finger.x2));
+      fingerLine.setAttribute('y2', String(finger.y2));
+      fingerLine.setAttribute('stroke', '#40e0d0');
+      fingerLine.setAttribute('stroke-width', '1.5');
+      fingerLine.setAttribute('stroke-linecap', 'round');
+      leftHandGroup.appendChild(fingerLine);
+    });
+
+    leftHandGroup.appendChild(leftPalm);
 
     // Add magnifying glass to left arm group
     const magnifyingGlass = this.createMagnifyingGlass();
 
-    leftArmGroup.append(leftArm, leftHand, magnifyingGlass);
+    leftArmGroup.append(leftArm, leftHandGroup, magnifyingGlass);
 
     // Right Arm Group (includes arm and hand)
     const rightArmGroup = document.createElementNS(
@@ -534,17 +768,51 @@ export class RobotDOMBuilder {
     rightArm.setAttribute('stroke-width', '3');
     rightArm.setAttribute('stroke-linecap', 'round');
 
-    // Right Hand (Grip Circle) - Viewer's Right
-    const rightHand = document.createElementNS(
+    // Right Hand (Detailed with fingers) - Viewer's Right
+    const rightHandGroup = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'g',
+    );
+    rightHandGroup.classList.add('robot-hand', 'right');
+
+    // Palm
+    const rightPalm = document.createElementNS(
       'http://www.w3.org/2000/svg',
       'circle',
     );
-    rightHand.setAttribute('cx', '75');
-    rightHand.setAttribute('cy', '80');
-    rightHand.setAttribute('r', '3'); // Simple round grip
-    rightHand.setAttribute('fill', '#40e0d0');
+    rightPalm.setAttribute('cx', '75');
+    rightPalm.setAttribute('cy', '80');
+    rightPalm.setAttribute('r', '4');
+    rightPalm.setAttribute('fill', '#40e0d0');
 
-    rightArmGroup.append(rightArm, rightHand);
+    // Fingers (5 small lines) - mirrored
+    const rightFingers = [
+      { x1: 77, y1: 77, x2: 79, y2: 74 }, // Thumb
+      { x1: 76, y1: 76, x2: 77, y2: 73 }, // Index
+      { x1: 75, y1: 76, x2: 75, y2: 72 }, // Middle
+      { x1: 74, y1: 76, x2: 73, y2: 73 }, // Ring
+      { x1: 73, y1: 77, x2: 71, y2: 74 }, // Pinky
+    ];
+
+    rightFingers.forEach((finger, index) => {
+      const fingerLine = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'line',
+      );
+      fingerLine.classList.add('robot-finger', `finger-${index}`);
+      fingerLine.setAttribute('x1', String(finger.x1));
+      fingerLine.setAttribute('y1', String(finger.y1));
+      fingerLine.setAttribute('x2', String(finger.x2));
+      fingerLine.setAttribute('y2', String(finger.y2));
+      fingerLine.setAttribute('stroke', '#40e0d0');
+      fingerLine.setAttribute('stroke-width', '1.5');
+      fingerLine.setAttribute('stroke-linecap', 'round');
+      rightHandGroup.appendChild(fingerLine);
+    });
+
+    rightHandGroup.appendChild(rightPalm);
+
+    rightArmGroup.append(rightArm, rightHandGroup);
 
     g.append(leftArmGroup, rightArmGroup);
 
