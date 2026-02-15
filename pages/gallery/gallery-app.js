@@ -10,7 +10,7 @@ import ReactDOM from 'react-dom/client';
 import { createLogger } from '/content/core/logger.js';
 import { AppLoadManager } from '/content/core/load-manager.js';
 import { createUseTranslation } from '/content/core/react-utils.js';
-import { createErrorBoundary } from '/content/components/ui/ErrorBoundary.js';
+import { createErrorBoundary } from '/content/components/ErrorBoundary.js';
 
 import { ThreeGalleryScene } from './components/ThreeGalleryScene.js';
 import { GALLERY_ITEMS } from './config.js';
