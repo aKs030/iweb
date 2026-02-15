@@ -138,6 +138,11 @@ const GalleryApp = () => {
           '@type': 'Person',
           name: 'Abdulkerim Sesli',
         },
+        creator: {
+          '@type': 'Person',
+          name: 'Abdulkerim Sesli',
+        },
+        creditText: 'Photo: Abdulkerim Sesli',
         license: 'https://abdulkerimsesli.de/#image-license',
         acquireLicensePage: 'https://abdulkerimsesli.de/#image-license',
         copyrightNotice: `© ${new Date().getFullYear()} Abdulkerim Sesli`,
