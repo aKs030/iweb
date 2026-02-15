@@ -74,8 +74,6 @@ export function generateSchemaGraph(
     sameAs: brandData.sameAs,
     contactPoint: brandData.contactPoint,
     telephone: brandData.telephone,
-    address: brandData.address,
-    geo: brandData.geo,
     founder: { '@id': ID.person },
   });
 
@@ -89,7 +87,8 @@ export function generateSchemaGraph(
     worksFor: { '@id': ID.org },
     url: ENV.BASE_URL,
     identifier: ID.person,
-    image: {
+    logo: brandData.logo,
+    image: brandData.image || {
       '@type': 'ImageObject',
       '@id': `${ENV.BASE_URL}/#personImage`,
       url: 'https://commons.wikimedia.org/wiki/File:Abdulkerim_Sesli_portrait_2025.png',
@@ -106,9 +105,18 @@ export function generateSchemaGraph(
     homeLocation: {
       '@type': 'Place',
       name: 'Berlin',
-      address: brandData.address,
-      geo: brandData.geo,
     },
+    knowsLanguage: brandData.knowsLanguage?.map((lang) => ({
+      '@type': 'Language',
+      name: lang.name,
+      alternateName: lang.alternateName,
+    })),
+    hasOccupation: brandData.hasOccupation?.map((occ) => ({
+      '@type': 'Occupation',
+      name: occ.name,
+      description: occ.description,
+      skills: occ.skills,
+    })),
     knowsAbout: getKnowsAbout(),
   };
 

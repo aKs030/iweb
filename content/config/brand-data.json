@@ -2,20 +2,37 @@
   "name": "Abdulkerim Sesli",
   "legalName": "Abdulkerim Sesli",
   "alternateName": ["Abdul Sesli", "Abdul Berlin", "Abdulkerim Berlin"],
-  "logo": "/content/assets/img/icons/favicon-512.png",
+  "logo": "https://www.abdulkerimsesli.de/content/assets/img/icons/favicon-512.webp",
+  "image": "https://www.abdulkerimsesli.de/content/assets/img/icons/favicon-512.webp",
   "jobTitle": ["Web Developer", "Photographer"],
   "email": "kontakt@abdulkerimsesli.de",
   "areaServed": "Berlin, Deutschland",
-  "address": {
-    "streetAddress": "Sterkrader Str. 59",
-    "addressLocality": "Berlin",
-    "postalCode": "13507",
-    "addressCountry": "DE"
-  },
-  "geo": {
-    "latitude": "52.5733",
-    "longitude": "13.2911"
-  },
+  "knowsLanguage": [
+    {
+      "name": "Deutsch",
+      "alternateName": "German"
+    },
+    {
+      "name": "Englisch",
+      "alternateName": "English"
+    },
+    {
+      "name": "Türkisch",
+      "alternateName": "Turkish"
+    }
+  ],
+  "hasOccupation": [
+    {
+      "name": "Web Developer",
+      "description": "Spezialisiert auf moderne Frontend-Entwicklung mit React, Three.js und Progressive Web Apps",
+      "skills": "JavaScript, React, Three.js, Web Components, PWA, Performance Optimization"
+    },
+    {
+      "name": "Photographer",
+      "description": "Urban und Portrait Fotografie mit Fokus auf Berlin",
+      "skills": "Urban Photography, Portrait Photography, Photo Editing"
+    }
+  ],
   "sameAs": [
     "https://github.com/aKs030",
     "https://linkedin.com/in/abdulkerim-s",
