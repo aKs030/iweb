@@ -20,6 +20,10 @@ export const createUseTranslation = (React) => {
       return () => i18n.removeEventListener('language-changed', onLangChange);
     }, []);
 
-    return { t: (key, params) => i18n.t(key, params), lang };
+    // Stabilize the t function reference so it doesn't change on every render
+    const t = React.useCallback((key, params) => i18n.t(key, params), [lang]);
+
+    // Return memoized object to prevent unnecessary re-renders in consumers
+    return React.useMemo(() => ({ t, lang }), [t, lang]);
   };
 };
