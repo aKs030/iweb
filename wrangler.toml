@@ -1,61 +1,22 @@
 name = "1web"
-compatibility_date = "2025-05-23"
+compatibility_date = "2024-10-01"
 compatibility_flags = ["nodejs_compat"]
 
 # Pages Build Output - Root-Verzeichnis (kein Build)
 pages_build_output_dir = "."
 
-# R2 Bucket für Gallery
+# Bindings für alle Umgebungen (default)
 [[r2_buckets]]
 binding = "GALLERY_BUCKET"
 bucket_name = "img"
 
-# Workers AI Binding
 [ai]
 binding = "AI"
-
-# Vectorize Index für Semantic Search
-[[vectorize]]
-binding = "VECTORIZE"
-index_name = "website-search-index"
-
-# KV Namespace für Search Cache
-[[kv_namespaces]]
-binding = "SEARCH_CACHE"
-id = "87763b0924a446fa961f2e500f227af3"
 
 # Umgebungsvariablen für Production
 [env.production]
 vars = { MAX_SEARCH_RESULTS = "10", RAG_ID = "wispy-pond-1055" }
 
-# R2 Bucket für Gallery (Production)
-[[env.production.r2_buckets]]
-binding = "GALLERY_BUCKET"
-bucket_name = "img"
-
-# Workers AI Binding (Production)
-[env.production.ai]
-binding = "AI"
-
-# Vectorize Index (Production)
-[[env.production.vectorize]]
-binding = "VECTORIZE"
-index_name = "website-search-index"
-
-# KV Namespace für Search Cache (Production)
-[[env.production.kv_namespaces]]
-binding = "SEARCH_CACHE"
-id = "87763b0924a446fa961f2e500f227af3"
-
 # Umgebungsvariablen für Preview
 [env.preview]
 vars = { MAX_SEARCH_RESULTS = "10" }
-
-# R2 Bucket für Gallery (Preview)
-[[env.preview.r2_buckets]]
-binding = "GALLERY_BUCKET"
-bucket_name = "img"
-
-# Workers AI Binding (Preview)
-[env.preview.ai]
-binding = "AI"

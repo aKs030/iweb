@@ -1,16 +1,14 @@
 /**
  * Cloudflare Pages Function - POST /api/search
  * AI Search using Cloudflare AI Search Beta via Workers Binding
- * Enhanced with query expansion, fuzzy matching, relevance scoring, and caching
- * @version 10.2.0
+ * Enhanced with query expansion, fuzzy matching, and relevance scoring
+ * @version 12.0.0
  */
 
 import { getCorsHeaders, handleOptions } from './_cors.js';
 import {
   expandQuery,
   calculateRelevanceScore,
-  getCacheKey,
-  isCacheValid,
   normalizeUrl,
   cleanDescription,
 } from './_search-utils.js';
@@ -34,41 +32,7 @@ export async function onRequestPost(context) {
       throw new Error('AI binding not configured');
     }
 
-    // Generate cache key with version to bust old cache
-    const CACHE_VERSION = 'v7'; // Increment to bust cache
     const topK = parseInt(body.topK || env.MAX_SEARCH_RESULTS || '10');
-    const cacheKey = `${CACHE_VERSION}:${getCacheKey(query, topK)}`;
-
-    // Try to get from cache (KV or in-memory fallback)
-    if (env.SEARCH_CACHE) {
-      try {
-        const cached = await env.SEARCH_CACHE.get(cacheKey, 'json');
-        console.log('Cache lookup for key:', cacheKey);
-        console.log('Cached data:', cached ? 'FOUND' : 'NOT FOUND');
-        if (cached && isCacheValid(cached, 3600)) {
-          console.log('Cache hit for query:', query);
-          console.log(
-            'Cached results count:',
-            cached.data?.results?.length || 0,
-          );
-          console.log(
-            'Cached data structure:',
-            JSON.stringify(cached.data, null, 2),
-          );
-          return new Response(JSON.stringify(cached.data), {
-            headers: {
-              ...corsHeaders,
-              'X-Cache': 'HIT',
-              'Cache-Control': 'public, max-age=3600',
-            },
-          });
-        } else {
-          console.log('Cache miss or expired for query:', query);
-        }
-      } catch (cacheError) {
-        console.warn('Cache read error:', cacheError);
-      }
-    }
 
     // Expand query with synonyms and fuzzy matching
     const expandedQuery = expandQuery(query);
@@ -80,7 +44,7 @@ export async function onRequestPost(context) {
     const ragId = env.RAG_ID || 'wispy-pond-1055';
     const searchData = await env.AI.autorag(ragId).aiSearch({
       query: expandedQuery,
-      max_num_results: topK,
+      max_num_results: Math.max(topK, 15), // Mindestens 15 für bessere Abdeckung
       rewrite_query: true,
       stream: false,
       system_prompt:
@@ -116,26 +80,53 @@ export async function onRequestPost(context) {
         textContent = textContent.substring(0, breakPoint).trim();
       }
 
-      // Determine category from URL
+      // Determine category from URL with better mapping
       let category = 'Seite';
       if (url.includes('/projekte')) category = 'Projekte';
       else if (url.includes('/blog')) category = 'Blog';
-      else if (url.includes('/gallery')) category = 'Gallery';
+      else if (url.includes('/gallery')) category = 'Galerie';
       else if (url.includes('/videos')) category = 'Videos';
-      else if (url.includes('/about')) category = 'About';
-      else if (url.includes('/contact')) category = 'Contact';
+      else if (url.includes('/about')) category = 'Über mich';
+      else if (url.includes('/contact')) category = 'Kontakt';
+      else if (url === '/') category = 'Home';
 
-      // Improve title extraction slightly to avoid "index"
-      let title =
-        item.filename?.split('/').pop()?.replace('.html', '') || 'Seite';
-      if (title === 'index' || title === '') {
-        // Fallback to last segment of URL if title is generic
+      // Improved title extraction with better fallbacks
+      let title = item.filename?.split('/').pop()?.replace('.html', '') || '';
+
+      // Smart title mapping based on URL patterns
+      if (title === 'index' || title === '' || !title) {
         const segments = url.split('/').filter(Boolean);
-        if (segments.length > 0) {
-          title = segments[segments.length - 1];
-        } else {
-          title = 'Home';
+
+        if (url === '/') {
+          title = 'Startseite';
+        } else if (segments.length === 1) {
+          // Top-level pages: /projekte, /blog, etc.
+          const titleMap = {
+            projekte: 'Projekte Übersicht',
+            blog: 'Blog Übersicht',
+            gallery: 'Galerie',
+            videos: 'Videos Übersicht',
+            about: 'Über mich',
+            contact: 'Kontakt',
+          };
+          title =
+            titleMap[segments[0]] ||
+            segments[0].charAt(0).toUpperCase() + segments[0].slice(1);
+        } else if (segments.length >= 2) {
+          // Sub-pages: /blog/threejs-performance, /videos/1bl8bzd6cpy
+          const lastSegment = segments[segments.length - 1];
+          // Convert kebab-case to Title Case
+          title = lastSegment
+            .split('-')
+            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
         }
+      } else {
+        // Convert existing title from kebab-case to Title Case
+        title = title
+          .split('-')
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(' ');
       }
 
       return {
@@ -147,31 +138,14 @@ export async function onRequestPost(context) {
       };
     });
 
-    // Remove duplicates based on URL and normalize similar descriptions
+    // Remove duplicates based on URL only (vereinfacht für bessere Abdeckung)
     const uniqueResults = [];
     const seenUrls = new Set();
-    const seenDescriptions = new Set();
 
     for (const result of results) {
       // Skip if URL already seen
       if (seenUrls.has(result.url)) {
         continue;
-      }
-
-      // Normalize description for comparison (first 50 chars)
-      const descNormalized = result.description
-        .substring(0, 50)
-        .toLowerCase()
-        .trim();
-
-      // Skip if very similar description already exists for same category
-      // (Except if description is very short/empty, to avoid filtering distinct pages with missing desc)
-      if (descNormalized.length > 10) {
-        const descKey = `${result.category}:${descNormalized}`;
-        if (seenDescriptions.has(descKey)) {
-          continue;
-        }
-        seenDescriptions.add(descKey);
       }
 
       seenUrls.add(result.url);
@@ -186,9 +160,9 @@ export async function onRequestPost(context) {
       }))
       .sort((a, b) => b.score - a.score);
 
-    // Limit results per category to avoid spam
+    // Limit results per category to avoid spam (erhöht für bessere Abdeckung)
     const categoryCount = {};
-    const MAX_PER_CATEGORY = 3;
+    const MAX_PER_CATEGORY = 5; // Erhöht von 3 auf 5
     const finalResults = scoredResults.filter((result) => {
       const cat = result.category || 'Seite';
       categoryCount[cat] = (categoryCount[cat] || 0) + 1;
@@ -207,27 +181,10 @@ export async function onRequestPost(context) {
       expandedQuery: expandedQuery !== query ? expandedQuery : undefined,
     };
 
-    // Cache the result
-    if (env.SEARCH_CACHE) {
-      try {
-        await env.SEARCH_CACHE.put(
-          cacheKey,
-          JSON.stringify({
-            data: responseData,
-            timestamp: Date.now(),
-          }),
-          { expirationTtl: 3600 }, // 1 hour
-        );
-      } catch (cacheError) {
-        console.warn('Cache write error:', cacheError);
-      }
-    }
-
     return new Response(JSON.stringify(responseData), {
       headers: {
         ...corsHeaders,
-        'X-Cache': 'MISS',
-        'Cache-Control': 'public, max-age=3600',
+        'Cache-Control': 'public, max-age=300', // 5 minutes browser cache
       },
     });
   } catch (error) {
