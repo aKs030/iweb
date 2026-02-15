@@ -10,7 +10,6 @@ import {
   expandQuery,
   calculateRelevanceScore,
   normalizeUrl,
-  cleanDescription,
   createSnippet,
 } from './_search-utils.js';
 
@@ -155,10 +154,19 @@ export async function onRequestPost(context) {
       }))
       .sort((a, b) => b.score - a.score);
 
+    // Filter out low relevance results
+    // Threshold 1.0 ensures we only keep results that:
+    // 1. Have a text match (score boosted > 2.0)
+    // 2. OR have a high vector similarity (> 0.6) which triggers static boosts (> 1.6)
+    const RELEVANCE_THRESHOLD = 1.0;
+    const relevantResults = scoredResults.filter(
+      (result) => result.score >= RELEVANCE_THRESHOLD,
+    );
+
     // Limit results per category to avoid spam (erhöht für bessere Abdeckung)
     const categoryCount = {};
     const MAX_PER_CATEGORY = 5; // Erhöht von 3 auf 5
-    const finalResults = scoredResults.filter((result) => {
+    const finalResults = relevantResults.filter((result) => {
       const cat = result.category || 'Seite';
       categoryCount[cat] = (categoryCount[cat] || 0) + 1;
       return categoryCount[cat] <= MAX_PER_CATEGORY;
