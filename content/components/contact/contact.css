@@ -25,36 +25,6 @@ body.contact-page {
 
 /* `.container` override moved to `content/styles/main.css` */
 
-/* Ensure the main area fills the space between the top menu and the footer on the contact page */
-.contact-page main {
-  /* Let the main area expand to push footer down and fill available viewport */
-  flex: 1 0 auto;
-  min-height: calc(
-    100svh - var(--content-top-offset) - var(--content-bottom-offset)
-  );
-  display: flex;
-  flex-direction: column;
-  /* Center the page content vertically and horizontally within the available area */
-  justify-content: center;
-  align-items: center;
-}
-
-..contact-page main .container {
-  /* keep the container's responsive padding while preventing it from stretching */
-  width: min(100%, var(--container-width));
-  box-sizing: border-box;
-}
-
-/* Add safe bottom spacing so fixed footer / cookie bar never overlap form controls */
-.contact-page main {
-  padding-bottom: 3.5rem; /* baseline safe area for controls */
-}
-
-/* When cookie banner is visible (set by SiteFooter.js), add extra space */
-:root.footer-cookie-visible .contact-page main {
-  padding-bottom: calc(3.5rem + env(safe-area-inset-bottom, 0));
-}
-
 .contact-header {
   text-align: center;
   margin-bottom: 3rem;
