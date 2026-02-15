@@ -68,9 +68,22 @@ export class RobotAnimation {
     /** @type {ReturnType<typeof setTimeout> | null} */
     this._blinkTimer = null;
 
+    // Search Animation State
+    this.searchAnimation = {
+      active: false,
+      phase: 'idle',
+      startTime: 0,
+      startX: 0,
+      startY: 0,
+      targetX: 0,
+      targetY: 0,
+      hoverPhase: 0,
+    };
+
     // Bind loop
     this.updatePatrol = this.updatePatrol.bind(this);
     this.updateStartAnimation = this.updateStartAnimation.bind(this);
+    this.updateSearchAnimation = this.updateSearchAnimation.bind(this);
 
     this.thinkingActive = false;
     this.speakingActive = false;
@@ -377,8 +390,12 @@ export class RobotAnimation {
       return;
     }
 
-    if (!this.patrol.active || this.startAnimation.active) {
-      if (!this.startAnimation.active) {
+    if (
+      !this.patrol.active ||
+      this.startAnimation.active ||
+      this.searchAnimation.active
+    ) {
+      if (!this.startAnimation.active && !this.searchAnimation.active) {
         requestAnimationFrame(this.updatePatrol);
       }
       return;
@@ -1022,6 +1039,233 @@ export class RobotAnimation {
     // Hide thinking bubble
     if (this.robot.dom.thinking) {
       this.robot.dom.thinking.style.opacity = '0';
+    }
+  }
+
+  startSearchAnimation() {
+    if (!this.robot.dom.container) {
+      return;
+    }
+
+    // Try to find search modal or input
+    const searchModal = document.querySelector('.search-modal');
+    const searchInput = document.getElementById('search-input');
+    const targetEl = searchModal || searchInput;
+
+    if (!targetEl) {
+      return;
+    }
+
+    const targetRect = targetEl.getBoundingClientRect();
+    const windowWidth =
+      typeof globalThis !== 'undefined' ? globalThis.innerWidth : 0;
+    const windowHeight =
+      typeof globalThis !== 'undefined' ? globalThis.innerHeight : 0;
+
+    // Robot base position (fixed css)
+    const baseRight = 30;
+    const baseBottom = 30;
+    const robotSize = 80;
+
+    // Calculate target position (Top-Right of search modal area)
+    // We want the robot to be slightly to the right of the modal
+    let targetLeft = targetRect.right + 10;
+    let targetTop = targetRect.top;
+
+    // Adjust if off-screen
+    if (targetLeft + robotSize > windowWidth) {
+      // If no space on right, put it on top-right corner overlapping slightly
+      targetLeft = windowWidth - robotSize - 10;
+      targetTop = targetRect.top - robotSize + 20;
+    }
+
+    if (targetTop < 10) targetTop = 10;
+
+    // Convert to Patrol Coordinates (X from Right, Y from Bottom)
+    // patrol.x (positive = left displacement from original right pos)
+    // patrol.y (positive = up displacement from original bottom pos)
+    // Since we use translate3d(-x, y, 0) and the element is bottom-aligned:
+    // positive y moves DOWN. To move UP, we need negative y.
+
+    // Target Right CSS Position
+    const targetRightCSS = windowWidth - (targetLeft + robotSize);
+    const targetBottomCSS = windowHeight - (targetTop + robotSize);
+
+    const targetX = targetRightCSS - baseRight;
+    const targetY = -(targetBottomCSS - baseBottom);
+
+    this.searchAnimation.active = true;
+    this.searchAnimation.phase = 'approach';
+    this.searchAnimation.startTime = performance.now();
+    this.searchAnimation.startX = this.patrol.x;
+    this.searchAnimation.startY = this.patrol.y;
+    this.searchAnimation.targetX = targetX;
+    this.searchAnimation.targetY = targetY;
+
+    // Ensure robot is above search overlay
+    this.robot.dom.container.style.zIndex = '10001';
+
+    // Show magnifying glass
+    if (this.robot.dom.magnifyingGlass) {
+      this.robot.dom.magnifyingGlass.style.opacity = '1';
+    }
+
+    // Show excitement
+    this.robot.showBubble('Ah! Ich helfe suchen! 🔍');
+    setTimeout(() => this.robot.hideBubble(), 2000);
+
+    requestAnimationFrame(this.updateSearchAnimation);
+  }
+
+  stopSearchAnimation() {
+    if (!this.searchAnimation.active) return;
+
+    this.searchAnimation.phase = 'returning';
+    this.searchAnimation.startTime = performance.now();
+    this.searchAnimation.startX = this.patrol.x;
+    this.searchAnimation.startY = this.patrol.y;
+    this.searchAnimation.targetX = 0; // Return to origin x=0
+    this.searchAnimation.targetY = 0; // Return to origin y=0
+
+    // Ensure loop continues if it was stuck
+    requestAnimationFrame(this.updateSearchAnimation);
+
+    // Hide magnifying glass
+    if (this.robot.dom.magnifyingGlass) {
+      this.robot.dom.magnifyingGlass.style.opacity = '0';
+      this.robot.dom.magnifyingGlass.setAttribute(
+        'transform',
+        'translate(78, 82) rotate(-45) scale(0.9)',
+      );
+    }
+
+    // Keep loop running until returned
+  }
+
+  updateSearchAnimation() {
+    if (!this.searchAnimation.active) return;
+
+    const now = performance.now();
+    // Slower duration for more realistic flying
+    const duration = 2000;
+
+    if (
+      this.searchAnimation.phase === 'approach' ||
+      this.searchAnimation.phase === 'returning'
+    ) {
+      const elapsed = now - this.searchAnimation.startTime;
+      const t = Math.min(1, elapsed / duration);
+
+      // Use Ease In Out Cubic for realistic start/stop
+      const ease = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+      this.patrol.x =
+        this.searchAnimation.startX +
+        (this.searchAnimation.targetX - this.searchAnimation.startX) * ease;
+      this.patrol.y =
+        this.searchAnimation.startY +
+        (this.searchAnimation.targetY - this.searchAnimation.startY) * ease;
+
+      // Add bounce effect (hovering while flying)
+      this.searchAnimation.hoverPhase += 0.05;
+      const bounce = Math.sin(this.searchAnimation.hoverPhase) * 10;
+      this.patrol.y += bounce;
+
+      // Rotate towards target
+      if (this.robot.dom.svg) {
+        const isReturning = this.searchAnimation.phase === 'returning';
+        // Gentle tilt
+        const tilt = isReturning
+          ? 0
+          : 10 + Math.sin(this.searchAnimation.hoverPhase) * 2;
+        this.robot.dom.svg.style.transform = `rotate(${tilt}deg)`;
+      }
+
+      // Activate flame animation during flight
+      if (this.robot.dom.flame) {
+        const flameScale =
+          1 + Math.sin(this.searchAnimation.hoverPhase * 5) * 0.2;
+        this.robot.dom.flame.style.opacity = '1';
+        this.robot.dom.flame.style.transform = `scale(${flameScale})`;
+
+        // Randomly spawn particles for effect
+        if (Math.random() < 0.15) {
+          this.spawnFlameParticle();
+        }
+      }
+
+      this.updateRobotTransform();
+
+      if (t >= 1) {
+        if (this.searchAnimation.phase === 'returning') {
+          this.searchAnimation.active = false;
+          this.robot.dom.container.style.zIndex = ''; // Reset Z-Index
+          // Reset flame
+          if (this.robot.dom.flame) {
+            this.robot.dom.flame.style.opacity = '0';
+          }
+          this.startPatrol();
+        } else {
+          this.searchAnimation.phase = 'hover';
+          requestAnimationFrame(this.updateSearchAnimation);
+        }
+      } else {
+        requestAnimationFrame(this.updateSearchAnimation);
+      }
+    } else if (this.searchAnimation.phase === 'hover') {
+      // Hovering state with "Scanning" motion
+      this.searchAnimation.hoverPhase += 0.04;
+
+      // Bobbing up and down
+      const hoverY =
+        this.searchAnimation.targetY +
+        Math.sin(this.searchAnimation.hoverPhase) * 12;
+
+      this.patrol.x = this.searchAnimation.targetX;
+      this.patrol.y = hoverY;
+
+      // Gentle flame flicker during hover
+      if (this.robot.dom.flame) {
+        const flameScale =
+          0.8 + Math.sin(this.searchAnimation.hoverPhase * 3) * 0.15;
+        this.robot.dom.flame.style.opacity = '0.8';
+        this.robot.dom.flame.style.transform = `scale(${flameScale})`;
+      }
+
+      // Scanning with Magnifying Glass
+      if (this.robot.dom.magnifyingGlass) {
+        // Move glass slightly - Rotation only to simulate holding in hand
+        const scanRot = Math.sin(this.searchAnimation.hoverPhase * 1.5) * 12;
+
+        // Base transform: translate(78, 82) rotate(-45) scale(0.9)
+        this.robot.dom.magnifyingGlass.setAttribute(
+          'transform',
+          `translate(78, 82) rotate(${-45 + scanRot}) scale(0.9)`,
+        );
+      }
+
+      // Eyes following the scan
+      if (this.robot.dom.eyes) {
+        const eyeX = Math.sin(this.searchAnimation.hoverPhase * 2) * 2;
+        const eyeY = 2 + Math.cos(this.searchAnimation.hoverPhase * 2) * 1;
+        this.robot.dom.eyes.style.transform = `translate(${eyeX}px, ${eyeY}px)`;
+      }
+
+      this.updateRobotTransform();
+      requestAnimationFrame(this.updateSearchAnimation);
+    }
+  }
+
+  updateRobotTransform() {
+    if (!this.robot.dom.container) return;
+    this.robot.dom.container.style.transform = `translate3d(-${this.patrol.x}px, ${this.patrol.y}px, 0)`;
+    if (this.robot.dom.floatWrapper) {
+      this.robot.dom.floatWrapper.style.transform = 'rotate(0deg)';
+    }
+    // Update eyes to look interesting
+    if (this.robot.dom.eyes) {
+      // Look slightly down-left towards search
+      this.robot.dom.eyes.style.transform = 'translate(-2px, 2px)';
     }
   }
 }
