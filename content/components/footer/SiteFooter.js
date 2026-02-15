@@ -277,6 +277,15 @@ export class SiteFooter extends HTMLElement {
       acceptAll: this.querySelector('#accept-all'),
     };
 
+    // Store base footer height from CSS variables so we can temporarily extend it
+    try {
+      const root = document.documentElement;
+      const raw = getComputedStyle(root).getPropertyValue('--footer-height');
+      this._baseFooterHeight = parseFloat(raw) || 76;
+    } catch (err) {
+      this._baseFooterHeight = 76;
+    }
+
     this.setupDate();
     this.setupCookieBanner();
     this.setupScrollHandler();
@@ -301,6 +310,30 @@ export class SiteFooter extends HTMLElement {
     const shouldShow = consent !== 'accepted' && consent !== 'rejected';
 
     cookieBanner.classList.toggle('hidden', !shouldShow);
+
+    // Adjust global footer height CSS var while cookie banner is visible so
+    // page content (body / main) keeps clear of the footer overlay.
+    try {
+      const root = document.documentElement;
+      if (shouldShow) {
+        const bannerHeight = Math.round(
+          cookieBanner.getBoundingClientRect().height || 0,
+        );
+        root.style.setProperty(
+          '--footer-height',
+          `${this._baseFooterHeight + bannerHeight}px`,
+        );
+        root.classList.add('footer-cookie-visible');
+      } else {
+        root.style.setProperty(
+          '--footer-height',
+          `${this._baseFooterHeight}px`,
+        );
+        root.classList.remove('footer-cookie-visible');
+      }
+    } catch (err) {
+      /* noop */
+    }
 
     if (consent === 'accepted') {
       this.analytics.updateConsent(true);
@@ -329,7 +362,19 @@ export class SiteFooter extends HTMLElement {
         banner
       );
     styledBanner.style.animation = 'cookieSlideOut 0.3s ease-out forwards';
-    this.timers.setTimeout(() => banner.classList.add('hidden'), 300);
+    this.timers.setTimeout(() => {
+      banner.classList.add('hidden');
+      try {
+        // revert footer height when banner hidden
+        document.documentElement.style.setProperty(
+          '--footer-height',
+          `${this._baseFooterHeight}px`,
+        );
+        document.documentElement.classList.remove('footer-cookie-visible');
+      } catch (e) {
+        /* noop */
+      }
+    }, 300);
 
     CookieManager.set('cookie_consent', 'accepted');
     this.analytics.updateConsent(true);
@@ -346,7 +391,19 @@ export class SiteFooter extends HTMLElement {
         banner
       );
     styledBanner.style.animation = 'cookieSlideOut 0.3s ease-out forwards';
-    this.timers.setTimeout(() => banner.classList.add('hidden'), 300);
+    this.timers.setTimeout(() => {
+      banner.classList.add('hidden');
+      try {
+        // revert footer height when banner hidden
+        document.documentElement.style.setProperty(
+          '--footer-height',
+          `${this._baseFooterHeight}px`,
+        );
+        document.documentElement.classList.remove('footer-cookie-visible');
+      } catch (e) {
+        /* noop */
+      }
+    }, 300);
 
     CookieManager.set('cookie_consent', 'rejected');
     this.analytics.updateConsent(false);
