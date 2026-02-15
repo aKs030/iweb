@@ -508,7 +508,8 @@ const showInfoMessage = (msg) => {
 
 // Extracted API loader (top-level to reduce nested complexity)
 const loadFromApi = async (handle) => {
-  const channelId = await fetchChannelId(handle);
+  // Use channel ID directly if available, otherwise resolve from handle
+  const channelId = YOUTUBE_CHANNEL_ID || (await fetchChannelId(handle));
   if (!channelId) return { items: [], detailsMap: {} };
 
   const uploads = await fetchUploadsPlaylist(channelId);
