@@ -282,7 +282,7 @@ export class SiteFooter extends HTMLElement {
       const root = document.documentElement;
       const raw = getComputedStyle(root).getPropertyValue('--footer-height');
       this._baseFooterHeight = parseFloat(raw) || 76;
-    } catch (err) {
+    } catch {
       this._baseFooterHeight = 76;
     }
 
@@ -331,7 +331,7 @@ export class SiteFooter extends HTMLElement {
         );
         root.classList.remove('footer-cookie-visible');
       }
-    } catch (err) {
+    } catch {
       /* noop */
     }
 
@@ -371,7 +371,7 @@ export class SiteFooter extends HTMLElement {
           `${this._baseFooterHeight}px`,
         );
         document.documentElement.classList.remove('footer-cookie-visible');
-      } catch (e) {
+      } catch {
         /* noop */
       }
     }, 300);
@@ -400,7 +400,7 @@ export class SiteFooter extends HTMLElement {
           `${this._baseFooterHeight}px`,
         );
         document.documentElement.classList.remove('footer-cookie-visible');
-      } catch (e) {
+      } catch {
         /* noop */
       }
     }, 300);
