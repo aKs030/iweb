@@ -1133,9 +1133,10 @@ export class RobotAnimation {
     // Hide magnifying glass
     if (this.robot.dom.magnifyingGlass) {
       this.robot.dom.magnifyingGlass.style.opacity = '0';
+      // Reset to default left-hand position
       this.robot.dom.magnifyingGlass.setAttribute(
         'transform',
-        'translate(78, 82) rotate(-45) scale(0.9)',
+        'translate(22, 82) rotate(-45) scale(0.9)',
       );
     }
 
@@ -1233,21 +1234,19 @@ export class RobotAnimation {
       }
 
       // Scanning with Magnifying Glass
+      // Keep magnifying glass fixed relative to the robot; do NOT animate its transform here.
+      // The magnifying glass will follow robot movement because it's part of the robot SVG group.
+      // Opacity is still controlled elsewhere (show/hide on search start/stop).
       if (this.robot.dom.magnifyingGlass) {
-        // Move glass slightly - Rotation only to simulate holding in hand
-        const scanRot = Math.sin(this.searchAnimation.hoverPhase * 1.5) * 12;
-
-        // Base transform: translate(78, 82) rotate(-45) scale(0.9)
-        this.robot.dom.magnifyingGlass.setAttribute(
-          'transform',
-          `translate(78, 82) rotate(${-45 + scanRot}) scale(0.9)`,
-        );
+        // intentionally left blank to keep the glass anchored to the robot's hand
       }
 
       // Eyes following the scan
       if (this.robot.dom.eyes) {
-        const eyeX = Math.sin(this.searchAnimation.hoverPhase * 2) * 2;
-        const eyeY = 2 + Math.cos(this.searchAnimation.hoverPhase * 2) * 1;
+        // Look Left (-3) and oscillate slightly
+        const eyeX = -3 + Math.sin(this.searchAnimation.hoverPhase * 2) * 1.5;
+        // Look Up (-2) towards search bar and oscillate
+        const eyeY = -2 + Math.cos(this.searchAnimation.hoverPhase * 2) * 1;
         this.robot.dom.eyes.style.transform = `translate(${eyeX}px, ${eyeY}px)`;
       }
 
@@ -1263,9 +1262,10 @@ export class RobotAnimation {
       this.robot.dom.floatWrapper.style.transform = 'rotate(0deg)';
     }
     // Update eyes to look interesting
-    if (this.robot.dom.eyes) {
-      // Look slightly down-left towards search
-      this.robot.dom.eyes.style.transform = 'translate(-2px, 2px)';
+    // Only update if NOT in hover phase (which handles its own eye movement)
+    if (this.robot.dom.eyes && this.searchAnimation.phase !== 'hover') {
+      // Look slightly up-left towards search (assuming search is top-left)
+      this.robot.dom.eyes.style.transform = 'translate(-3px, -1px)';
     }
   }
 }
