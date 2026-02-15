@@ -1,16 +1,17 @@
 /**
  * Modern 3D Gallery App
- * @version 3.1.0
+ * @version 3.1.1
  * @last-modified 2026-02-14
  */
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import ReactDOM from 'react-dom/client';
 
 import { createLogger } from '/content/core/logger.js';
 import { AppLoadManager } from '/content/core/load-manager.js';
 import { createUseTranslation } from '/content/core/react-utils.js';
 import { createErrorBoundary } from '/content/components/ErrorBoundary.js';
+import { i18n } from '/content/core/i18n.js';
 
 import { ThreeGalleryScene } from './components/ThreeGalleryScene.js';
 // Removed static GALLERY_ITEMS import to use dynamic loading
@@ -24,15 +25,20 @@ const GalleryApp = () => {
   const { t } = useTranslation();
   const [isReady, setIsReady] = useState(false);
   const [items, setItems] = useState([]);
+  const initRef = useRef(false);
 
   useEffect(() => {
+    // Prevent double initialization
+    if (initRef.current) return;
+    initRef.current = true;
+
     const initGallery = async () => {
       try {
         log.info('Initializing 3D Gallery...');
 
         AppLoadManager.updateLoader(
           0.2,
-          t('gallery.loading.init') || 'Initializing...',
+          i18n.t('gallery.loading.init') || 'Initializing...',
         );
 
         // Fetch dynamic items from R2 API
@@ -46,9 +52,6 @@ const GalleryApp = () => {
               // For now, trust the API.
               dynamicItems = data.items;
               log.info(`Loaded ${dynamicItems.length} items from R2`);
-
-              // Inject JSON-LD Structured Data for the Gallery dynamically
-              updateGallerySchema(dynamicItems);
             }
           }
         } catch (apiErr) {
@@ -65,18 +68,21 @@ const GalleryApp = () => {
 
         AppLoadManager.updateLoader(
           0.5,
-          t('gallery.loading.prepare') || 'Preparing Scene...',
+          i18n.t('gallery.loading.prepare') || 'Preparing Scene...',
         );
         await new Promise((r) => setTimeout(r, 300));
 
         AppLoadManager.updateLoader(
           0.8,
-          t('gallery.loading.assets') || 'Loading Assets...',
+          i18n.t('gallery.loading.assets') || 'Loading Assets...',
         );
         // Preload first few textures if needed, or let Three.js handle it
         await new Promise((r) => setTimeout(r, 200));
 
-        AppLoadManager.updateLoader(1, t('gallery.loading.ready') || 'Ready');
+        AppLoadManager.updateLoader(
+          1,
+          i18n.t('gallery.loading.ready') || 'Ready',
+        );
         AppLoadManager.hideLoader(100);
 
         setIsReady(true);
@@ -91,7 +97,14 @@ const GalleryApp = () => {
     };
 
     initGallery();
-  }, [t]);
+  }, []); // Run once on mount
+
+  // Separate effect for Schema updates when items change
+  useEffect(() => {
+    if (items.length > 0) {
+      updateGallerySchema(items);
+    }
+  }, [items]);
 
   // Helper to inject Schema.org JSON-LD
   const updateGallerySchema = (galleryItems) => {
