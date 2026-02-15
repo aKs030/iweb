@@ -195,6 +195,7 @@ html {
   scroll-snap-type: y mandatory;
   scroll-padding-top: var(--content-top-offset);
   scroll-behavior: smooth;
+  background: var(--bg-primary);
 }
 
 body {
@@ -210,7 +211,7 @@ body {
     'liga' 1,
     'calt' 1;
   font-family: var(--font-inter);
-  background: var(--bg-primary);
+  background: transparent;
   color: var(--text-primary);
   margin: 0;
   text-rendering: optimizelegibility;
@@ -219,6 +220,8 @@ body {
   padding-bottom: var(--content-bottom-offset);
   padding-left: var(--safe-left);
   padding-right: var(--safe-right);
+  /* Viewport-fit: Cover - Content respektiert Safe Areas */
+  position: relative;
 }
 
 *,
