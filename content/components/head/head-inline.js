@@ -2,6 +2,7 @@ import { createLogger } from '../../core/logger.js';
 import { upsertHeadLink } from '../../core/utils.js';
 import { ENV } from '../../config/env.config.js';
 import { resourceHints } from '../../core/resource-hints.js';
+import { stripBranding } from '../../core/utils.js';
 import { headState } from './head-state.js';
 
 const log = createLogger('head-inline');
@@ -448,12 +449,8 @@ const hideBrandingFromUsers = () => {
         ua,
       );
 
-    const BRAND_REGEX =
-      /\s*(?:[—–-]\s*Abdulkerim Sesli|\|\s*Abdulkerim Sesli|Abdulkerim\s*—\s*Digital Creator Portfolio)\s*$/i;
-    const sanitize = (s) =>
-      String(s || '')
-        .replace(BRAND_REGEX, '')
-        .trim();
+    // Branding removal is handled centrally via `stripBranding()` in `content/core/utils.js`
+    const sanitize = (s) => stripBranding(s);
 
     const SHORT_MAP = {
       videos: 'Videos 🎬',

@@ -245,3 +245,17 @@ export function upsertMeta(nameOrProperty, content, isProperty = false) {
     return null;
   }
 }
+
+/**
+ * Entfernt Branding‑Suffixe aus Titles/Headings.
+ * Repräsentiert den vorher in `head-inline.js` verwendeten Branding‑Sanitizer.
+ * @param {string} input
+ * @returns {string}
+ */
+export function stripBranding(input) {
+  const BRAND_REGEX =
+    /\s*(?:[—–-]\s*Abdulkerim Sesli|\|\s*Abdulkerim Sesli|Abdulkerim\s*—\s*Digital Creator Portfolio)\s*$/i;
+  return String(input || '')
+    .replace(BRAND_REGEX, '')
+    .trim();
+}
