@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Gallery3DSystem } from './Gallery3DSystem.js';
-import { X_Icon } from './gallery-icons.js';
+import { X_Icon } from '/content/components/icons/icons.js';
 
 const h = React.createElement;
 
