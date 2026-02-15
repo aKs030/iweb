@@ -12,6 +12,7 @@ import {
   normalizeUrl,
   cleanDescription,
   createSnippet,
+  levenshteinDistance,
 } from './_search-utils.js';
 
 export async function onRequestPost(context) {
@@ -147,8 +148,54 @@ export async function onRequestPost(context) {
       uniqueResults.push(result);
     }
 
+    // Strictly filter out items that don't contain any of the ORIGINAL query tokens
+    // (allow a small fuzzy/tolerance check against title/url segments). This prevents
+    // returning posts that only matched expanded/synonym queries but are unrelated.
+    function matchesOriginalQuery(result, originalQuery) {
+      if (!originalQuery) return true;
+
+      const queryWords = originalQuery
+        .toLowerCase()
+        .split(/\s+/)
+        .filter((w) => w.length > 2);
+
+      if (queryWords.length === 0) return true;
+
+      const title = (result.title || '').toLowerCase();
+      const url = (result.url || '').toLowerCase();
+      const desc = (result.description || '').toLowerCase();
+
+      // direct token match
+      const directMatch = queryWords.some(
+        (w) => title.includes(w) || url.includes(w) || desc.includes(w),
+      );
+      if (directMatch) return true;
+
+      // fuzzy match against title words / url segments (small threshold)
+      const titleWords = title.split(/[\s\-_/]+/).filter(Boolean);
+      const urlSegments = url.split('/').filter(Boolean);
+      const thresholdFor = (word) => (word.length <= 4 ? 1 : 2);
+
+      const fuzzyInArray = (arr) =>
+        queryWords.some((q) =>
+          arr.some((t) => levenshteinDistance(q, t) <= thresholdFor(q)),
+        );
+
+      if (fuzzyInArray(titleWords) || fuzzyInArray(urlSegments)) return true;
+
+      return false;
+    }
+
+    const filteredResults = uniqueResults.filter((r) =>
+      matchesOriginalQuery(r, query),
+    );
+
+    // If filtering removed everything, fall back to the unfiltered set to avoid empty results
+    const resultsToScore =
+      filteredResults.length > 0 ? filteredResults : uniqueResults;
+
     // Calculate enhanced relevance scores and sort
-    const scoredResults = uniqueResults
+    const scoredResults = resultsToScore
       .map((result) => ({
         ...result,
         score: calculateRelevanceScore(result, query),
@@ -164,8 +211,16 @@ export async function onRequestPost(context) {
       return categoryCount[cat] <= MAX_PER_CATEGORY;
     });
 
+    // Build category counts and expose only categories with >0 results
+    const categoryCounts = finalResults.reduce((acc, r) => {
+      const c = r.category || 'Seite';
+      acc[c] = (acc[c] || 0) + 1;
+      return acc;
+    }, {});
+
     const responseData = {
       results: finalResults,
+      categories: categoryCounts,
       summary: searchData.response
         ? searchData.response.trim().substring(0, 150)
         : `${finalResults.length} ${finalResults.length === 1 ? 'Ergebnis' : 'Ergebnisse'} für "${query}"`,
