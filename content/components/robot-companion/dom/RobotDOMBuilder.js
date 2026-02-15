@@ -515,11 +515,17 @@ export class RobotDOMBuilder {
 
     leftArmGroup.append(leftArm, leftHand, magnifyingGlass);
 
+    // Right Arm Group (includes arm and hand)
+    const rightArmGroup = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'g',
+    );
+    rightArmGroup.classList.add('robot-arm', 'right');
+
     const rightArm = document.createElementNS(
       'http://www.w3.org/2000/svg',
       'path',
     );
-    rightArm.classList.add('robot-arm', 'right');
     // Normal arm for right side (Viewer's Right)
     // Mirrored from old left arm: M70,62 Q80,70 75,80
     rightArm.setAttribute('d', 'M70,62 Q80,70 75,80');
@@ -528,7 +534,19 @@ export class RobotDOMBuilder {
     rightArm.setAttribute('stroke-width', '3');
     rightArm.setAttribute('stroke-linecap', 'round');
 
-    g.append(leftArmGroup, rightArm);
+    // Right Hand (Grip Circle) - Viewer's Right
+    const rightHand = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'circle',
+    );
+    rightHand.setAttribute('cx', '75');
+    rightHand.setAttribute('cy', '80');
+    rightHand.setAttribute('r', '3'); // Simple round grip
+    rightHand.setAttribute('fill', '#40e0d0');
+
+    rightArmGroup.append(rightArm, rightHand);
+
+    g.append(leftArmGroup, rightArmGroup);
 
     return g;
   }
