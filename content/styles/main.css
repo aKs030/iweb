@@ -239,7 +239,14 @@ body {
 .contact-page main.container {
   /* Contact page is narrower and gets extra inner padding */
   max-width: 800px;
-  padding: 2rem;
+  padding: 1.25rem;
+  min-height: calc(
+    100vh - var(--content-top-offset) - var(--content-bottom-offset)
+  );
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1rem;
 }
 
 /* ===== END BASE STYLES ===== */
