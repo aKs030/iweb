@@ -796,6 +796,9 @@ export class RobotCompanion {
     };
     this.dom.particles = container.querySelector('.robot-particles');
     this.dom.thinking = container.querySelector('.robot-thinking');
+    this.dom.magnifyingGlass = container.querySelector(
+      '.robot-magnifying-glass',
+    );
 
     const anim = /** @type {any} */ (this.animationModule);
     requestAnimationFrame(() => anim.startIdleEyeMovement());

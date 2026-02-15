@@ -1105,6 +1105,11 @@ export class RobotAnimation {
     // Ensure robot is above search overlay
     this.robot.dom.container.style.zIndex = '10001';
 
+    // Show magnifying glass
+    if (this.robot.dom.magnifyingGlass) {
+      this.robot.dom.magnifyingGlass.style.opacity = '1';
+    }
+
     // Show excitement
     this.robot.showBubble('Ah! Ich helfe suchen! 🔍');
     setTimeout(() => this.robot.hideBubble(), 2000);
@@ -1122,6 +1127,13 @@ export class RobotAnimation {
     this.searchAnimation.targetX = 0; // Return to origin x=0
     this.searchAnimation.targetY = 0; // Return to origin y=0
 
+    // Hide magnifying glass
+    if (this.robot.dom.magnifyingGlass) {
+      this.robot.dom.magnifyingGlass.style.opacity = '0';
+      this.robot.dom.magnifyingGlass.style.transform =
+        'translate(72px, 75px) rotate(-45deg) scale(0.8)';
+    }
+
     // Keep loop running until returned
   }
 
@@ -1129,16 +1141,18 @@ export class RobotAnimation {
     if (!this.searchAnimation.active) return;
 
     const now = performance.now();
-    const duration = 800; // ms
+    // Slower duration for more realistic flying
+    const duration = 2000;
 
     if (
       this.searchAnimation.phase === 'approach' ||
       this.searchAnimation.phase === 'returning'
     ) {
       const elapsed = now - this.searchAnimation.startTime;
-      let t = Math.min(1, elapsed / duration);
-      // Ease Out Cubic
-      const ease = 1 - Math.pow(1 - t, 3);
+      const t = Math.min(1, elapsed / duration);
+
+      // Use Ease In Out Cubic for realistic start/stop
+      const ease = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
       this.patrol.x =
         this.searchAnimation.startX +
@@ -1147,15 +1161,18 @@ export class RobotAnimation {
         this.searchAnimation.startY +
         (this.searchAnimation.targetY - this.searchAnimation.startY) * ease;
 
-      // Add bounce effect
-      this.searchAnimation.hoverPhase += 0.1;
-      const bounce = Math.sin(this.searchAnimation.hoverPhase) * 5;
+      // Add bounce effect (hovering while flying)
+      this.searchAnimation.hoverPhase += 0.05;
+      const bounce = Math.sin(this.searchAnimation.hoverPhase) * 10;
       this.patrol.y += bounce;
 
       // Rotate towards target
       if (this.robot.dom.svg) {
         const isReturning = this.searchAnimation.phase === 'returning';
-        const tilt = isReturning ? 0 : 15;
+        // Gentle tilt
+        const tilt = isReturning
+          ? 0
+          : 10 + Math.sin(this.searchAnimation.hoverPhase) * 2;
         this.robot.dom.svg.style.transform = `rotate(${tilt}deg)`;
       }
 
@@ -1168,21 +1185,41 @@ export class RobotAnimation {
           this.startPatrol();
         } else {
           this.searchAnimation.phase = 'hover';
-          // Point at search
-          this.pointAtElement(document.getElementById('search-input'));
         }
       } else {
         requestAnimationFrame(this.updateSearchAnimation);
       }
     } else if (this.searchAnimation.phase === 'hover') {
-      // Hovering state
-      this.searchAnimation.hoverPhase += 0.05;
+      // Hovering state with "Scanning" motion
+      this.searchAnimation.hoverPhase += 0.04;
+
+      // Bobbing up and down
       const hoverY =
         this.searchAnimation.targetY +
-        Math.sin(this.searchAnimation.hoverPhase) * 8;
+        Math.sin(this.searchAnimation.hoverPhase) * 12;
 
       this.patrol.x = this.searchAnimation.targetX;
       this.patrol.y = hoverY;
+
+      // Scanning with Magnifying Glass
+      if (this.robot.dom.magnifyingGlass) {
+        // Move glass slightly
+        const scanX = Math.sin(this.searchAnimation.hoverPhase * 2) * 5;
+        const scanY = Math.cos(this.searchAnimation.hoverPhase * 2) * 3;
+        const scanRot = Math.sin(this.searchAnimation.hoverPhase * 1.5) * 10;
+
+        // Base transform: translate(72, 75) rotate(-45) scale(0.8)
+        this.robot.dom.magnifyingGlass.style.transform = `translate(${
+          72 + scanX
+        }px, ${75 + scanY}px) rotate(${-45 + scanRot}deg) scale(0.8)`;
+      }
+
+      // Eyes following the scan
+      if (this.robot.dom.eyes) {
+        const eyeX = Math.sin(this.searchAnimation.hoverPhase * 2) * 2;
+        const eyeY = 2 + Math.cos(this.searchAnimation.hoverPhase * 2) * 1;
+        this.robot.dom.eyes.style.transform = `translate(${eyeX}px, ${eyeY}px)`;
+      }
 
       this.updateRobotTransform();
       requestAnimationFrame(this.updateSearchAnimation);

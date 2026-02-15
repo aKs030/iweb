@@ -1221,6 +1221,13 @@
   opacity: 1;
 }
 
+.robot-magnifying-glass {
+  transition:
+    opacity 0.4s ease,
+    transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  pointer-events: none;
+}
+
 .robot-antenna-light.is-thinking {
   animation: thinkingAntenna 0.5s infinite alternate;
 }

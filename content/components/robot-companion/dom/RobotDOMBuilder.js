@@ -229,6 +229,10 @@ export class RobotDOMBuilder {
     const coreLight = this.createCoreLight();
     svg.appendChild(coreLight);
 
+    // Magnifying Glass (initially hidden)
+    const magnifyingGlass = this.createMagnifyingGlass();
+    svg.appendChild(magnifyingGlass);
+
     return svg;
   }
 
@@ -593,6 +597,60 @@ export class RobotDOMBuilder {
     text.textContent = '?';
 
     g.append(circle, text);
+
+    return g;
+  }
+
+  /**
+   * Create magnifying glass
+   * @returns {SVGGElement}
+   */
+  createMagnifyingGlass() {
+    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    g.classList.add('robot-magnifying-glass');
+    g.style.opacity = '0';
+    g.style.transformBox = 'fill-box';
+    g.style.transformOrigin = 'center';
+    // Position near right hand (approx 75, 80)
+    g.setAttribute('transform', 'translate(72, 75) rotate(-45) scale(0.8)');
+
+    // Handle
+    const handle = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'line',
+    );
+    handle.setAttribute('x1', '0');
+    handle.setAttribute('y1', '0');
+    handle.setAttribute('x2', '-8');
+    handle.setAttribute('y2', '8');
+    handle.setAttribute('stroke', '#cbd5e1'); // Slate-300
+    handle.setAttribute('stroke-width', '3');
+    handle.setAttribute('stroke-linecap', 'round');
+
+    // Glass Rim
+    const rim = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'circle',
+    );
+    rim.setAttribute('cx', '-14');
+    rim.setAttribute('cy', '14');
+    rim.setAttribute('r', '9');
+    rim.setAttribute('fill', 'rgba(64, 224, 208, 0.15)'); // Turquoise low opacity
+    rim.setAttribute('stroke', '#40e0d0'); // Turquoise
+    rim.setAttribute('stroke-width', '2');
+
+    // Glass Reflection
+    const reflection = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'path',
+    );
+    reflection.setAttribute('d', 'M-18,10 Q-14,10 -12,14');
+    reflection.setAttribute('fill', 'none');
+    reflection.setAttribute('stroke', 'rgba(255, 255, 255, 0.6)');
+    reflection.setAttribute('stroke-width', '1.5');
+    reflection.setAttribute('stroke-linecap', 'round');
+
+    g.append(handle, rim, reflection);
 
     return g;
   }
