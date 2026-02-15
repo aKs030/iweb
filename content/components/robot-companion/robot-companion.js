@@ -10,6 +10,8 @@ import { RobotCollision } from './modules/robot-collision.js';
 import { RobotAnimation } from './modules/robot-animation.js';
 import { RobotChat } from './modules/robot-chat.js';
 import { RobotIntelligence } from './modules/robot-intelligence.js';
+import { RobotEmotions } from './modules/robot-emotions.js';
+import { RobotContextReactions } from './modules/robot-context-reactions.js';
 import { robotCompanionTexts } from './robot-companion-texts.js';
 import { createLogger } from '../../core/logger.js';
 import { createObserver } from '../../core/intersection-observer.js';
@@ -62,6 +64,10 @@ export class RobotCompanion {
     this.chatModule = new RobotChat(this);
     /** @type {RobotIntelligence} */
     this.intelligenceModule = new RobotIntelligence(this);
+    /** @type {RobotEmotions} */
+    this.emotionsModule = new RobotEmotions(this);
+    /** @type {RobotContextReactions} */
+    this.contextReactionsModule = new RobotContextReactions(this);
 
     /** @type {boolean} Flag to prevent footer overlap check from overriding keyboard adjustment */
     this.isKeyboardAdjustmentActive = false;
@@ -427,6 +433,12 @@ export class RobotCompanion {
 
     this.setupSectionChangeDetection();
 
+    // Start context-aware reactions monitoring
+    this._setTimeout(() => {
+      this.contextReactionsModule.startMonitoring();
+      this.contextReactionsModule.setupIdleReaction(60000); // 1 minute idle
+    }, 3000);
+
     this._setTimeout(() => {
       this.animationModule.startTypeWriterKnockbackAnimation();
     }, 50);
@@ -470,6 +482,10 @@ export class RobotCompanion {
         currentContext !== this.chatModule.lastGreetedContext
       ) {
         lastContext = currentContext;
+
+        // Trigger context-aware reaction
+        this.contextReactionsModule?.reactToSection(currentContext);
+
         this._setTimeout(() => {
           if (
             this.getPageContext() === currentContext &&
@@ -798,6 +814,7 @@ export class RobotCompanion {
     this.dom.magnifyingGlass = container.querySelector(
       '.robot-magnifying-glass',
     );
+    this.dom.mouth = container.querySelector('.robot-mouth');
 
     const anim = /** @type {any} */ (this.animationModule);
     requestAnimationFrame(() => anim.startIdleEyeMovement());
