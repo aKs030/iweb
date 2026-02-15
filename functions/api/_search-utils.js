@@ -235,7 +235,24 @@ export function cleanDescription(text) {
     '',
   );
 
-  // 6. Normalize whitespace
+  // 6. Remove specific site artifacts reported by users
+  // Remove "Skip to main content" links (flexible match)
+  cleaned = cleaned.replace(/\[?Zum Hauptinhalt springen\]?(\([^)]*\))?/gi, '');
+
+  // Remove site brand/title artifacts
+  cleaned = cleaned.replace(/AKS \| WEB/g, '');
+
+  // Remove loading screen text
+  cleaned = cleaned.replace(/Initialisiere System(\.\.\.)?/gi, '');
+  cleaned = cleaned.replace(/\d+%\s*\d+%/g, ''); // Matches "0% 0%"
+
+  // Remove raw JSON/JSON-LD blocks that might have been indexed
+  // Matches any markdown code blocks
+  cleaned = cleaned.replace(/```[\s\S]*?```/g, '');
+  // Matches raw JSON-LD structure starting with @context
+  cleaned = cleaned.replace(/\{\s*"@context":[\s\S]*?\}/g, '');
+
+  // 7. Normalize whitespace
   cleaned = cleaned.replace(/\s+/g, ' ').trim();
 
   return cleaned;
