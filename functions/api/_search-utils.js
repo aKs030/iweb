@@ -251,13 +251,23 @@ export function cleanDescription(text) {
   // Remove specific UI artifacts (Cookie banner, Chat, Menu, Scroll hints)
   cleaned = cleaned.replace(/🍪\s*Wir nutzen Analytics[\s\S]*?Datenschutz/gi, '');
   cleaned = cleaned.replace(/Soll ich dir was zeigen\?×\s*\?\s*Hauptmenü geschlossen/gi, '');
+  cleaned = cleaned.replace(/Willkommen auf der Seite!×\s*\?/gi, '');
   cleaned = cleaned.replace(/Scroll to explore • Click to view/gi, '');
   cleaned = cleaned.replace(/Premium Fotogalerie Professionelle Fotografie in höchster Qualität/gi, '');
   cleaned = cleaned.replace(/Fotos Eindrücke/gi, '');
+  cleaned = cleaned.replace(/Startseite Start/gi, '');
+  cleaned = cleaned.replace(/Zitat vollständig:/gi, '');
 
   // Remove persistent 3D Earth overlay description that leaks into many pages
   cleaned = cleaned.replace(/Eine interaktive 3D-Darstellung der Erde[\s\S]*?Kamera-Modi\./gi, '');
   cleaned = cleaned.replace(/🌍 CSS-Modus/gi, '');
+
+  // Remove long footer/thank you message block often indexed
+  cleaned = cleaned.replace(/Vielen herzlichen Dank, dass Sie sich die Zeit genommen haben[\s\S]*?nächsten Besuch!/gi, '');
+  cleaned = cleaned.replace(/Schön, dass du nachts hier bist – willkommen!/gi, '');
+  cleaned = cleaned.replace(/Habe Mut, dich deines eigenen Verstandes zu bedienen\./gi, '');
+  cleaned = cleaned.replace(/Weiter Kontakt Auf Wiedersehen!/gi, '');
+  cleaned = cleaned.replace(/Nach oben Über mich/gi, '');
 
   // Remove raw JSON/JSON-LD blocks that might have been indexed
   // Matches any markdown code blocks
@@ -274,6 +284,21 @@ export function cleanDescription(text) {
   cleaned = cleaned.replace(/(\}\s*,\s*)?\{\s*"@type":[\s\S]*?\}/g, '');
   // Remove trailing JSON artifacts like `url": "..."` or closing braces
   cleaned = cleaned.replace(/,\s*"url":\s*"[^"]+"[\s\S]*/, '');
+  // Remove broken JSON arrays starting with comma or bracket sequences
+  cleaned = cleaned.replace(/^\]\s*,\s*,?\s*"[^"]+":\s*"[^"]+"/g, '');
+  cleaned = cleaned.replace(/,\s*,\s*"[^"]+":\s*"[^"]+"/g, '');
+  cleaned = cleaned.replace(/,\s*"[^"]+":\s*"[^"]+"/g, '');
+  cleaned = cleaned.replace(/\}\s*,\s*\{/g, '');
+
+  // Remove remaining isolated JSON keys and fragments
+  cleaned = cleaned.replace(/,?\s*"[^"]+":\s*"[^"]+"/g, '');
+  cleaned = cleaned.replace(/\{?\s*"[^"]+":\s*"[^"]+"\s*\}?/g, '');
+  cleaned = cleaned.replace(/^,\s*/, ''); // Remove leading comma
+
+  // Remove common footer/copyright fragments if they weren't caught by the block regex
+  cleaned = cleaned.replace(/©\s*\d{4}\s*Abdulkerim Sesli/gi, '');
+  cleaned = cleaned.replace(/Kant\s*/gi, ''); // Remove isolated "Kant" from quote block
+  cleaned = cleaned.replace(/✨\s*AI OVERVIEW/gi, ''); // Remove AI OVERVIEW label
 
   // 7. Normalize whitespace
   cleaned = cleaned.replace(/\s+/g, ' ').trim();
