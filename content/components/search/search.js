@@ -240,7 +240,13 @@ class SearchComponent {
       this.selectedIndex = -1;
 
       if (data.results.length > 0 || data.summary) {
-        this.displayResults(data.results, trimmedQuery, data.summary);
+        // Use the server-provided `categories` to decide which category groups to show
+        this.displayResults(
+          data.results,
+          trimmedQuery,
+          data.summary,
+          data.categories || {},
+        );
       } else {
         this.showEmptyState(`Keine Ergebnisse für "${trimmedQuery}"`);
       }
@@ -273,10 +279,11 @@ class SearchComponent {
           icon: item.icon || this.getIconForCategory(item.category || 'Seite'),
         })),
         summary: data.summary || '',
+        categories: data.categories || {},
       };
     } catch (e) {
       console.error('API Search Error:', e);
-      return { results: [], summary: '' };
+      return { results: [], summary: '', categories: {} };
     }
   }
 
@@ -301,7 +308,9 @@ class SearchComponent {
     }
   }
 
-  displayResults(results, query, summary = '') {
+  // Use server-provided `categories` to decide which category groups to render.
+  // Only categories present in `categories` with a count > 0 will be shown.
+  displayResults(results, query, summary = '', categories = {}) {
     const grouped = {};
     results.forEach((result) => {
       const cat = result.category || 'Allgemein';
@@ -325,21 +334,38 @@ class SearchComponent {
     }
 
     if (results.length > 0) {
+      // Prefer the server-provided category ordering/counts; fall back to grouped keys
+      const categoriesToShow = Object.keys(categories || {}).filter(
+        (c) =>
+          (categories[c] || 0) > 0 &&
+          Array.isArray(grouped[c]) &&
+          grouped[c].length > 0,
+      );
+
+      const finalCategories =
+        categoriesToShow.length > 0
+          ? categoriesToShow.sort(
+              (a, b) => (categories[b] || 0) - (categories[a] || 0),
+            )
+          : Object.keys(grouped).filter(
+              (c) => grouped[c] && grouped[c].length > 0,
+            );
+
       html += `
         <div class="search-stats">
           <span class="search-stats-icon">⚡</span>
           <span class="search-stats-count">${results.length}</span>
           ${results.length === 1 ? 'Ergebnis' : 'Ergebnisse'}
         </div>
-        ${Object.entries(grouped)
+        ${finalCategories
           .map(
-            ([category, items]) => `
+            (category) => `
           <div class="search-category-group">
             <div class="search-category-header">
-              <span>${category}</span>
+              <span>${category}${categories[category] ? ` (${categories[category]})` : ''}</span>
               <div class="search-category-divider"></div>
             </div>
-            ${items
+            ${(grouped[category] || [])
               .map((result) => this.createResultHTML(result, query))
               .join('')}
           </div>
