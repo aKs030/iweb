@@ -603,6 +603,7 @@
   align-items: center;
   gap: 12px;
   background: linear-gradient(135deg, #fff 0%, #cbd5e1 100%);
+  background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -860,7 +861,6 @@
 
 #robot-chat-send {
   background: linear-gradient(135deg, #40e0d0, #2563eb);
-  border: none;
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -1219,6 +1219,17 @@
 
 .robot-thinking.is-visible {
   opacity: 1;
+}
+
+.robot-magnifying-glass {
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+/* Glass Lens Effect */
+.robot-lens {
+  mix-blend-mode: hard-light;
+  filter: drop-shadow(0 0 5px rgba(64, 224, 208, 0.3));
 }
 
 .robot-antenna-light.is-thinking {

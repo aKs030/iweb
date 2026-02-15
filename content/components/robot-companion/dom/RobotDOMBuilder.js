@@ -209,6 +209,11 @@ export class RobotDOMBuilder {
     const body = this.createBody();
     svg.appendChild(body);
 
+    // Magnifying Glass (initially hidden)
+    // Render before arms so the handle appears to be held
+    const magnifyingGlass = this.createMagnifyingGlass();
+    svg.appendChild(magnifyingGlass);
+
     // Arms
     const arms = this.createArms();
     svg.appendChild(arms);
@@ -481,13 +486,24 @@ export class RobotDOMBuilder {
       'path',
     );
     rightArm.classList.add('robot-arm', 'right');
-    rightArm.setAttribute('d', 'M70,62 Q80,70 75,80');
+    // Adjusted grip to wrap around the handle at approx (78, 82)
+    rightArm.setAttribute('d', 'M70,62 Q82,72 78,82');
     rightArm.setAttribute('fill', 'none');
     rightArm.setAttribute('stroke', '#40e0d0');
     rightArm.setAttribute('stroke-width', '3');
     rightArm.setAttribute('stroke-linecap', 'round');
 
-    g.append(leftArm, rightArm);
+    // Hand (Grip Circle)
+    const rightHand = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'circle',
+    );
+    rightHand.setAttribute('cx', '78');
+    rightHand.setAttribute('cy', '82');
+    rightHand.setAttribute('r', '3'); // Simple round grip
+    rightHand.setAttribute('fill', '#40e0d0');
+
+    g.append(leftArm, rightArm, rightHand);
 
     return g;
   }
@@ -593,6 +609,117 @@ export class RobotDOMBuilder {
     text.textContent = '?';
 
     g.append(circle, text);
+
+    return g;
+  }
+
+  /**
+   * Create magnifying glass
+   * @returns {SVGGElement}
+   */
+  createMagnifyingGlass() {
+    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    g.classList.add('robot-magnifying-glass');
+    g.style.opacity = '0';
+    g.style.transformBox = 'fill-box';
+    g.style.transformOrigin = 'center';
+    // Position adjusted to be held by the right hand
+    // Right arm ends around 78, 82. We rotate -45deg so it points up-left.
+    g.setAttribute('transform', 'translate(78, 82) rotate(-45) scale(0.9)');
+
+    // Handle - extending from hand (0,0) UPWARDS/OUTWARDS to the lens center
+    // Previous was x2=-8, y2=8 which goes DOWN-LEFT.
+    // We want it to go UP-RIGHT relative to the hand rotation, or simply align with the arm.
+    // Let's define the handle going straight UP relative to the group's local coords (0,-10).
+    const handle = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'line',
+    );
+    handle.setAttribute('x1', '0');
+    handle.setAttribute('y1', '0');
+    handle.setAttribute('x2', '0');
+    handle.setAttribute('y2', '-12'); // Handle length 12px upwards
+    handle.setAttribute('stroke', '#cbd5e1'); // Slate-300
+    handle.setAttribute('stroke-width', '3');
+    handle.setAttribute('stroke-linecap', 'round');
+
+    // Lens Gradient (for distortion effect)
+    // Instead, I'll add a gradient definition locally or inline if possible,
+    // but cleaner to use radialGradient.
+    const gradientId = 'lensGradient';
+    // Ideally should be in createSVGDefs, but for simplicity/encapsulation:
+    const gradient = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'radialGradient',
+    );
+    gradient.setAttribute('id', gradientId);
+    gradient.setAttribute('cx', '30%');
+    gradient.setAttribute('cy', '30%');
+    gradient.setAttribute('r', '70%');
+
+    const stop1 = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'stop',
+    );
+    stop1.setAttribute('offset', '0%');
+    stop1.setAttribute('stop-color', 'rgba(255, 255, 255, 0.4)');
+
+    const stop2 = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'stop',
+    );
+    stop2.setAttribute('offset', '100%');
+    stop2.setAttribute('stop-color', 'rgba(64, 224, 208, 0.1)');
+
+    gradient.append(stop1, stop2);
+    // Append to g temporarily or better inject to svg defs.
+    // Since we don't have easy access to svg root here, we can append to the group
+    // (defs works inside group too in SVG, though usually root).
+    const localDefs = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'defs',
+    );
+    localDefs.append(gradient);
+    g.append(localDefs);
+
+    // Glass Rim
+    // Must be at the end of the handle (0, -12) + some offset for rim radius
+    const rim = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'circle',
+    );
+    rim.setAttribute('class', 'robot-lens');
+    rim.setAttribute('cx', '0');
+    rim.setAttribute('cy', '-22'); // handle end (-12) - rim radius (10)
+    rim.setAttribute('r', '10');
+    rim.setAttribute('fill', `url(#${gradientId})`);
+    rim.setAttribute('stroke', '#40e0d0');
+    rim.setAttribute('stroke-width', '2.5');
+
+    // Glass Reflection (Highlights) - relative to new rim position (0, -22)
+    const reflection = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'path',
+    );
+    // Adjust reflection path for new coords
+    reflection.setAttribute('d', 'M-5,-27 Q0,-32 5,-27');
+    reflection.setAttribute('fill', 'none');
+    reflection.setAttribute('stroke', 'rgba(255, 255, 255, 0.8)');
+    reflection.setAttribute('stroke-width', '2');
+    reflection.setAttribute('stroke-linecap', 'round');
+
+    // Secondary reflection at bottom
+    const reflection2 = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'path',
+    );
+    reflection2.setAttribute('d', 'M-3,-17 Q0,-15 3,-17');
+    reflection2.setAttribute('fill', 'none');
+    reflection2.setAttribute('stroke', 'rgba(64, 224, 208, 0.6)');
+    reflection2.setAttribute('stroke-width', '1.5');
+    reflection2.setAttribute('stroke-linecap', 'round');
+
+    g.append(handle, rim, reflection, reflection2);
 
     return g;
   }

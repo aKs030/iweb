@@ -31,7 +31,7 @@ export function sanitizeHTML(html, options = {}) {
   if (html == null) return '';
   try {
     return DOMPurify.sanitize(String(html), options);
-  } catch (err) {
+  } catch {
     // Fallback to escaping if DOMPurify fails for any reason
     return escapeHTML(String(html));
   }

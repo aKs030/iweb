@@ -142,7 +142,8 @@
 /**
  * @typedef {Object} DOMCache
  * @property {HTMLElement} [container] - Container element
- * @property {HTMLElement} [window] - Window element
+ * @property {HTMLElement} [window] - Chat window element
+ * @property {HTMLElement} [floatWrapper] - Float wrapper element
  * @property {HTMLElement} [bubble] - Bubble element
  * @property {HTMLElement} [bubbleText] - Bubble text element
  * @property {HTMLElement} [bubbleClose] - Bubble close button
@@ -159,6 +160,7 @@
  * @property {{left: Element|null, right: Element|null}} [arms] - Robot arms
  * @property {HTMLElement} [particles] - Particles element
  * @property {HTMLElement} [thinking] - Thinking indicator element
+ * @property {HTMLElement} [magnifyingGlass] - Magnifying glass element
  * @property {HTMLElement} [closeBtn] - Close button element
  * @property {Element} [footer] - Footer element
  */
@@ -172,7 +174,7 @@
  * @property {{target: EventTarget, handler: EventListenerOrEventListenerObject}|null} [inputFocus] - Input focus listener
  * @property {{target: EventTarget, handler: EventListenerOrEventListenerObject}|null} [inputBlur] - Input blur listener
  * @property {{target: EventTarget, handler: EventListenerOrEventListenerObject}|null} [heroTypingEnd] - Hero typing end listener
- * @property {Array<{target: Element, event: string, handler: EventListenerOrEventListenerObject}>} dom - DOM listeners
+ * @property {Array<{target: EventTarget, event: string, handler: EventListenerOrEventListenerObject}>} dom - DOM listeners
  */
 
 /**

@@ -202,6 +202,19 @@ export class RobotCompanion {
   setupFooterOverlapCheck() {
     let ticking = false;
     const checkOverlap = () => {
+      // Skip if search animation is active
+      if (
+        this.animationModule.searchAnimation &&
+        this.animationModule.searchAnimation.active
+      ) {
+        // Ensure bottom is reset so transform works from base position
+        if (this.dom.container.style.bottom) {
+          this.dom.container.style.bottom = '';
+        }
+        ticking = false;
+        return;
+      }
+
       // If keyboard adjustment is active, skip overlap check to prevent overriding style.bottom
       if (this.isKeyboardAdjustmentActive) {
         ticking = false;
@@ -260,6 +273,14 @@ export class RobotCompanion {
     if (typeof globalThis === 'undefined' || !globalThis.visualViewport) return;
 
     this._handleViewportResize = () => {
+      // Skip if search animation is active
+      if (
+        this.animationModule.searchAnimation &&
+        this.animationModule.searchAnimation.active
+      ) {
+        return;
+      }
+
       if (!this.dom.window || !this.dom.container) return;
 
       // If chat is closed, ensure we clean up state and do nothing else
@@ -759,7 +780,6 @@ export class RobotCompanion {
 
     // Cache DOM references
     this.dom.container = container;
-    // @ts-ignore - floatWrapper missing in DOMCache type but exists in DOM
     this.dom.floatWrapper = container.querySelector('.robot-float-wrapper');
     this.dom.bubble = document.getElementById('robot-bubble');
     this.dom.bubbleText = document.getElementById('robot-bubble-text');
@@ -775,6 +795,9 @@ export class RobotCompanion {
     };
     this.dom.particles = container.querySelector('.robot-particles');
     this.dom.thinking = container.querySelector('.robot-thinking');
+    this.dom.magnifyingGlass = container.querySelector(
+      '.robot-magnifying-glass',
+    );
 
     const anim = /** @type {any} */ (this.animationModule);
     requestAnimationFrame(() => anim.startIdleEyeMovement());
@@ -823,6 +846,28 @@ export class RobotCompanion {
       target: this.dom.bubbleClose,
       event: 'click',
       handler: _onBubbleClose,
+    });
+
+    // Search Events
+    const _onSearchOpened = () => {
+      this.animationModule.startSearchAnimation();
+    };
+    const _onSearchClosed = () => {
+      this.animationModule.stopSearchAnimation();
+    };
+
+    window.addEventListener('search:opened', _onSearchOpened);
+    window.addEventListener('search:closed', _onSearchClosed);
+
+    this._eventListeners.dom.push({
+      target: window,
+      event: 'search:opened',
+      handler: _onSearchOpened,
+    });
+    this._eventListeners.dom.push({
+      target: window,
+      event: 'search:closed',
+      handler: _onSearchClosed,
     });
   }
 
