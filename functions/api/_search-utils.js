@@ -280,3 +280,75 @@ export function cleanDescription(text) {
 
   return cleaned;
 }
+
+/**
+ * Creates a smart text snippet focused on the query terms
+ * @param {string} content - Full text content
+ * @param {string} query - Search query
+ * @param {number} maxLength - Maximum length of the snippet (default: 160)
+ * @returns {string} Context-aware snippet
+ */
+export function createSnippet(content, query, maxLength = 160) {
+  if (!content || !query) return content ? content.substring(0, maxLength) : '';
+
+  const cleanContent = cleanDescription(content);
+  const words = query.toLowerCase().split(/\s+/).filter(w => w.length > 2);
+
+  // If no valid query words, return start of content
+  if (words.length === 0) {
+    return cleanContent.substring(0, maxLength) + (cleanContent.length > maxLength ? '...' : '');
+  }
+
+  // Find the first occurrence of any query word
+  let bestIndex = -1;
+  const contentLower = cleanContent.toLowerCase();
+
+  for (const word of words) {
+    const index = contentLower.indexOf(word);
+    if (index !== -1) {
+      if (bestIndex === -1 || index < bestIndex) {
+        bestIndex = index;
+      }
+    }
+  }
+
+  // If match found, center the window around it
+  if (bestIndex !== -1) {
+    const halfLength = Math.floor(maxLength / 2);
+    let start = Math.max(0, bestIndex - halfLength);
+    let end = start + maxLength;
+
+    // Adjust if window goes beyond end
+    if (end > cleanContent.length) {
+      end = cleanContent.length;
+      start = Math.max(0, end - maxLength);
+    }
+
+    // Try to align start to a word boundary
+    if (start > 0) {
+      const spaceIndex = cleanContent.lastIndexOf(' ', start);
+      if (spaceIndex !== -1 && start - spaceIndex < 20) {
+        start = spaceIndex + 1;
+      }
+    }
+
+    // Try to align end to a word boundary
+    if (end < cleanContent.length) {
+      const spaceIndex = cleanContent.indexOf(' ', end);
+      if (spaceIndex !== -1 && spaceIndex - end < 20) {
+        end = spaceIndex;
+      }
+    }
+
+    let snippet = cleanContent.substring(start, end);
+
+    // Add ellipsis if needed
+    if (start > 0) snippet = '...' + snippet;
+    if (end < cleanContent.length) snippet = snippet + '...';
+
+    return snippet;
+  }
+
+  // Fallback: Return start of content if no match found
+  return cleanContent.substring(0, maxLength) + (cleanContent.length > maxLength ? '...' : '');
+}
