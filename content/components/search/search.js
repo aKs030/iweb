@@ -187,6 +187,7 @@ class SearchComponent {
 
     document.body.style.overflow = 'hidden';
 
+    window.dispatchEvent(new CustomEvent('search:opened'));
     _log.info('Search opened');
   }
 
@@ -198,6 +199,7 @@ class SearchComponent {
     if (this.input) this.input.value = '';
     if (this.searchTimeout) clearTimeout(this.searchTimeout);
     document.body.style.overflow = '';
+    window.dispatchEvent(new CustomEvent('search:closed'));
     _log.info('Search closed');
   }
 

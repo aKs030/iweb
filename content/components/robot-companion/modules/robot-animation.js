@@ -68,9 +68,22 @@ export class RobotAnimation {
     /** @type {ReturnType<typeof setTimeout> | null} */
     this._blinkTimer = null;
 
+    // Search Animation State
+    this.searchAnimation = {
+      active: false,
+      phase: 'idle',
+      startTime: 0,
+      startX: 0,
+      startY: 0,
+      targetX: 0,
+      targetY: 0,
+      hoverPhase: 0,
+    };
+
     // Bind loop
     this.updatePatrol = this.updatePatrol.bind(this);
     this.updateStartAnimation = this.updateStartAnimation.bind(this);
+    this.updateSearchAnimation = this.updateSearchAnimation.bind(this);
 
     this.thinkingActive = false;
     this.speakingActive = false;
@@ -377,8 +390,12 @@ export class RobotAnimation {
       return;
     }
 
-    if (!this.patrol.active || this.startAnimation.active) {
-      if (!this.startAnimation.active) {
+    if (
+      !this.patrol.active ||
+      this.startAnimation.active ||
+      this.searchAnimation.active
+    ) {
+      if (!this.startAnimation.active && !this.searchAnimation.active) {
         requestAnimationFrame(this.updatePatrol);
       }
       return;
@@ -1022,6 +1039,166 @@ export class RobotAnimation {
     // Hide thinking bubble
     if (this.robot.dom.thinking) {
       this.robot.dom.thinking.style.opacity = '0';
+    }
+  }
+
+  startSearchAnimation() {
+    if (!this.robot.dom.container) {
+      return;
+    }
+
+    // Try to find search modal or input
+    const searchModal = document.querySelector('.search-modal');
+    const searchInput = document.getElementById('search-input');
+    const targetEl = searchModal || searchInput;
+
+    if (!targetEl) {
+      return;
+    }
+
+    const targetRect = targetEl.getBoundingClientRect();
+    const windowWidth =
+      typeof globalThis !== 'undefined' ? globalThis.innerWidth : 0;
+    const windowHeight =
+      typeof globalThis !== 'undefined' ? globalThis.innerHeight : 0;
+
+    // Robot base position (fixed css)
+    const baseRight = 30;
+    const baseBottom = 30;
+    const robotSize = 80;
+
+    // Calculate target position (Top-Right of search modal area)
+    // We want the robot to be slightly to the right of the modal
+    let targetLeft = targetRect.right + 10;
+    let targetTop = targetRect.top;
+
+    // Adjust if off-screen
+    if (targetLeft + robotSize > windowWidth) {
+      // If no space on right, put it on top-right corner overlapping slightly
+      targetLeft = windowWidth - robotSize - 10;
+      targetTop = targetRect.top - robotSize + 20;
+    }
+
+    if (targetTop < 10) targetTop = 10;
+
+    // Convert to Patrol Coordinates (X from Right, Y from Bottom)
+    // patrol.x (positive = left displacement from original right pos)
+    // patrol.y (positive = up displacement from original bottom pos)
+    // Since we use translate3d(-x, y, 0) and the element is bottom-aligned:
+    // positive y moves DOWN. To move UP, we need negative y.
+
+    // Target Right CSS Position
+    const targetRightCSS = windowWidth - (targetLeft + robotSize);
+    const targetBottomCSS = windowHeight - (targetTop + robotSize);
+
+    const targetX = targetRightCSS - baseRight;
+    const targetY = -(targetBottomCSS - baseBottom);
+
+    this.searchAnimation.active = true;
+    this.searchAnimation.phase = 'approach';
+    this.searchAnimation.startTime = performance.now();
+    this.searchAnimation.startX = this.patrol.x;
+    this.searchAnimation.startY = this.patrol.y;
+    this.searchAnimation.targetX = targetX;
+    this.searchAnimation.targetY = targetY;
+
+    // Ensure robot is above search overlay
+    this.robot.dom.container.style.zIndex = '10001';
+
+    // Show excitement
+    this.robot.showBubble('Ah! Ich helfe suchen! 🔍');
+    setTimeout(() => this.robot.hideBubble(), 2000);
+
+    requestAnimationFrame(this.updateSearchAnimation);
+  }
+
+  stopSearchAnimation() {
+    if (!this.searchAnimation.active) return;
+
+    this.searchAnimation.phase = 'returning';
+    this.searchAnimation.startTime = performance.now();
+    this.searchAnimation.startX = this.patrol.x;
+    this.searchAnimation.startY = this.patrol.y;
+    this.searchAnimation.targetX = 0; // Return to origin x=0
+    this.searchAnimation.targetY = 0; // Return to origin y=0
+
+    // Keep loop running until returned
+  }
+
+  updateSearchAnimation() {
+    if (!this.searchAnimation.active) return;
+
+    const now = performance.now();
+    const duration = 800; // ms
+
+    if (
+      this.searchAnimation.phase === 'approach' ||
+      this.searchAnimation.phase === 'returning'
+    ) {
+      const elapsed = now - this.searchAnimation.startTime;
+      let t = Math.min(1, elapsed / duration);
+      // Ease Out Cubic
+      const ease = 1 - Math.pow(1 - t, 3);
+
+      this.patrol.x =
+        this.searchAnimation.startX +
+        (this.searchAnimation.targetX - this.searchAnimation.startX) * ease;
+      this.patrol.y =
+        this.searchAnimation.startY +
+        (this.searchAnimation.targetY - this.searchAnimation.startY) * ease;
+
+      // Add bounce effect
+      this.searchAnimation.hoverPhase += 0.1;
+      const bounce = Math.sin(this.searchAnimation.hoverPhase) * 5;
+      this.patrol.y += bounce;
+
+      // Rotate towards target
+      if (this.robot.dom.svg) {
+        const isReturning = this.searchAnimation.phase === 'returning';
+        const tilt = isReturning ? 0 : 15;
+        this.robot.dom.svg.style.transform = `rotate(${tilt}deg)`;
+      }
+
+      this.updateRobotTransform();
+
+      if (t >= 1) {
+        if (this.searchAnimation.phase === 'returning') {
+          this.searchAnimation.active = false;
+          this.robot.dom.container.style.zIndex = ''; // Reset Z-Index
+          this.startPatrol();
+        } else {
+          this.searchAnimation.phase = 'hover';
+          // Point at search
+          this.pointAtElement(document.getElementById('search-input'));
+        }
+      } else {
+        requestAnimationFrame(this.updateSearchAnimation);
+      }
+    } else if (this.searchAnimation.phase === 'hover') {
+      // Hovering state
+      this.searchAnimation.hoverPhase += 0.05;
+      const hoverY =
+        this.searchAnimation.targetY +
+        Math.sin(this.searchAnimation.hoverPhase) * 8;
+
+      this.patrol.x = this.searchAnimation.targetX;
+      this.patrol.y = hoverY;
+
+      this.updateRobotTransform();
+      requestAnimationFrame(this.updateSearchAnimation);
+    }
+  }
+
+  updateRobotTransform() {
+    if (!this.robot.dom.container) return;
+    this.robot.dom.container.style.transform = `translate3d(-${this.patrol.x}px, ${this.patrol.y}px, 0)`;
+    if (this.robot.dom.floatWrapper) {
+      this.robot.dom.floatWrapper.style.transform = 'rotate(0deg)';
+    }
+    // Update eyes to look interesting
+    if (this.robot.dom.eyes) {
+      // Look slightly down-left towards search
+      this.robot.dom.eyes.style.transform = 'translate(-2px, 2px)';
     }
   }
 }
