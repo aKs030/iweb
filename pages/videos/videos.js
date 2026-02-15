@@ -26,7 +26,6 @@ import { i18n } from '/content/core/i18n.js';
 import { FAVICON_512 } from '../../content/config/site-config.js';
 import { ENV } from '../../content/config/env.config.js';
 import {
-  fetchChannelId,
   fetchUploadsPlaylist,
   fetchPlaylistItems,
   searchChannelVideos,
@@ -37,7 +36,6 @@ const log = createLogger('videos');
 
 // Initialize YouTube configuration
 const YOUTUBE_CHANNEL_ID = ENV.YOUTUBE_CHANNEL_ID || 'UCTGRherjM4iuIn86xxubuPg';
-const YOUTUBE_CHANNEL_HANDLE = ENV.YOUTUBE_CHANNEL_HANDLE || 'aks.030';
 
 // Helper: replace a thumbnail button with an autoplaying iframe
 const activateThumb = (btn) => {
@@ -296,8 +294,6 @@ const setVideoStatus = (msg) => {
 };
 
 const loadLatestVideos = async () => {
-  const handle = (YOUTUBE_CHANNEL_HANDLE || 'aks.030').replace(/^@/, '');
-
   // Bind any existing static thumbnails (works without API)
   try {
     document.querySelectorAll('.video-thumb').forEach(bindThumb);
@@ -328,7 +324,7 @@ const loadLatestVideos = async () => {
     }
 
     AppLoadManager.updateLoader(0.3, i18n.t('videos.connecting'));
-    const { items, detailsMap } = await loadFromApi(handle);
+    const { items, detailsMap } = await loadFromApi();
 
     // Check for deep link /videos/VIDEO_ID
     const path = window.location.pathname;
@@ -507,10 +503,13 @@ const showInfoMessage = (msg) => {
 };
 
 // Extracted API loader (top-level to reduce nested complexity)
-const loadFromApi = async (handle) => {
-  // Use channel ID directly if available, otherwise resolve from handle
-  const channelId = YOUTUBE_CHANNEL_ID || (await fetchChannelId(handle));
-  if (!channelId) return { items: [], detailsMap: {} };
+const loadFromApi = async () => {
+  // Use channel ID directly - no fallback to handle search
+  const channelId = YOUTUBE_CHANNEL_ID;
+  if (!channelId) {
+    log.error('No YouTube channel ID configured');
+    return { items: [], detailsMap: {} };
+  }
 
   const uploads = await fetchUploadsPlaylist(channelId);
   let items = [];

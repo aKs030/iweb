@@ -10,50 +10,6 @@ import { fetchJSON } from '/content/core/fetch.js';
 const log = createLogger('YouTubeAPI');
 
 /**
- * Fetch YouTube channel ID from handle or validate existing ID
- * @param {string} handle - Channel handle or ID
- * @returns {Promise<string|null>} - Channel ID or null
- */
-export const fetchChannelId = async (handle) => {
-  // Check if already a valid channel ID
-  if (/^UC[0-9A-Za-z_-]{22,}$/.test(String(handle || ''))) {
-    return String(handle).trim();
-  }
-
-  const url = `/api/youtube/search?part=snippet&type=channel&q=${encodeURIComponent(
-    handle,
-  )}&maxResults=5`;
-  const json = await fetchJSON(url);
-  const items = json?.items || [];
-
-  if (!items.length) return null;
-
-  const ids = items
-    .map((i) => i?.id?.channelId || i?.snippet?.channelId)
-    .filter(Boolean);
-
-  if (!ids.length) return null;
-  if (ids.length === 1) return ids[0];
-
-  // Disambiguate multiple channels
-  try {
-    const chUrl = `/api/youtube/channels?part=statistics,contentDetails&id=${ids.join(
-      ',',
-    )}`;
-    const chJson = await fetchJSON(chUrl);
-    const chItems = chJson?.items || [];
-    const preferred = chItems.find(
-      (c) => Number(c?.statistics?.videoCount) > 0,
-    );
-    if (preferred?.id) return preferred.id;
-  } catch (e) {
-    log.warn('Could not disambiguate channel:', e);
-  }
-
-  return ids[0];
-};
-
-/**
  * Fetch uploads playlist ID for a channel
  * @param {string} channelId - YouTube channel ID
  * @returns {Promise<string|null>} - Uploads playlist ID or null

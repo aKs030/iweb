@@ -15,7 +15,7 @@ binding = "AI"
 
 # Umgebungsvariablen für Production
 [env.production]
-vars = { MAX_SEARCH_RESULTS = "10", RAG_ID = "wispy-pond-1055", YOUTUBE_CHANNEL_ID = "UCTGRherjM4iuIn86xxubuPg", YOUTUBE_CHANNEL_HANDLE = "aks.030" }
+vars = { MAX_SEARCH_RESULTS = "10", RAG_ID = "wispy-pond-1055", YOUTUBE_CHANNEL_ID = "UCTGRherjM4iuIn86xxubuPg" }
 
 [[env.production.r2_buckets]]
 binding = "GALLERY_BUCKET"
@@ -26,7 +26,7 @@ binding = "AI"
 
 # Umgebungsvariablen für Preview
 [env.preview]
-vars = { MAX_SEARCH_RESULTS = "10", YOUTUBE_CHANNEL_ID = "UCTGRherjM4iuIn86xxubuPg", YOUTUBE_CHANNEL_HANDLE = "aks.030" }
+vars = { MAX_SEARCH_RESULTS = "10", YOUTUBE_CHANNEL_ID = "UCTGRherjM4iuIn86xxubuPg" }
 
 [[env.preview.r2_buckets]]
 binding = "GALLERY_BUCKET"
