@@ -639,95 +639,209 @@ export class RobotDOMBuilder {
 
     // Handle - extending from hand (0,0) UPWARDS/OUTWARDS to the lens center
     // Let's define the handle going straight UP relative to the group's local coords (0,-10).
-    const handle = document.createElementNS(
+    // Improved handle with slight taper/shading simulation (two lines)
+    const handleBase = document.createElementNS(
       'http://www.w3.org/2000/svg',
       'line',
     );
-    handle.setAttribute('x1', '0');
-    handle.setAttribute('y1', '0');
-    handle.setAttribute('x2', '0');
-    handle.setAttribute('y2', '-12'); // Handle length 12px upwards
-    handle.setAttribute('stroke', '#cbd5e1'); // Slate-300
-    handle.setAttribute('stroke-width', '3');
-    handle.setAttribute('stroke-linecap', 'round');
+    handleBase.setAttribute('x1', '0');
+    handleBase.setAttribute('y1', '1'); // Slightly inside hand
+    handleBase.setAttribute('x2', '0');
+    handleBase.setAttribute('y2', '-12'); // Handle length 13px
+    handleBase.setAttribute('stroke', '#64748b'); // Slate-500 (darker base)
+    handleBase.setAttribute('stroke-width', '4');
+    handleBase.setAttribute('stroke-linecap', 'butt');
 
-    // Lens Gradient (for distortion effect)
-    // Instead, I'll add a gradient definition locally or inline if possible,
-    // but cleaner to use radialGradient.
-    const gradientId = 'lensGradient';
-    // Ideally should be in createSVGDefs, but for simplicity/encapsulation:
-    const gradient = document.createElementNS(
+    const handleHighlight = document.createElementNS(
       'http://www.w3.org/2000/svg',
-      'radialGradient',
+      'line',
     );
-    gradient.setAttribute('id', gradientId);
-    gradient.setAttribute('cx', '30%');
-    gradient.setAttribute('cy', '30%');
-    gradient.setAttribute('r', '70%');
+    handleHighlight.setAttribute('x1', '-0.5');
+    handleHighlight.setAttribute('y1', '1');
+    handleHighlight.setAttribute('x2', '-0.5');
+    handleHighlight.setAttribute('y2', '-12');
+    handleHighlight.setAttribute('stroke', '#94a3b8'); // Slate-400 (lighter highlight)
+    handleHighlight.setAttribute('stroke-width', '1.5');
+    handleHighlight.setAttribute('stroke-linecap', 'butt');
 
-    const stop1 = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'stop',
-    );
-    stop1.setAttribute('offset', '0%');
-    stop1.setAttribute('stop-color', 'rgba(255, 255, 255, 0.4)');
-
-    const stop2 = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'stop',
-    );
-    stop2.setAttribute('offset', '100%');
-    stop2.setAttribute('stop-color', 'rgba(64, 224, 208, 0.1)');
-
-    gradient.append(stop1, stop2);
-    // Append to g temporarily or better inject to svg defs.
-    // Since we don't have easy access to svg root here, we can append to the group
-    // (defs works inside group too in SVG, though usually root).
+    // Lens Gradients
     const localDefs = document.createElementNS(
       'http://www.w3.org/2000/svg',
       'defs',
     );
-    localDefs.append(gradient);
+
+    // 1. Main Glass Gradient (Convex feeling)
+    const glassGradientId = 'glassGradient';
+    const glassGradient = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'radialGradient',
+    );
+    glassGradient.setAttribute('id', glassGradientId);
+    glassGradient.setAttribute('cx', '35%');
+    glassGradient.setAttribute('cy', '35%');
+    glassGradient.setAttribute('r', '65%');
+
+    // Highlight top-left
+    const stopG1 = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'stop',
+    );
+    stopG1.setAttribute('offset', '0%');
+    stopG1.setAttribute('stop-color', 'rgba(255, 255, 255, 0.5)'); // Bright spot
+
+    // Mid-tone (clear glass)
+    const stopG2 = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'stop',
+    );
+    stopG2.setAttribute('offset', '50%');
+    stopG2.setAttribute('stop-color', 'rgba(200, 240, 255, 0.1)'); // Very subtle blue tint
+
+    // Shadow edge (bottom-right)
+    const stopG3 = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'stop',
+    );
+    stopG3.setAttribute('offset', '100%');
+    stopG3.setAttribute('stop-color', 'rgba(64, 224, 208, 0.2)'); // Cyan tint at edge
+
+    glassGradient.append(stopG1, stopG2, stopG3);
+
+    // 2. Metal Rim Gradient (Cylindrical look)
+    const rimGradientId = 'rimGradient';
+    const rimGradient = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'linearGradient',
+    );
+    rimGradient.setAttribute('id', rimGradientId);
+    rimGradient.setAttribute('x1', '0%');
+    rimGradient.setAttribute('y1', '0%');
+    rimGradient.setAttribute('x2', '100%');
+    rimGradient.setAttribute('y2', '100%');
+
+    const stopR1 = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'stop',
+    );
+    stopR1.setAttribute('offset', '0%');
+    stopR1.setAttribute('stop-color', '#e2e8f0'); // Light grey
+
+    const stopR2 = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'stop',
+    );
+    stopR2.setAttribute('offset', '50%');
+    stopR2.setAttribute('stop-color', '#94a3b8'); // Mid grey
+
+    const stopR3 = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'stop',
+    );
+    stopR3.setAttribute('offset', '100%');
+    stopR3.setAttribute('stop-color', '#475569'); // Dark grey
+
+    rimGradient.append(stopR1, stopR2, stopR3);
+
+    localDefs.append(glassGradient, rimGradient);
     g.append(localDefs);
 
-    // Glass Rim
-    // Must be at the end of the handle (0, -12) + some offset for rim radius
+    // Connector (between handle and rim)
+    const connector = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'rect',
+    );
+    connector.setAttribute('x', '-2');
+    connector.setAttribute('y', '-14');
+    connector.setAttribute('width', '4');
+    connector.setAttribute('height', '3');
+    connector.setAttribute('rx', '1');
+    connector.setAttribute('fill', '#64748b');
+
+    // Glass Rim (Outer Metal Ring)
+    // Center at (0, -24) approx (handle -12, + connector 2 + radius 10)
+    // Let's adjust center to (0, -25) for 13px radius
+    const cx = 0;
+    const cy = -25;
+    const radius = 12;
+
     const rim = document.createElementNS(
       'http://www.w3.org/2000/svg',
       'circle',
     );
-    rim.setAttribute('class', 'robot-lens');
-    rim.setAttribute('cx', '0');
-    rim.setAttribute('cy', '-22'); // handle end (-12) - rim radius (10)
-    rim.setAttribute('r', '10');
-    rim.setAttribute('fill', `url(#${gradientId})`);
-    rim.setAttribute('stroke', '#40e0d0');
-    rim.setAttribute('stroke-width', '2.5');
+    rim.setAttribute('cx', String(cx));
+    rim.setAttribute('cy', String(cy));
+    rim.setAttribute('r', String(radius));
+    rim.setAttribute('fill', 'none');
+    rim.setAttribute('stroke', `url(#${rimGradientId})`);
+    rim.setAttribute('stroke-width', '3'); // Thicker metal rim
 
-    // Glass Reflection (Highlights) - relative to new rim position (0, -22)
-    const reflection = document.createElementNS(
+    // Inner Lens Surface
+    const lens = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'circle',
+    );
+    lens.setAttribute('class', 'robot-lens');
+    lens.setAttribute('cx', String(cx));
+    lens.setAttribute('cy', String(cy));
+    lens.setAttribute('r', String(radius - 1.5)); // Slightly smaller to fit inside rim
+    lens.setAttribute('fill', `url(#${glassGradientId})`);
+    // Optional: Subtle inner stroke for depth
+    lens.setAttribute('stroke', 'rgba(255, 255, 255, 0.3)');
+    lens.setAttribute('stroke-width', '0.5');
+
+    // Realistic Reflections (Specular Highlights)
+    // 1. Sharp top-left highlight (simulating light source)
+    const reflection1 = document.createElementNS(
       'http://www.w3.org/2000/svg',
       'path',
     );
-    // Adjust reflection path for new coords
-    reflection.setAttribute('d', 'M-5,-27 Q0,-32 5,-27');
-    reflection.setAttribute('fill', 'none');
-    reflection.setAttribute('stroke', 'rgba(255, 255, 255, 0.8)');
-    reflection.setAttribute('stroke-width', '2');
-    reflection.setAttribute('stroke-linecap', 'round');
+    // Adjusted curve for new coords
+    reflection1.setAttribute(
+      'd',
+      `M${cx - 5},${cy - 6} Q${cx},${cy - 10} ${cx + 5},${cy - 6}`,
+    );
+    reflection1.setAttribute('fill', 'none');
+    reflection1.setAttribute('stroke', 'rgba(255, 255, 255, 0.9)');
+    reflection1.setAttribute('stroke-width', '2');
+    reflection1.setAttribute('stroke-linecap', 'round');
+    reflection1.setAttribute('filter', 'blur(0.5px)'); // Soften slightly
 
-    // Secondary reflection at bottom
+    // 2. Softer, larger reflection
     const reflection2 = document.createElementNS(
       'http://www.w3.org/2000/svg',
+      'ellipse',
+    );
+    reflection2.setAttribute('cx', String(cx - 4));
+    reflection2.setAttribute('cy', String(cy - 4));
+    reflection2.setAttribute('rx', '4');
+    reflection2.setAttribute('ry', '2');
+    reflection2.setAttribute('transform', `rotate(-45, ${cx - 4}, ${cy - 4})`);
+    reflection2.setAttribute('fill', 'rgba(255, 255, 255, 0.2)');
+
+    // 3. Bottom-right rim reflection (internal reflection)
+    const reflection3 = document.createElementNS(
+      'http://www.w3.org/2000/svg',
       'path',
     );
-    reflection2.setAttribute('d', 'M-3,-17 Q0,-15 3,-17');
-    reflection2.setAttribute('fill', 'none');
-    reflection2.setAttribute('stroke', 'rgba(64, 224, 208, 0.6)');
-    reflection2.setAttribute('stroke-width', '1.5');
-    reflection2.setAttribute('stroke-linecap', 'round');
+    reflection3.setAttribute(
+      'd',
+      `M${cx - 4},${cy + 6} Q${cx},${cy + 8} ${cx + 4},${cy + 6}`,
+    );
+    reflection3.setAttribute('fill', 'none');
+    reflection3.setAttribute('stroke', 'rgba(64, 224, 208, 0.4)'); // Cyan glow
+    reflection3.setAttribute('stroke-width', '1.5');
+    reflection3.setAttribute('stroke-linecap', 'round');
 
-    g.append(handle, rim, reflection, reflection2);
+    g.append(
+      handleBase,
+      handleHighlight,
+      connector,
+      lens,
+      rim,
+      reflection1,
+      reflection2,
+      reflection3,
+    );
 
     return g;
   }
