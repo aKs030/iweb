@@ -309,7 +309,7 @@ export class CardManager {
             const groupHeightPx = Math.max(0, groupBottom - groupTop);
 
             const canvasRect = this.renderer.domElement.getBoundingClientRect();
-            const canvasHeight = canvasRect.height || window.innerHeight;
+            const viewportHeight = window.innerHeight || canvasRect.height || 0;
 
             const safeTop =
               parseFloat(
@@ -328,7 +328,9 @@ export class CardManager {
             const footerPx = 40 + safeBottom;
 
             const safeAreaTopPx = headerPx;
-            const safeAreaBottomPx = Math.max(0, canvasHeight - footerPx);
+            // Use viewport coordinates for bottom of safe area so it matches
+            // getCardScreenRects() which returns viewport-relative values.
+            const safeAreaBottomPx = Math.max(0, viewportHeight - footerPx);
             const safeAreaHeight = Math.max(
               0,
               safeAreaBottomPx - safeAreaTopPx,
