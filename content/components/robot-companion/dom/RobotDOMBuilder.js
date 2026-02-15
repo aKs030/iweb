@@ -624,18 +624,21 @@ export class RobotDOMBuilder {
     g.style.transformBox = 'fill-box';
     g.style.transformOrigin = 'center';
     // Position adjusted to be held by the right hand
-    // Right arm ends around 75, 80
-    g.setAttribute('transform', 'translate(78, 82) rotate(-35) scale(0.9)');
+    // Right arm ends around 78, 82. We rotate -45deg so it points up-left.
+    g.setAttribute('transform', 'translate(78, 82) rotate(-45) scale(0.9)');
 
-    // Handle
+    // Handle - extending from hand (0,0) UPWARDS/OUTWARDS to the lens center
+    // Previous was x2=-8, y2=8 which goes DOWN-LEFT.
+    // We want it to go UP-RIGHT relative to the hand rotation, or simply align with the arm.
+    // Let's define the handle going straight UP relative to the group's local coords (0,-10).
     const handle = document.createElementNS(
       'http://www.w3.org/2000/svg',
       'line',
     );
     handle.setAttribute('x1', '0');
     handle.setAttribute('y1', '0');
-    handle.setAttribute('x2', '-8');
-    handle.setAttribute('y2', '8');
+    handle.setAttribute('x2', '0');
+    handle.setAttribute('y2', '-12'); // Handle length 12px upwards
     handle.setAttribute('stroke', '#cbd5e1'); // Slate-300
     handle.setAttribute('stroke-width', '3');
     handle.setAttribute('stroke-linecap', 'round');
@@ -680,24 +683,25 @@ export class RobotDOMBuilder {
     g.append(localDefs);
 
     // Glass Rim
+    // Must be at the end of the handle (0, -12) + some offset for rim radius
     const rim = document.createElementNS(
       'http://www.w3.org/2000/svg',
       'circle',
     );
-    rim.setAttribute('cx', '-14');
-    rim.setAttribute('cy', '14');
-    rim.setAttribute('r', '10'); // Slightly larger
+    rim.setAttribute('cx', '0');
+    rim.setAttribute('cy', '-22'); // handle end (-12) - rim radius (10)
+    rim.setAttribute('r', '10');
     rim.setAttribute('fill', `url(#${gradientId})`);
     rim.setAttribute('stroke', '#40e0d0');
-    rim.setAttribute('stroke-width', '2.5'); // Thicker rim
+    rim.setAttribute('stroke-width', '2.5');
 
-    // Glass Reflection (Highlights)
+    // Glass Reflection (Highlights) - relative to new rim position (0, -22)
     const reflection = document.createElementNS(
       'http://www.w3.org/2000/svg',
       'path',
     );
-    // More curved reflection for "convex" look
-    reflection.setAttribute('d', 'M-19,9 Q-14,4 -9,9');
+    // Adjust reflection path for new coords
+    reflection.setAttribute('d', 'M-5,-27 Q0,-32 5,-27');
     reflection.setAttribute('fill', 'none');
     reflection.setAttribute('stroke', 'rgba(255, 255, 255, 0.8)');
     reflection.setAttribute('stroke-width', '2');
@@ -708,7 +712,7 @@ export class RobotDOMBuilder {
       'http://www.w3.org/2000/svg',
       'path',
     );
-    reflection2.setAttribute('d', 'M-16,20 Q-14,22 -12,20');
+    reflection2.setAttribute('d', 'M-3,-17 Q0,-15 3,-17');
     reflection2.setAttribute('fill', 'none');
     reflection2.setAttribute('stroke', 'rgba(64, 224, 208, 0.6)');
     reflection2.setAttribute('stroke-width', '1.5');

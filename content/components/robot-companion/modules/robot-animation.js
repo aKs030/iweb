@@ -1135,7 +1135,7 @@ export class RobotAnimation {
       this.robot.dom.magnifyingGlass.style.opacity = '0';
       this.robot.dom.magnifyingGlass.setAttribute(
         'transform',
-        'translate(78, 82) rotate(-35) scale(0.9)',
+        'translate(78, 82) rotate(-45) scale(0.9)',
       );
     }
 
@@ -1212,10 +1212,10 @@ export class RobotAnimation {
         // Move glass slightly - Rotation only to simulate holding in hand
         const scanRot = Math.sin(this.searchAnimation.hoverPhase * 1.5) * 12;
 
-        // Base transform: translate(78, 82) rotate(-35) scale(0.9)
+        // Base transform: translate(78, 82) rotate(-45) scale(0.9)
         this.robot.dom.magnifyingGlass.setAttribute(
           'transform',
-          `translate(78, 82) rotate(${-35 + scanRot}) scale(0.9)`,
+          `translate(78, 82) rotate(${-45 + scanRot}) scale(0.9)`,
         );
       }
 
