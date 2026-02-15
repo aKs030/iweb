@@ -17,6 +17,8 @@ Allow: /content/components/*.png
 Allow: /content/components/*.jpg
 Allow: /content/components/*.webp
 Allow: /content/components/*.html
+# Erlaube explizit den Footer ohne Extension (wichtig für Redirects/Clean URLs)
+Allow: /content/components/footer/footer
 
 # Blockiere nur rein technische Komponenten und System-Pfade
 Disallow: /content/components/
