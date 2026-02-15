@@ -415,6 +415,29 @@ function handleAPIMock(req, res, url) {
     'Access-Control-Allow-Origin': '*',
   };
 
+  // YouTube API Mock (GET requests)
+  if (url.startsWith('/api/youtube/')) {
+    if (req.method !== 'GET') {
+      res.writeHead(405, corsHeaders);
+      res.end(JSON.stringify({ error: 'Method not allowed', status: 405 }));
+      return true;
+    }
+
+    res.writeHead(200, corsHeaders);
+    res.end(
+      JSON.stringify({
+        items: [],
+        pageInfo: { totalResults: 0, resultsPerPage: 0 },
+        error: {
+          message:
+            'YouTube API ist nur in Production verfügbar. Bitte deployen oder YOUTUBE_API_KEY in .dev.vars setzen und wrangler pages dev verwenden.',
+        },
+      }),
+    );
+    return true;
+  }
+
+  // Other API endpoints require POST
   if (req.method !== 'POST') {
     res.writeHead(405, corsHeaders);
     res.end(JSON.stringify({ error: 'Method not allowed', status: 405 }));

@@ -36,30 +36,8 @@ import {
 const log = createLogger('videos');
 
 // Initialize YouTube configuration
-const YOUTUBE_API_KEY = ENV.YOUTUBE_API_KEY || '';
 const YOUTUBE_CHANNEL_ID = ENV.YOUTUBE_CHANNEL_ID || 'UCTGRherjM4iuIn86xxubuPg';
 const YOUTUBE_CHANNEL_HANDLE = ENV.YOUTUBE_CHANNEL_HANDLE || 'aks.030';
-
-// Set global variables for compatibility
-if (typeof globalThis !== 'undefined') {
-  if (YOUTUBE_API_KEY) {
-    globalThis.YOUTUBE_API_KEY = YOUTUBE_API_KEY;
-  }
-  globalThis.YOUTUBE_CHANNEL_ID = YOUTUBE_CHANNEL_ID;
-  globalThis.YOUTUBE_CHANNEL_HANDLE = YOUTUBE_CHANNEL_HANDLE;
-
-  // Mock mode for development/testing
-  const forceMock = new URLSearchParams(location.search).has('mockVideos');
-  if (forceMock) {
-    globalThis.YOUTUBE_USE_MOCK = true;
-    log.warn('Using mock data due to ?mockVideos=1 (forced).');
-  } else if (!YOUTUBE_API_KEY && ENV.isDev) {
-    globalThis.YOUTUBE_USE_MOCK = true;
-    log.warn('No API key found — using mock data for development/testing.');
-  } else {
-    globalThis.YOUTUBE_USE_MOCK = false;
-  }
-}
 
 // Helper: replace a thumbnail button with an autoplaying iframe
 const activateThumb = (btn) => {
@@ -212,7 +190,7 @@ const renderVideoCard = async (grid, it, detailsMap, index = 0) => {
   )}">${i18n.t('videos.open_page')}</a></div>`;
 
   const publisherName =
-    globalThis.YOUTUBE_CHANNEL_ID === 'UCTGRherjM4iuIn86xxubuPg'
+    YOUTUBE_CHANNEL_ID === 'UCTGRherjM4iuIn86xxubuPg'
       ? 'Abdulkerim Berlin'
       : 'Abdulkerim Sesli';
   const ldObj = {
@@ -318,10 +296,7 @@ const setVideoStatus = (msg) => {
 };
 
 const loadLatestVideos = async () => {
-  const handle = (globalThis.YOUTUBE_CHANNEL_HANDLE || 'aks.030').replace(
-    /^@/,
-    '',
-  );
+  const handle = (YOUTUBE_CHANNEL_HANDLE || 'aks.030').replace(/^@/, '');
 
   // Bind any existing static thumbnails (works without API)
   try {

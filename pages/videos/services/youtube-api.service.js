@@ -15,10 +15,6 @@ const log = createLogger('YouTubeAPI');
  * @returns {Promise<string|null>} - Channel ID or null
  */
 export const fetchChannelId = async (handle) => {
-  if (globalThis.YOUTUBE_CHANNEL_ID) {
-    return String(globalThis.YOUTUBE_CHANNEL_ID).trim();
-  }
-
   // Check if already a valid channel ID
   if (/^UC[0-9A-Za-z_-]{22,}$/.test(String(handle || ''))) {
     return String(handle).trim();

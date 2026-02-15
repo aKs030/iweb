@@ -41,7 +41,7 @@ export const ROUTES = {
     description_en:
       'A selection of my work, brief presentations and behind-the-scenes.',
     type: 'CollectionPage',
-    image: `${BASE_URL}/content/assets/img/og/og-videos-800.webp`,
+    image: `${BASE_URL}/content/assets/img/og/og-videos-800.svg`,
   },
   '/gallery/': {
     title: 'Fotografie Portfolio | Urban & Portrait Berlin',
