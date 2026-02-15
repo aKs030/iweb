@@ -14,8 +14,8 @@ import { AppLoadManager } from '/content/core/load-manager.js';
 import { i18n } from '/content/core/i18n.js';
 import { marked } from 'https://cdn.jsdelivr.net/npm/marked@11.1.1/lib/marked.esm.js';
 import DOMPurify from 'https://cdn.jsdelivr.net/npm/dompurify@3.3.1/dist/purify.es.mjs';
-import { Clock, ArrowRight, ArrowUp } from '/content/components/ui/icons.js';
-import { createErrorBoundary } from '/content/components/ui/ErrorBoundary.js';
+import { Clock, ArrowRight, ArrowUp } from '/content/components/icons/icons.js';
+import { createErrorBoundary } from '/content/components/ErrorBoundary.js';
 
 const log = createLogger('BlogApp3D');
 const html = htm.bind(React.createElement);

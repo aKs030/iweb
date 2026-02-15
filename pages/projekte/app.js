@@ -8,7 +8,7 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { useProjects } from './hooks/useProjects.js';
 import { ThreeScene } from './components/ThreeScene.js';
-import * as Icons from '/content/components/ui/icons.js';
+import * as Icons from '/content/components/icons/icons.js';
 
 const { createElement: h, Fragment, useState } = React;
 
