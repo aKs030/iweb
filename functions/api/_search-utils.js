@@ -238,19 +238,42 @@ export function cleanDescription(text) {
   // 6. Remove specific site artifacts reported by users
   // Remove "Skip to main content" links (flexible match)
   cleaned = cleaned.replace(/\[?Zum Hauptinhalt springen\]?(\([^)]*\))?/gi, '');
+  cleaned = cleaned.replace(/menu\.skip_mainmenu\.skip_nav/gi, '');
 
   // Remove site brand/title artifacts
   cleaned = cleaned.replace(/AKS \| WEB/g, '');
+  cleaned = cleaned.replace(/© \d{4} Abdulkerim Sesli/gi, '');
 
   // Remove loading screen text
   cleaned = cleaned.replace(/Initialisiere System(\.\.\.)?/gi, '');
   cleaned = cleaned.replace(/\d+%\s*\d+%/g, ''); // Matches "0% 0%"
+
+  // Remove specific UI artifacts (Cookie banner, Chat, Menu, Scroll hints)
+  cleaned = cleaned.replace(/🍪\s*Wir nutzen Analytics[\s\S]*?Datenschutz/gi, '');
+  cleaned = cleaned.replace(/Soll ich dir was zeigen\?×\s*\?\s*Hauptmenü geschlossen/gi, '');
+  cleaned = cleaned.replace(/Scroll to explore • Click to view/gi, '');
+  cleaned = cleaned.replace(/Premium Fotogalerie Professionelle Fotografie in höchster Qualität/gi, '');
+  cleaned = cleaned.replace(/Fotos Eindrücke/gi, '');
+
+  // Remove persistent 3D Earth overlay description that leaks into many pages
+  cleaned = cleaned.replace(/Eine interaktive 3D-Darstellung der Erde[\s\S]*?Kamera-Modi\./gi, '');
+  cleaned = cleaned.replace(/🌍 CSS-Modus/gi, '');
 
   // Remove raw JSON/JSON-LD blocks that might have been indexed
   // Matches any markdown code blocks
   cleaned = cleaned.replace(/```[\s\S]*?```/g, '');
   // Matches raw JSON-LD structure starting with @context
   cleaned = cleaned.replace(/\{\s*"@context":[\s\S]*?\}/g, '');
+  // Matches partial JSON array fragments often found in search snippets
+  cleaned = cleaned.replace(/\[\s*\{\s*"@type":[\s\S]*?\}\s*\]/g, '');
+  cleaned = cleaned.replace(/\}\s*,\s*\{\s*"@type":[\s\S]*?\}/g, '');
+  // Matches hanging JSON closing braces often left after truncation
+  cleaned = cleaned.replace(/(\}\s*\]\s*\}\s*,?\s*\{\s*"@type":\s*"[^"]+")/g, '');
+  // Clean remaining JSON syntax characters if they appear in isolation or clusters
+  cleaned = cleaned.replace(/```json\s*\}?(\s*\]\s*\}\s*,?)?/g, '');
+  cleaned = cleaned.replace(/(\}\s*,\s*)?\{\s*"@type":[\s\S]*?\}/g, '');
+  // Remove trailing JSON artifacts like `url": "..."` or closing braces
+  cleaned = cleaned.replace(/,\s*"url":\s*"[^"]+"[\s\S]*/, '');
 
   // 7. Normalize whitespace
   cleaned = cleaned.replace(/\s+/g, ' ').trim();
