@@ -90,6 +90,7 @@
   appearance: none;
 
   flex: 1;
+  min-width: 0; /* allow shrinking inside flex containers */
   background: transparent !important; /* ensure no background shows through */
   border: 0 !important; /* remove any native border */
   color: #fff;
@@ -134,25 +135,41 @@
   height: 0;
 }
 
+/* Close button adopts former quick-action visual style */
 .search-close {
-  background: rgba(255, 255, 255, 0.1);
-  border: none;
-  color: rgba(255, 255, 255, 0.6);
-  width: 24px;
-  height: 24px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
+  background: rgba(38, 38, 42, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  color: rgba(255, 255, 255, 0.75);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   margin-left: 10px;
   font-size: 14px;
-  transition: all 0.2s;
+  transition:
+    transform 0.18s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+    background 0.18s,
+    border-color 0.18s;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
 }
 
 .search-close:hover {
-  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+  background: rgba(60, 60, 65, 0.95);
   color: #fff;
+  border-color: rgba(255, 255, 255, 0.28);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.42);
+}
+
+.search-close svg {
+  width: 20px;
+  height: 20px;
+  display: block; /* ensure proper centering */
 }
 
 .search-loader {
@@ -169,45 +186,6 @@
   to {
     transform: rotate(360deg);
   }
-}
-
-/* --- Quick Actions --- */
-.search-quick-actions {
-  display: flex;
-  gap: 10px; /* tighter to match the compact pill */
-}
-
-.search-action-btn {
-  width: 48px; /* match input pill height */
-  height: 48px;
-  border-radius: 50%;
-  background: rgba(38, 38, 42, 0.92);
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  color: rgba(255, 255, 255, 0.75);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition:
-    transform 0.18s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-    background 0.18s,
-    border-color 0.18s;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
-}
-
-.search-action-btn:hover {
-  transform: translateY(-1px);
-  background: rgba(60, 60, 65, 0.95);
-  color: #fff;
-  border-color: rgba(255, 255, 255, 0.28);
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.42);
-}
-
-.search-action-btn svg {
-  width: 20px;
-  height: 20px;
 }
 
 /* --- Results Container --- */
@@ -430,30 +408,24 @@
     margin: 0 auto;
   }
 
+  /* keep input and close button on the same row */
   .search-bar-wrapper {
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     justify-content: center;
   }
 
   .search-input-container {
-    width: 100%;
-    flex: none;
+    width: auto;
+    flex: 1 1 auto;
+    min-width: 0; /* allow text-overflow inside flex */
   }
 
-  .search-quick-actions {
-    width: 100%;
-    justify-content: center;
-    margin-top: 10px;
-  }
-
-  .search-action-btn {
-    width: 44px; /* slightly smaller on narrow screens */
+  /* ensure close button stays to the right and is touch-friendly */
+  .search-close {
+    margin-left: 10px;
+    flex: 0 0 auto;
+    width: 44px;
     height: 44px;
-  }
-
-  .search-action-btn svg {
-    width: 18px;
-    height: 18px;
   }
 }
 
