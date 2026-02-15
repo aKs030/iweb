@@ -1133,8 +1133,10 @@ export class RobotAnimation {
     // Hide magnifying glass
     if (this.robot.dom.magnifyingGlass) {
       this.robot.dom.magnifyingGlass.style.opacity = '0';
-      this.robot.dom.magnifyingGlass.style.transform =
-        'translate(78px, 82px) rotate(-35deg) scale(0.9)';
+      this.robot.dom.magnifyingGlass.setAttribute(
+        'transform',
+        'translate(78, 82) rotate(-35) scale(0.9)',
+      );
     }
 
     // Keep loop running until returned
@@ -1188,6 +1190,7 @@ export class RobotAnimation {
           this.startPatrol();
         } else {
           this.searchAnimation.phase = 'hover';
+          requestAnimationFrame(this.updateSearchAnimation);
         }
       } else {
         requestAnimationFrame(this.updateSearchAnimation);
@@ -1206,15 +1209,14 @@ export class RobotAnimation {
 
       // Scanning with Magnifying Glass
       if (this.robot.dom.magnifyingGlass) {
-        // Move glass slightly
-        const scanX = Math.sin(this.searchAnimation.hoverPhase * 2) * 5;
-        const scanY = Math.cos(this.searchAnimation.hoverPhase * 2) * 3;
-        const scanRot = Math.sin(this.searchAnimation.hoverPhase * 1.5) * 10;
+        // Move glass slightly - Rotation only to simulate holding in hand
+        const scanRot = Math.sin(this.searchAnimation.hoverPhase * 1.5) * 12;
 
         // Base transform: translate(78, 82) rotate(-35) scale(0.9)
-        this.robot.dom.magnifyingGlass.style.transform = `translate(${
-          78 + scanX
-        }px, ${82 + scanY}px) rotate(${-35 + scanRot}deg) scale(0.9)`;
+        this.robot.dom.magnifyingGlass.setAttribute(
+          'transform',
+          `translate(78, 82) rotate(${-35 + scanRot}) scale(0.9)`,
+        );
       }
 
       // Eyes following the scan

@@ -209,6 +209,11 @@ export class RobotDOMBuilder {
     const body = this.createBody();
     svg.appendChild(body);
 
+    // Magnifying Glass (initially hidden)
+    // Render before arms so the handle appears to be held
+    const magnifyingGlass = this.createMagnifyingGlass();
+    svg.appendChild(magnifyingGlass);
+
     // Arms
     const arms = this.createArms();
     svg.appendChild(arms);
@@ -228,10 +233,6 @@ export class RobotDOMBuilder {
     // Core light
     const coreLight = this.createCoreLight();
     svg.appendChild(coreLight);
-
-    // Magnifying Glass (initially hidden)
-    const magnifyingGlass = this.createMagnifyingGlass();
-    svg.appendChild(magnifyingGlass);
 
     return svg;
   }
@@ -485,13 +486,24 @@ export class RobotDOMBuilder {
       'path',
     );
     rightArm.classList.add('robot-arm', 'right');
-    rightArm.setAttribute('d', 'M70,62 Q80,70 75,80');
+    // Adjusted grip to wrap around the handle at approx (78, 82)
+    rightArm.setAttribute('d', 'M70,62 Q82,72 78,82');
     rightArm.setAttribute('fill', 'none');
     rightArm.setAttribute('stroke', '#40e0d0');
     rightArm.setAttribute('stroke-width', '3');
     rightArm.setAttribute('stroke-linecap', 'round');
 
-    g.append(leftArm, rightArm);
+    // Hand (Grip Circle)
+    const rightHand = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'circle',
+    );
+    rightHand.setAttribute('cx', '78');
+    rightHand.setAttribute('cy', '82');
+    rightHand.setAttribute('r', '3'); // Simple round grip
+    rightHand.setAttribute('fill', '#40e0d0');
+
+    g.append(leftArm, rightArm, rightHand);
 
     return g;
   }
@@ -628,6 +640,45 @@ export class RobotDOMBuilder {
     handle.setAttribute('stroke-width', '3');
     handle.setAttribute('stroke-linecap', 'round');
 
+    // Lens Gradient (for distortion effect)
+    // Instead, I'll add a gradient definition locally or inline if possible,
+    // but cleaner to use radialGradient.
+    const gradientId = 'lensGradient';
+    // Ideally should be in createSVGDefs, but for simplicity/encapsulation:
+    const gradient = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'radialGradient',
+    );
+    gradient.setAttribute('id', gradientId);
+    gradient.setAttribute('cx', '30%');
+    gradient.setAttribute('cy', '30%');
+    gradient.setAttribute('r', '70%');
+
+    const stop1 = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'stop',
+    );
+    stop1.setAttribute('offset', '0%');
+    stop1.setAttribute('stop-color', 'rgba(255, 255, 255, 0.4)');
+
+    const stop2 = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'stop',
+    );
+    stop2.setAttribute('offset', '100%');
+    stop2.setAttribute('stop-color', 'rgba(64, 224, 208, 0.1)');
+
+    gradient.append(stop1, stop2);
+    // Append to g temporarily or better inject to svg defs.
+    // Since we don't have easy access to svg root here, we can append to the group
+    // (defs works inside group too in SVG, though usually root).
+    const localDefs = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'defs',
+    );
+    localDefs.append(gradient);
+    g.append(localDefs);
+
     // Glass Rim
     const rim = document.createElementNS(
       'http://www.w3.org/2000/svg',
@@ -635,23 +686,35 @@ export class RobotDOMBuilder {
     );
     rim.setAttribute('cx', '-14');
     rim.setAttribute('cy', '14');
-    rim.setAttribute('r', '9');
-    rim.setAttribute('fill', 'rgba(64, 224, 208, 0.15)'); // Turquoise low opacity
-    rim.setAttribute('stroke', '#40e0d0'); // Turquoise
-    rim.setAttribute('stroke-width', '2');
+    rim.setAttribute('r', '10'); // Slightly larger
+    rim.setAttribute('fill', `url(#${gradientId})`);
+    rim.setAttribute('stroke', '#40e0d0');
+    rim.setAttribute('stroke-width', '2.5'); // Thicker rim
 
-    // Glass Reflection
+    // Glass Reflection (Highlights)
     const reflection = document.createElementNS(
       'http://www.w3.org/2000/svg',
       'path',
     );
-    reflection.setAttribute('d', 'M-18,10 Q-14,10 -12,14');
+    // More curved reflection for "convex" look
+    reflection.setAttribute('d', 'M-19,9 Q-14,4 -9,9');
     reflection.setAttribute('fill', 'none');
-    reflection.setAttribute('stroke', 'rgba(255, 255, 255, 0.6)');
-    reflection.setAttribute('stroke-width', '1.5');
+    reflection.setAttribute('stroke', 'rgba(255, 255, 255, 0.8)');
+    reflection.setAttribute('stroke-width', '2');
     reflection.setAttribute('stroke-linecap', 'round');
 
-    g.append(handle, rim, reflection);
+    // Secondary reflection at bottom
+    const reflection2 = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'path',
+    );
+    reflection2.setAttribute('d', 'M-16,20 Q-14,22 -12,20');
+    reflection2.setAttribute('fill', 'none');
+    reflection2.setAttribute('stroke', 'rgba(64, 224, 208, 0.6)');
+    reflection2.setAttribute('stroke-width', '1.5');
+    reflection2.setAttribute('stroke-linecap', 'round');
+
+    g.append(handle, rim, reflection, reflection2);
 
     return g;
   }
