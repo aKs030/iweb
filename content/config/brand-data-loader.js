@@ -12,15 +12,24 @@ export async function loadBrandData() {
     const response = await fetch('/content/config/brand-data.json');
     BRAND_DATA_CACHE = await response.json();
 
-    if (BRAND_DATA_CACHE.logo && !BRAND_DATA_CACHE.logo.startsWith('http')) {
-      BRAND_DATA_CACHE.logo = `${BASE_URL}${BRAND_DATA_CACHE.logo}`;
-    }
+    // Logo and image are already absolute URLs in brand-data.json
+    // No need to prepend BASE_URL
 
-    if (BRAND_DATA_CACHE.address) {
-      BRAND_DATA_CACHE.address['@type'] = 'PostalAddress';
+    if (BRAND_DATA_CACHE.knowsLanguage) {
+      BRAND_DATA_CACHE.knowsLanguage = BRAND_DATA_CACHE.knowsLanguage.map(
+        (lang) => ({
+          '@type': 'Language',
+          ...lang,
+        }),
+      );
     }
-    if (BRAND_DATA_CACHE.geo) {
-      BRAND_DATA_CACHE.geo['@type'] = 'GeoCoordinates';
+    if (BRAND_DATA_CACHE.hasOccupation) {
+      BRAND_DATA_CACHE.hasOccupation = BRAND_DATA_CACHE.hasOccupation.map(
+        (occ) => ({
+          '@type': 'Occupation',
+          ...occ,
+        }),
+      );
     }
     if (BRAND_DATA_CACHE.contactPoint) {
       BRAND_DATA_CACHE.contactPoint = BRAND_DATA_CACHE.contactPoint.map(
