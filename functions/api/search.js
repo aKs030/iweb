@@ -43,8 +43,18 @@ export async function onRequestPost(context) {
     if (env.SEARCH_CACHE) {
       try {
         const cached = await env.SEARCH_CACHE.get(cacheKey, 'json');
+        console.log('Cache lookup for key:', cacheKey);
+        console.log('Cached data:', cached ? 'FOUND' : 'NOT FOUND');
         if (cached && isCacheValid(cached, 3600)) {
           console.log('Cache hit for query:', query);
+          console.log(
+            'Cached results count:',
+            cached.data?.results?.length || 0,
+          );
+          console.log(
+            'Cached data structure:',
+            JSON.stringify(cached.data, null, 2),
+          );
           return new Response(JSON.stringify(cached.data), {
             headers: {
               ...corsHeaders,
@@ -52,6 +62,8 @@ export async function onRequestPost(context) {
               'Cache-Control': 'public, max-age=3600',
             },
           });
+        } else {
+          console.log('Cache miss or expired for query:', query);
         }
       } catch (cacheError) {
         console.warn('Cache read error:', cacheError);
