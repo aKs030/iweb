@@ -106,6 +106,7 @@ export function expandQuery(query) {
  */
 export function calculateRelevanceScore(result, originalQuery) {
   let score = result.score || 0;
+  let textMatchScore = 0;
 
   const queryLower = originalQuery.toLowerCase();
   const titleLower = (result.title || '').toLowerCase();
@@ -114,34 +115,40 @@ export function calculateRelevanceScore(result, originalQuery) {
 
   // Boost for exact title match
   if (titleLower.includes(queryLower)) {
-    score += 10;
+    textMatchScore += 10;
   }
 
   // Boost for URL match
   if (urlLower.includes(queryLower)) {
-    score += 5;
+    textMatchScore += 5;
   }
 
   // Boost for description match
   if (descLower.includes(queryLower)) {
-    score += 2;
+    textMatchScore += 2;
   }
 
-  // Boost for shorter URLs (likely more important pages)
-  const urlDepth = (result.url || '').split('/').length;
-  score += Math.max(0, 5 - urlDepth);
+  score += textMatchScore;
 
-  // Boost for specific categories (angepasst an deutsche Kategorien)
-  const categoryBoosts = {
-    projekte: 3,
-    blog: 2,
-    galerie: 2,
-    videos: 2,
-    home: 1,
-  };
+  // Only apply static boosts if there is a text match OR the vector score is decent
+  // This prevents completely irrelevant pages from being boosted just because of their URL depth or category
+  if (textMatchScore > 0 || score > 0.6) {
+    // Boost for shorter URLs (likely more important pages)
+    const urlDepth = (result.url || '').split('/').length;
+    score += Math.max(0, 5 - urlDepth);
 
-  const category = (result.category || '').toLowerCase();
-  score += categoryBoosts[category] || 0;
+    // Boost for specific categories (angepasst an deutsche Kategorien)
+    const categoryBoosts = {
+      projekte: 3,
+      blog: 2,
+      galerie: 2,
+      videos: 2,
+      home: 1,
+    };
+
+    const category = (result.category || '').toLowerCase();
+    score += categoryBoosts[category] || 0;
+  }
 
   return score;
 }
