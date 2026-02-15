@@ -23,7 +23,7 @@
 2. Settings → Environment Variables
 3. Füge hinzu:
    - Variable name: `YOUTUBE_API_KEY`
-   - Value: `AIzaSyA1uN-8I94wyGRSA9WylFetW9PaUehgTcY`
+   - Value: `<your-youtube-api-key>`
    - Environment: Production & Preview
 
 #### Option B: Wrangler CLI
