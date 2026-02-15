@@ -212,20 +212,34 @@ export class CardManager {
               const pixelsPerWorld = 1 / worldPerPixel;
 
               // Current vertical world span of the card group (two rows + card height)
-              const cardSpacingY = 3.2; // vertical spacing in world units
+              let cardSpacingY = 3.2; // vertical spacing in world units (may be reduced)
               const desiredWorldGroupHeight =
                 cardSpacingY + this._baseH * finalScale;
               const desiredPixelGroupHeight =
                 desiredWorldGroupHeight * pixelsPerWorld;
 
               if (desiredPixelGroupHeight > availablePixels) {
-                // Compute max allowed scale so that the group fits into availablePixels
-                const maxScaleFromHeight = Math.max(
-                  0.6,
+                // Calculate the exact scale required to fit the available pixel height
+                const requiredScale =
                   (availablePixels / pixelsPerWorld - cardSpacingY) /
-                    this._baseH,
-                );
-                finalScale = Math.min(finalScale, maxScaleFromHeight);
+                  this._baseH;
+                const MIN_SCALE = 0.45; // allow more aggressive downscaling on very small heights
+
+                if (requiredScale >= MIN_SCALE) {
+                  finalScale = Math.min(finalScale, requiredScale);
+                } else {
+                  // requiredScale is below minimum — clamp scale and reduce inter-row spacing as fallback
+                  finalScale = Math.min(finalScale, MIN_SCALE);
+
+                  // Compute maximum spacing (world units) that still fits with MIN_SCALE
+                  const maxSpacingWorld = Math.max(
+                    0.9,
+                    availablePixels / pixelsPerWorld - this._baseH * finalScale,
+                  );
+
+                  // Reduce spacing but keep it sensible
+                  cardSpacingY = Math.min(cardSpacingY, maxSpacingWorld);
+                }
               }
             } catch (e) {
               // ignore measurement errors and keep default finalScale
@@ -233,7 +247,7 @@ export class CardManager {
 
             // Grid-Abstände mit optimiertem Spacing
             const cardSpacingX = 3.0; // Horizontaler Abstand zwischen Karten
-            const cardSpacingY = 3.2; // Vertikaler Abstand zwischen Zeilen
+            const cardSpacingY = 3.2; // Vertikaler Abstand zwischen Zeilen (may be adjusted above)
 
             // Layout: 3 Karten oben, 2 unten (versetzt zentriert)
             let x, y;
