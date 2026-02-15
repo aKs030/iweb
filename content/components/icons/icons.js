@@ -191,3 +191,11 @@ export const Rocket = (props) => html`
     <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
   <//>
 `;
+
+// --- Gallery-specific icon (migrated from pages/gallery/components/gallery-icons.js)
+export const X_Icon = (props) => html`
+  <${IconBase} width="20" height="20" ...${props}>
+    <line x1="18" y1="6" x2="6" y2="18"></line>
+    <line x1="6" y1="6" x2="18" y2="18"></line>
+  <//>
+`;
