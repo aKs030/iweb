@@ -8,7 +8,6 @@ const ENV_DEFAULTS = {
   AW_LABEL: 'AW-CONV-LABEL',
   YOUTUBE_API_KEY: '',
   YOUTUBE_CHANNEL_ID: 'UCTGRherjM4iuIn86xxubuPg',
-  YOUTUBE_CHANNEL_HANDLE: 'aks.030',
 };
 
 const ENV_DEV = {
@@ -45,7 +44,6 @@ export const ENV = {
   AW_LABEL: getEnv('AW_LABEL'),
   YOUTUBE_API_KEY: getEnv('YOUTUBE_API_KEY'),
   YOUTUBE_CHANNEL_ID: getEnv('YOUTUBE_CHANNEL_ID'),
-  YOUTUBE_CHANNEL_HANDLE: getEnv('YOUTUBE_CHANNEL_HANDLE'),
 
   get isDev() {
     return (
