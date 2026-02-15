@@ -178,7 +178,58 @@ export class CardManager {
             // Größere Kartengröße für besseren visuellen Impact
             const baseScale = 1.15;
             const adaptiveScale = Math.min(1, vw / 1400);
-            const finalScale = baseScale * Math.max(0.75, adaptiveScale);
+            let finalScale = baseScale * Math.max(0.75, adaptiveScale);
+
+            // Respect viewport safe areas (menu + footer) and reduce scale
+            // if the vertical space between header and footer is too small.
+            try {
+              const canvasRect =
+                this.renderer.domElement.getBoundingClientRect();
+              const canvasHeight = canvasRect.height || window.innerHeight;
+
+              const safeTop =
+                parseFloat(
+                  getComputedStyle(document.documentElement).getPropertyValue(
+                    '--safe-top',
+                  ),
+                ) || 0;
+              const safeBottom =
+                parseFloat(
+                  getComputedStyle(document.documentElement).getPropertyValue(
+                    '--safe-bottom',
+                  ),
+                ) || 0;
+
+              const estimatedHeaderPx = 24 + safeTop; // approx. menu height + safe inset
+              const estimatedFooterPx = 40 + safeBottom; // approx. footer height + safe inset
+              const availablePixels = Math.max(
+                220,
+                canvasHeight - estimatedHeaderPx - estimatedFooterPx - 40,
+              );
+
+              // Convert pixels <-> world units at z~=0
+              const worldPerPixel = Math.abs(this._pixelsToWorldY(1)) || 0.0005;
+              const pixelsPerWorld = 1 / worldPerPixel;
+
+              // Current vertical world span of the card group (two rows + card height)
+              const cardSpacingY = 3.2; // vertical spacing in world units
+              const desiredWorldGroupHeight =
+                cardSpacingY + this._baseH * finalScale;
+              const desiredPixelGroupHeight =
+                desiredWorldGroupHeight * pixelsPerWorld;
+
+              if (desiredPixelGroupHeight > availablePixels) {
+                // Compute max allowed scale so that the group fits into availablePixels
+                const maxScaleFromHeight = Math.max(
+                  0.6,
+                  (availablePixels / pixelsPerWorld - cardSpacingY) /
+                    this._baseH,
+                );
+                finalScale = Math.min(finalScale, maxScaleFromHeight);
+              }
+            } catch (e) {
+              // ignore measurement errors and keep default finalScale
+            }
 
             // Grid-Abstände mit optimiertem Spacing
             const cardSpacingX = 3.0; // Horizontaler Abstand zwischen Karten
