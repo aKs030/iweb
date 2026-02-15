@@ -98,11 +98,7 @@ Nach dem Deployment:
    https://abdulkerimsesli.de/
    ```
 
-   - Cmd+K / Ctrl+K drücken
-   - Suche eingeben
-   - Sollte Ergebnisse mit AI Summary zeigen
-
-## Troubleshooting
+   - Such‑Icon anklicken (Suche über UI öffnen)
 
 **Problem: "RESEND_API_KEY is missing"**
 
