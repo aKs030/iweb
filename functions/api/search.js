@@ -11,6 +11,7 @@ import {
   calculateRelevanceScore,
   normalizeUrl,
   cleanDescription,
+  createSnippet,
 } from './_search-utils.js';
 
 export async function onRequestPost(context) {
@@ -70,32 +71,9 @@ export async function onRequestPost(context) {
         textContent = item.description;
       }
 
-      // Clean the description
-      textContent = cleanDescription(textContent);
-
-      // Smart truncation: don't cut words in half
-      if (textContent && textContent.length > 250) {
-        // Find a good breaking point (space, comma, period)
-        let breakPoint = 250;
-        const lastSpace = textContent.lastIndexOf(' ', 250);
-        const lastComma = textContent.lastIndexOf(',', 250);
-        const lastPeriod = textContent.lastIndexOf('.', 250);
-
-        // Use the best breaking point
-        breakPoint = Math.max(lastSpace, lastComma, lastPeriod);
-
-        // If no good breaking point found or too far back, just use space
-        if (breakPoint < 180) {
-          breakPoint = lastSpace > 0 ? lastSpace : 250;
-        }
-
-        textContent = textContent.substring(0, breakPoint).trim();
-
-        // Add ellipsis if truncated
-        if (breakPoint < textContent.length) {
-          textContent += '...';
-        }
-      }
+      // Create a smart snippet focused on the query
+      // Use original query for highlighting to avoid synonym confusion
+      const snippet = createSnippet(textContent, query, 160);
 
       // Determine category from URL with better mapping
       let category = 'Seite';
@@ -150,7 +128,7 @@ export async function onRequestPost(context) {
         url: url,
         title: title,
         category: category,
-        description: textContent || 'Keine Beschreibung verfügbar',
+        description: snippet || 'Keine Beschreibung verfügbar',
         score: item.score || 0,
       };
     });
