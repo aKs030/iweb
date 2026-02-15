@@ -36,9 +36,6 @@ export async function onRequestPost(context) {
 
     // Expand query with synonyms and fuzzy matching
     const expandedQuery = expandQuery(query);
-    console.log('Original query:', query);
-    console.log('Expanded query:', expandedQuery);
-    console.log('Using Cloudflare AI Search Beta');
 
     // Use Workers Binding to call AI Search Beta
     const ragId = env.RAG_ID || 'wispy-pond-1055';
