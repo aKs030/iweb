@@ -1,20 +1,36 @@
 /**
  * Search Utilities - Query Expansion, Fuzzy Matching, Relevance Scoring
- * @version 1.1.0
+ * @version 3.0.0
  */
 
 /**
  * Synonym mapping for German query expansion
+ * Erweitert für alle indexierten Seiten
  */
 export const SYNONYMS = {
-  bilder: ['galerie', 'photos', 'fotos', 'fotografie', 'gallery'],
-  projekte: ['projects', 'arbeiten', 'portfolio', 'werke'],
-  blog: ['artikel', 'posts', 'beiträge', 'articles'],
-  videos: ['filme', 'clips', 'aufnahmen'],
-  kontakt: ['contact', 'email', 'nachricht', 'anfrage'],
-  über: ['about', 'info', 'information', 'profil'],
+  bilder: ['galerie', 'photos', 'fotos', 'fotografie', 'gallery', 'images'],
+  galerie: ['bilder', 'photos', 'fotos', 'gallery', 'images'],
+  projekte: ['projects', 'arbeiten', 'portfolio', 'werke', 'projekt'],
+  blog: [
+    'artikel',
+    'posts',
+    'beiträge',
+    'articles',
+    'threejs',
+    'performance',
+    'storytelling',
+    'design',
+    'react',
+  ],
+  videos: ['filme', 'clips', 'aufnahmen', 'video'],
+  kontakt: ['contact', 'email', 'nachricht', 'anfrage', 'formular'],
+  über: ['about', 'info', 'information', 'profil', 'ich'],
   suche: ['search', 'finden', 'suchen'],
-  home: ['startseite', 'hauptseite', 'index'],
+  home: ['startseite', 'hauptseite', 'index', 'start'],
+  threejs: ['three.js', '3d', 'webgl', 'performance', 'optimization'],
+  storytelling: ['visual', 'design', 'erzählen', 'story'],
+  react: ['javascript', 'js', 'frontend', 'no-build'],
+  ui: ['design', 'interface', 'modern', 'benutzeroberfläche'],
 };
 
 /**
@@ -115,39 +131,19 @@ export function calculateRelevanceScore(result, originalQuery) {
   const urlDepth = (result.url || '').split('/').length;
   score += Math.max(0, 5 - urlDepth);
 
-  // Boost for specific categories
+  // Boost for specific categories (angepasst an deutsche Kategorien)
   const categoryBoosts = {
     projekte: 3,
     blog: 2,
-    gallery: 2,
+    galerie: 2,
+    videos: 2,
+    home: 1,
   };
 
   const category = (result.category || '').toLowerCase();
   score += categoryBoosts[category] || 0;
 
   return score;
-}
-
-/**
- * Generate cache key for search query
- * @param {string} query - Search query
- * @param {number} topK - Number of results
- * @returns {string} Cache key
- */
-export function getCacheKey(query, topK = 10) {
-  return `search:${query.toLowerCase().trim()}:${topK}`;
-}
-
-/**
- * Check if cache entry is still valid
- * @param {Object} cached - Cached data with timestamp
- * @param {number} maxAge - Max age in seconds (default: 1 hour)
- * @returns {boolean} True if cache is valid
- */
-export function isCacheValid(cached, maxAge = 3600) {
-  if (!cached || !cached.timestamp) return false;
-  const age = Date.now() - cached.timestamp;
-  return age < maxAge * 1000;
 }
 
 /**
