@@ -9,6 +9,14 @@ Allow: /
 # Erlaube Zugriff auf den Pages-Ordner für korrektes Rendering und Indexierung
 Allow: /pages/
 
+# Erlaube wichtige Ressourcen in Komponenten (CSS, JS, Bilder)
+Allow: /content/components/*.js
+Allow: /content/components/*.css
+Allow: /content/components/*.svg
+Allow: /content/components/*.png
+Allow: /content/components/*.jpg
+Allow: /content/components/*.webp
+
 # Blockiere nur rein technische Komponenten und System-Pfade
 Disallow: /content/components/
 Disallow: /node_modules/
