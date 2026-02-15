@@ -53,16 +53,28 @@ function calculateRelevanceScore(item, query) {
  * @returns {string} Cleaned content
  */
 function extractContent(item, maxLength = 400) {
-  if (!item.content || item.content.length === 0) {
+  // Extract text content from multiple possible sources (same logic as search.js)
+  let fullContent = '';
+
+  // Try content array first
+  if (item.content && Array.isArray(item.content)) {
+    fullContent = item.content.map((c) => c.text || '').join(' ');
+  }
+
+  // Fallback to other possible fields
+  if (!fullContent && item.text) {
+    fullContent = item.text;
+  }
+
+  if (!fullContent && item.description) {
+    fullContent = item.description;
+  }
+
+  if (!fullContent) {
     return '';
   }
 
-  // Join all content chunks
-  const fullContent = item.content
-    .map((c) => c.text)
-    .join(' ')
-    .replace(/\s+/g, ' ')
-    .trim();
+  fullContent = fullContent.replace(/\s+/g, ' ').trim();
 
   // If content is short enough, return as is
   if (fullContent.length <= maxLength) {
