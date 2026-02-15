@@ -16,6 +16,7 @@ Allow: /content/components/*.svg
 Allow: /content/components/*.png
 Allow: /content/components/*.jpg
 Allow: /content/components/*.webp
+Allow: /content/components/*.html
 
 # Blockiere nur rein technische Komponenten und System-Pfade
 Disallow: /content/components/
