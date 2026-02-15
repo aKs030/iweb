@@ -299,6 +299,64 @@ export class CardManager {
             card.userData.originalZ = 0;
           }
         });
+
+        // --- Pixel-precise vertical centering between header and footer safe areas ---
+        try {
+          const rects = this.getCardScreenRects();
+          if (rects && rects.length > 0) {
+            const groupTop = Math.min(...rects.map((r) => r.top));
+            const groupBottom = Math.max(...rects.map((r) => r.bottom));
+            const groupHeightPx = Math.max(0, groupBottom - groupTop);
+
+            const canvasRect = this.renderer.domElement.getBoundingClientRect();
+            const canvasHeight = canvasRect.height || window.innerHeight;
+
+            const safeTop =
+              parseFloat(
+                getComputedStyle(document.documentElement).getPropertyValue(
+                  '--safe-top',
+                ),
+              ) || 0;
+            const safeBottom =
+              parseFloat(
+                getComputedStyle(document.documentElement).getPropertyValue(
+                  '--safe-bottom',
+                ),
+              ) || 0;
+
+            const headerPx = 24 + safeTop;
+            const footerPx = 40 + safeBottom;
+
+            const safeAreaTopPx = headerPx;
+            const safeAreaBottomPx = Math.max(0, canvasHeight - footerPx);
+            const safeAreaHeight = Math.max(
+              0,
+              safeAreaBottomPx - safeAreaTopPx,
+            );
+
+            // Only attempt to recenter if the group fits (or nearly fits) in the safe area
+            if (groupHeightPx <= safeAreaHeight + 4 && safeAreaHeight > 0) {
+              const targetCenterPx = safeAreaTopPx + safeAreaHeight / 2;
+              const currentCenterPx = groupTop + groupHeightPx / 2;
+              const deltaPx = targetCenterPx - currentCenterPx;
+
+              if (Math.abs(deltaPx) > 2) {
+                const worldShift = this._pixelsToWorldY(deltaPx) || 0;
+
+                this.cards.forEach((card) => {
+                  card.position.y += worldShift;
+                  if (typeof card.userData.originalY === 'number')
+                    card.userData.originalY += worldShift;
+                  if (typeof card.userData.hoverY === 'number')
+                    card.userData.hoverY += worldShift;
+                });
+              }
+            }
+          }
+        } catch (err) {
+          // ignore measurement errors — centering is cosmetic
+        }
+
         this._resizeRAF = null;
       });
     };
