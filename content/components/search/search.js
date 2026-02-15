@@ -1,19 +1,14 @@
 // @ts-check
 /**
  * Search Component
- * Mac Spotlight-Inspired Search with Server-Side Optimization & AI Overview
+ * AI-powered search with Cloudflare AI Search Beta
  * @author Abdulkerim Sesli
- * @version 3.0.0
+ * @version 4.0.0
  */
 
 /* exported initSearch, openSearch, closeSearch, toggleSearch */
 import { createLogger } from '../../core/logger.js';
 import { upsertHeadLink } from '../../core/utils.js';
-import {
-  findQuickAction,
-  getAutocompleteSuggestions,
-  getDidYouMeanSuggestions,
-} from './search-data.js';
 
 const _log = createLogger('search');
 
@@ -31,8 +26,6 @@ class SearchComponent {
     this.resultsContainer = null;
     /** @type {HTMLElement|null} */
     this.loader = null;
-    /** @type {HTMLElement|null} */
-    this.suggestionsContainer = null;
     /** @type {boolean} */
     this.isOpen = false;
     /** @type {Array} */
@@ -43,10 +36,6 @@ class SearchComponent {
     this.searchTimeout = null;
     /** @type {string} */
     this.lastQuery = '';
-    /** @type {Array<string>} */
-    this.searchHistory = this.loadSearchHistory();
-    /** @type {string} */
-    this.activeFilter = 'all';
 
     this.init();
   }
@@ -55,7 +44,7 @@ class SearchComponent {
     this.createSearchOverlay();
     this.attachEventListeners();
     this.loadStyles();
-    _log.info('Search component initialized with AI Search & Summary');
+    _log.info('Search component initialized with Cloudflare AI Search');
   }
 
   loadStyles() {
@@ -104,8 +93,6 @@ class SearchComponent {
           </button>
         </div>
 
-        <div class="search-autocomplete" style="display: none;"></div>
-
         <div class="search-results" role="region" aria-live="polite" aria-atomic="false"></div>
       </div>
     `;
@@ -116,7 +103,6 @@ class SearchComponent {
     this.input = overlay.querySelector('.search-input');
     this.resultsContainer = overlay.querySelector('.search-results');
     this.loader = overlay.querySelector('.search-loader');
-    this.suggestionsContainer = overlay.querySelector('.search-autocomplete');
 
     overlay
       .querySelector('.search-close')
@@ -156,9 +142,6 @@ class SearchComponent {
       this.input.addEventListener('input', (e) => {
         const value = e.target.value;
 
-        // Show autocomplete suggestions
-        this.showAutocompleteSuggestions(value);
-
         if (this.searchTimeout) clearTimeout(this.searchTimeout);
         // @ts-ignore
         this.searchTimeout = setTimeout(() => {
@@ -170,7 +153,6 @@ class SearchComponent {
       this.input.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
           clearTimeout(this.searchTimeout);
-          this.hideAutocompleteSuggestions();
 
           if (this.currentResults.length > 0) {
             const index = this.selectedIndex >= 0 ? this.selectedIndex : 0;
@@ -253,17 +235,6 @@ class SearchComponent {
     }
 
     this.lastQuery = trimmedQuery;
-    this.hideAutocompleteSuggestions();
-
-    // Check for Quick Action
-    const quickAction = findQuickAction(trimmedQuery);
-    if (quickAction) {
-      _log.info(`Quick action detected: ${quickAction.label}`);
-      window.location.href = quickAction.url;
-      this.close();
-      return;
-    }
-
     this.showLoader(true);
 
     try {
@@ -273,11 +244,8 @@ class SearchComponent {
 
       if (data.results.length > 0 || data.summary) {
         this.displayResults(data.results, trimmedQuery, data.summary);
-        this.applyFilter();
       } else {
-        // Show "Did you mean?" suggestions
-        const suggestions = getDidYouMeanSuggestions(trimmedQuery);
-        this.showEmptyStateWithSuggestions(trimmedQuery, suggestions);
+        this.showEmptyState(`Keine Ergebnisse für "${trimmedQuery}"`);
       }
     } catch (error) {
       _log.error('Search failed', error);
@@ -319,10 +287,11 @@ class SearchComponent {
     const icons = {
       Seite: '📄',
       Blog: '📝',
-      Projekt: '💻',
-      Video: '🎬',
+      Projekte: '💻',
+      Videos: '🎬',
       Galerie: '🖼️',
-      About: 'ℹ️',
+      'Über mich': 'ℹ️',
+      Kontakt: '✉️',
       Home: '🏠',
     };
     return icons[category] || '🔍';
@@ -479,6 +448,7 @@ class SearchComponent {
   showEmptyState(message) {
     const html = `
       <div class="search-empty">
+        <div class="search-empty-icon">🔍</div>
         <div class="search-empty-text">${message || 'Keine Ergebnisse'}</div>
       </div>
     `;
@@ -487,147 +457,13 @@ class SearchComponent {
     this.selectedIndex = -1;
   }
 
-  /**
-   * Show empty state with "Did you mean?" suggestions
-   */
-  showEmptyStateWithSuggestions(query, suggestions) {
-    let html = `
-      <div class="search-empty">
-        <div class="search-empty-icon">🔍</div>
-        <div class="search-empty-text">Keine Ergebnisse für "${this.escapeHTML(query)}"</div>
-    `;
-
-    if (suggestions.length > 0) {
-      html += `
-        <div class="search-did-you-mean">
-          <div class="search-did-you-mean-title">Meinten Sie:</div>
-          <div class="search-did-you-mean-suggestions">
-            ${suggestions.map((suggestion) => `<button class="search-did-you-mean-btn" data-suggestion="${this.escapeHTML(suggestion)}">${this.escapeHTML(suggestion)}</button>`).join('')}
-          </div>
-        </div>
-      `;
-    }
-
-    html += `</div>`;
-
-    this.resultsContainer.innerHTML = html;
-    this.currentResults = [];
-    this.selectedIndex = -1;
-
-    // Add click handlers for suggestions
-    this.resultsContainer
-      .querySelectorAll('.search-did-you-mean-btn')
-      .forEach((btn) => {
-        btn.addEventListener('click', () => {
-          const suggestion = btn.dataset.suggestion;
-          this.input.value = suggestion;
-          this.handleSearch(suggestion);
-        });
-      });
-  }
-
   selectResult(index) {
     if (index < 0 || index >= this.currentResults.length) return;
     const result = this.currentResults[index];
     _log.info(`Navigating to: ${result.url}`);
 
-    // Save to search history
-    this.saveToSearchHistory(this.lastQuery);
-
     window.location.href = result.url;
     this.close();
-  }
-
-  /**
-   * Show autocomplete suggestions
-   */
-  showAutocompleteSuggestions(query) {
-    if (!query || query.length < 2) {
-      this.hideAutocompleteSuggestions();
-      return;
-    }
-
-    const suggestions = getAutocompleteSuggestions(query, 5);
-
-    if (suggestions.length === 0) {
-      this.hideAutocompleteSuggestions();
-      return;
-    }
-
-    const html = suggestions
-      .map(
-        (suggestion) => `
-      <div class="search-autocomplete-item" data-suggestion="${this.escapeHTML(suggestion)}">
-        <span class="search-autocomplete-icon">🔍</span>
-        <span class="search-autocomplete-text">${this.escapeHTML(suggestion)}</span>
-      </div>
-    `,
-      )
-      .join('');
-
-    this.suggestionsContainer.innerHTML = html;
-    this.suggestionsContainer.style.display = 'block';
-
-    // Add click handlers
-    this.suggestionsContainer
-      .querySelectorAll('.search-autocomplete-item')
-      .forEach((item) => {
-        item.addEventListener('click', () => {
-          const suggestion = item.dataset.suggestion;
-          this.input.value = suggestion;
-          this.hideAutocompleteSuggestions();
-          this.handleSearch(suggestion);
-        });
-      });
-  }
-
-  /**
-   * Hide autocomplete suggestions
-   */
-  hideAutocompleteSuggestions() {
-    if (this.suggestionsContainer) {
-      this.suggestionsContainer.style.display = 'none';
-      this.suggestionsContainer.innerHTML = '';
-    }
-  }
-
-  /**
-   * Load search history from localStorage
-   */
-  loadSearchHistory() {
-    try {
-      const history = localStorage.getItem('search_history');
-      return history ? JSON.parse(history) : [];
-    } catch {
-      return [];
-    }
-  }
-
-  /**
-   * Save query to search history
-   */
-  saveToSearchHistory(query) {
-    if (!query || query.length < 2) return;
-
-    try {
-      const history = this.loadSearchHistory();
-      const filtered = history.filter((q) => q !== query);
-      filtered.unshift(query);
-
-      // Keep only last 10 searches
-      const updated = filtered.slice(0, 10);
-      localStorage.setItem('search_history', JSON.stringify(updated));
-      this.searchHistory = updated;
-    } catch (e) {
-      _log.warn('Failed to save search history', e);
-    }
-  }
-
-  /**
-   * Apply active filter to results
-   */
-  applyFilter() {
-    // Filter functionality removed - showing all results
   }
 
   destroy() {
