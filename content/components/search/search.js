@@ -69,28 +69,40 @@ class SearchComponent {
 
     overlay.innerHTML = `
       <div class="search-modal" role="document">
-        <div class="search-header">
-          <div class="search-input-wrapper">
+        <div class="search-bar-wrapper">
+          <div class="search-input-container">
+            <span class="search-icon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </span>
             <input
               type="text"
               id="search-input"
               name="search"
               class="search-input"
-              placeholder="Suche... (KI-gestützt)"
               aria-label="Suchfeld"
               autocomplete="off"
               autocorrect="off"
               autocapitalize="off"
               spellcheck="false"
             >
-            <span class="search-icon" aria-hidden="true">🔍</span>
             <div class="search-loader" style="display: none;"></div>
+            <button class="search-close" aria-label="Suche schließen" title="ESC">✕</button>
           </div>
-          <button class="search-close" aria-label="Suche schließen" title="ESC">
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-            </svg>
-          </button>
+
+          <div class="search-quick-actions">
+            <button class="search-action-btn" data-href="/" title="Home">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            </button>
+            <button class="search-action-btn" data-href="/projects" title="Projekte">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+            </button>
+            <button class="search-action-btn" data-href="/gallery" title="Galerie">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+            </button>
+            <button class="search-action-btn" data-href="/contact" title="Kontakt">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+            </button>
+          </div>
         </div>
 
         <div class="search-results" role="region" aria-live="polite" aria-atomic="false"></div>
@@ -107,6 +119,19 @@ class SearchComponent {
     overlay
       .querySelector('.search-close')
       .addEventListener('click', () => this.close());
+
+    // Quick action buttons
+    overlay.querySelectorAll('.search-action-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        // @ts-ignore
+        const href = btn.dataset.href;
+        if (href) {
+          window.location.href = href;
+          this.close();
+        }
+      });
+    });
+
     overlay.addEventListener('click', (e) => {
       if (e.target === overlay) this.close();
     });
@@ -114,11 +139,6 @@ class SearchComponent {
 
   attachEventListeners() {
     this._handleKeydown = (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        this.toggle();
-      }
-
       if (e.key === 'Escape' && this.isOpen) {
         this.close();
       }
