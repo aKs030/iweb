@@ -250,14 +250,52 @@ export class CardManager {
               y = -cardSpacingY / 2; // Unten
             }
 
+            // Compute vertical centering between estimated header and footer safe areas
+            let centerWorldShift = 0;
+            try {
+              const canvasRect =
+                this.renderer.domElement.getBoundingClientRect();
+              const canvasHeight = canvasRect.height || window.innerHeight;
+
+              const safeTop =
+                parseFloat(
+                  getComputedStyle(document.documentElement).getPropertyValue(
+                    '--safe-top',
+                  ),
+                ) || 0;
+              const safeBottom =
+                parseFloat(
+                  getComputedStyle(document.documentElement).getPropertyValue(
+                    '--safe-bottom',
+                  ),
+                ) || 0;
+
+              const estimatedHeaderPx = 24 + safeTop;
+              const estimatedFooterPx = 40 + safeBottom;
+
+              const availableTop = estimatedHeaderPx;
+              const availableBottom = Math.max(
+                0,
+                canvasHeight - estimatedFooterPx,
+              );
+              const centerPixels = (availableTop + availableBottom) / 2;
+              const deltaFromCanvasCenterPx = centerPixels - canvasHeight / 2;
+
+              // Convert pixel delta to world units
+              centerWorldShift =
+                this._pixelsToWorldY(deltaFromCanvasCenterPx) || 0;
+            } catch (e) {
+              centerWorldShift = 0;
+            }
+
             card.scale.setScalar(finalScale);
             card.position.x = x;
-            card.position.y = y;
+            card.position.y = y + centerWorldShift;
             card.position.z = 0; // Keine Tiefenvariation
 
             // Reset metadata
-            card.userData.originalY = y;
-            card.userData.hoverY = y + 0.3; // Sanfte Hebung beim Hover
+            card.userData.originalY = y + centerWorldShift;
+            card.userData.hoverY = y + centerWorldShift + 0.3; // Sanfte Hebung beim Hover
             card.userData.originalZ = 0;
           }
         });
