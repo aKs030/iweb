@@ -146,7 +146,6 @@ textarea:focus-visible {
 main {
   margin-top: 0 !important;
   padding: 0 !important;
-  /* Inhalt zwischen Menü und Footer */
   min-height: calc(
     100vh - var(--content-top-offset) - var(--content-bottom-offset)
   );
@@ -166,7 +165,6 @@ main {
   justify-content: center;
 }
 
-/* Optimierung: content-visibility nur wenn unterstützt */
 @supports (content-visibility: auto) {
   .section {
     /* OPTIMIZATION: content-visibility allows browser to skip rendering work for off-screen sections */
@@ -215,12 +213,10 @@ body {
   color: var(--text-primary);
   margin: 0;
   text-rendering: optimizelegibility;
-  /* Safe-Area: Dynamischer Abstand für Menü und Footer */
   padding-top: var(--content-top-offset);
   padding-bottom: var(--content-bottom-offset);
   padding-left: var(--safe-left);
   padding-right: var(--safe-right);
-  /* Viewport-fit: Cover - Content respektiert Safe Areas */
   position: relative;
 }
 
@@ -515,7 +511,6 @@ a:hover {
   .container h4,
   .container h5,
   .container h6 {
-    overflow-wrap: break-word;
     overflow-wrap: anywhere;
   }
 }
