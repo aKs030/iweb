@@ -48,7 +48,7 @@ export async function onRequestPost(context) {
       rewrite_query: true,
       stream: false,
       system_prompt:
-        'Du bist ein hilfreicher Assistent. Antworte SEHR KURZ in maximal 1-2 Sätzen (max. 150 Zeichen). Sei präzise und direkt.',
+        'Du bist ein Suchassistent für abdulkerimsesli.de. Fasse die Suchergebnisse in 1-2 prägnanten Sätzen zusammen (max. 120 Zeichen). Fokussiere auf die wichtigsten Inhalte und vermeide generische Aussagen.',
     });
 
     // Transform AI Search Beta response to our format
@@ -56,28 +56,48 @@ export async function onRequestPost(context) {
       // Use helper to normalize URL
       const url = normalizeUrl(item.filename);
 
-      // Extract text content and clean it
-      let textContent = item.content?.map((c) => c.text).join(' ');
+      // Extract text content from multiple possible sources
+      let textContent = '';
 
+      // Try content array first
+      if (item.content && Array.isArray(item.content)) {
+        textContent = item.content.map((c) => c.text || '').join(' ');
+      }
+
+      // Fallback to other possible fields
+      if (!textContent && item.text) {
+        textContent = item.text;
+      }
+
+      if (!textContent && item.description) {
+        textContent = item.description;
+      }
+
+      // Clean the description
       textContent = cleanDescription(textContent);
 
       // Smart truncation: don't cut words in half
-      if (textContent && textContent.length > 200) {
+      if (textContent && textContent.length > 250) {
         // Find a good breaking point (space, comma, period)
-        let breakPoint = 200;
-        const lastSpace = textContent.lastIndexOf(' ', 200);
-        const lastComma = textContent.lastIndexOf(',', 200);
-        const lastPeriod = textContent.lastIndexOf('.', 200);
+        let breakPoint = 250;
+        const lastSpace = textContent.lastIndexOf(' ', 250);
+        const lastComma = textContent.lastIndexOf(',', 250);
+        const lastPeriod = textContent.lastIndexOf('.', 250);
 
         // Use the best breaking point
         breakPoint = Math.max(lastSpace, lastComma, lastPeriod);
 
         // If no good breaking point found or too far back, just use space
-        if (breakPoint < 150) {
-          breakPoint = lastSpace > 0 ? lastSpace : 200;
+        if (breakPoint < 180) {
+          breakPoint = lastSpace > 0 ? lastSpace : 250;
         }
 
         textContent = textContent.substring(0, breakPoint).trim();
+
+        // Add ellipsis if truncated
+        if (breakPoint < textContent.length) {
+          textContent += '...';
+        }
       }
 
       // Determine category from URL with better mapping
@@ -133,7 +153,7 @@ export async function onRequestPost(context) {
         url: url,
         title: title,
         category: category,
-        description: textContent || '',
+        description: textContent || 'Keine Beschreibung verfügbar',
         score: item.score || 0,
       };
     });
@@ -171,11 +191,9 @@ export async function onRequestPost(context) {
 
     const responseData = {
       results: finalResults,
-      summary:
-        (searchData.response || `Suchergebnisse für "${query}"`).substring(
-          0,
-          200,
-        ) + '...',
+      summary: searchData.response
+        ? searchData.response.trim().substring(0, 150)
+        : `${finalResults.length} ${finalResults.length === 1 ? 'Ergebnis' : 'Ergebnisse'} für "${query}"`,
       count: finalResults.length,
       query: query,
       expandedQuery: expandedQuery !== query ? expandedQuery : undefined,
