@@ -1,7 +1,7 @@
 /**
  * Cloudflare Pages Function - POST /api/ai
  * Modern AI Chat with RAG (Retrieval-Augmented Generation) using Groq + AI Search Beta
- * @version 9.0.0
+ * @version 9.1.0 - Enhanced RAG with relevance scoring and better context extraction
  */
 
 import { getCorsHeaders, handleOptions } from './_cors.js';
@@ -10,7 +10,116 @@ const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const GROQ_MODEL = 'llama-3.3-70b-versatile';
 
 /**
- * Search for relevant context using AI Search Beta
+ * Calculate relevance score for search results
+ * @param {Object} item - Search result item
+ * @param {string} query - Original query
+ * @returns {number} Relevance score (0-1)
+ */
+function calculateRelevanceScore(item, query) {
+  const queryLower = query.toLowerCase();
+  const queryTerms = queryLower.split(/\s+/).filter((t) => t.length > 2);
+
+  let score = 0;
+  const content =
+    item.content
+      ?.map((c) => c.text)
+      .join(' ')
+      .toLowerCase() || '';
+  const title = item.filename?.toLowerCase() || '';
+
+  // Title match (highest weight)
+  queryTerms.forEach((term) => {
+    if (title.includes(term)) score += 0.4;
+  });
+
+  // Content match
+  queryTerms.forEach((term) => {
+    const matches = (content.match(new RegExp(term, 'g')) || []).length;
+    score += Math.min(matches * 0.1, 0.3);
+  });
+
+  // Boost for exact phrase match
+  if (content.includes(queryLower)) {
+    score += 0.3;
+  }
+
+  return Math.min(score, 1);
+}
+
+/**
+ * Extract and clean content from search result
+ * @param {Object} item - Search result item
+ * @param {number} maxLength - Maximum content length
+ * @returns {string} Cleaned content
+ */
+function extractContent(item, maxLength = 400) {
+  if (!item.content || item.content.length === 0) {
+    return '';
+  }
+
+  // Join all content chunks
+  const fullContent = item.content
+    .map((c) => c.text)
+    .join(' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  // If content is short enough, return as is
+  if (fullContent.length <= maxLength) {
+    return fullContent;
+  }
+
+  // Try to find a good breaking point (sentence end)
+  const truncated = fullContent.substring(0, maxLength);
+  const lastPeriod = truncated.lastIndexOf('.');
+  const lastExclamation = truncated.lastIndexOf('!');
+  const lastQuestion = truncated.lastIndexOf('?');
+
+  const breakPoint = Math.max(lastPeriod, lastExclamation, lastQuestion);
+
+  if (breakPoint > maxLength * 0.7) {
+    return fullContent.substring(0, breakPoint + 1);
+  }
+
+  return truncated + '...';
+}
+
+/**
+ * Format URL for display
+ * @param {string} filename - Original filename/URL
+ * @returns {string} Clean URL path
+ */
+function formatUrl(filename) {
+  if (!filename) return '/';
+
+  return (
+    filename
+      .replace(/^https?:\/\/(www\.)?abdulkerimsesli\.de/, '')
+      .replace(/\/index\.html$/, '/')
+      .replace(/\.html$/, '') || '/'
+  );
+}
+
+/**
+ * Extract page title from filename
+ * @param {string} filename - Original filename
+ * @returns {string} Page title
+ */
+function extractTitle(filename) {
+  if (!filename) return 'Unbekannt';
+
+  const path = filename.split('/').filter(Boolean);
+  const lastSegment = path[path.length - 1] || 'Home';
+
+  return lastSegment
+    .replace('.html', '')
+    .replace(/-/g, ' ')
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+/**
+ * Search for relevant context using AI Search Beta with improved ranking
+ * @returns {Object} { context: string, sources: Array } or null
  */
 async function getRelevantContext(query, env) {
   if (!env.AI) {
@@ -18,10 +127,10 @@ async function getRelevantContext(query, env) {
   }
 
   try {
-    // Use AI Search Beta to get relevant context
+    // Use AI Search Beta to get relevant context (increased from 3 to 5)
     const searchData = await env.AI.autorag('wispy-pond-1055').aiSearch({
       query: query,
-      max_num_results: 3,
+      max_num_results: 5,
       rewrite_query: false,
       stream: false,
     });
@@ -30,25 +139,44 @@ async function getRelevantContext(query, env) {
       return null;
     }
 
-    // Format context from search results
-    const contextParts = searchData.data.map((item) => {
-      const url =
-        item.filename?.replace(/^https?:\/\/(www\.)?abdulkerimsesli\.de/, '') ||
-        '/';
-      const title =
-        item.filename?.split('/').pop()?.replace('.html', '') || 'Unbekannt';
-      const content =
-        item.content
-          ?.map((c) => c.text)
-          .join(' ')
-          .substring(0, 200) || '';
+    // Calculate relevance scores and sort
+    const scoredResults = searchData.data
+      .map((item) => ({
+        item,
+        score: calculateRelevanceScore(item, query),
+      }))
+      .filter((result) => result.score > 0.1) // Filter out low-relevance results
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 3); // Keep top 3 most relevant
 
-      return `Seite: ${title}
+    if (scoredResults.length === 0) {
+      return null;
+    }
+
+    // Format context from search results with better structure
+    const contextParts = scoredResults.map(({ item, score }) => {
+      const url = formatUrl(item.filename);
+      const title = extractTitle(item.filename);
+      const content = extractContent(item, 400);
+      const relevance = Math.round(score * 100);
+
+      return `[Relevanz: ${relevance}%] ${title}
 URL: ${url}
 Inhalt: ${content}`;
     });
 
-    return contextParts.join('\n\n---\n\n');
+    const contextHeader = `GEFUNDENE INFORMATIONEN (${scoredResults.length} relevante Ergebnisse):`;
+    const contextText = `${contextHeader}\n\n${contextParts.join('\n\n---\n\n')}`;
+
+    // Return both context text and source metadata
+    return {
+      context: contextText,
+      sources: scoredResults.map(({ item, score }) => ({
+        url: formatUrl(item.filename),
+        title: extractTitle(item.filename),
+        relevance: Math.round(score * 100),
+      })),
+    };
   } catch (error) {
     console.error('Context retrieval error:', error.message);
     return null;
@@ -80,17 +208,24 @@ export async function onRequestPost(context) {
     }
 
     // Try to get relevant context from AI Search Beta
-    const context = await getRelevantContext(prompt, env);
+    const contextData = await getRelevantContext(prompt, env);
 
     // Build system message with context if available
     let systemMessage =
       systemInstruction ||
       'Du bist Cyber, ein hilfreicher Roboter-Assistent auf der Portfolio-Website von Abdulkerim Sesli. Antworte freundlich und präzise auf Deutsch.';
 
-    if (context) {
-      systemMessage += `\n\nRELEVANTE INFORMATIONEN VON DER WEBSITE:\n${context}\n\nNutze diese Informationen, um präzise und hilfreiche Antworten zu geben. Wenn die Frage sich auf die Website bezieht, verweise auf die relevanten Seiten.`;
+    if (contextData) {
+      systemMessage += `\n\n${contextData.context}
+
+ANWEISUNGEN:
+- Nutze die gefundenen Informationen, um präzise und hilfreiche Antworten zu geben
+- Beziehe dich auf die Relevanz-Scores, um die wichtigsten Informationen zu priorisieren
+- Wenn du auf Seiten verweist, nutze die angegebenen URLs
+- Wenn die Informationen nicht ausreichen, sage das ehrlich und schlage vor, die Suche zu nutzen
+- Fasse mehrere Quellen zusammen, wenn sie zum Thema passen`;
     } else {
-      systemMessage += `\n\nDu bist auf der Portfolio-Website von Abdulkerim Sesli, einem Webentwickler aus Berlin. Die Website zeigt Projekte, Blog-Artikel, Fotografie und Videos. Wenn du nach spezifischen Inhalten gefragt wirst, empfehle die Suche-Funktion.`;
+      systemMessage += `\n\nDu bist auf der Portfolio-Website von Abdulkerim Sesli, einem Webentwickler aus Berlin. Die Website zeigt Projekte, Blog-Artikel, Fotografie und Videos. Wenn du nach spezifischen Inhalten gefragt wirst, empfehle die Suche-Funktion oder gib allgemeine Informationen über die verfügbaren Bereiche.`;
     }
 
     const messages = [
@@ -130,7 +265,9 @@ export async function onRequestPost(context) {
       JSON.stringify({
         text: responseText,
         model: GROQ_MODEL,
-        hasContext: !!context,
+        hasContext: !!contextData,
+        contextQuality: contextData ? contextData.sources.length : 0,
+        sources: contextData ? contextData.sources : [],
       }),
       { headers: corsHeaders },
     );
