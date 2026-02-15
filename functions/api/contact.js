@@ -70,20 +70,6 @@ export async function onRequestPost({ request, env }) {
       );
     }
 
-    // Sanitize user input for HTML email and then call Resend API
-    const escapeHtml = (s) =>
-      String(s || '')
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-
-    const safeName = escapeHtml(name);
-    const safeEmailDisplay = escapeHtml(email);
-    const safeSubject = escapeHtml(subject || 'Kein Betreff');
-    const safeMessageHtml = escapeHtml(message).replace(/\n/g, '<br>');
-
     // Call Resend API directly
     const resendResponse = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -95,14 +81,14 @@ export async function onRequestPost({ request, env }) {
         from: 'Contact Form <onboarding@resend.dev>',
         to: ['krm19030@gmail.com'],
         reply_to: email,
-        subject: `Kontaktformular: ${safeSubject}`,
+        subject: `Kontaktformular: ${subject || 'Kein Betreff'}`,
         html: `
           <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2>Neue Nachricht von ${safeName}</h2>
-            <p><strong>Absender:</strong> ${safeName} (<a href="mailto:${safeEmailDisplay}">${safeEmailDisplay}</a>)</p>
-            <p><strong>Betreff:</strong> ${safeSubject}</p>
+            <h2>Neue Nachricht von ${name}</h2>
+            <p><strong>Absender:</strong> ${name} (<a href="mailto:${email}">${email}</a>)</p>
+            <p><strong>Betreff:</strong> ${subject || 'Kein Betreff'}</p>
             <hr style="border: 1px solid #eee; margin: 20px 0;">
-            <div style="white-space: pre-wrap; background: #f9f9f9; padding: 15px; border-radius: 5px;">${safeMessageHtml}</div>
+            <div style="white-space: pre-wrap; background: #f9f9f9; padding: 15px; border-radius: 5px;">${message}</div>
             <hr style="border: 1px solid #eee; margin: 20px 0;">
             <p style="font-size: 12px; color: #666;">Diese E-Mail wurde über das Kontaktformular auf abdulkerimsesli.de gesendet.</p>
           </div>

@@ -178,76 +178,11 @@ export class CardManager {
             // Größere Kartengröße für besseren visuellen Impact
             const baseScale = 1.15;
             const adaptiveScale = Math.min(1, vw / 1400);
-            let finalScale = baseScale * Math.max(0.75, adaptiveScale);
-
-            // Respect viewport safe areas (menu + footer) and reduce scale
-            // if the vertical space between header and footer is too small.
-            try {
-              const canvasRect =
-                this.renderer.domElement.getBoundingClientRect();
-              const canvasHeight = canvasRect.height || window.innerHeight;
-
-              const safeTop =
-                parseFloat(
-                  getComputedStyle(document.documentElement).getPropertyValue(
-                    '--safe-top',
-                  ),
-                ) || 0;
-              const safeBottom =
-                parseFloat(
-                  getComputedStyle(document.documentElement).getPropertyValue(
-                    '--safe-bottom',
-                  ),
-                ) || 0;
-
-              const estimatedHeaderPx = 24 + safeTop; // approx. menu height + safe inset
-              const estimatedFooterPx = 40 + safeBottom; // approx. footer height + safe inset
-              const availablePixels = Math.max(
-                220,
-                canvasHeight - estimatedHeaderPx - estimatedFooterPx - 40,
-              );
-
-              // Convert pixels <-> world units at z~=0
-              const worldPerPixel = Math.abs(this._pixelsToWorldY(1)) || 0.0005;
-              const pixelsPerWorld = 1 / worldPerPixel;
-
-              // Current vertical world span of the card group (two rows + card height)
-              let cardSpacingY = 3.2; // vertical spacing in world units (may be reduced)
-              const desiredWorldGroupHeight =
-                cardSpacingY + this._baseH * finalScale;
-              const desiredPixelGroupHeight =
-                desiredWorldGroupHeight * pixelsPerWorld;
-
-              if (desiredPixelGroupHeight > availablePixels) {
-                // Calculate the exact scale required to fit the available pixel height
-                const requiredScale =
-                  (availablePixels / pixelsPerWorld - cardSpacingY) /
-                  this._baseH;
-                const MIN_SCALE = 0.45; // allow more aggressive downscaling on very small heights
-
-                if (requiredScale >= MIN_SCALE) {
-                  finalScale = Math.min(finalScale, requiredScale);
-                } else {
-                  // requiredScale is below minimum — clamp scale and reduce inter-row spacing as fallback
-                  finalScale = Math.min(finalScale, MIN_SCALE);
-
-                  // Compute maximum spacing (world units) that still fits with MIN_SCALE
-                  const maxSpacingWorld = Math.max(
-                    0.9,
-                    availablePixels / pixelsPerWorld - this._baseH * finalScale,
-                  );
-
-                  // Reduce spacing but keep it sensible
-                  cardSpacingY = Math.min(cardSpacingY, maxSpacingWorld);
-                }
-              }
-            } catch (e) {
-              // ignore measurement errors and keep default finalScale
-            }
+            const finalScale = baseScale * Math.max(0.75, adaptiveScale);
 
             // Grid-Abstände mit optimiertem Spacing
             const cardSpacingX = 3.0; // Horizontaler Abstand zwischen Karten
-            const cardSpacingY = 3.2; // Vertikaler Abstand zwischen Zeilen (may be adjusted above)
+            const cardSpacingY = 3.2; // Vertikaler Abstand zwischen Zeilen
 
             // Layout: 3 Karten oben, 2 unten (versetzt zentriert)
             let x, y;
@@ -264,212 +199,17 @@ export class CardManager {
               y = -cardSpacingY / 2; // Unten
             }
 
-            // Compute vertical centering between estimated header and footer safe areas
-            let centerWorldShift = 0;
-            try {
-              const canvasRect =
-                this.renderer.domElement.getBoundingClientRect();
-              const canvasHeight = canvasRect.height || window.innerHeight;
-
-              const safeTop =
-                parseFloat(
-                  getComputedStyle(document.documentElement).getPropertyValue(
-                    '--safe-top',
-                  ),
-                ) || 0;
-              const safeBottom =
-                parseFloat(
-                  getComputedStyle(document.documentElement).getPropertyValue(
-                    '--safe-bottom',
-                  ),
-                ) || 0;
-
-              const estimatedHeaderPx = 24 + safeTop;
-              const estimatedFooterPx = 40 + safeBottom;
-
-              const availableTop = estimatedHeaderPx;
-              const availableBottom = Math.max(
-                0,
-                canvasHeight - estimatedFooterPx,
-              );
-              const centerPixels = (availableTop + availableBottom) / 2;
-              const deltaFromCanvasCenterPx = centerPixels - canvasHeight / 2;
-
-              // Convert pixel delta to world units
-              centerWorldShift =
-                this._pixelsToWorldY(deltaFromCanvasCenterPx) || 0;
-            } catch (e) {
-              centerWorldShift = 0;
-            }
-
             card.scale.setScalar(finalScale);
             card.position.x = x;
-            card.position.y = y + centerWorldShift;
+            card.position.y = y;
             card.position.z = 0; // Keine Tiefenvariation
 
             // Reset metadata
-            card.userData.originalY = y + centerWorldShift;
-            card.userData.hoverY = y + centerWorldShift + 0.3; // Sanfte Hebung beim Hover
+            card.userData.originalY = y;
+            card.userData.hoverY = y + 0.3; // Sanfte Hebung beim Hover
             card.userData.originalZ = 0;
           }
         });
-
-        // --- Pixel-precise vertical centering between header and footer safe areas ---
-        try {
-          const rects = this.getCardScreenRects();
-          if (rects && rects.length > 0) {
-            const groupTop = Math.min(...rects.map((r) => r.top));
-            const groupBottom = Math.max(...rects.map((r) => r.bottom));
-            const groupHeightPx = Math.max(0, groupBottom - groupTop);
-
-            const canvasRect = this.renderer.domElement.getBoundingClientRect();
-            const viewportHeight = window.innerHeight || canvasRect.height || 0;
-
-            const safeTop =
-              parseFloat(
-                getComputedStyle(document.documentElement).getPropertyValue(
-                  '--safe-top',
-                ),
-              ) || 0;
-            const safeBottom =
-              parseFloat(
-                getComputedStyle(document.documentElement).getPropertyValue(
-                  '--safe-bottom',
-                ),
-              ) || 0;
-
-            const headerPx = 24 + safeTop;
-            const footerPx = 40 + safeBottom;
-
-            const safeAreaTopPx = headerPx;
-            // Use viewport coordinates for bottom of safe area so it matches
-            // getCardScreenRects() which returns viewport-relative values.
-            const safeAreaBottomPx = Math.max(0, viewportHeight - footerPx);
-            const safeAreaHeight = Math.max(
-              0,
-              safeAreaBottomPx - safeAreaTopPx,
-            );
-
-            // Only attempt to recenter if the group fits (or nearly fits) in the safe area
-            if (groupHeightPx <= safeAreaHeight + 4 && safeAreaHeight > 0) {
-              const targetCenterPx = safeAreaTopPx + safeAreaHeight / 2;
-              const currentCenterPx = groupTop + groupHeightPx / 2;
-              const deltaPx = targetCenterPx - currentCenterPx;
-
-              if (Math.abs(deltaPx) > 2) {
-                const worldShift = this._pixelsToWorldY(deltaPx) || 0;
-
-                this.cards.forEach((card) => {
-                  card.position.y += worldShift;
-                  if (typeof card.userData.originalY === 'number')
-                    card.userData.originalY += worldShift;
-                  if (typeof card.userData.hoverY === 'number')
-                    card.userData.hoverY += worldShift;
-                });
-              }
-            }
-
-            // Debug overlay helper (enable with ?three-debug=cards)
-            try {
-              const params = new URL(window.location.href).searchParams;
-              if (params.get('three-debug') === 'cards') {
-                const debugId = 'three-earth-cards-debug';
-                let debugEl = document.getElementById(debugId);
-                if (!debugEl) {
-                  debugEl = document.createElement('div');
-                  debugEl.id = debugId;
-                  Object.assign(debugEl.style, {
-                    position: 'fixed',
-                    inset: '0',
-                    pointerEvents: 'none',
-                    zIndex: '2147483647',
-                  });
-                  document.body.appendChild(debugEl);
-                }
-
-                // Clear previous markers
-                debugEl.innerHTML = '';
-
-                const mkLine = (topPx, color, label) => {
-                  const el = document.createElement('div');
-                  Object.assign(el.style, {
-                    position: 'absolute',
-                    left: '0',
-                    width: '100%',
-                    height: '2px',
-                    background: color,
-                    top: `${topPx}px`,
-                    opacity: '0.9',
-                  });
-                  if (label) {
-                    const l = document.createElement('div');
-                    l.textContent = label;
-                    Object.assign(l.style, {
-                      position: 'absolute',
-                      right: '8px',
-                      top: `${topPx + 4}px`,
-                      color: color,
-                      fontSize: '12px',
-                      background: 'rgba(0,0,0,0.5)',
-                      padding: '2px 6px',
-                      borderRadius: '4px',
-                    });
-                    debugEl.appendChild(l);
-                  }
-                  debugEl.appendChild(el);
-                };
-
-                // safe area lines
-                mkLine(
-                  safeAreaTopPx,
-                  'orange',
-                  `safe top ${Math.round(safeAreaTopPx)}px`,
-                );
-                mkLine(
-                  safeAreaBottomPx,
-                  'orange',
-                  `safe bottom ${Math.round(safeAreaBottomPx)}px`,
-                );
-
-                // group bounds
-                const groupRect = document.createElement('div');
-                Object.assign(groupRect.style, {
-                  position: 'absolute',
-                  left: '20%',
-                  width: '60%',
-                  top: `${groupTop}px`,
-                  height: `${Math.max(4, groupHeightPx)}px`,
-                  border: '2px dashed lime',
-                  background: 'rgba(0,255,0,0.03)',
-                  boxSizing: 'border-box',
-                  pointerEvents: 'none',
-                });
-                debugEl.appendChild(groupRect);
-
-                // small info panel
-                const info = document.createElement('div');
-                Object.assign(info.style, {
-                  position: 'fixed',
-                  left: '8px',
-                  bottom: '8px',
-                  background: 'rgba(0,0,0,0.6)',
-                  color: '#fff',
-                  padding: '8px 10px',
-                  borderRadius: '6px',
-                  fontSize: '12px',
-                  pointerEvents: 'none',
-                });
-                info.innerHTML = `group ${Math.round(groupTop)}–${Math.round(groupBottom)} px, safe ${Math.round(safeAreaTopPx)}–${Math.round(safeAreaBottomPx)} px`;
-                debugEl.appendChild(info);
-              }
-            } catch (err) {
-              // ignore debug overlay errors
-            }
-          }
-        } catch (err) {
-          // ignore measurement errors — centering is cosmetic
-        }
-
         this._resizeRAF = null;
       });
     };
