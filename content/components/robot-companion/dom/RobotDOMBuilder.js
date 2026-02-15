@@ -639,130 +639,174 @@ export class RobotDOMBuilder {
 
     // Handle - extending from hand (0,0) UPWARDS/OUTWARDS to the lens center
     // Let's define the handle going straight UP relative to the group's local coords (0,-10).
-    // Improved handle with slight taper/shading simulation (two lines)
-    const handleBase = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'line',
-    );
-    handleBase.setAttribute('x1', '0');
-    handleBase.setAttribute('y1', '1'); // Slightly inside hand
-    handleBase.setAttribute('x2', '0');
-    handleBase.setAttribute('y2', '-12'); // Handle length 13px
-    handleBase.setAttribute('stroke', '#64748b'); // Slate-500 (darker base)
-    handleBase.setAttribute('stroke-width', '4');
-    handleBase.setAttribute('stroke-linecap', 'butt');
-
-    const handleHighlight = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'line',
-    );
-    handleHighlight.setAttribute('x1', '-0.5');
-    handleHighlight.setAttribute('y1', '1');
-    handleHighlight.setAttribute('x2', '-0.5');
-    handleHighlight.setAttribute('y2', '-12');
-    handleHighlight.setAttribute('stroke', '#94a3b8'); // Slate-400 (lighter highlight)
-    handleHighlight.setAttribute('stroke-width', '1.5');
-    handleHighlight.setAttribute('stroke-linecap', 'butt');
-
-    // Lens Gradients
+    // --- Definitions for Photorealism ---
     const localDefs = document.createElementNS(
       'http://www.w3.org/2000/svg',
       'defs',
     );
 
-    // 1. Main Glass Gradient (Flatter, more realistic)
-    const glassGradientId = 'glassGradient';
-    const glassGradient = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'linearGradient', // Changed from radial to linear for flatter look
-    );
-    glassGradient.setAttribute('id', glassGradientId);
-    glassGradient.setAttribute('x1', '0%');
-    glassGradient.setAttribute('y1', '0%');
-    glassGradient.setAttribute('x2', '100%');
-    glassGradient.setAttribute('y2', '100%');
-
-    // Top-left: subtle highlight
-    const stopG1 = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'stop',
-    );
-    stopG1.setAttribute('offset', '0%');
-    stopG1.setAttribute('stop-color', 'rgba(255, 255, 255, 0.15)');
-
-    // Center: Almost completely transparent (clear glass)
-    const stopG2 = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'stop',
-    );
-    stopG2.setAttribute('offset', '50%');
-    stopG2.setAttribute('stop-color', 'rgba(255, 255, 255, 0.02)');
-
-    // Bottom-right: Very subtle tint for refraction
-    const stopG3 = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'stop',
-    );
-    stopG3.setAttribute('offset', '100%');
-    stopG3.setAttribute('stop-color', 'rgba(64, 224, 208, 0.08)');
-
-    glassGradient.append(stopG1, stopG2, stopG3);
-
-    // 2. Metal Rim Gradient (Cylindrical look)
-    const rimGradientId = 'rimGradient';
-    const rimGradient = document.createElementNS(
+    // 1. Handle Gradient (Cylindrical Black/Dark Grey)
+    const handleGradientId = 'handleGradient';
+    const handleGradient = document.createElementNS(
       'http://www.w3.org/2000/svg',
       'linearGradient',
     );
-    rimGradient.setAttribute('id', rimGradientId);
-    rimGradient.setAttribute('x1', '0%');
-    rimGradient.setAttribute('y1', '0%');
-    rimGradient.setAttribute('x2', '100%');
-    rimGradient.setAttribute('y2', '100%');
+    handleGradient.setAttribute('id', handleGradientId);
+    handleGradient.setAttribute('x1', '0%');
+    handleGradient.setAttribute('y1', '0%');
+    handleGradient.setAttribute('x2', '100%');
+    handleGradient.setAttribute('y2', '0%'); // Horizontal gradient across width
 
-    const stopR1 = document.createElementNS(
+    // Left edge (shadow)
+    const stopH1 = document.createElementNS(
       'http://www.w3.org/2000/svg',
       'stop',
     );
-    stopR1.setAttribute('offset', '0%');
-    stopR1.setAttribute('stop-color', '#e2e8f0'); // Light grey
-
-    const stopR2 = document.createElementNS(
+    stopH1.setAttribute('offset', '0%');
+    stopH1.setAttribute('stop-color', '#1e293b'); // Dark Slate
+    // Center (highlight)
+    const stopH2 = document.createElementNS(
       'http://www.w3.org/2000/svg',
       'stop',
     );
-    stopR2.setAttribute('offset', '50%');
-    stopR2.setAttribute('stop-color', '#94a3b8'); // Mid grey
-
-    const stopR3 = document.createElementNS(
+    stopH2.setAttribute('offset', '40%');
+    stopH2.setAttribute('stop-color', '#475569'); // Lighter Slate
+    // Right edge (shadow)
+    const stopH3 = document.createElementNS(
       'http://www.w3.org/2000/svg',
       'stop',
     );
-    stopR3.setAttribute('offset', '100%');
-    stopR3.setAttribute('stop-color', '#475569'); // Dark grey
+    stopH3.setAttribute('offset', '100%');
+    stopH3.setAttribute('stop-color', '#0f172a'); // Very Dark
 
-    rimGradient.append(stopR1, stopR2, stopR3);
+    handleGradient.append(stopH1, stopH2, stopH3);
 
-    localDefs.append(glassGradient, rimGradient);
+    // 2. Realistic Chrome Rim Gradient
+    const chromeGradientId = 'chromeGradient';
+    const chromeGradient = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'linearGradient',
+    );
+    chromeGradient.setAttribute('id', chromeGradientId);
+    chromeGradient.setAttribute('x1', '0%');
+    chromeGradient.setAttribute('y1', '0%');
+    chromeGradient.setAttribute('x2', '100%');
+    chromeGradient.setAttribute('y2', '100%'); // Diagonal light
+
+    // Complex metallic reflection stops
+    const stops = [
+      { off: '0%', col: '#e2e8f0' }, // Highlight
+      { off: '25%', col: '#cbd5e1' }, // Mid
+      { off: '50%', col: '#64748b' }, // Shadow
+      { off: '51%', col: '#ffffff' }, // Specular flash
+      { off: '75%', col: '#94a3b8' }, // Mid
+      { off: '100%', col: '#475569' }, // Dark
+    ];
+    stops.forEach((s) => {
+      const stop = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'stop',
+      );
+      stop.setAttribute('offset', s.off);
+      stop.setAttribute('stop-color', s.col);
+      chromeGradient.appendChild(stop);
+    });
+
+    // 3. Realistic Glass Gradient (Clear with subtle refraction)
+    const realGlassGradientId = 'realGlassGradient';
+    const realGlassGradient = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'radialGradient',
+    );
+    realGlassGradient.setAttribute('id', realGlassGradientId);
+    realGlassGradient.setAttribute('cx', '50%');
+    realGlassGradient.setAttribute('cy', '50%');
+    realGlassGradient.setAttribute('r', '50%');
+
+    // Center - Ultra clear
+    const stopRG1 = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'stop',
+    );
+    stopRG1.setAttribute('offset', '70%');
+    stopRG1.setAttribute('stop-color', 'rgba(255, 255, 255, 0.01)');
+
+    // Edge - Subtle dark/green tint (common in real glass)
+    const stopRG2 = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'stop',
+    );
+    stopRG2.setAttribute('offset', '100%');
+    stopRG2.setAttribute('stop-color', 'rgba(200, 230, 230, 0.15)');
+
+    realGlassGradient.append(stopRG1, stopRG2);
+
+    // 4. Drop Shadow Filter
+    const shadowFilter = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'filter',
+    );
+    shadowFilter.setAttribute('id', 'magShadow');
+    shadowFilter.setAttribute('x', '-50%');
+    shadowFilter.setAttribute('y', '-50%');
+    shadowFilter.setAttribute('width', '200%');
+    shadowFilter.setAttribute('height', '200%');
+    const feDropShadow = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'feDropShadow',
+    );
+    feDropShadow.setAttribute('dx', '1');
+    feDropShadow.setAttribute('dy', '2');
+    feDropShadow.setAttribute('stdDeviation', '2');
+    feDropShadow.setAttribute('flood-color', '#000000');
+    feDropShadow.setAttribute('flood-opacity', '0.3');
+    shadowFilter.appendChild(feDropShadow);
+
+    localDefs.append(
+      handleGradient,
+      chromeGradient,
+      realGlassGradient,
+      shadowFilter,
+    );
     g.append(localDefs);
 
-    // Connector (between handle and rim)
-    const connector = document.createElementNS(
+    // Apply shadow to group? Or better to specific elements. Let's apply to rim/handle.
+    // Actually, applying to the whole group might be heavy during animation. Let's apply to rim.
+
+    // --- Construction ---
+
+    // 1. Handle (Cylindrical)
+    const handleRect = document.createElementNS(
       'http://www.w3.org/2000/svg',
       'rect',
     );
-    connector.setAttribute('x', '-2');
-    connector.setAttribute('y', '-14');
-    connector.setAttribute('width', '4');
-    connector.setAttribute('height', '3');
-    connector.setAttribute('rx', '1');
-    connector.setAttribute('fill', '#64748b');
+    handleRect.setAttribute('x', '-2');
+    handleRect.setAttribute('y', '-14'); // Length 14 + 2 inside hand
+    handleRect.setAttribute('width', '4');
+    handleRect.setAttribute('height', '16');
+    handleRect.setAttribute('rx', '1');
+    handleRect.setAttribute('fill', `url(#${handleGradientId})`);
+    // Add a cap at the bottom
+    const handleCap = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'circle',
+    );
+    handleCap.setAttribute('cx', '0');
+    handleCap.setAttribute('cy', '1');
+    handleCap.setAttribute('r', '2');
+    handleCap.setAttribute('fill', '#0f172a'); // Dark cap
 
-    // Glass Rim (Outer Metal Ring)
-    // Center at (0, -24) approx (handle -12, + connector 2 + radius 10)
-    // Let's adjust center to (0, -25) for 13px radius
+    // 2. Connector (Chrome Neck)
+    const connector = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'path',
+    );
+    connector.setAttribute('d', 'M-1.5,-14 L1.5,-14 L2.5,-17 L-2.5,-17 Z');
+    connector.setAttribute('fill', `url(#${chromeGradientId})`);
+
+    // 3. Rim (Chrome Ring) - Using stroke
     const cx = 0;
-    const cy = -25;
+    const cy = -29; // handle -14, connector -3, radius 12 -> -29 center
     const radius = 12;
 
     const rim = document.createElementNS(
@@ -773,58 +817,74 @@ export class RobotDOMBuilder {
     rim.setAttribute('cy', String(cy));
     rim.setAttribute('r', String(radius));
     rim.setAttribute('fill', 'none');
-    rim.setAttribute('stroke', `url(#${rimGradientId})`);
-    rim.setAttribute('stroke-width', '3'); // Thicker metal rim
+    rim.setAttribute('stroke', `url(#${chromeGradientId})`);
+    rim.setAttribute('stroke-width', '2.5');
+    rim.setAttribute('filter', 'url(#magShadow)'); // Add shadow for depth
 
-    // Inner Lens Surface
+    // 4. Lens (Glass)
     const lens = document.createElementNS(
       'http://www.w3.org/2000/svg',
       'circle',
     );
-    lens.setAttribute('class', 'robot-lens');
     lens.setAttribute('cx', String(cx));
     lens.setAttribute('cy', String(cy));
-    lens.setAttribute('r', String(radius - 1.5)); // Slightly smaller to fit inside rim
-    lens.setAttribute('fill', `url(#${glassGradientId})`);
-    // Optional: Subtle inner stroke for depth
-    lens.setAttribute('stroke', 'rgba(255, 255, 255, 0.3)');
+    lens.setAttribute('r', String(radius - 1.25)); // Just inside rim
+    lens.setAttribute('fill', `url(#${realGlassGradientId})`);
+    // Inner bevel shadow (inset) simulation using stroke
+    lens.setAttribute('stroke', 'rgba(0,0,0,0.1)');
     lens.setAttribute('stroke-width', '0.5');
 
-    // Realistic Reflections (Flat, sharp glass reflections)
-    // 1. Sharp diagonal reflection (classic cartoon glass shine)
-    const reflection1 = document.createElementNS(
+    // 5. Realistic Reflections (Photorealism)
+    // Soft, wide glare across top half
+    const glare = document.createElementNS(
       'http://www.w3.org/2000/svg',
-      'line',
+      'path',
     );
-    reflection1.setAttribute('x1', String(cx - 5));
-    reflection1.setAttribute('y1', String(cy - 5));
-    reflection1.setAttribute('x2', String(cx - 2));
-    reflection1.setAttribute('y2', String(cy - 8));
-    reflection1.setAttribute('stroke', 'rgba(255, 255, 255, 0.6)');
-    reflection1.setAttribute('stroke-width', '2');
-    reflection1.setAttribute('stroke-linecap', 'round');
+    glare.setAttribute(
+      'd',
+      `M${cx - 9},${cy - 5} Q${cx},${cy - 14} ${cx + 9},${cy - 5} Q${cx},${cy - 9} ${cx - 9},${cy - 5}`,
+    );
+    glare.setAttribute('fill', 'rgba(255, 255, 255, 0.15)');
+    glare.setAttribute('filter', 'blur(1px)');
 
-    // 2. Smaller secondary reflection
-    const reflection2 = document.createElementNS(
+    // Sharp specular highlight (Point light source)
+    const specular = document.createElementNS(
       'http://www.w3.org/2000/svg',
-      'line',
+      'ellipse',
     );
-    reflection2.setAttribute('x1', String(cx - 1));
-    reflection2.setAttribute('y1', String(cy - 2));
-    reflection2.setAttribute('x2', String(cx + 0.5));
-    reflection2.setAttribute('y2', String(cy - 3.5));
-    reflection2.setAttribute('stroke', 'rgba(255, 255, 255, 0.4)');
-    reflection2.setAttribute('stroke-width', '1.5');
-    reflection2.setAttribute('stroke-linecap', 'round');
+    specular.setAttribute('cx', String(cx - 5));
+    specular.setAttribute('cy', String(cy - 6));
+    specular.setAttribute('rx', '2.5');
+    specular.setAttribute('ry', '1.5');
+    specular.setAttribute('transform', `rotate(-45, ${cx - 5}, ${cy - 6})`);
+    specular.setAttribute('fill', 'white');
+    specular.setAttribute('opacity', '0.7');
+    specular.setAttribute('filter', 'blur(0.5px)');
+
+    // Bottom edge refraction (internal reflection)
+    const refraction = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'path',
+    );
+    refraction.setAttribute(
+      'd',
+      `M${cx - 8},${cy + 4} Q${cx},${cy + 10} ${cx + 8},${cy + 4}`,
+    );
+    refraction.setAttribute('fill', 'none');
+    refraction.setAttribute('stroke', 'rgba(255, 255, 255, 0.3)');
+    refraction.setAttribute('stroke-width', '1.5');
+    refraction.setAttribute('stroke-linecap', 'round');
+    refraction.setAttribute('opacity', '0.6');
 
     g.append(
-      handleBase,
-      handleHighlight,
+      handleRect,
+      handleCap,
       connector,
-      lens,
       rim,
-      reflection1,
-      reflection2,
+      lens,
+      glare,
+      specular,
+      refraction,
     );
 
     return g;
