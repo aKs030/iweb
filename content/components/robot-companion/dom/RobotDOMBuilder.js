@@ -611,8 +611,9 @@ export class RobotDOMBuilder {
     g.style.opacity = '0';
     g.style.transformBox = 'fill-box';
     g.style.transformOrigin = 'center';
-    // Position near right hand (approx 75, 80)
-    g.setAttribute('transform', 'translate(72, 75) rotate(-45) scale(0.8)');
+    // Position adjusted to be held by the right hand
+    // Right arm ends around 75, 80
+    g.setAttribute('transform', 'translate(78, 82) rotate(-35) scale(0.9)');
 
     // Handle
     const handle = document.createElementNS(

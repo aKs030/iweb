@@ -1127,11 +1127,14 @@ export class RobotAnimation {
     this.searchAnimation.targetX = 0; // Return to origin x=0
     this.searchAnimation.targetY = 0; // Return to origin y=0
 
+    // Ensure loop continues if it was stuck
+    requestAnimationFrame(this.updateSearchAnimation);
+
     // Hide magnifying glass
     if (this.robot.dom.magnifyingGlass) {
       this.robot.dom.magnifyingGlass.style.opacity = '0';
       this.robot.dom.magnifyingGlass.style.transform =
-        'translate(72px, 75px) rotate(-45deg) scale(0.8)';
+        'translate(78px, 82px) rotate(-35deg) scale(0.9)';
     }
 
     // Keep loop running until returned
@@ -1208,10 +1211,10 @@ export class RobotAnimation {
         const scanY = Math.cos(this.searchAnimation.hoverPhase * 2) * 3;
         const scanRot = Math.sin(this.searchAnimation.hoverPhase * 1.5) * 10;
 
-        // Base transform: translate(72, 75) rotate(-45) scale(0.8)
+        // Base transform: translate(78, 82) rotate(-35) scale(0.9)
         this.robot.dom.magnifyingGlass.style.transform = `translate(${
-          72 + scanX
-        }px, ${75 + scanY}px) rotate(${-45 + scanRot}deg) scale(0.8)`;
+          78 + scanX
+        }px, ${82 + scanY}px) rotate(${-35 + scanRot}deg) scale(0.9)`;
       }
 
       // Eyes following the scan
