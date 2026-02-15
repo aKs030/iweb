@@ -13,7 +13,7 @@ import { createUseTranslation } from '/content/core/react-utils.js';
 import { AppLoadManager } from '/content/core/load-manager.js';
 import { i18n } from '/content/core/i18n.js';
 import { marked } from 'https://cdn.jsdelivr.net/npm/marked@11.1.1/lib/marked.esm.js';
-import DOMPurify from 'https://cdn.jsdelivr.net/npm/dompurify@3.3.1/dist/purify.es.mjs';
+import { sanitizeHTML } from '/content/core/html-sanitizer.js';
 import { Clock, ArrowRight, ArrowUp } from '/content/components/icons/icons.js';
 import { createErrorBoundary } from '/content/components/ErrorBoundary.js';
 
@@ -574,7 +574,7 @@ const BlogApp = () => {
   const activePostHtml = React.useMemo(
     () =>
       activePost
-        ? DOMPurify.sanitize(
+        ? sanitizeHTML(
             activePost.html ||
               (activePost.content ? marked.parse(activePost.content) : ''),
             { ADD_ATTR: ['id', 'class'] },
