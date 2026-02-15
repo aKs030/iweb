@@ -3,7 +3,7 @@ import { Send, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 
 const { createElement: h, Fragment } = React;
 
-export function ContactForm() {
+function ContactForm() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
