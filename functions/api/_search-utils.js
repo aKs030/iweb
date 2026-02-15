@@ -238,22 +238,141 @@ export function cleanDescription(text) {
   // 6. Remove specific site artifacts reported by users
   // Remove "Skip to main content" links (flexible match)
   cleaned = cleaned.replace(/\[?Zum Hauptinhalt springen\]?(\([^)]*\))?/gi, '');
+  cleaned = cleaned.replace(/menu\.skip_mainmenu\.skip_nav/gi, '');
 
   // Remove site brand/title artifacts
   cleaned = cleaned.replace(/AKS \| WEB/g, '');
+  cleaned = cleaned.replace(/© \d{4} Abdulkerim Sesli/gi, '');
 
   // Remove loading screen text
   cleaned = cleaned.replace(/Initialisiere System(\.\.\.)?/gi, '');
   cleaned = cleaned.replace(/\d+%\s*\d+%/g, ''); // Matches "0% 0%"
+
+  // Remove specific UI artifacts (Cookie banner, Chat, Menu, Scroll hints)
+  cleaned = cleaned.replace(
+    /🍪\s*Wir nutzen Analytics[\s\S]*?Datenschutz/gi,
+    '',
+  );
+  cleaned = cleaned.replace(
+    /Soll ich dir was zeigen\?×\s*\?\s*Hauptmenü geschlossen/gi,
+    '',
+  );
+  cleaned = cleaned.replace(/Scroll to explore • Click to view/gi, '');
+  cleaned = cleaned.replace(
+    /Premium Fotogalerie Professionelle Fotografie in höchster Qualität/gi,
+    '',
+  );
+  cleaned = cleaned.replace(/Fotos Eindrücke/gi, '');
+
+  // Remove persistent 3D Earth overlay description that leaks into many pages
+  cleaned = cleaned.replace(
+    /Eine interaktive 3D-Darstellung der Erde[\s\S]*?Kamera-Modi\./gi,
+    '',
+  );
+  cleaned = cleaned.replace(/🌍 CSS-Modus/gi, '');
 
   // Remove raw JSON/JSON-LD blocks that might have been indexed
   // Matches any markdown code blocks
   cleaned = cleaned.replace(/```[\s\S]*?```/g, '');
   // Matches raw JSON-LD structure starting with @context
   cleaned = cleaned.replace(/\{\s*"@context":[\s\S]*?\}/g, '');
+  // Matches partial JSON array fragments often found in search snippets
+  cleaned = cleaned.replace(/\[\s*\{\s*"@type":[\s\S]*?\}\s*\]/g, '');
+  cleaned = cleaned.replace(/\}\s*,\s*\{\s*"@type":[\s\S]*?\}/g, '');
+  // Matches hanging JSON closing braces often left after truncation
+  cleaned = cleaned.replace(
+    /(\}\s*\]\s*\}\s*,?\s*\{\s*"@type":\s*"[^"]+")/g,
+    '',
+  );
+  // Clean remaining JSON syntax characters if they appear in isolation or clusters
+  cleaned = cleaned.replace(/```json\s*\}?(\s*\]\s*\}\s*,?)?/g, '');
+  cleaned = cleaned.replace(/(\}\s*,\s*)?\{\s*"@type":[\s\S]*?\}/g, '');
+  // Remove trailing JSON artifacts like `url": "..."` or closing braces
+  cleaned = cleaned.replace(/,\s*"url":\s*"[^"]+"[\s\S]*/, '');
 
   // 7. Normalize whitespace
   cleaned = cleaned.replace(/\s+/g, ' ').trim();
 
   return cleaned;
+}
+
+/**
+ * Creates a smart text snippet focused on the query terms
+ * @param {string} content - Full text content
+ * @param {string} query - Search query
+ * @param {number} maxLength - Maximum length of the snippet (default: 160)
+ * @returns {string} Context-aware snippet
+ */
+export function createSnippet(content, query, maxLength = 160) {
+  if (!content || !query) return content ? content.substring(0, maxLength) : '';
+
+  const cleanContent = cleanDescription(content);
+  const words = query
+    .toLowerCase()
+    .split(/\s+/)
+    .filter((w) => w.length > 2);
+
+  // If no valid query words, return start of content
+  if (words.length === 0) {
+    return (
+      cleanContent.substring(0, maxLength) +
+      (cleanContent.length > maxLength ? '...' : '')
+    );
+  }
+
+  // Find the first occurrence of any query word
+  let bestIndex = -1;
+  const contentLower = cleanContent.toLowerCase();
+
+  for (const word of words) {
+    const index = contentLower.indexOf(word);
+    if (index !== -1) {
+      if (bestIndex === -1 || index < bestIndex) {
+        bestIndex = index;
+      }
+    }
+  }
+
+  // If match found, center the window around it
+  if (bestIndex !== -1) {
+    const halfLength = Math.floor(maxLength / 2);
+    let start = Math.max(0, bestIndex - halfLength);
+    let end = start + maxLength;
+
+    // Adjust if window goes beyond end
+    if (end > cleanContent.length) {
+      end = cleanContent.length;
+      start = Math.max(0, end - maxLength);
+    }
+
+    // Try to align start to a word boundary
+    if (start > 0) {
+      const spaceIndex = cleanContent.lastIndexOf(' ', start);
+      if (spaceIndex !== -1 && start - spaceIndex < 20) {
+        start = spaceIndex + 1;
+      }
+    }
+
+    // Try to align end to a word boundary
+    if (end < cleanContent.length) {
+      const spaceIndex = cleanContent.indexOf(' ', end);
+      if (spaceIndex !== -1 && spaceIndex - end < 20) {
+        end = spaceIndex;
+      }
+    }
+
+    let snippet = cleanContent.substring(start, end);
+
+    // Add ellipsis if needed
+    if (start > 0) snippet = '...' + snippet;
+    if (end < cleanContent.length) snippet = snippet + '...';
+
+    return snippet;
+  }
+
+  // Fallback: Return start of content if no match found
+  return (
+    cleanContent.substring(0, maxLength) +
+    (cleanContent.length > maxLength ? '...' : '')
+  );
 }
