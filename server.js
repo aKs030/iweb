@@ -307,7 +307,7 @@ const CLEAN_URLS = {
   '/videos/': 'pages/videos/index.html',
   '/impressum/': 'pages/impressum/index.html',
   '/datenschutz/': 'pages/datenschutz/index.html',
-  '/contact/': 'pages/contact/index.html',
+  '/contact/': 'content/components/contact/index.html',
 };
 
 function tryServe(filePath, res, url = '/') {

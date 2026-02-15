@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import { createRoot } from 'react-dom/client';
 import { Send, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 
 const { createElement: h, Fragment } = React;
 
-const ContactForm = () => {
+export function ContactForm() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -255,11 +254,6 @@ const ContactForm = () => {
       ),
     ),
   );
-};
-
-// Initialize
-const rootEl = document.getElementById('root');
-if (rootEl) {
-  const root = createRoot(rootEl);
-  root.render(h(ContactForm));
 }
+
+export default ContactForm;
