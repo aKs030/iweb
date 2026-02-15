@@ -209,13 +209,7 @@ export class RobotDOMBuilder {
     const body = this.createBody();
     svg.appendChild(body);
 
-    // Arms (rendered first so hand can be overlaid if needed, but usually glass handle is held)
-    // Actually, to make it look like held *in* hand, handle should be behind fingers or simply attached.
-    // The previous code had glass BEFORE arms. Let's keep that.
-    const magnifyingGlass = this.createMagnifyingGlass();
-    svg.appendChild(magnifyingGlass);
-
-    // Arms
+    // Arms (now includes magnifying glass in left arm group)
     const arms = this.createArms();
     svg.appendChild(arms);
 
@@ -487,11 +481,17 @@ export class RobotDOMBuilder {
     const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     g.classList.add('robot-arms');
 
+    // Left Arm Group (includes arm, hand, and magnifying glass)
+    const leftArmGroup = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'g',
+    );
+    leftArmGroup.classList.add('robot-arm', 'left');
+
     const leftArm = document.createElementNS(
       'http://www.w3.org/2000/svg',
       'path',
     );
-    leftArm.classList.add('robot-arm', 'left');
     // Adjusted grip to wrap around the handle at approx (22, 82) - Viewer's Left
     // Mirrored from old right arm: M30,62 Q18,72 22,82
     leftArm.setAttribute('d', 'M30,62 Q18,72 22,82');
@@ -510,6 +510,11 @@ export class RobotDOMBuilder {
     leftHand.setAttribute('r', '3'); // Simple round grip
     leftHand.setAttribute('fill', '#40e0d0');
 
+    // Add magnifying glass to left arm group
+    const magnifyingGlass = this.createMagnifyingGlass();
+
+    leftArmGroup.append(leftArm, leftHand, magnifyingGlass);
+
     const rightArm = document.createElementNS(
       'http://www.w3.org/2000/svg',
       'path',
@@ -523,7 +528,7 @@ export class RobotDOMBuilder {
     rightArm.setAttribute('stroke-width', '3');
     rightArm.setAttribute('stroke-linecap', 'round');
 
-    g.append(leftArm, leftHand, rightArm);
+    g.append(leftArmGroup, rightArm);
 
     return g;
   }

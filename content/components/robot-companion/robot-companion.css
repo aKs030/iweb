@@ -282,7 +282,6 @@
 
 /* Arms Styling */
 .robot-arm {
-  transform-origin: 20% 20%; /* Pivot at shoulder */
   transition: transform 0.4s ease;
   will-change: transform;
 }
