@@ -235,6 +235,13 @@ body {
   box-sizing: border-box;
 }
 
+/* Page-specific container overrides — centralized */
+.contact-page main.container {
+  /* Contact page is narrower and gets extra inner padding */
+  max-width: 800px;
+  padding: 2rem;
+}
+
 /* ===== END BASE STYLES ===== */
 
 /* ===== TYPOGRAPHY ===== */
