@@ -13,6 +13,21 @@ export class RobotContextReactions {
   }
 
   /**
+   * Show a random message from array
+   * @param {string[]} messages
+   * @param {number} duration
+   * @private
+   */
+  _showRandomMessage(messages, duration = 3000) {
+    const randomMessage = messages[Math.floor(Math.random() * messages.length)];
+    this.robot.chatModule?.showBubble(randomMessage);
+
+    setTimeout(() => {
+      this.robot.chatModule?.hideBubble();
+    }, duration);
+  }
+
+  /**
    * Start monitoring user behavior
    */
   startMonitoring() {
@@ -76,12 +91,7 @@ export class RobotContextReactions {
       'Nicht so hastig! 😵',
     ];
 
-    const randomMessage = messages[Math.floor(Math.random() * messages.length)];
-    this.robot.chatModule?.showBubble(randomMessage);
-
-    setTimeout(() => {
-      this.robot.chatModule?.hideBubble();
-    }, 2000);
+    this._showRandomMessage(messages, 2000);
   }
 
   /**
@@ -134,12 +144,7 @@ export class RobotContextReactions {
       'Toll! Alles erledigt! 🎊',
     ];
 
-    const randomMessage = messages[Math.floor(Math.random() * messages.length)];
-    this.robot.chatModule?.showBubble(randomMessage);
-
-    setTimeout(() => {
-      this.robot.chatModule?.hideBubble();
-    }, 3000);
+    this._showRandomMessage(messages, 3000);
   }
 
   /**
@@ -158,11 +163,9 @@ export class RobotContextReactions {
       'Hmm, das hat nicht geklappt... 🤔',
     ];
 
-    const randomMessage = messages[Math.floor(Math.random() * messages.length)];
-    this.robot.chatModule?.showBubble(randomMessage);
+    this._showRandomMessage(messages, 3000);
 
     setTimeout(() => {
-      this.robot.chatModule?.hideBubble();
       this.robot.emotionsModule?.setMouthExpression('neutral');
     }, 3000);
   }
@@ -262,12 +265,7 @@ export class RobotContextReactions {
       'Alles okay? Brauchst du Hilfe? 🥱',
     ];
 
-    const randomMessage = messages[Math.floor(Math.random() * messages.length)];
-    this.robot.chatModule?.showBubble(randomMessage);
-
-    setTimeout(() => {
-      this.robot.chatModule?.hideBubble();
-    }, 3000);
+    this._showRandomMessage(messages, 3000);
   }
 
   /**
