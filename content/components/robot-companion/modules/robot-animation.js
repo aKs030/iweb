@@ -1074,9 +1074,16 @@ export class RobotAnimation {
 
     // Adjust if off-screen
     if (targetLeft + robotSize > windowWidth) {
-      // If no space on right, put it on top-right corner overlapping slightly
-      targetLeft = windowWidth - robotSize - 10;
-      targetTop = targetRect.top - robotSize + 20;
+      // If no space on right, position above the search input field (centered)
+      targetLeft = targetRect.left + targetRect.width / 2 - robotSize / 2;
+      targetTop = targetRect.top - robotSize - 10;
+
+      // Ensure it doesn't go off-screen left
+      if (targetLeft < 10) targetLeft = 10;
+      // Ensure it doesn't go off-screen right
+      if (targetLeft + robotSize > windowWidth - 10) {
+        targetLeft = windowWidth - robotSize - 10;
+      }
     }
 
     if (targetTop < 10) targetTop = 10;
