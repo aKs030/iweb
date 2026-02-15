@@ -86,23 +86,10 @@ class SearchComponent {
               spellcheck="false"
             >
             <div class="search-loader" style="display: none;"></div>
-            <button class="search-close" aria-label="Suche schließen" title="ESC">✕</button>
           </div>
-
-          <div class="search-quick-actions">
-            <button class="search-action-btn" data-href="/" title="Home">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-            </button>
-            <button class="search-action-btn" data-href="/projects" title="Projekte">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
-            </button>
-            <button class="search-action-btn" data-href="/gallery" title="Galerie">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
-            </button>
-            <button class="search-action-btn" data-href="/contact" title="Kontakt">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-            </button>
-          </div>
+          <button class="search-close" aria-label="Suche schließen" title="ESC">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
         </div>
 
         <div class="search-results" role="region" aria-live="polite" aria-atomic="false"></div>
@@ -119,18 +106,6 @@ class SearchComponent {
     overlay
       .querySelector('.search-close')
       .addEventListener('click', () => this.close());
-
-    // Quick action buttons
-    overlay.querySelectorAll('.search-action-btn').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        // @ts-ignore
-        const href = btn.dataset.href;
-        if (href) {
-          window.location.href = href;
-          this.close();
-        }
-      });
-    });
 
     overlay.addEventListener('click', (e) => {
       if (e.target === overlay) this.close();
