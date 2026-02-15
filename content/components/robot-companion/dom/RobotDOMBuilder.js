@@ -688,6 +688,7 @@ export class RobotDOMBuilder {
       'http://www.w3.org/2000/svg',
       'circle',
     );
+    rim.setAttribute('class', 'robot-lens');
     rim.setAttribute('cx', '0');
     rim.setAttribute('cy', '-22'); // handle end (-12) - rim radius (10)
     rim.setAttribute('r', '10');

@@ -1181,12 +1181,29 @@ export class RobotAnimation {
         this.robot.dom.svg.style.transform = `rotate(${tilt}deg)`;
       }
 
+      // Activate flame animation during flight
+      if (this.robot.dom.flame) {
+        const flameScale =
+          1 + Math.sin(this.searchAnimation.hoverPhase * 5) * 0.2;
+        this.robot.dom.flame.style.opacity = '1';
+        this.robot.dom.flame.style.transform = `scale(${flameScale})`;
+
+        // Randomly spawn particles for effect
+        if (Math.random() < 0.15) {
+          this.spawnFlameParticle();
+        }
+      }
+
       this.updateRobotTransform();
 
       if (t >= 1) {
         if (this.searchAnimation.phase === 'returning') {
           this.searchAnimation.active = false;
           this.robot.dom.container.style.zIndex = ''; // Reset Z-Index
+          // Reset flame
+          if (this.robot.dom.flame) {
+            this.robot.dom.flame.style.opacity = '0';
+          }
           this.startPatrol();
         } else {
           this.searchAnimation.phase = 'hover';
@@ -1206,6 +1223,14 @@ export class RobotAnimation {
 
       this.patrol.x = this.searchAnimation.targetX;
       this.patrol.y = hoverY;
+
+      // Gentle flame flicker during hover
+      if (this.robot.dom.flame) {
+        const flameScale =
+          0.8 + Math.sin(this.searchAnimation.hoverPhase * 3) * 0.15;
+        this.robot.dom.flame.style.opacity = '0.8';
+        this.robot.dom.flame.style.transform = `scale(${flameScale})`;
+      }
 
       // Scanning with Magnifying Glass
       if (this.robot.dom.magnifyingGlass) {
