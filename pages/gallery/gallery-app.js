@@ -1,6 +1,6 @@
 /**
  * Modern 3D Gallery App
- * @version 3.0.0
+ * @version 3.1.0
  * @last-modified 2026-02-14
  */
 
@@ -13,7 +13,8 @@ import { createUseTranslation } from '/content/core/react-utils.js';
 import { createErrorBoundary } from '/content/components/ErrorBoundary.js';
 
 import { ThreeGalleryScene } from './components/ThreeGalleryScene.js';
-import { GALLERY_ITEMS } from './config.js';
+// Removed static GALLERY_ITEMS import to use dynamic loading
+import { GALLERY_ITEMS as STATIC_GALLERY_ITEMS } from './config.js';
 
 const log = createLogger('gallery-app');
 const useTranslation = createUseTranslation(React);
@@ -22,6 +23,7 @@ const h = React.createElement;
 const GalleryApp = () => {
   const { t } = useTranslation();
   const [isReady, setIsReady] = useState(false);
+  const [items, setItems] = useState([]);
 
   useEffect(() => {
     const initGallery = async () => {
@@ -32,7 +34,34 @@ const GalleryApp = () => {
           0.2,
           t('gallery.loading.init') || 'Initializing...',
         );
-        await new Promise((r) => setTimeout(r, 300));
+
+        // Fetch dynamic items from R2 API
+        let dynamicItems = [];
+        try {
+          const res = await fetch('/api/gallery-items');
+          if (res.ok) {
+            const data = await res.json();
+            if (data.items && Array.isArray(data.items)) {
+              // Ensure there are enough items for 3D gallery stability, or mix with static if too few?
+              // For now, trust the API.
+              dynamicItems = data.items;
+              log.info(`Loaded ${dynamicItems.length} items from R2`);
+
+              // Inject JSON-LD Structured Data for the Gallery dynamically
+              updateGallerySchema(dynamicItems);
+            }
+          }
+        } catch (apiErr) {
+          log.warn(
+            'Failed to load dynamic gallery items, falling back to static config',
+            apiErr,
+          );
+        }
+
+        // Use dynamic items if available, otherwise fallback to static config
+        const finalItems =
+          dynamicItems.length > 0 ? dynamicItems : STATIC_GALLERY_ITEMS;
+        setItems(finalItems);
 
         AppLoadManager.updateLoader(
           0.5,
@@ -44,6 +73,7 @@ const GalleryApp = () => {
           0.8,
           t('gallery.loading.assets') || 'Loading Assets...',
         );
+        // Preload first few textures if needed, or let Three.js handle it
         await new Promise((r) => setTimeout(r, 200));
 
         AppLoadManager.updateLoader(1, t('gallery.loading.ready') || 'Ready');
@@ -52,13 +82,57 @@ const GalleryApp = () => {
         setIsReady(true);
       } catch (err) {
         log.error('Gallery init failed', err);
-        AppLoadManager.updateLoader(1, 'Error loading gallery');
+        // Fallback to static items even on critical failure if possible
+        setItems(STATIC_GALLERY_ITEMS);
+        setIsReady(true); // Still try to render something
+        AppLoadManager.updateLoader(1, 'Gallery loaded (fallback)');
         AppLoadManager.hideLoader(500);
       }
     };
 
     initGallery();
   }, [t]);
+
+  // Helper to inject Schema.org JSON-LD
+  const updateGallerySchema = (galleryItems) => {
+    const scriptId = 'gallery-schema-json-ld';
+    let script = document.getElementById(scriptId);
+    if (!script) {
+      script = document.createElement('script');
+      script.id = scriptId;
+      script.type = 'application/ld+json';
+      document.head.appendChild(script);
+    }
+
+    const schema = {
+      '@context': 'https://schema.org',
+      '@type': 'ImageGallery',
+      name: 'Fotografie Portfolio | Abdulkerim Sesli',
+      description:
+        'Kuratierte Galerie mit Fokus auf Street Photography, Architektur und Portraits.',
+      url: window.location.href,
+      author: {
+        '@type': 'Person',
+        name: 'Abdulkerim Sesli',
+      },
+      image: galleryItems.map((item) => ({
+        '@type': 'ImageObject',
+        contentUrl: item.url,
+        url: item.url,
+        name: item.title,
+        description: item.description || item.title,
+        author: {
+          '@type': 'Person',
+          name: 'Abdulkerim Sesli',
+        },
+        license: 'https://abdulkerimsesli.de/#image-license',
+        acquireLicensePage: 'https://abdulkerimsesli.de/#image-license',
+        copyrightNotice: `© ${new Date().getFullYear()} Abdulkerim Sesli`,
+      })),
+    };
+
+    script.textContent = JSON.stringify(schema);
+  };
 
   if (!isReady) return null;
 
@@ -69,7 +143,8 @@ const GalleryApp = () => {
       className: 'fixed inset-0 w-screen h-screen bg-black overflow-hidden',
       style: { touchAction: 'none' }, // Verhindert Mobile-Swipes auf App-Ebene
     },
-    h(ThreeGalleryScene, { items: GALLERY_ITEMS }),
+    // Pass dynamic items to the scene
+    h(ThreeGalleryScene, { items: items }),
 
     // Title Overlay - Safe Area zwischen Menu (top: 76px) und Footer (bottom: 76px)
     h(
