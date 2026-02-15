@@ -17,6 +17,20 @@ binding = "AI"
 [env.production]
 vars = { MAX_SEARCH_RESULTS = "10", RAG_ID = "wispy-pond-1055" }
 
+[[env.production.r2_buckets]]
+binding = "GALLERY_BUCKET"
+bucket_name = "img"
+
+[env.production.ai]
+binding = "AI"
+
 # Umgebungsvariablen für Preview
 [env.preview]
 vars = { MAX_SEARCH_RESULTS = "10" }
+
+[[env.preview.r2_buckets]]
+binding = "GALLERY_BUCKET"
+bucket_name = "img"
+
+[env.preview.ai]
+binding = "AI"
