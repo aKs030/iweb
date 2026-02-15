@@ -23,31 +23,6 @@ body.contact-page {
     );
 }
 
-/* `.container` override moved to `content/styles/main.css` */
-
-/* Prevent horizontal overflow on very small viewports */
-body.contact-page {
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
-}
-
-/* Ensure form/flex children don't force horizontal scroll */
-form,
-.form-group {
-  min-width: 0;
-}
-
-/* Constrain interactive elements and enable wrapping for long text */
-.contact-form-card,
-.form-input,
-.form-textarea,
-.btn-submit {
-  box-sizing: border-box;
-  max-width: 100%;
-  word-break: break-word;
-  hyphens: auto;
-}
-
 .contact-header {
   text-align: center;
   margin-bottom: 0.75rem;
