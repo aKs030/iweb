@@ -325,7 +325,23 @@ export class RobotDOMBuilder {
 
     lidGradient.append(stop1, stop2);
 
-    defs.append(glowFilter, lidShadowFilter, lidGradient);
+    // Flame clip path (to keep flame contained within original bounds while allowing overflow elsewhere)
+    const flameClip = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'clipPath',
+    );
+    flameClip.setAttribute('id', 'flame-clip');
+    const flameRect = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'rect',
+    );
+    flameRect.setAttribute('x', '0');
+    flameRect.setAttribute('y', '0');
+    flameRect.setAttribute('width', '100');
+    flameRect.setAttribute('height', '100');
+    flameClip.appendChild(flameRect);
+
+    defs.append(glowFilter, lidShadowFilter, lidGradient, flameClip);
 
     return defs;
   }
@@ -520,6 +536,8 @@ export class RobotDOMBuilder {
     const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     g.classList.add('robot-flame');
     g.style.opacity = '0';
+    // Apply clip-path to restore original clipping behavior for the flame
+    g.setAttribute('clip-path', 'url(#flame-clip)');
 
     const outerFlame = document.createElementNS(
       'http://www.w3.org/2000/svg',
