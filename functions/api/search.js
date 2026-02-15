@@ -77,7 +77,8 @@ export async function onRequestPost(context) {
     console.log('Using Cloudflare AI Search Beta');
 
     // Use Workers Binding to call AI Search Beta
-    const searchData = await env.AI.autorag('wispy-pond-1055').aiSearch({
+    const ragId = env.RAG_ID || 'wispy-pond-1055';
+    const searchData = await env.AI.autorag(ragId).aiSearch({
       query: expandedQuery,
       max_num_results: topK,
       rewrite_query: true,
