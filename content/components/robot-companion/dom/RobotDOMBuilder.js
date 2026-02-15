@@ -670,40 +670,41 @@ export class RobotDOMBuilder {
       'defs',
     );
 
-    // 1. Main Glass Gradient (Convex feeling)
+    // 1. Main Glass Gradient (Flatter, more realistic)
     const glassGradientId = 'glassGradient';
     const glassGradient = document.createElementNS(
       'http://www.w3.org/2000/svg',
-      'radialGradient',
+      'linearGradient', // Changed from radial to linear for flatter look
     );
     glassGradient.setAttribute('id', glassGradientId);
-    glassGradient.setAttribute('cx', '35%');
-    glassGradient.setAttribute('cy', '35%');
-    glassGradient.setAttribute('r', '65%');
+    glassGradient.setAttribute('x1', '0%');
+    glassGradient.setAttribute('y1', '0%');
+    glassGradient.setAttribute('x2', '100%');
+    glassGradient.setAttribute('y2', '100%');
 
-    // Highlight top-left
+    // Top-left: subtle highlight
     const stopG1 = document.createElementNS(
       'http://www.w3.org/2000/svg',
       'stop',
     );
     stopG1.setAttribute('offset', '0%');
-    stopG1.setAttribute('stop-color', 'rgba(255, 255, 255, 0.5)'); // Bright spot
+    stopG1.setAttribute('stop-color', 'rgba(255, 255, 255, 0.15)');
 
-    // Mid-tone (clear glass)
+    // Center: Almost completely transparent (clear glass)
     const stopG2 = document.createElementNS(
       'http://www.w3.org/2000/svg',
       'stop',
     );
     stopG2.setAttribute('offset', '50%');
-    stopG2.setAttribute('stop-color', 'rgba(200, 240, 255, 0.1)'); // Very subtle blue tint
+    stopG2.setAttribute('stop-color', 'rgba(255, 255, 255, 0.02)');
 
-    // Shadow edge (bottom-right)
+    // Bottom-right: Very subtle tint for refraction
     const stopG3 = document.createElementNS(
       'http://www.w3.org/2000/svg',
       'stop',
     );
     stopG3.setAttribute('offset', '100%');
-    stopG3.setAttribute('stop-color', 'rgba(64, 224, 208, 0.2)'); // Cyan tint at edge
+    stopG3.setAttribute('stop-color', 'rgba(64, 224, 208, 0.08)');
 
     glassGradient.append(stopG1, stopG2, stopG3);
 
@@ -789,48 +790,32 @@ export class RobotDOMBuilder {
     lens.setAttribute('stroke', 'rgba(255, 255, 255, 0.3)');
     lens.setAttribute('stroke-width', '0.5');
 
-    // Realistic Reflections (Specular Highlights)
-    // 1. Sharp top-left highlight (simulating light source)
+    // Realistic Reflections (Flat, sharp glass reflections)
+    // 1. Sharp diagonal reflection (classic cartoon glass shine)
     const reflection1 = document.createElementNS(
       'http://www.w3.org/2000/svg',
-      'path',
+      'line',
     );
-    // Adjusted curve for new coords
-    reflection1.setAttribute(
-      'd',
-      `M${cx - 5},${cy - 6} Q${cx},${cy - 10} ${cx + 5},${cy - 6}`,
-    );
-    reflection1.setAttribute('fill', 'none');
-    reflection1.setAttribute('stroke', 'rgba(255, 255, 255, 0.9)');
+    reflection1.setAttribute('x1', String(cx - 5));
+    reflection1.setAttribute('y1', String(cy - 5));
+    reflection1.setAttribute('x2', String(cx - 2));
+    reflection1.setAttribute('y2', String(cy - 8));
+    reflection1.setAttribute('stroke', 'rgba(255, 255, 255, 0.6)');
     reflection1.setAttribute('stroke-width', '2');
     reflection1.setAttribute('stroke-linecap', 'round');
-    reflection1.setAttribute('filter', 'blur(0.5px)'); // Soften slightly
 
-    // 2. Softer, larger reflection
+    // 2. Smaller secondary reflection
     const reflection2 = document.createElementNS(
       'http://www.w3.org/2000/svg',
-      'ellipse',
+      'line',
     );
-    reflection2.setAttribute('cx', String(cx - 4));
-    reflection2.setAttribute('cy', String(cy - 4));
-    reflection2.setAttribute('rx', '4');
-    reflection2.setAttribute('ry', '2');
-    reflection2.setAttribute('transform', `rotate(-45, ${cx - 4}, ${cy - 4})`);
-    reflection2.setAttribute('fill', 'rgba(255, 255, 255, 0.2)');
-
-    // 3. Bottom-right rim reflection (internal reflection)
-    const reflection3 = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'path',
-    );
-    reflection3.setAttribute(
-      'd',
-      `M${cx - 4},${cy + 6} Q${cx},${cy + 8} ${cx + 4},${cy + 6}`,
-    );
-    reflection3.setAttribute('fill', 'none');
-    reflection3.setAttribute('stroke', 'rgba(64, 224, 208, 0.4)'); // Cyan glow
-    reflection3.setAttribute('stroke-width', '1.5');
-    reflection3.setAttribute('stroke-linecap', 'round');
+    reflection2.setAttribute('x1', String(cx - 1));
+    reflection2.setAttribute('y1', String(cy - 2));
+    reflection2.setAttribute('x2', String(cx + 0.5));
+    reflection2.setAttribute('y2', String(cy - 3.5));
+    reflection2.setAttribute('stroke', 'rgba(255, 255, 255, 0.4)');
+    reflection2.setAttribute('stroke-width', '1.5');
+    reflection2.setAttribute('stroke-linecap', 'round');
 
     g.append(
       handleBase,
@@ -840,7 +825,6 @@ export class RobotDOMBuilder {
       rim,
       reflection1,
       reflection2,
-      reflection3,
     );
 
     return g;
