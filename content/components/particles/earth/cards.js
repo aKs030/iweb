@@ -368,6 +368,103 @@ export class CardManager {
                 });
               }
             }
+
+            // Debug overlay helper (enable with ?three-debug=cards)
+            try {
+              const params = new URL(window.location.href).searchParams;
+              if (params.get('three-debug') === 'cards') {
+                const debugId = 'three-earth-cards-debug';
+                let debugEl = document.getElementById(debugId);
+                if (!debugEl) {
+                  debugEl = document.createElement('div');
+                  debugEl.id = debugId;
+                  Object.assign(debugEl.style, {
+                    position: 'fixed',
+                    inset: '0',
+                    pointerEvents: 'none',
+                    zIndex: '2147483647',
+                  });
+                  document.body.appendChild(debugEl);
+                }
+
+                // Clear previous markers
+                debugEl.innerHTML = '';
+
+                const mkLine = (topPx, color, label) => {
+                  const el = document.createElement('div');
+                  Object.assign(el.style, {
+                    position: 'absolute',
+                    left: '0',
+                    width: '100%',
+                    height: '2px',
+                    background: color,
+                    top: `${topPx}px`,
+                    opacity: '0.9',
+                  });
+                  if (label) {
+                    const l = document.createElement('div');
+                    l.textContent = label;
+                    Object.assign(l.style, {
+                      position: 'absolute',
+                      right: '8px',
+                      top: `${topPx + 4}px`,
+                      color: color,
+                      fontSize: '12px',
+                      background: 'rgba(0,0,0,0.5)',
+                      padding: '2px 6px',
+                      borderRadius: '4px',
+                    });
+                    debugEl.appendChild(l);
+                  }
+                  debugEl.appendChild(el);
+                };
+
+                // safe area lines
+                mkLine(
+                  safeAreaTopPx,
+                  'orange',
+                  `safe top ${Math.round(safeAreaTopPx)}px`,
+                );
+                mkLine(
+                  safeAreaBottomPx,
+                  'orange',
+                  `safe bottom ${Math.round(safeAreaBottomPx)}px`,
+                );
+
+                // group bounds
+                const groupRect = document.createElement('div');
+                Object.assign(groupRect.style, {
+                  position: 'absolute',
+                  left: '20%',
+                  width: '60%',
+                  top: `${groupTop}px`,
+                  height: `${Math.max(4, groupHeightPx)}px`,
+                  border: '2px dashed lime',
+                  background: 'rgba(0,255,0,0.03)',
+                  boxSizing: 'border-box',
+                  pointerEvents: 'none',
+                });
+                debugEl.appendChild(groupRect);
+
+                // small info panel
+                const info = document.createElement('div');
+                Object.assign(info.style, {
+                  position: 'fixed',
+                  left: '8px',
+                  bottom: '8px',
+                  background: 'rgba(0,0,0,0.6)',
+                  color: '#fff',
+                  padding: '8px 10px',
+                  borderRadius: '6px',
+                  fontSize: '12px',
+                  pointerEvents: 'none',
+                });
+                info.innerHTML = `group ${Math.round(groupTop)}–${Math.round(groupBottom)} px, safe ${Math.round(safeAreaTopPx)}–${Math.round(safeAreaBottomPx)} px`;
+                debugEl.appendChild(info);
+              }
+            } catch (err) {
+              // ignore debug overlay errors
+            }
           }
         } catch (err) {
           // ignore measurement errors — centering is cosmetic
