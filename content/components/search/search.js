@@ -36,6 +36,15 @@ class SearchComponent {
     this.searchTimeout = null;
     /** @type {string} */
     this.lastQuery = '';
+    /** @type {number} */
+    this.scrollLockY = 0;
+    this.prevBodyStyles = {
+      position: '',
+      top: '',
+      left: '',
+      right: '',
+      width: '',
+    };
 
     this.init();
   }
@@ -165,6 +174,36 @@ class SearchComponent {
     this.isOpen ? this.close() : this.open();
   }
 
+  lockBodyScroll() {
+    const body = document.body;
+    this.scrollLockY = window.scrollY || window.pageYOffset || 0;
+    this.prevBodyStyles = {
+      position: body.style.position,
+      top: body.style.top,
+      left: body.style.left,
+      right: body.style.right,
+      width: body.style.width,
+    };
+
+    body.classList.add('search-open');
+    body.style.position = 'fixed';
+    body.style.top = `-${this.scrollLockY}px`;
+    body.style.left = '0';
+    body.style.right = '0';
+    body.style.width = '100%';
+  }
+
+  unlockBodyScroll() {
+    const body = document.body;
+    body.classList.remove('search-open');
+    body.style.position = this.prevBodyStyles.position;
+    body.style.top = this.prevBodyStyles.top;
+    body.style.left = this.prevBodyStyles.left;
+    body.style.right = this.prevBodyStyles.right;
+    body.style.width = this.prevBodyStyles.width;
+    window.scrollTo(0, this.scrollLockY);
+  }
+
   open() {
     if (this.isOpen) return;
     this.isOpen = true;
@@ -180,8 +219,7 @@ class SearchComponent {
       }, 100);
     });
 
-    document.documentElement.classList.add('search-open');
-    document.body.classList.add('search-open');
+    this.lockBodyScroll();
 
     window.dispatchEvent(new CustomEvent('search:opened'));
     _log.info('Search opened');
@@ -194,8 +232,7 @@ class SearchComponent {
     this.selectedIndex = -1;
     if (this.input) this.input.value = '';
     if (this.searchTimeout) clearTimeout(this.searchTimeout);
-    document.documentElement.classList.remove('search-open');
-    document.body.classList.remove('search-open');
+    this.unlockBodyScroll();
     window.dispatchEvent(new CustomEvent('search:closed'));
     _log.info('Search closed');
   }
