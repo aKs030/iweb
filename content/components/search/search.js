@@ -39,6 +39,10 @@ class SearchComponent {
     /** @type {Array|null} */
     this.originalThemeColors = null;
 
+    // Bind methods to ensure 'this' context is preserved
+    this.preventScroll = this.preventScroll.bind(this);
+    this.handleKeydown = this.handleKeydown.bind(this);
+
     this.init();
   }
 
@@ -115,25 +119,7 @@ class SearchComponent {
   }
 
   attachEventListeners() {
-    this._handleKeydown = (e) => {
-      if (e.key === 'Escape' && this.isOpen) {
-        this.close();
-      }
-
-      if (this.isOpen && this.currentResults.length > 0) {
-        if (e.key === 'ArrowDown') {
-          e.preventDefault();
-          this.navigateResults(1);
-        } else if (e.key === 'ArrowUp') {
-          e.preventDefault();
-          this.navigateResults(-1);
-        } else if (e.key === 'Enter' && this.selectedIndex >= 0) {
-          e.preventDefault();
-          this.selectResult(this.selectedIndex);
-        }
-      }
-    };
-    document.addEventListener('keydown', this._handleKeydown);
+    document.addEventListener('keydown', this.handleKeydown);
 
     if (this.input) {
       this.input.addEventListener('input', () => {
@@ -248,10 +234,11 @@ class SearchComponent {
    * Prevents scroll unless within search results or input
    * @param {Event} e
    */
-  preventScroll = (e) => {
+  preventScroll(e) {
     // Allow scroll inside results container
     if (
       this.resultsContainer &&
+      // @ts-ignore
       (this.resultsContainer.contains(e.target) ||
         e.target === this.resultsContainer)
     ) {
@@ -260,12 +247,36 @@ class SearchComponent {
     // Allow input interaction
     if (
       this.input &&
+      // @ts-ignore
       (this.input.contains(e.target) || e.target === this.input)
     ) {
       return;
     }
     e.preventDefault();
-  };
+  }
+
+  /**
+   * Handles keyboard navigation
+   * @param {KeyboardEvent} e
+   */
+  handleKeydown(e) {
+    if (e.key === 'Escape' && this.isOpen) {
+      this.close();
+    }
+
+    if (this.isOpen && this.currentResults.length > 0) {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        this.navigateResults(1);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        this.navigateResults(-1);
+      } else if (e.key === 'Enter' && this.selectedIndex >= 0) {
+        e.preventDefault();
+        this.selectResult(this.selectedIndex);
+      }
+    }
+  }
 
   navigateResults(direction) {
     if (this.currentResults.length === 0) return;
@@ -559,10 +570,8 @@ class SearchComponent {
   }
 
   destroy() {
-    if (this._handleKeydown) {
-      document.removeEventListener('keydown', this._handleKeydown);
-      this._handleKeydown = null;
-    }
+    document.removeEventListener('keydown', this.handleKeydown);
+
     if (this.searchTimeout) {
       clearTimeout(this.searchTimeout);
       this.searchTimeout = null;
