@@ -180,12 +180,11 @@ class SearchComponent {
       }, 100);
     });
 
-    // Lock scroll on both html and body to prevent issues
-    document.documentElement.style.overflow = 'hidden';
-    document.body.style.overflow = 'hidden';
-    // Ensure height is 100% to prevent layout shifts
-    document.documentElement.style.height = '100%';
-    document.body.style.height = '100%';
+    // Prevent body scroll using event listener to avoid layout shifts/black bars
+    document.addEventListener('touchmove', this.preventScroll, {
+      passive: false,
+    });
+    document.addEventListener('wheel', this.preventScroll, { passive: false });
 
     window.dispatchEvent(new CustomEvent('search:opened'));
     _log.info('Search opened');
