@@ -36,6 +36,8 @@ class SearchComponent {
     this.searchTimeout = null;
     /** @type {string} */
     this.lastQuery = '';
+    /** @type {Array|null} */
+    this.originalThemeColors = null;
 
     this.init();
   }
@@ -186,6 +188,20 @@ class SearchComponent {
     });
     document.addEventListener('wheel', this.preventScroll, { passive: false });
 
+    // Handle theme-color meta tag to ensure status bar blends with overlay
+    // We update all theme-color tags (light/dark) to match the dark search overlay
+    const metaThemeColors = document.querySelectorAll(
+      'meta[name="theme-color"]',
+    );
+    this.originalThemeColors = [];
+    metaThemeColors.forEach((meta) => {
+      this.originalThemeColors.push({
+        element: meta,
+        content: meta.getAttribute('content'),
+      });
+      meta.setAttribute('content', '#1a1a1e');
+    });
+
     window.dispatchEvent(new CustomEvent('search:opened'));
     _log.info('Search opened');
   }
@@ -198,15 +214,56 @@ class SearchComponent {
     if (this.input) this.input.value = '';
     if (this.searchTimeout) clearTimeout(this.searchTimeout);
 
+    // Restore scroll listeners
+    document.removeEventListener('touchmove', this.preventScroll, {
+      passive: false,
+    });
+    document.removeEventListener('wheel', this.preventScroll, {
+      passive: false,
+    });
+
     // Restore scroll
     document.documentElement.style.overflow = '';
     document.body.style.overflow = '';
     document.documentElement.style.height = '';
     document.body.style.height = '';
 
+    // Restore theme-color
+    if (this.originalThemeColors) {
+      this.originalThemeColors.forEach(({ element, content }) => {
+        if (element && content) {
+          element.setAttribute('content', content);
+        }
+      });
+      this.originalThemeColors = null;
+    }
+
     window.dispatchEvent(new CustomEvent('search:closed'));
     _log.info('Search closed');
   }
+
+  /**
+   * Prevents scroll unless within search results or input
+   * @param {Event} e
+   */
+  preventScroll = (e) => {
+    // Allow scroll inside results container
+    if (
+      this.resultsContainer &&
+      (this.resultsContainer.contains(e.target) ||
+        e.target === this.resultsContainer)
+    ) {
+      return;
+    }
+    // Allow input interaction
+    if (
+      this.input &&
+      (this.input.contains(e.target) || e.target === this.input)
+    ) {
+      return;
+    }
+    e.preventDefault();
+  };
 
   navigateResults(direction) {
     if (this.currentResults.length === 0) return;
