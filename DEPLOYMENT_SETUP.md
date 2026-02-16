@@ -35,3 +35,11 @@ Wenn der GitHub Action Workflow fehlschlägt mit `Invalid access token [code: 91
 - Überprüfe, ob das Token abgelaufen ist oder widerrufen wurde.
 - Stelle sicher, dass du ein **API Token** verwendest, keinen Global API Key.
 - Stelle sicher, dass das Token Zugriff auf den Account hat, in dem das `1web` Projekt liegt.
+
+### Preview-URL zeigt Login-Seite?
+
+Wenn du beim Öffnen der Preview-URL (`*.pages.dev`) aufgefordert wirst, dich anzumelden (Cloudflare Access):
+
+- Das bedeutet, dass **Cloudflare Zero Trust / Access** auf deinem Account aktiviert ist.
+- Um die Seite zu sehen, musst du dich mit deiner autorisierten E-Mail-Adresse anmelden (du erhältst einen Code).
+- Wenn die Preview öffentlich sein soll, musst du im **Cloudflare Dashboard > Zero Trust > Access > Applications** die Richtlinie für deine Pages-Projekte anpassen oder deaktivieren.
