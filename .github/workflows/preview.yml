@@ -49,6 +49,25 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy . --project-name=1web --commit-dirty=true
 
+      - name: Comment Preview URL
+        if: steps.check_secrets.outputs.has_secrets == 'true' && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const deploymentUrl = '${{ steps.cloudflare_pages_deploy.outputs.deployment-url }}';
+            const comment = `## 🚀 Preview Deployment Successful!
+
+            **Preview URL:** [${deploymentUrl}](${deploymentUrl})
+
+            _Note: It might take a few seconds for the URL to be live._`;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: comment
+            });
+
       - name: Notify Missing Secrets (PR Comment)
         if: steps.check_secrets.outputs.has_secrets == 'false' && github.event_name == 'pull_request'
         uses: actions/github-script@v7
