@@ -189,7 +189,7 @@ class SearchComponent {
     document.addEventListener('wheel', this.preventScroll, { passive: false });
 
     // Handle theme-color meta tag to ensure status bar blends with overlay
-    // We update all theme-color tags (light/dark) to match the dark search overlay
+    // We remove the content attribute temporarily to let the background bleed through
     const metaThemeColors = document.querySelectorAll(
       'meta[name="theme-color"]',
     );
@@ -199,7 +199,9 @@ class SearchComponent {
         element: meta,
         content: meta.getAttribute('content'),
       });
-      meta.setAttribute('content', '#1a1a1e');
+      // Setting to transparent or removing content allows viewport-fit=cover to take effect
+      // and show the blurred overlay behind the status bar
+      meta.setAttribute('content', 'transparent');
     });
 
     window.dispatchEvent(new CustomEvent('search:opened'));
