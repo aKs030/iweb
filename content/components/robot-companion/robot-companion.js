@@ -279,9 +279,6 @@ export class RobotCompanion {
     if (typeof globalThis === 'undefined' || !globalThis.visualViewport) return;
 
     this._handleViewportResize = () => {
-      // Ensure visualViewport is available
-      if (!window.visualViewport) return;
-
       // Skip if search animation is active
       if (
         this.animationModule.searchAnimation &&
@@ -330,13 +327,6 @@ export class RobotCompanion {
         const maxWindowHeight = visualHeight - safeMargin * 2;
         this.dom.window.style.maxHeight = `${maxWindowHeight}px`;
 
-        // Adjust Chat Window Position to stay centered in Visual Viewport
-        if (this.dom.window) {
-          const visualTop = window.visualViewport.offsetTop;
-          const centerY = visualTop + visualHeight / 2;
-          this.dom.window.style.top = `${centerY}px`;
-        }
-
         requestAnimationFrame(() => {
           if (!this.dom.window) return;
           const currentHeight = this.dom.window.offsetHeight;
@@ -361,7 +351,6 @@ export class RobotCompanion {
         // Reset styles to allow CSS / footer overlap logic to take over
         this.dom.container.style.bottom = '';
         this.dom.window.style.maxHeight = '';
-        this.dom.window.style.top = '';
       }
     };
 
