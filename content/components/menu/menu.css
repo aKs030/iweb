@@ -560,6 +560,20 @@ site-menu {
 
 /* ===== Mobile Responsive ===== */
 @media (width <= 900px) {
+  body.menu-open::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    height: calc(var(--safe-top) + 8px);
+    background: var(--component-header-bg, rgba(0, 0, 0, 0.85));
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    z-index: 9997;
+    pointer-events: none;
+  }
+
   .site-header {
     display: flex;
     justify-content: space-between;

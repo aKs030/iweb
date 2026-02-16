@@ -180,7 +180,8 @@ class SearchComponent {
       }, 100);
     });
 
-    document.body.style.overflow = 'hidden';
+    document.documentElement.classList.add('search-open');
+    document.body.classList.add('search-open');
 
     window.dispatchEvent(new CustomEvent('search:opened'));
     _log.info('Search opened');
@@ -193,7 +194,8 @@ class SearchComponent {
     this.selectedIndex = -1;
     if (this.input) this.input.value = '';
     if (this.searchTimeout) clearTimeout(this.searchTimeout);
-    document.body.style.overflow = '';
+    document.documentElement.classList.remove('search-open');
+    document.body.classList.remove('search-open');
     window.dispatchEvent(new CustomEvent('search:closed'));
     _log.info('Search closed');
   }

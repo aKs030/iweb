@@ -69,6 +69,7 @@ class SiteMenu extends HTMLElement {
   }
 
   disconnectedCallback() {
+    document.body?.classList.remove('menu-open');
     this.events?.destroy();
     const accessibility = /** @type {any} */ (this.accessibility);
     accessibility?.destroy();

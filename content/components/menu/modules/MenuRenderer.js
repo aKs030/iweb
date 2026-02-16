@@ -30,6 +30,7 @@ export class MenuRenderer {
   render(container) {
     this.container = container;
     container.innerHTML = this.template.getHTML();
+    document.body?.classList.remove('menu-open');
     this.updateYear();
     this.initializeIcons();
     this.setupStateSubscriptions();
@@ -79,9 +80,11 @@ export class MenuRenderer {
     this.state.on('openChange', (isOpen) => {
       const toggle = this.container.querySelector('.site-menu__toggle');
       const menu = this.container.querySelector('.site-menu');
+      const body = document.body;
 
       if (menu) menu.classList.toggle('open', isOpen);
       if (toggle) toggle.classList.toggle('active', isOpen);
+      if (body) body.classList.toggle('menu-open', isOpen);
 
       // Accessibility update
       if (toggle) toggle.setAttribute('aria-expanded', String(isOpen));

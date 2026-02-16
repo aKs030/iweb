@@ -1,3 +1,9 @@
+html.search-open,
+body.search-open {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
 /* Search specific styles - Spotlight Design */
 .search-overlay {
   position: fixed;
