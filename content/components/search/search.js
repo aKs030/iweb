@@ -36,12 +36,6 @@ class SearchComponent {
     this.searchTimeout = null;
     /** @type {string} */
     this.lastQuery = '';
-    /** @type {Array|null} */
-    this.originalThemeColors = null;
-
-    // Bind methods to ensure 'this' context is preserved
-    this.preventScroll = this.preventScroll.bind(this);
-    this.handleKeydown = this.handleKeydown.bind(this);
 
     this.init();
   }
@@ -119,7 +113,25 @@ class SearchComponent {
   }
 
   attachEventListeners() {
-    document.addEventListener('keydown', this.handleKeydown);
+    this._handleKeydown = (e) => {
+      if (e.key === 'Escape' && this.isOpen) {
+        this.close();
+      }
+
+      if (this.isOpen && this.currentResults.length > 0) {
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          this.navigateResults(1);
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          this.navigateResults(-1);
+        } else if (e.key === 'Enter' && this.selectedIndex >= 0) {
+          e.preventDefault();
+          this.selectResult(this.selectedIndex);
+        }
+      }
+    };
+    document.addEventListener('keydown', this._handleKeydown);
 
     if (this.input) {
       this.input.addEventListener('input', () => {
@@ -168,27 +180,7 @@ class SearchComponent {
       }, 100);
     });
 
-    // Prevent body scroll using event listener to avoid layout shifts/black bars
-    document.addEventListener('touchmove', this.preventScroll, {
-      passive: false,
-    });
-    document.addEventListener('wheel', this.preventScroll, { passive: false });
-
-    // Handle theme-color meta tag to ensure status bar blends with overlay
-    // We remove the content attribute temporarily to let the background bleed through
-    const metaThemeColors = document.querySelectorAll(
-      'meta[name="theme-color"]',
-    );
-    this.originalThemeColors = [];
-    metaThemeColors.forEach((meta) => {
-      this.originalThemeColors.push({
-        element: meta,
-        content: meta.getAttribute('content'),
-      });
-      // Setting to transparent or removing content allows viewport-fit=cover to take effect
-      // and show the blurred overlay behind the status bar
-      meta.setAttribute('content', 'transparent');
-    });
+    document.body.style.overflow = 'hidden';
 
     window.dispatchEvent(new CustomEvent('search:opened'));
     _log.info('Search opened');
@@ -201,81 +193,9 @@ class SearchComponent {
     this.selectedIndex = -1;
     if (this.input) this.input.value = '';
     if (this.searchTimeout) clearTimeout(this.searchTimeout);
-
-    // Restore scroll listeners
-    document.removeEventListener('touchmove', this.preventScroll, {
-      passive: false,
-    });
-    document.removeEventListener('wheel', this.preventScroll, {
-      passive: false,
-    });
-
-    // Restore scroll
-    document.documentElement.style.overflow = '';
     document.body.style.overflow = '';
-    document.documentElement.style.height = '';
-    document.body.style.height = '';
-
-    // Restore theme-color
-    if (this.originalThemeColors) {
-      this.originalThemeColors.forEach(({ element, content }) => {
-        if (element && content) {
-          element.setAttribute('content', content);
-        }
-      });
-      this.originalThemeColors = null;
-    }
-
     window.dispatchEvent(new CustomEvent('search:closed'));
     _log.info('Search closed');
-  }
-
-  /**
-   * Prevents scroll unless within search results or input
-   * @param {Event} e
-   */
-  preventScroll(e) {
-    // Allow scroll inside results container
-    if (
-      this.resultsContainer &&
-      // @ts-ignore
-      (this.resultsContainer.contains(e.target) ||
-        e.target === this.resultsContainer)
-    ) {
-      return;
-    }
-    // Allow input interaction
-    if (
-      this.input &&
-      // @ts-ignore
-      (this.input.contains(e.target) || e.target === this.input)
-    ) {
-      return;
-    }
-    e.preventDefault();
-  }
-
-  /**
-   * Handles keyboard navigation
-   * @param {KeyboardEvent} e
-   */
-  handleKeydown(e) {
-    if (e.key === 'Escape' && this.isOpen) {
-      this.close();
-    }
-
-    if (this.isOpen && this.currentResults.length > 0) {
-      if (e.key === 'ArrowDown') {
-        e.preventDefault();
-        this.navigateResults(1);
-      } else if (e.key === 'ArrowUp') {
-        e.preventDefault();
-        this.navigateResults(-1);
-      } else if (e.key === 'Enter' && this.selectedIndex >= 0) {
-        e.preventDefault();
-        this.selectResult(this.selectedIndex);
-      }
-    }
   }
 
   navigateResults(direction) {
@@ -570,8 +490,10 @@ class SearchComponent {
   }
 
   destroy() {
-    document.removeEventListener('keydown', this.handleKeydown);
-
+    if (this._handleKeydown) {
+      document.removeEventListener('keydown', this._handleKeydown);
+      this._handleKeydown = null;
+    }
     if (this.searchTimeout) {
       clearTimeout(this.searchTimeout);
       this.searchTimeout = null;
