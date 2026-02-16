@@ -180,7 +180,12 @@ class SearchComponent {
       }, 100);
     });
 
+    // Lock scroll on both html and body to prevent issues
+    document.documentElement.style.overflow = 'hidden';
     document.body.style.overflow = 'hidden';
+    // Ensure height is 100% to prevent layout shifts
+    document.documentElement.style.height = '100%';
+    document.body.style.height = '100%';
 
     window.dispatchEvent(new CustomEvent('search:opened'));
     _log.info('Search opened');
@@ -193,7 +198,13 @@ class SearchComponent {
     this.selectedIndex = -1;
     if (this.input) this.input.value = '';
     if (this.searchTimeout) clearTimeout(this.searchTimeout);
+
+    // Restore scroll
+    document.documentElement.style.overflow = '';
     document.body.style.overflow = '';
+    document.documentElement.style.height = '';
+    document.body.style.height = '';
+
     window.dispatchEvent(new CustomEvent('search:closed'));
     _log.info('Search closed');
   }
