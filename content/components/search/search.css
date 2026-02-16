@@ -4,15 +4,16 @@
   top: 0;
   left: 0;
   width: 100%;
-  height: 100%;
+  height: 100dvh; /* Dynamic viewport height to cover address bars */
   background: rgba(0, 0, 0, 0.2); /* Reduced opacity for cleaner look */
   backdrop-filter: blur(15px);
   -webkit-backdrop-filter: blur(15px);
-  z-index: 9999;
+  z-index: 10002; /* Above header (9999) and skip-links (10001) */
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding-top: 20vh;
+  /* Remove padding from overlay to ensure background covers everything */
+  padding: 0;
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.2s ease;
@@ -26,6 +27,11 @@
 .search-modal {
   width: 100%;
   max-width: 800px;
+  /* Move safe-area spacing to the modal content instead of the overlay container */
+  margin-top: calc(20vh + var(--safe-top, 0px));
+  margin-left: var(--safe-left, 0px);
+  margin-right: var(--safe-right, 0px);
+  margin-bottom: var(--safe-bottom, 0px);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -405,7 +411,9 @@
 @media (max-width: 768px) {
   .search-modal {
     max-width: 95%;
-    margin: 0 auto;
+    margin-left: auto;
+    margin-right: auto;
+    /* margin-top is inherited from the main rule, preserving safe area */
   }
 
   /* keep input and close button on the same row */
@@ -430,8 +438,8 @@
 }
 
 @media (max-width: 480px) {
-  .search-overlay {
-    padding-top: 10vh;
+  .search-modal {
+    margin-top: calc(10vh + var(--safe-top, 0px));
   }
 
   .search-input {
