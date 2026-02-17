@@ -44,7 +44,7 @@ class SiteMenu extends HTMLElement {
 
       // Initialize subsystems
       const accessibility = /** @type {any} */ (
-        new MenuAccessibility(this, this.state)
+        new MenuAccessibility(this, this.state, this.config)
       );
       this.accessibility = accessibility;
       this.events = new MenuEvents(

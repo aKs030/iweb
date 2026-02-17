@@ -1,13 +1,13 @@
 /**
  * Service Worker for PWA
  * Provides offline support and caching strategies
- * @version 1.2.0
+ * @version 1.2.3
  */
 
 // @ts-nocheck
 /* global self, caches */
 
-const CACHE_VERSION = 'v1.2.0';
+const CACHE_VERSION = 'v1.2.3';
 const CACHE_NAME = `iweb-${CACHE_VERSION}`;
 
 // Assets to cache on install
@@ -179,9 +179,12 @@ function getStrategy(url, request) {
     return CACHE_STRATEGIES.CACHE_FIRST;
   }
 
-  // Scripts and styles - stale while revalidate
-  if (request.destination === 'script' || request.destination === 'style') {
-    return CACHE_STRATEGIES.STALE_WHILE_REVALIDATE;
+  // Scripts and styles - network first to avoid serving stale JS/CSS after hotfixes
+  if (
+    (request.destination === 'script' || request.destination === 'style') &&
+    url.origin === self.location.origin
+  ) {
+    return CACHE_STRATEGIES.NETWORK_FIRST;
   }
 
   // Documents - network first

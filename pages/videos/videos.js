@@ -33,6 +33,10 @@ import {
 } from './services/youtube-api.service.js';
 
 const log = createLogger('videos');
+const isLocalDevHost = () => {
+  const host = globalThis.location?.hostname || '';
+  return host === 'localhost' || host === '127.0.0.1';
+};
 
 // Initialize YouTube configuration
 const YOUTUBE_CHANNEL_ID = ENV.YOUTUBE_CHANNEL_ID || 'UCTGRherjM4iuIn86xxubuPg';
@@ -366,7 +370,11 @@ const loadLatestVideos = async () => {
     }
 
     if (!items.length) {
-      log.warn('Keine Videos gefunden');
+      if (isLocalDevHost()) {
+        log.info('Keine Videos gefunden (lokaler Dev-Modus)');
+      } else {
+        log.warn('Keine Videos gefunden');
+      }
       showInfoMessage(
         'Keine öffentlichen Uploads auf YouTube gefunden — es werden die statisch eingebetteten Videos angezeigt.',
       );
@@ -517,7 +525,13 @@ const loadFromApi = async () => {
   if (uploads) {
     items = await fetchPlaylistItems(uploads);
     if (items.length === 0) {
-      log.warn('Uploads playlist returned no items — falling back to search');
+      if (isLocalDevHost()) {
+        log.info(
+          'Uploads playlist returned no items in local dev — falling back to search',
+        );
+      } else {
+        log.warn('Uploads playlist returned no items — falling back to search');
+      }
       // Inform the user in the UI when running in a browser
       try {
         if (typeof window !== 'undefined' && document)
@@ -531,7 +545,13 @@ const loadFromApi = async () => {
       items = await searchChannelVideos(channelId);
     }
   } else {
-    log.warn('No uploads playlist available — falling back to search');
+    if (isLocalDevHost()) {
+      log.info(
+        'No uploads playlist available in local dev — falling back to search',
+      );
+    } else {
+      log.warn('No uploads playlist available — falling back to search');
+    }
     try {
       if (typeof window !== 'undefined' && document)
         showInfoMessage(

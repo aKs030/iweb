@@ -16,9 +16,11 @@
 import { createServer } from 'http';
 import { readFileSync, existsSync, statSync, watchFile } from 'fs';
 import { resolve, extname } from 'path';
+import os from 'os';
 
 const PORT = process.env.PORT || 8080;
 const ROOT = import.meta.dirname;
+const START_TIME = Date.now();
 
 // ─── MIME Types ──────────────────────────────────────────────
 const MIME = {
@@ -191,6 +193,18 @@ function loadHeaders() {
 
 loadHeaders();
 
+// Dev helper: show uncaught exceptions and unhandled rejections prominently
+if (process.env.NODE_ENV !== 'production') {
+  process.on('uncaughtException', (err) => {
+    console.error(
+      '\n[uncaughtException] ' + (err && err.stack ? err.stack : err),
+    );
+  });
+  process.on('unhandledRejection', (reason) => {
+    console.error('\n[unhandledRejection] ', reason);
+  });
+}
+
 /**
  * Findet passende Header-Regel für eine URL
  */
@@ -325,6 +339,13 @@ function tryServe(filePath, res, url = '/') {
   if (ext === '.html') {
     let html = readFileSync(filePath, 'utf-8');
     html = injectTemplates(html);
+
+    // Dev-only: inject a small client logger that forwards console errors to the server
+    if (process.env.NODE_ENV !== 'production') {
+      const clientLogSnippet = `\n<script>(function(){if(window.__DEV_CLIENT_LOGGER__)return;window.__DEV_CLIENT_LOGGER__=1;function s(l,a){try{var m=a.map(function(x){try{return typeof x==='object'?JSON.stringify(x):String(x)}catch(e){return String(x)}}).join(' ');var p={level:l,message:m,url:location.href,userAgent:navigator.userAgent,timestamp:Date.now()};var b=JSON.stringify(p);if(navigator.sendBeacon){try{navigator.sendBeacon('/__client-log',b)}catch(e){}}else{try{fetch('/__client-log',{method:'POST',headers:{'Content-Type':'application/json'},body:b}).catch(function(){})}catch(e){}}}catch(e){}}var L=['error','warn','info','log','debug'];L.forEach(function(l){var o=console[l]||console.log;console[l]=function(){s(l,Array.prototype.slice.call(arguments));try{o.apply(console,arguments)}catch(e){}}});window.addEventListener('error',function(e){s('error',[e.message,e.filename+':'+e.lineno+':'+e.colno,e.error&&e.error.stack])});window.addEventListener('unhandledrejection',function(e){s('error',[e.reason&&(e.reason.stack||e.reason)])});})();</script>\n`;
+      html += clientLogSnippet;
+    }
+
     const buf = Buffer.from(html, 'utf-8');
     res.writeHead(200, {
       'Content-Type': mime,
@@ -437,6 +458,25 @@ function handleAPIMock(req, res, url) {
     return true;
   }
 
+  // Gallery items mock (GET request)
+  // Returns empty dynamic list so frontend falls back to static gallery config.
+  if (url === '/api/gallery-items') {
+    if (req.method !== 'GET') {
+      res.writeHead(405, corsHeaders);
+      res.end(JSON.stringify({ error: 'Method not allowed', status: 405 }));
+      return true;
+    }
+
+    res.writeHead(200, corsHeaders);
+    res.end(
+      JSON.stringify({
+        items: [],
+        source: 'dev-mock',
+      }),
+    );
+    return true;
+  }
+
   // Other API endpoints require POST
   if (req.method !== 'POST') {
     res.writeHead(405, corsHeaders);
@@ -500,6 +540,32 @@ function handleAPIMock(req, res, url) {
 const server = createServer(async (req, res) => {
   const url = req.url?.split('?')[0] || '/';
 
+  // Dev-only: receive client-side console logs forwarded from the browser
+  if (
+    process.env.NODE_ENV !== 'production' &&
+    url === '/__client-log' &&
+    req.method === 'POST'
+  ) {
+    let body = '';
+    req.on('data', (chunk) => (body += chunk));
+    req.on('end', () => {
+      try {
+        const payload = JSON.parse(body || '{}');
+        const level = (payload.level || 'log').toLowerCase();
+        const prefix = `[client:${level}] ${payload.url || ''} • ${payload.userAgent || ''}`;
+        const msg = payload.message || '';
+        if (level === 'error') console.error(prefix, msg, payload.stack || '');
+        else if (level === 'warn') console.warn(prefix, msg);
+        else console.log(prefix, msg);
+      } catch (err) {
+        console.error('[client-log] invalid payload', body);
+      }
+      res.writeHead(204, { 'Content-Type': 'text/plain' });
+      res.end();
+    });
+    return;
+  }
+
   // 0. R2 Proxy (löst CORS-Probleme auf localhost)
   if (await handleR2Proxy(req, res, url)) return;
 
@@ -560,10 +626,118 @@ const server = createServer(async (req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`\n  🚀 Dev-Server: http://localhost:${PORT}`);
-  console.log(
-    '  📄 Templates werden dynamisch injiziert (kein Build, kein Duplicate)',
+  const now = Date.now();
+  const elapsed = ((now - START_TIME) / 1000).toFixed(2);
+
+  const useColors = process.stdout.isTTY;
+  const C = {
+    reset: '\x1b[0m',
+    dim: '\x1b[2m',
+    green: '\x1b[32m',
+    cyan: '\x1b[36m',
+    yellow: '\x1b[33m',
+    magenta: '\x1b[35m',
+  };
+  const colorize = (text, code) =>
+    useColors && code ? `${code}${text}${C.reset}` : text;
+  const ts = () => new Date().toTimeString().split(' ')[0];
+  const log = (label, msg, colorName = 'cyan') => {
+    const timePrefix = useColors ? `${C.dim}${ts()}${C.reset}` : ts();
+    const coloredLabel = colorize(label, C[colorName] || '');
+    console.log(`${timePrefix} ${coloredLabel} ${msg}`);
+  };
+
+  // Sammle alle nicht-internen Adressen (IPv4 + IPv6), filtere unbrauchbare Interfaces
+  const nets = os.networkInterfaces();
+  const BLACKLIST = [
+    /^awdl/i,
+    /^utun/i,
+    /^llw/i,
+    /^gif/i,
+    /^stf/i,
+    /^bridge/i,
+    /^p2p/i,
+  ];
+  const isBlacklisted = (name) => BLACKLIST.some((rx) => rx.test(name));
+
+  let addrs = [];
+  for (const [name, list] of Object.entries(nets)) {
+    if (isBlacklisted(name)) continue; // reduce noise (awdl*, utun* ...)
+    for (const net of list) {
+      if (net.internal) continue;
+      addrs.push({ name, address: net.address, family: net.family });
+    }
+  }
+
+  // Deduplicate identical addresses
+  const seen = new Set();
+  addrs = addrs.filter((a) => {
+    if (seen.has(a.address)) return false;
+    seen.add(a.address);
+    return true;
+  });
+
+  const isPrivateIPv4 = (ip) =>
+    /^(10\.|192\.168\.|172\.(1[6-9]|2[0-9]|3[0-1])\.)/.test(ip);
+  const shorten = (s) => {
+    if (!s) return s;
+    if (s.includes(':') && s.length > 30)
+      return s.slice(0, 12) + '…' + s.slice(-8);
+    if (s.length > 24) return s.slice(0, 20) + '…';
+    return s;
+  };
+
+  // Sort: prefer private IPv4 → IPv4 → IPv6 global → IPv6 ULA → IPv6 link-local
+  addrs.sort((a, b) => {
+    const score = (x) => {
+      if (x.family === 'IPv4') return isPrivateIPv4(x.address) ? 0 : 1;
+      if (x.family === 'IPv6') {
+        if (x.address.startsWith('fe80:')) return 4; // link-local
+        if (x.address.startsWith('fc') || x.address.startsWith('fd')) return 3; // ULA
+        return 2; // global
+      }
+      return 5;
+    };
+    const sa = score(a);
+    const sb = score(b);
+    if (sa !== sb) return sa - sb;
+    if (a.name !== b.name) return a.name.localeCompare(b.name);
+    return a.address.localeCompare(b.address);
+  });
+
+  console.log('');
+  log(
+    '🚀 Dev‑Server',
+    `gestartet — ${colorize(`http://localhost:${PORT}`, C.green)}`,
   );
-  console.log('  👀 Template-Änderungen werden automatisch erkannt');
-  console.log('  Strg+C zum Beenden\n');
+
+  // Kompakte LAN‑Anzeige: nur die primäre Adresse (erste private IPv4 / erste IPv4 / erste Adresse)
+  const primary =
+    addrs.find((a) => a.family === 'IPv4' && isPrivateIPv4(a.address)) ||
+    addrs.find((a) => a.family === 'IPv4') ||
+    addrs[0];
+
+  if (primary) {
+    const url =
+      primary.family === 'IPv6'
+        ? `http://[${primary.address}]:${PORT}`
+        : `http://${primary.address}:${PORT}`;
+    const scopeNote =
+      primary.family === 'IPv6' && primary.address.startsWith('fe80:')
+        ? colorize('(link-local)', C.dim)
+        : '';
+    console.log(`  🌐 LAN: ${colorize(url, C.green)} ${scopeNote}`);
+  }
+
+  console.log('');
+
+  console.log('');
+  log(
+    '✨',
+    'Templates: dynamische Injektion — kein Build, kein Duplicate',
+    'magenta',
+  );
+  log('🔁', 'Auto‑Reload: Template‑Änderungen aktiv', 'magenta');
+  log('⌃C', `zum Beenden  •  Startup ${elapsed}s`, 'dim');
+  console.log('');
 });
