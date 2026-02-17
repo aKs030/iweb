@@ -4,6 +4,65 @@ import { ProjectGallery } from './ProjectGallery.js';
 import { useScrollCamera } from '../hooks/useScrollCamera.js';
 
 const { useEffect, useRef } = React;
+const BREAKPOINTS = {
+  mobile: 640,
+  tablet: 1024,
+};
+
+function getViewportSize(container) {
+  const width = Math.max(
+    1,
+    Math.floor(container?.clientWidth || window.innerWidth),
+  );
+  const height = Math.max(
+    1,
+    Math.floor(container?.clientHeight || window.innerHeight),
+  );
+
+  return { width, height };
+}
+
+function getCameraFov(viewportWidth) {
+  if (viewportWidth <= BREAKPOINTS.mobile) return 72;
+  if (viewportWidth <= BREAKPOINTS.tablet) return 66;
+  return 60;
+}
+
+function getMotionProfile(viewportWidth) {
+  if (viewportWidth <= BREAKPOINTS.mobile) {
+    return {
+      lerpFactor: 0.11,
+      xAmplitude: 0.2,
+      yBase: 0.78,
+      yAmplitude: 0.16,
+      starRotationSpeed: 0.012,
+    };
+  }
+
+  if (viewportWidth <= BREAKPOINTS.tablet) {
+    return {
+      lerpFactor: 0.095,
+      xAmplitude: 0.35,
+      yBase: 0.88,
+      yAmplitude: 0.22,
+      starRotationSpeed: 0.016,
+    };
+  }
+
+  return {
+    lerpFactor: 0.08,
+    xAmplitude: 0.5,
+    yBase: 1,
+    yAmplitude: 0.3,
+    starRotationSpeed: 0.02,
+  };
+}
+
+function getProjectsSignature(projects) {
+  return projects
+    .map((project) => project?.name || project?.dirName || project?.id || '')
+    .join('|');
+}
 
 // GLOBAL STATE
 // We keep the renderer and scene persistent across mounts to prevent
@@ -14,6 +73,7 @@ let globalCamera = null;
 let globalStars = null;
 let globalGallery = null;
 let globalCameraLight = null;
+let globalGallerySignature = '';
 
 /**
  * Three.js Scene Component
@@ -26,6 +86,7 @@ export const ThreeScene = ({ projects, onScrollUpdate, onReady }) => {
   const scrollRef = useRef(0);
   const isMountedRef = useRef(true);
   const prevActiveIndexRef = useRef(-1);
+  const viewportWidthRef = useRef(window.innerWidth);
 
   // Use the hook to track scroll
   const normalizedScroll = useScrollCamera(projects);
@@ -50,8 +111,6 @@ export const ThreeScene = ({ projects, onScrollUpdate, onReady }) => {
           powerPreference: 'high-performance',
           failIfMajorPerformanceCaveat: false,
         });
-        globalRenderer.setSize(window.innerWidth, window.innerHeight);
-        globalRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
         // Handle context loss
         globalRenderer.domElement.addEventListener(
@@ -102,15 +161,19 @@ export const ThreeScene = ({ projects, onScrollUpdate, onReady }) => {
 
         globalCameraLight = new THREE.PointLight(0x60a5fa, 1.5, 30);
         globalScene.add(globalCameraLight);
-
-        // Init Gallery (Dynamic content)
-        // We re-create gallery content if projects change, but here we assume init once for simplicity
-        // ideally we'd have a method to update it.
-        globalGallery = new ProjectGallery(globalScene, projects);
       } catch (e) {
         console.error('Three.js Init Failed:', e);
         return;
       }
+    }
+
+    const nextGallerySignature = getProjectsSignature(projects);
+    if (!globalGallery || globalGallerySignature !== nextGallerySignature) {
+      if (globalGallery) {
+        globalGallery.dispose?.();
+      }
+      globalGallery = new ProjectGallery(globalScene, projects);
+      globalGallerySignature = nextGallerySignature;
     }
 
     // --- 2. ATTACH TO DOM ---
@@ -133,11 +196,40 @@ export const ThreeScene = ({ projects, onScrollUpdate, onReady }) => {
     // --- 3. RESIZE HANDLER ---
     const handleResize = () => {
       if (!isMountedRef.current || !globalRenderer || !globalCamera) return;
-      globalCamera.aspect = window.innerWidth / window.innerHeight;
+
+      const { width, height } = getViewportSize(containerRef.current);
+      viewportWidthRef.current = width;
+
+      const dprCap =
+        width <= BREAKPOINTS.mobile
+          ? 1.25
+          : width <= BREAKPOINTS.tablet
+            ? 1.5
+            : 2;
+
+      globalRenderer.setPixelRatio(
+        Math.min(window.devicePixelRatio || 1, dprCap),
+      );
+      globalRenderer.setSize(width, height, false);
+      globalCamera.fov = getCameraFov(width);
+      globalCamera.aspect = width / height;
       globalCamera.updateProjectionMatrix();
-      globalRenderer.setSize(window.innerWidth, window.innerHeight);
+      globalGallery?.setViewportWidth(width);
     };
-    window.addEventListener('resize', handleResize);
+
+    window.addEventListener('resize', handleResize, { passive: true });
+    window.addEventListener('orientationchange', handleResize, {
+      passive: true,
+    });
+
+    let resizeObserver = null;
+    if (window.ResizeObserver && containerRef.current) {
+      resizeObserver = new ResizeObserver(() => {
+        handleResize();
+      });
+      resizeObserver.observe(containerRef.current);
+    }
+
     // Force initial size update in case window changed while unmounted
     handleResize();
 
@@ -151,24 +243,30 @@ export const ThreeScene = ({ projects, onScrollUpdate, onReady }) => {
 
       // Update Camera & Light
       if (globalCamera && globalCameraLight) {
-        const totalPathLength = projects.length * 15 + 10;
+        const viewportWidth = viewportWidthRef.current;
+        const motion = getMotionProfile(viewportWidth);
+        const totalPathLength =
+          globalGallery?.getPathLength?.() || projects.length * 15 + 10;
         const targetZ = 5 - scrollRef.current * totalPathLength;
 
         // More responsive camera movement
-        const lerpFactor = 0.08; // Increased from 0.05 for more responsiveness
+        const lerpFactor = motion.lerpFactor;
         globalCamera.position.z +=
           (targetZ - globalCamera.position.z) * lerpFactor;
 
-        // Smoother side-to-side movement with higher Y baseline
-        globalCamera.position.x = Math.sin(t * 0.5) * 0.5;
-        globalCamera.position.y = 1 + Math.cos(t * 0.3) * 0.3; // Higher baseline Y position
+        // Reduce lateral motion on small screens to keep focus centered.
+        globalCamera.position.x = Math.sin(t * 0.5) * motion.xAmplitude;
+        globalCamera.position.y =
+          motion.yBase + Math.cos(t * 0.3) * motion.yAmplitude;
 
         globalCameraLight.position.copy(globalCamera.position);
       }
 
       // Update Stars
       if (globalStars) {
-        globalStars.rotation.z = t * 0.02;
+        const viewportWidth = viewportWidthRef.current;
+        const motion = getMotionProfile(viewportWidth);
+        globalStars.rotation.z = t * motion.starRotationSpeed;
       }
 
       // Update Gallery
@@ -199,6 +297,10 @@ export const ThreeScene = ({ projects, onScrollUpdate, onReady }) => {
         cancelAnimationFrame(frameIdRef.current);
       }
       window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      }
 
       // IMPORTANT: We do NOT dispose the renderer here.
       // We only remove the canvas from the DOM so the React component can unmount cleanly.

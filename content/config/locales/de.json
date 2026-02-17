@@ -122,7 +122,21 @@
     },
     "app": {
       "fullscreen": "Vollbild",
-      "close": "Schließen"
+      "close": "Schließen",
+      "popup_title": "App Popup",
+      "open_tab": "Im neuen Tab öffnen"
+    },
+    "launch": {
+      "badge": "3D Projekt Galerie",
+      "title": "Projektansicht wird gestartet",
+      "subtitle": "Apps werden aus dem GitHub Repository geladen und für die 3D-Navigation vorbereitet.",
+      "loading": "Lade Projekte und bereite die Szene vor...",
+      "scene": "Initialisiere 3D-Szene...",
+      "hint": "Danach kannst du per Scrollen durch die Apps navigieren.",
+      "scroll_hint": "SCROLLEN ZUM ENTDECKEN",
+      "source": "Live aus GitHub",
+      "error_title": "Projekte konnten nicht geladen werden",
+      "retry": "Seite neu laden"
     }
   },
   "gallery": {
