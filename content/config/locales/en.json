@@ -13,7 +13,20 @@
     "videos_sub": "Motion",
     "blog_sub": "Insights",
     "about_sub": "Profile",
-    "contact_sub": "Inquiry"
+    "contact_sub": "Inquiry",
+    "toggle": "Open menu",
+    "main_nav": "Main navigation",
+    "skip_main": "Skip to main content",
+    "skip_nav": "Skip to navigation",
+    "search_label": "Open search",
+    "search_tooltip": "Search website",
+    "search_close": "Close search",
+    "search_input_label": "Search",
+    "search_placeholder": "Search website...",
+    "search_loading": "Searching...",
+    "search_no_results": "No results found",
+    "search_unavailable": "Search is currently unavailable",
+    "lang_toggle": "Switch language"
   },
   "footer": {
     "about": {

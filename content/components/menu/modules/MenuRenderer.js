@@ -53,13 +53,15 @@ export class MenuRenderer {
   initializeIcons() {
     const delay = this.config.ICON_CHECK_DELAY || 100;
     setTimeout(() => {
-      const icons = document.querySelectorAll('.nav-icon use');
+      if (!this.container) return;
+
+      const icons = this.container.querySelectorAll('.nav-icon use');
       icons.forEach((use) => {
         const href = use.getAttribute('href');
         if (!href) return;
 
         const targetId = href.substring(1);
-        const target = document.getElementById(targetId);
+        const target = this.container.querySelector(`#${targetId}`);
         const svg = use.closest('svg');
         const fallback = svg
           ?.closest('a, button')
@@ -124,6 +126,7 @@ export class MenuRenderer {
 
   updateLanguage(lang) {
     if (typeof lang !== 'string') return;
+    if (!this.container) return;
 
     // Update Toggle Text
     const langText = this.container.querySelector('.lang-text');
@@ -131,21 +134,37 @@ export class MenuRenderer {
       langText.textContent = lang.toUpperCase();
     }
 
-    // Update Menu Items
-    const menuItems = this.container.querySelectorAll(
-      '.site-menu__list a span[data-i18n], .site-menu__list button[aria-label]',
-    );
-
-    menuItems.forEach((el) => {
-      // Text content translation
-      if (el.hasAttribute('data-i18n')) {
-        const key = el.getAttribute('data-i18n');
+    const textElements = this.container.querySelectorAll('[data-i18n]');
+    textElements.forEach((el) => {
+      const key = el.getAttribute('data-i18n');
+      if (key) {
         el.textContent = i18n.t(key);
       }
-      // Aria-label translation (for buttons)
-      if (el.hasAttribute('aria-label') && el.getAttribute('data-i18n-aria')) {
-        const key = el.getAttribute('data-i18n-aria');
+    });
+
+    const ariaElements = this.container.querySelectorAll('[data-i18n-aria]');
+    ariaElements.forEach((el) => {
+      const key = el.getAttribute('data-i18n-aria');
+      if (key) {
         el.setAttribute('aria-label', i18n.t(key));
+      }
+    });
+
+    const titleElements = this.container.querySelectorAll('[data-i18n-title]');
+    titleElements.forEach((el) => {
+      const key = el.getAttribute('data-i18n-title');
+      if (key) {
+        el.setAttribute('title', i18n.t(key));
+      }
+    });
+
+    const placeholderElements = this.container.querySelectorAll(
+      '[data-i18n-placeholder]',
+    );
+    placeholderElements.forEach((el) => {
+      const key = el.getAttribute('data-i18n-placeholder');
+      if (key) {
+        el.setAttribute('placeholder', i18n.t(key));
       }
     });
 
@@ -157,8 +176,10 @@ export class MenuRenderer {
   }
 
   updateTitle(title, subtitle = '') {
-    const siteTitleEl = getElementById('site-title');
-    const siteSubtitleEl = getElementById('site-subtitle');
+    if (!this.container) return;
+
+    const siteTitleEl = this.container.querySelector('.site-title');
+    const siteSubtitleEl = this.container.querySelector('.site-subtitle');
 
     if (!siteTitleEl) return;
 

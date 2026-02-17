@@ -2,6 +2,8 @@
  * Menu Events Management
  * Handles all user interactions, URL changes, and scroll events.
  */
+import { i18n } from '../../../core/i18n.js';
+
 export class MenuEvents {
   /**
    * @param {HTMLElement} container
@@ -21,6 +23,7 @@ export class MenuEvents {
       isOpen: false,
       trigger: null,
       panel: null,
+      bar: null,
       input: null,
       results: null,
       items: [],
@@ -28,16 +31,21 @@ export class MenuEvents {
       debounceTimer: null,
       abortController: null,
     };
+
+    this.searchCache = new Map();
+    this.searchCacheTtlMs = this.config.SEARCH_CACHE_TTL_MS ?? 120000;
+    this.searchCacheMaxEntries = this.config.SEARCH_CACHE_MAX_ENTRIES ?? 40;
   }
 
   init() {
     this.setupToggle();
     this.setupLanguageToggle();
     this.setupSearch();
+    this.setupI18nSync();
     this.setupNavigation();
     this.setupGlobalListeners();
     this.setupResizeHandler();
-    this.setupPageSpecific();
+    this.fixSubpageLinks();
     this.setupScrollSpy();
 
     // Initial state sync
@@ -48,10 +56,9 @@ export class MenuEvents {
     const langToggle = this.container.querySelector('.lang-toggle');
     if (!langToggle) return;
 
-    const handleLangClick = async (e) => {
+    const handleLangClick = (e) => {
       e.preventDefault();
       try {
-        const { i18n } = await import('/content/core/i18n.js');
         i18n.toggleLanguage();
       } catch (err) {
         console.error('Failed to toggle language:', err);
@@ -66,13 +73,10 @@ export class MenuEvents {
   setupToggle() {
     const toggle = this.container.querySelector('.site-menu__toggle');
     if (!toggle) return;
-    if (!toggle.dataset.defaultAriaLabel) {
-      toggle.dataset.defaultAriaLabel = toggle.getAttribute('aria-label') || '';
-    }
 
     const handleToggle = () => {
       if (this.isSearchOpen()) {
-        this.closeSearchMode({ restoreFocus: false });
+        this.closeSearchModeSilently();
         return;
       }
 
@@ -94,30 +98,30 @@ export class MenuEvents {
   setupSearch() {
     const searchTrigger = this.container.querySelector('.search-trigger');
     const searchPanel = this.container.querySelector('.menu-search');
+    const searchBar = this.container.querySelector('.menu-search__bar');
     const searchInput = this.container.querySelector('.menu-search__input');
     const searchResults = this.container.querySelector('.menu-search__results');
 
-    if (!searchTrigger || !searchPanel || !searchInput || !searchResults) {
+    if (
+      !searchTrigger ||
+      !searchPanel ||
+      !searchBar ||
+      !searchInput ||
+      !searchResults
+    ) {
       return;
     }
 
     this.search.trigger = searchTrigger;
     this.search.panel = searchPanel;
+    this.search.bar = searchBar;
     this.search.input = searchInput;
     this.search.results = searchResults;
-    if (!searchTrigger.dataset.defaultAriaLabel) {
-      searchTrigger.dataset.defaultAriaLabel =
-        searchTrigger.getAttribute('aria-label') || '';
-    }
-    if (!searchTrigger.dataset.defaultTitle) {
-      searchTrigger.dataset.defaultTitle =
-        searchTrigger.getAttribute('title') || '';
-    }
 
     const handleSearchTrigger = (e) => {
       e.preventDefault();
       if (this.isSearchOpen()) {
-        this.closeSearchMode({ restoreFocus: false });
+        this.closeSearchModeSilently();
         return;
       }
       this.openSearchMode();
@@ -160,7 +164,7 @@ export class MenuEvents {
       this.navigateToSearchResult(index);
     };
 
-    const handleResultsMouseMove = (e) => {
+    const handleResultsPointerOver = (e) => {
       const index = this.getSearchResultIndexFromEvent(e);
       if (index < 0) return;
 
@@ -173,13 +177,22 @@ export class MenuEvents {
       this.addListener(searchInput, 'input', handleSearchInput),
       this.addListener(searchInput, 'keydown', handleSearchKeydown),
       this.addListener(searchResults, 'click', handleResultsClick),
-      this.addListener(searchResults, 'mousemove', handleResultsMouseMove),
+      this.addListener(searchResults, 'pointerover', handleResultsPointerOver),
+    );
+  }
+
+  setupI18nSync() {
+    this.cleanupFns.push(
+      i18n.subscribe(() => {
+        this.syncSearchTriggerState(this.isSearchOpen());
+        this.syncToggleSearchState(this.isSearchOpen());
+      }),
     );
   }
 
   getSearchResultIndexFromEvent(event) {
-    const target = /** @type {HTMLElement|null} */ (
-      event.target instanceof HTMLElement ? event.target : null
+    const target = /** @type {Element|null} */ (
+      event.target instanceof Element ? event.target : null
     );
     const item = target?.closest?.('[data-search-index]');
     if (!item) return -1;
@@ -192,16 +205,66 @@ export class MenuEvents {
     return this.container.closest('.site-header');
   }
 
+  getToggleElement() {
+    return this.container.querySelector('.site-menu__toggle');
+  }
+
   isSearchOpen() {
     return Boolean(this.search.isOpen);
+  }
+
+  t(key, fallback = '') {
+    const translated = i18n.t(key);
+    if (translated === key) {
+      return fallback || key;
+    }
+    return translated;
+  }
+
+  closeSearchModeSilently() {
+    this.closeSearchMode({ restoreFocus: false });
+  }
+
+  syncSearchTriggerState(isOpen) {
+    const trigger = this.search.trigger;
+    if (!trigger) return;
+
+    if (isOpen) {
+      const closeLabel = this.t('menu.search_close', 'Suche schließen');
+      trigger.setAttribute('aria-label', closeLabel);
+      trigger.setAttribute('title', closeLabel);
+      trigger.setAttribute('aria-expanded', 'true');
+      return;
+    }
+
+    trigger.setAttribute('aria-label', this.t('menu.search_label', 'Suche'));
+    trigger.setAttribute(
+      'title',
+      this.t('menu.search_tooltip', 'Website durchsuchen'),
+    );
+    trigger.setAttribute('aria-expanded', 'false');
+  }
+
+  syncToggleSearchState(isOpen) {
+    const toggle = this.getToggleElement();
+    if (!toggle) return;
+
+    toggle.classList.toggle('active', isOpen);
+    if (isOpen) {
+      toggle.setAttribute(
+        'aria-label',
+        this.t('menu.search_close', 'Suche schließen'),
+      );
+      return;
+    }
+
+    toggle.setAttribute('aria-label', this.t('menu.toggle', 'Menü'));
   }
 
   openSearchMode() {
     const header = this.getHeaderElement();
     const panel = this.search.panel;
     const input = this.search.input;
-    const trigger = this.search.trigger;
-    const toggle = this.container.querySelector('.site-menu__toggle');
 
     if (!header || !panel || !input) return;
     if (this.search.isOpen) return;
@@ -211,14 +274,9 @@ export class MenuEvents {
     this.search.isOpen = true;
     header.classList.add('search-mode');
     panel.setAttribute('aria-hidden', 'false');
-    if (trigger) {
-      trigger.setAttribute('aria-label', 'Suche schließen');
-      trigger.setAttribute('title', 'Suche schließen');
-    }
-    if (toggle) {
-      toggle.classList.add('active');
-      toggle.setAttribute('aria-label', 'Suche schließen');
-    }
+    this.syncSearchTriggerState(true);
+    this.syncToggleSearchState(true);
+    this.setSearchPopupExpanded(false);
 
     requestAnimationFrame(() => {
       try {
@@ -237,8 +295,6 @@ export class MenuEvents {
     if (!this.search.isOpen) return;
 
     const header = this.getHeaderElement();
-    const trigger = this.search.trigger;
-    const toggle = this.container.querySelector('.site-menu__toggle');
     if (header) {
       header.classList.remove('search-mode');
     }
@@ -253,21 +309,8 @@ export class MenuEvents {
     this.search.isOpen = false;
     this.search.items = [];
     this.search.selectedIndex = -1;
-    if (trigger) {
-      const defaultAria =
-        trigger.dataset.defaultAriaLabel ||
-        trigger.getAttribute('aria-label') ||
-        '';
-      const defaultTitle =
-        trigger.dataset.defaultTitle || trigger.getAttribute('title') || '';
-      trigger.setAttribute('aria-label', defaultAria);
-      trigger.setAttribute('title', defaultTitle);
-    }
-    if (toggle) {
-      toggle.classList.remove('active');
-      const defaultToggleLabel = toggle.dataset.defaultAriaLabel || 'Menü';
-      toggle.setAttribute('aria-label', defaultToggleLabel);
-    }
+    this.syncSearchTriggerState(false);
+    this.syncToggleSearchState(false);
 
     if (this.search.input) {
       this.search.input.value = '';
@@ -317,16 +360,37 @@ export class MenuEvents {
     if (!this.search.results) return;
 
     this.abortSearchRequest();
+    const topK = this.config.SEARCH_TOP_K ?? 12;
+    const cacheKey = this.buildSearchCacheKey(query, topK);
+    const cachedItems = this.getCachedSearchResults(cacheKey);
+
+    if (cachedItems) {
+      if (this.search.input?.value.trim() !== query) return;
+      this.search.items = cachedItems;
+      this.search.selectedIndex = cachedItems.length > 0 ? 0 : -1;
+
+      if (cachedItems.length === 0) {
+        this.renderSearchState({
+          message: this.t('menu.search_no_results', 'Keine Treffer gefunden'),
+        });
+        return;
+      }
+
+      this.renderSearchState({
+        items: cachedItems,
+      });
+      return;
+    }
+
     this.search.abortController = new AbortController();
     const signal = this.search.abortController.signal;
 
     this.renderSearchState({
       loading: true,
-      message: 'Suche...',
+      message: this.t('menu.search_loading', 'Suche...'),
     });
 
     try {
-      const topK = this.config.SEARCH_TOP_K ?? 12;
       const response = await fetch('/api/search', {
         method: 'POST',
         headers: {
@@ -353,10 +417,11 @@ export class MenuEvents {
 
       this.search.items = items;
       this.search.selectedIndex = items.length > 0 ? 0 : -1;
+      this.setCachedSearchResults(cacheKey, items);
 
       if (items.length === 0) {
         this.renderSearchState({
-          message: 'Keine Treffer gefunden',
+          message: this.t('menu.search_no_results', 'Keine Treffer gefunden'),
         });
         return;
       }
@@ -370,7 +435,10 @@ export class MenuEvents {
       this.search.items = [];
       this.search.selectedIndex = -1;
       this.renderSearchState({
-        message: 'Suche derzeit nicht verfuegbar',
+        message: this.t(
+          'menu.search_unavailable',
+          'Suche derzeit nicht verfuegbar',
+        ),
       });
     } finally {
       if (this.search.abortController?.signal === signal) {
@@ -407,18 +475,21 @@ export class MenuEvents {
 
     const results = this.search.results;
     results.innerHTML = '';
+    results.setAttribute('aria-busy', String(Boolean(loading)));
 
     if (hidden) {
       results.classList.remove('active');
+      this.setSearchPopupExpanded(false);
       return;
     }
 
     results.classList.add('active');
+    this.setSearchPopupExpanded(true);
 
     if (loading || message) {
       const stateEl = document.createElement('div');
       stateEl.className = 'menu-search__state';
-      stateEl.textContent = message || 'Lade...';
+      stateEl.textContent = message || this.t('common.loading', 'Lade...');
       results.appendChild(stateEl);
       return;
     }
@@ -433,6 +504,7 @@ export class MenuEvents {
       const button = document.createElement('button');
       button.type = 'button';
       button.className = 'menu-search__result';
+      button.id = this.buildSearchOptionId(index);
       button.setAttribute('data-search-index', String(index));
       button.setAttribute('role', 'option');
       button.setAttribute(
@@ -475,6 +547,7 @@ export class MenuEvents {
     const optionEls = this.search.results.querySelectorAll(
       '[data-search-index]',
     );
+    let activeOptionId = '';
 
     optionEls.forEach((el) => {
       const index = Number(el.getAttribute('data-search-index'));
@@ -483,9 +556,18 @@ export class MenuEvents {
       el.setAttribute('aria-selected', String(isSelected));
 
       if (isSelected) {
+        activeOptionId = el.id || '';
         el.scrollIntoView({ block: 'nearest' });
       }
     });
+
+    if (this.search.input) {
+      if (activeOptionId) {
+        this.search.input.setAttribute('aria-activedescendant', activeOptionId);
+      } else {
+        this.search.input.removeAttribute('aria-activedescendant');
+      }
+    }
   }
 
   moveSearchSelection(direction) {
@@ -515,8 +597,73 @@ export class MenuEvents {
     const item = this.search.items[index];
     if (!item?.url) return;
 
-    this.closeSearchMode({ restoreFocus: false });
+    this.closeSearchModeSilently();
     window.location.href = item.url;
+  }
+
+  setSearchPopupExpanded(isExpanded) {
+    const expanded = String(Boolean(isExpanded));
+
+    if (this.search.bar) {
+      this.search.bar.setAttribute('aria-expanded', expanded);
+    }
+
+    if (this.search.input) {
+      this.search.input.setAttribute('aria-expanded', expanded);
+      if (!isExpanded) {
+        this.search.input.removeAttribute('aria-activedescendant');
+      }
+    }
+  }
+
+  buildSearchCacheKey(query, topK) {
+    return `${topK}:${String(query || '')
+      .trim()
+      .toLowerCase()}`;
+  }
+
+  buildSearchOptionId(index) {
+    const resultsId = this.search.results?.id || 'menu-search-results';
+    return `${resultsId}-option-${index}`;
+  }
+
+  getCachedSearchResults(cacheKey) {
+    if (!cacheKey) return null;
+
+    const entry = this.searchCache.get(cacheKey);
+    if (!entry) return null;
+
+    if (entry.expiresAt <= Date.now()) {
+      this.searchCache.delete(cacheKey);
+      return null;
+    }
+
+    // Mark as recently used (LRU).
+    this.searchCache.delete(cacheKey);
+    this.searchCache.set(cacheKey, entry);
+
+    return entry.items.map((item) => ({ ...item }));
+  }
+
+  setCachedSearchResults(cacheKey, items) {
+    if (!cacheKey || !Array.isArray(items)) return;
+    if (this.searchCacheMaxEntries <= 0) return;
+
+    if (this.searchCache.has(cacheKey)) {
+      this.searchCache.delete(cacheKey);
+    }
+
+    if (this.searchCache.size >= this.searchCacheMaxEntries) {
+      const leastRecentlyUsedKey = this.searchCache.keys().next().value;
+      if (leastRecentlyUsedKey) {
+        this.searchCache.delete(leastRecentlyUsedKey);
+      }
+    }
+
+    this.searchCache.set(cacheKey, {
+      expiresAt: Date.now() + this.searchCacheTtlMs,
+      items: items.map((item) => ({ ...item })),
+    });
   }
 
   setupNavigation() {
@@ -527,20 +674,11 @@ export class MenuEvents {
         const href = link.getAttribute('href');
         if (!href) return;
 
-        this.closeSearchMode({ restoreFocus: false });
+        this.closeSearchModeSilently();
 
         // Handle internal links
         if (href.startsWith('/') || href.startsWith('#')) {
           this.closeMenu();
-
-          // If it's a hash link on the same page, we let browser handle scroll
-          // but we might want to update active state manually for instant feedback
-          const isHash = href.includes('#');
-          const isSamePage = href.split('#')[0] === window.location.pathname;
-
-          if (!isHash || !isSamePage) {
-            // Let normal navigation happen
-          }
         }
       };
 
@@ -563,7 +701,7 @@ export class MenuEvents {
         );
 
         if (!isInsideHeader) {
-          this.closeSearchMode({ restoreFocus: false });
+          this.closeSearchModeSilently();
         }
       }
 
@@ -587,7 +725,7 @@ export class MenuEvents {
 
       if (this.state.isOpen) {
         this.closeMenu();
-        const toggle = this.container.querySelector('.site-menu__toggle');
+        const toggle = this.getToggleElement();
         toggle?.focus();
       }
     };
@@ -618,10 +756,6 @@ export class MenuEvents {
     };
 
     this.cleanupFns.push(this.addListener(window, 'resize', handleResize));
-  }
-
-  setupPageSpecific() {
-    this.fixSubpageLinks();
   }
 
   /**
@@ -663,14 +797,6 @@ export class MenuEvents {
 
       if (entry.target.id) {
         this.updateTitleFromSection(entry.target.id);
-        // Optionally sync active link for scrolling on homepage
-        if (
-          window.location.pathname === '/' ||
-          window.location.pathname === '/index.html'
-        ) {
-          // We could update state here, but let's be careful not to spam
-          // this.state.setActiveLink(`/#${entry.target.id}`);
-        }
       }
     };
 
@@ -825,9 +951,10 @@ export class MenuEvents {
   }
 
   destroy() {
-    this.closeSearchMode({ restoreFocus: false });
+    this.closeSearchModeSilently();
     this.clearSearchDebounce();
     this.abortSearchRequest();
+    this.searchCache.clear();
 
     this.cleanupFns.forEach((fn) => fn());
     this.cleanupFns = [];

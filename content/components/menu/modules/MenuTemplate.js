@@ -1,8 +1,26 @@
 import { i18n } from '../../../core/i18n.js';
 
+let menuTemplateInstanceCounter = 0;
+
 export class MenuTemplate {
   constructor(config = {}) {
     this.config = config;
+    this.ids = this.createDomIds();
+  }
+
+  createDomIds() {
+    menuTemplateInstanceCounter += 1;
+    const configuredPrefix = String(this.config?.DOM_ID_PREFIX || '').trim();
+    const prefix =
+      configuredPrefix || `site-menu-${menuTemplateInstanceCounter}`;
+
+    return {
+      navigation: `${prefix}-navigation`,
+      title: `${prefix}-title`,
+      subtitle: `${prefix}-subtitle`,
+      searchInput: `${prefix}-search-input`,
+      searchResults: `${prefix}-search-results`,
+    };
   }
 
   getHTML() {
@@ -19,16 +37,16 @@ ${this.getToggleButton()}
   getSkipLinks() {
     return `
 <div class="skip-links">
-  <a href="#main-content" class="skip-link">${i18n.t('menu.skip_main')}</a>
-  <a href="#navigation" class="skip-link">${i18n.t('menu.skip_nav')}</a>
+  <a href="#main-content" class="skip-link" data-i18n="menu.skip_main">${i18n.t('menu.skip_main')}</a>
+  <a href="#${this.ids.navigation}" class="skip-link" data-i18n="menu.skip_nav">${i18n.t('menu.skip_nav')}</a>
 </div>`;
   }
 
   getBrand() {
     return `
 <div class="site-logo__container">
-  <span id="site-title" class="site-title"></span>
-  <span id="site-subtitle" class="site-subtitle"></span>
+  <span id="${this.ids.title}" class="site-title"></span>
+  <span id="${this.ids.subtitle}" class="site-subtitle"></span>
 </div>`;
   }
 
@@ -72,7 +90,14 @@ ${this.getToggleButton()}
 
   getToggleButton() {
     return `
-<button type="button" class="site-menu__toggle" aria-label="${i18n.t('menu.toggle')}" aria-controls="navigation" aria-expanded="false">
+<button
+  type="button"
+  class="site-menu__toggle"
+  aria-label="${i18n.t('menu.toggle')}"
+  data-i18n-aria="menu.toggle"
+  aria-controls="${this.ids.navigation}"
+  aria-expanded="false"
+>
   <div class="hamburger-container">
     <span class="hamburger-line hamburger-line--top"></span>
     <span class="hamburger-line hamburger-line--middle"></span>
@@ -87,14 +112,14 @@ ${this.getToggleButton()}
 
     const items = menuItems
       .map(
-        (item) => `
-    <li>
+        (item, index) => `
+    <li style="--menu-item-index: ${index}">
       <a href="${item.href}"${item.attrs ? ' ' + item.attrs : ''}>
         <span class="nav-icon-wrapper">
              <svg class="nav-icon" aria-hidden="true">
                <use href="#icon-${item.icon}"></use>
              </svg>
-             <span class="icon-fallback" style="display: none">${item.fallback}</span>
+             <span class="icon-fallback icon-fallback--hidden">${item.fallback}</span>
         </span>
         <span data-i18n="${item.label}">${i18n.t(item.label)}</span>
       </a>
@@ -103,25 +128,46 @@ ${this.getToggleButton()}
       .join('');
 
     return `
-<nav id="navigation" class="site-menu" aria-label="${i18n.t('menu.main_nav')}">
+<nav
+  id="${this.ids.navigation}"
+  class="site-menu"
+  aria-label="${i18n.t('menu.main_nav')}"
+  data-i18n-aria="menu.main_nav"
+>
   <ul class="site-menu__list">
     ${items}
-    <li>
-      <button type="button" class="search-trigger" aria-label="${i18n.t('menu.search_label')}" title="${i18n.t('menu.search_tooltip')}">
+    <li style="--menu-item-index: ${menuItems.length}">
+      <button
+        type="button"
+        class="search-trigger"
+        aria-label="${i18n.t('menu.search_label')}"
+        data-i18n-aria="menu.search_label"
+        title="${i18n.t('menu.search_tooltip')}"
+        data-i18n-title="menu.search_tooltip"
+        aria-expanded="false"
+        aria-controls="${this.ids.searchResults}"
+      >
         <span class="icon-container">
             <svg class="nav-icon search-icon" aria-hidden="true">
             <use href="#icon-search"></use>
             </svg>
         </span>
-        <span class="icon-fallback" style="display: none">🔍</span>
+        <span class="icon-fallback icon-fallback--hidden">🔍</span>
       </button>
     </li>
-    <li>
-      <button type="button" class="lang-toggle" aria-label="${i18n.t('menu.lang_toggle')}" title="Switch Language">
+    <li style="--menu-item-index: ${menuItems.length + 1}">
+      <button
+        type="button"
+        class="lang-toggle"
+        aria-label="${i18n.t('menu.lang_toggle')}"
+        data-i18n-aria="menu.lang_toggle"
+        title="${i18n.t('menu.lang_toggle')}"
+        data-i18n-title="menu.lang_toggle"
+      >
         <svg class="nav-icon" aria-hidden="true">
           <use href="#icon-globe"></use>
         </svg>
-        <span class="lang-text" style="font-weight: 600; font-size: 0.9em; margin-left: 4px;">DE</span>
+        <span class="lang-text">DE</span>
       </button>
     </li>
   </ul>
@@ -132,22 +178,35 @@ ${this.getToggleButton()}
     return `
 <div class="menu-search" aria-hidden="true">
   <div class="menu-search__panel">
-    <div class="menu-search__bar">
+    <div
+      class="menu-search__bar"
+      role="combobox"
+      aria-expanded="false"
+      aria-haspopup="listbox"
+      aria-controls="${this.ids.searchResults}"
+    >
       <span class="menu-search__icon" aria-hidden="true">
         <svg class="nav-icon"><use href="#icon-search"></use></svg>
       </span>
       <input
+        id="${this.ids.searchInput}"
         type="text"
         class="menu-search__input"
-        aria-label="Suche"
-        placeholder="Website durchsuchen..."
+        aria-label="${i18n.t('menu.search_input_label')}"
+        data-i18n-aria="menu.search_input_label"
+        aria-autocomplete="list"
+        aria-controls="${this.ids.searchResults}"
+        aria-expanded="false"
+        role="searchbox"
+        placeholder="${i18n.t('menu.search_placeholder')}"
+        data-i18n-placeholder="menu.search_placeholder"
         autocomplete="off"
         autocorrect="off"
         autocapitalize="off"
         spellcheck="false"
       />
     </div>
-    <div class="menu-search__results" role="listbox" aria-live="polite"></div>
+    <div id="${this.ids.searchResults}" class="menu-search__results" role="listbox" aria-live="polite"></div>
   </div>
 </div>`;
   }
