@@ -32,7 +32,21 @@ export async function onRequestPost(context) {
       throw new Error('AI binding not configured');
     }
 
-    const topK = parseInt(body.topK || env.MAX_SEARCH_RESULTS || '10');
+    const parsePositiveInteger = (value) => {
+      const normalized = String(value ?? '').trim();
+
+      if (!/^\d+$/.test(normalized)) {
+        return null;
+      }
+
+      const parsed = Number.parseInt(normalized, 10);
+      return parsed > 0 ? parsed : null;
+    };
+
+    const topK =
+      parsePositiveInteger(body.topK) ??
+      parsePositiveInteger(env.MAX_SEARCH_RESULTS) ??
+      10;
 
     // Expand query with synonyms and fuzzy matching
     const expandedQuery = expandQuery(query);
