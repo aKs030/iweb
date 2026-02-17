@@ -13,7 +13,20 @@
     "videos_sub": "Motion",
     "blog_sub": "Wissen",
     "about_sub": "Profil",
-    "contact_sub": "Anfrage"
+    "contact_sub": "Anfrage",
+    "toggle": "Menü öffnen",
+    "main_nav": "Hauptnavigation",
+    "skip_main": "Zum Inhalt springen",
+    "skip_nav": "Zur Navigation springen",
+    "search_label": "Suche öffnen",
+    "search_tooltip": "Website durchsuchen",
+    "search_close": "Suche schließen",
+    "search_input_label": "Suche",
+    "search_placeholder": "Website durchsuchen...",
+    "search_loading": "Suche...",
+    "search_no_results": "Keine Treffer gefunden",
+    "search_unavailable": "Suche derzeit nicht verfügbar",
+    "lang_toggle": "Sprache wechseln"
   },
   "footer": {
     "about": {
