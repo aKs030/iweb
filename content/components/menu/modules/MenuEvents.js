@@ -167,6 +167,7 @@ export class MenuEvents {
     const handleResultsPointerOver = (e) => {
       const index = this.getSearchResultIndexFromEvent(e);
       if (index < 0) return;
+      if (this.search.selectedIndex === index) return;
 
       this.search.selectedIndex = index;
       this.updateSearchSelectionUI();
@@ -184,8 +185,9 @@ export class MenuEvents {
   setupI18nSync() {
     this.cleanupFns.push(
       i18n.subscribe(() => {
-        this.syncSearchTriggerState(this.isSearchOpen());
-        this.syncToggleSearchState(this.isSearchOpen());
+        const isSearchOpen = this.isSearchOpen();
+        this.syncSearchTriggerState(isSearchOpen);
+        this.syncToggleSearchState(isSearchOpen);
       }),
     );
   }
@@ -339,10 +341,11 @@ export class MenuEvents {
 
   scheduleSearch(rawQuery) {
     const query = String(rawQuery || '').trim();
+    const minQueryLength = this.config.SEARCH_MIN_QUERY_LENGTH ?? 2;
 
     this.clearSearchDebounce();
 
-    if (!query) {
+    if (!query || query.length < minQueryLength) {
       this.abortSearchRequest();
       this.search.items = [];
       this.search.selectedIndex = -1;
@@ -361,6 +364,7 @@ export class MenuEvents {
 
     this.abortSearchRequest();
     const topK = this.config.SEARCH_TOP_K ?? 12;
+    const requestTimeoutMs = this.config.SEARCH_REQUEST_TIMEOUT ?? 6000;
     const cacheKey = this.buildSearchCacheKey(query, topK);
     const cachedItems = this.getCachedSearchResults(cacheKey);
 
@@ -382,8 +386,17 @@ export class MenuEvents {
       return;
     }
 
-    this.search.abortController = new AbortController();
-    const signal = this.search.abortController.signal;
+    const abortController = new AbortController();
+    this.search.abortController = abortController;
+    const signal = abortController.signal;
+    let didTimeoutAbort = false;
+    const timeoutId =
+      requestTimeoutMs > 0
+        ? setTimeout(() => {
+            didTimeoutAbort = true;
+            abortController.abort();
+          }, requestTimeoutMs)
+        : null;
 
     this.renderSearchState({
       loading: true,
@@ -430,17 +443,19 @@ export class MenuEvents {
         items,
       });
     } catch (err) {
-      if (err?.name === 'AbortError') return;
+      if (err?.name === 'AbortError' && !didTimeoutAbort) return;
       console.error('Header search failed:', err);
       this.search.items = [];
       this.search.selectedIndex = -1;
       this.renderSearchState({
-        message: this.t(
-          'menu.search_unavailable',
-          'Suche derzeit nicht verfuegbar',
-        ),
+        message: didTimeoutAbort
+          ? this.t('menu.search_timeout', 'Suche dauert zu lange')
+          : this.t('menu.search_unavailable', 'Suche derzeit nicht verfuegbar'),
       });
     } finally {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
       if (this.search.abortController?.signal === signal) {
         this.search.abortController = null;
       }

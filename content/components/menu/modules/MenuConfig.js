@@ -13,6 +13,8 @@ export const MenuConfig = {
   ANNOUNCEMENT_DELAY: 100,
   OBSERVER_TIMEOUT: 3000,
   SEARCH_DEBOUNCE: 220,
+  SEARCH_MIN_QUERY_LENGTH: 2,
+  SEARCH_REQUEST_TIMEOUT: 6000,
   SEARCH_TOP_K: 12,
 
   // Breakpoints (must match menu.css media queries)

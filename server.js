@@ -557,7 +557,7 @@ const server = createServer(async (req, res) => {
         if (level === 'error') console.error(prefix, msg, payload.stack || '');
         else if (level === 'warn') console.warn(prefix, msg);
         else console.log(prefix, msg);
-      } catch (err) {
+      } catch {
         console.error('[client-log] invalid payload', body);
       }
       res.writeHead(204, { 'Content-Type': 'text/plain' });
@@ -679,14 +679,6 @@ server.listen(PORT, () => {
 
   const isPrivateIPv4 = (ip) =>
     /^(10\.|192\.168\.|172\.(1[6-9]|2[0-9]|3[0-1])\.)/.test(ip);
-  const shorten = (s) => {
-    if (!s) return s;
-    if (s.includes(':') && s.length > 30)
-      return s.slice(0, 12) + '…' + s.slice(-8);
-    if (s.length > 24) return s.slice(0, 20) + '…';
-    return s;
-  };
-
   // Sort: prefer private IPv4 → IPv4 → IPv6 global → IPv6 ULA → IPv6 link-local
   addrs.sort((a, b) => {
     const score = (x) => {
