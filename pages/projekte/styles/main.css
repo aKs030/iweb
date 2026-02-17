@@ -1,5 +1,16 @@
 /* Projekte Seite - 3D Space & HUD Styles - v8.0 - Fixed 3D object positioning */
 
+/* Dynamic viewport height for mobile browser UI changes */
+:root {
+  --projekte-viewport-height: 100vh;
+}
+
+@supports (height: 100dvh) {
+  :root {
+    --projekte-viewport-height: 100dvh;
+  }
+}
+
 /* ============================================================================
    BASE STYLES
    ============================================================================ */
@@ -10,7 +21,18 @@ body {
   font-family: var(--font-inter, sans-serif);
   overflow-x: hidden;
   /* We need a tall body to allow scrolling */
-  height: 500vh; /* Changed from min-height to height for better scroll calculation */
+  min-height: 500vh;
+  height: 500vh;
+  min-height: 500svh;
+  height: 500svh;
+  overscroll-behavior-y: none;
+}
+
+@supports (height: 100dvh) {
+  body {
+    min-height: 500dvh;
+    height: 500dvh;
+  }
 }
 
 #root {
@@ -19,7 +41,8 @@ body {
   left: 0;
   width: 100%;
   height: calc(
-    100vh - var(--content-top-offset) - var(--content-bottom-offset)
+    var(--projekte-viewport-height) - var(--content-top-offset) -
+      var(--content-bottom-offset)
   );
   z-index: 10;
   pointer-events: none; /* Allow scroll to pass through to body */
@@ -32,9 +55,10 @@ body {
   position: fixed;
   top: var(--content-top-offset);
   left: 0;
-  width: 100vw;
+  width: 100%;
   height: calc(
-    100vh - var(--content-top-offset) - var(--content-bottom-offset)
+    var(--projekte-viewport-height) - var(--content-top-offset) -
+      var(--content-bottom-offset)
   );
   z-index: 10; /* Higher z-index so 3D objects appear above HUD background */
   background: radial-gradient(circle at center, #0b0b15 0%, #000 100%);
@@ -45,6 +69,249 @@ body {
 canvas {
   display: block;
   pointer-events: none; /* Allow clicks to pass through to HUD */
+}
+
+/* ============================================================================
+   START / LAUNCH LAYOUT
+   ============================================================================ */
+.launch-screen {
+  position: absolute;
+  inset: 0;
+  z-index: 35;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(1rem, 3vw, 2rem);
+  pointer-events: none;
+}
+
+.launch-card {
+  width: min(92vw, 580px);
+  border-radius: 1.4rem;
+  padding: clamp(1.2rem, 3vw, 2rem);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: linear-gradient(
+    165deg,
+    rgba(8, 10, 20, 0.92) 0%,
+    rgba(8, 10, 20, 0.78) 100%
+  );
+  backdrop-filter: blur(20px);
+  box-shadow:
+    0 24px 56px rgba(0, 0, 0, 0.52),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  text-align: center;
+  pointer-events: auto;
+}
+
+.launch-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(96, 165, 250, 0.16);
+  color: #bfdbfe;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.launch-title {
+  margin: 1rem 0 0;
+  font-size: clamp(1.35rem, 3.2vw, 2rem);
+  color: #f8fafc;
+  line-height: 1.2;
+}
+
+.launch-subtitle {
+  margin: 0.75rem auto 0;
+  max-width: 54ch;
+  color: rgba(226, 232, 240, 0.86);
+  line-height: 1.6;
+  font-size: clamp(0.94rem, 2vw, 1.04rem);
+}
+
+.launch-status {
+  margin-top: 1.15rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: #e2e8f0;
+  font-size: 0.94rem;
+}
+
+.launch-dot {
+  width: 0.62rem;
+  height: 0.62rem;
+  border-radius: 999px;
+  background: #60a5fa;
+  box-shadow: 0 0 0 0 rgba(96, 165, 250, 0.45);
+  animation: launchPulse 1.35s ease-out infinite;
+}
+
+.launch-hint {
+  margin: 0.95rem auto 0;
+  color: rgba(148, 163, 184, 0.94);
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+.launch-screen--error .launch-card {
+  border-color: rgba(248, 113, 113, 0.34);
+  box-shadow:
+    0 24px 56px rgba(0, 0, 0, 0.56),
+    0 0 0 1px rgba(248, 113, 113, 0.12);
+}
+
+.launch-error-copy {
+  margin: 0.85rem 0 0;
+  color: #fecaca;
+  font-size: 0.94rem;
+  line-height: 1.55;
+}
+
+.launch-retry {
+  margin-top: 1.2rem;
+}
+
+.launch-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 25;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0 1rem calc(1rem + var(--safe-bottom, env(safe-area-inset-bottom)));
+  pointer-events: none;
+}
+
+.launch-overlay-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.62rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.26);
+  background: rgba(2, 6, 23, 0.62);
+  color: #cbd5e1;
+  backdrop-filter: blur(14px);
+  font-size: 0.83rem;
+  letter-spacing: 0.01em;
+}
+
+/* ============================================================================
+   APP POPUP
+   ============================================================================ */
+.app-popup {
+  position: fixed;
+  inset: 0;
+  z-index: 10050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(0.85rem, 2vw, 1.25rem);
+  background: rgba(2, 6, 23, 0.76);
+  backdrop-filter: blur(8px);
+  pointer-events: auto;
+}
+
+.app-popup__panel {
+  width: min(95vw, 1120px);
+  height: min(86vh, 780px);
+  background: #020617;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 1rem;
+  box-shadow: 0 28px 72px rgba(0, 0, 0, 0.62);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-popup__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(
+    90deg,
+    rgba(15, 23, 42, 0.9) 0%,
+    rgba(30, 41, 59, 0.78) 100%
+  );
+}
+
+.app-popup__title-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.app-popup__label {
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.17);
+  color: #bfdbfe;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.app-popup__title {
+  font-size: 0.98rem;
+  color: #e2e8f0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.app-popup__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.app-popup__action {
+  min-width: auto;
+  min-height: 38px;
+  padding: 0.52rem 0.9rem;
+  font-size: 0.84rem;
+}
+
+.app-popup__frame-wrap {
+  flex: 1;
+  min-height: 0;
+  background: transparent;
+}
+
+.app-popup__frame {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+  background: transparent;
+}
+
+@keyframes launchPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(96, 165, 250, 0.45);
+    transform: scale(0.96);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(96, 165, 250, 0);
+    transform: scale(1);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(96, 165, 250, 0);
+    transform: scale(0.96);
+  }
 }
 
 /* ============================================================================
@@ -60,7 +327,8 @@ canvas {
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  padding-bottom: 5vh;
+  padding: 0 clamp(0.75rem, 2vw, 1.5rem)
+    max(3.5vh, calc(0.75rem + var(--safe-bottom, env(safe-area-inset-bottom))));
   box-sizing: border-box;
   z-index: 15; /* Medium z-index between canvas and panel */
 }
@@ -68,9 +336,10 @@ canvas {
 /* The active project info card */
 .hud-panel {
   pointer-events: auto; /* Enable buttons */
-  margin: 0 auto 2rem auto;
-  width: 90%;
-  max-width: 600px;
+  margin: 0 auto clamp(1rem, 2vh, 2rem) auto;
+  width: min(92vw, 620px);
+  max-height: min(62vh, 460px);
+  overflow: auto;
   background: rgba(
     10,
     10,
@@ -96,6 +365,38 @@ canvas {
 .hud-panel.visible {
   opacity: 1;
   transform: translateY(0);
+}
+
+.hud-container.is-pending .hud-panel {
+  opacity: 0;
+  transform: translateY(24px) scale(0.98);
+  pointer-events: none;
+}
+
+.hud-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.8rem;
+}
+
+.hud-meta-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.35rem;
+  padding: 0.1rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(147, 197, 253, 0.14);
+  color: #bfdbfe;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.hud-meta-count {
+  font-size: 0.8rem;
+  color: rgba(226, 232, 240, 0.86);
 }
 
 .hud-title {
@@ -128,6 +429,7 @@ canvas {
 .hud-actions {
   display: flex;
   justify-content: center;
+  flex-wrap: wrap;
   gap: 1rem;
   position: relative;
   z-index: 20; /* Ensure buttons are above everything */
@@ -139,6 +441,7 @@ canvas {
 .btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
   padding: 0.75rem 1.5rem;
   border-radius: 9999px;
@@ -148,6 +451,8 @@ canvas {
   transition: all 0.2s;
   border: none;
   font-size: 0.95rem;
+  min-height: 44px;
+  min-width: 140px;
 }
 
 .btn-primary {
@@ -178,7 +483,10 @@ canvas {
    ============================================================================ */
 .scroll-hint {
   position: fixed;
-  bottom: 2rem;
+  bottom: max(
+    2rem,
+    calc(1rem + var(--safe-bottom, env(safe-area-inset-bottom)))
+  );
   right: 2rem;
   color: rgba(255, 255, 255, 0.6); /* Made more visible */
   font-size: 0.8rem;
@@ -204,30 +512,151 @@ canvas {
    RESPONSIVE
    ============================================================================ */
 @media (max-width: 768px) {
+  body {
+    min-height: 430vh;
+    height: 430vh;
+    min-height: 430svh;
+    height: 430svh;
+  }
+
+  @supports (height: 100dvh) {
+    body {
+      min-height: 430dvh;
+      height: 430dvh;
+    }
+  }
+
   .hud-panel {
-    width: 92%;
-    padding: 1.5rem;
-    bottom: 3vh; /* Reduced bottom margin to give more space for 3D objects */
-    margin-bottom: 0;
+    width: min(94vw, 540px);
+    max-height: min(58vh, 420px);
+    padding: 1.15rem;
+    border-radius: 1.2rem;
+  }
+
+  .launch-card {
+    width: min(96vw, 520px);
+    border-radius: 1.2rem;
+    padding: 1.1rem 1rem 1.2rem;
+  }
+
+  .launch-title {
+    font-size: clamp(1.2rem, 5.4vw, 1.5rem);
+  }
+
+  .launch-subtitle {
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+
+  .launch-status {
+    font-size: 0.86rem;
+  }
+
+  .app-popup {
+    padding: 0.6rem;
+    align-items: flex-end;
+  }
+
+  .app-popup__panel {
+    width: 100%;
+    height: min(84vh, 740px);
+    border-radius: 0.95rem;
+  }
+
+  .app-popup__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.6rem;
+    padding: 0.75rem;
+  }
+
+  .app-popup__actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .app-popup__action {
+    flex: 1 1 calc(50% - 0.3rem);
+    min-width: 0;
+  }
+
+  .hud-actions {
+    gap: 0.65rem;
+  }
+
+  .btn {
+    flex: 1 1 calc(50% - 0.35rem);
+    min-width: 0;
   }
 
   .hud-title {
-    font-size: 1.5rem;
+    font-size: clamp(1.35rem, 5vw, 1.6rem);
   }
 
   .hud-desc {
     font-size: 0.9rem;
+    line-height: 1.5;
   }
 
   .scroll-hint {
     display: none;
   }
 }
+
+@media (max-width: 480px) {
+  .hud-container {
+    padding-inline: clamp(
+      0.6rem,
+      3vw,
+      0.9rem
+    ); /* keep panel clear of rounded corners */
+  }
+
+  .hud-panel {
+    width: min(96vw, 420px);
+    max-height: min(56vh, 390px);
+    padding: 1rem;
+  }
+
+  .launch-overlay {
+    padding-bottom: calc(
+      0.7rem + var(--safe-bottom, env(safe-area-inset-bottom))
+    );
+  }
+
+  .launch-overlay-card {
+    font-size: 0.78rem;
+  }
+
+  .app-popup {
+    padding: 0.35rem;
+  }
+
+  .app-popup__panel {
+    height: min(88vh, 760px);
+    border-radius: 0.75rem;
+  }
+
+  .app-popup__title {
+    font-size: 0.9rem;
+  }
+
+  .hud-actions {
+    flex-direction: column;
+  }
+
+  .btn {
+    width: 100%;
+    min-height: 46px;
+    font-size: 0.92rem;
+  }
+}
 /* Mobile adjustments for header height */
 @media (width <= 900px) {
   #root {
     height: calc(
-      100vh - var(--content-top-offset) - var(--content-bottom-offset)
+      var(--projekte-viewport-height) - var(--content-top-offset) -
+        var(--content-bottom-offset)
     );
     top: var(--content-top-offset);
   }
@@ -235,7 +664,8 @@ canvas {
   #canvas-container {
     top: var(--content-top-offset);
     height: calc(
-      100vh - var(--content-top-offset) - var(--content-bottom-offset)
+      var(--projekte-viewport-height) - var(--content-top-offset) -
+        var(--content-bottom-offset)
     );
   }
 }
