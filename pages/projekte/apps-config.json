@@ -100,14 +100,6 @@
       "version": "1.0.0"
     },
     {
-      "name": "snake",
-      "title": "snake",
-      "description": "Kleines Snake‑Spiel (Canvas) — Lernprojekt für Spiel‑Loop und Kollisionserkennung.",
-      "tags": ["game", "snake", "canvas", "javascript", "html"],
-      "category": "game",
-      "version": "1.0.0"
-    },
-    {
       "name": "snake-game",
       "title": "snake-game",
       "description": "Klassisches Snake-Spiel mit Canvas, Game Loop und fortgeschrittener Kollisionserkennung",

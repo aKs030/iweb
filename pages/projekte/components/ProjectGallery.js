@@ -1,5 +1,49 @@
 import * as THREE from 'three';
 
+const LAYOUT_BREAKPOINTS = {
+  mobile: 640,
+  tablet: 1024,
+};
+
+function getLayoutPreset(viewportWidth = window.innerWidth) {
+  if (viewportWidth <= LAYOUT_BREAKPOINTS.mobile) {
+    return {
+      key: 'mobile',
+      scale: 0.72,
+      spacing: 11,
+      xAmplitude: 1.25,
+      yAmplitude: 0.75,
+      yOffset: 1.25,
+      lookAtOffset: 7.5,
+      focusOffset: 6.2,
+    };
+  }
+
+  if (viewportWidth <= LAYOUT_BREAKPOINTS.tablet) {
+    return {
+      key: 'tablet',
+      scale: 0.86,
+      spacing: 12.5,
+      xAmplitude: 2.1,
+      yAmplitude: 1.05,
+      yOffset: 1.6,
+      lookAtOffset: 8.8,
+      focusOffset: 7.1,
+    };
+  }
+
+  return {
+    key: 'desktop',
+    scale: 1,
+    spacing: 15,
+    xAmplitude: 3,
+    yAmplitude: 1.5,
+    yOffset: 2,
+    lookAtOffset: 10,
+    focusOffset: 8,
+  };
+}
+
 /**
  * Creates and manages the 3D objects for the project gallery.
  */
@@ -9,9 +53,28 @@ export class ProjectGallery {
     this.projects = projects;
     this.objects = [];
     this.group = new THREE.Group();
+    this.layout = getLayoutPreset();
     this.scene.add(this.group);
 
     this.initObjects();
+  }
+
+  getProjectPosition(index) {
+    const zPos = -index * this.layout.spacing;
+    const xPos = Math.sin(index * 0.5) * this.layout.xAmplitude;
+    const yPos =
+      Math.cos(index * 0.5) * this.layout.yAmplitude + this.layout.yOffset;
+
+    return { xPos, yPos, zPos };
+  }
+
+  applyLayoutToObject(obj) {
+    const { xPos, yPos, zPos } = this.getProjectPosition(obj.index);
+    obj.group.position.set(xPos, yPos, zPos);
+    obj.group.scale.setScalar(this.layout.scale);
+    obj.group.lookAt(0, 0, zPos + this.layout.lookAtOffset);
+    obj.originalPos.copy(obj.group.position);
+    obj.zPos = zPos;
   }
 
   initObjects() {
@@ -29,18 +92,6 @@ export class ProjectGallery {
 
     this.projects.forEach((project, index) => {
       const projectGroup = new THREE.Group();
-
-      // Calculate position
-      // Z moves forward (negative in ThreeJS), X oscillates
-      // Position objects higher in the viewport to avoid HUD overlap
-      const zPos = -index * 15; // 15 units apart
-      const xPos = Math.sin(index * 0.5) * 3; // Wiggle left/right
-      const yPos = Math.cos(index * 0.5) * 1.5 + 2; // Wiggle up/down + offset higher
-
-      projectGroup.position.set(xPos, yPos, zPos);
-
-      // Look roughly at the center path (0,0, zPos + offset)
-      projectGroup.lookAt(0, 0, zPos + 10);
 
       // 1. Image Screen
       const material = defaultMaterial;
@@ -77,13 +128,54 @@ export class ProjectGallery {
       // We skip 3D text for now as HUD is the primary reader.
 
       this.group.add(projectGroup);
-      this.objects.push({
+      const obj = {
         group: projectGroup,
-        originalPos: projectGroup.position.clone(),
+        originalPos: new THREE.Vector3(),
         index: index,
-        zPos: zPos,
+        zPos: 0,
+      };
+
+      this.applyLayoutToObject(obj);
+      this.objects.push(obj);
+    });
+  }
+
+  setViewportWidth(viewportWidth) {
+    const nextLayout = getLayoutPreset(viewportWidth);
+
+    if (nextLayout.key === this.layout.key) return;
+
+    this.layout = nextLayout;
+    this.objects.forEach((obj) => this.applyLayoutToObject(obj));
+  }
+
+  getPathLength() {
+    return this.projects.length * this.layout.spacing + 10;
+  }
+
+  dispose() {
+    this.objects.forEach((obj) => {
+      obj.group.traverse((child) => {
+        if (!child || !child.isMesh) return;
+
+        if (child.geometry) {
+          child.geometry.dispose();
+        }
+
+        const materials = Array.isArray(child.material)
+          ? child.material
+          : [child.material];
+
+        materials.forEach((material) => {
+          if (!material) return;
+          if (material.map) material.map.dispose();
+          material.dispose();
+        });
       });
     });
+
+    this.scene.remove(this.group);
+    this.objects = [];
   }
 
   /**
@@ -110,7 +202,7 @@ export class ProjectGallery {
   getActiveIndex(cameraZ) {
     // Camera is at cameraZ looking at -Z.
     // Focus point is roughly 10 units in front of camera: cameraZ - 10
-    const focusZ = cameraZ - 8;
+    const focusZ = cameraZ - this.layout.focusOffset;
 
     let closestIndex = 0;
     let minDiff = Infinity;
