@@ -16,6 +16,18 @@ export class MenuEvents {
     this.config = config;
     this.cleanupFns = [];
     this.sectionObserver = null;
+
+    this.search = {
+      isOpen: false,
+      trigger: null,
+      panel: null,
+      input: null,
+      results: null,
+      items: [],
+      selectedIndex: -1,
+      debounceTimer: null,
+      abortController: null,
+    };
   }
 
   init() {
@@ -54,8 +66,16 @@ export class MenuEvents {
   setupToggle() {
     const toggle = this.container.querySelector('.site-menu__toggle');
     if (!toggle) return;
+    if (!toggle.dataset.defaultAriaLabel) {
+      toggle.dataset.defaultAriaLabel = toggle.getAttribute('aria-label') || '';
+    }
 
     const handleToggle = () => {
+      if (this.isSearchOpen()) {
+        this.closeSearchMode({ restoreFocus: false });
+        return;
+      }
+
       const isOpen = !this.state.isOpen;
       this.state.setOpen(isOpen);
     };
@@ -73,30 +93,430 @@ export class MenuEvents {
 
   setupSearch() {
     const searchTrigger = this.container.querySelector('.search-trigger');
-    if (!searchTrigger) return;
+    const searchPanel = this.container.querySelector('.menu-search');
+    const searchInput = this.container.querySelector('.menu-search__input');
+    const searchResults = this.container.querySelector('.menu-search__results');
 
-    const handleSearch = async (e) => {
+    if (!searchTrigger || !searchPanel || !searchInput || !searchResults) {
+      return;
+    }
+
+    this.search.trigger = searchTrigger;
+    this.search.panel = searchPanel;
+    this.search.input = searchInput;
+    this.search.results = searchResults;
+    if (!searchTrigger.dataset.defaultAriaLabel) {
+      searchTrigger.dataset.defaultAriaLabel =
+        searchTrigger.getAttribute('aria-label') || '';
+    }
+    if (!searchTrigger.dataset.defaultTitle) {
+      searchTrigger.dataset.defaultTitle =
+        searchTrigger.getAttribute('title') || '';
+    }
+
+    const handleSearchTrigger = (e) => {
       e.preventDefault();
-      this.closeMenu();
+      if (this.isSearchOpen()) {
+        this.closeSearchMode({ restoreFocus: false });
+        return;
+      }
+      this.openSearchMode();
+    };
 
-      // Visual feedback
-      searchTrigger.classList.add('loading');
+    const handleSearchInput = () => {
+      const query = this.search.input ? this.search.input.value : '';
+      this.scheduleSearch(query);
+    };
 
-      try {
-        const module = await import('/content/components/search/search.js');
-        if (module.openSearch) {
-          module.openSearch();
-        }
-      } catch (err) {
-        console.error('Failed to load search:', err);
-      } finally {
-        searchTrigger.classList.remove('loading');
+    const handleSearchKeydown = (e) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        this.closeSearchMode();
+        return;
+      }
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        this.moveSearchSelection(1);
+        return;
+      }
+
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        this.moveSearchSelection(-1);
+        return;
+      }
+
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        this.activateSelectedSearchResult();
       }
     };
 
+    const handleResultsClick = (e) => {
+      const index = this.getSearchResultIndexFromEvent(e);
+      if (index < 0) return;
+
+      this.navigateToSearchResult(index);
+    };
+
+    const handleResultsMouseMove = (e) => {
+      const index = this.getSearchResultIndexFromEvent(e);
+      if (index < 0) return;
+
+      this.search.selectedIndex = index;
+      this.updateSearchSelectionUI();
+    };
+
     this.cleanupFns.push(
-      this.addListener(searchTrigger, 'click', handleSearch),
+      this.addListener(searchTrigger, 'click', handleSearchTrigger),
+      this.addListener(searchInput, 'input', handleSearchInput),
+      this.addListener(searchInput, 'keydown', handleSearchKeydown),
+      this.addListener(searchResults, 'click', handleResultsClick),
+      this.addListener(searchResults, 'mousemove', handleResultsMouseMove),
     );
+  }
+
+  getSearchResultIndexFromEvent(event) {
+    const target = /** @type {HTMLElement|null} */ (
+      event.target instanceof HTMLElement ? event.target : null
+    );
+    const item = target?.closest?.('[data-search-index]');
+    if (!item) return -1;
+
+    const index = Number(item.getAttribute('data-search-index'));
+    return Number.isFinite(index) ? index : -1;
+  }
+
+  getHeaderElement() {
+    return this.container.closest('.site-header');
+  }
+
+  isSearchOpen() {
+    return Boolean(this.search.isOpen);
+  }
+
+  openSearchMode() {
+    const header = this.getHeaderElement();
+    const panel = this.search.panel;
+    const input = this.search.input;
+    const trigger = this.search.trigger;
+    const toggle = this.container.querySelector('.site-menu__toggle');
+
+    if (!header || !panel || !input) return;
+    if (this.search.isOpen) return;
+
+    this.closeMenu();
+
+    this.search.isOpen = true;
+    header.classList.add('search-mode');
+    panel.setAttribute('aria-hidden', 'false');
+    if (trigger) {
+      trigger.setAttribute('aria-label', 'Suche schließen');
+      trigger.setAttribute('title', 'Suche schließen');
+    }
+    if (toggle) {
+      toggle.classList.add('active');
+      toggle.setAttribute('aria-label', 'Suche schließen');
+    }
+
+    requestAnimationFrame(() => {
+      try {
+        input.focus({ preventScroll: true });
+      } catch {
+        input.focus();
+      }
+      input.select();
+    });
+
+    window.dispatchEvent(new CustomEvent('search:opened'));
+  }
+
+  closeSearchMode(options = {}) {
+    const { restoreFocus = true } = options;
+    if (!this.search.isOpen) return;
+
+    const header = this.getHeaderElement();
+    const trigger = this.search.trigger;
+    const toggle = this.container.querySelector('.site-menu__toggle');
+    if (header) {
+      header.classList.remove('search-mode');
+    }
+
+    if (this.search.panel) {
+      this.search.panel.setAttribute('aria-hidden', 'true');
+    }
+
+    this.clearSearchDebounce();
+    this.abortSearchRequest();
+
+    this.search.isOpen = false;
+    this.search.items = [];
+    this.search.selectedIndex = -1;
+    if (trigger) {
+      const defaultAria =
+        trigger.dataset.defaultAriaLabel ||
+        trigger.getAttribute('aria-label') ||
+        '';
+      const defaultTitle =
+        trigger.dataset.defaultTitle || trigger.getAttribute('title') || '';
+      trigger.setAttribute('aria-label', defaultAria);
+      trigger.setAttribute('title', defaultTitle);
+    }
+    if (toggle) {
+      toggle.classList.remove('active');
+      const defaultToggleLabel = toggle.dataset.defaultAriaLabel || 'Menü';
+      toggle.setAttribute('aria-label', defaultToggleLabel);
+    }
+
+    if (this.search.input) {
+      this.search.input.value = '';
+    }
+
+    this.renderSearchState({ hidden: true });
+
+    if (restoreFocus) {
+      this.search.trigger?.focus();
+    }
+
+    window.dispatchEvent(new CustomEvent('search:closed'));
+  }
+
+  clearSearchDebounce() {
+    if (!this.search.debounceTimer) return;
+    clearTimeout(this.search.debounceTimer);
+    this.search.debounceTimer = null;
+  }
+
+  abortSearchRequest() {
+    if (!this.search.abortController) return;
+    this.search.abortController.abort();
+    this.search.abortController = null;
+  }
+
+  scheduleSearch(rawQuery) {
+    const query = String(rawQuery || '').trim();
+
+    this.clearSearchDebounce();
+
+    if (!query) {
+      this.abortSearchRequest();
+      this.search.items = [];
+      this.search.selectedIndex = -1;
+      this.renderSearchState({ hidden: true });
+      return;
+    }
+
+    const debounceDelay = this.config.SEARCH_DEBOUNCE ?? 220;
+    this.search.debounceTimer = setTimeout(() => {
+      this.executeSearch(query);
+    }, debounceDelay);
+  }
+
+  async executeSearch(query) {
+    if (!this.search.results) return;
+
+    this.abortSearchRequest();
+    this.search.abortController = new AbortController();
+    const signal = this.search.abortController.signal;
+
+    this.renderSearchState({
+      loading: true,
+      message: 'Suche...',
+    });
+
+    try {
+      const topK = this.config.SEARCH_TOP_K ?? 12;
+      const response = await fetch('/api/search', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query, topK }),
+        signal,
+      });
+
+      if (!response.ok) {
+        throw new Error(`Search request failed with status ${response.status}`);
+      }
+
+      const data = await response.json();
+      const items = Array.isArray(data?.results)
+        ? data.results
+            .map((item) => this.normalizeSearchResult(item))
+            .filter(Boolean)
+        : [];
+
+      if (this.search.input?.value.trim() !== query) {
+        return;
+      }
+
+      this.search.items = items;
+      this.search.selectedIndex = items.length > 0 ? 0 : -1;
+
+      if (items.length === 0) {
+        this.renderSearchState({
+          message: 'Keine Treffer gefunden',
+        });
+        return;
+      }
+
+      this.renderSearchState({
+        items,
+      });
+    } catch (err) {
+      if (err?.name === 'AbortError') return;
+      console.error('Header search failed:', err);
+      this.search.items = [];
+      this.search.selectedIndex = -1;
+      this.renderSearchState({
+        message: 'Suche derzeit nicht verfuegbar',
+      });
+    } finally {
+      if (this.search.abortController?.signal === signal) {
+        this.search.abortController = null;
+      }
+    }
+  }
+
+  normalizeSearchResult(item) {
+    if (!item || typeof item !== 'object') return null;
+
+    const title = String(item.title || '').trim();
+    const url = String(item.url || '').trim();
+
+    if (!title || !url) return null;
+
+    return {
+      title,
+      url,
+      description: String(item.description || '').trim(),
+      category: String(item.category || '').trim(),
+    };
+  }
+
+  renderSearchState(options = {}) {
+    if (!this.search.results) return;
+
+    const {
+      hidden = false,
+      loading = false,
+      message = '',
+      items = [],
+    } = options;
+
+    const results = this.search.results;
+    results.innerHTML = '';
+
+    if (hidden) {
+      results.classList.remove('active');
+      return;
+    }
+
+    results.classList.add('active');
+
+    if (loading || message) {
+      const stateEl = document.createElement('div');
+      stateEl.className = 'menu-search__state';
+      stateEl.textContent = message || 'Lade...';
+      results.appendChild(stateEl);
+      return;
+    }
+
+    const list = document.createElement('ul');
+    list.className = 'menu-search__list';
+
+    items.forEach((item, index) => {
+      const li = document.createElement('li');
+      li.className = 'menu-search__item';
+
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'menu-search__result';
+      button.setAttribute('data-search-index', String(index));
+      button.setAttribute('role', 'option');
+      button.setAttribute(
+        'aria-selected',
+        String(index === this.search.selectedIndex),
+      );
+
+      if (index === this.search.selectedIndex) {
+        button.classList.add('is-selected');
+      }
+
+      const title = document.createElement('span');
+      title.className = 'menu-search__title';
+      title.textContent = item.title;
+
+      const meta = document.createElement('span');
+      meta.className = 'menu-search__meta';
+      meta.textContent = item.category || item.url;
+
+      button.appendChild(title);
+      button.appendChild(meta);
+
+      if (item.description) {
+        const desc = document.createElement('span');
+        desc.className = 'menu-search__desc';
+        desc.textContent = item.description;
+        button.appendChild(desc);
+      }
+
+      li.appendChild(button);
+      list.appendChild(li);
+    });
+
+    results.appendChild(list);
+  }
+
+  updateSearchSelectionUI() {
+    if (!this.search.results) return;
+
+    const optionEls = this.search.results.querySelectorAll(
+      '[data-search-index]',
+    );
+
+    optionEls.forEach((el) => {
+      const index = Number(el.getAttribute('data-search-index'));
+      const isSelected = index === this.search.selectedIndex;
+      el.classList.toggle('is-selected', isSelected);
+      el.setAttribute('aria-selected', String(isSelected));
+
+      if (isSelected) {
+        el.scrollIntoView({ block: 'nearest' });
+      }
+    });
+  }
+
+  moveSearchSelection(direction) {
+    const max = this.search.items.length;
+    if (max === 0) return;
+
+    if (this.search.selectedIndex < 0) {
+      this.search.selectedIndex = 0;
+    } else {
+      this.search.selectedIndex =
+        (this.search.selectedIndex + direction + max) % max;
+    }
+
+    this.updateSearchSelectionUI();
+  }
+
+  activateSelectedSearchResult() {
+    if (this.search.items.length === 0) return;
+
+    const index =
+      this.search.selectedIndex >= 0 ? this.search.selectedIndex : 0;
+
+    this.navigateToSearchResult(index);
+  }
+
+  navigateToSearchResult(index) {
+    const item = this.search.items[index];
+    if (!item?.url) return;
+
+    this.closeSearchMode({ restoreFocus: false });
+    window.location.href = item.url;
   }
 
   setupNavigation() {
@@ -106,6 +526,8 @@ export class MenuEvents {
       const handleClick = (_e) => {
         const href = link.getAttribute('href');
         if (!href) return;
+
+        this.closeSearchMode({ restoreFocus: false });
 
         // Handle internal links
         if (href.startsWith('/') || href.startsWith('#')) {
@@ -128,10 +550,27 @@ export class MenuEvents {
 
   setupGlobalListeners() {
     const handleDocClick = (e) => {
+      // SVG taps (e.g. <use> in icon buttons) are Element, not HTMLElement.
+      // Using Element prevents false "outside click" detection on icon taps.
+      const target = /** @type {Element|null} */ (
+        e.target instanceof Element ? e.target : null
+      );
+
+      if (this.isSearchOpen()) {
+        const header = this.getHeaderElement();
+        const isInsideHeader = Boolean(
+          header && target && header.contains(target),
+        );
+
+        if (!isInsideHeader) {
+          this.closeSearchMode({ restoreFocus: false });
+        }
+      }
+
       if (!this.state.isOpen) return;
 
-      const isInside = this.container.contains(e.target);
-      const isToggle = e.target.closest('.site-menu__toggle');
+      const isInside = target ? this.container.contains(target) : false;
+      const isToggle = Boolean(target?.closest('.site-menu__toggle'));
 
       if (!isInside && !isToggle) {
         this.closeMenu();
@@ -139,7 +578,14 @@ export class MenuEvents {
     };
 
     const handleEscape = (e) => {
-      if (e.key === 'Escape' && this.state.isOpen) {
+      if (e.key !== 'Escape') return;
+
+      if (this.isSearchOpen()) {
+        this.closeSearchMode();
+        return;
+      }
+
+      if (this.state.isOpen) {
         this.closeMenu();
         const toggle = this.container.querySelector('.site-menu__toggle');
         toggle?.focus();
@@ -157,14 +603,18 @@ export class MenuEvents {
   }
 
   setupResizeHandler() {
+    const menuCollapseBreakpoint =
+      this.config.MOBILE_BREAKPOINT ?? this.config.TABLET_BREAKPOINT ?? 900;
+    const resizeDebounce = this.config.DEBOUNCE_DELAY ?? 100;
+
     let timeoutId;
     const handleResize = () => {
       clearTimeout(timeoutId);
       timeoutId = setTimeout(() => {
-        if (window.innerWidth > 900 && this.state.isOpen) {
+        if (window.innerWidth > menuCollapseBreakpoint && this.state.isOpen) {
           this.closeMenu();
         }
-      }, 100);
+      }, resizeDebounce);
     };
 
     this.cleanupFns.push(this.addListener(window, 'resize', handleResize));
@@ -367,12 +817,18 @@ export class MenuEvents {
    */
   addListener(target, event, handler, options = {}) {
     if (!target) return () => {};
-    const opts = { passive: true, ...options };
+    const passiveByDefault =
+      event === 'touchstart' || event === 'touchmove' || event === 'wheel';
+    const opts = { passive: passiveByDefault, ...options };
     target.addEventListener(event, handler, opts);
     return () => target.removeEventListener(event, handler, opts);
   }
 
   destroy() {
+    this.closeSearchMode({ restoreFocus: false });
+    this.clearSearchDebounce();
+    this.abortSearchRequest();
+
     this.cleanupFns.forEach((fn) => fn());
     this.cleanupFns = [];
     if (this.sectionObserver) {

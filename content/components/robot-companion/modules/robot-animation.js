@@ -79,6 +79,10 @@ export class RobotAnimation {
       targetY: 0,
       hoverPhase: 0,
     };
+    this.defaultMagnifyingGlassTransform =
+      'translate(22, 82) rotate(-45) scale(0.9)';
+    /** @type {number | null} */
+    this.searchAnimationFrame = null;
 
     // Bind loop
     this.updatePatrol = this.updatePatrol.bind(this);
@@ -1047,12 +1051,12 @@ export class RobotAnimation {
       return;
     }
 
-    // Try to find search modal or input
-    const searchModal = document.querySelector('.search-modal');
-    const searchInput = document.getElementById('search-input');
-    const targetEl = searchModal || searchInput;
+    const targetEl = document.querySelector(
+      '.site-header.search-mode .menu-search__bar, .menu-search[aria-hidden="false"] .menu-search__bar',
+    );
 
-    if (!targetEl) {
+    if (!targetEl || targetEl.getClientRects().length === 0) {
+      this.stopSearchAnimation();
       return;
     }
 
@@ -1067,26 +1071,20 @@ export class RobotAnimation {
     const baseBottom = 30;
     const robotSize = 80;
 
-    // Calculate target position (Top-Right of search modal area)
-    // We want the robot to be slightly to the right of the modal
-    let targetLeft = targetRect.right + 10;
-    let targetTop = targetRect.top;
+    // Keep robot away from the active search input area.
+    const targetLeft = Math.min(
+      targetRect.right - robotSize * 0.55,
+      windowWidth - robotSize - 12,
+    );
+    const clampedTargetLeft = Math.max(12, targetLeft);
 
-    // Adjust if off-screen
-    if (targetLeft + robotSize > windowWidth) {
-      // If no space on right, position above the search input field (centered)
-      targetLeft = targetRect.left + targetRect.width / 2 - robotSize / 2;
-      targetTop = targetRect.top - robotSize - 10;
-
-      // Ensure it doesn't go off-screen left
-      if (targetLeft < 10) targetLeft = 10;
-      // Ensure it doesn't go off-screen right
-      if (targetLeft + robotSize > windowWidth - 10) {
-        targetLeft = windowWidth - robotSize - 10;
-      }
-    }
-
-    if (targetTop < 10) targetTop = 10;
+    const targetTop = Math.max(
+      10,
+      Math.max(
+        12,
+        Math.min(targetRect.bottom + 12, windowHeight - robotSize - 12),
+      ),
+    );
 
     // Convert to Patrol Coordinates (X from Right, Y from Bottom)
     // patrol.x (positive = left displacement from original right pos)
@@ -1095,12 +1093,13 @@ export class RobotAnimation {
     // positive y moves DOWN. To move UP, we need negative y.
 
     // Target Right CSS Position
-    const targetRightCSS = windowWidth - (targetLeft + robotSize);
+    const targetRightCSS = windowWidth - (clampedTargetLeft + robotSize);
     const targetBottomCSS = windowHeight - (targetTop + robotSize);
 
     const targetX = targetRightCSS - baseRight;
     const targetY = -(targetBottomCSS - baseBottom);
 
+    this.cancelSearchAnimationFrame();
     this.searchAnimation.active = true;
     this.searchAnimation.phase = 'approach';
     this.searchAnimation.startTime = performance.now();
@@ -1108,46 +1107,84 @@ export class RobotAnimation {
     this.searchAnimation.startY = this.patrol.y;
     this.searchAnimation.targetX = targetX;
     this.searchAnimation.targetY = targetY;
+    this.searchAnimation.hoverPhase = 0;
 
     // Ensure robot is above search overlay
     this.robot.dom.container.style.zIndex = '10001';
 
-    // Show magnifying glass
-    if (this.robot.dom.magnifyingGlass) {
-      this.robot.dom.magnifyingGlass.style.opacity = '1';
-    }
+    this.setMagnifyingGlassVisible(true);
 
     // Show excitement
     this.robot.showBubble('Ah! Ich helfe suchen! 🔍');
     setTimeout(() => this.robot.hideBubble(), 2000);
 
-    requestAnimationFrame(this.updateSearchAnimation);
+    this.scheduleSearchAnimationFrame();
   }
 
   stopSearchAnimation() {
-    if (!this.searchAnimation.active) return;
+    this.cancelSearchAnimationFrame();
+    this.setMagnifyingGlassVisible(false);
 
+    const isNearOrigin =
+      Math.abs(this.patrol.x) < 0.5 && Math.abs(this.patrol.y) < 0.5;
+
+    if (!this.searchAnimation.active && isNearOrigin) {
+      this.searchAnimation.active = false;
+      this.searchAnimation.phase = 'idle';
+      this.searchAnimation.hoverPhase = 0;
+      if (this.robot.dom.container) {
+        this.robot.dom.container.style.zIndex = '';
+      }
+      if (this.robot.dom.flame) {
+        this.robot.dom.flame.style.opacity = '0';
+      }
+      if (this.robot.dom.svg) {
+        this.robot.dom.svg.style.transform = 'rotate(0deg)';
+      }
+      if (!this.patrol.active && !this.startAnimation.active) {
+        this.startPatrol();
+      }
+      return;
+    }
+
+    this.searchAnimation.active = true;
     this.searchAnimation.phase = 'returning';
     this.searchAnimation.startTime = performance.now();
     this.searchAnimation.startX = this.patrol.x;
     this.searchAnimation.startY = this.patrol.y;
     this.searchAnimation.targetX = 0; // Return to origin x=0
     this.searchAnimation.targetY = 0; // Return to origin y=0
+    this.searchAnimation.hoverPhase = 0;
 
     // Ensure loop continues if it was stuck
-    requestAnimationFrame(this.updateSearchAnimation);
-
-    // Hide magnifying glass
-    if (this.robot.dom.magnifyingGlass) {
-      this.robot.dom.magnifyingGlass.style.opacity = '0';
-      // Reset to default left-hand position
-      this.robot.dom.magnifyingGlass.setAttribute(
-        'transform',
-        'translate(22, 82) rotate(-45) scale(0.9)',
-      );
-    }
+    this.scheduleSearchAnimationFrame();
 
     // Keep loop running until returned
+  }
+
+  scheduleSearchAnimationFrame() {
+    if (this.searchAnimationFrame !== null) return;
+    this.searchAnimationFrame = requestAnimationFrame(() => {
+      this.searchAnimationFrame = null;
+      this.updateSearchAnimation();
+    });
+  }
+
+  cancelSearchAnimationFrame() {
+    if (this.searchAnimationFrame === null) return;
+    cancelAnimationFrame(this.searchAnimationFrame);
+    this.searchAnimationFrame = null;
+  }
+
+  setMagnifyingGlassVisible(isVisible) {
+    if (!this.robot.dom.magnifyingGlass) return;
+    this.robot.dom.magnifyingGlass.style.opacity = isVisible ? '1' : '0';
+    if (!isVisible) {
+      this.robot.dom.magnifyingGlass.setAttribute(
+        'transform',
+        this.defaultMagnifyingGlassTransform,
+      );
+    }
   }
 
   updateSearchAnimation() {
@@ -1207,18 +1244,23 @@ export class RobotAnimation {
       if (t >= 1) {
         if (this.searchAnimation.phase === 'returning') {
           this.searchAnimation.active = false;
+          this.searchAnimation.phase = 'idle';
           this.robot.dom.container.style.zIndex = ''; // Reset Z-Index
           // Reset flame
           if (this.robot.dom.flame) {
             this.robot.dom.flame.style.opacity = '0';
           }
+          if (this.robot.dom.svg) {
+            this.robot.dom.svg.style.transform = 'rotate(0deg)';
+          }
+          this.setMagnifyingGlassVisible(false);
           this.startPatrol();
         } else {
           this.searchAnimation.phase = 'hover';
-          requestAnimationFrame(this.updateSearchAnimation);
+          this.scheduleSearchAnimationFrame();
         }
       } else {
-        requestAnimationFrame(this.updateSearchAnimation);
+        this.scheduleSearchAnimationFrame();
       }
     } else if (this.searchAnimation.phase === 'hover') {
       // Hovering state with "Scanning" motion
@@ -1240,14 +1282,6 @@ export class RobotAnimation {
         this.robot.dom.flame.style.transform = `scale(${flameScale})`;
       }
 
-      // Scanning with Magnifying Glass
-      // Keep magnifying glass fixed relative to the robot; do NOT animate its transform here.
-      // The magnifying glass will follow robot movement because it's part of the robot SVG group.
-      // Opacity is still controlled elsewhere (show/hide on search start/stop).
-      if (this.robot.dom.magnifyingGlass) {
-        // intentionally left blank to keep the glass anchored to the robot's hand
-      }
-
       // Eyes following the scan
       if (this.robot.dom.eyes) {
         // Look Left (-3) and oscillate slightly
@@ -1258,7 +1292,7 @@ export class RobotAnimation {
       }
 
       this.updateRobotTransform();
-      requestAnimationFrame(this.updateSearchAnimation);
+      this.scheduleSearchAnimationFrame();
     }
   }
 

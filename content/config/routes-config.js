@@ -54,10 +54,23 @@ export const ROUTES = {
     image: `${BASE_URL}/content/assets/img/og/og-home-800.webp`,
   },
   '/about/': {
-    title: 'Kontakt & Profil | Abdulkerim Sesli',
+    title: 'Über mich | Abdulkerim Sesli',
+    title_en: 'About me | Abdulkerim Sesli',
     description:
       'Der Mensch hinter dem Code. Detaillierter Lebenslauf, Tech-Stack Übersicht und direkte Kontaktmöglichkeiten für Projektanfragen und Kooperationen.',
+    description_en:
+      'The person behind the code. Detailed background, tech stack overview, and direct contact options for project inquiries and collaborations.',
     type: 'AboutPage',
+    image: `${BASE_URL}/content/assets/img/og/og-home-800.webp`,
+  },
+  '/contact/': {
+    title: 'Kontakt | Abdulkerim Sesli',
+    title_en: 'Contact | Abdulkerim Sesli',
+    description:
+      'Projektanfrage oder Kooperation? Nimm direkt Kontakt auf und sende eine Nachricht.',
+    description_en:
+      'Project inquiry or collaboration? Get in touch directly and send a message.',
+    type: 'ContactPage',
     image: `${BASE_URL}/content/assets/img/og/og-home-800.webp`,
   },
   '/datenschutz/': {

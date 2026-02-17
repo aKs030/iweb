@@ -109,8 +109,16 @@
  * @typedef {Object} ComponentConfig
  * @property {string} [CSS_URL] - CSS file URL
  * @property {number} [DEBOUNCE_MS] - Debounce delay in milliseconds
+ * @property {number} [DEBOUNCE_DELAY] - Generic debounce delay in milliseconds
+ * @property {number} [ANNOUNCEMENT_DELAY] - A11y live-region announce delay
  * @property {number} [ICON_CHECK_DELAY] - Icon check delay
  * @property {number} [TITLE_TRANSITION_DELAY] - Title transition delay
+ * @property {number} [SEARCH_DEBOUNCE] - Header search debounce delay in milliseconds
+ * @property {number} [SEARCH_TOP_K] - Number of search results to request
+ * @property {number} [MOBILE_BREAKPOINT] - Mobile/menu breakpoint (px)
+ * @property {number} [TABLET_BREAKPOINT] - Tablet breakpoint fallback (px)
+ * @property {number} [SMALL_BREAKPOINT] - Extra small breakpoint (px)
+ * @property {number} [SUBTITLE_HIDE_BREAKPOINT] - Subtitle collapse breakpoint (px)
  */
 
 /**
@@ -160,7 +168,7 @@
  * @property {{left: Element|null, right: Element|null}} [arms] - Robot arms
  * @property {HTMLElement} [particles] - Particles element
  * @property {HTMLElement} [thinking] - Thinking indicator element
- * @property {HTMLElement} [magnifyingGlass] - Magnifying glass element
+ * @property {SVGElement} [magnifyingGlass] - Magnifying glass element
  * @property {HTMLElement} [closeBtn] - Close button element
  * @property {Element} [footer] - Footer element
  */
@@ -245,14 +253,10 @@
 
 /**
  * @typedef {Object} SearchResult
- * @property {string} id - Result ID
  * @property {string} title - Result title
- * @property {string} description - Result description
- * @property {string} category - Result category
  * @property {string} url - Result URL
- * @property {string} icon - Result icon
- * @property {string[]} keywords - Search keywords
- * @property {number} priority - Search priority
+ * @property {string} [description] - Result description
+ * @property {string} [category] - Result category
  * @property {number} [score] - Search score
  */
 

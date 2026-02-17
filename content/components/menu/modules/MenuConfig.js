@@ -7,14 +7,19 @@ export const MenuConfig = {
   // Paths
   CSS_URL: '/content/components/menu/menu.css',
 
-  // Timing
+  // Timing (aligned with menu.css transitions / JS behavior)
   ANIMATION_DURATION: 400,
-  DEBOUNCE_DELAY: 150,
+  DEBOUNCE_DELAY: 100,
+  ANNOUNCEMENT_DELAY: 100,
   OBSERVER_TIMEOUT: 3000,
+  SEARCH_DEBOUNCE: 220,
+  SEARCH_TOP_K: 12,
 
-  // Breakpoints
-  MOBILE_BREAKPOINT: 768,
+  // Breakpoints (must match menu.css media queries)
+  MOBILE_BREAKPOINT: 900,
   TABLET_BREAKPOINT: 900,
+  SUBTITLE_HIDE_BREAKPOINT: 1024,
+  SMALL_BREAKPOINT: 480,
 
   // Features
   ENABLE_ANALYTICS: false,
@@ -30,6 +35,7 @@ export const MenuConfig = {
     '/videos/': { title: 'menu.videos', subtitle: 'menu.videos_sub' },
     '/blog/': { title: 'menu.blog', subtitle: 'menu.blog_sub' },
     '/about/': { title: 'menu.about', subtitle: 'menu.about_sub' },
+    '/contact/': { title: 'menu.contact', subtitle: 'menu.contact_sub' },
   },
 
   // Fallback Titles
