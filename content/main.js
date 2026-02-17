@@ -18,9 +18,6 @@ import { initPerformanceMonitoring } from './core/performance-monitor.js';
 import { SectionTracker } from './core/section-tracker.js';
 import { GlobalEventHandlers } from './core/events.js';
 
-// Search Component
-import './components/search/search.js';
-
 // Initialize console filter for development
 initConsoleFilter();
 

@@ -543,8 +543,8 @@ address {
   flex-shrink: 0;
 }
 
-.btn-secondary,
-.btn-primary {
+.footer-btn-secondary,
+.footer-btn-primary {
   flex: 1 1 calc(50% - 3px);
   min-width: 100px;
   padding: 9px 14px;
@@ -558,32 +558,32 @@ address {
   letter-spacing: -0.01em;
 }
 
-.btn-secondary {
+.footer-btn-secondary {
   background: rgba(255, 255, 255, 0.05);
   color: rgba(255, 255, 255, 0.6);
   border: 1px solid var(--component-separator, rgba(255, 255, 255, 0.1));
 }
 
-.btn-secondary:hover {
+.footer-btn-secondary:hover {
   background: rgba(255, 255, 255, 0.08);
   color: #fff;
   border-color: rgba(255, 255, 255, 0.2);
   transform: translateY(-1px);
 }
 
-.btn-primary {
+.footer-btn-primary {
   background: var(--component-accent-blue, #007aff);
   color: #fff;
 }
 
-.btn-primary:hover {
+.footer-btn-primary:hover {
   background: var(--component-accent-blue-hover, #0051d5);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
 }
 
-.btn-secondary:active,
-.btn-primary:active {
+.footer-btn-secondary:active,
+.footer-btn-primary:active {
   transform: translateY(0) scale(0.98);
 }
 
@@ -602,7 +602,7 @@ address {
   gap: 12px;
 }
 
-.cards {
+.footer-cards {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 12px;
@@ -610,7 +610,7 @@ address {
   min-height: 0;
 }
 
-.card {
+.footer-card {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--component-separator, rgba(255, 255, 255, 0.1));
   border-radius: 12px;
@@ -621,14 +621,14 @@ address {
   min-height: 140px;
 }
 
-.card:hover {
+.footer-card:hover {
   background: rgba(255, 255, 255, 0.05);
   border-color: var(--component-accent-blue, #007aff);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 122, 255, 0.15);
 }
 
-.card h2 {
+.footer-card h2 {
   font-size: 13px;
   font-weight: 600;
   margin: 0 0 10px;
@@ -638,20 +638,20 @@ address {
   color: var(--component-label-primary, #fff);
 }
 
-.card .name {
+.footer-card .name {
   font-size: 13px;
   font-weight: 600;
   margin: 0 0 4px;
   color: var(--component-label-primary, #fff);
 }
 
-.card .role {
+.footer-card .role {
   font-size: 11px;
   color: rgba(255, 255, 255, 0.6);
   margin: 0 0 8px;
 }
 
-.card .bio {
+.footer-card .bio {
   font-size: 11px;
   line-height: 1.5;
   color: rgba(255, 255, 255, 0.7);
@@ -659,7 +659,7 @@ address {
   flex: 1;
 }
 
-.card .card-desc {
+.footer-card .card-desc {
   font-size: 11px;
   line-height: 1.4;
   color: rgba(255, 255, 255, 0.6);
@@ -667,14 +667,14 @@ address {
   flex: 1;
 }
 
-.card-actions {
+.footer-card-actions {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
   margin-top: auto;
 }
 
-.cta {
+.footer-cta {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -691,19 +691,19 @@ address {
   min-width: 0;
 }
 
-.cta:hover {
+.footer-cta:hover {
   background: var(--component-accent-blue-hover, #0051d5);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
 }
 
-.cta-secondary {
+.footer-cta-secondary {
   background: rgba(255, 255, 255, 0.1);
   color: rgba(255, 255, 255, 0.9);
   border: 1px solid var(--component-separator, rgba(255, 255, 255, 0.2));
 }
 
-.cta-secondary:hover {
+.footer-cta-secondary:hover {
   background: rgba(255, 255, 255, 0.15);
   border-color: rgba(255, 255, 255, 0.3);
   box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
@@ -964,8 +964,8 @@ body.footer-expanded {
 /* ===== Responsive ===== */
 @media (width <= 900px) {
   .site-footer {
-    width: calc(100% - 16px);
-    bottom: 8px;
+    width: calc(100% - 16px - var(--safe-left) - var(--safe-right));
+    bottom: calc(8px + var(--safe-bottom));
     border-radius: 20px;
     min-width: auto;
   }
@@ -1077,54 +1077,54 @@ body.footer-expanded {
     gap: 6px;
   }
 
-  .cards {
+  .footer-cards {
     grid-template-columns: repeat(2, 1fr);
     gap: 6px;
   }
 
-  .card {
+  .footer-card {
     padding: 10px;
     min-height: 100px;
   }
 
-  .card h2 {
+  .footer-card h2 {
     font-size: 11px;
     margin: 0 0 6px;
   }
 
-  .card .name {
+  .footer-card .name {
     font-size: 11px;
     margin: 0 0 3px;
   }
 
-  .card .role {
+  .footer-card .role {
     font-size: 9px;
     margin: 0 0 6px;
   }
 
-  .card .bio {
-    font-size: 9px;
-    line-height: 1.3;
-    margin: 0 0 6px;
-  }
-
-  .card .card-desc {
+  .footer-card .bio {
     font-size: 9px;
     line-height: 1.3;
     margin: 0 0 6px;
   }
 
-  .card-actions {
+  .footer-card .card-desc {
+    font-size: 9px;
+    line-height: 1.3;
+    margin: 0 0 6px;
+  }
+
+  .footer-card-actions {
     gap: 4px;
   }
 
-  .cta {
+  .footer-cta {
     padding: 5px 8px;
     font-size: 9px;
     gap: 3px;
   }
 
-  .cta svg {
+  .footer-cta svg {
     width: 10px;
     height: 10px;
   }
@@ -1277,43 +1277,43 @@ body.footer-expanded {
     gap: 6px;
   }
 
-  .cards {
+  .footer-cards {
     grid-template-columns: 1fr;
     gap: 6px;
   }
 
-  .card {
+  .footer-card {
     padding: 8px;
     min-height: 80px;
   }
 
-  .card h2 {
+  .footer-card h2 {
     font-size: 10px;
     margin: 0 0 5px;
   }
 
-  .card .name {
+  .footer-card .name {
     font-size: 10px;
     margin: 0 0 2px;
   }
 
-  .card .role {
+  .footer-card .role {
     font-size: 8px;
     margin: 0 0 5px;
   }
 
-  .card .bio,
-  .card .card-desc {
+  .footer-card .bio,
+  .footer-card .card-desc {
     font-size: 8px;
     line-height: 1.3;
     margin: 0 0 5px;
   }
 
-  .card-actions {
+  .footer-card-actions {
     gap: 4px;
   }
 
-  .cta {
+  .footer-cta {
     padding: 4px 8px;
     font-size: 8px;
   }
@@ -1423,8 +1423,8 @@ body.footer-expanded {
     gap: 6px;
   }
 
-  .btn-secondary,
-  .btn-primary {
+  .footer-btn-secondary,
+  .footer-btn-primary {
     padding: 7px 10px;
     font-size: 10px;
   }

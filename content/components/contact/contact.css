@@ -143,10 +143,10 @@ body.contact-page {
   border: 2px solid rgba(0, 0, 0, 0.3);
   border-top-color: #000;
   border-radius: 50%;
-  animation: spin 1s linear infinite;
+  animation: contact-spin 1s linear infinite;
 }
 
-@keyframes spin {
+@keyframes contact-spin {
   to {
     transform: rotate(360deg);
   }
@@ -161,7 +161,7 @@ body.contact-page {
   align-items: center;
   gap: 0.5rem;
   font-weight: 500;
-  animation: fadeIn 0.3s ease-out;
+  animation: contact-fade-in 0.3s ease-out;
 }
 
 .status-success {
@@ -176,7 +176,7 @@ body.contact-page {
   border: 1px solid rgba(239, 68, 68, 0.2);
 }
 
-@keyframes fadeIn {
+@keyframes contact-fade-in {
   from {
     opacity: 0;
     transform: translateY(-10px);

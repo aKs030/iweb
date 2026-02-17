@@ -1388,11 +1388,13 @@
   }
   50% {
     opacity: 1;
-    transform: translate(var(--tx), var(--ty)) scale(1.2) rotate(180deg);
+    transform: translate(var(--tx, 0px), var(--ty, 0px)) scale(1.2)
+      rotate(180deg);
   }
   100% {
     opacity: 0;
-    transform: translate(var(--tx), var(--ty)) scale(0.5) rotate(360deg);
+    transform: translate(var(--tx, 0px), var(--ty, 0px)) scale(0.5)
+      rotate(360deg);
   }
 }
 

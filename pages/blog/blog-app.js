@@ -616,12 +616,14 @@ const BlogApp = () => {
     }
   }, [activePost]);
 
-  // Check if we should show filters in menu (mobile)
+  // Show inline menu filters only on medium viewports.
+  // On narrow phones this collides with title + burger button.
   const [showFiltersInMenu, setShowFiltersInMenu] = React.useState(false);
 
   React.useEffect(() => {
     const checkScreenSize = () => {
-      setShowFiltersInMenu(window.innerWidth <= 900);
+      const width = window.innerWidth;
+      setShowFiltersInMenu(width > 768 && width <= 900);
     };
 
     checkScreenSize();

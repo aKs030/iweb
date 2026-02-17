@@ -3,9 +3,10 @@
  */
 
 export class MenuAccessibility {
-  constructor(container, state) {
+  constructor(container, state, config = {}) {
     this.container = container;
     this.state = state;
+    this.config = config;
     this._cleanupFns = [];
   }
 
@@ -15,11 +16,14 @@ export class MenuAccessibility {
   }
 
   setupFocusTrap() {
+    const mobileBreakpoint =
+      this.config.MOBILE_BREAKPOINT ?? this.config.TABLET_BREAKPOINT ?? 900;
+
     const handleKeydown = (e) => {
       if (e.key !== 'Tab') return;
 
       // Only trap focus if menu is open AND we are in mobile view
-      if (!this.state.isOpen || window.innerWidth > 900) return;
+      if (!this.state.isOpen || window.innerWidth > mobileBreakpoint) return;
 
       const menu = this.container.querySelector('.site-menu');
       const toggle = this.container.querySelector('.site-menu__toggle');
@@ -62,8 +66,10 @@ export class MenuAccessibility {
   }
 
   setupAnnouncements() {
+    const mobileBreakpoint =
+      this.config.MOBILE_BREAKPOINT ?? this.config.TABLET_BREAKPOINT ?? 900;
     this.state.on('openChange', (isOpen) => {
-      if (window.innerWidth <= 900) {
+      if (window.innerWidth <= mobileBreakpoint) {
         this.announce(isOpen ? 'Hauptmenü geöffnet' : 'Hauptmenü geschlossen');
       }
     });
@@ -86,7 +92,7 @@ export class MenuAccessibility {
     liveRegion.textContent = '';
     setTimeout(() => {
       liveRegion.textContent = message;
-    }, 100);
+    }, this.config.ANNOUNCEMENT_DELAY ?? 100);
   }
 
   destroy() {
