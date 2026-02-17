@@ -66,11 +66,13 @@ export class ProjectGallery {
 
       const screen = new THREE.Mesh(geometry, material);
       screen.name = 'screen';
+      screen.userData.index = index;
       projectGroup.add(screen);
 
       // 2. Frame
       const frame = new THREE.Mesh(frameGeometry, frameMaterial);
       frame.position.z = -0.06; // Slightly behind screen
+      frame.userData.index = index;
       projectGroup.add(frame);
 
       // 3. Floating Title (3D Text is heavy, let's use a sprite for simplicity or skip if HUD handles it)

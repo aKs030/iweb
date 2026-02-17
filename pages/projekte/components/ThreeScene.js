@@ -14,13 +14,15 @@ let globalCamera = null;
 let globalStars = null;
 let globalGallery = null;
 let globalCameraLight = null;
+const globalRaycaster = new THREE.Raycaster();
+const globalMouse = new THREE.Vector2();
 
 /**
  * Three.js Scene Component
  * Uses a singleton pattern for the WebGLRenderer to survive React StrictMode
  * and fast navigation without creating/destroying contexts repeatedly.
  */
-export const ThreeScene = ({ projects, onScrollUpdate, onReady }) => {
+export const ThreeScene = ({ projects, onScrollUpdate, onReady, onSelect }) => {
   const containerRef = useRef(null);
   const frameIdRef = useRef(null);
   const scrollRef = useRef(0);
@@ -213,8 +215,30 @@ export const ThreeScene = ({ projects, onScrollUpdate, onReady }) => {
     };
   }, []); // Run once on mount
 
+  const handleClick = (event) => {
+    if (!onSelect || !globalCamera || !globalGallery) return;
+
+    globalMouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    globalMouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+    globalRaycaster.setFromCamera(globalMouse, globalCamera);
+
+    const intersects = globalRaycaster.intersectObjects(
+      globalGallery.group.children,
+      true,
+    );
+
+    if (intersects.length > 0) {
+      const hit = intersects.find((i) => i.object.userData.index !== undefined);
+      if (hit) {
+        onSelect(hit.object.userData.index);
+      }
+    }
+  };
+
   return React.createElement('div', {
     ref: containerRef,
     style: { width: '100%', height: '100%' },
+    onClick: handleClick,
   });
 };

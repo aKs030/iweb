@@ -20,6 +20,28 @@ const App = () => {
 
   // State for the currently focused project index (controlled by scroll in ThreeScene)
   const [activeProjectIndex, setActiveProjectIndex] = useState(0);
+  const [preview, setPreview] = useState(null);
+
+  // Helper
+  const previewUrl = (url) => {
+    try {
+      const u = new URL(url);
+      u.searchParams.set('card', '1');
+      return u.toString();
+    } catch (e) {
+      return url;
+    }
+  };
+
+  const openPreview = (project) => setPreview(project);
+  const closePreview = () => setPreview(null);
+
+  const handleSelect = (index) => {
+    setActiveProjectIndex(index);
+    if (projects[index]) {
+      openPreview(projects[index]);
+    }
+  };
 
   // Update active project based on scroll
   const handleScrollUpdate = (index) => {
@@ -56,6 +78,7 @@ const App = () => {
           projects,
           onScrollUpdate: handleScrollUpdate,
           onReady: () => {}, // Empty callback since we don't need scene ready state
+          onSelect: handleSelect,
         }),
     ),
 
@@ -110,6 +133,53 @@ const App = () => {
       // Scroll Indicator
       h('div', { className: 'scroll-hint' }, 'SCROLL TO EXPLORE'),
     ),
+
+    // Preview Modal
+    preview &&
+      h(
+        'div',
+        { className: 'app-preview' },
+        h(
+          'div',
+          { className: 'app-preview-box' },
+          h(
+            'header',
+            {},
+            h('span', {}, preview.title),
+            h(
+              'button',
+              {
+                onClick: closePreview,
+                style: {
+                  background: 'none',
+                  border: 'none',
+                  color: 'white',
+                  fontSize: '1.5rem',
+                  cursor: 'pointer',
+                },
+              },
+              '✕',
+            ),
+          ),
+          h('iframe', {
+            src: previewUrl(preview.appPath),
+            loading: 'lazy',
+          }),
+          h(
+            'footer',
+            {},
+            h(
+              'a',
+              {
+                href: preview.appPath,
+                target: '_blank',
+                className: 'btn btn-primary',
+              },
+              'App starten',
+            ),
+          ),
+        ),
+      ),
   );
 };
 
