@@ -28,7 +28,7 @@ const App = () => {
       const u = new URL(url);
       u.searchParams.set('card', '1');
       return u.toString();
-    } catch (e) {
+    } catch {
       return url;
     }
   };

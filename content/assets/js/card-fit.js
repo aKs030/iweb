@@ -4,8 +4,11 @@
   const force = params.get('card') === '1';
 
   const embedded = (() => {
-    try { return window.self !== window.top; }
-    catch { return true; }
+    try {
+      return window.self !== window.top;
+    } catch {
+      return true;
+    }
   })();
 
   if (!force && !embedded) return;
@@ -31,7 +34,7 @@
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      height: '100vh'
+      height: '100vh',
     });
 
     return wrapper;
@@ -47,19 +50,15 @@
 
       const r = w.getBoundingClientRect();
 
-      const scale = Math.min(
-        innerWidth / r.width,
-        innerHeight / r.height,
-        1
-      );
+      const scale = Math.min(innerWidth / r.width, innerHeight / r.height, 1);
 
       w.style.transform = scale === 1 ? 'none' : `scale(${scale})`;
     });
   }
 
-  addEventListener('resize', fit, { passive: true });
-  addEventListener('orientationchange', fit, { passive: true });
-  addEventListener('load', fit);
+  window.addEventListener('resize', fit, { passive: true });
+  window.addEventListener('orientationchange', fit, { passive: true });
+  window.addEventListener('load', fit);
   document.addEventListener('DOMContentLoaded', fit);
 
   if ('ResizeObserver' in window) {
