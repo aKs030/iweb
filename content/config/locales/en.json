@@ -25,6 +25,7 @@
     "search_placeholder": "Search website...",
     "search_loading": "Searching...",
     "search_no_results": "No results found",
+    "search_timeout": "Search is taking too long",
     "search_unavailable": "Search is currently unavailable",
     "lang_toggle": "Switch language"
   },
