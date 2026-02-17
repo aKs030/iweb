@@ -63,12 +63,6 @@ site-menu {
   color: var(--bg-primary, #000);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .skip-link {
-    transition: none;
-  }
-}
-
 /* ===== Icon System ===== */
 .nav-icon-wrapper,
 .icon-container {
@@ -102,6 +96,16 @@ site-menu {
   flex-shrink: 0;
   opacity: 0.85;
   line-height: 1;
+}
+
+.icon-fallback--hidden {
+  display: none;
+}
+
+.lang-text {
+  margin-left: 4px;
+  font-size: 0.9em;
+  font-weight: 600;
 }
 
 /* Remove margin from inner icon since wrapper handles it */
@@ -282,6 +286,7 @@ site-menu {
   display: flex;
   flex-shrink: 0;
   min-width: fit-content;
+  --menu-item-index: 0;
 }
 
 /* ===== Menu Items ===== */
@@ -621,11 +626,19 @@ site-menu {
 
 /* ===== Modern Hamburger Toggle ===== */
 .site-menu__toggle {
+  --menu-toggle-transform-rest: translateY(-50%);
+  --menu-toggle-transform-hover: translateY(-50%) scale(1.05);
+  --menu-toggle-transform-active: translateY(-50%) scale(0.95);
+  --menu-toggle-transition:
+    transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    background 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: none;
   position: absolute;
   right: 20px;
   top: 50%;
-  transform: translateY(-50%);
+  transform: var(--menu-toggle-transform-rest);
   width: 48px;
   height: 48px;
   border: none;
@@ -635,7 +648,7 @@ site-menu {
   -webkit-backdrop-filter: blur(20px);
   cursor: pointer;
   overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: var(--menu-toggle-transition);
   box-shadow:
     0 4px 16px rgba(0, 0, 0, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
@@ -647,7 +660,7 @@ site-menu {
 
 .site-menu__toggle:hover {
   background: rgba(255, 255, 255, 0.12);
-  transform: translateY(-50%) scale(1.05);
+  transform: var(--menu-toggle-transform-hover);
   box-shadow:
     0 8px 24px rgba(0, 0, 0, 0.15),
     inset 0 1px 0 rgba(255, 255, 255, 0.15);
@@ -655,7 +668,7 @@ site-menu {
 }
 
 .site-menu__toggle:active {
-  transform: translateY(-50%) scale(0.95);
+  transform: var(--menu-toggle-transform-active);
   background: rgba(0, 122, 255, 0.2);
   box-shadow:
     0 2px 8px rgba(0, 0, 0, 0.2),
@@ -694,7 +707,10 @@ site-menu {
     rgba(255, 255, 255, 0.9) 100%
   );
   border-radius: 2px;
-  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  transition:
+    transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55),
+    opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    background 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   transform-origin: center;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
   position: relative;
@@ -729,7 +745,10 @@ site-menu {
   );
   border-radius: 50%;
   transform: translate(-50%, -50%);
-  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    width 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+    height 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1);
   pointer-events: none;
   z-index: 1;
   opacity: 0;
@@ -780,8 +799,10 @@ site-menu {
     position: absolute;
     right: calc(8px + var(--safe-right));
     top: 50%;
-    transform: translateY(-50%);
     margin-left: 0;
+    --menu-toggle-transform-rest: translateY(-50%);
+    --menu-toggle-transform-hover: translateY(-50%);
+    --menu-toggle-transform-active: translateY(-50%);
   }
 
   .site-header.search-mode .menu-search {
@@ -806,22 +827,12 @@ site-menu {
     position: relative;
     right: 0;
     top: 0;
-    transform: none;
     margin-left: 8px;
-    transition:
-      background 0.22s ease,
-      border-color 0.22s ease,
-      box-shadow 0.22s ease;
-  }
-
-  .site-menu__toggle:hover,
-  .site-menu__toggle:active {
-    transform: none;
-  }
-
-  .site-header.search-mode .site-menu__toggle:hover,
-  .site-header.search-mode .site-menu__toggle:active {
-    transform: translateY(-50%);
+    --menu-toggle-transform-rest: none;
+    --menu-toggle-transform-hover: none;
+    --menu-toggle-transform-active: none;
+    --menu-toggle-transition:
+      background 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
   }
 
   /* Mobile Menu Card */
@@ -877,6 +888,7 @@ site-menu {
     order: 10;
     opacity: 0;
     transform: translateX(10px);
+    transition-delay: 0s;
     transition:
       opacity 0.3s ease,
       transform 0.3s ease;
@@ -886,35 +898,7 @@ site-menu {
   .site-menu.open .site-menu__list li {
     opacity: 1;
     transform: translateX(0);
-  }
-
-  /* Improved Staggering */
-  .site-menu.open .site-menu__list li:nth-child(1) {
-    transition-delay: 0.05s;
-  }
-  .site-menu.open .site-menu__list li:nth-child(2) {
-    transition-delay: 0.1s;
-  }
-  .site-menu.open .site-menu__list li:nth-child(3) {
-    transition-delay: 0.15s;
-  }
-  .site-menu.open .site-menu__list li:nth-child(4) {
-    transition-delay: 0.2s;
-  }
-  .site-menu.open .site-menu__list li:nth-child(5) {
-    transition-delay: 0.25s;
-  }
-  .site-menu.open .site-menu__list li:nth-child(6) {
-    transition-delay: 0.3s;
-  }
-  .site-menu.open .site-menu__list li:nth-child(7) {
-    transition-delay: 0.35s;
-  }
-  .site-menu.open .site-menu__list li:nth-child(8) {
-    transition-delay: 0.4s;
-  }
-  .site-menu.open .site-menu__list li:nth-child(9) {
-    transition-delay: 0.45s;
+    transition-delay: calc(var(--menu-item-index, 0) * 0.05s);
   }
 
   .site-menu__list li a,
@@ -967,9 +951,6 @@ site-menu {
   .site-menu__list button.search-trigger,
   .site-menu__list button.lang-toggle {
     padding: 0 12px;
-    margin-top: 0;
-    border-top: none;
-    border-radius: 14px;
     width: 100%;
     justify-content: center;
   }
@@ -987,6 +968,34 @@ site-menu {
 
   .menu-search__results {
     max-height: min(56vh, 380px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skip-link {
+    transition: none;
+  }
+
+  .site-header {
+    animation: none;
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+
+  .site-menu,
+  .site-menu__list li,
+  .site-menu__toggle,
+  .hamburger-line,
+  .menu-ripple,
+  .menu-search__bar,
+  .menu-search__result,
+  .menu-search__results {
+    transition: none !important;
+    animation: none !important;
+  }
+
+  .site-menu.open .site-menu__list li {
+    transition-delay: 0s !important;
   }
 }
 
