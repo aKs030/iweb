@@ -1,21 +1,26 @@
 name: CI
 
 on:
-  push:
-    branches: [main]
   pull_request:
-    branches: [main]
+  push:
+    branches:
+      - main
+  workflow_dispatch:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-jobs:
-  lint:
-    name: Lint & Format
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
+permissions:
+  contents: read
 
+jobs:
+  quality:
+    name: Lint + Format
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20, 22]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -23,7 +28,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version-file: .nvmrc
+          node-version: ${{ matrix.node-version }}
           cache: npm
 
       - name: Install dependencies
@@ -32,19 +37,80 @@ jobs:
       - name: Run ESLint
         run: npm run lint:check
 
-      - name: Run Prettier
+      - name: Run Prettier check
         run: npm run format:check
 
-  deploy-info:
-    name: Deployment Info
+  smoke-test:
+    name: Smoke test server routes
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: lint
-
+    needs: quality
     steps:
-      - name: Deployment Status
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Start server and test routes
         run: |
-          echo "✅ Code quality checks passed!"
-          echo "🚀 Cloudflare Pages will automatically deploy this commit"
-          echo "📦 No build step required - source files deployed directly"
-          echo "🌐 Production: https://abdulkerimsesli.de"
+          PORT=8080 npm run dev > server.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
+
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:8080/ > /dev/null; then
+              break
+            fi
+            sleep 1
+          done
+
+          curl -fSs http://127.0.0.1:8080/ > /dev/null
+          curl -fSs http://127.0.0.1:8080/pages/about/index.html > /dev/null
+          curl -fSs http://127.0.0.1:8080/pages/projekte/index.html > /dev/null
+
+      - name: Upload server log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-server-log
+          path: server.log
+
+  security:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    needs: quality
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+
+  dependency-review:
+    name: Dependency review (PR)
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Dependency review
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+          comment-summary-in-pr: always
