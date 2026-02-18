@@ -15,7 +15,7 @@
 
 import { createServer } from 'http';
 import { readFileSync, existsSync, statSync, watchFile } from 'fs';
-import { resolve, extname } from 'path';
+import { resolve, extname, relative } from 'path';
 import os from 'os';
 
 const PORT = process.env.PORT || 8080;
@@ -52,6 +52,22 @@ const TEMPLATE_PATHS = {
 };
 
 const templates = { head: '', loader: '' };
+
+function isSubPath(parent, child) {
+  const rel = relative(parent, child);
+  return (
+    rel &&
+    !rel.startsWith('..') &&
+    !rel.includes(`..${process.platform === 'win32' ? '\\' : '/'}`)
+  );
+}
+
+function resolveInsideRoot(...parts) {
+  const resolvedPath = resolve(ROOT, ...parts);
+  return isSubPath(ROOT, resolvedPath) || resolvedPath === ROOT
+    ? resolvedPath
+    : null;
+}
 
 function loadTemplates() {
   try {
@@ -325,6 +341,7 @@ const CLEAN_URLS = {
 };
 
 function tryServe(filePath, res, url = '/') {
+  if (!filePath) return false;
   if (!existsSync(filePath)) return false;
   const stat = statSync(filePath);
   if (!stat.isFile()) return false;
@@ -590,7 +607,7 @@ const server = createServer(async (req, res) => {
       const target = applySplat(rule.to, splat);
       if (
         tryServe(
-          resolve(ROOT, target.startsWith('/') ? target.slice(1) : target),
+          resolveInsideRoot(target.startsWith('/') ? target.slice(1) : target),
           res,
           url,
         )
@@ -601,21 +618,21 @@ const server = createServer(async (req, res) => {
 
   // 3. Clean URLs (Fallback mapping)
   if (CLEAN_URLS[url]) {
-    if (tryServe(resolve(ROOT, CLEAN_URLS[url]), res, url)) return;
+    if (tryServe(resolveInsideRoot(CLEAN_URLS[url]), res, url)) return;
   }
 
   // 4. Direct file serving
-  const filePath = resolve(ROOT, url.substring(1));
+  const filePath = resolveInsideRoot(url.substring(1));
   if (tryServe(filePath, res, url)) return;
 
   // 5. Try adding index.html for directories
   if (url.endsWith('/')) {
-    const indexPath = resolve(ROOT, url.substring(1), 'index.html');
+    const indexPath = resolveInsideRoot(url.substring(1), 'index.html');
     if (tryServe(indexPath, res, url)) return;
   }
 
   // 6. Try .html extension
-  const htmlPath = resolve(ROOT, url.substring(1) + '.html');
+  const htmlPath = resolveInsideRoot(url.substring(1) + '.html');
   if (tryServe(htmlPath, res, url)) return;
 
   // 404
