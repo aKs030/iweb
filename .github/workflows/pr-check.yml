@@ -8,15 +8,19 @@ concurrency:
   group: pr-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+  pull-requests: write
+
+defaults:
+  run:
+    shell: bash
+
 jobs:
   quality:
-    name: Code Quality
+    name: Code quality
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: write
-    timeout-minutes: 5
-
+    timeout-minutes: 7
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -26,11 +30,12 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --no-audit --no-fund
 
-      - name: Lint & Format Check
+      - name: Lint & format check
         run: npm run check
 
       - name: Comment PR
@@ -49,7 +54,6 @@ jobs:
             ---
             _Automated check by GitHub Actions_`;
 
-            // Find existing comment
             const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -62,19 +66,17 @@ jobs:
             );
 
             if (botComment) {
-              // Update existing comment
               await github.rest.issues.updateComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 comment_id: botComment.id,
-                body: comment
+                body: comment,
               });
             } else {
-              // Create new comment
               await github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: context.issue.number,
-                body: comment
+                body: comment,
               });
             }
