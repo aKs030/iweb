@@ -1,12 +1,53 @@
 /**
  * Search Utilities - Query Expansion, Fuzzy Matching, Relevance Scoring
- * @version 3.0.0
+ * @version 4.0.0 - Centralized Utilities
  */
 
 /**
  * Synonym mapping for German query expansion
  * Erweitert für alle indexierten Seiten
  */
+/**
+ * Stopwords to exclude from scoring
+ */
+export const STOPWORDS = new Set([
+  'und',
+  'oder',
+  'aber',
+  'denn',
+  'doch',
+  'der',
+  'die',
+  'das',
+  'ein',
+  'eine',
+  'einer',
+  'mit',
+  'auf',
+  'aus',
+  'bei',
+  'von',
+  'nach',
+  'zu',
+  'im',
+  'in',
+  'dem',
+  'den',
+  'and',
+  'or',
+  'but',
+  'the',
+  'a',
+  'an',
+  'in',
+  'on',
+  'at',
+  'of',
+  'for',
+  'to',
+  'with',
+]);
+
 export const SYNONYMS = {
   bilder: ['galerie', 'photos', 'fotos', 'fotografie', 'gallery', 'images'],
   galerie: ['bilder', 'photos', 'fotos', 'gallery', 'images'],
@@ -100,7 +141,7 @@ export function expandQuery(query) {
 
 /**
  * Calculate relevance score based on multiple factors
- * @param {Object} result - Search result object
+ * @param {Object} result - Search result object (normalized)
  * @param {string} originalQuery - Original search query
  * @returns {number} Enhanced relevance score
  */
@@ -109,30 +150,44 @@ export function calculateRelevanceScore(result, originalQuery) {
   let textMatchScore = 0;
 
   const queryLower = originalQuery.toLowerCase();
+  // Split query into terms for partial matching and filter stopwords
+  const queryTerms = queryLower
+    .split(/\s+/)
+    .filter((t) => t.length > 2 && !STOPWORDS.has(t));
+
   const titleLower = (result.title || '').toLowerCase();
   const urlLower = (result.url || '').toLowerCase();
   const descLower = (result.description || '').toLowerCase();
 
-  // Boost for exact title match
+  // Boost for exact phrase match
   if (titleLower.includes(queryLower)) {
     textMatchScore += 10;
-  }
-
-  // Boost for URL match
-  if (urlLower.includes(queryLower)) {
+  } else if (urlLower.includes(queryLower)) {
     textMatchScore += 5;
-  }
-
-  // Boost for description match
-  if (descLower.includes(queryLower)) {
+  } else if (descLower.includes(queryLower)) {
     textMatchScore += 2;
   }
 
+  // Boost for individual term matches
+  // Stricter check: Common short words might trigger this, so we rely on STOPWORDS filtering (if added)
+  // or a higher threshold for triggering boosts.
+  queryTerms.forEach((term) => {
+    if (titleLower.includes(term)) textMatchScore += 1.0;
+    if (urlLower.includes(term)) textMatchScore += 0.5;
+    if (descLower.includes(term)) textMatchScore += 0.2;
+  });
+
   score += textMatchScore;
 
-  // Only apply static boosts if there is a text match OR the vector score is decent
-  // This prevents completely irrelevant pages from being boosted just because of their URL depth or category
-  if (textMatchScore > 0 || score > 0.6) {
+  // Only apply static boosts if we have strong evidence
+  // Evidence = Exact match found (textMatchScore is naturally high from phrase matches)
+  // OR significant partial matches (textMatchScore >= 1.0)
+  // OR very high vector similarity (> 0.65)
+  // This prevents stopwords or single minor mentions from unlocking massive category boosts
+  const hasStrongTextEvidence = textMatchScore >= 1.0;
+  const hasHighVectorScore = score > 0.65;
+
+  if (hasStrongTextEvidence || hasHighVectorScore) {
     // Boost for shorter URLs (likely more important pages)
     const urlDepth = (result.url || '').split('/').length;
     score += Math.max(0, 5 - urlDepth);
@@ -178,6 +233,11 @@ export function normalizeUrl(url) {
     normalized = normalized.substring(0, normalized.length - 11);
   }
 
+  // Remove .html extension
+  if (normalized.endsWith('.html')) {
+    normalized = normalized.slice(0, -5);
+  }
+
   // Remove trailing slash (unless root)
   if (normalized !== '/' && normalized.endsWith('/')) {
     normalized = normalized.slice(0, -1);
@@ -189,6 +249,65 @@ export function normalizeUrl(url) {
   }
 
   return normalized;
+}
+
+/**
+ * Extract page title from filename
+ * @param {string} filename - Original filename
+ * @returns {string} Page title
+ */
+export function extractTitle(filename) {
+  if (!filename) return 'Unbekannt';
+
+  // Normalize URL first to handle clean paths consistently
+  const url = normalizeUrl(filename);
+  const segments = url.split('/').filter(Boolean);
+
+  // 1. Root / Home
+  if (url === '/' || segments.length === 0) {
+    return 'Startseite';
+  }
+
+  // 2. Top-level pages with custom mapping
+  if (segments.length === 1) {
+    const key = segments[0].toLowerCase();
+    const titleMap = {
+      projekte: 'Projekte Übersicht',
+      blog: 'Blog Übersicht',
+      gallery: 'Galerie',
+      videos: 'Videos Übersicht',
+      about: 'Über mich',
+      contact: 'Kontakt',
+      impressum: 'Impressum',
+      datenschutz: 'Datenschutz',
+    };
+    if (titleMap[key]) return titleMap[key];
+  }
+
+  // 3. Sub-pages or unmapped top-level pages
+  const lastSegment = segments[segments.length - 1];
+
+  // Convert kebab-case to Title Case
+  return lastSegment
+    .replace(/-/g, ' ')
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+/**
+ * Extract category from URL
+ * @param {string} url - Normalized URL
+ * @returns {string} Category name
+ */
+export function extractCategory(url) {
+  if (!url) return 'Seite';
+  if (url.includes('/projekte')) return 'Projekte';
+  if (url.includes('/blog')) return 'Blog';
+  if (url.includes('/gallery')) return 'Galerie';
+  if (url.includes('/videos')) return 'Videos';
+  if (url.includes('/about')) return 'Über mich';
+  if (url.includes('/contact')) return 'Kontakt';
+  if (url === '/' || url === '/index.html') return 'Home';
+  return 'Seite';
 }
 
 /**
@@ -221,41 +340,24 @@ export function cleanDescription(text) {
   cleaned = cleaned.replace(/&[a-z0-9#]+;/gi, (match) => entities[match] || '');
 
   // 4. Remove metadata JSON-like structures often indexed by mistake
-  // Matches {"key": "value"} patterns that might appear in text
   cleaned = cleaned.replace(/\{"[^"]+":\s*"[^"]+"\}/g, '');
 
   // 5. Remove Front Matter and Metadata artifacts
-  // Remove standard Jekyll/Hugo front matter (between --- and ---)
   cleaned = cleaned.replace(/^---[\s\S]*?---\s*/, '');
-
-  // Remove the specific pattern reported by user ":--- description:"
-  // and potentially surrounding metadata if it looks like key-value pairs
-  // This regex tries to catch lines looking like "key: value" around the description
   cleaned = cleaned.replace(/title:\s*[^:]+:--- description:\s*/i, '');
-
-  // Also just remove ":--- description:" if it remains
   cleaned = cleaned.replace(/:--- description:\s*/gi, '');
-
-  // Remove other common front matter keys if they appear as artifacts
   cleaned = cleaned.replace(
     /\b(layout|permalink|date|author):\s*[^ \n]+\s*/gi,
     '',
   );
 
-  // 6. Remove specific site artifacts reported by users
-  // Remove "Skip to main content" links (flexible match)
+  // 6. Remove specific site artifacts
   cleaned = cleaned.replace(/\[?Zum Hauptinhalt springen\]?(\([^)]*\))?/gi, '');
   cleaned = cleaned.replace(/menu\.skip_mainmenu\.skip_nav/gi, '');
-
-  // Remove site brand/title artifacts
   cleaned = cleaned.replace(/AKS \| WEB/g, '');
   cleaned = cleaned.replace(/© \d{4} Abdulkerim Sesli/gi, '');
-
-  // Remove loading screen text
   cleaned = cleaned.replace(/Initialisiere System(\.\.\.)?/gi, '');
-  cleaned = cleaned.replace(/\d+%\s*\d+%/g, ''); // Matches "0% 0%"
-
-  // Remove specific UI artifacts (Cookie banner, Chat, Menu, Scroll hints)
+  cleaned = cleaned.replace(/\d+%\s*\d+%/g, '');
   cleaned = cleaned.replace(
     /🍪\s*Wir nutzen Analytics[\s\S]*?Datenschutz/gi,
     '',
@@ -273,15 +375,11 @@ export function cleanDescription(text) {
   cleaned = cleaned.replace(/Fotos Eindrücke/gi, '');
   cleaned = cleaned.replace(/Startseite Start/gi, '');
   cleaned = cleaned.replace(/Zitat vollständig:/gi, '');
-
-  // Remove persistent 3D Earth overlay description that leaks into many pages
   cleaned = cleaned.replace(
     /Eine interaktive 3D-Darstellung der Erde[\s\S]*?Kamera-Modi\./gi,
     '',
   );
   cleaned = cleaned.replace(/🌍 CSS-Modus/gi, '');
-
-  // Remove long footer/thank you message block often indexed
   cleaned = cleaned.replace(
     /Vielen herzlichen Dank, dass Sie sich die Zeit genommen haben[\s\S]*?nächsten Besuch!/gi,
     '',
@@ -297,44 +395,83 @@ export function cleanDescription(text) {
   cleaned = cleaned.replace(/Weiter Kontakt Auf Wiedersehen!/gi, '');
   cleaned = cleaned.replace(/Nach oben Über mich/gi, '');
 
-  // Remove raw JSON/JSON-LD blocks that might have been indexed
-  // Matches any markdown code blocks
+  // Remove JSON/JSON-LD artifacts
   cleaned = cleaned.replace(/```[\s\S]*?```/g, '');
-  // Matches raw JSON-LD structure starting with @context
   cleaned = cleaned.replace(/\{\s*"@context":[\s\S]*?\}/g, '');
-  // Matches partial JSON array fragments often found in search snippets
   cleaned = cleaned.replace(/\[\s*\{\s*"@type":[\s\S]*?\}\s*\]/g, '');
   cleaned = cleaned.replace(/\}\s*,\s*\{\s*"@type":[\s\S]*?\}/g, '');
-  // Matches hanging JSON closing braces often left after truncation
   cleaned = cleaned.replace(
     /(\}\s*\]\s*\}\s*,?\s*\{\s*"@type":\s*"[^"]+")/g,
     '',
   );
-  // Clean remaining JSON syntax characters if they appear in isolation or clusters
   cleaned = cleaned.replace(/```json\s*\}?(\s*\]\s*\}\s*,?)?/g, '');
   cleaned = cleaned.replace(/(\}\s*,\s*)?\{\s*"@type":[\s\S]*?\}/g, '');
-  // Remove trailing JSON artifacts like `url": "..."` or closing braces
   cleaned = cleaned.replace(/,\s*"url":\s*"[^"]+"[\s\S]*/, '');
-  // Remove broken JSON arrays starting with comma or bracket sequences
   cleaned = cleaned.replace(/^\]\s*,\s*,?\s*"[^"]+":\s*"[^"]+"/g, '');
   cleaned = cleaned.replace(/,\s*,\s*"[^"]+":\s*"[^"]+"/g, '');
   cleaned = cleaned.replace(/,\s*"[^"]+":\s*"[^"]+"/g, '');
   cleaned = cleaned.replace(/\}\s*,\s*\{/g, '');
-
-  // Remove remaining isolated JSON keys and fragments
   cleaned = cleaned.replace(/,?\s*"[^"]+":\s*"[^"]+"/g, '');
   cleaned = cleaned.replace(/\{?\s*"[^"]+":\s*"[^"]+"\s*\}?/g, '');
-  cleaned = cleaned.replace(/^,\s*/, ''); // Remove leading comma
-
-  // Remove common footer/copyright fragments if they weren't caught by the block regex
+  cleaned = cleaned.replace(/^,\s*/, '');
   cleaned = cleaned.replace(/©\s*\d{4}\s*Abdulkerim Sesli/gi, '');
-  cleaned = cleaned.replace(/Kant\s*/gi, ''); // Remove isolated "Kant" from quote block
-  cleaned = cleaned.replace(/✨\s*AI OVERVIEW/gi, ''); // Remove AI OVERVIEW label
+  cleaned = cleaned.replace(/Kant\s*/gi, '');
+  cleaned = cleaned.replace(/✨\s*AI OVERVIEW/gi, '');
 
   // 7. Normalize whitespace
   cleaned = cleaned.replace(/\s+/g, ' ').trim();
 
   return cleaned;
+}
+
+/**
+ * Extract and clean content from search result item
+ * @param {Object} item - Search result item (raw)
+ * @param {number} maxLength - Maximum content length
+ * @returns {string} Cleaned content
+ */
+export function extractContent(item, maxLength = 400) {
+  let fullContent = '';
+
+  // Try content array first
+  if (item.content && Array.isArray(item.content)) {
+    fullContent = item.content.map((c) => c.text || '').join(' ');
+  }
+
+  // Fallback to other possible fields
+  if (!fullContent && item.text) {
+    fullContent = item.text;
+  }
+
+  if (!fullContent && item.description) {
+    fullContent = item.description;
+  }
+
+  if (!fullContent) {
+    return '';
+  }
+
+  // Use centralized cleaner
+  const cleaned = cleanDescription(fullContent);
+
+  // If content is short enough, return as is
+  if (cleaned.length <= maxLength) {
+    return cleaned;
+  }
+
+  // Intelligent truncation
+  const truncated = cleaned.substring(0, maxLength);
+  const lastPeriod = truncated.lastIndexOf('.');
+  const lastExclamation = truncated.lastIndexOf('!');
+  const lastQuestion = truncated.lastIndexOf('?');
+
+  const breakPoint = Math.max(lastPeriod, lastExclamation, lastQuestion);
+
+  if (breakPoint > maxLength * 0.7) {
+    return cleaned.substring(0, breakPoint + 1);
+  }
+
+  return truncated + '...';
 }
 
 /**
@@ -353,7 +490,6 @@ export function createSnippet(content, query, maxLength = 160) {
     .split(/\s+/)
     .filter((w) => w.length > 2);
 
-  // If no valid query words, return start of content
   if (words.length === 0) {
     return (
       cleanContent.substring(0, maxLength) +
@@ -361,7 +497,6 @@ export function createSnippet(content, query, maxLength = 160) {
     );
   }
 
-  // Find the first occurrence of any query word
   let bestIndex = -1;
   const contentLower = cleanContent.toLowerCase();
 
@@ -374,19 +509,16 @@ export function createSnippet(content, query, maxLength = 160) {
     }
   }
 
-  // If match found, center the window around it
   if (bestIndex !== -1) {
     const halfLength = Math.floor(maxLength / 2);
     let start = Math.max(0, bestIndex - halfLength);
     let end = start + maxLength;
 
-    // Adjust if window goes beyond end
     if (end > cleanContent.length) {
       end = cleanContent.length;
       start = Math.max(0, end - maxLength);
     }
 
-    // Try to align start to a word boundary
     if (start > 0) {
       const spaceIndex = cleanContent.lastIndexOf(' ', start);
       if (spaceIndex !== -1 && start - spaceIndex < 20) {
@@ -394,7 +526,6 @@ export function createSnippet(content, query, maxLength = 160) {
       }
     }
 
-    // Try to align end to a word boundary
     if (end < cleanContent.length) {
       const spaceIndex = cleanContent.indexOf(' ', end);
       if (spaceIndex !== -1 && spaceIndex - end < 20) {
@@ -403,17 +534,38 @@ export function createSnippet(content, query, maxLength = 160) {
     }
 
     let snippet = cleanContent.substring(start, end);
-
-    // Add ellipsis if needed
     if (start > 0) snippet = '...' + snippet;
     if (end < cleanContent.length) snippet = snippet + '...';
-
     return snippet;
   }
 
-  // Fallback: Return start of content if no match found
   return (
     cleanContent.substring(0, maxLength) +
     (cleanContent.length > maxLength ? '...' : '')
   );
+}
+
+/**
+ * Escape characters for XML
+ * @param {string} unsafe - String to escape
+ * @returns {string} Escaped XML string
+ */
+export function escapeXml(unsafe) {
+  if (!unsafe) return '';
+  return unsafe.replace(/[<>&'"]/g, function (c) {
+    switch (c) {
+      case '<':
+        return '&lt;';
+      case '>':
+        return '&gt;';
+      case '&':
+        return '&amp;';
+      case "'":
+        return '&apos;';
+      case '"':
+        return '&quot;';
+      default:
+        return c;
+    }
+  });
 }
