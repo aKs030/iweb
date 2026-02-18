@@ -109,24 +109,28 @@ export function calculateRelevanceScore(result, originalQuery) {
   let textMatchScore = 0;
 
   const queryLower = originalQuery.toLowerCase();
+  // Split query into terms for partial matching
+  const queryTerms = queryLower.split(/\s+/).filter((t) => t.length > 2);
+
   const titleLower = (result.title || '').toLowerCase();
   const urlLower = (result.url || '').toLowerCase();
   const descLower = (result.description || '').toLowerCase();
 
-  // Boost for exact title match
+  // Boost for exact phrase match
   if (titleLower.includes(queryLower)) {
     textMatchScore += 10;
-  }
-
-  // Boost for URL match
-  if (urlLower.includes(queryLower)) {
+  } else if (urlLower.includes(queryLower)) {
     textMatchScore += 5;
-  }
-
-  // Boost for description match
-  if (descLower.includes(queryLower)) {
+  } else if (descLower.includes(queryLower)) {
     textMatchScore += 2;
   }
+
+  // Boost for individual term matches
+  queryTerms.forEach((term) => {
+    if (titleLower.includes(term)) textMatchScore += 1.0;
+    if (urlLower.includes(term)) textMatchScore += 0.5;
+    if (descLower.includes(term)) textMatchScore += 0.2;
+  });
 
   score += textMatchScore;
 

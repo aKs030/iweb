@@ -63,7 +63,8 @@ async function getRelevantContext(query, env) {
           content,
         };
       })
-      .filter((result) => result.relevance > 0.5) // Minimum relevance
+      // Relaxed filtering: > 0.3 allows weak matches if no strong ones exist
+      .filter((result) => result.relevance > 0.3)
       .sort((a, b) => b.relevance - a.relevance)
       .slice(0, 3);
 
