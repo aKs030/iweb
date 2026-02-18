@@ -60,9 +60,10 @@ async function getRelevantContext(query, env) {
 
         // Now truncate for context window
         // Use a slightly larger window for AI context (800 chars)
-        const displayContent = fullContent.length > 800
-          ? fullContent.substring(0, 800) + '...'
-          : fullContent;
+        const displayContent =
+          fullContent.length > 800
+            ? fullContent.substring(0, 800) + '...'
+            : fullContent;
 
         return {
           item,
