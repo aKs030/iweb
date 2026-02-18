@@ -4,18 +4,27 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
   push:
-    branches:
-      - '*'
-      - '!main' # Do not preview deploy on main as it usually means production
+    branches-ignore:
+      - main
+
+concurrency:
+  group: preview-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  deployments: write
+  pull-requests: write
+
+defaults:
+  run:
+    shell: bash
 
 jobs:
   deploy:
     name: Deploy to Cloudflare Pages
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      deployments: write
-      pull-requests: write # Needed for commenting on PRs
+    timeout-minutes: 15
 
     steps:
       - name: Checkout
@@ -26,18 +35,19 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --no-audit --no-fund
 
       - name: Check for Secrets
         id: check_secrets
         run: |
-          if [ "${{ secrets.CLOUDFLARE_API_TOKEN }}" == "" ] || [ "${{ secrets.CLOUDFLARE_ACCOUNT_ID }}" == "" ]; then
+          if [ -z "${{ secrets.CLOUDFLARE_API_TOKEN }}" ] || [ -z "${{ secrets.CLOUDFLARE_ACCOUNT_ID }}" ]; then
             echo "::warning::Missing CLOUDFLARE_API_TOKEN or CLOUDFLARE_ACCOUNT_ID secrets. Deployment skipped."
-            echo "has_secrets=false" >> $GITHUB_OUTPUT
+            echo "has_secrets=false" >> "$GITHUB_OUTPUT"
           else
-            echo "has_secrets=true" >> $GITHUB_OUTPUT
+            echo "has_secrets=true" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Deploy to Cloudflare Pages
@@ -49,41 +59,71 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy . --project-name=1web --commit-dirty=true
 
-      - name: Comment Preview URL
+      - name: Upsert preview comment
         if: steps.check_secrets.outputs.has_secrets == 'true' && github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
             const deploymentUrl = '${{ steps.cloudflare_pages_deploy.outputs.deployment-url }}';
-            const comment = `## 🚀 Preview Deployment Successful!
+            const body = `## 🚀 Preview Deployment Successful!\n\n**Preview URL:** [${deploymentUrl}](${deploymentUrl})\n\n_Note: It might take a few seconds for the URL to be live._`;
 
-            **Preview URL:** [${deploymentUrl}](${deploymentUrl})
-
-            _Note: It might take a few seconds for the URL to be live._`;
-
-            await github.rest.issues.createComment({
+            const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              body: comment
             });
 
-      - name: Notify Missing Secrets (PR Comment)
+            const existing = comments.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('Preview Deployment Successful')
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
+
+      - name: Upsert missing-secrets comment
         if: steps.check_secrets.outputs.has_secrets == 'false' && github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
-            const comment = `## ⚠️ Deployment Skipped
+            const body = `## ⚠️ Deployment Skipped\n\nTo enable automated preview URLs, please configure the required secrets in your repository settings:\n- **CLOUDFLARE_API_TOKEN**\n- **CLOUDFLARE_ACCOUNT_ID**\n\nSee \`DEPLOYMENT_SETUP.md\` for details.`;
 
-            To enable automated preview URLs, please configure the required secrets in your repository settings:
-            - **CLOUDFLARE_API_TOKEN**
-            - **CLOUDFLARE_ACCOUNT_ID**
-
-            See \`DEPLOYMENT_SETUP.md\` for details.`;
-
-            await github.rest.issues.createComment({
+            const { data: comments } = await github.rest.issues.listComments({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              body: comment
             });
+
+            const existing = comments.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('Deployment Skipped')
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
