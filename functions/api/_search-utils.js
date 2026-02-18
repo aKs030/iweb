@@ -230,7 +230,7 @@ export function extractTitle(filename) {
   }
 
   // 3. Sub-pages or unmapped top-level pages
-  let lastSegment = segments[segments.length - 1];
+  const lastSegment = segments[segments.length - 1];
 
   // Convert kebab-case to Title Case
   return lastSegment
