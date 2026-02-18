@@ -1,133 +1,19 @@
 /**
  * Cloudflare Pages Function - POST /api/ai
  * Modern AI Chat with RAG (Retrieval-Augmented Generation) using Groq + AI Search Beta
- * @version 9.1.0 - Enhanced RAG with relevance scoring and better context extraction
+ * @version 10.0.0 - Unified Utils
  */
 
 import { getCorsHeaders, handleOptions } from './_cors.js';
+import {
+  calculateRelevanceScore,
+  normalizeUrl,
+  extractTitle,
+  extractContent,
+} from './_search-utils.js';
 
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const GROQ_MODEL = 'llama-3.3-70b-versatile';
-
-/**
- * Calculate relevance score for search results
- * @param {Object} item - Search result item
- * @param {string} query - Original query
- * @returns {number} Relevance score (0-1)
- */
-function calculateRelevanceScore(item, query) {
-  const queryLower = query.toLowerCase();
-  const queryTerms = queryLower.split(/\s+/).filter((t) => t.length > 2);
-
-  let score = 0;
-  const content =
-    item.content
-      ?.map((c) => c.text)
-      .join(' ')
-      .toLowerCase() || '';
-  const title = item.filename?.toLowerCase() || '';
-
-  // Title match (highest weight)
-  queryTerms.forEach((term) => {
-    if (title.includes(term)) score += 0.4;
-  });
-
-  // Content match
-  queryTerms.forEach((term) => {
-    const matches = (content.match(new RegExp(term, 'g')) || []).length;
-    score += Math.min(matches * 0.1, 0.3);
-  });
-
-  // Boost for exact phrase match
-  if (content.includes(queryLower)) {
-    score += 0.3;
-  }
-
-  return Math.min(score, 1);
-}
-
-/**
- * Extract and clean content from search result
- * @param {Object} item - Search result item
- * @param {number} maxLength - Maximum content length
- * @returns {string} Cleaned content
- */
-function extractContent(item, maxLength = 400) {
-  // Extract text content from multiple possible sources (same logic as search.js)
-  let fullContent = '';
-
-  // Try content array first
-  if (item.content && Array.isArray(item.content)) {
-    fullContent = item.content.map((c) => c.text || '').join(' ');
-  }
-
-  // Fallback to other possible fields
-  if (!fullContent && item.text) {
-    fullContent = item.text;
-  }
-
-  if (!fullContent && item.description) {
-    fullContent = item.description;
-  }
-
-  if (!fullContent) {
-    return '';
-  }
-
-  fullContent = fullContent.replace(/\s+/g, ' ').trim();
-
-  // If content is short enough, return as is
-  if (fullContent.length <= maxLength) {
-    return fullContent;
-  }
-
-  // Try to find a good breaking point (sentence end)
-  const truncated = fullContent.substring(0, maxLength);
-  const lastPeriod = truncated.lastIndexOf('.');
-  const lastExclamation = truncated.lastIndexOf('!');
-  const lastQuestion = truncated.lastIndexOf('?');
-
-  const breakPoint = Math.max(lastPeriod, lastExclamation, lastQuestion);
-
-  if (breakPoint > maxLength * 0.7) {
-    return fullContent.substring(0, breakPoint + 1);
-  }
-
-  return truncated + '...';
-}
-
-/**
- * Format URL for display
- * @param {string} filename - Original filename/URL
- * @returns {string} Clean URL path
- */
-function formatUrl(filename) {
-  if (!filename) return '/';
-
-  return (
-    filename
-      .replace(/^https?:\/\/(www\.)?abdulkerimsesli\.de/, '')
-      .replace(/\/index\.html$/, '/')
-      .replace(/\.html$/, '') || '/'
-  );
-}
-
-/**
- * Extract page title from filename
- * @param {string} filename - Original filename
- * @returns {string} Page title
- */
-function extractTitle(filename) {
-  if (!filename) return 'Unbekannt';
-
-  const path = filename.split('/').filter(Boolean);
-  const lastSegment = path[path.length - 1] || 'Home';
-
-  return lastSegment
-    .replace('.html', '')
-    .replace(/-/g, ' ')
-    .replace(/\b\w/g, (c) => c.toUpperCase());
-}
 
 /**
  * Search for relevant context using AI Search Beta with improved ranking
@@ -139,7 +25,7 @@ async function getRelevantContext(query, env) {
   }
 
   try {
-    // Use AI Search Beta to get relevant context (increased from 3 to 5)
+    // Use AI Search Beta to get relevant context
     const searchData = await env.AI.autorag('wispy-pond-1055').aiSearch({
       query: query,
       max_num_results: 5,
@@ -151,42 +37,57 @@ async function getRelevantContext(query, env) {
       return null;
     }
 
-    // Calculate relevance scores and sort
+    // Process and score results
     const scoredResults = searchData.data
-      .map((item) => ({
-        item,
-        score: calculateRelevanceScore(item, query),
-      }))
-      .filter((result) => result.score > 0.1) // Filter out low-relevance results
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 3); // Keep top 3 most relevant
+      .map((item) => {
+        const url = normalizeUrl(item.filename);
+        const title = extractTitle(item.filename);
+        const content = extractContent(item, 400);
+
+        // Create a result object compatible with calculateRelevanceScore
+        const resultObj = {
+          url,
+          title,
+          description: content,
+          category: 'page', // Default
+          score: item.score || 0,
+        };
+
+        const relevance = calculateRelevanceScore(resultObj, query);
+
+        return {
+          item,
+          relevance,
+          url,
+          title,
+          content,
+        };
+      })
+      .filter((result) => result.relevance > 0.5) // Minimum relevance
+      .sort((a, b) => b.relevance - a.relevance)
+      .slice(0, 3);
 
     if (scoredResults.length === 0) {
       return null;
     }
 
-    // Format context from search results with better structure
-    const contextParts = scoredResults.map(({ item, score }) => {
-      const url = formatUrl(item.filename);
-      const title = extractTitle(item.filename);
-      const content = extractContent(item, 400);
-      const relevance = Math.round(score * 100);
-
-      return `[Relevanz: ${relevance}%] ${title}
-URL: ${url}
-Inhalt: ${content}`;
-    });
+    // Format context
+    const contextParts = scoredResults.map(
+      ({ title, url, content, relevance }) => {
+        const displayScore = Math.round(relevance);
+        return `[Relevanz: ${displayScore}] ${title}\nURL: ${url}\nInhalt: ${content}`;
+      },
+    );
 
     const contextHeader = `GEFUNDENE INFORMATIONEN (${scoredResults.length} relevante Ergebnisse):`;
     const contextText = `${contextHeader}\n\n${contextParts.join('\n\n---\n\n')}`;
 
-    // Return both context text and source metadata
     return {
       context: contextText,
-      sources: scoredResults.map(({ item, score }) => ({
-        url: formatUrl(item.filename),
-        title: extractTitle(item.filename),
-        relevance: Math.round(score * 100),
+      sources: scoredResults.map(({ title, url, relevance }) => ({
+        url,
+        title,
+        relevance: Math.round(relevance),
       })),
     };
   } catch (error) {
