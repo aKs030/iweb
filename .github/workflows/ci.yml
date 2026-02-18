@@ -98,7 +98,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-
   dependency-review:
     name: Dependency review (PR)
     if: github.event_name == 'pull_request'
