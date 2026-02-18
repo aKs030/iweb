@@ -42,25 +42,34 @@ async function getRelevantContext(query, env) {
       .map((item) => {
         const url = normalizeUrl(item.filename);
         const title = extractTitle(item.filename);
-        const content = extractContent(item, 400);
+
+        // Extract FULL content first for scoring
+        // 10000 chars limit to avoid memory issues but capture most content
+        const fullContent = extractContent(item, 10000);
 
         // Create a result object compatible with calculateRelevanceScore
         const resultObj = {
           url,
           title,
-          description: content,
+          description: fullContent, // Score against full text
           category: 'page', // Default
           score: item.score || 0,
         };
 
         const relevance = calculateRelevanceScore(resultObj, query);
 
+        // Now truncate for context window
+        // Use a slightly larger window for AI context (800 chars)
+        const displayContent = fullContent.length > 800
+          ? fullContent.substring(0, 800) + '...'
+          : fullContent;
+
         return {
           item,
           relevance,
           url,
           title,
-          content,
+          content: displayContent,
         };
       })
       // Relaxed filtering: > 0.3 allows weak matches if no strong ones exist
