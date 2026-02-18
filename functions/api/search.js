@@ -2,7 +2,7 @@
  * Cloudflare Pages Function - POST /api/search
  * AI Search using Cloudflare AI Search Beta via Workers Binding
  * Enhanced with query expansion, fuzzy matching, and relevance scoring
- * @version 12.0.0
+ * @version 13.0.0 - Refactored to use centralized utils
  */
 
 import { getCorsHeaders, handleOptions } from './_cors.js';
@@ -11,6 +11,9 @@ import {
   calculateRelevanceScore,
   normalizeUrl,
   createSnippet,
+  extractCategory,
+  extractTitle,
+  extractContent,
 } from './_search-utils.js';
 
 export async function onRequestPost(context) {
@@ -66,82 +69,23 @@ export async function onRequestPost(context) {
     const results = (searchData.data || []).map((item) => {
       // Use helper to normalize URL
       const url = normalizeUrl(item.filename);
+      const title = extractTitle(item.filename);
+      const category = extractCategory(url);
 
-      // Extract text content from multiple possible sources
-      let textContent = '';
-
-      // Try content array first
-      if (item.content && Array.isArray(item.content)) {
-        textContent = item.content.map((c) => c.text || '').join(' ');
-      }
-
-      // Fallback to other possible fields
-      if (!textContent && item.text) {
-        textContent = item.text;
-      }
-
-      if (!textContent && item.description) {
-        textContent = item.description;
-      }
+      // Extract full content using centralized helper
+      // Use a larger limit for snippet generation to find best match
+      const fullContent = extractContent(item, 5000);
 
       // Create a smart snippet focused on the query
-      // Use original query for highlighting to avoid synonym confusion
-      const snippet = createSnippet(textContent, query, 160);
-
-      // Determine category from URL with better mapping
-      let category = 'Seite';
-      if (url.includes('/projekte')) category = 'Projekte';
-      else if (url.includes('/blog')) category = 'Blog';
-      else if (url.includes('/gallery')) category = 'Galerie';
-      else if (url.includes('/videos')) category = 'Videos';
-      else if (url.includes('/about')) category = 'Über mich';
-      else if (url.includes('/contact')) category = 'Kontakt';
-      else if (url === '/') category = 'Home';
-
-      // Improved title extraction with better fallbacks
-      let title = item.filename?.split('/').pop()?.replace('.html', '') || '';
-
-      // Smart title mapping based on URL patterns
-      if (title === 'index' || title === '' || !title) {
-        const segments = url.split('/').filter(Boolean);
-
-        if (url === '/') {
-          title = 'Startseite';
-        } else if (segments.length === 1) {
-          // Top-level pages: /projekte, /blog, etc.
-          const titleMap = {
-            projekte: 'Projekte Übersicht',
-            blog: 'Blog Übersicht',
-            gallery: 'Galerie',
-            videos: 'Videos Übersicht',
-            about: 'Über mich',
-            contact: 'Kontakt',
-          };
-          title =
-            titleMap[segments[0]] ||
-            segments[0].charAt(0).toUpperCase() + segments[0].slice(1);
-        } else if (segments.length >= 2) {
-          // Sub-pages: /blog/threejs-performance, /videos/1bl8bzd6cpy
-          const lastSegment = segments[segments.length - 1];
-          // Convert kebab-case to Title Case
-          title = lastSegment
-            .split('-')
-            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(' ');
-        }
-      } else {
-        // Convert existing title from kebab-case to Title Case
-        title = title
-          .split('-')
-          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(' ');
-      }
+      const snippet = createSnippet(fullContent, query, 160);
 
       return {
         url: url,
         title: title,
         category: category,
         description: snippet || 'Keine Beschreibung verfügbar',
+        // Pass full content for accurate relevance scoring later
+        fullContent: fullContent,
         score: item.score || 0,
       };
     });
@@ -162,10 +106,22 @@ export async function onRequestPost(context) {
 
     // Calculate enhanced relevance scores and sort
     const scoredResults = uniqueResults
-      .map((result) => ({
-        ...result,
-        score: calculateRelevanceScore(result, query),
-      }))
+      .map((result) => {
+        // Use the full content we preserved for scoring
+        const scoreObj = {
+          ...result,
+          description: result.fullContent || result.description,
+        };
+        const finalScore = calculateRelevanceScore(scoreObj, query);
+
+        // Remove the heavy fullContent property before sending to client
+        const { fullContent: _fullContent, ...cleanResult } = result;
+
+        return {
+          ...cleanResult,
+          score: finalScore,
+        };
+      })
       .sort((a, b) => b.score - a.score);
 
     // Filter out low relevance results
