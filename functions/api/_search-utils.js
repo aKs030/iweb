@@ -7,6 +7,47 @@
  * Synonym mapping for German query expansion
  * Erweitert für alle indexierten Seiten
  */
+/**
+ * Stopwords to exclude from scoring
+ */
+export const STOPWORDS = new Set([
+  'und',
+  'oder',
+  'aber',
+  'denn',
+  'doch',
+  'der',
+  'die',
+  'das',
+  'ein',
+  'eine',
+  'einer',
+  'mit',
+  'auf',
+  'aus',
+  'bei',
+  'von',
+  'nach',
+  'zu',
+  'im',
+  'in',
+  'dem',
+  'den',
+  'and',
+  'or',
+  'but',
+  'the',
+  'a',
+  'an',
+  'in',
+  'on',
+  'at',
+  'of',
+  'for',
+  'to',
+  'with',
+]);
+
 export const SYNONYMS = {
   bilder: ['galerie', 'photos', 'fotos', 'fotografie', 'gallery', 'images'],
   galerie: ['bilder', 'photos', 'fotos', 'gallery', 'images'],
@@ -109,8 +150,10 @@ export function calculateRelevanceScore(result, originalQuery) {
   let textMatchScore = 0;
 
   const queryLower = originalQuery.toLowerCase();
-  // Split query into terms for partial matching
-  const queryTerms = queryLower.split(/\s+/).filter((t) => t.length > 2);
+  // Split query into terms for partial matching and filter stopwords
+  const queryTerms = queryLower
+    .split(/\s+/)
+    .filter((t) => t.length > 2 && !STOPWORDS.has(t));
 
   const titleLower = (result.title || '').toLowerCase();
   const urlLower = (result.url || '').toLowerCase();
@@ -126,6 +169,8 @@ export function calculateRelevanceScore(result, originalQuery) {
   }
 
   // Boost for individual term matches
+  // Stricter check: Common short words might trigger this, so we rely on STOPWORDS filtering (if added)
+  // or a higher threshold for triggering boosts.
   queryTerms.forEach((term) => {
     if (titleLower.includes(term)) textMatchScore += 1.0;
     if (urlLower.includes(term)) textMatchScore += 0.5;
@@ -134,9 +179,15 @@ export function calculateRelevanceScore(result, originalQuery) {
 
   score += textMatchScore;
 
-  // Only apply static boosts if there is a text match OR the vector score is decent
-  // This prevents completely irrelevant pages from being boosted just because of their URL depth or category
-  if (textMatchScore > 0 || score > 0.6) {
+  // Only apply static boosts if we have strong evidence
+  // Evidence = Exact match found (textMatchScore is naturally high from phrase matches)
+  // OR significant partial matches (textMatchScore >= 1.0)
+  // OR very high vector similarity (> 0.65)
+  // This prevents stopwords or single minor mentions from unlocking massive category boosts
+  const hasStrongTextEvidence = textMatchScore >= 1.0;
+  const hasHighVectorScore = score > 0.65;
+
+  if (hasStrongTextEvidence || hasHighVectorScore) {
     // Boost for shorter URLs (likely more important pages)
     const urlDepth = (result.url || '').split('/').length;
     score += Math.max(0, 5 - urlDepth);

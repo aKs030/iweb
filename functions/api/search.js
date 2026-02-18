@@ -13,6 +13,7 @@ import {
   createSnippet,
   extractCategory,
   extractTitle,
+  extractContent,
 } from './_search-utils.js';
 
 export async function onRequestPost(context) {
@@ -71,32 +72,20 @@ export async function onRequestPost(context) {
       const title = extractTitle(item.filename);
       const category = extractCategory(url);
 
-      // Extract raw text content for snippet generation
-      let rawContent = '';
-
-      // Try content array first
-      if (item.content && Array.isArray(item.content)) {
-        rawContent = item.content.map((c) => c.text || '').join(' ');
-      }
-
-      // Fallback to other possible fields
-      if (!rawContent && item.text) {
-        rawContent = item.text;
-      }
-
-      if (!rawContent && item.description) {
-        rawContent = item.description;
-      }
+      // Extract full content using centralized helper
+      // Use a larger limit for snippet generation to find best match
+      const fullContent = extractContent(item, 5000);
 
       // Create a smart snippet focused on the query
-      // Use original query for highlighting to avoid synonym confusion
-      const snippet = createSnippet(rawContent, query, 160);
+      const snippet = createSnippet(fullContent, query, 160);
 
       return {
         url: url,
         title: title,
         category: category,
         description: snippet || 'Keine Beschreibung verfügbar',
+        // Pass full content for accurate relevance scoring later
+        fullContent: fullContent,
         score: item.score || 0,
       };
     });
@@ -117,10 +106,22 @@ export async function onRequestPost(context) {
 
     // Calculate enhanced relevance scores and sort
     const scoredResults = uniqueResults
-      .map((result) => ({
-        ...result,
-        score: calculateRelevanceScore(result, query),
-      }))
+      .map((result) => {
+        // Use the full content we preserved for scoring
+        const scoreObj = {
+          ...result,
+          description: result.fullContent || result.description,
+        };
+        const finalScore = calculateRelevanceScore(scoreObj, query);
+
+        // Remove the heavy fullContent property before sending to client
+        const { fullContent: _fullContent, ...cleanResult } = result;
+
+        return {
+          ...cleanResult,
+          score: finalScore,
+        };
+      })
       .sort((a, b) => b.score - a.score);
 
     // Filter out low relevance results
