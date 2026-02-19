@@ -387,7 +387,7 @@ class ThreeEarthStateManager {
 For questions about this refactoring:
 
 1. Check the [README](../content/components/particles/README.md) for API usage
-2. Review the [test file](../content/components/particles/three-earth-state.test.js) for examples
+2. Review [`content/components/particles/README.md`](../content/components/particles/README.md) for examples
 3. Consult the [Architecture docs](./ARCHITECTURE.md) for system design
 
 ## Conclusion

@@ -14,8 +14,7 @@
     "check": "npm run lint:check && npm run format:check",
     "fix": "npm run lint && npm run format",
     "clean": "rm -rf .wrangler node_modules/.cache",
-    "push": "git add -A && git commit -m 'Update' && git push origin main",
-    "prepare": "husky install"
+    "prepare": "husky"
   },
   "dependencies": {
     "three": "^0.171.0"
