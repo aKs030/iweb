@@ -86,7 +86,7 @@ export async function onRequestPost(context) {
       // to avoid model binding errors with text generation parameters
       searchData = await env.AI.autorag(ragId).aiSearch({
         query: expandedQuery,
-        max_num_results: Math.max(topK, 15),
+        max_num_results: topK, // Reduce LLM context load from 15 to topK (e.g., 8-12)
         // rewrite_query: true, // Disabled: likely triggers LLM call
         // system_prompt: '...', // Disabled: definitely triggers LLM call
       });
