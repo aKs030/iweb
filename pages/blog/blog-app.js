@@ -981,7 +981,7 @@ const BlogApp = () => {
 
     if (!post)
       return html`<div className="container-blog pt-24">
-        <div style="color:#666">${t('common.loading')}</div>
+        <div style=${{ color: '#666' }}>${t('common.loading')}</div>
       </div>`;
 
     const cleanHtml = activePostHtml;
@@ -1127,7 +1127,7 @@ const BlogApp = () => {
           })}
         ${
           visiblePosts.length === 0 && !loading
-            ? html`<p style="color:#666">${t('blog.not_found')}</p>`
+            ? html`<p style=${{ color: '#666' }}>${t('blog.not_found')}</p>`
             : ''
         }
         </div>
