@@ -74,19 +74,12 @@ function getClientIdentifier(request) {
   const cfIP = request.headers.get('CF-Connecting-IP');
   if (cfIP) return cfIP;
 
-  // Enterprise / proxy setups may use alternative headers
-  const trueClientIP = request.headers.get('True-Client-IP');
-  if (trueClientIP) return trueClientIP;
-
-  const realIP = request.headers.get('X-Real-IP');
-  if (realIP) return realIP;
-
   // Fallback to X-Forwarded-For
   const forwarded = request.headers.get('X-Forwarded-For');
   if (forwarded) return forwarded.split(',')[0].trim();
 
-  // Last resort: do not rate-limit all anonymous clients as one shared bucket
-  return null;
+  // Last resort
+  return 'unknown';
 }
 
 /**
@@ -103,12 +96,6 @@ export async function onRequest(context) {
 
   // Get client identifier
   const clientId = getClientIdentifier(request);
-
-  // If we cannot identify the client reliably, skip rate-limiting for this request.
-  // This prevents accidentally blocking all users behind a shared "unknown" key.
-  if (!clientId) {
-    return next();
-  }
 
   // Determine rate limit based on endpoint
   const isAIEndpoint = url.pathname.includes('/ai');

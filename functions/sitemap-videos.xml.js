@@ -1,5 +1,3 @@
-import { escapeXml } from './api/_search-utils.js';
-
 export async function onRequest(context) {
   const { env } = context;
   const url = new URL(context.request.url);
@@ -106,4 +104,22 @@ export async function onRequest(context) {
       status: 500,
     });
   }
+}
+
+function escapeXml(unsafe) {
+  if (!unsafe) return '';
+  return unsafe.replace(/[<>&'"]/g, function (c) {
+    switch (c) {
+      case '<':
+        return '&lt;';
+      case '>':
+        return '&gt;';
+      case '&':
+        return '&amp;';
+      case "'":
+        return '&apos;';
+      case '"':
+        return '&quot;';
+    }
+  });
 }
