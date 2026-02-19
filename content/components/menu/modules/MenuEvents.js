@@ -364,7 +364,8 @@ export class MenuEvents {
 
     this.abortSearchRequest();
     const topK = this.config.SEARCH_TOP_K ?? 12;
-    const requestTimeoutMs = this.config.SEARCH_REQUEST_TIMEOUT ?? 6000;
+    // Increased timeout to 15s to handle cold starts of AI models better
+    const requestTimeoutMs = this.config.SEARCH_REQUEST_TIMEOUT ?? 15000;
     const cacheKey = this.buildSearchCacheKey(query, topK);
     const cachedItems = this.getCachedSearchResults(cacheKey);
 
