@@ -97,6 +97,9 @@
 /gallery  /gallery/   301
 /projekte /projekte/  301
 /videos   /videos/    301
+/search   /           302
+/search/  /           302
+/api/search/ /api/search 307
 
 # ============================================================================
 # 4. Old File Locations to Clean URLs

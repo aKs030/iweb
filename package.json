@@ -5,7 +5,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node server.js",
+    "dev": "wrangler pages dev . --port 8080",
+    "dev:sim": "node server.js",
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
     "format": "prettier --write .",

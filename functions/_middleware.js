@@ -38,6 +38,54 @@ async function loadTemplateFromURL(context, path) {
  * Middleware entry point — runs on every request.
  * @param {Object} context - Cloudflare Pages context
  */
+
+function isLocalhost(hostname) {
+  return (
+    hostname === 'localhost' ||
+    hostname === '127.0.0.1' ||
+    hostname === '::1' ||
+    hostname === '[::1]'
+  );
+}
+
+function normalizeLocalDevHeaders(headers, hostname) {
+  if (!isLocalhost(hostname)) {
+    return false;
+  }
+
+  let changed = false;
+
+  if (headers.has('Strict-Transport-Security')) {
+    headers.delete('Strict-Transport-Security');
+    changed = true;
+  }
+
+  const csp = headers.get('Content-Security-Policy');
+  if (csp) {
+    const sanitized = csp
+      .replace(/upgrade-insecure-requests;?\s*/gi, '')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
+
+    if (sanitized !== csp) {
+      headers.set('Content-Security-Policy', sanitized);
+      changed = true;
+    }
+  }
+
+  if (headers.has('Cross-Origin-Embedder-Policy')) {
+    headers.delete('Cross-Origin-Embedder-Policy');
+    changed = true;
+  }
+
+  if (headers.has('Cross-Origin-Opener-Policy')) {
+    headers.delete('Cross-Origin-Opener-Policy');
+    changed = true;
+  }
+
+  return changed;
+}
+
 export async function onRequest(context) {
   const url = new URL(context.request.url);
 
@@ -61,9 +109,22 @@ export async function onRequest(context) {
   }
 
   // Only process HTML responses
+  const initialHeaders = new Headers(response.headers);
+  const localHeaderAdjusted = normalizeLocalDevHeaders(
+    initialHeaders,
+    url.hostname,
+  );
   const contentType = response.headers.get('content-type') || '';
   if (!contentType.includes('text/html')) {
-    return response;
+    if (!localHeaderAdjusted) {
+      return response;
+    }
+
+    return new Response(response.body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: initialHeaders,
+    });
   }
 
   let html = await response.text();
@@ -73,7 +134,11 @@ export async function onRequest(context) {
     !html.includes('INJECT:BASE-HEAD') &&
     !html.includes('INJECT:BASE-LOADER')
   ) {
-    return new Response(html, response);
+    return new Response(html, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: initialHeaders,
+    });
   }
 
   // Fetch both templates in parallel
@@ -89,7 +154,7 @@ export async function onRequest(context) {
   });
 
   // Return modified response with original headers
-  const newHeaders = new Headers(response.headers);
+  const newHeaders = new Headers(initialHeaders);
   newHeaders.set(
     'Content-Length',
     new TextEncoder().encode(html).length.toString(),
