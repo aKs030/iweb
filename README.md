@@ -121,11 +121,17 @@ npm run build:analyze    # Visual bundle analysis
 
 ## 🌍 Environment Variables
 
-Create a `.env` file based on `.env.example`:
+Create a `.dev.vars` file for local Cloudflare Pages development:
 
 ```bash
 # Cloudflare Configuration
 MAX_SEARCH_RESULTS=10
+RAG_ID=wispy-pond-1055
+
+# Optional local API keys
+GROQ_API_KEY=
+YOUTUBE_API_KEY=
+RESEND_API_KEY=
 ```
 
 For Cloudflare secrets:
