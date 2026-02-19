@@ -153,7 +153,7 @@ class EventEmitter {
 }
 
 // Global event emitter
-const emitter = new EventEmitter();
+export const emitter = new EventEmitter();
 
 /**
  * Fire custom event on document
