@@ -60,7 +60,7 @@ jobs:
 
       - name: Start server and test routes
         run: |
-          PORT=8080 npm run dev > server.log 2>&1 &
+          PORT=8080 npm run dev:sim > server.log 2>&1 &
           SERVER_PID=$!
           trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
 
