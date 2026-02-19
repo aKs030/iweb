@@ -1,6 +1,6 @@
 /**
  * Search Utilities - Query Expansion, Fuzzy Matching, Relevance Scoring
- * @version 3.0.0
+ * @version 5.0.0
  */
 
 /**
@@ -8,9 +8,10 @@
  * Erweitert für alle indexierten Seiten
  */
 export const SYNONYMS = {
+  // --- Pages ---
   bilder: ['galerie', 'photos', 'fotos', 'fotografie', 'gallery', 'images'],
   galerie: ['bilder', 'photos', 'fotos', 'gallery', 'images'],
-  projekte: ['projects', 'arbeiten', 'portfolio', 'werke', 'projekt'],
+  projekte: ['projects', 'arbeiten', 'portfolio', 'werke', 'projekt', 'apps'],
   blog: [
     'artikel',
     'posts',
@@ -22,15 +23,53 @@ export const SYNONYMS = {
     'design',
     'react',
   ],
-  videos: ['filme', 'clips', 'aufnahmen', 'video'],
+  videos: ['filme', 'clips', 'aufnahmen', 'video', 'youtube'],
   kontakt: ['contact', 'email', 'nachricht', 'anfrage', 'formular'],
   über: ['about', 'info', 'information', 'profil', 'ich'],
   suche: ['search', 'finden', 'suchen'],
   home: ['startseite', 'hauptseite', 'index', 'start'],
+
+  // --- Blog Topics ---
   threejs: ['three.js', '3d', 'webgl', 'performance', 'optimization'],
   storytelling: ['visual', 'design', 'erzählen', 'story'],
   react: ['javascript', 'js', 'frontend', 'no-build'],
   ui: ['design', 'interface', 'modern', 'benutzeroberfläche'],
+  seo: [
+    'suchmaschinenoptimierung',
+    'search engine',
+    'google',
+    'meta',
+    'ranking',
+  ],
+  typescript: ['ts', 'typen', 'types', 'typed', 'javascript'],
+  'web-components': ['webcomponents', 'custom elements', 'shadow dom', 'slots'],
+  css: ['styles', 'stylesheet', 'container queries', 'responsive', 'layout'],
+  pwa: ['progressive web app', 'service worker', 'offline', 'manifest'],
+  performance: [
+    'schnell',
+    'fast',
+    'optimierung',
+    'optimization',
+    'speed',
+    'ladezeit',
+  ],
+
+  // --- Project Apps ---
+  calculator: ['taschenrechner', 'rechner', 'math', 'berechnung'],
+  taschenrechner: ['calculator', 'rechner', 'math'],
+  memory: ['memory-game', 'gedächtnis', 'kartenspiel', 'karten'],
+  snake: ['snake-game', 'schlange', 'arcade', 'retro'],
+  pong: ['pong-game', 'ping-pong', 'arcade', 'retro'],
+  quiz: ['quiz-app', 'wissen', 'trivia', 'fragen'],
+  todo: ['todo-liste', 'aufgaben', 'tasks', 'planer', 'to-do'],
+  timer: ['timer-app', 'countdown', 'stoppuhr', 'pomodoro'],
+  passwort: ['password-generator', 'password', 'sicherheit', 'security'],
+  wetter: ['weather-app', 'weather', 'forecast', 'vorhersage', 'temperatur'],
+  zeichnen: ['paint-app', 'paint', 'malen', 'canvas', 'drawing'],
+  farben: ['color-changer', 'colors', 'farbwechsler', 'gradient'],
+  tippen: ['typing-speed-test', 'typing', 'geschwindigkeit', 'wpm', 'tastatur'],
+  spiel: ['game', 'spiele', 'games', 'spielen', 'arcade'],
+  game: ['spiel', 'spiele', 'games', 'spielen'],
 };
 
 /**
@@ -108,36 +147,54 @@ export function calculateRelevanceScore(result, originalQuery) {
   let score = result.score || 0;
   let textMatchScore = 0;
 
-  const queryLower = originalQuery.toLowerCase();
+  const queryLower = originalQuery.toLowerCase().trim();
   const titleLower = (result.title || '').toLowerCase();
   const urlLower = (result.url || '').toLowerCase();
   const descLower = (result.description || '').toLowerCase();
 
-  // Boost for exact title match
-  if (titleLower.includes(queryLower)) {
-    textMatchScore += 10;
+  // Word-boundary aware matching (stronger signal than substring)
+  const queryTerms = queryLower.split(/\s+/).filter((t) => t.length > 1);
+  const boundaryRe = (term) =>
+    new RegExp(
+      `(^|[\\s/\\-_.])${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`,
+      'i',
+    );
+
+  // Exact full query match
+  if (titleLower.includes(queryLower)) textMatchScore += 12;
+  if (urlLower.includes(queryLower)) textMatchScore += 6;
+  if (descLower.includes(queryLower)) textMatchScore += 3;
+
+  // Per-term matching with word-boundary bonus
+  let termsMatched = 0;
+  for (const term of queryTerms) {
+    const re = boundaryRe(term);
+    if (re.test(titleLower)) {
+      textMatchScore += 4;
+      termsMatched++;
+    } else if (re.test(urlLower)) {
+      textMatchScore += 3;
+      termsMatched++;
+    } else if (re.test(descLower)) {
+      textMatchScore += 2;
+      termsMatched++;
+    }
   }
 
-  // Boost for URL match
-  if (urlLower.includes(queryLower)) {
+  // Multi-term intersection bonus – all query terms found somewhere
+  if (queryTerms.length > 1 && termsMatched === queryTerms.length) {
     textMatchScore += 5;
-  }
-
-  // Boost for description match
-  if (descLower.includes(queryLower)) {
-    textMatchScore += 2;
   }
 
   score += textMatchScore;
 
   // Only apply static boosts if there is a text match OR the vector score is decent
-  // This prevents completely irrelevant pages from being boosted just because of their URL depth or category
   if (textMatchScore > 0 || score > 0.6) {
     // Boost for shorter URLs (likely more important pages)
     const urlDepth = (result.url || '').split('/').length;
     score += Math.max(0, 5 - urlDepth);
 
-    // Boost for specific categories (angepasst an deutsche Kategorien)
+    // Boost for specific categories
     const categoryBoosts = {
       projekte: 3,
       blog: 2,
@@ -192,6 +249,112 @@ export function normalizeUrl(url) {
 }
 
 /**
+ * Patterns to strip from raw text before showing it as a search snippet.
+ * Each entry is [regex, replacement]. Evaluated in order.
+ * @type {Array<[RegExp, string]>}
+ */
+const CLEANUP_PATTERNS = [
+  // 1. Script / style / noscript blocks
+  [/<script\b[^>]*>[\s\S]*?<\/script>/gim, ''],
+  [/<style\b[^>]*>[\s\S]*?<\/style>/gim, ''],
+  [/<noscript\b[^>]*>[\s\S]*?<\/noscript>/gim, ''],
+  // 2. HTML tags
+  [/<[^>]+>/g, ' '],
+  // 3. Front matter / YAML
+  [/^---[\s\S]*?---\s*/, ''],
+  [/title:\s*[^:]+:--- description:\s*/i, ''],
+  [/:--- description:\s*/gi, ''],
+  [/\b(layout|permalink|date|author):\s*[^ \n]+\s*/gi, ''],
+  // 4. JSON / JSON-LD / structured data (aggressive — catches fragments)
+  [/```[\s\S]*?```/g, ''],
+  [/\{\s*"@(context|type|graph)"[\s\S]*?\}\s*\]?\s*\}?/g, ''],
+  [/\[\s*\{\s*"@type"[\s\S]*?\}\s*\]/g, ''],
+  [/\{[^{}]*"(position|@type|url|name|item)"[^{}]*\}/g, ''],
+  [/"\w+":\s*"[^"]*"/g, ''],
+  [/[{}[\],]\s*[{}[\],]/g, ' '],
+  [/[{}[\]]/g, ' '],
+  // 5. Site-specific UI artifacts
+  [/\[?Zum Hauptinhalt springen\]?(\([^)]*\))?/gi, ''],
+  [/\(#[a-z-]+\)/gi, ''],
+  [/menu\.skip_mainmenu\.skip_nav/gi, ''],
+  [/AKS \| WEB/g, ''],
+  [/©\s*\d{4}\s*Abdulkerim Sesli/gi, ''],
+  [/Initialisiere System(\.\.\.)?/gi, ''],
+  [/\d+%\s*\d+%/g, ''],
+  // Cookie / analytics banners
+  [/🍪\s*Wir nutzen Analytics[\s\S]*?Datenschutz/gi, ''],
+  // Greeting / time-of-day banners
+  [/Soll ich dir was zeigen\?×\s*\?\s*Hauptmenü geschlossen/gi, ''],
+  [/Willkommen auf der Seite!×\s*\?/gi, ''],
+  [/Schön, dass du (nachts |morgens |abends )?hier bist[^!]*!/gi, ''],
+  [
+    /Vielen herzlichen Dank, dass Sie sich die Zeit genommen haben[\s\S]*?nächsten Besuch!/gi,
+    '',
+  ],
+  // Globe / 3D mode toggles
+  [/🌍\s*CSS-Modus/gi, ''],
+  [/Eine interaktive 3D-Darstellung der Erde[\s\S]*?Kamera-Modi\./gi, ''],
+  [/Scroll to explore • Click to view/gi, ''],
+  // Navigation / menu / breadcrumb remains
+  [/Startseite\s*Start/gi, ''],
+  [/Nach oben\s*Über mich/gi, ''],
+  [/Weiter\s*Kontakt\s*Auf Wiedersehen!/gi, ''],
+  [/Hauptmenü\s*(geöffnet|geschlossen)/gi, ''],
+  // Gallery / section headings used as filler
+  [/Premium Fotogalerie Professionelle Fotografie in höchster Qualität/gi, ''],
+  [/Fotos\s*Eindrücke/gi, ''],
+  // Quotes / mottos
+  [/Zitat vollständig:/gi, ''],
+  [/Habe Mut, dich deines eigenen Verstandes zu bedienen\./gi, ''],
+  // AI / meta labels
+  [/✨\s*AI OVERVIEW/gi, ''],
+  [/Kant\s*/gi, ''],
+  // 6. Stray punctuation / noise left over
+  [/^\s*[,;:.\-|]+\s*/g, ''],
+  [/\s*[,;:.\-|]+\s*$/g, ''],
+];
+
+/**
+ * Detect whether a snippet is too low quality to display.
+ * Returns true when the text is empty, too short, or consists mostly of
+ * non-word characters / known placeholder strings.
+ * @param {string} text - The snippet to evaluate
+ * @param {number} [minLength=12] - Minimum meaningful length
+ * @returns {boolean} true if the snippet should be replaced with a fallback
+ */
+export function isLowQualitySnippet(text, minLength = 12) {
+  if (!text) return true;
+  const trimmed = text.trim();
+  if (trimmed.length < minLength) return true;
+
+  // Mostly non-word characters (JSON debris, punctuation soup)
+  const wordChars = trimmed.replace(/[^a-zA-ZäöüÄÖÜß]/g, '');
+  if (wordChars.length < 6) return true;
+
+  // Looks like an anchor-only remnant, e.g. "(#main-content)"
+  if (/^\(?#[a-z-]+\)?$/i.test(trimmed)) return true;
+
+  // Contains JSON-LD / structured-data debris
+  if (/@type|@context|ListItem|"position"|```json/i.test(trimmed)) return true;
+
+  // Known placeholder strings
+  const PLACEHOLDERS = ['keine beschreibung', 'css-modus', 'no description'];
+  const lower = trimmed.toLowerCase();
+  return PLACEHOLDERS.some((p) => lower.includes(p) && trimmed.length < 40);
+}
+
+/** HTML entity map for decoding */
+const HTML_ENTITIES = {
+  '&nbsp;': ' ',
+  '&amp;': '&',
+  '&lt;': '<',
+  '&gt;': '>',
+  '&quot;': '"',
+  '&#39;': "'",
+  '&copy;': '(c)',
+};
+
+/**
  * Clean description text by removing HTML tags and metadata artifacts
  * @param {string} text - Raw text content
  * @returns {string} Cleaned plain text
@@ -201,140 +364,39 @@ export function cleanDescription(text) {
 
   let cleaned = text;
 
-  // 1. Remove script and style blocks content
-  cleaned = cleaned.replace(/<script\b[^>]*>([\s\S]*?)<\/script>/gim, '');
-  cleaned = cleaned.replace(/<style\b[^>]*>([\s\S]*?)<\/style>/gim, '');
+  for (const [pattern, replacement] of CLEANUP_PATTERNS) {
+    cleaned = cleaned.replace(pattern, replacement);
+  }
 
-  // 2. Remove HTML tags
-  cleaned = cleaned.replace(/<[^>]+>/g, ' ');
+  // Decode HTML entities
+  cleaned = cleaned.replace(/&[a-z0-9#]+;/gi, (m) => HTML_ENTITIES[m] || '');
 
-  // 3. Decode common HTML entities
-  const entities = {
-    '&nbsp;': ' ',
-    '&amp;': '&',
-    '&lt;': '<',
-    '&gt;': '>',
-    '&quot;': '"',
-    '&#39;': "'",
-    '&copy;': '(c)',
-  };
-  cleaned = cleaned.replace(/&[a-z0-9#]+;/gi, (match) => entities[match] || '');
-
-  // 4. Remove metadata JSON-like structures often indexed by mistake
-  // Matches {"key": "value"} patterns that might appear in text
-  cleaned = cleaned.replace(/\{"[^"]+":\s*"[^"]+"\}/g, '');
-
-  // 5. Remove Front Matter and Metadata artifacts
-  // Remove standard Jekyll/Hugo front matter (between --- and ---)
-  cleaned = cleaned.replace(/^---[\s\S]*?---\s*/, '');
-
-  // Remove the specific pattern reported by user ":--- description:"
-  // and potentially surrounding metadata if it looks like key-value pairs
-  // This regex tries to catch lines looking like "key: value" around the description
-  cleaned = cleaned.replace(/title:\s*[^:]+:--- description:\s*/i, '');
-
-  // Also just remove ":--- description:" if it remains
-  cleaned = cleaned.replace(/:--- description:\s*/gi, '');
-
-  // Remove other common front matter keys if they appear as artifacts
-  cleaned = cleaned.replace(
-    /\b(layout|permalink|date|author):\s*[^ \n]+\s*/gi,
-    '',
-  );
-
-  // 6. Remove specific site artifacts reported by users
-  // Remove "Skip to main content" links (flexible match)
-  cleaned = cleaned.replace(/\[?Zum Hauptinhalt springen\]?(\([^)]*\))?/gi, '');
-  cleaned = cleaned.replace(/menu\.skip_mainmenu\.skip_nav/gi, '');
-
-  // Remove site brand/title artifacts
-  cleaned = cleaned.replace(/AKS \| WEB/g, '');
-  cleaned = cleaned.replace(/© \d{4} Abdulkerim Sesli/gi, '');
-
-  // Remove loading screen text
-  cleaned = cleaned.replace(/Initialisiere System(\.\.\.)?/gi, '');
-  cleaned = cleaned.replace(/\d+%\s*\d+%/g, ''); // Matches "0% 0%"
-
-  // Remove specific UI artifacts (Cookie banner, Chat, Menu, Scroll hints)
-  cleaned = cleaned.replace(
-    /🍪\s*Wir nutzen Analytics[\s\S]*?Datenschutz/gi,
-    '',
-  );
-  cleaned = cleaned.replace(
-    /Soll ich dir was zeigen\?×\s*\?\s*Hauptmenü geschlossen/gi,
-    '',
-  );
-  cleaned = cleaned.replace(/Willkommen auf der Seite!×\s*\?/gi, '');
-  cleaned = cleaned.replace(/Scroll to explore • Click to view/gi, '');
-  cleaned = cleaned.replace(
-    /Premium Fotogalerie Professionelle Fotografie in höchster Qualität/gi,
-    '',
-  );
-  cleaned = cleaned.replace(/Fotos Eindrücke/gi, '');
-  cleaned = cleaned.replace(/Startseite Start/gi, '');
-  cleaned = cleaned.replace(/Zitat vollständig:/gi, '');
-
-  // Remove persistent 3D Earth overlay description that leaks into many pages
-  cleaned = cleaned.replace(
-    /Eine interaktive 3D-Darstellung der Erde[\s\S]*?Kamera-Modi\./gi,
-    '',
-  );
-  cleaned = cleaned.replace(/🌍 CSS-Modus/gi, '');
-
-  // Remove long footer/thank you message block often indexed
-  cleaned = cleaned.replace(
-    /Vielen herzlichen Dank, dass Sie sich die Zeit genommen haben[\s\S]*?nächsten Besuch!/gi,
-    '',
-  );
-  cleaned = cleaned.replace(
-    /Schön, dass du nachts hier bist – willkommen!/gi,
-    '',
-  );
-  cleaned = cleaned.replace(
-    /Habe Mut, dich deines eigenen Verstandes zu bedienen\./gi,
-    '',
-  );
-  cleaned = cleaned.replace(/Weiter Kontakt Auf Wiedersehen!/gi, '');
-  cleaned = cleaned.replace(/Nach oben Über mich/gi, '');
-
-  // Remove raw JSON/JSON-LD blocks that might have been indexed
-  // Matches any markdown code blocks
-  cleaned = cleaned.replace(/```[\s\S]*?```/g, '');
-  // Matches raw JSON-LD structure starting with @context
-  cleaned = cleaned.replace(/\{\s*"@context":[\s\S]*?\}/g, '');
-  // Matches partial JSON array fragments often found in search snippets
-  cleaned = cleaned.replace(/\[\s*\{\s*"@type":[\s\S]*?\}\s*\]/g, '');
-  cleaned = cleaned.replace(/\}\s*,\s*\{\s*"@type":[\s\S]*?\}/g, '');
-  // Matches hanging JSON closing braces often left after truncation
-  cleaned = cleaned.replace(
-    /(\}\s*\]\s*\}\s*,?\s*\{\s*"@type":\s*"[^"]+")/g,
-    '',
-  );
-  // Clean remaining JSON syntax characters if they appear in isolation or clusters
-  cleaned = cleaned.replace(/```json\s*\}?(\s*\]\s*\}\s*,?)?/g, '');
-  cleaned = cleaned.replace(/(\}\s*,\s*)?\{\s*"@type":[\s\S]*?\}/g, '');
-  // Remove trailing JSON artifacts like `url": "..."` or closing braces
-  cleaned = cleaned.replace(/,\s*"url":\s*"[^"]+"[\s\S]*/, '');
-  // Remove broken JSON arrays starting with comma or bracket sequences
-  cleaned = cleaned.replace(/^\]\s*,\s*,?\s*"[^"]+":\s*"[^"]+"/g, '');
-  cleaned = cleaned.replace(/,\s*,\s*"[^"]+":\s*"[^"]+"/g, '');
-  cleaned = cleaned.replace(/,\s*"[^"]+":\s*"[^"]+"/g, '');
-  cleaned = cleaned.replace(/\}\s*,\s*\{/g, '');
-
-  // Remove remaining isolated JSON keys and fragments
-  cleaned = cleaned.replace(/,?\s*"[^"]+":\s*"[^"]+"/g, '');
-  cleaned = cleaned.replace(/\{?\s*"[^"]+":\s*"[^"]+"\s*\}?/g, '');
-  cleaned = cleaned.replace(/^,\s*/, ''); // Remove leading comma
-
-  // Remove common footer/copyright fragments if they weren't caught by the block regex
-  cleaned = cleaned.replace(/©\s*\d{4}\s*Abdulkerim Sesli/gi, '');
-  cleaned = cleaned.replace(/Kant\s*/gi, ''); // Remove isolated "Kant" from quote block
-  cleaned = cleaned.replace(/✨\s*AI OVERVIEW/gi, ''); // Remove AI OVERVIEW label
-
-  // 7. Normalize whitespace
+  // Normalize whitespace
   cleaned = cleaned.replace(/\s+/g, ' ').trim();
 
   return cleaned;
+}
+
+/**
+ * Wrap matching query terms in <mark> tags for highlight rendering.
+ * Only operates on plain-text content (no nested HTML expected).
+ * @param {string} text - Plain text to highlight
+ * @param {string} query - Original search query
+ * @returns {string} Text with <mark> wrapped matches
+ */
+export function highlightMatches(text, query) {
+  if (!text || !query) return text || '';
+
+  const terms = query
+    .toLowerCase()
+    .split(/\s+/)
+    .filter((t) => t.length > 1)
+    .map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+
+  if (terms.length === 0) return text;
+
+  const pattern = new RegExp(`(${terms.join('|')})`, 'gi');
+  return text.replace(pattern, '<mark>$1</mark>');
 }
 
 /**

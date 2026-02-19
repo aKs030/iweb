@@ -26,6 +26,7 @@ export class MenuEvents {
       bar: null,
       input: null,
       results: null,
+      clearBtn: null,
       items: [],
       selectedIndex: -1,
       debounceTimer: null,
@@ -35,6 +36,9 @@ export class MenuEvents {
     this.searchCache = new Map();
     this.searchCacheTtlMs = this.config.SEARCH_CACHE_TTL_MS ?? 120000;
     this.searchCacheMaxEntries = this.config.SEARCH_CACHE_MAX_ENTRIES ?? 40;
+
+    /** @type {string[]} recent search queries (max 5) */
+    this.recentSearches = this.loadRecentSearches();
   }
 
   init() {
@@ -95,12 +99,29 @@ export class MenuEvents {
     );
   }
 
+  // ── Cmd/Ctrl+K shortcut ──
+  setupKeyboardShortcut() {
+    const handleShortcut = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        if (this.isSearchOpen()) {
+          this.closeSearchMode();
+        } else {
+          this.openSearchMode();
+        }
+      }
+    };
+
+    this.cleanupFns.push(this.addListener(document, 'keydown', handleShortcut));
+  }
+
   setupSearch() {
     const searchTrigger = this.container.querySelector('.search-trigger');
     const searchPanel = this.container.querySelector('.menu-search');
     const searchBar = this.container.querySelector('.menu-search__bar');
     const searchInput = this.container.querySelector('.menu-search__input');
     const searchResults = this.container.querySelector('.menu-search__results');
+    const clearBtn = this.container.querySelector('.menu-search__clear');
 
     if (
       !searchTrigger ||
@@ -117,6 +138,7 @@ export class MenuEvents {
     this.search.bar = searchBar;
     this.search.input = searchInput;
     this.search.results = searchResults;
+    this.search.clearBtn = clearBtn;
 
     const handleSearchTrigger = (e) => {
       e.preventDefault();
@@ -129,7 +151,15 @@ export class MenuEvents {
 
     const handleSearchInput = () => {
       const query = this.search.input ? this.search.input.value : '';
+      this.updateClearButtonVisibility(query);
       this.scheduleSearch(query);
+    };
+
+    const handleSearchFocus = () => {
+      const query = (this.search.input?.value || '').trim();
+      if (!query && this.recentSearches.length > 0) {
+        this.renderRecentSearches();
+      }
     };
 
     const handleSearchKeydown = (e) => {
@@ -158,6 +188,18 @@ export class MenuEvents {
     };
 
     const handleResultsClick = (e) => {
+      // Check for recent search click
+      const recentBtn = e.target?.closest?.('[data-recent-query]');
+      if (recentBtn) {
+        const query = recentBtn.getAttribute('data-recent-query');
+        if (query && this.search.input) {
+          this.search.input.value = query;
+          this.updateClearButtonVisibility(query);
+          this.scheduleSearch(query);
+        }
+        return;
+      }
+
       const index = this.getSearchResultIndexFromEvent(e);
       if (index < 0) return;
 
@@ -173,13 +215,37 @@ export class MenuEvents {
       this.updateSearchSelectionUI();
     };
 
+    const handleClearClick = () => {
+      if (this.search.input) {
+        this.search.input.value = '';
+        this.updateClearButtonVisibility('');
+        this.search.items = [];
+        this.search.selectedIndex = -1;
+        this.renderSearchState({ hidden: true });
+        this.search.input.focus();
+        // Show recent searches again
+        if (this.recentSearches.length > 0) {
+          this.renderRecentSearches();
+        }
+      }
+    };
+
     this.cleanupFns.push(
       this.addListener(searchTrigger, 'click', handleSearchTrigger),
       this.addListener(searchInput, 'input', handleSearchInput),
+      this.addListener(searchInput, 'focus', handleSearchFocus),
       this.addListener(searchInput, 'keydown', handleSearchKeydown),
       this.addListener(searchResults, 'click', handleResultsClick),
       this.addListener(searchResults, 'pointerover', handleResultsPointerOver),
     );
+
+    if (clearBtn) {
+      this.cleanupFns.push(
+        this.addListener(clearBtn, 'click', handleClearClick),
+      );
+    }
+
+    this.setupKeyboardShortcut();
   }
 
   setupI18nSync() {
@@ -360,7 +426,12 @@ export class MenuEvents {
       this.abortSearchRequest();
       this.search.items = [];
       this.search.selectedIndex = -1;
-      this.renderSearchState({ hidden: true });
+      // Show recent searches when clearing
+      if (!query && this.recentSearches.length > 0 && this.isSearchOpen()) {
+        this.renderRecentSearches();
+      } else {
+        this.renderSearchState({ hidden: true });
+      }
       return;
     }
 
@@ -393,7 +464,9 @@ export class MenuEvents {
 
       this.renderSearchState({
         items: cachedItems,
+        query,
       });
+      this.saveRecentSearch(query);
       return;
     }
 
@@ -452,7 +525,9 @@ export class MenuEvents {
 
       this.renderSearchState({
         items,
+        query,
       });
+      this.saveRecentSearch(query);
     } catch (err) {
       const isAbortError = this.isAbortLikeError(err);
 
@@ -493,8 +568,26 @@ export class MenuEvents {
       title,
       url,
       description: String(item.description || '').trim(),
+      highlightedDescription: String(
+        item.highlightedDescription || item.description || '',
+      ).trim(),
       category: String(item.category || '').trim(),
     };
+  }
+
+  /** Map category to a short emoji/icon for visual identification */
+  getCategoryIcon(category) {
+    const icons = {
+      home: '🏠',
+      projekte: '📁',
+      blog: '📝',
+      galerie: '📷',
+      videos: '🎬',
+      'über mich': '🧑',
+      kontakt: '✉️',
+      seite: '📄',
+    };
+    return icons[(category || '').toLowerCase()] || '📄';
   }
 
   renderSearchState(options = {}) {
@@ -505,6 +598,7 @@ export class MenuEvents {
       loading = false,
       message = '',
       items = [],
+      query: _query = '',
     } = options;
 
     const results = this.search.results;
@@ -520,12 +614,35 @@ export class MenuEvents {
     results.classList.add('active');
     this.setSearchPopupExpanded(true);
 
-    if (loading || message) {
+    // Loading skeleton
+    if (loading) {
+      const skeleton = document.createElement('div');
+      skeleton.className = 'menu-search__skeleton';
+      for (let i = 0; i < 3; i++) {
+        const row = document.createElement('div');
+        row.className = 'menu-search__skeleton-row';
+        row.innerHTML =
+          '<div class="skeleton-title"></div><div class="skeleton-desc"></div>';
+        skeleton.appendChild(row);
+      }
+      results.appendChild(skeleton);
+      return;
+    }
+
+    if (message) {
       const stateEl = document.createElement('div');
       stateEl.className = 'menu-search__state';
-      stateEl.textContent = message || this.t('common.loading', 'Lade...');
+      stateEl.textContent = message;
       results.appendChild(stateEl);
       return;
+    }
+
+    // Result count summary
+    if (items.length > 0) {
+      const summary = document.createElement('div');
+      summary.className = 'menu-search__count';
+      summary.textContent = `${items.length} ${items.length === 1 ? 'Ergebnis' : 'Ergebnisse'}`;
+      results.appendChild(summary);
     }
 
     const list = document.createElement('ul');
@@ -534,6 +651,7 @@ export class MenuEvents {
     items.forEach((item, index) => {
       const li = document.createElement('li');
       li.className = 'menu-search__item';
+      li.style.setProperty('--search-item-index', index);
 
       const button = document.createElement('button');
       button.type = 'button';
@@ -550,21 +668,30 @@ export class MenuEvents {
         button.classList.add('is-selected');
       }
 
+      // Category badge with icon
+      const badge = document.createElement('span');
+      badge.className = 'menu-search__badge';
+      badge.textContent = `${this.getCategoryIcon(item.category)} ${item.category || 'Seite'}`;
+      button.appendChild(badge);
+
       const title = document.createElement('span');
       title.className = 'menu-search__title';
       title.textContent = item.title;
-
-      const meta = document.createElement('span');
-      meta.className = 'menu-search__meta';
-      meta.textContent = item.category || item.url;
-
       button.appendChild(title);
-      button.appendChild(meta);
 
-      if (item.description) {
+      // Use highlighted description if available
+      if (item.highlightedDescription || item.description) {
         const desc = document.createElement('span');
         desc.className = 'menu-search__desc';
-        desc.textContent = item.description;
+        // highlightedDescription contains <mark> tags – render as HTML
+        if (
+          item.highlightedDescription &&
+          item.highlightedDescription.includes('<mark>')
+        ) {
+          desc.innerHTML = item.highlightedDescription;
+        } else {
+          desc.textContent = item.description;
+        }
         button.appendChild(desc);
       }
 
@@ -633,6 +760,73 @@ export class MenuEvents {
 
     this.closeSearchModeSilently();
     window.location.href = item.url;
+  }
+
+  // ── Clear button visibility ──
+  updateClearButtonVisibility(query) {
+    if (!this.search.clearBtn) return;
+    this.search.clearBtn.classList.toggle(
+      'visible',
+      Boolean(query && query.trim()),
+    );
+  }
+
+  // ── Recent searches (localStorage) ──
+  loadRecentSearches() {
+    try {
+      const raw = localStorage.getItem('search_recent');
+      const parsed = raw ? JSON.parse(raw) : [];
+      return Array.isArray(parsed) ? parsed.slice(0, 5) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  saveRecentSearch(query) {
+    if (!query || query.length < 2) return;
+    const q = query.trim().toLowerCase();
+    this.recentSearches = [
+      q,
+      ...this.recentSearches.filter((r) => r !== q),
+    ].slice(0, 5);
+    try {
+      localStorage.setItem(
+        'search_recent',
+        JSON.stringify(this.recentSearches),
+      );
+    } catch {
+      /* quota exceeded – ignore */
+    }
+  }
+
+  renderRecentSearches() {
+    if (!this.search.results) return;
+    const results = this.search.results;
+    results.innerHTML = '';
+    results.classList.add('active');
+    this.setSearchPopupExpanded(true);
+
+    const header = document.createElement('div');
+    header.className = 'menu-search__recent-header';
+    header.textContent = '🕒 Letzte Suchen';
+    results.appendChild(header);
+
+    const list = document.createElement('ul');
+    list.className = 'menu-search__list';
+
+    this.recentSearches.forEach((q) => {
+      const li = document.createElement('li');
+      li.className = 'menu-search__item';
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'menu-search__recent-item';
+      btn.setAttribute('data-recent-query', q);
+      btn.textContent = q;
+      li.appendChild(btn);
+      list.appendChild(li);
+    });
+
+    results.appendChild(list);
   }
 
   setSearchPopupExpanded(isExpanded) {

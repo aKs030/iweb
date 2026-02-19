@@ -507,10 +507,6 @@ site-menu {
   gap: 6px;
 }
 
-.menu-search__item {
-  margin: 0;
-}
-
 .menu-search__result {
   width: 100%;
   text-align: left;
@@ -542,20 +538,161 @@ site-menu {
   line-height: 1.25;
 }
 
-.menu-search__meta {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.58);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
 .menu-search__desc {
   font-size: 12px;
   color: rgba(255, 255, 255, 0.72);
   line-height: 1.35;
 }
 
-/* ===== Divider ===== */
+.menu-search__desc mark {
+  background: rgba(255, 180, 0, 0.25);
+  color: #fff;
+  border-radius: 3px;
+  padding: 0 2px;
+  font-weight: 600;
+}
+
+/* ===== Category Badge ===== */
+.menu-search__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  padding: 2px 7px;
+  width: fit-content;
+  margin-bottom: 2px;
+}
+
+/* ===== Result Count ===== */
+.menu-search__count {
+  padding: 6px 12px 2px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.45);
+  letter-spacing: 0.02em;
+}
+
+/* ===== Clear Button ===== */
+.menu-search__clear {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.7);
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  cursor: pointer;
+  padding: 0;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+  flex-shrink: 0;
+}
+
+.menu-search__clear.visible {
+  display: inline-flex;
+}
+
+.menu-search__clear:hover {
+  background: rgba(255, 255, 255, 0.24);
+  color: #fff;
+}
+
+/* ===== Loading Skeleton ===== */
+.menu-search__skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+}
+
+.menu-search__skeleton-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.skeleton-title,
+.skeleton-desc {
+  border-radius: 6px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.06) 25%,
+    rgba(255, 255, 255, 0.12) 50%,
+    rgba(255, 255, 255, 0.06) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
+.skeleton-title {
+  height: 14px;
+  width: 60%;
+}
+
+.skeleton-desc {
+  height: 10px;
+  width: 90%;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* ===== Recent Searches ===== */
+.menu-search__recent-header {
+  padding: 8px 12px 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.02em;
+}
+
+.menu-search__recent-item {
+  width: 100%;
+  text-align: left;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 13px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.menu-search__recent-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* ===== Staggered Entrance Animation ===== */
+.menu-search__item {
+  margin: 0;
+  opacity: 0;
+  transform: translateY(6px);
+  animation: searchItemIn 0.25s ease forwards;
+  animation-delay: calc(var(--search-item-index, 0) * 0.04s);
+}
+
+@keyframes searchItemIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 @media (width >= 901px) {
   .site-header.search-mode {
     justify-content: center;
@@ -641,7 +778,7 @@ site-menu {
   transform: var(--menu-toggle-transform-rest);
   width: 48px;
   height: 48px;
-  border: none;
+
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(20px);
@@ -989,7 +1126,10 @@ site-menu {
   .menu-ripple,
   .menu-search__bar,
   .menu-search__result,
-  .menu-search__results {
+  .menu-search__results,
+  .menu-search__item,
+  .skeleton-title,
+  .skeleton-desc {
     transition: none !important;
     animation: none !important;
   }

@@ -1,8 +1,8 @@
 /**
  * Cloudflare Pages Function - POST /api/search
  * AI Search using Cloudflare AI Search Beta via Workers Binding
- * Enhanced with query expansion, fuzzy matching, and relevance scoring
- * @version 12.1.0
+ * Hybrid AI + Local merge with description enrichment
+ * @version 14.0.0
  */
 
 import { getCorsHeaders, handleOptions } from './_cors.js';
@@ -11,13 +11,17 @@ import {
   calculateRelevanceScore,
   normalizeUrl,
   createSnippet,
+  highlightMatches,
+  isLowQualitySnippet,
 } from './_search-utils.js';
 
 /**
- * Local fallback index for development environments without AI binding.
- * Keeps local search useful when env.AI/autorag is unavailable.
+ * Local search index covering all pages and apps.
+ * Used as fallback when env.AI is unavailable AND as enrichment source
+ * to fill coverage gaps in the RAG index (e.g. ?app= routes).
  */
 const LOCAL_SEARCH_DOCUMENTS = [
+  // ── Pages ──
   {
     url: '/',
     title: 'Startseite',
@@ -57,54 +61,6 @@ const LOCAL_SEARCH_DOCUMENTS = [
       'css',
       'performance',
     ],
-  },
-  {
-    url: '/blog/threejs-performance',
-    title: 'Threejs Performance',
-    category: 'Blog',
-    description:
-      'Optimierungsstrategien für performante Three.js und WebGL Anwendungen.',
-    keywords: ['threejs', 'three.js', 'webgl', 'performance', '3d'],
-  },
-  {
-    url: '/blog/progressive-web-apps-2026',
-    title: 'Progressive Web Apps 2026',
-    category: 'Blog',
-    description:
-      'Trends und Praxiswissen zu Progressive Web Apps, Offline-Funktionen und Caching.',
-    keywords: ['pwa', 'service worker', 'offline', 'performance', 'web apps'],
-  },
-  {
-    url: '/blog/css-container-queries',
-    title: 'Css Container Queries',
-    category: 'Blog',
-    description:
-      'Container Queries in CSS: responsive Komponenten ohne starre Viewport-Breakpoints.',
-    keywords: ['css', 'container queries', 'responsive', 'ui'],
-  },
-  {
-    url: '/blog/react-no-build',
-    title: 'React No Build',
-    category: 'Blog',
-    description:
-      'Wie React-Prototypen ohne Build-Step entwickelt werden können.',
-    keywords: ['react', 'no build', 'javascript', 'frontend'],
-  },
-  {
-    url: '/blog/modern-ui-design',
-    title: 'Modern Ui Design',
-    category: 'Blog',
-    description:
-      'Gestaltungsprinzipien für moderne UI-Systeme und bessere Benutzerführung.',
-    keywords: ['design', 'ui', 'ux', 'interface', 'modern'],
-  },
-  {
-    url: '/blog/javascript-performance-patterns',
-    title: 'Javascript Performance Patterns',
-    category: 'Blog',
-    description:
-      'Praktische JavaScript-Patterns für schnelle, stabile Frontend-Anwendungen.',
-    keywords: ['javascript', 'performance', 'patterns', 'frontend'],
   },
   {
     url: '/gallery',
@@ -153,7 +109,232 @@ const LOCAL_SEARCH_DOCUMENTS = [
       'Informationen zur Datenverarbeitung und Datenschutzrichtlinien.',
     keywords: ['datenschutz', 'privacy', 'cookies', 'tracking'],
   },
+
+  // ── Blog Posts ──
+  {
+    url: '/blog/threejs-performance',
+    title: 'Three.js Performance',
+    category: 'Blog',
+    description:
+      'Optimierungsstrategien für performante Three.js und WebGL Anwendungen.',
+    keywords: ['threejs', 'three.js', 'webgl', 'performance', '3d'],
+  },
+  {
+    url: '/blog/progressive-web-apps-2026',
+    title: 'Progressive Web Apps 2026',
+    category: 'Blog',
+    description:
+      'Trends und Praxiswissen zu Progressive Web Apps, Offline-Funktionen und Caching.',
+    keywords: ['pwa', 'service worker', 'offline', 'performance', 'web apps'],
+  },
+  {
+    url: '/blog/css-container-queries',
+    title: 'CSS Container Queries',
+    category: 'Blog',
+    description:
+      'Container Queries in CSS: responsive Komponenten ohne starre Viewport-Breakpoints.',
+    keywords: ['css', 'container queries', 'responsive', 'ui'],
+  },
+  {
+    url: '/blog/react-no-build',
+    title: 'React ohne Build',
+    category: 'Blog',
+    description:
+      'Wie React-Prototypen ohne Build-Step entwickelt werden können.',
+    keywords: ['react', 'no build', 'javascript', 'frontend'],
+  },
+  {
+    url: '/blog/modern-ui-design',
+    title: 'Modern UI Design',
+    category: 'Blog',
+    description:
+      'Gestaltungsprinzipien für moderne UI-Systeme und bessere Benutzerführung.',
+    keywords: ['design', 'ui', 'ux', 'interface', 'modern'],
+  },
+  {
+    url: '/blog/javascript-performance-patterns',
+    title: 'JavaScript Performance Patterns',
+    category: 'Blog',
+    description:
+      'Praktische JavaScript-Patterns für schnelle, stabile Frontend-Anwendungen.',
+    keywords: ['javascript', 'performance', 'patterns', 'frontend'],
+  },
+  {
+    url: '/blog/seo-technische-optimierung',
+    title: 'SEO Technische Optimierung',
+    category: 'Blog',
+    description:
+      'Technische SEO-Strategien für bessere Sichtbarkeit in Suchmaschinen.',
+    keywords: [
+      'seo',
+      'google',
+      'meta',
+      'ranking',
+      'suchmaschine',
+      'optimierung',
+    ],
+  },
+  {
+    url: '/blog/typescript-advanced-patterns',
+    title: 'TypeScript Advanced Patterns',
+    category: 'Blog',
+    description:
+      'Fortgeschrittene TypeScript-Patterns für typsichere, skalierbare Projekte.',
+    keywords: ['typescript', 'ts', 'types', 'generics', 'advanced', 'patterns'],
+  },
+  {
+    url: '/blog/web-components-zukunft',
+    title: 'Web Components Zukunft',
+    category: 'Blog',
+    description:
+      'Web Components als zukunftssichere Lösung für wiederverwendbare UI-Bausteine.',
+    keywords: ['web components', 'custom elements', 'shadow dom', 'html'],
+  },
+  {
+    url: '/blog/visual-storytelling',
+    title: 'Visual Storytelling',
+    category: 'Blog',
+    description:
+      'Visuelles Storytelling im Web – mit Animationen, Scroll-Effekten und Design.',
+    keywords: ['storytelling', 'visual', 'animation', 'scroll', 'design'],
+  },
+
+  // ── Projekte / Apps ──
+  {
+    url: '/projekte/?app=calculator',
+    title: 'Taschenrechner',
+    category: 'Projekte',
+    description:
+      'Moderner Taschenrechner mit erweiterten Funktionen. Grundrechenarten und wissenschaftliche Operationen.',
+    keywords: ['calculator', 'taschenrechner', 'rechner', 'math', 'tool'],
+  },
+  {
+    url: '/projekte/?app=color-changer',
+    title: 'Color Changer',
+    category: 'Projekte',
+    description:
+      'Dynamische Hintergrundfarben per Klick. Entdecke schöne Farbkombinationen und Gradienten.',
+    keywords: ['farben', 'color', 'gradient', 'design', 'css'],
+  },
+  {
+    url: '/projekte/?app=memory-game',
+    title: 'Memory Spiel',
+    category: 'Projekte',
+    description:
+      'Klassisches Memory-Spiel mit verschiedenen Schwierigkeitsgraden. Trainiere dein Gedächtnis!',
+    keywords: ['memory', 'spiel', 'game', 'karten', 'gedächtnis'],
+  },
+  {
+    url: '/projekte/?app=paint-app',
+    title: 'Paint App',
+    category: 'Projekte',
+    description:
+      'Einfaches Zeichenprogramm mit verschiedenen Farben und Pinselgrößen.',
+    keywords: ['paint', 'zeichnen', 'canvas', 'malen', 'art'],
+  },
+  {
+    url: '/projekte/?app=password-generator',
+    title: 'Passwort Generator',
+    category: 'Projekte',
+    description:
+      'Sicherer Passwort-Generator mit anpassbaren Optionen. Erstelle starke Passwörter für maximale Sicherheit.',
+    keywords: ['passwort', 'password', 'security', 'generator', 'sicherheit'],
+  },
+  {
+    url: '/projekte/?app=pong-game',
+    title: 'Pong Spiel',
+    category: 'Projekte',
+    description:
+      'Klassisches Pong-Spiel mit KI-Gegner, Physics Engine und Canvas-Rendering.',
+    keywords: ['pong', 'spiel', 'game', 'arcade', 'retro', 'canvas'],
+  },
+  {
+    url: '/projekte/?app=quiz-app',
+    title: 'Quiz App',
+    category: 'Projekte',
+    description:
+      'Interaktive Quiz-App mit verschiedenen Kategorien und Schwierigkeitsgraden.',
+    keywords: ['quiz', 'wissen', 'trivia', 'fragen', 'game'],
+  },
+  {
+    url: '/projekte/?app=schere-stein-papier',
+    title: 'Schere Stein Papier',
+    category: 'Projekte',
+    description:
+      'Der Klassiker gegen den Computer! Wähle Schere, Stein oder Papier und tritt gegen die KI an.',
+    keywords: ['schere', 'stein', 'papier', 'spiel', 'game'],
+  },
+  {
+    url: '/projekte/?app=snake-game',
+    title: 'Snake Spiel',
+    category: 'Projekte',
+    description:
+      'Klassisches Snake-Spiel mit Canvas, Game Loop und Kollisionserkennung.',
+    keywords: ['snake', 'schlange', 'spiel', 'game', 'arcade', 'retro'],
+  },
+  {
+    url: '/projekte/?app=tic-tac-toe',
+    title: 'Tic Tac Toe',
+    category: 'Projekte',
+    description: 'Klassisches Tic-Tac-Toe Spiel für zwei Spieler.',
+    keywords: ['tic-tac-toe', 'spiel', 'game', 'strategie'],
+  },
+  {
+    url: '/projekte/?app=timer-app',
+    title: 'Timer App',
+    category: 'Projekte',
+    description:
+      'Vielseitige Timer-App mit Countdown, Stoppuhr und Pomodoro-Technik.',
+    keywords: ['timer', 'countdown', 'stoppuhr', 'pomodoro', 'productivity'],
+  },
+  {
+    url: '/projekte/?app=todo-liste',
+    title: 'Todo Liste',
+    category: 'Projekte',
+    description:
+      'Produktivitäts-Tool zum Verwalten von Aufgaben. Erstelle, bearbeite und organisiere deine To-Dos.',
+    keywords: ['todo', 'aufgaben', 'tasks', 'planer', 'productivity'],
+  },
+  {
+    url: '/projekte/?app=typing-speed-test',
+    title: 'Typing Speed Test',
+    category: 'Projekte',
+    description: 'Teste deine Tippgeschwindigkeit (WPM) mit zufälligen Sätzen.',
+    keywords: ['typing', 'tippen', 'wpm', 'speed', 'tastatur'],
+  },
+  {
+    url: '/projekte/?app=weather-app',
+    title: 'Wetter App',
+    category: 'Projekte',
+    description:
+      'Moderne Wetter-App mit aktuellen Wetterdaten und 5-Tage-Vorhersage.',
+    keywords: ['wetter', 'weather', 'forecast', 'temperatur', 'vorhersage'],
+  },
+  {
+    url: '/projekte/?app=zahlen-raten',
+    title: 'Zahlen Raten',
+    category: 'Projekte',
+    description:
+      'Finde die geheime Zahl zwischen 1 und 100. Ein klassisches Ratespiel mit Hinweisen.',
+    keywords: ['zahlen', 'raten', 'spiel', 'game', 'puzzle', 'logik'],
+  },
 ];
+
+/**
+ * Build a lookup map from the local index for fast URL → document access.
+ * @returns {Map<string, Object>}
+ */
+function buildLocalLookup() {
+  const map = new Map();
+  for (const doc of LOCAL_SEARCH_DOCUMENTS) {
+    map.set(doc.url, doc);
+  }
+  return map;
+}
+
+const LOCAL_LOOKUP = buildLocalLookup();
+
+// ── Local scoring ──────────────────────────────────────────────────────────
 
 function scoreLocalDocument(document, normalizedQuery, queryTerms) {
   const title = String(document.title || '').toLowerCase();
@@ -197,17 +378,20 @@ function runLocalFallbackSearch(expandedQuery, originalQuery, topK) {
     const baseScore = scoreLocalDocument(document, normalizedQuery, queryTerms);
     if (baseScore <= 0) return null;
 
-    const description = createSnippet(
+    const snippet = createSnippet(
       `${document.description} ${(document.keywords || []).join(' ')}`.trim(),
       originalQuery,
       160,
     );
+    const description = snippet || document.description;
+    const highlightedDescription = highlightMatches(description, originalQuery);
 
     const result = {
       url: document.url,
       title: document.title,
       category: document.category || 'Seite',
-      description: description || document.description,
+      description,
+      highlightedDescription,
       score: baseScore,
     };
 
@@ -220,6 +404,130 @@ function runLocalFallbackSearch(expandedQuery, originalQuery, topK) {
     .sort((a, b) => b.score - a.score)
     .slice(0, maxResults);
 }
+
+// ── Enrichment helpers ─────────────────────────────────────────────────────
+
+/**
+ * Enrich an AI result with data from the local index when the AI snippet
+ * is low quality or the title is a generic slug.
+ * @param {Object} result - The AI-produced search result
+ * @returns {Object} Enriched result
+ */
+function enrichFromLocalIndex(result) {
+  const localDoc = LOCAL_LOOKUP.get(result.url);
+  if (!localDoc) return result;
+
+  const enriched = { ...result };
+
+  // Replace low-quality descriptions with hand-written ones
+  if (isLowQualitySnippet(result.description)) {
+    enriched.description = localDoc.description;
+    enriched.highlightedDescription = localDoc.description;
+  }
+
+  // Replace generic kebab-case titles
+  if (localDoc.title && localDoc.title !== result.title) {
+    const isGenericTitle =
+      !result.title ||
+      result.title === 'Index' ||
+      result.title.includes('-') ||
+      result.title.length < 3;
+    if (isGenericTitle) {
+      enriched.title = localDoc.title;
+    }
+  }
+
+  // Use local category if missing
+  if (
+    (!enriched.category || enriched.category === 'Seite') &&
+    localDoc.category
+  ) {
+    enriched.category = localDoc.category;
+  }
+
+  return enriched;
+}
+
+/**
+ * Merge AI results with local results to fill coverage gaps.
+ * Local results for URLs not already present in AI results are appended
+ * with a slight score penalty so AI results rank first when quality is equal.
+ * @param {Object[]} aiResults - Processed AI search results
+ * @param {Object[]} localResults - Local fallback search results
+ * @returns {Object[]} Merged and de-duplicated results
+ */
+function mergeWithLocalResults(aiResults, localResults) {
+  const seenUrls = new Set(aiResults.map((r) => r.url));
+  const merged = [...aiResults];
+
+  for (const local of localResults) {
+    if (seenUrls.has(local.url)) continue;
+    seenUrls.add(local.url);
+    // Slight penalty so AI results stay on top when scores are close
+    merged.push({ ...local, score: local.score * 0.85, source: 'local' });
+  }
+
+  return merged;
+}
+
+// ── Category detection ─────────────────────────────────────────────────────
+
+function detectCategory(url) {
+  if (url.includes('/projekte')) return 'Projekte';
+  if (url.includes('/blog')) return 'Blog';
+  if (url.includes('/gallery')) return 'Galerie';
+  if (url.includes('/videos')) return 'Videos';
+  if (url.includes('/about')) return 'Über mich';
+  if (url.includes('/contact')) return 'Kontakt';
+  if (url === '/') return 'Home';
+  return 'Seite';
+}
+
+// ── Title extraction ───────────────────────────────────────────────────────
+
+const TOP_LEVEL_TITLE_MAP = {
+  projekte: 'Projekte Übersicht',
+  blog: 'Blog Übersicht',
+  gallery: 'Galerie',
+  videos: 'Videos Übersicht',
+  about: 'Über mich',
+  contact: 'Kontakt',
+};
+
+function extractTitle(filename, url) {
+  const title = filename?.split('/').pop()?.replace('.html', '') || '';
+
+  if (title === 'index' || title === '' || !title) {
+    const segments = url.split('/').filter(Boolean);
+
+    if (url === '/') {
+      return 'Startseite';
+    }
+
+    if (segments.length === 1) {
+      return (
+        TOP_LEVEL_TITLE_MAP[segments[0]] ||
+        segments[0].charAt(0).toUpperCase() + segments[0].slice(1)
+      );
+    }
+
+    if (segments.length >= 2) {
+      const lastSegment = segments[segments.length - 1];
+      return lastSegment
+        .split('-')
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+    }
+  }
+
+  // Convert existing kebab-case to Title Case
+  return title
+    .split('-')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
+// ── Main handler ───────────────────────────────────────────────────────────
 
 export async function onRequestPost(context) {
   const request = context.request;
@@ -252,7 +560,7 @@ export async function onRequestPost(context) {
       parsePositiveInteger(env.MAX_SEARCH_RESULTS) ??
       10;
 
-    // Expand query with synonyms and fuzzy matching
+    // Expand query with synonyms
     const expandedQuery = expandQuery(query);
 
     // Local fallback for environments without AI binding (e.g. node dev server)
@@ -284,21 +592,21 @@ export async function onRequestPost(context) {
       );
     }
 
-    // Use Workers Binding to call AI Search Beta
+    // ── AI Search (Cloudflare AutoRAG) ──────────────────────────────────
+
     const ragId = env.RAG_ID || 'wispy-pond-1055';
 
     const searchData = await env.AI.autorag(ragId).aiSearch({
       query: expandedQuery,
-      max_num_results: Math.max(topK, 15), // Mindestens 15 für bessere Abdeckung
+      max_num_results: Math.max(topK, 15),
       rewrite_query: true,
       stream: false,
       system_prompt:
         'Du bist ein Suchassistent für abdulkerimsesli.de. Fasse die Suchergebnisse in 1-2 prägnanten Sätzen zusammen (max. 120 Zeichen). Fokussiere auf die wichtigsten Inhalte und vermeide generische Aussagen.',
     });
 
-    // Transform AI Search Beta response to our format
-    const results = (searchData.data || []).map((item) => {
-      // Use helper to normalize URL and avoid dead search-self links
+    // Transform AI response to our format
+    const aiResults = (searchData.data || []).map((item) => {
       let url = normalizeUrl(item.filename);
       if (url === '/search' || url === '/api/search') {
         url = '/';
@@ -306,129 +614,101 @@ export async function onRequestPost(context) {
 
       // Extract text content from multiple possible sources
       let textContent = '';
-
-      // Try content array first
       if (item.content && Array.isArray(item.content)) {
         textContent = item.content.map((c) => c.text || '').join(' ');
       }
-
-      // Fallback to other possible fields
       if (!textContent && item.text) {
         textContent = item.text;
       }
-
       if (!textContent && item.description) {
         textContent = item.description;
       }
 
-      // Create a smart snippet focused on the query
-      // Use original query for highlighting to avoid synonym confusion
+      // Smart snippet focused on the original query
       const snippet = createSnippet(textContent, query, 160);
-
-      // Determine category from URL with better mapping
-      let category = 'Seite';
-      if (url.includes('/projekte')) category = 'Projekte';
-      else if (url.includes('/blog')) category = 'Blog';
-      else if (url.includes('/gallery')) category = 'Galerie';
-      else if (url.includes('/videos')) category = 'Videos';
-      else if (url.includes('/about')) category = 'Über mich';
-      else if (url.includes('/contact')) category = 'Kontakt';
-      else if (url === '/') category = 'Home';
-
-      // Improved title extraction with better fallbacks
-      let title = item.filename?.split('/').pop()?.replace('.html', '') || '';
-
-      // Smart title mapping based on URL patterns
-      if (title === 'index' || title === '' || !title) {
-        const segments = url.split('/').filter(Boolean);
-
-        if (url === '/') {
-          title = 'Startseite';
-        } else if (segments.length === 1) {
-          // Top-level pages: /projekte, /blog, etc.
-          const titleMap = {
-            projekte: 'Projekte Übersicht',
-            blog: 'Blog Übersicht',
-            gallery: 'Galerie',
-            videos: 'Videos Übersicht',
-            about: 'Über mich',
-            contact: 'Kontakt',
-          };
-          title =
-            titleMap[segments[0]] ||
-            segments[0].charAt(0).toUpperCase() + segments[0].slice(1);
-        } else if (segments.length >= 2) {
-          // Sub-pages: /blog/threejs-performance, /videos/1bl8bzd6cpy
-          const lastSegment = segments[segments.length - 1];
-          // Convert kebab-case to Title Case
-          title = lastSegment
-            .split('-')
-            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(' ');
-        }
-      } else {
-        // Convert existing title from kebab-case to Title Case
-        title = title
-          .split('-')
-          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(' ');
-      }
+      const description = snippet || '';
+      const highlightedDescription = highlightMatches(
+        description || 'Keine Beschreibung verfügbar',
+        query,
+      );
 
       return {
-        url: url,
-        title: title,
-        category: category,
-        description: snippet || 'Keine Beschreibung verfügbar',
+        url,
+        title: extractTitle(item.filename, url),
+        category: detectCategory(url),
+        description,
+        highlightedDescription,
         score: item.score || 0,
       };
     });
 
-    // Remove duplicates based on URL only (vereinfacht für bessere Abdeckung)
-    const uniqueResults = [];
+    // ── Deduplicate AI results ──────────────────────────────────────────
+
+    const uniqueAiResults = [];
     const seenUrls = new Set();
 
-    for (const result of results) {
-      // Skip if URL already seen
-      if (seenUrls.has(result.url)) {
-        continue;
-      }
-
+    for (const result of aiResults) {
+      if (seenUrls.has(result.url)) continue;
       seenUrls.add(result.url);
-      uniqueResults.push(result);
+      uniqueAiResults.push(result);
     }
 
-    // Calculate enhanced relevance scores and sort
-    const scoredResults = uniqueResults
+    // ── Hybrid merge: AI + local results ────────────────────────────────
+
+    const localResults = runLocalFallbackSearch(expandedQuery, query, topK);
+    const mergedResults = mergeWithLocalResults(uniqueAiResults, localResults);
+
+    // ── Enrich from local index (fix bad descriptions / titles) ─────────
+
+    const enrichedResults = mergedResults.map((result) => {
+      const enriched = enrichFromLocalIndex(result);
+
+      // Re-highlight after enrichment
+      if (enriched.description !== result.description) {
+        enriched.highlightedDescription = highlightMatches(
+          enriched.description,
+          query,
+        );
+      }
+
+      return enriched;
+    });
+
+    // ── Score, sort, filter ─────────────────────────────────────────────
+
+    const scoredResults = enrichedResults
       .map((result) => ({
         ...result,
         score: calculateRelevanceScore(result, query),
       }))
       .sort((a, b) => b.score - a.score);
 
-    // Filter out low relevance results
-    // Threshold 1.0 ensures we only keep results that:
-    // 1. Have a text match (score boosted > 2.0)
-    // 2. OR have a high vector similarity (> 0.6) which triggers static boosts (> 1.6)
+    // Threshold 1.0 ensures only meaningful matches survive
     const RELEVANCE_THRESHOLD = 1.0;
     const relevantResults = scoredResults.filter(
       (result) => result.score >= RELEVANCE_THRESHOLD,
     );
 
-    // Limit results per category to avoid spam (erhöht für bessere Abdeckung)
+    // Limit per category to avoid spam
     const categoryCount = {};
-    const MAX_PER_CATEGORY = 5; // Erhöht von 3 auf 5
+    const MAX_PER_CATEGORY = 5;
     const finalResults = relevantResults.filter((result) => {
       const cat = result.category || 'Seite';
       categoryCount[cat] = (categoryCount[cat] || 0) + 1;
       return categoryCount[cat] <= MAX_PER_CATEGORY;
     });
 
+    // Remove internal fields before response
+    const cleanResults = finalResults.map(
+      ({ source: _source, ...rest }) => rest,
+    );
+
     const responseData = {
-      results: finalResults,
+      results: cleanResults,
       summary: searchData.response
         ? searchData.response.trim().substring(0, 150)
-        : `${finalResults.length} ${finalResults.length === 1 ? 'Ergebnis' : 'Ergebnisse'} für "${query}"`,
-      count: finalResults.length,
+        : `${cleanResults.length} ${cleanResults.length === 1 ? 'Ergebnis' : 'Ergebnisse'} für "${query}"`,
+      count: cleanResults.length,
       query: query,
       expandedQuery: expandedQuery !== query ? expandedQuery : undefined,
     };
@@ -436,7 +716,7 @@ export async function onRequestPost(context) {
     return new Response(JSON.stringify(responseData), {
       headers: {
         ...corsHeaders,
-        'Cache-Control': 'public, max-age=300', // 5 minutes browser cache
+        'Cache-Control': 'public, max-age=300',
       },
     });
   } catch (error) {

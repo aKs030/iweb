@@ -175,6 +175,11 @@ ${this.getToggleButton()}
   }
 
   getSearchUI() {
+    const isMac =
+      typeof navigator !== 'undefined' &&
+      /Mac|iPhone|iPad/.test(navigator.userAgent || '');
+    const shortcutHint = isMac ? '⌘K' : 'Ctrl+K';
+
     return `
 <div class="menu-search" aria-hidden="true">
   <div class="menu-search__panel">
@@ -198,13 +203,16 @@ ${this.getToggleButton()}
         aria-controls="${this.ids.searchResults}"
         aria-expanded="false"
         role="searchbox"
-        placeholder="${i18n.t('menu.search_placeholder')}"
+        placeholder="${i18n.t('menu.search_placeholder')} (${shortcutHint})"
         data-i18n-placeholder="menu.search_placeholder"
         autocomplete="off"
         autocorrect="off"
         autocapitalize="off"
         spellcheck="false"
       />
+      <button type="button" class="menu-search__clear" aria-label="Suche leeren" tabindex="-1">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
     </div>
     <div id="${this.ids.searchResults}" class="menu-search__results" role="listbox" aria-live="polite"></div>
   </div>
