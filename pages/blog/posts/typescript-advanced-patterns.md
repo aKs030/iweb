@@ -5,8 +5,14 @@ date: 2026-02-10
 category: Webdesign
 author: Abdulkerim Sesli
 image: /content/assets/img/og/og-typescript-800.svg
+imageAlt: TypeScript Advanced Patterns für robusteren Code - Artikelbild
 excerpt: Fortgeschrittene TypeScript-Patterns: Conditional Types, Template Literals, Branded Types und mehr. Typsicherheit auf dem nächsten Level.
+seoDescription: Fortgeschrittene TypeScript-Patterns: Conditional Types, Template Literals, Branded Types und mehr. Typsicherheit auf dem nächsten Level. Mit Verweisen auf Bilder, Videos und die Hauptseite für bessere Auffindbarkeit in der Google-Suche.
+keywords: TypeScript, Advanced Types, Conditional Types, Template Literal Types, Branded Types, Robuster Code, Bilder, Videos, Hauptseite
 readTime: 7 min
+relatedHome: /
+relatedGallery: /gallery/
+relatedVideos: /videos/
 ---
 
 ## TypeScript Mastery: Von Basic zu Advanced Patterns

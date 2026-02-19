@@ -5,8 +5,14 @@ date: 2025-11-02
 category: Online-Marketing
 author: Abdulkerim Sesli
 image: /content/assets/img/og/og-photography-800.svg
+imageAlt: Visuelles Storytelling in der Fotografie - Artikelbild
 excerpt: Visuelles Storytelling: Komposition, Licht und Reduktion als Mittel, um Emotionen und klare Botschaften zu transportieren.
+seoDescription: Visuelles Storytelling: Komposition, Licht und Reduktion als Mittel, um Emotionen und klare Botschaften zu transportieren. Mit Verweisen auf Bilder, Videos und die Hauptseite für bessere Auffindbarkeit in der Google-Suche.
+keywords: Fotografie, Visuelles Storytelling, Bildkomposition, Urban Photography, Licht, Farbkontraste, Bilder, Videos, Hauptseite
 readTime: 4 min
+relatedHome: /
+relatedGallery: /gallery/
+relatedVideos: /videos/
 ---
 
 ## Fotografie als visuelle Sprache

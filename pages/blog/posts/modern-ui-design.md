@@ -5,8 +5,14 @@ date: 2025-10-10
 category: Webdesign
 author: Abdulkerim Sesli
 image: /content/assets/img/og/og-design-800.svg
+imageAlt: Modernes UI-Design: Mehr als nur Dark Mode - Artikelbild
 excerpt: Modernes UI-Design bedeutet mehr als visuelle Trends: Es vereint Accessibility, Mikro‑Interaktionen und konsistente Nutzerführung.
+seoDescription: Modernes UI-Design bedeutet mehr als visuelle Trends: Es vereint Accessibility, Mikro‑Interaktionen und konsistente Nutzerführung. Mit Verweisen auf Bilder, Videos und die Hauptseite für bessere Auffindbarkeit in der Google-Suche.
+keywords: UI Design, Accessibility, Mikro-Interaktionen, Design System, UX, Webdesign, Bilder, Videos, Hauptseite
 readTime: 4 min
+relatedHome: /
+relatedGallery: /gallery/
+relatedVideos: /videos/
 ---
 
 ## Was modernes UI-Design wirklich ausmacht
