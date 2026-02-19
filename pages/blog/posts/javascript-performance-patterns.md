@@ -5,8 +5,14 @@ date: 2026-02-05
 category: Performance
 author: Abdulkerim Sesli
 image: /content/assets/img/og/og-performance-800.svg
+imageAlt: JavaScript Performance Patterns für moderne Web-Apps - Artikelbild
 excerpt: Praktische Performance-Patterns für JavaScript: Lazy Loading, Code Splitting, Memoization, Web Workers und mehr. Messbare Optimierungen für schnellere Web-Apps.
+seoDescription: Praktische Performance-Patterns für JavaScript: Lazy Loading, Code Splitting, Memoization, Web Workers und mehr. Messbare Optimierungen für schnellere Web-Apps. Mit Verweisen auf Bilder, Videos und die Hauptseite für bessere Auffindbarkeit in der Google-Suche.
+keywords: JavaScript Performance, Lazy Loading, Code Splitting, Memoization, Web Worker, Frontend Optimization, Bilder, Videos, Hauptseite
 readTime: 7 min
+relatedHome: /
+relatedGallery: /gallery/
+relatedVideos: /videos/
 ---
 
 ## Performance-Optimierung: Von Theorie zu messbaren Ergebnissen

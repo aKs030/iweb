@@ -4,9 +4,16 @@
     "title": "React ohne Build-Tools nutzen",
     "date": "2025-09-05",
     "category": "Webdesign",
-    "excerpt": "React ohne Build-Tools: Praktische Setups mit ES Modules und htm für schnelle Prototypen.",
+    "excerpt": "React ohne Build-Tools: Praktische Setups mit ES Modules und htm für schnelle Prototypen und kleine Projekte. Hinweise zu Performance, Limitations und Best Practices.",
     "image": "/content/assets/img/og/og-react-800.svg",
-    "file": "/pages/blog/posts/react-no-build.md"
+    "file": "/pages/blog/posts/react-no-build.md",
+    "imageAlt": "React ohne Build-Tools nutzen - Artikelbild",
+    "seoDescription": "React ohne Build-Tools: Praktische Setups mit ES Modules und htm für schnelle Prototypen und kleine Projekte. Hinweise zu Performance, Limitations und Best Practices. Mit Verweisen auf Bilder, Videos und die Hauptseite für bessere Auffindbarkeit in der Google-Suche.",
+    "keywords": "React ohne Build-Tools, ES Modules, htm, JavaScript, Frontend Prototyping, Web Performance, Bilder, Videos, Hauptseite",
+    "readTime": "5 min",
+    "relatedHome": "/",
+    "relatedGallery": "/gallery/",
+    "relatedVideos": "/videos/"
   },
   {
     "id": "modern-ui-design",
@@ -15,7 +22,14 @@
     "category": "Webdesign",
     "excerpt": "Modernes UI-Design bedeutet mehr als visuelle Trends: Es vereint Accessibility, Mikro‑Interaktionen und konsistente Nutzerführung.",
     "image": "/content/assets/img/og/og-design-800.svg",
-    "file": "/pages/blog/posts/modern-ui-design.md"
+    "file": "/pages/blog/posts/modern-ui-design.md",
+    "imageAlt": "Modernes UI-Design: Mehr als nur Dark Mode - Artikelbild",
+    "seoDescription": "Modernes UI-Design bedeutet mehr als visuelle Trends: Es vereint Accessibility, Mikro‑Interaktionen und konsistente Nutzerführung. Mit Verweisen auf Bilder, Videos und die Hauptseite für bessere Auffindbarkeit in der Google-Suche.",
+    "keywords": "UI Design, Accessibility, Mikro-Interaktionen, Design System, UX, Webdesign, Bilder, Videos, Hauptseite",
+    "readTime": "4 min",
+    "relatedHome": "/",
+    "relatedGallery": "/gallery/",
+    "relatedVideos": "/videos/"
   },
   {
     "id": "visual-storytelling",
@@ -24,16 +38,30 @@
     "category": "Online-Marketing",
     "excerpt": "Visuelles Storytelling: Komposition, Licht und Reduktion als Mittel, um Emotionen und klare Botschaften zu transportieren.",
     "image": "/content/assets/img/og/og-photography-800.svg",
-    "file": "/pages/blog/posts/visual-storytelling.md"
+    "file": "/pages/blog/posts/visual-storytelling.md",
+    "imageAlt": "Visuelles Storytelling in der Fotografie - Artikelbild",
+    "seoDescription": "Visuelles Storytelling: Komposition, Licht und Reduktion als Mittel, um Emotionen und klare Botschaften zu transportieren. Mit Verweisen auf Bilder, Videos und die Hauptseite für bessere Auffindbarkeit in der Google-Suche.",
+    "keywords": "Fotografie, Visuelles Storytelling, Bildkomposition, Urban Photography, Licht, Farbkontraste, Bilder, Videos, Hauptseite",
+    "readTime": "4 min",
+    "relatedHome": "/",
+    "relatedGallery": "/gallery/",
+    "relatedVideos": "/videos/"
   },
   {
     "id": "threejs-performance",
     "title": "Optimierung von Three.js für das Web",
     "date": "2025-12-15",
     "category": "Performance",
-    "excerpt": "Praxisnahe Techniken zur Performance-Optimierung von Three.js: InstancedMesh, LOD-Strategien, Texturkompression und mehr.",
+    "excerpt": "Praxisnahe Techniken zur Performance-Optimierung von Three.js: InstancedMesh, LOD-Strategien, Texturkompression (KTX2) und Shader-Optimierung.",
     "image": "/content/assets/img/og/og-threejs-800.svg",
-    "file": "/pages/blog/posts/threejs-performance.md"
+    "file": "/pages/blog/posts/threejs-performance.md",
+    "imageAlt": "Optimierung von Three.js für das Web - Artikelbild",
+    "seoDescription": "Praxisnahe Techniken zur Performance-Optimierung von Three.js: InstancedMesh, LOD-Strategien, Texturkompression (KTX2) und Shader-Optimierung. Mit Verweisen auf Bilder, Videos und die Hauptseite für bessere Auffindbarkeit in der Google-Suche.",
+    "keywords": "Three.js, WebGL, 3D Performance, InstancedMesh, LOD, Shader Optimierung, Bilder, Videos, Hauptseite",
+    "readTime": "6 min",
+    "relatedHome": "/",
+    "relatedGallery": "/gallery/",
+    "relatedVideos": "/videos/"
   },
   {
     "id": "seo-technische-optimierung",
@@ -42,7 +70,14 @@
     "category": "Online-Marketing",
     "excerpt": "Technische SEO 2026: Core Web Vitals optimieren, strukturierte Daten implementieren, Crawling verbessern. Messbare Rankings durch technische Exzellenz.",
     "image": "/content/assets/img/og/og-seo-800.svg",
-    "file": "/pages/blog/posts/seo-technische-optimierung.md"
+    "file": "/pages/blog/posts/seo-technische-optimierung.md",
+    "imageAlt": "Technische SEO: Core Web Vitals und strukturierte Daten - Artikelbild",
+    "seoDescription": "Technische SEO 2026: Core Web Vitals optimieren, strukturierte Daten implementieren, Crawling verbessern. Messbare Rankings durch technische Exzellenz. Mit Verweisen auf Bilder, Videos und die Hauptseite für bessere Auffindbarkeit in der Google-Suche.",
+    "keywords": "Technische SEO, Core Web Vitals, Strukturierte Daten, Crawling, Indexierung, Google Suche, Bilder, Videos, Hauptseite",
+    "readTime": "6 min",
+    "relatedHome": "/",
+    "relatedGallery": "/gallery/",
+    "relatedVideos": "/videos/"
   },
   {
     "id": "progressive-web-apps-2026",
@@ -51,7 +86,14 @@
     "category": "Performance",
     "excerpt": "PWAs 2026 bieten native Features wie Push Notifications, Offline-Funktionalität, App-Installation und mehr. Die Lücke zwischen Web und Native schließt sich.",
     "image": "/content/assets/img/og/og-pwa-800.svg",
-    "file": "/pages/blog/posts/progressive-web-apps-2026.md"
+    "file": "/pages/blog/posts/progressive-web-apps-2026.md",
+    "imageAlt": "Progressive Web Apps 2026: Native Features im Browser - Artikelbild",
+    "seoDescription": "PWAs 2026 bieten native Features wie Push Notifications, Offline-Funktionalität, App-Installation und mehr. Die Lücke zwischen Web und Native schließt sich. Mit Verweisen auf Bilder, Videos und die Hauptseite für bessere Auffindbarkeit in der Google-Suche.",
+    "keywords": "Progressive Web Apps, PWA, Service Worker, Offline First, Web App Installation, Push Notifications, Bilder, Videos, Hauptseite",
+    "readTime": "6 min",
+    "relatedHome": "/",
+    "relatedGallery": "/gallery/",
+    "relatedVideos": "/videos/"
   },
   {
     "id": "web-components-zukunft",
@@ -60,7 +102,14 @@
     "category": "Webdesign",
     "excerpt": "Web Components bieten framework-unabhängige, native Wiederverwendbarkeit. Custom Elements, Shadow DOM und HTML Templates revolutionieren moderne Webentwicklung.",
     "image": "/content/assets/img/og/og-webcomponents-800.svg",
-    "file": "/pages/blog/posts/web-components-zukunft.md"
+    "file": "/pages/blog/posts/web-components-zukunft.md",
+    "imageAlt": "Web Components: Die Zukunft der wiederverwendbaren UI-Elemente - Artikelbild",
+    "seoDescription": "Web Components bieten framework-unabhängige, native Wiederverwendbarkeit. Custom Elements, Shadow DOM und HTML Templates revolutionieren moderne Webentwicklung. Mit Verweisen auf Bilder, Videos und die Hauptseite für bessere Auffindbarkeit in der Google-Suche.",
+    "keywords": "Web Components, Custom Elements, Shadow DOM, HTML Templates, Framework-unabhängig, UI Komponenten, Bilder, Videos, Hauptseite",
+    "readTime": "6 min",
+    "relatedHome": "/",
+    "relatedGallery": "/gallery/",
+    "relatedVideos": "/videos/"
   },
   {
     "id": "css-container-queries",
@@ -69,7 +118,14 @@
     "category": "Webdesign",
     "excerpt": "Container Queries revolutionieren Responsive Design. Komponenten reagieren auf ihre Container-Größe statt auf den Viewport – echte komponentenbasierte Responsivität.",
     "image": "/content/assets/img/og/og-css-800.svg",
-    "file": "/pages/blog/posts/css-container-queries.md"
+    "file": "/pages/blog/posts/css-container-queries.md",
+    "imageAlt": "CSS Container Queries: Responsive Design neu gedacht - Artikelbild",
+    "seoDescription": "Container Queries revolutionieren Responsive Design. Komponenten reagieren auf ihre Container-Größe statt auf den Viewport – echte komponentenbasierte Responsivität. Mit Verweisen auf Bilder, Videos und die Hauptseite für bessere Auffindbarkeit in der Google-Suche.",
+    "keywords": "CSS Container Queries, Responsive Design, Komponentenbasiertes CSS, Frontend Architektur, Webdesign, Modern CSS, Bilder, Videos, Hauptseite",
+    "readTime": "5 min",
+    "relatedHome": "/",
+    "relatedGallery": "/gallery/",
+    "relatedVideos": "/videos/"
   },
   {
     "id": "javascript-performance-patterns",
@@ -78,7 +134,14 @@
     "category": "Performance",
     "excerpt": "Praktische Performance-Patterns für JavaScript: Lazy Loading, Code Splitting, Memoization, Web Workers und mehr. Messbare Optimierungen für schnellere Web-Apps.",
     "image": "/content/assets/img/og/og-performance-800.svg",
-    "file": "/pages/blog/posts/javascript-performance-patterns.md"
+    "file": "/pages/blog/posts/javascript-performance-patterns.md",
+    "imageAlt": "JavaScript Performance Patterns für moderne Web-Apps - Artikelbild",
+    "seoDescription": "Praktische Performance-Patterns für JavaScript: Lazy Loading, Code Splitting, Memoization, Web Workers und mehr. Messbare Optimierungen für schnellere Web-Apps. Mit Verweisen auf Bilder, Videos und die Hauptseite für bessere Auffindbarkeit in der Google-Suche.",
+    "keywords": "JavaScript Performance, Lazy Loading, Code Splitting, Memoization, Web Worker, Frontend Optimization, Bilder, Videos, Hauptseite",
+    "readTime": "7 min",
+    "relatedHome": "/",
+    "relatedGallery": "/gallery/",
+    "relatedVideos": "/videos/"
   },
   {
     "id": "typescript-advanced-patterns",
@@ -87,6 +150,13 @@
     "category": "Webdesign",
     "excerpt": "Fortgeschrittene TypeScript-Patterns: Conditional Types, Template Literals, Branded Types und mehr. Typsicherheit auf dem nächsten Level.",
     "image": "/content/assets/img/og/og-typescript-800.svg",
-    "file": "/pages/blog/posts/typescript-advanced-patterns.md"
+    "file": "/pages/blog/posts/typescript-advanced-patterns.md",
+    "imageAlt": "TypeScript Advanced Patterns für robusteren Code - Artikelbild",
+    "seoDescription": "Fortgeschrittene TypeScript-Patterns: Conditional Types, Template Literals, Branded Types und mehr. Typsicherheit auf dem nächsten Level. Mit Verweisen auf Bilder, Videos und die Hauptseite für bessere Auffindbarkeit in der Google-Suche.",
+    "keywords": "TypeScript, Advanced Types, Conditional Types, Template Literal Types, Branded Types, Robuster Code, Bilder, Videos, Hauptseite",
+    "readTime": "7 min",
+    "relatedHome": "/",
+    "relatedGallery": "/gallery/",
+    "relatedVideos": "/videos/"
   }
 ]

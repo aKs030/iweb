@@ -5,8 +5,14 @@ date: 2026-01-08
 category: Online-Marketing
 author: Abdulkerim Sesli
 image: /content/assets/img/og/og-seo-800.svg
+imageAlt: Technische SEO: Core Web Vitals und strukturierte Daten - Artikelbild
 excerpt: Technische SEO 2026: Core Web Vitals optimieren, strukturierte Daten implementieren, Crawling verbessern. Messbare Rankings durch technische Exzellenz.
+seoDescription: Technische SEO 2026: Core Web Vitals optimieren, strukturierte Daten implementieren, Crawling verbessern. Messbare Rankings durch technische Exzellenz. Mit Verweisen auf Bilder, Videos und die Hauptseite für bessere Auffindbarkeit in der Google-Suche.
+keywords: Technische SEO, Core Web Vitals, Strukturierte Daten, Crawling, Indexierung, Google Suche, Bilder, Videos, Hauptseite
 readTime: 6 min
+relatedHome: /
+relatedGallery: /gallery/
+relatedVideos: /videos/
 ---
 
 ## Technische SEO: Die Basis für nachhaltige Rankings

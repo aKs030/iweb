@@ -5,8 +5,14 @@ date: 2026-01-28
 category: Webdesign
 author: Abdulkerim Sesli
 image: /content/assets/img/og/og-css-800.svg
+imageAlt: CSS Container Queries: Responsive Design neu gedacht - Artikelbild
 excerpt: Container Queries revolutionieren Responsive Design. Komponenten reagieren auf ihre Container-Größe statt auf den Viewport – echte komponentenbasierte Responsivität.
+seoDescription: Container Queries revolutionieren Responsive Design. Komponenten reagieren auf ihre Container-Größe statt auf den Viewport – echte komponentenbasierte Responsivität. Mit Verweisen auf Bilder, Videos und die Hauptseite für bessere Auffindbarkeit in der Google-Suche.
+keywords: CSS Container Queries, Responsive Design, Komponentenbasiertes CSS, Frontend Architektur, Webdesign, Modern CSS, Bilder, Videos, Hauptseite
 readTime: 5 min
+relatedHome: /
+relatedGallery: /gallery/
+relatedVideos: /videos/
 ---
 
 ## Container Queries: Der Game-Changer für komponentenbasiertes Design
