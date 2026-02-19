@@ -28,7 +28,7 @@ export const useProjects = (icons) => {
   React.useEffect(() => {
     const loadProjects = async () => {
       try {
-        log.info('Loading projects from GitHub...');
+        log.info('Loading projects data...');
         setLoading(true);
 
         // Add a timeout to prevent infinite loading
