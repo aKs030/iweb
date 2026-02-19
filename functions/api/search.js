@@ -82,13 +82,13 @@ export async function onRequestPost(context) {
 
     let searchData;
     try {
+      // Attempt search without summarization (generation) features first
+      // to avoid model binding errors with text generation parameters
       searchData = await env.AI.autorag(ragId).aiSearch({
         query: expandedQuery,
-        max_num_results: Math.max(topK, 15), // Mindestens 15 für bessere Abdeckung
-        rewrite_query: true,
-        stream: false,
-        system_prompt:
-          'Du bist ein Suchassistent für abdulkerimsesli.de. Fasse die Suchergebnisse in 1-2 prägnanten Sätzen zusammen (max. 120 Zeichen). Fokussiere auf die wichtigsten Inhalte und vermeide generische Aussagen.',
+        max_num_results: Math.max(topK, 15),
+        // rewrite_query: true, // Disabled: likely triggers LLM call
+        // system_prompt: '...', // Disabled: definitely triggers LLM call
       });
     } catch (aiError) {
       console.error('AI execution failed:', aiError);
