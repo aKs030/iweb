@@ -2,7 +2,7 @@
  * Cloudflare Pages Function - POST /api/search
  * AI Search using Cloudflare AI Search Beta via Workers Binding
  * Enhanced with query expansion, fuzzy matching, and relevance scoring
- * @version 12.0.0
+ * @version 12.0.1
  */
 
 import { getCorsHeaders, handleOptions } from './_cors.js';
@@ -29,6 +29,7 @@ export async function onRequestPost(context) {
 
     // Check for AI binding
     if (!env.AI) {
+      console.error('AI binding (env.AI) is missing');
       throw new Error('AI binding not configured');
     }
 
@@ -53,6 +54,18 @@ export async function onRequestPost(context) {
 
     // Use Workers Binding to call AI Search Beta
     const ragId = env.RAG_ID || 'wispy-pond-1055';
+
+    // Verify autorag method exists before calling
+    if (typeof env.AI.autorag !== 'function') {
+      console.error(
+        'env.AI.autorag is not a function. env.AI keys:',
+        Object.keys(env.AI),
+      );
+      throw new Error(
+        'AI Search (autorag) is not available in this environment',
+      );
+    }
+
     const searchData = await env.AI.autorag(ragId).aiSearch({
       query: expandedQuery,
       max_num_results: Math.max(topK, 15), // Mindestens 15 für bessere Abdeckung
