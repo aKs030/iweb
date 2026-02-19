@@ -13,6 +13,22 @@ import * as Icons from '/content/components/icons/icons.js';
 import { i18n } from '/content/core/i18n.js';
 
 const { createElement: h, Fragment, useEffect, useRef, useState } = React;
+const CRAWLER_UA_PATTERN =
+  /googlebot|google-inspectiontool|bingbot|slurp|duckduckbot|baiduspider|yandex|facebookexternalhit|twitterbot|linkedinbot|applebot|semrushbot|ahrefsbot/i;
+
+const shouldDisableThreeScene = () => {
+  if (typeof window === 'undefined') return false;
+
+  const userAgent =
+    typeof navigator === 'undefined' ? '' : navigator.userAgent || '';
+  if (CRAWLER_UA_PATTERN.test(userAgent)) return true;
+
+  try {
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  } catch {
+    return false;
+  }
+};
 
 /**
  * Main App Component
@@ -24,6 +40,7 @@ const App = () => {
   // State for the currently focused project index (controlled by scroll in ThreeScene)
   const [activeProjectIndex, setActiveProjectIndex] = useState(0);
   const [isSceneReady, setIsSceneReady] = useState(false);
+  const [isThreeSceneEnabled] = useState(() => !shouldDisableThreeScene());
   const [popupApp, setPopupApp] = useState(null);
   const [popupSize, setPopupSize] = useState(null);
   const popupFrameRef = useRef(null);
@@ -44,11 +61,17 @@ const App = () => {
 
   useEffect(() => {
     if (loading || projects.length === 0) return;
+
+    if (!isThreeSceneEnabled) {
+      setIsSceneReady(true);
+      return;
+    }
+
     const timer = window.setTimeout(() => {
       setIsSceneReady(true);
     }, 280);
     return () => window.clearTimeout(timer);
-  }, [loading, projects.length]);
+  }, [loading, projects.length, isThreeSceneEnabled]);
 
   useEffect(() => {
     if (!popupApp) return;
@@ -303,7 +326,8 @@ const App = () => {
     h(
       'div',
       { id: 'canvas-container' },
-      projects.length > 0 &&
+      isThreeSceneEnabled &&
+        projects.length > 0 &&
         h(ThreeScene, {
           projects,
           onScrollUpdate: handleScrollUpdate,
@@ -469,11 +493,12 @@ const App = () => {
         ),
 
       // Scroll Indicator
-      h(
-        'div',
-        { className: 'scroll-hint' },
-        t('projects.launch.scroll_hint', 'SCROLL TO EXPLORE'),
-      ),
+      isThreeSceneEnabled &&
+        h(
+          'div',
+          { className: 'scroll-hint' },
+          t('projects.launch.scroll_hint', 'SCROLL TO EXPLORE'),
+        ),
     ),
   );
 };

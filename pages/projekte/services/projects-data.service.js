@@ -16,6 +16,8 @@ import {
 } from './github-api.service.js';
 
 const log = createLogger('ProjectsDataService');
+const CRAWLER_UA_PATTERN =
+  /googlebot|google-inspectiontool|bingbot|slurp|duckduckbot|baiduspider|yandex|facebookexternalhit|twitterbot|linkedinbot|applebot|semrushbot|ahrefsbot/i;
 
 // Load local apps config
 let localAppsConfig = {};
@@ -32,6 +34,46 @@ const loadLocalConfig = async () => {
 
 // Initialize config loading
 loadLocalConfig();
+
+const getErrorStatusCode = (error) => {
+  const status = Number(error?.status);
+  if (Number.isFinite(status)) return status;
+
+  const match = String(error?.message || '').match(/\b(\d{3})\b/);
+  if (!match) return 0;
+
+  return Number(match[1]) || 0;
+};
+
+const shouldUseGitHubSource = () => {
+  if (typeof window === 'undefined') return false;
+
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('github') === '1') return true;
+  if (params.get('github') === '0') return false;
+
+  const userAgent =
+    typeof navigator === 'undefined' ? '' : navigator.userAgent || '';
+  if (CRAWLER_UA_PATTERN.test(userAgent)) return false;
+
+  const host = window.location.hostname || '';
+  const isLocalHost =
+    host === 'localhost' || host === '127.0.0.1' || host.startsWith('192.168.');
+
+  return isLocalHost;
+};
+
+const loadLocalProjectsList = async () => {
+  if (!Array.isArray(localAppsConfig.apps)) {
+    await loadLocalConfig();
+  }
+
+  const localApps = localAppsConfig.apps || [];
+  return localApps.map((app) => ({
+    ...app,
+    dirName: app.name,
+  }));
+};
 
 /**
  * Helper function to create gradient backgrounds
@@ -95,79 +137,87 @@ const loadDynamicProjects = async (icons) => {
   let projectsList = [];
   let source = 'github';
 
-  try {
-    log.info('Starting dynamic project loading...');
-    AppLoadManager.updateLoader(0.1, i18n.t('loader.connect_github'));
+  if (!shouldUseGitHubSource()) {
+    source = 'local';
+    AppLoadManager.updateLoader(0.5, i18n.t('loader.fallback_local'));
+    projectsList = await loadLocalProjectsList();
+    AppLoadManager.updateLoader(0.85, i18n.t('loader.processing'));
+  } else {
+    try {
+      log.info('Starting dynamic project loading...');
+      AppLoadManager.updateLoader(0.1, i18n.t('loader.connect_github'));
 
-    const contents = await fetchGitHubContents(GITHUB_CONFIG.appsPath);
+      const contents = await fetchGitHubContents(GITHUB_CONFIG.appsPath);
 
-    if (!contents || contents.length === 0) {
-      throw new Error(i18n.t('error.no_content'));
-    }
+      if (!contents || contents.length === 0) {
+        throw new Error(i18n.t('error.no_content'));
+      }
 
-    const directories = contents.filter((item) => item.type === 'dir');
-    log.info(`Found ${directories.length} directories on GitHub`);
+      const directories = contents.filter((item) => item.type === 'dir');
+      log.info(`Found ${directories.length} directories on GitHub`);
 
-    AppLoadManager.updateLoader(
-      0.2,
-      i18n.t('loader.found_projects', { count: directories.length }),
-    );
-
-    for (const [i, dir] of directories.entries()) {
-      const projectPath = `${GITHUB_CONFIG.appsPath}/${dir.name}`;
-
-      // Update progress for each project
-      const progress = 0.2 + (i / directories.length) * 0.6;
       AppLoadManager.updateLoader(
-        progress,
-        i18n.t('loader.loading_project', {
-          current: i + 1,
-          total: directories.length,
-        }),
+        0.2,
+        i18n.t('loader.found_projects', { count: directories.length }),
       );
 
-      if (i > 0 && source === 'github') {
-        await sleep(GITHUB_CONFIG.requestDelay || 50);
+      for (const [i, dir] of directories.entries()) {
+        const projectPath = `${GITHUB_CONFIG.appsPath}/${dir.name}`;
+
+        // Update progress for each project
+        const progress = 0.2 + (i / directories.length) * 0.6;
+        AppLoadManager.updateLoader(
+          progress,
+          i18n.t('loader.loading_project', {
+            current: i + 1,
+            total: directories.length,
+          }),
+        );
+
+        if (i > 0 && source === 'github') {
+          await sleep(GITHUB_CONFIG.requestDelay || 50);
+        }
+
+        try {
+          const metadata = await fetchProjectMetadata(projectPath);
+          projectsList.push({ ...metadata, dirName: dir.name });
+        } catch (metadataError) {
+          log.warn(`Failed to load metadata for ${dir.name}:`, metadataError);
+          // Add project with default metadata
+          projectsList.push({
+            title: dir.name
+              .replace(/-/g, ' ')
+              .replace(/\b\w/g, (l) => l.toUpperCase()),
+            description: 'Ein interaktives Web-Projekt',
+            tags: ['JavaScript'],
+            category: 'app',
+            version: '1.0.0',
+            dirName: dir.name,
+          });
+        }
       }
 
-      try {
-        const metadata = await fetchProjectMetadata(projectPath);
-        projectsList.push({ ...metadata, dirName: dir.name });
-      } catch (metadataError) {
-        log.warn(`Failed to load metadata for ${dir.name}:`, metadataError);
-        // Add project with default metadata
-        projectsList.push({
-          title: dir.name
-            .replace(/-/g, ' ')
-            .replace(/\b\w/g, (l) => l.toUpperCase()),
-          description: 'Ein interaktives Web-Projekt',
-          tags: ['JavaScript'],
-          category: 'app',
-          version: '1.0.0',
-          dirName: dir.name,
+      AppLoadManager.updateLoader(0.85, i18n.t('loader.processing'));
+    } catch (error) {
+      const statusCode = getErrorStatusCode(error);
+      const isRateLimited = statusCode === 403 || statusCode === 429;
+      const isTimeout = error?.name === 'AbortError';
+
+      if (isRateLimited || isTimeout) {
+        log.warn('GitHub source unavailable, using local bundled config.', {
+          statusCode,
         });
+      } else {
+        log.error('Failed to load dynamic projects from GitHub:', error);
       }
+
+      log.info('Falling back to local bundled config');
+      source = 'local';
+      AppLoadManager.updateLoader(0.5, i18n.t('loader.fallback_local'));
+
+      projectsList = await loadLocalProjectsList();
+      AppLoadManager.updateLoader(0.85, i18n.t('loader.processing'));
     }
-
-    AppLoadManager.updateLoader(0.85, i18n.t('loader.processing'));
-  } catch (error) {
-    log.error('Failed to load dynamic projects from GitHub:', error);
-    log.info('Falling back to local bundled config');
-    source = 'local';
-
-    AppLoadManager.updateLoader(0.5, i18n.t('loader.fallback_local'));
-
-    // Ensure local config is loaded
-    if (!localAppsConfig.apps) {
-      await loadLocalConfig();
-    }
-
-    // Fallback to local config
-    const localApps = localAppsConfig.apps || [];
-    projectsList = localApps.map((app) => ({
-      ...app,
-      dirName: app.name,
-    }));
   }
 
   // Process the projects list to create UI objects

@@ -43,7 +43,11 @@ export async function fetchGitHubContents(path = '', options = {}) {
     clearTimeout(timeoutId);
 
     if (!response.ok) {
-      throw new Error(`GitHub API error: ${response.status}`);
+      const apiError = new Error(`GitHub API error: ${response.status}`);
+      apiError.name = 'GitHubApiError';
+      apiError.status = response.status;
+      apiError.rateLimited = response.status === 403 || response.status === 429;
+      throw apiError;
     }
 
     const data = await response.json();
