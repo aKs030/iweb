@@ -254,8 +254,7 @@ Total: ~6 kB (gzip) ✅ Excellent!
 
 ### Build & Tools
 
-- Vite (build tool)
-- PostCSS (CSS processing)
+- Wrangler Pages Dev (local runtime)
 - ESLint (linting)
 - Prettier (formatting)
 - Husky (git hooks)
@@ -273,9 +272,9 @@ Total: ~6 kB (gzip) ✅ Excellent!
 
 ### Technical Docs
 
-- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) - System architecture
-- [docs/CSS_GUIDE.md](docs/CSS_GUIDE.md) - CSS architecture & best practices
-- [functions/README.md](functions/README.md) - API Functions documentation
+- [ARCHITECTURE.md](ARCHITECTURE.md) - System architecture
+- [CSS_GUIDE.md](CSS_GUIDE.md) - CSS architecture & best practices
+- [../functions](../functions) - Cloudflare Functions source
 
 ---
 
@@ -294,16 +293,6 @@ npm run dev
 open http://localhost:8080
 ```
 
-### Build
-
-```bash
-# Production build
-npm run build
-
-# Preview build
-npm run preview
-```
-
 ### Deploy
 
 ```bash
@@ -311,7 +300,7 @@ npm run preview
 git push
 
 # Manual deployment
-npm run deploy
+npx wrangler pages deploy . --project-name=1web
 ```
 
 ---
@@ -326,18 +315,16 @@ npm run lint         # ESLint
 npm run format       # Prettier
 ```
 
-### Build
+### Runtime Check
 
 ```bash
-npm run build        # Production build
-npm run preview      # Preview build
+npm run dev:sim      # Lokaler Node-Simulator
 ```
 
 ### Utilities
 
 ```bash
-npm run css:check    # CSS statistics
-npm run docs         # List documentation
+npm run clean        # lokale Cache/Artifacts bereinigen
 ```
 
 ---
