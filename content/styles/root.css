@@ -2,6 +2,9 @@
    Global CSS Variables - Dark & Light Mode System
 ======================= */
 
+/* Layer order: lowest → highest specificity */
+@layer base, layout, components, utilities, overrides;
+
 /* Import consolidated variables */
 @import './variables.css';
 

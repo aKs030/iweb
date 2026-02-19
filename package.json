@@ -18,7 +18,7 @@
     "prepare": "husky install"
   },
   "dependencies": {
-    "three": "^0.170.0"
+    "three": "^0.171.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.14.0",

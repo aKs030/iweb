@@ -14,7 +14,7 @@ const log = createLogger('performance');
  * @typedef {Object} PerformanceMetrics
  * @property {number} [FCP] - First Contentful Paint
  * @property {number} [LCP] - Largest Contentful Paint
- * @property {number} [FID] - First Input Delay
+ * @property {number} [INP] - Interaction to Next Paint
  * @property {number} [CLS] - Cumulative Layout Shift
  * @property {number} [TTFB] - Time to First Byte
  * @property {number} [TTI] - Time to Interactive
@@ -61,8 +61,8 @@ class PerformanceMonitor {
     // LCP - Largest Contentful Paint
     this.observeLCP();
 
-    // FID - First Input Delay
-    this.observeFID();
+    // INP - Interaction to Next Paint (replaced FID as Core Web Vital)
+    this.observeINP();
 
     // CLS - Cumulative Layout Shift
     this.observeCLS();
@@ -118,22 +118,35 @@ class PerformanceMonitor {
   }
 
   /**
-   * Observe First Input Delay
+   * Observe Interaction to Next Paint (replaced FID as Core Web Vital in March 2024)
    */
-  observeFID() {
+  observeINP() {
     try {
+      let maxINP = 0;
       const observer = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
-          // @ts-ignore - processingStart exists on PerformanceEventTiming
-          const fid = entry.processingStart - entry.startTime;
-          this.metrics.FID = fid;
-          log.info(`FID: ${Math.round(fid)}ms`);
-          observer.disconnect();
+          // @ts-ignore - duration exists on PerformanceEventTiming
+          if (entry.duration > maxINP) {
+            maxINP = entry.duration;
+            this.metrics.INP = maxINP;
+          }
         }
       });
-      observer.observe({ type: 'first-input', buffered: true });
+      observer.observe({ type: 'event', buffered: true, durationThreshold: 40 });
+
+      // Report final INP when page becomes hidden
+      window.addEventListener(
+        'visibilitychange',
+        () => {
+          if (document.visibilityState === 'hidden') {
+            log.info(`INP: ${Math.round(maxINP)}ms`);
+            observer.disconnect();
+          }
+        },
+        { once: true },
+      );
     } catch (error) {
-      log.warn('FID observer failed:', error);
+      log.warn('INP observer failed:', error);
     }
   }
 

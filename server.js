@@ -14,7 +14,7 @@
  */
 
 import { createServer } from 'http';
-import { readFileSync, existsSync, statSync, watchFile } from 'fs';
+import { readFileSync, existsSync, statSync, watch } from 'fs';
 import { resolve, extname, relative } from 'path';
 import os from 'os';
 import { onRequestPost as onSearchRequestPost } from './functions/api/search.js';
@@ -87,12 +87,16 @@ function loadTemplates() {
 
 loadTemplates();
 
-// Watch templates for changes → auto-reload
+// Watch templates for changes → auto-reload (uses native OS events via fs.watch)
 for (const tplPath of Object.values(TEMPLATE_PATHS)) {
   if (existsSync(tplPath)) {
-    watchFile(tplPath, { interval: 1000 }, () => {
-      console.log('\n  🔄 Template geändert — neu geladen');
-      loadTemplates();
+    let debounce = null;
+    watch(tplPath, () => {
+      clearTimeout(debounce);
+      debounce = setTimeout(() => {
+        console.log('\n  🔄 Template geändert — neu geladen');
+        loadTemplates();
+      }, 100);
     });
   }
 }
@@ -277,19 +281,27 @@ function matchPath(url, pattern) {
   return false;
 }
 
-// Watch _redirects for changes
+// Watch _redirects for changes (native OS events)
 if (existsSync(resolve(ROOT, '_redirects'))) {
-  watchFile(resolve(ROOT, '_redirects'), { interval: 1000 }, () => {
-    console.log('\n  🔄 _redirects geändert — neu geladen');
-    loadRedirects();
+  let debounce = null;
+  watch(resolve(ROOT, '_redirects'), () => {
+    clearTimeout(debounce);
+    debounce = setTimeout(() => {
+      console.log('\n  🔄 _redirects geändert — neu geladen');
+      loadRedirects();
+    }, 100);
   });
 }
 
-// Watch _headers for changes
+// Watch _headers for changes (native OS events)
 if (existsSync(resolve(ROOT, '_headers'))) {
-  watchFile(resolve(ROOT, '_headers'), { interval: 1000 }, () => {
-    console.log('\n  🔄 _headers geändert — neu geladen');
-    loadHeaders();
+  let debounce = null;
+  watch(resolve(ROOT, '_headers'), () => {
+    clearTimeout(debounce);
+    debounce = setTimeout(() => {
+      console.log('\n  🔄 _headers geändert — neu geladen');
+      loadHeaders();
+    }, 100);
   });
 }
 

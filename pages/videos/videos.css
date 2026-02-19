@@ -1,5 +1,16 @@
 /* Modern dark theme for videos page with animations */
 
+/* Videos-specific variables (moved from global variables.css) */
+:root {
+  --videos-accent: #ff6b6b;
+  --videos-bg: #030303;
+  --videos-card-bg: #030303;
+  --accent-glow: rgba(255, 107, 107, 0.45);
+  --shadow: rgba(0, 0, 0, 0.45);
+  --youtube-red: #ff0000;
+  --share-blue: #1877f2;
+}
+
 @keyframes gradientShift {
   0%,
   100% {
