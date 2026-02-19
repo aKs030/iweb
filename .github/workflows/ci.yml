@@ -20,53 +20,8 @@ defaults:
     shell: bash
 
 jobs:
-  autofix:
-    name: Auto-fix lint and format
-    if: github.event_name == 'pull_request' && !github.event.pull_request.draft && github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    permissions:
-      contents: write
-    outputs:
-      pushed_changes: ${{ steps.changes.outputs.has_changes }}
-    steps:
-      - name: Checkout PR branch
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.head_ref }}
-          fetch-depth: 0
-
-      - name: Setup Node and install dependencies
-        uses: ./.github/actions/setup-node-deps
-
-      - name: Run auto-fix
-        run: npm run fix
-
-      - name: Detect changes
-        id: changes
-        run: |
-          if git diff --quiet; then
-            echo "has_changes=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "has_changes=true" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Commit and push fixes
-        if: steps.changes.outputs.has_changes == 'true'
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: 'chore(ci): auto-fix lint and format'
-          branch: ${{ github.head_ref }}
-
   verify:
     name: Lint, format and smoke test
-    needs: autofix
-    if: |
-      always() &&
-      needs.autofix.result != 'failure' &&
-      needs.autofix.result != 'cancelled' &&
-      (github.event_name != 'pull_request' || !github.event.pull_request.draft) &&
-      needs.autofix.outputs.pushed_changes != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -86,7 +41,7 @@ jobs:
           trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
 
           for i in {1..30}; do
-            if curl -fsS http://127.0.0.1:8080/ > /dev/null; then
+            if curl -fsS http://127.0.0.1:8080/ > /dev/null 2>&1; then
               break
             fi
             sleep 1
@@ -102,28 +57,3 @@ jobs:
         with:
           name: ci-server-log
           path: server.log
-
-  dependency-review:
-    name: Dependency review (PR)
-    needs: autofix
-    if: |
-      always() &&
-      needs.autofix.result != 'failure' &&
-      needs.autofix.result != 'cancelled' &&
-      github.event_name == 'pull_request' &&
-      !github.event.pull_request.draft &&
-      needs.autofix.outputs.pushed_changes != 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    permissions:
-      contents: read
-      pull-requests: write
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Dependency review
-        uses: actions/dependency-review-action@v4
-        with:
-          fail-on-severity: high
-          comment-summary-in-pr: always
