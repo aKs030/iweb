@@ -62,5 +62,4 @@ OPTIMIZATION_REPORT.md
 OPTIMIZATION_SUMMARY.md
 
 # Cloudflare
-.wrangler/
 wrangler.toml.backup
