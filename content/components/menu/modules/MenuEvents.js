@@ -333,6 +333,17 @@ export class MenuEvents {
     this.search.debounceTimer = null;
   }
 
+  isAbortLikeError(error) {
+    if (!error || typeof error !== 'object') return false;
+
+    if (error.name === 'AbortError' || error.code === 20) {
+      return true;
+    }
+
+    const message = String(error.message || '').toLowerCase();
+    return message.includes('abort');
+  }
+
   abortSearchRequest() {
     if (!this.search.abortController) return;
     this.search.abortController.abort();
@@ -443,8 +454,16 @@ export class MenuEvents {
         items,
       });
     } catch (err) {
-      if (err?.name === 'AbortError' && !didTimeoutAbort) return;
-      console.error('Header search failed:', err);
+      const isAbortError = this.isAbortLikeError(err);
+
+      if (isAbortError && !didTimeoutAbort) {
+        return;
+      }
+
+      if (!isAbortError) {
+        console.error('Header search failed:', err);
+      }
+
       this.search.items = [];
       this.search.selectedIndex = -1;
       this.renderSearchState({
