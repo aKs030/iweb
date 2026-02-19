@@ -8,7 +8,6 @@
     "/content/assets/img/og/*",
     "/content/assets/img/previews/*",
     "/*.json",
-    "/*.xml",
     "/*.txt",
     "/*.css",
     "/*.js",
@@ -18,9 +17,6 @@
     "/*.eot",
     "/sw.js",
     "/manifest.json",
-    "/robots.txt",
-    "/sitemap.xml",
-    "/sitemap-images.xml",
-    "/sitemap-videos.xml"
+    "/robots.txt"
   ]
 }

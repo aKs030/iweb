@@ -9,10 +9,12 @@ export async function onRequest(context) {
   const MAX_RESULTS = 50; // Google recommends limit per sitemap
 
   if (!CHANNEL_ID || !API_KEY) {
-    return new Response(
-      'Missing configuration (YOUTUBE_CHANNEL_ID or YOUTUBE_API_KEY)',
-      { status: 500 },
-    );
+    return new Response(buildFallbackXml(origin), {
+      headers: {
+        'Content-Type': 'application/xml; charset=utf-8',
+        'Cache-Control': 'public, max-age=3600',
+      },
+    });
   }
 
   try {
@@ -96,14 +98,26 @@ export async function onRequest(context) {
       headers: {
         'Content-Type': 'application/xml; charset=utf-8',
         'Cache-Control': 'public, max-age=3600', // Cache for 1 hour at edge
-        'X-Robots-Tag': 'noindex', // Sitemap itself shouldn't be indexed as a page
       },
     });
-  } catch (error) {
-    return new Response(`Error generating sitemap: ${error.message}`, {
-      status: 500,
+  } catch {
+    return new Response(buildFallbackXml(origin), {
+      headers: {
+        'Content-Type': 'application/xml; charset=utf-8',
+        'Cache-Control': 'public, max-age=3600',
+      },
     });
   }
+}
+
+function buildFallbackXml(origin) {
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
+  <url>
+    <loc>${origin}/videos/</loc>
+  </url>
+</urlset>`;
 }
 
 function escapeXml(unsafe) {
