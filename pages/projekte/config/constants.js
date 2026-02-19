@@ -9,7 +9,7 @@ export const CACHE_DURATION = 60 * 60 * 1000; // 1 hour
 
 // Default OG Image
 export const DEFAULT_OG_IMAGE =
-  'https://www.abdulkerimsesli.de/content/assets/img/og/og-projekte-800.webp';
+  'https://www.abdulkerimsesli.de/content/assets/img/og/og-projekte-800.svg';
 
 // Theme Colors for consistent design system
 export const THEME_COLORS = {

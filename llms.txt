@@ -1,0 +1,34 @@
+# Abdulkerim Sesli - Webentwicklung und Fotografie in Berlin
+
+> Offizielles Portfolio von Abdulkerim Sesli (Abdul Berlin): Webentwickler (React, Three.js, Performance) und Fotograf aus Berlin.
+
+Base URL: https://www.abdulkerimsesli.de/
+
+## Core Pages
+- Home: https://www.abdulkerimsesli.de/
+- Projekte: https://www.abdulkerimsesli.de/projekte/
+- Blog: https://www.abdulkerimsesli.de/blog/
+- Videos: https://www.abdulkerimsesli.de/videos/
+- Gallery: https://www.abdulkerimsesli.de/gallery/
+- About: https://www.abdulkerimsesli.de/about/
+- Contact: https://www.abdulkerimsesli.de/contact/
+- Impressum: https://www.abdulkerimsesli.de/impressum/
+- Datenschutz: https://www.abdulkerimsesli.de/datenschutz/
+
+## Featured Topics
+- JavaScript Performance
+- TypeScript Patterns
+- CSS Container Queries
+- Progressive Web Apps
+- Three.js Optimization
+- Technical SEO
+
+## Sitemaps
+- Main: https://www.abdulkerimsesli.de/sitemap.xml
+- Images: https://www.abdulkerimsesli.de/sitemap-images.xml
+- Videos: https://www.abdulkerimsesli.de/sitemap-videos.xml
+
+## Contact
+- Email: kontakt@abdulkerimsesli.de
+- LinkedIn: https://linkedin.com/in/abdulkerim-s
+- GitHub: https://github.com/aKs030

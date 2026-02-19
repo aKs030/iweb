@@ -14,6 +14,21 @@
   Cross-Origin-Resource-Policy: cross-origin
   Timing-Allow-Origin: *
 
+/content/assets/img/*
+  Cache-Control: public, max-age=31536000, immutable
+  Vary: Accept-Encoding
+  Cross-Origin-Resource-Policy: cross-origin
+  Timing-Allow-Origin: *
+  X-Robots-Tag: max-image-preview:large
+
+/llms.txt
+  Content-Type: text/plain; charset=utf-8
+  Cache-Control: public, max-age=3600, stale-while-revalidate=86400
+
+/llms-full.txt
+  Content-Type: text/plain; charset=utf-8
+  Cache-Control: public, max-age=3600, stale-while-revalidate=86400
+
 # Favicon and manifest files
 /favicon.ico
   Cache-Control: public, max-age=2592000

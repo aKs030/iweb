@@ -1,0 +1,44 @@
+# Abdulkerim Sesli - LLM Full Index
+
+> Strukturierter Inhaltsindex fuer KI-Suchsysteme und Assistenten.
+
+Base URL: https://www.abdulkerimsesli.de/
+
+## Pages
+- https://www.abdulkerimsesli.de/ (Home)
+- https://www.abdulkerimsesli.de/projekte/ (Projektportfolio und Experimente)
+- https://www.abdulkerimsesli.de/blog/ (Artikel, Tutorials, SEO, Performance)
+- https://www.abdulkerimsesli.de/videos/ (Video-Landingpages und YouTube-Content)
+- https://www.abdulkerimsesli.de/gallery/ (Fotogalerie)
+- https://www.abdulkerimsesli.de/about/ (Profil, Skills, Background)
+- https://www.abdulkerimsesli.de/contact/ (Kontakt und Projektanfrage)
+- https://www.abdulkerimsesli.de/impressum/ (Rechtliche Angaben)
+- https://www.abdulkerimsesli.de/datenschutz/ (DSGVO und Datenschutz)
+
+## Blog Posts
+- https://www.abdulkerimsesli.de/blog/react-no-build/ (2025-09-05, Webdesign)
+- https://www.abdulkerimsesli.de/blog/modern-ui-design/ (2025-10-10, Webdesign)
+- https://www.abdulkerimsesli.de/blog/visual-storytelling/ (2025-11-02, Online-Marketing)
+- https://www.abdulkerimsesli.de/blog/threejs-performance/ (2025-12-15, Performance)
+- https://www.abdulkerimsesli.de/blog/seo-technische-optimierung/ (2026-01-08, Online-Marketing)
+- https://www.abdulkerimsesli.de/blog/progressive-web-apps-2026/ (2026-01-15, Performance)
+- https://www.abdulkerimsesli.de/blog/web-components-zukunft/ (2026-01-20, Webdesign)
+- https://www.abdulkerimsesli.de/blog/css-container-queries/ (2026-01-28, Webdesign)
+- https://www.abdulkerimsesli.de/blog/javascript-performance-patterns/ (2026-02-05, Performance)
+- https://www.abdulkerimsesli.de/blog/typescript-advanced-patterns/ (2026-02-10, Webdesign)
+
+## Structured Discovery
+- Main sitemap: https://www.abdulkerimsesli.de/sitemap.xml
+- Image sitemap: https://www.abdulkerimsesli.de/sitemap-images.xml
+- Video sitemap: https://www.abdulkerimsesli.de/sitemap-videos.xml
+- Robots: https://www.abdulkerimsesli.de/robots.txt
+- LLM index short: https://www.abdulkerimsesli.de/llms.txt
+
+## Entity
+- Name: Abdulkerim Sesli
+- Alternate names: Abdul Sesli, Abdul Berlin, Abdulkerim Berlin
+- Focus: Web Development, React, Three.js, JavaScript Performance, Urban Photography
+- Location: Berlin, Germany
+- Email: kontakt@abdulkerimsesli.de
+- GitHub: https://github.com/aKs030
+- LinkedIn: https://linkedin.com/in/abdulkerim-s

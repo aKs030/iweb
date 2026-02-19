@@ -137,10 +137,12 @@
 # ============================================================================
 /gallery/*      /pages/gallery/:splat     200
 /projekte/*     /pages/projekte/:splat    200
-/videos/*       /pages/videos/:splat      200
-/blog/*         /pages/blog/:splat        200
+/videos/*       /pages/videos/            200
+/blog/*         /pages/blog/              200
 /about/*        /pages/about/:splat       200
-/contact/*      /pages/contact/:splat     200
+/contact/*      /content/components/contact/ 200
+/impressum/*    /pages/impressum/:splat   200
+/datenschutz/*  /pages/datenschutz/:splat 200
 
 # ============================================================================
 # Notes

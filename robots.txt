@@ -8,6 +8,11 @@ User-agent: *
 Allow: /
 # Erlaube Zugriff auf den Pages-Ordner für korrektes Rendering und Indexierung
 Allow: /pages/
+Allow: /llms.txt
+Allow: /llms-full.txt
+Allow: /content/assets/img/
+Allow: /content/assets/img/previews/
+Allow: /content/assets/img/og/
 
 # Erlaube wichtige Ressourcen in Komponenten (CSS, JS, Bilder)
 Allow: /content/components/*.js
@@ -31,6 +36,15 @@ Disallow: /pages/design/
 # Spezifische Sperre für Suchparameter (verhindert Duplicate Content)
 Disallow: /*?search=
 Disallow: /*?q=
+
+# Google Bildersuche explizit erlauben
+User-agent: Googlebot-Image
+Allow: /
+Allow: /llms.txt
+Allow: /llms-full.txt
+Allow: /content/assets/img/
+Allow: /content/assets/img/previews/
+Allow: /content/assets/img/og/
 
 # Aggressive Crawler blockieren
 User-agent: AhrefsBot

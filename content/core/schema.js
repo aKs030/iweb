@@ -1,6 +1,6 @@
 /**
  * Modern Schema.org Generator
- * @version 4.0.0 - Enhanced with FAQ, Skills, Image enrichment
+ * @version 4.1.0 - Enhanced with image/video enrichment and neutral entity profile
  */
 
 import { createLogger } from './logger.js';
@@ -11,18 +11,378 @@ const log = createLogger('Schema');
 // Business FAQs for homepage
 const BUSINESS_FAQS = [
   {
-    q: 'Welche Dienstleistungen bietest du an?',
-    a: 'Ich biete professionelle Webentwicklung (Frontend & Fullstack mit React/Node.js) sowie hochwertige Fotografie-Dienstleistungen (Portrait, Urban, Event) im Raum Berlin an.',
+    q: 'Welche Themen deckt diese Website ab?',
+    a: 'Der Fokus liegt auf Webentwicklung, Performance, JavaScript, TypeScript, React, Three.js sowie visuellen Inhalten aus Fotografie und Video.',
   },
   {
-    q: 'Welchen Tech-Stack verwendest du?',
-    a: 'Mein Fokus liegt auf modernen JavaScript-Frameworks wie React, Next.js und Vue. Für 3D-Visualisierungen im Web nutze ich Three.js und WebGL.',
+    q: 'Was finde ich auf der Startseite?',
+    a: 'Die Startseite verknüpft die wichtigsten Bereiche: Projekte, Blog, Galerie, Videos und Hintergrundinformationen.',
   },
   {
-    q: 'Bist du für Freelance-Projekte verfügbar?',
-    a: 'Ja, ich bin offen für spannende Projektanfragen und Kooperationen. Kontaktieren Sie mich gerne direkt über meine Webseite oder LinkedIn.',
+    q: 'Sind Bilder und Videos strukturiert auffindbar?',
+    a: 'Ja. Die Website verwendet strukturierte Daten für Bild- und Videoinhalte sowie eigene Sitemaps für die Google-Indexierung.',
   },
 ];
+
+const HOMEPAGE_DISCOVERY_TEXT =
+  'Die Startseite bündelt Portfolio, Bildgalerie, Videoinhalte, Blogartikel und technische Schwerpunkte in einem zentralen Einstiegspunkt.';
+
+const DEFAULT_IMAGE_DIMENSIONS = {
+  width: 1200,
+  height: 630,
+};
+
+const KNOWN_IMAGE_DIMENSIONS = {
+  'favicon-512.webp': { width: 512, height: 512 },
+  'og-home-800.svg': { width: 800, height: 420 },
+  'og-projekte-800.svg': { width: 800, height: 420 },
+  'og-videos-800.svg': { width: 800, height: 420 },
+  'og-design-800.svg': { width: 800, height: 420 },
+  'og-photography-800.svg': { width: 800, height: 420 },
+  'og-threejs-800.svg': { width: 800, height: 420 },
+  'og-react-800.svg': { width: 800, height: 420 },
+  'og-pwa-800.svg': { width: 800, height: 420 },
+  'og-seo-800.svg': { width: 800, height: 420 },
+  'og-performance-800.svg': { width: 800, height: 420 },
+  'og-webcomponents-800.svg': { width: 800, height: 420 },
+  'og-css-800.svg': { width: 800, height: 420 },
+  'og-typescript-800.svg': { width: 800, height: 420 },
+};
+
+function normalizeText(value) {
+  return String(value || '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function toAbsoluteUrl(url, base = ENV.BASE_URL) {
+  if (!url) return '';
+  try {
+    return new URL(url, base).toString();
+  } catch {
+    return String(url);
+  }
+}
+
+function getFilename(url) {
+  try {
+    const parsed = new URL(toAbsoluteUrl(url));
+    return parsed.pathname.split('/').pop() || '';
+  } catch {
+    return '';
+  }
+}
+
+function inferImageMimeType(url) {
+  const filename = getFilename(url).toLowerCase();
+  if (filename.endsWith('.svg')) return 'image/svg+xml';
+  if (filename.endsWith('.webp')) return 'image/webp';
+  if (filename.endsWith('.png')) return 'image/png';
+  if (filename.endsWith('.jpg') || filename.endsWith('.jpeg'))
+    return 'image/jpeg';
+  if (filename.endsWith('.gif')) return 'image/gif';
+  if (filename.endsWith('.avif')) return 'image/avif';
+  return null;
+}
+
+function inferImageDimensions(url, fallback = null) {
+  const filename = getFilename(url);
+  if (filename && KNOWN_IMAGE_DIMENSIONS[filename]) {
+    return KNOWN_IMAGE_DIMENSIONS[filename];
+  }
+  return fallback;
+}
+
+function toInt(value) {
+  const parsed = Number.parseInt(String(value || ''), 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
+
+function uniqueList(values) {
+  const result = [];
+  const seen = new Set();
+
+  for (const raw of values || []) {
+    const value = normalizeText(raw);
+    if (!value) continue;
+    const key = value.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    result.push(value);
+  }
+
+  return result;
+}
+
+function buildKeywordList(pageData, pathname = '/') {
+  const baseKeywords = [
+    'Abdulkerim Sesli',
+    'Portfolio',
+    'Webentwicklung',
+    'Fotografie',
+    'Bilder',
+    'Videos',
+    'React',
+    'Three.js',
+    'JavaScript',
+  ];
+
+  const path = String(pathname || '/').toLowerCase();
+  const sectionKeywords = [];
+
+  if (path === '/' || path === '') {
+    sectionKeywords.push(
+      'Hauptseite',
+      'Bildgalerie',
+      'Video-Portfolio',
+      'Tech Blog',
+    );
+  } else if (path.startsWith('/blog')) {
+    sectionKeywords.push(
+      'Blog',
+      'Tutorials',
+      'SEO',
+      'Performance',
+      'TypeScript',
+    );
+  } else if (path.startsWith('/videos')) {
+    sectionKeywords.push('Video', 'YouTube', 'Behind the Scenes');
+  } else if (path.startsWith('/gallery')) {
+    sectionKeywords.push('Fotogalerie', 'Urban Photography', 'Portrait');
+  } else if (path.startsWith('/projekte')) {
+    sectionKeywords.push('Code Projekte', 'Web Apps', 'Frontend Experimente');
+  }
+
+  const titleTokens = normalizeText(pageData?.title || '')
+    .split(/[\s|,–—:/]+/)
+    .map((token) => token.trim())
+    .filter((token) => token.length >= 3);
+
+  return uniqueList([
+    ...baseKeywords,
+    ...sectionKeywords,
+    ...titleTokens,
+  ]).slice(0, 24);
+}
+
+function extractYouTubeId(url) {
+  try {
+    const parsed = new URL(toAbsoluteUrl(url));
+    const host = parsed.hostname.toLowerCase();
+
+    if (host === 'youtu.be') {
+      return parsed.pathname.replace(/^\/+/, '').split('/')[0] || null;
+    }
+
+    if (host.includes('youtube.com') || host.includes('youtube-nocookie.com')) {
+      if (parsed.pathname.startsWith('/embed/')) {
+        return parsed.pathname.split('/')[2] || null;
+      }
+      return parsed.searchParams.get('v');
+    }
+  } catch {
+    // Ignore invalid URLs
+  }
+
+  return null;
+}
+
+function collectDomVideoObjects({
+  doc,
+  pageUrl,
+  pageData,
+  brandData,
+  canonicalOrigin,
+}) {
+  const nodes = [];
+  const seen = new Set();
+
+  const iframeVideos = Array.from(
+    doc?.querySelectorAll?.('main iframe[src]') || [],
+  )
+    .filter((iframe) => {
+      const src = iframe.getAttribute('src') || iframe.src || '';
+      return /youtube\.com|youtube-nocookie\.com|youtu\.be/i.test(src);
+    })
+    .slice(0, 8);
+
+  for (const iframe of iframeVideos) {
+    const src = iframe.getAttribute('src') || iframe.src || '';
+    const absoluteEmbed = toAbsoluteUrl(src, canonicalOrigin);
+    if (!absoluteEmbed || seen.has(absoluteEmbed)) continue;
+    seen.add(absoluteEmbed);
+
+    const youtubeId = extractYouTubeId(absoluteEmbed);
+    const canonicalVideoUrl = youtubeId
+      ? `https://www.youtube.com/watch?v=${youtubeId}`
+      : absoluteEmbed;
+
+    const name = normalizeText(
+      iframe.getAttribute('title') ||
+        iframe.getAttribute('aria-label') ||
+        `${pageData?.title || 'Video'} ${nodes.length + 1}`,
+    );
+
+    const videoNode = {
+      '@type': 'VideoObject',
+      '@id': `${pageUrl}#video-${nodes.length + 1}`,
+      name,
+      description: normalizeText(pageData?.description || name),
+      url: canonicalVideoUrl,
+      embedUrl: absoluteEmbed,
+      inLanguage: 'de-DE',
+      isFamilyFriendly: true,
+      publisher: {
+        '@type': 'Organization',
+        name: brandData.legalName || brandData.name,
+        url: ENV.BASE_URL,
+      },
+    };
+
+    if (youtubeId) {
+      videoNode.thumbnailUrl = `https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg`;
+      videoNode.contentUrl = canonicalVideoUrl;
+    }
+
+    nodes.push(videoNode);
+  }
+
+  const htmlVideos = Array.from(
+    doc?.querySelectorAll?.('main video') || [],
+  ).slice(0, 8);
+
+  for (const video of htmlVideos) {
+    const directSrc =
+      video.getAttribute('src') ||
+      video.querySelector?.('source[src]')?.getAttribute?.('src') ||
+      '';
+    if (!directSrc) continue;
+
+    const absoluteSrc = toAbsoluteUrl(directSrc, canonicalOrigin);
+    if (!absoluteSrc || seen.has(absoluteSrc)) continue;
+    seen.add(absoluteSrc);
+
+    const name = normalizeText(
+      video.getAttribute('title') ||
+        video.getAttribute('aria-label') ||
+        video.getAttribute('data-title') ||
+        `${pageData?.title || 'Video'} ${nodes.length + 1}`,
+    );
+
+    const videoNode = {
+      '@type': 'VideoObject',
+      '@id': `${pageUrl}#video-${nodes.length + 1}`,
+      name,
+      description: normalizeText(pageData?.description || name),
+      url: absoluteSrc,
+      contentUrl: absoluteSrc,
+      inLanguage: 'de-DE',
+      isFamilyFriendly: true,
+      publisher: {
+        '@type': 'Organization',
+        name: brandData.legalName || brandData.name,
+        url: ENV.BASE_URL,
+      },
+    };
+
+    const poster = video.getAttribute('poster');
+    if (poster) {
+      videoNode.thumbnailUrl = toAbsoluteUrl(poster, canonicalOrigin);
+    }
+
+    nodes.push(videoNode);
+  }
+
+  return nodes;
+}
+
+function buildImageObject({
+  id,
+  imageUrl,
+  name,
+  caption,
+  creatorName,
+  currentYear,
+  dimensions,
+  creditPrefix = 'Photo: ',
+  creditText = '',
+  representativeOfPage = false,
+}) {
+  const absoluteUrl = toAbsoluteUrl(imageUrl);
+  const encodingFormat = inferImageMimeType(absoluteUrl);
+
+  const imageNode = {
+    '@type': 'ImageObject',
+    ...(id ? { '@id': id } : {}),
+    contentUrl: absoluteUrl,
+    url: absoluteUrl,
+    name: normalizeText(name || caption || ''),
+    caption: normalizeText(caption || name || ''),
+    creator: { '@type': 'Person', name: creatorName },
+    license: `${ENV.BASE_URL}/#image-license`,
+    creditText: normalizeText(creditText || `${creditPrefix}${creatorName}`),
+    copyrightNotice: `© ${currentYear} ${creatorName}`,
+    acquireLicensePage: `${ENV.BASE_URL}/#image-license`,
+  };
+
+  if (encodingFormat) imageNode.encodingFormat = encodingFormat;
+
+  const finalDimensions = dimensions || inferImageDimensions(absoluteUrl);
+  if (finalDimensions?.width) imageNode.width = finalDimensions.width;
+  if (finalDimensions?.height) imageNode.height = finalDimensions.height;
+  if (representativeOfPage) imageNode.representativeOfPage = true;
+
+  return imageNode;
+}
+
+function collectDomImageObjects({
+  doc,
+  pageUrl,
+  brandData,
+  currentYear,
+  canonicalOrigin,
+}) {
+  const nodes = [];
+  const seen = new Set();
+  const images = Array.from(doc?.querySelectorAll?.('main img[src]') || []);
+
+  for (const img of images) {
+    if (nodes.length >= 12) break;
+
+    const src = img.getAttribute('src') || img.src;
+    if (!src) continue;
+
+    const absolute = toAbsoluteUrl(src, canonicalOrigin);
+    if (!absolute || seen.has(absolute)) continue;
+    seen.add(absolute);
+
+    const id = `${pageUrl}#image-${nodes.length + 1}`;
+    const alt = normalizeText(img.getAttribute('alt') || '');
+    const width = toInt(img.getAttribute('width'));
+    const height = toInt(img.getAttribute('height'));
+
+    nodes.push(
+      buildImageObject({
+        id,
+        imageUrl: absolute,
+        name: alt || pageUrl,
+        caption: alt || pageUrl,
+        creatorName: brandData.name,
+        currentYear,
+        dimensions:
+          width && height
+            ? {
+                width,
+                height,
+              }
+            : undefined,
+        creditPrefix: brandData.creditPrefix || 'Photo: ',
+      }),
+    );
+  }
+
+  return nodes;
+}
 
 /**
  * Generate Schema.org @graph
@@ -69,11 +429,14 @@ export function generateSchemaGraph(
     '@id': ID.org,
     name: brandData.legalName,
     url: ENV.BASE_URL,
-    logo: createImageObject(brandData.logo, brandData.name, currentYear),
+    logo: createImageObject(
+      brandData.logo,
+      brandData.name,
+      currentYear,
+      canonicalOrigin,
+    ),
     email: brandData.email,
     sameAs: brandData.sameAs,
-    contactPoint: brandData.contactPoint,
-    telephone: brandData.telephone,
     founder: { '@id': ID.person },
   });
 
@@ -91,7 +454,10 @@ export function generateSchemaGraph(
     image: brandData.image || {
       '@type': 'ImageObject',
       '@id': `${ENV.BASE_URL}/#personImage`,
-      url: 'https://commons.wikimedia.org/wiki/File:Abdulkerim_Sesli_portrait_2025.png',
+      contentUrl: `${ENV.BASE_URL}/content/assets/img/icons/favicon-512.webp`,
+      url: `${ENV.BASE_URL}/content/assets/img/icons/favicon-512.webp`,
+      width: 512,
+      height: 512,
       creator: { '@type': 'Person', name: brandData.name },
       caption: brandData.name,
       license: `${ENV.BASE_URL}/#image-license`,
@@ -101,22 +467,12 @@ export function generateSchemaGraph(
     },
     description: pageData.description,
     disambiguatingDescription:
-      "Webentwickler (React, Three.js) und Fotograf aus Berlin, nicht zu verwechseln mit 'Sesli Kitap' oder Hörbuch-Verlagen.",
+      "Webentwickler (React, Three.js) und Fotograf, nicht zu verwechseln mit 'Sesli Kitap' oder Hörbuch-Verlagen.",
     sameAs: brandData.sameAs,
-    homeLocation: {
-      '@type': 'Place',
-      name: 'Berlin',
-    },
     knowsLanguage: brandData.knowsLanguage?.map((lang) => ({
       '@type': 'Language',
       name: lang.name,
       alternateName: lang.alternateName,
-    })),
-    hasOccupation: brandData.hasOccupation?.map((occ) => ({
-      '@type': 'Occupation',
-      name: occ.name,
-      description: occ.description,
-      skills: occ.skills,
     })),
     knowsAbout: getKnowsAbout(),
   };
@@ -128,12 +484,26 @@ export function generateSchemaGraph(
 
   // WebPage with content extraction
   const aiReadyText = extractPageContent(doc);
+  const isHomepage =
+    globalThis.location?.pathname === '/' ||
+    globalThis.location?.pathname === '';
+  const pageKeywords = buildKeywordList(
+    pageData,
+    globalThis.location?.pathname || '/',
+  );
+  const longDescription = normalizeText(
+    [pageData.description, isHomepage ? HOMEPAGE_DISCOVERY_TEXT : '']
+      .filter(Boolean)
+      .join(' '),
+  );
+
   const webPageNode = {
     '@type': pageData.type || 'WebPage',
     '@id': ID.webpage,
     url: pageUrl,
     name: pageData.title,
-    description: pageData.description,
+    description: longDescription || pageData.description,
+    keywords: pageKeywords.join(', '),
     text: aiReadyText,
     isPartOf: { '@id': ID.website },
     mainEntity: { '@id': ID.person },
@@ -171,15 +541,76 @@ export function generateSchemaGraph(
   }
 
   // Image enrichment
+  let primaryImageUrl = null;
+  const hasPartRefs = [];
   if (pageData.image) {
     const imageNode = generateImageObject(
       pageUrl,
       pageData,
       brandData,
       currentYear,
+      canonicalOrigin,
     );
+    primaryImageUrl = imageNode.url || imageNode.contentUrl || null;
     graph.push(imageNode);
     webPageNode.primaryImageOfPage = { '@id': imageNode['@id'] };
+    if (primaryImageUrl) {
+      webPageNode.image = primaryImageUrl;
+    }
+    if (imageNode['@id']) {
+      hasPartRefs.push({ '@id': imageNode['@id'] });
+    }
+  }
+
+  const domImageNodes = collectDomImageObjects({
+    doc,
+    pageUrl,
+    brandData,
+    currentYear,
+    canonicalOrigin,
+  });
+  if (domImageNodes.length > 0) {
+    const filteredDomNodes = domImageNodes.filter((node) => {
+      const domUrl = node.url || node.contentUrl;
+      return domUrl && domUrl !== primaryImageUrl;
+    });
+
+    if (filteredDomNodes.length > 0) {
+      graph.push(...filteredDomNodes);
+      for (const imageNode of filteredDomNodes) {
+        if (imageNode['@id']) hasPartRefs.push({ '@id': imageNode['@id'] });
+      }
+    }
+
+    const imageUrls = [
+      ...(webPageNode.image ? [webPageNode.image] : []),
+      ...filteredDomNodes
+        .map((node) => node.url || node.contentUrl)
+        .filter(Boolean),
+    ];
+
+    if (imageUrls.length > 0) {
+      webPageNode.image = [...new Set(imageUrls)];
+    }
+  }
+
+  const domVideoNodes = collectDomVideoObjects({
+    doc,
+    pageUrl,
+    pageData,
+    brandData,
+    canonicalOrigin,
+  });
+  if (domVideoNodes.length > 0) {
+    graph.push(...domVideoNodes);
+    webPageNode.video = domVideoNodes.map((node) => ({ '@id': node['@id'] }));
+    for (const videoNode of domVideoNodes) {
+      if (videoNode['@id']) hasPartRefs.push({ '@id': videoNode['@id'] });
+    }
+  }
+
+  if (hasPartRefs.length > 0) {
+    webPageNode.hasPart = hasPartRefs;
   }
 
   // FAQ handling
@@ -208,18 +639,21 @@ export function generateSchemaGraph(
  * @param {string} name
  * @returns {Object}
  */
-function createImageObject(url, name, currentYear) {
-  return {
-    '@type': 'ImageObject',
-    url,
-    width: 512,
-    height: 512,
-    creator: { '@type': 'Person', name },
-    license: `${ENV.BASE_URL}/#image-license`,
-    acquireLicensePage: `${ENV.BASE_URL}/#image-license`,
-    creditText: `Logo: ${name}`,
-    copyrightNotice: `© ${currentYear} ${name}`,
-  };
+function createImageObject(
+  url,
+  name,
+  currentYear,
+  canonicalOrigin = ENV.BASE_URL,
+) {
+  return buildImageObject({
+    imageUrl: toAbsoluteUrl(url, canonicalOrigin),
+    name: `${name} Logo`,
+    caption: `${name} Logo`,
+    creatorName: name,
+    currentYear,
+    dimensions: { width: 512, height: 512 },
+    creditPrefix: 'Logo: ',
+  });
 }
 
 /**
@@ -252,11 +686,6 @@ function getKnowsAbout() {
       '@type': 'Thing',
       name: 'Photography',
       sameAs: 'https://www.wikidata.org/wiki/Q11633',
-    },
-    {
-      '@type': 'Place',
-      name: 'Berlin',
-      sameAs: 'https://www.wikidata.org/wiki/Q64',
     },
   ];
 }
@@ -468,6 +897,34 @@ function extractPageContent(doc) {
 
     let text = clone.textContent || '';
     text = text.replace(/\s+/g, ' ').trim();
+
+    const imageAltTexts = uniqueList(
+      Array.from(doc?.querySelectorAll?.('main img[alt]') || [])
+        .map((img) => img.getAttribute('alt'))
+        .filter(Boolean),
+    );
+
+    const videoTitles = uniqueList(
+      Array.from(
+        doc?.querySelectorAll?.(
+          'main iframe[title], main video[title], main video[aria-label]',
+        ) || [],
+      )
+        .map(
+          (node) =>
+            node.getAttribute('title') || node.getAttribute('aria-label'),
+        )
+        .filter(Boolean),
+    );
+
+    if (imageAltTexts.length > 0) {
+      text += ` Bilder: ${imageAltTexts.slice(0, 12).join(' | ')}.`;
+    }
+
+    if (videoTitles.length > 0) {
+      text += ` Videos: ${videoTitles.slice(0, 10).join(' | ')}.`;
+    }
+
     return text.length > 5000 ? text.substring(0, 5000) + '...' : text;
   } catch {
     return '';
@@ -515,19 +972,31 @@ function generateSkillsList(baseUrl) {
  * @param {Object} brandData
  * @returns {Object}
  */
-function generateImageObject(pageUrl, pageData, brandData, currentYear) {
-  return {
-    '@type': 'ImageObject',
-    '@id': `${pageUrl}#primaryImage`,
-    contentUrl: pageData.image,
-    url: pageData.image,
+function generateImageObject(
+  pageUrl,
+  pageData,
+  brandData,
+  currentYear,
+  canonicalOrigin = ENV.BASE_URL,
+) {
+  const absoluteImage = toAbsoluteUrl(pageData.image, canonicalOrigin);
+  const dimensions = inferImageDimensions(
+    absoluteImage,
+    DEFAULT_IMAGE_DIMENSIONS,
+  );
+
+  return buildImageObject({
+    id: `${pageUrl}#primaryImage`,
+    imageUrl: absoluteImage,
+    name: pageData.title || pageData.description || '',
     caption: pageData.title || pageData.description || '',
-    creator: { '@type': 'Person', name: brandData.name },
-    license: `${ENV.BASE_URL}/#image-license`,
-    creditText: pageData.imageCredit || `Photo: ${brandData.name}`,
-    copyrightNotice: `© ${currentYear} ${brandData.name}`,
-    acquireLicensePage: `${ENV.BASE_URL}/#image-license`,
-  };
+    creatorName: brandData.name,
+    currentYear,
+    dimensions,
+    creditPrefix: brandData.creditPrefix || 'Photo: ',
+    creditText: pageData.imageCredit || '',
+    representativeOfPage: true,
+  });
 }
 
 /**
