@@ -56,17 +56,34 @@ export async function onRequestPost(context) {
 
     // Use Workers Binding to call AI Search Beta
     const ragId = env.RAG_ID || 'wispy-pond-1055';
+    const startTime = Date.now();
+
+    // Call AI Search Beta with strict config (matches working Chat API)
     const searchData = await env.AI.autorag(ragId).aiSearch({
       query: expandedQuery,
-      max_num_results: Math.max(topK, 15), // Mindestens 15 für bessere Abdeckung
-      rewrite_query: true,
+      max_num_results: Math.max(topK, 15),
+      rewrite_query: false, // Disabled to prevent errors
       stream: false,
-      system_prompt:
-        'Du bist ein Suchassistent für abdulkerimsesli.de. Fasse die Suchergebnisse in 1-2 prägnanten Sätzen zusammen (max. 120 Zeichen). Fokussiere auf die wichtigsten Inhalte und vermeide generische Aussagen.',
+      // Removed system_prompt as it's not supported in all AI Search versions
     });
 
+    const duration = Date.now() - startTime;
+
+    // Handle empty or invalid response gracefully
+    if (!searchData || !searchData.data || !Array.isArray(searchData.data)) {
+        console.warn(`Search returned empty/invalid data for query: "${query}" (Time: ${duration}ms)`);
+        return new Response(JSON.stringify({
+            results: [],
+            summary: `Keine Ergebnisse für "${query}" gefunden.`,
+            count: 0,
+            query: query,
+        }), {
+            headers: corsHeaders,
+        });
+    }
+
     // Transform AI Search Beta response to our format
-    const results = (searchData.data || []).map((item) => {
+    const results = searchData.data.map((item) => {
       // Use helper to normalize URL
       const url = normalizeUrl(item.filename);
       const title = extractTitle(item.filename);
@@ -128,7 +145,7 @@ export async function onRequestPost(context) {
     // Threshold 1.0 ensures we only keep results that:
     // 1. Have a text match (score boosted > 2.0)
     // 2. OR have a high vector similarity (> 0.6) which triggers static boosts (> 1.6)
-    const RELEVANCE_THRESHOLD = 1.0;
+    const RELEVANCE_THRESHOLD = 0.8; // Slightly lowered to allow more results
     const relevantResults = scoredResults.filter(
       (result) => result.score >= RELEVANCE_THRESHOLD,
     );
@@ -142,11 +159,13 @@ export async function onRequestPost(context) {
       return categoryCount[cat] <= MAX_PER_CATEGORY;
     });
 
+    const summaryText = searchData.response
+        ? searchData.response.trim().substring(0, 150)
+        : `${finalResults.length} ${finalResults.length === 1 ? 'Ergebnis' : 'Ergebnisse'} für "${query}"`;
+
     const responseData = {
       results: finalResults,
-      summary: searchData.response
-        ? searchData.response.trim().substring(0, 150)
-        : `${finalResults.length} ${finalResults.length === 1 ? 'Ergebnis' : 'Ergebnisse'} für "${query}"`,
+      summary: summaryText,
       count: finalResults.length,
       query: query,
       expandedQuery: expandedQuery !== query ? expandedQuery : undefined,
