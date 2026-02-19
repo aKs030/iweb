@@ -132,7 +132,11 @@ class PerformanceMonitor {
           }
         }
       });
-      observer.observe({ type: 'event', buffered: true, durationThreshold: 40 });
+      observer.observe({
+        type: 'event',
+        buffered: true,
+        durationThreshold: 40,
+      });
 
       // Report final INP when page becomes hidden
       window.addEventListener(
