@@ -2,6 +2,7 @@ const LICENSE_URL = 'https://www.abdulkerimsesli.de/#image-license';
 const BLOG_INDEX_PATH = '/pages/blog/posts/index.json';
 const PROJECT_APPS_PATH = '/pages/projekte/apps-config.json';
 const R2_DOMAIN = 'https://img.abdulkerimsesli.de';
+const MAX_YOUTUBE_RESULTS = 200;
 
 const STATIC_PAGE_IMAGES = [
   {
@@ -216,6 +217,89 @@ async function addGalleryR2Images(urlMap, bucket) {
   } while (cursor);
 }
 
+async function fetchUploadsPlaylistId(channelId, apiKey) {
+  const channelUrl = new URL('https://www.googleapis.com/youtube/v3/channels');
+  channelUrl.searchParams.set('id', channelId);
+  channelUrl.searchParams.set('key', apiKey);
+  channelUrl.searchParams.set('part', 'contentDetails');
+
+  const response = await fetch(channelUrl.toString());
+  if (!response.ok) {
+    throw new Error(`YouTube channels API failed: ${response.status}`);
+  }
+
+  const payload = await response.json();
+  const firstItem = payload?.items?.[0];
+  return firstItem?.contentDetails?.relatedPlaylists?.uploads || null;
+}
+
+function getBestYouTubeThumbnail(snippet = {}) {
+  return (
+    snippet.thumbnails?.maxres?.url ||
+    snippet.thumbnails?.standard?.url ||
+    snippet.thumbnails?.high?.url ||
+    snippet.thumbnails?.medium?.url ||
+    snippet.thumbnails?.default?.url ||
+    ''
+  );
+}
+
+async function addYouTubeVideoImages(urlMap, env) {
+  const channelId = env?.YOUTUBE_CHANNEL_ID;
+  const apiKey = env?.YOUTUBE_API_KEY;
+  if (!channelId || !apiKey) return;
+
+  const uploadsPlaylistId = await fetchUploadsPlaylistId(channelId, apiKey);
+  if (!uploadsPlaylistId) return;
+
+  let nextPageToken = null;
+  let collected = 0;
+
+  do {
+    const playlistUrl = new URL(
+      'https://www.googleapis.com/youtube/v3/playlistItems',
+    );
+    playlistUrl.searchParams.set('playlistId', uploadsPlaylistId);
+    playlistUrl.searchParams.set('key', apiKey);
+    playlistUrl.searchParams.set('part', 'snippet');
+    playlistUrl.searchParams.set('maxResults', '50');
+    if (nextPageToken) {
+      playlistUrl.searchParams.set('pageToken', nextPageToken);
+    }
+
+    const response = await fetch(playlistUrl.toString());
+    if (!response.ok) {
+      throw new Error(`YouTube playlistItems API failed: ${response.status}`);
+    }
+
+    const payload = await response.json();
+    const items = payload?.items || [];
+
+    for (const item of items) {
+      const snippet = item?.snippet || {};
+      const videoId = snippet?.resourceId?.videoId;
+      const thumbnail = getBestYouTubeThumbnail(snippet);
+      if (!videoId || !thumbnail) continue;
+
+      const title = normalizeText(snippet.title, `Video ${videoId}`);
+      const description = normalizeText(snippet.description, title);
+
+      addImage(urlMap, `/videos/${encodeURIComponent(videoId)}/`, {
+        loc: thumbnail,
+        title,
+        caption: description,
+      });
+
+      collected += 1;
+      if (collected >= MAX_YOUTUBE_RESULTS) {
+        return;
+      }
+    }
+
+    nextPageToken = payload?.nextPageToken || null;
+  } while (nextPageToken && collected < MAX_YOUTUBE_RESULTS);
+}
+
 async function loadJsonAsset(context, path) {
   if (!context.env?.ASSETS) return null;
 
@@ -287,6 +371,12 @@ export async function onRequest(context) {
 
   addBlogImages(urlMap, origin, posts);
   addProjectPreviewImages(urlMap, origin, appsConfig);
+
+  try {
+    await addYouTubeVideoImages(urlMap, context.env);
+  } catch {
+    // Keep sitemap valid even if YouTube API is unavailable.
+  }
 
   try {
     await addGalleryR2Images(urlMap, context.env?.GALLERY_BUCKET);
