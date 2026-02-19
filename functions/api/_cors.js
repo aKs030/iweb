@@ -1,7 +1,7 @@
 /**
  * Shared CORS Utility for Cloudflare Pages Functions
  * Centralizes origin validation and header management.
- * @version 1.0.0
+ * @version 1.0.1
  * Verified existence for deployment: Feb 14, 2026
  */
 
@@ -27,10 +27,18 @@ export function getCorsHeaders(request, env) {
     'Content-Type': 'application/json',
   };
 
-  // Only set CORS headers if the origin is in our whitelist
-  if (origin && allowedOrigins.includes(origin)) {
-    headers['Access-Control-Allow-Origin'] = origin;
-    headers['Access-Control-Allow-Credentials'] = 'true';
+  // Only set CORS headers if the origin is in our whitelist or is a preview/local environment
+  if (origin) {
+    const isAllowed =
+      allowedOrigins.includes(origin) ||
+      origin.endsWith('.pages.dev') || // Allow all Pages Preview URLs
+      origin.includes('localhost') || // Allow local development
+      origin.includes('127.0.0.1'); // Allow local development IP
+
+    if (isAllowed) {
+      headers['Access-Control-Allow-Origin'] = origin;
+      headers['Access-Control-Allow-Credentials'] = 'true';
+    }
   }
 
   return headers;
