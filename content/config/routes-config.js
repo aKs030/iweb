@@ -2,10 +2,9 @@ import { BASE_URL } from './constants.js';
 
 export const ROUTES = {
   default: {
-    title:
-      'Abdulkerim Sesli | Webentwicklung & Fotografie Berlin | Abdul Berlin',
+    title: 'Abdulkerim Sesli | Offizielles Portfolio für Web, Foto & Video',
     description:
-      'Offizielles Portfolio von Abdulkerim Sesli (Abdul Berlin). Webentwickler (React, Three.js) und Fotograf aus Berlin. Nicht zu verwechseln mit Hörbuch-Verlagen.',
+      'Offizielle Website von Abdulkerim Sesli (auch bekannt als Abdul Sesli). Portfolio mit Webentwicklung, Fotografie, Videos, Projekten und Blog.',
     title_en: 'Abdulkerim Sesli — Web Developer & Photographer in Berlin',
     description_en:
       'Abdulkerim Sesli — Web Developer & Photographer in Berlin. Specialist in React, Three.js and urban photography. Portfolio, references & contact.',
@@ -24,7 +23,7 @@ export const ROUTES = {
     image: `${BASE_URL}/content/assets/img/og/og-projekte-800.svg`,
   },
   '/blog/': {
-    title: 'Tech-Blog & Tutorials | Webentwicklung Berlin',
+    title: 'Tech-Blog & Tutorials | Abdulkerim Sesli',
     description:
       'Expertenwissen zu JavaScript, CSS und Web-Architektur. Praxisnahe Tutorials und Einblicke in den Workflow eines Berliner Fullstack-Entwicklers.',
     title_en: 'Tech Blog & Tutorials | Web Development Berlin',
@@ -44,7 +43,7 @@ export const ROUTES = {
     image: `${BASE_URL}/content/assets/img/og/og-videos-800.svg`,
   },
   '/gallery/': {
-    title: 'Fotografie Portfolio | Urban & Portrait Berlin',
+    title: 'Fotografie Portfolio | Abdulkerim Sesli',
     description:
       'Visuelle Ästhetik aus der Hauptstadt. Kuratierte Galerie mit Fokus auf Street Photography, Architektur und atmosphärische Portraits aus Berlin und Umgebung.',
     title_en: 'Photography Portfolio | Urban & Portraits Berlin',
@@ -61,6 +60,16 @@ export const ROUTES = {
     description_en:
       'The person behind the code. Detailed background, tech stack overview, and direct contact options for project inquiries and collaborations.',
     type: 'AboutPage',
+    image: `${BASE_URL}/content/assets/img/og/og-home-800.svg`,
+  },
+  '/abdul-sesli/': {
+    title: 'Abdul Sesli | Offizielles Profil von Abdulkerim Sesli',
+    description:
+      'Abdul Sesli ist die Kurzform von Abdulkerim Sesli. Diese Seite verweist auf das offizielle Portfolio mit Blog, Videos, Bildern und Projekten.',
+    title_en: 'Abdul Sesli | Official profile of Abdulkerim Sesli',
+    description_en:
+      'Abdul Sesli is the short name of Abdulkerim Sesli. This page links to the official portfolio with blog, videos, images and projects.',
+    type: 'ProfilePage',
     image: `${BASE_URL}/content/assets/img/og/og-home-800.svg`,
   },
   '/contact/': {

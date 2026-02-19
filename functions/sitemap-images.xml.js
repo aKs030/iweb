@@ -9,43 +9,49 @@ const STATIC_PAGE_IMAGES = [
     page: '/',
     image: '/content/assets/img/og/og-home-800.svg',
     title: 'Abdulkerim Sesli Startseite',
-    caption: 'Digital Creator Portfolio',
+    caption:
+      'Zentrale Hauptseite mit Portfolio, Blog, Bildern, Videos und Projekten',
   },
   {
     page: '/about/',
     image: '/content/assets/img/icons/favicon-512.webp',
     title: 'Abdulkerim Sesli',
-    caption: 'Über mich',
+    caption:
+      'Profilseite mit Hintergrund, Themenfeldern und redaktionellen Inhalten',
+  },
+  {
+    page: '/abdul-sesli/',
+    image: '/content/assets/img/og/og-home-800.svg',
+    title: 'Abdul Sesli',
+    caption: 'Alias-Seite: Abdul Sesli ist die Kurzform von Abdulkerim Sesli',
   },
   {
     page: '/blog/',
     image: '/content/assets/img/og/og-design-800.svg',
     title: 'Tech Blog',
-    caption: 'Webentwicklung, SEO und Performance',
+    caption:
+      'Blog mit Artikeln zu Webentwicklung, SEO, Performance, React und TypeScript',
   },
   {
     page: '/gallery/',
     image: '/content/assets/img/og/og-photography-800.svg',
     title: 'Fotografie Portfolio',
-    caption: 'Urban & Portrait Berlin',
+    caption:
+      'Bildgalerie mit Portraits, Street-Fotografie und visuellen Serien',
   },
   {
     page: '/videos/',
     image: '/content/assets/img/og/og-videos-800.svg',
     title: 'Videos',
-    caption: 'YouTube und Behind-the-Scenes',
+    caption:
+      'Videoseite mit YouTube-Inhalten, Clips, Making-of und Story-Formaten',
   },
   {
     page: '/projekte/',
     image: '/content/assets/img/og/og-projekte-800.svg',
     title: 'Code Projekte',
-    caption: 'Interaktive Web-Experimente',
-  },
-  {
-    page: '/contact/',
-    image: '/content/assets/img/og/og-home-800.svg',
-    title: 'Kontakt',
-    caption: 'Projektanfrage und Zusammenarbeit',
+    caption:
+      'Interaktive Webprojekte mit JavaScript, React, UI und Frontend-Experimenten',
   },
   {
     page: '/impressum/',
@@ -92,6 +98,19 @@ function toAbsoluteUrl(origin, value) {
 function normalizeText(value, fallback = '') {
   const cleaned = String(value ?? '').trim();
   return cleaned || fallback;
+}
+
+function sanitizeDiscoveryText(value, fallback = '') {
+  const source = normalizeText(value, fallback);
+  if (!source) return '';
+
+  return source
+    .replace(/Abdul\s*Berlin/gi, 'Abdulkerim Sesli')
+    .replace(/\bBerlin\b/gi, '')
+    .replace(/#Abdulberlin/gi, '')
+    .replace(/\s{2,}/g, ' ')
+    .replace(/\s+([,.;:!?])/g, '$1')
+    .trim();
 }
 
 function formatSlug(slug = '') {
@@ -159,10 +178,16 @@ function addBlogImages(urlMap, origin, posts) {
     const image = normalizeText(post?.image);
     if (!id || !image) continue;
 
+    const cleanTitle = sanitizeDiscoveryText(post.title, `Blog Artikel ${id}`);
+    const cleanCaption = sanitizeDiscoveryText(
+      post.seoDescription || post.excerpt,
+      `${cleanTitle || id} - Blogbeitrag mit Bildern, Codebeispielen und Kontext`,
+    );
+
     addImage(urlMap, `/blog/${encodeURIComponent(id)}/`, {
       loc: toAbsoluteUrl(origin, image),
-      title: normalizeText(post.title, `Blog Artikel ${id}`),
-      caption: normalizeText(post.excerpt, post.title || id),
+      title: cleanTitle,
+      caption: cleanCaption,
       license: LICENSE_URL,
     });
   }
@@ -179,8 +204,8 @@ function addProjectPreviewImages(urlMap, origin, appsConfig) {
         origin,
         `/content/assets/img/previews/${encodeURIComponent(name)}.svg`,
       ),
-      title: normalizeText(app?.title, formatSlug(name)),
-      caption: normalizeText(app?.description, formatSlug(name)),
+      title: sanitizeDiscoveryText(app?.title, formatSlug(name)),
+      caption: sanitizeDiscoveryText(app?.description, formatSlug(name)),
       license: LICENSE_URL,
     });
   }
@@ -207,8 +232,8 @@ async function addGalleryR2Images(urlMap, bucket) {
 
       addImage(urlMap, '/gallery/', {
         loc: `${R2_DOMAIN}/${encodedKey}`,
-        title: normalizeText(title, 'Gallery Image'),
-        caption: `${normalizeText(title, 'Gallery Image')} - Abdulkerim Sesli Photography`,
+        title: sanitizeDiscoveryText(title, 'Gallery Image'),
+        caption: `${sanitizeDiscoveryText(title, 'Gallery Image')} - Fotoinhalt aus der Bildgalerie von Abdulkerim Sesli`,
         license: LICENSE_URL,
       });
     }
@@ -281,8 +306,11 @@ async function addYouTubeVideoImages(urlMap, env) {
       const thumbnail = getBestYouTubeThumbnail(snippet);
       if (!videoId || !thumbnail) continue;
 
-      const title = normalizeText(snippet.title, `Video ${videoId}`);
-      const description = normalizeText(snippet.description, title);
+      const title = sanitizeDiscoveryText(snippet.title, `Video ${videoId}`);
+      const description = sanitizeDiscoveryText(
+        snippet.description,
+        `${title} - Videoinhalt mit Beschreibung und Kontext`,
+      );
 
       addImage(urlMap, `/videos/${encodeURIComponent(videoId)}/`, {
         loc: thumbnail,
@@ -390,6 +418,7 @@ export async function onRequest(context) {
     headers: {
       'Content-Type': 'application/xml; charset=utf-8',
       'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
+      'X-Robots-Tag': 'index, follow',
     },
   });
 }

@@ -22,10 +22,29 @@ const BUSINESS_FAQS = [
     q: 'Sind Bilder und Videos strukturiert auffindbar?',
     a: 'Ja. Die Website verwendet strukturierte Daten für Bild- und Videoinhalte sowie eigene Sitemaps für die Google-Indexierung.',
   },
+  {
+    q: 'Ist diese Website von Abdülkerim Bardakcı oder Sesli Kitap?',
+    a: 'Nein. Diese Website gehört zu Abdulkerim Sesli und zeigt ausschließlich eigene Inhalte zu Webentwicklung, Fotografie und Videos.',
+  },
 ];
 
 const HOMEPAGE_DISCOVERY_TEXT =
-  'Die Startseite bündelt Portfolio, Bildgalerie, Videoinhalte, Blogartikel und technische Schwerpunkte in einem zentralen Einstiegspunkt.';
+  'Die Startseite bündelt Portfolio, Bildgalerie, Videoinhalte, Blogartikel und technische Schwerpunkte in einem zentralen Einstiegspunkt. Suchmaschinen und KI-Suchen erhalten dadurch einen klaren Überblick über Bilder, Videos und redaktionelle Inhalte auf dieser Domain.';
+
+const SECTION_DISCOVERY_TEXT = {
+  home: 'Diese Hauptseite verweist auf alle zentralen Inhaltsbereiche: Blog, Galerie, Videos, Projekte und Profilinformationen.',
+  blog: 'Der Blog enthält ausführliche Artikel mit technischen Erklärungen, strukturierten Überschriften, Bildern und ergänzenden Medien.',
+  videos:
+    'Die Videoseite bündelt Video-Landingpages und eingebettete Inhalte mit beschreibenden Titeln und Vorschaubildern.',
+  gallery:
+    'Die Galerie fokussiert auf visuelle Inhalte mit Bildmetadaten, Alt-Texten und strukturierter Bildzuordnung für die Suche.',
+  projects:
+    'Die Projektseite zeigt interaktive Frontend-Projekte mit inhaltlichen Beschreibungen, Kategorien und weiterführenden Verweisen.',
+  about:
+    'Die Profilseite beschreibt Abdulkerim Sesli als Autor der Inhalte und verknüpft die wichtigsten Themen dieser Website.',
+  generic:
+    'Diese Seite ist Teil des Portfolios von Abdulkerim Sesli und ergänzt den Gesamtzusammenhang aus Text, Bild und Video.',
+};
 
 const DEFAULT_IMAGE_DIMENSIONS = {
   width: 1200,
@@ -117,11 +136,16 @@ function uniqueList(values) {
 function buildKeywordList(pageData, pathname = '/') {
   const baseKeywords = [
     'Abdulkerim Sesli',
+    'Abdülkerim Sesli',
+    'Abdul Sesli',
     'Portfolio',
     'Webentwicklung',
     'Fotografie',
     'Bilder',
     'Videos',
+    'Google Bilder',
+    'Google Videos',
+    'KI Suche',
     'React',
     'Three.js',
     'JavaScript',
@@ -163,6 +187,34 @@ function buildKeywordList(pageData, pathname = '/') {
     ...sectionKeywords,
     ...titleTokens,
   ]).slice(0, 24);
+}
+
+function getSectionDiscoveryText(pathname = '/') {
+  const path = String(pathname || '/').toLowerCase();
+
+  if (path === '/' || path === '') return SECTION_DISCOVERY_TEXT.home;
+  if (path.startsWith('/blog')) return SECTION_DISCOVERY_TEXT.blog;
+  if (path.startsWith('/videos')) return SECTION_DISCOVERY_TEXT.videos;
+  if (path.startsWith('/gallery')) return SECTION_DISCOVERY_TEXT.gallery;
+  if (path.startsWith('/projekte')) return SECTION_DISCOVERY_TEXT.projects;
+  if (path.startsWith('/about')) return SECTION_DISCOVERY_TEXT.about;
+
+  return SECTION_DISCOVERY_TEXT.generic;
+}
+
+function getAboutTopics(pathname = '/') {
+  const path = String(pathname || '/').toLowerCase();
+  const topics = ['Portfolio', 'Webentwicklung', 'Fotografie', 'Video', 'Blog'];
+
+  if (path.startsWith('/blog'))
+    topics.push('Technik Artikel', 'SEO', 'Performance');
+  if (path.startsWith('/videos')) topics.push('Videoinhalte', 'YouTube');
+  if (path.startsWith('/gallery'))
+    topics.push('Bildersuche', 'Bildmetadaten', 'Fotogalerie');
+  if (path.startsWith('/projekte'))
+    topics.push('JavaScript Projekte', 'Interaktive Web Apps');
+
+  return uniqueList(topics).map((name) => ({ '@type': 'Thing', name }));
 }
 
 function extractYouTubeId(url) {
@@ -435,7 +487,6 @@ export function generateSchemaGraph(
       currentYear,
       canonicalOrigin,
     ),
-    email: brandData.email,
     sameAs: brandData.sameAs,
     founder: { '@id': ID.person },
   });
@@ -467,7 +518,7 @@ export function generateSchemaGraph(
     },
     description: pageData.description,
     disambiguatingDescription:
-      "Webentwickler (React, Three.js) und Fotograf, nicht zu verwechseln mit 'Sesli Kitap' oder Hörbuch-Verlagen.",
+      'Persönliche Website von Abdulkerim Sesli (auch bekannt als Abdul Sesli, Webentwickler und Fotograf); nicht identisch mit dem Fußballspieler Abdülkerim Bardakcı und nicht mit Sesli-Kitap-Portalen.',
     sameAs: brandData.sameAs,
     knowsLanguage: brandData.knowsLanguage?.map((lang) => ({
       '@type': 'Language',
@@ -484,15 +535,25 @@ export function generateSchemaGraph(
 
   // WebPage with content extraction
   const aiReadyText = extractPageContent(doc);
-  const isHomepage =
-    globalThis.location?.pathname === '/' ||
-    globalThis.location?.pathname === '';
-  const pageKeywords = buildKeywordList(
-    pageData,
-    globalThis.location?.pathname || '/',
-  );
+  const currentPathname = globalThis.location?.pathname || '/';
+  const sectionDiscoveryText = getSectionDiscoveryText(currentPathname);
+  const isHomepage = currentPathname === '/' || currentPathname === '';
+  const pageKeywords = buildKeywordList(pageData, currentPathname);
   const longDescription = normalizeText(
-    [pageData.description, isHomepage ? HOMEPAGE_DISCOVERY_TEXT : '']
+    [
+      pageData.description,
+      sectionDiscoveryText,
+      isHomepage ? HOMEPAGE_DISCOVERY_TEXT : '',
+    ]
+      .filter(Boolean)
+      .join(' '),
+  );
+  const fullText = normalizeText(
+    [
+      aiReadyText,
+      sectionDiscoveryText,
+      isHomepage ? HOMEPAGE_DISCOVERY_TEXT : '',
+    ]
       .filter(Boolean)
       .join(' '),
   );
@@ -504,7 +565,12 @@ export function generateSchemaGraph(
     name: pageData.title,
     description: longDescription || pageData.description,
     keywords: pageKeywords.join(', '),
-    text: aiReadyText,
+    text: fullText,
+    abstract: sectionDiscoveryText,
+    about: getAboutTopics(currentPathname),
+    mentions: pageKeywords
+      .slice(0, 10)
+      .map((keyword) => ({ '@type': 'Thing', name: keyword })),
     isPartOf: { '@id': ID.website },
     mainEntity: { '@id': ID.person },
     publisher: { '@id': ID.org },
@@ -522,7 +588,12 @@ export function generateSchemaGraph(
     '@type': 'WebSite',
     '@id': ID.website,
     url: ENV.BASE_URL,
-    name: 'Abdulkerim Sesli Portfolio',
+    name: 'Abdulkerim Sesli',
+    alternateName: 'Abdulkerim Sesli Portfolio',
+    description:
+      'Portfolio-Website mit technischen Artikeln, Bildern, Videos und Projektinhalten von Abdulkerim Sesli.',
+    keywords: pageKeywords.join(', '),
+    inLanguage: 'de-DE',
     publisher: { '@id': ID.org },
     potentialAction: {
       '@type': 'SearchAction',
@@ -923,6 +994,15 @@ function extractPageContent(doc) {
 
     if (videoTitles.length > 0) {
       text += ` Videos: ${videoTitles.slice(0, 10).join(' | ')}.`;
+    }
+
+    const headingTexts = uniqueList(
+      Array.from(doc?.querySelectorAll?.('main h1, main h2, main h3') || [])
+        .map((node) => node.textContent)
+        .filter(Boolean),
+    );
+    if (headingTexts.length > 0) {
+      text += ` Themen: ${headingTexts.slice(0, 12).join(' | ')}.`;
     }
 
     return text.length > 5000 ? text.substring(0, 5000) + '...' : text;
