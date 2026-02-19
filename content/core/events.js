@@ -166,7 +166,6 @@ export function fire(type, detail = null, target = document) {
 
   try {
     target.dispatchEvent(new CustomEvent(type, { detail, bubbles: true }));
-    emitter.emit(type, detail);
   } catch (error) {
     log.error(`Failed to dispatch event: ${type}`, error);
   }
@@ -230,6 +229,3 @@ export const GlobalEventHandlers = {
     });
   },
 };
-
-// Export emitter for advanced usage
-// export { emitter };

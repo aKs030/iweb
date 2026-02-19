@@ -3,6 +3,17 @@
    Three.js Inspired Design
    =================================== */
 
+/* Blog-specific variables (moved from global variables.css) */
+:root {
+  --blog-bg: #030303;
+  --blog-card-bg: #030303;
+  --blog-border: rgba(255, 255, 255, 0.08);
+  --blog-accent: #00f3ff;
+  --blog-text: #e0e0e0;
+  --blog-text-muted: rgba(255, 255, 255, 0.6);
+  --blog-text-main: var(--blog-text);
+}
+
 body {
   background-color: var(--bg-primary, #030303);
   color: var(--blog-text-main, #e2e8f0);

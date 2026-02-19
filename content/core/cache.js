@@ -238,9 +238,9 @@ class CacheManager {
    * @param {Array<{key: string, value: any, options?: Object}>} entries
    */
   async setMany(entries) {
-    for (const entry of entries) {
-      await this.set(entry.key, entry.value, entry.options);
-    }
+    await Promise.all(
+      entries.map((entry) => this.set(entry.key, entry.value, entry.options)),
+    );
   }
 
   async delete(key) {
