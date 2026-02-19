@@ -71,15 +71,20 @@ export async function onRequestPost(context) {
 
     // Handle empty or invalid response gracefully
     if (!searchData || !searchData.data || !Array.isArray(searchData.data)) {
-        console.warn(`Search returned empty/invalid data for query: "${query}" (Time: ${duration}ms)`);
-        return new Response(JSON.stringify({
-            results: [],
-            summary: `Keine Ergebnisse für "${query}" gefunden.`,
-            count: 0,
-            query: query,
-        }), {
-            headers: corsHeaders,
-        });
+      console.warn(
+        `Search returned empty/invalid data for query: "${query}" (Time: ${duration}ms)`,
+      );
+      return new Response(
+        JSON.stringify({
+          results: [],
+          summary: `Keine Ergebnisse für "${query}" gefunden.`,
+          count: 0,
+          query: query,
+        }),
+        {
+          headers: corsHeaders,
+        },
+      );
     }
 
     // Transform AI Search Beta response to our format
@@ -160,8 +165,8 @@ export async function onRequestPost(context) {
     });
 
     const summaryText = searchData.response
-        ? searchData.response.trim().substring(0, 150)
-        : `${finalResults.length} ${finalResults.length === 1 ? 'Ergebnis' : 'Ergebnisse'} für "${query}"`;
+      ? searchData.response.trim().substring(0, 150)
+      : `${finalResults.length} ${finalResults.length === 1 ? 'Ergebnis' : 'Ergebnisse'} für "${query}"`;
 
     const responseData = {
       results: finalResults,
