@@ -13,6 +13,7 @@ export async function onRequest(context) {
       headers: {
         'Content-Type': 'application/xml; charset=utf-8',
         'Cache-Control': 'public, max-age=3600',
+        'X-Robots-Tag': 'index, follow',
       },
     });
   }
@@ -54,9 +55,14 @@ export async function onRequest(context) {
     for (const item of items) {
       const snippet = item.snippet;
       const videoId = snippet.resourceId.videoId;
-      const title = escapeXml(snippet.title);
+      const title = escapeXml(
+        sanitizeDiscoveryText(snippet.title, `Video ${videoId}`),
+      );
       // Fallback description if empty
-      const description = escapeXml(snippet.description || title);
+      const description = escapeXml(
+        sanitizeDiscoveryText(snippet.description, '') ||
+          `${sanitizeDiscoveryText(snippet.title, 'Video')} - Videoinhalt von Abdulkerim Sesli`,
+      );
       const thumbnail =
         snippet.thumbnails?.maxres?.url ||
         snippet.thumbnails?.high?.url ||
@@ -98,6 +104,7 @@ export async function onRequest(context) {
       headers: {
         'Content-Type': 'application/xml; charset=utf-8',
         'Cache-Control': 'public, max-age=3600', // Cache for 1 hour at edge
+        'X-Robots-Tag': 'index, follow',
       },
     });
   } catch {
@@ -105,6 +112,7 @@ export async function onRequest(context) {
       headers: {
         'Content-Type': 'application/xml; charset=utf-8',
         'Cache-Control': 'public, max-age=3600',
+        'X-Robots-Tag': 'index, follow',
       },
     });
   }
@@ -136,4 +144,17 @@ function escapeXml(unsafe) {
         return '&quot;';
     }
   });
+}
+
+function sanitizeDiscoveryText(value, fallback = '') {
+  const source = String(value || fallback || '').trim();
+  if (!source) return '';
+
+  return source
+    .replace(/Abdul\s*Berlin/gi, 'Abdulkerim Sesli')
+    .replace(/\bBerlin\b/gi, '')
+    .replace(/#Abdulberlin/gi, '')
+    .replace(/\s{2,}/g, ' ')
+    .replace(/\s+([,.;:!?])/g, '$1')
+    .trim();
 }

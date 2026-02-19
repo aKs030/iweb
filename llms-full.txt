@@ -6,6 +6,7 @@ Base URL: https://www.abdulkerimsesli.de/
 
 ## Pages
 - https://www.abdulkerimsesli.de/ (Home)
+- https://www.abdulkerimsesli.de/abdul-sesli/ (Namensvariante Abdul Sesli)
 - https://www.abdulkerimsesli.de/projekte/ (Projektportfolio und Experimente)
 - https://www.abdulkerimsesli.de/blog/ (Artikel, Tutorials, SEO, Performance)
 - https://www.abdulkerimsesli.de/videos/ (Video-Landingpages und YouTube-Content)
@@ -36,9 +37,8 @@ Base URL: https://www.abdulkerimsesli.de/
 
 ## Entity
 - Name: Abdulkerim Sesli
-- Alternate names: Abdul Sesli, Abdul Berlin, Abdulkerim Berlin
+- Alternate names: Abdul Sesli, Abdülkerim Sesli
 - Focus: Web Development, React, Three.js, JavaScript Performance, Urban Photography
-- Location: Berlin, Germany
 - Email: kontakt@abdulkerimsesli.de
 - GitHub: https://github.com/aKs030
 - LinkedIn: https://linkedin.com/in/abdulkerim-s

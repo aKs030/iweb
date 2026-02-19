@@ -92,6 +92,7 @@
 # 3. Trailing Slash Canonicalization
 # ============================================================================
 /about    /about/     301
+/abdul-sesli  /abdul-sesli/ 301
 /contact  /contact/   301
 /blog     /blog/      301
 /gallery  /gallery/   301
@@ -140,6 +141,7 @@
 /videos/*       /pages/videos/            200
 /blog/*         /pages/blog/              200
 /about/*        /pages/about/:splat       200
+/abdul-sesli/*  /pages/abdul-sesli/:splat 200
 /contact/*      /content/components/contact/ 200
 /impressum/*    /pages/impressum/:splat   200
 /datenschutz/*  /pages/datenschutz/:splat 200

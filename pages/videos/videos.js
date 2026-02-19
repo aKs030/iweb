@@ -191,10 +191,7 @@ const renderVideoCard = async (grid, it, detailsMap, index = 0) => {
     title,
   )}">${i18n.t('videos.open_page')}</a></div>`;
 
-  const publisherName =
-    YOUTUBE_CHANNEL_ID === 'UCTGRherjM4iuIn86xxubuPg'
-      ? 'Abdulkerim Berlin'
-      : 'Abdulkerim Sesli';
+  const publisherName = 'Abdulkerim Sesli';
   const ldObj = {
     '@context': 'https://schema.org',
     '@type': 'VideoObject',
@@ -447,7 +444,7 @@ const loadLatestVideos = async () => {
   }
 };
 
-// Helper: clean titles for display (remove trailing channel suffixes like "- Abdulkerim Sesli" or "— Abdulkerim Berlin")
+// Helper: clean titles for display (remove trailing channel suffixes like "- Abdulkerim Sesli")
 const cleanTitle = (s) => {
   if (!s) return s;
   // Remove trailing separator and channel name starting with Abdulkerim

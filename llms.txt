@@ -1,11 +1,12 @@
-# Abdulkerim Sesli - Webentwicklung und Fotografie in Berlin
+# Abdulkerim Sesli (Abdul Sesli) - Offizielles Portfolio
 
-> Offizielles Portfolio von Abdulkerim Sesli (Abdul Berlin): Webentwickler (React, Three.js, Performance) und Fotograf aus Berlin.
+> Offizielles Portfolio von Abdulkerim Sesli, auch bekannt als Abdul Sesli.
 
 Base URL: https://www.abdulkerimsesli.de/
 
 ## Core Pages
 - Home: https://www.abdulkerimsesli.de/
+- Abdul Sesli Profil: https://www.abdulkerimsesli.de/abdul-sesli/
 - Projekte: https://www.abdulkerimsesli.de/projekte/
 - Blog: https://www.abdulkerimsesli.de/blog/
 - Videos: https://www.abdulkerimsesli.de/videos/
@@ -27,6 +28,10 @@ Base URL: https://www.abdulkerimsesli.de/
 - Main: https://www.abdulkerimsesli.de/sitemap.xml
 - Images: https://www.abdulkerimsesli.de/sitemap-images.xml
 - Videos: https://www.abdulkerimsesli.de/sitemap-videos.xml
+
+## Profile
+- Name: Abdulkerim Sesli
+- Alternate name: Abdul Sesli
 
 ## Contact
 - Email: kontakt@abdulkerimsesli.de

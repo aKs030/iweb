@@ -18,6 +18,148 @@ import { BASE_URL } from '../../config/constants.js';
 import { headState } from './head-state.js';
 
 const log = createLogger('HeadManager');
+const BASE_KEYWORDS = [
+  'Abdulkerim Sesli',
+  'Abdülkerim Sesli',
+  'Abdul Sesli',
+  'Portfolio',
+  'Webentwicklung',
+  'Fotografie',
+  'Bilder',
+  'Videos',
+  'Blog',
+  'React',
+  'Three.js',
+  'JavaScript',
+  'TypeScript',
+  'Frontend',
+  'UI',
+  'SEO',
+  'Google Bilder',
+  'Google Videos',
+  'KI Suche',
+];
+
+function pathTopics(pathname = '/') {
+  const path = String(pathname || '/').toLowerCase();
+
+  if (path === '/' || path === '') {
+    return [
+      'Hauptseite',
+      'Portfolio Übersicht',
+      'Bilder und Videos',
+      'Blog Artikel',
+      'Code Projekte',
+    ];
+  }
+  if (path.startsWith('/blog')) {
+    return [
+      'Tech Blog',
+      'Tutorial',
+      'Performance',
+      'SEO Inhalte',
+      'Frontend Wissen',
+    ];
+  }
+  if (path.startsWith('/videos')) {
+    return [
+      'Video Inhalte',
+      'YouTube Videos',
+      'Short Clips',
+      'Making-of',
+      'Video Landingpages',
+    ];
+  }
+  if (path.startsWith('/gallery')) {
+    return [
+      'Bildgalerie',
+      'Fotografie',
+      'Portrait',
+      'Street Photography',
+      'Visuelle Serien',
+    ];
+  }
+  if (path.startsWith('/projekte')) {
+    return [
+      'Code Projekte',
+      'Web Apps',
+      'Frontend Experimente',
+      'JavaScript Projekte',
+      'Interaktive Demos',
+    ];
+  }
+  if (path.startsWith('/about')) {
+    return [
+      'Über Abdulkerim Sesli',
+      'Profil',
+      'Technischer Hintergrund',
+      'Themenfelder',
+    ];
+  }
+
+  return ['Portfolio', 'Web', 'Foto', 'Video'];
+}
+
+function extractHeadingTerms(doc) {
+  const nodes = Array.from(
+    doc?.querySelectorAll?.('main h1, main h2, main h3, main img[alt]') || [],
+  );
+  const tokens = [];
+
+  for (const node of nodes) {
+    const source =
+      node.getAttribute?.('alt') ||
+      node.textContent ||
+      node.getAttribute?.('title');
+    const words = String(source || '')
+      .split(/[\s,.;:/()[\]|!?-]+/)
+      .map((value) => value.trim())
+      .filter((value) => value.length >= 3);
+    tokens.push(...words);
+  }
+
+  const seen = new Set();
+  const deduped = [];
+  for (const token of tokens) {
+    const normalized = token.toLowerCase();
+    if (seen.has(normalized)) continue;
+    seen.add(normalized);
+    deduped.push(token);
+    if (deduped.length >= 20) break;
+  }
+
+  return deduped;
+}
+
+function buildKeywordList(pageData, pageUrl) {
+  const titleTokens = String(pageData?.title || '')
+    .split(/[\s,.;:/()[\]|!?-]+/)
+    .map((value) => value.trim())
+    .filter((value) => value.length >= 3);
+  const sectionTerms = pathTopics(new URL(pageUrl).pathname);
+  const headingTerms = extractHeadingTerms(document);
+
+  return Array.from(
+    new Set([
+      ...BASE_KEYWORDS,
+      ...sectionTerms,
+      ...titleTokens,
+      ...headingTerms,
+    ]),
+  ).slice(0, 40);
+}
+
+function buildAbstractText(pageData, pageUrl) {
+  const sectionTerms = pathTopics(new URL(pageUrl).pathname);
+  return [
+    pageData.description || '',
+    `Inhaltsschwerpunkte: ${sectionTerms.join(', ')}.`,
+    'Diese Seite ist auf organische Suche für Bilder, Videos und redaktionelle Inhalte optimiert.',
+  ]
+    .join(' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
 
 const getPageData = () => {
   const currentPath = globalThis.location.pathname.toLowerCase();
@@ -78,30 +220,42 @@ const updateBasicMeta = (pageData, pageUrl) => {
     document.title = pageData.title;
   }
 
+  const keywordList = buildKeywordList(pageData, pageUrl);
+  const abstractText = buildAbstractText(pageData, pageUrl);
+
   upsertMeta('description', pageData.description);
+  upsertMeta('keywords', keywordList.join(', '));
+  upsertMeta('subject', pathTopics(new URL(pageUrl).pathname).join(', '));
+  upsertMeta('abstract', abstractText);
+  upsertMeta('summary', abstractText);
   upsertMeta('robots', 'index, follow, max-image-preview:large');
   upsertMeta('language', 'de-DE');
   upsertMeta('author', 'Abdulkerim Sesli');
 
-  upsertMeta('geo.region', 'DE-BE');
-  upsertMeta('geo.placename', 'Berlin');
-  upsertMeta('geo.position', '52.5733;13.2911');
-  upsertMeta('ICBM', '52.5733, 13.2911');
-
   upsertMeta('twitter:card', 'summary_large_image');
+  upsertMeta('twitter:site', '@abdulkerimsesli');
   upsertMeta('twitter:creator', '@abdulkerimsesli');
+  upsertMeta('twitter:title', pageData.title);
+  upsertMeta('twitter:description', pageData.description);
   upsertMeta('twitter:url', pageUrl);
   if (pageData.image) {
     upsertMeta('twitter:image', pageData.image);
     upsertMeta('twitter:image:alt', pageData.title || pageData.description);
   }
 
+  upsertMeta('og:type', 'website', true);
   upsertMeta('og:title', pageData.title, true);
+  upsertMeta(
+    'og:site_name',
+    'Abdulkerim Sesli — Digital Creator Portfolio',
+    true,
+  );
   upsertMeta('og:description', pageData.description, true);
   upsertMeta('og:locale', 'de_DE', true);
   upsertMeta('og:url', pageUrl, true);
   if (pageData.image) {
     upsertMeta('og:image', pageData.image, true);
+    upsertMeta('og:image:alt', pageData.title || pageData.description, true);
 
     (async () => {
       try {
