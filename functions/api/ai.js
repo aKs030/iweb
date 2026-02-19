@@ -1,13 +1,36 @@
 /**
  * Cloudflare Pages Function - POST /api/ai
  * Modern AI Chat with RAG (Retrieval-Augmented Generation) using Groq + AI Search Beta
- * @version 9.1.0 - Enhanced RAG with relevance scoring and better context extraction
+ * @version 9.2.0 - Enhanced RAG with local dev fallback for missing GROQ key
  */
 
 import { getCorsHeaders, handleOptions } from './_cors.js';
 
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const GROQ_MODEL = 'llama-3.3-70b-versatile';
+
+function isLocalRequest(request) {
+  try {
+    const hostname = new URL(request.url).hostname;
+    return hostname === 'localhost' || hostname === '127.0.0.1';
+  } catch {
+    return false;
+  }
+}
+
+function createLocalFallbackText(prompt, contextData) {
+  const promptPreview = String(prompt || '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 160);
+
+  const sourceHint =
+    contextData?.sources?.length > 0
+      ? `Ich habe lokal ${contextData.sources.length} relevante Quelle${contextData.sources.length === 1 ? '' : 'n'} gefunden.`
+      : 'Ich konnte lokal keine zusätzlichen Quellen ermitteln.';
+
+  return `Lokaler KI-Modus aktiv: GROQ_API_KEY fehlt.\n${sourceHint}\n\nDeine Anfrage: "${promptPreview || 'Leer'}"\n\nHinweis: Setze GROQ_API_KEY in .dev.vars für echte KI-Antworten.`;
+}
 
 /**
  * Calculate relevance score for search results
@@ -214,13 +237,34 @@ export async function onRequestPost(context) {
       );
     }
 
-    // Check for Groq API key
-    if (!env.GROQ_API_KEY) {
-      throw new Error('GROQ_API_KEY not configured');
-    }
-
     // Try to get relevant context from AI Search Beta
     const contextData = await getRelevantContext(prompt, env);
+
+    // Local dev fallback: avoid hard 500 when GROQ key is not configured
+    if (!env.GROQ_API_KEY) {
+      if (isLocalRequest(request)) {
+        return new Response(
+          JSON.stringify({
+            text: createLocalFallbackText(prompt, contextData),
+            model: 'mock-dev-local',
+            hasContext: !!contextData,
+            contextQuality: contextData ? contextData.sources.length : 0,
+            sources: contextData ? contextData.sources : [],
+            mode: 'local-fallback',
+            warning: 'GROQ_API_KEY not configured',
+          }),
+          {
+            status: 200,
+            headers: {
+              ...corsHeaders,
+              'Cache-Control': 'no-store',
+            },
+          },
+        );
+      }
+
+      throw new Error('GROQ_API_KEY not configured');
+    }
 
     // Build system message with context if available
     let systemMessage =

@@ -17,6 +17,7 @@ import { createServer } from 'http';
 import { readFileSync, existsSync, statSync, watchFile } from 'fs';
 import { resolve, extname, relative } from 'path';
 import os from 'os';
+import { onRequestPost as onSearchRequestPost } from './functions/api/search.js';
 
 const PORT = process.env.PORT || 8080;
 const ROOT = import.meta.dirname;
@@ -431,10 +432,12 @@ async function handleR2Proxy(req, res, url) {
   }
 }
 
-// ─── API Mock Handlers (Dev-Mode) ────────────────────────────
+// ─── API Dev Handlers ─────────────────────────────────────────
 function handleAPIMock(req, res, url) {
+  const normalizedUrl = url.length > 1 ? url.replace(/\/+$/, '') || '/' : url;
+
   // Only handle API routes
-  if (!url.startsWith('/api/')) return false;
+  if (!normalizedUrl.startsWith('/api/')) return false;
 
   // CORS preflight
   if (req.method === 'OPTIONS') {
@@ -454,7 +457,7 @@ function handleAPIMock(req, res, url) {
   };
 
   // YouTube API Mock (GET requests)
-  if (url.startsWith('/api/youtube/')) {
+  if (normalizedUrl.startsWith('/api/youtube/')) {
     if (req.method !== 'GET') {
       res.writeHead(405, corsHeaders);
       res.end(JSON.stringify({ error: 'Method not allowed', status: 405 }));
@@ -477,7 +480,7 @@ function handleAPIMock(req, res, url) {
 
   // Gallery items mock (GET request)
   // Returns empty dynamic list so frontend falls back to static gallery config.
-  if (url === '/api/gallery-items') {
+  if (normalizedUrl === '/api/gallery-items') {
     if (req.method !== 'GET') {
       res.writeHead(405, corsHeaders);
       res.end(JSON.stringify({ error: 'Method not allowed', status: 405 }));
@@ -503,11 +506,19 @@ function handleAPIMock(req, res, url) {
 
   let body = '';
   req.on('data', (chunk) => (body += chunk));
-  req.on('end', () => {
-    try {
-      const data = JSON.parse(body || '{}');
+  req.on('end', async () => {
+    let data = {};
 
-      if (url === '/api/ai') {
+    try {
+      data = JSON.parse(body || '{}');
+    } catch {
+      res.writeHead(400, corsHeaders);
+      res.end(JSON.stringify({ error: 'Invalid JSON', status: 400 }));
+      return;
+    }
+
+    try {
+      if (normalizedUrl === '/api/ai') {
         const prompt = data.prompt || data.message || '';
         res.writeHead(200, corsHeaders);
         res.end(
@@ -518,37 +529,47 @@ function handleAPIMock(req, res, url) {
             model: 'mock-dev',
           }),
         );
-      } else if (url === '/api/search') {
-        const query = data.query || '';
-        res.writeHead(200, corsHeaders);
-        res.end(
-          JSON.stringify({
-            results: [
-              {
-                title: 'Startseite',
-                url: '/',
-                category: 'Home',
-                description: 'Willkommen auf meiner Webseite.',
-              },
-              {
-                title: `Suche nach "${query}"`,
-                url: '/search',
-                category: 'Seite',
-                description: `Ergebnisse für ${query} werden hier simuliert.`,
-              },
-            ],
-            summary: `Dies ist eine KI-gestützte Zusammenfassung für deine Suche nach "${query}". Ich habe Informationen über Startseite und Projekte gefunden.`,
-            query,
-            count: 2,
-          }),
+      } else if (normalizedUrl === '/api/search') {
+        const host = req.headers.host || `localhost:${PORT}`;
+        const origin = req.headers.origin || `http://${host}`;
+        const requestUrl = new URL(normalizedUrl, origin).toString();
+
+        const request = new Request(requestUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Origin: origin,
+          },
+          body: JSON.stringify(data),
+        });
+
+        // Keep env minimal: search.js handles local fallback when AI binding is absent.
+        const env = {
+          MAX_SEARCH_RESULTS: process.env.MAX_SEARCH_RESULTS || '10',
+          RAG_ID: process.env.RAG_ID || 'wispy-pond-1055',
+          ALLOWED_ORIGINS: process.env.ALLOWED_ORIGINS || origin,
+        };
+
+        const functionResponse = await onSearchRequestPost({ request, env });
+        const responseBody = await functionResponse.text();
+        const functionHeaders = Object.fromEntries(
+          functionResponse.headers.entries(),
         );
+
+        res.writeHead(functionResponse.status, {
+          ...corsHeaders,
+          ...functionHeaders,
+          'Access-Control-Allow-Origin': '*',
+        });
+        res.end(responseBody);
       } else {
         res.writeHead(404, corsHeaders);
         res.end(JSON.stringify({ error: 'Not found', status: 404 }));
       }
-    } catch {
-      res.writeHead(400, corsHeaders);
-      res.end(JSON.stringify({ error: 'Invalid JSON', status: 400 }));
+    } catch (error) {
+      console.error('[API Dev] handler failed:', error?.message || error);
+      res.writeHead(500, corsHeaders);
+      res.end(JSON.stringify({ error: 'Internal server error', status: 500 }));
     }
   });
   return true;
