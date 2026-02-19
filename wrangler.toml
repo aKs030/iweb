@@ -1,5 +1,5 @@
 name = "1web"
-compatibility_date = "2025-02-14"
+compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
 
 # Pages Build Output - Root-Verzeichnis (kein Build)

@@ -57,23 +57,51 @@ export async function onRequestPost(context) {
 
     // Verify autorag method exists before calling
     if (typeof env.AI.autorag !== 'function') {
+      const availableKeys = Object.keys(env.AI);
       console.error(
         'env.AI.autorag is not a function. env.AI keys:',
-        Object.keys(env.AI),
+        availableKeys,
       );
-      throw new Error(
-        'AI Search (autorag) is not available in this environment',
+
+      // Return 503 with details for debugging instead of generic 500
+      return new Response(
+        JSON.stringify({
+          error: 'AI Search unavailable',
+          message:
+            'The AI Search method (autorag) is missing in this environment.',
+          debug: {
+            availableMethods: availableKeys,
+            note: 'Please check wrangler.toml compatibility_date and AI binding.',
+          },
+          results: [],
+          count: 0,
+        }),
+        { status: 503, headers: corsHeaders },
       );
     }
 
-    const searchData = await env.AI.autorag(ragId).aiSearch({
-      query: expandedQuery,
-      max_num_results: Math.max(topK, 15), // Mindestens 15 für bessere Abdeckung
-      rewrite_query: true,
-      stream: false,
-      system_prompt:
-        'Du bist ein Suchassistent für abdulkerimsesli.de. Fasse die Suchergebnisse in 1-2 prägnanten Sätzen zusammen (max. 120 Zeichen). Fokussiere auf die wichtigsten Inhalte und vermeide generische Aussagen.',
-    });
+    let searchData;
+    try {
+      searchData = await env.AI.autorag(ragId).aiSearch({
+        query: expandedQuery,
+        max_num_results: Math.max(topK, 15), // Mindestens 15 für bessere Abdeckung
+        rewrite_query: true,
+        stream: false,
+        system_prompt:
+          'Du bist ein Suchassistent für abdulkerimsesli.de. Fasse die Suchergebnisse in 1-2 prägnanten Sätzen zusammen (max. 120 Zeichen). Fokussiere auf die wichtigsten Inhalte und vermeide generische Aussagen.',
+      });
+    } catch (aiError) {
+      console.error('AI execution failed:', aiError);
+      return new Response(
+        JSON.stringify({
+          error: 'AI Execution Failed',
+          message: aiError.message,
+          results: [],
+          count: 0,
+        }),
+        { status: 503, headers: corsHeaders },
+      );
+    }
 
     // Transform AI Search Beta response to our format
     const results = (searchData.data || []).map((item) => {
