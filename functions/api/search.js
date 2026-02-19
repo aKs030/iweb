@@ -15,6 +15,7 @@ import {
   extractTitle,
   extractContent,
 } from './_search-utils.js';
+import { performAutoRagSearch } from './_ai-search.js';
 
 export async function onRequestPost(context) {
   const { request, env } = context;
@@ -28,11 +29,6 @@ export async function onRequestPost(context) {
       return new Response(JSON.stringify({ results: [], count: 0 }), {
         headers: corsHeaders,
       });
-    }
-
-    // Check for AI binding
-    if (!env.AI) {
-      throw new Error('AI binding not configured');
     }
 
     const parsePositiveInteger = (value) => {
@@ -54,14 +50,12 @@ export async function onRequestPost(context) {
     // Expand query with synonyms and fuzzy matching
     const expandedQuery = expandQuery(query);
 
-    // Use Workers Binding to call AI Search Beta
-    const ragId = env.RAG_ID || 'wispy-pond-1055';
-    const searchData = await env.AI.autorag(ragId).aiSearch({
+    const searchData = await performAutoRagSearch(env, {
       query: expandedQuery,
-      max_num_results: Math.max(topK, 15), // Mindestens 15 für bessere Abdeckung
-      rewrite_query: true,
+      maxResults: Math.max(topK, 15), // Mindestens 15 für bessere Abdeckung
+      rewriteQuery: true,
       stream: false,
-      system_prompt:
+      systemPrompt:
         'Du bist ein Suchassistent für abdulkerimsesli.de. Fasse die Suchergebnisse in 1-2 prägnanten Sätzen zusammen (max. 120 Zeichen). Fokussiere auf die wichtigsten Inhalte und vermeide generische Aussagen.',
     });
 
@@ -144,8 +138,8 @@ export async function onRequestPost(context) {
 
     const responseData = {
       results: finalResults,
-      summary: searchData.response
-        ? searchData.response.trim().substring(0, 150)
+      summary: searchData.summary
+        ? searchData.summary.trim().substring(0, 150)
         : `${finalResults.length} ${finalResults.length === 1 ? 'Ergebnis' : 'Ergebnisse'} für "${query}"`,
       count: finalResults.length,
       query: query,

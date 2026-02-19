@@ -11,6 +11,7 @@ import {
   extractTitle,
   extractContent,
 } from './_search-utils.js';
+import { performAutoRagSearch } from './_ai-search.js';
 
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const GROQ_MODEL = 'llama-3.3-70b-versatile';
@@ -20,17 +21,13 @@ const GROQ_MODEL = 'llama-3.3-70b-versatile';
  * @returns {Object} { context: string, sources: Array } or null
  */
 async function getRelevantContext(query, env) {
-  if (!env.AI) {
-    return null;
-  }
-
   try {
-    // Use AI Search Beta to get relevant context
-    const searchData = await env.AI.autorag('wispy-pond-1055').aiSearch({
+    const searchData = await performAutoRagSearch(env, {
       query: query,
-      max_num_results: 5,
-      rewrite_query: false,
+      maxResults: 5,
+      rewriteQuery: false,
       stream: false,
+      ragId: 'wispy-pond-1055',
     });
 
     if (!searchData.data || searchData.data.length === 0) {
