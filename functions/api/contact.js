@@ -2,7 +2,114 @@
  * Handles contact form submissions.
  * POST /api/contact
  * Uses Resend API directly (no package needed)
+ * Security: Honeypot, Rate Limiting, Input Sanitization
  */
+
+const MAX_MESSAGES_PER_HOUR = 5;
+const RATE_LIMIT_TTL = 3600; // 1 hour in seconds
+const inMemoryRateLimitStore = new Map();
+
+/**
+ * Escape HTML entities to prevent XSS in email templates
+ * @param {string} str
+ * @returns {string}
+ */
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+/**
+ * Resolve a stable client identifier from common proxy headers
+ * @param {Request} request
+ * @returns {string}
+ */
+function getClientIp(request) {
+  const cfIp = request.headers.get('cf-connecting-ip');
+  if (cfIp) return cfIp.trim();
+
+  const forwarded = request.headers.get('x-forwarded-for');
+  if (forwarded) {
+    const first = forwarded.split(',')[0]?.trim();
+    if (first) return first;
+  }
+
+  return 'unknown';
+}
+
+/**
+ * Best-effort in-memory fallback rate limit (per isolate)
+ * @param {string} ip
+ * @returns {{allowed: boolean, remaining: number, retryAfter?: number}}
+ */
+function checkInMemoryRateLimit(ip) {
+  const now = Date.now();
+  const windowMs = RATE_LIMIT_TTL * 1000;
+
+  if (inMemoryRateLimitStore.size > 1000) {
+    for (const [key, value] of inMemoryRateLimitStore.entries()) {
+      if (value.expiresAt <= now) inMemoryRateLimitStore.delete(key);
+    }
+  }
+
+  const entry = inMemoryRateLimitStore.get(ip);
+  if (!entry || entry.expiresAt <= now) {
+    inMemoryRateLimitStore.set(ip, {
+      count: 1,
+      expiresAt: now + windowMs,
+    });
+    return { allowed: true, remaining: MAX_MESSAGES_PER_HOUR - 1 };
+  }
+
+  if (entry.count >= MAX_MESSAGES_PER_HOUR) {
+    return {
+      allowed: false,
+      remaining: 0,
+      retryAfter: Math.max(1, Math.ceil((entry.expiresAt - now) / 1000)),
+    };
+  }
+
+  entry.count += 1;
+  return { allowed: true, remaining: MAX_MESSAGES_PER_HOUR - entry.count };
+}
+
+/**
+ * Check rate limit using Cloudflare KV
+ * @param {string} ip
+ * @param {Object} env
+ * @returns {Promise<{allowed: boolean, remaining: number, retryAfter?: number}>}
+ */
+async function checkRateLimit(ip, env) {
+  if (!env.RATE_LIMIT_KV) {
+    return checkInMemoryRateLimit(ip);
+  }
+
+  const key = `contact_rate:${ip}`;
+  try {
+    const raw = await env.RATE_LIMIT_KV.get(key);
+    const parsed = raw ? Number.parseInt(raw, 10) : 0;
+    const count = Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+
+    if (count >= MAX_MESSAGES_PER_HOUR) {
+      return { allowed: false, remaining: 0, retryAfter: RATE_LIMIT_TTL };
+    }
+
+    await env.RATE_LIMIT_KV.put(key, String(count + 1), {
+      expirationTtl: RATE_LIMIT_TTL,
+    });
+
+    return { allowed: true, remaining: MAX_MESSAGES_PER_HOUR - count - 1 };
+  } catch {
+    // If KV fails, degrade gracefully to in-memory limiter.
+    return checkInMemoryRateLimit(ip);
+  }
+}
+
 export async function onRequestPost({ request, env }) {
   const { getCorsHeaders } = await import('./_cors.js');
   const corsHeaders = getCorsHeaders(request, env);
@@ -16,6 +123,26 @@ export async function onRequestPost({ request, env }) {
         {
           status: 400,
           headers: { 'Content-Type': 'application/json', ...corsHeaders },
+        },
+      );
+    }
+
+    // Rate limiting (IP-based)
+    const clientIp = getClientIp(request);
+    const rateLimit = await checkRateLimit(clientIp, env);
+    if (!rateLimit.allowed) {
+      return new Response(
+        JSON.stringify({
+          error:
+            'Zu viele Nachrichten. Bitte versuchen Sie es in einer Stunde erneut.',
+        }),
+        {
+          status: 429,
+          headers: {
+            'Content-Type': 'application/json',
+            'Retry-After': String(rateLimit.retryAfter || RATE_LIMIT_TTL),
+            ...corsHeaders,
+          },
         },
       );
     }
@@ -38,6 +165,23 @@ export async function onRequestPost({ request, env }) {
     if (!name || !email || !message) {
       return new Response(
         JSON.stringify({ error: 'Bitte füllen Sie alle Pflichtfelder aus.' }),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json', ...corsHeaders },
+        },
+      );
+    }
+
+    // Length validation
+    if (
+      message.length > 5000 ||
+      name.length > 200 ||
+      (subject && subject.length > 300)
+    ) {
+      return new Response(
+        JSON.stringify({
+          error: 'Eingabe zu lang. Bitte kürzen Sie Ihre Nachricht.',
+        }),
         {
           status: 400,
           headers: { 'Content-Type': 'application/json', ...corsHeaders },
@@ -70,6 +214,12 @@ export async function onRequestPost({ request, env }) {
       );
     }
 
+    // Sanitize all user inputs for email HTML
+    const safeName = escapeHtml(name);
+    const safeEmail = escapeHtml(email);
+    const safeSubject = escapeHtml(subject);
+    const safeMessage = escapeHtml(message);
+
     // Call Resend API directly
     const resendResponse = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -81,14 +231,14 @@ export async function onRequestPost({ request, env }) {
         from: 'Contact Form <onboarding@resend.dev>',
         to: ['krm19030@gmail.com'],
         reply_to: email,
-        subject: `Kontaktformular: ${subject || 'Kein Betreff'}`,
+        subject: `Kontaktformular: ${safeSubject || 'Kein Betreff'}`,
         html: `
           <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2>Neue Nachricht von ${name}</h2>
-            <p><strong>Absender:</strong> ${name} (<a href="mailto:${email}">${email}</a>)</p>
-            <p><strong>Betreff:</strong> ${subject || 'Kein Betreff'}</p>
+            <h2>Neue Nachricht von ${safeName}</h2>
+            <p><strong>Absender:</strong> ${safeName} (<a href="mailto:${safeEmail}">${safeEmail}</a>)</p>
+            <p><strong>Betreff:</strong> ${safeSubject || 'Kein Betreff'}</p>
             <hr style="border: 1px solid #eee; margin: 20px 0;">
-            <div style="white-space: pre-wrap; background: #f9f9f9; padding: 15px; border-radius: 5px;">${message}</div>
+            <div style="white-space: pre-wrap; background: #f9f9f9; padding: 15px; border-radius: 5px;">${safeMessage}</div>
             <hr style="border: 1px solid #eee; margin: 20px 0;">
             <p style="font-size: 12px; color: #666;">Diese E-Mail wurde über das Kontaktformular auf abdulkerimsesli.de gesendet.</p>
           </div>

@@ -101,9 +101,9 @@
   },
   "screenshots": [
     {
-      "src": "/content/assets/img/og/og-home-800.svg",
+      "src": "/content/assets/img/og/og-home-800.png",
       "sizes": "1200x630",
-      "type": "image/svg+xml",
+      "type": "image/png",
       "form_factor": "wide",
       "label": "Abdulkerim Sesli Portfolio - Desktop"
     },

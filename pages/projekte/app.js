@@ -43,6 +43,7 @@ const App = () => {
   const [isThreeSceneEnabled] = useState(() => !shouldDisableThreeScene());
   const [popupApp, setPopupApp] = useState(null);
   const [popupSize, setPopupSize] = useState(null);
+  const [showCaseStudy, setShowCaseStudy] = useState(false);
   const popupFrameRef = useRef(null);
 
   useEffect(() => i18n.subscribe(setLang), []);
@@ -56,7 +57,49 @@ const App = () => {
   useEffect(() => {
     if (projects.length === 0) {
       setIsSceneReady(false);
+      return;
     }
+
+    // Inject SoftwareApplication Schema.org JSON-LD
+    const scriptId = 'projects-schema-ldjson';
+    let script = document.getElementById(scriptId);
+    if (!script) {
+      script = document.createElement('script');
+      script.id = scriptId;
+      script.type = 'application/ld+json';
+      document.head.appendChild(script);
+    }
+
+    const CATEGORY_MAP = {
+      game: 'GameApplication',
+      utility: 'WebApplication',
+      productivity: 'WebApplication',
+      ui: 'WebApplication',
+      web: 'WebApplication',
+    };
+
+    script.textContent = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@graph': projects.map((p) => ({
+        '@type': 'SoftwareApplication',
+        name: p.title || p.name,
+        description: p.description,
+        applicationCategory: CATEGORY_MAP[p.category] || 'WebApplication',
+        operatingSystem: 'Any',
+        ...(p.appPath ? { url: p.appPath } : {}),
+        ...(p.version ? { softwareVersion: p.version } : {}),
+        author: {
+          '@type': 'Person',
+          name: 'Abdulkerim Sesli',
+          url: 'https://www.abdulkerimsesli.de/',
+        },
+        offers: {
+          '@type': 'Offer',
+          price: '0',
+          priceCurrency: 'EUR',
+        },
+      })),
+    });
   }, [projects.length]);
 
   useEffect(() => {
@@ -463,6 +506,56 @@ const App = () => {
           ),
           h('h1', { className: 'hud-title' }, activeProject.title),
           h('p', { className: 'hud-desc' }, activeProject.description),
+
+          // Case Study expandable section
+          activeProject.caseStudy &&
+            h(
+              'div',
+              { className: 'hud-case-study' },
+              h(
+                'button',
+                {
+                  type: 'button',
+                  className: `btn btn-outline hud-case-study-toggle ${showCaseStudy ? 'is-open' : ''}`,
+                  onClick: () => setShowCaseStudy((v) => !v),
+                  style: {
+                    fontSize: '0.75rem',
+                    padding: '0.35rem 0.8rem',
+                    marginBottom: '0.5rem',
+                  },
+                },
+                showCaseStudy ? '✕ Case Study schließen' : '📋 Case Study',
+              ),
+              showCaseStudy &&
+                h(
+                  'div',
+                  { className: 'hud-case-study-content' },
+                  h(
+                    'div',
+                    { className: 'hud-cs-block' },
+                    h('strong', null, '⚡ Problem'),
+                    h('p', null, activeProject.caseStudy.problem),
+                  ),
+                  h(
+                    'div',
+                    { className: 'hud-cs-block' },
+                    h('strong', null, '💡 Lösung'),
+                    h('p', null, activeProject.caseStudy.solution),
+                  ),
+                  h(
+                    'div',
+                    { className: 'hud-cs-block' },
+                    h('strong', null, '🛠 Tech Stack'),
+                    h('p', null, activeProject.caseStudy.techStack.join(' · ')),
+                  ),
+                  h(
+                    'div',
+                    { className: 'hud-cs-block' },
+                    h('strong', null, '📊 Ergebnis'),
+                    h('p', null, activeProject.caseStudy.results),
+                  ),
+                ),
+            ),
 
           h(
             'div',

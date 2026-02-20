@@ -4,7 +4,7 @@ title: Web Components: Die Zukunft der wiederverwendbaren UI-Elemente
 date: 2026-01-20
 category: Webdesign
 author: Abdulkerim Sesli
-image: /content/assets/img/og/og-webcomponents-800.svg
+image: /content/assets/img/og/og-webcomponents-800.png
 imageAlt: Web Components: Die Zukunft der wiederverwendbaren UI-Elemente - Artikelbild
 excerpt: Web Components bieten framework-unabhängige, native Wiederverwendbarkeit. Custom Elements, Shadow DOM und HTML Templates revolutionieren moderne Webentwicklung.
 seoDescription: Web Components bieten framework-unabhängige, native Wiederverwendbarkeit. Custom Elements, Shadow DOM und HTML Templates revolutionieren moderne Webentwicklung. Mit Verweisen auf Bilder, Videos und die Hauptseite für bessere Auffindbarkeit in der Google-Suche.

@@ -7,7 +7,7 @@ const MAX_YOUTUBE_RESULTS = 200;
 const STATIC_PAGE_IMAGES = [
   {
     page: '/',
-    image: '/content/assets/img/og/og-home-800.svg',
+    image: '/content/assets/img/og/og-home-800.png',
     title: 'Abdulkerim Sesli Startseite',
     caption:
       'Zentrale Hauptseite mit Portfolio, Blog, Bildern, Videos und Projekten',
@@ -21,47 +21,47 @@ const STATIC_PAGE_IMAGES = [
   },
   {
     page: '/abdul-sesli/',
-    image: '/content/assets/img/og/og-home-800.svg',
+    image: '/content/assets/img/og/og-home-800.png',
     title: 'Abdul Sesli',
     caption: 'Alias-Seite: Abdul Sesli ist die Kurzform von Abdulkerim Sesli',
   },
   {
     page: '/blog/',
-    image: '/content/assets/img/og/og-design-800.svg',
+    image: '/content/assets/img/og/og-design-800.png',
     title: 'Tech Blog',
     caption:
       'Blog mit Artikeln zu Webentwicklung, SEO, Performance, React und TypeScript',
   },
   {
     page: '/gallery/',
-    image: '/content/assets/img/og/og-photography-800.svg',
+    image: '/content/assets/img/og/og-photography-800.png',
     title: 'Fotografie Portfolio',
     caption:
       'Bildgalerie mit Portraits, Street-Fotografie und visuellen Serien',
   },
   {
     page: '/videos/',
-    image: '/content/assets/img/og/og-videos-800.svg',
+    image: '/content/assets/img/og/og-videos-800.png',
     title: 'Videos',
     caption:
       'Videoseite mit YouTube-Inhalten, Clips, Making-of und Story-Formaten',
   },
   {
     page: '/projekte/',
-    image: '/content/assets/img/og/og-projekte-800.svg',
+    image: '/content/assets/img/og/og-projekte-800.png',
     title: 'Code Projekte',
     caption:
       'Interaktive Webprojekte mit JavaScript, React, UI und Frontend-Experimenten',
   },
   {
     page: '/impressum/',
-    image: '/content/assets/img/og/og-home-800.svg',
+    image: '/content/assets/img/og/og-home-800.png',
     title: 'Impressum',
     caption: 'Rechtliche Informationen',
   },
   {
     page: '/datenschutz/',
-    image: '/content/assets/img/og/og-home-800.svg',
+    image: '/content/assets/img/og/og-home-800.png',
     title: 'Datenschutz',
     caption: 'DSGVO und Datenverarbeitung',
   },

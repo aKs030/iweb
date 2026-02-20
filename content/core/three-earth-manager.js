@@ -43,6 +43,7 @@ export class ThreeEarthManager {
     // @ts-ignore - connection is not in standard Navigator type but exists in some browsers
     if (navigator.connection?.saveData) {
       log.info('Three.js skipped: save-data mode');
+      this.announce('3D-Darstellung deaktiviert — Datensparmodus aktiv');
       return;
     }
 
@@ -71,9 +72,11 @@ export class ThreeEarthManager {
       if (typeof this.cleanupFn === 'function') {
         threeEarthState.setCleanupFunction(this.cleanupFn);
         log.info('Three.js Earth system initialized');
+        this.announce('Interaktive 3D-Erde geladen');
       }
     } catch (error) {
       log.warn('Three.js failed, using CSS fallback:', error);
+      this.announce('CSS-Modus aktiv — 3D-Ansicht nicht verfügbar');
       // Unblock loader even on error
       AppLoadManager.unblock('three-earth');
     } finally {
@@ -120,6 +123,20 @@ export class ThreeEarthManager {
       } catch (error) {
         log.warn('Cleanup failed:', error);
       }
+    }
+  }
+
+  /**
+   * Announce state change via ARIA live region
+   * @param {string} message
+   */
+  announce(message) {
+    try {
+      if (typeof globalThis.announce === 'function') {
+        globalThis.announce(message, { dedupe: true });
+      }
+    } catch {
+      /* ignore */
     }
   }
 }

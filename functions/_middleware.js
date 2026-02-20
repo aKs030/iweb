@@ -1,9 +1,10 @@
 /**
- * Cloudflare Pages Middleware — Dynamic HTML Template Injection
+ * Cloudflare Pages Middleware — Dynamic HTML Template Injection + CSP Nonces
  *
  * Injects base-head and base-loader templates into HTML responses.
+ * Generates per-request CSP nonces to replace 'unsafe-inline'.
  *
- * @version 1.3.0
+ * @version 2.0.0
  */
 
 /**
@@ -81,6 +82,55 @@ function ensureViewportMeta(html) {
 }
 
 /**
+ * Generate a cryptographically random nonce (base64, 128-bit)
+ */
+function generateNonce() {
+  const bytes = new Uint8Array(16);
+  crypto.getRandomValues(bytes);
+  // Convert to base64 (CF Workers have btoa)
+  let binary = '';
+  for (const b of bytes) binary += String.fromCharCode(b);
+  return btoa(binary);
+}
+
+/**
+ * Inject nonce attribute into inline <script> and <style> tags
+ */
+function injectNonce(html, nonce) {
+  // Add nonce to <script> tags that don't have src (inline scripts)
+  // Including type="application/ld+json" and type="importmap"
+  html = html.replace(
+    /<script(?=[^>]*>)(?![^>]*\bsrc\s*=)(?![^>]*\bnonce\s*=)([^>]*)>/gi,
+    `<script nonce="${nonce}"$1>`,
+  );
+
+  // Add nonce to <style> tags
+  html = html.replace(
+    /<style(?![^>]*\bnonce\s*=)([^>]*)>/gi,
+    `<style nonce="${nonce}"$1>`,
+  );
+
+  return html;
+}
+
+/**
+ * Replace script-src 'unsafe-inline' with nonce in a CSP header
+ */
+function applyNonceToCSP(csp, nonce) {
+  if (!csp || !nonce) return csp;
+
+  // Keep style-src 'unsafe-inline' for runtime style injections and inline style attrs.
+  // Only replace script-src 'unsafe-inline' with a per-request nonce.
+  const withScriptNonce = csp.replace(
+    /(script-src[^;]*?)'unsafe-inline'([^;]*)(;|$)/gi,
+    (_match, start, end, terminator) =>
+      `${start}'nonce-${nonce}'${end}${terminator}`,
+  );
+
+  return withScriptNonce.replace(/\s{2,}/g, ' ').trim();
+}
+
+/**
  * Load template from URL
  */
 async function loadTemplateFromURL(context, path) {
@@ -147,6 +197,28 @@ function normalizeLocalDevHeaders(headers, hostname) {
   return changed;
 }
 
+/**
+ * HTMLRewriter handler for Edge-Side Includes
+ */
+class SectionInjector {
+  constructor(context) {
+    this.context = context;
+  }
+  async element(el) {
+    const src = el.getAttribute('data-section-src');
+    if (!src) return;
+
+    // Only inject specific partials to avoid edge bloat
+    if (src.endsWith('/hero') || src.endsWith('/section3')) {
+      const htmlStr = await loadTemplateFromURL(this.context, src + '.html');
+      if (htmlStr) {
+        el.setInnerContent(htmlStr, { html: true });
+        el.setAttribute('data-ssr-loaded', 'true');
+      }
+    }
+  }
+}
+
 export async function onRequest(context) {
   const url = new URL(context.request.url);
 
@@ -188,6 +260,11 @@ export async function onRequest(context) {
     });
   }
 
+  // Transform sections via Edge-Side Includes before converting to text
+  response = new HTMLRewriter()
+    .on('section[data-section-src]', new SectionInjector(context))
+    .transform(response);
+
   let html = await response.text();
   const hasTemplateMarkers =
     html.includes('INJECT:BASE-HEAD') || html.includes('INJECT:BASE-LOADER');
@@ -208,12 +285,29 @@ export async function onRequest(context) {
 
   html = ensureViewportMeta(html);
 
+  // Generate CSP nonce (only for production)
+  const isLocal = isLocalhost(url.hostname);
+  const nonce = isLocal ? null : generateNonce();
+
+  // Inject nonce into inline scripts/styles
+  if (nonce) {
+    html = injectNonce(html, nonce);
+  }
+
   // Return modified response with original headers
   const newHeaders = new Headers(initialHeaders);
   newHeaders.set(
     'Content-Length',
     new TextEncoder().encode(html).length.toString(),
   );
+
+  // Update CSP header with nonce
+  if (nonce) {
+    const csp = newHeaders.get('Content-Security-Policy');
+    if (csp) {
+      newHeaders.set('Content-Security-Policy', applyNonceToCSP(csp, nonce));
+    }
+  }
 
   return new Response(html, {
     status: response.status,
