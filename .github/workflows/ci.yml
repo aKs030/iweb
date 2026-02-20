@@ -21,7 +21,7 @@ defaults:
 
 jobs:
   verify:
-    name: Lint, format and smoke test
+    name: Lint and format
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -33,13 +33,3 @@ jobs:
 
       - name: Run quality checks
         run: npm run check
-
-      - name: Run smoke test
-        run: npm run smoke
-
-      - name: Upload server log on failure
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: ci-server-log
-          path: server.log

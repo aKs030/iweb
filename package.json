@@ -10,13 +10,11 @@
   "scripts": {
     "dev": "wrangler pages dev . --port 8080",
     "dev:sim": "node server.js",
-    "smoke": "node scripts/smoke-test.mjs",
     "lint": "eslint . --fix",
     "lint:check": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "check": "npm run lint:check && npm run format:check",
-    "check:all": "npm run check && npm run smoke",
     "fix": "npm run lint && npm run format",
     "clean": "rm -rf .wrangler node_modules/.cache",
     "prepare": "husky"

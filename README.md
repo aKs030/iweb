@@ -22,14 +22,12 @@ Lokale URL: [http://localhost:8080](http://localhost:8080)
 
 ```bash
 npm run dev           # Cloudflare Pages dev server (Port 8080)
-npm run dev:sim       # Lokaler Node-Server (Smoke-Test/Simulation)
-npm run smoke         # Startet dev:sim + prüft zentrale Routen
+npm run dev:sim       # Lokaler Node-Server (Simulation)
 npm run lint          # ESLint mit auto-fix
 npm run lint:check    # ESLint ohne fix
 npm run format        # Prettier mit write
 npm run format:check  # Prettier check
 npm run check         # lint:check + format:check
-npm run check:all     # check + smoke
 npm run fix           # lint + format
 npm run clean         # lokale Cache/Artifacts löschen
 npm run prepare       # Husky Hooks installieren/aktualisieren
@@ -46,7 +44,7 @@ Details: `/Users/abdo/iweb/.husky/README.md`
 
 GitHub Workflows:
 
-- `/Users/abdo/iweb/.github/workflows/ci.yml` - Lint/Format, Smoke-Test, Dependency Review
+- `/Users/abdo/iweb/.github/workflows/ci.yml` - Lint/Format
 - `/Users/abdo/iweb/.github/workflows/preview.yml` - Cloudflare Preview Deployments für PRs
 - `/Users/abdo/iweb/.github/workflows/codeql.yml` - CodeQL Analyse
 

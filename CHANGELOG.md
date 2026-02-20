@@ -9,7 +9,6 @@ und dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/).
 
 ### Changed - Config & Tooling Cleanup (2026-02-20)
 
-- ✅ CI Smoke-Test auf wiederverwendbares Script `npm run smoke` umgestellt
 - ✅ ESLint-Globals über `globals` Paket dedupliziert
 - ✅ Node/Tooling-Konfigurationen vereinheitlicht (`.node-version`, `engines`, aktualisierte Dev-Tool-Versionen)
 - ✅ Contributor/README-Dokumentation an aktuelle Scripts angepasst
