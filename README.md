@@ -6,13 +6,13 @@ Modernes Portfolio auf Cloudflare Pages mit Vanilla JavaScript, Three.js und Clo
 
 Voraussetzungen:
 
-- Node.js `22.22.0`
+- Node.js `22.22.0` (siehe `.node-version`)
 - npm
 
 Installation und Start:
 
 ```bash
-npm install
+npm ci
 npm run dev
 ```
 
@@ -23,11 +23,13 @@ Lokale URL: [http://localhost:8080](http://localhost:8080)
 ```bash
 npm run dev           # Cloudflare Pages dev server (Port 8080)
 npm run dev:sim       # Lokaler Node-Server (Smoke-Test/Simulation)
+npm run smoke         # Startet dev:sim + prüft zentrale Routen
 npm run lint          # ESLint mit auto-fix
 npm run lint:check    # ESLint ohne fix
 npm run format        # Prettier mit write
 npm run format:check  # Prettier check
 npm run check         # lint:check + format:check
+npm run check:all     # check + smoke
 npm run fix           # lint + format
 npm run clean         # lokale Cache/Artifacts löschen
 npm run prepare       # Husky Hooks installieren/aktualisieren

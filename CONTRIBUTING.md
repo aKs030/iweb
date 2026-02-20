@@ -6,7 +6,7 @@ Vielen Dank für dein Interesse an diesem Projekt! 🎉
 
 ### Prerequisites
 
-- Node.js >= 22.0.0
+- Node.js `22.22.0` (siehe `.node-version`)
 - npm >= 10.0.0
 - Git
 
@@ -18,7 +18,7 @@ git clone https://github.com/aKs030/iweb.git
 cd iweb
 
 # Dependencies installieren
-npm install
+npm ci
 
 # Development Server starten
 npm run dev
@@ -169,10 +169,10 @@ function fetchData() {
 npm run dev
 ```
 
-### CSS Stats prüfen
+### Smoke-Test (optional)
 
 ```bash
-npm run css:check
+npm run smoke
 ```
 
 ## 📚 Dokumentation
@@ -193,25 +193,22 @@ Siehe `docs/` Verzeichnis und [DEVELOPMENT.md](DEVELOPMENT.md).
 
 ```bash
 # Development
-npm run dev              # Dev Server
+npm run dev           # Cloudflare Pages dev server
+npm run dev:sim       # Lokaler Node-Server (Smoke-Test)
+npm run smoke         # Startet dev:sim + prüft zentrale Routen
 
 # Code Quality
-npm run lint             # ESLint (auto-fix)
-npm run format           # Prettier (auto-fix)
-npm run check            # Lint + Format Check
-npm run fix              # Lint + Format Fix
+npm run lint          # ESLint (auto-fix)
+npm run lint:check    # ESLint ohne auto-fix
+npm run format        # Prettier (auto-fix)
+npm run format:check  # Prettier check
+npm run check         # lint:check + format:check
+npm run check:all     # check + smoke
+npm run fix           # lint + format
 
-# Analysis
-npm run quality          # Knip + Duplicates + Circular
-npm run quality:full     # Quality + TypeScript + HTML
-npm run check:console    # Console.log Check
-npm run css:check        # CSS Statistics
-npm run size:check       # Bundle Size
-npm run docs             # List documentation
-
-# Build & Deploy
-npm run build            # Production build
-npm run deploy           # Deploy to Cloudflare Pages
+# Maintenance
+npm run clean         # lokale Cache/Artifacts löschen
+npm run prepare       # Husky Hooks installieren/aktualisieren
 ```
 
 ## 🐛 Bug Reports
@@ -252,7 +249,7 @@ npm run deploy           # Deploy to Cloudflare Pages
 
 - Browser: Chrome 120
 - OS: macOS 14
-- Node: 18.20.0
+- Node: 22.22.0
 ```
 
 ## 💡 Feature Requests
@@ -270,7 +267,7 @@ Bevor du einen PR öffnest:
 
 - [ ] Code läuft lokal ohne Fehler
 - [ ] `npm run check` läuft durch
-- [ ] `npm run build` funktioniert
+- [ ] `npm run smoke` läuft lokal
 - [ ] Dokumentation aktualisiert (falls nötig)
 - [ ] Commit Messages folgen Convention
 - [ ] Branch ist aktuell mit `main`
@@ -278,7 +275,7 @@ Bevor du einen PR öffnest:
 
 ## 🎯 Code Review Process
 
-1. **Automatische Checks:** ESLint, Prettier, Build
+1. **Automatische Checks:** ESLint, Prettier, Smoke-Test
 2. **Manual Review:** Code-Qualität, Best Practices
 3. **Testing:** Funktionalität testen
 4. **Merge:** Nach Approval
@@ -292,8 +289,8 @@ Bevor du einen PR öffnest:
 
 ### Externe Ressourcen
 
-- [Vite Docs](https://vitejs.dev/)
-- [PostCSS Docs](https://postcss.org/)
+- [Cloudflare Pages Docs](https://developers.cloudflare.com/pages/)
+- [Wrangler Docs](https://developers.cloudflare.com/workers/wrangler/)
 - [CSS Nesting Spec](https://www.w3.org/TR/css-nesting-1/)
 - [Three.js Docs](https://threejs.org/docs/)
 

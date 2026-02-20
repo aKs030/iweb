@@ -5,7 +5,6 @@
  */
 
 // @ts-nocheck
-/* global self, caches */
 
 const CACHE_VERSION = new URL(self.location).searchParams.get('v') || 'v1.2.3';
 const CACHE_NAME = `iweb-${CACHE_VERSION}`;
