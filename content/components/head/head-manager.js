@@ -256,29 +256,18 @@ const updateBasicMeta = (pageData, pageUrl) => {
   if (pageData.image) {
     upsertMeta('og:image', pageData.image, true);
     upsertMeta('og:image:alt', pageData.title || pageData.description, true);
+    const normalizedImage = String(pageData.image).toLowerCase();
+    const imageType = normalizedImage.endsWith('.png')
+      ? 'image/png'
+      : normalizedImage.endsWith('.webp')
+        ? 'image/webp'
+        : normalizedImage.endsWith('.svg')
+          ? 'image/svg+xml'
+          : 'image/jpeg';
 
-    (async () => {
-      try {
-        const response = await fetch(
-          '/content/assets/img/og/og-images-meta.json',
-        );
-        if (!response.ok) throw new Error('Failed to fetch');
-
-        const map = await response.json();
-        const dims = map[pageData.image] || null;
-
-        if (dims) {
-          upsertMeta('og:image:width', String(dims.width), true);
-          upsertMeta('og:image:height', String(dims.height), true);
-        } else {
-          upsertMeta('og:image:width', '1200', true);
-          upsertMeta('og:image:height', '630', true);
-        }
-      } catch {
-        upsertMeta('og:image:width', '1200', true);
-        upsertMeta('og:image:height', '630', true);
-      }
-    })();
+    upsertMeta('og:image:type', imageType, true);
+    upsertMeta('og:image:width', '1200', true);
+    upsertMeta('og:image:height', '630', true);
   }
 };
 

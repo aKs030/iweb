@@ -27,7 +27,8 @@
     "search_no_results": "No results found",
     "search_timeout": "Search is taking too long",
     "search_unavailable": "Search is currently unavailable",
-    "lang_toggle": "Switch language"
+    "lang_toggle": "Switch language",
+    "theme_toggle": "Switch theme (Light/Dark)"
   },
   "footer": {
     "about": {

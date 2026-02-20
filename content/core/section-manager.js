@@ -28,6 +28,20 @@ export class SectionManager {
     this.loadedSections.add(section);
     section.setAttribute('aria-busy', 'true');
 
+    // Handle Edge-Side Includes (SSR) Injection
+    if (section.hasAttribute('data-ssr-loaded')) {
+      log.debug(`Section ${section.id} loaded via Edge SSR`);
+      section.removeAttribute('aria-busy');
+      i18n.translateElement(section);
+      if (section.id === 'hero') {
+        fire(EVENTS.HERO_LOADED);
+      }
+      document.dispatchEvent(
+        new CustomEvent('section:loaded', { detail: { id: section.id } }),
+      );
+      return;
+    }
+
     try {
       // Fetch section HTML — URL should NOT end in .html to avoid
       // Cloudflare Pretty URLs 308 redirect loops

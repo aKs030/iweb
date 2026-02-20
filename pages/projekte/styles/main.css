@@ -426,6 +426,65 @@ canvas {
   margin-bottom: 1.5rem;
 }
 
+/* Case Study Section */
+.hud-case-study {
+  margin-bottom: 1rem;
+  text-align: left;
+}
+
+.hud-case-study-toggle {
+  font-family: inherit;
+}
+
+.hud-case-study-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+  margin-top: 0.5rem;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0.75rem;
+  animation: fadeInUp 0.3s ease-out;
+}
+
+.hud-cs-block {
+  padding: 0.4rem 0;
+}
+
+.hud-cs-block strong {
+  display: block;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #93c5fd;
+  margin-bottom: 0.25rem;
+}
+
+.hud-cs-block p {
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: #d1d5db;
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .hud-case-study-content {
+    grid-template-columns: 1fr;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .hud-actions {
   display: flex;
   justify-content: center;

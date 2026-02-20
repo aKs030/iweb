@@ -527,6 +527,68 @@ body.blog-page #main-content {
 }
 
 /* ===================================
+   BLOG SEARCH INPUT
+   =================================== */
+
+.blog-search-wrap {
+  margin-left: 0.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.blog-search-input {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 18px;
+  color: #fff;
+  font-size: 14px;
+  font-family: inherit;
+  padding: 0.4rem 0.9rem;
+  width: 180px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  outline: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+.blog-search-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.blog-search-input:focus {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.5);
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.25);
+  width: 220px;
+}
+
+/* Webkit search cancel button */
+.blog-search-input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  height: 14px;
+  width: 14px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.5)' stroke-width='2' stroke-linecap='round'%3E%3Cline x1='18' y1='6' x2='6' y2='18'/%3E%3Cline x1='6' y1='6' x2='18' y2='18'/%3E%3C/svg%3E")
+    center/contain no-repeat;
+  cursor: pointer;
+}
+
+@media (max-width: 900px) {
+  .blog-search-wrap {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .blog-search-input {
+    width: 140px;
+    font-size: 13px;
+  }
+
+  .blog-search-input:focus {
+    width: 160px;
+  }
+}
+
+/* ===================================
    3D BLOG GRID - THREE.JS STYLE (SMALLER)
    =================================== */
 

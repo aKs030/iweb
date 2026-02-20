@@ -13,6 +13,7 @@ import { SectionManager } from './core/section-manager.js';
 import { AppLoadManager } from './core/load-manager.js';
 import { ThreeEarthManager } from './core/three-earth-manager.js';
 import { getElementById, onDOMReady } from './core/utils.js';
+import { initViewTransitions } from './core/view-transitions.js';
 import { i18n } from './core/i18n.js';
 import { initPerformanceMonitoring } from './core/performance-monitor.js';
 import { SectionTracker } from './core/section-tracker.js';
@@ -34,9 +35,7 @@ const schedulePersistentStorageRequest = (delay = 2500) => {
         log.warn('Persistent storage request failed:', error);
       }
     }, delay);
-  } catch {
-    // Ignore
-  }
+  } catch {}
 };
 
 // ===== Configuration & Environment =====
@@ -85,6 +84,13 @@ const _initApp = () => {
   }
   _appInitialized = true;
 
+  // Fallback programmatic scroll to top just in case
+  window.scrollTo(0, 0);
+  // Safari hack: multiple delayed scrolls to top because Safari restores scroll late
+  setTimeout(() => window.scrollTo(0, 0), 10);
+  setTimeout(() => window.scrollTo(0, 0), 100);
+  setTimeout(() => window.scrollTo(0, 0), 500);
+
   sectionManager.init();
 
   // Start earth loading in next frame to avoid blocking DOM ready
@@ -95,9 +101,10 @@ const _initApp = () => {
   try {
     a11y?.updateAnimations?.();
     a11y?.updateContrast?.();
-  } catch {
-    // Ignore
-  }
+  } catch {}
+
+  // Initialize View Transitions API (progressive enhancement)
+  initViewTransitions();
 };
 
 onDOMReady(_initApp);
@@ -174,11 +181,7 @@ document.addEventListener(
     initHeroFeatureBundle(sectionManager);
 
     AppLoadManager.updateLoader(0.4, i18n.t('loader.system_3d'));
-    // Earth loading already started in _initApp
-
     AppLoadManager.updateLoader(0.5, i18n.t('loader.optimize_images'));
-    // Native browser lazy loading is sufficient
-    // No custom image optimization needed
 
     modulesReady = true;
     perfMarks.modulesReady = performance.now();
@@ -233,7 +236,15 @@ globalThis.addEventListener('pageshow', (event) => {
     if (!document.hidden) {
       document.dispatchEvent(new CustomEvent('visibilitychange'));
     }
+
+    // Force scroll to top on restoration
+    window.scrollTo(0, 0);
   }
+});
+
+// Safari Hack: scroll to top before unloading so it remembers 0 as scroll state
+globalThis.addEventListener('beforeunload', () => {
+  window.scrollTo(0, 0);
 });
 
 // ===== Service Worker Web Component =====
@@ -350,34 +361,41 @@ customElements.define('sw-update-notification', SWUpdateNotification);
 
 // ===== Service Worker Registration =====
 if ('serviceWorker' in navigator && !ENV.isTest) {
-  globalThis.addEventListener('load', () => {
-    navigator.serviceWorker
-      .register('/sw.js')
-      .then((registration) => {
-        log.info('Service Worker registered:', registration.scope);
+  globalThis.addEventListener('load', async () => {
+    try {
+      // Fetch app version for SW cache busting
+      let swUrl = '/sw.js';
+      try {
+        const pkg = await fetch('/package.json').then((r) => r.json());
+        if (pkg?.version) swUrl = `/sw.js?v=${pkg.version}`;
+      } catch {
+        /* fallback to plain /sw.js */
+      }
 
-        // Check for updates
-        registration.addEventListener('updatefound', () => {
-          const newWorker = registration.installing;
-          if (newWorker) {
-            newWorker.addEventListener('statechange', () => {
-              if (
-                newWorker.state === 'installed' &&
-                navigator.serviceWorker.controller
-              ) {
-                // New service worker available
-                log.info('New service worker available');
-                // Nutze die neue Web Component anstatt DOM Injection
-                document.body.appendChild(
-                  document.createElement('sw-update-notification'),
-                );
-              }
-            });
-          }
-        });
-      })
-      .catch((error) => {
-        log.warn('Service Worker registration failed:', error);
+      const registration = await navigator.serviceWorker.register(swUrl);
+      log.info('Service Worker registered:', registration.scope);
+
+      // Check for updates
+      registration.addEventListener('updatefound', () => {
+        const newWorker = registration.installing;
+        if (newWorker) {
+          newWorker.addEventListener('statechange', () => {
+            if (
+              newWorker.state === 'installed' &&
+              navigator.serviceWorker.controller
+            ) {
+              // New service worker available
+              log.info('New service worker available');
+              // Nutze die neue Web Component anstatt DOM Injection
+              document.body.appendChild(
+                document.createElement('sw-update-notification'),
+              );
+            }
+          });
+        }
       });
+    } catch (error) {
+      log.warn('Service Worker registration failed:', error);
+    }
   });
 }

@@ -10,6 +10,7 @@ export default [
         // Browser APIs
         window: 'readonly',
         document: 'readonly',
+        history: 'readonly',
         console: 'readonly',
         navigator: 'readonly',
         localStorage: 'readonly',
@@ -59,9 +60,11 @@ export default [
         Notification: 'readonly',
         TextEncoder: 'readonly',
         TextDecoder: 'readonly',
+        crypto: 'readonly',
         customElements: 'readonly',
         DOMParser: 'readonly',
         XMLSerializer: 'readonly',
+        HTMLRewriter: 'readonly',
         // External
         gtag: 'readonly',
         // Node.js (server.js)

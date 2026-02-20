@@ -53,19 +53,19 @@ const DEFAULT_IMAGE_DIMENSIONS = {
 
 const KNOWN_IMAGE_DIMENSIONS = {
   'favicon-512.webp': { width: 512, height: 512 },
-  'og-home-800.svg': { width: 800, height: 420 },
-  'og-projekte-800.svg': { width: 800, height: 420 },
-  'og-videos-800.svg': { width: 800, height: 420 },
-  'og-design-800.svg': { width: 800, height: 420 },
-  'og-photography-800.svg': { width: 800, height: 420 },
-  'og-threejs-800.svg': { width: 800, height: 420 },
-  'og-react-800.svg': { width: 800, height: 420 },
-  'og-pwa-800.svg': { width: 800, height: 420 },
-  'og-seo-800.svg': { width: 800, height: 420 },
-  'og-performance-800.svg': { width: 800, height: 420 },
-  'og-webcomponents-800.svg': { width: 800, height: 420 },
-  'og-css-800.svg': { width: 800, height: 420 },
-  'og-typescript-800.svg': { width: 800, height: 420 },
+  'og-home-800.png': { width: 800, height: 420 },
+  'og-projekte-800.png': { width: 800, height: 420 },
+  'og-videos-800.png': { width: 800, height: 420 },
+  'og-design-800.png': { width: 800, height: 420 },
+  'og-photography-800.png': { width: 800, height: 420 },
+  'og-threejs-800.png': { width: 800, height: 420 },
+  'og-react-800.png': { width: 800, height: 420 },
+  'og-pwa-800.png': { width: 800, height: 420 },
+  'og-seo-800.png': { width: 800, height: 420 },
+  'og-performance-800.png': { width: 800, height: 420 },
+  'og-webcomponents-800.png': { width: 800, height: 420 },
+  'og-css-800.png': { width: 800, height: 420 },
+  'og-typescript-800.png': { width: 800, height: 420 },
 };
 
 function normalizeText(value) {

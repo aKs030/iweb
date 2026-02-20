@@ -6,7 +6,7 @@ Modernes Portfolio auf Cloudflare Pages mit Vanilla JavaScript, Three.js und Clo
 
 Voraussetzungen:
 
-- Node.js `22.22.0` (siehe `/Users/abdo/iweb/.nvmrc`)
+- Node.js `22.22.0`
 - npm
 
 Installation und Start:
