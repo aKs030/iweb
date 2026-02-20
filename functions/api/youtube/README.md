@@ -38,13 +38,13 @@ wrangler pages secret put YOUTUBE_API_KEY --project-name=1web --env=preview
 
 ### 3. Lokale Entwicklung
 
-Erstelle eine `.dev.vars` Datei im Root:
+Trage deinen echten Schlüssel lokal in `.dev.vars` ein:
 
 ```bash
-YOUTUBE_API_KEY=AIzaSyA1uN-8I94wyGRSA9WylFetW9PaUehgTcY
+YOUTUBE_API_KEY=your_youtube_api_key
 ```
 
-**Wichtig:** Diese Datei ist bereits in `.gitignore` und wird nicht committed.
+**Wichtig:** `.dev.vars` ist in `.gitignore` und wird nicht committed.
 
 ## API Endpoints
 

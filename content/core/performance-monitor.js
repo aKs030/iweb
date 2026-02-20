@@ -4,8 +4,6 @@
  * @version 1.0.0
  */
 
-/* global PerformanceObserver */
-
 import { createLogger } from './logger.js';
 
 const log = createLogger('performance');

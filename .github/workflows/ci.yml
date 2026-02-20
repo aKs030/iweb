@@ -34,22 +34,8 @@ jobs:
       - name: Run quality checks
         run: npm run check
 
-      - name: Start server and test routes
-        run: |
-          PORT=8080 npm run dev:sim > server.log 2>&1 &
-          SERVER_PID=$!
-          trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
-
-          for i in {1..30}; do
-            if curl -fsS http://127.0.0.1:8080/ > /dev/null 2>&1; then
-              break
-            fi
-            sleep 1
-          done
-
-          curl -fsS http://127.0.0.1:8080/ > /dev/null
-          curl -fSs http://127.0.0.1:8080/pages/about/index.html > /dev/null
-          curl -fSs http://127.0.0.1:8080/pages/projekte/index.html > /dev/null
+      - name: Run smoke test
+        run: npm run smoke
 
       - name: Upload server log on failure
         if: failure()
