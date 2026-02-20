@@ -28,9 +28,7 @@ Datei: `/Users/abdo/iweb/.github/workflows/ci.yml`
 
 Jobs:
 
-- `quality`: ESLint + Prettier Check
-- `smoke-test`: lokaler Serverstart und Route-Checks
-- `dependency-review`: PR-Dependency-Review (High-Severity blockierend)
+- `verify`: ESLint + Prettier Check
 
 ## Workflow-Empfehlung
 

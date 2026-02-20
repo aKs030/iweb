@@ -138,9 +138,6 @@ const loadThreeEarth = () => import('./three-earth-system.js');
 ```bash
 # Code quality
 npm run check
-
-# Local smoke-test
-npm run smoke
 ```
 
 ### Lighthouse CI

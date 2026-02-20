@@ -169,12 +169,6 @@ function fetchData() {
 npm run dev
 ```
 
-### Smoke-Test (optional)
-
-```bash
-npm run smoke
-```
-
 ## 📚 Dokumentation
 
 ### Dokumentation aktualisieren
@@ -194,8 +188,7 @@ Siehe `docs/` Verzeichnis und [DEVELOPMENT.md](DEVELOPMENT.md).
 ```bash
 # Development
 npm run dev           # Cloudflare Pages dev server
-npm run dev:sim       # Lokaler Node-Server (Smoke-Test)
-npm run smoke         # Startet dev:sim + prüft zentrale Routen
+npm run dev:sim       # Lokaler Node-Server (Simulation)
 
 # Code Quality
 npm run lint          # ESLint (auto-fix)
@@ -203,7 +196,6 @@ npm run lint:check    # ESLint ohne auto-fix
 npm run format        # Prettier (auto-fix)
 npm run format:check  # Prettier check
 npm run check         # lint:check + format:check
-npm run check:all     # check + smoke
 npm run fix           # lint + format
 
 # Maintenance
@@ -267,7 +259,7 @@ Bevor du einen PR öffnest:
 
 - [ ] Code läuft lokal ohne Fehler
 - [ ] `npm run check` läuft durch
-- [ ] `npm run smoke` läuft lokal
+- [ ] `npm run dev:sim` läuft lokal
 - [ ] Dokumentation aktualisiert (falls nötig)
 - [ ] Commit Messages folgen Convention
 - [ ] Branch ist aktuell mit `main`
@@ -275,7 +267,7 @@ Bevor du einen PR öffnest:
 
 ## 🎯 Code Review Process
 
-1. **Automatische Checks:** ESLint, Prettier, Smoke-Test
+1. **Automatische Checks:** ESLint, Prettier
 2. **Manual Review:** Code-Qualität, Best Practices
 3. **Testing:** Funktionalität testen
 4. **Merge:** Nach Approval
