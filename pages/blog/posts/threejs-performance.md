@@ -4,7 +4,7 @@ title: Optimierung von Three.js für das Web
 date: 2025-12-15
 category: Performance
 author: Abdulkerim Sesli
-image: /content/assets/img/og/og-threejs-800.png
+image: https://img.abdulkerimsesli.de/blog/og-threejs-800.png
 imageAlt: Optimierung von Three.js für das Web - Artikelbild
 excerpt: Praxisnahe Techniken zur Performance-Optimierung von Three.js: InstancedMesh, LOD-Strategien, Texturkompression (KTX2) und Shader-Optimierung.
 seoDescription: Praxisnahe Techniken zur Performance-Optimierung von Three.js: InstancedMesh, LOD-Strategien, Texturkompression (KTX2) und Shader-Optimierung. Mit Verweisen auf Bilder, Videos und die Hauptseite für bessere Auffindbarkeit in der Google-Suche.

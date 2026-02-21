@@ -1,5 +1,3 @@
-import { BASE_URL } from './constants.js';
-
 export const ROUTES = {
   default: {
     title: 'Abdulkerim Sesli | Offizielles Portfolio für Web, Foto & Video',
@@ -9,8 +7,8 @@ export const ROUTES = {
     description_en:
       'Abdulkerim Sesli — Web Developer & Photographer in Berlin. Specialist in React, Three.js and urban photography. Portfolio, references & contact.',
     type: 'ProfilePage',
-    image: `${BASE_URL}/content/assets/img/og/og-home-800.png`,
-    imageWebp: `${BASE_URL}/content/assets/img/og/og-home-800.png`,
+    image: `https://img.abdulkerimsesli.de/blog/og-home-800.png`,
+    imageWebp: `https://img.abdulkerimsesli.de/blog/og-home-800.png`,
   },
   '/projekte/': {
     title: 'Referenzen & Code-Projekte | Abdulkerim Sesli',
@@ -20,7 +18,7 @@ export const ROUTES = {
     description_en:
       'Explore interactive web experiments and business apps. Specialist in performant React solutions, 3D web (Three.js) and modern UI/UX.',
     type: 'CollectionPage',
-    image: `${BASE_URL}/content/assets/img/og/og-projekte-800.png`,
+    image: `https://img.abdulkerimsesli.de/blog/og-projekte-800.png`,
   },
   '/blog/': {
     title: 'Tech-Blog & Tutorials | Abdulkerim Sesli',
@@ -30,7 +28,7 @@ export const ROUTES = {
     description_en:
       'Practical articles on JavaScript, CSS and web architecture. Hands-on tutorials and insights from a Berlin-based developer.',
     type: 'Blog',
-    image: `${BASE_URL}/content/assets/img/og/og-home-800.png`,
+    image: `https://img.abdulkerimsesli.de/blog/og-home-800.png`,
   },
   '/videos/': {
     title: 'Videos — Abdulkerim Sesli',
@@ -40,7 +38,7 @@ export const ROUTES = {
     description_en:
       'A selection of my work, brief presentations and behind-the-scenes.',
     type: 'CollectionPage',
-    image: `${BASE_URL}/content/assets/img/og/og-videos-800.png`,
+    image: `https://img.abdulkerimsesli.de/blog/og-videos-800.png`,
   },
   '/gallery/': {
     title: 'Fotografie Portfolio | Abdulkerim Sesli',
@@ -50,7 +48,7 @@ export const ROUTES = {
     description_en:
       'Visual aesthetics from the capital. Curated gallery focused on street photography, architecture and atmospheric portraits from Berlin.',
     type: 'ImageGallery',
-    image: `${BASE_URL}/content/assets/img/og/og-home-800.png`,
+    image: `https://img.abdulkerimsesli.de/blog/og-home-800.png`,
   },
   '/about/': {
     title: 'Über mich | Abdulkerim Sesli',
@@ -60,7 +58,7 @@ export const ROUTES = {
     description_en:
       'The person behind the code. Detailed background, tech stack overview, and direct contact options for project inquiries and collaborations.',
     type: 'AboutPage',
-    image: `${BASE_URL}/content/assets/img/og/og-home-800.png`,
+    image: `https://img.abdulkerimsesli.de/blog/og-home-800.png`,
   },
   '/abdul-sesli/': {
     title: 'Abdul Sesli | Offizielles Profil von Abdulkerim Sesli',
@@ -70,7 +68,7 @@ export const ROUTES = {
     description_en:
       'Abdul Sesli is the short name of Abdulkerim Sesli. This page links to the official portfolio with blog, videos, images and projects.',
     type: 'ProfilePage',
-    image: `${BASE_URL}/content/assets/img/og/og-home-800.png`,
+    image: `https://img.abdulkerimsesli.de/blog/og-home-800.png`,
   },
   '/contact/': {
     title: 'Kontakt | Abdulkerim Sesli',
@@ -80,20 +78,20 @@ export const ROUTES = {
     description_en:
       'Project inquiry or collaboration? Get in touch directly and send a message.',
     type: 'ContactPage',
-    image: `${BASE_URL}/content/assets/img/og/og-home-800.png`,
+    image: `https://img.abdulkerimsesli.de/blog/og-home-800.png`,
   },
   '/datenschutz/': {
     title: 'Datenschutzerklärung | Abdulkerim Sesli',
     description:
       'Informationen zum Datenschutz und zur Verarbeitung personenbezogener Daten gemäß DSGVO.',
     type: 'WebPage',
-    image: `${BASE_URL}/content/assets/img/og/og-home-800.png`,
+    image: `https://img.abdulkerimsesli.de/blog/og-home-800.png`,
   },
   '/impressum/': {
     title: 'Impressum | Abdulkerim Sesli',
     description:
       'Rechtliche Anbieterkennzeichnung und Kontaktinformationen gemäß TMG.',
     type: 'WebPage',
-    image: `${BASE_URL}/content/assets/img/og/og-home-800.png`,
+    image: `https://img.abdulkerimsesli.de/blog/og-home-800.png`,
   },
 };

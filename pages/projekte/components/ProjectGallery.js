@@ -1,5 +1,8 @@
 import * as THREE from 'three';
 
+const R2_APP_PREVIEWS_BASE_URL = 'https://img.abdulkerimsesli.de/app';
+const APP_PREVIEWS_VERSION = '20260221';
+
 const LAYOUT_BREAKPOINTS = {
   mobile: 640,
   tablet: 1024,
@@ -96,8 +99,10 @@ export class ProjectGallery {
       // 1. Image Screen
       const material = defaultMaterial;
       const projectName = project.dirName || project.name || project.id;
-      // We assume previews exist at this path as per previous code
-      const imageUrl = `/content/assets/img/previews/${projectName}.svg`;
+      const encodedProjectName = encodeURIComponent(String(projectName || ''))
+        .replace(/%2F/g, '/')
+        .trim();
+      const imageUrl = `${R2_APP_PREVIEWS_BASE_URL}/${encodedProjectName}.svg?v=${APP_PREVIEWS_VERSION}`;
 
       // Attempt to load texture
       textureLoader.load(
