@@ -1,6 +1,5 @@
 import { createLogger } from '../../../core/logger.js';
 import { MarkdownRenderer } from './markdown-renderer.js';
-import { ROBOT_PERSONA } from './robot-persona.js';
 import { ROBOT_ACTIONS } from '../constants/events.js';
 
 const log = createLogger('RobotChat');
@@ -116,22 +115,18 @@ export class RobotChat {
       this.robot.animationModule.startSpeaking();
       const aiService = await this.robot.getAIService();
 
-      const response = await aiService.generateResponse(
-        text,
-        (chunk) => {
-          if (!typingRemoved) {
-            this.removeTyping();
-            typingRemoved = true;
-          }
+      const response = await aiService.generateResponse(text, (chunk) => {
+        if (!typingRemoved) {
+          this.removeTyping();
+          typingRemoved = true;
+        }
 
-          if (!streamingMessageEl) {
-            streamingMessageEl = this.createStreamingMessage();
-          }
+        if (!streamingMessageEl) {
+          streamingMessageEl = this.createStreamingMessage();
+        }
 
-          this.updateStreamingMessage(streamingMessageEl, chunk);
-        },
-        ROBOT_PERSONA,
-      );
+        this.updateStreamingMessage(streamingMessageEl, chunk);
+      });
 
       this.robot.animationModule.stopThinking();
 

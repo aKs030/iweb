@@ -16,11 +16,11 @@ const FALLBACK_MESSAGE =
 /**
  * Makes a request to the AI API via proxy with retry logic
  * @param {string} prompt - User prompt
- * @param {string} systemInstruction - System instruction for the AI
+ * @param {string} mode - AI mode ('chat', 'summary', 'suggestion')
  * @param {Function} [onChunk] - Optional callback for streaming chunks
  * @returns {Promise<string>} AI response text
  */
-async function callAIAPI(prompt, systemInstruction, onChunk) {
+async function callAIAPI(prompt, mode = 'chat', onChunk) {
   let delay = INITIAL_DELAY;
 
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
@@ -28,7 +28,7 @@ async function callAIAPI(prompt, systemInstruction, onChunk) {
       const response = await fetch('/api/ai', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt, systemInstruction }),
+        body: JSON.stringify({ prompt, mode }),
       });
 
       if (!response.ok) {
@@ -94,21 +94,13 @@ export class AIService {
    * Generate a chat response
    * @param {string} prompt - User message
    * @param {Function} [onChunk] - Optional callback for streaming chunks
-   * @param {string} [systemInstruction] - Optional system instruction
+   * @param {string} [mode] - AI mode
    * @returns {Promise<string>} AI response
    */
-  async generateResponse(prompt, onChunk, systemInstruction) {
+  async generateResponse(prompt, onChunk, mode = 'chat') {
     const hasCallback = onChunk && typeof onChunk === 'function';
-    // Force German language in system instruction
-    const baseInstruction =
-      systemInstruction || 'Du bist ein hilfreicher Roboter-Begleiter.';
-    const finalSystemInstruction = `${baseInstruction} Antworte IMMER auf DEUTSCH.`;
 
-    return await callAIAPI(
-      prompt,
-      finalSystemInstruction,
-      hasCallback ? onChunk : undefined,
-    );
+    return await callAIAPI(prompt, mode, hasCallback ? onChunk : undefined);
   }
 
   /**
@@ -119,10 +111,7 @@ export class AIService {
   async summarizePage(content) {
     const trimmed = String(content || '').slice(0, 4800);
     const prompt = `Fasse den folgenden Text kurz und präzise auf DEUTSCH zusammen:\n\n${trimmed}`;
-    return await callAIAPI(
-      prompt,
-      'Fasse kurz auf Deutsch zusammen. Maximal 3 Sätze.',
-    );
+    return await callAIAPI(prompt, 'summary');
   }
 
   /**
@@ -147,9 +136,6 @@ Generiere einen kurzen, hilfreichen Tipp oder eine Frage zu diesem Inhalt.
 Sprich den Nutzer freundlich als Roboter-Assistent an (Cyber).
 Maximal 2 kurze Sätze.`;
 
-    return await callAIAPI(
-      prompt,
-      'Du bist Cyber, ein hilfreicher Roboter-Assistent. Antworte immer auf Deutsch.',
-    );
+    return await callAIAPI(prompt, 'suggestion');
   }
 }
