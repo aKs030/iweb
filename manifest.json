@@ -20,31 +20,31 @@
   "theme_color": "#030303",
   "icons": [
     {
-      "src": "/content/assets/img/icons/favicon-512.webp",
+      "src": "https://img.abdulkerimsesli.de/icons/favicon-512.webp?v=20260221",
       "sizes": "512x512",
       "type": "image/webp",
       "purpose": "any"
     },
     {
-      "src": "/content/assets/img/icons/favicon-512.webp",
+      "src": "https://img.abdulkerimsesli.de/icons/favicon-512.webp?v=20260221",
       "sizes": "512x512",
       "type": "image/webp",
       "purpose": "maskable"
     },
     {
-      "src": "/content/assets/img/icons/apple-touch-icon.webp",
+      "src": "https://img.abdulkerimsesli.de/icons/apple-touch-icon.webp?v=20260221",
       "sizes": "180x180",
       "type": "image/webp",
       "purpose": "any"
     },
     {
-      "src": "/content/assets/img/icons/favicon.svg",
+      "src": "https://img.abdulkerimsesli.de/icons/favicon.svg?v=20260221",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"
     },
     {
-      "src": "/content/assets/img/icons/favicon.ico",
+      "src": "https://img.abdulkerimsesli.de/icons/favicon.ico?v=20260221",
       "sizes": "48x48",
       "type": "image/x-icon",
       "purpose": "any"
@@ -58,7 +58,7 @@
       "url": "/#kontakt",
       "icons": [
         {
-          "src": "/content/assets/img/icons/favicon-512.webp",
+          "src": "https://img.abdulkerimsesli.de/icons/favicon-512.webp?v=20260221",
           "sizes": "512x512",
           "type": "image/webp"
         }
@@ -71,7 +71,7 @@
       "url": "/projekte/",
       "icons": [
         {
-          "src": "/content/assets/img/icons/favicon-512.webp",
+          "src": "https://img.abdulkerimsesli.de/icons/favicon-512.webp?v=20260221",
           "sizes": "512x512",
           "type": "image/webp"
         }
@@ -84,7 +84,7 @@
       "url": "/videos/",
       "icons": [
         {
-          "src": "/content/assets/img/icons/favicon-512.webp",
+          "src": "https://img.abdulkerimsesli.de/icons/favicon-512.webp?v=20260221",
           "sizes": "512x512",
           "type": "image/webp"
         }
@@ -101,14 +101,14 @@
   },
   "screenshots": [
     {
-      "src": "/content/assets/img/og/og-home-800.png",
+      "src": "https://img.abdulkerimsesli.de/blog/og-home-800.png",
       "sizes": "1200x630",
       "type": "image/png",
       "form_factor": "wide",
       "label": "Abdulkerim Sesli Portfolio - Desktop"
     },
     {
-      "src": "/content/assets/img/icons/favicon-512.webp",
+      "src": "https://img.abdulkerimsesli.de/icons/favicon-512.webp?v=20260221",
       "sizes": "512x512",
       "type": "image/webp",
       "form_factor": "narrow",

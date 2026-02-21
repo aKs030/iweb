@@ -4,7 +4,7 @@ title: React ohne Build-Tools nutzen
 date: 2025-09-05
 category: Webdesign
 author: Abdulkerim Sesli
-image: /content/assets/img/og/og-react-800.png
+image: https://img.abdulkerimsesli.de/blog/og-react-800.png
 imageAlt: React ohne Build-Tools nutzen - Artikelbild
 excerpt: React ohne Build-Tools: Praktische Setups mit ES Modules und htm für schnelle Prototypen und kleine Projekte. Hinweise zu Performance, Limitations und Best Practices.
 seoDescription: React ohne Build-Tools: Praktische Setups mit ES Modules und htm für schnelle Prototypen und kleine Projekte. Hinweise zu Performance, Limitations und Best Practices. Mit Verweisen auf Bilder, Videos und die Hauptseite für bessere Auffindbarkeit in der Google-Suche.

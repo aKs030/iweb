@@ -5,6 +5,7 @@
 
 import { createLogger } from './logger.js';
 import { ENV } from '../config/env.config.js';
+import { iconUrl } from '../config/constants.js';
 
 const log = createLogger('Schema');
 
@@ -67,6 +68,7 @@ const KNOWN_IMAGE_DIMENSIONS = {
   'og-css-800.png': { width: 800, height: 420 },
   'og-typescript-800.png': { width: 800, height: 420 },
 };
+const PERSON_FALLBACK_ICON = iconUrl('favicon-512.webp');
 
 function normalizeText(value) {
   return String(value || '')
@@ -505,8 +507,8 @@ export function generateSchemaGraph(
     image: brandData.image || {
       '@type': 'ImageObject',
       '@id': `${ENV.BASE_URL}/#personImage`,
-      contentUrl: `${ENV.BASE_URL}/content/assets/img/icons/favicon-512.webp`,
-      url: `${ENV.BASE_URL}/content/assets/img/icons/favicon-512.webp`,
+      contentUrl: PERSON_FALLBACK_ICON,
+      url: PERSON_FALLBACK_ICON,
       width: 512,
       height: 512,
       creator: { '@type': 'Person', name: brandData.name },

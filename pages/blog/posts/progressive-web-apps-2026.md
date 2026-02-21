@@ -4,7 +4,7 @@ title: Progressive Web Apps 2026: Native Features im Browser
 date: 2026-01-15
 category: Performance
 author: Abdulkerim Sesli
-image: /content/assets/img/og/og-pwa-800.png
+image: https://img.abdulkerimsesli.de/blog/og-pwa-800.png
 imageAlt: Progressive Web Apps 2026: Native Features im Browser - Artikelbild
 excerpt: PWAs 2026 bieten native Features wie Push Notifications, Offline-Funktionalität, App-Installation und mehr. Die Lücke zwischen Web und Native schließt sich.
 seoDescription: PWAs 2026 bieten native Features wie Push Notifications, Offline-Funktionalität, App-Installation und mehr. Die Lücke zwischen Web und Native schließt sich. Mit Verweisen auf Bilder, Videos und die Hauptseite für bessere Auffindbarkeit in der Google-Suche.
