@@ -366,16 +366,43 @@ function runLocalFallbackSearch(expandedQuery, originalQuery, topK) {
   const normalizedQuery = String(expandedQuery || '')
     .toLowerCase()
     .trim();
-  const queryTerms = normalizedQuery.split(/\s+/).filter(Boolean);
+  const queryTermsStrings = normalizedQuery.split(/\s+/).filter(Boolean);
 
   if (!normalizedQuery) {
     return [];
   }
 
+  // Pre-calculate terms and regexes for scoring and highlighting
+  const scoringTerms = normalizedQuery
+    .split(/\s+/)
+    .filter((t) => t.length > 1)
+    .map((term) => ({
+      term,
+      regex: new RegExp(
+        `(^|[\\s/\\-_.])${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`,
+        'i',
+      ),
+    }));
+
+  const highlightTerms = originalQuery
+    .toLowerCase()
+    .split(/\s+/)
+    .filter((t) => t.length > 1)
+    .map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+
+  const highlightRegex =
+    highlightTerms.length > 0
+      ? new RegExp(`(${highlightTerms.join('|')})`, 'gi')
+      : null;
+
   const maxResults = Number.isFinite(topK) && topK > 0 ? topK : 10;
 
   return LOCAL_SEARCH_DOCUMENTS.map((document) => {
-    const baseScore = scoreLocalDocument(document, normalizedQuery, queryTerms);
+    const baseScore = scoreLocalDocument(
+      document,
+      normalizedQuery,
+      queryTermsStrings,
+    );
     if (baseScore <= 0) return null;
 
     const snippet = createSnippet(
@@ -384,7 +411,10 @@ function runLocalFallbackSearch(expandedQuery, originalQuery, topK) {
       160,
     );
     const description = snippet || document.description;
-    const highlightedDescription = highlightMatches(description, originalQuery);
+    const highlightedDescription = highlightMatches(
+      description,
+      highlightRegex,
+    );
 
     const result = {
       url: document.url,
@@ -397,7 +427,7 @@ function runLocalFallbackSearch(expandedQuery, originalQuery, topK) {
 
     return {
       ...result,
-      score: calculateRelevanceScore(result, originalQuery),
+      score: calculateRelevanceScore(result, normalizedQuery, scoringTerms),
     };
   })
     .filter(Boolean)
@@ -605,6 +635,17 @@ export async function onRequestPost(context) {
         'Du bist ein Suchassistent für abdulkerimsesli.de. Fasse die Suchergebnisse in 1-2 prägnanten Sätzen zusammen (max. 120 Zeichen). Fokussiere auf die wichtigsten Inhalte und vermeide generische Aussagen.',
     });
 
+    // Pre-calculate highlight regex once
+    const highlightTerms = query
+      .toLowerCase()
+      .split(/\s+/)
+      .filter((t) => t.length > 1)
+      .map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+    const highlightRegex =
+      highlightTerms.length > 0
+        ? new RegExp(`(${highlightTerms.join('|')})`, 'gi')
+        : null;
+
     // Transform AI response to our format
     const aiResults = (searchData.data || []).map((item) => {
       let url = normalizeUrl(item.filename);
@@ -629,7 +670,7 @@ export async function onRequestPost(context) {
       const description = snippet || '';
       const highlightedDescription = highlightMatches(
         description || 'Keine Beschreibung verfügbar',
-        query,
+        highlightRegex,
       );
 
       return {
@@ -667,7 +708,7 @@ export async function onRequestPost(context) {
       if (enriched.description !== result.description) {
         enriched.highlightedDescription = highlightMatches(
           enriched.description,
-          query,
+          highlightRegex,
         );
       }
 
@@ -676,10 +717,22 @@ export async function onRequestPost(context) {
 
     // ── Score, sort, filter ─────────────────────────────────────────────
 
+    const queryLower = query.toLowerCase().trim();
+    const scoringTerms = queryLower
+      .split(/\s+/)
+      .filter((t) => t.length > 1)
+      .map((term) => ({
+        term,
+        regex: new RegExp(
+          `(^|[\\s/\\-_.])${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`,
+          'i',
+        ),
+      }));
+
     const scoredResults = enrichedResults
       .map((result) => ({
         ...result,
-        score: calculateRelevanceScore(result, query),
+        score: calculateRelevanceScore(result, queryLower, scoringTerms),
       }))
       .sort((a, b) => b.score - a.score);
 

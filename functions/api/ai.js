@@ -35,13 +35,11 @@ function createLocalFallbackText(prompt, contextData) {
 /**
  * Calculate relevance score for search results
  * @param {Object} item - Search result item
- * @param {string} query - Original query
+ * @param {string} queryLower - Lowercased query
+ * @param {Array} queryTerms - Array of { term, regex }
  * @returns {number} Relevance score (0-1)
  */
-function calculateRelevanceScore(item, query) {
-  const queryLower = query.toLowerCase();
-  const queryTerms = queryLower.split(/\s+/).filter((t) => t.length > 2);
-
+function calculateRelevanceScore(item, queryLower, queryTerms) {
   let score = 0;
   const content =
     item.content
@@ -51,13 +49,13 @@ function calculateRelevanceScore(item, query) {
   const title = item.filename?.toLowerCase() || '';
 
   // Title match (highest weight)
-  queryTerms.forEach((term) => {
+  queryTerms.forEach(({ term }) => {
     if (title.includes(term)) score += 0.4;
   });
 
   // Content match
-  queryTerms.forEach((term) => {
-    const matches = (content.match(new RegExp(term, 'g')) || []).length;
+  queryTerms.forEach(({ regex }) => {
+    const matches = (content.match(regex) || []).length;
     score += Math.min(matches * 0.1, 0.3);
   });
 
@@ -174,11 +172,21 @@ async function getRelevantContext(query, env) {
       return null;
     }
 
+    // Pre-compile query terms and regexes once
+    const queryLower = query.toLowerCase();
+    const queryTerms = queryLower
+      .split(/\s+/)
+      .filter((t) => t.length > 2)
+      .map((term) => ({
+        term,
+        regex: new RegExp(term, 'g'),
+      }));
+
     // Calculate relevance scores and sort
     const scoredResults = searchData.data
       .map((item) => ({
         item,
-        score: calculateRelevanceScore(item, query),
+        score: calculateRelevanceScore(item, queryLower, queryTerms),
       }))
       .filter((result) => result.score > 0.1) // Filter out low-relevance results
       .sort((a, b) => b.score - a.score)

@@ -140,25 +140,17 @@ export function expandQuery(query) {
 /**
  * Calculate relevance score based on multiple factors
  * @param {Object} result - Search result object
- * @param {string} originalQuery - Original search query
+ * @param {string} queryLower - Lowercased search query
+ * @param {Array} queryTerms - Array of { term, regex }
  * @returns {number} Enhanced relevance score
  */
-export function calculateRelevanceScore(result, originalQuery) {
+export function calculateRelevanceScore(result, queryLower, queryTerms) {
   let score = result.score || 0;
   let textMatchScore = 0;
 
-  const queryLower = originalQuery.toLowerCase().trim();
   const titleLower = (result.title || '').toLowerCase();
   const urlLower = (result.url || '').toLowerCase();
   const descLower = (result.description || '').toLowerCase();
-
-  // Word-boundary aware matching (stronger signal than substring)
-  const queryTerms = queryLower.split(/\s+/).filter((t) => t.length > 1);
-  const boundaryRe = (term) =>
-    new RegExp(
-      `(^|[\\s/\\-_.])${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`,
-      'i',
-    );
 
   // Exact full query match
   if (titleLower.includes(queryLower)) textMatchScore += 12;
@@ -167,15 +159,14 @@ export function calculateRelevanceScore(result, originalQuery) {
 
   // Per-term matching with word-boundary bonus
   let termsMatched = 0;
-  for (const term of queryTerms) {
-    const re = boundaryRe(term);
-    if (re.test(titleLower)) {
+  for (const { regex } of queryTerms) {
+    if (regex.test(titleLower)) {
       textMatchScore += 4;
       termsMatched++;
-    } else if (re.test(urlLower)) {
+    } else if (regex.test(urlLower)) {
       textMatchScore += 3;
       termsMatched++;
-    } else if (re.test(descLower)) {
+    } else if (regex.test(descLower)) {
       textMatchScore += 2;
       termsMatched++;
     }
@@ -381,22 +372,13 @@ export function cleanDescription(text) {
  * Wrap matching query terms in <mark> tags for highlight rendering.
  * Only operates on plain-text content (no nested HTML expected).
  * @param {string} text - Plain text to highlight
- * @param {string} query - Original search query
+ * @param {RegExp} highlightRegex - Pre-compiled regex for highlighting
  * @returns {string} Text with <mark> wrapped matches
  */
-export function highlightMatches(text, query) {
-  if (!text || !query) return text || '';
+export function highlightMatches(text, highlightRegex) {
+  if (!text || !highlightRegex) return text || '';
 
-  const terms = query
-    .toLowerCase()
-    .split(/\s+/)
-    .filter((t) => t.length > 1)
-    .map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
-
-  if (terms.length === 0) return text;
-
-  const pattern = new RegExp(`(${terms.join('|')})`, 'gi');
-  return text.replace(pattern, '<mark>$1</mark>');
+  return text.replace(highlightRegex, '<mark>$1</mark>');
 }
 
 /**
