@@ -760,8 +760,7 @@ site-menu {
     display: none;
   }
 
-  .site-header.search-mode .site-menu__list > li.menu-utility-item--theme,
-  .site-header.search-mode .site-menu__list > li.menu-utility-item--lang {
+  .site-header.search-mode .site-menu__list > li.menu-utility-item {
     display: flex;
   }
 }
