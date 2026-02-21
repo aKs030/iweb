@@ -23,7 +23,7 @@ export class Gallery3DSystem {
     this.startY = 0;
     this.objects = [];
     this.frameId = null;
-    this.clock = new THREE.Clock();
+    this.timer = new THREE.Timer();
 
     this.params = {
       radius: 8,
@@ -80,7 +80,6 @@ export class Gallery3DSystem {
     this.createStars();
     this.setupEvents();
 
-    this.clock.start();
     this.animate();
   }
 
@@ -253,7 +252,8 @@ export class Gallery3DSystem {
 
   animate() {
     this.frameId = requestAnimationFrame(this.animate);
-    const time = this.clock.getElapsedTime();
+    this.timer.update();
+    const time = this.timer.getElapsed();
 
     this.scrollPos += (this.targetScrollPos - this.scrollPos) * 0.1;
     const camY = -this.scrollPos;

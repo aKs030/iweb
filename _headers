@@ -13,6 +13,7 @@
   Vary: Accept-Encoding
   Cross-Origin-Resource-Policy: cross-origin
   Timing-Allow-Origin: *
+  X-Content-Type-Options: nosniff
 
 /content/assets/img/*
   Cache-Control: public, max-age=31536000, immutable
@@ -20,6 +21,7 @@
   Cross-Origin-Resource-Policy: cross-origin
   Timing-Allow-Origin: *
   X-Robots-Tag: max-image-preview:large
+  X-Content-Type-Options: nosniff
 
 /llms.txt
   Content-Type: text/plain; charset=utf-8
@@ -43,35 +45,46 @@
   Content-Type: application/manifest+json
 
 # ============================================================================
-# JavaScript Bundles
+# JavaScript Bundles - Modern Optimization
 # ============================================================================
 # Large runtime bundle (rl8i) - 1 week browser cache, 30 days stale-while-revalidate
 /rl8i/*
   Cache-Control: public, max-age=604800, stale-while-revalidate=2592000
   Vary: Accept-Encoding
   Cross-Origin-Resource-Policy: same-origin
+  X-Content-Type-Options: nosniff
 
 # Main application script (not fingerprinted) - fresh browser, 1 hour edge cache
 /content/main.js
   Cache-Control: public, max-age=0, s-maxage=3600, stale-while-revalidate=86400
   Vary: Accept-Encoding
+  X-Content-Type-Options: nosniff
 
-# Component scripts - short browser TTL, edge caching
+# Component scripts - short browser TTL, edge caching with priority hints
 /content/components/*
   Cache-Control: public, max-age=0, s-maxage=3600, stale-while-revalidate=86400
   Vary: Accept-Encoding
+  X-Content-Type-Options: nosniff
+  Link: <https://cdn.jsdelivr.net>; rel=preconnect; crossorigin
 
 # Built assets with hashes - long-term cache
 /assets/js/*
   Cache-Control: public, max-age=31536000, immutable
   Vary: Accept-Encoding
+  X-Content-Type-Options: nosniff
 
 # ============================================================================
-# CSS Stylesheets
+# CSS Stylesheets - Modern Optimization
 # ============================================================================
 /content/styles/*
   Cache-Control: public, max-age=0, s-maxage=3600, stale-while-revalidate=86400
   Vary: Accept-Encoding
+  X-Content-Type-Options: nosniff
+
+/content/components/*/*.css
+  Cache-Control: public, max-age=0, s-maxage=3600, stale-while-revalidate=86400
+  Vary: Accept-Encoding
+  X-Content-Type-Options: nosniff
 
 # ============================================================================
 # API Routes - Strategic Caching

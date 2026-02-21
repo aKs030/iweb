@@ -4,20 +4,12 @@
  * Generates an RSS 2.0 feed from blog post index
  */
 
+import { escapeXml } from './_xml-utils.js';
+
 const SITE_URL = 'https://abdulkerimsesli.de';
 const FEED_TITLE = 'Abdulkerim Sesli — Blog';
 const FEED_DESCRIPTION =
   'Praxisnahe Tipps zu Webdesign, SEO, Performance und Online-Marketing.';
-
-function escapeXml(str) {
-  if (!str) return '';
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
-}
 
 export async function onRequestGet({ request }) {
   try {

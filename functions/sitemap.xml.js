@@ -1,4 +1,11 @@
 import { ROUTES } from '../content/config/routes-config.js';
+import {
+  escapeXml,
+  normalizePath,
+  resolveOrigin,
+  toISODate,
+} from './api/_xml-utils.js';
+import { fetchUploadsPlaylistId, toYoutubeDate } from './api/_youtube-utils.js';
 
 const ROUTE_META = {
   '/': { priority: 1.0, changefreq: 'weekly' },
@@ -15,52 +22,6 @@ const BLOG_INDEX_PATH = '/pages/blog/posts/index.json';
 const EXCLUDED_PATHS = new Set(['/contact/']);
 const MAX_YOUTUBE_RESULTS = 200;
 
-function normalizePath(path) {
-  if (!path) return '/';
-  if (path === '/') return '/';
-
-  let normalized = String(path).trim();
-  if (!normalized.startsWith('/')) normalized = '/' + normalized;
-  normalized = normalized.replace(/\/index\.html?$/i, '/');
-  if (!normalized.endsWith('/')) normalized += '/';
-
-  return normalized;
-}
-
-function toISODate(value) {
-  if (!value) return null;
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return null;
-  return date.toISOString().split('T')[0];
-}
-
-function escapeXml(value) {
-  return String(value ?? '').replace(/[<>&'"]/g, (char) => {
-    switch (char) {
-      case '<':
-        return '&lt;';
-      case '>':
-        return '&gt;';
-      case '&':
-        return '&amp;';
-      case "'":
-        return '&apos;';
-      case '"':
-        return '&quot;';
-      default:
-        return char;
-    }
-  });
-}
-
-function resolveOrigin(requestUrl) {
-  const url = new URL(requestUrl);
-  if (url.hostname === 'abdulkerimsesli.de') {
-    url.hostname = 'www.abdulkerimsesli.de';
-  }
-  return url.origin;
-}
-
 async function loadBlogPosts(context) {
   if (!context.env?.ASSETS) {
     return [];
@@ -74,28 +35,6 @@ async function loadBlogPosts(context) {
 
   const posts = await response.json();
   return Array.isArray(posts) ? posts : [];
-}
-
-async function fetchUploadsPlaylistId(channelId, apiKey) {
-  const channelUrl = new URL('https://www.googleapis.com/youtube/v3/channels');
-  channelUrl.searchParams.set('id', channelId);
-  channelUrl.searchParams.set('key', apiKey);
-  channelUrl.searchParams.set('part', 'contentDetails');
-
-  const response = await fetch(channelUrl.toString());
-  if (!response.ok) {
-    throw new Error(`YouTube channels API failed: ${response.status}`);
-  }
-
-  const payload = await response.json();
-  const firstItem = payload?.items?.[0];
-  return firstItem?.contentDetails?.relatedPlaylists?.uploads || null;
-}
-
-function toYoutubeDate(value, fallbackDate) {
-  const parsed = new Date(value || '');
-  if (Number.isNaN(parsed.getTime())) return fallbackDate;
-  return parsed.toISOString().split('T')[0];
 }
 
 async function loadVideoEntries(env, today) {

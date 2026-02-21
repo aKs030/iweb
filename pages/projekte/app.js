@@ -603,7 +603,11 @@ export const initReactProjectsApp = () => {
   try {
     const root = createRoot(rootEl);
     root.render(h(App));
-  } catch (error) {
-    console.error('Failed to init projekte app:', error);
+  } catch {
+    // Failed to initialize React app - show error in UI
+    if (rootEl) {
+      rootEl.innerHTML =
+        '<div class="launch-screen launch-screen--error"><div class="launch-card"><h2>App konnte nicht geladen werden</h2></div></div>';
+    }
   }
 };

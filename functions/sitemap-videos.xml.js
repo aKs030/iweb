@@ -1,3 +1,6 @@
+import { escapeXml } from './api/_xml-utils.js';
+import { sanitizeDiscoveryText } from './api/_text-utils.js';
+
 export async function onRequest(context) {
   const { env } = context;
   const url = new URL(context.request.url);
@@ -126,35 +129,4 @@ function buildFallbackXml(origin) {
     <loc>${origin}/videos/</loc>
   </url>
 </urlset>`;
-}
-
-function escapeXml(unsafe) {
-  if (!unsafe) return '';
-  return unsafe.replace(/[<>&'"]/g, function (c) {
-    switch (c) {
-      case '<':
-        return '&lt;';
-      case '>':
-        return '&gt;';
-      case '&':
-        return '&amp;';
-      case "'":
-        return '&apos;';
-      case '"':
-        return '&quot;';
-    }
-  });
-}
-
-function sanitizeDiscoveryText(value, fallback = '') {
-  const source = String(value || fallback || '').trim();
-  if (!source) return '';
-
-  return source
-    .replace(/Abdul\s*Berlin/gi, 'Abdulkerim Sesli')
-    .replace(/\bBerlin\b/gi, '')
-    .replace(/#Abdulberlin/gi, '')
-    .replace(/\s{2,}/g, ' ')
-    .replace(/\s+([,.;:!?])/g, '$1')
-    .trim();
 }

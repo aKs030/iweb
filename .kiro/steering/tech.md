@@ -23,10 +23,9 @@
 
 ## Code Quality Tools
 
-- **ESLint 9+**: Linting with flat config (eslint.config.mjs)
+- **ESLint 10+**: Linting with flat config (eslint.config.mjs)
 - **Prettier**: Code formatting (single quotes, 2 spaces, trailing commas)
 - **Husky**: Git hooks for pre-commit/pre-push checks
-- **Knip**: Unused code detection
 - **TypeScript**: JSDoc type checking (checkJs: false, strict: false)
 
 ## Compression & Optimization
@@ -34,7 +33,6 @@
 - **Gzip + Brotli**: Dual compression for all assets
 - **Code Splitting**: Automatic chunking (Three.js vendor, core utilities)
 - **Tree Shaking**: Dead code elimination
-- **Bundle Visualizer**: rollup-plugin-visualizer for analysis
 
 ## Common Commands
 
@@ -42,12 +40,7 @@
 
 ```bash
 npm run dev              # Start dev server (port 8080)
-```
-
-### Deployment
-
-```bash
-npm run push             # Git add + commit + push (triggers Cloudflare deployment)
+npm run dev:sim          # Local Node.js dev server
 ```
 
 ### Code Quality
@@ -57,14 +50,13 @@ npm run lint             # ESLint with auto-fix
 npm run format           # Prettier with auto-fix
 npm run check            # Lint + format check (no fix)
 npm run fix              # Run both lint and format with fixes
-npm run quality          # Full quality check (lint + format + knip)
+npm run docs:check       # Check documentation integrity
 ```
 
-### Analysis
+### Maintenance
 
 ```bash
-npm run knip             # Find unused code
-npm run size:check       # Check bundle sizes
+npm run clean            # Clean build artifacts
 ```
 
 ## Node Version
