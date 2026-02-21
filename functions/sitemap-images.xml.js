@@ -2,66 +2,68 @@ const LICENSE_URL = 'https://www.abdulkerimsesli.de/#image-license';
 const BLOG_INDEX_PATH = '/pages/blog/posts/index.json';
 const PROJECT_APPS_PATH = '/pages/projekte/apps-config.json';
 const R2_DOMAIN = 'https://img.abdulkerimsesli.de';
+const R2_APP_PREVIEWS_BASE_URL = `${R2_DOMAIN}/app`;
+const APP_PREVIEWS_VERSION = '20260221';
 const MAX_YOUTUBE_RESULTS = 200;
 
 const STATIC_PAGE_IMAGES = [
   {
     page: '/',
-    image: '/content/assets/img/og/og-home-800.svg',
+    image: 'https://img.abdulkerimsesli.de/blog/og-home-800.png',
     title: 'Abdulkerim Sesli Startseite',
     caption:
       'Zentrale Hauptseite mit Portfolio, Blog, Bildern, Videos und Projekten',
   },
   {
     page: '/about/',
-    image: '/content/assets/img/icons/favicon-512.webp',
+    image: 'https://img.abdulkerimsesli.de/icons/favicon-512.webp?v=20260221',
     title: 'Abdulkerim Sesli',
     caption:
       'Profilseite mit Hintergrund, Themenfeldern und redaktionellen Inhalten',
   },
   {
     page: '/abdul-sesli/',
-    image: '/content/assets/img/og/og-home-800.svg',
+    image: 'https://img.abdulkerimsesli.de/blog/og-home-800.png',
     title: 'Abdul Sesli',
     caption: 'Alias-Seite: Abdul Sesli ist die Kurzform von Abdulkerim Sesli',
   },
   {
     page: '/blog/',
-    image: '/content/assets/img/og/og-design-800.svg',
+    image: 'https://img.abdulkerimsesli.de/blog/og-design-800.png',
     title: 'Tech Blog',
     caption:
       'Blog mit Artikeln zu Webentwicklung, SEO, Performance, React und TypeScript',
   },
   {
     page: '/gallery/',
-    image: '/content/assets/img/og/og-photography-800.svg',
+    image: 'https://img.abdulkerimsesli.de/blog/og-photography-800.png',
     title: 'Fotografie Portfolio',
     caption:
       'Bildgalerie mit Portraits, Street-Fotografie und visuellen Serien',
   },
   {
     page: '/videos/',
-    image: '/content/assets/img/og/og-videos-800.svg',
+    image: 'https://img.abdulkerimsesli.de/blog/og-videos-800.png',
     title: 'Videos',
     caption:
       'Videoseite mit YouTube-Inhalten, Clips, Making-of und Story-Formaten',
   },
   {
     page: '/projekte/',
-    image: '/content/assets/img/og/og-projekte-800.svg',
+    image: 'https://img.abdulkerimsesli.de/blog/og-projekte-800.png',
     title: 'Code Projekte',
     caption:
       'Interaktive Webprojekte mit JavaScript, React, UI und Frontend-Experimenten',
   },
   {
     page: '/impressum/',
-    image: '/content/assets/img/og/og-home-800.svg',
+    image: 'https://img.abdulkerimsesli.de/blog/og-home-800.png',
     title: 'Impressum',
     caption: 'Rechtliche Informationen',
   },
   {
     page: '/datenschutz/',
-    image: '/content/assets/img/og/og-home-800.svg',
+    image: 'https://img.abdulkerimsesli.de/blog/og-home-800.png',
     title: 'Datenschutz',
     caption: 'DSGVO und Datenverarbeitung',
   },
@@ -200,10 +202,7 @@ function addProjectPreviewImages(urlMap, origin, appsConfig) {
     if (!name) continue;
 
     addImage(urlMap, '/projekte/', {
-      loc: toAbsoluteUrl(
-        origin,
-        `/content/assets/img/previews/${encodeURIComponent(name)}.svg`,
-      ),
+      loc: `${R2_APP_PREVIEWS_BASE_URL}/${encodeURIComponent(name)}.svg?v=${APP_PREVIEWS_VERSION}`,
       title: sanitizeDiscoveryText(app?.title, formatSlug(name)),
       caption: sanitizeDiscoveryText(app?.description, formatSlug(name)),
       license: LICENSE_URL,

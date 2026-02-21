@@ -19,14 +19,9 @@ docs/
 .prettierignore
 eslint.config.mjs
 tsconfig.json
-.htmlvalidate.json
-.lighthouserc.json
 
 # Development server
 server.js
-
-# Build tools (nicht mehr benötigt)
-vite.config.js
 
 # Environment
 .env

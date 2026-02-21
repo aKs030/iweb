@@ -1,8 +1,10 @@
 import { createLogger } from './logger.js';
 import { upsertHeadLink, upsertMeta } from './utils.js';
-import { BASE_URL } from '../config/constants.js';
+import { iconUrl } from '../config/constants.js';
 
 const log = createLogger('PWAManager');
+const ROOT_FAVICON_ICO = '/favicon.ico';
+const ROOT_FAVICON_SVG = '/favicon.svg';
 
 function isTransparentColor(color) {
   if (!color) return true;
@@ -80,25 +82,31 @@ export function setupPWAAssets(brandData) {
     // Optimierte Icon-Konfiguration für existierende Dateien
     upsertHeadLink({
       rel: 'icon',
-      href: `${BASE_URL}/content/assets/img/icons/favicon.svg`,
+      href: ROOT_FAVICON_SVG,
       attrs: { sizes: 'any', type: 'image/svg+xml' },
     });
 
     upsertHeadLink({
       rel: 'icon',
-      href: `${BASE_URL}/content/assets/img/icons/favicon-512.webp`,
+      href: ROOT_FAVICON_ICO,
+      attrs: { sizes: '48x48', type: 'image/x-icon' },
+    });
+
+    upsertHeadLink({
+      rel: 'icon',
+      href: iconUrl('favicon-512.webp'),
       attrs: { sizes: '512x512', type: 'image/webp' },
     });
 
     upsertHeadLink({
       rel: 'apple-touch-icon',
-      href: `${BASE_URL}/content/assets/img/icons/apple-touch-icon.webp`,
+      href: iconUrl('apple-touch-icon.webp'),
       attrs: { sizes: '180x180' },
     });
 
     upsertHeadLink({
       rel: 'mask-icon',
-      href: `${BASE_URL}/content/assets/img/icons/safari-pinned-tab.svg`,
+      href: iconUrl('safari-pinned-tab.svg'),
       attrs: { color: '#030303' },
     });
 
@@ -108,7 +116,7 @@ export function setupPWAAssets(brandData) {
     if (!shortcutIcon) {
       const link = document.createElement('link');
       link.rel = 'shortcut icon';
-      link.href = `${BASE_URL}/content/assets/img/icons/favicon.ico`;
+      link.href = ROOT_FAVICON_ICO;
       document.head.appendChild(link);
     }
 

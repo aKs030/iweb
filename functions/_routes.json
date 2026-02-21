@@ -5,8 +5,6 @@
     "/content/assets/css/*",
     "/content/assets/js/*",
     "/content/assets/fonts/*",
-    "/content/assets/img/og/*",
-    "/content/assets/img/previews/*",
     "/*.json",
     "/*.txt",
     "/*.css",

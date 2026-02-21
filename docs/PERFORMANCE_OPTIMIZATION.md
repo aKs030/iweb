@@ -136,14 +136,8 @@ const loadThreeEarth = () => import('./three-earth-system.js');
 ### Bundle Analysis
 
 ```bash
-# Check bundle sizes
-npm run size:check
-
-# Check against budget
-npm run perf:budget
-
-# Build with analysis
-npm run build:analyze
+# Code quality
+npm run check
 ```
 
 ### Lighthouse CI
@@ -151,9 +145,6 @@ npm run build:analyze
 ```bash
 # Run Lighthouse audit
 npx lighthouse http://localhost:4173 --view
-
-# Run with config
-npx lhci autorun
 ```
 
 ### Performance Monitoring

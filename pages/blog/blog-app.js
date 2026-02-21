@@ -16,6 +16,7 @@ import { marked } from 'https://cdn.jsdelivr.net/npm/marked@11.1.1/lib/marked.es
 import { sanitizeHTML } from '/content/core/html-sanitizer.js';
 import { Clock, ArrowRight, ArrowUp } from '/content/components/icons/icons.js';
 import { createErrorBoundary } from '/content/components/ErrorBoundary.js';
+import { iconUrl } from '/content/config/constants.js';
 
 const log = createLogger('BlogApp3D');
 const html = htm.bind(React.createElement);
@@ -234,7 +235,9 @@ const BLOG_HOME_URL = `${BLOG_BASE_URL}/blog/`;
 const BLOG_DEFAULT_TITLE = 'Blog — Abdulkerim Sesli';
 const BLOG_DEFAULT_DESCRIPTION =
   'Blog von Abdulkerim Sesli: Tipps & Anleitungen zu Webdesign, SEO, Performance und Online-Marketing für Unternehmen und Selbstständige.';
-const BLOG_DEFAULT_IMAGE = `${BLOG_BASE_URL}/content/assets/img/og/og-home-800.svg`;
+const BLOG_DEFAULT_IMAGE =
+  'https://img.abdulkerimsesli.de/blog/og-home-800.png';
+const BLOG_PUBLISHER_LOGO = iconUrl('favicon-512.webp');
 
 const toAbsoluteBlogUrl = (value = '') => {
   if (!value) return '';
@@ -524,6 +527,7 @@ const BlogApp = () => {
   const [posts, setPosts] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
   const [filter, setFilter] = React.useState('All');
+  const [searchQuery, setSearchQuery] = React.useState('');
   const [currentPostId, setCurrentPostId] = React.useState(null);
   const [particleSystem, setParticleSystem] = React.useState(null);
   const { t } = useTranslation();
@@ -650,9 +654,21 @@ const BlogApp = () => {
     () =>
       posts.filter((p) => {
         const matchCat = filter === 'All' || p.category === filter;
-        return matchCat;
+        if (!matchCat) return false;
+
+        if (searchQuery.trim()) {
+          const q = searchQuery.toLowerCase();
+          const inTitle = (p.title || '').toLowerCase().includes(q);
+          const inExcerpt = (p.excerpt || '').toLowerCase().includes(q);
+          const inKeywords = (p.keywords || []).some((k) =>
+            k.toLowerCase().includes(q),
+          );
+          return inTitle || inExcerpt || inKeywords;
+        }
+
+        return true;
       }),
-    [posts, filter],
+    [posts, filter, searchQuery],
   );
 
   const activePost = React.useMemo(
@@ -828,7 +844,7 @@ const BlogApp = () => {
           url: BLOG_BASE_URL,
           logo: {
             '@type': 'ImageObject',
-            url: `${BLOG_BASE_URL}/content/assets/img/icons/favicon-512.webp`,
+            url: BLOG_PUBLISHER_LOGO,
           },
         },
         isPartOf: {
@@ -1066,6 +1082,17 @@ const BlogApp = () => {
                         </button>
                       `,
                     )}
+                  </div>
+                  <div className="blog-search-wrap">
+                    <input
+                      type="search"
+                      className="blog-search-input"
+                      placeholder=${t('blog.search_placeholder') ||
+                      'Artikel durchsuchen…'}
+                      value=${searchQuery}
+                      onInput=${(e) => setSearchQuery(e.target.value)}
+                      aria-label=${t('blog.search_label') || 'Blog durchsuchen'}
+                    />
                   </div>
                 </div>
               </div>

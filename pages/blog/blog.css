@@ -4,7 +4,7 @@
    =================================== */
 
 /* Blog-specific variables (moved from global variables.css) */
-:root {
+body.blog-page {
   --blog-bg: #030303;
   --blog-card-bg: #030303;
   --blog-border: rgba(255, 255, 255, 0.08);
@@ -14,7 +14,7 @@
   --blog-text-main: var(--blog-text);
 }
 
-body {
+body.blog-page {
   background-color: var(--bg-primary, #030303);
   color: var(--blog-text-main, #e2e8f0);
   margin: 0;
@@ -72,7 +72,7 @@ body {
    MAIN CONTENT LAYER
    =================================== */
 
-#main-content {
+body.blog-page #main-content {
   position: relative;
   z-index: 1;
   min-height: calc(
@@ -88,35 +88,35 @@ body {
    =================================== */
 
 @media (min-width: 769px) {
-  ::-webkit-scrollbar {
+  body.blog-page ::-webkit-scrollbar {
     width: 12px;
   }
 
-  ::-webkit-scrollbar-track {
+  body.blog-page ::-webkit-scrollbar-track {
     background: rgba(0, 0, 0, 0.4);
     border-left: 1px solid rgba(59, 130, 246, 0.1);
   }
 
-  ::-webkit-scrollbar-thumb {
+  body.blog-page ::-webkit-scrollbar-thumb {
     background: linear-gradient(180deg, #3b82f6, #8b5cf6);
     border-radius: 6px;
     border: 2px solid rgba(0, 0, 0, 0.4);
     box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
   }
 
-  ::-webkit-scrollbar-thumb:hover {
+  body.blog-page ::-webkit-scrollbar-thumb:hover {
     background: linear-gradient(180deg, #60a5fa, #a78bfa);
     box-shadow: 0 0 15px rgba(59, 130, 246, 0.8);
   }
 }
 
-::selection {
+body.blog-page ::selection {
   background: rgba(59, 130, 246, 0.5);
   color: #fff;
   text-shadow: 0 0 10px rgba(59, 130, 246, 0.8);
 }
 
-:focus-visible {
+body.blog-page :focus-visible {
   outline: 2px solid #3b82f6;
   outline-offset: 4px;
   box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
@@ -126,7 +126,7 @@ body {
    ANIMATIONS - ENHANCED
    =================================== */
 
-@keyframes fadeInUp {
+@keyframes blogFadeInUp {
   from {
     opacity: 0;
     transform: translateY(40px) translateZ(-20px);
@@ -137,7 +137,7 @@ body {
   }
 }
 
-@keyframes shimmer {
+@keyframes blogShimmer {
   0% {
     background-position: -1000px 0;
   }
@@ -187,8 +187,8 @@ body {
   }
 }
 
-.fade-in {
-  animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+body.blog-page .fade-in {
+  animation: blogFadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 /* ===================================
@@ -217,7 +217,7 @@ body {
     0 0 20px rgba(59, 130, 246, 0.8),
     0 0 40px rgba(139, 92, 246, 0.5),
     0 2px 10px rgba(0, 0, 0, 0.5);
-  animation: shimmer 3s linear infinite;
+  animation: blogShimmer 3s linear infinite;
 }
 
 /* ===================================
@@ -527,6 +527,68 @@ body.blog-page #main-content {
 }
 
 /* ===================================
+   BLOG SEARCH INPUT
+   =================================== */
+
+.blog-search-wrap {
+  margin-left: 0.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.blog-search-input {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 18px;
+  color: #fff;
+  font-size: 14px;
+  font-family: inherit;
+  padding: 0.4rem 0.9rem;
+  width: 180px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  outline: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+.blog-search-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.blog-search-input:focus {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.5);
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.25);
+  width: 220px;
+}
+
+/* Webkit search cancel button */
+.blog-search-input::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+  height: 14px;
+  width: 14px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.5)' stroke-width='2' stroke-linecap='round'%3E%3Cline x1='18' y1='6' x2='6' y2='18'/%3E%3Cline x1='6' y1='6' x2='18' y2='18'/%3E%3C/svg%3E")
+    center/contain no-repeat;
+  cursor: pointer;
+}
+
+@media (max-width: 900px) {
+  .blog-search-wrap {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .blog-search-input {
+    width: 140px;
+    font-size: 13px;
+  }
+
+  .blog-search-input:focus {
+    width: 160px;
+  }
+}
+
+/* ===================================
    3D BLOG GRID - THREE.JS STYLE (SMALLER)
    =================================== */
 
@@ -692,7 +754,7 @@ body.blog-page #main-content {
   background-size:
     200% 100%,
     100% 100%;
-  animation: shimmer 3s infinite;
+  animation: blogShimmer 3s infinite;
   height: 140px;
 }
 
@@ -1117,7 +1179,7 @@ body.blog-page #main-content {
    BUTTONS & INTERACTIONS
    =================================== */
 
-.btn-primary {
+body.blog-page .btn-primary {
   background: linear-gradient(135deg, #3b82f6, #8b5cf6);
   color: white;
   padding: 1rem 2.5rem;
@@ -1136,7 +1198,7 @@ body.blog-page #main-content {
   letter-spacing: 0.05em;
 }
 
-.btn-primary::before {
+body.blog-page .btn-primary::before {
   content: '';
   position: absolute;
   top: 0;
@@ -1148,16 +1210,16 @@ body.blog-page #main-content {
   pointer-events: none;
 }
 
-.btn-primary:hover {
+body.blog-page .btn-primary:hover {
   transform: translateY(-4px) scale(1.05);
   box-shadow: 0 12px 40px rgba(59, 130, 246, 0.6);
 }
 
-.btn-primary:hover::before {
+body.blog-page .btn-primary:hover::before {
   left: 100%;
 }
 
-.btn-back {
+body.blog-page .btn-back {
   background: rgba(59, 130, 246, 0.1);
   color: rgba(255, 255, 255, 0.9);
   border: 2px solid rgba(59, 130, 246, 0.3);
@@ -1170,7 +1232,7 @@ body.blog-page #main-content {
   font-weight: 600;
 }
 
-.btn-back:hover {
+body.blog-page .btn-back:hover {
   background: rgba(59, 130, 246, 0.2);
   border-color: rgba(59, 130, 246, 0.6);
   transform: translateX(-5px);
@@ -1268,11 +1330,11 @@ body.blog-page #main-content {
   .scroll-to-top-btn,
   .reading-progress-container,
   .blog-3d-background,
-  .btn-back {
+  body.blog-page .btn-back {
     display: none !important;
   }
 
-  body {
+  body.blog-page {
     background: #fff !important;
     color: #000 !important;
   }
@@ -1285,7 +1347,7 @@ body.blog-page #main-content {
 }
 /* Mobile adjustments for header height */
 @media (width <= 900px) {
-  #main-content {
+  body.blog-page #main-content {
     min-height: calc(100vh - 72px);
   }
 }

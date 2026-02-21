@@ -7,6 +7,8 @@ import { headState } from './head-state.js';
 
 const log = createLogger('head-inline');
 
+// head-inline.js
+
 const GTM_ID = ENV.GTM_ID;
 const GA4_MEASUREMENT_ID = ENV.GA4_ID;
 const ADS_CONVERSION_ID = ENV.AW_ID;
@@ -474,18 +476,23 @@ const hideBrandingFromUsers = () => {
       try {
         if (!s) return '';
         const low = s.toLowerCase();
+
+        // Specific override for home page to prevent misidentification
+        // Check for root path OR if the title matches the branding typical for the home page
+        const p =
+          (globalThis.location?.pathname || '').replace(/\/+$/g, '') || '/';
+        const isHomeTitle =
+          low.includes('portfolio') &&
+          (low.includes('abdulkerim') || low.includes('abdul sesli'));
+
+        if (p === '/' || isHomeTitle) return 'Startseite 🏠';
+
         for (const [key, value] of Object.entries(SHORT_MAP)) {
           if (low.includes(key)) return value;
         }
-        const first =
-          String(s)
-            .split(/[—–\-|:]/)[0]
-            .trim()
-            .split(/\s+/)[0] || '';
-        if (!first) return '';
-        return first.charAt(0).toUpperCase() + first.slice(1) + ' 🌐';
+        return s;
       } catch {
-        return '';
+        return s;
       }
     };
 

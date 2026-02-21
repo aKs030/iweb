@@ -5,10 +5,6 @@ node_modules/
 # Cloudflare Cache
 .wrangler/
 
-# Worker directories (temporary)
-worker/
-ai-search-worker/
-
 # Environment
 .env
 .env.local
@@ -52,8 +48,7 @@ coverage/
 *.bak
 *.old
 
-# Generated files
-package-lock.json
+# Other lockfiles (npm lockfile is tracked)
 yarn.lock
 pnpm-lock.yaml
 

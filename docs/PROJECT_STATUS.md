@@ -64,7 +64,7 @@ New Files:
 - ✅ **Bundle Analysis:** Size checking, budget enforcement, visual analyzer
 - ✅ **Service Worker:** Conditional logging, optimized caching strategies
 - ✅ **Compression:** Gzip + Brotli compression for all assets
-- ✅ **Performance Monitoring:** Lighthouse CI, GitHub Actions workflow
+- ✅ **Performance Monitoring:** Lighthouse Audits (manual)
 - ✅ **Documentation:** Complete performance and bundle optimization guides
 
 **Status:**
@@ -79,9 +79,8 @@ New Files:
 
 ```
 Configuration:
-├── vite.config.js (enhanced with compression & analysis)
-├── .lighthouserc.json (Lighthouse CI config)
-├── .github/workflows/performance.yml (CI workflow)
+├── vite.config.js (historical, no longer used)
+├── Lighthouse setup now runs via manual local audits
 
 Documentation:
 ├── docs/PERFORMANCE_OPTIMIZATION.md

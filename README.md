@@ -6,13 +6,13 @@ Modernes Portfolio auf Cloudflare Pages mit Vanilla JavaScript, Three.js und Clo
 
 Voraussetzungen:
 
-- Node.js `22.22.0` (siehe `/Users/abdo/iweb/.nvmrc`)
+- Node.js `22.22.0` (siehe `.node-version`)
 - npm
 
 Installation und Start:
 
 ```bash
-npm install
+npm ci
 npm run dev
 ```
 
@@ -22,7 +22,7 @@ Lokale URL: [http://localhost:8080](http://localhost:8080)
 
 ```bash
 npm run dev           # Cloudflare Pages dev server (Port 8080)
-npm run dev:sim       # Lokaler Node-Server (Smoke-Test/Simulation)
+npm run dev:sim       # Lokaler Node-Server (Simulation)
 npm run lint          # ESLint mit auto-fix
 npm run lint:check    # ESLint ohne fix
 npm run format        # Prettier mit write
@@ -31,6 +31,7 @@ npm run check         # lint:check + format:check
 npm run fix           # lint + format
 npm run clean         # lokale Cache/Artifacts löschen
 npm run prepare       # Husky Hooks installieren/aktualisieren
+npm run docs:check    # Markdown-Links & absolute lokale Pfade prüfen
 ```
 
 ## Hooks
@@ -38,32 +39,34 @@ npm run prepare       # Husky Hooks installieren/aktualisieren
 - `pre-commit`: `lint-staged` auf gestagten Dateien
 - `pre-push`: `npm run check`
 
-Details: `/Users/abdo/iweb/.husky/README.md`
+Details: [`.husky/README.md`](.husky/README.md)
 
 ## CI/CD
 
 GitHub Workflows:
 
-- `/Users/abdo/iweb/.github/workflows/ci.yml` - Lint/Format, Smoke-Test, Dependency Review
-- `/Users/abdo/iweb/.github/workflows/preview.yml` - Cloudflare Preview Deployments für PRs
-- `/Users/abdo/iweb/.github/workflows/codeql.yml` - CodeQL Analyse
+- [`.github/workflows/ci.yml`](.github/workflows/ci.yml) - Lint/Format
+- [`.github/workflows/preview.yml`](.github/workflows/preview.yml) - Cloudflare Preview Deployments für PRs
+- [`.github/workflows/codeql.yml`](.github/workflows/codeql.yml) - CodeQL Analyse
 
 ## Projektstruktur
 
 ```text
-content/     Frontend-Code (Komponenten, Core, Styles)
-pages/       Seiteninhalte
-functions/   Cloudflare Pages Functions
-docs/        Projektdokumentation
+content/      Frontend-Code (Komponenten, Core, Styles, Assets)
+pages/        Seiten-spezifische Entry-Points
+functions/    Cloudflare Pages Functions + API-Endpunkte
+docs/         Technische Dokumentation
+scripts/      Repo-Wartung und Prüfskripte
+.github/      CI/CD Workflows
 ```
 
 ## Dokumentation
 
-- `/Users/abdo/iweb/docs/README.md` - Dokumentationsindex
-- `/Users/abdo/iweb/docs/CODE_QUALITY.md` - Qualitäts- und Hook-Workflow
-- `/Users/abdo/iweb/CONTRIBUTING.md` - Beitrag/Workflow
-- `/Users/abdo/iweb/SECURITY.md` - Security Policy
+- [`docs/README.md`](docs/README.md) - Dokumentationsindex
+- [`docs/CODE_QUALITY.md`](docs/CODE_QUALITY.md) - Qualitäts- und Hook-Workflow
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) - Beitrag/Workflow
+- [`SECURITY.md`](SECURITY.md) - Security Policy
 
 ## License
 
-MIT. Siehe `/Users/abdo/iweb/LICENSE`.
+MIT. Siehe [`LICENSE`](LICENSE).

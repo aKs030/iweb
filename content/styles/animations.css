@@ -61,3 +61,69 @@
     opacity: 0.7;
   }
 }
+
+/* ===== Scroll-Driven Animations (CSS ScrollTimeline) ===== */
+/* Progressive enhancement: only applied in supporting browsers */
+@supports (animation-timeline: view()) {
+  @keyframes scrollFadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(40px) scale(0.97);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  /* Sections animate in when they enter the viewport */
+  .section {
+    animation: scrollFadeIn linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 35%;
+  }
+
+  /* Respect reduced motion preferences */
+  @media (prefers-reduced-motion: reduce) {
+    .section {
+      animation: none;
+    }
+  }
+}
+
+/* =======================
+   VIEW TRANSITIONS API
+======================= */
+
+::view-transition-old(root) {
+  animation: 0.25s ease-out both fade-out;
+}
+
+::view-transition-new(root) {
+  animation: 0.35s ease-in 0.1s both fade-in;
+}
+
+@keyframes fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+}

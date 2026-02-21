@@ -25,7 +25,7 @@
     "sw.js",
     "server.js",
     "functions/**/*.js",
-    "_middleware.js"
+    "scripts/**/*.mjs"
   ],
   "exclude": ["node_modules", "build", "dist", "reports"]
 }

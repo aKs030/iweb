@@ -3,4 +3,6 @@
  * Static site assets and constants
  */
 
-export const FAVICON_512 = '/content/assets/img/icons/favicon-512.png';
+import { iconUrl } from './constants.js';
+
+export const FAVICON_512 = iconUrl('favicon-512.webp');
