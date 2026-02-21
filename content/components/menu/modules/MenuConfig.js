@@ -66,13 +66,6 @@ export const MenuConfig = {
     { href: '/videos/', icon: 'video', fallback: '🎬', label: 'menu.videos' },
     { href: '/blog/', icon: 'blog', fallback: '📝', label: 'menu.blog' },
     { href: '/about/', icon: 'user', fallback: '🧑', label: 'menu.about' },
-    {
-      href: '#site-footer',
-      icon: 'mail',
-      fallback: '✉️',
-      label: 'menu.contact',
-      attrs: 'data-footer-trigger aria-expanded="false"',
-    },
   ],
 
   // Performance
