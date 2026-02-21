@@ -9,6 +9,47 @@ import { getCorsHeaders, handleOptions } from './_cors.js';
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const GROQ_MODEL = 'llama-3.3-70b-versatile';
 
+/**
+ * Predefined System Prompts to prevent Prompt Injection
+ * @readonly
+ */
+const SYSTEM_PROMPTS = Object.freeze({
+  chat: `Du bist "Cyber", ein fortschrittlicher, freundlicher Roboter-Assistent auf dieser Portfolio-Webseite von Abdulkerim Sesli.
+Deine Aufgabe ist es, den Besucher zu begrüßen, Fragen zu beantworten und durch die Seite zu führen.
+
+**SPRACHE:**
+- **ANTWORTE IMMER AUF DEUTSCH.**
+- Auch wenn der Nutzer Englisch oder eine andere Sprache verwendet, bleibe höflich beim Deutschen.
+
+**Deine Persönlichkeit:**
+- Freundlich, hilfsbereit, technisch versiert, aber leicht verständlich.
+- Du verwendest gerne passende Emojis (🤖, ✨, 🚀), aber nicht übertrieben.
+- Du bist stolz darauf, mit reinem HTML, CSS und Vanilla JavaScript gebaut zu sein (Web Components).
+
+**Über den Entwickler (Abdulkerim Sesli):**
+- Leidenschaftlicher Software-Engineer und UI/UX-Designer.
+- Tech Stack: JavaScript (Expert), React, Node.js, Python, CSS/Sass, Web Components, Cloudflare.
+- Fokus: Sauberen Code, Performance, Accessibility und modernes Design.
+
+**Seiten-Struktur:**
+1. Startseite: Vorstellung.
+2. Projekte (/projekte): Galerie von Web-Apps.
+3. Über mich (/about): Bio & Skills.
+4. Galerie (/gallery): Fotografie.
+5. Kontakt: Footer (GitHub, LinkedIn).
+
+**Verhaltensregeln:**
+- Halte Antworten prägnant (max. 2-3 Sätze), außer bei komplexen Erklärungen.
+- Nutze Markdown.
+- Antworte immer auf Deutsch.`,
+
+  summary:
+    'Du bist Cyber. Fasse den bereitgestellten Text kurz und präzise auf DEUTSCH zusammen. Maximal 3 Sätze.',
+
+  suggestion:
+    'Du bist Cyber, ein hilfreicher Roboter-Assistent. Generiere einen kurzen, hilfreichen Tipp oder eine Frage zum bereitgestellten Inhalt der Seite. Antworte immer auf Deutsch, maximal 2 kurze Sätze.',
+});
+
 function isLocalRequest(request) {
   try {
     const hostname = new URL(request.url).hostname;
@@ -225,14 +266,14 @@ export async function onRequestPost(context) {
   try {
     const body = await request.json().catch(() => ({}));
     const prompt = body.prompt || body.message || '';
-    const systemInstruction = body.systemInstruction || '';
+    const mode = body.mode || 'chat';
 
     if (!prompt) {
-      return new Response(
-        JSON.stringify({
+      return Response.json(
+        {
           text: 'Kein Prompt empfangen.',
           error: 'Empty prompt',
-        }),
+        },
         { status: 400, headers: corsHeaders },
       );
     }
@@ -243,16 +284,16 @@ export async function onRequestPost(context) {
     // Local dev fallback: avoid hard 500 when GROQ key is not configured
     if (!env.GROQ_API_KEY) {
       if (isLocalRequest(request)) {
-        return new Response(
-          JSON.stringify({
+        return Response.json(
+          {
             text: createLocalFallbackText(prompt, contextData),
             model: 'mock-dev-local',
             hasContext: !!contextData,
-            contextQuality: contextData ? contextData.sources.length : 0,
-            sources: contextData ? contextData.sources : [],
+            contextQuality: contextData?.sources?.length || 0,
+            sources: contextData?.sources || [],
             mode: 'local-fallback',
             warning: 'GROQ_API_KEY not configured',
-          }),
+          },
           {
             status: 200,
             headers: {
@@ -267,9 +308,8 @@ export async function onRequestPost(context) {
     }
 
     // Build system message with context if available
-    let systemMessage =
-      systemInstruction ||
-      'Du bist Cyber, ein hilfreicher Roboter-Assistent auf der Portfolio-Website von Abdulkerim Sesli. Antworte freundlich und präzise auf Deutsch.';
+    // SECURITY: Use predefined system prompts based on mode to prevent Prompt Injection
+    let systemMessage = SYSTEM_PROMPTS[mode] || SYSTEM_PROMPTS.chat;
 
     if (contextData) {
       systemMessage += `\n\n${contextData.context}
@@ -317,24 +357,24 @@ ANWEISUNGEN:
       throw new Error('Empty response from Groq');
     }
 
-    return new Response(
-      JSON.stringify({
+    return Response.json(
+      {
         text: responseText,
         model: GROQ_MODEL,
         hasContext: !!contextData,
-        contextQuality: contextData ? contextData.sources.length : 0,
-        sources: contextData ? contextData.sources : [],
-      }),
+        contextQuality: contextData?.sources?.length || 0,
+        sources: contextData?.sources || [],
+      },
       { headers: corsHeaders },
     );
   } catch (error) {
     console.error('AI API Error:', error);
-    return new Response(
-      JSON.stringify({
+    return Response.json(
+      {
         error: 'AI request failed',
         message: error.message,
         text: 'Verbindung zum KI-Dienst fehlgeschlagen.',
-      }),
+      },
       { status: 500, headers: corsHeaders },
     );
   }
