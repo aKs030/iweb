@@ -1,39 +1,39 @@
 /**
  * Service Worker for PWA
- * Provides offline support and caching strategies
- * @version 1.2.3
+ * Provides offline support and caching strategies with modern optimizations
+ * @version 1.3.0
  */
 
 // @ts-nocheck
 
-const CACHE_VERSION = new URL(self.location).searchParams.get('v') || 'v1.2.3';
+const CACHE_VERSION = new URL(self.location).searchParams.get('v') || 'v1.3.0';
 const CACHE_NAME = `iweb-${CACHE_VERSION}`;
 
-// Assets to cache on install
+// Assets to cache on install - optimized for Core Web Vitals
 const PRECACHE_ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
   '/favicon.ico',
   '/favicon.svg',
-  // Critical earth textures for faster loading
+  // Critical earth textures for faster loading (WebP format)
   '/content/assets/img/earth/textures/earth_day.webp',
   '/content/assets/img/earth/textures/earth_night.webp',
   '/content/assets/img/earth/textures/earth_normal.webp',
   '/content/assets/img/earth/textures/earth_bump.webp',
 ];
 
-// Cache strategies
+// Cache strategies with modern best practices
 const CACHE_STRATEGIES = {
-  // Cache first, fallback to network
+  // Cache first, fallback to network (for static assets)
   CACHE_FIRST: 'cache-first',
-  // Network first, fallback to cache
+  // Network first, fallback to cache (for dynamic content)
   NETWORK_FIRST: 'network-first',
-  // Network only
+  // Network only (for API calls)
   NETWORK_ONLY: 'network-only',
-  // Cache only
+  // Cache only (for offline mode)
   CACHE_ONLY: 'cache-only',
-  // Stale while revalidate
+  // Stale while revalidate (best for performance)
   STALE_WHILE_REVALIDATE: 'stale-while-revalidate',
 };
 

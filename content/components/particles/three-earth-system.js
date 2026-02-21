@@ -690,7 +690,7 @@ class ThreeEarthSystem {
   // --- Animation Loop ---
 
   _startAnimationLoop() {
-    const clock = new this.THREE.Clock();
+    const timer = new this.THREE.Timer();
     let lastFrameTime = performance.now();
 
     this.animate = () => {
@@ -708,8 +708,9 @@ class ThreeEarthSystem {
       if (cap.isLowEnd && elapsed < targetFrameTime) return;
       lastFrameTime = now;
 
-      const delta = clock.getDelta();
-      const totalTime = clock.getElapsedTime();
+      timer.update();
+      const delta = timer.getDelta();
+      const totalTime = timer.getElapsed();
 
       this._updateFrame(totalTime, delta, cap);
     };

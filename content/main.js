@@ -15,7 +15,6 @@ import { ThreeEarthManager } from './core/three-earth-manager.js';
 import { getElementById, onDOMReady } from './core/utils.js';
 import { initViewTransitions } from './core/view-transitions.js';
 import { i18n } from './core/i18n.js';
-import { initPerformanceMonitoring } from './core/performance-monitor.js';
 import { SectionTracker } from './core/section-tracker.js';
 import { GlobalEventHandlers } from './core/events.js';
 
@@ -84,12 +83,9 @@ const _initApp = () => {
   }
   _appInitialized = true;
 
-  // Fallback programmatic scroll to top just in case
+  // Scroll to top on init (Safari compatibility)
   window.scrollTo(0, 0);
-  // Safari hack: multiple delayed scrolls to top because Safari restores scroll late
-  setTimeout(() => window.scrollTo(0, 0), 10);
   setTimeout(() => window.scrollTo(0, 0), 100);
-  setTimeout(() => window.scrollTo(0, 0), 500);
 
   sectionManager.init();
 
@@ -122,9 +118,6 @@ document.addEventListener(
     await i18n.init();
     perfMarks.domReady = performance.now();
     AppLoadManager.updateLoader(0.1, i18n.t('loader.status_init'));
-
-    // Initialize performance monitoring
-    initPerformanceMonitoring();
 
     fire(EVENTS.DOM_READY);
 

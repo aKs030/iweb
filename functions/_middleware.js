@@ -4,221 +4,29 @@
  * Injects base-head and base-loader templates into HTML responses.
  * Generates per-request CSP nonces to replace 'unsafe-inline'.
  *
- * @version 2.0.0
+ * @version 3.0.0 - Refactored & Modular
  */
 
-/**
- * Inject templates into HTML
- */
-function injectTemplates(html, templates) {
-  if (templates.head) {
-    html = html.replace(/<!--\s*INJECT:BASE-HEAD\s*-->/g, templates.head);
-  }
-  if (templates.loader) {
-    html = html.replace(/<!--\s*INJECT:BASE-LOADER\s*-->/g, templates.loader);
-  }
-  return html;
-}
-
-const DEFAULT_VIEWPORT_CONTENT =
-  'width=device-width, initial-scale=1, viewport-fit=cover';
-
-function mergeViewportContent(content = '') {
-  let merged = content.trim();
-
-  const ensureToken = (regex, token) => {
-    if (!regex.test(merged)) {
-      merged = merged ? `${merged}, ${token}` : token;
-    }
-  };
-
-  ensureToken(
-    /(^|,)\s*width\s*=\s*device-width\s*(,|$)/i,
-    'width=device-width',
-  );
-  ensureToken(
-    /(^|,)\s*initial-scale\s*=\s*1(?:\.0+)?\s*(,|$)/i,
-    'initial-scale=1',
-  );
-  ensureToken(
-    /(^|,)\s*viewport-fit\s*=\s*cover\s*(,|$)/i,
-    'viewport-fit=cover',
-  );
-
-  return merged || DEFAULT_VIEWPORT_CONTENT;
-}
-
-function ensureViewportMeta(html) {
-  const viewportRegex = /<meta\s+[^>]*name=["']viewport["'][^>]*>/i;
-  const viewportMatch = html.match(viewportRegex);
-
-  if (viewportMatch) {
-    const contentMatch = viewportMatch[0].match(/content\s*=\s*(["'])(.*?)\1/i);
-    const optimizedContent = mergeViewportContent(contentMatch?.[2] || '');
-
-    return html.replace(
-      viewportRegex,
-      `<meta name="viewport" content="${optimizedContent}" />`,
-    );
-  }
-
-  const viewportTag = `<meta name="viewport" content="${DEFAULT_VIEWPORT_CONTENT}" />`;
-
-  if (/<meta\s+charset=[^>]*>/i.test(html)) {
-    return html.replace(
-      /<meta\s+charset=[^>]*>/i,
-      (charsetTag) => `${charsetTag}\n    ${viewportTag}`,
-    );
-  }
-
-  if (/<head[^>]*>/i.test(html)) {
-    return html.replace(
-      /<head[^>]*>/i,
-      (headTag) => `${headTag}\n    ${viewportTag}`,
-    );
-  }
-
-  return html;
-}
-
-/**
- * Generate a cryptographically random nonce (base64, 128-bit)
- */
-function generateNonce() {
-  const bytes = new Uint8Array(16);
-  crypto.getRandomValues(bytes);
-  // Convert to base64 (CF Workers have btoa)
-  let binary = '';
-  for (const b of bytes) binary += String.fromCharCode(b);
-  return btoa(binary);
-}
-
-/**
- * Inject nonce attribute into inline <script> and <style> tags
- */
-function injectNonce(html, nonce) {
-  // Add nonce to <script> tags that don't have src (inline scripts)
-  // Including type="application/ld+json" and type="importmap"
-  html = html.replace(
-    /<script(?=[^>]*>)(?![^>]*\bsrc\s*=)(?![^>]*\bnonce\s*=)([^>]*)>/gi,
-    `<script nonce="${nonce}"$1>`,
-  );
-
-  // Add nonce to <style> tags
-  html = html.replace(
-    /<style(?![^>]*\bnonce\s*=)([^>]*)>/gi,
-    `<style nonce="${nonce}"$1>`,
-  );
-
-  return html;
-}
-
-/**
- * Replace script-src 'unsafe-inline' with nonce in a CSP header
- */
-function applyNonceToCSP(csp, nonce) {
-  if (!csp || !nonce) return csp;
-
-  // Keep style-src 'unsafe-inline' for runtime style injections and inline style attrs.
-  // Only replace script-src 'unsafe-inline' with a per-request nonce.
-  const withScriptNonce = csp.replace(
-    /(script-src[^;]*?)'unsafe-inline'([^;]*)(;|$)/gi,
-    (_match, start, end, terminator) =>
-      `${start}'nonce-${nonce}'${end}${terminator}`,
-  );
-
-  return withScriptNonce.replace(/\s{2,}/g, ' ').trim();
-}
-
-/**
- * Load template from URL
- */
-async function loadTemplateFromURL(context, path) {
-  try {
-    const url = new URL(path, context.request.url);
-    const response = await context.env.ASSETS.fetch(url);
-    if (!response.ok) return '';
-    return await response.text();
-  } catch (err) {
-    console.error(`[middleware] Failed to load template ${path}:`, err);
-    return '';
-  }
-}
+import {
+  generateNonce,
+  injectNonce,
+  applyNonceToCSP,
+} from './_middleware-utils/csp-manager.js';
+import {
+  injectTemplates,
+  loadTemplateFromURL,
+  SectionInjector,
+} from './_middleware-utils/template-injector.js';
+import { ensureViewportMeta } from './_middleware-utils/viewport-manager.js';
+import {
+  isLocalhost,
+  normalizeLocalDevHeaders,
+} from './_middleware-utils/dev-utils.js';
 
 /**
  * Middleware entry point — runs on every request.
  * @param {Object} context - Cloudflare Pages context
  */
-
-function isLocalhost(hostname) {
-  return (
-    hostname === 'localhost' ||
-    hostname === '127.0.0.1' ||
-    hostname === '::1' ||
-    hostname === '[::1]'
-  );
-}
-
-function normalizeLocalDevHeaders(headers, hostname) {
-  if (!isLocalhost(hostname)) {
-    return false;
-  }
-
-  let changed = false;
-
-  if (headers.has('Strict-Transport-Security')) {
-    headers.delete('Strict-Transport-Security');
-    changed = true;
-  }
-
-  const csp = headers.get('Content-Security-Policy');
-  if (csp) {
-    const sanitized = csp
-      .replace(/upgrade-insecure-requests;?\s*/gi, '')
-      .replace(/\s{2,}/g, ' ')
-      .trim();
-
-    if (sanitized !== csp) {
-      headers.set('Content-Security-Policy', sanitized);
-      changed = true;
-    }
-  }
-
-  if (headers.has('Cross-Origin-Embedder-Policy')) {
-    headers.delete('Cross-Origin-Embedder-Policy');
-    changed = true;
-  }
-
-  if (headers.has('Cross-Origin-Opener-Policy')) {
-    headers.delete('Cross-Origin-Opener-Policy');
-    changed = true;
-  }
-
-  return changed;
-}
-
-/**
- * HTMLRewriter handler for Edge-Side Includes
- */
-class SectionInjector {
-  constructor(context) {
-    this.context = context;
-  }
-  async element(el) {
-    const src = el.getAttribute('data-section-src');
-    if (!src) return;
-
-    // Only inject specific partials to avoid edge bloat
-    if (src.endsWith('/hero') || src.endsWith('/section3')) {
-      const htmlStr = await loadTemplateFromURL(this.context, src + '.html');
-      if (htmlStr) {
-        el.setInnerContent(htmlStr, { html: true });
-        el.setAttribute('data-ssr-loaded', 'true');
-      }
-    }
-  }
-}
-
 export async function onRequest(context) {
   const url = new URL(context.request.url);
 
@@ -236,8 +44,7 @@ export async function onRequest(context) {
   let response;
   try {
     response = await context.next();
-  } catch (err) {
-    console.error('[middleware] context.next() failed:', err);
+  } catch {
     return new Response('Internal Server Error', { status: 500 });
   }
 

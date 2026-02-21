@@ -1,3 +1,19 @@
+import {
+  escapeXml,
+  normalizePath,
+  resolveOrigin,
+  toAbsoluteUrl,
+} from './api/_xml-utils.js';
+import {
+  normalizeText,
+  sanitizeDiscoveryText,
+  formatSlug,
+} from './api/_text-utils.js';
+import {
+  fetchUploadsPlaylistId,
+  getBestYouTubeThumbnail,
+} from './api/_youtube-utils.js';
+
 const LICENSE_URL = 'https://www.abdulkerimsesli.de/#image-license';
 const BLOG_INDEX_PATH = '/pages/blog/posts/index.json';
 const PROJECT_APPS_PATH = '/pages/projekte/apps-config.json';
@@ -68,80 +84,6 @@ const STATIC_PAGE_IMAGES = [
     caption: 'DSGVO und Datenverarbeitung',
   },
 ];
-
-function normalizePath(path) {
-  if (!path) return '/';
-  if (path === '/') return '/';
-
-  let normalized = String(path).trim();
-  if (!normalized.startsWith('/')) normalized = '/' + normalized;
-  normalized = normalized.replace(/\/index\.html?$/i, '/');
-  if (!normalized.endsWith('/')) normalized += '/';
-
-  return normalized;
-}
-
-function resolveOrigin(requestUrl) {
-  const url = new URL(requestUrl);
-  if (url.hostname === 'abdulkerimsesli.de') {
-    url.hostname = 'www.abdulkerimsesli.de';
-  }
-  return url.origin;
-}
-
-function toAbsoluteUrl(origin, value) {
-  if (!value) return '';
-  if (/^https?:\/\//i.test(value)) return value;
-
-  const path = value.startsWith('/') ? value : `/${value}`;
-  return `${origin}${path}`;
-}
-
-function normalizeText(value, fallback = '') {
-  const cleaned = String(value ?? '').trim();
-  return cleaned || fallback;
-}
-
-function sanitizeDiscoveryText(value, fallback = '') {
-  const source = normalizeText(value, fallback);
-  if (!source) return '';
-
-  return source
-    .replace(/Abdul\s*Berlin/gi, 'Abdulkerim Sesli')
-    .replace(/\bBerlin\b/gi, '')
-    .replace(/#Abdulberlin/gi, '')
-    .replace(/\s{2,}/g, ' ')
-    .replace(/\s+([,.;:!?])/g, '$1')
-    .trim();
-}
-
-function formatSlug(slug = '') {
-  return String(slug)
-    .replace(/\.[a-z0-9]+$/i, '')
-    .replace(/[-_]+/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-function escapeXml(unsafe) {
-  if (!unsafe) return '';
-  return String(unsafe).replace(/[<>&'"]/g, function (c) {
-    switch (c) {
-      case '<':
-        return '&lt;';
-      case '>':
-        return '&gt;';
-      case '&':
-        return '&amp;';
-      case "'":
-        return '&apos;';
-      case '"':
-        return '&quot;';
-      default:
-        return c;
-    }
-  });
-}
 
 function ensureUrlEntry(urlMap, pagePath) {
   const path = normalizePath(pagePath);
@@ -239,33 +181,6 @@ async function addGalleryR2Images(urlMap, bucket) {
 
     cursor = list?.truncated ? list.cursor : undefined;
   } while (cursor);
-}
-
-async function fetchUploadsPlaylistId(channelId, apiKey) {
-  const channelUrl = new URL('https://www.googleapis.com/youtube/v3/channels');
-  channelUrl.searchParams.set('id', channelId);
-  channelUrl.searchParams.set('key', apiKey);
-  channelUrl.searchParams.set('part', 'contentDetails');
-
-  const response = await fetch(channelUrl.toString());
-  if (!response.ok) {
-    throw new Error(`YouTube channels API failed: ${response.status}`);
-  }
-
-  const payload = await response.json();
-  const firstItem = payload?.items?.[0];
-  return firstItem?.contentDetails?.relatedPlaylists?.uploads || null;
-}
-
-function getBestYouTubeThumbnail(snippet = {}) {
-  return (
-    snippet.thumbnails?.maxres?.url ||
-    snippet.thumbnails?.standard?.url ||
-    snippet.thumbnails?.high?.url ||
-    snippet.thumbnails?.medium?.url ||
-    snippet.thumbnails?.default?.url ||
-    ''
-  );
 }
 
 async function addYouTubeVideoImages(urlMap, env) {

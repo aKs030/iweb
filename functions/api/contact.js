@@ -5,24 +5,11 @@
  * Security: Honeypot, Rate Limiting, Input Sanitization
  */
 
+import { escapeHtml } from './_html-utils.js';
+
 const MAX_MESSAGES_PER_HOUR = 5;
 const RATE_LIMIT_TTL = 3600; // 1 hour in seconds
 const inMemoryRateLimitStore = new Map();
-
-/**
- * Escape HTML entities to prevent XSS in email templates
- * @param {string} str
- * @returns {string}
- */
-function escapeHtml(str) {
-  if (!str) return '';
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-}
 
 /**
  * Resolve a stable client identifier from common proxy headers
@@ -204,7 +191,6 @@ export async function onRequestPost({ request, env }) {
     }
 
     if (!env.RESEND_API_KEY) {
-      console.error('RESEND_API_KEY is missing');
       return new Response(
         JSON.stringify({ error: 'Server configuration error.' }),
         {
@@ -247,8 +233,7 @@ export async function onRequestPost({ request, env }) {
     });
 
     if (!resendResponse.ok) {
-      const errorText = await resendResponse.text();
-      console.error('Resend API Error:', errorText);
+      await resendResponse.text(); // Consume response body
       return new Response(
         JSON.stringify({
           error:
@@ -267,8 +252,7 @@ export async function onRequestPost({ request, env }) {
       status: 200,
       headers: { 'Content-Type': 'application/json', ...corsHeaders },
     });
-  } catch (err) {
-    console.error('Unexpected Error in /api/contact:', err);
+  } catch {
     return new Response(
       JSON.stringify({ error: 'Ein unerwarteter Fehler ist aufgetreten.' }),
       {

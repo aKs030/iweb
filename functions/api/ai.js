@@ -253,8 +253,8 @@ Inhalt: ${content}`;
         relevance: Math.round(score * 100),
       })),
     };
-  } catch (error) {
-    console.error('Context retrieval error:', error.message);
+  } catch {
+    // Context retrieval failed - return null to continue without context
     return null;
   }
 }
@@ -346,8 +346,7 @@ ANWEISUNGEN:
 
     if (!groqResponse.ok) {
       const errorText = await groqResponse.text();
-      console.error('Groq API error:', errorText);
-      throw new Error(`Groq API error: ${groqResponse.status}`);
+      throw new Error(`Groq API error: ${groqResponse.status} - ${errorText}`);
     }
 
     const groqData = await groqResponse.json();
@@ -368,7 +367,6 @@ ANWEISUNGEN:
       { headers: corsHeaders },
     );
   } catch (error) {
-    console.error('AI API Error:', error);
     return Response.json(
       {
         error: 'AI request failed',
