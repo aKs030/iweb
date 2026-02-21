@@ -187,6 +187,6 @@ Ziele:
 
 ## Weitere Ressourcen
 
-- [Bildoptimierungs-Leitfaden](../../docs/IMAGE_OPTIMIZATION.md)
+- [Bildoptimierungs-Leitfaden](../../../docs/IMAGE_OPTIMIZATION.md)
 - [Web.dev: Optimize Images](https://web.dev/fast/#optimize-your-images)
 - [Squoosh Documentation](https://github.com/GoogleChromeLabs/squoosh)

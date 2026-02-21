@@ -127,7 +127,7 @@ ${this.getToggleButton()}
     const items = menuItems
       .map(
         (item, index) => `
-    <li style="--menu-item-index: ${index}">
+    <li class="menu-nav-item" style="--menu-item-index: ${index}">
       <a href="${item.href}"${item.attrs ? ' ' + item.attrs : ''}>
         <span class="nav-icon-wrapper">
              <svg class="nav-icon" aria-hidden="true">
@@ -150,7 +150,10 @@ ${this.getToggleButton()}
 >
   <ul class="site-menu__list">
     ${items}
-    <li style="--menu-item-index: ${menuItems.length}">
+    <li class="menu-utility-separator" style="--menu-item-index: ${menuItems.length}" aria-hidden="true">
+      <span class="menu-utility-separator__line"></span>
+    </li>
+    <li class="menu-utility-item menu-utility-item--search" style="--menu-item-index: ${menuItems.length + 1}">
       <button
         type="button"
         class="search-trigger"
@@ -169,22 +172,26 @@ ${this.getToggleButton()}
         <span class="icon-fallback icon-fallback--hidden">🔍</span>
       </button>
     </li>
-    <li style="--menu-item-index: ${menuItems.length + 1}">
+    <li class="menu-utility-item menu-utility-item--contact" style="--menu-item-index: ${menuItems.length + 2}">
       <button
         type="button"
-        class="lang-toggle"
-        aria-label="${i18n.t('menu.lang_toggle')}"
-        data-i18n-aria="menu.lang_toggle"
-        title="${i18n.t('menu.lang_toggle')}"
-        data-i18n-title="menu.lang_toggle"
+        class="contact-trigger"
+        data-footer-trigger
+        aria-expanded="false"
+        aria-label="${i18n.t('menu.contact')}"
+        data-i18n-aria="menu.contact"
+        title="${i18n.t('menu.contact')}"
+        data-i18n-title="menu.contact"
       >
-        <svg class="nav-icon" aria-hidden="true">
-          <use href="#icon-globe"></use>
-        </svg>
-        <span class="lang-text">DE</span>
+        <span class="icon-container">
+          <svg class="nav-icon contact-icon" aria-hidden="true">
+            <use href="#icon-mail"></use>
+          </svg>
+        </span>
+        <span class="icon-fallback icon-fallback--hidden">✉️</span>
       </button>
     </li>
-    <li style="--menu-item-index: ${menuItems.length + 2}">
+    <li class="menu-utility-item menu-utility-item--theme" style="--menu-item-index: ${menuItems.length + 3}">
       <button
         type="button"
         class="theme-toggle"
@@ -199,6 +206,21 @@ ${this.getToggleButton()}
         <svg class="nav-icon theme-icon theme-icon--moon" aria-hidden="true">
           <use href="#icon-moon"></use>
         </svg>
+      </button>
+    </li>
+    <li class="menu-utility-item menu-utility-item--lang" style="--menu-item-index: ${menuItems.length + 4}">
+      <button
+        type="button"
+        class="lang-toggle"
+        aria-label="${i18n.t('menu.lang_toggle')}"
+        data-i18n-aria="menu.lang_toggle"
+        title="${i18n.t('menu.lang_toggle')}"
+        data-i18n-title="menu.lang_toggle"
+      >
+        <svg class="nav-icon" aria-hidden="true">
+          <use href="#icon-globe"></use>
+        </svg>
+        <span class="lang-text">DE</span>
       </button>
     </li>
   </ul>

@@ -7,26 +7,24 @@ Aktueller Index der Projekt-Dokumentation.
 - [`../README.md`](../README.md) - Projektüberblick und lokale Entwicklung
 - [`../CONTRIBUTING.md`](../CONTRIBUTING.md) - Beitrags- und PR-Workflow
 - [`../SECURITY.md`](../SECURITY.md) - Security Policy
+- [`../DEPLOYMENT_SETUP.md`](../DEPLOYMENT_SETUP.md) - Deployment-Setup
+- [`../SECRETS_SETUP.md`](../SECRETS_SETUP.md) - Secret- und Env-Setup
 - [`PROJECT_STATUS.md`](PROJECT_STATUS.md) - Status und Metriken
 
 ## Architektur & Technik
 
 - [`ARCHITECTURE.md`](ARCHITECTURE.md)
 - [`MIDDLEWARE_ARCHITECTURE.md`](MIDDLEWARE_ARCHITECTURE.md)
-- [`RAG_IMPROVEMENTS.md`](RAG_IMPROVEMENTS.md)
 - [`CLOUDFLARE_AI_SEARCH_SETUP.md`](CLOUDFLARE_AI_SEARCH_SETUP.md)
 
 ## Qualität & Reviews
 
 - [`CODE_QUALITY.md`](CODE_QUALITY.md) - Lint/Format, Husky Hooks, CI-Checks
 - [`CODE_REVIEW.md`](CODE_REVIEW.md)
-- [`ARCHITECTURAL_REVIEW_2026_RESULTS.md`](ARCHITECTURAL_REVIEW_2026_RESULTS.md)
-- [`REVIEW_REPORT_2026.md`](REVIEW_REPORT_2026.md)
 
 ## Performance & Assets
 
 - [`PERFORMANCE_OPTIMIZATION.md`](PERFORMANCE_OPTIMIZATION.md)
-- [`BUNDLE_OPTIMIZATION.md`](BUNDLE_OPTIMIZATION.md)
 - [`IMAGE_OPTIMIZATION.md`](IMAGE_OPTIMIZATION.md)
 
 ## Frontend-spezifisch
@@ -37,5 +35,4 @@ Aktueller Index der Projekt-Dokumentation.
 
 ## Hinweise
 
-- Dieser Index enthält nur vorhandene Dateien.
-- Veraltete doppelte Quality-Dokumente wurden entfernt, um eine Single Source of Truth zu haben.
+- Dieser Index verlinkt nur auf vorhandene Dateien.

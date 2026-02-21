@@ -181,7 +181,7 @@ Wenn du Features hinzufügst oder änderst:
 
 ### Dokumentation anzeigen
 
-Siehe `docs/` Verzeichnis und [DEVELOPMENT.md](DEVELOPMENT.md).
+Siehe `docs/` Verzeichnis und [Dokumentationsindex](docs/README.md).
 
 ## 🔧 Nützliche Commands
 
@@ -201,6 +201,7 @@ npm run fix           # lint + format
 # Maintenance
 npm run clean         # lokale Cache/Artifacts löschen
 npm run prepare       # Husky Hooks installieren/aktualisieren
+npm run docs:check    # Markdown-Links + lokale absolute Pfade prüfen
 ```
 
 ## 🐛 Bug Reports

@@ -1,12 +1,12 @@
 /* Projekte Seite - 3D Space & HUD Styles - v8.0 - Fixed 3D object positioning */
 
 /* Dynamic viewport height for mobile browser UI changes */
-:root {
+body.projekte-page {
   --projekte-viewport-height: 100vh;
 }
 
 @supports (height: 100dvh) {
-  :root {
+  body.projekte-page {
     --projekte-viewport-height: 100dvh;
   }
 }
@@ -14,7 +14,7 @@
 /* ============================================================================
    BASE STYLES
    ============================================================================ */
-body {
+body.projekte-page {
   margin: 0;
   background-color: #000; /* Deep black space */
   color: #fff;
@@ -29,13 +29,13 @@ body {
 }
 
 @supports (height: 100dvh) {
-  body {
+  body.projekte-page {
     min-height: 500dvh;
     height: 500dvh;
   }
 }
 
-#root {
+body.projekte-page #root {
   position: fixed;
   top: var(--content-top-offset);
   left: 0;
@@ -51,7 +51,7 @@ body {
 /* ============================================================================
    CANVAS (3D SCENE)
    ============================================================================ */
-#canvas-container {
+body.projekte-page #canvas-container {
   position: fixed;
   top: var(--content-top-offset);
   left: 0;
@@ -66,7 +66,7 @@ body {
 }
 
 /* Ensure canvas itself doesn't block interactions */
-canvas {
+body.projekte-page canvas {
   display: block;
   pointer-events: none; /* Allow clicks to pass through to HUD */
 }
@@ -445,7 +445,7 @@ canvas {
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 0.75rem;
-  animation: fadeInUp 0.3s ease-out;
+  animation: projekteFadeInUp 0.3s ease-out;
 }
 
 .hud-cs-block {
@@ -474,7 +474,7 @@ canvas {
   }
 }
 
-@keyframes fadeInUp {
+@keyframes projekteFadeInUp {
   from {
     opacity: 0;
     transform: translateY(8px);
@@ -497,7 +497,7 @@ canvas {
 /* ============================================================================
    BUTTONS (Re-used/Simplified)
    ============================================================================ */
-.btn {
+body.projekte-page .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -514,25 +514,25 @@ canvas {
   min-width: 140px;
 }
 
-.btn-primary {
+body.projekte-page .btn-primary {
   background: #3b82f6;
   color: white;
   box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
 }
 
-.btn-primary:hover {
+body.projekte-page .btn-primary:hover {
   background: #2563eb;
   transform: translateY(-2px);
   box-shadow: 0 0 30px rgba(59, 130, 246, 0.5);
 }
 
-.btn-outline {
+body.projekte-page .btn-outline {
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.3);
   color: white;
 }
 
-.btn-outline:hover {
+body.projekte-page .btn-outline:hover {
   background: rgba(255, 255, 255, 0.1);
   border-color: white;
 }
@@ -571,7 +571,7 @@ canvas {
    RESPONSIVE
    ============================================================================ */
 @media (max-width: 768px) {
-  body {
+  body.projekte-page {
     min-height: 430vh;
     height: 430vh;
     min-height: 430svh;
@@ -579,7 +579,7 @@ canvas {
   }
 
   @supports (height: 100dvh) {
-    body {
+    body.projekte-page {
       min-height: 430dvh;
       height: 430dvh;
     }
@@ -643,7 +643,7 @@ canvas {
     gap: 0.65rem;
   }
 
-  .btn {
+  body.projekte-page .btn {
     flex: 1 1 calc(50% - 0.35rem);
     min-width: 0;
   }
@@ -704,7 +704,7 @@ canvas {
     flex-direction: column;
   }
 
-  .btn {
+  body.projekte-page .btn {
     width: 100%;
     min-height: 46px;
     font-size: 0.92rem;
@@ -712,7 +712,7 @@ canvas {
 }
 /* Mobile adjustments for header height */
 @media (width <= 900px) {
-  #root {
+  body.projekte-page #root {
     height: calc(
       var(--projekte-viewport-height) - var(--content-top-offset) -
         var(--content-bottom-offset)
@@ -720,7 +720,7 @@ canvas {
     top: var(--content-top-offset);
   }
 
-  #canvas-container {
+  body.projekte-page #canvas-container {
     top: var(--content-top-offset);
     height: calc(
       var(--projekte-viewport-height) - var(--content-top-offset) -
