@@ -30,17 +30,15 @@ async function initAboutPage() {
     await initializeLucideIcons();
     AppLoadManager.updateLoader(0.5, i18n.t('loader.loading_icons'));
 
-    // Step 3: Animate cards
-    await animateCards();
-    AppLoadManager.updateLoader(0.7, i18n.t('loader.animating'));
-
-    // Step 4: Setup interactions
+    // Step 3: Setup interactions
     setupInteractions();
-    AppLoadManager.updateLoader(0.9, i18n.t('loader.activating'));
+    AppLoadManager.updateLoader(0.7, i18n.t('loader.activating'));
 
-    // Complete
+    // Step 4: Animate cards
+    await animateCards();
     AppLoadManager.updateLoader(0.95, i18n.t('loader.page_ready'));
 
+    // Complete loader immediately
     setTimeout(() => {
       AppLoadManager.hideLoader(100);
     }, 100);
@@ -49,6 +47,9 @@ async function initAboutPage() {
   } catch (error) {
     log.error('Failed to initialize about page:', error);
     AppLoadManager.updateLoader(0.95, i18n.t('loader.failed'));
+    setTimeout(() => {
+      AppLoadManager.hideLoader(100);
+    }, 500);
   }
 }
 

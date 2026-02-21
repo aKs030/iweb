@@ -4,11 +4,12 @@
 
 ```
 content/assets/img/
-├── earth/          # 3D Earth Texturen
-├── icons/          # Favicons und App Icons
-├── og/             # Open Graph Images
-└── videos/         # Video Thumbnails
+└── earth/          # 3D Earth Texturen
 ```
+
+Hinweis: Favicons/App-Icons werden ueber Cloudflare R2 bereitgestellt (`img/icons`) und liegen nicht mehr lokal in diesem Verzeichnis.
+Hinweis: Open-Graph-Bilder werden ueber Cloudflare R2 bereitgestellt (`img/blog`) und liegen nicht mehr lokal in diesem Verzeichnis.
+Hinweis: Projekt-Preview-SVGs werden ueber Cloudflare R2 bereitgestellt (`img/app`) und liegen nicht mehr lokal in diesem Verzeichnis.
 
 ## Bildformate
 
@@ -25,9 +26,6 @@ Alle Bilder sollten in modernen Formaten vorliegen:
 ```bash
 # Alle Bilder konvertieren
 ./scripts/optimize-images.sh
-
-# Einzelnes Verzeichnis
-node content/core/image-conversion-script.js content/assets/img/og
 ```
 
 ### Manuelle Konvertierung
@@ -187,6 +185,6 @@ Ziele:
 
 ## Weitere Ressourcen
 
-- [Bildoptimierungs-Leitfaden](../../docs/IMAGE_OPTIMIZATION.md)
+- [Bildoptimierungs-Leitfaden](../../../docs/IMAGE_OPTIMIZATION.md)
 - [Web.dev: Optimize Images](https://web.dev/fast/#optimize-your-images)
 - [Squoosh Documentation](https://github.com/GoogleChromeLabs/squoosh)

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Gallery3DSystem } from './Gallery3DSystem.js';
 import { X_Icon } from '/content/components/icons/icons.js';
 
@@ -7,9 +7,26 @@ const h = React.createElement;
 export const ThreeGalleryScene = ({ items }) => {
   const containerRef = useRef(null);
   const systemRef = useRef(null);
-  const [selectedItem, setSelectedItem] = useState(null);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
   const [isLoading, setIsLoading] = useState(true);
+  const touchStartRef = useRef(null);
 
+  const selectedItem = selectedIndex >= 0 ? items[selectedIndex] : null;
+
+  // Navigate lightbox
+  const goNext = useCallback(() => {
+    setSelectedIndex((i) => (i + 1) % items.length);
+  }, [items.length]);
+
+  const goPrev = useCallback(() => {
+    setSelectedIndex((i) => (i - 1 + items.length) % items.length);
+  }, [items.length]);
+
+  const closeLightbox = useCallback(() => {
+    setSelectedIndex(-1);
+  }, []);
+
+  // Init 3D scene
   useEffect(() => {
     if (!containerRef.current) return;
 
@@ -17,7 +34,8 @@ export const ThreeGalleryScene = ({ items }) => {
       containerRef.current,
       items,
       (item) => {
-        setSelectedItem(item);
+        const idx = items.findIndex((i) => i === item);
+        setSelectedIndex(idx >= 0 ? idx : 0);
       },
     );
 
@@ -30,12 +48,78 @@ export const ThreeGalleryScene = ({ items }) => {
     };
   }, [items]);
 
+  // Handle background scrolling when lightbox is open
+  useEffect(() => {
+    if (selectedIndex >= 0) {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [selectedIndex]);
+
+  // Keyboard navigation for lightbox
+  useEffect(() => {
+    if (selectedIndex < 0) return;
+
+    const handleKey = (e) => {
+      switch (e.key) {
+        case 'Escape':
+          closeLightbox();
+          break;
+        case 'ArrowRight':
+        case 'ArrowDown':
+          e.preventDefault();
+          goNext();
+          break;
+        case 'ArrowLeft':
+        case 'ArrowUp':
+          e.preventDefault();
+          goPrev();
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKey);
+
+    return () => {
+      window.removeEventListener('keydown', handleKey);
+    };
+  }, [selectedIndex, closeLightbox, goNext, goPrev]);
+
+  // Touch/swipe handlers for lightbox
+  const onTouchStart = useCallback((e) => {
+    touchStartRef.current = {
+      x: e.touches[0].clientX,
+      y: e.touches[0].clientY,
+    };
+  }, []);
+
+  const onTouchEnd = useCallback(
+    (e) => {
+      if (!touchStartRef.current) return;
+      const dx = e.changedTouches[0].clientX - touchStartRef.current.x;
+      const dy = e.changedTouches[0].clientY - touchStartRef.current.y;
+      const absDx = Math.abs(dx);
+      const absDy = Math.abs(dy);
+
+      // Minimum swipe distance: 50px, must be more horizontal than vertical
+      if (absDx > 50 && absDx > absDy) {
+        if (dx < 0) goNext();
+        else goPrev();
+      }
+      touchStartRef.current = null;
+    },
+    [goNext, goPrev],
+  );
+
   return h(
     'div',
     {
       style: {
         width: '100vw',
-        height: '100vh',
+        height: '100dvh', // Modern viewport height for mobile
         position: 'relative',
         background: '#000',
       },
@@ -65,20 +149,73 @@ export const ThreeGalleryScene = ({ items }) => {
         {
           className:
             'absolute inset-0 z-40 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-fade-in',
+          role: 'dialog',
+          'aria-modal': 'true',
+          'aria-label': `${selectedItem.title} — Bild ${selectedIndex + 1} von ${items.length}`,
+          onTouchStart,
+          onTouchEnd,
+          onClick: closeLightbox,
+          style: { touchAction: 'none' }, // Prevent browser touch actions like swipe-to-go-back while in gallery
         },
+
+        // Prev button
+        h(
+          'button',
+          {
+            onClick: (e) => {
+              e.stopPropagation();
+              goPrev();
+            },
+            className:
+              'absolute left-4 top-1/2 -translate-y-1/2 p-3 bg-white/10 hover:bg-white/20 rounded-full transition-colors z-50',
+            'aria-label': 'Vorheriges Bild',
+            style: { fontSize: '24px', lineHeight: 1, color: '#fff' },
+          },
+          '‹',
+        ),
+
+        // Next button
+        h(
+          'button',
+          {
+            onClick: (e) => {
+              e.stopPropagation();
+              goNext();
+            },
+            className:
+              'absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-white/10 hover:bg-white/20 rounded-full transition-colors z-50',
+            'aria-label': 'Nächstes Bild',
+            style: { fontSize: '24px', lineHeight: 1, color: '#fff' },
+          },
+          '›',
+        ),
+
         h(
           'div',
           {
             className:
               'relative max-w-4xl w-full bg-slate-900/90 border border-white/10 rounded-2xl overflow-hidden shadow-2xl',
+            onClick: (e) => e.stopPropagation(), // Prevent clicks inside content from closing lightbox
           },
 
+          // Counter badge
+          h(
+            'div',
+            {
+              className:
+                'absolute top-4 left-4 px-3 py-1 bg-white/10 rounded-full text-white/70 text-sm z-50',
+            },
+            `${selectedIndex + 1} / ${items.length}`,
+          ),
+
+          // Close button
           h(
             'button',
             {
-              onClick: () => setSelectedItem(null),
+              onClick: closeLightbox,
               className:
                 'absolute top-4 right-4 p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors z-50',
+              'aria-label': 'Schließen (Esc)',
             },
             h(X_Icon, { size: 24, className: 'text-white' }),
           ),
@@ -129,14 +266,6 @@ export const ThreeGalleryScene = ({ items }) => {
               h(
                 'div',
                 { className: 'mt-8 flex gap-4' },
-                h(
-                  'button',
-                  {
-                    className:
-                      'px-6 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-white font-medium transition-all',
-                  },
-                  'Details',
-                ),
                 h(
                   'a',
                   {

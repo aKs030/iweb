@@ -13,7 +13,13 @@
         "computation"
       ],
       "category": "utility",
-      "version": "1.0.0"
+      "version": "1.0.0",
+      "caseStudy": {
+        "problem": "Standard-Taschenrechner im Browser bieten oft nur Grundrechenarten und sind visuell wenig ansprechend.",
+        "solution": "Ein moderner, responsive Taschenrechner mit wissenschaftlichen Funktionen (sin, cos, tan, log), Klammern-Support und einer intuitiven Tastatur-Navigation.",
+        "techStack": ["Vanilla JS", "CSS Grid", "eval()-freie Berechnung"],
+        "results": "Vollständig funktionaler Rechner mit Keyboard-Support, Fehlerbehandlung und History-Funktion."
+      }
     },
     {
       "name": "color-changer",
@@ -44,7 +50,13 @@
         "concentration"
       ],
       "category": "game",
-      "version": "1.0.0"
+      "version": "1.0.0",
+      "caseStudy": {
+        "problem": "Klassische Memory-Spiele im Browser sind oft langweilig und bieten kaum Variation.",
+        "solution": "Ein dynamisches Memory-Spiel mit mehreren Schwierigkeitsgraden, Timer, Punktesystem und verschiedenen Kartensets.",
+        "techStack": ["Vanilla JS", "CSS Animations", "Fisher-Yates Shuffle"],
+        "results": "Drei Schwierigkeitsgrade, Highscore-System mit localStorage, und flüssige Karten-Flip-Animationen."
+      }
     },
     {
       "name": "paint-app",
@@ -67,7 +79,13 @@
         "safety"
       ],
       "category": "utility",
-      "version": "1.0.0"
+      "version": "1.0.0",
+      "caseStudy": {
+        "problem": "Nutzer verwenden oft schwache, wiederverwendete Passwörter, weil sichere Passwörter schwer zu erstellen und zu merken sind.",
+        "solution": "Ein kryptographisch sicherer Generator mit anpassbarer Länge, Zeichensatz-Auswahl und Copy-to-Clipboard Funktion.",
+        "techStack": ["Web Crypto API", "Vanilla JS", "CSS Custom Properties"],
+        "results": "Generiert Passwörter mit konfigurierbarer Entropie. Prüft Passwortstärke in Echtzeit und zeigt geschätzte Crack-Zeit an."
+      }
     },
     {
       "name": "pong-game",
@@ -128,7 +146,17 @@
         "utility"
       ],
       "category": "productivity",
-      "version": "1.0.0"
+      "version": "1.0.0",
+      "caseStudy": {
+        "problem": "Mehrere Timer-Apps für verschiedene Zwecke (Countdown, Stoppuhr, Pomodoro) — warum nicht alles in einer?",
+        "solution": "Ein All-in-One Timer mit drei Modi: klassischer Countdown, präziser Stoppuhr und Pomodoro-Timer mit konfigurierbaren Arbeits/Pause-Intervallen.",
+        "techStack": [
+          "Vanilla JS",
+          "requestAnimationFrame",
+          "Notifications API"
+        ],
+        "results": "Drei Timer-Modi, akustische Benachrichtigungen, Session-Tracking und eine clean, ablenkungsfreie Oberfläche."
+      }
     },
     {
       "name": "todo-liste",
@@ -159,7 +187,13 @@
       "description": "Moderne Wetter-App mit aktuellen Wetterdaten und 5-Tage-Vorhersage. Standortbasierte Wetterinformationen.",
       "tags": ["web", "weather", "api", "forecast", "location", "temperature"],
       "category": "web",
-      "version": "1.0.0"
+      "version": "1.0.0",
+      "caseStudy": {
+        "problem": "Einfache Wetter-Anzeige ohne Kontext: Nutzer wollen nicht nur Zahlen, sondern verständliche Prognosen.",
+        "solution": "Eine moderne Wetter-App mit Standorterkennung, 5-Tage-Vorhersage, animierten Wettericonsund Gradientenhintergründen je nach Wetterlage.",
+        "techStack": ["OpenWeatherMap API", "Geolocation API", "CSS Gradients"],
+        "results": "Standortbasierte Wetteranzeige mit Temperatur, Luftfeuchtigkeit, Wind und 5-Tage-Forecast. Automatische Hintergrundanpassung."
+      }
     },
     {
       "name": "zahlen-raten",

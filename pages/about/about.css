@@ -1,16 +1,16 @@
 /* pages/about/about.css — Page-specific styles only */
 
-body {
+body.about-page {
   background-color: var(--bg-primary);
   color: var(--text-primary);
   font-family: var(--font-inter);
   line-height: 1.6;
   overflow-x: hidden;
-  /* min-height wird jetzt global durch main.css gesteuert */
   display: flex;
   flex-direction: column;
   justify-content: center;
   background-image:
+    var(--star-pattern, none),
     radial-gradient(
       circle at 15% 50%,
       rgba(59, 130, 246, 0.08) 0%,
@@ -21,9 +21,11 @@ body {
       rgba(6, 182, 212, 0.08) 0%,
       transparent 25%
     );
+  background-size: var(--star-size, auto), auto, auto;
+  animation: var(--star-anim, none);
 }
 
-h1 {
+.about-main h1 {
   font-size: clamp(2.5rem, 5vw, 4rem);
   margin-bottom: 1rem;
   letter-spacing: -0.02em;
@@ -36,31 +38,27 @@ h1 {
   background-clip: text;
 }
 
-p {
+.about-main p {
   color: var(--text-muted);
   margin-bottom: 1.5rem;
   font-size: 1.05rem;
 }
 
-a {
+.about-main a {
   color: inherit;
   text-decoration: none;
   transition: color 0.2s ease;
 }
 
 /* Utility */
-.container {
+main.about-main.container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 1.5rem;
-}
-
-/* Ensure about page content starts below the fixed header - now handled globally by body padding */
-.about-page main.container {
   padding-top: 2rem; /* Additional spacing for content */
 }
 
-.btn {
+.about-main .btn {
   display: inline-flex;
   align-items: center;
   gap: var(--gap-xs);
@@ -76,14 +74,14 @@ a {
   font-size: 0.95rem;
 }
 
-.btn-primary {
+.about-main .btn-primary {
   background: var(--text-main);
   color: var(--bg-dark);
   position: relative;
   overflow: hidden;
 }
 
-.btn-primary::before {
+.about-main .btn-primary::before {
   content: '';
   position: absolute;
   top: 0;
@@ -95,29 +93,29 @@ a {
   pointer-events: none;
 }
 
-.btn-primary:hover {
+.about-main .btn-primary:hover {
   transform: translateY(-2px);
   box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
 }
 
-.btn-primary:hover::before {
+.about-main .btn-primary:hover::before {
   left: 100%;
 }
 
-.btn-outline {
+.about-main .btn-outline {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--card-border);
   color: var(--text-main);
   backdrop-filter: blur(10px);
 }
 
-.btn-outline:hover {
+.about-main .btn-outline:hover {
   background: rgba(255, 255, 255, 0.1);
   border-color: rgba(255, 255, 255, 0.2);
 }
 
 /* Layout */
-header {
+.about-main header {
   padding: 6rem 0 4rem;
   position: relative;
 }
@@ -130,7 +128,7 @@ header {
   margin-bottom: 4rem;
 }
 
-.card {
+.about-main .card {
   background: var(--card-bg);
   border: 1px solid var(--card-border);
   border-radius: 1.5rem;
@@ -143,7 +141,7 @@ header {
   overflow: hidden;
 }
 
-.card:hover {
+.about-main .card:hover {
   border-color: rgba(255, 255, 255, 0.2);
   transform: translateY(-2px);
 }
@@ -175,11 +173,6 @@ header {
   .area-exp {
     grid-column: span 7;
   }
-}
-
-/* Specific Card Styles */
-.intro-card {
-  /* layout handled by utilities (u-stack / u-center) */
 }
 
 .profile-badge {
@@ -328,7 +321,7 @@ header {
 }
 
 /* Animations - using shared animations from animations.css */
-.fade-in {
+.about-main .fade-in {
   animation: fadeIn 0.6s ease-out forwards;
   opacity: 0;
 }
@@ -361,9 +354,7 @@ header {
 .about__intro-text {
   max-width: 600px;
 }
-.about__cta {
-  /* layout handled by utilities (u-row) */
-}
+
 .about__location {
   font-size: 0.9rem;
   margin-bottom: 0;
@@ -423,7 +414,7 @@ header {
 }
 /* Mobile adjustments for header height */
 @media (width <= 900px) {
-  body {
+  body.about-page {
     min-height: calc(100vh - 72px);
   }
 }

@@ -11,26 +11,25 @@ npm run format        # Prettier write
 npm run format:check  # Prettier check
 npm run check         # lint:check + format:check
 npm run fix           # lint + format
+npm run docs:check    # Markdown-Links + lokale absolute Pfade prüfen
 ```
 
 ## Husky Hooks
 
-Hooks liegen in `/Users/abdo/iweb/.husky/`.
+Hooks liegen in [`.husky/`](../.husky/).
 
 - `pre-commit`: `npm exec lint-staged` (nur staged Dateien)
 - `pre-push`: `npm run check` (read-only)
 
-Details: `/Users/abdo/iweb/.husky/README.md`
+Details: [`.husky/README.md`](../.husky/README.md)
 
 ## CI-Checks
 
-Datei: `/Users/abdo/iweb/.github/workflows/ci.yml`
+Datei: [`.github/workflows/ci.yml`](../.github/workflows/ci.yml)
 
 Jobs:
 
-- `quality`: ESLint + Prettier Check
-- `smoke-test`: lokaler Serverstart und Route-Checks
-- `dependency-review`: PR-Dependency-Review (High-Severity blockierend)
+- `verify`: ESLint + Prettier Check
 
 ## Workflow-Empfehlung
 

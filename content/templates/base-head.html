@@ -1,6 +1,12 @@
 <!-- Base Head Template - Shared across all pages -->
 <!-- Usage: Include this in all HTML pages -->
 
+<!-- Synchronous Scroll Lock & Reset (Must be as early as possible for Safari) -->
+<script>
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+  window.scrollTo(0, 0);
+</script>
+
 <!-- Critical CSS - Loaded immediately to prevent FOUC -->
 <link rel="stylesheet" href="/content/styles/root.css" />
 <link rel="stylesheet" href="/content/styles/main.css" />
@@ -19,35 +25,30 @@
 
 <!-- Favicons -->
 <link rel="icon" href="/favicon.ico" sizes="48x48" />
-<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<link rel="icon" href="/favicon.svg" sizes="any" type="image/svg+xml" />
 <link
   rel="icon"
   type="image/webp"
   sizes="512x512"
-  href="/content/assets/img/icons/favicon-512.webp"
+  href="https://img.abdulkerimsesli.de/icons/favicon-512.webp?v=20260221"
 />
 <link
   rel="apple-touch-icon"
   sizes="180x180"
-  href="/content/assets/img/icons/apple-touch-icon.webp"
+  href="https://img.abdulkerimsesli.de/icons/apple-touch-icon.webp?v=20260221"
 />
 
 <!-- Google Search Console - Favicon für Suchergebnisse -->
 <link rel="shortcut icon" href="https://www.abdulkerimsesli.de/favicon.ico" />
-<link
-  rel="icon"
-  type="image/svg+xml"
-  href="https://www.abdulkerimsesli.de/content/assets/img/icons/favicon.svg"
-/>
-<link
-  rel="icon"
-  type="image/webp"
-  sizes="192x192"
-  href="https://www.abdulkerimsesli.de/content/assets/img/icons/favicon-512.webp"
-/>
 
 <!-- PWA -->
 <link rel="manifest" href="/manifest.json" />
+<link
+  rel="alternate"
+  type="application/rss+xml"
+  title="Abdulkerim Sesli — Blog"
+  href="/api/feed.xml"
+/>
 <meta
   name="theme-color"
   media="(prefers-color-scheme: dark)"
@@ -73,21 +74,18 @@
   title="LLM Full Index"
 />
 
-<!-- Preconnect to Critical Resources -->
-<link rel="dns-prefetch" href="https://www.googletagmanager.com" />
-<link rel="dns-prefetch" href="https://www.google-analytics.com" />
-<link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
-<link rel="dns-prefetch" href="https://esm.sh" />
-<link rel="dns-prefetch" href="https://img.abdulkerimsesli.de" />
+<!-- Preconnect to Critical Resources (with dns-prefetch fallback) -->
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
 <link rel="preconnect" href="https://esm.sh" crossorigin />
 <link rel="preconnect" href="https://img.abdulkerimsesli.de" crossorigin />
+<link rel="preconnect" href="https://www.googletagmanager.com" crossorigin />
+<link rel="preconnect" href="https://www.google-analytics.com" crossorigin />
+<link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
+<link rel="dns-prefetch" href="https://esm.sh" />
+<link rel="dns-prefetch" href="https://img.abdulkerimsesli.de" />
+<link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+<link rel="dns-prefetch" href="https://www.google-analytics.com" />
 
 <!-- Core Scripts -->
 <script type="module" src="/content/components/head/head-inline.js"></script>
-<script
-  type="module"
-  src="/content/main.js"
-  crossorigin="anonymous"
-  defer
-></script>
+<script type="module" src="/content/main.js" crossorigin="anonymous"></script>

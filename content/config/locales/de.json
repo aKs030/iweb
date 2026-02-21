@@ -27,7 +27,8 @@
     "search_no_results": "Keine Treffer gefunden",
     "search_timeout": "Suche dauert zu lange",
     "search_unavailable": "Suche derzeit nicht verfügbar",
-    "lang_toggle": "Sprache wechseln"
+    "lang_toggle": "Sprache wechseln",
+    "theme_toggle": "Design wechseln (Hell/Dunkel)"
   },
   "footer": {
     "about": {
