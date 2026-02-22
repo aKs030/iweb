@@ -1,6 +1,6 @@
 /**
  * Blog Data Loading Logic
- * @version 1.0.0
+ * @version 2.0.0 - Optimized & Minimal
  */
 
 import { createLogger } from '/content/core/logger.js';
@@ -10,29 +10,26 @@ import { parseFrontmatter, normalizePost } from './blog-utils.js';
 
 const log = createLogger('BlogDataLoader');
 
-export const loadPostsData = async (seedPosts = []) => {
+export const loadPostsData = async () => {
   try {
     AppLoadManager.updateLoader(0.2, i18n.t('loader.loading_blog'));
 
-    let fetchedPosts = [];
-    try {
-      const indexRes = await fetch('/pages/blog/posts/index.json');
-      if (indexRes.ok) {
-        fetchedPosts = await indexRes.json();
-        AppLoadManager.updateLoader(
-          0.4,
-          i18n.t('loader.articles_found', { count: fetchedPosts.length }),
-        );
-      }
-    } catch (e) {
-      log.warn('Could not load index.json', e);
-      return seedPosts;
+    const indexRes = await fetch('/pages/blog/posts/index.json');
+    if (!indexRes.ok) {
+      log.warn('Could not load index.json');
+      return [];
     }
+
+    const fetchedPosts = await indexRes.json();
+    AppLoadManager.updateLoader(
+      0.4,
+      i18n.t('loader.articles_found', { count: fetchedPosts.length }),
+    );
 
     let loaded = 0;
     const total = fetchedPosts.length;
 
-    const populated = await Promise.all(
+    const posts = await Promise.all(
       fetchedPosts.map(async (p) => {
         try {
           let postData = { ...p };
@@ -47,13 +44,10 @@ export const loadPostsData = async (seedPosts = []) => {
           }
 
           loaded++;
-          const progress = 0.4 + (loaded / total) * 0.4;
           AppLoadManager.updateLoader(
-            progress,
+            0.4 + (loaded / total) * 0.4,
             i18n.t('loader.loading_article', { current: loaded, total }),
-            {
-              silent: true,
-            },
+            { silent: true },
           );
 
           return normalizePost(postData);
@@ -66,23 +60,18 @@ export const loadPostsData = async (seedPosts = []) => {
 
     AppLoadManager.updateLoader(0.85, i18n.t('loader.processing_articles'));
 
-    const map = new Map();
-    seedPosts.forEach((p) => map.set(p.id, p));
-    populated.filter(Boolean).forEach((p) => {
-      map.set(p.id, { ...(map.get(p.id) || {}), ...p });
-    });
-
-    const result = Array.from(map.values()).sort(
-      (a, b) => b.timestamp - a.timestamp,
-    );
+    const result = posts
+      .filter(Boolean)
+      .sort((a, b) => b.timestamp - a.timestamp);
 
     AppLoadManager.updateLoader(
       0.95,
       i18n.t('loader.articles_loaded', { count: result.length }),
     );
+
     return result;
   } catch (e) {
-    log.warn('Fatal error loading posts', e);
-    return seedPosts;
+    log.error('Fatal error loading posts', e);
+    return [];
   }
 };

@@ -8,7 +8,7 @@
 import * as THREE from 'three';
 import { createLogger } from '../../core/logger.js';
 import { getElementById, debounce } from '../../core/utils.js';
-import { createObserver } from '../../core/intersection-observer.js';
+import { createObserver } from '../../core/utils.js';
 import { AppLoadManager } from '../../core/load-manager.js';
 import {
   getSharedState,
@@ -1279,9 +1279,7 @@ function _getSectionConfig(sectionName) {
   };
   return (
     /** @type {any} */ (configs)[
-      sectionName === 'site-footer' || sectionName === 'section4'
-        ? 'contact'
-        : sectionName
+      sectionName === 'site-footer' ? 'contact' : sectionName
     ] || configs.hero
   );
 }

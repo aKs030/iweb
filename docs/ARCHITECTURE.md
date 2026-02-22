@@ -12,7 +12,7 @@
 │                   Web Components Layer                       │
 ├─────────────────────────────────────────────────────────────┤
 │  <site-menu>          <site-footer>      <robot-companion>  │
-│  ├─ SiteMenu.js       ├─ SiteFooter.js  ├─ Web Component   │
+│  ├─ SiteMenu.js       ├─ footer.js      ├─ Web Component   │
 │  └─ Modules:          └─ Analytics      └─ Wrapper          │
 │     ├─ MenuState                                             │
 │     ├─ MenuRenderer                                          │
@@ -213,7 +213,7 @@ Core Services (Shared)
 content/
 ├── components/
 │   ├── footer/
-│   │   ├── SiteFooter.js          (Web Component)
+│   │   ├── footer.js              (Web Component v3.0.0)
 │   │   └── footer.css
 │   ├── menu/
 │   │   ├── SiteMenu.js            (Web Component)

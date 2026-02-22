@@ -31,12 +31,9 @@ package-lock.json
 yarn.lock
 pnpm-lock.yaml
 
-# Service Worker (auto-generated)
-sw.js
-
 # Documentation summaries (auto-generated)
 OPTIMIZATION_REPORT.md
-OPTIMIZATION_SUMMARY.md
+FINAL_OPTIMIZATION_REPORT.md
 
 # Git
 .git/

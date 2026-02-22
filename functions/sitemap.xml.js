@@ -16,6 +16,12 @@ const ROUTE_META = {
   '/about/': { priority: 0.6, changefreq: 'monthly' },
   '/impressum/': { priority: 0.2, changefreq: 'yearly' },
   '/datenschutz/': { priority: 0.2, changefreq: 'yearly' },
+  '/ai-info.html': { priority: 0.4, changefreq: 'monthly' },
+  '/llms.txt': { priority: 0.5, changefreq: 'monthly' },
+  '/llms-full.txt': { priority: 0.5, changefreq: 'monthly' },
+  '/ai-index.json': { priority: 0.4, changefreq: 'monthly' },
+  '/person.jsonld': { priority: 0.6, changefreq: 'monthly' },
+  '/bio.md': { priority: 0.5, changefreq: 'monthly' },
 };
 
 const BLOG_INDEX_PATH = '/pages/blog/posts/index.json';
@@ -99,6 +105,13 @@ function buildStaticEntries(today) {
     ...Object.keys(ROUTES)
       .filter((path) => path.startsWith('/'))
       .map(normalizePath),
+    // AI Indexing Resources
+    '/ai-info.html',
+    '/llms.txt',
+    '/llms-full.txt',
+    '/ai-index.json',
+    '/person.jsonld',
+    '/bio.md',
   ].filter((path) => !EXCLUDED_PATHS.has(path));
 
   const uniquePaths = [...new Set(staticPaths)];

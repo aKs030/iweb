@@ -6,7 +6,7 @@
  */
 import { createLogger } from '../../core/logger.js';
 import { getElementById } from '../../core/utils.js';
-import { TimerManager } from '../../core/timer-utils.js';
+import { TimerManager } from '../../core/utils.js';
 
 const log = createLogger('TypeWriter');
 

@@ -1,0 +1,18 @@
+{
+  "schema_version": "v1",
+  "name_for_human": "Abdulkerim Sesli Portfolio",
+  "name_for_model": "abdulkerim_portfolio",
+  "description_for_human": "Modern portfolio with 3D visualizations, AI-powered search, and web development projects.",
+  "description_for_model": "Portfolio website featuring Three.js 3D Earth visualization, AI-powered RAG search, robot companion chat, and showcase of web development projects. Built with vanilla JavaScript, Cloudflare Pages, and modern web technologies. Zero-build architecture with edge-first deployment.",
+  "auth": {
+    "type": "none"
+  },
+  "api": {
+    "type": "openapi",
+    "url": "https://www.abdulkerimsesli.de/.well-known/openapi.json",
+    "is_user_authenticated": false
+  },
+  "logo_url": "https://www.abdulkerimsesli.de/favicon.svg",
+  "contact_email": "kontakt@abdulkerimsesli.de",
+  "legal_info_url": "https://www.abdulkerimsesli.de/impressum/"
+}

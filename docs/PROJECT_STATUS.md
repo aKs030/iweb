@@ -80,12 +80,11 @@ New Files:
 ```
 Configuration:
 ├── vite.config.js (historical, no longer used)
-├── Lighthouse setup now runs via manual local audits
+└── Lighthouse setup now runs via manual local audits
 
 Documentation:
 ├── docs/PERFORMANCE_OPTIMIZATION.md
-├── docs/BUNDLE_OPTIMIZATION.md
-└── OPTIMIZATION_SUMMARY.md
+└── docs/BUNDLE_OPTIMIZATION.md
 ```
 
 **Performance Impact:**

@@ -25,11 +25,13 @@ Details: [`.husky/README.md`](../.husky/README.md)
 
 ## CI-Checks
 
-Datei: [`.github/workflows/ci.yml`](../.github/workflows/ci.yml)
+Datei: [`.github/workflows/main.yml`](../.github/workflows/main.yml)
 
 Jobs:
 
-- `verify`: ESLint + Prettier Check
+- `lint`: ESLint + Prettier Check (`npm run check`)
+- `security`: CodeQL Analyse
+- `preview`: Cloudflare Pages Preview (nur bei PRs)
 
 ## Workflow-Empfehlung
 

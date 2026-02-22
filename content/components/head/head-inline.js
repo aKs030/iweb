@@ -176,18 +176,25 @@ const ensureFooterAndTrigger = () => {
         headerEl.appendChild(siteMenu);
       }
 
-      // Ensure <site-footer> exists
+      // Ensure footer exists - create site-footer custom element
       let siteFooter = document.querySelector('site-footer');
       if (!siteFooter) {
-        // Check for old container to upgrade
-        const oldContainer = document.getElementById('footer-container');
-        if (oldContainer) {
-          oldContainer.remove();
-        }
+        // Load footer CSS first
+        const footerCSS = document.createElement('link');
+        footerCSS.rel = 'stylesheet';
+        footerCSS.href = '/content/components/footer/footer.css';
+        document.head.appendChild(footerCSS);
 
+        // Create site-footer custom element
         siteFooter = document.createElement('site-footer');
-        siteFooter.setAttribute('id', 'site-footer-component');
+        siteFooter.setAttribute('src', '/content/components/footer/footer');
         document.body.appendChild(siteFooter);
+
+        // Load footer JS module
+        const footerJS = document.createElement('script');
+        footerJS.src = '/content/components/footer/footer.js';
+        footerJS.type = 'module';
+        document.body.appendChild(footerJS);
       }
 
       // Component definitions werden durch SCRIPTS array geladen - nicht hier doppelt
@@ -220,7 +227,6 @@ const injectCoreAssets = () => {
           '/pages/home/hero.css',
           '/content/components/typewriter/typewriter.css',
           '/pages/home/section3.css',
-          '/pages/home/section4.css',
         );
       }
 
@@ -229,7 +235,6 @@ const injectCoreAssets = () => {
 
     const SCRIPTS = [
       { src: '/content/components/menu/SiteMenu.js', module: true },
-      { src: '/content/components/footer/SiteFooter.js', module: true },
     ];
 
     const deferNonCriticalAssets = () => {
@@ -256,37 +261,13 @@ const injectCoreAssets = () => {
     const upsertStyle = (href) => {
       if (document.head.querySelector(`link[href="${href}"]`)) return;
 
-      // Load page-specific styles via preload for better performance
+      // Load page-specific styles directly as stylesheet
+      // These are critical for the page and should be loaded immediately
       upsertHeadLink({
-        rel: 'preload',
+        rel: 'stylesheet',
         href,
-        as: 'style',
         dataset: { injectedBy: 'head-inline' },
-        onload() {
-          try {
-            this.onload = null;
-            this.rel = 'stylesheet';
-          } catch {
-            /* ignore */
-          }
-        },
       });
-
-      // Fallback
-      setTimeout(() => {
-        try {
-          const existing = document.head.querySelector(`link[href="${href}"]`);
-          if (!existing || existing.rel === 'preload') {
-            upsertHeadLink({
-              rel: 'stylesheet',
-              href,
-              dataset: { injectedBy: 'head-inline' },
-            });
-          }
-        } catch {
-          /* ignore */
-        }
-      }, 2000);
     };
 
     const upsertScript = ({ src, module }) => {

@@ -14,7 +14,7 @@ import { RobotEmotions } from './modules/robot-emotions.js';
 import { RobotContextReactions } from './modules/robot-context-reactions.js';
 import { robotCompanionTexts } from './robot-companion-texts.js';
 import { createLogger } from '../../core/logger.js';
-import { createObserver } from '../../core/intersection-observer.js';
+import { createObserver } from '../../core/utils.js';
 import { ROBOT_EVENTS } from './constants/events.js';
 import { RobotStateManager } from './state/RobotStateManager.js';
 import { RobotDOMBuilder } from './dom/RobotDOMBuilder.js';
@@ -272,6 +272,10 @@ export class RobotCompanion {
       });
     }
     requestAnimationFrame(checkOverlap);
+    // Clear existing interval to prevent duplicates
+    if (this._footerCheckInterval) {
+      this._clearInterval(this._footerCheckInterval);
+    }
     this._footerCheckInterval = this._setInterval(requestTick, 1000);
   }
 
@@ -985,7 +989,7 @@ export class RobotCompanion {
       if (sectionCheck('#hero')) context = 'hero';
       else if (sectionCheck('#features')) context = 'features';
       else if (sectionCheck('#section3')) context = 'about';
-      else if (sectionCheck('#footer-container') || sectionCheck('footer'))
+      else if (sectionCheck('site-footer') || sectionCheck('footer'))
         context = 'footer';
       else if (lower.includes('projekte')) context = 'projects';
       else if (lower.includes('gallery') || lower.includes('fotos'))
@@ -1018,7 +1022,7 @@ export class RobotCompanion {
       { selector: '#hero', ctx: 'hero' },
       { selector: '#features', ctx: 'features' },
       { selector: '#section3', ctx: 'about' },
-      { selector: '#footer-container', ctx: 'footer' },
+      { selector: 'site-footer', ctx: 'footer' },
       { selector: 'footer', ctx: 'footer' },
     ];
 

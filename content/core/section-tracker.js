@@ -70,7 +70,9 @@ export class SectionTracker {
 
   refreshSections() {
     const elements = Array.from(
-      document.querySelectorAll('main .section[id], footer#site-footer[id]'),
+      document.querySelectorAll(
+        'main .section[id], site-footer #site-footer[id]',
+      ),
     );
 
     /** @type {HTMLElement[]} */

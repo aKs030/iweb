@@ -1,6 +1,6 @@
 /**
  * SEO & Meta Tag Management for Blog
- * @version 1.0.0
+ * @version 2.0.0 - Optimized & Minimal
  */
 
 import { iconUrl } from '/content/config/constants.js';
@@ -16,156 +16,99 @@ import {
   buildFallbackKeywords,
 } from './blog-utils.js';
 
-const BLOG_PUBLISHER_LOGO = iconUrl('favicon-512.webp');
+const PUBLISHER_LOGO = iconUrl('favicon-512.webp');
 
-export const upsertHeadMeta = ({ name, property, content }) => {
-  if (!content) return null;
-
-  const selector = name
-    ? `meta[name="${name}"]`
-    : `meta[property="${property}"]`;
-  let element = document.head.querySelector(selector);
-
-  if (!element) {
-    element = document.createElement('meta');
-    if (name) {
-      element.setAttribute('name', name);
-    } else {
-      element.setAttribute('property', property);
-    }
-    document.head.appendChild(element);
+const setMeta = (selector, attr, value) => {
+  if (!value) return;
+  let el = document.head.querySelector(selector);
+  if (!el) {
+    el = document.createElement('meta');
+    el.setAttribute(attr.split('=')[0], attr.split('=')[1]);
+    document.head.appendChild(el);
   }
-
-  element.setAttribute('content', content);
-  return element;
+  el.setAttribute('content', value);
 };
 
-export const upsertCanonical = (href) => {
-  if (!href) return null;
-  let canonical = document.head.querySelector('link[rel="canonical"]');
-  if (!canonical) {
-    canonical = document.createElement('link');
-    canonical.setAttribute('rel', 'canonical');
-    document.head.appendChild(canonical);
+const setCanonical = (href) => {
+  let el = document.head.querySelector('link[rel="canonical"]');
+  if (!el) {
+    el = document.createElement('link');
+    el.rel = 'canonical';
+    document.head.appendChild(el);
   }
-  canonical.setAttribute('href', href);
-  return canonical;
+  el.href = href;
 };
 
 export const resetBlogPageMeta = () => {
   document.title = BLOG_DEFAULT_TITLE;
+  setCanonical(BLOG_HOME_URL);
 
-  upsertHeadMeta({
-    name: 'description',
-    content: BLOG_DEFAULT_DESCRIPTION,
-  });
-  upsertHeadMeta({
-    name: 'twitter:title',
-    content: BLOG_DEFAULT_TITLE,
-  });
-  upsertHeadMeta({
-    name: 'twitter:description',
-    content: BLOG_DEFAULT_DESCRIPTION,
-  });
-  upsertHeadMeta({
-    name: 'twitter:image',
-    content: BLOG_DEFAULT_IMAGE,
-  });
-  upsertHeadMeta({
-    name: 'twitter:url',
-    content: BLOG_HOME_URL,
-  });
-
-  upsertHeadMeta({
-    property: 'og:type',
-    content: 'website',
-  });
-  upsertHeadMeta({
-    property: 'og:title',
-    content: BLOG_DEFAULT_TITLE,
-  });
-  upsertHeadMeta({
-    property: 'og:description',
-    content: BLOG_DEFAULT_DESCRIPTION,
-  });
-  upsertHeadMeta({
-    property: 'og:image',
-    content: BLOG_DEFAULT_IMAGE,
-  });
-  upsertHeadMeta({
-    property: 'og:url',
-    content: BLOG_HOME_URL,
-  });
-
-  upsertCanonical(BLOG_HOME_URL);
+  setMeta(
+    'meta[name="description"]',
+    'name=description',
+    BLOG_DEFAULT_DESCRIPTION,
+  );
+  setMeta(
+    'meta[name="twitter:title"]',
+    'name=twitter:title',
+    BLOG_DEFAULT_TITLE,
+  );
+  setMeta(
+    'meta[name="twitter:description"]',
+    'name=twitter:description',
+    BLOG_DEFAULT_DESCRIPTION,
+  );
+  setMeta(
+    'meta[name="twitter:image"]',
+    'name=twitter:image',
+    BLOG_DEFAULT_IMAGE,
+  );
+  setMeta('meta[name="twitter:url"]', 'name=twitter:url', BLOG_HOME_URL);
+  setMeta('meta[property="og:type"]', 'property=og:type', 'website');
+  setMeta('meta[property="og:title"]', 'property=og:title', BLOG_DEFAULT_TITLE);
+  setMeta(
+    'meta[property="og:description"]',
+    'property=og:description',
+    BLOG_DEFAULT_DESCRIPTION,
+  );
+  setMeta('meta[property="og:image"]', 'property=og:image', BLOG_DEFAULT_IMAGE);
+  setMeta('meta[property="og:url"]', 'property=og:url', BLOG_HOME_URL);
 };
 
-export const updatePostMeta = (activePost) => {
-  const canonicalUrl = buildPostCanonical(activePost.id);
-  const imageUrl = toAbsoluteBlogUrl(activePost.image) || BLOG_DEFAULT_IMAGE;
-  const description =
-    activePost.seoDescription || activePost.excerpt || BLOG_DEFAULT_DESCRIPTION;
-  const keywordList =
-    Array.isArray(activePost.keywords) && activePost.keywords.length > 0
-      ? activePost.keywords
-      : buildFallbackKeywords(activePost);
-  const articleBody = stripMarkdown(activePost.content || '').slice(0, 5000);
+export const updatePostMeta = (post) => {
+  const url = buildPostCanonical(post.id);
+  const image = toAbsoluteBlogUrl(post.image) || BLOG_DEFAULT_IMAGE;
+  const desc = post.seoDescription || post.excerpt || BLOG_DEFAULT_DESCRIPTION;
+  const keywords =
+    Array.isArray(post.keywords) && post.keywords.length
+      ? post.keywords
+      : buildFallbackKeywords(post);
+  const body = stripMarkdown(post.content || '').slice(0, 5000);
 
-  document.title = `${activePost.title} — Abdulkerim Sesli`;
-  upsertCanonical(canonicalUrl);
+  document.title = `${post.title} — Abdulkerim Sesli`;
+  setCanonical(url);
 
-  upsertHeadMeta({
-    name: 'description',
-    content: description,
-  });
-  upsertHeadMeta({
-    name: 'keywords',
-    content: keywordList.join(', '),
-  });
-  upsertHeadMeta({
-    name: 'robots',
-    content: 'index, follow, max-image-preview:large',
-  });
-  upsertHeadMeta({
-    name: 'twitter:title',
-    content: activePost.title,
-  });
-  upsertHeadMeta({
-    name: 'twitter:description',
-    content: description,
-  });
-  upsertHeadMeta({
-    name: 'twitter:image',
-    content: imageUrl,
-  });
-  upsertHeadMeta({
-    name: 'twitter:url',
-    content: canonicalUrl,
-  });
-  upsertHeadMeta({
-    property: 'og:type',
-    content: 'article',
-  });
-  upsertHeadMeta({
-    property: 'og:title',
-    content: activePost.title,
-  });
-  upsertHeadMeta({
-    property: 'og:description',
-    content: description,
-  });
-  upsertHeadMeta({
-    property: 'og:image',
-    content: imageUrl,
-  });
-  upsertHeadMeta({
-    property: 'og:url',
-    content: canonicalUrl,
-  });
-  upsertHeadMeta({
-    property: 'article:published_time',
-    content: activePost.date,
-  });
+  setMeta('meta[name="description"]', 'name=description', desc);
+  setMeta('meta[name="keywords"]', 'name=keywords', keywords.join(', '));
+  setMeta(
+    'meta[name="robots"]',
+    'name=robots',
+    'index, follow, max-image-preview:large',
+  );
+  setMeta('meta[name="twitter:title"]', 'name=twitter:title', post.title);
+  setMeta('meta[name="twitter:description"]', 'name=twitter:description', desc);
+  setMeta('meta[name="twitter:image"]', 'name=twitter:image', image);
+  setMeta('meta[name="twitter:url"]', 'name=twitter:url', url);
+  setMeta('meta[property="og:type"]', 'property=og:type', 'article');
+  setMeta('meta[property="og:title"]', 'property=og:title', post.title);
+  setMeta('meta[property="og:description"]', 'property=og:description', desc);
+  setMeta('meta[property="og:image"]', 'property=og:image', image);
+  setMeta('meta[property="og:url"]', 'property=og:url', url);
+  setMeta(
+    'meta[property="article:published_time"]',
+    'property=article:published_time',
+    post.date,
+  );
 
   const script = document.createElement('script');
   script.type = 'application/ld+json';
@@ -173,35 +116,25 @@ export const updatePostMeta = (activePost) => {
   script.textContent = JSON.stringify({
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
-    '@id': `${canonicalUrl}#article`,
-    mainEntityOfPage: {
-      '@type': 'WebPage',
-      '@id': canonicalUrl,
-    },
-    headline: activePost.title,
-    description,
-    articleBody,
-    articleSection: activePost.category,
-    keywords: keywordList.join(', '),
-    image: imageUrl ? [imageUrl] : [],
-    datePublished: activePost.date,
-    dateModified: activePost.date,
+    '@id': `${url}#article`,
+    mainEntityOfPage: { '@type': 'WebPage', '@id': url },
+    headline: post.title,
+    description: desc,
+    articleBody: body,
+    articleSection: post.category,
+    keywords: keywords.join(', '),
+    image: image ? [image] : [],
+    datePublished: post.date,
+    dateModified: post.date,
     inLanguage: 'de-DE',
     author: [
-      {
-        '@type': 'Person',
-        name: 'Abdulkerim Sesli',
-        url: `${BLOG_BASE_URL}/`,
-      },
+      { '@type': 'Person', name: 'Abdulkerim Sesli', url: `${BLOG_BASE_URL}/` },
     ],
     publisher: {
       '@type': 'Organization',
       name: 'Abdulkerim Sesli',
       url: BLOG_BASE_URL,
-      logo: {
-        '@type': 'ImageObject',
-        url: BLOG_PUBLISHER_LOGO,
-      },
+      logo: { '@type': 'ImageObject', url: PUBLISHER_LOGO },
     },
     isPartOf: {
       '@type': 'Blog',
@@ -210,6 +143,4 @@ export const updatePostMeta = (activePost) => {
     },
   });
   document.head.appendChild(script);
-
-  return script;
 };

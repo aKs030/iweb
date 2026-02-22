@@ -42,8 +42,13 @@ async function fetchWithRetry(url, config = {}) {
   if (useCache) {
     const cached = await cacheManager.get(url);
     if (cached) {
-      log.debug(`Cache hit: ${url}`);
-      return cached.clone();
+      try {
+        log.debug(`Cache hit: ${url}`);
+        return cached.clone();
+      } catch {
+        // Cache entry invalid (body already consumed), remove it
+        await cacheManager.delete(url);
+      }
     }
   }
 

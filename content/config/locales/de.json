@@ -203,10 +203,14 @@
     "open_landing": "Öffne Landing-Page für dieses Video"
   },
   "blog": {
+    "title": "Blog",
+    "subtitle": "Tipps & Anleitungen zu Webdesign, SEO, Performance und Online-Marketing",
     "headline": "Wissen & Einblicke",
     "subline": "In unserem Blog teilen wir praxisnahe Tipps zu Webdesign, SEO, Performance und Online-Marketing – verständlich erklärt und direkt umsetzbar.",
     "read_more": "Weiterlesen",
     "back": "Zurück",
+    "back_to_overview": "Zurück zur Übersicht",
+    "render_error": "Fehler beim Rendern des Artikels",
     "related_title": "Das könnte dich auch interessieren",
     "cta_title": "Unterstützung bei deinem Projekt?",
     "cta_text": "Benötigst du Hilfe bei Webdesign, Performance-Optimierung oder SEO? Lass uns unverbindlich darüber sprechen.",

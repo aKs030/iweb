@@ -1,4 +1,3 @@
-/* ===== Hero Title =====*/
 .hero__title {
   position: relative;
   font-family: var(--font-inter);
@@ -7,97 +6,67 @@
   font-weight: var(--greet-weight);
   letter-spacing: var(--greet-letter);
   text-align: center;
-  text-rendering: optimizelegibility;
   margin: 0;
   padding: 8px 12px;
   z-index: 2;
   background: var(--greet-grad);
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  opacity: 1;
   user-select: none;
-  white-space: normal;
   overflow-wrap: anywhere;
-  word-break: normal;
   hyphens: auto;
   max-width: var(--greet-max);
   min-inline-size: var(--greet-min-inline, clamp(18ch, 32vw, 42ch));
   min-height: 2.2em;
-  font-variation-settings: 'opsz' 18;
-  font-optical-sizing: auto;
   text-shadow:
-    0 0 18px rgb(37 99 235 / 35%),
-    0 0 32px rgb(37 99 235 / 22%);
+    0 0 18px rgb(37 99 235/35%),
+    0 0 32px rgb(37 99 235/22%);
   animation:
     gradientMove var(--greet-anim-grad-dur) linear infinite,
     pulseGlow var(--greet-anim-pulse-dur) ease-in-out infinite;
-  transition:
-    text-shadow var(--transition-base),
-    filter var(--transition-base);
   will-change: text-shadow;
 }
-
-/* Glitch Effect Layers */
 .hero__title::before,
 .hero__title::after {
   content: attr(data-text);
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: none;
-  -webkit-text-fill-color: var(--accent); /* Cyan glitch */
+  inset: 0;
+  -webkit-text-fill-color: var(--accent);
   opacity: 0;
   pointer-events: none;
   z-index: -1;
 }
-
 .hero__title::before {
   animation: glitch-anim-1 5s infinite linear alternate-reverse;
   text-shadow: -2px 0 #ff00c1;
   left: 2px;
 }
-
 .hero__title::after {
   animation: glitch-anim-2 5s infinite linear alternate-reverse;
   text-shadow: -2px 0 #00fff9;
   left: -2px;
 }
-
 .hero__title:hover {
   text-shadow:
-    0 0 26px rgb(37 99 235 / 45%),
-    0 0 52px rgb(37 99 235 / 32%);
+    0 0 26px rgb(37 99 235/45%),
+    0 0 52px rgb(37 99 235/32%);
   animation:
     gradientMove var(--greet-anim-grad-dur) linear infinite,
     pulseGlowHover var(--greet-anim-pulse-dur) ease-in-out infinite;
 }
-
-/* Respect user prefer-reduced-motion */
 @media (prefers-reduced-motion: reduce) {
   .hero__title,
-  .hero__floating-icons,
   .hero__floating-icon,
-  .hero__spotlight-bg,
-  .hero__buttons,
   .hero__title::before,
   .hero__title::after {
     animation: none !important;
-    transition: none !important;
-    opacity: 0 !important; /* Hide glitch layers */
-  }
-  .hero__title {
-    opacity: 1 !important;
   }
 }
-
 @supports (text-wrap: balance) {
   .hero__title {
     text-wrap: balance;
   }
 }
-
 @keyframes gradientMove {
   0% {
     background-position: 0% 50%;
@@ -106,59 +75,57 @@
     background-position: 200% 50%;
   }
 }
-
 @keyframes pulseGlow {
   0%,
   100% {
     text-shadow:
-      0 0 12px rgb(37 99 235 / 60%),
-      0 0 22px rgb(6 182 212 / 35%);
+      0 0 12px rgb(37 99 235/60%),
+      0 0 22px rgb(6 182 212/35%);
   }
   25% {
     text-shadow:
-      0 0 18px rgb(6 182 212 / 70%),
-      0 0 32px rgb(37 99 235 / 20%);
+      0 0 18px rgb(6 182 212/70%),
+      0 0 32px rgb(37 99 235/20%);
   }
   50% {
     text-shadow:
-      0 0 20px rgb(16 185 129 / 60%),
-      0 0 36px rgb(6 182 212 / 25%);
+      0 0 20px rgb(16 185 129/60%),
+      0 0 36px rgb(6 182 212/25%);
   }
   75% {
     text-shadow:
-      0 0 18px rgb(99 102 241 / 70%),
-      0 0 30px rgb(37 99 235 / 25%);
+      0 0 18px rgb(99 102 241/70%),
+      0 0 30px rgb(37 99 235/25%);
   }
 }
-
 @keyframes pulseGlowHover {
   0%,
   100% {
     text-shadow:
-      0 0 14px rgb(37 99 235 / 70%),
-      0 0 28px rgb(6 182 212 / 45%);
+      0 0 14px rgb(37 99 235/70%),
+      0 0 28px rgb(6 182 212/45%);
   }
   25% {
     text-shadow:
-      0 0 22px rgb(6 182 212 / 80%),
-      0 0 36px rgb(37 99 235 / 35%);
+      0 0 22px rgb(6 182 212/80%),
+      0 0 36px rgb(37 99 235/35%);
   }
   50% {
     text-shadow:
-      0 0 28px rgb(16 185 129 / 75%),
-      0 0 44px rgb(6 182 212 / 32%);
+      0 0 28px rgb(16 185 129/75%),
+      0 0 44px rgb(6 182 212/32%);
   }
   75% {
     text-shadow:
-      0 0 24px rgb(99 102 241 / 80%),
-      0 0 40px rgb(37 99 235 / 38%);
+      0 0 24px rgb(99 102 241/80%),
+      0 0 40px rgb(37 99 235/38%);
   }
 }
-
-/* Glitch Animations */
 @keyframes glitch-anim-1 {
   0%,
-  92% {
+  92%,
+  96%,
+  100% {
     opacity: 0;
     clip-path: inset(50% 0 30% 0);
     transform: translate(0);
@@ -178,19 +145,12 @@
     clip-path: inset(30% 0 20% 0);
     transform: translate(-1px, 2px);
   }
-  96% {
-    opacity: 0;
-    clip-path: inset(50% 0 30% 0);
-    transform: translate(0);
-  }
-  100% {
-    opacity: 0;
-  }
 }
-
 @keyframes glitch-anim-2 {
   0%,
-  94% {
+  94%,
+  98%,
+  100% {
     opacity: 0;
     clip-path: inset(20% 0 60% 0);
     transform: translate(0);
@@ -210,91 +170,52 @@
     clip-path: inset(80% 0 10% 0);
     transform: translate(1px, -1px);
   }
-  98% {
-    opacity: 0;
-    clip-path: inset(20% 0 60% 0);
-    transform: translate(0);
-  }
-  100% {
-    opacity: 0;
-  }
 }
-
 .hero__title.fade {
   opacity: 0;
-  transform: var(--transform-scale-fade);
+  transform: scale(0.98);
 }
-
-.hero__title:not(.fade) {
-  opacity: 1;
-  transform: var(--transform-scale-none);
-}
-
-/* paused state for global hero-inactive mode - will be placed below main hero layout */
-
 .hero {
-  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
   min-height: 100dvh;
-  height: auto;
   padding: 0 var(--spacing-sm);
-  box-sizing: border-box;
 }
-
-.hero.section {
-  justify-content: center;
-  padding-bottom: 0;
-}
-
 .hero__content {
   max-width: 800px;
   width: 100%;
 }
 .hero__visual {
   position: relative;
-  animation: fadeInUp 1s ease-out 0.3s both;
 }
-
 .hero__floating-icons {
   position: absolute;
-  width: 100%;
-  height: 100%;
-  top: 0;
-  left: 0;
+  inset: 0;
   pointer-events: none;
 }
-
 .hero__floating-icon {
   position: absolute;
   width: 2rem;
   height: 2rem;
-  color: var(--accent); /* Tech Cyan Color */
+  color: var(--accent);
   filter: drop-shadow(0 0 8px rgba(0, 243, 255, 0.5));
   animation: float 6s ease-in-out infinite;
 }
-
 .hero__floating-icon svg {
   width: 100%;
   height: 100%;
-  display: block;
-}
-
-.hero__floating-icon--delay-0 {
-  animation-delay: var(--delay-0);
 }
 .hero__floating-icon--delay-1 {
-  animation-delay: var(--delay-1);
+  animation-delay: 1s;
 }
 .hero__floating-icon--delay-2 {
-  animation-delay: var(--delay-2);
+  animation-delay: 2s;
 }
 .hero__floating-icon--delay-3 {
-  animation-delay: var(--delay-3);
+  animation-delay: 3s;
 }
-
 .hero__floating-icon:nth-child(1) {
   top: 10%;
   right: -50px;
@@ -311,8 +232,6 @@
   top: 40%;
   left: -40px;
 }
-
-/* Using shared floatRotate animation from animations.css */
 .hero__image-container {
   position: relative;
   width: 60vw;
@@ -320,15 +239,12 @@
   aspect-ratio: 1/1;
   margin: 0 auto;
 }
-
-/* Fallback when WebGL is not available */
 .three-earth-container.three-earth-unavailable .hero__image-container {
   display: block;
   width: 72vw;
   max-width: 720px;
   aspect-ratio: auto;
 }
-
 .three-earth-container .three-earth-fallback {
   display: none;
   box-sizing: border-box;
@@ -338,111 +254,75 @@
   text-align: center;
   padding: 1rem;
 }
-
 .three-earth-container.three-earth-unavailable .three-earth-fallback {
   display: block;
 }
-
 .three-earth-container canvas {
   opacity: 0;
   transition: opacity 320ms ease;
 }
-
-.three-earth-container[data-three-ready='1'] canvas {
-  opacity: 1;
-}
-
-.three-earth-container:has(canvas) .three-earth-fallback {
-  display: none;
-}
-
+.three-earth-container[data-three-ready='1'] canvas,
 .three-earth-container:has(canvas) canvas {
   opacity: 1;
 }
-
-body:not(.hero-active) .hero__floating-icon {
-  animation-play-state: paused;
+.three-earth-container:has(canvas) .three-earth-fallback {
+  display: none;
 }
-
 .hero__spotlight-bg {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: fit-content; /* hug the content width */
-  height: auto;
-  min-width: 0;
   z-index: 1;
   pointer-events: none;
-  display: inline-flex; /* inline-flex lets the pill shrink/grow with content */
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   padding-block: clamp(10px, 1.6vw, 18px);
   padding-inline: clamp(18px, 4vw, 36px);
-  box-sizing: border-box;
-  border-radius: var(--radius-full); /* pill shape */
-  white-space: normal; /* allow wrapping if needed */
-  max-width: 100%; /* do not exceed the hero-image-container width */
+  border-radius: var(--radius-full);
+  max-width: 100%;
 }
-
 .hero__spotlight-bg::before {
   content: '';
   position: absolute;
   inset: 0;
-  border-radius: inherit; /* match pill shape */
+  border-radius: inherit;
   background: radial-gradient(
     ellipse at center,
-    rgb(248 250 252 / 96%) 0%,
-    rgb(37 99 235 / 18%) 48%,
-    rgb(37 99 235 / 8%) 66%,
+    rgb(248 250 252/96%) 0%,
+    rgb(37 99 235/18%) 48%,
+    rgb(37 99 235/8%) 66%,
     transparent 100%
   );
   filter: blur(48px) saturate(1.04) contrast(1.02);
-  transform-origin: center center;
   transform: rotate(-8deg) scale(1.22);
-  z-index: 0;
   pointer-events: none;
 }
-
-/* Reduce glow intensity on small screens */
 @media (width <= 420px) {
   .hero__spotlight-bg::before {
     filter: blur(32px) saturate(1.04) contrast(1.02);
     transform: rotate(-8deg) scale(1.12);
   }
 }
-
 @media (width <= 360px) {
   .hero__spotlight-bg::before {
     filter: blur(22px) saturate(1.04) contrast(1.02);
     transform: rotate(-8deg) scale(1.08);
   }
 }
-
 .hero__spotlight-bg > .hero__title {
-  z-index: 2;
   position: relative;
-  display: inline-block; /* avoid baseline/flow issues inside flex */
+  z-index: 2;
   max-width: 100%;
-  text-align: center;
-  line-height: var(--greet-lh); /* keep text vertically balanced */
+  line-height: var(--greet-lh);
 }
-
-/* paused state for global hero-inactive mode */
-body:not(.hero-active) .hero__title {
-  animation-play-state: paused;
-}
-
-/* ===== Mobile: smaller type, tighter padding =====*/
 @media (width <= 420px) {
   .hero__image-container {
     width: 72vw;
     max-width: 300px;
-    overflow: visible;
     padding-inline: clamp(6px, 3vw, 12px);
-    box-sizing: border-box;
   }
-
   .hero__spotlight-bg {
     position: relative;
     top: auto;
@@ -450,108 +330,69 @@ body:not(.hero-active) .hero__title {
     transform: none;
     padding-block: clamp(6px, 1.4vw, 10px);
     padding-inline: clamp(8px, 3vw, 16px);
-    box-sizing: border-box;
-    max-width: 100%;
     margin-inline: auto;
   }
-
   .hero__title {
     font-size: clamp(1.05rem, 4.8vw, 1.6rem);
     min-inline-size: clamp(10ch, 26vw, 22ch);
-    max-width: 100%;
     padding: 6px 8px;
     line-height: 1.05;
-    font-variation-settings: 'opsz' 14;
-    filter: none;
-    will-change: text-shadow;
-    overflow-wrap: break-word;
-    hyphens: auto;
-  }
-
-  .hero__spotlight-bg::before {
-    filter: blur(32px) saturate(1.04) contrast(1.02);
-    transform: rotate(-8deg) scale(1.12);
   }
 }
-
-/* ===== Extra-small mobile breakpoint =====*/
 @media (width <= 360px) {
   .hero__image-container {
     width: 84vw;
     max-width: 260px;
     padding-inline: clamp(6px, 2.8vw, 10px);
   }
-
   .hero__spotlight-bg {
     padding-block: clamp(4px, 1.2vw, 8px);
     padding-inline: clamp(6px, 2.2vw, 12px);
-    border-radius: var(--radius-full);
   }
-
   .hero__title {
     font-size: clamp(0.95rem, 4.2vw, 1.2rem);
     min-inline-size: clamp(8ch, 22vw, 18ch);
     padding: 4px 6px;
     line-height: 1.02;
-    font-variation-settings: 'opsz' 12;
-    white-space: normal;
   }
-
   .hero__buttons {
     bottom: clamp(2.2rem, 12vh, 6rem);
-    gap: var(--gap-xs);
   }
-
   .hero__floating-icon {
     opacity: 0.85;
-    /* Removed fixed font-size, now handled by width/height */
   }
-
   .hero__floating-icon:nth-child(1),
   .hero__floating-icon:nth-child(3) {
     display: none;
   }
-
-  .hero__spotlight-bg::before {
-    filter: blur(22px) saturate(1.04) contrast(1.02);
-    transform: rotate(-8deg) scale(1.08);
-  }
 }
-
-/* ===== Hero Buttons =====*/
 .hero__buttons {
   position: absolute;
-  bottom: clamp(4rem, 20vh, 13rem);
+  bottom: calc(clamp(4rem, 20vh, 13rem) + env(safe-area-inset-bottom));
   left: 50%;
   transform: translateX(-50%);
   width: fit-content;
   pointer-events: auto;
   z-index: 80;
 }
-
 .hero__buttons .btn {
   padding: 0.5rem 1rem;
   font-size: 0.875rem;
 }
-
-/* ===== CRT Button Styles =====*/
 .hero__button--crt {
   position: relative;
   isolation: isolate;
   background: var(--primary-color);
   color: #fff;
 }
-
 .hero__button--crt:hover::after {
   opacity: 0.4;
 }
-
 .hero__button--crt.btn-secondary {
   background: var(--bg-secondary);
   border: 2px solid var(--primary-color);
   color: var(--primary-color);
 }
-
 .hero__button--crt.btn-secondary:hover {
   background: var(--primary-color);
   color: #fff;

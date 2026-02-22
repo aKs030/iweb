@@ -187,18 +187,20 @@ main {
 
 /* Base Styles */
 html {
-  height: 100%;
-  overflow-y: scroll;
-  overflow-x: hidden;
-  scroll-snap-type: y mandatory;
-  scroll-padding-top: var(--content-top-offset);
-  scroll-behavior: smooth;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
   background: var(--bg-primary);
 }
 
 body {
-  min-height: 100dvh;
-  overflow: visible; /* Ensure body is not a scroll container */
+  width: 100vw;
+  height: 100vh;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  scroll-snap-type: y mandatory;
+  scroll-padding-top: var(--content-top-offset);
+  overscroll-behavior: none;
   touch-action: pan-y;
   transition: padding-bottom var(--transition-base);
   -webkit-font-smoothing: antialiased;

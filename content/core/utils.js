@@ -5,6 +5,11 @@
  * @date 2026-01-30
  */
 
+import DOMPurify from 'https://cdn.jsdelivr.net/npm/dompurify@3.3.1/dist/purify.es.mjs';
+import { createLogger } from './logger.js';
+
+const log = createLogger('Utils');
+
 // ============================================================================
 // ASYNC UTILITIES
 // ============================================================================
@@ -246,6 +251,10 @@ export function upsertMeta(nameOrProperty, content, isProperty = false) {
   }
 }
 
+// Pre-compiled regex for better performance (avoid recompilation on each call)
+const BRAND_REGEX =
+  /\s*(?:[—–-]\s*Abdulkerim Sesli|\|\s*Abdulkerim Sesli|Abdulkerim\s*—\s*Digital Creator Portfolio)\s*$/i;
+
 /**
  * Entfernt Branding‑Suffixe aus Titles/Headings.
  * Repräsentiert den vorher in `head-inline.js` verwendeten Branding‑Sanitizer.
@@ -253,9 +262,204 @@ export function upsertMeta(nameOrProperty, content, isProperty = false) {
  * @returns {string}
  */
 export function stripBranding(input) {
-  const BRAND_REGEX =
-    /\s*(?:[—–-]\s*Abdulkerim Sesli|\|\s*Abdulkerim Sesli|Abdulkerim\s*—\s*Digital Creator Portfolio)\s*$/i;
   return String(input || '')
     .replace(BRAND_REGEX, '')
     .trim();
 }
+
+// ============================================================================
+// CONSOLE FILTER
+// ============================================================================
+
+export function initConsoleFilter() {
+  if (location.hostname !== 'localhost' && location.hostname !== '127.0.0.1')
+    return;
+
+  const originalWarn = console.warn;
+  const originalError = console.error;
+
+  const shouldFilter = (message) => {
+    const msg = String(message || '');
+    return (
+      msg.includes('touchstart') ||
+      msg.includes('touchmove') ||
+      msg.includes('non-passive event listener')
+    );
+  };
+
+  console.warn = (...args) => {
+    if (shouldFilter(args[0])) return;
+    originalWarn.apply(console, args);
+  };
+
+  console.error = (...args) => {
+    if (shouldFilter(args[0])) return;
+    originalError.apply(console, args);
+  };
+}
+
+// ============================================================================
+// HTML SANITIZATION
+// ============================================================================
+
+const HTML_ESCAPES = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  "'": '&#39;',
+};
+const ESCAPE_RE = /[&<>"']/g;
+
+export function escapeHTML(text) {
+  if (!text || typeof text !== 'string') return '';
+  return text.replace(ESCAPE_RE, (c) => HTML_ESCAPES[c]);
+}
+
+export function sanitizeHTML(html, options = {}) {
+  if (html == null) return '';
+  try {
+    return DOMPurify.sanitize(String(html), options);
+  } catch {
+    return escapeHTML(String(html));
+  }
+}
+
+// ============================================================================
+// TIMER MANAGER
+// ============================================================================
+
+export class TimerManager {
+  constructor(name = 'TimerManager') {
+    this.name = name;
+    this.timers = new Set();
+    this.intervals = new Set();
+    this.rafIds = new Set();
+  }
+
+  setTimeout(fn, delay) {
+    const id = setTimeout(() => {
+      this.timers.delete(id);
+      try {
+        fn();
+      } catch (err) {
+        log.error(`[${this.name}] setTimeout error:`, err);
+      }
+    }, delay);
+    this.timers.add(id);
+    return id;
+  }
+
+  setInterval(fn, delay) {
+    const id = setInterval(() => {
+      try {
+        fn();
+      } catch (err) {
+        log.error(`[${this.name}] setInterval error:`, err);
+      }
+    }, delay);
+    this.intervals.add(id);
+    return id;
+  }
+
+  requestAnimationFrame(fn) {
+    const id = requestAnimationFrame(() => {
+      this.rafIds.delete(id);
+      try {
+        fn();
+      } catch (err) {
+        log.error(`[${this.name}] RAF error:`, err);
+      }
+    });
+    this.rafIds.add(id);
+    return id;
+  }
+
+  clearTimeout(id) {
+    clearTimeout(id);
+    this.timers.delete(id);
+  }
+
+  clearInterval(id) {
+    clearInterval(id);
+    this.intervals.delete(id);
+  }
+
+  cancelAnimationFrame(id) {
+    cancelAnimationFrame(id);
+    this.rafIds.delete(id);
+  }
+
+  clearAll() {
+    this.timers.forEach((id) => clearTimeout(id));
+    this.intervals.forEach((id) => clearInterval(id));
+    this.rafIds.forEach((id) => cancelAnimationFrame(id));
+    this.timers.clear();
+    this.intervals.clear();
+    this.rafIds.clear();
+  }
+
+  get activeTimers() {
+    return {
+      timeouts: this.timers.size,
+      intervals: this.intervals.size,
+      rafs: this.rafIds.size,
+      total: this.timers.size + this.intervals.size + this.rafIds.size,
+    };
+  }
+}
+
+// ============================================================================
+// INTERSECTION OBSERVER UTILITIES
+// ============================================================================
+
+export function createObserver(callback, options = {}) {
+  const observer = new IntersectionObserver(callback, options);
+  return {
+    observe: (el) => observer.observe(el),
+    unobserve: (el) => observer.unobserve(el),
+    disconnect: () => observer.disconnect(),
+    raw: observer,
+  };
+}
+
+export function observeOnce(target, onIntersect, options = {}) {
+  if (!target) return () => {};
+  const obs = new IntersectionObserver((entries, o) => {
+    for (const entry of entries) {
+      if (entry.isIntersecting) {
+        try {
+          onIntersect(entry);
+        } finally {
+          o.disconnect();
+        }
+        break;
+      }
+    }
+  }, options);
+
+  obs.observe(target);
+  return () => obs.disconnect();
+}
+
+// ============================================================================
+// REACT UTILITIES
+// ============================================================================
+
+import { i18n } from './i18n.js';
+
+export const createUseTranslation = (React) => {
+  return () => {
+    const [lang, setLang] = React.useState(i18n.currentLang);
+
+    React.useEffect(() => {
+      const onLangChange = (e) => setLang(e.detail.lang);
+      i18n.addEventListener('language-changed', onLangChange);
+      return () => i18n.removeEventListener('language-changed', onLangChange);
+    }, []);
+
+    const t = React.useCallback((key, params) => i18n.t(key, params), [lang]);
+
+    return React.useMemo(() => ({ t, lang }), [t, lang]);
+  };
+};

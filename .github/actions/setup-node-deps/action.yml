@@ -1,15 +1,11 @@
-name: Setup Node and install dependencies
-description: Setup Node.js from .node-version with npm cache, then run npm ci.
+name: Setup Node
+description: Setup Node.js 22 with npm cache and install dependencies
 runs:
   using: composite
   steps:
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
+    - uses: actions/setup-node@v4
       with:
-        node-version-file: .node-version
+        node-version: 22
         cache: npm
-        cache-dependency-path: package-lock.json
-
-    - name: Install dependencies
+    - run: npm ci --prefer-offline --no-audit --no-fund
       shell: bash
-      run: npm ci --no-audit --no-fund

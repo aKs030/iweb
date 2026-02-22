@@ -1,0 +1,213 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "version": "1.0.0",
+  "lastUpdated": "2026-02-22",
+  "site": {
+    "name": "Abdulkerim Sesli Portfolio",
+    "url": "https://www.abdulkerimsesli.de",
+    "description": "Modern portfolio featuring 3D visualizations, AI-powered search, and progressive web technologies",
+    "language": ["de", "en"],
+    "author": {
+      "name": "Abdulkerim Sesli",
+      "alternateName": "Abdul Sesli",
+      "email": "kontakt@abdulkerimsesli.de",
+      "url": "https://www.abdulkerimsesli.de",
+      "sameAs": [
+        "https://github.com/aKs030",
+        "https://linkedin.com/in/abdulkerim-s"
+      ]
+    }
+  },
+  "indexing": {
+    "allowAI": true,
+    "allowTraining": true,
+    "allowCaching": true,
+    "attribution": "required",
+    "crawlDelay": 1,
+    "preferredBots": [
+      "GPTBot",
+      "Claude-Web",
+      "Google-Extended",
+      "PerplexityBot",
+      "CCBot"
+    ]
+  },
+  "content": {
+    "pages": [
+      {
+        "url": "https://www.abdulkerimsesli.de/",
+        "title": "Home - 3D Earth Visualization",
+        "description": "Interactive 3D Earth with Three.js",
+        "type": "homepage",
+        "keywords": ["three.js", "3d", "webgl", "interactive"],
+        "priority": 1.0
+      },
+      {
+        "url": "https://www.abdulkerimsesli.de/projekte/",
+        "title": "Projects Showcase",
+        "description": "Web development projects and applications",
+        "type": "portfolio",
+        "keywords": ["projects", "web apps", "javascript", "portfolio"],
+        "priority": 0.9
+      },
+      {
+        "url": "https://www.abdulkerimsesli.de/blog/",
+        "title": "Technical Blog",
+        "description": "Articles about web development, performance, and AI",
+        "type": "blog",
+        "keywords": ["blog", "tutorials", "web development", "performance"],
+        "priority": 0.8
+      },
+      {
+        "url": "https://www.abdulkerimsesli.de/videos/",
+        "title": "Video Portfolio",
+        "description": "Video tutorials and demonstrations",
+        "type": "media",
+        "keywords": ["videos", "tutorials", "youtube"],
+        "priority": 0.7
+      },
+      {
+        "url": "https://www.abdulkerimsesli.de/gallery/",
+        "title": "Photo Gallery",
+        "description": "Optimized image gallery with AVIF/WebP",
+        "type": "media",
+        "keywords": ["gallery", "images", "photography"],
+        "priority": 0.6
+      },
+      {
+        "url": "https://www.abdulkerimsesli.de/about/",
+        "title": "About & CV",
+        "description": "Professional background and skills",
+        "type": "about",
+        "keywords": ["about", "cv", "resume", "skills"],
+        "priority": 0.7
+      },
+      {
+        "url": "https://www.abdulkerimsesli.de/contact/",
+        "title": "Contact",
+        "description": "Get in touch",
+        "type": "contact",
+        "keywords": ["contact", "email", "form"],
+        "priority": 0.5
+      }
+    ],
+    "apis": [
+      {
+        "endpoint": "/api/search",
+        "method": "POST",
+        "description": "AI-powered search with RAG",
+        "technology": "Cloudflare AI Search Beta"
+      },
+      {
+        "endpoint": "/api/ai",
+        "method": "POST",
+        "description": "Groq chat completion",
+        "technology": "llama-3.3-70b-versatile"
+      },
+      {
+        "endpoint": "/api/contact",
+        "method": "POST",
+        "description": "Contact form submission",
+        "technology": "Resend API"
+      }
+    ]
+  },
+  "technologies": {
+    "frontend": [
+      "JavaScript ES2023+",
+      "Three.js r171",
+      "Web Components",
+      "CSS3 (Container Queries, Nesting)",
+      "Service Workers"
+    ],
+    "backend": [
+      "Cloudflare Pages Functions",
+      "Cloudflare Workers AI",
+      "Groq API",
+      "Resend API"
+    ],
+    "infrastructure": [
+      "Cloudflare Pages",
+      "R2 Storage",
+      "KV Storage",
+      "Edge Computing"
+    ],
+    "tools": [
+      "ESLint 10+",
+      "Prettier 3.8+",
+      "TypeScript (JSDoc)",
+      "Husky",
+      "GitHub Actions"
+    ]
+  },
+  "features": {
+    "ai": {
+      "search": {
+        "enabled": true,
+        "technology": "Cloudflare AI Search Beta",
+        "type": "RAG",
+        "indexId": "wispy-pond-1055"
+      },
+      "chat": {
+        "enabled": true,
+        "technology": "Groq API",
+        "model": "llama-3.3-70b-versatile",
+        "features": ["context-aware", "markdown-rendering"]
+      }
+    },
+    "3d": {
+      "enabled": true,
+      "technology": "Three.js",
+      "features": ["interactive-globe", "day-night-textures", "normal-maps"]
+    },
+    "pwa": {
+      "enabled": true,
+      "features": ["offline-support", "service-worker", "cache-api"]
+    },
+    "performance": {
+      "bundleSize": "~240 kB gzipped",
+      "lighthouseScore": "95+",
+      "coreWebVitals": "optimized"
+    }
+  },
+  "sitemaps": [
+    {
+      "url": "https://www.abdulkerimsesli.de/sitemap.xml",
+      "type": "main"
+    },
+    {
+      "url": "https://www.abdulkerimsesli.de/sitemap-images.xml",
+      "type": "images"
+    },
+    {
+      "url": "https://www.abdulkerimsesli.de/sitemap-videos.xml",
+      "type": "videos"
+    }
+  ],
+  "feeds": [
+    {
+      "url": "https://www.abdulkerimsesli.de/blog/feed.xml",
+      "type": "rss",
+      "format": "RSS 2.0"
+    }
+  ],
+  "documentation": {
+    "llms": "https://www.abdulkerimsesli.de/llms.txt",
+    "llmsFull": "https://www.abdulkerimsesli.de/llms-full.txt",
+    "bio": "https://www.abdulkerimsesli.de/bio.md",
+    "person": "https://www.abdulkerimsesli.de/person.jsonld",
+    "aiIndex": "https://www.abdulkerimsesli.de/ai-index.json",
+    "openapi": "https://www.abdulkerimsesli.de/.well-known/openapi.json",
+    "aiPlugin": "https://www.abdulkerimsesli.de/.well-known/ai-plugin.json"
+  },
+  "license": {
+    "type": "MIT",
+    "url": "https://github.com/aKs030/iweb/blob/main/LICENSE",
+    "attribution": "required"
+  },
+  "contact": {
+    "email": "kontakt@abdulkerimsesli.de",
+    "github": "https://github.com/aKs030",
+    "linkedin": "https://linkedin.com/in/abdulkerim-s"
+  }
+}

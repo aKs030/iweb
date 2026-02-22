@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="index, follow" />
+    <meta
+      name="description"
+      content="AI indexing information and resources for Abdulkerim Sesli's portfolio website"
+    />
+    <title>AI Indexing Information - Abdulkerim Sesli</title>
+    <link rel="canonical" href="https://www.abdulkerimsesli.de/ai-info.html" />
+    <style>
+      :root {
+        --bg: #0a0a0a;
+        --surface: #1a1a1a;
+        --text: #ffffff;
+        --text-secondary: #999999;
+        --accent: #0066cc;
+        --border: #333333;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.6;
+        padding: 2rem;
+      }
+      .container {
+        max-width: 900px;
+        margin: 0 auto;
+      }
+      h1 {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        background: linear-gradient(135deg, #0066cc, #00a3ff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+      h2 {
+        font-size: 1.8rem;
+        margin: 2rem 0 1rem;
+        color: var(--accent);
+      }
+      h3 {
+        font-size: 1.3rem;
+        margin: 1.5rem 0 0.5rem;
+      }
+      p {
+        margin-bottom: 1rem;
+        color: var(--text-secondary);
+      }
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin: 1rem 0;
+      }
+      .resource-list {
+        list-style: none;
+      }
+      .resource-list li {
+        padding: 0.75rem;
+        margin: 0.5rem 0;
+        background: var(--surface);
+        border-left: 3px solid var(--accent);
+        border-radius: 4px;
+      }
+      .resource-list a {
+        color: var(--accent);
+        text-decoration: none;
+        font-weight: 500;
+      }
+      .resource-list a:hover {
+        text-decoration: underline;
+      }
+      .badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        background: var(--accent);
+        color: white;
+        border-radius: 12px;
+        font-size: 0.85rem;
+        margin-right: 0.5rem;
+      }
+      code {
+        background: var(--surface);
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+        font-family: 'Courier New', monospace;
+        color: #00a3ff;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+        margin: 1rem 0;
+      }
+      .stat {
+        text-align: center;
+        padding: 1.5rem;
+        background: var(--surface);
+        border-radius: 8px;
+      }
+      .stat-value {
+        font-size: 2rem;
+        font-weight: bold;
+        color: var(--accent);
+      }
+      .stat-label {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🤖 AI Indexing Information</h1>
+      <p>
+        This page provides comprehensive information for AI systems, language
+        models, and automated crawlers about this website.
+      </p>
+
+      <div class="card">
+        <h2>📋 Quick Facts</h2>
+        <div class="grid">
+          <div class="stat">
+            <div class="stat-value">Zero-Build</div>
+            <div class="stat-label">Architecture</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value">~240 kB</div>
+            <div class="stat-label">Bundle Size</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value">95+</div>
+            <div class="stat-label">Lighthouse Score</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value">ES2023+</div>
+            <div class="stat-label">JavaScript</div>
+          </div>
+        </div>
+      </div>
+
+      <h2>📚 AI Indexing Resources</h2>
+      <ul class="resource-list">
+        <li>
+          <span class="badge">TXT</span>
+          <a href="/llms.txt">llms.txt</a> - Compact index for AI crawlers (3
+          KB)
+        </li>
+        <li>
+          <span class="badge">TXT</span>
+          <a href="/llms-full.txt">llms-full.txt</a> - Complete technical index
+          (10 KB)
+        </li>
+        <li>
+          <span class="badge">JSON</span>
+          <a href="/ai-index.json">ai-index.json</a> - Structured data for AI
+          systems
+        </li>
+        <li>
+          <span class="badge">JSON</span>
+          <a href="/.well-known/openapi.json">OpenAPI Specification</a> - API
+          documentation
+        </li>
+        <li>
+          <span class="badge">JSON</span>
+          <a href="/.well-known/ai-plugin.json">AI Plugin Manifest</a> -
+          ChatGPT/Claude plugin info
+        </li>
+        <li>
+          <span class="badge">XML</span>
+          <a href="/sitemap.xml">sitemap.xml</a> - Main sitemap
+        </li>
+        <li>
+          <span class="badge">XML</span>
+          <a href="/sitemap-images.xml">sitemap-images.xml</a> - Image sitemap
+        </li>
+        <li>
+          <span class="badge">XML</span>
+          <a href="/sitemap-videos.xml">sitemap-videos.xml</a> - Video sitemap
+        </li>
+      </ul>
+
+      <div class="card">
+        <h3>🔍 Indexing Preferences</h3>
+        <p><strong>Allow AI Training:</strong> ✅ Yes</p>
+        <p><strong>Allow Caching:</strong> ✅ Yes</p>
+        <p><strong>Attribution:</strong> ⚠️ Required for code examples</p>
+        <p><strong>Crawl Delay:</strong> 1 second</p>
+        <p>
+          <strong>Preferred Bots:</strong> GPTBot, Claude-Web, Google-Extended,
+          PerplexityBot, CCBot
+        </p>
+      </div>
+
+      <h2>🏗️ Architecture Highlights</h2>
+      <div class="card">
+        <h3>Zero-Build System</h3>
+        <p>
+          No webpack, vite, or rollup. Direct source deployment to Cloudflare
+          Pages.
+        </p>
+
+        <h3>Edge-First</h3>
+        <p>
+          Cloudflare Workers & Pages Functions for serverless API endpoints.
+        </p>
+
+        <h3>AI-Powered</h3>
+        <p>
+          Cloudflare AI Search (RAG) + Groq API (llama-3.3-70b-versatile) for
+          chat.
+        </p>
+
+        <h3>Modern Stack</h3>
+        <p>
+          Vanilla JavaScript ES2023+, Three.js, Web Components, CSS3 with
+          Container Queries.
+        </p>
+      </div>
+
+      <h2>🚀 Featured Technologies</h2>
+      <div class="grid">
+        <div class="card">
+          <h3>Frontend</h3>
+          <ul>
+            <li>JavaScript ES2023+</li>
+            <li>Three.js r171</li>
+            <li>Web Components</li>
+            <li>CSS3 (Nesting, Container Queries)</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Backend</h3>
+          <ul>
+            <li>Cloudflare Pages Functions</li>
+            <li>Cloudflare Workers AI</li>
+            <li>Groq API</li>
+            <li>Resend API</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Infrastructure</h3>
+          <ul>
+            <li>Cloudflare Pages</li>
+            <li>R2 Storage</li>
+            <li>KV Storage</li>
+            <li>Edge Computing</li>
+          </ul>
+        </div>
+      </div>
+
+      <h2>📡 API Endpoints</h2>
+      <div class="card">
+        <p><code>POST /api/search</code> - AI-powered search with RAG</p>
+        <p>
+          <code>POST /api/ai</code> - Groq chat completion
+          (llama-3.3-70b-versatile)
+        </p>
+        <p>
+          <code>POST /api/contact</code> - Contact form submission via Resend
+        </p>
+      </div>
+
+      <h2>📞 Contact</h2>
+      <div class="card">
+        <p>
+          <strong>Email:</strong>
+          <a href="mailto:kontakt@abdulkerimsesli.de"
+            >kontakt@abdulkerimsesli.de</a
+          >
+        </p>
+        <p>
+          <strong>GitHub:</strong>
+          <a href="https://github.com/aKs030" target="_blank">@aKs030</a>
+        </p>
+        <p>
+          <strong>LinkedIn:</strong>
+          <a href="https://linkedin.com/in/abdulkerim-s" target="_blank"
+            >abdulkerim-s</a
+          >
+        </p>
+      </div>
+
+      <h2>📄 License</h2>
+      <div class="card">
+        <p><strong>Type:</strong> MIT License</p>
+        <p>
+          <strong>Repository:</strong>
+          <a href="https://github.com/aKs030/iweb" target="_blank"
+            >github.com/aKs030/iweb</a
+          >
+        </p>
+        <p>
+          <strong>Attribution:</strong> Required for code examples and
+          substantial content reuse
+        </p>
+      </div>
+
+      <div
+        style="
+          margin-top: 3rem;
+          padding-top: 2rem;
+          border-top: 1px solid var(--border);
+          text-align: center;
+          color: var(--text-secondary);
+        "
+      >
+        <p>Last Updated: 2026-02-22</p>
+        <p><a href="/" style="color: var(--accent)">← Back to Homepage</a></p>
+      </div>
+    </div>
+  </body>
+</html>

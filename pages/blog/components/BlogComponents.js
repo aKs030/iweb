@@ -1,6 +1,6 @@
 /**
  * Blog React Components
- * @version 1.0.0
+ * @version 2.0.0 - Optimized & Minimal
  */
 
 import React from 'https://esm.sh/react@19.2.3';
@@ -15,24 +15,15 @@ export const ProgressiveImage = React.memo(function ProgressiveImage({
   className,
   loading = 'lazy',
   fetchpriority,
-  width,
-  height,
 }) {
   const [loaded, setLoaded] = React.useState(false);
-  const [error, setError] = React.useState(false);
   const imgRef = React.useRef(null);
 
   React.useEffect(() => {
-    if (!imgRef.current) return;
-    if (imgRef.current.complete && imgRef.current.naturalHeight !== 0) {
+    if (imgRef.current?.complete && imgRef.current.naturalHeight > 0) {
       setLoaded(true);
     }
-  }, [src]);
-
-  const handleLoad = () => setLoaded(true);
-  const handleError = () => setError(true);
-
-  if (error) return null;
+  }, []);
 
   return html`
     <div className="progressive-image-wrapper ${loaded ? 'loaded' : ''}">
@@ -43,11 +34,8 @@ export const ProgressiveImage = React.memo(function ProgressiveImage({
         className=${className}
         loading=${loading}
         fetchpriority=${fetchpriority}
-        width=${width}
-        height=${height}
         decoding="async"
-        onLoad=${handleLoad}
-        onError=${handleError}
+        onLoad=${() => setLoaded(true)}
       />
     </div>
   `;
@@ -55,17 +43,17 @@ export const ProgressiveImage = React.memo(function ProgressiveImage({
 
 export const ScrollToTop = () => {
   const [visible, setVisible] = React.useState(false);
+
   React.useEffect(() => {
     const toggle = () => setVisible(window.scrollY > 400);
-    window.addEventListener('scroll', toggle);
+    window.addEventListener('scroll', toggle, { passive: true });
     return () => window.removeEventListener('scroll', toggle);
   }, []);
-  const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
   return html`
     <button
-      className=${`scroll-to-top-btn ${visible ? 'visible' : ''}`}
-      onClick=${scrollToTop}
+      className="scroll-to-top-btn ${visible ? 'visible' : ''}"
+      onClick=${() => window.scrollTo({ top: 0, behavior: 'smooth' })}
       aria-label="Nach oben scrollen"
     >
       <${ArrowUp} />
@@ -75,15 +63,19 @@ export const ScrollToTop = () => {
 
 export const ReadingProgress = () => {
   const [width, setWidth] = React.useState(0);
+
   React.useEffect(() => {
     const onScroll = () => {
       const h = document.body.scrollHeight - window.innerHeight;
-      if (h > 0) setWidth((window.scrollY / h) * 100);
+      setWidth(h > 0 ? (window.scrollY / h) * 100 : 0);
     };
-    window.addEventListener('scroll', onScroll);
+    window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
-  return html`<div className="reading-progress-container">
-    <div className="reading-progress-bar" style=${{ width: width + '%' }}></div>
-  </div>`;
+
+  return html`
+    <div className="reading-progress-container">
+      <div className="reading-progress-bar" style=${{ width: `${width}%` }} />
+    </div>
+  `;
 };

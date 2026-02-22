@@ -6,7 +6,7 @@ Vielen Dank für dein Interesse an diesem Projekt! 🎉
 
 ### Prerequisites
 
-- Node.js `22.22.0` (siehe `.node-version`)
+- Node.js `22+` (siehe `package.json` `engines.node`)
 - npm >= 10.0.0
 - Git
 

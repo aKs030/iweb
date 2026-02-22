@@ -1,6 +1,6 @@
 /**
  * Blog Utility Functions
- * @version 1.0.0
+ * @version 2.0.0 - Optimized & Minimal
  */
 
 export const BLOG_BASE_URL = 'https://www.abdulkerimsesli.de';
@@ -11,41 +11,27 @@ export const BLOG_DEFAULT_DESCRIPTION =
 export const BLOG_DEFAULT_IMAGE =
   'https://img.abdulkerimsesli.de/blog/og-home-800.png';
 
-export const CATEGORY_OVERRIDES = {
+const CATEGORY_MAP = {
   'threejs-performance': 'Performance',
   'react-no-build': 'Webdesign',
   'modern-ui-design': 'Webdesign',
   'visual-storytelling': 'Online-Marketing',
 };
 
-export const estimateReadTime = (text = '') =>
-  `${Math.max(1, Math.round(text.split(/\s+/).length / 200))} min`;
-
-export const toAbsoluteBlogUrl = (value = '') => {
-  if (!value) return '';
+export const toAbsoluteBlogUrl = (url = '') => {
+  if (!url) return '';
   try {
-    return new URL(value, BLOG_BASE_URL).toString();
+    return new URL(url, BLOG_BASE_URL).toString();
   } catch {
-    return value;
+    return url;
   }
 };
 
-export const buildPostCanonical = (postId = '') =>
-  `${BLOG_HOME_URL}${encodeURIComponent(String(postId || '').trim())}/`;
+export const buildPostCanonical = (id = '') =>
+  `${BLOG_HOME_URL}${encodeURIComponent(String(id).trim())}/`;
 
-export const toKeywordList = (value = '') => {
-  if (Array.isArray(value)) {
-    return value.map((item) => String(item || '').trim()).filter(Boolean);
-  }
-
-  return String(value || '')
-    .split(',')
-    .map((item) => item.trim())
-    .filter(Boolean);
-};
-
-export const stripMarkdown = (value = '') =>
-  String(value || '')
+export const stripMarkdown = (text = '') =>
+  String(text)
     .replace(/```[\s\S]*?```/g, ' ')
     .replace(/`([^`]+)`/g, '$1')
     .replace(/!\[[^\]]*]\([^)]*\)/g, ' ')
@@ -59,34 +45,42 @@ export const parseFrontmatter = (text) => {
   const match = text.match(/^---\n([\s\S]*?)\n---/);
   if (!match) return { content: text, data: {} };
 
-  const frontmatter = match[1];
-  const content = text.slice(match[0].length);
   const data = {};
-
-  frontmatter.split('\n').forEach((line) => {
+  match[1].split('\n').forEach((line) => {
     const [key, ...val] = line.split(':');
-    if (key && val) {
+    if (key && val.length) {
       data[key.trim()] = val.join(':').trim();
     }
   });
 
-  return { content, data };
+  return { content: text.slice(match[0].length), data };
 };
 
-export const buildFallbackKeywords = (post = {}) =>
-  toKeywordList(
+const toKeywordArray = (value) => {
+  if (Array.isArray(value)) return value.filter(Boolean);
+  return String(value || '')
+    .split(',')
+    .map((k) => k.trim())
+    .filter(Boolean);
+};
+
+export const buildFallbackKeywords = (post) =>
+  toKeywordArray(
     `${post.category || 'Blog'}, ${post.title || ''}, Bilder, Videos, Hauptseite`,
   );
 
 export const normalizePost = (raw = {}) => {
   const id = raw.id || raw.slug;
   if (!id) return null;
-  const category = CATEGORY_OVERRIDES[id] || raw.category || 'Artikel';
-  const dateStr = raw.date || '';
+
+  const category = CATEGORY_MAP[id] || raw.category || 'Artikel';
   const keywords =
-    toKeywordList(raw.keywords).length > 0
-      ? toKeywordList(raw.keywords)
+    toKeywordArray(raw.keywords).length > 0
+      ? toKeywordArray(raw.keywords)
       : buildFallbackKeywords({ ...raw, category });
+
+  const wordCount = (raw.content || '').split(/\s+/).length;
+  const readTime = `${Math.max(1, Math.round(wordCount / 200))} min`;
 
   return {
     ...raw,
@@ -97,9 +91,9 @@ export const normalizePost = (raw = {}) => {
     seoDescription: raw.seoDescription || raw.excerpt || '',
     imageAlt: raw.imageAlt || raw.title || id,
     keywords,
-    timestamp: dateStr ? new Date(dateStr).getTime() : 0,
-    dateDisplay: raw.dateDisplay || dateStr,
-    readTime: raw.readTime || estimateReadTime(raw.content || raw.html || ''),
+    timestamp: raw.date ? new Date(raw.date).getTime() : 0,
+    dateDisplay: raw.dateDisplay || raw.date || '',
+    readTime: raw.readTime || readTime,
     file: raw.file || null,
   };
 };
