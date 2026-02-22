@@ -54,7 +54,7 @@ function applyPage(url, { title, mainHtml, bodyClass }) {
   // Notify other subsystems that the page content changed (e.g. theme manager)
   try {
     window.dispatchEvent(new CustomEvent('page:changed', { detail: { url } }));
-  } catch (e) {
+  } catch {
     // ignore
   }
 
@@ -67,7 +67,7 @@ function applyPage(url, { title, mainHtml, bodyClass }) {
       meta.setAttribute('content', '#00000000');
       document.head.appendChild(meta);
     }
-  } catch (e) {
+  } catch {
     // ignore
   }
 
@@ -80,7 +80,7 @@ function applyPage(url, { title, mainHtml, bodyClass }) {
       document.body &&
         document.body.insertBefore(div, document.body.firstChild);
     }
-  } catch (e) {
+  } catch {
     // ignore
   }
 }

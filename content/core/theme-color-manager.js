@@ -22,9 +22,8 @@ function getThemeColor() {
 
 /**
  * Update all theme-color meta tags
- * @param {string} color - RGBA color value
  */
-function updateThemeColorMetas(color) {
+function updateThemeColorMetas() {
   // Update all existing theme-color metas to avoid duplicates/conflicts
   const themeMetas = document.querySelectorAll('meta[name="theme-color"]');
 
@@ -41,7 +40,7 @@ function updateThemeColorMetas(color) {
     themeMetas.forEach((m) => {
       try {
         m.setAttribute('content', THEME_COLORS.transparentHex);
-      } catch (e) {
+      } catch {
         /* ignore */
       }
     });
@@ -77,7 +76,7 @@ export function initThemeColorManager() {
     window.addEventListener('page:changed', () => {
       updateThemeColorMetas(getThemeColor());
     });
-  } catch (e) {
+  } catch {
     // ignore in non-browser contexts
   }
 
