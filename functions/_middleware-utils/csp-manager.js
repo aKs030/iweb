@@ -46,10 +46,11 @@ export function injectNonce(html, nonce) {
 export function applyNonceToCSP(csp, nonce) {
   if (!csp || !nonce) return csp;
 
+  // Append nonce next to 'unsafe-inline' to maintain backward compatibility
+  // while enabling modern nonce-based protection.
   const withScriptNonce = csp.replace(
-    /(script-src[^;]*?)'unsafe-inline'([^;]*)(;|$)/gi,
-    (_match, start, end, terminator) =>
-      `${start}'nonce-${nonce}'${end}${terminator}`,
+    /'unsafe-inline'/gi,
+    `'nonce-${nonce}' 'unsafe-inline'`,
   );
 
   return withScriptNonce.replace(/\s{2,}/g, ' ').trim();

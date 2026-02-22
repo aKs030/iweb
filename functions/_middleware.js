@@ -108,6 +108,7 @@ export async function onRequest(context) {
     new TextEncoder().encode(html).length.toString(),
   );
 
+  /*
   // Update CSP header with nonce
   if (nonce) {
     const csp = newHeaders.get('Content-Security-Policy');
@@ -115,6 +116,7 @@ export async function onRequest(context) {
       newHeaders.set('Content-Security-Policy', applyNonceToCSP(csp, nonce));
     }
   }
+  */
 
   return new Response(html, {
     status: response.status,
