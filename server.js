@@ -592,7 +592,7 @@ function handleAPIMock(req, res, url) {
   let body = '';
   req.on('data', (chunk) => (body += chunk));
   req.on('end', async () => {
-    let data = {};
+    let data;
 
     try {
       data = JSON.parse(body || '{}');

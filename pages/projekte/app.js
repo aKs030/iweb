@@ -4,7 +4,7 @@
  * @description 3D Scroll-based Gallery using Three.js and React
  */
 
-import React, {
+import {
   createElement as h,
   Fragment,
   useEffect,

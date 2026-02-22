@@ -62,3 +62,7 @@ Disallow: /*.log$
 Allow: /llms.txt
 Allow: /llms-full.txt
 Allow: /ai-index.json
+Allow: /pages/projekte/apps-config.json
+Allow: /pages/blog/posts/index.json
+Allow: /.well-known/openapi.json
+Allow: /.well-known/ai-plugin.json

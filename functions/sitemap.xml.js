@@ -23,25 +23,47 @@ const ROUTE_META = {
   '/ai-index.json': { priority: 0.4, changefreq: 'monthly' },
   '/person.jsonld': { priority: 0.6, changefreq: 'monthly' },
   '/bio.md': { priority: 0.5, changefreq: 'monthly' },
+  '/pages/projekte/apps-config.json': { priority: 0.44, changefreq: 'weekly' },
+  '/pages/blog/posts/index.json': { priority: 0.4, changefreq: 'weekly' },
+  '/.well-known/openapi.json': { priority: 0.38, changefreq: 'monthly' },
+  '/.well-known/ai-plugin.json': { priority: 0.36, changefreq: 'monthly' },
+  '/robots.txt': { priority: 0.3, changefreq: 'monthly' },
 };
 
 const BLOG_INDEX_PATH = '/pages/blog/posts/index.json';
 const PROJECT_APPS_PATH = '/pages/projekte/apps-config.json';
 const MAX_YOUTUBE_RESULTS = 200;
+const DISCOVERY_PATHS = [
+  '/ai-info.html',
+  '/llms.txt',
+  '/llms-full.txt',
+  '/ai-index.json',
+  '/person.jsonld',
+  '/bio.md',
+  PROJECT_APPS_PATH,
+  BLOG_INDEX_PATH,
+  '/.well-known/openapi.json',
+  '/.well-known/ai-plugin.json',
+  '/robots.txt',
+];
 
 async function loadBlogPosts(context) {
   if (!context.env?.ASSETS) {
     return [];
   }
 
-  const indexUrl = new URL(BLOG_INDEX_PATH, context.request.url);
-  const response = await context.env.ASSETS.fetch(indexUrl);
-  if (!response.ok) {
+  try {
+    const indexUrl = new URL(BLOG_INDEX_PATH, context.request.url);
+    const response = await context.env.ASSETS.fetch(indexUrl);
+    if (!response.ok) {
+      return [];
+    }
+
+    const posts = await response.json();
+    return Array.isArray(posts) ? posts : [];
+  } catch {
     return [];
   }
-
-  const posts = await response.json();
-  return Array.isArray(posts) ? posts : [];
 }
 
 async function loadProjectApps(context) {
@@ -49,14 +71,18 @@ async function loadProjectApps(context) {
     return [];
   }
 
-  const indexUrl = new URL(PROJECT_APPS_PATH, context.request.url);
-  const response = await context.env.ASSETS.fetch(indexUrl);
-  if (!response.ok) {
+  try {
+    const indexUrl = new URL(PROJECT_APPS_PATH, context.request.url);
+    const response = await context.env.ASSETS.fetch(indexUrl);
+    if (!response.ok) {
+      return [];
+    }
+
+    const payload = await response.json();
+    return Array.isArray(payload?.apps) ? payload.apps : [];
+  } catch {
     return [];
   }
-
-  const payload = await response.json();
-  return Array.isArray(payload?.apps) ? payload.apps : [];
 }
 
 async function loadVideoEntries(env, today) {
@@ -121,13 +147,8 @@ function buildStaticEntries(today) {
     ...Object.keys(ROUTES)
       .filter((path) => path.startsWith('/'))
       .map(normalizePath),
-    // AI Indexing Resources
-    '/ai-info.html',
-    '/llms.txt',
-    '/llms-full.txt',
-    '/ai-index.json',
-    '/person.jsonld',
-    '/bio.md',
+    // AI discovery + index resources
+    ...DISCOVERY_PATHS,
   ];
 
   const uniquePaths = [...new Set(staticPaths)];

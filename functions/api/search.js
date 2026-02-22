@@ -47,116 +47,11 @@ const ROUTE_FALLBACK_PATHS = [
   '/videos/',
   '/abdul-sesli/',
 ];
-
-const APP_FALLBACK_ENTRIES = [
-  {
-    url: '/projekte/?app=calculator',
-    title: 'Taschenrechner',
-    category: 'Projekte',
-    description:
-      'Moderner Taschenrechner mit wissenschaftlichen Funktionen und Keyboard-Support.',
-    keywords: ['calculator', 'taschenrechner', 'math', 'rechner', 'tool'],
-  },
-  {
-    url: '/projekte/?app=color-changer',
-    title: 'Color Changer',
-    category: 'Projekte',
-    description: 'Interaktives Tool fuer dynamische Farben und Gradienten.',
-    keywords: ['color', 'farben', 'gradient', 'ui', 'design'],
-  },
-  {
-    url: '/projekte/?app=memory-game',
-    title: 'Memory Game',
-    category: 'Projekte',
-    description: 'Klassisches Memory-Spiel mit Schwierigkeitsgraden.',
-    keywords: ['memory', 'game', 'spiel', 'karten', 'puzzle'],
-  },
-  {
-    url: '/projekte/?app=paint-app',
-    title: 'Paint App',
-    category: 'Projekte',
-    description: 'Zeichen-App mit Canvas, Farben und Pinselgroessen.',
-    keywords: ['paint', 'zeichnen', 'drawing', 'canvas', 'art'],
-  },
-  {
-    url: '/projekte/?app=password-generator',
-    title: 'Passwort Generator',
-    category: 'Projekte',
-    description: 'Sicherer Generator fuer starke Passwoerter.',
-    keywords: ['password', 'passwort', 'security', 'generator'],
-  },
-  {
-    url: '/projekte/?app=pong-game',
-    title: 'Pong Game',
-    category: 'Projekte',
-    description: 'Klassisches Pong mit KI-Gegner und Canvas-Rendering.',
-    keywords: ['pong', 'game', 'arcade', 'retro'],
-  },
-  {
-    url: '/projekte/?app=quiz-app',
-    title: 'Quiz App',
-    category: 'Projekte',
-    description:
-      'Interaktive Quiz-App mit Kategorien und Schwierigkeitsgraden.',
-    keywords: ['quiz', 'trivia', 'wissen', 'game'],
-  },
-  {
-    url: '/projekte/?app=schere-stein-papier',
-    title: 'Schere Stein Papier',
-    category: 'Projekte',
-    description: 'Der Klassiker gegen den Computer.',
-    keywords: ['schere', 'stein', 'papier', 'rock paper scissors', 'game'],
-  },
-  {
-    url: '/projekte/?app=snake-game',
-    title: 'Snake Game',
-    category: 'Projekte',
-    description: 'Snake mit Canvas, Game Loop und Kollisionserkennung.',
-    keywords: ['snake', 'game', 'arcade', 'retro'],
-  },
-  {
-    url: '/projekte/?app=tic-tac-toe',
-    title: 'Tic Tac Toe',
-    category: 'Projekte',
-    description: 'Klassisches Tic-Tac-Toe fuer zwei Spieler.',
-    keywords: ['tic tac toe', 'spiel', 'strategy', 'game'],
-  },
-  {
-    url: '/projekte/?app=timer-app',
-    title: 'Timer App',
-    category: 'Projekte',
-    description: 'Countdown, Stoppuhr und Pomodoro in einer App.',
-    keywords: ['timer', 'countdown', 'pomodoro', 'stopwatch'],
-  },
-  {
-    url: '/projekte/?app=todo-liste',
-    title: 'Todo Liste',
-    category: 'Projekte',
-    description: 'Produktivitaets-Tool zum Verwalten von Aufgaben.',
-    keywords: ['todo', 'aufgaben', 'tasks', 'planner', 'productivity'],
-  },
-  {
-    url: '/projekte/?app=typing-speed-test',
-    title: 'Typing Speed Test',
-    category: 'Projekte',
-    description: 'Teste deine Tippgeschwindigkeit (WPM).',
-    keywords: ['typing', 'wpm', 'speed test', 'keyboard'],
-  },
-  {
-    url: '/projekte/?app=weather-app',
-    title: 'Weather App',
-    category: 'Projekte',
-    description: 'Wetter-App mit 5-Tage-Vorhersage und Standortdaten.',
-    keywords: ['weather', 'wetter', 'forecast', 'temperature', 'api'],
-  },
-  {
-    url: '/projekte/?app=zahlen-raten',
-    title: 'Zahlen Raten',
-    category: 'Projekte',
-    description: 'Klassisches Ratespiel mit Hinweisen.',
-    keywords: ['zahlen', 'raten', 'puzzle', 'logic', 'game'],
-  },
-];
+const PROJECT_APPS_PATH = '/pages/projekte/apps-config.json';
+const APP_FALLBACK_CACHE_TTL_MS = 5 * 60 * 1000;
+let cachedAppFallbackEntries = [];
+let cachedAppFallbackExpiresAt = 0;
+let appFallbackLoadPromise = null;
 
 function normalizeRoutePath(path) {
   if (!path || path === '/') return '/';
@@ -213,10 +108,106 @@ function buildRouteFallbackEntries() {
   });
 }
 
-const STATIC_FALLBACK_ENTRIES = [
-  ...buildRouteFallbackEntries(),
-  ...APP_FALLBACK_ENTRIES,
-];
+const ROUTE_FALLBACK_ENTRIES = buildRouteFallbackEntries();
+
+function formatSlugTitle(value, fallback = 'Projekt App') {
+  const raw = String(value || '').trim();
+  if (!raw) return fallback;
+
+  return raw
+    .replace(/[_+]/g, '-')
+    .split('-')
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
+}
+
+function toAppFallbackEntry(app) {
+  const name = String(app?.name || '').trim();
+  if (!name) return null;
+
+  const title = formatSlugTitle(app?.title || name);
+  const description =
+    String(app?.description || '').trim() ||
+    `${title} · Interaktive Projekt-App mit eigenem Funktionsumfang.`;
+  const tags = Array.isArray(app?.tags)
+    ? app.tags.map((tag) => String(tag).trim()).filter(Boolean)
+    : [];
+
+  return {
+    url: `/projekte/?app=${encodeURIComponent(name)}`,
+    title,
+    category: 'Projekte',
+    description,
+    keywords: [name, title, description, ...tags],
+  };
+}
+
+async function loadAppFallbackEntries(context) {
+  const now = Date.now();
+  if (cachedAppFallbackEntries.length > 0 && cachedAppFallbackExpiresAt > now) {
+    return cachedAppFallbackEntries;
+  }
+
+  if (appFallbackLoadPromise) {
+    return appFallbackLoadPromise;
+  }
+
+  appFallbackLoadPromise = (async () => {
+    try {
+      if (!context.env?.ASSETS) {
+        return cachedAppFallbackEntries;
+      }
+
+      const response = await context.env.ASSETS.fetch(
+        new URL(PROJECT_APPS_PATH, context.request.url),
+      );
+
+      if (!response.ok) {
+        return cachedAppFallbackEntries;
+      }
+
+      const payload = await response.json();
+      const apps = Array.isArray(payload?.apps) ? payload.apps : [];
+      const entries = apps.map(toAppFallbackEntry).filter(Boolean);
+
+      if (entries.length > 0) {
+        cachedAppFallbackEntries = entries;
+        cachedAppFallbackExpiresAt = Date.now() + APP_FALLBACK_CACHE_TTL_MS;
+      }
+
+      return cachedAppFallbackEntries;
+    } catch {
+      return cachedAppFallbackEntries;
+    } finally {
+      appFallbackLoadPromise = null;
+    }
+  })();
+
+  return appFallbackLoadPromise;
+}
+
+async function getFallbackEntries(context, includeApps = true) {
+  if (!includeApps) {
+    return ROUTE_FALLBACK_ENTRIES;
+  }
+
+  const appEntries = await loadAppFallbackEntries(context);
+  if (!appEntries.length) {
+    return ROUTE_FALLBACK_ENTRIES;
+  }
+
+  const merged = [...ROUTE_FALLBACK_ENTRIES];
+  const seenUrls = new Set(merged.map((entry) => entry.url));
+
+  for (const entry of appEntries) {
+    if (seenUrls.has(entry.url)) continue;
+    seenUrls.add(entry.url);
+    merged.push(entry);
+  }
+
+  return merged;
+}
 
 function withTimeout(promise, timeoutMs, timeoutValue = null) {
   let timeoutId;
@@ -305,6 +296,7 @@ function scoreFallbackEntry(entry, queryLower, queryTerms, intentPaths) {
 }
 
 function buildFallbackResults(
+  fallbackEntries,
   query,
   topK,
   intentPaths,
@@ -314,7 +306,7 @@ function buildFallbackResults(
     .toLowerCase()
     .trim();
   const queryTerms = toQueryTerms(queryLower);
-  let candidateEntries = STATIC_FALLBACK_ENTRIES.filter(
+  let candidateEntries = fallbackEntries.filter(
     (entry) => !excludeUrls.has(entry.url),
   );
 
@@ -339,11 +331,12 @@ function buildFallbackResults(
     .sort((a, b) => b.score - a.score);
 
   if (scored.length === 0 && intentPaths.length === 1) {
-    scored = STATIC_FALLBACK_ENTRIES.filter(
-      (entry) =>
-        !excludeUrls.has(entry.url) &&
-        isIntentPathMatch(entry.url, intentPaths),
-    )
+    scored = fallbackEntries
+      .filter(
+        (entry) =>
+          !excludeUrls.has(entry.url) &&
+          isIntentPathMatch(entry.url, intentPaths),
+      )
       .map((entry) => ({
         ...entry,
         score: 10,
@@ -416,7 +409,12 @@ export async function onRequestPost(context) {
       FAST_INTENT_PATHS.has(intentPaths[0]) &&
       quickTerms.length <= 4
     ) {
-      const fallbackOnly = buildFallbackResults(query, topK, intentPaths);
+      const fallbackOnly = buildFallbackResults(
+        ROUTE_FALLBACK_ENTRIES,
+        query,
+        topK,
+        intentPaths,
+      );
       const cleanFallback = fallbackOnly.map(
         ({ score: _score, source: _source, ...rest }) => rest,
       );
@@ -440,7 +438,13 @@ export async function onRequestPost(context) {
     }
 
     if (!env.AI || typeof env.AI.autorag !== 'function') {
-      const fallbackOnly = buildFallbackResults(query, topK, intentPaths);
+      const fallbackEntries = await getFallbackEntries(context, true);
+      const fallbackOnly = buildFallbackResults(
+        fallbackEntries,
+        query,
+        topK,
+        intentPaths,
+      );
       const cleanFallback = fallbackOnly.map(
         ({ score: _score, source: _source, ...rest }) => rest,
       );
@@ -466,6 +470,7 @@ export async function onRequestPost(context) {
     const candidateCount = clamp(Math.max(topK * 3, 15), 15, 36);
     const expandedQuery = expandQuery(query);
     const ragId = env.RAG_ID || 'wispy-pond-1055';
+    const fallbackEntriesPromise = getFallbackEntries(context, true);
 
     const secondaryPromises = [];
     const shouldRunPreciseQuery =
@@ -582,7 +587,9 @@ export async function onRequestPost(context) {
       }),
     );
 
+    const fallbackEntries = await fallbackEntriesPromise;
     const fallbackResults = buildFallbackResults(
+      fallbackEntries,
       query,
       topK,
       intentPaths,

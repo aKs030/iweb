@@ -34,8 +34,6 @@ const ENV = {
       globalThis.navigator.webdriver),
 };
 
-const STORAGE_REQUEST_DELAY_MS = 2200;
-
 // ===== Loading Configuration =====
 const LOADING_CONFIG = {
   TIMEOUT_MS: 8000, // Increased from 4000ms to 8000ms for slower networks
@@ -181,8 +179,6 @@ document.addEventListener(
         AppLoadManager.hideLoader();
       }
     }, LOADING_CONFIG.TIMEOUT_MS);
-
-    // schedulePersistentStorageRequest(STORAGE_REQUEST_DELAY_MS);
 
     // Initialize global event handlers
     GlobalEventHandlers.init(announce);

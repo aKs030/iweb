@@ -23,12 +23,12 @@ Lokale URL: [http://localhost:8080](http://localhost:8080)
 ```bash
 npm run dev           # Cloudflare Pages dev server (Port 8080)
 npm run dev:sim       # Lokaler Node-Server (Simulation)
-npm run lint          # ESLint mit auto-fix
-npm run lint:check    # ESLint ohne fix
-npm run format        # Prettier mit write
-npm run format:check  # Prettier check
-npm run check         # lint:check + format:check
-npm run fix           # lint + format
+npm run lint          # ESLint check
+npm run lint:fix      # ESLint mit auto-fix
+npm run format        # Prettier check
+npm run format:write  # Prettier mit write
+npm run check         # lint + format + ai-index:check
+npm run fix           # lint:fix + format:write
 npm run clean         # lokale Cache/Artifacts löschen
 npm run prepare       # Husky Hooks installieren/aktualisieren
 npm run docs:check    # Markdown-Links & absolute lokale Pfade prüfen
@@ -46,7 +46,6 @@ Details: [`.husky/README.md`](.husky/README.md)
 GitHub Workflows:
 
 - [`.github/workflows/main.yml`](.github/workflows/main.yml) - Lint, Security & Preview Deployments
-- [`.github/workflows/workflow-lint.yml`](.github/workflows/workflow-lint.yml) - Workflow Validation
 
 ## Projektstruktur
 

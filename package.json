@@ -10,25 +10,27 @@
   "scripts": {
     "dev": "wrangler pages dev . --port 8080",
     "dev:sim": "node server.js",
-    "lint": "eslint . --fix",
-    "lint:check": "eslint .",
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
-    "check": "npm run lint:check && npm run format:check",
-    "fix": "npm run lint && npm run format",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --check .",
+    "format:write": "prettier --write .",
+    "check": "npm run lint && npm run format && npm run ai-index:check",
+    "fix": "npm run lint:fix && npm run format:write",
     "clean": "rm -rf .wrangler node_modules/.cache",
     "prepare": "husky",
-    "docs:check": "node scripts/docs-check.mjs"
+    "docs:check": "node scripts/docs-check.mjs",
+    "ai-index:sync": "node scripts/sync-ai-index-apps.mjs",
+    "ai-index:check": "node scripts/sync-ai-index-apps.mjs --check"
   },
   "dependencies": {
     "three": "^0.183.1"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.3",
+    "@eslint/js": "^10.0.1",
     "eslint": "^10.0.1",
-    "globals": "^16.4.0",
+    "globals": "^17.3.0",
     "husky": "^9.1.7",
-    "lint-staged": "^15.5.2",
+    "lint-staged": "^16.2.7",
     "prettier": "^3.8.1",
     "wrangler": "^4.67.0"
   },

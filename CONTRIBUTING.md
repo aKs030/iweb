@@ -191,12 +191,12 @@ npm run dev           # Cloudflare Pages dev server
 npm run dev:sim       # Lokaler Node-Server (Simulation)
 
 # Code Quality
-npm run lint          # ESLint (auto-fix)
-npm run lint:check    # ESLint ohne auto-fix
-npm run format        # Prettier (auto-fix)
-npm run format:check  # Prettier check
-npm run check         # lint:check + format:check
-npm run fix           # lint + format
+npm run lint          # ESLint check
+npm run lint:fix      # ESLint mit auto-fix
+npm run format        # Prettier check
+npm run format:write  # Prettier mit write
+npm run check         # lint + format + ai-index:check
+npm run fix           # lint:fix + format:write
 
 # Maintenance
 npm run clean         # lokale Cache/Artifacts löschen

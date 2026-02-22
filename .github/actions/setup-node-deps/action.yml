@@ -3,7 +3,7 @@ description: Setup Node.js 22 with npm cache and install dependencies
 runs:
   using: composite
   steps:
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v6
       with:
         node-version: 22
         cache: npm

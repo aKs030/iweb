@@ -3,7 +3,17 @@ compatibility_date = "2025-02-14"
 compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = "."
 
-# Shared configuration
+# Preview/default environment (Cloudflare Pages uses top-level settings for preview)
+[vars]
+MAX_SEARCH_RESULTS = "10"
+RAG_ID = "wispy-pond-1055"
+YOUTUBE_CHANNEL_ID = "UCTGRherjM4iuIn86xxubuPg"
+ALLOWED_ORIGINS = "https://abdulkerimsesli.de,https://www.abdulkerimsesli.de"
+
+[[kv_namespaces]]
+binding = "RATE_LIMIT_KV"
+id = "edf1005c1b964f2fae4718afa152e836"
+
 [[r2_buckets]]
 binding = "GALLERY_BUCKET"
 bucket_name = "img"
@@ -11,11 +21,12 @@ bucket_name = "img"
 [ai]
 binding = "AI"
 
-# Environment-specific overrides
+# Production overrides
 [env.production.vars]
 MAX_SEARCH_RESULTS = "10"
 RAG_ID = "wispy-pond-1055"
 YOUTUBE_CHANNEL_ID = "UCTGRherjM4iuIn86xxubuPg"
+ALLOWED_ORIGINS = "https://abdulkerimsesli.de,https://www.abdulkerimsesli.de"
 
 [[env.production.kv_namespaces]]
 binding = "RATE_LIMIT_KV"
@@ -25,21 +36,5 @@ id = "75d79a452fa74cc980caf400862e2c67"
 binding = "AI"
 
 [[env.production.r2_buckets]]
-binding = "GALLERY_BUCKET"
-bucket_name = "img"
-
-[env.preview.vars]
-MAX_SEARCH_RESULTS = "10"
-RAG_ID = "wispy-pond-1055"
-YOUTUBE_CHANNEL_ID = "UCTGRherjM4iuIn86xxubuPg"
-
-[[env.preview.kv_namespaces]]
-binding = "RATE_LIMIT_KV"
-id = "edf1005c1b964f2fae4718afa152e836"
-
-[env.preview.ai]
-binding = "AI"
-
-[[env.preview.r2_buckets]]
 binding = "GALLERY_BUCKET"
 bucket_name = "img"

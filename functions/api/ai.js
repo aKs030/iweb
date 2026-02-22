@@ -8,6 +8,7 @@ import { getCorsHeaders, handleOptions } from './_cors.js';
 
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const GROQ_MODEL = 'llama-3.3-70b-versatile';
+const DEFAULT_RAG_ID = 'wispy-pond-1055';
 
 /**
  * Predefined System Prompts to prevent Prompt Injection
@@ -203,8 +204,10 @@ async function getRelevantContext(query, env) {
   }
 
   try {
+    const ragId = env.RAG_ID || DEFAULT_RAG_ID;
+
     // Use AI Search Beta to get relevant context (increased from 3 to 5)
-    const searchData = await env.AI.autorag('wispy-pond-1055').aiSearch({
+    const searchData = await env.AI.autorag(ragId).aiSearch({
       query: query,
       max_num_results: 5,
       rewrite_query: false,

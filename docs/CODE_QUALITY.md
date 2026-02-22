@@ -5,12 +5,12 @@ Aktuelle Quality-Checks im Projekt (Stand: Februar 2026).
 ## Lokale Commands
 
 ```bash
-npm run lint          # ESLint mit auto-fix
-npm run lint:check    # ESLint ohne fix
-npm run format        # Prettier write
-npm run format:check  # Prettier check
-npm run check         # lint:check + format:check
-npm run fix           # lint + format
+npm run lint          # ESLint check
+npm run lint:fix      # ESLint mit auto-fix
+npm run format        # Prettier check
+npm run format:write  # Prettier write
+npm run check         # lint + format + ai-index:check
+npm run fix           # lint:fix + format:write
 npm run docs:check    # Markdown-Links + lokale absolute Pfade prüfen
 ```
 
