@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/setup-node-deps
       - run: npm run check
 
@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: rhysd/actionlint@v1.7.11
 
   security:
@@ -31,7 +31,7 @@ jobs:
     permissions:
       security-events: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: github/codeql-action/init@v4
         with:
           languages: javascript-typescript
@@ -45,7 +45,7 @@ jobs:
       deployments: write
       pull-requests: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/setup-node-deps
       - id: secrets
         run: echo "has=${{ secrets.CLOUDFLARE_API_TOKEN != '' }}" >> "$GITHUB_OUTPUT"
@@ -55,8 +55,8 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy . --project-name=1web --commit-dirty=true
-      - uses: actions/github-script@v7
+          command: pages deploy . --project-name=1web --branch=${{ github.head_ref }} --commit-dirty=true
+      - uses: actions/github-script@v8
         env:
           HAS: ${{ steps.secrets.outputs.has }}
           URL: ${{ steps.deploy.outputs.deployment-url }}

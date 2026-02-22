@@ -309,8 +309,8 @@ npx wrangler pages deploy . --project-name=1web
 
 ```bash
 npm run check        # Lint + Format check
-npm run lint         # ESLint
-npm run format       # Prettier
+npm run lint         # ESLint check
+npm run format       # Prettier check
 ```
 
 ### Runtime Check

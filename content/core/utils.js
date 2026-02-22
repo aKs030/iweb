@@ -5,7 +5,7 @@
  * @date 2026-01-30
  */
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import DOMPurify from 'dompurify';
 import { createLogger } from './logger.js';
 

@@ -38,6 +38,12 @@ const STATIC_PAGE_IMAGES = [
       'Profilseite mit Hintergrund, Themenfeldern und redaktionellen Inhalten',
   },
   {
+    page: '/contact/',
+    image: 'https://img.abdulkerimsesli.de/blog/og-home-800.png',
+    title: 'Kontakt',
+    caption: 'Kontaktseite mit E-Mail, Formular und Kommunikationswegen',
+  },
+  {
     page: '/abdul-sesli/',
     image: 'https://img.abdulkerimsesli.de/blog/og-home-800.png',
     title: 'Abdul Sesli',
@@ -86,7 +92,10 @@ const STATIC_PAGE_IMAGES = [
 ];
 
 function ensureUrlEntry(urlMap, pagePath) {
-  const path = normalizePath(pagePath);
+  const rawPath = String(pagePath || '').trim();
+  const [pathname, query] = rawPath.split('?');
+  const normalizedPath = normalizePath(pathname);
+  const path = query ? `${normalizedPath}?${query}` : normalizedPath;
   if (!urlMap.has(path)) {
     urlMap.set(path, []);
   }

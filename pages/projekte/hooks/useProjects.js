@@ -3,7 +3,7 @@
  * @version 3.0.0
  */
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { createLogger } from '/content/core/logger.js';
 import { AppLoadManager } from '/content/core/load-manager.js';
 import { i18n } from '/content/core/i18n.js';

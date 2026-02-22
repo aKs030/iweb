@@ -3,11 +3,7 @@
  * @version 6.0.0 - Shared helpers for Cloudflare AI Search ranking
  */
 
-import { normalizeText, sanitizeDiscoveryText } from './_text-utils.js';
-import { escapeXml } from './_xml-utils.js';
 import { CLEANUP_PATTERNS, HTML_ENTITIES } from './_cleanup-patterns.js';
-
-export { normalizeText, sanitizeDiscoveryText, escapeXml };
 
 /**
  * Synonym mapping for German query expansion
@@ -85,6 +81,19 @@ const TOP_LEVEL_TITLE_MAP = {
   videos: 'Videos Übersicht',
   about: 'Über mich',
   contact: 'Kontakt',
+};
+
+const URL_DESCRIPTION_FALLBACKS = {
+  '/': 'Startseite mit 3D-Visualisierung, Portfolio und AI-Funktionen.',
+  '/about':
+    'Profil, Tech-Stack und beruflicher Hintergrund von Abdulkerim Sesli.',
+  '/contact': 'Kontaktseite mit E-Mail und Formular fuer Anfragen.',
+  '/projekte': 'Uebersicht interaktiver Web-Apps, Spiele und Tools.',
+  '/blog': 'Technischer Blog zu Webentwicklung, Performance und AI.',
+  '/gallery': 'Fotogalerie mit optimierten Bildformaten und Serien.',
+  '/videos': 'Video-Portfolio mit Tutorials und Demonstrationen.',
+  '/datenschutz': 'Datenschutzinformationen gemaess DSGVO.',
+  '/impressum': 'Rechtliche Anbieterkennzeichnung und Kontaktdaten.',
 };
 
 const INTENT_BOOST_RULES = [
@@ -268,42 +277,79 @@ export function calculateRelevanceScore(result, originalQuery) {
   return score;
 }
 
+function humanizeSlug(value) {
+  return String(value || '')
+    .replace(/[_+]/g, '-')
+    .split('-')
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ')
+    .trim();
+}
+
+function extractAppSlugFromUrl(url) {
+  try {
+    const parsed = new URL(String(url || ''), 'https://example.com');
+    const app = parsed.searchParams.get('app');
+    return app ? decodeURIComponent(app).trim() : '';
+  } catch {
+    return '';
+  }
+}
+
+function canonicalizeUrlPath(path) {
+  if (!path) return '/';
+
+  let normalized = String(path).trim();
+  if (!normalized.startsWith('/')) {
+    normalized = '/' + normalized;
+  }
+
+  if (normalized.endsWith('/index.html')) {
+    normalized = normalized.substring(0, normalized.length - 11);
+  }
+
+  if (normalized === '') {
+    return '/';
+  }
+
+  if (normalized !== '/' && normalized.endsWith('/')) {
+    normalized = normalized.slice(0, -1);
+  }
+
+  return normalized;
+}
+
 /**
  * Normalize URL to prevent duplicates
- * removes domain, protocol, trailing slashes, index.html, and ensures leading slash
+ * removes domain/protocol/noisy params but keeps canonical app deep-link query.
  * @param {string} url - Original URL
  * @returns {string} Normalized URL path
  */
 export function normalizeUrl(url) {
   if (!url) return '/';
 
-  // Remove protocol and domain
-  let normalized = url.replace(/^https?:\/\/[^/]+/, '');
-
-  // Remove query parameters and hash
-  normalized = normalized.split(/[?#]/)[0];
-
-  // Ensure leading slash
+  let normalized = String(url).replace(/^https?:\/\/[^/]+/i, '');
   if (!normalized.startsWith('/')) {
     normalized = '/' + normalized;
   }
 
-  // Remove /index.html suffix
-  if (normalized.endsWith('/index.html')) {
-    normalized = normalized.substring(0, normalized.length - 11);
+  const hashIndex = normalized.indexOf('#');
+  if (hashIndex >= 0) {
+    normalized = normalized.slice(0, hashIndex);
   }
 
-  // Remove trailing slash (unless root)
-  if (normalized !== '/' && normalized.endsWith('/')) {
-    normalized = normalized.slice(0, -1);
+  const [rawPath, rawQuery = ''] = normalized.split('?');
+  const path = canonicalizeUrlPath(rawPath);
+  const params = new URLSearchParams(rawQuery);
+  const app = String(params.get('app') || '').trim();
+
+  // Keep app deep-links as distinct canonical URLs.
+  if (path === '/projekte' && app) {
+    return `/projekte/?app=${encodeURIComponent(app)}`;
   }
 
-  // Handle empty string resulting from stripping index.html from root
-  if (normalized === '') {
-    normalized = '/';
-  }
-
-  return normalized;
+  return path;
 }
 
 /**
@@ -501,19 +547,25 @@ export function toQueryTerms(query) {
     .filter((term) => term.length > 1);
 }
 
+function toBasePath(url) {
+  const [path] = String(url || '').split('?');
+  return canonicalizeUrlPath(path);
+}
+
 /**
  * Infer high-level category from URL path.
  * @param {string} url
  * @returns {string}
  */
 function detectCategory(url) {
-  if (url.includes('/projekte')) return 'Projekte';
-  if (url.includes('/blog')) return 'Blog';
-  if (url.includes('/gallery')) return 'Galerie';
-  if (url.includes('/videos')) return 'Videos';
-  if (url.includes('/about')) return 'Über mich';
-  if (url.includes('/contact')) return 'Kontakt';
-  if (url === '/') return 'Home';
+  const path = toBasePath(url);
+  if (path.includes('/projekte')) return 'Projekte';
+  if (path.includes('/blog')) return 'Blog';
+  if (path.includes('/gallery')) return 'Galerie';
+  if (path.includes('/videos')) return 'Videos';
+  if (path.includes('/about')) return 'Über mich';
+  if (path.includes('/contact')) return 'Kontakt';
+  if (path === '/') return 'Home';
   return 'Seite';
 }
 
@@ -524,12 +576,18 @@ function detectCategory(url) {
  * @returns {string}
  */
 function extractTitle(filename, url) {
+  const appSlug = extractAppSlugFromUrl(url);
+  if (appSlug) {
+    return humanizeSlug(appSlug);
+  }
+
   const title = filename?.split('/').pop()?.replace('.html', '') || '';
 
   if (title === 'index' || title === '' || !title) {
-    const segments = url.split('/').filter(Boolean);
+    const basePath = toBasePath(url);
+    const segments = basePath.split('/').filter(Boolean);
 
-    if (url === '/') {
+    if (basePath === '/') {
       return 'Startseite';
     }
 
@@ -612,6 +670,16 @@ function chooseBestTitle(item, fallbackTitle, url) {
   return fallback || 'Unbenannt';
 }
 
+function buildFallbackDescription(url, title, category) {
+  const appSlug = extractAppSlugFromUrl(url);
+  if (appSlug) {
+    return `${title} · Interaktive Projekt-App mit eigenem Funktionsumfang.`;
+  }
+
+  const basePath = toBasePath(url);
+  return URL_DESCRIPTION_FALLBACKS[basePath] || `${title} · ${category}`;
+}
+
 /**
  * Normalize an AI item into the API search result schema.
  * @param {object} item
@@ -633,7 +701,7 @@ export function toSearchResult(item, query, snippetMaxLength = 170) {
   let description = snippet || '';
 
   if (isLowQualitySnippet(description)) {
-    description = `${title} · ${category}`;
+    description = buildFallbackDescription(url, title, category);
   }
 
   return {

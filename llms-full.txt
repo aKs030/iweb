@@ -328,6 +328,7 @@ Passionate web developer with a focus on performance, modern standards, and inno
 - `/projekte/?app=<app-name>` - Individual app deep-link routes
 - `/pages/projekte/apps-config.json` - Canonical app index data source
 - `/blog/` - Technical blog
+- `/pages/blog/posts/index.json` - Canonical blog index data source
 - `/videos/` - Video portfolio
 - `/gallery/` - Photo gallery
 - `/about/` - About & CV

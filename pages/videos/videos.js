@@ -517,7 +517,7 @@ const loadFromApi = async () => {
   }
 
   const uploads = await fetchUploadsPlaylist(channelId);
-  let items = [];
+  let items;
 
   if (uploads) {
     items = await fetchPlaylistItems(uploads);
