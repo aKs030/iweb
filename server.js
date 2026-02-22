@@ -304,6 +304,17 @@ function getHeadersForPath(url) {
   if (headers['Content-Security-Policy']) {
     headers['Content-Security-Policy'] = headers['Content-Security-Policy']
       .replace(/upgrade-insecure-requests;?\s*/gi, '')
+      // Remove hashes and nonces as they disable 'unsafe-inline'
+      .replace(/'sha256-[^']*'/gi, '')
+      .replace(/'nonce-[^']*'/gi, '')
+      // Ensure unsafe-inline and unsafe-eval are present for dev
+      .replace(/(script-src[^;]*)/i, (match) => {
+        let updated = match;
+        if (!updated.includes("'unsafe-inline'")) updated += " 'unsafe-inline'";
+        if (!updated.includes("'unsafe-eval'")) updated += " 'unsafe-eval'";
+        return updated;
+      })
+      .replace(/\s{2,}/g, ' ')
       .trim();
   }
 
