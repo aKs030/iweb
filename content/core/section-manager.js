@@ -107,6 +107,7 @@ export class SectionManager {
         (entries) => {
           entries.forEach((entry) => {
             if (entry.isIntersecting) {
+              if (this._observer) this._observer.unobserve(entry.target);
               this.loadSection(entry.target);
             }
           });

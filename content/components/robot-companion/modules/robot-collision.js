@@ -2,19 +2,41 @@ import { createLogger } from '../../../core/logger.js';
 import { createObserver } from '../../../core/utils.js';
 const log = createLogger('RobotCollision');
 
+const OBSTACLE_SELECTOR =
+  'img, .card, button.btn, h2, .project-card, [data-test="photo-card"]';
+const DECORATIVE_IGNORE_SELECTORS = [
+  '[data-decorative="true"]',
+  '.hero__floating-icons',
+  '.hero__spotlight-bg',
+  '.blog-3d-background',
+  '#blog-particles-canvas',
+  '.menu-ripple',
+  '.visually-hidden',
+  '.sr-only',
+  'figure[aria-hidden="true"]',
+  '.robot-burst-particle',
+];
+
 export class RobotCollision {
   constructor(robot) {
     this.robot = robot;
     this._lastCollisionCheck = 0;
     this._lastObstacleUpdate = 0;
+    this._lastDecorativeTagUpdate = 0;
+    this._scanCursor = 0;
     this._recentCollisions = new WeakSet();
+    this._obstacleMeta = new WeakMap();
 
     this.visibleObstacles = new Set();
-    this._trackedObstacles = new WeakSet();
+    this._trackedObstacles = new Set();
 
     this.obstacleObserver = createObserver(
       (entries) => {
         entries.forEach((entry) => {
+          this._obstacleMeta.set(entry.target, {
+            rect: entry.boundingClientRect,
+            ts: performance.now(),
+          });
           if (entry.isIntersecting) {
             this.visibleObstacles.add(entry.target);
           } else {
@@ -34,28 +56,143 @@ export class RobotCollision {
 
     // Clear alle Sets
     this.visibleObstacles.clear();
+    this._trackedObstacles.clear();
     this._recentCollisions = new WeakSet();
-    this._trackedObstacles = new WeakSet();
+    this._obstacleMeta = new WeakMap();
+  }
+
+  shouldTrackObstacle(el) {
+    if (!el || !el.isConnected) return false;
+    if (el.hasAttribute('data-collision-ignore')) return false;
+    if (el.closest?.('[data-collision-ignore]')) return false;
+    if (this.robot.dom?.container?.contains(el)) return false;
+    return true;
+  }
+
+  markDecorativeElements() {
+    const now = performance.now();
+    if (
+      this._lastDecorativeTagUpdate &&
+      now - this._lastDecorativeTagUpdate < 3000
+    ) {
+      return;
+    }
+    this._lastDecorativeTagUpdate = now;
+
+    const nodes = document.querySelectorAll(
+      DECORATIVE_IGNORE_SELECTORS.join(','),
+    );
+    nodes.forEach((el) => {
+      if (!el.hasAttribute('data-collision-ignore')) {
+        el.setAttribute('data-collision-ignore', '');
+      }
+    });
+  }
+
+  cleanupDetachedObstacles() {
+    for (const obs of this.visibleObstacles) {
+      if (!obs.isConnected) {
+        this.visibleObstacles.delete(obs);
+      }
+    }
+
+    for (const obs of this._trackedObstacles) {
+      if (obs.isConnected) continue;
+      try {
+        this.obstacleObserver.unobserve(obs);
+      } catch {
+        /* ignore */
+      }
+      this._trackedObstacles.delete(obs);
+      this.visibleObstacles.delete(obs);
+    }
   }
 
   updateObstacleCache() {
+    this.markDecorativeElements();
+
     // Update cache every 2 seconds or so
     const now = performance.now();
-    if (this._lastObstacleUpdate && now - this._lastObstacleUpdate < 2000)
+    if (this._lastObstacleUpdate && now - this._lastObstacleUpdate < 2000) {
+      this.cleanupDetachedObstacles();
       return;
+    }
     this._lastObstacleUpdate = now;
 
+    this.cleanupDetachedObstacles();
+
     // Cache relevant elements
-    const currentObstacles = document.querySelectorAll(
-      'img, .card, button.btn, h2, .project-card, [data-test="photo-card"]',
-    );
+    const currentObstacles = document.querySelectorAll(OBSTACLE_SELECTOR);
+    const nextObstacles = new Set();
 
     currentObstacles.forEach((el) => {
+      if (!this.shouldTrackObstacle(el)) return;
+      nextObstacles.add(el);
       if (!this._trackedObstacles.has(el)) {
         this.obstacleObserver.observe(el);
         this._trackedObstacles.add(el);
       }
     });
+
+    for (const tracked of this._trackedObstacles) {
+      if (nextObstacles.has(tracked)) continue;
+      this.obstacleObserver.unobserve(tracked);
+      this._trackedObstacles.delete(tracked);
+      this.visibleObstacles.delete(tracked);
+    }
+  }
+
+  getCandidatesForCollisionScan(robotRect) {
+    const candidates = [];
+    const proximityPadding = 260;
+
+    for (const obs of this.visibleObstacles) {
+      if (!obs?.isConnected) continue;
+      if (obs.offsetParent === null) continue;
+      if (this.robot.dom.container?.contains(obs)) continue;
+
+      const meta = this._obstacleMeta.get(obs);
+      const cachedRect = meta?.rect;
+
+      // Coarse pruning before expensive rect reads.
+      if (cachedRect) {
+        if (
+          cachedRect.right < robotRect.left - proximityPadding ||
+          cachedRect.left > robotRect.right + proximityPadding ||
+          cachedRect.bottom < robotRect.top - proximityPadding ||
+          cachedRect.top > robotRect.bottom + proximityPadding
+        ) {
+          continue;
+        }
+      }
+
+      candidates.push(obs);
+    }
+
+    return candidates;
+  }
+
+  getScannableCandidates(candidates) {
+    if (candidates.length <= 28) {
+      this._scanCursor = 0;
+      return candidates;
+    }
+
+    const maxChecks =
+      candidates.length > 100 ? 16 : candidates.length > 60 ? 22 : 28;
+    const selected = [];
+    const total = candidates.length;
+    if (this._scanCursor >= total) {
+      this._scanCursor = 0;
+    }
+
+    for (let i = 0; i < Math.min(maxChecks, total); i++) {
+      const index = (this._scanCursor + i) % total;
+      selected.push(candidates[index]);
+    }
+
+    this._scanCursor = (this._scanCursor + maxChecks) % total;
+    return selected;
   }
 
   scanForCollisions() {
@@ -67,25 +204,37 @@ export class RobotCollision {
     )
       return;
 
-    // Throttling: check frequently (30ms ~ 33fps) for low latency
+    const obstacleCount = this.visibleObstacles.size;
+    const minScanIntervalMs =
+      obstacleCount > 100
+        ? 95
+        : obstacleCount > 60
+          ? 70
+          : obstacleCount > 30
+            ? 50
+            : 35;
+
+    // Adaptive throttling based on current obstacle density.
     const now = performance.now();
-    if (this._lastCollisionCheck && now - this._lastCollisionCheck < 30) return;
+    if (
+      this._lastCollisionCheck &&
+      now - this._lastCollisionCheck < minScanIntervalMs
+    )
+      return;
     this._lastCollisionCheck = now;
 
     // Update obstacle cache periodically
     this.updateObstacleCache();
 
     const robotRect = this.robot.dom.avatar.getBoundingClientRect();
+    const candidates = this.getScannableCandidates(
+      this.getCandidatesForCollisionScan(robotRect),
+    );
+    if (candidates.length === 0) return;
 
-    // Iterate only over visible obstacles
-    for (const obs of this.visibleObstacles) {
-      // Skip hidden or tiny elements (re-check visibility as they might have changed)
-      if (obs.offsetParent === null) continue;
-
-      // Skip self (just in case) or children
-      if (this.robot.dom.container.contains(obs)) continue;
-
+    for (const obs of candidates) {
       const obsRect = obs.getBoundingClientRect();
+      this._obstacleMeta.set(obs, { rect: obsRect, ts: now });
 
       // Intersection check
       // Robot is roughly 80x80. We use a smaller hitbox.

@@ -192,8 +192,17 @@ export const ThreeScene = ({ projects, onScrollUpdate, onReady }) => {
     }
 
     // --- 3. RESIZE HANDLER ---
-    const handleResize = () => {
-      if (!isMountedRef.current || !globalRenderer || !globalCamera) return;
+    let resizeTimer = null;
+    let prevWidth = window.innerWidth;
+
+    const doResize = () => {
+      if (
+        !isMountedRef.current ||
+        !globalRenderer ||
+        !globalCamera ||
+        !containerRef.current
+      )
+        return;
 
       const { width, height } = getViewportSize(containerRef.current);
       viewportWidthRef.current = width;
@@ -215,6 +224,16 @@ export const ThreeScene = ({ projects, onScrollUpdate, onReady }) => {
       globalGallery?.setViewportWidth(width);
     };
 
+    const handleResize = () => {
+      const currentWidth = window.innerWidth;
+      const widthChanged = Math.abs(currentWidth - prevWidth) >= 10;
+      prevWidth = currentWidth;
+
+      // Mobile optimization: Don't block the main thread for height-only changes (address bar)
+      if (resizeTimer) clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(doResize, widthChanged ? 50 : 300);
+    };
+
     window.addEventListener('resize', handleResize, { passive: true });
     window.addEventListener('orientationchange', handleResize, {
       passive: true,
@@ -229,7 +248,7 @@ export const ThreeScene = ({ projects, onScrollUpdate, onReady }) => {
     }
 
     // Force initial size update in case window changed while unmounted
-    handleResize();
+    doResize();
 
     // --- 4. ANIMATION LOOP ---
     const animate = (time) => {
@@ -291,6 +310,7 @@ export const ThreeScene = ({ projects, onScrollUpdate, onReady }) => {
     // --- 5. CLEANUP (Soft) ---
     return () => {
       isMountedRef.current = false;
+      if (resizeTimer) clearTimeout(resizeTimer);
       if (frameIdRef.current) {
         cancelAnimationFrame(frameIdRef.current);
       }

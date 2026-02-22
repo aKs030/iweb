@@ -41,6 +41,12 @@ export class Gallery3DSystem {
     this.onMouseMove = this.onMouseMove.bind(this);
     this.onMouseUp = this.onMouseUp.bind(this);
     this.onClick = this.onClick.bind(this);
+    this.onTouchStart = this.onTouchStart.bind(this);
+    this.onTouchMove = this.onTouchMove.bind(this);
+
+    // Reuse vectors to prevent memory leaks in render loop
+    this._hoverScaleVec = new THREE.Vector3(1.1, 1.1, 1.1);
+    this._normalScaleVec = new THREE.Vector3(1.0, 1.0, 1.0);
 
     this.init();
   }
@@ -152,6 +158,8 @@ export class Gallery3DSystem {
       this.scene.add(group);
       this.objects.push({ group, mesh, index, baseY: y, item });
     });
+
+    this._raycastMeshes = this.objects.map((o) => o.mesh);
   }
 
   createStars() {
@@ -175,25 +183,17 @@ export class Gallery3DSystem {
 
   setupEvents() {
     window.addEventListener('wheel', this.handleWheel, { passive: false });
-    window.addEventListener('resize', this.handleResize);
-    this.container.addEventListener('mousedown', this.onMouseDown);
-    window.addEventListener('mousemove', this.onMouseMove);
-    window.addEventListener('mouseup', this.onMouseUp);
-    this.container.addEventListener(
-      'touchstart',
-      (e) => this.onMouseDown({ clientY: e.touches[0].clientY }),
-      { passive: true },
-    );
-    window.addEventListener(
-      'touchmove',
-      (e) =>
-        this.onMouseMove({
-          clientX: e.touches[0].clientX,
-          clientY: e.touches[0].clientY,
-        }),
-      { passive: true },
-    );
-    window.addEventListener('touchend', this.onMouseUp);
+    window.addEventListener('resize', this.handleResize, { passive: true });
+    this.container.addEventListener('mousedown', this.onMouseDown, {
+      passive: true,
+    });
+    window.addEventListener('mousemove', this.onMouseMove, { passive: true });
+    window.addEventListener('mouseup', this.onMouseUp, { passive: true });
+    this.container.addEventListener('touchstart', this.onTouchStart, {
+      passive: true,
+    });
+    window.addEventListener('touchmove', this.onTouchMove, { passive: true });
+    window.addEventListener('touchend', this.onMouseUp, { passive: true });
     this.container.addEventListener('click', this.onClick);
   }
 
@@ -228,6 +228,21 @@ export class Gallery3DSystem {
     this.clampScroll();
   }
 
+  onTouchStart(e) {
+    if (e.touches && e.touches.length > 0) {
+      this.onMouseDown({ clientY: e.touches[0].clientY });
+    }
+  }
+
+  onTouchMove(e) {
+    if (e.touches && e.touches.length > 0) {
+      this.onMouseMove({
+        clientX: e.touches[0].clientX,
+        clientY: e.touches[0].clientY,
+      });
+    }
+  }
+
   onMouseUp() {
     this.isDragging = false;
   }
@@ -235,7 +250,7 @@ export class Gallery3DSystem {
   onClick() {
     this.raycaster.setFromCamera(this.mouse, this.camera);
     const intersects = this.raycaster.intersectObjects(
-      this.objects.map((o) => o.mesh),
+      this._raycastMeshes || [],
     );
     if (intersects.length > 0) {
       const data = intersects[0].object.userData;
@@ -246,9 +261,20 @@ export class Gallery3DSystem {
 
   handleResize() {
     if (!this.camera || !this.renderer) return;
-    this.camera.aspect = window.innerWidth / window.innerHeight;
-    this.camera.updateProjectionMatrix();
-    this.renderer.setSize(window.innerWidth, window.innerHeight);
+
+    // Mobile optimization: Ignore resize events caused by the address bar hiding/showing (only height changes)
+    const currentWidth = window.innerWidth;
+    if (this._prevWidth && Math.abs(currentWidth - this._prevWidth) < 10)
+      return;
+    this._prevWidth = currentWidth;
+
+    // Debounce the heavy WebGL resize slightly to prevent stuttering
+    if (this._resizeTimeout) clearTimeout(this._resizeTimeout);
+    this._resizeTimeout = setTimeout(() => {
+      this.camera.aspect = window.innerWidth / window.innerHeight;
+      this.camera.updateProjectionMatrix();
+      this.renderer.setSize(window.innerWidth, window.innerHeight);
+    }, 150);
   }
 
   animate() {
@@ -267,17 +293,15 @@ export class Gallery3DSystem {
     // Raycasting optimization
     this.raycaster.setFromCamera(this.mouse, this.camera);
     const intersects = this.raycaster.intersectObjects(
-      this.objects.map((o) => o.mesh),
+      this._raycastMeshes || [],
     );
     const hoveredMesh = intersects.length > 0 ? intersects[0].object : null;
 
     this.objects.forEach((obj) => {
       obj.group.position.y = obj.baseY + Math.sin(time + obj.index) * 0.1;
-      const targetScale = obj.mesh === hoveredMesh ? 1.1 : 1.0;
-      obj.group.scale.lerp(
-        new THREE.Vector3(targetScale, targetScale, targetScale),
-        0.1,
-      );
+      const targetScaleVec =
+        obj.mesh === hoveredMesh ? this._hoverScaleVec : this._normalScaleVec;
+      obj.group.scale.lerp(targetScaleVec, 0.1);
     });
 
     if (this.stars) {
@@ -289,14 +313,18 @@ export class Gallery3DSystem {
   }
 
   dispose() {
+    if (this._resizeTimeout) clearTimeout(this._resizeTimeout);
     if (this.frameId) cancelAnimationFrame(this.frameId);
 
     window.removeEventListener('wheel', this.handleWheel);
     window.removeEventListener('resize', this.handleResize);
     window.removeEventListener('mousemove', this.onMouseMove);
     window.removeEventListener('mouseup', this.onMouseUp);
-    window.removeEventListener('touchmove', this.onMouseMove);
+    this.container.removeEventListener('mousedown', this.onMouseDown);
+    this.container.removeEventListener('touchstart', this.onTouchStart);
+    window.removeEventListener('touchmove', this.onTouchMove);
     window.removeEventListener('touchend', this.onMouseUp);
+    this.container.removeEventListener('click', this.onClick);
 
     // Deep Dispose - Verhindert WebGL Memory Leaks!
     this.scene.traverse((object) => {

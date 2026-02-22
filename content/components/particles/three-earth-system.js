@@ -762,7 +762,7 @@ class ThreeEarthSystem {
     this._updateNightPulse(totalTime, capabilities);
 
     this.cameraManager?.updateCameraPosition(delta);
-    this._updateTransforms();
+    this._updateTransforms(delta);
 
     if (this.cardManager) {
       this.cardManager.update(totalTime * 1000);
@@ -792,19 +792,22 @@ class ThreeEarthSystem {
     }
   }
 
-  _updateTransforms() {
+  _updateTransforms(delta = 0.016) {
     if (!this.earthMesh) return;
     const em = this.earthMesh;
+    const timeScale = delta * 60;
+    const posLerp = 1 - Math.pow(1 - 0.04, timeScale);
+    const scaleLerp = 1 - Math.pow(1 - 0.06, timeScale);
 
     if (em.userData.targetPosition)
-      em.position.lerp(em.userData.targetPosition, 0.04);
+      em.position.lerp(em.userData.targetPosition, posLerp);
     if (em.userData.targetScale) {
-      em.scale.x += (em.userData.targetScale - em.scale.x) * 0.06;
+      em.scale.x += (em.userData.targetScale - em.scale.x) * scaleLerp;
       em.scale.y = em.scale.z = em.scale.x;
     }
     if (em.userData.targetRotation !== undefined) {
       const diff = em.userData.targetRotation - em.rotation.y;
-      if (Math.abs(diff) > 0.001) em.rotation.y += diff * 0.06;
+      if (Math.abs(diff) > 0.001) em.rotation.y += diff * scaleLerp;
     }
 
     if (this.cloudMesh) {
@@ -815,9 +818,9 @@ class ThreeEarthSystem {
     if (this.moonMesh) {
       const mm = this.moonMesh;
       if (mm.userData.targetPosition)
-        mm.position.lerp(mm.userData.targetPosition, 0.04);
+        mm.position.lerp(mm.userData.targetPosition, posLerp);
       if (mm.userData.targetScale) {
-        mm.scale.x += (mm.userData.targetScale - mm.scale.x) * 0.06;
+        mm.scale.x += (mm.userData.targetScale - mm.scale.x) * scaleLerp;
         mm.scale.y = mm.scale.z = mm.scale.x;
       }
     }
