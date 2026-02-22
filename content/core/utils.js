@@ -5,7 +5,8 @@
  * @date 2026-01-30
  */
 
-import DOMPurify from 'https://cdn.jsdelivr.net/npm/dompurify@3.3.1/dist/purify.es.mjs';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import DOMPurify from 'dompurify';
 import { createLogger } from './logger.js';
 
 const log = createLogger('Utils');
@@ -448,18 +449,18 @@ export function observeOnce(target, onIntersect, options = {}) {
 
 import { i18n } from './i18n.js';
 
-export const createUseTranslation = (React) => {
+export const createUseTranslation = () => {
   return () => {
-    const [lang, setLang] = React.useState(i18n.currentLang);
+    const [lang, setLang] = useState(i18n.currentLang);
 
-    React.useEffect(() => {
+    useEffect(() => {
       const onLangChange = (e) => setLang(e.detail.lang);
       i18n.addEventListener('language-changed', onLangChange);
       return () => i18n.removeEventListener('language-changed', onLangChange);
     }, []);
 
-    const t = React.useCallback((key, params) => i18n.t(key, params), [lang]);
+    const t = useCallback((key, params) => i18n.t(key, params), [lang]);
 
-    return React.useMemo(() => ({ t, lang }), [t, lang]);
+    return useMemo(() => ({ t, lang }), [t, lang]);
   };
 };

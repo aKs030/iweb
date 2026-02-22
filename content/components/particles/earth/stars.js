@@ -24,7 +24,8 @@ export class StarManager {
     this.isMobileDevice = window.matchMedia('(max-width: 768px)').matches;
     this.scrollUpdateEnabled = false;
     this.lastScrollUpdate = 0;
-    this.scrollUpdateThrottle = 150;
+    this.lastScrollY = -1;
+    this.scrollUpdateThrottle = 200; // Increased from 150ms
     this.boundScrollHandler = null;
 
     // Cache for resize calculations
@@ -249,10 +250,13 @@ export class StarManager {
     addLine(rect.right, rect.bottom, rect.left, rect.bottom);
     addLine(rect.left, rect.bottom, rect.left, rect.top);
 
-    // 2. Surface (Inside)
+    // 2. Surface (Inside) - Use a deterministic distribution to avoid Math.random in hot loop
     for (let i = 0; i < surfaceStars; i++) {
-      const x = rect.left + Math.random() * rect.width;
-      const y = rect.top + Math.random() * rect.height;
+      // Use the index as a seed for stable "randomness"
+      const t1 = (i * 0.73) % 1;
+      const t2 = (i * 0.91) % 1;
+      const x = rect.left + t1 * rect.width;
+      const y = rect.top + t2 * rect.height;
       pushWorldPos(x, y, positions);
     }
 
@@ -313,7 +317,12 @@ export class StarManager {
 
     const now = performance.now();
     if (now - this.lastScrollUpdate < this.scrollUpdateThrottle) return;
+
+    const scrollY = window.pageYOffset;
+    if (Math.abs(scrollY - this.lastScrollY) < 5) return; // Ignore micro-scrolls
+
     this.lastScrollUpdate = now;
+    this.lastScrollY = scrollY;
 
     // Recalculate because scroll changes screen position relative to camera
     const cardPositions = this.getCardPositions();

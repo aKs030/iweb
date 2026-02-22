@@ -3,8 +3,8 @@
  * @version 7.0.0 - Final Optimized & Minimal
  */
 
-import React from 'https://esm.sh/react@19.2.3';
-import { createRoot } from 'https://esm.sh/react-dom@19.2.3/client';
+import React from 'react';
+import { createRoot } from 'react-dom/client';
 import htm from 'https://esm.sh/htm@3.1.1';
 import { createLogger } from '/content/core/logger.js';
 import { createUseTranslation } from '/content/core/utils.js';
@@ -25,7 +25,7 @@ import {
 const log = createLogger('BlogApp');
 const html = htm.bind(React.createElement);
 const ErrorBoundary = createErrorBoundary(React);
-const useTranslation = createUseTranslation(React);
+const useTranslation = createUseTranslation();
 
 // Configure Marked
 marked.setOptions({

@@ -25,6 +25,10 @@ export class CameraManager {
       endLookAt: null,
       presetZ: 0,
     };
+
+    // Reusable vectors for zero-allocation updates
+    this._vLookAt = new this.THREE.Vector3();
+    this._vCurrentLookAt = new this.THREE.Vector3();
   }
 
   setupCameraSystem() {
@@ -96,21 +100,23 @@ export class CameraManager {
         (this.transition.presetZ - this.transition.startZoom) * eased;
 
       if (this.camera) {
-        const blendedLookAt = new this.THREE.Vector3().lerpVectors(
+        this._vLookAt.lerpVectors(
           this.transition.startLookAt,
           this.transition.endLookAt,
           eased,
         );
-        this.camera.lookAt(blendedLookAt);
-        this.camera.userData.currentLookAt = blendedLookAt.clone();
+        this.camera.lookAt(this._vLookAt);
+        if (!this.camera.userData.currentLookAt) {
+          this.camera.userData.currentLookAt = new this.THREE.Vector3();
+        }
+        this.camera.userData.currentLookAt.copy(this._vLookAt);
       }
 
       if (progress >= 1) {
         this.transition.active = false;
         // Snap to final values to avoid floating point errors
-        if (this.camera)
-          this.camera.userData.currentLookAt =
-            this.transition.endLookAt.clone();
+        if (this.camera && this.camera.userData.currentLookAt)
+          this.camera.userData.currentLookAt.copy(this.transition.endLookAt);
       }
     }
 
@@ -153,9 +159,12 @@ export class CameraManager {
       this.cameraPosition.z,
     );
 
-    const currentLookAt =
-      this.camera.userData.currentLookAt || new this.THREE.Vector3(0, 0, 0);
-    this.camera.lookAt(currentLookAt);
+    if (this.camera.userData.currentLookAt) {
+      this.camera.lookAt(this.camera.userData.currentLookAt);
+    } else {
+      this._vCurrentLookAt.set(0, 0, 0);
+      this.camera.lookAt(this._vCurrentLookAt);
+    }
   }
 
   handleWheel(e) {

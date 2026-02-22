@@ -5,7 +5,7 @@
  */
 
 import React, { useEffect, useState, useRef } from 'react';
-import ReactDOM from 'react-dom/client';
+import { createRoot } from 'react-dom/client';
 
 import { createLogger } from '/content/core/logger.js';
 import { AppLoadManager } from '/content/core/load-manager.js';
@@ -18,7 +18,7 @@ import { ThreeGalleryScene } from './components/ThreeGalleryScene.js';
 import { GALLERY_ITEMS as STATIC_GALLERY_ITEMS } from './config.js';
 
 const log = createLogger('gallery-app');
-const useTranslation = createUseTranslation(React);
+const useTranslation = createUseTranslation();
 const h = React.createElement;
 
 const GalleryApp = () => {
@@ -207,7 +207,7 @@ const GalleryApp = () => {
   );
 };
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
+const root = createRoot(document.getElementById('root'));
 const ErrorBoundary = createErrorBoundary(React);
 
 root.render(h(ErrorBoundary, null, h(GalleryApp)));

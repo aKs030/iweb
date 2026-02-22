@@ -4,15 +4,19 @@
  * @description 3D Scroll-based Gallery using Three.js and React
  */
 
-import React from 'react';
+import React, {
+  createElement as h,
+  Fragment,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import { createRoot } from 'react-dom/client';
 import { createPortal } from 'react-dom';
 import { useProjects } from './hooks/useProjects.js';
 import { ThreeScene } from './components/ThreeScene.js';
 import * as Icons from '/content/components/icons/icons.js';
 import { i18n } from '/content/core/i18n.js';
-
-const { createElement: h, Fragment, useEffect, useRef, useState } = React;
 const CRAWLER_UA_PATTERN =
   /googlebot|google-inspectiontool|bingbot|slurp|duckduckbot|baiduspider|yandex|facebookexternalhit|twitterbot|linkedinbot|applebot|semrushbot|ahrefsbot/i;
 

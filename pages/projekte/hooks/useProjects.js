@@ -3,7 +3,7 @@
  * @version 3.0.0
  */
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { createLogger } from '/content/core/logger.js';
 import { AppLoadManager } from '/content/core/load-manager.js';
 import { i18n } from '/content/core/i18n.js';
@@ -21,11 +21,11 @@ const log = createLogger('useProjects');
  * }}
  */
 export const useProjects = (icons) => {
-  const [projects, setProjects] = React.useState(/** @type {any[]} */ ([]));
-  const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState('');
+  const [projects, setProjects] = useState(/** @type {any[]} */ ([]));
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  React.useEffect(() => {
+  useEffect(() => {
     const loadProjects = async () => {
       try {
         log.info('Loading projects data...');

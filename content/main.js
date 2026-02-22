@@ -23,19 +23,7 @@ initConsoleFilter();
 
 const log = createLogger('main');
 
-const schedulePersistentStorageRequest = (delay = 2500) => {
-  try {
-    setTimeout(async () => {
-      if (!navigator?.storage) return;
-      try {
-        const persisted = await navigator.storage.persisted();
-        if (!persisted) await navigator.storage.persist();
-      } catch (error) {
-        log.warn('Persistent storage request failed:', error);
-      }
-    }, delay);
-  } catch {}
-};
+// Persistent storage request removed to avoid deprecation warnings
 
 // ===== Configuration & Environment =====
 const ENV = {
@@ -194,7 +182,7 @@ document.addEventListener(
       }
     }, LOADING_CONFIG.TIMEOUT_MS);
 
-    schedulePersistentStorageRequest(STORAGE_REQUEST_DELAY_MS);
+    // schedulePersistentStorageRequest(STORAGE_REQUEST_DELAY_MS);
 
     // Initialize global event handlers
     GlobalEventHandlers.init(announce);
