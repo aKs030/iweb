@@ -270,6 +270,24 @@ function scoreFallbackEntry(entry, queryLower, queryTerms, intentPaths) {
     score += 12;
   }
 
+  if (intentPaths.length === 1) {
+    const primaryIntentPath = intentPaths[0];
+
+    if (entry.url === primaryIntentPath) {
+      score += 8;
+    }
+
+    if (
+      entry.url.includes('?app=') &&
+      primaryIntentPath === '/projekte' &&
+      !/\b(app|apps|tool|game|spiel|weather|wetter|todo|quiz|snake|memory|timer|typing|calculator|passwort|password|color|paint|pong)\b/i.test(
+        queryLower,
+      )
+    ) {
+      score -= 2;
+    }
+  }
+
   if (
     entry.url.startsWith('/projekte/?app=') &&
     /\b(app|apps|tool|game|spiel|projekt|projekte)\b/i.test(queryLower)
@@ -290,10 +308,22 @@ function buildFallbackResults(
     .toLowerCase()
     .trim();
   const queryTerms = toQueryTerms(queryLower);
-
-  let scored = STATIC_FALLBACK_ENTRIES.filter(
+  let candidateEntries = STATIC_FALLBACK_ENTRIES.filter(
     (entry) => !excludeUrls.has(entry.url),
-  )
+  );
+
+  // For single-intent queries, keep fallback strict to the intended path.
+  if (intentPaths.length === 1) {
+    const strictIntentEntries = candidateEntries.filter((entry) =>
+      isIntentPathMatch(entry.url, intentPaths),
+    );
+
+    if (strictIntentEntries.length > 0) {
+      candidateEntries = strictIntentEntries;
+    }
+  }
+
+  let scored = candidateEntries
     .map((entry) => ({
       ...entry,
       score: scoreFallbackEntry(entry, queryLower, queryTerms, intentPaths),
