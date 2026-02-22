@@ -119,12 +119,12 @@ const INTENT_BOOST_RULES = [
     boost: 4,
   },
   {
-    regex: /\b(datenschutz|impressum|privacy|legal)\b/i,
+    regex: /\b(datenschutz|privacy|dsgvo)\b/i,
     path: '/datenschutz',
     boost: 3,
   },
   {
-    regex: /\b(datenschutz|impressum|privacy|legal)\b/i,
+    regex: /\b(impressum|legal|anbieterkennzeichnung)\b/i,
     path: '/impressum',
     boost: 3,
   },
