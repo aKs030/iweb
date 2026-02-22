@@ -143,10 +143,24 @@ function addProjectPreviewImages(urlMap, origin, appsConfig) {
     const name = normalizeText(app?.name);
     if (!name) continue;
 
+    const appPath = `/projekte/?app=${encodeURIComponent(name)}`;
+    const appTitle = sanitizeDiscoveryText(app?.title, formatSlug(name));
+    const appCaption = sanitizeDiscoveryText(
+      app?.description,
+      formatSlug(name),
+    );
+
     addImage(urlMap, '/projekte/', {
       loc: `${R2_APP_PREVIEWS_BASE_URL}/${encodeURIComponent(name)}.svg?v=${APP_PREVIEWS_VERSION}`,
-      title: sanitizeDiscoveryText(app?.title, formatSlug(name)),
-      caption: sanitizeDiscoveryText(app?.description, formatSlug(name)),
+      title: appTitle,
+      caption: appCaption,
+      license: LICENSE_URL,
+    });
+
+    addImage(urlMap, appPath, {
+      loc: `${R2_APP_PREVIEWS_BASE_URL}/${encodeURIComponent(name)}.svg?v=${APP_PREVIEWS_VERSION}`,
+      title: appTitle,
+      caption: appCaption,
       license: LICENSE_URL,
     });
   }

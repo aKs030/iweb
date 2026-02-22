@@ -14,6 +14,7 @@ const ROUTE_META = {
   '/projekte/': { priority: 0.75, changefreq: 'monthly' },
   '/blog/': { priority: 0.75, changefreq: 'weekly' },
   '/about/': { priority: 0.6, changefreq: 'monthly' },
+  '/contact/': { priority: 0.55, changefreq: 'monthly' },
   '/impressum/': { priority: 0.2, changefreq: 'yearly' },
   '/datenschutz/': { priority: 0.2, changefreq: 'yearly' },
   '/ai-info.html': { priority: 0.4, changefreq: 'monthly' },
@@ -25,7 +26,7 @@ const ROUTE_META = {
 };
 
 const BLOG_INDEX_PATH = '/pages/blog/posts/index.json';
-const EXCLUDED_PATHS = new Set(['/contact/']);
+const PROJECT_APPS_PATH = '/pages/projekte/apps-config.json';
 const MAX_YOUTUBE_RESULTS = 200;
 
 async function loadBlogPosts(context) {
@@ -41,6 +42,21 @@ async function loadBlogPosts(context) {
 
   const posts = await response.json();
   return Array.isArray(posts) ? posts : [];
+}
+
+async function loadProjectApps(context) {
+  if (!context.env?.ASSETS) {
+    return [];
+  }
+
+  const indexUrl = new URL(PROJECT_APPS_PATH, context.request.url);
+  const response = await context.env.ASSETS.fetch(indexUrl);
+  if (!response.ok) {
+    return [];
+  }
+
+  const payload = await response.json();
+  return Array.isArray(payload?.apps) ? payload.apps : [];
 }
 
 async function loadVideoEntries(env, today) {
@@ -112,7 +128,7 @@ function buildStaticEntries(today) {
     '/ai-index.json',
     '/person.jsonld',
     '/bio.md',
-  ].filter((path) => !EXCLUDED_PATHS.has(path));
+  ];
 
   const uniquePaths = [...new Set(staticPaths)];
   return uniquePaths.map((path) => {
@@ -124,6 +140,17 @@ function buildStaticEntries(today) {
       priority: meta.priority,
     };
   });
+}
+
+function buildProjectAppEntries(apps, today) {
+  return apps
+    .filter((app) => app && typeof app.name === 'string' && app.name.trim())
+    .map((app) => ({
+      path: `/projekte/?app=${encodeURIComponent(app.name.trim())}`,
+      lastmod: toISODate(app.lastUpdated) || today,
+      changefreq: 'monthly',
+      priority: 0.62,
+    }));
 }
 
 function buildBlogEntries(posts, today) {
@@ -150,14 +177,22 @@ export async function onRequest(context) {
   const origin = resolveOrigin(context.request.url);
   const today = new Date().toISOString().split('T')[0];
 
-  const [staticEntries, blogPosts, videoEntries] = await Promise.all([
-    Promise.resolve(buildStaticEntries(today)),
-    loadBlogPosts(context),
-    loadVideoEntries(context.env, today).catch(() => []),
-  ]);
+  const [staticEntries, blogPosts, projectApps, videoEntries] =
+    await Promise.all([
+      Promise.resolve(buildStaticEntries(today)),
+      loadBlogPosts(context),
+      loadProjectApps(context),
+      loadVideoEntries(context.env, today).catch(() => []),
+    ]);
 
   const blogEntries = buildBlogEntries(blogPosts, today);
-  const allEntries = [...staticEntries, ...blogEntries, ...videoEntries];
+  const appEntries = buildProjectAppEntries(projectApps, today);
+  const allEntries = [
+    ...staticEntries,
+    ...blogEntries,
+    ...appEntries,
+    ...videoEntries,
+  ];
 
   const dedupedEntries = [];
   const seen = new Set();

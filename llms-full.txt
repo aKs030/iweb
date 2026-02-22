@@ -325,6 +325,8 @@ Passionate web developer with a focus on performance, modern standards, and inno
 ### Main Pages
 - `/` - Homepage with 3D Earth
 - `/projekte/` - Projects showcase
+- `/projekte/?app=<app-name>` - Individual app deep-link routes
+- `/pages/projekte/apps-config.json` - Canonical app index data source
 - `/blog/` - Technical blog
 - `/videos/` - Video portfolio
 - `/gallery/` - Photo gallery
