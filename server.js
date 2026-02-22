@@ -18,6 +18,7 @@ import { readFileSync, existsSync, statSync, watch } from 'fs';
 import { resolve, extname, relative } from 'path';
 import os from 'os';
 import { onRequestPost as onSearchRequestPost } from './functions/api/search.js';
+import { ensureViewportMeta } from './functions/_middleware-utils/viewport-manager.js';
 
 const PORT = process.env.PORT || 8080;
 const ROOT = import.meta.dirname;
@@ -108,67 +109,6 @@ function injectTemplates(html) {
   if (templates.loader) {
     html = html.replace(/<!--\s*INJECT:BASE-LOADER\s*-->/g, templates.loader);
   }
-  return html;
-}
-
-const DEFAULT_VIEWPORT_CONTENT =
-  'width=device-width, initial-scale=1, viewport-fit=cover';
-
-function mergeViewportContent(content = '') {
-  let merged = content.trim();
-
-  const ensureToken = (regex, token) => {
-    if (!regex.test(merged)) {
-      merged = merged ? `${merged}, ${token}` : token;
-    }
-  };
-
-  ensureToken(
-    /(^|,)\s*width\s*=\s*device-width\s*(,|$)/i,
-    'width=device-width',
-  );
-  ensureToken(
-    /(^|,)\s*initial-scale\s*=\s*1(?:\.0+)?\s*(,|$)/i,
-    'initial-scale=1',
-  );
-  ensureToken(
-    /(^|,)\s*viewport-fit\s*=\s*cover\s*(,|$)/i,
-    'viewport-fit=cover',
-  );
-
-  return merged || DEFAULT_VIEWPORT_CONTENT;
-}
-
-function ensureViewportMeta(html) {
-  const viewportRegex = /<meta\s+[^>]*name=["']viewport["'][^>]*>/i;
-  const viewportMatch = html.match(viewportRegex);
-
-  if (viewportMatch) {
-    const contentMatch = viewportMatch[0].match(/content\s*=\s*(["'])(.*?)\1/i);
-    const optimizedContent = mergeViewportContent(contentMatch?.[2] || '');
-
-    return html.replace(
-      viewportRegex,
-      `<meta name="viewport" content="${optimizedContent}" />`,
-    );
-  }
-
-  const viewportTag = `<meta name="viewport" content="${DEFAULT_VIEWPORT_CONTENT}" />`;
-
-  if (/<meta\s+charset=[^>]*>/i.test(html)) {
-    return html.replace(
-      /<meta\s+charset=[^>]*>/i,
-      (charsetTag) => `${charsetTag}\n    ${viewportTag}`,
-    );
-  }
-
-  if (/<head[^>]*>/i.test(html)) {
-    return html.replace(
-      /<head[^>]*>/i,
-      (headTag) => `${headTag}\n    ${viewportTag}`,
-    );
-  }
-
   return html;
 }
 

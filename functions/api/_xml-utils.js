@@ -82,3 +82,23 @@ export function toAbsoluteUrl(origin, value) {
   const path = value.startsWith('/') ? value : `/${value}`;
   return `${origin}${path}`;
 }
+
+/**
+ * Load JSON asset through Cloudflare Pages ASSETS binding
+ * @param {Object} context - Function context
+ * @param {string} path - Asset path
+ * @returns {Promise<any|null>} Parsed JSON or null
+ */
+export async function loadJsonAsset(context, path) {
+  if (!context.env?.ASSETS) return null;
+
+  try {
+    const response = await context.env.ASSETS.fetch(
+      new URL(path, context.request.url),
+    );
+    if (!response.ok) return null;
+    return await response.json();
+  } catch {
+    return null;
+  }
+}

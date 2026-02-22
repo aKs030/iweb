@@ -1,5 +1,6 @@
 import {
   escapeXml,
+  loadJsonAsset,
   normalizePath,
   resolveOrigin,
   toAbsoluteUrl,
@@ -10,6 +11,7 @@ import {
   formatSlug,
 } from './api/_text-utils.js';
 import {
+  fetchPlaylistItemsPage,
   fetchUploadsPlaylistId,
   getBestYouTubeThumbnail,
 } from './api/_youtube-utils.js';
@@ -218,23 +220,11 @@ async function addYouTubeVideoImages(urlMap, env) {
   let collected = 0;
 
   do {
-    const playlistUrl = new URL(
-      'https://www.googleapis.com/youtube/v3/playlistItems',
+    const payload = await fetchPlaylistItemsPage(
+      uploadsPlaylistId,
+      apiKey,
+      nextPageToken,
     );
-    playlistUrl.searchParams.set('playlistId', uploadsPlaylistId);
-    playlistUrl.searchParams.set('key', apiKey);
-    playlistUrl.searchParams.set('part', 'snippet');
-    playlistUrl.searchParams.set('maxResults', '50');
-    if (nextPageToken) {
-      playlistUrl.searchParams.set('pageToken', nextPageToken);
-    }
-
-    const response = await fetch(playlistUrl.toString());
-    if (!response.ok) {
-      throw new Error(`YouTube playlistItems API failed: ${response.status}`);
-    }
-
-    const payload = await response.json();
     const items = payload?.items || [];
 
     for (const item of items) {
@@ -263,20 +253,6 @@ async function addYouTubeVideoImages(urlMap, env) {
 
     nextPageToken = payload?.nextPageToken || null;
   } while (nextPageToken && collected < MAX_YOUTUBE_RESULTS);
-}
-
-async function loadJsonAsset(context, path) {
-  if (!context.env?.ASSETS) return null;
-
-  try {
-    const response = await context.env.ASSETS.fetch(
-      new URL(path, context.request.url),
-    );
-    if (!response.ok) return null;
-    return await response.json();
-  } catch {
-    return null;
-  }
 }
 
 function buildXml(origin, urlMap) {

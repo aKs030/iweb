@@ -1,11 +1,16 @@
 import { ROUTES } from '../content/config/routes-config.js';
 import {
   escapeXml,
+  loadJsonAsset,
   normalizePath,
   resolveOrigin,
   toISODate,
 } from './api/_xml-utils.js';
-import { fetchUploadsPlaylistId, toYoutubeDate } from './api/_youtube-utils.js';
+import {
+  fetchPlaylistItemsPage,
+  fetchUploadsPlaylistId,
+  toYoutubeDate,
+} from './api/_youtube-utils.js';
 
 const ROUTE_META = {
   '/': { priority: 1.0, changefreq: 'weekly' },
@@ -47,44 +52,6 @@ const DISCOVERY_PATHS = [
   '/robots.txt',
 ];
 
-async function loadBlogPosts(context) {
-  if (!context.env?.ASSETS) {
-    return [];
-  }
-
-  try {
-    const indexUrl = new URL(BLOG_INDEX_PATH, context.request.url);
-    const response = await context.env.ASSETS.fetch(indexUrl);
-    if (!response.ok) {
-      return [];
-    }
-
-    const posts = await response.json();
-    return Array.isArray(posts) ? posts : [];
-  } catch {
-    return [];
-  }
-}
-
-async function loadProjectApps(context) {
-  if (!context.env?.ASSETS) {
-    return [];
-  }
-
-  try {
-    const indexUrl = new URL(PROJECT_APPS_PATH, context.request.url);
-    const response = await context.env.ASSETS.fetch(indexUrl);
-    if (!response.ok) {
-      return [];
-    }
-
-    const payload = await response.json();
-    return Array.isArray(payload?.apps) ? payload.apps : [];
-  } catch {
-    return [];
-  }
-}
-
 async function loadVideoEntries(env, today) {
   const channelId = env?.YOUTUBE_CHANNEL_ID;
   const apiKey = env?.YOUTUBE_API_KEY;
@@ -98,23 +65,11 @@ async function loadVideoEntries(env, today) {
   let collected = 0;
 
   do {
-    const playlistUrl = new URL(
-      'https://www.googleapis.com/youtube/v3/playlistItems',
+    const payload = await fetchPlaylistItemsPage(
+      uploadsPlaylistId,
+      apiKey,
+      nextPageToken,
     );
-    playlistUrl.searchParams.set('playlistId', uploadsPlaylistId);
-    playlistUrl.searchParams.set('key', apiKey);
-    playlistUrl.searchParams.set('part', 'snippet');
-    playlistUrl.searchParams.set('maxResults', '50');
-    if (nextPageToken) {
-      playlistUrl.searchParams.set('pageToken', nextPageToken);
-    }
-
-    const response = await fetch(playlistUrl.toString());
-    if (!response.ok) {
-      throw new Error(`YouTube playlistItems API failed: ${response.status}`);
-    }
-
-    const payload = await response.json();
     const items = payload?.items || [];
 
     for (const item of items) {
@@ -198,13 +153,18 @@ export async function onRequest(context) {
   const origin = resolveOrigin(context.request.url);
   const today = new Date().toISOString().split('T')[0];
 
-  const [staticEntries, blogPosts, projectApps, videoEntries] =
+  const [staticEntries, blogPostsPayload, projectAppsPayload, videoEntries] =
     await Promise.all([
       Promise.resolve(buildStaticEntries(today)),
-      loadBlogPosts(context),
-      loadProjectApps(context),
+      loadJsonAsset(context, BLOG_INDEX_PATH),
+      loadJsonAsset(context, PROJECT_APPS_PATH),
       loadVideoEntries(context.env, today).catch(() => []),
     ]);
+
+  const blogPosts = Array.isArray(blogPostsPayload) ? blogPostsPayload : [];
+  const projectApps = Array.isArray(projectAppsPayload?.apps)
+    ? projectAppsPayload.apps
+    : [];
 
   const blogEntries = buildBlogEntries(blogPosts, today);
   const appEntries = buildProjectAppEntries(projectApps, today);
