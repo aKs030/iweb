@@ -117,7 +117,7 @@ ${this.getToggleButton()}
     <span class="hamburger-line hamburger-line--middle"></span>
     <span class="hamburger-line hamburger-line--bottom"></span>
   </div>
-  <div class="menu-ripple"></div>
+  <div class="menu-ripple" data-collision-ignore></div>
 </button>`;
   }
 

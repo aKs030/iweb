@@ -74,6 +74,28 @@ const SYNONYMS = {
   game: ['spiel', 'spiele', 'games', 'spielen'],
 };
 
+const SYNONYM_KEYS = Object.keys(SYNONYMS);
+const SYNONYM_KEYS_BY_INITIAL = new Map();
+const SYNONYM_KEYS_BY_LENGTH = new Map();
+
+SYNONYM_KEYS.forEach((key) => {
+  const initial = key.charAt(0);
+  if (!SYNONYM_KEYS_BY_INITIAL.has(initial)) {
+    SYNONYM_KEYS_BY_INITIAL.set(initial, []);
+  }
+  SYNONYM_KEYS_BY_INITIAL.get(initial).push(key);
+
+  const len = key.length;
+  if (!SYNONYM_KEYS_BY_LENGTH.has(len)) {
+    SYNONYM_KEYS_BY_LENGTH.set(len, []);
+  }
+  SYNONYM_KEYS_BY_LENGTH.get(len).push(key);
+});
+
+const QUERY_EXPANSION_CACHE = new Map();
+const QUERY_EXPANSION_CACHE_MAX_ENTRIES = 200;
+const MAX_FUZZY_COMPARISONS_PER_WORD = 40;
+
 const TOP_LEVEL_TITLE_MAP = {
   projekte: 'Projekte Übersicht',
   blog: 'Blog Übersicht',
@@ -173,35 +195,99 @@ function levenshteinDistance(a, b) {
   return matrix[b.length][a.length];
 }
 
+function getFuzzyCandidateKeys(word, threshold) {
+  const candidates = new Set();
+
+  const byInitial = SYNONYM_KEYS_BY_INITIAL.get(word.charAt(0));
+  if (byInitial?.length) {
+    byInitial.forEach((key) => candidates.add(key));
+  }
+
+  const minLen = Math.max(1, word.length - threshold);
+  const maxLen = word.length + threshold;
+  for (let len = minLen; len <= maxLen; len++) {
+    const byLength = SYNONYM_KEYS_BY_LENGTH.get(len);
+    if (byLength?.length) {
+      byLength.forEach((key) => candidates.add(key));
+    }
+  }
+
+  return candidates.size > 0 ? Array.from(candidates) : SYNONYM_KEYS;
+}
+
+function setQueryExpansionCache(cacheKey, expandedQuery) {
+  if (!cacheKey) return;
+
+  if (QUERY_EXPANSION_CACHE.has(cacheKey)) {
+    QUERY_EXPANSION_CACHE.delete(cacheKey);
+  }
+
+  if (QUERY_EXPANSION_CACHE.size >= QUERY_EXPANSION_CACHE_MAX_ENTRIES) {
+    const oldestKey = QUERY_EXPANSION_CACHE.keys().next().value;
+    if (oldestKey) {
+      QUERY_EXPANSION_CACHE.delete(oldestKey);
+    }
+  }
+
+  QUERY_EXPANSION_CACHE.set(cacheKey, expandedQuery);
+}
+
 /**
  * Expand query with synonyms
  * @param {string} query - Original search query
  * @returns {string} Expanded query with synonyms
  */
 export function expandQuery(query) {
-  const words = query.toLowerCase().split(/\s+/);
+  const normalizedQuery = String(query || '')
+    .toLowerCase()
+    .trim();
+  if (!normalizedQuery) return '';
+
+  const cached = QUERY_EXPANSION_CACHE.get(normalizedQuery);
+  if (cached) {
+    QUERY_EXPANSION_CACHE.delete(normalizedQuery);
+    QUERY_EXPANSION_CACHE.set(normalizedQuery, cached);
+    return cached;
+  }
+
+  const words = normalizedQuery.split(/\s+/).filter(Boolean).slice(0, 10);
   const expandedWords = new Set(words);
 
   words.forEach((word) => {
+    if (word.length < 2) return;
+
     // Direct synonym match
-    if (SYNONYMS[word]) {
-      SYNONYMS[word].forEach((syn) => expandedWords.add(syn));
+    const directSynonyms = SYNONYMS[word];
+    if (directSynonyms) {
+      directSynonyms.forEach((syn) => expandedWords.add(syn));
+      return;
     }
 
+    if (word.length < 3) return;
+
     // Fuzzy match against synonym keys (typo tolerance)
-    Object.keys(SYNONYMS).forEach((key) => {
+    const threshold = word.length <= 4 ? 1 : 2;
+    const candidateKeys = getFuzzyCandidateKeys(word, threshold);
+    let comparisons = 0;
+
+    for (const key of candidateKeys) {
+      if (key === word) continue;
+      if (Math.abs(key.length - word.length) > threshold) continue;
+      if (comparisons >= MAX_FUZZY_COMPARISONS_PER_WORD) break;
+
+      comparisons += 1;
       const distance = levenshteinDistance(word, key);
-      // Allow 1-2 character difference based on word length
-      const threshold = word.length <= 4 ? 1 : 2;
 
       if (distance <= threshold && distance > 0) {
         expandedWords.add(key);
         SYNONYMS[key].forEach((syn) => expandedWords.add(syn));
       }
-    });
+    }
   });
 
-  return Array.from(expandedWords).join(' ');
+  const expandedQuery = Array.from(expandedWords).join(' ');
+  setQueryExpansionCache(normalizedQuery, expandedQuery);
+  return expandedQuery;
 }
 
 /**

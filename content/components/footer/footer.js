@@ -630,39 +630,18 @@ export class SiteFooter extends HTMLElement {
     };
 
     /** @type {EventListener} */
-
     const handleTouchStart = (e) => {
       const touchEvent = /** @type {TouchEvent} */ (e);
-
-      if (
-        !this.#elements.footerMin?.contains(
-          /** @type {Node} */ (touchEvent.target),
-        )
-      )
-        return;
-
       this.#state.touchStartY = touchEvent.touches[0].clientY;
-
       this.#state.touchStartTime = Date.now();
     };
 
     /** @type {EventListener} */
-
     const handleTouchEnd = (e) => {
+      if (this.#state.isTransitioning) return;
       const touchEvent = /** @type {TouchEvent} */ (e);
-
-      if (
-        !this.#elements.footerMin?.contains(
-          /** @type {Node} */ (touchEvent.target),
-        ) ||
-        this.#state.isTransitioning
-      )
-        return;
-
       const touchEndY = touchEvent.changedTouches[0].clientY;
-
       const touchDuration = Date.now() - this.#state.touchStartTime;
-
       const touchDistance = Math.abs(touchEndY - this.#state.touchStartY);
 
       if (
@@ -670,13 +649,11 @@ export class SiteFooter extends HTMLElement {
         (touchDistance < 10 || this.#state.touchStartY - touchEndY > 30)
       ) {
         touchEvent.preventDefault();
-
         this.#toggleFooter(true);
       }
     };
 
     /** @type {EventListener} */
-
     const handleResize = () => {
       const timeoutId = this.#timers.setTimeout(() => {
         if (this.#state.expanded) this.#updateFooterPosition();
@@ -693,29 +670,23 @@ export class SiteFooter extends HTMLElement {
       passive: false,
     });
 
-    this.#addListener(
-      'document:touchstart',
+    if (this.#elements.footerMin) {
+      this.#addListener(
+        'footerMin:touchstart',
+        this.#elements.footerMin,
+        'touchstart',
+        handleTouchStart,
+        { passive: true },
+      );
 
-      document,
-
-      'touchstart',
-
-      handleTouchStart,
-
-      { passive: true },
-    );
-
-    this.#addListener(
-      'document:touchend',
-
-      document,
-
-      'touchend',
-
-      handleTouchEnd,
-
-      { passive: false },
-    );
+      this.#addListener(
+        'footerMin:touchend',
+        this.#elements.footerMin,
+        'touchend',
+        handleTouchEnd,
+        { passive: false },
+      );
+    }
 
     this.#addListener('window:resize', window, 'resize', handleResize, {
       passive: true,

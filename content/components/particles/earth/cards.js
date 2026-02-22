@@ -215,7 +215,7 @@ export class CardManager {
     };
 
     if (globalThis.window !== undefined) {
-      window.addEventListener('resize', this._onResize);
+      window.addEventListener('resize', this._onResize, { passive: true });
       // Force initial layout
       this._onResize();
     }

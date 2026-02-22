@@ -163,12 +163,16 @@
  * @property {HTMLElement} [avatar] - Avatar element
  * @property {SVGElement} [svg] - SVG element
  * @property {SVGElement} [eyes] - Robot eyes SVG element
+ * @property {SVGElement} [antenna] - Robot antenna SVG element
  * @property {SVGElement} [flame] - Robot flame SVG element
+ * @property {NodeListOf<SVGElement>} [lids] - Robot eyelid elements
+ * @property {NodeListOf<SVGElement>} [pupils] - Robot pupil elements
  * @property {SVGElement} [legs] - Robot legs SVG element
  * @property {{left: Element|null, right: Element|null}} [arms] - Robot arms
  * @property {HTMLElement} [particles] - Particles element
  * @property {HTMLElement} [thinking] - Thinking indicator element
  * @property {SVGElement} [magnifyingGlass] - Magnifying glass element
+ * @property {HTMLElement} [mouth] - Mouth element
  * @property {HTMLElement} [closeBtn] - Close button element
  * @property {Element} [footer] - Footer element
  */

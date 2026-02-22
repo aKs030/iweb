@@ -503,36 +503,42 @@ const hideBrandingFromUsers = () => {
       // ignore errors in title observer
     }
 
-    const sanitizeHeadings = () => {
-      document
-        .querySelectorAll(
-          'h1,h2,.section-title,.section-header,.page-title,.site-title',
-        )
-        .forEach((el) => {
-          if (!el?.textContent) return;
-          const cleaned = sanitize(el.textContent);
-          if (cleaned !== el.textContent) el.textContent = cleaned;
-        });
+    const HEADING_SELECTOR =
+      'h1,h2,.section-title,.section-header,.page-title,.site-title';
+
+    const sanitizeHeadingElement = (el) => {
+      if (!el?.textContent) return;
+      const cleaned = sanitize(el.textContent);
+      if (cleaned !== el.textContent) el.textContent = cleaned;
     };
 
-    sanitizeHeadings();
+    const sanitizeNodeTree = (node) => {
+      if (!node || node.nodeType !== Node.ELEMENT_NODE) return;
+      const root = /** @type {Element} */ (node);
+      if (root.matches?.(HEADING_SELECTOR)) {
+        sanitizeHeadingElement(root);
+      }
+      root
+        .querySelectorAll?.(HEADING_SELECTOR)
+        .forEach((el) => sanitizeHeadingElement(el));
+    };
 
-    let sanitizeTimeout = null;
+    sanitizeNodeTree(document.body || document.documentElement);
+
     const mo = new MutationObserver((mutations) => {
-      let changed = false;
-      for (const m of mutations) {
-        if (m.addedNodes?.length) {
-          changed = true;
-          break;
+      mutations.forEach((mutation) => {
+        if (mutation.type === 'characterData') {
+          const parent = mutation.target?.parentElement;
+          if (parent) sanitizeNodeTree(parent);
+          return;
         }
-      }
-      if (changed) {
-        clearTimeout(sanitizeTimeout);
-        sanitizeTimeout = setTimeout(sanitizeHeadings, 150);
-      }
+
+        mutation.addedNodes?.forEach((node) => sanitizeNodeTree(node));
+      });
     });
-    mo.observe(document.documentElement || document.body, {
+    mo.observe(document.body || document.documentElement, {
       childList: true,
+      characterData: true,
       subtree: true,
     });
   } catch {

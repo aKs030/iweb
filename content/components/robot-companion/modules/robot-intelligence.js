@@ -4,10 +4,11 @@ export class RobotIntelligence {
     this.mouse = { x: 0, y: 0, lastX: 0, lastY: 0, speed: 0 };
     this.lastMoveTime = Date.now();
 
-    this.scroll = { lastY: 0, speed: 0, direction: 'down' };
+    this.lastScrollY = 0;
     this.lastScrollTime = Date.now();
     this.scrollBackAndForth = 0;
     this.lastScrollDirection = 'down';
+    this._scrollDecayTimer = null;
 
     this.lastInteractionTime = Date.now();
     this.isIdle = false;
@@ -81,6 +82,11 @@ export class RobotIntelligence {
       this._proactiveTipsInterval = null;
     }
 
+    if (this._scrollDecayTimer) {
+      clearTimeout(this._scrollDecayTimer);
+      this._scrollDecayTimer = null;
+    }
+
     // Clear Referenzen
     this._handlers = null;
   }
@@ -138,11 +144,11 @@ export class RobotIntelligence {
     if (dt > 100) {
       const scrollY =
         typeof globalThis !== 'undefined' ? globalThis.scrollY : 0;
-      const dist = Math.abs(scrollY - this.scroll.lastY);
+      const dist = Math.abs(scrollY - this.lastScrollY);
       const speed = dist / dt;
 
       // Detect scroll direction
-      const currentDirection = scrollY > this.scroll.lastY ? 'down' : 'up';
+      const currentDirection = scrollY > this.lastScrollY ? 'down' : 'up';
 
       // Track scroll position for element detection
       this.scrollPositionTracking.lastPosition = scrollY;
@@ -163,18 +169,22 @@ export class RobotIntelligence {
       }
 
       this.lastScrollDirection = currentDirection;
-      this.scroll.lastY = scrollY;
-      this.scroll.lastScrollTime = now;
+      this.lastScrollY = scrollY;
+      this.lastScrollTime = now;
 
       if (speed > 5) {
         this.triggerScrollReaction();
       }
 
       // Reset back-and-forth counter after 3 seconds of no direction change
-      setTimeout(() => {
+      if (this._scrollDecayTimer) {
+        clearTimeout(this._scrollDecayTimer);
+      }
+      this._scrollDecayTimer = setTimeout(() => {
         if (this.scrollBackAndForth > 0) {
           this.scrollBackAndForth = Math.max(0, this.scrollBackAndForth - 1);
         }
+        this._scrollDecayTimer = null;
       }, 3000);
     }
   }

@@ -96,7 +96,7 @@ const bindThumb = (btn) => {
   btn.dataset.bound = '1';
 };
 
-const renderVideoCard = async (grid, it, detailsMap, index = 0) => {
+const renderVideoCard = (container, it, detailsMap, index = 0) => {
   const vid = it.snippet.resourceId.videoId;
   const rawTitle = it.snippet.title;
   const title = cleanTitle(rawTitle);
@@ -238,7 +238,7 @@ const renderVideoCard = async (grid, it, detailsMap, index = 0) => {
   ld.type = 'application/ld+json';
   ld.textContent = JSON.stringify(ldObj);
 
-  grid.appendChild(article);
+  container.appendChild(article);
   article.appendChild(thumbBtn);
   article.appendChild(meta);
 
@@ -391,8 +391,9 @@ const loadLatestVideos = async () => {
     const batchSize = 5;
     for (let i = 0; i < items.length; i += batchSize) {
       const batch = items.slice(i, i + batchSize);
+      const fragment = document.createDocumentFragment();
       batch.forEach((it, idx) => {
-        renderVideoCard(grid, it, detailsMap, i + idx);
+        renderVideoCard(fragment, it, detailsMap, i + idx);
 
         // Auto-play deep-linked video
         if (
@@ -411,6 +412,7 @@ const loadLatestVideos = async () => {
           }, 800);
         }
       });
+      grid.appendChild(fragment);
 
       const progress = 0.6 + ((i + batchSize) / items.length) * 0.3;
       AppLoadManager.updateLoader(

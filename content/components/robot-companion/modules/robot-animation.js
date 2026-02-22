@@ -109,8 +109,8 @@ export class RobotAnimation {
       this._speakingTimer = null;
     }
     // Reset antenna color
-    if (this.robot.dom.svg) {
-      const antenna = this.robot.dom.svg.querySelector('.robot-antenna-light');
+    if (this.robot.dom.antenna) {
+      const antenna = this.robot.dom.antenna;
       if (antenna) {
         antenna.style.fill = '';
         antenna.style.filter = '';
@@ -125,8 +125,8 @@ export class RobotAnimation {
     const duration = 100 + Math.random() * 150;
     const isLit = Math.random() > 0.3;
 
-    if (this.robot.dom.svg) {
-      const antenna = this.robot.dom.svg.querySelector('.robot-antenna-light');
+    if (this.robot.dom.antenna) {
+      const antenna = this.robot.dom.antenna;
       if (antenna) {
         if (isLit) {
           antenna.style.fill = '#40e0d0'; // Cyan
@@ -151,8 +151,8 @@ export class RobotAnimation {
     if (this.thinkingActive) return;
     this.thinkingActive = true;
 
-    if (this.robot.dom.svg) {
-      const antenna = this.robot.dom.svg.querySelector('.robot-antenna-light');
+    if (this.robot.dom.antenna) {
+      const antenna = this.robot.dom.antenna;
       if (antenna) {
         antenna.classList.add('is-thinking');
       }
@@ -168,8 +168,8 @@ export class RobotAnimation {
     if (!this.thinkingActive) return;
     this.thinkingActive = false;
 
-    if (this.robot.dom.svg) {
-      const antenna = this.robot.dom.svg.querySelector('.robot-antenna-light');
+    if (this.robot.dom.antenna) {
+      const antenna = this.robot.dom.antenna;
       if (antenna) {
         antenna.classList.remove('is-thinking');
       }
@@ -246,7 +246,6 @@ export class RobotAnimation {
 
   updateStartAnimation() {
     if (!this.startAnimation.active || !this.robot.dom.container) {
-      requestAnimationFrame(this.updateStartAnimation);
       return;
     }
 
@@ -399,9 +398,6 @@ export class RobotAnimation {
       this.startAnimation.active ||
       this.searchAnimation.active
     ) {
-      if (!this.startAnimation.active && !this.searchAnimation.active) {
-        requestAnimationFrame(this.updatePatrol);
-      }
       return;
     }
     if (!this.robot.dom.container) {
@@ -844,7 +840,7 @@ export class RobotAnimation {
 
   doBlink() {
     if (!this.robot.dom || !this.robot.dom.eyes) return;
-    const lids = this.robot.dom.eyes.querySelectorAll('.robot-lid');
+    const lids = this.robot.dom.lids;
     if (!lids.length) return;
     lids.forEach((l) => l.classList.add('is-blink'));
     setTimeout(
@@ -871,8 +867,8 @@ export class RobotAnimation {
     this.spawnParticleBurst(12, { strength: 1.5, spread: 360 });
 
     // Flash antenna
-    if (this.robot.dom.svg) {
-      const antenna = this.robot.dom.svg.querySelector('.robot-antenna-light');
+    if (this.robot.dom.antenna) {
+      const antenna = this.robot.dom.antenna;
       if (antenna) {
         antenna.style.fill = '#ffff00';
         antenna.style.filter = 'drop-shadow(0 0 8px #ffff00)';
@@ -886,8 +882,8 @@ export class RobotAnimation {
     await sleep(200);
 
     // Reset antenna
-    if (this.robot.dom.svg) {
-      const antenna = this.robot.dom.svg.querySelector('.robot-antenna-light');
+    if (this.robot.dom.antenna) {
+      const antenna = this.robot.dom.antenna;
       if (antenna) {
         antenna.style.fill = '';
         antenna.style.filter = '';
@@ -907,7 +903,7 @@ export class RobotAnimation {
 
     // Wide eyes
     if (this.robot.dom.eyes) {
-      const pupils = this.robot.dom.eyes.querySelectorAll('.robot-pupil');
+      const pupils = this.robot.dom.pupils;
       pupils.forEach((p) => {
         p.style.transform = 'scale(1.5)';
         p.style.transition = 'transform 0.2s';
@@ -920,7 +916,7 @@ export class RobotAnimation {
 
     // Reset eyes
     if (this.robot.dom.eyes) {
-      const pupils = this.robot.dom.eyes.querySelectorAll('.robot-pupil');
+      const pupils = this.robot.dom.pupils;
       pupils.forEach((p) => {
         p.style.transform = '';
       });

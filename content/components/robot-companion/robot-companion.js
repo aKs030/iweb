@@ -80,6 +80,14 @@ export class RobotCompanion {
     this.currentObservedContext = null;
     /** @type {ReturnType<typeof createObserver>|null} */
     this._sectionObserver = null;
+    /** @type {ResizeObserver|null} */
+    this._footerLayoutObserver = null;
+    /** @type {Element|null} */
+    this._observedFooterEl = null;
+    /** @type {import('/content/core/types.js').PageContext|null} */
+    this._lastKnownContext = null;
+    /** @type {Element|null} */
+    this._typeWriterEl = null;
 
     /** @type {import('/content/core/types.js').EventListenerRegistry} */
     this._eventListeners = {
@@ -205,8 +213,88 @@ export class RobotCompanion {
     return this.aiService;
   }
 
+  getFooterElement() {
+    if (this.dom.footer && document.contains(this.dom.footer)) {
+      return this.dom.footer;
+    }
+
+    this.dom.footer =
+      document.querySelector('footer') ||
+      document.querySelector('#site-footer');
+    return this.dom.footer || null;
+  }
+
+  getTypewriterElement() {
+    if (this._typeWriterEl && document.contains(this._typeWriterEl)) {
+      return this._typeWriterEl;
+    }
+
+    this._typeWriterEl = document.querySelector('.typewriter-title');
+    return this._typeWriterEl || null;
+  }
+
+  checkTypewriterCollision() {
+    const typeWriter = this.getTypewriterElement();
+    if (!typeWriter || !this.dom?.container) return;
+
+    const twRect = typeWriter.getBoundingClientRect();
+    const robotWidth = 80;
+    const initialLeft =
+      (typeof globalThis !== 'undefined' ? globalThis.innerWidth : 0) -
+      30 -
+      robotWidth;
+    const maxLeft = initialLeft - 20;
+    this.collisionModule.checkForTypewriterCollision(twRect, maxLeft);
+  }
+
+  maybeTriggerContextReaction(currentContext = null) {
+    if (this.chatModule.isOpen) return;
+
+    const nextContext = currentContext || this.getPageContext();
+    if (!nextContext) return;
+
+    if (!this._lastKnownContext) {
+      this._lastKnownContext = nextContext;
+      return;
+    }
+
+    if (
+      nextContext === this._lastKnownContext ||
+      nextContext === this.chatModule.lastGreetedContext
+    ) {
+      return;
+    }
+
+    this._lastKnownContext = nextContext;
+    this.contextReactionsModule?.reactToSection(nextContext);
+
+    this._setTimeout(() => {
+      if (this.getPageContext() === nextContext && !this.chatModule.isOpen) {
+        this.chatModule.startInitialBubbleSequence();
+      }
+    }, 2000);
+  }
+
   setupFooterOverlapCheck() {
     let ticking = false;
+
+    const ensureObservedFooter = () => {
+      if (!this._footerLayoutObserver) return;
+      const footer = this.getFooterElement();
+      if (!footer || this._observedFooterEl === footer) return;
+
+      if (this._observedFooterEl) {
+        try {
+          this._footerLayoutObserver.unobserve(this._observedFooterEl);
+        } catch {
+          /* ignore */
+        }
+      }
+
+      this._footerLayoutObserver.observe(footer);
+      this._observedFooterEl = footer;
+    };
+
     const checkOverlap = () => {
       // Skip if search animation is active
       if (
@@ -228,12 +316,8 @@ export class RobotCompanion {
       }
 
       if (!this.dom.container) return;
-      if (!this.dom.footer) {
-        this.dom.footer =
-          document.querySelector('footer') ||
-          document.querySelector('#site-footer');
-      }
-      const footer = this.dom.footer;
+
+      const footer = this.getFooterElement();
       if (!footer) return;
 
       this.dom.container.style.bottom = '';
@@ -249,6 +333,7 @@ export class RobotCompanion {
         this.collisionModule.scanForCollisions();
       }
       ticking = false;
+      ensureObservedFooter();
     };
 
     const requestTick = () => {
@@ -271,12 +356,20 @@ export class RobotCompanion {
         handler: requestTick,
       });
     }
-    requestAnimationFrame(checkOverlap);
-    // Clear existing interval to prevent duplicates
-    if (this._footerCheckInterval) {
-      this._clearInterval(this._footerCheckInterval);
+
+    if (typeof ResizeObserver !== 'undefined') {
+      if (this._footerLayoutObserver) {
+        this._footerLayoutObserver.disconnect();
+      }
+      this._footerLayoutObserver = new ResizeObserver(() => requestTick());
+      this._footerLayoutObserver.observe(document.documentElement);
+      if (this.dom.container) {
+        this._footerLayoutObserver.observe(this.dom.container);
+      }
+      ensureObservedFooter();
     }
-    this._footerCheckInterval = this._setInterval(requestTick, 1000);
+
+    requestTick();
   }
 
   setupMobileViewportHandler() {
@@ -449,16 +542,7 @@ export class RobotCompanion {
 
     this._onHeroTypingEnd = () => {
       try {
-        const typeWriter = document.querySelector('.typewriter-title');
-        if (!typeWriter || !this.dom?.container) return;
-        const twRect = typeWriter.getBoundingClientRect();
-        const robotWidth = 80;
-        const initialLeft =
-          (typeof globalThis !== 'undefined' ? globalThis.innerWidth : 0) -
-          30 -
-          robotWidth;
-        const maxLeft = initialLeft - 20;
-        this.collisionModule.checkForTypewriterCollision(twRect, maxLeft);
+        this.checkTypewriterCollision();
       } catch (err) {
         log.warn('RobotCompanion: hero typing end handler failed', err);
       }
@@ -475,62 +559,34 @@ export class RobotCompanion {
 
   setupSectionChangeDetection() {
     this.setupSectionObservers();
-    let lastContext = this.getPageContext();
+    this._lastKnownContext = this.getPageContext();
 
-    const checkContextChange = () => {
-      if (this.chatModule.isOpen) return;
-
-      const currentContext = this.getPageContext();
-      if (
-        currentContext !== lastContext &&
-        currentContext !== this.chatModule.lastGreetedContext
-      ) {
-        lastContext = currentContext;
-
-        // Trigger context-aware reaction
-        this.contextReactionsModule?.reactToSection(currentContext);
-
-        this._setTimeout(() => {
-          if (
-            this.getPageContext() === currentContext &&
-            !this.chatModule.isOpen
-          ) {
-            this.chatModule.startInitialBubbleSequence();
-          }
-        }, 2000);
-      }
-    };
-
+    let rafPending = false;
     this._scrollListener = () => {
-      if (this._timers.scrollTimeout) {
-        this._clearTimeout(this._timers.scrollTimeout);
-      }
-      this._timers.scrollTimeout = /** @type {TimerID} */ (
-        this._setTimeout(() => {
-          checkContextChange();
-          try {
-            const tw = document.querySelector('.typewriter-title');
-            if (tw && this.dom.container) {
-              const twRect = tw.getBoundingClientRect();
-              const robotWidth = 80;
-              const initialLeft =
-                (typeof globalThis !== 'undefined'
-                  ? globalThis.innerWidth
-                  : 0) -
-                30 -
-                robotWidth;
-              const maxLeft = initialLeft - 20;
-              this.collisionModule.checkForTypewriterCollision(twRect, maxLeft);
+      if (rafPending) return;
+      rafPending = true;
+
+      requestAnimationFrame(() => {
+        rafPending = false;
+        if (this._timers.scrollTimeout) {
+          this._clearTimeout(this._timers.scrollTimeout);
+        }
+        this._timers.scrollTimeout = /** @type {TimerID} */ (
+          this._setTimeout(() => {
+            this.maybeTriggerContextReaction();
+            try {
+              this.checkTypewriterCollision();
+            } catch (err) {
+              log.warn(
+                'RobotCompanion: scroll handler collision check failed',
+                err,
+              );
             }
-          } catch (err) {
-            log.warn(
-              'RobotCompanion: scroll handler collision check failed',
-              err,
-            );
-          }
-        }, 500)
-      );
+          }, 220)
+        );
+      });
     };
+
     if (typeof globalThis !== 'undefined') {
       globalThis.addEventListener('scroll', this._scrollListener, {
         passive: true,
@@ -541,7 +597,24 @@ export class RobotCompanion {
         handler: this._scrollListener,
       });
     }
-    this._sectionCheckInterval = this._setInterval(checkContextChange, 3000);
+
+    const _onNavContextCheck = () => this.maybeTriggerContextReaction();
+    window.addEventListener('hashchange', _onNavContextCheck, {
+      passive: true,
+    });
+    window.addEventListener('popstate', _onNavContextCheck, { passive: true });
+    this._eventListeners.dom.push({
+      target: window,
+      event: 'hashchange',
+      handler: _onNavContextCheck,
+    });
+    this._eventListeners.dom.push({
+      target: window,
+      event: 'popstate',
+      handler: _onNavContextCheck,
+    });
+
+    this.maybeTriggerContextReaction(this._lastKnownContext);
   }
 
   destroy() {
@@ -568,6 +641,11 @@ export class RobotCompanion {
     if (this._sectionObserver) {
       this._sectionObserver.disconnect();
       this._sectionObserver = null;
+    }
+    if (this._footerLayoutObserver) {
+      this._footerLayoutObserver.disconnect();
+      this._footerLayoutObserver = null;
+      this._observedFooterEl = null;
     }
 
     // State Manager Cleanup
@@ -640,15 +718,6 @@ export class RobotCompanion {
     }
 
     // Interval Cleanup
-    if (this._sectionCheckInterval) {
-      this._clearInterval(this._sectionCheckInterval);
-      this._sectionCheckInterval = null;
-    }
-    if (this._footerCheckInterval) {
-      this._clearInterval(this._footerCheckInterval);
-      this._footerCheckInterval = null;
-    }
-
     // Zentrale Timer Cleanup
     if (this._timers) {
       // Alle verbleibenden Timeouts canceln
@@ -664,11 +733,6 @@ export class RobotCompanion {
         clearTimeout(this._timers.scrollTimeout);
         this._timers.scrollTimeout = null;
       }
-    }
-
-    // Andere Module Cleanup
-    if (this.collisionModule?.obstacleObserver) {
-      this.collisionModule.obstacleObserver.disconnect();
     }
 
     // DOM Cleanup
@@ -807,6 +871,9 @@ export class RobotCompanion {
     this.dom.avatar = container.querySelector('.robot-avatar');
     this.dom.svg = container.querySelector('.robot-svg');
     this.dom.eyes = container.querySelector('.robot-eyes');
+    this.dom.lids = container.querySelectorAll('.robot-lid');
+    this.dom.pupils = container.querySelectorAll('.robot-pupil');
+    this.dom.antenna = container.querySelector('.robot-antenna-light');
     this.dom.flame = container.querySelector('.robot-flame');
     this.dom.legs = container.querySelector('.robot-legs');
     this.dom.arms = {
@@ -1034,9 +1101,11 @@ export class RobotCompanion {
               entry.target.matches(s.selector),
             );
             if (match) {
+              if (this.currentObservedContext === match.ctx) return;
               this.currentObservedContext = match.ctx;
               // Update state manager
               this.stateManager.setState({ currentContext: match.ctx });
+              this.maybeTriggerContextReaction(match.ctx);
             }
           }
         });
