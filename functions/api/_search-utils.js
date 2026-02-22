@@ -114,7 +114,7 @@ const INTENT_BOOST_RULES = [
     boost: 4,
   },
   {
-    regex: /\b(about|ueber|über|profil|lebenslauf)\b/i,
+    regex: /\b(about|ueber|uber|über|profil|lebenslauf)\b/i,
     path: '/about',
     boost: 4,
   },
@@ -627,14 +627,19 @@ export function toSearchResult(item, query, snippetMaxLength = 170) {
 
   const textContent = toTextContent(item);
   const snippet = createSnippet(textContent, query, snippetMaxLength);
-  const description = snippet || 'Keine Beschreibung verfügbar';
   const inferredTitle = extractTitle(item?.filename, url);
   const title = chooseBestTitle(item, inferredTitle, url);
+  const category = detectCategory(url);
+  let description = snippet || '';
+
+  if (isLowQualitySnippet(description)) {
+    description = `${title} · ${category}`;
+  }
 
   return {
     url,
     title,
-    category: detectCategory(url),
+    category,
     description,
     highlightedDescription: highlightMatches(description, query),
     vectorScore: Number(item?.score || 0),
@@ -672,11 +677,32 @@ function computeCoverageScore(result, queryTerms) {
  * @param {string} url
  * @returns {number}
  */
+function normalizeIntentQuery(query) {
+  return String(query ?? '')
+    .toLowerCase()
+    .replace(/ä/g, 'ae')
+    .replace(/ö/g, 'oe')
+    .replace(/ü/g, 'ue')
+    .replace(/ß/g, 'ss')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function matchesIntentRule(rule, query, normalizedQuery) {
+  return rule.regex.test(query) || rule.regex.test(normalizedQuery);
+}
+
 function getIntentBoost(query, url) {
   let boost = 0;
+  const normalizedQuery = normalizeIntentQuery(query);
 
   for (const rule of INTENT_BOOST_RULES) {
-    if (rule.regex.test(query) && url.includes(rule.path)) {
+    if (
+      matchesIntentRule(rule, query, normalizedQuery) &&
+      url.includes(rule.path)
+    ) {
       boost += rule.boost;
     }
   }
@@ -691,9 +717,10 @@ function getIntentBoost(query, url) {
  */
 export function getIntentPaths(query) {
   const paths = new Set();
+  const normalizedQuery = normalizeIntentQuery(query);
 
   for (const rule of INTENT_BOOST_RULES) {
-    if (rule.regex.test(query)) {
+    if (matchesIntentRule(rule, query, normalizedQuery)) {
       paths.add(rule.path);
     }
   }
