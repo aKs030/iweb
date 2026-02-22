@@ -37,6 +37,8 @@ Passionate web developer specializing in zero-build architectures and edge-first
 ## Content Sections
 - Home: https://www.abdulkerimsesli.de/
 - Projects: https://www.abdulkerimsesli.de/projekte/
+- Project App Index (JSON): https://www.abdulkerimsesli.de/pages/projekte/apps-config.json
+- Project App Route Pattern: https://www.abdulkerimsesli.de/projekte/?app=<app-name>
 - Blog: https://www.abdulkerimsesli.de/blog/
 - Videos: https://www.abdulkerimsesli.de/videos/
 - Gallery: https://www.abdulkerimsesli.de/gallery/

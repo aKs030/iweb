@@ -89,6 +89,142 @@
         "type": "contact",
         "keywords": ["contact", "email", "form"],
         "priority": 0.5
+      },
+      {
+        "url": "https://www.abdulkerimsesli.de/datenschutz/",
+        "title": "Datenschutzerklärung",
+        "description": "Datenschutzinformationen gemäß DSGVO",
+        "type": "legal",
+        "keywords": ["datenschutz", "privacy", "dsgvo"],
+        "priority": 0.45
+      },
+      {
+        "url": "https://www.abdulkerimsesli.de/impressum/",
+        "title": "Impressum",
+        "description": "Rechtliche Anbieterkennzeichnung und Kontaktdaten",
+        "type": "legal",
+        "keywords": ["impressum", "legal", "anbieterkennzeichnung"],
+        "priority": 0.45
+      },
+      {
+        "url": "https://www.abdulkerimsesli.de/projekte/?app=calculator",
+        "title": "Calculator App",
+        "description": "Moderner Taschenrechner mit erweiterten Funktionen",
+        "type": "project-app",
+        "keywords": ["calculator", "taschenrechner", "math", "tool"],
+        "priority": 0.52
+      },
+      {
+        "url": "https://www.abdulkerimsesli.de/projekte/?app=color-changer",
+        "title": "Color Changer App",
+        "description": "Interaktive Farb- und Gradient-Experimente",
+        "type": "project-app",
+        "keywords": ["color", "farben", "gradient", "design"],
+        "priority": 0.5
+      },
+      {
+        "url": "https://www.abdulkerimsesli.de/projekte/?app=memory-game",
+        "title": "Memory Game",
+        "description": "Memory-Spiel mit Schwierigkeitsgraden",
+        "type": "project-app",
+        "keywords": ["memory", "game", "spiel", "karten"],
+        "priority": 0.52
+      },
+      {
+        "url": "https://www.abdulkerimsesli.de/projekte/?app=paint-app",
+        "title": "Paint App",
+        "description": "Zeichen-App mit Canvas, Farben und Pinselgrößen",
+        "type": "project-app",
+        "keywords": ["paint", "drawing", "canvas", "art"],
+        "priority": 0.5
+      },
+      {
+        "url": "https://www.abdulkerimsesli.de/projekte/?app=password-generator",
+        "title": "Password Generator",
+        "description": "Sicherer Passwort-Generator",
+        "type": "project-app",
+        "keywords": ["password", "security", "generator", "passwort"],
+        "priority": 0.54
+      },
+      {
+        "url": "https://www.abdulkerimsesli.de/projekte/?app=pong-game",
+        "title": "Pong Game",
+        "description": "Klassisches Pong-Spiel mit KI-Gegner",
+        "type": "project-app",
+        "keywords": ["pong", "game", "arcade", "retro"],
+        "priority": 0.5
+      },
+      {
+        "url": "https://www.abdulkerimsesli.de/projekte/?app=quiz-app",
+        "title": "Quiz App",
+        "description": "Interaktive Quiz-App mit Kategorien",
+        "type": "project-app",
+        "keywords": ["quiz", "trivia", "game", "wissen"],
+        "priority": 0.5
+      },
+      {
+        "url": "https://www.abdulkerimsesli.de/projekte/?app=schere-stein-papier",
+        "title": "Schere Stein Papier",
+        "description": "Spiel gegen den Computer",
+        "type": "project-app",
+        "keywords": ["schere", "stein", "papier", "game"],
+        "priority": 0.5
+      },
+      {
+        "url": "https://www.abdulkerimsesli.de/projekte/?app=snake-game",
+        "title": "Snake Game",
+        "description": "Klassisches Snake-Spiel",
+        "type": "project-app",
+        "keywords": ["snake", "game", "arcade", "retro"],
+        "priority": 0.5
+      },
+      {
+        "url": "https://www.abdulkerimsesli.de/projekte/?app=tic-tac-toe",
+        "title": "Tic Tac Toe",
+        "description": "Klassisches Strategie-Spiel",
+        "type": "project-app",
+        "keywords": ["tic tac toe", "game", "strategy"],
+        "priority": 0.5
+      },
+      {
+        "url": "https://www.abdulkerimsesli.de/projekte/?app=timer-app",
+        "title": "Timer App",
+        "description": "Countdown, Stoppuhr und Pomodoro",
+        "type": "project-app",
+        "keywords": ["timer", "countdown", "pomodoro", "productivity"],
+        "priority": 0.52
+      },
+      {
+        "url": "https://www.abdulkerimsesli.de/projekte/?app=todo-liste",
+        "title": "Todo Liste",
+        "description": "Aufgabenverwaltung und Produktivitäts-Tool",
+        "type": "project-app",
+        "keywords": ["todo", "tasks", "productivity", "liste"],
+        "priority": 0.52
+      },
+      {
+        "url": "https://www.abdulkerimsesli.de/projekte/?app=typing-speed-test",
+        "title": "Typing Speed Test",
+        "description": "Tipptest für WPM und Schreibtempo",
+        "type": "project-app",
+        "keywords": ["typing", "wpm", "speed test", "keyboard"],
+        "priority": 0.5
+      },
+      {
+        "url": "https://www.abdulkerimsesli.de/projekte/?app=weather-app",
+        "title": "Weather App",
+        "description": "Wetter-App mit Vorhersage und Standortdaten",
+        "type": "project-app",
+        "keywords": ["weather", "wetter", "forecast", "api"],
+        "priority": 0.54
+      },
+      {
+        "url": "https://www.abdulkerimsesli.de/projekte/?app=zahlen-raten",
+        "title": "Zahlen Raten",
+        "description": "Ratespiel mit Zahlen und Hinweisen",
+        "type": "project-app",
+        "keywords": ["zahlen", "raten", "spiel", "puzzle"],
+        "priority": 0.5
       }
     ],
     "apis": [
