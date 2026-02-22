@@ -29,6 +29,7 @@ export class MenuEvents {
       clearBtn: null,
       items: [],
       aiChatMessage: '',
+      aiChatSuggestions: [],
       selectedIndex: -1,
       debounceTimer: null,
       abortController: null,
@@ -281,6 +282,16 @@ export class MenuEvents {
         return;
       }
 
+      const suggestionBtn = e.target?.closest?.('[data-search-suggestion-url]');
+      if (suggestionBtn) {
+        const url = suggestionBtn.getAttribute('data-search-suggestion-url');
+        if (url) {
+          this.closeSearchModeSilently();
+          window.location.href = url;
+        }
+        return;
+      }
+
       const index = this.getSearchResultIndexFromEvent(e);
       if (index < 0) return;
 
@@ -301,6 +312,8 @@ export class MenuEvents {
         this.search.input.value = '';
         this.updateClearButtonVisibility('');
         this.search.items = [];
+        this.search.aiChatMessage = '';
+        this.search.aiChatSuggestions = [];
         this.search.selectedIndex = -1;
         this.renderSearchState({ hidden: true });
         this.search.input.focus();
@@ -457,6 +470,8 @@ export class MenuEvents {
 
     this.search.isOpen = false;
     this.search.items = [];
+    this.search.aiChatMessage = '';
+    this.search.aiChatSuggestions = [];
     this.search.selectedIndex = -1;
     this.syncSearchTriggerState(false);
     this.syncToggleSearchState(false);
@@ -507,6 +522,7 @@ export class MenuEvents {
       this.abortSearchRequest();
       this.search.items = [];
       this.search.aiChatMessage = '';
+      this.search.aiChatSuggestions = [];
       this.search.selectedIndex = -1;
       // Show recent searches when clearing
       if (!query && this.recentSearches.length > 0 && this.isSearchOpen()) {
@@ -537,11 +553,13 @@ export class MenuEvents {
       if (this.search.input?.value.trim() !== query) return;
       this.search.items = cachedItems;
       this.search.aiChatMessage = cachedPayload.aiChatMessage;
+      this.search.aiChatSuggestions = cachedPayload.aiChatSuggestions;
       this.search.selectedIndex = cachedItems.length > 0 ? 0 : -1;
 
       if (cachedItems.length === 0) {
         this.renderSearchState({
-          message: this.t('menu.search_no_results', 'Keine Treffer gefunden'),
+          aiChatMessage: cachedPayload.aiChatMessage,
+          aiChatSuggestions: cachedPayload.aiChatSuggestions,
         });
         return;
       }
@@ -550,6 +568,7 @@ export class MenuEvents {
         items: cachedItems,
         query,
         aiChatMessage: cachedPayload.aiChatMessage,
+        aiChatSuggestions: cachedPayload.aiChatSuggestions,
       });
       this.saveRecentSearch(query);
       return;
@@ -592,9 +611,12 @@ export class MenuEvents {
             .map((item) => this.normalizeSearchResult(item))
             .filter(Boolean)
         : [];
-      const aiChatMessage = this.normalizeSearchChatMessage(
-        data?.aiChat?.message || data?.summary || '',
+      const aiChat = this.normalizeSearchChatPayload(
+        data?.aiChat,
+        data?.summary,
       );
+      const aiChatMessage = aiChat.message;
+      const aiChatSuggestions = aiChat.suggestions;
 
       if (this.search.input?.value.trim() !== query) {
         return;
@@ -602,12 +624,19 @@ export class MenuEvents {
 
       this.search.items = items;
       this.search.aiChatMessage = aiChatMessage;
+      this.search.aiChatSuggestions = aiChatSuggestions;
       this.search.selectedIndex = items.length > 0 ? 0 : -1;
-      this.setCachedSearchResults(cacheKey, items, aiChatMessage);
+      this.setCachedSearchResults(
+        cacheKey,
+        items,
+        aiChatMessage,
+        aiChatSuggestions,
+      );
 
       if (items.length === 0) {
         this.renderSearchState({
-          message: this.t('menu.search_no_results', 'Keine Treffer gefunden'),
+          aiChatMessage,
+          aiChatSuggestions,
         });
         return;
       }
@@ -616,6 +645,7 @@ export class MenuEvents {
         items,
         query,
         aiChatMessage,
+        aiChatSuggestions,
       });
       this.saveRecentSearch(query);
     } catch (err) {
@@ -631,6 +661,7 @@ export class MenuEvents {
 
       this.search.items = [];
       this.search.aiChatMessage = '';
+      this.search.aiChatSuggestions = [];
       this.search.selectedIndex = -1;
       this.renderSearchState({
         message: didTimeoutAbort
@@ -676,6 +707,37 @@ export class MenuEvents {
     return text.length > 260 ? `${text.slice(0, 259).trim()}...` : text;
   }
 
+  normalizeSearchSuggestion(item) {
+    if (!item || typeof item !== 'object') return null;
+
+    const title = String(item.title || '')
+      .replace(/\s+/g, ' ')
+      .trim();
+    const url = String(item.url || '').trim();
+
+    if (!title || !url) return null;
+
+    return {
+      title: title.length > 58 ? `${title.slice(0, 57).trim()}...` : title,
+      url,
+    };
+  }
+
+  normalizeSearchChatPayload(aiChat, fallbackSummary = '') {
+    const payload = aiChat && typeof aiChat === 'object' ? aiChat : {};
+    const message = this.normalizeSearchChatMessage(
+      payload.message || fallbackSummary || '',
+    );
+    const suggestions = Array.isArray(payload.suggestions)
+      ? payload.suggestions
+          .map((item) => this.normalizeSearchSuggestion(item))
+          .filter(Boolean)
+          .slice(0, 3)
+      : [];
+
+    return { message, suggestions };
+  }
+
   /** Map category to a short emoji/icon for visual identification */
   getCategoryIcon(category) {
     const icons = {
@@ -700,6 +762,7 @@ export class MenuEvents {
       message = '',
       items = [],
       aiChatMessage = '',
+      aiChatSuggestions = [],
       query: _query = '',
     } = options;
 
@@ -731,25 +794,47 @@ export class MenuEvents {
       return;
     }
 
-    if (message) {
-      const stateEl = document.createElement('div');
-      stateEl.className = 'menu-search__state';
-      stateEl.textContent = message;
-      results.appendChild(stateEl);
-      return;
-    }
-
     if (aiChatMessage) {
       const aiChat = document.createElement('div');
       aiChat.className = 'menu-search__ai-chat';
 
-      // no label element, user requested box without title text
       const aiText = document.createElement('p');
       aiText.className = 'menu-search__ai-text';
       aiText.textContent = aiChatMessage;
       aiChat.appendChild(aiText);
 
+      if (Array.isArray(aiChatSuggestions) && aiChatSuggestions.length > 0) {
+        const suggestionsWrap = document.createElement('div');
+        suggestionsWrap.className = 'menu-search__ai-suggestions';
+
+        aiChatSuggestions.forEach((suggestion) => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'menu-search__ai-suggestion';
+          btn.setAttribute('data-search-suggestion-url', suggestion.url);
+          btn.textContent = suggestion.title;
+          suggestionsWrap.appendChild(btn);
+        });
+
+        aiChat.appendChild(suggestionsWrap);
+      }
+
       results.appendChild(aiChat);
+    }
+
+    if (message) {
+      const stateEl = document.createElement('div');
+      stateEl.className = 'menu-search__state';
+      stateEl.textContent = message;
+      results.appendChild(stateEl);
+
+      if (items.length === 0) {
+        return;
+      }
+    }
+
+    if (items.length === 0) {
+      return;
     }
 
     // Result count summary
@@ -990,10 +1075,20 @@ export class MenuEvents {
         ? entry.items.map((item) => ({ ...item }))
         : [],
       aiChatMessage: this.normalizeSearchChatMessage(entry.aiChatMessage),
+      aiChatSuggestions: Array.isArray(entry.aiChatSuggestions)
+        ? entry.aiChatSuggestions
+            .map((item) => this.normalizeSearchSuggestion(item))
+            .filter(Boolean)
+        : [],
     };
   }
 
-  setCachedSearchResults(cacheKey, items, aiChatMessage = '') {
+  setCachedSearchResults(
+    cacheKey,
+    items,
+    aiChatMessage = '',
+    aiChatSuggestions = [],
+  ) {
     if (!cacheKey || !Array.isArray(items)) return;
     if (this.searchCacheMaxEntries <= 0) return;
 
@@ -1012,6 +1107,11 @@ export class MenuEvents {
       expiresAt: Date.now() + this.searchCacheTtlMs,
       items: items.map((item) => ({ ...item })),
       aiChatMessage: this.normalizeSearchChatMessage(aiChatMessage),
+      aiChatSuggestions: Array.isArray(aiChatSuggestions)
+        ? aiChatSuggestions
+            .map((item) => this.normalizeSearchSuggestion(item))
+            .filter(Boolean)
+        : [],
     });
   }
 
