@@ -262,9 +262,15 @@ export class CardManager {
     const DPR = globalThis.window?.devicePixelRatio || 1;
     // OPTIMIZATION: Cap scale factor to reduce memory usage on mobile/high-DPI
     const isMobile = globalThis.innerWidth < 768;
-    // Max S=2 on mobile (1024px width), S=3 on desktop (1536px width). S=4 is overkill (2048px).
-    const maxS = isMobile ? 2 : 3;
-    const S = Math.min(Math.max(Math.ceil(DPR * 1.5), 2), maxS);
+    // Historically we limited mobile to S=2 which resulted in blurry
+    // textures on phones with DPR 3/4. 2026 devices have more RAM, so we
+    // allow a higher maximum to improve quality without blowing up memory.
+    // Desktop remains capped slightly higher for very large screens.
+    const maxS = isMobile ? 3 : 4;
+    // Choose a scale proportional to DPR but within bounds.  Using *2 instead
+    // of *1.5 gives a bit more fidelity on high‑dpi devices while still
+    // avoiding absurd sizes. We'll clamp to [2, maxS].
+    const S = Math.min(Math.max(Math.ceil(DPR * 2), 2), maxS);
 
     const W = 512 * S;
     const H = 700 * S;
