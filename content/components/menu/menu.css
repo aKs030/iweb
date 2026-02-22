@@ -91,6 +91,38 @@ site-menu {
   position: relative;
 }
 
+/* AI Orb Styling */
+.ai-orb {
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  min-height: 18px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #30D5C8, #007AFF, #AF52DE, #FF2D55);
+  background-size: 300% 300%;
+  animation: ai-pulse 4s ease-in-out infinite;
+  box-shadow: 0 0 8px rgba(0, 122, 255, 0.4);
+  opacity: 1 !important; /* Override default nav-icon opacity */
+}
+
+@keyframes ai-pulse {
+  0% {
+    background-position: 0% 50%;
+    box-shadow: 0 0 8px rgba(0, 122, 255, 0.4);
+    transform: scale(1);
+  }
+  50% {
+    background-position: 100% 50%;
+    box-shadow: 0 0 15px rgba(175, 82, 222, 0.6), 0 0 5px rgba(0, 255, 255, 0.4);
+    transform: scale(1.05);
+  }
+  100% {
+    background-position: 0% 50%;
+    box-shadow: 0 0 8px rgba(0, 122, 255, 0.4);
+    transform: scale(1);
+  }
+}
+
 .icon-fallback {
   font-size: 14px;
   flex-shrink: 0;

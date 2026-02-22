@@ -165,9 +165,7 @@ ${this.getToggleButton()}
         aria-controls="${this.ids.searchResults}"
       >
         <span class="icon-container">
-            <svg class="nav-icon search-icon" aria-hidden="true">
-            <use href="#icon-search"></use>
-            </svg>
+            <div class="nav-icon ai-orb" aria-hidden="true"></div>
         </span>
         <span class="icon-fallback icon-fallback--hidden">🔍</span>
       </button>
