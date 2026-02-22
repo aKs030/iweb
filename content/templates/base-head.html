@@ -1,5 +1,21 @@
-<!-- Base Head Template - Shared across all pages -->
-<!-- Usage: Include this in all HTML pages -->
+<!-- Import Map for ES Modules - Centralized for all pages -->
+<!-- Must be as early as possible in the head -->
+<script type="importmap">
+  {
+    "imports": {
+      "react": "https://esm.sh/react@19.0.0",
+      "react-dom": "https://esm.sh/react-dom@19.0.0",
+      "react-dom/client": "https://esm.sh/react-dom@19.0.0/client",
+      "three": "https://cdn.jsdelivr.net/npm/three@0.183.1/build/three.module.min.js",
+      "dompurify": "https://esm.sh/dompurify@3.3.1"
+    },
+    "scopes": {
+      "https://esm.sh/": {
+        "react": "https://esm.sh/react@19.0.0"
+      }
+    }
+  }
+</script>
 
 <!-- Synchronous Scroll Lock & Reset (Must be as early as possible for Safari) -->
 <script>
@@ -88,4 +104,4 @@
 
 <!-- Core Scripts -->
 <script type="module" src="/content/components/head/head-inline.js"></script>
-<script type="module" src="/content/main.js" crossorigin="anonymous"></script>
+<script type="module" src="/content/main.js"></script>

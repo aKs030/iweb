@@ -128,19 +128,26 @@ class SharedParallaxManager {
   activate() {
     if (this.isActive) return;
 
+    const root = document.documentElement;
+    let lastProgress = -1;
+
     this.scrollHandler = /** @type {EventListener} */ (
       throttle(() => {
         const scrollY = window.pageYOffset;
         const windowHeight = window.innerHeight;
-        const documentHeight = document.documentElement.scrollHeight;
+        const documentHeight = root.scrollHeight;
         const scrollableHeight = Math.max(1, documentHeight - windowHeight);
         const progress = Math.min(1, Math.max(0, scrollY / scrollableHeight));
 
-        // Update CSS variable
-        document.documentElement.style.setProperty(
-          `${SHARED_CONFIG.SCROLL.CSS_PROPERTY_PREFIX}progress`,
-          progress.toFixed(4),
-        );
+        // Update CSS variable only if it changed significantly (0.1% precision)
+        // This avoids expensive style/layout recalculations on every single pixel of scroll
+        if (Math.abs(progress - lastProgress) > 0.001) {
+          root.style.setProperty(
+            `${SHARED_CONFIG.SCROLL.CSS_PROPERTY_PREFIX}progress`,
+            progress.toFixed(4),
+          );
+          lastProgress = progress;
+        }
 
         // Call all handlers
         this.handlers.forEach(({ handler, name }) => {

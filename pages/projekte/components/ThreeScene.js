@@ -1,9 +1,7 @@
 import * as THREE from 'three';
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { ProjectGallery } from './ProjectGallery.js';
 import { useScrollCamera } from '../hooks/useScrollCamera.js';
-
-const { useEffect, useRef } = React;
 const BREAKPOINTS = {
   mobile: 640,
   tablet: 1024,

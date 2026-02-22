@@ -3,7 +3,7 @@
  * @version 2.0.0 - Optimized & Minimal
  */
 
-import React from 'https://esm.sh/react@19.2.3';
+import React from 'react';
 import htm from 'https://esm.sh/htm@3.1.1';
 import { ArrowUp } from '/content/components/icons/icons.js';
 

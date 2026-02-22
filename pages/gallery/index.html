@@ -1,7 +1,8 @@
 <!doctype html>
 <html lang="de">
   <head>
-    <title>Fotografie Portfolio | Abdulkerim Sesli</title>
+    <!-- INJECT:BASE-HEAD -->
+    <title>3D Gallery | Abdulkerim Sesli</title>
     <meta
       name="description"
       content="Visuelle Ästhetik aus der Hauptstadt. Kuratierte Galerie mit Fokus auf Street Photography, Architektur und atmosphärische Portraits aus Berlin und Umgebung."
@@ -11,19 +12,6 @@
     <link rel="canonical" href="https://www.abdulkerimsesli.de/gallery/" />
 
     <!-- Preconnect to Critical Resources -->
-
-    <!-- Import Map for ES Modules -->
-    <script type="importmap">
-      {
-        "imports": {
-          "react": "https://esm.sh/react@19.2.3",
-          "react-dom": "https://esm.sh/react-dom@19.2.3",
-          "react-dom/client": "https://esm.sh/react-dom@19.2.3/client",
-          "three": "https://cdn.jsdelivr.net/npm/three@0.171.0/build/three.module.js",
-          "dompurify": "https://esm.sh/dompurify@3.3.1"
-        }
-      }
-    </script>
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
@@ -116,8 +104,6 @@
         ]
       }
     </script>
-
-    <!-- INJECT:BASE-HEAD -->
     <!-- Gallery styles -->
     <link rel="stylesheet" href="/pages/gallery/gallery-styles.css" />
   </head>
@@ -144,10 +130,6 @@
     <!-- Lucide Icons removed — using inline/local icons to avoid many ESM module requests -->
 
     <!-- Gallery Component -->
-    <script
-      type="module"
-      src="/pages/gallery/gallery-app.js"
-      crossorigin="anonymous"
-    ></script>
+    <script type="module" src="/pages/gallery/gallery-app.js"></script>
   </body>
 </html>

@@ -184,6 +184,10 @@ class ThreeEarthSystem {
     // Observers
     this.sectionObserver = null;
     this.viewportObserver = null;
+
+    // Reuse vectors to avoid allocation in high-frequency callbacks
+    this._vTargetPos = null;
+    this._vTargetMoonPos = null;
   }
 
   async init() {
@@ -251,6 +255,9 @@ class ThreeEarthSystem {
       this.nightMaterial = earthAssets.nightMaterial;
       this.moonMesh = moonLOD;
       this.cloudMesh = cloudObj;
+
+      this._vTargetPos = new this.THREE.Vector3();
+      this._vTargetMoonPos = new this.THREE.Vector3();
 
       this._assembleScene();
       this._initManagers(container);
@@ -844,7 +851,8 @@ class ThreeEarthSystem {
     const sections = Array.from(document.querySelectorAll('section[id]'));
     if (!sections.length || !('IntersectionObserver' in window)) return;
 
-    const thresholds = Array.from({ length: 21 }, (_, i) => i / 20);
+    // Reduced thresholds from 21 to 11 (steps of 0.1) for better performance
+    const thresholds = Array.from({ length: 11 }, (_, i) => i / 10);
     this.sectionObserver = createObserver(
       (/** @type {any[]} */ entries) => {
         let best = null;
@@ -930,9 +938,14 @@ class ThreeEarthSystem {
    * @param {any} config
    */
   _applyConfigToMeshes(config) {
-    if (!config) return;
+    if (!config || !this.active) return;
     const em = this.earthMesh;
-    em.userData.targetPosition = new this.THREE.Vector3(
+    if (!em) return;
+
+    if (!em.userData.targetPosition) {
+      em.userData.targetPosition = new this.THREE.Vector3();
+    }
+    em.userData.targetPosition.set(
       config.earth.pos.x,
       config.earth.pos.y,
       config.earth.pos.z,
@@ -942,7 +955,10 @@ class ThreeEarthSystem {
 
     if (this.moonMesh && config.moon) {
       const mm = this.moonMesh;
-      mm.userData.targetPosition = new this.THREE.Vector3(
+      if (!mm.userData.targetPosition) {
+        mm.userData.targetPosition = new this.THREE.Vector3();
+      }
+      mm.userData.targetPosition.set(
         config.moon.pos.x,
         config.moon.pos.y,
         config.moon.pos.z,
@@ -1191,14 +1207,20 @@ function detectDeviceCapabilities() {
     const ua = (navigator.userAgent || '').toLowerCase();
     const isMobile = /mobile|tablet|android|ios|iphone|ipad/i.test(ua);
 
-    // More lenient low-end detection - only flag very old devices
+    // Flag devices with 4 or fewer cores as potential low-end/medium for this complex scene
     const isLowEnd =
-      /android 4|android 5|cpu iphone os 9|cpu iphone os 10/i.test(ua) ||
-      (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 2);
+      /android 4|android 5|cpu iphone os 9|cpu iphone os 10|cpu iphone os 11/i.test(
+        ua,
+      ) ||
+      (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4);
 
     let recommendedQuality;
     if (isLowEnd) recommendedQuality = 'LOW';
-    else if (isMobile) recommendedQuality = 'MEDIUM';
+    else if (
+      isMobile ||
+      (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 8)
+    )
+      recommendedQuality = 'MEDIUM';
     else recommendedQuality = 'HIGH';
 
     log.debug('Device capabilities:', {

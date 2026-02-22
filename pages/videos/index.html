@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="de">
   <head>
+    <!-- INJECT:BASE-HEAD -->
     <title>Videos — Abdulkerim Sesli</title>
     <meta
       name="description"
@@ -53,21 +54,6 @@
     <meta name="twitter:image:width" content="1200" />
     <meta name="twitter:image:height" content="630" />
     <meta name="twitter:image:type" content="image/png" />
-
-    <!-- PWA & Icons (theme-color in base-head.html) -->
-
-    <!-- Import Map for ES Modules -->
-    <script type="importmap">
-      {
-        "imports": {
-          "react": "https://esm.sh/react@19.2.3",
-          "react-dom": "https://esm.sh/react-dom@19.2.3",
-          "react-dom/client": "https://esm.sh/react-dom@19.2.3/client",
-          "three": "https://cdn.jsdelivr.net/npm/three@0.171.0/build/three.module.js",
-          "dompurify": "https://esm.sh/dompurify@3.3.1"
-        }
-      }
-    </script>
 
     <!-- Server-side Breadcrumbs JSON-LD and WebPage (mainEntity) -->
     <script type="application/ld+json">
@@ -127,7 +113,6 @@
       }
     </script>
 
-    <!-- INJECT:BASE-HEAD -->
     <!-- Page-specific CSS -->
     <link rel="stylesheet" href="/pages/videos/videos.css" />
   </head>
@@ -216,11 +201,6 @@
       </div>
     </main>
 
-    <script
-      type="module"
-      src="/pages/videos/videos.js"
-      crossorigin="anonymous"
-      defer
-    ></script>
+    <script type="module" src="/pages/videos/videos.js" defer></script>
   </body>
 </html>
