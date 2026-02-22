@@ -4,7 +4,7 @@
  * @version 1.0.0
  */
 
-import { getElementById, onDOMReady } from './utils.js';
+import { getElementById, onDOMReady, TimerManager } from './utils.js';
 import { createLogger } from './logger.js';
 
 const log = createLogger('SectionTracker');
@@ -37,6 +37,8 @@ export class SectionTracker {
     this.observer = null;
     /** @type {(() => void)|null} */
     this.refreshHandler = null;
+    /** @type {TimerManager} */
+    this.timers = new TimerManager('SectionTracker');
   }
 
   init() {
@@ -44,7 +46,7 @@ export class SectionTracker {
 
     // Reuse single handler for both events
     this.refreshHandler = () =>
-      setTimeout(() => this.refreshSections(), REFRESH_DELAY_MS);
+      this.timers.setTimeout(() => this.refreshSections(), REFRESH_DELAY_MS);
     document.addEventListener('section:loaded', this.refreshHandler);
     document.addEventListener('footer:loaded', this.refreshHandler);
   }
@@ -62,9 +64,11 @@ export class SectionTracker {
 
     // Use requestIdleCallback for initial check
     if (typeof window.requestIdleCallback === 'function') {
-      requestIdleCallback(() => this.checkInitialSection(), { timeout: 1000 });
+      window.requestIdleCallback(() => this.checkInitialSection(), {
+        timeout: 1000,
+      });
     } else {
-      setTimeout(() => this.checkInitialSection(), 100);
+      this.timers.setTimeout(() => this.checkInitialSection(), 100);
     }
   }
 
@@ -215,6 +219,9 @@ export class SectionTracker {
     if (this.observer) {
       this.observer.disconnect();
       this.observer = null;
+    }
+    if (this.timers) {
+      this.timers.clearAll();
     }
     if (this.refreshHandler) {
       document.removeEventListener('section:loaded', this.refreshHandler);

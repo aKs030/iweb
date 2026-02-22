@@ -415,7 +415,7 @@ export class SiteFooter extends HTMLElement {
 
     this.#bindEvents();
 
-    this.#updateLanguage(i18n.currentLang);
+    i18n.translateElement(this);
   }
 
   #cacheElements() {
@@ -498,13 +498,13 @@ export class SiteFooter extends HTMLElement {
     this.#addListener('acceptBtn:click', acceptBtn, 'click', (e) => {
       e.stopPropagation();
 
-      this.#acceptCookies();
+      this.#handleConsent('accepted');
     });
 
     this.#addListener('rejectBtn:click', rejectBtn, 'click', (e) => {
       e.stopPropagation();
 
-      this.#rejectCookies();
+      this.#handleConsent('rejected');
     });
   }
 
@@ -517,40 +517,33 @@ export class SiteFooter extends HTMLElement {
   #updateFooterHeight(showBanner) {
     try {
       const root = document.documentElement;
-
       const { cookieBanner } = this.#elements;
 
-      if (showBanner && cookieBanner) {
-        const bannerHeight = Math.round(
-          cookieBanner.getBoundingClientRect().height || 0,
-        );
+      const bannerHeight =
+        showBanner && cookieBanner
+          ? Math.round(cookieBanner.getBoundingClientRect().height || 0)
+          : 0;
 
-        root.style.setProperty(
-          '--footer-height',
+      root.style.setProperty(
+        '--footer-height',
+        `${this.#state.baseFooterHeight + bannerHeight}px`,
+      );
 
-          `${this.#state.baseFooterHeight + bannerHeight}px`,
-        );
-
-        root.classList.add('footer-cookie-visible');
-      } else {
-        root.style.setProperty(
-          '--footer-height',
-
-          `${this.#state.baseFooterHeight}px`,
-        );
-
-        root.classList.remove('footer-cookie-visible');
-      }
+      root.classList.toggle('footer-cookie-visible', !!showBanner);
     } catch {
       /* noop */
     }
   }
 
-  #acceptCookies() {
+  /**
+   * @param {'accepted' | 'rejected'} type
+   */
+  #handleConsent(type) {
     const { cookieBanner } = this.#elements;
 
     if (!cookieBanner) return;
 
+    const isAccepted = type === 'accepted';
     const styledBanner =
       /** @type {import('/content/core/types.js').StyledHTMLElement} */ (
         cookieBanner
@@ -560,42 +553,17 @@ export class SiteFooter extends HTMLElement {
 
     this.#timers.setTimeout(() => {
       cookieBanner.classList.add('hidden');
-
       this.#updateFooterHeight(false);
     }, 300);
 
-    CookieManager.set('cookie_consent', 'accepted');
+    CookieManager.set('cookie_consent', type);
+    this.#analytics.updateConsent(isAccepted);
 
-    this.#analytics.updateConsent(true);
+    if (isAccepted) {
+      this.#analytics.load();
+    }
 
-    this.#analytics.load();
-
-    a11y?.announce(i18n.t('footer.messages.accepted'), { priority: 'polite' });
-  }
-
-  #rejectCookies() {
-    const { cookieBanner } = this.#elements;
-
-    if (!cookieBanner) return;
-
-    const styledBanner =
-      /** @type {import('/content/core/types.js').StyledHTMLElement} */ (
-        cookieBanner
-      );
-
-    styledBanner.style.animation = 'cookieSlideOut 0.3s ease-out forwards';
-
-    this.#timers.setTimeout(() => {
-      cookieBanner.classList.add('hidden');
-
-      this.#updateFooterHeight(false);
-    }, 300);
-
-    CookieManager.set('cookie_consent', 'rejected');
-
-    this.#analytics.updateConsent(false);
-
-    a11y?.announce(i18n.t('footer.messages.rejected'), { priority: 'polite' });
+    a11y?.announce(i18n.t(`footer.messages.${type}`), { priority: 'polite' });
   }
 
   #setupGlobalEventListeners() {
@@ -727,25 +695,29 @@ export class SiteFooter extends HTMLElement {
 
     const footerTriggers = document.querySelectorAll('[data-footer-trigger]');
 
-    if (this.#state.expanded) {
-      footer.classList.add('expanded');
+    footer.classList.toggle('expanded', newState);
+    document.body.classList.toggle('footer-expanded', newState);
 
-      document.body.classList.add('footer-expanded');
+    footerMin?.classList.toggle('hidden', newState);
+    footerMax?.classList.toggle('hidden', !newState);
 
-      footerMin?.classList.add('hidden');
+    const ariaState = String(newState);
+    footerMin?.setAttribute('aria-expanded', ariaState);
+    footerTriggers.forEach((t) => t.setAttribute('aria-expanded', ariaState));
 
-      footerMax?.classList.remove('hidden');
+    const actionKey = newState ? 'expanded' : 'minimized';
+    a11y?.announce(i18n.t(`footer.actions.${actionKey}`), {
+      priority: 'polite',
+    });
 
-      footerMin?.setAttribute('aria-expanded', 'true');
+    this.dispatchEvent(
+      new CustomEvent(
+        newState ? EVENTS.FOOTER_EXPANDED : EVENTS.FOOTER_COLLAPSED,
+        { bubbles: true },
+      ),
+    );
 
-      footerTriggers.forEach((t) => t.setAttribute('aria-expanded', 'true'));
-
-      a11y?.announce(i18n.t('footer.actions.expanded'), { priority: 'polite' });
-
-      this.dispatchEvent(
-        new CustomEvent(EVENTS.FOOTER_EXPANDED, { bubbles: true }),
-      );
-
+    if (newState) {
       const firstFocusable = /** @type {HTMLElement|null} */ (
         footerMax?.querySelector(
           'button, a, input, [tabindex]:not([tabindex="-1"])',
@@ -755,26 +727,6 @@ export class SiteFooter extends HTMLElement {
       if (firstFocusable) {
         this.#timers.setTimeout(() => firstFocusable.focus(), 100);
       }
-    } else {
-      footer.classList.remove('expanded');
-
-      document.body.classList.remove('footer-expanded');
-
-      footerMin?.classList.remove('hidden');
-
-      footerMax?.classList.add('hidden');
-
-      footerMin?.setAttribute('aria-expanded', 'false');
-
-      footerTriggers.forEach((t) => t.setAttribute('aria-expanded', 'false'));
-
-      a11y?.announce(i18n.t('footer.actions.minimized'), {
-        priority: 'polite',
-      });
-
-      this.dispatchEvent(
-        new CustomEvent(EVENTS.FOOTER_COLLAPSED, { bubbles: true }),
-      );
     }
 
     this.#timers.setTimeout(() => {
@@ -829,63 +781,31 @@ export class SiteFooter extends HTMLElement {
   #bindEvents() {
     const { closeBtn, footerMin } = this.#elements;
 
-    // Footer-Trigger (außerhalb des Footers)
-
-    /** @type {EventListener} */
-
-    const footerTriggerHandler = (e) => {
+    const createTriggerHandler = (selector, action) => (e) => {
       const target = /** @type {Element} */ (e.target);
 
-      const trigger = target.closest('[data-footer-trigger]');
-
-      if (trigger) {
+      if (target.closest(selector)) {
         e.preventDefault();
-
         e.stopPropagation();
-
-        this.#toggleFooter(true);
-
-        trigger.setAttribute('aria-expanded', 'true');
+        action();
       }
     };
 
     this.#addListener(
       'document:footerTrigger',
-
       document,
-
       'click',
-
-      footerTriggerHandler,
+      createTriggerHandler('[data-footer-trigger]', () =>
+        this.#toggleFooter(true),
+      ),
     );
-
-    // Cookie-Trigger
-
-    /** @type {EventListener} */
-
-    const cookieTriggerHandler = (e) => {
-      const target = /** @type {Element} */ (e.target);
-
-      if (target.closest('[data-cookie-trigger]')) {
-        e.preventDefault();
-
-        e.stopPropagation();
-
-        this.#openSettings();
-      }
-    };
 
     this.#addListener(
       'this:cookieTrigger',
-
       this,
-
       'click',
-
-      cookieTriggerHandler,
+      createTriggerHandler('[data-cookie-trigger]', () => this.#openSettings()),
     );
-
-    // Settings schließen
 
     if (closeBtn) {
       this.#addListener('closeBtn:click', closeBtn, 'click', () =>
@@ -893,203 +813,88 @@ export class SiteFooter extends HTMLElement {
       );
     }
 
-    // Footer minimiert - Klick zum Erweitern
-
     if (footerMin) {
-      /** @type {EventListener} */
+      const isInteractive = (/** @type {Element} */ target) =>
+        target.closest('a, button, input, .cookie-inline');
 
-      const footerMinClickHandler = (e) => {
-        const target = /** @type {Element} */ (e.target);
-
-        if (target.closest('a, button, input, .cookie-inline')) return;
+      this.#addListener('footerMin:click', footerMin, 'click', (e) => {
+        if (isInteractive(/** @type {Element} */ (e.target))) return;
 
         if (this.#state.isTransitioning) {
           e.preventDefault();
-
           return;
         }
 
         this.#toggleFooter();
-      };
+      });
 
-      this.#addListener(
-        'footerMin:click',
-
-        footerMin,
-
-        'click',
-
-        footerMinClickHandler,
-      );
-
-      // Keyboard Support
-
-      /** @type {EventListener} */
-
-      const footerMinKeydownHandler = (e) => {
+      this.#addListener('footerMin:keydown', footerMin, 'keydown', (e) => {
         const keyEvent = /** @type {KeyboardEvent} */ (e);
 
-        if (keyEvent.key === 'Enter' || keyEvent.key === ' ') {
-          const target = /** @type {Element} */ (keyEvent.target);
-
-          if (!target.closest('a, button, input, .cookie-inline')) {
-            keyEvent.preventDefault();
-
-            this.#toggleFooter();
-          }
+        if (
+          (keyEvent.key === 'Enter' || keyEvent.key === ' ') &&
+          !isInteractive(/** @type {Element} */ (keyEvent.target))
+        ) {
+          keyEvent.preventDefault();
+          this.#toggleFooter();
         }
-      };
-
-      this.#addListener(
-        'footerMin:keydown',
-
-        footerMin,
-
-        'keydown',
-
-        footerMinKeydownHandler,
-      );
+      });
     }
 
     this.#bindSettingsButtons();
   }
 
+  #saveSettings(consentType, analyticsEnabled, messageKey) {
+    CookieManager.set('cookie_consent', consentType);
+    this.#analytics.updateConsent(analyticsEnabled);
+
+    if (analyticsEnabled) {
+      this.#analytics.load();
+    } else {
+      CookieManager.deleteAnalytics();
+    }
+
+    this.#elements.cookieBanner?.classList.add('hidden');
+    a11y?.announce(i18n.t(messageKey), { priority: 'polite' });
+    this.#closeSettings();
+  }
+
   #bindSettingsButtons() {
-    const {
-      rejectAll,
-
-      acceptSelected,
-
-      acceptAll,
-
-      analyticsToggle,
-
-      cookieBanner,
-    } = this.#elements;
+    const { rejectAll, acceptSelected, acceptAll, analyticsToggle } =
+      this.#elements;
 
     if (rejectAll) {
-      /** @type {EventListener} */
-
-      const rejectAllHandler = () => {
-        CookieManager.set('cookie_consent', 'rejected');
-
-        CookieManager.deleteAnalytics();
-
-        this.#analytics.updateConsent(false);
-
-        cookieBanner?.classList.add('hidden');
-
-        a11y?.announce(i18n.t('footer.messages.necessary_only'), {
-          priority: 'polite',
-        });
-
-        this.#closeSettings();
-      };
-
-      this.#addListener(
-        'rejectAll:click',
-
-        rejectAll,
-
-        'click',
-
-        rejectAllHandler,
-      );
+      this.#addListener('rejectAll:click', rejectAll, 'click', () => {
+        this.#saveSettings('rejected', false, 'footer.messages.necessary_only');
+      });
     }
 
     if (acceptSelected) {
-      /** @type {EventListener} */
-
-      const acceptSelectedHandler = () => {
+      this.#addListener('acceptSelected:click', acceptSelected, 'click', () => {
         const toggle = /** @type {HTMLInputElement|null} */ (analyticsToggle);
-
         const analyticsEnabled = toggle?.checked ?? false;
 
-        CookieManager.set(
-          'cookie_consent',
-
+        this.#saveSettings(
           analyticsEnabled ? 'accepted' : 'rejected',
+          analyticsEnabled,
+          'footer.messages.saved',
         );
-
-        if (analyticsEnabled) {
-          this.#analytics.updateConsent(true);
-
-          this.#analytics.load();
-        } else {
-          this.#analytics.updateConsent(false);
-
-          CookieManager.deleteAnalytics();
-        }
-
-        cookieBanner?.classList.add('hidden');
-
-        a11y?.announce(i18n.t('footer.messages.saved'), { priority: 'polite' });
-
-        this.#closeSettings();
-      };
-
-      this.#addListener(
-        'acceptSelected:click',
-
-        acceptSelected,
-
-        'click',
-
-        acceptSelectedHandler,
-      );
+      });
     }
 
     if (acceptAll) {
-      /** @type {EventListener} */
-
-      const acceptAllHandler = () => {
-        CookieManager.set('cookie_consent', 'accepted');
-
-        this.#analytics.updateConsent(true);
-
-        this.#analytics.load();
-
-        cookieBanner?.classList.add('hidden');
-
-        a11y?.announce(i18n.t('footer.messages.all_accepted'), {
-          priority: 'polite',
-        });
-
-        this.#closeSettings();
-      };
-
-      this.#addListener(
-        'acceptAll:click',
-
-        acceptAll,
-
-        'click',
-
-        acceptAllHandler,
-      );
+      this.#addListener('acceptAll:click', acceptAll, 'click', () => {
+        this.#saveSettings('accepted', true, 'footer.messages.all_accepted');
+      });
     }
   }
 
   #setupLanguageUpdates() {
-    /** @type {(lang: string) => void} */
-
-    const languageChangeHandler = (lang) => {
-      this.#updateLanguage(lang);
-    };
-
-    const unsubscribe = i18n.subscribe(languageChangeHandler);
+    const unsubscribe = i18n.subscribe(() => {
+      i18n.translateElement(this);
+    });
 
     this.#listeners.set('i18n:unsubscribe', unsubscribe);
-  }
-
-  /**
-
-   * @param {string} _lang
-
-   */
-
-  #updateLanguage(_lang) {
-    i18n.translateElement(this);
   }
 }
 

@@ -105,7 +105,7 @@ export class RobotAnimation {
     if (!this.speakingActive) return;
     this.speakingActive = false;
     if (this._speakingTimer) {
-      clearTimeout(this._speakingTimer);
+      this.robot._clearTimeout(this._speakingTimer);
       this._speakingTimer = null;
     }
     // Reset antenna color
@@ -141,7 +141,7 @@ export class RobotAnimation {
     // Check again before scheduling to prevent race condition
     if (!this.speakingActive) return;
 
-    this._speakingTimer = setTimeout(
+    this._speakingTimer = this.robot._setTimeout(
       () => this.startSpeakingLoop(),
       duration + 50,
     );
@@ -309,7 +309,7 @@ export class RobotAnimation {
         const reaction =
           reactions[Math.floor(Math.random() * reactions.length)];
         this.robot.showBubble(reaction);
-        setTimeout(() => this.robot.hideBubble(), 2500);
+        this.robot._setTimeout(() => this.robot.hideBubble(), 2500);
 
         this.spawnParticleBurst(15, { strength: 2, spread: 180 });
 
@@ -356,7 +356,7 @@ export class RobotAnimation {
         this.startAnimation.phase = 'landing';
         this.spawnParticleBurst(8, { strength: 1.5 });
 
-        setTimeout(() => {
+        this.robot._setTimeout(() => {
           this.startAnimation.active = false;
           this.patrol.active = true;
           this.patrol.y = 0;
@@ -389,7 +389,10 @@ export class RobotAnimation {
 
   updatePatrol() {
     if (document.hidden) {
-      setTimeout(() => requestAnimationFrame(this.updatePatrol), 500);
+      this.robot._setTimeout(
+        () => requestAnimationFrame(this.updatePatrol),
+        500,
+      );
       return;
     }
 
@@ -578,12 +581,12 @@ export class RobotAnimation {
 
     if (this.robot.dom.thinking && Math.random() < 0.3) {
       this.robot.dom.thinking.style.opacity = '1';
-      setTimeout(() => {
+      this.robot._setTimeout(() => {
         if (this.robot.dom.thinking)
           this.robot.dom.thinking.style.opacity = '0';
       }, ms * 0.6);
     }
-    setTimeout(() => {
+    this.robot._setTimeout(() => {
       this.patrol.isPaused = false;
       this.resetIdleAnimations();
     }, ms);
@@ -672,7 +675,7 @@ export class RobotAnimation {
         if (Math.random() < 0.15) el.style.filter = 'blur(1px)';
       });
 
-      setTimeout(() => el.remove(), 900 + Math.random() * 600);
+      this.robot._setTimeout(() => el.remove(), 900 + Math.random() * 600);
     }
   }
 
@@ -715,7 +718,7 @@ export class RobotAnimation {
       el.style.opacity = '0';
     });
 
-    setTimeout(() => el.remove(), 600);
+    this.robot._setTimeout(() => el.remove(), 600);
   }
 
   async playPokeAnimation() {
@@ -732,9 +735,9 @@ export class RobotAnimation {
       this.robot.dom.avatar.style.transform = 'translateY(-20px) scale(1.1)';
 
       await new Promise((resolve) => {
-        setTimeout(() => {
+        this.robot._setTimeout(() => {
           this.robot.dom.avatar.style.transform = '';
-          setTimeout(resolve, 200);
+          this.robot._setTimeout(resolve, 200);
         }, 200);
       });
     } else if (effect === 'shake') {
@@ -755,9 +758,9 @@ export class RobotAnimation {
           'brightness(2) drop-shadow(0 0 10px #fff)';
       }
       await new Promise((resolve) => {
-        setTimeout(() => {
+        this.robot._setTimeout(() => {
           if (this.robot.dom.svg) this.robot.dom.svg.style.filter = '';
-          setTimeout(resolve, 100);
+          this.robot._setTimeout(resolve, 100);
         }, 150);
       });
     }
@@ -769,13 +772,13 @@ export class RobotAnimation {
     const scheduleNext = () => {
       const delay =
         cfg.intervalMin + Math.random() * (cfg.intervalMax - cfg.intervalMin);
-      this._eyeIdleTimer = setTimeout(() => {
+      this._eyeIdleTimer = this.robot._setTimeout(() => {
         const targetX = (Math.random() * 2 - 1) * cfg.amplitudeX;
         const targetY = (Math.random() * 2 - 1) * cfg.amplitudeY;
         this.eyeIdleOffset.x = targetX;
         this.eyeIdleOffset.y = targetY;
         this.updateEyesTransform();
-        const t = setTimeout(() => {
+        const t = this.robot._setTimeout(() => {
           this.eyeIdleOffset.x = 0;
           this.eyeIdleOffset.y = 0;
           this.updateEyesTransform();
@@ -790,7 +793,7 @@ export class RobotAnimation {
 
   stopIdleEyeMovement() {
     if (this._eyeIdleTimer) {
-      clearTimeout(this._eyeIdleTimer);
+      this.robot._clearTimeout(this._eyeIdleTimer);
       this._eyeIdleTimer = null;
     }
     this.eyeIdleOffset.x = 0;

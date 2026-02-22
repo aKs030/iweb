@@ -51,6 +51,38 @@ function applyPage(url, { title, mainHtml, bodyClass }) {
 
   // Scroll to top
   window.scrollTo({ top: 0, behavior: 'instant' });
+  // Notify other subsystems that the page content changed (e.g. theme manager)
+  try {
+    window.dispatchEvent(new CustomEvent('page:changed', { detail: { url } }));
+  } catch (e) {
+    // ignore
+  }
+
+  // Safety: ensure a transparent theme-color meta exists after SPA swaps
+  try {
+    if (!document.querySelector('meta[name="theme-color"]')) {
+      const meta = document.createElement('meta');
+      meta.setAttribute('name', 'theme-color');
+      meta.id = 'meta-theme-color-fallback';
+      meta.setAttribute('content', '#00000000');
+      document.head.appendChild(meta);
+    }
+  } catch (e) {
+    // ignore
+  }
+
+  // Safety: ensure status-bar bleed element exists after dynamic page swap
+  try {
+    if (!document.getElementById('status-bar-bleed')) {
+      const div = document.createElement('div');
+      div.id = 'status-bar-bleed';
+      div.setAttribute('aria-hidden', 'true');
+      document.body &&
+        document.body.insertBefore(div, document.body.firstChild);
+    }
+  } catch (e) {
+    // ignore
+  }
 }
 
 /**

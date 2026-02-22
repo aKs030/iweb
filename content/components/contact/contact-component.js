@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Send, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 
 const { createElement: h, Fragment } = React;
 
 function ContactForm() {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = React.useState({
     name: '',
     email: '',
     subject: '',
@@ -12,8 +12,8 @@ function ContactForm() {
     _gotcha: '', // Honeypot
   });
 
-  const [status, setStatus] = useState('idle'); // idle, submitting, success, error
-  const [errorMessage, setErrorMessage] = useState('');
+  const [status, setStatus] = React.useState('idle'); // idle, submitting, success, error
+  const [errorMessage, setErrorMessage] = React.useState('');
 
   const handleChange = (e) => {
     const { name, value } = e.target;

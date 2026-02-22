@@ -12,7 +12,7 @@ import { a11y, createAnnouncer } from './core/accessibility-manager.js';
 import { SectionManager } from './core/section-manager.js';
 import { AppLoadManager } from './core/load-manager.js';
 import { ThreeEarthManager } from './core/three-earth-manager.js';
-import { getElementById, onDOMReady } from './core/utils.js';
+import { getElementById, onDOMReady, TimerManager } from './core/utils.js';
 import { initViewTransitions } from './core/view-transitions.js';
 import { i18n } from './core/i18n.js';
 import { SectionTracker } from './core/section-tracker.js';
@@ -22,6 +22,7 @@ import { GlobalEventHandlers } from './core/events.js';
 initConsoleFilter();
 
 const log = createLogger('main');
+const appTimers = new TimerManager('Main');
 
 // Persistent storage request removed to avoid deprecation warnings
 
@@ -72,7 +73,7 @@ const _initApp = () => {
   // Scroll to top on init (Safari compatibility) - only if no hash in URL
   if (!window.location.hash) {
     window.scrollTo(0, 0);
-    setTimeout(() => window.scrollTo(0, 0), 100);
+    appTimers.setTimeout(() => window.scrollTo(0, 0), 100);
   }
 
   sectionManager.init();
@@ -137,7 +138,7 @@ document.addEventListener(
 
       loaderHidden = true;
       AppLoadManager.updateLoader(1, i18n.t('loader.ready_system'));
-      setTimeout(() => AppLoadManager.hideLoader(), 100);
+      appTimers.setTimeout(() => AppLoadManager.hideLoader(), 100);
       announce(i18n.t('loader.app_loaded'), { dedupe: true });
     };
 
@@ -171,7 +172,7 @@ document.addEventListener(
     checkReady();
 
     // Force hide after timeout
-    setTimeout(() => {
+    appTimers.setTimeout(() => {
       if (!loaderHidden) {
         log.info('Forcing loading screen hide after timeout');
         loaderHidden = true;
@@ -243,19 +244,7 @@ if ('serviceWorker' in navigator && !ENV.isTest) {
               worker.state === 'installed' &&
               navigator.serviceWorker.controller
             ) {
-              const notification = document.createElement('div');
-              notification.innerHTML = `
-                <div style="position:fixed;bottom:20px;right:20px;background:#1a1a1a;color:#fff;padding:16px 20px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.3);z-index:10000;max-width:400px;">
-                  <div style="display:flex;align-items:center;gap:12px;">
-                    <span style="font-size:24px;">🔄</span>
-                    <span style="flex:1;font-size:14px;">Neue Version verfügbar!</span>
-                    <button onclick="location.reload()" style="background:#0066cc;color:#fff;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;font-size:14px;font-weight:500;">Aktualisieren</button>
-                    <button onclick="this.parentElement.parentElement.remove()" style="background:transparent;border:none;color:#999;font-size:24px;cursor:pointer;padding:0;width:24px;height:24px;">×</button>
-                  </div>
-                </div>
-              `;
-              document.body.appendChild(notification.firstElementChild);
-              setTimeout(() => notification.firstElementChild?.remove(), 30000);
+              showUpdateNotification();
             }
           });
         });
@@ -264,4 +253,26 @@ if ('serviceWorker' in navigator && !ENV.isTest) {
       }
     });
   }
+}
+
+/**
+ * Shows an update notification toast when a new SW version is available
+ */
+function showUpdateNotification() {
+  const notification = document.createElement('div');
+  notification.innerHTML = `
+    <div style="position:fixed;bottom:20px;right:20px;background:#1a1a1a;color:#fff;padding:16px 20px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.3);z-index:var(--z-tooltip);max-width:400px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span style="font-size:24px;">🔄</span>
+        <span style="flex:1;font-size:14px;">Neue Version verfügbar!</span>
+        <button onclick="location.reload()" style="background:#0066cc;color:#fff;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;font-size:14px;font-weight:500;">Aktualisieren</button>
+        <button onclick="this.parentElement.parentElement.remove()" style="background:transparent;border:none;color:#999;font-size:24px;cursor:pointer;padding:0;width:24px;height:24px;">×</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(notification.firstElementChild);
+  appTimers.setTimeout(() => {
+    const el = document.querySelector('[style*="z-index:var(--z-tooltip)"]');
+    if (el) el.remove();
+  }, 30000);
 }

@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { TimerManager } from '../../../content/core/utils.js';
 
 /**
  * Modern 3D Gallery System
@@ -47,6 +48,9 @@ export class Gallery3DSystem {
     // Reuse vectors to prevent memory leaks in render loop
     this._hoverScaleVec = new THREE.Vector3(1.1, 1.1, 1.1);
     this._normalScaleVec = new THREE.Vector3(1.0, 1.0, 1.0);
+
+    // Timer management
+    this.timers = new TimerManager('Gallery3DSystem');
 
     this.init();
   }
@@ -269,8 +273,7 @@ export class Gallery3DSystem {
     this._prevWidth = currentWidth;
 
     // Debounce the heavy WebGL resize slightly to prevent stuttering
-    if (this._resizeTimeout) clearTimeout(this._resizeTimeout);
-    this._resizeTimeout = setTimeout(() => {
+    this.timers.setTimeout(() => {
       this.camera.aspect = window.innerWidth / window.innerHeight;
       this.camera.updateProjectionMatrix();
       this.renderer.setSize(window.innerWidth, window.innerHeight);
@@ -313,7 +316,7 @@ export class Gallery3DSystem {
   }
 
   dispose() {
-    if (this._resizeTimeout) clearTimeout(this._resizeTimeout);
+    this.timers.clearAll();
     if (this.frameId) cancelAnimationFrame(this.frameId);
 
     window.removeEventListener('wheel', this.handleWheel);

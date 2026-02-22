@@ -16,8 +16,8 @@
     "browser"
   ],
   "orientation": "any",
-  "background_color": "#030303",
-  "theme_color": "#030303",
+  "background_color": "#00000000",
+  "theme_color": "#00000000",
   "icons": [
     {
       "src": "https://img.abdulkerimsesli.de/icons/favicon-512.webp?v=20260221",

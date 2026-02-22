@@ -14,7 +14,7 @@ import { RobotEmotions } from './modules/robot-emotions.js';
 import { RobotContextReactions } from './modules/robot-context-reactions.js';
 import { robotCompanionTexts } from './robot-companion-texts.js';
 import { createLogger } from '../../core/logger.js';
-import { createObserver } from '../../core/utils.js';
+import { createObserver, TimerManager } from '../../core/utils.js';
 import { ROBOT_EVENTS } from './constants/events.js';
 import { RobotStateManager } from './state/RobotStateManager.js';
 import { RobotDOMBuilder } from './dom/RobotDOMBuilder.js';
@@ -51,6 +51,9 @@ export class RobotCompanion {
     // Initialize State Manager
     /** @type {RobotStateManager} */
     this.stateManager = new RobotStateManager();
+
+    /** @type {TimerManager} */
+    this.timerManager = new TimerManager('RobotCompanion');
 
     /** @type {import('./ai-service.js').AIService|null} */
     this.aiService = null;
@@ -101,12 +104,8 @@ export class RobotCompanion {
       dom: [],
     };
 
-    /** @type {import('/content/core/types.js').TimerRegistry} */
-    this._timers = {
-      timeouts: new Set(),
-      intervals: new Set(),
-      scrollTimeout: null,
-    };
+    /** @type {import('/content/core/types.js').TimerID | null} */
+    this._scrollTimeout = null;
 
     // Load analytics from storage and calculate mood
     this.stateManager.loadFromStorage();
@@ -137,12 +136,7 @@ export class RobotCompanion {
    * @returns {ReturnType<typeof setTimeout>} Timeout ID
    */
   _setTimeout(callback, delay) {
-    const id = setTimeout(() => {
-      this._timers.timeouts.delete(id);
-      callback();
-    }, delay);
-    this._timers.timeouts.add(id);
-    return id;
+    return this.timerManager.setTimeout(callback, delay);
   }
 
   /**
@@ -152,11 +146,7 @@ export class RobotCompanion {
    * @returns {ReturnType<typeof setInterval>} Interval ID
    */
   _setInterval(callback, delay) {
-    const id = setInterval(callback, delay);
-    // @ts-ignore - Type compatibility between Node and Browser
-    this._timers.intervals.add(id);
-    // @ts-ignore - Type compatibility between Node and Browser
-    return id;
+    return this.timerManager.setInterval(callback, delay);
   }
 
   /**
@@ -164,8 +154,7 @@ export class RobotCompanion {
    * @param {ReturnType<typeof setTimeout>} id - Timeout ID
    */
   _clearTimeout(id) {
-    clearTimeout(id);
-    this._timers.timeouts.delete(id);
+    this.timerManager.clearTimeout(id);
   }
 
   /**
@@ -173,8 +162,7 @@ export class RobotCompanion {
    * @param {ReturnType<typeof setInterval>} id - Interval ID
    */
   _clearInterval(id) {
-    clearInterval(id);
-    this._timers.intervals.delete(id);
+    this.timerManager.clearInterval(id);
   }
 
   applyTexts() {
@@ -568,10 +556,10 @@ export class RobotCompanion {
 
       requestAnimationFrame(() => {
         rafPending = false;
-        if (this._timers.scrollTimeout) {
-          this._clearTimeout(this._timers.scrollTimeout);
+        if (this._scrollTimeout) {
+          this._clearTimeout(this._scrollTimeout);
         }
-        this._timers.scrollTimeout = /** @type {TimerID} */ (
+        this._scrollTimeout = /** @type {TimerID} */ (
           this._setTimeout(() => {
             this.maybeTriggerContextReaction();
             try {
@@ -717,23 +705,11 @@ export class RobotCompanion {
       };
     }
 
-    // Interval Cleanup
     // Zentrale Timer Cleanup
-    if (this._timers) {
-      // Alle verbleibenden Timeouts canceln
-      this._timers.timeouts.forEach((id) => clearTimeout(id));
-      this._timers.timeouts.clear();
-
-      // Alle verbleibenden Intervals canceln
-      this._timers.intervals.forEach((id) => clearInterval(id));
-      this._timers.intervals.clear();
-
-      // Scroll Timeout
-      if (this._timers.scrollTimeout) {
-        clearTimeout(this._timers.scrollTimeout);
-        this._timers.scrollTimeout = null;
-      }
+    if (this.timerManager) {
+      this.timerManager.clearAll();
     }
+    this._scrollTimeout = null;
 
     // DOM Cleanup
     if (this.dom.container && this.dom.container.parentNode) {

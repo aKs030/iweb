@@ -3,15 +3,15 @@
 <script type="importmap">
   {
     "imports": {
-      "react": "https://esm.sh/react@19.0.0",
-      "react-dom": "https://esm.sh/react-dom@19.0.0",
-      "react-dom/client": "https://esm.sh/react-dom@19.0.0/client",
+      "react": "https://esm.sh/react@19.2.4",
+      "react-dom": "https://esm.sh/react-dom@19.2.4",
+      "react-dom/client": "https://esm.sh/react-dom@19.2.4/client",
       "three": "https://cdn.jsdelivr.net/npm/three@0.183.1/build/three.module.min.js",
       "dompurify": "https://esm.sh/dompurify@3.3.1"
     },
     "scopes": {
       "https://esm.sh/": {
-        "react": "https://esm.sh/react@19.0.0"
+        "react": "https://esm.sh/react@19.2.4"
       }
     }
   }
@@ -35,9 +35,10 @@
 <meta name="format-detection" content="telephone=no,email=no" />
 <meta
   name="viewport"
-  content="width=device-width, initial-scale=1, viewport-fit=cover"
+  content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5"
 />
 <meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-touch-fullscreen" content="yes" />
 
 <!-- Favicons -->
 <link rel="icon" href="/favicon.ico" sizes="48x48" />
@@ -65,20 +66,14 @@
   title="Abdulkerim Sesli — Blog"
   href="/api/feed.xml"
 />
+<!-- Browser & PWA Integration -->
+<!-- theme-color is managed dynamically by theme-color-manager.js -->
 <meta
-  name="theme-color"
-  media="(prefers-color-scheme: dark)"
-  content="#030303"
+  name="apple-mobile-web-app-status-bar-style"
+  content="black-translucent"
 />
-<meta
-  name="theme-color"
-  media="(prefers-color-scheme: light)"
-  content="#1e3a8a"
-/>
-
-<!-- Apple Mobile Web App -->
-<meta name="apple-mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<!-- Static fallback: fully transparent theme color for direct loads -->
+<meta name="theme-color" id="meta-theme-color-fallback" content="#00000000" />
 
 <!-- Sitemap -->
 <link rel="sitemap" href="/sitemap.xml" type="application/xml" />
@@ -104,4 +99,30 @@
 
 <!-- Core Scripts -->
 <script type="module" src="/content/components/head/head-inline.js"></script>
+<script type="module">
+  // Initialize theme color manager immediately for all pages
+  import { initThemeColorManager } from '/content/core/theme-color-manager.js';
+  initThemeColorManager();
+</script>
 <script type="module" src="/content/main.js"></script>
+
+<!-- Insert a minimal status-bar bleed element immediately after body opens (for browsers that render head-inline JS before body) -->
+<script>
+  // Create a small script that will ensure a status-bar bleed exists at top of body
+  (function () {
+    function ensureStatusBarBleed() {
+      if (document.getElementById('status-bar-bleed')) return;
+      var div = document.createElement('div');
+      div.id = 'status-bar-bleed';
+      div.setAttribute('aria-hidden', 'true');
+      document.body &&
+        document.body.insertBefore(div, document.body.firstChild);
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', ensureStatusBarBleed);
+    } else {
+      ensureStatusBarBleed();
+    }
+  })();
+</script>

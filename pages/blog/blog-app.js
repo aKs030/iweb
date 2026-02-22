@@ -21,6 +21,7 @@ import {
   ScrollToTop,
   ReadingProgress,
 } from './components/BlogComponents.js';
+import { initThemeColorManager } from '/content/core/theme-color-manager.js';
 
 const log = createLogger('BlogApp');
 const html = htm.bind(React.createElement);
@@ -234,16 +235,58 @@ const BlogApp = () => {
   `;
 };
 
-// App Initialization
-const initBlogApp = () => {
-  const root = document.getElementById('root');
+// App Initialization with resilience for SPA DOM injection timing
+const waitForRoot = (timeout = 3000) =>
+  new Promise((resolve) => {
+    const existing = document.getElementById('root');
+    if (existing) return resolve(existing);
+
+    const observer = new MutationObserver((mutations) => {
+      for (const m of mutations) {
+        for (const node of m.addedNodes) {
+          if (node.nodeType === 1) {
+            const found = node.querySelector && node.querySelector('#root');
+            if (found) {
+              observer.disconnect();
+              return resolve(found);
+            }
+            if (node.id === 'root') {
+              observer.disconnect();
+              return resolve(node);
+            }
+          }
+        }
+      }
+    });
+
+    observer.observe(document.body || document.documentElement, {
+      childList: true,
+      subtree: true,
+    });
+
+    // Timeout fallback
+    setTimeout(() => {
+      observer.disconnect();
+      resolve(document.getElementById('root'));
+    }, timeout);
+  });
+
+const initBlogApp = async () => {
+  const root = await waitForRoot();
   if (!root) {
-    log.error('Root element not found');
+    log.error('Root element not found after waiting');
     return;
   }
 
   createRoot(root).render(html`<${ErrorBoundary}><${BlogApp} /><//>`);
   log.info('Blog app initialized');
+
+  // Ensure browser theme-color meta tags are initialized (transparent bar)
+  try {
+    initThemeColorManager();
+  } catch (e) {
+    log.warn('initThemeColorManager failed', e);
+  }
 };
 
 if (document.readyState === 'loading') {

@@ -161,7 +161,7 @@ body.projekte-page canvas {
 .app-popup {
   position: fixed;
   inset: 0;
-  z-index: 10050;
+  z-index: var(--z-top-elements);
   display: flex;
   align-items: center;
   justify-content: center;

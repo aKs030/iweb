@@ -40,10 +40,13 @@ export class RobotIntelligence {
     this.setupListeners();
 
     // Check idle state every 10 seconds
-    this._idleCheckInterval = setInterval(() => this.checkIdle(), 10000);
+    this._idleCheckInterval = this.robot._setInterval(
+      () => this.checkIdle(),
+      10000,
+    );
 
     // Check for proactive tips every 15 seconds
-    this._proactiveTipsInterval = setInterval(
+    this._proactiveTipsInterval = this.robot._setInterval(
       () => this.checkProactiveTips(),
       15000,
     );
@@ -177,10 +180,7 @@ export class RobotIntelligence {
       }
 
       // Reset back-and-forth counter after 3 seconds of no direction change
-      if (this._scrollDecayTimer) {
-        clearTimeout(this._scrollDecayTimer);
-      }
-      this._scrollDecayTimer = setTimeout(() => {
+      this._scrollDecayTimer = this.robot._setTimeout(() => {
         if (this.scrollBackAndForth > 0) {
           this.scrollBackAndForth = Math.max(0, this.scrollBackAndForth - 1);
         }
@@ -233,7 +233,7 @@ export class RobotIntelligence {
           this.elementHighlights.set(elementId, Date.now());
 
           // Clean up old highlights after 30 seconds
-          setTimeout(() => {
+          this.robot._setTimeout(() => {
             this.elementHighlights.delete(elementId);
           }, 30000);
         }
@@ -318,14 +318,14 @@ export class RobotIntelligence {
         break;
       case 'wave':
         this.robot.dom.avatar?.classList.add('waving');
-        setTimeout(() => {
+        this.robot._setTimeout(() => {
           this.robot.dom.avatar?.classList.remove('waving');
         }, 1000);
         break;
     }
 
     // Remove highlight after 3 seconds
-    setTimeout(() => {
+    this.robot._setTimeout(() => {
       element.classList.remove('robot-highlight');
       this.robot.chatModule.hideBubble();
     }, 3000);
@@ -343,7 +343,7 @@ export class RobotIntelligence {
 
     const text = texts[Math.floor(Math.random() * texts.length)];
     this.robot.chatModule.showBubble(text);
-    setTimeout(() => this.robot.chatModule.hideBubble(), 2500);
+    this.robot._setTimeout(() => this.robot.chatModule.hideBubble(), 2500);
   }
 
   /**
@@ -401,7 +401,7 @@ export class RobotIntelligence {
     const message =
       helpMessages[Math.floor(Math.random() * helpMessages.length)];
     this.robot.chatModule.showBubble(message);
-    setTimeout(() => this.robot.chatModule.hideBubble(), 6000);
+    this.robot._setTimeout(() => this.robot.chatModule.hideBubble(), 6000);
   }
 
   triggerScrollReaction() {
@@ -415,7 +415,7 @@ export class RobotIntelligence {
     ];
     const text = texts[Math.floor(Math.random() * texts.length)];
     this.robot.chatModule.showBubble(text);
-    setTimeout(() => this.robot.chatModule.hideBubble(), 2000);
+    this.robot._setTimeout(() => this.robot.chatModule.hideBubble(), 2000);
   }
 
   triggerIdleReaction() {
@@ -430,7 +430,7 @@ export class RobotIntelligence {
     ];
     const text = texts[Math.floor(Math.random() * texts.length)];
     this.robot.chatModule.showBubble(text);
-    setTimeout(() => this.robot.chatModule.hideBubble(), 4000);
+    this.robot._setTimeout(() => this.robot.chatModule.hideBubble(), 4000);
 
     // Maybe look at user
     this.robot.animationModule.triggerRandomIdleAnimation();
