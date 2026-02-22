@@ -28,6 +28,12 @@ const PRIMARY_SEARCH_TIMEOUT_MS = 4200;
 const SECONDARY_SEARCH_TIMEOUT_MS = 1200;
 const SECONDARY_MAX_RESULTS = 12;
 const INTENT_MAX_RESULTS = 10;
+const FAST_INTENT_PATHS = new Set([
+  '/about',
+  '/contact',
+  '/datenschutz',
+  '/impressum',
+]);
 
 const ROUTE_FALLBACK_PATHS = [
   '/',
@@ -402,6 +408,36 @@ export async function onRequestPost(context) {
     );
 
     const intentPaths = getIntentPaths(query);
+    const quickTerms = toQueryTerms(query);
+
+    // Fast-path for clear navigation intents to avoid unnecessary AI latency.
+    if (
+      intentPaths.length === 1 &&
+      FAST_INTENT_PATHS.has(intentPaths[0]) &&
+      quickTerms.length <= 4
+    ) {
+      const fallbackOnly = buildFallbackResults(query, topK, intentPaths);
+      const cleanFallback = fallbackOnly.map(
+        ({ score: _score, source: _source, ...rest }) => rest,
+      );
+
+      return new Response(
+        JSON.stringify({
+          results: cleanFallback,
+          count: cleanFallback.length,
+          query,
+          source: 'route-fallback-fast',
+          summary: `${cleanFallback.length} ${cleanFallback.length === 1 ? 'Ergebnis' : 'Ergebnisse'} fuer "${query}"`,
+        }),
+        {
+          status: 200,
+          headers: {
+            ...corsHeaders,
+            'Cache-Control': 'public, max-age=300',
+          },
+        },
+      );
+    }
 
     if (!env.AI || typeof env.AI.autorag !== 'function') {
       const fallbackOnly = buildFallbackResults(query, topK, intentPaths);
