@@ -49,6 +49,22 @@ const ROUTE_FALLBACK_PATHS = [
 ];
 const PROJECT_APPS_PATH = '/pages/projekte/apps-config.json';
 const APP_FALLBACK_CACHE_TTL_MS = 5 * 60 * 1000;
+const MAX_CHAT_SUGGESTIONS = 3;
+const DEFAULT_NO_RESULT_SUGGESTIONS = [
+  { title: 'Projekte entdecken', url: '/projekte' },
+  { title: 'Blog durchsuchen', url: '/blog' },
+  { title: 'Kontakt aufnehmen', url: '/contact' },
+];
+const INTENT_FALLBACK_SUGGESTIONS = {
+  '/about': { title: 'Über mich ansehen', url: '/about' },
+  '/contact': { title: 'Kontakt öffnen', url: '/contact' },
+  '/datenschutz': { title: 'Datenschutz öffnen', url: '/datenschutz' },
+  '/impressum': { title: 'Impressum öffnen', url: '/impressum' },
+  '/projekte': { title: 'Projekte öffnen', url: '/projekte' },
+  '/blog': { title: 'Blog öffnen', url: '/blog' },
+  '/gallery': { title: 'Galerie öffnen', url: '/gallery' },
+  '/videos': { title: 'Videos öffnen', url: '/videos' },
+};
 let cachedAppFallbackEntries = [];
 let cachedAppFallbackExpiresAt = 0;
 let appFallbackLoadPromise = null;
@@ -393,7 +409,94 @@ function truncateText(value, maxLength = 220) {
   return `${text.slice(0, maxLength - 1).trim()}...`;
 }
 
-function buildSearchChatMessage(query, results, aiSummary = '') {
+function normalizeSuggestion(item) {
+  const title = truncateText(item?.title, 56);
+  let url = String(item?.url || '').trim();
+
+  if (!title || !url) return null;
+
+  if (!url.startsWith('/')) {
+    try {
+      const parsed = new URL(url);
+      url = `${parsed.pathname}${parsed.search}`;
+    } catch {
+      url = `/${url.replace(/^\/+/, '')}`;
+    }
+  }
+
+  return { title, url };
+}
+
+function addSuggestion(list, seenUrls, item) {
+  const normalized = normalizeSuggestion(item);
+  if (!normalized) return;
+  if (seenUrls.has(normalized.url)) return;
+
+  seenUrls.add(normalized.url);
+  list.push(normalized);
+}
+
+function buildNoResultSuggestions({
+  query,
+  intentPaths,
+  aiCandidates,
+  fallbackEntries,
+}) {
+  const suggestions = [];
+  const seenUrls = new Set();
+
+  for (const path of intentPaths) {
+    const fallbackFromIntent =
+      fallbackEntries.find((entry) => entry.url === path) ||
+      fallbackEntries.find((entry) => entry.url.startsWith(`${path}?`)) ||
+      INTENT_FALLBACK_SUGGESTIONS[path];
+
+    addSuggestion(suggestions, seenUrls, fallbackFromIntent);
+  }
+
+  for (const candidate of aiCandidates) {
+    const semanticStrong = Number(candidate?.vectorScore || 0) >= 0.62;
+    const lexicalStrong = Number(candidate?.matchCount || 0) > 0;
+    if (!semanticStrong && !lexicalStrong) continue;
+
+    addSuggestion(suggestions, seenUrls, candidate);
+    if (suggestions.length >= MAX_CHAT_SUGGESTIONS) {
+      break;
+    }
+  }
+
+  const lexicalCandidates = buildFallbackResults(
+    fallbackEntries,
+    query,
+    MAX_CHAT_SUGGESTIONS * 2,
+    intentPaths,
+  );
+
+  for (const item of lexicalCandidates) {
+    addSuggestion(suggestions, seenUrls, item);
+    if (suggestions.length >= MAX_CHAT_SUGGESTIONS) {
+      break;
+    }
+  }
+
+  if (suggestions.length < MAX_CHAT_SUGGESTIONS) {
+    for (const item of DEFAULT_NO_RESULT_SUGGESTIONS) {
+      addSuggestion(suggestions, seenUrls, item);
+      if (suggestions.length >= MAX_CHAT_SUGGESTIONS) {
+        break;
+      }
+    }
+  }
+
+  return suggestions.slice(0, MAX_CHAT_SUGGESTIONS);
+}
+
+function buildSearchChatMessage(
+  query,
+  results,
+  aiSummary = '',
+  suggestions = [],
+) {
   const summaryCandidate = truncateText(aiSummary, 240);
 
   if (
@@ -410,6 +513,15 @@ function buildSearchChatMessage(query, results, aiSummary = '') {
     .filter(Boolean);
 
   if (results.length === 0) {
+    if (suggestions.length > 0) {
+      const suggestionText = suggestions
+        .slice(0, 2)
+        .map((item) => `"${item.title}"`)
+        .join(' oder ');
+
+      return `Ich habe keine direkten Treffer fuer "${safeQuery}" gefunden. Schau dir als Vorschlag ${suggestionText} an oder formuliere die Suche etwas genauer.`;
+    }
+
     return `Ich habe aktuell keine direkten Treffer fuer "${safeQuery}" gefunden. Versuche einen praeziseren Begriff.`;
   }
 
@@ -424,8 +536,24 @@ function buildSearchChatMessage(query, results, aiSummary = '') {
   return `Ich habe ${results.length} passende Treffer fuer "${safeQuery}" gefunden.`;
 }
 
-function buildSearchChatPayload(query, results, aiSummary, source) {
-  const message = buildSearchChatMessage(query, results, aiSummary);
+function buildSearchChatPayload(
+  query,
+  results,
+  aiSummary,
+  source,
+  suggestions = [],
+) {
+  const normalizedSuggestions = suggestions
+    .map((item) => normalizeSuggestion(item))
+    .filter(Boolean)
+    .slice(0, MAX_CHAT_SUGGESTIONS);
+
+  const message = buildSearchChatMessage(
+    query,
+    results,
+    aiSummary,
+    normalizedSuggestions,
+  );
   if (!message) return undefined;
 
   return {
@@ -435,6 +563,7 @@ function buildSearchChatPayload(query, results, aiSummary, source) {
       title: result.title,
       url: result.url,
     })),
+    suggestions: normalizedSuggestions,
   };
 }
 
@@ -479,6 +608,15 @@ export async function onRequestPost(context) {
       const cleanFallback = fallbackOnly.map(
         ({ score: _score, source: _source, ...rest }) => rest,
       );
+      const noResultSuggestions =
+        cleanFallback.length === 0
+          ? buildNoResultSuggestions({
+              query,
+              intentPaths,
+              aiCandidates: [],
+              fallbackEntries: ROUTE_FALLBACK_ENTRIES,
+            })
+          : [];
 
       return new Response(
         JSON.stringify({
@@ -492,6 +630,7 @@ export async function onRequestPost(context) {
             cleanFallback,
             '',
             'route-fallback-fast',
+            noResultSuggestions,
           ),
         }),
         {
@@ -515,6 +654,15 @@ export async function onRequestPost(context) {
       const cleanFallback = fallbackOnly.map(
         ({ score: _score, source: _source, ...rest }) => rest,
       );
+      const noResultSuggestions =
+        cleanFallback.length === 0
+          ? buildNoResultSuggestions({
+              query,
+              intentPaths,
+              aiCandidates: [],
+              fallbackEntries,
+            })
+          : [];
 
       return new Response(
         JSON.stringify({
@@ -528,6 +676,7 @@ export async function onRequestPost(context) {
             cleanFallback,
             '',
             'route-fallback-only',
+            noResultSuggestions,
           ),
         }),
         {
@@ -680,6 +829,15 @@ export async function onRequestPost(context) {
     const cleanResults = mergedResults.map(
       ({ score: _score, source: _source, ...rest }) => rest,
     );
+    const noResultSuggestions =
+      cleanResults.length === 0
+        ? buildNoResultSuggestions({
+            query,
+            intentPaths,
+            aiCandidates: uniqueResults,
+            fallbackEntries,
+          })
+        : [];
 
     const responseData = {
       results: cleanResults,
@@ -697,6 +855,7 @@ export async function onRequestPost(context) {
         cleanResults,
         aiSummary,
         usedFallback ? 'cloudflare-ai-search+fallback' : 'cloudflare-ai-search',
+        noResultSuggestions,
       ),
     };
 
