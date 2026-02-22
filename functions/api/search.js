@@ -21,6 +21,8 @@ import {
 
 const SEARCH_SYSTEM_PROMPT =
   'Du bist ein Suchassistent für abdulkerimsesli.de. Fasse die Suchergebnisse in 1-2 prägnanten Sätzen zusammen (max. 120 Zeichen). Fokussiere auf die wichtigsten Inhalte und vermeide generische Aussagen.';
+const SECONDARY_MAX_RESULTS = 12;
+const INTENT_MAX_RESULTS = 10;
 
 async function runAiSearch(
   aiBinding,
@@ -81,51 +83,46 @@ export async function onRequestPost(context) {
     );
 
     const candidateCount = clamp(Math.max(topK * 4, 20), 20, 60);
-    const queryLower = query.toLowerCase();
     const expandedQuery = expandQuery(query);
+    const intentPaths = getIntentPaths(query);
     const ragId = env.RAG_ID || 'wispy-pond-1055';
 
-    const primarySearchData = await runAiSearch(
-      env.AI,
-      ragId,
-      expandedQuery,
-      candidateCount,
-      true,
-    );
+    const secondaryPromises = [];
+    const shouldRunPreciseQuery =
+      expandedQuery !== query && intentPaths.length === 0;
 
-    const additionalItems = [];
-
-    if (expandedQuery !== query) {
-      try {
-        const preciseSearchData = await runAiSearch(
+    if (shouldRunPreciseQuery) {
+      secondaryPromises.push(
+        runAiSearch(
           env.AI,
           ragId,
           query,
-          Math.min(candidateCount, 24),
+          Math.min(candidateCount, SECONDARY_MAX_RESULTS),
           false,
-        );
-        additionalItems.push(...(preciseSearchData?.data || []));
-      } catch {
-        // Keep primary results if secondary retrieval fails.
-      }
+        ).catch(() => null),
+      );
     }
 
-    const intentPaths = getIntentPaths(queryLower);
     if (intentPaths.length > 0) {
-      try {
-        const intentQuery = `${query} ${intentPaths.join(' ')}`;
-        const intentSearchData = await runAiSearch(
+      secondaryPromises.push(
+        runAiSearch(
           env.AI,
           ragId,
-          intentQuery,
-          Math.min(candidateCount, 24),
+          `${query} ${intentPaths.join(' ')}`,
+          Math.min(candidateCount, INTENT_MAX_RESULTS),
           false,
-        );
-        additionalItems.push(...(intentSearchData?.data || []));
-      } catch {
-        // Keep primary results if intent retrieval fails.
-      }
+        ).catch(() => null),
+      );
     }
+
+    const [primarySearchData, ...secondarySearchData] = await Promise.all([
+      runAiSearch(env.AI, ragId, expandedQuery, candidateCount, true),
+      ...secondaryPromises,
+    ]);
+
+    const additionalItems = secondarySearchData.flatMap(
+      (result) => result?.data || [],
+    );
 
     const allAiItems = [...(primarySearchData?.data || []), ...additionalItems];
     const queryTerms = toQueryTerms(query);
