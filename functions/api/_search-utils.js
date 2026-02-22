@@ -1,6 +1,6 @@
 /**
  * Search Utilities - Query Expansion, Fuzzy Matching, Relevance Scoring
- * @version 5.2.0 - Refactored with separate modules
+ * @version 6.0.0 - Shared helpers for Cloudflare AI Search ranking
  */
 
 import { normalizeText, sanitizeDiscoveryText } from './_text-utils.js';
@@ -13,7 +13,7 @@ export { normalizeText, sanitizeDiscoveryText, escapeXml };
  * Synonym mapping for German query expansion
  * Erweitert für alle indexierten Seiten
  */
-export const SYNONYMS = {
+const SYNONYMS = {
   // --- Pages ---
   bilder: ['galerie', 'photos', 'fotos', 'fotografie', 'gallery', 'images'],
   galerie: ['bilder', 'photos', 'fotos', 'gallery', 'images'],
@@ -78,13 +78,65 @@ export const SYNONYMS = {
   game: ['spiel', 'spiele', 'games', 'spielen'],
 };
 
+const TOP_LEVEL_TITLE_MAP = {
+  projekte: 'Projekte Übersicht',
+  blog: 'Blog Übersicht',
+  gallery: 'Galerie',
+  videos: 'Videos Übersicht',
+  about: 'Über mich',
+  contact: 'Kontakt',
+};
+
+const INTENT_BOOST_RULES = [
+  {
+    regex: /\b(blog|artikel|post|beitrag|beitraege)\b/i,
+    path: '/blog',
+    boost: 4,
+  },
+  {
+    regex: /\b(projekt|projekte|app|apps|tool|game|spiel)\b/i,
+    path: '/projekte',
+    boost: 4,
+  },
+  {
+    regex: /\b(galerie|bild|bilder|foto|fotos|photography)\b/i,
+    path: '/gallery',
+    boost: 4,
+  },
+  {
+    regex: /\b(video|videos|youtube|clip|clips)\b/i,
+    path: '/videos',
+    boost: 4,
+  },
+  {
+    regex: /\b(kontakt|contact|email|anfrage)\b/i,
+    path: '/contact',
+    boost: 4,
+  },
+  {
+    regex: /\b(about|ueber|über|profil|lebenslauf)\b/i,
+    path: '/about',
+    boost: 4,
+  },
+  {
+    regex: /\b(datenschutz|impressum|privacy|legal)\b/i,
+    path: '/datenschutz',
+    boost: 3,
+  },
+  {
+    regex: /\b(datenschutz|impressum|privacy|legal)\b/i,
+    path: '/impressum',
+    boost: 3,
+  },
+];
+
 /**
  * Calculate Levenshtein distance for fuzzy matching
  * @param {string} a - First string
  * @param {string} b - Second string
  * @returns {number} Edit distance
  */
-export function levenshteinDistance(a, b) {
+function levenshteinDistance(a, b) {
   const matrix = [];
 
   for (let i = 0; i <= b.length; i++) {
@@ -407,4 +459,402 @@ export function createSnippet(content, query, maxLength = 160) {
     cleanContent.substring(0, maxLength) +
     (cleanContent.length > maxLength ? '...' : '')
   );
+}
+
+/**
+ * Parse a positive integer or return null.
+ * @param {unknown} value
+ * @returns {number | null}
+ */
+export function parsePositiveInteger(value) {
+  const normalized = String(value ?? '').trim();
+
+  if (!/^\d+$/.test(normalized)) {
+    return null;
+  }
+
+  const parsed = Number.parseInt(normalized, 10);
+  return parsed > 0 ? parsed : null;
+}
+
+/**
+ * Clamp a number into a fixed range.
+ * @param {number} value
+ * @param {number} min
+ * @param {number} max
+ * @returns {number}
+ */
+export function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
+/**
+ * Convert query string into normalized terms.
+ * @param {string} query
+ * @returns {string[]}
+ */
+export function toQueryTerms(query) {
+  return String(query)
+    .toLowerCase()
+    .split(/\s+/)
+    .map((term) => term.trim())
+    .filter((term) => term.length > 1);
+}
+
+/**
+ * Infer high-level category from URL path.
+ * @param {string} url
+ * @returns {string}
+ */
+function detectCategory(url) {
+  if (url.includes('/projekte')) return 'Projekte';
+  if (url.includes('/blog')) return 'Blog';
+  if (url.includes('/gallery')) return 'Galerie';
+  if (url.includes('/videos')) return 'Videos';
+  if (url.includes('/about')) return 'Über mich';
+  if (url.includes('/contact')) return 'Kontakt';
+  if (url === '/') return 'Home';
+  return 'Seite';
+}
+
+/**
+ * Derive a human-readable title from filename/path.
+ * @param {string} filename
+ * @param {string} url
+ * @returns {string}
+ */
+function extractTitle(filename, url) {
+  const title = filename?.split('/').pop()?.replace('.html', '') || '';
+
+  if (title === 'index' || title === '' || !title) {
+    const segments = url.split('/').filter(Boolean);
+
+    if (url === '/') {
+      return 'Startseite';
+    }
+
+    if (segments.length === 1) {
+      return (
+        TOP_LEVEL_TITLE_MAP[segments[0]] ||
+        segments[0].charAt(0).toUpperCase() + segments[0].slice(1)
+      );
+    }
+
+    if (segments.length >= 2) {
+      const lastSegment = segments[segments.length - 1];
+      return lastSegment
+        .split('-')
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+    }
+  }
+
+  return title
+    .split('-')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
+/**
+ * Extract textual content from AI search item candidates.
+ * @param {object} item
+ * @returns {string}
+ */
+function toTextContent(item) {
+  if (Array.isArray(item?.content)) {
+    const joined = item.content
+      .map((c) => c?.text || '')
+      .join(' ')
+      .trim();
+    if (joined) return joined;
+  }
+
+  if (typeof item?.text === 'string' && item.text.trim()) {
+    return item.text;
+  }
+
+  if (typeof item?.description === 'string' && item.description.trim()) {
+    return item.description;
+  }
+
+  return '';
+}
+
+/**
+ * Check whether a token looks like an 11-char YouTube video ID.
+ * @param {unknown} value
+ * @returns {boolean}
+ */
+function looksLikeVideoId(value) {
+  return /^[a-zA-Z0-9_-]{11}$/.test(String(value || '').trim());
+}
+
+/**
+ * Pick the best result title from AI metadata and fallback heuristics.
+ * @param {object} item
+ * @param {string} fallbackTitle
+ * @param {string} url
+ * @returns {string}
+ */
+function chooseBestTitle(item, fallbackTitle, url) {
+  const aiTitle =
+    typeof item?.title === 'string' ? String(item.title).trim() : '';
+
+  if (aiTitle && aiTitle.length > 2 && !looksLikeVideoId(aiTitle)) {
+    return aiTitle;
+  }
+
+  const fallback = String(fallbackTitle || '').trim();
+  if (url.includes('/videos/') && looksLikeVideoId(fallback)) {
+    return `Video ${fallback}`;
+  }
+
+  return fallback || 'Unbenannt';
+}
+
+/**
+ * Normalize an AI item into the API search result schema.
+ * @param {object} item
+ * @param {string} query
+ * @param {number} [snippetMaxLength=170]
+ * @returns {{url: string, title: string, category: string, description: string, highlightedDescription: string, vectorScore: number}}
+ */
+export function toSearchResult(item, query, snippetMaxLength = 170) {
+  let url = normalizeUrl(item?.filename);
+  if (url === '/search' || url === '/api/search') {
+    url = '/';
+  }
+
+  const textContent = toTextContent(item);
+  const snippet = createSnippet(textContent, query, snippetMaxLength);
+  const description = snippet || 'Keine Beschreibung verfügbar';
+  const inferredTitle = extractTitle(item?.filename, url);
+  const title = chooseBestTitle(item, inferredTitle, url);
+
+  return {
+    url,
+    title,
+    category: detectCategory(url),
+    description,
+    highlightedDescription: highlightMatches(description, query),
+    vectorScore: Number(item?.score || 0),
+  };
+}
+
+/**
+ * Measure how many query terms appear in result text fields.
+ * @param {{title: string, description: string, url: string}} result
+ * @param {string[]} queryTerms
+ * @returns {{matched: number, ratio: number}}
+ */
+function computeCoverageScore(result, queryTerms) {
+  if (queryTerms.length === 0) {
+    return { matched: 0, ratio: 0 };
+  }
+
+  const haystack = `${result.title} ${result.description} ${result.url}`
+    .toLowerCase()
+    .trim();
+
+  let matched = 0;
+  for (const term of queryTerms) {
+    if (haystack.includes(term)) {
+      matched += 1;
+    }
+  }
+
+  return { matched, ratio: matched / queryTerms.length };
+}
+
+/**
+ * Calculate intent-based score bonus.
+ * @param {string} query
+ * @param {string} url
+ * @returns {number}
+ */
+function getIntentBoost(query, url) {
+  let boost = 0;
+
+  for (const rule of INTENT_BOOST_RULES) {
+    if (rule.regex.test(query) && url.includes(rule.path)) {
+      boost += rule.boost;
+    }
+  }
+
+  return boost;
+}
+
+/**
+ * Extract intent paths matched by the query.
+ * @param {string} query
+ * @returns {string[]}
+ */
+export function getIntentPaths(query) {
+  const paths = new Set();
+
+  for (const rule of INTENT_BOOST_RULES) {
+    if (rule.regex.test(query)) {
+      paths.add(rule.path);
+    }
+  }
+
+  return [...paths];
+}
+
+/**
+ * Whether a URL aligns with one of the matched intent paths.
+ * @param {string} url
+ * @param {string[]} intentPaths
+ * @returns {boolean}
+ */
+export function isIntentPathMatch(url, intentPaths) {
+  if (!url || intentPaths.length === 0) {
+    return false;
+  }
+
+  return intentPaths.some((path) => {
+    if (url === path) return true;
+    if (url.startsWith(`${path}/`)) return true;
+    if (url.startsWith(`${path}?`)) return true;
+    return false;
+  });
+}
+
+/**
+ * Score a normalized search result with lexical + semantic + intent signals.
+ * @param {{title: string, description: string, url: string, vectorScore: number}} result
+ * @param {string} query
+ * @param {string[]} queryTerms
+ * @param {string[]} intentPaths
+ * @returns {{title: string, description: string, url: string, vectorScore: number, score: number, matchCount: number, category: string, highlightedDescription: string}}
+ */
+export function scoreSearchResult(result, query, queryTerms, intentPaths) {
+  const vectorScaled = result.vectorScore * 12;
+  const lexicalScore = calculateRelevanceScore(
+    {
+      ...result,
+      score: vectorScaled,
+    },
+    query,
+  );
+
+  const coverage = computeCoverageScore(result, queryTerms);
+  const queryLower = query.toLowerCase();
+  const titleLower = result.title.toLowerCase();
+  const combinedText =
+    `${result.title} ${result.description} ${result.url}`.toLowerCase();
+
+  let score = lexicalScore;
+  score += coverage.ratio * 10;
+
+  if (queryTerms.length > 1 && coverage.matched === queryTerms.length) {
+    score += 6;
+  }
+
+  if (combinedText.includes(queryLower)) {
+    score += 3;
+  }
+
+  if (titleLower.includes(queryLower)) {
+    score += 5;
+  }
+
+  score += getIntentBoost(queryLower, result.url);
+
+  if (
+    looksLikeVideoId(result.title) &&
+    !/\b(video|videos|youtube|clip)\b/i.test(queryLower)
+  ) {
+    score -= 2;
+  }
+
+  if (isLowQualitySnippet(result.description)) {
+    score -= 2;
+  }
+
+  if (intentPaths.length > 0 && !isIntentPathMatch(result.url, intentPaths)) {
+    score -= intentPaths.length === 1 ? 6 : 4;
+  }
+
+  return {
+    ...result,
+    score,
+    matchCount: coverage.matched,
+  };
+}
+
+/**
+ * Deduplicate results by URL, keeping the strongest candidate.
+ * @param {Array<{url: string, score: number, description: string}>} results
+ * @returns {Array}
+ */
+export function dedupeByBestScore(results) {
+  const bestByUrl = new Map();
+
+  for (const result of results) {
+    const existing = bestByUrl.get(result.url);
+
+    if (!existing) {
+      bestByUrl.set(result.url, result);
+      continue;
+    }
+
+    if (result.score > existing.score) {
+      bestByUrl.set(result.url, result);
+      continue;
+    }
+
+    if (result.score === existing.score) {
+      const existingLowQuality = isLowQualitySnippet(existing.description);
+      const currentLowQuality = isLowQualitySnippet(result.description);
+
+      if (existingLowQuality && !currentLowQuality) {
+        bestByUrl.set(result.url, result);
+      }
+    }
+  }
+
+  return [...bestByUrl.values()];
+}
+
+/**
+ * Keep variety by limiting category saturation in the final result set.
+ * @param {Array<{url: string, category: string}>} results
+ * @param {number} topK
+ * @returns {Array}
+ */
+export function balanceByCategory(results, topK) {
+  const maxPerCategory = Math.max(2, Math.ceil(topK / 2));
+  const categoryCount = {};
+  const selected = [];
+  const selectedUrls = new Set();
+
+  for (const result of results) {
+    const category = result.category || 'Seite';
+    const count = categoryCount[category] || 0;
+    if (count >= maxPerCategory) {
+      continue;
+    }
+
+    categoryCount[category] = count + 1;
+    selected.push(result);
+    selectedUrls.add(result.url);
+
+    if (selected.length >= topK) {
+      return selected;
+    }
+  }
+
+  for (const result of results) {
+    if (selectedUrls.has(result.url)) {
+      continue;
+    }
+
+    selected.push(result);
+    if (selected.length >= topK) {
+      break;
+    }
+  }
+
+  return selected;
 }

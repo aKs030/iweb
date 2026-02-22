@@ -7,11 +7,7 @@
  * @version 3.0.0 - Refactored & Modular
  */
 
-import {
-  generateNonce,
-  injectNonce,
-  applyNonceToCSP,
-} from './_middleware-utils/csp-manager.js';
+import { generateNonce, injectNonce } from './_middleware-utils/csp-manager.js';
 import {
   injectTemplates,
   loadTemplateFromURL,
