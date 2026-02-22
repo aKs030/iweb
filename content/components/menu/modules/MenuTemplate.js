@@ -165,7 +165,12 @@ ${this.getToggleButton()}
         aria-controls="${this.ids.searchResults}"
       >
         <span class="icon-container">
-            <div class="nav-icon ai-orb" aria-hidden="true"></div>
+            <span class="nav-icon ai-orb" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="100%" height="100%" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ai-orb__icon">
+                <path d="M12 2C7 2 2 7 2 12C2 17 7 22 12 22C17 22 22 17 22 12C22 7 17 2 12 2ZM12 4C14.5 4 16 6 16 8C16 10 14.5 11.5 12 11.5C9.5 11.5 8 10 8 8C8 6 9.5 4 12 4ZM12 20C9.5 20 8 18 8 16C8 14 9.5 12.5 12 12.5C14.5 12.5 16 14 16 16C16 18 14.5 20 12 20Z" opacity="0.8"></path>
+                <path d="M12.0001 2.00004C10.2223 3.77782 10.2223 6.66671 12.0001 8.44449C13.7779 6.66671 16.6667 6.66671 18.4445 8.44449C16.6667 10.2223 16.6667 13.1111 18.4445 14.8889C16.6667 13.1111 13.7779 13.1111 12.0001 14.8889C13.7779 16.6667 13.7779 19.5556 12.0001 21.3334C10.2223 19.5556 7.33341 19.5556 5.55563 21.3334C7.33341 19.5556 7.33341 16.6667 5.55563 14.8889C7.33341 16.6667 10.2223 16.6667 12.0001 14.8889C10.2223 13.1111 10.2223 10.2223 12.0001 8.44449C10.2223 10.2223 7.33341 10.2223 5.55563 8.44449C7.33341 6.66671 7.33341 3.77782 5.55563 2.00004C7.33341 3.77782 10.2223 3.77782 12.0001 2.00004Z" fill="white" fill-opacity="0.2" stroke="white" stroke-width="1.2"></path>
+              </svg>
+            </span>
         </span>
         <span class="icon-fallback icon-fallback--hidden">🔍</span>
       </button>
