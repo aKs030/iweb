@@ -377,6 +377,67 @@ function mergeResults(aiResults, fallbackResults, topK) {
     .slice(0, topK);
 }
 
+function toPlainText(value) {
+  return String(value || '')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function truncateText(value, maxLength = 220) {
+  const text = toPlainText(value);
+  if (text.length <= maxLength) {
+    return text;
+  }
+
+  return `${text.slice(0, maxLength - 1).trim()}...`;
+}
+
+function buildSearchChatMessage(query, results, aiSummary = '') {
+  const summaryCandidate = truncateText(aiSummary, 240);
+
+  if (
+    summaryCandidate &&
+    !/^\d+\s+Ergebnis(?:se)?\s+fuer\s+"/i.test(summaryCandidate)
+  ) {
+    return summaryCandidate;
+  }
+
+  const safeQuery = truncateText(query, 80) || 'deine Suche';
+  const topTitles = results
+    .slice(0, 3)
+    .map((item) => truncateText(item?.title, 48))
+    .filter(Boolean);
+
+  if (results.length === 0) {
+    return `Ich habe aktuell keine direkten Treffer fuer "${safeQuery}" gefunden. Versuche einen praeziseren Begriff.`;
+  }
+
+  if (results.length === 1) {
+    return `Zu "${safeQuery}" passt besonders "${topTitles[0] || 'dieser Inhalt'}".`;
+  }
+
+  if (topTitles.length >= 2) {
+    return `Zu "${safeQuery}" passen ${results.length} Treffer, unter anderem "${topTitles[0]}" und "${topTitles[1]}".`;
+  }
+
+  return `Ich habe ${results.length} passende Treffer fuer "${safeQuery}" gefunden.`;
+}
+
+function buildSearchChatPayload(query, results, aiSummary, source) {
+  const message = buildSearchChatMessage(query, results, aiSummary);
+  if (!message) return undefined;
+
+  return {
+    message,
+    source: source || 'search',
+    references: results.slice(0, 3).map((result) => ({
+      title: result.title,
+      url: result.url,
+    })),
+  };
+}
+
 export async function onRequestPost(context) {
   const request = context.request;
   const env = context.env || {};
@@ -426,6 +487,12 @@ export async function onRequestPost(context) {
           query,
           source: 'route-fallback-fast',
           summary: `${cleanFallback.length} ${cleanFallback.length === 1 ? 'Ergebnis' : 'Ergebnisse'} fuer "${query}"`,
+          aiChat: buildSearchChatPayload(
+            query,
+            cleanFallback,
+            '',
+            'route-fallback-fast',
+          ),
         }),
         {
           status: 200,
@@ -456,6 +523,12 @@ export async function onRequestPost(context) {
           query,
           source: 'route-fallback-only',
           summary: `${cleanFallback.length} ${cleanFallback.length === 1 ? 'Ergebnis' : 'Ergebnisse'} fuer "${query}"`,
+          aiChat: buildSearchChatPayload(
+            query,
+            cleanFallback,
+            '',
+            'route-fallback-only',
+          ),
         }),
         {
           status: 200,
@@ -600,6 +673,9 @@ export async function onRequestPost(context) {
     const usedFallback = mergedResults.some(
       (result) => result.source === 'route-fallback',
     );
+    const aiSummary = primarySearchData?.response
+      ? truncateText(primarySearchData.response, 240)
+      : '';
 
     const cleanResults = mergedResults.map(
       ({ score: _score, source: _source, ...rest }) => rest,
@@ -607,8 +683,8 @@ export async function onRequestPost(context) {
 
     const responseData = {
       results: cleanResults,
-      summary: primarySearchData?.response
-        ? String(primarySearchData.response).trim().substring(0, 150)
+      summary: aiSummary
+        ? aiSummary.substring(0, 150)
         : `${cleanResults.length} ${cleanResults.length === 1 ? 'Ergebnis' : 'Ergebnisse'} fuer "${query}"`,
       count: cleanResults.length,
       query,
@@ -616,6 +692,12 @@ export async function onRequestPost(context) {
       source: usedFallback
         ? 'cloudflare-ai-search+fallback'
         : 'cloudflare-ai-search',
+      aiChat: buildSearchChatPayload(
+        query,
+        cleanResults,
+        aiSummary,
+        usedFallback ? 'cloudflare-ai-search+fallback' : 'cloudflare-ai-search',
+      ),
     };
 
     return new Response(JSON.stringify(responseData), {

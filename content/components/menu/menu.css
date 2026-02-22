@@ -588,6 +588,38 @@ site-menu {
   font-weight: 600;
 }
 
+.menu-search__ai-chat {
+  margin: 2px 4px 6px; /* tighter spacing per request */
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(125, 180, 255, 0.35);
+  background:
+    radial-gradient(
+      120% 120% at 0% 0%,
+      rgba(71, 145, 255, 0.18) 0%,
+      rgba(71, 145, 255, 0) 70%
+    ),
+    rgba(22, 35, 56, 0.68);
+}
+
+.menu-search__ai-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(189, 219, 255, 0.95);
+}
+
+.menu-search__ai-text {
+  margin: 5px 0 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: rgba(240, 247, 255, 0.94);
+}
+
 /* ===== Category Badge ===== */
 .menu-search__badge {
   display: inline-flex;
