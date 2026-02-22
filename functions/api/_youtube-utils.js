@@ -26,6 +26,37 @@ export async function fetchUploadsPlaylistId(channelId, apiKey) {
 }
 
 /**
+ * Fetch one page of videos from a YouTube playlist
+ * @param {string} playlistId - YouTube playlist ID
+ * @param {string} apiKey - YouTube API key
+ * @param {string|null} pageToken - Optional page token
+ * @returns {Promise<Object>} Playlist page payload
+ */
+export async function fetchPlaylistItemsPage(
+  playlistId,
+  apiKey,
+  pageToken = null,
+) {
+  const playlistUrl = new URL(
+    'https://www.googleapis.com/youtube/v3/playlistItems',
+  );
+  playlistUrl.searchParams.set('playlistId', playlistId);
+  playlistUrl.searchParams.set('key', apiKey);
+  playlistUrl.searchParams.set('part', 'snippet');
+  playlistUrl.searchParams.set('maxResults', '50');
+  if (pageToken) {
+    playlistUrl.searchParams.set('pageToken', pageToken);
+  }
+
+  const response = await fetch(playlistUrl.toString());
+  if (!response.ok) {
+    throw new Error(`YouTube playlistItems API failed: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+/**
  * Convert to YouTube date format
  * @param {string} value - Date value
  * @param {string} fallbackDate - Fallback date
