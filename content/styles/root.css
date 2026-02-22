@@ -394,28 +394,18 @@ iframe {
   }
 }
 
-/* Hide scrollbars on mobile while keeping scroll intact */
-@media (width <= 768px) {
-  html,
-  body {
-    -ms-overflow-style: none;
-  }
+/* Hide scrollbars globally while keeping scroll intact */
+html,
+body {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
 
-  /* Apply scrollbar-width only when supported */
-  @supports (scrollbar-width: none) {
-    html,
-    body,
-    * {
-      scrollbar-width: none;
-    }
-  }
-
-  /* Canonical/centralized scrollbar hide for small viewports (keep here) */
-  html::-webkit-scrollbar,
-  body::-webkit-scrollbar,
-  *::-webkit-scrollbar {
-    width: 0;
-    height: 0;
-    background: transparent;
-  }
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  background: transparent;
+  display: none;
 }

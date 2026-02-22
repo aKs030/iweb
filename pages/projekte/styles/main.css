@@ -1,40 +1,17 @@
-/* Projekte Seite - 3D Space & HUD Styles - v8.0 - Fixed 3D object positioning */
-
-/* Dynamic viewport height for mobile browser UI changes */
 body.projekte-page {
   --projekte-viewport-height: 100vh;
-}
-
-@supports (height: 100dvh) {
-  body.projekte-page {
-    --projekte-viewport-height: 100dvh;
-  }
-}
-
-/* ============================================================================
-   BASE STYLES
-   ============================================================================ */
-body.projekte-page {
-  margin: 0;
-  background-color: #000; /* Deep black space */
-  color: #fff;
-  font-family: var(--font-inter, sans-serif);
-  overflow-x: hidden;
-  /* We need a tall body to allow scrolling */
   min-height: 500vh;
   height: 500vh;
   min-height: 500svh;
   height: 500svh;
-  overscroll-behavior-y: none;
 }
-
 @supports (height: 100dvh) {
   body.projekte-page {
+    --projekte-viewport-height: 100dvh;
     min-height: 500dvh;
     height: 500dvh;
   }
 }
-
 body.projekte-page #root {
   position: fixed;
   top: var(--content-top-offset);
@@ -45,12 +22,8 @@ body.projekte-page #root {
       var(--content-bottom-offset)
   );
   z-index: 10;
-  pointer-events: none; /* Allow scroll to pass through to body */
+  pointer-events: none;
 }
-
-/* ============================================================================
-   CANVAS (3D SCENE)
-   ============================================================================ */
 body.projekte-page #canvas-container {
   position: fixed;
   top: var(--content-top-offset);
@@ -60,20 +33,15 @@ body.projekte-page #canvas-container {
     var(--projekte-viewport-height) - var(--content-top-offset) -
       var(--content-bottom-offset)
   );
-  z-index: 10; /* Higher z-index so 3D objects appear above HUD background */
+  z-index: 10;
   background: radial-gradient(circle at center, #0b0b15 0%, #000 100%);
-  pointer-events: none; /* Allow interactions to pass through to HUD buttons */
+  pointer-events: none;
 }
-
-/* Ensure canvas itself doesn't block interactions */
 body.projekte-page canvas {
   display: block;
-  pointer-events: none; /* Allow clicks to pass through to HUD */
+  pointer-events: none;
 }
 
-/* ============================================================================
-   START / LAUNCH LAYOUT
-   ============================================================================ */
 .launch-screen {
   position: absolute;
   inset: 0;
@@ -84,7 +52,6 @@ body.projekte-page canvas {
   padding: clamp(1rem, 3vw, 2rem);
   pointer-events: none;
 }
-
 .launch-card {
   width: min(92vw, 580px);
   border-radius: 1.4rem;
@@ -102,7 +69,6 @@ body.projekte-page canvas {
   text-align: center;
   pointer-events: auto;
 }
-
 .launch-badge {
   display: inline-flex;
   align-items: center;
@@ -116,14 +82,12 @@ body.projekte-page canvas {
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
-
 .launch-title {
   margin: 1rem 0 0;
   font-size: clamp(1.35rem, 3.2vw, 2rem);
   color: #f8fafc;
   line-height: 1.2;
 }
-
 .launch-subtitle {
   margin: 0.75rem auto 0;
   max-width: 54ch;
@@ -131,7 +95,6 @@ body.projekte-page canvas {
   line-height: 1.6;
   font-size: clamp(0.94rem, 2vw, 1.04rem);
 }
-
 .launch-status {
   margin-top: 1.15rem;
   display: inline-flex;
@@ -140,7 +103,6 @@ body.projekte-page canvas {
   color: #e2e8f0;
   font-size: 0.94rem;
 }
-
 .launch-dot {
   width: 0.62rem;
   height: 0.62rem;
@@ -149,32 +111,27 @@ body.projekte-page canvas {
   box-shadow: 0 0 0 0 rgba(96, 165, 250, 0.45);
   animation: launchPulse 1.35s ease-out infinite;
 }
-
 .launch-hint {
   margin: 0.95rem auto 0;
   color: rgba(148, 163, 184, 0.94);
   font-size: 0.86rem;
   line-height: 1.45;
 }
-
 .launch-screen--error .launch-card {
   border-color: rgba(248, 113, 113, 0.34);
   box-shadow:
     0 24px 56px rgba(0, 0, 0, 0.56),
     0 0 0 1px rgba(248, 113, 113, 0.12);
 }
-
 .launch-error-copy {
   margin: 0.85rem 0 0;
   color: #fecaca;
   font-size: 0.94rem;
   line-height: 1.55;
 }
-
 .launch-retry {
   margin-top: 1.2rem;
 }
-
 .launch-overlay {
   position: absolute;
   inset: 0;
@@ -182,10 +139,11 @@ body.projekte-page canvas {
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  padding: 0 1rem calc(1rem + var(--safe-bottom, env(safe-area-inset-bottom)));
+  padding: 0 calc(1rem + env(safe-area-inset-left))
+    calc(1rem + env(safe-area-inset-bottom))
+    calc(1rem + env(safe-area-inset-right));
   pointer-events: none;
 }
-
 .launch-overlay-card {
   display: inline-flex;
   align-items: center;
@@ -200,9 +158,6 @@ body.projekte-page canvas {
   letter-spacing: 0.01em;
 }
 
-/* ============================================================================
-   APP POPUP
-   ============================================================================ */
 .app-popup {
   position: fixed;
   inset: 0;
@@ -215,7 +170,6 @@ body.projekte-page canvas {
   backdrop-filter: blur(8px);
   pointer-events: auto;
 }
-
 .app-popup__panel {
   width: min(95vw, 1120px);
   height: min(86vh, 780px);
@@ -227,7 +181,6 @@ body.projekte-page canvas {
   display: flex;
   flex-direction: column;
 }
-
 .app-popup__header {
   display: flex;
   align-items: center;
@@ -241,14 +194,12 @@ body.projekte-page canvas {
     rgba(30, 41, 59, 0.78) 100%
   );
 }
-
 .app-popup__title-wrap {
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
   min-width: 0;
 }
-
 .app-popup__label {
   display: inline-flex;
   width: fit-content;
@@ -261,7 +212,6 @@ body.projekte-page canvas {
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
-
 .app-popup__title {
   font-size: 0.98rem;
   color: #e2e8f0;
@@ -269,7 +219,6 @@ body.projekte-page canvas {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
 .app-popup__actions {
   display: flex;
   align-items: center;
@@ -277,20 +226,17 @@ body.projekte-page canvas {
   flex-wrap: wrap;
   justify-content: flex-end;
 }
-
 .app-popup__action {
   min-width: auto;
   min-height: 38px;
   padding: 0.52rem 0.9rem;
   font-size: 0.84rem;
 }
-
 .app-popup__frame-wrap {
   flex: 1;
   min-height: 0;
   background: transparent;
 }
-
 .app-popup__frame {
   width: 100%;
   height: 100%;
@@ -298,7 +244,6 @@ body.projekte-page canvas {
   display: block;
   background: transparent;
 }
-
 @keyframes launchPulse {
   0% {
     box-shadow: 0 0 0 0 rgba(96, 165, 250, 0.45);
@@ -314,65 +259,52 @@ body.projekte-page canvas {
   }
 }
 
-/* ============================================================================
-   HUD / OVERLAY
-   ============================================================================ */
 .hud-container {
-  position: absolute; /* Relative to #root which is fixed */
+  position: absolute;
   bottom: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  pointer-events: none; /* Let clicks pass through to 3D if needed, but mainly ensures layout */
+  pointer-events: none;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  padding: 0 clamp(0.75rem, 2vw, 1.5rem)
-    max(3.5vh, calc(0.75rem + var(--safe-bottom, env(safe-area-inset-bottom))));
+  padding: 0 calc(clamp(0.75rem, 2vw, 1.5rem) + env(safe-area-inset-left))
+    calc(max(3.5vh, 0.75rem) + env(safe-area-inset-bottom))
+    calc(clamp(0.75rem, 2vw, 1.5rem) + env(safe-area-inset-right));
   box-sizing: border-box;
-  z-index: 15; /* Medium z-index between canvas and panel */
+  z-index: 15;
 }
-
-/* The active project info card */
 .hud-panel {
-  pointer-events: auto; /* Enable buttons */
+  pointer-events: auto;
   margin: 0 auto clamp(1rem, 2vh, 2rem) auto;
   width: min(92vw, 620px);
   max-height: min(62vh, 460px);
   overflow: auto;
-  background: rgba(
-    10,
-    10,
-    16,
-    0.85
-  ); /* Slightly more opaque for better readability */
-  backdrop-filter: blur(20px); /* Increased blur for better separation */
+  background: rgba(10, 10, 16, 0.85);
+  backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 1.5rem;
   padding: 2rem;
   text-align: center;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
-  z-index: 20; /* Higher z-index to ensure interactivity */
-  position: relative; /* Needed for z-index to work */
-
+  z-index: 20;
+  position: relative;
   opacity: 0;
   transform: translateY(20px);
   transition:
     opacity 0.4s ease,
     transform 0.4s ease;
 }
-
 .hud-panel.visible {
   opacity: 1;
   transform: translateY(0);
 }
-
 .hud-container.is-pending .hud-panel {
   opacity: 0;
   transform: translateY(24px) scale(0.98);
   pointer-events: none;
 }
-
 .hud-meta-row {
   display: flex;
   align-items: center;
@@ -380,7 +312,6 @@ body.projekte-page canvas {
   gap: 0.5rem;
   margin-bottom: 0.8rem;
 }
-
 .hud-meta-pill {
   display: inline-flex;
   align-items: center;
@@ -393,12 +324,10 @@ body.projekte-page canvas {
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
-
 .hud-meta-count {
   font-size: 0.8rem;
   color: rgba(226, 232, 240, 0.86);
 }
-
 .hud-title {
   font-size: 2rem;
   font-weight: 700;
@@ -406,7 +335,6 @@ body.projekte-page canvas {
   color: #fff;
   text-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
 }
-
 .hud-category {
   display: inline-block;
   font-size: 0.75rem;
@@ -418,24 +346,19 @@ body.projekte-page canvas {
   margin-bottom: 1rem;
   color: #a0a0a0;
 }
-
 .hud-desc {
   font-size: 1rem;
   line-height: 1.6;
   color: #d1d5db;
   margin-bottom: 1.5rem;
 }
-
-/* Case Study Section */
 .hud-case-study {
   margin-bottom: 1rem;
   text-align: left;
 }
-
 .hud-case-study-toggle {
   font-family: inherit;
 }
-
 .hud-case-study-content {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -447,11 +370,9 @@ body.projekte-page canvas {
   border-radius: 0.75rem;
   animation: projekteFadeInUp 0.3s ease-out;
 }
-
 .hud-cs-block {
   padding: 0.4rem 0;
 }
-
 .hud-cs-block strong {
   display: block;
   font-size: 0.7rem;
@@ -460,20 +381,17 @@ body.projekte-page canvas {
   color: #93c5fd;
   margin-bottom: 0.25rem;
 }
-
 .hud-cs-block p {
   font-size: 0.8rem;
   line-height: 1.45;
   color: #d1d5db;
   margin: 0;
 }
-
 @media (max-width: 640px) {
   .hud-case-study-content {
     grid-template-columns: 1fr;
   }
 }
-
 @keyframes projekteFadeInUp {
   from {
     opacity: 0;
@@ -484,19 +402,15 @@ body.projekte-page canvas {
     transform: translateY(0);
   }
 }
-
 .hud-actions {
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
   gap: 1rem;
   position: relative;
-  z-index: 20; /* Ensure buttons are above everything */
+  z-index: 20;
 }
 
-/* ============================================================================
-   BUTTONS (Re-used/Simplified)
-   ============================================================================ */
 body.projekte-page .btn {
   display: inline-flex;
   align-items: center;
@@ -513,50 +427,38 @@ body.projekte-page .btn {
   min-height: 44px;
   min-width: 140px;
 }
-
 body.projekte-page .btn-primary {
   background: #3b82f6;
-  color: white;
+  color: #fff;
   box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
 }
-
 body.projekte-page .btn-primary:hover {
   background: #2563eb;
   transform: translateY(-2px);
   box-shadow: 0 0 30px rgba(59, 130, 246, 0.5);
 }
-
 body.projekte-page .btn-outline {
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.3);
-  color: white;
+  color: #fff;
 }
-
 body.projekte-page .btn-outline:hover {
   background: rgba(255, 255, 255, 0.1);
-  border-color: white;
+  border-color: #fff;
 }
-
-/* ============================================================================
-   SCROLL PROGRESS / HINT
-   ============================================================================ */
 .scroll-hint {
   position: fixed;
-  bottom: max(
-    2rem,
-    calc(1rem + var(--safe-bottom, env(safe-area-inset-bottom)))
-  );
-  right: 2rem;
-  color: rgba(255, 255, 255, 0.6); /* Made more visible */
+  bottom: calc(2rem + env(safe-area-inset-bottom));
+  right: calc(2rem + env(safe-area-inset-right));
+  color: rgba(255, 255, 255, 0.6);
   font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.2em;
   writing-mode: vertical-rl;
   pointer-events: none;
-  z-index: 15; /* Higher z-index to stay above 3D objects */
+  z-index: 15;
   animation: pulseHint 2s infinite;
 }
-
 @keyframes pulseHint {
   0%,
   100% {
@@ -566,10 +468,6 @@ body.projekte-page .btn-outline:hover {
     opacity: 1;
   }
 }
-
-/* ============================================================================
-   RESPONSIVE
-   ============================================================================ */
 @media (max-width: 768px) {
   body.projekte-page {
     min-height: 430vh;
@@ -577,141 +475,111 @@ body.projekte-page .btn-outline:hover {
     min-height: 430svh;
     height: 430svh;
   }
-
   @supports (height: 100dvh) {
     body.projekte-page {
       min-height: 430dvh;
       height: 430dvh;
     }
   }
-
   .hud-panel {
     width: min(94vw, 540px);
     max-height: min(58vh, 420px);
     padding: 1.15rem;
     border-radius: 1.2rem;
   }
-
   .launch-card {
     width: min(96vw, 520px);
     border-radius: 1.2rem;
     padding: 1.1rem 1rem 1.2rem;
   }
-
   .launch-title {
     font-size: clamp(1.2rem, 5.4vw, 1.5rem);
   }
-
   .launch-subtitle {
     font-size: 0.9rem;
     line-height: 1.5;
   }
-
   .launch-status {
     font-size: 0.86rem;
   }
-
   .app-popup {
     padding: 0.6rem;
     align-items: flex-end;
   }
-
   .app-popup__panel {
     width: 100%;
     height: min(84vh, 740px);
     border-radius: 0.95rem;
   }
-
   .app-popup__header {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.6rem;
     padding: 0.75rem;
   }
-
   .app-popup__actions {
     width: 100%;
     justify-content: flex-start;
   }
-
   .app-popup__action {
     flex: 1 1 calc(50% - 0.3rem);
     min-width: 0;
   }
-
   .hud-actions {
     gap: 0.65rem;
   }
-
   body.projekte-page .btn {
     flex: 1 1 calc(50% - 0.35rem);
     min-width: 0;
   }
-
   .hud-title {
     font-size: clamp(1.35rem, 5vw, 1.6rem);
   }
-
   .hud-desc {
     font-size: 0.9rem;
     line-height: 1.5;
   }
-
   .scroll-hint {
     display: none;
   }
 }
-
 @media (max-width: 480px) {
   .hud-container {
-    padding-inline: clamp(
-      0.6rem,
-      3vw,
-      0.9rem
-    ); /* keep panel clear of rounded corners */
+    padding-inline: calc(
+      clamp(0.6rem, 3vw, 0.9rem) + env(safe-area-inset-left)
+    );
   }
-
   .hud-panel {
     width: min(96vw, 420px);
     max-height: min(56vh, 390px);
     padding: 1rem;
   }
-
   .launch-overlay {
-    padding-bottom: calc(
-      0.7rem + var(--safe-bottom, env(safe-area-inset-bottom))
-    );
+    padding-bottom: calc(0.7rem + env(safe-area-inset-bottom));
   }
-
   .launch-overlay-card {
     font-size: 0.78rem;
   }
-
   .app-popup {
     padding: 0.35rem;
   }
-
   .app-popup__panel {
     height: min(88vh, 760px);
     border-radius: 0.75rem;
   }
-
   .app-popup__title {
     font-size: 0.9rem;
   }
-
   .hud-actions {
     flex-direction: column;
   }
-
   body.projekte-page .btn {
     width: 100%;
     min-height: 46px;
     font-size: 0.92rem;
   }
 }
-/* Mobile adjustments for header height */
-@media (width <= 900px) {
+@media (width<=900px) {
   body.projekte-page #root {
     height: calc(
       var(--projekte-viewport-height) - var(--content-top-offset) -
@@ -719,7 +587,6 @@ body.projekte-page .btn-outline:hover {
     );
     top: var(--content-top-offset);
   }
-
   body.projekte-page #canvas-container {
     top: var(--content-top-offset);
     height: calc(

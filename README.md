@@ -6,7 +6,7 @@ Modernes Portfolio auf Cloudflare Pages mit Vanilla JavaScript, Three.js und Clo
 
 Voraussetzungen:
 
-- Node.js `22.22.0` (siehe `.node-version`)
+- Node.js `22+` (siehe `package.json` engines)
 - npm
 
 Installation und Start:
@@ -45,9 +45,8 @@ Details: [`.husky/README.md`](.husky/README.md)
 
 GitHub Workflows:
 
-- [`.github/workflows/ci.yml`](.github/workflows/ci.yml) - Lint/Format
-- [`.github/workflows/preview.yml`](.github/workflows/preview.yml) - Cloudflare Preview Deployments für PRs
-- [`.github/workflows/codeql.yml`](.github/workflows/codeql.yml) - CodeQL Analyse
+- [`.github/workflows/main.yml`](.github/workflows/main.yml) - Lint, Security & Preview Deployments
+- [`.github/workflows/workflow-lint.yml`](.github/workflows/workflow-lint.yml) - Workflow Validation
 
 ## Projektstruktur
 

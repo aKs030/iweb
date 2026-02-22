@@ -19,7 +19,7 @@
  */
 
 import { createLogger } from '/content/core/logger.js';
-import { escapeHTML } from '/content/core/html-sanitizer.js';
+import { escapeHTML } from '/content/core/utils.js';
 import { getElementById } from '/content/core/utils.js';
 import { AppLoadManager } from '/content/core/load-manager.js';
 import { i18n } from '/content/core/i18n.js';

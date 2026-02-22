@@ -61,7 +61,7 @@ npm run clean            # Clean build artifacts
 
 ## Node Version
 
-- **Required**: Node.js 18+ (see .nvmrc)
+- **Required**: Node.js 22+ (see package.json engines)
 - **Package Manager**: npm (package-lock.json present)
 
 ## Environment Variables

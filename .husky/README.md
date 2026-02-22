@@ -1,24 +1,19 @@
 # Husky Git Hooks
 
-## Hooks
+## Active Hooks
 
-| Hook         | Was passiert                                                       |
-| ------------ | ------------------------------------------------------------------ |
-| `pre-commit` | `lint-staged` → ESLint --fix + Prettier --write (nur staged files) |
-| `pre-push`   | `npm run check` (ESLint + Prettier Check, read-only)               |
+- `pre-commit` → lint-staged (ESLint + Prettier on staged files)
+- `pre-push` → npm run check (ESLint + Prettier validation)
 
-## Commit-Typen
-
-`feat` `fix` `docs` `style` `refactor` `perf` `test` `build` `ci` `chore`
+## Skip Hooks
 
 ```bash
-git commit -m "feat(menu): add search"
-git commit --no-verify -m "emergency fix"   # Hook überspringen
+git commit --no-verify -m "emergency fix"
+git push --no-verify
 ```
 
-## Troubleshooting
+## Reinstall
 
 ```bash
-npm run prepare        # Hooks neu installieren
-chmod +x .husky/*      # Ausführbar machen
+npm run prepare
 ```

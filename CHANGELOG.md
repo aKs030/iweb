@@ -7,62 +7,38 @@ und dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/).
 
 ## [Unreleased]
 
-### Changed - Config & Tooling Cleanup (2026-02-20)
+### Added - AI Indexing & Optimization (2026-02-21)
 
-- ✅ ESLint-Globals über `globals` Paket dedupliziert
-- ✅ Node/Tooling-Konfigurationen vereinheitlicht (`.node-version`, `engines`, aktualisierte Dev-Tool-Versionen)
-- ✅ Contributor/README-Dokumentation an aktuelle Scripts angepasst
+- ✅ Umfassende AI-Indexierung implementiert
+- ✅ llms.txt & llms-full.txt für LLM-Crawler
+- ✅ person.jsonld (Schema.org Person Markup)
+- ✅ bio.md (Professionelle Biografie)
+- ✅ ai-index.json (Strukturierte Site-Daten)
+- ✅ OpenAPI Spezifikation für APIs
+- ✅ AI Plugin Manifest (ChatGPT/Claude)
+- ✅ robots.txt mit AI-Bot Direktiven
+- ✅ Dynamische Sitemaps aktualisiert
+
+### Changed - Zero-Config Optimization (2026-02-21)
+
+- ✅ Zero-Build System implementiert
+- ✅ Service Worker optimiert (350 → 200 Zeilen, 43% Reduktion)
+- ✅ GitHub Workflows konsolidiert (4 → 2 Workflows, 42% Reduktion)
+- ✅ Konfigurationsdateien komprimiert (eslint, prettier, tsconfig, wrangler)
+- ✅ Moderne JavaScript Patterns durchgehend implementiert
+- ✅ Cache-Busting via Meta-Tag statt Build-Script
+- ✅ Issue Templates vereinfacht (77% Reduktion)
 
 ### Removed
 
-- ✅ Ungenutzte Konfigurationsdateien entfernt: `.htmlvalidate.json`, `.lighthouserc.json`
-
-### Security
-
-- ✅ Sensitiven API-Key-Beispielwert in Doku entfernt
-
-### Added - Bildoptimierung (2025-01-30)
-
-- ✅ Vollständige Bildoptimierung mit AVIF/WebP Support
-- ✅ Automatisches Lazy Loading mit Intersection Observer
-- ✅ Performance-Monitoring für Bilder (LCP, CLS Tracking)
-- ✅ React-Komponenten für optimierte Bilder (`OptimizedImage`, `OptimizedPicture`, `LazyImage`)
-- ✅ Automatische Bildkonvertierungs-Scripts (Bash + Node.js)
-- ✅ GitHub Actions Workflow für automatische Bildoptimierung
-- ✅ CSS-Utilities für Loading-States (Blur, Spinner, Fade-in)
-- ✅ Umfassende Dokumentation (Quick Start + Vollständiger Leitfaden)
-- ✅ Live-Beispiele (`examples/image-optimization-examples.html`)
-
-### Changed
-
-- Gallery-App: Optimierte Bildlade-Strategie (erste 6 eager, Rest lazy)
-- Videos-Seite: Optimierte Thumbnails mit Lazy Loading
-- Main.js: Auto-Initialisierung der Bildoptimierung beim Seitenload
-- README: Aktualisiert mit Bildoptimierungs-Features
-- Docs: Neue Dokumentations-Struktur
-
-### Performance
-
-- Bildgröße: -40% bis -60% durch AVIF-Format
-- LCP: Verbessert durch Preloading kritischer Bilder
-- CLS: Nahezu 0 durch explizite Dimensionen
-- Lazy Loading: Nur sichtbare Bilder werden geladen
-
-### Files Added
-
-- `content/core/image-optimizer.js` (400+ Zeilen) - Hauptmodul
-- `content/core/image-loader-helper.js` (50 Zeilen) - Minimale API
-- `content/styles/components/image-loading.css` (300+ Zeilen)
-- `docs/IMAGE_OPTIMIZATION.md`
-- `docs/IMAGE_OPTIMIZATION_GUIDE.md`
-
-### Files Optimized
-
-- ✅ 13 Bilder zu AVIF konvertiert
-- ✅ 13 Bilder zu WebP konvertiert
-- ✅ Alte JPG/PNG-Dateien gelöscht
-- ✅ Backup gelöscht (nicht für Produktion nötig)
-- 📊 Finale Größe: 2.0M (nur moderne Formate)
+- ✅ Build-System: `.pages.toml`, `.node-version`, `build.sh`, `scripts/inject-version.mjs`, `version.json`
+- ✅ Alte Dokumentation: `DEPLOYMENT_SETUP.md`, `SECRETS_SETUP.md`, `docs/VERSION_MANAGEMENT.md`, `docs/CLOUDFLARE_PAGES_SETUP.md`
+- ✅ Temporäre Reports: `OPTIMIZATION_SUMMARY.md`, `FINAL_OPTIMIZATION_REPORT.md`
+- ✅ Ungenutzte Tools: `cspell.json`
+- ✅ Duplikate: `about-me.json`, `llms-full.txt` (war fälschlich als gelöscht markiert)
+- ✅ Statische Sitemap: `sitemap.xml` (dynamische Version wird verwendet)
+- ✅ Log-Dateien: `server.log`
+- ✅ macOS Metadaten: Alle `.DS_Store` Dateien
 
 ## [1.0.0] - 2025-01-30
 
@@ -76,6 +52,9 @@ und dieses Projekt folgt [Semantic Versioning](https://semver.org/lang/de/).
 - Cloudflare Pages Functions Integration
 - Responsive Design
 - SEO Optimierung
+- Vollständige Bildoptimierung mit AVIF/WebP Support
+- Automatisches Lazy Loading mit Intersection Observer
+- Performance-Monitoring für Bilder (LCP, CLS Tracking)
 
 [Unreleased]: https://github.com/aKs030/iweb/compare/v1.0.0...HEAD
 [1.0.0]: https://github.com/aKs030/iweb/releases/tag/v1.0.0

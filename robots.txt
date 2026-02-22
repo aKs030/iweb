@@ -1,58 +1,64 @@
-# robots.txt – abdulkerimsesli.de (Optimiert für Cloudflare Pages & Googlebot)
+# robots.txt - AI & Search Engine Directives
 
+# Default: Allow all bots
+User-agent: *
+Allow: /
+Crawl-delay: 1
+
+# Sitemaps
 Sitemap: https://www.abdulkerimsesli.de/sitemap.xml
 Sitemap: https://www.abdulkerimsesli.de/sitemap-images.xml
 Sitemap: https://www.abdulkerimsesli.de/sitemap-videos.xml
 
+# AI-specific directives
+# OpenAI GPT
+User-agent: GPTBot
+Allow: /
+Crawl-delay: 1
+
+# Anthropic Claude
+User-agent: Claude-Web
+Allow: /
+Crawl-delay: 1
+
+# Google Bard/Gemini
+User-agent: Google-Extended
+Allow: /
+Crawl-delay: 1
+
+# Perplexity AI
+User-agent: PerplexityBot
+Allow: /
+Crawl-delay: 1
+
+# Common Crawl (used by many AI systems)
+User-agent: CCBot
+Allow: /
+Crawl-delay: 2
+
+# Cohere AI
+User-agent: cohere-ai
+Allow: /
+Crawl-delay: 1
+
+# AI2 Bot (Allen Institute)
+User-agent: AI2Bot
+Allow: /
+Crawl-delay: 1
+
+# Applebot (used for Siri, Spotlight)
+User-agent: Applebot
+Allow: /
+Crawl-delay: 1
+
+# Disallow sensitive areas
 User-agent: *
-Allow: /
-# Erlaube Zugriff auf den Pages-Ordner für korrektes Rendering und Indexierung
-Allow: /pages/
-Allow: /favicon.ico
-Allow: /favicon.svg
-Allow: /manifest.json
-Allow: /llms.txt
-Allow: /llms-full.txt
-Allow: /content/assets/img/
-
-# Erlaube wichtige Ressourcen in Komponenten (CSS, JS, Bilder)
-Allow: /content/components/*.js
-Allow: /content/components/*.css
-Allow: /content/components/*.svg
-Allow: /content/components/*.png
-Allow: /content/components/*.jpg
-Allow: /content/components/*.webp
-Allow: /content/components/*.html
-# Erlaube explizit den Footer ohne Extension (wichtig für Redirects/Clean URLs)
-Allow: /content/components/footer/footer
-
-# Blockiere nur rein technische Komponenten und System-Pfade
-Disallow: /content/components/
+Disallow: /api/
+Disallow: /.wrangler/
 Disallow: /node_modules/
-Disallow: /tmp/
-Disallow: /dev/
-Disallow: /pages/about/about-loader.js
-Disallow: /pages/design/
+Disallow: /*.log$
 
-# Spezifische Sperre für Suchparameter (verhindert Duplicate Content)
-Disallow: /*?search=
-Disallow: /*?q=
-
-# Google Bildersuche explizit erlauben
-User-agent: Googlebot-Image
-Allow: /
-Allow: /favicon.ico
-Allow: /favicon.svg
+# LLM-specific files
 Allow: /llms.txt
 Allow: /llms-full.txt
-Allow: /content/assets/img/
-
-# Aggressive Crawler blockieren
-User-agent: AhrefsBot
-Disallow: /
-User-agent: SemrushBot
-Disallow: /
-User-agent: MJ12bot
-Disallow: /
-User-agent: DotBot
-Disallow: /
+Allow: /ai-index.json

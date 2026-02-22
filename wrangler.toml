@@ -1,11 +1,9 @@
 name = "1web"
 compatibility_date = "2025-02-14"
 compatibility_flags = ["nodejs_compat"]
-
-# Pages Build Output - Root-Verzeichnis (kein Build)
 pages_build_output_dir = "."
 
-# Bindings für alle Umgebungen (default)
+# Shared configuration
 [[r2_buckets]]
 binding = "GALLERY_BUCKET"
 bucket_name = "img"
@@ -13,32 +11,21 @@ bucket_name = "img"
 [ai]
 binding = "AI"
 
-# Umgebungsvariablen für Production
-[env.production]
-vars = { MAX_SEARCH_RESULTS = "10", RAG_ID = "wispy-pond-1055", YOUTUBE_CHANNEL_ID = "UCTGRherjM4iuIn86xxubuPg" }
-
-[[env.production.r2_buckets]]
-binding = "GALLERY_BUCKET"
-bucket_name = "img"
+# Environment-specific overrides
+[env.production.vars]
+MAX_SEARCH_RESULTS = "10"
+RAG_ID = "wispy-pond-1055"
+YOUTUBE_CHANNEL_ID = "UCTGRherjM4iuIn86xxubuPg"
 
 [[env.production.kv_namespaces]]
 binding = "RATE_LIMIT_KV"
 id = "75d79a452fa74cc980caf400862e2c67"
 
-[env.production.ai]
-binding = "AI"
-
-# Umgebungsvariablen für Preview
-[env.preview]
-vars = { MAX_SEARCH_RESULTS = "10", RAG_ID = "wispy-pond-1055", YOUTUBE_CHANNEL_ID = "UCTGRherjM4iuIn86xxubuPg" }
-
-[[env.preview.r2_buckets]]
-binding = "GALLERY_BUCKET"
-bucket_name = "img"
+[env.preview.vars]
+MAX_SEARCH_RESULTS = "10"
+RAG_ID = "wispy-pond-1055"
+YOUTUBE_CHANNEL_ID = "UCTGRherjM4iuIn86xxubuPg"
 
 [[env.preview.kv_namespaces]]
 binding = "RATE_LIMIT_KV"
 id = "edf1005c1b964f2fae4718afa152e836"
-
-[env.preview.ai]
-binding = "AI"

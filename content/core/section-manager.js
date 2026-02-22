@@ -6,7 +6,7 @@
 import { createLogger } from './logger.js';
 import { fetchText } from './fetch.js';
 import { fire, EVENTS } from './events.js';
-import { createObserver } from './intersection-observer.js';
+import { createObserver } from './utils.js';
 import { i18n } from '../core/i18n.js';
 
 const log = createLogger('SectionManager');

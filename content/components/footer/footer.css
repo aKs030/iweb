@@ -1,6 +1,6 @@
 /**
- * Modern Footer System v2.0.1
- * Scroll-based auto-expand/collapse footer
+ * Modern Footer System v3.0.0
+ * Scroll-based auto-expand/collapse footer with memory-leak prevention
  * @author Abdulkerim Sesli
  */
 
@@ -314,52 +314,6 @@ address {
   display: none !important;
 }
 
-/* ===== Minimize Button ===== */
-.btn-minimize {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 1px solid var(--component-separator, rgba(255, 255, 255, 0.1));
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.6);
-  cursor: pointer;
-  transition: all var(--transition-base);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10;
-  font-family: inherit;
-}
-
-.btn-minimize:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
-  border-color: var(--component-accent-blue, #007aff);
-  transform: scale(1.1);
-}
-
-.btn-minimize:active {
-  transform: scale(0.95);
-}
-
-.btn-minimize:focus-visible {
-  outline: 2px solid var(--component-accent-blue, #007aff);
-  outline-offset: 2px;
-  box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.2);
-}
-
-.btn-minimize svg {
-  flex-shrink: 0;
-  transition: transform var(--transition-base);
-}
-
-.btn-minimize:hover svg {
-  transform: translateY(2px);
-}
-
 /* ===== Cookie Settings ===== */
 .cookie-settings {
   max-width: 520px;
@@ -659,14 +613,6 @@ address {
   flex: 1;
 }
 
-.footer-card .card-desc {
-  font-size: 11px;
-  line-height: 1.4;
-  color: rgba(255, 255, 255, 0.6);
-  margin: 0 0 10px;
-  flex: 1;
-}
-
 .footer-card-actions {
   display: flex;
   gap: 8px;
@@ -695,18 +641,6 @@ address {
   background: var(--component-accent-blue-hover, #0051d5);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
-}
-
-.footer-cta-secondary {
-  background: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.9);
-  border: 1px solid var(--component-separator, rgba(255, 255, 255, 0.2));
-}
-
-.footer-cta-secondary:hover {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.3);
-  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
 }
 
 .links {
@@ -793,52 +727,6 @@ address {
   transform: scale(1.15);
 }
 
-/* ===== Newsletter Form ===== */
-.newsletter-form {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: auto;
-}
-
-.newsletter-form input {
-  flex: 1;
-  padding: 8px 12px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--component-separator, rgba(255, 255, 255, 0.1));
-  border-radius: 8px;
-  color: #fff;
-  font-size: 11px;
-  font-family: inherit;
-  transition: all var(--transition-base);
-}
-
-.newsletter-form input:focus {
-  outline: none;
-  border-color: var(--component-accent-blue, #007aff);
-  background: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
-}
-
-.newsletter-form button {
-  padding: 8px 16px;
-  background: var(--component-accent-blue, #007aff);
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  font-size: 11px;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all var(--transition-base);
-}
-
-.newsletter-form button:hover {
-  background: var(--component-accent-blue-hover, #0051d5);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
-}
-
 /* ===== Skill Tags ===== */
 .skill-tags {
   display: flex;
@@ -905,6 +793,49 @@ address {
   display: flex;
   gap: 6px;
   flex-shrink: 0;
+}
+
+.legal-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--component-separator, rgba(255, 255, 255, 0.1));
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  font-size: 11px;
+  font-weight: 510;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  font-family: inherit;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.legal-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--component-accent-blue, #007aff);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.legal-btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.legal-btn svg {
+  flex-shrink: 0;
+  width: 14px;
+  height: 14px;
+  opacity: 0.7;
+  transition: all var(--transition-base);
+}
+
+.legal-btn:hover svg {
+  opacity: 1;
+  transform: scale(1.1);
 }
 
 .legal .nav-btn {
@@ -1043,18 +974,6 @@ body.footer-expanded {
     max-height: calc(100vh - 100px);
   }
 
-  .btn-minimize {
-    top: 8px;
-    right: 8px;
-    width: 28px;
-    height: 28px;
-  }
-
-  .btn-minimize svg {
-    width: 16px;
-    height: 16px;
-  }
-
   .footer-content {
     gap: 8px;
   }
@@ -1108,12 +1027,6 @@ body.footer-expanded {
     margin: 0 0 6px;
   }
 
-  .footer-card .card-desc {
-    font-size: 9px;
-    line-height: 1.3;
-    margin: 0 0 6px;
-  }
-
   .footer-card-actions {
     gap: 4px;
   }
@@ -1149,20 +1062,6 @@ body.footer-expanded {
   .tag {
     font-size: 8px;
     padding: 3px 6px;
-  }
-
-  .newsletter-form {
-    gap: 6px;
-  }
-
-  .newsletter-form input {
-    padding: 6px 10px;
-    font-size: 10px;
-  }
-
-  .newsletter-form button {
-    padding: 6px 12px;
-    font-size: 10px;
   }
 
   .status-bar {
@@ -1210,6 +1109,17 @@ body.footer-expanded {
     gap: 2px;
     order: 3;
     flex-shrink: 0;
+  }
+
+  .legal-btn {
+    padding: 6px 8px;
+    font-size: 9px;
+    gap: 4px;
+  }
+
+  .legal-btn svg {
+    width: 12px;
+    height: 12px;
   }
 
   .legal .nav-btn {
@@ -1261,18 +1171,6 @@ body.footer-expanded {
     max-height: calc(100vh - 80px);
   }
 
-  .btn-minimize {
-    top: 6px;
-    right: 6px;
-    width: 24px;
-    height: 24px;
-  }
-
-  .btn-minimize svg {
-    width: 14px;
-    height: 14px;
-  }
-
   .footer-content {
     gap: 6px;
   }
@@ -1302,8 +1200,7 @@ body.footer-expanded {
     margin: 0 0 5px;
   }
 
-  .footer-card .bio,
-  .footer-card .card-desc {
+  .footer-card .bio {
     font-size: 8px;
     line-height: 1.3;
     margin: 0 0 5px;
@@ -1331,16 +1228,6 @@ body.footer-expanded {
   .tag {
     font-size: 7px;
     padding: 2px 5px;
-  }
-
-  .newsletter-form input {
-    padding: 5px 8px;
-    font-size: 9px;
-  }
-
-  .newsletter-form button {
-    padding: 5px 10px;
-    font-size: 9px;
   }
 
   .status-bar {
@@ -1376,6 +1263,17 @@ body.footer-expanded {
 
   .legal {
     gap: 2px;
+  }
+
+  .legal-btn {
+    padding: 5px 7px;
+    font-size: 8px;
+    gap: 3px;
+  }
+
+  .legal-btn svg {
+    width: 11px;
+    height: 11px;
   }
 
   .legal .nav-btn {
@@ -1450,21 +1348,4 @@ body.footer-expanded {
   .site-footer {
     display: none;
   }
-}
-
-/* ===== Utility Classes ===== */
-.visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-
-.year::after {
-  content: attr(data-year);
 }

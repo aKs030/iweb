@@ -9,7 +9,7 @@ import ReactDOM from 'react-dom/client';
 
 import { createLogger } from '/content/core/logger.js';
 import { AppLoadManager } from '/content/core/load-manager.js';
-import { createUseTranslation } from '/content/core/react-utils.js';
+import { createUseTranslation } from '/content/core/utils.js';
 import { createErrorBoundary } from '/content/components/ErrorBoundary.js';
 import { i18n } from '/content/core/i18n.js';
 

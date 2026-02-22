@@ -7,8 +7,6 @@ Aktueller Index der Projekt-Dokumentation.
 - [`../README.md`](../README.md) - Projektüberblick und lokale Entwicklung
 - [`../CONTRIBUTING.md`](../CONTRIBUTING.md) - Beitrags- und PR-Workflow
 - [`../SECURITY.md`](../SECURITY.md) - Security Policy
-- [`../DEPLOYMENT_SETUP.md`](../DEPLOYMENT_SETUP.md) - Deployment-Setup
-- [`../SECRETS_SETUP.md`](../SECRETS_SETUP.md) - Secret- und Env-Setup
 - [`PROJECT_STATUS.md`](PROJECT_STATUS.md) - Status und Metriken
 
 ## Architektur & Technik

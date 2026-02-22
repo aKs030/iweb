@@ -4,7 +4,7 @@
  * @last-modified 2026-02-11
  */
 
-import { initConsoleFilter } from './core/console-filter.js';
+import { initConsoleFilter } from './core/utils.js';
 import { initHeroFeatureBundle } from '../pages/home/hero-manager.js';
 import { createLogger } from './core/logger.js';
 import { EVENTS, fire } from './core/events.js';
@@ -83,9 +83,11 @@ const _initApp = () => {
   }
   _appInitialized = true;
 
-  // Scroll to top on init (Safari compatibility)
-  window.scrollTo(0, 0);
-  setTimeout(() => window.scrollTo(0, 0), 100);
+  // Scroll to top on init (Safari compatibility) - only if no hash in URL
+  if (!window.location.hash) {
+    window.scrollTo(0, 0);
+    setTimeout(() => window.scrollTo(0, 0), 100);
+  }
 
   sectionManager.init();
 
@@ -194,19 +196,6 @@ document.addEventListener(
 
     schedulePersistentStorageRequest(STORAGE_REQUEST_DELAY_MS);
 
-    // Activate deferred styles (DOM-schonend optimiert)
-    try {
-      document
-        .querySelectorAll('link[rel="stylesheet"][data-defer="1"]')
-        .forEach((link) => {
-          const linkEl = /** @type {HTMLLinkElement} */ (link);
-          linkEl.media = 'all';
-          linkEl.removeAttribute('data-defer'); // Saubere Methode statt delete dataset
-        });
-    } catch {
-      /* ignore */
-    }
-
     // Initialize global event handlers
     GlobalEventHandlers.init(announce);
 
@@ -230,8 +219,10 @@ globalThis.addEventListener('pageshow', (event) => {
       document.dispatchEvent(new CustomEvent('visibilitychange'));
     }
 
-    // Force scroll to top on restoration
-    window.scrollTo(0, 0);
+    // Force scroll to top on restoration - only if no hash in URL
+    if (!window.location.hash) {
+      window.scrollTo(0, 0);
+    }
   }
 });
 
@@ -240,155 +231,53 @@ globalThis.addEventListener('beforeunload', () => {
   window.scrollTo(0, 0);
 });
 
-// ===== Service Worker Web Component =====
-class SWUpdateNotification extends HTMLElement {
-  constructor() {
-    super();
-    this.attachShadow({ mode: 'open' });
-    this.shadowRoot.innerHTML = `
-      <style>
-        :host {
-          display: block;
-          position: fixed;
-          bottom: 20px;
-          right: 20px;
-          background: var(--color-surface, #1a1a1a);
-          color: var(--color-text, #ffffff);
-          padding: 16px 20px;
-          border-radius: 8px;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-          z-index: 10000;
-          animation: slideIn 0.3s ease-out;
-          max-width: 400px;
-        }
-        .sw-update-content {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-        }
-        .sw-update-icon {
-          font-size: 24px;
-        }
-        .sw-update-text {
-          flex: 1;
-          font-size: 14px;
-        }
-        .sw-update-button {
-          background: var(--color-primary, #0066cc);
-          color: white;
-          border: none;
-          padding: 8px 16px;
-          border-radius: 4px;
-          cursor: pointer;
-          font-size: 14px;
-          font-weight: 500;
-          transition: background 0.2s;
-        }
-        .sw-update-button:hover {
-          background: var(--color-primary-hover, #0052a3);
-        }
-        .sw-update-close {
-          background: transparent;
-          border: none;
-          color: var(--color-text-secondary, #999);
-          font-size: 24px;
-          cursor: pointer;
-          padding: 0;
-          width: 24px;
-          height: 24px;
-          line-height: 1;
-        }
-        .sw-update-close:hover {
-          color: var(--color-text, #ffffff);
-        }
-        @keyframes slideIn {
-          from {
-            transform: translateY(100px);
-            opacity: 0;
-          }
-          to {
-            transform: translateY(0);
-            opacity: 1;
-          }
-        }
-        @media (max-width: 640px) {
-          :host {
-            bottom: 10px;
-            right: 10px;
-            left: 10px;
-            max-width: none;
-          }
-        }
-      </style>
-      <div class="sw-update-content">
-        <span class="sw-update-icon">🔄</span>
-        <span class="sw-update-text">Neue Version verfügbar!</span>
-        <button class="sw-update-button" id="sw-update-reload">Aktualisieren</button>
-        <button class="sw-update-close" id="sw-update-dismiss" aria-label="Schließen">×</button>
-      </div>
-    `;
-  }
-
-  connectedCallback() {
-    this.shadowRoot
-      .getElementById('sw-update-reload')
-      .addEventListener('click', () => {
-        window.location.reload();
-      });
-
-    this.shadowRoot
-      .getElementById('sw-update-dismiss')
-      .addEventListener('click', () => {
-        this.remove();
-      });
-
-    // Auto-dismiss after 30 seconds
-    setTimeout(() => {
-      if (this.parentNode) this.remove();
-    }, 30000);
-  }
-}
-
-// Registriere die neue Web Component
-customElements.define('sw-update-notification', SWUpdateNotification);
-
 // ===== Service Worker Registration =====
 if ('serviceWorker' in navigator && !ENV.isTest) {
-  globalThis.addEventListener('load', async () => {
-    try {
-      // Fetch app version for SW cache busting
-      let swUrl = '/sw.js';
+  const isLocal = ['localhost', '127.0.0.1'].includes(
+    globalThis.location.hostname,
+  );
+
+  if (isLocal) {
+    navigator.serviceWorker.getRegistrations().then((regs) => {
+      regs.forEach((reg) => reg.unregister());
+    });
+  } else {
+    globalThis.addEventListener('load', async () => {
       try {
-        const pkg = await fetch('/package.json').then((r) => r.json());
-        if (pkg?.version) swUrl = `/sw.js?v=${pkg.version}`;
-      } catch {
-        /* fallback to plain /sw.js */
-      }
+        const version =
+          document.querySelector('meta[name="version"]')?.content || Date.now();
+        const reg = await navigator.serviceWorker.register(
+          `/sw.js?v=${version}`,
+        );
 
-      const registration = await navigator.serviceWorker.register(swUrl);
-      log.info('Service Worker registered:', registration.scope);
+        reg.addEventListener('updatefound', () => {
+          const worker = reg.installing;
+          if (!worker) return;
 
-      // Check for updates
-      registration.addEventListener('updatefound', () => {
-        const newWorker = registration.installing;
-        if (newWorker) {
-          newWorker.addEventListener('statechange', () => {
+          worker.addEventListener('statechange', () => {
             if (
-              newWorker.state === 'installed' &&
+              worker.state === 'installed' &&
               navigator.serviceWorker.controller
             ) {
-              // New service worker available
-              log.info('New service worker available');
-              // Nutze die neue Web Component anstatt DOM Injection
-              document.body.appendChild(
-                document.createElement('sw-update-notification'),
-              );
+              const notification = document.createElement('div');
+              notification.innerHTML = `
+                <div style="position:fixed;bottom:20px;right:20px;background:#1a1a1a;color:#fff;padding:16px 20px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.3);z-index:10000;max-width:400px;">
+                  <div style="display:flex;align-items:center;gap:12px;">
+                    <span style="font-size:24px;">🔄</span>
+                    <span style="flex:1;font-size:14px;">Neue Version verfügbar!</span>
+                    <button onclick="location.reload()" style="background:#0066cc;color:#fff;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;font-size:14px;font-weight:500;">Aktualisieren</button>
+                    <button onclick="this.parentElement.parentElement.remove()" style="background:transparent;border:none;color:#999;font-size:24px;cursor:pointer;padding:0;width:24px;height:24px;">×</button>
+                  </div>
+                </div>
+              `;
+              document.body.appendChild(notification.firstElementChild);
+              setTimeout(() => notification.firstElementChild?.remove(), 30000);
             }
           });
-        }
-      });
-    } catch (error) {
-      log.warn('Service Worker registration failed:', error);
-    }
-  });
+        });
+      } catch (error) {
+        log.warn('Service Worker registration failed:', error);
+      }
+    });
+  }
 }

@@ -1,0 +1,117 @@
+{
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "@id": "https://www.abdulkerimsesli.de/#person",
+  "name": "Abdulkerim Sesli",
+  "alternateName": [
+    "Abdul Sesli",
+    "AKS",
+    "aKs030"
+  ],
+  "givenName": "Abdulkerim",
+  "familyName": "Sesli",
+  "url": "https://www.abdulkerimsesli.de",
+  "image": "https://www.abdulkerimsesli.de/favicon.svg",
+  "jobTitle": [
+    "Full-Stack Web Developer",
+    "Performance Engineer",
+    "3D Graphics Developer",
+    "AI Integration Specialist"
+  ],
+  "description": "Full-Stack Web Developer aus Deutschland, spezialisiert auf moderne JavaScript-Entwicklung, 3D-Grafiken mit Three.js, AI-Integration und Performance-Optimierung. Bekannt für Zero-Build-Architekturen und Edge-First-Deployment.",
+  "knowsAbout": [
+    "JavaScript ES2023+",
+    "Three.js",
+    "WebGL",
+    "AI Integration",
+    "RAG",
+    "Performance Optimization",
+    "Cloudflare Workers",
+    "Edge Computing",
+    "Web Components",
+    "CSS3",
+    "PWA"
+  ],
+  "knowsLanguage": [
+    {
+      "@type": "Language",
+      "name": "German"
+    },
+    {
+      "@type": "Language",
+      "name": "English"
+    },
+    {
+      "@type": "Language",
+      "name": "Turkish"
+    }
+  ],
+  "hasOccupation": {
+    "@type": "Occupation",
+    "name": "Full-Stack Web Developer",
+    "occupationLocation": {
+      "@type": "Country",
+      "name": "Germany"
+    },
+    "skills": [
+      "Frontend Development",
+      "Backend Development",
+      "3D Graphics",
+      "AI Integration",
+      "Performance Engineering"
+    ]
+  },
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "contactType": "Professional",
+    "email": "kontakt@abdulkerimsesli.de"
+  },
+  "sameAs": [
+    "https://github.com/aKs030",
+    "https://linkedin.com/in/abdulkerim-s"
+  ],
+  "workExample": [
+    {
+      "@type": "CreativeWork",
+      "name": "3D Earth Visualization",
+      "url": "https://www.abdulkerimsesli.de/",
+      "keywords": [
+        "Three.js",
+        "WebGL",
+        "3D"
+      ],
+      "programmingLanguage": "JavaScript"
+    },
+    {
+      "@type": "CreativeWork",
+      "name": "AI Robot Companion",
+      "url": "https://www.abdulkerimsesli.de/",
+      "keywords": [
+        "AI",
+        "Groq",
+        "LLM"
+      ],
+      "programmingLanguage": "JavaScript"
+    },
+    {
+      "@type": "CreativeWork",
+      "name": "RAG Search System",
+      "url": "https://www.abdulkerimsesli.de/",
+      "keywords": [
+        "RAG",
+        "AI Search",
+        "Cloudflare AI"
+      ],
+      "programmingLanguage": "JavaScript"
+    }
+  ],
+  "award": [
+    "100/100 Code Quality Score",
+    "95+ Lighthouse Performance Score",
+    "Zero-Build Architecture Pioneer"
+  ],
+  "seeks": {
+    "@type": "Demand",
+    "name": "Freelance Projects & Collaborations"
+  }
+}

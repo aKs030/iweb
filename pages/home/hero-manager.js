@@ -1,8 +1,8 @@
-import { observeOnce } from '/content/core/intersection-observer.js';
+import { observeOnce } from '/content/core/utils.js';
 import { createLogger } from '/content/core/logger.js';
 import { getElementById } from '/content/core/utils.js';
 import { i18n } from '/content/core/i18n.js';
-import { TimerManager } from '/content/core/timer-utils.js';
+import { TimerManager } from '/content/core/utils.js';
 import { ROBOT_EVENTS } from '/content/components/robot-companion/constants/events.js';
 
 let typeWriterModule = null;

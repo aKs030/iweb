@@ -1,328 +1,127 @@
 /**
- * Service Worker for PWA
- * Provides offline support and caching strategies with modern optimizations
- * @version 1.3.0
+ * Modern Service Worker with Runtime Caching
+ * @version 2.0.0
  */
 
-// @ts-nocheck
+const VERSION = new URL(self.location).searchParams.get('v') || '1';
+const CACHE = `app-v${VERSION}`;
+const RUNTIME = `runtime-v${VERSION}`;
 
-const CACHE_VERSION = new URL(self.location).searchParams.get('v') || 'v1.3.0';
-const CACHE_NAME = `iweb-${CACHE_VERSION}`;
-
-// Assets to cache on install - optimized for Core Web Vitals
-const PRECACHE_ASSETS = [
+const PRECACHE = [
   '/',
-  '/index.html',
   '/manifest.json',
-  '/favicon.ico',
-  '/favicon.svg',
-  // Critical earth textures for faster loading (WebP format)
   '/content/assets/img/earth/textures/earth_day.webp',
   '/content/assets/img/earth/textures/earth_night.webp',
-  '/content/assets/img/earth/textures/earth_normal.webp',
-  '/content/assets/img/earth/textures/earth_bump.webp',
 ];
 
-// Cache strategies with modern best practices
-const CACHE_STRATEGIES = {
-  // Cache first, fallback to network (for static assets)
-  CACHE_FIRST: 'cache-first',
-  // Network first, fallback to cache (for dynamic content)
-  NETWORK_FIRST: 'network-first',
-  // Network only (for API calls)
-  NETWORK_ONLY: 'network-only',
-  // Cache only (for offline mode)
-  CACHE_ONLY: 'cache-only',
-  // Stale while revalidate (best for performance)
-  STALE_WHILE_REVALIDATE: 'stale-while-revalidate',
-};
+const SKIP_HOSTS = [
+  'cloudflareinsights.com',
+  'googletagmanager.com',
+  'google-analytics.com',
+  'googleapis.com',
+  'gstatic.com',
+];
 
-/**
- * Install event - precache assets
- */
-self.addEventListener('install', (event) => {
-  // Skip service worker on localhost to avoid HTTPS caching issues
-  if (self.location.hostname === 'localhost' || self.location.hostname === '127.0.0.1') {
-    console.log('[SW] Skipping service worker on localhost');
-    return self.skipWaiting();
-  }
-
-  if (self.location.hostname === 'localhost') {
-    console.log('[SW] Installing service worker...');
-  }
-
-  event.waitUntil(
+// Install: Precache critical assets
+self.addEventListener('install', (e) => {
+  e.waitUntil(
     caches
-      .open(CACHE_NAME)
-      .then((cache) => {
-        if (self.location.hostname === 'localhost') {
-          console.log('[SW] Precaching assets');
-        }
-        return cache.addAll(PRECACHE_ASSETS);
-      })
-      .then(() => {
-        if (self.location.hostname === 'localhost') {
-          console.log('[SW] Installation complete');
-        }
-        return self.skipWaiting();
-      })
-      .catch((error) => {
-        if (self.location.hostname === 'localhost') {
-          console.error('[SW] Installation failed:', error);
-        }
-      }),
+      .open(CACHE)
+      .then((c) => c.addAll(PRECACHE))
+      .then(() => self.skipWaiting()),
   );
 });
 
-/**
- * Activate event - cleanup old caches
- */
-self.addEventListener('activate', (event) => {
-  if (self.location.hostname === 'localhost') {
-    console.log('[SW] Activating service worker...');
-  }
-
-  event.waitUntil(
+// Activate: Clean old caches
+self.addEventListener('activate', (e) => {
+  e.waitUntil(
     caches
       .keys()
-      .then((cacheNames) => {
-        return Promise.all(
-          cacheNames.map((cacheName) => {
-            if (cacheName !== CACHE_NAME) {
-              if (self.location.hostname === 'localhost') {
-                console.log('[SW] Deleting old cache:', cacheName);
-              }
-              return caches.delete(cacheName);
-            }
-          }),
-        );
-      })
-      .then(() => {
-        if (self.location.hostname === 'localhost') {
-          console.log('[SW] Activation complete');
-        }
-        return self.clients.claim();
-      }),
+      .then((keys) =>
+        Promise.all(
+          keys
+            .filter((k) => k !== CACHE && k !== RUNTIME)
+            .map((k) => caches.delete(k)),
+        ),
+      )
+      .then(() => self.clients.claim()),
   );
 });
 
-/**
- * Fetch event - handle requests with caching strategies
- */
-self.addEventListener('fetch', (event) => {
-  // Skip service worker completely on localhost
-  if (self.location.hostname === 'localhost' || self.location.hostname === '127.0.0.1') {
-    return;
-  }
-
-  const { request } = event;
+// Fetch: Smart caching strategies
+self.addEventListener('fetch', (e) => {
+  const { request } = e;
   const url = new URL(request.url);
 
-  // Skip non-GET requests
-  if (request.method !== 'GET') {
-    return;
-  }
-
-  // Skip chrome-extension and other protocols
-  if (!url.protocol.startsWith('http')) {
-    return;
-  }
-
-  // Skip Cloudflare analytics/insights - let it handle its own requests
-  // cspell:ignore cloudflareinsights
-  if (url.hostname === 'static.cloudflareinsights.com') {
-    return;
-  }
-
-  // Skip external analytics and tracking scripts
-  // cspell:ignore googletagmanager
+  // Skip non-GET or external services
   if (
-    url.hostname.includes('googletagmanager.com') ||
-    url.hostname.includes('google-analytics.com')
+    request.method !== 'GET' ||
+    !url.protocol.startsWith('http') ||
+    SKIP_HOSTS.some((h) => url.hostname.includes(h))
   ) {
     return;
   }
 
-  // Skip Google Fonts - let the CDN handle caching directly
-  if (
-    url.hostname === 'fonts.googleapis.com' ||
-    url.hostname === 'fonts.gstatic.com'
-  ) {
+  // API: Network first
+  if (url.pathname.startsWith('/api/')) {
+    e.respondWith(networkFirst(request));
     return;
   }
 
-  // Determine strategy based on request type
-  const strategy = getStrategy(url, request);
+  // Images & Fonts: Cache first
+  if (['image', 'font'].includes(request.destination)) {
+    e.respondWith(cacheFirst(request));
+    return;
+  }
 
-  event.respondWith(handleRequest(request, strategy));
+  // Scripts & Styles: Stale while revalidate
+  if (['script', 'style'].includes(request.destination)) {
+    e.respondWith(staleRevalidate(request));
+    return;
+  }
+
+  // Documents: Network first
+  e.respondWith(networkFirst(request));
 });
 
-/**
- * Get caching strategy for request
- * @param {URL} url - Request URL
- * @param {Request} request - Request object
- * @returns {string} Strategy name
- */
-function getStrategy(url, request) {
-  // API requests - network first
-  if (url.pathname.startsWith('/api/')) {
-    return CACHE_STRATEGIES.NETWORK_FIRST;
-  }
-
-  // Images - cache first
-  if (request.destination === 'image') {
-    return CACHE_STRATEGIES.CACHE_FIRST;
-  }
-
-  // Fonts - cache first
-  if (request.destination === 'font') {
-    return CACHE_STRATEGIES.CACHE_FIRST;
-  }
-
-  // Scripts and styles - network first to avoid serving stale JS/CSS after hotfixes
-  if (
-    (request.destination === 'script' || request.destination === 'style') &&
-    url.origin === self.location.origin
-  ) {
-    return CACHE_STRATEGIES.NETWORK_FIRST;
-  }
-
-  // Documents - network first
-  if (request.destination === 'document') {
-    return CACHE_STRATEGIES.NETWORK_FIRST;
-  }
-
-  // Default - network first
-  return CACHE_STRATEGIES.NETWORK_FIRST;
-}
-
-/**
- * Handle request with specified strategy
- * @param {Request} request - Request object
- * @param {string} strategy - Strategy name
- * @returns {Promise<Response>}
- */
-async function handleRequest(request, strategy) {
-  switch (strategy) {
-    case CACHE_STRATEGIES.CACHE_FIRST:
-      return cacheFirst(request);
-    case CACHE_STRATEGIES.NETWORK_FIRST:
-      return networkFirst(request);
-    case CACHE_STRATEGIES.STALE_WHILE_REVALIDATE:
-      return staleWhileRevalidate(request);
-    case CACHE_STRATEGIES.CACHE_ONLY:
-      return cacheOnly(request);
-    case CACHE_STRATEGIES.NETWORK_ONLY:
-      return networkOnly(request);
-    default:
-      return networkFirst(request);
-  }
-}
-
-/**
- * Cache first strategy
- */
-async function cacheFirst(request) {
-  const cached = await caches.match(request);
-  if (cached) {
-    return cached;
-  }
+// Cache first with network fallback
+async function cacheFirst(req) {
+  const cache = await caches.open(RUNTIME);
+  const cached = await cache.match(req);
+  if (cached) return cached;
 
   try {
-    const response = await fetch(request);
-    if (response.ok) {
-      const cache = await caches.open(CACHE_NAME);
-      cache.put(request, response.clone());
-    }
-    return response;
-  } catch (error) {
-    if (self.location.hostname === 'localhost') {
-      console.error('[SW] Cache first failed:', error);
-    }
+    const res = await fetch(req);
+    if (res.ok) cache.put(req, res.clone());
+    return res;
+  } catch {
     return new Response('Offline', { status: 503 });
   }
 }
 
-/**
- * Network first strategy
- */
-async function networkFirst(request) {
+// Network first with cache fallback
+async function networkFirst(req) {
+  const cache = await caches.open(RUNTIME);
   try {
-    const response = await fetch(request);
-    if (response.ok) {
-      const cache = await caches.open(CACHE_NAME);
-      cache.put(request, response.clone());
-    }
-    return response;
-  } catch (error) {
-    const cached = await caches.match(request);
-    if (cached) {
-      return cached;
-    }
-    if (self.location.hostname === 'localhost') {
-      console.error('[SW] Network first failed:', error);
-    }
-    return new Response('Offline', { status: 503 });
+    const res = await fetch(req);
+    if (res.ok) cache.put(req, res.clone());
+    return res;
+  } catch {
+    return (await cache.match(req)) || new Response('Offline', { status: 503 });
   }
 }
 
-/**
- * Stale while revalidate strategy
- */
-async function staleWhileRevalidate(request) {
-  const cached = await caches.match(request);
+// Stale while revalidate
+async function staleRevalidate(req) {
+  const cache = await caches.open(RUNTIME);
+  const cached = await cache.match(req);
 
-  const fetchPromise = fetch(request)
-    .then((response) => {
-      if (response.ok) {
-        // Clone before any other operations
-        const responseToCache = response.clone();
-        caches
-          .open(CACHE_NAME)
-          .then((cache) => {
-            cache.put(request, responseToCache);
-          })
-          .catch((error) => {
-            if (self.location.hostname === 'localhost') {
-              console.error('[SW] Cache put failed:', error);
-            }
-          });
-      }
-      return response;
+  const fetchPromise = fetch(req)
+    .then((res) => {
+      if (res.ok) cache.put(req, res.clone());
+      return res;
     })
-    .catch((error) => {
-      if (self.location.hostname === 'localhost') {
-        console.error('[SW] Stale while revalidate fetch failed:', error);
-      }
-      return cached || new Response('Offline', { status: 503 });
-    });
+    .catch(() => cached || new Response('Offline', { status: 503 }));
 
   return cached || fetchPromise;
 }
-
-/**
- * Cache only strategy
- */
-async function cacheOnly(request) {
-  const cached = await caches.match(request);
-  if (cached) {
-    return cached;
-  }
-  return new Response('Not in cache', { status: 404 });
-}
-
-/**
- * Network only strategy
- */
-async function networkOnly(request) {
-  return fetch(request);
-}
-
-/**
- * Message event - handle messages from clients
- */
-self.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
-    self.skipWaiting();
-  }
-});

@@ -26,6 +26,13 @@ class RateLimiter {
     if (now - this.lastCleanup < 300000) return;
 
     this.lastCleanup = now;
+
+    // Hard reset if map grows too large (memory leak protection)
+    if (this.requests.size > 10000) {
+      this.requests.clear();
+      return;
+    }
+
     for (const [key, data] of this.requests.entries()) {
       if (now - data.resetTime > RATE_LIMIT.WINDOW_MS) {
         this.requests.delete(key);
