@@ -28,6 +28,7 @@ export class MenuEvents {
       results: null,
       clearBtn: null,
       items: [],
+      aiChatMessage: '',
       selectedIndex: -1,
       debounceTimer: null,
       abortController: null,
@@ -505,6 +506,7 @@ export class MenuEvents {
     if (!query || query.length < minQueryLength) {
       this.abortSearchRequest();
       this.search.items = [];
+      this.search.aiChatMessage = '';
       this.search.selectedIndex = -1;
       // Show recent searches when clearing
       if (!query && this.recentSearches.length > 0 && this.isSearchOpen()) {
@@ -528,11 +530,13 @@ export class MenuEvents {
     const topK = this.config.SEARCH_TOP_K ?? 12;
     const requestTimeoutMs = this.config.SEARCH_REQUEST_TIMEOUT ?? 6000;
     const cacheKey = this.buildSearchCacheKey(query, topK);
-    const cachedItems = this.getCachedSearchResults(cacheKey);
+    const cachedPayload = this.getCachedSearchResults(cacheKey);
 
-    if (cachedItems) {
+    if (cachedPayload) {
+      const cachedItems = cachedPayload.items;
       if (this.search.input?.value.trim() !== query) return;
       this.search.items = cachedItems;
+      this.search.aiChatMessage = cachedPayload.aiChatMessage;
       this.search.selectedIndex = cachedItems.length > 0 ? 0 : -1;
 
       if (cachedItems.length === 0) {
@@ -545,6 +549,7 @@ export class MenuEvents {
       this.renderSearchState({
         items: cachedItems,
         query,
+        aiChatMessage: cachedPayload.aiChatMessage,
       });
       this.saveRecentSearch(query);
       return;
@@ -587,14 +592,18 @@ export class MenuEvents {
             .map((item) => this.normalizeSearchResult(item))
             .filter(Boolean)
         : [];
+      const aiChatMessage = this.normalizeSearchChatMessage(
+        data?.aiChat?.message || data?.summary || '',
+      );
 
       if (this.search.input?.value.trim() !== query) {
         return;
       }
 
       this.search.items = items;
+      this.search.aiChatMessage = aiChatMessage;
       this.search.selectedIndex = items.length > 0 ? 0 : -1;
-      this.setCachedSearchResults(cacheKey, items);
+      this.setCachedSearchResults(cacheKey, items, aiChatMessage);
 
       if (items.length === 0) {
         this.renderSearchState({
@@ -606,6 +615,7 @@ export class MenuEvents {
       this.renderSearchState({
         items,
         query,
+        aiChatMessage,
       });
       this.saveRecentSearch(query);
     } catch (err) {
@@ -620,6 +630,7 @@ export class MenuEvents {
       }
 
       this.search.items = [];
+      this.search.aiChatMessage = '';
       this.search.selectedIndex = -1;
       this.renderSearchState({
         message: didTimeoutAbort
@@ -655,6 +666,16 @@ export class MenuEvents {
     };
   }
 
+  normalizeSearchChatMessage(value) {
+    const text = String(value || '')
+      .replace(/<[^>]*>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    if (!text) return '';
+    return text.length > 260 ? `${text.slice(0, 259).trim()}...` : text;
+  }
+
   /** Map category to a short emoji/icon for visual identification */
   getCategoryIcon(category) {
     const icons = {
@@ -678,6 +699,7 @@ export class MenuEvents {
       loading = false,
       message = '',
       items = [],
+      aiChatMessage = '',
       query: _query = '',
     } = options;
 
@@ -715,6 +737,19 @@ export class MenuEvents {
       stateEl.textContent = message;
       results.appendChild(stateEl);
       return;
+    }
+
+    if (aiChatMessage) {
+      const aiChat = document.createElement('div');
+      aiChat.className = 'menu-search__ai-chat';
+
+      // no label element, user requested box without title text
+      const aiText = document.createElement('p');
+      aiText.className = 'menu-search__ai-text';
+      aiText.textContent = aiChatMessage;
+      aiChat.appendChild(aiText);
+
+      results.appendChild(aiChat);
     }
 
     // Result count summary
@@ -950,10 +985,15 @@ export class MenuEvents {
     this.searchCache.delete(cacheKey);
     this.searchCache.set(cacheKey, entry);
 
-    return entry.items.map((item) => ({ ...item }));
+    return {
+      items: Array.isArray(entry.items)
+        ? entry.items.map((item) => ({ ...item }))
+        : [],
+      aiChatMessage: this.normalizeSearchChatMessage(entry.aiChatMessage),
+    };
   }
 
-  setCachedSearchResults(cacheKey, items) {
+  setCachedSearchResults(cacheKey, items, aiChatMessage = '') {
     if (!cacheKey || !Array.isArray(items)) return;
     if (this.searchCacheMaxEntries <= 0) return;
 
@@ -971,6 +1011,7 @@ export class MenuEvents {
     this.searchCache.set(cacheKey, {
       expiresAt: Date.now() + this.searchCacheTtlMs,
       items: items.map((item) => ({ ...item })),
+      aiChatMessage: this.normalizeSearchChatMessage(aiChatMessage),
     });
   }
 
