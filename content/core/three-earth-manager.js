@@ -4,7 +4,7 @@
  */
 
 import { createLogger } from './logger.js';
-import { getElementById } from './utils.js';
+import { getElementById, TimerManager } from './utils.js';
 import { AppLoadManager } from './load-manager.js';
 import { threeEarthState } from '../components/particles/three-earth-state.js';
 
@@ -18,6 +18,7 @@ export class ThreeEarthManager {
     this.env = env;
     this.cleanupFn = null;
     this.isLoading = false;
+    this.timers = new TimerManager('ThreeEarthManager');
   }
 
   getContainer() {
@@ -53,7 +54,7 @@ export class ThreeEarthManager {
     this.preloadTextures();
 
     // Set loading timeout to prevent indefinite blocking
-    const loadingTimeout = setTimeout(() => {
+    const loadingTimeout = this.timers.setTimeout(() => {
       log.warn('Three.js Earth loading timeout, unblocking loader');
       AppLoadManager.unblock('three-earth');
     }, 6000); // 6 second timeout for earth loading
@@ -80,7 +81,7 @@ export class ThreeEarthManager {
       // Unblock loader even on error
       AppLoadManager.unblock('three-earth');
     } finally {
-      clearTimeout(loadingTimeout);
+      this.timers.clearTimeout(loadingTimeout);
       this.isLoading = false;
     }
   }
@@ -110,11 +111,11 @@ export class ThreeEarthManager {
   }
 
   initDelayed() {
-    const idleCallback = window.requestIdleCallback || setTimeout;
-    idleCallback(() => this.init(), { timeout: 500 }); // Reduced from 2000ms to 500ms
+    this.timers.setTimeout(() => this.init(), 500);
   }
 
   cleanup() {
+    this.timers.clearAll();
     if (this.cleanupFn) {
       try {
         this.cleanupFn();

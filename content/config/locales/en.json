@@ -203,10 +203,14 @@
     "open_landing": "Open landing page for this video"
   },
   "blog": {
+    "title": "Blog",
+    "subtitle": "Tips & guides on web design, SEO, performance, and online marketing",
     "headline": "Knowledge & Insights",
     "subline": "In our blog, we share practical tips on web design, SEO, performance, and online marketing – explained simply and directly applicable.",
     "read_more": "Read more",
     "back": "Back",
+    "back_to_overview": "Back to overview",
+    "render_error": "Error rendering the article",
     "related_title": "You might also be interested in",
     "cta_title": "Need help with your project?",
     "cta_text": "Do you need help with web design, performance optimization, or SEO? Let's talk about it without obligation.",

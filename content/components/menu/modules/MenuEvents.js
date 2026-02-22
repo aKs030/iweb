@@ -3,6 +3,7 @@
  * Handles all user interactions, URL changes, and scroll events.
  */
 import { i18n } from '../../../core/i18n.js';
+import { TimerManager } from '../../../core/utils.js';
 
 export class MenuEvents {
   /**
@@ -18,6 +19,7 @@ export class MenuEvents {
     this.config = config;
     this.cleanupFns = [];
     this.sectionObserver = null;
+    this.timers = new TimerManager('MenuEvents');
 
     this.search = {
       isOpen: false,
@@ -99,18 +101,19 @@ export class MenuEvents {
       }
 
       // Update theme-color meta tags
-      const darkMeta = document.querySelector(
-        'meta[name="theme-color"][media="(prefers-color-scheme: dark)"]',
+      import('/content/core/theme-color-manager.js').then(
+        ({ updateThemeColor }) => {
+          updateThemeColor();
+        },
       );
-      const lightMeta = document.querySelector(
-        'meta[name="theme-color"][media="(prefers-color-scheme: light)"]',
+
+      // Update apple status bar style if needed
+      const appleStatusMeta = document.querySelector(
+        'meta[name="apple-mobile-web-app-status-bar-style"]',
       );
-      if (theme === 'light') {
-        if (darkMeta) darkMeta.setAttribute('content', '#1e3a8a');
-        if (lightMeta) lightMeta.setAttribute('content', '#1e3a8a');
-      } else {
-        if (darkMeta) darkMeta.setAttribute('content', '#030303');
-        if (lightMeta) lightMeta.setAttribute('content', '#1e3a8a');
+      if (appleStatusMeta) {
+        // We keep it black-translucent for the transparent look
+        appleStatusMeta.setAttribute('content', 'black-translucent');
       }
 
       // Update toggle button state
@@ -491,7 +494,7 @@ export class MenuEvents {
 
   clearSearchDebounce() {
     if (!this.search.debounceTimer) return;
-    clearTimeout(this.search.debounceTimer);
+    this.timers.clearTimeout(this.search.debounceTimer);
     this.search.debounceTimer = null;
   }
 
@@ -534,7 +537,7 @@ export class MenuEvents {
     }
 
     const debounceDelay = this.config.SEARCH_DEBOUNCE ?? 220;
-    this.search.debounceTimer = setTimeout(() => {
+    this.search.debounceTimer = this.timers.setTimeout(() => {
       this.executeSearch(query);
     }, debounceDelay);
   }
@@ -580,7 +583,7 @@ export class MenuEvents {
     let didTimeoutAbort = false;
     const timeoutId =
       requestTimeoutMs > 0
-        ? setTimeout(() => {
+        ? this.timers.setTimeout(() => {
             didTimeoutAbort = true;
             abortController.abort();
           }, requestTimeoutMs)
@@ -670,7 +673,7 @@ export class MenuEvents {
       });
     } finally {
       if (timeoutId) {
-        clearTimeout(timeoutId);
+        this.timers.clearTimeout(timeoutId);
       }
       if (this.search.abortController?.signal === signal) {
         this.search.abortController = null;
@@ -1196,8 +1199,8 @@ export class MenuEvents {
 
     let timeoutId;
     const handleResize = () => {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => {
+      this.timers.clearTimeout(timeoutId);
+      timeoutId = this.timers.setTimeout(() => {
         if (window.innerWidth > menuCollapseBreakpoint && this.state.isOpen) {
           this.closeMenu();
         }
@@ -1405,6 +1408,9 @@ export class MenuEvents {
     this.abortSearchRequest();
     this.searchCache.clear();
 
+    if (this.timers) {
+      this.timers.clearAll();
+    }
     this.cleanupFns.forEach((fn) => fn());
     this.cleanupFns = [];
     if (this.sectionObserver) {

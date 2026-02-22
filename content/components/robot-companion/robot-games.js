@@ -51,12 +51,12 @@ export class RobotGames {
     if (this.checkTicTacToeWin(symbol)) {
       this.robot.addMessage(winMsg, 'bot');
       this.disableTicTacToeBoard(gameContainer);
-      setTimeout(() => this.robot.handleAction('games'), 2000);
+      this.robot._setTimeout(() => this.robot.handleAction('games'), 2000);
       return true;
     }
     if (this.state.ticTacToe.board.every((cell) => cell !== null)) {
       this.robot.addMessage('🤝 Unentschieden! Gut gespielt!', 'bot');
-      setTimeout(() => this.robot.handleAction('games'), 2000);
+      this.robot._setTimeout(() => this.robot.handleAction('games'), 2000);
       return true;
     }
     return false;
@@ -80,7 +80,7 @@ export class RobotGames {
       return;
 
     // Bot move
-    setTimeout(() => {
+    this.robot._setTimeout(() => {
       const botMove = this.getBotTicTacToeMove();
       if (botMove !== -1) {
         this.state.ticTacToe.board[botMove] = 'O';
@@ -248,7 +248,7 @@ export class RobotGames {
       );
     }
 
-    setTimeout(() => {
+    this.robot._setTimeout(() => {
       this.robot.addMessage('Noch eine Frage?', 'bot');
       this.robot.addOptions([
         { label: 'Ja, weiter!', action: 'playTrivia' },
@@ -305,14 +305,14 @@ export class RobotGames {
         );
       }
 
-      setTimeout(() => this.robot.handleAction('games'), 2000);
+      this.robot._setTimeout(() => this.robot.handleAction('games'), 2000);
     } else if (attempts >= maxAttempts) {
       this.robot.addMessage(
         `😅 Keine Versuche mehr! Die Zahl war ${target}. Nochmal?`,
         'bot',
       );
       this.state.guessNumberActive = false;
-      setTimeout(() => this.robot.handleAction('games'), 2000);
+      this.robot._setTimeout(() => this.robot.handleAction('games'), 2000);
     } else {
       const hint = num < target ? '📈 Zu niedrig!' : '📉 Zu hoch!';
       this.robot.addMessage(

@@ -223,58 +223,62 @@ const updateBasicMeta = (pageData, pageUrl) => {
   const keywordList = buildKeywordList(pageData, pageUrl);
   const abstractText = buildAbstractText(pageData, pageUrl);
 
-  upsertMeta('description', pageData.description);
-  upsertMeta('keywords', keywordList.join(', '));
-  upsertMeta('subject', pathTopics(new URL(pageUrl).pathname).join(', '));
-  upsertMeta('abstract', abstractText);
-  upsertMeta('summary', abstractText);
-  upsertMeta('robots', 'index, follow, max-image-preview:large');
-  upsertMeta('language', 'de-DE');
-  upsertMeta('author', 'Abdulkerim Sesli');
+  const metaUpdates = [
+    ['description', pageData.description],
+    ['keywords', keywordList.join(', ')],
+    ['subject', pathTopics(new URL(pageUrl).pathname).join(', ')],
+    ['abstract', abstractText],
+    ['summary', abstractText],
+    ['robots', 'index, follow, max-image-preview:large'],
+    ['language', 'de-DE'],
+    ['author', 'Abdulkerim Sesli'],
+    ['twitter:card', 'summary_large_image'],
+    ['twitter:site', '@abdulkerimsesli'],
+    ['twitter:creator', '@abdulkerimsesli'],
+    ['twitter:title', pageData.title],
+    ['twitter:description', pageData.description],
+    ['twitter:url', pageUrl],
+  ];
 
-  upsertMeta('twitter:card', 'summary_large_image');
-  upsertMeta('twitter:site', '@abdulkerimsesli');
-  upsertMeta('twitter:creator', '@abdulkerimsesli');
-  upsertMeta('twitter:title', pageData.title);
-  upsertMeta('twitter:description', pageData.description);
-  upsertMeta('twitter:url', pageUrl);
-  if (pageData.image) {
-    upsertMeta('twitter:image', pageData.image);
-    upsertMeta('twitter:image:alt', pageData.title || pageData.description);
-  }
+  metaUpdates.forEach(([name, content]) => upsertMeta(name, content));
 
-  upsertMeta('og:type', 'website', true);
-  upsertMeta('og:title', pageData.title, true);
-  upsertMeta(
-    'og:site_name',
-    'Abdulkerim Sesli — Digital Creator Portfolio',
-    true,
+  const ogUpdates = [
+    ['og:type', 'website'],
+    ['og:title', pageData.title],
+    ['og:site_name', 'Abdulkerim Sesli — Digital Creator Portfolio'],
+    ['og:description', pageData.description],
+    ['og:locale', 'de_DE'],
+    ['og:url', pageUrl],
+  ];
+
+  ogUpdates.forEach(([property, content]) =>
+    upsertMeta(property, content, true),
   );
-  upsertMeta('og:description', pageData.description, true);
-  upsertMeta('og:locale', 'de_DE', true);
-  upsertMeta('og:url', pageUrl, true);
-  if (pageData.image) {
-    upsertMeta('og:image', pageData.image, true);
-    upsertMeta('og:image:alt', pageData.title || pageData.description, true);
-    const normalizedImage = String(pageData.image).toLowerCase();
-    const imageType = normalizedImage.endsWith('.png')
-      ? 'image/png'
-      : normalizedImage.endsWith('.webp')
-        ? 'image/webp'
-        : normalizedImage.endsWith('.svg')
-          ? 'image/svg+xml'
-          : 'image/jpeg';
 
-    upsertMeta('og:image:type', imageType, true);
+  if (pageData.image) {
+    const imgAlt = pageData.title || pageData.description;
+    upsertMeta('twitter:image', pageData.image);
+    upsertMeta('twitter:image:alt', imgAlt);
+
+    upsertMeta('og:image', pageData.image, true);
+    upsertMeta('og:image:alt', imgAlt, true);
     upsertMeta('og:image:width', '1200', true);
     upsertMeta('og:image:height', '630', true);
+
+    const ext = String(pageData.image).toLowerCase().split('.').pop();
+    const typeMap = {
+      png: 'image/png',
+      webp: 'image/webp',
+      svg: 'image/svg+xml',
+    };
+    upsertMeta('og:image:type', typeMap[ext] || 'image/jpeg', true);
   }
 };
 
 const pushToDataLayer = (pageData, pageUrl) => {
   try {
-    globalThis.dataLayer = globalThis.dataLayer || [];
-    globalThis.dataLayer.push({
+    const dl = (globalThis.dataLayer ??= []);
+    dl.push({
       event: 'pageMetadataReady',
       page_meta: {
         page_title: pageData.title || document.title || '',
@@ -328,9 +332,7 @@ async function loadHead() {
         visibility: 'hidden',
       });
 
-      setTimeout(() => {
-        if (el) el.style.display = 'none';
-      }, 800);
+      setTimeout(() => (el.style.display = 'none'), 800);
     };
 
     document.addEventListener('app:loaderHide', hideLoader, { once: true });

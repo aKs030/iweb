@@ -342,7 +342,7 @@ export class RobotChat {
       btn.textContent = opt.label;
       btn.onclick = () => {
         this.addMessage(opt.label, 'user');
-        setTimeout(() => {
+        this.robot._setTimeout(() => {
           if (opt.url) {
             globalThis?.open?.(opt.url, opt.target || '_self');
             if (opt.target === '_blank') this.handleAction(ROBOT_ACTIONS.START);
@@ -368,10 +368,13 @@ export class RobotChat {
       [ROBOT_ACTIONS.SCROLL_FOOTER]: () => {
         this.robot.dom.footer?.scrollIntoView({ behavior: 'smooth' });
         this.showTyping();
-        setTimeout(() => {
+        this.robot._setTimeout(() => {
           this.removeTyping();
           this.addMessage('Ich habe dich nach unten gebracht! 👇', 'bot');
-          setTimeout(() => this.handleAction(ROBOT_ACTIONS.START), 2000);
+          this.robot._setTimeout(
+            () => this.handleAction(ROBOT_ACTIONS.START),
+            2000,
+          );
         }, 1000);
       },
       [ROBOT_ACTIONS.RANDOM_PROJECT]: () =>
@@ -393,7 +396,10 @@ export class RobotChat {
 
     this.showTyping();
     this.robot.dom.avatar.classList.add('nod');
-    setTimeout(() => this.robot.dom.avatar.classList.remove('nod'), 650);
+    this.robot._setTimeout(
+      () => this.robot.dom.avatar.classList.remove('nod'),
+      650,
+    );
 
     let responseText = Array.isArray(data.text)
       ? data.text[Math.floor(Math.random() * data.text.length)]
@@ -413,7 +419,7 @@ export class RobotChat {
     }
 
     const typingTime = Math.min(Math.max(responseText.length * 15, 800), 2000);
-    setTimeout(() => {
+    this.robot._setTimeout(() => {
       this.removeTyping();
       this.addMessage(responseText, 'bot');
       if (data.options) this.addOptions(data.options);
@@ -428,7 +434,7 @@ export class RobotChat {
 
   clearBubbleSequence() {
     if (!this._bubbleSequenceTimers) return;
-    this._bubbleSequenceTimers.forEach((t) => clearTimeout(t));
+    this._bubbleSequenceTimers.forEach((t) => this.robot._clearTimeout(t));
     this._bubbleSequenceTimers = [];
   }
 
@@ -520,11 +526,11 @@ export class RobotChat {
       }
 
       this.showBubble(picks[index]);
-      const t1 = setTimeout(() => {
+      const t1 = this.robot._setTimeout(() => {
         this.hideBubble();
         const pause = pauses[index] || 0;
         const delay = pause > 0 ? pause : 300;
-        const t2 = setTimeout(() => schedule(index + 1), delay);
+        const t2 = this.robot._setTimeout(() => schedule(index + 1), delay);
         this._bubbleSequenceTimers.push(t2);
       }, showMs);
       this._bubbleSequenceTimers.push(t1);
@@ -566,7 +572,7 @@ export class RobotChat {
         if (tipKey) {
           this.robot.intelligenceModule.contextTipsShown.add(tipKey);
         }
-        setTimeout(() => this.hideBubble(), 12000);
+        this.robot._setTimeout(() => this.hideBubble(), 12000);
         return true;
       }
     } catch (e) {

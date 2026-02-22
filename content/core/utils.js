@@ -5,7 +5,7 @@
  * @date 2026-01-30
  */
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import React from 'react';
 import DOMPurify from 'dompurify';
 import { createLogger } from './logger.js';
 
@@ -451,16 +451,16 @@ import { i18n } from './i18n.js';
 
 export const createUseTranslation = () => {
   return () => {
-    const [lang, setLang] = useState(i18n.currentLang);
+    const [lang, setLang] = React.useState(i18n.currentLang);
 
-    useEffect(() => {
+    React.useEffect(() => {
       const onLangChange = (e) => setLang(e.detail.lang);
       i18n.addEventListener('language-changed', onLangChange);
       return () => i18n.removeEventListener('language-changed', onLangChange);
     }, []);
 
-    const t = useCallback((key, params) => i18n.t(key, params), [lang]);
+    const t = React.useCallback((key, params) => i18n.t(key, params), [lang]);
 
-    return useMemo(() => ({ t, lang }), [t, lang]);
+    return React.useMemo(() => ({ t, lang }), [t, lang]);
   };
 };

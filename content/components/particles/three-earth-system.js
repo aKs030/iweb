@@ -7,8 +7,12 @@
 
 import * as THREE from 'three';
 import { createLogger } from '../../core/logger.js';
-import { getElementById, debounce } from '../../core/utils.js';
-import { createObserver } from '../../core/utils.js';
+import {
+  getElementById,
+  debounce,
+  createObserver,
+  TimerManager,
+} from '../../core/utils.js';
 import { AppLoadManager } from '../../core/load-manager.js';
 import {
   getSharedState,
@@ -59,75 +63,11 @@ function onResize(callback, delay = 100) {
 }
 
 /**
- * Timer Manager Utility
- */
-class TimerManager {
-  constructor() {
-    /** @type {Set<TimerID>} */
-    this.timers = new Set();
-    /** @type {Set<TimerID>} */
-    this.intervals = new Set();
-  }
-
-  /**
-   * @param {Function} fn
-   * @param {number} delay
-   * @returns {TimerID}
-   */
-  setTimeout(fn, delay) {
-    // @ts-ignore
-    const id = /** @type {TimerID} */ (
-      setTimeout(() => {
-        // ✅ Guard clause: Check if timer is still active before executing
-        if (this.timers.has(id)) {
-          this.timers.delete(id);
-          fn();
-        }
-      }, delay)
-    );
-    this.timers.add(id);
-    return id;
-  }
-
-  /**
-   * @param {Function} fn
-   * @param {number} delay
-   * @returns {TimerID}
-   */
-  setInterval(fn, delay) {
-    const id = /** @type {TimerID} */ (
-      /** @type {unknown} */ (setInterval(fn, delay))
-    );
-    this.intervals.add(id);
-    return id;
-  }
-
-  /** @param {TimerID} id */
-  clearTimeout(id) {
-    clearTimeout(id);
-    this.timers.delete(id);
-  }
-
-  /** @param {TimerID} id */
-  clearInterval(id) {
-    clearInterval(id);
-    this.intervals.delete(id);
-  }
-
-  clearAll() {
-    this.timers.forEach((id) => clearTimeout(id));
-    this.intervals.forEach((id) => clearInterval(id));
-    this.timers.clear();
-    this.intervals.clear();
-  }
-}
-
-/**
  * Main Three Earth System Class
  */
 class ThreeEarthSystem {
   constructor() {
-    this.timers = new TimerManager();
+    this.timers = new TimerManager('ThreeEarthSystem');
     this.active = false;
 
     // Three.js Core
