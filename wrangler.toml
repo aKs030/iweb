@@ -21,6 +21,13 @@ YOUTUBE_CHANNEL_ID = "UCTGRherjM4iuIn86xxubuPg"
 binding = "RATE_LIMIT_KV"
 id = "75d79a452fa74cc980caf400862e2c67"
 
+[env.production.ai]
+binding = "AI"
+
+[[env.production.r2_buckets]]
+binding = "GALLERY_BUCKET"
+bucket_name = "img"
+
 [env.preview.vars]
 MAX_SEARCH_RESULTS = "10"
 RAG_ID = "wispy-pond-1055"
@@ -29,3 +36,10 @@ YOUTUBE_CHANNEL_ID = "UCTGRherjM4iuIn86xxubuPg"
 [[env.preview.kv_namespaces]]
 binding = "RATE_LIMIT_KV"
 id = "edf1005c1b964f2fae4718afa152e836"
+
+[env.preview.ai]
+binding = "AI"
+
+[[env.preview.r2_buckets]]
+binding = "GALLERY_BUCKET"
+bucket_name = "img"
