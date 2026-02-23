@@ -5,7 +5,7 @@
  */
 
 import { getCorsHeaders, handleOptions } from './_cors.js';
-import { calculateRelevanceScore } from './_search-utils.js';
+import { calculateRelevanceScore, normalizeUrl } from './_search-utils.js';
 
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const GROQ_MODEL = 'llama-3.3-70b-versatile';
@@ -126,24 +126,6 @@ function extractContent(item, maxLength = 400) {
   if (breakPoint > maxLength * 0.7) {
     return fullContent.substring(0, breakPoint + 1);
   }
-
-  return truncated + '...';
-}
-
-/**
- * Format URL for display
- * @param {string} filename - Original filename/URL
- * @returns {string} Clean URL path
- */
-function formatUrl(filename) {
-  if (!filename) return '/';
-
-  return (
-    filename
-      .replace(/^https?:\/\/(www\.)?abdulkerimsesli\.de/, '')
-      .replace(/\/index\.html$/, '/')
-      .replace(/\.html$/, '') || '/'
-  );
 }
 
 /**
@@ -211,7 +193,7 @@ async function getRelevantContext(query, env) {
 
     // Format context from search results with better structure
     const contextParts = scoredResults.map(({ item, score }) => {
-      const url = formatUrl(item.filename);
+      const url = normalizeUrl(item.filename);
       const title = extractTitle(item.filename);
       const content = extractContent(item, 400);
       const relevance = Math.round(score * 100);
@@ -228,7 +210,7 @@ Inhalt: ${content}`;
     return {
       context: contextText,
       sources: scoredResults.map(({ item, score }) => ({
-        url: formatUrl(item.filename),
+        url: normalizeUrl(item.filename),
         title: extractTitle(item.filename),
         relevance: Math.round(score * 100),
       })),
