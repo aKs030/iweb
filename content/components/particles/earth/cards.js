@@ -260,17 +260,9 @@ export class CardManager {
 
   createCardTexture(data) {
     const DPR = globalThis.window?.devicePixelRatio || 1;
-    // OPTIMIZATION: Cap scale factor to reduce memory usage on mobile/high-DPI
-    const isMobile = globalThis.innerWidth < 768;
-    // Historically we limited mobile to S=2 which resulted in blurry
-    // textures on phones with DPR 3/4. 2026 devices have more RAM, so we
-    // allow a higher maximum to improve quality without blowing up memory.
-    // Desktop remains capped slightly higher for very large screens.
-    const maxS = isMobile ? 3 : 4;
-    // Choose a scale proportional to DPR but within bounds.  Using *2 instead
-    // of *1.5 gives a bit more fidelity on high‑dpi devices while still
-    // avoiding absurd sizes. We'll clamp to [2, maxS].
-    const S = Math.min(Math.max(Math.ceil(DPR * 2), 2), maxS);
+    // MAX QUALITY: Always use at least DPR * 2, minimum 4 for sharpness
+    // We intentionally ignore memory constraints to force maximum quality as requested.
+    const S = Math.max(Math.ceil(DPR * 2), 4);
 
     const W = 512 * S;
     const H = 700 * S;

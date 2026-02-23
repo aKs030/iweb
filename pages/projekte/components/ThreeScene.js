@@ -207,8 +207,8 @@ export const ThreeScene = ({ projects, onScrollUpdate, onReady }) => {
       const { width, height } = getViewportSize(containerRef.current);
       viewportWidthRef.current = width;
 
-      const dprCap =
-        width <= BREAKPOINTS.mobile ? 2 : width <= BREAKPOINTS.tablet ? 2 : 2;
+      // MAX QUALITY: Remove caps and allow native resolution up to DPR 3
+      const dprCap = 3;
 
       globalRenderer.setPixelRatio(
         Math.min(window.devicePixelRatio || 1, dprCap),
