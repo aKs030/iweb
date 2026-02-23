@@ -1,28 +1,28 @@
 import {
   escapeXml,
-  loadJsonAsset,
   normalizePath,
   resolveOrigin,
   toAbsoluteUrl,
 } from './api/_xml-utils.js';
 import {
-  normalizeText,
-  sanitizeDiscoveryText,
-  formatSlug,
-} from './api/_text-utils.js';
+  buildSitemapHeaders,
+  respondWithSnapshotOr503,
+  saveSitemapSnapshot,
+} from './api/_sitemap-snapshot.js';
+import { normalizeText, sanitizeDiscoveryText } from './api/_text-utils.js';
 import {
-  fetchPlaylistItemsPage,
-  fetchUploadsPlaylistId,
-  getBestYouTubeThumbnail,
-} from './api/_youtube-utils.js';
+  buildBlogPath,
+  buildProjectAppPath,
+  buildProjectPreviewImageUrl,
+  loadBlogPosts,
+  loadGalleryImages,
+  loadProjectApps,
+  loadYouTubeVideos,
+} from './api/_sitemap-data.js';
 
 const LICENSE_URL = 'https://www.abdulkerimsesli.de/#image-license';
-const BLOG_INDEX_PATH = '/pages/blog/posts/index.json';
-const PROJECT_APPS_PATH = '/pages/projekte/apps-config.json';
-const R2_DOMAIN = 'https://img.abdulkerimsesli.de';
-const R2_APP_PREVIEWS_BASE_URL = `${R2_DOMAIN}/app`;
-const APP_PREVIEWS_VERSION = '20260221';
-const MAX_YOUTUBE_RESULTS = 200;
+const CACHE_CONTROL = 'public, max-age=3600, stale-while-revalidate=86400';
+const SNAPSHOT_NAME = 'sitemap-images.xml';
 
 const STATIC_PAGE_IMAGES = [
   {
@@ -104,28 +104,44 @@ function ensureUrlEntry(urlMap, pagePath) {
   return urlMap.get(path);
 }
 
-function addImage(urlMap, pagePath, image) {
+function addImage(urlMap, pagePath, image, globalImageLocs = null) {
   const images = ensureUrlEntry(urlMap, pagePath);
-  if (!image?.loc) return;
+  const imageLoc = normalizeText(image?.loc);
+  if (!imageLoc) return;
 
-  const exists = images.some((existing) => existing.loc === image.loc);
+  // Keep each image URL globally unique across the whole sitemap.
+  if (globalImageLocs?.has(imageLoc)) return;
+
+  const exists = images.some((existing) => existing.loc === imageLoc);
   if (exists) return;
 
-  images.push(image);
-}
+  images.push({
+    ...image,
+    loc: imageLoc,
+  });
 
-function addStaticImages(urlMap, origin) {
-  for (const item of STATIC_PAGE_IMAGES) {
-    addImage(urlMap, item.page, {
-      loc: toAbsoluteUrl(origin, item.image),
-      title: item.title,
-      caption: item.caption,
-      license: LICENSE_URL,
-    });
+  if (globalImageLocs) {
+    globalImageLocs.add(imageLoc);
   }
 }
 
-function addBlogImages(urlMap, origin, posts) {
+function addStaticImages(urlMap, origin, globalImageLocs) {
+  for (const item of STATIC_PAGE_IMAGES) {
+    addImage(
+      urlMap,
+      item.page,
+      {
+        loc: toAbsoluteUrl(origin, item.image),
+        title: item.title,
+        caption: item.caption,
+        license: LICENSE_URL,
+      },
+      globalImageLocs,
+    );
+  }
+}
+
+function addBlogImages(urlMap, origin, posts, globalImageLocs) {
   if (!Array.isArray(posts)) return;
 
   for (const post of posts) {
@@ -135,124 +151,74 @@ function addBlogImages(urlMap, origin, posts) {
 
     const cleanTitle = sanitizeDiscoveryText(post.title, `Blog Artikel ${id}`);
     const cleanCaption = sanitizeDiscoveryText(
-      post.seoDescription || post.excerpt,
+      post.description,
       `${cleanTitle || id} - Blogbeitrag mit Bildern, Codebeispielen und Kontext`,
     );
 
-    addImage(urlMap, `/blog/${encodeURIComponent(id)}/`, {
-      loc: toAbsoluteUrl(origin, image),
-      title: cleanTitle,
-      caption: cleanCaption,
-      license: LICENSE_URL,
-    });
+    addImage(
+      urlMap,
+      buildBlogPath(id),
+      {
+        loc: toAbsoluteUrl(origin, image),
+        title: cleanTitle,
+        caption: cleanCaption,
+        license: LICENSE_URL,
+      },
+      globalImageLocs,
+    );
   }
 }
 
-function addProjectPreviewImages(urlMap, origin, appsConfig) {
-  const apps = Array.isArray(appsConfig?.apps) ? appsConfig.apps : [];
+function addProjectPreviewImages(urlMap, apps, globalImageLocs) {
   for (const app of apps) {
     const name = normalizeText(app?.name);
     if (!name) continue;
 
-    const appPath = `/projekte/?app=${encodeURIComponent(name)}`;
-    const appTitle = sanitizeDiscoveryText(app?.title, formatSlug(name));
-    const appCaption = sanitizeDiscoveryText(
-      app?.description,
-      formatSlug(name),
+    addImage(
+      urlMap,
+      buildProjectAppPath(name),
+      {
+        loc: buildProjectPreviewImageUrl(name),
+        title: app.title,
+        caption: app.description,
+        license: LICENSE_URL,
+      },
+      globalImageLocs,
     );
-
-    addImage(urlMap, '/projekte/', {
-      loc: `${R2_APP_PREVIEWS_BASE_URL}/${encodeURIComponent(name)}.svg?v=${APP_PREVIEWS_VERSION}`,
-      title: appTitle,
-      caption: appCaption,
-      license: LICENSE_URL,
-    });
-
-    addImage(urlMap, appPath, {
-      loc: `${R2_APP_PREVIEWS_BASE_URL}/${encodeURIComponent(name)}.svg?v=${APP_PREVIEWS_VERSION}`,
-      title: appTitle,
-      caption: appCaption,
-      license: LICENSE_URL,
-    });
   }
 }
 
-function extractFilenameFromKey(key = '') {
-  const filename = key.split('/').pop() || key;
-  return formatSlug(filename);
-}
-
-async function addGalleryR2Images(urlMap, bucket) {
-  if (!bucket) return;
-
-  let cursor;
-  do {
-    const list = await bucket.list({ prefix: 'Gallery/', cursor });
-    const objects = list?.objects || [];
-
-    for (const obj of objects) {
-      if (!/\.(jpg|jpeg|png|webp|gif|svg)$/i.test(obj.key)) continue;
-
-      const encodedKey = encodeURIComponent(obj.key).replace(/%2F/g, '/');
-      const title = extractFilenameFromKey(obj.key);
-
-      addImage(urlMap, '/gallery/', {
-        loc: `${R2_DOMAIN}/${encodedKey}`,
-        title: sanitizeDiscoveryText(title, 'Gallery Image'),
-        caption: `${sanitizeDiscoveryText(title, 'Gallery Image')} - Fotoinhalt aus der Bildgalerie von Abdulkerim Sesli`,
+function addGalleryImages(urlMap, images, globalImageLocs) {
+  for (const image of images) {
+    addImage(
+      urlMap,
+      '/gallery/',
+      {
+        loc: image.loc,
+        title: image.title,
+        caption: image.caption,
         license: LICENSE_URL,
-      });
-    }
-
-    cursor = list?.truncated ? list.cursor : undefined;
-  } while (cursor);
+      },
+      globalImageLocs,
+    );
+  }
 }
 
-async function addYouTubeVideoImages(urlMap, env) {
-  const channelId = env?.YOUTUBE_CHANNEL_ID;
-  const apiKey = env?.YOUTUBE_API_KEY;
-  if (!channelId || !apiKey) return;
+function addYouTubeVideoImages(urlMap, videos, globalImageLocs) {
+  for (const video of videos) {
+    if (!video?.videoId || !video?.thumbnail) continue;
 
-  const uploadsPlaylistId = await fetchUploadsPlaylistId(channelId, apiKey);
-  if (!uploadsPlaylistId) return;
-
-  let nextPageToken = null;
-  let collected = 0;
-
-  do {
-    const payload = await fetchPlaylistItemsPage(
-      uploadsPlaylistId,
-      apiKey,
-      nextPageToken,
+    addImage(
+      urlMap,
+      video.path,
+      {
+        loc: video.thumbnail,
+        title: video.title,
+        caption: video.description,
+      },
+      globalImageLocs,
     );
-    const items = payload?.items || [];
-
-    for (const item of items) {
-      const snippet = item?.snippet || {};
-      const videoId = snippet?.resourceId?.videoId;
-      const thumbnail = getBestYouTubeThumbnail(snippet);
-      if (!videoId || !thumbnail) continue;
-
-      const title = sanitizeDiscoveryText(snippet.title, `Video ${videoId}`);
-      const description = sanitizeDiscoveryText(
-        snippet.description,
-        `${title} - Videoinhalt mit Beschreibung und Kontext`,
-      );
-
-      addImage(urlMap, `/videos/${encodeURIComponent(videoId)}/`, {
-        loc: thumbnail,
-        title,
-        caption: description,
-      });
-
-      collected += 1;
-      if (collected >= MAX_YOUTUBE_RESULTS) {
-        return;
-      }
-    }
-
-    nextPageToken = payload?.nextPageToken || null;
-  } while (nextPageToken && collected < MAX_YOUTUBE_RESULTS);
+  }
 }
 
 function buildXml(origin, urlMap) {
@@ -300,38 +266,37 @@ function buildXml(origin, urlMap) {
 }
 
 export async function onRequest(context) {
-  const origin = resolveOrigin(context.request.url);
-  const urlMap = new Map();
-
-  addStaticImages(urlMap, origin);
-
-  const [posts, appsConfig] = await Promise.all([
-    loadJsonAsset(context, BLOG_INDEX_PATH),
-    loadJsonAsset(context, PROJECT_APPS_PATH),
-  ]);
-
-  addBlogImages(urlMap, origin, posts);
-  addProjectPreviewImages(urlMap, origin, appsConfig);
-
   try {
-    await addYouTubeVideoImages(urlMap, context.env);
+    const origin = resolveOrigin(context.request.url);
+    const urlMap = new Map();
+    const globalImageLocs = new Set();
+
+    addStaticImages(urlMap, origin, globalImageLocs);
+
+    const [posts, apps, galleryImages, videos] = await Promise.all([
+      loadBlogPosts(context),
+      loadProjectApps(context),
+      loadGalleryImages(context),
+      loadYouTubeVideos(context.env),
+    ]);
+
+    addBlogImages(urlMap, origin, posts, globalImageLocs);
+    addProjectPreviewImages(urlMap, apps, globalImageLocs);
+    addGalleryImages(urlMap, galleryImages, globalImageLocs);
+    addYouTubeVideoImages(urlMap, videos, globalImageLocs);
+
+    const xml = buildXml(origin, urlMap);
+
+    await saveSitemapSnapshot(context.env, SNAPSHOT_NAME, xml);
+
+    return new Response(xml, {
+      headers: buildSitemapHeaders(CACHE_CONTROL),
+    });
   } catch {
-    // Keep sitemap valid even if YouTube API is unavailable.
+    return respondWithSnapshotOr503({
+      env: context.env,
+      name: SNAPSHOT_NAME,
+      cacheControl: CACHE_CONTROL,
+    });
   }
-
-  try {
-    await addGalleryR2Images(urlMap, context.env?.GALLERY_BUCKET);
-  } catch {
-    // Keep static + blog + project images even if R2 listing fails.
-  }
-
-  const xml = buildXml(origin, urlMap);
-
-  return new Response(xml, {
-    headers: {
-      'Content-Type': 'application/xml; charset=utf-8',
-      'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
-      'X-Robots-Tag': 'index, follow',
-    },
-  });
 }

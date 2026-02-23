@@ -10,7 +10,9 @@
         "math",
         "tool",
         "scientific",
-        "computation"
+        "computation",
+        "Abdulkerim",
+        "Sesli"
       ],
       "category": "utility",
       "version": "1.0.0",
@@ -32,9 +34,29 @@
         "css",
         "theme",
         "gradient",
-        "interactive"
+        "interactive",
+        "Abdulkerim",
+        "Sesli"
       ],
       "category": "ui",
+      "version": "1.0.0"
+    },
+    {
+      "name": "ip-info",
+      "title": "ip-info",
+      "description": "Zeigt deine öffentliche IP-Adresse und Standortinformationen an. Optimiert für Cloudflare Workers/Pages.",
+      "tags": [
+        "utility",
+        "ip",
+        "network",
+        "geo",
+        "location",
+        "cloudflare",
+        "info",
+        "Abdulkerim",
+        "Sesli"
+      ],
+      "category": "utility",
       "version": "1.0.0"
     },
     {
@@ -47,7 +69,9 @@
         "cards",
         "brain-training",
         "puzzle",
-        "concentration"
+        "concentration",
+        "Abdulkerim",
+        "Sesli"
       ],
       "category": "game",
       "version": "1.0.0",
@@ -62,7 +86,15 @@
       "name": "paint-app",
       "title": "paint-app",
       "description": "Einfaches Zeichenprogramm mit verschiedenen Farben und Pinselgrößen.",
-      "tags": ["ui", "drawing", "canvas", "paint", "art"],
+      "tags": [
+        "ui",
+        "drawing",
+        "canvas",
+        "paint",
+        "art",
+        "Abdulkerim",
+        "Sesli"
+      ],
       "category": "ui",
       "version": "1.0.0"
     },
@@ -76,7 +108,9 @@
         "password",
         "generator",
         "encryption",
-        "safety"
+        "safety",
+        "Abdulkerim",
+        "Sesli"
       ],
       "category": "utility",
       "version": "1.0.0",
@@ -91,7 +125,17 @@
       "name": "pong-game",
       "title": "pong-game",
       "description": "Klassisches Pong-Spiel mit KI-Gegner, Physics Engine und Canvas-Rendering",
-      "tags": ["pong", "game", "canvas", "retro", "arcade", "ai", "physics"],
+      "tags": [
+        "pong",
+        "game",
+        "canvas",
+        "retro",
+        "arcade",
+        "ai",
+        "physics",
+        "Abdulkerim",
+        "Sesli"
+      ],
       "category": "game",
       "version": "1.0.0"
     },
@@ -99,7 +143,16 @@
       "name": "quiz-app",
       "title": "quiz-app",
       "description": "Interaktive Quiz-App mit verschiedenen Kategorien und Schwierigkeitsgraden",
-      "tags": ["quiz", "game", "trivia", "education", "javascript", "wissen"],
+      "tags": [
+        "quiz",
+        "game",
+        "trivia",
+        "education",
+        "javascript",
+        "wissen",
+        "Abdulkerim",
+        "Sesli"
+      ],
       "category": "game",
       "version": "1.0.0"
     },
@@ -112,16 +165,45 @@
         "spiel",
         "rock-paper-scissors",
         "javascript",
-        "entertainment"
+        "entertainment",
+        "Abdulkerim",
+        "Sesli"
       ],
       "category": "game",
+      "version": "1.0.0"
+    },
+    {
+      "name": "schluesselweite",
+      "title": "schluesselweite",
+      "description": "ISO/DIN Schlüsselweite und Gewinde Tabelle",
+      "tags": [
+        "mechanic",
+        "tool",
+        "iso",
+        "din",
+        "thread",
+        "bolt",
+        "schlüsselweite",
+        "gewinde",
+        "steigung"
+      ],
+      "category": "utility",
       "version": "1.0.0"
     },
     {
       "name": "snake-game",
       "title": "snake-game",
       "description": "Klassisches Snake-Spiel mit Canvas, Game Loop und fortgeschrittener Kollisionserkennung",
-      "tags": ["snake", "game", "canvas", "retro", "arcade", "javascript"],
+      "tags": [
+        "snake",
+        "game",
+        "canvas",
+        "retro",
+        "arcade",
+        "javascript",
+        "Abdulkerim",
+        "Sesli"
+      ],
       "category": "game",
       "version": "1.0.0"
     },
@@ -129,7 +211,14 @@
       "name": "tic-tac-toe",
       "title": "tic-tac-toe",
       "description": "Klassisches Tic-Tac-Toe Spiel für zwei Spieler.",
-      "tags": ["game", "strategy", "tic-tac-toe", "2-player"],
+      "tags": [
+        "game",
+        "strategy",
+        "tic-tac-toe",
+        "2-player",
+        "Abdulkerim",
+        "Sesli"
+      ],
       "category": "game",
       "version": "1.0.0"
     },
@@ -143,9 +232,11 @@
         "stopwatch",
         "pomodoro",
         "productivity",
-        "utility"
+        "utility",
+        "Abdulkerim",
+        "Sesli"
       ],
-      "category": "productivity",
+      "category": "utility",
       "version": "1.0.0",
       "caseStudy": {
         "problem": "Mehrere Timer-Apps für verschiedene Zwecke (Countdown, Stoppuhr, Pomodoro) — warum nicht alles in einer?",
@@ -168,7 +259,9 @@
         "tasks",
         "crud",
         "organization",
-        "planner"
+        "planner",
+        "Abdulkerim",
+        "Sesli"
       ],
       "category": "productivity",
       "version": "1.0.0"
@@ -177,7 +270,15 @@
       "name": "typing-speed-test",
       "title": "typing-speed-test",
       "description": "Teste deine Tippgeschwindigkeit (WPM) mit zufälligen Sätzen.",
-      "tags": ["productivity", "typing", "wpm", "speed-test", "keyboard"],
+      "tags": [
+        "productivity",
+        "typing",
+        "wpm",
+        "speed-test",
+        "keyboard",
+        "Abdulkerim",
+        "Sesli"
+      ],
       "category": "productivity",
       "version": "1.0.0"
     },
@@ -185,7 +286,16 @@
       "name": "weather-app",
       "title": "weather-app",
       "description": "Moderne Wetter-App mit aktuellen Wetterdaten und 5-Tage-Vorhersage. Standortbasierte Wetterinformationen.",
-      "tags": ["web", "weather", "api", "forecast", "location", "temperature"],
+      "tags": [
+        "web",
+        "weather",
+        "api",
+        "forecast",
+        "location",
+        "temperature",
+        "Abdulkerim",
+        "Sesli"
+      ],
       "category": "web",
       "version": "1.0.0",
       "caseStudy": {
@@ -199,11 +309,20 @@
       "name": "zahlen-raten",
       "title": "zahlen-raten",
       "description": "Finde die geheime Zahl zwischen 1 und 100. Ein klassisches Ratespiel mit Hinweisen.",
-      "tags": ["puzzle", "logic", "guessing", "numbers", "math", "brain"],
-      "category": "game",
+      "tags": [
+        "puzzle",
+        "logic",
+        "guessing",
+        "numbers",
+        "math",
+        "brain",
+        "Abdulkerim",
+        "Sesli"
+      ],
+      "category": "puzzle",
       "version": "1.0.0"
     }
   ],
-  "lastUpdated": "2026-01-31T21:58:23.286Z",
+  "lastUpdated": "2026-02-23T20:51:43.472Z",
   "source": "github-api-sync"
 }

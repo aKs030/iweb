@@ -15,6 +15,10 @@ ALLOWED_ORIGINS = "https://abdulkerimsesli.de,https://www.abdulkerimsesli.de"
 binding = "RATE_LIMIT_KV"
 id = "edf1005c1b964f2fae4718afa152e836"
 
+[[kv_namespaces]]
+binding = "SITEMAP_CACHE_KV"
+id = "84ddd91c726146f3b363749eff14dbd5"
+
 [[r2_buckets]]
 binding = "GALLERY_BUCKET"
 bucket_name = "img"
@@ -33,6 +37,10 @@ ALLOWED_ORIGINS = "https://abdulkerimsesli.de,https://www.abdulkerimsesli.de"
 [[env.production.kv_namespaces]]
 binding = "RATE_LIMIT_KV"
 id = "75d79a452fa74cc980caf400862e2c67"
+
+[[env.production.kv_namespaces]]
+binding = "SITEMAP_CACHE_KV"
+id = "5980265e029e4a88a987d17f25c71dfc"
 
 [env.production.ai]
 binding = "AI"

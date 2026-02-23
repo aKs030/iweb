@@ -28,19 +28,24 @@ import {
   DEFAULT_NO_RESULT_SUGGESTIONS,
   INTENT_FALLBACK_SUGGESTIONS,
 } from './_search-data.js';
+import {
+  buildBlogPath,
+  buildProjectAppPath,
+  loadBlogPosts,
+  loadProjectApps,
+} from './_sitemap-data.js';
 
 const PRIMARY_SEARCH_TIMEOUT_MS = 4200;
 const SECONDARY_SEARCH_TIMEOUT_MS = 1200;
 const SECONDARY_MAX_RESULTS = 12;
 const INTENT_MAX_RESULTS = 10;
 
-const PROJECT_APPS_PATH = '/pages/projekte/apps-config.json';
-const APP_FALLBACK_CACHE_TTL_MS = 5 * 60 * 1000;
+const DYNAMIC_FALLBACK_CACHE_TTL_MS = 5 * 60 * 1000;
 const MAX_CHAT_SUGGESTIONS = 3;
 
-let cachedAppFallbackEntries = [];
-let cachedAppFallbackExpiresAt = 0;
-let appFallbackLoadPromise = null;
+let cachedDynamicFallbackEntries = [];
+let cachedDynamicFallbackExpiresAt = 0;
+let dynamicFallbackLoadPromise = null;
 
 function normalizeRoutePath(path) {
   if (!path || path === '/') return '/';
@@ -124,7 +129,7 @@ function toAppFallbackEntry(app) {
     : [];
 
   return {
-    url: `/projekte/?app=${encodeURIComponent(name)}`,
+    url: buildProjectAppPath(name),
     title,
     category: 'Projekte',
     description,
@@ -132,64 +137,92 @@ function toAppFallbackEntry(app) {
   };
 }
 
-async function loadAppFallbackEntries(context) {
+function toBlogFallbackEntry(post) {
+  const id = String(post?.id || '').trim();
+  if (!id) return null;
+
+  const title = truncateText(
+    post?.title || formatSlugTitle(id, 'Blog Artikel'),
+    80,
+  );
+  const description =
+    String(post?.description || '').trim() ||
+    `${title} · Technischer Blogbeitrag mit Praxisbezug.`;
+  const keywords = Array.isArray(post?.keywords)
+    ? post.keywords.map((keyword) => String(keyword).trim()).filter(Boolean)
+    : [];
+
+  return {
+    url: buildBlogPath(id),
+    title,
+    category: 'Blog',
+    description,
+    keywords: [id, title, description, ...keywords],
+  };
+}
+
+async function loadDynamicFallbackEntries(context) {
   const now = Date.now();
-  if (cachedAppFallbackEntries.length > 0 && cachedAppFallbackExpiresAt > now) {
-    return cachedAppFallbackEntries;
+  if (
+    cachedDynamicFallbackEntries.length > 0 &&
+    cachedDynamicFallbackExpiresAt > now
+  ) {
+    return cachedDynamicFallbackEntries;
   }
 
-  if (appFallbackLoadPromise) {
-    return appFallbackLoadPromise;
+  if (dynamicFallbackLoadPromise) {
+    return dynamicFallbackLoadPromise;
   }
 
-  appFallbackLoadPromise = (async () => {
+  dynamicFallbackLoadPromise = (async () => {
     try {
-      if (!context.env?.ASSETS) {
-        return cachedAppFallbackEntries;
+      const [apps, blogPosts] = await Promise.all([
+        loadProjectApps(context),
+        loadBlogPosts(context),
+      ]);
+      const entries = [
+        ...apps.map(toAppFallbackEntry),
+        ...blogPosts.map(toBlogFallbackEntry),
+      ].filter(Boolean);
+      const deduped = [];
+      const seen = new Set();
+      for (const entry of entries) {
+        if (seen.has(entry.url)) continue;
+        seen.add(entry.url);
+        deduped.push(entry);
       }
 
-      const response = await context.env.ASSETS.fetch(
-        new URL(PROJECT_APPS_PATH, context.request.url),
-      );
-
-      if (!response.ok) {
-        return cachedAppFallbackEntries;
+      if (deduped.length > 0) {
+        cachedDynamicFallbackEntries = deduped;
+        cachedDynamicFallbackExpiresAt =
+          Date.now() + DYNAMIC_FALLBACK_CACHE_TTL_MS;
       }
 
-      const payload = await response.json();
-      const apps = Array.isArray(payload?.apps) ? payload.apps : [];
-      const entries = apps.map(toAppFallbackEntry).filter(Boolean);
-
-      if (entries.length > 0) {
-        cachedAppFallbackEntries = entries;
-        cachedAppFallbackExpiresAt = Date.now() + APP_FALLBACK_CACHE_TTL_MS;
-      }
-
-      return cachedAppFallbackEntries;
+      return cachedDynamicFallbackEntries;
     } catch {
-      return cachedAppFallbackEntries;
+      return cachedDynamicFallbackEntries;
     } finally {
-      appFallbackLoadPromise = null;
+      dynamicFallbackLoadPromise = null;
     }
   })();
 
-  return appFallbackLoadPromise;
+  return dynamicFallbackLoadPromise;
 }
 
-async function getFallbackEntries(context, includeApps = true) {
-  if (!includeApps) {
+async function getFallbackEntries(context, includeDynamic = true) {
+  if (!includeDynamic) {
     return ROUTE_FALLBACK_ENTRIES;
   }
 
-  const appEntries = await loadAppFallbackEntries(context);
-  if (!appEntries.length) {
+  const dynamicEntries = await loadDynamicFallbackEntries(context);
+  if (!dynamicEntries.length) {
     return ROUTE_FALLBACK_ENTRIES;
   }
 
   const merged = [...ROUTE_FALLBACK_ENTRIES];
   const seenUrls = new Set(merged.map((entry) => entry.url));
 
-  for (const entry of appEntries) {
+  for (const entry of dynamicEntries) {
     if (seenUrls.has(entry.url)) continue;
     seenUrls.add(entry.url);
     merged.push(entry);
