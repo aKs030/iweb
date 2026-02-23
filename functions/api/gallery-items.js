@@ -14,8 +14,16 @@ export async function onRequest(context) {
   }
 
   try {
-    const list = await BUCKET.list({ prefix: 'Gallery/' });
-    const objects = list.objects || [];
+    const objects = [];
+    let cursor;
+
+    do {
+      const list = await BUCKET.list({ prefix: 'Gallery/', cursor });
+      if (list.objects) {
+        objects.push(...list.objects);
+      }
+      cursor = list.truncated ? list.cursor : undefined;
+    } while (cursor);
 
     // Base URL for images
     // Use environment variable or default to custom domain
