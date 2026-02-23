@@ -2,7 +2,7 @@ export const CONFIG = {
   EARTH: {
     RADIUS: 3.5,
     SEGMENTS: 64,
-    SEGMENTS_MOBILE: 32, // Reduced geometry for mobile
+    SEGMENTS_MOBILE: 64, // Same geometry for mobile (was 32)
     BUMP_SCALE: 0.008,
     EMISSIVE_INTENSITY: 0.2,
     EMISSIVE_PULSE_SPEED: 0.3,
@@ -111,7 +111,7 @@ export const CONFIG = {
     MAX_SIMULTANEOUS: 3,
   },
   PERFORMANCE: {
-    PIXEL_RATIO: Math.min(window.devicePixelRatio || 1, 1.5),
+    PIXEL_RATIO: Math.min(window.devicePixelRatio || 1, 2),
     TARGET_FPS: 30,
     DRS_DOWN_THRESHOLD: 25, // Drop quality if FPS < 25
     DRS_UP_THRESHOLD: 45, // Raise quality if FPS > 45 (Wider hysteresis)
