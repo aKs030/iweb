@@ -14,6 +14,7 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --check .",
     "format:write": "prettier --write .",
+    "test": "node --test",
     "check": "npm run lint && npm run format && npm run ai-index:check",
     "fix": "npm run lint:fix && npm run format:write",
     "clean": "rm -rf .wrangler node_modules/.cache",
