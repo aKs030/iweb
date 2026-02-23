@@ -1198,7 +1198,7 @@ function getOptimizedConfig(capabilities) {
       STARS: { ...CONFIG.STARS, COUNT: 2000 },
       PERFORMANCE: {
         ...CONFIG.PERFORMANCE,
-        PIXEL_RATIO: Math.min(window.devicePixelRatio || 1, 2),
+        PIXEL_RATIO: Math.min(window.devicePixelRatio || 1, 3),
       },
     };
   }
