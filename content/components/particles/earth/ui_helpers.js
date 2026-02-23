@@ -11,8 +11,7 @@ export function calculateQualityLevel(fps) {
   return 'HIGH';
 }
 
-export function calculateDynamicResolution(fps, currentRatio, perfConfig) {
-  // DISABLE DRS: Always return the configured max pixel ratio.
-  // The user requested maximum quality even on mobile, so we prevent downscaling.
+// DRS Disabled for maximum quality
+export function calculateDynamicResolution(_fps, _currentRatio, perfConfig) {
   return perfConfig.PIXEL_RATIO;
 }
