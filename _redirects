@@ -103,6 +103,16 @@
 /api/search/ /api/search 307
 
 # ============================================================================
+# 3b. Detail Route Canonicalization (Blog/Videos)
+# ============================================================================
+/blog/:slug            /blog/:slug/            301
+/blog/:slug/index.html /blog/:slug/            301
+/blog/:slug/index/     /blog/:slug/            301
+/videos/:videoId            /videos/:videoId/  301
+/videos/:videoId/index.html /videos/:videoId/  301
+/videos/:videoId/index/     /videos/:videoId/  301
+
+# ============================================================================
 # 4. Old File Locations to Clean URLs
 # ============================================================================
 /pages/gallery/gallery.html     /gallery/     301
