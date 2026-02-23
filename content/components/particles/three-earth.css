@@ -20,6 +20,9 @@
   object-fit: cover;
   transform: translateZ(0); /* Hardware acceleration */
   will-change: transform;
+  /* Ensure sharp rendering */
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
 }
 
 /* Loading & Error States */
