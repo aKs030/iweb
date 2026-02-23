@@ -1,7 +1,7 @@
 /**
  * Shared CORS Utility for Cloudflare Pages Functions
  * Centralizes origin validation and header management.
- * @version 1.0.1
+ * @version 1.0.2
  * Verified existence for deployment: Feb 14, 2026
  */
 
@@ -29,11 +29,22 @@ export function getCorsHeaders(request, env) {
 
   // Only set CORS headers if the origin is in our whitelist or is a preview/local environment
   if (origin) {
-    const isAllowed =
-      allowedOrigins.includes(origin) ||
-      origin.endsWith('.pages.dev') || // Allow all Pages Preview URLs
-      origin.includes('localhost') || // Allow local development
-      origin.includes('127.0.0.1'); // Allow local development IP
+    let isAllowed = allowedOrigins.includes(origin);
+
+    // Securely check for Cloudflare Pages preview URLs (strictly *.1web.pages.dev)
+    if (!isAllowed) {
+      // Regex allows https://1web.pages.dev and https://<branch>.1web.pages.dev
+      const isPreview = /^https:\/\/(?:[a-z0-9-]+\.)*1web\.pages\.dev$/.test(
+        origin,
+      );
+      if (isPreview) isAllowed = true;
+    }
+
+    // Securely check for local development (http://localhost or http://127.0.0.1 with optional port)
+    if (!isAllowed) {
+      const isLocal = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
+      if (isLocal) isAllowed = true;
+    }
 
     if (isAllowed) {
       headers['Access-Control-Allow-Origin'] = origin;
