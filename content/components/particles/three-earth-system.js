@@ -1194,7 +1194,7 @@ function getOptimizedConfig(capabilities) {
   }
   if (capabilities.isMobile) {
     return {
-      EARTH: { ...CONFIG.EARTH, SEGMENTS_MOBILE: 32 },
+      EARTH: { ...CONFIG.EARTH, SEGMENTS_MOBILE: 64 },
       STARS: { ...CONFIG.STARS, COUNT: 2000 },
       PERFORMANCE: {
         ...CONFIG.PERFORMANCE,
