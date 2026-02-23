@@ -1,4 +1,4 @@
-import htm from 'https://esm.sh/htm@3.1.1';
+import htm from 'htm';
 import React from 'react';
 
 const html = htm.bind(React.createElement);
