@@ -7,6 +7,7 @@ pages_build_output_dir = "."
 [vars]
 MAX_SEARCH_RESULTS = "10"
 RAG_ID = "wispy-pond-1055"
+CONTACT_EMAIL = "krm19030@gmail.com"
 YOUTUBE_CHANNEL_ID = "UCTGRherjM4iuIn86xxubuPg"
 ALLOWED_ORIGINS = "https://abdulkerimsesli.de,https://www.abdulkerimsesli.de"
 
@@ -25,6 +26,7 @@ binding = "AI"
 [env.production.vars]
 MAX_SEARCH_RESULTS = "10"
 RAG_ID = "wispy-pond-1055"
+CONTACT_EMAIL = "krm19030@gmail.com"
 YOUTUBE_CHANNEL_ID = "UCTGRherjM4iuIn86xxubuPg"
 ALLOWED_ORIGINS = "https://abdulkerimsesli.de,https://www.abdulkerimsesli.de"
 

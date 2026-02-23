@@ -1,5 +1,6 @@
 import React from 'react';
 import { Send, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { i18n } from '../../core/i18n.js';
 
 const { createElement: h, Fragment } = React;
 
@@ -38,11 +39,11 @@ function ContactForm() {
       try {
         data = await response.json();
       } catch {
-        throw new Error('Server antwortete mit ungültigem Format.');
+        throw new Error(i18n.t('contact.error.server_format'));
       }
 
       if (!response.ok) {
-        throw new Error(data.error || 'Ein Fehler ist aufgetreten.');
+        throw new Error(data.error || i18n.t('contact.error.generic'));
       }
 
       setStatus('success');
@@ -56,9 +57,7 @@ function ContactForm() {
     } catch (err) {
       console.error(err);
       setStatus('error');
-      setErrorMessage(
-        err.message || 'Netzwerkfehler. Bitte prüfen Sie Ihre Verbindung.',
-      );
+      setErrorMessage(err.message || i18n.t('contact.error.network'));
     }
   };
 
@@ -92,7 +91,7 @@ function ContactForm() {
               color: '#fff',
             },
           },
-          'Nachricht gesendet!',
+          i18n.t('contact.success.title'),
         ),
         h(
           'p',
@@ -103,7 +102,7 @@ function ContactForm() {
               marginBottom: '2rem',
             },
           },
-          'Vielen Dank für Ihre Nachricht. Ich werde mich so schnell wie möglich bei Ihnen melden.',
+          i18n.t('contact.success.message'),
         ),
         h(
           'button',
@@ -112,7 +111,7 @@ function ContactForm() {
             style: { width: 'auto', padding: '0.8rem 2rem' },
             onClick: () => setStatus('idle'),
           },
-          'Neue Nachricht senden',
+          i18n.t('contact.success.new_message'),
         ),
       ),
     );
@@ -124,12 +123,8 @@ function ContactForm() {
     h(
       'div',
       { className: 'contact-header' },
-      h('h1', null, 'Lass uns sprechen'),
-      h(
-        'p',
-        null,
-        'Haben Sie eine Projektidee oder möchten Sie zusammenarbeiten? Füllen Sie das Formular aus und ich melde mich bei Ihnen.',
-      ),
+      h('h1', null, i18n.t('contact.title')),
+      h('p', null, i18n.t('contact.subtitle')),
     ),
     h(
       'div',
@@ -141,7 +136,11 @@ function ContactForm() {
         h(
           'div',
           { className: 'form-group' },
-          h('label', { htmlFor: 'name', className: 'form-label' }, 'Name'),
+          h(
+            'label',
+            { htmlFor: 'name', className: 'form-label' },
+            i18n.t('contact.form.name'),
+          ),
           h('input', {
             type: 'text',
             id: 'name',
@@ -150,14 +149,18 @@ function ContactForm() {
             onChange: handleChange,
             required: true,
             className: 'form-input',
-            placeholder: 'Max Mustermann',
+            placeholder: i18n.t('contact.form.name_placeholder'),
           }),
         ),
         // Email
         h(
           'div',
           { className: 'form-group' },
-          h('label', { htmlFor: 'email', className: 'form-label' }, 'E-Mail'),
+          h(
+            'label',
+            { htmlFor: 'email', className: 'form-label' },
+            i18n.t('contact.form.email'),
+          ),
           h('input', {
             type: 'email',
             id: 'email',
@@ -166,7 +169,7 @@ function ContactForm() {
             onChange: handleChange,
             required: true,
             className: 'form-input',
-            placeholder: 'max@beispiel.de',
+            placeholder: i18n.t('contact.form.email_placeholder'),
           }),
         ),
         // Subject
@@ -176,7 +179,7 @@ function ContactForm() {
           h(
             'label',
             { htmlFor: 'subject', className: 'form-label' },
-            'Betreff',
+            i18n.t('contact.form.subject'),
           ),
           h('input', {
             type: 'text',
@@ -185,7 +188,7 @@ function ContactForm() {
             value: formData.subject,
             onChange: handleChange,
             className: 'form-input',
-            placeholder: 'Projektanfrage...',
+            placeholder: i18n.t('contact.form.subject_placeholder'),
           }),
         ),
         // Message
@@ -195,7 +198,7 @@ function ContactForm() {
           h(
             'label',
             { htmlFor: 'message', className: 'form-label' },
-            'Nachricht',
+            i18n.t('contact.form.message'),
           ),
           h('textarea', {
             id: 'message',
@@ -204,7 +207,7 @@ function ContactForm() {
             onChange: handleChange,
             required: true,
             className: 'form-textarea',
-            placeholder: 'Erzählen Sie mir von Ihrem Projekt...',
+            placeholder: i18n.t('contact.form.message_placeholder'),
           }),
         ),
         // Honeypot
@@ -246,9 +249,14 @@ function ContactForm() {
                   Fragment,
                   null,
                   h(Loader2, { className: 'spinner', size: 18 }),
-                  ' Wird gesendet...',
+                  ' ' + i18n.t('contact.form.submitting'),
                 )
-              : h(Fragment, null, h(Send, { size: 18 }), ' Nachricht senden'),
+              : h(
+                  Fragment,
+                  null,
+                  h(Send, { size: 18 }),
+                  ' ' + i18n.t('contact.form.submit'),
+                ),
           ),
         ),
       ),
