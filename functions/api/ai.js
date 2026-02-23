@@ -5,6 +5,7 @@
  */
 
 import { getCorsHeaders, handleOptions } from './_cors.js';
+import { calculateRelevanceScore } from './_search-utils.js';
 
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const GROQ_MODEL = 'llama-3.3-70b-versatile';
@@ -71,44 +72,12 @@ function createLocalFallbackText(prompt, contextData) {
       ? `Ich habe lokal ${contextData.sources.length} relevante Quelle${contextData.sources.length === 1 ? '' : 'n'} gefunden.`
       : 'Ich konnte lokal keine zusätzlichen Quellen ermitteln.';
 
-  return `Lokaler KI-Modus aktiv: GROQ_API_KEY fehlt.\n${sourceHint}\n\nDeine Anfrage: "${promptPreview || 'Leer'}"\n\nHinweis: Setze GROQ_API_KEY in .dev.vars für echte KI-Antworten.`;
-}
+  return `Lokaler KI-Modus aktiv: GROQ_API_KEY fehlt.
+${sourceHint}
 
-/**
- * Calculate relevance score for search results
- * @param {Object} item - Search result item
- * @param {string} query - Original query
- * @returns {number} Relevance score (0-1)
- */
-function calculateRelevanceScore(item, query) {
-  const queryLower = query.toLowerCase();
-  const queryTerms = queryLower.split(/\s+/).filter((t) => t.length > 2);
+Deine Anfrage: "${promptPreview || 'Leer'}"
 
-  let score = 0;
-  const content =
-    item.content
-      ?.map((c) => c.text)
-      .join(' ')
-      .toLowerCase() || '';
-  const title = item.filename?.toLowerCase() || '';
-
-  // Title match (highest weight)
-  queryTerms.forEach((term) => {
-    if (title.includes(term)) score += 0.4;
-  });
-
-  // Content match
-  queryTerms.forEach((term) => {
-    const matches = (content.match(new RegExp(term, 'g')) || []).length;
-    score += Math.min(matches * 0.1, 0.3);
-  });
-
-  // Boost for exact phrase match
-  if (content.includes(queryLower)) {
-    score += 0.3;
-  }
-
-  return Math.min(score, 1);
+Hinweis: Setze GROQ_API_KEY in .dev.vars für echte KI-Antworten.`;
 }
 
 /**
@@ -222,9 +191,17 @@ async function getRelevantContext(query, env) {
     const scoredResults = searchData.data
       .map((item) => ({
         item,
-        score: calculateRelevanceScore(item, query),
+        score: calculateRelevanceScore(
+          {
+            title: item.filename || '',
+            url: item.filename || '',
+            description: item.content?.map((c) => c.text).join(' ') || '',
+            score: 0,
+          },
+          query,
+        ),
       }))
-      .filter((result) => result.score > 0.1) // Filter out low-relevance results
+      .filter((result) => result.score > 1) // Filter out low-relevance results
       .sort((a, b) => b.score - a.score)
       .slice(0, 3); // Keep top 3 most relevant
 
