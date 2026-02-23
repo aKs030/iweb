@@ -208,11 +208,7 @@ export const ThreeScene = ({ projects, onScrollUpdate, onReady }) => {
       viewportWidthRef.current = width;
 
       const dprCap =
-        width <= BREAKPOINTS.mobile
-          ? 1.25
-          : width <= BREAKPOINTS.tablet
-            ? 1.5
-            : 2;
+        width <= BREAKPOINTS.mobile ? 2 : width <= BREAKPOINTS.tablet ? 2 : 2;
 
       globalRenderer.setPixelRatio(
         Math.min(window.devicePixelRatio || 1, dprCap),
