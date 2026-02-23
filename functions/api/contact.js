@@ -215,7 +215,7 @@ export async function onRequestPost({ request, env }) {
       },
       body: JSON.stringify({
         from: 'Contact Form <onboarding@resend.dev>',
-        to: ['krm19030@gmail.com'],
+        to: [env.CONTACT_EMAIL || 'krm19030@gmail.com'],
         reply_to: email,
         subject: `Kontaktformular: ${safeSubject || 'Kein Betreff'}`,
         html: `

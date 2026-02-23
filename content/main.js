@@ -86,7 +86,9 @@ const _initApp = () => {
   try {
     a11y?.updateAnimations?.();
     a11y?.updateContrast?.();
-  } catch {}
+  } catch (error) {
+    log.warn('A11y update failed:', error);
+  }
 
   // Initialize View Transitions API (progressive enhancement)
   initViewTransitions();
