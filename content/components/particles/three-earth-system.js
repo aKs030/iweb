@@ -1150,12 +1150,13 @@ function detectDeviceCapabilities() {
     const ua = (navigator.userAgent || '').toLowerCase();
     const isMobile = /mobile|tablet|android|ios|iphone|ipad/i.test(ua);
 
-    // Flag devices with 4 or fewer cores as potential low-end/medium for this complex scene
+    // Flag only ancient devices as low-end (e.g. Android 4/5 or very old iOS).
+    // Modern devices with few cores (e.g. newer iPhones) should NOT be flagged as low-end.
+    // We removed the hardwareConcurrency check as it falsely flags powerful mobile devices.
     const isLowEnd =
       /android 4|android 5|cpu iphone os 9|cpu iphone os 10|cpu iphone os 11/i.test(
         ua,
-      ) ||
-      (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4);
+      );
 
     let recommendedQuality;
     if (isLowEnd) recommendedQuality = 'LOW';
@@ -1186,9 +1187,14 @@ function getOptimizedConfig(capabilities) {
   if (!capabilities) return {};
   if (capabilities.isLowEnd) {
     return {
-      EARTH: { ...CONFIG.EARTH, SEGMENTS: 24, SEGMENTS_MOBILE: 16 },
+      EARTH: { ...CONFIG.EARTH, SEGMENTS: 24, SEGMENTS_MOBILE: 32 },
       STARS: { ...CONFIG.STARS, COUNT: 1000 },
-      PERFORMANCE: { ...CONFIG.PERFORMANCE, PIXEL_RATIO: 1, TARGET_FPS: 30 },
+      // Even on low-end devices, keep decent resolution (1.5x minimum) to avoid extreme blur
+      PERFORMANCE: {
+        ...CONFIG.PERFORMANCE,
+        PIXEL_RATIO: Math.min(window.devicePixelRatio || 1, 1.5),
+        TARGET_FPS: 30,
+      },
       CLOUDS: { ...CONFIG.CLOUDS, OPACITY: 0 },
     };
   }
