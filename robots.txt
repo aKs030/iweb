@@ -1,16 +1,40 @@
 # robots.txt - AI & Search Engine Directives
 
-# Default: Allow all bots
-User-agent: *
-Allow: /
-Crawl-delay: 1
-
 # Sitemaps
 Sitemap: https://www.abdulkerimsesli.de/sitemap-index.xml
 
-# AI-specific directives
-# OpenAI GPT
+# Default policy: allow all public content, block sensitive/internal paths
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /.wrangler/
+Disallow: /node_modules/
+Disallow: /*.log$
+
+# LLM and discovery resources
+Allow: /llms.txt
+Allow: /llms-full.txt
+Allow: /ai-index.json
+Allow: /ai-info
+Allow: /person.jsonld
+Allow: /bio.md
+Allow: /pages/projekte/apps-config.json
+Allow: /pages/blog/posts/index.json
+Allow: /.well-known/openapi.json
+Allow: /.well-known/ai-plugin.json
+
+Crawl-delay: 1
+
+# OpenAI crawlers
 User-agent: GPTBot
+Allow: /
+Crawl-delay: 1
+
+User-agent: OAI-SearchBot
+Allow: /
+Crawl-delay: 1
+
+User-agent: ChatGPT-User
 Allow: /
 Crawl-delay: 1
 
@@ -19,7 +43,7 @@ User-agent: Claude-Web
 Allow: /
 Crawl-delay: 1
 
-# Google Bard/Gemini
+# Google Gemini (AI usage controls)
 User-agent: Google-Extended
 Allow: /
 Crawl-delay: 1
@@ -44,23 +68,7 @@ User-agent: AI2Bot
 Allow: /
 Crawl-delay: 1
 
-# Applebot (used for Siri, Spotlight)
+# Applebot (Siri, Spotlight)
 User-agent: Applebot
 Allow: /
 Crawl-delay: 1
-
-# Disallow sensitive areas
-User-agent: *
-Disallow: /api/
-Disallow: /.wrangler/
-Disallow: /node_modules/
-Disallow: /*.log$
-
-# LLM-specific files
-Allow: /llms.txt
-Allow: /llms-full.txt
-Allow: /ai-index.json
-Allow: /pages/projekte/apps-config.json
-Allow: /pages/blog/posts/index.json
-Allow: /.well-known/openapi.json
-Allow: /.well-known/ai-plugin.json

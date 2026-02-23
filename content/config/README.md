@@ -1,8 +1,19 @@
 # Configuration Files
 
-## YouTube API Configuration
+This directory centralizes runtime and SEO configuration.
 
-To use the YouTube API features, set your API key via environment variable:
+## Environment Config
+
+`env.config.js` resolves runtime IDs and environment values:
+
+- GTM / GA4 / Google Ads IDs
+- Base URL (production vs localhost)
+- YouTube channel + optional API key
+- Environment detection (`isDev`, `isPreview`, `isProd`)
+
+Runtime values can be injected via `window.ENV` or `window.__ENV__`.
+
+### Local Variables
 
 ```bash
 # .dev.vars
@@ -10,30 +21,32 @@ YOUTUBE_API_KEY=your_api_key_here
 YOUTUBE_CHANNEL_ID=UCTGRherjM4iuIn86xxubuPg
 ```
 
-The configuration is provided to Cloudflare Pages Functions and used by the YouTube API proxy.
+## Route Meta
 
-### Mock Mode
+`routes-config.js` defines per-route SEO defaults:
 
-For development without an API key, the app automatically uses mock data when running on localhost.
-
-Force mock mode with: `?mockVideos=1`
+- title / description (DE + EN)
+- semantic page type
+- default Open Graph image
 
 ## Brand Data
 
-All brand information (name, contact, social links) is centralized in `brand-data.json`.
+`brand-data.json` stores canonical brand identity and schema fields:
 
-This file is used by:
+- name / legalName / alternateName
+- social profiles (`sameAs`)
+- language, occupation and contact points
 
-- SEO meta tags
-- Schema.org structured data
-- Footer contact information
+`brand-data-loader.js` normalizes this payload for JSON-LD usage.
 
-## Site Configuration
+## Shared Constants
 
-`site-config.js` contains environment-specific settings:
+`constants.js` is the source for URLs and reusable asset helpers:
 
-- Google Tag Manager IDs
-- Google Analytics IDs
-- Google Ads conversion tracking
+- `BASE_URL`, `BASE_URL_DEV`
+- R2 paths (`R2_PUBLIC_BASE_URL`, `R2_ICONS_BASE_URL`, `R2_BLOG_BASE_URL`)
+- asset URL helpers (`iconUrl`, `ogImageUrl`)
 
-Configure per hostname or use the `default` configuration.
+## Static Site Assets
+
+Static site-level assets are exported from `constants.js` (for example `FAVICON_512`).

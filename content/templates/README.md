@@ -1,72 +1,35 @@
-# Loader System v2.0
+# Templates
 
-## Features
-
-- Animiertes Hintergrund-Grid
-- Schwebende Gradient-Orbs
-- Doppelte Spinner-Ringe
-- Logo mit Pulse-Effekt & Scanline
-- Enhanced Progress Bar mit Glow
-- Loading Dots Animation
-- Timeout-Warnung (8s)
-- Performance-Hint (3s)
-- Responsive & Accessible
-- Reduced Motion Support
-
-## Verwendung
-
-```javascript
-import {
-  showLoader,
-  updateLoader,
-  hideLoader,
-} from '/content/core/load-manager.js';
-
-// Anzeigen
-showLoader('Lade Daten...');
-
-// Aktualisieren
-updateLoader(0.5, 'Verarbeite...'); // 50%
-
-// Verstecken
-hideLoader();
-```
-
-## Optionen
-
-```javascript
-showLoader('Laden...', {
-  initialProgress: 0.1,
-  showWarning: true,
-});
-
-hideLoader(500, { immediate: false });
-```
-
-## Events
-
-```javascript
-import { EVENTS } from '/content/core/load-manager.js';
-
-document.addEventListener(EVENTS.LOADING_SHOW, () => {});
-document.addEventListener(EVENTS.LOADING_UPDATE, (e) => {});
-document.addEventListener(EVENTS.LOADING_HIDE, () => {});
-document.addEventListener(EVENTS.LOADING_TIMEOUT, () => {});
-```
-
-## CSS-Variablen
-
-```css
-:root {
-  --loader-bg: #030303;
-  --loader-text: #e0e0e0;
-  --loader-accent: #00f3ff;
-  --loader-accent-secondary: #7000ff;
-}
-```
+Gemeinsame HTML-Bausteine, die in Seiten eingebettet werden.
 
 ## Dateien
 
-- `content/templates/base-loader.html` - HTML-Template
-- `content/styles/loader.css` - Styles
-- `content/core/global-loader.js` - Logik
+- `content/templates/base-head.html`: Importmap, globale Meta/Link-Tags und Core-Script-Injektion.
+- `content/templates/base-loader.html`: Globaler Loader-Markup (`#app-loader`).
+
+## Loader Nutzung (aktuell)
+
+```javascript
+import { AppLoadManager } from '/content/core/load-manager.js';
+import { EVENTS } from '/content/core/events.js';
+
+AppLoadManager.block('data-fetch');
+AppLoadManager.updateLoader(0.4, 'Lade Daten...');
+
+// ... async work
+
+AppLoadManager.unblock('data-fetch');
+AppLoadManager.hideLoader(200, { immediate: false });
+
+document.addEventListener(EVENTS.LOADING_UNBLOCKED, () => {});
+document.addEventListener(EVENTS.LOADING_HIDE, () => {});
+document.addEventListener('loading:update', (event) => {
+  // event.detail = { progress, message }
+});
+```
+
+## Hinweise
+
+- Der Loader wird über `content/core/load-manager.js` gesteuert.
+- Event-Konstanten liegen in `content/core/events.js`.
+- `base-head.html` lädt `head-inline.js` früh, danach `content/main.js`.

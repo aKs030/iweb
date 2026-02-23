@@ -27,7 +27,7 @@ const ROUTE_META = {
   '/contact/': { priority: 0.55, changefreq: 'monthly' },
   '/impressum/': { priority: 0.2, changefreq: 'yearly' },
   '/datenschutz/': { priority: 0.2, changefreq: 'yearly' },
-  '/ai-info': { priority: 0.4, changefreq: 'monthly' },
+  '/ai-info': { priority: 0.65, changefreq: 'weekly' },
   '/llms.txt': { priority: 0.5, changefreq: 'monthly' },
   '/llms-full.txt': { priority: 0.5, changefreq: 'monthly' },
   '/ai-index.json': { priority: 0.4, changefreq: 'monthly' },

@@ -4,7 +4,7 @@
  * @version 1.1.0
  */
 
-import { createLogger } from '../core/logger.js';
+import { createLogger } from './logger.js';
 
 const log = createLogger('LanguageManager');
 

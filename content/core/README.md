@@ -1,85 +1,40 @@
-# Core Utilities
+# Core Runtime Modules
 
-This directory contains core utility modules used throughout the application.
+This directory contains shared browser runtime modules used by pages, components, and app bootstrap code.
 
-## Event Utilities (`event-utils.js`)
+## Module Overview
 
-Helper functions for adding event listeners with proper passive handling to improve scroll performance.
+- `logger.js`: Structured logging helpers (`createLogger`).
+- `events.js`: App event constants, emitter, and global event helpers.
+- `load-manager.js`: Central app loading lifecycle and loader orchestration.
+- `i18n.js`: Language manager with translation loading and page translation.
+- `utils.js`: DOM helpers, observer helpers, timers, sanitizing, and shared helpers.
+- `fetch.js` / `cache.js`: Request helpers with cache support.
+- `section-manager.js` / `section-tracker.js`: Dynamic section loading and active section tracking.
+- `schema.js` / `canonical-manager.js`: SEO structured data and canonical management.
+- `theme-color-manager.js` / `pwa-manager.js` / `resource-hints.js`: Head and PWA runtime optimizations.
+- `accessibility-manager.js`: Accessibility helpers and announcer utilities.
+- `types.js`: JSDoc typedefs used across modules and components.
 
-### Usage Examples
-
-#### Single Event Listener
-
-```javascript
-import { addPassiveListener } from '/content/core/event-utils.js';
-
-// Automatically adds passive: true for touch/scroll events
-const cleanup = addPassiveListener(element, 'touchstart', (e) => {
-  console.log('Touch started');
-});
-
-// Call cleanup when done
-cleanup();
-```
-
-#### Multiple Event Listeners
+## Typical Usage
 
 ```javascript
-import { addPassiveListeners } from '/content/core/event-utils.js';
+import { createLogger } from '/content/core/logger.js';
+import { AppLoadManager } from '/content/core/load-manager.js';
+import { i18n } from '/content/core/i18n.js';
+import { EVENTS, fire } from '/content/core/events.js';
 
-const cleanup = addPassiveListeners(
-  element,
-  ['touchstart', 'touchmove', 'touchend'],
-  handleTouch,
-);
+const log = createLogger('Example');
 
-// Cleanup all listeners at once
-cleanup();
+await i18n.init();
+fire(EVENTS.DOM_READY);
+AppLoadManager.block('example-init');
+AppLoadManager.unblock('example-init');
+log.info('Core initialized');
 ```
 
-#### Check Passive Support
+## Notes
 
-```javascript
-import { supportsPassive } from '/content/core/event-utils.js';
-
-if (supportsPassive()) {
-  console.log('Browser supports passive event listeners');
-}
-```
-
-### Why Use Passive Listeners?
-
-Passive event listeners improve scroll performance by telling the browser that the event handler won't call `preventDefault()`. This allows the browser to start scrolling immediately without waiting for JavaScript.
-
-**Events that default to passive:**
-
-- `touchstart`
-- `touchmove`
-- `touchend`
-- `touchcancel`
-- `wheel`
-- `mousewheel`
-
-### When NOT to Use Passive
-
-If you need to call `preventDefault()` in your handler, explicitly set `passive: false`:
-
-```javascript
-addPassiveListener(
-  element,
-  'touchstart',
-  (e) => {
-    e.preventDefault(); // This won't work with passive: true
-  },
-  { passive: false },
-);
-```
-
-## Other Core Modules
-
-- `logger.js` - Logging utilities
-- `cache.js` - Caching utilities
-- `utils.js` - General utility functions
-- `fetch.js` - Enhanced fetch utilities
-- `html-sanitizer.js` - HTML sanitization
-- And more...
+- Core modules are ESM and browser-first.
+- Keep internal imports within this folder consistent as `./module.js`.
+- Prefer reusing existing helpers from `utils.js`, `fetch.js`, and `events.js` before adding new utilities.

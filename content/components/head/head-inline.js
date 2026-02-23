@@ -103,7 +103,7 @@ const injectGTM = () => {
   try {
     if (!GTM_ID || GTM_ID === 'GTM-PLACEHOLDER') {
       log?.info?.(
-        'GTM not configured — set GTM_ID in content/config/site-config.js to enable',
+        'GTM not configured — set GTM_ID in content/config/env.config.js or window.ENV to enable',
       );
       return;
     }
@@ -114,7 +114,7 @@ const injectGTM = () => {
     const firstScript = document.getElementsByTagName('script')[0];
     const gtmScript = document.createElement('script');
     gtmScript.async = true;
-    gtmScript.src = `https://www.googletagmanager.com/gtm.js?id=${GTM_ID}&l=dataLayer`;
+    gtmScript.src = `https://www.googletagmanager.com/gtm.js?id=${encodeURIComponent(GTM_ID)}&l=dataLayer`;
     firstScript.parentNode.insertBefore(gtmScript, firstScript);
   } catch (err) {
     log?.warn?.('head-inline: GTM injection failed', err);
@@ -131,7 +131,14 @@ const ensureGTMNoScript = () => {
         if (document.getElementById('gtm-noscript')) return;
         const ns = document.createElement('noscript');
         ns.id = 'gtm-noscript';
-        ns.innerHTML = `<iframe title="Google Tag Manager (noscript)" src="https://www.googletagmanager.com/ns.html?id=${GTM_ID}" height="0" width="0" style="display:none;visibility:hidden"></iframe>`;
+        const iframe = document.createElement('iframe');
+        iframe.title = 'Google Tag Manager (noscript)';
+        iframe.src = `https://www.googletagmanager.com/ns.html?id=${encodeURIComponent(GTM_ID)}`;
+        iframe.height = '0';
+        iframe.width = '0';
+        iframe.style.display = 'none';
+        iframe.style.visibility = 'hidden';
+        ns.appendChild(iframe);
         if (document.body?.firstChild) {
           document.body.insertBefore(ns, document.body.firstChild);
         } else if (document.body) {

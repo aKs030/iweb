@@ -98,6 +98,7 @@
 /gallery  /gallery/   301
 /projekte /projekte/  301
 /videos   /videos/    301
+/ai-info/ /ai-info    301
 /search   /           302
 /search/  /           302
 /api/search/ /api/search 307
@@ -137,6 +138,7 @@
 # to prevent 308 redirect loops with Cloudflare Pretty URLs
 /pages/*                  /pages/:splat                   200
 /content/components/*     /content/components/:splat      200
+/ai-info                  /ai-info.html                   200
 
 # ============================================================================
 # 7. Generic .html Removal (Must be after specific rules)

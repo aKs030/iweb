@@ -1,20 +1,22 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "lastUpdated": "2026-02-23",
   "site": {
     "name": "Abdulkerim Sesli Portfolio",
     "url": "https://www.abdulkerimsesli.de",
-    "description": "Modern portfolio featuring 3D visualizations, AI-powered search, and progressive web technologies",
+    "description": "Portfolio of Abdulkerim Sesli with modern web engineering, interactive 3D experiences, performance optimization, and AI integration",
     "language": ["de", "en"],
     "author": {
       "name": "Abdulkerim Sesli",
-      "alternateName": "Abdul Sesli",
+      "alternateName": ["Abdul Sesli", "AKS", "aKs030"],
       "email": "kontakt@abdulkerimsesli.de",
       "url": "https://www.abdulkerimsesli.de",
       "sameAs": [
         "https://github.com/aKs030",
-        "https://linkedin.com/in/abdulkerim-s"
+        "https://linkedin.com/in/abdulkerim-s",
+        "https://x.com/kRm_030",
+        "https://www.youtube.com/@aks.030"
       ]
     }
   },
@@ -26,11 +28,20 @@
     "crawlDelay": 1,
     "preferredBots": [
       "GPTBot",
+      "OAI-SearchBot",
+      "ChatGPT-User",
       "Claude-Web",
       "Google-Extended",
       "PerplexityBot",
       "CCBot"
-    ]
+    ],
+    "discovery": {
+      "llms": "https://www.abdulkerimsesli.de/llms.txt",
+      "llmsFull": "https://www.abdulkerimsesli.de/llms-full.txt",
+      "aiIndex": "https://www.abdulkerimsesli.de/ai-index.json",
+      "personJsonLd": "https://www.abdulkerimsesli.de/person.jsonld",
+      "sitemap": "https://www.abdulkerimsesli.de/sitemap.xml"
+    }
   },
   "content": {
     "pages": [

@@ -7,13 +7,14 @@ import { createLogger } from './logger.js';
 import { fetchText } from './fetch.js';
 import { fire, EVENTS } from './events.js';
 import { createObserver } from './utils.js';
-import { i18n } from '../core/i18n.js';
+import { i18n } from './i18n.js';
 
 const log = createLogger('SectionManager');
 
 export class SectionManager {
   constructor() {
     this.loadedSections = new WeakSet();
+    this.loadingSections = new WeakSet();
   }
 
   async loadSection(section) {
@@ -21,17 +22,23 @@ export class SectionManager {
       log.debug(`Section already loaded: ${section.id}`);
       return;
     }
+    if (this.loadingSections.has(section)) {
+      log.debug(`Section already loading: ${section.id}`);
+      return;
+    }
 
     const url = section.dataset.sectionSrc;
     if (!url) return;
 
-    this.loadedSections.add(section);
+    this.loadingSections.add(section);
     section.setAttribute('aria-busy', 'true');
 
     // Handle Edge-Side Includes (SSR) Injection
     if (section.hasAttribute('data-ssr-loaded')) {
       log.debug(`Section ${section.id} loaded via Edge SSR`);
       section.removeAttribute('aria-busy');
+      this.loadingSections.delete(section);
+      this.loadedSections.add(section);
       i18n.translateElement(section);
       if (section.id === 'hero') {
         fire(EVENTS.HERO_LOADED);
@@ -72,6 +79,8 @@ export class SectionManager {
       }
 
       section.removeAttribute('aria-busy');
+      this.loadedSections.add(section);
+      this.loadingSections.delete(section);
 
       // Translate loaded content
       i18n.translateElement(section);
@@ -85,6 +94,8 @@ export class SectionManager {
       );
     } catch (error) {
       log.warn(`Section load failed: ${section.id}`, error);
+      this.loadingSections.delete(section);
+      this.loadedSections.delete(section);
       section.removeAttribute('aria-busy');
     }
   }
@@ -126,12 +137,14 @@ export class SectionManager {
     }
     this._initialized = false;
     this.loadedSections = new WeakSet();
+    this.loadingSections = new WeakSet();
     this.init();
   }
 
   // Backward compatibility
   async retrySection(section) {
     this.loadedSections.delete(section);
+    this.loadingSections.delete(section);
     await this.loadSection(section);
   }
 }

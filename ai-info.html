@@ -1,325 +1,544 @@
 <!doctype html>
-<html lang="en">
+<html lang="de">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="index, follow" />
     <meta
       name="description"
-      content="AI indexing information and resources for Abdulkerim Sesli's portfolio website"
+      content="AI & Profile Hub von Abdulkerim Sesli: umfassende Informationen zu Person, Leistungen, Technologien, Projekten und AI-Indexing-Ressourcen."
     />
-    <title>AI Indexing Information - Abdulkerim Sesli</title>
-    <link rel="canonical" href="https://www.abdulkerimsesli.de/ai-info.html" />
+    <meta
+      name="keywords"
+      content="Abdulkerim Sesli, Abdul Sesli, Full-Stack Developer, Three.js, JavaScript, Cloudflare, AI Integration, Portfolio"
+    />
+    <title>Abdulkerim Sesli - AI & Profile Hub</title>
+    <link rel="canonical" href="https://www.abdulkerimsesli.de/ai-info" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+
     <style>
       :root {
-        --bg: #0a0a0a;
-        --surface: #1a1a1a;
-        --text: #ffffff;
-        --text-secondary: #999999;
-        --accent: #0066cc;
-        --border: #333333;
+        --bg: #f7f9fc;
+        --surface: #ffffff;
+        --surface-strong: #eef4ff;
+        --text: #122033;
+        --text-soft: #3d4b61;
+        --muted: #5b6f8e;
+        --line: #d6dfed;
+        --brand: #0f6fff;
+        --brand-2: #0ec5a5;
+        --shadow: 0 16px 40px rgba(15, 28, 56, 0.08);
       }
+
       * {
-        margin: 0;
-        padding: 0;
         box-sizing: border-box;
       }
+
+      html,
       body {
-        font-family:
-          -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        background: var(--bg);
-        color: var(--text);
-        line-height: 1.6;
-        padding: 2rem;
+        margin: 0;
+        padding: 0;
       }
+
+      body {
+        font-family: 'Manrope', 'Segoe UI', sans-serif;
+        background:
+          radial-gradient(
+            circle at 10% 10%,
+            rgba(15, 111, 255, 0.1),
+            transparent 42%
+          ),
+          radial-gradient(
+            circle at 88% 0%,
+            rgba(14, 197, 165, 0.09),
+            transparent 45%
+          ),
+          var(--bg);
+        color: var(--text);
+        line-height: 1.65;
+      }
+
       .container {
-        max-width: 900px;
+        width: min(1120px, calc(100% - 2rem));
         margin: 0 auto;
       }
-      h1 {
-        font-size: 2.5rem;
-        margin-bottom: 1rem;
-        background: linear-gradient(135deg, #0066cc, #00a3ff);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+
+      .hero {
+        padding: 4.4rem 0 2.8rem;
       }
-      h2 {
-        font-size: 1.8rem;
-        margin: 2rem 0 1rem;
-        color: var(--accent);
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        border: 1px solid rgba(15, 111, 255, 0.25);
+        background: rgba(255, 255, 255, 0.84);
+        border-radius: 999px;
+        padding: 0.35rem 0.9rem;
+        color: var(--brand);
+        font-size: 0.82rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
       }
+
+      h1,
+      h2,
       h3 {
-        font-size: 1.3rem;
-        margin: 1.5rem 0 0.5rem;
+        font-family: 'Space Grotesk', 'Segoe UI', sans-serif;
+        letter-spacing: -0.02em;
+        margin: 0;
       }
-      p {
-        margin-bottom: 1rem;
-        color: var(--text-secondary);
+
+      h1 {
+        font-size: clamp(2rem, 6vw, 3.3rem);
+        margin-top: 1rem;
+        max-width: 16ch;
       }
-      .card {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        padding: 1.5rem;
-        margin: 1rem 0;
+
+      .hero p {
+        color: var(--text-soft);
+        max-width: 70ch;
+        margin: 1rem 0 0;
+        font-size: clamp(1rem, 1.8vw, 1.15rem);
       }
-      .resource-list {
-        list-style: none;
+
+      .hero-cta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.8rem;
+        margin-top: 1.6rem;
       }
-      .resource-list li {
-        padding: 0.75rem;
-        margin: 0.5rem 0;
-        background: var(--surface);
-        border-left: 3px solid var(--accent);
-        border-radius: 4px;
-      }
-      .resource-list a {
-        color: var(--accent);
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        padding: 0.65rem 1.15rem;
         text-decoration: none;
-        font-weight: 500;
+        font-weight: 700;
+        font-size: 0.93rem;
+        border: 1px solid transparent;
       }
-      .resource-list a:hover {
-        text-decoration: underline;
+
+      .btn-primary {
+        background: linear-gradient(135deg, var(--brand), #237dff);
+        color: #fff;
+        box-shadow: var(--shadow);
       }
-      .badge {
-        display: inline-block;
-        padding: 0.25rem 0.75rem;
-        background: var(--accent);
-        color: white;
-        border-radius: 12px;
-        font-size: 0.85rem;
-        margin-right: 0.5rem;
+
+      .btn-secondary {
+        color: var(--text);
+        border-color: var(--line);
+        background: rgba(255, 255, 255, 0.88);
       }
-      code {
+
+      section {
+        margin: 1.1rem 0;
+        padding: 1.35rem;
+        border: 1px solid var(--line);
+        border-radius: 1.15rem;
         background: var(--surface);
-        padding: 0.2rem 0.5rem;
-        border-radius: 4px;
-        font-family: 'Courier New', monospace;
-        color: #00a3ff;
+        box-shadow: var(--shadow);
       }
+
+      h2 {
+        font-size: clamp(1.3rem, 3.6vw, 1.85rem);
+        margin-bottom: 0.8rem;
+      }
+
+      .lead {
+        color: var(--text-soft);
+        margin-top: 0;
+      }
+
       .grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        grid-template-columns: repeat(12, 1fr);
         gap: 1rem;
-        margin: 1rem 0;
       }
-      .stat {
+
+      .card {
+        grid-column: span 12;
+        border: 1px solid var(--line);
+        background: var(--surface-strong);
+        border-radius: 0.95rem;
+        padding: 1rem;
+      }
+
+      .card h3 {
+        font-size: 1.05rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .card p {
+        margin: 0;
+        color: var(--text-soft);
+      }
+
+      .badge-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.6rem;
+        margin-top: 0.4rem;
+      }
+
+      .badge {
+        border: 1px solid rgba(15, 111, 255, 0.2);
+        border-radius: 999px;
+        padding: 0.3rem 0.7rem;
+        background: #fff;
+        font-size: 0.83rem;
+        color: #1f3657;
+        font-weight: 600;
+      }
+
+      ul {
+        margin: 0.6rem 0 0;
+        padding-left: 1.15rem;
+        color: var(--text-soft);
+      }
+
+      li + li {
+        margin-top: 0.35rem;
+      }
+
+      a {
+        color: var(--brand);
+        text-underline-offset: 0.18em;
+      }
+
+      .resource-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: grid;
+        gap: 0.6rem;
+      }
+
+      .resource-list li {
+        border: 1px solid var(--line);
+        border-radius: 0.8rem;
+        padding: 0.8rem;
+        background: #fff;
+      }
+
+      .resource-title {
+        font-weight: 700;
+        color: var(--text);
+        display: block;
+      }
+
+      .resource-desc {
+        color: var(--muted);
+        font-size: 0.92rem;
+      }
+
+      .faq-item + .faq-item {
+        margin-top: 1rem;
+        border-top: 1px solid var(--line);
+        padding-top: 1rem;
+      }
+
+      .faq-item h3 {
+        font-size: 1rem;
+      }
+
+      .faq-item p {
+        margin: 0.4rem 0 0;
+        color: var(--text-soft);
+      }
+
+      .footer-note {
         text-align: center;
-        padding: 1.5rem;
-        background: var(--surface);
-        border-radius: 8px;
-      }
-      .stat-value {
-        font-size: 2rem;
-        font-weight: bold;
-        color: var(--accent);
-      }
-      .stat-label {
-        color: var(--text-secondary);
+        color: var(--muted);
         font-size: 0.9rem;
+        padding: 1.1rem 0 2.2rem;
+      }
+
+      @media (min-width: 760px) {
+        .card.col-6 {
+          grid-column: span 6;
+        }
+
+        .card.col-4 {
+          grid-column: span 4;
+        }
       }
     </style>
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Person",
+            "@id": "https://www.abdulkerimsesli.de/#person",
+            "name": "Abdulkerim Sesli",
+            "alternateName": ["Abdul Sesli", "AKS", "aKs030"],
+            "url": "https://www.abdulkerimsesli.de",
+            "jobTitle": [
+              "Full-Stack Web Developer",
+              "Performance Engineer",
+              "AI Integration Specialist"
+            ],
+            "description": "Full-Stack Web Developer mit Fokus auf moderne JavaScript-Architekturen, Three.js-Erlebnisse, Edge-Deployment und AI-Integration.",
+            "sameAs": [
+              "https://github.com/aKs030",
+              "https://linkedin.com/in/abdulkerim-s"
+            ],
+            "knowsAbout": [
+              "JavaScript ES2023+",
+              "Three.js",
+              "Web Components",
+              "Cloudflare Workers",
+              "RAG Search",
+              "Web Performance"
+            ]
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://www.abdulkerimsesli.de/#website",
+            "url": "https://www.abdulkerimsesli.de",
+            "name": "Abdulkerim Sesli Portfolio",
+            "inLanguage": ["de", "en"],
+            "publisher": {
+              "@id": "https://www.abdulkerimsesli.de/#person"
+            }
+          },
+          {
+            "@type": "FAQPage",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "Welche Leistungen bietet Abdulkerim Sesli an?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Ich entwickle performante Webanwendungen, interaktive 3D-Erlebnisse mit Three.js, AI-gestützte Such- und Chat-Funktionen sowie technische SEO- und Performance-Optimierungen."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Ist die Website fuer KI-Systeme indexierbar?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Ja. Oeffentliche Inhalte sind indexierbar. Relevante Discovery-Dateien wie llms.txt, llms-full.txt, ai-index.json, Sitemap und strukturierte Daten sind verlinkt und gepflegt."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Wie kann man Kontakt aufnehmen?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Projektanfragen sind ueber die Kontaktseite oder per E-Mail an kontakt@abdulkerimsesli.de moeglich."
+                }
+              }
+            ]
+          }
+        ]
+      }
+    </script>
   </head>
   <body>
-    <div class="container">
-      <h1>🤖 AI Indexing Information</h1>
-      <p>
-        This page provides comprehensive information for AI systems, language
-        models, and automated crawlers about this website.
-      </p>
+    <header class="hero">
+      <div class="container">
+        <span class="eyebrow">AI Discovery + Human Profile</span>
+        <h1>
+          Abdulkerim Sesli: moderner Webentwickler fuer performante AI-Websites
+        </h1>
+        <p>
+          Diese Seite ist der zentrale Einstieg fuer AI-Systeme, Suchmaschinen
+          und Menschen. Sie enthaelt ein aktuelles, ausfuehrliches Profil zu
+          Abdulkerim Sesli, seinen technischen Schwerpunkten, Services,
+          Referenzen und alle relevanten Discovery-Ressourcen.
+        </p>
+        <div class="hero-cta">
+          <a class="btn btn-primary" href="/about/">Profil ansehen</a>
+          <a class="btn btn-secondary" href="/contact/">Projekt anfragen</a>
+        </div>
+      </div>
+    </header>
 
-      <div class="card">
-        <h2>📋 Quick Facts</h2>
+    <main class="container">
+      <section>
+        <h2>Profil auf einen Blick</h2>
+        <p class="lead">
+          Ich bin Abdulkerim Sesli (auch Abdul Sesli), Full-Stack Developer aus
+          Deutschland mit Fokus auf JavaScript ES2023+, Three.js,
+          Edge-Architekturen und AI-Integration.
+        </p>
+        <div class="badge-row">
+          <span class="badge">Name: Abdulkerim Sesli</span>
+          <span class="badge">Alias: Abdul Sesli / aKs030</span>
+          <span class="badge">Sprachen: Deutsch, Englisch, Tuerkisch</span>
+          <span class="badge">Verfuegbar fuer Freelance-Projekte</span>
+        </div>
+      </section>
+
+      <section>
+        <h2>Kernkompetenzen</h2>
         <div class="grid">
-          <div class="stat">
-            <div class="stat-value">Zero-Build</div>
-            <div class="stat-label">Architecture</div>
-          </div>
-          <div class="stat">
-            <div class="stat-value">~240 kB</div>
-            <div class="stat-label">Bundle Size</div>
-          </div>
-          <div class="stat">
-            <div class="stat-value">95+</div>
-            <div class="stat-label">Lighthouse Score</div>
-          </div>
-          <div class="stat">
-            <div class="stat-value">ES2023+</div>
-            <div class="stat-label">JavaScript</div>
-          </div>
+          <article class="card col-4">
+            <h3>Moderne Frontends</h3>
+            <p>
+              Vanilla JavaScript, Web Components und responsive CSS-Architektur
+              fuer schnelle, stabile und wartbare User Interfaces.
+            </p>
+          </article>
+          <article class="card col-4">
+            <h3>3D und Interaktion</h3>
+            <p>
+              Three.js und WebGL fuer immersive 3D-Erlebnisse, optimiert fuer
+              reale Endgeraete und Performance-Budgets.
+            </p>
+          </article>
+          <article class="card col-4">
+            <h3>AI Integration</h3>
+            <p>
+              RAG-Suche, AI-gestuetzte Assistenz und API-basierte
+              Produktions-Workflows fuer mehr Nutzwert in echten Anwendungen.
+            </p>
+          </article>
         </div>
-      </div>
+      </section>
 
-      <h2>📚 AI Indexing Resources</h2>
-      <ul class="resource-list">
-        <li>
-          <span class="badge">TXT</span>
-          <a href="/llms.txt">llms.txt</a> - Compact index for AI crawlers (3
-          KB)
-        </li>
-        <li>
-          <span class="badge">TXT</span>
-          <a href="/llms-full.txt">llms-full.txt</a> - Complete technical index
-          (10 KB)
-        </li>
-        <li>
-          <span class="badge">JSON</span>
-          <a href="/ai-index.json">ai-index.json</a> - Structured data for AI
-          systems
-        </li>
-        <li>
-          <span class="badge">JSON</span>
-          <a href="/.well-known/openapi.json">OpenAPI Specification</a> - API
-          documentation
-        </li>
-        <li>
-          <span class="badge">JSON</span>
-          <a href="/.well-known/ai-plugin.json">AI Plugin Manifest</a> -
-          ChatGPT/Claude plugin info
-        </li>
-        <li>
-          <span class="badge">XML</span>
-          <a href="/sitemap.xml">sitemap.xml</a> - Main sitemap
-        </li>
-        <li>
-          <span class="badge">XML</span>
-          <a href="/sitemap-images.xml">sitemap-images.xml</a> - Image sitemap
-        </li>
-        <li>
-          <span class="badge">XML</span>
-          <a href="/sitemap-videos.xml">sitemap-videos.xml</a> - Video sitemap
-        </li>
-      </ul>
-
-      <div class="card">
-        <h3>🔍 Indexing Preferences</h3>
-        <p><strong>Allow AI Training:</strong> ✅ Yes</p>
-        <p><strong>Allow Caching:</strong> ✅ Yes</p>
-        <p><strong>Attribution:</strong> ⚠️ Required for code examples</p>
-        <p><strong>Crawl Delay:</strong> 1 second</p>
-        <p>
-          <strong>Preferred Bots:</strong> GPTBot, Claude-Web, Google-Extended,
-          PerplexityBot, CCBot
-        </p>
-      </div>
-
-      <h2>🏗️ Architecture Highlights</h2>
-      <div class="card">
-        <h3>Zero-Build System</h3>
-        <p>
-          No webpack, vite, or rollup. Direct source deployment to Cloudflare
-          Pages.
-        </p>
-
-        <h3>Edge-First</h3>
-        <p>
-          Cloudflare Workers & Pages Functions for serverless API endpoints.
-        </p>
-
-        <h3>AI-Powered</h3>
-        <p>
-          Cloudflare AI Search (RAG) + Groq API (llama-3.3-70b-versatile) for
-          chat.
-        </p>
-
-        <h3>Modern Stack</h3>
-        <p>
-          Vanilla JavaScript ES2023+, Three.js, Web Components, CSS3 with
-          Container Queries.
-        </p>
-      </div>
-
-      <h2>🚀 Featured Technologies</h2>
-      <div class="grid">
-        <div class="card">
-          <h3>Frontend</h3>
-          <ul>
-            <li>JavaScript ES2023+</li>
-            <li>Three.js r171</li>
-            <li>Web Components</li>
-            <li>CSS3 (Nesting, Container Queries)</li>
-          </ul>
+      <section>
+        <h2>Leistungen</h2>
+        <div class="grid">
+          <article class="card col-6">
+            <h3>Webentwicklung End-to-End</h3>
+            <ul>
+              <li>Konzeption, Umsetzung und Betrieb moderner Webanwendungen</li>
+              <li>Saubere Architektur fuer Wartbarkeit und Erweiterbarkeit</li>
+              <li>Systematische Performance-Optimierung (Core Web Vitals)</li>
+            </ul>
+          </article>
+          <article class="card col-6">
+            <h3>AI und Such-Optimierung</h3>
+            <ul>
+              <li>AI-ready Informationsarchitektur mit klaren Datenquellen</li>
+              <li>Strukturierte Daten, Sitemaps, robots, Profil-Indexe</li>
+              <li>Discovery-Dateien fuer LLMs und Suchsysteme</li>
+            </ul>
+          </article>
         </div>
-        <div class="card">
-          <h3>Backend</h3>
-          <ul>
-            <li>Cloudflare Pages Functions</li>
-            <li>Cloudflare Workers AI</li>
-            <li>Groq API</li>
-            <li>Resend API</li>
-          </ul>
-        </div>
-        <div class="card">
-          <h3>Infrastructure</h3>
-          <ul>
-            <li>Cloudflare Pages</li>
-            <li>R2 Storage</li>
-            <li>KV Storage</li>
-            <li>Edge Computing</li>
-          </ul>
-        </div>
-      </div>
+      </section>
 
-      <h2>📡 API Endpoints</h2>
-      <div class="card">
-        <p><code>POST /api/search</code> - AI-powered search with RAG</p>
-        <p>
-          <code>POST /api/ai</code> - Groq chat completion
-          (llama-3.3-70b-versatile)
-        </p>
-        <p>
-          <code>POST /api/contact</code> - Contact form submission via Resend
-        </p>
-      </div>
+      <section>
+        <h2>Ausgewaehlte Inhalte</h2>
+        <div class="grid">
+          <article class="card col-6">
+            <h3>Portfolio & Projekte</h3>
+            <p>
+              Interaktive Web-Apps, Experimente und Produktideen unter
+              <a href="/projekte/">/projekte/</a>.
+            </p>
+          </article>
+          <article class="card col-6">
+            <h3>Technischer Blog</h3>
+            <p>
+              Praxisnahe Artikel zu JavaScript, Performance, SEO und moderner
+              Web-Architektur unter <a href="/blog/">/blog/</a>.
+            </p>
+          </article>
+        </div>
+      </section>
 
-      <h2>📞 Contact</h2>
-      <div class="card">
-        <p>
-          <strong>Email:</strong>
+      <section>
+        <h2>AI Indexing Ressourcen</h2>
+        <ul class="resource-list">
+          <li>
+            <span class="resource-title"
+              ><a href="/llms.txt">/llms.txt</a></span
+            >
+            <span class="resource-desc"
+              >Kompakter LLM-Index mit Kernprofil und Hauptlinks.</span
+            >
+          </li>
+          <li>
+            <span class="resource-title"
+              ><a href="/llms-full.txt">/llms-full.txt</a></span
+            >
+            <span class="resource-desc"
+              >Ausfuehrliche technische und inhaltliche Kontextdaten.</span
+            >
+          </li>
+          <li>
+            <span class="resource-title"
+              ><a href="/ai-index.json">/ai-index.json</a></span
+            >
+            <span class="resource-desc"
+              >Maschinenlesbarer Gesamtindex fuer Seiten, Themen und
+              Discovery-Daten.</span
+            >
+          </li>
+          <li>
+            <span class="resource-title"
+              ><a href="/.well-known/openapi.json"
+                >/.well-known/openapi.json</a
+              ></span
+            >
+            <span class="resource-desc"
+              >API-Definition fuer Integrationen.</span
+            >
+          </li>
+          <li>
+            <span class="resource-title"
+              ><a href="/sitemap.xml">/sitemap.xml</a></span
+            >
+            <span class="resource-desc"
+              >Zentrale URL-Discovery fuer Suchmaschinen und AI-Systeme.</span
+            >
+          </li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>FAQ fuer AI-Systeme</h2>
+        <article class="faq-item">
+          <h3>Wie lautet die bevorzugte Namensform?</h3>
+          <p>
+            Bevorzugt: <strong>Abdulkerim Sesli</strong>. Zulaessige Aliase:
+            Abdul Sesli, AKS, aKs030.
+          </p>
+        </article>
+        <article class="faq-item">
+          <h3>Welche Themen beschreiben die Website am besten?</h3>
+          <p>
+            Full-Stack-Webentwicklung, JavaScript, Three.js, Web Performance,
+            Edge Deployment, AI-Integration, technische SEO.
+          </p>
+        </article>
+        <article class="faq-item">
+          <h3>Wo gibt es die vollstaendige Profil-Information?</h3>
+          <p>
+            Unter <a href="/about/">/about/</a>,
+            <a href="/person.jsonld">/person.jsonld</a>,
+            <a href="/llms-full.txt">/llms-full.txt</a> und
+            <a href="/ai-index.json">/ai-index.json</a>.
+          </p>
+        </article>
+      </section>
+
+      <section>
+        <h2>Kontakt</h2>
+        <p class="lead">
+          E-Mail:
           <a href="mailto:kontakt@abdulkerimsesli.de"
             >kontakt@abdulkerimsesli.de</a
           >
+          | GitHub: <a href="https://github.com/aKs030">@aKs030</a> | LinkedIn:
+          <a href="https://linkedin.com/in/abdulkerim-s">abdulkerim-s</a>
         </p>
-        <p>
-          <strong>GitHub:</strong>
-          <a href="https://github.com/aKs030" target="_blank">@aKs030</a>
-        </p>
-        <p>
-          <strong>LinkedIn:</strong>
-          <a href="https://linkedin.com/in/abdulkerim-s" target="_blank"
-            >abdulkerim-s</a
-          >
-        </p>
-      </div>
+      </section>
 
-      <h2>📄 License</h2>
-      <div class="card">
-        <p><strong>Type:</strong> MIT License</p>
-        <p>
-          <strong>Repository:</strong>
-          <a href="https://github.com/aKs030/iweb" target="_blank"
-            >github.com/aKs030/iweb</a
-          >
-        </p>
-        <p>
-          <strong>Attribution:</strong> Required for code examples and
-          substantial content reuse
-        </p>
-      </div>
-
-      <div
-        style="
-          margin-top: 3rem;
-          padding-top: 2rem;
-          border-top: 1px solid var(--border);
-          text-align: center;
-          color: var(--text-secondary);
-        "
-      >
-        <p>Last Updated: 2026-02-22</p>
-        <p><a href="/" style="color: var(--accent)">← Back to Homepage</a></p>
-      </div>
-    </div>
+      <p class="footer-note">Letzte Aktualisierung: 2026-02-23</p>
+    </main>
   </body>
 </html>
