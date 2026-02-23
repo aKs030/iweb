@@ -33,7 +33,7 @@
   "footer": {
     "about": {
       "title": "About",
-      "text": "Creative web solutions with modern technologies. Specialized in React, Three.js, and performance optimization."
+      "text": "Creative web solutions with modern technologies. Focused on JavaScript, Three.js, AI integration, and performance optimization."
     },
     "work": {
       "title": "Work",
@@ -281,8 +281,8 @@
     "loading_github": "Loading projects from GitHub repository..."
   },
   "meta": {
-    "title": "Abdulkerim Sesli — Digital Creator Portfolio",
-    "description": "Abdulkerim Sesli — Web Developer & Photographer in Berlin. Specialized in React, Three.js and Urban Photography. Portfolio, References & Contact."
+    "title": "Abdulkerim Sesli — Full-Stack Web Developer Portfolio",
+    "description": "Abdulkerim Sesli — Full-Stack Web Developer specialized in modern JavaScript architecture, Three.js, AI integration, and performance engineering."
   },
   "hero": {
     "greeting": "Welcome",

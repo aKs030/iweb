@@ -117,6 +117,123 @@ function uniqueList(values) {
   return result;
 }
 
+function isPlainObject(value) {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+}
+
+function getNodeIdentity(value) {
+  if (!isPlainObject(value)) return `json:${JSON.stringify(value)}`;
+
+  const id = normalizeText(value['@id']);
+  if (id) return `id:${id}`;
+
+  const url = normalizeText(value.url || value.contentUrl || value.embedUrl);
+  if (url) return `url:${url}`;
+
+  const type = normalizeText(value['@type']);
+  const name = normalizeText(value.name);
+  if (type && name) return `type-name:${type}:${name}`;
+
+  return `json:${JSON.stringify(value)}`;
+}
+
+function mergeSchemaNodes(baseNode, incomingNode) {
+  const merged = { ...baseNode };
+
+  for (const [key, value] of Object.entries(incomingNode || {})) {
+    if (value == null || value === '') continue;
+
+    if (!(key in merged) || merged[key] == null || merged[key] === '') {
+      merged[key] = value;
+      continue;
+    }
+
+    const current = merged[key];
+    if (Array.isArray(current) && Array.isArray(value)) {
+      const seen = new Set();
+      const next = [];
+      for (const item of [...current, ...value]) {
+        const identity = getNodeIdentity(item);
+        if (seen.has(identity)) continue;
+        seen.add(identity);
+        next.push(item);
+      }
+      merged[key] = next;
+      continue;
+    }
+
+    if (isPlainObject(current) && isPlainObject(value)) {
+      const currentId = normalizeText(current['@id']);
+      const valueId = normalizeText(value['@id']);
+      if (!currentId || !valueId || currentId === valueId) {
+        merged[key] = mergeSchemaNodes(current, value);
+      }
+    }
+  }
+
+  return merged;
+}
+
+function dedupeNodeRefList(refs) {
+  const seen = new Set();
+  const result = [];
+
+  for (const ref of refs || []) {
+    if (!isPlainObject(ref)) continue;
+    const id = normalizeText(ref['@id']);
+    if (!id || seen.has(id)) continue;
+    seen.add(id);
+    result.push({ '@id': id });
+  }
+
+  return result;
+}
+
+function dedupeSchemaGraph(nodes) {
+  const orderedIds = [];
+  const byId = new Map();
+  const noIdNodes = [];
+  const noIdSeen = new Set();
+
+  for (const node of nodes || []) {
+    if (!isPlainObject(node)) continue;
+
+    const id = normalizeText(node['@id']);
+    if (id) {
+      if (!byId.has(id)) {
+        byId.set(id, node);
+        orderedIds.push(id);
+      } else {
+        byId.set(id, mergeSchemaNodes(byId.get(id), node));
+      }
+      continue;
+    }
+
+    const identity = getNodeIdentity(node);
+    if (noIdSeen.has(identity)) continue;
+    noIdSeen.add(identity);
+    noIdNodes.push(node);
+  }
+
+  return [...orderedIds.map((id) => byId.get(id)), ...noIdNodes];
+}
+
+function extractSchemaNodesFromScript(script) {
+  if (!script?.textContent) return [];
+
+  try {
+    const payload = JSON.parse(script.textContent);
+    if (Array.isArray(payload?.['@graph'])) {
+      return payload['@graph'].filter(isPlainObject);
+    }
+    if (isPlainObject(payload)) return [payload];
+  } catch {
+    // Ignore malformed inline payload
+  }
+
+  return [];
+}
+
 function buildKeywordList(pageData, pathname = '/') {
   const baseKeywords = [
     'Abdulkerim Sesli',
@@ -130,7 +247,8 @@ function buildKeywordList(pageData, pathname = '/') {
     'Google Bilder',
     'Google Videos',
     'KI Suche',
-    'React',
+    'AI Integration',
+    'Web Components',
     'Three.js',
     'JavaScript',
   ];
@@ -665,7 +783,7 @@ export function generateSchemaGraph(
   }
 
   if (hasPartRefs.length > 0) {
-    webPageNode.hasPart = hasPartRefs;
+    webPageNode.hasPart = dedupeNodeRefList(hasPartRefs);
   }
 
   // FAQ handling
@@ -685,7 +803,14 @@ export function generateSchemaGraph(
   // Breadcrumbs
   graph.push(generateBreadcrumbs(pageUrl, pageData.title, canonicalOrigin));
 
-  return graph;
+  const deduped = dedupeSchemaGraph(graph);
+  if (deduped.length !== graph.length) {
+    log.debug(
+      `Schema graph deduplicated: ${graph.length} -> ${deduped.length}`,
+    );
+  }
+
+  return deduped;
 }
 
 /**
@@ -1100,11 +1225,18 @@ export function injectSchema(graph, scriptId = 'schema-ldjson') {
   if (!document?.head) return;
 
   try {
+    const edgeScript = document.getElementById('edge-route-schema');
+    const edgeNodes = extractSchemaNodesFromScript(edgeScript);
+    const finalGraph = dedupeSchemaGraph([
+      ...(edgeNodes || []),
+      ...(graph || []),
+    ]);
+
     let script = document.getElementById(scriptId);
 
     const payload = JSON.stringify({
       '@context': 'https://schema.org',
-      '@graph': graph,
+      '@graph': finalGraph,
     });
 
     if (script) {
@@ -1115,6 +1247,10 @@ export function injectSchema(graph, scriptId = 'schema-ldjson') {
       script.id = scriptId;
       script.textContent = payload;
       document.head.appendChild(script);
+    }
+
+    if (edgeScript && edgeScript.id !== scriptId) {
+      edgeScript.remove();
     }
 
     log.debug('Schema injected successfully');

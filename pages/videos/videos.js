@@ -23,7 +23,7 @@ import { escapeHTML } from '/content/core/utils.js';
 import { getElementById } from '/content/core/utils.js';
 import { AppLoadManager } from '/content/core/load-manager.js';
 import { i18n } from '/content/core/i18n.js';
-import { FAVICON_512 } from '../../content/config/site-config.js';
+import { FAVICON_512 } from '../../content/config/constants.js';
 import { ENV } from '../../content/config/env.config.js';
 import {
   fetchUploadsPlaylist,

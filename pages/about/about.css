@@ -110,7 +110,9 @@ main.about-main.container {
 .area-intro,
 .area-stack,
 .area-exp,
-.area-connect {
+.area-connect,
+.area-impact,
+.area-services {
   grid-column: span 12;
 }
 @media (min-width: 768px) {
@@ -124,6 +126,12 @@ main.about-main.container {
     grid-column: span 5;
   }
   .area-exp {
+    grid-column: span 7;
+  }
+  .area-impact {
+    grid-column: span 5;
+  }
+  .area-services {
     grid-column: span 7;
   }
 }
@@ -259,6 +267,12 @@ main.about-main.container {
 .delay-4 {
   animation-delay: 0.4s;
 }
+.delay-5 {
+  animation-delay: 0.5s;
+}
+.delay-6 {
+  animation-delay: 0.6s;
+}
 .profile-img {
   width: 120px;
   height: 120px;
@@ -325,6 +339,35 @@ main.about-main.container {
 }
 .about__error .btn {
   margin-top: 0.5rem;
+}
+.about__stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--gap-sm);
+  margin: 1rem 0 1.25rem;
+}
+.about__stat-card {
+  border: 1px solid var(--card-border);
+  border-radius: 0.85rem;
+  padding: 0.9rem 0.85rem;
+  background: rgba(255, 255, 255, 0.03);
+}
+.about__stat-card strong {
+  display: block;
+  font-size: 1.25rem;
+  color: var(--text-main);
+}
+.about__stat-card span {
+  color: var(--text-muted);
+  font-size: 0.83rem;
+}
+.about__bullet-list {
+  margin: 0;
+  padding-left: 1.15rem;
+  color: var(--text-muted);
+}
+.about__bullet-list li + li {
+  margin-top: 0.45rem;
 }
 @media (width <= 900px) {
   body.about-page {

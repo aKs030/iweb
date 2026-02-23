@@ -110,9 +110,13 @@ export const updatePostMeta = (post) => {
     post.date,
   );
 
-  const script = document.createElement('script');
-  script.type = 'application/ld+json';
-  script.id = 'blog-post-ldjson';
+  let script = document.getElementById('blog-post-ldjson');
+  if (!script) {
+    script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.id = 'blog-post-ldjson';
+    document.head.appendChild(script);
+  }
   script.textContent = JSON.stringify({
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
@@ -142,5 +146,4 @@ export const updatePostMeta = (post) => {
       url: BLOG_HOME_URL,
     },
   });
-  document.head.appendChild(script);
 };

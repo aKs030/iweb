@@ -28,10 +28,12 @@ const BASE_KEYWORDS = [
   'Bilder',
   'Videos',
   'Blog',
-  'React',
+  'Web Components',
   'Three.js',
   'JavaScript',
   'TypeScript',
+  'AI Integration',
+  'Performance Engineering',
   'Frontend',
   'UI',
   'SEO',
@@ -175,6 +177,17 @@ function getOpenGraphType(pageData) {
   return 'website';
 }
 
+function resolveLanguageContext(preferredLang) {
+  const normalizedLang = String(preferredLang || '').toLowerCase();
+  const isEnglish = normalizedLang.startsWith('en');
+
+  return {
+    isEnglish,
+    pageLang: isEnglish ? 'en-US' : 'de-DE',
+    ogLocale: isEnglish ? 'en_US' : 'de_DE',
+  };
+}
+
 const getPageData = () => {
   const currentPath = globalThis.location.pathname.toLowerCase();
   const matchedKey = Object.keys(ROUTES).find(
@@ -188,18 +201,19 @@ const getPageData = () => {
     globalThis.navigator?.language ||
     'de'
   ).toLowerCase();
-  const isEnglish = preferredLang.startsWith('en');
+  const { isEnglish, pageLang, ogLocale } =
+    resolveLanguageContext(preferredLang);
 
   let pageData = {
     ...rawPageData,
     title:
       isEnglish && rawPageData.title_en
         ? rawPageData.title_en
-        : rawPageData.title,
+        : rawPageData.title || '',
     description:
       isEnglish && rawPageData.description_en
         ? rawPageData.description_en
-        : rawPageData.description,
+        : rawPageData.description || '',
   };
 
   try {
@@ -226,6 +240,9 @@ const getPageData = () => {
     log.warn('Failed to merge partial PAGE_META:', e);
   }
 
+  pageData.pageLang = pageLang;
+  pageData.ogLocale = ogLocale;
+
   return pageData;
 };
 
@@ -244,7 +261,7 @@ const updateBasicMeta = (pageData, pageUrl) => {
     ['abstract', abstractText],
     ['summary', abstractText],
     ['robots', pageData.robots || 'index, follow, max-image-preview:large'],
-    ['language', 'de-DE'],
+    ['language', pageData.pageLang || 'de-DE'],
     ['author', 'Abdulkerim Sesli'],
     ['twitter:card', 'summary_large_image'],
     ['twitter:site', '@abdulkerimsesli'],
@@ -261,7 +278,7 @@ const updateBasicMeta = (pageData, pageUrl) => {
     ['og:title', pageData.title],
     ['og:site_name', 'Abdulkerim Sesli — Digital Creator Portfolio'],
     ['og:description', pageData.description],
-    ['og:locale', 'de_DE'],
+    ['og:locale', pageData.ogLocale || 'de_DE'],
     ['og:url', pageUrl],
   ];
 
@@ -300,7 +317,7 @@ const pushToDataLayer = (pageData, pageUrl) => {
         page_url: pageUrl,
         page_type: pageData.type || 'WebPage',
         page_image: pageData.image || '',
-        page_lang: 'de-DE',
+        page_lang: pageData.pageLang || 'de-DE',
       },
     });
   } catch (e) {

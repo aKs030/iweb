@@ -4,9 +4,13 @@
   "alternateName": ["Abdülkerim Sesli", "Abdul Sesli"],
   "logo": "https://img.abdulkerimsesli.de/icons/favicon-512.webp?v=20260221",
   "image": "https://img.abdulkerimsesli.de/icons/favicon-512.webp?v=20260221",
-  "jobTitle": ["Web Developer", "Photographer"],
+  "jobTitle": [
+    "Full-Stack Web Developer",
+    "Performance Engineer",
+    "AI Integration Specialist"
+  ],
   "email": "kontakt@abdulkerimsesli.de",
-  "areaServed": "Berlin, Deutschland",
+  "areaServed": "Germany",
   "knowsLanguage": [
     {
       "name": "Deutsch",
@@ -23,14 +27,14 @@
   ],
   "hasOccupation": [
     {
-      "name": "Web Developer",
-      "description": "Spezialisiert auf moderne Frontend-Entwicklung mit React, Three.js und Progressive Web Apps",
-      "skills": "JavaScript, React, Three.js, Web Components, PWA, Performance Optimization"
+      "name": "Full-Stack Web Developer",
+      "description": "Modern web applications with JavaScript ES2023+, Three.js, Web Components, and edge-ready architectures",
+      "skills": "JavaScript, Three.js, Web Components, API Integration, Technical SEO, Web Performance"
     },
     {
-      "name": "Photographer",
-      "description": "Urban und Portrait Fotografie mit Fokus auf Berlin",
-      "skills": "Urban Photography, Portrait Photography, Photo Editing"
+      "name": "Creative Technologist",
+      "description": "Combining engineering quality with visual design for interactive digital products",
+      "skills": "Interaction Design, Prototyping, UI Systems, Creative Development"
     }
   ],
   "sameAs": [
@@ -49,12 +53,8 @@
       "email": "kontakt@abdulkerimsesli.de"
     }
   ],
-  "telephone": "+49-30-12345678",
   "paymentAccepted": "Invoice",
   "currenciesAccepted": "EUR",
-  "followersCount": 5400,
-  "likesCount": 12000,
-  "postsCount": 234,
   "licensePage": "https://www.abdulkerimsesli.de/#image-license",
   "creditPrefix": "Photo: ",
   "copyrightHolder": "Abdulkerim Sesli"
