@@ -31,19 +31,34 @@ function computeCleanPath() {
   return cleanPath;
 }
 
+function computeCanonicalQuerySuffix(pathname = globalThis.location.pathname) {
+  const path = String(pathname || '');
+  if (!/^\/projekte\/?$/i.test(path)) return '';
+
+  const params = new URLSearchParams(globalThis.location.search || '');
+  const app = String(params.get('app') || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9-]/g, '');
+  if (!app) return '';
+
+  return `?app=${encodeURIComponent(app)}`;
+}
+
 function computeCanonicalUrl({ forceProd = false, cleanPath = null }) {
   const path = cleanPath || computeCleanPath();
+  const querySuffix = computeCanonicalQuerySuffix(globalThis.location.pathname);
 
   if (forceProd) {
-    return `${BASE_URL}${path}`;
+    return `${BASE_URL}${path}${querySuffix}`;
   }
 
   const isDirtyPath =
     /^\/pages\//i.test(globalThis.location.pathname) ||
     /\/index\.html$/i.test(globalThis.location.pathname);
 
-  if (isDirtyPath) {
-    return `${globalThis.location.origin}${path}`;
+  if (isDirtyPath || querySuffix) {
+    return `${globalThis.location.origin}${path}${querySuffix}`;
   }
 
   return globalThis.location.href.split('#')[0].split('?')[0];
@@ -53,14 +68,15 @@ function buildCanonicalLinks(options = {}) {
   const forceProd =
     options.forceProd ?? (!isLocalDevelopment() && !isPreviewEnvironment());
   const cleanPath = options.cleanPath || computeCleanPath();
+  const querySuffix = computeCanonicalQuerySuffix(globalThis.location.pathname);
 
   const canonical = computeCanonicalUrl({ forceProd, cleanPath });
   const origin = forceProd ? BASE_URL : globalThis.location.origin;
 
   const alternates = [
-    { lang: 'de', href: `${origin}${cleanPath}` },
-    { lang: 'en', href: `${origin}${cleanPath}` },
-    { lang: 'x-default', href: `${origin}${cleanPath}` },
+    { lang: 'de', href: `${origin}${cleanPath}${querySuffix}` },
+    { lang: 'en', href: `${origin}${cleanPath}${querySuffix}` },
+    { lang: 'x-default', href: `${origin}${cleanPath}${querySuffix}` },
   ];
 
   return { canonical, alternates, origin };

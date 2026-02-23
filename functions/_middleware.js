@@ -13,6 +13,7 @@ import {
   loadTemplateFromURL,
   SectionInjector,
 } from './_middleware-utils/template-injector.js';
+import { applyRouteSeo } from './_middleware-utils/route-seo.js';
 import { ensureViewportMeta } from './_middleware-utils/viewport-manager.js';
 import {
   isLocalhost,
@@ -87,6 +88,12 @@ export async function onRequest(context) {
   }
 
   html = ensureViewportMeta(html);
+
+  try {
+    html = await applyRouteSeo(context, html, url);
+  } catch {
+    // Keep serving HTML even when route-level SEO enrichment fails.
+  }
 
   // Generate CSP nonce (only for production)
   const isLocal = isLocalhost(url.hostname);

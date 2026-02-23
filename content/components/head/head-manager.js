@@ -161,6 +161,20 @@ function buildAbstractText(pageData, pageUrl) {
     .trim();
 }
 
+function getOpenGraphType(pageData) {
+  const explicitType = String(pageData?.ogType || '').trim();
+  if (explicitType) return explicitType;
+
+  const semanticType = String(pageData?.type || '').toLowerCase();
+  if (semanticType === 'blogposting' || semanticType === 'article') {
+    return 'article';
+  }
+  if (semanticType === 'videoobject' || semanticType === 'video') {
+    return 'video.other';
+  }
+  return 'website';
+}
+
 const getPageData = () => {
   const currentPath = globalThis.location.pathname.toLowerCase();
   const matchedKey = Object.keys(ROUTES).find(
@@ -229,7 +243,7 @@ const updateBasicMeta = (pageData, pageUrl) => {
     ['subject', pathTopics(new URL(pageUrl).pathname).join(', ')],
     ['abstract', abstractText],
     ['summary', abstractText],
-    ['robots', 'index, follow, max-image-preview:large'],
+    ['robots', pageData.robots || 'index, follow, max-image-preview:large'],
     ['language', 'de-DE'],
     ['author', 'Abdulkerim Sesli'],
     ['twitter:card', 'summary_large_image'],
@@ -243,7 +257,7 @@ const updateBasicMeta = (pageData, pageUrl) => {
   metaUpdates.forEach(([name, content]) => upsertMeta(name, content));
 
   const ogUpdates = [
-    ['og:type', 'website'],
+    ['og:type', getOpenGraphType(pageData)],
     ['og:title', pageData.title],
     ['og:site_name', 'Abdulkerim Sesli — Digital Creator Portfolio'],
     ['og:description', pageData.description],
@@ -305,10 +319,12 @@ async function loadHead() {
 
     const brandData = await loadBrandData();
     const pageData = getPageData();
-    const pageUrl = globalThis.location.href.split('#')[0];
+    applyCanonicalLinks();
+    const pageUrl =
+      document.head.querySelector('link[rel="canonical"]')?.href ||
+      globalThis.location.href.split('#')[0];
 
     updateBasicMeta(pageData, pageUrl);
-    applyCanonicalLinks();
     setupPWAAssets(brandData);
     pushToDataLayer(pageData, pageUrl);
 
