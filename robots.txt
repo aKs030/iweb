@@ -6,9 +6,7 @@ Allow: /
 Crawl-delay: 1
 
 # Sitemaps
-Sitemap: https://www.abdulkerimsesli.de/sitemap.xml
-Sitemap: https://www.abdulkerimsesli.de/sitemap-images.xml
-Sitemap: https://www.abdulkerimsesli.de/sitemap-videos.xml
+Sitemap: https://www.abdulkerimsesli.de/sitemap-index.xml
 
 # AI-specific directives
 # OpenAI GPT

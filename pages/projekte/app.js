@@ -82,16 +82,41 @@ const App = () => {
       web: 'WebApplication',
     };
 
-    script.textContent = JSON.stringify({
-      '@context': 'https://schema.org',
-      '@graph': projects.map((p) => ({
+    const projectsListId =
+      'https://www.abdulkerimsesli.de/projekte/#projects-list';
+    const seenSlugs = new Set();
+    const projectNodes = [];
+
+    projects.forEach((project, index) => {
+      const rawSlug = String(
+        project?.name || project?.title || `project-${index + 1}`,
+      )
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '');
+      const slug = rawSlug || `project-${index + 1}`;
+      if (seenSlugs.has(slug)) return;
+      seenSlugs.add(slug);
+
+      const nodeId = `https://www.abdulkerimsesli.de/projekte/#app-${slug}`;
+      const canonicalUrl = `https://www.abdulkerimsesli.de/projekte/#app-${slug}`;
+      const name = project.title || project.name || `Projekt ${index + 1}`;
+
+      projectNodes.push({
         '@type': 'SoftwareApplication',
-        name: p.title || p.name,
-        description: p.description,
-        applicationCategory: CATEGORY_MAP[p.category] || 'WebApplication',
+        '@id': nodeId,
+        name,
+        description: project.description,
+        applicationCategory: CATEGORY_MAP[project.category] || 'WebApplication',
+        applicationSubCategory: project.category || undefined,
         operatingSystem: 'Any',
-        ...(p.appPath ? { url: p.appPath } : {}),
-        ...(p.version ? { softwareVersion: p.version } : {}),
+        url: canonicalUrl,
+        ...(project.appPath ? { sameAs: project.appPath } : {}),
+        ...(project.image ? { image: [project.image] } : {}),
+        ...(Array.isArray(project.tags) && project.tags.length
+          ? { keywords: project.tags.join(', ') }
+          : {}),
+        ...(project.version ? { softwareVersion: project.version } : {}),
         author: {
           '@type': 'Person',
           name: 'Abdulkerim Sesli',
@@ -101,8 +126,31 @@ const App = () => {
           '@type': 'Offer',
           price: '0',
           priceCurrency: 'EUR',
+          availability: 'https://schema.org/InStock',
+        },
+        isPartOf: { '@id': projectsListId },
+      });
+    });
+
+    const listNode = {
+      '@type': 'ItemList',
+      '@id': projectsListId,
+      name: 'Projekte von Abdulkerim Sesli',
+      numberOfItems: projectNodes.length,
+      itemListElement: projectNodes.map((node, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        item: {
+          '@id': node['@id'],
+          name: node.name,
+          url: node.url,
         },
       })),
+    };
+
+    script.textContent = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@graph': [listNode, ...projectNodes],
     });
   }, [projects.length]);
 

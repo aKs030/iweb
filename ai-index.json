@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "version": "1.0.0",
-  "lastUpdated": "2026-02-22",
+  "lastUpdated": "2026-02-23",
   "site": {
     "name": "Abdulkerim Sesli Portfolio",
     "url": "https://www.abdulkerimsesli.de",
@@ -141,7 +141,9 @@
           "math",
           "tool",
           "scientific",
-          "computation"
+          "computation",
+          "abdulkerim",
+          "sesli"
         ],
         "priority": 0.54
       },
@@ -159,9 +161,30 @@
           "css",
           "theme",
           "gradient",
-          "interactive"
+          "interactive",
+          "abdulkerim",
+          "sesli"
         ],
         "priority": 0.5
+      },
+      {
+        "url": "https://www.abdulkerimsesli.de/projekte/?app=ip-info",
+        "title": "Ip Info",
+        "description": "Zeigt deine öffentliche IP-Adresse und Standortinformationen an. Optimiert für Cloudflare Workers/Pages.",
+        "type": "project-app",
+        "keywords": [
+          "ip-info",
+          "ip",
+          "info",
+          "utility",
+          "network",
+          "geo",
+          "location",
+          "cloudflare",
+          "abdulkerim",
+          "sesli"
+        ],
+        "priority": 0.54
       },
       {
         "url": "https://www.abdulkerimsesli.de/projekte/?app=memory-game",
@@ -175,7 +198,9 @@
           "cards",
           "brain-training",
           "puzzle",
-          "concentration"
+          "concentration",
+          "abdulkerim",
+          "sesli"
         ],
         "priority": 0.5
       },
@@ -191,7 +216,9 @@
           "ui",
           "drawing",
           "canvas",
-          "art"
+          "art",
+          "abdulkerim",
+          "sesli"
         ],
         "priority": 0.5
       },
@@ -207,7 +234,9 @@
           "utility",
           "security",
           "encryption",
-          "safety"
+          "safety",
+          "abdulkerim",
+          "sesli"
         ],
         "priority": 0.54
       },
@@ -224,7 +253,9 @@
           "retro",
           "arcade",
           "ai",
-          "physics"
+          "physics",
+          "abdulkerim",
+          "sesli"
         ],
         "priority": 0.5
       },
@@ -241,7 +272,9 @@
           "trivia",
           "education",
           "javascript",
-          "wissen"
+          "wissen",
+          "abdulkerim",
+          "sesli"
         ],
         "priority": 0.5
       },
@@ -259,9 +292,31 @@
           "spiel",
           "rock-paper-scissors",
           "javascript",
-          "entertainment"
+          "entertainment",
+          "abdulkerim",
+          "sesli"
         ],
         "priority": 0.5
+      },
+      {
+        "url": "https://www.abdulkerimsesli.de/projekte/?app=schluesselweite",
+        "title": "Schluesselweite",
+        "description": "ISO/DIN Schlüsselweite und Gewinde Tabelle",
+        "type": "project-app",
+        "keywords": [
+          "schluesselweite",
+          "utility",
+          "mechanic",
+          "tool",
+          "iso",
+          "din",
+          "thread",
+          "bolt",
+          "schlüsselweite",
+          "gewinde",
+          "steigung"
+        ],
+        "priority": 0.54
       },
       {
         "url": "https://www.abdulkerimsesli.de/projekte/?app=snake-game",
@@ -275,7 +330,9 @@
           "canvas",
           "retro",
           "arcade",
-          "javascript"
+          "javascript",
+          "abdulkerim",
+          "sesli"
         ],
         "priority": 0.5
       },
@@ -291,7 +348,9 @@
           "toe",
           "game",
           "strategy",
-          "2-player"
+          "2-player",
+          "abdulkerim",
+          "sesli"
         ],
         "priority": 0.5
       },
@@ -304,13 +363,15 @@
           "timer-app",
           "timer",
           "app",
-          "productivity",
+          "utility",
           "countdown",
           "stopwatch",
           "pomodoro",
-          "utility"
+          "productivity",
+          "abdulkerim",
+          "sesli"
         ],
-        "priority": 0.52
+        "priority": 0.54
       },
       {
         "url": "https://www.abdulkerimsesli.de/projekte/?app=todo-liste",
@@ -325,7 +386,9 @@
           "tasks",
           "crud",
           "organization",
-          "planner"
+          "planner",
+          "abdulkerim",
+          "sesli"
         ],
         "priority": 0.52
       },
@@ -342,7 +405,9 @@
           "productivity",
           "wpm",
           "speed-test",
-          "keyboard"
+          "keyboard",
+          "abdulkerim",
+          "sesli"
         ],
         "priority": 0.52
       },
@@ -359,7 +424,9 @@
           "api",
           "forecast",
           "location",
-          "temperature"
+          "temperature",
+          "abdulkerim",
+          "sesli"
         ],
         "priority": 0.54
       },
@@ -372,13 +439,14 @@
           "zahlen-raten",
           "zahlen",
           "raten",
-          "game",
           "puzzle",
           "logic",
           "guessing",
           "numbers",
           "math",
-          "brain"
+          "brain",
+          "abdulkerim",
+          "sesli"
         ],
         "priority": 0.5
       }

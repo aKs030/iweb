@@ -8,26 +8,8 @@ import { ENV } from '../config/env.config.js';
 import { iconUrl } from '../config/constants.js';
 
 const log = createLogger('Schema');
-
-// Business FAQs for homepage
-const BUSINESS_FAQS = [
-  {
-    q: 'Welche Themen deckt diese Website ab?',
-    a: 'Der Fokus liegt auf Webentwicklung, Performance, JavaScript, TypeScript, React, Three.js sowie visuellen Inhalten aus Fotografie und Video.',
-  },
-  {
-    q: 'Was finde ich auf der Startseite?',
-    a: 'Die Startseite verknüpft die wichtigsten Bereiche: Projekte, Blog, Galerie, Videos und Hintergrundinformationen.',
-  },
-  {
-    q: 'Sind Bilder und Videos strukturiert auffindbar?',
-    a: 'Ja. Die Website verwendet strukturierte Daten für Bild- und Videoinhalte sowie eigene Sitemaps für die Google-Indexierung.',
-  },
-  {
-    q: 'Ist diese Website von Abdülkerim Bardakcı oder Sesli Kitap?',
-    a: 'Nein. Diese Website gehört zu Abdulkerim Sesli und zeigt ausschließlich eigene Inhalte zu Webentwicklung, Fotografie und Videos.',
-  },
-];
+const CRAWLER_UA_PATTERN =
+  /googlebot|google-inspectiontool|bingbot|slurp|duckduckbot|baiduspider|yandex|facebookexternalhit|twitterbot|linkedinbot|applebot|semrushbot|ahrefsbot/i;
 
 const HOMEPAGE_DISCOVERY_TEXT =
   'Die Startseite bündelt Portfolio, Bildgalerie, Videoinhalte, Blogartikel und technische Schwerpunkte in einem zentralen Einstiegspunkt. Suchmaschinen und KI-Suchen erhalten dadurch einen klaren Überblick über Bilder, Videos und redaktionelle Inhalte auf dieser Domain.';
@@ -1106,29 +1088,7 @@ function extractFAQs(pageUrl, pageData, doc) {
     })
     .filter(Boolean);
 
-  if (faqNodes.length > 0) return faqNodes;
-
-  // Fallback to business FAQs for homepage
-  const isHomepage =
-    globalThis.location?.pathname === '/' ||
-    globalThis.location?.pathname === '';
-  const hasBusinessFaqFlag = !!doc?.querySelector?.(
-    '[data-inject-business-faq]',
-  );
-
-  if (isHomepage || hasBusinessFaqFlag) {
-    return BUSINESS_FAQS.map((item, i) => ({
-      '@type': 'Question',
-      '@id': `${pageUrl}#faq-q${i + 1}`,
-      name: String(item.q).replace(/\s+/g, ' ').trim(),
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: String(item.a).replace(/\s+/g, ' ').trim(),
-      },
-    }));
-  }
-
-  return [];
+  return faqNodes;
 }
 
 /**
@@ -1168,9 +1128,27 @@ export function injectSchema(graph, scriptId = 'schema-ldjson') {
  * @param {Function} callback
  */
 export function scheduleSchemaInjection(callback) {
+  const run = () => {
+    try {
+      callback();
+    } catch (error) {
+      log.error('Scheduled schema injection failed:', error);
+    }
+  };
+
+  const userAgent = globalThis.navigator?.userAgent || '';
+  if (CRAWLER_UA_PATTERN.test(userAgent)) {
+    if (typeof queueMicrotask === 'function') {
+      queueMicrotask(run);
+    } else {
+      Promise.resolve().then(run);
+    }
+    return;
+  }
+
   if (typeof requestIdleCallback === 'function') {
-    requestIdleCallback(callback, { timeout: 1500 });
+    requestIdleCallback(run, { timeout: 600 });
   } else {
-    setTimeout(callback, 1200);
+    setTimeout(run, 150);
   }
 }

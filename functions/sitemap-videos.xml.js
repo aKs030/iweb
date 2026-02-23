@@ -1,124 +1,40 @@
-import { escapeXml } from './api/_xml-utils.js';
-import { sanitizeDiscoveryText } from './api/_text-utils.js';
+import { escapeXml, resolveOrigin } from './api/_xml-utils.js';
+import {
+  buildYouTubeEmbedUrl,
+  loadYouTubeVideos,
+} from './api/_sitemap-data.js';
+import {
+  buildSitemapHeaders,
+  loadSitemapSnapshot,
+  respondWithSnapshotOr503,
+  saveSitemapSnapshot,
+} from './api/_sitemap-snapshot.js';
 
-export async function onRequest(context) {
-  const { env } = context;
-  const url = new URL(context.request.url);
-  const origin = url.origin;
+const CACHE_CONTROL = 'public, max-age=3600, stale-while-revalidate=86400';
+const SNAPSHOT_NAME = 'sitemap-videos.xml';
 
-  // Configuration
-  const CHANNEL_ID = env.YOUTUBE_CHANNEL_ID;
-  const API_KEY = env.YOUTUBE_API_KEY;
-  const MAX_RESULTS = 50; // Google recommends limit per sitemap
+function toVideoNode(video, channelId) {
+  if (!video?.videoId || !video?.thumbnail) return '';
 
-  if (!CHANNEL_ID || !API_KEY) {
-    return new Response(buildFallbackXml(origin), {
-      headers: {
-        'Content-Type': 'application/xml; charset=utf-8',
-        'Cache-Control': 'public, max-age=3600',
-        'X-Robots-Tag': 'index, follow',
-      },
-    });
-  }
+  const uploader = escapeXml(video.channelTitle || 'Abdulkerim Sesli');
+  const publicationDate = video.publishedAt || '';
+  const publicationNode = publicationDate
+    ? `\n      <video:publication_date>${escapeXml(publicationDate)}</video:publication_date>`
+    : '';
 
-  try {
-    // 1. Get "Uploads" playlist ID
-    const channelUrl = `https://www.googleapis.com/youtube/v3/channels?id=${CHANNEL_ID}&key=${API_KEY}&part=contentDetails`;
-    const channelRes = await fetch(channelUrl);
-
-    if (!channelRes.ok) {
-      throw new Error(`YouTube API Error: ${channelRes.status}`);
-    }
-
-    const channelData = await channelRes.json();
-    if (!channelData.items || channelData.items.length === 0) {
-      return new Response('YouTube Channel not found', { status: 404 });
-    }
-
-    const uploadsPlaylistId =
-      channelData.items[0].contentDetails.relatedPlaylists.uploads;
-
-    // 2. Fetch videos from the uploads playlist
-    const playlistUrl = `https://www.googleapis.com/youtube/v3/playlistItems?playlistId=${uploadsPlaylistId}&key=${API_KEY}&part=snippet&maxResults=${MAX_RESULTS}`;
-    const playlistRes = await fetch(playlistUrl);
-
-    if (!playlistRes.ok) {
-      throw new Error(`YouTube Playlist API Error: ${playlistRes.status}`);
-    }
-
-    const playlistData = await playlistRes.json();
-    const items = playlistData.items || [];
-
-    // 3. Generate XML
-    let xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
-`;
-
-    for (const item of items) {
-      const snippet = item.snippet;
-      const videoId = snippet.resourceId.videoId;
-      const title = escapeXml(
-        sanitizeDiscoveryText(snippet.title, `Video ${videoId}`),
-      );
-      // Fallback description if empty
-      const description = escapeXml(
-        sanitizeDiscoveryText(snippet.description, '') ||
-          `${sanitizeDiscoveryText(snippet.title, 'Video')} - Videoinhalt von Abdulkerim Sesli`,
-      );
-      const thumbnail =
-        snippet.thumbnails?.maxres?.url ||
-        snippet.thumbnails?.high?.url ||
-        snippet.thumbnails?.medium?.url ||
-        '';
-      const pubDate = snippet.publishedAt; // ISO 8601 format is required by Google
-
-      // The page where the video is embedded (Landing Page)
-      // Using the dedicated video page route if available, or anchor on videos page
-      const loc = `${origin}/videos/${videoId}/`;
-
-      // The player URL (embed)
-      const playerLoc = `https://www.youtube.com/embed/${videoId}`;
-
-      // Basic validation: ensure we have critical fields
-      if (videoId && title && thumbnail) {
-        xml += `
-  <url>
-    <loc>${loc}</loc>
+  return `  <url>
+    <loc>${escapeXml(video.path)}</loc>
     <video:video>
-      <video:thumbnail_loc>${escapeXml(thumbnail)}</video:thumbnail_loc>
-      <video:title>${title}</video:title>
-      <video:description>${description}</video:description>
-      <video:player_loc autoplay="ap=1">${playerLoc}</video:player_loc>
-      <video:publication_date>${pubDate}</video:publication_date>
+      <video:thumbnail_loc>${escapeXml(video.thumbnail)}</video:thumbnail_loc>
+      <video:title>${escapeXml(video.title || `Video ${video.videoId}`)}</video:title>
+      <video:description>${escapeXml(video.description || `Video ${video.videoId}`)}</video:description>
+      <video:player_loc allow_embed="yes" autoplay="ap=1">${escapeXml(buildYouTubeEmbedUrl(video.videoId))}</video:player_loc>${publicationNode}
       <video:family_friendly>yes</video:family_friendly>
       <video:requires_subscription>no</video:requires_subscription>
-      <video:uploader info="https://www.youtube.com/channel/${CHANNEL_ID}">${escapeXml(snippet.channelTitle)}</video:uploader>
+      <video:uploader info="https://www.youtube.com/channel/${escapeXml(channelId)}">${uploader}</video:uploader>
       <video:live>no</video:live>
     </video:video>
   </url>`;
-      }
-    }
-
-    xml += `
-</urlset>`;
-
-    return new Response(xml, {
-      headers: {
-        'Content-Type': 'application/xml; charset=utf-8',
-        'Cache-Control': 'public, max-age=3600', // Cache for 1 hour at edge
-        'X-Robots-Tag': 'index, follow',
-      },
-    });
-  } catch {
-    return new Response(buildFallbackXml(origin), {
-      headers: {
-        'Content-Type': 'application/xml; charset=utf-8',
-        'Cache-Control': 'public, max-age=3600',
-        'X-Robots-Tag': 'index, follow',
-      },
-    });
-  }
 }
 
 function buildFallbackXml(origin) {
@@ -126,7 +42,94 @@ function buildFallbackXml(origin) {
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
   <url>
-    <loc>${origin}/videos/</loc>
+    <loc>${escapeXml(`${origin}/videos/`)}</loc>
   </url>
 </urlset>`;
+}
+
+export async function onRequest(context) {
+  const origin = resolveOrigin(context.request.url);
+  const channelId = String(context.env?.YOUTUBE_CHANNEL_ID || '').trim();
+  const apiKey = String(context.env?.YOUTUBE_API_KEY || '').trim();
+
+  if (!channelId || !apiKey) {
+    const snapshot = await loadSitemapSnapshot(context.env, SNAPSHOT_NAME);
+    if (snapshot?.xml) {
+      return new Response(snapshot.xml, {
+        status: 200,
+        headers: buildSitemapHeaders(CACHE_CONTROL, {
+          'X-Sitemap-Source': 'snapshot-stale',
+          ...(snapshot.updatedAt
+            ? { 'X-Sitemap-Snapshot-At': snapshot.updatedAt }
+            : {}),
+        }),
+      });
+    }
+
+    return new Response(buildFallbackXml(origin), {
+      headers: {
+        ...buildSitemapHeaders(CACHE_CONTROL),
+        'X-Sitemap-Source': 'fallback-no-credentials',
+      },
+    });
+  }
+
+  try {
+    const videos = await loadYouTubeVideos(context.env);
+    if (!videos.length) {
+      const snapshot = await loadSitemapSnapshot(context.env, SNAPSHOT_NAME);
+      if (snapshot?.xml) {
+        return new Response(snapshot.xml, {
+          status: 200,
+          headers: buildSitemapHeaders(CACHE_CONTROL, {
+            'X-Sitemap-Source': 'snapshot-stale',
+            ...(snapshot.updatedAt
+              ? { 'X-Sitemap-Snapshot-At': snapshot.updatedAt }
+              : {}),
+          }),
+        });
+      }
+
+      return new Response(buildFallbackXml(origin), {
+        headers: {
+          ...buildSitemapHeaders(CACHE_CONTROL),
+          'X-Sitemap-Source': 'fallback-empty-video-feed',
+        },
+      });
+    }
+
+    const seenPaths = new Set();
+    const uniqueVideos = [];
+    for (const video of videos) {
+      const absolutePath = `${origin}${video.path}`;
+      if (seenPaths.has(absolutePath)) continue;
+      seenPaths.add(absolutePath);
+      uniqueVideos.push({
+        ...video,
+        path: absolutePath,
+      });
+    }
+
+    const xml = [
+      '<?xml version="1.0" encoding="UTF-8"?>',
+      '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"',
+      '        xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">',
+      ...uniqueVideos
+        .map((video) => toVideoNode(video, channelId))
+        .filter(Boolean),
+      '</urlset>',
+    ].join('\n');
+
+    await saveSitemapSnapshot(context.env, SNAPSHOT_NAME, xml);
+
+    return new Response(xml, {
+      headers: buildSitemapHeaders(CACHE_CONTROL),
+    });
+  } catch {
+    return respondWithSnapshotOr503({
+      env: context.env,
+      name: SNAPSHOT_NAME,
+      cacheControl: CACHE_CONTROL,
+    });
+  }
 }

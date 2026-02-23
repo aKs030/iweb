@@ -1,16 +1,21 @@
 import { ROUTES } from '../content/config/routes-config.js';
+import { escapeXml, normalizePath, resolveOrigin } from './api/_xml-utils.js';
 import {
-  escapeXml,
-  loadJsonAsset,
-  normalizePath,
-  resolveOrigin,
-  toISODate,
-} from './api/_xml-utils.js';
+  buildSitemapHeaders,
+  respondWithSnapshotOr503,
+  saveSitemapSnapshot,
+} from './api/_sitemap-snapshot.js';
 import {
-  fetchPlaylistItemsPage,
-  fetchUploadsPlaylistId,
-  toYoutubeDate,
-} from './api/_youtube-utils.js';
+  BLOG_INDEX_PATH,
+  PROJECT_APPS_PATH,
+  buildBlogPath,
+  buildProjectAppPath,
+  loadBlogPosts,
+  loadProjectApps,
+} from './api/_sitemap-data.js';
+
+const CACHE_CONTROL = 'public, max-age=3600, stale-while-revalidate=86400';
+const SNAPSHOT_NAME = 'sitemap.xml';
 
 const ROUTE_META = {
   '/': { priority: 1.0, changefreq: 'weekly' },
@@ -35,9 +40,6 @@ const ROUTE_META = {
   '/robots.txt': { priority: 0.3, changefreq: 'monthly' },
 };
 
-const BLOG_INDEX_PATH = '/pages/blog/posts/index.json';
-const PROJECT_APPS_PATH = '/pages/projekte/apps-config.json';
-const MAX_YOUTUBE_RESULTS = 200;
 const DISCOVERY_PATHS = [
   '/ai-info.html',
   '/llms.txt',
@@ -51,50 +53,6 @@ const DISCOVERY_PATHS = [
   '/.well-known/ai-plugin.json',
   '/robots.txt',
 ];
-
-async function loadVideoEntries(env, today) {
-  const channelId = env?.YOUTUBE_CHANNEL_ID;
-  const apiKey = env?.YOUTUBE_API_KEY;
-  if (!channelId || !apiKey) return [];
-
-  const uploadsPlaylistId = await fetchUploadsPlaylistId(channelId, apiKey);
-  if (!uploadsPlaylistId) return [];
-
-  const entries = [];
-  let nextPageToken = null;
-  let collected = 0;
-
-  do {
-    const payload = await fetchPlaylistItemsPage(
-      uploadsPlaylistId,
-      apiKey,
-      nextPageToken,
-    );
-    const items = payload?.items || [];
-
-    for (const item of items) {
-      const snippet = item?.snippet || {};
-      const videoId = snippet?.resourceId?.videoId;
-      if (!videoId) continue;
-
-      entries.push({
-        path: `/videos/${encodeURIComponent(videoId)}/`,
-        lastmod: toYoutubeDate(snippet.publishedAt, today),
-        changefreq: 'weekly',
-        priority: 0.7,
-      });
-
-      collected += 1;
-      if (collected >= MAX_YOUTUBE_RESULTS) {
-        return entries;
-      }
-    }
-
-    nextPageToken = payload?.nextPageToken || null;
-  } while (nextPageToken && collected < MAX_YOUTUBE_RESULTS);
-
-  return entries;
-}
 
 function buildStaticEntries(today) {
   const staticPaths = [
@@ -120,10 +78,10 @@ function buildStaticEntries(today) {
 
 function buildProjectAppEntries(apps, today) {
   return apps
-    .filter((app) => app && typeof app.name === 'string' && app.name.trim())
+    .filter((app) => app && typeof app.name === 'string' && app.name)
     .map((app) => ({
-      path: `/projekte/?app=${encodeURIComponent(app.name.trim())}`,
-      lastmod: toISODate(app.lastUpdated) || today,
+      path: buildProjectAppPath(app.name),
+      lastmod: app.lastmod || today,
       changefreq: 'monthly',
       priority: 0.62,
     }));
@@ -131,10 +89,10 @@ function buildProjectAppEntries(apps, today) {
 
 function buildBlogEntries(posts, today) {
   return posts
-    .filter((post) => post && typeof post.id === 'string' && post.id.trim())
+    .filter((post) => post && typeof post.id === 'string' && post.id)
     .map((post) => ({
-      path: `/blog/${encodeURIComponent(post.id.trim())}/`,
-      lastmod: toISODate(post.date) || today,
+      path: buildBlogPath(post.id),
+      lastmod: post.lastmod || today,
       changefreq: 'monthly',
       priority: 0.64,
     }));
@@ -150,51 +108,45 @@ function toXmlEntry(origin, entry) {
 }
 
 export async function onRequest(context) {
-  const origin = resolveOrigin(context.request.url);
-  const today = new Date().toISOString().split('T')[0];
+  try {
+    const origin = resolveOrigin(context.request.url);
+    const today = new Date().toISOString().split('T')[0];
 
-  const [staticEntries, blogPostsPayload, projectAppsPayload, videoEntries] =
-    await Promise.all([
+    const [staticEntries, blogPosts, projectApps] = await Promise.all([
       Promise.resolve(buildStaticEntries(today)),
-      loadJsonAsset(context, BLOG_INDEX_PATH),
-      loadJsonAsset(context, PROJECT_APPS_PATH),
-      loadVideoEntries(context.env, today).catch(() => []),
+      loadBlogPosts(context),
+      loadProjectApps(context),
     ]);
 
-  const blogPosts = Array.isArray(blogPostsPayload) ? blogPostsPayload : [];
-  const projectApps = Array.isArray(projectAppsPayload?.apps)
-    ? projectAppsPayload.apps
-    : [];
+    const blogEntries = buildBlogEntries(blogPosts, today);
+    const appEntries = buildProjectAppEntries(projectApps, today);
+    const allEntries = [...staticEntries, ...blogEntries, ...appEntries];
 
-  const blogEntries = buildBlogEntries(blogPosts, today);
-  const appEntries = buildProjectAppEntries(projectApps, today);
-  const allEntries = [
-    ...staticEntries,
-    ...blogEntries,
-    ...appEntries,
-    ...videoEntries,
-  ];
+    const dedupedEntries = [];
+    const seen = new Set();
+    for (const entry of allEntries) {
+      if (seen.has(entry.path)) continue;
+      seen.add(entry.path);
+      dedupedEntries.push(entry);
+    }
 
-  const dedupedEntries = [];
-  const seen = new Set();
-  for (const entry of allEntries) {
-    if (seen.has(entry.path)) continue;
-    seen.add(entry.path);
-    dedupedEntries.push(entry);
+    const xml = [
+      '<?xml version="1.0" encoding="UTF-8"?>',
+      '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+      ...dedupedEntries.map((entry) => toXmlEntry(origin, entry)),
+      '</urlset>',
+    ].join('\n');
+
+    await saveSitemapSnapshot(context.env, SNAPSHOT_NAME, xml);
+
+    return new Response(xml, {
+      headers: buildSitemapHeaders(CACHE_CONTROL),
+    });
+  } catch {
+    return respondWithSnapshotOr503({
+      env: context.env,
+      name: SNAPSHOT_NAME,
+      cacheControl: CACHE_CONTROL,
+    });
   }
-
-  const xml = [
-    '<?xml version="1.0" encoding="UTF-8"?>',
-    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
-    ...dedupedEntries.map((entry) => toXmlEntry(origin, entry)),
-    '</urlset>',
-  ].join('\n');
-
-  return new Response(xml, {
-    headers: {
-      'Content-Type': 'application/xml; charset=utf-8',
-      'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
-      'X-Robots-Tag': 'index, follow',
-    },
-  });
 }

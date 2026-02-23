@@ -40,6 +40,65 @@ const isLocalDevHost = () => {
 
 // Initialize YouTube configuration
 const YOUTUBE_CHANNEL_ID = ENV.YOUTUBE_CHANNEL_ID || 'UCTGRherjM4iuIn86xxubuPg';
+const VIDEO_PAGE_BASE_URL = 'https://www.abdulkerimsesli.de/videos/';
+const VIDEOS_LIST_ID = `${VIDEO_PAGE_BASE_URL}#videos-list`;
+const VIDEOS_SCHEMA_SCRIPT_ID = 'videos-feed-ldjson';
+
+const dedupeVideoSchemas = (videoNodes) => {
+  const byKey = new Map();
+  for (const node of videoNodes || []) {
+    if (!node || typeof node !== 'object') continue;
+    const key = node['@id'] || node.url || node.contentUrl || node.embedUrl;
+    if (!key || byKey.has(key)) continue;
+    byKey.set(key, node);
+  }
+  return Array.from(byKey.values());
+};
+
+const upsertVideosSchema = (videoNodes) => {
+  const existing = document.getElementById(VIDEOS_SCHEMA_SCRIPT_ID);
+  if (!Array.isArray(videoNodes) || videoNodes.length === 0) {
+    existing?.remove();
+    return;
+  }
+
+  const itemListElement = videoNodes.map((videoNode, index) => ({
+    '@type': 'ListItem',
+    position: index + 1,
+    item: {
+      '@id': videoNode['@id'] || `${VIDEO_PAGE_BASE_URL}#video-${index + 1}`,
+      name: videoNode.name || `Video ${index + 1}`,
+      url:
+        videoNode.url ||
+        videoNode.contentUrl ||
+        videoNode.embedUrl ||
+        VIDEO_PAGE_BASE_URL,
+    },
+  }));
+
+  const payload = JSON.stringify({
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'ItemList',
+        '@id': VIDEOS_LIST_ID,
+        name: 'Videos von Abdulkerim Sesli',
+        numberOfItems: videoNodes.length,
+        itemListElement,
+      },
+      ...videoNodes,
+    ],
+  });
+
+  let script = existing;
+  if (!script) {
+    script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.id = VIDEOS_SCHEMA_SCRIPT_ID;
+    document.head.appendChild(script);
+  }
+  script.textContent = payload;
+};
 
 // Helper: replace a thumbnail button with an autoplaying iframe
 const activateThumb = (btn) => {
@@ -192,19 +251,25 @@ const renderVideoCard = (container, it, detailsMap, index = 0) => {
   )}">${i18n.t('videos.open_page')}</a></div>`;
 
   const publisherName = 'Abdulkerim Sesli';
+  const canonicalWatchUrl = `https://www.youtube.com/watch?v=${vid}`;
+  const landingPageUrl = `${VIDEO_PAGE_BASE_URL}${vid}/`;
   const ldObj = {
-    '@context': 'https://schema.org',
     '@type': 'VideoObject',
+    '@id': `${VIDEO_PAGE_BASE_URL}#video-${vid}`,
     name: rawTitle + ` — ${publisherName}`,
     description: desc,
     thumbnailUrl: thumb,
     uploadDate: pub,
-    contentUrl: `https://youtu.be/${vid}`,
+    url: canonicalWatchUrl,
+    contentUrl: canonicalWatchUrl,
     embedUrl: `https://www.youtube-nocookie.com/embed/${vid}`,
+    mainEntityOfPage: { '@type': 'WebPage', '@id': landingPageUrl },
     isFamilyFriendly: true,
     publisher: {
       '@type': 'Organization',
       '@id': 'https://www.abdulkerimsesli.de/#organization',
+      name: publisherName,
+      url: 'https://www.abdulkerimsesli.de/',
       logo: {
         '@type': 'ImageObject',
         url: FAVICON_512,
@@ -229,14 +294,10 @@ const renderVideoCard = (container, it, detailsMap, index = 0) => {
   if (viewCount !== undefined) {
     ldObj.interactionStatistic = {
       '@type': 'InteractionCounter',
-      interactionType: 'http://schema.org/WatchAction',
+      interactionType: 'https://schema.org/WatchAction',
       userInteractionCount: viewCount,
     };
   }
-
-  const ld = document.createElement('script');
-  ld.type = 'application/ld+json';
-  ld.textContent = JSON.stringify(ldObj);
 
   container.appendChild(article);
   article.appendChild(thumbBtn);
@@ -283,9 +344,8 @@ const renderVideoCard = (container, it, detailsMap, index = 0) => {
     /* ignore */
   }
 
-  article.appendChild(ld);
-
   bindThumb(thumbBtn);
+  return ldObj;
 };
 
 // Videos page loader
@@ -303,12 +363,14 @@ const loadLatestVideos = async () => {
   }
 
   setVideoStatus('');
+  upsertVideosSchema([]);
 
   try {
     if (globalThis.location?.protocol === 'file:') {
       log.warn(
         'Running from file:// — network requests may be blocked. Serve site via http://localhost for proper API requests.',
       );
+      upsertVideosSchema([]);
       AppLoadManager.updateLoader(1, i18n.t('videos.local_mode'));
       AppLoadManager.hideLoader(500);
       return;
@@ -319,6 +381,7 @@ const loadLatestVideos = async () => {
 
     const grid = document.querySelector('.video-grid');
     if (!grid) {
+      upsertVideosSchema([]);
       AppLoadManager.updateLoader(1, i18n.t('videos.error'));
       AppLoadManager.hideLoader(500);
       return;
@@ -375,6 +438,7 @@ const loadLatestVideos = async () => {
       showInfoMessage(
         'Keine öffentlichen Uploads auf YouTube gefunden — es werden die statisch eingebetteten Videos angezeigt.',
       );
+      upsertVideosSchema([]);
       setVideoStatus('');
       AppLoadManager.updateLoader(1, i18n.t('videos.not_found'));
       AppLoadManager.hideLoader(500);
@@ -386,6 +450,7 @@ const loadLatestVideos = async () => {
       i18n.t('videos.processing', { count: items.length }),
     );
     grid.innerHTML = '';
+    const videoSchemaNodes = [];
 
     // Render videos with progress updates
     const batchSize = 5;
@@ -393,7 +458,10 @@ const loadLatestVideos = async () => {
       const batch = items.slice(i, i + batchSize);
       const fragment = document.createDocumentFragment();
       batch.forEach((it, idx) => {
-        renderVideoCard(fragment, it, detailsMap, i + idx);
+        const schemaNode = renderVideoCard(fragment, it, detailsMap, i + idx);
+        if (schemaNode) {
+          videoSchemaNodes.push(schemaNode);
+        }
 
         // Auto-play deep-linked video
         if (
@@ -426,6 +494,8 @@ const loadLatestVideos = async () => {
       await new Promise((resolve) => setTimeout(resolve, 0));
     }
 
+    upsertVideosSchema(dedupeVideoSchemas(videoSchemaNodes));
+
     AppLoadManager.updateLoader(
       0.95,
       i18n.t('loader.videos_loaded', { count: items.length }),
@@ -440,6 +510,7 @@ const loadLatestVideos = async () => {
     log.info(`Successfully loaded ${items.length} videos`);
   } catch (err) {
     log.error('Fehler beim Laden der Videos', err);
+    upsertVideosSchema([]);
     showErrorMessage(err);
     AppLoadManager.updateLoader(1, i18n.t('videos.error'));
     AppLoadManager.hideLoader(500);
