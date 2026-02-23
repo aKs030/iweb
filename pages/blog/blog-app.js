@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import htm from 'https://esm.sh/htm@3.1.1';
+import htm from 'htm';
 import { createLogger } from '/content/core/logger.js';
 import { createUseTranslation } from '/content/core/utils.js';
 import { AppLoadManager } from '/content/core/load-manager.js';
