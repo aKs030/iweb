@@ -1,11 +1,15 @@
 /**
  * Cloudflare Pages Function - POST /api/ai
  * Modern AI Chat with RAG (Retrieval-Augmented Generation) using Groq + AI Search Beta
- * @version 9.2.0 - Enhanced RAG with local dev fallback for missing GROQ key
+ * @version 9.3.0 - Enhanced RAG with shared title extraction
  */
 
 import { getCorsHeaders, handleOptions } from './_cors.js';
-import { calculateRelevanceScore, normalizeUrl } from './_search-utils.js';
+import {
+  calculateRelevanceScore,
+  normalizeUrl,
+  extractTitle,
+} from './_search-utils.js';
 
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const GROQ_MODEL = 'llama-3.3-70b-versatile';
@@ -129,23 +133,6 @@ function extractContent(item, maxLength = 400) {
 }
 
 /**
- * Extract page title from filename
- * @param {string} filename - Original filename
- * @returns {string} Page title
- */
-function extractTitle(filename) {
-  if (!filename) return 'Unbekannt';
-
-  const path = filename.split('/').filter(Boolean);
-  const lastSegment = path[path.length - 1] || 'Home';
-
-  return lastSegment
-    .replace('.html', '')
-    .replace(/-/g, ' ')
-    .replace(/\b\w/g, (c) => c.toUpperCase());
-}
-
-/**
  * Search for relevant context using AI Search Beta with improved ranking
  * @returns {Object} { context: string, sources: Array } or null
  */
@@ -194,7 +181,7 @@ async function getRelevantContext(query, env) {
     // Format context from search results with better structure
     const contextParts = scoredResults.map(({ item, score }) => {
       const url = normalizeUrl(item.filename);
-      const title = extractTitle(item.filename);
+      const title = extractTitle(item.filename, url);
       const content = extractContent(item, 400);
       const relevance = Math.round(score * 100);
 
@@ -209,11 +196,14 @@ Inhalt: ${content}`;
     // Return both context text and source metadata
     return {
       context: contextText,
-      sources: scoredResults.map(({ item, score }) => ({
-        url: normalizeUrl(item.filename),
-        title: extractTitle(item.filename),
-        relevance: Math.round(score * 100),
-      })),
+      sources: scoredResults.map(({ item, score }) => {
+        const url = normalizeUrl(item.filename);
+        return {
+          url: url,
+          title: extractTitle(item.filename, url),
+          relevance: Math.round(score * 100),
+        };
+      }),
     };
   } catch {
     // Context retrieval failed - return null to continue without context

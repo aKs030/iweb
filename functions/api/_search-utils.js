@@ -663,7 +663,7 @@ function detectCategory(url) {
  * @param {string} url
  * @returns {string}
  */
-function extractTitle(filename, url) {
+export function extractTitle(filename, url) {
   const appSlug = extractAppSlugFromUrl(url);
   if (appSlug) {
     return humanizeSlug(appSlug);
