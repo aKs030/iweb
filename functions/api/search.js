@@ -19,6 +19,7 @@ import {
   dedupeByBestScore,
   balanceByCategory,
   highlightMatches,
+  compileQueryRegexes,
 } from './_search-utils.js';
 import {
   SEARCH_SYSTEM_PROMPT,
@@ -719,11 +720,13 @@ export async function onRequestPost(context) {
     const allAiItems = [...(primarySearchData?.data || []), ...additionalItems];
 
     const queryTerms = toQueryTerms(query);
+    const queryRegexes = compileQueryRegexes(queryTerms);
+
     const scoredResults = allAiItems
       .map((item) => toSearchResult(item, query))
       .filter((result) => Boolean(result.url && result.title))
       .map((result) =>
-        scoreSearchResult(result, query, queryTerms, intentPaths),
+        scoreSearchResult(result, query, queryTerms, intentPaths, queryRegexes),
       );
 
     const uniqueResults = dedupeByBestScore(scoredResults).sort(

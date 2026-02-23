@@ -1,6 +1,6 @@
 /**
  * Search Utilities - Query Expansion, Fuzzy Matching, Relevance Scoring
- * @version 6.0.0 - Shared helpers for Cloudflare AI Search ranking
+ * @version 6.1.0 - Performance optimized regex compilation
  */
 
 import { CLEANUP_PATTERNS, HTML_ENTITIES } from './_cleanup-patterns.js';
@@ -291,12 +291,36 @@ export function expandQuery(query) {
 }
 
 /**
+ * Compile regexes for query terms to avoid recompilation in loops.
+ * @param {string[]} queryTerms
+ * @returns {RegExp[]}
+ */
+export function compileQueryRegexes(queryTerms) {
+  if (!queryTerms || queryTerms.length === 0) return [];
+
+  const boundaryRe = (term) =>
+    new RegExp(
+      `(^|[\\s/\\-_.])${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`,
+      'i',
+    );
+
+  return queryTerms.map(boundaryRe);
+}
+
+/**
  * Calculate relevance score based on multiple factors
  * @param {Object} result - Search result object
  * @param {string} originalQuery - Original search query
+ * @param {string[]} [queryTerms] - Optional pre-split query terms
+ * @param {RegExp[]} [queryRegexes] - Optional pre-compiled regexes
  * @returns {number} Enhanced relevance score
  */
-export function calculateRelevanceScore(result, originalQuery) {
+export function calculateRelevanceScore(
+  result,
+  originalQuery,
+  queryTerms,
+  queryRegexes,
+) {
   let score = result.score || 0;
   let textMatchScore = 0;
 
@@ -306,12 +330,13 @@ export function calculateRelevanceScore(result, originalQuery) {
   const descLower = (result.description || '').toLowerCase();
 
   // Word-boundary aware matching (stronger signal than substring)
-  const queryTerms = queryLower.split(/\s+/).filter((t) => t.length > 1);
-  const boundaryRe = (term) =>
-    new RegExp(
-      `(^|[\\s/\\-_.])${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`,
-      'i',
-    );
+  if (!queryTerms) {
+    queryTerms = queryLower.split(/\s+/).filter((t) => t.length > 1);
+  }
+
+  if (!queryRegexes) {
+    queryRegexes = compileQueryRegexes(queryTerms);
+  }
 
   // Exact full query match
   if (titleLower.includes(queryLower)) textMatchScore += 12;
@@ -320,8 +345,7 @@ export function calculateRelevanceScore(result, originalQuery) {
 
   // Per-term matching with word-boundary bonus
   let termsMatched = 0;
-  for (const term of queryTerms) {
-    const re = boundaryRe(term);
+  for (const re of queryRegexes) {
     if (re.test(titleLower)) {
       textMatchScore += 4;
       termsMatched++;
@@ -909,9 +933,16 @@ export function isIntentPathMatch(url, intentPaths) {
  * @param {string} query
  * @param {string[]} queryTerms
  * @param {string[]} intentPaths
+ * @param {RegExp[]} [queryRegexes] - Optional pre-compiled regexes
  * @returns {{title: string, description: string, url: string, vectorScore: number, score: number, matchCount: number, category: string, highlightedDescription: string}}
  */
-export function scoreSearchResult(result, query, queryTerms, intentPaths) {
+export function scoreSearchResult(
+  result,
+  query,
+  queryTerms,
+  intentPaths,
+  queryRegexes,
+) {
   const vectorScaled = result.vectorScore * 12;
   const lexicalScore = calculateRelevanceScore(
     {
@@ -919,6 +950,8 @@ export function scoreSearchResult(result, query, queryTerms, intentPaths) {
       score: vectorScaled,
     },
     query,
+    queryTerms,
+    queryRegexes,
   );
 
   const coverage = computeCoverageScore(result, queryTerms);
