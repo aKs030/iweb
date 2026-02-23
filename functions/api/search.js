@@ -20,51 +20,23 @@ import {
   balanceByCategory,
   highlightMatches,
 } from './_search-utils.js';
-
-const SEARCH_SYSTEM_PROMPT =
-  'Du bist ein Suchassistent fuer abdulkerimsesli.de. Fasse Suchergebnisse in 1-2 praegnanten Saetzen zusammen (max. 120 Zeichen). Fokus auf konkrete Inhalte, keine generischen Aussagen.';
+import {
+  SEARCH_SYSTEM_PROMPT,
+  FAST_INTENT_PATHS,
+  ROUTE_FALLBACK_PATHS,
+  DEFAULT_NO_RESULT_SUGGESTIONS,
+  INTENT_FALLBACK_SUGGESTIONS,
+} from './_search-data.js';
 
 const PRIMARY_SEARCH_TIMEOUT_MS = 4200;
 const SECONDARY_SEARCH_TIMEOUT_MS = 1200;
 const SECONDARY_MAX_RESULTS = 12;
 const INTENT_MAX_RESULTS = 10;
-const FAST_INTENT_PATHS = new Set([
-  '/about',
-  '/contact',
-  '/datenschutz',
-  '/impressum',
-]);
 
-const ROUTE_FALLBACK_PATHS = [
-  '/',
-  '/about/',
-  '/contact/',
-  '/datenschutz/',
-  '/impressum/',
-  '/projekte/',
-  '/blog/',
-  '/gallery/',
-  '/videos/',
-  '/abdul-sesli/',
-];
 const PROJECT_APPS_PATH = '/pages/projekte/apps-config.json';
 const APP_FALLBACK_CACHE_TTL_MS = 5 * 60 * 1000;
 const MAX_CHAT_SUGGESTIONS = 3;
-const DEFAULT_NO_RESULT_SUGGESTIONS = [
-  { title: 'Projekte entdecken', url: '/projekte' },
-  { title: 'Blog durchsuchen', url: '/blog' },
-  { title: 'Kontakt aufnehmen', url: '/contact' },
-];
-const INTENT_FALLBACK_SUGGESTIONS = {
-  '/about': { title: 'Über mich ansehen', url: '/about' },
-  '/contact': { title: 'Kontakt öffnen', url: '/contact' },
-  '/datenschutz': { title: 'Datenschutz öffnen', url: '/datenschutz' },
-  '/impressum': { title: 'Impressum öffnen', url: '/impressum' },
-  '/projekte': { title: 'Projekte öffnen', url: '/projekte' },
-  '/blog': { title: 'Blog öffnen', url: '/blog' },
-  '/gallery': { title: 'Galerie öffnen', url: '/gallery' },
-  '/videos': { title: 'Videos öffnen', url: '/videos' },
-};
+
 let cachedAppFallbackEntries = [];
 let cachedAppFallbackExpiresAt = 0;
 let appFallbackLoadPromise = null;
