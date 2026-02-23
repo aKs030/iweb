@@ -302,5 +302,33 @@
     "aria_top": "Zur Hero-Sektion",
     "btn_about": "Über mich",
     "aria_about": "Zu About gehen"
+  },
+  "contact": {
+    "title": "Lass uns sprechen",
+    "subtitle": "Haben Sie eine Projektidee oder möchten Sie zusammenarbeiten? Füllen Sie das Formular aus und ich melde mich bei Ihnen.",
+    "form": {
+      "name": "Name",
+      "name_placeholder": "Max Mustermann",
+      "email": "E-Mail",
+      "email_placeholder": "max@beispiel.de",
+      "subject": "Betreff",
+      "subject_placeholder": "Projektanfrage...",
+      "message": "Nachricht",
+      "message_placeholder": "Erzählen Sie mir von Ihrem Projekt...",
+      "submit": "Nachricht senden",
+      "submitting": "Wird gesendet..."
+    },
+    "success": {
+      "title": "Nachricht gesendet!",
+      "message": "Vielen Dank für Ihre Nachricht. Ich werde mich so schnell wie möglich bei Ihnen melden.",
+      "new_message": "Neue Nachricht senden"
+    },
+    "error": {
+      "generic": "Ein Fehler ist aufgetreten.",
+      "network": "Netzwerkfehler. Bitte prüfen Sie Ihre Verbindung.",
+      "required": "Bitte füllen Sie alle Pflichtfelder aus.",
+      "email": "Bitte geben Sie eine gültige E-Mail-Adresse ein.",
+      "server_format": "Server antwortete mit ungültigem Format."
+    }
   }
 }
