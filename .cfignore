@@ -38,3 +38,6 @@ Thumbs.db
 *.swp
 *.swo
 *~
+*.test.js
+**/*.test.js
+**/__tests__/
