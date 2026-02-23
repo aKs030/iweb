@@ -393,6 +393,8 @@ function canonicalizeUrlPath(path) {
 
   if (normalized.endsWith('/index.html')) {
     normalized = normalized.substring(0, normalized.length - 11);
+  } else if (normalized.endsWith('.html')) {
+    normalized = normalized.substring(0, normalized.length - 5);
   }
 
   if (normalized === '') {
