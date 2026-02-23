@@ -126,12 +126,6 @@ function extractContent(item, maxLength = 400) {
   if (breakPoint > maxLength * 0.7) {
     return fullContent.substring(0, breakPoint + 1);
   }
-
-  return truncated + '...';
-}
-
-/**
- * Format URL for display
 }
 
 /**

@@ -30,6 +30,9 @@ describe('normalizeUrl', () => {
 
   it('keeps app deep links', () => {
     assert.equal(normalizeUrl('/projekte/?app=test'), '/projekte/?app=test');
-    assert.equal(normalizeUrl('https://site.com/projekte/index.html?app=foo'), '/projekte/?app=foo');
+    assert.equal(
+      normalizeUrl('https://site.com/projekte/index.html?app=foo'),
+      '/projekte/?app=foo',
+    );
   });
 });
