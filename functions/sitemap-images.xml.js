@@ -104,14 +104,13 @@ function ensureUrlEntry(urlMap, pagePath) {
   return urlMap.get(path);
 }
 
-function addImage(urlMap, pagePath, image, globalImageLocs = null) {
+function addImage(urlMap, pagePath, image) {
   const images = ensureUrlEntry(urlMap, pagePath);
   const imageLoc = normalizeText(image?.loc);
   if (!imageLoc) return;
 
-  // Keep each image URL globally unique across the whole sitemap.
-  if (globalImageLocs?.has(imageLoc)) return;
-
+  // Keep each image URL unique per <url> entry while allowing
+  // cross-page reuse (same image on overview + detail pages).
   const exists = images.some((existing) => existing.loc === imageLoc);
   if (exists) return;
 
@@ -119,29 +118,20 @@ function addImage(urlMap, pagePath, image, globalImageLocs = null) {
     ...image,
     loc: imageLoc,
   });
-
-  if (globalImageLocs) {
-    globalImageLocs.add(imageLoc);
-  }
 }
 
-function addStaticImages(urlMap, origin, globalImageLocs) {
+function addStaticImages(urlMap, origin) {
   for (const item of STATIC_PAGE_IMAGES) {
-    addImage(
-      urlMap,
-      item.page,
-      {
-        loc: toAbsoluteUrl(origin, item.image),
-        title: item.title,
-        caption: item.caption,
-        license: LICENSE_URL,
-      },
-      globalImageLocs,
-    );
+    addImage(urlMap, item.page, {
+      loc: toAbsoluteUrl(origin, item.image),
+      title: item.title,
+      caption: item.caption,
+      license: LICENSE_URL,
+    });
   }
 }
 
-function addBlogImages(urlMap, origin, posts, globalImageLocs) {
+function addBlogImages(urlMap, origin, posts) {
   if (!Array.isArray(posts)) return;
 
   for (const post of posts) {
@@ -155,69 +145,49 @@ function addBlogImages(urlMap, origin, posts, globalImageLocs) {
       `${cleanTitle || id} - Blogbeitrag mit Bildern, Codebeispielen und Kontext`,
     );
 
-    addImage(
-      urlMap,
-      buildBlogPath(id),
-      {
-        loc: toAbsoluteUrl(origin, image),
-        title: cleanTitle,
-        caption: cleanCaption,
-        license: LICENSE_URL,
-      },
-      globalImageLocs,
-    );
+    addImage(urlMap, buildBlogPath(id), {
+      loc: toAbsoluteUrl(origin, image),
+      title: cleanTitle,
+      caption: cleanCaption,
+      license: LICENSE_URL,
+    });
   }
 }
 
-function addProjectPreviewImages(urlMap, apps, globalImageLocs) {
+function addProjectPreviewImages(urlMap, apps) {
   for (const app of apps) {
     const name = normalizeText(app?.name);
     if (!name) continue;
 
-    addImage(
-      urlMap,
-      buildProjectAppPath(name),
-      {
-        loc: buildProjectPreviewImageUrl(name),
-        title: app.title,
-        caption: app.description,
-        license: LICENSE_URL,
-      },
-      globalImageLocs,
-    );
+    addImage(urlMap, buildProjectAppPath(name), {
+      loc: buildProjectPreviewImageUrl(name),
+      title: app.title,
+      caption: app.description,
+      license: LICENSE_URL,
+    });
   }
 }
 
-function addGalleryImages(urlMap, images, globalImageLocs) {
+function addGalleryImages(urlMap, images) {
   for (const image of images) {
-    addImage(
-      urlMap,
-      '/gallery/',
-      {
-        loc: image.loc,
-        title: image.title,
-        caption: image.caption,
-        license: LICENSE_URL,
-      },
-      globalImageLocs,
-    );
+    addImage(urlMap, '/gallery/', {
+      loc: image.loc,
+      title: image.title,
+      caption: image.caption,
+      license: LICENSE_URL,
+    });
   }
 }
 
-function addYouTubeVideoImages(urlMap, videos, globalImageLocs) {
+function addYouTubeVideoImages(urlMap, videos) {
   for (const video of videos) {
     if (!video?.videoId || !video?.thumbnail) continue;
 
-    addImage(
-      urlMap,
-      video.path,
-      {
-        loc: video.thumbnail,
-        title: video.title,
-        caption: video.description,
-      },
-      globalImageLocs,
-    );
+    addImage(urlMap, video.path, {
+      loc: video.thumbnail,
+      title: video.title,
+      caption: video.description,
+    });
   }
 }
 
@@ -269,9 +239,8 @@ export async function onRequest(context) {
   try {
     const origin = resolveOrigin(context.request.url);
     const urlMap = new Map();
-    const globalImageLocs = new Set();
 
-    addStaticImages(urlMap, origin, globalImageLocs);
+    addStaticImages(urlMap, origin);
 
     const [posts, apps, galleryImages, videos] = await Promise.all([
       loadBlogPosts(context),
@@ -280,10 +249,10 @@ export async function onRequest(context) {
       loadYouTubeVideos(context.env),
     ]);
 
-    addBlogImages(urlMap, origin, posts, globalImageLocs);
-    addProjectPreviewImages(urlMap, apps, globalImageLocs);
-    addGalleryImages(urlMap, galleryImages, globalImageLocs);
-    addYouTubeVideoImages(urlMap, videos, globalImageLocs);
+    addBlogImages(urlMap, origin, posts);
+    addProjectPreviewImages(urlMap, apps);
+    addGalleryImages(urlMap, galleryImages);
+    addYouTubeVideoImages(urlMap, videos);
 
     const xml = buildXml(origin, urlMap);
 
