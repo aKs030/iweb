@@ -34,6 +34,12 @@ const shouldDisableThreeScene = () => {
   }
 };
 
+const normalizeProjectSlug = (value) =>
+  String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9-]/g, '');
+
 /**
  * Main App Component
  */
@@ -57,6 +63,26 @@ const App = () => {
       setActiveProjectIndex(0);
     }
   }, [activeProjectIndex, projects.length]);
+
+  useEffect(() => {
+    if (!projects.length) return;
+
+    const appSlug = normalizeProjectSlug(
+      new URLSearchParams(window.location.search).get('app'),
+    );
+    if (!appSlug) return;
+
+    const appIndex = projects.findIndex((project) => {
+      const candidate = normalizeProjectSlug(
+        project?.name || project?.title || '',
+      );
+      return candidate === appSlug;
+    });
+
+    if (appIndex >= 0) {
+      setActiveProjectIndex(appIndex);
+    }
+  }, [projects]);
 
   useEffect(() => {
     if (projects.length === 0) {
@@ -98,8 +124,8 @@ const App = () => {
       if (seenSlugs.has(slug)) return;
       seenSlugs.add(slug);
 
-      const nodeId = `https://www.abdulkerimsesli.de/projekte/#app-${slug}`;
-      const canonicalUrl = `https://www.abdulkerimsesli.de/projekte/#app-${slug}`;
+      const canonicalUrl = `https://www.abdulkerimsesli.de/projekte/?app=${encodeURIComponent(slug)}`;
+      const nodeId = `${canonicalUrl}#app`;
       const name = project.title || project.name || `Projekt ${index + 1}`;
 
       projectNodes.push({

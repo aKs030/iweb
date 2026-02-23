@@ -35,6 +35,42 @@ marked.setOptions({
   headerIds: false,
 });
 
+const BLOG_HOME_PATH = '/blog/';
+
+const normalizePath = (value = '') => {
+  const cleaned = String(value || '/')
+    .replace(/\/+/g, '/')
+    .trim();
+  if (!cleaned || cleaned === '/') return '/';
+  return cleaned.endsWith('/') ? cleaned : `${cleaned}/`;
+};
+
+const buildPostPath = (postId = '') =>
+  `${BLOG_HOME_PATH}${encodeURIComponent(String(postId).trim())}/`;
+
+const extractPostIdFromLocation = (locationLike = window.location) => {
+  const path = normalizePath(locationLike?.pathname || '/');
+  const hashId = String(locationLike?.hash || '')
+    .replace(/^#/, '')
+    .trim();
+
+  if (path.startsWith(BLOG_HOME_PATH) && path !== BLOG_HOME_PATH) {
+    const slug = path
+      .replace(/^\/blog\//, '')
+      .replace(/\/$/, '')
+      .trim();
+    if (slug && slug.toLowerCase() !== 'index.html') {
+      try {
+        return decodeURIComponent(slug);
+      } catch {
+        return slug;
+      }
+    }
+  }
+
+  return hashId || '';
+};
+
 const BlogApp = () => {
   const { t } = useTranslation();
   const [posts, setPosts] = React.useState([]);
@@ -65,10 +101,16 @@ const BlogApp = () => {
         const loadedPosts = await loadPostsData();
         setPosts(loadedPosts);
 
-        const hash = window.location.hash.slice(1);
-        if (hash) {
-          const post = loadedPosts.find((p) => p.id === hash);
-          if (post) setActivePost(post);
+        const routePostId = extractPostIdFromLocation(window.location);
+        if (routePostId) {
+          const post = loadedPosts.find((p) => p.id === routePostId);
+          if (post) {
+            setActivePost(post);
+            const canonicalPath = buildPostPath(post.id);
+            if (window.location.pathname !== canonicalPath) {
+              window.history.replaceState(null, '', canonicalPath);
+            }
+          }
         }
 
         AppLoadManager.updateLoader(1.0, t('loader.ready'));
@@ -92,21 +134,32 @@ const BlogApp = () => {
   // Handle post navigation
   const openPost = React.useCallback((post) => {
     setActivePost(post);
-    window.history.pushState(null, '', `#${post.id}`);
+    const nextPath = buildPostPath(post.id);
+    if (
+      window.location.pathname !== nextPath ||
+      String(window.location.hash || '').length > 0
+    ) {
+      window.history.pushState(null, '', nextPath);
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
   const closePost = React.useCallback(() => {
     setActivePost(null);
-    window.history.pushState(null, '', window.location.pathname);
+    if (
+      window.location.pathname !== BLOG_HOME_PATH ||
+      String(window.location.hash || '').length > 0
+    ) {
+      window.history.pushState(null, '', BLOG_HOME_PATH);
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
   // Handle browser back/forward
   React.useEffect(() => {
     const handlePopState = () => {
-      const hash = window.location.hash.slice(1);
-      const post = hash ? posts.find((p) => p.id === hash) : null;
+      const routePostId = extractPostIdFromLocation(window.location);
+      const post = routePostId ? posts.find((p) => p.id === routePostId) : null;
       setActivePost(post || null);
     };
 
@@ -221,9 +274,16 @@ const BlogApp = () => {
                   <span className="card-read-time">
                     <${Clock} /> ${post.readTime}
                   </span>
-                  <span className="btn-read">
+                  <a
+                    className="btn-read"
+                    href=${buildPostPath(post.id)}
+                    onClick=${(event) => {
+                      event.preventDefault();
+                      openPost(post);
+                    }}
+                  >
                     ${t('blog.read_more')} <${ArrowRight} />
-                  </span>
+                  </a>
                 </div>
               </div>
             </article>

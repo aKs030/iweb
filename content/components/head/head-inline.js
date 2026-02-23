@@ -384,8 +384,27 @@ ensureFontDisplaySwap();
 
 const setEarlyCanonical = () => {
   try {
-    const canonicalUrl = globalThis.location.href.split('#')[0].split('?')[0];
-    if (!document.head.querySelector('link[rel="canonical"]')) {
+    const pathname = globalThis.location.pathname || '/';
+    const canonicalBase = globalThis.location.href.split('#')[0].split('?')[0];
+    const query = new URLSearchParams(globalThis.location.search || '');
+    const appSlug = String(query.get('app') || '')
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9-]/g, '');
+    const canonicalUrl =
+      /^\/projekte\/?$/i.test(pathname) && appSlug
+        ? `${globalThis.location.origin}/projekte/?app=${encodeURIComponent(appSlug)}`
+        : canonicalBase;
+
+    const existing = document.head.querySelector('link[rel="canonical"]');
+    if (existing) {
+      if (existing.getAttribute('href') !== canonicalUrl) {
+        existing.setAttribute('href', canonicalUrl);
+      }
+      return;
+    }
+
+    if (!existing) {
       const link = document.createElement('link');
       link.rel = 'canonical';
       link.href = canonicalUrl;
