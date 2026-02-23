@@ -9,6 +9,7 @@ import {
   calculateRelevanceScore,
   normalizeUrl,
   extractTitle,
+  compileQueryRegexes,
 } from './_search-utils.js';
 
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
@@ -156,6 +157,14 @@ async function getRelevantContext(query, env) {
       return null;
     }
 
+    // Pre-compile regexes for relevance scoring
+    const queryTerms = query
+      .toLowerCase()
+      .trim()
+      .split(/\s+/)
+      .filter((t) => t.length > 1);
+    const queryRegexes = compileQueryRegexes(queryTerms);
+
     // Calculate relevance scores and sort
     const scoredResults = searchData.data
       .map((item) => ({
@@ -168,6 +177,8 @@ async function getRelevantContext(query, env) {
             score: 0,
           },
           query,
+          queryTerms,
+          queryRegexes,
         ),
       }))
       .filter((result) => result.score > 1) // Filter out low-relevance results
