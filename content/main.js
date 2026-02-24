@@ -4,7 +4,6 @@
  * @last-modified 2026-02-11
  */
 
-import { initConsoleFilter } from './core/utils.js';
 import { initHeroFeatureBundle } from '../pages/home/hero-manager.js';
 import { createLogger } from './core/logger.js';
 import { EVENTS, fire } from './core/events.js';
@@ -17,9 +16,6 @@ import { initViewTransitions } from './core/view-transitions.js';
 import { i18n } from './core/i18n.js';
 import { SectionTracker } from './core/section-tracker.js';
 import { GlobalEventHandlers } from './core/events.js';
-
-// Initialize console filter for development
-initConsoleFilter();
 
 const log = createLogger('main');
 const appTimers = new TimerManager('Main');
