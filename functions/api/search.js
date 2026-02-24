@@ -15,6 +15,18 @@ import {
 // Configuration
 const SEARCH_TIMEOUT_MS = 15000;
 const SYSTEM_PROMPT = `Du bist der AI-Assistent der Website von Abdulkerim Sesli. Antworte auf Fragen professionell und auf Deutsch basierend auf den gefundenen Inhalten. Fasse die Inhalte kurz und informativ zusammen.`;
+const TECHNICAL_RESULT_PATHS = new Set([
+  '/llms.txt',
+  '/llms-full.txt',
+  '/ai-index.json',
+  '/person.jsonld',
+  '/robots.txt',
+  '/.well-known/openapi.json',
+  '/.well-known/ai-plugin.json',
+  '/pages/projekte/apps-config.json',
+  '/pages/blog/posts/index.json',
+]);
+const TECHNICAL_RESULT_PREFIXES = ['/.well-known/', '/api/'];
 
 function withTimeout(promise, ms) {
   return Promise.race([
@@ -101,6 +113,17 @@ function extractAiResult(item) {
   };
 }
 
+function isTechnicalResult(url) {
+  const normalized = normalizeUrl(url).toLowerCase();
+  if (TECHNICAL_RESULT_PATHS.has(normalized)) {
+    return true;
+  }
+
+  return TECHNICAL_RESULT_PREFIXES.some((prefix) =>
+    normalized.startsWith(prefix),
+  );
+}
+
 export async function onRequestPost(context) {
   const { request, env } = context;
   const corsHeaders = getCorsHeaders(request, env);
@@ -151,6 +174,10 @@ export async function onRequestPost(context) {
     // Deduplicate results based on URL
     const uniqueResultsMap = new Map();
     for (const res of results) {
+      if (isTechnicalResult(res.url)) {
+        continue;
+      }
+
       if (!uniqueResultsMap.has(res.url)) {
         uniqueResultsMap.set(res.url, res);
       } else {
