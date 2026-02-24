@@ -2,7 +2,7 @@
  * Cloudflare Pages Function - POST /api/search
  * Primary: Cloudflare AI Search (AutoRAG)
  * Secondary: deterministic route/app fallback for missing index coverage
- * @version 17.0.0
+ * @version 18.0.0
  */
 
 import { ROUTES } from '../../content/config/routes-config.js';
@@ -12,15 +12,20 @@ import {
   parsePositiveInteger,
   clamp,
   toQueryTerms,
-  getIntentPaths,
+  compileQueryRegexes,
+} from './_search-query.js';
+import {
   isIntentPathMatch,
-  toSearchResult,
+  getIntentPaths,
   scoreSearchResult,
+} from './_search-scoring.js';
+import {
+  toSearchResult,
   dedupeByBestScore,
   balanceByCategory,
-  highlightMatches,
-  compileQueryRegexes,
-} from './_search-utils.js';
+} from './_search-results.js';
+import { highlightMatches, truncateText } from './_search-content.js';
+
 import {
   SEARCH_SYSTEM_PROMPT,
   FAST_INTENT_PATHS,
@@ -397,22 +402,6 @@ function mergeResults(aiResults, fallbackResults, topK) {
   return merged
     .sort((a, b) => Number(b.score || 0) - Number(a.score || 0))
     .slice(0, topK);
-}
-
-function toPlainText(value) {
-  return String(value || '')
-    .replace(/<[^>]*>/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-function truncateText(value, maxLength = 220) {
-  const text = toPlainText(value);
-  if (text.length <= maxLength) {
-    return text;
-  }
-
-  return `${text.slice(0, maxLength - 1).trim()}...`;
 }
 
 function normalizeSuggestion(item) {
