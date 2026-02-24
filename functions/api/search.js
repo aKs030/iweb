@@ -874,10 +874,10 @@ export async function onRequestPost(context) {
       },
     });
   } catch (error) {
+    console.error('Search API error:', error);
     return new Response(
       JSON.stringify({
         error: 'Search failed',
-        message: error.message,
         results: [],
       }),
       {

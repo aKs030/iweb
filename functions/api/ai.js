@@ -330,10 +330,10 @@ ANWEISUNGEN:
       { headers: corsHeaders },
     );
   } catch (error) {
+    console.error('AI API error:', error);
     return Response.json(
       {
         error: 'AI request failed',
-        message: error.message,
         text: 'Verbindung zum KI-Dienst fehlgeschlagen.',
       },
       { status: 500, headers: corsHeaders },
