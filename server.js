@@ -353,17 +353,6 @@ function applySplat(to, splat) {
 }
 
 // ─── Clean URL mapping (Fallback wenn _redirects fehlt) ─────
-const CLEAN_URLS = {
-  '/': 'index.html',
-  '/about/': 'pages/about/index.html',
-  '/blog/': 'pages/blog/index.html',
-  '/gallery/': 'pages/gallery/index.html',
-  '/projekte/': 'pages/projekte/index.html',
-  '/videos/': 'pages/videos/index.html',
-  '/impressum/': 'pages/impressum/index.html',
-  '/datenschutz/': 'pages/datenschutz/index.html',
-  '/contact/': 'content/components/contact/index.html',
-};
 
 function tryServe(filePath, res, url = '/') {
   if (!filePath) return false;
@@ -651,6 +640,8 @@ const server = createServer(async (req, res) => {
     const { matched, splat } = matchRule(url, rule.from);
     if (matched) {
       const target = applySplat(rule.to, splat);
+
+      // 1. Try direct target
       if (
         tryServe(
           resolveInsideRoot(target.startsWith('/') ? target.slice(1) : target),
@@ -659,13 +650,27 @@ const server = createServer(async (req, res) => {
         )
       )
         return;
+
+      // 2. Try index.html for directory targets
+      if (target.endsWith('/') || !extname(target)) {
+        const indexTarget = target.endsWith('/')
+          ? target + 'index.html'
+          : target + '/index.html';
+        if (
+          tryServe(
+            resolveInsideRoot(
+              indexTarget.startsWith('/') ? indexTarget.slice(1) : indexTarget,
+            ),
+            res,
+            url,
+          )
+        )
+          return;
+      }
     }
   }
 
   // 3. Clean URLs (Fallback mapping)
-  if (CLEAN_URLS[url]) {
-    if (tryServe(resolveInsideRoot(CLEAN_URLS[url]), res, url)) return;
-  }
 
   // 4. Direct file serving
   const filePath = resolveInsideRoot(url.substring(1));
