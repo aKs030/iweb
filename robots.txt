@@ -25,6 +25,16 @@ Allow: /.well-known/ai-plugin.json
 
 Crawl-delay: 1
 
+# Cloudflare AI Search crawler (required for website data source crawling)
+User-agent: Cloudflare-AI-Search
+Allow: /
+Crawl-delay: 1
+
+# Alternative Cloudflare AI Search user-agent token
+User-agent: CloudflareAISearch
+Allow: /
+Crawl-delay: 1
+
 # OpenAI crawlers
 User-agent: GPTBot
 Allow: /

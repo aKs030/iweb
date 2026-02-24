@@ -1,8 +1,12 @@
 import { getCorsHeaders, handleOptions } from './_cors.js';
+import {
+  buildAiSearchRequest,
+  clampResults,
+  resolveAiSearchConfig,
+} from './_ai-search-config.js';
 
 // Configuration
 const SEARCH_TIMEOUT_MS = 15000;
-const MAX_RESULTS_DEFAULT = 10;
 const SYSTEM_PROMPT = `Du bist der AI-Assistent der Website von Abdulkerim Sesli. Antworte auf Fragen professionell und auf Deutsch basierend auf den gefundenen Inhalten. Fasse die Inhalte kurz und informativ zusammen.`;
 
 function withTimeout(promise, ms) {
@@ -12,15 +16,6 @@ function withTimeout(promise, ms) {
       setTimeout(() => reject(new Error('Timeout')), ms),
     ),
   ]);
-}
-
-function parsePositiveInteger(val) {
-  const parsed = parseInt(val, 10);
-  return isNaN(parsed) || parsed <= 0 ? null : parsed;
-}
-
-function clamp(val, min, max) {
-  return Math.min(Math.max(val, min), max);
 }
 
 function extractAiResult(item) {
@@ -67,10 +62,11 @@ export async function onRequestPost(context) {
       return Response.json({ results: [], count: 0 }, { headers: corsHeaders });
     }
 
-    const topK = clamp(
-      parsePositiveInteger(body?.topK) || MAX_RESULTS_DEFAULT,
-      1,
-      20,
+    const aiSearchConfig = resolveAiSearchConfig(env);
+    const topK = clampResults(
+      body?.topK,
+      aiSearchConfig.maxResults,
+      aiSearchConfig.maxResults,
     );
 
     if (!env.AI || !env.RAG_ID) {
@@ -82,13 +78,17 @@ export async function onRequestPost(context) {
     }
 
     // Run AI Search
+    const aiSearchRequest = buildAiSearchRequest({
+      query,
+      maxResults: topK,
+      config: aiSearchConfig,
+      systemPrompt: SYSTEM_PROMPT,
+      stream: false,
+      hybrid: true,
+    });
+
     const searchResponse = await withTimeout(
-      env.AI.autorag(env.RAG_ID).aiSearch({
-        query,
-        max_num_results: topK, // Fetch all requested results
-        hybrid: true,
-        system_prompt: SYSTEM_PROMPT,
-      }),
+      env.AI.autorag(env.RAG_ID).aiSearch(aiSearchRequest),
       SEARCH_TIMEOUT_MS,
     );
 
