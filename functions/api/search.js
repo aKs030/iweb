@@ -27,6 +27,8 @@ const TECHNICAL_RESULT_PATHS = new Set([
   '/pages/blog/posts/index.json',
 ]);
 const TECHNICAL_RESULT_PREFIXES = ['/.well-known/', '/api/'];
+const ALLOWED_RESULT_PREFIXES = ['/about', '/blog', '/projekte'];
+const ALLOW_ROOT_RESULT = true;
 
 function withTimeout(promise, ms) {
   return Promise.race([
@@ -124,6 +126,20 @@ function isTechnicalResult(url) {
   );
 }
 
+function isAllowlistedResult(url) {
+  const normalized = normalizeUrl(url).toLowerCase();
+  if (ALLOW_ROOT_RESULT && normalized === '/') {
+    return true;
+  }
+
+  return ALLOWED_RESULT_PREFIXES.some(
+    (prefix) =>
+      normalized === prefix ||
+      normalized.startsWith(`${prefix}/`) ||
+      normalized.startsWith(`${prefix}?`),
+  );
+}
+
 export async function onRequestPost(context) {
   const { request, env } = context;
   const corsHeaders = getCorsHeaders(request, env);
@@ -174,7 +190,7 @@ export async function onRequestPost(context) {
     // Deduplicate results based on URL
     const uniqueResultsMap = new Map();
     for (const res of results) {
-      if (isTechnicalResult(res.url)) {
+      if (isTechnicalResult(res.url) || !isAllowlistedResult(res.url)) {
         continue;
       }
 
