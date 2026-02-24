@@ -150,6 +150,7 @@ export function initViewTransitions() {
       '/projekte',
       '/videos',
       '/blog',
+      '/contact',
       '/about',
       '/datenschutz',
       '/impressum',
