@@ -255,13 +255,20 @@ async function runAiSearch(
   maxNumResults,
   rewriteQuery,
 ) {
-  return aiBinding.autorag(ragId).aiSearch({
+  // Use 'hybrid: true' for modern vector search with keyword boosting if supported by binding
+  const options = {
     query,
     max_num_results: maxNumResults,
     rewrite_query: rewriteQuery,
     stream: false,
     system_prompt: SEARCH_SYSTEM_PROMPT,
-  });
+    // Enable hybrid search if supported by the binding (assumed 'modern' context)
+    // Note: Cloudflare's aiSearch API behavior depends on the specific model/binding version.
+    // Explicitly requesting hybrid search can improve relevance "without much fallback".
+    hybrid: true,
+  };
+
+  return aiBinding.autorag(ragId).aiSearch(options);
 }
 
 function scoreFallbackEntry(entry, queryLower, queryTerms, intentPaths) {
