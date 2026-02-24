@@ -4,6 +4,13 @@ import {
   clampResults,
   resolveAiSearchConfig,
 } from './_ai-search-config.js';
+import {
+  buildFallbackDescription,
+  chooseBestTitle,
+  detectCategory,
+  extractTitle,
+  normalizeUrl,
+} from './_search-url.js';
 
 // Configuration
 const SEARCH_TIMEOUT_MS = 15000;
@@ -18,35 +25,79 @@ function withTimeout(promise, ms) {
   ]);
 }
 
-function extractAiResult(item) {
-  const pathName = item.filename || '';
-  let url = pathName.startsWith('/') ? pathName : '/' + pathName;
-  // Clean up URL: remove .md, .mdx extensions
-  url = url.replace(/\.mdx?$/, '');
-  // if url is just /index, map to /
-  if (url === '/index') url = '/';
+function extractSnippet(item, maxLength = 180) {
+  const mergedContent = Array.isArray(item?.content)
+    ? item.content
+        .map((chunk) =>
+          typeof chunk?.text === 'string' ? chunk.text.trim() : '',
+        )
+        .filter(Boolean)
+        .join(' ')
+    : '';
 
-  const attrs = item.attributes || {};
-  const title =
-    attrs.title ||
-    pathName
-      .split('/')
-      .pop()
-      .replace(/-/g, ' ')
-      .replace(/\.mdx?$/, '') ||
-    'Ergebnis';
-  const description =
-    attrs.description ||
-    (item.content?.[0] ? item.content[0].text.substring(0, 150) + '...' : '');
+  const fallbackText =
+    typeof item?.text === 'string'
+      ? item.text
+      : typeof item?.description === 'string'
+        ? item.description
+        : '';
+
+  const raw = (mergedContent || fallbackText || '').replace(/\s+/g, ' ').trim();
+  if (!raw) return '';
+  if (raw.length <= maxLength) return raw;
+
+  const truncated = raw.slice(0, maxLength);
+  const lastSentenceBreak = Math.max(
+    truncated.lastIndexOf('.'),
+    truncated.lastIndexOf('!'),
+    truncated.lastIndexOf('?'),
+  );
+
+  if (lastSentenceBreak > maxLength * 0.7) {
+    return truncated.slice(0, lastSentenceBreak + 1).trim();
+  }
+
+  return `${truncated.trim()}...`;
+}
+
+function extractAiResult(item) {
+  const rawPath =
+    typeof item?.filename === 'string'
+      ? item.filename
+      : typeof item?.metadata?.filename === 'string'
+        ? item.metadata.filename
+        : typeof item?.url === 'string'
+          ? item.url
+          : '';
+
+  const attrs =
+    item?.attributes && typeof item.attributes === 'object'
+      ? item.attributes
+      : {};
+
+  const url = normalizeUrl(rawPath);
+  const fallbackTitle = extractTitle(rawPath, url);
+  const title = chooseBestTitle(
+    { title: attrs.title || item?.title },
+    fallbackTitle,
+    url,
+  );
   const category =
-    attrs.category || (pathName.includes('blog') ? 'Blog' : 'Seite');
+    typeof attrs.category === 'string' && attrs.category.trim()
+      ? attrs.category.trim()
+      : detectCategory(url);
+  const description =
+    (typeof attrs.description === 'string' ? attrs.description.trim() : '') ||
+    extractSnippet(item) ||
+    buildFallbackDescription(url, title, category);
+  const score = Number.isFinite(item?.score) ? Number(item.score) : 0;
 
   return {
     title,
     url,
     description,
     category,
-    score: item.score || 0,
+    score,
   };
 }
 
