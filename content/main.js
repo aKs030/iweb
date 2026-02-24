@@ -1,6 +1,6 @@
 /**
  * Main Application Entry Point
- * @version 6.2.0
+ * @version 6.2.1
  * @last-modified 2026-02-11
  */
 
@@ -65,12 +65,6 @@ const _initApp = () => {
     return;
   }
   _appInitialized = true;
-
-  // Scroll to top on init (Safari compatibility) - only if no hash in URL
-  if (!window.location.hash) {
-    window.scrollTo(0, 0);
-    appTimers.setTimeout(() => window.scrollTo(0, 0), 100);
-  }
 
   sectionManager.init();
 
@@ -200,11 +194,6 @@ globalThis.addEventListener('pageshow', (event) => {
     // Trigger visibility change to resume animations
     if (!document.hidden) {
       document.dispatchEvent(new CustomEvent('visibilitychange'));
-    }
-
-    // Force scroll to top on restoration - only if no hash in URL
-    if (!window.location.hash) {
-      window.scrollTo(0, 0);
     }
   }
 });

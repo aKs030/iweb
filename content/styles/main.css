@@ -192,10 +192,6 @@ html {
   scroll-behavior: smooth;
 }
 
-.snap-page {
-  scroll-snap-type: y mandatory;
-}
-
 body {
   width: 100%;
   overflow-x: hidden;
