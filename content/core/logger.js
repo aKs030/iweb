@@ -34,7 +34,7 @@ class Logger {
     const params = new URLSearchParams(window.location.search);
     if (params.get('debug') === 'true') return LOG_LEVELS.debug;
 
-    const stored = localStorage?.getItem('iweb-debug');
+    const stored = window.localStorage?.getItem('iweb-debug');
     if (stored === 'true') return LOG_LEVELS.debug;
 
     return isProd ? LOG_LEVELS.error : LOG_LEVELS.warn;

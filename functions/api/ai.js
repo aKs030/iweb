@@ -5,12 +5,9 @@
  */
 
 import { getCorsHeaders, handleOptions } from './_cors.js';
-import {
-  calculateRelevanceScore,
-  normalizeUrl,
-  extractTitle,
-  compileQueryRegexes,
-} from './_search-utils.js';
+import { compileQueryRegexes } from './_search-query.js';
+import { calculateRelevanceScore } from './_search-scoring.js';
+import { normalizeUrl, extractTitle } from './_search-url.js';
 
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const GROQ_MODEL = 'llama-3.3-70b-versatile';

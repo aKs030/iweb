@@ -8,6 +8,7 @@
 import { MenuRenderer } from './modules/MenuRenderer.js';
 import { MenuState } from './modules/MenuState.js';
 import { MenuEvents } from './modules/MenuEvents.js';
+import { MenuSearch } from './modules/MenuSearch.js';
 import { MenuAccessibility } from './modules/MenuAccessibility.js';
 import { MenuPerformance } from './modules/MenuPerformance.js';
 import { MenuConfig } from './modules/MenuConfig.js';
@@ -27,6 +28,8 @@ class SiteMenu extends HTMLElement {
     this.performance = new MenuPerformance();
     /** @type {MenuEvents|null} */
     this.events = null;
+    /** @type {MenuSearch|null} */
+    this.search = null;
     /** @type {MenuAccessibility|null} */
     this.accessibility = null;
     this.initialized = false;
@@ -47,14 +50,19 @@ class SiteMenu extends HTMLElement {
         new MenuAccessibility(this, this.state, this.config)
       );
       this.accessibility = accessibility;
+
+      this.search = new MenuSearch(this, this.state, this.config);
+
       this.events = new MenuEvents(
         this,
         this.state,
         this.renderer,
+        this.search,
         this.config,
       );
 
       accessibility.init();
+      this.search.init();
       this.events.init();
 
       this.initialized = true;
@@ -70,6 +78,7 @@ class SiteMenu extends HTMLElement {
 
   disconnectedCallback() {
     this.events?.destroy();
+    this.search?.destroy();
     const accessibility = /** @type {any} */ (this.accessibility);
     accessibility?.destroy();
     this.performance?.destroy();
@@ -100,6 +109,9 @@ class SiteMenu extends HTMLElement {
         isOpen: this.state.isOpen,
         title: this.state.currentTitle,
         subtitle: this.state.currentSubtitle,
+      },
+      search: {
+        isOpen: this.search?.isSearchOpen() || false,
       },
       device: this.performance.getDeviceCapabilities(),
     };
