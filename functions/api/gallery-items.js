@@ -1,3 +1,9 @@
+// Memory cache for R2 objects to reduce costs and latency
+let cachedObjects = null;
+let cacheExpiresAt = 0;
+let pendingLoadPromise = null;
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
 export async function onRequest(context) {
   const { env } = context;
   const url = new URL(context.request.url);
@@ -14,16 +20,42 @@ export async function onRequest(context) {
   }
 
   try {
-    const objects = [];
-    let cursor;
+    let objects = [];
+    const now = Date.now();
 
-    do {
-      const list = await BUCKET.list({ prefix: 'Gallery/', cursor });
-      if (list.objects) {
-        objects.push(...list.objects);
+    // Check if we have a valid cache
+    if (cachedObjects && now < cacheExpiresAt) {
+      objects = cachedObjects;
+    } else {
+      // Check if another request is already fetching from R2
+      if (pendingLoadPromise) {
+        objects = await pendingLoadPromise;
+      } else {
+        // Fetch from R2 and update cache
+        pendingLoadPromise = (async () => {
+          try {
+            const listResults = [];
+            let cursor;
+
+            do {
+              const list = await BUCKET.list({ prefix: 'Gallery/', cursor });
+              if (list.objects) {
+                listResults.push(...list.objects);
+              }
+              cursor = list.truncated ? list.cursor : undefined;
+            } while (cursor);
+
+            cachedObjects = listResults;
+            cacheExpiresAt = Date.now() + CACHE_TTL_MS;
+            return listResults;
+          } finally {
+            pendingLoadPromise = null;
+          }
+        })();
+
+        objects = await pendingLoadPromise;
       }
-      cursor = list.truncated ? list.cursor : undefined;
-    } while (cursor);
+    }
 
     // Base URL for images
     // Use environment variable or default to custom domain
