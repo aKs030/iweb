@@ -413,28 +413,12 @@ export class MenuSearch {
     const cachedPayload = this.getCachedSearchResults(cacheKey);
 
     if (cachedPayload) {
-      const cachedItems = cachedPayload.items;
-      if (this.input?.value.trim() !== query) return;
-      this.items = cachedItems;
-      this.aiChatMessage = cachedPayload.aiChatMessage;
-      this.aiChatSuggestions = cachedPayload.aiChatSuggestions;
-      this.selectedIndex = cachedItems.length > 0 ? 0 : -1;
-
-      if (cachedItems.length === 0) {
-        this.renderSearchState({
-          aiChatMessage: cachedPayload.aiChatMessage,
-          aiChatSuggestions: cachedPayload.aiChatSuggestions,
-        });
-        return;
-      }
-
-      this.renderSearchState({
-        items: cachedItems,
+      this.applySearchPayload(query, {
+        items: cachedPayload.items,
         query,
         aiChatMessage: cachedPayload.aiChatMessage,
         aiChatSuggestions: cachedPayload.aiChatSuggestions,
       });
-      this.saveRecentSearch(query);
       return;
     }
 
@@ -479,39 +463,13 @@ export class MenuSearch {
         data?.aiChat,
         data?.summary,
       );
-      const aiChatMessage = aiChat.message;
-      const aiChatSuggestions = aiChat.suggestions;
-
-      if (this.input?.value.trim() !== query) {
-        return;
-      }
-
-      this.items = items;
-      this.aiChatMessage = aiChatMessage;
-      this.aiChatSuggestions = aiChatSuggestions;
-      this.selectedIndex = items.length > 0 ? 0 : -1;
-      this.setCachedSearchResults(
-        cacheKey,
-        items,
-        aiChatMessage,
-        aiChatSuggestions,
-      );
-
-      if (items.length === 0) {
-        this.renderSearchState({
-          aiChatMessage,
-          aiChatSuggestions,
-        });
-        return;
-      }
-
-      this.renderSearchState({
+      this.applySearchPayload(query, {
         items,
         query,
-        aiChatMessage,
-        aiChatSuggestions,
+        aiChatMessage: aiChat.message,
+        aiChatSuggestions: aiChat.suggestions,
+        cacheKey,
       });
-      this.saveRecentSearch(query);
     } catch (err) {
       const isAbortError = this.isAbortLikeError(err);
 
@@ -542,6 +500,44 @@ export class MenuSearch {
     }
   }
 
+  applySearchPayload(query, payload = {}) {
+    if (this.input?.value.trim() !== query) return;
+
+    const items = Array.isArray(payload.items) ? payload.items : [];
+    const aiChatMessage = String(payload.aiChatMessage || '');
+    const aiChatSuggestions = Array.isArray(payload.aiChatSuggestions)
+      ? payload.aiChatSuggestions
+      : [];
+    const cacheKey = String(payload.cacheKey || '').trim();
+    const inlineAiMode = Boolean(aiChatMessage);
+    const visibleItems = inlineAiMode ? [] : items;
+
+    this.items = visibleItems;
+    this.aiChatMessage = aiChatMessage;
+    this.aiChatSuggestions = aiChatSuggestions;
+    this.selectedIndex = visibleItems.length > 0 ? 0 : -1;
+
+    if (cacheKey) {
+      this.setCachedSearchResults(
+        cacheKey,
+        items,
+        aiChatMessage,
+        aiChatSuggestions,
+      );
+    }
+
+    this.renderSearchState({
+      items: visibleItems,
+      query,
+      aiChatMessage,
+      aiChatSuggestions,
+    });
+
+    if (items.length > 0 || aiChatMessage) {
+      this.saveRecentSearch(query);
+    }
+  }
+
   normalizeSearchResult(item) {
     if (!item || typeof item !== 'object') return null;
 
@@ -561,6 +557,28 @@ export class MenuSearch {
     };
   }
 
+  sanitizeSearchLinkUrl(rawUrl) {
+    const value = String(rawUrl || '').trim();
+    if (!value) return '';
+
+    try {
+      const parsed = new URL(value, window.location.origin);
+      if (!['http:', 'https:'].includes(parsed.protocol)) return '';
+
+      const hostname = parsed.hostname.toLowerCase();
+      const allowedHosts = new Set([
+        window.location.hostname.toLowerCase(),
+        'www.abdulkerimsesli.de',
+        'abdulkerimsesli.de',
+      ]);
+      if (!allowedHosts.has(hostname)) return '';
+
+      return `${parsed.pathname}${parsed.search}${parsed.hash}` || '/';
+    } catch {
+      return '';
+    }
+  }
+
   normalizeSearchChatMessage(value) {
     let text = String(value || '').trim();
     if (!text) return '';
@@ -569,6 +587,21 @@ export class MenuSearch {
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;');
+    // Markdown links [label](url)
+    text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_match, label, rawUrl) => {
+      const safeUrl = this.sanitizeSearchLinkUrl(rawUrl);
+      if (!safeUrl) return label;
+      return `<a href="${safeUrl}" class="menu-search__ai-link">${label}</a>`;
+    });
+    // Plain URLs to internal clickable links
+    text = text.replace(
+      /(^|[\s(])(https?:\/\/[^\s<)]+)/gi,
+      (_match, prefix, rawUrl) => {
+        const safeUrl = this.sanitizeSearchLinkUrl(rawUrl);
+        if (!safeUrl) return `${prefix}${rawUrl}`;
+        return `${prefix}<a href="${safeUrl}" class="menu-search__ai-link">${safeUrl}</a>`;
+      },
+    );
     // Code blocks / inline
     text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
     // Bold & italic
@@ -586,7 +619,7 @@ export class MenuSearch {
     const title = String(item.title || '')
       .replace(/\s+/g, ' ')
       .trim();
-    const url = String(item.url || '').trim();
+    const url = this.sanitizeSearchLinkUrl(item.url);
 
     if (!title || !url) return null;
 
@@ -611,19 +644,106 @@ export class MenuSearch {
     return { message, suggestions };
   }
 
-  /** Map category to a short emoji/icon for visual identification */
-  getCategoryIcon(category) {
-    const icons = {
-      home: '🏠',
-      projekte: '📁',
-      blog: '📝',
-      galerie: '📷',
-      videos: '🎬',
-      'über mich': '🧑',
-      kontakt: '✉️',
-      seite: '📄',
+  getCategoryLabel(category) {
+    const key = String(category || '')
+      .trim()
+      .toLowerCase();
+
+    const labels = {
+      home: 'Start',
+      projekte: 'Projekte',
+      blog: 'Blog',
+      galerie: 'Galerie',
+      videos: 'Videos',
+      'ueber mich': 'About',
+      'über mich': 'About',
+      kontakt: 'Kontakt',
+      seite: 'Seite',
     };
-    return icons[(category || '').toLowerCase()] || '📄';
+
+    return labels[key] || category || 'Seite';
+  }
+
+  formatSearchResultUrl(rawUrl) {
+    const fallback = String(rawUrl || '').trim();
+    if (!fallback) return '';
+
+    try {
+      const parsed = new URL(fallback, window.location.origin);
+      const basePath = parsed.pathname || '/';
+      const compactPath =
+        basePath.length > 44
+          ? `${basePath.slice(0, 41).replace(/\/+$/, '')}...`
+          : basePath;
+
+      return `${compactPath}${parsed.search}`;
+    } catch {
+      return fallback.length > 46 ? `${fallback.slice(0, 43)}...` : fallback;
+    }
+  }
+
+  getFallbackSuggestions() {
+    return [
+      {
+        title: this.t('menu.nav_home', 'Startseite'),
+        url: '/',
+      },
+      {
+        title: this.t('menu.nav_about', 'About'),
+        url: '/about/',
+      },
+      {
+        title: this.t('menu.nav_blog', 'Blog'),
+        url: '/blog/',
+      },
+      {
+        title: this.t('menu.nav_projects', 'Projekte'),
+        url: '/projekte/',
+      },
+    ];
+  }
+
+  renderSearchEmptyState(query = '') {
+    const wrap = document.createElement('div');
+    wrap.className = 'menu-search__empty';
+
+    const title = document.createElement('p');
+    title.className = 'menu-search__empty-title';
+    if (query) {
+      title.textContent = this.t(
+        'menu.search_no_results_title',
+        'Keine passenden Ergebnisse gefunden',
+      );
+    } else {
+      title.textContent = this.t(
+        'menu.search_empty_title',
+        'Website-Suche starten',
+      );
+    }
+    wrap.appendChild(title);
+
+    const description = document.createElement('p');
+    description.className = 'menu-search__empty-text';
+    description.textContent = this.t(
+      'menu.search_empty_text',
+      'Probiere Startseite, About, Blog oder Projekte.',
+    );
+    wrap.appendChild(description);
+
+    const suggestionsWrap = document.createElement('div');
+    suggestionsWrap.className = 'menu-search__empty-suggestions';
+
+    this.getFallbackSuggestions().forEach((suggestion) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'menu-search__empty-suggestion';
+      btn.setAttribute('data-search-suggestion-url', suggestion.url);
+      btn.textContent = suggestion.title;
+      suggestionsWrap.appendChild(btn);
+    });
+
+    wrap.appendChild(suggestionsWrap);
+    return wrap;
   }
 
   renderSearchState(options = {}) {
@@ -635,8 +755,8 @@ export class MenuSearch {
       message = '',
       items = [],
       aiChatMessage = '',
-      aiChatSuggestions = [],
-      query: _query = '',
+      aiChatSuggestions: _aiChatSuggestions = [],
+      query = '',
     } = options;
 
     const results = this.results;
@@ -676,23 +796,8 @@ export class MenuSearch {
       aiText.innerHTML = aiChatMessage;
       aiChat.appendChild(aiText);
 
-      if (Array.isArray(aiChatSuggestions) && aiChatSuggestions.length > 0) {
-        const suggestionsWrap = document.createElement('div');
-        suggestionsWrap.className = 'menu-search__ai-suggestions';
-
-        aiChatSuggestions.forEach((suggestion) => {
-          const btn = document.createElement('button');
-          btn.type = 'button';
-          btn.className = 'menu-search__ai-suggestion';
-          btn.setAttribute('data-search-suggestion-url', suggestion.url);
-          btn.textContent = suggestion.title;
-          suggestionsWrap.appendChild(btn);
-        });
-
-        aiChat.appendChild(suggestionsWrap);
-      }
-
       results.appendChild(aiChat);
+      return;
     }
 
     if (message) {
@@ -707,16 +812,26 @@ export class MenuSearch {
     }
 
     if (items.length === 0) {
+      if (!aiChatMessage) {
+        results.appendChild(this.renderSearchEmptyState(query));
+      }
       return;
     }
 
-    // Result count summary
-    if (items.length > 0) {
-      const summary = document.createElement('div');
-      summary.className = 'menu-search__count';
-      summary.textContent = `${items.length} ${items.length === 1 ? 'Ergebnis' : 'Ergebnisse'}`;
-      results.appendChild(summary);
-    }
+    const summary = document.createElement('div');
+    summary.className = 'menu-search__count';
+
+    const countText = document.createElement('span');
+    countText.className = 'menu-search__count-value';
+    countText.textContent = `${items.length} ${items.length === 1 ? 'Ergebnis' : 'Ergebnisse'}`;
+    summary.appendChild(countText);
+
+    const hintText = document.createElement('span');
+    hintText.className = 'menu-search__count-hint';
+    hintText.textContent = 'Enter oeffnen | Pfeile navigieren | Esc';
+    summary.appendChild(hintText);
+
+    results.appendChild(summary);
 
     const list = document.createElement('ul');
     list.className = 'menu-search__list';
@@ -741,16 +856,32 @@ export class MenuSearch {
         button.classList.add('is-selected');
       }
 
-      // Category badge with icon
+      // Category badge
       const badge = document.createElement('span');
       badge.className = 'menu-search__badge';
-      badge.textContent = `${this.getCategoryIcon(item.category)} ${item.category || 'Seite'}`;
+      badge.textContent = this.getCategoryLabel(item.category);
       button.appendChild(badge);
+
+      const heading = document.createElement('span');
+      heading.className = 'menu-search__heading';
 
       const title = document.createElement('span');
       title.className = 'menu-search__title';
       title.textContent = item.title;
-      button.appendChild(title);
+      heading.appendChild(title);
+
+      const go = document.createElement('span');
+      go.className = 'menu-search__go';
+      go.setAttribute('aria-hidden', 'true');
+      go.textContent = '›';
+      heading.appendChild(go);
+
+      button.appendChild(heading);
+
+      const url = document.createElement('span');
+      url.className = 'menu-search__url';
+      url.textContent = this.formatSearchResultUrl(item.url);
+      button.appendChild(url);
 
       // Use highlighted description if available
       if (item.highlightedDescription || item.description) {
@@ -874,7 +1005,7 @@ export class MenuSearch {
 
     const header = document.createElement('div');
     header.className = 'menu-search__recent-header';
-    header.textContent = '🕒 Letzte Suchen';
+    header.textContent = this.t('menu.search_recent', 'Letzte Suchen');
     results.appendChild(header);
 
     const list = document.createElement('ul');
