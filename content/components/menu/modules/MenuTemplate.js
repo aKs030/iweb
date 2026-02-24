@@ -228,11 +228,6 @@ ${this.getToggleButton()}
   }
 
   getSearchUI() {
-    const isMac =
-      typeof navigator !== 'undefined' &&
-      /Mac|iPhone|iPad/.test(navigator.userAgent || '');
-    const shortcutHint = isMac ? '⌘K' : 'Ctrl+K';
-
     return `
 <div class="menu-search" aria-hidden="true">
   <div class="menu-search__panel">
@@ -263,7 +258,6 @@ ${this.getToggleButton()}
         autocapitalize="off"
         spellcheck="false"
       />
-      <span class="menu-search__shortcut" aria-hidden="true">${shortcutHint}</span>
       <button type="button" class="menu-search__clear" aria-label="Suche leeren">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>

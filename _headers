@@ -89,13 +89,6 @@
 # ============================================================================
 # JavaScript Bundles - Modern Optimization
 # ============================================================================
-# Large runtime bundle (rl8i) - 1 week browser cache, 30 days stale-while-revalidate
-/rl8i/*
-  Cache-Control: public, max-age=604800, stale-while-revalidate=2592000
-  Vary: Accept-Encoding
-  Cross-Origin-Resource-Policy: same-origin
-  X-Content-Type-Options: nosniff
-
 # Main application script (not fingerprinted) - fresh browser, 1 hour edge cache
 /content/main.js
   Cache-Control: public, max-age=0, s-maxage=3600, stale-while-revalidate=86400
