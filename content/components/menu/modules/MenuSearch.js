@@ -562,13 +562,22 @@ export class MenuSearch {
   }
 
   normalizeSearchChatMessage(value) {
-    const text = String(value || '')
-      .replace(/<[^>]*>/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim();
-
+    let text = String(value || '').trim();
     if (!text) return '';
-    return text.length > 260 ? `${text.slice(0, 259).trim()}...` : text;
+    // Basic Markdown to HTML
+    text = text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+    // Code blocks / inline
+    text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
+    // Bold & italic
+    text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
+    // Lines
+    text = text.replace(/\n\n+/g, '</p><p>');
+    text = text.replace(/\n/g, '<br>');
+    return `<p>${text}</p>`;
   }
 
   normalizeSearchSuggestion(item) {
@@ -662,9 +671,9 @@ export class MenuSearch {
       const aiChat = document.createElement('div');
       aiChat.className = 'menu-search__ai-chat';
 
-      const aiText = document.createElement('p');
+      const aiText = document.createElement('div');
       aiText.className = 'menu-search__ai-text';
-      aiText.textContent = aiChatMessage;
+      aiText.innerHTML = aiChatMessage;
       aiChat.appendChild(aiText);
 
       if (Array.isArray(aiChatSuggestions) && aiChatSuggestions.length > 0) {

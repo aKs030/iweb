@@ -5,8 +5,6 @@
  */
 
 import { getCorsHeaders, handleOptions } from './_cors.js';
-import { compileQueryRegexes } from './_search-query.js';
-import { calculateRelevanceScore } from './_search-scoring.js';
 import { normalizeUrl, extractTitle } from './_search-url.js';
 
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
@@ -145,7 +143,7 @@ async function getRelevantContext(query, env) {
     // Use AI Search Beta to get relevant context (increased from 3 to 5)
     const searchData = await env.AI.autorag(ragId).aiSearch({
       query: query,
-      max_num_results: 5,
+      max_num_results: 3,
       rewrite_query: false,
       stream: false,
     });
@@ -154,31 +152,11 @@ async function getRelevantContext(query, env) {
       return null;
     }
 
-    // Pre-compile regexes for relevance scoring
-    const queryTerms = query
-      .toLowerCase()
-      .trim()
-      .split(/\s+/)
-      .filter((t) => t.length > 1);
-    const queryRegexes = compileQueryRegexes(queryTerms);
-
-    // Calculate relevance scores and sort
     const scoredResults = searchData.data
       .map((item) => ({
         item,
-        score: calculateRelevanceScore(
-          {
-            title: item.filename || '',
-            url: item.filename || '',
-            description: item.content?.map((c) => c.text).join(' ') || '',
-            score: 0,
-          },
-          query,
-          queryTerms,
-          queryRegexes,
-        ),
+        score: item.score || 0,
       }))
-      .filter((result) => result.score > 1) // Filter out low-relevance results
       .sort((a, b) => b.score - a.score)
       .slice(0, 3); // Keep top 3 most relevant
 
