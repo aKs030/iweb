@@ -97,6 +97,15 @@ async function checkRateLimit(ip, env) {
   }
 }
 
+function buildJsonHeaders(corsHeaders, extraHeaders = {}) {
+  return {
+    'Content-Type': 'application/json',
+    'Cache-Control': 'no-store, no-cache, must-revalidate, private',
+    ...corsHeaders,
+    ...extraHeaders,
+  };
+}
+
 export async function onRequestPost({ request, env }) {
   const { getCorsHeaders } = await import('./_cors.js');
   const corsHeaders = getCorsHeaders(request, env);
@@ -109,7 +118,7 @@ export async function onRequestPost({ request, env }) {
         JSON.stringify({ error: 'Content-Type must be application/json' }),
         {
           status: 400,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders },
+          headers: buildJsonHeaders(corsHeaders),
         },
       );
     }
@@ -125,11 +134,9 @@ export async function onRequestPost({ request, env }) {
         }),
         {
           status: 429,
-          headers: {
-            'Content-Type': 'application/json',
+          headers: buildJsonHeaders(corsHeaders, {
             'Retry-After': String(rateLimit.retryAfter || RATE_LIMIT_TTL),
-            ...corsHeaders,
-          },
+          }),
         },
       );
     }
@@ -143,7 +150,7 @@ export async function onRequestPost({ request, env }) {
         JSON.stringify({ success: true, message: 'Message received' }),
         {
           status: 200,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders },
+          headers: buildJsonHeaders(corsHeaders),
         },
       );
     }
@@ -154,7 +161,7 @@ export async function onRequestPost({ request, env }) {
         JSON.stringify({ error: 'Bitte füllen Sie alle Pflichtfelder aus.' }),
         {
           status: 400,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders },
+          headers: buildJsonHeaders(corsHeaders),
         },
       );
     }
@@ -171,7 +178,7 @@ export async function onRequestPost({ request, env }) {
         }),
         {
           status: 400,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders },
+          headers: buildJsonHeaders(corsHeaders),
         },
       );
     }
@@ -185,7 +192,7 @@ export async function onRequestPost({ request, env }) {
         }),
         {
           status: 400,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders },
+          headers: buildJsonHeaders(corsHeaders),
         },
       );
     }
@@ -195,7 +202,7 @@ export async function onRequestPost({ request, env }) {
         JSON.stringify({ error: 'Server configuration error.' }),
         {
           status: 500,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders },
+          headers: buildJsonHeaders(corsHeaders),
         },
       );
     }
@@ -241,7 +248,7 @@ export async function onRequestPost({ request, env }) {
         }),
         {
           status: 500,
-          headers: { 'Content-Type': 'application/json', ...corsHeaders },
+          headers: buildJsonHeaders(corsHeaders),
         },
       );
     }
@@ -250,14 +257,14 @@ export async function onRequestPost({ request, env }) {
 
     return new Response(JSON.stringify({ success: true, id: data.id }), {
       status: 200,
-      headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      headers: buildJsonHeaders(corsHeaders),
     });
   } catch {
     return new Response(
       JSON.stringify({ error: 'Ein unerwarteter Fehler ist aufgetreten.' }),
       {
         status: 500,
-        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+        headers: buildJsonHeaders(corsHeaders),
       },
     );
   }

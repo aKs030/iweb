@@ -27,7 +27,6 @@ export class MenuSearch {
     this.clearBtn = null;
     this.items = [];
     this.aiChatMessage = '';
-    this.aiChatSuggestions = [];
     this.selectedIndex = -1;
     this.debounceTimer = null;
     this.abortController = null;
@@ -162,7 +161,6 @@ export class MenuSearch {
         this.updateClearButtonVisibility('');
         this.items = [];
         this.aiChatMessage = '';
-        this.aiChatSuggestions = [];
         this.selectedIndex = -1;
         this.renderSearchState({ hidden: true });
         this.input.focus();
@@ -335,7 +333,6 @@ export class MenuSearch {
     this.isOpen = false;
     this.items = [];
     this.aiChatMessage = '';
-    this.aiChatSuggestions = [];
     this.selectedIndex = -1;
     this.syncSearchTriggerState(false);
     this.syncToggleSearchState(false);
@@ -386,7 +383,6 @@ export class MenuSearch {
       this.abortSearchRequest();
       this.items = [];
       this.aiChatMessage = '';
-      this.aiChatSuggestions = [];
       this.selectedIndex = -1;
       // Show recent searches when clearing
       if (!query && this.recentSearches.length > 0 && this.isSearchOpen()) {
@@ -417,7 +413,6 @@ export class MenuSearch {
         items: cachedPayload.items,
         query,
         aiChatMessage: cachedPayload.aiChatMessage,
-        aiChatSuggestions: cachedPayload.aiChatSuggestions,
       });
       return;
     }
@@ -467,7 +462,6 @@ export class MenuSearch {
         items,
         query,
         aiChatMessage: aiChat.message,
-        aiChatSuggestions: aiChat.suggestions,
         cacheKey,
       });
     } catch (err) {
@@ -483,7 +477,6 @@ export class MenuSearch {
 
       this.items = [];
       this.aiChatMessage = '';
-      this.aiChatSuggestions = [];
       this.selectedIndex = -1;
       this.renderSearchState({
         message: didTimeoutAbort
@@ -505,32 +498,22 @@ export class MenuSearch {
 
     const items = Array.isArray(payload.items) ? payload.items : [];
     const aiChatMessage = String(payload.aiChatMessage || '');
-    const aiChatSuggestions = Array.isArray(payload.aiChatSuggestions)
-      ? payload.aiChatSuggestions
-      : [];
     const cacheKey = String(payload.cacheKey || '').trim();
     const inlineAiMode = Boolean(aiChatMessage);
     const visibleItems = inlineAiMode ? [] : items;
 
     this.items = visibleItems;
     this.aiChatMessage = aiChatMessage;
-    this.aiChatSuggestions = aiChatSuggestions;
     this.selectedIndex = visibleItems.length > 0 ? 0 : -1;
 
     if (cacheKey) {
-      this.setCachedSearchResults(
-        cacheKey,
-        items,
-        aiChatMessage,
-        aiChatSuggestions,
-      );
+      this.setCachedSearchResults(cacheKey, items, aiChatMessage);
     }
 
     this.renderSearchState({
       items: visibleItems,
       query,
       aiChatMessage,
-      aiChatSuggestions,
     });
 
     if (items.length > 0 || aiChatMessage) {
@@ -613,35 +596,12 @@ export class MenuSearch {
     return `<p>${text}</p>`;
   }
 
-  normalizeSearchSuggestion(item) {
-    if (!item || typeof item !== 'object') return null;
-
-    const title = String(item.title || '')
-      .replace(/\s+/g, ' ')
-      .trim();
-    const url = this.sanitizeSearchLinkUrl(item.url);
-
-    if (!title || !url) return null;
-
-    return {
-      title: title.length > 58 ? `${title.slice(0, 57).trim()}...` : title,
-      url,
-    };
-  }
-
   normalizeSearchChatPayload(aiChat, fallbackSummary = '') {
     const payload = aiChat && typeof aiChat === 'object' ? aiChat : {};
     const message = this.normalizeSearchChatMessage(
       payload.message || fallbackSummary || '',
     );
-    const suggestions = Array.isArray(payload.suggestions)
-      ? payload.suggestions
-          .map((item) => this.normalizeSearchSuggestion(item))
-          .filter(Boolean)
-          .slice(0, 3)
-      : [];
-
-    return { message, suggestions };
+    return { message };
   }
 
   getCategoryLabel(category) {
@@ -755,7 +715,6 @@ export class MenuSearch {
       message = '',
       items = [],
       aiChatMessage = '',
-      aiChatSuggestions: _aiChatSuggestions = [],
       query = '',
     } = options;
 
@@ -1072,20 +1031,10 @@ export class MenuSearch {
         ? entry.items.map((item) => ({ ...item }))
         : [],
       aiChatMessage: this.normalizeSearchChatMessage(entry.aiChatMessage),
-      aiChatSuggestions: Array.isArray(entry.aiChatSuggestions)
-        ? entry.aiChatSuggestions
-            .map((item) => this.normalizeSearchSuggestion(item))
-            .filter(Boolean)
-        : [],
     };
   }
 
-  setCachedSearchResults(
-    cacheKey,
-    items,
-    aiChatMessage = '',
-    aiChatSuggestions = [],
-  ) {
+  setCachedSearchResults(cacheKey, items, aiChatMessage = '') {
     if (!cacheKey || !Array.isArray(items)) return;
     if (this.searchCacheMaxEntries <= 0) return;
 
@@ -1104,11 +1053,6 @@ export class MenuSearch {
       expiresAt: Date.now() + this.searchCacheTtlMs,
       items: items.map((item) => ({ ...item })),
       aiChatMessage: this.normalizeSearchChatMessage(aiChatMessage),
-      aiChatSuggestions: Array.isArray(aiChatSuggestions)
-        ? aiChatSuggestions
-            .map((item) => this.normalizeSearchSuggestion(item))
-            .filter(Boolean)
-        : [],
     });
   }
 
