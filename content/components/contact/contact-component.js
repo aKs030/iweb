@@ -16,6 +16,15 @@ function ContactForm() {
   const [status, setStatus] = React.useState('idle'); // idle, submitting, success, error
   const [errorMessage, setErrorMessage] = React.useState('');
 
+  // UX: Focus management for accessibility
+  const successRef = React.useRef(null);
+
+  React.useEffect(() => {
+    if (status === 'success' && successRef.current) {
+      successRef.current.focus();
+    }
+  }, [status]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -68,6 +77,10 @@ function ContactForm() {
       h(
         'div',
         {
+          ref: successRef,
+          tabIndex: -1, // Make focusable programmatically
+          role: 'status', // Announce status change
+          'aria-live': 'polite',
           className: 'status-message status-success',
           style: {
             flexDirection: 'column',
@@ -75,6 +88,7 @@ function ContactForm() {
             padding: '3rem',
             background: 'transparent',
             border: 'none',
+            outline: 'none',
           },
         },
         h(CheckCircle, {
@@ -219,6 +233,7 @@ function ContactForm() {
           className: 'hidden-field',
           tabIndex: -1,
           autoComplete: 'off',
+          'aria-hidden': 'true', // Hide from screen readers
         }),
 
         // Error Message
@@ -227,6 +242,8 @@ function ContactForm() {
             'div',
             {
               className: 'status-message status-error',
+              role: 'alert', // Announce errors immediately
+              'aria-live': 'assertive',
               style: { marginBottom: '1.5rem' },
             },
             h(AlertCircle, { size: 20 }),
