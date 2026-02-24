@@ -1,60 +1,40 @@
-# API Utilities
+# API Functions
 
-Shared utility modules for Cloudflare Pages Functions.
+This directory contains server-side logic powered by Cloudflare Pages Functions.
 
-## Modules
+## Core API Endpoints
 
-### Core Utilities
+- **`search.js`** - Central search API combining Cloudflare AI Search (Vectorize) and deterministic fallback logic.
+- **`ai.js`** - AI Chat endpoint using RAG (Retrieval-Augmented Generation) and Groq.
+- **`contact.js`** - Contact form handler (email sending).
+- **`gallery-items.js`** - Media API for the gallery (R2 storage listing).
 
-- **`_xml-utils.js`** - XML/URL processing
-  - `escapeXml()` - XML character escaping
-  - `normalizePath()` - URL path normalization
-  - `resolveOrigin()` - Origin URL resolution
-  - `toISODate()` - ISO date conversion
-  - `toAbsoluteUrl()` - Relative to absolute URLs
+## Shared Utilities
 
-- **`_text-utils.js`** - Text processing
-  - `normalizeText()` - Text normalization with fallback
-  - `sanitizeDiscoveryText()` - Discovery text cleanup
-  - `formatSlug()` - Slug to readable text
+- **`_search-query.js`** - Query parsing, synonym expansion, regex compilation.
+- **`_search-scoring.js`** - Relevance scoring algorithms (lexical + vector combination).
+- **`_search-content.js`** - Snippet generation, highlighting, text cleaning.
+- **`_search-url.js`** - URL normalization, category detection, title extraction.
+- **`_search-results.js`** - Deduplication, result balancing, formatting.
+- **`_search-data.js`** - Static fallback data, synonyms configuration, intent rules.
+- **`_cors.js`** - CORS handling middleware.
+- **`_text-utils.js`** - General text processing (seo, sitemap).
+- **`_html-utils.js`** - HTML escaping helpers.
+- **`_xml-utils.js`** - XML generation for sitemaps.
 
-- **`_html-utils.js`** - HTML processing
-  - `escapeHtml()` - HTML entity escaping for XSS prevention
+## Search Architecture
 
-### Search & Content
+The search system is a hybrid engine:
 
-- **`_search-utils.js`** - Search functionality
-  - Query expansion with synonyms
-  - Fuzzy matching (Levenshtein distance)
-  - Relevance scoring
-  - URL normalization
-  - Snippet generation
+1.  **Intent Analysis:** Checks if the query matches specific sections (e.g., "blog", "projects").
+2.  **Vector Search:** Uses Cloudflare AI (Workers AI + Vectorize) for semantic understanding.
+3.  **Lexical Fallback:** Deterministic scoring for exact matches and known routes (useful if AI is slow or cold).
+4.  **Result Balancing:** Ensures diversity in results (e.g., not just 10 blog posts).
 
-- **`_cleanup-patterns.js`** - Text cleanup
-  - 60+ regex patterns for content cleaning
-  - HTML entity decoding
-  - Site-specific artifact removal
+## Development
 
-### External Services
+Run tests:
 
-- **`_youtube-utils.js`** - YouTube API integration
-  - `fetchUploadsPlaylistId()` - Get uploads playlist
-  - `toYoutubeDate()` - Date format conversion
-  - `getBestYouTubeThumbnail()` - Optimal thumbnail selection
-
-## Usage
-
-```javascript
-// Import utilities
-import { escapeXml, normalizePath } from './_xml-utils.js';
-import { normalizeText } from './_text-utils.js';
-import { escapeHtml } from './_html-utils.js';
-
-// Use in your API endpoints
-const safeText = escapeXml(userInput);
-const cleanPath = normalizePath('/blog/post/');
+```bash
+npm run check
 ```
-
-## Naming Convention
-
-Files prefixed with `_` are utility modules, not API endpoints.
