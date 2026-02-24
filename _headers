@@ -2,7 +2,7 @@
 # Cloudflare Pages Headers Configuration
 # ============================================================================
 # Optimized caching strategy and security headers for performance and protection
-# Last updated: 2026-02-13
+# Last updated: 2026-02-24
 
 # ============================================================================
 # Static Assets - Long-term Immutable Caching
@@ -89,14 +89,42 @@
 # ============================================================================
 # JavaScript Bundles - Modern Optimization
 # ============================================================================
+# Pages scripts (blog/gallery/videos/projekte/about)
+/pages/*.js
+  Cache-Control: public, max-age=0, s-maxage=3600, stale-while-revalidate=86400
+  Vary: Accept-Encoding
+  X-Content-Type-Options: nosniff
+
+/pages/*/*.js
+  Cache-Control: public, max-age=0, s-maxage=3600, stale-while-revalidate=86400
+  Vary: Accept-Encoding
+  X-Content-Type-Options: nosniff
+
+/pages/*/*/*.js
+  Cache-Control: public, max-age=0, s-maxage=3600, stale-while-revalidate=86400
+  Vary: Accept-Encoding
+  X-Content-Type-Options: nosniff
+
 # Main application script (not fingerprinted) - fresh browser, 1 hour edge cache
 /content/main.js
   Cache-Control: public, max-age=0, s-maxage=3600, stale-while-revalidate=86400
   Vary: Accept-Encoding
   X-Content-Type-Options: nosniff
 
-# Component scripts - short browser TTL, edge caching with priority hints
-/content/components/*
+# Component scripts (JS only) - short browser TTL, edge caching
+/content/components/*.js
+  Cache-Control: public, max-age=0, s-maxage=3600, stale-while-revalidate=86400
+  Vary: Accept-Encoding
+  X-Content-Type-Options: nosniff
+  Link: <https://cdn.jsdelivr.net>; rel=preconnect; crossorigin
+
+/content/components/*/*.js
+  Cache-Control: public, max-age=0, s-maxage=3600, stale-while-revalidate=86400
+  Vary: Accept-Encoding
+  X-Content-Type-Options: nosniff
+  Link: <https://cdn.jsdelivr.net>; rel=preconnect; crossorigin
+
+/content/components/*/*/*.js
   Cache-Control: public, max-age=0, s-maxage=3600, stale-while-revalidate=86400
   Vary: Accept-Encoding
   X-Content-Type-Options: nosniff
@@ -105,6 +133,21 @@
 # ============================================================================
 # CSS Stylesheets - Modern Optimization
 # ============================================================================
+/pages/*.css
+  Cache-Control: public, max-age=0, s-maxage=3600, stale-while-revalidate=86400
+  Vary: Accept-Encoding
+  X-Content-Type-Options: nosniff
+
+/pages/*/*.css
+  Cache-Control: public, max-age=0, s-maxage=3600, stale-while-revalidate=86400
+  Vary: Accept-Encoding
+  X-Content-Type-Options: nosniff
+
+/pages/*/*/*.css
+  Cache-Control: public, max-age=0, s-maxage=3600, stale-while-revalidate=86400
+  Vary: Accept-Encoding
+  X-Content-Type-Options: nosniff
+
 /content/styles/*
   Cache-Control: public, max-age=0, s-maxage=3600, stale-while-revalidate=86400
   Vary: Accept-Encoding
@@ -118,38 +161,104 @@
 # ============================================================================
 # API Routes - Strategic Caching
 # ============================================================================
-# Search API - Cache for 5 minutes (search results change infrequently)
+# Search API - Cache-Control is set in function response
 /api/search
-  Cache-Control: public, max-age=300, stale-while-revalidate=600
   Vary: Accept-Encoding, Accept
   X-Robots-Tag: noindex
 
-# AI API - No caching (dynamic responses)
+# AI API - Cache-Control is set in function response
 /api/ai
-  Cache-Control: no-store, no-cache, must-revalidate, private
   Vary: Accept-Encoding, Accept
   X-Robots-Tag: noindex
 
-# YouTube API - Cache for 1 hour (video metadata rarely changes)
+# YouTube API - Cache-Control is set in function response
 /api/youtube/*
-  Cache-Control: public, max-age=3600, stale-while-revalidate=7200
   Vary: Accept-Encoding, Accept
   X-Robots-Tag: noindex
 
 # ============================================================================
-# HTML Pages - Fresh Content with Edge Caching
+# Public HTML Routes - Dynamic Cache (single source for page responses)
 # ============================================================================
-/*.html
-  Cache-Control: public, max-age=0, s-maxage=300, stale-while-revalidate=3600
-  Vary: Accept-Encoding
-
-# ============================================================================
-# Default - Dynamic Content
-# ============================================================================
-/*
+/
   Cache-Control: public, max-age=0, s-maxage=60, stale-while-revalidate=86400
   Vary: Accept-Encoding
 
+/about
+  Cache-Control: public, max-age=0, s-maxage=60, stale-while-revalidate=86400
+  Vary: Accept-Encoding
+
+/about/*
+  Cache-Control: public, max-age=0, s-maxage=60, stale-while-revalidate=86400
+  Vary: Accept-Encoding
+
+/abdul-sesli
+  Cache-Control: public, max-age=0, s-maxage=60, stale-while-revalidate=86400
+  Vary: Accept-Encoding
+
+/abdul-sesli/*
+  Cache-Control: public, max-age=0, s-maxage=60, stale-while-revalidate=86400
+  Vary: Accept-Encoding
+
+/contact
+  Cache-Control: public, max-age=0, s-maxage=60, stale-while-revalidate=86400
+  Vary: Accept-Encoding
+
+/contact/*
+  Cache-Control: public, max-age=0, s-maxage=60, stale-while-revalidate=86400
+  Vary: Accept-Encoding
+
+/blog
+  Cache-Control: public, max-age=0, s-maxage=60, stale-while-revalidate=86400
+  Vary: Accept-Encoding
+
+/blog/*
+  Cache-Control: public, max-age=0, s-maxage=60, stale-while-revalidate=86400
+  Vary: Accept-Encoding
+
+/gallery
+  Cache-Control: public, max-age=0, s-maxage=60, stale-while-revalidate=86400
+  Vary: Accept-Encoding
+
+/gallery/*
+  Cache-Control: public, max-age=0, s-maxage=60, stale-while-revalidate=86400
+  Vary: Accept-Encoding
+
+/projekte
+  Cache-Control: public, max-age=0, s-maxage=60, stale-while-revalidate=86400
+  Vary: Accept-Encoding
+
+/projekte/*
+  Cache-Control: public, max-age=0, s-maxage=60, stale-while-revalidate=86400
+  Vary: Accept-Encoding
+
+/videos
+  Cache-Control: public, max-age=0, s-maxage=60, stale-while-revalidate=86400
+  Vary: Accept-Encoding
+
+/videos/*
+  Cache-Control: public, max-age=0, s-maxage=60, stale-while-revalidate=86400
+  Vary: Accept-Encoding
+
+/impressum
+  Cache-Control: public, max-age=0, s-maxage=60, stale-while-revalidate=86400
+  Vary: Accept-Encoding
+
+/impressum/*
+  Cache-Control: public, max-age=0, s-maxage=60, stale-while-revalidate=86400
+  Vary: Accept-Encoding
+
+/datenschutz
+  Cache-Control: public, max-age=0, s-maxage=60, stale-while-revalidate=86400
+  Vary: Accept-Encoding
+
+/datenschutz/*
+  Cache-Control: public, max-age=0, s-maxage=60, stale-while-revalidate=86400
+  Vary: Accept-Encoding
+
+# ============================================================================
+# Global Security Headers
+# ============================================================================
+/*
   # ============================================================================
   # Security Headers (Applied Globally)
   # ============================================================================
