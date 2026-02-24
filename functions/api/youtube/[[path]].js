@@ -98,7 +98,6 @@ export async function onRequestGet(context) {
     return new Response(
       JSON.stringify({
         error: 'YouTube API request failed',
-        message: error.message,
       }),
       {
         status: 500,
