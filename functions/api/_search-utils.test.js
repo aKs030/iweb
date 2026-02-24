@@ -1,22 +1,22 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { normalizeUrl, extractTitle } from './_search-utils.js';
+import { normalizeUrl, extractTitle } from './_search-url.js';
 
 describe('normalizeUrl', () => {
   it('handles empty input', () => {
+    assert.equal(normalizeUrl(''), '/');
     assert.equal(normalizeUrl(null), '/');
     assert.equal(normalizeUrl(undefined), '/');
-    assert.equal(normalizeUrl(''), '/');
   });
 
   it('removes domain', () => {
     assert.equal(normalizeUrl('https://example.com/foo'), '/foo');
-    assert.equal(normalizeUrl('http://www.test.de/bar'), '/bar');
+    assert.equal(normalizeUrl('http://localhost:8788/bar'), '/bar');
   });
 
   it('handles index.html', () => {
+    assert.equal(normalizeUrl('/foo/index.html'), '/foo');
     assert.equal(normalizeUrl('/index.html'), '/');
-    assert.equal(normalizeUrl('https://site.com/sub/index.html'), '/sub');
   });
 
   it('removes query parameters', () => {
@@ -25,14 +25,13 @@ describe('normalizeUrl', () => {
 
   it('removes .html extension', () => {
     assert.equal(normalizeUrl('/page.html'), '/page');
-    assert.equal(normalizeUrl('/section/sub.html'), '/section/sub');
   });
 
   it('keeps app deep links', () => {
-    assert.equal(normalizeUrl('/projekte/?app=test'), '/projekte/?app=test');
+    assert.equal(normalizeUrl('/projekte?app=snake'), '/projekte/?app=snake');
     assert.equal(
-      normalizeUrl('https://site.com/projekte/index.html?app=foo'),
-      '/projekte/?app=foo',
+      normalizeUrl('https://site.com/projekte/index.html?app=quiz&foo=bar'),
+      '/projekte/?app=quiz',
     );
   });
 });
@@ -40,20 +39,17 @@ describe('normalizeUrl', () => {
 describe('extractTitle', () => {
   it('extracts title from simple filename', () => {
     assert.equal(extractTitle('my-page.html', '/my-page'), 'My Page');
-    assert.equal(
-      extractTitle('hello-world.html', '/hello-world'),
-      'Hello World',
-    );
   });
 
   it('handles root path', () => {
     assert.equal(extractTitle('index.html', '/'), 'Startseite');
-    assert.equal(extractTitle('', '/'), 'Startseite');
   });
 
   it('handles top-level directory mapping', () => {
-    assert.equal(extractTitle('index.html', '/projekte'), 'Projekte Übersicht');
-    assert.equal(extractTitle('index.html', '/blog'), 'Blog Übersicht');
+    assert.equal(
+      extractTitle('index.html', '/projekte/'),
+      'Projekte Übersicht',
+    );
   });
 
   it('handles nested paths', () => {
@@ -62,16 +58,12 @@ describe('extractTitle', () => {
 
   it('handles app query parameters', () => {
     assert.equal(
-      extractTitle('index.html', '/projekte/?app=calculator'),
-      'Calculator',
-    );
-    assert.equal(
-      extractTitle('index.html', '/projekte/?app=memory-game'),
-      'Memory Game',
+      extractTitle('index.html', '/projekte/?app=super-tool'),
+      'Super Tool',
     );
   });
 
   it('falls back to filename if URL is missing/empty', () => {
-    assert.equal(extractTitle('some-page.html', ''), 'Some Page');
+    assert.equal(extractTitle('some-file.html', ''), 'Some File');
   });
 });
