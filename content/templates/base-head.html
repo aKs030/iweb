@@ -18,12 +18,6 @@
   }
 </script>
 
-<!-- Synchronous Scroll Lock & Reset (Must be as early as possible for Safari) -->
-<script>
-  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
-  window.scrollTo(0, 0);
-</script>
-
 <!-- Critical CSS - Loaded immediately to prevent FOUC -->
 <link rel="stylesheet" href="/content/styles/root.css" />
 <link rel="stylesheet" href="/content/styles/main.css" />
