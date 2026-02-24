@@ -1,4 +1,5 @@
 import {
+  escapeXml,
   loadJsonAsset,
   resolveOrigin,
   toAbsoluteUrl,
@@ -84,13 +85,6 @@ function serializeJson(data) {
   return JSON.stringify(data).replace(/</g, '\\u003c');
 }
 
-function escapeAttr(value) {
-  return String(value ?? '')
-    .replace(/&/g, '&amp;')
-    .replace(/"/g, '&quot;')
-    .replace(/</g, '&lt;');
-}
-
 function escapeRegExp(value) {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
@@ -105,7 +99,7 @@ function injectBeforeHeadClose(html, snippet) {
 
 function upsertTitle(html, title) {
   if (!title) return html;
-  const tag = `<title>${escapeAttr(title)}</title>`;
+  const tag = `<title>${escapeXml(title)}</title>`;
 
   if (/<title\b[^>]*>[\s\S]*?<\/title>/i.test(html)) {
     return html.replace(/<title\b[^>]*>[\s\S]*?<\/title>/i, tag);
@@ -117,7 +111,7 @@ function upsertTitle(html, title) {
 function upsertMetaByName(html, name, content) {
   if (!name || !content) return html;
 
-  const tag = `  <meta name="${escapeAttr(name)}" content="${escapeAttr(content)}" />`;
+  const tag = `  <meta name="${escapeXml(name)}" content="${escapeXml(content)}" />`;
   const pattern = new RegExp(
     `<meta\\b[^>]*\\bname=(['"])${escapeRegExp(name)}\\1[^>]*>`,
     'i',
@@ -133,7 +127,7 @@ function upsertMetaByName(html, name, content) {
 function upsertMetaByProperty(html, property, content) {
   if (!property || !content) return html;
 
-  const tag = `  <meta property="${escapeAttr(property)}" content="${escapeAttr(content)}" />`;
+  const tag = `  <meta property="${escapeXml(property)}" content="${escapeXml(content)}" />`;
   const pattern = new RegExp(
     `<meta\\b[^>]*\\bproperty=(['"])${escapeRegExp(property)}\\1[^>]*>`,
     'i',
@@ -149,7 +143,7 @@ function upsertMetaByProperty(html, property, content) {
 function upsertCanonical(html, href) {
   if (!href) return html;
 
-  const tag = `  <link rel="canonical" href="${escapeAttr(href)}" />`;
+  const tag = `  <link rel="canonical" href="${escapeXml(href)}" />`;
   const pattern = /<link\b[^>]*\brel=(['"])canonical\1[^>]*>/i;
 
   if (pattern.test(html)) {
