@@ -98,7 +98,11 @@ test('gallery-items caching', async (_t) => {
 
   // Note: if tests run in parallel or share state, this might be tricky,
   // but since we just increment listCalls, we can at least check it didn't increase.
-  assert.equal(listCalls, callsAfterFirst, 'Should use cache for second request');
+  assert.equal(
+    listCalls,
+    callsAfterFirst,
+    'Should use cache for second request',
+  );
 
   const data1 = await response1.json();
   const data2 = await response2.json();
