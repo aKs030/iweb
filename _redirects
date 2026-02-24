@@ -16,13 +16,8 @@
 # Legacy /pages/* structure (compact patterns)
 /pages/album*                                /gallery/                 301
 /pages/fotogalerie*                          /gallery/                 301
-/pages/blog/pages/fotos/fotos*               /gallery/                 301
-/pages/komponente/pages/fotogalerie*         /gallery/                 301
-/pages/pages/fotogalerie*                    /gallery/                 301
 /pages/ubermich*                             /about/                   301
 /pages/ueber-mich*                           /about/                   301
-/pages/design/pages/ueber-mich*              /about/                   301
-/pages/komponente/pages/ueber-mich*          /about/                   301
 /pages/tools*                                /projekte/                301
 /pages/webentwicklung/*                      /projekte/                301
 /pages/projekte/                             /projekte/                301
@@ -34,17 +29,11 @@
 /pages/about/about                           /about/                   301
 /pages/blog/blog.html                        /blog/                    301
 /pages/blog/blog                             /blog/                    301
-/pages/features/*                            /                         301
-/pages/card/*                                /                         301
-/pages/komponente/menu*                      /                         301
-/pages/komponente/footer*                    /                         301
-/pages/index-game*                           /                         301
 /pages/kontakt*                              /#kontakt                 301
 
 # Legacy content/footer paths
 /content/footer/datenschutz*                 /datenschutz/             301
 /content/components/footer/datenschutz*      /datenschutz/             301
-/content/webentwicklung/footer/datenschutz*  /datenschutz/             301
 /content/footer/impressum*                   /impressum/               301
 /content/components/footer/impressum*        /impressum/               301
 /content/kontakt*                            /#kontakt                 301

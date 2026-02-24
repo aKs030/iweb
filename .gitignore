@@ -58,6 +58,7 @@ pnpm-lock.yaml
 OPTIMIZATION_REPORT.md
 OPTIMIZATION_SUMMARY.md
 FINAL_OPTIMIZATION_REPORT.md
+reports/redirect-audit/
 
 # Cloudflare
 wrangler.toml.backup
