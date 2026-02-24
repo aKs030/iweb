@@ -209,11 +209,6 @@ globalThis.addEventListener('pageshow', (event) => {
   }
 });
 
-// Safari Hack: scroll to top before unloading so it remembers 0 as scroll state
-globalThis.addEventListener('beforeunload', () => {
-  window.scrollTo(0, 0);
-});
-
 // ===== Service Worker Registration =====
 if ('serviceWorker' in navigator && !ENV.isTest) {
   const isLocal = ['localhost', '127.0.0.1'].includes(

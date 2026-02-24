@@ -304,7 +304,10 @@ export function unregisterParticleSystem(name) {
 // ===== Global Cleanup Hook =====
 
 if (typeof window !== 'undefined') {
-  window.addEventListener('beforeunload', () => {
-    sharedCleanupManager.cleanupAll();
+  window.addEventListener('pagehide', (event) => {
+    // Only cleanup if the page is actually unloading, not just entering bfcache
+    if (!event.persisted) {
+      sharedCleanupManager.cleanupAll();
+    }
   });
 }
