@@ -45,9 +45,22 @@ export async function onRequest(context) {
               cursor = list.truncated ? list.cursor : undefined;
             } while (cursor);
 
-            cachedObjects = listResults;
+            // Pre-filter and pre-sort by upload date (newest first) before caching
+            // This reduces the work needed on every request
+            const filtered = listResults
+              .filter((obj) =>
+                /\.(jpg|jpeg|png|webp|gif|svg|mp4|webm)$/i.test(obj.key),
+              )
+              .map((obj) => ({
+                ...obj,
+                uploadedTime: new Date(obj.uploaded).getTime(),
+              }));
+
+            filtered.sort((a, b) => b.uploadedTime - a.uploadedTime);
+
+            cachedObjects = filtered;
             cacheExpiresAt = Date.now() + CACHE_TTL_MS;
-            return listResults;
+            return filtered;
           } finally {
             pendingLoadPromise = null;
           }
@@ -64,29 +77,24 @@ export async function onRequest(context) {
       url.hostname === 'localhost' || url.hostname === '127.0.0.1';
     const R2_BASE = isLocal ? '/r2-proxy' : 'https://img.abdulkerimsesli.de';
 
-    const items = objects
-      .filter((obj) => /\.(jpg|jpeg|png|webp|gif|svg|mp4|webm)$/i.test(obj.key))
-      .map((obj) => {
-        const key = obj.key;
-        const filename = key.split('/').pop();
-        const type = /\.(mp4|webm)$/i.test(filename) ? 'video' : 'image';
+    const items = objects.map((obj) => {
+      const key = obj.key;
+      const filename = key.split('/').pop();
+      const type = /\.(mp4|webm)$/i.test(filename) ? 'video' : 'image';
 
-        // "Gallery/My Image.jpg" -> "My Image"
-        const title = filename.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
+      // "Gallery/My Image.jpg" -> "My Image"
+      const title = filename.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
 
-        return {
-          id: key, // Unique ID
-          type: type,
-          url: `${R2_BASE}/${encodeURIComponent(key).replace(/%2F/g, '/')}`,
-          title: title,
-          description: `Taken by Abdulkerim Sesli`, // Default description
-          size: obj.size,
-          uploaded: obj.uploaded,
-        };
-      });
-
-    // Sort by upload date (newest first)
-    items.sort((a, b) => new Date(b.uploaded) - new Date(a.uploaded));
+      return {
+        id: key, // Unique ID
+        type: type,
+        url: `${R2_BASE}/${encodeURIComponent(key).replace(/%2F/g, '/')}`,
+        title: title,
+        description: `Taken by Abdulkerim Sesli`, // Default description
+        size: obj.size,
+        uploaded: obj.uploaded,
+      };
+    });
 
     return new Response(JSON.stringify({ items }), {
       headers: {

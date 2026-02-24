@@ -969,9 +969,9 @@ site-menu {
   }
 
   .site-header.search-mode .menu-search {
-    flex: 0 1 clamp(300px, 46vw, 620px);
-    width: clamp(300px, 46vw, 620px);
-    max-width: calc(100% - 220px);
+    flex: 0 1 clamp(280px, 38vw, 520px);
+    width: clamp(280px, 38vw, 520px);
+    max-width: min(520px, calc(100% - 260px));
     margin-inline: auto;
   }
 
@@ -1191,9 +1191,9 @@ site-menu {
 
   .site-header.search-mode .menu-search {
     display: flex;
-    flex: 0 1 min(420px, calc(100% - 64px));
-    width: min(420px, calc(100% - 64px));
-    max-width: min(420px, calc(100% - 64px));
+    flex: 0 1 min(360px, calc(100% - 72px));
+    width: min(360px, calc(100% - 72px));
+    max-width: min(360px, calc(100% - 72px));
     margin-inline: auto;
   }
 
