@@ -11,14 +11,12 @@
  */
 
 import { createLogger } from '../../core/logger.js';
-
 import { a11y } from '../../core/accessibility-manager.js';
-
 import { i18n } from '../../core/i18n.js';
-
 import { TimerManager } from '../../core/utils.js';
-
 import { EVENTS } from '../../core/events.js';
+import { CookieManager } from '../../core/cookie-manager.js';
+import { AnalyticsManager } from '../../core/analytics-manager.js';
 
 const log = createLogger('SiteFooter');
 
@@ -35,156 +33,6 @@ const CONFIG = Object.freeze({
 
   LOAD_RETRY_DELAY_MS: 500,
 });
-
-/**
-
- * Cookie Management Utility
-
- */
-
-const CookieManager = Object.freeze({
-  /**
-
-   * @param {string} name
-
-   * @param {string} value
-
-   * @param {number} [days=365]
-
-   */
-
-  set(name, value, days = 365) {
-    const date = new Date();
-
-    date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
-
-    const expires = `; expires=${date.toUTCString()}`;
-
-    const secure = window.location.protocol === 'https:' ? '; Secure' : '';
-
-    document.cookie = `${name}=${value || ''}${expires}; path=/; SameSite=Lax${secure}`;
-  },
-
-  /**
-
-   * @param {string} name
-
-   * @returns {string|null}
-
-   */
-
-  get(name) {
-    const nameEQ = `${name}=`;
-
-    const cookies = document.cookie.split(';');
-
-    for (let cookie of cookies) {
-      cookie = cookie.trim();
-
-      if (cookie.startsWith(nameEQ)) {
-        return cookie.substring(nameEQ.length);
-      }
-    }
-
-    return null;
-  },
-
-  /**
-
-   * @param {string} name
-
-   */
-
-  delete(name) {
-    const domains = [
-      '',
-
-      window.location.hostname,
-
-      `.${window.location.hostname}`,
-    ];
-
-    domains.forEach((domain) => {
-      const domainPart = domain ? `; domain=${domain}` : '';
-
-      document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/${domainPart}`;
-    });
-  },
-
-  deleteAnalytics() {
-    const analyticsCookies = ['_ga', '_gid', '_gat', '_gat_gtag_G_S0587RQ4CN'];
-
-    analyticsCookies.forEach((name) => this.delete(name));
-  },
-});
-
-/**
-
- * Analytics Manager
-
- */
-
-class AnalyticsManager {
-  #loaded = false;
-
-  load() {
-    if (this.#loaded) return;
-
-    document
-
-      .querySelectorAll('script[data-consent="required"]')
-
-      .forEach((script) => {
-        const newScript = document.createElement('script');
-
-        for (const attr of script.attributes) {
-          const name = attr.name === 'data-src' ? 'src' : attr.name;
-
-          if (!['data-consent', 'type'].includes(attr.name)) {
-            newScript.setAttribute(name, attr.value);
-          }
-        }
-
-        if (script.innerHTML.trim()) newScript.innerHTML = script.innerHTML;
-
-        script.replaceWith(newScript);
-      });
-
-    this.#loaded = true;
-
-    log.info('Analytics loaded');
-  }
-
-  /**
-
-   * @param {boolean} granted
-
-   */
-
-  updateConsent(granted) {
-    const win = /** @type {import('/content/core/types.js').GlobalWindow} */ (
-      window
-    );
-
-    if (typeof win.gtag !== 'function') return;
-
-    const status = granted ? 'granted' : 'denied';
-
-    try {
-      win.gtag('consent', 'update', {
-        ad_storage: status,
-
-        analytics_storage: status,
-
-        ad_user_data: status,
-
-        ad_personalization: status,
-      });
-    } catch (e) {
-      log.error('Consent update failed', e);
-    }
-  }
-}
 
 /**
 
