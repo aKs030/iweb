@@ -6,10 +6,15 @@
 
 import { getCorsHeaders, handleOptions } from './_cors.js';
 import { normalizeUrl, extractTitle } from './_search-url.js';
+import {
+  buildAiSearchRequest,
+  resolveAiSearchConfig,
+} from './_ai-search-config.js';
 
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const GROQ_MODEL = 'llama-3.3-70b-versatile';
 const DEFAULT_RAG_ID = 'wispy-pond-1055';
+const MAX_CONTEXT_SOURCES = 3;
 
 /**
  * Predefined System Prompts to prevent Prompt Injection
@@ -126,6 +131,8 @@ function extractContent(item, maxLength = 400) {
   if (breakPoint > maxLength * 0.7) {
     return fullContent.substring(0, breakPoint + 1);
   }
+
+  return `${truncated}...`;
 }
 
 /**
@@ -139,14 +146,17 @@ async function getRelevantContext(query, env) {
 
   try {
     const ragId = env.RAG_ID || DEFAULT_RAG_ID;
+    const aiSearchConfig = resolveAiSearchConfig(env);
 
-    // Use AI Search Beta to get relevant context (increased from 3 to 5)
-    const searchData = await env.AI.autorag(ragId).aiSearch({
-      query: query,
-      max_num_results: 3,
-      rewrite_query: false,
-      stream: false,
-    });
+    // Retrieve context with production-tuned AI Search settings.
+    const searchData = await env.AI.autorag(ragId).aiSearch(
+      buildAiSearchRequest({
+        query,
+        maxResults: aiSearchConfig.contextMaxResults,
+        config: aiSearchConfig,
+        stream: false,
+      }),
+    );
 
     if (!searchData.data || searchData.data.length === 0) {
       return null;
@@ -158,7 +168,7 @@ async function getRelevantContext(query, env) {
         score: item.score || 0,
       }))
       .sort((a, b) => b.score - a.score)
-      .slice(0, 3); // Keep top 3 most relevant
+      .slice(0, MAX_CONTEXT_SOURCES); // Keep top relevant context snippets
 
     if (scoredResults.length === 0) {
       return null;
