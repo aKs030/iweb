@@ -20,18 +20,21 @@
     "prepare": "husky",
     "docs:check": "node scripts/docs-check.mjs",
     "ai-index:sync": "node scripts/sync-ai-index-apps.mjs",
-    "ai-index:check": "node scripts/sync-ai-index-apps.mjs --check"
+    "ai-index:check": "node scripts/sync-ai-index-apps.mjs --check",
+    "test": "node --test content/components/menu/modules/*.test.js"
   },
   "dependencies": {
     "three": "^0.183.1"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "dompurify": "^3.3.1",
     "eslint": "^10.0.1",
     "globals": "^17.3.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
     "prettier": "^3.8.1",
+    "react": "^19.2.4",
     "wrangler": "^4.67.0"
   },
   "lint-staged": {

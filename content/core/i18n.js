@@ -62,7 +62,7 @@ class LanguageManager extends EventTarget {
 
     this.loadingPromise = (async () => {
       // 1. Check LocalStorage
-      let savedLang = localStorage.getItem('app_language');
+      let savedLang = window.localStorage?.getItem('app_language');
 
       // 2. Check Browser Language if no preference saved
       if (!savedLang) {
@@ -169,7 +169,7 @@ class LanguageManager extends EventTarget {
     await this.loadTranslations(lang);
 
     this.currentLang = lang;
-    localStorage.setItem('app_language', lang);
+    window.localStorage?.setItem('app_language', lang);
     document.documentElement.lang = lang === 'de' ? 'de-DE' : 'en-US';
 
     this.translatePage();
