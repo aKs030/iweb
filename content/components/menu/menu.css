@@ -604,10 +604,30 @@ site-menu {
 }
 
 .menu-search__ai-text {
-  margin: 0;
-  font-size: 12px;
-  line-height: 1.45;
+  font-size: 13px;
+  line-height: 1.5;
   color: rgba(240, 247, 255, 0.94);
+}
+
+.menu-search__ai-text p {
+  margin: 0 0 10px;
+}
+
+.menu-search__ai-text p:last-child {
+  margin-bottom: 0;
+}
+
+.menu-search__ai-text strong {
+  font-weight: 600;
+  color: #fff;
+}
+
+.menu-search__ai-text code {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 0.9em;
 }
 
 .menu-search__ai-suggestions {
