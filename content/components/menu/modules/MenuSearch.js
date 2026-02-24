@@ -41,7 +41,6 @@ export class MenuSearch {
 
   init() {
     this.setupSearch();
-    this.setupKeyboardShortcut();
     this.setupI18nSync();
   }
 
@@ -185,22 +184,6 @@ export class MenuSearch {
         this.addListener(clearBtn, 'click', handleClearClick),
       );
     }
-  }
-
-  // ── Cmd/Ctrl+K shortcut ──
-  setupKeyboardShortcut() {
-    const handleShortcut = (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        if (this.isSearchOpen()) {
-          this.closeSearchMode();
-        } else {
-          this.openSearchMode();
-        }
-      }
-    };
-
-    this.cleanupFns.push(this.addListener(document, 'keydown', handleShortcut));
   }
 
   setupI18nSync() {

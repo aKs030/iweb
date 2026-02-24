@@ -2,9 +2,6 @@
   "version": 1,
   "include": ["/*"],
   "exclude": [
-    "/content/assets/css/*",
-    "/content/assets/js/*",
-    "/content/assets/fonts/*",
     "/*.json",
     "/*.txt",
     "/*.css",
