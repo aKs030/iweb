@@ -77,7 +77,11 @@ const _initApp = () => {
   }
 
   sectionManager.init();
-  scrollNav.init();
+
+  // Only init scroll nav on home page
+  if (document.documentElement.classList.contains('home-page')) {
+    scrollNav.init();
+  }
 
   // Start earth loading in next frame to avoid blocking DOM ready
   requestAnimationFrame(() => {

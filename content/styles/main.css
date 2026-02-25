@@ -178,10 +178,16 @@ main {
 
 /* ===== END LAYOUT & SECTIONS ===== */
 
+scroll-behavior: smooth;
+background: var(--bg-primary);
+width: 100%;
+html {
+}
+/* Apply global background to base html too, or keep it scoped if intended */
 /* ===== BASE STYLES ===== */
 
 /* Base Styles */
-html {
+html.home-page {
   scroll-snap-type: y mandatory;
   overflow-y: scroll;
   height: 100vh;
@@ -449,7 +455,7 @@ a:hover {
 
 /* Tablet & Mobile: 768px and below */
 @media (width <= 768px) {
-  html {
+  html.home-page {
     scroll-snap-type: y mandatory;
     overflow-y: scroll;
     height: 100vh;
@@ -480,18 +486,20 @@ a:hover {
 }
 
 /* h1 size is already handled by clamp() in base typography */
-
-.card {
-  padding: 1.5rem;
+@media (width <= 600px) {
+  .about-page main.container {
+    padding-top: calc(48px + 20px);
+  }
+  .card {
+    padding: 1.5rem;
+  }
 }
-
 /* Mobile: 480px and below */
 @media (width <= 480px) {
   .container {
-    max-width: 100%;
     padding-inline: max(0.5rem, var(--safe-left));
+    max-width: 100%;
   }
-
   .container p,
   .container h1,
   .container h2,
@@ -505,7 +513,7 @@ a:hover {
 
 /* Mobile: 375px and below */
 @media (width <= 375px) {
-  html {
+  html.home-page {
     scroll-snap-type: y mandatory;
     overflow-y: scroll;
     height: 100vh;
