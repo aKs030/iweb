@@ -18,6 +18,7 @@ import { SectionTracker } from './core/section-tracker.js';
 import { GlobalEventHandlers } from './core/events.js';
 
 const log = createLogger('main');
+// Prevent browser from restoring scroll position on reloadif ('scrollRestoration' in history) {  history.scrollRestoration = 'manual';}
 const appTimers = new TimerManager('Main');
 
 // Persistent storage request removed to avoid deprecation warnings
@@ -68,6 +69,7 @@ const _initApp = () => {
 
   // Scroll to top on init (Safari compatibility) - only if no hash in URL
   if (!window.location.hash) {
+    if (window.scrollY > 0) window.scrollTo(0, 0);
     window.scrollTo(0, 0);
     appTimers.setTimeout(() => window.scrollTo(0, 0), 100);
   }
@@ -204,6 +206,7 @@ globalThis.addEventListener('pageshow', (event) => {
 
     // Force scroll to top on restoration - only if no hash in URL
     if (!window.location.hash) {
+      if (window.scrollY > 0) window.scrollTo(0, 0);
       window.scrollTo(0, 0);
     }
   }
