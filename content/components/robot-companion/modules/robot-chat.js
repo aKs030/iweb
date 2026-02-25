@@ -150,10 +150,9 @@ export class RobotChat {
               .map((s) => {
                 const url = String(s.url || '');
                 const title = String(s.title || '');
-                const isSafeUrl = !url
-                  .trim()
-                  .toLowerCase()
-                  .startsWith('javascript:');
+                const isSafeUrl = !/^(javascript|data|vbscript):/i.test(
+                  url.trim(),
+                );
                 const safeUrl = isSafeUrl ? escapeHTML(url) : '#';
                 const safeTitle = escapeHTML(title);
                 return `<li><a href="${safeUrl}" target="_blank" rel="noopener noreferrer">${safeTitle}</a></li>`;

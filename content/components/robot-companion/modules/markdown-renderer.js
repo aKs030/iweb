@@ -67,8 +67,8 @@ export class MarkdownRenderer {
 
     // 6. Links - with sanitization
     html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, label, url) => {
-      // Prevent javascript: protocol
-      if (url.trim().toLowerCase().startsWith('javascript:')) {
+      // Prevent unsafe protocols
+      if (/^(javascript|data|vbscript):/i.test(url.trim())) {
         return label; // Return just text if unsafe
       }
       return `<a href="${url}" target="_blank" rel="noopener noreferrer">${label}</a>`;
