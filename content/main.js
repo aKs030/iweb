@@ -67,9 +67,14 @@ const _initApp = () => {
   _appInitialized = true;
 
   // Scroll to top on init (Safari compatibility) - only if no hash in URL
+  // Force scroll to top on init (Safari compatibility) - only if no hash in URL
   if (!window.location.hash) {
-    if (window.scrollY > 0) window.scrollTo(0, 0);
+    // Immediate reset
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
     window.scrollTo(0, 0);
+
+    // Backup reset after render
+    requestAnimationFrame(() => window.scrollTo(0, 0));
     appTimers.setTimeout(() => window.scrollTo(0, 0), 100);
   }
 
