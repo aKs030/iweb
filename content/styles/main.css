@@ -176,24 +176,20 @@ main {
   }
 }
 
-/* ===== END LAYOUT & SECTIONS ===== */
-
-scroll-behavior: smooth;
-background: var(--bg-primary);
-width: 100%;
-html {
-}
-/* Apply global background to base html too, or keep it scoped if intended */
 /* ===== BASE STYLES ===== */
 
 /* Base Styles */
+html {
+  width: 100%;
+  background: var(--bg-primary);
+  scroll-behavior: smooth;
+}
+
 html.home-page {
   scroll-snap-type: y mandatory;
   overflow-y: scroll;
   height: 100vh;
   scroll-behavior: smooth;
-
-  background: var(--bg-primary);
 }
 
 body {
