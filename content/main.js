@@ -18,7 +18,6 @@ import { SectionTracker } from './core/section-tracker.js';
 import { GlobalEventHandlers } from './core/events.js';
 
 const log = createLogger('main');
-// Prevent browser from restoring scroll position on reloadif ('scrollRestoration' in history) {  history.scrollRestoration = 'manual';}
 const appTimers = new TimerManager('Main');
 
 // Persistent storage request removed to avoid deprecation warnings
