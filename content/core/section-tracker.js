@@ -26,7 +26,11 @@ export class SectionTracker {
   setupObserver() {
     if (this.observer) this.observer.disconnect();
 
-    this.sections = Array.from(document.querySelectorAll('.scroll-section'));
+    // Select both .scroll-section (new) and .section (legacy/compatibility)
+    const elements = document.querySelectorAll('.scroll-section, .section');
+    // Deduplicate elements if they have both classes
+    this.sections = Array.from(new Set(Array.from(elements)));
+
     if (this.sections.length === 0) return;
 
     const options = {

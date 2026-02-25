@@ -44,6 +44,7 @@ export class ScrollNav {
       if (index === 0) dot.classList.add('active');
 
       dot.addEventListener('click', () => {
+        // window-based scrolling for compatibility
         section.scrollIntoView({ behavior: 'smooth' });
         this.updateActiveDot(section);
       });

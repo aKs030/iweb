@@ -113,7 +113,7 @@ textarea:focus-visible {
       position: absolute;
       top: 0;
       left: -100%;
-      width: 100%;
+
       height: 100%;
       background: rgb(255 255 255 / 20%);
       transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -150,17 +150,18 @@ main {
   );
 }
 
-.scroll-section {
+.scroll-section,
+.section {
   scroll-snap-align: start;
   scroll-snap-stop: always;
-  height: 100vh;
-  width: 100%;
+
   display: flex;
   justify-content: center;
 }
 
 @supports (content-visibility: auto) {
-  .scroll-section {
+  .scroll-section,
+  .section {
     /* OPTIMIZATION: content-visibility allows browser to skip rendering work for off-screen sections */
     content-visibility: auto;
     /* Fallback size estimation to prevent scrollbar jumping */
@@ -181,17 +182,12 @@ main {
 
 /* Base Styles */
 html {
-  width: 100%;
-  background: var(--bg-primary);
-  scroll-behavior: smooth;
-}
-
-.scroll-container {
   scroll-snap-type: y mandatory;
   overflow-y: scroll;
   height: 100vh;
-  width: 100%;
   scroll-behavior: smooth;
+
+  background: var(--bg-primary);
 }
 
 body {
@@ -454,10 +450,15 @@ a:hover {
 /* Tablet & Mobile: 768px and below */
 @media (width <= 768px) {
   html {
+    scroll-snap-type: y mandatory;
+    overflow-y: scroll;
+    height: 100vh;
+    scroll-behavior: smooth;
     font-size: 15px;
   }
 
-  .scroll-section {
+  .scroll-section,
+  .section {
     min-height: calc(
       100svh - var(--content-top-offset) - var(--content-bottom-offset)
     );
@@ -467,7 +468,8 @@ a:hover {
     padding: var(--spacing-xl) 0;
   }
 
-  .scroll-section {
+  .scroll-section,
+  .section {
     min-height: calc(
       100dvh - var(--content-top-offset) - var(--content-bottom-offset)
     );
@@ -504,6 +506,10 @@ a:hover {
 /* Mobile: 375px and below */
 @media (width <= 375px) {
   html {
+    scroll-snap-type: y mandatory;
+    overflow-y: scroll;
+    height: 100vh;
+    scroll-behavior: smooth;
     font-size: 14px;
   }
 
@@ -511,7 +517,8 @@ a:hover {
     padding-inline: max(0.25rem, var(--safe-left));
   }
 
-  .scroll-section {
+  .scroll-section,
+  .section {
     padding: var(--spacing-lg) 0;
   }
 }
@@ -530,7 +537,6 @@ a:hover {
   .container {
     max-width: 900px;
     margin: 0 auto;
-    width: 100%;
   }
 
   a {
