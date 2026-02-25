@@ -11,11 +11,13 @@ export class MarkdownRenderer {
   static parse(text) {
     if (!text) return '';
 
-    // Escape HTML first to prevent XSS (basic)
+    // Escape HTML first to prevent XSS
     let html = text
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
 
     // 1. Code Blocks
     // Note: We handle code blocks first to avoid parsing markdown inside them

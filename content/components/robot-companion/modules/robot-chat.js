@@ -1,4 +1,5 @@
 import { createLogger } from '../../../core/logger.js';
+import { escapeHTML } from '../../../core/utils.js';
 import { MarkdownRenderer } from './markdown-renderer.js';
 import { ROBOT_ACTIONS } from '../constants/events.js';
 
@@ -145,12 +146,21 @@ export class RobotChat {
           let html = MarkdownRenderer.parse(safeText);
 
           if (Array.isArray(response.sources) && response.sources.length) {
-            html +=
-              '<div class="chat-sources"><strong>Quellen:</strong><ul>' +
-              response.sources
-                .map((s) => `<li><a href="${s.url}">${s.title}</a></li>`)
-                .join('') +
-              '</ul></div>';
+            const safeSources = response.sources
+              .map((s) => {
+                const url = String(s.url || '');
+                const title = String(s.title || '');
+                const isSafeUrl = !url
+                  .trim()
+                  .toLowerCase()
+                  .startsWith('javascript:');
+                const safeUrl = isSafeUrl ? escapeHTML(url) : '#';
+                const safeTitle = escapeHTML(title);
+                return `<li><a href="${safeUrl}" target="_blank" rel="noopener noreferrer">${safeTitle}</a></li>`;
+              })
+              .join('');
+
+            html += `<div class="chat-sources"><strong>Quellen:</strong><ul>${safeSources}</ul></div>`;
           }
           this.addMessage(html, 'bot', true);
         } else {
