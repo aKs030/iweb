@@ -1,3 +1,6 @@
+if (history.scrollRestoration) {
+  history.scrollRestoration = 'manual';
+}
 import { createLogger } from '../../core/logger.js';
 import { upsertHeadLink } from '../../core/utils.js';
 import { ENV } from '../../config/env.config.js';

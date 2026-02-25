@@ -66,7 +66,7 @@ const _initApp = () => {
   }
   _appInitialized = true;
 
-  // Scroll to top on init (Safari compatibility) - only if no hash in URL
+  // Scroll to top on init - needed because history.scrollRestoration = 'manual'
   if (!window.location.hash) {
     window.scrollTo(0, 0);
     appTimers.setTimeout(() => window.scrollTo(0, 0), 100);
