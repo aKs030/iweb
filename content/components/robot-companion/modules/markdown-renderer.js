@@ -11,11 +11,13 @@ export class MarkdownRenderer {
   static parse(text) {
     if (!text) return '';
 
-    // Escape HTML first to prevent XSS (basic)
+    // Escape HTML first to prevent XSS
     let html = text
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
 
     // 1. Code Blocks
     // Note: We handle code blocks first to avoid parsing markdown inside them
@@ -65,8 +67,8 @@ export class MarkdownRenderer {
 
     // 6. Links - with sanitization
     html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, label, url) => {
-      // Prevent javascript: protocol
-      if (url.trim().toLowerCase().startsWith('javascript:')) {
+      // Prevent unsafe protocols
+      if (/^(javascript|data|vbscript):/i.test(url.trim())) {
         return label; // Return just text if unsafe
       }
       return `<a href="${url}" target="_blank" rel="noopener noreferrer">${label}</a>`;
