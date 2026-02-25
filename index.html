@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="de" class="snap-page">
+<html lang="de">
   <head>
     <!-- INJECT:BASE-HEAD -->
     <title>
@@ -70,6 +70,10 @@
     <meta name="twitter:image:type" content="image/png" />
 
     <!-- PWA & Icons (theme-color in base-head.html) -->
+    <link
+      rel="stylesheet"
+      href="/content/components/scroll-nav/scroll-nav.css"
+    />
   </head>
   <body>
     <!-- Skip to main content for keyboard/screen reader users -->
@@ -120,10 +124,10 @@
       <span id="typedText" class="typed-text"></span>
     </p>
 
-    <main id="main-content" tabindex="-1">
+    <main id="main-content" class="scroll-container" tabindex="-1">
       <section
         id="hero"
-        class="section hero u-center"
+        class="scroll-section hero u-center"
         aria-label="Abdulkerim Sesli — Full-Stack Web Developer Portfolio"
         data-section-src="/pages/home/hero"
         data-eager="true"
@@ -134,7 +138,7 @@
       <!-- Card Section -->
       <section
         id="features"
-        class="section features full-screen-section"
+        class="scroll-section features"
         aria-label="Features und Leistungen"
         data-eager="true"
         data-state="loaded"
@@ -147,7 +151,7 @@
       <!-- section3 -->
       <section
         id="section3"
-        class="section section3"
+        class="scroll-section section3"
         aria-label="Weitere Inhalte"
         data-section-src="/pages/home/section3"
         data-eager="true"

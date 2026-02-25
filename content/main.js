@@ -16,6 +16,7 @@ import { initViewTransitions } from './core/view-transitions.js';
 import { i18n } from './core/i18n.js';
 import { SectionTracker } from './core/section-tracker.js';
 import { GlobalEventHandlers } from './core/events.js';
+import { ScrollNav } from './components/scroll-nav/scroll-nav.js';
 
 const log = createLogger('main');
 const appTimers = new TimerManager('Main');
@@ -57,6 +58,9 @@ sectionTracker.init();
 // ===== Section Manager =====
 const sectionManager = new SectionManager();
 
+// ===== Scroll Navigation =====
+const scrollNav = new ScrollNav();
+
 let _appInitialized = false;
 
 const _initApp = () => {
@@ -73,6 +77,7 @@ const _initApp = () => {
   }
 
   sectionManager.init();
+  scrollNav.init();
 
   // Start earth loading in next frame to avoid blocking DOM ready
   requestAnimationFrame(() => {
