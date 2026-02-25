@@ -20,11 +20,6 @@ import { GlobalEventHandlers } from './core/events.js';
 const log = createLogger('main');
 const appTimers = new TimerManager('Main');
 
-// Prevent browser scroll restoration from reopening the page at old positions
-if ('scrollRestoration' in window.history) {
-  window.history.scrollRestoration = 'manual';
-}
-
 // Persistent storage request removed to avoid deprecation warnings
 
 // ===== Configuration & Environment =====

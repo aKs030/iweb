@@ -19,6 +19,13 @@
   }
 </script>
 
+<!-- Prevent native scroll restoration as early as possible -->
+<script>
+  if ('scrollRestoration' in window.history) {
+    window.history.scrollRestoration = 'manual';
+  }
+</script>
+
 <!-- Critical CSS - Loaded immediately to prevent FOUC -->
 <link rel="stylesheet" href="/content/styles/root.css" />
 <link rel="stylesheet" href="/content/styles/main.css" />
