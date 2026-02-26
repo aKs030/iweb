@@ -5,7 +5,8 @@
 
 import { createLogger } from './logger.js';
 import { fetchText } from './fetch.js';
-import { fire, EVENTS } from './events.js';
+// events dispatching was removed; imports kept if future needs arise
+// import { fire, EVENTS } from './events.js';
 import { createObserver } from './utils.js';
 import { i18n } from './i18n.js';
 
@@ -32,10 +33,8 @@ export class SectionManager {
       this.loadedSections.add(section);
       this.loadingSections.delete(section);
       i18n.translateElement(section);
-      if (section.id === 'hero') fire(EVENTS.HERO_LOADED);
-      document.dispatchEvent(
-        new CustomEvent('section:loaded', { detail: { id: section.id } }),
-      );
+      // Note: event dispatch removed; other parts of the system should
+      // rely on the centralized fire() helper if needed.
     };
 
     if (section.hasAttribute('data-ssr-loaded')) {

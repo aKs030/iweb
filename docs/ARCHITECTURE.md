@@ -93,6 +93,13 @@
 
 ### Web Component Lifecycle
 
+_New helpers_: Scroll/hash behaviour has been moved to shared utilities (`core/utils.js`) to avoid duplication across
+`main.js`, menu logic and view-transitions. The footer element now exposes a small public API
+(`open()`, `close()`) and companion helpers (`openFooter()`, `closeFooter()`) so other modules can
+control it without event gymnastics.
+
+### Web Component Lifecycle
+
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    Component Creation                        │
@@ -111,8 +118,6 @@
                     │   - Load data     │
                     │   - Render DOM    │
                     │   - Bind events   │
-                    │   - Dispatch      │
-                    │     'loaded'      │
                     └───────────────────┘
                               │
                               ▼

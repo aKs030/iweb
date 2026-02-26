@@ -3,6 +3,10 @@
  * Centralized configuration for easy customization
  */
 
+// shared title objects (DRY and easier renaming)
+const HOME_TITLE = { title: 'menu.home', subtitle: 'menu.home_sub' };
+const CONTACT_TITLE = { title: 'menu.contact', subtitle: 'menu.contact_sub' };
+
 export const MenuConfig = {
   // Paths
   CSS_URL: '/content/components/menu/menu.css',
@@ -30,22 +34,23 @@ export const MenuConfig = {
 
   // Title Mapping
   TITLE_MAP: {
-    '/index.html': { title: 'menu.home', subtitle: 'menu.home_sub' },
-    '/': { title: 'menu.home', subtitle: 'menu.home_sub' },
+    '/index.html': HOME_TITLE,
+    '/': HOME_TITLE,
     '/gallery/': { title: 'menu.gallery', subtitle: 'menu.gallery_sub' },
     '/projekte/': { title: 'menu.projects', subtitle: 'menu.projects_sub' },
     '/videos/': { title: 'menu.videos', subtitle: 'menu.videos_sub' },
     '/blog/': { title: 'menu.blog', subtitle: 'menu.blog_sub' },
     '/about/': { title: 'menu.about', subtitle: 'menu.about_sub' },
-    '/contact/': { title: 'menu.contact', subtitle: 'menu.contact_sub' },
+    '/contact/': CONTACT_TITLE,
   },
 
   // Fallback Titles
   FALLBACK_TITLES: {
-    hero: { title: 'menu.home', subtitle: 'menu.home_sub' },
+    hero: HOME_TITLE,
     features: { title: 'menu.projects', subtitle: 'menu.projects_sub' },
     section3: { title: 'menu.about', subtitle: 'menu.about_sub' },
-    contact: { title: 'menu.contact', subtitle: 'menu.contact_sub' },
+    contact: CONTACT_TITLE,
+    footer: CONTACT_TITLE,
   },
 
   // Menu Items Configuration

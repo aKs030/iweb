@@ -1,12 +1,40 @@
 /**
- * Modern Footer System v3.0.0
- * Scroll-based auto-expand/collapse footer with memory-leak prevention
- * @author Abdulkerim Sesli
+ * Modern Footer System v3.1.0
  */
 
 /* ===== Address Element Reset ===== */
 address {
   font-style: normal;
+}
+
+/* ===== Variables & Utility Classes ===== */
+:root {
+  --footer-gap: clamp(8px, 1vw, 12px);
+  --footer-padding: 20px;
+  --footer-min-height: 52px;
+
+  --btn-padding: 8px 16px;
+  --btn-radius: 18px;
+  --btn-font-size: clamp(12px, 1vw, 13px);
+  --btn-transition: all var(--transition-base);
+
+  --accent-color: var(--component-accent-blue, #007aff);
+  --accent-hover: var(--component-accent-blue-hover, #0051d5);
+}
+
+/* utility base for footer buttons */
+.footer-btn {
+  padding: var(--btn-padding);
+  border-radius: var(--btn-radius);
+  border: 1px solid transparent;
+  font-size: var(--btn-font-size);
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--btn-transition);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  flex-shrink: 0;
+  font-family: inherit;
 }
 
 /* ===== Base Footer ===== */
@@ -52,9 +80,9 @@ address {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: clamp(8px, 1vw, 12px);
-  padding: 0 20px;
-  min-height: 52px;
+  gap: var(--footer-gap);
+  padding: 0 var(--footer-padding);
+  min-height: var(--footer-min-height);
   cursor: pointer;
   transition: background var(--transition-base);
   user-select: none;
@@ -116,7 +144,7 @@ address {
 .cookie-inline {
   display: flex;
   align-items: center;
-  gap: clamp(8px, 1vw, 12px);
+  gap: var(--footer-gap);
   flex-shrink: 0;
   animation: cookieSlideIn 0.4s var(--ease-spring) forwards;
   pointer-events: auto;
@@ -186,13 +214,14 @@ address {
 
 .btn-accept,
 .btn-reject {
-  padding: 8px 16px;
-  border-radius: 18px;
+  /* shared appearance now uses custom properties for easy tweaking */
+  padding: var(--btn-padding);
+  border-radius: var(--btn-radius);
   border: 1px solid transparent;
-  font-size: clamp(12px, 1vw, 13px);
+  font-size: var(--btn-font-size);
   font-weight: 600;
   cursor: pointer;
-  transition: all var(--transition-base);
+  transition: var(--btn-transition);
   letter-spacing: -0.01em;
   white-space: nowrap;
   flex-shrink: 0;
@@ -200,9 +229,9 @@ address {
 }
 
 .btn-accept {
-  background: var(--component-accent-blue, #007aff);
+  background: var(--accent-color);
   color: #fff;
-  border-color: var(--component-accent-blue, #007aff);
+  border-color: var(--accent-color);
 }
 
 .btn-accept:hover {
@@ -894,6 +923,14 @@ body.footer-expanded {
 
 /* ===== Responsive ===== */
 @media (width <= 900px) {
+  :root {
+    /* adjust variables instead of repeating rules */
+    --footer-padding: 16px;
+    --footer-min-height: 48px;
+    --footer-gap: 8px;
+    --btn-padding: 8px 12px;
+  }
+
   .site-footer {
     width: calc(100% - 16px - var(--safe-left) - var(--safe-right));
     bottom: calc(8px + var(--safe-bottom));
@@ -902,9 +939,6 @@ body.footer-expanded {
   }
 
   .footer-min {
-    padding: 0 16px;
-    min-height: 48px;
-    gap: 8px;
     overflow: visible;
   }
 
@@ -922,7 +956,6 @@ body.footer-expanded {
   }
 
   .cookie-inline {
-    gap: 8px;
     flex-shrink: 0;
   }
 
@@ -948,7 +981,6 @@ body.footer-expanded {
 
   .btn-accept,
   .btn-reject {
-    padding: 8px 12px;
     min-width: 36px;
     min-height: 36px;
   }
@@ -1131,9 +1163,11 @@ body.footer-expanded {
 }
 
 @media (width <= 480px) {
-  .footer-min {
-    padding: 0 12px;
-    gap: 6px;
+  :root {
+    --footer-padding: 12px;
+    --footer-gap: 6px;
+    --btn-padding: 6px 10px;
+    --btn-font-size: 11px;
   }
 
   .footer-copyright {
@@ -1146,17 +1180,7 @@ body.footer-expanded {
     font-size: 10px;
   }
 
-  .cookie-inline {
-    gap: 6px;
-  }
-
   .cookie-text {
-    font-size: 11px;
-  }
-
-  .btn-accept,
-  .btn-reject {
-    padding: 6px 10px;
     font-size: 11px;
   }
 

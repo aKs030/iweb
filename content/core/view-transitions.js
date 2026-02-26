@@ -7,6 +7,8 @@
  * @date 2026-02-20
  */
 
+import { handleSamePageScroll } from './utils.js';
+
 const SAME_ORIGIN = location.origin;
 
 /**
@@ -127,18 +129,19 @@ export function initViewTransitions() {
 
     const url = new URL(link.href, SAME_ORIGIN);
 
-    // Only intercept same-origin, non-hash, non-download links
+    // Only intercept same-origin links
     if (url.origin !== SAME_ORIGIN) return;
-    if (url.pathname === location.pathname && url.hash) return;
 
-    // If the link points exactly to the current page (ignoring hashes), scroll to top instead of re-fetching
-    if (url.pathname === location.pathname && url.search === location.search) {
-      if (!url.hash) {
-        e.preventDefault();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
+    // If the link points exactly to the current page (ignoring hashes), use
+    // shared helper to handle scroll behaviour. the helper returns true if the
+    // navigation was handled and we should prevent default.
+    if (handleSamePageScroll(url.href)) {
+      e.preventDefault();
       return;
     }
+
+    // Discard pure-hash URLs up front (they won't change page content)
+    if (url.pathname === location.pathname && url.hash) return;
 
     if (link.hasAttribute('download')) return;
     if (link.target === '_blank') return;

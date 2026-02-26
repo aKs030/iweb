@@ -209,23 +209,25 @@ class AccessibilityManager {
     }
   }
 
-  handleEscape() {
-    const cookieModal = document.querySelector(
-      '.footer-cookie-settings:not(.hidden)',
-    );
+  async handleEscape() {
+    // footer cookie settings use an ID now, not the old `.footer-cookie-settings` class
+    const cookieModal = document.querySelector('#cookie-settings:not(.hidden)');
     if (cookieModal) {
-      const closeBtn = cookieModal.querySelector('.cookie-settings-close');
+      // the close button also has its own ID; fall back to the legacy class just in case
+      const closeBtn =
+        cookieModal.querySelector('#close-settings') ||
+        cookieModal.querySelector('.cookie-settings-close');
       if (closeBtn) closeBtn.click();
       return;
     }
 
-    const footer = document.getElementById('site-footer');
-    if (footer && footer.classList.contains('footer-expanded')) {
-      try {
-        document.dispatchEvent(new CustomEvent('footer:requestClose'));
-      } catch {
-        // Ignore event dispatch errors
-      }
+    // prefer calling the footer API directly instead of firing events
+    try {
+      const { closeFooter } = await import('../components/footer/footer.js');
+      closeFooter();
+    } catch {
+      // footer module could not be imported; nothing else we can do – the
+      // old event-based fallback is no longer supported.
     }
   }
 

@@ -1,7 +1,6 @@
 /**
- * KI Roboter Begleiter - Extended Edition (Optimized)
- * Performance-Optimierungen: DOM-Caching, RequestAnimationFrame-Nutzung, Refactoring.
- * @version 2.0.1
+ * KI Roboter Begleiter
+ *  * @version 2.0.1
  */
 // @ts-check
 
@@ -206,9 +205,10 @@ export class RobotCompanion {
       return this.dom.footer;
     }
 
-    this.dom.footer =
-      document.querySelector('footer') ||
-      document.querySelector('#site-footer');
+    // prefer custom element; fall back to legacy <footer> tag if present
+    // prefer the <site-footer> custom element; page markup should always
+    // include it now that the ID has been removed.
+    this.dom.footer = document.querySelector('site-footer');
     return this.dom.footer || null;
   }
 

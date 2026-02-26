@@ -1,7 +1,6 @@
 /**
  * Main Application Entry Point
  * @version 6.2.0
- * @last-modified 2026-02-11
  */
 
 import { initHeroFeatureBundle } from '../pages/home/hero-manager.js';
@@ -11,7 +10,12 @@ import { a11y, createAnnouncer } from './core/accessibility-manager.js';
 import { SectionManager } from './core/section-manager.js';
 import { AppLoadManager } from './core/load-manager.js';
 import { ThreeEarthManager } from './core/three-earth-manager.js';
-import { getElementById, onDOMReady, TimerManager } from './core/utils.js';
+import {
+  getElementById,
+  onDOMReady,
+  TimerManager,
+  scrollTopIfNoHash,
+} from './core/utils.js';
 import { initViewTransitions } from './core/view-transitions.js';
 import { i18n } from './core/i18n.js';
 import { GlobalEventHandlers } from './core/events.js';
@@ -61,11 +65,8 @@ const _initApp = () => {
   }
   _appInitialized = true;
 
-  // Scroll to top on init (Safari compatibility) - only if no hash in URL
-  if (!window.location.hash) {
-    window.scrollTo(0, 0);
-    appTimers.setTimeout(() => window.scrollTo(0, 0), 100);
-  }
+  // Ensure consistent scroll behaviour across browsers
+  scrollTopIfNoHash();
 
   sectionManager.init();
 
@@ -198,9 +199,7 @@ globalThis.addEventListener('pageshow', (event) => {
     }
 
     // Force scroll to top on restoration - only if no hash in URL
-    if (!window.location.hash) {
-      window.scrollTo(0, 0);
-    }
+    scrollTopIfNoHash();
   }
 });
 

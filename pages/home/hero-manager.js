@@ -220,7 +220,7 @@ export const initHeroFeatureBundle = (sectionManager) => {
 
   HeroManager.initLazyHeroModules();
 
-  const handleHeroClick = (event) => {
+  const handleHeroClick = async (event) => {
     const link = event.target.closest('.hero__buttons a[href^="#"]');
     if (!link) return;
 
@@ -232,6 +232,21 @@ export const initHeroFeatureBundle = (sectionManager) => {
     const target =
       getElementById(targetId) || document.getElementById(targetId);
     if (!target) return;
+
+    // if the hero button points at the footer element we want to expand the
+    // footer rather than just scrolling – makes behavior consistent with the
+    // [data-footer-trigger] mechanism used elsewhere.
+    if (targetId === 'footer') {
+      try {
+        const { openFooter } =
+          await import('/content/components/footer/footer.js');
+        openFooter();
+      } catch {
+        // fallback: simple scroll
+        requestAnimationFrame(doScroll);
+      }
+      return;
+    }
 
     const doScroll = () => {
       try {
