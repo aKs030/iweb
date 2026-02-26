@@ -146,6 +146,10 @@ textarea:focus-visible {
 main {
   margin-top: 0 !important;
   padding: 0 !important;
+  /* Fallback for browsers not supporting dvh */
+  min-height: calc(
+    100vh - var(--content-top-offset) - var(--content-bottom-offset)
+  );
   min-height: calc(
     100dvh - var(--content-top-offset) - var(--content-bottom-offset)
   );
@@ -153,6 +157,10 @@ main {
 
 .section {
   scroll-snap-align: start;
+  /* Fallback for browsers not supporting dvh */
+  min-height: calc(
+    100vh - var(--content-top-offset) - var(--content-bottom-offset)
+  );
   min-height: calc(
     100dvh - var(--content-top-offset) - var(--content-bottom-offset)
   );
@@ -162,6 +170,7 @@ main {
 
   /* Modern Rendering Optimization */
   content-visibility: auto;
+  contain-intrinsic-size: auto 100vh; /* Fallback */
   contain-intrinsic-size: auto 100dvh;
 }
 
@@ -230,6 +239,10 @@ body {
   /* Contact page is narrower and gets extra inner padding */
   max-width: 760px;
   padding: 0.75rem;
+  /* Fallback for browsers not supporting dvh */
+  min-height: calc(
+    100vh - var(--content-top-offset) - var(--content-bottom-offset)
+  );
   min-height: calc(
     100dvh - var(--content-top-offset) - var(--content-bottom-offset)
   );
