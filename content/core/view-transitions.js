@@ -45,6 +45,19 @@ function applyPage(url, { title, mainHtml, bodyClass }) {
   document.title = title;
   if (bodyClass) document.body.className = bodyClass;
 
+  // Toggle .snap-page class on html based on URL path
+  try {
+    const urlObj = new URL(url, location.origin);
+    const isHome = urlObj.pathname === '/' || urlObj.pathname === '/index.html';
+    if (isHome) {
+      document.documentElement.classList.add('snap-page');
+    } else {
+      document.documentElement.classList.remove('snap-page');
+    }
+  } catch (e) {
+    console.warn('[ViewTransitions] Error parsing URL:', e);
+  }
+
   // Update canonical URL
   const canonical = document.querySelector('link[rel="canonical"]');
   if (canonical) canonical.href = url;

@@ -151,10 +151,7 @@ main {
   );
 }
 
-.section {
-  scroll-snap-align: start;
-  scroll-snap-stop: always;
-  min-height: calc(
+.section {min-height: calc(
     100vh - var(--content-top-offset) - var(--content-bottom-offset)
   );
   height: calc(
@@ -562,3 +559,9 @@ a:hover {
 }
 
 /* ===== END PRINT STYLES ===== */
+
+/* Scroll snap only for the home page */
+.snap-page .section {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}

@@ -66,10 +66,24 @@ const _initApp = () => {
   }
   _appInitialized = true;
 
-  // Scroll to top on init (Safari compatibility) - only if no hash in URL
-  if (!window.location.hash) {
-    window.scrollTo(0, 0);
-    appTimers.setTimeout(() => window.scrollTo(0, 0), 100);
+  // Ensure correct initial state for snap-page class
+  const isHome = window.location.pathname === '/' || window.location.pathname === '/index.html';
+  if (isHome) {
+    if (!document.documentElement.classList.contains('snap-page')) {
+       document.documentElement.classList.add('snap-page');
+    }
+  } else {
+    document.documentElement.classList.remove('snap-page');
+  }
+
+  // Configure scroll restoration
+  if ('scrollRestoration' in history) {
+    if (document.documentElement.classList.contains('snap-page')) {
+      history.scrollRestoration = 'manual';
+      if (!window.location.hash) window.scrollTo(0, 0);
+    } else {
+      history.scrollRestoration = 'auto';
+    }
   }
 
   sectionManager.init();
@@ -202,8 +216,8 @@ globalThis.addEventListener('pageshow', (event) => {
       document.dispatchEvent(new CustomEvent('visibilitychange'));
     }
 
-    // Force scroll to top on restoration - only if no hash in URL
-    if (!window.location.hash) {
+    // Force scroll to top on restoration - only if no hash in URL and on snap page
+    if (document.documentElement.classList.contains('snap-page') && !window.location.hash) {
       window.scrollTo(0, 0);
     }
   }
