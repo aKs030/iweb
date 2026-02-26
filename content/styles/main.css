@@ -157,6 +157,7 @@ main {
 
 .section {
   scroll-snap-align: start;
+  scroll-snap-stop: always;
   /* Fallback for browsers not supporting dvh */
   min-height: calc(
     100vh - var(--content-top-offset) - var(--content-bottom-offset)
