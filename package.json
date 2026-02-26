@@ -22,7 +22,8 @@
     "ai-index:sync": "node scripts/sync-ai-index-apps.mjs",
     "ai-index:check": "node scripts/sync-ai-index-apps.mjs --check",
     "cf:redirect:audit": "node scripts/cloudflare-redirect-audit.mjs --days 8 --limit 500",
-    "cf:redirect:prune": "node scripts/cloudflare-redirect-audit.mjs --days 8 --limit 500 --apply-prune"
+    "cf:redirect:prune": "node scripts/cloudflare-redirect-audit.mjs --days 8 --limit 500 --apply-prune",
+    "css:audit": "npx purgecss --css \"content/styles/**/*.css\" \"content/components/**/*.css\" \"pages/**/*.css\" --content \"pages/**/*.html\" \"content/**/*.js\" \"content/**/*.mjs\" \"content/components/**/*.js\" --output /tmp/purged-all.css"
   },
   "dependencies": {
     "three": "^0.183.1"

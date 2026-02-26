@@ -415,8 +415,9 @@ export async function initHeroSubtitle(options = {}) {
       try {
         el.style.removeProperty('bottom');
         const rect = el.getBoundingClientRect();
+        // use the custom element itself instead of an ID
         const footer = /** @type {HTMLElement | null} */ (
-          document.querySelector('#site-footer')
+          document.querySelector('site-footer')
         );
         if (!footer) return;
         const fRect = footer.getBoundingClientRect();

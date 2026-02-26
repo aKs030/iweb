@@ -3,7 +3,6 @@
  */
 
 import { MenuTemplate } from './MenuTemplate.js';
-import { getElementById } from '../../../core/utils.js';
 import { i18n } from '../../../core/i18n.js';
 
 /**
@@ -21,6 +20,8 @@ export class MenuRenderer {
     this.template = new MenuTemplate(config);
     this.rafId = null;
     this.container = null;
+    this.iconTimeout = null; // used by initializeIcons
+    this._i18nUnsub = null; // cleaned up in destroy
   }
 
   /**
@@ -30,8 +31,9 @@ export class MenuRenderer {
   render(container) {
     this.container = container;
     container.innerHTML = this.template.getHTML();
-    this.updateYear();
-    this.initializeIcons();
+    // removed legacy year update - handled via static markup or server
+
+    // wire state subscriptions _before_ syncing so changes apply immediately
     this.setupStateSubscriptions();
 
     // Initial State Sync
@@ -45,14 +47,11 @@ export class MenuRenderer {
     this.updateLanguage(currentLang);
   }
 
-  updateYear() {
-    const yearEl = getElementById('current-year');
-    if (yearEl) yearEl.textContent = new Date().getFullYear();
-  }
-
   initializeIcons() {
     const delay = this.config.ICON_CHECK_DELAY || 100;
-    setTimeout(() => {
+    this.iconTimeout = setTimeout(() => {
+      // clear reference early to avoid leaks when container is removed during delay
+      this.iconTimeout = null;
       if (!this.container) return;
 
       const icons = this.container.querySelectorAll('.nav-icon use');
@@ -100,7 +99,8 @@ export class MenuRenderer {
     });
 
     // Language State
-    i18n.subscribe((lang) => {
+    // keep unsubscribe function for cleanup
+    this._i18nUnsub = i18n.subscribe((lang) => {
       this.updateLanguage(lang);
     });
   }
@@ -243,6 +243,14 @@ export class MenuRenderer {
   destroy() {
     if (this.rafId) {
       cancelAnimationFrame(this.rafId);
+    }
+    if (this.iconTimeout) {
+      clearTimeout(this.iconTimeout);
+      this.iconTimeout = null;
+    }
+    if (typeof this._i18nUnsub === 'function') {
+      this._i18nUnsub();
+      this._i18nUnsub = null;
     }
     this.container = null;
   }

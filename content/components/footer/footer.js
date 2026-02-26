@@ -2,11 +2,12 @@
 
 /**
 
- * Modern Site Footer Web Component v3.0.0
+ * Modern Site Footer Web Component v3.1.0
 
  * Optimized architecture with complete memory leak prevention
 
- * @version 3.0.0
+ * legacy/fallback logic removed 2026‑02‑26
+ * @version 3.1.0
 
  */
 
@@ -23,9 +24,8 @@ const log = createLogger('SiteFooter');
 /** @typedef {import('/content/core/types.js').FooterElements} FooterElements */
 
 const CONFIG = Object.freeze({
-  FOOTER_PATH: '/content/components/footer/footer',
-
-  FOOTER_PATH_FALLBACK: '/content/components/footer/footer.html',
+  // primary path used by <site-footer> instances; always serves HTML
+  FOOTER_PATH: '/content/components/footer/footer.html',
 
   TRANSITION_DURATION: 300,
 
@@ -59,8 +59,6 @@ export class SiteFooter extends HTMLElement {
     touchStartY: 0,
 
     touchStartTime: 0,
-
-    baseFooterHeight: 76,
   };
 
   /** @type {FooterElements} */
@@ -134,47 +132,37 @@ export class SiteFooter extends HTMLElement {
   }
 
   /**
-
    * Fetch footer HTML with retry logic
-
-   * @param {string} primarySrc
-
+   *
+   * @param {string} src - URL or path to footer HTML (extension optional)
    * @returns {Promise<string>}
-
    */
 
-  async #fetchFooterHTML(primarySrc) {
-    const urls = [primarySrc];
+  async #fetchFooterHTML(src) {
+    // Simplified: always fetch HTML file (src may omit .html extension)
+    const url = src.endsWith('.html') ? src : `${src}.html`;
 
-    if (!primarySrc.endsWith('.html')) {
-      urls.push(primarySrc + '.html');
-    } else if (primarySrc !== CONFIG.FOOTER_PATH) {
-      urls.push(CONFIG.FOOTER_PATH);
-    }
+    for (let attempt = 0; attempt <= CONFIG.LOAD_RETRY_ATTEMPTS; attempt++) {
+      try {
+        const response = await fetch(url, { redirect: 'follow' });
 
-    for (const url of urls) {
-      for (let attempt = 0; attempt <= CONFIG.LOAD_RETRY_ATTEMPTS; attempt++) {
-        try {
-          const response = await fetch(url, { redirect: 'follow' });
+        if (response.ok) return await response.text();
 
-          if (response.ok) return await response.text();
+        log.warn(
+          `Footer fetch ${url} returned ${response.status} (attempt ${attempt + 1})`,
+        );
+      } catch (err) {
+        log.warn(`Footer fetch ${url} failed (attempt ${attempt + 1})`, err);
+      }
 
-          log.warn(
-            `Footer fetch ${url} returned ${response.status} (attempt ${attempt + 1})`,
-          );
-        } catch (err) {
-          log.warn(`Footer fetch ${url} failed (attempt ${attempt + 1})`, err);
-        }
-
-        if (attempt < CONFIG.LOAD_RETRY_ATTEMPTS) {
-          await new Promise((r) =>
-            setTimeout(r, CONFIG.LOAD_RETRY_DELAY_MS * (attempt + 1)),
-          );
-        }
+      if (attempt < CONFIG.LOAD_RETRY_ATTEMPTS) {
+        await new Promise((r) =>
+          setTimeout(r, CONFIG.LOAD_RETRY_DELAY_MS * (attempt + 1)),
+        );
       }
     }
 
-    throw new Error('Footer load failed — all URLs exhausted');
+    throw new Error('Footer load failed — all attempts exhausted');
   }
 
   /**
@@ -268,7 +256,8 @@ export class SiteFooter extends HTMLElement {
 
   #cacheElements() {
     this.#elements = {
-      footer: this.querySelector('#site-footer'),
+      // the `<footer>` element inside the custom element; no ID required
+      footer: this.querySelector('footer.site-footer'),
 
       footerMin: this.querySelector('.footer-min'),
 
@@ -297,15 +286,9 @@ export class SiteFooter extends HTMLElement {
       acceptAll: this.querySelector('#accept-all'),
     };
 
-    try {
-      const root = document.documentElement;
-
-      const raw = getComputedStyle(root).getPropertyValue('--footer-height');
-
-      this.#state.baseFooterHeight = parseFloat(raw) || 76;
-    } catch {
-      this.#state.baseFooterHeight = 76;
-    }
+    // base footer height no longer needs to be tracked in state;
+    // we just add a fixed constant when updating the CSS variable.
+    // legacy code has been removed.
   }
 
   #setupDate() {
@@ -372,10 +355,9 @@ export class SiteFooter extends HTMLElement {
           ? Math.round(cookieBanner.getBoundingClientRect().height || 0)
           : 0;
 
-      root.style.setProperty(
-        '--footer-height',
-        `${this.#state.baseFooterHeight + bannerHeight}px`,
-      );
+      // we no longer store a base height in state; the constant 76px is the
+      // height of the collapsed footer and matches the CSS default.
+      root.style.setProperty('--footer-height', `${76 + bannerHeight}px`);
 
       root.classList.toggle('footer-cookie-visible', !!showBanner);
     } catch {
@@ -469,14 +451,9 @@ export class SiteFooter extends HTMLElement {
       }
     };
 
-    /** @type {EventListener} */
-    const handleResize = () => {
-      const timeoutId = this.#timers.setTimeout(() => {
-        if (this.#state.expanded) this.#updateFooterPosition();
-      }, 150);
-
-      this.#listeners.set('resize:timeout', timeoutId);
-    };
+    // legacy resize handler removed – footer position no longer needs to
+    // be recalculated on viewport change.  All callers of this method can
+    // simply rely on the CSS layout.
 
     this.#addListener('document:click', document, 'click', handleOutsideClick, {
       passive: false,
@@ -504,21 +481,7 @@ export class SiteFooter extends HTMLElement {
       );
     }
 
-    this.#addListener('window:resize', window, 'resize', handleResize, {
-      passive: true,
-    });
-  }
-
-  #updateFooterPosition() {
-    const { footer } = this.#elements;
-
-    if (!footer) return;
-
-    const rect = footer.getBoundingClientRect();
-
-    if (rect.bottom > window.innerHeight) {
-      footer.scrollIntoView({ behavior: 'smooth', block: 'end' });
-    }
+    // resize handling removed – no need to reposition footer on viewport changes
   }
 
   /**
@@ -580,6 +543,24 @@ export class SiteFooter extends HTMLElement {
     this.#timers.setTimeout(() => {
       this.#state.isTransitioning = false;
     }, CONFIG.TRANSITION_DURATION);
+  }
+
+  // -------------------------------------------------------------------------
+  // Public API
+  // -------------------------------------------------------------------------
+
+  /**
+   * Programmatically open the footer.
+   */
+  open() {
+    this.#toggleFooter(true);
+  }
+
+  /**
+   * Programmatically close the footer.
+   */
+  close() {
+    this.#toggleFooter(false);
   }
 
   #openSettings() {
@@ -647,6 +628,9 @@ export class SiteFooter extends HTMLElement {
         this.#toggleFooter(true),
       ),
     );
+
+    // legacy event from earlier versions has been removed; other
+    // modules should call the exported `closeFooter()` helper instead.
 
     this.#addListener(
       'this:cookieTrigger',
@@ -749,3 +733,18 @@ export class SiteFooter extends HTMLElement {
 // Register Custom Element
 
 customElements.define('site-footer', SiteFooter);
+
+// Convenience functions for other modules that don't want to query the
+// DOM or depend directly on the element class.
+export function openFooter() {
+  const el = /** @type {any} */ (document.querySelector('site-footer'));
+  if (el && typeof el.open === 'function') {
+    el.open();
+  }
+}
+export function closeFooter() {
+  const el = /** @type {any} */ (document.querySelector('site-footer'));
+  if (el && typeof el.close === 'function') {
+    el.close();
+  }
+}

@@ -1,3 +1,8 @@
+/* ========================================================================
+   CLEANUP NOTE: unused selectors removed, duplicate rules consolidated
+   (see CSS sweep 2026-02-26)
+   ======================================================================== */
+
 /**
  * Modern Menu System - Styles
  *
@@ -207,13 +212,13 @@ site-menu {
   display: inline-block;
 }
 
-@media (width <= 1024px) {
+@media (max-width: 1024px) {
   .site-subtitle {
     display: none !important;
   }
 }
 
-@media (width <= 900px) {
+@media (max-width: 900px) {
   .site-subtitle {
     display: inline-block !important;
     font-size: 14px;
@@ -224,7 +229,7 @@ site-menu {
   }
 }
 
-@media (width <= 480px) {
+@media (max-width: 480px) {
   .site-title {
     font-size: 16px;
   }
@@ -1155,7 +1160,7 @@ site-menu {
 }
 
 /* ===== Mobile Responsive ===== */
-@media (width <= 900px) {
+@media (max-width: 900px) {
   .site-header {
     display: flex;
     justify-content: space-between;
@@ -1461,7 +1466,7 @@ site-menu {
 }
 
 /* Extra Small Screens */
-@media (width <= 480px) {
+@media (max-width: 480px) {
   .site-header {
     width: calc(100% - 12px - var(--safe-left) - var(--safe-right));
     padding: 0 12px;

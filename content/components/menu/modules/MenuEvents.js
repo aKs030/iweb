@@ -148,6 +148,16 @@ export class MenuEvents {
       }
 
       const isOpen = !this.state.isOpen;
+      if (isOpen) {
+        // ensure footer is collapsed when main nav opens
+        import('/content/components/footer/footer.js').then(
+          ({ closeFooter }) => {
+            try {
+              closeFooter();
+            } catch {}
+          },
+        );
+      }
       this.state.setOpen(isOpen);
     };
 
@@ -180,7 +190,18 @@ export class MenuEvents {
 
         this.menuSearch.closeSearchModeSilently();
 
-        // Handle internal links
+        // Special case: contact button should close menu first, then open footer
+        // only treat the exact hash `#footer` as a trigger; legacy `#site-footer`
+        // anchor is no longer supported and should not open the panel.
+        if (href === '#footer') {
+          this.closeMenu();
+          import('/content/components/footer/footer.js')
+            .then(({ openFooter }) => openFooter())
+            .catch(() => {});
+          return;
+        }
+
+        // Handle generic internal links
         if (href.startsWith('/') || href.startsWith('#')) {
           this.closeMenu();
         }
@@ -192,8 +213,6 @@ export class MenuEvents {
 
   setupGlobalListeners() {
     const handleDocClick = (e) => {
-      // SVG taps (e.g. <use> in icon buttons) are Element, not HTMLElement.
-      // Using Element prevents false "outside click" detection on icon taps.
       const target = /** @type {Element|null} */ (
         e.target instanceof Element ? e.target : null
       );
@@ -241,6 +260,11 @@ export class MenuEvents {
       this.addListener(document, 'keydown', handleEscape),
       this.addListener(window, 'hashchange', onUrlChange),
       this.addListener(window, 'popstate', onUrlChange),
+      // if footer is loaded after menu init we need to observe again
+      this.addListener(document, 'footer:loaded', () => {
+        this.setupScrollSpy();
+        this.handleUrlChange();
+      }),
     );
   }
 
@@ -275,8 +299,14 @@ export class MenuEvents {
       links.forEach((link) => {
         const hash = link.getAttribute('href');
         if (hash === '#') return;
-        // Prepend / to make it a root-relative link to home sections
-        // UNLESS the hash exists on current page (rare for this site structure)
+
+        // if the hash target exists on the current page, leave it alone so
+        // the browser can jump locally. otherwise rewrite to root-relative
+        // so it points at the homepage section.
+        if (document.querySelector(hash)) {
+          return;
+        }
+
         link.setAttribute('href', `/${hash}`);
       });
     }
@@ -311,6 +341,11 @@ export class MenuEvents {
   }
 
   handleUrlChange() {
+    // make sure any navigation that lands here without a hash resets scroll
+    import('../../../core/utils.js').then(({ scrollTopIfNoHash }) => {
+      scrollTopIfNoHash();
+    });
+
     this.calculateAndSetActiveLink();
     this.updateTitleFromPathOrSection();
   }
@@ -413,6 +448,12 @@ export class MenuEvents {
   }
 
   updateTitleFromSection(sectionId) {
+    // treat footer hash as contact page
+    if (sectionId === 'footer') {
+      this.state.setTitle('menu.contact', 'menu.contact_sub');
+      return;
+    }
+
     const info = this.extractSectionInfo(sectionId);
     if (info) {
       this.state.setTitle(info.title, info.subtitle);

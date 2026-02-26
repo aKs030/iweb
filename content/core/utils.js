@@ -15,6 +15,52 @@ const log = createLogger('Utils');
 // ASYNC UTILITIES
 // ============================================================================
 
+// ---------------------------------------------------------------------------
+// HASH & SCROLL HELPERS
+// ---------------------------------------------------------------------------
+
+/**
+ * If the current location has no hash, scrolls to the top immediately and
+ * schedules a second try after a brief delay. Used on initial load and when
+ * restoring from bfcache to avoid Safari oddities.
+ */
+export function scrollTopIfNoHash() {
+  if (!window.location.hash) {
+    window.scrollTo(0, 0);
+    // some browsers (mobile Safari) require a second call after render
+    setTimeout(() => window.scrollTo(0, 0), 100);
+  }
+}
+
+/**
+ * When navigating with the View Transitions API we intercept same-page
+ * navigations. This helper determines if a URL points to the same origin
+ * and path as the current location, and -- if there is no hash -- performs a
+ * smooth scroll to the top. Returns `true` when the navigation is handled
+ * (indicating the caller should prevent default behaviour).
+ *
+ * @param {string} url
+ * @returns {boolean}
+ */
+export function handleSamePageScroll(url) {
+  try {
+    const parsed = new URL(url, location.origin);
+    if (parsed.origin !== location.origin) return false;
+    if (
+      parsed.pathname === location.pathname &&
+      parsed.search === location.search
+    ) {
+      if (!parsed.hash) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return true;
+      }
+    }
+  } catch {
+    // malformed URL
+  }
+  return false;
+}
+
 /**
  * Sleep for specified milliseconds
  * @param {number} ms - Milliseconds to sleep

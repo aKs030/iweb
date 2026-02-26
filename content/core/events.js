@@ -12,7 +12,6 @@ export const EVENTS = Object.freeze({
   DOM_READY: 'app:domReady',
   CORE_INITIALIZED: 'app:coreInitialized',
   MODULES_READY: 'app:modulesReady',
-  APP_READY: 'app:ready',
   LOADING_UNBLOCKED: 'app:loadingUnblocked',
   LOADING_HIDE: 'app:loaderHide',
   HERO_INIT_READY: 'app:heroInitReady',
