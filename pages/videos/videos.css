@@ -259,42 +259,6 @@ h1 {
     gap: var(--gap-md);
   }
 
-  /* Video links list */
-  .video-links {
-    margin-top: 1.5rem;
-    margin-bottom: 2rem;
-    padding: 1.5rem;
-    background: linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.02),
-      rgba(0, 0, 0, 0.02)
-    );
-    border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.03);
-  }
-  .video-links h2 {
-    margin: 0 0 0.5rem 0;
-    font-size: 1.25rem;
-  }
-  .video-links-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 0.5rem 1rem;
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-  .video-links-list li a {
-    color: var(--accent);
-    text-decoration: none;
-    font-weight: 600;
-    display: inline-block;
-    transition: color 0.2s ease;
-  }
-  .video-links-list li a:hover {
-    color: #fff;
-    text-decoration: underline;
-  }
   .lead {
     margin-bottom: 0.75rem;
   }
@@ -313,9 +277,6 @@ h1 {
   margin-bottom: 3rem;
   position: relative;
   z-index: 1;
-}
-.action-buttons {
-  /* layout managed by utilities */
 }
 
 .btn-subscribe,

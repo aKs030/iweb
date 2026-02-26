@@ -330,16 +330,6 @@ main.about-main.container {
 .about__icon--purple {
   color: #a78bfa;
 }
-.about__container {
-  padding: 2rem;
-}
-.about__error p {
-  color: var(--text-muted);
-  margin-bottom: 1rem;
-}
-.about__error .btn {
-  margin-top: 0.5rem;
-}
 .about__stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));

@@ -10,7 +10,7 @@ This directory contains shared browser runtime modules used by pages, components
 - `i18n.js`: Language manager with translation loading and page translation.
 - `utils.js`: DOM helpers, observer helpers, timers, sanitizing, and shared helpers.
 - `fetch.js` / `cache.js`: Request helpers with cache support.
-- `section-manager.js` / `section-tracker.js`: Dynamic section loading and active section tracking.
+- `section-manager.js`: Dynamic section loading and active section tracking.
 - `schema.js` / `canonical-manager.js`: SEO structured data and canonical management.
 - `theme-color-manager.js` / `pwa-manager.js` / `resource-hints.js`: Head and PWA runtime optimizations.
 - `accessibility-manager.js`: Accessibility helpers and announcer utilities.
