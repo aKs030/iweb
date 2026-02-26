@@ -1206,10 +1206,6 @@ body.footer-expanded {
     margin: 0 0 5px;
   }
 
-  .footer-card-actions {
-    gap: 4px;
-  }
-
   .footer-cta {
     padding: 4px 8px;
     font-size: 8px;

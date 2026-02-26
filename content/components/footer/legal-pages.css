@@ -15,6 +15,14 @@
   );
 }
 
+@supports (min-height: 100dvh) {
+  .legal-content {
+    min-height: calc(
+      100dvh - var(--content-top-offset) - var(--content-bottom-offset)
+    );
+  }
+}
+
 .legal-content h1 {
   font-size: clamp(2rem, 5vw, 2.5rem);
   margin-bottom: 0.5rem;

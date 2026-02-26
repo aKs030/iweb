@@ -14,7 +14,6 @@ import { ThreeEarthManager } from './core/three-earth-manager.js';
 import { getElementById, onDOMReady, TimerManager } from './core/utils.js';
 import { initViewTransitions } from './core/view-transitions.js';
 import { i18n } from './core/i18n.js';
-import { SectionTracker } from './core/section-tracker.js';
 import { GlobalEventHandlers } from './core/events.js';
 
 const log = createLogger('main');
@@ -49,10 +48,6 @@ const perfMarks = {
 // ===== Accessibility Announcements =====
 const announce = createAnnouncer();
 globalThis.announce = announce;
-
-// ===== Section Tracker =====
-const sectionTracker = new SectionTracker();
-sectionTracker.init();
 
 // ===== Section Manager =====
 const sectionManager = new SectionManager();
