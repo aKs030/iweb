@@ -67,10 +67,12 @@ const _initApp = () => {
   _appInitialized = true;
 
   // Ensure correct initial state for snap-page class
-  const isHome = window.location.pathname === '/' || window.location.pathname === '/index.html';
+  const isHome =
+    window.location.pathname === '/' ||
+    window.location.pathname === '/index.html';
   if (isHome) {
     if (!document.documentElement.classList.contains('snap-page')) {
-       document.documentElement.classList.add('snap-page');
+      document.documentElement.classList.add('snap-page');
     }
   } else {
     document.documentElement.classList.remove('snap-page');
@@ -217,7 +219,10 @@ globalThis.addEventListener('pageshow', (event) => {
     }
 
     // Force scroll to top on restoration - only if no hash in URL and on snap page
-    if (document.documentElement.classList.contains('snap-page') && !window.location.hash) {
+    if (
+      document.documentElement.classList.contains('snap-page') &&
+      !window.location.hash
+    ) {
       window.scrollTo(0, 0);
     }
   }
