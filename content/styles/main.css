@@ -549,3 +549,13 @@ a:hover {
 }
 
 /* ===== END PRINT STYLES ===== */
+
+/* Footer Snap Target - Ensures smooth scroll to bottom */
+.footer-snap-target {
+  scroll-snap-align: end;
+  height: 1px; /* Minimal height to serve as anchor */
+  width: 100%;
+  pointer-events: none;
+  visibility: hidden;
+  margin-top: -1px; /* Overlap slightly to prevent extra space */
+}
