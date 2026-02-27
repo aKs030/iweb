@@ -337,7 +337,7 @@ npm run format       # Prettier check
 ### Runtime Check
 
 ```bash
-npm run dev:sim      # Lokaler Node-Simulator
+npm run dev          # Einheitlicher Dev-Workflow (inkl. Token-Watcher)
 ```
 
 ### Utilities

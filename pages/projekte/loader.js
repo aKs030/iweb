@@ -15,10 +15,10 @@ const initPage = () => {
     const root = document.getElementById('root');
     if (root && !root.innerHTML.trim()) {
       root.innerHTML = `
-        <div style="padding: 2rem; text-align: center; color: #ef4444; background: rgba(0,0,0,0.8); border-radius: 1rem; margin: 2rem;">
+        <div class="project-load-error">
           <h2>Fehler beim Laden</h2>
           <p><strong>Details:</strong> <span id="error-detail"></span></p>
-          <button onclick="location.reload()" style="margin-top: 1rem; padding: 0.5rem 1rem; cursor: pointer; background: #4444ff; color: white; border: none; border-radius: 4px;">
+          <button onclick="location.reload()" class="project-load-error__button">
             Seite neu laden
           </button>
         </div>

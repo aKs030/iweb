@@ -72,11 +72,7 @@ export class MenuEvents {
 
     const applyTheme = (theme) => {
       const root = document.documentElement;
-      if (theme === 'light') {
-        root.setAttribute('data-theme', 'light');
-      } else {
-        root.removeAttribute('data-theme');
-      }
+      root.setAttribute('data-theme', theme === 'light' ? 'light' : 'dark');
 
       // Update theme-color meta tags
       import('/content/core/theme-color-manager.js').then(

@@ -157,9 +157,7 @@ const GalleryApp = () => {
   return h(
     'div',
     {
-      // 'fixed inset-0' fixiert das Element genau im sichtbaren Bildschirmbereich
-      className: 'fixed inset-0 w-screen h-screen bg-black overflow-hidden',
-      style: { touchAction: 'none' }, // Verhindert Mobile-Swipes auf App-Ebene
+      className: 'gallery-shell',
     },
     // Pass dynamic items to the scene
     h(ThreeGalleryScene, { items: items }),
@@ -168,15 +166,12 @@ const GalleryApp = () => {
     h(
       'div',
       {
-        className:
-          'absolute left-1/2 -translate-x-1/2 z-10 pointer-events-none text-center w-full px-4',
-        style: { top: '100px' }, // 76px Menu + 24px Abstand
+        className: 'gallery-title-overlay',
       },
       h(
         'h1',
         {
-          className:
-            'text-4xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-400 drop-shadow-lg',
+          className: 'gallery-title',
         },
         t('gallery.title') || 'Gallery',
       ),
@@ -184,7 +179,7 @@ const GalleryApp = () => {
       h(
         'p',
         {
-          className: 'text-indigo-200 mt-2 text-lg drop-shadow-md',
+          className: 'gallery-subtitle',
         },
         t('gallery.subtitle') || 'Explore visual moments',
       ),
@@ -194,13 +189,11 @@ const GalleryApp = () => {
     h(
       'div',
       {
-        className:
-          'absolute left-1/2 -translate-x-1/2 z-10 pointer-events-none animate-pulse w-full text-center',
-        style: { bottom: '120px' }, // 52px Footer + 56px Abstand + 12px bottom offset
+        className: 'gallery-instructions',
       },
       h(
         'p',
-        { className: 'text-white/40 text-sm' },
+        { className: 'gallery-instructions__text' },
         'Scroll to explore • Click to view',
       ),
     ),

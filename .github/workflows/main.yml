@@ -16,6 +16,8 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: ./.github/actions/setup-node-deps
+      - run: npm run tokens:generate:all
+      - run: npm run utilities:generate
       - run: npm run check
 
   actionlint:
@@ -47,6 +49,11 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: ./.github/actions/setup-node-deps
+      - run: npm run tokens:generate:all
+      - run: npm run utilities:generate
+      - run: npm run css:lint
+      - run: npm run css:audit
+      - run: npm run structure:check
       - id: secrets
         run: echo "has=${{ secrets.CLOUDFLARE_API_TOKEN != '' }}" >> "$GITHUB_OUTPUT"
       - if: steps.secrets.outputs.has == 'true'

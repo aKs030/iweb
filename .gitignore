@@ -49,6 +49,10 @@ coverage/
 *.temp
 *.bak
 *.old
+.playwright-cli/
+
+# Generated CSS artifacts
+content/styles/minified/
 
 # Other lockfiles (npm lockfile is tracked)
 yarn.lock

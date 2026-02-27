@@ -248,18 +248,18 @@ if ('serviceWorker' in navigator && !ENV.isTest) {
 function showUpdateNotification() {
   const notification = document.createElement('div');
   notification.innerHTML = `
-    <div style="position:fixed;bottom:20px;right:20px;background:#1a1a1a;color:#fff;padding:16px 20px;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.3);z-index:var(--z-tooltip);max-width:400px;">
-      <div style="display:flex;align-items:center;gap:12px;">
-        <span style="font-size:24px;">🔄</span>
-        <span style="flex:1;font-size:14px;">Neue Version verfügbar!</span>
-        <button onclick="location.reload()" style="background:#0066cc;color:#fff;border:none;padding:8px 16px;border-radius:4px;cursor:pointer;font-size:14px;font-weight:500;">Aktualisieren</button>
-        <button onclick="this.parentElement.parentElement.remove()" style="background:transparent;border:none;color:#999;font-size:24px;cursor:pointer;padding:0;width:24px;height:24px;">×</button>
+    <div class="sw-update-toast">
+      <div class="sw-update-toast__row">
+        <span class="sw-update-toast__icon" aria-hidden="true">🔄</span>
+        <span class="sw-update-toast__text">Neue Version verfügbar!</span>
+        <button class="sw-update-toast__refresh" onclick="location.reload()">Aktualisieren</button>
+        <button class="sw-update-toast__close" onclick="this.closest('.sw-update-toast')?.remove()" aria-label="Hinweis schließen">×</button>
       </div>
     </div>
   `;
   document.body.appendChild(notification.firstElementChild);
   appTimers.setTimeout(() => {
-    const el = document.querySelector('[style*="z-index:var(--z-tooltip)"]');
+    const el = document.querySelector('.sw-update-toast');
     if (el) el.remove();
   }, 30000);
 }

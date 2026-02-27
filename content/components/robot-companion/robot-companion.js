@@ -205,10 +205,11 @@ export class RobotCompanion {
       return this.dom.footer;
     }
 
-    // prefer custom element; fall back to legacy <footer> tag if present
-    // prefer the <site-footer> custom element; page markup should always
-    // include it now that the ID has been removed.
-    this.dom.footer = document.querySelector('site-footer');
+    // Prefer the fixed footer inside <site-footer>, then fallback targets.
+    this.dom.footer =
+      document.querySelector('site-footer .site-footer') ||
+      document.querySelector('footer.site-footer') ||
+      document.querySelector('site-footer');
     return this.dom.footer || null;
   }
 
@@ -265,6 +266,11 @@ export class RobotCompanion {
 
   setupFooterOverlapCheck() {
     let ticking = false;
+    const footerEvents = [
+      'footer:loaded',
+      'footer:expanded',
+      'footer:collapsed',
+    ];
 
     const ensureObservedFooter = () => {
       if (!this._footerLayoutObserver) return;
@@ -303,19 +309,34 @@ export class RobotCompanion {
         return;
       }
 
-      if (!this.dom.container) return;
+      if (!this.dom.container) {
+        ticking = false;
+        return;
+      }
+
+      const footerGap = 8;
+      this.dom.container.style.removeProperty('bottom');
+      const computedBottom = parseFloat(
+        getComputedStyle(this.dom.container).bottom,
+      );
+      const baseBottom = Number.isFinite(computedBottom) ? computedBottom : 30;
 
       const footer = this.getFooterElement();
-      if (!footer) return;
-
-      this.dom.container.style.bottom = '';
-      const rect = this.dom.container.getBoundingClientRect();
-      const fRect = footer.getBoundingClientRect();
-      const overlap = Math.max(0, rect.bottom - fRect.top);
-
-      if (overlap > 0) {
-        this.dom.container.style.bottom = `${30 + overlap}px`;
+      if (!footer) {
+        this.dom.container.style.bottom = `${Math.round(baseBottom)}px`;
+        ticking = false;
+        return;
       }
+
+      const viewportHeight =
+        globalThis.innerHeight || document.documentElement.clientHeight || 0;
+      const fRect = footer.getBoundingClientRect();
+      const anchoredBottom = Math.max(
+        baseBottom,
+        viewportHeight - fRect.top + footerGap,
+      );
+
+      this.dom.container.style.bottom = `${Math.round(anchoredBottom)}px`;
 
       if (!this.chatModule.isOpen) {
         this.collisionModule.scanForCollisions();
@@ -334,6 +355,9 @@ export class RobotCompanion {
     if (typeof globalThis !== 'undefined') {
       globalThis.addEventListener('scroll', requestTick, { passive: true });
       globalThis.addEventListener('resize', requestTick, { passive: true });
+      footerEvents.forEach((eventName) =>
+        document.addEventListener(eventName, requestTick),
+      );
       // Registriere Listener für Cleanup
       this._eventListeners.scroll.push({
         target: globalThis,
@@ -342,6 +366,13 @@ export class RobotCompanion {
       this._eventListeners.resize.push({
         target: globalThis,
         handler: requestTick,
+      });
+      footerEvents.forEach((eventName) => {
+        this._eventListeners.dom.push({
+          target: document,
+          event: eventName,
+          handler: requestTick,
+        });
       });
     }
 

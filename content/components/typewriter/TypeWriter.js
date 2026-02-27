@@ -407,29 +407,42 @@ export async function initHeroSubtitle(options = {}) {
 
     const measurer = makeLineMeasurer(subtitleEl);
 
-    // Local helper to check and adjust bottom spacing to prevent footer overlap
+    // Local helper to keep subtitle anchored directly above the footer edge
     /**
      * @param {HTMLElement} el
      */
     const checkFooterOverlap = (el) => {
       try {
         el.style.removeProperty('bottom');
-        const rect = el.getBoundingClientRect();
-        // use the custom element itself instead of an ID
+        const fallbackBase = el.classList.contains('typewriter-title--fixed')
+          ? 24
+          : 16;
+        const footerGap = 8;
+        const computedBottom = parseFloat(getComputedStyle(el).bottom);
+        const baseBottom = Number.isFinite(computedBottom)
+          ? computedBottom
+          : fallbackBase;
+
+        // Prefer the actual fixed footer element rendered inside <site-footer>
         const footer = /** @type {HTMLElement | null} */ (
-          document.querySelector('site-footer')
+          document.querySelector('site-footer .site-footer') ||
+            document.querySelector('footer.site-footer') ||
+            document.querySelector('site-footer')
         );
-        if (!footer) return;
-        const fRect = footer.getBoundingClientRect();
-        const overlap = Math.max(0, rect.bottom - (fRect.top - 24));
-        if (overlap > 0) {
-          const base = document.body.classList.contains('footer-expanded')
-            ? 'clamp(8px,1.5vw,16px)'
-            : el.classList.contains('typewriter-title--fixed')
-              ? 'clamp(16px,2.5vw,32px)'
-              : 'clamp(12px,2vw,24px)';
-          setCSSVars(el, { bottom: `calc(${base} + ${overlap}px)` });
+        if (!footer) {
+          setCSSVars(el, { bottom: `${Math.round(baseBottom)}px` });
+          return;
         }
+
+        const viewportHeight =
+          window.innerHeight || document.documentElement.clientHeight || 0;
+        const fRect = footer.getBoundingClientRect();
+        const anchoredBottom = Math.max(
+          baseBottom,
+          viewportHeight - fRect.top + footerGap,
+        );
+
+        setCSSVars(el, { bottom: `${Math.round(anchoredBottom)}px` });
       } catch (err) {
         log.warn('TypeWriter: checkFooterOverlap failed', err);
       }
@@ -495,8 +508,14 @@ export async function initHeroSubtitle(options = {}) {
       const pollInterval = setInterval(pollOverlap, 100);
       setTimeout(() => clearInterval(pollInterval), 2000);
 
-      // Also check when footer explicitly reports loaded
-      document.addEventListener('footer:loaded', pollOverlap, { once: true });
+      const footerEvents = [
+        'footer:loaded',
+        'footer:expanded',
+        'footer:collapsed',
+      ];
+      footerEvents.forEach((eventName) =>
+        document.addEventListener(eventName, pollOverlap),
+      );
       // And on resize
       const onResize = () => {
         if (subtitleEl) requestAnimationFrame(pollOverlap);
@@ -508,7 +527,11 @@ export async function initHeroSubtitle(options = {}) {
       const instance = /** @type {any} */ (typeWriterInstance);
       instance.__teardown = () => {
         document.removeEventListener(EVENTS.HERO_TYPING_END, onHeroTypingEnd);
+        footerEvents.forEach((eventName) =>
+          document.removeEventListener(eventName, pollOverlap),
+        );
         window.removeEventListener('resize', onResize);
+        clearInterval(pollInterval);
       };
     };
 

@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>Styleguide | Token System</title>
+    <link rel="stylesheet" href="/content/styles/tokens.css" />
+    <link rel="stylesheet" href="/content/styles/root.css" />
+    <link rel="stylesheet" href="/content/styles/main.css" />
+    <style>
+      body {
+        padding: var(--space-8);
+      }
+
+      .sg-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: var(--space-4);
+      }
+
+      .sg-card {
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        background: var(--card-bg);
+        padding: var(--space-4);
+      }
+
+      .sg-swatch {
+        height: 72px;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--border-color);
+      }
+
+      .sg-stack {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-2);
+      }
+
+      .sg-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      .sg-table th,
+      .sg-table td {
+        border: 1px solid var(--border-color);
+        padding: var(--space-2) var(--space-3);
+        text-align: left;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="sg-stack mb-8">
+      <h1>Design Tokens & Utilities</h1>
+      <p>
+        Theme: <strong id="themeLabel">dark</strong>
+        <button type="button" class="btn btn-secondary ml-4" id="themeToggle">
+          Theme wechseln
+        </button>
+      </p>
+    </header>
+
+    <section class="mb-8">
+      <h2>Farbpalette</h2>
+      <div class="sg-grid">
+        <article class="sg-card">
+          <div class="sg-swatch" style="background: var(--primary-color)"></div>
+          <p class="mt-2 mb-0">--primary-color</p>
+        </article>
+        <article class="sg-card">
+          <div class="sg-swatch" style="background: var(--accent)"></div>
+          <p class="mt-2 mb-0">--accent</p>
+        </article>
+        <article class="sg-card">
+          <div class="sg-swatch" style="background: var(--bg-primary)"></div>
+          <p class="mt-2 mb-0">--bg-primary</p>
+        </article>
+        <article class="sg-card">
+          <div
+            class="sg-swatch"
+            style="background: var(--component-header-bg)"
+          ></div>
+          <p class="mt-2 mb-0">--component-header-bg</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="mb-8">
+      <h2>Spacing & Radius</h2>
+      <table class="sg-table">
+        <thead>
+          <tr>
+            <th>Token</th>
+            <th>Wert</th>
+          </tr>
+        </thead>
+        <tbody id="tokenRows"></tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>Utilities Vorschau</h2>
+      <div class="sg-card">
+        <div class="u-row gap-4">
+          <div class="p-4" style="background: var(--component-fill-primary)">
+            `.p-4`
+          </div>
+          <div
+            class="mt-2 p-2"
+            style="background: var(--component-fill-primary)"
+          >
+            `.mt-2`
+          </div>
+          <div class="gap-4" style="display: flex">
+            <span class="p-2" style="background: var(--component-fill-primary)"
+              >A</span
+            >
+            <span class="p-2" style="background: var(--component-fill-primary)"
+              >B</span
+            >
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <script>
+      const rowTokens = [
+        '--space-1',
+        '--space-2',
+        '--space-4',
+        '--space-6',
+        '--space-8',
+        '--radius-sm',
+        '--radius-md',
+        '--radius-lg',
+        '--shadow-sm',
+        '--shadow-md',
+      ];
+
+      const rows = document.getElementById('tokenRows');
+      const root = document.documentElement;
+      rowTokens.forEach((token) => {
+        const tr = document.createElement('tr');
+        const value = getComputedStyle(root).getPropertyValue(token).trim();
+        tr.innerHTML = `<td><code>${token}</code></td><td>${value}</td>`;
+        rows.appendChild(tr);
+      });
+
+      const themeLabel = document.getElementById('themeLabel');
+      const applyTheme = (theme) => {
+        root.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+        themeLabel.textContent = theme;
+      };
+
+      const initialTheme =
+        localStorage.getItem('theme') ||
+        (window.matchMedia('(prefers-color-scheme: light)').matches
+          ? 'light'
+          : 'dark');
+      applyTheme(initialTheme);
+
+      document.getElementById('themeToggle').addEventListener('click', () => {
+        applyTheme(
+          root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark',
+        );
+      });
+    </script>
+  </body>
+</html>

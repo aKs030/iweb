@@ -30,10 +30,17 @@ Thumbs.db
 package-lock.json
 yarn.lock
 pnpm-lock.yaml
+.playwright-cli/
 
 # Documentation summaries (auto-generated)
 OPTIMIZATION_REPORT.md
 FINAL_OPTIMIZATION_REPORT.md
+
+# Generated CSS artifacts
+content/styles/minified/
+content/styles/tokens.css
+content/styles/tokens-dark.css
+content/styles/utilities.generated.css
 
 # Git
 .git/

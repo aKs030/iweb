@@ -594,13 +594,8 @@ const App = () => {
                 'button',
                 {
                   type: 'button',
-                  className: `btn btn-outline hud-case-study-toggle ${showCaseStudy ? 'is-open' : ''}`,
+                  className: `btn btn-outline hud-case-study-toggle hud-case-study-toggle--compact ${showCaseStudy ? 'is-open' : ''}`,
                   onClick: () => setShowCaseStudy((v) => !v),
-                  style: {
-                    fontSize: '0.75rem',
-                    padding: '0.35rem 0.8rem',
-                    marginBottom: '0.5rem',
-                  },
                 },
                 showCaseStudy ? '✕ Case Study schließen' : '📋 Case Study',
               ),

@@ -9,7 +9,7 @@
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(var(--size-20));
   }
   to {
     opacity: 1;
@@ -34,7 +34,7 @@
   @keyframes scrollFadeIn {
     from {
       opacity: 0;
-      transform: translateY(40px) scale(0.97);
+      transform: translateY(var(--size-40)) scale(0.97);
     }
     to {
       opacity: 1;
