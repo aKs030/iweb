@@ -1,1 +1,1 @@
-npx lint-staged && npm run css:lint && npm run css:audit && npm run structure:check
+npx lint-staged

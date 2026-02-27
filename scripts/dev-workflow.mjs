@@ -122,9 +122,9 @@ process.on('SIGTERM', () => shutdown(0));
 async function main() {
   console.log('[dev] preflight: generating tokens + utilities');
   let code = await run(
-    'tokens:generate:all',
+    'tokens:generate',
     NODE_BIN,
-    [path.join(ROOT_DIR, 'scripts/generate-tokens-css.mjs'), '--all'],
+    [path.join(ROOT_DIR, 'scripts/generate-tokens-css.mjs')],
     false,
   );
   if (code !== 0) process.exit(code);
@@ -148,11 +148,7 @@ async function main() {
       run(
         'tokens:watch',
         NODE_BIN,
-        [
-          path.join(ROOT_DIR, 'scripts/generate-tokens-css.mjs'),
-          '--watch',
-          '--all',
-        ],
+        [path.join(ROOT_DIR, 'scripts/generate-tokens-css.mjs'), '--watch'],
         true,
       )
     );

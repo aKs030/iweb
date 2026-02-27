@@ -6,23 +6,20 @@ import { fileURLToPath } from 'node:url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(__dirname, '..');
 const TOKENS_DIR = path.join(ROOT_DIR, 'content/styles/tokens');
-
-const TARGETS = [
-  {
-    input: path.join(TOKENS_DIR, 'tokens.json'),
-    mergeInput: path.join(TOKENS_DIR, 'tokens-dark.json'),
-    output: path.join(ROOT_DIR, 'content/styles/tokens.css'),
-  },
-  {
-    input: path.join(TOKENS_DIR, 'tokens-dark.json'),
-    output: path.join(ROOT_DIR, 'content/styles/tokens-dark.css'),
-  },
+const INPUTS = [
+  path.join(TOKENS_DIR, 'tokens.json'),
+  path.join(TOKENS_DIR, 'tokens-dark.json'),
 ];
+const OUTPUT = path.join(ROOT_DIR, 'content/styles/tokens.css');
 
 const args = new Set(process.argv.slice(2));
 const shouldWatch = args.has('--watch');
-const shouldGenerateAll = args.has('--all');
-const onlyDark = args.has('--dark');
+const unsupportedArgs = [...args].filter((arg) => arg !== '--watch');
+if (unsupportedArgs.length) {
+  throw new Error(
+    `Unsupported argument(s): ${unsupportedArgs.join(', ')}. Use only "--watch".`,
+  );
+}
 
 function toCssValue(value) {
   if (typeof value === 'number') return String(value);
@@ -62,8 +59,41 @@ function normalizeBlocks(json, inputPath) {
     return {
       selector,
       entries,
+      inputPath,
     };
   });
+}
+
+function mergeBlocksBySelector(blocks) {
+  const merged = new Map();
+
+  for (const block of blocks) {
+    const relInput = path.relative(ROOT_DIR, block.inputPath);
+    if (!merged.has(block.selector)) {
+      merged.set(block.selector, {
+        selector: block.selector,
+        entries: [],
+        seenNames: new Map(),
+      });
+    }
+
+    const mergedBlock = merged.get(block.selector);
+    for (const [name, value] of block.entries) {
+      if (mergedBlock.seenNames.has(name)) {
+        const previousSource = mergedBlock.seenNames.get(name);
+        throw new Error(
+          `Duplicate token "${name}" in selector "${block.selector}" across ${previousSource} and ${relInput}`,
+        );
+      }
+      mergedBlock.seenNames.set(name, relInput);
+      mergedBlock.entries.push([name, value]);
+    }
+  }
+
+  return [...merged.values()].map(({ selector, entries }) => ({
+    selector,
+    entries,
+  }));
 }
 
 function renderCss(sourceLabel, blocks, relPathForErrors) {
@@ -91,52 +121,24 @@ function renderCss(sourceLabel, blocks, relPathForErrors) {
   return `${lines.join('\n').trimEnd()}\n`;
 }
 
-async function buildTarget(target) {
-  const rawBase = await fs.readFile(target.input, 'utf8');
-  const jsonBase = JSON.parse(rawBase);
-  const baseBlocks = normalizeBlocks(jsonBase, target.input);
+async function generateCss() {
+  const allBlocks = [];
+  const relSources = [];
 
-  const mergedBlocks = [...baseBlocks];
-  const relSources = [path.relative(ROOT_DIR, target.input)];
-
-  if (target.mergeInput) {
-    const rawMerge = await fs.readFile(target.mergeInput, 'utf8');
-    const jsonMerge = JSON.parse(rawMerge);
-    const mergeBlocks = normalizeBlocks(jsonMerge, target.mergeInput);
-    mergedBlocks.push(...mergeBlocks);
-    relSources.push(path.relative(ROOT_DIR, target.mergeInput));
+  for (const input of INPUTS) {
+    const raw = await fs.readFile(input, 'utf8');
+    const json = JSON.parse(raw);
+    const blocks = normalizeBlocks(json, input);
+    allBlocks.push(...blocks);
+    relSources.push(path.relative(ROOT_DIR, input));
   }
 
-  const css = renderCss(
-    relSources.join(' + '),
-    mergedBlocks,
-    path.relative(ROOT_DIR, target.input),
-  );
+  const mergedBlocks = mergeBlocksBySelector(allBlocks);
+  const css = renderCss(relSources.join(' + '), mergedBlocks, relSources[0]);
 
-  await fs.mkdir(path.dirname(target.output), { recursive: true });
-  await fs.writeFile(target.output, css, 'utf8');
-
-  const relOut = path.relative(ROOT_DIR, target.output);
-  return relOut;
-}
-
-function selectTargets() {
-  if (onlyDark)
-    return TARGETS.filter((target) =>
-      target.input.endsWith('tokens-dark.json'),
-    );
-  if (shouldGenerateAll) return TARGETS;
-  return TARGETS.filter((target) => target.input.endsWith('tokens.json'));
-}
-
-async function generateAll() {
-  const targets = selectTargets();
-  const outputs = await Promise.all(
-    targets.map((target) => buildTarget(target)),
-  );
-  outputs.forEach((out) => {
-    console.log(`generated ${out}`);
-  });
+  await fs.mkdir(path.dirname(OUTPUT), { recursive: true });
+  await fs.writeFile(OUTPUT, css, 'utf8');
+  console.log(`generated ${path.relative(ROOT_DIR, OUTPUT)}`);
 }
 
 function debounce(fn, ms = 120) {
@@ -151,12 +153,12 @@ function debounce(fn, ms = 120) {
 }
 
 if (shouldWatch) {
-  await generateAll();
+  await generateCss();
   console.log('watching tokens/*.json ...');
 
   const rerun = debounce(async () => {
     try {
-      await generateAll();
+      await generateCss();
     } catch (error) {
       console.error(error instanceof Error ? error.message : String(error));
     }
@@ -168,5 +170,5 @@ if (shouldWatch) {
     rerun();
   }
 } else {
-  await generateAll();
+  await generateCss();
 }

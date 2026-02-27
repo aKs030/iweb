@@ -51,9 +51,6 @@ coverage/
 *.old
 .playwright-cli/
 
-# Generated CSS artifacts
-content/styles/minified/
-
 # Other lockfiles (npm lockfile is tracked)
 yarn.lock
 pnpm-lock.yaml

@@ -46,13 +46,13 @@ npm run dev
 
 ```bash
 # Linting & Formatting
-npm run check
+npm run qa
 
 # Automatisch fixen
-npm run fix
+npm run qa:fix
 ```
 
-`npm run check` enthält: ESLint, Prettier, Stylelint, CSS-Audit, AI-Index-Check und Struktur-Gate.
+`npm run qa` enthält: ESLint, Prettier, Stylelint, CSS-Audit, AI-Index-Check und Struktur-Gate.
 
 ### 4. Commit erstellen
 
@@ -192,22 +192,18 @@ Siehe `docs/` Verzeichnis und [Dokumentationsindex](docs/README.md).
 npm run dev           # Einziger Dev-Workflow (preflight + token watch + app)
 
 # Code Quality
-npm run lint          # ESLint check
-npm run lint:fix      # ESLint mit auto-fix
-npm run format        # Prettier check
-npm run format:write  # Prettier mit write
-npm run css:lint      # Stylelint für content/ + pages/
-npm run css:audit     # Utility-/Purge-Audit
-npm run structure:check # Struktur-Gate (Source/Generated/Docs)
-npm run check         # lint + format + css + ai-index + structure
-npm run fix           # lint:fix + format:write
+npm run qa            # Empfohlen: kompletter Qualitäts-Run (alles prüfen)
+npm run qa:fix        # Empfohlen: auto-fix für ESLint + Stylelint + Prettier
+npm run qa:all        # Fix + kompletter Check in einem Lauf
 
 # Maintenance
 npm run clean         # lokale Cache/Artifacts löschen
 npm run prepare       # Husky Hooks installieren/aktualisieren
 npm run docs:check    # Markdown-Links + lokale absolute Pfade prüfen
-npm run tokens:generate:all # Token CSS (light/dark) neu erzeugen
-npm run utilities:generate  # Utility CSS neu erzeugen
+npm run styles:generate # Tokens + Utilities in einem Run erzeugen
+npm run ai-index:sync # AI-Index manuell synchronisieren
+npm run cf:redirect:audit # Redirects analysieren
+npm run cf:redirect:prune # Redirects bereinigen
 ```
 
 Optionaler Port:
@@ -271,7 +267,7 @@ npm run dev -- --port 8787
 Bevor du einen PR öffnest:
 
 - [ ] Code läuft lokal ohne Fehler
-- [ ] `npm run check` läuft durch
+- [ ] `npm run qa` läuft durch
 - [ ] `npm run dev` läuft lokal
 - [ ] Dokumentation aktualisiert (falls nötig)
 - [ ] Commit Messages folgen Convention

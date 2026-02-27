@@ -5,15 +5,10 @@ Aktuelle Quality-Checks im Projekt (Stand: Februar 2026).
 ## Lokale Commands
 
 ```bash
-npm run lint          # ESLint check
-npm run lint:fix      # ESLint mit auto-fix
-npm run format        # Prettier check
-npm run format:write  # Prettier write
-npm run css:lint      # Stylelint für content/pages
-npm run css:audit     # Purge-/Utility-Audit
-npm run structure:check # Struktur-Gate (Ordner + generated CSS)
-npm run check         # lint + format + css + ai-index + structure
-npm run fix           # lint:fix + format:write
+npm run qa          # Vollständiger Quality Gate Run
+npm run qa:fix      # Auto-Fixes (ESLint + Stylelint + Prettier)
+npm run qa:all      # Fix + vollständiger Check in einem Lauf
+npm run styles:generate # Tokens + Utilities erzeugen
 npm run docs:check    # Markdown-Links + lokale absolute Pfade prüfen
 ```
 
@@ -21,8 +16,8 @@ npm run docs:check    # Markdown-Links + lokale absolute Pfade prüfen
 
 Hooks liegen in [`.husky/`](../.husky/).
 
-- `pre-commit`: `npm exec lint-staged` + `css:lint` + `css:audit` + `structure:check`
-- `pre-push`: `npm run check` (read-only)
+- `pre-commit`: `npm exec lint-staged`
+- `pre-push`: `npm run qa` (read-only)
 
 Details: [`.husky/README.md`](../.husky/README.md)
 
@@ -32,16 +27,16 @@ Datei: [`.github/workflows/main.yml`](../.github/workflows/main.yml)
 
 Jobs:
 
-- `lint`: ESLint + Prettier + CSS + Struktur (`npm run check`)
+- `lint`: Voller Qualitätslauf (`npm run qa`)
 - `security`: CodeQL Analyse
-- `preview`: Cloudflare Pages Preview + CSS/Struktur-Gates (nur bei PRs)
+- `preview`: Cloudflare Pages Preview + Qualitätslauf (nur bei PRs)
 
 ## Workflow-Empfehlung
 
 Vor PR:
 
-1. `npm run fix`
-2. `npm run check`
+1. `npm run qa:fix`
+2. `npm run qa`
 
 Beim Push:
 

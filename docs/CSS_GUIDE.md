@@ -1,249 +1,97 @@
 # CSS Architecture Guide
 
-**Status:** ✅ Complete  
-**Last Updated:** January 30, 2025
+**Status:** Active  
+**Last Updated:** February 27, 2026
 
----
+## Current CSS Setup
 
-## 📊 Current CSS Setup
+### Source of truth
 
-### Structure
+- `content/styles/tokens/tokens.json`
+- `content/styles/tokens/tokens-dark.json`
 
-```
-content/styles/
-├── root.css         ~300 lines  # CSS Variables & Theme
-├── variables.css    ~100 lines  # Additional Variables
-├── main.css         ~330 lines  # Base Styles & Components
-├── animations.css    ~25 lines  # Keyframe Animations
-└── components/
-    ├── card.css                # Card component
-    └── image-loading.css       # Image loading states
+### Generated files
 
-Total: ~755 lines
-```
+- `content/styles/tokens.css` (single runtime token entry with base + light + dark blocks)
+- `content/styles/utilities.generated.css`
 
-### Build Configuration
+### Runtime loading
 
-- **PostCSS** - CSS processing
-- **postcss-nesting** - CSS Nesting support
-- **autoprefixer** - Automatic vendor prefixes
-- **cssnano** - Minification (production only)
+Loaded in `content/templates/base-head.html`:
 
-### Performance
+1. `tokens.css`
+2. `root.css`
+3. `main.css`
+4. `animations.css`
+5. `loader.css`
 
-- **Raw Size:** 16.97 kB
-- **Gzipped:** 4.96 kB
-- **Build Time:** ~1.2s
+Theme switching is attribute-based on `<html data-theme="light|dark">`.
 
----
+## Development Workflow
 
-## 🎯 CSS Nesting
-
-PostCSS Nesting is configured and ready to use.
-
-### Basic Example
-
-```css
-.card {
-  padding: 1rem;
-  background: white;
-
-  &:hover {
-    transform: translateY(-4px);
-  }
-
-  .card-title {
-    font-size: 1.5rem;
-  }
-
-  @media (width <= 768px) {
-    padding: 0.5rem;
-  }
-}
-```
-
----
-
-## 📝 Best Practices
-
-### 1. Use CSS Variables
-
-```css
-.btn {
-  padding: var(--spacing-md);
-  color: var(--primary-color);
-  border-radius: var(--radius-md);
-}
-```
-
-### 2. Nest Wisely (Max 3-4 Levels)
-
-```css
-/* ✅ Good */
-.card {
-  .card-header {
-    .card-title {
-      /* Max 3 levels */
-    }
-  }
-}
-
-/* ❌ Too deep */
-.card {
-  .card-header {
-    .card-title {
-      .card-subtitle {
-        .card-meta {
-          /* 5 levels - too deep! */
-        }
-      }
-    }
-  }
-}
-```
-
-### 3. Media Queries at End
-
-```css
-.container {
-  width: 1200px;
-
-  /* Other styles... */
-
-  /* Media queries at end */
-  @media (width <= 768px) {
-    width: 100%;
-  }
-}
-```
-
-### 4. Use Semantic Class Names
-
-```css
-/* ✅ Good */
-.card-header {
-}
-.card-title {
-}
-.card-body {
-}
-
-/* ❌ Bad */
-.ch {
-}
-.ct {
-}
-.cb {
-}
-```
-
----
-
-## 🔧 Development Workflow
-
-### 1. Development
+### Local development
 
 ```bash
 npm run dev
-# PostCSS runs automatically
-# Nesting is transformed
-# No minification
 ```
 
-### 2. Production Build
+This runs preflight generation (`tokens.css` + utilities), starts token watch mode, and runs `wrangler pages dev`.
+
+### Token and utility generation
 
 ```bash
-npm run build
-# PostCSS runs automatically
-# Nesting transformed
-# Autoprefixer active
-# CSS minified
+npm run styles:generate
+npm run dev
 ```
 
-### 3. Check CSS Stats
+### Quality gates
 
 ```bash
-npm run css:check
-# Shows line counts for all CSS files
+npm run qa
 ```
 
----
+`npm run qa` enthält Lint, Format, Stylelint, Token-Check, CSS-Audit, AI-Index-Check und Struktur-Check.
 
-## 📚 Related Documentation
+## Authoring Rules
 
-- **CSS Variables:** See `content/styles/root.css` & `content/styles/variables.css`
-- **Base Styles:** See `content/styles/main.css`
-- **Animations:** See `content/styles/animations.css`
-- **PostCSS Config:** See `postcss.config.js`
+- Use `var(--...)` tokens for color, spacing, radius, shadows, and z-index.
+- Avoid hardcoded design values in component/page CSS.
+- Keep global styles in `content/styles/*`.
+- Keep page-local styles in `pages/*`.
+- Keep component styles reusable and token-based in `content/components/*`.
 
----
+## Token Rules
 
-## 🎓 Key Achievements
+- Edit only JSON token sources in `content/styles/tokens/`.
+- Do not manually edit generated `tokens.css`.
+- Dark/light overrides belong in selector blocks, not in duplicated files.
 
-### Phase 1: Consolidation ✅
+## Troubleshooting
 
-- Removed redundancies
-- Cleaned up root.css (-110 lines)
-- Structured main.css (+98 lines)
-- Consolidated mobile styles
+### Token changes not visible
 
-### Phase 2: PostCSS ✅
+Run:
 
-- Installed PostCSS
-- Configured CSS Nesting
-- Added Autoprefixer
-- Configured cssnano
-- Reduced size by 2.1%
-
-### Results
-
-- **Code Quality:** Excellent
-- **Performance:** Optimized
-- **Developer Experience:** Modern CSS features available
-- **Browser Support:** Automatic vendor prefixes
-
----
-
-## 🚀 Quick Start
-
-### Using CSS Nesting
-
-1. Write nested CSS in any `.css` file
-2. PostCSS will transform it automatically
-3. No additional configuration needed
-
-### Example
-
-```css
-/* Write this: */
-.btn {
-  padding: 1rem;
-
-  &:hover {
-    transform: scale(1.05);
-  }
-}
-
-/* PostCSS outputs: */
-.btn {
-  padding: 1rem;
-}
-.btn:hover {
-  transform: scale(1.05);
-}
+```bash
+npm run styles:generate
 ```
 
----
+### Theme not switching
 
-## 📞 Support
+- Verify `<html>` has `data-theme`.
+- Verify `tokens.css` is loaded before component styles.
 
-For CSS-related questions:
+### CSS quality check fails
 
-- Review CSS files in `content/styles/`
-- Check `postcss.config.js` for build configuration
-- See [PostCSS documentation](https://postcss.org/)
+Run in sequence:
 
----
+```bash
+npm run qa:fix
+npm run qa
+```
 
-**Status:** ✅ Complete & Production Ready  
-**Next Steps:** Optional - Further modularization (Phase 3)
+## Related Docs
+
+- `content/styles/README.md`
+- `docs/PROJECT_STRUCTURE.md`
+- `docs/CODE_QUALITY.md`

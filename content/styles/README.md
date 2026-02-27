@@ -5,11 +5,15 @@
 - `content/styles/tokens/tokens.json`
 - `content/styles/tokens/tokens-dark.json`
 
+## Token file responsibilities
+
+- `tokens.css` (generated): canonical design tokens + theme selector overrides.
+- `variables.css` (handwritten): legacy aliases + responsive remapping only.
+- `root.css` (handwritten): runtime-computed tokens + global runtime rules only.
+
 ## Generate token CSS
 
-- `npm run tokens:generate` -> updates `content/styles/tokens.css` (includes base + light + dark blocks)
-- `npm run tokens:generate:all` -> updates `content/styles/tokens.css` + compatibility file `content/styles/tokens-dark.css`
-- `npm run tokens:watch` -> watches both JSON files and regenerates on change
+- `npm run styles:generate` -> updates `content/styles/tokens.css` (includes base + light + dark blocks)
 - `npm run dev` -> single modern dev workflow (preflight + token watcher + app)
 
 ## Theme switching
@@ -20,15 +24,13 @@
 
 ## Utilities
 
-- Utility source is generated via `npm run utilities:generate`.
+- Utility source is generated via `npm run styles:generate`.
 - Generated file: `content/styles/utilities.generated.css`.
 - Prefer token-bound utilities (`.mt-*`, `.gap-*`, `.p-*`) over inline spacing.
 
 ## Quality gates
 
-- `npm run css:lint`
-- `npm run css:audit`
-- `npm run css:minify` (outputs to `content/styles/minified/`)
+- `npm run qa`
 
 ## Team rule
 
@@ -39,4 +41,4 @@
 
 - Breakpoint tokens are defined in `tokens.json` (`--bp-*`) for shared reference (docs/JS/tooling).
 - Keep numeric `@media` queries in CSS for now; native CSS variables are not supported inside media queries.
-- If you want tokenized media queries, add `postcss-custom-media` and transpile `@media (--bp-*)` in the build pipeline.
+- If you want tokenized media queries, introduce a dedicated CSS transform step (for example `postcss-custom-media`) and transpile `@media (--bp-*)`.

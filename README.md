@@ -22,21 +22,16 @@ Lokale URL: [http://localhost:8080](http://localhost:8080)
 
 ```bash
 npm run dev           # Einziger moderner Dev-Workflow (preflight + token watch + app)
-npm run lint          # ESLint check
-npm run lint:fix      # ESLint mit auto-fix
-npm run format        # Prettier check
-npm run format:write  # Prettier mit write
-npm run css:lint      # Stylelint für content/ + pages/
-npm run css:audit     # Utility-Audit + Purge-Check
-npm run css:minify    # Minify-Ausgabe nach content/styles/minified/
-npm run tokens:generate:all  # tokens.css + tokens-dark.css erzeugen
-npm run utilities:generate   # utilities.generated.css erzeugen
-npm run structure:check      # Repo-Strukturprüfung
-npm run check         # lint + format + css + ai-index + structure
-npm run fix           # lint:fix + format:write
+npm run qa            # Empfohlen: kompletter Qualitäts-Run (alles prüfen)
+npm run qa:fix        # Empfohlen: auto-fix für ESLint + Stylelint + Prettier
+npm run qa:all        # Fix + kompletter Check in einem Lauf
+npm run styles:generate # Tokens + Utilities in einem Run erzeugen
 npm run clean         # lokale Cache/Artifacts löschen
 npm run prepare       # Husky Hooks installieren/aktualisieren
 npm run docs:check    # Markdown-Links & absolute lokale Pfade prüfen
+npm run ai-index:sync # AI-Index manuell synchronisieren
+npm run cf:redirect:audit # Redirects analysieren
+npm run cf:redirect:prune # Redirects bereinigen
 ```
 
 Optionaler Port:
@@ -53,7 +48,7 @@ npm run dev -- --port 8787
 ## Hooks
 
 - `pre-commit`: `lint-staged` auf gestagten Dateien
-- `pre-push`: `npm run check`
+- `pre-push`: `npm run qa`
 
 Details: [`.husky/README.md`](.husky/README.md)
 

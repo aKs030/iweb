@@ -36,5 +36,5 @@ The search system is a hybrid engine:
 Run tests:
 
 ```bash
-npm run check
+npm run qa
 ```
