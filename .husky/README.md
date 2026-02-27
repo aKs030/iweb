@@ -2,8 +2,8 @@
 
 ## Active Hooks
 
-- `pre-commit` → lint-staged + `css:lint` + `css:audit` + `structure:check`
-- `pre-push` → `npm run check` (includes lint/format/css/structure checks)
+- `pre-commit` → `npx lint-staged`
+- `pre-push` → `npm run qa` (full quality gate)
 
 ## Skip Hooks
 

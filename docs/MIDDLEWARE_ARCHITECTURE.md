@@ -255,11 +255,11 @@ Retry-After: 45 (nur bei 429)
 Beide Middleware-Dateien werden automatisch erkannt:
 
 ```bash
-# Build
-npm run build
+# Preflight checks
+npm run qa
 
 # Deploy
-npm run deploy
+npx wrangler pages deploy . --project-name=1web
 ```
 
 ### Lokale Entwicklung

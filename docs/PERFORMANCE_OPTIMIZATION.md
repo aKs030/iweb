@@ -137,7 +137,7 @@ const loadThreeEarth = () => import('./three-earth-system.js');
 
 ```bash
 # Code quality
-npm run check
+npm run qa
 ```
 
 ### Lighthouse CI
@@ -177,7 +177,7 @@ initPerformanceMonitoring();
 
 - [x] Images optimized (WebP)
 - [x] Fonts optimized
-- [x] CSS minified
+- [x] CSS audit active
 - [x] Critical CSS inlined
 
 ### Caching

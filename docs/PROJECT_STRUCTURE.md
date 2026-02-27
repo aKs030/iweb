@@ -18,7 +18,7 @@ styleguide/ Visuelle Token-/Utility-Demo
 ```text
 content/core/         Framework-nahe Utilities, Event-System, Infrastruktur
 content/components/   Wiederverwendbare UI-Komponenten
-content/styles/       Globale Styles, Tokens, Utilities, minified Output
+content/styles/       Globale Styles, Tokens und Utilities
 pages/*/              Seiten-Entry und seitengebundene Komponenten
 ```
 
@@ -38,26 +38,19 @@ Source of truth:
 Generated:
 
 - `content/styles/tokens.css`
-- `content/styles/tokens-dark.css` (compatibility output)
 - `content/styles/utilities.generated.css`
-- `content/styles/minified/*` (Build/Optimierungsartefakte)
 
 Wichtige Scripts:
 
-- `npm run tokens:generate:all`
-- `npm run utilities:generate`
-- `npm run css:lint`
-- `npm run css:audit`
-- `npm run css:minify`
+- `npm run styles:generate`
+- `npm run qa`
 
 ## Struktur-Sicherungen
 
-- `npm run structure:check` prüft Kernpfade + warnt bei fehlenden Generated CSS.
-- `npm run check` enthält `structure:check` als letzten Gate.
+- `npm run qa` enthält den kompletten Quality Gate Lauf inkl. Strukturprüfung.
 - Husky + CI laufen weiterhin vor Push/Deploy.
 
 ## Repo-Hygiene
 
 - Temporäre Tool-Artefakte (z. B. `.playwright-cli/`) sind ignoriert.
-- Generierte Minify-Artefakte bleiben außerhalb von Source-Logik.
 - Doku bleibt in `docs/` zentral versioniert.

@@ -263,7 +263,7 @@ Total: ~6 kB (gzip) ✅ Excellent!
 - Vanilla JavaScript (ES6+)
 - Three.js for 3D graphics
 - Web Components
-- CSS3 with PostCSS
+- CSS3 with token-based theming and audit gates
 
 ### Backend
 
@@ -329,9 +329,8 @@ npx wrangler pages deploy . --project-name=1web
 ### Code Quality
 
 ```bash
-npm run check        # Lint + Format check
-npm run lint         # ESLint check
-npm run format       # Prettier check
+npm run qa        # Vollständiger Quality Gate Run
+npm run qa:fix    # Auto-Fixes anwenden
 ```
 
 ### Runtime Check
