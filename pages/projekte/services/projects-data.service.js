@@ -122,7 +122,8 @@ const getProjectIconAndTheme = (project, icons) => {
 
   return {
     icon: React.createElement(IconComponent, {
-      style: { color: theme.icon, width: '32px', height: '32px' },
+      className: 'project-category-icon',
+      style: { '--project-icon-color': theme.icon },
     }),
     theme: theme,
   };

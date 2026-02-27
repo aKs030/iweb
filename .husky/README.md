@@ -2,8 +2,8 @@
 
 ## Active Hooks
 
-- `pre-commit` → lint-staged (ESLint + Prettier on staged files)
-- `pre-push` → npm run check (ESLint + Prettier validation)
+- `pre-commit` → lint-staged + `css:lint` + `css:audit` + `structure:check`
+- `pre-push` → `npm run check` (includes lint/format/css/structure checks)
 
 ## Skip Hooks
 

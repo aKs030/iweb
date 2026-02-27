@@ -52,6 +52,8 @@ npm run check
 npm run fix
 ```
 
+`npm run check` enthält: ESLint, Prettier, Stylelint, CSS-Audit, AI-Index-Check und Struktur-Gate.
+
 ### 4. Commit erstellen
 
 ```bash
@@ -187,21 +189,31 @@ Siehe `docs/` Verzeichnis und [Dokumentationsindex](docs/README.md).
 
 ```bash
 # Development
-npm run dev           # Cloudflare Pages dev server
-npm run dev:sim       # Lokaler Node-Server (Simulation)
+npm run dev           # Einziger Dev-Workflow (preflight + token watch + app)
 
 # Code Quality
 npm run lint          # ESLint check
 npm run lint:fix      # ESLint mit auto-fix
 npm run format        # Prettier check
 npm run format:write  # Prettier mit write
-npm run check         # lint + format + ai-index:check
+npm run css:lint      # Stylelint für content/ + pages/
+npm run css:audit     # Utility-/Purge-Audit
+npm run structure:check # Struktur-Gate (Source/Generated/Docs)
+npm run check         # lint + format + css + ai-index + structure
 npm run fix           # lint:fix + format:write
 
 # Maintenance
 npm run clean         # lokale Cache/Artifacts löschen
 npm run prepare       # Husky Hooks installieren/aktualisieren
 npm run docs:check    # Markdown-Links + lokale absolute Pfade prüfen
+npm run tokens:generate:all # Token CSS (light/dark) neu erzeugen
+npm run utilities:generate  # Utility CSS neu erzeugen
+```
+
+Optionaler Port:
+
+```bash
+npm run dev -- --port 8787
 ```
 
 ## 🐛 Bug Reports
@@ -260,7 +272,7 @@ Bevor du einen PR öffnest:
 
 - [ ] Code läuft lokal ohne Fehler
 - [ ] `npm run check` läuft durch
-- [ ] `npm run dev:sim` läuft lokal
+- [ ] `npm run dev` läuft lokal
 - [ ] Dokumentation aktualisiert (falls nötig)
 - [ ] Commit Messages folgen Convention
 - [ ] Branch ist aktuell mit `main`
@@ -268,7 +280,7 @@ Bevor du einen PR öffnest:
 
 ## 🎯 Code Review Process
 
-1. **Automatische Checks:** ESLint, Prettier
+1. **Automatische Checks:** ESLint, Prettier, Stylelint, CSS-Audit, Struktur-Gate
 2. **Manual Review:** Code-Qualität, Best Practices
 3. **Testing:** Funktionalität testen
 4. **Merge:** Nach Approval
@@ -279,6 +291,8 @@ Bevor du einen PR öffnest:
 
 - [CSS Guide](docs/CSS_GUIDE.md)
 - [Architecture](docs/ARCHITECTURE.md)
+- [Project Structure](docs/PROJECT_STRUCTURE.md)
+- [Styles Workflow](content/styles/README.md)
 
 ### Externe Ressourcen
 

@@ -19,6 +19,30 @@
   }
 </script>
 
+<!-- Theme bootstrap (run before stylesheets) -->
+<script>
+  (function () {
+    try {
+      var stored = localStorage.getItem('theme');
+      var prefersLight =
+        window.matchMedia &&
+        window.matchMedia('(prefers-color-scheme: light)').matches;
+      var theme =
+        stored === 'light' || stored === 'dark'
+          ? stored
+          : prefersLight
+            ? 'light'
+            : 'dark';
+      document.documentElement.setAttribute('data-theme', theme);
+    } catch (_err) {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    }
+  })();
+</script>
+
+<!-- Generated design tokens (single file with :root + [data-theme] blocks) -->
+<link rel="stylesheet" href="/content/styles/tokens.css" id="tokens-css" />
+
 <!-- Critical CSS - Loaded immediately to prevent FOUC -->
 <link rel="stylesheet" href="/content/styles/root.css" />
 <link rel="stylesheet" href="/content/styles/main.css" />

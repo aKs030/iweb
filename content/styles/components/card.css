@@ -4,7 +4,7 @@
   padding: var(--card-pad);
   background: var(--bg-secondary);
   border-radius: var(--radius-lg);
-  border: 1px solid var(--border-color);
+  border: var(--size-1) solid var(--border-color);
   transition:
     transform var(--card-transition-smooth),
     box-shadow var(--card-transition-smooth),
@@ -29,13 +29,13 @@
 
   /* Focus state */
   &:focus-visible {
-    outline: 2px solid var(--primary-color);
-    outline-offset: 2px;
+    outline: var(--btn-focus-outline);
+    outline-offset: var(--space-1);
   }
 
   /* Card variants */
   &.card-featured {
-    border: 2px solid var(--primary-color);
+    border: var(--size-2) solid var(--primary-color);
     box-shadow: var(--card-shadow-base);
 
     &::before {
@@ -44,7 +44,7 @@
       top: 0;
       left: 0;
       right: 0;
-      height: 4px;
+      height: var(--space-1);
       background: linear-gradient(
         90deg,
         var(--primary-color),
@@ -57,7 +57,7 @@
     cursor: pointer;
 
     &:active {
-      transform: scale(0.98);
+      transform: scale(var(--card-active-scale, 0.98));
     }
   }
 
@@ -66,13 +66,13 @@
   }
 
   &.card-glass {
-    background: rgba(255, 255, 255, 0.05);
+    background: color-mix(in srgb, var(--card-bg) 70%, transparent);
     backdrop-filter: blur(var(--card-blur-base));
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: var(--size-1) solid var(--border-color);
 
     &:hover {
       backdrop-filter: blur(var(--card-blur-hover));
-      background: rgba(255, 255, 255, 0.08);
+      background: color-mix(in srgb, var(--card-bg) 90%, transparent);
     }
   }
 
@@ -102,7 +102,7 @@
     background: linear-gradient(
       to bottom,
       transparent 0%,
-      rgba(0, 0, 0, 0.7) 100%
+      color-mix(in srgb, var(--clr-black) 70%, transparent) 100%
     );
     opacity: 0;
     transition: opacity var(--transition-smooth);
@@ -114,13 +114,13 @@
 
     .card-badge {
       display: inline-block;
-      padding: 0.25rem 0.75rem;
-      font-size: 0.75rem;
+      padding: var(--space-1) var(--space-3);
+      font-size: var(--card-badge-size, var(--size-r-0-75));
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       background: var(--primary-color);
-      color: white;
+      color: var(--clr-white);
       border-radius: var(--radius-full);
       margin-bottom: var(--spacing-sm);
     }
@@ -152,14 +152,14 @@
       display: flex;
       align-items: center;
       gap: var(--spacing-sm);
-      font-size: 0.875rem;
+      font-size: var(--size-r-0-875);
       color: var(--text-muted);
       margin-top: var(--spacing-xs);
 
       .card-meta-item {
         display: flex;
         align-items: center;
-        gap: 0.25rem;
+        gap: var(--space-1);
 
         &::after {
           content: '•';
@@ -188,12 +188,12 @@
       margin-top: var(--spacing-md);
 
       .card-tag {
-        padding: 0.25rem 0.75rem;
-        font-size: 0.75rem;
+        padding: var(--space-1) var(--space-3);
+        font-size: var(--card-tag-size, var(--size-r-0-75));
         background: var(--bg-tertiary);
         color: var(--text-secondary);
         border-radius: var(--radius-full);
-        border: 1px solid var(--border-color);
+        border: var(--size-1) solid var(--border-color);
         transition: all var(--transition-fast);
 
         &:hover {
@@ -208,7 +208,7 @@
   .card-footer {
     margin-top: var(--spacing-md);
     padding-top: var(--spacing-md);
-    border-top: 1px solid var(--border-color);
+    border-top: var(--size-1) solid var(--border-color);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -219,26 +219,26 @@
       gap: var(--spacing-sm);
 
       .card-action {
-        padding: 0.5rem 1rem;
-        font-size: 0.875rem;
+        padding: var(--space-2) var(--space-4);
+        font-size: var(--card-action-size, var(--size-r-0-875));
         border-radius: var(--radius-sm);
         transition: all var(--transition-fast);
         cursor: pointer;
 
         &.card-action-primary {
           background: var(--primary-color);
-          color: white;
+          color: var(--clr-white);
 
           &:hover {
             background: var(--primary-dark);
-            transform: translateY(-2px);
+            transform: var(--transform-lift-sm);
           }
         }
 
         &.card-action-secondary {
           background: transparent;
           color: var(--text-primary);
-          border: 1px solid var(--border-color);
+          border: var(--size-1) solid var(--border-color);
 
           &:hover {
             border-color: var(--primary-color);
@@ -251,13 +251,13 @@
     .card-stats {
       display: flex;
       gap: var(--spacing-md);
-      font-size: 0.875rem;
+      font-size: var(--size-r-0-875);
       color: var(--text-muted);
 
       .card-stat {
         display: flex;
         align-items: center;
-        gap: 0.25rem;
+        gap: var(--size-r-0-25);
       }
     }
   }
@@ -267,7 +267,7 @@
     padding: var(--spacing-md);
 
     .card-header .card-title {
-      font-size: 1.125rem;
+      font-size: var(--card-title-size-md, var(--size-r-1-125));
     }
 
     .card-footer {
@@ -286,18 +286,18 @@
   }
 
   @media (width <= 600px) {
-    padding: 1.5rem;
+    padding: var(--space-6);
   }
 
   @media (width <= 480px) {
-    padding: 1rem;
+    padding: var(--space-4);
 
     .card-header .card-title {
-      font-size: 1rem;
+      font-size: var(--card-title-size-sm, var(--size-r-1));
     }
 
     .card-body .card-description {
-      font-size: 0.9375rem;
+      font-size: var(--card-description-size-sm, var(--size-r-0-9375));
     }
   }
 }
@@ -309,7 +309,10 @@
   gap: var(--gap-md);
 
   @media (width <= 768px) {
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(
+      auto-fill,
+      minmax(var(--card-min-width-tablet, var(--size-280)), 1fr)
+    );
     gap: var(--gap-sm);
   }
 
@@ -330,8 +333,8 @@
     flex-direction: row;
 
     .card-image {
-      width: 200px;
-      height: 150px;
+      width: var(--card-list-image-width, var(--size-200));
+      height: var(--card-list-image-height, var(--size-150));
       margin-bottom: 0;
       margin-right: var(--spacing-md);
       flex-shrink: 0;

@@ -331,6 +331,6 @@ export const ThreeScene = ({ projects, onScrollUpdate, onReady }) => {
 
   return React.createElement('div', {
     ref: containerRef,
-    style: { width: '100%', height: '100%' },
+    className: 'three-scene-container',
   });
 };

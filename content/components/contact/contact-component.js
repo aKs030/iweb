@@ -81,48 +81,26 @@ function ContactForm() {
           tabIndex: -1, // Make focusable programmatically
           role: 'status', // Announce status change
           'aria-live': 'polite',
-          className: 'status-message status-success',
-          style: {
-            flexDirection: 'column',
-            textAlign: 'center',
-            padding: '3rem',
-            background: 'transparent',
-            border: 'none',
-            outline: 'none',
-          },
+          className: 'status-message status-success status-success-panel',
         },
         h(CheckCircle, {
           size: 64,
-          color: '#34d399',
-          style: { marginBottom: '1rem' },
+          className: 'contact-success-icon',
         }),
         h(
           'h2',
-          {
-            style: {
-              fontSize: '1.8rem',
-              marginBottom: '0.5rem',
-              color: '#fff',
-            },
-          },
+          { className: 'contact-success-title' },
           i18n.t('contact.success.title'),
         ),
         h(
           'p',
-          {
-            style: {
-              color: '#94a3b8',
-              fontSize: '1.1rem',
-              marginBottom: '2rem',
-            },
-          },
+          { className: 'contact-success-text' },
           i18n.t('contact.success.message'),
         ),
         h(
           'button',
           {
-            className: 'btn-submit',
-            style: { width: 'auto', padding: '0.8rem 2rem' },
+            className: 'btn-submit btn-submit-inline',
             onClick: () => setStatus('idle'),
           },
           i18n.t('contact.success.new_message'),
@@ -241,10 +219,9 @@ function ContactForm() {
           h(
             'div',
             {
-              className: 'status-message status-error',
+              className: 'status-message status-error status-error-inline',
               role: 'alert', // Announce errors immediately
               'aria-live': 'assertive',
-              style: { marginBottom: '1.5rem' },
             },
             h(AlertCircle, { size: 20 }),
             h('span', null, errorMessage),

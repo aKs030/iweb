@@ -13,10 +13,10 @@
   /* ============================================
      SAFE AREA INSETS
      ============================================ */
-  --safe-top: env(safe-area-inset-top, 0px);
-  --safe-right: env(safe-area-inset-right, 0px);
-  --safe-bottom: env(safe-area-inset-bottom, 0px);
-  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-top: env(safe-area-inset-top, var(--size-0));
+  --safe-right: env(safe-area-inset-right, var(--size-0));
+  --safe-bottom: env(safe-area-inset-bottom, var(--size-0));
+  --safe-left: env(safe-area-inset-left, var(--size-0));
 
   /* ============================================
      SEMANTIC COLOR SYSTEM (Dark Mode)
@@ -28,7 +28,7 @@
   --color-link: var(--primary-color);
 
   /* Particle System */
-  --particle-color: rgb(9 139 255 / 80%);
+  --particle-color: color-mix(in srgb, var(--primary-color) 80%, transparent);
   --particle-opacity: 0.4;
 
   /* ============================================
@@ -41,11 +41,11 @@
   --font-family-main: var(--font-system);
   --critical-font-stack: var(--font-system);
 
-  --font-size-p: 1.08rem;
+  --font-size-p: var(--size-r-1-08);
   --line-height-base: 1.7;
 
   /* Headline & Body Tokens */
-  --headline-fs: clamp(3rem, 6vw, 4.5rem);
+  --headline-fs: clamp(var(--size-r-3), 6vw, calc(var(--size-r-1-5) * 3));
   --headline-lh: 1.03;
   --headline-weight: 900;
   --headline-letter: -0.02em;
@@ -73,15 +73,18 @@
   /* ============================================
      TRANSFORMS & EFFECTS
      ============================================ */
-  --transform-lift-sm: translateY(-2px);
-  --transform-lift-md: translateY(-4px);
+  --transform-lift-sm: translateY(calc(var(--size-2) * -1));
+  --transform-lift-md: translateY(calc(var(--size-4) * -1));
 
-  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
-  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.15);
-  --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.2);
+  --shadow-sm: 0 var(--size-2) var(--size-4)
+    color-mix(in srgb, var(--clr-black) 10%, transparent);
+  --shadow-md: 0 var(--size-4) var(--size-8)
+    color-mix(in srgb, var(--clr-black) 15%, transparent);
+  --shadow-lg: 0 var(--size-8) var(--size-16)
+    color-mix(in srgb, var(--clr-black) 20%, transparent);
 
-  --blur-md: blur(12px);
-  --blur-lg: blur(20px);
+  --blur-md: blur(var(--size-12));
+  --blur-lg: blur(var(--size-20));
 
   /* ============================================
      Z-INDEX LAYERS
@@ -107,24 +110,46 @@
   /* ============================================
      COMPONENT SYSTEM (Menu, Footer, Cards)
      ============================================ */
-  --component-header-bg: rgb(28 28 30 / 40%);
-  --component-blur-radius: 16px;
-  --component-pill-radius: 26px;
-  --component-card-radius: 16px;
-  --component-separator: rgba(255, 255, 255, 0.12);
+  --component-header-bg: color-mix(in srgb, var(--clr-black) 40%, transparent);
+  --component-blur-radius: var(--size-16);
+  --component-pill-radius: var(--size-26);
+  --component-card-radius: var(--size-16);
+  --component-separator: color-mix(in srgb, var(--clr-white) 12%, transparent);
 
-  --component-accent-blue: #007aff;
-  --component-accent-blue-hover: #0056cc;
+  --component-accent-blue: var(--primary-color);
+  --component-accent-blue-hover: var(--primary-dark);
 
-  --component-label-primary: rgba(255, 255, 255, 0.95);
-  --component-label-secondary: rgba(255, 255, 255, 0.7);
-  --component-label-tertiary: rgba(255, 255, 255, 0.5);
+  --component-label-primary: color-mix(
+    in srgb,
+    var(--clr-white) 95%,
+    transparent
+  );
+  --component-label-secondary: color-mix(
+    in srgb,
+    var(--clr-white) 70%,
+    transparent
+  );
+  --component-label-tertiary: color-mix(
+    in srgb,
+    var(--clr-white) 50%,
+    transparent
+  );
 
-  --component-fill-primary: rgba(255, 255, 255, 0.1);
-  --component-fill-secondary: rgba(255, 255, 255, 0.15);
+  --component-fill-primary: color-mix(
+    in srgb,
+    var(--clr-white) 10%,
+    transparent
+  );
+  --component-fill-secondary: color-mix(
+    in srgb,
+    var(--clr-white) 15%,
+    transparent
+  );
 
-  --component-shadow-depth-2: 0 8px 32px rgba(0, 0, 0, 0.2);
-  --component-shadow-depth-3: 0 14px 38px rgba(0, 0, 0, 0.4);
+  --component-shadow-depth-2: 0 var(--size-8) var(--size-32)
+    color-mix(in srgb, var(--clr-black) 20%, transparent);
+  --component-shadow-depth-3: 0 var(--size-14) var(--size-38)
+    color-mix(in srgb, var(--clr-black) 40%, transparent);
 
   /* Animation Easings for Components */
   --component-spring-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
@@ -139,7 +164,7 @@
 /* Responsive tweaks: slightly smaller headings on very small viewports */
 @media (width <= 420px) {
   :root {
-    --headline-fs: clamp(2.2rem, 8vw, 3rem);
+    --headline-fs: clamp(var(--size-r-2-2), 8vw, var(--size-r-3));
     --greet-fs: var(--headline-fs);
     --greet-min-inline: clamp(14ch, 36vw, 28ch);
     --greet-max: clamp(14ch, 100vw, 26ch);
@@ -149,7 +174,7 @@
 
 @media (min-width: 1600px) {
   :root {
-    --container-width: 1800px;
+    --container-width: var(--container-width-wide);
   }
 }
 
@@ -194,10 +219,13 @@ iframe {
     --text-muted: var(--light-text-muted);
     --primary-color: var(--light-primary);
     --border-color: var(--light-border);
-    --particle-color: rgb(248 250 252 / 80%);
-    --shadow-sm: 0 2px 4px rgb(0 0 0 / 20%);
-    --shadow-md: 0 4px 12px rgb(0 0 0 / 25%);
-    --shadow-lg: 0 8px 24px rgb(0 0 0 / 30%);
+    --particle-color: color-mix(in srgb, var(--clr-slate-100) 80%, transparent);
+    --shadow-sm: 0 var(--size-2) var(--size-4)
+      color-mix(in srgb, var(--clr-black) 20%, transparent);
+    --shadow-md: 0 var(--size-4) var(--size-12)
+      color-mix(in srgb, var(--clr-black) 25%, transparent);
+    --shadow-lg: 0 var(--size-8) var(--size-24)
+      color-mix(in srgb, var(--clr-black) 30%, transparent);
   }
 
   /* Automatic theme based on system preference */
@@ -213,10 +241,17 @@ iframe {
       --text-muted: var(--light-text-muted);
       --primary-color: var(--light-primary);
       --border-color: var(--light-border);
-      --particle-color: rgb(248 250 252 / 80%);
-      --shadow-sm: 0 2px 4px rgb(0 0 0 / 20%);
-      --shadow-md: 0 4px 12px rgb(0 0 0 / 25%);
-      --shadow-lg: 0 8px 24px rgb(0 0 0 / 30%);
+      --particle-color: color-mix(
+        in srgb,
+        var(--clr-slate-100) 80%,
+        transparent
+      );
+      --shadow-sm: 0 var(--size-2) var(--size-4)
+        color-mix(in srgb, var(--clr-black) 20%, transparent);
+      --shadow-md: 0 var(--size-4) var(--size-12)
+        color-mix(in srgb, var(--clr-black) 25%, transparent);
+      --shadow-lg: 0 var(--size-8) var(--size-24)
+        color-mix(in srgb, var(--clr-black) 30%, transparent);
     }
   }
 }
@@ -231,11 +266,11 @@ iframe {
   top: 0;
   left: 0;
   right: 0;
-  height: env(safe-area-inset-top, 0px);
+  height: env(safe-area-inset-top, var(--size-0));
   pointer-events: none;
   z-index: var(--z-top-overlay);
   background: transparent !important;
-  transition: opacity 160ms linear;
+  transition: opacity var(--duration-160ms) linear;
   opacity: 1;
 }
 

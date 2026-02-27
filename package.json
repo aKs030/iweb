@@ -8,35 +8,47 @@
     "node": ">=22.0.0"
   },
   "scripts": {
-    "dev": "wrangler pages dev . --port 8080",
-    "dev:sim": "node server.js",
+    "dev": "node scripts/dev-workflow.mjs",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --check .",
     "format:write": "prettier --write .",
-    "check": "npm run lint && npm run format && npm run ai-index:check",
+    "check": "npm run lint && npm run format && npm run css:lint && npm run css:audit && npm run ai-index:check && npm run structure:check",
     "fix": "npm run lint:fix && npm run format:write",
     "clean": "rm -rf .wrangler node_modules/.cache",
     "prepare": "husky",
+    "tokens:generate": "node scripts/generate-tokens-css.mjs",
+    "tokens:generate:all": "node scripts/generate-tokens-css.mjs --all",
+    "tokens:watch": "node scripts/generate-tokens-css.mjs --watch --all",
+    "utilities:generate": "node scripts/generate-utilities.mjs",
+    "css:lint": "stylelint \"content/**/*.css\" \"pages/**/*.css\"",
+    "css:minify": "node scripts/minify-css.mjs",
     "docs:check": "node scripts/docs-check.mjs",
+    "structure:check": "node scripts/structure-check.mjs",
     "ai-index:sync": "node scripts/sync-ai-index-apps.mjs",
     "ai-index:check": "node scripts/sync-ai-index-apps.mjs --check",
     "cf:redirect:audit": "node scripts/cloudflare-redirect-audit.mjs --days 8 --limit 500",
     "cf:redirect:prune": "node scripts/cloudflare-redirect-audit.mjs --days 8 --limit 500 --apply-prune",
-    "css:audit": "npx purgecss --css \"content/styles/**/*.css\" \"content/components/**/*.css\" \"pages/**/*.css\" --content \"pages/**/*.html\" \"content/**/*.js\" \"content/**/*.mjs\" \"content/components/**/*.js\" --output /tmp/purged-all.css"
+    "css:audit": "node scripts/css-audit.mjs"
   },
   "dependencies": {
     "three": "^0.183.1"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "autoprefixer": "^10.4.21",
+    "cssnano": "^7.1.2",
     "dompurify": "^3.3.1",
     "eslint": "^10.0.1",
     "globals": "^17.3.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
+    "postcss": "^8.5.6",
+    "postcss-cli": "^11.0.1",
     "prettier": "^3.8.1",
+    "purgecss": "^7.0.2",
     "react": "^19.2.4",
+    "stylelint": "^16.25.0",
     "wrangler": "^4.67.0"
   },
   "lint-staged": {

@@ -265,11 +265,11 @@ npm run deploy
 ### Lokale Entwicklung
 
 ```bash
-# Dev Server (mit Middleware-Simulation)
+# Einheitlicher Dev-Workflow
 npm run dev
 ```
 
-**Hinweis:** Der lokale Dev-Server (`server.js`) simuliert die Template-Injection, aber nicht das Rate Limiting.
+**Hinweis:** `npm run dev` startet den modernen Workflow mit Token-Preflight, Token-Watcher und `wrangler pages dev`.
 
 ---
 

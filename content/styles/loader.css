@@ -6,10 +6,10 @@
   /* Make the very top safe-area transparent so the status-bar bleed shows through immediately */
   background: linear-gradient(
     to bottom,
-    transparent calc(env(safe-area-inset-top, 0px)),
-    var(--loader-bg, #030303) calc(env(safe-area-inset-top, 0px))
+    transparent calc(env(safe-area-inset-top, var(--size-0))),
+    var(--loader-bg) calc(env(safe-area-inset-top, var(--size-0)))
   );
-  z-index: calc(var(--z-top-overlay) - 1);
+  z-index: calc(var(--z-top-overlay) - var(--z-base));
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -32,7 +32,7 @@
   inset: 0;
   overflow: hidden;
   pointer-events: none;
-  z-index: 0;
+  z-index: var(--z-none);
   isolation: isolate;
 }
 
@@ -40,9 +40,16 @@
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-  background-size: 50px 50px;
+    linear-gradient(
+      color-mix(in srgb, var(--clr-white) 2%, transparent) var(--size-1),
+      transparent var(--size-1)
+    ),
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--clr-white) 2%, transparent) var(--size-1),
+      transparent var(--size-1)
+    );
+  background-size: var(--size-50) var(--size-50);
   animation: grid-move 20s linear infinite;
   opacity: 0.3;
 }
@@ -52,14 +59,14 @@
     transform: translate(0, 0);
   }
   100% {
-    transform: translate(50px, 50px);
+    transform: translate(var(--size-50), var(--size-50));
   }
 }
 
 .loader-gradient-orb {
   position: absolute;
   border-radius: 50%;
-  filter: blur(80px);
+  filter: blur(var(--size-80));
   opacity: 0.15;
   animation: floatOrb 8s ease-in-out infinite;
   pointer-events: none;
@@ -67,28 +74,24 @@
 }
 
 .loader-gradient-orb--1 {
-  width: 400px;
-  height: 400px;
-  background: radial-gradient(
-    circle,
-    var(--loader-accent, #00f3ff) 0%,
-    transparent 70%
-  );
-  top: -200px;
-  left: -200px;
+  width: var(--size-400);
+  height: var(--size-400);
+  background: radial-gradient(circle, var(--loader-accent) 0%, transparent 70%);
+  top: calc(var(--size-200) * -1);
+  left: calc(var(--size-200) * -1);
   animation-delay: 0s;
 }
 
 .loader-gradient-orb--2 {
-  width: 300px;
-  height: 300px;
+  width: var(--size-300);
+  height: var(--size-300);
   background: radial-gradient(
     circle,
-    var(--loader-accent-secondary, #7000ff) 0%,
+    var(--loader-accent-secondary) 0%,
     transparent 70%
   );
-  bottom: -150px;
-  right: -150px;
+  bottom: calc(var(--size-150) * -1);
+  right: calc(var(--size-150) * -1);
   animation-delay: 2s;
   animation-duration: 10s;
 }
@@ -99,22 +102,22 @@
     transform: translate(0, 0) scale(1);
   }
   33% {
-    transform: translate(30px, -30px) scale(1.1);
+    transform: translate(var(--size-30), calc(var(--size-30) * -1)) scale(1.1);
   }
   66% {
-    transform: translate(-20px, 20px) scale(0.9);
+    transform: translate(calc(var(--size-20) * -1), var(--size-20)) scale(0.9);
   }
 }
 
 /* Spinner Rings */
 .loader-spinner {
   position: absolute;
-  width: 400px;
-  height: 400px;
+  width: var(--size-400);
+  height: var(--size-400);
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  z-index: 1;
+  z-index: var(--z-base);
   pointer-events: none;
   isolation: isolate;
 }
@@ -122,33 +125,34 @@
 .loader-spinner-ring {
   position: absolute;
   inset: 0;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: var(--size-1) solid
+    color-mix(in srgb, var(--clr-white) 5%, transparent);
   border-radius: 50%;
   animation: spin 8s linear infinite;
 
   &::before {
     content: '';
     position: absolute;
-    top: -2px;
+    top: calc(var(--size-2) * -1);
     left: 50%;
-    width: 10px;
-    height: 10px;
-    background: var(--loader-accent-secondary, #7000ff);
+    width: var(--size-10);
+    height: var(--size-10);
+    background: var(--loader-accent-secondary);
     border-radius: 50%;
-    box-shadow: 0 0 20px var(--loader-accent-secondary, #7000ff);
+    box-shadow: 0 0 var(--size-20) var(--loader-accent-secondary);
     transform: translateX(-50%);
   }
 
   &.loader-spinner-ring--delayed {
     animation-duration: 12s;
     animation-direction: reverse;
-    border-color: rgba(255, 255, 255, 0.03);
+    border-color: color-mix(in srgb, var(--clr-white) 3%, transparent);
 
     &::before {
-      background: var(--loader-accent, #00f3ff);
-      box-shadow: 0 0 20px var(--loader-accent, #00f3ff);
-      width: 8px;
-      height: 8px;
+      background: var(--loader-accent);
+      box-shadow: 0 0 var(--size-20) var(--loader-accent);
+      width: var(--size-8);
+      height: var(--size-8);
     }
   }
 }
@@ -164,11 +168,11 @@
 
 /* Main Content */
 .loader-content {
-  width: 320px;
+  width: var(--size-320);
   max-width: 90%;
   text-align: center;
   position: relative;
-  z-index: 10;
+  z-index: var(--z-loader-content);
   transform: translateZ(0);
   isolation: isolate;
 }
@@ -176,31 +180,31 @@
 /* Logo */
 .loader-logo {
   position: relative;
-  margin-bottom: 2.5rem;
+  margin-bottom: var(--size-r-2-5);
   display: inline-block;
 }
 
 .loader-logo-text {
-  font-size: 2.5rem;
+  font-size: var(--size-r-2-5);
   font-weight: 700;
-  color: var(--loader-text, #e0e0e0);
-  letter-spacing: 4px;
+  color: var(--loader-text);
+  letter-spacing: var(--size-4);
   text-transform: uppercase;
   position: relative;
   display: inline-block;
-  z-index: 1;
+  z-index: var(--z-base);
 
   &::after {
     content: '';
     position: absolute;
-    bottom: -8px;
+    bottom: calc(var(--size-8) * -1);
     left: 0;
     width: 100%;
-    height: 2px;
+    height: var(--size-2);
     background: linear-gradient(
       90deg,
       transparent,
-      var(--loader-accent, #00f3ff),
+      var(--loader-accent),
       transparent
     );
     animation: scanline 2s infinite ease-in-out;
@@ -209,9 +213,9 @@
 
 .loader-logo-pulse {
   position: absolute;
-  inset: -20px;
-  border: 2px solid var(--loader-accent, #00f3ff);
-  border-radius: 8px;
+  inset: calc(var(--size-20) * -1);
+  border: var(--size-2) solid var(--loader-accent);
+  border-radius: var(--size-8);
   opacity: 0;
   animation: pulse-border 2s ease-out infinite;
 }
@@ -249,15 +253,16 @@
 /* Progress Bar */
 .progress-container {
   width: 100%;
-  height: 6px;
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 3px;
+  height: var(--size-6);
+  background: color-mix(in srgb, var(--clr-white) 8%, transparent);
+  border-radius: var(--size-3);
   position: relative;
   overflow: hidden;
-  margin-bottom: 1.25rem;
+  margin-bottom: var(--size-r-1-25);
   box-shadow:
-    inset 0 1px 3px rgba(0, 0, 0, 0.3),
-    0 0 10px rgba(0, 243, 255, 0.1);
+    inset 0 var(--size-1) var(--size-3)
+      color-mix(in srgb, var(--clr-black) 30%, transparent),
+    0 0 var(--size-10) color-mix(in srgb, var(--loader-accent) 10%, transparent);
 }
 
 .progress-track-glow {
@@ -266,7 +271,7 @@
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(0, 243, 255, 0.1),
+    color-mix(in srgb, var(--loader-accent) 10%, transparent),
     transparent
   );
   animation: track-shimmer 2s ease-in-out infinite;
@@ -287,14 +292,14 @@
   width: 0%;
   background: linear-gradient(
     90deg,
-    var(--loader-accent, #00f3ff),
-    var(--loader-accent-secondary, #7000ff),
-    var(--loader-accent, #00f3ff)
+    var(--loader-accent),
+    var(--loader-accent-secondary),
+    var(--loader-accent)
   );
   background-size: 200% 100%;
-  border-radius: 3px;
+  border-radius: var(--size-3);
   position: relative;
-  box-shadow: 0 0 15px var(--loader-accent, #00f3ff);
+  box-shadow: 0 0 var(--size-15) var(--loader-accent);
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   animation: gradient-shift 2s ease infinite;
 
@@ -304,18 +309,18 @@
     inset: 0;
     background-image: linear-gradient(
       45deg,
-      rgba(255, 255, 255, 0.2) 25%,
+      color-mix(in srgb, var(--clr-white) 20%, transparent) 25%,
       transparent 25%,
       transparent 50%,
-      rgba(255, 255, 255, 0.2) 50%,
-      rgba(255, 255, 255, 0.2) 75%,
+      color-mix(in srgb, var(--clr-white) 20%, transparent) 50%,
+      color-mix(in srgb, var(--clr-white) 20%, transparent) 75%,
       transparent 75%,
       transparent
     );
-    background-size: 20px 20px;
+    background-size: var(--size-20) var(--size-20);
     animation: move-stripes 1s linear infinite;
     opacity: 0.3;
-    border-radius: 3px;
+    border-radius: var(--size-3);
   }
 }
 
@@ -323,15 +328,15 @@
   position: absolute;
   top: 50%;
   right: 0;
-  width: 30px;
+  width: var(--size-30);
   height: 150%;
   background: radial-gradient(
     ellipse,
-    rgba(255, 255, 255, 0.8) 0%,
+    color-mix(in srgb, var(--clr-white) 80%, transparent) 0%,
     transparent 70%
   );
   transform: translateY(-50%);
-  filter: blur(8px);
+  filter: blur(var(--size-8));
   animation: glow-pulse 1.5s ease-in-out infinite;
 }
 
@@ -352,7 +357,7 @@
     background-position: 0 0;
   }
   100% {
-    background-position: 20px 20px;
+    background-position: var(--size-20) var(--size-20);
   }
 }
 
@@ -371,11 +376,11 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.875rem;
-  color: rgba(255, 255, 255, 0.6);
-  margin-top: 0.75rem;
-  font-family: 'Courier New', Courier, monospace;
-  gap: 1rem;
+  font-size: var(--size-r-0-875);
+  color: var(--footer-quiet-text);
+  margin-top: var(--size-r-0-75);
+  font-family: var(--font-mono);
+  gap: var(--size-r-1);
 
   .status-text {
     text-align: left;
@@ -388,8 +393,8 @@
   .percentage {
     text-align: right;
     font-weight: bold;
-    color: var(--loader-accent, #00f3ff);
-    min-width: 45px;
+    color: var(--loader-accent);
+    min-width: var(--size-45);
     font-variant-numeric: tabular-nums;
   }
 }
@@ -398,18 +403,18 @@
 .loader-dots {
   display: flex;
   justify-content: center;
-  gap: 8px;
-  margin-top: 1.5rem;
-  height: 8px;
+  gap: var(--size-8);
+  margin-top: var(--size-r-1-5);
+  height: var(--size-8);
 }
 
 .loader-dot {
-  width: 8px;
-  height: 8px;
-  background: var(--loader-accent, #00f3ff);
+  width: var(--size-8);
+  height: var(--size-8);
+  background: var(--loader-accent);
   border-radius: 50%;
   animation: dot-bounce 1.4s ease-in-out infinite;
-  box-shadow: 0 0 10px var(--loader-accent, #00f3ff);
+  box-shadow: 0 0 var(--size-10) var(--loader-accent);
 
   &:nth-child(1) {
     animation-delay: 0s;
@@ -438,40 +443,40 @@
 /* Responsive */
 @media (width <= 768px) {
   .loader-spinner {
-    width: 300px;
-    height: 300px;
+    width: var(--size-300);
+    height: var(--size-300);
   }
   .loader-content {
-    width: 280px;
+    width: var(--size-280);
   }
   .loader-logo-text {
-    font-size: 2rem;
+    font-size: var(--size-r-2);
   }
   .loader-gradient-orb--1 {
-    width: 300px;
-    height: 300px;
+    width: var(--size-300);
+    height: var(--size-300);
   }
   .loader-gradient-orb--2 {
-    width: 200px;
-    height: 200px;
+    width: var(--size-200);
+    height: var(--size-200);
   }
 }
 
 @media (width <= 480px) {
   .loader-spinner {
-    width: 250px;
-    height: 250px;
+    width: var(--size-250);
+    height: var(--size-250);
   }
   .loader-content {
     width: 90%;
-    max-width: 280px;
+    max-width: var(--size-280);
   }
   .loader-logo-text {
-    font-size: 1.75rem;
-    letter-spacing: 3px;
+    font-size: var(--size-r-1-75);
+    letter-spacing: var(--size-3);
   }
   .loader-info {
-    font-size: 0.8rem;
+    font-size: var(--size-r-0-8);
   }
 }
 
@@ -506,21 +511,28 @@
 /* Keep loader consistently dark to avoid light flash on dark pages */
 @media (prefers-color-scheme: light) {
   #app-loader {
-    background-color: var(--loader-bg, #030303);
+    background-color: var(--loader-bg);
   }
   .loader-logo-text {
-    color: var(--loader-text, #e0e0e0);
+    color: var(--loader-text);
   }
   .loader-info {
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--footer-quiet-text);
   }
   .progress-container {
-    background: rgba(255, 255, 255, 0.08);
+    background: color-mix(in srgb, var(--clr-white) 8%, transparent);
   }
   .loader-grid {
     background-image:
-      linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      linear-gradient(
+        color-mix(in srgb, var(--clr-white) 2%, transparent) var(--size-1),
+        transparent var(--size-1)
+      ),
+      linear-gradient(
+        90deg,
+        color-mix(in srgb, var(--clr-white) 2%, transparent) var(--size-1),
+        transparent var(--size-1)
+      );
   }
 }
 
