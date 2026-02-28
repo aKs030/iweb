@@ -233,16 +233,6 @@ class CacheManager {
     log.debug(`Cache set: ${key}`);
   }
 
-  /**
-   * Batch set multiple cache entries
-   * @param {Array<{key: string, value: any, options?: Object}>} entries
-   */
-  async setMany(entries) {
-    await Promise.all(
-      entries.map((entry) => this.set(entry.key, entry.value, entry.options)),
-    );
-  }
-
   async delete(key) {
     this.memory.delete(key);
     if (this.useIndexedDB) {

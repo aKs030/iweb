@@ -1,6 +1,6 @@
 /**
  * Main Application Entry Point
- * @version 6.2.0
+ * @version 6.3.0
  */
 
 import { initHeroFeatureBundle } from '../pages/home/hero-manager.js';
@@ -22,8 +22,6 @@ import { GlobalEventHandlers } from './core/events.js';
 
 const log = createLogger('main');
 const appTimers = new TimerManager('Main');
-
-// Persistent storage request removed to avoid deprecation warnings
 
 // ===== Configuration & Environment =====
 const ENV = {
