@@ -137,24 +137,3 @@
   initThemeColorManager();
 </script>
 <script type="module" src="/content/main.js"></script>
-
-<!-- Insert a minimal status-bar bleed element immediately after body opens (for browsers that render head-inline JS before body) -->
-<script>
-  // Create a small script that will ensure a status-bar bleed exists at top of body
-  (function () {
-    function ensureStatusBarBleed() {
-      if (document.getElementById('status-bar-bleed')) return;
-      var div = document.createElement('div');
-      div.id = 'status-bar-bleed';
-      div.setAttribute('aria-hidden', 'true');
-      document.body &&
-        document.body.insertBefore(div, document.body.firstChild);
-    }
-
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', ensureStatusBarBleed);
-    } else {
-      ensureStatusBarBleed();
-    }
-  })();
-</script>

@@ -62,13 +62,13 @@ body.blog-page #main-content {
 
 .reading-progress-container {
   position: fixed;
-  top: 0;
+  top: env(safe-area-inset-top, 0px);
   left: 0;
   width: 100%;
   height: var(--size-4);
   z-index: var(--z-overlay);
   pointer-events: none;
-  background: color-mix(in srgb, var(--clr-black) 50%, transparent);
+  background: transparent;
 }
 .reading-progress-bar {
   height: 100%;
@@ -776,11 +776,8 @@ body.blog-page #main-content {
 
 body.blog-page .btn-back {
   position: fixed;
-  top: calc(
-    var(--content-top-offset, var(--size-76)) + env(safe-area-inset-top) +
-      var(--size-r-1)
-  );
-  left: calc(env(safe-area-inset-left) + var(--size-r-2));
+  top: calc(var(--content-top-offset) + var(--size-r-1));
+  left: calc(var(--safe-left) + var(--size-r-2));
   z-index: var(--z-fixed);
   background: color-mix(in srgb, var(--clr-black) 80%, transparent);
   backdrop-filter: blur(var(--size-20));
@@ -817,8 +814,8 @@ body.blog-page .btn-back:hover {
 
 @media (max-width: 900px) {
   body.blog-page .btn-back {
-    top: calc(var(--size-72) + env(safe-area-inset-top) + var(--size-r-0-5));
-    left: calc(env(safe-area-inset-left) + var(--size-r-1));
+    top: calc(var(--content-top-offset) + var(--size-r-0-5));
+    left: calc(var(--safe-left) + var(--size-r-1));
     padding: var(--size-r-0-6) var(--size-r-1-2);
     font-size: var(--size-r-0-85);
   }
@@ -826,7 +823,7 @@ body.blog-page .btn-back:hover {
 
 @media (max-width: 640px) {
   body.blog-page .btn-back {
-    left: calc(env(safe-area-inset-left) + var(--size-r-0-5));
+    left: calc(var(--safe-left) + var(--size-r-0-5));
     padding: var(--size-r-0-5) var(--size-r-1);
     font-size: var(--size-r-0-8);
   }
@@ -838,11 +835,8 @@ body.blog-page .btn-back:hover {
 
 .scroll-to-top-btn {
   position: fixed;
-  bottom: calc(
-    var(--content-bottom-offset, var(--size-120)) +
-      env(safe-area-inset-bottom) + var(--size-r-2)
-  );
-  right: calc(env(safe-area-inset-right) + var(--size-r-2));
+  bottom: calc(var(--content-bottom-offset) + var(--size-r-2));
+  right: calc(var(--safe-right) + var(--size-r-2));
   background: linear-gradient(
     135deg,
     var(--clr-blue-500),
@@ -912,11 +906,8 @@ body.blog-page .btn-back:hover {
 
 @media (max-width: 900px) {
   .scroll-to-top-btn {
-    bottom: calc(
-      var(--content-bottom-offset, var(--size-100)) +
-        env(safe-area-inset-bottom) + var(--size-r-1-5)
-    );
-    right: calc(env(safe-area-inset-right) + var(--size-r-1-5));
+    bottom: calc(var(--content-bottom-offset) + var(--size-r-1-5));
+    right: calc(var(--safe-right) + var(--size-r-1-5));
     width: var(--size-r-3-5);
     height: var(--size-r-3-5);
   }
@@ -924,11 +915,8 @@ body.blog-page .btn-back:hover {
 
 @media (max-width: 640px) {
   .scroll-to-top-btn {
-    bottom: calc(
-      var(--content-bottom-offset, var(--size-100)) +
-        env(safe-area-inset-bottom) + var(--size-r-1)
-    );
-    right: calc(env(safe-area-inset-right) + var(--size-r-1));
+    bottom: calc(var(--content-bottom-offset) + var(--size-r-1));
+    right: calc(var(--safe-right) + var(--size-r-1));
     width: var(--size-r-3);
     height: var(--size-r-3);
   }
@@ -970,6 +958,8 @@ body.blog-page .btn-back:hover {
 /* Mobile adjustments for header height */
 @media (width <= 900px) {
   body.blog-page #main-content {
-    min-height: calc(100vh - var(--size-72));
+    min-height: calc(
+      100dvh - var(--content-top-offset) - var(--content-bottom-offset)
+    );
   }
 }

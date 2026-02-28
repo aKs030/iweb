@@ -72,31 +72,6 @@ iframe {
   display: block;
 }
 
-/* ============================================
-   STATUS BAR BLEED (for transparent status bars)
-   Ensures a controlled background behind the device
-   safe-area (iOS PWA / modern Android browsers)
-============================================ */
-#status-bar-bleed {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: env(safe-area-inset-top, var(--size-0));
-  pointer-events: none;
-  z-index: var(--z-top-overlay);
-  background: transparent !important;
-  transition: opacity var(--duration-160ms) linear;
-  opacity: 1;
-}
-
-/* When safe-area is zero, hide the element to avoid layout impact */
-@supports (height: env(safe-area-inset-top)) {
-  :root {
-    --has-safe-area: env(safe-area-inset-top);
-  }
-}
-
 /* Hide scrollbars globally while keeping scroll intact */
 html,
 body {

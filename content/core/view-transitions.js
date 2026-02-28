@@ -75,19 +75,6 @@ function applyPage(url, { title, mainHtml, bodyClass }) {
   } catch {
     // ignore
   }
-
-  // Safety: ensure status-bar bleed element exists after dynamic page swap
-  try {
-    if (!document.getElementById('status-bar-bleed')) {
-      const div = document.createElement('div');
-      div.id = 'status-bar-bleed';
-      div.setAttribute('aria-hidden', 'true');
-      document.body &&
-        document.body.insertBefore(div, document.body.firstChild);
-    }
-  } catch {
-    // ignore
-  }
 }
 
 /**
