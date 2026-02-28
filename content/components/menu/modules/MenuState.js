@@ -3,6 +3,7 @@
  * Handles the reactive state of the menu (open/closed, active link, title).
  */
 import { createLogger } from '../../../core/logger.js';
+import { uiStore } from '../../../core/ui-store.js';
 
 const log = createLogger('MenuState');
 
@@ -28,6 +29,7 @@ export class MenuState {
   setOpen(value) {
     if (this.isOpen === value) return;
     this.isOpen = value;
+    uiStore.setState({ menuOpen: value });
     this.emit('openChange', value);
   }
 
@@ -101,6 +103,7 @@ export class MenuState {
     this.activeLink = null;
     this.currentTitle = 'menu.home';
     this.currentSubtitle = '';
+    uiStore.setState({ menuOpen: false });
     this.listeners.clear();
   }
 }

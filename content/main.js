@@ -50,6 +50,7 @@ const perfMarks = {
 // ===== Accessibility Announcements =====
 const announce = createAnnouncer();
 globalThis.announce = announce;
+let networkIndicatorDismissTimer = null;
 
 // ===== Section Manager =====
 const sectionManager = new SectionManager();
@@ -98,6 +99,7 @@ document.addEventListener(
   'DOMContentLoaded',
   async () => {
     await i18n.init();
+    initOfflineIndicator();
     perfMarks.domReady = performance.now();
     AppLoadManager.updateLoader(0.1, i18n.t('loader.status_init'));
 
@@ -261,4 +263,61 @@ function showUpdateNotification() {
     const el = document.querySelector('.sw-update-toast');
     if (el) el.remove();
   }, 30000);
+}
+
+function initOfflineIndicator() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById('network-status-indicator')) return;
+
+  const indicator = document.createElement('div');
+  indicator.id = 'network-status-indicator';
+  indicator.className = 'network-status-indicator';
+  indicator.setAttribute('role', 'status');
+  indicator.setAttribute('aria-live', 'polite');
+  indicator.setAttribute('aria-atomic', 'true');
+  document.body.appendChild(indicator);
+
+  let hasInitialized = false;
+
+  const clearDismissTimer = () => {
+    if (!networkIndicatorDismissTimer) return;
+    appTimers.clearTimeout(networkIndicatorDismissTimer);
+    networkIndicatorDismissTimer = null;
+  };
+
+  const updateIndicator = () => {
+    const isOffline = navigator.onLine === false;
+
+    clearDismissTimer();
+
+    if (isOffline) {
+      indicator.classList.add('is-visible', 'is-offline');
+      indicator.classList.remove('is-online');
+      indicator.textContent =
+        'Offline-Modus: Navigation und lokale Suchtreffer verfuegbar, AI-Antworten eingeschraenkt.';
+      announce('Offline-Modus aktiv');
+      hasInitialized = true;
+      return;
+    }
+
+    if (!hasInitialized) {
+      hasInitialized = true;
+      indicator.classList.remove('is-visible', 'is-online', 'is-offline');
+      return;
+    }
+
+    indicator.classList.add('is-visible', 'is-online');
+    indicator.classList.remove('is-offline');
+    indicator.textContent = 'Verbindung wiederhergestellt.';
+    announce('Online-Verbindung wiederhergestellt');
+
+    networkIndicatorDismissTimer = appTimers.setTimeout(() => {
+      indicator.classList.remove('is-visible', 'is-online');
+      networkIndicatorDismissTimer = null;
+    }, 3500);
+  };
+
+  window.addEventListener('online', updateIndicator);
+  window.addEventListener('offline', updateIndicator);
+  updateIndicator();
 }

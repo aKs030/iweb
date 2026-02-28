@@ -14,6 +14,19 @@
   height: var(--size-80);
 }
 
+#robot-companion-container[data-hydrated='false'] .robot-avatar {
+  pointer-events: none;
+  opacity: 0.72;
+}
+
+#robot-companion-container.robot-companion--menu-open {
+  opacity: 0.7;
+}
+
+#robot-companion-container.robot-companion--menu-open .robot-avatar {
+  pointer-events: none;
+}
+
 /* Wrapper für synchrones Schweben von Avatar und Bubble */
 .robot-float-wrapper {
   display: flex;

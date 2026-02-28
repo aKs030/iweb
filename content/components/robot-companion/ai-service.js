@@ -1,6 +1,6 @@
 /**
- * AI API Service (using Groq - Free!)
- * Handles AI chat responses via Cloudflare Pages Function
+ * AI API Service (using Groq through /api/ai proxy)
+ * Includes retry logic and a circuit breaker fallback to local mode.
  */
 
 import { createLogger } from '../../core/logger.js';
@@ -12,15 +12,105 @@ const MAX_RETRIES = 3;
 const INITIAL_DELAY = 1000;
 const FALLBACK_MESSAGE =
   'Entschuldigung, ich habe gerade Verbindungsprobleme. Bitte versuche es später noch einmal.';
+const LOCAL_MODE_MESSAGE =
+  'Ich bin aktuell im lokalen Modus (ohne Cloud-Verbindung) und beantworte nur Basisanfragen.';
+const CIRCUIT_FAILURE_THRESHOLD = 3;
+const CIRCUIT_COOLDOWN_MS = 120000;
+
+const circuitState = {
+  consecutiveFailures: 0,
+  openedAt: 0,
+};
+
+function isCircuitOpen() {
+  if (!circuitState.openedAt) return false;
+
+  const elapsed = Date.now() - circuitState.openedAt;
+  if (elapsed < CIRCUIT_COOLDOWN_MS) return true;
+
+  circuitState.openedAt = 0;
+  circuitState.consecutiveFailures = Math.max(0, CIRCUIT_FAILURE_THRESHOLD - 1);
+  return false;
+}
+
+function registerFailure(error) {
+  circuitState.consecutiveFailures += 1;
+  if (circuitState.consecutiveFailures < CIRCUIT_FAILURE_THRESHOLD) return;
+
+  if (!circuitState.openedAt) {
+    circuitState.openedAt = Date.now();
+    log.warn('AI circuit breaker opened:', error?.message || error);
+  }
+}
+
+function registerSuccess() {
+  circuitState.consecutiveFailures = 0;
+  circuitState.openedAt = 0;
+}
+
+function buildLocalReply(prompt = '', mode = 'chat') {
+  const normalizedPrompt = String(prompt || '').toLowerCase();
+
+  if (mode === 'summary') {
+    return `${LOCAL_MODE_MESSAGE} Ich kann gerade nur eine sehr kurze lokale Zusammenfassung liefern.`;
+  }
+
+  if (mode === 'suggestion') {
+    return `${LOCAL_MODE_MESSAGE} Probiere in der Zwischenzeit die Navigation oder die lokale Suche im Menü.`;
+  }
+
+  if (
+    normalizedPrompt.includes('kontakt') ||
+    normalizedPrompt.includes('mail')
+  ) {
+    return `${LOCAL_MODE_MESSAGE} Für Kontakt kannst du den Footer über das Menü öffnen.`;
+  }
+
+  if (normalizedPrompt.includes('projekt')) {
+    return `${LOCAL_MODE_MESSAGE} Die Projekte findest du unter /projekte/.`;
+  }
+
+  if (normalizedPrompt.includes('blog')) {
+    return `${LOCAL_MODE_MESSAGE} Blog-Inhalte findest du unter /blog/.`;
+  }
+
+  return `${LOCAL_MODE_MESSAGE} ${FALLBACK_MESSAGE}`;
+}
 
 /**
- * Makes a request to the AI API via proxy with retry logic
+ * Simulate streaming effect by sending text in chunks
+ * @param {string} text - Full text to stream
+ * @param {Function} onChunk - Callback for each chunk
+ */
+async function simulateStreaming(text, onChunk) {
+  const tokens = text.match(/\S+\s*/g) || [];
+  let accumulated = '';
+
+  for (const token of tokens) {
+    accumulated += token;
+    onChunk(accumulated);
+    await sleep(Math.floor(Math.random() * 35) + 15);
+  }
+}
+
+/**
+ * Makes a request to the AI API via proxy with retry + circuit breaker
  * @param {string} prompt - User prompt
  * @param {string} mode - AI mode ('chat', 'summary', 'suggestion')
  * @param {Function} [onChunk] - Optional callback for streaming chunks
  * @returns {Promise<string>} AI response text
  */
 async function callAIAPI(prompt, mode = 'chat', onChunk) {
+  const offline =
+    typeof navigator !== 'undefined' && navigator.onLine === false;
+  if (offline || isCircuitOpen()) {
+    const localReply = buildLocalReply(prompt, mode);
+    if (onChunk && typeof onChunk === 'function') {
+      await simulateStreaming(localReply, onChunk);
+    }
+    return localReply;
+  }
+
   let delay = INITIAL_DELAY;
 
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
@@ -42,10 +132,10 @@ async function callAIAPI(prompt, mode = 'chat', onChunk) {
         throw new Error('Empty response from AI model');
       }
 
-      // If streaming callback provided, simulate streaming effect
+      registerSuccess();
+
       if (onChunk && typeof onChunk === 'function') {
         await simulateStreaming(result.text, onChunk);
-        return result.text;
       }
 
       return result.text;
@@ -53,37 +143,27 @@ async function callAIAPI(prompt, mode = 'chat', onChunk) {
       const isLastAttempt = attempt === MAX_RETRIES - 1;
 
       if (isLastAttempt) {
-        log.error('AI API failed after retries:', error?.message);
-        return FALLBACK_MESSAGE;
+        registerFailure(error);
+
+        const circuitOpenAfterFailure = isCircuitOpen();
+        const localReply = circuitOpenAfterFailure
+          ? buildLocalReply(prompt, mode)
+          : FALLBACK_MESSAGE;
+
+        if (onChunk && typeof onChunk === 'function') {
+          await simulateStreaming(localReply, onChunk);
+        }
+        return localReply;
       }
 
       log.warn(`AI API attempt ${attempt + 1} failed, retrying...`);
       await sleep(delay);
-      delay *= 2; // Exponential backoff
+      delay *= 2;
     }
   }
 
-  return FALLBACK_MESSAGE;
-}
-
-/**
- * Simulate streaming effect by sending text in chunks
- * @param {string} text - Full text to stream
- * @param {Function} onChunk - Callback for each chunk
- */
-async function simulateStreaming(text, onChunk) {
-  // Use word-based chunking for better performance with markdown parsing
-  // Split on word boundaries while preserving whitespace and newlines
-  const tokens = text.match(/\S+\s*/g) || [];
-
-  let accumulated = '';
-
-  for (const token of tokens) {
-    accumulated += token;
-    onChunk(accumulated);
-    // Add jitter for more natural typing effect (15ms - 50ms)
-    await sleep(Math.floor(Math.random() * 35) + 15);
-  }
+  registerFailure(new Error('Retries exhausted'));
+  return buildLocalReply(prompt, mode);
 }
 
 /**
@@ -99,7 +179,6 @@ export class AIService {
    */
   async generateResponse(prompt, onChunk, mode = 'chat') {
     const hasCallback = onChunk && typeof onChunk === 'function';
-
     return await callAIAPI(prompt, mode, hasCallback ? onChunk : undefined);
   }
 
@@ -120,12 +199,11 @@ export class AIService {
    * @returns {Promise<string>} Suggestion
    */
   async getSuggestion(contextData) {
-    // Clean and limit content snippet to avoid API payload issues
     const cleanContent = String(contextData.contentSnippet || '')
-      .replace(/<[^>]*>/g, ' ') // Remove HTML tags
-      .replace(/\s+/g, ' ') // Normalize whitespace
+      .replace(/<[^>]*>/g, ' ')
+      .replace(/\s+/g, ' ')
       .trim()
-      .slice(0, 500); // Limit to 500 chars
+      .slice(0, 500);
 
     const prompt = `Seite: "${contextData.title || 'Unbekannt'}"
 Überschrift: "${contextData.headline || ''}"

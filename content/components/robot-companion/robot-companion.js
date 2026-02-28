@@ -14,6 +14,7 @@ import { RobotContextReactions } from './modules/robot-context-reactions.js';
 import { robotCompanionTexts } from './robot-companion-texts.js';
 import { createLogger } from '../../core/logger.js';
 import { createObserver, TimerManager } from '../../core/utils.js';
+import { uiStore } from '../../core/ui-store.js';
 import { ROBOT_EVENTS } from './constants/events.js';
 import { RobotStateManager } from './state/RobotStateManager.js';
 import { RobotDOMBuilder } from './dom/RobotDOMBuilder.js';
@@ -64,8 +65,8 @@ export class RobotCompanion {
     this.collisionModule = new RobotCollision(this);
     /** @type {RobotChat} */
     this.chatModule = new RobotChat(this);
-    /** @type {RobotIntelligence} */
-    this.intelligenceModule = new RobotIntelligence(this);
+    /** @type {RobotIntelligence|null} */
+    this.intelligenceModule = null;
     /** @type {RobotEmotions} */
     this.emotionsModule = new RobotEmotions(this);
     /** @type {RobotContextReactions} */
@@ -90,6 +91,14 @@ export class RobotCompanion {
     this._lastKnownContext = null;
     /** @type {Element|null} */
     this._typeWriterEl = null;
+    /** @type {IntersectionObserver|null} */
+    this._hydrationObserver = null;
+    /** @type {TimerID|null} */
+    this._hydrationFallbackTimer = null;
+    /** @type {boolean} */
+    this.isHydrated = false;
+    /** @type {(() => void)|null} */
+    this._uiUnsubscribe = null;
 
     /** @type {import('/content/core/types.js').EventListenerRegistry} */
     this._eventListeners = {
@@ -516,6 +525,86 @@ export class RobotCompanion {
 
     this.loadCSS();
     this.createDOM();
+    this.setupSharedUIStateSync();
+    this.setupProgressiveHydration();
+  }
+
+  setupSharedUIStateSync() {
+    if (this._uiUnsubscribe) return;
+
+    const syncFromUIState = (state) => {
+      if (!this.dom.container) return;
+      const menuOpen = Boolean(state?.menuOpen);
+
+      this.dom.container.classList.toggle(
+        'robot-companion--menu-open',
+        menuOpen,
+      );
+      if (!menuOpen) return;
+
+      this.chatModule.hideBubble();
+      if (this.chatModule.isOpen) {
+        this.toggleChat(false);
+      }
+    };
+
+    this._uiUnsubscribe = uiStore.subscribe(syncFromUIState);
+  }
+
+  setupProgressiveHydration() {
+    if (!this.dom.container || this.isHydrated) return;
+
+    this.dom.container.dataset.hydrated = 'false';
+
+    const hydrateNow = () => {
+      if (this.isHydrated) return;
+      if (this._hydrationObserver) {
+        this._hydrationObserver.disconnect();
+        this._hydrationObserver = null;
+      }
+      if (this._hydrationFallbackTimer) {
+        this._clearTimeout(this._hydrationFallbackTimer);
+        this._hydrationFallbackTimer = null;
+      }
+      this.hydrateInteractiveFeatures();
+    };
+
+    if (
+      typeof globalThis !== 'undefined' &&
+      'IntersectionObserver' in globalThis
+    ) {
+      this._hydrationObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              hydrateNow();
+            }
+          });
+        },
+        {
+          rootMargin: '180px 0px',
+          threshold: [0.01, 0.2],
+        },
+      );
+      this._hydrationObserver.observe(this.dom.container);
+      this._hydrationFallbackTimer = /** @type {TimerID} */ (
+        this._setTimeout(hydrateNow, 7000)
+      );
+      return;
+    }
+
+    hydrateNow();
+  }
+
+  hydrateInteractiveFeatures() {
+    if (this.isHydrated || !this.dom.container) return;
+    this.isHydrated = true;
+    this.dom.container.dataset.hydrated = 'true';
+
+    if (!this.intelligenceModule) {
+      this.intelligenceModule = new RobotIntelligence(this);
+    }
+
     this.attachEvents();
     this.setupFooterOverlapCheck();
     this.setupMobileViewportHandler();
@@ -552,7 +641,7 @@ export class RobotCompanion {
     // Start context-aware reactions monitoring
     this._setTimeout(() => {
       this.contextReactionsModule.startMonitoring();
-      this.contextReactionsModule.setupIdleReaction(60000); // 1 minute idle
+      this.contextReactionsModule.setupIdleReaction(60000);
     }, 3000);
 
     this._setTimeout(() => {
@@ -574,6 +663,8 @@ export class RobotCompanion {
       target: document,
       handler: this._onHeroTypingEnd,
     };
+
+    uiStore.setState({ robotHydrated: true });
   }
 
   setupSectionChangeDetection() {
@@ -649,6 +740,21 @@ export class RobotCompanion {
     // Intelligence Modul Cleanup (Event-Listener entfernen)
     if (this.intelligenceModule?.destroy) {
       this.intelligenceModule.destroy();
+      this.intelligenceModule = null;
+    }
+
+    if (this._uiUnsubscribe) {
+      this._uiUnsubscribe();
+      this._uiUnsubscribe = null;
+    }
+
+    if (this._hydrationObserver) {
+      this._hydrationObserver.disconnect();
+      this._hydrationObserver = null;
+    }
+    if (this._hydrationFallbackTimer) {
+      this._clearTimeout(this._hydrationFallbackTimer);
+      this._hydrationFallbackTimer = null;
     }
 
     // Collision Modul Cleanup (IntersectionObserver)
@@ -671,6 +777,7 @@ export class RobotCompanion {
     if (this.stateManager) {
       this.stateManager.destroy();
     }
+    uiStore.setState({ robotHydrated: false, robotChatOpen: false });
 
     // Zentrale Event-Listener Cleanup
     if (this._eventListeners) {
