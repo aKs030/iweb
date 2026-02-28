@@ -127,7 +127,7 @@
 }
 
 .gallery-title-overlay {
-  top: calc(var(--menu-height) + var(--safe-top) + var(--space-6));
+  top: calc(var(--content-top-offset) + var(--space-6));
 }
 
 .gallery-title {
@@ -152,7 +152,7 @@
 }
 
 .gallery-instructions {
-  bottom: calc(var(--footer-height) + var(--safe-bottom) + var(--space-14));
+  bottom: calc(var(--content-bottom-offset) + var(--space-8));
   animation: gallery-pulse 1.6s ease-in-out infinite;
 }
 
