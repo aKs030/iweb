@@ -85,6 +85,46 @@ self.addEventListener('fetch', (e) => {
 });
 
 // Cache first with network fallback
+const OFFLINE_HTML = `<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Offline – Abdulkerim Sesli</title>
+  <style>
+    :root { color-scheme: dark; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #030303; color: #f5f5f5;
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh; margin: 0;
+    }
+    .card {
+      text-align: center; max-width: 400px;
+      padding: 2rem; border-radius: 12px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .icon { font-size: 3rem; margin-bottom: 1rem; }
+    h1 { font-size: 1.5rem; margin: 0 0 0.75rem; }
+    p { color: rgba(255,255,255,0.7); margin: 0 0 1.5rem; line-height: 1.6; }
+    button {
+      background: #098bff; color: #fff; border: none;
+      padding: 0.75rem 1.5rem; border-radius: 8px;
+      font-size: 1rem; cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon">📡</div>
+    <h1>Keine Verbindung</h1>
+    <p>Du bist derzeit offline. Bitte überprüfe deine Internetverbindung und versuche es erneut.</p>
+    <button onclick="location.reload()">Erneut versuchen</button>
+  </div>
+</body>
+</html>`;
+
 async function cacheFirst(req) {
   const cache = await caches.open(RUNTIME);
   const cached = await cache.match(req);
@@ -95,6 +135,13 @@ async function cacheFirst(req) {
     if (res.ok) cache.put(req, res.clone());
     return res;
   } catch {
+    // For document requests, return styled offline page
+    if (req.destination === 'document') {
+      return new Response(OFFLINE_HTML, {
+        status: 503,
+        headers: { 'Content-Type': 'text/html;charset=utf-8' },
+      });
+    }
     return new Response('Offline', { status: 503 });
   }
 }
@@ -107,7 +154,16 @@ async function networkFirst(req) {
     if (res.ok) cache.put(req, res.clone());
     return res;
   } catch {
-    return (await cache.match(req)) || new Response('Offline', { status: 503 });
+    const cached = await cache.match(req);
+    if (cached) return cached;
+    // Return styled offline page for document requests
+    if (req.destination === 'document' || req.mode === 'navigate') {
+      return new Response(OFFLINE_HTML, {
+        status: 503,
+        headers: { 'Content-Type': 'text/html;charset=utf-8' },
+      });
+    }
+    return new Response('Offline', { status: 503 });
   }
 }
 

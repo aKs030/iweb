@@ -4,6 +4,9 @@
  */
 import { i18n } from '../../../core/i18n.js';
 import { TimerManager } from '../../../core/utils.js';
+import { createLogger } from '../../../core/logger.js';
+
+const log = createLogger('MenuEvents');
 
 export class MenuEvents {
   /**
@@ -48,7 +51,7 @@ export class MenuEvents {
       try {
         i18n.toggleLanguage();
       } catch (err) {
-        console.error('Failed to toggle language:', err);
+        log.error('Failed to toggle language:', err);
       }
     };
 

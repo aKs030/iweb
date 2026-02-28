@@ -1,6 +1,9 @@
 import React from 'react';
 import { Send, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { i18n } from '../../core/i18n.js';
+import { createLogger } from '../../core/logger.js';
+
+const log = createLogger('ContactForm');
 
 const { createElement: h, Fragment } = React;
 
@@ -64,7 +67,7 @@ function ContactForm() {
         _gotcha: '',
       });
     } catch (err) {
-      console.error(err);
+      log.error('Form submission failed:', err);
       setStatus('error');
       setErrorMessage(err.message || i18n.t('contact.error.network'));
     }

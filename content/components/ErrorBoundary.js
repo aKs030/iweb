@@ -21,7 +21,18 @@ export function createErrorBoundary(ReactInstance) {
     }
 
     componentDidCatch(error, errorInfo) {
-      console.error('[ErrorBoundary] Caught error:', error, errorInfo);
+      // Log error details — use dynamic import so the bundle stays small
+      // and this module has zero hard dependencies on the logger.
+      import('/content/core/logger.js')
+        .then(({ createLogger }) => {
+          const log = createLogger('ErrorBoundary');
+          log.error('Caught error:', error, errorInfo);
+        })
+        .catch(() => {
+          // Fallback if logger fails to load
+          /* eslint-disable-next-line no-console */
+          console.error('[ErrorBoundary] Caught error:', error, errorInfo);
+        });
     }
 
     render() {

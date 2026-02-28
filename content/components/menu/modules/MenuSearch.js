@@ -4,6 +4,9 @@
  */
 import { i18n } from '../../../core/i18n.js';
 import { TimerManager } from '../../../core/utils.js';
+import { createLogger } from '../../../core/logger.js';
+
+const log = createLogger('MenuSearch');
 
 export class MenuSearch {
   /**
@@ -455,7 +458,7 @@ export class MenuSearch {
       }
 
       if (!isAbortError) {
-        console.error('Header search failed:', err);
+        log.error('Header search failed:', err);
       }
 
       this.items = [];

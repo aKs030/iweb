@@ -2,6 +2,10 @@
  * Menu State Management
  * Handles the reactive state of the menu (open/closed, active link, title).
  */
+import { createLogger } from '../../../core/logger.js';
+
+const log = createLogger('MenuState');
+
 export class MenuState {
   constructor() {
     /** @type {boolean} */
@@ -84,7 +88,7 @@ export class MenuState {
       try {
         callback(data);
       } catch (err) {
-        console.error(`Error in menu listener for ${event}:`, err);
+        log.error(`Error in menu listener for ${event}:`, err);
       }
     });
   }
