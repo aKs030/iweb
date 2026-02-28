@@ -4,7 +4,7 @@
  * @description 3D Scroll-based Gallery using Three.js and React
  */
 
-import {
+import React, {
   createElement as h,
   Fragment,
   useEffect,
@@ -17,6 +17,10 @@ import { useProjects } from './hooks/useProjects.js';
 import { ThreeScene } from './components/ThreeScene.js';
 import * as Icons from '/content/components/icons/icons.js';
 import { i18n } from '/content/core/i18n.js';
+import { createErrorBoundary } from '/content/components/ErrorBoundary.js';
+
+const ErrorBoundary = createErrorBoundary(React);
+
 const CRAWLER_UA_PATTERN =
   /googlebot|google-inspectiontool|bingbot|slurp|duckduckbot|baiduspider|yandex|facebookexternalhit|twitterbot|linkedinbot|applebot|semrushbot|ahrefsbot/i;
 
@@ -675,7 +679,7 @@ export const initReactProjectsApp = () => {
 
   try {
     const root = createRoot(rootEl);
-    root.render(h(App));
+    root.render(h(ErrorBoundary, null, h(App)));
   } catch {
     // Failed to initialize React app - show error in UI
     if (rootEl) {
