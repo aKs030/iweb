@@ -11,12 +11,6 @@
   "compatibility_flags": ["nodejs_compat"],
   "pages_build_output_dir": ".",
 
-  // Observability: Worker-Logs im Cloudflare Dashboard sichtbar
-  "observability": {
-    "enabled": true,
-    "head_sampling_rate": 1,
-  },
-
   // Gemeinsame Vars für preview UND production
   // (Beide Environments hatten identische Werte → DRY)
   "vars": {
