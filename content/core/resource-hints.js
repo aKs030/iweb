@@ -155,6 +155,35 @@ class ResourceHintsManager {
   /**
    * Initialize common resource hints
    */
+
+  /**
+   * Inject Speculative Rules for aggressive prefetching/prerendering
+   * Requires browser support (Chrome 109+)
+   * @param {Object} rules - Speculative rules configuration object
+   */
+  injectSpeculationRules(rules) {
+    if (
+      !HTMLScriptElement.supports ||
+      !HTMLScriptElement.supports('speculationrules')
+    ) {
+      log.info('Speculative Rules API not supported in this browser.');
+      return;
+    }
+
+    try {
+      const script = document.createElement('script');
+      script.type = 'speculationrules';
+      script.textContent = JSON.stringify(rules);
+      document.head.appendChild(script);
+      log.info('Speculation rules injected successfully.');
+    } catch (err) {
+      log.error('Failed to inject speculation rules:', err);
+    }
+  }
+
+  /**
+   * Initialize common resource hints
+   */
   initCommonHints() {
     if (this.initialized) return;
 
@@ -165,6 +194,24 @@ class ResourceHintsManager {
     // DNS prefetch for external services
     this.dnsPrefetch('https://www.google-analytics.com');
     this.dnsPrefetch('https://www.googletagmanager.com');
+
+    // Inject Speculative Rules for instant page loads
+    // We prerender main site areas when the user hovers over the links
+    this.injectSpeculationRules({
+      prerender: [
+        {
+          source: 'document',
+          where: {
+            and: [
+              { href_matches: '/*' },
+              { not: { href_matches: '/*?*' } },
+              { not: { href_matches: '/*#*' } },
+            ],
+          },
+          eagerness: 'moderate', // moderate typically triggers on hover
+        },
+      ],
+    });
 
     this.initialized = true;
     log.info('Common resource hints initialized');
@@ -212,5 +259,7 @@ export const resourceHints = {
   prefetch: (href, options) =>
     getResourceHintsManager().prefetch(href, options),
   modulePreload: (href) => getResourceHintsManager().modulePreload(href),
+  injectSpeculationRules: (rules) =>
+    getResourceHintsManager().injectSpeculationRules(rules),
   init: () => getResourceHintsManager().initCommonHints(),
 };
