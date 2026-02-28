@@ -43,16 +43,20 @@ export class MenuAccessibility {
 
       const first = focusables[0];
       const last = focusables[focusables.length - 1];
+      const activeEl =
+        this.container instanceof ShadowRoot
+          ? this.container.activeElement
+          : document.activeElement;
 
       if (e.shiftKey) {
         // Shift + Tab (Backward)
-        if (document.activeElement === first) {
+        if (activeEl === first) {
           e.preventDefault();
           last.focus();
         }
       } else {
         // Tab (Forward)
-        if (document.activeElement === last) {
+        if (activeEl === last) {
           e.preventDefault();
           first.focus();
         }

@@ -10,14 +10,24 @@ const log = createLogger('MenuEvents');
 
 export class MenuEvents {
   /**
-   * @param {HTMLElement} container
+   * @param {HTMLElement|ShadowRoot} container
    * @param {import('./MenuState.js').MenuState} state
    * @param {import('./MenuRenderer.js').MenuRenderer} renderer
    * @param {import('./MenuSearch.js').MenuSearch} menuSearch
    * @param {Object} config
+   * @param {HTMLElement|null} [host]
    */
-  constructor(container, state, renderer, menuSearch, config = {}) {
+  constructor(
+    container,
+    state,
+    renderer,
+    menuSearch,
+    config = {},
+    host = null,
+  ) {
     this.container = container;
+    this.host =
+      host || (container instanceof ShadowRoot ? container.host : container);
     this.state = state;
     this.renderer = renderer;
     this.menuSearch = menuSearch;
@@ -172,7 +182,7 @@ export class MenuEvents {
   }
 
   getHeaderElement() {
-    return this.container.closest('.site-header');
+    return this.host?.closest?.('.site-header') || null;
   }
 
   getToggleElement() {
@@ -215,6 +225,8 @@ export class MenuEvents {
       const target = /** @type {Element|null} */ (
         e.target instanceof Element ? e.target : null
       );
+      const composedPath =
+        typeof e.composedPath === 'function' ? e.composedPath() : [];
 
       if (this.menuSearch.isSearchOpen()) {
         const header = this.getHeaderElement();
@@ -229,8 +241,22 @@ export class MenuEvents {
 
       if (!this.state.isOpen) return;
 
-      const isInside = target ? this.container.contains(target) : false;
-      const isToggle = Boolean(target?.closest('.site-menu__toggle'));
+      const isInside = Boolean(
+        (target && this.container.contains(target)) ||
+        composedPath.includes(this.host) ||
+        composedPath.includes(this.container),
+      );
+      const isToggleInPath = composedPath.some((node) => {
+        return Boolean(
+          node &&
+          typeof node === 'object' &&
+          'classList' in node &&
+          node.classList?.contains?.('site-menu__toggle'),
+        );
+      });
+      const isToggle = Boolean(
+        target?.closest('.site-menu__toggle') || isToggleInPath,
+      );
 
       if (!isInside && !isToggle) {
         this.closeMenu();

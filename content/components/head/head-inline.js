@@ -179,6 +179,14 @@ const ensureFooterAndTrigger = () => {
         if (oldContainer) oldContainer.remove();
 
         siteMenu = document.createElement('site-menu');
+        try {
+          const params = new URLSearchParams(globalThis.location.search || '');
+          if (params.get('menuShadow') === '1') {
+            siteMenu.setAttribute('data-shadow-dom', 'true');
+          }
+        } catch {
+          /* ignore */
+        }
         siteMenu.dataset.injectedBy = 'head-inline';
         headerEl.appendChild(siteMenu);
       }
