@@ -288,13 +288,28 @@ class TypeWriter {
     if (!this.textEl) return;
 
     const lines = text.includes('\n') ? text.split('\n') : [text];
-    this.textEl.innerHTML = '';
-    lines.forEach((/** @type {string} */ line) => {
-      const span = document.createElement('span');
-      span.textContent = line;
-      span.className = 'typed-line';
-      this.textEl.appendChild(span);
-    });
+    const existingSpans = this.textEl.children;
+
+    for (let i = 0; i < lines.length; i++) {
+      if (i < existingSpans.length) {
+        if (existingSpans[i].textContent !== lines[i]) {
+          existingSpans[i].textContent = lines[i];
+        }
+      } else {
+        const span = document.createElement('span');
+        span.className = 'typed-line';
+        span.textContent = lines[i];
+        this.textEl.appendChild(span);
+      }
+    }
+
+    while (existingSpans.length > lines.length) {
+      if (this.textEl.lastChild) {
+        this.textEl.removeChild(this.textEl.lastChild);
+      } else {
+        break; // Safety fallback
+      }
+    }
   }
 
   _tick() {

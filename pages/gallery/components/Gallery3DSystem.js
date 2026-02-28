@@ -27,6 +27,12 @@ export class Gallery3DSystem {
     this.startTime = performance.now();
     this.elapsedTime = 0;
 
+    // Cache viewport dimensions to avoid layout thrashing
+    this.width = window.innerWidth;
+    this.height = window.innerHeight;
+    this._mouseDirty = false;
+    this.hoveredMesh = null;
+
     this.params = {
       radius: 8,
       verticalStep: 4,
@@ -61,7 +67,7 @@ export class Gallery3DSystem {
 
     this.camera = new THREE.PerspectiveCamera(
       60,
-      window.innerWidth / window.innerHeight,
+      this.width / this.height,
       0.1,
       1000,
     );
@@ -69,10 +75,10 @@ export class Gallery3DSystem {
 
     this.renderer = new THREE.WebGLRenderer({
       alpha: true,
-      antialias: true,
+      antialias: window.devicePixelRatio < 2, // Avoid double anti-aliasing on high-DPI screens
       powerPreference: 'high-performance',
     });
-    this.renderer.setSize(window.innerWidth, window.innerHeight);
+    this.renderer.setSize(this.width, this.height);
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.container.appendChild(this.renderer.domElement);
@@ -222,8 +228,16 @@ export class Gallery3DSystem {
 
   onMouseMove(e) {
     if (e.clientX !== undefined) {
-      this.mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-      this.mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+      const newX = (e.clientX / this.width) * 2 - 1;
+      const newY = -(e.clientY / this.height) * 2 + 1;
+      if (
+        Math.abs(this.mouse.x - newX) > 0.001 ||
+        Math.abs(this.mouse.y - newY) > 0.001
+      ) {
+        this.mouse.x = newX;
+        this.mouse.y = newY;
+        this._mouseDirty = true;
+      }
     }
     if (!this.isDragging) return;
     const delta = (e.clientY - this.startY) * 0.02;
@@ -274,9 +288,11 @@ export class Gallery3DSystem {
 
     // Debounce the heavy WebGL resize slightly to prevent stuttering
     this.timers.setTimeout(() => {
-      this.camera.aspect = window.innerWidth / window.innerHeight;
+      this.width = window.innerWidth;
+      this.height = window.innerHeight;
+      this.camera.aspect = this.width / this.height;
       this.camera.updateProjectionMatrix();
-      this.renderer.setSize(window.innerWidth, window.innerHeight);
+      this.renderer.setSize(this.width, this.height);
     }, 150);
   }
 
@@ -293,17 +309,23 @@ export class Gallery3DSystem {
       -(this.scrollPos / this.params.verticalStep) * this.params.rotationStep -
       Math.PI / 2;
 
-    // Raycasting optimization
-    this.raycaster.setFromCamera(this.mouse, this.camera);
-    const intersects = this.raycaster.intersectObjects(
-      this._raycastMeshes || [],
-    );
-    const hoveredMesh = intersects.length > 0 ? intersects[0].object : null;
+    // Raycasting optimization: Only perform raycast if mouse moved or user is scrolling
+    const isScrolling = Math.abs(this.targetScrollPos - this.scrollPos) > 0.01;
+    if (this._mouseDirty || isScrolling) {
+      this.raycaster.setFromCamera(this.mouse, this.camera);
+      const intersects = this.raycaster.intersectObjects(
+        this._raycastMeshes || [],
+      );
+      this.hoveredMesh = intersects.length > 0 ? intersects[0].object : null;
+      this._mouseDirty = false;
+    }
 
     this.objects.forEach((obj) => {
       obj.group.position.y = obj.baseY + Math.sin(time + obj.index) * 0.1;
       const targetScaleVec =
-        obj.mesh === hoveredMesh ? this._hoverScaleVec : this._normalScaleVec;
+        obj.mesh === this.hoveredMesh
+          ? this._hoverScaleVec
+          : this._normalScaleVec;
       obj.group.scale.lerp(targetScaleVec, 0.1);
     });
 

@@ -2,16 +2,37 @@
   "version": 1,
   "include": ["/*"],
   "exclude": [
-    "/*.json",
-    "/*.txt",
-    "/*.css",
-    "/*.js",
+    "/favicon.ico",
+    "/favicon.svg",
+    "/robots.txt",
+    "/manifest.json",
+    "/sw.js",
+    "/llms.txt",
+    "/llms-full.txt",
+    "/person.jsonld",
+    "/ai-index.json",
+    "/bio.md",
+    "/_redirects",
+    "/content/*",
+    "/pages/**/*.css",
+    "/pages/**/*.js",
+
     "/*.woff",
     "/*.woff2",
     "/*.ttf",
     "/*.eot",
-    "/sw.js",
-    "/manifest.json",
-    "/robots.txt"
+    "/*.ico",
+    "/*.svg",
+    "/*.png",
+    "/*.jpg",
+    "/*.webp",
+    "/*.gif",
+    "/*.avif",
+
+    "/pages/blog/posts/index.json",
+    "/pages/projekte/apps-config.json",
+    "/.well-known/*",
+
+    "/*.map"
   ]
 }
