@@ -8,6 +8,9 @@
  */
 
 import { handleSamePageScroll } from './utils.js';
+import { createLogger } from './logger.js';
+
+const log = createLogger('ViewTransitions');
 
 const SAME_ORIGIN = location.origin;
 
@@ -108,10 +111,8 @@ async function navigateWithTransition(url) {
     history.pushState(null, pageData.title, url);
   } catch (err) {
     // Fallback: regular navigation
-    console.warn(
-      '[ViewTransitions] Fallback to regular navigation:',
-      err.message,
-    );
+    log.warn('Fallback to regular navigation:', err.message);
+
     location.href = url;
   }
 }

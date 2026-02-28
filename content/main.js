@@ -56,6 +56,10 @@ globalThis.announce = announce;
 // ===== Section Manager =====
 const sectionManager = new SectionManager();
 
+// ===== Initialize Managers =====
+// Declared before onDOMReady so _initApp can reference it without temporal issues
+const ThreeEarthLoader = new ThreeEarthManager(ENV);
+
 let _appInitialized = false;
 
 const _initApp = () => {
@@ -87,9 +91,6 @@ const _initApp = () => {
 };
 
 onDOMReady(_initApp);
-
-// ===== Initialize Managers =====
-const ThreeEarthLoader = new ThreeEarthManager(ENV);
 
 // Track if loader has been hidden
 let loaderHidden = false;

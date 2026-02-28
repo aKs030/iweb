@@ -30,11 +30,22 @@ class PerformanceMonitor {
   }
 
   /**
-   * Check if monitoring should be enabled
+   * Check if monitoring should be enabled.
+   * Enabled when:
+   *  - Running on localhost (always)
+   *  - URL contains ?perf=true (opt-in for production debugging)
+   *  - localStorage has perf=true (persistent opt-in)
+   *  - 10% random sample in production
    */
   shouldEnable() {
     if (typeof window === 'undefined') return false;
     if (window.location.hostname === 'localhost') return true;
+
+    // Allow explicit opt-in via URL or localStorage
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('perf') === 'true') return true;
+    if (window.localStorage?.getItem('perf') === 'true') return true;
+
     return Math.random() < 0.1; // Sample 10% of production traffic
   }
 
