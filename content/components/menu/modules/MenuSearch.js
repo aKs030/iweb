@@ -12,12 +12,15 @@ const log = createLogger('MenuSearch');
 
 export class MenuSearch {
   /**
-   * @param {HTMLElement} container
+   * @param {HTMLElement|ShadowRoot} container
    * @param {import('./MenuState.js').MenuState} state
    * @param {Object} config
+   * @param {HTMLElement|null} [host]
    */
-  constructor(container, state, config = {}) {
+  constructor(container, state, config = {}, host = null) {
     this.container = container;
+    this.host =
+      host || (container instanceof ShadowRoot ? container.host : container);
     this.state = state;
     this.config = config;
     this.cleanupFns = [];
@@ -217,7 +220,7 @@ export class MenuSearch {
   }
 
   getHeaderElement() {
-    return this.container.closest('.site-header');
+    return this.host?.closest?.('.site-header') || null;
   }
 
   getToggleElement() {

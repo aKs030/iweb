@@ -9,7 +9,7 @@
   },
   "scripts": {
     "dev": "node scripts/dev-workflow.mjs",
-    "qa": "run-s qa:lint qa:scripts",
+    "qa": "run-s build:types:core qa:lint qa:scripts",
     "qa:lint": "run-p lint:*",
     "qa:scripts": "run-s check:*",
     "qa:fix": "run-p fix:*",
@@ -17,6 +17,8 @@
     "lint:es": "eslint . --cache",
     "lint:css": "stylelint \"content/**/*.css\" \"pages/**/*.css\" --cache",
     "lint:format": "prettier --check . --cache",
+    "lint:types": "tsc -p tsconfig.typecheck.json --noEmit",
+    "build:types:core": "tsc -p tsconfig.build-core.json && prettier --write content/core/logger.js content/core/ui-store.js",
     "fix:es": "eslint . --fix --cache",
     "fix:css": "stylelint \"content/**/*.css\" \"pages/**/*.css\" --fix --cache",
     "fix:format": "prettier --write . --cache",
@@ -50,6 +52,7 @@
     "purgecss": "^7.0.2",
     "react": "^19.2.4",
     "stylelint": "^16.25.0",
+    "typescript": "^5.9.3",
     "wrangler": "^4.67.0"
   },
   "lint-staged": {

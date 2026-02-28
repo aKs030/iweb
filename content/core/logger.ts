@@ -2,20 +2,31 @@
  * Modern Logger with Performance Tracking
  * @version 3.0.0
  */
-const LOG_LEVELS = {
+
+type LogLevelName = 'error' | 'warn' | 'info' | 'debug' | 'trace';
+
+const LOG_LEVELS: Record<LogLevelName, number> = {
   error: 0,
   warn: 1,
   info: 2,
   debug: 3,
   trace: 4,
 };
+
+type LoggerOptions = {
+  level?: number;
+  performance?: boolean;
+  timestamps?: boolean;
+};
+
 class Logger {
-  category;
-  prefix;
-  level;
-  performance;
-  timestamps;
-  constructor(category, options = {}) {
+  private category: string;
+  private prefix: string;
+  private level: number;
+  private performance: boolean;
+  private timestamps: boolean;
+
+  constructor(category: string, options: LoggerOptions = {}) {
     this.category = category;
     this.prefix = `[${category}]`;
     this.level =
@@ -23,77 +34,98 @@ class Logger {
     this.performance = options.performance ?? true;
     this.timestamps = options.timestamps ?? false;
   }
-  detectLogLevel() {
+
+  private detectLogLevel(): number {
     if (typeof window === 'undefined') return LOG_LEVELS.warn;
+
     const hostname = window.location?.hostname || '';
     const isProd =
       hostname &&
       hostname !== 'localhost' &&
       hostname !== '127.0.0.1' &&
       !hostname.startsWith('192.168.');
+
     const params = new URLSearchParams(window.location.search);
     if (params.get('debug') === 'true') return LOG_LEVELS.debug;
+
     const stored = window.localStorage?.getItem('iweb-debug');
     if (stored === 'true') return LOG_LEVELS.debug;
+
     return isProd ? LOG_LEVELS.error : LOG_LEVELS.warn;
   }
-  shouldLog(level) {
+
+  private shouldLog(level: LogLevelName): boolean {
     return LOG_LEVELS[level] <= this.level;
   }
-  formatMessage(message, ...args) {
-    const parts = [this.prefix];
+
+  private formatMessage(message: string, ...args: unknown[]) {
+    const parts: string[] = [this.prefix];
     if (this.timestamps) {
       parts.push(`[${new Date().toISOString()}]`);
     }
     parts.push(message);
     return { parts, args };
   }
-  error(message, ...args) {
+
+  error(message: string, ...args: unknown[]): void {
     if (!this.shouldLog('error')) return;
     const { parts, args: formattedArgs } = this.formatMessage(message, ...args);
     console.error(...parts, ...formattedArgs);
   }
-  warn(message, ...args) {
+
+  warn(message: string, ...args: unknown[]): void {
     if (!this.shouldLog('warn')) return;
     const { parts, args: formattedArgs } = this.formatMessage(message, ...args);
     console.warn(...parts, ...formattedArgs);
   }
-  info(message, ...args) {
+
+  info(message: string, ...args: unknown[]): void {
     if (!this.shouldLog('info')) return;
     const { parts, args: formattedArgs } = this.formatMessage(message, ...args);
     console.info(...parts, ...formattedArgs);
   }
-  debug(message, ...args) {
+
+  debug(message: string, ...args: unknown[]): void {
     if (!this.shouldLog('debug')) return;
     const { parts, args: formattedArgs } = this.formatMessage(message, ...args);
     console.debug(...parts, ...formattedArgs);
   }
-  trace(message, ...args) {
+
+  trace(message: string, ...args: unknown[]): void {
     if (!this.shouldLog('trace')) return;
     const { parts, args: formattedArgs } = this.formatMessage(message, ...args);
     console.trace(...parts, ...formattedArgs);
   }
-  time(label) {
+
+  time(label: string): void {
     if (!this.performance || !this.shouldLog('debug')) return;
     console.time(`${this.prefix} ${label}`);
   }
-  timeEnd(label) {
+
+  timeEnd(label: string): void {
     if (!this.performance || !this.shouldLog('debug')) return;
     console.timeEnd(`${this.prefix} ${label}`);
   }
-  group(label) {
+
+  group(label: string): void {
     if (!this.shouldLog('debug')) return;
     console.group(`${this.prefix} ${label}`);
   }
-  groupEnd() {
+
+  groupEnd(): void {
     if (!this.shouldLog('debug')) return;
     console.groupEnd();
   }
-  table(data) {
+
+  table(data: unknown): void {
     if (!this.shouldLog('debug')) return;
     console.table(data);
   }
 }
-export function createLogger(category, options) {
+
+export function createLogger(
+  category: string,
+  options?: LoggerOptions,
+): Logger {
   return new Logger(category, options);
 }
