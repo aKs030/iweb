@@ -50,8 +50,6 @@ npm run dev -- --port 8787
 - `pre-commit`: `lint-staged` auf gestagten Dateien
 - `pre-push`: `npm run qa`
 
-Details: [`.husky/README.md`](.husky/README.md)
-
 ## CI/CD
 
 GitHub Workflows:
