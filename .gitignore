@@ -63,3 +63,6 @@ reports/redirect-audit/
 
 # Cloudflare
 wrangler.toml.backup
+.eslintcache
+.stylelintcache
+.prettiercache

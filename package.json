@@ -9,9 +9,21 @@
   },
   "scripts": {
     "dev": "node scripts/dev-workflow.mjs",
-    "qa": "eslint . && prettier --check . && stylelint \"content/**/*.css\" \"pages/**/*.css\" && node scripts/css-token-structure-check.mjs && node scripts/css-audit.mjs && node scripts/sync-ai-index-apps.mjs --check && node scripts/structure-check.mjs",
-    "qa:fix": "eslint . --fix && stylelint \"content/**/*.css\" \"pages/**/*.css\" --fix && prettier --write .",
+    "qa": "run-s qa:lint qa:scripts",
+    "qa:lint": "run-p lint:*",
+    "qa:scripts": "run-s check:*",
+    "qa:fix": "run-p fix:*",
     "qa:all": "npm run qa:fix && npm run qa",
+    "lint:es": "eslint . --cache",
+    "lint:css": "stylelint \"content/**/*.css\" \"pages/**/*.css\" --cache",
+    "lint:format": "prettier --check . --cache",
+    "fix:es": "eslint . --fix --cache",
+    "fix:css": "stylelint \"content/**/*.css\" \"pages/**/*.css\" --fix --cache",
+    "fix:format": "prettier --write . --cache",
+    "check:css-tokens": "node scripts/css-token-structure-check.mjs",
+    "check:css-audit": "node scripts/css-audit.mjs",
+    "check:ai": "node scripts/sync-ai-index-apps.mjs --check",
+    "check:structure": "node scripts/structure-check.mjs",
     "clean": "rm -rf .wrangler node_modules/.cache",
     "prepare": "husky",
     "styles:generate": "node scripts/generate-tokens-css.mjs && node scripts/generate-utilities.mjs",
@@ -30,6 +42,7 @@
     "globals": "^17.3.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
+    "npm-run-all2": "^8.0.4",
     "prettier": "^3.8.1",
     "purgecss": "^7.0.2",
     "react": "^19.2.4",
@@ -41,7 +54,11 @@
       "eslint --fix",
       "prettier --write"
     ],
-    "*.{css,md,html,json,yml,yaml}": [
+    "*.css": [
+      "stylelint --fix",
+      "prettier --write"
+    ],
+    "*.{md,html,json,yml,yaml}": [
       "prettier --write"
     ]
   }
