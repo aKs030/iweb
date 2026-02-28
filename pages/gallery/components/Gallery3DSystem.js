@@ -32,6 +32,8 @@ export class Gallery3DSystem {
     this.height = window.innerHeight;
     this._mouseDirty = false;
     this.hoveredMesh = null;
+    this.isVisible = true; // Set to true initially, observer will correct it
+    this.visibilityObserver = null;
 
     this.params = {
       radius: 8,
@@ -205,6 +207,19 @@ export class Gallery3DSystem {
     window.addEventListener('touchmove', this.onTouchMove, { passive: true });
     window.addEventListener('touchend', this.onMouseUp, { passive: true });
     this.container.addEventListener('click', this.onClick);
+
+    // Performance Optimization: Only render when visible
+    if ('IntersectionObserver' in window) {
+      this.visibilityObserver = new IntersectionObserver(
+        (entries) => {
+          if (entries[0]) {
+            this.isVisible = entries[0].isIntersecting;
+          }
+        },
+        { rootMargin: '100px', threshold: 0 },
+      );
+      this.visibilityObserver.observe(this.container);
+    }
   }
 
   handleWheel(e) {
@@ -298,6 +313,10 @@ export class Gallery3DSystem {
 
   animate() {
     this.frameId = requestAnimationFrame(this.animate);
+
+    // Performance Optimization: Skip heavy calculations and rendering if strictly off-screen
+    if (!this.isVisible) return;
+
     this.elapsedTime = (performance.now() - this.startTime) / 1000;
     const time = this.elapsedTime;
 
@@ -350,6 +369,11 @@ export class Gallery3DSystem {
     window.removeEventListener('touchmove', this.onTouchMove);
     window.removeEventListener('touchend', this.onMouseUp);
     this.container.removeEventListener('click', this.onClick);
+
+    if (this.visibilityObserver) {
+      this.visibilityObserver.disconnect();
+      this.visibilityObserver = null;
+    }
 
     // Deep Dispose - Verhindert WebGL Memory Leaks!
     this.scene.traverse((object) => {

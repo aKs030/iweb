@@ -83,6 +83,7 @@ export const ThreeScene = ({ projects, onScrollUpdate, onReady }) => {
   const frameIdRef = useRef(null);
   const scrollRef = useRef(0);
   const isMountedRef = useRef(true);
+  const isVisibleRef = useRef(false);
   const prevActiveIndexRef = useRef(-1);
   const viewportWidthRef = useRef(window.innerWidth);
 
@@ -252,6 +253,9 @@ export const ThreeScene = ({ projects, onScrollUpdate, onReady }) => {
 
       frameIdRef.current = requestAnimationFrame(animate);
 
+      // CPU/GPU Optimization: Skip heavy calculations and rendering if totally off-screen
+      if (!isVisibleRef.current) return;
+
       const t = time * 0.001;
 
       // Update Camera & Light
@@ -301,6 +305,23 @@ export const ThreeScene = ({ projects, onScrollUpdate, onReady }) => {
     };
     animate(performance.now());
 
+    // --- 4b. VISIBILITY OBSERVER ---
+    let visibilityObserver = null;
+    if (window.IntersectionObserver && containerRef.current) {
+      visibilityObserver = new IntersectionObserver(
+        (entries) => {
+          if (entries[0]) {
+            isVisibleRef.current = entries[0].isIntersecting;
+          }
+        },
+        { rootMargin: '100px', threshold: 0 }, // Add soft margin to render just before entering
+      );
+      visibilityObserver.observe(containerRef.current);
+    } else {
+      // Fallback
+      isVisibleRef.current = true;
+    }
+
     if (onReady) onReady();
 
     // --- 5. CLEANUP (Soft) ---
@@ -314,6 +335,9 @@ export const ThreeScene = ({ projects, onScrollUpdate, onReady }) => {
       window.removeEventListener('orientationchange', handleResize);
       if (resizeObserver) {
         resizeObserver.disconnect();
+      }
+      if (visibilityObserver) {
+        visibilityObserver.disconnect();
       }
 
       // IMPORTANT: We do NOT dispose the renderer here.
