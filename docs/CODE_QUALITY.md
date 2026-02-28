@@ -16,10 +16,8 @@ npm run docs:check    # Markdown-Links + lokale absolute Pfade prüfen
 
 Hooks liegen in [`.husky/`](../.husky/).
 
-- `pre-commit`: `npm exec lint-staged`
+- `pre-commit`: `npx lint-staged`
 - `pre-push`: `npm run qa` (read-only)
-
-Details: [`.husky/README.md`](../.husky/README.md)
 
 ## CI-Checks
 
