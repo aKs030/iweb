@@ -2,6 +2,7 @@ import { createLogger } from '../../../core/logger.js';
 import { escapeHTML } from '../../../core/utils.js';
 import { MarkdownRenderer } from './markdown-renderer.js';
 import { ROBOT_ACTIONS } from '../constants/events.js';
+import { uiStore } from '../../../core/ui-store.js';
 
 const log = createLogger('RobotChat');
 
@@ -43,6 +44,7 @@ export class RobotChat {
 
       // Update state manager
       this.robot.stateManager.setState({ isChatOpen: true });
+      uiStore.setState({ robotChatOpen: true });
 
       this.clearBubbleSequence();
       this.hideBubble();
@@ -67,6 +69,7 @@ export class RobotChat {
 
       // Update state manager
       this.robot.stateManager.setState({ isChatOpen: false });
+      uiStore.setState({ robotChatOpen: false });
 
       this.robot.animationModule.startIdleEyeMovement();
       this.robot.animationModule.startBlinkLoop();

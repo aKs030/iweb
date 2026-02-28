@@ -221,6 +221,20 @@ ensureFooterAndTrigger();
 
 const injectCoreAssets = () => {
   try {
+    const injectHomeLcpHints = () => {
+      const p =
+        (globalThis.location?.pathname || '').replace(/\/+$/g, '') || '/';
+      if (p !== '/') return;
+
+      upsertHeadLink({
+        rel: 'preload',
+        href: '/content/assets/img/earth/textures/earth_day.webp',
+        as: 'image',
+        attrs: { fetchpriority: 'high' },
+        dataset: { injectedBy: 'head-inline', lcp: 'hero-earth' },
+      });
+    };
+
     const getStylesForPath = () => {
       const p =
         (globalThis.location?.pathname || '').replace(/\/+$/g, '') || '/';
@@ -311,6 +325,8 @@ const injectCoreAssets = () => {
         upsertStyle(href);
       });
 
+      injectHomeLcpHints();
+
       // Batch inject scripts
       SCRIPTS.forEach(upsertScript);
 
@@ -338,9 +354,12 @@ injectCoreAssets();
 const addLazyLoadingDefaults = () => {
   try {
     const apply = () => {
-      document
-        .querySelectorAll('img:not([loading])')
-        .forEach((img) => img.setAttribute('loading', 'lazy'));
+      document.querySelectorAll('img:not([loading])').forEach((img) => {
+        const isLcpCandidate =
+          img.getAttribute('fetchpriority') === 'high' ||
+          img.dataset?.lcp === 'true';
+        img.setAttribute('loading', isLcpCandidate ? 'eager' : 'lazy');
+      });
       document
         .querySelectorAll('img:not([decoding])')
         .forEach((img) => img.setAttribute('decoding', 'async'));

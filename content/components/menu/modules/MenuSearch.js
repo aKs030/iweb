@@ -5,6 +5,8 @@
 import { i18n } from '../../../core/i18n.js';
 import { TimerManager } from '../../../core/utils.js';
 import { createLogger } from '../../../core/logger.js';
+import { resourceHints } from '../../../core/resource-hints.js';
+import { uiStore } from '../../../core/ui-store.js';
 
 const log = createLogger('MenuSearch');
 
@@ -33,6 +35,8 @@ export class MenuSearch {
     this.selectedIndex = -1;
     this.debounceTimer = null;
     this.abortController = null;
+    this.searchDepsPreloaded = false;
+    this.searchDepsIntentTimer = null;
 
     this.searchCache = new Map();
     this.searchCacheTtlMs = this.config.SEARCH_CACHE_TTL_MS ?? 120000;
@@ -187,6 +191,8 @@ export class MenuSearch {
         this.addListener(clearBtn, 'click', handleClearClick),
       );
     }
+
+    this.setupSearchDependencyPreloadIntent();
   }
 
   setupI18nSync() {
@@ -282,6 +288,7 @@ export class MenuSearch {
     this.state.setOpen(false);
 
     this.isOpen = true;
+    uiStore.setState({ searchOpen: true });
     header.classList.add('search-mode');
     panel.setAttribute('aria-hidden', 'false');
     this.syncSearchTriggerState(true);
@@ -317,6 +324,7 @@ export class MenuSearch {
     this.abortSearchRequest();
 
     this.isOpen = false;
+    uiStore.setState({ searchOpen: false });
     this.items = [];
     this.aiChatMessage = '';
     this.selectedIndex = -1;
@@ -403,6 +411,21 @@ export class MenuSearch {
       return;
     }
 
+    if (navigator.onLine === false) {
+      const offlineItems = this.buildOfflineSearchResults(query);
+      this.applySearchPayload(query, {
+        items: offlineItems,
+        query,
+        aiChatMessage: '',
+        cacheKey,
+        statusMessage: this.t(
+          'menu.search_offline',
+          'Offline-Modus: lokale Treffer',
+        ),
+      });
+      return;
+    }
+
     const abortController = new AbortController();
     this.abortController = abortController;
     const signal = abortController.signal;
@@ -484,6 +507,7 @@ export class MenuSearch {
 
     const items = Array.isArray(payload.items) ? payload.items : [];
     const aiChatMessage = String(payload.aiChatMessage || '');
+    const statusMessage = String(payload.statusMessage || '');
     const cacheKey = String(payload.cacheKey || '').trim();
     const inlineAiMode = Boolean(aiChatMessage);
     const visibleItems = inlineAiMode ? [] : items;
@@ -500,6 +524,7 @@ export class MenuSearch {
       items: visibleItems,
       query,
       aiChatMessage,
+      message: statusMessage,
     });
 
     if (items.length > 0 || aiChatMessage) {
@@ -647,6 +672,145 @@ export class MenuSearch {
         url: '/projekte/',
       },
     ];
+  }
+
+  buildOfflineSearchResults(query) {
+    const normalizedQuery = String(query || '')
+      .trim()
+      .toLowerCase();
+    if (!normalizedQuery) return [];
+
+    const fallbackSources = [
+      ...this.getFallbackSuggestions(),
+      { title: this.t('menu.nav_gallery', 'Galerie'), url: '/gallery/' },
+      { title: this.t('menu.nav_videos', 'Videos'), url: '/videos/' },
+      { title: this.t('menu.contact', 'Kontakt'), url: '#footer' },
+    ];
+
+    return fallbackSources
+      .filter((item) => {
+        const title = String(item.title || '').toLowerCase();
+        const url = String(item.url || '').toLowerCase();
+        return title.includes(normalizedQuery) || url.includes(normalizedQuery);
+      })
+      .slice(0, 6)
+      .map((item) => ({
+        title: String(item.title || ''),
+        url: String(item.url || '/'),
+        description: this.t(
+          'menu.search_offline_desc',
+          'Aus lokal verfügbaren Navigationseinträgen',
+        ),
+        highlightedDescription: '',
+        category: this.t('menu.search_offline_category', 'Offline'),
+      }));
+  }
+
+  setupSearchDependencyPreloadIntent() {
+    const trigger = this.trigger;
+    const bar = this.bar;
+    if (!trigger || !bar) return;
+
+    const preload = () => this.preloadSearchDependencies();
+    const scheduleIntent = () => {
+      if (this.searchDepsPreloaded || this.searchDepsIntentTimer) return;
+      this.searchDepsIntentTimer = this.timers.setTimeout(() => {
+        this.searchDepsIntentTimer = null;
+        preload();
+      }, 80);
+    };
+
+    const clearIntentTimer = () => {
+      if (!this.searchDepsIntentTimer) return;
+      this.timers.clearTimeout(this.searchDepsIntentTimer);
+      this.searchDepsIntentTimer = null;
+    };
+
+    const isPointerNearSearchControl = (event) => {
+      const pointerX = Number(event?.clientX);
+      const pointerY = Number(event?.clientY);
+      if (!Number.isFinite(pointerX) || !Number.isFinite(pointerY)) {
+        return false;
+      }
+
+      const rects = [trigger, bar]
+        .map((element) => element?.getBoundingClientRect?.())
+        .filter(Boolean);
+      if (!rects.length) return false;
+
+      return rects.some((rect) => {
+        const dx =
+          pointerX < rect.left
+            ? rect.left - pointerX
+            : pointerX > rect.right
+              ? pointerX - rect.right
+              : 0;
+        const dy =
+          pointerY < rect.top
+            ? rect.top - pointerY
+            : pointerY > rect.bottom
+              ? pointerY - rect.bottom
+              : 0;
+        return Math.hypot(dx, dy) <= 120;
+      });
+    };
+
+    const handlePointerMove = (event) => {
+      if (this.searchDepsPreloaded) return;
+      if (!isPointerNearSearchControl(event)) return;
+      scheduleIntent();
+    };
+
+    const canHover = window.matchMedia?.('(hover: hover)').matches;
+    if (canHover) {
+      this.cleanupFns.push(
+        this.addListener(this.container, 'pointermove', handlePointerMove, {
+          passive: true,
+        }),
+        this.addListener(trigger, 'pointerenter', scheduleIntent),
+        this.addListener(bar, 'pointerenter', scheduleIntent),
+      );
+    }
+
+    this.cleanupFns.push(
+      this.addListener(trigger, 'focus', preload),
+      this.addListener(bar, 'focusin', preload),
+      this.addListener(trigger, 'click', preload),
+      clearIntentTimer,
+    );
+  }
+
+  preloadSearchDependencies() {
+    if (this.searchDepsPreloaded) return;
+    this.searchDepsPreloaded = true;
+
+    const deps = this.resolveSearchDependencyUrls();
+    deps.forEach((href) => resourceHints.modulePreload(href));
+  }
+
+  resolveSearchDependencyUrls() {
+    const importMapScript = document.querySelector('script[type="importmap"]');
+    const fallback = [
+      'https://esm.sh/htm@3.1.1',
+      'https://esm.sh/react-dom@19.2.4',
+      'https://esm.sh/react-dom@19.2.4/client',
+    ];
+
+    if (!importMapScript?.textContent) return fallback;
+
+    try {
+      const parsed = JSON.parse(importMapScript.textContent);
+      const imports = parsed?.imports || {};
+
+      const urls = ['htm', 'react-dom', 'react-dom/client']
+        .map((key) => String(imports[key] || '').trim())
+        .filter(Boolean);
+
+      return urls.length ? urls : fallback;
+    } catch (error) {
+      log.warn('Failed to parse importmap for search preloading:', error);
+      return fallback;
+    }
   }
 
   renderSearchEmptyState(query = '') {
@@ -1059,6 +1223,7 @@ export class MenuSearch {
     this.clearSearchDebounce();
     this.abortSearchRequest();
     this.searchCache.clear();
+    uiStore.setState({ searchOpen: false });
 
     if (this.timers) {
       this.timers.clearAll();

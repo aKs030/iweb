@@ -1,3 +1,7 @@
+import { createLogger } from '../../../core/logger.js';
+
+const log = createLogger('RobotIntelligence');
+
 export class RobotIntelligence {
   constructor(robot) {
     this.robot = robot;
@@ -27,6 +31,10 @@ export class RobotIntelligence {
       elementsInView: new Set(),
     };
     this._lastElementCheck = 0;
+    this.workerEnabled = false;
+    this.decisionWorker = null;
+    this._onWorkerMessage = (event) => this.handleWorkerDecision(event?.data);
+    this._onWorkerError = (event) => this.handleWorkerError(event);
 
     // Event-Listener Handler f\u00fcr Cleanup speichern
     this._handlers = {
@@ -37,6 +45,7 @@ export class RobotIntelligence {
       touchstart: () => this.resetIdle(),
     };
 
+    this.setupDecisionWorker();
     this.setupListeners();
 
     // Check idle state every 10 seconds
@@ -50,6 +59,66 @@ export class RobotIntelligence {
       () => this.checkProactiveTips(),
       15000,
     );
+  }
+
+  setupDecisionWorker() {
+    if (typeof Worker === 'undefined') return;
+
+    try {
+      this.decisionWorker = new Worker(
+        new URL('../workers/robot-intelligence.worker.js', import.meta.url),
+        { type: 'module' },
+      );
+      this.decisionWorker.addEventListener('message', this._onWorkerMessage);
+      this.decisionWorker.addEventListener('error', this._onWorkerError);
+      this.decisionWorker.postMessage({ type: 'init', now: Date.now() });
+      this.workerEnabled = true;
+    } catch (error) {
+      this.workerEnabled = false;
+      this.decisionWorker = null;
+      log.warn('Worker init failed, falling back to main-thread logic:', error);
+    }
+  }
+
+  postToWorker(payload) {
+    if (!this.workerEnabled || !this.decisionWorker) return;
+    try {
+      this.decisionWorker.postMessage(payload);
+    } catch (error) {
+      log.warn('Failed to post robot intelligence payload to worker:', error);
+      this.workerEnabled = false;
+    }
+  }
+
+  handleWorkerError(event) {
+    log.warn('Robot intelligence worker error:', event?.message || event);
+    this.workerEnabled = false;
+  }
+
+  handleWorkerDecision(message) {
+    if (!message || typeof message !== 'object') return;
+    if (this.robot.chatModule.isOpen) return;
+
+    switch (message.type) {
+      case 'hectic':
+        this.triggerHecticReaction();
+        break;
+      case 'scroll-fast':
+        this.triggerScrollReaction();
+        break;
+      case 'frustration':
+        this.triggerFrustrationHelp();
+        break;
+      case 'idle':
+        this.isIdle = true;
+        this.triggerIdleReaction();
+        break;
+      case 'idle-reset':
+        this.isIdle = false;
+        break;
+      default:
+        break;
+    }
   }
 
   setupListeners() {
@@ -90,6 +159,21 @@ export class RobotIntelligence {
       this._scrollDecayTimer = null;
     }
 
+    if (this.decisionWorker) {
+      try {
+        this.decisionWorker.removeEventListener(
+          'message',
+          this._onWorkerMessage,
+        );
+        this.decisionWorker.removeEventListener('error', this._onWorkerError);
+        this.decisionWorker.terminate();
+      } catch {
+        /* ignore */
+      }
+      this.decisionWorker = null;
+    }
+    this.workerEnabled = false;
+
     // Clear Referenzen
     this._handlers = null;
   }
@@ -100,9 +184,19 @@ export class RobotIntelligence {
       this.isIdle = false;
       // Optional: Wake up reaction?
     }
+    this.postToWorker({ type: 'activity', now: Date.now() });
   }
 
   checkIdle() {
+    if (this.workerEnabled) {
+      this.postToWorker({
+        type: 'idle-check',
+        now: Date.now(),
+        chatOpen: this.robot.chatModule.isOpen,
+      });
+      return;
+    }
+
     if (this.robot.chatModule.isOpen) return;
 
     const now = Date.now();
@@ -117,6 +211,17 @@ export class RobotIntelligence {
 
   handleMouseMove(e) {
     this.resetIdle();
+    if (this.workerEnabled) {
+      this.postToWorker({
+        type: 'mousemove',
+        now: Date.now(),
+        x: e.clientX,
+        y: e.clientY,
+        chatOpen: this.robot.chatModule.isOpen,
+      });
+      return;
+    }
+
     const now = Date.now();
     const dt = now - this.lastMoveTime;
 
@@ -141,27 +246,44 @@ export class RobotIntelligence {
 
   handleScroll() {
     this.resetIdle();
+
     const now = Date.now();
+    const scrollY = typeof globalThis !== 'undefined' ? globalThis.scrollY : 0;
+    const currentDirection = scrollY > this.lastScrollY ? 'down' : 'up';
+    this.scrollPositionTracking.lastPosition = scrollY;
+    this.scrollPositionTracking.direction = currentDirection;
+
+    if (this.workerEnabled) {
+      const dt = now - this.lastScrollTime;
+      if (dt > 100) {
+        this.lastScrollTime = now;
+        this.lastScrollY = scrollY;
+        this.checkElementsInViewport();
+      }
+
+      this.postToWorker({
+        type: 'scroll',
+        now,
+        scrollY,
+        chatOpen: this.robot.chatModule.isOpen,
+      });
+      return;
+    }
+
     const dt = now - this.lastScrollTime;
 
     if (dt > 100) {
-      const scrollY =
-        typeof globalThis !== 'undefined' ? globalThis.scrollY : 0;
       const dist = Math.abs(scrollY - this.lastScrollY);
       const speed = dist / dt;
 
       // Detect scroll direction
-      const currentDirection = scrollY > this.lastScrollY ? 'down' : 'up';
-
-      // Track scroll position for element detection
-      this.scrollPositionTracking.lastPosition = scrollY;
-      this.scrollPositionTracking.direction = currentDirection;
+      const currentDirectionLocal = currentDirection;
 
       // Check for interesting elements in viewport
       this.checkElementsInViewport();
 
       // Detect back-and-forth scrolling (frustration indicator)
-      if (currentDirection !== this.lastScrollDirection) {
+      if (currentDirectionLocal !== this.lastScrollDirection) {
         this.scrollBackAndForth++;
 
         // If user scrolls back and forth 5+ times in short period, offer help
@@ -171,7 +293,7 @@ export class RobotIntelligence {
         }
       }
 
-      this.lastScrollDirection = currentDirection;
+      this.lastScrollDirection = currentDirectionLocal;
       this.lastScrollY = scrollY;
       this.lastScrollTime = now;
 

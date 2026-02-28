@@ -4,7 +4,7 @@
  */
 
 import { createLogger } from './logger.js';
-import { getElementById, TimerManager } from './utils.js';
+import { getElementById, TimerManager, upsertHeadLink } from './utils.js';
 import { AppLoadManager } from './load-manager.js';
 import { threeEarthState } from '../components/particles/three-earth-state.js';
 
@@ -95,8 +95,22 @@ export class ThreeEarthManager {
       '/content/assets/img/earth/textures/earth_bump.webp',
     ];
 
-    this._preloadedImages = texturePaths.map((path) => {
+    const highPriorityTexture = texturePaths[0];
+    if (highPriorityTexture) {
+      upsertHeadLink({
+        rel: 'preload',
+        href: highPriorityTexture,
+        as: 'image',
+        dataset: { injectedBy: 'three-earth' },
+        attrs: { fetchpriority: 'high' },
+      });
+    }
+
+    this._preloadedImages = texturePaths.map((path, index) => {
       const img = new Image();
+      if (index === 0) {
+        img.fetchPriority = 'high';
+      }
       img.src = path;
       return img;
     });
