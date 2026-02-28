@@ -2,7 +2,6 @@
 // OPTIMIERUNGEN:
 // - Vars nur noch einmal definiert (DRY — preview + production teilen dieselben Werte)
 // - KV/R2/AI-Bindings bleiben für beide Environments erhalten
-// - observability aktiviert für Worker-Logs
 // - nodejs_compat beibehalten
 // - compatibility_date auf 2025-03-07 (aktuell empfohlen)
 {
@@ -10,12 +9,6 @@
   "compatibility_date": "2025-03-07",
   "compatibility_flags": ["nodejs_compat"],
   "pages_build_output_dir": ".",
-
-  // Observability: Worker-Logs im Cloudflare Dashboard sichtbar
-  "observability": {
-    "enabled": true,
-    "head_sampling_rate": 1,
-  },
 
   // Gemeinsame Vars für preview UND production
   // (Beide Environments hatten identische Werte → DRY)
