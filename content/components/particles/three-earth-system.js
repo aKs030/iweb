@@ -316,6 +316,36 @@ class ThreeEarthSystem {
     this.THREE = THREE;
     loaded = true;
     this.timers.clearTimeout(timer);
+
+    // Setup OffscreenCanvas Worker Architecture if supported
+    if (this.supportsOffscreen && !this.worker) {
+      try {
+        // Create the canvas element here to prepare for transfer
+        let canvas = container.querySelector('canvas');
+        if (!canvas) {
+          canvas = document.createElement('canvas');
+          canvas.style.width = '100%';
+          canvas.style.height = '100%';
+          container.appendChild(canvas);
+        }
+
+        // In a fully isolated worker setup, we would do:
+        // const offscreen = canvas.transferControlToOffscreen();
+        // this.worker = new Worker(new URL('./earth.worker.js', import.meta.url), { type: 'module' });
+        // this.worker.postMessage({ type: 'INIT', canvas: offscreen }, [offscreen]);
+
+        // However, since the current codebase deeply intertwines DOM events (scroll, click, cards)
+        // with Three.js objects (Raycaster, Cameras, Materials), a full worker isolation requires
+        // rewriting the entire interaction layer to proxy events asynchronously.
+        // For now, we prepare the architecture and document the boundary.
+        log.info(
+          'OffscreenCanvas supported. Prepared for future Worker-Isolation.',
+        );
+      } catch (err) {
+        log.warn('Failed to setup OffscreenCanvas:', err);
+      }
+    }
+
     return THREE;
   }
 
@@ -857,12 +887,28 @@ class ThreeEarthSystem {
     if (allowModeSwitch) {
       const newMode =
         this.earthMesh.userData.currentMode === 'night' ? 'day' : 'night';
-      this.earthMesh.material =
+      const targetMaterial =
         newMode === 'day' ? this.dayMaterial : this.nightMaterial;
-      const material = /** @type {THREE.Material & {needsUpdate?: boolean}} */ (
-        this.earthMesh.material
-      );
-      material.needsUpdate = true;
+
+      // Since earthMesh is now an LOD object containing multiple meshes,
+      // we need to update the material on all child meshes
+      if (this.earthMesh.userData.meshes) {
+        this.earthMesh.userData.meshes.forEach((mesh) => {
+          if (mesh && mesh.material) {
+            mesh.material = targetMaterial;
+            mesh.material.needsUpdate = true;
+          }
+        });
+      } else {
+        // Fallback for single mesh (e.g. tests or older config)
+        this.earthMesh.material = targetMaterial;
+        const material =
+          /** @type {THREE.Material & {needsUpdate?: boolean}} */ (
+            this.earthMesh.material
+          );
+        material.needsUpdate = true;
+      }
+
       this.earthMesh.userData.currentMode = newMode;
       this.cameraManager?.setTargetOrbitAngle(newMode === 'day' ? 0 : Math.PI);
     }

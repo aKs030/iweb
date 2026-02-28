@@ -75,25 +75,57 @@ export async function createEarthSystem(
     emissiveIntensity: CONFIG.EARTH.EMISSIVE_INTENSITY * 4,
   });
 
-  // OPTIMIZATION: Reduce segments on mobile
-  const segments = isMobileDevice
+  // OPTIMIZATION: Implement LOD (Level of Detail) System
+  const earthLOD = new THREE.LOD();
+
+  // High detail (close up)
+  const segmentsHigh = isMobileDevice
     ? CONFIG.EARTH.SEGMENTS_MOBILE
     : CONFIG.EARTH.SEGMENTS;
-
-  const earthGeometry = new THREE.SphereGeometry(
+  const geometryHigh = new THREE.SphereGeometry(
     CONFIG.EARTH.RADIUS,
-    segments,
-    segments,
+    segmentsHigh,
+    segmentsHigh,
   );
-  const earthMesh = new THREE.Mesh(earthGeometry, dayMaterial);
-  earthMesh.position.set(0, -6, 0);
-  earthMesh.scale.set(1.5, 1.5, 1.5);
-  earthMesh.userData.currentMode = 'day';
-  earthMesh.userData.targetPosition = new THREE.Vector3(0, -6, 0);
-  earthMesh.userData.targetScale = 1.5;
-  earthMesh.userData.targetRotation = 0;
+  const meshHigh = new THREE.Mesh(geometryHigh, dayMaterial);
+  earthLOD.addLevel(meshHigh, 0);
 
-  scene.add(earthMesh);
+  // Medium detail (mid distance)
+  const segmentsMed = Math.floor(segmentsHigh * 0.6);
+  const geometryMed = new THREE.SphereGeometry(
+    CONFIG.EARTH.RADIUS,
+    segmentsMed,
+    segmentsMed,
+  );
+  const meshMed = new THREE.Mesh(geometryMed, dayMaterial);
+  earthLOD.addLevel(meshMed, 15);
+
+  // Low detail (far away)
+  const segmentsLow = Math.floor(segmentsHigh * 0.3);
+  const geometryLow = new THREE.SphereGeometry(
+    CONFIG.EARTH.RADIUS,
+    segmentsLow,
+    segmentsLow,
+  );
+  const meshLow = new THREE.Mesh(geometryLow, dayMaterial);
+  earthLOD.addLevel(meshLow, 30);
+
+  earthLOD.position.set(0, -6, 0);
+  earthLOD.scale.set(1.5, 1.5, 1.5);
+
+  // Store properties on the LOD object for backwards compatibility with the rest of the code
+  earthLOD.userData.currentMode = 'day';
+  earthLOD.userData.targetPosition = new THREE.Vector3(0, -6, 0);
+  earthLOD.userData.targetScale = 1.5;
+  earthLOD.userData.targetRotation = 0;
+
+  // Helper property for material switching
+  earthLOD.userData.meshes = [meshHigh, meshMed, meshLow];
+
+  scene.add(earthLOD);
+
+  // We rename the variable to earthMesh when returning to maintain API compatibility
+  const earthMesh = earthLOD;
 
   return { earthMesh, dayMaterial, nightMaterial };
 }
@@ -161,6 +193,26 @@ export async function createMoonSystem(
 
   scene.add(moonLOD);
   return moonLOD;
+}
+
+/**
+ * Setup DracoLoader for future complex 3D models (like the Robot mesh)
+ * Configured to use the official Google CDN for the WebAssembly decoder.
+ */
+export function createGLTFLoader(GLTFLoader, DRACOLoader, loadingManager) {
+  const loader = new GLTFLoader(loadingManager);
+
+  if (DRACOLoader) {
+    const dracoLoader = new DRACOLoader();
+    // Using CDN for WebAssembly decoder files to avoid keeping them in the repo
+    dracoLoader.setDecoderPath(
+      'https://www.gstatic.com/draco/versioned/decoders/1.5.6/',
+    );
+    dracoLoader.setDecoderConfig({ type: 'wasm' });
+    loader.setDRACOLoader(dracoLoader);
+  }
+
+  return loader;
 }
 
 export async function createCloudLayer(
