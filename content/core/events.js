@@ -20,6 +20,11 @@ export const EVENTS = Object.freeze({
   FOOTER_LOADED: 'footer:loaded',
   FOOTER_EXPANDED: 'footer:expanded',
   FOOTER_COLLAPSED: 'footer:collapsed',
+
+  // Robot Tool Commands
+  ROBOT_COMMAND_THEME: 'robot:command:theme',
+  ROBOT_COMMAND_NAVIGATE: 'robot:command:navigate',
+  ROBOT_COMMAND_SEARCH: 'robot:command:search',
 });
 
 /**
@@ -38,6 +43,61 @@ export function fire(type, detail = null, target = document) {
  */
 export const GlobalEventHandlers = {
   init(announcer) {
+    // Listen for robot tool commands
+    document.addEventListener(EVENTS.ROBOT_COMMAND_THEME, (e) => {
+      const theme = e.detail?.theme;
+      if (theme) {
+        log.info('Robot Theme Command received:', theme);
+        // Switch theme using UI store or DOM directly
+        import('./ui-store.js')
+          .then(({ uiStore }) => {
+            uiStore.getState().setTheme(theme);
+          })
+          .catch((err) => log.error('Failed to load ui-store', err));
+      }
+    });
+
+    document.addEventListener(EVENTS.ROBOT_COMMAND_NAVIGATE, (e) => {
+      const path = e.detail?.path;
+      if (path) {
+        log.info('Robot Navigate Command received:', path);
+        import('./view-transitions.js')
+          .then(({ performNavigation }) => {
+            if (typeof performNavigation === 'function') {
+              performNavigation(path);
+            } else {
+              globalThis.location.href = path;
+            }
+          })
+          .catch(() => {
+            globalThis.location.href = path;
+          });
+      }
+    });
+
+    document.addEventListener(EVENTS.ROBOT_COMMAND_SEARCH, (e) => {
+      const query = e.detail?.query;
+      if (query) {
+        log.info('Robot Search Command received:', query);
+        // We open the search UI and populate it
+        import('./ui-store.js')
+          .then(({ uiStore }) => {
+            uiStore.getState().setSearchOpen(true);
+            // Small delay to let UI render before populating input
+            setTimeout(() => {
+              const searchInput = document.querySelector('.search-input');
+              if (searchInput) {
+                searchInput.value = query;
+                searchInput.dispatchEvent(
+                  new Event('input', { bubbles: true }),
+                );
+              }
+            }, 100);
+          })
+          .catch((err) => log.error('Failed to open search', err));
+      }
+    });
+
     document.addEventListener('click', async (event) => {
       // Retry handling
       if (event.target?.closest('.retry-btn')) {

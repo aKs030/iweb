@@ -2,6 +2,7 @@ import { createLogger } from '../../../core/logger.js';
 import { escapeHTML } from '../../../core/utils.js';
 import { MarkdownRenderer } from './markdown-renderer.js';
 import { ROBOT_ACTIONS } from '../constants/events.js';
+import { EVENTS, fire } from '../../../core/events.js';
 import { uiStore } from '../../../core/ui-store.js';
 
 const log = createLogger('RobotChat');
@@ -134,6 +135,11 @@ export class RobotChat {
 
       this.robot.animationModule.stopThinking();
 
+      // Handle tool calls first if they exist
+      if (response && response.toolCalls) {
+        this.handleToolCalls(response.toolCalls);
+      }
+
       // If no streaming occurred, add message normally
       if (!streamingMessageEl) {
         if (!typingRemoved) {
@@ -165,6 +171,9 @@ export class RobotChat {
             html += `<div class="chat-sources"><strong>Quellen:</strong><ul>${safeSources}</ul></div>`;
           }
           this.addMessage(html, 'bot', true);
+        } else if (response && response.toolCalls && !response.text) {
+          // Tool call only, no text response
+          this.addMessage('Ich habe die Aktion für dich ausgeführt.', 'bot');
         } else {
           this.addMessage('Entschuldigung, keine Antwort erhalten.', 'bot');
         }
@@ -208,6 +217,42 @@ export class RobotChat {
     if (textSpan) {
       textSpan.innerHTML = MarkdownRenderer.parse(text);
       this.scrollToBottom();
+    }
+  }
+
+  handleToolCalls(toolCalls) {
+    if (!toolCalls || !Array.isArray(toolCalls)) return;
+
+    for (const call of toolCalls) {
+      if (call.type === 'function') {
+        const name = call.function.name;
+        let args = {};
+        try {
+          args = JSON.parse(call.function.arguments);
+        } catch (e) {
+          log.warn('Failed to parse tool arguments', e);
+        }
+
+        log.info('Executing tool call:', name, args);
+
+        switch (name) {
+          case 'change_theme':
+            if (args.theme) {
+              fire(EVENTS.ROBOT_COMMAND_THEME, { theme: args.theme });
+            }
+            break;
+          case 'navigate_to':
+            if (args.path) {
+              fire(EVENTS.ROBOT_COMMAND_NAVIGATE, { path: args.path });
+            }
+            break;
+          case 'search_site':
+            if (args.query) {
+              fire(EVENTS.ROBOT_COMMAND_SEARCH, { query: args.query });
+            }
+            break;
+        }
+      }
     }
   }
 

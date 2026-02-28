@@ -98,7 +98,7 @@ async function simulateStreaming(text, onChunk) {
  * @param {string} prompt - User prompt
  * @param {string} mode - AI mode ('chat', 'summary', 'suggestion')
  * @param {Function} [onChunk] - Optional callback for streaming chunks
- * @returns {Promise<string>} AI response text
+ * @returns {Promise<Object>} AI response object
  */
 async function callAIAPI(prompt, mode = 'chat', onChunk) {
   const offline =
@@ -108,7 +108,7 @@ async function callAIAPI(prompt, mode = 'chat', onChunk) {
     if (onChunk && typeof onChunk === 'function') {
       await simulateStreaming(localReply, onChunk);
     }
-    return localReply;
+    return { text: localReply };
   }
 
   let delay = INITIAL_DELAY;
@@ -128,17 +128,17 @@ async function callAIAPI(prompt, mode = 'chat', onChunk) {
 
       const result = await response.json();
 
-      if (!result.text) {
+      if (!result.text && !result.toolCalls) {
         throw new Error('Empty response from AI model');
       }
 
       registerSuccess();
 
-      if (onChunk && typeof onChunk === 'function') {
+      if (onChunk && typeof onChunk === 'function' && result.text) {
         await simulateStreaming(result.text, onChunk);
       }
 
-      return result.text;
+      return result;
     } catch (error) {
       const isLastAttempt = attempt === MAX_RETRIES - 1;
 
@@ -153,7 +153,7 @@ async function callAIAPI(prompt, mode = 'chat', onChunk) {
         if (onChunk && typeof onChunk === 'function') {
           await simulateStreaming(localReply, onChunk);
         }
-        return localReply;
+        return { text: localReply };
       }
 
       log.warn(`AI API attempt ${attempt + 1} failed, retrying...`);
@@ -163,7 +163,7 @@ async function callAIAPI(prompt, mode = 'chat', onChunk) {
   }
 
   registerFailure(new Error('Retries exhausted'));
-  return buildLocalReply(prompt, mode);
+  return { text: buildLocalReply(prompt, mode) };
 }
 
 /**
@@ -190,7 +190,8 @@ export class AIService {
   async summarizePage(content) {
     const trimmed = String(content || '').slice(0, 4800);
     const prompt = `Fasse den folgenden Text kurz und präzise auf DEUTSCH zusammen:\n\n${trimmed}`;
-    return await callAIAPI(prompt, 'summary');
+    const res = await callAIAPI(prompt, 'summary');
+    return res.text;
   }
 
   /**
@@ -214,6 +215,7 @@ Generiere einen kurzen, hilfreichen Tipp oder eine Frage zu diesem Inhalt.
 Sprich den Nutzer freundlich als Roboter-Assistent an (Cyber).
 Maximal 2 kurze Sätze.`;
 
-    return await callAIAPI(prompt, 'suggestion');
+    const res = await callAIAPI(prompt, 'suggestion');
+    return res.text;
   }
 }

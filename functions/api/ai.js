@@ -16,6 +16,65 @@ const GROQ_MODEL = 'llama-3.3-70b-versatile';
 const DEFAULT_RAG_ID = 'wispy-pond-1055';
 const MAX_CONTEXT_SOURCES = 3;
 
+const AI_TOOLS = [
+  {
+    type: 'function',
+    function: {
+      name: 'change_theme',
+      description:
+        'Wechsle das Design-Theme der Website (z.B. Dark Mode, Light Mode, System).',
+      parameters: {
+        type: 'object',
+        properties: {
+          theme: {
+            type: 'string',
+            enum: ['dark', 'light', 'system'],
+            description: 'Das gewünschte Theme.',
+          },
+        },
+        required: ['theme'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'navigate_to',
+      description:
+        'Navigiere den Nutzer zu einem bestimmten Bereich der Website (z.B. 3D-Galerie, Blog, Über mich).',
+      parameters: {
+        type: 'object',
+        properties: {
+          path: {
+            type: 'string',
+            description:
+              "Der Pfad oder die URL zum Navigieren (z.B. '/projekte/', '/blog/', '/about/', '/gallery/').",
+          },
+        },
+        required: ['path'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'search_site',
+      description:
+        'Suche auf der Website nach einem bestimmten Begriff oder Thema.',
+      parameters: {
+        type: 'object',
+        properties: {
+          query: {
+            type: 'string',
+            description: 'Der Suchbegriff.',
+          },
+        },
+        required: ['query'],
+      },
+    },
+  },
+];
+
 /**
  * Predefined System Prompts to prevent Prompt Injection
  * @readonly
@@ -23,6 +82,7 @@ const MAX_CONTEXT_SOURCES = 3;
 const SYSTEM_PROMPTS = Object.freeze({
   chat: `Du bist "Cyber", ein fortschrittlicher, freundlicher Roboter-Assistent auf dieser Portfolio-Webseite von Abdulkerim Sesli.
 Deine Aufgabe ist es, den Besucher zu begrüßen, Fragen zu beantworten und durch die Seite zu führen.
+Du hast Zugriff auf Tools, um die Website aktiv zu steuern (z.B. Dark Mode aktivieren, zur Galerie navigieren oder die Suche öffnen). Nutze diese Tools, wenn der Nutzer eine entsprechende Aktion wünscht!
 
 **SPRACHE:**
 - **ANTWORTE IMMER AUF DEUTSCH.**
@@ -289,6 +349,7 @@ ANWEISUNGEN:
         messages: messages,
         temperature: 0.7,
         max_tokens: 1024,
+        ...(mode === 'chat' && { tools: AI_TOOLS, tool_choice: 'auto' }),
       }),
     });
 
@@ -298,9 +359,11 @@ ANWEISUNGEN:
     }
 
     const groqData = await groqResponse.json();
-    const responseText = groqData.choices?.[0]?.message?.content || '';
+    const message = groqData.choices?.[0]?.message;
+    const responseText = message?.content || '';
+    const toolCalls = message?.tool_calls || null;
 
-    if (!responseText) {
+    if (!responseText && !toolCalls) {
       throw new Error('Empty response from Groq');
     }
 
@@ -311,6 +374,7 @@ ANWEISUNGEN:
         hasContext: !!contextData,
         contextQuality: contextData?.sources?.length || 0,
         sources: contextData?.sources || [],
+        toolCalls: toolCalls,
       },
       { headers: corsHeaders },
     );
