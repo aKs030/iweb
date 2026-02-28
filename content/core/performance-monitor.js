@@ -250,39 +250,6 @@ class PerformanceMonitor {
       });
     }
   }
-
-  /**
-   * Get all metrics
-   */
-  getMetrics() {
-    return { ...this.metrics };
-  }
-
-  /**
-   * Get performance summary
-   */
-  getSummary() {
-    const summary = {
-      good: 0,
-      needsImprovement: 0,
-      poor: 0,
-    };
-
-    Object.entries(this.metrics).forEach(([name, value]) => {
-      const threshold = THRESHOLDS[name];
-      if (!threshold) return;
-
-      if (value <= threshold.good) {
-        summary.good++;
-      } else if (value <= threshold.needsImprovement) {
-        summary.needsImprovement++;
-      } else {
-        summary.poor++;
-      }
-    });
-
-    return summary;
-  }
 }
 
 // Create singleton instance

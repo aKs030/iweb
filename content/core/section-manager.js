@@ -5,11 +5,8 @@
 
 import { createLogger } from './logger.js';
 import { fetchText } from './fetch.js';
-// events dispatching was removed; imports kept if future needs arise
-// import { fire, EVENTS } from './events.js';
 import { createObserver } from './utils.js';
 import { i18n } from './i18n.js';
-
 const log = createLogger('SectionManager');
 
 export class SectionManager {
@@ -102,20 +99,5 @@ export class SectionManager {
           this._observer.observe(section);
         }
       });
-  }
-
-  reinit() {
-    this._observer?.disconnect();
-    this._observer = null;
-    this._initialized = false;
-    this.loadedSections = new WeakSet();
-    this.loadingSections = new WeakSet();
-    this.init();
-  }
-
-  async retrySection(section) {
-    this.loadedSections.delete(section);
-    this.loadingSections.delete(section);
-    await this.loadSection(section);
   }
 }

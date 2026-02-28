@@ -110,10 +110,6 @@ export class ThreeEarthManager {
     this.load();
   }
 
-  initDelayed() {
-    this.timers.setTimeout(() => this.init(), 500);
-  }
-
   cleanup() {
     this.timers.clearAll();
     if (this.cleanupFn) {

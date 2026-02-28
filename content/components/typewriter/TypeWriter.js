@@ -5,8 +5,7 @@
  * @version 2.0.0
  */
 import { createLogger } from '../../core/logger.js';
-import { getElementById } from '../../core/utils.js';
-import { TimerManager } from '../../core/utils.js';
+import { getElementById, TimerManager } from '../../core/utils.js';
 
 const log = createLogger('TypeWriter');
 
@@ -520,8 +519,11 @@ export async function initHeroSubtitle(options = {}) {
 
       // Check immediately, then poll for a short duration
       pollOverlap();
-      const pollInterval = setInterval(pollOverlap, 100);
-      setTimeout(() => clearInterval(pollInterval), 2000);
+      const pollInterval = tw.timerManager.setInterval(pollOverlap, 100);
+      tw.timerManager.setTimeout(
+        () => tw.timerManager.clearInterval(pollInterval),
+        2000,
+      );
 
       const footerEvents = [
         'footer:loaded',
