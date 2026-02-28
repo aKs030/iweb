@@ -1,0 +1,85 @@
+// wrangler.jsonc — Migriert von wrangler.toml
+// OPTIMIERUNGEN:
+// - Vars nur noch einmal definiert (DRY — preview + production teilen dieselben Werte)
+// - KV/R2/AI-Bindings bleiben für beide Environments erhalten
+// - observability aktiviert für Worker-Logs
+// - nodejs_compat beibehalten
+// - compatibility_date auf 2025-03-07 (aktuell empfohlen)
+{
+  "name": "1web",
+  "compatibility_date": "2025-03-07",
+  "compatibility_flags": ["nodejs_compat"],
+  "pages_build_output_dir": ".",
+
+  // Observability: Worker-Logs im Cloudflare Dashboard sichtbar
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1,
+  },
+
+  // Gemeinsame Vars für preview UND production
+  // (Beide Environments hatten identische Werte → DRY)
+  "vars": {
+    "MAX_SEARCH_RESULTS": "10",
+    "RAG_ID": "wispy-pond-1055",
+    "AI_SEARCH_MAX_RESULTS": "10",
+    "AI_SEARCH_CONTEXT_MAX_RESULTS": "6",
+    "AI_SEARCH_SCORE_THRESHOLD": "0.25",
+    "AI_SEARCH_REWRITE_QUERY": "true",
+    "AI_SEARCH_RERANKING_ENABLED": "true",
+    "AI_SEARCH_RERANKING_MODEL": "@cf/baai/bge-reranker-base",
+    "CONTACT_EMAIL": "krm19030@gmail.com",
+    "YOUTUBE_CHANNEL_ID": "UCTGRherjM4iuIn86xxubuPg",
+    "ALLOWED_ORIGINS": "https://abdulkerimsesli.de,https://www.abdulkerimsesli.de",
+  },
+
+  // KV Namespaces — Preview IDs (werden für 'wrangler pages dev' genutzt)
+  "kv_namespaces": [
+    {
+      "binding": "RATE_LIMIT_KV",
+      "id": "edf1005c1b964f2fae4718afa152e836",
+    },
+    {
+      // SITEMAP_CACHE_KV wird jetzt auch für Template-Caching genutzt
+      // (Keys: "template:base-head", "template:base-loader", "sitemap:*.xml")
+      "binding": "SITEMAP_CACHE_KV",
+      "id": "84ddd91c726146f3b363749eff14dbd5",
+    },
+  ],
+
+  "r2_buckets": [
+    {
+      "binding": "GALLERY_BUCKET",
+      "bucket_name": "img",
+    },
+  ],
+
+  "ai": {
+    "binding": "AI",
+  },
+
+  // Production-Environment — nur abweichende KV-IDs überschreiben
+  "env": {
+    "production": {
+      "kv_namespaces": [
+        {
+          "binding": "RATE_LIMIT_KV",
+          "id": "75d79a452fa74cc980caf400862e2c67",
+        },
+        {
+          "binding": "SITEMAP_CACHE_KV",
+          "id": "5980265e029e4a88a987d17f25c71dfc",
+        },
+      ],
+      "r2_buckets": [
+        {
+          "binding": "GALLERY_BUCKET",
+          "bucket_name": "img",
+        },
+      ],
+      "ai": {
+        "binding": "AI",
+      },
+    },
+  },
+}

@@ -551,20 +551,59 @@ const hideBrandingFromUsers = () => {
 
     sanitizeNodeTree(document.body || document.documentElement);
 
+    // Debounced full-tree sanitization to prevent infinite loops and CPU spikes
+    let pendingSanitize = null;
+    const requestSanitize = () => {
+      if (pendingSanitize) cancelAnimationFrame(pendingSanitize);
+      pendingSanitize = requestAnimationFrame(() => {
+        sanitizeNodeTree(document.body || document.documentElement);
+        pendingSanitize = null;
+      });
+    };
+
     const mo = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
+      let needsSanitize = false;
+      for (let i = 0; i < mutations.length; i++) {
+        const mutation = mutations[i];
+
+        // Fast path for text changes: only care if parent is a heading
         if (mutation.type === 'characterData') {
           const parent = mutation.target?.parentElement;
-          if (parent) sanitizeNodeTree(parent);
-          return;
+          if (parent && parent.matches && parent.matches(HEADING_SELECTOR)) {
+            needsSanitize = true;
+            break;
+          }
         }
+        // Fast path for added nodes
+        else if (mutation.addedNodes) {
+          for (let j = 0; j < mutation.addedNodes.length; j++) {
+            const node = mutation.addedNodes[j];
+            if (node.nodeType === Node.ELEMENT_NODE) {
+              // Ignore typewriter animation nodes which change ~60 times a second
+              if (node.classList && node.classList.contains('typed-line'))
+                continue;
 
-        mutation.addedNodes?.forEach((node) => sanitizeNodeTree(node));
-      });
+              if (node.matches && node.matches(HEADING_SELECTOR)) {
+                needsSanitize = true;
+                break;
+              }
+              if (node.querySelector && node.querySelector(HEADING_SELECTOR)) {
+                needsSanitize = true;
+                break;
+              }
+            }
+          }
+        }
+        if (needsSanitize) break;
+      }
+
+      if (needsSanitize) {
+        requestSanitize();
+      }
     });
     mo.observe(document.body || document.documentElement, {
       childList: true,
-      characterData: true,
+      characterData: true, // Needed for text edits, but carefully filtered above
       subtree: true,
     });
   } catch {
