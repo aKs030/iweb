@@ -387,7 +387,7 @@
 .hero__buttons {
   position: absolute;
   bottom: calc(
-    clamp(var(--size-r-4), 20vh, var(--size-r-13)) + env(safe-area-inset-bottom)
+    clamp(var(--size-r-4), 20vh, var(--size-r-13)) + var(--safe-bottom)
   );
   left: 50%;
   transform: translateX(-50%);

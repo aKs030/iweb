@@ -1,91 +1,61 @@
 /**
- * Theme Color Manager - Central management for browser theme color
- * Ensures consistent transparent browser bar across all pages
- * @version 1.0.0
+ * Theme Color Manager
+ * Keeps browser chrome fully transparent on all pages via theme-color meta.
+ * Uses #00000000 (fully-transparent hex) for maximum cross-browser compat —
+ * some browsers ignore rgba alpha, hex alpha is universally understood.
+ *
+ * @version 1.1.0
  */
 
-const THEME_COLORS = {
-  dark: 'rgba(3, 3, 3, 0.01)',
-  light: 'rgba(30, 58, 138, 0.01)',
-  // Fallback fully transparent hex (some browsers ignore rgba alpha)
-  transparentHex: '#00000000',
-};
+/** Fully-transparent hex works in Chrome, Safari, Firefox and PWA contexts. */
+const TRANSPARENT = '#00000000';
 
-/**
- * Get current theme color based on data-theme attribute
- * @returns {string} RGBA color value
- */
-function getThemeColor() {
-  const theme = document.documentElement.getAttribute('data-theme');
-  return theme === 'light' ? THEME_COLORS.light : THEME_COLORS.dark;
-}
-
-/**
- * Update all theme-color meta tags
- */
-function updateThemeColorMetas() {
-  // Update all existing theme-color metas to avoid duplicates/conflicts
-  const themeMetas = document.querySelectorAll('meta[name="theme-color"]');
-
-  if (themeMetas.length === 0) {
-    // Create a single fallback meta if none exists
+/** Ensure all theme-color metas carry the transparent value. */
+function applyTransparentThemeColor() {
+  const metas = document.querySelectorAll('meta[name="theme-color"]');
+  if (metas.length === 0) {
     const meta = document.createElement('meta');
     meta.setAttribute('name', 'theme-color');
     meta.id = 'meta-theme-color-fallback';
-    meta.setAttribute('content', THEME_COLORS.transparentHex);
+    meta.setAttribute('content', TRANSPARENT);
     document.head.appendChild(meta);
   } else {
-    // Always set a conservative, fully-transparent hex value to maximize
-    // compatibility across browsers (some ignore rgba alpha values).
-    themeMetas.forEach((m) => {
+    metas.forEach((m) => {
       try {
-        m.setAttribute('content', THEME_COLORS.transparentHex);
+        m.setAttribute('content', TRANSPARENT);
       } catch {
-        /* ignore */
+        /* read-only meta in some contexts — ignore */
       }
     });
   }
 }
 
 /**
- * Initialize theme color management
- * Sets up observer for automatic updates on theme changes
+ * Initialize theme color management.
+ * Returns the MutationObserver so callers can disconnect it if needed.
+ * @returns {MutationObserver}
  */
 export function initThemeColorManager() {
-  // Wait for DOM to be ready
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-      updateThemeColorMetas(getThemeColor());
+    document.addEventListener('DOMContentLoaded', applyTransparentThemeColor, {
+      once: true,
     });
   } else {
-    updateThemeColorMetas(getThemeColor());
+    applyTransparentThemeColor();
   }
 
-  // Observe theme changes
-  const observer = new MutationObserver(() => {
-    updateThemeColorMetas(getThemeColor());
-  });
-
+  // Re-apply after theme toggle (data-theme attribute change)
+  const observer = new MutationObserver(applyTransparentThemeColor);
   observer.observe(document.documentElement, {
     attributes: true,
     attributeFilter: ['data-theme'],
   });
 
-  // React to page-level changes (SPA navigation) to re-apply meta updates
-  try {
-    window.addEventListener('page:changed', () => {
-      updateThemeColorMetas(getThemeColor());
-    });
-  } catch {
-    // ignore in non-browser contexts
-  }
+  // Re-apply after SPA page swaps
+  window.addEventListener('page:changed', applyTransparentThemeColor);
 
   return observer;
 }
 
-/**
- * Manually update theme color (for external use)
- */
-export function updateThemeColor() {
-  updateThemeColorMetas(getThemeColor());
-}
+/** Public alias for external callers (e.g. view-transitions). */
+export const updateThemeColor = applyTransparentThemeColor;
