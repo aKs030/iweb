@@ -777,8 +777,8 @@ export class RobotChat {
     };
 
     try {
-      const aiService = await this.robot.getAIService();
-      const suggestion = await aiService.getSuggestion(contextData);
+      const agentService = await this.robot.getAgentService();
+      const suggestion = await agentService.getProactiveSuggestion(contextData);
       if (suggestion && !this.isOpen) {
         this.showBubble(suggestion);
         if (tipKey) {
