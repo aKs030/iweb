@@ -115,31 +115,6 @@ class Logger {
     console.table(data);
   }
 }
-/** @type {Map<string, Logger>} */
-const _registry = new Map();
-
-/**
- * Create or retrieve a cached Logger instance for a category.
- * @param {string} category
- * @param {Object} [options]
- * @returns {Logger}
- */
 export function createLogger(category, options) {
-  if (!options && _registry.has(category)) return _registry.get(category);
-  const logger = new Logger(category, options);
-  if (!options) _registry.set(category, logger);
-  return logger;
-}
-
-/**
- * Change the log level for all existing loggers at runtime.
- * @param {keyof typeof LOG_LEVELS} level
- */
-export function setGlobalLogLevel(level) {
-  const numeric = LOG_LEVELS[level];
-  if (numeric === undefined) return;
-  _cachedDefaultLevel = numeric;
-  for (const logger of _registry.values()) {
-    logger.level = numeric;
-  }
+  return new Logger(category, options);
 }
