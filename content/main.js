@@ -229,11 +229,7 @@ if ('serviceWorker' in navigator && !ENV.isTest) {
 
     globalThis.addEventListener('load', async () => {
       try {
-        const version =
-          document.querySelector('meta[name="version"]')?.content || Date.now();
-        const reg = await navigator.serviceWorker.register(
-          `/sw.js?v=${version}`,
-        );
+        const reg = await navigator.serviceWorker.register('/sw.js');
 
         reg.addEventListener('updatefound', () => {
           const worker = reg.installing;
