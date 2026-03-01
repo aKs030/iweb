@@ -604,7 +604,7 @@ async function buildVideoMeta(context, requestUrl, videoId) {
   };
 }
 
-async function buildRouteMeta(context, requestUrl) {
+export async function buildRouteMeta(context, requestUrl) {
   const pathname = normalizePathname(requestUrl.pathname);
 
   if (isBlogDetailPath(pathname)) {

@@ -1,3 +1,5 @@
+import { signal, batch, type Signal } from './signals.js';
+
 export type UIState = {
   menuOpen: boolean;
   searchOpen: boolean;
@@ -5,38 +7,63 @@ export type UIState = {
   robotHydrated: boolean;
 };
 
-const initialState: UIState = {
-  menuOpen: false,
-  searchOpen: false,
-  robotChatOpen: false,
-  robotHydrated: false,
+// ---------------------------------------------------------------------------
+// Reactive Signals — fine-grained, subscribable per-property state
+// ---------------------------------------------------------------------------
+
+export const menuOpen: Signal<boolean> = signal(false);
+export const searchOpen: Signal<boolean> = signal(false);
+export const robotChatOpen: Signal<boolean> = signal(false);
+export const robotHydrated: Signal<boolean> = signal(false);
+
+/**
+ * All UI signals collected for convenience.
+ * Components can import individual signals for fine-grained reactivity.
+ */
+export const uiSignals = { menuOpen, searchOpen, robotChatOpen, robotHydrated };
+
+const _signalMap: Record<string, Signal<boolean>> = {
+  menuOpen,
+  searchOpen,
+  robotChatOpen,
+  robotHydrated,
 };
+
+// ---------------------------------------------------------------------------
+// UIStore — backwards-compatible façade backed by Signals
+// ---------------------------------------------------------------------------
 
 type UIListener = (state: Readonly<UIState>) => void;
 
 class UIStore {
-  private state: UIState = { ...initialState };
   private listeners = new Set<UIListener>();
 
   getState(): Readonly<UIState> {
-    return Object.freeze({ ...this.state });
+    return Object.freeze({
+      menuOpen: menuOpen.value,
+      searchOpen: searchOpen.value,
+      robotChatOpen: robotChatOpen.value,
+      robotHydrated: robotHydrated.value,
+    });
   }
 
   setState(patch: Partial<UIState> = {}): Readonly<UIState> {
     let hasChanges = false;
-    const next: UIState = { ...this.state };
 
-    (Object.keys(patch) as Array<keyof UIState>).forEach((key) => {
-      const value = patch[key];
-      if (value === undefined) return;
-      if (Object.is(next[key], value)) return;
-      next[key] = value;
-      hasChanges = true;
+    batch(() => {
+      (Object.keys(patch) as Array<keyof UIState>).forEach((key) => {
+        const value = patch[key];
+        if (value === undefined) return;
+        const sig = _signalMap[key];
+        if (!sig) return;
+        if (Object.is(sig.peek(), value)) return;
+        sig.value = value;
+        hasChanges = true;
+      });
     });
 
     if (!hasChanges) return this.getState();
 
-    this.state = next;
     const snapshot = this.getState();
 
     this.listeners.forEach((listener) => {
@@ -73,7 +100,12 @@ class UIStore {
   }
 
   reset(): void {
-    this.state = { ...initialState };
+    batch(() => {
+      menuOpen.value = false;
+      searchOpen.value = false;
+      robotChatOpen.value = false;
+      robotHydrated.value = false;
+    });
     this.listeners.clear();
   }
 }

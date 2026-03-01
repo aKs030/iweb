@@ -21,6 +21,7 @@ import { initViewTransitions } from './core/view-transitions.js';
 import { i18n } from './core/i18n.js';
 import { GlobalEventHandlers } from './core/events.js';
 import { resourceHints } from './core/resource-hints.js';
+import { initOfflineAnalytics } from './core/offline-analytics.js';
 
 const log = createLogger('main');
 const appTimers = new TimerManager('Main');
@@ -183,6 +184,9 @@ document.addEventListener(
 
     // Initialize global event handlers
     GlobalEventHandlers.init(announce);
+
+    // Initialize offline-first analytics pipeline (IndexedDB + Background Sync)
+    initOfflineAnalytics();
 
     log.info('Performance:', {
       domReady: Math.round(perfMarks.domReady - perfMarks.start),
