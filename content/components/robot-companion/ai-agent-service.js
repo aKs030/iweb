@@ -314,8 +314,22 @@ export class AIAgentService {
    */
   async getProactiveSuggestion(contextData) {
     try {
+      const {
+        title = 'Unknown',
+        url = '/',
+        headline = '',
+        description = '',
+        contentSnippet = '',
+      } = contextData;
+      const contextParts = [];
+      if (headline) contextParts.push(`Headline: ${headline}`);
+      if (description) contextParts.push(`Description: ${description}`);
+      if (contentSnippet)
+        contextParts.push(`Content: ${contentSnippet.substring(0, 500)}`);
+      const contextBlock =
+        contextParts.length > 0 ? `\n${contextParts.join('\n')}` : '';
       const response = await callAgentAPI({
-        prompt: `Gib einen kurzen, proaktiven Tipp für den Nutzer auf der Seite "${contextData.title || 'Unbekannt'}" (${contextData.url || '/'}). Maximal 2 Sätze.`,
+        prompt: `Give a short, proactive tip for the user on the page "${title}" (${url}).${contextBlock}\nMax 2 sentences.`,
       });
       return response.text;
     } catch {

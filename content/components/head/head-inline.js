@@ -343,6 +343,8 @@ const injectCoreAssets = () => {
       } catch (err) {
         log?.warn?.('head-inline: deferNonCriticalAssets call failed', err);
       }
+
+      resourceHints.init();
     };
 
     if (document.readyState === 'loading') {

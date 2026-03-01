@@ -156,39 +156,43 @@ class ResourceHintsManager {
    * Inject Speculative Rules for prerendering on hover/pointerdown
    */
   initSpeculativeRules() {
-    if (
-      HTMLScriptElement.supports &&
-      HTMLScriptElement.supports('speculationrules')
-    ) {
-      if (document.querySelector('script[type="speculationrules"]')) {
-        return;
-      }
+    try {
+      if (
+        HTMLScriptElement.supports &&
+        HTMLScriptElement.supports('speculationrules')
+      ) {
+        if (document.querySelector('script[type="speculationrules"]')) {
+          return;
+        }
 
-      const script = document.createElement('script');
-      script.type = 'speculationrules';
+        const script = document.createElement('script');
+        script.type = 'speculationrules';
 
-      // Wir definieren Regeln: Prerender für interne Links auf Hover.
-      // eagerness 'moderate' triggert auf mousedown/pointerdown oder längeres Hovern (z.B. 200ms)
-      const rules = {
-        prerender: [
-          {
-            source: 'document',
-            where: {
-              and: [
-                { href_matches: '/*\\?*' },
-                { not: { href_matches: '/api/*' } },
-              ],
+        // Define rules: prerender internal links on hover.
+        // Eagerness 'moderate' triggers on mousedown/pointerdown or extended hover (e.g. ~200ms)
+        const rules = {
+          prerender: [
+            {
+              source: 'document',
+              where: {
+                and: [
+                  { href_matches: '/*' },
+                  { not: { href_matches: '/api/*' } },
+                ],
+              },
+              eagerness: 'moderate',
             },
-            eagerness: 'moderate',
-          },
-        ],
-      };
+          ],
+        };
 
-      script.textContent = JSON.stringify(rules);
-      document.head.appendChild(script);
-      log.info('Speculative Rules injected for prerendering');
-    } else {
-      log.info('Speculative Rules API not supported by browser');
+        script.textContent = JSON.stringify(rules);
+        document.head.appendChild(script);
+        log.info('Speculative Rules injected for prerendering');
+      } else {
+        log.info('Speculative Rules API not supported by browser');
+      }
+    } catch (err) {
+      log.error('Failed to initialize speculative rules:', err);
     }
   }
 
