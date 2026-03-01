@@ -16,7 +16,7 @@ const SUPPORTED_LANGUAGES = ['de', 'en'];
  * Manages language settings, translations, and DOM updates.
  * Extends EventTarget to dispatch language change events.
  */
-export class LanguageManager extends EventTarget {
+class LanguageManager extends EventTarget {
   /**
    * Creates an instance of LanguageManager.
    * Initializes state properties but does not start the loading process.

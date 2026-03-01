@@ -1,19 +1,7 @@
 /**
- * CSS Variables - Generated Token Bridge
+ * CSS Variables - Responsive Overrides
  * Tokens are generated from ./tokens/*.json via npm run styles:generate
  */
-
-:root {
-  /* Legacy aliases kept for compatibility across page-level CSS */
-  --font-family-main: var(--font-system);
-  --critical-font-stack: var(--font-system);
-  --color-text-main: var(--text-primary);
-  --color-text-muted: var(--text-muted);
-  --color-bg: var(--bg-primary);
-  --color-bg-secondary: var(--bg-tertiary);
-  --color-link: var(--primary-color);
-  --particle-opacity: 0.4;
-}
 
 @media (width <= 768px) {
   :root {

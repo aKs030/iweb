@@ -39,6 +39,23 @@ const spacingRules = [
   ['gap', 'gap'],
 ];
 
+/**
+ * Whitelist of actually used spacing utilities.
+ * Run `grep -rn --include='*.html' --include='*.js' -E '\b(gap|m|mb|ml|mt|p)-[0-9]+\b' .`
+ * to audit usage and keep this list up to date.
+ */
+const USED_UTILITIES = new Set([
+  'gap-4',
+  'm-0',
+  'mb-0',
+  'mb-8',
+  'ml-4',
+  'mt-2',
+  'p-0',
+  'p-2',
+  'p-4',
+]);
+
 const utilityLines = [
   '/* Auto-generated utility classes. Do not edit directly. */',
   '',
@@ -58,7 +75,9 @@ const utilityLines = [
 
 for (const [prefix, prop] of spacingRules) {
   for (const [name, token] of scale) {
-    utilityLines.push(`.${prefix}-${name} {`);
+    const className = `${prefix}-${name}`;
+    if (!USED_UTILITIES.has(className)) continue;
+    utilityLines.push(`.${className} {`);
     if (Array.isArray(prop)) {
       prop.forEach((key) => utilityLines.push(`  ${key}: var(${token});`));
     } else {

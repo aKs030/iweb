@@ -22,10 +22,12 @@ const RUNTIME_FILE = path.join(ROOT_DIR, 'content/styles/root.css');
  * @returns {Set<string>}
  */
 const extractPrimaryRootVariables = (css, fileLabel) => {
-  const rootMatch = css.match(/:root\s*\{([\s\S]*?)\}/);
-  if (!rootMatch) {
-    throw new Error(`No primary :root block found in ${fileLabel}`);
-  }
+  // Strip @media blocks to only match truly top-level :root declarations.
+  // Responsive overrides (e.g. --menu-height inside @media) are intentional
+  // and must not be flagged as duplicates.
+  const topLevel = css.replace(/@media\b[^{]*\{[\s\S]*?\n\}/g, '');
+  const rootMatch = topLevel.match(/:root\s*\{([\s\S]*?)\}/);
+  if (!rootMatch) return new Set();
 
   const block = rootMatch[1];
   const names = new Set();
