@@ -27,28 +27,26 @@ const SKIP_HOSTS = [
 
 // Install: Precache critical assets
 self.addEventListener('install', (e) => {
-  e.waitUntil(
-    caches
-      .open(CACHE)
-      .then((c) => c.addAll(PRECACHE))
-      .then(() => self.skipWaiting()),
-  );
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(PRECACHE)));
 });
 
-// Activate: Clean old caches
+// Activate: Clean ALL old caches (including runtime) to force fresh content
 self.addEventListener('activate', (e) => {
   e.waitUntil(
     caches
       .keys()
       .then((keys) =>
         Promise.all(
-          keys
-            .filter((k) => k !== CACHE && k !== RUNTIME)
-            .map((k) => caches.delete(k)),
+          keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)),
         ),
       )
       .then(() => self.clients.claim()),
   );
+});
+
+// Handle skip-waiting message from client
+self.addEventListener('message', (e) => {
+  if (e.data === 'SKIP_WAITING') self.skipWaiting();
 });
 
 // Fetch: Smart caching strategies
