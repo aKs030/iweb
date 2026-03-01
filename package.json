@@ -32,9 +32,7 @@
     "docs:check": "node scripts/docs-check.mjs",
     "ai-index:sync": "node scripts/sync-ai-index-apps.mjs",
     "cf:redirect:audit": "node scripts/cloudflare-redirect-audit.mjs --days 8 --limit 500",
-    "cf:redirect:prune": "node scripts/cloudflare-redirect-audit.mjs --days 8 --limit 500 --apply-prune",
-    "models:compress": "node scripts/compress-models.mjs",
-    "models:compress:dry": "node scripts/compress-models.mjs --dry-run"
+    "cf:redirect:prune": "node scripts/cloudflare-redirect-audit.mjs --days 8 --limit 500 --apply-prune"
   },
   "dependencies": {
     "htm": "^3.1.1",
