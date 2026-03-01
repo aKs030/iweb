@@ -52,7 +52,7 @@ npm run qa
 npm run qa:fix
 ```
 
-`npm run qa` enthält: ESLint, Prettier, Stylelint, CSS-Audit, AI-Index-Check, Struktur-Gate und eine Suche nach `TODO`/`FIXME`-Hinweisen (siehe `check:todos`).
+`npm run qa` enthält: ESLint, Prettier, Stylelint, AI-Index-Check, Struktur-Gate und eine Suche nach `TODO`/`FIXME`-Hinweisen (siehe `check:todos`).
 
 ### 4. Commit erstellen
 
@@ -291,7 +291,7 @@ Bevor du einen PR öffnest:
 
 ## 🎯 Code Review Process
 
-1. **Automatische Checks:** ESLint, Prettier, Stylelint, CSS-Audit, Struktur-Gate
+1. **Automatische Checks:** ESLint, Prettier, Stylelint, Struktur-Gate
 2. **Manual Review:** Code-Qualität, Best Practices
 3. **Testing:** Funktionalität testen
 4. **Merge:** Nach Approval
