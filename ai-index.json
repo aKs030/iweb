@@ -486,7 +486,7 @@
   "technologies": {
     "frontend": [
       "JavaScript ES2023+",
-      "Three.js r171",
+      "Three.js 0.183.1",
       "Web Components",
       "CSS3 (Container Queries, Nesting)",
       "Service Workers"

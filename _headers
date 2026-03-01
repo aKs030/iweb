@@ -15,6 +15,19 @@
   Timing-Allow-Origin: *
   X-Content-Type-Options: nosniff
 
+# 3D Models (GLB/glTF) - Long-term caching with correct MIME types
+/content/assets/models/*.glb
+  Content-Type: model/gltf-binary
+  Cache-Control: public, max-age=31536000, immutable
+  Cross-Origin-Resource-Policy: cross-origin
+  X-Content-Type-Options: nosniff
+
+/content/assets/models/*.gltf
+  Content-Type: model/gltf+json
+  Cache-Control: public, max-age=31536000, immutable
+  Cross-Origin-Resource-Policy: cross-origin
+  X-Content-Type-Options: nosniff
+
 /content/assets/img/*
   Cache-Control: public, max-age=31536000, immutable
   Vary: Accept-Encoding

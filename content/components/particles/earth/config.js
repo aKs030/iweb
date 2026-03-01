@@ -150,5 +150,16 @@ export const CONFIG = {
       MOON: '/content/assets/img/earth/textures/moon_texture.webp',
       MOON_BUMP: '/content/assets/img/earth/textures/moon_bump.webp',
     },
+    /**
+     * 3D models directory — place Draco/Meshopt-compressed .glb files here.
+     * Source files go in `source/` (gitignored). Run `npm run models:compress`.
+     * Use `loadCompressedModel()` from `/content/core/model-loader.js` to load.
+     */
+    MODELS: {
+      BASE: '/content/assets/models',
+      // Uncomment and point to compressed variants when ready:
+      // ROBOT: '/content/assets/models/robot-draco.glb',
+      // SATELLITE: '/content/assets/models/satellite-meshopt.glb',
+    },
   },
 };

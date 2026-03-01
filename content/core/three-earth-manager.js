@@ -124,7 +124,7 @@ export class ThreeEarthManager {
     this.load();
   }
 
-  cleanup() {
+  async cleanup() {
     this.timers.clearAll();
     if (this.cleanupFn) {
       try {
@@ -134,6 +134,14 @@ export class ThreeEarthManager {
       } catch (error) {
         log.warn('Cleanup failed:', error);
       }
+    }
+
+    // Release Draco/Meshopt decoder resources if model-loader was used
+    try {
+      const { disposeModelLoader } = await import('./model-loader.js');
+      disposeModelLoader();
+    } catch {
+      // model-loader was never loaded — nothing to dispose
     }
   }
 

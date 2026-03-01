@@ -28,6 +28,7 @@ const REQUIRED_PATHS = [
   'content/styles/tokens',
   'content/components',
   'content/core',
+  'content/assets/models',
   'styleguide/index.html',
 ];
 

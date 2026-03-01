@@ -279,8 +279,42 @@ performance.measure('hero-load-time', 'navigationStart', 'hero-loaded');
 - [Lighthouse Documentation](https://developers.google.com/web/tools/lighthouse)
 - [Core Web Vitals](https://web.dev/vitals/)
 - [Vite Performance](https://vitejs.dev/guide/performance.html)
+- [Draco 3D Compression](https://google.github.io/draco/)
+- [Meshopt Decoder](https://github.com/zeux/meshoptimizer)
+- [glTF Compression Guide](https://meshoptimizer.org/gltf/)
+
+## 🗜️ 3D Model Compression (Draco & Meshopt)
+
+### Overview
+
+For complex 3D meshes (e.g. a robot companion as real geometry instead of particles), Draco and Meshopt compression are essential. In a no-build architecture without automatic asset processing, pre-compressed models are the most effective way to keep download sizes low.
+
+| Codec   | Size Reduction | Decode Speed | Best For            |
+| ------- | -------------- | ------------ | ------------------- |
+| Draco   | 70-95 %        | Moderate     | Static geometry     |
+| Meshopt | 60-80 %        | Very fast    | Animated characters |
+
+### Integration
+
+The project provides a unified model loader at `/content/core/model-loader.js`:
+
+```javascript
+import { loadCompressedModel } from '/content/core/model-loader.js';
+
+const gltf = await loadCompressedModel('/content/assets/models/robot.glb');
+scene.add(gltf.scene);
+```
+
+- **Draco decoder** WASM is loaded from the Three.js CDN on first use
+- **Meshopt decoder** is initialised alongside Draco via a single import
+- Loader instances are singletons — safe to call from multiple modules
+- `disposeModelLoader()` releases decoder resources when 3D is no longer needed
+
+### Compression Workflow
+
+See [`/content/assets/models/README.md`](/content/assets/models/README.md) for CLI commands, file naming conventions, and compression comparison.
 
 ---
 
-**Last Updated:** February 2026  
+**Last Updated:** März 2026  
 **Status:** ✅ Optimized
