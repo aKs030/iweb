@@ -260,7 +260,7 @@ export class RobotCollision {
 
         // Cooldown for this specific object
         this._recentCollisions.add(obs);
-        setTimeout(() => {
+        this.robot._setTimeout(() => {
           this._recentCollisions.delete(obs);
         }, 500);
 
@@ -288,7 +288,7 @@ export class RobotCollision {
     // Show bubble
     const texts = ['Huch!', 'Oha!', 'Eng hier!', 'Platz da!'];
     this.robot.showBubble(texts[Math.floor(Math.random() * texts.length)]);
-    setTimeout(() => this.robot.hideBubble(), 1500);
+    this.robot._setTimeout(() => this.robot.hideBubble(), 1500);
 
     const anim = this.robot.animationModule;
 
@@ -304,7 +304,7 @@ export class RobotCollision {
             <path d="M35,38 L45,46 M45,38 L35,46" stroke="#40e0d0" stroke-width="3" />
             <path d="M55,38 L65,46 M65,38 L55,46" stroke="#40e0d0" stroke-width="3" />
         `;
-        setTimeout(() => {
+        this.robot._setTimeout(() => {
           // Restore eyes
           if (this.robot.dom.eyes) {
             this.robot.dom.eyes.innerHTML = `
@@ -403,7 +403,7 @@ export class RobotCollision {
       ];
       const reaction = reactions[Math.floor(Math.random() * reactions.length)];
       this.robot.showBubble(reaction);
-      setTimeout(() => this.robot.hideBubble(), 2500);
+      this.robot._setTimeout(() => this.robot.hideBubble(), 2500);
       this.robot.animationModule.spawnParticleBurst(18, {
         strength: 2.0,
         spread: 180,

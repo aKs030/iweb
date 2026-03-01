@@ -193,7 +193,7 @@ export class RobotAnimation {
     this.startAnimation.knockbackStartX = this.patrol.x;
     this.startAnimation.knockbackStartY = this.patrol.y;
 
-    requestAnimationFrame(this.updateStartAnimation);
+    this.robot._requestAnimationFrame(this.updateStartAnimation);
   }
 
   startTypeWriterKnockbackAnimation() {
@@ -241,7 +241,7 @@ export class RobotAnimation {
       this.robot.dom.floatWrapper.style.transform = 'rotate(0deg)';
     }
     this.robot.dom.container.style.opacity = '1';
-    requestAnimationFrame(this.updateStartAnimation);
+    this.robot._requestAnimationFrame(this.updateStartAnimation);
   }
 
   updateStartAnimation() {
@@ -294,7 +294,7 @@ export class RobotAnimation {
         this.setAvatarState({ moving: false, dashing: false });
       }
 
-      requestAnimationFrame(this.updateStartAnimation);
+      this.robot._requestAnimationFrame(this.updateStartAnimation);
       return;
     }
 
@@ -319,7 +319,7 @@ export class RobotAnimation {
         this.startAnimation.knockbackStartY = this.patrol.y;
       }
 
-      requestAnimationFrame(this.updateStartAnimation);
+      this.robot._requestAnimationFrame(this.updateStartAnimation);
       return;
     }
 
@@ -370,13 +370,13 @@ export class RobotAnimation {
         }, 300);
       }
 
-      requestAnimationFrame(this.updateStartAnimation);
+      this.robot._requestAnimationFrame(this.updateStartAnimation);
       return;
     }
 
     if (this.startAnimation.phase === 'landing') {
       if (!this.startAnimation.active) return;
-      requestAnimationFrame(this.updateStartAnimation);
+      this.robot._requestAnimationFrame(this.updateStartAnimation);
     }
   }
 
@@ -384,13 +384,13 @@ export class RobotAnimation {
     this.patrol.active = true;
     if (this.robot.dom && this.robot.dom.container)
       this.robot.dom.container.style.opacity = '1';
-    requestAnimationFrame(this.updatePatrol);
+    this.robot._requestAnimationFrame(this.updatePatrol);
   }
 
   updatePatrol() {
     if (document.hidden) {
       this.robot._setTimeout(
-        () => requestAnimationFrame(this.updatePatrol),
+        () => this.robot._requestAnimationFrame(this.updatePatrol),
         500,
       );
       return;
@@ -404,18 +404,13 @@ export class RobotAnimation {
       return;
     }
     if (!this.robot.dom.container) {
-      requestAnimationFrame(this.updatePatrol);
+      this.robot._requestAnimationFrame(this.updatePatrol);
       return;
     }
 
     const now = performance.now();
-    if (
-      now - this.cacheConfig.lastTypeWriterCheck >
-      this.cacheConfig.typeWriterCheckInterval
-    ) {
-      this.robot.dom.typeWriter = document.querySelector('.typewriter-title');
-      this.cacheConfig.lastTypeWriterCheck = now;
-    }
+    const typeWriter = this.robot.getTypewriterElement();
+    const twRect = typeWriter ? typeWriter.getBoundingClientRect() : null;
 
     const isHovering =
       this.robot.dom.avatar && this.robot.dom.avatar.matches(':hover');
@@ -424,7 +419,7 @@ export class RobotAnimation {
       if (this.robot.dom.flame) this.robot.dom.flame.style.opacity = '0';
       if (this.robot.dom.particles)
         this.robot.dom.particles.style.opacity = '0';
-      requestAnimationFrame(this.updatePatrol);
+      this.robot._requestAnimationFrame(this.updatePatrol);
       return;
     }
 
@@ -435,9 +430,7 @@ export class RobotAnimation {
       robotWidth;
     let maxLeft = initialLeft - 20;
 
-    let twRect = null;
-    if (this.robot.dom.typeWriter) {
-      twRect = this.robot.dom.typeWriter.getBoundingClientRect();
+    if (twRect) {
       const limit = initialLeft - twRect.right - 50;
       if (limit < maxLeft) maxLeft = limit;
     }
@@ -459,7 +452,7 @@ export class RobotAnimation {
     // Collision Check via Module
     this.robot.collisionModule.scanForCollisions();
 
-    if (!this.robot.dom.typeWriter && approachingLimit) {
+    if (!typeWriter && approachingLimit) {
       this.patrol.direction *= -1;
       this.spawnParticleBurst(4, {
         direction: -this.patrol.direction,
@@ -468,7 +461,7 @@ export class RobotAnimation {
       this.pausePatrol(3000 + Math.random() * 3000);
     }
 
-    if (this.robot.dom.typeWriter && twRect) {
+    if (typeWriter && twRect) {
       this.robot.collisionModule.checkForTypewriterCollision(twRect, maxLeft);
     }
 
@@ -566,7 +559,7 @@ export class RobotAnimation {
       this.robot.dom.floatWrapper.style.transform = `rotate(${containerRotation}deg)`;
     }
 
-    requestAnimationFrame(this.updatePatrol);
+    this.robot._requestAnimationFrame(this.updatePatrol);
   }
 
   pausePatrol(ms) {
@@ -667,7 +660,7 @@ export class RobotAnimation {
       el.style.left = baseX - cRect.left - size / 2 + 'px';
       el.style.top = baseY - cRect.top - size / 2 + 'px';
 
-      requestAnimationFrame(() => {
+      this.robot._requestAnimationFrame(() => {
         el.style.transform = `translate(${dx}px, ${dy}px) scale(${
           0.5 + Math.random() * 0.6
         })`;
@@ -711,7 +704,7 @@ export class RobotAnimation {
 
     this.robot.dom.container.appendChild(el);
 
-    requestAnimationFrame(() => {
+    this.robot._requestAnimationFrame(() => {
       const dx = (Math.random() - 0.5) * 10;
       const dy = 15 + Math.random() * 15;
       el.style.transform = `translate(${dx}px, ${dy}px) scale(0)`;
@@ -826,9 +819,9 @@ export class RobotAnimation {
         this.blinkConfig.intervalMin +
         Math.random() *
           (this.blinkConfig.intervalMax - this.blinkConfig.intervalMin);
-      this._blinkTimer = setTimeout(() => {
+      this._blinkTimer = this.robot._setTimeout(() => {
         this.doBlink();
-        schedule();
+        schedule(); // Schedule next blink after current one completes
       }, delay);
     };
     schedule();
@@ -836,7 +829,7 @@ export class RobotAnimation {
 
   stopBlinkLoop() {
     if (this._blinkTimer) {
-      clearTimeout(this._blinkTimer);
+      this.robot._clearTimeout(this._blinkTimer);
       this._blinkTimer = null;
     }
   }
@@ -1115,7 +1108,7 @@ export class RobotAnimation {
 
     // Show excitement
     this.robot.showBubble('Ah! Ich helfe suchen! 🔍');
-    setTimeout(() => this.robot.hideBubble(), 2000);
+    this.robot._setTimeout(() => this.robot.hideBubble(), 2000);
 
     this.scheduleSearchAnimationFrame();
   }
@@ -1162,17 +1155,26 @@ export class RobotAnimation {
   }
 
   scheduleSearchAnimationFrame() {
-    if (this.searchAnimationFrame !== null) return;
-    this.searchAnimationFrame = requestAnimationFrame(() => {
-      this.searchAnimationFrame = null;
-      this.updateSearchAnimation();
-    });
+    const schedule = () => {
+      this.searchAnimationFrame = this.robot._requestAnimationFrame(() => {
+        this.updateSearchAnimation();
+        if (this.searchAnimation.active) {
+          schedule();
+        } else {
+          this.searchAnimationFrame = null;
+        }
+      });
+    };
+    if (this.searchAnimationFrame === null) {
+      schedule();
+    }
   }
 
   cancelSearchAnimationFrame() {
-    if (this.searchAnimationFrame === null) return;
-    cancelAnimationFrame(this.searchAnimationFrame);
-    this.searchAnimationFrame = null;
+    if (this.searchAnimationFrame !== null) {
+      this.robot._cancelAnimationFrame(this.searchAnimationFrame);
+      this.searchAnimationFrame = null;
+    }
   }
 
   setMagnifyingGlassVisible(isVisible) {
@@ -1306,6 +1308,27 @@ export class RobotAnimation {
     if (this.robot.dom.eyes && this.searchAnimation.phase !== 'hover') {
       // Look slightly up-left towards search (assuming search is top-left)
       this.robot.dom.eyes.style.transform = 'translate(-3px, -1px)';
+    }
+  }
+
+  destroy() {
+    this.patrol.active = false;
+    this.startAnimation.active = false;
+    this.searchAnimation.active = false;
+    this.speakingActive = false;
+    this.thinkingActive = false;
+
+    if (this._speakingTimer) {
+      this.robot._clearTimeout(this._speakingTimer);
+      this._speakingTimer = null;
+    }
+
+    this.stopIdleEyeMovement();
+    this.stopBlinkLoop();
+
+    if (this.searchAnimationFrame !== null) {
+      this.robot._cancelAnimationFrame(this.searchAnimationFrame);
+      this.searchAnimationFrame = null;
     }
   }
 }

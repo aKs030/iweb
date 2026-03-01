@@ -158,6 +158,15 @@ export class RobotCompanion {
   }
 
   /**
+   * Safe requestAnimationFrame wrapper for automatic cleanup
+   * @param {Function} callback - Callback function
+   * @returns {number} Animation frame ID
+   */
+  _requestAnimationFrame(callback) {
+    return this.timerManager.requestAnimationFrame(callback);
+  }
+
+  /**
    * Clear timeout and remove from registry
    * @param {ReturnType<typeof setTimeout>} id - Timeout ID
    */
@@ -171,6 +180,14 @@ export class RobotCompanion {
    */
   _clearInterval(id) {
     this.timerManager.clearInterval(id);
+  }
+
+  /**
+   * Cancel animation frame and remove from registry
+   * @param {number} id - Animation frame ID
+   */
+  _cancelAnimationFrame(id) {
+    this.timerManager.cancelAnimationFrame(id);
   }
 
   applyTexts() {
@@ -241,7 +258,14 @@ export class RobotCompanion {
       (typeof globalThis !== 'undefined' ? globalThis.innerWidth : 0) -
       30 -
       robotWidth;
-    const maxLeft = initialLeft - 20;
+    let maxLeft = initialLeft - 20; // Use 'let' as maxLeft might be modified
+
+    // If typewriter is present, adjust maxLeft based on its position
+    if (typeWriter && twRect) {
+      const limit = initialLeft - twRect.right - 50;
+      if (limit < maxLeft) maxLeft = limit;
+    }
+
     this.collisionModule.checkForTypewriterCollision(twRect, maxLeft);
   }
 
@@ -356,7 +380,7 @@ export class RobotCompanion {
 
     const requestTick = () => {
       if (!ticking) {
-        requestAnimationFrame(checkOverlap);
+        this._requestAnimationFrame(checkOverlap);
         ticking = true;
       }
     };
@@ -452,7 +476,7 @@ export class RobotCompanion {
         const maxWindowHeight = visualHeight - safeMargin * 2;
         this.dom.window.style.maxHeight = `${maxWindowHeight}px`;
 
-        requestAnimationFrame(() => {
+        this._requestAnimationFrame(() => {
           if (!this.dom.window) return;
           const currentHeight = this.dom.window.offsetHeight;
           const spaceAboveKeyboard = visualHeight;
@@ -505,7 +529,7 @@ export class RobotCompanion {
   setupChatInputViewportHandlers() {
     if (this.dom.input && this._handleViewportResize) {
       const handleResize = this._handleViewportResize;
-      const blurHandler = () => setTimeout(handleResize, 200);
+      const blurHandler = () => this._setTimeout(handleResize, 200);
       this.dom.input.addEventListener('focus', handleResize);
       this.dom.input.addEventListener('blur', blurHandler);
       // Registriere Listener für Cleanup
@@ -676,7 +700,7 @@ export class RobotCompanion {
       if (rafPending) return;
       rafPending = true;
 
-      requestAnimationFrame(() => {
+      this._requestAnimationFrame(() => {
         rafPending = false;
         if (this._scrollTimeout) {
           this._clearTimeout(this._scrollTimeout);
@@ -729,19 +753,12 @@ export class RobotCompanion {
 
   destroy() {
     // Module Cleanup
-    if (this.chatModule?.destroy) {
-      this.chatModule.destroy();
-    }
-    this.chatModule?.clearBubbleSequence();
-    const anim = /** @type {any} */ (this.animationModule);
-    anim?.stopIdleEyeMovement();
-    anim?.stopBlinkLoop();
-
-    // Intelligence Modul Cleanup (Event-Listener entfernen)
-    if (this.intelligenceModule?.destroy) {
-      this.intelligenceModule.destroy();
-      this.intelligenceModule = null;
-    }
+    this.chatModule?.destroy();
+    this.animationModule?.destroy();
+    this.intelligenceModule?.destroy();
+    this.collisionModule?.destroy();
+    this.contextReactionsModule?.destroy();
+    if (this.emotionsModule?.destroy) this.emotionsModule.destroy();
 
     if (this._uiUnsubscribe) {
       this._uiUnsubscribe();
@@ -1002,7 +1019,7 @@ export class RobotCompanion {
     this.dom.mouth = container.querySelector('.robot-mouth');
 
     const anim = /** @type {any} */ (this.animationModule);
-    requestAnimationFrame(() => anim.startIdleEyeMovement());
+    this._requestAnimationFrame(() => anim.startIdleEyeMovement());
   }
 
   ensureChatWindowCreated() {
@@ -1121,7 +1138,7 @@ export class RobotCompanion {
       });
 
       const _onInputBlur = () => {
-        setTimeout(() => {
+        this._setTimeout(() => {
           if (this.dom.controls) {
             this.dom.controls.classList.remove('hide-controls-mobile');
           }

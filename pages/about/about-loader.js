@@ -140,5 +140,3 @@ if (document.readyState === 'loading') {
 } else {
   initAboutPage();
 }
-
-export { initAboutPage };

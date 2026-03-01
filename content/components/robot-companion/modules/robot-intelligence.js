@@ -136,26 +136,28 @@ export class RobotIntelligence {
 
   destroy() {
     // Entferne alle Event-Listener
-    document.removeEventListener('mousemove', this._handlers.mousemove);
-    document.removeEventListener('scroll', this._handlers.scroll);
-    ['mousedown', 'keydown', 'touchstart'].forEach((evt) => {
-      document.removeEventListener(evt, this._handlers[evt]);
-    });
+    if (this._handlers) {
+      document.removeEventListener('mousemove', this._handlers.mousemove);
+      document.removeEventListener('scroll', this._handlers.scroll);
+      ['mousedown', 'keydown', 'touchstart'].forEach((evt) => {
+        document.removeEventListener(evt, this._handlers[evt]);
+      });
+    }
 
     // Stoppe Idle-Check Interval
     if (this._idleCheckInterval) {
-      clearInterval(this._idleCheckInterval);
+      this.robot._clearInterval(this._idleCheckInterval);
       this._idleCheckInterval = null;
     }
 
     // Stoppe Proactive Tips Interval
     if (this._proactiveTipsInterval) {
-      clearInterval(this._proactiveTipsInterval);
+      this.robot._clearInterval(this._proactiveTipsInterval);
       this._proactiveTipsInterval = null;
     }
 
     if (this._scrollDecayTimer) {
-      clearTimeout(this._scrollDecayTimer);
+      this.robot._clearTimeout(this._scrollDecayTimer);
       this._scrollDecayTimer = null;
     }
 
@@ -176,6 +178,7 @@ export class RobotIntelligence {
 
     // Clear Referenzen
     this._handlers = null;
+    this.contextTipsShown.clear();
   }
 
   resetIdle() {

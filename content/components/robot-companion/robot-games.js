@@ -14,6 +14,10 @@ export class RobotGames {
     };
   }
 
+  destroy() {
+    // Placeholder for cleanup
+  }
+
   // --- Tic Tac Toe ---
 
   startTicTacToe() {
