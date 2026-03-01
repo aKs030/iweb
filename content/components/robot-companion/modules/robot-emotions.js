@@ -9,6 +9,10 @@ export class RobotEmotions {
     this.robot = robot;
   }
 
+  destroy() {
+    // Placeholder for cleanup
+  }
+
   /**
    * Set mouth expression
    * @param {'neutral'|'happy'|'sad'|'surprised'} expression
@@ -37,7 +41,7 @@ export class RobotEmotions {
 
     this.robot.dom.mouth.classList.add('talking');
 
-    setTimeout(() => {
+    this.robot._setTimeout(() => {
       this.robot.dom.mouth?.classList.remove('talking');
     }, duration);
   }
@@ -54,7 +58,7 @@ export class RobotEmotions {
     rightHand.classList.add('thumbs-up');
     this.setMouthExpression('happy');
 
-    setTimeout(() => {
+    this.robot._setTimeout(() => {
       rightHand.classList.remove('thumbs-up');
       this.setMouthExpression('neutral');
     }, duration);
@@ -73,7 +77,7 @@ export class RobotEmotions {
 
     handEl.classList.add('gripping');
 
-    setTimeout(() => {
+    this.robot._setTimeout(() => {
       handEl.classList.remove('gripping');
     }, duration);
   }
@@ -87,7 +91,7 @@ export class RobotEmotions {
     this.robot.dom.avatar.classList.add('shake-no');
     this.setMouthExpression('sad');
 
-    setTimeout(() => {
+    this.robot._setTimeout(() => {
       this.robot.dom.avatar?.classList.remove('shake-no');
       this.setMouthExpression('neutral');
     }, 500);
@@ -102,7 +106,7 @@ export class RobotEmotions {
     this.robot.dom.avatar.classList.add('nod-yes');
     this.setMouthExpression('happy');
 
-    setTimeout(() => {
+    this.robot._setTimeout(() => {
       this.robot.dom.avatar?.classList.remove('nod-yes');
       this.setMouthExpression('neutral');
     }, 600);
@@ -118,7 +122,7 @@ export class RobotEmotions {
     this.robot.dom.avatar.classList.add('dancing');
     this.setMouthExpression('happy');
 
-    setTimeout(() => {
+    this.robot._setTimeout(() => {
       this.robot.dom.avatar?.classList.remove('dancing');
       this.setMouthExpression('neutral');
     }, duration);
@@ -133,7 +137,7 @@ export class RobotEmotions {
     this.robot.dom.avatar.classList.add('saluting');
     this.setMouthExpression('happy');
 
-    setTimeout(() => {
+    this.robot._setTimeout(() => {
       this.robot.dom.avatar?.classList.remove('saluting');
       this.setMouthExpression('neutral');
     }, 800);
@@ -148,7 +152,7 @@ export class RobotEmotions {
 
     this.robot.dom.avatar.classList.add('sleeping');
 
-    setTimeout(() => {
+    this.robot._setTimeout(() => {
       this.robot.dom.avatar?.classList.remove('sleeping');
     }, duration);
   }
@@ -162,7 +166,7 @@ export class RobotEmotions {
     this.robot.dom.avatar.classList.add('scared');
     this.setMouthExpression('surprised');
 
-    setTimeout(() => {
+    this.robot._setTimeout(() => {
       this.robot.dom.avatar?.classList.remove('scared');
       this.setMouthExpression('neutral');
     }, 300);
@@ -178,7 +182,7 @@ export class RobotEmotions {
     this.robot.dom.avatar.classList.add('applauding');
     this.setMouthExpression('happy');
 
-    setTimeout(() => {
+    this.robot._setTimeout(() => {
       this.robot.dom.avatar?.classList.remove('applauding');
       this.setMouthExpression('neutral');
     }, duration);
@@ -210,7 +214,7 @@ export class RobotEmotions {
 
       document.body.appendChild(star);
 
-      setTimeout(() => star.remove(), 1000);
+      this.robot._setTimeout(() => star.remove(), 1000);
     }
   }
 
@@ -224,7 +228,7 @@ export class RobotEmotions {
     const rect = this.robot.dom.container.getBoundingClientRect();
 
     for (let i = 0; i < count; i++) {
-      setTimeout(() => {
+      this.robot._setTimeout(() => {
         const heart = document.createElement('div');
         heart.className = 'robot-particle-heart';
         heart.textContent = '❤️';
@@ -233,7 +237,7 @@ export class RobotEmotions {
 
         document.body.appendChild(heart);
 
-        setTimeout(() => heart.remove(), 1500);
+        this.robot._setTimeout(() => heart.remove(), 1500);
       }, i * 200);
     }
   }
@@ -254,7 +258,7 @@ export class RobotEmotions {
 
     document.body.appendChild(question);
 
-    setTimeout(() => question.remove(), 1000);
+    this.robot._setTimeout(() => question.remove(), 1000);
   }
 
   /**
@@ -273,7 +277,7 @@ export class RobotEmotions {
 
     document.body.appendChild(sweat);
 
-    setTimeout(() => sweat.remove(), 800);
+    this.robot._setTimeout(() => sweat.remove(), 800);
   }
 
   /**
@@ -283,7 +287,7 @@ export class RobotEmotions {
     this.setMouthExpression('surprised');
     this.spawnQuestionMark();
 
-    setTimeout(() => {
+    this.robot._setTimeout(() => {
       this.setMouthExpression('neutral');
     }, 2000);
   }
@@ -296,8 +300,8 @@ export class RobotEmotions {
     this.spawnSweatDrop();
 
     // Spawn multiple sweat drops
-    setTimeout(() => this.spawnSweatDrop(), 400);
-    setTimeout(() => this.spawnSweatDrop(), 800);
+    this.robot._setTimeout(() => this.spawnSweatDrop(), 400);
+    this.robot._setTimeout(() => this.spawnSweatDrop(), 800);
   }
 
   /**

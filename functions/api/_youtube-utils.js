@@ -57,18 +57,6 @@ export async function fetchPlaylistItemsPage(
 }
 
 /**
- * Convert to YouTube date format
- * @param {string} value - Date value
- * @param {string} fallbackDate - Fallback date
- * @returns {string} ISO date string
- */
-export function toYoutubeDate(value, fallbackDate) {
-  const parsed = new Date(value || '');
-  if (Number.isNaN(parsed.getTime())) return fallbackDate;
-  return parsed.toISOString().split('T')[0];
-}
-
-/**
  * Get best quality YouTube thumbnail
  * @param {Object} snippet - YouTube video snippet
  * @returns {string} Thumbnail URL

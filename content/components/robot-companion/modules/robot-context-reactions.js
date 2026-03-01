@@ -10,6 +10,8 @@ export class RobotContextReactions {
     this.lastScrollY = 0;
     this.scrollVelocity = 0;
     this.isMonitoring = false;
+    /** @type {Array<{target: EventTarget, event: string, handler: Function}>} */
+    this._listeners = [];
   }
 
   /**
@@ -22,7 +24,7 @@ export class RobotContextReactions {
     const randomMessage = messages[Math.floor(Math.random() * messages.length)];
     this.robot.chatModule?.showBubble(randomMessage);
 
-    setTimeout(() => {
+    this.robot._setTimeout(() => {
       this.robot.chatModule?.hideBubble();
     }, duration);
   }
@@ -40,11 +42,26 @@ export class RobotContextReactions {
   }
 
   /**
-   * Stop monitoring
+   * Stop monitoring and cleanup
    */
   stopMonitoring() {
     this.isMonitoring = false;
-    // Cleanup listeners if needed
+    this._listeners.forEach(({ target, event, handler }) => {
+      target.removeEventListener(event, handler);
+    });
+    this._listeners = [];
+  }
+
+  /**
+   * @private
+   * @param {EventTarget} target
+   * @param {string} event
+   * @param {Function} handler
+   * @param {Object} [options]
+   */
+  _addEventListener(target, event, handler, options) {
+    target.addEventListener(event, handler, options);
+    this._listeners.push({ target, event, handler });
   }
 
   /**
@@ -62,7 +79,7 @@ export class RobotContextReactions {
       const deltaTime = currentTime - lastTime;
 
       // Calculate velocity (pixels per millisecond)
-      this.scrollVelocity = deltaY / deltaTime;
+      this.scrollVelocity = deltaY / Math.max(1, deltaTime);
 
       // Fast scroll detected (> 3 pixels per ms)
       if (this.scrollVelocity > 3 && !this.robot.chatModule?.isOpen) {
@@ -73,7 +90,7 @@ export class RobotContextReactions {
       lastTime = currentTime;
     };
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
+    this._addEventListener(window, 'scroll', handleScroll, { passive: true });
   }
 
   /**
@@ -98,24 +115,24 @@ export class RobotContextReactions {
    * Monitor form submissions
    */
   setupFormMonitoring() {
-    document.addEventListener('submit', (e) => {
+    const onFormSubmit = (e) => {
       if (!this.isMonitoring) return;
-
       const form = e.target;
-      // Check if it's a form element
       if (form && form.tagName === 'FORM') {
         this.reactToFormSubmit();
       }
-    });
+    };
+    this._addEventListener(document, 'submit', onFormSubmit);
 
-    // Listen for custom success events
-    window.addEventListener('form:success', () => {
-      this.reactToFormSuccess();
-    });
+    const onFormSuccess = () => {
+      if (this.isMonitoring) this.reactToFormSuccess();
+    };
+    this._addEventListener(window, 'form:success', onFormSuccess);
 
-    window.addEventListener('form:error', () => {
-      this.reactToFormError();
-    });
+    const onFormError = () => {
+      if (this.isMonitoring) this.reactToFormError();
+    };
+    this._addEventListener(window, 'form:error', onFormError);
   }
 
   /**
@@ -165,7 +182,7 @@ export class RobotContextReactions {
 
     this._showRandomMessage(messages, 3000);
 
-    setTimeout(() => {
+    this.robot._setTimeout(() => {
       this.robot.emotionsModule?.setMouthExpression('neutral');
     }, 3000);
   }
@@ -174,14 +191,13 @@ export class RobotContextReactions {
    * Monitor for errors
    */
   setupErrorMonitoring() {
-    window.addEventListener('error', (e) => {
+    const onError = (e) => {
       if (!this.isMonitoring) return;
-
-      // Only react to visible errors (not background scripts)
       if (e.error && !this.robot.chatModule?.isOpen) {
         this.reactToError();
       }
-    });
+    };
+    this._addEventListener(window, 'error', onError);
   }
 
   /**
@@ -192,7 +208,7 @@ export class RobotContextReactions {
 
     this.robot.emotionsModule.showConfused();
 
-    setTimeout(() => {
+    this.robot._setTimeout(() => {
       this.robot.emotionsModule?.setMouthExpression('neutral');
     }, 2000);
   }
@@ -205,19 +221,14 @@ export class RobotContextReactions {
   pointToElement(element, message = 'Schau hier! 👉') {
     if (!element || !this.robot.dom.container) return;
 
-    // Animate pointing
     if (this.robot.dom.avatar) {
       this.robot.dom.avatar.classList.add('pointing');
     }
 
-    // Highlight element
     element.classList.add('robot-highlight');
-
-    // Show message
     this.robot.chatModule?.showBubble(message);
 
-    // Cleanup after 3 seconds
-    setTimeout(() => {
+    this.robot._setTimeout(() => {
       this.robot.dom.avatar?.classList.remove('pointing');
       element.classList.remove('robot-highlight');
       this.robot.chatModule?.hideBubble();
@@ -232,19 +243,17 @@ export class RobotContextReactions {
     let idleTimer = null;
 
     const resetTimer = () => {
-      if (idleTimer) clearTimeout(idleTimer);
+      if (idleTimer) this.robot._clearTimeout(idleTimer);
 
-      idleTimer = setTimeout(() => {
+      idleTimer = this.robot._setTimeout(() => {
         if (!this.isMonitoring || this.robot.chatModule?.isOpen) return;
-
         this.reactToIdle();
       }, idleTime);
     };
 
-    // Reset on user activity
     ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'].forEach(
       (event) => {
-        document.addEventListener(event, resetTimer, { passive: true });
+        this._addEventListener(document, event, resetTimer, { passive: true });
       },
     );
 
@@ -300,10 +309,17 @@ export class RobotContextReactions {
     if (reaction) {
       reaction();
 
-      setTimeout(() => {
+      this.robot._setTimeout(() => {
         this.robot.chatModule?.hideBubble();
         this.robot.emotionsModule?.setMouthExpression('neutral');
       }, 3000);
     }
+  }
+
+  /**
+   * Destroy and cleanup
+   */
+  destroy() {
+    this.stopMonitoring();
   }
 }

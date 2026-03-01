@@ -150,28 +150,6 @@ class HeadStateManager {
     });
     this.readyListeners.clear();
   }
-
-  /**
-   * Reset state (for testing)
-   */
-  reset() {
-    this.config = {
-      inlineReady: false,
-      managerLoaded: false,
-    };
-    this.readyListeners.clear();
-    this.readyPromise = null;
-    this.readyResolve = null;
-    log.debug('State reset');
-  }
-
-  /**
-   * Get full config (read-only copy)
-   * @returns {HeadStateConfig}
-   */
-  getConfig() {
-    return { ...this.config };
-  }
 }
 
 // Export singleton instance
