@@ -15,7 +15,9 @@ export class RobotGames {
   }
 
   destroy() {
-    // Placeholder for cleanup
+    // Abort all game event listeners
+    this._currentGameController?.abort();
+    this._currentGameController = null;
   }
 
   // --- Tic Tac Toe ---
@@ -30,14 +32,20 @@ export class RobotGames {
     const gameContainer = document.createElement('div');
     gameContainer.className = 'tic-tac-toe-game';
 
+    // Use AbortController for proper listener cleanup
+    const controller = new AbortController();
+    this._currentGameController = controller;
+
     const createCell = (index) => {
       const cell = document.createElement('button');
       cell.className = 'ttt-cell';
       cell.dataset.index = String(index);
       cell.textContent = '';
       cell.setAttribute('aria-label', `Feld ${index + 1}`);
-      cell.addEventListener('click', () =>
-        this.playTicTacToeMove(index, gameContainer),
+      cell.addEventListener(
+        'click',
+        () => this.playTicTacToeMove(index, gameContainer),
+        { signal: controller.signal },
       );
       return cell;
     };

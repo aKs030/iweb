@@ -5,7 +5,7 @@
   "lang": "de-DE",
   "dir": "ltr",
   "id": "/",
-  "start_url": "/?utm_source=pwa&utm_medium=launch",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "display_override": [
@@ -16,8 +16,8 @@
     "browser"
   ],
   "orientation": "any",
-  "background_color": "#00000000",
-  "theme_color": "#00000000",
+  "background_color": "#030303",
+  "theme_color": "#030303",
   "icons": [
     {
       "src": "https://img.abdulkerimsesli.de/icons/favicon-512.webp?v=20260221",

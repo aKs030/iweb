@@ -72,9 +72,9 @@ iframe {
   display: block;
 }
 
-/* Hide scrollbars globally while keeping scroll intact */
-html,
-body {
+/* Hide scrollbars on snap containers while keeping scroll intact */
+.snap-page,
+.snap-page body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }

@@ -15,8 +15,8 @@ const ADS_CONVERSION_ID = ENV.AW_ID;
 const ADS_CONVERSION_LABEL = ENV.AW_LABEL;
 
 const dataLayer = (globalThis.dataLayer = globalThis.dataLayer || []);
-function gtag() {
-  dataLayer.push(arguments);
+function gtag(...args) {
+  dataLayer.push(args);
 }
 
 try {

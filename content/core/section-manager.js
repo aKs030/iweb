@@ -13,6 +13,7 @@ export class SectionManager {
   constructor() {
     this.loadedSections = new WeakSet();
     this.loadingSections = new WeakSet();
+    this._snapRestorer = null;
   }
 
   async loadSection(section) {
@@ -42,7 +43,7 @@ export class SectionManager {
     try {
       let html;
       try {
-        html = await fetchText(url.endsWith('.html') ? url.slice(0, -5) : url);
+        html = await fetchText(url.replace(/\.html$/, '') || url);
       } catch {
         html = await fetchText(url);
       }

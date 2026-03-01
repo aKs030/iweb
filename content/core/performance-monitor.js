@@ -26,6 +26,7 @@ const THRESHOLDS = {
 class PerformanceMonitor {
   constructor() {
     this.metrics = {};
+    this._observers = [];
     this.isEnabled = this.shouldEnable();
   }
 
@@ -81,6 +82,7 @@ class PerformanceMonitor {
       });
 
       observer.observe({ type: 'largest-contentful-paint', buffered: true });
+      this._observers.push(observer);
     } catch (e) {
       log.warn('LCP observation failed:', e);
     }
@@ -103,6 +105,7 @@ class PerformanceMonitor {
       });
 
       observer.observe({ type: 'first-input', buffered: true });
+      this._observers.push(observer);
     } catch (e) {
       log.warn('FID observation failed:', e);
     }
@@ -110,6 +113,7 @@ class PerformanceMonitor {
 
   /**
    * Observe Cumulative Layout Shift (CLS)
+   * Reports final CLS value when the page becomes hidden (per Google recommendation).
    */
   observeCLS() {
     if (!('PerformanceObserver' in window)) return;
@@ -123,10 +127,20 @@ class PerformanceMonitor {
           }
         }
         this.metrics.CLS = clsValue;
-        this.reportMetric('CLS', clsValue, THRESHOLDS.CLS);
       });
 
       observer.observe({ type: 'layout-shift', buffered: true });
+      this._observers.push(observer);
+
+      // Report final CLS when the page is hidden
+      const reportFinalCLS = () => {
+        if (document.visibilityState === 'hidden' && this.metrics.CLS != null) {
+          this.reportMetric('CLS', this.metrics.CLS, THRESHOLDS.CLS);
+        }
+      };
+      document.addEventListener('visibilitychange', reportFinalCLS, {
+        once: true,
+      });
     } catch (e) {
       log.warn('CLS observation failed:', e);
     }
@@ -151,6 +165,7 @@ class PerformanceMonitor {
       });
 
       observer.observe({ type: 'paint', buffered: true });
+      this._observers.push(observer);
     } catch (e) {
       log.warn('FCP observation failed:', e);
     }
@@ -176,21 +191,28 @@ class PerformanceMonitor {
 
   /**
    * Observe Interaction to Next Paint (INP)
+   * Tracks all event durations and uses the 98th percentile value.
    */
   observeINP() {
     if (!('PerformanceObserver' in window)) return;
 
     try {
-      let maxDuration = 0;
+      const durations = [];
       const observer = new PerformanceObserver((list) => {
         const entries = list.getEntries();
         entries.forEach((entry) => {
-          if (entry.duration > maxDuration) {
-            maxDuration = entry.duration;
-            this.metrics.INP = maxDuration;
-            this.reportMetric('INP', maxDuration, THRESHOLDS.INP);
-          }
+          durations.push(entry.duration);
         });
+        // 98th percentile (Google recommendation for INP)
+        if (durations.length > 0) {
+          durations.sort((a, b) => a - b);
+          const p98Index = Math.min(
+            Math.ceil(durations.length * 0.98) - 1,
+            durations.length - 1,
+          );
+          this.metrics.INP = durations[p98Index];
+          this.reportMetric('INP', this.metrics.INP, THRESHOLDS.INP);
+        }
       });
 
       observer.observe({
@@ -222,6 +244,20 @@ class PerformanceMonitor {
     } catch (e) {
       log.warn('Resource timing observation failed:', e);
     }
+  }
+
+  /**
+   * Disconnect all observers and clean up resources.
+   */
+  destroy() {
+    for (const observer of this._observers) {
+      try {
+        observer.disconnect();
+      } catch {
+        // ignore
+      }
+    }
+    this._observers = [];
   }
 
   /**
@@ -262,4 +298,9 @@ if (typeof window !== 'undefined') {
   } else {
     window.addEventListener('load', () => performanceMonitor.init());
   }
+
+  // Disconnect observers when page is unloaded to prevent memory leaks
+  window.addEventListener('pagehide', () => performanceMonitor.destroy(), {
+    once: true,
+  });
 }

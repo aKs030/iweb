@@ -15,6 +15,7 @@ import {
   onDOMReady,
   TimerManager,
   scrollTopIfNoHash,
+  initDOMPurify,
 } from './core/utils.js';
 import { initViewTransitions } from './core/view-transitions.js';
 import { i18n } from './core/i18n.js';
@@ -102,7 +103,7 @@ let loaderHidden = false;
 document.addEventListener(
   'DOMContentLoaded',
   async () => {
-    await i18n.init();
+    await Promise.all([i18n.init(), initDOMPurify()]);
     initOfflineIndicator();
     perfMarks.domReady = performance.now();
     AppLoadManager.updateLoader(0.1, i18n.t('loader.status_init'));

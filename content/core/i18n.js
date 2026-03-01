@@ -9,11 +9,14 @@ import { sanitizeHTML } from './utils.js';
 
 const log = createLogger('LanguageManager');
 
+/** Supported language codes — single source of truth */
+const SUPPORTED_LANGUAGES = ['de', 'en'];
+
 /**
  * Manages language settings, translations, and DOM updates.
  * Extends EventTarget to dispatch language change events.
  */
-class LanguageManager extends EventTarget {
+export class LanguageManager extends EventTarget {
   /**
    * Creates an instance of LanguageManager.
    * Initializes state properties but does not start the loading process.
@@ -32,10 +35,9 @@ class LanguageManager extends EventTarget {
      * @type {Object.<string, Object|null>}
      * @public
      */
-    this.translations = {
-      de: null,
-      en: null,
-    };
+    this.translations = Object.fromEntries(
+      SUPPORTED_LANGUAGES.map((lang) => [lang, null]),
+    );
 
     /**
      * Whether the manager has finished its initial setup.
@@ -68,12 +70,14 @@ class LanguageManager extends EventTarget {
       // 2. Check Browser Language if no preference saved
       if (!savedLang) {
         const browserLang = navigator.language.slice(0, 2);
-        savedLang = browserLang === 'de' ? 'de' : 'en'; // Default fallback to EN for non-DE
+        savedLang = SUPPORTED_LANGUAGES.includes(browserLang)
+          ? browserLang
+          : SUPPORTED_LANGUAGES[0];
       }
 
       // Validate
-      if (!['de', 'en'].includes(savedLang)) {
-        savedLang = 'de';
+      if (!SUPPORTED_LANGUAGES.includes(savedLang)) {
+        savedLang = SUPPORTED_LANGUAGES[0];
       }
 
       this.currentLang = savedLang;
@@ -159,7 +163,7 @@ class LanguageManager extends EventTarget {
    */
   async setLanguage(lang) {
     if (lang === this.currentLang) return;
-    if (!['de', 'en'].includes(lang)) {
+    if (!SUPPORTED_LANGUAGES.includes(lang)) {
       log.warn(`Unsupported language: ${lang}`);
       return;
     }
@@ -270,83 +274,72 @@ class LanguageManager extends EventTarget {
   translateElement(element) {
     if (!element) return;
 
-    // 1. Text Content: data-i18n
-    const textElements = element.querySelectorAll
-      ? Array.from(element.querySelectorAll('[data-i18n]'))
+    // Single querySelectorAll for all i18n attributes (performance optimisation)
+    const allI18nEls = element.querySelectorAll
+      ? Array.from(
+          element.querySelectorAll(
+            '[data-i18n], [data-i18n-html], [data-i18n-attrs]',
+          ),
+        )
       : [];
 
-    // Include the root element itself if it matches
-    if (element.hasAttribute?.('data-i18n')) {
-      textElements.push(element);
+    // Include the root element itself if it matches any
+    if (
+      element.hasAttribute?.('data-i18n') ||
+      element.hasAttribute?.('data-i18n-html') ||
+      element.hasAttribute?.('data-i18n-attrs')
+    ) {
+      allI18nEls.push(element);
     }
 
-    textElements.forEach((el) => {
-      const key = el.getAttribute('data-i18n');
-      if (key) {
-        // Note: textContent assignment overwrites all child elements,
-        // including any existing fallback HTML structure.
-        el.textContent = this.t(key);
-      }
-    });
-
-    // 2. Inner HTML: data-i18n-html (Use with caution - Potential XSS risk)
-    // Ensure translation keys used here come from trusted sources.
-    const htmlElements = element.querySelectorAll
-      ? Array.from(element.querySelectorAll('[data-i18n-html]'))
-      : [];
-
-    if (element.hasAttribute?.('data-i18n-html')) {
-      htmlElements.push(element);
-    }
-
-    htmlElements.forEach((el) => {
-      const key = el.getAttribute('data-i18n-html');
-      if (key) {
-        const translated = this.t(key);
-        // Sanitize HTML using DOMPurify for robust XSS protection
-        el.innerHTML = sanitizeHTML(translated, {
-          ALLOWED_TAGS: [
-            'b',
-            'i',
-            'em',
-            'strong',
-            'a',
-            'br',
-            'span',
-            'p',
-            'ul',
-            'ol',
-            'li',
-            'small',
-            'sub',
-            'sup',
-          ],
-          ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'id'],
-        });
-      }
-    });
-
-    // 3. Attributes: data-i18n-attrs="placeholder:key,title:key2"
-    const attrElements = element.querySelectorAll
-      ? Array.from(element.querySelectorAll('[data-i18n-attrs]'))
-      : [];
-
-    if (element.hasAttribute?.('data-i18n-attrs')) {
-      attrElements.push(element);
-    }
-
-    attrElements.forEach((el) => {
-      const config = el.getAttribute('data-i18n-attrs');
-      if (!config) return;
-
-      const mappings = config.split(',');
-      mappings.forEach((mapping) => {
-        const [attr, key] = mapping.split(':').map((s) => s.trim());
-        if (attr && key) {
-          el.setAttribute(attr, this.t(key));
+    for (const el of allI18nEls) {
+      try {
+        // 1. Text Content: data-i18n
+        const textKey = el.getAttribute('data-i18n');
+        if (textKey) {
+          el.textContent = this.t(textKey);
         }
-      });
-    });
+
+        // 2. Inner HTML: data-i18n-html
+        const htmlKey = el.getAttribute('data-i18n-html');
+        if (htmlKey) {
+          const translated = this.t(htmlKey);
+          el.innerHTML = sanitizeHTML(translated, {
+            ALLOWED_TAGS: [
+              'b',
+              'i',
+              'em',
+              'strong',
+              'a',
+              'br',
+              'span',
+              'p',
+              'ul',
+              'ol',
+              'li',
+              'small',
+              'sub',
+              'sup',
+            ],
+            ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'id'],
+          });
+        }
+
+        // 3. Attributes: data-i18n-attrs="placeholder:key,title:key2"
+        const attrConfig = el.getAttribute('data-i18n-attrs');
+        if (attrConfig) {
+          const mappings = attrConfig.split(',');
+          for (const mapping of mappings) {
+            const [attr, key] = mapping.split(':').map((s) => s.trim());
+            if (attr && key) {
+              el.setAttribute(attr, this.t(key));
+            }
+          }
+        }
+      } catch (err) {
+        log.debug('Translation failed for element:', err);
+      }
+    }
   }
 
   /**

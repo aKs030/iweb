@@ -19,6 +19,8 @@ export const IconBase = ({ children, className, style, ...props }) => html`
     strokeLinejoin="round"
     className=${className}
     style=${style}
+    aria-hidden="true"
+    focusable="false"
     ...${props}
   >
     ${children}

@@ -38,14 +38,19 @@ export function fire(type, detail = null, target = document) {
  * Global Event Handlers for retry & share actions
  */
 export const GlobalEventHandlers = {
+  _initialized: false,
   init(announcer) {
+    if (this._initialized) return;
+    this._initialized = true;
     document.addEventListener('click', async (event) => {
       // Retry handling
       if (event.target?.closest('.retry-btn')) {
         event.preventDefault();
         try {
           globalThis.location.reload();
-        } catch {}
+        } catch (err) {
+          log.debug('Reload failed:', err);
+        }
         return;
       }
 
@@ -63,16 +68,25 @@ export const GlobalEventHandlers = {
               text: i18n.t('common.share_text'),
               url: shareUrl,
             });
-          } catch {}
+          } catch (err) {
+            // AbortError = user cancelled share dialog — not a real error
+            if (err?.name !== 'AbortError') {
+              log.debug('Share failed:', err);
+            }
+          }
         } else if (navigator.clipboard) {
           try {
             await navigator.clipboard.writeText(shareUrl);
             announcer?.(i18n.t('common.link_copied'), { dedupe: true });
-          } catch {}
+          } catch (err) {
+            log.debug('Clipboard write failed:', err);
+          }
         } else {
           try {
             globalThis.prompt(i18n.t('common.copy_link'), shareUrl);
-          } catch {}
+          } catch (err) {
+            log.debug('Prompt failed:', err);
+          }
         }
       }
     });

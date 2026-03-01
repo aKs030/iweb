@@ -100,29 +100,19 @@ class IndexedDBCache {
   async get(key) {
     try {
       await this.init();
-      return new Promise((resolve, reject) => {
-        const transaction = this.db.transaction(['cache'], 'readonly');
-        const store = transaction.objectStore('cache');
-        const request = store.get(key);
+      const transaction = this.db.transaction(['cache'], 'readonly');
+      const store = transaction.objectStore('cache');
+      const request = store.get(key);
+      const item = await this._requestToPromise(request);
 
-        request.onsuccess = () => {
-          const item = request.result;
-          if (!item) {
-            resolve(null);
-            return;
-          }
+      if (!item) return null;
 
-          if (item.expires && item.expires < Date.now()) {
-            this.delete(key);
-            resolve(null);
-            return;
-          }
+      if (item.expires && item.expires < Date.now()) {
+        this.delete(key);
+        return null;
+      }
 
-          resolve(item.value);
-        };
-
-        request.onerror = () => reject(request.error);
-      });
+      return item.value;
     } catch (error) {
       log.warn('IndexedDB get failed:', error);
       return null;
@@ -254,6 +244,16 @@ class CacheManager {
       memorySize: this.memory.size,
       memoryMaxSize: this.memory.maxSize,
     };
+  }
+
+  /**
+   * Check if a key exists (in memory or IndexedDB)
+   * @param {string} key
+   * @returns {Promise<boolean>}
+   */
+  async has(key) {
+    const value = await this.get(key);
+    return value !== null;
   }
 }
 

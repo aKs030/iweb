@@ -176,6 +176,7 @@
       "date": "Datum",
       "tags": "Tags"
     },
+    "instructions": "Scrollen zum Erkunden • Klicken zum Ansehen",
     "actions": {
       "toggle_info": "Foto-Details umschalten",
       "toggle_slideshow": "Diashow umschalten",
