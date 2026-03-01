@@ -1,7 +1,8 @@
 /**
  * Service Worker v4 — Minimal, Silent, Modern
- * Navigation: Network-only (kein Caching von HTML)
- * Assets: Cache-first mit Netzwerk-Fallback
+ * Navigation: Network-only mit Offline-Fallback
+ * Bilder/Fonts/3D: Cache-first
+ * JS/CSS: Kein SW-Caching (Browser-HTTP-Cache übernimmt)
  * API/Externe: Ignoriert
  */
 
@@ -59,9 +60,9 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
-  // Statische Assets (Bilder, Fonts, JS, CSS, 3D): Cache-first
+  // Statische Assets (Bilder, Fonts, 3D-Modelle): Cache-first
   if (
-    ['image', 'font', 'script', 'style'].includes(request.destination) ||
+    ['image', 'font'].includes(request.destination) ||
     /\.(glb|gltf)$/.test(url.pathname)
   ) {
     e.respondWith(
