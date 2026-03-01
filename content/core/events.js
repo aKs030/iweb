@@ -10,13 +10,8 @@ const log = createLogger('Events');
 
 /** Event names (frozen for immutability) */
 export const EVENTS = Object.freeze({
-  DOM_READY: 'app:domReady',
-  CORE_INITIALIZED: 'app:coreInitialized',
-  MODULES_READY: 'app:modulesReady',
   LOADING_UNBLOCKED: 'app:loadingUnblocked',
   LOADING_HIDE: 'app:loaderHide',
-  HERO_INIT_READY: 'app:heroInitReady',
-  HERO_LOADED: 'hero:loaded',
   HERO_TYPING_END: 'hero:typingEnd',
   FOOTER_LOADED: 'footer:loaded',
   FOOTER_EXPANDED: 'footer:expanded',

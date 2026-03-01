@@ -190,28 +190,6 @@ const HeroManager = (() => {
 export const initHeroFeatureBundle = (sectionManager) => {
   HeroManager.cleanup();
 
-  const onHeroLoaded = () => {
-    const el = getElementById('greetingText');
-    if (!el) return;
-    if (!el.textContent.trim() || el.textContent.trim() === 'Willkommen') {
-      HeroManager.setRandomGreetingHTML();
-      window.announce?.('Hero Bereich bereit.');
-    }
-  };
-
-  document.removeEventListener('hero:loaded', onHeroLoaded);
-  document.addEventListener('hero:loaded', onHeroLoaded, { once: true });
-
-  document.addEventListener(
-    'hero:initReady',
-    () => {
-      const el = getElementById('greetingText');
-      if (el?.textContent.trim()) return;
-      HeroManager.setRandomGreetingHTML();
-    },
-    { once: true },
-  );
-
   document.addEventListener(ROBOT_EVENTS.HERO_TYPING_END, (e) => {
     const detail = /** @type {CustomEvent} */ (e).detail;
     window.announce?.(`Zitat vollständig: ${detail?.text ?? 'Text'}`);
