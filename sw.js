@@ -1,14 +1,15 @@
 /**
- * Service Worker v5 — Reload-Loop-safe
+ * Service Worker v6 — Cache-Limits, Update-Notification, Reload-Loop-safe
  * Navigation: Network-only mit Offline-Fallback
- * Bilder/Fonts/3D: Cache-first
+ * Bilder/Fonts/3D: Cache-first mit Size-Limits
  * JS/CSS: Kein SW-Caching (Browser-HTTP-Cache übernimmt)
  * API/Externe: Ignoriert
  */
 
-// Cache-Name mit Version — bei Deployments hochzählen (z. B. static-v2)
-const CACHE = 'static-v1';
+// Cache-Name mit Version — bei Deployments hochzählen
+const CACHE = 'static-v2';
 const OFFLINE = '/offline.html';
+const MAX_CACHE_ITEMS = 80; // Max cached assets (images, fonts, models)
 
 const SKIP = [
   'cloudflareinsights.com',
@@ -20,6 +21,19 @@ const SKIP = [
   'cdn.jsdelivr.net',
   'unpkg.com',
 ];
+
+/**
+ * Trim cache to MAX_CACHE_ITEMS (LRU: oldest first)
+ * @param {string} cacheName
+ */
+async function trimCache(cacheName) {
+  const cache = await caches.open(cacheName);
+  const keys = await cache.keys();
+  if (keys.length > MAX_CACHE_ITEMS) {
+    const toDelete = keys.slice(0, keys.length - MAX_CACHE_ITEMS);
+    await Promise.all(toDelete.map((key) => cache.delete(key)));
+  }
+}
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.add(OFFLINE)));
@@ -40,6 +54,13 @@ self.addEventListener('activate', (e) => {
     // laufende Seiten mitten in der Session übernimmt und dabei
     // ausstehende Requests abbricht oder Reloads auslöst.
   );
+});
+
+// Notify clients when a new SW version is waiting
+self.addEventListener('message', (e) => {
+  if (e.data?.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 self.addEventListener('fetch', (e) => {
@@ -64,7 +85,7 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
-  // Statische Assets (Bilder, Fonts, 3D-Modelle): Cache-first
+  // Statische Assets (Bilder, Fonts, 3D-Modelle): Cache-first mit Limits
   if (
     ['image', 'font'].includes(request.destination) ||
     /\.(glb|gltf)$/.test(url.pathname)
@@ -74,7 +95,11 @@ self.addEventListener('fetch', (e) => {
         const cached = await c.match(request);
         if (cached) return cached;
         const res = await fetch(request);
-        if (res.ok) c.put(request, res.clone());
+        if (res.ok) {
+          c.put(request, res.clone());
+          // Trim cache in background to respect size limits
+          trimCache(CACHE);
+        }
         return res;
       }),
     );

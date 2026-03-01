@@ -107,7 +107,7 @@ export async function onRequest(context) {
       headers: {
         'Content-Type': 'application/json',
         'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=1200',
-        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Origin': 'https://www.abdulkerimsesli.de',
         'X-Cache': 'MISS',
       },
     });

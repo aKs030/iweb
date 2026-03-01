@@ -133,7 +133,7 @@ class SharedParallaxManager {
 
     this.scrollHandler = /** @type {EventListener} */ (
       throttle(() => {
-        const scrollY = window.pageYOffset;
+        const scrollY = window.scrollY;
         const windowHeight = window.innerHeight;
         const documentHeight = root.scrollHeight;
         const scrollableHeight = Math.max(1, documentHeight - windowHeight);

@@ -4,6 +4,7 @@
  */
 
 import { createLogger } from './logger.js';
+import { i18n } from './i18n.js';
 
 const log = createLogger('Events');
 
@@ -59,18 +60,18 @@ export const GlobalEventHandlers = {
           try {
             await navigator.share({
               title: document.title,
-              text: 'Schau dir diesen Kanal an',
+              text: i18n.t('common.share_text'),
               url: shareUrl,
             });
           } catch {}
         } else if (navigator.clipboard) {
           try {
             await navigator.clipboard.writeText(shareUrl);
-            announcer?.('Link kopiert', { dedupe: true });
+            announcer?.(i18n.t('common.link_copied'), { dedupe: true });
           } catch {}
         } else {
           try {
-            globalThis.prompt('Link kopieren', shareUrl);
+            globalThis.prompt(i18n.t('common.copy_link'), shareUrl);
           } catch {}
         }
       }

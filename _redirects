@@ -2,24 +2,49 @@
 # Cloudflare Pages Redirects Configuration
 # ============================================================================
 # Optimized redirect rules for canonical URLs and legacy path cleanup
-# Last updated: 2026-02-24
+# Last updated: 2026-03-01
 #
 # Rule Priority (Cloudflare processes top to bottom):
-# 1. Specific redirects (exact paths)
-# 2. Pattern-based redirects
-# 3. Generic cleanup rules
-# 4. Rewrites (200 status)
+# 1. Exact path redirects (most performant — no pattern matching)
+# 2. Pattern-based redirects (placeholders like :slug)
+# 3. Wildcard redirects (splats like *)
+# 4. Generic cleanup rules
+# 5. Rewrites (200 status)
+#
+# IMPORTANT: Specific rules MUST come before splat/placeholder rules
+# to avoid Wrangler performance warnings.
 
 # ============================================================================
-# 1. Legacy URL Cleanup (Pre-Refactoring)
+# 1. Exact Path Redirects (No wildcards — highest performance)
 # ============================================================================
-# Legacy /pages/* structure (compact patterns)
-/pages/album*                                /gallery/                 301
-/pages/fotogalerie*                          /gallery/                 301
-/pages/ubermich*                             /about/                   301
-/pages/ueber-mich*                           /about/                   301
-/pages/tools*                                /projekte/                301
-/pages/webentwicklung/*                      /projekte/                301
+
+# Canonical URL Redirects (Remove index.html)
+/index.html          /              301
+/blog/index.html     /blog/         301
+/projekte/index.html /projekte/     301
+/gallery/index.html  /gallery/      301
+/videos/index.html   /videos/       301
+/about/index.html    /about/        301
+/contact/index.html  /contact/      301
+
+# Trailing Slash Canonicalization
+/about        /about/        301
+/abdul-sesli  /abdul-sesli/  301
+/contact      /contact/      301
+/blog         /blog/         301
+/gallery      /gallery/      301
+/projekte     /projekte/     301
+/videos       /videos/       301
+/datenschutz  /datenschutz/  301
+/impressum    /impressum/    301
+/ai-info/     /ai-info       301
+
+# Search & API
+/search       /              302
+/search/      /              302
+/api/search/  /api/search    307
+
+# Legacy exact paths
 /pages/projekte/                             /projekte/                301
 /pages/gallery/gallery.html                  /gallery/                 301
 /pages/gallery/gallery                       /gallery/                 301
@@ -29,6 +54,29 @@
 /pages/about/about                           /about/                   301
 /pages/blog/blog.html                        /blog/                    301
 /pages/blog/blog                             /blog/                    301
+
+# ============================================================================
+# 2. Placeholder Rules (:slug, :videoId)
+# ============================================================================
+# Detail Route Canonicalization (Blog/Videos)
+/blog/:slug            /blog/:slug/            301
+/blog/:slug/index.html /blog/:slug/            301
+/blog/:slug/index/     /blog/:slug/            301
+/videos/:videoId            /videos/:videoId/  301
+/videos/:videoId/index.html /videos/:videoId/  301
+/videos/:videoId/index/     /videos/:videoId/  301
+
+# ============================================================================
+# 3. Wildcard Redirects (Splats — processed after exact rules)
+# ============================================================================
+
+# Legacy /pages/* structure
+/pages/album*                                /gallery/                 301
+/pages/fotogalerie*                          /gallery/                 301
+/pages/ubermich*                             /about/                   301
+/pages/ueber-mich*                           /about/                   301
+/pages/tools*                                /projekte/                301
+/pages/webentwicklung/*                      /projekte/                301
 /pages/kontakt*                              /#kontakt                 301
 
 # Legacy content/footer paths
@@ -43,66 +91,19 @@
 /album*                                      /gallery/                 301
 
 # ============================================================================
-# 2. Canonical URL Redirects (Remove index.html) - Permanent
+# 4. Generic .html Removal (Must be after specific rules)
 # ============================================================================
-/index.html          /              301
-/blog/index.html     /blog/         301
-/projekte/index.html /projekte/     301
-/gallery/index.html  /gallery/      301
-/videos/index.html   /videos/       301
-/about/index.html    /about/        301
-/contact/index.html  /contact/      301
-
-# ============================================================================
-# 3. Trailing Slash Canonicalization
-# ============================================================================
-/about    /about/     301
-/abdul-sesli  /abdul-sesli/ 301
-/contact  /contact/   301
-/blog     /blog/      301
-/gallery  /gallery/   301
-/projekte /projekte/  301
-/videos   /videos/    301
-/ai-info/ /ai-info    301
-/search   /           302
-/search/  /           302
-/api/search/ /api/search 307
-
-# ============================================================================
-# 3b. Detail Route Canonicalization (Blog/Videos)
-# ============================================================================
-/blog/:slug            /blog/:slug/            301
-/blog/:slug/index.html /blog/:slug/            301
-/blog/:slug/index/     /blog/:slug/            301
-/videos/:videoId            /videos/:videoId/  301
-/videos/:videoId/index.html /videos/:videoId/  301
-/videos/:videoId/index/     /videos/:videoId/  301
-
-# ============================================================================
-# 4. Legal Pages (Impressum & Datenschutz)
-# ============================================================================
-# Canonicalize to trailing slash — actual pages served from /impressum/index.html
-# and /datenschutz/index.html directly (no rewrite needed)
-/datenschutz    /datenschutz/                                      301
-/impressum      /impressum/                                        301
+/*.html   /:splat/   301
 
 # ============================================================================
 # 5. Dynamic Content Rewrites (200 Status)
 # ============================================================================
-# Serve /pages/ and /content/components/ directly (no redirect)
-# Splat rules handle all partials — explicit .html rewrites removed
-# to prevent 308 redirect loops with Cloudflare Pretty URLs
 /pages/*                  /pages/:splat                   200
 /content/components/*     /content/components/:splat      200
 /ai-info                  /ai-info.html                   200
 
 # ============================================================================
-# 6. Generic .html Removal (Must be after specific rules)
-# ============================================================================
-/*.html   /:splat/   301
-
-# ============================================================================
-# 7. Section Rewrites (Map clean URLs to physical files)
+# 6. Section Rewrites (Map clean URLs to physical files)
 # ============================================================================
 /gallery/*      /pages/gallery/:splat     200
 /projekte/*     /pages/projekte/:splat    200
@@ -117,7 +118,7 @@
 # ============================================================================
 # Notes
 # ============================================================================
-# - Specific redirects come first to avoid conflicts
+# - Exact redirects come first for maximum performance
 # - Generic .html removal is after specific rules
 # - 200 rewrites serve content without changing URL
 # - Removed absolute URL redirects (not supported by Cloudflare Pages)

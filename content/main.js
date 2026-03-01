@@ -217,7 +217,27 @@ if ('serviceWorker' in navigator && !ENV.isTest) {
   } else {
     globalThis.addEventListener(
       'load',
-      () => navigator.serviceWorker.register('/sw.js'),
+      () => {
+        navigator.serviceWorker.register('/sw.js').then((reg) => {
+          // Check for updates periodically
+          reg.addEventListener('updatefound', () => {
+            const newWorker = reg.installing;
+            if (!newWorker) return;
+            newWorker.addEventListener('statechange', () => {
+              if (
+                newWorker.state === 'installed' &&
+                navigator.serviceWorker.controller
+              ) {
+                // New SW waiting — notify user
+                log.info('New Service Worker available');
+                announce(
+                  'Update verfügbar — Seite neu laden für die neueste Version',
+                );
+              }
+            });
+          });
+        });
+      },
       { once: true },
     );
   }

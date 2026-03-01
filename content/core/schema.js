@@ -677,7 +677,11 @@ export function generateSchemaGraph(
     mainEntity: { '@id': ID.person },
     publisher: { '@id': ID.org },
     inLanguage: 'de-DE',
-    dateModified: now.toISOString(),
+    dateModified:
+      doc.querySelector('meta[name="dateModified"]')?.content ||
+      doc.querySelector('meta[property="article:modified_time"]')?.content ||
+      doc.querySelector('meta[name="dateCreated"]')?.content ||
+      now.toISOString(),
   };
 
   // Try to add dateCreated
