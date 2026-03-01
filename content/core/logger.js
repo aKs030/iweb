@@ -9,7 +9,6 @@ const LOG_LEVELS = {
   debug: 3,
   trace: 4,
 };
-
 /** Cached default log level — computed once, reused by all Logger instances */
 let _cachedDefaultLevel = null;
 function getDefaultLogLevel() {
@@ -45,7 +44,6 @@ function getDefaultLogLevel() {
   }
   return _cachedDefaultLevel;
 }
-
 class Logger {
   category;
   prefix;
