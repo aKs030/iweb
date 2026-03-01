@@ -1,5 +1,7 @@
 /* Container für den Roboter - fixiert unten rechts */
 #robot-companion-container {
+  container-type: inline-size;
+  container-name: robotcontainer;
   position: fixed;
   bottom: var(--size-30);
   right: var(--size-30);
@@ -1339,7 +1341,7 @@
   }
 }
 
-@media (width <= 480px) {
+@container robotcontainer (width <= 480px) {
   #robot-companion-container {
     bottom: var(--size-15);
     right: var(--size-15);
@@ -1369,7 +1371,7 @@
 }
 
 /* Mobile: Chat-Inhalte kompakter bei schmalen Viewports */
-@media (width <= 480px) {
+@container robotcontainer (width <= 480px) {
   .chat-messages {
     padding: var(--size-15);
   }
@@ -1479,7 +1481,7 @@
 
 /* Mobile Optimization: Prevent iOS Zoom on Input Focus */
 /* Mobile: input font-size für iOS Zoom-Prevention */
-@media (width <= 480px) {
+@container robotcontainer (width <= 480px) {
   #robot-chat-input {
     font-size: var(--size-16) !important;
   }

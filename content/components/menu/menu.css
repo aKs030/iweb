@@ -19,6 +19,8 @@
 
 /* ===== Custom Element Layout ===== */
 site-menu {
+  container-type: inline-size;
+  container-name: sitemenu;
   display: contents;
 }
 
@@ -176,7 +178,7 @@ site-menu {
   letter-spacing: -0.02em;
 }
 
-@media (width >= 901px) {
+@container sitemenu (width >= 901px) {
   .site-header {
     min-width: var(--menu-header-min-width-desktop);
   }
@@ -224,13 +226,13 @@ site-menu {
   display: inline-block;
 }
 
-@media (max-width: 1024px) {
+@container sitemenu (max-width: 1024px) {
   .site-subtitle {
     display: none !important;
   }
 }
 
-@media (max-width: 900px) {
+@container sitemenu (max-width: 900px) {
   .site-subtitle {
     display: inline-block !important;
     font-size: var(--size-r-0-875);
@@ -241,7 +243,7 @@ site-menu {
   }
 }
 
-@media (max-width: 480px) {
+@container sitemenu (max-width: 480px) {
   .site-title {
     font-size: var(--size-r-1);
   }
@@ -1033,7 +1035,7 @@ site-menu {
     transform: translateY(0);
   }
 }
-@media (width >= 901px) {
+@container sitemenu (width >= 901px) {
   .site-header.search-mode {
     justify-content: center;
     padding-inline: var(--size-16);
@@ -1250,7 +1252,7 @@ site-menu {
 }
 
 /* ===== Mobile Responsive ===== */
-@media (max-width: 900px) {
+@container sitemenu (max-width: 900px) {
   .site-header {
     display: flex;
     justify-content: space-between;
@@ -1562,7 +1564,7 @@ site-menu {
 }
 
 /* Extra Small Screens */
-@media (max-width: 480px) {
+@container sitemenu (max-width: 480px) {
   .site-header {
     width: calc(100% - var(--size-12) - var(--safe-left) - var(--safe-right));
     padding: 0 var(--size-12);
@@ -1618,4 +1620,13 @@ site-menu {
   .menu-search__desc {
     font-size: var(--size-11);
   }
+}
+
+/* View Transitions for Menu */
+::view-transition-group(menu) {
+  animation-duration: 0.3s;
+}
+
+.site-menu {
+  view-transition-name: menu;
 }
