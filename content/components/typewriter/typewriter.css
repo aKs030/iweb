@@ -102,10 +102,6 @@
   display: none;
 }
 
-.typewriter-measurer-char {
-  display: inline-block;
-}
-
 @keyframes caret-blink {
   50% {
     opacity: 0;

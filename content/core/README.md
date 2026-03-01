@@ -29,7 +29,7 @@ import { EVENTS, fire } from '/content/core/events.js';
 const log = createLogger('Example');
 
 await i18n.init();
-fire(EVENTS.DOM_READY);
+fire(EVENTS.LOADING_UNBLOCKED);
 AppLoadManager.block('example-init');
 AppLoadManager.unblock('example-init');
 log.info('Core initialized');

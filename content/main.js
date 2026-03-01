@@ -5,7 +5,7 @@
 
 import { initHeroFeatureBundle } from '../pages/home/hero-manager.js';
 import { createLogger } from './core/logger.js';
-import { EVENTS, fire } from './core/events.js';
+import { EVENTS } from './core/events.js';
 import { a11y, createAnnouncer } from './core/accessibility-manager.js';
 import { SectionManager } from './core/section-manager.js';
 import { AppLoadManager } from './core/load-manager.js';
@@ -109,8 +109,6 @@ document.addEventListener(
     perfMarks.domReady = performance.now();
     AppLoadManager.updateLoader(0.1, i18n.t('loader.status_init'));
 
-    fire(EVENTS.DOM_READY);
-
     let modulesReady = false;
     let windowLoaded = false;
 
@@ -157,9 +155,6 @@ document.addEventListener(
     );
 
     AppLoadManager.updateLoader(0.2, i18n.t('loader.modules_core'));
-    fire(EVENTS.CORE_INITIALIZED);
-    fire(EVENTS.HERO_INIT_READY);
-
     AppLoadManager.updateLoader(0.3, i18n.t('loader.hero_init'));
     initHeroFeatureBundle(sectionManager);
 
@@ -169,7 +164,6 @@ document.addEventListener(
     modulesReady = true;
     perfMarks.modulesReady = performance.now();
     AppLoadManager.updateLoader(0.6, i18n.t('loader.modules_loaded'));
-    fire(EVENTS.MODULES_READY);
     checkReady();
 
     // Force hide after timeout
