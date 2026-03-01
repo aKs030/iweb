@@ -52,7 +52,7 @@ npm run qa
 npm run qa:fix
 ```
 
-`npm run qa` enthält: ESLint, Prettier, Stylelint, CSS-Audit, AI-Index-Check und Struktur-Gate.
+`npm run qa` enthält: ESLint, Prettier, Stylelint, CSS-Audit, AI-Index-Check, Struktur-Gate und eine Suche nach `TODO`/`FIXME`-Hinweisen (siehe `check:todos`).
 
 ### 4. Commit erstellen
 
@@ -186,6 +186,21 @@ Wenn du Features hinzufügst oder änderst:
 Siehe `docs/` Verzeichnis und [Dokumentationsindex](docs/README.md).
 
 ## 🔧 Nützliche Commands
+
+> ⚠️ **Environment variables**
+> Viele Entwickler‑Skripte (z. B. `cf:redirect:audit`) benötigen Cloudflare‑Zugangsdaten.
+> Lege lokal eine `.env`-Datei an oder exportiere die folgenden Variablen:
+>
+> ```bash
+> # Cloudflare (optional für redirect-audit etc.)
+> CF_ACCOUNT_ID=your_account_id
+> CF_API_TOKEN=your_api_token
+>
+> # CORS whitelist (kommasepariert)
+> ALLOWED_ORIGINS=https://abdulkerimsesli.de,https://www.abdulkerimsesli.de
+> ```
+>
+> Siehe auch `.env.example` für ein Template.
 
 ```bash
 # Development

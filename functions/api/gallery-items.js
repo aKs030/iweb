@@ -5,8 +5,8 @@ let pendingLoadPromise = null;
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
 export async function onRequest(context) {
-  const { env } = context;
-  const url = new URL(context.request.url);
+  const { env, request } = context;
+  const url = new URL(request.url);
 
   const BUCKET = env.GALLERY_BUCKET;
   if (!BUCKET) {
@@ -19,19 +19,34 @@ export async function onRequest(context) {
     );
   }
 
+  // Optimize: Use Cloudflare Cache API for persistent caching across worker restarts
+  const cache = caches.default;
+  const isLocal = url.hostname === 'localhost' || url.hostname === '127.0.0.1';
+
+  // Try fetching from cache first (skip for local dev to avoid confusion)
+  if (!isLocal) {
+    const cachedResponse = await cache.match(request);
+    if (cachedResponse) {
+      // Add a header to indicate cache hit for debugging
+      const hitResponse = new Response(cachedResponse.body, cachedResponse);
+      hitResponse.headers.set('X-Cache', 'HIT');
+      return hitResponse;
+    }
+  }
+
   try {
     let objects = [];
     const now = Date.now();
 
-    // Check if we have a valid cache
+    // Secondary layer: In-memory cache for ultra-fast same-isolate hits
     if (cachedObjects && now < cacheExpiresAt) {
       objects = cachedObjects;
     } else {
-      // Check if another request is already fetching from R2
+      // De-duplication: Check if another request is already fetching from R2
       if (pendingLoadPromise) {
         objects = await pendingLoadPromise;
       } else {
-        // Fetch from R2 and update cache
+        // Fetch from R2 and update in-memory cache
         pendingLoadPromise = (async () => {
           try {
             const listResults = [];
@@ -45,8 +60,6 @@ export async function onRequest(context) {
               cursor = list.truncated ? list.cursor : undefined;
             } while (cursor);
 
-            // Pre-filter and pre-sort by upload date (newest first) before caching
-            // This reduces the work needed on every request
             const filtered = listResults
               .filter((obj) =>
                 /\.(jpg|jpeg|png|webp|gif|svg|mp4|webm)$/i.test(obj.key),
@@ -70,39 +83,41 @@ export async function onRequest(context) {
       }
     }
 
-    // Base URL for images
-    // Use environment variable or default to custom domain
-    // During local dev, use relative proxy path
-    const isLocal =
-      url.hostname === 'localhost' || url.hostname === '127.0.0.1';
     const R2_BASE = isLocal ? '/r2-proxy' : 'https://img.abdulkerimsesli.de';
 
     const items = objects.map((obj) => {
       const key = obj.key;
       const filename = key.split('/').pop();
       const type = /\.(mp4|webm)$/i.test(filename) ? 'video' : 'image';
-
-      // "Gallery/My Image.jpg" -> "My Image"
       const title = filename.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
 
       return {
-        id: key, // Unique ID
+        id: key,
         type: type,
         url: `${R2_BASE}/${encodeURIComponent(key).replace(/%2F/g, '/')}`,
         title: title,
-        description: `Taken by Abdulkerim Sesli`, // Default description
+        description: `Taken by Abdulkerim Sesli`,
         size: obj.size,
         uploaded: obj.uploaded,
       };
     });
 
-    return new Response(JSON.stringify({ items }), {
+    const responseContent = JSON.stringify({ items });
+    const responseView = new Response(responseContent, {
       headers: {
         'Content-Type': 'application/json',
-        'Cache-Control': 'public, max-age=600', // Cache 10 minutes
+        'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=1200',
         'Access-Control-Allow-Origin': '*',
+        'X-Cache': 'MISS',
       },
     });
+
+    // Store in Cache API if not local
+    if (!isLocal) {
+      context.waitUntil(cache.put(request, responseView.clone()));
+    }
+
+    return responseView;
   } catch (err) {
     console.error('Gallery API error:', err);
     return new Response(JSON.stringify({ error: 'Gallery request failed' }), {
