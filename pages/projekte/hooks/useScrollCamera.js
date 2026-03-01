@@ -19,8 +19,7 @@ export const useScrollCamera = (projects) => {
       rafId = requestAnimationFrame(() => {
         rafId = null;
         // Get current scroll position
-        const scrollY =
-          window.pageYOffset || document.documentElement.scrollTop;
+        const scrollY = window.scrollY || document.documentElement.scrollTop;
 
         // Calculate total scrollable height
         const documentHeight = Math.max(

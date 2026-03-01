@@ -318,7 +318,7 @@ export class StarManager {
     const now = performance.now();
     if (now - this.lastScrollUpdate < this.scrollUpdateThrottle) return;
 
-    const scrollY = window.pageYOffset;
+    const scrollY = window.scrollY;
     if (Math.abs(scrollY - this.lastScrollY) < 5) return; // Ignore micro-scrolls
 
     this.lastScrollUpdate = now;

@@ -255,7 +255,7 @@ export const initHeroFeatureBundle = (sectionManager) => {
         target.scrollIntoView({ behavior: 'smooth' });
       } catch (err) {
         log.warn('HeroManager: scrollIntoView failed, using fallback', err);
-        const top = target.getBoundingClientRect().top + window.pageYOffset;
+        const top = target.getBoundingClientRect().top + window.scrollY;
         window.scrollTo({ top, behavior: 'smooth' });
       }
     };

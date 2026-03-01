@@ -3,8 +3,7 @@
  * Provides smooth cross-fade transitions between page navigations.
  * Only activates in browsers that support `document.startViewTransition`.
  *
- * @version 1.0.0
- * @date 2026-02-20
+ * @version 1.1.0
  */
 
 import { handleSamePageScroll } from './utils.js';
@@ -13,6 +12,11 @@ import { createLogger } from './logger.js';
 const log = createLogger('ViewTransitions');
 
 const SAME_ORIGIN = location.origin;
+
+// Internes Flag: wurde die aktuelle History-Entry von uns per pushState gesetzt?
+// Wichtig weil pushState(null, ...) immer state=null setzt — wir brauchen
+// einen eigenen Mechanismus um "VT-navigierte" Einträge zu erkennen.
+const vtManagedPaths = new Set();
 
 /**
  * Check if the View Transitions API is supported
@@ -56,6 +60,7 @@ function applyPage(url, { title, mainHtml, bodyClass }) {
 
   // Scroll to top
   window.scrollTo({ top: 0, behavior: 'instant' });
+
   // Notify other subsystems that the page content changed (e.g. theme manager)
   try {
     window.dispatchEvent(new CustomEvent('page:changed', { detail: { url } }));
@@ -94,12 +99,14 @@ async function navigateWithTransition(url) {
       applyPage(url, pageData);
     }
 
+    // Pfad als VT-verwaltet markieren, BEVOR pushState aufgerufen wird
+    vtManagedPaths.add(new URL(url, SAME_ORIGIN).pathname);
+
     // Update browser history
     history.pushState(null, pageData.title, url);
   } catch (err) {
     // Fallback: regular navigation
     log.warn('Fallback to regular navigation:', err.message);
-
     location.href = url;
   }
 }
@@ -120,22 +127,20 @@ export function initViewTransitions() {
     // Only intercept same-origin links
     if (url.origin !== SAME_ORIGIN) return;
 
-    // If the link points exactly to the current page (ignoring hashes), use
-    // shared helper to handle scroll behaviour. the helper returns true if the
-    // navigation was handled and we should prevent default.
+    // Gleiche Seite: ggf. sanftes Scroll-to-top
     if (handleSamePageScroll(url.href)) {
       e.preventDefault();
       return;
     }
 
-    // Discard pure-hash URLs up front (they won't change page content)
+    // Reine Hash-URLs nicht abfangen (Anchor-Sprünge auf gleicher Seite)
     if (url.pathname === location.pathname && url.hash) return;
 
     if (link.hasAttribute('download')) return;
     if (link.target === '_blank') return;
     if (e.ctrlKey || e.metaKey || e.shiftKey) return;
 
-    // Skip gallery, projekte, blog, videos pages (they have their own SPA routing)
+    // Seiten mit eigenem SPA-Routing überspringen
     const skipPaths = [
       '/gallery',
       '/projekte',
@@ -154,10 +159,19 @@ export function initViewTransitions() {
     navigateWithTransition(url.href);
   });
 
-  // Handle back/forward navigation safely
+  // Back/Forward-Navigation:
+  // Nur dann reloaden, wenn der Ziel-Pfad NICHT von uns per VT-Navigation
+  // verwaltet wird. So werden Hash-Wechsel und unbekannte popstate-Events
+  // nicht fälschlicherweise in einen Reload umgewandelt.
   window.addEventListener('popstate', () => {
-    // A soft popstate replacement breaks dynamic scripts (e.g. section loaders and specific page scripts).
-    // The safest approach is to force a full reload on back/forward to ensure all scripts and styles re-initialize correctly.
+    const targetPath = location.pathname;
+
+    // Hash-Only-Änderungen auf der gleichen Seite: kein Reload
+    if (location.hash && targetPath === location.pathname) return;
+
+    // Wenn der Zielpfad ein VT-verwalteter Pfad ist, führen wir einen
+    // vollständigen Reload durch, damit Scripts und Styles korrekt neu
+    // initialisiert werden (SPA-State ist nach Back/Forward nicht zuverlässig).
     location.reload();
   });
 }

@@ -91,7 +91,7 @@ async function fetchWithRetry(url, config = {}) {
 
       if (attempt < retries) {
         log.warn(`Fetch attempt ${attempt + 1} failed, retrying...`, error);
-        await sleep(retryDelay * (attempt + 1));
+        await sleep(retryDelay * Math.pow(2, attempt));
       }
     }
   }

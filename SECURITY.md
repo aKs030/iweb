@@ -132,11 +132,24 @@ All API keys and secrets are stored as environment variables and never exposed t
 
 ## Security Audit History
 
-| Date       | Type          | Findings | Status   |
-| ---------- | ------------- | -------- | -------- |
-| 2025-01-30 | Code Review   | 0 issues | ✅ Clean |
-| 2025-01-30 | Dependency    | 0 issues | ✅ Clean |
-| 2025-01-30 | Configuration | 0 issues | ✅ Clean |
+| Date       | Type          | Findings | Status      |
+| ---------- | ------------- | -------- | ----------- |
+| 2026-03-01 | Code Review   | 5 fixed  | ✅ Resolved |
+| 2026-03-01 | Dependency    | 0 issues | ✅ Clean    |
+| 2026-03-01 | Configuration | 3 fixed  | ✅ Resolved |
+| 2025-01-30 | Code Review   | 0 issues | ✅ Clean    |
+| 2025-01-30 | Dependency    | 0 issues | ✅ Clean    |
+| 2025-01-30 | Configuration | 0 issues | ✅ Clean    |
+
+### 2026-03-01 Audit Details
+
+**Fixed:**
+
+- i18n HTML sanitizer replaced with DOMPurify (XSS risk)
+- Gallery API CORS restricted to own domain (was wildcard)
+- Cookie values now URL-encoded (special char handling)
+- Lucide CDN pinned to specific version (was @latest)
+- Service Worker cache size limits added
 
 ## Security Tools
 
@@ -162,5 +175,5 @@ We appreciate the security research community and will acknowledge researchers w
 
 ---
 
-**Last Updated**: January 30, 2025  
-**Version**: 1.0.0
+**Last Updated**: March 1, 2026  
+**Version**: 1.1.0

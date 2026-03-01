@@ -12,7 +12,7 @@ export const CookieManager = Object.freeze({
     date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
     const expires = `; expires=${date.toUTCString()}`;
     const secure = window.location.protocol === 'https:' ? '; Secure' : '';
-    document.cookie = `${name}=${value || ''}${expires}; path=/; SameSite=Lax${secure}`;
+    document.cookie = `${encodeURIComponent(name)}=${encodeURIComponent(value || '')}${expires}; path=/; SameSite=Lax${secure}`;
   },
 
   /**

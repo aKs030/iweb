@@ -330,5 +330,10 @@
       "email": "Please enter a valid email address.",
       "server_format": "Server responded with invalid format."
     }
+  },
+  "common": {
+    "share_text": "Check out this channel",
+    "link_copied": "Link copied",
+    "copy_link": "Copy link"
   }
 }

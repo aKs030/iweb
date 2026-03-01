@@ -9,6 +9,43 @@ const LOG_LEVELS = {
   debug: 3,
   trace: 4,
 };
+
+/** Cached default log level — computed once, reused by all Logger instances */
+let _cachedDefaultLevel = null;
+function getDefaultLogLevel() {
+  if (_cachedDefaultLevel !== null) return _cachedDefaultLevel;
+  if (typeof window === 'undefined') {
+    _cachedDefaultLevel = LOG_LEVELS.warn;
+    return _cachedDefaultLevel;
+  }
+  try {
+    const hostname = window.location?.hostname || '';
+    const isProd =
+      hostname &&
+      hostname !== 'localhost' &&
+      hostname !== '127.0.0.1' &&
+      !hostname.startsWith('192.168.');
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('debug') === 'true') {
+      _cachedDefaultLevel = LOG_LEVELS.debug;
+      return _cachedDefaultLevel;
+    }
+    try {
+      const stored = window.localStorage?.getItem('iweb-debug');
+      if (stored === 'true') {
+        _cachedDefaultLevel = LOG_LEVELS.debug;
+        return _cachedDefaultLevel;
+      }
+    } catch {
+      // localStorage may throw SecurityError in private browsing
+    }
+    _cachedDefaultLevel = isProd ? LOG_LEVELS.error : LOG_LEVELS.warn;
+  } catch {
+    _cachedDefaultLevel = LOG_LEVELS.warn;
+  }
+  return _cachedDefaultLevel;
+}
+
 class Logger {
   category;
   prefix;
@@ -19,23 +56,9 @@ class Logger {
     this.category = category;
     this.prefix = `[${category}]`;
     this.level =
-      options.level !== undefined ? options.level : this.detectLogLevel();
+      options.level !== undefined ? options.level : getDefaultLogLevel();
     this.performance = options.performance ?? true;
     this.timestamps = options.timestamps ?? false;
-  }
-  detectLogLevel() {
-    if (typeof window === 'undefined') return LOG_LEVELS.warn;
-    const hostname = window.location?.hostname || '';
-    const isProd =
-      hostname &&
-      hostname !== 'localhost' &&
-      hostname !== '127.0.0.1' &&
-      !hostname.startsWith('192.168.');
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('debug') === 'true') return LOG_LEVELS.debug;
-    const stored = window.localStorage?.getItem('iweb-debug');
-    if (stored === 'true') return LOG_LEVELS.debug;
-    return isProd ? LOG_LEVELS.error : LOG_LEVELS.warn;
   }
   shouldLog(level) {
     return LOG_LEVELS[level] <= this.level;

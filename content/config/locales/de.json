@@ -330,5 +330,10 @@
       "email": "Bitte geben Sie eine gültige E-Mail-Adresse ein.",
       "server_format": "Server antwortete mit ungültigem Format."
     }
+  },
+  "common": {
+    "share_text": "Schau dir diesen Kanal an",
+    "link_copied": "Link kopiert",
+    "copy_link": "Link kopieren"
   }
 }
