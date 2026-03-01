@@ -208,28 +208,16 @@ globalThis.addEventListener('pageshow', (event) => {
   }
 });
 
-// ===== Service Worker Registration =====
-// Silent-Update: Kein Toast, kein User-Interaktion nötig.
-// Navigation ist Network-First → User bekommt immer frische Inhalte vom Server.
-// Der SW dient nur als Offline-Fallback und Asset-Cache.
+// ===== Service Worker =====
 if ('serviceWorker' in navigator && !ENV.isTest) {
-  const isLocal = ['localhost', '127.0.0.1'].includes(
-    globalThis.location.hostname,
-  );
-
-  if (isLocal) {
-    navigator.serviceWorker.getRegistrations().then((regs) => {
-      regs.forEach((reg) => reg.unregister());
-    });
-    caches.keys().then((names) => names.forEach((n) => caches.delete(n)));
+  if (['localhost', '127.0.0.1'].includes(globalThis.location.hostname)) {
+    navigator.serviceWorker
+      .getRegistrations()
+      .then((r) => r.forEach((s) => s.unregister()));
   } else {
     globalThis.addEventListener(
       'load',
-      () => {
-        navigator.serviceWorker.register('/sw.js').catch((err) => {
-          log.warn('SW registration failed:', err);
-        });
-      },
+      () => navigator.serviceWorker.register('/sw.js'),
       { once: true },
     );
   }
