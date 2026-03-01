@@ -38,6 +38,12 @@ export const ROBOT_EVENTS = {
   GAME_STARTED: 'robot:game:started',
   GAME_ENDED: 'robot:game:ended',
 
+  // Agent Events
+  TOOL_EXECUTED: 'robot:tool:executed',
+  IMAGE_UPLOADED: 'robot:image:uploaded',
+  MEMORY_RECALLED: 'robot:memory:recalled',
+  MEMORY_STORED: 'robot:memory:stored',
+
   // Error Events
   ERROR: 'robot:error',
 };
@@ -50,4 +56,7 @@ export const ROBOT_ACTIONS = {
   PLAY_TIC_TAC_TOE: 'playTicTacToe',
   PLAY_TRIVIA: 'playTrivia',
   PLAY_GUESS_NUMBER: 'playGuessNumber',
+  UPLOAD_IMAGE: 'uploadImage',
+  TOGGLE_THEME: 'toggleTheme',
+  SEARCH_WEBSITE: 'searchWebsite',
 };

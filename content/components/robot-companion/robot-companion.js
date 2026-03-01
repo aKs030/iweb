@@ -57,6 +57,8 @@ export class RobotCompanion {
 
     /** @type {import('./ai-service.js').AIService|null} */
     this.aiService = null;
+    /** @type {import('./ai-agent-service.js').AIAgentService|null} */
+    this._agentService = null;
     /** @type {RobotGames} */
     this.gameModule = new RobotGames(this);
     /** @type {RobotAnimation} */
@@ -215,7 +217,7 @@ export class RobotCompanion {
   }
 
   /**
-   * Lazy load the AI Service
+   * Lazy load the AI Service (legacy)
    * @returns {Promise<import('./ai-service.js').AIService>}
    */
   async getAIService() {
@@ -224,6 +226,18 @@ export class RobotCompanion {
       this.aiService = new AIService();
     }
     return this.aiService;
+  }
+
+  /**
+   * Lazy load the AI Agent Service (proactive, with tool-calling & memory)
+   * @returns {Promise<import('./ai-agent-service.js').AIAgentService>}
+   */
+  async getAgentService() {
+    if (!this._agentService) {
+      const { AIAgentService } = await import('./ai-agent-service.js');
+      this._agentService = new AIAgentService();
+    }
+    return this._agentService;
   }
 
   getFooterElement() {
@@ -343,6 +357,13 @@ export class RobotCompanion {
       }
 
       if (!this.dom.container) {
+        ticking = false;
+        return;
+      }
+
+      // When positioned via 'top' (e.g. gallery), skip footer overlap entirely
+      const pageCtx = this.dom.container.dataset.pageContext;
+      if (pageCtx === 'gallery') {
         ticking = false;
         return;
       }
@@ -468,9 +489,15 @@ export class RobotCompanion {
         // Keyboard is open (overlay mode or partial resize)
         this.isKeyboardAdjustmentActive = true;
 
-        if (this.dom.controls) {
-          this.dom.controls.classList.add('hide-controls-mobile');
-        }
+        // We used to hide the chat controls while the mobile keyboard
+        // was visible because they could be obscured. This caused the
+        // buttons to vanish entirely on some devices, which was
+        // confusing. Controls are now left in place and the window
+        // itself is shifted upward instead.
+        //
+        // if (this.dom.controls) {
+        //   this.dom.controls.classList.add('hide-controls-mobile');
+        // }
 
         const safeMargin = 10;
         const maxWindowHeight = visualHeight - safeMargin * 2;
@@ -493,9 +520,7 @@ export class RobotCompanion {
         // Keyboard is closed
         this.isKeyboardAdjustmentActive = false;
 
-        if (this.dom.controls && !isInputFocused) {
-          this.dom.controls.classList.remove('hide-controls-mobile');
-        }
+        // no need to toggle hide-controls-mobile any more
 
         // Reset styles to allow CSS / footer overlap logic to take over
         this.dom.container.style.bottom = '';
@@ -661,6 +686,7 @@ export class RobotCompanion {
     }, 5000);
 
     this.setupSectionChangeDetection();
+    this.setupPageContextMorphing();
 
     // Start context-aware reactions monitoring
     this._setTimeout(() => {
@@ -749,6 +775,92 @@ export class RobotCompanion {
     });
 
     this.maybeTriggerContextReaction(this._lastKnownContext);
+  }
+
+  /**
+   * View Transitions Morphing – set `data-page-context` on the container so
+   * the CSS position rules kick in. During SPA navigations the attribute
+   * changes *inside* `document.startViewTransition()`, which causes the
+   * browser to smoothly morph the robot from old → new position.
+   */
+  setupPageContextMorphing() {
+    // Set initial context immediately
+    this._updatePageContextAttribute();
+
+    // Re-evaluate after every SPA page swap dispatched by view-transitions.js
+    /** @type {() => void} */
+    const onPageChanged = () => this._updatePageContextAttribute();
+
+    window.addEventListener('page:changed', onPageChanged, { passive: true });
+    this._eventListeners.dom.push({
+      target: window,
+      event: 'page:changed',
+      handler: onPageChanged,
+    });
+  }
+
+  /**
+   * Resolve current page context and apply it as a data attribute.
+   * When the context actually changes (SPA navigation), reset patrol
+   * and collision state so the robot settles cleanly in its new position.
+   * @private
+   */
+  _updatePageContextAttribute() {
+    const ctx = this.getPageContext();
+    const container = this.dom?.container;
+    if (!container) return;
+
+    // Map the granular section contexts to the broader page-level ones
+    // used in the CSS morph rules.
+    /** @type {Record<string, string>} */
+    const contextMap = {
+      hero: 'home',
+      features: 'home',
+      home: 'home',
+      projects: 'projects',
+      about: 'about',
+      gallery: 'gallery',
+      blog: 'blog',
+      videos: 'videos',
+      contact: 'contact',
+      legal: 'legal',
+      footer: 'home', // keep default position when at footer
+      default: 'home',
+    };
+
+    const mapped = contextMap[ctx] || 'home';
+    const prev = container.dataset.pageContext;
+
+    if (prev !== mapped) {
+      container.dataset.pageContext = mapped;
+
+      // Clear typewriter ref – it may not exist on the new page
+      this._typeWriterEl = null;
+
+      // Reset patrol to prevent leftover offsets from the old page
+      if (this.animationModule) {
+        this.animationModule.patrol.x = 0;
+        this.animationModule.patrol.y = 0;
+        this.animationModule.patrol.isPaused = false;
+        container.style.transform = 'translate3d(0px, 0px, 0)';
+
+        // When returning to home via SPA navigation, re-trigger entry animation.
+        // Skip initial load (prev === undefined) — the hydration callback handles that.
+        if (mapped === 'home' && prev !== undefined) {
+          this._setTimeout(() => {
+            this.animationModule.startTypeWriterKnockbackAnimation();
+          }, 300);
+        }
+      }
+
+      // Invalidate collision caches
+      if (this.collisionModule) {
+        this.collisionModule._lastCollisionCheck = 0;
+        this.collisionModule._lastObstacleUpdate = 0;
+      }
+
+      log.debug('Robot morph context →', mapped);
+    }
   }
 
   destroy() {
@@ -1019,6 +1131,8 @@ export class RobotCompanion {
     this.dom.mouth = container.querySelector('.robot-mouth');
 
     const anim = /** @type {any} */ (this.animationModule);
+    // flame colours may need adjustment after DOM creation
+    anim.ensureFlameColors();
     this._requestAnimationFrame(() => anim.startIdleEyeMovement());
   }
 
@@ -1151,6 +1265,34 @@ export class RobotCompanion {
         handler: _onInputBlur,
       });
     }
+
+    // Image upload handling
+    const imageUploadInput = document.getElementById('robot-image-upload');
+    const imageBtn = document.getElementById('robot-image-btn');
+
+    if (imageBtn && imageUploadInput) {
+      const _onImageBtnClick = () => imageUploadInput.click();
+      imageBtn.addEventListener('click', _onImageBtnClick);
+      this._eventListeners.dom.push({
+        target: imageBtn,
+        event: 'click',
+        handler: _onImageBtnClick,
+      });
+
+      const _onImageChange = (e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+          this.chatModule.handleImageUpload(file);
+          /** @type {HTMLInputElement} */ (imageUploadInput).value = ''; // Reset for re-upload
+        }
+      };
+      imageUploadInput.addEventListener('change', _onImageChange);
+      this._eventListeners.dom.push({
+        target: imageUploadInput,
+        event: 'change',
+        handler: _onImageChange,
+      });
+    }
   }
 
   /**
@@ -1192,9 +1334,15 @@ export class RobotCompanion {
       else if (lower.includes('projekte')) context = 'projects';
       else if (lower.includes('gallery') || lower.includes('fotos'))
         context = 'gallery';
-      else if (lower.includes('about') && file !== 'index.html')
-        context = 'about';
-      else if (lower === '/' || file === 'index.html' || file === '')
+      else if (lower.includes('videos')) context = 'videos';
+      else if (lower.includes('blog')) context = 'blog';
+      else if (lower.includes('contact') || lower.includes('kontakt'))
+        context = 'contact';
+      else if (lower.includes('datenschutz') || lower.includes('impressum'))
+        context = 'legal';
+      else if (lower.includes('about') || lower.includes('abdul-sesli')) {
+        if (file !== 'index.html') context = 'about';
+      } else if (lower === '/' || file === 'index.html' || file === '')
         context = 'home';
       else {
         const h1 = document.querySelector('h1');
@@ -1203,6 +1351,7 @@ export class RobotCompanion {
           if (h1Text.includes('projekt')) context = 'projects';
           else if (h1Text.includes('foto') || h1Text.includes('galerie'))
             context = 'gallery';
+          else if (h1Text.includes('video')) context = 'videos';
         }
       }
 

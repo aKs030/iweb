@@ -197,7 +197,7 @@
  */
 
 /**
- * @typedef {'hero'|'features'|'about'|'footer'|'projects'|'gallery'|'home'|'default'} PageContext
+ * @typedef {'hero'|'features'|'about'|'footer'|'projects'|'gallery'|'videos'|'blog'|'contact'|'legal'|'home'|'default'} PageContext
  */
 
 /**

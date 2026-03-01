@@ -98,13 +98,30 @@ export class RobotDOMBuilder {
   }
 
   /**
-   * Create input area
+   * Create input area with image upload button
    * @returns {HTMLElement}
    */
   createInputArea() {
     const inputArea = document.createElement('div');
     inputArea.className = 'chat-input-area';
     inputArea.id = 'robot-input-area';
+
+    // Hidden file input for image upload
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.id = 'robot-image-upload';
+    fileInput.accept = 'image/jpeg,image/png,image/webp,image/gif';
+    fileInput.style.display = 'none';
+    fileInput.setAttribute('aria-label', 'Bild hochladen');
+
+    // Image upload button
+    const uploadBtn = document.createElement('button');
+    uploadBtn.id = 'robot-image-btn';
+    uploadBtn.className = 'chat-image-btn';
+    uploadBtn.textContent = '📷';
+    uploadBtn.setAttribute('aria-label', 'Bild zur Analyse hochladen');
+    uploadBtn.title = 'Bild hochladen';
+    uploadBtn.type = 'button';
 
     const input = document.createElement('input');
     input.type = 'text';
@@ -119,9 +136,94 @@ export class RobotDOMBuilder {
     sendBtn.textContent = '➤';
     sendBtn.setAttribute('aria-label', 'Nachricht senden');
 
-    inputArea.append(input, sendBtn);
+    inputArea.append(fileInput, uploadBtn, input, sendBtn);
 
     return inputArea;
+  }
+
+  /**
+   * Create image preview element
+   * @param {string} src - Image source URL
+   * @param {string} fileName - File name
+   * @returns {HTMLElement}
+   */
+  createImagePreview(src, fileName) {
+    const preview = document.createElement('div');
+    preview.className = 'chat-image-preview';
+    preview.id = 'robot-image-preview';
+
+    const img = document.createElement('img');
+    img.src = src;
+    img.alt = fileName || 'Hochgeladenes Bild';
+    img.className = 'chat-preview-img';
+
+    const info = document.createElement('span');
+    info.className = 'chat-preview-name';
+    info.textContent = fileName || 'Bild';
+
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'chat-preview-remove';
+    removeBtn.textContent = '×';
+    removeBtn.setAttribute('aria-label', 'Bild entfernen');
+    removeBtn.type = 'button';
+
+    preview.append(img, info, removeBtn);
+    return preview;
+  }
+
+  /**
+   * Create tool execution indicator
+   * @param {string} toolName - Tool name
+   * @param {string} message - Execution message
+   * @returns {HTMLElement}
+   */
+  createToolCallIndicator(toolName, message) {
+    const indicator = document.createElement('div');
+    indicator.className = 'chat-tool-call';
+
+    const icon = document.createElement('span');
+    icon.className = 'tool-call-icon';
+    icon.textContent = this._getToolIcon(toolName);
+
+    const text = document.createElement('span');
+    text.className = 'tool-call-text';
+    text.textContent = message || `${toolName} ausführen...`;
+
+    indicator.append(icon, text);
+    return indicator;
+  }
+
+  /**
+   * Create memory indicator
+   * @returns {HTMLElement}
+   */
+  createMemoryIndicator() {
+    const badge = document.createElement('span');
+    badge.className = 'chat-memory-badge';
+    badge.textContent = '🧠';
+    badge.title = 'Jules erinnert sich an dich';
+    return badge;
+  }
+
+  /**
+   * Get icon for tool type
+   * @param {string} toolName
+   * @returns {string}
+   * @private
+   */
+  _getToolIcon(toolName) {
+    const icons = {
+      navigate: '🧭',
+      setTheme: '🎨',
+      searchBlog: '🔍',
+      toggleMenu: '📋',
+      scrollToSection: '📜',
+      rememberUser: '🧠',
+      recallMemory: '💭',
+      summarizePage: '📝',
+      recommend: '💡',
+    };
+    return icons[toolName] || '⚡';
   }
 
   /**
@@ -834,15 +936,15 @@ export class RobotDOMBuilder {
       'http://www.w3.org/2000/svg',
       'path',
     );
-    outerFlame.setAttribute('d', 'M40,90 Q50,120 60,90 Q50,110 40,90');
-    outerFlame.setAttribute('fill', '#ff9900');
+    outerFlame.setAttribute('d', 'M35,88 Q50,115 65,88 Q50,108 35,88');
+    // fill is handled by CSS (.robot-flame path { fill: var(--flame-outer-color) })
 
     const innerFlame = document.createElementNS(
       'http://www.w3.org/2000/svg',
       'path',
     );
-    innerFlame.setAttribute('d', 'M45,90 Q50,110 55,90');
-    innerFlame.setAttribute('fill', '#ffff00');
+    innerFlame.setAttribute('d', 'M42,88 Q50,108 58,88');
+    // fill is handled by CSS (.robot-flame path:nth-child(2) { fill: var(--flame-inner-color) })
 
     g.append(outerFlame, innerFlame);
 

@@ -1,5 +1,4 @@
 import { createLogger } from '../../../core/logger.js';
-import { escapeHTML } from '../../../core/utils.js';
 import { MarkdownRenderer } from './markdown-renderer.js';
 import { ROBOT_ACTIONS } from '../constants/events.js';
 import { uiStore } from '../../../core/ui-store.js';
@@ -10,11 +9,17 @@ export class RobotChat {
   constructor(robot) {
     this.robot = robot;
 
+    /** @type {File|null} Pending image for upload */
+    this.pendingImage = null;
+
     // Use state manager for chat state
     // Legacy properties for backward compatibility (deprecated)
     this.isOpen = false;
     this.isTyping = false;
     this.lastGreetedContext = null;
+
+    // track whether we've already bound focus/blur handlers
+    this._controlsTypingBound = false;
 
     this._bubbleSequenceTimers = [];
     this.contextGreetingHistory = {};
@@ -39,7 +44,20 @@ export class RobotChat {
     const newState = forceState ?? !this.isOpen;
     if (newState) {
       this.robot.ensureChatWindowCreated();
+
+      // attach focus/blur handlers once we know input exists
+      if (!this._controlsTypingBound && this.robot.dom.input) {
+        this.robot.dom.input.addEventListener('focus', () => {
+          this.robot.dom.controls?.classList.add('typing');
+        });
+        this.robot.dom.input.addEventListener('blur', () => {
+          this.robot.dom.controls?.classList.remove('typing');
+        });
+        this._controlsTypingBound = true;
+      }
+
       this.robot.dom.window.classList.add('open');
+      this.robot.dom.container.classList.add('robot-chat--open');
       this.isOpen = true;
 
       // Update state manager
@@ -65,6 +83,7 @@ export class RobotChat {
       globalThis?.a11y?.trapFocus(this.robot.dom.window);
     } else {
       this.robot.dom.window.classList.remove('open');
+      this.robot.dom.container.classList.remove('robot-chat--open');
       this.isOpen = false;
 
       // Update state manager
@@ -93,19 +112,30 @@ export class RobotChat {
 
   async handleUserMessage() {
     const text = this.robot.dom.input.value.trim();
-    if (!text) return;
+    const hasPendingImage = !!this.pendingImage;
 
-    this.addMessage(text, 'user');
+    if (!text && !hasPendingImage) return;
+
+    // Show user message (with image thumbnail if present)
+    if (hasPendingImage) {
+      this.addImageMessage(text, this.pendingImage);
+    } else {
+      this.addMessage(text, 'user');
+    }
     this.robot.dom.input.value = '';
 
     // Check for active mini-games
     if (this.robot.gameModule.state.guessNumberActive) {
       this.robot.gameModule.handleGuessNumber(text);
+      this.clearImagePreview();
       return;
     }
 
     // Check for trivia answer
-    if (text.startsWith('triviaAnswer_')) return;
+    if (text.startsWith('triviaAnswer_')) {
+      this.clearImagePreview();
+      return;
+    }
 
     this.showTyping();
     this.robot.animationModule.startThinking();
@@ -117,22 +147,51 @@ export class RobotChat {
 
     try {
       this.robot.animationModule.startSpeaking();
-      const aiService = await this.robot.getAIService();
+      const agentService = await this.robot.getAgentService();
 
-      const response = await aiService.generateResponse(text, (chunk) => {
-        if (!typingRemoved) {
-          this.removeTyping();
-          typingRemoved = true;
-        }
+      let response;
 
-        if (!streamingMessageEl) {
-          streamingMessageEl = this.createStreamingMessage();
-        }
+      if (hasPendingImage) {
+        // Use image analysis
+        const imageFile = this.pendingImage;
+        this.clearImagePreview();
 
-        this.updateStreamingMessage(streamingMessageEl, chunk);
-      });
+        response = await agentService.analyzeImage(imageFile, text, (chunk) => {
+          if (!typingRemoved) {
+            this.removeTyping();
+            typingRemoved = true;
+          }
+          if (!streamingMessageEl) {
+            streamingMessageEl = this.createStreamingMessage();
+          }
+          this.updateStreamingMessage(streamingMessageEl, chunk);
+        });
+      } else {
+        // Regular agent response with tool-calling
+        response = await agentService.generateResponse(text, (chunk) => {
+          if (!typingRemoved) {
+            this.removeTyping();
+            typingRemoved = true;
+          }
+          if (!streamingMessageEl) {
+            streamingMessageEl = this.createStreamingMessage();
+          }
+          this.updateStreamingMessage(streamingMessageEl, chunk);
+        });
+      }
 
       this.robot.animationModule.stopThinking();
+
+      // Show tool call indicators
+      if (response.toolResults && response.toolResults.length > 0) {
+        this.showToolCallResults(response.toolResults);
+      }
+
+      // Show memory badge if memory was used
+      if (response.hasMemory && streamingMessageEl) {
+        const badge = this.robot.domBuilder.createMemoryIndicator();
+        streamingMessageEl.appendChild(badge);
+      }
 
       // If no streaming occurred, add message normally
       if (!streamingMessageEl) {
@@ -144,27 +203,7 @@ export class RobotChat {
         if (typeof response === 'string') {
           this.addMessage(response, 'bot');
         } else if (response && response.text) {
-          // Response object handling
-          const safeText = String(response.text || '');
-          let html = MarkdownRenderer.parse(safeText);
-
-          if (Array.isArray(response.sources) && response.sources.length) {
-            const safeSources = response.sources
-              .map((s) => {
-                const url = String(s.url || '');
-                const title = String(s.title || '');
-                const isSafeUrl = !/^(javascript|data|vbscript):/i.test(
-                  url.trim(),
-                );
-                const safeUrl = isSafeUrl ? escapeHTML(url) : '#';
-                const safeTitle = escapeHTML(title);
-                return `<li><a href="${safeUrl}" target="_blank" rel="noopener noreferrer">${safeTitle}</a></li>`;
-              })
-              .join('');
-
-            html += `<div class="chat-sources"><strong>Quellen:</strong><ul>${safeSources}</ul></div>`;
-          }
-          this.addMessage(html, 'bot', true);
+          this.addMessage(response.text, 'bot');
         } else {
           this.addMessage('Entschuldigung, keine Antwort erhalten.', 'bot');
         }
@@ -183,7 +222,134 @@ export class RobotChat {
         streamingMessageEl.remove();
       }
 
-      this.addMessage('Fehler bei der Verbindung.', 'bot');
+      // Fallback to legacy AI service
+      try {
+        const aiService = await this.robot.getAIService();
+        const fallbackResponse = await aiService.generateResponse(text);
+        this.addMessage(
+          typeof fallbackResponse === 'string'
+            ? fallbackResponse
+            : 'Fehler bei der Verbindung.',
+          'bot',
+        );
+      } catch {
+        this.addMessage('Fehler bei der Verbindung.', 'bot');
+      }
+    }
+  }
+
+  /**
+   * Show tool call execution results in chat
+   * @param {Array<{name: string, success: boolean, message: string}>} toolResults
+   */
+  showToolCallResults(toolResults) {
+    if (!this.robot.dom.messages) return;
+
+    for (const result of toolResults) {
+      const indicator = this.robot.domBuilder.createToolCallIndicator(
+        result.name,
+        result.message,
+      );
+      this.robot.dom.messages.appendChild(indicator);
+    }
+    this.scrollToBottom();
+  }
+
+  /**
+   * Add a user message with image thumbnail
+   * @param {string} text
+   * @param {File} imageFile
+   */
+  addImageMessage(text, imageFile) {
+    const msg = document.createElement('div');
+    msg.className = 'message user';
+
+    if (text) {
+      const textEl = document.createElement('div');
+      textEl.textContent = text;
+      msg.appendChild(textEl);
+    }
+
+    // Add image thumbnail
+    const img = document.createElement('img');
+    img.className = 'user-image';
+    img.alt = imageFile.name || 'Hochgeladenes Bild';
+    img.src = URL.createObjectURL(imageFile);
+
+    // Clean up object URL after load
+    img.onload = () => URL.revokeObjectURL(img.src);
+
+    msg.appendChild(img);
+    this.robot.dom.messages.appendChild(msg);
+    this.scrollToBottom();
+
+    this.history.push({
+      role: 'user',
+      text: text
+        ? `[Bild: ${imageFile.name}] ${text}`
+        : `[Bild: ${imageFile.name}]`,
+    });
+    if (this.history.length > 30) {
+      this.history = this.history.slice(-30);
+    }
+    this.saveHistory();
+  }
+
+  /**
+   * Handle image upload from file input
+   * @param {File} file
+   */
+  handleImageUpload(file) {
+    if (!file) return;
+
+    // Remove existing preview
+    this.clearImagePreview();
+
+    this.pendingImage = file;
+
+    // Show preview
+    const src = URL.createObjectURL(file);
+    const preview = this.robot.domBuilder.createImagePreview(src, file.name);
+
+    // Insert before input area
+    const inputArea =
+      this.robot.dom.inputArea || document.getElementById('robot-input-area');
+    if (inputArea && inputArea.parentNode) {
+      inputArea.parentNode.insertBefore(preview, inputArea);
+    }
+
+    // Setup remove handler
+    const removeBtn = preview.querySelector('.chat-preview-remove');
+    if (removeBtn) {
+      removeBtn.addEventListener('click', () => this.clearImagePreview());
+    }
+
+    // Update placeholder
+    if (this.robot.dom.input) {
+      this.robot.dom.input.placeholder =
+        'Beschreibe das Bild oder sende es direkt...';
+      this.robot.dom.input.focus();
+    }
+  }
+
+  /**
+   * Clear image preview and pending image
+   */
+  clearImagePreview() {
+    this.pendingImage = null;
+
+    const preview = document.getElementById('robot-image-preview');
+    if (preview) {
+      const img = preview.querySelector('img');
+      if (img?.src?.startsWith('blob:')) {
+        URL.revokeObjectURL(img.src);
+      }
+      preview.remove();
+    }
+
+    if (this.robot.dom.input) {
+      this.robot.dom.input.placeholder =
+        'Frag mich etwas oder wähle eine Option...';
     }
   }
 
@@ -396,6 +562,40 @@ export class RobotChat {
       [ROBOT_ACTIONS.PLAY_TRIVIA]: () => this.robot.gameModule.startTrivia(),
       [ROBOT_ACTIONS.PLAY_GUESS_NUMBER]: () =>
         this.robot.gameModule.startGuessNumber(),
+      [ROBOT_ACTIONS.UPLOAD_IMAGE]: () => {
+        const fileInput = document.getElementById('robot-image-upload');
+        if (fileInput) {
+          fileInput.click();
+        }
+        this.addMessage(
+          '📷 Lade ein Bild hoch und ich analysiere es für dich!',
+          'bot',
+        );
+      },
+      [ROBOT_ACTIONS.TOGGLE_THEME]: () => {
+        (async () => {
+          try {
+            const { executeTool } = await import('./tool-executor.js');
+            const result = executeTool({
+              name: 'setTheme',
+              arguments: { theme: 'toggle' },
+            });
+            this.addMessage(result.message, 'bot');
+          } catch {
+            this.addMessage('Theme konnte nicht gewechselt werden.', 'bot');
+          }
+          this.robot._setTimeout(
+            () => this.handleAction(ROBOT_ACTIONS.START),
+            2000,
+          );
+        })();
+      },
+      [ROBOT_ACTIONS.SEARCH_WEBSITE]: () => {
+        this.addMessage(
+          '🔍 Schreib einfach wonach du suchst — ich durchsuche die Website für dich!',
+          'bot',
+        );
+      },
     };
 
     if (actions[actionKey]) {
