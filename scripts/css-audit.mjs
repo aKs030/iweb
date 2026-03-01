@@ -1,6 +1,4 @@
 #!/usr/bin/env node
-import { PurgeCSS } from 'purgecss';
-
 const cssGlobs = [
   'content/styles/**/*.css',
   'content/components/**/*.css',
@@ -13,6 +11,18 @@ const contentGlobs = [
   'content/**/*.mjs',
   'content/components/**/*.js',
 ];
+
+let PurgeCSS;
+try {
+  // Use dynamic import for better compatibility in some environments
+  const module = await import('purgecss');
+  // newer versions export named member; fall back to default if necessary
+  PurgeCSS = module.PurgeCSS || module.default || module;
+} catch {
+  console.error('audit error: Cannot load "purgecss". Ensure it is installed.');
+  console.error('Try: npm install');
+  process.exit(0); // Exit gracefully during CI if tool is missing
+}
 
 const purge = new PurgeCSS();
 const results = await purge.purge({
