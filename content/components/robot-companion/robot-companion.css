@@ -23,48 +23,65 @@
 }
 
 /* ── View Transitions Morphing ─────────────────────────────────────────────
-   Vertical positions per page context – the robot stays on the right side
-   (so patrol & collision keep working) but shifts vertically to signal the
-   page change.  The View Transitions API morphs this automatically.
+   Die View Transitions API morpht den Roboter automatisch, da
+   view-transition-name: robot-companion gesetzt ist. Wir definieren
+   asymmetrische, interessante Positionen (X und Y Achsen) für die
+   einzelnen Seiten, um den Morphing-Effekt ("Lebendigkeit") hervorzuheben.
    ──────────────────────────────────────────────────────────────────────── */
 
-/* Home (hero / features / default) – standard bottom-right */
-/* (no override needed, uses base styles) */
+/* Home (hero / features / default) – standard unten rechts */
+#robot-companion-container[data-page-context='home'],
+#robot-companion-container[data-page-context='hero'] {
+  bottom: var(--size-30);
+  right: var(--size-30);
+}
 
-/* Projekte – etwas höher, damit er über den Projektkarten schwebt */
+/* Projekte – weiter oben rechts, schwebt über den Projektkarten */
 #robot-companion-container[data-page-context='projects'] {
-  bottom: 18vh;
-}
-
-/* About – mittig rechts, begleitet den Leser */
-#robot-companion-container[data-page-context='about'] {
-  bottom: 30vh;
-}
-
-/* Galerie – oben rechts, aus dem Weg der Bilder */
-#robot-companion-container[data-page-context='gallery'] {
   bottom: auto;
   top: 12vh;
+  right: 5vw;
 }
 
-/* Blog – leicht angehoben */
+/* About – mittig links, blickt quasi auf den Textbereich */
+#robot-companion-container[data-page-context='about'] {
+  bottom: 40vh;
+  right: auto;
+  left: 8vw;
+}
+
+/* Galerie – oben mittig-rechts, aus dem Weg der Bilder */
+#robot-companion-container[data-page-context='gallery'] {
+  bottom: auto;
+  top: 15vh;
+  right: 35vw;
+}
+
+/* Blog – oben links im Header-Bereich, wie ein Lesebegleiter */
 #robot-companion-container[data-page-context='blog'] {
-  bottom: 22vh;
+  bottom: auto;
+  top: 8vh;
+  right: auto;
+  left: 5vw;
 }
 
-/* Videos – unten rechts, aber etwas höher */
+/* Videos – mittig rechts */
 #robot-companion-container[data-page-context='videos'] {
-  bottom: 16vh;
+  bottom: 30vh;
+  right: 6vw;
 }
 
-/* Kontakt – mittig rechts */
+/* Kontakt – direkt über dem Footer mittig */
 #robot-companion-container[data-page-context='contact'] {
-  bottom: 35vh;
+  bottom: 10vh;
+  right: 45vw;
 }
 
-/* Legal-Seiten (Impressum, Datenschutz) – standard unten */
+/* Legal-Seiten (Impressum, Datenschutz) – ganz unten links */
 #robot-companion-container[data-page-context='legal'] {
   bottom: var(--size-30);
+  right: auto;
+  left: var(--size-30);
 }
 
 /* While the chat window is open, lock position to bottom-right so it
@@ -81,8 +98,13 @@
 /* View-transition pseudo-elements for the robot morph animation */
 ::view-transition-old(robot-companion),
 ::view-transition-new(robot-companion) {
-  animation-duration: 0.45s;
-  animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+  animation-duration: 0.8s; /* Länger für einen smoothen "Morph" */
+  animation-timing-function: cubic-bezier(
+    0.34,
+    1.56,
+    0.64,
+    1
+  ); /* Bouncy / Spring effect */
 }
 
 ::view-transition-old(robot-companion) {
