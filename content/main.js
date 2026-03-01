@@ -219,6 +219,14 @@ if ('serviceWorker' in navigator && !ENV.isTest) {
       regs.forEach((reg) => reg.unregister());
     });
   } else {
+    // Auto-reload when a new SW takes control
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (refreshing) return;
+      refreshing = true;
+      globalThis.location.reload();
+    });
+
     globalThis.addEventListener('load', async () => {
       try {
         const version =
@@ -236,7 +244,7 @@ if ('serviceWorker' in navigator && !ENV.isTest) {
               worker.state === 'installed' &&
               navigator.serviceWorker.controller
             ) {
-              showUpdateNotification();
+              showUpdateNotification(worker);
             }
           });
         });
@@ -250,19 +258,34 @@ if ('serviceWorker' in navigator && !ENV.isTest) {
 /**
  * Shows an update notification toast when a new SW version is available
  */
-function showUpdateNotification() {
+function showUpdateNotification(waitingWorker) {
+  // Prevent duplicate notifications
+  if (document.querySelector('.sw-update-toast')) return;
+
   const notification = document.createElement('div');
   notification.innerHTML = `
     <div class="sw-update-toast">
       <div class="sw-update-toast__row">
         <span class="sw-update-toast__icon" aria-hidden="true">🔄</span>
         <span class="sw-update-toast__text">Neue Version verfügbar!</span>
-        <button class="sw-update-toast__refresh" onclick="location.reload()">Aktualisieren</button>
-        <button class="sw-update-toast__close" onclick="this.closest('.sw-update-toast')?.remove()" aria-label="Hinweis schließen">×</button>
+        <button class="sw-update-toast__refresh">Aktualisieren</button>
+        <button class="sw-update-toast__close" aria-label="Hinweis schließen">×</button>
       </div>
     </div>
   `;
-  document.body.appendChild(notification.firstElementChild);
+  const toast = notification.firstElementChild;
+  toast
+    .querySelector('.sw-update-toast__refresh')
+    .addEventListener('click', () => {
+      // Tell the waiting SW to activate, controllerchange listener will reload
+      waitingWorker.postMessage('SKIP_WAITING');
+    });
+  toast
+    .querySelector('.sw-update-toast__close')
+    .addEventListener('click', () => {
+      toast.remove();
+    });
+  document.body.appendChild(toast);
   appTimers.setTimeout(() => {
     const el = document.querySelector('.sw-update-toast');
     if (el) el.remove();
