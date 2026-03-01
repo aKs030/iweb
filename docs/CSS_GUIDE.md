@@ -50,7 +50,7 @@ npm run dev
 npm run qa
 ```
 
-`npm run qa` enthält Lint, Format, Stylelint, Token-Check, CSS-Audit, AI-Index-Check und Struktur-Check.
+`npm run qa` enthält Lint, Format, Stylelint, Token-Check, AI-Index-Check und Struktur-Check.
 
 ## Authoring Rules
 
