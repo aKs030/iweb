@@ -14,6 +14,8 @@ This directory contains shared browser runtime modules used by pages, components
 - `schema.js` / `canonical-manager.js`: SEO structured data and canonical management.
 - `theme-color-manager.js` / `pwa-manager.js` / `resource-hints.js`: Head and PWA runtime optimizations.
 - `accessibility-manager.js`: Accessibility helpers and announcer utilities.
+- `three-earth-manager.js`: Three.js Earth lifecycle, loading orchestration, and cleanup.
+- `model-loader.js`: Compressed 3D model loader (Draco & Meshopt via GLTFLoader).
 - `types.js`: JSDoc typedefs used across modules and components.
 
 ## Typical Usage

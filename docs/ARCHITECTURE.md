@@ -209,6 +209,8 @@ Core Services (Shared)
 ├── fetch.js
 ├── dom-utils.js
 ├── accessibility-manager.js
+├── three-earth-manager.js
+├── model-loader.js (Draco & Meshopt)
 └── types.js
 ```
 
@@ -249,7 +251,9 @@ content/
 │   ├── cache.js
 │   ├── fetch.js
 │   ├── dom-utils.js
-│   └── accessibility-manager.js
+│   ├── accessibility-manager.js
+│   ├── three-earth-manager.js
+│   └── model-loader.js            ⭐ NEW (Draco & Meshopt)
 └── main.js
 
 docs/

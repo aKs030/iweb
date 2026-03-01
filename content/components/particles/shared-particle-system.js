@@ -8,9 +8,9 @@
  * - Reduced memory footprint
  *
  * OPTIMIZATIONS v2.3.0:
- * - Prefer local Three.js vendor copy with CDN fallback; support precompressed assets
- * @version 2.4.0
- * @last-modified 2025-12-19
+ * - Three.js loading via import map; compressed model support via core/model-loader.js
+ * @version 2.5.0
+ * @last-modified 2026-03-01
  */
 
 import { createLogger } from '../../core/logger.js';
@@ -282,9 +282,7 @@ class SharedCleanupManager {
 export const sharedParallaxManager = new SharedParallaxManager();
 export const sharedCleanupManager = new SharedCleanupManager();
 
-// ===== Shared Three.js Loading =====
-
-// Three.js loading strategy:
+// ===== Particle System Registration =====
 
 /**
  * @param {string} name

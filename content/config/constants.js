@@ -14,6 +14,10 @@ export const R2_BLOG_BASE_URL = `${R2_PUBLIC_BASE_URL}/blog`;
 export const ICONS_VERSION = '20260221';
 export const CONTACT_PATH = '/contact/';
 
+// ── Three.js ──────────────────────────────
+// Sync with the import map in content/templates/base-head.html
+export const THREE_VERSION = '0.183.1';
+
 export function iconUrl(filename) {
   return `${R2_ICONS_BASE_URL}/${filename}?v=${ICONS_VERSION}`;
 }
