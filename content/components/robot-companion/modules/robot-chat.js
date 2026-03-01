@@ -2,6 +2,7 @@ import { createLogger } from '../../../core/logger.js';
 import { MarkdownRenderer } from './markdown-renderer.js';
 import { ROBOT_ACTIONS } from '../constants/events.js';
 import { uiStore } from '../../../core/ui-store.js';
+import { withViewTransition } from '../../../core/view-transitions.js';
 
 const log = createLogger('RobotChat');
 
@@ -43,6 +44,9 @@ export class RobotChat {
   toggleChat(forceState) {
     const newState =
       forceState ?? !this.robot.stateManager.getState().isChatOpen;
+
+    // DOM-Erstellung & Event-Binding AUSSERHALB der View Transition
+    // (VT darf nur DOM-Mutationen wrappen, nicht DOM-Erstellung)
     if (newState) {
       this.robot.ensureChatWindowCreated();
 
@@ -56,7 +60,29 @@ export class RobotChat {
         });
         this._controlsTypingBound = true;
       }
+    }
 
+    // Visuelle State-Änderungen in View Transition wrappen.
+    // CSS-Transitions nur deaktivieren wenn VT tatsächlich unterstützt wird,
+    // damit Browser ohne VT die CSS-Fallback-Animation behalten.
+    const win = this.robot.dom.window;
+    const vtSupported = typeof document.startViewTransition === 'function';
+    if (vtSupported && win) win.classList.add('vt-animating');
+
+    withViewTransition(() => this._applyVisualChatState(newState), {
+      types: [newState ? 'chat-open' : 'chat-close'],
+    }).finally(() => {
+      if (win) win.classList.remove('vt-animating');
+    });
+  }
+
+  /**
+   * Apply the visual chat state (class toggles, state updates, focus management).
+   * Separated so it can be wrapped in a View Transition.
+   * @param {boolean} newState
+   */
+  _applyVisualChatState(newState) {
+    if (newState) {
       this.robot.dom.window.classList.add('open');
       this.robot.dom.container.classList.add('robot-chat--open');
       this.isOpen = true; // kept for backward compat — prefer stateManager

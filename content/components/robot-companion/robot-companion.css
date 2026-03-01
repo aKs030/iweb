@@ -14,19 +14,17 @@
   height: var(--size-80);
   /* Hidden until entry animation sets start position */
   opacity: 0;
-  /* View Transitions: Der Robot ist die konstante Identität der Seite */
-  view-transition-name: robot-companion;
+
   /* Smooth position transitions for scroll-based context changes */
   transition:
     bottom 0.6s cubic-bezier(0.2, 0.8, 0.2, 1),
     top 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-/* ── View Transitions Morphing ─────────────────────────────────────────────
-   Die View Transitions API morpht den Roboter automatisch, da
-   view-transition-name: robot-companion gesetzt ist. Wir definieren
-   asymmetrische, interessante Positionen (X und Y Achsen) für die
-   einzelnen Seiten, um den Morphing-Effekt ("Lebendigkeit") hervorzuheben.
+/* ── Robot Positionen pro Seite ─────────────────────────────────────────────
+   Der Roboter wird per CSS-Transitions (transition-property: bottom, top)
+   auf verschiedenen Seitenabschnitten repositioniert. Asymmetrische
+   Positionen geben dem Roboter eine lebendige, kontextbezogene Präsenz.
    ──────────────────────────────────────────────────────────────────────── */
 
 /* Home (hero / features / default) – standard unten rechts */
@@ -718,6 +716,9 @@
 
 /* --- GLASSMORPHISM & MODERN CHAT --- */
 .robot-chat-window {
+  /* View Transitions: Smooth morph for chat open/close */
+  view-transition-name: robot-chat;
+
   /* Positioning: Centered on Screen */
   position: fixed;
   top: 50%;
@@ -750,12 +751,20 @@
   visibility: hidden;
   pointer-events: none; /* Ignore pointer events when hidden */
 
-  /* Smooth Animation */
+  /* Smooth Animation — Fallback für Browser ohne View Transitions API.
+     Bei VT-Support werden diese Transitions per JS deaktiviert,
+     damit die VT-Animation (scale+fade) allein wirkt. */
   transition:
     opacity 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
     transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
     visibility 0.4s;
   z-index: var(--z-tooltip); /* Ensure it's above other overlays */
+}
+
+/* Während einer View Transition CSS-Transitions deaktivieren,
+   damit VT-Animation und CSS-Transition sich nicht überlagern */
+.robot-chat-window.vt-animating {
+  transition: none !important;
 }
 
 .robot-chat-window.open {
@@ -1357,13 +1366,41 @@
     right: auto;
     border-radius: var(--size-20);
   }
+}
 
+/* Mobile: Chat-Inhalte kompakter bei schmalen Viewports */
+@media (width <= 480px) {
   .chat-messages {
     padding: var(--size-15);
   }
 
   .chat-input-area {
     padding: var(--size-15);
+  }
+
+  .chat-header {
+    padding: var(--size-14) var(--size-16);
+  }
+
+  .chat-title {
+    font-size: var(--size-r-0-95);
+    gap: var(--size-8);
+  }
+
+  .message {
+    max-width: 92%;
+    padding: var(--size-10) var(--size-14);
+    font-size: var(--size-r-0-9);
+  }
+
+  .chat-option-btn {
+    padding: var(--size-3) var(--size-8);
+    font-size: var(--size-r-0-7, 0.7rem);
+  }
+
+  .chat-controls {
+    padding: var(--size-4) var(--size-10);
+    gap: var(--size-4);
   }
 }
 
@@ -1441,6 +1478,7 @@
 /* Hide controls when keyboard is open (toggled by JS) */
 
 /* Mobile Optimization: Prevent iOS Zoom on Input Focus */
+/* Mobile: input font-size für iOS Zoom-Prevention */
 @media (width <= 480px) {
   #robot-chat-input {
     font-size: var(--size-16) !important;

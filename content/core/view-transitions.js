@@ -1,177 +1,96 @@
 /**
  * View Transitions API - Progressive Enhancement
- * Provides smooth cross-fade transitions between page navigations.
- * Only activates in browsers that support `document.startViewTransition`.
  *
- * @version 1.1.0
+ * Bietet eine saubere Utility-Funktion `withViewTransition()` zum Wrappen
+ * beliebiger DOM-Mutationen in eine View Transition (Crossfade/Morph).
+ *
+ * Diese Datei enthält KEIN SPA-Routing. Navigation zwischen Unterseiten
+ * wird komplett dem Browser überlassen (normaler MPA-Seitenaufruf).
+ *
+ * @version 3.1.0
  */
 
 import { handleSamePageScroll } from './utils.js';
-import { createLogger } from './logger.js';
-
-const log = createLogger('ViewTransitions');
-
-const SAME_ORIGIN = location.origin;
-
-// Internes Flag: wurde die aktuelle History-Entry von uns per pushState gesetzt?
-// Wichtig weil pushState(null, ...) immer state=null setzt — wir brauchen
-// einen eigenen Mechanismus um "VT-navigierte" Einträge zu erkennen.
-const vtManagedPaths = new Set();
 
 /**
  * Check if the View Transitions API is supported
+ * @returns {boolean}
  */
-const isSupported = () => typeof document.startViewTransition === 'function';
+export const isSupported = () =>
+  typeof document.startViewTransition === 'function';
 
 /**
- * Fetch a page and extract its <main> content + title
- * @param {string} url
- * @returns {Promise<{title: string, mainHtml: string, bodyClass: string}>}
+ * Wrap a DOM mutation in a View Transition if supported.
+ * Falls back to executing the callback directly if VT is not available.
+ *
+ * @param {() => void | Promise<void>} callback - DOM mutation function
+ * @param {object} [options]
+ * @param {string[]} [options.types] - Transition type hints (e.g. ['chat-open'])
+ * @returns {Promise<void>}
  */
-async function fetchPage(url) {
-  const res = await fetch(url, { headers: { 'X-View-Transition': '1' } });
-  if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
-
-  const html = await res.text();
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(html, 'text/html');
-
-  const main = doc.querySelector('#main-content') || doc.querySelector('main');
-  const title = doc.querySelector('title')?.textContent || document.title;
-  const bodyClass = doc.body.className || '';
-
-  return { title, mainHtml: main?.innerHTML || '', bodyClass };
-}
-
-/**
- * Apply fetched page content to the current document
- */
-function applyPage(url, { title, mainHtml, bodyClass }) {
-  const main =
-    document.querySelector('#main-content') || document.querySelector('main');
-  if (main) main.innerHTML = mainHtml;
-
-  document.title = title;
-  if (bodyClass) document.body.className = bodyClass;
-
-  // Update canonical URL
-  const canonical = document.querySelector('link[rel="canonical"]');
-  if (canonical) canonical.href = url;
-
-  // Scroll to top
-  window.scrollTo({ top: 0, behavior: 'instant' });
-
-  // Notify other subsystems that the page content changed (e.g. theme manager)
-  try {
-    window.dispatchEvent(new CustomEvent('page:changed', { detail: { url } }));
-  } catch {
-    // ignore
+export async function withViewTransition(callback, options = {}) {
+  if (!isSupported()) {
+    await callback();
+    return;
   }
-
-  // Safety: ensure a transparent theme-color meta exists after SPA swaps
   try {
-    if (!document.querySelector('meta[name="theme-color"]')) {
-      const meta = document.createElement('meta');
-      meta.setAttribute('name', 'theme-color');
-      meta.id = 'meta-theme-color-fallback';
-      meta.setAttribute('content', '#00000000');
-      document.head.appendChild(meta);
-    }
-  } catch {
-    // ignore
-  }
-}
+    // Präferiert die Object-Form (Chrome 126+) für Typed-VTs,
+    // Fallback auf Function-Form + manuelle types.
+    let transition;
+    const hasObjectForm = (() => {
+      try {
+        // Feature-detect: object form throws if not supported
+        return typeof ViewTransition !== 'undefined';
+      } catch {
+        return false;
+      }
+    })();
 
-/**
- * Navigate to a URL with View Transition
- * @param {string} url
- */
-async function navigateWithTransition(url) {
-  try {
-    const pageData = await fetchPage(url);
-
-    if (isSupported()) {
-      const transition = document.startViewTransition(() => {
-        applyPage(url, pageData);
-      });
-      await transition.finished;
+    if (options.types?.length && hasObjectForm) {
+      try {
+        transition = document.startViewTransition({
+          update: () => callback(),
+          types: options.types,
+        });
+      } catch {
+        // Object-Form nicht unterstützt, Fallback
+        transition = document.startViewTransition(() => callback());
+      }
     } else {
-      applyPage(url, pageData);
+      transition = document.startViewTransition(() => callback());
     }
 
-    // Pfad als VT-verwaltet markieren, BEVOR pushState aufgerufen wird
-    vtManagedPaths.add(new URL(url, SAME_ORIGIN).pathname);
+    // Fallback: types manuell setzen (Chrome 125)
+    if (options.types && transition.types && !transition.types.size) {
+      for (const t of options.types) transition.types.add(t);
+    }
 
-    // Update browser history
-    history.pushState(null, pageData.title, url);
-  } catch (err) {
-    // Fallback: regular navigation
-    log.warn('Fallback to regular navigation:', err.message);
-    location.href = url;
+    await transition.finished;
+  } catch {
+    // VT fehlgeschlagen — Callback direkt ausführen (Progressive Enhancement)
+    await callback();
   }
 }
 
 /**
- * Initialize View Transitions
+ * Initialize View Transitions — nur Same-Page-Scroll-Handling.
+ * Kein SPA-Swap, keine Interceptors für Seitennavigation.
  */
 export function initViewTransitions() {
-  if (!isSupported()) return;
-
-  // Intercept same-origin link clicks
+  // Same-page scroll-to-top bei Klick auf Home-Links
   document.addEventListener('click', (e) => {
     const link = e.target.closest('a[href]');
     if (!link) return;
 
-    const url = new URL(link.href, SAME_ORIGIN);
+    try {
+      const url = new URL(link.href, location.origin);
+      if (url.origin !== location.origin) return;
 
-    // Only intercept same-origin links
-    if (url.origin !== SAME_ORIGIN) return;
-
-    // Gleiche Seite: ggf. sanftes Scroll-to-top
-    if (handleSamePageScroll(url.href)) {
-      e.preventDefault();
-      return;
+      if (handleSamePageScroll(url.href)) {
+        e.preventDefault();
+      }
+    } catch {
+      // Ungültige URL — ignorieren
     }
-
-    // Reine Hash-URLs nicht abfangen (Anchor-Sprünge auf gleicher Seite)
-    if (url.pathname === location.pathname && url.hash) return;
-
-    if (link.hasAttribute('download')) return;
-    if (link.target === '_blank') return;
-    if (e.ctrlKey || e.metaKey || e.shiftKey) return;
-
-    // Seiten mit eigenem SPA-Routing überspringen
-    const skipPaths = [
-      '/gallery',
-      '/projekte',
-      '/videos',
-      '/blog',
-      '/contact',
-      '/about',
-      '/datenschutz',
-      '/impressum',
-      '/abdul-sesli',
-    ];
-    if (skipPaths.some((p) => url.pathname.startsWith(p))) return;
-    if (skipPaths.some((p) => location.pathname.startsWith(p))) return;
-
-    e.preventDefault();
-    navigateWithTransition(url.href);
-  });
-
-  // Back/Forward-Navigation:
-  // Nur dann reloaden, wenn der Ziel-Pfad NICHT von uns per VT-Navigation
-  // verwaltet wird. So werden Hash-Wechsel und unbekannte popstate-Events
-  // nicht fälschlicherweise in einen Reload umgewandelt.
-  window.addEventListener('popstate', () => {
-    const targetPath = location.pathname;
-
-    // Hash-Only-Änderungen auf der gleichen Seite: kein Reload
-    if (location.hash && targetPath === location.pathname) return;
-
-    // Wenn der Zielpfad ein VT-verwalteter Pfad ist, führen wir einen
-    // vollständigen Reload durch, damit Scripts und Styles korrekt neu
-    // initialisiert werden (SPA-State ist nach Back/Forward nicht zuverlässig).
-    location.reload();
   });
 }

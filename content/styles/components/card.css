@@ -12,6 +12,10 @@
   position: relative;
   overflow: hidden;
 
+  /* Container Queries: Karten-Kinder reagieren auf die Kartenbreite */
+  container-type: inline-size;
+  container-name: card;
+
   /* Hover state */
   &:hover {
     transform: var(--transform-hover-card-subtle);
@@ -262,10 +266,12 @@
     }
   }
 
-  /* Responsive adjustments */
-  @media (width <= 768px) {
-    padding: var(--spacing-md);
-
+  /* Container Queries: Kind-Elemente reagieren auf die KARTEN-Breite.
+     In einem 3-Spalten-Grid bei 1200px Viewport ist jede Card ~370px breit.
+     In einem 2-Spalten-Grid bei 800px Viewport ist jede Card ~370px breit.
+     Bei 1 Spalte (mobil) ist die Card ~100% Viewport.
+     → Breakpoints basieren auf der Card-Breite, nicht auf dem Viewport! */
+  @container card (max-width: 400px) {
     .card-header .card-title {
       font-size: var(--card-title-size-md, var(--size-r-1-125));
     }
@@ -285,13 +291,7 @@
     }
   }
 
-  @media (width <= 600px) {
-    padding: var(--space-6);
-  }
-
-  @media (width <= 480px) {
-    padding: var(--space-4);
-
+  @container card (max-width: 280px) {
     .card-header .card-title {
       font-size: var(--card-title-size-sm, var(--size-r-1));
     }
@@ -299,6 +299,19 @@
     .card-body .card-description {
       font-size: var(--card-description-size-sm, var(--size-r-0-9375));
     }
+  }
+
+  /* Self-sizing: Container kann sich nicht selbst per @container stylen */
+  @media (width <= 768px) {
+    padding: var(--spacing-md);
+  }
+
+  @media (width <= 600px) {
+    padding: var(--space-6);
+  }
+
+  @media (width <= 480px) {
+    padding: var(--space-4);
   }
 }
 
@@ -308,6 +321,7 @@
   grid-template-columns: repeat(auto-fill, minmax(var(--card-min-width), 1fr));
   gap: var(--gap-md);
 
+  /* Self-sizing: bleibt @media */
   @media (width <= 768px) {
     grid-template-columns: repeat(
       auto-fill,
