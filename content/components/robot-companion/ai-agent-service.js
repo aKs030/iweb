@@ -314,8 +314,20 @@ export class AIAgentService {
    */
   async getProactiveSuggestion(contextData) {
     try {
+      let promptText = `Gib einen kurzen, proaktiven Tipp für den Nutzer auf der Seite "${contextData.title || 'Unbekannt'}" (${contextData.url || '/'}). Maximal 2 Sätze.`;
+
+      if (contextData.headline) {
+        promptText += `\nÜberschrift der Seite: "${contextData.headline}"`;
+      }
+      if (contextData.description) {
+        promptText += `\nBeschreibung: "${contextData.description}"`;
+      }
+      if (contextData.contentSnippet) {
+        promptText += `\nAuszug des Seiteninhalts zur Orientierung:\n"${contextData.contentSnippet.substring(0, 500)}..."`;
+      }
+
       const response = await callAgentAPI({
-        prompt: `Gib einen kurzen, proaktiven Tipp für den Nutzer auf der Seite "${contextData.title || 'Unbekannt'}" (${contextData.url || '/'}). Maximal 2 Sätze.`,
+        prompt: promptText,
       });
       return response.text;
     } catch {
