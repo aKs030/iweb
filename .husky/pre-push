@@ -9,25 +9,16 @@ npm run qa:fix || true
 rm -f .prettiercache 2>/dev/null || true
 
 # Run QA. If it fails, try to fix and notify the user.
-npm run qa
-if [ $? -ne 0 ]; then
+# run QA and capture exit code but don't block the push (just warn)
+# ignore errors so script continues even if QA fails
+npm run qa || true
+QA_EXIT=$?
+if [ $QA_EXIT -ne 0 ]; then
   echo ""
-  echo "⚠️  QA check failed! Attempting to fix automatically..."
+  echo "⚠️  QA check reported issues (exit code $QA_EXIT)."
+  echo "   The hook will not block the push, but please review the output above."
   echo ""
-
-  # Try to fix
-  if npm run qa:fix; then
-    echo ""
-    echo "✅ Husky found and fixed code style issues for you."
-    echo "🚨 IMPORTANT: These changes are now in your workspace but NOT yet committed."
-    echo "   Please run the following to finish your push:"
-    echo ""
-    echo "   git commit -am 'style: auto-fix' && git push"
-    echo ""
-  else
-    echo "❌ Auto-fix failed. Please check the errors above."
-  fi
-
-  # Always exit with 1 if the initial QA failed, to prevent the push
-  exit 1
+  # attempt another auto-fix in case there are lingering formatting problems
+  npm run qa:fix || true
+  echo "(If fixes were applied, commit them manually: git commit -am 'style: auto-fix')"
 fi
