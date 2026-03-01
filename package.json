@@ -41,7 +41,9 @@
     "three": "^0.183.1"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260228.1",
     "@eslint/js": "^10.0.1",
+    "@types/node": "^25.3.3",
     "dompurify": "^3.3.1",
     "eslint": "^10.0.1",
     "globals": "^17.3.0",
