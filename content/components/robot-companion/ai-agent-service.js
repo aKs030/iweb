@@ -135,9 +135,11 @@ function validateImageFile(file) {
  * @param {string} payload.prompt
  * @param {File} [payload.image]
  * @param {Function} [onChunk]
+ * @param {{ maxRetries?: number }} [options]
  * @returns {Promise<AgentResponse>}
  */
-async function callAgentAPI(payload, onChunk) {
+async function callAgentAPI(payload, onChunk, options = {}) {
+  const maxRetries = options.maxRetries ?? MAX_RETRIES;
   const offline =
     typeof navigator !== 'undefined' && navigator.onLine === false;
 
@@ -158,7 +160,7 @@ async function callAgentAPI(payload, onChunk) {
   const conversationHistory = getConversationHistory();
   let delay = INITIAL_DELAY;
 
-  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       let response;
 
@@ -252,7 +254,7 @@ async function callAgentAPI(payload, onChunk) {
         toolResults,
       };
     } catch {
-      if (attempt === MAX_RETRIES) {
+      if (attempt === maxRetries) {
         circuit.failures++;
         if (circuit.failures >= circuit.threshold && !circuit.openedAt) {
           circuit.openedAt = Date.now();
@@ -349,8 +351,8 @@ export class AIAgentService {
         promptText += `\nAuszug des Seiteninhalts zur Orientierung:\n"${contextData.contentSnippet.substring(0, 500)}..."`;
       }
 
-      const response = await callAgentAPI({
-        prompt: promptText,
+      const response = await callAgentAPI({ prompt: promptText }, null, {
+        maxRetries: 0,
       });
       return response.text;
     } catch {
