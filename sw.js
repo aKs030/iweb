@@ -1,11 +1,15 @@
 /**
  * Modern Service Worker with Runtime Caching
- * @version 2.0.0
+ * @version 2.1.0
+ *
+ * IMPORTANT: Bump APP_VERSION when deploying new content.
+ * The browser compares sw.js byte-by-byte — a changed version string
+ * here is what triggers the update flow.
  */
 
-const VERSION = new URL(self.location).searchParams.get('v') || '1';
-const CACHE = `app-v${VERSION}`;
-const RUNTIME = `runtime-v${VERSION}`;
+const APP_VERSION = '1.0.2';
+const CACHE = `app-v${APP_VERSION}`;
+const RUNTIME = `runtime-v${APP_VERSION}`;
 
 const PRECACHE = [
   '/',
