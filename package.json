@@ -54,7 +54,7 @@
     "react": "^19.2.4",
     "stylelint": "^16.25.0",
     "typescript": "^5.9.3",
-    "wrangler": "^4.67.0"
+    "wrangler": "^4.69.0"
   },
   "lint-staged": {
     "*.{js,mjs,cjs}": [
