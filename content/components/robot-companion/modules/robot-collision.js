@@ -299,21 +299,34 @@ export class RobotCollision {
         this.robot.dom.svg.style.transform = 'rotate(720deg)';
       }
       if (this.robot.dom.eyes) {
-        // Temporarily change eyes to 'X'
-        this.robot.dom.eyes.innerHTML = `
+        // Temporarily hide original eyes
+        if (this.robot.dom.pupils)
+          this.robot.dom.pupils.forEach((p) => (p.style.display = 'none'));
+        if (this.robot.dom.lids)
+          this.robot.dom.lids.forEach((l) => (l.style.display = 'none'));
+
+        const dizzyGroup = document.createElementNS(
+          'http://www.w3.org/2000/svg',
+          'g',
+        );
+        dizzyGroup.classList.add('dizzy-eyes-temp');
+        dizzyGroup.innerHTML = `
             <path d="M35,38 L45,46 M45,38 L35,46" stroke="#40e0d0" stroke-width="3" />
             <path d="M55,38 L65,46 M65,38 L55,46" stroke="#40e0d0" stroke-width="3" />
         `;
+        this.robot.dom.eyes.appendChild(dizzyGroup);
+
         this.robot._setTimeout(() => {
           // Restore eyes
           if (this.robot.dom.eyes) {
-            this.robot.dom.eyes.innerHTML = `
-                <circle class="robot-pupil" cx="40" cy="42" r="4" fill="#40e0d0" filter="url(#glow)" />
-                <path class="robot-lid" d="M34 36 C36 30 44 30 46 36 L46 44 C44 38 36 38 34 44 Z" fill="url(#lidGradient)" filter="url(#lidShadow)" />
-                <circle class="robot-pupil" cx="60" cy="42" r="4" fill="#40e0d0" filter="url(#glow)" />
-                <path class="robot-lid" d="M54 36 C56 30 64 30 66 36 L66 44 C64 38 56 38 54 44 Z" fill="url(#lidGradient)" filter="url(#lidShadow)" />
-             `;
+            const temp = this.robot.dom.eyes.querySelector('.dizzy-eyes-temp');
+            if (temp) temp.remove();
           }
+          if (this.robot.dom.pupils)
+            this.robot.dom.pupils.forEach((p) => (p.style.display = ''));
+          if (this.robot.dom.lids)
+            this.robot.dom.lids.forEach((l) => (l.style.display = ''));
+
           if (this.robot.dom.svg) this.robot.dom.svg.style.transform = '';
         }, 2000);
       }
@@ -411,8 +424,10 @@ export class RobotCollision {
 
       const anim = this.robot.animationModule;
       if (!anim.startAnimation || !anim.startAnimation.active) {
-        // Pass the actual typewriter rect so the response can compute safely
-        anim.triggerKnockback();
+        // Use shared AABB helper – avoids duplicate getBoundingClientRect logic
+        if (anim._robotIntersectsTypewriter(twRect)) {
+          anim.triggerKnockback();
+        }
       }
 
       return true;

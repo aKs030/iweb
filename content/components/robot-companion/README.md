@@ -30,12 +30,15 @@ robot-companion/
 │   ├── robot-chat.js          # Chat-Logik
 │   ├── robot-collision.js     # Kollisionserkennung
 │   ├── robot-intelligence.js  # KI-Integration
-│   ├── robot-persona.js       # Persönlichkeit
+│   ├── robot-context-reactions.js # Kontext-Reaktionen
+│   ├── robot-emotions.js      # Emotionssteuerung
+│   ├── tool-executor.js       # Tool-Ausführung (Agent)
 │   └── markdown-renderer.js   # Markdown-Parsing
 ├── robot-companion.js         # Hauptkomponente
 ├── robot-companion.css        # Styling
 ├── robot-games.js             # Spiele-Logik
-├── ai-service.js              # AI API Service
+├── ai-agent-service.js        # AI Agent Service (LLaVA + Vectorize)
+├── ai-service.js              # AI API Service (Legacy-Fallback)
 └── index.js                   # Exports
 ```
 

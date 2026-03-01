@@ -6,12 +6,14 @@ declare namespace Cloudflare {
     SITEMAP_CACHE_KV: KVNamespace;
     GALLERY_BUCKET: R2Bucket;
     AI: Ai;
+    JULES_MEMORY: VectorizeIndex;
   }
   interface Env {
     RATE_LIMIT_KV: KVNamespace;
     SITEMAP_CACHE_KV: KVNamespace;
     GALLERY_BUCKET: R2Bucket;
     AI: Ai;
+    JULES_MEMORY: VectorizeIndex;
     MAX_SEARCH_RESULTS?: '10';
     RAG_ID?: 'wispy-pond-1055';
     AI_SEARCH_MAX_RESULTS?: '10';

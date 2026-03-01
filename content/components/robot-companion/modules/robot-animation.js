@@ -1,5 +1,3 @@
-import { sleep } from '../../../core/utils.js';
-
 export class RobotAnimation {
   constructor(robot) {
     this.robot = robot;
@@ -10,7 +8,6 @@ export class RobotAnimation {
       x: 0,
       y: 0,
       direction: 1,
-      speed: 0.3,
       isPaused: false,
       bouncePhase: 0,
     };
@@ -93,6 +90,69 @@ export class RobotAnimation {
     this.speakingActive = false;
     /** @type {ReturnType<typeof setTimeout> | null} */
     this._speakingTimer = null;
+
+    // NOTE: flame DOM may not exist at constructor time; we moved the
+    // suspicious colour-fixing logic into a dedicated helper that can be
+    // invoked once the robot container has been built.
+  }
+
+  /**
+   * Managed async wait using the robot's timer system (respects cleanup).
+   * @param {number} ms
+   */
+  _wait(ms) {
+    return new Promise((resolve) => this.robot._setTimeout(resolve, ms));
+  }
+
+  /**
+   * Make sure flame paths have the correct fill colours and reset
+   * opacity. Call after DOM references are cached.
+   */
+  ensureFlameColors() {
+    if (this._flameInitDone) return;
+    this._flameInitDone = true;
+    if (this.robot.dom && this.robot.dom.flame) {
+      // Fill colours are now set by CSS (.robot-flame path rules).
+      // Only reset opacity/scale so nothing leaks from a previous session.
+      this.robot.dom.flame.style.opacity = '0';
+      this.robot.dom.flame.style.transform = 'scale(1)';
+    }
+  }
+
+  /**
+   * Shared AABB overlap test between the robot's visible hitbox and a rect.
+   * Reused by naturalApproach and any caller that needs a precise "is touching" check.
+   * @param {DOMRect} targetRect
+   * @param {number} [shrinkX=10]
+   * @param {number} [shrinkY=6]
+   * @returns {boolean}
+   */
+  _robotIntersectsTypewriter(targetRect, shrinkX = 10, shrinkY = 6) {
+    if (!targetRect || !this.robot.dom) return false;
+    const sourceEl =
+      this.robot.dom.svg || this.robot.dom.avatar || this.robot.dom.container;
+    if (!sourceEl) return false;
+    const rRaw = sourceEl.getBoundingClientRect();
+    const rRect = {
+      left: rRaw.left + shrinkX,
+      right: rRaw.right - shrinkX,
+      top: rRaw.top + shrinkY,
+      bottom: rRaw.bottom - shrinkY,
+    };
+    const intersects = !(
+      targetRect.right < rRect.left ||
+      targetRect.left > rRect.right ||
+      targetRect.bottom < rRect.top ||
+      targetRect.top > rRect.bottom
+    );
+    if (!intersects) return false;
+    const overlapX =
+      Math.min(targetRect.right, rRect.right) -
+      Math.max(targetRect.left, rRect.left);
+    const overlapY =
+      Math.min(targetRect.bottom, rRect.bottom) -
+      Math.max(targetRect.top, rRect.top);
+    return overlapX >= 6 && overlapY >= 6;
   }
 
   startSpeaking() {
@@ -185,62 +245,267 @@ export class RobotAnimation {
     if (!this.robot.dom.container) return;
     if (this.startAnimation.active) return;
 
+    // Stop patrol – knockback takes over
+    this.patrol.active = false;
+
     const now = performance.now();
     this.startAnimation.active = true;
     this.startAnimation.phase = 'knockback';
     this.startAnimation.knockbackStartTime = now;
-    this.startAnimation.knockbackDuration = 700;
+    this.startAnimation.knockbackDuration = 900;
     this.startAnimation.knockbackStartX = this.patrol.x;
     this.startAnimation.knockbackStartY = this.patrol.y;
+    // Random landing position so robot doesn't always end up at the same spot
+    this.startAnimation.knockbackEndX = Math.round(10 + Math.random() * 70);
 
     this.robot._requestAnimationFrame(this.updateStartAnimation);
   }
 
+  /**
+   * Entry animation dispatcher – randomly picks one of several
+   * entry animations each time the page loads for variety.
+   */
   startTypeWriterKnockbackAnimation() {
+    // Guard: don't restart if an entry animation is already running
+    if (this.startAnimation.active) return;
+
     const typeWriter = document.querySelector('.typewriter-title');
     if (!typeWriter || !this.robot.dom.container) {
+      if (this.robot.dom.container) {
+        this.robot.dom.container.style.opacity = '1';
+      }
       this.startPatrol();
+      return;
+    }
+
+    const variants = [
+      () => this._entryKnockback(typeWriter),
+      () => this._entryDropIn(),
+      () => this._entryZoomSpin(),
+      () => this._entrySlideIn(),
+      () => this._entryGlitchIn(),
+    ];
+    const pick = variants[Math.floor(Math.random() * variants.length)];
+    pick();
+  }
+
+  // ── Entry Animation Variants ──────────────────────────────────
+
+  /** @param {string[]} arr */
+  _randomPick(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
+  }
+
+  /** Original: Robot appears at default position and naturally patrols to text */
+  _entryKnockback(typeWriter) {
+    const twRect = typeWriter.getBoundingClientRect();
+    const robotWidth = 80;
+    const windowWidth =
+      typeof globalThis !== 'undefined' ? globalThis.innerWidth : 0;
+    const initialLeft = windowWidth - 30 - robotWidth;
+
+    const gap = 12;
+    const spaceRight = windowWidth - twRect.right - 30;
+    let targetLeft =
+      spaceRight >= robotWidth + gap
+        ? twRect.right + gap
+        : twRect.left - robotWidth - gap;
+    targetLeft = Math.max(8, Math.min(initialLeft - 20, targetLeft));
+
+    const targetX = Math.max(20, Math.round(initialLeft - targetLeft));
+
+    this.startAnimation.active = true;
+    this.patrol.x = Math.max(0, targetX - 200);
+    this.patrol.y = 0;
+    this.patrol.bouncePhase = 0;
+
+    this.robot.dom.container.style.transform = `translate3d(${-this.patrol.x}px, 0px, 0)`;
+    if (this.robot.dom.floatWrapper) {
+      this.robot.dom.floatWrapper.style.transform = 'rotate(0deg)';
+    }
+    this.robot.dom.container.style.opacity = '1';
+    this._startNaturalApproach(targetX);
+  }
+
+  /** Robot drops from above the viewport with a bounce landing */
+  _entryDropIn() {
+    const startY = -(globalThis.innerHeight || 800);
+    this.patrol.x = 0;
+    this.patrol.y = startY;
+    this.patrol.direction = -1;
+    this.patrol.bouncePhase = 0;
+
+    this.startAnimation.active = true;
+    this.startAnimation.phase = 'entryDropIn';
+    this.startAnimation.startTime = performance.now();
+    this.startAnimation.knockbackStartY = startY;
+    this.startAnimation.duration = 900;
+
+    this.robot.dom.container.style.transform = `translate3d(0px, ${startY}px, 0)`;
+    if (this.robot.dom.floatWrapper) {
+      this.robot.dom.floatWrapper.style.transform = 'rotate(0deg)';
+    }
+    // Show robot now that start position is off-screen
+    this.robot.dom.container.style.opacity = '1';
+    this.robot._requestAnimationFrame(this.updateStartAnimation);
+  }
+
+  /** Robot zooms in from tiny with a spin */
+  _entryZoomSpin() {
+    this.patrol.x = 0;
+    this.patrol.y = 0;
+
+    this.startAnimation.active = true;
+    this.startAnimation.phase = 'entryZoomSpin';
+    this.startAnimation.startTime = performance.now();
+    this.startAnimation.duration = 1000;
+
+    if (this.robot.dom.floatWrapper) {
+      this.robot.dom.floatWrapper.style.transform = 'scale(0.05) rotate(0deg)';
+      this.robot.dom.floatWrapper.style.opacity = '0';
+    }
+    this.robot.dom.container.style.transform = 'translate3d(0px, 0px, 0)';
+    // Show container (floatWrapper handles fade-in via its own opacity)
+    this.robot.dom.container.style.opacity = '1';
+    this.robot._requestAnimationFrame(this.updateStartAnimation);
+  }
+
+  /** Robot slides in from the right edge */
+  _entrySlideIn() {
+    this.patrol.x = -300;
+    this.patrol.y = 0;
+    this.patrol.direction = 1;
+    this.patrol.bouncePhase = 0;
+
+    this.startAnimation.active = true;
+    this.startAnimation.phase = 'entrySlideIn';
+    this.startAnimation.startTime = performance.now();
+    this.startAnimation.startX = -300;
+    this.startAnimation.duration = 1200;
+
+    this.robot.dom.container.style.transform = 'translate3d(300px, 0px, 0)';
+    if (this.robot.dom.floatWrapper) {
+      this.robot.dom.floatWrapper.style.transform = 'rotate(-15deg)';
+    }
+    // Show robot now that it's positioned off-screen right
+    this.robot.dom.container.style.opacity = '1';
+    this.robot._requestAnimationFrame(this.updateStartAnimation);
+  }
+
+  /** Robot appears with glitch/teleport effect */
+  _entryGlitchIn() {
+    this.patrol.x = 0;
+    this.patrol.y = 0;
+
+    this.startAnimation.active = true;
+    this.startAnimation.phase = 'entryGlitchIn';
+    this.startAnimation.startTime = performance.now();
+    this.startAnimation.duration = 1400;
+
+    this.robot.dom.container.style.transform = 'translate3d(0px, 0px, 0)';
+    if (this.robot.dom.floatWrapper) {
+      this.robot.dom.floatWrapper.style.opacity = '0';
+    }
+    // Show container (floatWrapper handles visibility via its own opacity)
+    this.robot.dom.container.style.opacity = '1';
+    this.robot._requestAnimationFrame(this.updateStartAnimation);
+  }
+
+  /** Clean up any entry animation state and transition to patrol */
+  _finishEntry(bubble) {
+    // Immediately mark phase as finishing so no phase handler re-fires
+    this.startAnimation.phase = 'finishing';
+
+    if (bubble) {
+      this.robot.showBubble(bubble);
+      this.robot._setTimeout(() => this.robot.hideBubble(), 2500);
+    }
+    const endX = this.startAnimation.knockbackEndX || 0;
+    this.robot._setTimeout(() => {
+      this.startAnimation.active = false;
+      this.startAnimation.phase = 'idle';
+      this.patrol.x = endX;
+      this.patrol.y = 0;
+      if (this.robot.dom.svg) {
+        this.robot.dom.svg.style.transform = 'rotate(0deg)';
+      }
+      if (this.robot.dom.floatWrapper) {
+        this.robot.dom.floatWrapper.style.transform = 'rotate(0deg)';
+        this.robot.dom.floatWrapper.style.opacity = '';
+      }
+      this.robot.dom.container.style.transform = `translate3d(${-endX}px, 0px, 0)`;
+      this.setAvatarState({ moving: false, dashing: false });
+      this.startPatrol();
+    }, 300);
+  }
+
+  /**
+   * Transition from a completed entry variant into a natural patrol
+   * that eventually collides with the typewriter text → knockback.
+   * @param {string} [bubble] - Optional bubble message from the entry variant
+   */
+  _transitionToTextKnockback(bubble) {
+    if (bubble) {
+      this.robot.showBubble(bubble);
+      this.robot._setTimeout(() => this.robot.hideBubble(), 1800);
+    }
+
+    // Reset variant-specific transforms
+    this.patrol.y = 0;
+    if (this.robot.dom.svg) {
+      this.robot.dom.svg.style.transform = 'rotate(0deg)';
+    }
+    if (this.robot.dom.floatWrapper) {
+      this.robot.dom.floatWrapper.style.transform = 'rotate(0deg)';
+      this.robot.dom.floatWrapper.style.opacity = '';
+    }
+    this.setAvatarState({ moving: false, dashing: false });
+
+    // Find typewriter text for collision target
+    const typeWriter = document.querySelector('.typewriter-title');
+    if (!typeWriter || !this.robot.dom.container) {
+      this._finishEntry(null);
       return;
     }
 
     const twRect = typeWriter.getBoundingClientRect();
     const robotWidth = 80;
-    const windowWidth =
-      typeof globalThis !== 'undefined' ? globalThis.innerWidth : 0;
-
+    const windowWidth = globalThis.innerWidth || 0;
     const initialLeft = windowWidth - 30 - robotWidth;
-    const gap = 24;
-    let targetLeft;
+    const gap = 12;
     const spaceRight = windowWidth - twRect.right - 30;
-    if (spaceRight >= robotWidth + gap) {
-      targetLeft = twRect.right + gap;
-    } else {
-      targetLeft = twRect.left - robotWidth - gap;
-    }
+    let targetLeft =
+      spaceRight >= robotWidth + gap
+        ? twRect.right + gap
+        : twRect.left - robotWidth - gap;
     targetLeft = Math.max(8, Math.min(initialLeft - 20, targetLeft));
 
-    const startOffset = 80;
-    const startLeft = Math.min(initialLeft, targetLeft + startOffset);
+    const targetX = Math.max(20, Math.round(initialLeft - targetLeft));
+    this._startNaturalApproach(targetX);
+  }
 
-    const startX = Math.max(0, Math.round(initialLeft - startLeft));
-    const targetX = Math.max(0, Math.round(initialLeft - targetLeft));
+  /**
+   * Begin a natural patrol-like approach toward the text.
+   * The robot walks left and right with random pauses and direction
+   * changes, subtly biased toward the text. On contact → knockback.
+   * @param {number} targetX - patrol.x value at which collision occurs
+   */
+  _startNaturalApproach(targetX) {
+    const now = performance.now();
 
-    this.startAnimation.active = true;
-    this.startAnimation.phase = 'approach';
-    this.startAnimation.startTime = performance.now();
-    this.startAnimation.startX = startX;
+    this.startAnimation.phase = 'naturalApproach';
     this.startAnimation.targetX = targetX;
-    this.startAnimation.duration = 1000;
+    this.startAnimation.startTime = now;
+    // Pause scheduling
+    this.startAnimation.naturalPauseUntil = 0;
+    this.startAnimation.naturalNextPauseAt = now + 1000 + Math.random() * 1500;
+    // Don't wander further right than ~80px behind start
+    this.startAnimation.naturalMinX = Math.max(this.patrol.x - 80, -20);
 
-    this.patrol.x = startX;
-    this.patrol.direction = 1;
-    this.patrol.bouncePhase = 0;
+    this.patrol.direction = 1; // start toward text (left)
+    this.patrol.bouncePhase = this.patrol.bouncePhase || 0;
 
-    this.robot.dom.container.style.transform = `translate3d(-${this.patrol.x}px, ${this.patrol.y}px, 0)`;
-    if (this.robot.dom.floatWrapper) {
-      this.robot.dom.floatWrapper.style.transform = 'rotate(0deg)';
-    }
-    this.robot.dom.container.style.opacity = '1';
+    this.robot.dom.container.style.transform = `translate3d(${-this.patrol.x}px, 0px, 0)`;
     this.robot._requestAnimationFrame(this.updateStartAnimation);
   }
 
@@ -251,47 +516,106 @@ export class RobotAnimation {
 
     const now = performance.now();
 
-    if (this.startAnimation.phase === 'approach') {
-      const elapsed = now - this.startAnimation.startTime;
-      const t = Math.min(1, elapsed / this.startAnimation.duration);
-      const eased = t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
-
-      this.patrol.x =
-        this.startAnimation.startX +
-        (this.startAnimation.targetX - this.startAnimation.startX) * eased;
-
-      this.patrol.bouncePhase += 0.08;
-      this.patrol.y = Math.sin(this.patrol.bouncePhase) * 4;
-
-      const flameIntensity = 0.8 + 0.6 * eased;
-      if (this.robot.dom.flame) {
-        this.robot.dom.flame.style.opacity = flameIntensity;
-        this.robot.dom.flame.style.transform = `scale(${
-          1 + flameIntensity * 0.3
-        })`;
-        if (Math.random() < 0.2) this.spawnFlameParticle();
-      }
-
-      const isDashing = t > 0.3;
-      if (isDashing && this.robot.dom.particles) {
-        this.robot.dom.particles.style.opacity = '0.9';
-      }
-
-      this.setAvatarState({ moving: true, dashing: isDashing });
-
-      if (this.robot.dom.svg) {
-        this.robot.dom.svg.style.transform = `rotate(-5deg)`;
-      }
-
-      this.robot.dom.container.style.transform = `translate3d(-${this.patrol.x}px, ${this.patrol.y}px, 0)`;
-      if (this.robot.dom.floatWrapper) {
-        this.robot.dom.floatWrapper.style.transform = 'rotate(-4deg)';
-      }
-
-      if (t >= 1) {
-        this.startAnimation.phase = 'pause';
-        this.startAnimation.pauseUntil = now + 200;
+    if (this.startAnimation.phase === 'naturalApproach') {
+      // ── Pause handling ──
+      if (now < this.startAnimation.naturalPauseUntil) {
         this.setAvatarState({ moving: false, dashing: false });
+        if (this.robot.dom.legs) this.robot.dom.legs.classList.remove('wiggle');
+        if (this.robot.dom.flame) this.robot.dom.flame.style.opacity = '0';
+        this.robot._requestAnimationFrame(this.updateStartAnimation);
+        return;
+      }
+
+      // ── Trigger random pauses ──
+      if (now > this.startAnimation.naturalNextPauseAt) {
+        const pauseDuration = 800 + Math.random() * 2200; // sehr lange Pausen
+        this.startAnimation.naturalPauseUntil = now + pauseDuration;
+        this.startAnimation.naturalNextPauseAt =
+          now + pauseDuration + 1200 + Math.random() * 1800;
+        // Öfter Richtung wechseln während Pause
+        if (Math.random() < 0.45) this.patrol.direction *= -1;
+        this.setAvatarState({ moving: false, dashing: false });
+        if (this.robot.dom.legs) this.robot.dom.legs.classList.remove('wiggle');
+        this.robot._requestAnimationFrame(this.updateStartAnimation);
+        return;
+      }
+
+      // ── Random direction changes (biased toward text) ──
+      const goingTowardText = this.patrol.direction > 0;
+      if (goingTowardText) {
+        // Gelegentlich kurz wegdrehen – sieht zufälliger aus
+        if (Math.random() < 0.005) this.patrol.direction = -1;
+      } else {
+        // Langsamer zurückdrehen – wirkt natürlicher
+        if (Math.random() < 0.018) this.patrol.direction = 1;
+      }
+
+      // Don't wander too far right past start
+      const minX = this.startAnimation.naturalMinX || -20;
+      if (this.patrol.x <= minX) {
+        this.patrol.direction = 1;
+      }
+
+      // ── Movement with gentle randomised walking speed ──
+      // Recalculate random component only every 25 frames to avoid
+      // calling Math.random() 60× per second unnecessarily.
+      this._naturalSpeedFrame = ((this._naturalSpeedFrame || 0) + 1) % 40;
+      if (
+        this._naturalSpeedFrame === 0 ||
+        this._naturalSpeedCached === undefined
+      ) {
+        this._naturalSpeedCached = 0.12 + Math.random() * 0.13; // 0.12–0.25 px/frame
+      }
+      const baseSpeed = this._naturalSpeedCached + Math.sin(now / 1600) * 0.04;
+      this.patrol.x += baseSpeed * this.patrol.direction;
+
+      // Natural bounce – sehr subtil
+      this.patrol.bouncePhase += 0.028;
+      this.patrol.y = Math.sin(this.patrol.bouncePhase) * 1.5;
+
+      // Walking state
+      this.setAvatarState({ moving: true, dashing: false });
+      if (this.robot.dom.legs) this.robot.dom.legs.classList.add('wiggle');
+
+      // Flame – etwas sichtbarer, damit sie nicht komplett transparent wirkt
+      if (this.robot.dom.flame) {
+        this.robot.dom.flame.style.opacity = '0.6';
+        this.robot.dom.flame.style.transform = 'scale(1)';
+      }
+
+      // Direction-dependent tilt – minimal
+      const tilt = this.patrol.direction > 0 ? -1.5 : 1.5;
+      if (this.robot.dom.svg) {
+        this.robot.dom.svg.style.transform = `rotate(${tilt}deg)`;
+      }
+
+      this.robot.dom.container.style.transform = `translate3d(${-this.patrol.x}px, ${this.patrol.y}px, 0)`;
+      if (this.robot.dom.floatWrapper) {
+        const ft = this.patrol.direction > 0 ? -1 : 1;
+        this.robot.dom.floatWrapper.style.transform = `rotate(${ft}deg)`;
+      }
+
+      // ── Collision check: use cached typewriter rect where possible ──
+      const typeWriter = this.robot.getTypewriterElement();
+      if (typeWriter && this.robot.dom.container) {
+        const now2 = now; // alias for clarity
+        const cache = this.cacheConfig;
+        if (
+          !cache.typeWriterRect ||
+          now2 - cache.lastTypeWriterCheck > cache.typeWriterCheckInterval
+        ) {
+          cache.typeWriterRect = typeWriter.getBoundingClientRect();
+          cache.lastTypeWriterCheck = now2;
+        }
+        if (this._robotIntersectsTypewriter(cache.typeWriterRect)) {
+          // precise contact
+          this.patrol.x = this.startAnimation.targetX;
+          this.startAnimation.phase = 'pause';
+          this.startAnimation.pauseUntil = now + 250;
+          this.setAvatarState({ moving: false, dashing: false });
+          if (this.robot.dom.legs)
+            this.robot.dom.legs.classList.remove('wiggle');
+        }
       }
 
       this.robot._requestAnimationFrame(this.updateStartAnimation);
@@ -311,12 +635,15 @@ export class RobotAnimation {
         this.robot.showBubble(reaction);
         this.robot._setTimeout(() => this.robot.hideBubble(), 2500);
 
-        this.spawnParticleBurst(15, { strength: 2, spread: 180 });
+        this.spawnParticleBurst(18, { strength: 2.5, spread: 220 });
 
         this.startAnimation.phase = 'knockback';
         this.startAnimation.knockbackStartTime = now;
+        this.startAnimation.knockbackDuration = 900;
         this.startAnimation.knockbackStartX = this.patrol.x;
         this.startAnimation.knockbackStartY = this.patrol.y;
+        // Random landing position instead of always right edge
+        this.startAnimation.knockbackEndX = Math.round(10 + Math.random() * 70);
       }
 
       this.robot._requestAnimationFrame(this.updateStartAnimation);
@@ -327,25 +654,51 @@ export class RobotAnimation {
       const elapsed = now - this.startAnimation.knockbackStartTime;
       const t = Math.min(1, elapsed / this.startAnimation.knockbackDuration);
 
-      const arc = Math.sin(t * Math.PI) * 50;
+      // Higher arc trajectory (more dramatic)
+      const arc = Math.sin(t * Math.PI) * 70;
       this.patrol.y = this.startAnimation.knockbackStartY - arc;
 
-      const eased = 1 - Math.pow(1 - t, 3);
-      this.patrol.x = this.startAnimation.knockbackStartX - 200 * eased;
+      // Fly back from collision point to random landing position
+      // Use elastic ease-out for bouncy dramatic effect
+      const eased =
+        t === 1 ? 1 : 1 - Math.pow(2, -10 * t) * Math.cos(t * Math.PI * 2.5);
+      const endX = this.startAnimation.knockbackEndX || 0;
+      this.patrol.x =
+        this.startAnimation.knockbackStartX +
+        (endX - this.startAnimation.knockbackStartX) * eased;
 
-      const rotation = -20 + t * 40;
+      // More dramatic tumble rotation
+      const rotation = -25 + t * 50;
       if (this.robot.dom.svg) {
         this.robot.dom.svg.style.transform = `rotate(${rotation}deg)`;
       }
 
-      const containerRot = 15 * Math.sin(t * Math.PI * 2);
-      this.robot.dom.container.style.transform = `translate3d(-${this.patrol.x}px, ${this.patrol.y}px, 0)`;
+      const containerRot = 20 * Math.sin(t * Math.PI * 2.5);
+      this.robot.dom.container.style.transform = `translate3d(${-this.patrol.x}px, ${this.patrol.y}px, 0)`;
       if (this.robot.dom.floatWrapper) {
         this.robot.dom.floatWrapper.style.transform = `rotate(${containerRot}deg)`;
       }
 
+      // Flash effect on impact start
+      if (t < 0.1 && this.robot.dom.svg) {
+        this.robot.dom.svg.style.filter =
+          'brightness(2) drop-shadow(0 0 8px #fff)';
+      } else if (t >= 0.1 && t < 0.15 && this.robot.dom.svg) {
+        this.robot.dom.svg.style.filter = '';
+      }
+
       if (this.robot.dom.flame) {
-        this.robot.dom.flame.style.opacity = '0.2';
+        // flare up immediately after collision, then fade to a moderate glow
+        let flameVal;
+        if (t < 0.2) {
+          flameVal = 1; // full intensity right after hit
+        } else {
+          flameVal = 0.5 + (1 - t) * 0.5; // settle back toward 0.5
+        }
+        this.robot.dom.flame.style.opacity = `${flameVal}`;
+        // slight scale effect when at peak
+        const scaleVal = 1 + (1 - t) * 0.5;
+        this.robot.dom.flame.style.transform = `scale(${scaleVal})`;
       }
 
       if (t < 0.3 && this.robot.dom.particles) {
@@ -356,16 +709,22 @@ export class RobotAnimation {
         this.startAnimation.phase = 'landing';
         this.spawnParticleBurst(8, { strength: 1.5 });
 
+        const landX = this.startAnimation.knockbackEndX || 0;
         this.robot._setTimeout(() => {
           this.startAnimation.active = false;
+          this.startAnimation.phase = 'idle';
           this.patrol.active = true;
+          this.patrol.x = landX;
           this.patrol.y = 0;
+          // Walk away from text after knockback
+          this.patrol.direction = -1;
           if (this.robot.dom.svg) {
             this.robot.dom.svg.style.transform = 'rotate(0deg)';
           }
           if (this.robot.dom.floatWrapper) {
             this.robot.dom.floatWrapper.style.transform = 'rotate(0deg)';
           }
+          this.robot.dom.container.style.transform = `translate3d(${-landX}px, 0px, 0)`;
           this.startPatrol();
         }, 300);
       }
@@ -376,6 +735,177 @@ export class RobotAnimation {
 
     if (this.startAnimation.phase === 'landing') {
       if (!this.startAnimation.active) return;
+      this.robot._requestAnimationFrame(this.updateStartAnimation);
+      return;
+    }
+
+    // ── Random entry animation phase handlers ────────────────────
+    this._updateEntryPhases(now);
+  }
+
+  /**
+   * Handle frame updates for the random entry animation variants.
+   * @param {number} now - Current timestamp from performance.now()
+   */
+  _updateEntryPhases(now) {
+    if (this.startAnimation.phase === 'entryDropIn') {
+      const elapsed = now - this.startAnimation.startTime;
+      const t = Math.min(1, elapsed / this.startAnimation.duration);
+
+      // Gravity-like fall then bounce
+      let eased;
+      if (t < 0.6) {
+        const ft = t / 0.6;
+        eased = ft * ft; // Accelerating fall
+      } else {
+        const bt = (t - 0.6) / 0.4;
+        eased = 1 - Math.abs(Math.sin(bt * Math.PI * 2)) * (1 - bt) * 0.25;
+      }
+
+      const startY = this.startAnimation.knockbackStartY;
+      this.patrol.y = startY * (1 - eased);
+
+      // Tilt during fall, stabilize on landing
+      const tilt = t < 0.6 ? -12 * (t / 0.6) : -12 + 12 * ((t - 0.6) / 0.4);
+      if (this.robot.dom.svg) {
+        this.robot.dom.svg.style.transform = `rotate(${tilt}deg)`;
+      }
+
+      if (this.robot.dom.flame) {
+        this.robot.dom.flame.style.opacity = `${t < 0.6 ? 0.3 + t : 1 - (t - 0.6) / 0.4}`;
+      }
+
+      this.setAvatarState({ moving: true, dashing: t < 0.6 });
+      this.robot.dom.container.style.transform = `translate3d(0px, ${this.patrol.y}px, 0)`;
+
+      if (t >= 1) {
+        this.spawnParticleBurst(10, { strength: 1.5, spread: 180 });
+        const msg = this._randomPick([
+          'Gelandet! 🛬',
+          'Touchdown! 🪂',
+          'Hallo von oben! 🌤️',
+          'Anflug beendet! ✈️',
+        ]);
+        this._transitionToTextKnockback(msg);
+        return;
+      }
+
+      this.robot._requestAnimationFrame(this.updateStartAnimation);
+      return;
+    }
+
+    if (this.startAnimation.phase === 'entryZoomSpin') {
+      const elapsed = now - this.startAnimation.startTime;
+      const t = Math.min(1, elapsed / this.startAnimation.duration);
+
+      // Ease-out cubic with overshoot
+      const eased = 1 - Math.pow(1 - t, 3);
+      const scale = 0.05 + 0.95 * eased;
+      const rotation = (1 - eased) * 720; // 2 full spins
+      const opacity = Math.min(1, eased * 2);
+
+      if (this.robot.dom.floatWrapper) {
+        this.robot.dom.floatWrapper.style.transform = `scale(${scale}) rotate(${rotation}deg)`;
+        this.robot.dom.floatWrapper.style.opacity = `${opacity}`;
+      }
+
+      if (t >= 1) {
+        this.spawnParticleBurst(8, { strength: 1.2, spread: 360 });
+        const msg = this._randomPick([
+          'Tada! ✨',
+          'Und da bin ich! 🌀',
+          'Einmal Drehung bitte! 🎪',
+          'Materialisation abgeschlossen! 🔮',
+        ]);
+        this._transitionToTextKnockback(msg);
+        return;
+      }
+
+      this.robot._requestAnimationFrame(this.updateStartAnimation);
+      return;
+    }
+
+    if (this.startAnimation.phase === 'entrySlideIn') {
+      const elapsed = now - this.startAnimation.startTime;
+      const t = Math.min(1, elapsed / this.startAnimation.duration);
+
+      // Elastic ease-out
+      const eased =
+        t === 1 ? 1 : 1 - Math.pow(2, -10 * t) * Math.cos(t * Math.PI * 3);
+
+      this.patrol.x = this.startAnimation.startX * (1 - eased);
+      this.patrol.bouncePhase += 0.08;
+      this.patrol.y = Math.sin(this.patrol.bouncePhase) * 4;
+
+      const tilt = -15 * (1 - eased);
+      if (this.robot.dom.floatWrapper) {
+        this.robot.dom.floatWrapper.style.transform = `rotate(${tilt}deg)`;
+      }
+
+      this.setAvatarState({ moving: true, dashing: t < 0.5 });
+      if (this.robot.dom.flame) {
+        this.robot.dom.flame.style.opacity = `${1 - eased}`;
+      }
+
+      this.robot.dom.container.style.transform = `translate3d(${-this.patrol.x}px, ${this.patrol.y}px, 0)`;
+
+      if (t >= 1) {
+        this.spawnParticleBurst(6, { strength: 1, direction: 1 });
+        const msg = this._randomPick([
+          'Da bin ich! 👋',
+          'Psst… Hey! 🤫',
+          'Alles klar hier? 😊',
+          'Bin eingetroffen! 🚀',
+        ]);
+        this._transitionToTextKnockback(msg);
+        return;
+      }
+
+      this.robot._requestAnimationFrame(this.updateStartAnimation);
+      return;
+    }
+
+    if (this.startAnimation.phase === 'entryGlitchIn') {
+      const elapsed = now - this.startAnimation.startTime;
+      const t = Math.min(1, elapsed / this.startAnimation.duration);
+
+      // Glitch: rapid random visibility flickers + position jitter
+      const flickerRate = t < 0.6 ? 0.45 : 0.85;
+      const isVisible = Math.random() < flickerRate;
+
+      if (this.robot.dom.floatWrapper) {
+        this.robot.dom.floatWrapper.style.opacity = isVisible ? '1' : '0';
+
+        if (t < 0.6 && isVisible) {
+          const jX = (Math.random() - 0.5) * 50;
+          const jY = (Math.random() - 0.5) * 50;
+          this.robot.dom.floatWrapper.style.transform = `translate(${jX}px, ${jY}px)`;
+        } else if (t >= 0.6) {
+          const settle = (t - 0.6) / 0.4;
+          const jScale = (1 - settle) * 12;
+          const jX = (Math.random() - 0.5) * jScale;
+          const jY = (Math.random() - 0.5) * jScale;
+          this.robot.dom.floatWrapper.style.transform = `translate(${jX}px, ${jY}px)`;
+        }
+      }
+
+      // Random glitch particles
+      if (Math.random() < 0.12) {
+        this.spawnParticleBurst(2, { strength: 0.8, spread: 360 });
+      }
+
+      if (t >= 1) {
+        this.spawnParticleBurst(12, { strength: 1.5, spread: 360 });
+        const msg = this._randomPick([
+          '*bzzt* Online! ⚡',
+          'System bereit! 🔌',
+          'Verbindung hergestellt! 📡',
+          'Initialisierung… fertig! 🤖',
+        ]);
+        this._transitionToTextKnockback(msg);
+        return;
+      }
+
       this.robot._requestAnimationFrame(this.updateStartAnimation);
     }
   }
@@ -429,12 +959,6 @@ export class RobotAnimation {
       30 -
       robotWidth;
     let maxLeft = initialLeft - 20;
-
-    if (twRect) {
-      const limit = initialLeft - twRect.right - 50;
-      if (limit < maxLeft) maxLeft = limit;
-    }
-
     if (maxLeft < 0) maxLeft = 0;
 
     if (
@@ -504,14 +1028,12 @@ export class RobotAnimation {
     if (this.robot.dom.flame) {
       const flameIntensity =
         this.startAnimation && this.startAnimation.active
-          ? 1.4
+          ? 0.9
           : dashActive
-            ? 1.2
-            : 0.85;
-      this.robot.dom.flame.style.opacity = flameIntensity;
-      this.robot.dom.flame.style.transform = `scale(${
-        1 + (flameIntensity - 0.7) * 0.4
-      })`;
+            ? 0.85
+            : 0.75;
+      this.robot.dom.flame.style.opacity = `${flameIntensity}`;
+      this.robot.dom.flame.style.transform = `scale(${1 + (flameIntensity - 0.7) * 0.4})`;
     }
     if (this.robot.dom.particles) {
       this.robot.dom.particles.style.opacity =
@@ -744,7 +1266,7 @@ export class RobotAnimation {
         ],
         { duration: 300 },
       );
-      await sleep(350);
+      await this._wait(350);
     } else {
       if (this.robot.dom.svg) {
         this.robot.dom.svg.style.filter =
@@ -839,7 +1361,7 @@ export class RobotAnimation {
     const lids = this.robot.dom.lids;
     if (!lids.length) return;
     lids.forEach((l) => l.classList.add('is-blink'));
-    setTimeout(
+    this.robot._setTimeout(
       () => {
         lids.forEach((l) => l.classList.remove('is-blink'));
       },
@@ -871,11 +1393,11 @@ export class RobotAnimation {
       }
     }
 
-    await sleep(300);
+    await this._wait(300);
 
     this.robot.dom.avatar.style.transform = 'translateY(0) scale(1) rotate(0)';
 
-    await sleep(200);
+    await this._wait(200);
 
     // Reset antenna
     if (this.robot.dom.antenna) {
@@ -906,7 +1428,7 @@ export class RobotAnimation {
       });
     }
 
-    await sleep(400);
+    await this._wait(400);
 
     this.robot.dom.avatar.style.transform = '';
 
@@ -949,7 +1471,7 @@ export class RobotAnimation {
     // Add pointing arm animation
     this.robot.dom.avatar.classList.add('pointing');
 
-    await sleep(2000);
+    await this._wait(2000);
 
     // Reset
     this.robot.dom.avatar.style.transform = '';
@@ -983,7 +1505,7 @@ export class RobotAnimation {
         this.spawnParticleBurst(3, { strength: 0.8, spread: 180 });
       }
 
-      await sleep(move.duration);
+      await this._wait(move.duration);
     }
   }
 
@@ -1001,7 +1523,7 @@ export class RobotAnimation {
       this.robot.dom.eyes.style.transform = 'translate(0, 3px)';
     }
 
-    await sleep(2000);
+    await this._wait(2000);
 
     this.robot.dom.avatar.style.transform = '';
     if (this.robot.dom.eyes) {
@@ -1024,11 +1546,11 @@ export class RobotAnimation {
     this.robot.dom.avatar.style.transition = 'transform 0.3s ease-in-out';
     this.robot.dom.avatar.style.transform = 'rotate(-15deg)';
 
-    await sleep(500);
+    await this._wait(500);
 
     this.robot.dom.avatar.style.transform = 'rotate(15deg)';
 
-    await sleep(500);
+    await this._wait(500);
 
     this.robot.dom.avatar.style.transform = '';
 
@@ -1299,7 +1821,7 @@ export class RobotAnimation {
 
   updateRobotTransform() {
     if (!this.robot.dom.container) return;
-    this.robot.dom.container.style.transform = `translate3d(-${this.patrol.x}px, ${this.patrol.y}px, 0)`;
+    this.robot.dom.container.style.transform = `translate3d(${-this.patrol.x}px, ${this.patrol.y}px, 0)`;
     if (this.robot.dom.floatWrapper) {
       this.robot.dom.floatWrapper.style.transform = 'rotate(0deg)';
     }

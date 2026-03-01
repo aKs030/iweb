@@ -21,7 +21,8 @@
     "pages/**/*.js",
     "sw.js",
     "functions/**/*.js",
-    "scripts/**/*.mjs"
+    "scripts/**/*.mjs",
+    "worker-configuration.d.ts"
   ],
   "exclude": ["node_modules", "build", "dist", "reports"]
 }

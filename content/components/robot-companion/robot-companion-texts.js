@@ -5,57 +5,28 @@ export const robotCompanionTexts = {
   knowledgeBase: {
     start: {
       text: [
-        'Hallo! Ich bin Cyber, dein virtueller Assistent. Wie kann ich dir heute helfen?',
-        'Hi! Cyber hier — möchtest du Projekte anschauen oder etwas über den Entwickler erfahren?',
-        'Grüß dich! Brauchst du Hilfe oder willst du einfach die Galerie durchstöbern?',
-        'Servus! Ich kann dir Projekte, Skills und Kontaktinfos zeigen. Soll ich beginnen?',
-        'Hey! Ich bin Cyber — tippe auf mich, um loszulegen!',
+        'Hey! Ich bin Jules — dein proaktiver KI-Assistent. Frag mich was, lade ein Bild hoch oder lass mich die Seite für dich steuern! 🤖',
+        'Hi! Jules hier — ich kann navigieren, suchen, das Theme wechseln und mich an dich erinnern. Was soll ich tun?',
+        'Servus! Ich bin Jules, mehr als nur ein Chatbot. Ich kann die Website aktiv für dich bedienen. Probier es aus!',
+        'Hallo! Ich bin Jules — dein intelligenter Begleiter. Tippe etwas oder wähle eine Option! ✨',
       ],
       options: [
-        { label: 'Was kannst du?', action: 'skills' },
-        { label: 'Projekte zeigen', action: 'projects' },
-        { label: 'Seite zusammenfassen', action: 'summarizePage' },
-        { label: 'Über den Dev', action: 'about' },
-        { label: 'Fun & Extras', action: 'extras' },
-      ],
-    },
-    skills: {
-      text: 'Ich wurde mit HTML, CSS und reinem JavaScript gebaut! Mein Erschaffer beherrscht aber noch viel mehr: React, Node.js, Python und UI/UX Design. Möchtest du Details?',
-      options: [
-        { label: 'Tech Stack ansehen', url: '/about/#skills' },
-        { label: 'Zurück', action: 'start' },
+        { label: '🧭 Seite erkunden', action: 'explore' },
+        { label: '📷 Bild analysieren', action: 'uploadImage' },
+        { label: '🔍 Website durchsuchen', action: 'searchWebsite' },
+        { label: '🎨 Theme wechseln', action: 'toggleTheme' },
+        { label: '🎮 Fun & Extras', action: 'extras' },
       ],
     },
-    about: {
-      text: 'Hinter dieser Seite steckt ein leidenschaftlicher Entwickler, der sauberen Code und modernes Design liebt.',
+    explore: {
+      text: 'Wohin soll ich dich bringen? Ich navigiere dich direkt dorthin! 🧭',
       options: [
-        { label: 'Zur Bio', url: '/about/' },
-        { label: 'Kontakt aufnehmen', action: 'contact' },
-        { label: 'Zurück', action: 'start' },
-      ],
-    },
-    projects: {
-      text: 'Wir haben einige spannende Projekte hier! Von Web-Apps bis zu Design-Experimenten. Wirf einen Blick in die Galerie.',
-      options: [
-        { label: 'Zur Galerie', url: '/projekte/' },
-        { label: 'Ein Zufallsprojekt?', action: 'randomProject' },
-        { label: 'Zurück', action: 'start' },
-      ],
-    },
-    contact: {
-      text: 'Du findest Kontaktmöglichkeiten im Footer der Seite oder im Impressum. Ich kann dich dorthin scrollen!',
-      options: [
-        { label: 'Zum Footer scrollen', action: 'scrollFooter' },
-        { label: 'Social Media?', action: 'socials' },
-        { label: 'Alles klar', action: 'start' },
-      ],
-    },
-    socials: {
-      text: 'Vernetze dich gerne! Hier sind die Profile:',
-      options: [
-        { label: 'GitHub', url: 'https://github.com', target: '_blank' },
-        { label: 'LinkedIn', url: 'https://linkedin.com', target: '_blank' },
-        { label: 'Zurück', action: 'contact' },
+        { label: '🚀 Projekte', url: '/projekte/' },
+        { label: '👤 Über Abdulkerim', url: '/about/' },
+        { label: '📸 Galerie', url: '/gallery/' },
+        { label: '📝 Blog', url: '/blog/' },
+        { label: '🎬 Videos', url: '/videos/' },
+        { label: '↩️ Zurück', action: 'start' },
       ],
     },
     extras: {
@@ -64,7 +35,7 @@ export const robotCompanionTexts = {
         { label: 'Witz erzählen', action: 'joke' },
         { label: 'Weltraum Fakt', action: 'fact' },
         { label: 'Mini-Games', action: 'games' },
-        { label: 'Zurück', action: 'start' },
+        { label: '↩️ Zurück', action: 'start' },
       ],
     },
     games: {
