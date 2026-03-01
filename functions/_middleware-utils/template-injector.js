@@ -4,24 +4,6 @@
  */
 
 /**
- * Inject templates into HTML
- * @param {string} html - HTML content
- * @param {Object} templates - Template content
- * @param {string} templates.head - Head template
- * @param {string} templates.loader - Loader template
- * @returns {string} HTML with injected templates
- */
-export function injectTemplates(html, templates) {
-  if (templates.head) {
-    html = html.replace(/<!--\s*INJECT:BASE-HEAD\s*-->/g, templates.head);
-  }
-  if (templates.loader) {
-    html = html.replace(/<!--\s*INJECT:BASE-LOADER\s*-->/g, templates.loader);
-  }
-  return html;
-}
-
-/**
  * Load template from URL
  * @param {Object} context - Cloudflare Pages context
  * @param {string} path - Template path

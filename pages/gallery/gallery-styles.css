@@ -20,52 +20,16 @@
   display: flex;
 }
 
-.flex-col {
-  flex-direction: column;
-}
-
-.items-center {
-  align-items: center;
-}
-
-.justify-center {
-  justify-content: center;
-}
-
 .gap-4 {
   gap: var(--space-4);
-}
-
-.aspect-square {
-  aspect-ratio: 1 / 1;
-}
-
-.text-center {
-  text-align: center;
 }
 
 .text-white {
   color: var(--clr-white);
 }
 
-.font-bold {
-  font-weight: 700;
-}
-
 .overflow-hidden {
   overflow: hidden;
-}
-
-.rounded-lg {
-  border-radius: var(--radius-sm);
-}
-
-.rounded-2xl {
-  border-radius: var(--radius-lg);
-}
-
-.rounded-full {
-  border-radius: var(--radius-full);
 }
 
 .absolute {
@@ -82,14 +46,6 @@
 
 .w-full {
   width: 100%;
-}
-
-.max-w-full {
-  max-width: 100%;
-}
-
-.object-contain {
-  object-fit: contain;
 }
 
 .gallery-shell {

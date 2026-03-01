@@ -449,24 +449,6 @@ a:hover {
   justify-content: space-between;
 }
 
-/* Responsive u-* utilities (lg breakpoint) */
-@media (min-width: 1024px) {
-  .lg\:u-row {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-  }
-
-  .lg\:u-stack {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .lg\:u-wrap {
-    flex-wrap: wrap;
-  }
-}
-
 /* ===== END UTILITIES ===== */
 
 /* ===== GLOBAL COMPONENTS ===== */

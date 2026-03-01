@@ -150,13 +150,6 @@ main.about-main.container {
   border: var(--size-1) solid
     color-mix(in srgb, var(--clr-blue-500) 20%, transparent);
 }
-.connect-card {
-  background: linear-gradient(
-    145deg,
-    color-mix(in srgb, var(--clr-slate-500) 80%, transparent),
-    color-mix(in srgb, var(--clr-blue-600) 35%, var(--bg-primary))
-  );
-}
 .social-links {
   margin-top: var(--size-r-1-5);
 }
