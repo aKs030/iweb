@@ -1,1 +1,1 @@
-npm run qa
+npm run qa || (npm run qa:fix && echo "✅ Husky auto-fixed code style issues. Please COMMIT these changes and push again." && exit 1)
