@@ -153,6 +153,50 @@ class ResourceHintsManager {
   }
 
   /**
+   * Inject Speculative Rules for prerendering on hover/pointerdown
+   */
+  initSpeculativeRules() {
+    try {
+      if (
+        HTMLScriptElement.supports &&
+        HTMLScriptElement.supports('speculationrules')
+      ) {
+        if (document.querySelector('script[type="speculationrules"]')) {
+          return;
+        }
+
+        const script = document.createElement('script');
+        script.type = 'speculationrules';
+
+        // Define rules: prerender internal links on hover.
+        // Eagerness 'moderate' triggers on mousedown/pointerdown or extended hover (e.g. ~200ms)
+        const rules = {
+          prerender: [
+            {
+              source: 'document',
+              where: {
+                and: [
+                  { href_matches: '/*' },
+                  { not: { href_matches: '/api/*' } },
+                ],
+              },
+              eagerness: 'moderate',
+            },
+          ],
+        };
+
+        script.textContent = JSON.stringify(rules);
+        document.head.appendChild(script);
+        log.info('Speculative Rules injected for prerendering');
+      } else {
+        log.info('Speculative Rules API not supported by browser');
+      }
+    } catch (err) {
+      log.error('Failed to initialize speculative rules:', err);
+    }
+  }
+
+  /**
    * Initialize common resource hints
    */
   initCommonHints() {
@@ -165,6 +209,8 @@ class ResourceHintsManager {
     // DNS prefetch for external services
     this.dnsPrefetch('https://www.google-analytics.com');
     this.dnsPrefetch('https://www.googletagmanager.com');
+
+    this.initSpeculativeRules();
 
     this.initialized = true;
     log.info('Common resource hints initialized');

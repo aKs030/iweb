@@ -19,6 +19,7 @@ import {
 import { initViewTransitions } from './core/view-transitions.js';
 import { i18n } from './core/i18n.js';
 import { GlobalEventHandlers } from './core/events.js';
+import { resourceHints } from './core/resource-hints.js';
 
 const log = createLogger('main');
 const appTimers = new TimerManager('Main');
@@ -87,6 +88,9 @@ const _initApp = () => {
 
   // Initialize View Transitions API (progressive enhancement)
   initViewTransitions();
+
+  // Initialize Resource Hints & Speculative Prerendering
+  resourceHints.init();
 };
 
 onDOMReady(_initApp);
