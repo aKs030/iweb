@@ -523,7 +523,19 @@ export async function onRequestPost(context) {
           },
         );
       }
-      throw new Error('GROQ_API_KEY not configured');
+      // Permanent config error — 500 with retryable: false so clients don't retry
+      console.error(
+        'GROQ_API_KEY secret is not configured in Cloudflare Pages.',
+      );
+      return Response.json(
+        {
+          error: 'AI service not configured',
+          text: 'Der KI-Dienst ist momentan nicht verfügbar.',
+          toolCalls: [],
+          retryable: false,
+        },
+        { status: 500, headers: corsHeaders },
+      );
     }
 
     // ── Call Groq with tool-calling ──
@@ -545,7 +557,18 @@ export async function onRequestPost(context) {
 
     if (!groqResponse.ok) {
       const errorText = await groqResponse.text();
-      throw new Error(`Groq API error: ${groqResponse.status} - ${errorText}`);
+      console.error(`Groq API error: ${groqResponse.status} - ${errorText}`);
+      const isTransient =
+        groqResponse.status >= 500 || groqResponse.status === 429;
+      return Response.json(
+        {
+          error: 'AI provider error',
+          text: 'Verbindung zum KI-Dienst fehlgeschlagen. Bitte versuche es erneut.',
+          toolCalls: [],
+          retryable: isTransient,
+        },
+        { status: isTransient ? 503 : 502, headers: corsHeaders },
+      );
     }
 
     const groqData = await groqResponse.json();
@@ -660,14 +683,15 @@ export async function onRequestPost(context) {
       { headers: corsHeaders },
     );
   } catch (error) {
-    console.error('AI Agent error:', error);
+    console.error('AI Agent error:', error?.message || error);
     return Response.json(
       {
         error: 'AI Agent request failed',
         text: 'Verbindung zum KI-Dienst fehlgeschlagen. Bitte versuche es erneut.',
         toolCalls: [],
+        retryable: true,
       },
-      { status: 500, headers: corsHeaders },
+      { status: 503, headers: corsHeaders },
     );
   }
 }
