@@ -1,11 +1,12 @@
 /**
- * Service Worker v4 — Minimal, Silent, Modern
+ * Service Worker v5 — Reload-Loop-safe
  * Navigation: Network-only mit Offline-Fallback
  * Bilder/Fonts/3D: Cache-first
  * JS/CSS: Kein SW-Caching (Browser-HTTP-Cache übernimmt)
  * API/Externe: Ignoriert
  */
 
+// Cache-Name mit Version — bei Deployments hochzählen (z. B. static-v2)
 const CACHE = 'static-v1';
 const OFFLINE = '/offline.html';
 
@@ -22,7 +23,8 @@ const SKIP = [
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.add(OFFLINE)));
-  self.skipWaiting();
+  // KEIN skipWaiting() — verhindert Mid-Session-SW-Übernahme, die Reloads auslöst.
+  // Neuer SW wartet, bis alle Tabs der alten Version geschlossen sind.
 });
 
 self.addEventListener('activate', (e) => {
@@ -33,8 +35,10 @@ self.addEventListener('activate', (e) => {
         Promise.all(
           keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)),
         ),
-      )
-      .then(() => self.clients.claim()),
+      ),
+    // clients.claim() NICHT aufrufen — verhindert, dass der neue SW
+    // laufende Seiten mitten in der Session übernimmt und dabei
+    // ausstehende Requests abbricht oder Reloads auslöst.
   );
 });
 
