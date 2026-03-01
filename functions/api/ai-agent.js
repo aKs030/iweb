@@ -1,15 +1,15 @@
 /**
  * Cloudflare Pages Function - POST /api/ai-agent
  * Proactive AI Agent with Tool-Calling, Image Analysis (LLaVA), and Long-Term Memory (Vectorize)
- * @version 1.0.0
+ * Uses Cloudflare Workers AI — no external API keys required.
+ * @version 2.0.0
  */
 
 import { getCorsHeaders, handleOptions } from './_cors.js';
 
 // ─── Constants ──────────────────────────────────────────────────────────────────
 
-const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
-const GROQ_MODEL = 'llama-3.3-70b-versatile';
+const CHAT_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast';
 const EMBEDDING_MODEL = '@cf/baai/bge-base-en-v1.5';
 const LLAVA_MODEL = '@cf/llava-hf/llava-1.5-7b-hf';
 const MAX_MEMORY_RESULTS = 5;
@@ -167,9 +167,9 @@ const TOOL_DEFINITIONS = [
   },
 ];
 
-// ─── Groq-compatible tool format ────────────────────────────────────────────────
+// ─── OpenAI-compatible tool format (for Workers AI) ────────────────────────────
 
-function buildGroqTools() {
+function buildTools() {
   return TOOL_DEFINITIONS.map((t) => ({
     type: 'function',
     function: {
@@ -505,32 +505,13 @@ export async function onRequestPost(context) {
 
     messages.push({ role: 'user', content: prompt });
 
-    // ── Dev fallback ──
-    if (!env.GROQ_API_KEY) {
-      const isLocal = isLocalRequest(request);
-      if (isLocal) {
-        return Response.json(
-          {
-            text: `🤖 Lokaler Modus: GROQ_API_KEY fehlt.\n\nDeine Anfrage: "${prompt.slice(0, 100)}"${memoryContext ? `\n\nErinnerungen: ${memoryContext}` : ''}${imageAnalysis ? `\n\nBild-Analyse: ${imageAnalysis}` : ''}`,
-            toolCalls: [],
-            model: 'mock-dev-local',
-            memoryContext: !!memoryContext,
-            mode: 'local-fallback',
-          },
-          {
-            status: 200,
-            headers: { ...corsHeaders, 'Cache-Control': 'no-store' },
-          },
-        );
-      }
-      // Permanent config error — 500 with retryable: false so clients don't retry
-      console.error(
-        'GROQ_API_KEY secret is not configured in Cloudflare Pages.',
-      );
+    // ── Check AI binding ──
+    if (!env.AI) {
+      console.error('AI binding is not configured in wrangler.jsonc.');
       return Response.json(
         {
           error: 'AI service not configured',
-          text: 'Der KI-Dienst ist momentan nicht verfügbar.',
+          text: 'Der KI-Dienst ist momentan nicht verfügbar (AI-Binding fehlt).',
           toolCalls: [],
           retryable: false,
         },
@@ -538,61 +519,31 @@ export async function onRequestPost(context) {
       );
     }
 
-    // ── Call Groq with tool-calling ──
-    const groqResponse = await fetch(GROQ_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${env.GROQ_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: GROQ_MODEL,
-        messages,
-        tools: buildGroqTools(),
-        tool_choice: 'auto',
-        temperature: 0.7,
-        max_tokens: 1024,
-      }),
+    // ── Call Cloudflare Workers AI ──
+    const aiResult = await env.AI.run(CHAT_MODEL, {
+      messages,
+      tools: buildTools(),
+      temperature: 0.7,
+      max_tokens: 2048,
     });
 
-    if (!groqResponse.ok) {
-      const errorText = await groqResponse.text();
-      console.error(`Groq API error: ${groqResponse.status} - ${errorText}`);
-      const isTransient =
-        groqResponse.status >= 500 || groqResponse.status === 429;
-      return Response.json(
-        {
-          error: 'AI provider error',
-          text: 'Verbindung zum KI-Dienst fehlgeschlagen. Bitte versuche es erneut.',
-          toolCalls: [],
-          retryable: isTransient,
-        },
-        { status: isTransient ? 503 : 502, headers: corsHeaders },
-      );
-    }
-
-    const groqData = await groqResponse.json();
-    const choice = groqData.choices?.[0];
-
-    if (!choice) {
-      throw new Error('Empty response from Groq');
+    if (!aiResult) {
+      throw new Error('Empty response from Workers AI');
     }
 
     // ── Process tool calls ──
     const clientToolCalls = [];
     const toolResults = [];
+    const toolCalls = aiResult.tool_calls || [];
 
-    if (choice.message?.tool_calls?.length) {
-      for (const toolCall of choice.message.tool_calls) {
-        const fn = toolCall.function;
-        const toolName = fn.name;
-        let args;
-
-        try {
-          args = JSON.parse(fn.arguments || '{}');
-        } catch {
-          args = {};
-        }
+    if (toolCalls.length > 0) {
+      for (const toolCall of toolCalls) {
+        // Workers AI returns { name, arguments } directly (arguments already parsed)
+        const toolName = toolCall.name;
+        const args =
+          typeof toolCall.arguments === 'string'
+            ? JSON.parse(toolCall.arguments)
+            : toolCall.arguments || {};
 
         // Execute server-side tools
         const serverResult = await executeServerTool(
@@ -618,42 +569,38 @@ export async function onRequestPost(context) {
 
       // If we had server-side tool results, do a second LLM call to incorporate them
       if (toolResults.length > 0) {
-        // Build tool result messages
-        const toolMessages = [...messages, choice.message];
-        for (const tr of toolResults) {
-          toolMessages.push({
-            role: 'tool',
-            tool_call_id:
-              choice.message.tool_calls.find(
-                (tc) => tc.function.name === tr.name,
-              )?.id || 'unknown',
-            content: tr.result,
-          });
-        }
+        const toolSummary = toolResults
+          .map((tr) => `[Tool ${tr.name}]: ${tr.result}`)
+          .join('\n');
 
-        const secondResponse = await fetch(GROQ_API_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${env.GROQ_API_KEY}`,
+        const followUpMessages = [
+          ...messages,
+          {
+            role: 'assistant',
+            content:
+              aiResult.response ||
+              `Ich habe folgende Tools ausgeführt: ${toolResults.map((r) => r.name).join(', ')}`,
           },
-          body: JSON.stringify({
-            model: GROQ_MODEL,
-            messages: toolMessages,
-            temperature: 0.7,
-            max_tokens: 1024,
-          }),
-        });
+          {
+            role: 'user',
+            content: `Ergebnisse der Tool-Ausführung:\n${toolSummary}\n\nBitte antworte dem Nutzer basierend auf diesen Ergebnissen.`,
+          },
+        ];
 
-        if (secondResponse.ok) {
-          const secondData = await secondResponse.json();
-          const secondText = secondData.choices?.[0]?.message?.content || '';
+        try {
+          const secondResult = await env.AI.run(CHAT_MODEL, {
+            messages: followUpMessages,
+            temperature: 0.7,
+            max_tokens: 2048,
+          });
+
+          const secondText = secondResult?.response || '';
           if (secondText) {
             return Response.json(
               {
                 text: secondText,
                 toolCalls: clientToolCalls,
-                model: GROQ_MODEL,
+                model: CHAT_MODEL,
                 hasMemory: !!memoryContext,
                 hasImage: !!imageAnalysis,
                 toolResults: toolResults.map((r) => r.name),
@@ -661,12 +608,15 @@ export async function onRequestPost(context) {
               { headers: corsHeaders },
             );
           }
+        } catch (err) {
+          console.warn('Second AI call failed:', err?.message);
+          // Fall through to return first response
         }
       }
     }
 
     // ── Return response ──
-    const responseText = choice.message?.content || '';
+    const responseText = aiResult.response || '';
 
     return Response.json(
       {
@@ -676,7 +626,7 @@ export async function onRequestPost(context) {
             ? 'Aktion wird ausgeführt...'
             : 'Keine Antwort erhalten.'),
         toolCalls: clientToolCalls,
-        model: GROQ_MODEL,
+        model: CHAT_MODEL,
         hasMemory: !!memoryContext,
         hasImage: !!imageAnalysis,
       },
@@ -693,15 +643,6 @@ export async function onRequestPost(context) {
       },
       { status: 503, headers: corsHeaders },
     );
-  }
-}
-
-function isLocalRequest(request) {
-  try {
-    const hostname = new URL(request.url).hostname;
-    return hostname === 'localhost' || hostname === '127.0.0.1';
-  } catch {
-    return false;
   }
 }
 
