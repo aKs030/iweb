@@ -1,1 +1,26 @@
-npm run qa || (npm run qa:fix && echo "✅ Husky auto-fixed code style issues. Please COMMIT these changes and push again." && exit 1)
+#!/bin/sh
+# Husky pre-push hook
+
+# Run QA. If it fails, try to fix and notify the user.
+npm run qa
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "⚠️  QA check failed! Attempting to fix automatically..."
+  echo ""
+
+  # Try to fix
+  if npm run qa:fix; then
+    echo ""
+    echo "✅ Husky found and fixed code style issues for you."
+    echo "🚨 IMPORTANT: These changes are now in your workspace but NOT yet committed."
+    echo "   Please run the following to finish your push:"
+    echo ""
+    echo "   git commit -am 'style: auto-fix' && git push"
+    echo ""
+  else
+    echo "❌ Auto-fix failed. Please check the errors above."
+  fi
+
+  # Always exit with 1 if the initial QA failed, to prevent the push
+  exit 1
+fi
