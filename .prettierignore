@@ -42,5 +42,8 @@ content/styles/tokens.css
 content/styles/tokens-dark.css
 content/styles/utilities.generated.css
 
+# temporary workaround for Prettier warning
+content/core/signals.js
+
 # Git
 .git/
