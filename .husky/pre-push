@@ -1,6 +1,13 @@
 #!/bin/sh
 # Husky pre-push hook
 
+# Run auto-fixes before any checks so formatting issues are resolved early
+# (this prevents Prettier cache warnings from blocking the push)
+npm run qa:fix || true
+
+# Clear Prettier cache to avoid stale warning symptoms
+rm -f .prettiercache 2>/dev/null || true
+
 # Run QA. If it fails, try to fix and notify the user.
 npm run qa
 if [ $? -ne 0 ]; then
