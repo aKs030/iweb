@@ -1,5 +1,7 @@
 /* Container für den Roboter - fixiert unten rechts */
 #robot-companion-container {
+  container-type: inline-size;
+  container-name: robotcontainer;
   position: fixed;
   bottom: var(--size-30);
   right: var(--size-30);
@@ -1181,6 +1183,23 @@
   }
 }
 
+.robot-avatar.celebrating {
+  animation: celebrate 0.6s ease-in-out;
+}
+
+@keyframes celebrate {
+  0%,
+  100% {
+    transform: rotate(0deg) translateY(0);
+  }
+  25% {
+    transform: rotate(-15deg) translateY(calc(var(--size-10) * -1));
+  }
+  75% {
+    transform: rotate(15deg) translateY(calc(var(--size-10) * -1));
+  }
+}
+
 /* Highlight pulse for elements being pointed at */
 .robot-highlight {
   animation: highlight-pulse 2s ease-in-out;
@@ -1322,7 +1341,7 @@
   }
 }
 
-@media (width <= 480px) {
+@container robotcontainer (width <= 480px) {
   #robot-companion-container {
     bottom: var(--size-15);
     right: var(--size-15);
@@ -1352,7 +1371,7 @@
 }
 
 /* Mobile: Chat-Inhalte kompakter bei schmalen Viewports */
-@media (width <= 480px) {
+@container robotcontainer (width <= 480px) {
   .chat-messages {
     padding: var(--size-15);
   }
@@ -1462,7 +1481,7 @@
 
 /* Mobile Optimization: Prevent iOS Zoom on Input Focus */
 /* Mobile: input font-size für iOS Zoom-Prevention */
-@media (width <= 480px) {
+@container robotcontainer (width <= 480px) {
   #robot-chat-input {
     font-size: var(--size-16) !important;
   }
@@ -1475,6 +1494,14 @@
 .robot-magnifying-glass {
   transition: opacity 0.4s ease;
   pointer-events: none;
+}
+
+/* Glass Lens Effect */
+.robot-lens {
+  mix-blend-mode: hard-light;
+  filter: drop-shadow(
+    0 0 var(--size-5) color-mix(in srgb, var(--robot-cyan) 30%, transparent)
+  );
 }
 
 .robot-antenna-light.is-thinking {
@@ -1514,6 +1541,59 @@
   }
   100% {
     transform: rotate(-15deg);
+  }
+}
+
+/* Thumbs up gesture */
+.robot-hand.thumbs-up .finger-0 {
+  animation: thumbsUp 0.5s ease-out forwards;
+}
+
+.robot-hand.thumbs-up .finger-1,
+.robot-hand.thumbs-up .finger-2,
+.robot-hand.thumbs-up .finger-3,
+.robot-hand.thumbs-up .finger-4 {
+  opacity: 0.3;
+  transform: scale(0.8);
+}
+
+@keyframes thumbsUp {
+  0% {
+    transform: rotate(0deg) translateY(0);
+  }
+  100% {
+    transform: rotate(-90deg) translateY(calc(var(--size-3) * -1));
+  }
+}
+
+/* Wave animation for fingers */
+.robot-hand.waving .robot-finger {
+  animation: fingerWave 0.6s ease-in-out infinite;
+}
+
+.robot-hand.waving .finger-0 {
+  animation-delay: 0s;
+}
+.robot-hand.waving .finger-1 {
+  animation-delay: 0.1s;
+}
+.robot-hand.waving .finger-2 {
+  animation-delay: 0.2s;
+}
+.robot-hand.waving .finger-3 {
+  animation-delay: 0.3s;
+}
+.robot-hand.waving .finger-4 {
+  animation-delay: 0.4s;
+}
+
+@keyframes fingerWave {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(15deg);
   }
 }
 
@@ -1918,6 +1998,22 @@
   object-fit: cover;
   border: var(--size-1) solid
     color-mix(in srgb, var(--robot-cyan) 20%, transparent);
+}
+
+/* Tool result in message */
+.message .tool-result {
+  display: flex;
+  align-items: center;
+  gap: var(--size-6);
+  margin-top: var(--size-4);
+  padding: var(--size-4) var(--size-8);
+  background: color-mix(in srgb, var(--robot-cyan) 5%, transparent);
+  border-radius: var(--size-6);
+  font-size: var(--size-r-0-8, 0.8rem);
+}
+
+.tool-result .tool-status {
+  font-size: var(--size-r-0-9, 0.9rem);
 }
 
 /* Slide up animation */

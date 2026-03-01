@@ -4,6 +4,7 @@
 
 import { MenuTemplate } from './MenuTemplate.js';
 import { i18n } from '../../../core/i18n.js';
+import { withViewTransition } from '../../../core/view-transitions.js';
 
 /**
  * @typedef {import('./MenuState.js').MenuState} MenuState
@@ -78,14 +79,19 @@ export class MenuRenderer {
   setupStateSubscriptions() {
     // Open/Close State
     this.state.on('openChange', (isOpen) => {
-      const toggle = this.container.querySelector('.site-menu__toggle');
-      const menu = this.container.querySelector('.site-menu');
+      withViewTransition(
+        () => {
+          const toggle = this.container.querySelector('.site-menu__toggle');
+          const menu = this.container.querySelector('.site-menu');
 
-      if (menu) menu.classList.toggle('open', isOpen);
-      if (toggle) toggle.classList.toggle('active', isOpen);
+          if (menu) menu.classList.toggle('open', isOpen);
+          if (toggle) toggle.classList.toggle('active', isOpen);
 
-      // Accessibility update
-      if (toggle) toggle.setAttribute('aria-expanded', String(isOpen));
+          // Accessibility update
+          if (toggle) toggle.setAttribute('aria-expanded', String(isOpen));
+        },
+        { types: [isOpen ? 'menu-open' : 'menu-close'] },
+      );
     });
 
     // Active Link State
