@@ -137,6 +137,10 @@ export const AppLoadManager = (() => {
      * @param {Object} options - Options
      */
     hideLoader(delay = 0, options = {}) {
+      // Guard against multiple calls
+      if (this._hiding) return;
+      this._hiding = true;
+
       try {
         const elements = getLoaderElements();
         if (!elements) return;

@@ -161,6 +161,10 @@ function makeLineMeasurer(subtitleEl) {
       subtitleEl.setAttribute('data-lines', String(lines));
       return lines;
     },
+    /** Remove the off-screen measurer element from the DOM */
+    destroy() {
+      measurer.remove();
+    },
   };
 }
 
@@ -548,7 +552,8 @@ export async function initHeroSubtitle(options = {}) {
           document.removeEventListener(eventName, pollOverlap),
         );
         window.removeEventListener('resize', onResize);
-        clearInterval(pollInterval);
+        tw.timerManager?.clearAll?.();
+        measurer.destroy();
       };
     };
 

@@ -1,12 +1,10 @@
 /**
  * Core Utilities
  * Central collection of utility functions for DOM, Async and general helpers
- * @version 2.0.0
- * @date 2026-01-30
+ * @version 2.1.0
+ * @date 2026-03-01
  */
 
-import React from 'react';
-import DOMPurify from 'dompurify';
 import { createLogger } from './logger.js';
 
 const log = createLogger('Utils');
@@ -332,10 +330,30 @@ export function escapeHTML(text) {
   return text.replace(ESCAPE_RE, (c) => HTML_ESCAPES[c]);
 }
 
+/** @type {any} */
+let _DOMPurify = null;
+
+/**
+ * Eagerly initialise DOMPurify once (called from head-inline or main).
+ * Modules that need sanitisation early can `await initDOMPurify()`.
+ * @returns {Promise<void>}
+ */
+export async function initDOMPurify() {
+  if (_DOMPurify) return;
+  try {
+    const mod = await import('dompurify');
+    _DOMPurify = mod.default || mod;
+  } catch {
+    log.warn('DOMPurify could not be loaded — falling back to escapeHTML');
+  }
+}
+
 export function sanitizeHTML(html, options = {}) {
   if (html == null) return '';
   try {
-    return DOMPurify.sanitize(String(html), options);
+    if (_DOMPurify) return _DOMPurify.sanitize(String(html), options);
+    // DOMPurify not loaded yet — safe-escape as fallback
+    return escapeHTML(String(html));
   } catch {
     return escapeHTML(String(html));
   }
@@ -459,23 +477,9 @@ export function observeOnce(target, onIntersect, options = {}) {
 }
 
 // ============================================================================
-// REACT UTILITIES
+// REACT UTILITIES — moved to core/react-utils.js
+// Import { createUseTranslation } from './react-utils.js' in React components.
 // ============================================================================
 
-import { i18n } from './i18n.js';
-
-export const createUseTranslation = () => {
-  return () => {
-    const [lang, setLang] = React.useState(i18n.currentLang);
-
-    React.useEffect(() => {
-      const onLangChange = (e) => setLang(e.detail.lang);
-      i18n.addEventListener('language-changed', onLangChange);
-      return () => i18n.removeEventListener('language-changed', onLangChange);
-    }, []);
-
-    const t = React.useCallback((key, params) => i18n.t(key, params), [lang]);
-
-    return React.useMemo(() => ({ t, lang }), [t, lang]);
-  };
-};
+// Re-export for backward compatibility
+export { createUseTranslation } from './react-utils.js';

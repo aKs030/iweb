@@ -221,8 +221,8 @@ export async function onRequestPost({ request, env }) {
         Authorization: `Bearer ${env.RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: 'Contact Form <onboarding@resend.dev>',
-        to: [env.CONTACT_EMAIL || 'krm19030@gmail.com'],
+        from: `Contact Form <${env.CONTACT_FROM_EMAIL || 'onboarding@resend.dev'}>`,
+        to: [env.CONTACT_EMAIL],
         reply_to: email,
         subject: `Kontaktformular: ${safeSubject || 'Kein Betreff'}`,
         html: `

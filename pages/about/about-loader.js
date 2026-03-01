@@ -55,31 +55,43 @@ async function initAboutPage() {
 
 /**
  * Initialize Lucide Icons
+ * Uses a MutationObserver-based approach instead of polling.
  */
 async function initializeLucideIcons() {
+  // Already available
+  if (typeof window !== 'undefined' && window.lucide) {
+    try {
+      window.lucide.createIcons();
+      log.debug('Lucide icons initialized (immediate)');
+    } catch (error) {
+      log.warn('Failed to initialize Lucide icons:', error);
+    }
+    return;
+  }
+
+  // Wait for lucide to appear on window (max 3s)
   return new Promise((resolve) => {
-    let attempts = 0;
-    const MAX_ATTEMPTS = 60; // 3s max (60 * 50ms)
-    const tryInit = () => {
-      // Check if lucide is available globally
-      if (typeof window !== 'undefined' && window.lucide) {
+    const timeout = setTimeout(() => {
+      log.warn('Lucide icons not available after timeout');
+      resolve();
+    }, 3000);
+
+    // Check periodically via rAF (lighter than setInterval)
+    const check = () => {
+      if (window.lucide) {
+        clearTimeout(timeout);
         try {
           window.lucide.createIcons();
           log.debug('Lucide icons initialized');
-          resolve();
         } catch (error) {
           log.warn('Failed to initialize Lucide icons:', error);
-          resolve(); // Continue anyway
         }
-      } else if (++attempts >= MAX_ATTEMPTS) {
-        log.warn('Lucide icons not available after timeout');
         resolve();
-      } else {
-        // Retry after a short delay
-        setTimeout(tryInit, 50);
+        return;
       }
+      requestAnimationFrame(check);
     };
-    tryInit();
+    requestAnimationFrame(check);
   });
 }
 

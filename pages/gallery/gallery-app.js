@@ -194,7 +194,7 @@ const GalleryApp = () => {
       h(
         'p',
         { className: 'gallery-instructions__text' },
-        'Scroll to explore • Click to view',
+        t('gallery.instructions') || 'Scroll to explore \u2022 Click to view',
       ),
     ),
   );

@@ -237,6 +237,12 @@ class AccessibilityManager {
       document.documentElement.style.setProperty('--transition-base', '0s');
       document.documentElement.style.setProperty('--transition-smooth', '0s');
       document.documentElement.style.setProperty('--transition-slow', '0s');
+    } else {
+      // Restore default transitions when preference changes back
+      document.documentElement.style.removeProperty('--transition-fast');
+      document.documentElement.style.removeProperty('--transition-base');
+      document.documentElement.style.removeProperty('--transition-smooth');
+      document.documentElement.style.removeProperty('--transition-slow');
     }
   }
 
@@ -276,9 +282,9 @@ class AccessibilityManager {
   }
 }
 
-// Global instance
-const a11y = new AccessibilityManager();
-window.a11y = a11y;
+// Global instance (guard for SSR / non-browser environments)
+const a11y = typeof window !== 'undefined' ? new AccessibilityManager() : null;
+if (typeof window !== 'undefined') window.a11y = a11y;
 export { a11y };
 
 export function createAnnouncer() {

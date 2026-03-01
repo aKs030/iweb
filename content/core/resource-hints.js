@@ -225,9 +225,15 @@ class ResourceHintsManager {
   }
 
   /**
-   * Clear all hints
+   * Clear all hints — removes DOM elements and resets state
    */
   clear() {
+    // Remove injected <link> elements from the DOM
+    const injected = document.querySelectorAll(
+      'link[data-injected-by="resource-hints"]',
+    );
+    injected.forEach((el) => el.remove());
+
     this.hints.clear();
     this.initialized = false;
   }

@@ -41,7 +41,8 @@ export class RobotChat {
   }
 
   toggleChat(forceState) {
-    const newState = forceState ?? !this.isOpen;
+    const newState =
+      forceState ?? !this.robot.stateManager.getState().isChatOpen;
     if (newState) {
       this.robot.ensureChatWindowCreated();
 
@@ -58,9 +59,9 @@ export class RobotChat {
 
       this.robot.dom.window.classList.add('open');
       this.robot.dom.container.classList.add('robot-chat--open');
-      this.isOpen = true;
+      this.isOpen = true; // kept for backward compat — prefer stateManager
 
-      // Update state manager
+      // Update state manager (single source of truth)
       this.robot.stateManager.setState({ isChatOpen: true });
       uiStore.setState({ robotChatOpen: true });
 
@@ -84,9 +85,9 @@ export class RobotChat {
     } else {
       this.robot.dom.window.classList.remove('open');
       this.robot.dom.container.classList.remove('robot-chat--open');
-      this.isOpen = false;
+      this.isOpen = false; // kept for backward compat — prefer stateManager
 
-      // Update state manager
+      // Update state manager (single source of truth)
       this.robot.stateManager.setState({ isChatOpen: false });
       uiStore.setState({ robotChatOpen: false });
 

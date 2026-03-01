@@ -1,91 +1,90 @@
 /**
  * API Middleware - Rate Limiting & Security
- * @version 1.0.0
+ * Uses Cloudflare KV for distributed rate limiting across isolates.
+ * Falls back to in-memory Map when KV is unavailable (local dev).
+ * @version 2.0.0
  */
 
 // Rate limiting configuration
 const RATE_LIMIT = {
-  WINDOW_MS: 60000, // 1 minute
+  WINDOW_S: 60, // 1 minute (seconds, for KV TTL)
   MAX_REQUESTS: 30, // 30 requests per minute per IP
   MAX_REQUESTS_STRICT: 10, // 10 requests per minute for AI endpoints
 };
 
-/**
- * Simple in-memory rate limiter using Map
- * In production, consider using Cloudflare KV or Durable Objects
- */
-class RateLimiter {
-  constructor() {
-    this.requests = new Map();
-    this.lastCleanup = Date.now();
-  }
+// ── In-memory fallback (dev / KV unavailable) ──────────────────────
+const _mem = new Map();
+let _lastCleanup = Date.now();
 
-  cleanup() {
-    const now = Date.now();
-    // Only cleanup if 5 minutes have passed since last cleanup
-    if (now - this.lastCleanup < 300000) return;
+function checkInMemory(identifier, maxRequests) {
+  const now = Date.now();
+  const windowMs = RATE_LIMIT.WINDOW_S * 1000;
 
-    this.lastCleanup = now;
-
-    // Hard reset if map grows too large (memory leak protection)
-    if (this.requests.size > 10000) {
-      this.requests.clear();
-      return;
-    }
-
-    for (const [key, data] of this.requests.entries()) {
-      if (now - data.resetTime > RATE_LIMIT.WINDOW_MS) {
-        this.requests.delete(key);
+  // Periodic cleanup
+  if (now - _lastCleanup > 300_000) {
+    _lastCleanup = now;
+    if (_mem.size > 10_000) {
+      _mem.clear();
+    } else {
+      for (const [k, d] of _mem) {
+        if (now - d.resetTime > windowMs) _mem.delete(k);
       }
     }
   }
 
-  check(identifier, maxRequests = RATE_LIMIT.MAX_REQUESTS) {
-    this.cleanup();
-    const now = Date.now();
-    const data = this.requests.get(identifier);
+  const data = _mem.get(identifier);
+  if (!data || now - data.resetTime > windowMs) {
+    _mem.set(identifier, { count: 1, resetTime: now });
+    return { allowed: true, remaining: maxRequests - 1 };
+  }
+  if (data.count >= maxRequests) {
+    return {
+      allowed: false,
+      remaining: 0,
+      retryAfter: Math.ceil((windowMs - (now - data.resetTime)) / 1000),
+    };
+  }
+  data.count++;
+  return { allowed: true, remaining: maxRequests - data.count };
+}
 
-    if (!data || now - data.resetTime > RATE_LIMIT.WINDOW_MS) {
-      // New window
-      this.requests.set(identifier, {
-        count: 1,
-        resetTime: now,
-      });
-      return { allowed: true, remaining: maxRequests - 1 };
-    }
+// ── KV-backed rate limiter (distributed) ───────────────────────────
+async function checkKV(kv, identifier, maxRequests) {
+  const key = `rl:${identifier}`;
+  try {
+    const raw = await kv.get(key);
+    const count = raw ? Number.parseInt(raw, 10) || 0 : 0;
 
-    if (data.count >= maxRequests) {
-      // Rate limit exceeded
+    if (count >= maxRequests) {
       return {
         allowed: false,
         remaining: 0,
-        retryAfter: Math.ceil(
-          (RATE_LIMIT.WINDOW_MS - (now - data.resetTime)) / 1000,
-        ),
+        retryAfter: RATE_LIMIT.WINDOW_S,
       };
     }
 
-    // Increment counter
-    data.count++;
-    return { allowed: true, remaining: maxRequests - data.count };
+    // Increment – TTL auto-expires the key after the window
+    await kv.put(key, String(count + 1), {
+      expirationTtl: RATE_LIMIT.WINDOW_S,
+    });
+
+    return { allowed: true, remaining: maxRequests - count - 1 };
+  } catch {
+    // KV failure → degrade to in-memory
+    return checkInMemory(identifier, maxRequests);
   }
 }
-
-const rateLimiter = new RateLimiter();
 
 /**
  * Get client identifier (IP address)
  */
 function getClientIdentifier(request) {
-  // Try Cloudflare headers first
   const cfIP = request.headers.get('CF-Connecting-IP');
   if (cfIP) return cfIP;
 
-  // Fallback to X-Forwarded-For
   const forwarded = request.headers.get('X-Forwarded-For');
   if (forwarded) return forwarded.split(',')[0].trim();
 
-  // Last resort
   return 'unknown';
 }
 
@@ -93,7 +92,7 @@ function getClientIdentifier(request) {
  * Middleware for rate limiting
  */
 export async function onRequest(context) {
-  const { request, next } = context;
+  const { request, env, next } = context;
   const url = new URL(request.url);
 
   // Skip rate limiting for OPTIONS requests
@@ -101,26 +100,24 @@ export async function onRequest(context) {
     return next();
   }
 
-  // Get client identifier
   const clientId = getClientIdentifier(request);
 
-  // Determine rate limit based on endpoint
   const isAIEndpoint = url.pathname.includes('/ai');
   const maxRequests = isAIEndpoint
     ? RATE_LIMIT.MAX_REQUESTS_STRICT
     : RATE_LIMIT.MAX_REQUESTS;
 
-  // Check rate limit
-  const result = rateLimiter.check(clientId, maxRequests);
+  // Use KV when available (production), else fall back to in-memory
+  const result = env?.RATE_LIMIT_KV
+    ? await checkKV(env.RATE_LIMIT_KV, clientId, maxRequests)
+    : checkInMemory(clientId, maxRequests);
 
-  // Add rate limit headers
   const headers = {
     'X-RateLimit-Limit': maxRequests.toString(),
     'X-RateLimit-Remaining': result.remaining.toString(),
   };
 
   if (!result.allowed) {
-    // Rate limit exceeded
     return new Response(
       JSON.stringify({
         error: 'Rate limit exceeded',
@@ -138,14 +135,12 @@ export async function onRequest(context) {
     );
   }
 
-  // Continue to next handler
   const response = await next();
 
-  // Add rate limit headers to response
   const newHeaders = new Headers(response.headers);
-  Object.entries(headers).forEach(([key, value]) => {
+  for (const [key, value] of Object.entries(headers)) {
     newHeaders.set(key, value);
-  });
+  }
 
   return new Response(response.body, {
     status: response.status,

@@ -50,16 +50,7 @@ export function setupPWAAssets(brandData) {
       attrs: { color: '#030303' },
     });
 
-    const shortcutIcon = document.head.querySelector(
-      'link[rel="shortcut icon"]',
-    );
-    if (!shortcutIcon) {
-      const link = document.createElement('link');
-      link.rel = 'shortcut icon';
-      link.href = ROOT_FAVICON_ICO;
-      document.head.appendChild(link);
-    }
-
+    // Legacy 'shortcut icon' removed — 'rel="icon"' above covers all browsers.
     log.debug('PWA assets configured successfully');
   } catch (error) {
     log.error('Failed to setup PWA assets:', error);

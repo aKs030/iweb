@@ -188,7 +188,8 @@
       "download": "Download",
       "favorite_add": "Add to favorites",
       "favorite_remove": "Remove from favorites"
-    }
+    },
+    "instructions": "Scroll to explore • Click to view"
   },
   "videos": {
     "local_mode": "Local mode",

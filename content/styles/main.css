@@ -232,7 +232,6 @@ body {
   background: transparent;
   color: var(--text-primary);
   margin: 0;
-  text-rendering: optimizelegibility;
   padding-top: var(--content-top-offset);
   padding-bottom: var(--content-bottom-offset);
   padding-left: var(--safe-left);

@@ -123,7 +123,7 @@ const BlogApp = () => {
         setLoading(false);
       }
     })();
-  }, [t]);
+  }, []); // only run on mount
 
   // Update SEO meta tags
   React.useEffect(() => {
