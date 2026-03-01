@@ -1,5 +1,4 @@
 import {
-  escapeXml,
   loadJsonAsset,
   resolveOrigin,
   toAbsoluteUrl,
@@ -81,109 +80,6 @@ function clampText(value, maxLength = 220) {
   return `${normalized.slice(0, Math.max(0, maxLength - 1)).trim()}…`;
 }
 
-function serializeJson(data) {
-  return JSON.stringify(data).replace(/</g, '\\u003c');
-}
-
-function escapeRegExp(value) {
-  return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-function injectBeforeHeadClose(html, snippet) {
-  if (!snippet) return html;
-  if (/<\/head>/i.test(html)) {
-    return html.replace(/<\/head>/i, `${snippet}\n</head>`);
-  }
-  return `${html}\n${snippet}`;
-}
-
-function upsertTitle(html, title) {
-  if (!title) return html;
-  const tag = `<title>${escapeXml(title)}</title>`;
-
-  if (/<title\b[^>]*>[\s\S]*?<\/title>/i.test(html)) {
-    return html.replace(/<title\b[^>]*>[\s\S]*?<\/title>/i, tag);
-  }
-
-  return injectBeforeHeadClose(html, `  ${tag}`);
-}
-
-function upsertMetaByName(html, name, content) {
-  if (!name || !content) return html;
-
-  const tag = `  <meta name="${escapeXml(name)}" content="${escapeXml(content)}" />`;
-  const pattern = new RegExp(
-    `<meta\\b[^>]*\\bname=(['"])${escapeRegExp(name)}\\1[^>]*>`,
-    'i',
-  );
-
-  if (pattern.test(html)) {
-    return html.replace(pattern, tag.trim());
-  }
-
-  return injectBeforeHeadClose(html, tag);
-}
-
-function upsertMetaByProperty(html, property, content) {
-  if (!property || !content) return html;
-
-  const tag = `  <meta property="${escapeXml(property)}" content="${escapeXml(content)}" />`;
-  const pattern = new RegExp(
-    `<meta\\b[^>]*\\bproperty=(['"])${escapeRegExp(property)}\\1[^>]*>`,
-    'i',
-  );
-
-  if (pattern.test(html)) {
-    return html.replace(pattern, tag.trim());
-  }
-
-  return injectBeforeHeadClose(html, tag);
-}
-
-function upsertCanonical(html, href) {
-  if (!href) return html;
-
-  const tag = `  <link rel="canonical" href="${escapeXml(href)}" />`;
-  const pattern = /<link\b[^>]*\brel=(['"])canonical\1[^>]*>/i;
-
-  if (pattern.test(html)) {
-    return html.replace(pattern, tag.trim());
-  }
-
-  return injectBeforeHeadClose(html, tag);
-}
-
-function upsertScriptById(html, id, scriptTag) {
-  const pattern = new RegExp(
-    `<script\\b[^>]*\\bid=(['"])${escapeRegExp(id)}\\1[^>]*>[\\s\\S]*?<\\/script>`,
-    'i',
-  );
-
-  if (pattern.test(html)) {
-    return html.replace(pattern, scriptTag.trim());
-  }
-
-  return injectBeforeHeadClose(html, `  ${scriptTag}`);
-}
-
-function upsertPartialMetaScript(html, partialMeta) {
-  if (!partialMeta || typeof partialMeta !== 'object') return html;
-
-  const payload = serializeJson(partialMeta);
-  const scriptTag = `<script type="application/json" id="edge-partial-meta" data-partial-meta>${payload}</script>`;
-
-  return upsertScriptById(html, 'edge-partial-meta', scriptTag);
-}
-
-function upsertRouteSchemaScript(html, schema) {
-  if (!schema || typeof schema !== 'object') return html;
-
-  const payload = serializeJson(schema);
-  const scriptTag = `<script type="application/ld+json" id="edge-route-schema">${payload}</script>`;
-
-  return upsertScriptById(html, 'edge-route-schema', scriptTag);
-}
-
 async function loadJsonCached(context, path, ttlMs = JSON_CACHE_TTL_MS) {
   const now = Date.now();
   const cached = jsonCache.get(path);
@@ -261,49 +157,6 @@ async function loadVideoDetails(context, videoId) {
   }
 
   return cached?.value ?? null;
-}
-
-function applyRouteMeta(html, meta) {
-  let next = html;
-
-  next = upsertTitle(next, meta.title);
-  next = upsertCanonical(next, meta.canonicalUrl);
-  next = upsertMetaByName(next, 'description', meta.description);
-  next = upsertMetaByName(next, 'robots', meta.robots || INDEX_ROBOTS);
-  next = upsertMetaByName(
-    next,
-    'twitter:card',
-    meta.twitterCard || 'summary_large_image',
-  );
-  next = upsertMetaByName(next, 'twitter:title', meta.title);
-  next = upsertMetaByName(next, 'twitter:description', meta.description);
-  next = upsertMetaByName(next, 'twitter:url', meta.canonicalUrl);
-  next = upsertMetaByProperty(next, 'og:type', meta.ogType || 'website');
-  next = upsertMetaByProperty(next, 'og:title', meta.title);
-  next = upsertMetaByProperty(next, 'og:description', meta.description);
-  next = upsertMetaByProperty(next, 'og:url', meta.canonicalUrl);
-
-  if (meta.keywords) {
-    next = upsertMetaByName(next, 'keywords', meta.keywords);
-  }
-
-  if (meta.image) {
-    next = upsertMetaByProperty(next, 'og:image', meta.image);
-    next = upsertMetaByName(next, 'twitter:image', meta.image);
-  }
-
-  if (meta.publishedTime) {
-    next = upsertMetaByProperty(
-      next,
-      'article:published_time',
-      meta.publishedTime,
-    );
-  }
-
-  next = upsertPartialMetaScript(next, meta.partialMeta);
-  next = upsertRouteSchemaScript(next, meta.schema);
-
-  return next;
 }
 
 async function buildBlogMeta(context, requestUrl, postId) {
@@ -629,10 +482,4 @@ export async function buildRouteMeta(context, requestUrl) {
   }
 
   return null;
-}
-
-export async function applyRouteSeo(context, html, requestUrl) {
-  const routeMeta = await buildRouteMeta(context, requestUrl);
-  if (!routeMeta) return html;
-  return applyRouteMeta(html, routeMeta);
 }

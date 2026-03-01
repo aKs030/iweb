@@ -6,11 +6,6 @@ export const menuOpen = signal(false);
 export const searchOpen = signal(false);
 export const robotChatOpen = signal(false);
 export const robotHydrated = signal(false);
-/**
- * All UI signals collected for convenience.
- * Components can import individual signals for fine-grained reactivity.
- */
-export const uiSignals = { menuOpen, searchOpen, robotChatOpen, robotHydrated };
 const _signalMap = {
   menuOpen,
   searchOpen,

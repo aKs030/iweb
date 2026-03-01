@@ -46,15 +46,12 @@
     "https://www.behance.net/abdulkerimsesli",
     "https://dribbble.com/abdulkerimsesli"
   ],
-  "openingHours": ["Mo-Fr 09:00-18:00"],
   "contactPoint": [
     {
       "contactType": "customer service",
       "email": "kontakt@abdulkerimsesli.de"
     }
   ],
-  "paymentAccepted": "Invoice",
-  "currenciesAccepted": "EUR",
   "licensePage": "https://www.abdulkerimsesli.de/#image-license",
   "creditPrefix": "Photo: ",
   "copyrightHolder": "Abdulkerim Sesli"
