@@ -20,6 +20,9 @@ const SKIP_HOSTS = [
   'google-analytics.com',
   'googleapis.com',
   'gstatic.com',
+  'esm.sh',
+  'cdn.jsdelivr.net',
+  'unpkg.com',
 ];
 
 // Install: Precache critical assets
