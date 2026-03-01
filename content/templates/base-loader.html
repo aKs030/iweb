@@ -1,34 +1,23 @@
-<!-- Loader v2.0 -->
+<!-- Loader v4.0 — Modern VT Design -->
 <div id="app-loader" role="status">
-  <!-- Background Effects -->
-  <div class="loader-bg-effects" aria-hidden="true">
-    <div class="loader-grid"></div>
-    <div class="loader-gradient-orb loader-gradient-orb--1"></div>
-    <div class="loader-gradient-orb loader-gradient-orb--2"></div>
-  </div>
-
-  <!-- Spinner Rings -->
-  <div class="loader-spinner" aria-hidden="true">
-    <div class="loader-spinner-ring"></div>
-    <div class="loader-spinner-ring loader-spinner-ring--delayed"></div>
-  </div>
-
-  <!-- Content -->
   <div class="loader-content">
+    <!-- Ambient Glow -->
+    <div class="loader-glow" aria-hidden="true"></div>
+
+    <!-- Logo -->
     <div class="loader-logo" aria-hidden="true" data-i18n="loader.logo">
       <span class="loader-logo-text">AKS | WEB</span>
-      <div class="loader-logo-pulse"></div>
+      <span class="loader-logo-line"></span>
     </div>
 
-    <div class="progress-container" role="presentation">
-      <div class="progress-bar" id="loader-progress-bar">
-        <div class="progress-bar-glow"></div>
-      </div>
-      <div class="progress-track-glow"></div>
+    <!-- Progress -->
+    <div class="loader-track" role="presentation">
+      <div class="loader-bar" id="loader-progress-bar"></div>
     </div>
 
-    <div class="loader-info" aria-live="polite" aria-atomic="true">
-      <span class="status-text" id="loader-status-text"
+    <!-- Status -->
+    <div class="loader-status">
+      <span class="loader-status-text" id="loader-status-text"
         >Initialisiere System...</span
       >
       <span
@@ -39,14 +28,7 @@
         data-i18n="loader.status_init"
         >Initialisiere System... 0%</span
       >
-
-      <span class="percentage" id="loader-percentage">0%</span>
-    </div>
-
-    <div class="loader-dots" aria-hidden="true">
-      <span class="loader-dot"></span>
-      <span class="loader-dot"></span>
-      <span class="loader-dot"></span>
+      <span class="loader-pct" id="loader-percentage">0%</span>
     </div>
   </div>
 </div>

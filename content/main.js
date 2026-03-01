@@ -37,9 +37,9 @@ const ENV = {
 
 // ===== Loading Configuration =====
 const LOADING_CONFIG = {
-  TIMEOUT_MS: 8000, // Increased from 4000ms to 8000ms for slower networks
-  EARTH_INIT_DELAY: 500, // Reduced from 2000ms to 500ms
-  MODULE_READY_DELAY: 300, // Reduced from 600ms to 300ms
+  TIMEOUT_MS: 5000, // Maximale Wartezeit — danach wird Loader forciert ausgeblendet
+  EARTH_INIT_DELAY: 500,
+  MODULE_READY_DELAY: 300,
 };
 
 // ===== Performance Tracking =====

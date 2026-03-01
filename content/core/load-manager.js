@@ -7,6 +7,10 @@
 import { createLogger } from './logger.js';
 import { EVENTS, fire } from './events.js';
 import { i18n } from './i18n.js';
+import {
+  withViewTransition,
+  isSupported as vtSupported,
+} from './view-transitions.js';
 
 const log = createLogger('AppLoadManager');
 
@@ -147,7 +151,7 @@ export const AppLoadManager = (() => {
 
         const { overlay } = elements;
 
-        setTimeout(() => {
+        setTimeout(async () => {
           if (options.immediate) {
             if (elements.announcement) {
               elements.announcement.textContent = i18n.t('loader.app_loaded');
@@ -164,23 +168,38 @@ export const AppLoadManager = (() => {
             return;
           }
 
-          overlay.classList.add('fade-out');
+          // Accessibility
           overlay.setAttribute('aria-hidden', 'true');
           overlay.removeAttribute('aria-live');
           overlay.dataset.loaderDone = 'true';
-
           if (elements.announcement) {
             elements.announcement.textContent = i18n.t('loader.app_loaded');
           }
 
-          setTimeout(() => {
+          const onHidden = () => {
             overlay.style.display = 'none';
+            overlay.style.viewTransitionName = 'none';
             document.body.classList.remove('global-loading-visible');
             fire(EVENTS.LOADING_HIDE);
             globalThis.dispatchEvent(new Event('app-ready'));
             clearCache();
             log.debug('Loader hidden');
-          }, 800);
+          };
+
+          // View Transition: Loader verschwindet mit VT-Animation
+          if (vtSupported()) {
+            await withViewTransition(
+              () => {
+                overlay.style.display = 'none';
+              },
+              { types: ['loader-hide'] },
+            );
+            onHidden();
+          } else {
+            // CSS-Fallback: .fade-out Klasse
+            overlay.classList.add('fade-out');
+            setTimeout(onHidden, 400);
+          }
         }, delay);
       } catch (err) {
         log.warn('Could not hide loader:', err);
