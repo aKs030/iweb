@@ -571,7 +571,7 @@ a:hover {
   }
 }
 
-/* Inline-style replacements */
+/* ─── Service Worker Update Toast ─────────────────────────────────────────── */
 .sw-update-toast {
   position: fixed;
   right: var(--space-5);
@@ -583,6 +583,24 @@ a:hover {
   color: var(--surface-toast-text);
   box-shadow: var(--surface-toast-shadow);
   padding: var(--space-4) var(--space-5);
+  opacity: 0;
+  transform: translateY(1rem);
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
+  pointer-events: none;
+}
+
+.sw-update-toast--visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.sw-update-toast--closing {
+  opacity: 0;
+  transform: translateY(1rem);
+  pointer-events: none;
 }
 
 .sw-update-toast__row {
@@ -593,11 +611,13 @@ a:hover {
 
 .sw-update-toast__icon {
   font-size: var(--surface-toast-icon-size);
+  flex-shrink: 0;
 }
 
 .sw-update-toast__text {
   flex: 1;
   font-size: var(--size-r-0-875);
+  font-weight: 500;
 }
 
 .sw-update-toast__refresh,
@@ -606,6 +626,7 @@ a:hover {
   cursor: pointer;
   color: var(--clr-white);
   background: transparent;
+  flex-shrink: 0;
 }
 
 .sw-update-toast__refresh {
@@ -614,6 +635,17 @@ a:hover {
   background: var(--primary-dark);
   font-size: var(--size-r-0-875);
   font-weight: 500;
+  white-space: nowrap;
+  transition: opacity 0.2s ease;
+}
+
+.sw-update-toast__refresh:hover {
+  opacity: 0.85;
+}
+
+.sw-update-toast__refresh:disabled {
+  opacity: 0.5;
+  cursor: wait;
 }
 
 .sw-update-toast__close {
@@ -623,6 +655,11 @@ a:hover {
   width: var(--surface-toast-icon-size);
   height: var(--surface-toast-icon-size);
   padding: 0;
+  transition: opacity 0.2s ease;
+}
+
+.sw-update-toast__close:hover {
+  opacity: 0.7;
 }
 
 .network-status-indicator {

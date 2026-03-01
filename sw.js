@@ -1,24 +1,27 @@
 /**
- * Modern Service Worker with Runtime Caching
- * @version 2.1.0
+ * Service Worker — Network-First with Offline Fallback
+ * @version 3.0.0
  *
- * IMPORTANT: Bump APP_VERSION when deploying new content.
- * The browser compares sw.js byte-by-byte — a changed version string
- * here is what triggers the update flow.
+ * Strategie:
+ * - Navigation (HTML): Immer Netzwerk, Cache nur als Offline-Fallback
+ * - Statische Assets (JS/CSS/Fonts): Stale-While-Revalidate
+ * - Bilder/Modelle: Cache-First (langlebig)
+ * - API: Network-Only (kein Caching)
+ * - Externe Hosts: Komplett ignoriert (kein Caching)
+ *
+ * Update-Flow:
+ * 1. Browser prüft sw.js bei Navigation (max alle 24h, mit no-cache Header sofort)
+ * 2. Byte-Vergleich: Nur wenn sich der Inhalt ändert → install-Event
+ * 3. Neuer SW wartet im "waiting"-State bis Client SKIP_WAITING sendet
+ * 4. Client zeigt Toast → User klickt → postMessage('SKIP_WAITING')
+ * 5. Neuer SW aktiviert → clients.claim() → controllerchange → Seite lädt neu
  */
 
-const APP_VERSION = '1.0.2';
-const CACHE = `app-v${APP_VERSION}`;
-const RUNTIME = `runtime-v${APP_VERSION}`;
+// ─── Cache-Name (wird NICHT versioniert — Aktivierung räumt alten Cache auf) ──
+const CACHE_NAME = 'v1';
 
-const PRECACHE = [
-  '/',
-  '/manifest.json',
-  '/content/assets/img/earth/textures/earth_day.webp',
-  '/content/assets/img/earth/textures/earth_night.webp',
-];
-
-const SKIP_HOSTS = [
+// ─── Hosts die komplett ignoriert werden (Analytics, CDNs etc.) ──────────────
+const IGNORED_HOSTS = new Set([
   'cloudflareinsights.com',
   'googletagmanager.com',
   'google-analytics.com',
@@ -27,162 +30,163 @@ const SKIP_HOSTS = [
   'esm.sh',
   'cdn.jsdelivr.net',
   'unpkg.com',
-];
+]);
 
-// Install: Precache critical assets
-self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(PRECACHE)));
+// ─── Offline-Fallback-Seite ──────────────────────────────────────────────────
+const OFFLINE_PAGE = '/offline.html';
+
+// ─── Install: Cache nur die Offline-Seite ────────────────────────────────────
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => cache.add(OFFLINE_PAGE)),
+  );
+  // Nicht skipWaiting() hier — der Client steuert das
 });
 
-// Activate: Clean ALL old caches (including runtime) to force fresh content
-self.addEventListener('activate', (e) => {
-  e.waitUntil(
+// ─── Activate: Alte Caches löschen + sofort alle Tabs übernehmen ─────────────
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
     caches
       .keys()
-      .then((keys) =>
+      .then((names) =>
         Promise.all(
-          keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)),
+          names
+            .filter((name) => name !== CACHE_NAME)
+            .map((name) => caches.delete(name)),
         ),
       )
       .then(() => self.clients.claim()),
   );
 });
 
-// Handle skip-waiting message from client
-self.addEventListener('message', (e) => {
-  if (e.data === 'SKIP_WAITING') self.skipWaiting();
+// ─── Message: Client kann skipWaiting auslösen ──────────────────────────────
+self.addEventListener('message', (event) => {
+  if (event.data?.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
-// Fetch: Smart caching strategies
-self.addEventListener('fetch', (e) => {
-  const { request } = e;
+// ─── Fetch: Routing nach Request-Typ ─────────────────────────────────────────
+self.addEventListener('fetch', (event) => {
+  const { request } = event;
   const url = new URL(request.url);
 
-  // Skip non-GET or external services
+  // Nur GET-Requests von HTTP(S)-Ursprüngen behandeln
+  if (request.method !== 'GET' || !url.protocol.startsWith('http')) return;
+
+  // Externe Hosts komplett ignorieren
+  if (isIgnoredHost(url.hostname)) return;
+
+  // API-Requests: Immer Netzwerk, kein Cache
+  if (url.pathname.startsWith('/api/')) return;
+
+  // Navigation (HTML-Seiten): Network-First mit Offline-Fallback
+  if (request.mode === 'navigate') {
+    event.respondWith(handleNavigation(request));
+    return;
+  }
+
+  // Bilder & 3D-Modelle: Cache-First
   if (
-    request.method !== 'GET' ||
-    !url.protocol.startsWith('http') ||
-    SKIP_HOSTS.some((h) => url.hostname.includes(h))
+    request.destination === 'image' ||
+    request.destination === 'font' ||
+    url.pathname.endsWith('.glb') ||
+    url.pathname.endsWith('.gltf')
   ) {
+    event.respondWith(handleCacheFirst(request));
     return;
   }
 
-  // API: Network first
-  if (url.pathname.startsWith('/api/')) {
-    e.respondWith(networkFirst(request));
+  // JS, CSS: Stale-While-Revalidate
+  if (request.destination === 'script' || request.destination === 'style') {
+    event.respondWith(handleStaleWhileRevalidate(request));
     return;
   }
 
-  // Images & Fonts: Cache first
-  if (['image', 'font'].includes(request.destination)) {
-    e.respondWith(cacheFirst(request));
-    return;
-  }
-
-  // Scripts & Styles: Stale while revalidate
-  if (['script', 'style'].includes(request.destination)) {
-    e.respondWith(staleRevalidate(request));
-    return;
-  }
-
-  // Documents: Network first
-  e.respondWith(networkFirst(request));
+  // Alles andere: Network-First
+  event.respondWith(handleNetworkFirst(request));
 });
 
-// Cache first with network fallback
-const OFFLINE_HTML = `<!doctype html>
-<html lang="de">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Offline – Abdulkerim Sesli</title>
-  <style>
-    :root { color-scheme: dark; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: #030303; color: #f5f5f5;
-      display: flex; align-items: center; justify-content: center;
-      min-height: 100vh; margin: 0;
-    }
-    .card {
-      text-align: center; max-width: 400px;
-      padding: 2rem; border-radius: 12px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
-    }
-    .icon { font-size: 3rem; margin-bottom: 1rem; }
-    h1 { font-size: 1.5rem; margin: 0 0 0.75rem; }
-    p { color: rgba(255,255,255,0.7); margin: 0 0 1.5rem; line-height: 1.6; }
-    button {
-      background: #098bff; color: #fff; border: none;
-      padding: 0.75rem 1.5rem; border-radius: 8px;
-      font-size: 1rem; cursor: pointer;
-    }
-  </style>
-</head>
-<body>
-  <div class="card">
-    <div class="icon">📡</div>
-    <h1>Keine Verbindung</h1>
-    <p>Du bist derzeit offline. Bitte überprüfe deine Internetverbindung und versuche es erneut.</p>
-    <button onclick="location.reload()">Erneut versuchen</button>
-  </div>
-</body>
-</html>`;
+// ─── Helper: Host-Check ──────────────────────────────────────────────────────
+function isIgnoredHost(hostname) {
+  for (const host of IGNORED_HOSTS) {
+    if (hostname.includes(host)) return true;
+  }
+  return false;
+}
 
-async function cacheFirst(req) {
-  const cache = await caches.open(RUNTIME);
-  const cached = await cache.match(req);
+// ─── Strategie: Navigation — Network mit Offline-Fallback ────────────────────
+async function handleNavigation(request) {
+  try {
+    const response = await fetch(request);
+    // Erfolgreiche Antworten im Cache speichern für Offline-Zugriff
+    if (response.ok) {
+      const cache = await caches.open(CACHE_NAME);
+      cache.put(request, response.clone());
+    }
+    return response;
+  } catch {
+    // Offline: Versuche gecachte Version der angeforderten Seite
+    const cache = await caches.open(CACHE_NAME);
+    const cached = await cache.match(request);
+    if (cached) return cached;
+
+    // Letzte Option: Offline-Fallback-Seite
+    const offlinePage = await cache.match(OFFLINE_PAGE);
+    return (
+      offlinePage ||
+      new Response('Offline', {
+        status: 503,
+        headers: { 'Content-Type': 'text/plain' },
+      })
+    );
+  }
+}
+
+// ─── Strategie: Cache-First (Bilder, Fonts, 3D-Modelle) ─────────────────────
+async function handleCacheFirst(request) {
+  const cache = await caches.open(CACHE_NAME);
+  const cached = await cache.match(request);
   if (cached) return cached;
 
   try {
-    const res = await fetch(req);
-    if (res.ok) cache.put(req, res.clone());
-    return res;
+    const response = await fetch(request);
+    if (response.ok) cache.put(request, response.clone());
+    return response;
   } catch {
-    // For document requests, return styled offline page
-    if (req.destination === 'document') {
-      return new Response(OFFLINE_HTML, {
-        status: 503,
-        headers: { 'Content-Type': 'text/html;charset=utf-8' },
-      });
-    }
-    return new Response('Offline', { status: 503 });
+    return new Response('', { status: 503 });
   }
 }
 
-// Network first with cache fallback
-async function networkFirst(req) {
-  const cache = await caches.open(RUNTIME);
+// ─── Strategie: Network-First (Fallback auf Cache) ───────────────────────────
+async function handleNetworkFirst(request) {
+  const cache = await caches.open(CACHE_NAME);
   try {
-    const res = await fetch(req);
-    if (res.ok) cache.put(req, res.clone());
-    return res;
+    const response = await fetch(request);
+    if (response.ok) cache.put(request, response.clone());
+    return response;
   } catch {
-    const cached = await cache.match(req);
-    if (cached) return cached;
-    // Return styled offline page for document requests
-    if (req.destination === 'document' || req.mode === 'navigate') {
-      return new Response(OFFLINE_HTML, {
-        status: 503,
-        headers: { 'Content-Type': 'text/html;charset=utf-8' },
-      });
-    }
-    return new Response('Offline', { status: 503 });
+    const cached = await cache.match(request);
+    return cached || new Response('', { status: 503 });
   }
 }
 
-// Stale while revalidate
-async function staleRevalidate(req) {
-  const cache = await caches.open(RUNTIME);
-  const cached = await cache.match(req);
+// ─── Strategie: Stale-While-Revalidate (JS, CSS) ────────────────────────────
+async function handleStaleWhileRevalidate(request) {
+  const cache = await caches.open(CACHE_NAME);
+  const cached = await cache.match(request);
 
-  const fetchPromise = fetch(req)
-    .then((res) => {
-      if (res.ok) cache.put(req, res.clone());
-      return res;
+  // Immer im Hintergrund aktualisieren
+  const networkPromise = fetch(request)
+    .then((response) => {
+      if (response.ok) cache.put(request, response.clone());
+      return response;
     })
-    .catch(() => cached || new Response('Offline', { status: 503 }));
+    .catch(() => null);
 
-  return cached || fetchPromise;
+  // Sofort aus Cache antworten wenn vorhanden, sonst auf Netzwerk warten
+  if (cached) return cached;
+
+  const response = await networkPromise;
+  return response || new Response('', { status: 503 });
 }
