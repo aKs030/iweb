@@ -35,12 +35,13 @@ const IGNORED_HOSTS = new Set([
 // ─── Offline-Fallback-Seite ──────────────────────────────────────────────────
 const OFFLINE_PAGE = '/offline.html';
 
-// ─── Install: Cache nur die Offline-Seite ────────────────────────────────────
+// ─── Install: Cache Offline-Seite + sofort aktivieren ────────────────────────
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.add(OFFLINE_PAGE)),
   );
-  // Nicht skipWaiting() hier — der Client steuert das
+  // Sofort aktivieren — kein Warten auf User-Interaktion
+  self.skipWaiting();
 });
 
 // ─── Activate: Alte Caches löschen + sofort alle Tabs übernehmen ─────────────
@@ -57,13 +58,6 @@ self.addEventListener('activate', (event) => {
       )
       .then(() => self.clients.claim()),
   );
-});
-
-// ─── Message: Client kann skipWaiting auslösen ──────────────────────────────
-self.addEventListener('message', (event) => {
-  if (event.data?.type === 'SKIP_WAITING') {
-    self.skipWaiting();
-  }
 });
 
 // ─── Fetch: Routing nach Request-Typ ─────────────────────────────────────────

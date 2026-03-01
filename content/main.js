@@ -209,144 +209,30 @@ globalThis.addEventListener('pageshow', (event) => {
 });
 
 // ===== Service Worker Registration =====
+// Silent-Update: Kein Toast, kein User-Interaktion nötig.
+// Navigation ist Network-First → User bekommt immer frische Inhalte vom Server.
+// Der SW dient nur als Offline-Fallback und Asset-Cache.
 if ('serviceWorker' in navigator && !ENV.isTest) {
   const isLocal = ['localhost', '127.0.0.1'].includes(
     globalThis.location.hostname,
   );
 
   if (isLocal) {
-    // Lokal: Alle SWs deregistrieren und Caches leeren
     navigator.serviceWorker.getRegistrations().then((regs) => {
       regs.forEach((reg) => reg.unregister());
     });
     caches.keys().then((names) => names.forEach((n) => caches.delete(n)));
   } else {
-    registerServiceWorker();
+    globalThis.addEventListener(
+      'load',
+      () => {
+        navigator.serviceWorker.register('/sw.js').catch((err) => {
+          log.warn('SW registration failed:', err);
+        });
+      },
+      { once: true },
+    );
   }
-}
-
-/**
- * Service Worker Registration & Update-Handling
- *
- * Flow:
- * 1. SW wird registriert (Browser prüft automatisch auf Änderungen)
- * 2. Bei Update: neuer SW installiert → "waiting" state
- * 3. Toast wird angezeigt → User klickt "Aktualisieren"
- * 4. postMessage({type: 'SKIP_WAITING'}) → neuer SW aktiviert
- * 5. controllerchange feuert → Seite lädt automatisch neu
- */
-function registerServiceWorker() {
-  // Einmal-Reload wenn ein neuer SW die Kontrolle übernimmt
-  let refreshing = false;
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (refreshing) return;
-    refreshing = true;
-    log.info('New Service Worker active — reloading page');
-    globalThis.location.reload();
-  });
-
-  // Registrierung nach dem Load-Event (Performance)
-  globalThis.addEventListener(
-    'load',
-    async () => {
-      try {
-        const registration = await navigator.serviceWorker.register('/sw.js');
-
-        log.debug('Service Worker registered', {
-          scope: registration.scope,
-          active: !!registration.active,
-          waiting: !!registration.waiting,
-        });
-
-        // Falls schon ein Update wartet (z.B. von vorherigem Besuch)
-        if (registration.waiting) {
-          showUpdateToast(registration.waiting);
-          return;
-        }
-
-        // Auf neue Updates lauschen
-        registration.addEventListener('updatefound', () => {
-          const newWorker = registration.installing;
-          if (!newWorker) return;
-
-          newWorker.addEventListener('statechange', () => {
-            // Nur anzeigen wenn:
-            // 1. Der neue SW installiert ist ("waiting")
-            // 2. Es bereits einen aktiven SW gibt (= echtes Update, nicht Erstinstallation)
-            if (
-              newWorker.state === 'installed' &&
-              navigator.serviceWorker.controller
-            ) {
-              showUpdateToast(newWorker);
-            }
-          });
-        });
-      } catch (error) {
-        log.warn('Service Worker registration failed:', error);
-      }
-    },
-    { once: true },
-  );
-}
-
-/**
- * Zeigt einen modernen Update-Toast mit Fortschrittsanzeige
- */
-function showUpdateToast(waitingWorker) {
-  // Keine Duplikate
-  if (document.querySelector('.sw-update-toast')) return;
-
-  const toast = document.createElement('div');
-  toast.className = 'sw-update-toast';
-  toast.setAttribute('role', 'alert');
-  toast.setAttribute('aria-live', 'assertive');
-  toast.innerHTML = `
-    <div class="sw-update-toast__row">
-      <span class="sw-update-toast__icon" aria-hidden="true">✨</span>
-      <span class="sw-update-toast__text">Neue Version verfügbar</span>
-      <button class="sw-update-toast__refresh" type="button">Jetzt aktualisieren</button>
-      <button class="sw-update-toast__close" type="button" aria-label="Schließen">×</button>
-    </div>
-  `;
-
-  const refreshBtn = toast.querySelector('.sw-update-toast__refresh');
-  const closeBtn = toast.querySelector('.sw-update-toast__close');
-
-  refreshBtn.addEventListener('click', () => {
-    // Visuelles Feedback
-    refreshBtn.textContent = 'Wird geladen…';
-    refreshBtn.disabled = true;
-
-    // Neuen SW aktivieren → controllerchange → auto-reload
-    waitingWorker.postMessage({ type: 'SKIP_WAITING' });
-
-    // Sicherheits-Timeout: Falls controllerchange nicht feuert
-    appTimers.setTimeout(() => {
-      globalThis.location.reload();
-    }, 3000);
-  });
-
-  closeBtn.addEventListener('click', () => {
-    toast.classList.add('sw-update-toast--closing');
-    toast.addEventListener('animationend', () => toast.remove(), {
-      once: true,
-    });
-    // Fallback falls keine Animation
-    appTimers.setTimeout(() => toast.remove(), 400);
-  });
-
-  document.body.appendChild(toast);
-
-  // Einblend-Animation triggern
-  requestAnimationFrame(() => toast.classList.add('sw-update-toast--visible'));
-
-  // Auto-Dismiss nach 60s (länger als vorher, damit User Zeit hat)
-  appTimers.setTimeout(() => {
-    if (toast.parentNode) {
-      toast.classList.add('sw-update-toast--closing');
-      appTimers.setTimeout(() => toast.remove(), 400);
-    }
-  }, 60_000);
 }
 
 function initOfflineIndicator() {
