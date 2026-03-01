@@ -188,6 +188,29 @@ async function callAgentAPI(payload, onChunk) {
       }
 
       if (!response.ok) {
+        // Parse the error body to check retryable flag
+        let errorBody;
+        try {
+          errorBody = await response.json();
+        } catch {
+          errorBody = {};
+        }
+
+        // Don't retry non-retryable errors (e.g. missing API key config)
+        if (errorBody.retryable === false) {
+          log.warn('Non-retryable AI Agent error:', response.status);
+          const fallbackText =
+            errorBody.text || 'Der KI-Dienst ist momentan nicht verfügbar.';
+          if (onChunk) await simulateStreaming(fallbackText, onChunk);
+          return {
+            text: fallbackText,
+            toolCalls: [],
+            hasMemory: false,
+            hasImage: false,
+            toolResults: [],
+          };
+        }
+
         throw new Error(`API Error ${response.status}`);
       }
 
