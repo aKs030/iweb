@@ -9,7 +9,7 @@
 const RATE_LIMIT = {
   WINDOW_S: 60, // 1 minute (seconds, for KV TTL)
   MAX_REQUESTS: 30, // 30 requests per minute per IP
-  MAX_REQUESTS_STRICT: 10, // 10 requests per minute for AI endpoints
+  MAX_REQUESTS_STRICT: 30, // 30 requests per minute for AI endpoints
 };
 
 // ── In-memory fallback (dev / KV unavailable) ──────────────────────
