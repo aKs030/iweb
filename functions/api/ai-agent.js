@@ -15,6 +15,7 @@ const DEFAULT_MAX_HISTORY_TURNS = 10;
 const DEFAULT_MAX_TOKENS = 2048;
 const FALLBACK_MEMORY_PREFIX = 'robot-memory:';
 const FALLBACK_MEMORY_LIMIT = 60;
+const USER_ID_COOKIE = 'jules_uid';
 
 function parseInteger(value, fallback, { min = 1, max = 8192 } = {}) {
   const parsed = Number.parseInt(String(value ?? ''), 10);
@@ -64,6 +65,68 @@ function getAgentConfig(env) {
       max: 8192,
     }),
   };
+}
+
+function normalizeUserId(raw) {
+  const value = String(raw || '').trim();
+  if (!value || value === 'anonymous') return '';
+  if (!/^[A-Za-z0-9_-]{3,120}$/.test(value)) return '';
+  return value;
+}
+
+function readCookieValue(cookieHeader, key) {
+  const header = String(cookieHeader || '');
+  if (!header) return '';
+  const needle = `${key}=`;
+  const parts = header.split(';');
+  for (const part of parts) {
+    const token = part.trim();
+    if (!token.startsWith(needle)) continue;
+    try {
+      return decodeURIComponent(token.slice(needle.length));
+    } catch {
+      return token.slice(needle.length);
+    }
+  }
+  return '';
+}
+
+function createUserId() {
+  if (
+    typeof crypto !== 'undefined' &&
+    typeof crypto.randomUUID === 'function'
+  ) {
+    return `u_${crypto.randomUUID().replace(/-/g, '').slice(0, 24)}`;
+  }
+  return `u_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function resolveUserIdentity(request, requestedUserId = '') {
+  const cookieUserId = normalizeUserId(
+    readCookieValue(request.headers.get('cookie'), USER_ID_COOKIE),
+  );
+  const bodyUserId = normalizeUserId(requestedUserId);
+  const resolvedUserId = bodyUserId || cookieUserId || createUserId();
+  const shouldSetCookie = cookieUserId !== resolvedUserId;
+  return {
+    userId: resolvedUserId,
+    shouldSetCookie,
+  };
+}
+
+function withUserCookie(headers, request, userId, shouldSetCookie) {
+  const out = new Headers(headers);
+  if (!shouldSetCookie || !userId) return out;
+
+  const requestUrl = new URL(request.url);
+  const secure = requestUrl.protocol === 'https:' ? '; Secure' : '';
+  out.append(
+    'Set-Cookie',
+    `${USER_ID_COOKIE}=${encodeURIComponent(
+      userId,
+    )}; Path=/; Max-Age=31536000; SameSite=Lax${secure}`,
+  );
+  return out;
 }
 
 // ─── Tool Definitions ───────────────────────────────────────────────────────────
@@ -941,16 +1004,31 @@ export async function onRequestPost(context) {
 
     const {
       prompt = '',
-      userId = 'anonymous',
+      userId: requestedUserId = 'anonymous',
       conversationHistory = [],
       stream = true,
     } = body;
     imageAnalysis = body.imageAnalysis || imageAnalysis;
 
+    const identity = resolveUserIdentity(request, requestedUserId);
+    const userId = identity.userId;
+    const jsonHeaders = withUserCookie(
+      corsHeaders,
+      request,
+      userId,
+      identity.shouldSetCookie,
+    );
+    const sseResponseHeaders = withUserCookie(
+      sseHeaders,
+      request,
+      userId,
+      identity.shouldSetCookie,
+    );
+
     if (!prompt && !imageAnalysis) {
       return Response.json(
         { error: 'Empty prompt', text: 'Kein Prompt empfangen.' },
-        { status: 400, headers: corsHeaders },
+        { status: 400, headers: jsonHeaders },
       );
     }
 
@@ -962,7 +1040,7 @@ export async function onRequestPost(context) {
           toolCalls: [],
           retryable: false,
         },
-        { status: 500, headers: corsHeaders },
+        { status: 500, headers: jsonHeaders },
       );
     }
 
@@ -1019,7 +1097,7 @@ export async function onRequestPost(context) {
         env,
         messages,
         userId,
-        corsHeaders,
+        jsonHeaders,
         {
           memoryContext,
           imageAnalysis,
@@ -1106,7 +1184,7 @@ export async function onRequestPost(context) {
       })(),
     );
 
-    return new Response(readable, { headers: sseHeaders });
+    return new Response(readable, { headers: sseResponseHeaders });
   } catch (error) {
     console.error('AI Agent error:', error?.message || error);
     return Response.json(
