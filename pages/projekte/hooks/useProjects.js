@@ -26,23 +26,42 @@ export const useProjects = (icons) => {
   const [error, setError] = useState('');
 
   useEffect(() => {
+    let isActive = true;
+
+    const withTimeout = (promise, timeoutMs) =>
+      new Promise((resolve, reject) => {
+        const timeoutId = setTimeout(
+          () =>
+            reject(
+              new Error(`Loading timeout after ${timeoutMs / 1000} seconds`),
+            ),
+          timeoutMs,
+        );
+
+        promise.then(
+          (value) => {
+            clearTimeout(timeoutId);
+            resolve(value);
+          },
+          (err) => {
+            clearTimeout(timeoutId);
+            reject(err);
+          },
+        );
+      });
+
     const loadProjects = async () => {
       try {
         log.info('Loading projects data...');
+        if (!isActive) return;
         setLoading(true);
+        setError('');
 
-        // Add a timeout to prevent infinite loading
-        const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(
-            () => reject(new Error('Loading timeout after 30 seconds')),
-            30000,
-          );
-        });
-
-        const loadedProjects = await Promise.race([
+        const loadedProjects = await withTimeout(
           createProjectsData(icons),
-          timeoutPromise,
-        ]);
+          30000,
+        );
+        if (!isActive) return;
 
         log.info(`Successfully loaded ${loadedProjects.length} projects`);
 
@@ -50,20 +69,26 @@ export const useProjects = (icons) => {
 
         // Final update
         setTimeout(() => {
+          if (!isActive) return;
           AppLoadManager.updateLoader(1, i18n.t('loader.ready_system'));
         }, 100);
       } catch (err) {
+        if (!isActive) return;
         log.error('Failed to load projects:', err);
         const errorMessage =
           err instanceof Error ? err.message : i18n.t('error.unknown');
         setError(`${i18n.t('error.load_failed_title')}: ${errorMessage}`);
         AppLoadManager.updateLoader(1, i18n.t('loader.failed'));
       } finally {
-        setLoading(false);
+        if (isActive) setLoading(false);
       }
     };
 
     loadProjects();
+
+    return () => {
+      isActive = false;
+    };
   }, [icons]);
 
   return { projects, loading, error };

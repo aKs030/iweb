@@ -35,10 +35,9 @@ export class RobotDOMBuilder {
 
     const header = this.createChatHeader();
     const messages = this.createMessagesContainer();
-    const controls = this.createControlsContainer();
     const inputArea = this.createInputArea();
 
-    window.append(header, messages, controls, inputArea);
+    window.append(header, messages, inputArea);
 
     return window;
   }
@@ -116,18 +115,6 @@ export class RobotDOMBuilder {
   }
 
   /**
-   * Create controls container
-   * @returns {HTMLElement}
-   */
-  createControlsContainer() {
-    const controls = document.createElement('div');
-    controls.className = 'chat-controls';
-    controls.id = 'robot-controls';
-
-    return controls;
-  }
-
-  /**
    * Create input area with image upload button
    * @returns {HTMLElement}
    */
@@ -157,7 +144,7 @@ export class RobotDOMBuilder {
     input.type = 'text';
     input.id = 'robot-chat-input';
     input.name = 'robot-message';
-    input.placeholder = 'Frag mich etwas oder nutze /help';
+    input.placeholder = 'Frag mich etwas...';
     input.autocomplete = 'off';
     input.setAttribute('aria-label', 'Chat-Nachricht eingeben');
 
@@ -165,6 +152,9 @@ export class RobotDOMBuilder {
     sendBtn.id = 'robot-chat-send';
     sendBtn.textContent = '➤';
     sendBtn.setAttribute('aria-label', 'Nachricht senden');
+    sendBtn.type = 'button';
+    sendBtn.disabled = true;
+    sendBtn.setAttribute('aria-disabled', 'true');
 
     inputArea.append(fileInput, uploadBtn, input, sendBtn);
 
@@ -248,6 +238,13 @@ export class RobotDOMBuilder {
       searchBlog: '🔍',
       toggleMenu: '📋',
       scrollToSection: '📜',
+      openSearch: '🔎',
+      closeSearch: '❎',
+      focusSearch: '🎯',
+      scrollTop: '⬆️',
+      copyCurrentUrl: '🔗',
+      openImageUpload: '📷',
+      clearChatHistory: '🧹',
       rememberUser: '🧠',
       recallMemory: '💭',
       recommend: '💡',
@@ -1357,35 +1354,6 @@ export class RobotDOMBuilder {
     circle.appendChild(animate);
 
     return circle;
-  }
-
-  /**
-   * Create message element
-   * @param {string} text - Message text
-   * @param {'user'|'bot'} type - Message type
-   * @returns {HTMLElement}
-   */
-  createMessage(text, type = 'bot') {
-    const msg = document.createElement('div');
-    msg.className = `message ${type}`;
-    msg.textContent = text;
-
-    return msg;
-  }
-
-  /**
-   * Create option button
-   * @param {string} label - Button label
-   * @param {Function} onClick - Click handler
-   * @returns {HTMLElement}
-   */
-  createOptionButton(label, onClick) {
-    const btn = document.createElement('button');
-    btn.className = 'chat-option-btn';
-    btn.textContent = label;
-    btn.onclick = onClick;
-
-    return btn;
   }
 
   /**

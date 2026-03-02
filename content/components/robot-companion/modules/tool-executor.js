@@ -1,7 +1,7 @@
 /**
  * Tool Executor - Executes AI tool calls on the client side
- * Steuert die Website aktiv über den Event-Bus und DOM-APIs.
- * @version 1.0.0
+ * Controls website behavior through UI state, DOM APIs, and events.
+ * @version 2.0.0
  */
 
 import { createLogger } from '../../../core/logger.js';
@@ -31,15 +31,19 @@ const SECTION_SELECTORS = new Map([
   ['contact', 'site-footer .footer-contact, .contact-section, #contact'],
   ['projects', '.projects-grid, [data-section="projects"], .project-cards'],
   ['skills', '.skills-section, [data-section="skills"], .skill-grid'],
+  ['top', 'html, body'],
 ]);
+
+const CHAT_HISTORY_KEYS = ['robot-chat-history', 'jules-conversation-history'];
 
 /**
  * Execute a tool call from the AI agent
  * @param {Object} toolCall - { name: string, arguments: Object }
- * @returns {{ success: boolean, message: string, requiresUI?: boolean }}
+ * @returns {{ success: boolean, message: string }}
  */
 export function executeTool(toolCall) {
-  const { name, arguments: args } = toolCall;
+  const name = String(toolCall?.name || '').trim();
+  const args = toolCall?.arguments || {};
 
   try {
     switch (name) {
@@ -53,17 +57,47 @@ export function executeTool(toolCall) {
         return executeToggleMenu(args);
       case 'scrollToSection':
         return executeScrollToSection(args);
-
       case 'recommend':
         return executeRecommend(args);
+      case 'openSearch':
+        return executeOpenSearch();
+      case 'closeSearch':
+        return executeCloseSearch();
+      case 'focusSearch':
+        return executeFocusSearch(args);
+      case 'scrollTop':
+        return executeScrollTop();
+      case 'copyCurrentUrl':
+        return executeCopyCurrentUrl();
+      case 'openImageUpload':
+        return executeOpenImageUpload();
+      case 'clearChatHistory':
+        return executeClearChatHistory();
       default:
         log.warn(`Unknown tool: ${name}`);
         return { success: false, message: `Unbekanntes Tool: ${name}` };
     }
   } catch (error) {
+    const message =
+      error && typeof error === 'object' && 'message' in error
+        ? String(error.message)
+        : String(error);
     log.error(`Tool execution failed: ${name}`, error);
-    return { success: false, message: `Tool-Fehler: ${error.message}` };
+    return { success: false, message: `Tool-Fehler: ${message}` };
   }
+}
+
+function queryFirst(selectors) {
+  if (!selectors) return null;
+  const selectorList = String(selectors)
+    .split(',')
+    .map((sel) => sel.trim())
+    .filter(Boolean);
+  for (const selector of selectorList) {
+    const target = document.querySelector(selector);
+    if (target) return target;
+  }
+  return null;
 }
 
 /**
@@ -78,16 +112,14 @@ function executeNavigate(args) {
   if (!route) {
     return {
       success: false,
-      message: `Unbekannte Seite: "${page}". Verfügbar: ${[...PAGE_ROUTES.keys()].join(', ')}`,
+      message: `Unbekannte Seite: "${page}". Verfuegbar: ${[...PAGE_ROUTES.keys()].join(', ')}`,
     };
   }
 
   if (route === '#footer') {
-    // Special handling for contact → scroll to footer
     return executeScrollToSection({ section: 'footer' });
   }
 
-  // Use View Transitions API if available
   if (document.startViewTransition) {
     document.startViewTransition(() => {
       globalThis.location.href = route;
@@ -96,7 +128,6 @@ function executeNavigate(args) {
     globalThis.location.href = route;
   }
 
-  log.info(`Navigating to: ${route}`);
   return {
     success: true,
     message: `Navigiere zu ${page}...`,
@@ -108,7 +139,6 @@ function executeNavigate(args) {
  */
 function executeSetTheme(args) {
   const theme = String(args?.theme || 'toggle').toLowerCase();
-
   const html = document.documentElement;
   const currentTheme = html.getAttribute('data-theme') || 'dark';
 
@@ -121,23 +151,34 @@ function executeSetTheme(args) {
 
   html.setAttribute('data-theme', newTheme);
 
-  // Persist preference
   try {
     localStorage.setItem('theme', newTheme);
   } catch {
-    // Storage not available
+    /* ignore */
   }
 
-  // Fire event for other components
   fire('theme:changed', { theme: newTheme });
-
-  const label = newTheme === 'dark' ? 'Dark Mode 🌙' : 'Light Mode ☀️';
-  log.info(`Theme set to: ${newTheme}`);
-
   return {
     success: true,
-    message: `${label} aktiviert!`,
+    message: `Theme auf ${newTheme} gesetzt.`,
   };
+}
+
+function focusSearchInput(query = '') {
+  requestAnimationFrame(() => {
+    const searchInput = queryFirst(
+      '.search-input input, [data-search-input], input[type="search"]',
+    );
+    if (!searchInput) return;
+
+    if (query) {
+      /** @type {HTMLInputElement} */ (searchInput).value = query;
+      searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+      fire('search:execute', { query });
+    }
+
+    /** @type {HTMLElement} */ (searchInput).focus();
+  });
 }
 
 /**
@@ -145,34 +186,9 @@ function executeSetTheme(args) {
  */
 function executeSearch(args) {
   const query = String(args?.query || '').trim();
-  if (!query) {
-    return { success: false, message: 'Kein Suchbegriff angegeben.' };
-  }
-
-  // Try to open the search panel with the query
-  const searchState = uiStore.getState();
-  if (!searchState.searchOpen) {
-    uiStore.setState({ searchOpen: true });
-  }
-
-  // Fire search event
-  fire('search:execute', { query });
-
-  // Also try to find and fill the search input
-  requestAnimationFrame(() => {
-    const searchInput =
-      document.querySelector('.search-input input') ||
-      document.querySelector('[data-search-input]') ||
-      document.querySelector('input[type="search"]');
-
-    if (searchInput) {
-      /** @type {HTMLInputElement} */ (searchInput).value = query;
-      searchInput.dispatchEvent(new Event('input', { bubbles: true }));
-      searchInput.focus();
-    }
-  });
-
-  log.info(`Search executed: ${query}`);
+  if (!query) return { success: false, message: 'Kein Suchbegriff angegeben.' };
+  executeOpenSearch();
+  focusSearchInput(query);
   return {
     success: true,
     message: `Suche nach "${query}"...`,
@@ -196,23 +212,16 @@ function executeToggleMenu(args) {
   uiStore.setState({ menuOpen: newState });
   fire('menu:toggle', { open: newState });
 
-  // Also try to click the menu button directly
-  const menuBtn =
-    document.querySelector('.menu-toggle') ||
-    document.querySelector('[data-menu-toggle]') ||
-    document.querySelector('button[aria-label*="Menü"]') ||
-    document.querySelector('button[aria-label*="Menu"]');
-
+  const menuBtn = queryFirst(
+    '.menu-toggle, [data-menu-toggle], button[aria-label*="Menue"], button[aria-label*="Menu"], button[aria-label*="Menü"]',
+  );
   if (menuBtn && currentState !== newState) {
     /** @type {HTMLElement} */ (menuBtn).click();
   }
 
-  const label = newState ? 'geöffnet 📋' : 'geschlossen';
-  log.info(`Menu ${label}`);
-
   return {
     success: true,
-    message: `Menü ${label}`,
+    message: newState ? 'Menue geoeffnet.' : 'Menue geschlossen.',
   };
 }
 
@@ -223,45 +232,99 @@ function executeScrollToSection(args) {
   const section = String(args?.section || '')
     .toLowerCase()
     .trim();
-  const selectors = SECTION_SELECTORS.get(section);
+  if (section === 'top') return executeScrollTop();
 
+  const selectors = SECTION_SELECTORS.get(section);
   if (!selectors) {
     return {
       success: false,
-      message: `Unbekannter Bereich: "${section}". Verfügbar: ${[...SECTION_SELECTORS.keys()].join(', ')}`,
+      message: `Unbekannter Bereich: "${section}". Verfuegbar: ${[...SECTION_SELECTORS.keys()].join(', ')}`,
     };
   }
 
-  // Try each selector
-  const selectorList = selectors.split(',').map((s) => s.trim());
-  let target = null;
-
-  for (const sel of selectorList) {
-    target = document.querySelector(sel);
-    if (target) break;
-  }
-
+  const target = queryFirst(selectors);
   if (!target) {
     return {
       success: false,
-      message: `Bereich "${section}" nicht auf dieser Seite gefunden.`,
+      message: `Bereich "${section}" nicht gefunden.`,
     };
   }
 
   target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  log.info(`Scrolled to: ${section}`);
-
   return {
     success: true,
-    message: `Scrolle zu ${section}... 👇`,
+    message: `Scrolle zu ${section}...`,
   };
 }
 
 /**
- * Give recommendation based on topic — delegates to search
+ * Recommendation helper: delegate to search
  */
 function executeRecommend(args) {
   const topic = String(args?.topic || '').trim();
-  if (topic) return executeSearch({ query: topic });
-  return { success: true, message: 'Schau dir die neuesten Blog-Artikel an!' };
+  if (!topic) {
+    return {
+      success: true,
+      message: 'Nenne ein Thema, dann suche ich passende Inhalte.',
+    };
+  }
+  return executeSearch({ query: topic });
+}
+
+function executeOpenSearch() {
+  uiStore.setState({ searchOpen: true });
+  fire('search:opened', {}, window);
+  return { success: true, message: 'Suche geoeffnet.' };
+}
+
+function executeCloseSearch() {
+  uiStore.setState({ searchOpen: false });
+  fire('search:closed', {}, window);
+  return { success: true, message: 'Suche geschlossen.' };
+}
+
+function executeFocusSearch(args) {
+  const query = String(args?.query || '').trim();
+  executeOpenSearch();
+  focusSearchInput(query);
+  return {
+    success: true,
+    message: query ? `Suche fokussiert mit "${query}".` : 'Suche fokussiert.',
+  };
+}
+
+function executeScrollTop() {
+  globalThis.scrollTo({ top: 0, behavior: 'smooth' });
+  return { success: true, message: 'Scrolle nach oben.' };
+}
+
+function executeCopyCurrentUrl() {
+  const url = globalThis.location?.href || '';
+  if (!url) return { success: false, message: 'URL nicht verfuegbar.' };
+
+  if (navigator.clipboard?.writeText) {
+    void navigator.clipboard.writeText(url).catch(() => {});
+    return { success: true, message: 'Link in die Zwischenablage kopiert.' };
+  }
+
+  return { success: true, message: 'Aktueller Link bereit.' };
+}
+
+function executeOpenImageUpload() {
+  const input = document.getElementById('robot-image-upload');
+  if (!input) return { success: false, message: 'Bild-Upload nicht gefunden.' };
+  /** @type {HTMLElement} */ (input).click();
+  return { success: true, message: 'Bild-Upload geoeffnet.' };
+}
+
+function executeClearChatHistory() {
+  for (const key of CHAT_HISTORY_KEYS) {
+    try {
+      localStorage.removeItem(key);
+    } catch {
+      /* ignore */
+    }
+  }
+  fire('robot:history:cleared', {}, document);
+  return { success: true, message: 'Chatverlauf geloescht.' };
 }

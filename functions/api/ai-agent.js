@@ -13,6 +13,8 @@ const DEFAULT_MAX_MEMORY_RESULTS = 5;
 const DEFAULT_MEMORY_SCORE_THRESHOLD = 0.65;
 const DEFAULT_MAX_HISTORY_TURNS = 10;
 const DEFAULT_MAX_TOKENS = 2048;
+const FALLBACK_MEMORY_PREFIX = 'robot-memory:';
+const FALLBACK_MEMORY_LIMIT = 60;
 
 function parseInteger(value, fallback, { min = 1, max = 8192 } = {}) {
   const parsed = Number.parseInt(String(value ?? ''), 10);
@@ -138,6 +140,66 @@ const TOOL_DEFINITIONS = [
     },
   },
   {
+    name: 'openSearch',
+    description: 'Öffne die Website-Suche.',
+    parameters: {
+      type: 'object',
+      properties: {},
+    },
+  },
+  {
+    name: 'closeSearch',
+    description: 'Schließe die Website-Suche.',
+    parameters: {
+      type: 'object',
+      properties: {},
+    },
+  },
+  {
+    name: 'focusSearch',
+    description:
+      'Fokussiere die Suche. Optional kann ein Suchbegriff gesetzt werden.',
+    parameters: {
+      type: 'object',
+      properties: {
+        query: { type: 'string' },
+      },
+    },
+  },
+  {
+    name: 'scrollTop',
+    description: 'Scrolle zum Seitenanfang.',
+    parameters: {
+      type: 'object',
+      properties: {},
+    },
+  },
+  {
+    name: 'copyCurrentUrl',
+    description: 'Kopiere den aktuellen Seitenlink.',
+    parameters: {
+      type: 'object',
+      properties: {},
+    },
+  },
+  {
+    name: 'openImageUpload',
+    description: 'Öffne den Bild-Upload im Chat.',
+    parameters: {
+      type: 'object',
+      properties: {},
+    },
+  },
+  {
+    name: 'clearChatHistory',
+    description:
+      'Lösche den lokalen Chatverlauf (nur auf Nutzerwunsch verwenden).',
+    parameters: {
+      type: 'object',
+      properties: {},
+    },
+  },
+  {
     name: 'rememberUser',
     description:
       'Merke dir Infos über den Nutzer (Name, Interessen, Präferenzen).',
@@ -213,9 +275,13 @@ Du HAST einen permanenten Langzeitspeicher! Du kannst dir Nutzer-Informationen (
 3. Rufe andere Tools NUR auf wenn der Nutzer EXPLIZIT eine Aktion anfordert:
    - "Zeig mir Projekte" / "Geh zu Projekte" → navigate
    - "Mach es dunkel" / "Dark Mode" → setTheme
-   - "Suche nach React" → searchBlog
-   - "Öffne das Menü" → toggleMenu
-4. Wenn du dir bei Navigation/Theme/Suche unsicher bist: Antworte mit Text, OHNE Tool.
+   - "Suche nach React" → searchBlog oder focusSearch
+   - "Öffne das Menü" / "Schließe das Menü" → toggleMenu
+   - "Scroll nach oben" → scrollTop
+   - "Kopiere den Link" → copyCurrentUrl
+   - "Öffne Bild-Upload" → openImageUpload
+   - "Lösch den Chatverlauf" → clearChatHistory
+4. Wenn du dir bei einer Aktion unsicher bist: Stelle eine kurze Rückfrage statt ein falsches Tool aufzurufen.
 5. Fasse NIEMALS eigenständig die Seite zusammen. Seitenzusammenfassungen werden nur über den separaten UI-Button ausgelöst.
 
 **Antwort-Stil:** Prägnant (2-3 Sätze), Markdown nutzen.`;
@@ -232,13 +298,139 @@ Du HAST einen permanenten Langzeitspeicher! Du kannst dir Nutzer-Informationen (
 
 // ─── Vectorize Memory ───────────────────────────────────────────────────────────
 
+function getFallbackMemoryKV(env) {
+  if (env.JULES_MEMORY_KV) return env.JULES_MEMORY_KV;
+  if (env.RATE_LIMIT_KV) return env.RATE_LIMIT_KV;
+  if (env.SITEMAP_CACHE_KV) return env.SITEMAP_CACHE_KV;
+  return null;
+}
+
+function getFallbackMemoryKey(userId) {
+  return `${FALLBACK_MEMORY_PREFIX}${String(userId || 'anonymous')}`;
+}
+
+function normalizeMemoryText(value) {
+  return String(value || '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+async function loadFallbackMemories(env, userId) {
+  const kv = getFallbackMemoryKV(env);
+  if (!kv?.get) return [];
+
+  try {
+    const raw = await kv.get(getFallbackMemoryKey(userId));
+    const parsed = JSON.parse(raw || '[]');
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .map((entry) => ({
+        key: String(entry?.key || 'note'),
+        value: normalizeMemoryText(entry?.value || ''),
+        timestamp:
+          typeof entry?.timestamp === 'number' ? entry.timestamp : Date.now(),
+      }))
+      .filter((entry) => entry.value.length > 0)
+      .slice(-FALLBACK_MEMORY_LIMIT);
+  } catch {
+    return [];
+  }
+}
+
+async function saveFallbackMemory(env, userId, key, value) {
+  const kv = getFallbackMemoryKV(env);
+  if (!kv?.get || !kv?.put) return false;
+
+  const cleanedKey = String(key || 'note');
+  const cleanedValue = normalizeMemoryText(value);
+  if (!cleanedValue) return false;
+
+  try {
+    const existing = await loadFallbackMemories(env, userId);
+    const now = Date.now();
+    const duplicateIndex = existing.findIndex(
+      (item) =>
+        item.key === cleanedKey &&
+        item.value.toLowerCase() === cleanedValue.toLowerCase(),
+    );
+
+    if (duplicateIndex >= 0) {
+      existing[duplicateIndex] = {
+        ...existing[duplicateIndex],
+        timestamp: now,
+      };
+    } else {
+      existing.push({
+        key: cleanedKey,
+        value: cleanedValue,
+        timestamp: now,
+      });
+    }
+
+    await kv.put(
+      getFallbackMemoryKey(userId),
+      JSON.stringify(existing.slice(-FALLBACK_MEMORY_LIMIT)),
+    );
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function scoreFallbackMemoryEntry(entry, query) {
+  const haystack = `${entry.key} ${entry.value}`.toLowerCase();
+  const normalizedQuery = normalizeMemoryText(query).toLowerCase();
+  if (!normalizedQuery) return 0.5;
+
+  if (haystack.includes(normalizedQuery)) return 1;
+
+  const terms = normalizedQuery.split(/\s+/).filter((term) => term.length >= 2);
+  if (terms.length === 0) return 0.4;
+
+  let hits = 0;
+  for (const term of terms) {
+    if (haystack.includes(term)) hits += 1;
+  }
+  return hits / terms.length;
+}
+
+async function recallMemoriesFromFallback(
+  env,
+  userId,
+  query,
+  { topK = DEFAULT_MAX_MEMORY_RESULTS, scoreThreshold = 0 } = {},
+) {
+  const entries = await loadFallbackMemories(env, userId);
+  if (!entries.length) return [];
+
+  return entries
+    .map((entry) => ({
+      ...entry,
+      score: scoreFallbackMemoryEntry(entry, query),
+    }))
+    .filter((entry) => entry.score >= scoreThreshold)
+    .sort((a, b) =>
+      b.score === a.score ? b.timestamp - a.timestamp : b.score - a.score,
+    )
+    .slice(0, topK);
+}
+
 async function storeMemory(env, userId, key, value, config) {
-  if (!env.AI || !env.JULES_MEMORY) return { success: false };
+  const kvStored = await saveFallbackMemory(env, userId, key, value);
+  if (!env.AI || !env.JULES_MEMORY) {
+    return kvStored
+      ? { success: true, id: `kv_${Date.now()}`, storage: 'kv' }
+      : { success: false };
+  }
 
   try {
     const text = `${key}: ${value}`;
     const { data } = await env.AI.run(config.embeddingModel, { text: [text] });
-    if (!data?.[0]) return { success: false, error: 'Embedding failed' };
+    if (!data?.[0]) {
+      return kvStored
+        ? { success: true, id: `kv_${Date.now()}`, storage: 'kv' }
+        : { success: false, error: 'Embedding failed' };
+    }
 
     const id = `${userId}_${key}_${Date.now()}`;
     await env.JULES_MEMORY.upsert([
@@ -248,30 +440,57 @@ async function storeMemory(env, userId, key, value, config) {
         metadata: { userId, key, value, timestamp: Date.now(), text },
       },
     ]);
-    return { success: true, id };
+    return {
+      success: true,
+      id,
+      storage: kvStored ? 'vectorize+kv' : 'vectorize',
+    };
   } catch (error) {
-    if (error?.remote)
-      return { success: false, error: 'Vectorize not available locally' };
+    if (error?.remote) {
+      return kvStored
+        ? { success: true, id: `kv_${Date.now()}`, storage: 'kv' }
+        : { success: false, error: 'Vectorize not available locally' };
+    }
     console.error('storeMemory error:', error?.message || error);
-    return { success: false, error: error.message };
+    return kvStored
+      ? { success: true, id: `kv_${Date.now()}`, storage: 'kv' }
+      : { success: false, error: error.message };
   }
 }
 
-async function recallMemories(env, userId, query, config) {
-  if (!env.AI || !env.JULES_MEMORY) return [];
+async function recallMemories(env, userId, query, config, options = {}) {
+  const topK = Number.isFinite(options.topK)
+    ? Math.max(1, Math.floor(options.topK))
+    : config.maxMemoryResults;
+  const scoreThreshold =
+    typeof options.scoreThreshold === 'number'
+      ? options.scoreThreshold
+      : config.memoryScoreThreshold;
+
+  if (!env.AI || !env.JULES_MEMORY) {
+    return recallMemoriesFromFallback(env, userId, query, {
+      topK,
+      scoreThreshold,
+    });
+  }
 
   try {
     const { data } = await env.AI.run(config.embeddingModel, { text: [query] });
-    if (!data?.[0]) return [];
+    if (!data?.[0]) {
+      return recallMemoriesFromFallback(env, userId, query, {
+        topK,
+        scoreThreshold,
+      });
+    }
 
     const results = await env.JULES_MEMORY.query(data[0], {
-      topK: config.maxMemoryResults,
+      topK,
       filter: { userId },
       returnMetadata: 'all',
     });
 
-    return (results?.matches || [])
-      .filter((m) => m.score >= config.memoryScoreThreshold)
+    const vectorMemories = (results?.matches || [])
+      .filter((m) => m.score >= scoreThreshold)
       .map((m) => ({
         key: m.metadata?.key || 'unknown',
         value: m.metadata?.value || '',
@@ -279,10 +498,20 @@ async function recallMemories(env, userId, query, config) {
         timestamp: m.metadata?.timestamp || 0,
       }))
       .sort((a, b) => b.timestamp - a.timestamp);
+
+    if (vectorMemories.length > 0) return vectorMemories;
+
+    return recallMemoriesFromFallback(env, userId, query, {
+      topK,
+      scoreThreshold,
+    });
   } catch (error) {
     if (!error?.remote)
       console.warn('recallMemories error:', error?.message || error);
-    return [];
+    return recallMemoriesFromFallback(env, userId, query, {
+      topK,
+      scoreThreshold,
+    });
   }
 }
 
@@ -340,14 +569,35 @@ async function executeServerTool(env, toolName, args, userId, config) {
   return null; // Client-side tool
 }
 
+function parseToolArguments(rawArguments, toolName) {
+  if (!rawArguments) return {};
+  if (typeof rawArguments === 'object' && !Array.isArray(rawArguments)) {
+    return rawArguments;
+  }
+  if (typeof rawArguments !== 'string') return {};
+
+  const trimmed = rawArguments.trim();
+  if (!trimmed) return {};
+
+  try {
+    const parsed = JSON.parse(trimmed);
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+      ? parsed
+      : {};
+  } catch (error) {
+    console.warn(
+      `Failed to parse tool arguments for "${toolName || 'unknown'}":`,
+      error?.message || error,
+    );
+    return {};
+  }
+}
+
 async function classifyToolCalls(env, toolCalls, userId, config) {
   const clientToolCalls = [];
   const serverToolResults = [];
   for (const tc of toolCalls) {
-    const args =
-      typeof tc.arguments === 'string'
-        ? JSON.parse(tc.arguments)
-        : tc.arguments || {};
+    const args = parseToolArguments(tc?.arguments, tc?.name);
     const serverResult = await executeServerTool(
       env,
       tc.name,
@@ -403,10 +653,244 @@ const sseEvent = (event, data) =>
 
 /** Detect if user prompt asks for an action that requires tools. */
 const ACTION_PATTERNS =
-  /\b(zeig|geh|navigier|öffn|schließ|such|mach|wechsl|dark|light|toggle|theme|dunkel|hell|merk|erinner|scroll|menü|menu|name ist|heiße|ich bin |ich heiß|nenn mich|kennst du mich|weißt du (meinen|wer ich)|bin der |bin die |empfehl)/i;
+  /\b(zeig|geh|navigier|oeffn|öffn|schlie(?:ss|ß)|schließ|such|find|mach|wechsel|dark|light|toggle|theme|dunkel|hell|merk|merke|erinner|scroll|oben|top|menü|menu|name ist|hei(?:ss|ß)e|ich bin |ich hei(?:ss|ß)|nenn mich|kennst du mich|wei(?:ss|ß)t du (meinen|wer ich)|bin der |bin die |empfehl|kopier|link|url|upload|bild hoch|chatverlauf|verlauf l[oö]sch|history)/i;
+const MEMORY_RECALL_PATTERNS =
+  /\b(kennst du mich noch|erinnerst du dich|wei(?:ss|ß)t du (meinen namen|wer ich bin)|wie hei(?:ss|ß)e ich)\b/i;
 
 function promptNeedsTools(prompt) {
   return ACTION_PATTERNS.test(prompt);
+}
+
+function promptNeedsMemoryRecall(prompt) {
+  return MEMORY_RECALL_PATTERNS.test(String(prompt || ''));
+}
+
+function normalizeExtractedValue(value, maxLength = 120) {
+  return String(value || '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/^["'`]+|["'`]+$/g, '')
+    .replace(/[.,;:!?]+$/g, '')
+    .slice(0, maxLength);
+}
+
+function extractPromptMemoryFacts(prompt) {
+  const text = String(prompt || '');
+  if (!text.trim()) return [];
+
+  const extracted = [];
+
+  const nameMatch = text.match(
+    /(?:\bich\s+hei(?:ss|ß)e\b|\bmein\s+name\s+ist\b|\bnenn\s+mich\b)\s+([^\n.,;:!?]{2,50})/i,
+  );
+  if (nameMatch?.[1]) {
+    const cleanedName = normalizeExtractedValue(nameMatch[1], 40);
+    if (/^[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ' -]{1,39}$/.test(cleanedName)) {
+      extracted.push({ key: 'name', value: cleanedName });
+    }
+  }
+
+  const interestMatch = text.match(
+    /(?:\bich\s+(?:mag|liebe|interessiere mich(?: sehr)? (?:fuer|für)|arbeite(?:\s+gern)?\s+mit)\b)\s+([^\n.!?]{3,120})/i,
+  );
+  if (interestMatch?.[1]) {
+    const cleanedInterest = normalizeExtractedValue(interestMatch[1], 120);
+    if (cleanedInterest.length >= 3) {
+      extracted.push({ key: 'interest', value: cleanedInterest });
+    }
+  }
+
+  const preferenceMatch = text.match(
+    /(?:\bich\s+(?:bevorzuge|nutze am liebsten)\b|\bbitte immer\b)\s+([^\n.!?]{3,120})/i,
+  );
+  if (preferenceMatch?.[1]) {
+    const cleanedPreference = normalizeExtractedValue(preferenceMatch[1], 120);
+    if (cleanedPreference.length >= 3) {
+      extracted.push({ key: 'preference', value: cleanedPreference });
+    }
+  }
+
+  const unique = [];
+  const seen = new Set();
+  for (const item of extracted) {
+    const hash = `${item.key}:${item.value.toLowerCase()}`;
+    if (seen.has(hash)) continue;
+    seen.add(hash);
+    unique.push(item);
+  }
+
+  return unique;
+}
+
+async function persistPromptMemories(env, userId, prompt, config) {
+  const facts = extractPromptMemoryFacts(prompt);
+  if (!facts.length) return [];
+
+  const results = await Promise.allSettled(
+    facts.map((fact) => storeMemory(env, userId, fact.key, fact.value, config)),
+  );
+
+  return facts
+    .map((fact, index) => ({ fact, result: results[index] }))
+    .filter(
+      (entry) =>
+        entry.result.status === 'fulfilled' && entry.result.value?.success,
+    )
+    .map((entry) => ({
+      key: entry.fact.key,
+      value: entry.fact.value,
+      score: 1,
+      timestamp: Date.now(),
+    }));
+}
+
+async function resolveMemoryContext(env, userId, prompt, config) {
+  const primary = await recallMemories(env, userId, prompt || 'user', config);
+  if (primary.length > 0) return primary;
+
+  if (!promptNeedsMemoryRecall(prompt)) return [];
+
+  const recallQueries = [
+    'name',
+    'interests',
+    'preferences',
+    'notes about this user',
+  ];
+
+  for (const query of recallQueries) {
+    const fallback = await recallMemories(env, userId, query, config, {
+      topK: Math.max(12, config.maxMemoryResults),
+      scoreThreshold: 0,
+    });
+    if (fallback.length > 0) return fallback;
+  }
+
+  return [];
+}
+
+function mergeMemoryEntries(recalled = [], stored = []) {
+  const merged = [...recalled];
+  const seen = new Set(
+    merged.map((entry) => `${entry.key}:${String(entry.value).toLowerCase()}`),
+  );
+
+  for (const item of stored) {
+    const hash = `${item.key}:${String(item.value).toLowerCase()}`;
+    if (seen.has(hash)) continue;
+    seen.add(hash);
+    merged.push(item);
+  }
+
+  return merged.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+}
+
+function inferClientToolCallsFromPrompt(prompt) {
+  const text = String(prompt || '').toLowerCase();
+  if (!text.trim()) return [];
+
+  const inferred = [];
+  const addTool = (name, args = {}) => {
+    if (inferred.some((item) => item.name === name)) return;
+    inferred.push({ name, arguments: args });
+  };
+
+  if (
+    /(chatverlauf|verlauf|history).*(lösch|loesch|clear|zurueck)|(\blösch|\bloesch).*(chatverlauf|verlauf|history)/i.test(
+      text,
+    )
+  ) {
+    addTool('clearChatHistory');
+  }
+
+  if (/(kopier|copy).*(link|url)|(link|url).*(kopier|copy)/i.test(text)) {
+    addTool('copyCurrentUrl');
+  }
+
+  if (
+    /(scroll|geh).*(nach oben|ganz nach oben|top)|\bscroll top\b|seite nach oben/i.test(
+      text,
+    )
+  ) {
+    addTool('scrollTop');
+  }
+
+  if (
+    /(öffn|oeffn|aufmachen|mach auf).*(menü|menu)|(menü|menu).*(öffn|oeffn|aufmachen|mach auf)/i.test(
+      text,
+    )
+  ) {
+    addTool('toggleMenu', { state: 'open' });
+  } else if (
+    /(schließ|schliess|schließe|schliesse|zu machen|zumachen).*(menü|menu)|(menü|menu).*(schließ|schliess|schließe|schliesse|zu machen|zumachen)/i.test(
+      text,
+    )
+  ) {
+    addTool('toggleMenu', { state: 'close' });
+  }
+
+  if (
+    /(öffn|oeffn|zeige).*(suche|search)|(suche|search).*(öffn|oeffn|auf)/i.test(
+      text,
+    )
+  ) {
+    addTool('openSearch');
+  } else if (
+    /(schließ|schliess|schließe|schliesse).*(suche|search)|(suche|search).*(schließ|schliess|schließe|schliesse|zu)/i.test(
+      text,
+    )
+  ) {
+    addTool('closeSearch');
+  }
+
+  const searchMatch = text.match(
+    /(?:suche(?:\s+nach)?|search(?:\s+for)?)\s+([a-z0-9äöüß .,_-]{2,80})/i,
+  );
+  if (searchMatch?.[1]) {
+    const query = searchMatch[1]
+      .trim()
+      .replace(/[.,;:!?]+$/g, '')
+      .slice(0, 80);
+    if (
+      query &&
+      !/^(oeffnen|öffnen|schließen|schliessen|schliessen|zu|auf)$/.test(query)
+    ) {
+      addTool('searchBlog', { query });
+    }
+  }
+
+  if (/\b(dark mode|dunkel|nachtmodus)\b/i.test(text)) {
+    addTool('setTheme', { theme: 'dark' });
+  } else if (/\b(light mode|hell(?:es)? thema|hell)\b/i.test(text)) {
+    addTool('setTheme', { theme: 'light' });
+  } else if (/\b(theme|thema).*(wechsel|toggle)|toggle.*theme\b/i.test(text)) {
+    addTool('setTheme', { theme: 'toggle' });
+  }
+
+  if (/(geh|navigier|zeige|öffn|oeffn).*(projekt|projekte)\b/i.test(text)) {
+    addTool('navigate', { page: 'projekte' });
+  } else if (
+    /(geh|navigier|zeige|öffn|oeffn).*(about|über mich|ueber mich)\b/i.test(
+      text,
+    )
+  ) {
+    addTool('navigate', { page: 'about' });
+  } else if (
+    /(geh|navigier|zeige|öffn|oeffn).*(galerie|gallery|fotos)\b/i.test(text)
+  ) {
+    addTool('navigate', { page: 'gallery' });
+  } else if (/(geh|navigier|zeige|öffn|oeffn).*(blog)\b/i.test(text)) {
+    addTool('navigate', { page: 'blog' });
+  } else if (/(geh|navigier|zeige|öffn|oeffn).*(videos)\b/i.test(text)) {
+    addTool('navigate', { page: 'videos' });
+  } else if (
+    /(geh|navigier|zeige|öffn|oeffn).*(kontakt|contact|footer)\b/i.test(text)
+  ) {
+    addTool('navigate', { page: 'kontakt' });
+  } else if (/(geh|navigier|zeige|öffn|oeffn).*(start|home)\b/i.test(text)) {
+    addTool('navigate', { page: 'home' });
+  }
+
+  return inferred;
 }
 
 // ─── Main Handler ───────────────────────────────────────────────────────────────
@@ -482,15 +966,31 @@ export async function onRequestPost(context) {
       );
     }
 
-    // ── Parallel: memory + RAG ──
-    const [memResult, ragResult] = await Promise.allSettled([
-      recallMemories(env, userId, prompt || 'user', config),
-      getRAGContext(prompt, env),
-    ]);
+    // ── Parallel: memory + RAG + deterministic memory persistence ──
+    const [memResult, ragResult, storedPromptMemoriesResult] =
+      await Promise.allSettled([
+        resolveMemoryContext(env, userId, prompt, config),
+        getRAGContext(prompt, env),
+        persistPromptMemories(env, userId, prompt, config),
+      ]);
+
+    const recalledMemories =
+      memResult.status === 'fulfilled' ? memResult.value : [];
+    const storedPromptMemories =
+      storedPromptMemoriesResult.status === 'fulfilled'
+        ? storedPromptMemoriesResult.value
+        : [];
+    const mergedMemories = mergeMemoryEntries(
+      recalledMemories,
+      storedPromptMemories,
+    );
 
     const memoryContext =
-      memResult.status === 'fulfilled' && memResult.value.length > 0
-        ? memResult.value.map((m) => `- ${m.key}: ${m.value}`).join('\n')
+      mergedMemories.length > 0
+        ? mergedMemories
+            .slice(0, Math.max(config.maxMemoryResults, 8))
+            .map((m) => `- ${m.key}: ${m.value}`)
+            .join('\n')
         : '';
 
     const ragText =
@@ -551,8 +1051,14 @@ export async function onRequestPost(context) {
 
           const aiResult = await env.AI.run(config.chatModel, aiParams);
 
-          const toolCalls = aiResult?.tool_calls || [];
+          let toolCalls = Array.isArray(aiResult?.tool_calls)
+            ? aiResult.tool_calls
+            : [];
           const responseText = aiResult?.response || '';
+
+          if (useTools && toolCalls.length === 0) {
+            toolCalls = inferClientToolCallsFromPrompt(prompt);
+          }
 
           if (toolCalls.length > 0) {
             await processToolCalls(
@@ -630,6 +1136,14 @@ function buildMsg(text, clientToolCalls, serverToolResults, ctx, config) {
   };
 }
 
+function hasMeaningfulText(text, minLength = 4) {
+  return (
+    String(text || '')
+      .replace(/\s+/g, ' ')
+      .trim().length >= minLength
+  );
+}
+
 async function streamToSSE(stream, write) {
   if (!(stream instanceof ReadableStream)) {
     if (stream?.response) {
@@ -641,25 +1155,71 @@ async function streamToSSE(stream, write) {
   const reader = stream.getReader();
   const decoder = new TextDecoder();
   let text = '';
+  let lineBuffer = '';
+  let eventDataLines = [];
+
+  const flushEvent = async () => {
+    if (eventDataLines.length === 0) return;
+
+    const payload = eventDataLines.join('\n').trim();
+    eventDataLines = [];
+    if (!payload || payload === '[DONE]') return;
+
+    let delta = '';
+    try {
+      const parsed = JSON.parse(payload);
+      if (typeof parsed?.response === 'string') {
+        delta = parsed.response;
+      } else if (typeof parsed?.text === 'string') {
+        delta = parsed.text;
+      }
+    } catch {
+      // Fallback for providers that send plain text in data lines.
+      delta = payload;
+    }
+
+    if (!delta) return;
+    text += delta;
+    await write('token', { text: delta });
+  };
+
+  const consumeChunk = async (chunk, isFinal = false) => {
+    if (chunk) lineBuffer += chunk;
+
+    let newlineIndex = lineBuffer.indexOf('\n');
+    while (newlineIndex !== -1) {
+      const rawLine = lineBuffer.slice(0, newlineIndex);
+      lineBuffer = lineBuffer.slice(newlineIndex + 1);
+      const line = rawLine.endsWith('\r') ? rawLine.slice(0, -1) : rawLine;
+
+      if (!line) {
+        await flushEvent();
+      } else if (line.startsWith('data:')) {
+        eventDataLines.push(line.slice(5).trimStart());
+      }
+
+      newlineIndex = lineBuffer.indexOf('\n');
+    }
+
+    if (!isFinal) return;
+
+    const tail = lineBuffer.endsWith('\r')
+      ? lineBuffer.slice(0, -1)
+      : lineBuffer;
+    if (tail && tail.startsWith('data:')) {
+      eventDataLines.push(tail.slice(5).trimStart());
+    }
+    lineBuffer = '';
+    await flushEvent();
+  };
+
   try {
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
-      for (const line of decoder.decode(value, { stream: true }).split('\n')) {
-        if (!line.startsWith('data: ')) continue;
-        const data = line.slice(6).trim();
-        if (data === '[DONE]') continue;
-        try {
-          const delta = JSON.parse(data).response || '';
-          if (delta) {
-            text += delta;
-            await write('token', { text: delta });
-          }
-        } catch {
-          /* skip */
-        }
-      }
+      await consumeChunk(decoder.decode(value, { stream: true }));
     }
+    await consumeChunk(decoder.decode(), true);
   } finally {
     reader.releaseLock();
   }
@@ -707,29 +1267,50 @@ async function processToolCalls(
     const summary = serverToolResults
       .map((r) => `[${r.name}]: ${r.result}`)
       .join('\n');
+    const followUpMessages = [
+      ...messages,
+      {
+        role: 'assistant',
+        content: `Tools: ${serverToolResults.map((r) => r.name).join(', ')}`,
+      },
+      {
+        role: 'user',
+        content: `Ergebnisse:\n${summary}\n\nAntworte dem Nutzer.`,
+      },
+    ];
     try {
       const result = await env.AI.run(config.chatModel, {
-        messages: [
-          ...messages,
-          {
-            role: 'assistant',
-            content: `Tools: ${serverToolResults.map((r) => r.name).join(', ')}`,
-          },
-          {
-            role: 'user',
-            content: `Ergebnisse:\n${summary}\n\nAntworte dem Nutzer.`,
-          },
-        ],
+        messages: followUpMessages,
         temperature: 0.7,
         max_tokens: config.maxTokens,
         stream: true,
       });
       const text = await streamToSSE(result, write);
-      if (text) {
+      if (hasMeaningfulText(text)) {
         await write(
           'message',
           buildMsg(text, clientToolCalls, serverToolResults, ctx, config),
         );
+        return;
+      }
+
+      // Local dev fallback: if stream parsing produced only fragments, force full non-stream answer.
+      const fallback = await env.AI.run(config.chatModel, {
+        messages: followUpMessages,
+        temperature: 0.7,
+        max_tokens: config.maxTokens,
+      });
+      if (hasMeaningfulText(fallback?.response)) {
+        await write('message', {
+          ...buildMsg(
+            fallback.response,
+            clientToolCalls,
+            serverToolResults,
+            ctx,
+            config,
+          ),
+          forcedFromNonStreamFallback: true,
+        });
         return;
       }
     } catch (err) {
@@ -738,7 +1319,11 @@ async function processToolCalls(
   }
 
   // Follow-up for client-only tools without text
-  if (clientToolCalls.length > 0 && !existingText && messages.length > 0) {
+  if (
+    clientToolCalls.length > 0 &&
+    !hasMeaningfulText(existingText) &&
+    messages.length > 0
+  ) {
     await write('status', { phase: 'responding' });
     try {
       const names = clientToolCalls.map((t) => t.name).join(', ');
@@ -769,8 +1354,13 @@ async function processToolCalls(
   await write(
     'message',
     buildMsg(
-      existingText ||
-        (clientToolCalls.length > 0 ? 'Aktion wird ausgeführt…' : ''),
+      hasMeaningfulText(existingText)
+        ? existingText
+        : clientToolCalls.length > 0
+          ? 'Aktion wird ausgeführt…'
+          : serverToolResults.length > 0
+            ? 'Ich habe deine Infos geprüft. Frag mich gern noch einmal.'
+            : 'Keine Antwort erhalten.',
       clientToolCalls,
       serverToolResults,
       ctx,
@@ -804,9 +1394,18 @@ async function handleNonStreaming(
     const aiResult = await env.AI.run(config.chatModel, aiParams);
     if (!aiResult) throw new Error('Empty AI response');
 
+    let toolCalls = Array.isArray(aiResult.tool_calls)
+      ? aiResult.tool_calls
+      : [];
+    if (useTools && toolCalls.length === 0) {
+      toolCalls = inferClientToolCallsFromPrompt(
+        messages[messages.length - 1]?.content || '',
+      );
+    }
+
     const { clientToolCalls, serverToolResults } = await classifyToolCalls(
       env,
-      aiResult.tool_calls || [],
+      toolCalls,
       userId,
       config,
     );

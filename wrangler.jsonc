@@ -1,7 +1,7 @@
 // wrangler.jsonc — Migriert von wrangler.toml
 // OPTIMIERUNGEN:
-// - Vars nur noch einmal definiert (DRY — preview + production teilen dieselben Werte)
-// - KV/R2/AI-Bindings bleiben für beide Environments erhalten
+// - Production-`vars` explizit gesetzt (Wrangler vererbt Top-Level vars nicht)
+// - KV/R2/AI-Bindings für beide Environments vorhanden
 // - nodejs_compat beibehalten
 // - compatibility_date auf 2026-03-02
 {
@@ -41,6 +41,10 @@
       "id": "edf1005c1b964f2fae4718afa152e836",
     },
     {
+      "binding": "JULES_MEMORY_KV",
+      "id": "8165d825e79a4e8d953aaca346c91f10",
+    },
+    {
       // SITEMAP_CACHE_KV wird jetzt auch für Template-Caching genutzt
       // (Keys: "template:base-head", "template:base-loader", "sitemap:*.xml")
       "binding": "SITEMAP_CACHE_KV",
@@ -72,10 +76,36 @@
   // Production-Environment — nur abweichende KV-IDs überschreiben
   "env": {
     "production": {
+      // Hinweis: `vars` werden von Wrangler NICHT aus dem Top-Level geerbt.
+      // Deshalb hier explizit identisch hinterlegt.
+      "vars": {
+        "MAX_SEARCH_RESULTS": "10",
+        "RAG_ID": "wispy-pond-1055",
+        "AI_SEARCH_MAX_RESULTS": "10",
+        "AI_SEARCH_CONTEXT_MAX_RESULTS": "6",
+        "AI_SEARCH_SCORE_THRESHOLD": "0.25",
+        "AI_SEARCH_REWRITE_QUERY": "true",
+        "AI_SEARCH_RERANKING_ENABLED": "true",
+        "AI_SEARCH_RERANKING_MODEL": "@cf/baai/bge-reranker-base",
+        "ROBOT_CHAT_MODEL": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+        "ROBOT_EMBEDDING_MODEL": "@cf/baai/bge-base-en-v1.5",
+        "ROBOT_IMAGE_MODEL": "@cf/llava-hf/llava-1.5-7b-hf",
+        "ROBOT_MAX_TOKENS": "2048",
+        "ROBOT_MAX_HISTORY_TURNS": "10",
+        "ROBOT_MEMORY_TOP_K": "5",
+        "ROBOT_MEMORY_SCORE_THRESHOLD": "0.65",
+        "CONTACT_EMAIL": "krm19030@gmail.com",
+        "YOUTUBE_CHANNEL_ID": "UCTGRherjM4iuIn86xxubuPg",
+        "ALLOWED_ORIGINS": "https://abdulkerimsesli.de,https://www.abdulkerimsesli.de",
+      },
       "kv_namespaces": [
         {
           "binding": "RATE_LIMIT_KV",
           "id": "75d79a452fa74cc980caf400862e2c67",
+        },
+        {
+          "binding": "JULES_MEMORY_KV",
+          "id": "90adb98d1b0c4dc783e91cfdcecad60d",
         },
         {
           "binding": "SITEMAP_CACHE_KV",

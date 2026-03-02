@@ -312,7 +312,7 @@ scene.add(gltf.scene);
 
 ### Compression Workflow
 
-See [`/content/assets/models/README.md`](/content/assets/models/README.md) for CLI commands, file naming conventions, and compression comparison.
+See [`../content/assets/models/README.md`](../content/assets/models/README.md) for CLI commands, file naming conventions, and compression comparison.
 
 ---
 

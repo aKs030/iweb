@@ -34,10 +34,6 @@ export const ROBOT_EVENTS = {
   HERO_TYPING_END: 'hero:typingEnd',
   SECTION_CHANGED: 'robot:section:changed',
 
-  // Game Events
-  GAME_STARTED: 'robot:game:started',
-  GAME_ENDED: 'robot:game:ended',
-
   // Agent Events
   TOOL_EXECUTED: 'robot:tool:executed',
   IMAGE_UPLOADED: 'robot:image:uploaded',
@@ -51,11 +47,16 @@ export const ROBOT_EVENTS = {
 export const ROBOT_ACTIONS = {
   START: 'start',
   SUMMARIZE_PAGE: 'summarizePage',
-  SCROLL_FOOTER: 'scrollFooter',
-  PLAY_TIC_TAC_TOE: 'playTicTacToe',
-  PLAY_TRIVIA: 'playTrivia',
-  PLAY_GUESS_NUMBER: 'playGuessNumber',
   UPLOAD_IMAGE: 'uploadImage',
   TOGGLE_THEME: 'toggleTheme',
   SEARCH_WEBSITE: 'searchWebsite',
+  SCROLL_FOOTER: 'scrollFooter',
+  OPEN_MENU: 'openMenu',
+  CLOSE_MENU: 'closeMenu',
+  OPEN_SEARCH: 'openSearch',
+  CLOSE_SEARCH: 'closeSearch',
+  SCROLL_TOP: 'scrollTop',
+  COPY_CURRENT_URL: 'copyCurrentUrl',
+  CLEAR_CHAT: 'clearChat',
+  EXPORT_CHAT: 'exportChat',
 };

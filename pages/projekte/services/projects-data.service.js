@@ -20,20 +20,28 @@ const CRAWLER_UA_PATTERN =
   /googlebot|google-inspectiontool|bingbot|slurp|duckduckbot|baiduspider|yandex|facebookexternalhit|twitterbot|linkedinbot|applebot|semrushbot|ahrefsbot/i;
 
 // Load local apps config
-let localAppsConfig = {};
+let localAppsConfig = null;
+let localConfigPromise = null;
 
 const loadLocalConfig = async () => {
-  try {
-    const response = await fetch('/pages/projekte/apps-config.json');
-    localAppsConfig = await response.json();
-  } catch (error) {
-    log.warn('Failed to load apps-config.json:', error);
-    localAppsConfig = { apps: [] };
-  }
-};
+  if (localAppsConfig) return localAppsConfig;
+  if (localConfigPromise) return localConfigPromise;
 
-// Initialize config loading
-loadLocalConfig();
+  localConfigPromise = (async () => {
+    try {
+      const response = await fetch('/pages/projekte/apps-config.json');
+      localAppsConfig = await response.json();
+    } catch (error) {
+      log.warn('Failed to load apps-config.json:', error);
+      localAppsConfig = { apps: [] };
+    }
+    return localAppsConfig;
+  })().finally(() => {
+    localConfigPromise = null;
+  });
+
+  return localConfigPromise;
+};
 
 const getErrorStatusCode = (error) => {
   const status = Number(error?.status);
@@ -64,11 +72,9 @@ const shouldUseGitHubSource = () => {
 };
 
 const loadLocalProjectsList = async () => {
-  if (!Array.isArray(localAppsConfig.apps)) {
-    await loadLocalConfig();
-  }
-
-  const localApps = localAppsConfig.apps || [];
+  const config = await loadLocalConfig();
+  if (!config || !Array.isArray(config.apps)) return [];
+  const localApps = config.apps || [];
   return localApps.map((app) => ({
     ...app,
     dirName: app.name,
