@@ -21,13 +21,10 @@ function sanitizePrompt(raw) {
   const trimmed = raw.trim();
   if (!trimmed) return '';
   if (trimmed.length < 5) {
-    return (
+    const fallback =
       trimmed +
-      ' (Dies ist eine kurze Begrüßung oder Bestätigung. Bitte antworte freundlich und kurz auf Deutsch darauf ohne nach mehr Details zu fragen.)'.slice(
-        0,
-        MAX_PROMPT_LENGTH,
-      )
-    );
+      ' (Dies ist eine kurze Begrüßung oder Bestätigung. Bitte antworte freundlich und kurz auf Deutsch darauf ohne nach mehr Details zu fragen.)';
+    return fallback.slice(0, MAX_PROMPT_LENGTH);
   }
   return trimmed.slice(0, MAX_PROMPT_LENGTH);
 }
