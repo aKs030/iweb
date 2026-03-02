@@ -89,6 +89,33 @@ function getClientIdentifier(request) {
 }
 
 /**
+ * Build CORS headers for the rate-limit 429 response so the browser can
+ * actually read the error body instead of getting a CORS TypeError.
+ */
+function build429CorsHeaders(request) {
+  const origin = request.headers.get('Origin');
+  if (!origin) return {};
+
+  const allowed = [
+    'https://abdulkerimsesli.de',
+    'https://www.abdulkerimsesli.de',
+  ];
+
+  const isPreview = /^https:\/\/(?:[a-z0-9-]+\.)*1web\.pages\.dev$/.test(
+    origin,
+  );
+  const isLocal = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
+
+  if (allowed.includes(origin) || isPreview || isLocal) {
+    return {
+      'Access-Control-Allow-Origin': origin,
+      'Access-Control-Allow-Credentials': 'true',
+    };
+  }
+  return {};
+}
+
+/**
  * Middleware for rate limiting
  */
 export async function onRequest(context) {
@@ -130,6 +157,7 @@ export async function onRequest(context) {
           'Content-Type': 'application/json',
           'Retry-After': result.retryAfter.toString(),
           ...headers,
+          ...build429CorsHeaders(request),
         },
       },
     );
