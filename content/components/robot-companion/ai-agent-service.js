@@ -281,6 +281,20 @@ async function callAgentAPI(payload, callbacks = {}, options = {}) {
         errorBody = {};
       }
 
+      // Rate limited — inform user, don't trip circuit breaker
+      if (response.status === 429) {
+        const retryAfter = errorBody.retryAfter || 60;
+        const text = `⏳ Zu viele Anfragen. Bitte warte ${retryAfter} Sekunden.`;
+        callbacks.onToken?.(text);
+        return {
+          text,
+          toolCalls: [],
+          hasMemory: false,
+          hasImage: false,
+          toolResults: [],
+        };
+      }
+
       if (errorBody.retryable === false) {
         log.warn('Non-retryable AI error:', response.status);
         const text =
