@@ -6,6 +6,7 @@
  */
 
 import { escapeHtml } from './_html-utils.js';
+import { getCorsHeaders, handleOptions } from './_cors.js';
 
 const MAX_MESSAGES_PER_HOUR = 5;
 const RATE_LIMIT_TTL = 3600; // 1 hour in seconds
@@ -107,7 +108,6 @@ function buildJsonHeaders(corsHeaders, extraHeaders = {}) {
 }
 
 export async function onRequestPost({ request, env }) {
-  const { getCorsHeaders } = await import('./_cors.js');
   const corsHeaders = getCorsHeaders(request, env);
 
   try {
@@ -270,7 +270,4 @@ export async function onRequestPost({ request, env }) {
   }
 }
 
-export async function onRequestOptions({ request, env }) {
-  const { handleOptions } = await import('./_cors.js');
-  return handleOptions({ request, env });
-}
+export const onRequestOptions = handleOptions;

@@ -1,60 +1,41 @@
 # Middleware Utilities
 
-Modular utilities for Cloudflare Pages Middleware.
+Modular utilities for Cloudflare Pages Middleware (`functions/_middleware.js`).
 
 ## Modules
 
-### Security
+### `csp-manager.js`
 
-**`csp-manager.js`** - Content Security Policy management
+- `generateNonce()` — Cryptographic nonce for CSP
 
-- `generateNonce()` - Generate cryptographic nonce
-- `injectNonce()` - Add nonce to inline scripts/styles
-- `applyNonceToCSP()` - Update CSP header with nonce
+### `template-injector.js`
 
-### Templates
+- `loadTemplateFromURL()` — Fetch template content from KV/origin
+- `SectionInjector` — HTMLRewriter handler for ESI-style section injection
 
-**`template-injector.js`** - HTML template injection
+### `streaming-handlers.js`
 
-- `injectTemplates()` - Inject head/loader templates
-- `loadTemplateFromURL()` - Fetch template content
-- `SectionInjector` - HTMLRewriter handler for ESI
+- `TemplateCommentHandler` — Injects head/loader templates via HTMLRewriter
+- `NonceInjector` — Adds nonce to inline scripts/styles
+- `SeoMetaHandler` — Injects SEO meta tags into `<head>`
 
-### HTML Processing
+### `route-seo.js`
 
-**`viewport-manager.js`** - Viewport meta tag management
+- `buildRouteMeta()` — Builds SEO metadata (title, description, OG tags) per route
+- Internal helpers for blog, project, and video detail pages
 
-- `mergeViewportContent()` - Merge viewport settings
-- `ensureViewportMeta()` - Ensure optimized viewport tag
+### `dev-utils.js`
 
-### Development
-
-**`dev-utils.js`** - Development environment utilities
-
-- `isLocalhost()` - Check if running locally
-- `normalizeLocalDevHeaders()` - Adjust headers for localhost
-
-## Usage
-
-```javascript
-import { generateNonce, injectNonce } from './_middleware-utils/csp-manager.js';
-import { injectTemplates } from './_middleware-utils/template-injector.js';
-
-// Generate and inject CSP nonce
-const nonce = generateNonce();
-html = injectNonce(html, nonce);
-
-// Inject templates
-html = injectTemplates(html, { head, loader });
-```
+- `isLocalhost()` — Check if running locally
+- `normalizeLocalDevHeaders()` — Adjust headers for localhost dev
 
 ## Architecture
 
-Each module has a single responsibility:
-
-- **CSP Manager** → Security
-- **Template Injector** → Content
-- **Viewport Manager** → Meta tags
-- **Dev Utils** → Development
-
-This separation makes testing and maintenance easier.
+```
+_middleware.js
+  ├── csp-manager.js        → Security (nonce)
+  ├── template-injector.js   → Template loading + ESI
+  ├── streaming-handlers.js  → HTMLRewriter transforms
+  ├── route-seo.js           → SEO meta generation
+  └── dev-utils.js           → Dev environment
+```

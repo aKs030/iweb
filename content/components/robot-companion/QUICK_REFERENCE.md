@@ -260,9 +260,11 @@ globalThis?.a11y?.releaseFocus();
 // .env
 VITE_GROQ_API_KEY = your_api_key_here;
 
-// Verwendung
-const aiService = await robot.getAIService();
-const response = await aiService.generateResponse('Hello');
+// Verwendung (Agent Service mit SSE, Tools & Memory)
+const agentService = await robot.getAgentService();
+const response = await agentService.generateResponse('Hallo!', (chunk) => {
+  console.log('Streaming:', chunk);
+});
 ```
 
 ### CSS Anpassung

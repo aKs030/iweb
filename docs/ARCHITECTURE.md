@@ -237,7 +237,7 @@ content/
 │       ├── robot-companion.css
 │       ├── README.md                             ⭐ NEW
 │       ├── example-usage.html                    ⭐ NEW
-│       ├── ai-service.js
+│       ├── ai-agent-service.js
 │       ├── robot-games.js
 │       └── modules/
 │           ├── robot-animation.js
