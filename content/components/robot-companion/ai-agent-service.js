@@ -401,7 +401,7 @@ async function callAgentAPI(payload, callbacks = {}, options = {}) {
       toolResults,
     };
   } catch (error) {
-    log.error('Agent API call failed:', error?.message);
+    log.error('Agent API call failed:', error?.message, error?.stack);
     recordFailure();
 
     const fallback =
