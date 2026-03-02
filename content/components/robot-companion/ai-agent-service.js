@@ -227,6 +227,14 @@ async function parseSSEStream(response, callbacks = {}) {
 async function callAgentAPI(payload, callbacks = {}, options = {}) {
   const stream = options.stream !== false;
 
+  const errorResult = (text) => ({
+    text,
+    toolCalls: [],
+    hasMemory: false,
+    hasImage: false,
+    toolResults: [],
+  });
+
   // Offline / circuit breaker check
   const offline =
     typeof navigator !== 'undefined' && navigator.onLine === false;
@@ -234,21 +242,15 @@ async function callAgentAPI(payload, callbacks = {}, options = {}) {
     const fallback =
       '🤖 Ich bin gerade offline. Bitte versuche es später erneut.';
     callbacks.onToken?.(fallback);
-    return {
-      text: fallback,
-      toolCalls: [],
-      hasMemory: false,
-      hasImage: false,
-      toolResults: [],
-    };
+    return errorResult(fallback);
   }
 
   const userId = getUserId();
   const conversationHistory = getConversationHistory();
 
+  // ── 1. Fetch ──────────────────────────────────────────────
+  let response;
   try {
-    let response;
-
     if (payload.image) {
       const formData = new FormData();
       formData.append('prompt', payload.prompt || '');
@@ -272,69 +274,88 @@ async function callAgentAPI(payload, callbacks = {}, options = {}) {
         }),
       });
     }
+  } catch (fetchError) {
+    // TypeError = CORS or network error, AbortError = timeout
+    log.error(
+      `Fetch failed [${fetchError?.name}]:`,
+      fetchError?.message,
+      fetchError?.stack,
+    );
+    recordFailure();
+    const fallback =
+      fetchError?.name === 'TypeError'
+        ? 'Netzwerkfehler — bitte prüfe deine Verbindung und versuche es erneut.'
+        : 'Verbindung zum KI-Dienst fehlgeschlagen. Bitte versuche es erneut.';
+    callbacks.onToken?.(fallback);
+    return errorResult(fallback);
+  }
 
-    if (!response.ok) {
-      let errorBody;
-      try {
-        errorBody = await response.json();
-      } catch {
-        errorBody = {};
-      }
-
-      // Rate limited — inform user, don't trip circuit breaker
-      if (response.status === 429) {
-        const retryAfter = errorBody.retryAfter || 60;
-        const text = `⏳ Zu viele Anfragen. Bitte warte ${retryAfter} Sekunden.`;
-        callbacks.onToken?.(text);
-        return {
-          text,
-          toolCalls: [],
-          hasMemory: false,
-          hasImage: false,
-          toolResults: [],
-        };
-      }
-
-      if (errorBody.retryable === false) {
-        log.warn('Non-retryable AI error:', response.status);
-        const text =
-          errorBody.text || 'Der KI-Dienst ist momentan nicht verfügbar.';
-        callbacks.onToken?.(text);
-        return {
-          text,
-          toolCalls: [],
-          hasMemory: false,
-          hasImage: false,
-          toolResults: [],
-        };
-      }
-
-      throw new Error(`API Error ${response.status}`);
+  // ── 2. Response status ────────────────────────────────────
+  if (!response.ok) {
+    let errorBody;
+    try {
+      errorBody = await response.json();
+    } catch {
+      errorBody = {};
     }
 
-    recordSuccess();
+    // Rate limited — inform user, don't trip circuit breaker
+    if (response.status === 429) {
+      const retryAfter = errorBody.retryAfter || 60;
+      const text = `⏳ Zu viele Anfragen. Bitte warte ${retryAfter} Sekunden.`;
+      callbacks.onToken?.(text);
+      return errorResult(text);
+    }
 
-    const contentType = response.headers.get('content-type') || '';
+    if (errorBody.retryable === false) {
+      log.warn('Non-retryable AI error:', response.status);
+      const text =
+        errorBody.text || 'Der KI-Dienst ist momentan nicht verfügbar.';
+      callbacks.onToken?.(text);
+      return errorResult(text);
+    }
 
-    // ── SSE Stream ──
-    if (contentType.includes('text/event-stream')) {
+    log.error(`API returned ${response.status}:`, errorBody);
+    recordFailure();
+    const fallback =
+      errorBody.text ||
+      `KI-Dienst-Fehler (${response.status}). Bitte versuche es erneut.`;
+    callbacks.onToken?.(fallback);
+    return errorResult(fallback);
+  }
+
+  recordSuccess();
+
+  const contentType = response.headers.get('content-type') || '';
+
+  // ── 3. SSE Stream ────────────────────────────────────────
+  if (contentType.includes('text/event-stream')) {
+    try {
       let fullText = '';
       const toolResults = [];
 
       const finalMessage = await parseSSEStream(response, {
         onToken(delta) {
           fullText += delta;
-          callbacks.onToken?.(fullText);
+          try {
+            callbacks.onToken?.(fullText);
+          } catch (cbErr) {
+            log.warn('onToken callback error:', cbErr?.message);
+          }
         },
         onTool(toolEvent) {
           // Execute client-side tools immediately
           if (toolEvent.status === 'client') {
-            const result = executeTool({
-              name: toolEvent.name,
-              arguments: toolEvent.arguments,
-            });
-            toolResults.push({ name: toolEvent.name, ...result });
-            log.info(`Tool executed: ${toolEvent.name}`, result);
+            try {
+              const result = executeTool({
+                name: toolEvent.name,
+                arguments: toolEvent.arguments,
+              });
+              toolResults.push({ name: toolEvent.name, ...result });
+              log.info(`Tool executed: ${toolEvent.name}`, result);
+            } catch (toolErr) {
+              log.warn(`Tool execution error: ${toolEvent.name}`, toolErr);
+            }
           }
           callbacks.onTool?.(toolEvent);
         },
@@ -349,11 +370,14 @@ async function callAgentAPI(payload, callbacks = {}, options = {}) {
           // Execute any remaining client tool calls from final message
           if (Array.isArray(msg.toolCalls)) {
             for (const tc of msg.toolCalls) {
-              // Only if not already executed via 'tool' events
               if (!toolResults.some((r) => r.name === tc.name)) {
-                const result = executeTool(tc);
-                toolResults.push({ name: tc.name, ...result });
-                log.info(`Tool executed: ${tc.name}`, result);
+                try {
+                  const result = executeTool(tc);
+                  toolResults.push({ name: tc.name, ...result });
+                  log.info(`Tool executed: ${tc.name}`, result);
+                } catch (toolErr) {
+                  log.warn(`Tool execution error: ${tc.name}`, toolErr);
+                }
               }
             }
           }
@@ -362,7 +386,6 @@ async function callAgentAPI(payload, callbacks = {}, options = {}) {
 
       const text = finalMessage?.text || fullText;
 
-      // Save conversation history
       addToHistory('user', payload.prompt);
       if (text) addToHistory('assistant', text);
 
@@ -373,9 +396,22 @@ async function callAgentAPI(payload, callbacks = {}, options = {}) {
         hasImage: finalMessage?.hasImage || false,
         toolResults,
       };
+    } catch (sseError) {
+      log.error(
+        `SSE parsing failed [${sseError?.name}]:`,
+        sseError?.message,
+        sseError?.stack,
+      );
+      recordFailure();
+      const fallback =
+        'Fehler beim Lesen der KI-Antwort. Bitte versuche es erneut.';
+      callbacks.onToken?.(fallback);
+      return errorResult(fallback);
     }
+  }
 
-    // ── JSON fallback (non-streaming) ──
+  // ── 4. JSON fallback (non-streaming) ──────────────────────
+  try {
     const result = await response.json();
 
     addToHistory('user', payload.prompt);
@@ -385,9 +421,13 @@ async function callAgentAPI(payload, callbacks = {}, options = {}) {
     const toolResults = [];
     if (Array.isArray(result.toolCalls)) {
       for (const tc of result.toolCalls) {
-        const toolResult = executeTool(tc);
-        toolResults.push({ name: tc.name, ...toolResult });
-        log.info(`Tool executed: ${tc.name}`, toolResult);
+        try {
+          const toolResult = executeTool(tc);
+          toolResults.push({ name: tc.name, ...toolResult });
+          log.info(`Tool executed: ${tc.name}`, toolResult);
+        } catch (toolErr) {
+          log.warn(`Tool execution error: ${tc.name}`, toolErr);
+        }
       }
     }
 
@@ -400,20 +440,17 @@ async function callAgentAPI(payload, callbacks = {}, options = {}) {
       hasImage: result.hasImage || false,
       toolResults,
     };
-  } catch (error) {
-    log.error('Agent API call failed:', error?.message, error?.stack);
+  } catch (jsonError) {
+    log.error(
+      `JSON parsing failed [${jsonError?.name}]:`,
+      jsonError?.message,
+      jsonError?.stack,
+    );
     recordFailure();
-
     const fallback =
-      'Verbindung zum KI-Dienst fehlgeschlagen. Bitte versuche es erneut.';
+      'Fehler beim Lesen der KI-Antwort. Bitte versuche es erneut.';
     callbacks.onToken?.(fallback);
-    return {
-      text: fallback,
-      toolCalls: [],
-      hasMemory: false,
-      hasImage: false,
-      toolResults: [],
-    };
+    return errorResult(fallback);
   }
 }
 
