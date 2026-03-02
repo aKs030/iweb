@@ -519,30 +519,51 @@ export async function onRequestPost(context) {
         try {
           await write('status', { phase: 'thinking' });
 
+          // 1) First call: NON-streaming with tools for reliable tool detection
+          //    Workers AI outputs tool calls as raw text when stream+tools are combined.
           const aiResult = await env.AI.run(CHAT_MODEL, {
             messages,
             tools: buildTools(),
             temperature: 0.7,
             max_tokens: MAX_TOKENS,
-            stream: true,
           });
 
-          if (aiResult instanceof ReadableStream) {
-            await write('status', { phase: 'streaming' });
-            await streamAIResponse(aiResult, writer, encoder, env, userId, {
-              memoryContext,
-              imageAnalysis,
-              messages,
-            });
-          } else {
-            await handleToolCallsAndRespond(
-              aiResult,
+          const toolCalls = aiResult?.tool_calls || [];
+          const responseText = aiResult?.response || '';
+
+          if (toolCalls.length > 0) {
+            // 2a) Process tool calls, then stream follow-up response
+            await processToolCalls(
+              toolCalls,
               write,
               env,
               userId,
-              messages,
               { memoryContext, imageAnalysis },
+              messages,
             );
+          } else if (responseText) {
+            // 2b) No tool calls — emit response as SSE tokens
+            await write('status', { phase: 'streaming' });
+            // Split into word-sized chunks for a streaming feel
+            const words = responseText.match(/\S+\s*/g) || [responseText];
+            for (const word of words) {
+              await write('token', { text: word });
+            }
+            await write('message', {
+              text: responseText,
+              toolCalls: [],
+              model: CHAT_MODEL,
+              hasMemory: !!memoryContext,
+              hasImage: !!imageAnalysis,
+            });
+          } else {
+            await write('message', {
+              text: 'Keine Antwort erhalten.',
+              toolCalls: [],
+              model: CHAT_MODEL,
+              hasMemory: !!memoryContext,
+              hasImage: !!imageAnalysis,
+            });
           }
         } catch (error) {
           console.error('SSE pipeline error:', error?.message || error);
@@ -570,93 +591,6 @@ export async function onRequestPost(context) {
       { status: 503, headers: corsHeaders },
     );
   }
-}
-
-// ─── Stream AI Response ─────────────────────────────────────────────────────────
-
-async function streamAIResponse(stream, writer, encoder, env, userId, ctx) {
-  const write = (event, data) =>
-    writer.write(encoder.encode(sseEvent(event, data)));
-
-  const reader = stream.getReader();
-  const decoder = new TextDecoder();
-  let fullText = '';
-  let toolCalls = [];
-
-  try {
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      const chunk = decoder.decode(value, { stream: true });
-      const lines = chunk.split('\n');
-
-      for (const line of lines) {
-        if (!line.startsWith('data: ')) continue;
-        const data = line.slice(6).trim();
-        if (data === '[DONE]') continue;
-
-        try {
-          const parsed = JSON.parse(data);
-          const delta = parsed.response || '';
-
-          if (delta) {
-            fullText += delta;
-            await write('token', { text: delta });
-          }
-
-          if (parsed.tool_calls) {
-            toolCalls = parsed.tool_calls;
-          }
-        } catch {
-          // skip malformed chunks
-        }
-      }
-    }
-  } finally {
-    reader.releaseLock();
-  }
-
-  if (toolCalls.length > 0) {
-    await processToolCalls(toolCalls, write, env, userId, ctx);
-  }
-
-  await write('message', {
-    text: fullText,
-    model: CHAT_MODEL,
-    hasMemory: !!ctx.memoryContext,
-    hasImage: !!ctx.imageAnalysis,
-  });
-}
-
-// ─── Handle Tool Calls (Non-Streaming Path) ────────────────────────────────────
-
-async function handleToolCallsAndRespond(
-  aiResult,
-  write,
-  env,
-  userId,
-  messages,
-  ctx,
-) {
-  const toolCalls = aiResult.tool_calls || [];
-  const responseText = aiResult.response || '';
-
-  if (toolCalls.length === 0) {
-    if (responseText) {
-      await write('token', { text: responseText });
-    }
-    await write('message', {
-      text: responseText || 'Keine Antwort erhalten.',
-      toolCalls: [],
-      model: CHAT_MODEL,
-      hasMemory: !!ctx.memoryContext,
-      hasImage: !!ctx.imageAnalysis,
-    });
-    return;
-  }
-
-  await processToolCalls(toolCalls, write, env, userId, ctx, messages);
 }
 
 // ─── Process Tool Calls ─────────────────────────────────────────────────────────
