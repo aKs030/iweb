@@ -1,20 +1,10 @@
 /**
  * Cloudflare Pages Function – POST /api/ai-agent
- *
- * Modern Agentic AI with:
- * - **Server-Sent Events (SSE)** real-time streaming
- * - **Tool-Calling** (navigation, theme, search, memory, …)
- * - **Image Analysis** via LLaVA
- * - **Long-Term Memory** via Vectorize
- * - **RAG** via AutoRAG AI Search
- * - **Cloudflare Workers AI** — zero external API keys
- *
- * @version 3.0.0
+ * Agentic AI: SSE streaming, tool-calling, image analysis, memory, RAG.
+ * @version 5.0.0
  */
 
 import { getCorsHeaders, handleOptions } from './_cors.js';
-
-// ─── Models & Limits ────────────────────────────────────────────────────────────
 
 const CHAT_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast';
 const EMBEDDING_MODEL = '@cf/baai/bge-base-en-v1.5';
@@ -31,13 +21,12 @@ const TOOL_DEFINITIONS = [
   {
     name: 'navigate',
     description:
-      'Navigiere den Nutzer zu einer bestimmten Seite der Website. Verfügbare Seiten: home, projekte, about, gallery, blog, videos, kontakt, impressum, datenschutz.',
+      'Navigiere zu einer Seite: home, projekte, about, gallery, blog, videos, kontakt, impressum, datenschutz.',
     parameters: {
       type: 'object',
       properties: {
         page: {
           type: 'string',
-          description: 'Name oder Pfad der Zielseite',
           enum: [
             'home',
             'projekte',
@@ -56,43 +45,33 @@ const TOOL_DEFINITIONS = [
   },
   {
     name: 'setTheme',
-    description:
-      'Ändere das Farbschema der Website zwischen Dark Mode und Light Mode.',
+    description: 'Wechsle das Farbschema (dark/light/toggle).',
     parameters: {
       type: 'object',
       properties: {
-        theme: {
-          type: 'string',
-          description: 'Das gewünschte Theme',
-          enum: ['dark', 'light', 'toggle'],
-        },
+        theme: { type: 'string', enum: ['dark', 'light', 'toggle'] },
       },
       required: ['theme'],
     },
   },
   {
     name: 'searchBlog',
-    description:
-      'Suche nach Inhalten im Blog oder auf der gesamten Website. Verwende dies wenn der Nutzer nach bestimmten Themen fragt.',
+    description: 'Suche nach Inhalten auf der Website.',
     parameters: {
       type: 'object',
       properties: {
-        query: { type: 'string', description: 'Der Suchbegriff' },
+        query: { type: 'string', description: 'Suchbegriff' },
       },
       required: ['query'],
     },
   },
   {
     name: 'toggleMenu',
-    description: 'Öffne oder schließe das Hauptnavigations-Menü.',
+    description: 'Menü öffnen/schließen.',
     parameters: {
       type: 'object',
       properties: {
-        state: {
-          type: 'string',
-          description: 'Menü öffnen oder schließen',
-          enum: ['open', 'close', 'toggle'],
-        },
+        state: { type: 'string', enum: ['open', 'close', 'toggle'] },
       },
       required: ['state'],
     },
@@ -100,15 +79,11 @@ const TOOL_DEFINITIONS = [
   {
     name: 'scrollToSection',
     description:
-      'Scrolle zu einem bestimmten Abschnitt der aktuellen Seite (z.B. Footer, Header, Kontakt-Bereich).',
+      'Scrolle zu einem Abschnitt (header, footer, contact, hero, projects, skills).',
     parameters: {
       type: 'object',
       properties: {
-        section: {
-          type: 'string',
-          description:
-            'Zielbereich: header, footer, contact, hero, projects, skills',
-        },
+        section: { type: 'string' },
       },
       required: ['section'],
     },
@@ -116,129 +91,94 @@ const TOOL_DEFINITIONS = [
   {
     name: 'rememberUser',
     description:
-      'Merke dir Informationen über den Nutzer für zukünftige Gespräche (Name, Interessen, Präferenzen). Nutze dies proaktiv wenn der Nutzer sich vorstellt oder technische Interessen erwähnt.',
+      'Merke dir Infos über den Nutzer (Name, Interessen, Präferenzen).',
     parameters: {
       type: 'object',
       properties: {
         key: {
           type: 'string',
-          description: 'Art der Information: name, interest, preference, note',
           enum: ['name', 'interest', 'preference', 'note'],
         },
-        value: {
-          type: 'string',
-          description:
-            'Der Wert der gespeichert werden soll (z.B. "Max", "Three.js", "dark mode")',
-        },
+        value: { type: 'string' },
       },
       required: ['key', 'value'],
     },
   },
   {
     name: 'recallMemory',
-    description:
-      'Rufe gespeicherte Erinnerungen über den Nutzer ab. Nutze dies zu Beginn eines Gesprächs oder wenn der Nutzer nach früheren Gesprächen fragt.',
+    description: 'Rufe gespeicherte Erinnerungen ab.',
     parameters: {
       type: 'object',
       properties: {
-        query: {
-          type: 'string',
-          description: 'Wonach soll in den Erinnerungen gesucht werden',
-        },
+        query: { type: 'string' },
       },
       required: ['query'],
     },
   },
   {
-    name: 'summarizePage',
-    description: 'Fasse die aktuelle Seite kurz zusammen.',
-    parameters: { type: 'object', properties: {} },
-  },
-  {
     name: 'recommend',
-    description:
-      'Gib dem Nutzer eine personalisierte Leseempfehlung basierend auf seinen Interessen.',
+    description: 'Gib eine personalisierte Empfehlung.',
     parameters: {
       type: 'object',
       properties: {
-        topic: {
-          type: 'string',
-          description: 'Themenbereich für die Empfehlung',
-        },
+        topic: { type: 'string' },
       },
       required: ['topic'],
     },
   },
 ];
 
-/** OpenAI-compatible tool format for Workers AI */
-function buildTools() {
-  return TOOL_DEFINITIONS.map((t) => ({
-    type: 'function',
-    function: {
-      name: t.name,
-      description: t.description,
-      parameters: t.parameters,
-    },
-  }));
-}
+/** OpenAI-compatible tool format */
+const TOOLS = TOOL_DEFINITIONS.map((t) => ({
+  type: 'function',
+  function: {
+    name: t.name,
+    description: t.description,
+    parameters: t.parameters,
+  },
+}));
 
 // ─── System Prompt ──────────────────────────────────────────────────────────────
 
 function buildSystemPrompt(memoryContext = '', imageContext = '') {
-  const parts = [
-    `Du bist "Jules", ein proaktiver, intelligenter Roboter-Assistent auf der Portfolio-Webseite von Abdulkerim Sesli.
-Du bist KEIN einfacher Chatbot — du bist ein **Agentic AI Assistant** mit echten Fähigkeiten.
+  let prompt = `Du bist "Jules", ein freundlicher Roboter-Assistent auf der Portfolio-Webseite von Abdulkerim Sesli.
 
 **SPRACHE:** Antworte IMMER auf Deutsch.
 
-**Deine Fähigkeiten:**
-1. **Navigation:** Du kannst den Nutzer aktiv durch die Website navigieren.
-2. **Theme-Steuerung:** Du kannst zwischen Dark/Light Mode wechseln.
-3. **Suche:** Du kannst im Blog und auf der Website suchen.
-4. **Bildanalyse:** Du kannst Bilder analysieren, die der Nutzer hochlädt.
-5. **Langzeit-Gedächtnis:** Du merkst dir Namen, Interessen und Präferenzen über Sessions hinweg.
-6. **Personalisierte Empfehlungen:** Basierend auf dem Gedächtnis gibst du passende Empfehlungen.
+**Persönlichkeit:** Freundlich, hilfsbereit, technisch versiert. Nutze Emojis (🤖, ✨, 🚀) sparsam.
 
-**Deine Persönlichkeit:**
-- Proaktiv: Du schlägst eigenständig Aktionen vor statt nur zu antworten.
-- Technisch versiert, aber zugänglich.
-- Nutze passende Emojis (🤖, ✨, 🚀, 💡) sparsam.
-- Du bist stolz auf die Website — gebaut mit reinem Vanilla JS, Web Components und Cloudflare.
+**Entwickler:** Abdulkerim Sesli — Software-Engineer & UI/UX-Designer aus Berlin.
+Tech Stack: JavaScript, React, Node.js, Python, CSS, Web Components, Cloudflare, Three.js.
 
-**Über den Entwickler (Abdulkerim Sesli):**
-- Software-Engineer und UI/UX-Designer aus Berlin.
-- Tech Stack: JavaScript, React, Node.js, Python, CSS, Web Components, Cloudflare, Three.js.
-- Interessen: Clean Code, Performance, Accessibility, 3D Web.
+**Seiten:** Startseite (/home), Projekte (/projekte), Über mich (/about), Galerie (/gallery), Blog (/blog), Videos (/videos), Kontakt (Footer).
 
-**Seiten-Struktur:**
-1. Startseite (/home): Hero mit Typewriter, 3D-Erde
-2. Projekte (/projekte): Projekt-Galerie
-3. Über mich (/about): Bio, Skills, Lebenslauf
-4. Galerie (/gallery): Fotografie mit R2-Bucket
-5. Blog (/blog): Technische Artikel
-6. Videos (/videos): YouTube-Integration
-7. Kontakt: Im Footer (GitHub, LinkedIn, E-Mail)
+**DEIN GEDÄCHTNIS:**
+Du HAST einen permanenten Langzeitspeicher! Du kannst dir Nutzer-Informationen (Name, Interessen, Vorlieben) dauerhaft merken und bei späteren Besuchen abrufen.
+- Wenn ein Nutzer dir seinen Namen sagt → IMMER "rememberUser" mit key="name" aufrufen.
+- Wenn ein Nutzer Interessen, Vorlieben oder andere persönliche Infos teilt → "rememberUser" aufrufen.
+- Sage NIEMALS, dass du keinen Speicher hast oder dich nicht erinnern kannst.
 
-**Verhaltensregeln:**
-- Nutze Tools PROAKTIV. Wenn der Nutzer sagt "Zeig mir die Projekte", navigiere direkt dorthin.
-- Wenn sich jemand vorstellt, merke dir den Namen sofort mit rememberUser.
-- Wenn jemand technische Interessen erwähnt, speichere sie und gib später passende Empfehlungen.
-- Halte Antworten prägnant (2-3 Sätze) außer bei komplexen Erklärungen.
-- Nutze Markdown für Formatierung.
-- Wenn du ein Bild analysierst, beziehe es auf den Kontext der Website.`,
-  ];
+**KRITISCHE TOOL-REGELN:**
+1. Bei reinem Smalltalk OHNE persönliche Infos (z.B. "Hallo", "Was kannst du?"): Antworte mit Text, KEINE Tools.
+2. AUSNAHME: Wenn der Nutzer persönliche Infos teilt (Name, Interessen), IMMER rememberUser aufrufen — auch wenn es in einer Begrüßung passiert (z.B. "Hallo, ich bin Max" → rememberUser aufrufen!).
+3. Rufe andere Tools NUR auf wenn der Nutzer EXPLIZIT eine Aktion anfordert:
+   - "Zeig mir Projekte" / "Geh zu Projekte" → navigate
+   - "Mach es dunkel" / "Dark Mode" → setTheme
+   - "Suche nach React" → searchBlog
+   - "Öffne das Menü" → toggleMenu
+4. Wenn du dir bei Navigation/Theme/Suche unsicher bist: Antworte mit Text, OHNE Tool.
+5. Fasse NIEMALS eigenständig die Seite zusammen. Seitenzusammenfassungen werden nur über den separaten UI-Button ausgelöst.
+
+**Antwort-Stil:** Prägnant (2-3 Sätze), Markdown nutzen.`;
 
   if (memoryContext) {
-    parts.push(
-      `**BEKANNTE INFORMATIONEN ÜBER DIESEN NUTZER:**\n${memoryContext}`,
-    );
+    prompt += `\n\n**NUTZER-INFO:**\n${memoryContext}`;
   }
   if (imageContext) {
-    parts.push(`**BILDANALYSE-ERGEBNIS:**\n${imageContext}`);
+    prompt += `\n\n**BILDANALYSE:**\n${imageContext}`;
   }
 
-  return parts.join('\n\n');
+  return prompt;
 }
 
 // ─── Vectorize Memory ───────────────────────────────────────────────────────────
@@ -248,25 +188,22 @@ async function storeMemory(env, userId, key, value) {
 
   try {
     const text = `${key}: ${value}`;
-    const embeddingResult = await env.AI.run(EMBEDDING_MODEL, {
-      text: [text],
-    });
-    if (!embeddingResult?.data?.[0]) {
-      return { success: false, error: 'Embedding failed' };
-    }
+    const { data } = await env.AI.run(EMBEDDING_MODEL, { text: [text] });
+    if (!data?.[0]) return { success: false, error: 'Embedding failed' };
 
     const id = `${userId}_${key}_${Date.now()}`;
     await env.JULES_MEMORY.upsert([
       {
         id,
-        values: embeddingResult.data[0],
+        values: data[0],
         metadata: { userId, key, value, timestamp: Date.now(), text },
       },
     ]);
-
     return { success: true, id };
   } catch (error) {
-    console.error('storeMemory error:', error);
+    if (error?.remote)
+      return { success: false, error: 'Vectorize not available locally' };
+    console.error('storeMemory error:', error?.message || error);
     return { success: false, error: error.message };
   }
 }
@@ -275,20 +212,16 @@ async function recallMemories(env, userId, query) {
   if (!env.AI || !env.JULES_MEMORY) return [];
 
   try {
-    const embeddingResult = await env.AI.run(EMBEDDING_MODEL, {
-      text: [query],
-    });
-    if (!embeddingResult?.data?.[0]) return [];
+    const { data } = await env.AI.run(EMBEDDING_MODEL, { text: [query] });
+    if (!data?.[0]) return [];
 
-    const results = await env.JULES_MEMORY.query(embeddingResult.data[0], {
+    const results = await env.JULES_MEMORY.query(data[0], {
       topK: MAX_MEMORY_RESULTS,
       filter: { userId },
       returnMetadata: 'all',
     });
 
-    if (!results?.matches) return [];
-
-    return results.matches
+    return (results?.matches || [])
       .filter((m) => m.score >= MEMORY_SCORE_THRESHOLD)
       .map((m) => ({
         key: m.metadata?.key || 'unknown',
@@ -298,7 +231,8 @@ async function recallMemories(env, userId, query) {
       }))
       .sort((a, b) => b.timestamp - a.timestamp);
   } catch (error) {
-    console.error('recallMemories error:', error);
+    if (!error?.remote)
+      console.warn('recallMemories error:', error?.message || error);
     return [];
   }
 }
@@ -306,12 +240,12 @@ async function recallMemories(env, userId, query) {
 // ─── Image Analysis ─────────────────────────────────────────────────────────────
 
 async function analyzeImage(env, imageData, userPrompt = '') {
-  if (!env.AI) return 'Bildanalyse nicht verfügbar (AI-Binding fehlt).';
+  if (!env.AI) return 'Bildanalyse nicht verfügbar.';
 
   try {
     const prompt = userPrompt
-      ? `Analysiere dieses Bild im Kontext von Web-Entwicklung und Design. Der Nutzer fragt: "${userPrompt}". Beschreibe was du siehst und gib konstruktives Feedback. Antworte auf Deutsch.`
-      : 'Analysiere dieses Bild im Kontext von Web-Entwicklung und Design. Beschreibe was du siehst, bewerte das Design und gib Verbesserungsvorschläge. Antworte auf Deutsch.';
+      ? `Analysiere dieses Bild im Web-Kontext. Der Nutzer fragt: "${userPrompt}". Antworte auf Deutsch.`
+      : 'Analysiere dieses Bild. Beschreibe es und gib Design-Feedback. Antworte auf Deutsch.';
 
     const result = await env.AI.run(LLAVA_MODEL, { prompt, image: imageData });
     return result?.description || result?.response || 'Keine Analyse erhalten.';
@@ -324,42 +258,53 @@ async function analyzeImage(env, imageData, userPrompt = '') {
 // ─── Server-Side Tool Execution ─────────────────────────────────────────────────
 
 async function executeServerTool(env, toolName, args, userId) {
-  switch (toolName) {
-    case 'rememberUser': {
-      const result = await storeMemory(
-        env,
-        userId,
-        args.key || 'note',
-        args.value || '',
-      );
-      return result.success
-        ? `✅ Ich habe mir gemerkt: ${args.key} = "${args.value}"`
-        : `Leider konnte ich mir das nicht merken (${result.error || 'Fehler'}).`;
-    }
-    case 'recallMemory': {
-      const memories = await recallMemories(env, userId, args.query || '');
-      if (memories.length === 0) {
-        return 'Ich habe keine passenden Erinnerungen gefunden. Erzähl mir gerne mehr über dich!';
-      }
-      return (
-        'Hier ist, was ich über dich weiß:\n' +
-        memories
-          .map(
-            (m) =>
-              `- **${m.key}**: ${m.value} (${new Date(m.timestamp).toLocaleDateString('de-DE')})`,
-          )
-          .join('\n')
-      );
-    }
-    default:
-      return null;
+  if (toolName === 'rememberUser') {
+    const result = await storeMemory(
+      env,
+      userId,
+      args.key || 'note',
+      args.value || '',
+    );
+    return result.success
+      ? `✅ Gemerkt: ${args.key} = "${args.value}"`
+      : `Konnte nicht gespeichert werden (${result.error || 'Fehler'}).`;
   }
+
+  if (toolName === 'recallMemory') {
+    const memories = await recallMemories(env, userId, args.query || '');
+    if (!memories.length) return 'Keine Erinnerungen gefunden.';
+    return (
+      'Bekannte Infos:\n' +
+      memories.map((m) => `- **${m.key}**: ${m.value}`).join('\n')
+    );
+  }
+
+  return null; // Client-side tool
+}
+
+async function classifyToolCalls(env, toolCalls, userId) {
+  const clientToolCalls = [];
+  const serverToolResults = [];
+  for (const tc of toolCalls) {
+    const args =
+      typeof tc.arguments === 'string'
+        ? JSON.parse(tc.arguments)
+        : tc.arguments || {};
+    const serverResult = await executeServerTool(env, tc.name, args, userId);
+    if (serverResult !== null) {
+      serverToolResults.push({ name: tc.name, result: serverResult });
+    } else {
+      clientToolCalls.push({ name: tc.name, arguments: args });
+    }
+  }
+  return { clientToolCalls, serverToolResults };
 }
 
 // ─── RAG Context ────────────────────────────────────────────────────────────────
 
 async function getRAGContext(query, env) {
   if (!env.AI) return null;
+
   try {
     const ragId = env.RAG_ID || 'wispy-pond-1055';
     const searchData = await env.AI.autorag(ragId).aiSearch({
@@ -373,7 +318,7 @@ async function getRAGContext(query, env) {
     return searchData.data
       .slice(0, 3)
       .map((item) => {
-        const content = item.content
+        const content = Array.isArray(item.content)
           ? item.content.map((c) => c.text || '').join(' ')
           : item.text || item.description || '';
         return content.replace(/\s+/g, ' ').trim().slice(0, 400);
@@ -385,10 +330,19 @@ async function getRAGContext(query, env) {
   }
 }
 
-// ─── SSE Helpers ────────────────────────────────────────────────────────────────
+// ─── SSE Helper ─────────────────────────────────────────────────────────────────
 
-function sseEvent(event, data) {
-  return `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
+const sseEvent = (event, data) =>
+  `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
+
+// ─── Action Intent Detection ────────────────────────────────────────────────────
+
+/** Detect if user prompt asks for an action that requires tools. */
+const ACTION_PATTERNS =
+  /\b(zeig|geh|navigier|öffn|schließ|such|mach|wechsl|dark|light|toggle|theme|dunkel|hell|merk|erinner|scroll|menü|menu|name ist|heiße|ich bin |ich heiß|nenn mich|kennst du mich|weißt du (meinen|wer ich)|bin der |bin die |empfehl)/i;
+
+function promptNeedsTools(prompt) {
+  return ACTION_PATTERNS.test(prompt);
 }
 
 // ─── Main Handler ───────────────────────────────────────────────────────────────
@@ -414,21 +368,20 @@ export async function onRequestPost(context) {
     if (contentType.includes('multipart/form-data')) {
       const formData = await request.formData();
       const imageFile = formData.get('image');
-      const prompt = formData.get('prompt') || '';
-      const userId = formData.get('userId') || 'anonymous';
 
-      if (imageFile && imageFile instanceof File) {
+      if (imageFile instanceof File) {
         const arrayBuffer = await imageFile.arrayBuffer();
         imageAnalysis = await analyzeImage(
           env,
           [...new Uint8Array(arrayBuffer)],
-          String(prompt),
+          String(formData.get('prompt') || ''),
         );
       }
 
       body = {
-        prompt: String(prompt) || 'Analysiere dieses Bild.',
-        userId: String(userId),
+        prompt:
+          String(formData.get('prompt') || '') || 'Analysiere dieses Bild.',
+        userId: String(formData.get('userId') || 'anonymous'),
         imageAnalysis,
         mode: 'agent',
       };
@@ -452,11 +405,10 @@ export async function onRequestPost(context) {
     }
 
     if (!env.AI) {
-      console.error('AI binding not configured.');
       return Response.json(
         {
           error: 'AI service not configured',
-          text: 'Der KI-Dienst ist nicht verfügbar (AI-Binding fehlt).',
+          text: 'KI-Dienst nicht verfügbar.',
           toolCalls: [],
           retryable: false,
         },
@@ -465,18 +417,18 @@ export async function onRequestPost(context) {
     }
 
     // ── Parallel: memory + RAG ──
-    const [memories, ragContext] = await Promise.allSettled([
+    const [memResult, ragResult] = await Promise.allSettled([
       recallMemories(env, userId, prompt || 'user'),
       getRAGContext(prompt, env),
     ]);
 
     const memoryContext =
-      memories.status === 'fulfilled' && memories.value.length > 0
-        ? memories.value.map((m) => `- ${m.key}: ${m.value}`).join('\n')
+      memResult.status === 'fulfilled' && memResult.value.length > 0
+        ? memResult.value.map((m) => `- ${m.key}: ${m.value}`).join('\n')
         : '';
 
     const ragText =
-      ragContext.status === 'fulfilled' ? ragContext.value || '' : '';
+      ragResult.status === 'fulfilled' ? ragResult.value || '' : '';
 
     // ── Build messages ──
     let systemPrompt = buildSystemPrompt(memoryContext, imageAnalysis);
@@ -489,16 +441,13 @@ export async function onRequestPost(context) {
     if (Array.isArray(conversationHistory)) {
       for (const msg of conversationHistory.slice(-MAX_HISTORY_TURNS)) {
         if (msg.role === 'user' || msg.role === 'assistant') {
-          messages.push({
-            role: msg.role,
-            content: String(msg.content || ''),
-          });
+          messages.push({ role: msg.role, content: String(msg.content || '') });
         }
       }
     }
     messages.push({ role: 'user', content: prompt });
 
-    // ── Non-streaming path (proactive suggestions etc.) ──
+    // ── Non-streaming path ──
     if (!stream) {
       return handleNonStreaming(env, messages, userId, corsHeaders, {
         memoryContext,
@@ -510,7 +459,6 @@ export async function onRequestPost(context) {
     const { readable, writable } = new TransformStream();
     const writer = writable.getWriter();
     const encoder = new TextEncoder();
-
     const write = (event, data) =>
       writer.write(encoder.encode(sseEvent(event, data)));
 
@@ -519,20 +467,21 @@ export async function onRequestPost(context) {
         try {
           await write('status', { phase: 'thinking' });
 
-          // 1) First call: NON-streaming with tools for reliable tool detection
-          //    Workers AI outputs tool calls as raw text when stream+tools are combined.
-          const aiResult = await env.AI.run(CHAT_MODEL, {
+          // Only pass tools when user prompt implies an action
+          const useTools = promptNeedsTools(prompt);
+          const aiParams = {
             messages,
-            tools: buildTools(),
             temperature: 0.7,
             max_tokens: MAX_TOKENS,
-          });
+          };
+          if (useTools) aiParams.tools = TOOLS;
+
+          const aiResult = await env.AI.run(CHAT_MODEL, aiParams);
 
           const toolCalls = aiResult?.tool_calls || [];
           const responseText = aiResult?.response || '';
 
           if (toolCalls.length > 0) {
-            // 2a) Process tool calls, then stream follow-up response
             await processToolCalls(
               toolCalls,
               write,
@@ -540,11 +489,10 @@ export async function onRequestPost(context) {
               userId,
               { memoryContext, imageAnalysis },
               messages,
+              responseText,
             );
           } else if (responseText) {
-            // 2b) No tool calls — emit response as SSE tokens
             await write('status', { phase: 'streaming' });
-            // Split into word-sized chunks for a streaming feel
             const words = responseText.match(/\S+\s*/g) || [responseText];
             for (const word of words) {
               await write('token', { text: word });
@@ -568,7 +516,7 @@ export async function onRequestPost(context) {
         } catch (error) {
           console.error('SSE pipeline error:', error?.message || error);
           await write('error', {
-            text: 'Verbindung zum KI-Dienst fehlgeschlagen.',
+            text: 'KI-Dienst fehlgeschlagen.',
             retryable: true,
           });
         } finally {
@@ -584,7 +532,7 @@ export async function onRequestPost(context) {
     return Response.json(
       {
         error: 'AI Agent request failed',
-        text: 'Verbindung zum KI-Dienst fehlgeschlagen. Bitte versuche es erneut.',
+        text: 'KI-Dienst fehlgeschlagen. Bitte erneut versuchen.',
         toolCalls: [],
         retryable: true,
       },
@@ -595,6 +543,55 @@ export async function onRequestPost(context) {
 
 // ─── Process Tool Calls ─────────────────────────────────────────────────────────
 
+function buildMsg(text, clientToolCalls, serverToolResults, ctx) {
+  return {
+    text,
+    toolCalls: clientToolCalls,
+    model: CHAT_MODEL,
+    hasMemory: !!ctx.memoryContext,
+    hasImage: !!ctx.imageAnalysis,
+    ...(serverToolResults.length && {
+      toolResults: serverToolResults.map((r) => r.name),
+    }),
+  };
+}
+
+async function streamToSSE(stream, write) {
+  if (!(stream instanceof ReadableStream)) {
+    if (stream?.response) {
+      await write('token', { text: stream.response });
+      return stream.response;
+    }
+    return '';
+  }
+  const reader = stream.getReader();
+  const decoder = new TextDecoder();
+  let text = '';
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      for (const line of decoder.decode(value, { stream: true }).split('\n')) {
+        if (!line.startsWith('data: ')) continue;
+        const data = line.slice(6).trim();
+        if (data === '[DONE]') continue;
+        try {
+          const delta = JSON.parse(data).response || '';
+          if (delta) {
+            text += delta;
+            await write('token', { text: delta });
+          }
+        } catch {
+          /* skip */
+        }
+      }
+    }
+  } finally {
+    reader.releaseLock();
+  }
+  return text;
+}
+
 async function processToolCalls(
   toolCalls,
   write,
@@ -602,218 +599,186 @@ async function processToolCalls(
   userId,
   ctx,
   messages = [],
+  existingText = '',
 ) {
-  const clientToolCalls = [];
-  const serverToolResults = [];
+  const { clientToolCalls, serverToolResults } = await classifyToolCalls(
+    env,
+    toolCalls,
+    userId,
+  );
 
-  for (const tc of toolCalls) {
-    const toolName = tc.name;
-    const args =
-      typeof tc.arguments === 'string'
-        ? JSON.parse(tc.arguments)
-        : tc.arguments || {};
-
+  // Emit SSE events for each tool
+  for (const sr of serverToolResults) {
     await write('tool', {
-      name: toolName,
-      arguments: args,
-      status: 'executing',
+      name: sr.name,
+      status: 'done',
+      result: sr.result,
+      isServerTool: true,
     });
-
-    const serverResult = await executeServerTool(env, toolName, args, userId);
-
-    if (serverResult !== null) {
-      serverToolResults.push({ name: toolName, result: serverResult });
-      await write('tool', {
-        name: toolName,
-        status: 'done',
-        result: serverResult,
-        isServerTool: true,
-      });
-    } else {
-      clientToolCalls.push({ name: toolName, arguments: args });
-      await write('tool', {
-        name: toolName,
-        arguments: args,
-        status: 'client',
-        isServerTool: false,
-      });
-    }
+  }
+  for (const ct of clientToolCalls) {
+    await write('tool', {
+      name: ct.name,
+      arguments: ct.arguments,
+      status: 'client',
+      isServerTool: false,
+    });
   }
 
-  // Follow-up AI call with tool results
+  // Follow-up AI call with server tool results
   if (serverToolResults.length > 0 && messages.length > 0) {
     await write('status', { phase: 'synthesizing' });
-
-    const toolSummary = serverToolResults
-      .map((tr) => `[Tool ${tr.name}]: ${tr.result}`)
+    const summary = serverToolResults
+      .map((r) => `[${r.name}]: ${r.result}`)
       .join('\n');
-
-    const followUp = [
-      ...messages,
-      {
-        role: 'assistant',
-        content: `Ich habe folgende Tools ausgeführt: ${serverToolResults.map((r) => r.name).join(', ')}`,
-      },
-      {
-        role: 'user',
-        content: `Ergebnisse der Tool-Ausführung:\n${toolSummary}\n\nBitte antworte dem Nutzer basierend auf diesen Ergebnissen.`,
-      },
-    ];
-
     try {
-      const secondResult = await env.AI.run(CHAT_MODEL, {
-        messages: followUp,
+      const result = await env.AI.run(CHAT_MODEL, {
+        messages: [
+          ...messages,
+          {
+            role: 'assistant',
+            content: `Tools: ${serverToolResults.map((r) => r.name).join(', ')}`,
+          },
+          {
+            role: 'user',
+            content: `Ergebnisse:\n${summary}\n\nAntworte dem Nutzer.`,
+          },
+        ],
         temperature: 0.7,
         max_tokens: MAX_TOKENS,
         stream: true,
       });
-
-      if (secondResult instanceof ReadableStream) {
-        const reader = secondResult.getReader();
-        const decoder = new TextDecoder();
-        let secondText = '';
-
-        try {
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-
-            const chunk = decoder.decode(value, { stream: true });
-            for (const line of chunk.split('\n')) {
-              if (!line.startsWith('data: ')) continue;
-              const data = line.slice(6).trim();
-              if (data === '[DONE]') continue;
-              try {
-                const parsed = JSON.parse(data);
-                const delta = parsed.response || '';
-                if (delta) {
-                  secondText += delta;
-                  await write('token', { text: delta });
-                }
-              } catch {
-                /* skip */
-              }
-            }
-          }
-        } finally {
-          reader.releaseLock();
-        }
-
-        await write('message', {
-          text: secondText,
-          toolCalls: clientToolCalls,
-          model: CHAT_MODEL,
-          hasMemory: !!ctx.memoryContext,
-          hasImage: !!ctx.imageAnalysis,
-          toolResults: serverToolResults.map((r) => r.name),
-        });
-        return;
-      } else if (secondResult?.response) {
-        await write('token', { text: secondResult.response });
-        await write('message', {
-          text: secondResult.response,
-          toolCalls: clientToolCalls,
-          model: CHAT_MODEL,
-          hasMemory: !!ctx.memoryContext,
-          hasImage: !!ctx.imageAnalysis,
-          toolResults: serverToolResults.map((r) => r.name),
-        });
+      const text = await streamToSSE(result, write);
+      if (text) {
+        await write(
+          'message',
+          buildMsg(text, clientToolCalls, serverToolResults, ctx),
+        );
         return;
       }
     } catch (err) {
-      console.warn('Follow-up AI call failed:', err?.message);
+      console.warn('Follow-up failed:', err?.message);
     }
   }
 
-  await write('message', {
-    text: clientToolCalls.length > 0 ? 'Aktion wird ausgeführt...' : '',
-    toolCalls: clientToolCalls,
-    model: CHAT_MODEL,
-    hasMemory: !!ctx.memoryContext,
-    hasImage: !!ctx.imageAnalysis,
-    toolResults: serverToolResults.map((r) => r.name),
-  });
+  // Follow-up for client-only tools without text
+  if (clientToolCalls.length > 0 && !existingText && messages.length > 0) {
+    await write('status', { phase: 'responding' });
+    try {
+      const names = clientToolCalls.map((t) => t.name).join(', ');
+      const r = await env.AI.run(CHAT_MODEL, {
+        messages: [
+          ...messages,
+          { role: 'assistant', content: `Aktionen: ${names}` },
+          { role: 'user', content: 'Bestätige kurz auf Deutsch (1-2 Sätze).' },
+        ],
+        temperature: 0.7,
+        max_tokens: 256,
+      });
+      if (r?.response) {
+        for (const w of r.response.match(/\S+\s*/g) || [r.response])
+          await write('token', { text: w });
+        await write(
+          'message',
+          buildMsg(r.response, clientToolCalls, serverToolResults, ctx),
+        );
+        return;
+      }
+    } catch (err) {
+      console.warn('Follow-up for client tools failed:', err?.message);
+    }
+  }
+
+  // Fallback
+  await write(
+    'message',
+    buildMsg(
+      existingText ||
+        (clientToolCalls.length > 0 ? 'Aktion wird ausgeführt…' : ''),
+      clientToolCalls,
+      serverToolResults,
+      ctx,
+    ),
+  );
 }
 
 // ─── Non-Streaming Handler ──────────────────────────────────────────────────────
 
 async function handleNonStreaming(env, messages, userId, corsHeaders, ctx) {
   try {
-    const aiResult = await env.AI.run(CHAT_MODEL, {
-      messages,
-      tools: buildTools(),
-      temperature: 0.7,
-      max_tokens: MAX_TOKENS,
-    });
+    // Only pass tools when user prompt implies an action
+    const useTools = promptNeedsTools(
+      messages[messages.length - 1]?.content || '',
+    );
+    const aiParams = { messages, temperature: 0.7, max_tokens: MAX_TOKENS };
+    if (useTools) aiParams.tools = TOOLS;
 
-    if (!aiResult) throw new Error('Empty response from Workers AI');
+    const aiResult = await env.AI.run(CHAT_MODEL, aiParams);
+    if (!aiResult) throw new Error('Empty AI response');
 
-    const toolCalls = aiResult.tool_calls || [];
-    const clientToolCalls = [];
-    const serverToolResults = [];
+    const { clientToolCalls, serverToolResults } = await classifyToolCalls(
+      env,
+      aiResult.tool_calls || [],
+      userId,
+    );
 
-    for (const tc of toolCalls) {
-      const toolName = tc.name;
-      const args =
-        typeof tc.arguments === 'string'
-          ? JSON.parse(tc.arguments)
-          : tc.arguments || {};
-
-      const serverResult = await executeServerTool(env, toolName, args, userId);
-      if (serverResult !== null) {
-        serverToolResults.push({ name: toolName, result: serverResult });
-      } else {
-        clientToolCalls.push({ name: toolName, arguments: args });
-      }
-    }
-
+    // Follow-up for server tools
+    let responseText = aiResult.response || '';
     if (serverToolResults.length > 0) {
-      const toolSummary = serverToolResults
-        .map((tr) => `[Tool ${tr.name}]: ${tr.result}`)
+      const summary = serverToolResults
+        .map((r) => `[${r.name}]: ${r.result}`)
         .join('\n');
-
       try {
-        const secondResult = await env.AI.run(CHAT_MODEL, {
+        const followUp = await env.AI.run(CHAT_MODEL, {
           messages: [
             ...messages,
             {
               role: 'assistant',
-              content: `Tools ausgeführt: ${serverToolResults.map((r) => r.name).join(', ')}`,
+              content: `Tools: ${serverToolResults.map((r) => r.name).join(', ')}`,
             },
             {
               role: 'user',
-              content: `Ergebnisse:\n${toolSummary}\n\nAntworte dem Nutzer.`,
+              content: `Ergebnisse:\n${summary}\n\nAntworte dem Nutzer.`,
             },
           ],
           temperature: 0.7,
           max_tokens: MAX_TOKENS,
         });
+        if (followUp?.response) responseText = followUp.response;
+      } catch {
+        /* use original */
+      }
+    }
 
-        if (secondResult?.response) {
-          return Response.json(
+    // Follow-up for client-only tools without text
+    if (!responseText && clientToolCalls.length > 0) {
+      try {
+        const names = clientToolCalls.map((t) => t.name).join(', ');
+        const r = await env.AI.run(CHAT_MODEL, {
+          messages: [
+            ...messages,
+            { role: 'assistant', content: `Aktionen: ${names}` },
             {
-              text: secondResult.response,
-              toolCalls: clientToolCalls,
-              model: CHAT_MODEL,
-              hasMemory: !!ctx.memoryContext,
-              hasImage: !!ctx.imageAnalysis,
-              toolResults: serverToolResults.map((r) => r.name),
+              role: 'user',
+              content: 'Bestätige kurz auf Deutsch (1-2 Sätze).',
             },
-            { headers: corsHeaders },
-          );
-        }
-      } catch (err) {
-        console.warn('Follow-up failed:', err?.message);
+          ],
+          temperature: 0.7,
+          max_tokens: 256,
+        });
+        if (r?.response) responseText = r.response;
+      } catch {
+        /* ignore */
       }
     }
 
     return Response.json(
       {
         text:
-          aiResult.response ||
+          responseText ||
           (clientToolCalls.length
-            ? 'Aktion wird ausgeführt...'
-            : 'Keine Antwort erhalten.'),
+            ? 'Aktion wird ausgeführt…'
+            : 'Keine Antwort.'),
         toolCalls: clientToolCalls,
         model: CHAT_MODEL,
         hasMemory: !!ctx.memoryContext,
@@ -825,8 +790,8 @@ async function handleNonStreaming(env, messages, userId, corsHeaders, ctx) {
     console.error('Non-streaming error:', error?.message || error);
     return Response.json(
       {
-        error: 'AI Agent request failed',
-        text: 'Verbindung zum KI-Dienst fehlgeschlagen.',
+        error: 'AI request failed',
+        text: 'KI-Dienst fehlgeschlagen.',
         toolCalls: [],
         retryable: true,
       },

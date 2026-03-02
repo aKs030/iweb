@@ -53,8 +53,7 @@ export function executeTool(toolCall) {
         return executeToggleMenu(args);
       case 'scrollToSection':
         return executeScrollToSection(args);
-      case 'summarizePage':
-        return executeSummarizePage();
+
       case 'recommend':
         return executeRecommend(args);
       default:
@@ -259,36 +258,10 @@ function executeScrollToSection(args) {
 }
 
 /**
- * Summarize current page (triggers the existing summarize feature)
- */
-function executeSummarizePage() {
-  fire('robot:summarize', {});
-
-  return {
-    success: true,
-    message: 'Seite wird zusammengefasst...',
-    requiresUI: true,
-  };
-}
-
-/**
- * Give recommendation based on topic
+ * Give recommendation based on topic — delegates to search
  */
 function executeRecommend(args) {
   const topic = String(args?.topic || '').trim();
-
-  // Navigate to blog with search query if topic is given
-  if (topic) {
-    fire('search:execute', { query: topic });
-
-    return {
-      success: true,
-      message: `Suche nach Empfehlungen zu "${topic}"...`,
-    };
-  }
-
-  return {
-    success: true,
-    message: 'Schau dir die neuesten Blog-Artikel an!',
-  };
+  if (topic) return executeSearch({ query: topic });
+  return { success: true, message: 'Schau dir die neuesten Blog-Artikel an!' };
 }

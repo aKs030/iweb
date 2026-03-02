@@ -52,7 +52,6 @@ export const ROBOT_ACTIONS = {
   START: 'start',
   SUMMARIZE_PAGE: 'summarizePage',
   SCROLL_FOOTER: 'scrollFooter',
-  RANDOM_PROJECT: 'randomProject',
   PLAY_TIC_TAC_TOE: 'playTicTacToe',
   PLAY_TRIVIA: 'playTrivia',
   PLAY_GUESS_NUMBER: 'playGuessNumber',

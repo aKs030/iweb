@@ -17,20 +17,6 @@ export class RobotIntelligence {
     this.lastInteractionTime = Date.now();
     this.isIdle = false;
 
-    // Context-based proactive tips
-    this.contextTipsShown = new Set();
-    this.pageTimeTracking = {};
-    this.currentContext = null;
-
-    // Scroll-based element tracking
-    this.elementHighlights = new Map();
-    this.lastHighlightedElement = null;
-    this.scrollPositionTracking = {
-      lastPosition: 0,
-      direction: 'down',
-      elementsInView: new Set(),
-    };
-    this._lastElementCheck = 0;
     this.workerEnabled = false;
     this.decisionWorker = null;
     this._onWorkerMessage = (event) => this.handleWorkerDecision(event?.data);
@@ -52,12 +38,6 @@ export class RobotIntelligence {
     this._idleCheckInterval = this.robot._setInterval(
       () => this.checkIdle(),
       10000,
-    );
-
-    // Check for proactive tips every 15 seconds
-    this._proactiveTipsInterval = this.robot._setInterval(
-      () => this.checkProactiveTips(),
-      15000,
     );
   }
 
@@ -150,12 +130,6 @@ export class RobotIntelligence {
       this._idleCheckInterval = null;
     }
 
-    // Stoppe Proactive Tips Interval
-    if (this._proactiveTipsInterval) {
-      this.robot._clearInterval(this._proactiveTipsInterval);
-      this._proactiveTipsInterval = null;
-    }
-
     if (this._scrollDecayTimer) {
       this.robot._clearTimeout(this._scrollDecayTimer);
       this._scrollDecayTimer = null;
@@ -178,7 +152,6 @@ export class RobotIntelligence {
 
     // Clear Referenzen
     this._handlers = null;
-    this.contextTipsShown.clear();
   }
 
   resetIdle() {
@@ -251,17 +224,14 @@ export class RobotIntelligence {
     this.resetIdle();
 
     const now = Date.now();
-    const scrollY = typeof globalThis !== 'undefined' ? globalThis.scrollY : 0;
+    const scrollY = globalThis.scrollY || 0;
     const currentDirection = scrollY > this.lastScrollY ? 'down' : 'up';
-    this.scrollPositionTracking.lastPosition = scrollY;
-    this.scrollPositionTracking.direction = currentDirection;
 
     if (this.workerEnabled) {
       const dt = now - this.lastScrollTime;
       if (dt > 100) {
         this.lastScrollTime = now;
         this.lastScrollY = scrollY;
-        this.checkElementsInViewport();
       }
 
       this.postToWorker({
@@ -279,14 +249,8 @@ export class RobotIntelligence {
       const dist = Math.abs(scrollY - this.lastScrollY);
       const speed = dist / dt;
 
-      // Detect scroll direction
-      const currentDirectionLocal = currentDirection;
-
-      // Check for interesting elements in viewport
-      this.checkElementsInViewport();
-
       // Detect back-and-forth scrolling (frustration indicator)
-      if (currentDirectionLocal !== this.lastScrollDirection) {
+      if (currentDirection !== this.lastScrollDirection) {
         this.scrollBackAndForth++;
 
         // If user scrolls back and forth 5+ times in short period, offer help
@@ -296,7 +260,7 @@ export class RobotIntelligence {
         }
       }
 
-      this.lastScrollDirection = currentDirectionLocal;
+      this.lastScrollDirection = currentDirection;
       this.lastScrollY = scrollY;
       this.lastScrollTime = now;
 
@@ -305,6 +269,8 @@ export class RobotIntelligence {
       }
 
       // Reset back-and-forth counter after 3 seconds of no direction change
+      if (this._scrollDecayTimer)
+        this.robot._clearTimeout(this._scrollDecayTimer);
       this._scrollDecayTimer = this.robot._setTimeout(() => {
         if (this.scrollBackAndForth > 0) {
           this.scrollBackAndForth = Math.max(0, this.scrollBackAndForth - 1);
@@ -312,148 +278,6 @@ export class RobotIntelligence {
         this._scrollDecayTimer = null;
       }, 3000);
     }
-  }
-
-  /**
-   * Check for interesting elements in the viewport and highlight them
-   */
-  checkElementsInViewport() {
-    if (this.robot.chatModule.isOpen) return;
-
-    // Throttle checks - only run every 1000ms (Optimized from 500ms)
-    const now = Date.now();
-    if (this._lastElementCheck && now - this._lastElementCheck < 1000) return;
-    this._lastElementCheck = now;
-
-    // Define interesting selectors based on context
-    const interestingSelectors = this.getInterestingSelectors();
-    if (!interestingSelectors.length) return;
-
-    const viewportHeight = window.innerHeight || 0;
-    const viewportMiddle = viewportHeight / 2;
-
-    interestingSelectors.forEach(({ selector, message, animation }) => {
-      const elements = document.querySelectorAll(selector);
-
-      elements.forEach((element) => {
-        const rect = element.getBoundingClientRect();
-        const isInViewport = rect.top >= 0 && rect.bottom <= viewportHeight;
-        const isNearMiddle =
-          Math.abs(rect.top + rect.height / 2 - viewportMiddle) < 150; // Increased threshold
-
-        // Element is in viewport and near middle
-        if (isInViewport && isNearMiddle) {
-          const elementId = this.getElementId(element);
-
-          // Don't highlight same element twice
-          if (this.elementHighlights.has(elementId)) return;
-
-          // Don't show too many highlights
-          if (this.elementHighlights.size >= 3) return;
-
-          // 30% chance to highlight
-          if (Math.random() > 0.3) return;
-
-          this.highlightElement(element, message, animation);
-          this.elementHighlights.set(elementId, Date.now());
-
-          // Clean up old highlights after 30 seconds
-          this.robot._setTimeout(() => {
-            this.elementHighlights.delete(elementId);
-          }, 30000);
-        }
-      });
-    });
-  }
-
-  /**
-   * Get interesting selectors based on current context
-   */
-  getInterestingSelectors() {
-    const context = this.robot.getPageContext();
-
-    const selectorsByContext = {
-      projects: [
-        {
-          selector: '.project-card:not(.robot-highlighted)',
-          message: '👀 Schau dir dieses Projekt an! Es ist richtig cool!',
-          animation: 'excitement',
-        },
-      ],
-      gallery: [
-        {
-          // Updated selector for React gallery
-          selector: '[data-test="photo-card"]:not(.robot-highlighted)',
-          message: '📸 Wow, tolles Bild!',
-          animation: 'excitement',
-        },
-      ],
-      hero: [
-        {
-          selector: '.typewriter-title:not(.robot-highlighted)',
-          message: '✨ Willkommen auf der Seite!',
-          animation: 'wave',
-        },
-      ],
-      about: [
-        {
-          // Updated selector for About page skills
-          selector: '.stack-tag:not(.robot-highlighted)',
-          message: '💪 Beeindruckende Skills!',
-          animation: 'point',
-        },
-      ],
-    };
-
-    return selectorsByContext[context] || [];
-  }
-
-  /**
-   * Generate unique ID for an element
-   */
-  getElementId(element) {
-    if (element.id) return element.id;
-
-    // Generate ID based on element position and content
-    const rect = element.getBoundingClientRect();
-    const content = element.textContent?.substring(0, 20) || '';
-    return `${rect.top}-${rect.left}-${content}`;
-  }
-
-  /**
-   * Highlight an element and show message
-   */
-  async highlightElement(element, message, animation) {
-    if (!element || this.robot.chatModule.isOpen) return;
-
-    // Add highlight class
-    element.classList.add('robot-highlight');
-    element.classList.add('robot-highlighted');
-
-    // Show message
-    this.robot.chatModule.showBubble(message);
-
-    // Play animation based on type
-    switch (animation) {
-      case 'excitement':
-        await this.robot.animationModule.playExcitementAnimation();
-        break;
-      case 'point':
-        await this.robot.animationModule.pointAtElement(element);
-        break;
-      case 'wave':
-        this.robot.dom.avatar?.classList.add('waving');
-        this.robot._setTimeout(() => {
-          this.robot.dom.avatar?.classList.remove('waving');
-        }, 1000);
-        break;
-    }
-
-    // Remove highlight after 3 seconds
-    this.robot._setTimeout(() => {
-      element.classList.remove('robot-highlight');
-      this.robot.chatModule.hideBubble();
-    }, 3000);
   }
 
   triggerHecticReaction() {
@@ -471,48 +295,6 @@ export class RobotIntelligence {
     this.robot._setTimeout(() => this.robot.chatModule.hideBubble(), 2500);
   }
 
-  /**
-   * Check for proactive tips based on context and user behavior
-   */
-  checkProactiveTips() {
-    if (this.robot.chatModule.isOpen) return;
-
-    const context = this.robot.getPageContext();
-
-    // Track time spent on each context
-    if (context !== this.currentContext) {
-      this.currentContext = context;
-      this.pageTimeTracking[context] = Date.now();
-    }
-
-    const timeOnPage =
-      Date.now() - (this.pageTimeTracking[context] || Date.now());
-    // Create a key for this "slot" (e.g. "projects-0", "projects-1" for 30s blocks)
-    // Align checks to 30s boundaries to ensure one check per slot
-    const slotIndex = Math.floor(timeOnPage / 30000);
-    const tipKey = `${context}-${slotIndex}`;
-
-    // If we already showed a tip in this time slot, skip
-    if (this.contextTipsShown.has(tipKey)) return;
-
-    // Only show tips after user has been on page for at least 15 seconds
-    if (timeOnPage < 15000) return;
-
-    // Check if we're at the start of a new 30s slot (within first 15s of the slot)
-    const timeInSlot = timeOnPage % 30000;
-    if (timeInSlot >= 15000) return; // Already checked this slot
-
-    // 30% chance to show tip per check (checks every 15s, but only once per 30s slot)
-    if (Math.random() > 0.3) return;
-
-    // Always fetch dynamic suggestion based on real page content
-    // Pass tipKey so it can be marked as shown only on success
-    this.robot.fetchAndShowSuggestion(tipKey);
-  }
-
-  /**
-   * Trigger help when user seems frustrated
-   */
   triggerFrustrationHelp() {
     if (this.robot.chatModule.isOpen || Math.random() > 0.7) return;
 
@@ -520,7 +302,6 @@ export class RobotIntelligence {
       '🤔 Suchst du etwas Bestimmtes? Ich kann dir helfen!',
       '💡 Brauchst du Hilfe beim Navigieren? Frag mich einfach!',
       '🎯 Kann ich dir bei der Suche helfen?',
-      '👋 Hey! Scheint als würdest du etwas suchen. Wie kann ich helfen?',
     ];
 
     const message =

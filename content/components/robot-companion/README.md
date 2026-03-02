@@ -37,8 +37,7 @@ robot-companion/
 ├── robot-companion.js         # Hauptkomponente
 ├── robot-companion.css        # Styling
 ├── robot-games.js             # Spiele-Logik
-├── ai-agent-service.js        # AI Agent Service (LLaVA + Vectorize)
-├── ai-service.js              # AI API Service (Legacy-Fallback)
+├── ai-agent-service.js        # AI Agent Service (SSE, Tools, Memory, LLaVA)
 └── index.js                   # Exports
 ```
 

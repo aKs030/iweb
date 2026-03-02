@@ -1,10 +1,7 @@
 /**
- * AI Agent Service v3 — Real SSE Streaming, Tool-Calling & Memory
- *
- * Connects to POST /api/ai-agent which streams Server-Sent Events.
- * Falls back to JSON for non-streaming calls (proactive suggestions).
- *
- * @version 3.0.0
+ * AI Agent Service — SSE Streaming, Tool-Calling & Memory
+ * Pure AI-first: Kein Offline-Fallback, kein Circuit Breaker.
+ * @version 5.0.0
  */
 
 import { createLogger } from '../../core/logger.js';
@@ -13,43 +10,18 @@ import { executeTool } from './modules/tool-executor.js';
 const log = createLogger('AIAgentService');
 
 const AGENT_ENDPOINT = '/api/ai-agent';
-const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5 MB
-const CONVERSATION_HISTORY_KEY = 'jules-conversation-history';
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+];
+const HISTORY_KEY = 'jules-conversation-history';
 const USER_ID_KEY = 'jules-user-id';
-const MAX_HISTORY_LENGTH = 20;
+const MAX_HISTORY = 20;
 
-// ─── Circuit Breaker ────────────────────────────────────────────────────────────
-
-const circuit = {
-  failures: 0,
-  openedAt: 0,
-  threshold: 3,
-  cooldown: 120_000,
-};
-
-function isCircuitOpen() {
-  if (!circuit.openedAt) return false;
-  if (Date.now() - circuit.openedAt < circuit.cooldown) return true;
-  // Half-open after cooldown
-  circuit.openedAt = 0;
-  circuit.failures = Math.max(0, circuit.threshold - 1);
-  return false;
-}
-
-function recordSuccess() {
-  circuit.failures = 0;
-  circuit.openedAt = 0;
-}
-
-function recordFailure() {
-  circuit.failures++;
-  if (circuit.failures >= circuit.threshold && !circuit.openedAt) {
-    circuit.openedAt = Date.now();
-    log.warn('Circuit breaker opened — AI calls paused for 2 min');
-  }
-}
-
-// ─── User ID ────────────────────────────────────────────────────────────────────
+// ─── User ID & History ──────────────────────────────────────────────────────────
 
 function getUserId() {
   try {
@@ -64,77 +36,33 @@ function getUserId() {
   }
 }
 
-// ─── Conversation History ───────────────────────────────────────────────────────
-
-function getConversationHistory() {
+function getHistory() {
   try {
-    return JSON.parse(localStorage.getItem(CONVERSATION_HISTORY_KEY) || '[]');
+    return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
   } catch {
     return [];
   }
 }
 
-function saveConversationHistory(history) {
+function saveHistory(history) {
   try {
     localStorage.setItem(
-      CONVERSATION_HISTORY_KEY,
-      JSON.stringify(history.slice(-MAX_HISTORY_LENGTH)),
+      HISTORY_KEY,
+      JSON.stringify(history.slice(-MAX_HISTORY)),
     );
   } catch {
-    /* storage unavailable */
+    /* ignore */
   }
 }
 
 function addToHistory(role, content) {
-  const history = getConversationHistory();
+  const history = getHistory();
   history.push({ role, content, timestamp: Date.now() });
-  saveConversationHistory(history);
-}
-
-// ─── Image Validation ───────────────────────────────────────────────────────────
-
-const ALLOWED_IMAGE_TYPES = [
-  'image/jpeg',
-  'image/png',
-  'image/webp',
-  'image/gif',
-];
-
-function validateImageFile(file) {
-  if (!file || !(file instanceof File)) {
-    return { valid: false, error: 'Keine gültige Datei.' };
-  }
-  if (file.size > MAX_IMAGE_SIZE) {
-    return {
-      valid: false,
-      error: `Bild zu groß (${(file.size / 1024 / 1024).toFixed(1)} MB). Maximum: 5 MB.`,
-    };
-  }
-  if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
-    return {
-      valid: false,
-      error: `Dateityp nicht unterstützt: ${file.type}. Erlaubt: JPEG, PNG, WebP, GIF.`,
-    };
-  }
-  return { valid: true, file };
+  saveHistory(history);
 }
 
 // ─── SSE Stream Parser ──────────────────────────────────────────────────────────
 
-/**
- * Parse an SSE stream from the AI agent endpoint.
- *
- * Callbacks:
- * - onToken(text)       — incremental text delta
- * - onTool(toolEvent)   — tool call status updates
- * - onStatus(phase)     — thinking / streaming / synthesizing
- * - onMessage(msg)      — final complete message payload
- * - onError(err)        — error event
- *
- * @param {Response} response
- * @param {Object} callbacks
- * @returns {Promise<Object>} Final message payload
- */
 async function parseSSEStream(response, callbacks = {}) {
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
@@ -147,10 +75,8 @@ async function parseSSEStream(response, callbacks = {}) {
       if (done) break;
 
       buffer += decoder.decode(value, { stream: true });
-
-      // Process complete SSE events (double newline delimited)
       const events = buffer.split('\n\n');
-      buffer = events.pop() || ''; // Keep incomplete event in buffer
+      buffer = events.pop() || '';
 
       for (const event of events) {
         if (!event.trim()) continue;
@@ -159,11 +85,8 @@ async function parseSSEStream(response, callbacks = {}) {
         let eventData = '';
 
         for (const line of event.split('\n')) {
-          if (line.startsWith('event: ')) {
-            eventType = line.slice(7).trim();
-          } else if (line.startsWith('data: ')) {
-            eventData += line.slice(6);
-          }
+          if (line.startsWith('event: ')) eventType = line.slice(7).trim();
+          else if (line.startsWith('data: ')) eventData += line.slice(6);
         }
 
         if (!eventType || !eventData) continue;
@@ -192,9 +115,6 @@ async function parseSSEStream(response, callbacks = {}) {
           case 'error':
             callbacks.onError?.(data);
             break;
-          case 'done':
-            // Stream finished
-            break;
         }
       }
     }
@@ -205,62 +125,29 @@ async function parseSSEStream(response, callbacks = {}) {
   return finalMessage;
 }
 
-// ─── Core Streaming Call ────────────────────────────────────────────────────────
+// ─── Core API Call ──────────────────────────────────────────────────────────────
 
-/**
- * @typedef {Object} AgentResponse
- * @property {string} text
- * @property {Array<{name: string, arguments: Object}>} toolCalls
- * @property {boolean} hasMemory
- * @property {boolean} hasImage
- * @property {Array<{name: string, success: boolean, message: string}>} toolResults
- */
+const mkResult = (text, extra = {}) => ({
+  text,
+  toolCalls: [],
+  hasMemory: false,
+  hasImage: false,
+  toolResults: [],
+  ...extra,
+});
 
-/**
- * Call the AI Agent API with real SSE streaming.
- *
- * @param {Object} payload - { prompt, image? }
- * @param {Object} [callbacks] - { onToken, onTool, onStatus }
- * @param {Object} [options] - { stream?, maxRetries? }
- * @returns {Promise<AgentResponse>}
- */
-async function callAgentAPI(payload, callbacks = {}, options = {}) {
-  const stream = options.stream !== false;
-
-  const errorResult = (text) => ({
-    text,
-    toolCalls: [],
-    hasMemory: false,
-    hasImage: false,
-    toolResults: [],
-  });
-
-  // Offline / circuit breaker check
-  const offline =
-    typeof navigator !== 'undefined' && navigator.onLine === false;
-  if (offline || isCircuitOpen()) {
-    const fallback =
-      '🤖 Ich bin gerade offline. Bitte versuche es später erneut.';
-    callbacks.onToken?.(fallback);
-    return errorResult(fallback);
-  }
-
+async function callAgent(payload, callbacks = {}, { stream = true } = {}) {
   const userId = getUserId();
-  const conversationHistory = getConversationHistory();
 
-  // ── 1. Fetch ──────────────────────────────────────────────
+  // ── Fetch ──
   let response;
   try {
     if (payload.image) {
-      const formData = new FormData();
-      formData.append('prompt', payload.prompt || '');
-      formData.append('userId', userId);
-      formData.append('image', payload.image);
-
-      response = await fetch(AGENT_ENDPOINT, {
-        method: 'POST',
-        body: formData,
-      });
+      const fd = new FormData();
+      fd.append('prompt', payload.prompt || '');
+      fd.append('userId', userId);
+      fd.append('image', payload.image);
+      response = await fetch(AGENT_ENDPOINT, { method: 'POST', body: fd });
     } else {
       response = await fetch(AGENT_ENDPOINT, {
         method: 'POST',
@@ -268,275 +155,155 @@ async function callAgentAPI(payload, callbacks = {}, options = {}) {
         body: JSON.stringify({
           prompt: payload.prompt,
           userId,
-          conversationHistory,
-          mode: 'agent',
+          conversationHistory: getHistory(),
           stream,
         }),
       });
     }
-  } catch (fetchError) {
-    // TypeError = CORS or network error, AbortError = timeout
-    log.error(
-      `Fetch failed [${fetchError?.name}]:`,
-      fetchError?.message,
-      fetchError?.stack,
-    );
-    recordFailure();
-    const fallback =
-      fetchError?.name === 'TypeError'
-        ? 'Netzwerkfehler — bitte prüfe deine Verbindung und versuche es erneut.'
-        : 'Verbindung zum KI-Dienst fehlgeschlagen. Bitte versuche es erneut.';
-    callbacks.onToken?.(fallback);
-    return errorResult(fallback);
+  } catch (err) {
+    log.error('Fetch failed:', err?.message);
+    const text = 'KI-Dienst nicht erreichbar. Bitte erneut versuchen.';
+    callbacks.onToken?.(text);
+    return mkResult(text);
   }
 
-  // ── 2. Response status ────────────────────────────────────
+  // ── Error response ──
   if (!response.ok) {
-    let errorBody;
+    let body = {};
     try {
-      errorBody = await response.json();
+      body = await response.json();
     } catch {
-      errorBody = {};
+      /* ignore */
     }
 
-    // Rate limited — inform user, don't trip circuit breaker
     if (response.status === 429) {
-      const retryAfter = errorBody.retryAfter || 60;
-      const text = `⏳ Zu viele Anfragen. Bitte warte ${retryAfter} Sekunden.`;
+      const text = `⏳ Zu viele Anfragen. Bitte ${body.retryAfter || 60}s warten.`;
       callbacks.onToken?.(text);
-      return errorResult(text);
+      return mkResult(text);
     }
 
-    if (errorBody.retryable === false) {
-      log.warn('Non-retryable AI error:', response.status);
-      const text =
-        errorBody.text || 'Der KI-Dienst ist momentan nicht verfügbar.';
-      callbacks.onToken?.(text);
-      return errorResult(text);
-    }
-
-    log.error(`API returned ${response.status}:`, errorBody);
-    recordFailure();
-    const fallback =
-      errorBody.text ||
-      `KI-Dienst-Fehler (${response.status}). Bitte versuche es erneut.`;
-    callbacks.onToken?.(fallback);
-    return errorResult(fallback);
+    const text = body.text || `KI-Fehler (${response.status}).`;
+    callbacks.onToken?.(text);
+    return mkResult(text);
   }
-
-  recordSuccess();
 
   const contentType = response.headers.get('content-type') || '';
 
-  // ── 3. SSE Stream ────────────────────────────────────────
+  // ── SSE Stream ──
   if (contentType.includes('text/event-stream')) {
-    try {
-      let fullText = '';
-      const toolResults = [];
+    let fullText = '';
+    const toolResults = [];
 
-      const finalMessage = await parseSSEStream(response, {
-        onToken(delta) {
-          fullText += delta;
+    const finalMessage = await parseSSEStream(response, {
+      onToken(delta) {
+        fullText += delta;
+        try {
+          callbacks.onToken?.(fullText);
+        } catch {
+          /* ignore */
+        }
+      },
+      onTool(ev) {
+        if (ev.status === 'client') {
           try {
-            callbacks.onToken?.(fullText);
-          } catch (cbErr) {
-            log.warn('onToken callback error:', cbErr?.message);
+            const result = executeTool({
+              name: ev.name,
+              arguments: ev.arguments,
+            });
+            toolResults.push({ name: ev.name, ...result });
+          } catch (e) {
+            log.warn(`Tool error: ${ev.name}`, e);
           }
-        },
-        onTool(toolEvent) {
-          // Execute client-side tools immediately
-          if (toolEvent.status === 'client') {
-            try {
-              const result = executeTool({
-                name: toolEvent.name,
-                arguments: toolEvent.arguments,
-              });
-              toolResults.push({ name: toolEvent.name, ...result });
-              log.info(`Tool executed: ${toolEvent.name}`, result);
-            } catch (toolErr) {
-              log.warn(`Tool execution error: ${toolEvent.name}`, toolErr);
-            }
-          }
-          callbacks.onTool?.(toolEvent);
-        },
-        onStatus(phase) {
-          callbacks.onStatus?.(phase);
-        },
-        onError(err) {
-          log.error('SSE error event:', err);
-          callbacks.onError?.(err);
-        },
-        onMessage(msg) {
-          // Execute any remaining client tool calls from final message
-          if (Array.isArray(msg.toolCalls)) {
-            for (const tc of msg.toolCalls) {
-              if (!toolResults.some((r) => r.name === tc.name)) {
-                try {
-                  const result = executeTool(tc);
-                  toolResults.push({ name: tc.name, ...result });
-                  log.info(`Tool executed: ${tc.name}`, result);
-                } catch (toolErr) {
-                  log.warn(`Tool execution error: ${tc.name}`, toolErr);
-                }
+        }
+        callbacks.onTool?.(ev);
+      },
+      onStatus(phase) {
+        callbacks.onStatus?.(phase);
+      },
+      onError(err) {
+        log.error('SSE error:', err);
+        callbacks.onError?.(err);
+      },
+      onMessage(msg) {
+        if (Array.isArray(msg.toolCalls)) {
+          for (const tc of msg.toolCalls) {
+            if (!toolResults.some((r) => r.name === tc.name)) {
+              try {
+                const result = executeTool(tc);
+                toolResults.push({ name: tc.name, ...result });
+              } catch {
+                /* skip */
               }
             }
           }
-        },
-      });
-
-      const text = finalMessage?.text || fullText;
-
-      addToHistory('user', payload.prompt);
-      if (text) addToHistory('assistant', text);
-
-      return {
-        text,
-        toolCalls: finalMessage?.toolCalls || [],
-        hasMemory: finalMessage?.hasMemory || false,
-        hasImage: finalMessage?.hasImage || false,
-        toolResults,
-      };
-    } catch (sseError) {
-      log.error(
-        `SSE parsing failed [${sseError?.name}]:`,
-        sseError?.message,
-        sseError?.stack,
-      );
-      recordFailure();
-      const fallback =
-        'Fehler beim Lesen der KI-Antwort. Bitte versuche es erneut.';
-      callbacks.onToken?.(fallback);
-      return errorResult(fallback);
-    }
-  }
-
-  // ── 4. JSON fallback (non-streaming) ──────────────────────
-  try {
-    const result = await response.json();
-
-    addToHistory('user', payload.prompt);
-    if (result.text) addToHistory('assistant', result.text);
-
-    // Execute client tool calls
-    const toolResults = [];
-    if (Array.isArray(result.toolCalls)) {
-      for (const tc of result.toolCalls) {
-        try {
-          const toolResult = executeTool(tc);
-          toolResults.push({ name: tc.name, ...toolResult });
-          log.info(`Tool executed: ${tc.name}`, toolResult);
-        } catch (toolErr) {
-          log.warn(`Tool execution error: ${tc.name}`, toolErr);
         }
-      }
-    }
+      },
+    });
 
-    callbacks.onToken?.(result.text || '');
+    const text = finalMessage?.text || fullText;
+    addToHistory('user', payload.prompt);
+    if (text) addToHistory('assistant', text);
 
     return {
-      text: result.text || '',
-      toolCalls: result.toolCalls || [],
-      hasMemory: result.hasMemory || false,
-      hasImage: result.hasImage || false,
+      text,
+      toolCalls: finalMessage?.toolCalls || [],
+      hasMemory: finalMessage?.hasMemory || false,
+      hasImage: finalMessage?.hasImage || false,
       toolResults,
     };
-  } catch (jsonError) {
-    log.error(
-      `JSON parsing failed [${jsonError?.name}]:`,
-      jsonError?.message,
-      jsonError?.stack,
-    );
-    recordFailure();
-    const fallback =
-      'Fehler beim Lesen der KI-Antwort. Bitte versuche es erneut.';
-    callbacks.onToken?.(fallback);
-    return errorResult(fallback);
   }
+
+  // ── JSON response ──
+  const result = await response.json();
+  addToHistory('user', payload.prompt);
+  if (result.text) addToHistory('assistant', result.text);
+
+  const toolResults = [];
+  if (Array.isArray(result.toolCalls)) {
+    for (const tc of result.toolCalls) {
+      try {
+        toolResults.push({ name: tc.name, ...executeTool(tc) });
+      } catch {
+        /* skip */
+      }
+    }
+  }
+
+  callbacks.onToken?.(result.text || '');
+  return mkResult(result.text || '', {
+    toolCalls: result.toolCalls || [],
+    hasMemory: result.hasMemory || false,
+    hasImage: result.hasImage || false,
+    toolResults,
+  });
 }
 
-// ─── AI Agent Service Class ─────────────────────────────────────────────────────
+// ─── Public API ─────────────────────────────────────────────────────────────────
 
 export class AIAgentService {
-  /**
-   * Generate a streaming agent response with tool-calling.
-   *
-   * @param {string} prompt - User message
-   * @param {Function} [onToken] - Called with accumulated text on each token
-   * @param {Object} [callbacks] - { onTool, onStatus, onError }
-   * @returns {Promise<AgentResponse>}
-   */
-  async generateResponse(prompt, onToken, callbacks = {}) {
-    return callAgentAPI(
-      { prompt },
-      { onToken, ...callbacks },
-      { stream: true },
-    );
+  /** Streaming agent response with tool-calling */
+  generateResponse(prompt, onToken, callbacks = {}) {
+    return callAgent({ prompt }, { onToken, ...callbacks });
   }
 
-  /**
-   * Analyze an image with optional prompt (streamed).
-   *
-   * @param {File} imageFile
-   * @param {string} [prompt]
-   * @param {Function} [onToken]
-   * @returns {Promise<AgentResponse>}
-   */
-  async analyzeImage(imageFile, prompt = '', onToken) {
-    const validation = validateImageFile(imageFile);
-    if (!validation.valid) {
-      const error = `⚠️ ${validation.error}`;
-      onToken?.(error);
-      return {
-        text: error,
-        toolCalls: [],
-        hasMemory: false,
-        hasImage: false,
-        toolResults: [],
-      };
+  /** Analyze an image with optional prompt (streamed) */
+  analyzeImage(imageFile, prompt = '', onToken) {
+    const v = this.validateImage(imageFile);
+    if (!v.valid) {
+      const err = `⚠️ ${v.error}`;
+      onToken?.(err);
+      return Promise.resolve(mkResult(err));
     }
-
-    return callAgentAPI(
+    return callAgent(
       { prompt: prompt || 'Analysiere dieses Bild.', image: imageFile },
       { onToken },
-      { stream: true },
     );
-  }
-
-  /**
-   * Get proactive suggestion (non-streaming, single request).
-   *
-   * @param {Object} contextData
-   * @returns {Promise<string>}
-   */
-  async getProactiveSuggestion(contextData) {
-    try {
-      let promptText = `Gib einen kurzen, proaktiven Tipp für den Nutzer auf der Seite "${contextData.title || 'Unbekannt'}" (${contextData.url || '/'}). Maximal 2 Sätze.`;
-
-      if (contextData.headline) {
-        promptText += `\nÜberschrift der Seite: "${contextData.headline}"`;
-      }
-      if (contextData.description) {
-        promptText += `\nBeschreibung: "${contextData.description}"`;
-      }
-      if (contextData.contentSnippet) {
-        promptText += `\nAuszug des Seiteninhalts:\n"${contextData.contentSnippet.substring(0, 500)}..."`;
-      }
-
-      const response = await callAgentAPI(
-        { prompt: promptText },
-        {},
-        { stream: false },
-      );
-      return response.text;
-    } catch {
-      return '';
-    }
   }
 
   /** Clear conversation history */
   clearHistory() {
     try {
-      localStorage.removeItem(CONVERSATION_HISTORY_KEY);
+      localStorage.removeItem(HISTORY_KEY);
     } catch {
       /* ignore */
     }
@@ -547,12 +314,20 @@ export class AIAgentService {
     return getUserId();
   }
 
-  /**
-   * Validate image before upload.
-   * @param {File} file
-   * @returns {{ valid: boolean, error?: string }}
-   */
+  /** Validate image before upload */
   validateImage(file) {
-    return validateImageFile(file);
+    if (!file || !(file instanceof File))
+      return { valid: false, error: 'Keine gültige Datei.' };
+    if (file.size > MAX_IMAGE_SIZE)
+      return {
+        valid: false,
+        error: `Bild zu groß (${(file.size / 1024 / 1024).toFixed(1)} MB). Max: 5 MB.`,
+      };
+    if (!ALLOWED_IMAGE_TYPES.includes(file.type))
+      return {
+        valid: false,
+        error: `Typ nicht unterstützt: ${file.type}. Erlaubt: JPEG, PNG, WebP, GIF.`,
+      };
+    return { valid: true, file };
   }
 }

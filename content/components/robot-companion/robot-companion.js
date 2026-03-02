@@ -55,8 +55,6 @@ export class RobotCompanion {
     /** @type {TimerManager} */
     this.timerManager = new TimerManager('RobotCompanion');
 
-    /** @type {import('./ai-service.js').AIService|null} */
-    this.aiService = null;
     /** @type {import('./ai-agent-service.js').AIAgentService|null} */
     this._agentService = null;
     /** @type {RobotGames} */
@@ -217,25 +215,13 @@ export class RobotCompanion {
   }
 
   /**
-   * Lazy load the AI Service (legacy)
-   * @returns {Promise<import('./ai-service.js').AIService>}
-   */
-  async getAIService() {
-    if (!this.aiService) {
-      const { AIService } = await import('./ai-service.js');
-      this.aiService = new AIService();
-    }
-    return this.aiService;
-  }
-
-  /**
-   * Lazy load the AI Agent Service (proactive, with tool-calling & memory)
+   * Lazy load the AI Agent Service (tool-calling, memory, streaming)
    * @returns {Promise<import('./ai-agent-service.js').AIAgentService>}
    */
   async getAgentService() {
     if (!this._agentService) {
       const { AIAgentService } = await import(
-        /* webpackIgnore: true */ './ai-agent-service.js?v=3'
+        /* webpackIgnore: true */ './ai-agent-service.js?v=4'
       );
       this._agentService = new AIAgentService();
     }
@@ -888,11 +874,6 @@ export class RobotCompanion {
       this._hydrationFallbackTimer = null;
     }
 
-    // Collision Modul Cleanup (IntersectionObserver)
-    if (this.collisionModule?.destroy) {
-      this.collisionModule.destroy();
-    }
-
     // Observer Cleanup
     if (this._sectionObserver) {
       this._sectionObserver.disconnect();
@@ -1000,11 +981,11 @@ export class RobotCompanion {
 
     if (hour >= 0 && hour < 6) return 'night-owl';
     if (hour >= 6 && hour < 10) return 'sleepy';
-    if (hour >= 10 && hour < 17) return 'energetic';
+    if (hour >= 10 && hour < 17) {
+      return sessions > 10 || interactions > 50 ? 'enthusiastic' : 'energetic';
+    }
     if (hour >= 17 && hour < 22) return 'relaxed';
-    if (hour >= 22) return 'night-owl';
-    if (sessions > 10 || interactions > 50) return 'enthusiastic';
-    return 'normal';
+    return 'night-owl';
   }
 
   /**
@@ -1401,94 +1382,37 @@ export class RobotCompanion {
     });
   }
 
-  // Delegated methods to chat module
-  /**
-   * Fetch and show AI suggestion
-   * @returns {Promise<boolean | void>}
-   */
-  fetchAndShowSuggestion() {
-    return this.chatModule.fetchAndShowSuggestion();
-  }
-
-  /**
-   * Toggle chat window
-   * @param {boolean} [force] - Force open/close state
-   */
+  // ─── Chat Module Proxy Methods (used by RobotGames, Collision, Animation) ───
   toggleChat(force) {
     return this.chatModule.toggleChat(force);
   }
-
-  /**
-   * Handle avatar click event
-   */
   handleAvatarClick() {
     return this.chatModule.handleAvatarClick();
   }
-
-  /**
-   * Handle user message submission
-   */
   handleUserMessage() {
     return this.chatModule.handleUserMessage();
   }
-
-  /**
-   * Add message to chat
-   * @param {string} text - Message text
-   * @param {'user'|'bot'} type - Message type
-   */
   addMessage(text, type) {
     return this.chatModule.addMessage(text, type);
   }
-
-  /**
-   * Add option buttons to chat
-   * @param {import('/content/core/types.js').ChatOption[]} options - Chat options
-   */
   addOptions(options) {
     return this.chatModule.addOptions(options);
   }
-
-  /**
-   * Handle chat action
-   * @param {string} action - Action identifier
-   */
   handleAction(action) {
     return this.chatModule.handleAction(action);
   }
-
-  /**
-   * Show bubble message
-   * @param {string} text - Bubble text
-   */
   showBubble(text) {
     return this.chatModule.showBubble(text);
   }
-
-  /**
-   * Hide bubble message
-   */
   hideBubble() {
     return this.chatModule.hideBubble();
   }
-
-  /**
-   * Scroll chat to bottom
-   */
   scrollToBottom() {
     return this.chatModule.scrollToBottom();
   }
-
-  /**
-   * Start initial bubble sequence
-   */
   startInitialBubbleSequence() {
     return this.chatModule.startInitialBubbleSequence();
   }
-
-  /**
-   * Clear bubble sequence
-   */
   clearBubbleSequence() {
     return this.chatModule.clearBubbleSequence();
   }

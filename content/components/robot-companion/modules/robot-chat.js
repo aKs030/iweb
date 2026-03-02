@@ -1,6 +1,7 @@
 import { createLogger } from '../../../core/logger.js';
 import { MarkdownRenderer } from './markdown-renderer.js';
 import { ROBOT_ACTIONS } from '../constants/events.js';
+import { executeTool } from './tool-executor.js';
 import { uiStore } from '../../../core/ui-store.js';
 import { withViewTransition } from '../../../core/view-transitions.js';
 
@@ -158,12 +159,6 @@ export class RobotChat {
       return;
     }
 
-    // Check for trivia answer
-    if (text.startsWith('triviaAnswer_')) {
-      this.clearImagePreview();
-      return;
-    }
-
     this.showTyping();
     this.robot.animationModule.startThinking();
     this.robot.trackInteraction();
@@ -249,19 +244,10 @@ export class RobotChat {
         streamingMessageEl.remove();
       }
 
-      // Fallback to legacy AI service
-      try {
-        const aiService = await this.robot.getAIService();
-        const fallbackResponse = await aiService.generateResponse(text);
-        this.addMessage(
-          typeof fallbackResponse === 'string'
-            ? fallbackResponse
-            : 'Fehler bei der Verbindung.',
-          'bot',
-        );
-      } catch {
-        this.addMessage('Fehler bei der Verbindung.', 'bot');
-      }
+      this.addMessage(
+        'Fehler bei der Verbindung. Bitte erneut versuchen.',
+        'bot',
+      );
     }
   }
 
@@ -316,10 +302,7 @@ export class RobotChat {
         ? `[Bild: ${imageFile.name}] ${text}`
         : `[Bild: ${imageFile.name}]`,
     });
-    if (this.history.length > 30) {
-      this.history = this.history.slice(-30);
-    }
-    this.saveHistory();
+    this._trimHistory();
   }
 
   /**
@@ -413,25 +396,42 @@ export class RobotChat {
     const textSpan = messageEl.querySelector('.streaming-text');
     const text = textSpan?.innerText || textSpan?.textContent || '';
 
-    this.history.push({
-      role: 'model',
-      text: text,
-    });
-    if (this.history.length > 30) {
-      this.history = this.history.slice(-30);
-    }
-    this.saveHistory();
+    this.history.push({ role: 'model', text });
+    this._trimHistory();
   }
 
   async handleSummarize() {
     this.toggleChat(true);
     this.showTyping();
-    const content = document.body.innerText;
-    const aiService = await this.robot.getAIService();
-    const summary = await aiService.summarizePage(content);
-    this.removeTyping();
-    this.addMessage('Zusammenfassung dieser Seite:', 'bot');
-    this.addMessage(summary, 'bot');
+    this.robot.animationModule.startThinking();
+
+    try {
+      const agentService = await this.robot.getAgentService();
+      const content = document.body.innerText?.slice(0, 4800) || '';
+      const prompt = `Fasse den folgenden Text kurz und präzise auf DEUTSCH zusammen (max 3 Sätze):\n\n${content}`;
+
+      let streamingEl = null;
+      const response = await agentService.generateResponse(prompt, (chunk) => {
+        if (this.isTyping) this.removeTyping();
+        if (!streamingEl) streamingEl = this.createStreamingMessage();
+        this.updateStreamingMessage(streamingEl, chunk);
+      });
+
+      this.robot.animationModule.stopThinking();
+      if (streamingEl) {
+        this.finalizeStreamingMessage(streamingEl);
+      } else {
+        this.removeTyping();
+        this.addMessage(
+          response?.text || 'Zusammenfassung nicht verfügbar.',
+          'bot',
+        );
+      }
+    } catch {
+      this.robot.animationModule.stopThinking();
+      this.removeTyping();
+      this.addMessage('Zusammenfassung fehlgeschlagen.', 'bot');
+    }
   }
 
   showBubble(text) {
@@ -496,9 +496,11 @@ export class RobotChat {
       role: type === 'user' ? 'user' : 'model',
       text: String(text || ''),
     });
-    if (this.history.length > 30) {
-      this.history = this.history.slice(-30);
-    }
+    this._trimHistory();
+  }
+
+  _trimHistory() {
+    if (this.history.length > 30) this.history = this.history.slice(-30);
     this.saveHistory();
   }
 
@@ -506,7 +508,7 @@ export class RobotChat {
     try {
       localStorage.setItem('robot-chat-history', JSON.stringify(this.history));
     } catch {
-      // ignore
+      /* ignore */
     }
   }
 
@@ -582,8 +584,6 @@ export class RobotChat {
           );
         }, 1000);
       },
-      [ROBOT_ACTIONS.RANDOM_PROJECT]: () =>
-        this.addMessage('Ich suche ein Projekt...', 'bot'),
       [ROBOT_ACTIONS.PLAY_TIC_TAC_TOE]: () =>
         this.robot.gameModule.startTicTacToe(),
       [ROBOT_ACTIONS.PLAY_TRIVIA]: () => this.robot.gameModule.startTrivia(),
@@ -600,22 +600,19 @@ export class RobotChat {
         );
       },
       [ROBOT_ACTIONS.TOGGLE_THEME]: () => {
-        (async () => {
-          try {
-            const { executeTool } = await import('./tool-executor.js');
-            const result = executeTool({
-              name: 'setTheme',
-              arguments: { theme: 'toggle' },
-            });
-            this.addMessage(result.message, 'bot');
-          } catch {
-            this.addMessage('Theme konnte nicht gewechselt werden.', 'bot');
-          }
-          this.robot._setTimeout(
-            () => this.handleAction(ROBOT_ACTIONS.START),
-            2000,
-          );
-        })();
+        try {
+          const result = executeTool({
+            name: 'setTheme',
+            arguments: { theme: 'toggle' },
+          });
+          this.addMessage(result.message, 'bot');
+        } catch {
+          this.addMessage('Theme konnte nicht gewechselt werden.', 'bot');
+        }
+        this.robot._setTimeout(
+          () => this.handleAction(ROBOT_ACTIONS.START),
+          2000,
+        );
       },
       [ROBOT_ACTIONS.SEARCH_WEBSITE]: () => {
         this.addMessage(
@@ -630,6 +627,7 @@ export class RobotChat {
       return;
     }
 
+    // Route unknown actions to knowledgeBase if available
     const data = this.knowledgeBase?.[actionKey];
     if (!data) return;
 
@@ -640,29 +638,90 @@ export class RobotChat {
       650,
     );
 
-    let responseText = Array.isArray(data.text)
-      ? data.text[Math.floor(Math.random() * data.text.length)]
-      : data.text;
-
+    // AI-powered START-Nachricht
     if (actionKey === ROBOT_ACTIONS.START) {
+      const greetings = Array.isArray(data.text) ? data.text : [data.text];
+      let pick = greetings[Math.floor(Math.random() * greetings.length)];
+
       if (Math.random() < 0.3) {
-        responseText = this.robot.getMoodGreeting();
+        pick = this.robot.getMoodGreeting() || pick;
       } else {
         const ctx = this.robot.getPageContext();
         const suffix = String(this.startMessageSuffix?.[ctx] ?? '').trim();
-        if (suffix) {
-          responseText =
-            `${String(responseText || '').trim()} ${suffix}`.trim();
-        }
+        if (suffix) pick = `${String(pick || '').trim()} ${suffix}`.trim();
       }
+
+      this.robot._setTimeout(() => {
+        this.removeTyping();
+        this.addMessage(pick, 'bot');
+        if (data.options) this.addOptions(data.options);
+      }, 800);
+      return;
     }
 
-    const typingTime = Math.min(Math.max(responseText.length * 15, 800), 2000);
-    this.robot._setTimeout(() => {
+    // Statische Menüs (explore, games, extras) — nur Optionen anzeigen
+    if (data.options?.length) {
+      const text = Array.isArray(data.text)
+        ? data.text[Math.floor(Math.random() * data.text.length)]
+        : data.text;
+      this.robot._setTimeout(() => {
+        this.removeTyping();
+        this.addMessage(text || '', 'bot');
+        this.addOptions(data.options);
+      }, 600);
+      return;
+    }
+
+    // Alle anderen Inhalte (joke, fact etc.) → über AI streamen
+    this.removeTyping();
+    this._routeToAI(actionKey);
+  }
+
+  /** Route action to AI for dynamic response */
+  async _routeToAI(actionKey) {
+    const prompts = {
+      joke: 'Erzähle einen kurzen, lustigen Programmierer-Witz auf Deutsch. Max 2 Sätze.',
+      fact: 'Nenne einen faszinierenden Weltraum-Fakt auf Deutsch. Max 2 Sätze.',
+    };
+    const prompt =
+      prompts[actionKey] ||
+      `Antworte kurz zum Thema "${actionKey}" auf Deutsch.`;
+
+    this.showTyping();
+    this.robot.animationModule.startThinking();
+
+    try {
+      const agentService = await this.robot.getAgentService();
+      let streamingEl = null;
+
+      await agentService.generateResponse(prompt, (chunk) => {
+        if (this.isTyping) this.removeTyping();
+        if (!streamingEl) streamingEl = this.createStreamingMessage();
+        this.updateStreamingMessage(streamingEl, chunk);
+      });
+
+      this.robot.animationModule.stopThinking();
+      if (streamingEl) {
+        this.finalizeStreamingMessage(streamingEl);
+      } else {
+        this.removeTyping();
+      }
+    } catch {
+      this.robot.animationModule.stopThinking();
       this.removeTyping();
-      this.addMessage(responseText, 'bot');
-      if (data.options) this.addOptions(data.options);
-    }, typingTime);
+      this.addMessage('Da ist etwas schiefgelaufen.', 'bot');
+    }
+
+    // Zurück zum Start nach Witz/Fakt
+    this.robot._setTimeout(() => {
+      const startData = this.knowledgeBase?.start;
+      if (startData?.options) {
+        this.addOptions([
+          { label: 'Noch einmal!', action: actionKey },
+          { label: '↩️ Zurück', action: 'start' },
+        ]);
+      }
+    }, 500);
   }
 
   scrollToBottom() {
@@ -775,47 +834,5 @@ export class RobotChat {
       this._bubbleSequenceTimers.push(t1);
     };
     schedule(0);
-  }
-
-  async fetchAndShowSuggestion(tipKey = null) {
-    if (this.isOpen) return;
-
-    const ctx = this.robot.getPageContext();
-
-    const pageTitle = document.title;
-    const metaDesc =
-      document.querySelector('meta[name="description"]')?.content || '';
-    const h1 = document.querySelector('h1')?.textContent || '';
-
-    const contentSnippet = (document.body.textContent || '')
-      .substring(0, 3000)
-      .replace(/\r\n/g, '\n')
-      .replace(/[ \t]+/g, ' ')
-      .replace(/\n{3,}/g, '\n\n')
-      .trim();
-
-    const contextData = {
-      pageId: ctx,
-      title: pageTitle,
-      description: metaDesc.substring(0, 150),
-      headline: h1,
-      url: window.location.pathname,
-      contentSnippet: contentSnippet,
-    };
-
-    try {
-      const agentService = await this.robot.getAgentService();
-      const suggestion = await agentService.getProactiveSuggestion(contextData);
-      if (suggestion && !this.isOpen) {
-        this.showBubble(suggestion);
-        if (tipKey) {
-          this.robot.intelligenceModule.contextTipsShown.add(tipKey);
-        }
-        this.robot._setTimeout(() => this.hideBubble(), 12000);
-        return true;
-      }
-    } catch (e) {
-      log.warn('fetchAndShowSuggestion failed', e);
-    }
   }
 }

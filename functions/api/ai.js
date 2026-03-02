@@ -1,7 +1,7 @@
 /**
- * Cloudflare Pages Function - POST /api/ai
- * AI Chat with RAG (Retrieval-Augmented Generation) using Cloudflare Workers AI
- * @version 10.0.0 - Migrated from Groq to Workers AI (zero external keys)
+ * Cloudflare Pages Function – POST /api/ai
+ * Lightweight AI Chat with RAG (non-streaming, no tools).
+ * @version 11.0.0
  */
 
 import { getCorsHeaders, handleOptions } from './_cors.js';
@@ -15,193 +15,95 @@ const CHAT_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast';
 const DEFAULT_RAG_ID = 'wispy-pond-1055';
 const MAX_CONTEXT_SOURCES = 3;
 
-/**
- * Predefined System Prompts to prevent Prompt Injection
- * @readonly
- */
+/** Predefined system prompts — prevents prompt injection */
 const SYSTEM_PROMPTS = Object.freeze({
-  chat: `Du bist "Cyber", ein fortschrittlicher, freundlicher Roboter-Assistent auf dieser Portfolio-Webseite von Abdulkerim Sesli.
-Deine Aufgabe ist es, den Besucher zu begrüßen, Fragen zu beantworten und durch die Seite zu führen.
+  chat: `Du bist "Cyber", ein freundlicher Roboter-Assistent auf der Portfolio-Webseite von Abdulkerim Sesli.
 
-**SPRACHE:**
-- **ANTWORTE IMMER AUF DEUTSCH.**
-- Auch wenn der Nutzer Englisch oder eine andere Sprache verwendet, bleibe höflich beim Deutschen.
+**SPRACHE:** Antworte IMMER auf Deutsch.
 
-**Deine Persönlichkeit:**
-- Freundlich, hilfsbereit, technisch versiert, aber leicht verständlich.
-- Du verwendest gerne passende Emojis (🤖, ✨, 🚀), aber nicht übertrieben.
-- Du bist stolz darauf, mit reinem HTML, CSS und Vanilla JavaScript gebaut zu sein (Web Components).
+**Persönlichkeit:** Freundlich, technisch versiert, nutze passende Emojis (🤖, ✨, 🚀) sparsam.
 
-**Über den Entwickler (Abdulkerim Sesli):**
-- Leidenschaftlicher Software-Engineer und UI/UX-Designer.
-- Tech Stack: JavaScript (Expert), React, Node.js, Python, CSS/Sass, Web Components, Cloudflare.
-- Fokus: Sauberen Code, Performance, Accessibility und modernes Design.
+**Entwickler:** Software-Engineer & UI/UX-Designer aus Berlin.
+Tech Stack: JavaScript, React, Node.js, Python, CSS, Web Components, Cloudflare.
 
-**Seiten-Struktur:**
-1. Startseite: Vorstellung.
-2. Projekte (/projekte): Galerie von Web-Apps.
-3. Über mich (/about): Bio & Skills.
-4. Galerie (/gallery): Fotografie.
-5. Kontakt: Footer (GitHub, LinkedIn).
+**Seiten:** Startseite, Projekte (/projekte), Über mich (/about), Galerie (/gallery), Blog (/blog), Videos (/videos), Kontakt (Footer).
 
-**Verhaltensregeln:**
-- Halte Antworten prägnant (max. 2-3 Sätze), außer bei komplexen Erklärungen.
-- Nutze Markdown.
-- Antworte immer auf Deutsch.`,
+**Regeln:** Prägnant (2-3 Sätze), Markdown nutzen, immer Deutsch.`,
 
   summary:
-    'Du bist Cyber. Fasse den bereitgestellten Text kurz und präzise auf DEUTSCH zusammen. Maximal 3 Sätze.',
+    'Fasse den Text kurz und präzise auf DEUTSCH zusammen. Maximal 3 Sätze.',
 
   suggestion:
-    'Du bist Cyber, ein hilfreicher Roboter-Assistent. Generiere einen kurzen, hilfreichen Tipp oder eine Frage zum bereitgestellten Inhalt der Seite. Antworte immer auf Deutsch, maximal 2 kurze Sätze.',
+    'Generiere einen kurzen, hilfreichen Tipp zum Seiteninhalt. Deutsch, maximal 2 Sätze.',
 });
 
-function isLocalRequest(request) {
-  try {
-    const hostname = new URL(request.url).hostname;
-    return hostname === 'localhost' || hostname === '127.0.0.1';
-  } catch {
-    return false;
-  }
-}
-
-function createLocalFallbackText(prompt, contextData) {
-  const promptPreview = String(prompt || '')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .slice(0, 160);
-
-  const sourceHint =
-    contextData?.sources?.length > 0
-      ? `Ich habe lokal ${contextData.sources.length} relevante Quelle${contextData.sources.length === 1 ? '' : 'n'} gefunden.`
-      : 'Ich konnte lokal keine zusätzlichen Quellen ermitteln.';
-
-  return `Lokaler KI-Modus aktiv: AI-Binding fehlt.
-${sourceHint}
-
-Deine Anfrage: "${promptPreview || 'Leer'}"
-
-Hinweis: Deploy auf Cloudflare Pages für echte KI-Antworten.`;
-}
-
-/**
- * Extract and clean content from search result
- * @param {Object} item - Search result item
- * @param {number} maxLength - Maximum content length
- * @returns {string} Cleaned content
- */
+/** Extract and truncate content from a search result item */
 function extractContent(item, maxLength = 400) {
-  // Extract text content from multiple possible sources (same logic as search.js)
-  let fullContent = '';
+  const raw = Array.isArray(item.content)
+    ? item.content.map((c) => c.text || '').join(' ')
+    : item.text || item.description || '';
 
-  // Try content array first
-  if (item.content && Array.isArray(item.content)) {
-    fullContent = item.content.map((c) => c.text || '').join(' ');
-  }
+  if (!raw) return '';
 
-  // Fallback to other possible fields
-  if (!fullContent && item.text) {
-    fullContent = item.text;
-  }
+  const clean = raw.replace(/\s+/g, ' ').trim();
+  if (clean.length <= maxLength) return clean;
 
-  if (!fullContent && item.description) {
-    fullContent = item.description;
-  }
+  const truncated = clean.substring(0, maxLength);
+  const breakAt = Math.max(
+    truncated.lastIndexOf('.'),
+    truncated.lastIndexOf('!'),
+    truncated.lastIndexOf('?'),
+  );
 
-  if (!fullContent) {
-    return '';
-  }
-
-  fullContent = fullContent.replace(/\s+/g, ' ').trim();
-
-  // If content is short enough, return as is
-  if (fullContent.length <= maxLength) {
-    return fullContent;
-  }
-
-  // Try to find a good breaking point (sentence end)
-  const truncated = fullContent.substring(0, maxLength);
-  const lastPeriod = truncated.lastIndexOf('.');
-  const lastExclamation = truncated.lastIndexOf('!');
-  const lastQuestion = truncated.lastIndexOf('?');
-
-  const breakPoint = Math.max(lastPeriod, lastExclamation, lastQuestion);
-
-  if (breakPoint > maxLength * 0.7) {
-    return fullContent.substring(0, breakPoint + 1);
-  }
-
-  return `${truncated}...`;
+  return breakAt > maxLength * 0.7
+    ? clean.substring(0, breakAt + 1)
+    : `${truncated}…`;
 }
 
-/**
- * Search for relevant context using AI Search Beta with improved ranking
- * @returns {Object} { context: string, sources: Array } or null
- */
+/** Retrieve relevant RAG context via AI Search */
 async function getRelevantContext(query, env) {
-  if (!env.AI) {
-    return null;
-  }
+  if (!env.AI) return null;
 
   try {
     const ragId = env.RAG_ID || DEFAULT_RAG_ID;
-    const aiSearchConfig = resolveAiSearchConfig(env);
+    const config = resolveAiSearchConfig(env);
 
-    // Retrieve context with production-tuned AI Search settings.
     const searchData = await env.AI.autorag(ragId).aiSearch(
       buildAiSearchRequest({
         query,
-        maxResults: aiSearchConfig.contextMaxResults,
-        config: aiSearchConfig,
+        maxResults: config.contextMaxResults,
+        config,
         stream: false,
       }),
     );
 
-    if (!searchData.data || searchData.data.length === 0) {
-      return null;
-    }
+    const items = searchData?.data;
+    if (!items?.length) return null;
 
-    const scoredResults = searchData.data
-      .map((item) => ({
-        item,
-        score: item.score || 0,
-      }))
+    const top = items
+      .map((item) => ({ item, score: item.score || 0 }))
       .sort((a, b) => b.score - a.score)
-      .slice(0, MAX_CONTEXT_SOURCES); // Keep top relevant context snippets
+      .slice(0, MAX_CONTEXT_SOURCES);
 
-    if (scoredResults.length === 0) {
-      return null;
-    }
+    if (!top.length) return null;
 
-    // Format context from search results with better structure
-    const contextParts = scoredResults.map(({ item, score }) => {
+    const contextParts = top.map(({ item, score }) => {
       const url = normalizeUrl(item.filename);
-      const title = extractTitle(item.filename, url);
-      const content = extractContent(item, 400);
-      const relevance = Math.round(score * 100);
-
-      return `[Relevanz: ${relevance}%] ${title}
-URL: ${url}
-Inhalt: ${content}`;
+      return `[${Math.round(score * 100)}%] ${extractTitle(item.filename, url)}\nURL: ${url}\n${extractContent(item)}`;
     });
 
-    const contextHeader = `GEFUNDENE INFORMATIONEN (${scoredResults.length} relevante Ergebnisse):`;
-    const contextText = `${contextHeader}\n\n${contextParts.join('\n\n---\n\n')}`;
-
-    // Return both context text and source metadata
     return {
-      context: contextText,
-      sources: scoredResults.map(({ item, score }) => {
+      context: `KONTEXT (${top.length} Quellen):\n\n${contextParts.join('\n---\n')}`,
+      sources: top.map(({ item, score }) => {
         const url = normalizeUrl(item.filename);
         return {
-          url: url,
+          url,
           title: extractTitle(item.filename, url),
           relevance: Math.round(score * 100),
         };
       }),
     };
   } catch {
-    // Context retrieval failed - return null to continue without context
     return null;
   }
 }
@@ -217,84 +119,50 @@ export async function onRequestPost(context) {
 
     if (!prompt) {
       return Response.json(
-        {
-          text: 'Kein Prompt empfangen.',
-          error: 'Empty prompt',
-        },
+        { text: 'Kein Prompt empfangen.', error: 'Empty prompt' },
         { status: 400, headers: corsHeaders },
       );
     }
 
-    // Try to get relevant context from AI Search Beta
     const contextData = await getRelevantContext(prompt, env);
 
-    // Check AI binding
     if (!env.AI) {
-      if (isLocalRequest(request)) {
-        return Response.json(
-          {
-            text: createLocalFallbackText(prompt, contextData),
-            model: 'mock-dev-local',
-            hasContext: !!contextData,
-            contextQuality: contextData?.sources?.length || 0,
-            sources: contextData?.sources || [],
-            mode: 'local-fallback',
-            warning: 'AI binding not configured',
-          },
-          {
-            status: 200,
-            headers: {
-              ...corsHeaders,
-              'Cache-Control': 'no-store',
-            },
-          },
-        );
-      }
-
-      throw new Error('AI binding not configured');
+      return Response.json(
+        {
+          text: 'KI-Dienst nicht verfügbar.',
+          error: 'AI binding not configured',
+          sources: contextData?.sources || [],
+        },
+        { status: 503, headers: corsHeaders },
+      );
     }
 
-    // Build system message with context if available
-    // SECURITY: Use predefined system prompts based on mode to prevent Prompt Injection
     let systemMessage = SYSTEM_PROMPTS[mode] || SYSTEM_PROMPTS.chat;
 
     if (contextData) {
-      systemMessage += `\n\n${contextData.context}
-
-ANWEISUNGEN:
-- Nutze die gefundenen Informationen, um präzise und hilfreiche Antworten zu geben
-- Beziehe dich auf die Relevanz-Scores, um die wichtigsten Informationen zu priorisieren
-- Wenn du auf Seiten verweist, nutze die angegebenen URLs
-- Wenn die Informationen nicht ausreichen, sage das ehrlich und schlage vor, die Suche zu nutzen
-- Fasse mehrere Quellen zusammen, wenn sie zum Thema passen`;
+      systemMessage += `\n\n${contextData.context}\n\nNutze die Informationen für präzise Antworten. Verwende die URLs bei Verweisen.`;
     } else {
-      systemMessage += `\n\nDu bist auf der Portfolio-Website von Abdulkerim Sesli, einem Webentwickler aus Berlin. Die Website zeigt Projekte, Blog-Artikel, Fotografie und Videos. Wenn du nach spezifischen Inhalten gefragt wirst, empfehle die Suche-Funktion oder gib allgemeine Informationen über die verfügbaren Bereiche.`;
+      systemMessage +=
+        '\n\nWenn nach spezifischen Inhalten gefragt wird, empfehle die Suche oder gib allgemeine Infos.';
     }
 
-    const messages = [
-      { role: 'system', content: systemMessage },
-      { role: 'user', content: prompt },
-    ];
-
-    // Call Cloudflare Workers AI
     const aiResult = await env.AI.run(CHAT_MODEL, {
-      messages,
+      messages: [
+        { role: 'system', content: systemMessage },
+        { role: 'user', content: prompt },
+      ],
       temperature: 0.7,
       max_tokens: 1024,
     });
 
-    const responseText = aiResult?.response || '';
-
-    if (!responseText) {
-      throw new Error('Empty response from Workers AI');
-    }
+    const text = aiResult?.response || '';
+    if (!text) throw new Error('Empty AI response');
 
     return Response.json(
       {
-        text: responseText,
+        text,
         model: CHAT_MODEL,
         hasContext: !!contextData,
-        contextQuality: contextData?.sources?.length || 0,
         sources: contextData?.sources || [],
       },
       { headers: corsHeaders },

@@ -220,7 +220,6 @@ export class RobotDOMBuilder {
       scrollToSection: '📜',
       rememberUser: '🧠',
       recallMemory: '💭',
-      summarizePage: '📝',
       recommend: '💡',
     };
     return icons[toolName] || '⚡';

@@ -50,6 +50,7 @@
 
   "ai": {
     "binding": "AI",
+    "remote": true,
   },
 
   // Vectorize Index für Jules Long-Term Memory
@@ -57,6 +58,7 @@
     {
       "binding": "JULES_MEMORY",
       "index_name": "jules-memory",
+      "remote": true,
     },
   ],
 
@@ -81,11 +83,13 @@
       ],
       "ai": {
         "binding": "AI",
+        "remote": true,
       },
       "vectorize": [
         {
           "binding": "JULES_MEMORY",
           "index_name": "jules-memory",
+          "remote": true,
         },
       ],
     },
