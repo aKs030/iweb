@@ -33,13 +33,9 @@ function sanitizePrompt(raw) {
   if (!trimmed) return '';
   // Cloudflare Workers AI with Llama 3.3 can complain if the input is too short
   if (trimmed.length < 5) {
-    return (
-      trimmed +
-      ' (Dies ist eine kurze Begrüßung oder Bestätigung. Bitte antworte freundlich und kurz auf Deutsch darauf ohne nach mehr Details zu fragen.)'.slice(
-        0,
-        MAX_PROMPT_LENGTH,
-      )
-    );
+    const suffix =
+      ' (Dies ist eine kurze Begrüßung oder Bestätigung. Bitte antworte freundlich und kurz auf Deutsch darauf ohne nach mehr Details zu fragen.)';
+    return (trimmed + suffix).slice(0, MAX_PROMPT_LENGTH);
   }
   return trimmed.slice(0, MAX_PROMPT_LENGTH);
 }
