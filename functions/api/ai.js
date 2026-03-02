@@ -14,6 +14,23 @@ import {
 const CHAT_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast';
 const DEFAULT_RAG_ID = 'wispy-pond-1055';
 const MAX_CONTEXT_SOURCES = 3;
+const MAX_PROMPT_LENGTH = 8000;
+
+function sanitizePrompt(raw) {
+  if (typeof raw !== 'string') return '';
+  const trimmed = raw.trim();
+  if (!trimmed) return '';
+  if (trimmed.length < 5) {
+    return (
+      trimmed +
+      ' (Dies ist eine kurze Begrüßung oder Bestätigung. Bitte antworte freundlich und kurz auf Deutsch darauf ohne nach mehr Details zu fragen.)'.slice(
+        0,
+        MAX_PROMPT_LENGTH,
+      )
+    );
+  }
+  return trimmed.slice(0, MAX_PROMPT_LENGTH);
+}
 
 /**
  * Predefined System Prompts to prevent Prompt Injection
@@ -212,7 +229,7 @@ export async function onRequestPost(context) {
 
   try {
     const body = await request.json().catch(() => ({}));
-    const prompt = body.prompt || body.message || '';
+    const prompt = sanitizePrompt(body.prompt || body.message || '');
     const mode = body.mode || 'chat';
 
     if (!prompt) {

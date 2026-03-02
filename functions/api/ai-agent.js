@@ -24,6 +24,41 @@ const MAX_MEMORY_RESULTS = 5;
 const MEMORY_SCORE_THRESHOLD = 0.65;
 const MAX_HISTORY_TURNS = 10;
 const MAX_TOKENS = 2048;
+const MAX_PROMPT_LENGTH = 8000;
+
+function sanitizePrompt(raw) {
+  if (typeof raw !== 'string') return '';
+  // Fallback string if prompt is just whitespace or extremely short (like "hi" or "hallo")
+  const trimmed = raw.trim();
+  if (!trimmed) return '';
+  // Cloudflare Workers AI with Llama 3.3 can complain if the input is too short
+  if (trimmed.length < 5) {
+    return (
+      trimmed +
+      ' (Dies ist eine kurze Begrüßung oder Bestätigung. Bitte antworte freundlich und kurz auf Deutsch darauf ohne nach mehr Details zu fragen.)'.slice(
+        0,
+        MAX_PROMPT_LENGTH,
+      )
+    );
+  }
+  return trimmed.slice(0, MAX_PROMPT_LENGTH);
+}
+
+function sanitizeHistory(raw) {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .slice(-MAX_HISTORY_TURNS)
+    .filter(
+      (msg) =>
+        msg &&
+        (msg.role === 'user' || msg.role === 'assistant') &&
+        typeof msg.content === 'string',
+    )
+    .map((msg) => ({
+      role: msg.role,
+      content: String(msg.content).slice(0, 2000),
+    }));
+}
 
 // ─── Tool Definitions ───────────────────────────────────────────────────────────
 
@@ -436,12 +471,14 @@ export async function onRequestPost(context) {
       body = await request.json().catch(() => ({}));
     }
 
-    const {
+    let {
       prompt = '',
       userId = 'anonymous',
       conversationHistory = [],
       stream = true,
     } = body;
+    prompt = sanitizePrompt(prompt);
+    conversationHistory = sanitizeHistory(conversationHistory);
     imageAnalysis = body.imageAnalysis || imageAnalysis;
 
     if (!prompt && !imageAnalysis) {
