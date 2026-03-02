@@ -108,41 +108,41 @@
 # ============================================================================
 # Pages scripts (blog/gallery/videos/projekte/about)
 /pages/*.js
-  Cache-Control: public, max-age=0, s-maxage=3600, stale-while-revalidate=86400
+  Cache-Control: public, max-age=0, s-maxage=60
   Vary: Accept-Encoding
   X-Content-Type-Options: nosniff
 
 /pages/*/*.js
-  Cache-Control: public, max-age=0, s-maxage=3600, stale-while-revalidate=86400
+  Cache-Control: public, max-age=0, s-maxage=60
   Vary: Accept-Encoding
   X-Content-Type-Options: nosniff
 
 /pages/*/*/*.js
-  Cache-Control: public, max-age=0, s-maxage=3600, stale-while-revalidate=86400
+  Cache-Control: public, max-age=0, s-maxage=60
   Vary: Accept-Encoding
   X-Content-Type-Options: nosniff
 
-# Main application script (not fingerprinted) - fresh browser, 1 hour edge cache
+# Main application script (not fingerprinted) - fresh browser, 60s edge cache
 /content/main.js
-  Cache-Control: public, max-age=0, s-maxage=3600, stale-while-revalidate=86400
+  Cache-Control: public, max-age=0, s-maxage=60
   Vary: Accept-Encoding
   X-Content-Type-Options: nosniff
 
-# Component scripts (JS only) - short browser TTL, edge caching
+# Component scripts (JS only) - fresh browser, 60s edge cache
 /content/components/*.js
-  Cache-Control: public, max-age=0, s-maxage=3600, stale-while-revalidate=86400
+  Cache-Control: public, max-age=0, s-maxage=60
   Vary: Accept-Encoding
   X-Content-Type-Options: nosniff
   Link: <https://cdn.jsdelivr.net>; rel=preconnect; crossorigin
 
 /content/components/*/*.js
-  Cache-Control: public, max-age=0, s-maxage=3600, stale-while-revalidate=86400
+  Cache-Control: public, max-age=0, s-maxage=60
   Vary: Accept-Encoding
   X-Content-Type-Options: nosniff
   Link: <https://cdn.jsdelivr.net>; rel=preconnect; crossorigin
 
 /content/components/*/*/*.js
-  Cache-Control: public, max-age=0, s-maxage=3600, stale-while-revalidate=86400
+  Cache-Control: public, max-age=0, s-maxage=60
   Vary: Accept-Encoding
   X-Content-Type-Options: nosniff
   Link: <https://cdn.jsdelivr.net>; rel=preconnect; crossorigin
@@ -151,27 +151,27 @@
 # CSS Stylesheets - Modern Optimization
 # ============================================================================
 /pages/*.css
-  Cache-Control: public, max-age=0, s-maxage=3600, stale-while-revalidate=86400
+  Cache-Control: public, max-age=0, s-maxage=60
   Vary: Accept-Encoding
   X-Content-Type-Options: nosniff
 
 /pages/*/*.css
-  Cache-Control: public, max-age=0, s-maxage=3600, stale-while-revalidate=86400
+  Cache-Control: public, max-age=0, s-maxage=60
   Vary: Accept-Encoding
   X-Content-Type-Options: nosniff
 
 /pages/*/*/*.css
-  Cache-Control: public, max-age=0, s-maxage=3600, stale-while-revalidate=86400
+  Cache-Control: public, max-age=0, s-maxage=60
   Vary: Accept-Encoding
   X-Content-Type-Options: nosniff
 
 /content/styles/*
-  Cache-Control: public, max-age=0, s-maxage=3600, stale-while-revalidate=86400
+  Cache-Control: public, max-age=0, s-maxage=60
   Vary: Accept-Encoding
   X-Content-Type-Options: nosniff
 
 /content/components/*/*.css
-  Cache-Control: public, max-age=0, s-maxage=3600, stale-while-revalidate=86400
+  Cache-Control: public, max-age=0, s-maxage=60
   Vary: Accept-Encoding
   X-Content-Type-Options: nosniff
 
