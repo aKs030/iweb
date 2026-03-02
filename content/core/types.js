@@ -156,7 +156,6 @@
  * @property {HTMLElement} [bubbleText] - Bubble text element
  * @property {HTMLElement} [bubbleClose] - Bubble close button
  * @property {HTMLElement} [messages] - Messages container
- * @property {HTMLElement} [controls] - Controls container
  * @property {HTMLElement} [inputArea] - Input area container
  * @property {HTMLInputElement} [input] - Input element
  * @property {HTMLButtonElement} [sendBtn] - Send button
@@ -204,23 +203,6 @@
 
 /**
  * @typedef {'night-owl'|'sleepy'|'energetic'|'relaxed'|'enthusiastic'|'normal'} RobotMood
- */
-
-/**
- * @typedef {Object} ChatOption
- * @property {string} text - Option text
- * @property {string} action - Action identifier
- */
-
-/**
- * @typedef {Object} KnowledgeBaseNode
- * @property {string} text - Response text
- * @property {ChatOption[]} [options] - Available options
- * @property {string} [action] - Action to perform
- */
-
-/**
- * @typedef {Object.<string, KnowledgeBaseNode>} KnowledgeBase
  */
 
 /**
@@ -326,7 +308,6 @@
 
 /**
  * @typedef {Object} GlobalThisExtended
- * @property {any} [robotCompanionTexts] - Robot companion texts
  * @property {any} [__ENV__] - Environment variables
  * @deprecated Use threeEarthState module instead of global variables
  */

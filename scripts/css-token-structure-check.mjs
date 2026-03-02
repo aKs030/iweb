@@ -18,10 +18,9 @@ const RUNTIME_FILE = path.join(ROOT_DIR, 'content/styles/root.css');
 
 /**
  * @param {string} css
- * @param {string} fileLabel
  * @returns {Set<string>}
  */
-const extractPrimaryRootVariables = (css, fileLabel) => {
+const extractPrimaryRootVariables = (css) => {
   // Strip @media blocks to only match truly top-level :root declarations.
   // Responsive overrides (e.g. --menu-height inside @media) are intentional
   // and must not be flagged as duplicates.
@@ -56,9 +55,9 @@ const [tokensCss, bridgeCss, runtimeCss] = await Promise.all([
   readFile(RUNTIME_FILE, 'utf8'),
 ]);
 
-const tokensRootVars = extractPrimaryRootVariables(tokensCss, 'tokens.css');
-const bridgeRootVars = extractPrimaryRootVariables(bridgeCss, 'variables.css');
-const runtimeRootVars = extractPrimaryRootVariables(runtimeCss, 'root.css');
+const tokensRootVars = extractPrimaryRootVariables(tokensCss);
+const bridgeRootVars = extractPrimaryRootVariables(bridgeCss);
+const runtimeRootVars = extractPrimaryRootVariables(runtimeCss);
 
 const bridgeOverlapsTokens = intersection(bridgeRootVars, tokensRootVars);
 const runtimeOverlapsTokens = intersection(runtimeRootVars, tokensRootVars);

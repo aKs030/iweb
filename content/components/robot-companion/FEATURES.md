@@ -237,6 +237,6 @@ Weitere mögliche Erweiterungen:
 
 - Augenbrauen für noch mehr Ausdruckskraft
 - Sound-Effekte (optional)
-- Mehr Mini-Games
+- Mehr Agent-Tools
 - Achievement-System erweitern
 - Saisonale Anpassungen

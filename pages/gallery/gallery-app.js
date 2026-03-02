@@ -31,10 +31,13 @@ const GalleryApp = () => {
     // Prevent double initialization
     if (initRef.current) return;
     initRef.current = true;
+    const controller = new AbortController();
+    let isCancelled = false;
 
     const initGallery = async () => {
       try {
         log.info('Initializing 3D Gallery...');
+        if (isCancelled) return;
 
         AppLoadManager.updateLoader(
           0.2,
@@ -44,7 +47,9 @@ const GalleryApp = () => {
         // Fetch dynamic items from R2 API
         let dynamicItems = [];
         try {
-          const res = await fetch('/api/gallery-items');
+          const res = await fetch('/api/gallery-items', {
+            signal: controller.signal,
+          });
           if (res.ok) {
             const data = await res.json();
             if (data.items && Array.isArray(data.items)) {
@@ -55,11 +60,13 @@ const GalleryApp = () => {
             }
           }
         } catch (apiErr) {
+          if (controller.signal.aborted || isCancelled) return;
           log.warn(
             'Failed to load dynamic gallery items, falling back to static config',
             apiErr,
           );
         }
+        if (isCancelled) return;
 
         // Use dynamic items if available, otherwise fallback to static config
         const finalItems =
@@ -70,14 +77,13 @@ const GalleryApp = () => {
           0.5,
           i18n.t('gallery.loading.prepare') || 'Preparing Scene...',
         );
-        await new Promise((r) => setTimeout(r, 300));
+        if (isCancelled) return;
 
         AppLoadManager.updateLoader(
-          0.8,
+          0.9,
           i18n.t('gallery.loading.assets') || 'Loading Assets...',
         );
-        // Preload first few textures if needed, or let Three.js handle it
-        await new Promise((r) => setTimeout(r, 200));
+        if (isCancelled) return;
 
         AppLoadManager.updateLoader(
           1,
@@ -85,8 +91,10 @@ const GalleryApp = () => {
         );
         AppLoadManager.hideLoader(100);
 
+        if (isCancelled) return;
         setIsReady(true);
       } catch (err) {
+        if (controller.signal.aborted || isCancelled) return;
         log.error('Gallery init failed', err);
         // Fallback to static items even on critical failure if possible
         setItems(STATIC_GALLERY_ITEMS);
@@ -97,6 +105,11 @@ const GalleryApp = () => {
     };
 
     initGallery();
+
+    return () => {
+      isCancelled = true;
+      controller.abort();
+    };
   }, []); // Run once on mount
 
   // Separate effect for Schema updates when items change

@@ -182,7 +182,7 @@ const App = () => {
       '@context': 'https://schema.org',
       '@graph': [listNode, ...projectNodes],
     });
-  }, [projects.length]);
+  }, [projects]);
 
   useEffect(() => {
     if (loading || projects.length === 0) return;

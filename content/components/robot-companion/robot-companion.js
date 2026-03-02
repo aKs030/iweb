@@ -4,18 +4,16 @@
  */
 // @ts-check
 
-import { RobotGames } from './robot-games.js';
 import { RobotCollision } from './modules/robot-collision.js';
 import { RobotAnimation } from './modules/robot-animation.js';
 import { RobotChat } from './modules/robot-chat.js';
 import { RobotIntelligence } from './modules/robot-intelligence.js';
 import { RobotEmotions } from './modules/robot-emotions.js';
 import { RobotContextReactions } from './modules/robot-context-reactions.js';
-import { robotCompanionTexts } from './robot-companion-texts.js';
 import { createLogger } from '../../core/logger.js';
 import { createObserver, TimerManager } from '../../core/utils.js';
 import { uiStore } from '../../core/ui-store.js';
-import { ROBOT_EVENTS } from './constants/events.js';
+import { ROBOT_ACTIONS, ROBOT_EVENTS } from './constants/events.js';
 import { RobotStateManager } from './state/RobotStateManager.js';
 import { RobotDOMBuilder } from './dom/RobotDOMBuilder.js';
 
@@ -38,12 +36,8 @@ const log = createLogger('RobotCompanion');
  */
 export class RobotCompanion {
   containerId = 'robot-companion-container';
-  /** @type {Object} */
-  texts = {};
 
   constructor() {
-    this.texts = robotCompanionTexts;
-
     // Initialize DOM Builder
     /** @type {RobotDOMBuilder} */
     this.domBuilder = new RobotDOMBuilder();
@@ -57,8 +51,6 @@ export class RobotCompanion {
 
     /** @type {import('./ai-agent-service.js').AIAgentService|null} */
     this._agentService = null;
-    /** @type {RobotGames} */
-    this.gameModule = new RobotGames(this);
     /** @type {RobotAnimation} */
     this.animationModule = new RobotAnimation(this);
     /** @type {RobotCollision} */
@@ -74,6 +66,8 @@ export class RobotCompanion {
 
     /** @type {boolean} Flag to prevent footer overlap check from overriding keyboard adjustment */
     this.isKeyboardAdjustmentActive = false;
+    /** @type {boolean} Hide local bubble text so chat responses stay Cloudflare-AI only */
+    this.disableLocalBubbleTexts = true;
 
     /** @type {number} Store initial layout height for detecting keyboard */
     this.initialLayoutHeight =
@@ -133,8 +127,6 @@ export class RobotCompanion {
 
     /** @type {import('/content/core/types.js').DOMCache} */
     this.dom = {};
-
-    this.applyTexts();
   }
 
   /**
@@ -190,30 +182,6 @@ export class RobotCompanion {
     this.timerManager.cancelAnimationFrame(id);
   }
 
-  applyTexts() {
-    const src = this.texts || {};
-    const chat = /** @type {any} */ (this.chatModule);
-
-    chat.knowledgeBase = src.knowledgeBase ||
-      chat.knowledgeBase || { start: { text: 'Hallo!', options: [] } };
-    chat.contextGreetings = src.contextGreetings ||
-      chat.contextGreetings || { default: [] };
-    chat.moodGreetings = src.moodGreetings ||
-      chat.moodGreetings || {
-        normal: ['Hey! Wie kann ich helfen?', 'Hi! Was brauchst du?'],
-      };
-    chat.startMessageSuffix =
-      src.startMessageSuffix || chat.startMessageSuffix || {};
-    chat.initialBubblePools =
-      src.initialBubblePools || chat.initialBubblePools || [];
-    chat.initialBubbleSequenceConfig = src.initialBubbleSequenceConfig ||
-      chat.initialBubbleSequenceConfig || {
-        steps: 4,
-        displayDuration: 10000,
-        pausesAfter: [0, 20000, 20000, 0],
-      };
-  }
-
   /**
    * Lazy load the AI Agent Service (tool-calling, memory, streaming)
    * @returns {Promise<import('./ai-agent-service.js').AIAgentService>}
@@ -221,7 +189,7 @@ export class RobotCompanion {
   async getAgentService() {
     if (!this._agentService) {
       const { AIAgentService } = await import(
-        /* webpackIgnore: true */ './ai-agent-service.js?v=4'
+        /* webpackIgnore: true */ './ai-agent-service.js'
       );
       this._agentService = new AIAgentService();
     }
@@ -294,7 +262,7 @@ export class RobotCompanion {
 
     this._setTimeout(() => {
       if (this.getPageContext() === nextContext && !this.chatModule.isOpen) {
-        this.chatModule.startInitialBubbleSequence();
+        this.chatModule.lastGreetedContext = nextContext;
       }
     }, 2000);
   }
@@ -452,6 +420,7 @@ export class RobotCompanion {
         if (this.isKeyboardAdjustmentActive) {
           this.isKeyboardAdjustmentActive = false;
           this.dom.container.style.bottom = '';
+          this.dom.window.style.bottom = '';
           this.dom.window.style.maxHeight = '';
         }
         return;
@@ -474,44 +443,21 @@ export class RobotCompanion {
         heightDiff > 150 || (isInputFocused && heightDiff > 50);
 
       if (isKeyboardOverlay) {
-        // Keyboard is open (overlay mode or partial resize)
+        // Keyboard is open (overlay mode or partial resize).
+        // Keep the chat window above the keyboard area.
         this.isKeyboardAdjustmentActive = true;
-
-        // We used to hide the chat controls while the mobile keyboard
-        // was visible because they could be obscured. This caused the
-        // buttons to vanish entirely on some devices, which was
-        // confusing. Controls are now left in place and the window
-        // itself is shifted upward instead.
-        //
-        // if (this.dom.controls) {
-        //   this.dom.controls.classList.add('hide-controls-mobile');
-        // }
 
         const safeMargin = 10;
         const maxWindowHeight = visualHeight - safeMargin * 2;
         this.dom.window.style.maxHeight = `${maxWindowHeight}px`;
-
-        this._requestAnimationFrame(() => {
-          if (!this.dom.window) return;
-          const currentHeight = this.dom.window.offsetHeight;
-          const spaceAboveKeyboard = visualHeight;
-          const freeSpace = Math.max(0, spaceAboveKeyboard - currentHeight);
-          const verticalPadding = freeSpace / 2;
-
-          const centeredBottom = heightDiff + verticalPadding;
-          this.dom.container.style.bottom = `${centeredBottom}px`;
-        });
-
-        // Fallback initial set to ensure it jumps up immediately
-        this.dom.container.style.bottom = `${heightDiff + 10}px`;
+        this.dom.window.style.bottom = `${Math.max(8, heightDiff + safeMargin)}px`;
       } else {
         // Keyboard is closed
         this.isKeyboardAdjustmentActive = false;
 
-        // no need to toggle hide-controls-mobile any more
-
         // Reset styles to allow CSS / footer overlap logic to take over
         this.dom.container.style.bottom = '';
+        this.dom.window.style.bottom = '';
         this.dom.window.style.maxHeight = '';
       }
     };
@@ -649,27 +595,7 @@ export class RobotCompanion {
     this._setTimeout(() => {
       const ctx = this.getPageContext();
       if (!this.chatModule.isOpen && !this.chatModule.lastGreetedContext) {
-        const showSequenceChance = 0.9;
-        const chat = /** @type {any} */ (this.chatModule);
-        if (
-          chat.initialBubblePools &&
-          chat.initialBubblePools.length > 0 &&
-          Math.random() < showSequenceChance
-        ) {
-          this.chatModule.startInitialBubbleSequence();
-        } else {
-          const ctxArr =
-            chat.contextGreetings[ctx] || chat.contextGreetings.default || [];
-          let finalGreet = 'Hallo!';
-          if (ctxArr.length && Math.random() < 0.7) {
-            const ctxMsg = String(
-              ctxArr[Math.floor(Math.random() * ctxArr.length)] || '',
-            ).trim();
-            finalGreet = ctxMsg;
-          }
-          this.chatModule.showBubble(finalGreet);
-          this.chatModule.lastGreetedContext = ctx;
-        }
+        this.chatModule.lastGreetedContext = ctx;
       }
     }, 5000);
 
@@ -988,26 +914,6 @@ export class RobotCompanion {
     return 'night-owl';
   }
 
-  /**
-   * Get mood-based greeting message
-   * @returns {string}
-   */
-  getMoodGreeting() {
-    const chat = /** @type {any} */ (this.chatModule);
-    const greetings =
-      chat.moodGreetings ||
-      (typeof globalThis !== 'undefined' &&
-        globalThis.robotCompanionTexts &&
-        globalThis.robotCompanionTexts.moodGreetings) ||
-      {};
-
-    // Get current mood from state manager
-    const currentMood = this.stateManager.getState().mood;
-    const moodGreets = greetings[currentMood] ||
-      greetings['normal'] || ['Hey! Wie kann ich helfen?'];
-    return moodGreets[Math.floor(Math.random() * moodGreets.length)];
-  }
-
   trackInteraction() {
     this.stateManager.trackInteraction();
 
@@ -1127,7 +1033,6 @@ export class RobotCompanion {
 
     this.dom.window = chatWindow;
     this.dom.messages = document.getElementById('robot-messages');
-    this.dom.controls = document.getElementById('robot-controls');
     this.dom.inputArea = document.getElementById('robot-input-area');
     this.dom.input = /** @type {HTMLInputElement} */ (
       document.getElementById('robot-chat-input')
@@ -1232,35 +1137,18 @@ export class RobotCompanion {
         handler: _onInputKeydown,
       });
 
-      const _onInputFocus = () => {
-        if (this.dom.controls) {
-          this.dom.controls.classList.add('hide-controls-mobile');
-        }
-      };
-      this.dom.input.addEventListener('focus', _onInputFocus);
+      const _onInput = () => this.chatModule.syncComposerState();
+      this.dom.input.addEventListener('input', _onInput);
       this._eventListeners.dom.push({
         target: this.dom.input,
-        event: 'focus',
-        handler: _onInputFocus,
-      });
-
-      const _onInputBlur = () => {
-        this._setTimeout(() => {
-          if (this.dom.controls) {
-            this.dom.controls.classList.remove('hide-controls-mobile');
-          }
-        }, 200);
-      };
-      this.dom.input.addEventListener('blur', _onInputBlur);
-      this._eventListeners.dom.push({
-        target: this.dom.input,
-        event: 'blur',
-        handler: _onInputBlur,
+        event: 'input',
+        handler: _onInput,
       });
     }
 
     if (this.dom.clearBtn) {
-      const _onClearBtnClick = () => this.chatModule.clearHistory();
+      const _onClearBtnClick = () =>
+        this.chatModule.handleAction(ROBOT_ACTIONS.CLEAR_CHAT);
       this.dom.clearBtn.addEventListener('click', _onClearBtnClick);
       this._eventListeners.dom.push({
         target: this.dom.clearBtn,
@@ -1270,15 +1158,8 @@ export class RobotCompanion {
     }
 
     if (this.dom.exportBtn) {
-      const _onExportBtnClick = () => {
-        const ok = this.chatModule.exportHistory();
-        this.chatModule.addMessage(
-          ok
-            ? 'Export erstellt. Die Datei wurde heruntergeladen.'
-            : 'Noch kein Verlauf zum Exportieren vorhanden.',
-          'bot',
-        );
-      };
+      const _onExportBtnClick = () =>
+        this.chatModule.handleAction(ROBOT_ACTIONS.EXPORT_CHAT);
       this.dom.exportBtn.addEventListener('click', _onExportBtnClick);
       this._eventListeners.dom.push({
         target: this.dom.exportBtn,
@@ -1314,6 +1195,8 @@ export class RobotCompanion {
         handler: _onImageChange,
       });
     }
+
+    this.chatModule.syncComposerState();
   }
 
   /**
@@ -1420,7 +1303,7 @@ export class RobotCompanion {
     });
   }
 
-  // ─── Chat Module Proxy Methods (used by RobotGames, Collision, Animation) ───
+  // ─── Chat Module Proxy Methods (used by collision/animation/intelligence modules) ───
   toggleChat(force) {
     return this.chatModule.toggleChat(force);
   }
@@ -1432,9 +1315,6 @@ export class RobotCompanion {
   }
   addMessage(text, type) {
     return this.chatModule.addMessage(text, type);
-  }
-  addOptions(options) {
-    return this.chatModule.addOptions(options);
   }
   handleAction(action) {
     return this.chatModule.handleAction(action);
@@ -1448,9 +1328,6 @@ export class RobotCompanion {
   scrollToBottom() {
     return this.chatModule.scrollToBottom();
   }
-  startInitialBubbleSequence() {
-    return this.chatModule.startInitialBubbleSequence();
-  }
   clearBubbleSequence() {
     return this.chatModule.clearBubbleSequence();
   }
@@ -1460,7 +1337,6 @@ export class RobotCompanion {
    * @returns {Promise<void>}
    */
   async initialize() {
-    this.applyTexts();
     if (!this.dom.container) this.init();
   }
 }

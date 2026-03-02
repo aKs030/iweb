@@ -8,6 +8,30 @@ import { GITHUB_CONFIG } from '../config/github.config.js';
 import { getCache, setCache } from '../utils/cache.utils.js';
 
 const log = createLogger('GitHubAPI');
+const REQUEST_TIMEOUT_MS = 5000;
+
+const createGitHubApiError = (status) => {
+  const apiError = new Error(`GitHub API error: ${status}`);
+  apiError.name = 'GitHubApiError';
+  apiError.status = status;
+  apiError.rateLimited = status === 403 || status === 429;
+  return apiError;
+};
+
+const fetchWithTimeout = async (
+  url,
+  options = {},
+  timeoutMs = REQUEST_TIMEOUT_MS,
+) => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timeoutId);
+  }
+};
 
 /**
  * Fetches repository contents from GitHub API (with Caching)
@@ -30,33 +54,18 @@ export async function fetchGitHubContents(path = '', options = {}) {
     'User-Agent': 'Projekte-Loader/1.0',
   };
 
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 5000);
+  const response = await fetchWithTimeout(url, {
+    ...options,
+    headers: { ...defaultHeaders, ...options.headers },
+  });
 
-  try {
-    const response = await fetch(url, {
-      ...options,
-      headers: { ...defaultHeaders, ...options.headers },
-      signal: controller.signal,
-    });
-
-    clearTimeout(timeoutId);
-
-    if (!response.ok) {
-      const apiError = new Error(`GitHub API error: ${response.status}`);
-      apiError.name = 'GitHubApiError';
-      apiError.status = response.status;
-      apiError.rateLimited = response.status === 403 || response.status === 429;
-      throw apiError;
-    }
-
-    const data = await response.json();
-    setCache(cacheKey, data);
-    return data;
-  } catch (error) {
-    clearTimeout(timeoutId);
-    throw error;
+  if (!response.ok) {
+    throw createGitHubApiError(response.status);
   }
+
+  const data = await response.json();
+  setCache(cacheKey, data);
+  return data;
 }
 
 /**
@@ -75,15 +84,8 @@ export async function fetchProjectMetadata(projectPath) {
 
   const metadataUrl = `${GITHUB_CONFIG.rawBase}/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/${GITHUB_CONFIG.branch}/${projectPath}/package.json`;
 
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 5000); // Reduced timeout
-
   try {
-    const contentResponse = await fetch(metadataUrl, {
-      signal: controller.signal,
-    });
-
-    clearTimeout(timeoutId);
+    const contentResponse = await fetchWithTimeout(metadataUrl);
 
     if (contentResponse.ok) {
       const packageData = await contentResponse.json();
@@ -99,7 +101,6 @@ export async function fetchProjectMetadata(projectPath) {
       return metadata;
     }
   } catch (error) {
-    clearTimeout(timeoutId);
     log.warn(`Could not fetch metadata for ${projectPath}:`, error);
   }
 

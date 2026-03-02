@@ -136,6 +136,14 @@ const mkResult = (text, extra = {}) => ({
   ...extra,
 });
 
+const pickBestText = (finalText, streamedText) => {
+  const a = String(finalText || '').trim();
+  const b = String(streamedText || '').trim();
+  if (!a) return b;
+  if (!b) return a;
+  return a.length >= b.length ? a : b;
+};
+
 async function callAgent(payload, callbacks = {}, { stream = true } = {}) {
   const userId = getUserId();
 
@@ -240,7 +248,7 @@ async function callAgent(payload, callbacks = {}, { stream = true } = {}) {
       },
     });
 
-    const text = finalMessage?.text || fullText;
+    const text = pickBestText(finalMessage?.text, fullText);
     addToHistory('user', payload.prompt);
     if (text) addToHistory('assistant', text);
 

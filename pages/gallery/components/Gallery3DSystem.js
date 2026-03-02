@@ -34,6 +34,7 @@ export class Gallery3DSystem {
     this.hoveredMesh = null;
     this.isVisible = true; // Set to true initially, observer will correct it
     this.visibilityObserver = null;
+    this._resizeTimeoutId = null;
 
     this.params = {
       radius: 8,
@@ -302,12 +303,18 @@ export class Gallery3DSystem {
     this._prevWidth = currentWidth;
 
     // Debounce the heavy WebGL resize slightly to prevent stuttering
-    this.timers.setTimeout(() => {
+    if (this._resizeTimeoutId) {
+      this.timers.clearTimeout(this._resizeTimeoutId);
+      this._resizeTimeoutId = null;
+    }
+
+    this._resizeTimeoutId = this.timers.setTimeout(() => {
       this.width = window.innerWidth;
       this.height = window.innerHeight;
       this.camera.aspect = this.width / this.height;
       this.camera.updateProjectionMatrix();
       this.renderer.setSize(this.width, this.height);
+      this._resizeTimeoutId = null;
     }, 150);
   }
 
@@ -357,8 +364,15 @@ export class Gallery3DSystem {
   }
 
   dispose() {
+    if (this._resizeTimeoutId) {
+      this.timers.clearTimeout(this._resizeTimeoutId);
+      this._resizeTimeoutId = null;
+    }
     this.timers.clearAll();
-    if (this.frameId) cancelAnimationFrame(this.frameId);
+    if (this.frameId) {
+      cancelAnimationFrame(this.frameId);
+      this.frameId = null;
+    }
 
     window.removeEventListener('wheel', this.handleWheel);
     window.removeEventListener('resize', this.handleResize);
@@ -392,7 +406,9 @@ export class Gallery3DSystem {
     if (this.renderer) {
       this.renderer.dispose();
       this.renderer.forceContextLoss();
-      this.container.removeChild(this.renderer.domElement);
+      if (this.container.contains(this.renderer.domElement)) {
+        this.container.removeChild(this.renderer.domElement);
+      }
     }
 
     this.objects.forEach((obj) => {
