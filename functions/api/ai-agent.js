@@ -114,17 +114,45 @@ function resolveUserIdentity(request, requestedUserId = '') {
   };
 }
 
+function getCookieDomainForRequest(requestUrl) {
+  const host = String(requestUrl?.hostname || '').toLowerCase();
+  if (!host) return '';
+  if (host === 'abdulkerimsesli.de' || host === 'www.abdulkerimsesli.de') {
+    return 'abdulkerimsesli.de';
+  }
+  return '';
+}
+
+function appendExposeHeader(headers, name) {
+  if (!name) return;
+  const current = headers.get('Access-Control-Expose-Headers') || '';
+  const values = current
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
+  if (!values.includes(name)) {
+    values.push(name);
+    headers.set('Access-Control-Expose-Headers', values.join(', '));
+  }
+}
+
 function withUserCookie(headers, request, userId, shouldSetCookie) {
   const out = new Headers(headers);
+  if (userId) {
+    out.set('X-Jules-User-Id', userId);
+    appendExposeHeader(out, 'X-Jules-User-Id');
+  }
   if (!shouldSetCookie || !userId) return out;
 
   const requestUrl = new URL(request.url);
   const secure = requestUrl.protocol === 'https:' ? '; Secure' : '';
+  const cookieDomain = getCookieDomainForRequest(requestUrl);
+  const domainPart = cookieDomain ? `; Domain=${cookieDomain}` : '';
   out.append(
     'Set-Cookie',
     `${USER_ID_COOKIE}=${encodeURIComponent(
       userId,
-    )}; Path=/; Max-Age=31536000; SameSite=Lax${secure}`,
+    )}; Path=/; Max-Age=31536000; SameSite=Lax${secure}${domainPart}`,
   );
   return out;
 }
@@ -737,20 +765,151 @@ function normalizeExtractedValue(value, maxLength = 120) {
     .slice(0, maxLength);
 }
 
+const NAME_CONTEXT_STOPWORDS = new Set([
+  'aus',
+  'von',
+  'und',
+  'aber',
+  'im',
+  'in',
+  'mit',
+  'bei',
+  'als',
+  'ein',
+  'eine',
+  'einer',
+  'einem',
+  'eines',
+  'der',
+  'die',
+  'das',
+  'den',
+  'dem',
+  'des',
+  'bin',
+  'heisse',
+  'heiße',
+  'nenne',
+  'nennen',
+  'arbeite',
+  'komme',
+  'wohne',
+  'mag',
+  'liebe',
+  'interessiere',
+  'interessiert',
+  'habe',
+  'hab',
+  'will',
+  'moechte',
+  'möchte',
+]);
+
+const NON_NAME_SINGLE_WORDS = new Set([
+  'muede',
+  'müde',
+  'hungrig',
+  'bereit',
+  'hier',
+  'da',
+  'neu',
+  'krank',
+  'ok',
+  'okay',
+  'gut',
+  'schlecht',
+  'traurig',
+  'verwirrt',
+  'gespannt',
+  'froh',
+  'cool',
+  'fertig',
+]);
+
+const TOOL_LEAK_INLINE_PATTERN =
+  /\s+tools?\s*:\s*(?:navigate|setTheme|searchBlog|toggleMenu|scrollToSection|openSearch|closeSearch|focusSearch|scrollTop|copyCurrentUrl|openImageUpload|clearChatHistory|rememberUser|recallMemory|recommend)\b[^\n]*/gi;
+const TOOL_LEAK_LINE_PATTERN = /(?:^|\n)\s*tools?\s*:[^\n]*(?=\n|$)/gi;
+
+function isLikelyNameToken(token) {
+  return /^[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ'’-]{0,29}$/.test(token);
+}
+
+function normalizeNameCandidate(candidate) {
+  const cleaned = normalizeExtractedValue(candidate, 60);
+  if (!cleaned) return '';
+
+  const tokens = cleaned.split(/\s+/).filter(Boolean);
+  if (!tokens.length) return '';
+
+  const selected = [];
+  for (const rawToken of tokens) {
+    const token = rawToken.replace(/^['’`]+|['’`]+$/g, '');
+    const lower = token.toLowerCase();
+
+    if (!token) continue;
+    if (selected.length === 0 && NAME_CONTEXT_STOPWORDS.has(lower)) continue;
+    if (selected.length > 0 && NAME_CONTEXT_STOPWORDS.has(lower)) break;
+    if (!isLikelyNameToken(token)) break;
+
+    selected.push(token);
+    if (selected.length >= 3) break;
+  }
+
+  if (!selected.length) return '';
+  if (
+    selected.length === 1 &&
+    NON_NAME_SINGLE_WORDS.has(selected[0].toLowerCase())
+  ) {
+    return '';
+  }
+
+  const name = selected.join(' ').trim();
+  if (!/^[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ'’ -]{1,39}$/.test(name)) {
+    return '';
+  }
+  return name;
+}
+
+function extractNameFromPrompt(promptText) {
+  const text = String(promptText || '');
+  if (!text.trim()) return '';
+
+  const patterns = [
+    /(?:\bich\s+hei(?:ss|ß)e\b|\bmein\s+name\s+ist\b|\bnenn\s+mich\b|\bdu\s+kannst\s+mich\b)\s+([^\n.,;:!?]{2,60})/i,
+    /(?:\bich\s+bin\b|\bich\s+bin's\b|\bich\s+bins\b)\s+([^\n.,;:!?]{2,60})/i,
+  ];
+
+  for (const pattern of patterns) {
+    const match = text.match(pattern);
+    if (!match?.[1]) continue;
+    const name = normalizeNameCandidate(match[1]);
+    if (name) return name;
+  }
+
+  return '';
+}
+
+function sanitizeAssistantText(rawText) {
+  const input = String(rawText || '');
+  if (!input) return '';
+
+  return input
+    .replace(TOOL_LEAK_INLINE_PATTERN, '')
+    .replace(TOOL_LEAK_LINE_PATTERN, '')
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
 function extractPromptMemoryFacts(prompt) {
   const text = String(prompt || '');
   if (!text.trim()) return [];
 
   const extracted = [];
 
-  const nameMatch = text.match(
-    /(?:\bich\s+hei(?:ss|ß)e\b|\bmein\s+name\s+ist\b|\bnenn\s+mich\b)\s+([^\n.,;:!?]{2,50})/i,
-  );
-  if (nameMatch?.[1]) {
-    const cleanedName = normalizeExtractedValue(nameMatch[1], 40);
-    if (/^[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ' -]{1,39}$/.test(cleanedName)) {
-      extracted.push({ key: 'name', value: cleanedName });
-    }
+  const extractedName = extractNameFromPrompt(text);
+  if (extractedName) {
+    extracted.push({ key: 'name', value: extractedName });
   }
 
   const interestMatch = text.match(
@@ -1132,7 +1291,7 @@ export async function onRequestPost(context) {
           let toolCalls = Array.isArray(aiResult?.tool_calls)
             ? aiResult.tool_calls
             : [];
-          const responseText = aiResult?.response || '';
+          const responseText = sanitizeAssistantText(aiResult?.response || '');
 
           if (useTools && toolCalls.length === 0) {
             toolCalls = inferClientToolCallsFromPrompt(prompt);
@@ -1363,7 +1522,7 @@ async function processToolCalls(
         max_tokens: config.maxTokens,
         stream: true,
       });
-      const text = await streamToSSE(result, write);
+      const text = sanitizeAssistantText(await streamToSSE(result, write));
       if (hasMeaningfulText(text)) {
         await write(
           'message',
@@ -1378,10 +1537,11 @@ async function processToolCalls(
         temperature: 0.7,
         max_tokens: config.maxTokens,
       });
-      if (hasMeaningfulText(fallback?.response)) {
+      const fallbackText = sanitizeAssistantText(fallback?.response || '');
+      if (hasMeaningfulText(fallbackText)) {
         await write('message', {
           ...buildMsg(
-            fallback.response,
+            fallbackText,
             clientToolCalls,
             serverToolResults,
             ctx,
@@ -1414,12 +1574,19 @@ async function processToolCalls(
         temperature: 0.7,
         max_tokens: 256,
       });
-      if (r?.response) {
-        for (const w of r.response.match(/\S+\s*/g) || [r.response])
+      const followUpText = sanitizeAssistantText(r?.response || '');
+      if (followUpText) {
+        for (const w of followUpText.match(/\S+\s*/g) || [followUpText])
           await write('token', { text: w });
         await write(
           'message',
-          buildMsg(r.response, clientToolCalls, serverToolResults, ctx, config),
+          buildMsg(
+            followUpText,
+            clientToolCalls,
+            serverToolResults,
+            ctx,
+            config,
+          ),
         );
         return;
       }
@@ -1489,7 +1656,7 @@ async function handleNonStreaming(
     );
 
     // Follow-up for server tools
-    let responseText = aiResult.response || '';
+    let responseText = sanitizeAssistantText(aiResult.response || '');
     if (serverToolResults.length > 0) {
       const summary = serverToolResults
         .map((r) => `[${r.name}]: ${r.result}`)
@@ -1510,7 +1677,8 @@ async function handleNonStreaming(
           temperature: 0.7,
           max_tokens: config.maxTokens,
         });
-        if (followUp?.response) responseText = followUp.response;
+        const followUpText = sanitizeAssistantText(followUp?.response || '');
+        if (followUpText) responseText = followUpText;
       } catch {
         /* use original */
       }
@@ -1532,7 +1700,8 @@ async function handleNonStreaming(
           temperature: 0.7,
           max_tokens: 256,
         });
-        if (r?.response) responseText = r.response;
+        const followUpText = sanitizeAssistantText(r?.response || '');
+        if (followUpText) responseText = followUpText;
       } catch {
         /* ignore */
       }
