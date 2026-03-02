@@ -11,9 +11,9 @@
 - @version 1.0.0
   */
 
-import { getCorsHeaders, handleOptions } from ‘./_cors.js’;
+import { getCorsHeaders, handleOptions } from './_cors.js';
 
-const CHAT_MODEL = ‘@cf/meta/llama-3.3-70b-instruct-fp8-fast’;
+const CHAT_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast';
 const MAX_TOKENS = 4096;
 const MAX_PROMPT_LENGTH = 8000;
 const MAX_HISTORY_TURNS = 10;
@@ -25,7 +25,7 @@ const MAX_HISTORY_TURNS = 10;
 // Das behebt den “{user_prompt}”-Bug, der die Fehlermeldung verursacht hat:
 // “Your input is lacking necessary details…”
 //
-const SYSTEM_PROMPT = `You are an advanced assistant specialized in generating Cloudflare Workers code. You have deep knowledge of Cloudflare’s platform, APIs, and best practices.
+const SYSTEM_PROMPT = `You are an advanced assistant specialized in generating Cloudflare Workers code. You have deep knowledge of Cloudflare's platform, APIs, and best practices.
 
 <behavior_guidelines>
 
@@ -102,45 +102,45 @@ const SYSTEM_PROMPT = `You are an advanced assistant specialized in generating C
 // ─── Input-Validierung ─────────────────────────────────────────────────────────
 
 function sanitizePrompt(raw) {
-if (typeof raw !== ‘string’) return ‘’;
-return raw.trim().slice(0, MAX_PROMPT_LENGTH);
+  if (typeof raw !== 'string') return '';
+  return raw.trim().slice(0, MAX_PROMPT_LENGTH);
 }
 
 function sanitizeHistory(raw) {
-if (!Array.isArray(raw)) return [];
-return raw
-.slice(-MAX_HISTORY_TURNS)
-.filter(
-(msg) =>
-msg &&
-(msg.role === ‘user’ || msg.role === ‘assistant’) &&
-typeof msg.content === ‘string’,
-)
-.map((msg) => ({
-role: msg.role,
-content: String(msg.content).slice(0, 2000),
-}));
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .slice(-MAX_HISTORY_TURNS)
+    .filter(
+      (msg) =>
+        msg &&
+        (msg.role === 'user' || msg.role === 'assistant') &&
+        typeof msg.content === 'string',
+    )
+    .map((msg) => ({
+      role: msg.role,
+      content: String(msg.content).slice(0, 2000),
+    }));
 }
 
 // ─── Handler ───────────────────────────────────────────────────────────────────
 
 export async function onRequestPost(context) {
-const { request, env } = context;
-const corsHeaders = getCorsHeaders(request, env);
+  const { request, env } = context;
+  const corsHeaders = getCorsHeaders(request, env);
 
-try {
-// 1. Request parsen
-let body;
-try {
-body = await request.json();
-} catch {
-return Response.json(
-{ error: ‘Invalid JSON’, text: ‘Ungültiges JSON im Request-Body.’ },
-{ status: 400, headers: corsHeaders },
-);
-}
+  try {
+    // 1. Request parsen
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return Response.json(
+        { error: 'Invalid JSON', text: 'Ungültiges JSON im Request-Body.' },
+        { status: 400, headers: corsHeaders },
+      );
+    }
 
-```
+    ```
 // 2. Nutzer-Eingabe validieren
 const prompt = sanitizePrompt(body.prompt || body.message || '');
 
@@ -181,9 +181,7 @@ const messages = [
 ];
 
 // 5. Workers AI aufrufen
-console.info(
-  `[workers-assistant] Calling ${CHAT_MODEL} with ${messages.length} messages`,
-);
+console.info('[workers-assistant] Calling ' + CHAT_MODEL + ' with ' + messages.length + ' messages');
 
 const aiResult = await env.AI.run(CHAT_MODEL, {
   messages,
@@ -206,12 +204,11 @@ return Response.json(
   },
   { headers: corsHeaders },
 );
-```
+```;
+  } catch (error) {
+    console.error('[workers-assistant] Error:', error?.message || error);
 
-} catch (error) {
-console.error(’[workers-assistant] Error:’, error?.message || error);
-
-```
+    ```
 return Response.json(
   {
     error: 'AI request failed',
@@ -219,9 +216,8 @@ return Response.json(
   },
   { status: 503, headers: corsHeaders },
 );
-```
-
-}
+```;
+  }
 }
 
 export const onRequestOptions = handleOptions;

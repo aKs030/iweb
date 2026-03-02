@@ -21,7 +21,7 @@ const RUNTIME_FILE = path.join(ROOT_DIR, 'content/styles/root.css');
  * @param {string} fileLabel
  * @returns {Set<string>}
  */
-const extractPrimaryRootVariables = (css, fileLabel) => {
+const extractPrimaryRootVariables = (css, _fileLabel) => {
   // Strip @media blocks to only match truly top-level :root declarations.
   // Responsive overrides (e.g. --menu-height inside @media) are intentional
   // and must not be flagged as duplicates.
