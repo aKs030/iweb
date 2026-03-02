@@ -473,11 +473,13 @@ export async function onRequestPost(context) {
       conversationHistory = [],
       stream = true,
     } = body;
-    prompt = sanitizePrompt(prompt);
+    // Keep a separate raw prompt for memory/RAG, and use a sanitized version only for the model.
+    const rawPrompt = typeof prompt === 'string' ? prompt : String(prompt || '');
+    const modelPrompt = sanitizePrompt(rawPrompt);
     conversationHistory = sanitizeHistory(conversationHistory);
     imageAnalysis = body.imageAnalysis || imageAnalysis;
 
-    if (!prompt && !imageAnalysis) {
+    if (!modelPrompt && !imageAnalysis) {
       return Response.json(
         { error: 'Empty prompt', text: 'Kein Prompt empfangen.' },
         { status: 400, headers: corsHeaders },
