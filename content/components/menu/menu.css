@@ -1304,7 +1304,7 @@ site-menu {
   }
 
   .site-menu__toggle {
-    display: block;
+    display: block !important;
     position: relative;
     right: 0;
     top: 0;
