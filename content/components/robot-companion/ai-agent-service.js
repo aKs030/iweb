@@ -19,21 +19,118 @@ const ALLOWED_IMAGE_TYPES = [
 ];
 const HISTORY_KEY = 'jules-conversation-history';
 const USER_ID_KEY = 'jules-user-id';
+const USER_ID_COOKIE = 'jules_uid';
+const USER_ID_HEADER = 'x-jules-user-id';
 const MAX_HISTORY = 20;
+let runtimeUserId = '';
 
 // ─── User ID & History ──────────────────────────────────────────────────────────
 
-function getUserId() {
-  try {
-    let id = localStorage.getItem(USER_ID_KEY);
-    if (!id) {
-      id = `user_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
-      localStorage.setItem(USER_ID_KEY, id);
-    }
-    return id;
-  } catch {
-    return 'anonymous';
+function normalizeUserId(raw) {
+  const value = String(raw || '').trim();
+  if (!value || value === 'anonymous') return '';
+  if (!/^[A-Za-z0-9_-]{3,120}$/.test(value)) return '';
+  return value;
+}
+
+function createUserId() {
+  if (
+    typeof crypto !== 'undefined' &&
+    typeof crypto.randomUUID === 'function'
+  ) {
+    return `u_${crypto.randomUUID().replace(/-/g, '').slice(0, 24)}`;
   }
+  return `u_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function getUserIdFromStorage(storage) {
+  if (!storage?.getItem) return '';
+  try {
+    return normalizeUserId(storage.getItem(USER_ID_KEY));
+  } catch {
+    return '';
+  }
+}
+
+function getSafeStorage(type) {
+  try {
+    return type === 'local' ? localStorage : sessionStorage;
+  } catch {
+    return null;
+  }
+}
+
+function readUserIdFromCookie() {
+  if (typeof document === 'undefined') return '';
+  const cookie = String(document.cookie || '');
+  if (!cookie) return '';
+
+  const parts = cookie.split(';');
+  for (const rawPart of parts) {
+    const part = rawPart.trim();
+    if (!part.startsWith(`${USER_ID_COOKIE}=`)) continue;
+    const value = part.slice(USER_ID_COOKIE.length + 1);
+    try {
+      return normalizeUserId(decodeURIComponent(value));
+    } catch {
+      return normalizeUserId(value);
+    }
+  }
+  return '';
+}
+
+function persistUserId(id) {
+  const value = normalizeUserId(id);
+  if (!value) return '';
+  runtimeUserId = value;
+
+  try {
+    localStorage.setItem(USER_ID_KEY, value);
+  } catch {
+    /* ignore */
+  }
+
+  try {
+    sessionStorage.setItem(USER_ID_KEY, value);
+  } catch {
+    /* ignore */
+  }
+
+  try {
+    if (typeof document !== 'undefined') {
+      const secure =
+        typeof location !== 'undefined' && location.protocol === 'https:'
+          ? '; Secure'
+          : '';
+      document.cookie = `${USER_ID_COOKIE}=${encodeURIComponent(
+        value,
+      )}; Path=/; Max-Age=31536000; SameSite=Lax${secure}`;
+    }
+  } catch {
+    /* ignore */
+  }
+
+  return value;
+}
+
+function getUserId() {
+  if (normalizeUserId(runtimeUserId)) return runtimeUserId;
+
+  const fromLocal = getUserIdFromStorage(getSafeStorage('local'));
+  if (fromLocal) return persistUserId(fromLocal);
+
+  const fromSession = getUserIdFromStorage(getSafeStorage('session'));
+  if (fromSession) return persistUserId(fromSession);
+
+  const fromCookie = readUserIdFromCookie();
+  if (fromCookie) return persistUserId(fromCookie);
+
+  return persistUserId(createUserId());
+}
+
+function syncUserIdFromResponse(response) {
+  const headerValue = normalizeUserId(response?.headers?.get?.(USER_ID_HEADER));
+  if (headerValue) persistUserId(headerValue);
 }
 
 function getHistory() {
@@ -155,11 +252,16 @@ async function callAgent(payload, callbacks = {}, { stream = true } = {}) {
       fd.append('prompt', payload.prompt || '');
       fd.append('userId', userId);
       fd.append('image', payload.image);
-      response = await fetch(AGENT_ENDPOINT, { method: 'POST', body: fd });
+      response = await fetch(AGENT_ENDPOINT, {
+        method: 'POST',
+        body: fd,
+        credentials: 'include',
+      });
     } else {
       response = await fetch(AGENT_ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           prompt: payload.prompt,
           userId,
@@ -168,6 +270,7 @@ async function callAgent(payload, callbacks = {}, { stream = true } = {}) {
         }),
       });
     }
+    syncUserIdFromResponse(response);
   } catch (err) {
     log.error('Fetch failed:', err?.message);
     const text = 'KI-Dienst nicht erreichbar. Bitte erneut versuchen.';
