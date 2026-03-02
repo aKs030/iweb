@@ -234,7 +234,9 @@ export class RobotCompanion {
    */
   async getAgentService() {
     if (!this._agentService) {
-      const { AIAgentService } = await import('./ai-agent-service.js');
+      const { AIAgentService } = await import(
+        /* webpackIgnore: true */ './ai-agent-service.js?v=3'
+      );
       this._agentService = new AIAgentService();
     }
     return this._agentService;
