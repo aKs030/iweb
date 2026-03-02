@@ -805,6 +805,37 @@
   -webkit-text-fill-color: transparent;
 }
 
+.chat-header-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--size-8);
+}
+
+.chat-header-btn {
+  background: color-mix(in srgb, var(--clr-white) 4%, transparent);
+  border: var(--size-1) solid
+    color-mix(in srgb, var(--clr-white) 10%, transparent);
+  color: var(--clr-slate-300);
+  border-radius: var(--size-16);
+  padding: var(--size-6) var(--size-10);
+  font-size: var(--size-r-0-72, 0.72rem);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.chat-header-btn:hover {
+  border-color: color-mix(in srgb, var(--robot-cyan) 40%, transparent);
+  color: var(--robot-cyan);
+  background: color-mix(in srgb, var(--robot-cyan) 12%, transparent);
+}
+
+.chat-header-btn:focus-visible {
+  outline: var(--size-2) solid
+    color-mix(in srgb, var(--robot-cyan) 45%, transparent);
+  outline-offset: var(--size-2);
+}
+
 .chat-status-dot {
   width: var(--size-8);
   height: var(--size-8);
@@ -919,6 +950,23 @@
     color-mix(in srgb, var(--clr-blue-600) 25%, transparent);
   border: var(--size-1) solid
     color-mix(in srgb, var(--clr-white) 10%, transparent);
+}
+
+.message-meta {
+  display: block;
+  margin-top: var(--size-6);
+  font-size: var(--size-r-0-7, 0.7rem);
+  opacity: 0.65;
+  user-select: none;
+}
+
+.message.bot .message-meta {
+  color: var(--clr-slate-400);
+}
+
+.message.user .message-meta {
+  color: color-mix(in srgb, var(--clr-white) 85%, transparent);
+  text-align: right;
 }
 
 /* --- MARKDOWN STYLES --- */
@@ -1387,6 +1435,15 @@
   .chat-title {
     font-size: var(--size-r-0-95);
     gap: var(--size-8);
+  }
+
+  .chat-header-controls {
+    gap: var(--size-6);
+  }
+
+  .chat-header-btn {
+    padding: var(--size-5) var(--size-8);
+    font-size: var(--size-r-0-68, 0.68rem);
   }
 
   .message {

@@ -3,11 +3,11 @@
 // - Vars nur noch einmal definiert (DRY — preview + production teilen dieselben Werte)
 // - KV/R2/AI-Bindings bleiben für beide Environments erhalten
 // - nodejs_compat beibehalten
-// - compatibility_date auf 2025-03-07 (aktuell empfohlen)
+// - compatibility_date auf 2026-03-02
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "1web",
-  "compatibility_date": "2025-03-07",
+  "compatibility_date": "2026-03-02",
   "compatibility_flags": ["nodejs_compat"],
   "pages_build_output_dir": ".",
 
@@ -22,6 +22,13 @@
     "AI_SEARCH_REWRITE_QUERY": "true",
     "AI_SEARCH_RERANKING_ENABLED": "true",
     "AI_SEARCH_RERANKING_MODEL": "@cf/baai/bge-reranker-base",
+    "ROBOT_CHAT_MODEL": "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+    "ROBOT_EMBEDDING_MODEL": "@cf/baai/bge-base-en-v1.5",
+    "ROBOT_IMAGE_MODEL": "@cf/llava-hf/llava-1.5-7b-hf",
+    "ROBOT_MAX_TOKENS": "2048",
+    "ROBOT_MAX_HISTORY_TURNS": "10",
+    "ROBOT_MEMORY_TOP_K": "5",
+    "ROBOT_MEMORY_SCORE_THRESHOLD": "0.65",
     "CONTACT_EMAIL": "krm19030@gmail.com",
     "YOUTUBE_CHANNEL_ID": "UCTGRherjM4iuIn86xxubuPg",
     "ALLOWED_ORIGINS": "https://abdulkerimsesli.de,https://www.abdulkerimsesli.de",

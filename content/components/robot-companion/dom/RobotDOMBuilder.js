@@ -65,10 +65,40 @@ export class RobotDOMBuilder {
     closeBtn.className = 'chat-close-btn';
     closeBtn.textContent = '×';
     closeBtn.setAttribute('aria-label', 'Chat schließen');
+    closeBtn.type = 'button';
 
-    header.append(title, closeBtn);
+    const controls = document.createElement('div');
+    controls.className = 'chat-header-controls';
+
+    const clearBtn = this.createHeaderActionButton({
+      id: 'robot-chat-clear',
+      label: 'Neu',
+      title: 'Unterhaltung zuruecksetzen',
+      ariaLabel: 'Neue Unterhaltung starten',
+    });
+
+    const exportBtn = this.createHeaderActionButton({
+      id: 'robot-chat-export',
+      label: 'Export',
+      title: 'Chatverlauf als JSON herunterladen',
+      ariaLabel: 'Chatverlauf exportieren',
+    });
+
+    controls.append(clearBtn, exportBtn, closeBtn);
+    header.append(title, controls);
 
     return header;
+  }
+
+  createHeaderActionButton({ id, label, title, ariaLabel }) {
+    const button = document.createElement('button');
+    button.className = 'chat-header-btn';
+    button.type = 'button';
+    button.id = id;
+    button.textContent = label;
+    button.title = title;
+    button.setAttribute('aria-label', ariaLabel);
+    return button;
   }
 
   /**
@@ -127,7 +157,7 @@ export class RobotDOMBuilder {
     input.type = 'text';
     input.id = 'robot-chat-input';
     input.name = 'robot-message';
-    input.placeholder = 'Frag mich etwas oder wähle eine Option...';
+    input.placeholder = 'Frag mich etwas oder nutze /help';
     input.autocomplete = 'off';
     input.setAttribute('aria-label', 'Chat-Nachricht eingeben');
 
@@ -1374,5 +1404,21 @@ export class RobotDOMBuilder {
     }
 
     return div;
+  }
+
+  createMessageMeta(timestamp, { sender = '' } = {}) {
+    const time = document.createElement('time');
+    time.className = 'message-meta';
+    const date = new Date(timestamp || Date.now());
+    time.dateTime = date.toISOString();
+    const value = date.toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+    time.textContent = value;
+    if (sender) {
+      time.setAttribute('aria-label', `${sender} um ${value}`);
+    }
+    return time;
   }
 }

@@ -254,17 +254,22 @@ globalThis?.a11y?.releaseFocus();
 
 ## 🔧 Konfiguration
 
-### AI Service (Groq)
+### AI Agent Service
 
 ```javascript
-// .env
-VITE_GROQ_API_KEY = your_api_key_here;
-
-// Verwendung (Agent Service mit SSE, Tools & Memory)
+// Verwendung (SSE, Tools & Memory)
 const agentService = await robot.getAgentService();
 const response = await agentService.generateResponse('Hallo!', (chunk) => {
   console.log('Streaming:', chunk);
 });
+```
+
+Slash Commands im Chat:
+
+```text
+/help
+/clear
+/export
 ```
 
 ### CSS Anpassung

@@ -15,7 +15,8 @@ functions/
 └── api/
     ├── _middleware.js       # API-Level Middleware
     ├── search.js           # Search Endpoint
-    └── ai.js               # AI Endpoint (optional)
+    ├── ai-agent.js         # Agentic AI Endpoint (SSE, Tools, Memory)
+    └── ai.js               # Lightweight AI Endpoint (kompatibel)
 ```
 
 ## 🔄 Middleware-Hierarchie
