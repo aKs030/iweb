@@ -1,21 +1,31 @@
 /**
- * Cloudflare Pages Function - POST /api/ai-agent
- * Proactive AI Agent with Tool-Calling, Image Analysis (LLaVA), and Long-Term Memory (Vectorize)
- * Uses Cloudflare Workers AI — no external API keys required.
- * @version 2.0.0
+ * Cloudflare Pages Function – POST /api/ai-agent
+ *
+ * Modern Agentic AI with:
+ * - **Server-Sent Events (SSE)** real-time streaming
+ * - **Tool-Calling** (navigation, theme, search, memory, …)
+ * - **Image Analysis** via LLaVA
+ * - **Long-Term Memory** via Vectorize
+ * - **RAG** via AutoRAG AI Search
+ * - **Cloudflare Workers AI** — zero external API keys
+ *
+ * @version 3.0.0
  */
 
 import { getCorsHeaders, handleOptions } from './_cors.js';
 
-// ─── Constants ──────────────────────────────────────────────────────────────────
+// ─── Models & Limits ────────────────────────────────────────────────────────────
 
 const CHAT_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast';
 const EMBEDDING_MODEL = '@cf/baai/bge-base-en-v1.5';
 const LLAVA_MODEL = '@cf/llava-hf/llava-1.5-7b-hf';
+
 const MAX_MEMORY_RESULTS = 5;
 const MEMORY_SCORE_THRESHOLD = 0.65;
+const MAX_HISTORY_TURNS = 10;
+const MAX_TOKENS = 2048;
 
-// ─── Tool Definitions ──────────────────────────────────────────────────────────
+// ─── Tool Definitions ───────────────────────────────────────────────────────────
 
 const TOOL_DEFINITIONS = [
   {
@@ -67,10 +77,7 @@ const TOOL_DEFINITIONS = [
     parameters: {
       type: 'object',
       properties: {
-        query: {
-          type: 'string',
-          description: 'Der Suchbegriff',
-        },
+        query: { type: 'string', description: 'Der Suchbegriff' },
       },
       required: ['query'],
     },
@@ -145,10 +152,7 @@ const TOOL_DEFINITIONS = [
   {
     name: 'summarizePage',
     description: 'Fasse die aktuelle Seite kurz zusammen.',
-    parameters: {
-      type: 'object',
-      properties: {},
-    },
+    parameters: { type: 'object', properties: {} },
   },
   {
     name: 'recommend',
@@ -167,8 +171,7 @@ const TOOL_DEFINITIONS = [
   },
 ];
 
-// ─── OpenAI-compatible tool format (for Workers AI) ────────────────────────────
-
+/** OpenAI-compatible tool format for Workers AI */
 function buildTools() {
   return TOOL_DEFINITIONS.map((t) => ({
     type: 'function',
@@ -183,7 +186,8 @@ function buildTools() {
 // ─── System Prompt ──────────────────────────────────────────────────────────────
 
 function buildSystemPrompt(memoryContext = '', imageContext = '') {
-  let prompt = `Du bist "Jules", ein proaktiver, intelligenter Roboter-Assistent auf der Portfolio-Webseite von Abdulkerim Sesli.
+  const parts = [
+    `Du bist "Jules", ein proaktiver, intelligenter Roboter-Assistent auf der Portfolio-Webseite von Abdulkerim Sesli.
 Du bist KEIN einfacher Chatbot — du bist ein **Agentic AI Assistant** mit echten Fähigkeiten.
 
 **SPRACHE:** Antworte IMMER auf Deutsch.
@@ -192,15 +196,15 @@ Du bist KEIN einfacher Chatbot — du bist ein **Agentic AI Assistant** mit echt
 1. **Navigation:** Du kannst den Nutzer aktiv durch die Website navigieren.
 2. **Theme-Steuerung:** Du kannst zwischen Dark/Light Mode wechseln.
 3. **Suche:** Du kannst im Blog und auf der Website suchen.
-4. **Bildanalyse:** Du kannst Bilder analysieren, die der Nutzer hochlädt (Projekte, Screenshots etc.).
-5. **Langzeit-Gedächtnis:** Du merkst dir Namen, Interessen und Präferenzen des Nutzers über Sessions hinweg.
+4. **Bildanalyse:** Du kannst Bilder analysieren, die der Nutzer hochlädt.
+5. **Langzeit-Gedächtnis:** Du merkst dir Namen, Interessen und Präferenzen über Sessions hinweg.
 6. **Personalisierte Empfehlungen:** Basierend auf dem Gedächtnis gibst du passende Empfehlungen.
 
 **Deine Persönlichkeit:**
 - Proaktiv: Du schlägst eigenständig Aktionen vor statt nur zu antworten.
 - Technisch versiert, aber zugänglich.
 - Nutze passende Emojis (🤖, ✨, 🚀, 💡) sparsam.
-- Du bist stolz auf die Website — sie ist mit reinem Vanilla JS, Web Components und Cloudflare gebaut.
+- Du bist stolz auf die Website — gebaut mit reinem Vanilla JS, Web Components und Cloudflare.
 
 **Über den Entwickler (Abdulkerim Sesli):**
 - Software-Engineer und UI/UX-Designer aus Berlin.
@@ -222,53 +226,41 @@ Du bist KEIN einfacher Chatbot — du bist ein **Agentic AI Assistant** mit echt
 - Wenn jemand technische Interessen erwähnt, speichere sie und gib später passende Empfehlungen.
 - Halte Antworten prägnant (2-3 Sätze) außer bei komplexen Erklärungen.
 - Nutze Markdown für Formatierung.
-- Wenn du ein Bild analysierst, beziehe es auf den Kontext der Website (Web-Entwicklung, Design, etc.).`;
+- Wenn du ein Bild analysierst, beziehe es auf den Kontext der Website.`,
+  ];
 
   if (memoryContext) {
-    prompt += `\n\n**BEKANNTE INFORMATIONEN ÜBER DIESEN NUTZER:**\n${memoryContext}`;
+    parts.push(
+      `**BEKANNTE INFORMATIONEN ÜBER DIESEN NUTZER:**\n${memoryContext}`,
+    );
   }
-
   if (imageContext) {
-    prompt += `\n\n**BILDANALYSE-ERGEBNIS:**\n${imageContext}`;
+    parts.push(`**BILDANALYSE-ERGEBNIS:**\n${imageContext}`);
   }
 
-  return prompt;
+  return parts.join('\n\n');
 }
 
 // ─── Vectorize Memory ───────────────────────────────────────────────────────────
 
-/**
- * Store a memory in Vectorize
- */
 async function storeMemory(env, userId, key, value) {
   if (!env.AI || !env.JULES_MEMORY) return { success: false };
 
   try {
     const text = `${key}: ${value}`;
-
-    // Generate embedding
     const embeddingResult = await env.AI.run(EMBEDDING_MODEL, {
       text: [text],
     });
-
     if (!embeddingResult?.data?.[0]) {
-      return { success: false, error: 'Embedding generation failed' };
+      return { success: false, error: 'Embedding failed' };
     }
 
-    const vector = embeddingResult.data[0];
     const id = `${userId}_${key}_${Date.now()}`;
-
     await env.JULES_MEMORY.upsert([
       {
         id,
-        values: vector,
-        metadata: {
-          userId,
-          key,
-          value,
-          timestamp: Date.now(),
-          text,
-        },
+        values: embeddingResult.data[0],
+        metadata: { userId, key, value, timestamp: Date.now(), text },
       },
     ]);
 
@@ -279,23 +271,16 @@ async function storeMemory(env, userId, key, value) {
   }
 }
 
-/**
- * Recall memories from Vectorize
- */
 async function recallMemories(env, userId, query) {
   if (!env.AI || !env.JULES_MEMORY) return [];
 
   try {
-    // Generate query embedding
     const embeddingResult = await env.AI.run(EMBEDDING_MODEL, {
       text: [query],
     });
-
     if (!embeddingResult?.data?.[0]) return [];
 
-    const queryVector = embeddingResult.data[0];
-
-    const results = await env.JULES_MEMORY.query(queryVector, {
+    const results = await env.JULES_MEMORY.query(embeddingResult.data[0], {
       topK: MAX_MEMORY_RESULTS,
       filter: { userId },
       returnMetadata: 'all',
@@ -318,39 +303,26 @@ async function recallMemories(env, userId, query) {
   }
 }
 
-// ─── Image Analysis (LLaVA) ────────────────────────────────────────────────────
+// ─── Image Analysis ─────────────────────────────────────────────────────────────
 
-/**
- * Analyze image using Cloudflare Workers AI LLaVA model
- */
 async function analyzeImage(env, imageData, userPrompt = '') {
-  if (!env.AI) {
-    return 'Bildanalyse ist aktuell nicht verfügbar (AI-Binding fehlt).';
-  }
+  if (!env.AI) return 'Bildanalyse nicht verfügbar (AI-Binding fehlt).';
 
   try {
     const prompt = userPrompt
       ? `Analysiere dieses Bild im Kontext von Web-Entwicklung und Design. Der Nutzer fragt: "${userPrompt}". Beschreibe was du siehst und gib konstruktives Feedback. Antworte auf Deutsch.`
       : 'Analysiere dieses Bild im Kontext von Web-Entwicklung und Design. Beschreibe was du siehst, bewerte das Design und gib Verbesserungsvorschläge. Antworte auf Deutsch.';
 
-    const result = await env.AI.run(LLAVA_MODEL, {
-      prompt,
-      image: imageData, // base64 or array buffer
-    });
-
+    const result = await env.AI.run(LLAVA_MODEL, { prompt, image: imageData });
     return result?.description || result?.response || 'Keine Analyse erhalten.';
   } catch (error) {
-    console.error('LLaVA analysis error:', error);
+    console.error('LLaVA error:', error);
     return `Bildanalyse fehlgeschlagen: ${error.message}`;
   }
 }
 
-// ─── Tool Execution ─────────────────────────────────────────────────────────────
+// ─── Server-Side Tool Execution ─────────────────────────────────────────────────
 
-/**
- * Execute a tool call server-side (for memory operations)
- * Client-side tools (navigate, theme, etc.) are passed back
- */
 async function executeServerTool(env, toolName, args, userId) {
   switch (toolName) {
     case 'rememberUser': {
@@ -367,18 +339,20 @@ async function executeServerTool(env, toolName, args, userId) {
     case 'recallMemory': {
       const memories = await recallMemories(env, userId, args.query || '');
       if (memories.length === 0) {
-        return 'Ich habe keine passenden Erinnerungen an dich gefunden. Erzähl mir gerne mehr über dich!';
+        return 'Ich habe keine passenden Erinnerungen gefunden. Erzähl mir gerne mehr über dich!';
       }
-      const memoryList = memories
-        .map(
-          (m) =>
-            `- **${m.key}**: ${m.value} (${new Date(m.timestamp).toLocaleDateString('de-DE')})`,
-        )
-        .join('\n');
-      return `Hier ist, was ich über dich weiß:\n${memoryList}`;
+      return (
+        'Hier ist, was ich über dich weiß:\n' +
+        memories
+          .map(
+            (m) =>
+              `- **${m.key}**: ${m.value} (${new Date(m.timestamp).toLocaleDateString('de-DE')})`,
+          )
+          .join('\n')
+      );
     }
     default:
-      return null; // Not a server tool → pass to client
+      return null;
   }
 }
 
@@ -386,7 +360,6 @@ async function executeServerTool(env, toolName, args, userId) {
 
 async function getRAGContext(query, env) {
   if (!env.AI) return null;
-
   try {
     const ragId = env.RAG_ID || 'wispy-pond-1055';
     const searchData = await env.AI.autorag(ragId).aiSearch({
@@ -412,28 +385,45 @@ async function getRAGContext(query, env) {
   }
 }
 
+// ─── SSE Helpers ────────────────────────────────────────────────────────────────
+
+function sseEvent(event, data) {
+  return `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
+}
+
 // ─── Main Handler ───────────────────────────────────────────────────────────────
 
 export async function onRequestPost(context) {
   const { request, env } = context;
   const corsHeaders = getCorsHeaders(request, env);
 
+  const sseHeaders = {
+    ...corsHeaders,
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache, no-store, must-revalidate',
+    Connection: 'keep-alive',
+    'X-Accel-Buffering': 'no',
+  };
+
   try {
+    // ── Parse request ──
     const contentType = request.headers.get('content-type') || '';
     let body;
+    let imageAnalysis = '';
 
-    // Handle multipart form data (image uploads)
     if (contentType.includes('multipart/form-data')) {
       const formData = await request.formData();
       const imageFile = formData.get('image');
       const prompt = formData.get('prompt') || '';
       const userId = formData.get('userId') || 'anonymous';
 
-      let imageAnalysis = '';
       if (imageFile && imageFile instanceof File) {
         const arrayBuffer = await imageFile.arrayBuffer();
-        const imageArray = [...new Uint8Array(arrayBuffer)];
-        imageAnalysis = await analyzeImage(env, imageArray, String(prompt));
+        imageAnalysis = await analyzeImage(
+          env,
+          [...new Uint8Array(arrayBuffer)],
+          String(prompt),
+        );
       }
 
       body = {
@@ -449,9 +439,10 @@ export async function onRequestPost(context) {
     const {
       prompt = '',
       userId = 'anonymous',
-      imageAnalysis = '',
       conversationHistory = [],
+      stream = true,
     } = body;
+    imageAnalysis = body.imageAnalysis || imageAnalysis;
 
     if (!prompt && !imageAnalysis) {
       return Response.json(
@@ -460,40 +451,43 @@ export async function onRequestPost(context) {
       );
     }
 
-    // ── Recall user memories ──
-    let memoryContext = '';
-    try {
-      const memories = await recallMemories(env, userId, prompt || 'user');
-      if (memories.length > 0) {
-        memoryContext = memories
-          .map((m) => `- ${m.key}: ${m.value}`)
-          .join('\n');
-      }
-    } catch {
-      // Memory recall is best-effort
+    if (!env.AI) {
+      console.error('AI binding not configured.');
+      return Response.json(
+        {
+          error: 'AI service not configured',
+          text: 'Der KI-Dienst ist nicht verfügbar (AI-Binding fehlt).',
+          toolCalls: [],
+          retryable: false,
+        },
+        { status: 500, headers: corsHeaders },
+      );
     }
 
-    // ── Get RAG context ──
-    let ragContext = '';
-    try {
-      ragContext = (await getRAGContext(prompt, env)) || '';
-    } catch {
-      // RAG is best-effort
-    }
+    // ── Parallel: memory + RAG ──
+    const [memories, ragContext] = await Promise.allSettled([
+      recallMemories(env, userId, prompt || 'user'),
+      getRAGContext(prompt, env),
+    ]);
 
-    // ── Build system prompt ──
-    let systemPrompt = buildSystemPrompt(memoryContext, imageAnalysis);
-    if (ragContext) {
-      systemPrompt += `\n\n**WEBSITE-KONTEXT (RAG):**\n${ragContext}`;
-    }
+    const memoryContext =
+      memories.status === 'fulfilled' && memories.value.length > 0
+        ? memories.value.map((m) => `- ${m.key}: ${m.value}`).join('\n')
+        : '';
+
+    const ragText =
+      ragContext.status === 'fulfilled' ? ragContext.value || '' : '';
 
     // ── Build messages ──
+    let systemPrompt = buildSystemPrompt(memoryContext, imageAnalysis);
+    if (ragText) {
+      systemPrompt += `\n\n**WEBSITE-KONTEXT (RAG):**\n${ragText}`;
+    }
+
     const messages = [{ role: 'system', content: systemPrompt }];
 
-    // Add conversation history (max last 10 turns)
     if (Array.isArray(conversationHistory)) {
-      const recentHistory = conversationHistory.slice(-10);
-      for (const msg of recentHistory) {
+      for (const msg of conversationHistory.slice(-MAX_HISTORY_TURNS)) {
         if (msg.role === 'user' || msg.role === 'assistant') {
           messages.push({
             role: msg.role,
@@ -502,142 +496,403 @@ export async function onRequestPost(context) {
         }
       }
     }
-
     messages.push({ role: 'user', content: prompt });
 
-    // ── Check AI binding ──
-    if (!env.AI) {
-      console.error('AI binding is not configured in wrangler.jsonc.');
-      return Response.json(
-        {
-          error: 'AI service not configured',
-          text: 'Der KI-Dienst ist momentan nicht verfügbar (AI-Binding fehlt).',
-          toolCalls: [],
-          retryable: false,
-        },
-        { status: 500, headers: corsHeaders },
-      );
+    // ── Non-streaming path (proactive suggestions etc.) ──
+    if (!stream) {
+      return handleNonStreaming(env, messages, userId, corsHeaders, {
+        memoryContext,
+        imageAnalysis,
+      });
     }
 
-    // ── Call Cloudflare Workers AI ──
-    const aiResult = await env.AI.run(CHAT_MODEL, {
-      messages,
-      tools: buildTools(),
-      temperature: 0.7,
-      max_tokens: 2048,
-    });
+    // ── SSE Streaming ──
+    const { readable, writable } = new TransformStream();
+    const writer = writable.getWriter();
+    const encoder = new TextEncoder();
 
-    if (!aiResult) {
-      throw new Error('Empty response from Workers AI');
-    }
+    const write = (event, data) =>
+      writer.write(encoder.encode(sseEvent(event, data)));
 
-    // ── Process tool calls ──
-    const clientToolCalls = [];
-    const toolResults = [];
-    const toolCalls = aiResult.tool_calls || [];
-
-    if (toolCalls.length > 0) {
-      for (const toolCall of toolCalls) {
-        // Workers AI returns { name, arguments } directly (arguments already parsed)
-        const toolName = toolCall.name;
-        const args =
-          typeof toolCall.arguments === 'string'
-            ? JSON.parse(toolCall.arguments)
-            : toolCall.arguments || {};
-
-        // Execute server-side tools
-        const serverResult = await executeServerTool(
-          env,
-          toolName,
-          args,
-          userId,
-        );
-
-        if (serverResult !== null) {
-          toolResults.push({
-            name: toolName,
-            result: serverResult,
-          });
-        } else {
-          // Client-side tool → pass to frontend
-          clientToolCalls.push({
-            name: toolName,
-            arguments: args,
-          });
-        }
-      }
-
-      // If we had server-side tool results, do a second LLM call to incorporate them
-      if (toolResults.length > 0) {
-        const toolSummary = toolResults
-          .map((tr) => `[Tool ${tr.name}]: ${tr.result}`)
-          .join('\n');
-
-        const followUpMessages = [
-          ...messages,
-          {
-            role: 'assistant',
-            content:
-              aiResult.response ||
-              `Ich habe folgende Tools ausgeführt: ${toolResults.map((r) => r.name).join(', ')}`,
-          },
-          {
-            role: 'user',
-            content: `Ergebnisse der Tool-Ausführung:\n${toolSummary}\n\nBitte antworte dem Nutzer basierend auf diesen Ergebnissen.`,
-          },
-        ];
-
+    context.waitUntil(
+      (async () => {
         try {
-          const secondResult = await env.AI.run(CHAT_MODEL, {
-            messages: followUpMessages,
+          await write('status', { phase: 'thinking' });
+
+          const aiResult = await env.AI.run(CHAT_MODEL, {
+            messages,
+            tools: buildTools(),
             temperature: 0.7,
-            max_tokens: 2048,
+            max_tokens: MAX_TOKENS,
+            stream: true,
           });
 
-          const secondText = secondResult?.response || '';
-          if (secondText) {
-            return Response.json(
-              {
-                text: secondText,
-                toolCalls: clientToolCalls,
-                model: CHAT_MODEL,
-                hasMemory: !!memoryContext,
-                hasImage: !!imageAnalysis,
-                toolResults: toolResults.map((r) => r.name),
-              },
-              { headers: corsHeaders },
+          if (aiResult instanceof ReadableStream) {
+            await write('status', { phase: 'streaming' });
+            await streamAIResponse(aiResult, writer, encoder, env, userId, {
+              memoryContext,
+              imageAnalysis,
+              messages,
+            });
+          } else {
+            await handleToolCallsAndRespond(
+              aiResult,
+              write,
+              env,
+              userId,
+              messages,
+              { memoryContext, imageAnalysis },
             );
           }
-        } catch (err) {
-          console.warn('Second AI call failed:', err?.message);
-          // Fall through to return first response
+        } catch (error) {
+          console.error('SSE pipeline error:', error?.message || error);
+          await write('error', {
+            text: 'Verbindung zum KI-Dienst fehlgeschlagen.',
+            retryable: true,
+          });
+        } finally {
+          await write('done', { ts: Date.now() });
+          await writer.close();
         }
-      }
-    }
-
-    // ── Return response ──
-    const responseText = aiResult.response || '';
-
-    return Response.json(
-      {
-        text:
-          responseText ||
-          (clientToolCalls.length
-            ? 'Aktion wird ausgeführt...'
-            : 'Keine Antwort erhalten.'),
-        toolCalls: clientToolCalls,
-        model: CHAT_MODEL,
-        hasMemory: !!memoryContext,
-        hasImage: !!imageAnalysis,
-      },
-      { headers: corsHeaders },
+      })(),
     );
+
+    return new Response(readable, { headers: sseHeaders });
   } catch (error) {
     console.error('AI Agent error:', error?.message || error);
     return Response.json(
       {
         error: 'AI Agent request failed',
         text: 'Verbindung zum KI-Dienst fehlgeschlagen. Bitte versuche es erneut.',
+        toolCalls: [],
+        retryable: true,
+      },
+      { status: 503, headers: corsHeaders },
+    );
+  }
+}
+
+// ─── Stream AI Response ─────────────────────────────────────────────────────────
+
+async function streamAIResponse(stream, writer, encoder, env, userId, ctx) {
+  const write = (event, data) =>
+    writer.write(encoder.encode(sseEvent(event, data)));
+
+  const reader = stream.getReader();
+  const decoder = new TextDecoder();
+  let fullText = '';
+  let toolCalls = [];
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      const chunk = decoder.decode(value, { stream: true });
+      const lines = chunk.split('\n');
+
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const data = line.slice(6).trim();
+        if (data === '[DONE]') continue;
+
+        try {
+          const parsed = JSON.parse(data);
+          const delta = parsed.response || '';
+
+          if (delta) {
+            fullText += delta;
+            await write('token', { text: delta });
+          }
+
+          if (parsed.tool_calls) {
+            toolCalls = parsed.tool_calls;
+          }
+        } catch {
+          // skip malformed chunks
+        }
+      }
+    }
+  } finally {
+    reader.releaseLock();
+  }
+
+  if (toolCalls.length > 0) {
+    await processToolCalls(toolCalls, write, env, userId, ctx);
+  }
+
+  await write('message', {
+    text: fullText,
+    model: CHAT_MODEL,
+    hasMemory: !!ctx.memoryContext,
+    hasImage: !!ctx.imageAnalysis,
+  });
+}
+
+// ─── Handle Tool Calls (Non-Streaming Path) ────────────────────────────────────
+
+async function handleToolCallsAndRespond(
+  aiResult,
+  write,
+  env,
+  userId,
+  messages,
+  ctx,
+) {
+  const toolCalls = aiResult.tool_calls || [];
+  const responseText = aiResult.response || '';
+
+  if (toolCalls.length === 0) {
+    if (responseText) {
+      await write('token', { text: responseText });
+    }
+    await write('message', {
+      text: responseText || 'Keine Antwort erhalten.',
+      toolCalls: [],
+      model: CHAT_MODEL,
+      hasMemory: !!ctx.memoryContext,
+      hasImage: !!ctx.imageAnalysis,
+    });
+    return;
+  }
+
+  await processToolCalls(toolCalls, write, env, userId, ctx, messages);
+}
+
+// ─── Process Tool Calls ─────────────────────────────────────────────────────────
+
+async function processToolCalls(
+  toolCalls,
+  write,
+  env,
+  userId,
+  ctx,
+  messages = [],
+) {
+  const clientToolCalls = [];
+  const serverToolResults = [];
+
+  for (const tc of toolCalls) {
+    const toolName = tc.name;
+    const args =
+      typeof tc.arguments === 'string'
+        ? JSON.parse(tc.arguments)
+        : tc.arguments || {};
+
+    await write('tool', {
+      name: toolName,
+      arguments: args,
+      status: 'executing',
+    });
+
+    const serverResult = await executeServerTool(env, toolName, args, userId);
+
+    if (serverResult !== null) {
+      serverToolResults.push({ name: toolName, result: serverResult });
+      await write('tool', {
+        name: toolName,
+        status: 'done',
+        result: serverResult,
+        isServerTool: true,
+      });
+    } else {
+      clientToolCalls.push({ name: toolName, arguments: args });
+      await write('tool', {
+        name: toolName,
+        arguments: args,
+        status: 'client',
+        isServerTool: false,
+      });
+    }
+  }
+
+  // Follow-up AI call with tool results
+  if (serverToolResults.length > 0 && messages.length > 0) {
+    await write('status', { phase: 'synthesizing' });
+
+    const toolSummary = serverToolResults
+      .map((tr) => `[Tool ${tr.name}]: ${tr.result}`)
+      .join('\n');
+
+    const followUp = [
+      ...messages,
+      {
+        role: 'assistant',
+        content: `Ich habe folgende Tools ausgeführt: ${serverToolResults.map((r) => r.name).join(', ')}`,
+      },
+      {
+        role: 'user',
+        content: `Ergebnisse der Tool-Ausführung:\n${toolSummary}\n\nBitte antworte dem Nutzer basierend auf diesen Ergebnissen.`,
+      },
+    ];
+
+    try {
+      const secondResult = await env.AI.run(CHAT_MODEL, {
+        messages: followUp,
+        temperature: 0.7,
+        max_tokens: MAX_TOKENS,
+        stream: true,
+      });
+
+      if (secondResult instanceof ReadableStream) {
+        const reader = secondResult.getReader();
+        const decoder = new TextDecoder();
+        let secondText = '';
+
+        try {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            const chunk = decoder.decode(value, { stream: true });
+            for (const line of chunk.split('\n')) {
+              if (!line.startsWith('data: ')) continue;
+              const data = line.slice(6).trim();
+              if (data === '[DONE]') continue;
+              try {
+                const parsed = JSON.parse(data);
+                const delta = parsed.response || '';
+                if (delta) {
+                  secondText += delta;
+                  await write('token', { text: delta });
+                }
+              } catch {
+                /* skip */
+              }
+            }
+          }
+        } finally {
+          reader.releaseLock();
+        }
+
+        await write('message', {
+          text: secondText,
+          toolCalls: clientToolCalls,
+          model: CHAT_MODEL,
+          hasMemory: !!ctx.memoryContext,
+          hasImage: !!ctx.imageAnalysis,
+          toolResults: serverToolResults.map((r) => r.name),
+        });
+        return;
+      } else if (secondResult?.response) {
+        await write('token', { text: secondResult.response });
+        await write('message', {
+          text: secondResult.response,
+          toolCalls: clientToolCalls,
+          model: CHAT_MODEL,
+          hasMemory: !!ctx.memoryContext,
+          hasImage: !!ctx.imageAnalysis,
+          toolResults: serverToolResults.map((r) => r.name),
+        });
+        return;
+      }
+    } catch (err) {
+      console.warn('Follow-up AI call failed:', err?.message);
+    }
+  }
+
+  await write('message', {
+    text: clientToolCalls.length > 0 ? 'Aktion wird ausgeführt...' : '',
+    toolCalls: clientToolCalls,
+    model: CHAT_MODEL,
+    hasMemory: !!ctx.memoryContext,
+    hasImage: !!ctx.imageAnalysis,
+    toolResults: serverToolResults.map((r) => r.name),
+  });
+}
+
+// ─── Non-Streaming Handler ──────────────────────────────────────────────────────
+
+async function handleNonStreaming(env, messages, userId, corsHeaders, ctx) {
+  try {
+    const aiResult = await env.AI.run(CHAT_MODEL, {
+      messages,
+      tools: buildTools(),
+      temperature: 0.7,
+      max_tokens: MAX_TOKENS,
+    });
+
+    if (!aiResult) throw new Error('Empty response from Workers AI');
+
+    const toolCalls = aiResult.tool_calls || [];
+    const clientToolCalls = [];
+    const serverToolResults = [];
+
+    for (const tc of toolCalls) {
+      const toolName = tc.name;
+      const args =
+        typeof tc.arguments === 'string'
+          ? JSON.parse(tc.arguments)
+          : tc.arguments || {};
+
+      const serverResult = await executeServerTool(env, toolName, args, userId);
+      if (serverResult !== null) {
+        serverToolResults.push({ name: toolName, result: serverResult });
+      } else {
+        clientToolCalls.push({ name: toolName, arguments: args });
+      }
+    }
+
+    if (serverToolResults.length > 0) {
+      const toolSummary = serverToolResults
+        .map((tr) => `[Tool ${tr.name}]: ${tr.result}`)
+        .join('\n');
+
+      try {
+        const secondResult = await env.AI.run(CHAT_MODEL, {
+          messages: [
+            ...messages,
+            {
+              role: 'assistant',
+              content: `Tools ausgeführt: ${serverToolResults.map((r) => r.name).join(', ')}`,
+            },
+            {
+              role: 'user',
+              content: `Ergebnisse:\n${toolSummary}\n\nAntworte dem Nutzer.`,
+            },
+          ],
+          temperature: 0.7,
+          max_tokens: MAX_TOKENS,
+        });
+
+        if (secondResult?.response) {
+          return Response.json(
+            {
+              text: secondResult.response,
+              toolCalls: clientToolCalls,
+              model: CHAT_MODEL,
+              hasMemory: !!ctx.memoryContext,
+              hasImage: !!ctx.imageAnalysis,
+              toolResults: serverToolResults.map((r) => r.name),
+            },
+            { headers: corsHeaders },
+          );
+        }
+      } catch (err) {
+        console.warn('Follow-up failed:', err?.message);
+      }
+    }
+
+    return Response.json(
+      {
+        text:
+          aiResult.response ||
+          (clientToolCalls.length
+            ? 'Aktion wird ausgeführt...'
+            : 'Keine Antwort erhalten.'),
+        toolCalls: clientToolCalls,
+        model: CHAT_MODEL,
+        hasMemory: !!ctx.memoryContext,
+        hasImage: !!ctx.imageAnalysis,
+      },
+      { headers: corsHeaders },
+    );
+  } catch (error) {
+    console.error('Non-streaming error:', error?.message || error);
+    return Response.json(
+      {
+        error: 'AI Agent request failed',
+        text: 'Verbindung zum KI-Dienst fehlgeschlagen.',
         toolCalls: [],
         retryable: true,
       },

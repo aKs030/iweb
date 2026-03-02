@@ -1,7 +1,7 @@
 /**
  * Cloudflare Pages Function - POST /api/ai
- * Modern AI Chat with RAG (Retrieval-Augmented Generation) using Groq + AI Search Beta
- * @version 9.3.0 - Enhanced RAG with shared title extraction
+ * AI Chat with RAG (Retrieval-Augmented Generation) using Cloudflare Workers AI
+ * @version 10.0.0 - Migrated from Groq to Workers AI (zero external keys)
  */
 
 import { getCorsHeaders, handleOptions } from './_cors.js';
@@ -11,8 +11,7 @@ import {
   resolveAiSearchConfig,
 } from './_ai-search-config.js';
 
-const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
-const GROQ_MODEL = 'llama-3.3-70b-versatile';
+const CHAT_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast';
 const DEFAULT_RAG_ID = 'wispy-pond-1055';
 const MAX_CONTEXT_SOURCES = 3;
 
@@ -77,12 +76,12 @@ function createLocalFallbackText(prompt, contextData) {
       ? `Ich habe lokal ${contextData.sources.length} relevante Quelle${contextData.sources.length === 1 ? '' : 'n'} gefunden.`
       : 'Ich konnte lokal keine zusätzlichen Quellen ermitteln.';
 
-  return `Lokaler KI-Modus aktiv: GROQ_API_KEY fehlt.
+  return `Lokaler KI-Modus aktiv: AI-Binding fehlt.
 ${sourceHint}
 
 Deine Anfrage: "${promptPreview || 'Leer'}"
 
-Hinweis: Setze GROQ_API_KEY in .dev.vars für echte KI-Antworten.`;
+Hinweis: Deploy auf Cloudflare Pages für echte KI-Antworten.`;
 }
 
 /**
@@ -229,8 +228,8 @@ export async function onRequestPost(context) {
     // Try to get relevant context from AI Search Beta
     const contextData = await getRelevantContext(prompt, env);
 
-    // Local dev fallback: avoid hard 500 when GROQ key is not configured
-    if (!env.GROQ_API_KEY) {
+    // Check AI binding
+    if (!env.AI) {
       if (isLocalRequest(request)) {
         return Response.json(
           {
@@ -240,7 +239,7 @@ export async function onRequestPost(context) {
             contextQuality: contextData?.sources?.length || 0,
             sources: contextData?.sources || [],
             mode: 'local-fallback',
-            warning: 'GROQ_API_KEY not configured',
+            warning: 'AI binding not configured',
           },
           {
             status: 200,
@@ -252,7 +251,7 @@ export async function onRequestPost(context) {
         );
       }
 
-      throw new Error('GROQ_API_KEY not configured');
+      throw new Error('AI binding not configured');
     }
 
     // Build system message with context if available
@@ -277,37 +276,23 @@ ANWEISUNGEN:
       { role: 'user', content: prompt },
     ];
 
-    // Call Groq API
-    const groqResponse = await fetch(GROQ_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${env.GROQ_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: GROQ_MODEL,
-        messages: messages,
-        temperature: 0.7,
-        max_tokens: 1024,
-      }),
+    // Call Cloudflare Workers AI
+    const aiResult = await env.AI.run(CHAT_MODEL, {
+      messages,
+      temperature: 0.7,
+      max_tokens: 1024,
     });
 
-    if (!groqResponse.ok) {
-      const errorText = await groqResponse.text();
-      throw new Error(`Groq API error: ${groqResponse.status} - ${errorText}`);
-    }
-
-    const groqData = await groqResponse.json();
-    const responseText = groqData.choices?.[0]?.message?.content || '';
+    const responseText = aiResult?.response || '';
 
     if (!responseText) {
-      throw new Error('Empty response from Groq');
+      throw new Error('Empty response from Workers AI');
     }
 
     return Response.json(
       {
         text: responseText,
-        model: GROQ_MODEL,
+        model: CHAT_MODEL,
         hasContext: !!contextData,
         contextQuality: contextData?.sources?.length || 0,
         sources: contextData?.sources || [],

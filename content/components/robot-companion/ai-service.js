@@ -1,10 +1,10 @@
 /**
- * AI API Service (using Groq through /api/ai proxy)
+ * AI API Service (Legacy fallback — uses /api/ai with Workers AI)
  * Includes retry logic and a circuit breaker fallback to local mode.
+ * @version 2.0.0 — Groq removed, now uses Cloudflare Workers AI via /api/ai
  */
 
 import { createLogger } from '../../core/logger.js';
-import { sleep } from '../../core/utils.js';
 
 const log = createLogger('AIService');
 
@@ -78,7 +78,7 @@ function buildLocalReply(prompt = '', mode = 'chat') {
 }
 
 /**
- * Simulate streaming effect by sending text in chunks
+ * Simulate streaming effect for local fallback text
  * @param {string} text - Full text to stream
  * @param {Function} onChunk - Callback for each chunk
  */
@@ -89,7 +89,9 @@ async function simulateStreaming(text, onChunk) {
   for (const token of tokens) {
     accumulated += token;
     onChunk(accumulated);
-    await sleep(Math.floor(Math.random() * 35) + 15);
+    await new Promise((r) =>
+      setTimeout(r, Math.floor(Math.random() * 35) + 15),
+    );
   }
 }
 
@@ -157,7 +159,7 @@ async function callAIAPI(prompt, mode = 'chat', onChunk) {
       }
 
       log.warn(`AI API attempt ${attempt + 1} failed, retrying...`);
-      await sleep(delay);
+      await new Promise((r) => setTimeout(r, delay));
       delay *= 2;
     }
   }
@@ -167,7 +169,7 @@ async function callAIAPI(prompt, mode = 'chat', onChunk) {
 }
 
 /**
- * AI Service - Provides AI chat functionality (using Groq)
+ * AI Service - Provides AI chat functionality (via Workers AI)
  */
 export class AIService {
   /**

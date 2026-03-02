@@ -1,19 +1,19 @@
 /**
- * AI Agent Service - Proactive AI with Tool-Calling, Image Analysis & Memory
- * Erweitert den bestehenden AIService um Agentic-Fähigkeiten.
- * @version 1.0.0
+ * AI Agent Service v3 — Real SSE Streaming, Tool-Calling & Memory
+ *
+ * Connects to POST /api/ai-agent which streams Server-Sent Events.
+ * Falls back to JSON for non-streaming calls (proactive suggestions).
+ *
+ * @version 3.0.0
  */
 
 import { createLogger } from '../../core/logger.js';
-import { sleep } from '../../core/utils.js';
 import { executeTool } from './modules/tool-executor.js';
 
 const log = createLogger('AIAgentService');
 
-const MAX_RETRIES = 2;
-const INITIAL_DELAY = 1500;
 const AGENT_ENDPOINT = '/api/ai-agent';
-const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5 MB
 const CONVERSATION_HISTORY_KEY = 'jules-conversation-history';
 const USER_ID_KEY = 'jules-user-id';
 const MAX_HISTORY_LENGTH = 20;
@@ -30,12 +30,26 @@ const circuit = {
 function isCircuitOpen() {
   if (!circuit.openedAt) return false;
   if (Date.now() - circuit.openedAt < circuit.cooldown) return true;
+  // Half-open after cooldown
   circuit.openedAt = 0;
   circuit.failures = Math.max(0, circuit.threshold - 1);
   return false;
 }
 
-// ─── User ID Management ─────────────────────────────────────────────────────────
+function recordSuccess() {
+  circuit.failures = 0;
+  circuit.openedAt = 0;
+}
+
+function recordFailure() {
+  circuit.failures++;
+  if (circuit.failures >= circuit.threshold && !circuit.openedAt) {
+    circuit.openedAt = Date.now();
+    log.warn('Circuit breaker opened — AI calls paused for 2 min');
+  }
+}
+
+// ─── User ID ────────────────────────────────────────────────────────────────────
 
 function getUserId() {
   try {
@@ -62,10 +76,12 @@ function getConversationHistory() {
 
 function saveConversationHistory(history) {
   try {
-    const trimmed = history.slice(-MAX_HISTORY_LENGTH);
-    localStorage.setItem(CONVERSATION_HISTORY_KEY, JSON.stringify(trimmed));
+    localStorage.setItem(
+      CONVERSATION_HISTORY_KEY,
+      JSON.stringify(history.slice(-MAX_HISTORY_LENGTH)),
+    );
   } catch {
-    // Storage not available
+    /* storage unavailable */
   }
 }
 
@@ -75,78 +91,149 @@ function addToHistory(role, content) {
   saveConversationHistory(history);
 }
 
-// ─── Streaming Simulation ───────────────────────────────────────────────────────
+// ─── Image Validation ───────────────────────────────────────────────────────────
 
-async function simulateStreaming(text, onChunk) {
-  const tokens = text.match(/\S+\s*/g) || [];
-  let accumulated = '';
+const ALLOWED_IMAGE_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+];
 
-  for (const token of tokens) {
-    accumulated += token;
-    onChunk(accumulated);
-    await sleep(Math.floor(Math.random() * 30) + 15);
-  }
-}
-
-// ─── Image Processing ───────────────────────────────────────────────────────────
-
-/**
- * Process and validate an image file for upload
- * @param {File} file - Image file
- * @returns {Promise<{ valid: boolean, error?: string, file?: File }>}
- */
 function validateImageFile(file) {
   if (!file || !(file instanceof File)) {
     return { valid: false, error: 'Keine gültige Datei.' };
   }
-
   if (file.size > MAX_IMAGE_SIZE) {
     return {
       valid: false,
-      error: `Bild zu groß (${(file.size / 1024 / 1024).toFixed(1)}MB). Maximum: 5MB.`,
+      error: `Bild zu groß (${(file.size / 1024 / 1024).toFixed(1)} MB). Maximum: 5 MB.`,
     };
   }
-
-  const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-  if (!allowedTypes.includes(file.type)) {
+  if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
     return {
       valid: false,
       error: `Dateityp nicht unterstützt: ${file.type}. Erlaubt: JPEG, PNG, WebP, GIF.`,
     };
   }
-
   return { valid: true, file };
 }
 
-// ─── Core API Call ──────────────────────────────────────────────────────────────
+// ─── SSE Stream Parser ──────────────────────────────────────────────────────────
+
+/**
+ * Parse an SSE stream from the AI agent endpoint.
+ *
+ * Callbacks:
+ * - onToken(text)       — incremental text delta
+ * - onTool(toolEvent)   — tool call status updates
+ * - onStatus(phase)     — thinking / streaming / synthesizing
+ * - onMessage(msg)      — final complete message payload
+ * - onError(err)        — error event
+ *
+ * @param {Response} response
+ * @param {Object} callbacks
+ * @returns {Promise<Object>} Final message payload
+ */
+async function parseSSEStream(response, callbacks = {}) {
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  let finalMessage = null;
+
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+
+      // Process complete SSE events (double newline delimited)
+      const events = buffer.split('\n\n');
+      buffer = events.pop() || ''; // Keep incomplete event in buffer
+
+      for (const event of events) {
+        if (!event.trim()) continue;
+
+        let eventType = '';
+        let eventData = '';
+
+        for (const line of event.split('\n')) {
+          if (line.startsWith('event: ')) {
+            eventType = line.slice(7).trim();
+          } else if (line.startsWith('data: ')) {
+            eventData += line.slice(6);
+          }
+        }
+
+        if (!eventType || !eventData) continue;
+
+        let data;
+        try {
+          data = JSON.parse(eventData);
+        } catch {
+          continue;
+        }
+
+        switch (eventType) {
+          case 'token':
+            callbacks.onToken?.(data.text || '');
+            break;
+          case 'tool':
+            callbacks.onTool?.(data);
+            break;
+          case 'status':
+            callbacks.onStatus?.(data.phase || '');
+            break;
+          case 'message':
+            finalMessage = data;
+            callbacks.onMessage?.(data);
+            break;
+          case 'error':
+            callbacks.onError?.(data);
+            break;
+          case 'done':
+            // Stream finished
+            break;
+        }
+      }
+    }
+  } finally {
+    reader.releaseLock();
+  }
+
+  return finalMessage;
+}
+
+// ─── Core Streaming Call ────────────────────────────────────────────────────────
 
 /**
  * @typedef {Object} AgentResponse
- * @property {string} text - AI response text
- * @property {Array<{name: string, arguments: Object}>} toolCalls - Client tool calls
- * @property {boolean} hasMemory - Whether memory context was used
- * @property {boolean} hasImage - Whether image analysis was included
- * @property {Array<{name: string, success: boolean, message: string}>} toolResults - Tool execution results
+ * @property {string} text
+ * @property {Array<{name: string, arguments: Object}>} toolCalls
+ * @property {boolean} hasMemory
+ * @property {boolean} hasImage
+ * @property {Array<{name: string, success: boolean, message: string}>} toolResults
  */
 
 /**
- * Call the AI Agent API
- * @param {Object} payload
- * @param {string} payload.prompt
- * @param {File} [payload.image]
- * @param {Function} [onChunk]
- * @param {{ maxRetries?: number }} [options]
+ * Call the AI Agent API with real SSE streaming.
+ *
+ * @param {Object} payload - { prompt, image? }
+ * @param {Object} [callbacks] - { onToken, onTool, onStatus }
+ * @param {Object} [options] - { stream?, maxRetries? }
  * @returns {Promise<AgentResponse>}
  */
-async function callAgentAPI(payload, onChunk, options = {}) {
-  const maxRetries = options.maxRetries ?? MAX_RETRIES;
+async function callAgentAPI(payload, callbacks = {}, options = {}) {
+  const stream = options.stream !== false;
+
+  // Offline / circuit breaker check
   const offline =
     typeof navigator !== 'undefined' && navigator.onLine === false;
-
   if (offline || isCircuitOpen()) {
     const fallback =
       '🤖 Ich bin gerade offline. Bitte versuche es später erneut.';
-    if (onChunk) await simulateStreaming(fallback, onChunk);
+    callbacks.onToken?.(fallback);
     return {
       text: fallback,
       toolCalls: [],
@@ -158,114 +245,49 @@ async function callAgentAPI(payload, onChunk, options = {}) {
 
   const userId = getUserId();
   const conversationHistory = getConversationHistory();
-  let delay = INITIAL_DELAY;
 
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    try {
-      let response;
+  try {
+    let response;
 
-      if (payload.image) {
-        // Multipart upload for image
-        const formData = new FormData();
-        formData.append('prompt', payload.prompt || '');
-        formData.append('userId', userId);
-        formData.append('image', payload.image);
+    if (payload.image) {
+      const formData = new FormData();
+      formData.append('prompt', payload.prompt || '');
+      formData.append('userId', userId);
+      formData.append('image', payload.image);
 
-        response = await fetch(AGENT_ENDPOINT, {
-          method: 'POST',
-          body: formData,
-        });
-      } else {
-        // JSON request
-        response = await fetch(AGENT_ENDPOINT, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            prompt: payload.prompt,
-            userId,
-            conversationHistory,
-            mode: 'agent',
-          }),
-        });
+      response = await fetch(AGENT_ENDPOINT, {
+        method: 'POST',
+        body: formData,
+      });
+    } else {
+      response = await fetch(AGENT_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: payload.prompt,
+          userId,
+          conversationHistory,
+          mode: 'agent',
+          stream,
+        }),
+      });
+    }
+
+    if (!response.ok) {
+      let errorBody;
+      try {
+        errorBody = await response.json();
+      } catch {
+        errorBody = {};
       }
 
-      if (!response.ok) {
-        // Parse the error body to check retryable flag
-        let errorBody;
-        try {
-          errorBody = await response.json();
-        } catch {
-          errorBody = {};
-        }
-
-        // Don't retry non-retryable errors (e.g. missing API key config)
-        if (errorBody.retryable === false) {
-          log.warn('Non-retryable AI Agent error:', response.status);
-          const fallbackText =
-            errorBody.text || 'Der KI-Dienst ist momentan nicht verfügbar.';
-          if (onChunk) await simulateStreaming(fallbackText, onChunk);
-          return {
-            text: fallbackText,
-            toolCalls: [],
-            hasMemory: false,
-            hasImage: false,
-            toolResults: [],
-          };
-        }
-
-        throw new Error(`API Error ${response.status}`);
-      }
-
-      const result = await response.json();
-
-      // Reset circuit breaker on success
-      circuit.failures = 0;
-      circuit.openedAt = 0;
-
-      // Save to conversation history
-      addToHistory('user', payload.prompt);
-      if (result.text) {
-        addToHistory('assistant', result.text);
-      }
-
-      // Execute client-side tool calls
-      const toolResults = [];
-      if (Array.isArray(result.toolCalls) && result.toolCalls.length > 0) {
-        for (const tc of result.toolCalls) {
-          const toolResult = executeTool(tc);
-          toolResults.push({
-            name: tc.name,
-            ...toolResult,
-          });
-          log.info(`Tool executed: ${tc.name}`, toolResult);
-        }
-      }
-
-      // Stream the text response
-      if (result.text && onChunk) {
-        await simulateStreaming(result.text, onChunk);
-      }
-
-      return {
-        text: result.text || '',
-        toolCalls: result.toolCalls || [],
-        hasMemory: result.hasMemory || false,
-        hasImage: result.hasImage || false,
-        toolResults,
-      };
-    } catch {
-      if (attempt === maxRetries) {
-        circuit.failures++;
-        if (circuit.failures >= circuit.threshold && !circuit.openedAt) {
-          circuit.openedAt = Date.now();
-          log.warn('Agent circuit breaker opened');
-        }
-
-        const fallback =
-          'Verbindung zum KI-Dienst fehlgeschlagen. Bitte versuche es erneut.';
-        if (onChunk) await simulateStreaming(fallback, onChunk);
+      if (errorBody.retryable === false) {
+        log.warn('Non-retryable AI error:', response.status);
+        const text =
+          errorBody.text || 'Der KI-Dienst ist momentan nicht verfügbar.';
+        callbacks.onToken?.(text);
         return {
-          text: fallback,
+          text,
           toolCalls: [],
           hasMemory: false,
           hasImage: false,
@@ -273,47 +295,146 @@ async function callAgentAPI(payload, onChunk, options = {}) {
         };
       }
 
-      log.warn(`Agent API attempt ${attempt + 1} failed, retrying...`);
-      await sleep(delay);
-      delay *= 2;
+      throw new Error(`API Error ${response.status}`);
     }
-  }
 
-  // Should not reach here, but just in case
-  return {
-    text: 'Ein unerwarteter Fehler ist aufgetreten.',
-    toolCalls: [],
-    hasMemory: false,
-    hasImage: false,
-    toolResults: [],
-  };
+    recordSuccess();
+
+    const contentType = response.headers.get('content-type') || '';
+
+    // ── SSE Stream ──
+    if (contentType.includes('text/event-stream')) {
+      let fullText = '';
+      const toolResults = [];
+
+      const finalMessage = await parseSSEStream(response, {
+        onToken(delta) {
+          fullText += delta;
+          callbacks.onToken?.(fullText);
+        },
+        onTool(toolEvent) {
+          // Execute client-side tools immediately
+          if (toolEvent.status === 'client') {
+            const result = executeTool({
+              name: toolEvent.name,
+              arguments: toolEvent.arguments,
+            });
+            toolResults.push({ name: toolEvent.name, ...result });
+            log.info(`Tool executed: ${toolEvent.name}`, result);
+          }
+          callbacks.onTool?.(toolEvent);
+        },
+        onStatus(phase) {
+          callbacks.onStatus?.(phase);
+        },
+        onError(err) {
+          log.error('SSE error event:', err);
+          callbacks.onError?.(err);
+        },
+        onMessage(msg) {
+          // Execute any remaining client tool calls from final message
+          if (Array.isArray(msg.toolCalls)) {
+            for (const tc of msg.toolCalls) {
+              // Only if not already executed via 'tool' events
+              if (!toolResults.some((r) => r.name === tc.name)) {
+                const result = executeTool(tc);
+                toolResults.push({ name: tc.name, ...result });
+                log.info(`Tool executed: ${tc.name}`, result);
+              }
+            }
+          }
+        },
+      });
+
+      const text = finalMessage?.text || fullText;
+
+      // Save conversation history
+      addToHistory('user', payload.prompt);
+      if (text) addToHistory('assistant', text);
+
+      return {
+        text,
+        toolCalls: finalMessage?.toolCalls || [],
+        hasMemory: finalMessage?.hasMemory || false,
+        hasImage: finalMessage?.hasImage || false,
+        toolResults,
+      };
+    }
+
+    // ── JSON fallback (non-streaming) ──
+    const result = await response.json();
+
+    addToHistory('user', payload.prompt);
+    if (result.text) addToHistory('assistant', result.text);
+
+    // Execute client tool calls
+    const toolResults = [];
+    if (Array.isArray(result.toolCalls)) {
+      for (const tc of result.toolCalls) {
+        const toolResult = executeTool(tc);
+        toolResults.push({ name: tc.name, ...toolResult });
+        log.info(`Tool executed: ${tc.name}`, toolResult);
+      }
+    }
+
+    callbacks.onToken?.(result.text || '');
+
+    return {
+      text: result.text || '',
+      toolCalls: result.toolCalls || [],
+      hasMemory: result.hasMemory || false,
+      hasImage: result.hasImage || false,
+      toolResults,
+    };
+  } catch (error) {
+    log.error('Agent API call failed:', error?.message);
+    recordFailure();
+
+    const fallback =
+      'Verbindung zum KI-Dienst fehlgeschlagen. Bitte versuche es erneut.';
+    callbacks.onToken?.(fallback);
+    return {
+      text: fallback,
+      toolCalls: [],
+      hasMemory: false,
+      hasImage: false,
+      toolResults: [],
+    };
+  }
 }
 
 // ─── AI Agent Service Class ─────────────────────────────────────────────────────
 
 export class AIAgentService {
   /**
-   * Generate a proactive agent response with tool-calling
+   * Generate a streaming agent response with tool-calling.
+   *
    * @param {string} prompt - User message
-   * @param {Function} [onChunk] - Streaming callback
+   * @param {Function} [onToken] - Called with accumulated text on each token
+   * @param {Object} [callbacks] - { onTool, onStatus, onError }
    * @returns {Promise<AgentResponse>}
    */
-  async generateResponse(prompt, onChunk) {
-    return await callAgentAPI({ prompt }, onChunk);
+  async generateResponse(prompt, onToken, callbacks = {}) {
+    return callAgentAPI(
+      { prompt },
+      { onToken, ...callbacks },
+      { stream: true },
+    );
   }
 
   /**
-   * Analyze an image with optional prompt
-   * @param {File} imageFile - Image file
-   * @param {string} [prompt] - User prompt about the image
-   * @param {Function} [onChunk] - Streaming callback
+   * Analyze an image with optional prompt (streamed).
+   *
+   * @param {File} imageFile
+   * @param {string} [prompt]
+   * @param {Function} [onToken]
    * @returns {Promise<AgentResponse>}
    */
-  async analyzeImage(imageFile, prompt = '', onChunk) {
+  async analyzeImage(imageFile, prompt = '', onToken) {
     const validation = validateImageFile(imageFile);
     if (!validation.valid) {
       const error = `⚠️ ${validation.error}`;
-      if (onChunk) await simulateStreaming(error, onChunk);
+      onToken?.(error);
       return {
         text: error,
         toolCalls: [],
@@ -323,17 +444,16 @@ export class AIAgentService {
       };
     }
 
-    return await callAgentAPI(
-      {
-        prompt: prompt || 'Analysiere dieses Bild.',
-        image: imageFile,
-      },
-      onChunk,
+    return callAgentAPI(
+      { prompt: prompt || 'Analysiere dieses Bild.', image: imageFile },
+      { onToken },
+      { stream: true },
     );
   }
 
   /**
-   * Get proactive suggestion based on current context
+   * Get proactive suggestion (non-streaming, single request).
+   *
    * @param {Object} contextData
    * @returns {Promise<string>}
    */
@@ -348,39 +468,36 @@ export class AIAgentService {
         promptText += `\nBeschreibung: "${contextData.description}"`;
       }
       if (contextData.contentSnippet) {
-        promptText += `\nAuszug des Seiteninhalts zur Orientierung:\n"${contextData.contentSnippet.substring(0, 500)}..."`;
+        promptText += `\nAuszug des Seiteninhalts:\n"${contextData.contentSnippet.substring(0, 500)}..."`;
       }
 
-      const response = await callAgentAPI({ prompt: promptText }, null, {
-        maxRetries: 0,
-      });
+      const response = await callAgentAPI(
+        { prompt: promptText },
+        {},
+        { stream: false },
+      );
       return response.text;
     } catch {
       return '';
     }
   }
 
-  /**
-   * Clear conversation history
-   */
+  /** Clear conversation history */
   clearHistory() {
     try {
       localStorage.removeItem(CONVERSATION_HISTORY_KEY);
     } catch {
-      // ignore
+      /* ignore */
     }
   }
 
-  /**
-   * Get user ID
-   * @returns {string}
-   */
+  /** @returns {string} Persistent user ID */
   getUserId() {
     return getUserId();
   }
 
   /**
-   * Validate image before upload
+   * Validate image before upload.
    * @param {File} file
    * @returns {{ valid: boolean, error?: string }}
    */
