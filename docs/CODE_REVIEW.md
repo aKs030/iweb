@@ -44,10 +44,12 @@ The component architecture is modular, with `particles/earth/` containing the bu
 - No API tokens required (secure Workers Binding)
 - Returns AI-generated summaries (max 150 characters)
 
-### Robot Chat API (`functions/api/ai.js`)
+### Robot Chat API (`functions/api/ai-agent.js`)
 
 **Implementation:**
 
-- Uses Groq API (`llama-3.3-70b-versatile`) for chat responses
+- Uses Cloudflare Workers AI models for chat, embeddings, and image analysis
+- SSE streaming responses with tool-calling and memory support
 - RAG context retrieval via AI Search Beta
-- GROQ_API_KEY stored as Cloudflare Pages Secret
+
+_Hinweis:_ `functions/api/ai.js` existiert weiterhin als leichtgewichtiger, kompatibler Endpoint.

@@ -1136,6 +1136,12 @@ export class RobotCompanion {
       document.getElementById('robot-chat-send')
     );
     this.dom.closeBtn = chatWindow.querySelector('.chat-close-btn');
+    this.dom.clearBtn = /** @type {HTMLButtonElement|null} */ (
+      document.getElementById('robot-chat-clear')
+    );
+    this.dom.exportBtn = /** @type {HTMLButtonElement|null} */ (
+      document.getElementById('robot-chat-export')
+    );
 
     this.attachChatEvents();
     this.setupChatInputViewportHandlers();
@@ -1212,14 +1218,18 @@ export class RobotCompanion {
     }
 
     if (this.dom.input) {
-      const _onInputKeypress = (e) => {
-        if (e.key === 'Enter') this.handleUserMessage();
+      const _onInputKeydown = (e) => {
+        if (e.isComposing) return;
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          this.handleUserMessage();
+        }
       };
-      this.dom.input.addEventListener('keypress', _onInputKeypress);
+      this.dom.input.addEventListener('keydown', _onInputKeydown);
       this._eventListeners.dom.push({
         target: this.dom.input,
-        event: 'keypress',
-        handler: _onInputKeypress,
+        event: 'keydown',
+        handler: _onInputKeydown,
       });
 
       const _onInputFocus = () => {
@@ -1246,6 +1256,34 @@ export class RobotCompanion {
         target: this.dom.input,
         event: 'blur',
         handler: _onInputBlur,
+      });
+    }
+
+    if (this.dom.clearBtn) {
+      const _onClearBtnClick = () => this.chatModule.clearHistory();
+      this.dom.clearBtn.addEventListener('click', _onClearBtnClick);
+      this._eventListeners.dom.push({
+        target: this.dom.clearBtn,
+        event: 'click',
+        handler: _onClearBtnClick,
+      });
+    }
+
+    if (this.dom.exportBtn) {
+      const _onExportBtnClick = () => {
+        const ok = this.chatModule.exportHistory();
+        this.chatModule.addMessage(
+          ok
+            ? 'Export erstellt. Die Datei wurde heruntergeladen.'
+            : 'Noch kein Verlauf zum Exportieren vorhanden.',
+          'bot',
+        );
+      };
+      this.dom.exportBtn.addEventListener('click', _onExportBtnClick);
+      this._eventListeners.dom.push({
+        target: this.dom.exportBtn,
+        event: 'click',
+        handler: _onExportBtnClick,
       });
     }
 

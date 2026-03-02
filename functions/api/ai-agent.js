@@ -6,14 +6,63 @@
 
 import { getCorsHeaders, handleOptions } from './_cors.js';
 
-const CHAT_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast';
-const EMBEDDING_MODEL = '@cf/baai/bge-base-en-v1.5';
-const LLAVA_MODEL = '@cf/llava-hf/llava-1.5-7b-hf';
+const DEFAULT_CHAT_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast';
+const DEFAULT_EMBEDDING_MODEL = '@cf/baai/bge-base-en-v1.5';
+const DEFAULT_IMAGE_MODEL = '@cf/llava-hf/llava-1.5-7b-hf';
+const DEFAULT_MAX_MEMORY_RESULTS = 5;
+const DEFAULT_MEMORY_SCORE_THRESHOLD = 0.65;
+const DEFAULT_MAX_HISTORY_TURNS = 10;
+const DEFAULT_MAX_TOKENS = 2048;
 
-const MAX_MEMORY_RESULTS = 5;
-const MEMORY_SCORE_THRESHOLD = 0.65;
-const MAX_HISTORY_TURNS = 10;
-const MAX_TOKENS = 2048;
+function parseInteger(value, fallback, { min = 1, max = 8192 } = {}) {
+  const parsed = Number.parseInt(String(value ?? ''), 10);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.min(max, Math.max(min, parsed));
+}
+
+function parseDecimal(
+  value,
+  fallback,
+  { min = 0, max = 1, precision = 2 } = {},
+) {
+  const parsed = Number.parseFloat(String(value ?? ''));
+  if (!Number.isFinite(parsed)) return fallback;
+  const clamped = Math.min(max, Math.max(min, parsed));
+  const factor = 10 ** precision;
+  return Math.round(clamped * factor) / factor;
+}
+
+function getAgentConfig(env) {
+  return {
+    chatModel: env.ROBOT_CHAT_MODEL || DEFAULT_CHAT_MODEL,
+    embeddingModel: env.ROBOT_EMBEDDING_MODEL || DEFAULT_EMBEDDING_MODEL,
+    imageModel: env.ROBOT_IMAGE_MODEL || DEFAULT_IMAGE_MODEL,
+    maxMemoryResults: parseInteger(
+      env.ROBOT_MEMORY_TOP_K,
+      DEFAULT_MAX_MEMORY_RESULTS,
+      {
+        min: 1,
+        max: 25,
+      },
+    ),
+    memoryScoreThreshold: parseDecimal(
+      env.ROBOT_MEMORY_SCORE_THRESHOLD,
+      DEFAULT_MEMORY_SCORE_THRESHOLD,
+    ),
+    maxHistoryTurns: parseInteger(
+      env.ROBOT_MAX_HISTORY_TURNS,
+      DEFAULT_MAX_HISTORY_TURNS,
+      {
+        min: 1,
+        max: 40,
+      },
+    ),
+    maxTokens: parseInteger(env.ROBOT_MAX_TOKENS, DEFAULT_MAX_TOKENS, {
+      min: 128,
+      max: 8192,
+    }),
+  };
+}
 
 // ─── Tool Definitions ───────────────────────────────────────────────────────────
 
@@ -183,12 +232,12 @@ Du HAST einen permanenten Langzeitspeicher! Du kannst dir Nutzer-Informationen (
 
 // ─── Vectorize Memory ───────────────────────────────────────────────────────────
 
-async function storeMemory(env, userId, key, value) {
+async function storeMemory(env, userId, key, value, config) {
   if (!env.AI || !env.JULES_MEMORY) return { success: false };
 
   try {
     const text = `${key}: ${value}`;
-    const { data } = await env.AI.run(EMBEDDING_MODEL, { text: [text] });
+    const { data } = await env.AI.run(config.embeddingModel, { text: [text] });
     if (!data?.[0]) return { success: false, error: 'Embedding failed' };
 
     const id = `${userId}_${key}_${Date.now()}`;
@@ -208,21 +257,21 @@ async function storeMemory(env, userId, key, value) {
   }
 }
 
-async function recallMemories(env, userId, query) {
+async function recallMemories(env, userId, query, config) {
   if (!env.AI || !env.JULES_MEMORY) return [];
 
   try {
-    const { data } = await env.AI.run(EMBEDDING_MODEL, { text: [query] });
+    const { data } = await env.AI.run(config.embeddingModel, { text: [query] });
     if (!data?.[0]) return [];
 
     const results = await env.JULES_MEMORY.query(data[0], {
-      topK: MAX_MEMORY_RESULTS,
+      topK: config.maxMemoryResults,
       filter: { userId },
       returnMetadata: 'all',
     });
 
     return (results?.matches || [])
-      .filter((m) => m.score >= MEMORY_SCORE_THRESHOLD)
+      .filter((m) => m.score >= config.memoryScoreThreshold)
       .map((m) => ({
         key: m.metadata?.key || 'unknown',
         value: m.metadata?.value || '',
@@ -239,7 +288,7 @@ async function recallMemories(env, userId, query) {
 
 // ─── Image Analysis ─────────────────────────────────────────────────────────────
 
-async function analyzeImage(env, imageData, userPrompt = '') {
+async function analyzeImage(env, imageData, userPrompt = '', config) {
   if (!env.AI) return 'Bildanalyse nicht verfügbar.';
 
   try {
@@ -247,7 +296,10 @@ async function analyzeImage(env, imageData, userPrompt = '') {
       ? `Analysiere dieses Bild im Web-Kontext. Der Nutzer fragt: "${userPrompt}". Antworte auf Deutsch.`
       : 'Analysiere dieses Bild. Beschreibe es und gib Design-Feedback. Antworte auf Deutsch.';
 
-    const result = await env.AI.run(LLAVA_MODEL, { prompt, image: imageData });
+    const result = await env.AI.run(config.imageModel, {
+      prompt,
+      image: imageData,
+    });
     return result?.description || result?.response || 'Keine Analyse erhalten.';
   } catch (error) {
     console.error('LLaVA error:', error);
@@ -257,13 +309,14 @@ async function analyzeImage(env, imageData, userPrompt = '') {
 
 // ─── Server-Side Tool Execution ─────────────────────────────────────────────────
 
-async function executeServerTool(env, toolName, args, userId) {
+async function executeServerTool(env, toolName, args, userId, config) {
   if (toolName === 'rememberUser') {
     const result = await storeMemory(
       env,
       userId,
       args.key || 'note',
       args.value || '',
+      config,
     );
     return result.success
       ? `✅ Gemerkt: ${args.key} = "${args.value}"`
@@ -271,7 +324,12 @@ async function executeServerTool(env, toolName, args, userId) {
   }
 
   if (toolName === 'recallMemory') {
-    const memories = await recallMemories(env, userId, args.query || '');
+    const memories = await recallMemories(
+      env,
+      userId,
+      args.query || '',
+      config,
+    );
     if (!memories.length) return 'Keine Erinnerungen gefunden.';
     return (
       'Bekannte Infos:\n' +
@@ -282,7 +340,7 @@ async function executeServerTool(env, toolName, args, userId) {
   return null; // Client-side tool
 }
 
-async function classifyToolCalls(env, toolCalls, userId) {
+async function classifyToolCalls(env, toolCalls, userId, config) {
   const clientToolCalls = [];
   const serverToolResults = [];
   for (const tc of toolCalls) {
@@ -290,7 +348,13 @@ async function classifyToolCalls(env, toolCalls, userId) {
       typeof tc.arguments === 'string'
         ? JSON.parse(tc.arguments)
         : tc.arguments || {};
-    const serverResult = await executeServerTool(env, tc.name, args, userId);
+    const serverResult = await executeServerTool(
+      env,
+      tc.name,
+      args,
+      userId,
+      config,
+    );
     if (serverResult !== null) {
       serverToolResults.push({ name: tc.name, result: serverResult });
     } else {
@@ -349,6 +413,7 @@ function promptNeedsTools(prompt) {
 
 export async function onRequestPost(context) {
   const { request, env } = context;
+  const config = getAgentConfig(env);
   const corsHeaders = getCorsHeaders(request, env);
 
   const sseHeaders = {
@@ -375,6 +440,7 @@ export async function onRequestPost(context) {
           env,
           [...new Uint8Array(arrayBuffer)],
           String(formData.get('prompt') || ''),
+          config,
         );
       }
 
@@ -418,7 +484,7 @@ export async function onRequestPost(context) {
 
     // ── Parallel: memory + RAG ──
     const [memResult, ragResult] = await Promise.allSettled([
-      recallMemories(env, userId, prompt || 'user'),
+      recallMemories(env, userId, prompt || 'user', config),
       getRAGContext(prompt, env),
     ]);
 
@@ -439,7 +505,7 @@ export async function onRequestPost(context) {
     const messages = [{ role: 'system', content: systemPrompt }];
 
     if (Array.isArray(conversationHistory)) {
-      for (const msg of conversationHistory.slice(-MAX_HISTORY_TURNS)) {
+      for (const msg of conversationHistory.slice(-config.maxHistoryTurns)) {
         if (msg.role === 'user' || msg.role === 'assistant') {
           messages.push({ role: msg.role, content: String(msg.content || '') });
         }
@@ -449,10 +515,17 @@ export async function onRequestPost(context) {
 
     // ── Non-streaming path ──
     if (!stream) {
-      return handleNonStreaming(env, messages, userId, corsHeaders, {
-        memoryContext,
-        imageAnalysis,
-      });
+      return handleNonStreaming(
+        env,
+        messages,
+        userId,
+        corsHeaders,
+        {
+          memoryContext,
+          imageAnalysis,
+        },
+        config,
+      );
     }
 
     // ── SSE Streaming ──
@@ -472,11 +545,11 @@ export async function onRequestPost(context) {
           const aiParams = {
             messages,
             temperature: 0.7,
-            max_tokens: MAX_TOKENS,
+            max_tokens: config.maxTokens,
           };
           if (useTools) aiParams.tools = TOOLS;
 
-          const aiResult = await env.AI.run(CHAT_MODEL, aiParams);
+          const aiResult = await env.AI.run(config.chatModel, aiParams);
 
           const toolCalls = aiResult?.tool_calls || [];
           const responseText = aiResult?.response || '';
@@ -490,6 +563,7 @@ export async function onRequestPost(context) {
               { memoryContext, imageAnalysis },
               messages,
               responseText,
+              config,
             );
           } else if (responseText) {
             await write('status', { phase: 'streaming' });
@@ -500,7 +574,7 @@ export async function onRequestPost(context) {
             await write('message', {
               text: responseText,
               toolCalls: [],
-              model: CHAT_MODEL,
+              model: config.chatModel,
               hasMemory: !!memoryContext,
               hasImage: !!imageAnalysis,
             });
@@ -508,7 +582,7 @@ export async function onRequestPost(context) {
             await write('message', {
               text: 'Keine Antwort erhalten.',
               toolCalls: [],
-              model: CHAT_MODEL,
+              model: config.chatModel,
               hasMemory: !!memoryContext,
               hasImage: !!imageAnalysis,
             });
@@ -543,11 +617,11 @@ export async function onRequestPost(context) {
 
 // ─── Process Tool Calls ─────────────────────────────────────────────────────────
 
-function buildMsg(text, clientToolCalls, serverToolResults, ctx) {
+function buildMsg(text, clientToolCalls, serverToolResults, ctx, config) {
   return {
     text,
     toolCalls: clientToolCalls,
-    model: CHAT_MODEL,
+    model: config.chatModel,
     hasMemory: !!ctx.memoryContext,
     hasImage: !!ctx.imageAnalysis,
     ...(serverToolResults.length && {
@@ -600,11 +674,13 @@ async function processToolCalls(
   ctx,
   messages = [],
   existingText = '',
+  config,
 ) {
   const { clientToolCalls, serverToolResults } = await classifyToolCalls(
     env,
     toolCalls,
     userId,
+    config,
   );
 
   // Emit SSE events for each tool
@@ -632,7 +708,7 @@ async function processToolCalls(
       .map((r) => `[${r.name}]: ${r.result}`)
       .join('\n');
     try {
-      const result = await env.AI.run(CHAT_MODEL, {
+      const result = await env.AI.run(config.chatModel, {
         messages: [
           ...messages,
           {
@@ -645,14 +721,14 @@ async function processToolCalls(
           },
         ],
         temperature: 0.7,
-        max_tokens: MAX_TOKENS,
+        max_tokens: config.maxTokens,
         stream: true,
       });
       const text = await streamToSSE(result, write);
       if (text) {
         await write(
           'message',
-          buildMsg(text, clientToolCalls, serverToolResults, ctx),
+          buildMsg(text, clientToolCalls, serverToolResults, ctx, config),
         );
         return;
       }
@@ -666,7 +742,7 @@ async function processToolCalls(
     await write('status', { phase: 'responding' });
     try {
       const names = clientToolCalls.map((t) => t.name).join(', ');
-      const r = await env.AI.run(CHAT_MODEL, {
+      const r = await env.AI.run(config.chatModel, {
         messages: [
           ...messages,
           { role: 'assistant', content: `Aktionen: ${names}` },
@@ -680,7 +756,7 @@ async function processToolCalls(
           await write('token', { text: w });
         await write(
           'message',
-          buildMsg(r.response, clientToolCalls, serverToolResults, ctx),
+          buildMsg(r.response, clientToolCalls, serverToolResults, ctx, config),
         );
         return;
       }
@@ -698,28 +774,41 @@ async function processToolCalls(
       clientToolCalls,
       serverToolResults,
       ctx,
+      config,
     ),
   );
 }
 
 // ─── Non-Streaming Handler ──────────────────────────────────────────────────────
 
-async function handleNonStreaming(env, messages, userId, corsHeaders, ctx) {
+async function handleNonStreaming(
+  env,
+  messages,
+  userId,
+  corsHeaders,
+  ctx,
+  config,
+) {
   try {
     // Only pass tools when user prompt implies an action
     const useTools = promptNeedsTools(
       messages[messages.length - 1]?.content || '',
     );
-    const aiParams = { messages, temperature: 0.7, max_tokens: MAX_TOKENS };
+    const aiParams = {
+      messages,
+      temperature: 0.7,
+      max_tokens: config.maxTokens,
+    };
     if (useTools) aiParams.tools = TOOLS;
 
-    const aiResult = await env.AI.run(CHAT_MODEL, aiParams);
+    const aiResult = await env.AI.run(config.chatModel, aiParams);
     if (!aiResult) throw new Error('Empty AI response');
 
     const { clientToolCalls, serverToolResults } = await classifyToolCalls(
       env,
       aiResult.tool_calls || [],
       userId,
+      config,
     );
 
     // Follow-up for server tools
@@ -729,7 +818,7 @@ async function handleNonStreaming(env, messages, userId, corsHeaders, ctx) {
         .map((r) => `[${r.name}]: ${r.result}`)
         .join('\n');
       try {
-        const followUp = await env.AI.run(CHAT_MODEL, {
+        const followUp = await env.AI.run(config.chatModel, {
           messages: [
             ...messages,
             {
@@ -742,7 +831,7 @@ async function handleNonStreaming(env, messages, userId, corsHeaders, ctx) {
             },
           ],
           temperature: 0.7,
-          max_tokens: MAX_TOKENS,
+          max_tokens: config.maxTokens,
         });
         if (followUp?.response) responseText = followUp.response;
       } catch {
@@ -754,7 +843,7 @@ async function handleNonStreaming(env, messages, userId, corsHeaders, ctx) {
     if (!responseText && clientToolCalls.length > 0) {
       try {
         const names = clientToolCalls.map((t) => t.name).join(', ');
-        const r = await env.AI.run(CHAT_MODEL, {
+        const r = await env.AI.run(config.chatModel, {
           messages: [
             ...messages,
             { role: 'assistant', content: `Aktionen: ${names}` },
@@ -780,7 +869,7 @@ async function handleNonStreaming(env, messages, userId, corsHeaders, ctx) {
             ? 'Aktion wird ausgeführt…'
             : 'Keine Antwort.'),
         toolCalls: clientToolCalls,
-        model: CHAT_MODEL,
+        model: config.chatModel,
         hasMemory: !!ctx.memoryContext,
         hasImage: !!ctx.imageAnalysis,
       },

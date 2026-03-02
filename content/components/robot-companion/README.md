@@ -4,7 +4,7 @@ Ein interaktiver KI-Roboter-Begleiter für die Website mit Chat-Funktionalität,
 
 ## ✨ Features
 
-- 🤖 **Interaktiver Chat** - KI-gestützte Konversation mit AI Service (Groq)
+- 🤖 **Interaktiver Chat** - KI-gestützte Konversation mit Agent Service (SSE + Tool Calling)
 - 🎨 **Animationen** - Flüssige SVG-Animationen und Bewegungen
 - 🎮 **Mini-Games** - Tic-Tac-Toe, Trivia Quiz, Zahlenraten
 - 📊 **Analytics** - Session-Tracking und Interaktions-Statistiken
@@ -33,12 +33,13 @@ robot-companion/
 │   ├── robot-context-reactions.js # Kontext-Reaktionen
 │   ├── robot-emotions.js      # Emotionssteuerung
 │   ├── tool-executor.js       # Tool-Ausführung (Agent)
-│   └── markdown-renderer.js   # Markdown-Parsing
+│   ├── markdown-renderer.js   # Markdown-Parsing
+│   └── chat-history-store.js  # Persistenz + Export des Chatverlaufs
 ├── robot-companion.js         # Hauptkomponente
 ├── robot-companion.css        # Styling
 ├── robot-games.js             # Spiele-Logik
 ├── ai-agent-service.js        # AI Agent Service (SSE, Tools, Memory, LLaVA)
-└── index.js                   # Exports
+└── robot-companion-texts.js   # Textbausteine + Menüs
 ```
 
 ## 🚀 Verwendung
@@ -114,16 +115,16 @@ robotCompanionTexts.knowledgeBase.start.text = [
 ];
 ```
 
-### AI Service (Groq)
+### AI Agent Service
 
 ```javascript
-// .env Datei
-VITE_GROQ_API_KEY = your_api_key_here;
+// Endpoint wird über Cloudflare Function bereitgestellt
+// POST /api/ai-agent
 ```
 
 ## 📦 Dependencies
 
-- **AI Service** - KI-Konversation (Groq)
+- **AI Agent Service** - KI-Konversation (SSE, Tools, Memory)
 - **Markdown Renderer** - Markdown-Parsing
 - **Logger** - Logging-System
 - **Intersection Observer** - Scroll-Detection

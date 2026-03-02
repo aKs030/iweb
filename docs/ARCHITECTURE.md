@@ -49,7 +49,7 @@
 ┌─────────────────────────────────────────────────────────────┐
 │                   External Services                          │
 ├─────────────────────────────────────────────────────────────┤
-│  ├─ AIService           (Groq AI)                           │
+│  ├─ AIAgentService      (Workers AI, SSE, Tools, Memory)    │
 │  ├─ Analytics           (Google Analytics)                  │
 │  └─ LocalStorage        (Browser storage)                   │
 └─────────────────────────────────────────────────────────────┘
@@ -156,8 +156,8 @@ control it without event gymnastics.
                     ┌─────────┴─────────┐
                     ▼                   ▼
         ┌───────────────────┐   ┌───────────────────┐
-        │ KnowledgeBase     │   │ AIService         │
-        │ (Local)           │   │ (AI)              │
+        │ KnowledgeBase     │   │ AIAgentService    │
+        │ (Local)           │   │ (AI + SSE)        │
         └───────────────────┘   └───────────────────┘
                     │                   │
                     └─────────┬─────────┘
@@ -187,7 +187,7 @@ control it without event gymnastics.
 
 ```
 RobotCompanion
-├── AIService (AI)
+├── AIAgentService (AI)
 ├── RobotGames (Games)
 ├── RobotAnimation (Visual)
 │   └── DOM manipulation
@@ -232,18 +232,17 @@ content/
 │   │       └── MenuAccessibility.js
 │   └── robot-companion/
 │       ├── robot-companion.js                    (Core Class)
-│       ├── robot-companion-web-component.js      (Web Component) ⭐ NEW
 │       ├── robot-companion-texts.js
 │       ├── robot-companion.css
-│       ├── README.md                             ⭐ NEW
-│       ├── example-usage.html                    ⭐ NEW
+│       ├── README.md
 │       ├── ai-agent-service.js
 │       ├── robot-games.js
 │       └── modules/
 │           ├── robot-animation.js
 │           ├── robot-chat.js
 │           ├── robot-collision.js
-│           └── robot-intelligence.js
+│           ├── robot-intelligence.js
+│           └── chat-history-store.js
 ├── core/
 │   ├── types.js                   ⭐ EXTENDED (27 types)
 │   ├── logger.js
@@ -338,7 +337,7 @@ Deferred Load (Non-critical)
 └── Section content (intersection observer)
 
 On-Demand Load
-├── AIService (when chat opens)
+├── AIAgentService (when chat opens)
 ├── RobotGames (when activated)
 └── Analytics (after consent)
 ```

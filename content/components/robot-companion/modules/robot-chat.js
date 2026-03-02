@@ -4,8 +4,10 @@ import { ROBOT_ACTIONS } from '../constants/events.js';
 import { executeTool } from './tool-executor.js';
 import { uiStore } from '../../../core/ui-store.js';
 import { withViewTransition } from '../../../core/view-transitions.js';
+import { ChatHistoryStore } from './chat-history-store.js';
 
 const log = createLogger('RobotChat');
+const DEFAULT_INPUT_PLACEHOLDER = 'Frag mich etwas oder nutze /help';
 
 export class RobotChat {
   constructor(robot) {
@@ -26,15 +28,10 @@ export class RobotChat {
     this._bubbleSequenceTimers = [];
     this.contextGreetingHistory = {};
     this.initialBubblePoolCursor = [];
+    this.historyStore = new ChatHistoryStore();
 
-    // Load history from local storage
-    try {
-      this.history = JSON.parse(
-        localStorage.getItem('robot-chat-history') || '[]',
-      );
-    } catch {
-      this.history = [];
-    }
+    // Load history (supports legacy format migration)
+    this.history = this.historyStore.load();
   }
 
   destroy() {
@@ -126,6 +123,50 @@ export class RobotChat {
     }
   }
 
+  _parseSlashCommand(text) {
+    if (!text || !text.startsWith('/')) return null;
+    const [rawCommand, ...args] = text.slice(1).trim().split(/\s+/);
+    const command = String(rawCommand || '').toLowerCase();
+    if (!command) return null;
+    return { command, args };
+  }
+
+  async _handleSlashCommand(command, _args = []) {
+    switch (command) {
+      case 'help':
+        this.addMessage(
+          [
+            'Verfuegbare Befehle:',
+            '- `/help` zeigt diese Hilfe',
+            '- `/clear` startet eine neue Unterhaltung',
+            '- `/export` exportiert den Chat als JSON',
+          ].join('\n'),
+          'bot',
+        );
+        return true;
+      case 'clear':
+      case 'new':
+        this.clearHistory();
+        return true;
+      case 'export': {
+        const ok = this.exportHistory();
+        this.addMessage(
+          ok
+            ? 'Export erstellt. Die Datei wurde heruntergeladen.'
+            : 'Noch kein Verlauf zum Exportieren vorhanden.',
+          'bot',
+        );
+        return true;
+      }
+      default:
+        this.addMessage(
+          `Unbekannter Befehl: /${command}. Nutze /help fuer die Liste.`,
+          'bot',
+        );
+        return true;
+    }
+  }
+
   handleAvatarClick() {
     if (this.isOpen) {
       this.toggleChat(false);
@@ -143,6 +184,16 @@ export class RobotChat {
     const hasPendingImage = !!this.pendingImage;
 
     if (!text && !hasPendingImage) return;
+    if (this.isTyping) return;
+
+    const slashCommand = !hasPendingImage
+      ? this._parseSlashCommand(text)
+      : null;
+    if (slashCommand) {
+      this.robot.dom.input.value = '';
+      await this._handleSlashCommand(slashCommand.command, slashCommand.args);
+      return;
+    }
 
     // Show user message (with image thumbnail if present)
     if (hasPendingImage) {
@@ -163,92 +214,78 @@ export class RobotChat {
     this.robot.animationModule.startThinking();
     this.robot.trackInteraction();
 
-    // Create streaming message element
-    let streamingMessageEl = null;
-    let typingRemoved = false;
-
     try {
       this.robot.animationModule.startSpeaking();
-      const agentService = await this.robot.getAgentService();
-
-      let response;
-
-      if (hasPendingImage) {
-        // Use image analysis
-        const imageFile = this.pendingImage;
-        this.clearImagePreview();
-
-        response = await agentService.analyzeImage(imageFile, text, (chunk) => {
-          if (!typingRemoved) {
-            this.removeTyping();
-            typingRemoved = true;
+      const response = await this._streamAgentResponse(
+        async (agentService, onChunk) => {
+          if (hasPendingImage) {
+            const imageFile = this.pendingImage;
+            this.clearImagePreview();
+            return agentService.analyzeImage(imageFile, text, onChunk);
           }
-          if (!streamingMessageEl) {
-            streamingMessageEl = this.createStreamingMessage();
-          }
-          this.updateStreamingMessage(streamingMessageEl, chunk);
-        });
-      } else {
-        // Regular agent response with tool-calling
-        response = await agentService.generateResponse(text, (chunk) => {
-          if (!typingRemoved) {
-            this.removeTyping();
-            typingRemoved = true;
-          }
-          if (!streamingMessageEl) {
-            streamingMessageEl = this.createStreamingMessage();
-          }
-          this.updateStreamingMessage(streamingMessageEl, chunk);
-        });
-      }
+          return agentService.generateResponse(text, onChunk);
+        },
+      );
 
-      this.robot.animationModule.stopThinking();
-
-      // Show tool call indicators
-      if (response.toolResults && response.toolResults.length > 0) {
+      if (response.toolResults?.length) {
         this.showToolCallResults(response.toolResults);
-      }
-
-      // Show memory badge if memory was used
-      if (response.hasMemory && streamingMessageEl) {
-        const badge = this.robot.domBuilder.createMemoryIndicator();
-        streamingMessageEl.appendChild(badge);
-      }
-
-      // If no streaming occurred, add message normally
-      if (!streamingMessageEl) {
-        if (!typingRemoved) {
-          this.removeTyping();
-        }
-        this.robot.animationModule.stopSpeaking();
-
-        if (typeof response === 'string') {
-          this.addMessage(response, 'bot');
-        } else if (response && response.text) {
-          this.addMessage(response.text, 'bot');
-        } else {
-          this.addMessage('Entschuldigung, keine Antwort erhalten.', 'bot');
-        }
-      } else {
-        this.finalizeStreamingMessage(streamingMessageEl);
       }
     } catch (e) {
       log.error('generateResponse failed', e);
-      if (!typingRemoved) {
-        this.removeTyping();
-      }
+      this.removeTyping();
       this.robot.animationModule.stopThinking();
       this.robot.animationModule.stopSpeaking();
-
-      if (streamingMessageEl) {
-        streamingMessageEl.remove();
-      }
-
       this.addMessage(
         'Fehler bei der Verbindung. Bitte erneut versuchen.',
         'bot',
       );
     }
+  }
+
+  async _streamAgentResponse(runRequest) {
+    const agentService = await this.robot.getAgentService();
+    let streamingMessageEl = null;
+    let typingRemoved = false;
+
+    let response;
+    try {
+      response = await runRequest(agentService, (chunk) => {
+        if (!typingRemoved) {
+          this.removeTyping();
+          typingRemoved = true;
+        }
+        if (!streamingMessageEl) {
+          streamingMessageEl = this.createStreamingMessage();
+        }
+        this.updateStreamingMessage(streamingMessageEl, chunk);
+      });
+    } catch (error) {
+      if (streamingMessageEl) {
+        streamingMessageEl.remove();
+      }
+      throw error;
+    }
+
+    this.robot.animationModule.stopThinking();
+
+    if (response?.hasMemory && streamingMessageEl) {
+      const badge = this.robot.domBuilder.createMemoryIndicator();
+      streamingMessageEl.appendChild(badge);
+    }
+
+    if (!streamingMessageEl) {
+      if (!typingRemoved) this.removeTyping();
+      this.robot.animationModule.stopSpeaking();
+      const text =
+        typeof response === 'string'
+          ? response
+          : response?.text || 'Entschuldigung, keine Antwort erhalten.';
+      this.addMessage(text, 'bot');
+      return response;
+    }
+
+    this.finalizeStreamingMessage(streamingMessageEl);
+    return response;
   }
 
   /**
@@ -276,6 +313,7 @@ export class RobotChat {
   addImageMessage(text, imageFile) {
     const msg = document.createElement('div');
     msg.className = 'message user';
+    const timestamp = Date.now();
 
     if (text) {
       const textEl = document.createElement('div');
@@ -293,16 +331,21 @@ export class RobotChat {
     img.onload = () => URL.revokeObjectURL(img.src);
 
     msg.appendChild(img);
+    msg.appendChild(
+      this.robot.domBuilder.createMessageMeta(timestamp, {
+        sender: 'Du',
+      }),
+    );
     this.robot.dom.messages.appendChild(msg);
     this.scrollToBottom();
 
-    this.history.push({
+    this.history = this.historyStore.append(this.history, {
       role: 'user',
       text: text
         ? `[Bild: ${imageFile.name}] ${text}`
         : `[Bild: ${imageFile.name}]`,
+      timestamp,
     });
-    this._trimHistory();
   }
 
   /**
@@ -358,14 +401,14 @@ export class RobotChat {
     }
 
     if (this.robot.dom.input) {
-      this.robot.dom.input.placeholder =
-        'Frag mich etwas oder wähle eine Option...';
+      this.robot.dom.input.placeholder = DEFAULT_INPUT_PLACEHOLDER;
     }
   }
 
   createStreamingMessage() {
     const msg = document.createElement('div');
     msg.className = 'message bot streaming';
+    msg.dataset.timestamp = String(Date.now());
 
     const textSpan = document.createElement('span');
     textSpan.className = 'streaming-text';
@@ -396,8 +439,19 @@ export class RobotChat {
     const textSpan = messageEl.querySelector('.streaming-text');
     const text = textSpan?.innerText || textSpan?.textContent || '';
 
-    this.history.push({ role: 'model', text });
-    this._trimHistory();
+    const timestamp =
+      Number.parseInt(messageEl.dataset.timestamp || '', 10) || Date.now();
+    messageEl.appendChild(
+      this.robot.domBuilder.createMessageMeta(timestamp, {
+        sender: 'Jules',
+      }),
+    );
+
+    this.history = this.historyStore.append(this.history, {
+      role: 'model',
+      text,
+      timestamp,
+    });
   }
 
   async handleSummarize() {
@@ -406,28 +460,13 @@ export class RobotChat {
     this.robot.animationModule.startThinking();
 
     try {
-      const agentService = await this.robot.getAgentService();
       const content = document.body.innerText?.slice(0, 4800) || '';
       const prompt = `Fasse den folgenden Text kurz und präzise auf DEUTSCH zusammen (max 3 Sätze):\n\n${content}`;
-
-      let streamingEl = null;
-      const response = await agentService.generateResponse(prompt, (chunk) => {
-        if (this.isTyping) this.removeTyping();
-        if (!streamingEl) streamingEl = this.createStreamingMessage();
-        this.updateStreamingMessage(streamingEl, chunk);
-      });
-
-      this.robot.animationModule.stopThinking();
-      if (streamingEl) {
-        this.finalizeStreamingMessage(streamingEl);
-      } else {
-        this.removeTyping();
-        this.addMessage(
-          response?.text || 'Zusammenfassung nicht verfügbar.',
-          'bot',
-        );
-      }
-    } catch {
+      await this._streamAgentResponse((agentService, onChunk) =>
+        agentService.generateResponse(prompt, onChunk),
+      );
+    } catch (error) {
+      log.warn('Summarize failed', error);
       this.robot.animationModule.stopThinking();
       this.removeTyping();
       this.addMessage('Zusammenfassung fehlgeschlagen.', 'bot');
@@ -468,7 +507,12 @@ export class RobotChat {
     this.robot.stateManager.setState({ isTyping: false });
   }
 
-  renderMessage(text, type = 'bot', skipParsing = false) {
+  renderMessage(
+    text,
+    type = 'bot',
+    skipParsing = false,
+    timestamp = Date.now(),
+  ) {
     const msg = document.createElement('div');
     msg.className = `message ${type}`;
 
@@ -485,50 +529,61 @@ export class RobotChat {
       }
     }
 
+    msg.appendChild(
+      this.robot.domBuilder.createMessageMeta(timestamp, {
+        sender: type === 'user' ? 'Du' : 'Jules',
+      }),
+    );
+
     this.robot.dom.messages.appendChild(msg);
     this.scrollToBottom();
   }
 
   addMessage(text, type = 'bot', skipParsing = false) {
-    this.renderMessage(text, type, skipParsing);
+    const timestamp = Date.now();
+    this.renderMessage(text, type, skipParsing, timestamp);
 
-    this.history.push({
+    this.history = this.historyStore.append(this.history, {
       role: type === 'user' ? 'user' : 'model',
       text: String(text || ''),
+      timestamp,
     });
-    this._trimHistory();
-  }
-
-  _trimHistory() {
-    if (this.history.length > 30) this.history = this.history.slice(-30);
-    this.saveHistory();
-  }
-
-  saveHistory() {
-    try {
-      localStorage.setItem('robot-chat-history', JSON.stringify(this.history));
-    } catch {
-      /* ignore */
-    }
   }
 
   restoreMessages() {
     this.history.forEach((item) => {
       const type = item.role === 'user' ? 'user' : 'bot';
-      this.renderMessage(item.text, type, false);
+      this.renderMessage(item.text, type, false, item.timestamp);
     });
   }
 
   clearHistory() {
     this.history = [];
-    localStorage.removeItem('robot-chat-history');
+    this.historyStore.clear();
+    this.clearImagePreview();
+    this.clearControls();
     if (this.robot.dom.messages) {
       // Clear messages safely
       while (this.robot.dom.messages.firstChild) {
         this.robot.dom.messages.removeChild(this.robot.dom.messages.firstChild);
       }
     }
+
+    void this._clearAgentHistory();
     this.handleAction(ROBOT_ACTIONS.START);
+  }
+
+  exportHistory() {
+    return this.historyStore.download(this.history);
+  }
+
+  async _clearAgentHistory() {
+    try {
+      const agentService = await this.robot.getAgentService();
+      agentService.clearHistory?.();
+    } catch {
+      /* ignore */
+    }
   }
 
   clearControls() {
@@ -544,10 +599,7 @@ export class RobotChat {
     this.clearControls();
     if (!this.robot.dom.controls) return;
     options.forEach((opt) => {
-      const btn = document.createElement('button');
-      btn.className = 'chat-option-btn';
-      btn.textContent = opt.label;
-      btn.onclick = () => {
+      const btn = this.robot.domBuilder.createOptionButton(opt.label, () => {
         this.addMessage(opt.label, 'user');
         this.robot._setTimeout(() => {
           if (opt.url) {
@@ -562,7 +614,7 @@ export class RobotChat {
             }
           }
         }, 300);
-      };
+      });
       this.robot.dom.controls.appendChild(btn);
     });
   }
@@ -691,22 +743,11 @@ export class RobotChat {
     this.robot.animationModule.startThinking();
 
     try {
-      const agentService = await this.robot.getAgentService();
-      let streamingEl = null;
-
-      await agentService.generateResponse(prompt, (chunk) => {
-        if (this.isTyping) this.removeTyping();
-        if (!streamingEl) streamingEl = this.createStreamingMessage();
-        this.updateStreamingMessage(streamingEl, chunk);
-      });
-
-      this.robot.animationModule.stopThinking();
-      if (streamingEl) {
-        this.finalizeStreamingMessage(streamingEl);
-      } else {
-        this.removeTyping();
-      }
-    } catch {
+      await this._streamAgentResponse((agentService, onChunk) =>
+        agentService.generateResponse(prompt, onChunk),
+      );
+    } catch (error) {
+      log.warn('Action routing failed', error);
       this.robot.animationModule.stopThinking();
       this.removeTyping();
       this.addMessage('Da ist etwas schiefgelaufen.', 'bot');

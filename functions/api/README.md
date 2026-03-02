@@ -4,16 +4,16 @@ Server-side logic powered by Cloudflare Pages Functions.
 
 ## Endpoints
 
-| File                   | Description                                         |
-| ---------------------- | --------------------------------------------------- |
-| `ai.js`                | Lightweight AI chat with RAG (Workers AI + AutoRAG) |
-| `ai-agent.js`          | Agentic AI with SSE streaming, tool-calling, memory |
-| `workers-assistant.js` | Workers code-generation assistant                   |
-| `search.js`            | Hybrid search (AutoRAG + deterministic fallback)    |
-| `contact.js`           | Contact form handler (email via MailChannels)       |
-| `gallery-items.js`     | Gallery media listing (R2 storage)                  |
-| `feed.xml.js`          | RSS/Atom feed generator                             |
-| `youtube/[[path]].js`  | YouTube Data API v3 proxy                           |
+| File                   | Description                                                       |
+| ---------------------- | ----------------------------------------------------------------- |
+| `ai.js`                | Lightweight AI chat with RAG (Workers AI + AutoRAG)               |
+| `ai-agent.js`          | Primary robot endpoint: SSE, tool-calling, image analysis, memory |
+| `workers-assistant.js` | Workers code-generation assistant                                 |
+| `search.js`            | Hybrid search (AutoRAG + deterministic fallback)                  |
+| `contact.js`           | Contact form handler (email via MailChannels)                     |
+| `gallery-items.js`     | Gallery media listing (R2 storage)                                |
+| `feed.xml.js`          | RSS/Atom feed generator                                           |
+| `youtube/[[path]].js`  | YouTube Data API v3 proxy                                         |
 
 ## Shared Utilities
 
@@ -40,3 +40,15 @@ Hybrid engine: AutoRAG semantic search with deterministic fallback scoring, inte
 ```bash
 npm run qa
 ```
+
+## Robot Cloudflare Config (Wrangler)
+
+Der Robot-Agent liest seine Cloudflare-Konfiguration aus `wrangler.jsonc`:
+
+- `ROBOT_CHAT_MODEL`
+- `ROBOT_EMBEDDING_MODEL`
+- `ROBOT_IMAGE_MODEL`
+- `ROBOT_MAX_TOKENS`
+- `ROBOT_MAX_HISTORY_TURNS`
+- `ROBOT_MEMORY_TOP_K`
+- `ROBOT_MEMORY_SCORE_THRESHOLD`
