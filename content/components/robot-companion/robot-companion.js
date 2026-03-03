@@ -421,44 +421,63 @@ export class RobotCompanion {
           this.isKeyboardAdjustmentActive = false;
           this.dom.container.style.bottom = '';
           this.dom.window.style.bottom = '';
+          this.dom.window.style.top = '';
           this.dom.window.style.maxHeight = '';
+          this.dom.window.classList.remove('keyboard-open');
+          document.body.classList.remove('robot-keyboard-open');
         }
         return;
       }
 
-      // Use initialLayoutHeight if available to detect shrink-resize behaviors
-      const referenceHeight =
-        this.initialLayoutHeight ||
-        (typeof globalThis !== 'undefined' ? globalThis.innerHeight : 0);
-      const visualHeight =
-        typeof globalThis !== 'undefined' && globalThis.visualViewport
-          ? globalThis.visualViewport.height
-          : referenceHeight;
-      const heightDiff = referenceHeight - visualHeight;
+      const visualViewport = globalThis.visualViewport;
+      if (!visualViewport) return;
+
+      // Use visualViewport properties to perfectly track iOS Safari's shifting layout
+      const visualHeight = visualViewport.height;
+      const visualOffsetTop = visualViewport.offsetTop;
+      const layoutHeight = globalThis.innerHeight;
+
       const isInputFocused = document.activeElement === this.dom.input;
+      const heightDiff = layoutHeight - visualHeight;
 
       // Threshold: > 150px difference usually implies keyboard.
-      // Also trigger if input is focused and difference is measurable (>50px).
+      // Also trigger if input is focused and there is a measurable offset/height change.
       const isKeyboardOverlay =
-        heightDiff > 150 || (isInputFocused && heightDiff > 50);
+        heightDiff > 150 ||
+        (isInputFocused && (heightDiff > 50 || visualOffsetTop > 0));
 
       if (isKeyboardOverlay) {
-        // Keyboard is open (overlay mode or partial resize).
-        // Keep the chat window above the keyboard area.
+        // Keyboard is open. Keep the chat window exactly framed within the visualViewport.
         this.isKeyboardAdjustmentActive = true;
+        this.dom.window.classList.add('keyboard-open');
+        document.body.classList.add('robot-keyboard-open');
 
-        const safeMargin = 10;
+        const safeMargin = 8;
+
+        // Disable bottom alignment because iOS layout viewport pushes it off screen.
+        // Instead, pin exactly from the visualViewport's top.
+        this.dom.window.style.bottom = 'auto';
+        this.dom.window.style.top = `${visualOffsetTop + safeMargin}px`;
+
+        // Lock max-height to remaining visual space
         const maxWindowHeight = visualHeight - safeMargin * 2;
         this.dom.window.style.maxHeight = `${maxWindowHeight}px`;
-        this.dom.window.style.bottom = `${Math.max(8, heightDiff + safeMargin)}px`;
+        this.dom.window.style.height = `${maxWindowHeight}px`;
+
+        // Scroll to bottom immediately so the input remains visible
+        this._setTimeout(() => this.chatModule.scrollToBottom(), 10);
       } else {
         // Keyboard is closed
         this.isKeyboardAdjustmentActive = false;
+        this.dom.window.classList.remove('keyboard-open');
+        document.body.classList.remove('robot-keyboard-open');
 
         // Reset styles to allow CSS / footer overlap logic to take over
         this.dom.container.style.bottom = '';
         this.dom.window.style.bottom = '';
+        this.dom.window.style.top = '';
         this.dom.window.style.maxHeight = '';
+        this.dom.window.style.height = '';
       }
     };
 
