@@ -1347,6 +1347,7 @@ export async function onRequestPost(context) {
     context.waitUntil(
       (async () => {
         try {
+          await write('identity', { userId });
           await write('status', { phase: 'thinking' });
 
           // Only pass tools when user prompt implies an action
@@ -1781,6 +1782,7 @@ async function handleNonStreaming(
 
     return Response.json(
       {
+        userId,
         text:
           responseText ||
           (clientToolCalls.length
