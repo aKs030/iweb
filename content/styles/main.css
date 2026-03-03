@@ -185,6 +185,18 @@ main {
   }
 }
 
+.full-screen-section {
+  min-height: calc(100vh - var(--content-top-offset));
+  height: calc(100vh - var(--content-top-offset));
+}
+
+@supports (min-height: 100dvh) {
+  .full-screen-section {
+    min-height: calc(100dvh - var(--content-top-offset));
+    height: calc(100dvh - var(--content-top-offset));
+  }
+}
+
 @supports (content-visibility: auto) {
   .section {
     /* OPTIMIZATION: content-visibility allows browser to skip rendering work for off-screen sections */
