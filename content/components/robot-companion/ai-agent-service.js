@@ -127,6 +127,11 @@ async function parseSSEStream(response, callbacks = {}) {
         }
 
         switch (eventType) {
+          case 'identity':
+            if (data.userId) {
+              persistUserId(data.userId);
+            }
+            break;
           case 'token':
             callbacks.onToken?.(data.text || '');
             break;
@@ -185,13 +190,17 @@ async function callAgent(payload, callbacks = {}, { stream = true } = {}) {
       fd.append('image', payload.image);
       response = await fetch(AGENT_ENDPOINT, {
         method: 'POST',
+        headers: { [USER_ID_HEADER]: userId },
         body: fd,
         credentials: 'include',
       });
     } else {
       response = await fetch(AGENT_ENDPOINT, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          [USER_ID_HEADER]: userId,
+        },
         credentials: 'include',
         body: JSON.stringify({
           prompt: payload.prompt,
@@ -297,6 +306,10 @@ async function callAgent(payload, callbacks = {}, { stream = true } = {}) {
 
   // ── JSON response ──
   const result = await response.json();
+  if (result.userId) {
+    persistUserId(result.userId);
+  }
+
   addToHistory('user', payload.prompt);
   if (result.text) addToHistory('assistant', result.text);
 
