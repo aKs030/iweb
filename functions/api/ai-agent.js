@@ -943,35 +943,10 @@ const sseEvent = (event, data) =>
 // ─── Action Intent Detection ────────────────────────────────────────────────────
 
 /** Detect if user prompt asks for an action that requires tools. */
-const MEMORY_RECALL_PATTERNS = new RegExp(
-  [
-    // Explicit identity recall
-    'kennst du mich noch',
-    'erinnerst du dich',
-    'wei(?:ss|ß)t du (?:meinen namen|wer ich bin|noch)',
-    'wie hei(?:ss|ß)e ich',
-    // Questions about personal info
-    'was (?:ist|war) mein(?:e?)', // "Was ist meine Lieblingsfarbe?"
-    'was wei(?:ss|ß)t du (?:über|ueber) mich',
-    'was hast du (?:dir )?(?:über|ueber) mich (?:gemerkt|gespeichert)',
-    'erinnerst du dich an',
-    'kannst du dich (?:an mich )?erinnern',
-    // Name-based greeting (returning user)
-    'ich bin\\b', // "Ich bin Max"
-    'ich hei(?:ss|ß)e\\b', // "Ich heiße Max"
-    'mein name ist\\b', // "Mein Name ist Max"
-  ].join('|'),
-  'i',
-);
-
 function promptNeedsTools(_prompt) {
   // We now always return true so the AI agent has access to `rememberUser`
   // even if the user answers with a single word like "Grün" or "Hunde".
   return true;
-}
-
-function promptNeedsMemoryRecall(prompt) {
-  return MEMORY_RECALL_PATTERNS.test(String(prompt || ''));
 }
 
 const TOOL_LEAK_INLINE_PATTERN =
@@ -1059,19 +1034,10 @@ async function resolveMemoryContext(env, userId, _prompt, config) {
   // Always load ALL memories for this user with no score threshold.
   // Users typically have < 20 personal memories, so loading everything
   // is cheap and guarantees the LLM never misses stored context.
-  console.log(
-    `[resolveMemoryContext] userId=${userId}, prompt="${String(_prompt || '').slice(0, 80)}"`,
-  );
-
   const all = await recallMemories(env, userId, 'user info', config, {
     topK: Math.max(20, config.maxMemoryResults),
     scoreThreshold: 0,
   });
-
-  console.log(
-    `[resolveMemoryContext] Found ${all.length} memories:`,
-    JSON.stringify(all.map((m) => ({ key: m.key, value: m.value }))),
-  );
 
   if (all.length > 0) return all;
 
@@ -1083,15 +1049,9 @@ async function resolveMemoryContext(env, userId, _prompt, config) {
       topK: Math.max(20, config.maxMemoryResults),
       scoreThreshold: 0,
     });
-    if (fallback.length > 0) {
-      console.log(
-        `[resolveMemoryContext] Fallback query="${query}" found ${fallback.length} memories`,
-      );
-      return fallback;
-    }
+    if (fallback.length > 0) return fallback;
   }
 
-  console.log('[resolveMemoryContext] No memories found at all');
   return [];
 }
 
