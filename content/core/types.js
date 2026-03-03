@@ -25,21 +25,12 @@
  * @property {string[]} jobTitle - Job titles
  * @property {string} email - Contact email
  * @property {string} areaServed - Service area
- * @property {PostalAddress} address - Physical address
  * @property {GeoCoordinates} geo - Geographic coordinates
  * @property {string[]} sameAs - Social media URLs
  * @property {ContactPoint[]} contactPoint - Contact points
  * @property {string} telephone - Phone number
  * @property {string} [licensePage] - License page URL
  * @property {string} [copyrightHolder] - Copyright holder name
- */
-
-/**
- * @typedef {Object} PostalAddress
- * @property {string} streetAddress - Street address
- * @property {string} addressLocality - City
- * @property {string} postalCode - Postal code
- * @property {string} addressCountry - Country code
  */
 
 /**

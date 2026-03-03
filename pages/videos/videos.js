@@ -280,13 +280,6 @@ const renderVideoCard = (container, it, detailsMap, index = 0) => {
         copyrightNotice: `© ${new Date().getFullYear()} Abdulkerim Sesli`,
         acquireLicensePage: 'https://www.abdulkerimsesli.de/#image-license',
       },
-      address: {
-        '@type': 'PostalAddress',
-        streetAddress: 'Sterkrader Str. 59',
-        postalCode: '13507',
-        addressLocality: 'Berlin',
-        addressCountry: 'DE',
-      },
     },
   };
 
