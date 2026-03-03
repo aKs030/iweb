@@ -98,7 +98,16 @@ function createUserId() {
   ) {
     return `u_${crypto.randomUUID().replace(/-/g, '').slice(0, 24)}`;
   }
-  return `u_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
+  const array = new Uint32Array(2);
+  if (
+    typeof crypto !== 'undefined' &&
+    typeof crypto.getRandomValues === 'function'
+  ) {
+    crypto.getRandomValues(array);
+    return `u_${Date.now().toString(36)}_${array[0].toString(36)}${array[1].toString(36)}`;
+  }
+  // Fallback for extremely old environments without crypto (unlikely in CF Workers)
+  return `u_${Date.now().toString(36)}_${Date.now().toString(36).slice(2, 10)}`;
 }
 
 function extractNameFromPrompt(promptText) {
