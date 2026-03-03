@@ -98,29 +98,251 @@ function createUserId() {
   ) {
     return `u_${crypto.randomUUID().replace(/-/g, '').slice(0, 24)}`;
   }
-  return `u_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
+  const array = new Uint32Array(2);
+  if (
+    typeof crypto !== 'undefined' &&
+    typeof crypto.getRandomValues === 'function'
+  ) {
+    crypto.getRandomValues(array);
+    return `u_${Date.now().toString(36)}_${array[0].toString(36)}${array[1].toString(36)}`;
+  }
+  // Fallback for extremely old environments without crypto (unlikely in CF Workers)
+  return `u_${Date.now().toString(36)}_${Date.now().toString(36).slice(2, 10)}`;
 }
 
-function resolveUserIdentity(request, requestedUserId = '') {
+function extractNameFromPrompt(promptText) {
+  const text = String(promptText || '');
+  if (!text.trim()) return '';
+
+  const patterns = [
+    /(?:\bich\s+hei(?:ss|ß)e\b|\bmein\s+name\s+ist\b|\bnenn\s+mich\b|\bdu\s+kannst\s+mich\b)\s+([^\n.,;:!?]{2,60})/i,
+    /(?:\bich\s+bin\b|\bich\s+bin's\b|\bich\s+bins\b)\s+([^\n.,;:!?]{2,60})/i,
+  ];
+
+  for (const pattern of patterns) {
+    const match = text.match(pattern);
+    if (!match?.[1]) continue;
+    const name = normalizeNameCandidate(match[1]);
+    if (name) return name;
+  }
+
+  return '';
+}
+
+function normalizeExtractedValue(value, maxLength = 120) {
+  return String(value || '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/^["'`]+|["'`]+$/g, '')
+    .replace(/[.,;:!?]+$/g, '')
+    .slice(0, maxLength);
+}
+
+const NAME_CONTEXT_STOPWORDS = new Set([
+  'aus',
+  'von',
+  'und',
+  'aber',
+  'im',
+  'in',
+  'mit',
+  'bei',
+  'als',
+  'ein',
+  'eine',
+  'einer',
+  'einem',
+  'eines',
+  'der',
+  'die',
+  'das',
+  'den',
+  'dem',
+  'des',
+  'bin',
+  'heisse',
+  'heiße',
+  'nenne',
+  'nennen',
+  'arbeite',
+  'komme',
+  'wohne',
+  'mag',
+  'liebe',
+  'interessiere',
+  'interessiert',
+  'habe',
+  'hab',
+  'will',
+  'moechte',
+  'möchte',
+]);
+
+const NON_NAME_SINGLE_WORDS = new Set([
+  'muede',
+  'müde',
+  'hungrig',
+  'bereit',
+  'hier',
+  'da',
+  'neu',
+  'krank',
+  'ok',
+  'okay',
+  'gut',
+  'schlecht',
+  'traurig',
+  'verwirrt',
+  'gespannt',
+  'froh',
+  'cool',
+  'fertig',
+]);
+
+function isLikelyNameToken(token) {
+  return /^[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ'’-]{0,29}$/.test(token);
+}
+
+function normalizeNameCandidate(candidate) {
+  const cleaned = normalizeExtractedValue(candidate, 60);
+  if (!cleaned) return '';
+
+  const tokens = cleaned.split(/\s+/).filter(Boolean);
+  if (!tokens.length) return '';
+
+  const selected = [];
+  for (const rawToken of tokens) {
+    const token = rawToken.replace(/^['’`]+|['’`]+$/g, '');
+    const lower = token.toLowerCase();
+
+    if (!token) continue;
+    if (selected.length === 0 && NAME_CONTEXT_STOPWORDS.has(lower)) continue;
+    if (selected.length > 0 && NAME_CONTEXT_STOPWORDS.has(lower)) break;
+    if (!isLikelyNameToken(token)) break;
+
+    selected.push(token);
+    if (selected.length >= 3) break;
+  }
+
+  if (!selected.length) return '';
+  if (
+    selected.length === 1 &&
+    NON_NAME_SINGLE_WORDS.has(selected[0].toLowerCase())
+  ) {
+    return '';
+  }
+
+  const name = selected.join(' ').trim();
+  if (!/^[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ'’ -]{1,39}$/.test(name)) {
+    return '';
+  }
+  return name;
+}
+
+function getFallbackMemoryKV(env) {
+  if (env.JULES_MEMORY_KV) return env.JULES_MEMORY_KV;
+  if (env.RATE_LIMIT_KV) return env.RATE_LIMIT_KV;
+  if (env.SITEMAP_CACHE_KV) return env.SITEMAP_CACHE_KV;
+  return null;
+}
+
+function sanitizeNameKey(name) {
+  return `username:${String(name || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9à-öø-ÿ]/g, '')}`;
+}
+
+async function lookupUserIdByName(env, name) {
+  const kv = getFallbackMemoryKV(env);
+  if (!kv?.get || !name) {
+    console.log('[lookupUserIdByName] Missing KV or Name', {
+      hasKV: !!kv?.get,
+      name,
+    });
+    return null;
+  }
+  try {
+    const key = sanitizeNameKey(name);
+    const result = await kv.get(key);
+    console.log(`[lookupUserIdByName] Key: ${key} -> Result: ${result}`);
+    return result;
+  } catch (err) {
+    console.error('[lookupUserIdByName] Error:', err);
+    return null;
+  }
+}
+
+async function linkUserByName(env, name, userId) {
+  const kv = getFallbackMemoryKV(env);
+  if (!kv?.put || !name || !userId) {
+    console.log('[linkUserByName] Missing KV, name or userId', {
+      hasKV: !!kv?.put,
+      name,
+      userId,
+    });
+    return false;
+  }
+  try {
+    const key = sanitizeNameKey(name);
+    await kv.put(key, userId);
+    console.log(
+      `[linkUserByName] Successfully linked Key: ${key} to UserId: ${userId}`,
+    );
+    return true;
+  } catch (err) {
+    console.error('[linkUserByName] Error:', err);
+    return false;
+  }
+}
+
+async function resolveUserIdentity(
+  request,
+  requestedUserId = '',
+  prompt = '',
+  env = null,
+) {
   const cookieUserId = normalizeUserId(
     readCookieValue(request.headers.get('cookie'), USER_ID_COOKIE),
   );
+  const headerUserId = normalizeUserId(request.headers.get('X-Jules-User-Id'));
   const bodyUserId = normalizeUserId(requestedUserId);
-  const resolvedUserId = bodyUserId || cookieUserId || createUserId();
-  const shouldSetCookie = cookieUserId !== resolvedUserId;
+
+  let nameMatchUserId = null;
+  let extractedName = null;
+
+  if (prompt && env) {
+    extractedName = extractNameFromPrompt(prompt);
+    if (extractedName) {
+      console.log(
+        `[resolveUserIdentity] Extracted name from prompt: "${extractedName}"`,
+      );
+      nameMatchUserId = await lookupUserIdByName(env, extractedName);
+      console.log(
+        `[resolveUserIdentity] User ID for name "${extractedName}": ${nameMatchUserId}`,
+      );
+    }
+  }
+
+  const resolvedUserId =
+    nameMatchUserId ||
+    bodyUserId ||
+    headerUserId ||
+    cookieUserId ||
+    createUserId();
+
+  // Wenn ein Name gesagt wurde, aber wir ihn noch NICHT im KV hatten (nameMatchUserId === null),
+  // verknüpfen wir die gerade ermittelte/neu generierte ID SOFORT mit dem Namen im KV.
+  if (extractedName && !nameMatchUserId && env) {
+    console.log(
+      `[resolveUserIdentity] New name "${extractedName}" detected, linking to resolved ID: ${resolvedUserId}`,
+    );
+    await linkUserByName(env, extractedName, resolvedUserId);
+  }
+
   return {
     userId: resolvedUserId,
-    shouldSetCookie,
+    shouldSetCookie: false,
   };
-}
-
-function getCookieDomainForRequest(requestUrl) {
-  const host = String(requestUrl?.hostname || '').toLowerCase();
-  if (!host) return '';
-  if (host === 'abdulkerimsesli.de' || host === 'www.abdulkerimsesli.de') {
-    return 'abdulkerimsesli.de';
-  }
-  return '';
 }
 
 function appendExposeHeader(headers, name) {
@@ -136,24 +358,12 @@ function appendExposeHeader(headers, name) {
   }
 }
 
-function withUserCookie(headers, request, userId, shouldSetCookie) {
+function withUserCookie(headers, request, userId) {
   const out = new Headers(headers);
   if (userId) {
     out.set('X-Jules-User-Id', userId);
     appendExposeHeader(out, 'X-Jules-User-Id');
   }
-  if (!shouldSetCookie || !userId) return out;
-
-  const requestUrl = new URL(request.url);
-  const secure = requestUrl.protocol === 'https:' ? '; Secure' : '';
-  const cookieDomain = getCookieDomainForRequest(requestUrl);
-  const domainPart = cookieDomain ? `; Domain=${cookieDomain}` : '';
-  out.append(
-    'Set-Cookie',
-    `${USER_ID_COOKIE}=${encodeURIComponent(
-      userId,
-    )}; Path=/; Max-Age=31536000; SameSite=Lax${secure}${domainPart}`,
-  );
   return out;
 }
 
@@ -362,7 +572,7 @@ Du HAST einen permanenten Langzeitspeicher! Du kannst dir Nutzer-Informationen (
 
 **KRITISCHE TOOL-REGELN:**
 1. Bei reinem Smalltalk OHNE persönliche Infos (z.B. "Hallo", "Was kannst du?"): Antworte mit Text, KEINE Tools.
-2. AUSNAHME: Wenn der Nutzer persönliche Infos teilt (Name, Interessen), IMMER rememberUser aufrufen — auch wenn es in einer Begrüßung passiert (z.B. "Hallo, ich bin Max" → rememberUser aufrufen!).
+2. AUSNAHME: Wenn der Nutzer persönliche Infos teilt (Name, Interessen, Lieblingsfarbe etc.), MUSST du technisch die Funktion "rememberUser" aufrufen — auch wenn die Info nur in einem Wort (z.B. "Grün") steht. Behaupte NIEMALS nur im Text, dass du es tust, sondern nutze exklusiv den Function Call!
 3. Rufe andere Tools NUR auf wenn der Nutzer EXPLIZIT eine Aktion anfordert:
    - "Zeig mir Projekte" / "Geh zu Projekte" → navigate
    - "Mach es dunkel" / "Dark Mode" → setTheme
@@ -388,13 +598,6 @@ Du HAST einen permanenten Langzeitspeicher! Du kannst dir Nutzer-Informationen (
 }
 
 // ─── Vectorize Memory ───────────────────────────────────────────────────────────
-
-function getFallbackMemoryKV(env) {
-  if (env.JULES_MEMORY_KV) return env.JULES_MEMORY_KV;
-  if (env.RATE_LIMIT_KV) return env.RATE_LIMIT_KV;
-  if (env.SITEMAP_CACHE_KV) return env.SITEMAP_CACHE_KV;
-  return null;
-}
 
 function getFallbackMemoryKey(userId) {
   return `${FALLBACK_MEMORY_PREFIX}${String(userId || 'anonymous')}`;
@@ -508,6 +711,9 @@ async function recallMemoriesFromFallback(
 
 async function storeMemory(env, userId, key, value, config) {
   const kvStored = await saveFallbackMemory(env, userId, key, value);
+  if (key === 'name' && value) {
+    await linkUserByName(env, value, userId);
+  }
   if (!env.AI || !env.JULES_MEMORY) {
     return kvStored
       ? { success: true, id: `kv_${Date.now()}`, storage: 'kv' }
@@ -743,151 +949,22 @@ const sseEvent = (event, data) =>
 // ─── Action Intent Detection ────────────────────────────────────────────────────
 
 /** Detect if user prompt asks for an action that requires tools. */
-const ACTION_PATTERNS =
-  /\b(zeig|geh|navigier|oeffn|öffn|schlie(?:ss|ß)|schließ|such|find|mach|wechsel|dark|light|toggle|theme|dunkel|hell|merk|merke|erinner|scroll|oben|top|menü|menu|name ist|hei(?:ss|ß)e|ich bin |ich hei(?:ss|ß)|nenn mich|kennst du mich|wei(?:ss|ß)t du (meinen|wer ich)|bin der |bin die |empfehl|kopier|link|url|upload|bild hoch|chatverlauf|verlauf l[oö]sch|history)/i;
 const MEMORY_RECALL_PATTERNS =
   /\b(kennst du mich noch|erinnerst du dich|wei(?:ss|ß)t du (meinen namen|wer ich bin)|wie hei(?:ss|ß)e ich)\b/i;
 
-function promptNeedsTools(prompt) {
-  return ACTION_PATTERNS.test(prompt);
+function promptNeedsTools(_prompt) {
+  // We now always return true so the AI agent has access to `rememberUser`
+  // even if the user answers with a single word like "Grün" or "Hunde".
+  return true;
 }
 
 function promptNeedsMemoryRecall(prompt) {
   return MEMORY_RECALL_PATTERNS.test(String(prompt || ''));
 }
 
-function normalizeExtractedValue(value, maxLength = 120) {
-  return String(value || '')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .replace(/^["'`]+|["'`]+$/g, '')
-    .replace(/[.,;:!?]+$/g, '')
-    .slice(0, maxLength);
-}
-
-const NAME_CONTEXT_STOPWORDS = new Set([
-  'aus',
-  'von',
-  'und',
-  'aber',
-  'im',
-  'in',
-  'mit',
-  'bei',
-  'als',
-  'ein',
-  'eine',
-  'einer',
-  'einem',
-  'eines',
-  'der',
-  'die',
-  'das',
-  'den',
-  'dem',
-  'des',
-  'bin',
-  'heisse',
-  'heiße',
-  'nenne',
-  'nennen',
-  'arbeite',
-  'komme',
-  'wohne',
-  'mag',
-  'liebe',
-  'interessiere',
-  'interessiert',
-  'habe',
-  'hab',
-  'will',
-  'moechte',
-  'möchte',
-]);
-
-const NON_NAME_SINGLE_WORDS = new Set([
-  'muede',
-  'müde',
-  'hungrig',
-  'bereit',
-  'hier',
-  'da',
-  'neu',
-  'krank',
-  'ok',
-  'okay',
-  'gut',
-  'schlecht',
-  'traurig',
-  'verwirrt',
-  'gespannt',
-  'froh',
-  'cool',
-  'fertig',
-]);
-
 const TOOL_LEAK_INLINE_PATTERN =
   /\s+tools?\s*:\s*(?:navigate|setTheme|searchBlog|toggleMenu|scrollToSection|openSearch|closeSearch|focusSearch|scrollTop|copyCurrentUrl|openImageUpload|clearChatHistory|rememberUser|recallMemory|recommend)\b[^\n]*/gi;
 const TOOL_LEAK_LINE_PATTERN = /(?:^|\n)\s*tools?\s*:[^\n]*(?=\n|$)/gi;
-
-function isLikelyNameToken(token) {
-  return /^[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ'’-]{0,29}$/.test(token);
-}
-
-function normalizeNameCandidate(candidate) {
-  const cleaned = normalizeExtractedValue(candidate, 60);
-  if (!cleaned) return '';
-
-  const tokens = cleaned.split(/\s+/).filter(Boolean);
-  if (!tokens.length) return '';
-
-  const selected = [];
-  for (const rawToken of tokens) {
-    const token = rawToken.replace(/^['’`]+|['’`]+$/g, '');
-    const lower = token.toLowerCase();
-
-    if (!token) continue;
-    if (selected.length === 0 && NAME_CONTEXT_STOPWORDS.has(lower)) continue;
-    if (selected.length > 0 && NAME_CONTEXT_STOPWORDS.has(lower)) break;
-    if (!isLikelyNameToken(token)) break;
-
-    selected.push(token);
-    if (selected.length >= 3) break;
-  }
-
-  if (!selected.length) return '';
-  if (
-    selected.length === 1 &&
-    NON_NAME_SINGLE_WORDS.has(selected[0].toLowerCase())
-  ) {
-    return '';
-  }
-
-  const name = selected.join(' ').trim();
-  if (!/^[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ'’ -]{1,39}$/.test(name)) {
-    return '';
-  }
-  return name;
-}
-
-function extractNameFromPrompt(promptText) {
-  const text = String(promptText || '');
-  if (!text.trim()) return '';
-
-  const patterns = [
-    /(?:\bich\s+hei(?:ss|ß)e\b|\bmein\s+name\s+ist\b|\bnenn\s+mich\b|\bdu\s+kannst\s+mich\b)\s+([^\n.,;:!?]{2,60})/i,
-    /(?:\bich\s+bin\b|\bich\s+bin's\b|\bich\s+bins\b)\s+([^\n.,;:!?]{2,60})/i,
-  ];
-
-  for (const pattern of patterns) {
-    const match = text.match(pattern);
-    if (!match?.[1]) continue;
-    const name = normalizeNameCandidate(match[1]);
-    if (name) return name;
-  }
-
-  return '';
-}
 
 function sanitizeAssistantText(rawText) {
   const input = String(rawText || '');
@@ -1169,20 +1246,15 @@ export async function onRequestPost(context) {
     } = body;
     imageAnalysis = body.imageAnalysis || imageAnalysis;
 
-    const identity = resolveUserIdentity(request, requestedUserId);
+    const identity = await resolveUserIdentity(
+      request,
+      requestedUserId,
+      prompt,
+      env,
+    );
     const userId = identity.userId;
-    const jsonHeaders = withUserCookie(
-      corsHeaders,
-      request,
-      userId,
-      identity.shouldSetCookie,
-    );
-    const sseResponseHeaders = withUserCookie(
-      sseHeaders,
-      request,
-      userId,
-      identity.shouldSetCookie,
-    );
+    const jsonHeaders = withUserCookie(corsHeaders, request, userId);
+    const sseResponseHeaders = withUserCookie(sseHeaders, request, userId);
 
     if (!prompt && !imageAnalysis) {
       return Response.json(
@@ -1275,6 +1347,7 @@ export async function onRequestPost(context) {
     context.waitUntil(
       (async () => {
         try {
+          await write('identity', { userId });
           await write('status', { phase: 'thinking' });
 
           // Only pass tools when user prompt implies an action
@@ -1709,6 +1782,7 @@ async function handleNonStreaming(
 
     return Response.json(
       {
+        userId,
         text:
           responseText ||
           (clientToolCalls.length
