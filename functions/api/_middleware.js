@@ -79,11 +79,10 @@ async function checkKV(kv, identifier, maxRequests) {
  * Get client identifier (IP address)
  */
 function getClientIdentifier(request) {
+  // Use CF-Connecting-IP exclusively as it is verified by Cloudflare.
+  // Ignore X-Forwarded-For to prevent IP spoofing vulnerabilities.
   const cfIP = request.headers.get('CF-Connecting-IP');
   if (cfIP) return cfIP;
-
-  const forwarded = request.headers.get('X-Forwarded-For');
-  if (forwarded) return forwarded.split(',')[0].trim();
 
   return 'unknown';
 }
