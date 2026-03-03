@@ -18,8 +18,6 @@ const ALLOWED_IMAGE_TYPES = [
   'image/gif',
 ];
 const HISTORY_KEY = 'jules-conversation-history';
-const USER_ID_KEY = 'jules-user-id';
-const USER_ID_COOKIE = 'jules_uid';
 const USER_ID_HEADER = 'x-jules-user-id';
 const MAX_HISTORY = 20;
 let runtimeUserId = '';
@@ -43,88 +41,21 @@ function createUserId() {
   return `u_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
 }
 
-function getUserIdFromStorage(storage) {
-  if (!storage?.getItem) return '';
-  try {
-    return normalizeUserId(storage.getItem(USER_ID_KEY));
-  } catch {
-    return '';
-  }
-}
-
-function getSafeStorage(type) {
-  try {
-    return type === 'local' ? localStorage : sessionStorage;
-  } catch {
-    return null;
-  }
-}
-
-function readUserIdFromCookie() {
-  if (typeof document === 'undefined') return '';
-  const cookie = String(document.cookie || '');
-  if (!cookie) return '';
-
-  const parts = cookie.split(';');
-  for (const rawPart of parts) {
-    const part = rawPart.trim();
-    if (!part.startsWith(`${USER_ID_COOKIE}=`)) continue;
-    const value = part.slice(USER_ID_COOKIE.length + 1);
-    try {
-      return normalizeUserId(decodeURIComponent(value));
-    } catch {
-      return normalizeUserId(value);
-    }
-  }
-  return '';
-}
-
 function persistUserId(id) {
   const value = normalizeUserId(id);
   if (!value) return '';
   runtimeUserId = value;
-
-  try {
-    localStorage.setItem(USER_ID_KEY, value);
-  } catch {
-    /* ignore */
-  }
-
-  try {
-    sessionStorage.setItem(USER_ID_KEY, value);
-  } catch {
-    /* ignore */
-  }
-
-  try {
-    if (typeof document !== 'undefined') {
-      const secure =
-        typeof location !== 'undefined' && location.protocol === 'https:'
-          ? '; Secure'
-          : '';
-      document.cookie = `${USER_ID_COOKIE}=${encodeURIComponent(
-        value,
-      )}; Path=/; Max-Age=31536000; SameSite=Lax${secure}`;
-    }
-  } catch {
-    /* ignore */
-  }
-
+  // We explicitly DO NOT store this locally (no cookies, no localStorage)
+  // per user request for "Incognito" (Indigo) style ephemeral sessions.
+  // The ID is held purely in RAM via runtimeUserId.
   return value;
 }
 
 function getUserId() {
   if (normalizeUserId(runtimeUserId)) return runtimeUserId;
 
-  const fromLocal = getUserIdFromStorage(getSafeStorage('local'));
-  if (fromLocal) return persistUserId(fromLocal);
-
-  const fromSession = getUserIdFromStorage(getSafeStorage('session'));
-  if (fromSession) return persistUserId(fromSession);
-
-  const fromCookie = readUserIdFromCookie();
-  if (fromCookie) return persistUserId(fromCookie);
-
+  // Since we no longer persist or read from local storage or cookies,
+  // we just create an ephemeral ID for the session and hold it in RAM.
   return persistUserId(createUserId());
 }
 
