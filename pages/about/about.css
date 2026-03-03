@@ -75,6 +75,7 @@ main.about-main.container {
   background: color-mix(in srgb, var(--clr-white) 5%, transparent);
   border: var(--size-1) solid var(--card-border);
   color: var(--text-main);
+  -webkit-backdrop-filter: blur(var(--card-blur-base));
   backdrop-filter: blur(var(--card-blur-base));
 }
 .about-main .btn-outline:hover {
@@ -96,6 +97,7 @@ main.about-main.container {
   border: var(--size-1) solid var(--card-border);
   border-radius: var(--radius-xl);
   padding: var(--space-8);
+  -webkit-backdrop-filter: blur(var(--size-12));
   backdrop-filter: blur(var(--size-12));
   transition:
     transform 0.3s,

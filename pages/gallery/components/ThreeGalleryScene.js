@@ -10,6 +10,7 @@ export const ThreeGalleryScene = ({ items }) => {
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [isLoading, setIsLoading] = useState(true);
   const touchStartRef = useRef(null);
+  const lightboxRef = useRef(null);
 
   const selectedItem = selectedIndex >= 0 ? items[selectedIndex] : null;
 
@@ -57,6 +58,14 @@ export const ThreeGalleryScene = ({ items }) => {
         document.body.style.overflow = originalOverflow;
       };
     }
+  }, [selectedIndex]);
+
+  // Animate backdrop-filter in after lightbox mounts
+  useEffect(() => {
+    const el = lightboxRef.current;
+    if (!el) return;
+    const raf = requestAnimationFrame(() => el.classList.add('is-active'));
+    return () => cancelAnimationFrame(raf);
   }, [selectedIndex]);
 
   // Keyboard navigation for lightbox
@@ -141,6 +150,7 @@ export const ThreeGalleryScene = ({ items }) => {
         'div',
         {
           className: 'gallery-lightbox',
+          ref: lightboxRef,
           role: 'dialog',
           'aria-modal': 'true',
           'aria-label': `${selectedItem.title} — Bild ${selectedIndex + 1} von ${items.length}`,

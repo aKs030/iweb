@@ -47,6 +47,7 @@ address {
   max-width: var(--size-1440);
   min-width: var(--size-320);
   background: var(--component-header-bg);
+  -webkit-backdrop-filter: blur(var(--component-blur-radius));
   backdrop-filter: blur(var(--component-blur-radius));
   border-radius: var(--component-pill-radius);
   border: var(--size-1) solid var(--component-separator);
