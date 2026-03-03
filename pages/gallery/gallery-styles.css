@@ -146,12 +146,21 @@
   align-items: center;
   justify-content: center;
   background: var(--modal-overlay-bg);
-  backdrop-filter: blur(var(--modal-overlay-blur));
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
   padding: calc(var(--space-4) + var(--safe-top))
     calc(var(--space-4) + var(--safe-right))
     calc(var(--space-4) + var(--safe-bottom))
     calc(var(--space-4) + var(--safe-left));
   touch-action: none;
+  transition:
+    backdrop-filter 0.35s ease,
+    -webkit-backdrop-filter 0.35s ease;
+}
+
+.gallery-lightbox.is-active {
+  backdrop-filter: blur(var(--modal-overlay-blur));
+  -webkit-backdrop-filter: blur(var(--modal-overlay-blur));
 }
 
 .gallery-lightbox__nav,

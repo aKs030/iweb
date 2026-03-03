@@ -2,8 +2,12 @@ body.projekte-page {
   --projekte-viewport-height: 100vh;
   min-height: 500vh;
   height: 500vh;
-  min-height: 500svh;
-  height: 500svh;
+}
+@supports (height: 100svh) {
+  body.projekte-page {
+    min-height: 500svh;
+    height: 500svh;
+  }
 }
 @supports (height: 100dvh) {
   body.projekte-page {
@@ -97,6 +101,7 @@ body.projekte-page canvas {
     color-mix(in srgb, var(--bg-primary) 92%, var(--clr-blue-600)) 0%,
     color-mix(in srgb, var(--bg-primary) 78%, var(--clr-blue-600)) 100%
   );
+  -webkit-backdrop-filter: var(--blur-lg);
   backdrop-filter: var(--blur-lg);
   box-shadow:
     var(--projects-launch-shadow),
@@ -189,6 +194,7 @@ body.projekte-page canvas {
     color-mix(in srgb, var(--clr-slate-400) 26%, transparent);
   background: color-mix(in srgb, var(--clr-slate-500) 62%, var(--bg-primary));
   color: var(--clr-slate-300);
+  -webkit-backdrop-filter: blur(var(--size-14));
   backdrop-filter: blur(var(--size-14));
   font-size: var(--size-r-0-83);
   letter-spacing: 0.01em;
@@ -203,8 +209,16 @@ body.projekte-page canvas {
   justify-content: center;
   padding: clamp(var(--size-r-0-85), 2vw, var(--size-r-1-25));
   background: var(--modal-overlay-bg);
-  backdrop-filter: blur(var(--modal-overlay-blur));
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
   pointer-events: auto;
+  transition:
+    backdrop-filter 0.35s ease,
+    -webkit-backdrop-filter 0.35s ease;
+}
+.app-popup.is-active {
+  backdrop-filter: blur(var(--modal-overlay-blur));
+  -webkit-backdrop-filter: blur(var(--modal-overlay-blur));
 }
 .app-popup__panel {
   width: min(95vw, var(--size-1120));
@@ -320,7 +334,8 @@ body.projekte-page canvas {
   max-height: min(62vh, var(--size-460));
   overflow: auto;
   background: var(--projects-hud-bg);
-  backdrop-filter: var(--blur-lg);
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
   border: var(--size-1) solid var(--projects-hud-border);
   border-radius: var(--size-r-1-5);
   padding: var(--size-r-2);
@@ -332,11 +347,15 @@ body.projekte-page canvas {
   transform: translateY(var(--size-20));
   transition:
     opacity 0.4s ease,
-    transform 0.4s ease;
+    transform 0.4s ease,
+    backdrop-filter 0.4s ease,
+    -webkit-backdrop-filter 0.4s ease;
 }
 .hud-panel.visible {
   opacity: 1;
   transform: translateY(0);
+  backdrop-filter: var(--blur-lg);
+  -webkit-backdrop-filter: var(--blur-lg);
 }
 .hud-container.is-pending .hud-panel {
   opacity: 0;
@@ -521,8 +540,12 @@ body.projekte-page .btn-outline:hover {
   body.projekte-page {
     min-height: 430vh;
     height: 430vh;
-    min-height: 430svh;
-    height: 430svh;
+  }
+  @supports (height: 100svh) {
+    body.projekte-page {
+      min-height: 430svh;
+      height: 430svh;
+    }
   }
   @supports (height: 100dvh) {
     body.projekte-page {

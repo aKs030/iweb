@@ -764,8 +764,8 @@
     0 0 var(--size-30) color-mix(in srgb, var(--robot-cyan) 10%, transparent),
     0 var(--size-12) var(--size-45)
       color-mix(in srgb, var(--clr-blue-800) 35%, transparent);
-  backdrop-filter: blur(var(--size-28));
-  -webkit-backdrop-filter: blur(var(--size-28));
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
   border-radius: var(--size-28);
   display: flex;
   flex-direction: column;
@@ -783,7 +783,9 @@
   transition:
     opacity 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
     transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
-    visibility 0.4s;
+    visibility 0.4s,
+    backdrop-filter 0.4s ease,
+    -webkit-backdrop-filter 0.4s ease;
   z-index: var(--z-tooltip); /* Ensure it's above other overlays */
 }
 
@@ -841,6 +843,8 @@
   transform: translateY(0) scale(1);
   visibility: visible;
   pointer-events: auto;
+  backdrop-filter: blur(var(--size-28));
+  -webkit-backdrop-filter: blur(var(--size-28));
 }
 
 .chat-header {
@@ -857,6 +861,7 @@
   align-items: center;
   border-bottom: var(--size-1) solid
     color-mix(in srgb, var(--robot-cyan) 15%, transparent);
+  -webkit-backdrop-filter: blur(var(--size-12));
   backdrop-filter: blur(var(--size-12));
   flex-shrink: 0;
   position: relative;
@@ -1034,6 +1039,7 @@
   border-bottom-left-radius: var(--size-5);
   border: var(--size-1) solid
     color-mix(in srgb, var(--clr-white) 8%, transparent);
+  -webkit-backdrop-filter: blur(var(--size-4));
   backdrop-filter: blur(var(--size-4));
 }
 
@@ -1192,6 +1198,7 @@
   display: flex;
   gap: var(--size-10);
   align-items: center;
+  -webkit-backdrop-filter: blur(var(--size-10));
   backdrop-filter: blur(var(--size-10));
   flex-shrink: 0;
   position: relative;

@@ -123,7 +123,7 @@ function extractNameFromPrompt(promptText) {
     const match = text.match(pattern);
     if (!match?.[1]) continue;
     const name = normalizeNameCandidate(match[1]);
-    if (name) return name;
+    if (name && name.toLowerCase() !== 'jules') return name;
   }
 
   return '';
@@ -280,6 +280,9 @@ async function linkUserByName(env, name, userId) {
       name,
       userId,
     });
+    return false;
+  }
+  if (name.toLowerCase() === 'jules') {
     return false;
   }
   try {
@@ -710,6 +713,12 @@ async function recallMemoriesFromFallback(
 }
 
 async function storeMemory(env, userId, key, value, config) {
+  if (key === 'name' && value && value.toLowerCase() === 'jules') {
+    return {
+      success: false,
+      error: "Cannot use assistant's name as user name",
+    };
+  }
   const kvStored = await saveFallbackMemory(env, userId, key, value);
   if (key === 'name' && value) {
     await linkUserByName(env, value, userId);

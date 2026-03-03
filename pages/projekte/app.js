@@ -59,6 +59,7 @@ const App = () => {
   const [popupSize, setPopupSize] = useState(null);
   const [showCaseStudy, setShowCaseStudy] = useState(false);
   const popupFrameRef = useRef(null);
+  const popupOverlayRef = useRef(null);
 
   useEffect(() => i18n.subscribe(setLang), []);
 
@@ -242,6 +243,14 @@ const App = () => {
 
     window.addEventListener('message', onMessage);
     return () => window.removeEventListener('message', onMessage);
+  }, [popupApp]);
+
+  // Animate backdrop-filter on popup overlay
+  useEffect(() => {
+    const el = popupOverlayRef.current;
+    if (!el) return;
+    const raf = requestAnimationFrame(() => el.classList.add('is-active'));
+    return () => cancelAnimationFrame(raf);
   }, [popupApp]);
 
   const t = (key, fallback, params = {}) => {
@@ -484,6 +493,7 @@ const App = () => {
           'div',
           {
             className: 'app-popup',
+            ref: popupOverlayRef,
             role: 'dialog',
             'aria-modal': 'true',
             'aria-label': t('projects.app.popup_title', 'App popup'),

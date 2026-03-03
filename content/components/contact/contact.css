@@ -57,6 +57,7 @@ body.contact-page {
 
 .contact-form-card {
   background: var(--card-bg);
+  -webkit-backdrop-filter: blur(var(--card-blur-base));
   backdrop-filter: blur(var(--card-blur-base));
   border: var(--size-1) solid var(--card-border);
   border-radius: var(--radius-lg);
