@@ -359,19 +359,100 @@ export class RobotCollision {
     }
   }
 
+  // ── Text Collision Impact Effects ───────────────────────────
+
+  /**
+   * Play visual impact effects on the typewriter text when the robot collides.
+   * Randomly picks 2-3 effects from: shake, glitch, scatter, flash.
+   * Also spawns a shockwave ring and directional sparks at the impact point.
+   * @param {Element} typeWriter - The typewriter DOM element
+   * @param {DOMRect} twRect - Bounding rect of the typewriter
+   */
+  _playTextCollisionEffect(typeWriter, twRect) {
+    if (!typeWriter || this._textCollisionCooldown) return;
+
+    // Cooldown to prevent rapid-fire effects
+    this._textCollisionCooldown = true;
+    this.robot._setTimeout(() => {
+      this._textCollisionCooldown = false;
+    }, 800);
+
+    // ── 1. Select random text effects (2-3 of 4) ──
+    const effects = [
+      'collision-shake',
+      'collision-glitch',
+      'collision-scatter',
+      'collision-flash',
+    ];
+    // Shuffle and pick 2-3
+    const shuffled = effects.sort(() => Math.random() - 0.5);
+    const count = 2 + Math.floor(Math.random() * 2); // 2 or 3
+    const chosen = shuffled.slice(0, count);
+
+    // Apply CSS classes with staggered timing
+    chosen.forEach((cls, i) => {
+      this.robot._setTimeout(() => {
+        typeWriter.classList.add(cls);
+      }, i * 50);
+    });
+
+    // Remove all after the longest animation finishes
+    this.robot._setTimeout(() => {
+      effects.forEach((cls) => typeWriter.classList.remove(cls));
+    }, 700);
+
+    // ── 2. Calculate impact point ──
+    const robotEl = this.robot.dom.svg || this.robot.dom.avatar;
+    if (!robotEl) return;
+    const rRect = robotEl.getBoundingClientRect();
+
+    // Impact point is where robot and text overlap
+    const impactX = Math.max(
+      twRect.left,
+      Math.min(twRect.right, rRect.left + rRect.width / 2),
+    );
+    const impactY = Math.max(
+      twRect.top,
+      Math.min(twRect.bottom, rRect.top + rRect.height / 2),
+    );
+
+    // ── 3. Shockwave ring ──
+    const shockwave = document.createElement('div');
+    shockwave.className = 'collision-shockwave';
+    shockwave.style.left = `${impactX}px`;
+    shockwave.style.top = `${impactY}px`;
+    document.body.appendChild(shockwave);
+    this.robot._setTimeout(() => shockwave.remove(), 650);
+
+    // ── 4. Directional sparks ──
+    const sparkCount = 6 + Math.floor(Math.random() * 5);
+    for (let i = 0; i < sparkCount; i++) {
+      const spark = document.createElement('div');
+      spark.className = 'collision-spark';
+      const angle = (360 / sparkCount) * i + (Math.random() - 0.5) * 30;
+      spark.style.setProperty('--spark-angle', `${angle}deg`);
+      spark.style.left = `${impactX + (Math.random() - 0.5) * 8}px`;
+      spark.style.top = `${impactY + (Math.random() - 0.5) * 8}px`;
+      // Vary spark size
+      const len = 8 + Math.random() * 10;
+      spark.style.height = `${len}px`;
+      spark.style.animationDuration = `${0.3 + Math.random() * 0.2}s`;
+      document.body.appendChild(spark);
+      this.robot._setTimeout(() => spark.remove(), 550);
+    }
+  }
+
   /**
    * Check for collision with the typewriter title
    * @param {DOMRect} twRect - Bounding rect of typewriter
-   * @param {number} [_maxLeft] - Optional max left limit
    * @returns {boolean} True if collision occurred
    */
-  checkForTypewriterCollision(twRect, _maxLeft) {
+  checkForTypewriterCollision(twRect) {
     if (!twRect) return false;
-    // Allow collisions even if the robot recently changed direction.
-    // Previously this returned early when a startAnimation was active which
-    // prevented showing the bubble/particles for subsequent quick collisions.
-    // Instead: always show the reaction (bubble + particles) but only
-    // trigger the knockback/startAnimation when it's not already active.
+
+    // ── Immunity check: skip if recently knocked back by text ──
+    if (this._textCollisionImmunity) return false;
+
     if (!this.robot.dom || !this.robot.dom.container) return false;
     try {
       // Use the robot avatar or svg bounding box instead of the full container
@@ -401,34 +482,39 @@ export class RobotCollision {
       const overlapY =
         Math.min(twRect.bottom, rRect.bottom) - Math.max(twRect.top, rRect.top);
       if (overlapX < 6 || overlapY < 6) return false;
-      // Clamp maxLeft fallback
-      const robotWidth = 80;
-      const initialLeft = window.innerWidth - 30 - robotWidth;
-      _maxLeft = typeof _maxLeft === 'number' ? _maxLeft : initialLeft - 20;
 
-      // Collision reaction: show bubble and particle burst. If there's no
-      // existing startAnimation active, trigger the dedicated knockback.
+      // ── Activate immunity: no more text collisions for 6 seconds ──
+      this._textCollisionImmunity = true;
+      this.robot._setTimeout(() => {
+        this._textCollisionImmunity = false;
+      }, 6000);
+
+      // Collision reaction: show bubble and particle burst
       const reactions = [
         'Autsch! 😵',
         'Ups! Das war hart! 💥',
         'Whoa! 😲',
         'Hey! Nicht schubsen! 😠',
+        'Au weia! 💢',
+        'Das hätte nicht sein müssen! 😤',
       ];
       const reaction = reactions[Math.floor(Math.random() * reactions.length)];
       this.robot.showBubble(reaction);
       this.robot._setTimeout(() => this.robot.hideBubble(), 2500);
       this.robot.animationModule.spawnParticleBurst(18, {
-        strength: 2.0,
-        spread: 180,
+        strength: 2.5,
+        spread: 220,
       });
 
-      const anim = this.robot.animationModule;
-      if (!anim.startAnimation || !anim.startAnimation.active) {
-        // Use shared AABB helper – avoids duplicate getBoundingClientRect logic
-        if (anim._robotIntersectsTypewriter(twRect)) {
-          anim.triggerKnockback();
-        }
+      // Play text impact effects
+      const typeWriter = document.querySelector('.typewriter-title');
+      if (typeWriter) {
+        this._playTextCollisionEffect(typeWriter, twRect);
       }
+
+      // Always trigger a full knockback that flings the robot far away
+      const anim = this.robot.animationModule;
+      anim.triggerKnockback();
 
       return true;
     } catch (err) {

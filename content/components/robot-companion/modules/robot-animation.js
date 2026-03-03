@@ -252,11 +252,11 @@ export class RobotAnimation {
     this.startAnimation.active = true;
     this.startAnimation.phase = 'knockback';
     this.startAnimation.knockbackStartTime = now;
-    this.startAnimation.knockbackDuration = 900;
+    this.startAnimation.knockbackDuration = 1200; // longer flight
     this.startAnimation.knockbackStartX = this.patrol.x;
     this.startAnimation.knockbackStartY = this.patrol.y;
-    // Random landing position so robot doesn't always end up at the same spot
-    this.startAnimation.knockbackEndX = Math.round(10 + Math.random() * 70);
+    // Land far away from text (near right edge, low x values)
+    this.startAnimation.knockbackEndX = Math.round(Math.random() * 15);
 
     this.robot._requestAnimationFrame(this.updateStartAnimation);
   }
@@ -284,6 +284,9 @@ export class RobotAnimation {
       () => this._entryZoomSpin(),
       () => this._entrySlideIn(),
       () => this._entryGlitchIn(),
+      () => this._entryBounceAcross(),
+      () => this._entryPortalOpen(),
+      () => this._entryRocketLaunch(),
     ];
     const pick = variants[Math.floor(Math.random() * variants.length)];
     pick();
@@ -411,6 +414,76 @@ export class RobotAnimation {
     this.robot._requestAnimationFrame(this.updateStartAnimation);
   }
 
+  /** Robot bounces across the bottom of the screen like a ball */
+  _entryBounceAcross() {
+    const windowWidth = globalThis.innerWidth || 800;
+    this.patrol.x = -(windowWidth * 0.3); // start off-screen left
+    this.patrol.y = 0;
+    this.patrol.direction = 1;
+    this.patrol.bouncePhase = 0;
+
+    this.startAnimation.active = true;
+    this.startAnimation.phase = 'entryBounceAcross';
+    this.startAnimation.startTime = performance.now();
+    this.startAnimation.startX = this.patrol.x;
+    this.startAnimation.duration = 2000;
+    this.startAnimation.bounceCount = 0;
+
+    this.robot.dom.container.style.transform = `translate3d(${-this.patrol.x}px, 0px, 0)`;
+    if (this.robot.dom.floatWrapper) {
+      this.robot.dom.floatWrapper.style.transform = 'rotate(0deg)';
+    }
+    this.robot.dom.container.style.opacity = '1';
+    this.robot._requestAnimationFrame(this.updateStartAnimation);
+  }
+
+  /** Robot materialises through a spinning portal */
+  _entryPortalOpen() {
+    this.patrol.x = 0;
+    this.patrol.y = 0;
+
+    this.startAnimation.active = true;
+    this.startAnimation.phase = 'entryPortalOpen';
+    this.startAnimation.startTime = performance.now();
+    this.startAnimation.duration = 1600;
+
+    if (this.robot.dom.floatWrapper) {
+      this.robot.dom.floatWrapper.style.transform = 'scale(0) rotate(0deg)';
+      this.robot.dom.floatWrapper.style.opacity = '0';
+    }
+    // Add portal glow CSS class to avatar
+    if (this.robot.dom.avatar) {
+      this.robot.dom.avatar.classList.add('portal-glow');
+    }
+    this.robot.dom.container.style.transform = 'translate3d(0px, 0px, 0)';
+    this.robot.dom.container.style.opacity = '1';
+    this.robot._requestAnimationFrame(this.updateStartAnimation);
+  }
+
+  /** Robot launches from below like a rocket */
+  _entryRocketLaunch() {
+    const startY = 300; // below viewport
+    this.patrol.x = 0;
+    this.patrol.y = startY;
+    this.patrol.bouncePhase = 0;
+
+    this.startAnimation.active = true;
+    this.startAnimation.phase = 'entryRocketLaunch';
+    this.startAnimation.startTime = performance.now();
+    this.startAnimation.knockbackStartY = startY;
+    this.startAnimation.duration = 1200;
+
+    if (this.robot.dom.avatar) {
+      this.robot.dom.avatar.classList.add('rocket-trail');
+    }
+    this.robot.dom.container.style.transform = `translate3d(0px, ${startY}px, 0)`;
+    if (this.robot.dom.floatWrapper) {
+      this.robot.dom.floatWrapper.style.transform = 'rotate(0deg)';
+    }
+    this.robot.dom.container.style.opacity = '1';
+    this.robot._requestAnimationFrame(this.updateStartAnimation);
+  }
+
   /** Clean up any entry animation state and transition to patrol */
   _finishEntry(bubble) {
     // Immediately mark phase as finishing so no phase handler re-fires
@@ -420,6 +493,12 @@ export class RobotAnimation {
       this.robot.showBubble(bubble);
       this.robot._setTimeout(() => this.robot.hideBubble(), 2500);
     }
+
+    // Clean up any entry-variant CSS helper classes
+    if (this.robot.dom.avatar) {
+      this.robot.dom.avatar.classList.remove('portal-glow', 'rocket-trail');
+    }
+
     const endX = this.startAnimation.knockbackEndX || 0;
     this.robot._setTimeout(() => {
       this.startAnimation.active = false;
@@ -637,13 +716,33 @@ export class RobotAnimation {
 
         this.spawnParticleBurst(18, { strength: 2.5, spread: 220 });
 
+        // Play text collision impact effects
+        const typeWriter = document.querySelector('.typewriter-title');
+        if (typeWriter) {
+          const twRect = typeWriter.getBoundingClientRect();
+          this.robot.collisionModule._playTextCollisionEffect(
+            typeWriter,
+            twRect,
+          );
+        }
+
         this.startAnimation.phase = 'knockback';
         this.startAnimation.knockbackStartTime = now;
-        this.startAnimation.knockbackDuration = 900;
+        this.startAnimation.knockbackDuration = 1200;
         this.startAnimation.knockbackStartX = this.patrol.x;
         this.startAnimation.knockbackStartY = this.patrol.y;
-        // Random landing position instead of always right edge
-        this.startAnimation.knockbackEndX = Math.round(10 + Math.random() * 70);
+        // Land far away from text (near right edge)
+        this.startAnimation.knockbackEndX = Math.round(Math.random() * 15);
+
+        // Set text collision immunity to prevent loop
+        if (this.robot.collisionModule) {
+          this.robot.collisionModule._textCollisionImmunity = true;
+          this.robot._setTimeout(() => {
+            if (this.robot.collisionModule) {
+              this.robot.collisionModule._textCollisionImmunity = false;
+            }
+          }, 6000);
+        }
       }
 
       this.robot._requestAnimationFrame(this.updateStartAnimation);
@@ -654,11 +753,11 @@ export class RobotAnimation {
       const elapsed = now - this.startAnimation.knockbackStartTime;
       const t = Math.min(1, elapsed / this.startAnimation.knockbackDuration);
 
-      // Higher arc trajectory (more dramatic)
-      const arc = Math.sin(t * Math.PI) * 70;
+      // High arc trajectory for dramatic fling
+      const arc = Math.sin(t * Math.PI) * 120;
       this.patrol.y = this.startAnimation.knockbackStartY - arc;
 
-      // Fly back from collision point to random landing position
+      // Fly back from collision point to landing position (far from text)
       // Use elastic ease-out for bouncy dramatic effect
       const eased =
         t === 1 ? 1 : 1 - Math.pow(2, -10 * t) * Math.cos(t * Math.PI * 2.5);
@@ -668,12 +767,12 @@ export class RobotAnimation {
         (endX - this.startAnimation.knockbackStartX) * eased;
 
       // More dramatic tumble rotation
-      const rotation = -25 + t * 50;
+      const rotation = -30 + t * 60;
       if (this.robot.dom.svg) {
         this.robot.dom.svg.style.transform = `rotate(${rotation}deg)`;
       }
 
-      const containerRot = 20 * Math.sin(t * Math.PI * 2.5);
+      const containerRot = 25 * Math.sin(t * Math.PI * 2.5);
       this.robot.dom.container.style.transform = `translate3d(${-this.patrol.x}px, ${this.patrol.y}px, 0)`;
       if (this.robot.dom.floatWrapper) {
         this.robot.dom.floatWrapper.style.transform = `rotate(${containerRot}deg)`;
@@ -707,7 +806,7 @@ export class RobotAnimation {
 
       if (t >= 1) {
         this.startAnimation.phase = 'landing';
-        this.spawnParticleBurst(8, { strength: 1.5 });
+        this.spawnParticleBurst(10, { strength: 1.8, spread: 180 });
 
         const landX = this.startAnimation.knockbackEndX || 0;
         this.robot._setTimeout(() => {
@@ -725,6 +824,10 @@ export class RobotAnimation {
             this.robot.dom.floatWrapper.style.transform = 'rotate(0deg)';
           }
           this.robot.dom.container.style.transform = `translate3d(${-landX}px, 0px, 0)`;
+          this.setAvatarState({ moving: false, dashing: false });
+
+          // Pause longer after text collision to prevent immediate re-approach
+          this.pausePatrol(4000 + Math.random() * 3000);
           this.startPatrol();
         }, 300);
       }
@@ -907,6 +1010,196 @@ export class RobotAnimation {
       }
 
       this.robot._requestAnimationFrame(this.updateStartAnimation);
+      return;
+    }
+
+    // ── entryBounceAcross: ball-like bouncing across the screen ──
+    if (this.startAnimation.phase === 'entryBounceAcross') {
+      const elapsed = now - this.startAnimation.startTime;
+      const t = Math.min(1, elapsed / this.startAnimation.duration);
+
+      // Horizontal: ease from off-screen-left to 0
+      const easeX = 1 - Math.pow(1 - t, 2); // ease-out quad
+      const totalDist = Math.abs(this.startAnimation.startX);
+      this.patrol.x = this.startAnimation.startX + totalDist * easeX;
+
+      // Vertical: 4 diminishing bounces
+      const bounceFreq = 4;
+      const bounceHeight = 120 * (1 - t); // diminish over time
+      const bounceVal = Math.abs(Math.sin(t * Math.PI * bounceFreq));
+      this.patrol.y = -bounceVal * bounceHeight;
+
+      // Squash/stretch on "floor contact" (when y is near 0)
+      const nearFloor = bounceVal < 0.15;
+      if (this.robot.dom.floatWrapper) {
+        if (nearFloor && t < 0.9) {
+          this.robot.dom.floatWrapper.style.transform =
+            'scaleX(1.15) scaleY(0.85)';
+          // Spawn small burst on bounce contact
+          if (!this._lastBounceT || Math.abs(t - this._lastBounceT) > 0.08) {
+            this.spawnParticleBurst(3, { strength: 0.6, spread: 120 });
+            this._lastBounceT = t;
+          }
+        } else {
+          const rot = Math.sin(t * Math.PI * bounceFreq * 2) * 15 * (1 - t);
+          this.robot.dom.floatWrapper.style.transform = `scaleX(1) scaleY(1) rotate(${rot}deg)`;
+        }
+      }
+
+      this.setAvatarState({ moving: true, dashing: t < 0.3 });
+      if (this.robot.dom.flame) {
+        this.robot.dom.flame.style.opacity = `${0.4 + bounceVal * 0.5}`;
+      }
+
+      this.robot.dom.container.style.transform = `translate3d(${-this.patrol.x}px, ${this.patrol.y}px, 0)`;
+
+      if (t >= 1) {
+        this._lastBounceT = null;
+        this.spawnParticleBurst(8, { strength: 1.2, spread: 180 });
+        const msg = this._randomPick([
+          'Boing! Boing! 🏀',
+          'Was für ein Eingang! 🤸',
+          'Hoppla, gute Landung! 🎯',
+          'Boing! Hier bin ich! 🤖',
+        ]);
+        this._transitionToTextKnockback(msg);
+        return;
+      }
+
+      this.robot._requestAnimationFrame(this.updateStartAnimation);
+      return;
+    }
+
+    // ── entryPortalOpen: materialise through a spinning portal ──
+    if (this.startAnimation.phase === 'entryPortalOpen') {
+      const elapsed = now - this.startAnimation.startTime;
+      const t = Math.min(1, elapsed / this.startAnimation.duration);
+
+      // Phase 1 (0-0.5): Portal ring spins, robot invisible
+      // Phase 2 (0.5-1.0): Robot scales in, portal fades
+      if (t < 0.5) {
+        // Portal phase: random sparks
+        if (Math.random() < 0.15) {
+          this.spawnParticleBurst(2, { strength: 1, spread: 360 });
+        }
+        if (this.robot.dom.floatWrapper) {
+          const pulse = 0.02 + Math.sin(t * Math.PI * 6) * 0.03;
+          this.robot.dom.floatWrapper.style.transform = `scale(${pulse})`;
+          this.robot.dom.floatWrapper.style.opacity = '0';
+        }
+      } else {
+        const pt = (t - 0.5) / 0.5; // 0-1 for scale-in phase
+        // Elastic ease-out for dramatic pop
+        const elasticEase =
+          pt === 1 ? 1 : 1 - Math.pow(2, -10 * pt) * Math.cos(pt * Math.PI * 3);
+        const scale = Math.max(0, elasticEase);
+        const rotation = (1 - pt) * 360;
+
+        if (this.robot.dom.floatWrapper) {
+          this.robot.dom.floatWrapper.style.transform = `scale(${scale}) rotate(${rotation}deg)`;
+          this.robot.dom.floatWrapper.style.opacity = `${Math.min(1, pt * 2.5)}`;
+        }
+
+        // Remove portal glow progressively
+        if (pt > 0.6 && this.robot.dom.avatar) {
+          this.robot.dom.avatar.classList.remove('portal-glow');
+        }
+      }
+
+      if (t >= 1) {
+        if (this.robot.dom.avatar) {
+          this.robot.dom.avatar.classList.remove('portal-glow');
+        }
+        this.spawnParticleBurst(15, { strength: 1.8, spread: 360 });
+        const msg = this._randomPick([
+          'Portal-Transfer komplett! 🌀',
+          'Dimensionssprung! ✨',
+          'Teleportation erfolgreich! 🔮',
+          'Aus einer anderen Welt! 🌌',
+        ]);
+        this._transitionToTextKnockback(msg);
+        return;
+      }
+
+      this.robot._requestAnimationFrame(this.updateStartAnimation);
+      return;
+    }
+
+    // ── entryRocketLaunch: shoot up from below ──
+    if (this.startAnimation.phase === 'entryRocketLaunch') {
+      const elapsed = now - this.startAnimation.startTime;
+      const t = Math.min(1, elapsed / this.startAnimation.duration);
+
+      const startY = this.startAnimation.knockbackStartY;
+
+      if (t < 0.6) {
+        // Phase 1: Rocket up (decelerate)
+        const ft = t / 0.6;
+        const eased = 1 - Math.pow(1 - ft, 3); // ease-out cubic
+        this.patrol.y = startY * (1 - eased);
+
+        // Slight wobble
+        const wobble = Math.sin(ft * Math.PI * 8) * (3 * (1 - ft));
+        if (this.robot.dom.floatWrapper) {
+          this.robot.dom.floatWrapper.style.transform = `rotate(${wobble}deg)`;
+        }
+
+        // Flame on full blast
+        if (this.robot.dom.flame) {
+          this.robot.dom.flame.style.opacity = '1';
+          this.robot.dom.flame.style.transform = `scale(${1.2 + (1 - ft) * 0.5})`;
+        }
+
+        // Trail particles
+        if (Math.random() < 0.3) {
+          this.spawnParticleBurst(2, {
+            strength: 0.8,
+            direction: 0,
+            spread: 30,
+          });
+        }
+
+        this.setAvatarState({ moving: true, dashing: true });
+      } else {
+        // Phase 2: Overshoot and settle (spring)
+        const st = (t - 0.6) / 0.4;
+        const overshoot = -40 * Math.sin(st * Math.PI) * (1 - st);
+        this.patrol.y = overshoot;
+
+        if (this.robot.dom.floatWrapper) {
+          const settleRot = Math.sin(st * Math.PI * 2) * 8 * (1 - st);
+          this.robot.dom.floatWrapper.style.transform = `rotate(${settleRot}deg)`;
+        }
+
+        // Fade out flame
+        if (this.robot.dom.flame) {
+          this.robot.dom.flame.style.opacity = `${0.8 * (1 - st)}`;
+          this.robot.dom.flame.style.transform = 'scale(1)';
+        }
+
+        this.setAvatarState({ moving: true, dashing: false });
+      }
+
+      this.robot.dom.container.style.transform = `translate3d(0px, ${this.patrol.y}px, 0)`;
+
+      if (t >= 1) {
+        // Remove rocket trail class
+        if (this.robot.dom.avatar) {
+          this.robot.dom.avatar.classList.remove('rocket-trail');
+        }
+        this.spawnParticleBurst(10, { strength: 1.5, spread: 360 });
+        const msg = this._randomPick([
+          'Houston, wir sind da! 🚀',
+          '3… 2… 1… Hallo! 🛸',
+          'Raketenstart geglückt! 🌟',
+          'Abheben und landen! 💫',
+        ]);
+        this._transitionToTextKnockback(msg);
+        return;
+      }
+
+      this.robot._requestAnimationFrame(this.updateStartAnimation);
+      return;
     }
   }
 
@@ -986,7 +1279,7 @@ export class RobotAnimation {
     }
 
     if (typeWriter && twRect) {
-      this.robot.collisionModule.checkForTypewriterCollision(twRect, maxLeft);
+      this.robot.collisionModule.checkForTypewriterCollision(twRect);
     }
 
     if (now > this.motion.dashUntil && Math.random() < this.motion.dashChance) {
@@ -1108,15 +1401,82 @@ export class RobotAnimation {
   }
 
   triggerRandomIdleAnimation() {
+    if (!this.robot.dom.avatar) return;
+
     const r = Math.random();
-    if (r < 0.3) {
+    if (r < 0.1) {
+      // Wave (original)
       this.robot.dom.avatar.classList.add('waving');
-    } else if (r < 0.6) {
+    } else if (r < 0.2) {
+      // Check watch (original)
       this.robot.dom.avatar.classList.add('check-watch');
       if (this.robot.dom.eyes) {
         this.robot.dom.eyes.style.transform = 'translate(-2px, 4px)';
       }
+    } else if (r < 0.28) {
+      // Head tilt (curious)
+      this.robot.dom.avatar.classList.add('head-tilt');
+    } else if (r < 0.36) {
+      // Yawn
+      this.robot.dom.avatar.classList.add('yawning');
+      if (this.robot.dom.mouth) {
+        this.robot.dom.mouth.classList.add('surprised');
+        this.robot._setTimeout(() => {
+          this.robot.dom.mouth?.classList.remove('surprised');
+        }, 2000);
+      }
+    } else if (r < 0.44) {
+      // Air drumming
+      this.robot.dom.avatar.classList.add('air-drumming');
+    } else if (r < 0.52) {
+      // Stretch
+      this.robot.dom.avatar.classList.add('stretching');
+    } else if (r < 0.6) {
+      // Doze off then jolt awake
+      this.robot.dom.avatar.classList.add('dozing');
+      // Spawn Zzz particle during doze
+      this.robot._setTimeout(() => {
+        if (this.robot.dom.container) {
+          const rect = this.robot.dom.container.getBoundingClientRect();
+          const zzz = document.createElement('div');
+          zzz.textContent = '💤';
+          zzz.style.cssText = `position:fixed;left:${rect.left + rect.width / 2}px;top:${rect.top - 10}px;font-size:16px;pointer-events:none;z-index:9999;animation:particleHeart 1.5s ease-out forwards;`;
+          document.body.appendChild(zzz);
+          this.robot._setTimeout(() => zzz.remove(), 1500);
+        }
+      }, 800);
+    } else if (r < 0.72) {
+      // Look around (curious scanning)
+      this.robot.dom.avatar.classList.add('looking-around');
+      if (this.robot.dom.eyes) {
+        // Eyes follow the head turns
+        this.robot.dom.eyes.style.transition = 'transform 0.3s ease';
+        this.robot._setTimeout(() => {
+          if (this.robot.dom.eyes)
+            this.robot.dom.eyes.style.transform = 'translate(-3px, 0)';
+        }, 400);
+        this.robot._setTimeout(() => {
+          if (this.robot.dom.eyes)
+            this.robot.dom.eyes.style.transform = 'translate(3px, 0)';
+        }, 1500);
+        this.robot._setTimeout(() => {
+          if (this.robot.dom.eyes) {
+            this.robot.dom.eyes.style.transform = '';
+            this.robot.dom.eyes.style.transition = '';
+          }
+        }, 2800);
+      }
+    } else if (r < 0.84) {
+      // Wiggle dance (happy)
+      this.robot.dom.avatar.classList.add('wiggle-dance');
+      if (this.robot.dom.mouth) {
+        this.robot.dom.mouth.classList.add('happy');
+        this.robot._setTimeout(() => {
+          this.robot.dom.mouth?.classList.remove('happy');
+        }, 1500);
+      }
     } else {
+      // Random eye look (original fallback)
       if (this.robot.dom.eyes) {
         this.robot.dom.eyes.style.transform = `translate(${
           Math.random() * 4 - 2
@@ -1127,8 +1487,20 @@ export class RobotAnimation {
 
   resetIdleAnimations() {
     if (this.robot.dom.avatar) {
-      this.robot.dom.avatar.classList.remove('waving');
-      this.robot.dom.avatar.classList.remove('check-watch');
+      this.robot.dom.avatar.classList.remove(
+        'waving',
+        'check-watch',
+        'head-tilt',
+        'yawning',
+        'air-drumming',
+        'stretching',
+        'dozing',
+        'looking-around',
+        'wiggle-dance',
+      );
+    }
+    if (this.robot.dom.mouth) {
+      this.robot.dom.mouth.classList.remove('surprised', 'happy');
     }
   }
 

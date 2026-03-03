@@ -223,20 +223,7 @@ export class RobotCompanion {
     if (!typeWriter || !this.dom?.container) return;
 
     const twRect = typeWriter.getBoundingClientRect();
-    const robotWidth = 80;
-    const initialLeft =
-      (typeof globalThis !== 'undefined' ? globalThis.innerWidth : 0) -
-      30 -
-      robotWidth;
-    let maxLeft = initialLeft - 20; // Use 'let' as maxLeft might be modified
-
-    // If typewriter is present, adjust maxLeft based on its position
-    if (typeWriter && twRect) {
-      const limit = initialLeft - twRect.right - 50;
-      if (limit < maxLeft) maxLeft = limit;
-    }
-
-    this.collisionModule.checkForTypewriterCollision(twRect, maxLeft);
+    this.collisionModule.checkForTypewriterCollision(twRect);
   }
 
   maybeTriggerContextReaction(currentContext = null) {
