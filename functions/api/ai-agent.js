@@ -572,7 +572,7 @@ Du HAST einen permanenten Langzeitspeicher! Du kannst dir Nutzer-Informationen (
 
 **KRITISCHE TOOL-REGELN:**
 1. Bei reinem Smalltalk OHNE persönliche Infos (z.B. "Hallo", "Was kannst du?"): Antworte mit Text, KEINE Tools.
-2. AUSNAHME: Wenn der Nutzer persönliche Infos teilt (Name, Interessen), IMMER rememberUser aufrufen — auch wenn es in einer Begrüßung passiert (z.B. "Hallo, ich bin Max" → rememberUser aufrufen!).
+2. AUSNAHME: Wenn der Nutzer persönliche Infos teilt (Name, Interessen, Lieblingsfarbe etc.), MUSST du technisch die Funktion "rememberUser" aufrufen — auch wenn die Info nur in einem Wort (z.B. "Grün") steht. Behaupte NIEMALS nur im Text, dass du es tust, sondern nutze exklusiv den Function Call!
 3. Rufe andere Tools NUR auf wenn der Nutzer EXPLIZIT eine Aktion anfordert:
    - "Zeig mir Projekte" / "Geh zu Projekte" → navigate
    - "Mach es dunkel" / "Dark Mode" → setTheme
@@ -949,13 +949,13 @@ const sseEvent = (event, data) =>
 // ─── Action Intent Detection ────────────────────────────────────────────────────
 
 /** Detect if user prompt asks for an action that requires tools. */
-const ACTION_PATTERNS =
-  /\b(zeig|geh|navigier|oeffn|öffn|schlie(?:ss|ß)|schließ|such|find|mach|wechsel|dark|light|toggle|theme|dunkel|hell|merk|merke|erinner|scroll|oben|top|menü|menu|name ist|hei(?:ss|ß)e|ich bin |ich hei(?:ss|ß)|nenn mich|kennst du mich|wei(?:ss|ß)t du (meinen|wer ich)|bin der |bin die |empfehl|kopier|link|url|upload|bild hoch|chatverlauf|verlauf l[oö]sch|history)/i;
 const MEMORY_RECALL_PATTERNS =
   /\b(kennst du mich noch|erinnerst du dich|wei(?:ss|ß)t du (meinen namen|wer ich bin)|wie hei(?:ss|ß)e ich)\b/i;
 
-function promptNeedsTools(prompt) {
-  return ACTION_PATTERNS.test(prompt);
+function promptNeedsTools(_prompt) {
+  // We now always return true so the AI agent has access to `rememberUser`
+  // even if the user answers with a single word like "Grün" or "Hunde".
+  return true;
 }
 
 function promptNeedsMemoryRecall(prompt) {
