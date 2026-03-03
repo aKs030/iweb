@@ -764,20 +764,20 @@ async function recallMemories(env, userId, query, config, options = {}) {
       ? options.scoreThreshold
       : config.memoryScoreThreshold;
 
+  // Always load KV memories — this is the complete set for the user.
+  const kvMemories = await recallMemoriesFromFallback(env, userId, query, {
+    topK,
+    scoreThreshold,
+  });
+
   if (!env.AI || !env.JULES_MEMORY) {
-    return recallMemoriesFromFallback(env, userId, query, {
-      topK,
-      scoreThreshold,
-    });
+    return kvMemories;
   }
 
   try {
     const { data } = await env.AI.run(config.embeddingModel, { text: [query] });
     if (!data?.[0]) {
-      return recallMemoriesFromFallback(env, userId, query, {
-        topK,
-        scoreThreshold,
-      });
+      return kvMemories;
     }
 
     const results = await env.JULES_MEMORY.query(data[0], {
@@ -796,19 +796,13 @@ async function recallMemories(env, userId, query, config, options = {}) {
       }))
       .sort((a, b) => b.timestamp - a.timestamp);
 
-    if (vectorMemories.length > 0) return vectorMemories;
-
-    return recallMemoriesFromFallback(env, userId, query, {
-      topK,
-      scoreThreshold,
-    });
+    // Merge both sources — KV may have entries that Vectorize missed
+    // (e.g. when embedding failed at store time).
+    return mergeMemoryEntries(vectorMemories, kvMemories);
   } catch (error) {
     if (!error?.remote)
       console.warn('recallMemories error:', error?.message || error);
-    return recallMemoriesFromFallback(env, userId, query, {
-      topK,
-      scoreThreshold,
-    });
+    return kvMemories;
   }
 }
 
@@ -949,8 +943,26 @@ const sseEvent = (event, data) =>
 // ─── Action Intent Detection ────────────────────────────────────────────────────
 
 /** Detect if user prompt asks for an action that requires tools. */
-const MEMORY_RECALL_PATTERNS =
-  /\b(kennst du mich noch|erinnerst du dich|wei(?:ss|ß)t du (meinen namen|wer ich bin)|wie hei(?:ss|ß)e ich)\b/i;
+const MEMORY_RECALL_PATTERNS = new RegExp(
+  [
+    // Explicit identity recall
+    'kennst du mich noch',
+    'erinnerst du dich',
+    'wei(?:ss|ß)t du (?:meinen namen|wer ich bin|noch)',
+    'wie hei(?:ss|ß)e ich',
+    // Questions about personal info
+    'was (?:ist|war) mein(?:e?)', // "Was ist meine Lieblingsfarbe?"
+    'was wei(?:ss|ß)t du (?:über|ueber) mich',
+    'was hast du (?:dir )?(?:über|ueber) mich (?:gemerkt|gespeichert)',
+    'erinnerst du dich an',
+    'kannst du dich (?:an mich )?erinnern',
+    // Name-based greeting (returning user)
+    'ich bin\\b', // "Ich bin Max"
+    'ich hei(?:ss|ß)e\\b', // "Ich heiße Max"
+    'mein name ist\\b', // "Mein Name ist Max"
+  ].join('|'),
+  'i',
+);
 
 function promptNeedsTools(_prompt) {
   // We now always return true so the AI agent has access to `rememberUser`
@@ -1043,27 +1055,43 @@ async function persistPromptMemories(env, userId, prompt, config) {
     }));
 }
 
-async function resolveMemoryContext(env, userId, prompt, config) {
-  const primary = await recallMemories(env, userId, prompt || 'user', config);
-  if (primary.length > 0) return primary;
+async function resolveMemoryContext(env, userId, _prompt, config) {
+  // Always load ALL memories for this user with no score threshold.
+  // Users typically have < 20 personal memories, so loading everything
+  // is cheap and guarantees the LLM never misses stored context.
+  console.log(
+    `[resolveMemoryContext] userId=${userId}, prompt="${String(_prompt || '').slice(0, 80)}"`,
+  );
 
-  if (!promptNeedsMemoryRecall(prompt)) return [];
+  const all = await recallMemories(env, userId, 'user info', config, {
+    topK: Math.max(20, config.maxMemoryResults),
+    scoreThreshold: 0,
+  });
 
-  const recallQueries = [
-    'name',
-    'interests',
-    'preferences',
-    'notes about this user',
-  ];
+  console.log(
+    `[resolveMemoryContext] Found ${all.length} memories:`,
+    JSON.stringify(all.map((m) => ({ key: m.key, value: m.value }))),
+  );
 
+  if (all.length > 0) return all;
+
+  // Fallback: try common category queries (helps when KV is empty
+  // but Vectorize has entries under specific terms).
+  const recallQueries = ['name', 'interests', 'preferences', 'notes'];
   for (const query of recallQueries) {
     const fallback = await recallMemories(env, userId, query, config, {
-      topK: Math.max(12, config.maxMemoryResults),
+      topK: Math.max(20, config.maxMemoryResults),
       scoreThreshold: 0,
     });
-    if (fallback.length > 0) return fallback;
+    if (fallback.length > 0) {
+      console.log(
+        `[resolveMemoryContext] Fallback query="${query}" found ${fallback.length} memories`,
+      );
+      return fallback;
+    }
   }
 
+  console.log('[resolveMemoryContext] No memories found at all');
   return [];
 }
 
