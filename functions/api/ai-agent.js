@@ -101,12 +101,192 @@ function createUserId() {
   return `u_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
 }
 
-function resolveUserIdentity(request, requestedUserId = '') {
+function extractNameFromPrompt(promptText) {
+  const text = String(promptText || '');
+  if (!text.trim()) return '';
+
+  const patterns = [
+    /(?:\bich\s+hei(?:ss|ß)e\b|\bmein\s+name\s+ist\b|\bnenn\s+mich\b|\bdu\s+kannst\s+mich\b)\s+([^\n.,;:!?]{2,60})/i,
+    /(?:\bich\s+bin\b|\bich\s+bin's\b|\bich\s+bins\b)\s+([^\n.,;:!?]{2,60})/i,
+  ];
+
+  for (const pattern of patterns) {
+    const match = text.match(pattern);
+    if (!match?.[1]) continue;
+    const name = normalizeNameCandidate(match[1]);
+    if (name) return name;
+  }
+
+  return '';
+}
+
+function normalizeExtractedValue(value, maxLength = 120) {
+  return String(value || '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/^["'`]+|["'`]+$/g, '')
+    .replace(/[.,;:!?]+$/g, '')
+    .slice(0, maxLength);
+}
+
+const NAME_CONTEXT_STOPWORDS = new Set([
+  'aus',
+  'von',
+  'und',
+  'aber',
+  'im',
+  'in',
+  'mit',
+  'bei',
+  'als',
+  'ein',
+  'eine',
+  'einer',
+  'einem',
+  'eines',
+  'der',
+  'die',
+  'das',
+  'den',
+  'dem',
+  'des',
+  'bin',
+  'heisse',
+  'heiße',
+  'nenne',
+  'nennen',
+  'arbeite',
+  'komme',
+  'wohne',
+  'mag',
+  'liebe',
+  'interessiere',
+  'interessiert',
+  'habe',
+  'hab',
+  'will',
+  'moechte',
+  'möchte',
+]);
+
+const NON_NAME_SINGLE_WORDS = new Set([
+  'muede',
+  'müde',
+  'hungrig',
+  'bereit',
+  'hier',
+  'da',
+  'neu',
+  'krank',
+  'ok',
+  'okay',
+  'gut',
+  'schlecht',
+  'traurig',
+  'verwirrt',
+  'gespannt',
+  'froh',
+  'cool',
+  'fertig',
+]);
+
+function isLikelyNameToken(token) {
+  return /^[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ'’-]{0,29}$/.test(token);
+}
+
+function normalizeNameCandidate(candidate) {
+  const cleaned = normalizeExtractedValue(candidate, 60);
+  if (!cleaned) return '';
+
+  const tokens = cleaned.split(/\s+/).filter(Boolean);
+  if (!tokens.length) return '';
+
+  const selected = [];
+  for (const rawToken of tokens) {
+    const token = rawToken.replace(/^['’`]+|['’`]+$/g, '');
+    const lower = token.toLowerCase();
+
+    if (!token) continue;
+    if (selected.length === 0 && NAME_CONTEXT_STOPWORDS.has(lower)) continue;
+    if (selected.length > 0 && NAME_CONTEXT_STOPWORDS.has(lower)) break;
+    if (!isLikelyNameToken(token)) break;
+
+    selected.push(token);
+    if (selected.length >= 3) break;
+  }
+
+  if (!selected.length) return '';
+  if (
+    selected.length === 1 &&
+    NON_NAME_SINGLE_WORDS.has(selected[0].toLowerCase())
+  ) {
+    return '';
+  }
+
+  const name = selected.join(' ').trim();
+  if (!/^[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ'’ -]{1,39}$/.test(name)) {
+    return '';
+  }
+  return name;
+}
+
+function getFallbackMemoryKV(env) {
+  if (env.JULES_MEMORY_KV) return env.JULES_MEMORY_KV;
+  if (env.RATE_LIMIT_KV) return env.RATE_LIMIT_KV;
+  if (env.SITEMAP_CACHE_KV) return env.SITEMAP_CACHE_KV;
+  return null;
+}
+
+function sanitizeNameKey(name) {
+  return `username:${String(name || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9à-öø-ÿ]/g, '')}`;
+}
+
+async function lookupUserIdByName(env, name) {
+  const kv = getFallbackMemoryKV(env);
+  if (!kv?.get || !name) return null;
+  try {
+    const key = sanitizeNameKey(name);
+    return await kv.get(key);
+  } catch {
+    return null;
+  }
+}
+
+async function linkUserByName(env, name, userId) {
+  const kv = getFallbackMemoryKV(env);
+  if (!kv?.put || !name || !userId) return false;
+  try {
+    const key = sanitizeNameKey(name);
+    await kv.put(key, userId);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function resolveUserIdentity(
+  request,
+  requestedUserId = '',
+  prompt = '',
+  env = null,
+) {
   const cookieUserId = normalizeUserId(
     readCookieValue(request.headers.get('cookie'), USER_ID_COOKIE),
   );
   const bodyUserId = normalizeUserId(requestedUserId);
-  const resolvedUserId = bodyUserId || cookieUserId || createUserId();
+
+  let nameMatchUserId = null;
+  if (prompt && env) {
+    const extractedName = extractNameFromPrompt(prompt);
+    if (extractedName) {
+      nameMatchUserId = await lookupUserIdByName(env, extractedName);
+    }
+  }
+
+  const resolvedUserId =
+    nameMatchUserId || bodyUserId || cookieUserId || createUserId();
   const shouldSetCookie = cookieUserId !== resolvedUserId;
   return {
     userId: resolvedUserId,
@@ -389,13 +569,6 @@ Du HAST einen permanenten Langzeitspeicher! Du kannst dir Nutzer-Informationen (
 
 // ─── Vectorize Memory ───────────────────────────────────────────────────────────
 
-function getFallbackMemoryKV(env) {
-  if (env.JULES_MEMORY_KV) return env.JULES_MEMORY_KV;
-  if (env.RATE_LIMIT_KV) return env.RATE_LIMIT_KV;
-  if (env.SITEMAP_CACHE_KV) return env.SITEMAP_CACHE_KV;
-  return null;
-}
-
 function getFallbackMemoryKey(userId) {
   return `${FALLBACK_MEMORY_PREFIX}${String(userId || 'anonymous')}`;
 }
@@ -508,6 +681,9 @@ async function recallMemoriesFromFallback(
 
 async function storeMemory(env, userId, key, value, config) {
   const kvStored = await saveFallbackMemory(env, userId, key, value);
+  if (key === 'name' && value) {
+    await linkUserByName(env, value, userId);
+  }
   if (!env.AI || !env.JULES_MEMORY) {
     return kvStored
       ? { success: true, id: `kv_${Date.now()}`, storage: 'kv' }
@@ -756,138 +932,9 @@ function promptNeedsMemoryRecall(prompt) {
   return MEMORY_RECALL_PATTERNS.test(String(prompt || ''));
 }
 
-function normalizeExtractedValue(value, maxLength = 120) {
-  return String(value || '')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .replace(/^["'`]+|["'`]+$/g, '')
-    .replace(/[.,;:!?]+$/g, '')
-    .slice(0, maxLength);
-}
-
-const NAME_CONTEXT_STOPWORDS = new Set([
-  'aus',
-  'von',
-  'und',
-  'aber',
-  'im',
-  'in',
-  'mit',
-  'bei',
-  'als',
-  'ein',
-  'eine',
-  'einer',
-  'einem',
-  'eines',
-  'der',
-  'die',
-  'das',
-  'den',
-  'dem',
-  'des',
-  'bin',
-  'heisse',
-  'heiße',
-  'nenne',
-  'nennen',
-  'arbeite',
-  'komme',
-  'wohne',
-  'mag',
-  'liebe',
-  'interessiere',
-  'interessiert',
-  'habe',
-  'hab',
-  'will',
-  'moechte',
-  'möchte',
-]);
-
-const NON_NAME_SINGLE_WORDS = new Set([
-  'muede',
-  'müde',
-  'hungrig',
-  'bereit',
-  'hier',
-  'da',
-  'neu',
-  'krank',
-  'ok',
-  'okay',
-  'gut',
-  'schlecht',
-  'traurig',
-  'verwirrt',
-  'gespannt',
-  'froh',
-  'cool',
-  'fertig',
-]);
-
 const TOOL_LEAK_INLINE_PATTERN =
   /\s+tools?\s*:\s*(?:navigate|setTheme|searchBlog|toggleMenu|scrollToSection|openSearch|closeSearch|focusSearch|scrollTop|copyCurrentUrl|openImageUpload|clearChatHistory|rememberUser|recallMemory|recommend)\b[^\n]*/gi;
 const TOOL_LEAK_LINE_PATTERN = /(?:^|\n)\s*tools?\s*:[^\n]*(?=\n|$)/gi;
-
-function isLikelyNameToken(token) {
-  return /^[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ'’-]{0,29}$/.test(token);
-}
-
-function normalizeNameCandidate(candidate) {
-  const cleaned = normalizeExtractedValue(candidate, 60);
-  if (!cleaned) return '';
-
-  const tokens = cleaned.split(/\s+/).filter(Boolean);
-  if (!tokens.length) return '';
-
-  const selected = [];
-  for (const rawToken of tokens) {
-    const token = rawToken.replace(/^['’`]+|['’`]+$/g, '');
-    const lower = token.toLowerCase();
-
-    if (!token) continue;
-    if (selected.length === 0 && NAME_CONTEXT_STOPWORDS.has(lower)) continue;
-    if (selected.length > 0 && NAME_CONTEXT_STOPWORDS.has(lower)) break;
-    if (!isLikelyNameToken(token)) break;
-
-    selected.push(token);
-    if (selected.length >= 3) break;
-  }
-
-  if (!selected.length) return '';
-  if (
-    selected.length === 1 &&
-    NON_NAME_SINGLE_WORDS.has(selected[0].toLowerCase())
-  ) {
-    return '';
-  }
-
-  const name = selected.join(' ').trim();
-  if (!/^[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ'’ -]{1,39}$/.test(name)) {
-    return '';
-  }
-  return name;
-}
-
-function extractNameFromPrompt(promptText) {
-  const text = String(promptText || '');
-  if (!text.trim()) return '';
-
-  const patterns = [
-    /(?:\bich\s+hei(?:ss|ß)e\b|\bmein\s+name\s+ist\b|\bnenn\s+mich\b|\bdu\s+kannst\s+mich\b)\s+([^\n.,;:!?]{2,60})/i,
-    /(?:\bich\s+bin\b|\bich\s+bin's\b|\bich\s+bins\b)\s+([^\n.,;:!?]{2,60})/i,
-  ];
-
-  for (const pattern of patterns) {
-    const match = text.match(pattern);
-    if (!match?.[1]) continue;
-    const name = normalizeNameCandidate(match[1]);
-    if (name) return name;
-  }
-
-  return '';
-}
 
 function sanitizeAssistantText(rawText) {
   const input = String(rawText || '');
@@ -1169,7 +1216,12 @@ export async function onRequestPost(context) {
     } = body;
     imageAnalysis = body.imageAnalysis || imageAnalysis;
 
-    const identity = resolveUserIdentity(request, requestedUserId);
+    const identity = await resolveUserIdentity(
+      request,
+      requestedUserId,
+      prompt,
+      env,
+    );
     const userId = identity.userId;
     const jsonHeaders = withUserCookie(
       corsHeaders,
