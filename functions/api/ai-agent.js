@@ -284,6 +284,7 @@ async function resolveUserIdentity(
   const cookieUserId = normalizeUserId(
     readCookieValue(request.headers.get('cookie'), USER_ID_COOKIE),
   );
+  const headerUserId = normalizeUserId(request.headers.get('X-Jules-User-Id'));
   const bodyUserId = normalizeUserId(requestedUserId);
 
   let nameMatchUserId = null;
@@ -295,21 +296,16 @@ async function resolveUserIdentity(
   }
 
   const resolvedUserId =
-    nameMatchUserId || bodyUserId || cookieUserId || createUserId();
-  const shouldSetCookie = cookieUserId !== resolvedUserId;
+    nameMatchUserId ||
+    bodyUserId ||
+    headerUserId ||
+    cookieUserId ||
+    createUserId();
+
   return {
     userId: resolvedUserId,
-    shouldSetCookie,
+    shouldSetCookie: false,
   };
-}
-
-function getCookieDomainForRequest(requestUrl) {
-  const host = String(requestUrl?.hostname || '').toLowerCase();
-  if (!host) return '';
-  if (host === 'abdulkerimsesli.de' || host === 'www.abdulkerimsesli.de') {
-    return 'abdulkerimsesli.de';
-  }
-  return '';
 }
 
 function appendExposeHeader(headers, name) {
@@ -325,24 +321,12 @@ function appendExposeHeader(headers, name) {
   }
 }
 
-function withUserCookie(headers, request, userId, shouldSetCookie) {
+function withUserCookie(headers, request, userId) {
   const out = new Headers(headers);
   if (userId) {
     out.set('X-Jules-User-Id', userId);
     appendExposeHeader(out, 'X-Jules-User-Id');
   }
-  if (!shouldSetCookie || !userId) return out;
-
-  const requestUrl = new URL(request.url);
-  const secure = requestUrl.protocol === 'https:' ? '; Secure' : '';
-  const cookieDomain = getCookieDomainForRequest(requestUrl);
-  const domainPart = cookieDomain ? `; Domain=${cookieDomain}` : '';
-  out.append(
-    'Set-Cookie',
-    `${USER_ID_COOKIE}=${encodeURIComponent(
-      userId,
-    )}; Path=/; Max-Age=31536000; SameSite=Lax${secure}${domainPart}`,
-  );
   return out;
 }
 
@@ -1232,18 +1216,8 @@ export async function onRequestPost(context) {
       env,
     );
     const userId = identity.userId;
-    const jsonHeaders = withUserCookie(
-      corsHeaders,
-      request,
-      userId,
-      identity.shouldSetCookie,
-    );
-    const sseResponseHeaders = withUserCookie(
-      sseHeaders,
-      request,
-      userId,
-      identity.shouldSetCookie,
-    );
+    const jsonHeaders = withUserCookie(corsHeaders, request, userId);
+    const sseResponseHeaders = withUserCookie(sseHeaders, request, userId);
 
     if (!prompt && !imageAnalysis) {
       return Response.json(
