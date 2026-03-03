@@ -138,23 +138,26 @@ export class CardManager {
 
         this.cards.forEach((card, idx) => {
           if (isMobile) {
-            // === Mobile Layout (2-Column Grid) ===
-            const scale = 0.5; // Smaller for grid layout
+            // === Mobile Layout (Elegant Centered Grid) ===
+            // Calculate a significantly larger safe scale
+            const adaptiveBase = vw / 320;
+            const scale = Math.min(1.15, Math.max(0.8, adaptiveBase));
 
-            // Grid positioning: 2 columns, 3 rows (for 5 cards)
-            const col = idx % 2; // 0 or 1
+            // Grid logic: 2 columns, perfectly center the 5th odd card
+            const isLast = idx === 4;
+            const col = isLast ? 0.5 : idx % 2; // 0=left, 1=right, 0.5=center
             const row = Math.floor(idx / 2); // 0, 1, 2
 
-            // Horizontal spacing between columns
-            const colSpacing = 2.5;
-            const x = (col - 0.5) * colSpacing; // Center around 0
+            // Spacing adjusted for much larger cards
+            const colSpacing = 2.6 * scale;
+            const x = (col - 0.5) * colSpacing;
 
-            // Vertical spacing between rows
-            const rowSpacing = 2.4;
-            const y = (1 - row) * rowSpacing; // Top to bottom
+            const rowSpacing = 3.2 * scale;
+            // Shift the starting Y position down (from 1.2 to 0.8) so it doesn't hit the top nav
+            const y = (0.8 - row) * rowSpacing;
 
-            // Header offset - account for mobile safe areas
-            const headerPixels = 20;
+            // Header offset to ensure we safely clear the mobile nav
+            const headerPixels = 80;
             const safeAreaTop =
               parseFloat(
                 getComputedStyle(document.documentElement).getPropertyValue(
@@ -162,16 +165,18 @@ export class CardManager {
                 ),
               ) || 0;
             const totalHeaderOffset = headerPixels + safeAreaTop;
-            const headerWorldOffset = this._pixelsToWorldY(totalHeaderOffset);
+            const headerWorldOffset = this._pixelsToWorldY
+              ? this._pixelsToWorldY(totalHeaderOffset)
+              : (totalHeaderOffset / window.innerHeight) * 10;
 
             card.scale.setScalar(scale);
             card.position.x = x;
             card.position.y = y - headerWorldOffset;
-            card.position.z = 0;
+            card.position.z = 0; // Strictly flat to guarantee no z-overlap illusions
 
-            // Update metadata for hover/animation
-            card.userData.originalY = y - headerWorldOffset;
-            card.userData.hoverY = y - headerWorldOffset + 0.2;
+            // Metadata for hover
+            card.userData.originalY = card.position.y;
+            card.userData.hoverY = card.position.y + 0.15;
             card.userData.originalZ = 0;
           } else {
             // === Desktop Layout (Grid: 3 oben, 2 unten) ===
