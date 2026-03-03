@@ -1555,13 +1555,18 @@
     padding: var(--size-10) var(--size-14);
     font-size: var(--size-r-0-9);
   }
+
+  /* When keyboard is open via JS, remove safe-area-inset because keyboard already pushes layout up */
+  .robot-chat-window.keyboard-open .chat-input-area {
+    padding-bottom: var(--size-12) !important;
+  }
 }
 
 /* Mobile Optimization: Prevent iOS Zoom on Input Focus */
 /* Mobile: input font-size für iOS Zoom-Prevention */
 @container robotcontainer (width <= 480px) {
   #robot-chat-input {
-    font-size: var(--size-16) !important;
+    font-size: 16px !important; /* Force exact 16px so iOS Safari never zooms */
   }
 }
 
