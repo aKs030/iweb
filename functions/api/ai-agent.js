@@ -421,6 +421,21 @@ const TOOL_DEFINITIONS = [
     },
   },
   {
+    name: 'getSiteAnalytics',
+    description:
+      'Analysiere Seiteninformationen oder Statistiken (mocked/simuliert für Analytics-Demo).',
+    parameters: {
+      type: 'object',
+      properties: {
+        metric: {
+          type: 'string',
+          description: 'Die angeforderte Metrik (z.B. views, performance)',
+        },
+      },
+      required: ['metric'],
+    },
+  },
+  {
     name: 'toggleMenu',
     description: 'Menü öffnen/schließen.',
     parameters: {
@@ -591,11 +606,13 @@ Du HAST einen permanenten Langzeitspeicher! Du kannst dir Nutzer-Informationen (
 **Antwort-Stil:** Prägnant (2-3 Sätze), Markdown nutzen.`;
 
   if (memoryContext) {
-    prompt += `\n\n**NUTZER-INFO:**\n${memoryContext}`;
+    prompt += `\n\n**DEIN WISSEN ÜBER DEN NUTZER:**\nInhalte aus deinem Langzeit-Gedächtnis:\n${memoryContext}`;
   }
   if (imageContext) {
-    prompt += `\n\n**BILDANALYSE:**\n${imageContext}`;
+    prompt += `\n\n**AKTUELLE BILDANALYSE (Vom Nutzer hochgeladen):**\nDies ist das Bild, über das der Nutzer spricht:\n${imageContext}`;
   }
+
+  prompt += `\n\nWenn du RAG-Informationen (Suchergebnisse) erhältst, verwende sie, um Fragen zur Website, zum Portfolio oder zu bestimmten Unterseiten von Abdulkerim Sesli detailliert und freundlich zu beantworten. Falls du einen relativen Link bekommst, nutze Markdown, um ihn darzustellen (z.B. [Name](/pfad)). Beende Listen oder Sätze immer ordentlich.`;
 
   return prompt;
 }
@@ -866,6 +883,14 @@ async function executeServerTool(env, toolName, args, userId, config) {
     );
   }
 
+  if (toolName === 'getSiteAnalytics') {
+    const metric = String(args.metric || '').toLowerCase();
+    if (metric.includes('perf')) {
+      return 'Performance Score: 100/100 (Core Web Vitals optimiert, Zero-Build Architektur, Cloudflare Edge Caching).';
+    }
+    return `Website Status: Online. Portfolio-Aufrufe steigen kontinuierlich an. Cloudflare Pages Functions sind aktiv.`;
+  }
+
   return null; // Client-side tool
 }
 
@@ -923,23 +948,27 @@ async function getRAGContext(query, env) {
     const ragId = env.RAG_ID || 'wispy-pond-1055';
     const searchData = await env.AI.autorag(ragId).aiSearch({
       query,
-      max_num_results: 3,
+      max_num_results: 4,
       stream: false,
     });
 
     if (!searchData?.data?.length) return null;
 
     return searchData.data
-      .slice(0, 3)
+      .slice(0, 4)
       .map((item) => {
+        const url = item.filename || item.url || '';
+        const title = item.title || 'Seite';
         const content = Array.isArray(item.content)
           ? item.content.map((c) => c.text || '').join(' ')
           : item.text || item.description || '';
-        return content.replace(/\s+/g, ' ').trim().slice(0, 400);
+        const safeUrl = url.startsWith('/') ? url : `/${url}`;
+        return `Titel: ${title}\nURL: ${safeUrl}\nInhalt: ${content.replace(/\s+/g, ' ').trim().slice(0, 500)}`;
       })
       .filter(Boolean)
-      .join('\n---\n');
-  } catch {
+      .join('\n\n---\n\n');
+  } catch (error) {
+    console.warn('RAG Context Error:', error?.message);
     return null;
   }
 }
@@ -1797,7 +1826,7 @@ async function handleNonStreaming(
     return Response.json(
       {
         error: 'AI request failed',
-        text: 'KI-Dienst fehlgeschlagen.',
+        text: 'Es gab ein technisches Problem mit der Verbindung. Bitte versuche es noch einmal.',
         toolCalls: [],
         retryable: true,
       },
