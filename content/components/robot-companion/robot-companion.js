@@ -1047,11 +1047,11 @@ export class RobotCompanion {
       document.getElementById('robot-chat-send')
     );
     this.dom.closeBtn = chatWindow.querySelector('.chat-close-btn');
-    this.dom.clearBtn = /** @type {HTMLButtonElement|null} */ (
-      document.getElementById('robot-chat-clear')
+    this.dom.memoriesBtn = /** @type {HTMLButtonElement|null} */ (
+      document.getElementById('robot-chat-memories')
     );
-    this.dom.exportBtn = /** @type {HTMLButtonElement|null} */ (
-      document.getElementById('robot-chat-export')
+    this.dom.deleteUserBtn = /** @type {HTMLButtonElement|null} */ (
+      document.getElementById('robot-chat-delete-user')
     );
 
     this.attachChatEvents();
@@ -1091,6 +1091,10 @@ export class RobotCompanion {
 
     window.addEventListener('search:opened', _onSearchOpened);
     window.addEventListener('search:closed', _onSearchClosed);
+    const _onHistoryCleared = () => {
+      this.chatModule.clearHistory();
+    };
+    document.addEventListener('robot:history:cleared', _onHistoryCleared);
 
     this._eventListeners.dom.push({
       target: window,
@@ -1101,6 +1105,11 @@ export class RobotCompanion {
       target: window,
       event: 'search:closed',
       handler: _onSearchClosed,
+    });
+    this._eventListeners.dom.push({
+      target: document,
+      event: 'robot:history:cleared',
+      handler: _onHistoryCleared,
     });
   }
 
@@ -1152,25 +1161,25 @@ export class RobotCompanion {
       });
     }
 
-    if (this.dom.clearBtn) {
-      const _onClearBtnClick = () =>
-        this.chatModule.handleAction(ROBOT_ACTIONS.CLEAR_CHAT);
-      this.dom.clearBtn.addEventListener('click', _onClearBtnClick);
+    if (this.dom.memoriesBtn) {
+      const _onMemoriesBtnClick = () =>
+        this.chatModule.handleAction(ROBOT_ACTIONS.SHOW_MEMORIES);
+      this.dom.memoriesBtn.addEventListener('click', _onMemoriesBtnClick);
       this._eventListeners.dom.push({
-        target: this.dom.clearBtn,
+        target: this.dom.memoriesBtn,
         event: 'click',
-        handler: _onClearBtnClick,
+        handler: _onMemoriesBtnClick,
       });
     }
 
-    if (this.dom.exportBtn) {
-      const _onExportBtnClick = () =>
-        this.chatModule.handleAction(ROBOT_ACTIONS.EXPORT_CHAT);
-      this.dom.exportBtn.addEventListener('click', _onExportBtnClick);
+    if (this.dom.deleteUserBtn) {
+      const _onDeleteUserBtnClick = () =>
+        this.chatModule.handleAction(ROBOT_ACTIONS.DELETE_CLOUDFLARE_USER);
+      this.dom.deleteUserBtn.addEventListener('click', _onDeleteUserBtnClick);
       this._eventListeners.dom.push({
-        target: this.dom.exportBtn,
+        target: this.dom.deleteUserBtn,
         event: 'click',
-        handler: _onExportBtnClick,
+        handler: _onDeleteUserBtnClick,
       });
     }
 

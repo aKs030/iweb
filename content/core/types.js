@@ -164,8 +164,8 @@
  * @property {SVGElement} [magnifyingGlass] - Magnifying glass element
  * @property {HTMLElement} [mouth] - Mouth element
  * @property {HTMLElement} [closeBtn] - Close button element
- * @property {HTMLButtonElement} [clearBtn] - Header action: clear chat
- * @property {HTMLButtonElement} [exportBtn] - Header action: export history
+ * @property {HTMLButtonElement} [memoriesBtn] - Header action: show Cloudflare memories
+ * @property {HTMLButtonElement} [deleteUserBtn] - Header action: delete Cloudflare user ID
  * @property {Element} [footer] - Footer element
  */
 

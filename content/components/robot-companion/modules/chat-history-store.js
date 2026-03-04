@@ -1,4 +1,3 @@
-const DEFAULT_HISTORY_KEY = 'robot-chat-history';
 const DEFAULT_HISTORY_LIMIT = 40;
 
 const normalizeRole = (role) => {
@@ -33,43 +32,21 @@ const normalizeEntry = (entry, fallbackTimestamp) => {
 };
 
 /**
- * Persists chat history and handles legacy format migration.
+ * Keeps chat history in memory for the current page session only.
  */
 export class ChatHistoryStore {
-  constructor({
-    storageKey = DEFAULT_HISTORY_KEY,
-    limit = DEFAULT_HISTORY_LIMIT,
-  } = {}) {
-    this.storageKey = storageKey;
+  constructor({ limit = DEFAULT_HISTORY_LIMIT } = {}) {
     this.limit = limit;
+    this.memoryHistory = [];
   }
 
   load() {
-    try {
-      const raw = localStorage.getItem(this.storageKey);
-      const parsed = JSON.parse(raw || '[]');
-      if (!Array.isArray(parsed)) return [];
-
-      const now = Date.now();
-      const normalized = parsed
-        .map((entry, index) =>
-          normalizeEntry(entry, now - (parsed.length - index) * 1000),
-        )
-        .filter(Boolean);
-
-      return normalized.slice(-this.limit);
-    } catch {
-      return [];
-    }
+    return this.memoryHistory.slice(-this.limit);
   }
 
   save(history) {
-    try {
-      const safe = Array.isArray(history) ? history.slice(-this.limit) : [];
-      localStorage.setItem(this.storageKey, JSON.stringify(safe));
-    } catch {
-      /* ignore */
-    }
+    const safe = Array.isArray(history) ? history.slice(-this.limit) : [];
+    this.memoryHistory = safe;
   }
 
   append(history, entry) {
@@ -84,43 +61,6 @@ export class ChatHistoryStore {
   }
 
   clear() {
-    try {
-      localStorage.removeItem(this.storageKey);
-    } catch {
-      /* ignore */
-    }
-  }
-
-  download(history, filePrefix = 'jules-chat-export') {
-    if (!Array.isArray(history) || history.length === 0) return false;
-
-    try {
-      const payload = {
-        exportedAt: new Date().toISOString(),
-        messageCount: history.length,
-        messages: history,
-      };
-      const blob = new Blob([JSON.stringify(payload, null, 2)], {
-        type: 'application/json',
-      });
-
-      const today = new Date();
-      const yyyy = String(today.getFullYear());
-      const mm = String(today.getMonth() + 1).padStart(2, '0');
-      const dd = String(today.getDate()).padStart(2, '0');
-
-      const a = document.createElement('a');
-      const url = URL.createObjectURL(blob);
-      a.href = url;
-      a.download = `${filePrefix}-${yyyy}-${mm}-${dd}.json`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-
-      setTimeout(() => URL.revokeObjectURL(url), 0);
-      return true;
-    } catch {
-      return false;
-    }
+    this.memoryHistory = [];
   }
 }

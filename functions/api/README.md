@@ -8,6 +8,7 @@ Server-side logic powered by Cloudflare Pages Functions.
 | ---------------------- | ----------------------------------------------------------------- |
 | `ai.js`                | Lightweight AI chat with RAG (Workers AI + AutoRAG)               |
 | `ai-agent.js`          | Primary robot endpoint: SSE, tool-calling, image analysis, memory |
+| `ai-agent-user.js`     | List/delete robot memory + user mapping in Cloudflare             |
 | `workers-assistant.js` | Workers code-generation assistant                                 |
 | `search.js`            | Hybrid search (AutoRAG + deterministic fallback)                  |
 | `contact.js`           | Contact form handler (email via MailChannels)                     |
@@ -52,3 +53,7 @@ Der Robot-Agent liest seine Cloudflare-Konfiguration aus `wrangler.jsonc`:
 - `ROBOT_MAX_HISTORY_TURNS`
 - `ROBOT_MEMORY_TOP_K`
 - `ROBOT_MEMORY_SCORE_THRESHOLD`
+- `ROBOT_MEMORY_RETENTION_DAYS` (default: `180`)
+- `ROBOT_TOOL_TRUSTED_IDS` (CSV User-IDs mit erweiterten Tool-Rechten)
+- `ROBOT_TOOL_ADMIN_IDS` (CSV User-IDs mit Admin-Rechten)
+- `ROBOT_ENABLED_INTEGRATIONS` (CSV, z.B. `links,social,email,calendar` oder `none`)

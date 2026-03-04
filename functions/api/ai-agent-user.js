@@ -1,0 +1,484 @@
+/**
+ * Cloudflare Pages Function – POST /api/ai-agent-user
+ * Lists or deletes robot memory/user mappings for a given user ID.
+ */
+
+import { getCorsHeaders, handleOptions } from './_cors.js';
+
+const FALLBACK_MEMORY_PREFIX = 'robot-memory:';
+const DEFAULT_EMBEDDING_MODEL = '@cf/baai/bge-base-en-v1.5';
+const DEFAULT_MEMORY_RETENTION_DAYS = 180;
+const DAY_IN_MS = 24 * 60 * 60 * 1000;
+const MEMORY_KEY_METADATA = {
+  name: { category: 'identity', priority: 100 },
+  preference: { category: 'preference', priority: 90 },
+  occupation: { category: 'profile', priority: 88 },
+  company: { category: 'profile', priority: 86 },
+  location: { category: 'profile', priority: 84 },
+  language: { category: 'profile', priority: 82 },
+  interest: { category: 'interest', priority: 80 },
+  skill: { category: 'ability', priority: 78 },
+  goal: { category: 'goal', priority: 76 },
+  project: { category: 'project', priority: 74 },
+  birthday: { category: 'identity', priority: 72 },
+  dislike: { category: 'preference', priority: 70 },
+  availability: { category: 'availability', priority: 68 },
+  timezone: { category: 'availability', priority: 66 },
+  note: { category: 'note', priority: 40 },
+};
+const DEFAULT_MEMORY_CATEGORY = 'note';
+const DEFAULT_MEMORY_PRIORITY = 20;
+
+function parseInteger(value, fallback, { min = 1, max = 3650 } = {}) {
+  const parsed = Number.parseInt(String(value ?? ''), 10);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.min(max, Math.max(min, parsed));
+}
+
+function normalizeUserId(raw) {
+  const value = String(raw || '').trim();
+  if (!value || value === 'anonymous') return '';
+  if (!/^[A-Za-z0-9_-]{3,120}$/.test(value)) return '';
+  return value;
+}
+
+function getMemoryKV(env) {
+  if (env?.JULES_MEMORY_KV?.get && env?.JULES_MEMORY_KV?.delete) {
+    return env.JULES_MEMORY_KV;
+  }
+  if (env?.RATE_LIMIT_KV?.get && env?.RATE_LIMIT_KV?.delete) {
+    return env.RATE_LIMIT_KV;
+  }
+  if (env?.SITEMAP_CACHE_KV?.get && env?.SITEMAP_CACHE_KV?.delete) {
+    return env.SITEMAP_CACHE_KV;
+  }
+  return null;
+}
+
+function normalizeMemoryText(value) {
+  return String(value || '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function normalizeMemoryKey(rawKey) {
+  return String(rawKey || 'note')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9_-]/g, '')
+    .slice(0, 30);
+}
+
+function getMemoryRetentionMs(env) {
+  const days = parseInteger(
+    env?.ROBOT_MEMORY_RETENTION_DAYS,
+    DEFAULT_MEMORY_RETENTION_DAYS,
+  );
+  return days * DAY_IN_MS;
+}
+
+function getMemoryKey(userId) {
+  return `${FALLBACK_MEMORY_PREFIX}${userId}`;
+}
+
+function resolveMemoryMetadata(key, category, priority) {
+  const normalizedKey = normalizeMemoryKey(key) || 'note';
+  const fallback = MEMORY_KEY_METADATA[normalizedKey] || {
+    category: DEFAULT_MEMORY_CATEGORY,
+    priority: DEFAULT_MEMORY_PRIORITY,
+  };
+  const normalizedCategory =
+    normalizeMemoryText(category || fallback.category).toLowerCase() ||
+    fallback.category;
+  const numericPriority = Number.parseInt(String(priority ?? ''), 10);
+  const normalizedPriority = Number.isFinite(numericPriority)
+    ? Math.min(100, Math.max(0, numericPriority))
+    : fallback.priority;
+
+  return {
+    key: normalizedKey,
+    category: normalizedCategory,
+    priority: normalizedPriority,
+  };
+}
+
+function normalizeMemoryEntry(entry, now, retentionMs) {
+  const ts = Number(entry?.timestamp);
+  const timestamp = Number.isFinite(ts) && ts > 0 ? ts : now;
+  const metadata = resolveMemoryMetadata(
+    entry?.key,
+    entry?.category,
+    entry?.priority,
+  );
+
+  return {
+    ...metadata,
+    value: normalizeMemoryText(entry?.value || ''),
+    timestamp,
+    expiresAt: timestamp + retentionMs,
+  };
+}
+
+function compactMemories(entries, now, retentionMs) {
+  const unique = new Map();
+  for (const rawEntry of entries) {
+    const entry = normalizeMemoryEntry(rawEntry, now, retentionMs);
+    if (!entry.value) continue;
+    if (now - entry.timestamp > retentionMs) continue;
+
+    const hash = `${entry.key}:${entry.value.toLowerCase()}`;
+    const existing = unique.get(hash);
+    if (
+      !existing ||
+      entry.timestamp > existing.timestamp ||
+      (entry.timestamp === existing.timestamp &&
+        entry.priority > existing.priority)
+    ) {
+      unique.set(hash, entry);
+    }
+  }
+  return [...unique.values()].sort((a, b) => a.timestamp - b.timestamp);
+}
+
+async function loadFallbackMemories(
+  kv,
+  userId,
+  env,
+  { persistPruned = false } = {},
+) {
+  if (!kv?.get) return [];
+
+  try {
+    const raw = await kv.get(getMemoryKey(userId));
+    const parsed = JSON.parse(raw || '[]');
+    if (!Array.isArray(parsed)) return [];
+
+    const now = Date.now();
+    const retentionMs = getMemoryRetentionMs(env);
+    const compacted = compactMemories(parsed, now, retentionMs);
+
+    if (persistPruned && kv?.put) {
+      const compactedJson = JSON.stringify(compacted);
+      if ((raw || '[]') !== compactedJson) {
+        await kv.put(getMemoryKey(userId), compactedJson);
+      }
+    }
+
+    return compacted;
+  } catch {
+    return [];
+  }
+}
+
+function rankMemoryKey(key) {
+  const value = String(key || '').toLowerCase();
+  if (value === 'name') return 0;
+  if (value === 'preference') return 1;
+  if (value === 'occupation') return 2;
+  if (value === 'company') return 3;
+  if (value === 'location') return 4;
+  if (value === 'language') return 5;
+  if (value === 'interest') return 6;
+  if (value === 'skill') return 7;
+  if (value === 'goal') return 8;
+  if (value === 'project') return 9;
+  if (value === 'birthday') return 10;
+  if (value === 'dislike') return 11;
+  if (value === 'availability') return 12;
+  if (value === 'timezone') return 13;
+  if (value === 'note') return 14;
+  return 99;
+}
+
+function normalizeAction(raw) {
+  const value = String(raw || 'delete')
+    .toLowerCase()
+    .trim();
+  if (value === 'list') return 'list';
+  return 'delete';
+}
+
+async function deleteUsernameMappingsForUser(kv, userId) {
+  if (!kv?.list || !kv?.get || !kv?.delete) {
+    return { scanned: 0, deleted: 0 };
+  }
+
+  let cursor = undefined;
+  let scanned = 0;
+  let deleted = 0;
+  let iterations = 0;
+
+  do {
+    const page = await kv.list({
+      prefix: 'username:',
+      cursor,
+      limit: 1000,
+    });
+
+    const keys = Array.isArray(page?.keys) ? page.keys : [];
+    for (const item of keys) {
+      const key = String(item?.name || '').trim();
+      if (!key) continue;
+
+      scanned += 1;
+
+      let mappedUserId;
+      try {
+        mappedUserId = normalizeUserId(await kv.get(key));
+      } catch {
+        continue;
+      }
+
+      if (mappedUserId !== userId) continue;
+
+      try {
+        await kv.delete(key);
+        deleted += 1;
+      } catch {
+        /* ignore */
+      }
+    }
+
+    const listComplete = !!page?.list_complete;
+    cursor = listComplete ? undefined : page?.cursor;
+    iterations += 1;
+  } while (cursor && iterations < 100);
+
+  return { scanned, deleted };
+}
+
+async function deleteVectorizeMemoriesForUser(env, userId) {
+  const index = env?.JULES_MEMORY;
+  if (!index) {
+    return {
+      available: false,
+      attempted: false,
+      deleted: 0,
+      mode: 'not-configured',
+    };
+  }
+
+  const metadataDeleteMethods = [
+    'deleteByMetadata',
+    'deleteByFilter',
+    'deleteByMetadataFilter',
+  ];
+
+  for (const method of metadataDeleteMethods) {
+    if (typeof index[method] !== 'function') continue;
+    try {
+      await index[method]({ userId });
+      return {
+        available: true,
+        attempted: true,
+        deleted: null,
+        mode: method,
+      };
+    } catch (error) {
+      console.warn(
+        `[ai-agent-user] Vectorize ${method} failed:`,
+        error?.message || error,
+      );
+    }
+  }
+
+  const idDeleteMethod =
+    typeof index.deleteByIds === 'function'
+      ? 'deleteByIds'
+      : typeof index.delete === 'function'
+        ? 'delete'
+        : typeof index.remove === 'function'
+          ? 'remove'
+          : '';
+
+  if (!idDeleteMethod || typeof index.query !== 'function' || !env?.AI?.run) {
+    return {
+      available: true,
+      attempted: false,
+      deleted: 0,
+      mode: 'unsupported',
+    };
+  }
+
+  const embeddingModel = env.ROBOT_EMBEDDING_MODEL || DEFAULT_EMBEDDING_MODEL;
+  const probeTerms = ['name', 'interest', 'preference', 'user info', 'profil'];
+  const ids = new Set();
+
+  for (const term of probeTerms) {
+    try {
+      const embeddingResult = await env.AI.run(embeddingModel, {
+        text: [term],
+      });
+      const vector = Array.isArray(embeddingResult?.data)
+        ? embeddingResult.data[0]
+        : null;
+      if (!vector) continue;
+
+      const queryResult = await index.query(vector, {
+        topK: 100,
+        filter: { userId },
+        returnMetadata: 'all',
+      });
+
+      const matches = Array.isArray(queryResult?.matches)
+        ? queryResult.matches
+        : [];
+      for (const match of matches) {
+        const id = String(match?.id || '').trim();
+        if (id) ids.add(id);
+      }
+    } catch {
+      /* ignore probe failures */
+    }
+  }
+
+  if (ids.size === 0) {
+    return {
+      available: true,
+      attempted: true,
+      deleted: 0,
+      mode: `${idDeleteMethod}-by-id`,
+    };
+  }
+
+  try {
+    await index[idDeleteMethod]([...ids]);
+    return {
+      available: true,
+      attempted: true,
+      deleted: ids.size,
+      mode: `${idDeleteMethod}-by-id`,
+    };
+  } catch (error) {
+    console.warn(
+      `[ai-agent-user] Vectorize ${idDeleteMethod} failed:`,
+      error?.message || error,
+    );
+    return {
+      available: true,
+      attempted: true,
+      deleted: 0,
+      mode: `${idDeleteMethod}-failed`,
+    };
+  }
+}
+
+export async function onRequestPost(context) {
+  const { request, env } = context;
+  const corsHeaders = getCorsHeaders(request, env);
+
+  try {
+    const body = await request.json().catch(() => ({}));
+    const action = normalizeAction(body?.action);
+    const headerUserId = normalizeUserId(
+      request.headers.get('X-Jules-User-Id'),
+    );
+    const bodyUserId = normalizeUserId(body?.userId);
+
+    if (!headerUserId) {
+      return Response.json(
+        {
+          success: false,
+          text: 'Keine aktive User-ID im Request-Header vorhanden.',
+        },
+        { status: 401, headers: corsHeaders },
+      );
+    }
+
+    if (bodyUserId && bodyUserId !== headerUserId) {
+      return Response.json(
+        {
+          success: false,
+          text: 'User-ID-Mismatch: Zugriff nur auf die angemeldete ID erlaubt.',
+        },
+        { status: 403, headers: corsHeaders },
+      );
+    }
+
+    const userId = headerUserId;
+
+    if (!userId) {
+      return Response.json(
+        {
+          success: false,
+          text: 'Keine gültige User-ID übergeben.',
+        },
+        { status: 400, headers: corsHeaders },
+      );
+    }
+
+    const kv = getMemoryKV(env);
+    if (!kv) {
+      return Response.json(
+        {
+          success: false,
+          text: 'Cloudflare KV für Memory ist nicht verfügbar.',
+        },
+        { status: 503, headers: corsHeaders },
+      );
+    }
+
+    if (action === 'list') {
+      const memories = await loadFallbackMemories(kv, userId, env, {
+        persistPruned: true,
+      });
+      const retentionDays = parseInteger(
+        env?.ROBOT_MEMORY_RETENTION_DAYS,
+        DEFAULT_MEMORY_RETENTION_DAYS,
+      );
+      const ordered = memories.sort((a, b) => {
+        const priorityDiff = (b.priority || 0) - (a.priority || 0);
+        if (priorityDiff !== 0) return priorityDiff;
+        const rankDiff = rankMemoryKey(a.key) - rankMemoryKey(b.key);
+        if (rankDiff !== 0) return rankDiff;
+        return (b.timestamp || 0) - (a.timestamp || 0);
+      });
+
+      return Response.json(
+        {
+          success: true,
+          userId,
+          count: ordered.length,
+          retentionDays,
+          memories: ordered,
+          text:
+            ordered.length > 0
+              ? 'Gespeicherte Erinnerungen erfolgreich geladen.'
+              : 'Keine Erinnerungen gespeichert.',
+        },
+        { headers: corsHeaders },
+      );
+    }
+
+    const memoryKey = getMemoryKey(userId);
+    await kv.delete(memoryKey);
+    const usernameStats = await deleteUsernameMappingsForUser(kv, userId);
+    const vectorizeStats = await deleteVectorizeMemoriesForUser(env, userId);
+
+    return Response.json(
+      {
+        success: true,
+        userId,
+        deleted: {
+          memoryKey,
+          usernameMappings: usernameStats.deleted,
+          scannedUsernameMappings: usernameStats.scanned,
+          vectorize: vectorizeStats,
+        },
+        text: 'User-ID und verknüpfte Erinnerungen wurden aus Cloudflare gelöscht. Neue User-ID wird beim nächsten Chat automatisch verwendet.',
+      },
+      { headers: corsHeaders },
+    );
+  } catch (error) {
+    console.error('[ai-agent-user] Delete failed:', error?.message || error);
+    return Response.json(
+      {
+        success: false,
+        text: 'Cloudflare-Löschung fehlgeschlagen.',
+      },
+      { status: 500, headers: corsHeaders },
+    );
+  }
+}
+
+export const onRequestOptions = handleOptions;

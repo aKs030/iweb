@@ -57,6 +57,7 @@ export const ROBOT_ACTIONS = {
   CLOSE_SEARCH: 'closeSearch',
   SCROLL_TOP: 'scrollTop',
   COPY_CURRENT_URL: 'copyCurrentUrl',
+  SHOW_MEMORIES: 'showMemories',
   CLEAR_CHAT: 'clearChat',
-  EXPORT_CHAT: 'exportChat',
+  DELETE_CLOUDFLARE_USER: 'deleteCloudflareUser',
 };

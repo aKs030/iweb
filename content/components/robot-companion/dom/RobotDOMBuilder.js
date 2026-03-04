@@ -69,21 +69,21 @@ export class RobotDOMBuilder {
     const controls = document.createElement('div');
     controls.className = 'chat-header-controls';
 
-    const clearBtn = this.createHeaderActionButton({
-      id: 'robot-chat-clear',
-      label: 'Neu',
-      title: 'Unterhaltung zuruecksetzen',
-      ariaLabel: 'Neue Unterhaltung starten',
+    const memoriesBtn = this.createHeaderActionButton({
+      id: 'robot-chat-memories',
+      label: 'Welche Erinnerungen?',
+      title: 'Gespeicherte Cloudflare-Erinnerungen anzeigen',
+      ariaLabel: 'Gespeicherte Erinnerungen anzeigen',
     });
 
-    const exportBtn = this.createHeaderActionButton({
-      id: 'robot-chat-export',
-      label: 'Export',
-      title: 'Chatverlauf als JSON herunterladen',
-      ariaLabel: 'Chatverlauf exportieren',
+    const deleteUserBtn = this.createHeaderActionButton({
+      id: 'robot-chat-delete-user',
+      label: 'User-ID löschen',
+      title: 'User-ID und Erinnerungen in Cloudflare löschen',
+      ariaLabel: 'User-ID aus Cloudflare löschen',
     });
 
-    controls.append(clearBtn, exportBtn, closeBtn);
+    controls.append(memoriesBtn, deleteUserBtn, closeBtn);
     header.append(title, controls);
 
     return header;
@@ -248,6 +248,11 @@ export class RobotDOMBuilder {
       rememberUser: '🧠',
       recallMemory: '💭',
       recommend: '💡',
+      openExternalLink: '🌐',
+      openSocialProfile: '👤',
+      composeEmail: '✉️',
+      createCalendarReminder: '📅',
+      getSiteAnalytics: '📊',
     };
     return icons[toolName] || '⚡';
   }

@@ -35,7 +35,29 @@ const SECTION_SELECTORS = new Map([
   ['top', 'html, body'],
 ]);
 
-const CHAT_HISTORY_KEYS = ['robot-chat-history', 'jules-conversation-history'];
+const DEFAULT_CONFIRM_TITLE = 'Aktion bestaetigen';
+const SOCIAL_PROFILE_URLS = new Map([
+  ['github', 'https://github.com/aKs030'],
+  ['linkedin', 'https://linkedin.com/in/abdulkerim-s'],
+  ['instagram', 'https://instagram.com/abdul.codes'],
+  ['youtube', 'https://youtube.com/@abdulcodes'],
+  ['x', 'https://x.com/kRm_030'],
+]);
+
+function shouldConfirmToolExecution(toolCall) {
+  return !!toolCall?.meta?.requiresConfirm;
+}
+
+function confirmToolExecution(toolCall) {
+  const title =
+    String(toolCall?.meta?.confirmTitle || '').trim() || DEFAULT_CONFIRM_TITLE;
+  const message =
+    String(toolCall?.meta?.confirmMessage || '').trim() ||
+    'Soll diese Aktion wirklich ausgefuehrt werden?';
+
+  if (typeof window?.confirm !== 'function') return true;
+  return window.confirm(`${title}\n\n${message}`);
+}
 
 /**
  * Execute a tool call from the AI agent
@@ -47,6 +69,16 @@ export function executeTool(toolCall) {
   const args = toolCall?.arguments || {};
 
   try {
+    if (
+      shouldConfirmToolExecution(toolCall) &&
+      !confirmToolExecution(toolCall)
+    ) {
+      return {
+        success: false,
+        message: 'Aktion abgebrochen (nicht bestaetigt).',
+      };
+    }
+
     switch (name) {
       case 'navigate':
         return executeNavigate(args);
@@ -74,6 +106,14 @@ export function executeTool(toolCall) {
         return executeOpenImageUpload();
       case 'clearChatHistory':
         return executeClearChatHistory();
+      case 'openExternalLink':
+        return executeOpenExternalLink(args);
+      case 'openSocialProfile':
+        return executeOpenSocialProfile(args);
+      case 'composeEmail':
+        return executeComposeEmail(args);
+      case 'createCalendarReminder':
+        return executeCreateCalendarReminder(args);
       default:
         log.warn(`Unknown tool: ${name}`);
         return { success: false, message: `Unbekanntes Tool: ${name}` };
@@ -322,13 +362,144 @@ function executeOpenImageUpload() {
 }
 
 function executeClearChatHistory() {
-  for (const key of CHAT_HISTORY_KEYS) {
-    try {
-      localStorage.removeItem(key);
-    } catch {
-      /* ignore */
-    }
-  }
   fire('robot:history:cleared', {}, document);
   return { success: true, message: 'Chatverlauf geloescht.' };
+}
+
+function normalizeExternalUrl(rawUrl) {
+  const value = String(rawUrl || '').trim();
+  if (!value) return '';
+  if (value.startsWith('/')) {
+    try {
+      return new URL(value, globalThis.location?.origin || '').toString();
+    } catch {
+      return '';
+    }
+  }
+  return value;
+}
+
+function openUrl(url, newTab = true) {
+  if (newTab) {
+    const ref = window.open(url, '_blank', 'noopener,noreferrer');
+    return !!ref;
+  }
+  globalThis.location.href = url;
+  return true;
+}
+
+function executeOpenExternalLink(args) {
+  const normalized = normalizeExternalUrl(args?.url);
+  if (!normalized) {
+    return { success: false, message: 'Kein gueltiger Link uebergeben.' };
+  }
+
+  let parsed;
+  try {
+    parsed = new URL(normalized);
+  } catch {
+    return { success: false, message: 'Link ist ungueltig.' };
+  }
+
+  if (!['http:', 'https:'].includes(parsed.protocol)) {
+    return {
+      success: false,
+      message: 'Nur http/https Links sind erlaubt.',
+    };
+  }
+
+  const opened = openUrl(parsed.toString(), args?.newTab !== false);
+  return opened
+    ? { success: true, message: 'Externer Link geoeffnet.' }
+    : { success: false, message: 'Link konnte nicht geoeffnet werden.' };
+}
+
+function executeOpenSocialProfile(args) {
+  const platform = String(args?.platform || '')
+    .toLowerCase()
+    .trim();
+  const url = SOCIAL_PROFILE_URLS.get(platform);
+  if (!url) {
+    return { success: false, message: `Unbekannte Plattform: ${platform}` };
+  }
+
+  const opened = openUrl(url, true);
+  return opened
+    ? { success: true, message: `${platform} Profil geoeffnet.` }
+    : {
+        success: false,
+        message: `${platform} Profil konnte nicht geoeffnet werden.`,
+      };
+}
+
+function executeComposeEmail(args) {
+  const to = String(args?.to || '').trim();
+  if (!to || !to.includes('@')) {
+    return { success: false, message: 'Ungueltige E-Mail-Adresse.' };
+  }
+
+  const subject = String(args?.subject || '').trim();
+  const body = String(args?.body || '').trim();
+  const mailto =
+    `mailto:${encodeURIComponent(to)}` +
+    `?subject=${encodeURIComponent(subject)}` +
+    `&body=${encodeURIComponent(body)}`;
+
+  const opened = openUrl(mailto, false);
+  return opened
+    ? { success: true, message: 'E-Mail-Entwurf geoeffnet.' }
+    : {
+        success: false,
+        message: 'E-Mail-Entwurf konnte nicht geoeffnet werden.',
+      };
+}
+
+function formatCalendarDateForGoogle(date) {
+  return date
+    .toISOString()
+    .replace(/[-:]/g, '')
+    .replace(/\.\d{3}Z$/, 'Z');
+}
+
+function parseReminderDate(dateValue, timeValue = '09:00') {
+  const rawDate = String(dateValue || '').trim();
+  if (!rawDate) return null;
+
+  let isoDate = rawDate;
+  if (/^\d{1,2}\.\d{1,2}\.\d{2,4}$/.test(rawDate)) {
+    const parts = rawDate.split('.');
+    const day = parts[0].padStart(2, '0');
+    const month = parts[1].padStart(2, '0');
+    const year = parts[2].length === 2 ? `20${parts[2]}` : parts[2];
+    isoDate = `${year}-${month}-${day}`;
+  }
+
+  const safeTime = String(timeValue || '09:00').trim() || '09:00';
+  const parsed = new Date(`${isoDate}T${safeTime}:00`);
+  return Number.isFinite(parsed.getTime()) ? parsed : null;
+}
+
+function executeCreateCalendarReminder(args) {
+  const title = String(args?.title || '').trim() || 'Erinnerung';
+  const start = parseReminderDate(args?.date, args?.time);
+  if (!start) {
+    return { success: false, message: 'Ungueltiges Datum fuer Erinnerung.' };
+  }
+
+  const end = new Date(start.getTime() + 60 * 60 * 1000);
+  const details = String(args?.details || '').trim();
+  const location = String(args?.url || '').trim();
+  const url =
+    'https://calendar.google.com/calendar/render?action=TEMPLATE' +
+    `&text=${encodeURIComponent(title)}` +
+    `&dates=${encodeURIComponent(
+      `${formatCalendarDateForGoogle(start)}/${formatCalendarDateForGoogle(end)}`,
+    )}` +
+    `&details=${encodeURIComponent(details)}` +
+    `&location=${encodeURIComponent(location)}`;
+
+  const opened = openUrl(url, true);
+  return opened
+    ? { success: true, message: 'Kalender-Erinnerung geoeffnet.' }
+    : { success: false, message: 'Kalender konnte nicht geoeffnet werden.' };
 }

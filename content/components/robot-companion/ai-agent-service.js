@@ -10,6 +10,7 @@ import { executeTool } from './modules/tool-executor.js';
 const log = createLogger('AIAgentService');
 
 const AGENT_ENDPOINT = '/api/ai-agent';
+const DELETE_USER_ENDPOINT = '/api/ai-agent-user';
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = [
   'image/jpeg',
@@ -17,10 +18,10 @@ const ALLOWED_IMAGE_TYPES = [
   'image/webp',
   'image/gif',
 ];
-const HISTORY_KEY = 'jules-conversation-history';
 const USER_ID_HEADER = 'x-jules-user-id';
 const MAX_HISTORY = 20;
 let runtimeUserId = '';
+let runtimeConversationHistory = [];
 
 // ─── User ID & History ──────────────────────────────────────────────────────────
 
@@ -65,22 +66,13 @@ function syncUserIdFromResponse(response) {
 }
 
 function getHistory() {
-  try {
-    return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
-  } catch {
-    return [];
-  }
+  return runtimeConversationHistory.slice(-MAX_HISTORY);
 }
 
 function saveHistory(history) {
-  try {
-    localStorage.setItem(
-      HISTORY_KEY,
-      JSON.stringify(history.slice(-MAX_HISTORY)),
-    );
-  } catch {
-    /* ignore */
-  }
+  runtimeConversationHistory = Array.isArray(history)
+    ? history.slice(-MAX_HISTORY)
+    : [];
 }
 
 function addToHistory(role, content) {
@@ -192,7 +184,7 @@ async function callAgent(payload, callbacks = {}, { stream = true } = {}) {
         method: 'POST',
         headers: { [USER_ID_HEADER]: userId },
         body: fd,
-        credentials: 'include',
+        credentials: 'omit',
       });
     } else {
       response = await fetch(AGENT_ENDPOINT, {
@@ -201,7 +193,7 @@ async function callAgent(payload, callbacks = {}, { stream = true } = {}) {
           'Content-Type': 'application/json',
           [USER_ID_HEADER]: userId,
         },
-        credentials: 'include',
+        credentials: 'omit',
         body: JSON.stringify({
           prompt: payload.prompt,
           userId,
@@ -260,6 +252,7 @@ async function callAgent(payload, callbacks = {}, { stream = true } = {}) {
             const result = executeTool({
               name: ev.name,
               arguments: ev.arguments,
+              meta: ev.meta || {},
             });
             toolResults.push({ name: ev.name, ...result });
           } catch (e) {
@@ -357,16 +350,130 @@ export class AIAgentService {
 
   /** Clear conversation history */
   clearHistory() {
+    runtimeConversationHistory = [];
+  }
+
+  /** @returns {string} Session user ID (RAM only) */
+  getUserId() {
+    return getUserId();
+  }
+
+  /**
+   * Delete current user identity and memory bindings from Cloudflare.
+   * Resets local in-memory session identity on success.
+   */
+  async deleteUserIdFromCloudflare() {
+    const userId = normalizeUserId(runtimeUserId);
+    if (!userId) {
+      return {
+        success: false,
+        text: 'Keine aktive User-ID vorhanden. Sende erst eine Nachricht.',
+      };
+    }
+
+    let response;
     try {
-      localStorage.removeItem(HISTORY_KEY);
+      response = await fetch(DELETE_USER_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          [USER_ID_HEADER]: userId,
+        },
+        credentials: 'omit',
+        body: JSON.stringify({ action: 'delete' }),
+      });
+    } catch (error) {
+      log.error('deleteUserIdFromCloudflare failed:', error?.message || error);
+      return {
+        success: false,
+        text: 'Cloudflare-Löschung nicht erreichbar. Bitte erneut versuchen.',
+      };
+    }
+
+    let data = {};
+    try {
+      data = await response.json();
     } catch {
       /* ignore */
     }
+
+    if (!response.ok || !data?.success) {
+      return {
+        success: false,
+        text:
+          data?.text ||
+          `Cloudflare-Löschung fehlgeschlagen (${response.status}).`,
+      };
+    }
+
+    runtimeConversationHistory = [];
+    const rotatedUserId = persistUserId(createUserId());
+    return {
+      success: true,
+      userId: rotatedUserId,
+      text:
+        data?.text || 'User-ID und Erinnerungen in Cloudflare wurden gelöscht.',
+    };
   }
 
-  /** @returns {string} Persistent user ID */
-  getUserId() {
-    return getUserId();
+  /** Load stored memories for current user from Cloudflare */
+  async listCloudflareMemories() {
+    const userId = normalizeUserId(runtimeUserId);
+    if (!userId) {
+      return {
+        success: false,
+        memories: [],
+        text: 'Keine aktive User-ID vorhanden. Sende erst eine Nachricht.',
+      };
+    }
+
+    let response;
+    try {
+      response = await fetch(DELETE_USER_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          [USER_ID_HEADER]: userId,
+        },
+        credentials: 'omit',
+        body: JSON.stringify({ action: 'list' }),
+      });
+    } catch (error) {
+      log.error('listCloudflareMemories failed:', error?.message || error);
+      return {
+        success: false,
+        memories: [],
+        text: 'Cloudflare-Erinnerungen nicht erreichbar. Bitte erneut versuchen.',
+      };
+    }
+
+    let data = {};
+    try {
+      data = await response.json();
+    } catch {
+      /* ignore */
+    }
+
+    if (!response.ok || !data?.success) {
+      return {
+        success: false,
+        memories: [],
+        text:
+          data?.text ||
+          `Cloudflare-Erinnerungen konnten nicht geladen werden (${response.status}).`,
+      };
+    }
+
+    return {
+      success: true,
+      memories: Array.isArray(data.memories) ? data.memories : [],
+      retentionDays:
+        Number.isFinite(Number(data?.retentionDays)) &&
+        Number(data.retentionDays) > 0
+          ? Number(data.retentionDays)
+          : 0,
+      text: data?.text || '',
+    };
   }
 
   /** Validate image before upload */
