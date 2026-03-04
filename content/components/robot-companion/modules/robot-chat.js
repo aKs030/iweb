@@ -36,15 +36,14 @@ export class RobotChat {
     /** @type {File|null} Pending image for upload */
     this.pendingImage = null;
 
-    // Use state manager for chat state
-    // Legacy properties for backward compatibility (deprecated)
+    // Runtime chat state
     this.isOpen = false;
     this.isTyping = false;
     this.isResponding = false;
     this.lastGreetedContext = null;
     this.historyStore = new ChatHistoryStore();
 
-    // Load history (supports legacy format migration)
+    // Session-only in-memory history
     this.history = this.historyStore.load();
   }
 
@@ -85,7 +84,7 @@ export class RobotChat {
     if (newState) {
       this.robot.dom.window.classList.add('open');
       this.robot.dom.container.classList.add('robot-chat--open');
-      this.isOpen = true; // kept for backward compat — prefer stateManager
+      this.isOpen = true;
 
       // Update state manager (single source of truth)
       this.robot.stateManager.setState({ isChatOpen: true });
@@ -112,7 +111,7 @@ export class RobotChat {
     } else {
       this.robot.dom.window.classList.remove('open');
       this.robot.dom.container.classList.remove('robot-chat--open');
-      this.isOpen = false; // kept for backward compat — prefer stateManager
+      this.isOpen = false;
 
       // Update state manager (single source of truth)
       this.robot.stateManager.setState({ isChatOpen: false });
@@ -567,8 +566,135 @@ export class RobotChat {
     this.handleAction(ROBOT_ACTIONS.START);
   }
 
-  exportHistory() {
-    return this.historyStore.download(this.history);
+  formatCloudflareMemoriesMessage(memories = [], retentionDays = 0) {
+    if (!Array.isArray(memories) || memories.length === 0) {
+      return 'Aktuell sind keine Erinnerungen gespeichert.';
+    }
+
+    const source = memories;
+
+    const lines = source.map((entry) => {
+      const key = String(entry?.key || 'memory');
+      const value = String(entry?.value || '').trim() || '(leer)';
+      const category = String(entry?.category || 'note').trim() || 'note';
+      const priority = Number.parseInt(String(entry?.priority || ''), 10);
+      const priorityText = Number.isFinite(priority)
+        ? `Prioritaet ${priority}`
+        : 'Prioritaet n/a';
+      const timestamp = Number(entry?.timestamp || 0);
+      const tsText =
+        Number.isFinite(timestamp) && timestamp > 0
+          ? new Date(timestamp).toLocaleString('de-DE')
+          : 'unbekannt';
+      return `- **${key}** (${category}, ${priorityText}): ${value} _(Zeit: ${tsText})_`;
+    });
+
+    const retentionInfo =
+      Number.isFinite(Number(retentionDays)) && Number(retentionDays) > 0
+        ? `\n\n_Auto-Retention: ${Number(retentionDays)} Tage_`
+        : '';
+    return (
+      [`**Gespeicherte Erinnerungen:**`, ...lines].join('\n') + retentionInfo
+    );
+  }
+
+  async showStoredCloudflareMemories() {
+    if (this.isResponding) return;
+
+    this.isResponding = true;
+    this.syncComposerState();
+    this.showTyping();
+
+    try {
+      const agentService = await this.robot.getAgentService();
+      const result = await agentService.listCloudflareMemories?.();
+      this.removeTyping();
+
+      if (result?.success) {
+        this.addMessage(
+          this.formatCloudflareMemoriesMessage(
+            result.memories || [],
+            result.retentionDays || 0,
+          ),
+          'bot',
+        );
+        return;
+      }
+
+      this.addMessage(
+        result?.text || 'Cloudflare-Erinnerungen konnten nicht geladen werden.',
+        'bot',
+      );
+    } catch (error) {
+      this.removeTyping();
+      log.warn('showStoredCloudflareMemories failed', error);
+      this.addMessage(
+        'Cloudflare-Erinnerungen konnten nicht geladen werden.',
+        'bot',
+      );
+    } finally {
+      this.isResponding = false;
+      this.syncComposerState();
+    }
+  }
+
+  async deleteCloudflareUserId() {
+    if (this.isResponding) return;
+
+    if (typeof window?.confirm === 'function') {
+      const confirmed = window.confirm(
+        'User-ID und alle verknuepften Erinnerungen in Cloudflare wirklich loeschen?',
+      );
+      if (!confirmed) return;
+    }
+
+    this.isResponding = true;
+    this.syncComposerState();
+
+    try {
+      const agentService = await this.robot.getAgentService();
+      const result = await agentService.deleteUserIdFromCloudflare?.();
+
+      if (result?.success) {
+        this.history = [];
+        this.historyStore.clear();
+        this.clearImagePreview();
+
+        withViewTransition(
+          () => {
+            if (this.robot.dom.messages) {
+              while (this.robot.dom.messages.firstChild) {
+                this.robot.dom.messages.removeChild(
+                  this.robot.dom.messages.firstChild,
+                );
+              }
+            }
+          },
+          { types: ['chat-clear'] },
+        );
+
+        this.addMessage(
+          result.text ||
+            'User-ID und Erinnerungen in Cloudflare wurden gelöscht.',
+          'bot',
+        );
+        return;
+      }
+
+      this.addMessage(
+        result?.text || 'Cloudflare-User-ID konnte nicht gelöscht werden.',
+        'bot',
+      );
+    } catch (error) {
+      log.warn('deleteCloudflareUserId failed', error);
+      this.addMessage(
+        'Cloudflare-User-ID konnte nicht gelöscht werden.',
+        'bot',
+      );
+    } finally {
+      this.isResponding = false;
+      this.syncComposerState();
+    }
   }
 
   async _clearAgentHistory() {
@@ -588,13 +714,18 @@ export class RobotChat {
       return;
     }
 
+    if (actionKey === ROBOT_ACTIONS.SHOW_MEMORIES) {
+      await this.showStoredCloudflareMemories();
+      return;
+    }
+
     if (actionKey === ROBOT_ACTIONS.CLEAR_CHAT) {
       this.clearHistory();
       return;
     }
 
-    if (actionKey === ROBOT_ACTIONS.EXPORT_CHAT) {
-      this.exportHistory();
+    if (actionKey === ROBOT_ACTIONS.DELETE_CLOUDFLARE_USER) {
+      await this.deleteCloudflareUserId();
       return;
     }
 

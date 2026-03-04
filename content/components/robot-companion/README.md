@@ -6,8 +6,11 @@ Cloudflare-AI-first Roboter-Begleiter mit Streaming-Chat, Tool-Calling und Memor
 
 - KI-Chat via `POST /api/ai-agent` (SSE Streaming)
 - Tool-Calling fuer Navigation, Theme, Suche, Menu, Scroll und Utility-Aktionen
+- Integrations-Tools: externe Links, Social-Profile, Mail-Entwurf, Kalender-Erinnerung
+- Confirm-Step fuer sensible Tool-Aktionen (Browser-Bestaetigung)
 - Bildanalyse (Upload im Chat)
-- Persistenter Chatverlauf (lokal) inkl. Export
+- Session-Chatverlauf nur im RAM (kein localStorage)
+- Header-Buttons für Cloudflare-Memory: Erinnerungen anzeigen und User-ID löschen
 - Stateful Robot-UI (Animation, Kollision, Kontextreaktionen)
 - XSS-sichere DOM-Erstellung
 
@@ -58,8 +61,9 @@ ROBOT_ACTIONS = {
   CLOSE_SEARCH: 'closeSearch',
   SCROLL_TOP: 'scrollTop',
   COPY_CURRENT_URL: 'copyCurrentUrl',
+  SHOW_MEMORIES: 'showMemories',
   CLEAR_CHAT: 'clearChat',
-  EXPORT_CHAT: 'exportChat',
+  DELETE_CLOUDFLARE_USER: 'deleteCloudflareUser',
 };
 ```
 
