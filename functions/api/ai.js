@@ -31,14 +31,14 @@ Tech Stack: JavaScript, React, Node.js, Python, CSS, Web Components, Cloudflare.
 **Regeln:** Prägnant (2-3 Sätze), Markdown nutzen, immer Deutsch.`,
 
   summary:
-    'Fasse den Text kurz und präzise auf DEUTSCH zusammen. Maximal 3 Sätze.',
+    'Fasse den Text kurz und präzise auf DEUTSCH zusammen. Maximal 3 Sätze. Nutze Formatierungen wie Aufzählungszeichen, wenn sinnvoll.',
 
   suggestion:
-    'Generiere einen kurzen, hilfreichen Tipp zum Seiteninhalt. Deutsch, maximal 2 Sätze.',
+    'Generiere einen kurzen, hilfreichen Tipp zum Seiteninhalt. Deutsch, maximal 2 Sätze. Sei kreativ und lösungsorientiert.',
 });
 
 /** Extract and truncate content from a search result item */
-function extractContent(item, maxLength = 400) {
+function extractContent(item, maxLength = 600) {
   const raw = Array.isArray(item.content)
     ? item.content.map((c) => c.text || '').join(' ')
     : item.text || item.description || '';
@@ -140,10 +140,10 @@ export async function onRequestPost(context) {
     let systemMessage = SYSTEM_PROMPTS[mode] || SYSTEM_PROMPTS.chat;
 
     if (contextData) {
-      systemMessage += `\n\n${contextData.context}\n\nNutze die Informationen für präzise Antworten. Verwende die URLs bei Verweisen.`;
+      systemMessage += `\n\n${contextData.context}\n\nNutze die oben genannten Informationen (inklusive Metadaten und Relevanz-Scores) als Grundlage für deine Antwort. Formuliere flüssig und binde Links als Markdown (z.B. [Name](URL)) in den Text ein. Erwähne nicht explizit "Relevanz-Score" oder "Quelle".`;
     } else {
       systemMessage +=
-        '\n\nWenn nach spezifischen Inhalten gefragt wird, empfehle die Suche oder gib allgemeine Infos.';
+        '\n\nWenn nach spezifischen Inhalten gefragt wird, empfehle die Suchfunktion oder das Menü. Gib ansonsten allgemeine und hilfsbereite Antworten aus deinem eigenen Wissen.';
     }
 
     const aiResult = await env.AI.run(CHAT_MODEL, {
