@@ -252,14 +252,19 @@ export class RobotChat {
   showToolCallResults(toolResults) {
     if (!this.robot.dom.messages) return;
 
-    for (const result of toolResults) {
-      const indicator = this.robot.domBuilder.createToolCallIndicator(
-        result.name,
-        result.message,
-      );
-      this.robot.dom.messages.appendChild(indicator);
-    }
-    this.scrollToBottom();
+    withViewTransition(
+      () => {
+        for (const result of toolResults) {
+          const indicator = this.robot.domBuilder.createToolCallIndicator(
+            result.name,
+            result.message,
+          );
+          this.robot.dom.messages.appendChild(indicator);
+        }
+        this.scrollToBottom();
+      },
+      { types: ['chat-tool-result'] },
+    );
   }
 
   /**
@@ -452,21 +457,32 @@ export class RobotChat {
     // Update state manager
     this.robot.stateManager.setState({ isTyping: true });
 
-    // Use DOM Builder for XSS-safe creation
-    const typingDiv = this.robot.domBuilder.createTypingIndicator();
-    this.robot.dom.messages.appendChild(typingDiv);
-    this.scrollToBottom();
-    this.syncComposerState();
+    withViewTransition(
+      () => {
+        // Use DOM Builder for XSS-safe creation
+        const typingDiv = this.robot.domBuilder.createTypingIndicator();
+        this.robot.dom.messages.appendChild(typingDiv);
+        this.scrollToBottom();
+        this.syncComposerState();
+      },
+      { types: ['chat-typing-show'] },
+    );
   }
 
   removeTyping() {
     const typingDiv = document.getElementById('robot-typing');
-    if (typingDiv) typingDiv.remove();
     this.isTyping = false;
 
     // Update state manager
     this.robot.stateManager.setState({ isTyping: false });
-    this.syncComposerState();
+
+    withViewTransition(
+      () => {
+        if (typingDiv) typingDiv.remove();
+        this.syncComposerState();
+      },
+      { types: ['chat-typing-hide'] },
+    );
   }
 
   renderMessage(
@@ -475,30 +491,38 @@ export class RobotChat {
     skipParsing = false,
     timestamp = Date.now(),
   ) {
-    const msg = document.createElement('div');
-    msg.className = `message ${type}`;
+    const renderFn = () => {
+      const msg = document.createElement('div');
+      msg.className = `message ${type}`;
 
-    if (type === 'user') {
-      // User messages are always plain text (XSS-safe)
-      msg.textContent = String(text || '');
-    } else {
-      if (skipParsing) {
-        // Already sanitized HTML (from streaming or other sources)
-        msg.innerHTML = String(text || '');
+      if (type === 'user') {
+        // User messages are always plain text (XSS-safe)
+        msg.textContent = String(text || '');
       } else {
-        // Parse markdown (MarkdownRenderer sanitizes output)
-        msg.innerHTML = MarkdownRenderer.parse(String(text || ''));
+        if (skipParsing) {
+          // Already sanitized HTML (from streaming or other sources)
+          msg.innerHTML = String(text || '');
+        } else {
+          // Parse markdown (MarkdownRenderer sanitizes output)
+          msg.innerHTML = MarkdownRenderer.parse(String(text || ''));
+        }
       }
+
+      msg.appendChild(
+        this.robot.domBuilder.createMessageMeta(timestamp, {
+          sender: type === 'user' ? 'Du' : 'Jules',
+        }),
+      );
+
+      this.robot.dom.messages.appendChild(msg);
+      this.scrollToBottom();
+    };
+
+    if (this.robot.dom.messages.offsetParent !== null) {
+      withViewTransition(renderFn, { types: ['chat-message-add'] });
+    } else {
+      renderFn();
     }
-
-    msg.appendChild(
-      this.robot.domBuilder.createMessageMeta(timestamp, {
-        sender: type === 'user' ? 'Du' : 'Jules',
-      }),
-    );
-
-    this.robot.dom.messages.appendChild(msg);
-    this.scrollToBottom();
   }
 
   addMessage(text, type = 'bot', skipParsing = false) {
@@ -523,16 +547,24 @@ export class RobotChat {
     this.history = [];
     this.historyStore.clear();
     this.clearImagePreview();
-    if (this.robot.dom.messages) {
-      // Clear messages safely
-      while (this.robot.dom.messages.firstChild) {
-        this.robot.dom.messages.removeChild(this.robot.dom.messages.firstChild);
-      }
-    }
+
+    withViewTransition(
+      () => {
+        if (this.robot.dom.messages) {
+          // Clear messages safely
+          while (this.robot.dom.messages.firstChild) {
+            this.robot.dom.messages.removeChild(
+              this.robot.dom.messages.firstChild,
+            );
+          }
+        }
+        this.syncComposerState();
+      },
+      { types: ['chat-clear'] },
+    );
 
     void this._clearAgentHistory();
     this.handleAction(ROBOT_ACTIONS.START);
-    this.syncComposerState();
   }
 
   exportHistory() {

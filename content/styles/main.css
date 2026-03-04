@@ -147,54 +147,22 @@ textarea:focus-visible {
 main {
   margin-top: 0 !important;
   padding: 0 !important;
-  min-height: calc(
-    100vh - var(--content-top-offset) - var(--content-bottom-offset)
-  );
-}
-
-@supports (min-height: 100dvh) {
-  main {
-    min-height: calc(
-      100dvh - var(--content-top-offset) - var(--content-bottom-offset)
-    );
-  }
+  min-height: var(--section-viewport-height);
 }
 
 .section {
   scroll-snap-align: start;
   scroll-snap-stop: always;
-  min-height: calc(
-    100vh - var(--content-top-offset) - var(--content-bottom-offset)
-  );
-  height: calc(
-    100vh - var(--content-top-offset) - var(--content-bottom-offset)
-  );
+  min-height: var(--section-viewport-height);
+  height: var(--section-viewport-height);
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
 
-@supports (min-height: 100dvh) {
-  .section {
-    min-height: calc(
-      100dvh - var(--content-top-offset) - var(--content-bottom-offset)
-    );
-    height: calc(
-      100dvh - var(--content-top-offset) - var(--content-bottom-offset)
-    );
-  }
-}
-
 .full-screen-section {
-  min-height: calc(100vh - var(--content-top-offset));
-  height: calc(100vh - var(--content-top-offset));
-}
-
-@supports (min-height: 100dvh) {
-  .full-screen-section {
-    min-height: calc(100dvh - var(--content-top-offset));
-    height: calc(100dvh - var(--content-top-offset));
-  }
+  min-height: var(--full-section-viewport-height);
+  height: var(--full-section-viewport-height);
 }
 
 @supports (content-visibility: auto) {
@@ -202,7 +170,7 @@ main {
     /* OPTIMIZATION: content-visibility allows browser to skip rendering work for off-screen sections */
     content-visibility: auto;
     /* Fallback size estimation to prevent scrollbar jumping */
-    contain-intrinsic-size: auto 100vh;
+    contain-intrinsic-size: auto var(--section-viewport-height);
   }
 }
 
@@ -273,22 +241,12 @@ body {
   /* Contact page is narrower and gets extra inner padding */
   max-width: var(--size-760);
   padding: var(--space-3);
-  min-height: calc(
-    100vh - var(--content-top-offset) - var(--content-bottom-offset)
-  );
+  min-height: var(--section-viewport-height);
   display: flex;
   flex-direction: column;
   justify-content: center;
   gap: var(--space-2);
   align-items: stretch;
-}
-
-@supports (min-height: 100dvh) {
-  .contact-page main.container {
-    min-height: calc(
-      100dvh - var(--content-top-offset) - var(--content-bottom-offset)
-    );
-  }
 }
 
 /* ===== END BASE STYLES ===== */

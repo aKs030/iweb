@@ -1,23 +1,14 @@
 import { createLogger } from './logger.js';
-import { upsertHeadLink, upsertMeta } from './utils.js';
+import { upsertHeadLink } from './utils.js';
 import { iconUrl } from '../config/constants.js';
-import { initThemeColorManager } from './theme-color-manager.js';
 
 const log = createLogger('PWAManager');
 const ROOT_FAVICON_ICO = '/favicon.ico';
 const ROOT_FAVICON_SVG = '/favicon.svg';
 
-export function setupPWAAssets(brandData) {
+export function setupPWAAssets(_brandData) {
   try {
     upsertHeadLink({ rel: 'manifest', href: '/manifest.json' });
-
-    // Initialize centralized theme color management
-    initThemeColorManager();
-
-    upsertMeta('mobile-web-app-capable', 'yes');
-    upsertMeta('apple-mobile-web-app-capable', 'yes');
-    upsertMeta('apple-mobile-web-app-title', brandData.name);
-    upsertMeta('apple-mobile-web-app-status-bar-style', 'black-translucent');
 
     // Optimierte Icon-Konfiguration für existierende Dateien
     upsertHeadLink({

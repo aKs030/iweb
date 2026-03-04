@@ -87,22 +87,6 @@ export class MenuEvents {
       const root = document.documentElement;
       root.setAttribute('data-theme', theme === 'light' ? 'light' : 'dark');
 
-      // Update theme-color meta tags
-      import('/content/core/theme-color-manager.js').then(
-        ({ updateThemeColor }) => {
-          updateThemeColor();
-        },
-      );
-
-      // Update apple status bar style if needed
-      const appleStatusMeta = document.querySelector(
-        'meta[name="apple-mobile-web-app-status-bar-style"]',
-      );
-      if (appleStatusMeta) {
-        // We keep it black-translucent for the transparent look
-        appleStatusMeta.setAttribute('content', 'black-translucent');
-      }
-
       // Update toggle button state
       themeToggle.classList.toggle('is-light', theme === 'light');
     };

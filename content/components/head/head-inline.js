@@ -7,12 +7,31 @@ import { headState } from './head-state.js';
 
 const log = createLogger('head-inline');
 
-// head-inline.js
-
 const GTM_ID = ENV.GTM_ID;
 const GA4_MEASUREMENT_ID = ENV.GA4_ID;
 const ADS_CONVERSION_ID = ENV.AW_ID;
 const ADS_CONVERSION_LABEL = ENV.AW_LABEL;
+const GTM_PLACEHOLDER = 'GTM-PLACEHOLDER';
+const hasGtmId = Boolean(GTM_ID && GTM_ID !== GTM_PLACEHOLDER);
+const hasGa4MeasurementId =
+  typeof GA4_MEASUREMENT_ID === 'string' && GA4_MEASUREMENT_ID.startsWith('G-');
+
+/**
+ * Run callback when DOM is ready.
+ * @param {() => void} callback
+ * @param {{ microtask?: boolean }} [options]
+ */
+const runWhenDomReady = (callback, options = {}) => {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', callback, { once: true });
+    return;
+  }
+  if (options.microtask) {
+    globalThis.queueMicrotask(callback);
+    return;
+  }
+  callback();
+};
 
 const dataLayer = (globalThis.dataLayer = globalThis.dataLayer || []);
 function gtag(...args) {
@@ -73,8 +92,8 @@ dataLayer.push({
 
 const injectGA4Fallback = () => {
   try {
-    if (!GA4_MEASUREMENT_ID || GA4_MEASUREMENT_ID.indexOf('G-') !== 0) return;
-    if (GTM_ID && GTM_ID !== 'GTM-PLACEHOLDER') {
+    if (!hasGa4MeasurementId) return;
+    if (hasGtmId) {
       log?.info?.(
         'GTM present — configure GA4 inside GTM instead of direct gtag load',
       );
@@ -101,7 +120,7 @@ injectGA4Fallback();
 
 const injectGTM = () => {
   try {
-    if (!GTM_ID || GTM_ID === 'GTM-PLACEHOLDER') {
+    if (!hasGtmId) {
       log?.info?.(
         'GTM not configured — set GTM_ID in content/config/env.config.js or window.ENV to enable',
       );
@@ -125,7 +144,7 @@ injectGTM();
 
 const ensureGTMNoScript = () => {
   try {
-    if (!GTM_ID || GTM_ID === 'GTM-PLACEHOLDER') return;
+    if (!hasGtmId) return;
     const insert = () => {
       try {
         if (document.getElementById('gtm-noscript')) return;
@@ -149,11 +168,7 @@ const ensureGTMNoScript = () => {
       }
     };
 
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', insert, { once: true });
-    } else {
-      insert();
-    }
+    runWhenDomReady(insert);
   } catch (err) {
     log?.warn?.('head-inline: GTM noscript setup failed', err);
   }
@@ -215,11 +230,7 @@ const ensureFooterAndTrigger = () => {
       // Component definitions werden durch SCRIPTS array geladen - nicht hier doppelt
     };
 
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', run, { once: true });
-    } else {
-      globalThis.queueMicrotask(run);
-    }
+    runWhenDomReady(run, { microtask: true });
   } catch (err) {
     log?.warn?.('head-inline: ensure footer/trigger setup failed', err);
   }
@@ -313,12 +324,11 @@ const injectCoreAssets = () => {
     };
 
     const performInjection = () => {
-      const hasGtm = GTM_ID && GTM_ID !== 'GTM-PLACEHOLDER';
-      if (hasGtm) {
+      if (hasGtmId) {
         resourceHints.preconnect('https://www.googletagmanager.com');
         resourceHints.preconnect('https://static.cloudflareinsights.com');
       }
-      if (GA4_MEASUREMENT_ID && GA4_MEASUREMENT_ID.indexOf('G-') === 0) {
+      if (hasGa4MeasurementId) {
         resourceHints.preconnect('https://www.gstatic.com');
       }
 
@@ -338,20 +348,10 @@ const injectCoreAssets = () => {
       // Batch inject scripts
       SCRIPTS.forEach(upsertScript);
 
-      try {
-        deferNonCriticalAssets();
-      } catch (err) {
-        log?.warn?.('head-inline: deferNonCriticalAssets call failed', err);
-      }
+      deferNonCriticalAssets();
     };
 
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', performInjection, {
-        once: true,
-      });
-    } else {
-      performInjection();
-    }
+    runWhenDomReady(performInjection);
   } catch (err) {
     log?.warn?.('head-inline: injectCoreAssets failed', err);
   }
@@ -376,11 +376,7 @@ const addLazyLoadingDefaults = () => {
         .forEach((ifr) => ifr.setAttribute('loading', 'lazy'));
     };
 
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', apply, { once: true });
-    } else {
-      apply();
-    }
+    runWhenDomReady(apply);
   } catch (err) {
     log?.warn?.('head-inline: addLazyLoadingDefaults failed', err);
   }
@@ -404,11 +400,7 @@ const ensureFontDisplaySwap = () => {
           }
         });
     };
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', update, { once: true });
-    } else {
-      update();
-    }
+    runWhenDomReady(update);
   } catch (err) {
     log?.warn?.('head-inline: ensureFontDisplaySwap failed', err);
   }
@@ -461,7 +453,7 @@ const injectHeroCriticalCSS = () => {
     if (document.head.querySelector('#hero-critical-css')) return;
 
     const css = `
-  .hero{display:flex;align-items:center;justify-content:center;min-height:100dvh;padding:0 .5rem;box-sizing:border-box}
+  .hero{display:flex;align-items:center;justify-content:center;min-height:var(--viewport-height,100dvh);padding:0 .5rem;box-sizing:border-box}
   .hero__title{font:800 clamp(3rem,6vw,4.5rem)/1.03 var(--font-inter);margin:0;padding:8px 12px;max-width:30ch;color:var(--color-text-main,#fff);text-align:center;white-space:normal}
   `;
 

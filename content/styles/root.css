@@ -54,19 +54,15 @@
   *,
   *::before,
   *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+    animation-duration: var(--motion-reduce-duration) !important;
+    animation-iteration-count: var(--motion-reduce-iterations) !important;
+    transition-duration: var(--motion-reduce-duration) !important;
     scroll-behavior: auto !important;
   }
 }
 
 /* Global responsive media elements */
-img,
-svg,
-picture,
-video,
-iframe {
+:where(img, svg, picture, video, iframe) {
   max-width: 100%;
   height: auto;
   display: block;

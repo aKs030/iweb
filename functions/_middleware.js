@@ -28,12 +28,40 @@ import {
 
 // KV-Cache TTL für Templates: 1 Stunde
 const TEMPLATE_TTL_SECONDS = 3600;
+// Bump this whenever base-head/base-loader template markup changes.
+const TEMPLATE_CACHE_VERSION = '20260304-3';
 
 // KV-Schlüssel für Template-Cache
 const KV_KEYS = {
-  HEAD: 'template:base-head',
-  LOADER: 'template:base-loader',
+  HEAD: `template:${TEMPLATE_CACHE_VERSION}:base-head`,
+  LOADER: `template:${TEMPLATE_CACHE_VERSION}:base-loader`,
 };
+
+/**
+ * Sanitize cached template HTML to avoid unsupported viewport keys
+ * on older Safari/WebKit builds.
+ *
+ * @param {string} kvKey
+ * @param {string} html
+ * @returns {string}
+ */
+function sanitizeTemplateHtml(kvKey, html) {
+  if (!html) return '';
+  if (!kvKey.includes('base-head')) return html;
+
+  let sanitized = html.replace(
+    /\s*,\s*interactive-widget=resizes-content/g,
+    '',
+  );
+
+  // Strip legacy browser-chrome metas that can interfere with viewport-fit behavior.
+  sanitized = sanitized.replace(
+    /<meta\b[^>]*\bname=(["'])(?:theme-color|apple-mobile-web-app-status-bar-style|apple-mobile-web-app-capable|mobile-web-app-capable|apple-touch-fullscreen|apple-mobile-web-app-title)\1[^>]*>\s*/gi,
+    '',
+  );
+
+  return sanitized;
+}
 
 /**
  * Lädt ein Template — zuerst aus KV, dann per fetch() als Fallback.
@@ -65,12 +93,26 @@ async function loadTemplateWithCache(env, kvKey, fetchUrl, ctx) {
 
   // 3. Cache-Hit: SWR Logik
   if (cachedItem && cachedItem.html) {
+    const cachedHtml = sanitizeTemplateHtml(kvKey, cachedItem.html);
+
+    if (cachedHtml !== cachedItem.html) {
+      ctx.waitUntil(
+        env.SITEMAP_CACHE_KV.put(
+          kvKey,
+          JSON.stringify({
+            timestamp: now,
+            html: cachedHtml,
+          }),
+        ),
+      );
+    }
+
     // Wenn Template älter als eine Stunde ist -> im Hintergrund aktualisieren
     if (now - cachedItem.timestamp > ONE_HOUR_MS) {
       ctx.waitUntil(refreshTemplateInKV(env, kvKey, fetchUrl));
     }
     // Sofort die (ggf. leicht alte) Version aus dem Cache zurückgeben (~1-5ms)
-    return cachedItem.html;
+    return cachedHtml;
   }
 
   // 4. Cache-Miss: Blockierendes Laden und Speichern
@@ -91,7 +133,7 @@ async function refreshTemplateInKV(env, kvKey, fetchUrl) {
       );
       return '';
     }
-    const html = await res.text();
+    const html = sanitizeTemplateHtml(kvKey, await res.text());
 
     await env.SITEMAP_CACHE_KV.put(
       kvKey,

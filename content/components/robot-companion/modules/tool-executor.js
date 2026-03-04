@@ -7,6 +7,7 @@
 import { createLogger } from '../../../core/logger.js';
 import { fire } from '../../../core/events.js';
 import { uiStore } from '../../../core/ui-store.js';
+import { withViewTransition } from '../../../core/view-transitions.js';
 
 const log = createLogger('ToolExecutor');
 
@@ -121,9 +122,12 @@ function executeNavigate(args) {
   }
 
   if (document.startViewTransition) {
-    document.startViewTransition(() => {
-      globalThis.location.href = route;
-    });
+    void withViewTransition(
+      () => {
+        globalThis.location.href = route;
+      },
+      { types: ['page-navigate'] },
+    );
   } else {
     globalThis.location.href = route;
   }

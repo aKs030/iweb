@@ -20,6 +20,8 @@
     opacity 0.3s ease-out,
     visibility 0.3s ease-out;
   contain: layout style;
+  container-type: inline-size;
+  container-name: loader;
   view-transition-name: loader-overlay;
 
   &.fade-out {
@@ -158,7 +160,7 @@
 }
 
 /* Responsive */
-@media (width <= 480px) {
+@container loader (width <= 480px) {
   .loader-content {
     max-width: 90%;
   }

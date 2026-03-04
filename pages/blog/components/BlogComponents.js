@@ -60,22 +60,3 @@ export const ScrollToTop = () => {
     </button>
   `;
 };
-
-export const ReadingProgress = () => {
-  const [width, setWidth] = React.useState(0);
-
-  React.useEffect(() => {
-    const onScroll = () => {
-      const h = document.body.scrollHeight - window.innerHeight;
-      setWidth(h > 0 ? (window.scrollY / h) * 100 : 0);
-    };
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
-
-  return html`
-    <div className="reading-progress-container">
-      <div className="reading-progress-bar" style=${{ width: `${width}%` }} />
-    </div>
-  `;
-};

@@ -11,16 +11,9 @@
   max-width: var(--size-960);
   margin: 0 auto;
   min-height: calc(
-    100vh - var(--content-top-offset) - var(--content-bottom-offset)
+    var(--viewport-height) - var(--content-top-offset) -
+      var(--content-bottom-offset)
   );
-}
-
-@supports (min-height: 100dvh) {
-  .legal-content {
-    min-height: calc(
-      100dvh - var(--content-top-offset) - var(--content-bottom-offset)
-    );
-  }
 }
 
 .legal-content h1 {
@@ -130,7 +123,10 @@
   border-radius: var(--size-6);
   font-weight: 600;
   text-decoration: none;
-  transition: all 0.2s ease;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .legal-content .back-link:hover {

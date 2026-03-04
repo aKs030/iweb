@@ -35,6 +35,26 @@ const ENV = {
       globalThis.navigator.webdriver),
 };
 
+const isLocalDevHost = (hostname) => {
+  const host = String(hostname || '').toLowerCase();
+  if (!host) return false;
+  if (
+    host === 'localhost' ||
+    host === '127.0.0.1' ||
+    host === '0.0.0.0' ||
+    host.endsWith('.local')
+  ) {
+    return true;
+  }
+
+  // RFC1918 private network ranges (typical local LAN testing on phone/tablet)
+  if (/^10\./.test(host)) return true;
+  if (/^192\.168\./.test(host)) return true;
+  if (/^172\.(1[6-9]|2\d|3[0-1])\./.test(host)) return true;
+
+  return false;
+};
+
 // ===== Loading Configuration =====
 const LOADING_CONFIG = {
   TIMEOUT_MS: 5000, // Maximale Wartezeit — danach wird Loader forciert ausgeblendet
@@ -209,7 +229,7 @@ globalThis.addEventListener('pageshow', (event) => {
 
 // ===== Service Worker =====
 if ('serviceWorker' in navigator && !ENV.isTest) {
-  if (['localhost', '127.0.0.1'].includes(globalThis.location.hostname)) {
+  if (isLocalDevHost(globalThis.location.hostname)) {
     navigator.serviceWorker
       .getRegistrations()
       .then((r) => r.forEach((s) => s.unregister()));

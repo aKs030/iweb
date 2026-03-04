@@ -5,7 +5,7 @@
 }
 
 .h-screen {
-  height: 100vh;
+  height: var(--viewport-height);
 }
 
 .bg-black {
@@ -52,16 +52,10 @@
   position: fixed;
   inset: 0;
   width: 100vw;
-  height: 100vh;
+  height: var(--viewport-height);
   background: var(--clr-black);
   overflow: hidden;
   touch-action: none;
-}
-
-@supports (height: 100dvh) {
-  .gallery-shell {
-    height: 100dvh;
-  }
 }
 
 .gallery-scene,
@@ -250,7 +244,7 @@
 
 .gallery-lightbox__media-item {
   max-width: 100%;
-  max-height: 60vh;
+  max-height: calc(var(--viewport-height) * 0.6);
   object-fit: contain;
   border-radius: var(--radius-sm);
 }
