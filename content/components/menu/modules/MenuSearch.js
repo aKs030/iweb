@@ -7,6 +7,7 @@ import { TimerManager } from '../../../core/utils.js';
 import { createLogger } from '../../../core/logger.js';
 import { resourceHints } from '../../../core/resource-hints.js';
 import { uiStore } from '../../../core/ui-store.js';
+import { withViewTransition } from '../../../core/view-transitions.js';
 
 const log = createLogger('MenuSearch');
 
@@ -292,11 +293,19 @@ export class MenuSearch {
 
     this.isOpen = true;
     uiStore.setState({ searchOpen: true });
-    header.classList.add('search-mode');
-    panel.setAttribute('aria-hidden', 'false');
-    this.syncSearchTriggerState(true);
-    this.syncToggleSearchState(true);
-    this.setSearchPopupExpanded(false);
+
+    withViewTransition(
+      () => {
+        header.classList.add('search-mode');
+        panel.setAttribute('aria-hidden', 'false');
+        this.syncSearchTriggerState(true);
+        this.syncToggleSearchState(true);
+        if (typeof this.setSearchPopupExpanded === 'function') {
+          this.setSearchPopupExpanded(false);
+        }
+      },
+      { types: ['search-open'] },
+    );
 
     requestAnimationFrame(() => {
       try {
@@ -315,30 +324,33 @@ export class MenuSearch {
     if (!this.isOpen) return;
 
     const header = this.getHeaderElement();
-    if (header) {
-      header.classList.remove('search-mode');
-    }
-
-    if (this.panel) {
-      this.panel.setAttribute('aria-hidden', 'true');
-    }
-
-    this.clearSearchDebounce();
-    this.abortSearchRequest();
-
     this.isOpen = false;
     uiStore.setState({ searchOpen: false });
     this.items = [];
     this.aiChatMessage = '';
     this.selectedIndex = -1;
-    this.syncSearchTriggerState(false);
-    this.syncToggleSearchState(false);
 
-    if (this.input) {
-      this.input.value = '';
-    }
+    withViewTransition(
+      () => {
+        if (header) {
+          header.classList.remove('search-mode');
+        }
 
-    this.renderSearchState({ hidden: true });
+        if (this.panel) {
+          this.panel.setAttribute('aria-hidden', 'true');
+        }
+
+        this.syncSearchTriggerState(false);
+        this.syncToggleSearchState(false);
+
+        if (this.input) {
+          this.input.value = '';
+        }
+
+        this.renderSearchState({ hidden: true });
+      },
+      { types: ['search-close'] },
+    );
 
     if (restoreFocus) {
       this.trigger?.focus();

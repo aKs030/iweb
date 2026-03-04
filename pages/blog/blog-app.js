@@ -16,12 +16,7 @@ import { createErrorBoundary } from '/content/components/ErrorBoundary.js';
 import { ParticleSystem } from './utils/ParticleSystem.js';
 import { loadPostsData } from './utils/data-loader.js';
 import { resetBlogPageMeta, updatePostMeta } from './utils/seo-manager.js';
-import {
-  ProgressiveImage,
-  ScrollToTop,
-  ReadingProgress,
-} from './components/BlogComponents.js';
-import { initThemeColorManager } from '/content/core/theme-color-manager.js';
+import { ProgressiveImage, ScrollToTop } from './components/BlogComponents.js';
 
 const log = createLogger('BlogApp');
 const html = htm.bind(React.createElement);
@@ -199,7 +194,6 @@ const BlogApp = () => {
   if (activePost) {
     return html`
       <div className="blog-post-view">
-        <${ReadingProgress} />
         <button className="btn-back" onClick=${closePost}>
           <${ArrowRight} style=${{ transform: 'rotate(180deg)' }} />
           ${t('blog.back_to_overview')}
@@ -340,13 +334,6 @@ const initBlogApp = async () => {
 
   createRoot(root).render(html`<${ErrorBoundary}><${BlogApp} /><//>`);
   log.info('Blog app initialized');
-
-  // Ensure browser theme-color meta tags are initialized (transparent bar)
-  try {
-    initThemeColorManager();
-  } catch (e) {
-    log.warn('initThemeColorManager failed', e);
-  }
 };
 
 if (document.readyState === 'loading') {

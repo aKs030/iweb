@@ -16,14 +16,17 @@ address {
   --btn-padding: var(--space-2) var(--space-4);
   --btn-radius: var(--menu-item-radius);
   --btn-font-size: clamp(var(--size-12), 1vw, var(--size-13));
-  --btn-transition: all var(--transition-base);
+  --btn-transition:
+    background-color var(--transition-base), color var(--transition-base),
+    border-color var(--transition-base), transform var(--transition-base),
+    box-shadow var(--transition-base);
 
   --accent-color: var(--component-accent-blue);
   --accent-hover: var(--component-accent-blue-hover);
 }
 
 /* utility base for footer buttons */
-.footer-btn {
+:is(.footer-btn, .btn-accept, .btn-reject) {
   padding: var(--btn-padding);
   border-radius: var(--btn-radius);
   border: var(--size-1) solid transparent;
@@ -35,6 +38,28 @@ address {
   white-space: nowrap;
   flex-shrink: 0;
   font-family: inherit;
+}
+
+:is(
+  .brand-link,
+  .nav-btn,
+  .btn-close,
+  .cookie-category,
+  .footer-btn-secondary,
+  .footer-btn-primary,
+  .footer-card,
+  .footer-cta,
+  .links a,
+  .links-compact a,
+  .tag,
+  .legal-btn,
+  .social-btn
+) {
+  transition: var(--transition-interactive-standard);
+}
+
+:is(.nav-btn svg, .links a svg, .links-compact a svg, .legal-btn svg) {
+  transition: var(--transition-icon-standard);
 }
 
 /* ===== Base Footer ===== */
@@ -122,7 +147,6 @@ address {
   padding: var(--size-4) var(--size-8);
   border-radius: var(--radius-sm);
   font-weight: 590;
-  transition: all var(--transition-base);
   white-space: nowrap;
 }
 
@@ -213,22 +237,6 @@ address {
   display: none;
 }
 
-.btn-accept,
-.btn-reject {
-  /* shared appearance now uses custom properties for easy tweaking */
-  padding: var(--btn-padding);
-  border-radius: var(--btn-radius);
-  border: var(--size-1) solid transparent;
-  font-size: var(--btn-font-size);
-  font-weight: 600;
-  cursor: pointer;
-  transition: var(--btn-transition);
-  letter-spacing: -0.01em;
-  white-space: nowrap;
-  flex-shrink: 0;
-  font-family: inherit;
-}
-
 .btn-accept {
   background: var(--accent-color);
   color: var(--clr-white);
@@ -292,7 +300,6 @@ address {
   letter-spacing: -0.01em;
   cursor: pointer;
   white-space: nowrap;
-  transition: all var(--transition-base);
   -webkit-tap-highlight-color: color-mix(
     in srgb,
     var(--component-accent-blue) 10%,
@@ -326,7 +333,6 @@ address {
   width: var(--size-14);
   height: var(--size-14);
   opacity: 0.85;
-  transition: all var(--transition-base);
 }
 
 .nav-btn:hover svg {
@@ -341,7 +347,7 @@ address {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  max-height: calc(100vh - var(--size-150));
+  max-height: calc(var(--viewport-height) - var(--size-150));
   overflow-y: auto;
   overflow-x: hidden;
   position: relative;
@@ -395,7 +401,6 @@ address {
   font-size: var(--size-20);
   line-height: 1;
   cursor: pointer;
-  transition: all var(--transition-base);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -427,7 +432,6 @@ address {
   border: var(--size-1) solid var(--component-separator);
   border-radius: var(--radius-sm);
   padding: var(--size-10) var(--size-12);
-  transition: all var(--transition-base);
   display: flex;
   flex-direction: column;
   gap: var(--size-4);
@@ -544,7 +548,6 @@ address {
   font-weight: 600;
   cursor: pointer;
   border: none;
-  transition: all var(--transition-base);
   font-family: inherit;
   letter-spacing: -0.01em;
 }
@@ -607,7 +610,6 @@ address {
   border: var(--size-1) solid var(--component-separator);
   border-radius: var(--radius-md);
   padding: var(--size-14);
-  transition: all var(--transition-base);
   display: flex;
   flex-direction: column;
   min-height: var(--size-140);
@@ -670,7 +672,6 @@ address {
   border-radius: var(--radius-sm);
   font-size: var(--size-11);
   font-weight: 600;
-  transition: all var(--transition-base);
   flex: 1;
   justify-content: center;
   min-width: 0;
@@ -699,7 +700,6 @@ address {
   text-decoration: none;
   border-radius: var(--radius-xs);
   font-size: var(--size-10);
-  transition: all var(--transition-base);
 }
 
 .links a svg {
@@ -707,7 +707,6 @@ address {
   width: var(--size-12);
   height: var(--size-12);
   opacity: 0.7;
-  transition: all var(--transition-base);
 }
 
 .links a:hover {
@@ -739,7 +738,6 @@ address {
   text-decoration: none;
   border-radius: var(--radius-xs);
   font-size: var(--size-10);
-  transition: all var(--transition-base);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -752,7 +750,6 @@ address {
   width: var(--size-12);
   height: var(--size-12);
   opacity: 0.7;
-  transition: all var(--transition-base);
 }
 
 .links-compact a:hover {
@@ -786,7 +783,6 @@ address {
   font-size: var(--size-10);
   font-weight: 600;
   color: color-mix(in srgb, var(--clr-white) 80%, transparent);
-  transition: all var(--transition-base);
   cursor: default;
   letter-spacing: 0.02em;
 }
@@ -849,7 +845,6 @@ address {
   font-size: var(--size-11);
   font-weight: 510;
   cursor: pointer;
-  transition: all var(--transition-base);
   font-family: inherit;
   letter-spacing: -0.01em;
   white-space: nowrap;
@@ -871,7 +866,6 @@ address {
   width: var(--size-14);
   height: var(--size-14);
   opacity: 0.7;
-  transition: all var(--transition-base);
 }
 
 .legal-btn:hover svg {
@@ -904,7 +898,6 @@ address {
   color: var(--footer-quiet-text);
   text-decoration: none;
   font-size: var(--size-10);
-  transition: all var(--transition-base);
 }
 
 .social-btn:hover {
@@ -930,7 +923,7 @@ address {
 }
 
 body.footer-expanded {
-  padding-bottom: calc(80vh + var(--size-24));
+  padding-bottom: calc(var(--viewport-height) * 0.8 + var(--size-24));
 }
 
 /* ===== Responsive ===== */
@@ -1015,7 +1008,7 @@ body.footer-expanded {
 
   .footer-max {
     padding: var(--size-12);
-    max-height: calc(100vh - var(--size-100));
+    max-height: calc(var(--viewport-height) - var(--size-100));
   }
 
   .footer-content {
@@ -1204,7 +1197,7 @@ body.footer-expanded {
 
   .footer-max {
     padding: var(--size-10);
-    max-height: calc(100vh - var(--size-80));
+    max-height: calc(var(--viewport-height) - var(--size-80));
   }
 
   .footer-content {

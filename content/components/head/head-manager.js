@@ -42,64 +42,88 @@ const BASE_KEYWORDS = [
   'KI Suche',
 ];
 
-function pathTopics(pathname = '/') {
-  const path = String(pathname || '/').toLowerCase();
-
-  if (path === '/' || path === '') {
-    return [
-      'Hauptseite',
-      'Portfolio Übersicht',
-      'Bilder und Videos',
-      'Blog Artikel',
-      'Code Projekte',
-    ];
-  }
-  if (path.startsWith('/blog')) {
-    return [
+const WORD_SPLIT_PATTERN = /[\s,.;:/()[\]|!?-]+/;
+const MIN_SEARCH_TOKEN_LENGTH = 3;
+const MAX_HEADING_TERMS = 20;
+const HOME_TOPICS = [
+  'Hauptseite',
+  'Portfolio Übersicht',
+  'Bilder und Videos',
+  'Blog Artikel',
+  'Code Projekte',
+];
+const DEFAULT_TOPICS = ['Portfolio', 'Web', 'Foto', 'Video'];
+const PATH_TOPIC_GROUPS = [
+  {
+    prefix: '/blog',
+    topics: [
       'Tech Blog',
       'Tutorial',
       'Performance',
       'SEO Inhalte',
       'Frontend Wissen',
-    ];
-  }
-  if (path.startsWith('/videos')) {
-    return [
+    ],
+  },
+  {
+    prefix: '/videos',
+    topics: [
       'Video Inhalte',
       'YouTube Videos',
       'Short Clips',
       'Making-of',
       'Video Landingpages',
-    ];
-  }
-  if (path.startsWith('/gallery')) {
-    return [
+    ],
+  },
+  {
+    prefix: '/gallery',
+    topics: [
       'Bildgalerie',
       'Fotografie',
       'Portrait',
       'Street Photography',
       'Visuelle Serien',
-    ];
-  }
-  if (path.startsWith('/projekte')) {
-    return [
+    ],
+  },
+  {
+    prefix: '/projekte',
+    topics: [
       'Code Projekte',
       'Web Apps',
       'Frontend Experimente',
       'JavaScript Projekte',
       'Interaktive Demos',
-    ];
-  }
-  if (path.startsWith('/about')) {
-    return [
+    ],
+  },
+  {
+    prefix: '/about',
+    topics: [
       'Über Abdulkerim Sesli',
       'Profil',
       'Technischer Hintergrund',
       'Themenfelder',
-    ];
+    ],
+  },
+];
+
+function tokenizeSearchTerms(value) {
+  return String(value || '')
+    .split(WORD_SPLIT_PATTERN)
+    .map((token) => token.trim())
+    .filter((token) => token.length >= MIN_SEARCH_TOKEN_LENGTH);
+}
+
+function pathTopics(pathname = '/') {
+  const path = String(pathname || '/').toLowerCase();
+
+  if (path === '/' || path === '') {
+    return HOME_TOPICS;
   }
 
-  return ['Portfolio', 'Web', 'Foto', 'Video'];
+  for (const group of PATH_TOPIC_GROUPS) {
+    if (path.startsWith(group.prefix)) return group.topics;
+  }
+
+  return DEFAULT_TOPICS;
 }
 
 function extractHeadingTerms(doc) {
@@ -113,11 +137,7 @@ function extractHeadingTerms(doc) {
       node.getAttribute?.('alt') ||
       node.textContent ||
       node.getAttribute?.('title');
-    const words = String(source || '')
-      .split(/[\s,.;:/()[\]|!?-]+/)
-      .map((value) => value.trim())
-      .filter((value) => value.length >= 3);
-    tokens.push(...words);
+    tokens.push(...tokenizeSearchTerms(source));
   }
 
   const seen = new Set();
@@ -127,17 +147,14 @@ function extractHeadingTerms(doc) {
     if (seen.has(normalized)) continue;
     seen.add(normalized);
     deduped.push(token);
-    if (deduped.length >= 20) break;
+    if (deduped.length >= MAX_HEADING_TERMS) break;
   }
 
   return deduped;
 }
 
 function buildKeywordList(pageData, pageUrl) {
-  const titleTokens = String(pageData?.title || '')
-    .split(/[\s,.;:/()[\]|!?-]+/)
-    .map((value) => value.trim())
-    .filter((value) => value.length >= 3);
+  const titleTokens = tokenizeSearchTerms(pageData?.title);
   const sectionTerms = pathTopics(new URL(pageUrl).pathname);
   const headingTerms = extractHeadingTerms(document);
 
@@ -287,7 +304,7 @@ const updateBasicMeta = (pageData, pageUrl) => {
   );
 
   if (pageData.image) {
-    const imgAlt = pageData.title || pageData.description;
+    const imgAlt = pageData.imageAlt || pageData.title || pageData.description;
     upsertMeta('twitter:image', pageData.image);
     upsertMeta('twitter:image:alt', imgAlt);
 

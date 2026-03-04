@@ -149,6 +149,7 @@ export class SeoMetaHandler {
       'twitter:description': m.description,
       'twitter:url': m.canonicalUrl,
       'twitter:image': m.image,
+      'twitter:image:alt': m.imageAlt,
     };
 
     if (name in map && map[name]) {
@@ -166,7 +167,9 @@ export class SeoMetaHandler {
       'og:description': m.description,
       'og:url': m.canonicalUrl,
       'og:image': m.image,
+      'og:image:alt': m.imageAlt,
       'article:published_time': m.publishedTime,
+      'article:modified_time': m.modifiedTime,
     };
 
     if (prop in map && map[prop]) {
@@ -198,6 +201,7 @@ export class SeoMetaHandler {
       'twitter:description': m.description,
       'twitter:url': m.canonicalUrl,
       'twitter:image': m.image,
+      'twitter:image:alt': m.imageAlt,
     };
     if (m.keywords) nameDefaults.keywords = m.keywords;
 
@@ -216,9 +220,13 @@ export class SeoMetaHandler {
       'og:description': m.description,
       'og:url': m.canonicalUrl,
       'og:image': m.image,
+      'og:image:alt': m.imageAlt,
     };
     if (m.publishedTime) {
       propDefaults['article:published_time'] = m.publishedTime;
+    }
+    if (m.modifiedTime) {
+      propDefaults['article:modified_time'] = m.modifiedTime;
     }
 
     for (const [prop, content] of Object.entries(propDefaults)) {

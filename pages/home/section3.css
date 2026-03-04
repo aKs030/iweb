@@ -1,90 +1,179 @@
-:where(.section.section3) {
-  padding: clamp(var(--size-r-1), 3vh, var(--size-r-2)) var(--spacing-sm);
-  overflow-y: auto;
+.section.section3 {
+  --s3-shell-block: clamp(0.9rem, 1.8vh, 1.5rem);
+  --s3-shell-inline: clamp(1rem, 2.2vw, 2rem);
+  --s3-content-max: min(100%, 72ch);
+  --s3-gap: clamp(0.9rem, 1.8vh, 1.6rem);
+  --s3-heading-size: clamp(1.14rem, 0.96rem + 0.78vw, 1.72rem);
+  --s3-body-size: clamp(0.95rem, 0.88rem + 0.24vw, 1.08rem);
+  --s3-emphasis-size: clamp(1rem, 0.9rem + 0.34vw, 1.22rem);
+  --s3-cta-gap: clamp(0.7rem, 1.4vh, 1.3rem);
+  --s3-cta-offset: clamp(1rem, 2.5vh, 2.2rem);
+
+  min-block-size: var(--section-viewport-height);
+  block-size: auto;
+  padding-block: var(--s3-shell-block);
+  padding-inline: max(var(--s3-shell-inline), var(--safe-left))
+    max(var(--s3-shell-inline), var(--safe-right));
+  overflow: clip;
+  container-type: inline-size;
+  container-name: section3;
 }
+
 .section3__container {
-  max-width: var(--size-1200);
-  margin: 0 auto;
-  padding: clamp(var(--size-r-1), 2vh, var(--size-r-2))
-    clamp(var(--size-r-0-8), 2vw, var(--size-r-1-2));
-  text-align: center;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100%;
+  inline-size: min(100%, var(--size-1200));
+  min-block-size: 100%;
+  margin-inline: auto;
+  display: grid;
+  place-items: center;
 }
+
 .section3__content {
-  max-width: var(--size-800);
-  width: 100%;
-  max-height: 80vh;
-  overflow-y: auto;
-  padding-right: var(--size-r-0-5);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+  inline-size: var(--s3-content-max);
+  margin-inline: auto;
+  display: grid;
+  gap: var(--s3-gap);
 }
+
 .section3__text {
-  text-align: left;
-  line-height: 1.4;
-  margin: 0 auto;
+  display: grid;
+  gap: var(--s3-gap);
+  text-align: start;
 }
+
 .section3__text h1,
 .section3__text h3 {
-  font-size: clamp(var(--size-r-1-2), 2.5vw, var(--size-r-1-6));
-  margin-bottom: var(--size-r-1);
-  font-weight: 600;
+  margin: 0;
+  font-size: var(--s3-heading-size);
+  font-weight: 700;
+  line-height: 1.26;
+  text-wrap: balance;
 }
+
 .section3__text p {
-  font-size: clamp(var(--size-r-0-95), 1.8vw, var(--size-r-1-1));
-  margin-bottom: var(--size-r-1);
+  margin: 0;
+  font-size: var(--s3-body-size);
+  line-height: 1.66;
   color: var(--text-secondary);
-  line-height: 1.7;
+  text-wrap: pretty;
 }
+
 .section3__farewell {
-  font-size: clamp(var(--size-r-1), 1.6vw, var(--size-r-1-2));
-  font-weight: 600;
-  margin-top: var(--size-r-1-5);
+  margin: clamp(0.9rem, 2.1vh, 1.9rem) 0 0;
+  font-size: var(--s3-emphasis-size);
+  font-weight: 650;
+  line-height: 1.5;
   text-align: center;
   position: relative;
-  line-height: 1.6;
 }
+
 .section3__farewell::before {
   content: '';
   position: absolute;
-  top: calc(var(--size-r-0-75) * -1);
+  top: calc(clamp(0.55rem, 1.2vh, 0.95rem) * -1);
   left: 50%;
   transform: translateX(-50%);
-  width: var(--size-50);
-  height: var(--size-2);
+  inline-size: var(--size-50);
+  block-size: var(--size-2);
+  border-radius: var(--size-2);
   background: linear-gradient(
     90deg,
-    var(--clr-blue-300),
+    var(--clr-blue-400),
     var(--clr-purple-400),
     var(--clr-fuchsia-400)
   );
-  border-radius: var(--size-2);
 }
+
 .section3__cta {
-  margin-top: var(--size-r-1-5);
+  margin-block-start: var(--s3-cta-offset);
   display: flex;
-  gap: var(--size-r-0-75);
   flex-wrap: wrap;
   justify-content: center;
+  gap: var(--s3-cta-gap);
 }
-@media (width <= 768px) {
-  .section3__container {
-    padding: var(--size-r-1-5) var(--size-r-1);
-  }
+
+.section3__cta .btn {
+  flex: 0 1 auto;
+  inline-size: auto;
+  min-inline-size: clamp(8.5rem, 26vw, 11.25rem);
+  white-space: nowrap;
 }
-@media (width <= 600px) {
-  .section3__container {
-    padding: var(--size-r-1-5) var(--size-r-0-8);
+
+@media (width >= 1440px) and (height >= 860px) {
+  .section.section3 {
+    --s3-shell-block: clamp(1.1rem, 2.2vh, 1.9rem);
+    --s3-shell-inline: clamp(1.4rem, 2.8vw, 2.8rem);
+    --s3-gap: clamp(1.15rem, 2.25vh, 2rem);
+    --s3-cta-gap: clamp(1rem, 2vh, 1.8rem);
+    --s3-cta-offset: clamp(1.4rem, 3vh, 2.8rem);
   }
-  .section3__text h1,
-  .section3__text h3 {
-    font-size: var(--size-r-1-15);
-  }
+
   .section3__text p {
-    font-size: var(--size-r-0-8);
+    line-height: 1.72;
+  }
+}
+
+@media (width >= 1920px) and (height >= 980px) {
+  .section.section3 {
+    --s3-shell-block: clamp(1.25rem, 2.5vh, 2.15rem);
+    --s3-shell-inline: clamp(1.7rem, 3.1vw, 3rem);
+    --s3-gap: clamp(1.35rem, 2.6vh, 2.25rem);
+    --s3-heading-size: clamp(1.22rem, 1.05rem + 0.9vw, 1.92rem);
+    --s3-body-size: clamp(1rem, 0.9rem + 0.3vw, 1.14rem);
+    --s3-emphasis-size: clamp(1.06rem, 0.94rem + 0.4vw, 1.32rem);
+    --s3-cta-gap: clamp(1.15rem, 2.3vh, 2rem);
+    --s3-cta-offset: clamp(1.55rem, 3.4vh, 3rem);
+  }
+}
+
+@media (height <= 820px) {
+  .section.section3 {
+    --s3-shell-block: clamp(0.5rem, 1vh, 0.85rem);
+    --s3-gap: clamp(0.58rem, 1.05vh, 1rem);
+    --s3-heading-size: clamp(1.04rem, 0.9rem + 0.54vw, 1.28rem);
+    --s3-body-size: clamp(0.88rem, 0.82rem + 0.2vw, 0.96rem);
+    --s3-emphasis-size: clamp(0.92rem, 0.86rem + 0.22vw, 1.05rem);
+    --s3-cta-gap: clamp(0.5rem, 0.95vh, 0.95rem);
+    --s3-cta-offset: clamp(0.65rem, 1.2vh, 1.2rem);
+  }
+
+  .section3__farewell {
+    margin-top: clamp(0.55rem, 1vh, 1.05rem);
+  }
+}
+
+@media (height <= 700px) {
+  .section3__container {
+    place-items: start center;
+  }
+
+  .section3__content {
+    max-block-size: calc(
+      var(--section-viewport-height) - var(--s3-shell-block)
+    );
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable both-edges;
+    padding-inline-end: clamp(0.12rem, 0.6vw, 0.42rem);
+  }
+}
+
+@container section3 (max-width: 768px) {
+  .section.section3 {
+    --s3-shell-inline: 1rem;
+    --s3-content-max: min(100%, 68ch);
+  }
+}
+
+@container section3 (max-width: 560px) {
+  .section.section3 {
+    --s3-shell-inline: 0.85rem;
+    --s3-heading-size: clamp(0.98rem, 0.86rem + 0.52vw, 1.18rem);
+    --s3-body-size: clamp(0.86rem, 0.82rem + 0.15vw, 0.92rem);
+    --s3-cta-gap: clamp(0.45rem, 1vh, 0.8rem);
+    --s3-cta-offset: clamp(0.55rem, 1.2vh, 0.95rem);
+  }
+
+  .section3__cta .btn {
+    min-inline-size: clamp(8rem, 44vw, 9.75rem);
   }
 }

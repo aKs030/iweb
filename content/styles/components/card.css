@@ -1,7 +1,13 @@
 /* ===== CARD COMPONENT (Base) ===== */
 
 .card {
-  padding: var(--card-pad);
+  --card-padding-responsive: clamp(
+    var(--space-4),
+    calc(var(--space-2) + 2vw),
+    var(--card-pad)
+  );
+
+  padding: var(--card-padding-responsive);
   background: var(--bg-secondary);
   border-radius: var(--radius-lg);
   border: var(--size-1) solid var(--border-color);
@@ -24,16 +30,14 @@
     outline: var(--btn-focus-outline);
     outline-offset: var(--space-1);
   }
+}
 
-  @media (width <= 768px) {
-    padding: var(--spacing-md);
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition: none;
   }
 
-  @media (width <= 600px) {
-    padding: var(--space-6);
-  }
-
-  @media (width <= 480px) {
-    padding: var(--space-4);
+  .card:hover {
+    transform: none;
   }
 }

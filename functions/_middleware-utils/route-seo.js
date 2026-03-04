@@ -180,11 +180,13 @@ async function buildBlogMeta(context, requestUrl, postId) {
       robots: NOINDEX_ROBOTS,
       ogType: 'website',
       image: DEFAULT_BLOG_IMAGE,
+      imageAlt: 'Blog — Abdulkerim Sesli',
       twitterCard: 'summary_large_image',
       partialMeta: {
         title: 'Blog — Abdulkerim Sesli',
         description: 'Der angefragte Blogbeitrag wurde nicht gefunden.',
         image: DEFAULT_BLOG_IMAGE,
+        imageAlt: 'Blog — Abdulkerim Sesli',
         robots: NOINDEX_ROBOTS,
       },
       schema: null,
@@ -205,6 +207,10 @@ async function buildBlogMeta(context, requestUrl, postId) {
     origin,
     normalizeText(post.image, DEFAULT_BLOG_IMAGE),
   );
+  const imageAlt = sanitizeDiscoveryText(
+    post.imageAlt,
+    `${postTitle} - Artikelbild`,
+  );
   const keywordList = Array.isArray(post.keywords)
     ? post.keywords
     : String(post.keywords || '')
@@ -214,6 +220,8 @@ async function buildBlogMeta(context, requestUrl, postId) {
   const keywords = keywordList.length
     ? [...new Set(keywordList)].join(', ')
     : `${postTitle}, Blog, Abdulkerim Sesli`;
+  const publishedTime = normalizeText(post.date);
+  const modifiedTime = normalizeText(post.updated || post.date);
 
   const schema = {
     '@context': 'https://schema.org',
@@ -223,8 +231,8 @@ async function buildBlogMeta(context, requestUrl, postId) {
     headline: postTitle,
     description,
     image: [image],
-    datePublished: normalizeText(post.date),
-    dateModified: normalizeText(post.date),
+    datePublished: publishedTime,
+    dateModified: modifiedTime,
     inLanguage: 'de-DE',
     author: {
       '@type': 'Person',
@@ -252,17 +260,21 @@ async function buildBlogMeta(context, requestUrl, postId) {
     robots: INDEX_ROBOTS,
     ogType: 'article',
     image,
+    imageAlt,
     keywords,
-    publishedTime: normalizeText(post.date),
+    publishedTime,
+    modifiedTime,
     twitterCard: 'summary_large_image',
     partialMeta: {
       title: `${postTitle} — Abdulkerim Sesli`,
       description,
       image,
+      imageAlt,
       type: 'BlogPosting',
       ogType: 'article',
       keywords,
-      datePublished: normalizeText(post.date),
+      datePublished: publishedTime,
+      dateModified: modifiedTime,
     },
     schema,
   };

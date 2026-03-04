@@ -27,19 +27,20 @@
 
 <!-- Theme bootstrap (run before stylesheets) -->
 <script>
-  (function () {
+  (function bootstrapTheme() {
     try {
-      var stored = localStorage.getItem('theme');
-      var prefersLight =
+      var root = document.documentElement;
+      var storedTheme = localStorage.getItem('theme');
+      var prefersLightTheme =
         window.matchMedia &&
         window.matchMedia('(prefers-color-scheme: light)').matches;
-      var theme =
-        stored === 'light' || stored === 'dark'
-          ? stored
-          : prefersLight
+      var resolvedTheme =
+        storedTheme === 'light' || storedTheme === 'dark'
+          ? storedTheme
+          : prefersLightTheme
             ? 'light'
             : 'dark';
-      document.documentElement.setAttribute('data-theme', theme);
+      root.setAttribute('data-theme', resolvedTheme);
     } catch (_err) {
       document.documentElement.setAttribute('data-theme', 'dark');
     }
@@ -63,8 +64,6 @@
   name="viewport"
   content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5"
 />
-<meta name="mobile-web-app-capable" content="yes" />
-<meta name="apple-touch-fullscreen" content="yes" />
 
 <!-- Favicons -->
 <link rel="icon" href="/favicon.ico" sizes="48x48" />
@@ -92,14 +91,6 @@
   title="Abdulkerim Sesli — Blog"
   href="/api/feed.xml"
 />
-<!-- Browser & PWA Integration -->
-<!-- theme-color is managed dynamically by theme-color-manager.js -->
-<meta
-  name="apple-mobile-web-app-status-bar-style"
-  content="black-translucent"
-/>
-<!-- Static fallback: fully transparent theme color for direct loads -->
-<meta name="theme-color" id="meta-theme-color-fallback" content="#00000000" />
 
 <!-- Sitemap -->
 <link rel="sitemap" href="/sitemap-index.xml" type="application/xml" />
@@ -133,13 +124,7 @@
 <!-- Preload Critical App JS -->
 <link rel="modulepreload" href="/content/main.js" />
 <link rel="modulepreload" href="/content/components/head/head-inline.js" />
-<link rel="modulepreload" href="/content/core/theme-color-manager.js" />
 
 <!-- Core Scripts -->
 <script type="module" src="/content/components/head/head-inline.js"></script>
-<script type="module">
-  // Initialize theme color manager immediately for all pages
-  import { initThemeColorManager } from '/content/core/theme-color-manager.js';
-  initThemeColorManager();
-</script>
 <script type="module" src="/content/main.js"></script>

@@ -1,42 +1,24 @@
 body.projekte-page {
-  --projekte-viewport-height: 100vh;
-  min-height: 500vh;
-  height: 500vh;
+  min-height: calc(var(--viewport-height) * 5);
+  height: calc(var(--viewport-height) * 5);
 }
-@supports (height: 100svh) {
-  body.projekte-page {
-    min-height: 500svh;
-    height: 500svh;
-  }
-}
-@supports (height: 100dvh) {
-  body.projekte-page {
-    --projekte-viewport-height: 100dvh;
-    min-height: 500dvh;
-    height: 500dvh;
-  }
+
+body.projekte-page #root,
+body.projekte-page #canvas-container {
+  top: var(--content-top-offset);
+  height: var(--section-viewport-height);
 }
 body.projekte-page #root {
   position: fixed;
-  top: var(--content-top-offset);
   left: 0;
   width: 100%;
-  height: calc(
-    var(--projekte-viewport-height) - var(--content-top-offset) -
-      var(--content-bottom-offset)
-  );
   z-index: var(--z-base);
   pointer-events: none;
 }
 body.projekte-page #canvas-container {
   position: fixed;
-  top: var(--content-top-offset);
   left: 0;
   width: 100%;
-  height: calc(
-    var(--projekte-viewport-height) - var(--content-top-offset) -
-      var(--content-bottom-offset)
-  );
   z-index: var(--z-base);
   background: radial-gradient(
     circle at center,
@@ -486,7 +468,12 @@ body.projekte-page .btn {
   font-weight: 600;
   text-decoration: none;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast),
+    border-color var(--transition-fast),
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
   border: none;
   font-size: var(--size-r-0-95);
   min-height: var(--size-44);
@@ -538,20 +525,8 @@ body.projekte-page .btn-outline:hover {
 }
 @media (max-width: 768px) {
   body.projekte-page {
-    min-height: 430vh;
-    height: 430vh;
-  }
-  @supports (height: 100svh) {
-    body.projekte-page {
-      min-height: 430svh;
-      height: 430svh;
-    }
-  }
-  @supports (height: 100dvh) {
-    body.projekte-page {
-      min-height: 430dvh;
-      height: 430dvh;
-    }
+    min-height: calc(var(--viewport-height) * 4.3);
+    height: calc(var(--viewport-height) * 4.3);
   }
   .hud-panel {
     width: min(94vw, var(--size-540));
@@ -649,21 +624,5 @@ body.projekte-page .btn-outline:hover {
     width: 100%;
     min-height: var(--size-46);
     font-size: var(--size-r-0-92);
-  }
-}
-@media (width<=900px) {
-  body.projekte-page #root {
-    height: calc(
-      var(--projekte-viewport-height) - var(--content-top-offset) -
-        var(--content-bottom-offset)
-    );
-    top: var(--content-top-offset);
-  }
-  body.projekte-page #canvas-container {
-    top: var(--content-top-offset);
-    height: calc(
-      var(--projekte-viewport-height) - var(--content-top-offset) -
-        var(--content-bottom-offset)
-    );
   }
 }

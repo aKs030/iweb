@@ -17,6 +17,15 @@ import {
 } from './blog-utils.js';
 
 const PUBLISHER_LOGO = iconUrl('favicon-512.webp');
+const BLOG_DEFAULT_KEYWORDS = [
+  'Blog',
+  'Abdulkerim Sesli',
+  'Webdesign',
+  'SEO',
+  'Performance',
+  'Online-Marketing',
+].join(', ');
+const BLOG_DEFAULT_IMAGE_ALT = 'Blog — Abdulkerim Sesli';
 
 const setMeta = (selector, attr, value) => {
   if (!value) return;
@@ -39,6 +48,33 @@ const setCanonical = (href) => {
   el.href = href;
 };
 
+const removeMeta = (selector) => {
+  const el = document.head.querySelector(selector);
+  if (el) el.remove();
+};
+
+const removeElementById = (id) => {
+  const el = document.getElementById(id);
+  if (el) el.remove();
+};
+
+const inferImageType = (url = '') => {
+  const clean = String(url || '')
+    .split('#')[0]
+    .split('?')[0];
+  const ext = clean.toLowerCase().split('.').pop();
+  const map = {
+    png: 'image/png',
+    webp: 'image/webp',
+    jpg: 'image/jpeg',
+    jpeg: 'image/jpeg',
+    avif: 'image/avif',
+    gif: 'image/gif',
+    svg: 'image/svg+xml',
+  };
+  return map[ext] || 'image/jpeg';
+};
+
 export const resetBlogPageMeta = () => {
   document.title = BLOG_DEFAULT_TITLE;
   setCanonical(BLOG_HOME_URL);
@@ -47,6 +83,12 @@ export const resetBlogPageMeta = () => {
     'meta[name="description"]',
     'name=description',
     BLOG_DEFAULT_DESCRIPTION,
+  );
+  setMeta('meta[name="keywords"]', 'name=keywords', BLOG_DEFAULT_KEYWORDS);
+  setMeta(
+    'meta[name="robots"]',
+    'name=robots',
+    'index, follow, max-image-preview:large',
   );
   setMeta(
     'meta[name="twitter:title"]',
@@ -63,6 +105,11 @@ export const resetBlogPageMeta = () => {
     'name=twitter:image',
     BLOG_DEFAULT_IMAGE,
   );
+  setMeta(
+    'meta[name="twitter:image:alt"]',
+    'name=twitter:image:alt',
+    BLOG_DEFAULT_IMAGE_ALT,
+  );
   setMeta('meta[name="twitter:url"]', 'name=twitter:url', BLOG_HOME_URL);
   setMeta('meta[property="og:type"]', 'property=og:type', 'website');
   setMeta('meta[property="og:title"]', 'property=og:title', BLOG_DEFAULT_TITLE);
@@ -72,18 +119,38 @@ export const resetBlogPageMeta = () => {
     BLOG_DEFAULT_DESCRIPTION,
   );
   setMeta('meta[property="og:image"]', 'property=og:image', BLOG_DEFAULT_IMAGE);
+  setMeta(
+    'meta[property="og:image:alt"]',
+    'property=og:image:alt',
+    BLOG_DEFAULT_IMAGE_ALT,
+  );
+  setMeta(
+    'meta[property="og:image:type"]',
+    'property=og:image:type',
+    inferImageType(BLOG_DEFAULT_IMAGE),
+  );
   setMeta('meta[property="og:url"]', 'property=og:url', BLOG_HOME_URL);
+
+  removeMeta('meta[property="article:published_time"]');
+  removeMeta('meta[property="article:modified_time"]');
+  removeElementById('blog-post-ldjson');
+  removeElementById('edge-route-schema');
+  removeElementById('edge-partial-meta');
 };
 
 export const updatePostMeta = (post) => {
   const url = buildPostCanonical(post.id);
   const image = toAbsoluteBlogUrl(post.image) || BLOG_DEFAULT_IMAGE;
+  const imageAlt = post.imageAlt || post.title || BLOG_DEFAULT_IMAGE_ALT;
+  const imageType = inferImageType(image);
   const desc = post.seoDescription || post.excerpt || BLOG_DEFAULT_DESCRIPTION;
   const keywords =
     Array.isArray(post.keywords) && post.keywords.length
       ? post.keywords
       : buildFallbackKeywords(post);
   const body = stripMarkdown(post.content || '').slice(0, 5000);
+  const publishedTime = post.date;
+  const modifiedTime = post.updated || post.date;
 
   document.title = `${post.title} — Abdulkerim Sesli`;
   setCanonical(url);
@@ -98,17 +165,32 @@ export const updatePostMeta = (post) => {
   setMeta('meta[name="twitter:title"]', 'name=twitter:title', post.title);
   setMeta('meta[name="twitter:description"]', 'name=twitter:description', desc);
   setMeta('meta[name="twitter:image"]', 'name=twitter:image', image);
+  setMeta('meta[name="twitter:image:alt"]', 'name=twitter:image:alt', imageAlt);
   setMeta('meta[name="twitter:url"]', 'name=twitter:url', url);
   setMeta('meta[property="og:type"]', 'property=og:type', 'article');
   setMeta('meta[property="og:title"]', 'property=og:title', post.title);
   setMeta('meta[property="og:description"]', 'property=og:description', desc);
   setMeta('meta[property="og:image"]', 'property=og:image', image);
+  setMeta('meta[property="og:image:alt"]', 'property=og:image:alt', imageAlt);
+  setMeta(
+    'meta[property="og:image:type"]',
+    'property=og:image:type',
+    imageType,
+  );
   setMeta('meta[property="og:url"]', 'property=og:url', url);
   setMeta(
     'meta[property="article:published_time"]',
     'property=article:published_time',
-    post.date,
+    publishedTime,
   );
+  setMeta(
+    'meta[property="article:modified_time"]',
+    'property=article:modified_time',
+    modifiedTime,
+  );
+
+  removeElementById('edge-route-schema');
+  removeElementById('edge-partial-meta');
 
   let script = document.getElementById('blog-post-ldjson');
   if (!script) {
@@ -128,8 +210,8 @@ export const updatePostMeta = (post) => {
     articleSection: post.category,
     keywords: keywords.join(', '),
     image: image ? [image] : [],
-    datePublished: post.date,
-    dateModified: post.date,
+    datePublished: publishedTime,
+    dateModified: modifiedTime,
     inLanguage: 'de-DE',
     author: [
       { '@type': 'Person', name: 'Abdulkerim Sesli', url: `${BLOG_BASE_URL}/` },

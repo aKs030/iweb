@@ -19,8 +19,8 @@
 
   /* Smooth position transitions for scroll-based context changes */
   transition:
-    bottom 0.6s cubic-bezier(0.2, 0.8, 0.2, 1),
-    top 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+    bottom 0.6s var(--ease-standard),
+    top 0.6s var(--ease-standard);
 }
 
 /* ── Robot Positionen pro Seite ─────────────────────────────────────────────
@@ -793,7 +793,12 @@
   justify-content: center;
   cursor: pointer;
   opacity: 0;
-  transition: all 0.2s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease,
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease;
   box-shadow: 0 var(--size-2) var(--size-5)
     color-mix(in srgb, var(--clr-black) 30%, transparent);
 }
@@ -839,7 +844,7 @@
   /* Responsive Dimensions */
   width: min(92vw, 420px);
   height: min(70vh, 560px);
-  max-height: calc(100dvh - 24px);
+  max-height: calc(var(--viewport-height) - 24px);
   min-height: 360px;
 
   /* Advanced Glass Effect */
@@ -874,8 +879,8 @@
      Bei VT-Support werden diese Transitions per JS deaktiviert,
      damit die VT-Animation (scale+fade) allein wirkt. */
   transition:
-    opacity 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
-    transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1),
+    opacity 0.4s var(--ease-standard),
+    transform 0.4s var(--ease-standard),
     visibility 0.4s,
     backdrop-filter 0.4s ease,
     -webkit-backdrop-filter 0.4s ease;
@@ -1001,7 +1006,12 @@
   font-size: var(--size-r-0-72, 0.72rem);
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition:
+    background-color 0.2s var(--ease-standard),
+    border-color 0.2s var(--ease-standard),
+    color 0.2s var(--ease-standard),
+    transform 0.2s var(--ease-standard),
+    box-shadow 0.2s var(--ease-standard);
 }
 
 .chat-header-btn:hover {
@@ -1057,7 +1067,11 @@
   justify-content: center;
   border-radius: 50%;
   font-size: var(--size-r-1-2);
-  transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition:
+    background-color 0.2s var(--ease-standard),
+    border-color 0.2s var(--ease-standard),
+    color 0.2s var(--ease-standard),
+    transform 0.2s var(--ease-standard);
 }
 
 .chat-close-btn:hover {
@@ -1114,7 +1128,7 @@
   border-radius: var(--size-18);
   font-size: var(--size-r-0-95);
   line-height: 1.55;
-  animation: messageFadeIn 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  animation: messageFadeIn 0.3s var(--ease-standard);
   overflow-wrap: break-word;
   position: relative;
   box-shadow: 0 var(--size-2) var(--size-8)
@@ -1223,7 +1237,10 @@
   text-decoration: none;
   border-bottom: var(--size-1) dashed
     color-mix(in srgb, var(--robot-sky) 40%, transparent);
-  transition: all 0.2s;
+  transition:
+    color 0.2s ease,
+    border-bottom-color 0.2s ease,
+    opacity 0.2s ease;
   padding-bottom: var(--size-1);
 }
 
@@ -1278,7 +1295,7 @@
 /* --- INPUT AREA --- */
 .chat-input-area {
   padding: var(--size-16) var(--size-18);
-  padding-bottom: calc(var(--size-16) + env(safe-area-inset-bottom));
+  padding-bottom: calc(var(--size-16) + var(--safe-bottom));
   border-top: var(--size-1) solid
     color-mix(in srgb, var(--robot-cyan) 10%, transparent);
   background:
@@ -1310,7 +1327,12 @@
   font-family: inherit;
   font-size: var(--size-r-0-95);
   outline: none;
-  transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition:
+    background-color 0.25s var(--ease-standard),
+    border-color 0.25s var(--ease-standard),
+    box-shadow 0.25s var(--ease-standard),
+    transform 0.25s var(--ease-standard),
+    color 0.25s var(--ease-standard);
   box-shadow:
     inset 0 var(--size-2) var(--size-4)
       color-mix(in srgb, var(--clr-black) 10%, transparent),
@@ -1342,7 +1364,12 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition:
+    transform 0.3s var(--ease-bounce-soft),
+    box-shadow 0.3s var(--ease-bounce-soft),
+    background 0.3s var(--ease-bounce-soft),
+    border-color 0.3s var(--ease-bounce-soft),
+    color 0.3s var(--ease-bounce-soft);
   box-shadow: 0 var(--size-4) var(--size-15)
     color-mix(in srgb, var(--robot-cyan) 30%, transparent);
   border: var(--size-1) solid
@@ -1951,13 +1978,13 @@
   .robot-chat-window {
     width: min(96vw, 430px);
     max-width: 430px;
-    height: min(78dvh, 620px);
-    min-height: 56dvh;
-    max-height: calc(100dvh - 16px);
+    height: min(calc(var(--viewport-height) * 0.78), 620px);
+    min-height: calc(var(--viewport-height) * 0.56);
+    max-height: calc(var(--viewport-height) - 16px);
     top: auto;
     left: auto;
     right: 2vw;
-    bottom: max(8px, env(safe-area-inset-bottom));
+    bottom: max(var(--size-8), var(--safe-bottom));
     transform: translateY(10px) scale(0.97);
     transform-origin: bottom right;
     border-radius: var(--size-20);
@@ -1972,7 +1999,7 @@
 
   .chat-input-area {
     padding: var(--size-12);
-    padding-bottom: calc(var(--size-12) + env(safe-area-inset-bottom));
+    padding-bottom: calc(var(--size-12) + var(--safe-bottom));
     gap: var(--size-8);
   }
 
@@ -2068,7 +2095,10 @@
 }
 
 .robot-finger {
-  transition: all 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease,
+    fill 0.2s ease;
   transform-origin: center;
 }
 
@@ -2431,7 +2461,12 @@
   align-items: center;
   justify-content: center;
   font-size: var(--size-r-1, 1rem);
-  transition: all 0.25s ease;
+  transition:
+    background-color 0.25s ease,
+    border-color 0.25s ease,
+    color 0.25s ease,
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
   flex-shrink: 0;
   padding: 0;
 }
@@ -2485,7 +2520,10 @@
   padding: var(--size-4);
   line-height: 1;
   border-radius: 50%;
-  transition: all 0.2s;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
 }
 
 .chat-preview-remove:hover {

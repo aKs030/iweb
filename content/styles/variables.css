@@ -3,6 +3,23 @@
  * Tokens are generated from ./tokens/*.json via npm run styles:generate
  */
 
+:root {
+  --viewport-height: 100vh;
+  --section-viewport-height: calc(
+    var(--viewport-height) - var(--content-top-offset) -
+      var(--content-bottom-offset)
+  );
+  --full-section-viewport-height: calc(
+    var(--viewport-height) - var(--content-top-offset)
+  );
+}
+
+@supports (height: 100dvh) {
+  :root {
+    --viewport-height: 100dvh;
+  }
+}
+
 @media (width <= 768px) {
   :root {
     --menu-height: var(--menu-height-mobile);

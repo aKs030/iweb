@@ -1,5 +1,37 @@
 /* Auto-generated utility classes. Do not edit directly. */
 
+.flex {
+  display: flex;
+}
+
+.grid {
+  display: grid;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.w-full {
+  width: 100%;
+}
+
+.h-full {
+  height: 100%;
+}
+
+.h-screen {
+  height: var(--viewport-height);
+}
+
+.min-h-screen {
+  min-height: var(--viewport-height);
+}
+
 .pointer-events-none {
   pointer-events: none;
 }

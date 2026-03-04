@@ -1,96 +1,231 @@
 /**
  * View Transitions API - Progressive Enhancement
  *
- * Bietet eine saubere Utility-Funktion `withViewTransition()` zum Wrappen
- * beliebiger DOM-Mutationen in eine View Transition (Crossfade/Morph).
+ * Lightweight helper for wrapping DOM updates in View Transitions and
+ * a safe same-page scroll interceptor for anchor links.
  *
- * Diese Datei enthält KEIN SPA-Routing. Navigation zwischen Unterseiten
- * wird komplett dem Browser überlassen (normaler MPA-Seitenaufruf).
- *
- * @version 3.1.0
+ * @version 4.1.0
  */
 
 import { handleSamePageScroll } from './utils.js';
 
+let isInitialized = false;
+let activeTransition = null;
+
 /**
- * Check if the View Transitions API is supported
  * @returns {boolean}
  */
 export const isSupported = () =>
+  typeof document !== 'undefined' &&
   typeof document.startViewTransition === 'function';
 
 /**
+ * @returns {boolean}
+ */
+const supportsTypedTransitions = () =>
+  typeof ViewTransition !== 'undefined' &&
+  typeof document?.startViewTransition === 'function';
+
+/**
+ * @param {unknown} error
+ * @returns {boolean}
+ */
+const isAbortError = (error) =>
+  !!error &&
+  typeof error === 'object' &&
+  'name' in error &&
+  error.name === 'AbortError';
+
+/**
+ * @param {unknown} value
+ * @returns {string[]}
+ */
+const normalizeTypes = (value) => {
+  if (!Array.isArray(value)) return [];
+  const unique = new Set();
+
+  for (const entry of value) {
+    if (typeof entry !== 'string') continue;
+    const token = entry.trim();
+    if (!token) continue;
+    unique.add(token);
+    if (unique.size >= 8) break;
+  }
+
+  return [...unique];
+};
+
+/**
+ * @param {Promise<unknown>|undefined|null} promise
+ */
+const silencePromiseRejection = (promise) => {
+  promise?.catch(() => {});
+};
+
+/**
+ * @param {ViewTransition|undefined} transition
+ */
+const guardTransitionPromises = (transition) => {
+  silencePromiseRejection(transition?.ready);
+  silencePromiseRejection(transition?.updateCallbackDone);
+};
+
+/**
+ * @param {() => void|Promise<void>} update
+ * @param {string[]} types
+ * @returns {ViewTransition}
+ */
+const startTransition = (update, types) => {
+  if (types.length && supportsTypedTransitions()) {
+    return document.startViewTransition({
+      update,
+      types,
+    });
+  }
+  return document.startViewTransition(update);
+};
+
+/**
+ * @returns {Promise<void>}
+ */
+const waitForActiveTransition = async () => {
+  if (!activeTransition) return;
+  try {
+    await activeTransition;
+  } catch {
+    /* ignore previous transition failures */
+  }
+};
+
+/**
+ * @param {Promise<void>} finishedPromise
+ */
+const trackActiveTransition = (finishedPromise) => {
+  const tracked = finishedPromise.finally(() => {
+    if (activeTransition === tracked) {
+      activeTransition = null;
+    }
+  });
+
+  activeTransition = tracked;
+  silencePromiseRejection(tracked);
+};
+
+/**
  * Wrap a DOM mutation in a View Transition if supported.
- * Falls back to executing the callback directly if VT is not available.
+ * Calls are serialized so a new transition does not abort the previous one.
  *
- * @param {() => void | Promise<void>} callback - DOM mutation function
- * @param {object} [options]
- * @param {string[]} [options.types] - Transition type hints (e.g. ['chat-open'])
+ * @param {() => void|Promise<void>} callback
+ * @param {{ types?: string[] }} [options]
  * @returns {Promise<void>}
  */
 export async function withViewTransition(callback, options = {}) {
-  if (!isSupported()) {
-    await callback();
-    return;
-  }
+  if (typeof callback !== 'function') return;
+
   try {
-    // Präferiert die Object-Form (Chrome 126+) für Typed-VTs,
-    // Fallback auf Function-Form + manuelle types.
+    await waitForActiveTransition();
+
+    if (!isSupported()) {
+      await callback();
+      return;
+    }
+
+    const types = normalizeTypes(options.types);
     let transition;
-    const hasObjectForm = (() => {
-      try {
-        // Feature-detect: object form throws if not supported
-        return typeof ViewTransition !== 'undefined';
-      } catch {
-        return false;
-      }
-    })();
+    let updateExecuted = false;
 
-    if (options.types?.length && hasObjectForm) {
-      try {
-        transition = document.startViewTransition({
-          update: () => callback(),
-          types: options.types,
-        });
-      } catch {
-        // Object-Form nicht unterstützt, Fallback
-        transition = document.startViewTransition(() => callback());
-      }
-    } else {
-      transition = document.startViewTransition(() => callback());
+    const update = async () => {
+      updateExecuted = true;
+      await callback();
+    };
+
+    try {
+      transition = startTransition(update, types);
+    } catch {
+      await callback();
+      return;
     }
 
-    // Fallback: types manuell setzen (Chrome 125)
-    if (options.types && transition.types && !transition.types.size) {
-      for (const t of options.types) transition.types.add(t);
-    }
+    guardTransitionPromises(transition);
 
-    await transition.finished;
+    const finishedPromise = Promise.resolve(transition?.finished);
+    trackActiveTransition(finishedPromise);
+
+    try {
+      if (types.length && transition?.types && transition.types.size === 0) {
+        for (const token of types) transition.types.add(token);
+      }
+
+      await finishedPromise;
+    } catch (error) {
+      if (!updateExecuted && !isAbortError(error)) {
+        await callback();
+      }
+    }
   } catch {
-    // VT fehlgeschlagen — Callback direkt ausführen (Progressive Enhancement)
-    await callback();
+    /* keep transition helper non-throwing for fire-and-forget call sites */
   }
 }
 
 /**
- * Initialize View Transitions — nur Same-Page-Scroll-Handling.
- * Kein SPA-Swap, keine Interceptors für Seitennavigation.
+ * @param {MouseEvent} event
+ * @returns {HTMLAnchorElement|null}
+ */
+function getEventAnchor(event) {
+  const path = event.composedPath?.() || [];
+
+  for (const node of path) {
+    if (node instanceof HTMLAnchorElement && node.hasAttribute('href')) {
+      return node;
+    }
+  }
+
+  const target = event.target;
+  if (!(target instanceof Element)) return null;
+
+  return target.closest('a[href]');
+}
+
+/**
+ * @param {HTMLAnchorElement} link
+ * @returns {boolean}
+ */
+function shouldIgnoreLink(link) {
+  const href = link.getAttribute('href') || '';
+  if (!href) return true;
+  if (href.startsWith('#')) return true;
+  if (href.startsWith('mailto:') || href.startsWith('tel:')) return true;
+  if (href.startsWith('javascript:')) return true;
+  if (link.hasAttribute('download')) return true;
+  if (link.target && link.target !== '_self') return true;
+  if (link.rel.includes('external')) return true;
+
+  return false;
+}
+
+/**
+ * Intercepts same-page links so scroll-to-top can be handled smoothly.
+ *
+ * @param {MouseEvent} event
+ */
+function onDocumentClick(event) {
+  if (event.defaultPrevented) return;
+  if (event.button !== 0) return;
+  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+
+  const link = getEventAnchor(event);
+  if (!link || shouldIgnoreLink(link)) return;
+
+  if (handleSamePageScroll(link.href)) {
+    event.preventDefault();
+  }
+}
+
+/**
+ * Initialize View Transitions support hooks.
  */
 export function initViewTransitions() {
-  // Same-page scroll-to-top bei Klick auf Home-Links
-  document.addEventListener('click', (e) => {
-    const link = e.target.closest('a[href]');
-    if (!link) return;
-
-    try {
-      const url = new URL(link.href, location.origin);
-      if (url.origin !== location.origin) return;
-
-      if (handleSamePageScroll(url.href)) {
-        e.preventDefault();
-      }
-    } catch {
-      // Ungültige URL — ignorieren
-    }
-  });
+  if (isInitialized) return;
+  isInitialized = true;
+  document.addEventListener('click', onDocumentClick);
 }

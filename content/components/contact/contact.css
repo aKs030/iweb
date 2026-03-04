@@ -6,7 +6,7 @@ body.contact-page {
   color: var(--text-primary);
   font-family: var(--font-inter);
   line-height: 1.6;
-  min-height: 100vh;
+  min-height: var(--viewport-height);
   display: flex;
   flex-direction: column;
   padding-top: calc(var(--menu-height) + var(--space-1));

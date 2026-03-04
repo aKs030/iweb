@@ -59,11 +59,10 @@ blog/
 
 ### Components
 
-**`BlogComponents.js`** (89 lines)
+**`BlogComponents.js`** (67 lines)
 
 - `ProgressiveImage` - Lazy loading images
 - `ScrollToTop` - Scroll button
-- `ReadingProgress` - Progress bar
 
 ## Usage
 
@@ -79,7 +78,6 @@ The blog is a self-contained React application that:
 
 - ✅ 3D particle system background
 - ✅ Progressive image loading
-- ✅ Reading progress indicator
 - ✅ Mobile-responsive filters
 - ✅ SEO-optimized with Schema.org
 - ✅ Client-side routing
