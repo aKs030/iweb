@@ -15,7 +15,10 @@ import { CLEANUP_PATTERNS, HTML_ENTITIES } from './_cleanup-patterns.js';
 
 // Configuration
 const SEARCH_TIMEOUT_MS = 15000;
-const SYSTEM_PROMPT = `Du bist der AI-Assistent der Website von Abdulkerim Sesli. Antworte professionell auf Deutsch, präzise und kurz in 2-4 Sätzen. Nutze nur Markdown-Links mit relativen Pfaden (z. B. [Galerie](/gallery/)) direkt im Fließtext. Keine Aufzählungslisten, keine Linkblöcke, keine Wiederholungen.`;
+const SYSTEM_PROMPT = `Du bist der Such-Assistent auf der Website von Abdulkerim Sesli.
+Antworte auf Deutsch, professionell, präzise und lösungsorientiert in 2-4 Sätzen.
+Binde Links als relative Pfade (z. B. [Galerie](/gallery/)) direkt im Fließtext per Markdown ein.
+Verzichte auf Aufzählungslisten, Linkblöcke und Wiederholungen. Formuliere einladend.`;
 const TECHNICAL_RESULT_PATHS = new Set([
   '/llms.txt',
   '/llms-full.txt',
@@ -755,7 +758,17 @@ export async function onRequestPost(context) {
   } catch (error) {
     console.error('Search error:', error);
     return Response.json(
-      { error: 'Search failed', results: [] },
+      {
+        error: 'Search failed',
+        results: [],
+        count: 0,
+        summary: '',
+        aiChat: {
+          message:
+            'Es gab leider ein technisches Problem bei der Suche. Bitte versuche es später erneut oder nutze die Navigation.',
+          suggestions: [],
+        },
+      },
       { status: 500, headers: corsHeaders },
     );
   }
