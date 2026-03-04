@@ -2,7 +2,7 @@ export const CONFIG = {
   EARTH: {
     RADIUS: 3.5,
     SEGMENTS: 64,
-    SEGMENTS_MOBILE: 64, // Same geometry for mobile (was 32)
+    SEGMENTS_MOBILE: 32, // Reduced geometry for mobile to save performance
     BUMP_SCALE: 0.008,
     EMISSIVE_INTENSITY: 0.2,
     EMISSIVE_PULSE_SPEED: 0.3,

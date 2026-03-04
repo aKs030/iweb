@@ -1200,11 +1200,13 @@ function getOptimizedConfig(capabilities) {
   }
   if (capabilities.isMobile) {
     return {
-      EARTH: { ...CONFIG.EARTH, SEGMENTS_MOBILE: 64 },
-      STARS: { ...CONFIG.STARS, COUNT: 2000 },
+      EARTH: { ...CONFIG.EARTH, SEGMENTS_MOBILE: 32 },
+      STARS: { ...CONFIG.STARS, COUNT: 1500 },
       PERFORMANCE: {
         ...CONFIG.PERFORMANCE,
-        PIXEL_RATIO: Math.min(window.devicePixelRatio || 1, 3),
+        // Capping Pixel Ratio on mobile devices to 1.5 to prevent GPU overheating on high DPI devices
+        // (like iPhone 17 Pro Max) which causes battery drain and thermal throttling.
+        PIXEL_RATIO: Math.min(window.devicePixelRatio || 1, 1.5),
       },
     };
   }
