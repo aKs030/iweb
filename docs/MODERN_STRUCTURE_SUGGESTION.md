@@ -33,14 +33,17 @@ Hier ist ein Konzept, wie man die Struktur "modernisieren" und aufräumen kann, 
 ## 2. Warum diese Änderung?
 
 ### A. Trennung von Source und Output
-- **Aktuell:** `pages_build_output_dir: "."` bedeutet, dass beim Deployment das *komplette Repository* (inklusive `scripts/`, `docs/`, `package.json` etc.) als Website bereitgestellt werden kann, sofern es nicht explizit durch eine `.cfignore` gefiltert wird.
+
+- **Aktuell:** `pages_build_output_dir: "."` bedeutet, dass beim Deployment das _komplette Repository_ (inklusive `scripts/`, `docs/`, `package.json` etc.) als Website bereitgestellt werden kann, sofern es nicht explizit durch eine `.cfignore` gefiltert wird.
 - **Neu:** Durch ein explizites Output-Verzeichnis (z.B. `public/` oder ein generiertes `dist/`) wird nur das ausgeliefert, was wirklich für den Browser bestimmt ist.
 
 ### B. Verbesserte Sicherheit & Hygiene
+
 - Keine Gefahr mehr, versehentlich Source-Maps, interne Skripte oder Konfigurationen (`eslint.config.mjs`, `wrangler.jsonc`) zu veröffentlichen.
 - Eine `.cfignore` wird weitestgehend obsolet (oder zumindest deutlich kleiner).
 
 ### C. Zukunftsfähigkeit
+
 - Falls das Projekt wächst und ein Bundler (wie Vite, Rollup oder ESBuild) eingeführt werden soll, ist der Code bereits im `src/`-Ordner isoliert. Der Bundler würde dann von `src/` nach `dist/` (oder `public/`) kompilieren.
 - Bessere Übersichtlichkeit im Root-Verzeichnis.
 
@@ -53,7 +56,7 @@ Hier ist ein Konzept, wie man die Struktur "modernisieren" und aufräumen kann, 
    - Die Ordner `content/`, `pages/` und `styleguide/` in `src/` verschieben.
 
 2. **Pfade in HTML & Skripten anpassen:**
-   - In den HTML-Dateien (jetzt in `public/`) müssen die relativen Pfade zu den JS/CSS-Dateien angepasst werden (z.B. `<script src="/src/content/main.js"></script>` oder je nach Routing-Setup). *Hinweis: Wenn kein Bundler genutzt wird, müssen die `src/` Dateien auch ins `public/` kopiert oder das Routing im Dev-Server entsprechend konfiguriert werden.*
+   - In den HTML-Dateien (jetzt in `public/`) müssen die relativen Pfade zu den JS/CSS-Dateien angepasst werden (z.B. `<script src="/src/content/main.js"></script>` oder je nach Routing-Setup). _Hinweis: Wenn kein Bundler genutzt wird, müssen die `src/` Dateien auch ins `public/` kopiert oder das Routing im Dev-Server entsprechend konfiguriert werden._
 
 3. **`wrangler.jsonc` anpassen:**
    - `pages_build_output_dir` auf `"public"` (oder `"dist"`, falls ein Build-Step eingeführt wird) setzen.
@@ -81,4 +84,5 @@ Da das Projekt aktuell Vanilla JS ohne Bundler verwendet (und Dateien wie `conte
 ├── package.json
 └── wrangler.jsonc
 ```
+
 Hierbei würde alles, was in den Browser gelangt, einfach in den `public/` Ordner verschoben. In der `wrangler.jsonc` wird `"pages_build_output_dir": "public"` gesetzt. Das ändert keine relativen Importe innerhalb des Frontends (da `content/` und `pages/` nebeneinander in `public/` liegen) und erfordert die geringsten Code-Anpassungen, isoliert aber das Tooling (`scripts`, `docs`, Configs) vom Deployment.
