@@ -1,9 +1,6 @@
 import { escapeXml, resolveOrigin } from './api/_xml-utils.js';
-import {
-  buildSitemapHeaders,
-  respondWithSnapshotOr503,
-  saveSitemapSnapshot,
-} from './api/_sitemap-snapshot.js';
+import { respondWithSnapshotOr503 } from './api/_sitemap-snapshot.js';
+import { saveAndRespondSitemapXml } from './api/_sitemap-response.js';
 
 const SITEMAP_PATHS = [
   '/sitemap.xml',
@@ -30,10 +27,11 @@ export async function onRequest(context) {
       '</sitemapindex>',
     ].join('\n');
 
-    await saveSitemapSnapshot(context.env, SNAPSHOT_NAME, xml);
-
-    return new Response(xml, {
-      headers: buildSitemapHeaders(CACHE_CONTROL),
+    return saveAndRespondSitemapXml({
+      env: context.env,
+      name: SNAPSHOT_NAME,
+      xml,
+      cacheControl: CACHE_CONTROL,
     });
   } catch {
     return respondWithSnapshotOr503({

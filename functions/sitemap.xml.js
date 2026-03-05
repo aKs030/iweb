@@ -1,10 +1,7 @@
 import { ROUTES } from '../content/config/routes-config.js';
 import { escapeXml, normalizePath, resolveOrigin } from './api/_xml-utils.js';
-import {
-  buildSitemapHeaders,
-  respondWithSnapshotOr503,
-  saveSitemapSnapshot,
-} from './api/_sitemap-snapshot.js';
+import { respondWithSnapshotOr503 } from './api/_sitemap-snapshot.js';
+import { dedupeBy, saveAndRespondSitemapXml } from './api/_sitemap-response.js';
 import {
   BLOG_INDEX_PATH,
   PROJECT_APPS_PATH,
@@ -121,14 +118,7 @@ export async function onRequest(context) {
     const blogEntries = buildBlogEntries(blogPosts, today);
     const appEntries = buildProjectAppEntries(projectApps, today);
     const allEntries = [...staticEntries, ...blogEntries, ...appEntries];
-
-    const dedupedEntries = [];
-    const seen = new Set();
-    for (const entry of allEntries) {
-      if (seen.has(entry.path)) continue;
-      seen.add(entry.path);
-      dedupedEntries.push(entry);
-    }
+    const dedupedEntries = dedupeBy(allEntries, (entry) => entry.path);
 
     const xml = [
       '<?xml version="1.0" encoding="UTF-8"?>',
@@ -137,10 +127,11 @@ export async function onRequest(context) {
       '</urlset>',
     ].join('\n');
 
-    await saveSitemapSnapshot(context.env, SNAPSHOT_NAME, xml);
-
-    return new Response(xml, {
-      headers: buildSitemapHeaders(CACHE_CONTROL),
+    return saveAndRespondSitemapXml({
+      env: context.env,
+      name: SNAPSHOT_NAME,
+      xml,
+      cacheControl: CACHE_CONTROL,
     });
   } catch {
     return respondWithSnapshotOr503({

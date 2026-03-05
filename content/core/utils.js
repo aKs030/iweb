@@ -232,7 +232,7 @@ export function upsertHeadLink(options = {}) {
   } = options;
 
   if (!href || !rel) return null;
-  try {
+  return withSafeHeadOperation(() => {
     const selector = as
       ? `link[rel="${rel}"][href="${href}"][as="${as}"]`
       : `link[rel="${rel}"][href="${href}"]`;
@@ -258,11 +258,8 @@ export function upsertHeadLink(options = {}) {
         onload
       );
     }
-    document.head.appendChild(el);
-    return el;
-  } catch {
-    return null;
-  }
+    return appendHeadNode(el);
+  });
 }
 
 /**
@@ -277,7 +274,7 @@ export function upsertHeadLink(options = {}) {
  */
 export function upsertMeta(nameOrProperty, content, isProperty = false) {
   if (!content) return null;
-  try {
+  return withSafeHeadOperation(() => {
     const selector = isProperty
       ? `meta[property="${nameOrProperty}"]`
       : `meta[name="${nameOrProperty}"]`;
@@ -289,8 +286,18 @@ export function upsertMeta(nameOrProperty, content, isProperty = false) {
     el = document.createElement('meta');
     el.setAttribute(isProperty ? 'property' : 'name', nameOrProperty);
     el.setAttribute('content', content);
-    document.head.appendChild(el);
-    return el;
+    return appendHeadNode(el);
+  });
+}
+
+function appendHeadNode(el) {
+  document.head.appendChild(el);
+  return el;
+}
+
+function withSafeHeadOperation(fn) {
+  try {
+    return fn();
   } catch {
     return null;
   }
@@ -330,32 +337,166 @@ export function escapeHTML(text) {
   return text.replace(ESCAPE_RE, (c) => HTML_ESCAPES[c]);
 }
 
-/** @type {any} */
-let _DOMPurify = null;
+const DEFAULT_ALLOWED_TAGS = new Set([
+  'a',
+  'b',
+  'blockquote',
+  'br',
+  'code',
+  'div',
+  'em',
+  'h1',
+  'h2',
+  'h3',
+  'h4',
+  'h5',
+  'h6',
+  'hr',
+  'i',
+  'img',
+  'li',
+  'ol',
+  'p',
+  'pre',
+  'small',
+  'span',
+  'strong',
+  'sub',
+  'sup',
+  'table',
+  'tbody',
+  'td',
+  'th',
+  'thead',
+  'tr',
+  'u',
+  'ul',
+]);
+const DEFAULT_ALLOWED_ATTR = new Set([
+  'alt',
+  'aria-label',
+  'class',
+  'decoding',
+  'height',
+  'href',
+  'id',
+  'lang',
+  'loading',
+  'rel',
+  'role',
+  'src',
+  'target',
+  'title',
+  'width',
+]);
+const URL_ATTRS = new Set(['href', 'src']);
+const SAFE_URL_RE =
+  /^(?:https?:|mailto:|tel:|\/|#|data:image\/(?:png|gif|jpeg|jpg|webp|svg\+xml);base64,)/i;
 
-/**
- * Eagerly initialise DOMPurify once (called from head-inline or main).
- * Modules that need sanitisation early can `await initDOMPurify()`.
- * @returns {Promise<void>}
- */
 export async function initDOMPurify() {
-  if (_DOMPurify) return;
-  try {
-    const mod = await import('dompurify');
-    _DOMPurify = mod.default || mod;
-  } catch {
-    log.warn('DOMPurify could not be loaded — falling back to escapeHTML');
+  // API compatibility for existing startup flow; sanitizer is dependency-free now.
+}
+
+function normalizeSanitizeConfig(options = {}) {
+  const allowedTags = new Set(
+    Array.isArray(options.ALLOWED_TAGS) && options.ALLOWED_TAGS.length
+      ? options.ALLOWED_TAGS
+      : [...DEFAULT_ALLOWED_TAGS],
+  );
+  const allowedAttr = new Set(
+    Array.isArray(options.ALLOWED_ATTR) && options.ALLOWED_ATTR.length
+      ? options.ALLOWED_ATTR
+      : [...DEFAULT_ALLOWED_ATTR],
+  );
+  return { allowedTags, allowedAttr };
+}
+
+function isSafeUrl(value) {
+  const normalized = String(value || '').trim();
+  if (!normalized) return false;
+  return SAFE_URL_RE.test(normalized);
+}
+
+function sanitizeAttrValue(name, value) {
+  if (!URL_ATTRS.has(name)) return String(value);
+  if (!isSafeUrl(value)) return '';
+  return String(value);
+}
+
+function enforceAnchorRel(el) {
+  if (!(el instanceof HTMLAnchorElement)) return;
+  if (el.getAttribute('target') !== '_blank') return;
+  const rel = String(el.getAttribute('rel') || '')
+    .split(/\s+/)
+    .filter(Boolean);
+  const merged = new Set([...rel, 'noopener', 'noreferrer']);
+  el.setAttribute('rel', [...merged].join(' '));
+}
+
+function sanitizeNode(node, config) {
+  if (!node) return null;
+
+  if (node.nodeType === 3) {
+    return document.createTextNode(node.textContent || '');
   }
+
+  if (node.nodeType !== 1) return null;
+
+  const tag = String(node.nodeName || '').toLowerCase();
+  if (!config.allowedTags.has(tag)) {
+    const fragment = document.createDocumentFragment();
+    node.childNodes.forEach((child) => {
+      const sanitizedChild = sanitizeNode(child, config);
+      if (sanitizedChild) fragment.appendChild(sanitizedChild);
+    });
+    return fragment;
+  }
+
+  const el = document.createElement(tag);
+  const attrs = Array.from(node.attributes || []);
+  attrs.forEach(({ name, value }) => {
+    const attr = String(name || '').toLowerCase();
+    if (!attr || attr.startsWith('on')) return;
+    if (!config.allowedAttr.has(attr)) return;
+    const sanitizedValue = sanitizeAttrValue(attr, value);
+    if (!sanitizedValue) return;
+    el.setAttribute(attr, sanitizedValue);
+  });
+
+  enforceAnchorRel(el);
+
+  node.childNodes.forEach((child) => {
+    const sanitizedChild = sanitizeNode(child, config);
+    if (sanitizedChild) el.appendChild(sanitizedChild);
+  });
+
+  return el;
 }
 
 export function sanitizeHTML(html, options = {}) {
   if (html == null) return '';
+  const source = String(html);
+  if (!source) return '';
+
+  if (typeof document === 'undefined') {
+    return escapeHTML(source);
+  }
+
   try {
-    if (_DOMPurify) return _DOMPurify.sanitize(String(html), options);
-    // DOMPurify not loaded yet — safe-escape as fallback
-    return escapeHTML(String(html));
-  } catch {
-    return escapeHTML(String(html));
+    const template = document.createElement('template');
+    template.innerHTML = source;
+    const config = normalizeSanitizeConfig(options);
+    const out = document.createElement('div');
+
+    template.content.childNodes.forEach((child) => {
+      const sanitized = sanitizeNode(child, config);
+      if (sanitized) out.appendChild(sanitized);
+    });
+
+    return out.innerHTML;
+  } catch (err) {
+    log.warn('sanitizeHTML failed, returning escaped text', err);
+    return escapeHTML(source);
   }
 }
 
@@ -371,14 +512,18 @@ export class TimerManager {
     this.rafIds = new Set();
   }
 
+  _runSafely(label, fn) {
+    try {
+      fn();
+    } catch (err) {
+      log.error(`[${this.name}] ${label} error:`, err);
+    }
+  }
+
   setTimeout(fn, delay) {
     const id = setTimeout(() => {
       this.timers.delete(id);
-      try {
-        fn();
-      } catch (err) {
-        log.error(`[${this.name}] setTimeout error:`, err);
-      }
+      this._runSafely('setTimeout', fn);
     }, delay);
     this.timers.add(id);
     return id;
@@ -386,11 +531,7 @@ export class TimerManager {
 
   setInterval(fn, delay) {
     const id = setInterval(() => {
-      try {
-        fn();
-      } catch (err) {
-        log.error(`[${this.name}] setInterval error:`, err);
-      }
+      this._runSafely('setInterval', fn);
     }, delay);
     this.intervals.add(id);
     return id;
@@ -399,11 +540,7 @@ export class TimerManager {
   requestAnimationFrame(fn) {
     const id = requestAnimationFrame(() => {
       this.rafIds.delete(id);
-      try {
-        fn();
-      } catch (err) {
-        log.error(`[${this.name}] RAF error:`, err);
-      }
+      this._runSafely('RAF', fn);
     });
     this.rafIds.add(id);
     return id;

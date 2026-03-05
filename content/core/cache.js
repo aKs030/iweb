@@ -18,18 +18,14 @@ class MemoryCache {
 
   get(key) {
     const item = this.cache.get(key);
-    if (!item) return null;
-
-    if (item.expires && item.expires < Date.now()) {
-      this.cache.delete(key);
-      return null;
-    }
+    const resolved = resolveFreshCacheItem(item, () => this.cache.delete(key));
+    if (!resolved) return null;
 
     // Move to end for LRU ordering
     this.cache.delete(key);
-    this.cache.set(key, item);
+    this.cache.set(key, resolved);
 
-    return item.value;
+    return resolved.value;
   }
 
   set(key, value, ttl = 300000) {
@@ -56,6 +52,17 @@ class MemoryCache {
   get size() {
     return this.cache.size;
   }
+}
+
+function isExpired(item) {
+  return Boolean(item?.expires && item.expires < Date.now());
+}
+
+function resolveFreshCacheItem(item, onExpire) {
+  if (!item) return null;
+  if (!isExpired(item)) return item;
+  onExpire?.();
+  return null;
 }
 
 /**
@@ -92,73 +99,75 @@ class IndexedDBCache {
   /** Wraps an IDBRequest in a Promise */
   _requestToPromise(request, successValue) {
     return new Promise((resolve, reject) => {
-      request.onsuccess = () => resolve(successValue ?? request.result);
-      request.onerror = () => reject(request.error);
+      request.addEventListener(
+        'success',
+        () => resolve(successValue ?? request.result),
+        { once: true },
+      );
+      request.addEventListener('error', () => reject(request.error), {
+        once: true,
+      });
     });
   }
 
-  async get(key) {
+  async _withStore(mode, operation) {
+    await this.init();
+    const transaction = this.db.transaction(['cache'], mode);
+    const store = transaction.objectStore('cache');
+    return operation(store);
+  }
+
+  async _runSafely(label, fallback, operation) {
     try {
-      await this.init();
-      const transaction = this.db.transaction(['cache'], 'readonly');
-      const store = transaction.objectStore('cache');
-      const request = store.get(key);
-      const item = await this._requestToPromise(request);
-
-      if (!item) return null;
-
-      if (item.expires && item.expires < Date.now()) {
-        this.delete(key);
-        return null;
-      }
-
-      return item.value;
+      return await operation();
     } catch (error) {
-      log.warn('IndexedDB get failed:', error);
-      return null;
+      log.warn(`IndexedDB ${label} failed:`, error);
+      return fallback;
     }
+  }
+
+  async get(key) {
+    return this._runSafely('get', null, async () => {
+      const item = await this._withStore('readonly', (store) =>
+        this._requestToPromise(store.get(key)),
+      );
+      const resolved = resolveFreshCacheItem(item, () => this.delete(key));
+      if (!resolved) return null;
+
+      return resolved.value;
+    });
   }
 
   async set(key, value, ttl = 3600000) {
-    try {
-      await this.init();
-      const transaction = this.db.transaction(['cache'], 'readwrite');
-      const store = transaction.objectStore('cache');
-      const request = store.put({
-        key,
-        value,
-        expires: ttl ? Date.now() + ttl : null,
-        created: Date.now(),
-      });
-      return await this._requestToPromise(request, true);
-    } catch (error) {
-      log.warn('IndexedDB set failed:', error);
-      return false;
-    }
+    return this._runSafely('set', false, () =>
+      this._withStore('readwrite', (store) =>
+        this._requestToPromise(
+          store.put({
+            key,
+            value,
+            expires: ttl ? Date.now() + ttl : null,
+            created: Date.now(),
+          }),
+          true,
+        ),
+      ),
+    );
   }
 
   async delete(key) {
-    try {
-      await this.init();
-      const transaction = this.db.transaction(['cache'], 'readwrite');
-      const store = transaction.objectStore('cache');
-      return await this._requestToPromise(store.delete(key), true);
-    } catch (error) {
-      log.warn('IndexedDB delete failed:', error);
-      return false;
-    }
+    return this._runSafely('delete', false, () =>
+      this._withStore('readwrite', (store) =>
+        this._requestToPromise(store.delete(key), true),
+      ),
+    );
   }
 
   async clear() {
-    try {
-      await this.init();
-      const transaction = this.db.transaction(['cache'], 'readwrite');
-      const store = transaction.objectStore('cache');
-      return await this._requestToPromise(store.clear(), true);
-    } catch (error) {
-      log.warn('IndexedDB clear failed:', error);
-      return false;
-    }
+    return this._runSafely('clear', false, () =>
+      this._withStore('readwrite', (store) =>
+        this._requestToPromise(store.clear(), true),
+      ),
+    );
   }
 }
 

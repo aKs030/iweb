@@ -145,7 +145,7 @@ All API keys and secrets are stored as environment variables and never exposed t
 
 **Fixed:**
 
-- i18n HTML sanitizer replaced with DOMPurify (XSS risk)
+- i18n HTML sanitizer hardened with dependency-free allowlist filtering (XSS risk)
 - Gallery API CORS restricted to own domain (was wildcard)
 - Cookie values now URL-encoded (special char handling)
 - Lucide CDN pinned to specific version (was @latest)

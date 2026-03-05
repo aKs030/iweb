@@ -54,6 +54,14 @@ class LanguageManager extends EventTarget {
     this.loadingPromise = null;
   }
 
+  emitLanguageChanged() {
+    this.dispatchEvent(
+      new CustomEvent('language-changed', {
+        detail: { lang: this.currentLang },
+      }),
+    );
+  }
+
   /**
    * Initialize the language manager.
    * Loads preference from localStorage or detects browser language.
@@ -108,11 +116,7 @@ class LanguageManager extends EventTarget {
       }
 
       // Dispatch initial event for eager subscribers
-      this.dispatchEvent(
-        new CustomEvent('language-changed', {
-          detail: { lang: this.currentLang },
-        }),
-      );
+      this.emitLanguageChanged();
     })().finally(() => {
       this.loadingPromise = null;
     });
@@ -180,11 +184,7 @@ class LanguageManager extends EventTarget {
     this.translatePage();
     this.updateMetadata();
 
-    this.dispatchEvent(
-      new CustomEvent('language-changed', {
-        detail: { lang: this.currentLang },
-      }),
-    );
+    this.emitLanguageChanged();
   }
 
   /**

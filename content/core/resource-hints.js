@@ -30,6 +30,10 @@ const POINTER_WARMUP_DELAY_MS = 75;
 class ResourceHintsManager {
   constructor() {
     this.hints = new Map();
+    this.resetRuntimeState();
+  }
+
+  resetRuntimeState() {
     this.initialized = false;
     this.speculationRefreshAttached = false;
     this.intentHandlersAttached = false;
@@ -39,30 +43,109 @@ class ResourceHintsManager {
   }
 
   /**
+   * Register a link-based resource hint and keep internal state in sync.
+   * @param {{
+   *   key: string,
+   *   linkOptions: Record<string, unknown>,
+   *   hintMeta: Record<string, unknown>,
+   *   successMessage: string,
+   *   failureMessage: string
+   * }} config
+   * @returns {boolean}
+   */
+  registerLinkHint(config) {
+    const { key, linkOptions, hintMeta, successMessage, failureMessage } =
+      config;
+    if (!key || this.hints.has(key)) return false;
+
+    try {
+      upsertHeadLink({
+        ...(linkOptions || {}),
+        dataset: {
+          injectedBy: 'resource-hints',
+          ...(linkOptions?.dataset || {}),
+        },
+      });
+      this.hints.set(key, hintMeta);
+      log.info(successMessage);
+      return true;
+    } catch (err) {
+      log.error(failureMessage, err);
+      return false;
+    }
+  }
+
+  /**
+   * Resolve an internal, eligible route from href-like input.
+   * @param {string|null} rawHref
+   * @returns {string|null}
+   */
+  resolveEligibleRoute(rawHref) {
+    const href = String(rawHref || '').trim();
+    if (!href || href.startsWith('#')) return null;
+    if (href.startsWith('mailto:') || href.startsWith('tel:')) return null;
+
+    try {
+      const url = new URL(href, globalThis.location.href);
+      if (url.origin !== globalThis.location.origin) return null;
+      if (url.search) return null;
+      if (!this.isEligibleSpeculativePath(url.pathname)) return null;
+      return this.toRoutePath(url.pathname);
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Persist currently active speculation rules metadata.
+   * @param {string[]} routes
+   * @param {{ prerender?: Array<{ eagerness?: string }> }} rules
+   */
+  trackSpeculationHint(routes, rules) {
+    this.hints.set('speculationrules', {
+      type: 'speculationrules',
+      routes: [...routes],
+      prerenderEnabled: Boolean(rules.prerender?.length),
+      eagerness: rules.prerender?.[0]?.eagerness || 'conservative',
+    });
+  }
+
+  /**
+   * Clears pending pointer-intent warmup timer if present.
+   */
+  clearIntentWarmupTimer() {
+    if (!this.intentWarmupTimer) return;
+    clearTimeout(this.intentWarmupTimer);
+    this.intentWarmupTimer = null;
+  }
+
+  getNetworkConnection() {
+    return (
+      globalThis.navigator?.connection ||
+      globalThis.navigator?.mozConnection ||
+      globalThis.navigator?.webkitConnection ||
+      null
+    );
+  }
+
+  /**
    * Add preconnect hint for early connection to origin
    * @param {string} origin - Origin URL
    * @param {Object} options - Options
    */
   preconnect(origin, options = {}) {
     const { crossOrigin = true } = options;
-
-    if (this.hints.has(`preconnect:${origin}`)) {
-      return;
-    }
-
-    try {
-      upsertHeadLink({
+    this.registerLinkHint({
+      key: `preconnect:${origin}`,
+      linkOptions: {
         rel: 'preconnect',
         href: origin,
         crossOrigin: crossOrigin ? 'anonymous' : undefined,
-        dataset: { injectedBy: 'resource-hints' },
-      });
-
-      this.hints.set(`preconnect:${origin}`, { type: 'preconnect', origin });
-      log.info(`Preconnect added: ${origin}`);
-    } catch (err) {
-      log.error(`Failed to add preconnect for ${origin}:`, err);
-    }
+      },
+      hintMeta: { type: 'preconnect', origin },
+      successMessage: `Preconnect added: ${origin}`,
+      failureMessage: `Failed to add preconnect for ${origin}:`,
+    });
   }
 
   /**
@@ -70,25 +153,13 @@ class ResourceHintsManager {
    * @param {string} origin - Origin URL
    */
   dnsPrefetch(origin) {
-    if (this.hints.has(`dns-prefetch:${origin}`)) {
-      return;
-    }
-
-    try {
-      upsertHeadLink({
-        rel: 'dns-prefetch',
-        href: origin,
-        dataset: { injectedBy: 'resource-hints' },
-      });
-
-      this.hints.set(`dns-prefetch:${origin}`, {
-        type: 'dns-prefetch',
-        origin,
-      });
-      log.info(`DNS prefetch added: ${origin}`);
-    } catch (err) {
-      log.error(`Failed to add DNS prefetch for ${origin}:`, err);
-    }
+    this.registerLinkHint({
+      key: `dns-prefetch:${origin}`,
+      linkOptions: { rel: 'dns-prefetch', href: origin },
+      hintMeta: { type: 'dns-prefetch', origin },
+      successMessage: `DNS prefetch added: ${origin}`,
+      failureMessage: `Failed to add DNS prefetch for ${origin}:`,
+    });
   }
 
   /**
@@ -98,26 +169,19 @@ class ResourceHintsManager {
    */
   preload(href, options = {}) {
     const { as = 'script', type, crossOrigin = true } = options;
-
-    if (this.hints.has(`preload:${href}`)) {
-      return;
-    }
-
-    try {
-      upsertHeadLink({
+    this.registerLinkHint({
+      key: `preload:${href}`,
+      linkOptions: {
         rel: 'preload',
         href,
         as,
         crossOrigin: crossOrigin ? 'anonymous' : undefined,
-        dataset: { injectedBy: 'resource-hints' },
         attrs: type ? { type } : {},
-      });
-
-      this.hints.set(`preload:${href}`, { type: 'preload', href, as });
-      log.info(`Preload added: ${href} (as: ${as})`);
-    } catch (err) {
-      log.error(`Failed to add preload for ${href}:`, err);
-    }
+      },
+      hintMeta: { type: 'preload', href, as },
+      successMessage: `Preload added: ${href} (as: ${as})`,
+      failureMessage: `Failed to add preload for ${href}:`,
+    });
   }
 
   /**
@@ -127,24 +191,13 @@ class ResourceHintsManager {
    */
   prefetch(href, options = {}) {
     const { as = 'document' } = options;
-
-    if (this.hints.has(`prefetch:${href}`)) {
-      return;
-    }
-
-    try {
-      upsertHeadLink({
-        rel: 'prefetch',
-        href,
-        as,
-        dataset: { injectedBy: 'resource-hints' },
-      });
-
-      this.hints.set(`prefetch:${href}`, { type: 'prefetch', href, as });
-      log.info(`Prefetch added: ${href}`);
-    } catch (err) {
-      log.error(`Failed to add prefetch for ${href}:`, err);
-    }
+    this.registerLinkHint({
+      key: `prefetch:${href}`,
+      linkOptions: { rel: 'prefetch', href, as },
+      hintMeta: { type: 'prefetch', href, as },
+      successMessage: `Prefetch added: ${href}`,
+      failureMessage: `Failed to add prefetch for ${href}:`,
+    });
   }
 
   /**
@@ -152,23 +205,17 @@ class ResourceHintsManager {
    * @param {string} href - Module URL
    */
   modulePreload(href) {
-    if (this.hints.has(`modulepreload:${href}`)) {
-      return;
-    }
-
-    try {
-      upsertHeadLink({
+    this.registerLinkHint({
+      key: `modulepreload:${href}`,
+      linkOptions: {
         rel: 'modulepreload',
         href,
         crossOrigin: 'anonymous',
-        dataset: { injectedBy: 'resource-hints' },
-      });
-
-      this.hints.set(`modulepreload:${href}`, { type: 'modulepreload', href });
-      log.info(`Module preload added: ${href}`);
-    } catch (err) {
-      log.error(`Failed to add modulepreload for ${href}:`, err);
-    }
+      },
+      hintMeta: { type: 'modulepreload', href },
+      successMessage: `Module preload added: ${href}`,
+      failureMessage: `Failed to add modulepreload for ${href}:`,
+    });
   }
 
   /**
@@ -221,10 +268,7 @@ class ResourceHintsManager {
    */
   shouldUseSpeculativeLoading() {
     try {
-      const connection =
-        globalThis.navigator?.connection ||
-        globalThis.navigator?.mozConnection ||
-        globalThis.navigator?.webkitConnection;
+      const connection = this.getNetworkConnection();
 
       if (!connection) return true;
       if (connection.saveData) return false;
@@ -252,10 +296,7 @@ class ResourceHintsManager {
     const current = this.normalizePath(globalThis.location?.pathname || '/');
     const isHome = current === '/';
 
-    const connection =
-      globalThis.navigator?.connection ||
-      globalThis.navigator?.mozConnection ||
-      globalThis.navigator?.webkitConnection;
+    const connection = this.getNetworkConnection();
     const saveData = Boolean(connection?.saveData);
     const effectiveType = String(connection?.effectiveType || '').toLowerCase();
     const memory = Number(globalThis.navigator?.deviceMemory || 0);
@@ -343,24 +384,13 @@ class ResourceHintsManager {
     selectors.forEach(({ selector, weight }) => {
       document.querySelectorAll(selector).forEach((anchor) => {
         if (!(anchor instanceof HTMLAnchorElement)) return;
-        const rawHref = anchor.getAttribute('href');
-        if (!rawHref) return;
-        if (rawHref.startsWith('#')) return;
-        if (rawHref.startsWith('mailto:') || rawHref.startsWith('tel:')) return;
         if (anchor.hasAttribute('download')) return;
-
-        try {
-          const url = new URL(rawHref, globalThis.location.href);
-          if (url.origin !== origin) return;
-          if (url.search) return;
-          if (!this.isEligibleSpeculativePath(url.pathname)) return;
-
-          const route = this.toRoutePath(url.pathname);
-          const score = routeScores.get(route) || 0;
-          routeScores.set(route, score + weight);
-        } catch {
-          // Skip malformed links
-        }
+        const route = this.resolveEligibleRoute(anchor.getAttribute('href'));
+        if (!route) return;
+        const url = new URL(route, globalThis.location.href);
+        if (url.origin !== origin) return;
+        const score = routeScores.get(route) || 0;
+        routeScores.set(route, score + weight);
       });
     });
 
@@ -527,12 +557,7 @@ class ResourceHintsManager {
     replacement.textContent = JSON.stringify(rules);
     script.replaceWith(replacement);
 
-    this.hints.set('speculationrules', {
-      type: 'speculationrules',
-      routes: [...routes],
-      prerenderEnabled: Boolean(rules.prerender?.length),
-      eagerness: rules.prerender?.[0]?.eagerness || 'conservative',
-    });
+    this.trackSpeculationHint(routes, rules);
     log.info(`Speculation Rules updated (${routes.length} routes)`);
     return true;
   }
@@ -549,20 +574,7 @@ class ResourceHintsManager {
     if (anchor.dataset?.noSpeculate === 'true') return null;
     if (anchor.dataset?.noPrerender === 'true') return null;
 
-    const rawHref = anchor.getAttribute('href');
-    if (!rawHref || rawHref.startsWith('#')) return null;
-    if (rawHref.startsWith('mailto:') || rawHref.startsWith('tel:'))
-      return null;
-
-    try {
-      const url = new URL(rawHref, globalThis.location.href);
-      if (url.origin !== globalThis.location.origin) return null;
-      if (url.search) return null;
-      if (!this.isEligibleSpeculativePath(url.pathname)) return null;
-      return this.toRoutePath(url.pathname);
-    } catch {
-      return null;
-    }
+    return this.resolveEligibleRoute(anchor.getAttribute('href'));
   }
 
   /**
@@ -608,10 +620,7 @@ class ResourceHintsManager {
       // Warmup on hover intent (debounced to avoid excessive prefetch churn).
       if (event.type === 'pointerover') {
         if (this.intentPrefetchedRoutes.has(route)) return;
-        if (this.intentWarmupTimer) {
-          clearTimeout(this.intentWarmupTimer);
-          this.intentWarmupTimer = null;
-        }
+        this.clearIntentWarmupTimer();
         this.intentWarmupTimer = setTimeout(() => {
           this.intentPrefetchedRoutes.add(route);
           this.prefetch(route, { as: 'document' });
@@ -621,10 +630,7 @@ class ResourceHintsManager {
       }
 
       // On committed intent (pointerdown), prioritize route in speculation rules.
-      if (this.intentWarmupTimer) {
-        clearTimeout(this.intentWarmupTimer);
-        this.intentWarmupTimer = null;
-      }
+      this.clearIntentWarmupTimer();
       this.promoteIntentRoute(route);
     };
 
@@ -668,12 +674,7 @@ class ResourceHintsManager {
 
       script.textContent = JSON.stringify(rules);
       document.head.appendChild(script);
-      this.hints.set('speculationrules', {
-        type: 'speculationrules',
-        routes: [...speculativeRoutes],
-        prerenderEnabled: Boolean(rules.prerender?.length),
-        eagerness: rules.prerender?.[0]?.eagerness || 'conservative',
-      });
+      this.trackSpeculationHint(speculativeRoutes, rules);
       log.info(
         `Speculation Rules injected (${speculativeRoutes.length} routes, prerender=${Boolean(rules.prerender?.length)})`,
       );
@@ -778,17 +779,10 @@ class ResourceHintsManager {
       document.removeEventListener('pointerover', this.intentHandler);
       document.removeEventListener('pointerdown', this.intentHandler);
     }
-    if (this.intentWarmupTimer) {
-      clearTimeout(this.intentWarmupTimer);
-      this.intentWarmupTimer = null;
-    }
+    this.clearIntentWarmupTimer();
 
     this.hints.clear();
-    this.intentPrefetchedRoutes.clear();
-    this.initialized = false;
-    this.speculationRefreshAttached = false;
-    this.intentHandlersAttached = false;
-    this.intentHandler = null;
+    this.resetRuntimeState();
   }
 }
 
