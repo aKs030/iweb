@@ -92,15 +92,20 @@ export class ThreeEarthManager {
   }
 
   preloadTextures() {
-    // Keep startup light: preload only the first critical texture once loading starts.
+    // Avoid late-preload console warnings: only preload before window load fires.
+    // Three.js image loading uses anonymous CORS, so match that on the hint.
     const dayTexture = '/content/assets/img/earth/textures/earth_day.webp';
-    upsertHeadLink({
-      rel: 'preload',
-      href: dayTexture,
-      as: 'image',
-      dataset: { injectedBy: 'three-earth' },
-      attrs: { fetchpriority: 'high' },
-    });
+    const canPreloadNow = document.readyState !== 'complete';
+    if (canPreloadNow) {
+      upsertHeadLink({
+        rel: 'preload',
+        href: dayTexture,
+        as: 'image',
+        crossOrigin: 'anonymous',
+        dataset: { injectedBy: 'three-earth' },
+        attrs: { fetchpriority: 'high' },
+      });
+    }
 
     // Secondary textures are queued as low-priority prefetches.
     [
