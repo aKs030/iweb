@@ -32,32 +32,15 @@ function normalizeUserId(raw) {
   return value;
 }
 
-function createUserId() {
-  if (
-    typeof crypto !== 'undefined' &&
-    typeof crypto.randomUUID === 'function'
-  ) {
-    return `u_${crypto.randomUUID().replace(/-/g, '').slice(0, 24)}`;
-  }
-  return `u_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
-}
-
 function persistUserId(id) {
   const value = normalizeUserId(id);
   if (!value) return '';
   runtimeUserId = value;
-  // We explicitly DO NOT store this locally (no cookies, no localStorage)
-  // per user request for "Incognito" (Indigo) style ephemeral sessions.
-  // The ID is held purely in RAM via runtimeUserId.
   return value;
 }
 
 function getUserId() {
-  if (normalizeUserId(runtimeUserId)) return runtimeUserId;
-
-  // Since we no longer persist or read from local storage or cookies,
-  // we just create an ephemeral ID for the session and hold it in RAM.
-  return persistUserId(createUserId());
+  return normalizeUserId(runtimeUserId);
 }
 
 function syncUserIdFromResponse(response) {
@@ -171,6 +154,7 @@ const pickBestText = (finalText, streamedText) => {
 
 async function callAgent(payload, callbacks = {}, { stream = true } = {}) {
   const userId = getUserId();
+  const userIdHeader = userId ? { [USER_ID_HEADER]: userId } : {};
 
   // ── Fetch ──
   let response;
@@ -178,11 +162,11 @@ async function callAgent(payload, callbacks = {}, { stream = true } = {}) {
     if (payload.image) {
       const fd = new FormData();
       fd.append('prompt', payload.prompt || '');
-      fd.append('userId', userId);
+      if (userId) fd.append('userId', userId);
       fd.append('image', payload.image);
       response = await fetch(AGENT_ENDPOINT, {
         method: 'POST',
-        headers: { [USER_ID_HEADER]: userId },
+        headers: userIdHeader,
         body: fd,
         credentials: 'omit',
       });
@@ -191,12 +175,12 @@ async function callAgent(payload, callbacks = {}, { stream = true } = {}) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          [USER_ID_HEADER]: userId,
+          ...userIdHeader,
         },
         credentials: 'omit',
         body: JSON.stringify({
           prompt: payload.prompt,
-          userId,
+          ...(userId ? { userId } : {}),
           conversationHistory: getHistory(),
           stream,
         }),
@@ -353,7 +337,7 @@ export class AIAgentService {
     runtimeConversationHistory = [];
   }
 
-  /** @returns {string} Session user ID (RAM only) */
+  /** @returns {string} Runtime user ID (Cloudflare returns/rotates it per session) */
   getUserId() {
     return getUserId();
   }
@@ -407,10 +391,10 @@ export class AIAgentService {
     }
 
     runtimeConversationHistory = [];
-    const rotatedUserId = persistUserId(createUserId());
+    runtimeUserId = '';
     return {
       success: true,
-      userId: rotatedUserId,
+      userId: '',
       text:
         data?.text || 'User-ID und Erinnerungen in Cloudflare wurden gelöscht.',
     };
