@@ -1,16 +1,24 @@
 /**
- * Cloudflare Pages Middleware — Streaming HTML Edge Processing
+ * Cloudflare Pages Middleware — Edge Streaming v7.0.0
  *
- * OPTIMIERUNGEN v5.0.0:
- * - **Edge Streaming**: Alle HTML-Transformationen laufen jetzt über HTMLRewriter.
- *   Der Browser empfängt <head> (CSS, Import-Map) sofort, während der Body noch
- *   an der Edge generiert wird → drastisch besserer FCP.
- * - Templates werden in KV gecacht (SITEMAP_CACHE_KV) → eliminiert 2 fetch() pro HTML-Request
- * - Template-TTL: 1 Stunde (revalidiert im Hintergrund via stale-while-revalidate)
- * - CSP Nonce + SEO Meta via Streaming-Handlers (kein `await response.text()`)
- * - Fallback: Buffered Pipeline für Edge-Cases (applyRouteSeo bei komplexen Routen)
+ * OPTIMIERUNGEN v7.0.0:
+ * - **Critical CSS Inlining**: tokens.css + root.css direkt als <style> gestreamt
+ *   → 2 render-blockierende Requests eliminiert
+ * - **Async CSS Loading**: main.css + animations.css via media-swap Pattern
+ *   → nicht mehr render-blockierend
+ * - **Edge HTML Cache**: Cloudflare Cache API für fertig transformierte Responses
+ *   → Pipeline-Skip bei Cache-Hit (~0ms statt ~50-100ms)
+ * - **Edge Speculation Rules**: Route-spezifische Prefetch-Rules direkt im <head>
+ *   → Prefetch startet ~500ms früher als bei Client-Side-Berechnung
+ * - **Link-Header Preload**: CSS + JS als HTTP Link-Header
+ * - **Edge-Side Section Caching**: hero.html / section3.html in KV (SWR)
+ * - **Streaming Pipeline**: HTMLRewriter — Browser empfängt <head> sofort
+ * - **Template-KV-Cache**: base-head.html in KV gecacht (SWR)
+ * - **CSP Nonce + SEO Meta**: Via Streaming-Handlers (kein Buffering)
+ * - **Server-Timing**: Observability-Header für DevTools-Timing-Tab
+ * - **Deploy-Version Header**: SW-Cache-Konsistenz über X-Deploy-Version
  *
- * @version 5.0.0
+ * @version 7.0.0
  */
 
 import { generateNonce } from './_middleware-utils/csp-manager.js';
@@ -25,24 +33,41 @@ import {
   isLocalhost,
   normalizeLocalDevHeaders,
 } from './_middleware-utils/dev-utils.js';
+import { buildResponseLinkHeaders } from './_middleware-utils/early-hints.js';
+import {
+  preloadCriticalCss,
+  CriticalCssInliner,
+} from './_middleware-utils/critical-css.js';
+import {
+  EdgeSpeculationRules,
+  StaticSpeculationRemover,
+} from './_middleware-utils/edge-speculation.js';
+import {
+  matchEdgeCache,
+  storeInEdgeCache,
+} from './_middleware-utils/edge-cache.js';
+import {
+  HeaderInjector,
+  FooterInjector,
+} from './_middleware-utils/esi-shell.js';
 
 // KV-Cache TTL für Templates: 1 Stunde
 const TEMPLATE_TTL_SECONDS = 3600;
-// Bump this whenever base-head template markup changes.
-const TEMPLATE_CACHE_VERSION = '20260304-8';
+
+// Bump this whenever base-head template markup or critical CSS changes.
+const DEPLOY_VERSION = '20260306-2';
 
 // KV-Schlüssel für Template-Cache
 const KV_KEYS = {
-  HEAD: `template:${TEMPLATE_CACHE_VERSION}:base-head`,
+  HEAD: `template:${DEPLOY_VERSION}:base-head`,
 };
+
+// Pre-compute Link header values at module load (immutable per deploy)
+const RESPONSE_LINK_HEADERS = buildResponseLinkHeaders();
 
 /**
  * Sanitize cached template HTML to avoid unsupported viewport keys
  * on older Safari/WebKit builds.
- *
- * @param {string} kvKey
- * @param {string} html
- * @returns {string}
  */
 function sanitizeTemplateHtml(kvKey, html) {
   if (!html) return '';
@@ -53,9 +78,8 @@ function sanitizeTemplateHtml(kvKey, html) {
     '',
   );
 
-  // Strip legacy browser-chrome metas that can interfere with viewport-fit behavior.
   sanitized = sanitized.replace(
-    /<meta\b[^>]*\bname=(["'])(?:theme-color|apple-mobile-web-app-status-bar-style|apple-mobile-web-app-capable|mobile-web-app-capable|apple-touch-fullscreen|apple-mobile-web-app-title)\1[^>]*>\s*/gi,
+    /<meta\b[^>]*\bname=(['"])(?:theme-color|apple-mobile-web-app-status-bar-style|apple-mobile-web-app-capable|mobile-web-app-capable|apple-touch-fullscreen|apple-mobile-web-app-title)\1[^>]*>\s*/gi,
     '',
   );
 
@@ -63,34 +87,24 @@ function sanitizeTemplateHtml(kvKey, html) {
 }
 
 /**
- * Lädt ein Template — zuerst aus KV, dann per fetch() als Fallback.
- * Implementiert echtes Stale-While-Revalidate (SWR) und Graceful Degradation.
- *
- * @param {Object} env - Cloudflare Env-Objekt (mit SITEMAP_CACHE_KV)
- * @param {string} kvKey - KV-Schlüssel für dieses Template
- * @param {string} fetchUrl - Absolute URL zum Laden bei KV-Miss
- * @param {ExecutionContext} ctx - Pages Execution Context für waitUntil
- * @returns {Promise<string>} Template-HTML
+ * Load template with KV caching + SWR.
  */
 async function loadTemplateWithCache(env, kvKey, fetchUrl, ctx) {
-  // 1. Fallback: Falls KV nicht gebunden ist (z.B. lokales dev ohne richtiges Binding)
   if (!env.SITEMAP_CACHE_KV) {
     const fallbackRes = await env.ASSETS.fetch(new URL(fetchUrl));
     return fallbackRes.ok ? await fallbackRes.text() : '';
   }
 
-  // 2. KV-Lookup mit Fehler-Grace-Handling
   let cachedItem = null;
   try {
     cachedItem = await env.SITEMAP_CACHE_KV.get(kvKey, 'json');
   } catch (err) {
-    console.warn(`KV Error bei Key ${kvKey} - verwende Fallback-Fetch:`, err);
+    console.warn(`KV Error bei Key ${kvKey}:`, err);
   }
 
   const now = Date.now();
   const ONE_HOUR_MS = TEMPLATE_TTL_SECONDS * 1000;
 
-  // 3. Cache-Hit: SWR Logik
   if (cachedItem && cachedItem.html) {
     const cachedHtml = sanitizeTemplateHtml(kvKey, cachedItem.html);
 
@@ -98,53 +112,41 @@ async function loadTemplateWithCache(env, kvKey, fetchUrl, ctx) {
       ctx.waitUntil(
         env.SITEMAP_CACHE_KV.put(
           kvKey,
-          JSON.stringify({
-            timestamp: now,
-            html: cachedHtml,
-          }),
+          JSON.stringify({ timestamp: now, html: cachedHtml }),
         ),
       );
     }
 
-    // Wenn Template älter als eine Stunde ist -> im Hintergrund aktualisieren
     if (now - cachedItem.timestamp > ONE_HOUR_MS) {
       ctx.waitUntil(refreshTemplateInKV(env, kvKey, fetchUrl));
     }
-    // Sofort die (ggf. leicht alte) Version aus dem Cache zurückgeben (~1-5ms)
+
     return cachedHtml;
   }
 
-  // 4. Cache-Miss: Blockierendes Laden und Speichern
   return await refreshTemplateInKV(env, kvKey, fetchUrl);
 }
 
 /**
- * Führt den eigentlichen Fetch durch und speichert das Ergebnis im KV.
- * Diese Funktion kann blockierend oder non-blocking (via ctx.waitUntil) aufgerufen werden.
+ * Fetch template and persist to KV.
  */
 async function refreshTemplateInKV(env, kvKey, fetchUrl) {
   try {
-    // INTERNAL FETCHER: Bypass externes Netzwerk und frage Cloudflare Pages Assets direkt ab
     const res = await env.ASSETS.fetch(new URL(fetchUrl));
     if (!res.ok) {
-      console.error(
-        `Template fetch fehlgeschlagen: ${fetchUrl} → ${res.status}`,
-      );
+      console.error(`Template fetch failed: ${fetchUrl} → ${res.status}`);
       return '';
     }
     const html = sanitizeTemplateHtml(kvKey, await res.text());
 
     await env.SITEMAP_CACHE_KV.put(
       kvKey,
-      JSON.stringify({
-        timestamp: Date.now(),
-        html: html,
-      }),
+      JSON.stringify({ timestamp: Date.now(), html }),
     );
 
     return html;
   } catch (err) {
-    console.error(`Fehler beim Aktualisieren des Templates ${kvKey}:`, err);
+    console.error(`Template refresh failed for ${kvKey}:`, err);
     return '';
   }
 }
@@ -152,10 +154,13 @@ async function refreshTemplateInKV(env, kvKey, fetchUrl) {
 /**
  * Middleware entry point — runs on every request.
  *
- * v5 KEY CHANGE: All HTML transforms are now streamed via HTMLRewriter.
- * The response body is never fully buffered (`await response.text()` eliminated).
- * This lets the browser start parsing <head> immediately while the edge
- * is still processing <body>.
+ * v7 PIPELINE:
+ * 1. Skip non-HTML (API routes, redirects)
+ * 2. Check Edge HTML Cache → return immediately on hit
+ * 3. Parallel: upstream + templates + route meta + critical CSS
+ * 4. Build HTMLRewriter pipeline (section injection, CSS inlining, SEO, nonce, speculation)
+ * 5. Stream response with Link headers + Server-Timing + Deploy-Version
+ * 6. Store transformed response in Edge Cache (async, non-blocking)
  *
  * @param {Object} context - Cloudflare Pages context
  */
@@ -173,21 +178,50 @@ export async function onRequest(context) {
     return Response.redirect(url.href, 301);
   }
 
+  const isLocal = isLocalhost(url.hostname);
+
   // -----------------------------------------------------------------------
-  // Parallel: upstream response + templates + route meta (all at once)
+  // Edge HTML Cache: skip entire pipeline on cache hit
+  // -----------------------------------------------------------------------
+  if (!isLocal) {
+    const cachedResponse = await matchEdgeCache(url);
+    if (cachedResponse) {
+      // Inject fresh CSP nonce even on cache hit
+      const nonce = generateNonce();
+      const nonceHandler = new NonceInjector(nonce);
+      const rewriter = new HTMLRewriter();
+      rewriter.on('script', nonceHandler);
+      rewriter.on('style', nonceHandler);
+
+      const withNonce = rewriter.transform(cachedResponse);
+      const headers = new Headers(withNonce.headers);
+      headers.set('X-Deploy-Version', DEPLOY_VERSION);
+      headers.delete('Content-Length');
+
+      return new Response(withNonce.body, {
+        status: withNonce.status,
+        headers,
+      });
+    }
+  }
+
+  // -----------------------------------------------------------------------
+  // Parallel: upstream + templates + route meta + critical CSS
   // -----------------------------------------------------------------------
   const baseUrl = `${url.protocol}//${url.host}`;
 
-  const [upstreamResult, headTemplate, routeMeta] = await Promise.all([
-    context.next().catch(() => null),
-    loadTemplateWithCache(
-      context.env,
-      KV_KEYS.HEAD,
-      `${baseUrl}/content/templates/base-head.html`,
-      context,
-    ),
-    buildRouteMeta(context, url).catch(() => null),
-  ]);
+  const [upstreamResult, headTemplate, routeMeta, criticalCssMap] =
+    await Promise.all([
+      context.next().catch(() => null),
+      loadTemplateWithCache(
+        context.env,
+        KV_KEYS.HEAD,
+        `${baseUrl}/content/templates/base-head.html`,
+        context,
+      ),
+      buildRouteMeta(context, url).catch(() => null),
+      preloadCriticalCss(context),
+    ]);
 
   if (!upstreamResult) {
     return new Response('Internal Server Error', { status: 500 });
@@ -195,7 +229,7 @@ export async function onRequest(context) {
 
   const response = upstreamResult;
 
-  // Nur HTML verarbeiten
+  // Only process HTML
   const initialHeaders = new Headers(response.headers);
   const localHeaderAdjusted = normalizeLocalDevHeaders(
     initialHeaders,
@@ -213,24 +247,36 @@ export async function onRequest(context) {
   }
 
   // -----------------------------------------------------------------------
-  // Build a single HTMLRewriter pipeline (all transforms streamed)
+  // Build HTMLRewriter pipeline — all transforms streamed in one pass
   // -----------------------------------------------------------------------
   const rewriter = new HTMLRewriter();
 
-  // 1. Section injection (Edge-Side Includes for hero, section3, etc.)
+  // 1. Section injection (Edge-Side Includes, KV-cached SWR)
   rewriter.on('section[data-section-src]', new SectionInjector(context));
 
-  // 2. Template injection (replaces <!-- INJECT:BASE-HEAD --> etc.)
+  // 2. Template injection (replaces <!-- INJECT:BASE-HEAD -->)
   if (headTemplate) {
+    rewriter.on('*', new TemplateCommentHandler({ head: headTemplate }));
+  }
+
+  // 3. Critical CSS inlining + async loading
+  if (criticalCssMap.size > 0) {
     rewriter.on(
-      '*',
-      new TemplateCommentHandler({
-        head: headTemplate,
-      }),
+      'link[rel="stylesheet"]',
+      new CriticalCssInliner(criticalCssMap),
     );
   }
 
-  // 3. SEO meta injection (streaming upsert of title, meta, canonical, schema)
+  // 4. Remove static speculation rules (replaced by edge-computed rules)
+  rewriter.on(
+    'script[type="speculationrules"]',
+    new StaticSpeculationRemover(),
+  );
+
+  // 5. Inject route-aware speculation rules before </head>
+  rewriter.on('head', new EdgeSpeculationRules(url.pathname));
+
+  // 6. SEO meta injection
   if (routeMeta) {
     const seoHandler = new SeoMetaHandler(routeMeta);
     rewriter.on('title', seoHandler);
@@ -239,8 +285,7 @@ export async function onRequest(context) {
     rewriter.on('head', seoHandler);
   }
 
-  // 4. CSP Nonce injection (streaming, no buffering)
-  const isLocal = isLocalhost(url.hostname);
+  // 7. CSP Nonce injection
   const nonce = isLocal ? null : generateNonce();
   if (nonce) {
     const nonceHandler = new NonceInjector(nonce);
@@ -248,19 +293,51 @@ export async function onRequest(context) {
     rewriter.on('style', nonceHandler);
   }
 
+  // 8. Edge-Side Includes for Header/Footer Shells
+  rewriter.on('a.skip-link', new HeaderInjector(url)); // prepends to the page (after skip-link)
+  rewriter.on('body', new FooterInjector()); // appends to bottom of body
+
   // -----------------------------------------------------------------------
-  // Stream the response — browser receives <head> immediately
+  // Stream + build response headers
   // -----------------------------------------------------------------------
   const transformedResponse = rewriter.transform(response);
 
-  // Remove Content-Length since streaming responses are chunked
   const newHeaders = new Headers(initialHeaders);
   newHeaders.delete('Content-Length');
   newHeaders.set('Transfer-Encoding', 'chunked');
 
-  return new Response(transformedResponse.body, {
+  // Link headers: preload resources via HTTP headers
+  for (const linkValue of RESPONSE_LINK_HEADERS) {
+    newHeaders.append('Link', linkValue);
+  }
+
+  // Deploy version for SW cache consistency
+  newHeaders.set('X-Deploy-Version', DEPLOY_VERSION);
+
+  // Server-Timing for observability
+  const timingParts = [];
+  if (headTemplate) timingParts.push('tpl;desc="head-template"');
+  if (criticalCssMap.size > 0)
+    timingParts.push(`css;desc="inlined ${criticalCssMap.size} CSS"`);
+  if (routeMeta) timingParts.push('seo;desc="route-meta"');
+  if (nonce) timingParts.push('csp;desc="nonce"');
+  timingParts.push('spec;desc="edge-speculation"');
+  if (timingParts.length) {
+    newHeaders.set('Server-Timing', timingParts.join(', '));
+  }
+
+  const finalResponse = new Response(transformedResponse.body, {
     status: response.status,
     statusText: response.statusText,
     headers: newHeaders,
   });
+
+  // -----------------------------------------------------------------------
+  // Store in Edge Cache (async, non-blocking)
+  // -----------------------------------------------------------------------
+  if (!isLocal) {
+    storeInEdgeCache(url, finalResponse.clone(), context);
+  }
+
+  return finalResponse;
 }

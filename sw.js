@@ -1,16 +1,17 @@
 /**
- * Service Worker v8 — Offline-First mit Background Sync & IndexedDB
+ * Service Worker v9 — Offline-First mit Background Sync & IndexedDB
  *
  * Navigation: Network-only mit Offline-Fallback
  * Bilder/Fonts/3D: Cache-first mit Size-Limits
  * First-party JS/CSS: stale-while-revalidate
  * API/Externe: Ignoriert
- * NEU: Background Sync für Analytics-Events & Chat-Daten
- * NEU: IndexedDB-basierte Analytics-Queue wird bei Reconnect geflusht
+ * Background Sync für Analytics-Events & Chat-Daten
+ * IndexedDB-basierte Analytics-Queue wird bei Reconnect geflusht
+ * Deploy-Version Sync: Purge stale cache when edge deploys new version
  */
 
 // Cache-Name mit Version — bei Deployments hochzählen
-const CACHE = 'static-v4';
+const CACHE = 'static-v5';
 const OFFLINE = '/offline.html';
 const MAX_CACHE_ITEMS = 160; // Cached assets incl. images/fonts/models/first-party code
 
@@ -214,14 +215,36 @@ self.addEventListener('fetch', (e) => {
   if (url.pathname.startsWith('/api/')) return;
 
   // HTML-Navigation: Netzwerk, Offline-Fallback bei Fehler
+  // Detect deploy-version changes and purge stale cache
   if (request.mode === 'navigate') {
     e.respondWith(
-      fetch(request).catch(async () => {
-        const c = await caches.open(CACHE);
-        return (
-          (await c.match(OFFLINE)) || new Response('Offline', { status: 503 })
-        );
-      }),
+      fetch(request)
+        .then((response) => {
+          // Check if the edge has a newer deploy version
+          const edgeVersion = response.headers.get('X-Deploy-Version');
+          if (
+            edgeVersion &&
+            self.__deployVersion &&
+            edgeVersion !== self.__deployVersion
+          ) {
+            // New deploy detected — purge old cache in background
+            e.waitUntil(
+              caches.delete(CACHE).then(() => {
+                return caches.open(CACHE).then((c) => c.add(OFFLINE));
+              }),
+            );
+          }
+          if (edgeVersion) {
+            self.__deployVersion = edgeVersion;
+          }
+          return response;
+        })
+        .catch(async () => {
+          const c = await caches.open(CACHE);
+          return (
+            (await c.match(OFFLINE)) || new Response('Offline', { status: 503 })
+          );
+        }),
     );
     return;
   }
