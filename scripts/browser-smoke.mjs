@@ -802,11 +802,17 @@ async function runSmoke() {
   }
 }
 
-runSmoke().catch((error) => {
-  const message = String(error?.stack || error?.message || error);
-  console.error(`[smoke] failed: ${message}`);
-  if (/Executable doesn't exist|browserType\.launch/i.test(message)) {
-    console.error('[smoke] hint: run `npx playwright install chromium` once.');
-  }
-  process.exitCode = 1;
-});
+runSmoke()
+  .then(() => {
+    process.exit(0);
+  })
+  .catch((error) => {
+    const message = String(error?.stack || error?.message || error);
+    console.error(`[smoke] failed: ${message}`);
+    if (/Executable doesn't exist|browserType\.launch/i.test(message)) {
+      console.error(
+        '[smoke] hint: run `npx playwright install chromium` once.',
+      );
+    }
+    process.exit(1);
+  });
