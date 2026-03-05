@@ -78,7 +78,7 @@ ROBOT_ACTIONS = {
 
 ```bash
 npx eslint content/components/robot-companion --max-warnings=0
-npm run lint:types
+npm run qa
 ```
 
 ## Verwandte Dateien

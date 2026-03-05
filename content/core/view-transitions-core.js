@@ -126,6 +126,26 @@ const isAbortError = (error) =>
   (error.name === 'AbortError' || error.name === 'TimeoutError');
 
 /**
+ * @param {unknown} error
+ * @returns {string}
+ */
+const getErrorMessage = (error) =>
+  error && typeof error === 'object' && 'message' in error
+    ? String(error.message)
+    : String(error);
+
+/**
+ * @param {ViewTransition|undefined} transition
+ */
+const skipTransitionSafely = (transition) => {
+  try {
+    transition?.skipTransition?.();
+  } catch {
+    /* noop */
+  }
+};
+
+/**
  * @param {unknown} value
  * @param {number} [maxCount]
  * @returns {string[]}
@@ -287,31 +307,30 @@ const getMenuPanels = () => {
 };
 
 /**
+ * @param {(style: CSSStyleDeclaration) => boolean} predicate
  * @returns {boolean}
  */
-const isMenuDrawerLayoutActive = () => {
+const anyMenuPanelStyleMatches = (predicate) => {
   if (typeof globalThis.getComputedStyle !== 'function') return false;
-
   for (const panel of getMenuPanels()) {
     const style = globalThis.getComputedStyle(panel);
-    if (style.position === 'fixed') return true;
+    if (predicate(style)) return true;
   }
-
   return false;
 };
 
 /**
  * @returns {boolean}
  */
+const isMenuDrawerLayoutActive = () => {
+  return anyMenuPanelStyleMatches((style) => style.position === 'fixed');
+};
+
+/**
+ * @returns {boolean}
+ */
 const hasMenuBackdropGlassActive = () => {
-  if (typeof globalThis.getComputedStyle !== 'function') return false;
-
-  for (const panel of getMenuPanels()) {
-    const style = globalThis.getComputedStyle(panel);
-    if (hasActiveBackdropEffect(style)) return true;
-  }
-
-  return false;
+  return anyMenuPanelStyleMatches((style) => hasActiveBackdropEffect(style));
 };
 
 /**
@@ -468,10 +487,7 @@ export async function withViewTransition(callback, options = {}) {
         cleanupRootClasses();
         debugViewTransition('fallback:start-failed', {
           types,
-          message:
-            error && typeof error === 'object' && 'message' in error
-              ? String(error.message)
-              : String(error),
+          message: getErrorMessage(error),
         });
         await callback();
         return;
@@ -493,13 +509,7 @@ export async function withViewTransition(callback, options = {}) {
       if (options.signal) {
         options.signal.addEventListener(
           'abort',
-          () => {
-            try {
-              transition?.skipTransition?.();
-            } catch {
-              /* noop */
-            }
-          },
+          () => skipTransitionSafely(transition),
           { once: true },
         );
       }
@@ -510,13 +520,9 @@ export async function withViewTransition(callback, options = {}) {
       });
 
       try {
-        await withTimeout(finishedPromise, timeoutMs, () => {
-          try {
-            transition?.skipTransition?.();
-          } catch {
-            /* noop */
-          }
-        });
+        await withTimeout(finishedPromise, timeoutMs, () =>
+          skipTransitionSafely(transition),
+        );
 
         dispatchTransitionEvent(VT_EVENTS.FINISH, {
           types,
@@ -524,20 +530,15 @@ export async function withViewTransition(callback, options = {}) {
         });
         debugViewTransition('finish', { types });
       } catch (error) {
+        const message = getErrorMessage(error);
         dispatchTransitionEvent(VT_EVENTS.ERROR, {
           types,
           ts: Date.now(),
-          message:
-            error && typeof error === 'object' && 'message' in error
-              ? String(error.message)
-              : String(error),
+          message,
         });
         debugViewTransition('error', {
           types,
-          message:
-            error && typeof error === 'object' && 'message' in error
-              ? String(error.message)
-              : String(error),
+          message,
         });
 
         if (!updateExecuted && !isAbortError(error)) {

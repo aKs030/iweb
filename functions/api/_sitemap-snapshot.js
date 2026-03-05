@@ -87,6 +87,34 @@ export function buildSitemapHeaders(cacheControl, extraHeaders = {}) {
 }
 
 /**
+ * Build stale snapshot headers.
+ * @param {{updatedAt?: string}} snapshot
+ * @param {string} cacheControl
+ * @returns {Record<string, string>}
+ */
+export function buildSnapshotStaleHeaders(snapshot, cacheControl) {
+  return buildSitemapHeaders(cacheControl, {
+    'X-Sitemap-Source': 'snapshot-stale',
+    ...(snapshot?.updatedAt
+      ? { 'X-Sitemap-Snapshot-At': String(snapshot.updatedAt) }
+      : {}),
+  });
+}
+
+/**
+ * Build a stale snapshot XML response.
+ * @param {{xml: string, updatedAt?: string}} snapshot
+ * @param {string} cacheControl
+ * @returns {Response}
+ */
+export function createSnapshotStaleResponse(snapshot, cacheControl) {
+  return new Response(snapshot.xml, {
+    status: 200,
+    headers: buildSnapshotStaleHeaders(snapshot, cacheControl),
+  });
+}
+
+/**
  * Return stale snapshot if available, otherwise 503.
  * @param {Object} options
  * @param {Object} options.env
@@ -97,15 +125,7 @@ export function buildSitemapHeaders(cacheControl, extraHeaders = {}) {
 export async function respondWithSnapshotOr503({ env, name, cacheControl }) {
   const snapshot = await loadSitemapSnapshot(env, name);
   if (snapshot?.xml) {
-    return new Response(snapshot.xml, {
-      status: 200,
-      headers: buildSitemapHeaders(cacheControl, {
-        'X-Sitemap-Source': 'snapshot-stale',
-        ...(snapshot.updatedAt
-          ? { 'X-Sitemap-Snapshot-At': snapshot.updatedAt }
-          : {}),
-      }),
-    });
+    return createSnapshotStaleResponse(snapshot, cacheControl);
   }
 
   return new Response('Sitemap temporarily unavailable', {

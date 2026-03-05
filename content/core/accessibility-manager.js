@@ -1,5 +1,68 @@
 /* Accessibility Manager */
 
+/**
+ * Attach a MediaQueryList change listener across modern and legacy APIs.
+ * Returns a cleanup function.
+ *
+ * @param {MediaQueryList} mql
+ * @param {(event: MediaQueryListEvent) => void} handler
+ * @returns {() => void}
+ */
+function bindMediaQueryChange(mql, handler) {
+  if (!mql || typeof handler !== 'function') return () => {};
+
+  try {
+    if (typeof mql.addEventListener === 'function') {
+      mql.addEventListener('change', handler);
+      return () => {
+        try {
+          mql.removeEventListener('change', handler);
+        } catch {
+          // ignore cleanup errors
+        }
+      };
+    }
+  } catch {
+    // fall through to legacy API
+  }
+
+  try {
+    if (typeof mql.addListener === 'function') {
+      mql.addListener(handler);
+      return () => {
+        try {
+          mql.removeListener(handler);
+        } catch {
+          // ignore cleanup errors
+        }
+      };
+    }
+  } catch {
+    // ignore unsupported environments
+  }
+
+  return () => {};
+}
+
+/**
+ * Focus an element with a preventScroll-first strategy.
+ * @param {Element|null} element
+ */
+function focusSafely(element) {
+  if (!element || typeof element.focus !== 'function') return;
+  try {
+    element.focus({ preventScroll: true });
+    return;
+  } catch {
+    // fallback below
+  }
+  try {
+    element.focus();
+  } catch {
+    // ignore focus failures
+  }
+}
+
 class AccessibilityManager {
   constructor() {
     this.focusTrapStack = [];
@@ -17,42 +80,23 @@ class AccessibilityManager {
   init() {
     if (this._initialized) return;
 
-    try {
-      this._onReducedMotionChange = (e) => {
-        this.reducedMotion = e.matches;
-        this.updateAnimations();
-      };
-      this.reducedMotionMQL.addEventListener(
-        'change',
-        this._onReducedMotionChange,
-      );
+    this._onReducedMotionChange = (e) => {
+      this.reducedMotion = e.matches;
+      this.updateAnimations();
+    };
+    this._removeReducedMotionListener = bindMediaQueryChange(
+      this.reducedMotionMQL,
+      this._onReducedMotionChange,
+    );
 
-      this._onHighContrastChange = (e) => {
-        this.highContrast = e.matches;
-        this.updateContrast();
-      };
-      this.highContrastMQL.addEventListener(
-        'change',
-        this._onHighContrastChange,
-      );
-    } catch {
-      // Fallback for older browsers
-      try {
-        this._onReducedMotionChange = (e) => {
-          this.reducedMotion = e.matches;
-          this.updateAnimations();
-        };
-        this.reducedMotionMQL.addListener(this._onReducedMotionChange);
-
-        this._onHighContrastChange = (e) => {
-          this.highContrast = e.matches;
-          this.updateContrast();
-        };
-        this.highContrastMQL.addListener(this._onHighContrastChange);
-      } catch {
-        // Ignore if not supported
-      }
-    }
+    this._onHighContrastChange = (e) => {
+      this.highContrast = e.matches;
+      this.updateContrast();
+    };
+    this._removeHighContrastListener = bindMediaQueryChange(
+      this.highContrastMQL,
+      this._onHighContrastChange,
+    );
 
     this.setupKeyboardNav();
     this.setupSkipLinks();
@@ -63,28 +107,22 @@ class AccessibilityManager {
 
   destroy() {
     try {
+      if (this._removeReducedMotionListener) {
+        this._removeReducedMotionListener();
+        this._removeReducedMotionListener = null;
+      }
       if (this._onReducedMotionChange) {
-        if (this.reducedMotionMQL.removeEventListener)
-          this.reducedMotionMQL.removeEventListener(
-            'change',
-            this._onReducedMotionChange,
-          );
-        else if (this.reducedMotionMQL.removeListener)
-          this.reducedMotionMQL.removeListener(this._onReducedMotionChange);
         this._onReducedMotionChange = null;
       }
     } catch {
       // Ignore cleanup errors
     }
     try {
+      if (this._removeHighContrastListener) {
+        this._removeHighContrastListener();
+        this._removeHighContrastListener = null;
+      }
       if (this._onHighContrastChange) {
-        if (this.highContrastMQL.removeEventListener)
-          this.highContrastMQL.removeEventListener(
-            'change',
-            this._onHighContrastChange,
-          );
-        else if (this.highContrastMQL.removeListener)
-          this.highContrastMQL.removeListener(this._onHighContrastChange);
         this._onHighContrastChange = null;
       }
     } catch {
@@ -166,29 +204,13 @@ class AccessibilityManager {
     this.focusTrapStack.push(trap);
 
     // Focus first focusable element
-    try {
-      firstFocusable.focus({ preventScroll: true });
-    } catch {
-      try {
-        firstFocusable.focus();
-      } catch {
-        /* ignore */
-      }
-    }
+    focusSafely(firstFocusable);
   }
 
   releaseFocus() {
     const trap = this.focusTrapStack.pop();
     if (trap && this.lastFocusedElement) {
-      try {
-        this.lastFocusedElement.focus({ preventScroll: true });
-      } catch {
-        try {
-          this.lastFocusedElement.focus();
-        } catch {
-          /* ignored */
-        }
-      }
+      focusSafely(this.lastFocusedElement);
     }
   }
 

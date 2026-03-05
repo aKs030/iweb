@@ -83,14 +83,7 @@ export function effect(fn) {
     const execute = () => {
         if (disposed)
             return;
-        if (typeof cleanup === 'function') {
-            try {
-                cleanup();
-            }
-            catch {
-                /* keep resilient */
-            }
-        }
+        _safeCall(cleanup);
         const prev = _currentEffect;
         _currentEffect = execute;
         try {
@@ -103,14 +96,7 @@ export function effect(fn) {
     execute();
     return () => {
         disposed = true;
-        if (typeof cleanup === 'function') {
-            try {
-                cleanup();
-            }
-            catch {
-                /* keep resilient */
-            }
-        }
+        _safeCall(cleanup);
     };
 }
 // ---------------------------------------------------------------------------
@@ -133,12 +119,7 @@ export function batch(fn) {
         _batchQueue = null;
         for (const subscriberSet of queue) {
             for (const cb of subscriberSet) {
-                try {
-                    cb();
-                }
-                catch {
-                    /* keep resilient */
-                }
+                _safeCall(cb);
             }
         }
     }
@@ -152,11 +133,16 @@ function _notify(subscribers) {
         return;
     }
     for (const cb of [...subscribers]) {
-        try {
-            cb();
-        }
-        catch {
-            /* keep store resilient against listener errors */
-        }
+        _safeCall(cb);
+    }
+}
+function _safeCall(fn) {
+    if (typeof fn !== 'function')
+        return;
+    try {
+        fn();
+    }
+    catch {
+        /* keep resilient */
     }
 }

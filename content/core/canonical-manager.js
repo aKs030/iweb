@@ -82,6 +82,19 @@ function buildCanonicalLinks(options = {}) {
   return { canonical, alternates, origin };
 }
 
+function upsertAlternateLanguageLink(lang, href) {
+  if (!href) return;
+  const selector = `link[rel="alternate"][hreflang="${lang}"]`;
+  const existing = document.head.querySelector(selector);
+  if (existing) return void existing.setAttribute('href', href);
+
+  const el = document.createElement('link');
+  el.setAttribute('rel', 'alternate');
+  el.setAttribute('hreflang', lang);
+  el.setAttribute('href', href);
+  document.head.appendChild(el);
+}
+
 export function applyCanonicalLinks(options = {}) {
   try {
     const { canonical, alternates } = buildCanonicalLinks(options);
@@ -99,20 +112,9 @@ export function applyCanonicalLinks(options = {}) {
       upsertHeadLink({ rel: 'canonical', href: canonical });
     }
 
-    alternates.forEach(({ lang, href }) => {
-      if (!href) return;
-      const selector = `link[rel="alternate"][hreflang="${lang}"]`;
-      let el = document.head.querySelector(selector);
-      if (el) {
-        el.setAttribute('href', href);
-      } else {
-        el = document.createElement('link');
-        el.setAttribute('rel', 'alternate');
-        el.setAttribute('hreflang', lang);
-        el.setAttribute('href', href);
-        document.head.appendChild(el);
-      }
-    });
+    alternates.forEach(({ lang, href }) =>
+      upsertAlternateLanguageLink(lang, href),
+    );
 
     log.debug('Canonical links applied:', canonical);
   } catch (error) {

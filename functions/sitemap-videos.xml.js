@@ -3,12 +3,12 @@ import {
   buildYouTubeEmbedUrl,
   loadYouTubeVideos,
 } from './api/_sitemap-data.js';
+import { respondWithSnapshotOr503 } from './api/_sitemap-snapshot.js';
 import {
-  buildSitemapHeaders,
-  loadSitemapSnapshot,
-  respondWithSnapshotOr503,
-  saveSitemapSnapshot,
-} from './api/_sitemap-snapshot.js';
+  dedupeBy,
+  respondWithSnapshotOrFallback,
+  saveAndRespondSitemapXml,
+} from './api/_sitemap-response.js';
 
 const CACHE_CONTROL = 'public, max-age=3600, stale-while-revalidate=86400';
 const SNAPSHOT_NAME = 'sitemap-videos.xml';
@@ -53,62 +53,34 @@ export async function onRequest(context) {
   const apiKey = String(context.env?.YOUTUBE_API_KEY || '').trim();
 
   if (!channelId || !apiKey) {
-    const snapshot = await loadSitemapSnapshot(context.env, SNAPSHOT_NAME);
-    if (snapshot?.xml) {
-      return new Response(snapshot.xml, {
-        status: 200,
-        headers: buildSitemapHeaders(CACHE_CONTROL, {
-          'X-Sitemap-Source': 'snapshot-stale',
-          ...(snapshot.updatedAt
-            ? { 'X-Sitemap-Snapshot-At': snapshot.updatedAt }
-            : {}),
-        }),
-      });
-    }
-
-    return new Response(buildFallbackXml(origin), {
-      headers: {
-        ...buildSitemapHeaders(CACHE_CONTROL),
-        'X-Sitemap-Source': 'fallback-no-credentials',
-      },
+    return respondWithSnapshotOrFallback({
+      env: context.env,
+      name: SNAPSHOT_NAME,
+      cacheControl: CACHE_CONTROL,
+      fallbackXml: buildFallbackXml(origin),
+      fallbackSource: 'fallback-no-credentials',
     });
   }
 
   try {
     const videos = await loadYouTubeVideos(context.env);
     if (!videos.length) {
-      const snapshot = await loadSitemapSnapshot(context.env, SNAPSHOT_NAME);
-      if (snapshot?.xml) {
-        return new Response(snapshot.xml, {
-          status: 200,
-          headers: buildSitemapHeaders(CACHE_CONTROL, {
-            'X-Sitemap-Source': 'snapshot-stale',
-            ...(snapshot.updatedAt
-              ? { 'X-Sitemap-Snapshot-At': snapshot.updatedAt }
-              : {}),
-          }),
-        });
-      }
-
-      return new Response(buildFallbackXml(origin), {
-        headers: {
-          ...buildSitemapHeaders(CACHE_CONTROL),
-          'X-Sitemap-Source': 'fallback-empty-video-feed',
-        },
+      return respondWithSnapshotOrFallback({
+        env: context.env,
+        name: SNAPSHOT_NAME,
+        cacheControl: CACHE_CONTROL,
+        fallbackXml: buildFallbackXml(origin),
+        fallbackSource: 'fallback-empty-video-feed',
       });
     }
 
-    const seenPaths = new Set();
-    const uniqueVideos = [];
-    for (const video of videos) {
-      const absolutePath = `${origin}${video.path}`;
-      if (seenPaths.has(absolutePath)) continue;
-      seenPaths.add(absolutePath);
-      uniqueVideos.push({
+    const uniqueVideos = dedupeBy(
+      videos.map((video) => ({
         ...video,
-        path: absolutePath,
-      });
-    }
+        path: `${origin}${video.path}`,
+      })),
+      (video) => video.path,
+    );
 
     const xml = [
       '<?xml version="1.0" encoding="UTF-8"?>',
@@ -120,10 +92,11 @@ export async function onRequest(context) {
       '</urlset>',
     ].join('\n');
 
-    await saveSitemapSnapshot(context.env, SNAPSHOT_NAME, xml);
-
-    return new Response(xml, {
-      headers: buildSitemapHeaders(CACHE_CONTROL),
+    return saveAndRespondSitemapXml({
+      env: context.env,
+      name: SNAPSHOT_NAME,
+      xml,
+      cacheControl: CACHE_CONTROL,
     });
   } catch {
     return respondWithSnapshotOr503({
