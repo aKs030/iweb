@@ -9,28 +9,28 @@ const CONTACT_TITLE = { title: 'menu.contact', subtitle: 'menu.contact_sub' };
 
 export const MenuConfig = {
   // Paths
-  CSS_URL: '/content/components/menu/menu.css',
+  CSS_URLS: [
+    '/content/components/menu/menu.css',
+    '/content/components/menu/menu-responsive.css',
+    '/content/components/menu/menu-backdrop.css',
+  ],
+  SHADOW_CSS_URLS: [
+    '/content/components/menu/menu.css',
+    '/content/components/menu/menu-responsive.css',
+  ],
+  GLOBAL_CSS_URLS: ['/content/components/menu/menu-backdrop.css'],
 
-  // Timing (aligned with menu.css transitions / JS behavior)
-  ANIMATION_DURATION: 400,
+  // Timing
   DEBOUNCE_DELAY: 100,
   ANNOUNCEMENT_DELAY: 100,
-  OBSERVER_TIMEOUT: 3000,
   SEARCH_DEBOUNCE: 220,
   SEARCH_MIN_QUERY_LENGTH: 2,
   SEARCH_REQUEST_TIMEOUT: 6000,
   SEARCH_TOP_K: 12,
 
-  // Breakpoints (must match menu.css media queries)
+  // Breakpoints (must match menu-responsive.css media queries)
   MOBILE_BREAKPOINT: 900,
   TABLET_BREAKPOINT: 900,
-  SUBTITLE_HIDE_BREAKPOINT: 1024,
-  SMALL_BREAKPOINT: 480,
-
-  // Features
-  ENABLE_ANALYTICS: false,
-  ENABLE_PERSISTENCE: false,
-  ENABLE_DEBUG: false,
 
   // Title Mapping
   TITLE_MAP: {
@@ -73,8 +73,6 @@ export const MenuConfig = {
     { href: '/about/', icon: 'user', fallback: '🧑', label: 'menu.about' },
   ],
 
-  // Performance
-  MAX_LOG_ENTRIES: 20,
+  // Runtime
   ICON_CHECK_DELAY: 100,
-  TITLE_TRANSITION_DELAY: 200,
 };

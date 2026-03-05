@@ -5,6 +5,12 @@
 import { i18n } from '../../../core/i18n.js';
 import { TimerManager } from '../../../core/utils.js';
 import { createLogger } from '../../../core/logger.js';
+import { withViewTransition } from '../../../core/view-transitions.js';
+import {
+  VIEW_TRANSITION_ROOT_CLASSES,
+  VIEW_TRANSITION_TYPES,
+} from '../../../core/view-transition-types.js';
+import { VIEW_TRANSITION_TIMINGS_MS } from '../../../core/view-transition-timings.js';
 
 const log = createLogger('MenuEvents');
 
@@ -83,12 +89,25 @@ export class MenuEvents {
         : 'dark';
     };
 
-    const applyTheme = (theme) => {
-      const root = document.documentElement;
-      root.setAttribute('data-theme', theme === 'light' ? 'light' : 'dark');
+    const applyTheme = (theme, { animate = false } = {}) => {
+      const apply = () => {
+        const root = document.documentElement;
+        root.setAttribute('data-theme', theme === 'light' ? 'light' : 'dark');
 
-      // Update toggle button state
-      themeToggle.classList.toggle('is-light', theme === 'light');
+        // Update toggle button state
+        themeToggle.classList.toggle('is-light', theme === 'light');
+      };
+
+      if (!animate) {
+        apply();
+        return;
+      }
+
+      void withViewTransition(apply, {
+        types: [VIEW_TRANSITION_TYPES.THEME_CHANGE],
+        rootClasses: [VIEW_TRANSITION_ROOT_CLASSES.THEME_CHANGE],
+        timeoutMs: VIEW_TRANSITION_TIMINGS_MS.THEME_TIMEOUT,
+      });
     };
 
     // Apply initial theme
@@ -104,7 +123,7 @@ export class MenuEvents {
       } catch {
         /* quota exceeded */
       }
-      applyTheme(next);
+      applyTheme(next, { animate: true });
     };
 
     // Listen for system preference changes
@@ -151,7 +170,7 @@ export class MenuEvents {
           },
         );
       }
-      this.state.setOpen(isOpen);
+      this.setMenuOpenWithTransition(isOpen);
     };
 
     this.cleanupFns.push(
@@ -489,7 +508,30 @@ export class MenuEvents {
   }
 
   closeMenu() {
-    this.state.setOpen(false);
+    this.setMenuOpenWithTransition(false);
+  }
+
+  /**
+   * @param {boolean} isOpen
+   */
+  setMenuOpenWithTransition(isOpen) {
+    if (this.state.isOpen === isOpen) return;
+
+    void withViewTransition(
+      () => {
+        this.state.setOpen(isOpen);
+      },
+      {
+        types: [
+          isOpen
+            ? VIEW_TRANSITION_TYPES.MENU_OPEN
+            : VIEW_TRANSITION_TYPES.MENU_CLOSE,
+        ],
+        rootClasses: [VIEW_TRANSITION_ROOT_CLASSES.MENU],
+        preserveLiveBackdropOnMobile: true,
+        timeoutMs: VIEW_TRANSITION_TIMINGS_MS.MENU_TIMEOUT,
+      },
+    );
   }
 
   /**

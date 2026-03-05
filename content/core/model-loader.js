@@ -17,7 +17,7 @@
  * ```js
  * import { loadCompressedModel } from '/content/core/model-loader.js';
  *
- * const gltf = await loadCompressedModel('/content/assets/models/robot.glb');
+ * const gltf = await loadCompressedModel('/content/assets/robot.glb');
  * scene.add(gltf.scene);
  * ```
  *
@@ -124,11 +124,11 @@ export async function getConfiguredGLTFLoader(loadingManager) {
  *
  * @example
  * ```js
- * const gltf = await loadCompressedModel('/content/assets/models/robot.glb');
+ * const gltf = await loadCompressedModel('/content/assets/robot.glb');
  * scene.add(gltf.scene);
  *
  * // With options
- * const gltf = await loadCompressedModel('/content/assets/models/robot.glb', {
+ * const gltf = await loadCompressedModel('/content/assets/robot.glb', {
  *   timeout: 20000,
  *   onProgress: (xhr) => console.log(`${(xhr.loaded / xhr.total * 100)}%`),
  * });

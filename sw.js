@@ -1,18 +1,18 @@
 /**
- * Service Worker v7 — Offline-First mit Background Sync & IndexedDB
+ * Service Worker v8 — Offline-First mit Background Sync & IndexedDB
  *
  * Navigation: Network-only mit Offline-Fallback
  * Bilder/Fonts/3D: Cache-first mit Size-Limits
- * JS/CSS: Kein SW-Caching (Browser-HTTP-Cache übernimmt)
+ * First-party JS/CSS: stale-while-revalidate
  * API/Externe: Ignoriert
  * NEU: Background Sync für Analytics-Events & Chat-Daten
  * NEU: IndexedDB-basierte Analytics-Queue wird bei Reconnect geflusht
  */
 
 // Cache-Name mit Version — bei Deployments hochzählen
-const CACHE = 'static-v3';
+const CACHE = 'static-v4';
 const OFFLINE = '/offline.html';
-const MAX_CACHE_ITEMS = 80; // Max cached assets (images, fonts, models)
+const MAX_CACHE_ITEMS = 160; // Cached assets incl. images/fonts/models/first-party code
 
 // Background Sync tag names
 const SYNC_ANALYTICS = 'sync-analytics';
@@ -144,6 +144,24 @@ async function trimCache(cacheName) {
   }
 }
 
+/**
+ * Match same-origin JS/CSS assets that benefit from stale-while-revalidate.
+ * @param {Request} request
+ * @param {URL} url
+ * @returns {boolean}
+ */
+function isFirstPartyCodeAsset(request, url) {
+  if (url.origin !== self.location.origin) return false;
+  if (request.mode === 'navigate') return false;
+  if (url.pathname.startsWith('/api/')) return false;
+
+  if (request.destination === 'script' || request.destination === 'style') {
+    return true;
+  }
+
+  return /\.(?:m?js|css)$/.test(url.pathname);
+}
+
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.add(OFFLINE)));
   // KEIN skipWaiting() — verhindert Mid-Session-SW-Übernahme, die Reloads auslöst.
@@ -203,6 +221,36 @@ self.addEventListener('fetch', (e) => {
         return (
           (await c.match(OFFLINE)) || new Response('Offline', { status: 503 })
         );
+      }),
+    );
+    return;
+  }
+
+  // First-party JS/CSS: stale-while-revalidate
+  if (isFirstPartyCodeAsset(request, url)) {
+    e.respondWith(
+      caches.open(CACHE).then(async (c) => {
+        const cached = await c.match(request);
+
+        const networkPromise = fetch(request)
+          .then((res) => {
+            if (res.ok) {
+              c.put(request, res.clone());
+              trimCache(CACHE);
+            }
+            return res;
+          })
+          .catch(() => null);
+
+        if (cached) {
+          e.waitUntil(networkPromise);
+          return cached;
+        }
+
+        const network = await networkPromise;
+        if (network) return network;
+
+        return new Response('Offline', { status: 503 });
       }),
     );
     return;

@@ -46,7 +46,7 @@
     },
     {
       // SITEMAP_CACHE_KV wird jetzt auch für Template-Caching genutzt
-      // (Keys: "template:base-head", "template:base-loader", "sitemap:*.xml")
+      // (Keys: "template:base-head", "sitemap:*.xml")
       "binding": "SITEMAP_CACHE_KV",
       "id": "84ddd91c726146f3b363749eff14dbd5",
     },

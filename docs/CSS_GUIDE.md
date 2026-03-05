@@ -23,7 +23,6 @@ Loaded in `content/templates/base-head.html`:
 2. `root.css`
 3. `main.css`
 4. `animations.css`
-5. `loader.css`
 
 Theme switching is attribute-based on `<html data-theme="light|dark">`.
 

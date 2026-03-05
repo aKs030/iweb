@@ -19,6 +19,10 @@ export class ThreeEarthManager {
     this.cleanupFn = null;
     this.isLoading = false;
     this.timers = new TimerManager('ThreeEarthManager');
+    this.deferObserver = null;
+    this.deferIdleId = null;
+    this.deferTimeoutId = null;
+    this.deferIntentCleanup = null;
   }
 
   getContainer() {
@@ -29,6 +33,7 @@ export class ThreeEarthManager {
 
   async load() {
     if (this.isLoading || this.cleanupFn) return;
+    this.clearDeferredLoadHooks();
 
     if (this.env.isTest && !threeEarthState.isForceEnabled()) {
       log.info('Test environment - skipping Three.js Earth');
@@ -53,9 +58,9 @@ export class ThreeEarthManager {
     // Preload critical textures immediately when earth loading starts
     this.preloadTextures();
 
-    // Set loading timeout to prevent indefinite blocking
+    // Set loading timeout to prevent indefinite readiness gating
     const loadingTimeout = this.timers.setTimeout(() => {
-      log.warn('Three.js Earth loading timeout, unblocking loader');
+      log.warn('Three.js Earth loading timeout, clearing readiness block');
       AppLoadManager.unblock('three-earth');
     }, 6000); // 6 second timeout for earth loading
 
@@ -87,45 +92,116 @@ export class ThreeEarthManager {
   }
 
   preloadTextures() {
-    // Preload critical earth textures programmatically
-    const texturePaths = [
-      '/content/assets/img/earth/textures/earth_day.webp',
+    // Keep startup light: preload only the first critical texture once loading starts.
+    const dayTexture = '/content/assets/img/earth/textures/earth_day.webp';
+    upsertHeadLink({
+      rel: 'preload',
+      href: dayTexture,
+      as: 'image',
+      dataset: { injectedBy: 'three-earth' },
+      attrs: { fetchpriority: 'high' },
+    });
+
+    // Secondary textures are queued as low-priority prefetches.
+    [
       '/content/assets/img/earth/textures/earth_night.webp',
       '/content/assets/img/earth/textures/earth_normal.webp',
       '/content/assets/img/earth/textures/earth_bump.webp',
-    ];
-
-    const highPriorityTexture = texturePaths[0];
-    if (highPriorityTexture) {
+    ].forEach((href) => {
       upsertHeadLink({
-        rel: 'preload',
-        href: highPriorityTexture,
+        rel: 'prefetch',
+        href,
         as: 'image',
         dataset: { injectedBy: 'three-earth' },
-        attrs: { fetchpriority: 'high' },
       });
-    }
-
-    this._preloadedImages = texturePaths.map((path, index) => {
-      const img = new Image();
-      if (index === 0) {
-        img.fetchPriority = 'high';
-      }
-      img.src = path;
-      return img;
     });
   }
 
   init() {
     const container = this.getContainer();
     if (!container) return;
+    if (this.isLoading || this.cleanupFn) return;
 
-    // Start loading immediately if container exists, don't wait for viewport
-    this.load();
+    const startLoad = () => {
+      this.load();
+    };
+
+    // 1) Load when user intent is clear (click/tap/key interaction).
+    const onIntent = () => {
+      startLoad();
+    };
+
+    window.addEventListener('pointerdown', onIntent, {
+      once: true,
+      passive: true,
+    });
+    window.addEventListener('keydown', onIntent, { once: true });
+    this.deferIntentCleanup = () => {
+      window.removeEventListener('pointerdown', onIntent);
+      window.removeEventListener('keydown', onIntent);
+      this.deferIntentCleanup = null;
+    };
+
+    // 2) Load when container is near viewport.
+    if ('IntersectionObserver' in globalThis) {
+      this.deferObserver = new IntersectionObserver(
+        (entries) => {
+          if (entries.some((entry) => entry.isIntersecting)) {
+            startLoad();
+          }
+        },
+        {
+          root: null,
+          rootMargin: '300px 0px',
+          threshold: 0.01,
+        },
+      );
+      this.deferObserver.observe(container);
+    }
+
+    // 3) Fallback/assist: load during idle time (with timeout).
+    if (globalThis.requestIdleCallback) {
+      this.deferIdleId = requestIdleCallback(
+        () => {
+          startLoad();
+        },
+        { timeout: 2500 },
+      );
+    } else {
+      this.deferTimeoutId = this.timers.setTimeout(() => {
+        startLoad();
+      }, 2500);
+    }
+  }
+
+  clearDeferredLoadHooks() {
+    if (this.deferObserver) {
+      this.deferObserver.disconnect();
+      this.deferObserver = null;
+    }
+
+    if (
+      this.deferIdleId !== null &&
+      this.deferIdleId !== undefined &&
+      globalThis.cancelIdleCallback
+    ) {
+      cancelIdleCallback(this.deferIdleId);
+    }
+    this.deferIdleId = null;
+
+    if (this.deferTimeoutId) {
+      this.timers.clearTimeout(this.deferTimeoutId);
+      this.deferTimeoutId = null;
+    }
+
+    if (this.deferIntentCleanup) {
+      this.deferIntentCleanup();
+    }
   }
 
   async cleanup() {
     this.timers.clearAll();
+    this.clearDeferredLoadHooks();
     if (this.cleanupFn) {
       try {
         this.cleanupFn();

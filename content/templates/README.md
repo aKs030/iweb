@@ -5,9 +5,8 @@ Gemeinsame HTML-Bausteine, die in Seiten eingebettet werden.
 ## Dateien
 
 - `content/templates/base-head.html`: Importmap, globale Meta/Link-Tags und Core-Script-Injektion.
-- `content/templates/base-loader.html`: Globaler Loader-Markup (`#app-loader`).
 
-## Loader Nutzung (aktuell)
+## Loading-State Nutzung
 
 ```javascript
 import { AppLoadManager } from '/content/core/load-manager.js';
@@ -19,7 +18,7 @@ AppLoadManager.updateLoader(0.4, 'Lade Daten...');
 // ... async work
 
 AppLoadManager.unblock('data-fetch');
-AppLoadManager.hideLoader(200, { immediate: false });
+AppLoadManager.hideLoader(200);
 
 document.addEventListener(EVENTS.LOADING_UNBLOCKED, () => {});
 document.addEventListener(EVENTS.LOADING_HIDE, () => {});
@@ -30,6 +29,7 @@ document.addEventListener('loading:update', (event) => {
 
 ## Hinweise
 
-- Der Loader wird über `content/core/load-manager.js` gesteuert.
+- Loading-State wird über `content/core/load-manager.js` gesteuert.
+- Das Loading-System ist UI-agnostisch (Events/State) und nicht an Loader-Markup gebunden.
 - Event-Konstanten liegen in `content/core/events.js`.
 - `base-head.html` lädt `head-inline.js` früh, danach `content/main.js`.

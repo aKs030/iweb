@@ -1,231 +1,130 @@
 /**
  * View Transitions API - Progressive Enhancement
  *
- * Lightweight helper for wrapping DOM updates in View Transitions and
- * a safe same-page scroll interceptor for anchor links.
+ * Public facade that composes the internal transition modules:
+ * - core transition wrapper
+ * - navigation interception
+ * - runtime style injection
  *
- * @version 4.1.0
+ * @version 6.0.0
  */
 
-import { handleSamePageScroll } from './utils.js';
+import {
+  destroyViewTransitionCore,
+  isSupported,
+  normalizeTypes,
+  withElementViewTransitionName,
+  withViewTransition,
+} from './view-transitions-core.js';
+import {
+  createDocumentClickHandler,
+  navigateWithViewTransition as navigateWithViewTransitionInternal,
+} from './view-transitions-navigation.js';
+import {
+  injectViewTransitionRuntimeStyles,
+  removeViewTransitionRuntimeStyles,
+} from './view-transitions-runtime-style.js';
+import { applyViewTransitionTimingVars } from './view-transition-timings.js';
+import { DEFAULT_NAVIGATION_TRANSITION_TYPES } from './view-transition-types.js';
+
+/**
+ * @typedef {Object} ViewTransitionInitOptions
+ * @property {boolean=} captureInternalLinks - Intercept same-origin page links
+ * @property {boolean=} enableCrossDocument - Enable @view-transition navigation:auto
+ * @property {boolean=} injectNavigationStyles - Inject minimal default page transition styles
+ * @property {string[]=} navigationTypes - Types used for navigateWithViewTransition()
+ */
+
+const INIT_CONFIG = {
+  captureInternalLinks: true,
+  enableCrossDocument: true,
+  injectNavigationStyles: true,
+  navigationTypes: [...DEFAULT_NAVIGATION_TRANSITION_TYPES],
+};
 
 let isInitialized = false;
-let activeTransition = null;
+/** @type {(event: MouseEvent) => void | null} */
+let clickHandler = null;
 
 /**
- * @returns {boolean}
+ * @param {ViewTransitionInitOptions} options
  */
-export const isSupported = () =>
-  typeof document !== 'undefined' &&
-  typeof document.startViewTransition === 'function';
-
-/**
- * @returns {boolean}
- */
-const supportsTypedTransitions = () =>
-  typeof ViewTransition !== 'undefined' &&
-  typeof document?.startViewTransition === 'function';
-
-/**
- * @param {unknown} error
- * @returns {boolean}
- */
-const isAbortError = (error) =>
-  !!error &&
-  typeof error === 'object' &&
-  'name' in error &&
-  error.name === 'AbortError';
-
-/**
- * @param {unknown} value
- * @returns {string[]}
- */
-const normalizeTypes = (value) => {
-  if (!Array.isArray(value)) return [];
-  const unique = new Set();
-
-  for (const entry of value) {
-    if (typeof entry !== 'string') continue;
-    const token = entry.trim();
-    if (!token) continue;
-    unique.add(token);
-    if (unique.size >= 8) break;
+const applyInitConfig = (options = {}) => {
+  if (typeof options.captureInternalLinks === 'boolean') {
+    INIT_CONFIG.captureInternalLinks = options.captureInternalLinks;
+  }
+  if (typeof options.enableCrossDocument === 'boolean') {
+    INIT_CONFIG.enableCrossDocument = options.enableCrossDocument;
+  }
+  if (typeof options.injectNavigationStyles === 'boolean') {
+    INIT_CONFIG.injectNavigationStyles = options.injectNavigationStyles;
   }
 
-  return [...unique];
-};
-
-/**
- * @param {Promise<unknown>|undefined|null} promise
- */
-const silencePromiseRejection = (promise) => {
-  promise?.catch(() => {});
-};
-
-/**
- * @param {ViewTransition|undefined} transition
- */
-const guardTransitionPromises = (transition) => {
-  silencePromiseRejection(transition?.ready);
-  silencePromiseRejection(transition?.updateCallbackDone);
-};
-
-/**
- * @param {() => void|Promise<void>} update
- * @param {string[]} types
- * @returns {ViewTransition}
- */
-const startTransition = (update, types) => {
-  if (types.length && supportsTypedTransitions()) {
-    return document.startViewTransition({
-      update,
-      types,
-    });
-  }
-  return document.startViewTransition(update);
-};
-
-/**
- * @returns {Promise<void>}
- */
-const waitForActiveTransition = async () => {
-  if (!activeTransition) return;
-  try {
-    await activeTransition;
-  } catch {
-    /* ignore previous transition failures */
+  const navigationTypes = normalizeTypes(options.navigationTypes);
+  if (navigationTypes.length) {
+    INIT_CONFIG.navigationTypes = navigationTypes;
   }
 };
 
 /**
- * @param {Promise<void>} finishedPromise
+ * Update runtime config for view transitions. Safe to call multiple times.
+ *
+ * @param {ViewTransitionInitOptions} [options]
  */
-const trackActiveTransition = (finishedPromise) => {
-  const tracked = finishedPromise.finally(() => {
-    if (activeTransition === tracked) {
-      activeTransition = null;
-    }
+export function configureViewTransitions(options = {}) {
+  applyInitConfig(options);
+  applyViewTransitionTimingVars();
+  injectViewTransitionRuntimeStyles({
+    injectNavigationStyles: INIT_CONFIG.injectNavigationStyles,
+    enableCrossDocument: INIT_CONFIG.enableCrossDocument,
   });
-
-  activeTransition = tracked;
-  silencePromiseRejection(tracked);
-};
+}
 
 /**
- * Wrap a DOM mutation in a View Transition if supported.
- * Calls are serialized so a new transition does not abort the previous one.
+ * Navigate with a transition where possible.
  *
- * @param {() => void|Promise<void>} callback
- * @param {{ types?: string[] }} [options]
- * @returns {Promise<void>}
- */
-export async function withViewTransition(callback, options = {}) {
-  if (typeof callback !== 'function') return;
-
-  try {
-    await waitForActiveTransition();
-
-    if (!isSupported()) {
-      await callback();
-      return;
-    }
-
-    const types = normalizeTypes(options.types);
-    let transition;
-    let updateExecuted = false;
-
-    const update = async () => {
-      updateExecuted = true;
-      await callback();
-    };
-
-    try {
-      transition = startTransition(update, types);
-    } catch {
-      await callback();
-      return;
-    }
-
-    guardTransitionPromises(transition);
-
-    const finishedPromise = Promise.resolve(transition?.finished);
-    trackActiveTransition(finishedPromise);
-
-    try {
-      if (types.length && transition?.types && transition.types.size === 0) {
-        for (const token of types) transition.types.add(token);
-      }
-
-      await finishedPromise;
-    } catch (error) {
-      if (!updateExecuted && !isAbortError(error)) {
-        await callback();
-      }
-    }
-  } catch {
-    /* keep transition helper non-throwing for fire-and-forget call sites */
-  }
-}
-
-/**
- * @param {MouseEvent} event
- * @returns {HTMLAnchorElement|null}
- */
-function getEventAnchor(event) {
-  const path = event.composedPath?.() || [];
-
-  for (const node of path) {
-    if (node instanceof HTMLAnchorElement && node.hasAttribute('href')) {
-      return node;
-    }
-  }
-
-  const target = event.target;
-  if (!(target instanceof Element)) return null;
-
-  return target.closest('a[href]');
-}
-
-/**
- * @param {HTMLAnchorElement} link
+ * @param {string} href
+ * @param {import('./view-transitions-core.js').TransitionOptions & { replace?: boolean }} [options]
  * @returns {boolean}
  */
-function shouldIgnoreLink(link) {
-  const href = link.getAttribute('href') || '';
-  if (!href) return true;
-  if (href.startsWith('#')) return true;
-  if (href.startsWith('mailto:') || href.startsWith('tel:')) return true;
-  if (href.startsWith('javascript:')) return true;
-  if (link.hasAttribute('download')) return true;
-  if (link.target && link.target !== '_self') return true;
-  if (link.rel.includes('external')) return true;
-
-  return false;
-}
-
-/**
- * Intercepts same-page links so scroll-to-top can be handled smoothly.
- *
- * @param {MouseEvent} event
- */
-function onDocumentClick(event) {
-  if (event.defaultPrevented) return;
-  if (event.button !== 0) return;
-  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-
-  const link = getEventAnchor(event);
-  if (!link || shouldIgnoreLink(link)) return;
-
-  if (handleSamePageScroll(link.href)) {
-    event.preventDefault();
-  }
+export function navigateWithViewTransition(href, options = {}) {
+  return navigateWithViewTransitionInternal(href, options, {
+    navigationTypes: INIT_CONFIG.navigationTypes,
+  });
 }
 
 /**
  * Initialize View Transitions support hooks.
+ *
+ * @param {ViewTransitionInitOptions} [options]
  */
-export function initViewTransitions() {
+export function initViewTransitions(options = {}) {
+  configureViewTransitions(options);
+
   if (isInitialized) return;
   isInitialized = true;
-  document.addEventListener('click', onDocumentClick);
+
+  clickHandler = createDocumentClickHandler({
+    getCaptureInternalLinks: () => INIT_CONFIG.captureInternalLinks,
+    getNavigationTypes: () => INIT_CONFIG.navigationTypes,
+  });
+
+  document.addEventListener('click', clickHandler);
 }
+
+/**
+ * Optional teardown (useful in tests or isolated embeds).
+ */
+export function destroyViewTransitions() {
+  if (isInitialized && clickHandler) {
+    document.removeEventListener('click', clickHandler);
+  }
+
+  clickHandler = null;
+  isInitialized = false;
+
+  destroyViewTransitionCore();
+  removeViewTransitionRuntimeStyles();
+}
+
+export { isSupported, withElementViewTransitionName, withViewTransition };

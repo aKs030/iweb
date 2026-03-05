@@ -27,8 +27,6 @@ const CONFIG = Object.freeze({
   // primary path used by <site-footer> instances; always serves HTML
   FOOTER_PATH: '/content/components/footer/footer.html',
 
-  TRANSITION_DURATION: 300,
-
   LOAD_RETRY_ATTEMPTS: 2,
 
   LOAD_RETRY_DELAY_MS: 500,
@@ -53,8 +51,6 @@ export class SiteFooter extends HTMLElement {
     expanded: false,
 
     initialized: false,
-
-    isTransitioning: false,
 
     touchStartY: 0,
 
@@ -101,12 +97,14 @@ export class SiteFooter extends HTMLElement {
     const src = this.getAttribute('src') || CONFIG.FOOTER_PATH;
 
     try {
-      if (!this.innerHTML.trim()) {
+      const hasShell = this.dataset.shell === 'true';
+      if (!this.innerHTML.trim() || hasShell) {
         const html = await this.#fetchFooterHTML(src);
 
         if (!this.isConnected) return;
 
         this.innerHTML = html;
+        delete this.dataset.shell;
       }
 
       this.#init();
@@ -374,17 +372,8 @@ export class SiteFooter extends HTMLElement {
     if (!cookieBanner) return;
 
     const isAccepted = type === 'accepted';
-    const styledBanner =
-      /** @type {import('/content/core/types.js').StyledHTMLElement} */ (
-        cookieBanner
-      );
-
-    styledBanner.style.animation = 'cookieSlideOut 0.3s ease-out forwards';
-
-    this.#timers.setTimeout(() => {
-      cookieBanner.classList.add('hidden');
-      this.#updateFooterHeight(false);
-    }, 300);
+    cookieBanner.classList.add('hidden');
+    this.#updateFooterHeight(false);
 
     CookieManager.set('cookie_consent', type);
     this.#analytics.updateConsent(isAccepted);
@@ -400,7 +389,7 @@ export class SiteFooter extends HTMLElement {
     /** @type {EventListener} */
 
     const handleOutsideClick = (e) => {
-      if (!this.#state.expanded || this.#state.isTransitioning) return;
+      if (!this.#state.expanded) return;
 
       const target = /** @type {Element} */ (e.target);
 
@@ -436,7 +425,6 @@ export class SiteFooter extends HTMLElement {
 
     /** @type {EventListener} */
     const handleTouchEnd = (e) => {
-      if (this.#state.isTransitioning) return;
       const touchEvent = /** @type {TouchEvent} */ (e);
       const touchEndY = touchEvent.changedTouches[0].clientY;
       const touchDuration = Date.now() - this.#state.touchStartTime;
@@ -493,14 +481,12 @@ export class SiteFooter extends HTMLElement {
   #toggleFooter(forceState) {
     const { footer, footerMin, footerMax } = this.#elements;
 
-    if (!footer || this.#state.isTransitioning) return;
+    if (!footer) return;
 
     const newState =
       forceState !== undefined ? forceState : !this.#state.expanded;
 
     if (newState === this.#state.expanded) return;
-
-    this.#state.isTransitioning = true;
 
     this.#state.expanded = newState;
 
@@ -539,10 +525,6 @@ export class SiteFooter extends HTMLElement {
         this.#timers.setTimeout(() => firstFocusable.focus(), 100);
       }
     }
-
-    this.#timers.setTimeout(() => {
-      this.#state.isTransitioning = false;
-    }, CONFIG.TRANSITION_DURATION);
   }
 
   // -------------------------------------------------------------------------
@@ -651,11 +633,6 @@ export class SiteFooter extends HTMLElement {
 
       this.#addListener('footerMin:click', footerMin, 'click', (e) => {
         if (isInteractive(/** @type {Element} */ (e.target))) return;
-
-        if (this.#state.isTransitioning) {
-          e.preventDefault();
-          return;
-        }
 
         this.#toggleFooter();
       });

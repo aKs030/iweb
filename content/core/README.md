@@ -6,7 +6,7 @@ This directory contains shared browser runtime modules used by pages, components
 
 - `logger.js`: Structured logging helpers (`createLogger`).
 - `events.js`: App event constants, emitter, and global event helpers.
-- `load-manager.js`: Central app loading lifecycle and loader orchestration.
+- `load-manager.js`: UI-agnostic loading lifecycle/state manager (events + blockers).
 - `i18n.js`: Language manager with translation loading and page translation.
 - `utils.js`: DOM helpers, observer helpers, timers, sanitizing, and shared helpers.
 - `fetch.js` / `cache.js`: Request helpers with cache support.
@@ -32,6 +32,8 @@ await i18n.init();
 fire(EVENTS.LOADING_UNBLOCKED);
 AppLoadManager.block('example-init');
 AppLoadManager.unblock('example-init');
+AppLoadManager.updateLoader(0.75, 'Daten vorbereitet');
+AppLoadManager.hideLoader(0);
 log.info('Core initialized');
 ```
 

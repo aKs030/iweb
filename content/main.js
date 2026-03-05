@@ -81,6 +81,7 @@ const sectionManager = new SectionManager();
 // ===== Initialize Managers =====
 // Declared before onDOMReady so _initApp can reference it without temporal issues
 const ThreeEarthLoader = new ThreeEarthManager(ENV);
+let loaderHidden = false;
 
 let _appInitialized = false;
 
@@ -117,9 +118,6 @@ const _initApp = () => {
 
 onDOMReady(_initApp);
 
-// Track if loader has been hidden
-let loaderHidden = false;
-
 // ===== Application Bootstrap =====
 document.addEventListener(
   'DOMContentLoaded',
@@ -127,7 +125,11 @@ document.addEventListener(
     await Promise.all([i18n.init(), initDOMPurify()]);
     initOfflineIndicator();
     perfMarks.domReady = performance.now();
-    AppLoadManager.updateLoader(0.1, i18n.t('loader.status_init'));
+
+    const updateLoader = (progress, message, options) => {
+      if (loaderHidden) return;
+      AppLoadManager.updateLoader(progress, message, options);
+    };
 
     let modulesReady = false;
     let windowLoaded = false;
@@ -155,8 +157,8 @@ document.addEventListener(
       if (AppLoadManager?.isBlocked?.()) return;
       if (!isEarthReady()) return;
 
+      updateLoader(1, i18n.t('loader.ready_system'));
       loaderHidden = true;
-      AppLoadManager.updateLoader(1, i18n.t('loader.ready_system'));
       appTimers.setTimeout(() => AppLoadManager.hideLoader(), 100);
       announce(i18n.t('loader.app_loaded'), { dedupe: true });
     };
@@ -168,30 +170,30 @@ document.addEventListener(
       () => {
         perfMarks.windowLoaded = performance.now();
         windowLoaded = true;
-        AppLoadManager.updateLoader(0.7, i18n.t('loader.resources'));
+        updateLoader(0.7, i18n.t('loader.resources'));
         checkReady();
       },
       { once: true },
     );
 
-    AppLoadManager.updateLoader(0.2, i18n.t('loader.modules_core'));
-    AppLoadManager.updateLoader(0.3, i18n.t('loader.hero_init'));
+    updateLoader(0.2, i18n.t('loader.modules_core'));
+    updateLoader(0.3, i18n.t('loader.hero_init'));
     initHeroFeatureBundle(sectionManager);
 
-    AppLoadManager.updateLoader(0.4, i18n.t('loader.system_3d'));
-    AppLoadManager.updateLoader(0.5, i18n.t('loader.optimize_images'));
+    updateLoader(0.4, i18n.t('loader.system_3d'));
+    updateLoader(0.5, i18n.t('loader.optimize_images'));
 
     modulesReady = true;
     perfMarks.modulesReady = performance.now();
-    AppLoadManager.updateLoader(0.6, i18n.t('loader.modules_loaded'));
+    updateLoader(0.6, i18n.t('loader.modules_loaded'));
     checkReady();
 
     // Force hide after timeout
     appTimers.setTimeout(() => {
       if (!loaderHidden) {
         log.info('Forcing loading screen hide after timeout');
+        updateLoader(1, i18n.t('loader.timeout'));
         loaderHidden = true;
-        AppLoadManager.updateLoader(1, i18n.t('loader.timeout'));
         AppLoadManager.hideLoader();
       }
     }, LOADING_CONFIG.TIMEOUT_MS);

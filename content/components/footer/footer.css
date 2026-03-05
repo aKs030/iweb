@@ -16,10 +16,7 @@ address {
   --btn-padding: var(--space-2) var(--space-4);
   --btn-radius: var(--menu-item-radius);
   --btn-font-size: clamp(var(--size-12), 1vw, var(--size-13));
-  --btn-transition:
-    background-color var(--transition-base), color var(--transition-base),
-    border-color var(--transition-base), transform var(--transition-base),
-    box-shadow var(--transition-base);
+  --btn-transition: none;
 
   --accent-color: var(--component-accent-blue);
   --accent-hover: var(--component-accent-blue-hover);
@@ -33,7 +30,7 @@ address {
   font-size: var(--btn-font-size);
   font-weight: 600;
   cursor: pointer;
-  transition: var(--btn-transition);
+  transition: none;
   letter-spacing: -0.01em;
   white-space: nowrap;
   flex-shrink: 0;
@@ -55,11 +52,11 @@ address {
   .legal-btn,
   .social-btn
 ) {
-  transition: var(--transition-interactive-standard);
+  transition: none;
 }
 
 :is(.nav-btn svg, .links a svg, .links-compact a svg, .legal-btn svg) {
-  transition: var(--transition-icon-standard);
+  transition: none;
 }
 
 /* ===== Base Footer ===== */
@@ -90,15 +87,7 @@ address {
   font-size: var(--size-13);
   font-weight: 510;
   letter-spacing: -0.02em;
-  animation: footerAppear 0.8s var(--ease-spring) forwards;
-  opacity: 0;
-}
-
-@keyframes footerAppear {
-  to {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0) scale(1);
-  }
+  opacity: 1;
 }
 
 /* ===== Minimized State ===== */
@@ -110,7 +99,7 @@ address {
   padding: 0 var(--footer-padding);
   min-height: var(--footer-min-height);
   cursor: pointer;
-  transition: background var(--transition-base);
+  transition: none;
   user-select: none;
   overflow: hidden;
 }
@@ -153,7 +142,6 @@ address {
 .brand-link:hover {
   color: var(--component-accent-blue);
   background: var(--component-fill-primary);
-  transform: scale(1.02);
 }
 
 /* Mobile brand name shortening */
@@ -171,7 +159,7 @@ address {
   align-items: center;
   gap: var(--footer-gap);
   flex-shrink: 0;
-  animation: cookieSlideIn 0.4s var(--ease-spring) forwards;
+  animation: none;
   pointer-events: auto;
   cursor: default;
 }
@@ -184,43 +172,11 @@ address {
   cursor: pointer;
 }
 
-@keyframes cookieSlideIn {
-  from {
-    opacity: 0;
-    transform: translateX(calc(var(--size-10) * -1)) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0) scale(1);
-  }
-}
-
-@keyframes cookieSlideOut {
-  from {
-    opacity: 1;
-    transform: translateX(0) scale(1);
-  }
-  to {
-    opacity: 0;
-    transform: translateX(calc(var(--size-10) * -1)) scale(0.95);
-  }
-}
-
 .cookie-emoji {
   font-size: var(--size-16);
   line-height: 1;
   flex-shrink: 0;
-  animation: cookieBounce 2s ease-in-out infinite;
-}
-
-@keyframes cookieBounce {
-  0%,
-  100% {
-    transform: translateY(0) rotate(0deg);
-  }
-  50% {
-    transform: translateY(calc(var(--size-2) * -1)) rotate(5deg);
-  }
+  animation: none;
 }
 
 .cookie-text {
@@ -246,7 +202,6 @@ address {
 .btn-accept:hover {
   background: var(--accent-hover);
   border-color: var(--accent-hover);
-  transform: translateY(calc(var(--size-1) * -1)) scale(1.02);
   box-shadow: 0 var(--size-4) var(--size-12)
     color-mix(in srgb, var(--component-accent-blue) 30%, transparent);
 }
@@ -261,12 +216,11 @@ address {
   color: var(--component-label-primary);
   background: var(--component-fill-primary);
   border-color: color-mix(in srgb, var(--clr-white) 20%, transparent);
-  transform: translateY(calc(var(--size-1) * -1)) scale(1.02);
 }
 
 .btn-accept:active,
 .btn-reject:active {
-  transform: translateY(0) scale(0.98);
+  transform: none;
 }
 
 .btn-accept:focus-visible,
@@ -312,13 +266,12 @@ address {
   color: var(--component-accent-blue);
   background: var(--component-fill-primary);
   border-color: var(--component-separator);
-  transform: translateY(calc(var(--size-1) * -1)) scale(1.02);
   outline: none;
 }
 
 .nav-btn:active {
   background: var(--component-fill-secondary);
-  transform: translateY(0) scale(0.98);
+  transform: none;
 }
 
 .nav-btn:focus-visible {
@@ -337,7 +290,7 @@ address {
 
 .nav-btn:hover svg {
   opacity: 1;
-  transform: translateY(calc(var(--size-1) * -1)) scale(1.1);
+  transform: none;
 }
 
 /* ===== Maximized State ===== */
@@ -409,7 +362,6 @@ address {
 .btn-close:hover {
   background: var(--component-fill-primary);
   color: var(--clr-white);
-  transform: scale(1.05);
 }
 
 .settings-content {
@@ -492,7 +444,7 @@ address {
   inset: 0;
   background: color-mix(in srgb, var(--clr-white) 20%, var(--bg-primary));
   border-radius: var(--size-22);
-  transition: background 0.3s;
+  transition: none;
   border: var(--size-1) solid var(--border-color);
 }
 
@@ -505,9 +457,7 @@ address {
   bottom: var(--size-2);
   background: color-mix(in srgb, var(--clr-white) 40%, var(--bg-primary));
   border-radius: 50%;
-  transition:
-    transform 0.3s,
-    background 0.3s;
+  transition: none;
   box-shadow: var(--footer-toggle-knob-shadow);
 }
 
@@ -562,7 +512,6 @@ address {
   background: var(--footer-soft-fill-2);
   color: var(--clr-white);
   border-color: color-mix(in srgb, var(--clr-white) 20%, transparent);
-  transform: translateY(calc(var(--size-1) * -1));
 }
 
 .footer-btn-primary {
@@ -572,14 +521,13 @@ address {
 
 .footer-btn-primary:hover {
   background: var(--component-accent-blue-hover);
-  transform: translateY(calc(var(--size-1) * -1));
   box-shadow: 0 var(--size-4) var(--size-12)
     color-mix(in srgb, var(--component-accent-blue) 30%, transparent);
 }
 
 .footer-btn-secondary:active,
 .footer-btn-primary:active {
-  transform: translateY(0) scale(0.98);
+  transform: none;
 }
 
 #accept-all {
@@ -618,7 +566,6 @@ address {
 .footer-card:hover {
   background: var(--footer-soft-fill);
   border-color: var(--component-accent-blue);
-  transform: translateY(calc(var(--size-2) * -1));
   box-shadow: 0 var(--size-4) var(--size-12)
     color-mix(in srgb, var(--component-accent-blue) 15%, transparent);
 }
@@ -679,7 +626,6 @@ address {
 
 .footer-cta:hover {
   background: var(--component-accent-blue-hover);
-  transform: translateY(calc(var(--size-1) * -1));
   box-shadow: 0 var(--size-4) var(--size-12)
     color-mix(in srgb, var(--component-accent-blue) 30%, transparent);
 }
@@ -712,12 +658,11 @@ address {
 .links a:hover {
   color: var(--clr-white);
   background: var(--footer-soft-fill);
-  transform: translateX(var(--size-3));
 }
 
 .links a:hover svg {
   opacity: 1;
-  transform: scale(1.1);
+  transform: none;
 }
 
 /* Compact Grid Layout for Work & Quick Links */
@@ -756,12 +701,11 @@ address {
   color: var(--clr-white);
   background: var(--footer-soft-fill-2);
   border-color: var(--component-separator);
-  transform: scale(1.02);
 }
 
 .links-compact a:hover svg {
   opacity: 1;
-  transform: scale(1.15);
+  transform: none;
 }
 
 /* ===== Skill Tags ===== */
@@ -791,7 +735,6 @@ address {
   background: var(--footer-soft-fill-3);
   border-color: var(--component-accent-blue);
   color: var(--component-accent-blue);
-  transform: translateY(calc(var(--size-1) * -1)) scale(1.05);
 }
 
 /* ===== Status Bar ===== */
@@ -819,7 +762,7 @@ address {
   color: var(--clr-white);
   text-decoration: none;
   margin-left: var(--size-4);
-  transition: color var(--transition-base);
+  transition: none;
 }
 
 .copyright a:hover {
@@ -854,11 +797,10 @@ address {
   background: var(--component-fill-primary);
   border-color: var(--component-accent-blue);
   color: var(--clr-white);
-  transform: translateY(calc(var(--size-1) * -1));
 }
 
 .legal-btn:active {
-  transform: translateY(0) scale(0.98);
+  transform: none;
 }
 
 .legal-btn svg {
@@ -870,7 +812,7 @@ address {
 
 .legal-btn:hover svg {
   opacity: 1;
-  transform: scale(1.1);
+  transform: none;
 }
 
 .legal .nav-btn {
@@ -904,7 +846,6 @@ address {
   background: var(--component-fill-primary);
   border-color: var(--component-accent-blue);
   color: var(--clr-white);
-  transform: translateY(calc(var(--size-1) * -1));
 }
 
 .social-btn svg {
@@ -1354,15 +1295,6 @@ body.footer-expanded {
 }
 
 /* ===== Accessibility ===== */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-
 @media (prefers-contrast: more) {
   .site-footer {
     border-width: var(--size-2);

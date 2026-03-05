@@ -1,62 +1,33 @@
 /**
  * Application Load Manager
- * Centralizes loading state management and blocking mechanisms.
+ * Modern, UI-agnostic loading state manager.
+ * - Keeps blocking orchestration (`block`/`unblock`)
+ * - Emits progress events (`loading:update`)
+ * - Emits completion event (`EVENTS.LOADING_HIDE`) + global `app-ready`
+ * This keeps backward compatibility while removing hard dependency on legacy
+ * #app-loader DOM markup.
  * @module AppLoadManager
  */
 
 import { createLogger } from './logger.js';
 import { EVENTS, fire } from './events.js';
-import { i18n } from './i18n.js';
-import {
-  withViewTransition,
-  isSupported as vtSupported,
-} from './view-transitions.js';
 
 const log = createLogger('AppLoadManager');
 
 export const AppLoadManager = (() => {
   const pending = new Set();
-  let cachedElements = null;
-  let cacheTime = 0;
-  const CACHE_DURATION = 5000;
+  let lastProgress = 0;
+  let lastMessage = '';
+  let hideScheduled = false;
+  let hideCompleted = false;
 
-  function getLoaderElements() {
-    const now = Date.now();
-    if (cachedElements && now - cacheTime < CACHE_DURATION) {
-      return cachedElements;
-    }
-
-    const overlay = document.getElementById('app-loader');
-    const statusText = document.getElementById('loader-status-text');
-    const progressBar = document.getElementById('loader-progress-bar');
-    const percentage = document.getElementById('loader-percentage');
-    const announcement = document.getElementById('loader-announcement');
-
-    if (!overlay || !statusText || !progressBar || !percentage) {
-      cachedElements = null;
-      return null;
-    }
-
-    cachedElements = {
-      overlay,
-      statusText,
-      progressBar,
-      percentage,
-      announcement,
-    };
-    cacheTime = now;
-    return cachedElements;
-  }
-
-  function clearCache() {
-    cachedElements = null;
-    cacheTime = 0;
-  }
+  const toPercent = (value) =>
+    Math.round(Math.max(0, Math.min(100, Number(value || 0) * 100)));
 
   return {
     /**
-     * Block loading for a specific component
-     * @param {string} name - Component name
+     * Block loading for a specific component.
+     * @param {string} name
      */
     block(name) {
       if (!name) return;
@@ -65,8 +36,8 @@ export const AppLoadManager = (() => {
     },
 
     /**
-     * Unblock loading for a specific component
-     * @param {string} name - Component name
+     * Unblock loading for a specific component.
+     * @param {string} name
      */
     unblock(name) {
       if (!name) return;
@@ -78,7 +49,7 @@ export const AppLoadManager = (() => {
     },
 
     /**
-     * Check if loading is currently blocked
+     * Check if loading is currently blocked.
      * @returns {boolean}
      */
     isBlocked() {
@@ -86,7 +57,7 @@ export const AppLoadManager = (() => {
     },
 
     /**
-     * Get list of pending blockers
+     * Get list of pending blockers.
      * @returns {string[]}
      */
     getPending() {
@@ -94,116 +65,66 @@ export const AppLoadManager = (() => {
     },
 
     /**
-     * Update loader progress and message
-     * @param {number} progress - Progress (0-1)
-     * @param {string} message - Status message
-     * @param {Object} options - Options
+     * Update app loading progress (state + event only).
+     * @param {number} progress - Progress in range 0..1
+     * @param {string} message
+     * @param {{ silent?: boolean }} [options]
      */
     updateLoader(progress, message, options = {}) {
       try {
-        const elements = getLoaderElements();
-        if (!elements) return;
-
-        const { statusText, progressBar, percentage, announcement } = elements;
-        const pct = Math.round(Math.max(0, Math.min(100, progress * 100)));
-
-        if (statusText && statusText.textContent !== message) {
-          statusText.textContent = message;
-        }
-
-        const widthValue = `${pct}%`;
-        if (progressBar && progressBar.style.width !== widthValue) {
-          progressBar.style.width = widthValue;
-        }
-
-        if (percentage && percentage.textContent !== widthValue) {
-          percentage.textContent = widthValue;
-        }
-
-        const announcementText = `${message} ${widthValue}`;
-        if (announcement && announcement.textContent !== announcementText) {
-          announcement.textContent = announcementText;
-        }
-
-        fire('loading:update', { progress: pct, message });
-
+        const pct = toPercent(progress);
+        lastProgress = pct;
+        lastMessage = String(message || '');
+        fire('loading:update', { progress: pct, message: lastMessage });
         if (!options.silent) {
-          log.debug(`Loader: ${pct}% - ${message}`);
+          log.debug(`Loading state: ${pct}% - ${lastMessage}`);
         }
       } catch (err) {
-        log.warn('Could not update loader:', err);
+        log.warn('Could not update loading state:', err);
       }
     },
 
     /**
-     * Hide loader with optional delay
-     * @param {number} delay - Delay in ms
-     * @param {Object} options - Options
+     * Mark loading as completed and emit lifecycle events.
+     * @param {number} [delay=0]
      */
-    hideLoader(delay = 0, options = {}) {
-      // Guard against multiple calls
-      if (this._hiding) return;
-      this._hiding = true;
+    hideLoader(delay = 0) {
+      if (hideCompleted || hideScheduled) return;
+      hideScheduled = true;
 
-      try {
-        const elements = getLoaderElements();
-        if (!elements) return;
+      const run = () => {
+        hideScheduled = false;
+        if (hideCompleted) return;
+        hideCompleted = true;
+        pending.clear();
+        fire(EVENTS.LOADING_HIDE);
+        fire(EVENTS.LOADING_COMPLETE);
+        try {
+          globalThis.dispatchEvent(new Event('app-ready'));
+        } catch (err) {
+          log.debug('app-ready dispatch failed:', err);
+        }
+      };
 
-        const { overlay } = elements;
-
-        setTimeout(async () => {
-          if (options.immediate) {
-            if (elements.announcement) {
-              elements.announcement.textContent = i18n.t('loader.app_loaded');
-            }
-
-            overlay.style.display = 'none';
-            overlay.setAttribute('aria-hidden', 'true');
-            overlay.dataset.loaderDone = 'true';
-            document.body.classList.remove('global-loading-visible');
-            fire(EVENTS.LOADING_HIDE);
-            globalThis.dispatchEvent(new Event('app-ready'));
-            clearCache();
-            log.debug('Loader hidden (immediate)');
-            return;
-          }
-
-          // Accessibility
-          overlay.setAttribute('aria-hidden', 'true');
-          overlay.removeAttribute('aria-live');
-          overlay.dataset.loaderDone = 'true';
-          if (elements.announcement) {
-            elements.announcement.textContent = i18n.t('loader.app_loaded');
-          }
-
-          const onHidden = () => {
-            overlay.style.display = 'none';
-            overlay.style.viewTransitionName = 'none';
-            document.body.classList.remove('global-loading-visible');
-            fire(EVENTS.LOADING_HIDE);
-            globalThis.dispatchEvent(new Event('app-ready'));
-            clearCache();
-            log.debug('Loader hidden');
-          };
-
-          // View Transition: Loader verschwindet mit VT-Animation
-          if (vtSupported()) {
-            await withViewTransition(
-              () => {
-                overlay.style.display = 'none';
-              },
-              { types: ['loader-hide'] },
-            );
-            onHidden();
-          } else {
-            // CSS-Fallback: .fade-out Klasse
-            overlay.classList.add('fade-out');
-            setTimeout(onHidden, 400);
-          }
-        }, delay);
-      } catch (err) {
-        log.warn('Could not hide loader:', err);
+      if (delay > 0) {
+        setTimeout(run, delay);
+      } else {
+        run();
       }
+    },
+
+    /**
+     * Read-only snapshot for debugging and telemetry.
+     * @returns {{ blocked: boolean, pending: string[], progress: number, message: string, done: boolean }}
+     */
+    getSnapshot() {
+      return {
+        blocked: pending.size > 0,
+        pending: Array.from(pending),
+        progress: lastProgress,
+        message: lastMessage,
+        done: hideCompleted,
+      };
     },
   };
 })();

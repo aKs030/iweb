@@ -4,7 +4,10 @@
 
 import { MenuTemplate } from './MenuTemplate.js';
 import { i18n } from '../../../core/i18n.js';
-import { withViewTransition } from '../../../core/view-transitions.js';
+import {
+  clearMenuOverlayState,
+  setMenuOverlayState,
+} from './MenuOverlayState.js';
 
 /**
  * @typedef {import('./MenuState.js').MenuState} MenuState
@@ -19,7 +22,6 @@ export class MenuRenderer {
     this.state = state;
     this.config = config;
     this.template = new MenuTemplate(config);
-    this.rafId = null;
     this.container = null;
     this.iconTimeout = null; // used by initializeIcons
     this._i18nUnsub = null; // cleaned up in destroy
@@ -79,19 +81,15 @@ export class MenuRenderer {
   setupStateSubscriptions() {
     // Open/Close State
     this.state.on('openChange', (isOpen) => {
-      withViewTransition(
-        () => {
-          const toggle = this.container.querySelector('.site-menu__toggle');
-          const menu = this.container.querySelector('.site-menu');
+      const toggle = this.container.querySelector('.site-menu__toggle');
+      const menu = this.container.querySelector('.site-menu');
 
-          if (menu) menu.classList.toggle('open', isOpen);
-          if (toggle) toggle.classList.toggle('active', isOpen);
+      if (menu) menu.classList.toggle('open', isOpen);
+      if (toggle) toggle.classList.toggle('active', isOpen);
+      setMenuOverlayState(isOpen ? 'menu' : null);
 
-          // Accessibility update
-          if (toggle) toggle.setAttribute('aria-expanded', String(isOpen));
-        },
-        { types: [isOpen ? 'menu-open' : 'menu-close'] },
-      );
+      // Accessibility update
+      if (toggle) toggle.setAttribute('aria-expanded', String(isOpen));
     });
 
     // Active Link State
@@ -176,7 +174,6 @@ export class MenuRenderer {
 
     // Re-render title with new language
     if (this.state) {
-      // Force update by temporarily clearing to ensure animation or text update triggers
       this.updateTitle(this.state.currentTitle, this.state.currentSubtitle);
     }
   }
@@ -210,46 +207,15 @@ export class MenuRenderer {
       return;
     }
 
-    if (this.rafId) {
-      cancelAnimationFrame(this.rafId);
+    siteTitleEl.textContent = translatedTitle;
+
+    if (siteSubtitleEl) {
+      siteSubtitleEl.textContent = translatedSubtitle;
+      siteSubtitleEl.classList.toggle('show', Boolean(translatedSubtitle));
     }
-
-    // Animate change
-    this.rafId = requestAnimationFrame(() => {
-      const transitionDelay = this.config.TITLE_TRANSITION_DELAY || 200;
-
-      // Exit
-      siteTitleEl.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
-      siteTitleEl.style.opacity = '0';
-      siteTitleEl.style.transform = 'translateY(5px)';
-
-      if (siteSubtitleEl) {
-        siteSubtitleEl.style.opacity = '0';
-        siteSubtitleEl.classList.remove('show');
-      }
-
-      setTimeout(() => {
-        // Update
-        siteTitleEl.textContent = translatedTitle;
-
-        // Enter
-        siteTitleEl.style.opacity = '1';
-        siteTitleEl.style.transform = 'translateY(0)';
-
-        if (siteSubtitleEl && translatedSubtitle) {
-          siteSubtitleEl.textContent = translatedSubtitle;
-          siteSubtitleEl.style.opacity = ''; // Let CSS handle it via class
-          // Small delay for subtitle cascade
-          setTimeout(() => siteSubtitleEl.classList.add('show'), 50);
-        }
-      }, transitionDelay);
-    });
   }
 
   destroy() {
-    if (this.rafId) {
-      cancelAnimationFrame(this.rafId);
-    }
     if (this.iconTimeout) {
       clearTimeout(this.iconTimeout);
       this.iconTimeout = null;
@@ -258,6 +224,7 @@ export class MenuRenderer {
       this._i18nUnsub();
       this._i18nUnsub = null;
     }
+    clearMenuOverlayState();
     this.container = null;
   }
 }

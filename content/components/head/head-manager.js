@@ -370,23 +370,6 @@ async function loadHead() {
       injectSchema(graph, 'head-manager-ldjson');
     });
 
-    const hideLoader = () => {
-      const el = document.getElementById('app-loader');
-      if (!el) return;
-
-      el.classList.add('fade-out');
-      el.setAttribute('aria-hidden', 'true');
-      Object.assign(el.style, {
-        opacity: '0',
-        pointerEvents: 'none',
-        visibility: 'hidden',
-      });
-
-      setTimeout(() => (el.style.display = 'none'), 800);
-    };
-
-    document.addEventListener('app:loaderHide', hideLoader, { once: true });
-
     headState.setManagerLoaded();
     log.timeEnd('loadHead');
     log.info('Head loaded successfully');

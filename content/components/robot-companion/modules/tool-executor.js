@@ -8,6 +8,11 @@ import { createLogger } from '../../../core/logger.js';
 import { fire } from '../../../core/events.js';
 import { uiStore } from '../../../core/ui-store.js';
 import { withViewTransition } from '../../../core/view-transitions.js';
+import {
+  VIEW_TRANSITION_ROOT_CLASSES,
+  VIEW_TRANSITION_TYPES,
+} from '../../../core/view-transition-types.js';
+import { VIEW_TRANSITION_TIMINGS_MS } from '../../../core/view-transition-timings.js';
 
 const log = createLogger('ToolExecutor');
 
@@ -166,7 +171,7 @@ function executeNavigate(args) {
       () => {
         globalThis.location.href = route;
       },
-      { types: ['page-navigate'] },
+      { types: [VIEW_TRANSITION_TYPES.PAGE_NAVIGATE] },
     );
   } else {
     globalThis.location.href = route;
@@ -193,15 +198,25 @@ function executeSetTheme(args) {
     newTheme = theme === 'light' ? 'light' : 'dark';
   }
 
-  html.setAttribute('data-theme', newTheme);
+  void withViewTransition(
+    () => {
+      html.setAttribute('data-theme', newTheme);
 
-  try {
-    localStorage.setItem('theme', newTheme);
-  } catch {
-    /* ignore */
-  }
+      try {
+        localStorage.setItem('theme', newTheme);
+      } catch {
+        /* ignore */
+      }
 
-  fire('theme:changed', { theme: newTheme });
+      fire('theme:changed', { theme: newTheme });
+    },
+    {
+      types: [VIEW_TRANSITION_TYPES.THEME_CHANGE],
+      rootClasses: [VIEW_TRANSITION_ROOT_CLASSES.THEME_CHANGE],
+      timeoutMs: VIEW_TRANSITION_TIMINGS_MS.THEME_TIMEOUT,
+    },
+  );
+
   return {
     success: true,
     message: `Theme auf ${newTheme} gesetzt.`,
@@ -253,14 +268,28 @@ function executeToggleMenu(args) {
     newState = state === 'open';
   }
 
-  uiStore.setState({ menuOpen: newState });
-  fire('menu:toggle', { open: newState });
-
   const menuBtn = queryFirst(
-    '.menu-toggle, [data-menu-toggle], button[aria-label*="Menue"], button[aria-label*="Menu"], button[aria-label*="Menü"]',
+    '.site-menu__toggle, .menu-toggle, [data-menu-toggle], button[aria-label*="Menue"], button[aria-label*="Menu"], button[aria-label*="Menü"]',
   );
   if (menuBtn && currentState !== newState) {
     /** @type {HTMLElement} */ (menuBtn).click();
+  } else {
+    void withViewTransition(
+      () => {
+        uiStore.setState({ menuOpen: newState });
+        fire('menu:toggle', { open: newState });
+      },
+      {
+        types: [
+          newState
+            ? VIEW_TRANSITION_TYPES.MENU_OPEN
+            : VIEW_TRANSITION_TYPES.MENU_CLOSE,
+        ],
+        rootClasses: [VIEW_TRANSITION_ROOT_CLASSES.MENU],
+        preserveLiveBackdropOnMobile: true,
+        timeoutMs: VIEW_TRANSITION_TIMINGS_MS.MENU_TIMEOUT,
+      },
+    );
   }
 
   return {

@@ -15,7 +15,7 @@ Modular utilities for Cloudflare Pages Middleware (`functions/_middleware.js`).
 
 ### `streaming-handlers.js`
 
-- `TemplateCommentHandler` — Injects head/loader templates via HTMLRewriter
+- `TemplateCommentHandler` — Injects base-head template via HTMLRewriter
 - `NonceInjector` — Adds nonce to inline scripts/styles
 - `SeoMetaHandler` — Injects SEO meta tags into `<head>`
 
