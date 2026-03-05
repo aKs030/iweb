@@ -252,11 +252,8 @@ class ResourceHintsManager {
 
       const params = new URLSearchParams(globalThis.location?.search || '');
       if (params.get('speculation') === 'off') return true;
-
-      const stored = globalThis.localStorage?.getItem('iweb-speculation');
-      if (stored === 'off' || stored === 'disabled') return true;
     } catch {
-      // Ignore environments where location/localStorage are unavailable
+      // Ignore environments where location is unavailable
     }
 
     return false;

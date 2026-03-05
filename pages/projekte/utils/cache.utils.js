@@ -1,16 +1,16 @@
 /**
- * Cache Utilities with Memory + LocalStorage
+ * Cache Utilities (memory only, no local persistence)
  * @version 2.0.0
  */
 
-import { CACHE_PREFIX, CACHE_DURATION } from '../config/constants.js';
+import { CACHE_DURATION } from '../config/constants.js';
 
 // In-memory cache for faster access
 const memoryCache = new Map();
 const MAX_MEMORY_CACHE = 50;
 
 /**
- * Get cached data (memory first, then localStorage)
+ * Get cached data (memory only)
  * @param {string} key - Cache key
  * @returns {any | null}
  */
@@ -24,45 +24,18 @@ export const getCache = (key) => {
     memoryCache.delete(key);
   }
 
-  // Fallback to localStorage
-  try {
-    const item = localStorage.getItem(CACHE_PREFIX + key);
-    if (!item) return null;
-
-    const { data, timestamp } = JSON.parse(item);
-    if (Date.now() - timestamp > CACHE_DURATION) {
-      localStorage.removeItem(CACHE_PREFIX + key);
-      return null;
-    }
-
-    // Populate memory cache
-    setMemoryCache(key, data, timestamp);
-    return data;
-  } catch {
-    return null;
-  }
+  return null;
 };
 
 /**
- * Set cached data (both memory and localStorage)
+ * Set cached data (memory only)
  * @param {string} key - Cache key
  * @param {any} data - Data to cache
  */
 export const setCache = (key, data) => {
   const timestamp = Date.now();
 
-  // Set in memory cache
   setMemoryCache(key, data, timestamp);
-
-  // Set in localStorage
-  try {
-    localStorage.setItem(
-      CACHE_PREFIX + key,
-      JSON.stringify({ data, timestamp }),
-    );
-  } catch (e) {
-    console.warn('Cache write failed:', e);
-  }
 };
 
 /**

@@ -64,7 +64,7 @@ class LanguageManager extends EventTarget {
 
   /**
    * Initialize the language manager.
-   * Loads preference from localStorage or detects browser language.
+   * Uses URL param `?lang=de|en` or browser language.
    * @returns {Promise<void>} A promise that resolves when initialization is complete.
    */
   async init() {
@@ -72,10 +72,21 @@ class LanguageManager extends EventTarget {
     if (this.loadingPromise) return this.loadingPromise;
 
     this.loadingPromise = (async () => {
-      // 1. Check LocalStorage
-      let savedLang = window.localStorage?.getItem('app_language');
+      // 1. Check URL param
+      let savedLang = '';
+      try {
+        const params = new URLSearchParams(window.location?.search || '');
+        const queryLang = String(params.get('lang') || '')
+          .toLowerCase()
+          .trim();
+        if (SUPPORTED_LANGUAGES.includes(queryLang)) {
+          savedLang = queryLang;
+        }
+      } catch {
+        /* ignore malformed url contexts */
+      }
 
-      // 2. Check Browser Language if no preference saved
+      // 2. Check browser language if no query override
       if (!savedLang) {
         const browserLang = navigator.language.slice(0, 2);
         savedLang = SUPPORTED_LANGUAGES.includes(browserLang)
@@ -161,7 +172,7 @@ class LanguageManager extends EventTarget {
 
   /**
    * Set the active language.
-   * Updates state, localStorage, document attributes, and triggers events.
+   * Updates state, document attributes, and triggers events.
    * @param {string} lang - The language code to switch to ('de' or 'en').
    * @returns {Promise<void>} A promise that resolves when language is switched and DOM updated.
    */
@@ -178,7 +189,6 @@ class LanguageManager extends EventTarget {
     await this.loadTranslations(lang);
 
     this.currentLang = lang;
-    window.localStorage?.setItem('app_language', lang);
     document.documentElement.lang = lang === 'de' ? 'de-DE' : 'en-US';
 
     this.translatePage();

@@ -29,16 +29,10 @@
   (function bootstrapTheme() {
     try {
       var root = document.documentElement;
-      var storedTheme = localStorage.getItem('theme');
       var prefersLightTheme =
         window.matchMedia &&
         window.matchMedia('(prefers-color-scheme: light)').matches;
-      var resolvedTheme =
-        storedTheme === 'light' || storedTheme === 'dark'
-          ? storedTheme
-          : prefersLightTheme
-            ? 'light'
-            : 'dark';
+      var resolvedTheme = prefersLightTheme ? 'light' : 'dark';
       root.setAttribute('data-theme', resolvedTheme);
     } catch (_err) {
       document.documentElement.setAttribute('data-theme', 'dark');

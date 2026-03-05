@@ -7,7 +7,6 @@ const MOBILE_MENU_QUERY = '(max-width: 900px)';
 const MENU_HOST_SELECTOR = 'site-menu';
 const MENU_PANEL_SELECTOR = '.site-menu';
 const DEBUG_FLAG = '__VT_DEBUG__';
-const DEBUG_STORAGE_KEY = 'vt-debug';
 const BACKDROP_SENSITIVE_TYPES = new Set(BACKDROP_SENSITIVE_TRANSITION_TYPES);
 
 const VT_EVENTS = Object.freeze({
@@ -62,7 +61,7 @@ const isTruthyValue = (value) => {
 /**
  * Debug switch:
  * - runtime: `window.__VT_DEBUG__ = true`
- * - persisted: `localStorage.setItem('vt-debug', '1')`
+ * - query param: `?vt_debug=1`
  *
  * @returns {boolean}
  */
@@ -72,14 +71,12 @@ export const isViewTransitionDebugEnabled = () => {
   if (isTruthyValue(runtimeFlag)) return true;
 
   try {
-    if (
-      typeof localStorage !== 'undefined' &&
-      isTruthyValue(localStorage.getItem(DEBUG_STORAGE_KEY))
-    ) {
+    const params = new URLSearchParams(globalThis.location?.search || '');
+    if (isTruthyValue(params.get('vt_debug'))) {
       return true;
     }
   } catch {
-    /* ignore storage restrictions */
+    /* ignore URL parsing/runtime restrictions */
   }
 
   return false;

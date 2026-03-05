@@ -16,6 +16,9 @@ import { VIEW_TRANSITION_TIMINGS_MS } from '../../../core/view-transition-timing
 import { setMenuOverlayState } from './MenuOverlayState.js';
 
 const log = createLogger('MenuSearch');
+const SEARCH_ENDPOINT = '/api/search';
+const AI_AGENT_ENDPOINT = '/api/ai-agent';
+const MARK_HIGHLIGHT_PATTERN = /<mark>[\s\S]*?<\/mark>/i;
 const SEARCH_VIEW_TRANSITION_OPTIONS = Object.freeze({
   rootClasses: [VIEW_TRANSITION_ROOT_CLASSES.MENU],
   timeoutMs: VIEW_TRANSITION_TIMINGS_MS.SEARCH_TIMEOUT,
@@ -56,9 +59,6 @@ export class MenuSearch {
     this.searchCache = new Map();
     this.searchCacheTtlMs = this.config.SEARCH_CACHE_TTL_MS ?? 120000;
     this.searchCacheMaxEntries = this.config.SEARCH_CACHE_MAX_ENTRIES ?? 40;
-
-    /** @type {string[]} recent search queries (max 5) */
-    this.recentSearches = this.loadRecentSearches();
   }
 
   init() {
@@ -106,13 +106,6 @@ export class MenuSearch {
       this.scheduleSearch(query);
     };
 
-    const handleSearchFocus = () => {
-      const query = (this.input?.value || '').trim();
-      if (!query && this.recentSearches.length > 0) {
-        this.renderRecentSearches();
-      }
-    };
-
     const handleSearchKeydown = (e) => {
       if (e.key === 'Escape') {
         e.preventDefault();
@@ -139,18 +132,6 @@ export class MenuSearch {
     };
 
     const handleResultsClick = (e) => {
-      // Check for recent search click
-      const recentBtn = e.target?.closest?.('[data-recent-query]');
-      if (recentBtn) {
-        const query = recentBtn.getAttribute('data-recent-query');
-        if (query && this.input) {
-          this.input.value = query;
-          this.updateClearButtonVisibility(query);
-          this.scheduleSearch(query);
-        }
-        return;
-      }
-
       const suggestionBtn = e.target?.closest?.('[data-search-suggestion-url]');
       if (suggestionBtn) {
         const url = suggestionBtn.getAttribute('data-search-suggestion-url');
@@ -185,17 +166,12 @@ export class MenuSearch {
         this.selectedIndex = -1;
         this.renderSearchState({ hidden: true });
         this.input.focus();
-        // Show recent searches again
-        if (this.recentSearches.length > 0) {
-          this.renderRecentSearches();
-        }
       }
     };
 
     this.cleanupFns.push(
       this.addListener(searchTrigger, 'click', handleSearchTrigger),
       this.addListener(searchInput, 'input', handleSearchInput),
-      this.addListener(searchInput, 'focus', handleSearchFocus),
       this.addListener(searchInput, 'keydown', handleSearchKeydown),
       this.addListener(searchResults, 'click', handleResultsClick),
       this.addListener(searchResults, 'pointerover', handleResultsPointerOver),
@@ -413,12 +389,7 @@ export class MenuSearch {
       this.items = [];
       this.aiChatMessage = '';
       this.selectedIndex = -1;
-      // Show recent searches when clearing
-      if (!query && this.recentSearches.length > 0 && this.isSearchOpen()) {
-        this.renderRecentSearches();
-      } else {
-        this.renderSearchState({ hidden: true });
-      }
+      this.renderSearchState({ hidden: true });
       return;
     }
 
@@ -479,7 +450,7 @@ export class MenuSearch {
     });
 
     try {
-      const response = await fetch('/api/search', {
+      const response = await fetch(SEARCH_ENDPOINT, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -498,14 +469,15 @@ export class MenuSearch {
             .map((item) => this.normalizeSearchResult(item))
             .filter(Boolean)
         : [];
-      const aiChat = this.normalizeSearchChatPayload(
+      const fallbackAiChat = this.normalizeSearchChatPayload(
         data?.aiChat,
         data?.summary,
       );
+      const aiAgentMessage = await this.fetchSearchAiAgentMessage(query, items);
       this.applySearchPayload(query, {
         items,
         query,
-        aiChatMessage: aiChat.message,
+        aiChatMessage: aiAgentMessage || fallbackAiChat.message,
         cacheKey,
       });
     } catch (err) {
@@ -542,17 +514,23 @@ export class MenuSearch {
 
     const items = Array.isArray(payload.items) ? payload.items : [];
     const aiChatMessage = String(payload.aiChatMessage || '');
-    const statusMessage = String(payload.statusMessage || '');
+    let statusMessage = String(payload.statusMessage || '');
     const cacheKey = String(payload.cacheKey || '').trim();
-    const inlineAiMode = Boolean(aiChatMessage);
-    const visibleItems = inlineAiMode ? [] : items;
+    const visibleItems = this.filterHighlightedResults(items);
+
+    if (!statusMessage && items.length > 0 && visibleItems.length === 0) {
+      statusMessage = this.t(
+        'menu.search_no_highlight_matches',
+        'Keine markierten Texttreffer gefunden',
+      );
+    }
 
     this.items = visibleItems;
     this.aiChatMessage = aiChatMessage;
     this.selectedIndex = visibleItems.length > 0 ? 0 : -1;
 
     if (cacheKey) {
-      this.setCachedSearchResults(cacheKey, items, aiChatMessage);
+      this.setCachedSearchResults(cacheKey, visibleItems, aiChatMessage);
     }
 
     this.renderSearchState({
@@ -561,10 +539,6 @@ export class MenuSearch {
       aiChatMessage,
       message: statusMessage,
     });
-
-    if (items.length > 0 || aiChatMessage) {
-      this.saveRecentSearch(query);
-    }
   }
 
   normalizeSearchResult(item) {
@@ -579,11 +553,19 @@ export class MenuSearch {
       title,
       url,
       description: String(item.description || '').trim(),
-      highlightedDescription: String(
-        item.highlightedDescription || item.description || '',
-      ).trim(),
+      highlightedDescription: String(item.highlightedDescription || '').trim(),
       category: String(item.category || '').trim(),
     };
+  }
+
+  hasMarkedHighlight(value) {
+    return MARK_HIGHLIGHT_PATTERN.test(String(value || '').trim());
+  }
+
+  filterHighlightedResults(items) {
+    return (Array.isArray(items) ? items : []).filter((item) =>
+      this.hasMarkedHighlight(item?.highlightedDescription),
+    );
   }
 
   sanitizeSearchLinkUrl(rawUrl) {
@@ -648,6 +630,76 @@ export class MenuSearch {
       payload.message || fallbackSummary || '',
     );
     return { message };
+  }
+
+  buildSearchAiAgentPrompt(query, items = []) {
+    const compactQuery = String(query || '')
+      .replace(/\s+/g, ' ')
+      .trim();
+    const context = (Array.isArray(items) ? items : [])
+      .slice(0, 4)
+      .map((item, index) => {
+        const title = String(item?.title || '').trim();
+        const url = this.sanitizeSearchLinkUrl(item?.url || '');
+        const desc = String(item?.description || '')
+          .replace(/\s+/g, ' ')
+          .trim();
+        if (!title || !url) return '';
+        return `${index + 1}. ${title} (${url})${desc ? ` - ${desc}` : ''}`;
+      })
+      .filter(Boolean)
+      .join('\n');
+
+    return [
+      `Nutzer sucht im Menü nach: "${compactQuery}".`,
+      'Formuliere eine kurze Antwort auf Deutsch (maximal 2 Sätze).',
+      'Nutze nur relative interne Links im Markdown-Format, z. B. [Blog](/blog/).',
+      'Keine Listen, keine Tool-Aktionen, keine externen Links.',
+      '',
+      'Verfügbare Suchtreffer:',
+      context || 'Keine Treffer.',
+    ].join('\n');
+  }
+
+  async fetchSearchAiAgentMessage(query, items = []) {
+    if (!query) return '';
+    if (navigator.onLine === false) return '';
+
+    const timeoutMs = Math.min(
+      Number(this.config.SEARCH_AI_REQUEST_TIMEOUT ?? 4500),
+      Number(this.config.SEARCH_REQUEST_TIMEOUT ?? 6000),
+    );
+
+    const controller = new AbortController();
+    const timeoutId =
+      timeoutMs > 0
+        ? this.timers.setTimeout(() => controller.abort(), timeoutMs)
+        : null;
+
+    try {
+      const response = await fetch(AI_AGENT_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: this.buildSearchAiAgentPrompt(query, items),
+          stream: false,
+        }),
+        credentials: 'omit',
+        signal: controller.signal,
+      });
+
+      if (!response.ok) return '';
+
+      const body = await response.json().catch(() => ({}));
+      return this.normalizeSearchChatMessage(body?.text || '');
+    } catch (error) {
+      if (!this.isAbortLikeError(error)) {
+        log.debug('Menu search AI agent request failed:', error);
+      }
+      return '';
+    } finally {
+      if (timeoutId) this.timers.clearTimeout(timeoutId);
+    }
   }
 
   getCategoryLabel(category) {
@@ -736,7 +788,7 @@ export class MenuSearch {
           'menu.search_offline_desc',
           'Aus lokal verfügbaren Navigationseinträgen',
         ),
-        highlightedDescription: '',
+        highlightedDescription: `<mark>${this.t('menu.search_offline_match', 'Lokaler Treffer')}</mark>`,
         category: this.t('menu.search_offline_category', 'Offline'),
       }));
   }
@@ -941,7 +993,6 @@ export class MenuSearch {
       aiChat.appendChild(aiText);
 
       results.appendChild(aiChat);
-      return;
     }
 
     if (message) {
@@ -1027,20 +1078,13 @@ export class MenuSearch {
       url.textContent = this.formatSearchResultUrl(item.url);
       button.appendChild(url);
 
-      // Use highlighted description if available
-      if (item.highlightedDescription || item.description) {
+      if (item.highlightedDescription) {
         const desc = document.createElement('span');
         desc.className = 'menu-search__desc';
-        // highlightedDescription contains <mark> tags – render as HTML
-        if (
-          item.highlightedDescription &&
-          item.highlightedDescription.includes('<mark>')
-        ) {
+        if (this.hasMarkedHighlight(item.highlightedDescription)) {
           desc.innerHTML = item.highlightedDescription;
-        } else {
-          desc.textContent = item.description;
+          button.appendChild(desc);
         }
-        button.appendChild(desc);
       }
 
       li.appendChild(button);
@@ -1112,64 +1156,6 @@ export class MenuSearch {
     this.clearBtn.classList.toggle('visible', Boolean(query && query.trim()));
   }
 
-  // ── Recent searches (localStorage) ──
-  loadRecentSearches() {
-    try {
-      const raw = localStorage.getItem('search_recent');
-      const parsed = raw ? JSON.parse(raw) : [];
-      return Array.isArray(parsed) ? parsed.slice(0, 5) : [];
-    } catch {
-      return [];
-    }
-  }
-
-  saveRecentSearch(query) {
-    if (!query || query.length < 2) return;
-    const q = query.trim().toLowerCase();
-    this.recentSearches = [
-      q,
-      ...this.recentSearches.filter((r) => r !== q),
-    ].slice(0, 5);
-    try {
-      localStorage.setItem(
-        'search_recent',
-        JSON.stringify(this.recentSearches),
-      );
-    } catch {
-      /* quota exceeded – ignore */
-    }
-  }
-
-  renderRecentSearches() {
-    if (!this.results) return;
-    const results = this.results;
-    results.innerHTML = '';
-    results.classList.add('active');
-    this.setSearchPopupExpanded(true);
-
-    const header = document.createElement('div');
-    header.className = 'menu-search__recent-header';
-    header.textContent = this.t('menu.search_recent', 'Letzte Suchen');
-    results.appendChild(header);
-
-    const list = document.createElement('ul');
-    list.className = 'menu-search__list';
-
-    this.recentSearches.forEach((q) => {
-      const li = document.createElement('li');
-      li.className = 'menu-search__item';
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'menu-search__recent-item';
-      btn.setAttribute('data-recent-query', q);
-      btn.textContent = q;
-      li.appendChild(btn);
-      list.appendChild(li);
-    });
-
-    results.appendChild(list);
-  }
-
   setSearchPopupExpanded(isExpanded) {
     const expanded = String(Boolean(isExpanded));
 
@@ -1215,7 +1201,7 @@ export class MenuSearch {
       items: Array.isArray(entry.items)
         ? entry.items.map((item) => ({ ...item }))
         : [],
-      aiChatMessage: this.normalizeSearchChatMessage(entry.aiChatMessage),
+      aiChatMessage: String(entry.aiChatMessage || ''),
     };
   }
 
@@ -1237,7 +1223,7 @@ export class MenuSearch {
     this.searchCache.set(cacheKey, {
       expiresAt: Date.now() + this.searchCacheTtlMs,
       items: items.map((item) => ({ ...item })),
-      aiChatMessage: this.normalizeSearchChatMessage(aiChatMessage),
+      aiChatMessage: String(aiChatMessage || ''),
     });
   }
 

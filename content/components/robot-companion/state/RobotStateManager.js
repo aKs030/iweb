@@ -160,57 +160,22 @@ export class RobotStateManager {
   }
 
   /**
-   * Load state from localStorage
+   * Initialize per-session analytics state (no local persistence).
    */
-  loadFromStorage() {
-    try {
-      const sessions = Number.parseInt(
-        localStorage.getItem('robot-sessions') || '0',
-        10,
-      );
-      const interactions = Number.parseInt(
-        localStorage.getItem('robot-interactions') || '0',
-        10,
-      );
-      const lastVisit = localStorage.getItem('robot-last-visit');
+  initializeSessionState() {
+    const now = new Date().toISOString();
+    const currentSessions = Number.parseInt(
+      String(this._state.analytics.sessions || 0),
+      10,
+    );
 
-      this.setState({
-        analytics: {
-          ...this._state.analytics,
-          sessions: sessions + 1,
-          interactions,
-          lastVisit,
-        },
-      });
-
-      // Save updated session count
-      localStorage.setItem('robot-sessions', String(sessions + 1));
-      localStorage.setItem('robot-last-visit', new Date().toISOString());
-    } catch (error) {
-      log.warn('Failed to load state from storage:', error);
-    }
-  }
-
-  /**
-   * Save state to localStorage
-   */
-  saveToStorage() {
-    try {
-      localStorage.setItem(
-        'robot-sessions',
-        String(this._state.analytics.sessions),
-      );
-      localStorage.setItem(
-        'robot-interactions',
-        String(this._state.analytics.interactions),
-      );
-      localStorage.setItem(
-        'robot-last-visit',
-        this._state.analytics.lastVisit || new Date().toISOString(),
-      );
-    } catch (error) {
-      log.warn('Failed to save state to storage:', error);
-    }
+    this.setState({
+      analytics: {
+        ...this._state.analytics,
+        sessions: Number.isFinite(currentSessions) ? currentSessions + 1 : 1,
+        lastVisit: now,
+      },
+    });
   }
 
   /**
@@ -224,7 +189,6 @@ export class RobotStateManager {
         interactions,
       },
     });
-    this.saveToStorage();
   }
 
   /**
@@ -254,6 +218,5 @@ export class RobotStateManager {
    */
   destroy() {
     this._listeners.clear();
-    this.saveToStorage();
   }
 }
