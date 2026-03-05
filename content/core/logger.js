@@ -29,15 +29,6 @@ function getDefaultLogLevel() {
       _cachedDefaultLevel = LOG_LEVELS.debug;
       return _cachedDefaultLevel;
     }
-    try {
-      const stored = window.localStorage?.getItem('iweb-debug');
-      if (stored === 'true') {
-        _cachedDefaultLevel = LOG_LEVELS.debug;
-        return _cachedDefaultLevel;
-      }
-    } catch {
-      // localStorage may throw SecurityError in private browsing
-    }
     _cachedDefaultLevel = isProd ? LOG_LEVELS.error : LOG_LEVELS.warn;
   } catch {
     _cachedDefaultLevel = LOG_LEVELS.warn;

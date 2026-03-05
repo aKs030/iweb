@@ -109,8 +109,8 @@ export class RobotCompanion {
     /** @type {import('/content/core/types.js').TimerID | null} */
     this._scrollTimeout = null;
 
-    // Load analytics from storage and calculate mood
-    this.stateManager.loadFromStorage();
+    // Initialize session analytics and calculate mood
+    this.stateManager.initializeSessionState();
     const mood = this.calculateMood();
     this.stateManager.setState({ mood });
 
@@ -120,10 +120,8 @@ export class RobotCompanion {
     /** @type {import('/content/core/types.js').RobotMood} */
     this.mood = mood;
 
-    /** @type {Set<string>} */
-    this.easterEggFound = new Set(
-      JSON.parse(localStorage.getItem('robot-easter-eggs') || '[]'),
-    );
+    /** @type {Set<string>} Session-only easter egg tracking */
+    this.easterEggFound = new Set();
 
     /** @type {import('/content/core/types.js').DOMCache} */
     this.dom = {};
@@ -949,10 +947,6 @@ export class RobotCompanion {
    */
   unlockEasterEgg(id, message) {
     this.easterEggFound.add(id);
-    localStorage.setItem(
-      'robot-easter-eggs',
-      JSON.stringify([...this.easterEggFound]),
-    );
     this.chatModule.showBubble(message);
     this._setTimeout(() => this.chatModule.hideBubble(), 10000);
   }

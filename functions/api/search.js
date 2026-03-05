@@ -39,8 +39,6 @@ const ALLOWED_RESULT_PREFIXES = [
   '/videos',
 ];
 const ALLOW_ROOT_RESULT = true;
-const MAX_AI_CHAT_LINKS = 3;
-const MAX_APPENDED_LINKS = 2;
 const QUERY_STOPWORDS = new Set([
   'der',
   'die',
@@ -83,6 +81,8 @@ const QUERY_STOPWORDS = new Set([
   'infos',
   'info',
 ]);
+const MAX_QUERY_TOKENS = 8;
+const RESULT_DESCRIPTION_MAX_LENGTH = 220;
 
 const SNIPPET_METADATA_LABELS = [
   'title',
@@ -157,7 +157,7 @@ function cleanSnippetText(rawText) {
   return text;
 }
 
-function trimSnippetLength(raw, maxLength = 180) {
+function trimSnippetLength(raw, maxLength = RESULT_DESCRIPTION_MAX_LENGTH) {
   if (!raw) return '';
   if (raw.length <= maxLength) return raw;
 
@@ -175,7 +175,7 @@ function trimSnippetLength(raw, maxLength = 180) {
   return `${truncated.trim()}...`;
 }
 
-function extractSnippet(item, maxLength = 180) {
+function extractSnippet(item, maxLength = RESULT_DESCRIPTION_MAX_LENGTH) {
   const mergedContent = Array.isArray(item?.content)
     ? item.content
         .map((chunk) =>
@@ -226,7 +226,7 @@ function extractAiResult(item) {
     cleanSnippetText(
       typeof attrs.description === 'string' ? attrs.description : '',
     ),
-    180,
+    RESULT_DESCRIPTION_MAX_LENGTH,
   );
   const description =
     attrsDescription ||
@@ -241,6 +241,154 @@ function extractAiResult(item) {
     category,
     score,
   };
+}
+
+function normalizeForMatch(value) {
+  return String(value || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+}
+
+function escapeRegExp(value) {
+  return String(value || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function hasMarkHighlight(value) {
+  return /<mark>[\s\S]*?<\/mark>/i.test(String(value || '').trim());
+}
+
+function escapeHtml(value) {
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+function tokenizeQuery(query) {
+  const rawTokens = String(query || '')
+    .split(/[^0-9A-Za-zÀ-ÖØ-öø-ÿ]+/g)
+    .map((token) => token.trim())
+    .filter(Boolean);
+
+  const deduped = [];
+  const seen = new Set();
+  for (const token of rawTokens) {
+    const normalized = normalizeForMatch(token);
+    if (normalized.length < 2) continue;
+    if (QUERY_STOPWORDS.has(normalized)) continue;
+    if (seen.has(normalized)) continue;
+    seen.add(normalized);
+    deduped.push(token);
+    if (deduped.length >= MAX_QUERY_TOKENS) break;
+  }
+  return deduped;
+}
+
+function computeKeywordScore(result, queryTokens, normalizedQuery) {
+  const title = normalizeForMatch(result?.title || '');
+  const category = normalizeForMatch(result?.category || '');
+  const url = normalizeForMatch(result?.url || '');
+  const description = normalizeForMatch(result?.description || '');
+
+  const matchedTerms = [];
+  let score = 0;
+
+  for (const rawToken of queryTokens) {
+    const token = normalizeForMatch(rawToken);
+    let tokenScore = 0;
+    if (title.includes(token)) tokenScore += 24;
+    if (category.includes(token)) tokenScore += 14;
+    if (url.includes(token)) tokenScore += 12;
+    if (description.includes(token)) tokenScore += 8;
+    if (tokenScore > 0) matchedTerms.push(rawToken);
+    score += tokenScore;
+  }
+
+  if (normalizedQuery) {
+    if (title.includes(normalizedQuery)) score += 36;
+    if (description.includes(normalizedQuery)) score += 14;
+  }
+
+  // Reward broader term coverage.
+  score += Math.min(matchedTerms.length * 5, 25);
+
+  return {
+    score,
+    matchedTerms,
+  };
+}
+
+function buildHighlightedDescription(description, queryTokens) {
+  const source = trimSnippetLength(
+    cleanSnippetText(description || ''),
+    RESULT_DESCRIPTION_MAX_LENGTH * 2,
+  );
+  if (!source) return '';
+  if (!Array.isArray(queryTokens) || queryTokens.length === 0) return '';
+
+  const normalizedSource = normalizeForMatch(source);
+  let firstIndex = -1;
+  for (const token of queryTokens) {
+    const idx = normalizedSource.indexOf(normalizeForMatch(token));
+    if (idx >= 0 && (firstIndex < 0 || idx < firstIndex)) {
+      firstIndex = idx;
+    }
+  }
+
+  let snippet;
+  if (firstIndex >= 0 && source.length > RESULT_DESCRIPTION_MAX_LENGTH) {
+    const windowSize = RESULT_DESCRIPTION_MAX_LENGTH;
+    const start = Math.max(0, firstIndex - Math.floor(windowSize * 0.35));
+    const end = Math.min(source.length, start + windowSize);
+    const prefix = start > 0 ? '... ' : '';
+    const suffix = end < source.length ? ' ...' : '';
+    snippet = `${prefix}${source.slice(start, end).trim()}${suffix}`;
+  } else {
+    snippet = trimSnippetLength(source, RESULT_DESCRIPTION_MAX_LENGTH);
+  }
+
+  const escaped = escapeHtml(snippet);
+  const safeTokens = queryTokens
+    .map((token) => token.trim())
+    .filter(Boolean)
+    .sort((a, b) => b.length - a.length)
+    .slice(0, MAX_QUERY_TOKENS);
+  if (safeTokens.length === 0) return '';
+
+  const regex = new RegExp(
+    `(${safeTokens.map((token) => escapeRegExp(token)).join('|')})`,
+    'gi',
+  );
+  const highlighted = escaped.replace(regex, '<mark>$1</mark>');
+
+  return highlighted === escaped ? '' : highlighted;
+}
+
+function rerankSearchResults(results, query) {
+  const queryTokens = tokenizeQuery(query);
+  const normalizedQuery = normalizeForMatch(query).replace(/\s+/g, ' ').trim();
+
+  return (Array.isArray(results) ? results : []).map((item) => {
+    const semanticScore = Number.isFinite(item?.score) ? Number(item.score) : 0;
+    const keyword = computeKeywordScore(item, queryTokens, normalizedQuery);
+    const blendedScore = semanticScore * 100 + keyword.score;
+    const description = trimSnippetLength(
+      cleanSnippetText(item?.description || ''),
+      RESULT_DESCRIPTION_MAX_LENGTH,
+    );
+    const highlightedDescription = buildHighlightedDescription(
+      description,
+      queryTokens,
+    );
+
+    return {
+      ...item,
+      score: blendedScore,
+      highlightedDescription,
+      description,
+    };
+  });
 }
 
 function isTechnicalResult(url) {
@@ -275,392 +423,20 @@ function normalizeResultPathForDedup(rawUrl) {
   return normalized.replace(/\/+$/, '');
 }
 
-function formatAiLinkTitle(title) {
-  const cleaned = String(title || '')
+function normalizeSearchSummary(summary) {
+  const text = String(summary || '')
+    .replace(/\r/g, '')
     .replace(/\s+/g, ' ')
     .trim();
-  if (!cleaned) return '';
-  if (cleaned.length <= 56) return cleaned;
-  return `${cleaned.slice(0, 53).trim()}...`;
+  if (!text) return '';
+  return trimSnippetLength(text, 320);
 }
 
-function normalizeForMatch(value) {
-  return String(value || '')
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '');
-}
-
-function tokenizeQuery(query) {
-  return normalizeForMatch(query)
-    .split(/[^a-z0-9]+/g)
-    .filter((token) => token.length >= 2 && !QUERY_STOPWORDS.has(token));
-}
-
-function hasAnyToken(tokens, variants = []) {
-  return variants.some((variant) => tokens.includes(variant));
-}
-
-function buildQuerySignals(tokens) {
-  return {
-    gallery: hasAnyToken(tokens, [
-      'galerie',
-      'gallery',
-      'foto',
-      'fotos',
-      'photo',
-      'photography',
-      'bilder',
-      'street',
-    ]),
-    videos: hasAnyToken(tokens, [
-      'video',
-      'videos',
-      'reel',
-      'reels',
-      'film',
-      'filme',
-    ]),
-    blog: hasAnyToken(tokens, [
-      'blog',
-      'artikel',
-      'post',
-      'posts',
-      'beitrag',
-      'beitraege',
-    ]),
-    projects: hasAnyToken(tokens, [
-      'projekt',
-      'projekte',
-      'project',
-      'projects',
-      'app',
-      'apps',
-    ]),
-    about: hasAnyToken(tokens, [
-      'about',
-      'ueber',
-      'uber',
-      'profil',
-      'bio',
-      'kontakt',
-      'contact',
-    ]),
-    home: hasAnyToken(tokens, ['start', 'home', 'hauptseite']),
-  };
-}
-
-function scoreResultForQuery(item, index, queryTokens, querySignals) {
-  const path = normalizeUrl(item?.url || '');
-  const text = normalizeForMatch(
-    `${item?.title || ''} ${item?.category || ''} ${item?.url || ''} ${
-      item?.description || ''
-    }`,
-  );
-
-  let score = Number.isFinite(item?.score) ? item.score * 10 : 0;
-  score += Math.max(0, 8 - index);
-
-  for (const token of queryTokens) {
-    if (text.includes(token)) score += 2;
-  }
-
-  if (querySignals.gallery && path === '/gallery') score += 28;
-  else if (querySignals.gallery && path.startsWith('/gallery')) score += 18;
-  if (querySignals.videos && path === '/videos') score += 28;
-  else if (querySignals.videos && path.startsWith('/videos')) score += 18;
-  if (querySignals.blog && path === '/blog') score += 18;
-  else if (querySignals.blog && path.startsWith('/blog')) score += 10;
-  if (querySignals.projects && path === '/projekte') score += 20;
-  else if (querySignals.projects && path.startsWith('/projekte')) score += 12;
-  if (querySignals.about && path.startsWith('/about')) score += 10;
-  if (querySignals.home && path === '/') score += 8;
-
-  if (path === '/' && !querySignals.home) score -= 6;
-  if (path.startsWith('/blog') && querySignals.gallery) score -= 10;
-  if (path.startsWith('/blog') && querySignals.videos) score -= 10;
-
-  return score;
-}
-
-function escapeRegExp(value) {
-  return String(value || '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-function extractMarkdownLinks(text) {
-  return String(text || '').match(/\[[^\]]+]\([^)]+\)/g) || [];
-}
-
-function protectMarkdownLinks(text) {
-  const links = [];
-  const protectedText = String(text || '').replace(
-    /\[[^\]]+]\([^)]+\)/g,
-    (match) => {
-      const token = `__MD_LINK_${links.length}__`;
-      links.push(match);
-      return token;
-    },
-  );
-
-  return {
-    text: protectedText,
-    links,
-  };
-}
-
-function restoreMarkdownLinks(text, links = []) {
-  let output = String(text || '');
-  links.forEach((link, index) => {
-    output = output.replace(`__MD_LINK_${index}__`, link);
-  });
-  return output;
-}
-
-function normalizeAiSummaryText(summary) {
-  const raw = String(summary || '').trim();
-  if (!raw) return '';
-
-  const lines = raw
-    .replace(/\r/g, '')
-    .split('\n')
-    .map((line) => line.trim())
-    .filter(Boolean);
-
-  if (lines.length === 0) return '';
-
-  const allLinesAreListItems = lines.every((line) =>
-    /^(?:[-*]|\d+[.)])\s+/i.test(line),
-  );
-  const cleanedLines = lines.map((line) =>
-    line.replace(/^(?:[-*]|\d+[.)])\s+/i, ''),
-  );
-  const delimiter = allLinesAreListItems ? ', ' : ' ';
-
-  return cleanedLines.join(delimiter).replace(/\s+/g, ' ').trim();
-}
-
-function normalizeSentenceEnding(text) {
-  const value = String(text || '').trim();
-  if (!value) return value;
-  if (/[.!?]$/.test(value)) return value;
-  return `${value}.`;
-}
-
-function injectInlineLinks(summary, links = []) {
-  const source = String(summary || '').trim();
-  if (!source || !Array.isArray(links) || links.length === 0) {
-    return source;
-  }
-
-  const protectedLinks = protectMarkdownLinks(source);
-  let text = protectedLinks.text;
-
-  for (const link of links) {
-    const title = String(link?.title || '').trim();
-    const rel = String(link?.url || '').trim();
-    if (!title || !rel) continue;
-
-    const abs = `https://www.abdulkerimsesli.de${rel}`;
-    const relWithSlash = rel.endsWith('/') ? rel : `${rel}/`;
-    const patterns = [abs, `${abs}/`, rel, relWithSlash];
-
-    for (const variant of patterns) {
-      const escaped = escapeRegExp(variant);
-
-      // Quoted variants: "/videos/" or '/videos/'
-      text = text.replace(
-        new RegExp(`(["'])${escaped}\\1`, 'g'),
-        `[${title}](${rel})`,
-      );
-
-      // Bare URL/path variants surrounded by boundaries.
-      text = text.replace(
-        new RegExp(`(^|[\\s(,:;])${escaped}(?=$|[\\s).,;:!?])`, 'g'),
-        `$1[${title}](${rel})`,
-      );
-    }
-  }
-
-  return restoreMarkdownLinks(text, protectedLinks.links);
-}
-
-function buildInlineLinksSentence(links = [], prefix = 'Mehr dazu in') {
-  if (!Array.isArray(links) || links.length === 0) return '';
-
-  const markdownLinks = links.map((link) => `[${link.title}](${link.url})`);
-  if (markdownLinks.length === 1) {
-    return `${prefix} ${markdownLinks[0]}.`;
-  }
-
-  if (markdownLinks.length === 2) {
-    return `${prefix} ${markdownLinks[0]} und ${markdownLinks[1]}.`;
-  }
-
-  const head = markdownLinks.slice(0, -1).join(', ');
-  const tail = markdownLinks[markdownLinks.length - 1];
-  return `${prefix} ${head} und ${tail}.`;
-}
-
-function buildAiChatLinks(results, query, maxLinks = MAX_AI_CHAT_LINKS) {
-  if (!Array.isArray(results) || results.length === 0) return [];
-
-  const queryTokens = tokenizeQuery(query);
-  const querySignals = buildQuerySignals(queryTokens);
-  const links = [];
-  const seen = new Set();
-
-  for (const [index, item] of results.entries()) {
-    if (!item?.url) continue;
-
-    const dedupeUrl = normalizeResultPathForDedup(item.url).toLowerCase();
-    if (!dedupeUrl || seen.has(dedupeUrl)) continue;
-
-    const title = formatAiLinkTitle(item.title);
-    if (!title) continue;
-
-    seen.add(dedupeUrl);
-    links.push({
-      title,
-      url: normalizeUrl(item.url),
-      priority: scoreResultForQuery(item, index, queryTokens, querySignals),
-      rawScore: Number.isFinite(item.score) ? item.score : 0,
-    });
-  }
-
-  links.sort((a, b) => b.priority - a.priority || b.rawScore - a.rawScore);
-  return links.slice(0, maxLinks).map(({ title, url }) => ({ title, url }));
-}
-
-function isLowQualityAiSummary(summary) {
-  const text = normalizeAiSummaryText(summary);
-  if (!text || text.length < 32) return true;
-
-  const markdownLinkCount = extractMarkdownLinks(text).length;
-  if (text.length > 480) return true;
-  if (markdownLinkCount > 4) return true;
-  if (/website von/i.test(text)) return true;
-  if (/abdulkerim sesli/i.test(text)) return true;
-  if (/^sie können\b/i.test(text)) return true;
-  if (/\bbesuch(?:e|en)\b/i.test(text)) return true;
-  if (/\bkönnen sie\b/i.test(text)) return true;
-  if (/eine vielzahl von funktionen/i.test(text)) return true;
-  if (/^[-*]\s+/m.test(text)) return true;
-
-  return false;
-}
-
-function buildResultBackedSummary(query, results = [], links = []) {
-  if (!Array.isArray(results) || results.length === 0) {
-    return '';
-  }
-
-  const rankedLinks = Array.isArray(links) ? links.slice(0, 2) : [];
-  const selectedLinks =
-    rankedLinks.length > 0
-      ? rankedLinks
-      : [
-          {
-            title: formatAiLinkTitle(results[0]?.title),
-            url: normalizeUrl(results[0]?.url),
-          },
-        ].filter((entry) => entry.title && entry.url);
-  if (selectedLinks.length === 0) return '';
-
-  const linkParts = selectedLinks.map((link) => `[${link.title}](${link.url})`);
-  const queryLabel = String(query || '').trim();
-  let lead;
-  if (linkParts.length === 1) {
-    lead = queryLabel
-      ? `Zu "${queryLabel}" passt besonders ${linkParts[0]}`
-      : `Besonders passend ist ${linkParts[0]}`;
-  } else {
-    lead = queryLabel
-      ? `Zu "${queryLabel}" sind ${linkParts[0]} und ${linkParts[1]} besonders relevant`
-      : `${linkParts[0]} und ${linkParts[1]} sind besonders relevant`;
-  }
-
-  const primaryPath = normalizeResultPathForDedup(
-    selectedLinks[0].url,
-  ).toLowerCase();
-  const primaryResult = results.find(
-    (item) =>
-      normalizeResultPathForDedup(item?.url).toLowerCase() === primaryPath,
-  );
-  const description = trimSnippetLength(
-    cleanSnippetText(primaryResult?.description || ''),
-    110,
-  );
-  if (!description) {
-    return normalizeSentenceEnding(lead);
-  }
-
-  return `${normalizeSentenceEnding(lead)} ${normalizeSentenceEnding(description)}`.trim();
-}
-
-function buildAiChatMessage(summary, links = [], query = '', results = []) {
-  let normalizedSummary = injectInlineLinks(
-    normalizeAiSummaryText(summary),
-    links,
-  );
-  if (isLowQualityAiSummary(normalizedSummary)) {
-    normalizedSummary = buildResultBackedSummary(query, results, links);
-  }
-
-  if (!Array.isArray(links) || links.length === 0) {
-    return normalizedSummary;
-  }
-
-  const markdownLinks = extractMarkdownLinks(normalizedSummary);
-  const summaryLower = normalizedSummary.toLowerCase();
-  const missingLinks = links.filter((link) => {
-    const rel = String(link.url || '').toLowerCase();
-    if (!rel) return false;
-    if (!normalizedSummary) return true;
-    if (
-      markdownLinks.some((entry) => entry.toLowerCase().includes(`](${rel})`))
-    ) {
-      return false;
-    }
-    const abs = `https://www.abdulkerimsesli.de${rel}`.toLowerCase();
-    return !summaryLower.includes(abs);
-  });
-
-  if (missingLinks.length === 0) {
-    return normalizedSummary;
-  }
-
-  const currentLinkCount = markdownLinks.length;
-  const neededLinks = Math.max(0, MAX_APPENDED_LINKS - currentLinkCount);
-  if (neededLinks === 0) {
-    return normalizedSummary;
-  }
-
-  const linksToAppend = missingLinks.slice(0, neededLinks);
-  const linkSentence = buildInlineLinksSentence(
-    linksToAppend,
-    linksToAppend.length === 1 ? 'Direkt relevant ist' : 'Direkt relevant sind',
-  );
-  if (!normalizedSummary) {
-    return linkSentence;
-  }
-
-  return `${normalizeSentenceEnding(normalizedSummary)} ${linkSentence}`.trim();
-}
-
-function buildFallbackAiMessage(resultsCount, links = []) {
+function buildFallbackAiMessage(resultsCount) {
   if (resultsCount <= 0) {
     return 'Keine passenden Inhalte gefunden.';
   }
-
-  const linkSentence = buildInlineLinksSentence(
-    links.slice(0, 2),
-    'Direkt passend sind',
-  );
-  if (!linkSentence) {
-    return `Ich habe ${resultsCount} passende Seiten gefunden.`;
-  }
-
-  return `Ich habe ${resultsCount} passende Seiten gefunden. ${linkSentence}`;
+  return `Ich habe ${resultsCount} passende Seiten gefunden.`;
 }
 
 export async function onRequestPost(context) {
@@ -681,6 +457,10 @@ export async function onRequestPost(context) {
       aiSearchConfig.maxResults,
       aiSearchConfig.maxResults,
     );
+    const fetchTopK = Math.min(
+      aiSearchConfig.maxResults,
+      Math.max(topK, Math.min(topK * 2, topK + 8)),
+    );
 
     if (!env.AI || !env.RAG_ID) {
       console.warn('AI or RAG_ID not configured');
@@ -693,7 +473,7 @@ export async function onRequestPost(context) {
     // Run AI Search
     const aiSearchRequest = buildAiSearchRequest({
       query,
-      maxResults: topK,
+      maxResults: fetchTopK,
       config: aiSearchConfig,
       systemPrompt: SYSTEM_PROMPT,
       stream: false,
@@ -717,27 +497,28 @@ export async function onRequestPost(context) {
         continue;
       }
 
-      if (!uniqueResultsMap.has(res.url)) {
-        uniqueResultsMap.set(res.url, res);
+      const dedupeKey = normalizeResultPathForDedup(res.url);
+      if (!dedupeKey) continue;
+
+      if (!uniqueResultsMap.has(dedupeKey)) {
+        uniqueResultsMap.set(dedupeKey, res);
       } else {
-        const existing = uniqueResultsMap.get(res.url);
+        const existing = uniqueResultsMap.get(dedupeKey);
         if (res.score > existing.score) {
-          uniqueResultsMap.set(res.url, res);
+          uniqueResultsMap.set(dedupeKey, res);
         }
       }
     }
-    const uniqueResults = Array.from(uniqueResultsMap.values()).sort(
-      (a, b) => b.score - a.score,
-    );
-
-    const aiSummary = searchResponse?.response || '';
-    const aiChatLinks = buildAiChatLinks(uniqueResults, query);
-    const aiMessage = buildAiChatMessage(
-      aiSummary,
-      aiChatLinks,
+    const uniqueResults = rerankSearchResults(
+      Array.from(uniqueResultsMap.values()),
       query,
-      uniqueResults,
-    );
+    )
+      .filter((item) => hasMarkHighlight(item.highlightedDescription))
+      .sort((a, b) => b.score - a.score)
+      .slice(0, topK);
+
+    const aiSummary = normalizeSearchSummary(searchResponse?.response || '');
+    const aiMessage = aiSummary || buildFallbackAiMessage(uniqueResults.length);
 
     return Response.json(
       {
@@ -745,9 +526,7 @@ export async function onRequestPost(context) {
         count: uniqueResults.length,
         summary: aiSummary,
         aiChat: {
-          message:
-            aiMessage ||
-            buildFallbackAiMessage(uniqueResults.length, aiChatLinks),
+          message: aiMessage || buildFallbackAiMessage(uniqueResults.length),
           suggestions: [],
         },
       },

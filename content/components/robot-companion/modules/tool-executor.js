@@ -201,13 +201,6 @@ function executeSetTheme(args) {
   void withViewTransition(
     () => {
       html.setAttribute('data-theme', newTheme);
-
-      try {
-        localStorage.setItem('theme', newTheme);
-      } catch {
-        /* ignore */
-      }
-
       fire('theme:changed', { theme: newTheme });
     },
     {

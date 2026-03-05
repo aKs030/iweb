@@ -79,14 +79,17 @@ export class MenuEvents {
   setupThemeToggle() {
     const themeToggle = this.container.querySelector('.theme-toggle');
     if (!themeToggle) return;
+    const mql = window.matchMedia('(prefers-color-scheme: light)');
+    let userThemeOverride = '';
 
     // Detect current theme
     const getEffectiveTheme = () => {
-      const saved = localStorage.getItem('theme');
-      if (saved === 'light' || saved === 'dark') return saved;
-      return window.matchMedia('(prefers-color-scheme: light)').matches
-        ? 'light'
-        : 'dark';
+      if (userThemeOverride === 'light' || userThemeOverride === 'dark') {
+        return userThemeOverride;
+      }
+      const rootTheme = document.documentElement.getAttribute('data-theme');
+      if (rootTheme === 'light' || rootTheme === 'dark') return rootTheme;
+      return mql.matches ? 'light' : 'dark';
     };
 
     const applyTheme = (theme, { animate = false } = {}) => {
@@ -118,19 +121,13 @@ export class MenuEvents {
       e.preventDefault();
       const current = getEffectiveTheme();
       const next = current === 'dark' ? 'light' : 'dark';
-      try {
-        localStorage.setItem('theme', next);
-      } catch {
-        /* quota exceeded */
-      }
+      userThemeOverride = next;
       applyTheme(next, { animate: true });
     };
 
     // Listen for system preference changes
-    const mql = window.matchMedia('(prefers-color-scheme: light)');
     const handleSystemChange = () => {
-      const saved = localStorage.getItem('theme');
-      if (!saved) {
+      if (!userThemeOverride) {
         applyTheme(mql.matches ? 'light' : 'dark');
       }
     };

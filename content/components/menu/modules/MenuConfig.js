@@ -26,6 +26,7 @@ export const MenuConfig = {
   SEARCH_DEBOUNCE: 220,
   SEARCH_MIN_QUERY_LENGTH: 2,
   SEARCH_REQUEST_TIMEOUT: 6000,
+  SEARCH_AI_REQUEST_TIMEOUT: 4500,
   SEARCH_TOP_K: 12,
 
   // Breakpoints (must match menu-responsive.css media queries)

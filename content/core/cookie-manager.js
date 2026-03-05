@@ -1,6 +1,13 @@
 /**
- * Cookie Management Utility
+ * Runtime-only cookie-like storage utility (no browser persistence)
  */
+const runtimeCookieStore = new Map();
+
+function normalizeKey(name) {
+  const key = String(name || '').trim();
+  return key ? key.toLowerCase() : '';
+}
+
 export const CookieManager = Object.freeze({
   /**
    * @param {string} name
@@ -8,11 +15,10 @@ export const CookieManager = Object.freeze({
    * @param {number} [days=365]
    */
   set(name, value, days = 365) {
-    const date = new Date();
-    date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
-    const expires = `; expires=${date.toUTCString()}`;
-    const secure = window.location.protocol === 'https:' ? '; Secure' : '';
-    document.cookie = `${encodeURIComponent(name)}=${encodeURIComponent(value || '')}${expires}; path=/; SameSite=Lax${secure}`;
+    void days;
+    const key = normalizeKey(name);
+    if (!key) return;
+    runtimeCookieStore.set(key, String(value || ''));
   },
 
   /**
@@ -20,30 +26,18 @@ export const CookieManager = Object.freeze({
    * @returns {string|null}
    */
   get(name) {
-    const nameEQ = `${name}=`;
-    const cookies = document.cookie.split(';');
-    for (let cookie of cookies) {
-      cookie = cookie.trim();
-      if (cookie.startsWith(nameEQ)) {
-        return cookie.substring(nameEQ.length);
-      }
-    }
-    return null;
+    const key = normalizeKey(name);
+    if (!key) return null;
+    return runtimeCookieStore.has(key) ? runtimeCookieStore.get(key) : null;
   },
 
   /**
    * @param {string} name
    */
   delete(name) {
-    const domains = [
-      '',
-      window.location.hostname,
-      `.${window.location.hostname}`,
-    ];
-    domains.forEach((domain) => {
-      const domainPart = domain ? `; domain=${domain}` : '';
-      document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/${domainPart}`;
-    });
+    const key = normalizeKey(name);
+    if (!key) return;
+    runtimeCookieStore.delete(key);
   },
 
   deleteAnalytics() {
