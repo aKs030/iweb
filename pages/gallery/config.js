@@ -1,3 +1,5 @@
+import { isLocalDevRuntime } from '#core/runtime-env.js';
+
 /**
  * Gallery Configuration
  * Assets are hosted on Cloudflare R2 via custom domain (img.abdulkerimsesli.de).
@@ -6,9 +8,7 @@
  * Production: Direct R2 custom domain access
  */
 const isLocalhost =
-  typeof window !== 'undefined' &&
-  (window.location.hostname === 'localhost' ||
-    window.location.hostname === '127.0.0.1');
+  typeof window !== 'undefined' && isLocalDevRuntime(window.location);
 
 const R2_BASE_URL = isLocalhost
   ? '/r2-proxy'

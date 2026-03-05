@@ -4,6 +4,7 @@
  * Animated text typing effect with multi-line support
  * @version 2.0.0
  */
+import { subscribeFooterState } from '../../core/footer-state.js';
 import { createLogger } from '../../core/logger.js';
 import { getElementById, TimerManager } from '../../core/utils.js';
 
@@ -529,14 +530,9 @@ export async function initHeroSubtitle(options = {}) {
         2000,
       );
 
-      const footerEvents = [
-        'footer:loaded',
-        'footer:expanded',
-        'footer:collapsed',
-      ];
-      footerEvents.forEach((eventName) =>
-        document.addEventListener(eventName, pollOverlap),
-      );
+      const unsubscribeFooterState = subscribeFooterState(() => {
+        pollOverlap();
+      });
       // And on resize
       const onResize = () => {
         if (subtitleEl) requestAnimationFrame(pollOverlap);
@@ -548,9 +544,7 @@ export async function initHeroSubtitle(options = {}) {
       const instance = /** @type {any} */ (typeWriterInstance);
       instance.__teardown = () => {
         document.removeEventListener(EVENTS.HERO_TYPING_END, onHeroTypingEnd);
-        footerEvents.forEach((eventName) =>
-          document.removeEventListener(eventName, pollOverlap),
-        );
+        unsubscribeFooterState();
         window.removeEventListener('resize', onResize);
         tw.timerManager?.clearAll?.();
         measurer.destroy();

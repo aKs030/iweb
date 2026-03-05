@@ -3,7 +3,7 @@
  * @version 1.0.0
  */
 
-import { createLogger } from '/content/core/logger.js';
+import { createLogger } from '#core/logger.js';
 import { GITHUB_CONFIG } from '../config/github.config.js';
 import { getCache, setCache } from '../utils/cache.utils.js';
 

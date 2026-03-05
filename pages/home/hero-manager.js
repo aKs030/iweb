@@ -1,11 +1,7 @@
-import {
-  observeOnce,
-  getElementById,
-  TimerManager,
-} from '/content/core/utils.js';
-import { createLogger } from '/content/core/logger.js';
-import { i18n } from '/content/core/i18n.js';
-import { ROBOT_EVENTS } from '/content/components/robot-companion/constants/events.js';
+import { observeOnce, getElementById, TimerManager } from '#core/utils.js';
+import { createLogger } from '#core/logger.js';
+import { i18n } from '#core/i18n.js';
+import { ROBOT_EVENTS } from '#components/robot-companion/constants/events.js';
 
 let typeWriterModule = null;
 
@@ -32,12 +28,10 @@ const HeroManager = (() => {
     try {
       if (!typeWriterModule) {
         typeWriterModule =
-          await import('../../content/components/typewriter/TypeWriter.js').catch(
-            (err) => {
-              log.warn('Failed to import TypeWriter module', err);
-              return null;
-            },
-          );
+          await import('#components/typewriter/TypeWriter.js').catch((err) => {
+            log.warn('Failed to import TypeWriter module', err);
+            return null;
+          });
       }
 
       if (!typeWriterModule?.initHeroSubtitle) return false;
@@ -218,8 +212,7 @@ export const initHeroFeatureBundle = (sectionManager) => {
     // [data-footer-trigger] mechanism used elsewhere.
     if (targetId === 'footer') {
       try {
-        const { openFooter } =
-          await import('/content/components/footer/footer.js');
+        const { openFooter } = await import('#components/footer/footer.js');
         openFooter();
       } catch {
         // fallback: simple scroll

@@ -1,4 +1,9 @@
-import { signal, batch } from './signals.js';
+import {
+  signal,
+  batch,
+  effect,
+  subscribe as signalSubscribe,
+} from './signals.js';
 // ---------------------------------------------------------------------------
 // Reactive Signals — fine-grained, subscribable per-property state
 // ---------------------------------------------------------------------------
@@ -17,8 +22,21 @@ const _signalMap = {
   robotChatOpen,
   robotHydrated,
 };
+const _stateView = Object.freeze({
+  get menuOpen() {
+    return menuOpen.value;
+  },
+  get searchOpen() {
+    return searchOpen.value;
+  },
+  get robotChatOpen() {
+    return robotChatOpen.value;
+  },
+  get robotHydrated() {
+    return robotHydrated.value;
+  },
+});
 class UIStore {
-  listeners = new Set();
   getState() {
     return Object.freeze({
       menuOpen: menuOpen.value,
@@ -28,43 +46,56 @@ class UIStore {
     });
   }
   setState(patch = {}) {
-    let hasChanges = false;
     batch(() => {
       Object.keys(patch).forEach((key) => {
         const value = patch[key];
         if (value === undefined) return;
         const sig = _signalMap[key];
         if (!sig) return;
-        if (Object.is(sig.peek(), value)) return;
         sig.value = value;
-        hasChanges = true;
       });
     });
-    if (!hasChanges) return this.getState();
-    const snapshot = this.getState();
-    this.listeners.forEach((listener) => {
+    return this.getState();
+  }
+  subscribe(listener, options = {}) {
+    return signalSubscribe(() => this.getState(), listener, options);
+  }
+  subscribeKey(key, listener, options = {}) {
+    const sig = _signalMap[key];
+    if (!sig) return () => {};
+    return signalSubscribe(() => sig.value, listener, options);
+  }
+  select(selector, listener, options = {}) {
+    if (typeof selector !== 'function' || typeof listener !== 'function') {
+      return () => {};
+    }
+
+    const { emitImmediately = true, isEqual = Object.is } = options;
+    let hasRun = false;
+    let previousValue;
+
+    return effect(() => {
+      const selected = selector(_stateView);
+
+      if (!emitImmediately && !hasRun) {
+        previousValue = selected;
+        hasRun = true;
+        return;
+      }
+
+      if (hasRun && isEqual(selected, previousValue)) {
+        return;
+      }
+
+      previousValue = selected;
+      hasRun = true;
+
       try {
-        listener(snapshot);
+        listener(selected);
       } catch {
         // keep store resilient against listener errors
       }
     });
-    return snapshot;
-  }
-  subscribe(listener, options = {}) {
-    if (typeof listener !== 'function') return () => {};
-    const { emitImmediately = true } = options;
-    this.listeners.add(listener);
-    if (emitImmediately) {
-      try {
-        listener(this.getState());
-      } catch {
-        // keep store resilient against listener errors
-      }
-    }
-    return () => {
-      this.listeners.delete(listener);
-    };
   }
   reset() {
     batch(() => {
@@ -73,7 +104,6 @@ class UIStore {
       robotChatOpen.value = false;
       robotHydrated.value = false;
     });
-    this.listeners.clear();
   }
 }
 export const uiStore = new UIStore();

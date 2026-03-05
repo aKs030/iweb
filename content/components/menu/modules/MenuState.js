@@ -3,23 +3,46 @@
  * Handles the reactive state of the menu (open/closed, active link, title).
  */
 import { createLogger } from '../../../core/logger.js';
+import { computed, signal } from '../../../core/signals.js';
 import { uiStore } from '../../../core/ui-store.js';
 
 const log = createLogger('MenuState');
 
 export class MenuState {
   constructor() {
-    /** @type {boolean} */
-    this.isOpen = false;
-    /** @type {string|null} */
-    this.activeLink = null;
-    /** @type {string} */
-    this.currentTitle = 'menu.home';
-    /** @type {string} */
-    this.currentSubtitle = '';
+    this._openSignal = signal(false);
+    this._activeLinkSignal = signal(null);
+    this._titleSignal = signal(
+      Object.freeze({
+        title: 'menu.home',
+        subtitle: '',
+      }),
+    );
 
-    /** @type {Map<string, Set<Function>>} */
-    this.listeners = new Map();
+    this.signals = Object.freeze({
+      open: computed(() => this._openSignal.value),
+      activeLink: computed(() => this._activeLinkSignal.value),
+      title: computed(() => this._titleSignal.value),
+    });
+
+    /** @type {Map<string, Map<Function, Function>>} */
+    this._subscriptions = new Map();
+  }
+
+  get isOpen() {
+    return this._openSignal.value;
+  }
+
+  get activeLink() {
+    return this._activeLinkSignal.value;
+  }
+
+  get currentTitle() {
+    return this._titleSignal.value.title;
+  }
+
+  get currentSubtitle() {
+    return this._titleSignal.value.subtitle;
   }
 
   /**
@@ -28,9 +51,8 @@ export class MenuState {
    */
   setOpen(value) {
     if (this.isOpen === value) return;
-    this.isOpen = value;
+    this._openSignal.value = value;
     uiStore.setState({ menuOpen: value });
-    this.emit('openChange', value);
   }
 
   /**
@@ -39,8 +61,7 @@ export class MenuState {
    */
   setActiveLink(link) {
     if (this.activeLink === link) return;
-    this.activeLink = link;
-    this.emit('activeLinkChange', link);
+    this._activeLinkSignal.value = link;
   }
 
   /**
@@ -53,21 +74,43 @@ export class MenuState {
     if (this.currentTitle === title && this.currentSubtitle === subtitle)
       return;
 
-    this.currentTitle = title;
-    this.currentSubtitle = subtitle;
-    this.emit('titleChange', { title, subtitle });
+    this._titleSignal.value = Object.freeze({ title, subtitle });
   }
 
   /**
    * Subscribe to a state change event.
    * @param {string} event
    * @param {Function} callback
+   * @returns {Function}
    */
   on(event, callback) {
-    if (!this.listeners.has(event)) {
-      this.listeners.set(event, new Set());
+    if (typeof callback !== 'function') return () => {};
+
+    const source = this._resolveSignal(event);
+    if (!source) return () => {};
+
+    this.off(event, callback);
+
+    let hasRun = false;
+    const unsubscribe = source.subscribe((value) => {
+      if (!hasRun) {
+        hasRun = true;
+        return;
+      }
+
+      try {
+        callback(value);
+      } catch (err) {
+        log.error(`Error in menu listener for ${event}:`, err);
+      }
+    });
+
+    if (!this._subscriptions.has(event)) {
+      this._subscriptions.set(event, new Map());
     }
-    this.listeners.get(event).add(callback);
+    this._subscriptions.get(event).set(callback, unsubscribe);
+
+    return unsubscribe;
   }
 
   /**
@@ -76,34 +119,45 @@ export class MenuState {
    * @param {Function} callback
    */
   off(event, callback) {
-    this.listeners.get(event)?.delete(callback);
-  }
+    const subscriptions = this._subscriptions.get(event);
+    const unsubscribe = subscriptions?.get(callback);
+    if (!unsubscribe) return;
 
-  /**
-   * Emit an event to listeners.
-   * @param {string} event
-   * @param {any} data
-   * @private
-   */
-  emit(event, data) {
-    this.listeners.get(event)?.forEach((callback) => {
-      try {
-        callback(data);
-      } catch (err) {
-        log.error(`Error in menu listener for ${event}:`, err);
-      }
-    });
+    unsubscribe();
+    subscriptions.delete(callback);
+
+    if (subscriptions.size === 0) {
+      this._subscriptions.delete(event);
+    }
   }
 
   /**
    * Resets the state to initial values.
    */
   reset() {
-    this.isOpen = false;
-    this.activeLink = null;
-    this.currentTitle = 'menu.home';
-    this.currentSubtitle = '';
+    this._openSignal.value = false;
+    this._activeLinkSignal.value = null;
+    this._titleSignal.value = Object.freeze({
+      title: 'menu.home',
+      subtitle: '',
+    });
     uiStore.setState({ menuOpen: false });
-    this.listeners.clear();
+    this._subscriptions.forEach((subscriptions) => {
+      subscriptions.forEach((unsubscribe) => unsubscribe());
+    });
+    this._subscriptions.clear();
+  }
+
+  _resolveSignal(event) {
+    switch (event) {
+      case 'openChange':
+        return this.signals.open;
+      case 'activeLinkChange':
+        return this.signals.activeLink;
+      case 'titleChange':
+        return this.signals.title;
+      default:
+        return null;
+    }
   }
 }

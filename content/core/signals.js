@@ -1,148 +1,234 @@
 /**
- * Lightweight Reactive Signals — TypeScript source
+ * Lightweight Reactive Signals
  *
- * Zero-dependency, fine-grained reactivity for the app's state management.
- * Provides `signal`, `computed`, `effect` and `batch` primitives.
+ * Zero-dependency, fine-grained reactivity for browser-first state management.
+ * Provides `signal`, `computed`, `effect`, `batch`, `untracked`, and `subscribe`.
  *
  * @module signals
- * @version 1.0.0
+ * @version 1.2.0
  */
-// ---------------------------------------------------------------------------
-// Internal bookkeeping
-// ---------------------------------------------------------------------------
+
 let _currentEffect = null;
-let _batchQueue = null;
-// ---------------------------------------------------------------------------
-// signal(initialValue)
-// ---------------------------------------------------------------------------
+let _batchDepth = 0;
+const _batchedSubscribers = new Set();
+
 /**
  * Create a reactive signal.
+ * @template T
+ * @param {T} initialValue
+ * @returns {{
+ *   value: T,
+ *   peek: () => T,
+ *   subscribe: (fn: (value: T) => void) => () => boolean
+ * }}
  */
 export function signal(initialValue) {
-    let _value = initialValue;
-    const _subscribers = new Set();
-    const self = {
-        get value() {
-            if (_currentEffect) {
-                _subscribers.add(_currentEffect);
-            }
-            return _value;
-        },
-        set value(next) {
-            if (Object.is(_value, next))
-                return;
-            _value = next;
-            _notify(_subscribers);
-        },
-        peek() {
-            return _value;
-        },
-        subscribe(fn) {
-            const wrapper = () => fn(_value);
-            _subscribers.add(wrapper);
-            try {
-                fn(_value);
-            }
-            catch {
-                /* keep resilient */
-            }
-            return () => _subscribers.delete(wrapper);
-        },
-    };
-    return self;
+  let _value = initialValue;
+  const _subscribers = new Set();
+
+  return {
+    get value() {
+      _track(_subscribers);
+      return _value;
+    },
+    set value(next) {
+      if (Object.is(_value, next)) return;
+      _value = next;
+      _notify(_subscribers);
+    },
+    peek() {
+      return _value;
+    },
+    subscribe(fn) {
+      if (typeof fn !== 'function') return () => false;
+
+      const wrapper = () => fn(_value);
+      _subscribers.add(wrapper);
+      _safeCall(wrapper);
+
+      return () => _subscribers.delete(wrapper);
+    },
+  };
 }
-// ---------------------------------------------------------------------------
-// computed(fn)
-// ---------------------------------------------------------------------------
+
 /**
  * Derive a read-only signal.
+ * @template T
+ * @param {() => T} fn
+ * @returns {{
+ *   readonly value: T,
+ *   peek: () => T,
+ *   subscribe: (listener: (value: T) => void) => () => boolean
+ * }}
  */
 export function computed(fn) {
-    const s = signal(undefined);
-    effect(() => {
-        s.value = fn();
-    });
-    return {
-        get value() {
-            return s.value;
-        },
-        peek: () => s.peek(),
-        subscribe: (listener) => s.subscribe(listener),
-    };
+  const derived = signal(undefined);
+
+  effect(() => {
+    derived.value = fn();
+  });
+
+  return {
+    get value() {
+      return derived.value;
+    },
+    peek: () => derived.peek(),
+    subscribe: (listener) => derived.subscribe(listener),
+  };
 }
-// ---------------------------------------------------------------------------
-// effect(fn)
-// ---------------------------------------------------------------------------
+
 /**
  * Run `fn` immediately and re-run whenever any read signal changes.
  * Returns a dispose function.
+ *
+ * @param {() => void | (() => void)} fn
+ * @returns {() => void}
  */
 export function effect(fn) {
-    let cleanup;
-    let disposed = false;
-    const execute = () => {
-        if (disposed)
-            return;
-        _safeCall(cleanup);
-        const prev = _currentEffect;
-        _currentEffect = execute;
-        try {
-            cleanup = fn();
-        }
-        finally {
-            _currentEffect = prev;
-        }
-    };
-    execute();
-    return () => {
-        disposed = true;
-        _safeCall(cleanup);
-    };
+  const effectState = {
+    cleanup: undefined,
+    deps: new Set(),
+    disposed: false,
+    run: /** @type {(() => void)|null} */ (null),
+  };
+
+  const execute = () => {
+    if (effectState.disposed) return;
+
+    _cleanupDeps(effectState);
+    _safeCall(effectState.cleanup);
+
+    const previous = _currentEffect;
+    _currentEffect = effectState;
+
+    try {
+      effectState.cleanup = fn();
+    } finally {
+      _currentEffect = previous;
+    }
+  };
+
+  effectState.run = execute;
+  execute();
+
+  return () => {
+    if (effectState.disposed) return;
+    effectState.disposed = true;
+    _cleanupDeps(effectState);
+    _safeCall(effectState.cleanup);
+    effectState.cleanup = undefined;
+  };
 }
-// ---------------------------------------------------------------------------
-// batch(fn)
-// ---------------------------------------------------------------------------
+
 /**
- * Group multiple signal writes so effects run only once at the end.
+ * Group multiple signal writes so subscribers run once at the end.
+ *
+ * @param {() => void} fn
  */
 export function batch(fn) {
-    if (_batchQueue) {
-        fn();
-        return;
+  _batchDepth += 1;
+
+  try {
+    fn();
+  } finally {
+    _batchDepth -= 1;
+
+    if (_batchDepth === 0 && _batchedSubscribers.size > 0) {
+      const queue = [..._batchedSubscribers];
+      _batchedSubscribers.clear();
+
+      queue.forEach((subscriber) => _safeCall(subscriber));
     }
-    _batchQueue = new Set();
-    try {
-        fn();
-    }
-    finally {
-        const queue = _batchQueue;
-        _batchQueue = null;
-        for (const subscriberSet of queue) {
-            for (const cb of subscriberSet) {
-                _safeCall(cb);
-            }
-        }
-    }
+  }
 }
-// ---------------------------------------------------------------------------
-// Internal
-// ---------------------------------------------------------------------------
+
+/**
+ * Read signals without tracking them as dependencies of the current effect.
+ *
+ * @template T
+ * @param {() => T} fn
+ * @returns {T}
+ */
+export function untracked(fn) {
+  const previous = _currentEffect;
+  _currentEffect = null;
+
+  try {
+    return fn();
+  } finally {
+    _currentEffect = previous;
+  }
+}
+
+/**
+ * High-level reactive subscription helper.
+ *
+ * Wraps `effect()` with common options (skip initial emission,
+ * error isolation) that would otherwise be duplicated in every store.
+ *
+ * @template T
+ * @param {() => T} selector   — runs inside `effect`, should read one or more signals
+ * @param {(value: T) => void} listener — called with the selected value on changes
+ * @param {{ emitImmediately?: boolean }} [options]
+ * @returns {() => void} dispose function
+ */
+export function subscribe(selector, listener, options = {}) {
+  if (typeof selector !== 'function' || typeof listener !== 'function') {
+    return () => { };
+  }
+
+  const { emitImmediately = true } = options;
+  let hasRun = false;
+
+  return effect(() => {
+    const value = selector();
+
+    if (!emitImmediately && !hasRun) {
+      hasRun = true;
+      return;
+    }
+
+    hasRun = true;
+
+    try {
+      listener(value);
+    } catch {
+      /* keep subscribers isolated */
+    }
+  });
+}
+
+function _track(subscribers) {
+  if (!_currentEffect?.run) return;
+
+  subscribers.add(_currentEffect.run);
+  _currentEffect.deps.add(subscribers);
+}
+
 function _notify(subscribers) {
-    if (_batchQueue) {
-        _batchQueue.add(subscribers);
-        return;
-    }
-    for (const cb of [...subscribers]) {
-        _safeCall(cb);
-    }
+  const queue = [...subscribers];
+
+  if (_batchDepth > 0) {
+    queue.forEach((subscriber) => _batchedSubscribers.add(subscriber));
+    return;
+  }
+
+  queue.forEach((subscriber) => _safeCall(subscriber));
 }
+
+function _cleanupDeps(effectState) {
+  effectState.deps.forEach((subscribers) => {
+    subscribers.delete(effectState.run);
+  });
+  effectState.deps.clear();
+}
+
 function _safeCall(fn) {
-    if (typeof fn !== 'function')
-        return;
-    try {
-        fn();
-    }
-    catch {
-        /* keep resilient */
-    }
+  if (typeof fn !== 'function') return;
+
+  try {
+    fn();
+  } catch {
+    /* keep resilient */
+  }
 }

@@ -37,10 +37,23 @@
 │                      Core Services                           │
 ├─────────────────────────────────────────────────────────────┤
 │  ├─ logger.js           (Logging)                           │
-│  ├─ events.js           (Event bus)                         │
+│  ├─ signals.js          (Reactive primitives)               │
+│  ├─ ui-store.js         (Shared UI state)                   │
+│  ├─ theme-state.js      (Theme preference state)            │
+│  ├─ load-manager.js     (Reactive loading state)            │
+│  ├─ idle.js             (Idle scheduling helper)            │
+│  ├─ runtime-env.js      (Runtime env detection)             │
+│  ├─ sw-registration.js  (SW + online/offline lifecycle)    │
+│  ├─ events.js           (Lifecycle/interop events)          │
 │  ├─ cache.js            (Caching)                           │
 │  ├─ fetch.js            (HTTP)                              │
-│  ├─ dom-utils.js        (DOM helpers)                       │
+│  ├─ utils.js            (DOM helpers)                       │
+│  ├─ url-utils.js        (Shared URL normalization)          │
+│  ├─ resource-hints-matrix.js (Route hint budgets)           │
+│  ├─ schema-page-types.js (SEO route metadata)               │
+│  ├─ schema-shared.js    (Schema shared helpers)             │
+│  ├─ schema-media.js     (Schema media extraction)           │
+│  ├─ content-extractors.js (Shared DOM extraction)           │
 │  ├─ accessibility-manager.js (A11y)                         │
 │  └─ types.js            (Type definitions)                  │
 └─────────────────────────────────────────────────────────────┘
@@ -54,6 +67,22 @@
 │  └─ LocalStorage        (Browser storage)                   │
 └─────────────────────────────────────────────────────────────┘
 ```
+
+## State Strategy
+
+- Dauerhafter UI- und App-Zustand wird bevorzugt über Signals modelliert (`signals.js`, `ui-store.js`, `load-manager.js`).
+- Theme-Präferenz und resultierendes Light/Dark-Theme werden ebenfalls signal-basiert geführt (`theme-state.js`) und bei expliziter Auswahl persistent gespeichert.
+- Footer-Readiness und Footer-Expansion werden reaktiv über `footer-state.js` modelliert, statt über DOM-Custom-Events.
+- Suche trennt jetzt UI und Datenpfad: `MenuSearch.js` steuert Interaktion/Rendering, `MenuSearchStore.js` hält Query-, Loading- und Result-State reaktiv.
+- Route-/Intent-basiertes Speculative Loading wird über `resource-hints-matrix.js` budgetiert, damit Prefetch/Prerender je nach Bereich, Gerät und Netzwerk begrenzt bleiben.
+- Idle-/Deferred-Work wird über `idle.js` vereinheitlicht, damit Timeout-Fallback und Cleanup nicht mehr pro Modul auseinanderlaufen.
+- Service-Worker-Registrierung und Online/Offline-UI liegen in `sw-registration.js`, nicht mehr im App-Bootstrap.
+- Strukturierte Daten bleiben über `schema.js` erreichbar, die Seitentyp-Metadaten, Shared-Text-Helfer, DOM-Content-Extractor und Medien-Extraktion leben aber getrennt in `schema-page-types.js`, `schema-shared.js`, `content-extractors.js` und `schema-media.js`.
+- Lokale Host-/Dev-Erkennung wird zentral über `runtime-env.js` geführt statt pro Modul separat.
+- Interne Link-Sanitization und kompakte URL-Darstellung laufen zentral über `url-utils.js` statt über lokale `new URL(...)`-Helfer.
+- DOM-Events bleiben für einmalige Lifecycle-Hooks und lose Kopplung an browsernahe Integrationspunkte bestehen.
+- Vendor- und interne Module werden über die zentrale Import-Map in `content/templates/base-head.html` als Bare Imports bzw. Aliase (`#core`, `#components`, `#config`, `#pages`) bereitgestellt; die Map wird per `scripts/sync-import-map.mjs` aus den Paketversionen synchronisiert.
+- `npm run smoke:browser` deckt die neuen Pfade für Theme-Persistenz, Loader-Hide, Menu/Search/Robot, Footer-Hydration und BFCache in einem echten Chromium-Lauf ab.
 
 ## Type System Flow
 
@@ -204,10 +233,14 @@ RobotCompanion
 
 Core Services (Shared)
 ├── logger.js
+├── signals.js
+├── ui-store.js
+├── theme-state.js
+├── load-manager.js
 ├── events.js
 ├── cache.js
 ├── fetch.js
-├── dom-utils.js
+├── utils.js
 ├── accessibility-manager.js
 ├── three-earth-manager.js
 ├── model-loader.js (Draco & Meshopt)
@@ -231,12 +264,16 @@ content/
 │   │       ├── MenuEvents.js
 │   │       └── MenuAccessibility.js
 │   └── robot-companion/
-│       ├── robot-companion.js                    (Core Class)
+│       ├── robot-companion.js                    (Orchestrator)
 │       ├── robot-companion-texts.js
 │       ├── robot-companion.css
 │       ├── README.md
 │       ├── ai-agent-service.js
 │       ├── robot-games.js
+│       ├── runtime/
+│       │   ├── robot-layout.js                  (Footer/viewport layout)
+│       │   ├── robot-hydration.js               (Progressive hydration)
+│       │   └── robot-page-context.js            (Context + morphing)
 │       └── modules/
 │           ├── robot-animation.js
 │           ├── robot-chat.js
@@ -246,12 +283,19 @@ content/
 ├── core/
 │   ├── types.js                   ⭐ EXTENDED (27 types)
 │   ├── logger.js
+│   ├── signals.js                 ⭐ NEW (reactive primitives)
+│   ├── ui-store.js                ⭐ NEW (shared UI state)
+│   ├── theme-state.js             ⭐ NEW (reactive theme state)
+│   ├── load-manager.js            ⭐ UPDATED (signals + events bridge)
 │   ├── events.js
 │   ├── cache.js
 │   ├── fetch.js
-│   ├── dom-utils.js
+│   ├── utils.js
 │   ├── accessibility-manager.js
 │   ├── three-earth-manager.js
+│   ├── idle.js                   ⭐ NEW (shared idle scheduler)
+│   ├── url-utils.js              ⭐ NEW (shared URL helpers)
+│   ├── content-extractors.js     ⭐ NEW (shared DOM content extraction)
 │   └── model-loader.js            ⭐ NEW (Draco & Meshopt)
 └── main.js
 
@@ -281,7 +325,7 @@ function addMessage(text, type) {
 
 /**
  * Using imported types
- * @param {import('/content/core/types.js').PageContext} context
+ * @param {import('#core/types.js').PageContext} context
  */
 function trackSection(context) {
   // Type-safe with central definitions
@@ -289,7 +333,7 @@ function trackSection(context) {
 
 /**
  * Complex object types
- * @type {import('/content/core/types.js').RobotAnalytics}
+ * @type {import('#core/types.js').RobotAnalytics}
  */
 const analytics = {
   sessions: 0,
@@ -301,13 +345,15 @@ const analytics = {
 
 ## Event System
 
+Signals tragen langlebigen Zustandsfluss. Custom Events bleiben für einmalige
+Lifecycle-Hooks und externe Integrationen bestehen.
+
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                      Custom Events                           │
 ├─────────────────────────────────────────────────────────────┤
 │  Component Events:                                           │
 │  • menu:loaded          (SiteMenu ready)                     │
-│  • footer:loaded        (SiteFooter ready)                   │
 │  • robot:loaded         (RobotCompanion ready)               │
 │  • robot:error          (RobotCompanion error)               │
 │  • section:loaded       (Section loaded)                     │
@@ -317,9 +363,10 @@ const analytics = {
 │  • CORE_INITIALIZED     (Core initialized)                   │
 │  • MODULES_READY        (Modules ready)                      │
 │  • HERO_LOADED          (Hero section loaded)                │
-│  • LOADING_UNBLOCKED    (Loading complete)                   │
 └─────────────────────────────────────────────────────────────┘
 ```
+
+`content/core/load-manager.js` exposes `whenAppReady(...)` plus `loadSignals`/`subscribeLoadState(...)` for app readiness and loader progress inside the signal graph. New modules should not depend on removed loader DOM events.
 
 ## Performance Considerations
 
@@ -374,7 +421,7 @@ Automatic Cleanup
 export class MyComponent extends HTMLElement {
   constructor() {
     super();
-    /** @type {import('/content/core/types.js').ComponentConfig} */
+    /** @type {import('#core/types.js').ComponentConfig} */
     this.config = {};
   }
 

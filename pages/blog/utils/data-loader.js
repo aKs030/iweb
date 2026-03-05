@@ -3,9 +3,9 @@
  * @version 2.0.0 - Optimized & Minimal
  */
 
-import { createLogger } from '/content/core/logger.js';
-import { AppLoadManager } from '/content/core/load-manager.js';
-import { i18n } from '/content/core/i18n.js';
+import { createLogger } from '#core/logger.js';
+import { AppLoadManager } from '#core/load-manager.js';
+import { i18n } from '#core/i18n.js';
 import { parseFrontmatter, normalizePost } from './blog-utils.js';
 
 const log = createLogger('BlogDataLoader');

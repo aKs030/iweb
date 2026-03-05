@@ -4,9 +4,9 @@
  */
 
 import { useState, useEffect } from 'react';
-import { createLogger } from '/content/core/logger.js';
-import { AppLoadManager } from '/content/core/load-manager.js';
-import { i18n } from '/content/core/i18n.js';
+import { createLogger } from '#core/logger.js';
+import { AppLoadManager } from '#core/load-manager.js';
+import { i18n } from '#core/i18n.js';
 import { createProjectsData } from '../services/projects-data.service.js';
 
 const log = createLogger('useProjects');

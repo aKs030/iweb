@@ -7,11 +7,11 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 
-import { createLogger } from '/content/core/logger.js';
-import { AppLoadManager } from '/content/core/load-manager.js';
-import { createUseTranslation } from '/content/core/utils.js';
-import { createErrorBoundary } from '/content/components/ErrorBoundary.js';
-import { i18n } from '/content/core/i18n.js';
+import { createLogger } from '#core/logger.js';
+import { AppLoadManager } from '#core/load-manager.js';
+import { createUseTranslation } from '#core/utils.js';
+import { createErrorBoundary } from '#components/ErrorBoundary.js';
+import { i18n } from '#core/i18n.js';
 
 import { ThreeGalleryScene } from './components/ThreeGalleryScene.js';
 // Removed static GALLERY_ITEMS import to use dynamic loading

@@ -25,6 +25,7 @@ export class MenuRenderer {
     this.container = null;
     this.iconTimeout = null; // used by initializeIcons
     this._i18nUnsub = null; // cleaned up in destroy
+    this._stateCleanupFns = [];
   }
 
   /**
@@ -38,10 +39,6 @@ export class MenuRenderer {
 
     // wire state subscriptions _before_ syncing so changes apply immediately
     this.setupStateSubscriptions();
-
-    // Initial State Sync
-    this.updateActiveLink(this.state.activeLink);
-    this.updateTitle(this.state.currentTitle, this.state.currentSubtitle);
 
     // Initial Language Sync
     const currentLang = i18n.getCurrentLanguage
@@ -79,28 +76,37 @@ export class MenuRenderer {
   }
 
   setupStateSubscriptions() {
+    this._stateCleanupFns.forEach((cleanup) => cleanup());
+    this._stateCleanupFns = [];
+
     // Open/Close State
-    this.state.on('openChange', (isOpen) => {
-      const toggle = this.container.querySelector('.site-menu__toggle');
-      const menu = this.container.querySelector('.site-menu');
+    this._stateCleanupFns.push(
+      this.state.signals.open.subscribe((isOpen) => {
+        const toggle = this.container.querySelector('.site-menu__toggle');
+        const menu = this.container.querySelector('.site-menu');
 
-      if (menu) menu.classList.toggle('open', isOpen);
-      if (toggle) toggle.classList.toggle('active', isOpen);
-      setMenuOverlayState(isOpen ? 'menu' : null);
+        if (menu) menu.classList.toggle('open', isOpen);
+        if (toggle) toggle.classList.toggle('active', isOpen);
+        setMenuOverlayState(isOpen ? 'menu' : null);
 
-      // Accessibility update
-      if (toggle) toggle.setAttribute('aria-expanded', String(isOpen));
-    });
+        // Accessibility update
+        if (toggle) toggle.setAttribute('aria-expanded', String(isOpen));
+      }),
+    );
 
     // Active Link State
-    this.state.on('activeLinkChange', (activeHref) => {
-      this.updateActiveLink(activeHref);
-    });
+    this._stateCleanupFns.push(
+      this.state.signals.activeLink.subscribe((activeHref) => {
+        this.updateActiveLink(activeHref);
+      }),
+    );
 
     // Title State
-    this.state.on('titleChange', ({ title, subtitle }) => {
-      this.updateTitle(title, subtitle);
-    });
+    this._stateCleanupFns.push(
+      this.state.signals.title.subscribe(({ title, subtitle }) => {
+        this.updateTitle(title, subtitle);
+      }),
+    );
 
     // Language State
     // keep unsubscribe function for cleanup
@@ -220,6 +226,8 @@ export class MenuRenderer {
       clearTimeout(this.iconTimeout);
       this.iconTimeout = null;
     }
+    this._stateCleanupFns.forEach((cleanup) => cleanup());
+    this._stateCleanupFns = [];
     if (typeof this._i18nUnsub === 'function') {
       this._i18nUnsub();
       this._i18nUnsub = null;

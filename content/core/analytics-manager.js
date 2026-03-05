@@ -33,9 +33,7 @@ export class AnalyticsManager {
    * @param {boolean} granted
    */
   updateConsent(granted) {
-    const win = /** @type {import('/content/core/types.js').GlobalWindow} */ (
-      window
-    );
+    const win = /** @type {import('./types.js').GlobalWindow} */ (window);
 
     if (typeof win.gtag !== 'function') return;
 

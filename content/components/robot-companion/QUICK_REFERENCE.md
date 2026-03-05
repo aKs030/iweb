@@ -47,18 +47,11 @@ ROBOT_ACTIONS.CLEAR_CHAT;
 ROBOT_ACTIONS.DELETE_CLOUDFLARE_USER;
 ```
 
-## Events
-
-```js
-document.addEventListener(ROBOT_EVENTS.CHAT_OPENED, (e) => {
-  console.log(e.detail);
-});
-```
-
 ## Debug
 
 ```js
 console.log(robot.stateManager.getState());
+console.log(robot.stateManager.signals.isChatOpen.value);
 console.log(robot.dom);
 ```
 

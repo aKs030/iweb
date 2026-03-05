@@ -1,12 +1,13 @@
 /**
  * Menu Search Module
- * Handles search functionality, API interactions, and search UI state.
+ * Handles menu search interaction and rendering.
  */
 import { i18n } from '../../../core/i18n.js';
+import { SEARCH_PRELOAD_URLS } from '../../../config/import-map.generated.js';
 import { TimerManager } from '../../../core/utils.js';
-import { createLogger } from '../../../core/logger.js';
 import { resourceHints } from '../../../core/resource-hints.js';
-import { uiStore } from '../../../core/ui-store.js';
+import { searchOpen, uiStore } from '../../../core/ui-store.js';
+import { formatCompactUrlPath } from '../../../core/url-utils.js';
 import { withViewTransition } from '../../../core/view-transitions.js';
 import {
   VIEW_TRANSITION_ROOT_CLASSES,
@@ -14,11 +15,10 @@ import {
 } from '../../../core/view-transition-types.js';
 import { VIEW_TRANSITION_TIMINGS_MS } from '../../../core/view-transition-timings.js';
 import { setMenuOverlayState } from './MenuOverlayState.js';
+import { MenuSearchKeyboardController } from './search-keyboard-controller.js';
+import { MenuSearchRenderer } from './search-renderer.js';
+import { MenuSearchStore } from './MenuSearchStore.js';
 
-const log = createLogger('MenuSearch');
-const SEARCH_ENDPOINT = '/api/search';
-const AI_AGENT_ENDPOINT = '/api/ai-agent';
-const MARK_HIGHLIGHT_PATTERN = /<mark>[\s\S]*?<\/mark>/i;
 const SEARCH_VIEW_TRANSITION_OPTIONS = Object.freeze({
   rootClasses: [VIEW_TRANSITION_ROOT_CLASSES.MENU],
   timeoutMs: VIEW_TRANSITION_TIMINGS_MS.SEARCH_TIMEOUT,
@@ -49,21 +49,27 @@ export class MenuSearch {
     this.results = null;
     this.clearBtn = null;
     this.items = [];
-    this.aiChatMessage = '';
-    this.selectedIndex = -1;
     this.debounceTimer = null;
-    this.abortController = null;
     this.searchDepsPreloaded = false;
     this.searchDepsIntentTimer = null;
-
-    this.searchCache = new Map();
-    this.searchCacheTtlMs = this.config.SEARCH_CACHE_TTL_MS ?? 120000;
-    this.searchCacheMaxEntries = this.config.SEARCH_CACHE_MAX_ENTRIES ?? 40;
+    this._pendingCloseOptions = { restoreFocus: false };
+    this.keyboardController = new MenuSearchKeyboardController();
+    this.searchStore = new MenuSearchStore(config);
+    this.renderer = new MenuSearchRenderer({
+      translate: (key, fallback) => i18n.tOrFallback(key, fallback),
+      getCategoryLabel: (category) => this.getCategoryLabel(category),
+      formatSearchResultUrl: (rawUrl) => formatCompactUrlPath(rawUrl),
+      getFallbackSuggestions: () => this.searchStore.getFallbackSuggestions(),
+      hasMarkedHighlight: (value) => this.searchStore.hasMarkedHighlight(value),
+      setPopupExpanded: (isExpanded) => this.setSearchPopupExpanded(isExpanded),
+    });
   }
 
   init() {
     this.setupSearch();
     this.setupI18nSync();
+    this.setupSearchStateSync();
+    this.setupSearchStoreSync();
   }
 
   setupSearch() {
@@ -115,13 +121,17 @@ export class MenuSearch {
 
       if (e.key === 'ArrowDown') {
         e.preventDefault();
-        this.moveSearchSelection(1);
+        if (this.keyboardController.moveSelection(1)) {
+          this.updateSearchSelectionUI();
+        }
         return;
       }
 
       if (e.key === 'ArrowUp') {
         e.preventDefault();
-        this.moveSearchSelection(-1);
+        if (this.keyboardController.moveSelection(-1)) {
+          this.updateSearchSelectionUI();
+        }
         return;
       }
 
@@ -151,20 +161,15 @@ export class MenuSearch {
     const handleResultsPointerOver = (e) => {
       const index = this.getSearchResultIndexFromEvent(e);
       if (index < 0) return;
-      if (this.selectedIndex === index) return;
-
-      this.selectedIndex = index;
+      if (!this.keyboardController.setSelectedIndex(index)) return;
       this.updateSearchSelectionUI();
     };
 
     const handleClearClick = () => {
       if (this.input) {
         this.input.value = '';
-        this.updateClearButtonVisibility('');
-        this.items = [];
-        this.aiChatMessage = '';
-        this.selectedIndex = -1;
-        this.renderSearchState({ hidden: true });
+        this.keyboardController.clear();
+        this.searchStore.clear({ query: '' });
         this.input.focus();
       }
     };
@@ -196,6 +201,39 @@ export class MenuSearch {
     );
   }
 
+  setupSearchStateSync() {
+    this.cleanupFns.push(
+      searchOpen.subscribe((isOpen) => {
+        this.syncSearchModeState(isOpen);
+      }),
+    );
+  }
+
+  setupSearchStoreSync() {
+    this.cleanupFns.push(
+      this.searchStore.subscribe((state) => {
+        this.items = [...state.items];
+        this.keyboardController.setItems(this.items);
+        this.updateClearButtonVisibility(state.query);
+        this.renderer.renderState(this.results, {
+          hidden:
+            !state.loading &&
+            !state.message &&
+            !state.aiChatMessage &&
+            state.items.length === 0 &&
+            !state.query,
+          loading: state.loading,
+          message: state.message,
+          items: state.items,
+          aiChatMessage: state.aiChatMessage,
+          query: state.query,
+          selectedIndex: this.keyboardController.getSelectedIndex(),
+          optionIdBuilder: (index) => this.buildSearchOptionId(index),
+        });
+      }),
+    );
+  }
+
   getSearchResultIndexFromEvent(event) {
     const target = /** @type {Element|null} */ (
       event.target instanceof Element ? event.target : null
@@ -216,19 +254,22 @@ export class MenuSearch {
   }
 
   isSearchOpen() {
-    return Boolean(this.isOpen);
-  }
-
-  t(key, fallback = '') {
-    const translated = i18n.t(key);
-    if (translated === key) {
-      return fallback || key;
-    }
-    return translated;
+    return Boolean(searchOpen.value);
   }
 
   closeSearchModeSilently() {
     this.closeSearchMode({ restoreFocus: false });
+  }
+
+  syncSearchModeState(isOpen) {
+    if (isOpen) {
+      this.applySearchOpenState();
+      return;
+    }
+
+    const options = this._pendingCloseOptions || { restoreFocus: false };
+    this._pendingCloseOptions = { restoreFocus: false };
+    this.applySearchClosedState(options);
   }
 
   syncSearchTriggerState(isOpen) {
@@ -236,17 +277,23 @@ export class MenuSearch {
     if (!trigger) return;
 
     if (isOpen) {
-      const closeLabel = this.t('menu.search_close', 'Suche schließen');
+      const closeLabel = i18n.tOrFallback(
+        'menu.search_close',
+        'Suche schließen',
+      );
       trigger.setAttribute('aria-label', closeLabel);
       trigger.setAttribute('title', closeLabel);
       trigger.setAttribute('aria-expanded', 'true');
       return;
     }
 
-    trigger.setAttribute('aria-label', this.t('menu.search_label', 'Suche'));
+    trigger.setAttribute(
+      'aria-label',
+      i18n.tOrFallback('menu.search_label', 'Suche'),
+    );
     trigger.setAttribute(
       'title',
-      this.t('menu.search_tooltip', 'Website durchsuchen'),
+      i18n.tOrFallback('menu.search_tooltip', 'Website durchsuchen'),
     );
     trigger.setAttribute('aria-expanded', 'false');
   }
@@ -259,15 +306,22 @@ export class MenuSearch {
     if (isOpen) {
       toggle.setAttribute(
         'aria-label',
-        this.t('menu.search_close', 'Suche schließen'),
+        i18n.tOrFallback('menu.search_close', 'Suche schließen'),
       );
       return;
     }
 
-    toggle.setAttribute('aria-label', this.t('menu.toggle', 'Menü'));
+    toggle.setAttribute('aria-label', i18n.tOrFallback('menu.toggle', 'Menü'));
   }
 
   openSearchMode() {
+    if (this.isSearchOpen()) return;
+
+    this.state.setOpen(false);
+    uiStore.setState({ searchOpen: true });
+  }
+
+  applySearchOpenState() {
     const header = this.getHeaderElement();
     const panel = this.panel;
     const input = this.input;
@@ -275,11 +329,7 @@ export class MenuSearch {
     if (!header || !panel || !input) return;
     if (this.isOpen) return;
 
-    // Close menu if open
-    this.state.setOpen(false);
-
     this.isOpen = true;
-    uiStore.setState({ searchOpen: true });
     void withViewTransition(
       () => {
         setMenuOverlayState('search');
@@ -288,9 +338,7 @@ export class MenuSearch {
         panel.setAttribute('aria-hidden', 'false');
         this.syncSearchTriggerState(true);
         this.syncToggleSearchState(true);
-        if (typeof this.setSearchPopupExpanded === 'function') {
-          this.setSearchPopupExpanded(false);
-        }
+        this.setSearchPopupExpanded(false);
 
         requestAnimationFrame(() => {
           try {
@@ -300,8 +348,6 @@ export class MenuSearch {
           }
           input.select();
         });
-
-        window.dispatchEvent(new CustomEvent('search:opened'));
       },
       {
         ...SEARCH_VIEW_TRANSITION_OPTIONS,
@@ -312,47 +358,53 @@ export class MenuSearch {
 
   closeSearchMode(options = {}) {
     const { restoreFocus = true } = options;
-    if (!this.isOpen) return;
+    if (!this.isSearchOpen()) return;
+    this._pendingCloseOptions = { restoreFocus };
+    uiStore.setState({ searchOpen: false });
+  }
 
+  applySearchClosedState(options = {}) {
+    const { restoreFocus = false } = options;
+    const wasOpen = this.isOpen;
     const header = this.getHeaderElement();
     this.isOpen = false;
-    uiStore.setState({ searchOpen: false });
-    this.items = [];
-    this.aiChatMessage = '';
-    this.selectedIndex = -1;
+    this.keyboardController.clear();
 
-    void withViewTransition(
-      () => {
-        setMenuOverlayState(null);
+    const applyClosedState = () => {
+      setMenuOverlayState(null);
 
-        if (header) {
-          header.classList.remove('search-mode');
-        }
+      if (header) {
+        header.classList.remove('search-mode');
+      }
 
-        if (this.panel) {
-          this.panel.setAttribute('aria-hidden', 'true');
-        }
+      if (this.panel) {
+        this.panel.setAttribute('aria-hidden', 'true');
+      }
 
-        this.syncSearchTriggerState(false);
-        this.syncToggleSearchState(false);
+      this.syncSearchTriggerState(false);
+      this.syncToggleSearchState(false);
 
-        if (this.input) {
-          this.input.value = '';
-        }
+      if (this.input) {
+        this.input.value = '';
+      }
 
-        this.renderSearchState({ hidden: true });
+      this.searchStore.clear({ query: '' });
+      this.renderer.renderState(this.results, { hidden: true });
 
-        if (restoreFocus) {
-          this.trigger?.focus();
-        }
+      if (restoreFocus) {
+        this.trigger?.focus();
+      }
+    };
 
-        window.dispatchEvent(new CustomEvent('search:closed'));
-      },
-      {
-        ...SEARCH_VIEW_TRANSITION_OPTIONS,
-        types: [VIEW_TRANSITION_TYPES.SEARCH_CLOSE],
-      },
-    );
+    if (!wasOpen) {
+      applyClosedState();
+      return;
+    }
+
+    void withViewTransition(applyClosedState, {
+      ...SEARCH_VIEW_TRANSITION_OPTIONS,
+      types: [VIEW_TRANSITION_TYPES.SEARCH_CLOSE],
+    });
   }
 
   clearSearchDebounce() {
@@ -361,21 +413,8 @@ export class MenuSearch {
     this.debounceTimer = null;
   }
 
-  isAbortLikeError(error) {
-    if (!error || typeof error !== 'object') return false;
-
-    if (error.name === 'AbortError' || error.code === 20) {
-      return true;
-    }
-
-    const message = String(error.message || '').toLowerCase();
-    return message.includes('abort');
-  }
-
   abortSearchRequest() {
-    if (!this.abortController) return;
-    this.abortController.abort();
-    this.abortController = null;
+    this.searchStore.abortSearchRequest();
   }
 
   scheduleSearch(rawQuery) {
@@ -385,321 +424,15 @@ export class MenuSearch {
     this.clearSearchDebounce();
 
     if (!query || query.length < minQueryLength) {
-      this.abortSearchRequest();
-      this.items = [];
-      this.aiChatMessage = '';
-      this.selectedIndex = -1;
-      this.renderSearchState({ hidden: true });
+      this.keyboardController.clear();
+      this.searchStore.clear({ query });
       return;
     }
 
     const debounceDelay = this.config.SEARCH_DEBOUNCE ?? 220;
     this.debounceTimer = this.timers.setTimeout(() => {
-      this.executeSearch(query);
+      void this.searchStore.search(query);
     }, debounceDelay);
-  }
-
-  async executeSearch(query) {
-    if (!this.results) return;
-
-    this.abortSearchRequest();
-    const topK = this.config.SEARCH_TOP_K ?? 12;
-    const requestTimeoutMs = this.config.SEARCH_REQUEST_TIMEOUT ?? 6000;
-    const cacheKey = this.buildSearchCacheKey(query, topK);
-    const cachedPayload = this.getCachedSearchResults(cacheKey);
-
-    if (cachedPayload) {
-      this.applySearchPayload(query, {
-        items: cachedPayload.items,
-        query,
-        aiChatMessage: cachedPayload.aiChatMessage,
-      });
-      return;
-    }
-
-    if (navigator.onLine === false) {
-      const offlineItems = this.buildOfflineSearchResults(query);
-      this.applySearchPayload(query, {
-        items: offlineItems,
-        query,
-        aiChatMessage: '',
-        cacheKey,
-        statusMessage: this.t(
-          'menu.search_offline',
-          'Offline-Modus: lokale Treffer',
-        ),
-      });
-      return;
-    }
-
-    const abortController = new AbortController();
-    this.abortController = abortController;
-    const signal = abortController.signal;
-    let didTimeoutAbort = false;
-    const timeoutId =
-      requestTimeoutMs > 0
-        ? this.timers.setTimeout(() => {
-            didTimeoutAbort = true;
-            abortController.abort();
-          }, requestTimeoutMs)
-        : null;
-
-    this.renderSearchState({
-      loading: true,
-      message: this.t('menu.search_loading', 'Suche...'),
-    });
-
-    try {
-      const response = await fetch(SEARCH_ENDPOINT, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ query, topK }),
-        signal,
-      });
-
-      if (!response.ok) {
-        throw new Error(`Search request failed with status ${response.status}`);
-      }
-
-      const data = await response.json();
-      const items = Array.isArray(data?.results)
-        ? data.results
-            .map((item) => this.normalizeSearchResult(item))
-            .filter(Boolean)
-        : [];
-      const fallbackAiChat = this.normalizeSearchChatPayload(
-        data?.aiChat,
-        data?.summary,
-      );
-      const aiAgentMessage = await this.fetchSearchAiAgentMessage(query, items);
-      this.applySearchPayload(query, {
-        items,
-        query,
-        aiChatMessage: aiAgentMessage || fallbackAiChat.message,
-        cacheKey,
-      });
-    } catch (err) {
-      const isAbortError = this.isAbortLikeError(err);
-
-      if (isAbortError && !didTimeoutAbort) {
-        return;
-      }
-
-      if (!isAbortError) {
-        log.error('Header search failed:', err);
-      }
-
-      this.items = [];
-      this.aiChatMessage = '';
-      this.selectedIndex = -1;
-      this.renderSearchState({
-        message: didTimeoutAbort
-          ? this.t('menu.search_timeout', 'Suche dauert zu lange')
-          : this.t('menu.search_unavailable', 'Suche derzeit nicht verfuegbar'),
-      });
-    } finally {
-      if (timeoutId) {
-        this.timers.clearTimeout(timeoutId);
-      }
-      if (this.abortController?.signal === signal) {
-        this.abortController = null;
-      }
-    }
-  }
-
-  applySearchPayload(query, payload = {}) {
-    if (this.input?.value.trim() !== query) return;
-
-    const items = Array.isArray(payload.items) ? payload.items : [];
-    const aiChatMessage = String(payload.aiChatMessage || '');
-    let statusMessage = String(payload.statusMessage || '');
-    const cacheKey = String(payload.cacheKey || '').trim();
-    const visibleItems = this.filterHighlightedResults(items);
-
-    if (!statusMessage && items.length > 0 && visibleItems.length === 0) {
-      statusMessage = this.t(
-        'menu.search_no_highlight_matches',
-        'Keine markierten Texttreffer gefunden',
-      );
-    }
-
-    this.items = visibleItems;
-    this.aiChatMessage = aiChatMessage;
-    this.selectedIndex = visibleItems.length > 0 ? 0 : -1;
-
-    if (cacheKey) {
-      this.setCachedSearchResults(cacheKey, visibleItems, aiChatMessage);
-    }
-
-    this.renderSearchState({
-      items: visibleItems,
-      query,
-      aiChatMessage,
-      message: statusMessage,
-    });
-  }
-
-  normalizeSearchResult(item) {
-    if (!item || typeof item !== 'object') return null;
-
-    const title = String(item.title || '').trim();
-    const url = String(item.url || '').trim();
-
-    if (!title || !url) return null;
-
-    return {
-      title,
-      url,
-      description: String(item.description || '').trim(),
-      highlightedDescription: String(item.highlightedDescription || '').trim(),
-      category: String(item.category || '').trim(),
-    };
-  }
-
-  hasMarkedHighlight(value) {
-    return MARK_HIGHLIGHT_PATTERN.test(String(value || '').trim());
-  }
-
-  filterHighlightedResults(items) {
-    return (Array.isArray(items) ? items : []).filter((item) =>
-      this.hasMarkedHighlight(item?.highlightedDescription),
-    );
-  }
-
-  sanitizeSearchLinkUrl(rawUrl) {
-    const value = String(rawUrl || '').trim();
-    if (!value) return '';
-
-    try {
-      const parsed = new URL(value, window.location.origin);
-      if (!['http:', 'https:'].includes(parsed.protocol)) return '';
-
-      const hostname = parsed.hostname.toLowerCase();
-      const allowedHosts = new Set([
-        window.location.hostname.toLowerCase(),
-        'www.abdulkerimsesli.de',
-        'abdulkerimsesli.de',
-      ]);
-      if (!allowedHosts.has(hostname)) return '';
-
-      return `${parsed.pathname}${parsed.search}${parsed.hash}` || '/';
-    } catch {
-      return '';
-    }
-  }
-
-  normalizeSearchChatMessage(value) {
-    let text = String(value || '').trim();
-    if (!text) return '';
-    // Basic Markdown to HTML
-    text = text
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
-    // Markdown links [label](url)
-    text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_match, label, rawUrl) => {
-      const safeUrl = this.sanitizeSearchLinkUrl(rawUrl);
-      if (!safeUrl) return label;
-      return `<a href="${safeUrl}" class="menu-search__ai-link">${label}</a>`;
-    });
-    // Plain URLs to internal clickable links
-    text = text.replace(
-      /(^|[\s(])(https?:\/\/[^\s<)]+)/gi,
-      (_match, prefix, rawUrl) => {
-        const safeUrl = this.sanitizeSearchLinkUrl(rawUrl);
-        if (!safeUrl) return `${prefix}${rawUrl}`;
-        return `${prefix}<a href="${safeUrl}" class="menu-search__ai-link">${safeUrl}</a>`;
-      },
-    );
-    // Code blocks / inline
-    text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
-    // Bold & italic
-    text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
-    // Lines
-    text = text.replace(/\n\n+/g, '</p><p>');
-    text = text.replace(/\n/g, '<br>');
-    return `<p>${text}</p>`;
-  }
-
-  normalizeSearchChatPayload(aiChat, fallbackSummary = '') {
-    const payload = aiChat && typeof aiChat === 'object' ? aiChat : {};
-    const message = this.normalizeSearchChatMessage(
-      payload.message || fallbackSummary || '',
-    );
-    return { message };
-  }
-
-  buildSearchAiAgentPrompt(query, items = []) {
-    const compactQuery = String(query || '')
-      .replace(/\s+/g, ' ')
-      .trim();
-    const context = (Array.isArray(items) ? items : [])
-      .slice(0, 4)
-      .map((item, index) => {
-        const title = String(item?.title || '').trim();
-        const url = this.sanitizeSearchLinkUrl(item?.url || '');
-        const desc = String(item?.description || '')
-          .replace(/\s+/g, ' ')
-          .trim();
-        if (!title || !url) return '';
-        return `${index + 1}. ${title} (${url})${desc ? ` - ${desc}` : ''}`;
-      })
-      .filter(Boolean)
-      .join('\n');
-
-    return [
-      `Nutzer sucht im Menü nach: "${compactQuery}".`,
-      'Formuliere eine kurze Antwort auf Deutsch (maximal 2 Sätze).',
-      'Nutze nur relative interne Links im Markdown-Format, z. B. [Blog](/blog/).',
-      'Keine Listen, keine Tool-Aktionen, keine externen Links.',
-      '',
-      'Verfügbare Suchtreffer:',
-      context || 'Keine Treffer.',
-    ].join('\n');
-  }
-
-  async fetchSearchAiAgentMessage(query, items = []) {
-    if (!query) return '';
-    if (navigator.onLine === false) return '';
-
-    const timeoutMs = Math.min(
-      Number(this.config.SEARCH_AI_REQUEST_TIMEOUT ?? 4500),
-      Number(this.config.SEARCH_REQUEST_TIMEOUT ?? 6000),
-    );
-
-    const controller = new AbortController();
-    const timeoutId =
-      timeoutMs > 0
-        ? this.timers.setTimeout(() => controller.abort(), timeoutMs)
-        : null;
-
-    try {
-      const response = await fetch(AI_AGENT_ENDPOINT, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          prompt: this.buildSearchAiAgentPrompt(query, items),
-          stream: false,
-        }),
-        credentials: 'omit',
-        signal: controller.signal,
-      });
-
-      if (!response.ok) return '';
-
-      const body = await response.json().catch(() => ({}));
-      return this.normalizeSearchChatMessage(body?.text || '');
-    } catch (error) {
-      if (!this.isAbortLikeError(error)) {
-        log.debug('Menu search AI agent request failed:', error);
-      }
-      return '';
-    } finally {
-      if (timeoutId) this.timers.clearTimeout(timeoutId);
-    }
   }
 
   getCategoryLabel(category) {
@@ -720,77 +453,6 @@ export class MenuSearch {
     };
 
     return labels[key] || category || 'Seite';
-  }
-
-  formatSearchResultUrl(rawUrl) {
-    const fallback = String(rawUrl || '').trim();
-    if (!fallback) return '';
-
-    try {
-      const parsed = new URL(fallback, window.location.origin);
-      const basePath = parsed.pathname || '/';
-      const compactPath =
-        basePath.length > 44
-          ? `${basePath.slice(0, 41).replace(/\/+$/, '')}...`
-          : basePath;
-
-      return `${compactPath}${parsed.search}`;
-    } catch {
-      return fallback.length > 46 ? `${fallback.slice(0, 43)}...` : fallback;
-    }
-  }
-
-  getFallbackSuggestions() {
-    return [
-      {
-        title: this.t('menu.nav_home', 'Startseite'),
-        url: '/',
-      },
-      {
-        title: this.t('menu.nav_about', 'About'),
-        url: '/about/',
-      },
-      {
-        title: this.t('menu.nav_blog', 'Blog'),
-        url: '/blog/',
-      },
-      {
-        title: this.t('menu.nav_projects', 'Projekte'),
-        url: '/projekte/',
-      },
-    ];
-  }
-
-  buildOfflineSearchResults(query) {
-    const normalizedQuery = String(query || '')
-      .trim()
-      .toLowerCase();
-    if (!normalizedQuery) return [];
-
-    const fallbackSources = [
-      ...this.getFallbackSuggestions(),
-      { title: this.t('menu.nav_gallery', 'Galerie'), url: '/gallery/' },
-      { title: this.t('menu.nav_videos', 'Videos'), url: '/videos/' },
-      { title: this.t('menu.contact', 'Kontakt'), url: '#footer' },
-    ];
-
-    return fallbackSources
-      .filter((item) => {
-        const title = String(item.title || '').toLowerCase();
-        const url = String(item.url || '').toLowerCase();
-        return title.includes(normalizedQuery) || url.includes(normalizedQuery);
-      })
-      .slice(0, 6)
-      .map((item) => ({
-        title: String(item.title || ''),
-        url: String(item.url || '/'),
-        description: this.t(
-          'menu.search_offline_desc',
-          'Aus lokal verfügbaren Navigationseinträgen',
-        ),
-        highlightedDescription: `<mark>${this.t('menu.search_offline_match', 'Lokaler Treffer')}</mark>`,
-        category: this.t('menu.search_offline_category', 'Offline'),
-      }));
   }
 
   setupSearchDependencyPreloadIntent() {
@@ -876,268 +538,20 @@ export class MenuSearch {
   }
 
   resolveSearchDependencyUrls() {
-    const importMapScript = document.querySelector('script[type="importmap"]');
-    const fallback = [
-      'https://esm.sh/htm@3.1.1',
-      'https://esm.sh/react-dom@19.2.4',
-      'https://esm.sh/react-dom@19.2.4/client',
-    ];
-
-    if (!importMapScript?.textContent) return fallback;
-
-    try {
-      const parsed = JSON.parse(importMapScript.textContent);
-      const imports = parsed?.imports || {};
-
-      const urls = ['htm', 'react-dom', 'react-dom/client']
-        .map((key) => String(imports[key] || '').trim())
-        .filter(Boolean);
-
-      return urls.length ? urls : fallback;
-    } catch (error) {
-      log.warn('Failed to parse importmap for search preloading:', error);
-      return fallback;
-    }
-  }
-
-  renderSearchEmptyState(query = '') {
-    const wrap = document.createElement('div');
-    wrap.className = 'menu-search__empty';
-
-    const title = document.createElement('p');
-    title.className = 'menu-search__empty-title';
-    if (query) {
-      title.textContent = this.t(
-        'menu.search_no_results_title',
-        'Keine passenden Ergebnisse gefunden',
-      );
-    } else {
-      title.textContent = this.t(
-        'menu.search_empty_title',
-        'Website-Suche starten',
-      );
-    }
-    wrap.appendChild(title);
-
-    const description = document.createElement('p');
-    description.className = 'menu-search__empty-text';
-    description.textContent = this.t(
-      'menu.search_empty_text',
-      'Probiere Startseite, About, Blog oder Projekte.',
-    );
-    wrap.appendChild(description);
-
-    const suggestionsWrap = document.createElement('div');
-    suggestionsWrap.className = 'menu-search__empty-suggestions';
-
-    this.getFallbackSuggestions().forEach((suggestion) => {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'menu-search__empty-suggestion';
-      btn.setAttribute('data-search-suggestion-url', suggestion.url);
-      btn.textContent = suggestion.title;
-      suggestionsWrap.appendChild(btn);
-    });
-
-    wrap.appendChild(suggestionsWrap);
-    return wrap;
-  }
-
-  renderSearchState(options = {}) {
-    if (!this.results) return;
-
-    const {
-      hidden = false,
-      loading = false,
-      message = '',
-      items = [],
-      aiChatMessage = '',
-      query = '',
-    } = options;
-
-    const results = this.results;
-    results.innerHTML = '';
-    results.setAttribute('aria-busy', String(Boolean(loading)));
-
-    if (hidden) {
-      results.classList.remove('active');
-      this.setSearchPopupExpanded(false);
-      return;
-    }
-
-    results.classList.add('active');
-    this.setSearchPopupExpanded(true);
-
-    // Loading skeleton
-    if (loading) {
-      const skeleton = document.createElement('div');
-      skeleton.className = 'menu-search__skeleton';
-      for (let i = 0; i < 3; i++) {
-        const row = document.createElement('div');
-        row.className = 'menu-search__skeleton-row';
-        row.innerHTML =
-          '<div class="skeleton-title"></div><div class="skeleton-desc"></div>';
-        skeleton.appendChild(row);
-      }
-      results.appendChild(skeleton);
-      return;
-    }
-
-    if (aiChatMessage) {
-      const aiChat = document.createElement('div');
-      aiChat.className = 'menu-search__ai-chat';
-
-      const aiText = document.createElement('div');
-      aiText.className = 'menu-search__ai-text';
-      aiText.innerHTML = aiChatMessage;
-      aiChat.appendChild(aiText);
-
-      results.appendChild(aiChat);
-    }
-
-    if (message) {
-      const stateEl = document.createElement('div');
-      stateEl.className = 'menu-search__state';
-      stateEl.textContent = message;
-      results.appendChild(stateEl);
-
-      if (items.length === 0) {
-        return;
-      }
-    }
-
-    if (items.length === 0) {
-      if (!aiChatMessage) {
-        results.appendChild(this.renderSearchEmptyState(query));
-      }
-      return;
-    }
-
-    const summary = document.createElement('div');
-    summary.className = 'menu-search__count';
-
-    const countText = document.createElement('span');
-    countText.className = 'menu-search__count-value';
-    countText.textContent = `${items.length} ${items.length === 1 ? 'Ergebnis' : 'Ergebnisse'}`;
-    summary.appendChild(countText);
-
-    const hintText = document.createElement('span');
-    hintText.className = 'menu-search__count-hint';
-    hintText.textContent = 'Enter oeffnen | Pfeile navigieren | Esc';
-    summary.appendChild(hintText);
-
-    results.appendChild(summary);
-
-    const list = document.createElement('ul');
-    list.className = 'menu-search__list';
-
-    items.forEach((item, index) => {
-      const li = document.createElement('li');
-      li.className = 'menu-search__item';
-      li.style.setProperty('--search-item-index', index);
-
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.className = 'menu-search__result';
-      button.id = this.buildSearchOptionId(index);
-      button.setAttribute('data-search-index', String(index));
-      button.setAttribute('role', 'option');
-      button.setAttribute(
-        'aria-selected',
-        String(index === this.selectedIndex),
-      );
-
-      if (index === this.selectedIndex) {
-        button.classList.add('is-selected');
-      }
-
-      // Category badge
-      const badge = document.createElement('span');
-      badge.className = 'menu-search__badge';
-      badge.textContent = this.getCategoryLabel(item.category);
-      button.appendChild(badge);
-
-      const heading = document.createElement('span');
-      heading.className = 'menu-search__heading';
-
-      const title = document.createElement('span');
-      title.className = 'menu-search__title';
-      title.textContent = item.title;
-      heading.appendChild(title);
-
-      const go = document.createElement('span');
-      go.className = 'menu-search__go';
-      go.setAttribute('aria-hidden', 'true');
-      go.textContent = '›';
-      heading.appendChild(go);
-
-      button.appendChild(heading);
-
-      const url = document.createElement('span');
-      url.className = 'menu-search__url';
-      url.textContent = this.formatSearchResultUrl(item.url);
-      button.appendChild(url);
-
-      if (item.highlightedDescription) {
-        const desc = document.createElement('span');
-        desc.className = 'menu-search__desc';
-        if (this.hasMarkedHighlight(item.highlightedDescription)) {
-          desc.innerHTML = item.highlightedDescription;
-          button.appendChild(desc);
-        }
-      }
-
-      li.appendChild(button);
-      list.appendChild(li);
-    });
-
-    results.appendChild(list);
+    return [...SEARCH_PRELOAD_URLS];
   }
 
   updateSearchSelectionUI() {
-    if (!this.results) return;
-
-    const optionEls = this.results.querySelectorAll('[data-search-index]');
-    let activeOptionId = '';
-
-    optionEls.forEach((el) => {
-      const index = Number(el.getAttribute('data-search-index'));
-      const isSelected = index === this.selectedIndex;
-      el.classList.toggle('is-selected', isSelected);
-      el.setAttribute('aria-selected', String(isSelected));
-
-      if (isSelected) {
-        activeOptionId = el.id || '';
-        el.scrollIntoView({ block: 'nearest' });
-      }
-    });
-
-    if (this.input) {
-      if (activeOptionId) {
-        this.input.setAttribute('aria-activedescendant', activeOptionId);
-      } else {
-        this.input.removeAttribute('aria-activedescendant');
-      }
-    }
-  }
-
-  moveSearchSelection(direction) {
-    const max = this.items.length;
-    if (max === 0) return;
-
-    if (this.selectedIndex < 0) {
-      this.selectedIndex = 0;
-    } else {
-      this.selectedIndex = (this.selectedIndex + direction + max) % max;
-    }
-
-    this.updateSearchSelectionUI();
+    this.renderer.updateSelectionUI(
+      this.results,
+      this.input,
+      this.keyboardController.getSelectedIndex(),
+    );
   }
 
   activateSelectedSearchResult() {
-    if (this.items.length === 0) return;
-
-    const index = this.selectedIndex >= 0 ? this.selectedIndex : 0;
+    const index = this.keyboardController.getActivationIndex();
+    if (index < 0) return;
 
     this.navigateToSearchResult(index);
   }
@@ -1171,60 +585,9 @@ export class MenuSearch {
     }
   }
 
-  buildSearchCacheKey(query, topK) {
-    return `${topK}:${String(query || '')
-      .trim()
-      .toLowerCase()}`;
-  }
-
   buildSearchOptionId(index) {
     const resultsId = this.results?.id || 'menu-search-results';
     return `${resultsId}-option-${index}`;
-  }
-
-  getCachedSearchResults(cacheKey) {
-    if (!cacheKey) return null;
-
-    const entry = this.searchCache.get(cacheKey);
-    if (!entry) return null;
-
-    if (entry.expiresAt <= Date.now()) {
-      this.searchCache.delete(cacheKey);
-      return null;
-    }
-
-    // Mark as recently used (LRU).
-    this.searchCache.delete(cacheKey);
-    this.searchCache.set(cacheKey, entry);
-
-    return {
-      items: Array.isArray(entry.items)
-        ? entry.items.map((item) => ({ ...item }))
-        : [],
-      aiChatMessage: String(entry.aiChatMessage || ''),
-    };
-  }
-
-  setCachedSearchResults(cacheKey, items, aiChatMessage = '') {
-    if (!cacheKey || !Array.isArray(items)) return;
-    if (this.searchCacheMaxEntries <= 0) return;
-
-    if (this.searchCache.has(cacheKey)) {
-      this.searchCache.delete(cacheKey);
-    }
-
-    if (this.searchCache.size >= this.searchCacheMaxEntries) {
-      const leastRecentlyUsedKey = this.searchCache.keys().next().value;
-      if (leastRecentlyUsedKey) {
-        this.searchCache.delete(leastRecentlyUsedKey);
-      }
-    }
-
-    this.searchCache.set(cacheKey, {
-      expiresAt: Date.now() + this.searchCacheTtlMs,
-      items: items.map((item) => ({ ...item })),
-      aiChatMessage: String(aiChatMessage || ''),
-    });
   }
 
   /**
@@ -1240,16 +603,14 @@ export class MenuSearch {
   }
 
   destroy() {
-    this.closeSearchModeSilently();
+    this._pendingCloseOptions = { restoreFocus: false };
+    uiStore.setState({ searchOpen: false });
     setMenuOverlayState(null);
     this.clearSearchDebounce();
     this.abortSearchRequest();
-    this.searchCache.clear();
-    uiStore.setState({ searchOpen: false });
+    this.searchStore.destroy();
 
-    if (this.timers) {
-      this.timers.clearAll();
-    }
+    this.timers.clearAll();
     this.cleanupFns.forEach((fn) => fn());
     this.cleanupFns = [];
   }

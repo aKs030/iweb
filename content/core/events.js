@@ -1,23 +1,12 @@
 /**
  * Modern Event System
- * @version 3.1.0
+ * @version 3.2.0
  */
 
 import { createLogger } from './logger.js';
 import { i18n } from './i18n.js';
 
 const log = createLogger('Events');
-
-/** Event names (frozen for immutability) */
-export const EVENTS = Object.freeze({
-  LOADING_UNBLOCKED: 'app:loadingUnblocked',
-  LOADING_HIDE: 'app:loaderHide',
-  LOADING_COMPLETE: 'app:loadingComplete',
-  HERO_TYPING_END: 'hero:typingEnd',
-  FOOTER_LOADED: 'footer:loaded',
-  FOOTER_EXPANDED: 'footer:expanded',
-  FOOTER_COLLAPSED: 'footer:collapsed',
-});
 
 /**
  * Fire native custom event on document

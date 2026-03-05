@@ -354,10 +354,10 @@ For complex 3D meshes (e.g. a robot companion as real geometry instead of partic
 
 ### Integration
 
-The project provides a unified model loader at `/content/core/model-loader.js`:
+The project provides a unified model loader at `#core/model-loader.js`:
 
 ```javascript
-import { loadCompressedModel } from '/content/core/model-loader.js';
+import { loadCompressedModel } from '#core/model-loader.js';
 
 const gltf = await loadCompressedModel('/content/assets/robot.glb');
 scene.add(gltf.scene);

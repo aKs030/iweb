@@ -1,3 +1,5 @@
+import { isLocalDevHost } from './runtime-env.js';
+
 /**
  * Modern Logger with Performance Tracking
  * @version 3.0.0
@@ -19,11 +21,7 @@ function getDefaultLogLevel() {
   }
   try {
     const hostname = window.location?.hostname || '';
-    const isProd =
-      hostname &&
-      hostname !== 'localhost' &&
-      hostname !== '127.0.0.1' &&
-      !hostname.startsWith('192.168.');
+    const isProd = Boolean(hostname) && !isLocalDevHost(hostname);
     const params = new URLSearchParams(window.location.search);
     if (params.get('debug') === 'true') {
       _cachedDefaultLevel = LOG_LEVELS.debug;

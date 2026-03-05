@@ -6,7 +6,13 @@
 
 import { createLogger } from '../../../core/logger.js';
 import { fire } from '../../../core/events.js';
-import { uiStore } from '../../../core/ui-store.js';
+import { menuOpen, uiStore } from '../../../core/ui-store.js';
+import {
+  getResolvedTheme,
+  setTheme,
+  toggleTheme,
+} from '../../../core/theme-state.js';
+import { normalizeHttpUrl } from '../../../core/url-utils.js';
 import { withViewTransition } from '../../../core/view-transitions.js';
 import {
   VIEW_TRANSITION_ROOT_CLASSES,
@@ -188,20 +194,21 @@ function executeNavigate(args) {
  */
 function executeSetTheme(args) {
   const theme = String(args?.theme || 'toggle').toLowerCase();
-  const html = document.documentElement;
-  const currentTheme = html.getAttribute('data-theme') || 'dark';
+  const currentTheme = getResolvedTheme();
+  const nextTheme =
+    theme === 'toggle'
+      ? currentTheme === 'dark'
+        ? 'light'
+        : 'dark'
+      : theme === 'light'
+        ? 'light'
+        : 'dark';
 
-  let newTheme;
-  if (theme === 'toggle') {
-    newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-  } else {
-    newTheme = theme === 'light' ? 'light' : 'dark';
-  }
+  let newTheme = nextTheme;
 
   void withViewTransition(
     () => {
-      html.setAttribute('data-theme', newTheme);
-      fire('theme:changed', { theme: newTheme });
+      newTheme = theme === 'toggle' ? toggleTheme() : setTheme(nextTheme);
     },
     {
       types: [VIEW_TRANSITION_TYPES.THEME_CHANGE],
@@ -252,7 +259,7 @@ function executeSearch(args) {
  */
 function executeToggleMenu(args) {
   const state = String(args?.state || 'toggle').toLowerCase();
-  const currentState = uiStore.getState().menuOpen;
+  const currentState = menuOpen.value;
 
   let newState;
   if (state === 'toggle') {
@@ -339,13 +346,11 @@ function executeRecommend(args) {
 
 function executeOpenSearch() {
   uiStore.setState({ searchOpen: true });
-  fire('search:opened', {}, window);
   return { success: true, message: 'Suche geoeffnet.' };
 }
 
 function executeCloseSearch() {
   uiStore.setState({ searchOpen: false });
-  fire('search:closed', {}, window);
   return { success: true, message: 'Suche geschlossen.' };
 }
 
@@ -388,19 +393,6 @@ function executeClearChatHistory() {
   return { success: true, message: 'Chatverlauf geloescht.' };
 }
 
-function normalizeExternalUrl(rawUrl) {
-  const value = String(rawUrl || '').trim();
-  if (!value) return '';
-  if (value.startsWith('/')) {
-    try {
-      return new URL(value, globalThis.location?.origin || '').toString();
-    } catch {
-      return '';
-    }
-  }
-  return value;
-}
-
 function openUrl(url, newTab = true) {
   if (newTab) {
     const ref = window.open(url, '_blank', 'noopener,noreferrer');
@@ -411,7 +403,7 @@ function openUrl(url, newTab = true) {
 }
 
 function executeOpenExternalLink(args) {
-  const normalized = normalizeExternalUrl(args?.url);
+  const normalized = normalizeHttpUrl(args?.url);
   if (!normalized) {
     return { success: false, message: 'Kein gueltiger Link uebergeben.' };
   }

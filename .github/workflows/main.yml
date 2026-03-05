@@ -18,6 +18,8 @@ jobs:
       - uses: ./.github/actions/setup-node-deps
       - run: npm run styles:generate
       - run: npm run qa
+      - run: npx playwright install --with-deps chromium
+      - run: npm run qa:browser
 
   actionlint:
     runs-on: ubuntu-latest
@@ -46,6 +48,7 @@ jobs:
 
   preview:
     if: github.event_name == 'pull_request' && !github.event.pull_request.draft
+    needs: lint
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:

@@ -5,7 +5,7 @@
 
 import React from 'react';
 import htm from 'htm';
-import { ArrowUp } from '/content/components/icons/icons.js';
+import { ArrowUp } from '#components/icons/icons.js';
 
 const html = htm.bind(React.createElement);
 
@@ -55,6 +55,7 @@ export const ScrollToTop = () => {
       className="scroll-to-top-btn ${visible ? 'visible' : ''}"
       onClick=${() => window.scrollTo({ top: 0, behavior: 'smooth' })}
       aria-label="Nach oben scrollen"
+      title="Nach oben scrollen"
     >
       <${ArrowUp} />
     </button>

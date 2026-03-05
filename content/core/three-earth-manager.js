@@ -3,6 +3,7 @@
  * @version 1.2.0
  */
 
+import { cancelIdleTask, scheduleIdleTask } from './idle.js';
 import { createLogger } from './logger.js';
 import { getElementById, TimerManager, upsertHeadLink } from './utils.js';
 import { AppLoadManager } from './load-manager.js';
@@ -20,8 +21,7 @@ export class ThreeEarthManager {
     this.isLoading = false;
     this.timers = new TimerManager('ThreeEarthManager');
     this.deferObserver = null;
-    this.deferIdleId = null;
-    this.deferTimeoutId = null;
+    this.deferIdleHandle = null;
     this.deferIntentCleanup = null;
   }
 
@@ -54,6 +54,7 @@ export class ThreeEarthManager {
     }
 
     this.isLoading = true;
+    AppLoadManager.block('three-earth');
 
     // Preload critical textures immediately when earth loading starts
     this.preloadTextures();
@@ -165,18 +166,17 @@ export class ThreeEarthManager {
     }
 
     // 3) Fallback/assist: load during idle time (with timeout).
-    if (globalThis.requestIdleCallback) {
-      this.deferIdleId = requestIdleCallback(
-        () => {
-          startLoad();
-        },
-        { timeout: 2500 },
-      );
-    } else {
-      this.deferTimeoutId = this.timers.setTimeout(() => {
+    this.deferIdleHandle = scheduleIdleTask(
+      () => {
         startLoad();
-      }, 2500);
-    }
+      },
+      {
+        timeout: 2500,
+        fallbackDelay: 2500,
+        setTimeoutFn: this.timers.setTimeout.bind(this.timers),
+        clearTimeoutFn: this.timers.clearTimeout.bind(this.timers),
+      },
+    );
   }
 
   clearDeferredLoadHooks() {
@@ -185,19 +185,8 @@ export class ThreeEarthManager {
       this.deferObserver = null;
     }
 
-    if (
-      this.deferIdleId !== null &&
-      this.deferIdleId !== undefined &&
-      globalThis.cancelIdleCallback
-    ) {
-      cancelIdleCallback(this.deferIdleId);
-    }
-    this.deferIdleId = null;
-
-    if (this.deferTimeoutId) {
-      this.timers.clearTimeout(this.deferTimeoutId);
-      this.deferTimeoutId = null;
-    }
+    cancelIdleTask(this.deferIdleHandle);
+    this.deferIdleHandle = null;
 
     if (this.deferIntentCleanup) {
       this.deferIntentCleanup();

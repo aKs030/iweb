@@ -6,13 +6,12 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import htm from 'htm';
-import { createLogger } from '/content/core/logger.js';
-import { createUseTranslation } from '/content/core/utils.js';
-import { AppLoadManager } from '/content/core/load-manager.js';
+import { createLogger } from '#core/logger.js';
+import { createUseTranslation, sanitizeHTML } from '#core/utils.js';
+import { AppLoadManager } from '#core/load-manager.js';
 import { marked } from 'https://cdn.jsdelivr.net/npm/marked@11.1.1/lib/marked.esm.js';
-import { sanitizeHTML } from '/content/core/utils.js';
-import { Clock, ArrowRight } from '/content/components/icons/icons.js';
-import { createErrorBoundary } from '/content/components/ErrorBoundary.js';
+import { Clock, ArrowRight } from '#components/icons/icons.js';
+import { createErrorBoundary } from '#components/ErrorBoundary.js';
 import { ParticleSystem } from './utils/ParticleSystem.js';
 import { loadPostsData } from './utils/data-loader.js';
 import { resetBlogPageMeta, updatePostMeta } from './utils/seo-manager.js';

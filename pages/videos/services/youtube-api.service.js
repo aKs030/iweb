@@ -4,8 +4,8 @@
  * @version 1.0.0
  */
 
-import { createLogger } from '/content/core/logger.js';
-import { fetchJSON } from '/content/core/fetch.js';
+import { createLogger } from '#core/logger.js';
+import { fetchJSON } from '#core/fetch.js';
 
 const log = createLogger('YouTubeAPI');
 

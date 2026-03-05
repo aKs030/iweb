@@ -3,8 +3,10 @@
  * Handles all user interactions, URL changes, and scroll events.
  */
 import { i18n } from '../../../core/i18n.js';
+import { footerSignals } from '../../../core/footer-state.js';
 import { TimerManager } from '../../../core/utils.js';
 import { createLogger } from '../../../core/logger.js';
+import { resolvedTheme, setTheme } from '../../../core/theme-state.js';
 import { withViewTransition } from '../../../core/view-transitions.js';
 import {
   VIEW_TRANSITION_ROOT_CLASSES,
@@ -79,25 +81,9 @@ export class MenuEvents {
   setupThemeToggle() {
     const themeToggle = this.container.querySelector('.theme-toggle');
     if (!themeToggle) return;
-    const mql = window.matchMedia('(prefers-color-scheme: light)');
-    let userThemeOverride = '';
-
-    // Detect current theme
-    const getEffectiveTheme = () => {
-      if (userThemeOverride === 'light' || userThemeOverride === 'dark') {
-        return userThemeOverride;
-      }
-      const rootTheme = document.documentElement.getAttribute('data-theme');
-      if (rootTheme === 'light' || rootTheme === 'dark') return rootTheme;
-      return mql.matches ? 'light' : 'dark';
-    };
 
     const applyTheme = (theme, { animate = false } = {}) => {
       const apply = () => {
-        const root = document.documentElement;
-        root.setAttribute('data-theme', theme === 'light' ? 'light' : 'dark');
-
-        // Update toggle button state
         themeToggle.classList.toggle('is-light', theme === 'light');
       };
 
@@ -113,37 +99,30 @@ export class MenuEvents {
       });
     };
 
-    // Apply initial theme
-    const initialTheme = getEffectiveTheme();
-    applyTheme(initialTheme);
+    this.cleanupFns.push(
+      resolvedTheme.subscribe((theme) => {
+        applyTheme(theme);
+      }),
+    );
 
     const handleThemeClick = (e) => {
       e.preventDefault();
-      const current = getEffectiveTheme();
-      const next = current === 'dark' ? 'light' : 'dark';
-      userThemeOverride = next;
-      applyTheme(next, { animate: true });
-    };
-
-    // Listen for system preference changes
-    const handleSystemChange = () => {
-      if (!userThemeOverride) {
-        applyTheme(mql.matches ? 'light' : 'dark');
-      }
+      const nextTheme = resolvedTheme.value === 'dark' ? 'light' : 'dark';
+      void withViewTransition(
+        () => {
+          setTheme(nextTheme);
+        },
+        {
+          types: [VIEW_TRANSITION_TYPES.THEME_CHANGE],
+          rootClasses: [VIEW_TRANSITION_ROOT_CLASSES.THEME_CHANGE],
+          timeoutMs: VIEW_TRANSITION_TIMINGS_MS.THEME_TIMEOUT,
+        },
+      );
     };
 
     this.cleanupFns.push(
       this.addListener(themeToggle, 'click', handleThemeClick),
     );
-
-    try {
-      mql.addEventListener('change', handleSystemChange);
-      this.cleanupFns.push(() =>
-        mql.removeEventListener('change', handleSystemChange),
-      );
-    } catch {
-      /* older browsers */
-    }
   }
 
   setupToggle() {
@@ -159,13 +138,11 @@ export class MenuEvents {
       const isOpen = !this.state.isOpen;
       if (isOpen) {
         // ensure footer is collapsed when main nav opens
-        import('/content/components/footer/footer.js').then(
-          ({ closeFooter }) => {
-            try {
-              closeFooter();
-            } catch {}
-          },
-        );
+        import('#components/footer/footer.js').then(({ closeFooter }) => {
+          try {
+            closeFooter();
+          } catch {}
+        });
       }
       this.setMenuOpenWithTransition(isOpen);
     };
@@ -204,7 +181,7 @@ export class MenuEvents {
         // anchor is no longer supported and should not open the panel.
         if (href === '#footer') {
           this.closeMenu();
-          import('/content/components/footer/footer.js')
+          import('#components/footer/footer.js')
             .then(({ openFooter }) => openFooter())
             .catch(() => {});
           return;
@@ -285,8 +262,8 @@ export class MenuEvents {
       this.addListener(document, 'keydown', handleEscape),
       this.addListener(window, 'hashchange', onUrlChange),
       this.addListener(window, 'popstate', onUrlChange),
-      // if footer is loaded after menu init we need to observe again
-      this.addListener(document, 'footer:loaded', () => {
+      footerSignals.loaded.subscribe((isLoaded) => {
+        if (!isLoaded) return;
         this.setupScrollSpy();
         this.handleUrlChange();
       }),

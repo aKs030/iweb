@@ -3,119 +3,38 @@
  * @version 4.1.0 - Enhanced with image/video enrichment and neutral entity profile
  */
 
+import {
+  extractMainHeadingTexts,
+  extractMainImageAltTexts,
+  extractMainVideoTitles,
+} from './content-extractors.js';
 import { createLogger } from './logger.js';
+import { scheduleIdleTask } from './idle.js';
 import { ENV } from '../config/env.config.js';
-import { iconUrl } from '../config/constants.js';
+import {
+  DEFAULT_IMAGE_DIMENSIONS,
+  PERSON_FALLBACK_ICON,
+  buildImageObject,
+  collectDomImageObjects,
+  collectDomVideoObjects,
+  inferImageDimensions,
+  toAbsoluteUrl,
+} from './schema-media.js';
+import {
+  SCHEMA_HOMEPAGE_DISCOVERY_TEXT,
+  buildSchemaKeywordList,
+  getSchemaAboutTopics,
+  getSchemaSectionDiscoveryText,
+  shouldIncludeSchemaSkillsList,
+} from './schema-page-types.js';
+import {
+  normalizeSchemaText as normalizeText,
+  uniqueSchemaList as uniqueList,
+} from './schema-shared.js';
 
 const log = createLogger('Schema');
 const CRAWLER_UA_PATTERN =
   /googlebot|google-inspectiontool|bingbot|slurp|duckduckbot|baiduspider|yandex|facebookexternalhit|twitterbot|linkedinbot|applebot|semrushbot|ahrefsbot/i;
-
-const HOMEPAGE_DISCOVERY_TEXT =
-  'Die Startseite bündelt Portfolio, Bildgalerie, Videoinhalte, Blogartikel und technische Schwerpunkte in einem zentralen Einstiegspunkt. Suchmaschinen und KI-Suchen erhalten dadurch einen klaren Überblick über Bilder, Videos und redaktionelle Inhalte auf dieser Domain.';
-
-const SECTION_DISCOVERY_TEXT = {
-  home: 'Diese Hauptseite verweist auf alle zentralen Inhaltsbereiche: Blog, Galerie, Videos, Projekte und Profilinformationen.',
-  blog: 'Der Blog enthält ausführliche Artikel mit technischen Erklärungen, strukturierten Überschriften, Bildern und ergänzenden Medien.',
-  videos:
-    'Die Videoseite bündelt Video-Landingpages und eingebettete Inhalte mit beschreibenden Titeln und Vorschaubildern.',
-  gallery:
-    'Die Galerie fokussiert auf visuelle Inhalte mit Bildmetadaten, Alt-Texten und strukturierter Bildzuordnung für die Suche.',
-  projects:
-    'Die Projektseite zeigt interaktive Frontend-Projekte mit inhaltlichen Beschreibungen, Kategorien und weiterführenden Verweisen.',
-  about:
-    'Die Profilseite beschreibt Abdulkerim Sesli als Autor der Inhalte und verknüpft die wichtigsten Themen dieser Website.',
-  generic:
-    'Diese Seite ist Teil des Portfolios von Abdulkerim Sesli und ergänzt den Gesamtzusammenhang aus Text, Bild und Video.',
-};
-
-const DEFAULT_IMAGE_DIMENSIONS = {
-  width: 1200,
-  height: 630,
-};
-
-const KNOWN_IMAGE_DIMENSIONS = {
-  'favicon-512.webp': { width: 512, height: 512 },
-  'og-home-800.png': { width: 800, height: 420 },
-  'og-projekte-800.png': { width: 800, height: 420 },
-  'og-videos-800.png': { width: 800, height: 420 },
-  'og-design-800.png': { width: 800, height: 420 },
-  'og-photography-800.png': { width: 800, height: 420 },
-  'og-threejs-800.png': { width: 800, height: 420 },
-  'og-react-800.png': { width: 800, height: 420 },
-  'og-pwa-800.png': { width: 800, height: 420 },
-  'og-seo-800.png': { width: 800, height: 420 },
-  'og-performance-800.png': { width: 800, height: 420 },
-  'og-webcomponents-800.png': { width: 800, height: 420 },
-  'og-css-800.png': { width: 800, height: 420 },
-  'og-typescript-800.png': { width: 800, height: 420 },
-};
-const PERSON_FALLBACK_ICON = iconUrl('favicon-512.webp');
-
-function normalizeText(value) {
-  return String(value || '')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-function toAbsoluteUrl(url, base = ENV.BASE_URL) {
-  if (!url) return '';
-  try {
-    return new URL(url, base).toString();
-  } catch {
-    return String(url);
-  }
-}
-
-function getFilename(url) {
-  try {
-    const parsed = new URL(toAbsoluteUrl(url));
-    return parsed.pathname.split('/').pop() || '';
-  } catch {
-    return '';
-  }
-}
-
-function inferImageMimeType(url) {
-  const filename = getFilename(url).toLowerCase();
-  if (filename.endsWith('.svg')) return 'image/svg+xml';
-  if (filename.endsWith('.webp')) return 'image/webp';
-  if (filename.endsWith('.png')) return 'image/png';
-  if (filename.endsWith('.jpg') || filename.endsWith('.jpeg'))
-    return 'image/jpeg';
-  if (filename.endsWith('.gif')) return 'image/gif';
-  if (filename.endsWith('.avif')) return 'image/avif';
-  return null;
-}
-
-function inferImageDimensions(url, fallback = null) {
-  const filename = getFilename(url);
-  if (filename && KNOWN_IMAGE_DIMENSIONS[filename]) {
-    return KNOWN_IMAGE_DIMENSIONS[filename];
-  }
-  return fallback;
-}
-
-function toInt(value) {
-  const parsed = Number.parseInt(String(value || ''), 10);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
-}
-
-function uniqueList(values) {
-  const result = [];
-  const seen = new Set();
-
-  for (const raw of values || []) {
-    const value = normalizeText(raw);
-    if (!value) continue;
-    const key = value.toLowerCase();
-    if (seen.has(key)) continue;
-    seen.add(key);
-    result.push(value);
-  }
-
-  return result;
-}
 
 function isPlainObject(value) {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
@@ -234,310 +153,6 @@ function extractSchemaNodesFromScript(script) {
   return [];
 }
 
-function buildKeywordList(pageData, pathname = '/') {
-  const baseKeywords = [
-    'Abdulkerim Sesli',
-    'Abdülkerim Sesli',
-    'Abdul Sesli',
-    'Portfolio',
-    'Webentwicklung',
-    'Fotografie',
-    'Bilder',
-    'Videos',
-    'Google Bilder',
-    'Google Videos',
-    'KI Suche',
-    'AI Integration',
-    'Web Components',
-    'Three.js',
-    'JavaScript',
-  ];
-
-  const path = String(pathname || '/').toLowerCase();
-  const sectionKeywords = [];
-
-  if (path === '/' || path === '') {
-    sectionKeywords.push(
-      'Hauptseite',
-      'Bildgalerie',
-      'Video-Portfolio',
-      'Tech Blog',
-    );
-  } else if (path.startsWith('/blog')) {
-    sectionKeywords.push(
-      'Blog',
-      'Tutorials',
-      'SEO',
-      'Performance',
-      'TypeScript',
-    );
-  } else if (path.startsWith('/videos')) {
-    sectionKeywords.push('Video', 'YouTube', 'Behind the Scenes');
-  } else if (path.startsWith('/gallery')) {
-    sectionKeywords.push('Fotogalerie', 'Urban Photography', 'Portrait');
-  } else if (path.startsWith('/projekte')) {
-    sectionKeywords.push('Code Projekte', 'Web Apps', 'Frontend Experimente');
-  }
-
-  const titleTokens = normalizeText(pageData?.title || '')
-    .split(/[\s|,–—:/]+/)
-    .map((token) => token.trim())
-    .filter((token) => token.length >= 3);
-
-  return uniqueList([
-    ...baseKeywords,
-    ...sectionKeywords,
-    ...titleTokens,
-  ]).slice(0, 24);
-}
-
-function getSectionDiscoveryText(pathname = '/') {
-  const path = String(pathname || '/').toLowerCase();
-
-  if (path === '/' || path === '') return SECTION_DISCOVERY_TEXT.home;
-  if (path.startsWith('/blog')) return SECTION_DISCOVERY_TEXT.blog;
-  if (path.startsWith('/videos')) return SECTION_DISCOVERY_TEXT.videos;
-  if (path.startsWith('/gallery')) return SECTION_DISCOVERY_TEXT.gallery;
-  if (path.startsWith('/projekte')) return SECTION_DISCOVERY_TEXT.projects;
-  if (path.startsWith('/about')) return SECTION_DISCOVERY_TEXT.about;
-
-  return SECTION_DISCOVERY_TEXT.generic;
-}
-
-function getAboutTopics(pathname = '/') {
-  const path = String(pathname || '/').toLowerCase();
-  const topics = ['Portfolio', 'Webentwicklung', 'Fotografie', 'Video', 'Blog'];
-
-  if (path.startsWith('/blog'))
-    topics.push('Technik Artikel', 'SEO', 'Performance');
-  if (path.startsWith('/videos')) topics.push('Videoinhalte', 'YouTube');
-  if (path.startsWith('/gallery'))
-    topics.push('Bildersuche', 'Bildmetadaten', 'Fotogalerie');
-  if (path.startsWith('/projekte'))
-    topics.push('JavaScript Projekte', 'Interaktive Web Apps');
-
-  return uniqueList(topics).map((name) => ({ '@type': 'Thing', name }));
-}
-
-function extractYouTubeId(url) {
-  try {
-    const parsed = new URL(toAbsoluteUrl(url));
-    const host = parsed.hostname.toLowerCase();
-
-    if (host === 'youtu.be') {
-      return parsed.pathname.replace(/^\/+/, '').split('/')[0] || null;
-    }
-
-    if (host.includes('youtube.com') || host.includes('youtube-nocookie.com')) {
-      if (parsed.pathname.startsWith('/embed/')) {
-        return parsed.pathname.split('/')[2] || null;
-      }
-      return parsed.searchParams.get('v');
-    }
-  } catch {
-    // Ignore invalid URLs
-  }
-
-  return null;
-}
-
-function collectDomVideoObjects({
-  doc,
-  pageUrl,
-  pageData,
-  brandData,
-  canonicalOrigin,
-}) {
-  const nodes = [];
-  const seen = new Set();
-
-  const iframeVideos = Array.from(
-    doc?.querySelectorAll?.('main iframe[src]') || [],
-  )
-    .filter((iframe) => {
-      const src = iframe.getAttribute('src') || iframe.src || '';
-      return /youtube\.com|youtube-nocookie\.com|youtu\.be/i.test(src);
-    })
-    .slice(0, 8);
-
-  for (const iframe of iframeVideos) {
-    const src = iframe.getAttribute('src') || iframe.src || '';
-    const absoluteEmbed = toAbsoluteUrl(src, canonicalOrigin);
-    if (!absoluteEmbed || seen.has(absoluteEmbed)) continue;
-    seen.add(absoluteEmbed);
-
-    const youtubeId = extractYouTubeId(absoluteEmbed);
-    const canonicalVideoUrl = youtubeId
-      ? `https://www.youtube.com/watch?v=${youtubeId}`
-      : absoluteEmbed;
-
-    const name = normalizeText(
-      iframe.getAttribute('title') ||
-        iframe.getAttribute('aria-label') ||
-        `${pageData?.title || 'Video'} ${nodes.length + 1}`,
-    );
-
-    const videoNode = {
-      '@type': 'VideoObject',
-      '@id': `${pageUrl}#video-${nodes.length + 1}`,
-      name,
-      description: normalizeText(pageData?.description || name),
-      url: canonicalVideoUrl,
-      embedUrl: absoluteEmbed,
-      inLanguage: 'de-DE',
-      isFamilyFriendly: true,
-      publisher: {
-        '@type': 'Organization',
-        name: brandData.legalName || brandData.name,
-        url: ENV.BASE_URL,
-      },
-    };
-
-    if (youtubeId) {
-      videoNode.thumbnailUrl = `https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg`;
-      videoNode.contentUrl = canonicalVideoUrl;
-    }
-
-    nodes.push(videoNode);
-  }
-
-  const htmlVideos = Array.from(
-    doc?.querySelectorAll?.('main video') || [],
-  ).slice(0, 8);
-
-  for (const video of htmlVideos) {
-    const directSrc =
-      video.getAttribute('src') ||
-      video.querySelector?.('source[src]')?.getAttribute?.('src') ||
-      '';
-    if (!directSrc) continue;
-
-    const absoluteSrc = toAbsoluteUrl(directSrc, canonicalOrigin);
-    if (!absoluteSrc || seen.has(absoluteSrc)) continue;
-    seen.add(absoluteSrc);
-
-    const name = normalizeText(
-      video.getAttribute('title') ||
-        video.getAttribute('aria-label') ||
-        video.getAttribute('data-title') ||
-        `${pageData?.title || 'Video'} ${nodes.length + 1}`,
-    );
-
-    const videoNode = {
-      '@type': 'VideoObject',
-      '@id': `${pageUrl}#video-${nodes.length + 1}`,
-      name,
-      description: normalizeText(pageData?.description || name),
-      url: absoluteSrc,
-      contentUrl: absoluteSrc,
-      inLanguage: 'de-DE',
-      isFamilyFriendly: true,
-      publisher: {
-        '@type': 'Organization',
-        name: brandData.legalName || brandData.name,
-        url: ENV.BASE_URL,
-      },
-    };
-
-    const poster = video.getAttribute('poster');
-    if (poster) {
-      videoNode.thumbnailUrl = toAbsoluteUrl(poster, canonicalOrigin);
-    }
-
-    nodes.push(videoNode);
-  }
-
-  return nodes;
-}
-
-function buildImageObject({
-  id,
-  imageUrl,
-  name,
-  caption,
-  creatorName,
-  currentYear,
-  dimensions,
-  creditPrefix = 'Photo: ',
-  creditText = '',
-  representativeOfPage = false,
-}) {
-  const absoluteUrl = toAbsoluteUrl(imageUrl);
-  const encodingFormat = inferImageMimeType(absoluteUrl);
-
-  const imageNode = {
-    '@type': 'ImageObject',
-    ...(id ? { '@id': id } : {}),
-    contentUrl: absoluteUrl,
-    url: absoluteUrl,
-    name: normalizeText(name || caption || ''),
-    caption: normalizeText(caption || name || ''),
-    creator: { '@type': 'Person', name: creatorName },
-    license: `${ENV.BASE_URL}/#image-license`,
-    creditText: normalizeText(creditText || `${creditPrefix}${creatorName}`),
-    copyrightNotice: `© ${currentYear} ${creatorName}`,
-    acquireLicensePage: `${ENV.BASE_URL}/#image-license`,
-  };
-
-  if (encodingFormat) imageNode.encodingFormat = encodingFormat;
-
-  const finalDimensions = dimensions || inferImageDimensions(absoluteUrl);
-  if (finalDimensions?.width) imageNode.width = finalDimensions.width;
-  if (finalDimensions?.height) imageNode.height = finalDimensions.height;
-  if (representativeOfPage) imageNode.representativeOfPage = true;
-
-  return imageNode;
-}
-
-function collectDomImageObjects({
-  doc,
-  pageUrl,
-  brandData,
-  currentYear,
-  canonicalOrigin,
-}) {
-  const nodes = [];
-  const seen = new Set();
-  const images = Array.from(doc?.querySelectorAll?.('main img[src]') || []);
-
-  for (const img of images) {
-    if (nodes.length >= 12) break;
-
-    const src = img.getAttribute('src') || img.src;
-    if (!src) continue;
-
-    const absolute = toAbsoluteUrl(src, canonicalOrigin);
-    if (!absolute || seen.has(absolute)) continue;
-    seen.add(absolute);
-
-    const id = `${pageUrl}#image-${nodes.length + 1}`;
-    const alt = normalizeText(img.getAttribute('alt') || '');
-    const width = toInt(img.getAttribute('width'));
-    const height = toInt(img.getAttribute('height'));
-
-    nodes.push(
-      buildImageObject({
-        id,
-        imageUrl: absolute,
-        name: alt || pageUrl,
-        caption: alt || pageUrl,
-        creatorName: brandData.name,
-        currentYear,
-        dimensions:
-          width && height
-            ? {
-                width,
-                height,
-              }
-            : undefined,
-        creditPrefix: brandData.creditPrefix || 'Photo: ',
-      }),
-    );
-  }
-
-  return nodes;
-}
-
 /**
  * Generate Schema.org @graph
  * @param {PageData} pageData
@@ -638,14 +253,14 @@ export function generateSchemaGraph(
   // WebPage with content extraction
   const aiReadyText = extractPageContent(doc);
   const currentPathname = globalThis.location?.pathname || '/';
-  const sectionDiscoveryText = getSectionDiscoveryText(currentPathname);
+  const sectionDiscoveryText = getSchemaSectionDiscoveryText(currentPathname);
   const isHomepage = currentPathname === '/' || currentPathname === '';
-  const pageKeywords = buildKeywordList(pageData, currentPathname);
+  const pageKeywords = buildSchemaKeywordList(pageData, currentPathname);
   const longDescription = normalizeText(
     [
       pageData.description,
       sectionDiscoveryText,
-      isHomepage ? HOMEPAGE_DISCOVERY_TEXT : '',
+      isHomepage ? SCHEMA_HOMEPAGE_DISCOVERY_TEXT : '',
     ]
       .filter(Boolean)
       .join(' '),
@@ -654,7 +269,7 @@ export function generateSchemaGraph(
     [
       aiReadyText,
       sectionDiscoveryText,
-      isHomepage ? HOMEPAGE_DISCOVERY_TEXT : '',
+      isHomepage ? SCHEMA_HOMEPAGE_DISCOVERY_TEXT : '',
     ]
       .filter(Boolean)
       .join(' '),
@@ -669,7 +284,7 @@ export function generateSchemaGraph(
     keywords: pageKeywords.join(', '),
     text: fullText,
     abstract: sectionDiscoveryText,
-    about: getAboutTopics(currentPathname),
+    about: getSchemaAboutTopics(currentPathname),
     mentions: pageKeywords
       .slice(0, 10)
       .map((keyword) => ({ '@type': 'Thing', name: keyword })),
@@ -709,11 +324,7 @@ export function generateSchemaGraph(
   });
 
   // Skills ItemList (for homepage and about page)
-  if (
-    pageUrl.includes('/about') ||
-    pageUrl === ENV.BASE_URL ||
-    pageUrl === `${ENV.BASE_URL}/`
-  ) {
+  if (shouldIncludeSchemaSkillsList(pageUrl, ENV.BASE_URL)) {
     graph.push(generateSkillsList(ENV.BASE_URL));
   }
 
@@ -1082,24 +693,8 @@ function extractPageContent(doc) {
     let text = clone.textContent || '';
     text = text.replace(/\s+/g, ' ').trim();
 
-    const imageAltTexts = uniqueList(
-      Array.from(doc?.querySelectorAll?.('main img[alt]') || [])
-        .map((img) => img.getAttribute('alt'))
-        .filter(Boolean),
-    );
-
-    const videoTitles = uniqueList(
-      Array.from(
-        doc?.querySelectorAll?.(
-          'main iframe[title], main video[title], main video[aria-label]',
-        ) || [],
-      )
-        .map(
-          (node) =>
-            node.getAttribute('title') || node.getAttribute('aria-label'),
-        )
-        .filter(Boolean),
-    );
+    const imageAltTexts = uniqueList(extractMainImageAltTexts(doc));
+    const videoTitles = uniqueList(extractMainVideoTitles(doc));
 
     if (imageAltTexts.length > 0) {
       text += ` Bilder: ${imageAltTexts.slice(0, 12).join(' | ')}.`;
@@ -1109,11 +704,7 @@ function extractPageContent(doc) {
       text += ` Videos: ${videoTitles.slice(0, 10).join(' | ')}.`;
     }
 
-    const headingTexts = uniqueList(
-      Array.from(doc?.querySelectorAll?.('main h1, main h2, main h3') || [])
-        .map((node) => node.textContent)
-        .filter(Boolean),
-    );
+    const headingTexts = uniqueList(extractMainHeadingTexts(doc));
     if (headingTexts.length > 0) {
       text += ` Themen: ${headingTexts.slice(0, 12).join(' | ')}.`;
     }
@@ -1286,9 +877,8 @@ export function scheduleSchemaInjection(callback) {
     return;
   }
 
-  if (typeof requestIdleCallback === 'function') {
-    requestIdleCallback(run, { timeout: 600 });
-  } else {
-    setTimeout(run, 150);
-  }
+  scheduleIdleTask(run, {
+    timeout: 600,
+    fallbackDelay: 150,
+  });
 }

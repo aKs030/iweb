@@ -245,6 +245,11 @@ class LanguageManager extends EventTarget {
     });
   }
 
+  tOrFallback(key, fallback = '', params = {}) {
+    const translated = this.t(key, params);
+    return translated === key ? fallback || key : translated;
+  }
+
   /**
    * Handle pluralization logic.
    * Selects the correct form based on the count.
