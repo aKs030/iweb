@@ -229,26 +229,47 @@
 
         <div class="cookie-category">
           <div class="category-header">
-            <h3 data-i18n="footer.cookie_settings.analytics.title">Analyse</h3>
+            <h3
+              id="analytics-title"
+              data-i18n="footer.cookie_settings.analytics.title"
+            >
+              Analyse
+            </h3>
             <label class="toggle">
-              <input type="checkbox" id="analytics-toggle" checked />
+              <input
+                type="checkbox"
+                id="analytics-toggle"
+                checked
+                aria-labelledby="analytics-title"
+                aria-describedby="analytics-desc"
+              />
               <span class="slider"></span>
             </label>
           </div>
-          <p data-i18n="footer.cookie_settings.analytics.desc">
+          <p
+            id="analytics-desc"
+            data-i18n="footer.cookie_settings.analytics.desc"
+          >
             Hilft uns, Inhalte zu verbessern.
           </p>
         </div>
 
         <div class="cookie-category">
           <div class="category-header">
-            <h3 data-i18n="footer.cookie_settings.ads.title">Werbung</h3>
+            <h3 id="ads-title" data-i18n="footer.cookie_settings.ads.title">
+              Werbung
+            </h3>
             <label class="toggle">
-              <input type="checkbox" id="ads-toggle" />
+              <input
+                type="checkbox"
+                id="ads-toggle"
+                aria-labelledby="ads-title"
+                aria-describedby="ads-desc"
+              />
               <span class="slider"></span>
             </label>
           </div>
-          <p data-i18n="footer.cookie_settings.ads.desc">
+          <p id="ads-desc" data-i18n="footer.cookie_settings.ads.desc">
             Erlaubt personalisierte Anzeigen.
           </p>
         </div>
