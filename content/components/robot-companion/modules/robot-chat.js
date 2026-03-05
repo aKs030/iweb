@@ -54,7 +54,7 @@ export class RobotChat {
 
   toggleChat(forceState) {
     const newState =
-      forceState ?? !this.robot.stateManager.getState().isChatOpen;
+      forceState ?? !this.robot.stateManager.signals.isChatOpen.value;
 
     // DOM-Erstellung & Event-Binding AUSSERHALB der View Transition
     // (VT darf nur DOM-Mutationen wrappen, nicht DOM-Erstellung)

@@ -4,7 +4,7 @@
  */
 
 import { initReactProjectsApp } from './app.js';
-import { AppLoadManager } from '/content/core/load-manager.js';
+import { AppLoadManager } from '#core/load-manager.js';
 
 const initPage = () => {
   try {

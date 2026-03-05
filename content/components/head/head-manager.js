@@ -6,7 +6,13 @@
 import { createLogger } from '../../core/logger.js';
 import { upsertMeta } from '../../core/utils.js';
 import { applyCanonicalLinks } from '../../core/canonical-manager.js';
+import { extractMainHeadingTerms } from '../../core/content-extractors.js';
 import { setupPWAAssets } from '../../core/pwa-manager.js';
+import {
+  buildSeoAbstractText,
+  buildSeoKeywordList,
+  getSeoPageTopics,
+} from '../../core/schema-page-types.js';
 import {
   generateSchemaGraph,
   injectSchema,
@@ -18,167 +24,6 @@ import { BASE_URL } from '../../config/constants.js';
 import { headState } from './head-state.js';
 
 const log = createLogger('HeadManager');
-const BASE_KEYWORDS = [
-  'Abdulkerim Sesli',
-  'Abdülkerim Sesli',
-  'Abdul Sesli',
-  'Portfolio',
-  'Webentwicklung',
-  'Fotografie',
-  'Bilder',
-  'Videos',
-  'Blog',
-  'Web Components',
-  'Three.js',
-  'JavaScript',
-  'TypeScript',
-  'AI Integration',
-  'Performance Engineering',
-  'Frontend',
-  'UI',
-  'SEO',
-  'Google Bilder',
-  'Google Videos',
-  'KI Suche',
-];
-
-const WORD_SPLIT_PATTERN = /[\s,.;:/()[\]|!?-]+/;
-const MIN_SEARCH_TOKEN_LENGTH = 3;
-const MAX_HEADING_TERMS = 20;
-const HOME_TOPICS = [
-  'Hauptseite',
-  'Portfolio Übersicht',
-  'Bilder und Videos',
-  'Blog Artikel',
-  'Code Projekte',
-];
-const DEFAULT_TOPICS = ['Portfolio', 'Web', 'Foto', 'Video'];
-const PATH_TOPIC_GROUPS = [
-  {
-    prefix: '/blog',
-    topics: [
-      'Tech Blog',
-      'Tutorial',
-      'Performance',
-      'SEO Inhalte',
-      'Frontend Wissen',
-    ],
-  },
-  {
-    prefix: '/videos',
-    topics: [
-      'Video Inhalte',
-      'YouTube Videos',
-      'Short Clips',
-      'Making-of',
-      'Video Landingpages',
-    ],
-  },
-  {
-    prefix: '/gallery',
-    topics: [
-      'Bildgalerie',
-      'Fotografie',
-      'Portrait',
-      'Street Photography',
-      'Visuelle Serien',
-    ],
-  },
-  {
-    prefix: '/projekte',
-    topics: [
-      'Code Projekte',
-      'Web Apps',
-      'Frontend Experimente',
-      'JavaScript Projekte',
-      'Interaktive Demos',
-    ],
-  },
-  {
-    prefix: '/about',
-    topics: [
-      'Über Abdulkerim Sesli',
-      'Profil',
-      'Technischer Hintergrund',
-      'Themenfelder',
-    ],
-  },
-];
-
-function tokenizeSearchTerms(value) {
-  return String(value || '')
-    .split(WORD_SPLIT_PATTERN)
-    .map((token) => token.trim())
-    .filter((token) => token.length >= MIN_SEARCH_TOKEN_LENGTH);
-}
-
-function pathTopics(pathname = '/') {
-  const path = String(pathname || '/').toLowerCase();
-
-  if (path === '/' || path === '') {
-    return HOME_TOPICS;
-  }
-
-  for (const group of PATH_TOPIC_GROUPS) {
-    if (path.startsWith(group.prefix)) return group.topics;
-  }
-
-  return DEFAULT_TOPICS;
-}
-
-function extractHeadingTerms(doc) {
-  const nodes = Array.from(
-    doc?.querySelectorAll?.('main h1, main h2, main h3, main img[alt]') || [],
-  );
-  const tokens = [];
-
-  for (const node of nodes) {
-    const source =
-      node.getAttribute?.('alt') ||
-      node.textContent ||
-      node.getAttribute?.('title');
-    tokens.push(...tokenizeSearchTerms(source));
-  }
-
-  const seen = new Set();
-  const deduped = [];
-  for (const token of tokens) {
-    const normalized = token.toLowerCase();
-    if (seen.has(normalized)) continue;
-    seen.add(normalized);
-    deduped.push(token);
-    if (deduped.length >= MAX_HEADING_TERMS) break;
-  }
-
-  return deduped;
-}
-
-function buildKeywordList(pageData, pageUrl) {
-  const titleTokens = tokenizeSearchTerms(pageData?.title);
-  const sectionTerms = pathTopics(new URL(pageUrl).pathname);
-  const headingTerms = extractHeadingTerms(document);
-
-  return Array.from(
-    new Set([
-      ...BASE_KEYWORDS,
-      ...sectionTerms,
-      ...titleTokens,
-      ...headingTerms,
-    ]),
-  ).slice(0, 40);
-}
-
-function buildAbstractText(pageData, pageUrl) {
-  const sectionTerms = pathTopics(new URL(pageUrl).pathname);
-  return [
-    pageData.description || '',
-    `Inhaltsschwerpunkte: ${sectionTerms.join(', ')}.`,
-    'Diese Seite ist auf organische Suche für Bilder, Videos und redaktionelle Inhalte optimiert.',
-  ]
-    .join(' ')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
 
 function getOpenGraphType(pageData) {
   const explicitType = String(pageData?.ogType || '').trim();
@@ -268,13 +113,18 @@ const updateBasicMeta = (pageData, pageUrl) => {
     document.title = pageData.title;
   }
 
-  const keywordList = buildKeywordList(pageData, pageUrl);
-  const abstractText = buildAbstractText(pageData, pageUrl);
+  const pathname = new URL(pageUrl).pathname;
+  const keywordList = buildSeoKeywordList(
+    pageData,
+    pathname,
+    extractMainHeadingTerms(document),
+  );
+  const abstractText = buildSeoAbstractText(pageData, pathname);
 
   const metaUpdates = [
     ['description', pageData.description],
     ['keywords', keywordList.join(', ')],
-    ['subject', pathTopics(new URL(pageUrl).pathname).join(', ')],
+    ['subject', getSeoPageTopics(pathname).join(', ')],
     ['abstract', abstractText],
     ['summary', abstractText],
     ['robots', pageData.robots || 'index, follow, max-image-preview:large'],

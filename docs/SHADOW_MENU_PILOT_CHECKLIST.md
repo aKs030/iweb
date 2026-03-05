@@ -31,7 +31,7 @@
 
 ## Regression Checks
 
-1. Mit aktiviertem Shadow-DOM funktioniert `search:opened` / `search:closed` weiterhin.
+1. Mit aktiviertem Shadow-DOM funktioniert Search-Mode weiterhin sauber beim Öffnen, Schließen und erneuten Öffnen.
 2. Header-Layout in Search-Mode bleibt auf allen Seiten stabil.
 3. Kein visuelles CSS-Leck aus globalen Styles in das Menü.
 4. Keine JS-Fehler im Browser-Console-Log.

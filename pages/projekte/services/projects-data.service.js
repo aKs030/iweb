@@ -4,10 +4,11 @@
  */
 
 import React from 'react';
-import { createLogger } from '/content/core/logger.js';
-import { AppLoadManager } from '/content/core/load-manager.js';
-import { i18n } from '/content/core/i18n.js';
-import { sleep } from '/content/core/utils.js';
+import { createLogger } from '#core/logger.js';
+import { AppLoadManager } from '#core/load-manager.js';
+import { i18n } from '#core/i18n.js';
+import { isLocalDevHost } from '#core/runtime-env.js';
+import { sleep } from '#core/utils.js';
 import { GITHUB_CONFIG, PROJECT_CATEGORIES } from '../config/github.config.js';
 import { DEFAULT_OG_IMAGE, THEME_COLORS } from '../config/constants.js';
 import {
@@ -64,11 +65,7 @@ const shouldUseGitHubSource = () => {
     typeof navigator === 'undefined' ? '' : navigator.userAgent || '';
   if (CRAWLER_UA_PATTERN.test(userAgent)) return false;
 
-  const host = window.location.hostname || '';
-  const isLocalHost =
-    host === 'localhost' || host === '127.0.0.1' || host.startsWith('192.168.');
-
-  return isLocalHost;
+  return isLocalDevHost(window.location.hostname || '');
 };
 
 const loadLocalProjectsList = async () => {

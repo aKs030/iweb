@@ -3,25 +3,29 @@
  * @version 6.3.0
  */
 
-import { initHeroFeatureBundle } from '../pages/home/hero-manager.js';
-import { createLogger } from './core/logger.js';
-import { EVENTS } from './core/events.js';
-import { a11y, createAnnouncer } from './core/accessibility-manager.js';
-import { SectionManager } from './core/section-manager.js';
-import { AppLoadManager } from './core/load-manager.js';
-import { ThreeEarthManager } from './core/three-earth-manager.js';
+import { initHeroFeatureBundle } from '#pages/home/hero-manager.js';
+import { createLogger } from '#core/logger.js';
+import { a11y, createAnnouncer } from '#core/accessibility-manager.js';
+import { SectionManager } from '#core/section-manager.js';
+import { AppLoadManager, loadSignals } from '#core/load-manager.js';
+import { signal, effect, computed } from '#core/signals.js';
+import { ThreeEarthManager } from '#core/three-earth-manager.js';
 import {
-  getElementById,
   onDOMReady,
   TimerManager,
   scrollTopIfNoHash,
   initDOMPurify,
-} from './core/utils.js';
-import { initViewTransitions } from './core/view-transitions.js';
-import { i18n } from './core/i18n.js';
-import { GlobalEventHandlers } from './core/events.js';
-import { resourceHints } from './core/resource-hints.js';
-import { initOfflineAnalytics } from './core/offline-analytics.js';
+} from '#core/utils.js';
+import { initViewTransitions } from '#core/view-transitions.js';
+import { i18n } from '#core/i18n.js';
+import { GlobalEventHandlers } from '#core/events.js';
+import { resourceHints } from '#core/resource-hints.js';
+import { initOfflineAnalytics } from '#core/offline-analytics.js';
+import {
+  initNetworkStatusIndicator,
+  initServiceWorkerLifecycle,
+} from '#core/sw-registration.js';
+import { initThemeState } from '#core/theme-state.js';
 
 const log = createLogger('main');
 const appTimers = new TimerManager('Main');
@@ -35,31 +39,9 @@ const ENV = {
       globalThis.navigator.webdriver),
 };
 
-const isLocalDevHost = (hostname) => {
-  const host = String(hostname || '').toLowerCase();
-  if (!host) return false;
-  if (
-    host === 'localhost' ||
-    host === '127.0.0.1' ||
-    host === '0.0.0.0' ||
-    host.endsWith('.local')
-  ) {
-    return true;
-  }
-
-  // RFC1918 private network ranges (typical local LAN testing on phone/tablet)
-  if (/^10\./.test(host)) return true;
-  if (/^192\.168\./.test(host)) return true;
-  if (/^172\.(1[6-9]|2\d|3[0-1])\./.test(host)) return true;
-
-  return false;
-};
-
 // ===== Loading Configuration =====
 const LOADING_CONFIG = {
   TIMEOUT_MS: 5000, // Maximale Wartezeit — danach wird Loader forciert ausgeblendet
-  EARTH_INIT_DELAY: 500,
-  MODULE_READY_DELAY: 300,
 };
 
 // ===== Performance Tracking =====
@@ -73,7 +55,6 @@ const perfMarks = {
 // ===== Accessibility Announcements =====
 const announce = createAnnouncer();
 globalThis.announce = announce;
-let networkIndicatorDismissTimer = null;
 
 // ===== Section Manager =====
 const sectionManager = new SectionManager();
@@ -81,7 +62,17 @@ const sectionManager = new SectionManager();
 // ===== Initialize Managers =====
 // Declared before onDOMReady so _initApp can reference it without temporal issues
 const ThreeEarthLoader = new ThreeEarthManager(ENV);
-let loaderHidden = false;
+const loaderHidden = signal(false);
+const modulesReady = signal(false);
+const windowLoaded = signal(document.readyState === 'complete');
+const loadBlocked = computed(() => loadSignals.pending.value.length > 0);
+const canHideLoader = computed(
+  () =>
+    !loaderHidden.value &&
+    modulesReady.value &&
+    windowLoaded.value &&
+    !loadBlocked.value,
+);
 
 let _appInitialized = false;
 
@@ -109,6 +100,8 @@ const _initApp = () => {
     log.warn('A11y update failed:', error);
   }
 
+  initThemeState();
+
   // Initialize View Transitions API (progressive enhancement)
   initViewTransitions();
 
@@ -123,55 +116,40 @@ document.addEventListener(
   'DOMContentLoaded',
   async () => {
     await Promise.all([i18n.init(), initDOMPurify()]);
-    initOfflineIndicator();
+    initNetworkStatusIndicator({ announce, timers: appTimers });
     perfMarks.domReady = performance.now();
 
     const updateLoader = (progress, message, options) => {
-      if (loaderHidden) return;
+      if (loaderHidden.value) return;
       AppLoadManager.updateLoader(progress, message, options);
     };
 
-    let modulesReady = false;
-    let windowLoaded = false;
+    effect(() => {
+      const pending = loadSignals.pending.value;
 
-    const isEarthReady = () => {
-      const earthContainer =
-        getElementById('threeEarthContainer') ||
-        getElementById('earth-container');
-      return !earthContainer || earthContainer?.dataset?.threeReady === '1';
-    };
-
-    const checkReady = () => {
-      // Prevent multiple executions
-      if (loaderHidden) return;
-
-      log.debug('checkReady called', {
-        modulesReady,
-        windowLoaded,
-        isBlocked: AppLoadManager?.isBlocked?.(),
-        isEarthReady: isEarthReady(),
-        pending: AppLoadManager?.getPending?.(),
+      log.debug('Loader readiness changed', {
+        modulesReady: modulesReady.value,
+        windowLoaded: windowLoaded.value,
+        isBlocked: loadBlocked.value,
+        canHideLoader: canHideLoader.value,
+        done: loadSignals.done.value,
+        pending,
       });
 
-      if (!modulesReady || !windowLoaded) return;
-      if (AppLoadManager?.isBlocked?.()) return;
-      if (!isEarthReady()) return;
+      if (!canHideLoader.value) return;
 
       updateLoader(1, i18n.t('loader.ready_system'));
-      loaderHidden = true;
+      loaderHidden.value = true;
       appTimers.setTimeout(() => AppLoadManager.hideLoader(), 100);
       announce(i18n.t('loader.app_loaded'), { dedupe: true });
-    };
-
-    document.addEventListener(EVENTS.LOADING_UNBLOCKED, checkReady);
+    });
 
     globalThis.addEventListener(
       'load',
       () => {
         perfMarks.windowLoaded = performance.now();
-        windowLoaded = true;
+        windowLoaded.value = true;
         updateLoader(0.7, i18n.t('loader.resources'));
-        checkReady();
       },
       { once: true },
     );
@@ -183,17 +161,16 @@ document.addEventListener(
     updateLoader(0.4, i18n.t('loader.system_3d'));
     updateLoader(0.5, i18n.t('loader.optimize_images'));
 
-    modulesReady = true;
+    modulesReady.value = true;
     perfMarks.modulesReady = performance.now();
     updateLoader(0.6, i18n.t('loader.modules_loaded'));
-    checkReady();
 
     // Force hide after timeout
     appTimers.setTimeout(() => {
-      if (!loaderHidden) {
+      if (!loaderHidden.value) {
         log.info('Forcing loading screen hide after timeout');
         updateLoader(1, i18n.t('loader.timeout'));
-        loaderHidden = true;
+        loaderHidden.value = true;
         AppLoadManager.hideLoader();
       }
     }, LOADING_CONFIG.TIMEOUT_MS);
@@ -229,94 +206,4 @@ globalThis.addEventListener('pageshow', (event) => {
   }
 });
 
-// ===== Service Worker =====
-if ('serviceWorker' in navigator && !ENV.isTest) {
-  if (isLocalDevHost(globalThis.location.hostname)) {
-    navigator.serviceWorker
-      .getRegistrations()
-      .then((r) => r.forEach((s) => s.unregister()));
-  } else {
-    globalThis.addEventListener(
-      'load',
-      () => {
-        navigator.serviceWorker.register('/sw.js').then((reg) => {
-          // Check for updates periodically
-          reg.addEventListener('updatefound', () => {
-            const newWorker = reg.installing;
-            if (!newWorker) return;
-            newWorker.addEventListener('statechange', () => {
-              if (
-                newWorker.state === 'installed' &&
-                navigator.serviceWorker.controller
-              ) {
-                // New SW waiting — notify user
-                log.info('New Service Worker available');
-                announce(
-                  'Update verfügbar — Seite neu laden für die neueste Version',
-                );
-              }
-            });
-          });
-        });
-      },
-      { once: true },
-    );
-  }
-}
-
-function initOfflineIndicator() {
-  if (typeof document === 'undefined') return;
-  if (document.getElementById('network-status-indicator')) return;
-
-  const indicator = document.createElement('div');
-  indicator.id = 'network-status-indicator';
-  indicator.className = 'network-status-indicator';
-  indicator.setAttribute('role', 'status');
-  indicator.setAttribute('aria-live', 'polite');
-  indicator.setAttribute('aria-atomic', 'true');
-  document.body.appendChild(indicator);
-
-  let hasInitialized = false;
-
-  const clearDismissTimer = () => {
-    if (!networkIndicatorDismissTimer) return;
-    appTimers.clearTimeout(networkIndicatorDismissTimer);
-    networkIndicatorDismissTimer = null;
-  };
-
-  const updateIndicator = () => {
-    const isOffline = navigator.onLine === false;
-
-    clearDismissTimer();
-
-    if (isOffline) {
-      indicator.classList.add('is-visible', 'is-offline');
-      indicator.classList.remove('is-online');
-      indicator.textContent =
-        'Offline-Modus: Navigation und lokale Suchtreffer verfuegbar, AI-Antworten eingeschraenkt.';
-      announce('Offline-Modus aktiv');
-      hasInitialized = true;
-      return;
-    }
-
-    if (!hasInitialized) {
-      hasInitialized = true;
-      indicator.classList.remove('is-visible', 'is-online', 'is-offline');
-      return;
-    }
-
-    indicator.classList.add('is-visible', 'is-online');
-    indicator.classList.remove('is-offline');
-    indicator.textContent = 'Verbindung wiederhergestellt.';
-    announce('Online-Verbindung wiederhergestellt');
-
-    networkIndicatorDismissTimer = appTimers.setTimeout(() => {
-      indicator.classList.remove('is-visible', 'is-online');
-      networkIndicatorDismissTimer = null;
-    }, 3500);
-  };
-
-  window.addEventListener('online', updateIndicator);
-  window.addEventListener('offline', updateIndicator);
-  updateIndicator();
-}
+initServiceWorkerLifecycle({ isTest: ENV.isTest, announce });

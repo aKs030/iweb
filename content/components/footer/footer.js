@@ -15,13 +15,17 @@ import { createLogger } from '../../core/logger.js';
 import { a11y } from '../../core/accessibility-manager.js';
 import { i18n } from '../../core/i18n.js';
 import { TimerManager } from '../../core/utils.js';
-import { EVENTS } from '../../core/events.js';
 import { CookieManager } from '../../core/cookie-manager.js';
 import { AnalyticsManager } from '../../core/analytics-manager.js';
+import {
+  resetFooterState,
+  setFooterExpanded,
+  setFooterLoaded,
+} from '../../core/footer-state.js';
 
 const log = createLogger('SiteFooter');
 
-/** @typedef {import('/content/core/types.js').FooterElements} FooterElements */
+/** @typedef {import('../../core/types.js').FooterElements} FooterElements */
 
 const CONFIG = Object.freeze({
   // primary path used by <site-footer> instances; always serves HTML
@@ -116,10 +120,8 @@ export class SiteFooter extends HTMLElement {
       this.#state.initialized = true;
 
       log.info('Footer initialized');
-
-      this.dispatchEvent(
-        new CustomEvent(EVENTS.FOOTER_LOADED, { bubbles: true }),
-      );
+      setFooterLoaded(true);
+      setFooterExpanded(this.#state.expanded);
     } catch (error) {
       log.error('Footer load failed', error);
     }
@@ -208,6 +210,7 @@ export class SiteFooter extends HTMLElement {
     // Reset state
 
     this.#state.initialized = false;
+    resetFooterState();
 
     log.info('Footer cleanup complete');
   }
@@ -392,6 +395,9 @@ export class SiteFooter extends HTMLElement {
       if (!this.#state.expanded) return;
 
       const target = /** @type {Element} */ (e.target);
+      if (target.closest('[data-footer-trigger]')) {
+        return;
+      }
 
       if (!target.closest('site-footer')) {
         this.#toggleFooter(false);
@@ -506,13 +512,7 @@ export class SiteFooter extends HTMLElement {
     a11y?.announce(i18n.t(`footer.actions.${actionKey}`), {
       priority: 'polite',
     });
-
-    this.dispatchEvent(
-      new CustomEvent(
-        newState ? EVENTS.FOOTER_EXPANDED : EVENTS.FOOTER_COLLAPSED,
-        { bubbles: true },
-      ),
-    );
+    setFooterExpanded(newState);
 
     if (newState) {
       const firstFocusable = /** @type {HTMLElement|null} */ (

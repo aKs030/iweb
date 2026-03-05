@@ -1,6 +1,7 @@
-<!-- Import Map for ES Modules - Centralized for all pages -->
+<!-- Import Map for no-build ES modules: vendors + internal aliases -->
 <!-- Must be as early as possible in the head -->
 <!-- Three.js version: sync with THREE_VERSION in content/config/constants.js -->
+<!-- BEGIN GENERATED IMPORT MAP -->
 <script type="importmap">
   {
     "imports": {
@@ -14,7 +15,8 @@
       "idb-keyval": "https://esm.sh/idb-keyval@6.2.1",
       "#core/": "/content/core/",
       "#components/": "/content/components/",
-      "#config/": "/content/config/"
+      "#config/": "/content/config/",
+      "#pages/": "/pages/"
     },
     "scopes": {
       "https://esm.sh/": {
@@ -23,16 +25,26 @@
     }
   }
 </script>
+<!-- END GENERATED IMPORT MAP -->
 
 <!-- Theme bootstrap (run before stylesheets) -->
 <script>
   (function bootstrapTheme() {
     try {
       var root = document.documentElement;
+      var storageKey = 'iweb-theme-preference';
+      var storedPreference = window.localStorage
+        ? window.localStorage.getItem(storageKey)
+        : null;
       var prefersLightTheme =
         window.matchMedia &&
         window.matchMedia('(prefers-color-scheme: light)').matches;
-      var resolvedTheme = prefersLightTheme ? 'light' : 'dark';
+      var resolvedTheme =
+        storedPreference === 'light' || storedPreference === 'dark'
+          ? storedPreference
+          : prefersLightTheme
+            ? 'light'
+            : 'dark';
       root.setAttribute('data-theme', resolvedTheme);
     } catch (_err) {
       document.documentElement.setAttribute('data-theme', 'dark');
@@ -148,10 +160,8 @@
 <link rel="modulepreload" href="/content/main.js" />
 <link rel="modulepreload" href="/content/components/head/head-inline.js" />
 <link rel="modulepreload" href="/content/components/menu/SiteMenu.js" />
-<link rel="modulepreload" href="/content/components/footer/footer.js" />
 
 <!-- Core Scripts -->
 <script type="module" src="/content/components/menu/SiteMenu.js"></script>
-<script type="module" src="/content/components/footer/footer.js"></script>
 <script type="module" src="/content/components/head/head-inline.js"></script>
 <script type="module" src="/content/main.js"></script>

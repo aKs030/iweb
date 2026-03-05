@@ -3,7 +3,7 @@
  * @version 2.0.0 - Optimized & Minimal
  */
 
-import { iconUrl } from '/content/config/constants.js';
+import { iconUrl } from '#config/constants.js';
 import {
   BLOG_BASE_URL,
   BLOG_HOME_URL,

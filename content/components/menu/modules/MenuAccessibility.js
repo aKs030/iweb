@@ -72,13 +72,22 @@ export class MenuAccessibility {
   setupAnnouncements() {
     const mobileBreakpoint =
       this.config.MOBILE_BREAKPOINT ?? this.config.TABLET_BREAKPOINT ?? 900;
-    // store listener so we can unsubscribe later
-    this._openChangeHandler = (isOpen) => {
-      if (window.innerWidth <= mobileBreakpoint) {
-        this.announce(isOpen ? 'Hauptmenü geöffnet' : 'Hauptmenü geschlossen');
-      }
-    };
-    this.state.on('openChange', this._openChangeHandler);
+    let hasSyncedInitialState = false;
+
+    this._cleanupFns.push(
+      this.state.signals.open.subscribe((isOpen) => {
+        if (!hasSyncedInitialState) {
+          hasSyncedInitialState = true;
+          return;
+        }
+
+        if (window.innerWidth <= mobileBreakpoint) {
+          this.announce(
+            isOpen ? 'Hauptmenü geöffnet' : 'Hauptmenü geschlossen',
+          );
+        }
+      }),
+    );
   }
 
   announce(message) {
@@ -104,11 +113,6 @@ export class MenuAccessibility {
   destroy() {
     this._cleanupFns.forEach((fn) => fn());
     this._cleanupFns = [];
-
-    if (this._openChangeHandler) {
-      this.state.off('openChange', this._openChangeHandler);
-      this._openChangeHandler = null;
-    }
 
     const liveRegion = document.getElementById('a11y-live-region');
     if (liveRegion) liveRegion.remove();

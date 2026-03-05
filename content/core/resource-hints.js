@@ -6,23 +6,15 @@
  */
 
 import { createLogger } from './logger.js';
+import { cancelIdleTask, scheduleIdleTask } from './idle.js';
+import { getAdaptiveResourceHintBudget } from './resource-hints-matrix.js';
 import { upsertHeadLink } from './utils.js';
 
 const log = createLogger('ResourceHints');
-const DEFAULT_SPECULATIVE_ROUTES = Object.freeze([
-  '/projekte/',
-  '/gallery/',
-  '/videos/',
-  '/blog/',
-  '/about/',
-]);
-const DEFAULT_MAX_SPECULATIVE_ROUTES = 6;
-const DEFAULT_MAX_PREFETCH_ROUTES = 3;
 const SPECULATION_RULES_SELECTOR =
   'script[type="speculationrules"][data-injected-by="resource-hints"]';
 const DOWNLOAD_FILE_RE =
   /\.(pdf|zip|rar|7z|tar|gz|mp4|webm|mov|mp3|wav|doc|docx|xls|xlsx|ppt|pptx)$/i;
-const POINTER_WARMUP_DELAY_MS = 75;
 
 /**
  * Resource Hints Manager
@@ -40,6 +32,9 @@ class ResourceHintsManager {
     this.intentHandler = null;
     this.intentWarmupTimer = null;
     this.intentPrefetchedRoutes = new Set();
+    this.speculationRefreshHandle = null;
+    this._cachedProfile = null;
+    this._cachedProfilePathname = null;
   }
 
   /**
@@ -290,52 +285,26 @@ class ResourceHintsManager {
    * }}
    */
   getSpeculationProfile() {
-    const current = this.normalizePath(globalThis.location?.pathname || '/');
-    const isHome = current === '/';
+    const currentPathname = globalThis.location?.pathname || '/';
 
-    const connection = this.getNetworkConnection();
-    const saveData = Boolean(connection?.saveData);
-    const effectiveType = String(connection?.effectiveType || '').toLowerCase();
-    const memory = Number(globalThis.navigator?.deviceMemory || 0);
-    const cores = Number(globalThis.navigator?.hardwareConcurrency || 0);
+    if (
+      this._cachedProfile &&
+      this._cachedProfilePathname === currentPathname
+    ) {
+      return this._cachedProfile;
+    }
 
-    const profile = {
-      maxRoutes: DEFAULT_MAX_SPECULATIVE_ROUTES,
-      maxPrefetch: DEFAULT_MAX_PREFETCH_ROUTES,
-      prerenderEnabled: true,
-      prerenderEagerness: /** @type {'moderate'|'conservative'} */ (
-        isHome ? 'moderate' : 'conservative'
+    this._cachedProfilePathname = currentPathname;
+    this._cachedProfile = getAdaptiveResourceHintBudget({
+      pathname: currentPathname,
+      connection: this.getNetworkConnection(),
+      deviceMemory: Number(globalThis.navigator?.deviceMemory || 0),
+      hardwareConcurrency: Number(
+        globalThis.navigator?.hardwareConcurrency || 0,
       ),
-      prefetchEagerness: /** @type {'conservative'} */ ('conservative'),
-    };
+    });
 
-    // Constrained environments: keep to lightweight prefetch.
-    if (
-      saveData ||
-      effectiveType.includes('2g') ||
-      (memory > 0 && memory <= 2) ||
-      (cores > 0 && cores <= 4)
-    ) {
-      profile.maxRoutes = 3;
-      profile.maxPrefetch = 2;
-      profile.prerenderEnabled = false;
-      profile.prerenderEagerness = 'conservative';
-      return profile;
-    }
-
-    // Mid-tier: tighter route budgets and conservative prerender.
-    if (
-      effectiveType.includes('3g') ||
-      (memory > 0 && memory <= 4) ||
-      (cores > 0 && cores <= 8)
-    ) {
-      profile.maxRoutes = 4;
-      profile.maxPrefetch = 2;
-      profile.prerenderEagerness = 'conservative';
-      return profile;
-    }
-
-    return profile;
+    return this._cachedProfile;
   }
 
   /**
@@ -402,7 +371,7 @@ class ResourceHintsManager {
    * @param {string[]} [seedRoutes]
    * @returns {string[]}
    */
-  getSpeculativeRoutes(seedRoutes = DEFAULT_SPECULATIVE_ROUTES) {
+  getSpeculativeRoutes(seedRoutes = this.getSpeculationProfile().seedRoutes) {
     const merged = [...seedRoutes, ...this.collectRoutesFromDom()];
     const uniqueRoutes = [];
     const seen = new Set();
@@ -524,7 +493,7 @@ class ResourceHintsManager {
    * Prefetch fallback for browsers without Speculation Rules API
    * @param {string[]} [routes]
    */
-  initPrefetchFallback(routes = DEFAULT_SPECULATIVE_ROUTES) {
+  initPrefetchFallback(routes = this.getSpeculationProfile().seedRoutes) {
     const speculativeRoutes = this.getPrefetchRoutes(
       this.getSpeculativeRoutes(routes),
     );
@@ -622,7 +591,7 @@ class ResourceHintsManager {
           this.intentPrefetchedRoutes.add(route);
           this.prefetch(route, { as: 'document' });
           this.intentWarmupTimer = null;
-        }, POINTER_WARMUP_DELAY_MS);
+        }, this.getSpeculationProfile().intentWarmupDelayMs);
         return;
       }
 
@@ -642,7 +611,7 @@ class ResourceHintsManager {
   /**
    * Inject Speculation Rules (adaptive prerender + prefetch)
    */
-  initSpeculativeRules(routes = DEFAULT_SPECULATIVE_ROUTES) {
+  initSpeculativeRules(routes = this.getSpeculationProfile().seedRoutes) {
     try {
       const speculativeRoutes = this.getSpeculativeRoutes(routes);
       if (!this.supportsSpeculationRules()) {
@@ -730,12 +699,10 @@ class ResourceHintsManager {
     };
 
     document.addEventListener('menu:loaded', refresh, { once: true });
-
-    if (globalThis.requestIdleCallback) {
-      requestIdleCallback(refresh, { timeout: 2200 });
-    } else {
-      setTimeout(refresh, 1200);
-    }
+    this.speculationRefreshHandle = scheduleIdleTask(refresh, {
+      timeout: 2200,
+      fallbackDelay: 1200,
+    });
   }
 
   /**
@@ -777,6 +744,7 @@ class ResourceHintsManager {
       document.removeEventListener('pointerdown', this.intentHandler);
     }
     this.clearIntentWarmupTimer();
+    cancelIdleTask(this.speculationRefreshHandle);
 
     this.hints.clear();
     this.resetRuntimeState();

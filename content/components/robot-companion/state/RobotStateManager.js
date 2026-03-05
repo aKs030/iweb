@@ -4,8 +4,12 @@
  * @version 1.0.0
  */
 
-import { ROBOT_EVENTS } from '../constants/events.js';
 import { createLogger } from '../../../core/logger.js';
+import {
+  computed,
+  signal,
+  subscribe as signalSubscribe,
+} from '../../../core/signals.js';
 
 const log = createLogger('RobotStateManager');
 
@@ -24,14 +28,17 @@ const log = createLogger('RobotStateManager');
 
 export class RobotStateManager {
   constructor() {
-    /** @type {RobotState} */
-    this._state = this._getInitialState();
+    const initialState = Object.freeze(this._getInitialState());
+    this._stateSignal = signal(initialState);
 
-    /** @type {Map<string, Set<Function>>} */
-    this._listeners = new Map();
-
-    /** @type {RobotState} */
-    this._previousState = { ...this._state };
+    this.signals = Object.freeze({
+      state: computed(() => this._stateSignal.value),
+      isChatOpen: computed(() => this._stateSignal.value.isChatOpen),
+      isTyping: computed(() => this._stateSignal.value.isTyping),
+      mood: computed(() => this._stateSignal.value.mood),
+      currentContext: computed(() => this._stateSignal.value.currentContext),
+      analytics: computed(() => this._stateSignal.value.analytics),
+    });
   }
 
   /**
@@ -67,96 +74,44 @@ export class RobotStateManager {
    * @returns {Readonly<RobotState>}
    */
   getState() {
-    return Object.freeze({ ...this._state });
+    return Object.freeze({ ...this._stateSignal.value });
   }
 
   /**
-   * Update state and notify listeners
+   * Update state
    * @param {Partial<RobotState>} updates - State updates
    */
   setState(updates) {
-    this._previousState = { ...this._state };
-    this._state = { ...this._state, ...updates };
+    const currentState = this._stateSignal.peek();
+    const nextState = Object.freeze({ ...currentState, ...updates });
+    const hasChanges = Object.keys(updates || {}).some(
+      (key) => !Object.is(currentState[key], nextState[key]),
+    );
 
-    // Emit state change event
-    this._emit(ROBOT_EVENTS.STATE_CHANGED, {
-      current: this.getState(),
-      previous: this._previousState,
-      changes: updates,
-    });
+    if (!hasChanges) return this.getState();
 
-    // Emit specific events for important state changes
-    if (updates.isChatOpen !== undefined) {
-      this._emit(
-        updates.isChatOpen
-          ? ROBOT_EVENTS.CHAT_OPENED
-          : ROBOT_EVENTS.CHAT_CLOSED,
-        { state: this.getState() },
-      );
-    }
-
-    if (
-      updates.mood !== undefined &&
-      updates.mood !== this._previousState.mood
-    ) {
-      this._emit(ROBOT_EVENTS.MOOD_CHANGED, {
-        mood: updates.mood,
-        previousMood: this._previousState.mood,
-      });
-    }
+    this._stateSignal.value = nextState;
 
     log.debug('State updated:', updates);
+    return this.getState();
   }
 
   /**
-   * Subscribe to state changes
-   * @param {string} event - Event name
-   * @param {Function} callback - Callback function
-   * @returns {Function} Unsubscribe function
+   * Subscribe to a selected slice of state using signals.
+   * @template T
+   * @param {(state: Readonly<RobotState>) => T} selector
+   * @param {(value: T) => void} listener
+   * @param {{ emitImmediately?: boolean }} [options]
+   * @returns {() => void}
    */
-  subscribe(event, callback) {
-    if (!this._listeners.has(event)) {
-      this._listeners.set(event, new Set());
-    }
+  select(selector, listener, options = {}) {
+    if (typeof selector !== 'function') return () => {};
 
-    this._listeners.get(event).add(callback);
-
-    // Return unsubscribe function
-    return () => {
-      const listeners = this._listeners.get(event);
-      if (listeners) {
-        listeners.delete(callback);
-      }
-    };
-  }
-
-  /**
-   * Emit event to all listeners
-   * @param {string} event - Event name
-   * @param {any} data - Event data
-   * @private
-   */
-  _emit(event, data) {
-    const listeners = this._listeners.get(event);
-    if (listeners) {
-      listeners.forEach((callback) => {
-        try {
-          callback(data);
-        } catch (error) {
-          log.error(`Error in listener for ${event}:`, error);
-        }
-      });
-    }
-
-    // Also emit as DOM event for external listeners
-    if (typeof document !== 'undefined') {
-      document.dispatchEvent(
-        new CustomEvent(event, {
-          detail: data,
-          bubbles: true,
-        }),
-      );
-    }
+    return signalSubscribe(
+      () => selector(this._stateSignal.value),
+      listener,
+      options,
+    );
   }
 
   /**
@@ -165,13 +120,13 @@ export class RobotStateManager {
   initializeSessionState() {
     const now = new Date().toISOString();
     const currentSessions = Number.parseInt(
-      String(this._state.analytics.sessions || 0),
+      String(this._stateSignal.peek().analytics.sessions || 0),
       10,
     );
 
     this.setState({
       analytics: {
-        ...this._state.analytics,
+        ...this._stateSignal.peek().analytics,
         sessions: Number.isFinite(currentSessions) ? currentSessions + 1 : 1,
         lastVisit: now,
       },
@@ -182,10 +137,11 @@ export class RobotStateManager {
    * Track interaction
    */
   trackInteraction() {
-    const interactions = this._state.analytics.interactions + 1;
+    const currentState = this._stateSignal.peek();
+    const interactions = currentState.analytics.interactions + 1;
     this.setState({
       analytics: {
-        ...this._state.analytics,
+        ...currentState.analytics,
         interactions,
       },
     });
@@ -196,11 +152,13 @@ export class RobotStateManager {
    * @param {string} section - Section name
    */
   trackSectionVisit(section) {
-    if (!this._state.analytics.sectionsVisited.includes(section)) {
+    const currentState = this._stateSignal.peek();
+
+    if (!currentState.analytics.sectionsVisited.includes(section)) {
       this.setState({
         analytics: {
-          ...this._state.analytics,
-          sectionsVisited: [...this._state.analytics.sectionsVisited, section],
+          ...currentState.analytics,
+          sectionsVisited: [...currentState.analytics.sectionsVisited, section],
         },
       });
     }
@@ -210,13 +168,14 @@ export class RobotStateManager {
    * Reset state
    */
   reset() {
-    this._state = this._getInitialState();
+    const resetState = Object.freeze(this._getInitialState());
+    this._stateSignal.value = resetState;
   }
 
   /**
    * Cleanup
    */
   destroy() {
-    this._listeners.clear();
+    this.reset();
   }
 }

@@ -4,6 +4,12 @@
 
 The Head component system uses a centralized state manager (`head-state.js`) to coordinate initialization between `head-inline.js` and `head-manager.js`.
 
+`head-inline.js` is now a thin bootstrap entry and delegates side-effect groups into focused modules:
+
+- `analytics-bootstrap.js`: GTM/GA4 consent defaults and script injection.
+- `core-assets-bootstrap.js`: critical styles, resource hints, fonts, and deferred runtime assets.
+- `footer-hydration.js`: menu/footer shell injection and footer lazy hydration.
+
 ## Migration from Global Variables
 
 ### Before (❌)
@@ -102,7 +108,7 @@ headState.reset();
 ### Waiting for Initialization
 
 ```javascript
-import { headState } from '/content/components/head/head-state.js';
+import { headState } from '#components/head/head-state.js';
 
 // Wait with timeout
 await headState.waitForInlineReady(5000);
@@ -116,7 +122,7 @@ headState.onReady(() => {
 ### Testing
 
 ```javascript
-import { headState } from '/content/components/head/head-state.js';
+import { headState } from '#components/head/head-state.js';
 
 beforeEach(() => {
   headState.reset();

@@ -1,26 +1,153 @@
 /**
  * Application Load Manager
  * Modern, UI-agnostic loading state manager.
+ * - Uses reactive signals as the primary source of truth
  * - Keeps blocking orchestration (`block`/`unblock`)
- * - Emits progress events (`loading:update`)
- * - Emits completion event (`EVENTS.LOADING_HIDE`) + global `app-ready`
- * This keeps backward compatibility while removing hard dependency on legacy
- * #app-loader DOM markup.
+ * - Exposes `whenAppReady()` for async coordination without DOM events
+ * - Removes hard dependency on legacy `#app-loader` DOM markup
  * @module AppLoadManager
  */
 
 import { createLogger } from './logger.js';
-import { EVENTS, fire } from './events.js';
+import {
+  batch,
+  computed,
+  effect,
+  signal,
+  subscribe,
+  untracked,
+} from './signals.js';
 
 const log = createLogger('AppLoadManager');
 
-export const AppLoadManager = (() => {
-  const pending = new Set();
-  let lastProgress = 0;
-  let lastMessage = '';
-  let hideScheduled = false;
-  let hideCompleted = false;
+const pending = new Set();
+const progressSignal = signal(0);
+const messageSignal = signal('');
+const pendingSignal = signal(Object.freeze([]));
+const hideScheduledSignal = signal(false);
+const hideCompletedSignal = signal(false);
 
+export const loadSignals = Object.freeze({
+  progress: progressSignal,
+  message: messageSignal,
+  pending: pendingSignal,
+  hideScheduled: hideScheduledSignal,
+  done: hideCompletedSignal,
+  blocked: computed(() => pendingSignal.value.length > 0),
+});
+
+const toPendingList = () => Object.freeze(Array.from(pending));
+
+export function getLoadSnapshot() {
+  const pendingList = loadSignals.pending.value;
+
+  return Object.freeze({
+    blocked: pendingList.length > 0,
+    pending: [...pendingList],
+    progress: loadSignals.progress.value,
+    message: loadSignals.message.value,
+    hideScheduled: loadSignals.hideScheduled.value,
+    done: loadSignals.done.value,
+  });
+}
+
+export function subscribeLoadState(listener, options = {}) {
+  return subscribe(getLoadSnapshot, listener, options);
+}
+
+export function whenAppReady(options = {}) {
+  const { timeout = 0, abortSignal = null } = options;
+
+  const isReady = (snapshot) =>
+    snapshot.done === true && snapshot.blocked !== true;
+  const initialSnapshot = getLoadSnapshot();
+  if (isReady(initialSnapshot)) {
+    return Promise.resolve(initialSnapshot);
+  }
+
+  if (abortSignal?.aborted) {
+    return Promise.reject(
+      new DOMException('App readiness wait aborted', 'AbortError'),
+    );
+  }
+
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    let timeoutId = null;
+    let unsubscribe = () => {};
+
+    const cleanup = () => {
+      unsubscribe();
+      unsubscribe = () => {};
+
+      if (timeoutId !== null) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+
+      abortSignal?.removeEventListener?.('abort', handleAbort);
+    };
+
+    const resolveReady = (snapshot) => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      resolve(snapshot);
+    };
+
+    const rejectWait = (error) => {
+      if (settled) return;
+      settled = true;
+      cleanup();
+      reject(error);
+    };
+
+    const handleAbort = () => {
+      rejectWait(new DOMException('App readiness wait aborted', 'AbortError'));
+    };
+
+    const handleSnapshot = (snapshot) => {
+      if (isReady(snapshot)) {
+        resolveReady(snapshot);
+      }
+    };
+
+    unsubscribe = subscribeLoadState(handleSnapshot);
+
+    if (timeout > 0) {
+      timeoutId = setTimeout(() => {
+        rejectWait(
+          new Error(`Timed out waiting for app readiness after ${timeout}ms`),
+        );
+      }, timeout);
+    }
+
+    abortSignal?.addEventListener?.('abort', handleAbort, { once: true });
+    handleSnapshot(getLoadSnapshot());
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Legacy DOM event bridge — fires `app-ready` on globalThis exactly once
+// when loading completes, so external consumers (GTM, analytics, third-party
+// scripts) keep working without coupling to our signal system.
+// ---------------------------------------------------------------------------
+effect(() => {
+  if (!loadSignals.done.value || loadSignals.blocked.value) return;
+
+  untracked(() => {
+    try {
+      globalThis.dispatchEvent(new Event('app-ready'));
+    } catch {
+      // SSR / test environments may not have dispatchEvent
+    }
+  });
+
+  // Return a dispose callback — effect auto-disposes after first emission
+  // because `done` transitions from false→true exactly once per app lifecycle.
+});
+
+export const AppLoadManager = (() => {
   const toPercent = (value) =>
     Math.round(Math.max(0, Math.min(100, Number(value || 0) * 100)));
 
@@ -30,8 +157,10 @@ export const AppLoadManager = (() => {
      * @param {string} name
      */
     block(name) {
-      if (!name) return;
-      pending.add(name);
+      const key = String(name || '').trim();
+      if (!key || pending.has(key)) return;
+      pending.add(key);
+      pendingSignal.value = toPendingList();
       log.debug(`Blocked: ${name}`);
     },
 
@@ -40,12 +169,12 @@ export const AppLoadManager = (() => {
      * @param {string} name
      */
     unblock(name) {
-      if (!name) return;
-      pending.delete(name);
+      const key = String(name || '').trim();
+      if (!key || !pending.has(key)) return;
+
+      pending.delete(key);
+      pendingSignal.value = toPendingList();
       log.debug(`Unblocked: ${name}`);
-      if (pending.size === 0) {
-        fire(EVENTS.LOADING_UNBLOCKED);
-      }
     },
 
     /**
@@ -53,7 +182,7 @@ export const AppLoadManager = (() => {
      * @returns {boolean}
      */
     isBlocked() {
-      return pending.size > 0;
+      return loadSignals.pending.value.length > 0;
     },
 
     /**
@@ -61,11 +190,11 @@ export const AppLoadManager = (() => {
      * @returns {string[]}
      */
     getPending() {
-      return Array.from(pending);
+      return [...loadSignals.pending.value];
     },
 
     /**
-     * Update app loading progress (state + event only).
+     * Update app loading progress.
      * @param {number} progress - Progress in range 0..1
      * @param {string} message
      * @param {{ silent?: boolean }} [options]
@@ -73,11 +202,15 @@ export const AppLoadManager = (() => {
     updateLoader(progress, message, options = {}) {
       try {
         const pct = toPercent(progress);
-        lastProgress = pct;
-        lastMessage = String(message || '');
-        fire('loading:update', { progress: pct, message: lastMessage });
+        const text = String(message || '');
+
+        batch(() => {
+          progressSignal.value = pct;
+          messageSignal.value = text;
+        });
+
         if (!options.silent) {
-          log.debug(`Loading state: ${pct}% - ${lastMessage}`);
+          log.debug(`Loading state: ${pct}% - ${text}`);
         }
       } catch (err) {
         log.warn('Could not update loading state:', err);
@@ -85,25 +218,25 @@ export const AppLoadManager = (() => {
     },
 
     /**
-     * Mark loading as completed and emit lifecycle events.
+     * Mark loading as completed.
      * @param {number} [delay=0]
      */
     hideLoader(delay = 0) {
-      if (hideCompleted || hideScheduled) return;
-      hideScheduled = true;
+      if (loadSignals.done.value || loadSignals.hideScheduled.value) return;
+      hideScheduledSignal.value = true;
 
       const run = () => {
-        hideScheduled = false;
-        if (hideCompleted) return;
-        hideCompleted = true;
-        pending.clear();
-        fire(EVENTS.LOADING_HIDE);
-        fire(EVENTS.LOADING_COMPLETE);
-        try {
-          globalThis.dispatchEvent(new Event('app-ready'));
-        } catch (err) {
-          log.debug('app-ready dispatch failed:', err);
+        if (loadSignals.done.value) {
+          hideScheduledSignal.value = false;
+          return;
         }
+
+        batch(() => {
+          hideScheduledSignal.value = false;
+          hideCompletedSignal.value = true;
+          pending.clear();
+          pendingSignal.value = Object.freeze([]);
+        });
       };
 
       if (delay > 0) {
@@ -118,13 +251,7 @@ export const AppLoadManager = (() => {
      * @returns {{ blocked: boolean, pending: string[], progress: number, message: string, done: boolean }}
      */
     getSnapshot() {
-      return {
-        blocked: pending.size > 0,
-        pending: Array.from(pending),
-        progress: lastProgress,
-        message: lastMessage,
-        done: hideCompleted,
-      };
+      return getLoadSnapshot();
     },
   };
 })();

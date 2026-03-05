@@ -15,9 +15,9 @@ import { createRoot } from 'react-dom/client';
 import { createPortal } from 'react-dom';
 import { useProjects } from './hooks/useProjects.js';
 import { ThreeScene } from './components/ThreeScene.js';
-import * as Icons from '/content/components/icons/icons.js';
-import { i18n } from '/content/core/i18n.js';
-import { createErrorBoundary } from '/content/components/ErrorBoundary.js';
+import * as Icons from '#components/icons/icons.js';
+import { i18n } from '#core/i18n.js';
+import { createErrorBoundary } from '#components/ErrorBoundary.js';
 
 const ErrorBoundary = createErrorBoundary(React);
 
@@ -253,10 +253,8 @@ const App = () => {
     return () => cancelAnimationFrame(raf);
   }, [popupApp]);
 
-  const t = (key, fallback, params = {}) => {
-    const translated = i18n.t(key, params);
-    return translated === key ? fallback : translated;
-  };
+  const t = (key, fallback, params = {}) =>
+    i18n.tOrFallback(key, fallback, params);
 
   const normalizeAppUrl = (url) => {
     if (!url) return url;
