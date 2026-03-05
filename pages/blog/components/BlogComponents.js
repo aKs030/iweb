@@ -55,6 +55,7 @@ export const ScrollToTop = () => {
       className="scroll-to-top-btn ${visible ? 'visible' : ''}"
       onClick=${() => window.scrollTo({ top: 0, behavior: 'smooth' })}
       aria-label="Nach oben scrollen"
+      title="Nach oben scrollen"
     >
       <${ArrowUp} />
     </button>
