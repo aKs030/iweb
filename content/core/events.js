@@ -12,6 +12,7 @@ const log = createLogger('Events');
 export const EVENTS = Object.freeze({
   LOADING_UNBLOCKED: 'app:loadingUnblocked',
   LOADING_HIDE: 'app:loaderHide',
+  LOADING_COMPLETE: 'app:loadingComplete',
   HERO_TYPING_END: 'hero:typingEnd',
   FOOTER_LOADED: 'footer:loaded',
   FOOTER_EXPANDED: 'footer:expanded',

@@ -176,9 +176,73 @@ const ensureGTMNoScript = () => {
 
 ensureGTMNoScript();
 
+const getMenuShellMarkup = () => `
+<div class="site-logo__container">
+  <span class="site-title">Abdulkerim Sesli</span>
+  <span class="site-subtitle show">Portfolio</span>
+</div>
+<nav class="site-menu" aria-label="Hauptnavigation">
+  <ul class="site-menu__list">
+    <li><a href="/">Startseite</a></li>
+    <li><a href="/projekte/">Projekte</a></li>
+    <li><a href="/gallery/">Fotos</a></li>
+    <li><a href="/videos/">Videos</a></li>
+    <li><a href="/blog/">Blog</a></li>
+    <li><a href="/about/">Über mich</a></li>
+  </ul>
+</nav>
+<button
+  type="button"
+  class="site-menu__toggle"
+  aria-label="Menü"
+  aria-expanded="false"
+>
+  <div class="hamburger-container">
+    <span class="hamburger-line hamburger-line--top"></span>
+    <span class="hamburger-line hamburger-line--middle"></span>
+    <span class="hamburger-line hamburger-line--bottom"></span>
+  </div>
+</button>
+`;
+
+const getFooterShellMarkup = () => `
+<footer class="site-footer" role="contentinfo">
+  <div class="footer-min" aria-expanded="false" aria-controls="footer-content">
+    <span class="footer-copyright">
+      © ${new Date().getFullYear()}
+      <a href="/" class="brand-link" aria-label="Zur Startseite">Abdulkerim Sesli</a>
+    </span>
+    <div
+      id="cookie-banner"
+      class="cookie-inline"
+      role="dialog"
+      aria-label="Cookie-Einstellungen"
+    >
+      <span class="cookie-text">
+        <span class="full">Wir nutzen Analytics</span>
+      </span>
+      <button id="accept-cookies" class="btn-accept" type="button">
+        <span class="full">Akzeptieren</span>
+        <span class="short">✓</span>
+      </button>
+      <button id="reject-cookies" class="btn-reject" type="button">
+        <span class="full">Ablehnen</span>
+        <span class="short">✗</span>
+      </button>
+    </div>
+    <nav class="footer-nav" aria-label="Footer Navigation">
+      <a href="/impressum/" class="nav-btn">Impressum</a>
+      <a href="/datenschutz/" class="nav-btn">Datenschutz</a>
+    </nav>
+  </div>
+</footer>
+`;
+
 const ensureFooterAndTrigger = () => {
   try {
     const run = () => {
+      if (!document.body) return;
+
       // Ensure <site-menu> exists
       let siteMenu = document.querySelector('site-menu');
       if (!siteMenu) {
@@ -203,34 +267,60 @@ const ensureFooterAndTrigger = () => {
           /* ignore */
         }
         siteMenu.dataset.injectedBy = 'head-inline';
+        siteMenu.dataset.shell = 'true';
+        siteMenu.innerHTML = getMenuShellMarkup();
         headerEl.appendChild(siteMenu);
       }
 
       // Ensure footer exists - create site-footer custom element
       let siteFooter = document.querySelector('site-footer');
       if (!siteFooter) {
-        // Load footer CSS first
-        const footerCSS = document.createElement('link');
-        footerCSS.rel = 'stylesheet';
-        footerCSS.href = '/content/components/footer/footer.css';
-        document.head.appendChild(footerCSS);
+        upsertHeadLink({
+          rel: 'stylesheet',
+          href: '/content/components/footer/footer.css',
+          dataset: { injectedBy: 'head-inline' },
+        });
 
         // Create site-footer custom element
         siteFooter = document.createElement('site-footer');
         siteFooter.setAttribute('src', '/content/components/footer/footer');
+        siteFooter.dataset.shell = 'true';
+        siteFooter.innerHTML = getFooterShellMarkup();
         document.body.appendChild(siteFooter);
+      }
 
-        // Load footer JS module
-        const footerJS = document.createElement('script');
-        footerJS.src = '/content/components/footer/footer.js';
-        footerJS.type = 'module';
-        document.body.appendChild(footerJS);
+      if (!customElements.get('site-footer')) {
+        const hasFooterScript = Array.from(
+          document.querySelectorAll('script[src]'),
+        ).some((script) =>
+          String(script.getAttribute('src') || '').includes(
+            '/content/components/footer/footer.js',
+          ),
+        );
+
+        if (!hasFooterScript) {
+          const footerScript = document.createElement('script');
+          footerScript.type = 'module';
+          footerScript.src = '/content/components/footer/footer.js';
+          footerScript.dataset.injectedBy = 'head-inline';
+          document.head.appendChild(footerScript);
+        }
       }
 
       // Component definitions werden durch SCRIPTS array geladen - nicht hier doppelt
     };
 
-    runWhenDomReady(run, { microtask: true });
+    if (document.body) {
+      run();
+      return;
+    }
+
+    const observer = new MutationObserver(() => {
+      if (!document.body) return;
+      observer.disconnect();
+      run();
+    });
+    observer.observe(document.documentElement, { childList: true });
   } catch (err) {
     log?.warn?.('head-inline: ensure footer/trigger setup failed', err);
   }
@@ -246,10 +336,9 @@ const injectCoreAssets = () => {
       if (p !== '/') return;
 
       upsertHeadLink({
-        rel: 'preload',
+        rel: 'prefetch',
         href: '/content/assets/img/earth/textures/earth_day.webp',
         as: 'image',
-        attrs: { fetchpriority: 'high' },
         dataset: { injectedBy: 'head-inline', lcp: 'hero-earth' },
       });
     };
@@ -331,10 +420,6 @@ const injectCoreAssets = () => {
       if (hasGa4MeasurementId) {
         resourceHints.preconnect('https://www.gstatic.com');
       }
-
-      // Preconnect to CDNs for analytics (dns-prefetch already in base-head.html)
-      resourceHints.preconnect('https://cdn.jsdelivr.net');
-      resourceHints.preconnect('https://esm.sh');
 
       const styles = getStylesForPath();
 

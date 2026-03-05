@@ -30,7 +30,6 @@ Aktueller Index der Projekt-Dokumentation.
 
 - [`CSS_GUIDE.md`](CSS_GUIDE.md)
 - [`SAFE_AREAS.md`](SAFE_AREAS.md)
-- [`LOADER_ARCHITECTURE.md`](LOADER_ARCHITECTURE.md)
 
 ## Hinweise
 

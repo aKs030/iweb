@@ -8,8 +8,19 @@ import { createLogger } from '../../../core/logger.js';
 import { resourceHints } from '../../../core/resource-hints.js';
 import { uiStore } from '../../../core/ui-store.js';
 import { withViewTransition } from '../../../core/view-transitions.js';
+import {
+  VIEW_TRANSITION_ROOT_CLASSES,
+  VIEW_TRANSITION_TYPES,
+} from '../../../core/view-transition-types.js';
+import { VIEW_TRANSITION_TIMINGS_MS } from '../../../core/view-transition-timings.js';
+import { setMenuOverlayState } from './MenuOverlayState.js';
 
 const log = createLogger('MenuSearch');
+const SEARCH_VIEW_TRANSITION_OPTIONS = Object.freeze({
+  rootClasses: [VIEW_TRANSITION_ROOT_CLASSES.MENU],
+  timeoutMs: VIEW_TRANSITION_TIMINGS_MS.SEARCH_TIMEOUT,
+  preserveLiveBackdropOnMobile: true,
+});
 
 export class MenuSearch {
   /**
@@ -293,9 +304,10 @@ export class MenuSearch {
 
     this.isOpen = true;
     uiStore.setState({ searchOpen: true });
-
-    withViewTransition(
+    void withViewTransition(
       () => {
+        setMenuOverlayState('search');
+
         header.classList.add('search-mode');
         panel.setAttribute('aria-hidden', 'false');
         this.syncSearchTriggerState(true);
@@ -303,20 +315,23 @@ export class MenuSearch {
         if (typeof this.setSearchPopupExpanded === 'function') {
           this.setSearchPopupExpanded(false);
         }
+
+        requestAnimationFrame(() => {
+          try {
+            input.focus({ preventScroll: true });
+          } catch {
+            input.focus();
+          }
+          input.select();
+        });
+
+        window.dispatchEvent(new CustomEvent('search:opened'));
       },
-      { types: ['search-open'] },
+      {
+        ...SEARCH_VIEW_TRANSITION_OPTIONS,
+        types: [VIEW_TRANSITION_TYPES.SEARCH_OPEN],
+      },
     );
-
-    requestAnimationFrame(() => {
-      try {
-        input.focus({ preventScroll: true });
-      } catch {
-        input.focus();
-      }
-      input.select();
-    });
-
-    window.dispatchEvent(new CustomEvent('search:opened'));
   }
 
   closeSearchMode(options = {}) {
@@ -330,8 +345,10 @@ export class MenuSearch {
     this.aiChatMessage = '';
     this.selectedIndex = -1;
 
-    withViewTransition(
+    void withViewTransition(
       () => {
+        setMenuOverlayState(null);
+
         if (header) {
           header.classList.remove('search-mode');
         }
@@ -348,15 +365,18 @@ export class MenuSearch {
         }
 
         this.renderSearchState({ hidden: true });
+
+        if (restoreFocus) {
+          this.trigger?.focus();
+        }
+
+        window.dispatchEvent(new CustomEvent('search:closed'));
       },
-      { types: ['search-close'] },
+      {
+        ...SEARCH_VIEW_TRANSITION_OPTIONS,
+        types: [VIEW_TRANSITION_TYPES.SEARCH_CLOSE],
+      },
     );
-
-    if (restoreFocus) {
-      this.trigger?.focus();
-    }
-
-    window.dispatchEvent(new CustomEvent('search:closed'));
   }
 
   clearSearchDebounce() {
@@ -1235,6 +1255,7 @@ export class MenuSearch {
 
   destroy() {
     this.closeSearchModeSilently();
+    setMenuOverlayState(null);
     this.clearSearchDebounce();
     this.abortSearchRequest();
     this.searchCache.clear();

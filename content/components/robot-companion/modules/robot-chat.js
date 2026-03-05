@@ -4,6 +4,7 @@ import { ROBOT_ACTIONS } from '../constants/events.js';
 import { uiStore } from '../../../core/ui-store.js';
 import { withViewTransition } from '../../../core/view-transitions.js';
 import { ChatHistoryStore } from './chat-history-store.js';
+import { VIEW_TRANSITION_TYPES } from '../../../core/view-transition-types.js';
 
 const log = createLogger('RobotChat');
 const DEFAULT_INPUT_PLACEHOLDER = 'Frag mich etwas...';
@@ -69,7 +70,11 @@ export class RobotChat {
     if (vtSupported && win) win.classList.add('vt-animating');
 
     withViewTransition(() => this._applyVisualChatState(newState), {
-      types: [newState ? 'chat-open' : 'chat-close'],
+      types: [
+        newState
+          ? VIEW_TRANSITION_TYPES.CHAT_OPEN
+          : VIEW_TRANSITION_TYPES.CHAT_CLOSE,
+      ],
     }).finally(() => {
       if (win) win.classList.remove('vt-animating');
     });
@@ -262,7 +267,7 @@ export class RobotChat {
         }
         this.scrollToBottom();
       },
-      { types: ['chat-tool-result'] },
+      { types: [VIEW_TRANSITION_TYPES.CHAT_TOOL_RESULT] },
     );
   }
 
@@ -464,7 +469,7 @@ export class RobotChat {
         this.scrollToBottom();
         this.syncComposerState();
       },
-      { types: ['chat-typing-show'] },
+      { types: [VIEW_TRANSITION_TYPES.CHAT_TYPING_SHOW] },
     );
   }
 
@@ -480,7 +485,7 @@ export class RobotChat {
         if (typingDiv) typingDiv.remove();
         this.syncComposerState();
       },
-      { types: ['chat-typing-hide'] },
+      { types: [VIEW_TRANSITION_TYPES.CHAT_TYPING_HIDE] },
     );
   }
 
@@ -518,7 +523,9 @@ export class RobotChat {
     };
 
     if (this.robot.dom.messages.offsetParent !== null) {
-      withViewTransition(renderFn, { types: ['chat-message-add'] });
+      withViewTransition(renderFn, {
+        types: [VIEW_TRANSITION_TYPES.CHAT_MESSAGE_ADD],
+      });
     } else {
       renderFn();
     }
@@ -559,7 +566,7 @@ export class RobotChat {
         }
         this.syncComposerState();
       },
-      { types: ['chat-clear'] },
+      { types: [VIEW_TRANSITION_TYPES.CHAT_CLEAR] },
     );
 
     void this._clearAgentHistory();
@@ -670,7 +677,7 @@ export class RobotChat {
               }
             }
           },
-          { types: ['chat-clear'] },
+          { types: [VIEW_TRANSITION_TYPES.CHAT_CLEAR] },
         );
 
         this.addMessage(

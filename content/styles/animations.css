@@ -109,6 +109,70 @@
   }
 }
 
+/* Typed VT: Menue-Panel beim Oeffnen/Schliessen */
+:root:active-view-transition-type(menu-open) {
+  &::view-transition-old(site-menu-panel) {
+    animation: none;
+  }
+  &::view-transition-new(site-menu-panel) {
+    animation: 260ms cubic-bezier(0.2, 0.8, 0.2, 1) both vt-menu-panel-in;
+  }
+}
+
+:root:active-view-transition-type(menu-close) {
+  &::view-transition-old(site-menu-panel) {
+    animation: 200ms cubic-bezier(0.4, 0, 1, 1) both vt-menu-panel-out;
+  }
+  &::view-transition-new(site-menu-panel) {
+    animation: none;
+  }
+}
+
+/* Typed VT: Search-Panel beim Oeffnen/Schliessen */
+:root:active-view-transition-type(search-open) {
+  &::view-transition-old(site-menu-search-panel) {
+    animation: none;
+  }
+  &::view-transition-new(site-menu-search-panel) {
+    animation: 220ms cubic-bezier(0.2, 0.8, 0.2, 1) both vt-menu-search-in;
+  }
+}
+
+:root:active-view-transition-type(search-close) {
+  &::view-transition-old(site-menu-search-panel) {
+    animation: 180ms cubic-bezier(0.4, 0, 1, 1) both vt-menu-search-out;
+  }
+  &::view-transition-new(site-menu-search-panel) {
+    animation: none;
+  }
+}
+
+/* Typed VT: Theme-Wechsel inkl. Root + Toggle-Icon */
+:root:active-view-transition-type(theme-change) {
+  &::view-transition-old(root) {
+    animation: 180ms ease-out both vt-theme-root-out;
+  }
+  &::view-transition-new(root) {
+    animation: 280ms ease-in both vt-theme-root-in;
+  }
+  &::view-transition-old(theme-toggle-control) {
+    animation: 180ms ease-in both vt-theme-icon-out;
+  }
+  &::view-transition-new(theme-toggle-control) {
+    animation: 260ms ease-out both vt-theme-icon-in;
+  }
+}
+
+/* Typed VT: Dynamischer Abschnitts-Swap (SectionManager) */
+:root:active-view-transition-type(section-swap) {
+  &::view-transition-old(section-swap-target) {
+    animation: 180ms ease-in both vt-section-swap-out;
+  }
+  &::view-transition-new(section-swap-target) {
+    animation: 280ms ease-out both vt-section-swap-in;
+  }
+}
+
 /* Keyframes — Chat VT */
 @keyframes vt-chat-out {
   from {
@@ -153,11 +217,125 @@
   }
 }
 
+@keyframes vt-menu-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes vt-menu-panel-out {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.99);
+  }
+}
+
+@keyframes vt-menu-search-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.992);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes vt-menu-search-out {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-3px) scale(0.995);
+  }
+}
+
+@keyframes vt-theme-root-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.94;
+  }
+}
+
+@keyframes vt-theme-root-in {
+  from {
+    opacity: 0.75;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes vt-theme-icon-out {
+  from {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.7) rotate(-60deg);
+  }
+}
+
+@keyframes vt-theme-icon-in {
+  from {
+    opacity: 0;
+    transform: scale(0.7) rotate(60deg);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes vt-section-swap-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes vt-section-swap-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   ::view-transition-old(robot-chat),
   ::view-transition-new(robot-chat),
   ::view-transition-old(loader-overlay),
-  ::view-transition-new(root) {
+  ::view-transition-new(root),
+  ::view-transition-old(site-menu-panel),
+  ::view-transition-new(site-menu-panel),
+  ::view-transition-old(site-menu-search-panel),
+  ::view-transition-new(site-menu-search-panel),
+  ::view-transition-old(theme-toggle-control),
+  ::view-transition-new(theme-toggle-control),
+  ::view-transition-old(section-swap-target),
+  ::view-transition-new(section-swap-target) {
     animation: none;
   }
 }

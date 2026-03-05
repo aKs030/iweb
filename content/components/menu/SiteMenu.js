@@ -106,24 +106,82 @@ class SiteMenu extends HTMLElement {
     return globalThis.__SITE_MENU_SHADOW__ === true;
   }
 
+  dedupeCssUrls(urls) {
+    return [...new Set((Array.isArray(urls) ? urls : []).filter(Boolean))];
+  }
+
+  getCssUrls() {
+    const fallbackUrls = [
+      '/content/components/menu/menu.css',
+      '/content/components/menu/menu-responsive.css',
+      '/content/components/menu/menu-backdrop.css',
+    ];
+    const configuredUrls = Array.isArray(this.config.CSS_URLS)
+      ? this.config.CSS_URLS
+      : this.config.CSS_URL
+        ? [this.config.CSS_URL]
+        : fallbackUrls;
+
+    return this.dedupeCssUrls(configuredUrls);
+  }
+
+  getGlobalCssUrls() {
+    return this.dedupeCssUrls(this.config.GLOBAL_CSS_URLS);
+  }
+
+  getShadowCssUrls(allCssUrls = this.getCssUrls()) {
+    if (Array.isArray(this.config.SHADOW_CSS_URLS)) {
+      return this.dedupeCssUrls(this.config.SHADOW_CSS_URLS);
+    }
+
+    const globalUrls = new Set(this.getGlobalCssUrls());
+    return allCssUrls.filter((cssUrl) => !globalUrls.has(cssUrl));
+  }
+
+  ensureHeadStyles(cssUrls, injectedBy = 'site-menu') {
+    if (!cssUrls.length) return;
+
+    for (const cssUrl of cssUrls) {
+      const existing = document.head.querySelector(`link[href="${cssUrl}"]`);
+      if (existing) continue;
+
+      upsertHeadLink({
+        rel: 'stylesheet',
+        href: cssUrl,
+        attrs: { media: 'all' },
+        dataset: { injectedBy },
+      });
+    }
+  }
+
   async ensureStyles() {
     if (typeof document === 'undefined') return;
+    const allCssUrls = this.getCssUrls();
+    if (allCssUrls.length === 0) return;
 
-    const cssUrl = this.config.CSS_URL || '/content/components/menu/menu.css';
     if (this.usesShadowDOM && this.shadowRoot) {
-      const sheet = await this.getShadowStylesheet(cssUrl);
+      this.ensureHeadStyles(this.getGlobalCssUrls(), 'site-menu-global');
 
-      if (sheet && 'adoptedStyleSheets' in this.shadowRoot) {
-        if (!this.shadowRoot.adoptedStyleSheets.includes(sheet)) {
-          this.shadowRoot.adoptedStyleSheets = [
-            ...this.shadowRoot.adoptedStyleSheets,
-            sheet,
-          ];
+      const shadowCssUrls = this.getShadowCssUrls(allCssUrls);
+      if (shadowCssUrls.length === 0) return;
+
+      const sheets = await this.getShadowStylesheets(shadowCssUrls);
+
+      if (sheets.length > 0 && 'adoptedStyleSheets' in this.shadowRoot) {
+        const mergedSheets = [...this.shadowRoot.adoptedStyleSheets];
+        for (const sheet of sheets) {
+          if (!mergedSheets.includes(sheet)) {
+            mergedSheets.push(sheet);
+          }
+        }
+
+        if (mergedSheets.length !== this.shadowRoot.adoptedStyleSheets.length) {
+          this.shadowRoot.adoptedStyleSheets = mergedSheets;
         }
         return;
       }
 
-      const cssText = await this.getShadowScopedCssText(cssUrl);
+      const cssText = await this.getShadowScopedCssTextBatch(shadowCssUrls);
       if (!cssText) return;
 
       if (!this.shadowStyleElement) {
@@ -136,15 +194,26 @@ class SiteMenu extends HTMLElement {
       return;
     }
 
-    const existing = document.head.querySelector(`link[href="${cssUrl}"]`);
-    if (existing) return;
+    this.ensureHeadStyles(allCssUrls, 'site-menu');
+  }
 
-    upsertHeadLink({
-      rel: 'stylesheet',
-      href: cssUrl,
-      attrs: { media: 'all' },
-      dataset: { injectedBy: 'site-menu' },
-    });
+  async getShadowScopedCssTextBatch(cssUrls) {
+    const chunks = await Promise.all(
+      cssUrls.map((cssUrl) => this.getShadowScopedCssText(cssUrl)),
+    );
+    return chunks.filter(Boolean).join('\n');
+  }
+
+  async getShadowStylesheets(cssUrls) {
+    const entries = await Promise.all(
+      cssUrls.map((cssUrl) => this.getShadowStylesheet(cssUrl)),
+    );
+    /** @type {CSSStyleSheet[]} */
+    const sheets = [];
+    for (const sheet of entries) {
+      if (sheet) sheets.push(sheet);
+    }
+    return sheets;
   }
 
   async getShadowScopedCssText(cssUrl) {
@@ -217,7 +286,7 @@ class SiteMenu extends HTMLElement {
       '$1:host-context(.site-header.search-mode)',
     );
 
-    return `:host { display: contents; }\n${withHostContext}`;
+    return withHostContext;
   }
 
   // Get current stats

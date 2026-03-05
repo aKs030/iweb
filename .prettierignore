@@ -7,6 +7,7 @@ dist/
 build/
 .vite/
 .wrangler/
+output/
 
 # Cache
 .cache/

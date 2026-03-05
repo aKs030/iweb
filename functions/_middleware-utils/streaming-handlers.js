@@ -14,15 +14,15 @@
 // ---------------------------------------------------------------------------
 
 /**
- * HTMLRewriter handler that replaces <!-- INJECT:BASE-HEAD --> and
- * <!-- INJECT:BASE-LOADER --> comment nodes with pre-loaded template HTML.
+ * HTMLRewriter handler that replaces <!-- INJECT:BASE-HEAD -->
+ * comment nodes with pre-loaded template HTML.
  *
  * Because HTMLRewriter processes the stream chunk-by-chunk, this avoids
  * buffering the entire document.
  */
 export class TemplateCommentHandler {
   /**
-   * @param {{ head: string, loader: string }} templates
+   * @param {{ head: string }} templates
    */
   constructor(templates) {
     this.templates = templates;
@@ -33,8 +33,6 @@ export class TemplateCommentHandler {
     const text = comment.text.trim();
     if (text === 'INJECT:BASE-HEAD' && this.templates.head) {
       comment.replace(this.templates.head, { html: true });
-    } else if (text === 'INJECT:BASE-LOADER' && this.templates.loader) {
-      comment.replace(this.templates.loader, { html: true });
     }
   }
 }

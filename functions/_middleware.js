@@ -28,13 +28,12 @@ import {
 
 // KV-Cache TTL für Templates: 1 Stunde
 const TEMPLATE_TTL_SECONDS = 3600;
-// Bump this whenever base-head/base-loader template markup changes.
-const TEMPLATE_CACHE_VERSION = '20260304-3';
+// Bump this whenever base-head template markup changes.
+const TEMPLATE_CACHE_VERSION = '20260304-8';
 
 // KV-Schlüssel für Template-Cache
 const KV_KEYS = {
   HEAD: `template:${TEMPLATE_CACHE_VERSION}:base-head`,
-  LOADER: `template:${TEMPLATE_CACHE_VERSION}:base-loader`,
 };
 
 /**
@@ -179,23 +178,16 @@ export async function onRequest(context) {
   // -----------------------------------------------------------------------
   const baseUrl = `${url.protocol}//${url.host}`;
 
-  const [upstreamResult, headTemplate, loaderTemplate, routeMeta] =
-    await Promise.all([
-      context.next().catch(() => null),
-      loadTemplateWithCache(
-        context.env,
-        KV_KEYS.HEAD,
-        `${baseUrl}/content/templates/base-head.html`,
-        context,
-      ),
-      loadTemplateWithCache(
-        context.env,
-        KV_KEYS.LOADER,
-        `${baseUrl}/content/templates/base-loader.html`,
-        context,
-      ),
-      buildRouteMeta(context, url).catch(() => null),
-    ]);
+  const [upstreamResult, headTemplate, routeMeta] = await Promise.all([
+    context.next().catch(() => null),
+    loadTemplateWithCache(
+      context.env,
+      KV_KEYS.HEAD,
+      `${baseUrl}/content/templates/base-head.html`,
+      context,
+    ),
+    buildRouteMeta(context, url).catch(() => null),
+  ]);
 
   if (!upstreamResult) {
     return new Response('Internal Server Error', { status: 500 });
@@ -229,12 +221,11 @@ export async function onRequest(context) {
   rewriter.on('section[data-section-src]', new SectionInjector(context));
 
   // 2. Template injection (replaces <!-- INJECT:BASE-HEAD --> etc.)
-  if (headTemplate || loaderTemplate) {
+  if (headTemplate) {
     rewriter.on(
       '*',
       new TemplateCommentHandler({
         head: headTemplate,
-        loader: loaderTemplate,
       }),
     );
   }

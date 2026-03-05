@@ -119,11 +119,68 @@ const loadThreeEarth = () => import('./three-earth-system.js');
 <link rel="preload" href="/assets/main.css" as="style" />
 ```
 
-#### Prefetch Next Page
+#### Speculation Rules API (Prerender Next Navigation)
 
 ```html
-<link rel="prefetch" href="/projekte" />
+<script type="speculationrules">
+  {
+    "prerender": [
+      {
+        "source": "document",
+        "where": {
+          "and": [
+            { "href_matches": "/*" },
+            { "not": { "href_matches": "/api/*" } },
+            { "not": { "href_matches": "/functions/*" } },
+            {
+              "not": {
+                "selector_matches": "a[download],a[href^=\"#\"],a[href*=\"?\"],a[target=\"_blank\"],a[href$=\".pdf\"],a[href$=\".zip\"],a[href$=\".mp4\"],a[data-no-speculate],a[data-no-prerender]"
+              }
+            }
+          ]
+        },
+        "eagerness": "moderate"
+      }
+    ],
+    "prefetch": [
+      {
+        "source": "list",
+        "urls": ["/projekte/", "/gallery/", "/videos/"],
+        "eagerness": "conservative"
+      }
+    ]
+  }
+</script>
 ```
+
+> Hinweis: Die `urls`-Liste wird zur Laufzeit aus internen Links abgeleitet und mit Kernrouten kombiniert.
+
+**Why this is better than only `prefetch`:**
+
+- Allows full page prerendering (not just resource download)
+- Near-instant route transitions when prerender succeeds
+- Uses `eagerness: "moderate"` to avoid overly aggressive background work
+
+**Runtime behavior in this project:**
+
+- Browser supports Speculation Rules: adaptive `prerender` + targeted `prefetch` is enabled.
+- Core routes come from defaults and are enriched dynamically from internal links (`.site-menu`, `header`, `main`).
+- Adaptive budgets are device-aware:
+  - Low-end (RAM/CPU-limitiert): prefetch-focused, prerender disabled.
+  - Mid-tier: smaller route lists + conservative prerender.
+  - High-tier: broader route coverage; home can use `moderate` eagerness.
+- Intent-based optimization: hover warmup is debounced; committed intent (`pointerdown`) promotes route priority.
+- Browser does not support Speculation Rules: automatic `<link rel="prefetch">` fallback is used.
+- On constrained connections (`Save-Data` or `2g`), speculative loading is skipped to protect bandwidth.
+- Exclusions are enforced for API/function endpoints, query links, downloads, media files, and `target="_blank"` links.
+
+**Operational controls and observability:**
+
+- Kill switch via runtime flag: `window.__DISABLE_SPECULATION__ = true`
+- Optional URL switch for debugging: `?speculation=off`
+- Optional local override: `localStorage.setItem('iweb-speculation', 'off')`
+- Prerender activation metric: `performance.getEntriesByType('navigation')[0].activationStart`
+- Custom event on hit: `speculation:activation`
 
 #### DNS Prefetch
 
@@ -219,7 +276,8 @@ initPerformanceMonitoring();
 ### 5. Improve Loading
 
 - Preload critical resources
-- Prefetch next pages
+- Avoid blocking full-screen loaders; render immediately with skeletons and defer heavy modules
+- Use Speculation Rules API for prerendering (plus `prefetch` fallback)
 - Use service worker
 - Implement HTTP/2 push
 
@@ -301,7 +359,7 @@ The project provides a unified model loader at `/content/core/model-loader.js`:
 ```javascript
 import { loadCompressedModel } from '/content/core/model-loader.js';
 
-const gltf = await loadCompressedModel('/content/assets/models/robot.glb');
+const gltf = await loadCompressedModel('/content/assets/robot.glb');
 scene.add(gltf.scene);
 ```
 
@@ -312,7 +370,8 @@ scene.add(gltf.scene);
 
 ### Compression Workflow
 
-See [`../content/assets/models/README.md`](../content/assets/models/README.md) for CLI commands, file naming conventions, and compression comparison.
+Use your existing GLB/GLTF compression pipeline and keep deployment paths consistent per route.
+`loadCompressedModel()` remains path-agnostic and works with any valid model URL.
 
 ---
 

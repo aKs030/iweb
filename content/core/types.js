@@ -103,13 +103,10 @@
  * @property {number} [DEBOUNCE_DELAY] - Generic debounce delay in milliseconds
  * @property {number} [ANNOUNCEMENT_DELAY] - A11y live-region announce delay
  * @property {number} [ICON_CHECK_DELAY] - Icon check delay
- * @property {number} [TITLE_TRANSITION_DELAY] - Title transition delay
  * @property {number} [SEARCH_DEBOUNCE] - Header search debounce delay in milliseconds
  * @property {number} [SEARCH_TOP_K] - Number of search results to request
  * @property {number} [MOBILE_BREAKPOINT] - Mobile/menu breakpoint (px)
  * @property {number} [TABLET_BREAKPOINT] - Tablet breakpoint fallback (px)
- * @property {number} [SMALL_BREAKPOINT] - Extra small breakpoint (px)
- * @property {number} [SUBTITLE_HIDE_BREAKPOINT] - Subtitle collapse breakpoint (px)
  */
 
 /**

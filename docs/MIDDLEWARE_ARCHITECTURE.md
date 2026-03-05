@@ -29,7 +29,7 @@ functions/
 
 **Funktionen:**
 
-- ✅ Template Injection (BASE-HEAD, BASE-LOADER)
+- ✅ Template Injection (BASE-HEAD)
 - ✅ www-Redirect (abdulkerimsesli.de → www.abdulkerimsesli.de)
 - ✅ HTML Response Processing
 - ✅ Überspringt API-Routes

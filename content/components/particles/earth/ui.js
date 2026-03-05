@@ -12,23 +12,15 @@ import {
 const log = createLogger('EarthUI');
 
 /*
-  Earth UI Loader
-  - Uses the global page loader (id: #app-loader) with neon progress UI.
-  - This module only toggles visibility and can hint a status message while
-    the Earth system spins up.
+  Earth loading UI
+  - Publishes loading progress through AppLoadManager events.
+  - Maintains aria-busy state on the Earth container.
+  - Does not depend on legacy loader overlay DOM.
 */
-
-function getGlobalLoaderElements() {
-  const overlay = document.getElementById('app-loader');
-  const text = document.getElementById('loader-status-text');
-  if (!overlay) return null;
-  return { overlay, text };
-}
 
 export function showLoadingState(container, progress) {
   if (!container) return;
 
-  // Use the new global loader utility
   if (typeof progress === 'number') {
     const pct = Math.round(progress * 100);
     AppLoadManager.updateLoader(progress, i18n.t('loader.loading_3d', { pct }));
@@ -36,72 +28,22 @@ export function showLoadingState(container, progress) {
     AppLoadManager.updateLoader(0, i18n.t('loader.init_3d_engine'));
   }
 
-  // Legacy support: Update overlay directly if needed
-  const overlay = document.getElementById('app-loader');
-  if (overlay && overlay.dataset.loaderDone === 'true') return;
-
-  if (overlay) {
-    overlay.classList.remove('fade-out', 'hidden');
-    overlay.removeAttribute('aria-hidden');
-    overlay.setAttribute('aria-live', 'polite');
-    overlay.setAttribute('role', 'status');
-    Object.assign(overlay.style, {
-      display: 'flex',
-      opacity: '1',
-      pointerEvents: 'auto',
-      visibility: 'visible',
-    });
-
-    if (typeof progress === 'number') {
-      overlay.setAttribute('aria-valuenow', String(Math.round(progress * 100)));
-      overlay.setAttribute('aria-valuemin', '0');
-      overlay.setAttribute('aria-valuemax', '100');
-    } else {
-      overlay.removeAttribute('aria-valuenow');
-      overlay.removeAttribute('aria-valuemin');
-      overlay.removeAttribute('aria-valuemax');
-    }
-
-    try {
-      document.body.classList.add('global-loading-visible');
-    } catch (err) {
-      log.warn('EarthUI: add global-loading-visible failed', err);
-    }
-  }
+  container.setAttribute('aria-busy', 'true');
+  container.dataset.earthLoading = '1';
 }
 
 export function hideLoadingState(container) {
   if (!container) return;
 
-  const globals = getGlobalLoaderElements();
-  if (globals?.overlay) {
-    globals.overlay.classList.add('fade-out');
-    globals.overlay.setAttribute('aria-hidden', 'true');
-    globals.overlay.removeAttribute('aria-live');
-
-    setTimeout(() => {
-      if (globals.overlay) globals.overlay.style.display = 'none';
-      try {
-        document.body.classList.remove('global-loading-visible');
-      } catch (err) {
-        log.warn('EarthUI: remove global-loading-visible failed', err);
-      }
-    }, 800);
-  } else {
-    // No local progress UI to clear; do nothing.
-  }
+  container.setAttribute('aria-busy', 'false');
+  delete container.dataset.earthLoading;
 }
 
 export function showErrorState(container, error, retryCallback) {
   if (!container) return;
 
-  // Hide global loader to reveal page error/fallback
-  const globals = getGlobalLoaderElements();
-  if (globals?.overlay) {
-    globals.overlay.classList.add('fade-out');
-    // Ensure loader fully hides
-    hideLoadingState(container);
-  }
+  container.setAttribute('aria-busy', 'false');
+  delete container.dataset.earthLoading;
 
   container.classList.add('error');
 

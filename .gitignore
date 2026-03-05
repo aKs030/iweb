@@ -50,6 +50,7 @@ coverage/
 *.bak
 *.old
 .playwright-cli/
+output/
 
 # Other lockfiles (npm lockfile is tracked)
 yarn.lock
@@ -60,9 +61,6 @@ OPTIMIZATION_REPORT.md
 OPTIMIZATION_SUMMARY.md
 FINAL_OPTIMIZATION_REPORT.md
 reports/redirect-audit/
-
-# 3D Model Sources (uncompressed originals — do NOT deploy)
-content/assets/models/source/
 
 # Cloudflare
 wrangler.toml.backup
