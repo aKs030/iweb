@@ -1,6 +1,6 @@
 /**
  * Simple Section Manager
- * @version 2.0.0
+ * @version 2.1.0
  */
 
 import { createLogger } from './logger.js';
@@ -13,6 +13,7 @@ import {
   VIEW_TRANSITION_TYPES,
 } from './view-transition-types.js';
 import { VIEW_TRANSITION_TIMINGS_MS } from './view-transition-timings.js';
+
 const log = createLogger('SectionManager');
 const SECTION_SWAP_VT_NAME = 'section-swap-target';
 
@@ -127,6 +128,7 @@ export class SectionManager {
     if (this._initialized) return;
     this._initialized = true;
 
+    // Handle sections still needing client-side fetch
     document
       .querySelectorAll('section[data-section-src]')
       .forEach((section) => {
@@ -145,6 +147,18 @@ export class SectionManager {
             { rootMargin: '100px' },
           );
           this._observer.observe(section);
+        }
+      });
+
+    // Handle edge-rendered sections (data-section-src removed by middleware v6+)
+    // These just need i18n translation since their HTML is already injected.
+    document
+      .querySelectorAll('section[data-ssr-loaded]:not([data-section-src])')
+      .forEach((section) => {
+        if (!this.loadedSections.has(section)) {
+          this.loadedSections.add(section);
+          i18n.translateElement(section);
+          log.debug(`Section ${section.id} hydrated from Edge SSR`);
         }
       });
   }
