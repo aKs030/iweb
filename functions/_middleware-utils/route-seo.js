@@ -40,9 +40,13 @@ function normalizeSlug(value) {
 function humanizeSlug(value) {
   return String(value || '')
     .split(/[-_]+/)
-    .map((segment) => segment.trim())
-    .filter(Boolean)
-    .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
+    .reduce((acc, rawSegment) => {
+      const segment = rawSegment.trim();
+      if (segment) {
+        acc.push(segment.charAt(0).toUpperCase() + segment.slice(1));
+      }
+      return acc;
+    }, [])
     .join(' ');
 }
 
