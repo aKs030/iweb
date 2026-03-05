@@ -168,7 +168,7 @@ async function startDevServer(port, timeoutMs) {
     child.once('exit', (code, signal) => {
       reject(
         new Error(
-          `Dev server exited before readiness (code=${code ?? 'null'}, signal=${signal ?? 'null'})`,
+          `Dev server exited before readiness (code=${code ?? 'null'}, signal=${signal ?? 'null'}).\nLogs:\n${logs.join('\n')}`,
         ),
       );
     });

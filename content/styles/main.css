@@ -491,37 +491,6 @@ a:hover {
 
 /* ===== END RESPONSIVE ===== */
 
-/* ===== PRINT STYLES ===== */
-
-@media print {
-  body {
-    color: var(--clr-black);
-    background: var(--clr-white);
-    font-size: 12pt;
-  }
-
-  .container {
-    max-width: var(--size-900);
-    margin: 0 auto;
-    width: 100%;
-  }
-
-  a {
-    color: var(--clr-black);
-    text-decoration: underline;
-  }
-
-  button,
-  .btn {
-    display: none;
-  }
-
-  * {
-    animation: none;
-    transition: none;
-  }
-}
-
 .network-status-indicator {
   position: fixed;
   left: 50%;
@@ -601,4 +570,33 @@ a:hover {
   background: var(--primary-color);
 }
 
+/* ===== PRINT STYLES ===== */
+@media print {
+  body {
+    color: var(--clr-black);
+    background: var(--clr-white);
+    font-size: 12pt;
+  }
+
+  .container {
+    max-width: var(--size-900);
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  a {
+    color: var(--clr-black);
+    text-decoration: underline;
+  }
+
+  button,
+  .btn {
+    display: none;
+  }
+
+  * {
+    animation: none;
+    transition: none;
+  }
+}
 /* ===== END PRINT STYLES ===== */
