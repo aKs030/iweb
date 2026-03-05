@@ -355,6 +355,10 @@ async function resolveUserIdentity(
     }
   }
 
+  // Priority:
+  // 1) Name-based Cloudflare mapping (cross-browser recognition)
+  // 2) Explicit body/header userId for current runtime session continuity
+  // 3) Fresh generated ID when no identity signal exists
   const resolvedUserId =
     nameMatchUserId || bodyUserId || headerUserId || createUserId();
 
@@ -385,7 +389,7 @@ function appendExposeHeader(headers, name) {
   }
 }
 
-function withUserCookie(headers, userId) {
+function withUserIdHeader(headers, userId) {
   const out = new Headers(headers);
   if (userId) {
     out.set('X-Jules-User-Id', userId);
@@ -2028,8 +2032,8 @@ export async function onRequestPost(context) {
       toOpenAiTool(tool),
     );
     const availableToolNames = allowedToolDefinitions.map((tool) => tool.name);
-    const jsonHeaders = withUserCookie(corsHeaders, userId);
-    const sseResponseHeaders = withUserCookie(sseHeaders, userId);
+    const jsonHeaders = withUserIdHeader(corsHeaders, userId);
+    const sseResponseHeaders = withUserIdHeader(sseHeaders, userId);
 
     if (!prompt && !imageAnalysis) {
       return Response.json(
