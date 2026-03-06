@@ -135,7 +135,7 @@ textarea:focus-visible {
   }
 
   /* Mobile adjustments */
-  @media (width <= 480px) {
+  @media (width <=480px) {
     min-width: var(--btn-min-width-mobile);
   }
 }
@@ -174,7 +174,7 @@ main {
   }
 }
 
-@media (width <= 768px) {
+@media (width <=768px) {
   .section.features,
   .section.about {
     padding-block: clamp(var(--size-r-2-5), 8vw, var(--size-r-3-5));
@@ -188,7 +188,7 @@ main {
 /* Base Styles */
 html {
   width: 100%;
-  background: var(--bg-primary);
+  background: var(--route-page-bg, var(--bg-primary));
   scroll-behavior: smooth;
 }
 
@@ -198,8 +198,10 @@ html {
 
 body {
   width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
   overflow-x: hidden;
-  scroll-padding-top: var(--content-top-offset);
+  scroll-padding-top: var(--route-scroll-padding-top);
   transition: padding-bottom var(--transition-base);
   -webkit-font-smoothing: antialiased;
   font-kerning: normal;
@@ -212,11 +214,25 @@ body {
   background: transparent;
   color: var(--text-primary);
   margin: 0;
-  padding-top: var(--content-top-offset);
-  padding-bottom: var(--content-bottom-offset);
-  padding-left: var(--safe-left);
-  padding-right: var(--safe-right);
+  padding-top: max(var(--route-shell-pad-top), env(safe-area-inset-top, 0px));
+  padding-bottom: max(
+    var(--route-shell-pad-bottom),
+    env(safe-area-inset-bottom, 0px)
+  );
+  padding-left: max(
+    var(--route-shell-pad-left),
+    env(safe-area-inset-left, 0px)
+  );
+  padding-right: max(
+    var(--route-shell-pad-right),
+    env(safe-area-inset-right, 0px)
+  );
   position: relative;
+}
+
+body.blog-page {
+  padding: 0 !important;
+  margin: 0 !important;
 }
 
 *,
@@ -433,7 +449,7 @@ a:hover {
 /* ===== RESPONSIVE: MOBILE & TABLET ===== */
 
 /* Tablet and Mobile breakpoint */
-@media (width <= 768px) {
+@media (width <=768px) {
   html {
     font-size: var(--size-15);
   }
@@ -444,7 +460,7 @@ a:hover {
 }
 
 /* Mobile breakpoint (small) */
-@media (width <= 600px) {
+@media (width <=600px) {
   .about-page main.container {
     padding-top: calc(var(--menu-height-mobile) + var(--space-5));
   }
@@ -457,7 +473,7 @@ a:hover {
 }
 
 /* Mobile breakpoint (narrow) */
-@media (width <= 480px) {
+@media (width <=480px) {
   .container {
     max-width: 100%;
     padding-inline: max(var(--space-2), var(--safe-left));
@@ -475,7 +491,7 @@ a:hover {
 }
 
 /* Mobile breakpoint (compact) */
-@media (width <= 375px) {
+@media (width <=375px) {
   html {
     font-size: var(--size-14);
   }
@@ -599,4 +615,5 @@ a:hover {
     transition: none;
   }
 }
+
 /* ===== END PRINT STYLES ===== */
