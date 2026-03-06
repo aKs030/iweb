@@ -4,7 +4,7 @@
 body.blog-page {
   color: var(--clr-slate-200);
   line-height: 1.6;
-  background: transparent !important;
+  background-color: #080c16 !important;
   scroll-behavior: smooth;
   padding-top: 0;
   padding-bottom: 0;
@@ -15,7 +15,8 @@ body.blog-page {
   inset: 0;
   z-index: var(--z-none);
   pointer-events: none;
-  background:
+  background-color: #080c16;
+  background-image:
     radial-gradient(
       ellipse at 20% 30%,
       color-mix(in srgb, var(--clr-blue-500) 15%, transparent) 0%,

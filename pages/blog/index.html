@@ -15,16 +15,17 @@
     <link rel="canonical" href="https://www.abdulkerimsesli.de/blog/" />
     <!-- OG/Twitter tags are injected server-side by middleware SEO handler -->
     <link rel="stylesheet" href="/pages/blog/blog.css" />
-    <script>
-      // Override global theme-color for the blog page to match its blueish gradient
-      document.addEventListener('DOMContentLoaded', () => {
-        document.querySelectorAll('meta[name="theme-color"]').forEach((tag) => {
-          if (tag.getAttribute('media') === '(prefers-color-scheme: dark)') {
-            tag.setAttribute('content', '#080c16');
-          }
-        });
-      });
-    </script>
+    <!-- Override global theme-color for the blog page to match its blueish gradient -->
+    <meta
+      name="theme-color"
+      content="#080c16"
+      media="(prefers-color-scheme: dark)"
+    />
+    <meta
+      name="theme-color"
+      content="#080c16"
+      media="(prefers-color-scheme: light)"
+    />
   </head>
   <body class="blog-page">
     <a href="#main-content" class="skip-link sr-only"
