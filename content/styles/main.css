@@ -198,6 +198,8 @@ html {
 
 body {
   width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
   overflow-x: hidden;
   scroll-padding-top: var(--content-top-offset);
   transition: padding-bottom var(--transition-base);

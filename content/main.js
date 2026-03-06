@@ -26,6 +26,7 @@ import {
   initServiceWorkerLifecycle,
 } from '#core/sw-registration.js';
 import { initThemeState } from '#core/theme-state.js';
+import '#components/pwa-prompt.js';
 
 const log = createLogger('main');
 const appTimers = new TimerManager('Main');
