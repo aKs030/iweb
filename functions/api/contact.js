@@ -240,17 +240,30 @@ export async function onRequestPost({ request, env }) {
     });
 
     if (!resendResponse.ok) {
-      await resendResponse.text(); // Consume response body
       return new Response(
         JSON.stringify({
-          error:
-            'Fehler beim Senden der E-Mail. Bitte versuchen Sie es später erneut.',
+          error: 'Fehler beim Senden der E-Mail.',
         }),
         {
           status: 500,
           headers: buildJsonHeaders(corsHeaders),
         },
       );
+    }
+
+    // Save to Database for Admin Dashboard
+
+    if (env.DB_LIKES) {
+      try {
+        await env.DB_LIKES.prepare(
+          'INSERT INTO contact_messages (name, email, subject, message) VALUES (?, ?, ?, ?)',
+        )
+          .bind(name, email, subject || 'Kein Betreff', message)
+          .run();
+      } catch (dbError) {
+        console.error('Failed to save contact message to DB:', dbError);
+        // We continue anyway since the email was sent successfully
+      }
     }
 
     const data = await resendResponse.json();

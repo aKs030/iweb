@@ -63,7 +63,7 @@ export async function onRequestPost(context) {
       if (body.project_id) {
         projectId = body.project_id;
       }
-    } catch (e) {
+    } catch {
       // ignore
     }
   }

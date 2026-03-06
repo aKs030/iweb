@@ -48,7 +48,7 @@ export const CommentSection = ({ postId }) => {
       } else {
         setError(data.error || 'Fehler beim Senden');
       }
-    } catch (e) {
+    } catch {
       setError('Netzwerkfehler');
     } finally {
       setSubmitting(false);
