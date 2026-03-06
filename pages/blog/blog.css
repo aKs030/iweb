@@ -6,6 +6,7 @@ body.blog-page {
   line-height: 1.6;
   background: transparent !important;
   scroll-behavior: smooth;
+  padding-top: 0;
 }
 
 .blog-3d-background {
@@ -42,6 +43,7 @@ body.blog-page #main-content {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  padding-top: var(--content-top-offset);
 }
 
 @keyframes blogShimmer {
