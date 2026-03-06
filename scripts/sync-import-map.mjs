@@ -6,7 +6,7 @@ import prettier from 'prettier';
 const cwd = process.cwd();
 const checkOnly = process.argv.includes('--check');
 const packageJsonPath = path.join(cwd, 'package.json');
-const templatePath = path.join(cwd, 'content/templates/base-head.html');
+const templatePath = path.join(cwd, 'content/templates/global-head.html');
 const generatedConfigPath = path.join(
   cwd,
   'content/config/import-map.generated.js',
@@ -100,7 +100,7 @@ if (
   !currentTemplate.includes(templateStartMarker) ||
   !currentTemplate.includes(templateEndMarker)
 ) {
-  throw new Error('Import map markers missing in base-head.html');
+  throw new Error('Import map markers missing in global-head.html');
 }
 
 const nextTemplate = currentTemplate.replace(
