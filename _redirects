@@ -38,6 +38,8 @@
 /datenschutz  /datenschutz/  301
 /impressum    /impressum/    301
 /ai-info/     /ai-info       301
+/admin        /pages/admin.html 301
+
 
 # Search & API
 /search       /              302

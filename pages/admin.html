@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard | Portfolio</title>
+    <link rel="stylesheet" href="/content/styles/admin.css" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+  <body class="admin-page">
+    <!-- Auth Overlay -->
+    <div id="auth-overlay" class="auth-overlay">
+      <div class="auth-card">
+        <h2>Admin Zugang</h2>
+        <p style="color: var(--text-muted); margin-bottom: 2rem">
+          Bitte gib das Admin-Passwort ein.
+        </p>
+        <input
+          type="password"
+          id="admin-password"
+          class="auth-input"
+          placeholder="Passwort..."
+        />
+        <button id="login-button" class="auth-button">Einloggen</button>
+        <p
+          id="auth-error"
+          style="color: var(--clr-red-500); margin-top: 1rem; display: none"
+        >
+          Falsches Passwort!
+        </p>
+      </div>
+    </div>
+
+    <div class="admin-container">
+      <header class="admin-header">
+        <div>
+          <h1>Dashboard</h1>
+          <p
+            id="last-update"
+            style="color: var(--text-muted); font-size: 0.9rem"
+          >
+            Lädt...
+          </p>
+        </div>
+        <button
+          id="refresh-button"
+          class="auth-button"
+          style="width: auto; padding: 0.5rem 1rem"
+        >
+          Aktualisieren
+        </button>
+      </header>
+
+      <main id="admin-main" style="display: none">
+        <!-- Key Stats -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Gesamt Likes</div>
+            <div id="total-likes" class="stat-value">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Meiste Likes</div>
+            <div
+              id="top-project"
+              class="stat-value"
+              style="font-size: 1.2rem; margin-top: 0.5rem"
+            >
+              -
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Feedback Einträge</div>
+            <div id="feedback-count" class="stat-value">0</div>
+          </div>
+        </div>
+
+        <!-- Detailed Stats -->
+        <section class="admin-section">
+          <h2>
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l9.78-9.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
+              ></path>
+            </svg>
+            Projekt Likes
+          </h2>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Projekt ID</th>
+                <th>Likes</th>
+              </tr>
+            </thead>
+            <tbody id="likes-table-body">
+              <!-- Filled by JS -->
+            </tbody>
+          </table>
+        </section>
+
+        <!-- Latest Feedback -->
+        <section class="admin-section">
+          <h2>
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"
+              ></path>
+            </svg>
+            Neuestes Feedback & Gedanken
+          </h2>
+          <div id="comments-list" class="comments-list">
+            <!-- Filled by JS -->
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      const API_URL = '/api/admin/stats';
+      const STORAGE_KEY = 'admin_token';
+
+      const authOverlay = document.getElementById('auth-overlay');
+      const loginButton = document.getElementById('login-button');
+      const passwordInput = document.getElementById('admin-password');
+      const adminMain = document.getElementById('admin-main');
+      const authError = document.getElementById('auth-error');
+      const refreshButton = document.getElementById('refresh-button');
+
+      async function fetchData() {
+        const token = localStorage.getItem(STORAGE_KEY);
+        if (!token) {
+          showAuth();
+          return;
+        }
+
+        try {
+          const response = await fetch(API_URL, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+
+          if (response.status === 401) {
+            showAuth();
+            return;
+          }
+
+          if (!response.ok) throw new Error('Fehler beim Laden');
+
+          const data = await response.json();
+          updateUI(data);
+          hideAuth();
+        } catch (err) {
+          console.error(err);
+          alert('Daten konnten nicht geladen werden.');
+        }
+      }
+
+      function updateUI(data) {
+        // Stats
+        const totalLikes = data.likes.reduce(
+          (acc, curr) => acc + curr.likes,
+          0,
+        );
+        document.getElementById('total-likes').innerText = totalLikes;
+
+        if (data.likes.length > 0) {
+          const top = data.likes[0];
+          document.getElementById('top-project').innerText =
+            `${top.project_id} (${top.likes})`;
+        }
+
+        document.getElementById('feedback-count').innerText =
+          data.comments.length;
+        document.getElementById('last-update').innerText =
+          `Letztes Update: ${new Date(data.timestamp).toLocaleTimeString()}`;
+
+        // Likes Table
+        const likesBody = document.getElementById('likes-table-body');
+        likesBody.innerHTML = data.likes
+          .map(
+            (item) => `
+                <tr>
+                    <td>${item.project_id}</td>
+                    <td>${item.likes}</td>
+                </tr>
+            `,
+          )
+          .join('');
+
+        // Comments List
+        const commentsList = document.getElementById('comments-list');
+        commentsList.innerHTML = data.comments
+          .map(
+            (c) => `
+                <div class="comment-item">
+                    <div class="comment-meta">
+                        <span class="comment-author">${c.author_name}</span>
+                        <span class="comment-date">${new Date(c.created_at).toLocaleString()}</span>
+                    </div>
+                    <p class="comment-content">${c.content}</p>
+                    <span class="comment-post">Post: ${c.post_id}</span>
+                </div>
+            `,
+          )
+          .join('');
+
+        adminMain.style.display = 'block';
+      }
+
+      function showAuth() {
+        authOverlay.classList.remove('hidden');
+        adminMain.style.display = 'none';
+      }
+
+      function hideAuth() {
+        authOverlay.classList.add('hidden');
+        adminMain.style.display = 'block';
+      }
+
+      loginButton.addEventListener('click', () => {
+        const password = passwordInput.value;
+        localStorage.setItem(STORAGE_KEY, password);
+        fetchData();
+      });
+
+      passwordInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') loginButton.click();
+      });
+
+      refreshButton.addEventListener('click', fetchData);
+
+      // Initial load
+      if (localStorage.getItem(STORAGE_KEY)) {
+        fetchData();
+      }
+    </script>
+  </body>
+</html>
