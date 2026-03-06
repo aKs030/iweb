@@ -9,9 +9,11 @@ export class PwaPrompt extends HTMLElement {
     if (localStorage.getItem(this.storageKey)) return;
 
     // Nur auf iOS Apple-Geräten anzeigen, die NICHT im Standalone (App) Modus sind
-    const isIos = /iphone|ipad|ipod/.test(
-      window.navigator.userAgent.toLowerCase(),
-    );
+    // iPadOS 13+ meldet sich oft als "Macintosh" Desktop, kann aber über maxTouchPoints identifiziert werden
+    const ua = window.navigator.userAgent.toLowerCase();
+    const isIos =
+      /iphone|ipad|ipod/.test(ua) ||
+      (ua.includes('macintosh') && navigator.maxTouchPoints > 1);
     const isStandalone =
       'standalone' in window.navigator && window.navigator.standalone;
 
