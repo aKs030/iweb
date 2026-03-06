@@ -1,3 +1,5 @@
+@import '/content/components/interactions/interactions.css';
+
 /* Blog 3D Design System */
 body.blog-page {
   color: var(--clr-slate-200);
@@ -23,6 +25,7 @@ body.blog-page {
       transparent 50%
     );
 }
+
 #blog-particles-canvas {
   width: 100%;
   height: 100%;
@@ -45,16 +48,19 @@ body.blog-page #main-content {
   0% {
     background-position: calc(var(--size-1000) * -1) 0;
   }
+
   100% {
     background-position: var(--size-1000) 0;
   }
 }
+
 @keyframes cardFloat {
   0%,
   100% {
     transform: translateZ(var(--size-30)) rotateX(5deg) scale(1.02)
       translateY(0);
   }
+
   50% {
     transform: translateZ(var(--size-35)) rotateX(5deg) scale(1.02)
       translateY(calc(var(--size-5) * -1));
@@ -69,6 +75,7 @@ body.blog-page #main-content {
   min-height: calc(var(--viewport-height) * 0.5);
   padding: var(--size-r-2);
 }
+
 .blog-post-view,
 .blog-list-view {
   max-width: var(--size-1400);
@@ -80,6 +87,7 @@ body.blog-page #main-content {
   padding: var(--size-r-1) 0 var(--size-r-1-5);
   margin-bottom: var(--size-r-1);
 }
+
 .blog-header h1 {
   font-size: clamp(var(--size-r-1-75), 4vw, var(--size-r-2-5));
   font-weight: 800;
@@ -94,6 +102,7 @@ body.blog-page #main-content {
   -webkit-text-fill-color: transparent;
   line-height: 1.2;
 }
+
 .blog-subtitle {
   font-size: var(--size-r-0-95);
   color: color-mix(in srgb, var(--clr-slate-200) 80%, transparent);
@@ -948,8 +957,9 @@ body.blog-page .btn-back:hover {
     box-shadow: none;
   }
 }
+
 /* Mobile adjustments for header height */
-@media (width <= 900px) {
+@media (width <=900px) {
   body.blog-page #main-content {
     min-height: calc(
       var(--viewport-height) - var(--content-top-offset) -

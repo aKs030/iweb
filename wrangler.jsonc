@@ -59,6 +59,16 @@
     },
   ],
 
+  // D1 Database Binding für Portfolio Likes/Claps
+  "d1_databases": [
+    {
+      "binding": "DB_LIKES",
+      "database_name": "portfolio-likes",
+      "database_id": "a5d566b6-19c2-4238-8294-236479b02a97",
+      "migrations_dir": "migrations",
+    },
+  ],
+
   "ai": {
     "binding": "AI",
     "remote": true,
@@ -116,6 +126,14 @@
         {
           "binding": "GALLERY_BUCKET",
           "bucket_name": "img",
+        },
+      ],
+      "d1_databases": [
+        {
+          "binding": "DB_LIKES",
+          "database_name": "portfolio-likes",
+          "database_id": "a5d566b6-19c2-4238-8294-236479b02a97",
+          "migrations_dir": "migrations",
         },
       ],
       "ai": {

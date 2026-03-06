@@ -16,6 +16,7 @@ import { createPortal } from 'react-dom';
 import { useProjects } from './hooks/useProjects.js';
 import { ThreeScene } from './components/ThreeScene.js';
 import * as Icons from '#components/icons/icons.js';
+import { LikeButton } from '#components/interactions/index.js';
 import { i18n } from '#core/i18n.js';
 import { createErrorBoundary } from '#components/ErrorBoundary.js';
 
@@ -596,6 +597,12 @@ const App = () => {
           ),
           h('h1', { className: 'hud-title' }, activeProject.title),
           h('p', { className: 'hud-desc' }, activeProject.description),
+
+          // Dynamic Edge Likes/Claps
+          h(LikeButton, {
+            id: normalizeProjectSlug(activeProject.title || activeProject.name),
+            type: 'project',
+          }),
 
           // Case Study expandable section
           activeProject.caseStudy &&

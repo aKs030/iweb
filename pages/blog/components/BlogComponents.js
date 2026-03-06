@@ -6,6 +6,7 @@
 import React from 'react';
 import htm from 'htm';
 import { ArrowUp } from '#components/icons/icons.js';
+import { LikeButton } from '#components/interactions/index.js';
 
 const html = htm.bind(React.createElement);
 
@@ -60,4 +61,8 @@ export const ScrollToTop = () => {
       <${ArrowUp} />
     </button>
   `;
+};
+
+export const BlogLikes = ({ id }) => {
+  return html`<${LikeButton} id=${id} type="blog" />`;
 };

@@ -15,7 +15,12 @@ import { createErrorBoundary } from '#components/ErrorBoundary.js';
 import { ParticleSystem } from './utils/ParticleSystem.js';
 import { loadPostsData } from './utils/data-loader.js';
 import { resetBlogPageMeta, updatePostMeta } from './utils/seo-manager.js';
-import { ProgressiveImage, ScrollToTop } from './components/BlogComponents.js';
+import {
+  ProgressiveImage,
+  ScrollToTop,
+  BlogLikes,
+} from './components/BlogComponents.js';
+import { CommentSection } from '#components/interactions/index.js';
 
 const log = createLogger('BlogApp');
 const html = htm.bind(React.createElement);
@@ -216,6 +221,9 @@ const BlogApp = () => {
               <span className="card-read-time">
                 <${Clock} /> ${activePost.readTime}
               </span>
+              <div className="article-actions" style=${{ marginTop: '1rem' }}>
+                <${BlogLikes} id=${activePost.id} />
+              </div>
             </div>
             ${activePost.excerpt &&
             html`<p
@@ -229,6 +237,9 @@ const BlogApp = () => {
             </p>`}
           </header>
           <div className="article-body">${renderPostContent(activePost)}</div>
+          <footer className="article-footer" style=${{ marginTop: '4rem' }}>
+            <${CommentSection} postId=${activePost.id} />
+          </footer>
         </article>
         <${ScrollToTop} />
       </div>
