@@ -290,16 +290,11 @@ function sanitizeNameKey(name) {
 async function lookupUserIdByName(env, name) {
   const kv = getFallbackMemoryKV(env);
   if (!kv?.get || !name) {
-    console.log('[lookupUserIdByName] Missing KV or Name', {
-      hasKV: !!kv?.get,
-      name,
-    });
     return null;
   }
   try {
     const key = sanitizeNameKey(name);
     const result = await kv.get(key);
-    console.log(`[lookupUserIdByName] Key: ${key} -> Result: ${result}`);
     return result;
   } catch (err) {
     console.error('[lookupUserIdByName] Error:', err);
@@ -310,11 +305,6 @@ async function lookupUserIdByName(env, name) {
 async function linkUserByName(env, name, userId) {
   const kv = getFallbackMemoryKV(env);
   if (!kv?.put || !name || !userId) {
-    console.log('[linkUserByName] Missing KV, name or userId', {
-      hasKV: !!kv?.put,
-      name,
-      userId,
-    });
     return false;
   }
   if (name.toLowerCase() === 'jules') {
@@ -323,9 +313,6 @@ async function linkUserByName(env, name, userId) {
   try {
     const key = sanitizeNameKey(name);
     await kv.put(key, userId);
-    console.log(
-      `[linkUserByName] Successfully linked Key: ${key} to UserId: ${userId}`,
-    );
     return true;
   } catch (err) {
     console.error('[linkUserByName] Error:', err);
@@ -348,13 +335,7 @@ async function resolveUserIdentity(
   if (prompt && env) {
     extractedName = extractNameFromPrompt(prompt);
     if (extractedName) {
-      console.log(
-        `[resolveUserIdentity] Extracted name from prompt: "${extractedName}"`,
-      );
       nameMatchUserId = await lookupUserIdByName(env, extractedName);
-      console.log(
-        `[resolveUserIdentity] User ID for name "${extractedName}": ${nameMatchUserId}`,
-      );
     }
   }
 
@@ -368,9 +349,6 @@ async function resolveUserIdentity(
   // Wenn ein Name gesagt wurde, aber wir ihn noch NICHT im KV hatten (nameMatchUserId === null),
   // verknüpfen wir die gerade ermittelte/neu generierte ID SOFORT mit dem Namen im KV.
   if (extractedName && !nameMatchUserId && env) {
-    console.log(
-      `[resolveUserIdentity] New name "${extractedName}" detected, linking to resolved ID: ${resolvedUserId}`,
-    );
     await linkUserByName(env, extractedName, resolvedUserId);
   }
 
@@ -460,8 +438,6 @@ function getAllowedToolDefinitions(config, userRole) {
       isIntegrationEnabled(tool, config),
   );
 }
-
-// ─── System Prompt ──────────────────────────────────────────────────────────────
 
 // ─── Vectorize Memory ───────────────────────────────────────────────────────────
 
