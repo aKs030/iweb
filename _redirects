@@ -78,9 +78,12 @@
 # Legacy /pages/* structure
 /pages/album*                                /gallery/                 301
 /pages/fotogalerie*                          /gallery/                 301
+/pages/fotos*                                /gallery/                 301
 /pages/ubermich*                             /about/                   301
 /pages/ueber-mich*                           /about/                   301
 /pages/tools*                                /projekte/                301
+/pages/cards*                                /projekte/                301
+/pages/design*                               /projekte/                301
 /pages/webentwicklung*                       /projekte/                301
 /pages/kontakt*                              /#kontakt                 301
 
