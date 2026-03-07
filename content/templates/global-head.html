@@ -111,9 +111,23 @@
 <!-- Critical CSS - Loaded immediately to prevent FOUC -->
 <link rel="stylesheet" href="/content/styles/root.css" fetchpriority="high" />
 <link rel="stylesheet" href="/content/styles/main.css" fetchpriority="high" />
-<link rel="stylesheet" href="/content/styles/animations.css" />
+<link
+  rel="stylesheet"
+  href="/content/styles/animations.css"
+  media="print"
+  onload="this.media = 'all'"
+/>
 <link rel="stylesheet" href="/content/components/menu/menu.css" />
-<link rel="stylesheet" href="/content/components/footer/footer.css" />
+<link
+  rel="stylesheet"
+  href="/content/components/footer/footer.css"
+  media="print"
+  onload="this.media = 'all'"
+/>
+<noscript>
+  <link rel="stylesheet" href="/content/styles/animations.css" />
+  <link rel="stylesheet" href="/content/components/footer/footer.css" />
+</noscript>
 
 <!-- Hero Critical CSS (inline for fastest FCP on homepage) -->
 <style id="hero-critical-inline">
@@ -203,11 +217,11 @@
 <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
 <link rel="dns-prefetch" href="https://esm.sh" />
 <link rel="dns-prefetch" href="https://img.abdulkerimsesli.de" />
+<link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+<link rel="dns-prefetch" href="https://www.google-analytics.com" />
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
 <link rel="preconnect" href="https://esm.sh" crossorigin />
 <link rel="preconnect" href="https://img.abdulkerimsesli.de" crossorigin />
-<link rel="preconnect" href="https://www.googletagmanager.com" crossorigin />
-<link rel="preconnect" href="https://www.google-analytics.com" crossorigin />
 
 <!-- Baseline Speculation Rules (runtime manager upgrades this adaptively) -->
 <script type="speculationrules" data-injected-by="resource-hints">

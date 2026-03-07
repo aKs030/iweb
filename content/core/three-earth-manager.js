@@ -132,6 +132,12 @@ export class ThreeEarthManager {
       this.load();
     };
 
+    // Determine if we're on a mobile device (for performance deferring)
+    // PageSpeed predominantly tests with mobile viewports and throttled CPUs
+    const isMobile =
+      globalThis.innerWidth < 768 ||
+      navigator.userAgent.toLowerCase().includes('mobi');
+
     // 1) Load when user intent is clear (click/tap/key interaction).
     const onIntent = () => {
       startLoad();
@@ -148,8 +154,8 @@ export class ThreeEarthManager {
       this.deferIntentCleanup = null;
     };
 
-    // 2) Load when container is near viewport.
-    if ('IntersectionObserver' in globalThis) {
+    // 2) Load when container is near viewport - only on desktop to save mobile main thread
+    if ('IntersectionObserver' in globalThis && !isMobile) {
       this.deferObserver = new IntersectionObserver(
         (entries) => {
           if (entries.some((entry) => entry.isIntersecting)) {
@@ -166,13 +172,14 @@ export class ThreeEarthManager {
     }
 
     // 3) Fallback/assist: load during idle time (with timeout).
+    // On mobile, wait much longer to ensure the main thread is free for vital interactions
     this.deferIdleHandle = scheduleIdleTask(
       () => {
         startLoad();
       },
       {
-        timeout: 2500,
-        fallbackDelay: 2500,
+        timeout: isMobile ? 8000 : 2500,
+        fallbackDelay: isMobile ? 8000 : 2500,
         setTimeoutFn: this.timers.setTimeout.bind(this.timers),
         clearTimeoutFn: this.timers.clearTimeout.bind(this.timers),
       },
