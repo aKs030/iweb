@@ -74,26 +74,26 @@
   try {
     var d = document.documentElement,
       s = window.localStorage,
-      c = s ? s.getItem("iweb-theme-preference") : null,
-      m = window.matchMedia("(prefers-color-scheme: light)").matches,
+      c = s ? s.getItem('iweb-theme-preference') : null,
+      m = window.matchMedia('(prefers-color-scheme: light)').matches,
       t =
-        d.getAttribute("data-force-theme") ||
-        (c === "light" || c === "dark" ? c : m ? "light" : "dark");
-    d.setAttribute("data-theme", t);
+        d.getAttribute('data-force-theme') ||
+        (c === 'light' || c === 'dark' ? c : m ? 'light' : 'dark');
+    d.setAttribute('data-theme', t);
     d.style.colorScheme = t;
     var metas = document.querySelectorAll('meta[name="theme-color"]');
     for (var i = 0; i < metas.length; i++) {
       var meta = metas[i];
-      if (meta.getAttribute("media")) {
+      if (meta.getAttribute('media')) {
         meta.setAttribute(
-          "media",
-          (meta.getAttribute("content") || "").toLowerCase() === "#ffffff"
-            ? t === "light"
-              ? "all"
-              : "not all"
-            : t === "dark"
-              ? "all"
-              : "not all",
+          'media',
+          (meta.getAttribute('content') || '').toLowerCase() === '#ffffff'
+            ? t === 'light'
+              ? 'all'
+              : 'not all'
+            : t === 'dark'
+              ? 'all'
+              : 'not all',
         );
       }
     }
