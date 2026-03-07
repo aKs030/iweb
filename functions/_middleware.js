@@ -140,9 +140,15 @@ export async function onRequest(context) {
     return await context.next();
   }
 
-  // Redirect non-www → www (301 permanent)
+  // Redirect non-www → www (301 permanent) and normalize trailing slash early
   if (url.hostname === 'abdulkerimsesli.de') {
     url.hostname = 'www.abdulkerimsesli.de';
+
+    // Auto-append trailing slash to top-level paths without extension to prevent chained redirects in _redirects
+    if (!url.pathname.endsWith('/') && !url.pathname.includes('.')) {
+      url.pathname += '/';
+    }
+
     return Response.redirect(url.href, 301);
   }
 
