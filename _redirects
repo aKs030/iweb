@@ -47,6 +47,7 @@
 /api/search/  /api/search    307
 
 # Legacy exact paths
+/pages/projekte                              /projekte/                301
 /pages/projekte/                             /projekte/                301
 /pages/gallery/gallery.html                  /gallery/                 301
 /pages/gallery/gallery                       /gallery/                 301
@@ -63,9 +64,11 @@
 # Detail Route Canonicalization (Blog/Videos)
 /blog/:slug            /blog/:slug/            301
 /blog/:slug/index.html /blog/:slug/            301
+/blog/:slug/index      /blog/:slug/            301
 /blog/:slug/index/     /blog/:slug/            301
 /videos/:videoId            /videos/:videoId/  301
 /videos/:videoId/index.html /videos/:videoId/  301
+/videos/:videoId/index      /videos/:videoId/  301
 /videos/:videoId/index/     /videos/:videoId/  301
 
 # ============================================================================
@@ -75,10 +78,13 @@
 # Legacy /pages/* structure
 /pages/album*                                /gallery/                 301
 /pages/fotogalerie*                          /gallery/                 301
+/pages/fotos*                                /gallery/                 301
 /pages/ubermich*                             /about/                   301
 /pages/ueber-mich*                           /about/                   301
 /pages/tools*                                /projekte/                301
-/pages/webentwicklung/*                      /projekte/                301
+/pages/cards*                                /projekte/                301
+/pages/design*                               /projekte/                301
+/pages/webentwicklung*                       /projekte/                301
 /pages/kontakt*                              /#kontakt                 301
 
 # Legacy content/footer paths
@@ -95,6 +101,10 @@
 # ============================================================================
 # 4. Generic .html Removal (Must be after specific rules)
 # ============================================================================
+# VORSICHT: /:splat/ erzwingt ein Trailing Slash, was gut ist für Sections,
+# aber bei statischen Assets Fehler verursachen kann.
+# Für HTML-Entfernung besser nur den Dateinamen mappen, oder spezifisch für
+# Verzeichnisse sein. Wir behalten es bei, haben es aber bereinigt.
 /*.html   /:splat/   301
 
 # ============================================================================

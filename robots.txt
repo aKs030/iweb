@@ -6,6 +6,8 @@ Sitemap: https://www.abdulkerimsesli.de/sitemap-index.xml
 # Default policy: allow all public content, block sensitive/internal paths
 User-agent: *
 Allow: /
+# Allow public RSS feed
+Allow: /api/feed.xml
 Disallow: /api/
 Disallow: /.wrangler/
 Disallow: /node_modules/
