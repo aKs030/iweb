@@ -214,16 +214,16 @@ address {
 }
 
 .btn-accept {
-  background: var(--accent-color);
+  background: var(--component-accent-blue-hover);
   color: var(--clr-white);
-  border-color: var(--accent-color);
+  border-color: var(--component-accent-blue-hover);
 }
 
 .btn-accept:hover {
-  background: var(--accent-hover);
-  border-color: var(--accent-hover);
+  background: var(--primary-dark);
+  border-color: var(--primary-dark);
   box-shadow: 0 var(--size-4) var(--size-12)
-    color-mix(in srgb, var(--component-accent-blue) 30%, transparent);
+    color-mix(in srgb, var(--primary-dark) 30%, transparent);
 }
 
 .btn-reject {

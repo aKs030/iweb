@@ -436,7 +436,7 @@
 .hero__button--crt.btn-secondary {
   background: var(--bg-secondary);
   border: var(--size-2) solid var(--primary-color);
-  color: var(--primary-color);
+  color: var(--clr-white);
 }
 .hero__button--crt.btn-secondary:hover {
   background: var(--primary-color);
