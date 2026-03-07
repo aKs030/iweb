@@ -4,6 +4,7 @@ import {
   sanitizeDiscoveryText,
 } from './_text-utils.js';
 import { loadJsonAsset, toISODate } from './_xml-utils.js';
+import { buildProjectDetailPath } from '../../content/core/project-paths.js';
 import {
   fetchPlaylistItemsPage,
   fetchUploadsPlaylistId,
@@ -41,7 +42,7 @@ function formatAppDescription(name, description) {
 }
 
 export function buildProjectAppPath(name) {
-  return `/projekte/?app=${encodeURIComponent(name)}`;
+  return buildProjectDetailPath(name);
 }
 
 export function buildProjectPreviewImageUrl(name) {

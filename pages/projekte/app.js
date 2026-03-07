@@ -18,6 +18,12 @@ import { ThreeScene } from './components/ThreeScene.js';
 import * as Icons from '#components/icons/icons.js';
 import { LikeButton } from '#components/interactions/index.js';
 import { i18n } from '#core/i18n.js';
+import {
+  PROJECTS_HOME_PATH,
+  buildProjectDetailPath,
+  extractProjectSlugFromLocation,
+  normalizeProjectSlug,
+} from '#core/project-paths.js';
 import { createErrorBoundary } from '#components/ErrorBoundary.js';
 
 const ErrorBoundary = createErrorBoundary(React);
@@ -39,11 +45,15 @@ const shouldDisableThreeScene = () => {
   }
 };
 
-const normalizeProjectSlug = (value) =>
-  String(value || '')
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9-]/g, '');
+const getProjectSlug = (project, index = 0) =>
+  normalizeProjectSlug(
+    project?.name || project?.title || `project-${index + 1}`,
+  ) || `project-${index + 1}`;
+
+const findProjectIndexBySlug = (projects, slug) =>
+  projects.findIndex(
+    (project, index) => getProjectSlug(project, index) === slug,
+  );
 
 /**
  * Main App Component
@@ -73,21 +83,51 @@ const App = () => {
   useEffect(() => {
     if (!projects.length) return;
 
-    const appSlug = normalizeProjectSlug(
-      new URLSearchParams(window.location.search).get('app'),
-    );
-    if (!appSlug) return;
+    const routeSlug = extractProjectSlugFromLocation(window.location);
+    if (!routeSlug) return;
 
-    const appIndex = projects.findIndex((project) => {
-      const candidate = normalizeProjectSlug(
-        project?.name || project?.title || '',
-      );
-      return candidate === appSlug;
-    });
-
-    if (appIndex >= 0) {
-      setActiveProjectIndex(appIndex);
+    const appIndex = findProjectIndexBySlug(projects, routeSlug);
+    if (appIndex < 0) {
+      if (
+        window.location.pathname !== PROJECTS_HOME_PATH ||
+        String(window.location.search || '').length > 0
+      ) {
+        window.history.replaceState(null, '', PROJECTS_HOME_PATH);
+      }
+      return;
     }
+
+    setActiveProjectIndex(appIndex);
+
+    const canonicalPath = buildProjectDetailPath(
+      getProjectSlug(projects[appIndex]),
+    );
+    if (
+      window.location.pathname !== canonicalPath ||
+      String(window.location.search || '').length > 0
+    ) {
+      window.history.replaceState(null, '', canonicalPath);
+    }
+  }, [projects]);
+
+  useEffect(() => {
+    if (!projects.length) return;
+
+    const handlePopState = () => {
+      const routeSlug = extractProjectSlugFromLocation(window.location);
+      if (!routeSlug) {
+        setActiveProjectIndex(0);
+        return;
+      }
+
+      const appIndex = findProjectIndexBySlug(projects, routeSlug);
+      if (appIndex >= 0) {
+        setActiveProjectIndex(appIndex);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
   }, [projects]);
 
   useEffect(() => {
@@ -120,17 +160,11 @@ const App = () => {
     const projectNodes = [];
 
     projects.forEach((project, index) => {
-      const rawSlug = String(
-        project?.name || project?.title || `project-${index + 1}`,
-      )
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/(^-|-$)/g, '');
-      const slug = rawSlug || `project-${index + 1}`;
+      const slug = getProjectSlug(project, index);
       if (seenSlugs.has(slug)) return;
       seenSlugs.add(slug);
 
-      const canonicalUrl = `https://www.abdulkerimsesli.de/projekte/?app=${encodeURIComponent(slug)}`;
+      const canonicalUrl = `https://www.abdulkerimsesli.de${buildProjectDetailPath(slug)}`;
       const nodeId = `${canonicalUrl}#app`;
       const name = project.title || project.name || `Projekt ${index + 1}`;
 
@@ -600,7 +634,7 @@ const App = () => {
 
           // Dynamic Edge Likes/Claps
           h(LikeButton, {
-            id: normalizeProjectSlug(activeProject.title || activeProject.name),
+            id: getProjectSlug(activeProject, activeProjectIndex),
             type: 'project',
           }),
 

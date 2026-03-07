@@ -8,6 +8,13 @@ import {
   normalizeText,
   sanitizeDiscoveryText,
 } from '../api/_text-utils.js';
+import {
+  buildProjectCanonicalUrl,
+  extractProjectSlugFromPath,
+  isProjectDetailPath,
+  isProjectIndexPath,
+  normalizeProjectSlug,
+} from '../../content/core/project-paths.js';
 
 const BLOG_INDEX_PATH = '/pages/blog/posts/index.json';
 const PROJECT_APPS_PATH = '/pages/projekte/apps-config.json';
@@ -321,7 +328,7 @@ async function buildProjectAppMeta(context, requestUrl, appSlug) {
     app.title,
     humanizeSlug(appName) || formatSlug(appName),
   );
-  const canonicalUrl = `${origin}/projekte/?app=${encodeURIComponent(appName)}`;
+  const canonicalUrl = buildProjectCanonicalUrl(origin, appName);
   const description = clampText(
     sanitizeDiscoveryText(
       app.description,
@@ -482,8 +489,16 @@ export async function buildRouteMeta(context, requestUrl) {
     return buildBlogMeta(context, requestUrl, postId);
   }
 
-  if (/^\/projekte\/?$/i.test(pathname)) {
-    const appSlug = normalizeText(requestUrl.searchParams.get('app'));
+  if (isProjectDetailPath(pathname)) {
+    const appSlug = extractProjectSlugFromPath(pathname);
+    if (appSlug) {
+      return buildProjectAppMeta(context, requestUrl, appSlug);
+    }
+    return null;
+  }
+
+  if (isProjectIndexPath(pathname)) {
+    const appSlug = normalizeProjectSlug(requestUrl.searchParams.get('app'));
     if (appSlug) {
       return buildProjectAppMeta(context, requestUrl, appSlug);
     }

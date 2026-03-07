@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
+import { buildProjectDetailPath } from '../content/core/project-paths.js';
 
 const ROOT_DIR = process.cwd();
 const AI_INDEX_PATH = path.join(ROOT_DIR, 'ai-index.json');
@@ -70,7 +71,7 @@ function toProjectAppPage(app, siteUrl) {
   const keywords = toKeywords(name, title, app?.tags, category);
 
   return {
-    url: `${siteUrl}/projekte/?app=${encodeURIComponent(name)}`,
+    url: `${siteUrl}${buildProjectDetailPath(name)}`,
     title,
     description,
     type: 'project-app',

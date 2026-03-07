@@ -25,7 +25,7 @@ Modular utilities for Cloudflare Pages Middleware (`functions/_middleware.js`).
 
 - `matchEdgeCache()` — Check Cloudflare Cache API for transformed HTML
 - `storeInEdgeCache()` — Store response in Cache API (async, non-blocking)
-- `buildCacheKey()` — Deterministic cache keys (strips query params except ?app=)
+- `buildCacheKey()` — Deterministic cache keys (strips query params)
 
 ### `early-hints.js`
 

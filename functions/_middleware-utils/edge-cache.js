@@ -35,18 +35,14 @@ function isCacheablePath(pathname) {
 
 /**
  * Build a deterministic cache key from the request URL.
- * Strips query params to avoid cache fragmentation (except ?app= for projekte).
+ * Strips query params to avoid cache fragmentation.
  *
  * @param {URL} url
  * @returns {Request} Cache key as Request object
  */
 export function buildCacheKey(url) {
   const cacheUrl = new URL(url.href);
-
-  // Preserve ?app= for project detail pages (unique content per app)
-  if (!cacheUrl.pathname.startsWith('/projekte')) {
-    cacheUrl.search = '';
-  }
+  cacheUrl.search = '';
   cacheUrl.searchParams.set('__cv', EDGE_CACHE_KEY_VERSION);
 
   return new Request(cacheUrl.href, { method: 'GET' });
