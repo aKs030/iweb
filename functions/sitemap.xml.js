@@ -3,8 +3,6 @@ import { escapeXml, normalizePath, resolveOrigin } from './api/_xml-utils.js';
 import { respondWithSnapshotOr503 } from './api/_sitemap-snapshot.js';
 import { dedupeBy, saveAndRespondSitemapXml } from './api/_sitemap-response.js';
 import {
-  BLOG_INDEX_PATH,
-  PROJECT_APPS_PATH,
   buildBlogPath,
   buildProjectAppPath,
   loadBlogPosts,
@@ -22,43 +20,20 @@ const ROUTE_META = {
   '/blog/': { priority: 0.75, changefreq: 'weekly' },
   '/about/': { priority: 0.6, changefreq: 'monthly' },
   '/contact/': { priority: 0.55, changefreq: 'monthly' },
-  '/impressum/': { priority: 0.2, changefreq: 'yearly' },
-  '/datenschutz/': { priority: 0.2, changefreq: 'yearly' },
-  '/ai-info': { priority: 0.65, changefreq: 'weekly' },
-  '/llms.txt': { priority: 0.5, changefreq: 'monthly' },
-  '/llms-full.txt': { priority: 0.5, changefreq: 'monthly' },
-  '/ai-index.json': { priority: 0.4, changefreq: 'monthly' },
-  '/person.jsonld': { priority: 0.6, changefreq: 'monthly' },
-  '/bio.md': { priority: 0.5, changefreq: 'monthly' },
-  '/pages/projekte/apps-config.json': { priority: 0.44, changefreq: 'weekly' },
-  '/pages/blog/posts/index.json': { priority: 0.4, changefreq: 'weekly' },
-  '/.well-known/openapi.json': { priority: 0.38, changefreq: 'monthly' },
-  '/.well-known/ai-plugin.json': { priority: 0.36, changefreq: 'monthly' },
-  '/robots.txt': { priority: 0.3, changefreq: 'monthly' },
+  '/ai-info/': { priority: 0.65, changefreq: 'weekly' },
 };
 
-const DISCOVERY_PATHS = [
-  '/ai-info',
-  '/llms.txt',
-  '/llms-full.txt',
-  '/ai-index.json',
-  '/person.jsonld',
-  '/bio.md',
-  PROJECT_APPS_PATH,
-  BLOG_INDEX_PATH,
-  '/.well-known/openapi.json',
-  '/.well-known/ai-plugin.json',
-  '/robots.txt',
-];
+const NOINDEX_PATHS = new Set(['/datenschutz/', '/impressum/']);
+const EXTRA_INDEXABLE_PATHS = ['/ai-info/'];
 
 function buildStaticEntries(today) {
   const staticPaths = [
     '/',
     ...Object.keys(ROUTES)
       .filter((path) => path.startsWith('/'))
-      .map(normalizePath),
-    // AI discovery + index resources
-    ...DISCOVERY_PATHS,
+      .map(normalizePath)
+      .filter((path) => !NOINDEX_PATHS.has(path)),
+    ...EXTRA_INDEXABLE_PATHS,
   ];
 
   const uniquePaths = [...new Set(staticPaths)];

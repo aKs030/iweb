@@ -37,7 +37,8 @@
 /videos       /videos/       301
 /datenschutz  /datenschutz/  301
 /impressum    /impressum/    301
-/ai-info/     /ai-info       301
+/ai-info      /ai-info/      301
+/ai-info.html /ai-info/      301
 /admin        /pages/admin.html 301
 
 
@@ -102,7 +103,6 @@
 # ============================================================================
 /pages/*                  /pages/:splat                   200
 /content/components/*     /content/components/:splat      200
-/ai-info                  /ai-info.html                   200
 
 # ============================================================================
 # 6. Section Rewrites (Map clean URLs to physical files)
@@ -113,6 +113,7 @@
 /blog/*         /pages/blog/              200
 /about/*        /pages/about/:splat       200
 /abdul-sesli/*  /pages/abdul-sesli/:splat 200
+/ai-info/*      /pages/ai-info/:splat     200
 /contact/*      /content/components/contact/ 200
 /impressum/*    /pages/impressum/:splat   200
 /datenschutz/*  /pages/datenschutz/:splat 200

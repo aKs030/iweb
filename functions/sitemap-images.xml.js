@@ -79,18 +79,6 @@ const STATIC_PAGE_IMAGES = [
     caption:
       'Interaktive Webprojekte mit JavaScript, React, UI und Frontend-Experimenten',
   },
-  {
-    page: '/impressum/',
-    image: 'https://img.abdulkerimsesli.de/blog/og-home-800.png',
-    title: 'Impressum',
-    caption: 'Rechtliche Informationen',
-  },
-  {
-    page: '/datenschutz/',
-    image: 'https://img.abdulkerimsesli.de/blog/og-home-800.png',
-    title: 'Datenschutz',
-    caption: 'DSGVO und Datenverarbeitung',
-  },
 ];
 
 function ensureUrlEntry(urlMap, pagePath) {

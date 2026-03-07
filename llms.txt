@@ -39,7 +39,7 @@ Abdulkerim Sesli builds modern, high-performance web products with JavaScript ES
 
 ## AI Discovery Resources
 
-- AI profile hub: https://www.abdulkerimsesli.de/ai-info
+- AI profile hub: https://www.abdulkerimsesli.de/ai-info/
 - Structured AI index: https://www.abdulkerimsesli.de/ai-index.json
 - Detailed LLM index: https://www.abdulkerimsesli.de/llms-full.txt
 - Person schema: https://www.abdulkerimsesli.de/person.jsonld

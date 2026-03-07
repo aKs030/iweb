@@ -80,7 +80,7 @@ Abdulkerim Sesli builds modern web experiences that combine visual quality, real
 
 ## 7) AI Discovery and Machine-Readable Resources
 
-- AI profile page: https://www.abdulkerimsesli.de/ai-info
+- AI profile page: https://www.abdulkerimsesli.de/ai-info/
 - Compact LLM index: https://www.abdulkerimsesli.de/llms.txt
 - Full LLM index: https://www.abdulkerimsesli.de/llms-full.txt
 - Structured index JSON: https://www.abdulkerimsesli.de/ai-index.json

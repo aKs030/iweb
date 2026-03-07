@@ -95,7 +95,7 @@ Diese Website ist optimiert für KI-Systeme, Suchmaschinen und Entwickler-Tools:
 - **Sitemaps**: Dynamisch generiert via Cloudflare Functions
   - [sitemap.xml](https://www.abdulkerimsesli.de/sitemap.xml)
   - [sitemap-index.xml](https://www.abdulkerimsesli.de/sitemap-index.xml)
-- **AI Hub**: [ai-info.html](https://www.abdulkerimsesli.de/ai-info)
+- **AI Hub**: [AI profile hub](https://www.abdulkerimsesli.de/ai-info/)
 
 ## License
 
