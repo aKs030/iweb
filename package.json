@@ -88,7 +88,7 @@
     "npm-run-all2": "^8.0.4",
     "playwright": "^1.58.2",
     "prettier": "^3.8.1",
-    "stylelint": "^16.25.0",
+    "stylelint": "^17.4.0",
     "wrangler": "^4.71.0"
   },
   "lint-staged": {
