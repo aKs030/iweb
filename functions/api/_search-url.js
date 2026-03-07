@@ -3,6 +3,13 @@
  * Normalization, canonicalization, and category detection.
  */
 
+import {
+  buildProjectDetailPath,
+  extractProjectSlugFromPath,
+  isProjectIndexPath,
+  normalizeProjectSlug,
+} from '../../content/core/project-paths.js';
+
 const TOP_LEVEL_TITLE_MAP = {
   projekte: 'Projekte Übersicht',
   blog: 'Blog Übersicht',
@@ -38,8 +45,10 @@ function humanizeSlug(value) {
 export function extractAppSlugFromUrl(url) {
   try {
     const parsed = new URL(String(url || ''), 'https://example.com');
-    const app = parsed.searchParams.get('app');
-    return app ? decodeURIComponent(app).trim() : '';
+    const pathSlug = extractProjectSlugFromPath(parsed.pathname);
+    if (pathSlug) return pathSlug;
+    if (!isProjectIndexPath(parsed.pathname)) return '';
+    return normalizeProjectSlug(parsed.searchParams.get('app'));
   } catch {
     return '';
   }
@@ -72,7 +81,7 @@ export function canonicalizeUrlPath(path) {
 
 /**
  * Normalize URL to prevent duplicates
- * removes domain/protocol/noisy params but keeps canonical app deep-link query.
+ * removes domain/protocol/noisy params and rewrites legacy project queries.
  * @param {string} url - Original URL
  * @returns {string} Normalized URL path
  */
@@ -91,12 +100,9 @@ export function normalizeUrl(url) {
 
   const [rawPath, rawQuery = ''] = normalized.split('?');
   const path = canonicalizeUrlPath(rawPath);
-  const params = new URLSearchParams(rawQuery);
-  const app = String(params.get('app') || '').trim();
-
-  // Keep app deep-links as distinct canonical URLs.
-  if (path === '/projekte' && app) {
-    return `/projekte/?app=${encodeURIComponent(app)}`;
+  const appSlug = extractAppSlugFromUrl(`${path}?${rawQuery}`);
+  if (appSlug) {
+    return buildProjectDetailPath(appSlug);
   }
 
   return path;

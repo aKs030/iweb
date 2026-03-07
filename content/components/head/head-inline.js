@@ -1,4 +1,10 @@
 import { createLogger } from '../../core/logger.js';
+import {
+  buildProjectDetailPath,
+  extractProjectSlugFromPath,
+  isProjectIndexPath,
+  normalizeProjectSlug,
+} from '../../core/project-paths.js';
 import { stripBranding } from '../../core/utils.js';
 import { headState } from './head-state.js';
 import {
@@ -47,15 +53,18 @@ const setEarlyCanonical = () => {
   try {
     const pathname = globalThis.location.pathname || '/';
     const canonicalBase = globalThis.location.href.split('#')[0].split('?')[0];
-    const query = new URLSearchParams(globalThis.location.search || '');
-    const appSlug = String(query.get('app') || '')
-      .trim()
-      .toLowerCase()
-      .replace(/[^a-z0-9-]/g, '');
-    const canonicalUrl =
-      /^\/projekte\/?$/i.test(pathname) && appSlug
-        ? `${globalThis.location.origin}/projekte/?app=${encodeURIComponent(appSlug)}`
-        : canonicalBase;
+    const detailSlug = extractProjectSlugFromPath(pathname);
+    const legacyQuery = new URLSearchParams(globalThis.location.search || '');
+    const legacySlug = isProjectIndexPath(pathname)
+      ? normalizeProjectSlug(legacyQuery.get('app'))
+      : '';
+    const projectCanonicalPath =
+      detailSlug || legacySlug
+        ? buildProjectDetailPath(detailSlug || legacySlug)
+        : '';
+    const canonicalUrl = projectCanonicalPath
+      ? `${globalThis.location.origin}${projectCanonicalPath}`
+      : canonicalBase;
 
     const existing = document.head.querySelector('link[rel="canonical"]');
     if (existing) {

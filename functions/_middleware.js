@@ -50,6 +50,11 @@ import {
   HeaderInjector,
   FooterInjector,
 } from './_middleware-utils/esi-shell.js';
+import {
+  buildProjectDetailPath,
+  isProjectIndexPath,
+  normalizeProjectSlug,
+} from '../content/core/project-paths.js';
 
 // KV-Cache TTL für Templates: 1 Stunde
 const TEMPLATE_TTL_SECONDS = 3600;
@@ -144,6 +149,15 @@ export async function onRequest(context) {
   if (url.hostname === 'abdulkerimsesli.de') {
     url.hostname = 'www.abdulkerimsesli.de';
     return Response.redirect(url.href, 301);
+  }
+
+  if (isProjectIndexPath(url.pathname)) {
+    const legacyAppSlug = normalizeProjectSlug(url.searchParams.get('app'));
+    if (legacyAppSlug) {
+      url.pathname = buildProjectDetailPath(legacyAppSlug);
+      url.search = '';
+      return Response.redirect(url.href, 301);
+    }
   }
 
   const isLocal = isLocalhost(url.hostname);

@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "version": "1.1.0",
-  "lastUpdated": "2026-02-23",
+  "lastUpdated": "2026-03-07",
   "site": {
     "name": "Abdulkerim Sesli Portfolio",
     "url": "https://www.abdulkerimsesli.de",
@@ -142,7 +142,7 @@
         "priority": 0.5
       },
       {
-        "url": "https://www.abdulkerimsesli.de/projekte/?app=calculator",
+        "url": "https://www.abdulkerimsesli.de/projekte/calculator/",
         "title": "Calculator",
         "description": "Moderner Taschenrechner mit erweiterten Funktionen. Grundrechenarten und wissenschaftliche Operationen.",
         "type": "project-app",
@@ -159,7 +159,7 @@
         "priority": 0.54
       },
       {
-        "url": "https://www.abdulkerimsesli.de/projekte/?app=color-changer",
+        "url": "https://www.abdulkerimsesli.de/projekte/color-changer/",
         "title": "Color Changer",
         "description": "Dynamische Hintergrundfarben per Klick. Entdecke schöne Farbkombinationen und Gradienten.",
         "type": "project-app",
@@ -179,7 +179,7 @@
         "priority": 0.5
       },
       {
-        "url": "https://www.abdulkerimsesli.de/projekte/?app=ip-info",
+        "url": "https://www.abdulkerimsesli.de/projekte/ip-info/",
         "title": "Ip Info",
         "description": "Zeigt deine öffentliche IP-Adresse und Standortinformationen an. Optimiert für Cloudflare Workers/Pages.",
         "type": "project-app",
@@ -198,7 +198,7 @@
         "priority": 0.54
       },
       {
-        "url": "https://www.abdulkerimsesli.de/projekte/?app=memory-game",
+        "url": "https://www.abdulkerimsesli.de/projekte/memory-game/",
         "title": "Memory Game",
         "description": "Klassisches Memory-Spiel mit verschiedenen Schwierigkeitsgraden. Trainiere dein Gedächtnis!",
         "type": "project-app",
@@ -216,7 +216,7 @@
         "priority": 0.5
       },
       {
-        "url": "https://www.abdulkerimsesli.de/projekte/?app=paint-app",
+        "url": "https://www.abdulkerimsesli.de/projekte/paint-app/",
         "title": "Paint App",
         "description": "Einfaches Zeichenprogramm mit verschiedenen Farben und Pinselgrößen.",
         "type": "project-app",
@@ -234,7 +234,7 @@
         "priority": 0.5
       },
       {
-        "url": "https://www.abdulkerimsesli.de/projekte/?app=password-generator",
+        "url": "https://www.abdulkerimsesli.de/projekte/password-generator/",
         "title": "Password Generator",
         "description": "Sicherer Passwort-Generator mit anpassbaren Optionen. Erstelle starke Passwörter für maximale Sicherheit.",
         "type": "project-app",
@@ -252,7 +252,7 @@
         "priority": 0.54
       },
       {
-        "url": "https://www.abdulkerimsesli.de/projekte/?app=pong-game",
+        "url": "https://www.abdulkerimsesli.de/projekte/pong-game/",
         "title": "Pong Game",
         "description": "Klassisches Pong-Spiel mit KI-Gegner, Physics Engine und Canvas-Rendering",
         "type": "project-app",
@@ -271,7 +271,7 @@
         "priority": 0.5
       },
       {
-        "url": "https://www.abdulkerimsesli.de/projekte/?app=quiz-app",
+        "url": "https://www.abdulkerimsesli.de/projekte/quiz-app/",
         "title": "Quiz App",
         "description": "Interaktive Quiz-App mit verschiedenen Kategorien und Schwierigkeitsgraden",
         "type": "project-app",
@@ -290,7 +290,7 @@
         "priority": 0.5
       },
       {
-        "url": "https://www.abdulkerimsesli.de/projekte/?app=schere-stein-papier",
+        "url": "https://www.abdulkerimsesli.de/projekte/schere-stein-papier/",
         "title": "Schere Stein Papier",
         "description": "Der Klassiker gegen den Computer! Wähle Schere, Stein oder Papier und tritt gegen die KI an.",
         "type": "project-app",
@@ -310,7 +310,7 @@
         "priority": 0.5
       },
       {
-        "url": "https://www.abdulkerimsesli.de/projekte/?app=schluesselweite",
+        "url": "https://www.abdulkerimsesli.de/projekte/schluesselweite/",
         "title": "Schluesselweite",
         "description": "ISO/DIN Schlüsselweite und Gewinde Tabelle",
         "type": "project-app",
@@ -330,7 +330,7 @@
         "priority": 0.54
       },
       {
-        "url": "https://www.abdulkerimsesli.de/projekte/?app=snake-game",
+        "url": "https://www.abdulkerimsesli.de/projekte/snake-game/",
         "title": "Snake Game",
         "description": "Klassisches Snake-Spiel mit Canvas, Game Loop und fortgeschrittener Kollisionserkennung",
         "type": "project-app",
@@ -348,7 +348,7 @@
         "priority": 0.5
       },
       {
-        "url": "https://www.abdulkerimsesli.de/projekte/?app=tic-tac-toe",
+        "url": "https://www.abdulkerimsesli.de/projekte/tic-tac-toe/",
         "title": "Tic Tac Toe",
         "description": "Klassisches Tic-Tac-Toe Spiel für zwei Spieler.",
         "type": "project-app",
@@ -366,7 +366,7 @@
         "priority": 0.5
       },
       {
-        "url": "https://www.abdulkerimsesli.de/projekte/?app=timer-app",
+        "url": "https://www.abdulkerimsesli.de/projekte/timer-app/",
         "title": "Timer App",
         "description": "Vielseitige Timer-App mit Countdown, Stoppuhr und Pomodoro-Technik",
         "type": "project-app",
@@ -385,7 +385,7 @@
         "priority": 0.54
       },
       {
-        "url": "https://www.abdulkerimsesli.de/projekte/?app=todo-liste",
+        "url": "https://www.abdulkerimsesli.de/projekte/todo-liste/",
         "title": "Todo Liste",
         "description": "Produktivitäts-Tool zum Verwalten von Aufgaben. Erstelle, bearbeite und organisiere deine To-Dos.",
         "type": "project-app",
@@ -404,7 +404,7 @@
         "priority": 0.52
       },
       {
-        "url": "https://www.abdulkerimsesli.de/projekte/?app=typing-speed-test",
+        "url": "https://www.abdulkerimsesli.de/projekte/typing-speed-test/",
         "title": "Typing Speed Test",
         "description": "Teste deine Tippgeschwindigkeit (WPM) mit zufälligen Sätzen.",
         "type": "project-app",
@@ -423,7 +423,7 @@
         "priority": 0.52
       },
       {
-        "url": "https://www.abdulkerimsesli.de/projekte/?app=weather-app",
+        "url": "https://www.abdulkerimsesli.de/projekte/weather-app/",
         "title": "Weather App",
         "description": "Moderne Wetter-App mit aktuellen Wetterdaten und 5-Tage-Vorhersage. Standortbasierte Wetterinformationen.",
         "type": "project-app",
@@ -442,7 +442,7 @@
         "priority": 0.54
       },
       {
-        "url": "https://www.abdulkerimsesli.de/projekte/?app=zahlen-raten",
+        "url": "https://www.abdulkerimsesli.de/projekte/zahlen-raten/",
         "title": "Zahlen Raten",
         "description": "Finde die geheime Zahl zwischen 1 und 100. Ein klassisches Ratespiel mit Hinweisen.",
         "type": "project-app",

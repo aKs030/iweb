@@ -65,6 +65,9 @@
 /blog/:slug            /blog/:slug/            301
 /blog/:slug/index.html /blog/:slug/            301
 /blog/:slug/index/     /blog/:slug/            301
+/projekte/:slug            /projekte/:slug/    301
+/projekte/:slug/index.html /projekte/:slug/    301
+/projekte/:slug/index/     /projekte/:slug/    301
 /videos/:videoId            /videos/:videoId/  301
 /videos/:videoId/index.html /videos/:videoId/  301
 /videos/:videoId/index/     /videos/:videoId/  301
@@ -108,7 +111,7 @@
 # 6. Section Rewrites (Map clean URLs to physical files)
 # ============================================================================
 /gallery/*      /pages/gallery/:splat     200
-/projekte/*     /pages/projekte/:splat    200
+/projekte/*     /pages/projekte/          200
 /videos/*       /pages/videos/            200
 /blog/*         /pages/blog/              200
 /about/*        /pages/about/:splat       200

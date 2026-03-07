@@ -1,4 +1,10 @@
 import { createLogger } from './logger.js';
+import {
+  buildProjectDetailPath,
+  extractProjectSlugFromPath,
+  isProjectIndexPath,
+  normalizeProjectSlug,
+} from './project-paths.js';
 import { upsertHeadLink } from './utils.js';
 
 const log = createLogger('CanonicalManager');
@@ -31,34 +37,33 @@ function computeCleanPath() {
   return cleanPath;
 }
 
-function computeCanonicalQuerySuffix(pathname = globalThis.location.pathname) {
-  const path = String(pathname || '');
-  if (!/^\/projekte\/?$/i.test(path)) return '';
+function computeProjectCanonicalPath() {
+  const pathname = globalThis.location.pathname || '/';
+  const detailSlug = extractProjectSlugFromPath(pathname);
+  if (detailSlug) {
+    return buildProjectDetailPath(detailSlug);
+  }
+
+  if (!isProjectIndexPath(pathname)) return '';
 
   const params = new URLSearchParams(globalThis.location.search || '');
-  const app = String(params.get('app') || '')
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9-]/g, '');
-  if (!app) return '';
-
-  return `?app=${encodeURIComponent(app)}`;
+  const legacySlug = normalizeProjectSlug(params.get('app'));
+  return legacySlug ? buildProjectDetailPath(legacySlug) : '';
 }
 
 function computeCanonicalUrl({ forceProd = false, cleanPath = null }) {
-  const path = cleanPath || computeCleanPath();
-  const querySuffix = computeCanonicalQuerySuffix(globalThis.location.pathname);
+  const path = cleanPath || computeProjectCanonicalPath() || computeCleanPath();
 
   if (forceProd) {
-    return `${BASE_URL}${path}${querySuffix}`;
+    return `${BASE_URL}${path}`;
   }
 
   const isDirtyPath =
     /^\/pages\//i.test(globalThis.location.pathname) ||
     /\/index\.html$/i.test(globalThis.location.pathname);
 
-  if (isDirtyPath || querySuffix) {
-    return `${globalThis.location.origin}${path}${querySuffix}`;
+  if (isDirtyPath || path !== computeCleanPath()) {
+    return `${globalThis.location.origin}${path}`;
   }
 
   return globalThis.location.href.split('#')[0].split('?')[0];
@@ -67,16 +72,16 @@ function computeCanonicalUrl({ forceProd = false, cleanPath = null }) {
 function buildCanonicalLinks(options = {}) {
   const forceProd =
     options.forceProd ?? (!isLocalDevelopment() && !isPreviewEnvironment());
-  const cleanPath = options.cleanPath || computeCleanPath();
-  const querySuffix = computeCanonicalQuerySuffix(globalThis.location.pathname);
+  const cleanPath =
+    options.cleanPath || computeProjectCanonicalPath() || computeCleanPath();
 
   const canonical = computeCanonicalUrl({ forceProd, cleanPath });
   const origin = forceProd ? BASE_URL : globalThis.location.origin;
 
   const alternates = [
-    { lang: 'de', href: `${origin}${cleanPath}${querySuffix}` },
-    { lang: 'en', href: `${origin}${cleanPath}${querySuffix}` },
-    { lang: 'x-default', href: `${origin}${cleanPath}${querySuffix}` },
+    { lang: 'de', href: `${origin}${cleanPath}` },
+    { lang: 'en', href: `${origin}${cleanPath}` },
+    { lang: 'x-default', href: `${origin}${cleanPath}` },
   ];
 
   return { canonical, alternates, origin };
