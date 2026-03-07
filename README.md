@@ -1,5 +1,12 @@
 # Portfolio Website
 
+[![CI/CD](https://github.com/aKs030/iweb/actions/workflows/main.yml/badge.svg)](https://github.com/aKs030/iweb/actions/workflows/main.yml)
+[![CodeQL](https://github.com/aKs030/iweb/actions/workflows/codeql.yml/badge.svg)](https://github.com/aKs030/iweb/actions/workflows/codeql.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Node.js](https://img.shields.io/badge/node-%3E%3D22.0.0-brightgreen)](https://nodejs.org/)
+[![Lighthouse](https://img.shields.io/badge/lighthouse-95%2B-brightgreen)](https://www.abdulkerimsesli.de)
+[![Cloudflare Pages](https://img.shields.io/badge/Cloudflare-Pages-orange)](https://pages.cloudflare.com/)
+
 Modernes Portfolio auf Cloudflare Pages mit Vanilla JavaScript, Three.js und Cloudflare Functions.
 
 ## Quick Start
@@ -64,21 +71,32 @@ pages/        Seiten-spezifische Entry-Points
 functions/    Cloudflare Pages Functions + API-Endpunkte
 docs/         Technische Dokumentation
 scripts/      Repo-Wartung und Prüfskripte
+config/       Konfigurationsdateien (ESLint, Prettier, Stylelint)
 .github/      CI/CD Workflows
 ```
 
-Details und Regeln: [`docs/PROJECT_STRUCTURE.md`](docs/PROJECT_STRUCTURE.md)
+Details: [`docs/DOCUMENTATION.md`](docs/DOCUMENTATION.md)
 
 ## Dokumentation
 
-- [`docs/README.md`](docs/README.md) - Dokumentationsindex
-- [`docs/PROJECT_STRUCTURE.md`](docs/PROJECT_STRUCTURE.md) - Moderne Zielstruktur
-- [`docs/CODE_QUALITY.md`](docs/CODE_QUALITY.md) - Qualitäts- und Hook-Workflow
-- [`content/styles/README.md`](content/styles/README.md) - Token/Utility/CSS-Workflow
+- [`docs/DOCUMENTATION.md`](docs/DOCUMENTATION.md) - Vollständige Projekt-Dokumentation
+- [`content/styles/README.md`](content/styles/README.md) - CSS/Token/Utility-Workflow
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) - Beitrag/Workflow
 - [`SECURITY.md`](SECURITY.md) - Security Policy
+
+## AI Discovery & SEO
+
+Diese Website ist optimiert für KI-Systeme, Suchmaschinen und Entwickler-Tools:
+
+- **AI Index**: [`ai-index.json`](ai-index.json) - Strukturierter Gesamtindex
+- **LLM Context**: [`llms.txt`](llms.txt) & [`llms-full.txt`](llms-full.txt)
+- **Person Data**: [`person.jsonld`](person.jsonld) - Schema.org
+- **API Docs**: [`.well-known/openapi.json`](.well-known/openapi.json)
+- **Sitemaps**: Dynamisch generiert via Cloudflare Functions
+  - [sitemap.xml](https://www.abdulkerimsesli.de/sitemap.xml)
+  - [sitemap-index.xml](https://www.abdulkerimsesli.de/sitemap-index.xml)
+- **AI Hub**: [ai-info.html](https://www.abdulkerimsesli.de/ai-info)
 
 ## License
 
 MIT. Siehe [`LICENSE`](LICENSE).
-// test line

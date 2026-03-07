@@ -4,7 +4,7 @@
  * - Uses reactive signals as the primary source of truth
  * - Keeps blocking orchestration (`block`/`unblock`)
  * - Exposes `whenAppReady()` for async coordination without DOM events
- * - Removes hard dependency on legacy `#app-loader` DOM markup
+ * - Does not require loader-specific DOM markup
  * @module AppLoadManager
  */
 

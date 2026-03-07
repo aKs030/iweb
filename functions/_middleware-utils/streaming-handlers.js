@@ -14,15 +14,15 @@
 // ---------------------------------------------------------------------------
 
 /**
- * HTMLRewriter handler that replaces <!-- INJECT:BASE-HEAD -->
- * comment nodes with pre-loaded template HTML.
+ * HTMLRewriter handler that replaces template comment nodes with pre-loaded
+ * template HTML.
  *
  * Because HTMLRewriter processes the stream chunk-by-chunk, this avoids
  * buffering the entire document.
  */
 export class TemplateCommentHandler {
   /**
-   * @param {{ head: string }} templates
+   * @param {{ globalHead?: string }} templates
    */
   constructor(templates) {
     this.templates = templates;
@@ -30,9 +30,15 @@ export class TemplateCommentHandler {
 
   /** @param {Comment} comment */
   comments(comment) {
-    const text = comment.text.trim();
-    if (text === 'INJECT:BASE-HEAD' && this.templates.head) {
-      comment.replace(this.templates.head, { html: true });
+    const payload = parseTemplateComment(comment.text);
+
+    if (payload.name === 'INJECT:GLOBAL-HEAD' && this.templates.globalHead) {
+      comment.replace(
+        renderGlobalHeadTemplate(this.templates.globalHead, payload),
+        {
+          html: true,
+        },
+      );
     }
   }
 }
@@ -263,4 +269,47 @@ function escapeForHtml(str) {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
+}
+
+function parseTemplateComment(value = '') {
+  const text = String(value || '').trim();
+  const [name = '', ...rest] = text.split(/\s+/);
+  const attrs = {};
+  const attrText = rest.join(' ');
+  const attrPattern = /([a-zA-Z][\w-]*)=(?:"([^"]*)"|'([^']*)')/g;
+  let match;
+
+  while ((match = attrPattern.exec(attrText))) {
+    attrs[match[1]] = match[2] ?? match[3] ?? '';
+  }
+
+  return { name, attrs };
+}
+
+function renderGlobalHeadTemplate(template, payload) {
+  const attrs = payload?.attrs || {};
+  const mode = attrs.mode === 'standalone' ? 'standalone' : 'base';
+  const replacements = {
+    TITLE: attrs.title || 'Standalone',
+    THEME_COLOR: attrs['theme-color'] || '#030303',
+    COLOR_SCHEME: attrs['color-scheme'] || 'dark',
+    STATUS_BAR_STYLE: attrs['status-bar-style'] || 'black-translucent',
+    APP_TITLE:
+      attrs['app-title'] ||
+      (mode === 'standalone' ? attrs.title || 'Standalone' : 'AKS Portfolio'),
+  };
+
+  const nextTemplate = template
+    .replace(
+      /<!-- GLOBAL-HEAD:BASE-ONLY:BEGIN -->([\s\S]*?)<!-- GLOBAL-HEAD:BASE-ONLY:END -->/g,
+      (_match, block) => (mode === 'base' ? block : ''),
+    )
+    .replace(
+      /<!-- GLOBAL-HEAD:STANDALONE-ONLY:BEGIN -->([\s\S]*?)<!-- GLOBAL-HEAD:STANDALONE-ONLY:END -->/g,
+      (_match, block) => (mode === 'standalone' ? block : ''),
+    );
+
+  return nextTemplate.replace(/\{\{([A-Z_]+)\}\}/g, (_match, key) =>
+    escapeForHtml(replacements[key] || ''),
+  );
 }

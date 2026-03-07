@@ -231,7 +231,6 @@
   --btn-shadow-primary-hover: 0 0 18px rgb(9 139 255 / 55%);
   --btn-shine-bg: rgb(255 255 255 / 20%);
   --btn-focus-bg: rgb(0 119 255 / 12%);
-  --menu-header-top: 12px;
   --menu-header-side-gap: 32px;
   --menu-header-height: 52px;
   --menu-header-padding-inline: 16px;
@@ -458,7 +457,6 @@
 }
 
 :root[data-theme='dark'] {
-  --theme-mode: 'dark';
   --primary-color: #098bff;
   --primary-dark: #0066cc;
   --primary-light: #34aadc;

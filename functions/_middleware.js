@@ -13,7 +13,7 @@
  * - **Link-Header Preload**: CSS + JS als HTTP Link-Header
  * - **Edge-Side Section Caching**: hero.html / section3.html in KV (SWR)
  * - **Streaming Pipeline**: HTMLRewriter — Browser empfängt <head> sofort
- * - **Template-KV-Cache**: base-head.html in KV gecacht (SWR)
+ * - **Template-KV-Cache**: global-head.html in KV gecacht (SWR)
  * - **CSP Nonce + SEO Meta**: Via Streaming-Handlers (kein Buffering)
  * - **Server-Timing**: Observability-Header für DevTools-Timing-Tab
  * - **Deploy-Version Header**: SW-Cache-Konsistenz über X-Deploy-Version
@@ -54,37 +54,16 @@ import {
 // KV-Cache TTL für Templates: 1 Stunde
 const TEMPLATE_TTL_SECONDS = 3600;
 
-// Bump this whenever base-head template markup or critical CSS changes.
-const DEPLOY_VERSION = '20260306-2';
+// Bump this whenever injected head/template markup or critical CSS changes.
+const DEPLOY_VERSION = '20260306-13';
 
 // KV-Schlüssel für Template-Cache
 const KV_KEYS = {
-  HEAD: `template:${DEPLOY_VERSION}:base-head`,
+  GLOBAL_HEAD: `template:${DEPLOY_VERSION}:global-head`,
 };
 
 // Pre-compute Link header values at module load (immutable per deploy)
 const RESPONSE_LINK_HEADERS = buildResponseLinkHeaders();
-
-/**
- * Sanitize cached template HTML to avoid unsupported viewport keys
- * on older Safari/WebKit builds.
- */
-function sanitizeTemplateHtml(kvKey, html) {
-  if (!html) return '';
-  if (!kvKey.includes('base-head')) return html;
-
-  let sanitized = html.replace(
-    /\s*,\s*interactive-widget=resizes-content/g,
-    '',
-  );
-
-  sanitized = sanitized.replace(
-    /<meta\b[^>]*\bname=(['"])(?:theme-color|apple-mobile-web-app-status-bar-style|apple-mobile-web-app-capable|mobile-web-app-capable|apple-touch-fullscreen|apple-mobile-web-app-title)\1[^>]*>\s*/gi,
-    '',
-  );
-
-  return sanitized;
-}
 
 /**
  * Load template with KV caching + SWR.
@@ -106,22 +85,11 @@ async function loadTemplateWithCache(env, kvKey, fetchUrl, ctx) {
   const ONE_HOUR_MS = TEMPLATE_TTL_SECONDS * 1000;
 
   if (cachedItem && cachedItem.html) {
-    const cachedHtml = sanitizeTemplateHtml(kvKey, cachedItem.html);
-
-    if (cachedHtml !== cachedItem.html) {
-      ctx.waitUntil(
-        env.SITEMAP_CACHE_KV.put(
-          kvKey,
-          JSON.stringify({ timestamp: now, html: cachedHtml }),
-        ),
-      );
-    }
-
     if (now - cachedItem.timestamp > ONE_HOUR_MS) {
       ctx.waitUntil(refreshTemplateInKV(env, kvKey, fetchUrl));
     }
 
-    return cachedHtml;
+    return cachedItem.html;
   }
 
   return await refreshTemplateInKV(env, kvKey, fetchUrl);
@@ -137,7 +105,7 @@ async function refreshTemplateInKV(env, kvKey, fetchUrl) {
       console.error(`Template fetch failed: ${fetchUrl} → ${res.status}`);
       return '';
     }
-    const html = sanitizeTemplateHtml(kvKey, await res.text());
+    const html = await res.text();
 
     await env.SITEMAP_CACHE_KV.put(
       kvKey,
@@ -210,13 +178,13 @@ export async function onRequest(context) {
   // -----------------------------------------------------------------------
   const baseUrl = `${url.protocol}//${url.host}`;
 
-  const [upstreamResult, headTemplate, routeMeta, criticalCssMap] =
+  const [upstreamResult, globalHeadTemplate, routeMeta, criticalCssMap] =
     await Promise.all([
       context.next().catch(() => null),
       loadTemplateWithCache(
         context.env,
-        KV_KEYS.HEAD,
-        `${baseUrl}/content/templates/base-head.html`,
+        KV_KEYS.GLOBAL_HEAD,
+        `${baseUrl}/content/templates/global-head.html`,
         context,
       ),
       buildRouteMeta(context, url).catch(() => null),
@@ -254,9 +222,14 @@ export async function onRequest(context) {
   // 1. Section injection (Edge-Side Includes, KV-cached SWR)
   rewriter.on('section[data-section-src]', new SectionInjector(context));
 
-  // 2. Template injection (replaces <!-- INJECT:BASE-HEAD -->)
-  if (headTemplate) {
-    rewriter.on('*', new TemplateCommentHandler({ head: headTemplate }));
+  // 2. Template injection (replaces <!-- INJECT:* -->)
+  if (globalHeadTemplate) {
+    rewriter.on(
+      '*',
+      new TemplateCommentHandler({
+        globalHead: globalHeadTemplate,
+      }),
+    );
   }
 
   // 3. Critical CSS inlining + async loading
@@ -316,7 +289,9 @@ export async function onRequest(context) {
 
   // Server-Timing for observability
   const timingParts = [];
-  if (headTemplate) timingParts.push('tpl;desc="head-template"');
+  if (globalHeadTemplate) {
+    timingParts.push('tpl;desc="html-templates"');
+  }
   if (criticalCssMap.size > 0)
     timingParts.push(`css;desc="inlined ${criticalCssMap.size} CSS"`);
   if (routeMeta) timingParts.push('seo;desc="route-meta"');

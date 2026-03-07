@@ -9,7 +9,7 @@ import { createRoot } from 'react-dom/client';
 
 import { createLogger } from '#core/logger.js';
 import { AppLoadManager } from '#core/load-manager.js';
-import { createUseTranslation } from '#core/utils.js';
+import { createUseTranslation } from '#core/react-utils.js';
 import { createErrorBoundary } from '#components/ErrorBoundary.js';
 import { i18n } from '#core/i18n.js';
 

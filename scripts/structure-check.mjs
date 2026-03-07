@@ -28,7 +28,6 @@ const REQUIRED_PATHS = [
   'content/styles/tokens',
   'content/components',
   'content/core',
-  'styleguide/index.html',
 ];
 
 const GENERATED_FILES = [

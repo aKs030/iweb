@@ -1,0 +1,271 @@
+# Projekt-Dokumentation
+
+Portfolio Website mit Cloudflare Pages, Vanilla JavaScript und Three.js.
+
+## 📁 Projektstruktur
+
+```text
+content/      Frontend-Code (Komponenten, Core, Styles, Assets)
+pages/        Seiten-spezifische Entry-Points
+functions/    Cloudflare Pages Functions + API-Endpunkte
+docs/         Diese Dokumentation
+scripts/      Build-, Audit- und Wartungsskripte
+config/       Konfigurationsdateien (ESLint, Prettier, Stylelint, .env.example)
+```
+
+### Root-Verzeichnis
+
+Die Root-Struktur folgt Web-Standards:
+
+- **Entry Points**: index.html, offline.html, sw.js
+- **AI Discovery**: ai-index.json, llms.txt, bio.md, person.jsonld
+- **Configuration**: package.json, tsconfig.json, eslint.config.mjs
+- **Cloudflare**: \_headers, \_redirects, wrangler.jsonc
+- **Documentation**: README.md, LICENSE, CONTRIBUTING.md
+
+Alle Root-Dateien sind notwendig und folgen Tool-Konventionen.
+
+## 🎨 CSS & Styles
+
+### Token-System
+
+**Source of Truth**:
+
+- `content/styles/tokens/tokens.json` - Light Mode
+- `content/styles/tokens/tokens-dark.json` - Dark Mode
+
+**Generated**:
+
+- `content/styles/tokens.css` - CSS Custom Properties
+- `content/styles/utilities.generated.css` - Utility Classes
+
+### Workflow
+
+```bash
+npm run styles:generate  # Tokens + Utilities generieren
+npm run check:tokens     # Token-Struktur prüfen
+```
+
+### Regeln
+
+1. **Tokens verwenden**: Keine Hard-coded Colors/Spacing
+2. **Utilities nutzen**: Für häufige Patterns
+3. **Komponenten-Styles**: In separaten .css Dateien
+4. **Responsive**: Mobile-first mit Breakpoints
+
+Details: `content/styles/README.md`
+
+## 🔧 Development
+
+### Setup
+
+```bash
+npm ci                   # Dependencies installieren
+npm run dev              # Dev-Server starten (localhost:8080)
+```
+
+### Quality Assurance
+
+```bash
+npm run qa               # Kompletter QA-Run (fix + lint + check)
+npm run lint             # Nur Linting
+npm run fix              # Auto-fix für ESLint + Stylelint + Prettier
+npm run check            # Struktur-Checks
+```
+
+### Hooks
+
+**Pre-commit**: `lint-staged` auf gestagten Dateien
+**Pre-push**: `npm run qa`
+
+## 🚀 Deployment
+
+### Cloudflare Pages
+
+**Automatisch**:
+
+- Push zu `main` → Production Deploy
+- Pull Request → Preview Deploy
+
+**Konfiguration**:
+
+- `wrangler.jsonc` - Cloudflare Config
+- `_headers` - HTTP Headers (Caching, Security)
+- `_redirects` - URL-Redirects
+- `functions/` - Serverless Functions
+
+### Environment Variables
+
+**Lokal**: `.dev.vars` (gitignored)
+**Production**: Cloudflare Dashboard
+
+## 🤖 AI Discovery & SEO
+
+### AI-Indexierung
+
+- `ai-index.json` - Strukturierter Gesamtindex
+- `llms.txt` / `llms-full.txt` - LLM-Context
+- `person.jsonld` - Schema.org Person
+- `bio.md` - Markdown-Biografie
+
+### Sitemaps
+
+Dynamisch generiert via Cloudflare Functions:
+
+- `/sitemap.xml` - Haupt-Sitemap
+- `/sitemap-index.xml` - Sitemap-Index
+- `/sitemap-images.xml` - Bilder-Sitemap
+
+**Generator**: `functions/sitemap.xml.js`
+
+### robots.txt
+
+Erlaubt explizit AI-Bots (GPTBot, Claude-Web, etc.)
+
+## 📊 Code Quality
+
+### Linting
+
+- **ESLint**: JavaScript/JSDoc (eslint.config.mjs)
+- **Stylelint**: CSS (.stylelintrc.cjs)
+- **Prettier**: Formatierung (.prettierrc.json)
+
+### Struktur-Checks
+
+```bash
+npm run check:structure  # Projektstruktur prüfen
+npm run check:tokens     # Token-Struktur prüfen
+npm run check:importmap  # Import-Map validieren
+npm run check:docs       # Dokumentations-Links prüfen
+```
+
+### Git Hooks
+
+Konfiguriert via Husky (`.husky/`):
+
+- `pre-commit` - Lint staged files
+- `pre-push` - Full QA run
+
+## 🎯 Performance
+
+### Zero-Build Architecture
+
+Keine Build-Steps nötig:
+
+- Native ES Modules
+- Import Maps für Dependencies
+- CSS ohne Preprocessor
+
+### Optimierungen
+
+- **Caching**: Via `_headers` (Cloudflare)
+- **Compression**: Automatisch (Cloudflare)
+- **Images**: WebP, optimierte Größen
+- **Code Splitting**: Via dynamic imports
+- **Service Worker**: PWA mit Offline-Support
+
+## 🔍 Wichtige Scripts
+
+### Development
+
+```bash
+npm run dev              # Dev-Server mit Wrangler
+npm run dev -- --port 8787  # Custom Port
+```
+
+### Quality
+
+```bash
+npm run qa               # Fix + Lint + Check
+npm run qa:fix           # Nur Auto-fix
+npm run qa:all           # Fix + Check in einem
+```
+
+### Maintenance
+
+```bash
+npm run clean            # Cache löschen
+npm run clean:root       # Root-Verzeichnis aufräumen
+npm run sync             # Import-Map + AI-Index sync
+```
+
+### Styles
+
+```bash
+npm run styles:generate  # Tokens + Utilities generieren
+```
+
+## 📦 Dependencies
+
+### Production
+
+- `three` - 3D Graphics (Earth Visualization)
+- `react` + `react-dom` - UI Components
+- `htm` - JSX-Alternative
+- `lucide-react` - Icons
+
+### Development
+
+- `wrangler` - Cloudflare CLI
+- `eslint` - JavaScript Linting
+- `stylelint` - CSS Linting
+- `prettier` - Code Formatting
+- `playwright` - Browser Testing
+- `husky` - Git Hooks
+
+## 🏗️ Architektur
+
+### Frontend Layers
+
+```text
+content/core/         Framework-Utilities, Event-System
+content/components/   Wiederverwendbare UI-Komponenten
+content/styles/       Globale Styles, Tokens, Utilities
+pages/*/              Seiten-Entry und Page-Komponenten
+```
+
+### Regeln
+
+- `content/core` kennt keine Seiten-Details
+- `content/components` bleibt generisch und token-basiert
+- `pages/*` darf komponieren, aber keine Core-Regeln brechen
+
+### Cloudflare Functions
+
+```text
+functions/
+├── api/              API-Endpunkte
+├── sitemap.xml.js    Sitemap-Generator
+└── _routes.json      Routing-Config
+```
+
+## 🔐 Security
+
+- **CSP**: Content Security Policy via `_headers`
+- **HTTPS**: Erzwungen via Cloudflare
+- **Dependencies**: Automatische Updates via Renovate
+- **Secrets**: Nie in Git committen (`.dev.vars` ist gitignored)
+
+Security Policy: `SECURITY.md`
+
+## 🤝 Contributing
+
+Siehe `CONTRIBUTING.md` für:
+
+- Code-Style Guidelines
+- Commit-Konventionen
+- Pull Request Process
+- Testing Requirements
+
+## 📝 Changelog
+
+Alle Änderungen werden in `docs/CHANGELOG.md` dokumentiert.
+
+## 📄 License
+
+MIT License - Siehe `LICENSE`
+
+---
+
+**Last Updated**: 2026-03-07
+**Maintained by**: Abdulkerim Sesli

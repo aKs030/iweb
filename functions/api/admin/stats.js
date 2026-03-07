@@ -81,7 +81,7 @@ export async function onRequestGet(context) {
               userId: key.name.replace('robot-memory:', ''),
               memories: Array.isArray(parsed) ? parsed : [],
             });
-          } catch (e) {
+          } catch {
             // Not JSON
           }
         }

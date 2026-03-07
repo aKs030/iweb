@@ -1,0 +1,34 @@
+:root {
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --shell-pad-top: 0px;
+  --shell-pad-right: 0px;
+  --shell-pad-bottom: 0px;
+  --shell-pad-left: 0px;
+  --shell-bg: transparent;
+  --shell-text: inherit;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+html {
+  background: var(--shell-bg);
+}
+
+body.immersive-shell {
+  padding-top: max(var(--shell-pad-top), var(--safe-top));
+  padding-right: max(var(--shell-pad-right), var(--safe-right));
+  padding-bottom: max(var(--shell-pad-bottom), var(--safe-bottom));
+  padding-left: max(var(--shell-pad-left), var(--safe-left));
+  background: var(--shell-bg);
+  color: var(--shell-text);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}

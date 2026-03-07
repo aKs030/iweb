@@ -1,0 +1,65 @@
+body.offline-page {
+  --shell-bg: #030303;
+  --shell-text: #f5f5f5;
+  --shell-pad-top: 1.5rem;
+  --shell-pad-right: 1.5rem;
+  --shell-pad-bottom: 1.5rem;
+  --shell-pad-left: 1.5rem;
+  align-items: center;
+  display: flex;
+  font-family: system-ui, sans-serif;
+  justify-content: center;
+}
+
+body.offline-page,
+body.offline-page *,
+body.offline-page *::before,
+body.offline-page *::after {
+  box-sizing: border-box;
+}
+
+body.offline-page main,
+body.offline-page h1,
+body.offline-page p {
+  margin: 0;
+}
+
+.offline-card {
+  background: rgb(255 255 255 / 4%);
+  border: 1px solid rgb(255 255 255 / 8%);
+  border-radius: 1rem;
+  max-width: 400px;
+  padding: 2.5rem 2rem;
+  text-align: center;
+  width: min(100%, 400px);
+}
+
+.offline-icon {
+  font-size: 3rem;
+}
+
+body.offline-page h1 {
+  font-size: 1.25rem;
+  margin: 0.75rem 0;
+}
+
+body.offline-page p {
+  color: rgb(255 255 255 / 55%);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+}
+
+.offline-button {
+  all: unset;
+  background: #098bff;
+  border-radius: 0.6rem;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 500;
+  padding: 0.7rem 1.8rem;
+}
+
+.offline-button:active {
+  scale: 0.97;
+}

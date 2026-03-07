@@ -3,12 +3,13 @@
   .site-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    top: calc(var(--size-8) + var(--safe-top));
+    align-items: var(--route-header-mobile-align-items);
+    top: var(--route-header-mobile-top);
     width: calc(100% - var(--size-16) - var(--safe-left) - var(--safe-right));
     max-width: none;
-    height: var(--size-48);
-    padding: 0 var(--size-12) 0 var(--size-16);
+    height: var(--route-header-mobile-height);
+    padding: var(--route-header-mobile-padding-top) var(--size-12) 0
+      var(--size-16);
     border-radius: var(--size-20);
     min-width: 0;
   }
@@ -31,8 +32,6 @@
     top: 50%;
     margin-left: 0;
     --menu-toggle-transform-rest: translateY(-50%);
-    --menu-toggle-transform-hover: translateY(-50%);
-    --menu-toggle-transform-active: translateY(-50%);
   }
 
   .site-header.search-mode .menu-search {
@@ -59,9 +58,6 @@
     top: 0;
     margin-left: var(--size-8);
     --menu-toggle-transform-rest: none;
-    --menu-toggle-transform-hover: none;
-    --menu-toggle-transform-active: none;
-    --menu-toggle-transition: none;
   }
 
   .site-menu {
@@ -76,10 +72,10 @@
     overflow-y: auto;
     padding: 0;
     left: auto;
-    background: var(--component-header-bg);
+    background: var(--route-header-bg);
     backdrop-filter: blur(0px);
     -webkit-backdrop-filter: blur(0px);
-    border: var(--size-1) solid var(--component-separator);
+    border: var(--size-1) solid var(--route-header-border);
     border-radius: var(--size-20);
     box-shadow: var(
       --component-shadow-depth-3,
@@ -104,15 +100,13 @@
     pointer-events: auto;
     background: linear-gradient(
       145deg,
-      color-mix(in srgb, var(--component-header-bg) 86%, rgb(255 255 255 / 14%))
-        0%,
-      color-mix(in srgb, var(--component-header-bg) 92%, rgb(140 184 255 / 10%))
-        55%,
-      color-mix(in srgb, var(--component-header-bg) 96%, rgb(0 0 0 / 14%)) 100%
+      color-mix(in srgb, var(--route-header-bg) 86%, rgb(255 255 255 / 14%)) 0%,
+      color-mix(in srgb, var(--route-header-bg) 92%, rgb(140 184 255 / 10%)) 55%,
+      color-mix(in srgb, var(--route-header-bg) 96%, rgb(0 0 0 / 14%)) 100%
     );
     border-color: color-mix(
       in srgb,
-      var(--component-separator) 78%,
+      var(--route-header-border) 78%,
       rgb(193 222 255 / 46%)
     );
     box-shadow:

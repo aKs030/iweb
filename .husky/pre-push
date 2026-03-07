@@ -1,24 +1,34 @@
 #!/bin/sh
 # Husky pre-push hook
 
-# Run auto-fixes before any checks so formatting issues are resolved early
-# (this prevents Prettier cache warnings from blocking the push)
-npm run qa:fix || true
+echo "🚀 Pre-push checks starting..."
 
-# Clear Prettier cache to avoid stale warning symptoms
-rm -f .prettiercache 2>/dev/null || true
-
-# Run QA. If it fails, try to fix and notify the user.
-# run QA and capture exit code but don't block the push (just warn)
-# ignore errors so script continues even if QA fails
-npm run qa || true
-QA_EXIT=$?
-if [ $QA_EXIT -ne 0 ]; then
-  echo ""
-  echo "⚠️  QA check reported issues (exit code $QA_EXIT)."
-  echo "   The hook will not block the push, but please review the output above."
-  echo ""
-  # attempt another auto-fix in case there are lingering formatting problems
-  npm run qa:fix || true
-  echo "(If fixes were applied, commit them manually: git commit -am 'style: auto-fix')"
+# Skip for CI environments
+if [ -n "$CI" ]; then
+  echo "⏭️  Skipping in CI environment"
+  exit 0
 fi
+
+# Clear caches
+echo "🧹 Clearing caches..."
+npm run -s clean:cache 2>/dev/null || true
+
+# Run lint only (faster than full QA)
+echo "🔍 Running linters..."
+npm run lint
+
+LINT_EXIT=$?
+
+if [ $LINT_EXIT -ne 0 ]; then
+  echo ""
+  echo "❌ Lint checks failed"
+  echo "💡 Run: npm run fix"
+  echo ""
+  read -p "❓ Push anyway? [y/N] " -n 1 -r
+  echo
+  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    exit 1
+  fi
+fi
+
+echo "✅ Pre-push checks passed!"

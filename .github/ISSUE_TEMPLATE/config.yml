@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 💬 Fragen & Diskussionen
+    url: https://github.com/aKs030/iweb/discussions
+    about: Stelle Fragen oder diskutiere über das Projekt
+  - name: 🌐 Website
+    url: https://www.abdulkerimsesli.de
+    about: Besuche die Live-Website
+  - name: 📧 Direkter Kontakt
+    url: https://www.abdulkerimsesli.de/contact/
+    about: Kontaktiere mich direkt per E-Mail

@@ -1,13 +1,18 @@
 #!/bin/sh
 # Husky pre-commit hook
 
-# Run only locally installed, pinned tooling.
-for bin in lint-staged eslint prettier stylelint; do
-  if [ ! -x "node_modules/.bin/$bin" ]; then
-    echo "husky - missing dev dependency: $bin"
-    echo "husky - run: npm ci"
-    exit 1
-  fi
-done
+echo "🔍 Running pre-commit checks..."
 
-npm run -s hooks:pre-commit
+# Run lint-staged with auto-fix
+npx lint-staged
+
+EXIT_CODE=$?
+
+if [ $EXIT_CODE -ne 0 ]; then
+  echo ""
+  echo "❌ Pre-commit checks failed!"
+  echo "💡 Run: npm run fix"
+  exit 1
+fi
+
+echo "✅ Pre-commit checks passed!"

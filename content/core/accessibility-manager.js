@@ -1,42 +1,30 @@
 /* Accessibility Manager */
 
 /**
- * Attach a MediaQueryList change listener across modern and legacy APIs.
- * Returns a cleanup function.
+ * Attach a MediaQueryList change listener and return a cleanup function.
  *
  * @param {MediaQueryList} mql
  * @param {(event: MediaQueryListEvent) => void} handler
  * @returns {() => void}
  */
 function bindMediaQueryChange(mql, handler) {
-  if (!mql || typeof handler !== 'function') return () => {};
-
-  try {
-    if (typeof mql.addEventListener === 'function') {
-      mql.addEventListener('change', handler);
-      return () => {
-        try {
-          mql.removeEventListener('change', handler);
-        } catch {
-          // ignore cleanup errors
-        }
-      };
-    }
-  } catch {
-    // fall through to legacy API
+  if (
+    !mql ||
+    typeof handler !== 'function' ||
+    typeof mql.addEventListener !== 'function'
+  ) {
+    return () => {};
   }
 
   try {
-    if (typeof mql.addListener === 'function') {
-      mql.addListener(handler);
-      return () => {
-        try {
-          mql.removeListener(handler);
-        } catch {
-          // ignore cleanup errors
-        }
-      };
-    }
+    mql.addEventListener('change', handler);
+    return () => {
+      try {
+        mql.removeEventListener('change', handler);
+      } catch {
+        // ignore cleanup errors
+      }
+    };
   } catch {
     // ignore unsupported environments
   }
@@ -235,10 +223,7 @@ class AccessibilityManager {
     // footer cookie settings use an ID now, not the old `.footer-cookie-settings` class
     const cookieModal = document.querySelector('#cookie-settings:not(.hidden)');
     if (cookieModal) {
-      // the close button also has its own ID; fall back to the legacy class just in case
-      const closeBtn =
-        cookieModal.querySelector('#close-settings') ||
-        cookieModal.querySelector('.cookie-settings-close');
+      const closeBtn = cookieModal.querySelector('#close-settings');
       if (closeBtn) closeBtn.click();
       return;
     }
@@ -248,8 +233,7 @@ class AccessibilityManager {
       const { closeFooter } = await import('../components/footer/footer.js');
       closeFooter();
     } catch {
-      // footer module could not be imported; nothing else we can do – the
-      // old event-based fallback is no longer supported.
+      // footer module could not be imported
     }
   }
 

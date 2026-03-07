@@ -1,0 +1,255 @@
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+<meta name="format-detection" content="telephone=no,email=no" />
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+/>
+
+<!-- GLOBAL-HEAD:BASE-ONLY:BEGIN -->
+<!-- Import Map for no-build ES modules: vendors + internal aliases -->
+<!-- Must be as early as possible in the head -->
+<!-- Three.js version: sync with THREE_VERSION in content/config/constants.js -->
+<!-- BEGIN GENERATED IMPORT MAP -->
+<script type="importmap">
+  {
+    "imports": {
+      "react": "https://esm.sh/react@19.2.4",
+      "react-dom": "https://esm.sh/react-dom@19.2.4",
+      "react-dom/client": "https://esm.sh/react-dom@19.2.4/client",
+      "lucide-react": "https://esm.sh/lucide-react@0.575.0",
+      "three": "https://cdn.jsdelivr.net/npm/three@0.183.1/build/three.module.min.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.183.1/examples/jsm/",
+      "htm": "https://esm.sh/htm@3.1.1",
+      "idb-keyval": "https://esm.sh/idb-keyval@6.2.1",
+      "#core/": "/content/core/",
+      "#components/": "/content/components/",
+      "#config/": "/content/config/",
+      "#pages/": "/pages/"
+    },
+    "scopes": {
+      "https://esm.sh/": {
+        "react": "https://esm.sh/react@19.2.4"
+      }
+    }
+  }
+</script>
+<!-- END GENERATED IMPORT MAP -->
+<!-- GLOBAL-HEAD:BASE-ONLY:END -->
+
+<!-- Browser chrome / installed web app shell -->
+<!-- GLOBAL-HEAD:BASE-ONLY:BEGIN -->
+<meta
+  name="theme-color"
+  content="#0a0a0a"
+  media="(prefers-color-scheme: dark)"
+/>
+<meta
+  name="theme-color"
+  content="#ffffff"
+  media="(prefers-color-scheme: light)"
+/>
+<meta name="color-scheme" content="dark light" />
+<!-- GLOBAL-HEAD:BASE-ONLY:END -->
+<!-- GLOBAL-HEAD:STANDALONE-ONLY:BEGIN -->
+<meta name="theme-color" content="{{THEME_COLOR}}" />
+<meta name="color-scheme" content="{{COLOR_SCHEME}}" />
+<!-- GLOBAL-HEAD:STANDALONE-ONLY:END -->
+
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta
+  name="apple-mobile-web-app-status-bar-style"
+  content="{{STATUS_BAR_STYLE}}"
+/>
+<meta name="apple-mobile-web-app-title" content="{{APP_TITLE}}" />
+<meta name="mobile-web-app-capable" content="yes" />
+
+<!-- GLOBAL-HEAD:STANDALONE-ONLY:BEGIN -->
+<title>{{TITLE}}</title>
+<!-- GLOBAL-HEAD:STANDALONE-ONLY:END -->
+
+<!-- GLOBAL-HEAD:BASE-ONLY:BEGIN -->
+<!-- Theme bootstrap (run before stylesheets) -->
+<script id="theme-bootstrap">
+  try {
+    var d = document.documentElement,
+      s = window.localStorage,
+      c = s ? s.getItem("iweb-theme-preference") : null,
+      m = window.matchMedia("(prefers-color-scheme: light)").matches,
+      t =
+        d.getAttribute("data-force-theme") ||
+        (c === "light" || c === "dark" ? c : m ? "light" : "dark");
+    d.setAttribute("data-theme", t);
+    d.style.colorScheme = t;
+    var metas = document.querySelectorAll('meta[name="theme-color"]');
+    for (var i = 0; i < metas.length; i++) {
+      var meta = metas[i];
+      if (meta.getAttribute("media")) {
+        meta.setAttribute(
+          "media",
+          (meta.getAttribute("content") || "").toLowerCase() === "#ffffff"
+            ? t === "light"
+              ? "all"
+              : "not all"
+            : t === "dark"
+              ? "all"
+              : "not all",
+        );
+      }
+    }
+  } catch (e) {}
+</script>
+
+<!-- Generated design tokens (single file with :root + [data-theme] blocks) -->
+<link
+  rel="stylesheet"
+  href="/content/styles/tokens.css"
+  id="tokens-css"
+  fetchpriority="high"
+/>
+
+<!-- Critical CSS - Loaded immediately to prevent FOUC -->
+<link rel="stylesheet" href="/content/styles/root.css" fetchpriority="high" />
+<link rel="stylesheet" href="/content/styles/main.css" fetchpriority="high" />
+<link rel="stylesheet" href="/content/styles/animations.css" />
+<link rel="stylesheet" href="/content/components/menu/menu.css" />
+<link rel="stylesheet" href="/content/components/footer/footer.css" />
+
+<!-- Hero Critical CSS (inline for fastest FCP on homepage) -->
+<style id="hero-critical-inline">
+  .hero {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--viewport-height, 100dvh);
+    padding: 0 0.5rem;
+    box-sizing: border-box;
+  }
+  .hero__title {
+    font: 800 clamp(3rem, 6vw, 4.5rem)/1.03 var(--font-inter);
+    margin: 0;
+    padding: 8px 12px;
+    max-width: 30ch;
+    color: var(--color-text-main, #fff);
+    text-align: center;
+    white-space: normal;
+  }
+</style>
+<!-- GLOBAL-HEAD:BASE-ONLY:END -->
+
+<!-- Favicons -->
+<link
+  rel="icon"
+  href="https://img.abdulkerimsesli.de/icons/favicon.ico?v=20260221"
+  sizes="48x48"
+/>
+<link
+  rel="icon"
+  href="https://img.abdulkerimsesli.de/icons/favicon.svg?v=20260221"
+  sizes="any"
+  type="image/svg+xml"
+/>
+<link
+  rel="icon"
+  type="image/webp"
+  sizes="512x512"
+  href="https://img.abdulkerimsesli.de/icons/favicon-512.webp?v=20260221"
+/>
+<link
+  rel="apple-touch-icon"
+  sizes="180x180"
+  href="https://img.abdulkerimsesli.de/icons/apple-touch-icon.webp?v=20260221"
+/>
+<link
+  rel="mask-icon"
+  href="https://img.abdulkerimsesli.de/icons/safari-pinned-tab.svg?v=20260306"
+  color="#030303"
+/>
+
+<!-- PWA -->
+<link rel="manifest" href="/manifest.json" />
+
+<!-- GLOBAL-HEAD:BASE-ONLY:BEGIN -->
+<link
+  rel="alternate"
+  type="application/rss+xml"
+  title="Abdulkerim Sesli — Blog"
+  href="/api/feed.xml"
+/>
+
+<!-- Sitemap -->
+<link rel="sitemap" href="/sitemap-index.xml" type="application/xml" />
+<link rel="alternate" type="text/plain" href="/llms.txt" title="LLM Index" />
+<link
+  rel="alternate"
+  type="text/plain"
+  href="/llms-full.txt"
+  title="LLM Full Index"
+/>
+<link
+  rel="alternate"
+  type="application/json"
+  href="/ai-index.json"
+  title="AI Index"
+/>
+<link rel="alternate" type="text/html" href="/ai-info" title="AI Profile Hub" />
+
+<!-- Resource Hints: DNS-Prefetch (fallback) + Preconnect (modern) -->
+<link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
+<link rel="dns-prefetch" href="https://esm.sh" />
+<link rel="dns-prefetch" href="https://img.abdulkerimsesli.de" />
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+<link rel="preconnect" href="https://esm.sh" crossorigin />
+<link rel="preconnect" href="https://img.abdulkerimsesli.de" crossorigin />
+<link rel="preconnect" href="https://www.googletagmanager.com" crossorigin />
+<link rel="preconnect" href="https://www.google-analytics.com" crossorigin />
+
+<!-- Baseline Speculation Rules (runtime manager upgrades this adaptively) -->
+<script type="speculationrules" data-injected-by="resource-hints">
+  {
+    "prerender": [
+      {
+        "source": "document",
+        "where": {
+          "and": [
+            { "href_matches": "/*" },
+            { "not": { "href_matches": "/api/*" } },
+            { "not": { "href_matches": "/functions/*" } },
+            {
+              "not": {
+                "selector_matches": "a[download],a[href^=\"#\"],a[href*=\"?\"],a[target=\"_blank\"],a[href$=\".pdf\"],a[href$=\".zip\"],a[href$=\".mp4\"],a[data-no-speculate],a[data-no-prerender]"
+              }
+            }
+          ]
+        },
+        "eagerness": "conservative"
+      }
+    ],
+    "prefetch": [
+      {
+        "source": "list",
+        "urls": ["/projekte/", "/gallery/", "/videos/"],
+        "eagerness": "conservative"
+      }
+    ]
+  }
+</script>
+
+<!-- Preload Critical App JS -->
+<link rel="modulepreload" href="/content/main.js" fetchpriority="high" />
+<link
+  rel="modulepreload"
+  href="/content/components/head/head-inline.js"
+  fetchpriority="high"
+/>
+<link rel="modulepreload" href="/content/components/menu/SiteMenu.js" />
+
+<!-- Core Scripts -->
+<script type="module" src="/content/components/menu/SiteMenu.js"></script>
+<script type="module" src="/content/components/head/head-inline.js"></script>
+<script type="module" src="/content/main.js"></script>
+<!-- GLOBAL-HEAD:BASE-ONLY:END -->
+
+<!-- GLOBAL-HEAD:STANDALONE-ONLY:BEGIN -->
+<link rel="stylesheet" href="/content/styles/immersive-shell.css" />
+<!-- GLOBAL-HEAD:STANDALONE-ONLY:END -->

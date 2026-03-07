@@ -155,6 +155,13 @@ export function ensureFontDisplaySwap({ runWhenDomReady }) {
 export function injectHeroCriticalCSS() {
   try {
     if (getNormalizedPathname() !== '/') return;
+
+    // Check if already exists (from global-head.html inline style)
+    if (document.head.querySelector('#hero-critical-inline')) {
+      return; // Already inlined in global-head.html
+    }
+
+    // Fallback: inject if not found (shouldn't happen in production)
     if (document.head.querySelector('#hero-critical-css')) return;
 
     const css = `

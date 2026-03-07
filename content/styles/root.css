@@ -16,11 +16,8 @@
   --particle-color: color-mix(in srgb, var(--primary-color) 80%, transparent);
 
   /* Runtime-computed typography tokens */
-  --font-size-p: var(--size-r-1-08);
-  --line-height-base: 1.7;
   --headline-fs: clamp(var(--size-r-3), 6vw, calc(var(--size-r-1-5) * 3));
   --headline-lh: 1.03;
-  --headline-weight: 900;
   --headline-letter: -0.02em;
   --greet-fs: var(--headline-fs);
   --greet-lh: var(--headline-lh);
@@ -32,6 +29,23 @@
   /* Offset tokens composed from generated design tokens */
   --content-top-offset: calc(var(--menu-height) + var(--safe-top));
   --content-bottom-offset: calc(var(--footer-height) + var(--safe-bottom));
+
+  /* Standardized route-shell overrides for immersive/mobile layouts */
+  --route-page-bg: var(--bg-primary);
+  --route-scroll-padding-top: var(--content-top-offset);
+  --route-shell-pad-top: var(--content-top-offset);
+  --route-shell-pad-right: var(--safe-right);
+  --route-shell-pad-bottom: var(--content-bottom-offset);
+  --route-shell-pad-left: var(--safe-left);
+  --route-header-bg: var(--component-header-bg);
+  --route-header-border: var(--component-separator);
+  --route-header-shadow: var(--component-shadow-depth-2);
+  --route-header-top: calc(var(--size-12) + var(--safe-top));
+  --route-header-mobile-top: calc(var(--size-8) + var(--safe-top));
+  --route-header-mobile-height: var(--size-48);
+  --route-header-mobile-padding-top: 0px;
+  --route-header-mobile-align-items: center;
+  --route-theme-color: #0a0a0a;
 }
 
 /* ============================================

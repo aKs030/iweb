@@ -18,7 +18,7 @@ Modular utilities for Cloudflare Pages Middleware (`functions/_middleware.js`).
 ### `edge-speculation.js` ✨ NEW
 
 - `EdgeSpeculationRules` — Injects route-aware Speculation Rules before `</head>`
-- `StaticSpeculationRemover` — Removes static baseline rules from base-head.html
+- `StaticSpeculationRemover` — Removes static baseline rules from the global head template
 - Route → prefetch URL mapping for all pages
 
 ### `edge-cache.js` ✨ NEW
@@ -38,7 +38,7 @@ Modular utilities for Cloudflare Pages Middleware (`functions/_middleware.js`).
 
 ### `streaming-handlers.js`
 
-- `TemplateCommentHandler` — Injects base-head template via HTMLRewriter
+- `TemplateCommentHandler` — Injects the global head template via HTMLRewriter
 - `NonceInjector` — Adds nonce to inline scripts/styles
 - `SeoMetaHandler` — Injects SEO meta tags into `<head>`
 
@@ -74,11 +74,11 @@ Browser Request
   │
   ├─→ [1] Edge HTML Cache check → if HIT: inject fresh nonce → respond (~0ms)
   │
-  ├─→ [2] MISS: Parallel fetch (upstream + template + route-meta + critical CSS)
+  ├─→ [2] MISS: Parallel fetch (upstream + global-head template + route-meta + critical CSS)
   │
   ├─→ [3] HTMLRewriter pipeline (7 handlers, single pass):
   │        ① Section injection (hero/section3 from KV ~1ms)
-  │        ② Template injection (base-head.html)
+  │        ② Template injection (global-head.html)
   │        ③ Critical CSS inlining (tokens.css + root.css as <style>)
   │        ④ Static speculation rules removal
   │        ⑤ Route-aware speculation rules injection
@@ -97,10 +97,10 @@ Deploy-Version Sync:
 
 ## KV Cache Keys
 
-| Key Pattern                          | Content                           | TTL    |
-| ------------------------------------ | --------------------------------- | ------ |
-| `template:{v}:base-head`             | Import-Map + CSS + Meta + Scripts | 1h SWR |
-| `section:{v}:/pages/home/hero`       | Hero Section HTML                 | 1h SWR |
-| `section:{v}:/pages/home/section3`   | Section3 HTML                     | 1h SWR |
-| `css:{v}:/content/styles/tokens.css` | Design Tokens CSS                 | 1h SWR |
-| `css:{v}:/content/styles/root.css`   | Root Layout CSS                   | 1h SWR |
+| Key Pattern                          | Content                                | TTL    |
+| ------------------------------------ | -------------------------------------- | ------ |
+| `template:{v}:global-head`           | Global head template (base/standalone) | 1h SWR |
+| `section:{v}:/pages/home/hero`       | Hero Section HTML                      | 1h SWR |
+| `section:{v}:/pages/home/section3`   | Section3 HTML                          | 1h SWR |
+| `css:{v}:/content/styles/tokens.css` | Design Tokens CSS                      | 1h SWR |
+| `css:{v}:/content/styles/root.css`   | Root Layout CSS                        | 1h SWR |

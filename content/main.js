@@ -10,12 +10,7 @@ import { SectionManager } from '#core/section-manager.js';
 import { AppLoadManager, loadSignals } from '#core/load-manager.js';
 import { signal, effect, computed } from '#core/signals.js';
 import { ThreeEarthManager } from '#core/three-earth-manager.js';
-import {
-  onDOMReady,
-  TimerManager,
-  scrollTopIfNoHash,
-  initDOMPurify,
-} from '#core/utils.js';
+import { onDOMReady, TimerManager, scrollTopIfNoHash } from '#core/utils.js';
 import { initViewTransitions } from '#core/view-transitions.js';
 import { i18n } from '#core/i18n.js';
 import { GlobalEventHandlers } from '#core/events.js';
@@ -115,7 +110,7 @@ onDOMReady(_initApp);
 document.addEventListener(
   'DOMContentLoaded',
   async () => {
-    await Promise.all([i18n.init(), initDOMPurify()]);
+    await i18n.init();
     initNetworkStatusIndicator({ announce, timers: appTimers });
     perfMarks.domReady = performance.now();
 

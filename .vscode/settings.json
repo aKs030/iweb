@@ -1,34 +1,93 @@
 {
-  "editor.linkedEditing": true,
+  // Editor
   "editor.formatOnSave": true,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit"
+    "source.fixAll.eslint": "explicit",
+    "source.fixAll.stylelint": "explicit"
   },
-  "css.lint.duplicateProperties": "warning",
-  "css.lint.emptyRules": "warning",
+  "editor.rulers": [
+    80,
+    120
+  ],
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "editor.detectIndentation": false,
+  "editor.bracketPairColorization.enabled": true,
+  "editor.guides.bracketPairs": true,
+  "editor.linkedEditing": true,
+  "editor.inlineSuggest.enabled": true,
+  // Files
+  "files.eol": "\n",
   "files.trimTrailingWhitespace": true,
   "files.insertFinalNewline": true,
   "files.associations": {
     "*.css": "css",
-    "_headers": "plaintext",
-    "_redirects": "plaintext"
+    "*.mjs": "javascript",
+    "*.cjs": "javascript",
+    ".prettierrc": "json",
+    ".stylelintrc": "json",
+    "wrangler.jsonc": "jsonc"
   },
+  "files.exclude": {
+    "**/.DS_Store": true,
+    "**/node_modules": true,
+    "**/.wrangler": true,
+    "**/*.cache": true
+  },
+  // Search
   "search.exclude": {
-    "node_modules": true,
-    "package-lock.json": true,
-    ".wrangler": true
+    "**/node_modules": true,
+    "**/package-lock.json": true,
+    "**/.wrangler": true,
+    "**/*.cache": true
   },
-  "[markdown]": {
-    "files.trimTrailingWhitespace": false
+  // ESLint
+  "eslint.enable": true,
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+  // Stylelint
+  "stylelint.enable": true,
+  "stylelint.validate": [
+    "css",
+    "scss"
+  ],
+  "css.validate": false,
+  "scss.validate": false,
+  // Prettier
+  "prettier.enable": true,
+  "prettier.requireConfig": true,
+  // JavaScript/TypeScript
+  "javascript.updateImportsOnFileMove.enabled": "always",
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "javascript.suggest.autoImports": true,
+  "typescript.suggest.autoImports": true,
+  "js/ts.implicitProjectConfig.checkJs": true,
+  // Git
+  "git.autofetch": true,
+  "git.confirmSync": false,
+  "git.enableSmartCommit": true,
+  // Terminal
+  "terminal.integrated.defaultProfile.osx": "bash",
+  "terminal.integrated.defaultProfile.linux": "bash",
+  // Emmet
+  "emmet.includeLanguages": {
+    "javascript": "javascriptreact"
   },
-  "[javascript]": {
-    "editor.defaultFormatter": "vscode.typescript-language-features"
-  },
-  "[css]": {
-    "editor.defaultFormatter": "vscode.css-language-features"
-  },
-  "[jsonc]": {
-    "editor.defaultFormatter": "vscode.json-language-features"
-  }
+  // Spell Checker
+  "cSpell.words": [
+    "abdulkerim",
+    "sesli",
+    "cloudflare",
+    "wrangler",
+    "threejs",
+    "webgl",
+    "jsonld",
+    "llms",
+    "groq"
+  ]
 }
