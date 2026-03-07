@@ -473,12 +473,34 @@ async function buildVideoMeta(context, requestUrl, videoId) {
   };
 }
 
+function buildStaticRouteMeta(requestUrl) {
+  const origin = resolveOrigin(requestUrl.toString());
+  // Determine canonical path by normalizing and removing trailing 'index.html' or arbitrary query params
+  let pathname = normalizePathname(requestUrl.pathname);
+  if (pathname.endsWith('index.html')) {
+    pathname = pathname.replace(/index\.html$/, '');
+  }
+  if (!pathname.endsWith('/')) {
+    pathname += '/';
+  }
+
+  const canonicalUrl = `${origin}${pathname}`;
+
+  // Return a partial meta object that purely enforces canonical and indexing behavior for static pages
+  return {
+    canonicalUrl,
+    robots: INDEX_ROBOTS,
+    partialMeta: {},
+  };
+}
+
 export async function buildRouteMeta(context, requestUrl) {
   const pathname = normalizePathname(requestUrl.pathname);
 
   if (isBlogDetailPath(pathname)) {
     const postId = extractSecondSegment(pathname);
-    if (!postId || postId.toLowerCase() === 'index.html') return null;
+    if (!postId || postId.toLowerCase() === 'index.html')
+      return buildStaticRouteMeta(requestUrl);
     return buildBlogMeta(context, requestUrl, postId);
   }
 
@@ -487,15 +509,17 @@ export async function buildRouteMeta(context, requestUrl) {
     if (appSlug) {
       return buildProjectAppMeta(context, requestUrl, appSlug);
     }
-    return null;
+    return buildStaticRouteMeta(requestUrl);
   }
 
   if (isVideoDetailPath(pathname)) {
     const rawVideoId = extractSecondSegment(pathname);
     const videoId = normalizeVideoId(rawVideoId);
-    if (videoId.length < 6 || videoId.length > 20) return null;
+    if (videoId.length < 6 || videoId.length > 20)
+      return buildStaticRouteMeta(requestUrl);
     return buildVideoMeta(context, requestUrl, videoId);
   }
 
-  return null;
+  // Fallback generic strict canonical enforcement for all other static HTML routes
+  return buildStaticRouteMeta(requestUrl);
 }
