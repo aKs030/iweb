@@ -154,32 +154,15 @@ export class ThreeEarthManager {
       this.deferIntentCleanup = null;
     };
 
-    // 2) Load when container is near viewport - only on desktop to save mobile main thread
-    if ('IntersectionObserver' in globalThis && !isMobile) {
-      this.deferObserver = new IntersectionObserver(
-        (entries) => {
-          if (entries.some((entry) => entry.isIntersecting)) {
-            startLoad();
-          }
-        },
-        {
-          root: null,
-          rootMargin: '300px 0px',
-          threshold: 0.01,
-        },
-      );
-      this.deferObserver.observe(container);
-    }
-
-    // 3) Fallback/assist: load during idle time (with timeout).
-    // On mobile, wait much longer to ensure the main thread is free for vital interactions
+    // 2) Defer load during idle time (with timeout) to preserve main thread for TTI.
+    // On mobile, wait longer to ensure the main thread is free for vital interactions.
     this.deferIdleHandle = scheduleIdleTask(
       () => {
         startLoad();
       },
       {
-        timeout: isMobile ? 8000 : 2500,
-        fallbackDelay: isMobile ? 8000 : 2500,
+        timeout: isMobile ? 8000 : 3500,
+        fallbackDelay: isMobile ? 8000 : 3500,
         setTimeoutFn: this.timers.setTimeout.bind(this.timers),
         clearTimeoutFn: this.timers.clearTimeout.bind(this.timers),
       },

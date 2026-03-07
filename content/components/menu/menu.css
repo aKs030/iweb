@@ -52,6 +52,11 @@ site-menu {
   left: 50%;
   transform: translateX(-50%);
   padding: var(--btn-padding-y) var(--btn-padding-x);
+  min-height: 48px;
+  min-width: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: var(--glass-bg);
   color: var(--text-primary);
   text-decoration: none;

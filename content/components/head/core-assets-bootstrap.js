@@ -86,11 +86,11 @@ export function injectCoreAssets({
   try {
     runWhenDomReady(() => {
       if (hasGtmId) {
-        resourceHints.preconnect('https://www.googletagmanager.com');
-        resourceHints.preconnect('https://static.cloudflareinsights.com');
+        resourceHints.dnsPrefetch('https://www.googletagmanager.com');
+        resourceHints.dnsPrefetch('https://static.cloudflareinsights.com');
       }
       if (hasGa4MeasurementId) {
-        resourceHints.preconnect('https://www.gstatic.com');
+        resourceHints.dnsPrefetch('https://www.gstatic.com');
       }
 
       getStylesForPath().forEach((href) => {
