@@ -230,11 +230,6 @@ body {
   position: relative;
 }
 
-body.blog-page {
-  padding: 0 !important;
-  margin: 0 !important;
-}
-
 *,
 *::before,
 *::after {

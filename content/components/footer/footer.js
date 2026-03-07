@@ -1,14 +1,9 @@
 // @ts-check
 
 /**
-
  * Modern Site Footer Web Component v3.1.0
-
- * Optimized architecture with complete memory leak prevention
-
- * legacy/fallback logic removed 2026‑02‑26
+ * Optimized architecture with complete memory leak prevention.
  * @version 3.1.0
-
  */
 
 import { createLogger } from '../../core/logger.js';
@@ -287,9 +282,7 @@ export class SiteFooter extends HTMLElement {
       acceptAll: this.querySelector('#accept-all'),
     };
 
-    // base footer height no longer needs to be tracked in state;
-    // we just add a fixed constant when updating the CSS variable.
-    // legacy code has been removed.
+    // Footer height uses a fixed base constant when updating the CSS variable.
   }
 
   #setupDate() {
@@ -445,10 +438,6 @@ export class SiteFooter extends HTMLElement {
       }
     };
 
-    // legacy resize handler removed – footer position no longer needs to
-    // be recalculated on viewport change.  All callers of this method can
-    // simply rely on the CSS layout.
-
     this.#addListener('document:click', document, 'click', handleOutsideClick, {
       passive: false,
     });
@@ -474,8 +463,6 @@ export class SiteFooter extends HTMLElement {
         { passive: false },
       );
     }
-
-    // resize handling removed – no need to reposition footer on viewport changes
   }
 
   /**
@@ -610,9 +597,6 @@ export class SiteFooter extends HTMLElement {
         this.#toggleFooter(true),
       ),
     );
-
-    // legacy event from earlier versions has been removed; other
-    // modules should call the exported `closeFooter()` helper instead.
 
     this.#addListener(
       'this:cookieTrigger',

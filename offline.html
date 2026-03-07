@@ -1,70 +1,19 @@
 <!doctype html>
 <html lang="de">
   <head>
-    <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=5"
-    />
-    <title>Offline – Abdulkerim Sesli</title>
-    <style>
-      * {
-        box-sizing: border-box;
-        margin: 0;
-      }
-      :root {
-        color-scheme: dark;
-      }
-      body {
-        font-family: system-ui, sans-serif;
-        background: #030303;
-        color: #f5f5f5;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 100dvh;
-        padding: 1.5rem;
-      }
-      main {
-        text-align: center;
-        max-width: 400px;
-        padding: 2.5rem 2rem;
-        border-radius: 1rem;
-        background: rgba(255, 255, 255, 0.04);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-      }
-      h1 {
-        font-size: 1.25rem;
-        margin: 0.75rem 0;
-      }
-      p {
-        color: rgba(255, 255, 255, 0.55);
-        line-height: 1.6;
-        font-size: 0.9375rem;
-        margin-bottom: 1.5rem;
-      }
-      button {
-        all: unset;
-        background: #098bff;
-        color: #fff;
-        padding: 0.7rem 1.8rem;
-        border-radius: 0.6rem;
-        font-weight: 500;
-        cursor: pointer;
-      }
-      button:active {
-        scale: 0.97;
-      }
-    </style>
+    <!-- INJECT:GLOBAL-HEAD mode="standalone" title="Offline – Abdulkerim Sesli" theme-color="#030303" color-scheme="dark" status-bar-style="black-translucent" app-title="Offline" -->
+    <link rel="stylesheet" href="/content/styles/offline.css" />
   </head>
-  <body>
-    <main>
-      <div style="font-size: 3rem" aria-hidden="true">📡</div>
+  <body class="immersive-shell offline-page">
+    <main class="offline-card">
+      <div class="offline-icon" aria-hidden="true">📡</div>
       <h1>Keine Verbindung</h1>
       <p>
         Du bist offline. Prüfe deine Internetverbindung und versuche es erneut.
       </p>
-      <button onclick="location.reload()">Erneut versuchen</button>
+      <button class="offline-button" onclick="location.reload()">
+        Erneut versuchen
+      </button>
     </main>
   </body>
 </html>

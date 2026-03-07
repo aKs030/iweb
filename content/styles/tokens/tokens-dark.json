@@ -4,7 +4,6 @@
     {
       "selector": ":root[data-theme='dark']",
       "tokens": {
-        "--theme-mode": "'dark'",
         "--primary-color": "#098bff",
         "--primary-dark": "#0066cc",
         "--primary-light": "#34aadc",

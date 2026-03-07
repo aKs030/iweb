@@ -1092,7 +1092,7 @@ export const initThreeEarth = () => {
   return singleton.init();
 };
 
-// --- Helpers copied from original (kept for compatibility) ---
+// --- Shared material and geometry helpers ---
 
 /**
  * @param {any} material

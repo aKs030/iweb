@@ -23,7 +23,6 @@ address {
   --btn-padding: var(--space-2) var(--space-4);
   --btn-radius: var(--menu-item-radius);
   --btn-font-size: clamp(var(--size-12), 1vw, var(--size-13));
-  --btn-transition: none;
 
   --accent-color: var(--component-accent-blue);
   --accent-hover: var(--component-accent-blue-hover);
@@ -889,7 +888,7 @@ body.footer-expanded {
 }
 
 /* ===== Responsive ===== */
-@media (width <= 900px) {
+@media (width <=900px) {
   :root {
     /* adjust variables instead of repeating rules */
     --footer-padding: var(--space-4);
@@ -933,6 +932,7 @@ body.footer-expanded {
   .cookie-text .full {
     display: none;
   }
+
   .cookie-text .short {
     display: inline;
   }
@@ -941,6 +941,7 @@ body.footer-expanded {
   .btn-reject .full {
     display: none;
   }
+
   .btn-accept .short,
   .btn-reject .short {
     display: inline;
@@ -1129,7 +1130,7 @@ body.footer-expanded {
   }
 }
 
-@media (width <= 480px) {
+@media (width <=480px) {
   :root {
     --footer-padding: var(--space-3);
     --footer-gap: var(--space-1);
@@ -1145,6 +1146,12 @@ body.footer-expanded {
   .brand-link {
     padding: var(--size-3) var(--size-6);
     font-size: var(--size-10);
+  }
+
+  .cookie-inline {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--size-4);
   }
 
   .cookie-text {

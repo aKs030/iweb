@@ -1,0 +1,35 @@
+# Citation File Format
+# https://citation-file-format.github.io/
+
+cff-version: 1.2.0
+title: 'Abdulkerim Sesli Portfolio'
+message: 'If you use this project, please cite it as below.'
+type: software
+authors:
+  - family-names: Sesli
+    given-names: Abdulkerim
+    email: kontakt@abdulkerimsesli.de
+    orcid: ''
+    affiliation: Independent Developer
+repository-code: 'https://github.com/aKs030/iweb'
+url: 'https://www.abdulkerimsesli.de'
+abstract: >
+  Modern portfolio website featuring Three.js 3D Earth visualization,
+  AI-powered RAG search, and zero-build architecture. Built with vanilla
+  JavaScript, Web Components, and deployed on Cloudflare Pages with
+  edge-first deployment strategy.
+keywords:
+  - portfolio
+  - three.js
+  - cloudflare-pages
+  - ai-search
+  - rag
+  - web-components
+  - vanilla-javascript
+  - zero-build
+  - edge-computing
+  - webgl
+  - performance-optimization
+license: MIT
+version: 1.0.0
+date-released: '2026-03-07'

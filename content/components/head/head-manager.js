@@ -7,7 +7,6 @@ import { createLogger } from '../../core/logger.js';
 import { upsertMeta } from '../../core/utils.js';
 import { applyCanonicalLinks } from '../../core/canonical-manager.js';
 import { extractMainHeadingTerms } from '../../core/content-extractors.js';
-import { setupPWAAssets } from '../../core/pwa-manager.js';
 import {
   buildSeoAbstractText,
   buildSeoKeywordList,
@@ -209,7 +208,6 @@ async function loadHead() {
       globalThis.location.href.split('#')[0];
 
     updateBasicMeta(pageData, pageUrl);
-    setupPWAAssets(brandData);
     pushToDataLayer(pageData, pageUrl);
 
     scheduleSchemaInjection(() => {

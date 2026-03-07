@@ -126,8 +126,8 @@ ${this.getToggleButton()}
 
     const items = menuItems
       .map(
-        (item, index) => `
-    <li class="menu-nav-item" style="--menu-item-index: ${index}">
+        (item) => `
+    <li class="menu-nav-item">
       <a href="${item.href}"${item.attrs ? ' ' + item.attrs : ''}>
         <span class="nav-icon-wrapper">
              <svg class="nav-icon" aria-hidden="true">
@@ -150,10 +150,10 @@ ${this.getToggleButton()}
 >
   <ul class="site-menu__list">
     ${items}
-    <li class="menu-utility-separator" style="--menu-item-index: ${menuItems.length}" aria-hidden="true">
+    <li class="menu-utility-separator" aria-hidden="true">
       <span class="menu-utility-separator__line"></span>
     </li>
-    <li class="menu-utility-item menu-utility-item--search" style="--menu-item-index: ${menuItems.length + 1}">
+    <li class="menu-utility-item menu-utility-item--search">
       <button
         type="button"
         class="search-trigger"
@@ -172,7 +172,7 @@ ${this.getToggleButton()}
         <span class="icon-fallback icon-fallback--hidden">🔍</span>
       </button>
     </li>
-    <li class="menu-utility-item menu-utility-item--contact" style="--menu-item-index: ${menuItems.length + 2}">
+    <li class="menu-utility-item menu-utility-item--contact">
       <button
         type="button"
         class="contact-trigger"
@@ -191,7 +191,7 @@ ${this.getToggleButton()}
         <span class="icon-fallback icon-fallback--hidden">✉️</span>
       </button>
     </li>
-    <li class="menu-utility-item menu-utility-item--theme" style="--menu-item-index: ${menuItems.length + 3}">
+    <li class="menu-utility-item menu-utility-item--theme">
       <button
         type="button"
         class="theme-toggle"
@@ -208,7 +208,7 @@ ${this.getToggleButton()}
         </svg>
       </button>
     </li>
-    <li class="menu-utility-item menu-utility-item--lang" style="--menu-item-index: ${menuItems.length + 4}">
+    <li class="menu-utility-item menu-utility-item--lang">
       <button
         type="button"
         class="lang-toggle"

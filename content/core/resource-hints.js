@@ -711,7 +711,7 @@ class ResourceHintsManager {
   initCommonHints() {
     if (this.initialized) return;
 
-    // Network warmup for stable third-party origins is handled in base-head.html.
+    // Network warmup for stable third-party origins is handled in global-head.html.
     // This manager focuses on runtime-adaptive speculative navigation.
     this.trackSpeculationActivation();
     this.initSpeculativeNavigation();

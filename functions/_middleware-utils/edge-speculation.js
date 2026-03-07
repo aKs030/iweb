@@ -92,7 +92,7 @@ function buildSpeculationRulesJson(prefetchUrls) {
  * HTMLRewriter handler that injects route-aware Speculation Rules
  * before </head>.
  *
- * This replaces the static speculation rules from base-head.html with
+ * This replaces the static speculation rules from the global head template with
  * route-specific prefetch targets computed at the edge.
  *
  * Usage:
@@ -128,7 +128,7 @@ export class EdgeSpeculationRules {
 
 /**
  * HTMLRewriter handler that removes static speculation rules from
- * base-head.html — since the edge now injects route-specific rules.
+ * global-head.html — since the edge now injects route-specific rules.
  *
  * Usage:
  *   rewriter.on('script[type="speculationrules"]', new StaticSpeculationRemover());
@@ -136,7 +136,7 @@ export class EdgeSpeculationRules {
 export class StaticSpeculationRemover {
   /** @param {Element} el */
   element(el) {
-    // Only remove the static baseline rules from base-head.html
+    // Only remove the static baseline rules from the global head template
     const injectedBy = el.getAttribute('data-injected-by');
     if (injectedBy === 'resource-hints') {
       el.remove();

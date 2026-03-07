@@ -16,11 +16,14 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: ./.github/actions/setup-node-deps
-      - run: npm run styles:generate
-      - run: npm run qa
-      - run: npx playwright install --with-deps chromium
+      - name: Generate styles
+        run: npm run sync:styles
+      - name: Run QA checks
+        run: npm run qa
+      - name: Install Playwright
+        run: npx playwright install --with-deps chromium
       - name: Run E2E Browser tests
-        run: npm run qa:browser
+        run: npm run test:browser
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -42,26 +45,34 @@ jobs:
     timeout-minutes: 15
     permissions:
       security-events: write
+      contents: read
+      actions: read
     steps:
       - uses: actions/checkout@v6
-      - uses: github/codeql-action/init@v4
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v4
         with:
           languages: javascript-typescript
-      - uses: github/codeql-action/analyze@v4
+          queries: security-extended
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v4
 
   preview:
     if: github.event_name == 'pull_request' && !github.event.pull_request.draft
-    needs: lint
+    needs: [lint, security]
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
       deployments: write
       pull-requests: write
+      contents: read
     steps:
       - uses: actions/checkout@v6
       - uses: ./.github/actions/setup-node-deps
-      - run: npm run styles:generate
-      - run: npm run qa
+      - name: Generate styles
+        run: npm run sync:styles
+      - name: Run checks
+        run: npm run check
       - id: secrets
         run: echo "has=${{ secrets.CLOUDFLARE_API_TOKEN != '' }}" >> "$GITHUB_OUTPUT"
       - if: steps.secrets.outputs.has == 'true'

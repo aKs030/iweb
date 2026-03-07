@@ -176,9 +176,7 @@ export class MenuEvents {
 
         this.menuSearch.closeSearchModeSilently();
 
-        // Special case: contact button should close menu first, then open footer
-        // only treat the exact hash `#footer` as a trigger; legacy `#site-footer`
-        // anchor is no longer supported and should not open the panel.
+        // Contact button: close the menu first, then open the footer panel.
         if (href === '#footer') {
           this.closeMenu();
           import('#components/footer/footer.js')

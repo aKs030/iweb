@@ -1,0 +1,25 @@
+#!/bin/sh
+# Husky post-checkout hook
+
+PREV_HEAD=$1
+NEW_HEAD=$2
+BRANCH_SWITCH=$3
+
+# Only run on branch switch
+if [ "$BRANCH_SWITCH" = "1" ]; then
+  echo "🔄 Branch switched..."
+
+  # Check if package files changed
+  CHANGED_FILES=$(git diff --name-only "$PREV_HEAD" "$NEW_HEAD")
+
+  if echo "$CHANGED_FILES" | grep -qE "package(-lock)?.json"; then
+    echo "📦 Dependencies differ, updating..."
+    npm ci
+    echo "✅ Dependencies updated!"
+  fi
+
+  # Clean caches
+  echo "🧹 Cleaning caches..."
+  npm run -s clean:cache 2>/dev/null || true
+  echo "✅ Done!"
+fi

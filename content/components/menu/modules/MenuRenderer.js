@@ -35,7 +35,6 @@ export class MenuRenderer {
   render(container) {
     this.container = container;
     container.innerHTML = this.template.getHTML();
-    // removed legacy year update - handled via static markup or server
 
     // wire state subscriptions _before_ syncing so changes apply immediately
     this.setupStateSubscriptions();

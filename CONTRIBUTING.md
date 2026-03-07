@@ -183,7 +183,7 @@ Wenn du Features hinzufügst oder änderst:
 
 ### Dokumentation anzeigen
 
-Siehe `docs/` Verzeichnis und [Dokumentationsindex](docs/README.md).
+Siehe [`docs/DOCUMENTATION.md`](docs/DOCUMENTATION.md) für vollständige Projekt-Dokumentation.
 
 ## 🔧 Nützliche Commands
 
@@ -300,9 +300,7 @@ Bevor du einen PR öffnest:
 
 ### Dokumentation
 
-- [CSS Guide](docs/CSS_GUIDE.md)
-- [Architecture](docs/ARCHITECTURE.md)
-- [Project Structure](docs/PROJECT_STRUCTURE.md)
+- [Projekt-Dokumentation](docs/DOCUMENTATION.md)
 - [Styles Workflow](content/styles/README.md)
 
 ### Externe Ressourcen

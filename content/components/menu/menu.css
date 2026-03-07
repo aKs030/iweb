@@ -147,7 +147,7 @@ site-menu {
 /* ===== Header ===== */
 .site-header {
   position: fixed;
-  top: calc(var(--menu-header-top) + var(--safe-top));
+  top: var(--route-header-top);
   left: 50%;
   width: calc(
     100% - var(--menu-header-side-gap) - var(--safe-left) - var(--safe-right)
@@ -156,12 +156,12 @@ site-menu {
   min-width: 0;
   height: var(--menu-header-height);
   padding: 0 var(--menu-header-padding-inline);
-  background: var(--component-header-bg);
+  background: var(--route-header-bg);
   backdrop-filter: blur(var(--menu-header-backdrop-blur));
   -webkit-backdrop-filter: blur(var(--menu-header-backdrop-blur));
   border-radius: var(--component-pill-radius);
-  border: var(--size-1) solid var(--component-separator);
-  box-shadow: var(--component-shadow-depth-2);
+  border: var(--size-1) solid var(--route-header-border);
+  box-shadow: var(--route-header-shadow);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -272,7 +272,6 @@ site-menu {
   display: flex;
   flex-shrink: 0;
   min-width: fit-content;
-  --menu-item-index: 0;
 }
 
 .site-menu__list li.menu-utility-separator {
@@ -1021,9 +1020,6 @@ site-menu {
 /* ===== Modern Hamburger Toggle ===== */
 .site-menu__toggle {
   --menu-toggle-transform-rest: translateY(-50%);
-  --menu-toggle-transform-hover: translateY(-50%) scale(1.05);
-  --menu-toggle-transform-active: translateY(-50%) scale(0.95);
-  --menu-toggle-transition: none;
   display: none;
   position: absolute;
   right: var(--size-20);

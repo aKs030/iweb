@@ -4,7 +4,7 @@ Gemeinsame HTML-Bausteine, die in Seiten eingebettet werden.
 
 ## Dateien
 
-- `content/templates/base-head.html`: Importmap, globale Meta/Link-Tags und Core-Script-Injektion.
+- `content/templates/global-head.html`: zentrale Head-Vorlage für alle Vollseiten; rendert per `mode="base"` oder `mode="standalone"`.
 
 ## Loading-State Nutzung
 
@@ -38,8 +38,8 @@ console.log(loadSignals.blocked.value);
 - Loading-State wird über `content/core/load-manager.js` gesteuert.
 - Das Loading-System ist UI-agnostisch und verwendet Signals als Primärzustand.
 - `whenAppReady(...)`, `loadSignals` und `subscribeLoadState(...)` sind der Primärpfad für App-Readiness und Loader-Fortschritt.
-- `base-head.html` stellt per Import-Map Bare Imports für Vendor-Pakete und interne Aliase (`#core`, `#components`, `#config`, `#pages`) bereit.
+- `global-head.html` stellt im `base`-Modus per Import-Map Bare Imports für Vendor-Pakete und interne Aliase (`#core`, `#components`, `#config`, `#pages`) bereit.
 - Die Import-Map wird aus `scripts/sync-import-map.mjs` synchronisiert; Änderungen an Vendor-Versionen laufen über `npm run importmap:sync` bzw. `npm run check:importmap`.
 - Das Footer-Web-Component wird nicht mehr im kritischen Pfad geladen, sondern von `head-inline.js` per Intent-/Viewport-/Idle-Hydration nachgezogen.
 - Event-Konstanten liegen in `content/core/events.js`.
-- `base-head.html` lädt `head-inline.js` früh, danach `content/main.js`.
+- `global-head.html` liefert im `base`-Modus die globale App-Shell; `head-inline.js` und `content/main.js` werden weiter darüber initialisiert.

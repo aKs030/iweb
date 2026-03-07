@@ -20,7 +20,7 @@ This directory contains shared browser runtime modules used by pages, components
 - `fetch.js` / `cache.js`: Request helpers with cache support.
 - `section-manager.js`: Dynamic section loading and active section tracking.
 - `schema.js` / `schema-page-types.js` / `schema-media.js` / `schema-shared.js` / `canonical-manager.js`: SEO structured data, page-type mapping, shared schema helpers, media extraction, and canonical management.
-- `pwa-manager.js` / `sw-registration.js` / `resource-hints.js` / `resource-hints-matrix.js`: Head, offline lifecycle, and route-aware runtime optimizations.
+- `sw-registration.js` / `resource-hints.js` / `resource-hints-matrix.js`: offline lifecycle and route-aware runtime optimizations.
 - `accessibility-manager.js`: Accessibility helpers and announcer utilities.
 - `three-earth-manager.js`: Three.js Earth lifecycle, loading orchestration, and cleanup.
 - `model-loader.js`: Compressed 3D model loader (Draco & Meshopt via GLTFLoader).
@@ -77,5 +77,5 @@ log.info('Core initialized');
 - `url-utils.js` should be preferred over ad-hoc `new URL(...)` parsing for internal navigation and compact URL rendering.
 - `npm run smoke:browser` starts a local dev server and verifies theme persistence, loader completion, menu/search/robot interplay, footer hydration, and the BFCache restore path in Chromium.
 - `load-manager.js` exposes `whenAppReady(...)` for async coordination; loader progress and readiness are consumed directly through signals.
-- `#core/`, `#components/`, `#config/`, and `#pages/` are available via the global import map in `content/templates/base-head.html`.
+- `#core/`, `#components/`, `#config/`, and `#pages/` are available via the global import map in `content/templates/global-head.html` when rendered in `base` mode.
 - Prefer reusing existing helpers from `utils.js`, `fetch.js`, `signals.js`, and `events.js` before adding new utilities.

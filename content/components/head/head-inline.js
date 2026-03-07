@@ -245,6 +245,91 @@ const hideBrandingFromUsers = () => {
 
 hideBrandingFromUsers();
 
+function setupThemeObservers() {
+  try {
+    const root = document.documentElement;
+
+    // Sync browser chrome on data-theme change
+    if (typeof MutationObserver === 'function') {
+      new MutationObserver(() => {
+        const t = root.getAttribute('data-theme') || 'dark';
+        const metas = document.querySelectorAll('meta[name="theme-color"]');
+        for (let i = 0; i < metas.length; i++) {
+          const meta = metas[i];
+          const content = (meta.getAttribute('content') || '').toLowerCase();
+          if (meta.getAttribute('media')) {
+            const isLight = content === '#ffffff' || content === '#fff';
+            meta.setAttribute(
+              'media',
+              isLight
+                ? t === 'light'
+                  ? 'all'
+                  : 'not all'
+                : t === 'dark'
+                  ? 'all'
+                  : 'not all',
+            );
+          }
+        }
+      }).observe(root, {
+        attributes: true,
+        attributeFilter: ['data-theme', 'style'],
+      });
+    }
+
+    const detectIos = () => {
+      const ua = navigator.userAgent || navigator.vendor || '';
+      return (
+        /iphone|ipad|ipod/i.test(ua) ||
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+      );
+    };
+
+    const syncDisplayMode = () => {
+      let mode = 'browser';
+      const modes = ['fullscreen', 'standalone', 'minimal-ui'];
+      if (window.matchMedia) {
+        for (let i = 0; i < modes.length; i++) {
+          if (window.matchMedia(`(display-mode: ${modes[i]})`).matches) {
+            mode = modes[i];
+            break;
+          }
+        }
+      } else if (navigator.standalone) {
+        mode = 'standalone';
+      }
+
+      root.setAttribute('data-display-mode', mode);
+      root.setAttribute(
+        'data-standalone',
+        mode !== 'browser' ? 'true' : 'false',
+      );
+
+      if (detectIos()) {
+        root.setAttribute('data-platform', 'ios');
+      } else {
+        root.removeAttribute('data-platform');
+      }
+    };
+
+    if (window.matchMedia) {
+      ['fullscreen', 'standalone', 'minimal-ui'].forEach((mode) => {
+        const mq = window.matchMedia(`(display-mode: ${mode})`);
+        if (typeof mq.addEventListener === 'function') {
+          mq.addEventListener('change', syncDisplayMode);
+        }
+      });
+    }
+
+    window.addEventListener('pageshow', syncDisplayMode, { passive: true });
+    syncDisplayMode();
+  } catch {
+    // Ignore errors
+  }
+}
+
+setupThemeObservers();
+
 // Signal that head-inline is ready
 headState.setInlineReady();
 

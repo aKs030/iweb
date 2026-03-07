@@ -37,6 +37,16 @@ const readStoredPreference = () => {
   }
 };
 
+const readForcedDocumentTheme = () => {
+  try {
+    const forcedTheme =
+      document?.documentElement?.getAttribute('data-force-theme');
+    return forcedTheme === LIGHT || forcedTheme === DARK ? forcedTheme : null;
+  } catch {
+    return null;
+  }
+};
+
 const persistPreference = (preference) => {
   try {
     const storage = globalThis.localStorage;
@@ -69,7 +79,7 @@ let _handleSystemChange = null;
 function applyThemeToDocument(theme) {
   if (typeof document === 'undefined') return;
 
-  const nextTheme = normalizeTheme(theme);
+  const nextTheme = readForcedDocumentTheme() || normalizeTheme(theme);
   const root = document.documentElement;
   if (root.getAttribute('data-theme') === nextTheme) return;
   root.setAttribute('data-theme', nextTheme);
@@ -97,8 +107,6 @@ export function initThemeState() {
 
   if (typeof _mediaQueryList.addEventListener === 'function') {
     _mediaQueryList.addEventListener('change', _handleSystemChange);
-  } else if (typeof _mediaQueryList.addListener === 'function') {
-    _mediaQueryList.addListener(_handleSystemChange);
   }
 }
 
@@ -106,7 +114,7 @@ export function setThemePreference(preference = SYSTEM) {
   const nextPreference = normalizePreference(preference);
   themePreference.value = nextPreference;
   persistPreference(nextPreference);
-  return resolvedTheme.value;
+  return getResolvedTheme();
 }
 
 export function setTheme(theme) {
@@ -122,7 +130,7 @@ export function useSystemTheme() {
 }
 
 export function getResolvedTheme() {
-  return resolvedTheme.value;
+  return readForcedDocumentTheme() || resolvedTheme.value;
 }
 
 export function destroyThemeState() {
@@ -137,11 +145,6 @@ export function destroyThemeState() {
       typeof _mediaQueryList.removeEventListener === 'function'
     ) {
       _mediaQueryList.removeEventListener('change', _handleSystemChange);
-    } else if (
-      _handleSystemChange &&
-      typeof _mediaQueryList.removeListener === 'function'
-    ) {
-      _mediaQueryList.removeListener(_handleSystemChange);
     }
 
     _mediaQueryList = null;

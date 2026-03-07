@@ -61,6 +61,22 @@
   Access-Control-Allow-Origin: *
   X-Robots-Tag: all
 
+# Sitemaps
+/sitemap.xml
+  Content-Type: application/xml; charset=utf-8
+  Cache-Control: public, max-age=3600, stale-while-revalidate=86400
+  X-Robots-Tag: all
+
+/sitemap-index.xml
+  Content-Type: application/xml; charset=utf-8
+  Cache-Control: public, max-age=3600, stale-while-revalidate=86400
+  X-Robots-Tag: all
+
+/robots.txt
+  Content-Type: text/plain; charset=utf-8
+  Cache-Control: public, max-age=86400
+  X-Robots-Tag: all
+
 /.well-known/openapi.json
   Content-Type: application/json; charset=utf-8
   Cache-Control: public, max-age=86400

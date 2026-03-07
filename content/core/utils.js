@@ -393,10 +393,6 @@ const URL_ATTRS = new Set(['href', 'src']);
 const SAFE_URL_RE =
   /^(?:https?:|mailto:|tel:|\/|#|data:image\/(?:png|gif|jpeg|jpg|webp|svg\+xml);base64,)/i;
 
-export async function initDOMPurify() {
-  // API compatibility for existing startup flow; sanitizer is dependency-free now.
-}
-
 function normalizeSanitizeConfig(options = {}) {
   const allowedTags = new Set(
     Array.isArray(options.ALLOWED_TAGS) && options.ALLOWED_TAGS.length
@@ -612,11 +608,3 @@ export function observeOnce(target, onIntersect, options = {}) {
   obs.observe(target);
   return () => obs.disconnect();
 }
-
-// ============================================================================
-// REACT UTILITIES — moved to core/react-utils.js
-// Import { createUseTranslation } from './react-utils.js' in React components.
-// ============================================================================
-
-// Re-export for backward compatibility
-export { createUseTranslation } from './react-utils.js';

@@ -220,12 +220,6 @@ const ensureReducedMotionObserver = () => {
   if (typeof mql.addEventListener === 'function') {
     mql.addEventListener('change', onChange);
     reducedMotionCleanup = () => mql.removeEventListener('change', onChange);
-    return;
-  }
-
-  if (typeof mql.addListener === 'function') {
-    mql.addListener(onChange);
-    reducedMotionCleanup = () => mql.removeListener(onChange);
   }
 };
 

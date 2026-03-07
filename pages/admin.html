@@ -1,20 +1,15 @@
 <!doctype html>
 <html lang="de">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Admin Dashboard | Portfolio</title>
+    <!-- INJECT:GLOBAL-HEAD mode="standalone" title="Admin Dashboard | Portfolio" theme-color="#030303" color-scheme="dark" status-bar-style="black-translucent" app-title="Dashboard" -->
     <link rel="stylesheet" href="/content/styles/admin.css" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   </head>
-  <body class="admin-page">
+  <body class="immersive-shell admin-page">
     <!-- Auth Overlay -->
     <div id="auth-overlay" class="auth-overlay">
       <div class="auth-card">
         <h2>Admin Zugang</h2>
-        <p style="color: var(--text-muted); margin-bottom: 2rem">
-          Bitte gib das Admin-Passwort ein.
-        </p>
+        <p class="auth-card__copy">Bitte gib das Admin-Passwort ein.</p>
         <input
           type="password"
           id="admin-password"
@@ -22,12 +17,7 @@
           placeholder="Passwort..."
         />
         <button id="login-button" class="auth-button">Einloggen</button>
-        <p
-          id="auth-error"
-          style="color: var(--clr-red-500); margin-top: 1rem; display: none"
-        >
-          Falsches Passwort!
-        </p>
+        <p id="auth-error" class="auth-error" hidden>Falsches Passwort!</p>
       </div>
     </div>
 
@@ -35,23 +25,14 @@
       <header class="admin-header">
         <div>
           <h1>Dashboard</h1>
-          <p
-            id="last-update"
-            style="color: var(--text-muted); font-size: 0.9rem"
-          >
-            Lädt...
-          </p>
+          <p id="last-update" class="admin-header-status">Lädt...</p>
         </div>
-        <button
-          id="refresh-button"
-          class="auth-button"
-          style="width: auto; padding: 0.5rem 1rem"
-        >
+        <button id="refresh-button" class="auth-button auth-button--inline">
           Aktualisieren
         </button>
       </header>
 
-      <main id="admin-main" style="display: none">
+      <main id="admin-main" hidden>
         <!-- Key Stats -->
         <div class="stats-grid">
           <div class="stat-card">
@@ -60,13 +41,7 @@
           </div>
           <div class="stat-card">
             <div class="stat-label">Meiste Likes</div>
-            <div
-              id="top-project"
-              class="stat-value"
-              style="font-size: 1.2rem; margin-top: 0.5rem"
-            >
-              -
-            </div>
+            <div id="top-project" class="stat-value stat-value--compact">-</div>
           </div>
           <div class="stat-card">
             <div class="stat-label">Feedback & Kontakt</div>
@@ -104,15 +79,7 @@
               <!-- Filled by JS -->
             </tbody>
           </table>
-          <p
-            id="no-likes"
-            style="
-              display: none;
-              color: var(--text-muted);
-              padding: 1rem;
-              text-align: center;
-            "
-          >
+          <p id="no-likes" class="admin-empty-state" hidden>
             Keine Likes vorhanden.
           </p>
         </section>
@@ -140,15 +107,7 @@
           <div id="contacts-list" class="comments-list">
             <!-- Filled by JS -->
           </div>
-          <p
-            id="no-contacts"
-            style="
-              display: none;
-              color: var(--text-muted);
-              padding: 1rem;
-              text-align: center;
-            "
-          >
+          <p id="no-contacts" class="admin-empty-state" hidden>
             Keine Kontaktanfragen vorhanden.
           </p>
         </section>
@@ -173,26 +132,10 @@
             </svg>
             Jules: Bekannte Besucher
           </h2>
-          <div
-            id="names-grid"
-            style="
-              display: grid;
-              grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-              gap: 1rem;
-              margin-bottom: 2rem;
-            "
-          >
+          <div id="names-grid" class="admin-names-grid">
             <!-- Filled by JS -->
           </div>
-          <p
-            id="no-names"
-            style="
-              display: none;
-              color: var(--text-muted);
-              padding: 1rem;
-              text-align: center;
-            "
-          >
+          <p id="no-names" class="admin-empty-state" hidden>
             Jules kennt noch niemanden.
           </p>
         </section>
@@ -219,15 +162,7 @@
           <div id="memories-container" class="comments-list">
             <!-- Filled by JS -->
           </div>
-          <p
-            id="no-memories"
-            style="
-              display: none;
-              color: var(--text-muted);
-              padding: 1rem;
-              text-align: center;
-            "
-          >
+          <p id="no-memories" class="admin-empty-state" hidden>
             Keine Erinnerungen gespeichert.
           </p>
         </section>
@@ -255,15 +190,7 @@
           <div id="comments-list" class="comments-list">
             <!-- Filled by JS -->
           </div>
-          <p
-            id="no-comments"
-            style="
-              display: none;
-              color: var(--text-muted);
-              padding: 1rem;
-              text-align: center;
-            "
-          >
+          <p id="no-comments" class="admin-empty-state" hidden>
             Keine Kommentare vorhanden.
           </p>
         </section>
@@ -281,6 +208,11 @@
       const authError = document.getElementById('auth-error');
       const refreshButton = document.getElementById('refresh-button');
 
+      function setHidden(element, hidden) {
+        if (!element) return;
+        element.hidden = hidden;
+      }
+
       async function fetchData() {
         const token = localStorage.getItem(STORAGE_KEY);
         if (!token) {
@@ -294,7 +226,7 @@
           });
 
           if (response.status === 401) {
-            showAuth();
+            showAuth(true);
             return;
           }
 
@@ -330,10 +262,11 @@
 
         // Likes Table
         const likesBody = document.getElementById('likes-table-body');
+        const likesTable = likesBody.closest('table');
         const noLikes = document.getElementById('no-likes');
         if (data.likes.length > 0) {
-          likesBody.parentElement.style.display = 'table';
-          noLikes.style.display = 'none';
+          setHidden(likesTable, false);
+          setHidden(noLikes, true);
           likesBody.innerHTML = data.likes
             .map(
               (item) => `
@@ -345,24 +278,24 @@
             )
             .join('');
         } else {
-          likesBody.parentElement.style.display = 'none';
-          noLikes.style.display = 'block';
+          setHidden(likesTable, true);
+          setHidden(noLikes, false);
         }
 
         // Contact Messages
         const contactsList = document.getElementById('contacts-list');
         const noContacts = document.getElementById('no-contacts');
         if (data.contacts && data.contacts.length > 0) {
-          noContacts.style.display = 'none';
+          setHidden(noContacts, true);
           contactsList.innerHTML = data.contacts
             .map(
               (m) => `
-                <div class="comment-item" style="border-left-color: var(--primary-color);">
+                <div class="comment-item comment-item--primary">
                     <div class="comment-meta">
                         <span class="comment-author">${m.name} (${m.email})</span>
                         <span class="comment-date">${new Date(m.created_at).toLocaleString()}</span>
                     </div>
-                    <div style="font-weight: 600; margin-bottom: 0.5rem; color: var(--accent);">${m.subject}</div>
+                    <div class="admin-accent-title">${m.subject}</div>
                     <p class="comment-content">${m.message}</p>
                 </div>
             `,
@@ -370,49 +303,49 @@
             .join('');
         } else {
           contactsList.innerHTML = '';
-          noContacts.style.display = 'block';
+          setHidden(noContacts, false);
         }
 
         // AI Names
         const namesGrid = document.getElementById('names-grid');
         const noNames = document.getElementById('no-names');
         if (data.nameMappings && data.nameMappings.length > 0) {
-          noNames.style.display = 'none';
+          setHidden(noNames, true);
           namesGrid.innerHTML = data.nameMappings
             .map(
               (n) => `
-                <div class="stat-card" style="padding: 1rem;">
+                <div class="stat-card stat-card--compact">
                     <div class="stat-label">Name</div>
-                    <div style="font-weight: 600; color: var(--accent);">${n.name}</div>
-                    <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.5rem; overflow: hidden; text-overflow: ellipsis;">ID: ${n.userId}</div>
+                    <div class="admin-name-card__title">${n.name}</div>
+                    <div class="admin-name-card__meta">ID: ${n.userId}</div>
                 </div>
             `,
             )
             .join('');
         } else {
           namesGrid.innerHTML = '';
-          noNames.style.display = 'block';
+          setHidden(noNames, false);
         }
 
         // AI Memories
         const memoriesContainer = document.getElementById('memories-container');
         const noMemories = document.getElementById('no-memories');
         if (data.aiMemories && data.aiMemories.length > 0) {
-          noMemories.style.display = 'none';
+          setHidden(noMemories, true);
           memoriesContainer.innerHTML = data.aiMemories
             .map(
               (user) => `
-                <div style="margin-bottom: 2rem;">
-                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">User: ${user.userId}</div>
+                <div class="admin-memory-group">
+                    <div class="admin-memory-group__label">User: ${user.userId}</div>
                     ${user.memories
                       .map(
                         (m) => `
-                        <div class="comment-item" style="margin-left: 1rem; border-left-color: var(--accent-secondary); margin-bottom: 0.5rem;">
+                        <div class="comment-item comment-item--memory">
                             <div class="comment-meta">
-                                <span class="comment-author" style="font-size: 0.8rem;">Fact: ${m.key}</span>
+                                <span class="comment-author comment-author--memory">Fact: ${m.key}</span>
                                 <span class="comment-date">${new Date(m.timestamp).toLocaleString()}</span>
                             </div>
-                            <p class="comment-content" style="font-size: 0.95rem;">${m.value}</p>
+                            <p class="comment-content comment-content--memory">${m.value}</p>
                         </div>
                     `,
                       )
@@ -423,14 +356,14 @@
             .join('');
         } else {
           memoriesContainer.innerHTML = '';
-          noMemories.style.display = 'block';
+          setHidden(noMemories, false);
         }
 
         // Comments List
         const commentsList = document.getElementById('comments-list');
         const noComments = document.getElementById('no-comments');
         if (data.comments && data.comments.length > 0) {
-          noComments.style.display = 'none';
+          setHidden(noComments, true);
           commentsList.innerHTML = data.comments
             .map(
               (c) => `
@@ -447,23 +380,26 @@
             .join('');
         } else {
           commentsList.innerHTML = '';
-          noComments.style.display = 'block';
+          setHidden(noComments, false);
         }
 
-        adminMain.style.display = 'block';
+        setHidden(adminMain, false);
       }
 
-      function showAuth() {
+      function showAuth(showError = false) {
+        setHidden(authError, !showError);
         authOverlay.classList.remove('hidden');
-        adminMain.style.display = 'none';
+        setHidden(adminMain, true);
       }
 
       function hideAuth() {
+        setHidden(authError, true);
         authOverlay.classList.add('hidden');
-        adminMain.style.display = 'block';
+        setHidden(adminMain, false);
       }
 
       loginButton.addEventListener('click', () => {
+        setHidden(authError, true);
         const password = passwordInput.value;
         localStorage.setItem(STORAGE_KEY, password);
         fetchData();

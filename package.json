@@ -4,42 +4,76 @@
   "description": "Portfolio Website mit Cloudflare AI Search (Vanilla JS)",
   "private": true,
   "type": "module",
+  "keywords": [
+    "portfolio",
+    "three.js",
+    "cloudflare-pages",
+    "ai-search",
+    "rag",
+    "web-components",
+    "vanilla-javascript",
+    "zero-build",
+    "edge-computing",
+    "webgl",
+    "performance"
+  ],
+  "author": {
+    "name": "Abdulkerim Sesli",
+    "email": "kontakt@abdulkerimsesli.de",
+    "url": "https://www.abdulkerimsesli.de"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aKs030/iweb.git"
+  },
+  "homepage": "https://www.abdulkerimsesli.de",
+  "bugs": {
+    "url": "https://github.com/aKs030/iweb/issues",
+    "email": "kontakt@abdulkerimsesli.de"
+  },
+  "license": "MIT",
   "engines": {
-    "node": ">=22.0.0"
+    "node": ">=22.0.0",
+    "npm": ">=10.0.0"
   },
   "scripts": {
     "dev": "node scripts/dev-workflow.mjs",
-    "smoke:browser": "node scripts/browser-smoke.mjs",
-    "qa:browser": "npm run smoke:browser",
-    "qa": "run-s qa:lint qa:scripts",
-    "qa:lint": "run-p lint:*",
-    "qa:scripts": "run-s check:css-tokens check:importmap check:ai check:structure check:todos",
-    "qa:fix": "run-p fix:*",
-    "qa:all": "npm run qa:fix && npm run qa",
-    "lint:es": "eslint . --cache",
-    "lint:css": "stylelint \"content/**/*.css\" \"pages/**/*.css\" --cache",
-    "lint:format": "prettier --check . --ignore-path .prettierignore",
-    "fix:es": "eslint . --fix --cache",
-    "fix:css": "stylelint \"content/**/*.css\" \"pages/**/*.css\" --fix --cache",
-    "fix:format": "prettier --write . --ignore-path .prettierignore",
-    "check:css-tokens": "node scripts/css-token-structure-check.mjs",
-    "check:todos": "grep -R \"TODO\\|FIXME\\|HACK\" -n pages/ content/ || true",
-    "check:ai": "node scripts/sync-ai-index-apps.mjs --check",
+    "build": "echo 'Zero-build architecture - no build step needed'",
+    "start": "npm run dev",
+    "test": "run-s test:*",
+    "test:browser": "node scripts/browser-smoke.mjs",
+    "lint": "run-p lint:*",
+    "lint:es": "eslint . --cache --config config/eslint.config.mjs",
+    "lint:css": "stylelint \"**/*.css\" --cache --ignore-path .gitignore --config config/.stylelintrc.cjs",
+    "lint:format": "prettier --check . --config config/.prettierrc.json",
+    "fix": "run-p fix:*",
+    "fix:es": "eslint . --fix --cache --config config/eslint.config.mjs",
+    "fix:css": "stylelint \"**/*.css\" --fix --cache --ignore-path .gitignore --config config/.stylelintrc.cjs",
+    "fix:format": "prettier --write . --config config/.prettierrc.json",
+    "check": "run-s check:*",
     "check:structure": "node scripts/structure-check.mjs",
-    "hooks:pre-commit": "lint-staged",
-    "clean": "rm -rf .wrangler node_modules/.cache",
-    "prepare": "husky",
-    "styles:generate": "node scripts/generate-tokens-css.mjs && node scripts/generate-utilities.mjs",
-    "docs:check": "node scripts/docs-check.mjs",
-    "importmap:sync": "node scripts/sync-import-map.mjs",
-    "ai-index:sync": "node scripts/sync-ai-index-apps.mjs",
+    "check:tokens": "node scripts/css-token-structure-check.mjs",
     "check:importmap": "node scripts/sync-import-map.mjs --check",
-    "cf:redirect:audit": "node scripts/cloudflare-redirect-audit.mjs --days 8 --limit 500",
-    "cf:redirect:prune": "node scripts/cloudflare-redirect-audit.mjs --days 8 --limit 500 --apply-prune"
+    "check:ai": "node scripts/sync-ai-index-apps.mjs --check",
+    "check:docs": "node scripts/docs-check.mjs",
+    "sync": "run-p sync:*",
+    "sync:importmap": "node scripts/sync-import-map.mjs",
+    "sync:ai": "node scripts/sync-ai-index-apps.mjs",
+    "sync:styles": "run-s sync:styles:*",
+    "sync:styles:tokens": "node scripts/generate-tokens-css.mjs",
+    "sync:styles:utilities": "node scripts/generate-utilities.mjs",
+    "qa": "run-s fix lint check",
+    "clean": "run-p clean:*",
+    "clean:cache": "rm -rf node_modules/.cache .eslintcache .stylelintcache .prettiercache",
+    "clean:wrangler": "rm -rf .wrangler",
+    "prepare": "husky",
+    "preinstall": "npx only-allow npm",
+    "postinstall": "echo '✅ Dependencies installed successfully'"
   },
   "dependencies": {
     "htm": "^3.1.1",
     "lucide-react": "^0.575.0",
+    "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "three": "^0.183.1"
   },
@@ -54,21 +88,20 @@
     "npm-run-all2": "^8.0.4",
     "playwright": "^1.58.2",
     "prettier": "^3.8.1",
-    "react": "^19.2.4",
     "stylelint": "^16.25.0",
     "wrangler": "^4.69.0"
   },
   "lint-staged": {
     "*.{js,mjs,cjs}": [
-      "eslint --fix",
-      "prettier --write"
+      "eslint --fix --config config/eslint.config.mjs",
+      "prettier --write --config config/.prettierrc.json"
     ],
     "*.css": [
-      "stylelint --fix",
-      "prettier --write"
+      "stylelint --fix --config config/.stylelintrc.cjs",
+      "prettier --write --config config/.prettierrc.json"
     ],
     "*.{md,html,json,jsonc,yml,yaml}": [
-      "prettier --write"
+      "prettier --write --config config/.prettierrc.json"
     ]
   }
 }
