@@ -15,7 +15,7 @@ Disallow: /*.log$
 Allow: /llms.txt
 Allow: /llms-full.txt
 Allow: /ai-index.json
-Allow: /ai-info
+Allow: /ai-info/
 Allow: /person.jsonld
 Allow: /bio.md
 Allow: /pages/projekte/apps-config.json

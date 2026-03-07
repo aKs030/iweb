@@ -15,11 +15,13 @@
 
 // Cache TTL for HTML responses (edge-side, not browser-side)
 const EDGE_HTML_TTL_S = 300; // 5 minutes
+const EDGE_CACHE_KEY_VERSION = '20260307-1';
 
 /**
  * Pages that should NOT be cached (dynamic per-request content).
  */
 const UNCACHEABLE_PATTERNS = ['/api/', '/contact'];
+const UNCACHEABLE_EXACT_PATHS = new Set(['/']);
 
 /**
  * Check if a URL path is cacheable.
@@ -27,6 +29,7 @@ const UNCACHEABLE_PATTERNS = ['/api/', '/contact'];
  * @returns {boolean}
  */
 function isCacheablePath(pathname) {
+  if (UNCACHEABLE_EXACT_PATHS.has(pathname)) return false;
   return !UNCACHEABLE_PATTERNS.some((p) => pathname.startsWith(p));
 }
 
@@ -44,6 +47,7 @@ export function buildCacheKey(url) {
   if (!cacheUrl.pathname.startsWith('/projekte')) {
     cacheUrl.search = '';
   }
+  cacheUrl.searchParams.set('__cv', EDGE_CACHE_KEY_VERSION);
 
   return new Request(cacheUrl.href, { method: 'GET' });
 }
@@ -63,6 +67,10 @@ export async function matchEdgeCache(url) {
     const cached = await cache.match(key);
 
     if (cached) {
+      if (cached.status !== 200 || cached.body === null) {
+        return null;
+      }
+
       // Add cache-hit indicator
       const headers = new Headers(cached.headers);
       headers.set('X-Edge-Cache', 'HIT');
@@ -92,6 +100,7 @@ export async function matchEdgeCache(url) {
  */
 export function storeInEdgeCache(url, response, ctx) {
   if (!isCacheablePath(url.pathname)) return;
+  if (response.status !== 200 || !response.body) return;
 
   try {
     const cache = caches.default;
