@@ -132,37 +132,14 @@ export class ThreeEarthManager {
       this.load();
     };
 
-    // Determine if we're on a mobile device (for performance deferring)
-    // PageSpeed predominantly tests with mobile viewports and throttled CPUs
-    const isMobile =
-      globalThis.innerWidth < 768 ||
-      navigator.userAgent.toLowerCase().includes('mobi');
-
-    // 1) Load when user intent is clear (click/tap/key interaction).
-    const onIntent = () => {
-      startLoad();
-    };
-
-    window.addEventListener('pointerdown', onIntent, {
-      once: true,
-      passive: true,
-    });
-    window.addEventListener('keydown', onIntent, { once: true });
-    this.deferIntentCleanup = () => {
-      window.removeEventListener('pointerdown', onIntent);
-      window.removeEventListener('keydown', onIntent);
-      this.deferIntentCleanup = null;
-    };
-
-    // 2) Defer load during idle time (with timeout) to preserve main thread for TTI.
-    // On mobile, wait longer to ensure the main thread is free for vital interactions.
+    // Load immediately using a short idle task to prioritize the main thread for initial render
     this.deferIdleHandle = scheduleIdleTask(
       () => {
         startLoad();
       },
       {
-        timeout: isMobile ? 8000 : 3500,
-        fallbackDelay: isMobile ? 8000 : 3500,
+        timeout: 100,
+        fallbackDelay: 100,
         setTimeoutFn: this.timers.setTimeout.bind(this.timers),
         clearTimeoutFn: this.timers.clearTimeout.bind(this.timers),
       },
