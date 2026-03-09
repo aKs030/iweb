@@ -18,19 +18,6 @@ const log = createLogger('Utils');
 // ---------------------------------------------------------------------------
 
 /**
- * If the current location has no hash, scrolls to the top immediately and
- * schedules a second try after a brief delay. Used on initial load and when
- * restoring from bfcache to avoid Safari oddities.
- */
-export function scrollTopIfNoHash() {
-  if (!window.location.hash) {
-    window.scrollTo(0, 0);
-    // some browsers (mobile Safari) require a second call after render
-    setTimeout(() => window.scrollTo(0, 0), 100);
-  }
-}
-
-/**
  * When navigating with the View Transitions API we intercept same-page
  * navigations. This helper determines if a URL points to the same origin
  * and path as the current location, and -- if there is no hash -- performs a
