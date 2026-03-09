@@ -182,7 +182,7 @@ const BASE_SEO_KEYWORDS = Object.freeze([
 const SCHEMA_TITLE_SPLIT_RE = /[\s|,–—:/]+/;
 const SEO_TITLE_SPLIT_RE = /[\s,.;:/()[\]|!?-]+/;
 
-export function detectSchemaPageType(pathname = '/') {
+function detectSchemaPageType(pathname = '/') {
   const path = String(pathname || '/').toLowerCase();
 
   if (path === '/' || path === '' || path === '/index.html') return 'home';
