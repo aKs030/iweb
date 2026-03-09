@@ -10,7 +10,7 @@ import { SectionManager } from '#core/section-manager.js';
 import { AppLoadManager, loadSignals } from '#core/load-manager.js';
 import { signal, effect, computed } from '#core/signals.js';
 import { ThreeEarthManager } from '#core/three-earth-manager.js';
-import { onDOMReady, TimerManager, scrollTopIfNoHash } from '#core/utils.js';
+import { onDOMReady, TimerManager } from '#core/utils.js';
 import { initViewTransitions } from '#core/view-transitions.js';
 import { i18n } from '#core/i18n.js';
 import { GlobalEventHandlers } from '#core/events.js';
@@ -77,9 +77,6 @@ const _initApp = () => {
     return;
   }
   _appInitialized = true;
-
-  // Ensure consistent scroll behaviour across browsers
-  scrollTopIfNoHash();
 
   sectionManager.init();
 
@@ -195,9 +192,6 @@ globalThis.addEventListener('pageshow', (event) => {
     if (!document.hidden) {
       document.dispatchEvent(new CustomEvent('visibilitychange'));
     }
-
-    // Force scroll to top on restoration - only if no hash in URL
-    scrollTopIfNoHash();
   }
 });
 
