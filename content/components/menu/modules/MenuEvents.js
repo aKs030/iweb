@@ -341,11 +341,6 @@ export class MenuEvents {
   }
 
   handleUrlChange() {
-    // make sure any navigation that lands here without a hash resets scroll
-    import('../../../core/utils.js').then(({ scrollTopIfNoHash }) => {
-      scrollTopIfNoHash();
-    });
-
     this.calculateAndSetActiveLink();
     this.updateTitleFromPathOrSection();
   }
