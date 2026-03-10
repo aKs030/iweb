@@ -5,18 +5,18 @@ version: 2
 updates:
   # GitHub Actions
   # npm version updates are handled by Renovate to avoid duplicate PRs.
-  - package-ecosystem: "github-actions"
-    directory: "/"
+  - package-ecosystem: 'github-actions'
+    directory: '/'
     schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "09:00"
-      timezone: "Europe/Berlin"
+      interval: 'weekly'
+      day: 'monday'
+      time: '09:00'
+      timezone: 'Europe/Berlin'
     open-pull-requests-limit: 5
     reviewers:
-      - "aKs030"
+      - 'aKs030'
     commit-message:
-      prefix: "ci"
+      prefix: 'ci'
     labels:
-      - "github-actions"
-      - "automated"
+      - 'github-actions'
+      - 'automated'

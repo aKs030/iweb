@@ -1,6 +1,6 @@
-const BLOG_INDEX_PATH = "/pages/blog/posts/index.json";
-const PROJECTS_INDEX_PATH = "/pages/projekte/apps-config.json";
-const CONTENT_RAG_MANIFEST_KEY = "robot-content-rag:manifest:v1";
+const BLOG_INDEX_PATH = '/pages/blog/posts/index.json';
+const PROJECTS_INDEX_PATH = '/pages/projekte/apps-config.json';
+const CONTENT_RAG_MANIFEST_KEY = 'robot-content-rag:manifest:v1';
 const DEFAULT_TOP_K = 4;
 const DEFAULT_SCORE_THRESHOLD = 0.25;
 const DEFAULT_CHUNK_MAX_CHARS = 900;
@@ -13,80 +13,80 @@ const MAX_RERANKED_MATCHES = 12;
 const MAX_SOURCE_LINKS = 2;
 const CONTENT_RAG_MANIFEST_VERSION = 2;
 const QUERY_STOP_WORDS = new Set([
-  "aber",
-  "abdulkerim",
-  "about",
-  "agent",
-  "ai",
-  "als",
-  "am",
-  "an",
-  "and",
-  "antwort",
-  "antwortet",
-  "auf",
-  "aus",
-  "bei",
-  "beim",
-  "ber",
-  "bitte",
-  "blog",
-  "companion",
-  "das",
-  "dein",
-  "deine",
-  "dem",
-  "den",
-  "der",
-  "des",
-  "die",
-  "du",
-  "ein",
-  "eine",
-  "einer",
-  "eines",
-  "er",
-  "es",
-  "for",
-  "fragt",
-  "frage",
-  "geht",
-  "hat",
-  "how",
-  "ich",
-  "im",
-  "in",
-  "ist",
-  "kerim",
-  "mein",
-  "meint",
-  "mit",
-  "oder",
-  "portfolio",
-  "robot",
-  "seine",
-  "seinen",
-  "sesli",
-  "sie",
-  "sieht",
-  "site",
-  "the",
-  "uber",
-  "ueber",
-  "und",
-  "von",
-  "was",
-  "website",
-  "wie",
-  "wir",
-  "wo",
-  "zu",
-  "zum",
-  "zur",
+  'aber',
+  'abdulkerim',
+  'about',
+  'agent',
+  'ai',
+  'als',
+  'am',
+  'an',
+  'and',
+  'antwort',
+  'antwortet',
+  'auf',
+  'aus',
+  'bei',
+  'beim',
+  'ber',
+  'bitte',
+  'blog',
+  'companion',
+  'das',
+  'dein',
+  'deine',
+  'dem',
+  'den',
+  'der',
+  'des',
+  'die',
+  'du',
+  'ein',
+  'eine',
+  'einer',
+  'eines',
+  'er',
+  'es',
+  'for',
+  'fragt',
+  'frage',
+  'geht',
+  'hat',
+  'how',
+  'ich',
+  'im',
+  'in',
+  'ist',
+  'kerim',
+  'mein',
+  'meint',
+  'mit',
+  'oder',
+  'portfolio',
+  'robot',
+  'seine',
+  'seinen',
+  'sesli',
+  'sie',
+  'sieht',
+  'site',
+  'the',
+  'uber',
+  'ueber',
+  'und',
+  'von',
+  'was',
+  'website',
+  'wie',
+  'wir',
+  'wo',
+  'zu',
+  'zum',
+  'zur',
 ]);
 
 function parseInteger(value, fallback, { min = 1, max = 100 } = {}) {
-  const parsed = Number.parseInt(String(value ?? ""), 10);
+  const parsed = Number.parseInt(String(value ?? ''), 10);
   if (!Number.isFinite(parsed)) return fallback;
   return Math.min(max, Math.max(min, parsed));
 }
@@ -96,7 +96,7 @@ function parseDecimal(
   fallback,
   { min = 0, max = 1, precision = 2 } = {},
 ) {
-  const parsed = Number.parseFloat(String(value ?? ""));
+  const parsed = Number.parseFloat(String(value ?? ''));
   if (!Number.isFinite(parsed)) return fallback;
   const clamped = Math.min(max, Math.max(min, parsed));
   const factor = 10 ** precision;
@@ -104,8 +104,8 @@ function parseDecimal(
 }
 
 function normalizeWhitespace(value) {
-  return String(value || "")
-    .replace(/\s+/g, " ")
+  return String(value || '')
+    .replace(/\s+/g, ' ')
     .trim();
 }
 
@@ -116,12 +116,12 @@ function trimToLength(value, maxLength) {
 }
 
 function normalizeSearchText(value) {
-  return String(value || "")
+  return String(value || '')
     .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/ß/g, "ss")
-    .replace(/[^a-z0-9]+/g, " ")
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/ß/g, 'ss')
+    .replace(/[^a-z0-9]+/g, ' ')
     .trim();
 }
 
@@ -137,7 +137,7 @@ function extractSearchTerms(value) {
 
 function scoreTermCoverage(terms, ...texts) {
   if (!Array.isArray(terms) || terms.length === 0) return 0;
-  const haystack = normalizeSearchText(texts.filter(Boolean).join(" "));
+  const haystack = normalizeSearchText(texts.filter(Boolean).join(' '));
   if (!haystack) return 0;
 
   let hits = 0;
@@ -169,9 +169,9 @@ function resolveQueryIntent(query) {
 
 function getSourceIntentBoost(intent, sourceType) {
   let boost = 0;
-  if (intent.prefersBlog && sourceType === "blog") boost += 0.08;
-  if (intent.prefersProject && sourceType === "project") boost += 0.08;
-  if (intent.seeksOpinion && sourceType === "blog") boost += 0.05;
+  if (intent.prefersBlog && sourceType === 'blog') boost += 0.08;
+  if (intent.prefersProject && sourceType === 'project') boost += 0.08;
+  if (intent.seeksOpinion && sourceType === 'blog') boost += 0.05;
   return boost;
 }
 
@@ -192,7 +192,7 @@ function rerankMatch(match, intent) {
     `${match.title} ${match.section}`,
   );
   const normalizedContent = normalizeSearchText(
-    [match.content, match.snippet, match.category, match.tagsText].join(" "),
+    [match.content, match.snippet, match.category, match.tagsText].join(' '),
   );
   const phrase = intent.normalizedQuery;
   const exactTitleHit =
@@ -236,15 +236,15 @@ function buildIntentMetadataFilter(intent) {
   if (!intent) return null;
 
   if (intent.prefersProject && !intent.prefersBlog && !intent.seeksOpinion) {
-    return { sourceType: "project" };
+    return { sourceType: 'project' };
   }
 
   if (intent.prefersBlog && !intent.prefersProject) {
-    return { sourceType: "blog" };
+    return { sourceType: 'blog' };
   }
 
   if (intent.seeksOpinion && !intent.prefersProject) {
-    return { sourceType: "blog" };
+    return { sourceType: 'blog' };
   }
 
   return null;
@@ -278,7 +278,7 @@ async function queryContentRagIndex(index, vector, options, filter) {
   } catch (error) {
     if (!error?.remote) {
       console.warn(
-        "Content RAG metadata filter fallback:",
+        'Content RAG metadata filter fallback:',
         error?.message || error,
       );
     }
@@ -294,42 +294,42 @@ async function queryContentRagIndex(index, vector, options, filter) {
 async function hashText(value) {
   const input = normalizeWhitespace(value);
   const bytes = new TextEncoder().encode(input);
-  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  const digest = await crypto.subtle.digest('SHA-256', bytes);
   return Array.from(new Uint8Array(digest), (byte) =>
-    byte.toString(16).padStart(2, "0"),
-  ).join("");
+    byte.toString(16).padStart(2, '0'),
+  ).join('');
 }
 
 function removeFrontmatter(text) {
-  return String(text || "").replace(/^---\n[\s\S]*?\n---\n?/m, "");
+  return String(text || '').replace(/^---\n[\s\S]*?\n---\n?/m, '');
 }
 
 function stripMarkdown(text) {
   return removeFrontmatter(text)
     .replace(/```([\s\S]*?)```/g, (_match, code) => `\n${code}\n`)
-    .replace(/`([^`]+)`/g, "$1")
-    .replace(/!\[[^\]]*]\([^)]*\)/g, " ")
-    .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
-    .replace(/^>\s*/gm, "")
-    .replace(/^[-*+]\s+/gm, "")
-    .replace(/^\d+\.\s+/gm, "")
-    .replace(/^#{1,6}\s+/gm, "")
-    .replace(/[|]+/g, " ")
-    .replace(/\r/g, "")
-    .replace(/\n{3,}/g, "\n\n")
+    .replace(/`([^`]+)`/g, '$1')
+    .replace(/!\[[^\]]*]\([^)]*\)/g, ' ')
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+    .replace(/^>\s*/gm, '')
+    .replace(/^[-*+]\s+/gm, '')
+    .replace(/^\d+\.\s+/gm, '')
+    .replace(/^#{1,6}\s+/gm, '')
+    .replace(/[|]+/g, ' ')
+    .replace(/\r/g, '')
+    .replace(/\n{3,}/g, '\n\n')
     .trim();
 }
 
 function parseFrontmatter(text) {
-  const match = String(text || "").match(/^---\n([\s\S]*?)\n---/);
-  if (!match) return { content: String(text || ""), data: {} };
+  const match = String(text || '').match(/^---\n([\s\S]*?)\n---/);
+  if (!match) return { content: String(text || ''), data: {} };
 
   const data = {};
-  for (const rawLine of match[1].split("\n")) {
+  for (const rawLine of match[1].split('\n')) {
     const line = rawLine.trim();
-    if (!line || line.startsWith("#")) continue;
+    if (!line || line.startsWith('#')) continue;
 
-    const separatorIndex = line.indexOf(":");
+    const separatorIndex = line.indexOf(':');
     if (separatorIndex === -1) continue;
 
     const key = line.slice(0, separatorIndex).trim();
@@ -338,13 +338,13 @@ function parseFrontmatter(text) {
   }
 
   return {
-    content: String(text || "").slice(match[0].length),
+    content: String(text || '').slice(match[0].length),
     data,
   };
 }
 
 function splitSectionParagraphs(text) {
-  return String(text || "")
+  return String(text || '')
     .split(/\n\s*\n+/)
     .map((part) => normalizeWhitespace(stripMarkdown(part)))
     .filter(Boolean);
@@ -367,7 +367,7 @@ function splitLongSegment(text, maxChars) {
   }
 
   const parts = [];
-  let current = "";
+  let current = '';
   for (const sentence of sentences) {
     if (!sentence) continue;
     const candidate = current ? `${current} ${sentence}` : sentence;
@@ -378,7 +378,7 @@ function splitLongSegment(text, maxChars) {
     if (current) parts.push(current);
     if (sentence.length > maxChars) {
       parts.push(...splitLongSegment(sentence, maxChars));
-      current = "";
+      current = '';
     } else {
       current = sentence;
     }
@@ -389,15 +389,15 @@ function splitLongSegment(text, maxChars) {
 }
 
 function splitMarkdownSections(markdown) {
-  const content = removeFrontmatter(markdown).replace(/\r/g, "").trim();
+  const content = removeFrontmatter(markdown).replace(/\r/g, '').trim();
   if (!content) return [];
 
   const sections = [];
-  let currentTitle = "Einleitung";
+  let currentTitle = 'Einleitung';
   let buffer = [];
 
   const pushSection = () => {
-    const value = buffer.join("\n").trim();
+    const value = buffer.join('\n').trim();
     if (!value) return;
     sections.push({
       title: currentTitle,
@@ -406,7 +406,7 @@ function splitMarkdownSections(markdown) {
     buffer = [];
   };
 
-  for (const line of content.split("\n")) {
+  for (const line of content.split('\n')) {
     const headingMatch = line.match(/^#{2,4}\s+(.+)$/);
     if (headingMatch) {
       pushSection();
@@ -421,12 +421,12 @@ function splitMarkdownSections(markdown) {
 }
 
 function slugifyId(value) {
-  return String(value || "")
+  return String(value || '')
     .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
     .slice(0, 48);
 }
 
@@ -440,15 +440,15 @@ function buildVectorId(documentId, chunkIndex) {
 function buildChunkText(document, sectionTitle, chunkText) {
   return [
     `${document.sourceLabel}: ${document.title}`,
-    document.category ? `Kategorie: ${document.category}` : "",
-    document.date ? `Datum: ${document.date}` : "",
-    document.tagsText ? `Tags: ${document.tagsText}` : "",
-    sectionTitle ? `Abschnitt: ${sectionTitle}` : "",
-    document.summary ? `Kurzfassung: ${document.summary}` : "",
+    document.category ? `Kategorie: ${document.category}` : '',
+    document.date ? `Datum: ${document.date}` : '',
+    document.tagsText ? `Tags: ${document.tagsText}` : '',
+    sectionTitle ? `Abschnitt: ${sectionTitle}` : '',
+    document.summary ? `Kurzfassung: ${document.summary}` : '',
     chunkText,
   ]
     .filter(Boolean)
-    .join("\n");
+    .join('\n');
 }
 
 function chunkDocument(document, rawText, options = {}) {
@@ -459,7 +459,7 @@ function chunkDocument(document, rawText, options = {}) {
   let chunkIndex = 0;
 
   for (const section of sections) {
-    const sectionTitle = normalizeWhitespace(section.title || "Inhalt");
+    const sectionTitle = normalizeWhitespace(section.title || 'Inhalt');
     const paragraphSegments = splitSectionParagraphs(section.text).flatMap(
       (paragraph) => splitLongSegment(paragraph, maxChars),
     );
@@ -467,7 +467,7 @@ function chunkDocument(document, rawText, options = {}) {
     let currentParts = [];
     let currentLength = 0;
     const flushChunk = () => {
-      const chunkText = normalizeWhitespace(currentParts.join(" "));
+      const chunkText = normalizeWhitespace(currentParts.join(' '));
       if (!chunkText) return;
       chunks.push({
         id: buildVectorId(document.documentId, chunkIndex),
@@ -511,20 +511,20 @@ function chunkDocument(document, rawText, options = {}) {
 function buildProjectMarkdown(project) {
   const caseStudy = project.caseStudy || {};
   const sections = [
-    "## Projektüberblick",
-    project.description || "",
+    '## Projektüberblick',
+    project.description || '',
     Array.isArray(project.tags) && project.tags.length > 0
-      ? `Tags: ${project.tags.join(", ")}`
-      : "",
-    caseStudy.problem ? `## Problem\n${caseStudy.problem}` : "",
-    caseStudy.solution ? `## Lösung\n${caseStudy.solution}` : "",
+      ? `Tags: ${project.tags.join(', ')}`
+      : '',
+    caseStudy.problem ? `## Problem\n${caseStudy.problem}` : '',
+    caseStudy.solution ? `## Lösung\n${caseStudy.solution}` : '',
     Array.isArray(caseStudy.techStack) && caseStudy.techStack.length > 0
-      ? `## Tech-Stack\n${caseStudy.techStack.join(", ")}`
-      : "",
-    caseStudy.results ? `## Ergebnis\n${caseStudy.results}` : "",
+      ? `## Tech-Stack\n${caseStudy.techStack.join(', ')}`
+      : '',
+    caseStudy.results ? `## Ergebnis\n${caseStudy.results}` : '',
   ];
 
-  return sections.filter(Boolean).join("\n\n");
+  return sections.filter(Boolean).join('\n\n');
 }
 
 async function loadJsonAsset(env, requestUrl, path) {
@@ -535,9 +535,9 @@ async function loadJsonAsset(env, requestUrl, path) {
 }
 
 async function loadTextAsset(env, requestUrl, path) {
-  if (!env?.ASSETS) return "";
+  if (!env?.ASSETS) return '';
   const response = await env.ASSETS.fetch(new URL(path, requestUrl));
-  if (!response.ok) return "";
+  if (!response.ok) return '';
   return await response.text();
 }
 
@@ -571,8 +571,8 @@ async function loadBlogDocuments(context) {
 
       return {
         documentId: `blog-${slugifyId(entry.id)}`,
-        sourceType: "blog",
-        sourceLabel: "Blogpost",
+        sourceType: 'blog',
+        sourceLabel: 'Blogpost',
         title,
         url: `/blog/${encodeURIComponent(entry.id)}/`,
         summary: excerpt,
@@ -603,16 +603,16 @@ async function loadProjectDocuments(context) {
 
       return {
         documentId: `project-${slug}`,
-        sourceType: "project",
-        sourceLabel: "Projekt",
+        sourceType: 'project',
+        sourceLabel: 'Projekt',
         title: normalizeWhitespace(project.title || project.name || slug),
         url: `/projekte/${encodeURIComponent(project.name || slug)}/`,
         summary: normalizeWhitespace(project.description),
         category: normalizeWhitespace(project.category),
-        date: "",
+        date: '',
         tagsText: Array.isArray(project.tags)
-          ? project.tags.map((tag) => normalizeWhitespace(tag)).join(", ")
-          : "",
+          ? project.tags.map((tag) => normalizeWhitespace(tag)).join(', ')
+          : '',
         rawText: buildProjectMarkdown(project),
       };
     })
@@ -690,7 +690,7 @@ async function buildDocumentHashes(documents) {
 export async function readContentRagManifest(env) {
   if (!env?.SITEMAP_CACHE_KV) return null;
   try {
-    return await env.SITEMAP_CACHE_KV.get(CONTENT_RAG_MANIFEST_KEY, "json");
+    return await env.SITEMAP_CACHE_KV.get(CONTENT_RAG_MANIFEST_KEY, 'json');
   } catch {
     return null;
   }
@@ -738,14 +738,14 @@ function buildManifestDocuments(
   const entries = {};
   const previousDocuments =
     previousManifest?.documents &&
-    typeof previousManifest.documents === "object"
+    typeof previousManifest.documents === 'object'
       ? previousManifest.documents
       : {};
 
   for (const document of documents) {
     const documentChunks = chunksByDocument.get(document.documentId) || [];
     const previousEntry = previousDocuments[document.documentId];
-    const currentHash = documentHashes.get(document.documentId) || "";
+    const currentHash = documentHashes.get(document.documentId) || '';
     entries[document.documentId] = {
       hash: currentHash,
       sourceType: document.sourceType,
@@ -766,14 +766,14 @@ function buildManifestDocuments(
 function getChangedDocumentIds(documents, documentHashes, previousManifest) {
   const previousDocuments =
     previousManifest?.documents &&
-    typeof previousManifest.documents === "object"
+    typeof previousManifest.documents === 'object'
       ? previousManifest.documents
       : {};
 
   return documents
     .filter((document) => {
       const previousEntry = previousDocuments[document.documentId];
-      const currentHash = documentHashes.get(document.documentId) || "";
+      const currentHash = documentHashes.get(document.documentId) || '';
       return previousEntry?.hash !== currentHash;
     })
     .map((document) => document.documentId);
@@ -789,7 +789,7 @@ async function embedCorpusChunks(env, chunks, embeddingModel) {
     const embeddings = Array.isArray(response?.data) ? response.data : [];
 
     if (embeddings.length !== batch.length) {
-      throw new Error("Embedding result count mismatch");
+      throw new Error('Embedding result count mismatch');
     }
 
     for (const [index, item] of batch.entries()) {
@@ -809,9 +809,9 @@ async function embedCorpusChunks(env, chunks, embeddingModel) {
           section: item.section,
           snippet: item.snippet,
           content: item.content,
-          category: item.category || "",
-          tags: item.tagsText || "",
-          date: item.date || "",
+          category: item.category || '',
+          tags: item.tagsText || '',
+          date: item.date || '',
         },
       });
     }
@@ -832,15 +832,15 @@ async function deleteStaleVectors(index, ids) {
 export async function syncSiteContentRag(context, options = {}) {
   const { env } = context;
   if (!env?.AI) {
-    throw new Error("AI binding is missing");
+    throw new Error('AI binding is missing');
   }
   if (!env?.ROBOT_CONTENT_RAG) {
-    throw new Error("ROBOT_CONTENT_RAG binding is missing");
+    throw new Error('ROBOT_CONTENT_RAG binding is missing');
   }
 
   const corpus = await buildSiteContentCorpus(context);
   if (!corpus.chunks.length) {
-    throw new Error("No website content found for RAG sync");
+    throw new Error('No website content found for RAG sync');
   }
 
   const previousManifest = await readContentRagManifest(env);
@@ -856,7 +856,7 @@ export async function syncSiteContentRag(context, options = {}) {
   );
 
   const embeddingModel =
-    env.ROBOT_EMBEDDING_MODEL || "@cf/baai/bge-base-en-v1.5";
+    env.ROBOT_EMBEDDING_MODEL || '@cf/baai/bge-base-en-v1.5';
   const vectors =
     changedChunks.length > 0
       ? await embedCorpusChunks(env, changedChunks, embeddingModel)
@@ -880,7 +880,7 @@ export async function syncSiteContentRag(context, options = {}) {
 
   const previousDocumentIds =
     previousManifest?.documents &&
-    typeof previousManifest.documents === "object"
+    typeof previousManifest.documents === 'object'
       ? Object.keys(previousManifest.documents)
       : [];
   const currentDocumentIdSet = new Set(
@@ -937,7 +937,7 @@ export async function getSiteContentRagContext(query, env) {
 
   try {
     const embeddingModel =
-      env.ROBOT_EMBEDDING_MODEL || "@cf/baai/bge-base-en-v1.5";
+      env.ROBOT_EMBEDDING_MODEL || '@cf/baai/bge-base-en-v1.5';
     const response = await env.AI.run(embeddingModel, {
       text: [trimmedQuery],
     });
@@ -959,7 +959,7 @@ export async function getSiteContentRagContext(query, env) {
       vector,
       {
         topK: rawTopK,
-        returnMetadata: "all",
+        returnMetadata: 'all',
       },
       metadataFilter,
     );
@@ -968,7 +968,7 @@ export async function getSiteContentRagContext(query, env) {
         ? `metadata-filter:${appliedFilter.sourceType}`
         : usedFallback && metadataFilter?.sourceType
           ? `fallback-unfiltered:${metadataFilter.sourceType}`
-          : "unfiltered";
+          : 'unfiltered';
 
     const rerankedMatches = [];
     for (const match of results?.matches || []) {
@@ -980,7 +980,7 @@ export async function getSiteContentRagContext(query, env) {
       }
 
       const metadata =
-        match?.metadata && typeof match.metadata === "object"
+        match?.metadata && typeof match.metadata === 'object'
           ? match.metadata
           : {};
       const content = trimToLength(metadata.content, DEFAULT_CHUNK_MAX_CHARS);
@@ -991,7 +991,7 @@ export async function getSiteContentRagContext(query, env) {
       rerankedMatches.push({
         documentId: normalizeWhitespace(metadata.documentId || match.id),
         score: Number(match.score.toFixed(3)),
-        sourceType: normalizeWhitespace(metadata.sourceType || "content"),
+        sourceType: normalizeWhitespace(metadata.sourceType || 'content'),
         title,
         url,
         section: normalizeWhitespace(metadata.section),
@@ -1031,31 +1031,31 @@ export async function getSiteContentRagContext(query, env) {
 
     const sources = buildSourceLinks(matches);
     const prompt = [
-      "Nutze die folgenden Primärquellen aus Abdulkerims eigenem Website-Content als bevorzugte Grundlage für Antworten über seine Sichtweisen, Projekte und technischen Entscheidungen.",
+      'Nutze die folgenden Primärquellen aus Abdulkerims eigenem Website-Content als bevorzugte Grundlage für Antworten über seine Sichtweisen, Projekte und technischen Entscheidungen.',
       sources.length > 0
         ? [
             'Wenn du dich inhaltlich auf diesen Kontext stützt, nenne am Ende unter "Quellen:" 1-2 passende Markdown-Links aus dieser Liste und erfinde keine zusätzlichen URLs.',
             ...sources.map((item) => `- [${item.title}](${item.url})`),
-          ].join("\n")
-        : "",
+          ].join('\n')
+        : '',
       ...matches.map((item, index) =>
         [
           `[Quelle ${index + 1}]`,
           `Typ: ${item.sourceType}`,
           `Titel: ${item.title}`,
-          item.date ? `Datum: ${item.date}` : "",
-          item.section ? `Abschnitt: ${item.section}` : "",
+          item.date ? `Datum: ${item.date}` : '',
+          item.section ? `Abschnitt: ${item.section}` : '',
           `Retrieval: ${retrievalMode}`,
           `Rerank: ${item.rerankScore}`,
           `URL: ${item.url}`,
           `Inhalt: ${item.content}`,
         ]
           .filter(Boolean)
-          .join("\n"),
+          .join('\n'),
       ),
     ]
       .filter(Boolean)
-      .join("\n\n");
+      .join('\n\n');
 
     return {
       prompt,
@@ -1073,7 +1073,7 @@ export async function getSiteContentRagContext(query, env) {
     };
   } catch (error) {
     if (!error?.remote) {
-      console.warn("getSiteContentRagContext error:", error?.message || error);
+      console.warn('getSiteContentRagContext error:', error?.message || error);
     }
     return null;
   }

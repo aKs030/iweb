@@ -1,5 +1,5 @@
-const DEFAULT_BASE_URL = "http://127.0.0.1:8788";
-const ENDPOINT_PATH = "/api/admin/content-rag";
+const DEFAULT_BASE_URL = 'http://127.0.0.1:8788';
+const ENDPOINT_PATH = '/api/admin/content-rag';
 const DEFAULT_RETRIES = 6;
 const DEFAULT_DELAY_MS = 10000;
 
@@ -7,23 +7,23 @@ function getFlagValue(name) {
   const exactIndex = process.argv.findIndex((arg) => arg === name);
   if (exactIndex !== -1) {
     const next = process.argv[exactIndex + 1];
-    if (next && !next.startsWith("--")) return next;
+    if (next && !next.startsWith('--')) return next;
   }
 
   const prefix = `${name}=`;
   const arg = process.argv.find((entry) => entry.startsWith(prefix));
-  return arg ? arg.slice(prefix.length) : "";
+  return arg ? arg.slice(prefix.length) : '';
 }
 
 function parseInteger(value, fallback, { min = 0, max = 60 } = {}) {
-  const parsed = Number.parseInt(String(value ?? ""), 10);
+  const parsed = Number.parseInt(String(value ?? ''), 10);
   if (!Number.isFinite(parsed)) return fallback;
   return Math.min(max, Math.max(min, parsed));
 }
 
 function resolveBaseUrl() {
   const value =
-    getFlagValue("--url") ||
+    getFlagValue('--url') ||
     process.env.RAG_SYNC_BASE_URL ||
     process.env.SITE_URL ||
     DEFAULT_BASE_URL;
@@ -32,7 +32,7 @@ function resolveBaseUrl() {
 }
 
 function getMethod() {
-  return process.argv.includes("--status") ? "GET" : "POST";
+  return process.argv.includes('--status') ? 'GET' : 'POST';
 }
 
 function isFlagEnabled(name) {
@@ -42,12 +42,12 @@ function isFlagEnabled(name) {
 function getRetryConfig() {
   return {
     retries: parseInteger(
-      getFlagValue("--retries") || process.env.RAG_SYNC_RETRIES,
+      getFlagValue('--retries') || process.env.RAG_SYNC_RETRIES,
       DEFAULT_RETRIES,
       { min: 0, max: 20 },
     ),
     delayMs: parseInteger(
-      getFlagValue("--delay-ms") || process.env.RAG_SYNC_DELAY_MS,
+      getFlagValue('--delay-ms') || process.env.RAG_SYNC_DELAY_MS,
       DEFAULT_DELAY_MS,
       { min: 250, max: 60000 },
     ),
@@ -75,16 +75,16 @@ async function performRequest(endpoint, method, token) {
 
 function getExpectedCommitSha() {
   return String(
-    getFlagValue("--wait-for-commit") ||
+    getFlagValue('--wait-for-commit') ||
       process.env.RAG_SYNC_WAIT_FOR_COMMIT ||
-      "",
+      '',
   )
     .trim()
     .toLowerCase();
 }
 
 function getRuntimeCommitSha(payload) {
-  return String(payload?.runtime?.commitSha || "")
+  return String(payload?.runtime?.commitSha || '')
     .trim()
     .toLowerCase();
 }
@@ -103,7 +103,7 @@ async function waitForExpectedCommit(
     try {
       const { response, payload } = await performRequest(
         endpoint,
-        "GET",
+        'GET',
         token,
       );
       const runtimeCommitSha = getRuntimeCommitSha(payload);
@@ -156,9 +156,9 @@ async function waitForExpectedCommit(
 }
 
 async function main() {
-  const token = String(process.env.ADMIN_TOKEN || "").trim();
+  const token = String(process.env.ADMIN_TOKEN || '').trim();
   if (!token) {
-    console.error("ADMIN_TOKEN fehlt.");
+    console.error('ADMIN_TOKEN fehlt.');
     process.exitCode = 1;
     return;
   }
@@ -166,10 +166,10 @@ async function main() {
   const baseUrl = resolveBaseUrl();
   const endpoint = new URL(ENDPOINT_PATH, baseUrl);
   if (
-    getMethod() === "POST" &&
-    (isFlagEnabled("--full") || isFlagEnabled("--reindex"))
+    getMethod() === 'POST' &&
+    (isFlagEnabled('--full') || isFlagEnabled('--reindex'))
   ) {
-    endpoint.searchParams.set("full", "1");
+    endpoint.searchParams.set('full', '1');
   }
   const method = getMethod();
   const retryConfig = getRetryConfig();

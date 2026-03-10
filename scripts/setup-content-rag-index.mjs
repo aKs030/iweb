@@ -1,24 +1,24 @@
-import { spawn } from "node:child_process";
-import { fileURLToPath } from "node:url";
+import { spawn } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 
-const DEFAULT_INDEX_NAME = "jules-content-rag";
+const DEFAULT_INDEX_NAME = 'jules-content-rag';
 const DEFAULT_WAIT_RETRIES = 10;
 const DEFAULT_WAIT_DELAY_MS = 2000;
 const REQUIRED_METADATA_INDEXES = [
-  { propertyName: "sourceType", type: "string" },
-  { propertyName: "category", type: "string" },
+  { propertyName: 'sourceType', type: 'string' },
+  { propertyName: 'category', type: 'string' },
 ];
 
 function getFlagValue(name) {
   const exactIndex = process.argv.findIndex((arg) => arg === name);
   if (exactIndex !== -1) {
     const next = process.argv[exactIndex + 1];
-    if (next && !next.startsWith("--")) return next;
+    if (next && !next.startsWith('--')) return next;
   }
 
   const prefix = `${name}=`;
   const arg = process.argv.find((entry) => entry.startsWith(prefix));
-  return arg ? arg.slice(prefix.length) : "";
+  return arg ? arg.slice(prefix.length) : '';
 }
 
 function isFlagEnabled(name) {
@@ -26,7 +26,7 @@ function isFlagEnabled(name) {
 }
 
 function parseInteger(value, fallback, { min = 0, max = 60_000 } = {}) {
-  const parsed = Number.parseInt(String(value ?? ""), 10);
+  const parsed = Number.parseInt(String(value ?? ''), 10);
   if (!Number.isFinite(parsed)) return fallback;
   return Math.min(max, Math.max(min, parsed));
 }
@@ -37,10 +37,10 @@ function sleep(ms) {
 
 function resolveSyncUrl() {
   return String(
-    getFlagValue("--url") ||
+    getFlagValue('--url') ||
       process.env.RAG_SYNC_BASE_URL ||
       process.env.SITE_URL ||
-      "",
+      '',
   ).trim();
 }
 
@@ -49,20 +49,20 @@ async function runCommand(command, args, options = {}) {
     const child = spawn(command, args, {
       cwd: options.cwd || process.cwd(),
       env: options.env || process.env,
-      stdio: ["ignore", "pipe", "pipe"],
+      stdio: ['ignore', 'pipe', 'pipe'],
     });
 
-    let stdout = "";
-    let stderr = "";
+    let stdout = '';
+    let stderr = '';
 
-    child.stdout.on("data", (chunk) => {
+    child.stdout.on('data', (chunk) => {
       stdout += chunk.toString();
     });
-    child.stderr.on("data", (chunk) => {
+    child.stderr.on('data', (chunk) => {
       stderr += chunk.toString();
     });
-    child.on("error", reject);
-    child.on("close", (code) => {
+    child.on('error', reject);
+    child.on('close', (code) => {
       if (code === 0) {
         resolve({ stdout, stderr });
         return;
@@ -70,7 +70,7 @@ async function runCommand(command, args, options = {}) {
 
       reject(
         new Error(
-          [stdout.trim(), stderr.trim()].filter(Boolean).join("\n") ||
+          [stdout.trim(), stderr.trim()].filter(Boolean).join('\n') ||
             `${command} exited with code ${code}`,
         ),
       );
@@ -79,13 +79,13 @@ async function runCommand(command, args, options = {}) {
 }
 
 async function runWrangler(args) {
-  return await runCommand("npx", ["wrangler", ...args]);
+  return await runCommand('npx', ['wrangler', ...args]);
 }
 
 function parseJsonOutput(stdout) {
-  const trimmed = String(stdout || "").trim();
-  const arrayStart = trimmed.indexOf("[");
-  const objectStart = trimmed.indexOf("{");
+  const trimmed = String(stdout || '').trim();
+  const arrayStart = trimmed.indexOf('[');
+  const objectStart = trimmed.indexOf('{');
   const start =
     arrayStart === -1
       ? objectStart
@@ -94,7 +94,7 @@ function parseJsonOutput(stdout) {
         : Math.min(arrayStart, objectStart);
 
   if (start === -1) {
-    throw new Error("Command did not return JSON output");
+    throw new Error('Command did not return JSON output');
   }
 
   return JSON.parse(trimmed.slice(start));
@@ -102,10 +102,10 @@ function parseJsonOutput(stdout) {
 
 async function listMetadataIndexes(indexName) {
   const { stdout } = await runWrangler([
-    "vectorize",
-    "list-metadata-index",
+    'vectorize',
+    'list-metadata-index',
     indexName,
-    "--json",
+    '--json',
   ]);
   const parsed = parseJsonOutput(stdout);
   return Array.isArray(parsed) ? parsed : [];
@@ -113,8 +113,8 @@ async function listMetadataIndexes(indexName) {
 
 async function createMetadataIndex(indexName, definition) {
   await runWrangler([
-    "vectorize",
-    "create-metadata-index",
+    'vectorize',
+    'create-metadata-index',
     indexName,
     `--property-name=${definition.propertyName}`,
     `--type=${definition.type}`,
@@ -123,13 +123,13 @@ async function createMetadataIndex(indexName, definition) {
 
 async function waitForMetadataIndexes(indexName, propertyNames) {
   const retries = parseInteger(
-    getFlagValue("--wait-retries") ||
+    getFlagValue('--wait-retries') ||
       process.env.CONTENT_RAG_INDEX_WAIT_RETRIES,
     DEFAULT_WAIT_RETRIES,
     { min: 0, max: 60 },
   );
   const delayMs = parseInteger(
-    getFlagValue("--wait-delay-ms") ||
+    getFlagValue('--wait-delay-ms') ||
       process.env.CONTENT_RAG_INDEX_WAIT_DELAY_MS,
     DEFAULT_WAIT_DELAY_MS,
     { min: 250, max: 60_000 },
@@ -138,7 +138,7 @@ async function waitForMetadataIndexes(indexName, propertyNames) {
   for (let attempt = 0; attempt <= retries; attempt += 1) {
     const indexes = await listMetadataIndexes(indexName);
     const available = new Set(
-      indexes.map((item) => String(item?.propertyName || "").trim()),
+      indexes.map((item) => String(item?.propertyName || '').trim()),
     );
     const missing = propertyNames.filter((name) => !available.has(name));
     if (missing.length === 0) return indexes;
@@ -149,7 +149,7 @@ async function waitForMetadataIndexes(indexName, propertyNames) {
     }
 
     throw new Error(
-      `Metadata indexes still missing after wait: ${missing.join(", ")}`,
+      `Metadata indexes still missing after wait: ${missing.join(', ')}`,
     );
   }
 
@@ -158,11 +158,11 @@ async function waitForMetadataIndexes(indexName, propertyNames) {
 
 async function runFullSync(syncUrl) {
   const syncScriptPath = fileURLToPath(
-    new URL("./sync-content-rag.mjs", import.meta.url),
+    new URL('./sync-content-rag.mjs', import.meta.url),
   );
-  const args = [syncScriptPath, `--url=${syncUrl}`, "--full"];
-  const retries = getFlagValue("--sync-retries");
-  const delayMs = getFlagValue("--sync-delay-ms");
+  const args = [syncScriptPath, `--url=${syncUrl}`, '--full'];
+  const retries = getFlagValue('--sync-retries');
+  const delayMs = getFlagValue('--sync-delay-ms');
   if (retries) args.push(`--retries=${retries}`);
   if (delayMs) args.push(`--delay-ms=${delayMs}`);
 
@@ -170,22 +170,22 @@ async function runFullSync(syncUrl) {
     env: process.env,
   });
 
-  return JSON.parse(stdout.trim() || "{}");
+  return JSON.parse(stdout.trim() || '{}');
 }
 
 async function main() {
   const indexName = String(
-    getFlagValue("--index") ||
+    getFlagValue('--index') ||
       process.env.CONTENT_RAG_INDEX_NAME ||
       DEFAULT_INDEX_NAME,
   ).trim();
-  const skipSync = isFlagEnabled("--skip-sync");
+  const skipSync = isFlagEnabled('--skip-sync');
   const syncUrl = resolveSyncUrl();
   const existingIndexes = await listMetadataIndexes(indexName);
   const existingByName = new Map(
     existingIndexes.map((item) => [
-      String(item?.propertyName || "").trim(),
-      String(item?.indexType || "")
+      String(item?.propertyName || '').trim(),
+      String(item?.indexType || '')
         .trim()
         .toLowerCase(),
     ]),
@@ -211,14 +211,14 @@ async function main() {
 
   let sync = {
     attempted: false,
-    reason: "no sync URL provided",
+    reason: 'no sync URL provided',
   };
 
   if (!skipSync && syncUrl) {
-    if (!String(process.env.ADMIN_TOKEN || "").trim()) {
+    if (!String(process.env.ADMIN_TOKEN || '').trim()) {
       sync = {
         attempted: false,
-        reason: "ADMIN_TOKEN missing",
+        reason: 'ADMIN_TOKEN missing',
       };
     } else {
       sync = {
@@ -230,7 +230,7 @@ async function main() {
   } else if (skipSync) {
     sync = {
       attempted: false,
-      reason: "skipped via --skip-sync",
+      reason: 'skipped via --skip-sync',
     };
   }
 
