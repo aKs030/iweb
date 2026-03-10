@@ -488,8 +488,8 @@ function stripMarkdown(text) {
 
 function stripHtml(text) {
   return String(text || "")
-    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, " ")
-    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, " ")
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script\s*>/gi, " ")
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style\s*>/gi, " ")
     .replace(
       /<\/(p|div|section|article|main|header|footer|ul|ol|li|br)>/gi,
       "\n",
@@ -497,19 +497,20 @@ function stripHtml(text) {
     .replace(/<(h[1-6])\b[^>]*>/gi, "\n## ")
     .replace(/<[^>]+>/g, " ")
     .replace(/&nbsp;/gi, " ")
-    .replace(/&amp;/gi, "&")
+    .replace(/&amp;/gi, " and ")
     .replace(/&quot;/gi, '"')
     .replace(/&#39;/gi, "'")
-    .replace(/&lt;/gi, "<")
-    .replace(/&gt;/gi, ">")
+    .replace(/&lt;/gi, " ")
+    .replace(/&gt;/gi, " ")
     .replace(/\r/g, "")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
 }
 
 function parseFrontmatter(text) {
-  const match = String(text || "").match(/^---\n([\s\S]*?)\n---/);
-  if (!match) return { content: String(text || ""), data: {} };
+  const source = String(text ?? "");
+  const match = source.match(/^---\n([\s\S]*?)\n---/);
+  if (!match) return { content: source, data: {} };
 
   const data = {};
   for (const rawLine of match[1].split("\n")) {
@@ -525,7 +526,7 @@ function parseFrontmatter(text) {
   }
 
   return {
-    content: String(text || "").slice(match[0].length),
+    content: source.slice(match[0].length),
     data,
   };
 }
