@@ -78,7 +78,7 @@ Status only:
 ADMIN_TOKEN=... npm run sync:content-rag -- --status --url=https://www.abdulkerimsesli.de
 ```
 
-GitHub Preview Deployments in [`.github/workflows/main.yml`](/Users/abdo/iweb/.github/workflows/main.yml) trigger this sync automatically after a successful Cloudflare deploy when these repository secrets exist:
+GitHub Preview Deployments in [`.github/workflows/main.yml`](../../.github/workflows/main.yml) trigger this sync automatically after a successful Cloudflare deploy when these repository secrets exist:
 
 - `CLOUDFLARE_API_TOKEN`
 - `CLOUDFLARE_ACCOUNT_ID`
