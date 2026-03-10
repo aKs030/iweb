@@ -3,67 +3,20 @@
 
 version: 2
 updates:
-  # NPM Dependencies
-  - package-ecosystem: 'npm'
-    directory: '/'
-    schedule:
-      interval: 'weekly'
-      day: 'monday'
-      time: '09:00'
-      timezone: 'Europe/Berlin'
-    open-pull-requests-limit: 10
-    reviewers:
-      - 'aKs030'
-    assignees:
-      - 'aKs030'
-    commit-message:
-      prefix: 'deps'
-      include: 'scope'
-    labels:
-      - 'dependencies'
-      - 'automated'
-    # Ignore major updates for stable dependencies
-    ignore:
-      - dependency-name: 'three'
-        update-types: ['version-update:semver-major']
-      - dependency-name: 'react'
-        update-types: ['version-update:semver-major']
-      - dependency-name: 'react-dom'
-        update-types: ['version-update:semver-major']
-    # Group updates
-    groups:
-      development-dependencies:
-        dependency-type: 'development'
-        update-types:
-          - 'minor'
-          - 'patch'
-      production-dependencies:
-        dependency-type: 'production'
-        update-types:
-          - 'minor'
-          - 'patch'
-      eslint-ecosystem:
-        patterns:
-          - 'eslint*'
-          - '@eslint/*'
-      cloudflare-ecosystem:
-        patterns:
-          - '@cloudflare/*'
-          - 'wrangler'
-
   # GitHub Actions
-  - package-ecosystem: 'github-actions'
-    directory: '/'
+  # npm version updates are handled by Renovate to avoid duplicate PRs.
+  - package-ecosystem: "github-actions"
+    directory: "/"
     schedule:
-      interval: 'weekly'
-      day: 'monday'
-      time: '09:00'
-      timezone: 'Europe/Berlin'
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Europe/Berlin"
     open-pull-requests-limit: 5
     reviewers:
-      - 'aKs030'
+      - "aKs030"
     commit-message:
-      prefix: 'ci'
+      prefix: "ci"
     labels:
-      - 'github-actions'
-      - 'automated'
+      - "github-actions"
+      - "automated"

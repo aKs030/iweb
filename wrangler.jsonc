@@ -1,9 +1,10 @@
-// wrangler.jsonc — Migriert von wrangler.toml
-// OPTIMIERUNGEN:
-// - Production-`vars` explizit gesetzt (Wrangler vererbt Top-Level vars nicht)
-// - KV/R2/AI-Bindings für beide Environments vorhanden
-// - nodejs_compat beibehalten
-// - compatibility_date auf 2026-03-02
+// wrangler.jsonc — migriert von wrangler.toml
+// Hinweise:
+// - Top-Level beschreibt das Default-/Local-Setup fuer `wrangler pages dev`
+// - `env.production` ist ein separater Production-Override
+// - Nicht vererbbare Felder wie `vars`, KV/R2/D1/AI/Vectorize muessen in
+//   `env.production` erneut angegeben werden, sobald dort Overrides existieren
+// - `nodejs_compat` bleibt aktiv
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "1web",
@@ -11,8 +12,8 @@
   "compatibility_flags": ["nodejs_compat"],
   "pages_build_output_dir": ".",
 
-  // Gemeinsame Vars für preview UND production
-  // (Beide Environments hatten identische Werte → DRY)
+  // Default-/Local-Variablen fuer `wrangler pages dev`
+  // Production erbt diese Werte nicht automatisch.
   "vars": {
     "MAX_SEARCH_RESULTS": "10",
     "RAG_ID": "wispy-pond-1055",
@@ -29,12 +30,14 @@
     "ROBOT_MAX_HISTORY_TURNS": "10",
     "ROBOT_MEMORY_TOP_K": "5",
     "ROBOT_MEMORY_SCORE_THRESHOLD": "0.65",
+    "ROBOT_CONTENT_RAG_TOP_K": "4",
+    "ROBOT_CONTENT_RAG_SCORE_THRESHOLD": "0.25",
     "CONTACT_EMAIL": "krm19030@gmail.com",
     "YOUTUBE_CHANNEL_ID": "UCTGRherjM4iuIn86xxubuPg",
     "ALLOWED_ORIGINS": "https://abdulkerimsesli.de,https://www.abdulkerimsesli.de",
   },
 
-  // KV Namespaces — Preview IDs (werden für 'wrangler pages dev' genutzt)
+  // Default-/Local-Bindings fuer `wrangler pages dev`
   "kv_namespaces": [
     {
       "binding": "RATE_LIMIT_KV",
@@ -59,7 +62,7 @@
     },
   ],
 
-  // D1 Database Binding für Portfolio Likes/Claps
+  // D1-Binding fuer Portfolio Likes/Claps
   "d1_databases": [
     {
       "binding": "DB_LIKES",
@@ -74,20 +77,31 @@
     "remote": true,
   },
 
-  // Vectorize Index für Jules Long-Term Memory
+  // Vectorize-Indizes:
+  // - JULES_MEMORY: persoenliche Langzeit-Erinnerungen pro Nutzer
+  // - ROBOT_CONTENT_RAG: Website-/Blog-/Projektwissen fuer RAG-Antworten
   "vectorize": [
     {
       "binding": "JULES_MEMORY",
       "index_name": "jules-memory",
       "remote": true,
     },
+    {
+      "binding": "ROBOT_CONTENT_RAG",
+      "index_name": "jules-content-rag",
+      "remote": true,
+    },
   ],
 
-  // Production-Environment — nur abweichende KV-IDs überschreiben
+  // Production-Override.
+  // Wichtiger Cloudflare-Pages-Fallstrick:
+  // Sobald hier ein nicht vererbbares Feld ueberschrieben wird
+  // (z. B. `kv_namespaces`), muessen die anderen nicht vererbbaren Felder
+  // ebenfalls erneut aufgefuehrt werden.
   "env": {
     "production": {
-      // Hinweis: `vars` werden von Wrangler NICHT aus dem Top-Level geerbt.
-      // Deshalb hier explizit identisch hinterlegt.
+      // Production-spezifische Variablen.
+      // Diese werden nicht aus dem Top-Level geerbt.
       "vars": {
         "MAX_SEARCH_RESULTS": "10",
         "RAG_ID": "wispy-pond-1055",
@@ -104,6 +118,8 @@
         "ROBOT_MAX_HISTORY_TURNS": "10",
         "ROBOT_MEMORY_TOP_K": "5",
         "ROBOT_MEMORY_SCORE_THRESHOLD": "0.65",
+        "ROBOT_CONTENT_RAG_TOP_K": "4",
+        "ROBOT_CONTENT_RAG_SCORE_THRESHOLD": "0.25",
         "CONTACT_EMAIL": "krm19030@gmail.com",
         "YOUTUBE_CHANNEL_ID": "UCTGRherjM4iuIn86xxubuPg",
         "ALLOWED_ORIGINS": "https://abdulkerimsesli.de,https://www.abdulkerimsesli.de",
@@ -144,6 +160,11 @@
         {
           "binding": "JULES_MEMORY",
           "index_name": "jules-memory",
+          "remote": true,
+        },
+        {
+          "binding": "ROBOT_CONTENT_RAG",
+          "index_name": "jules-content-rag",
           "remote": true,
         },
       ],

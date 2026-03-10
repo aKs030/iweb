@@ -9,6 +9,7 @@ Server-side logic powered by Cloudflare Pages Functions.
 | `ai.js`                | Lightweight AI chat with RAG (Workers AI + AutoRAG)               |
 | `ai-agent.js`          | Primary robot endpoint: SSE, tool-calling, image analysis, memory |
 | `ai-agent-user.js`     | List/delete robot memory + user mapping in Cloudflare             |
+| `admin/content-rag.js` | Protected sync/status endpoint for Jules content RAG              |
 | `workers-assistant.js` | Workers code-generation assistant                                 |
 | `search.js`            | Hybrid search (AutoRAG + deterministic fallback)                  |
 | `contact.js`           | Contact form handler (email via MailChannels)                     |
@@ -22,6 +23,7 @@ Server-side logic powered by Cloudflare Pages Functions.
 | ---------------------- | ------------------------------------------------------------------------------------- |
 | `_cors.js`             | `getCorsHeaders()`, `handleOptions()`                                                 |
 | `_ai-search-config.js` | `resolveAiSearchConfig()`, `buildAiSearchRequest()`, `clampResults()`                 |
+| `_content-rag.js`      | Build/sync/query the Vectorize corpus for blog posts and projects                     |
 | `_cleanup-patterns.js` | `CLEANUP_PATTERNS`, `HTML_ENTITIES`                                                   |
 | `_search-url.js`       | `normalizeUrl()`, `canonicalizeUrlPath()`, `detectCategory()`, `extractTitle()`       |
 | `_sitemap-data.js`     | Blog/project/R2 constants, data loaders                                               |
@@ -35,6 +37,56 @@ Server-side logic powered by Cloudflare Pages Functions.
 ## Search Architecture
 
 Hybrid engine: AutoRAG semantic search with deterministic fallback scoring, intent analysis, and result balancing.
+
+## Content RAG Workflow
+
+`ai-agent.js` now prefers a dedicated Vectorize corpus built from:
+
+- `/pages/blog/posts/index.json` plus the referenced Markdown posts
+- `/pages/projekte/apps-config.json`
+
+Sync the corpus after content changes:
+
+```bash
+ADMIN_TOKEN=... npm run sync:content-rag -- --url=https://www.abdulkerimsesli.de
+```
+
+The sync is delta-aware: unchanged documents reuse their existing vectors, only changed documents are re-embedded, and removed documents have their stale chunk IDs deleted from Vectorize. Query-time retrieval also reranks the raw Vectorize hits, applies intent-based metadata filtering for source-aware queries, and passes 1-2 preferred source links into the agent prompt so answers can cite Abdulkerim's own content directly.
+
+Create the metadata indexes once on Cloudflare before relying on Vectorize filters:
+
+```bash
+npx wrangler vectorize create-metadata-index jules-content-rag --property-name=sourceType --type=string
+npx wrangler vectorize create-metadata-index jules-content-rag --property-name=category --type=string
+```
+
+Reusable setup shortcut:
+
+```bash
+ADMIN_TOKEN=... npm run setup:content-rag-index -- --url=https://www.abdulkerimsesli.de
+```
+
+Because Cloudflare only indexes metadata that was present after the metadata index existed, run one forced full resync after creating those indexes:
+
+```bash
+ADMIN_TOKEN=... npm run sync:content-rag -- --url=https://www.abdulkerimsesli.de --full
+```
+
+Status only:
+
+```bash
+ADMIN_TOKEN=... npm run sync:content-rag -- --status --url=https://www.abdulkerimsesli.de
+```
+
+GitHub Preview Deployments in [`.github/workflows/main.yml`](/Users/abdo/iweb/.github/workflows/main.yml) trigger this sync automatically after a successful Cloudflare deploy when these repository secrets exist:
+
+- `CLOUDFLARE_API_TOKEN`
+- `CLOUDFLARE_ACCOUNT_ID`
+- `ADMIN_TOKEN` (must match the `ADMIN_TOKEN` configured in Cloudflare Pages)
+
+Pushes to `main`/`master` also run a production sync job. It first polls `GET /api/admin/content-rag` until the live Pages runtime reports the pushed `CF_PAGES_COMMIT_SHA`, then executes the sync. Optional GitHub variable:
+
+- `PRODUCTION_SITE_URL` (default: `https://www.abdulkerimsesli.de`)
 
 ## Development
 
@@ -53,6 +105,8 @@ Der Robot-Agent liest seine Cloudflare-Konfiguration aus `wrangler.jsonc`:
 - `ROBOT_MAX_HISTORY_TURNS`
 - `ROBOT_MEMORY_TOP_K`
 - `ROBOT_MEMORY_SCORE_THRESHOLD`
+- `ROBOT_CONTENT_RAG_TOP_K` (default: `4`)
+- `ROBOT_CONTENT_RAG_SCORE_THRESHOLD` (default: `0.25`)
 - `ROBOT_MEMORY_RETENTION_DAYS` (default: `180`)
 - `ROBOT_TOOL_TRUSTED_IDS` (CSV User-IDs mit erweiterten Tool-Rechten)
 - `ROBOT_TOOL_ADMIN_IDS` (CSV User-IDs mit Admin-Rechten)
