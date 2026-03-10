@@ -6,6 +6,7 @@
     ":semanticCommits",
     ":preserveSemverRanges"
   ],
+  "enabledManagers": ["npm"],
   "schedule": ["before 9am on monday"],
   "timezone": "Europe/Berlin",
   "labels": ["dependencies", "automated"],
