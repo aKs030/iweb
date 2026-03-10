@@ -137,19 +137,27 @@ jobs:
             const body = hasCloudflare
               ? `${m}\n## 🚀 Preview\n\n[${url}](${url})${ragLine}`
               : `${m}\n## ⚠️ Skipped\n\nAdd: CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID`;
-            const { data: c } = await github.rest.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-            });
-            const e = c.find(x => x.user.type === 'Bot' && x.body.includes(m));
-            const fn = e ? github.rest.issues.updateComment : github.rest.issues.createComment;
-            await fn({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ...(e ? { comment_id: e.id } : { issue_number: context.issue.number }),
-              body,
-            });
+            try {
+              const { data: c } = await github.rest.issues.listComments({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+              });
+              const e = c.find(x => x.user.type === 'Bot' && x.body.includes(m));
+              const fn = e ? github.rest.issues.updateComment : github.rest.issues.createComment;
+              await fn({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ...(e ? { comment_id: e.id } : { issue_number: context.issue.number }),
+                body,
+              });
+            } catch (error) {
+              if (error?.status === 403) {
+                console.log(`Preview comment skipped: ${error.message}`);
+                return;
+              }
+              throw error;
+            }
 
   production_rag_sync:
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
