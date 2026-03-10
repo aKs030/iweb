@@ -23,7 +23,7 @@ Server-side logic powered by Cloudflare Pages Functions.
 | ---------------------- | ------------------------------------------------------------------------------------- |
 | `_cors.js`             | `getCorsHeaders()`, `handleOptions()`                                                 |
 | `_ai-search-config.js` | `resolveAiSearchConfig()`, `buildAiSearchRequest()`, `clampResults()`                 |
-| `_content-rag.js`      | Build/sync/query the Vectorize corpus for blog posts and projects                     |
+| `_content-rag.js`      | Build/sync/query the Vectorize corpus for blog posts, projects, about, and videos     |
 | `_cleanup-patterns.js` | `CLEANUP_PATTERNS`, `HTML_ENTITIES`                                                   |
 | `_search-url.js`       | `normalizeUrl()`, `canonicalizeUrlPath()`, `detectCategory()`, `extractTitle()`       |
 | `_sitemap-data.js`     | Blog/project/R2 constants, data loaders                                               |
@@ -36,7 +36,7 @@ Server-side logic powered by Cloudflare Pages Functions.
 
 ## Search Architecture
 
-Hybrid engine: AutoRAG semantic search with deterministic fallback scoring, intent analysis, and result balancing.
+Hybrid engine: Vectorize semantic search plus a KV-backed lexical fallback, intent analysis, metadata filtering, and result balancing.
 
 ## Content RAG Workflow
 
@@ -44,6 +44,8 @@ Hybrid engine: AutoRAG semantic search with deterministic fallback scoring, inte
 
 - `/pages/blog/posts/index.json` plus the referenced Markdown posts
 - `/pages/projekte/apps-config.json`
+- `/pages/about/index.html`
+- YouTube channel uploads via `loadYouTubeVideos()`
 
 Sync the corpus after content changes:
 
@@ -51,7 +53,7 @@ Sync the corpus after content changes:
 ADMIN_TOKEN=... npm run sync:content-rag -- --url=https://www.abdulkerimsesli.de
 ```
 
-The sync is delta-aware: unchanged documents reuse their existing vectors, only changed documents are re-embedded, and removed documents have their stale chunk IDs deleted from Vectorize. Query-time retrieval also reranks the raw Vectorize hits, applies intent-based metadata filtering for source-aware queries, and passes 1-2 preferred source links into the agent prompt so answers can cite Abdulkerim's own content directly.
+The sync is delta-aware: unchanged documents reuse their existing vectors, only changed documents are re-embedded, and removed documents have their stale chunk IDs deleted from Vectorize. Each sync also writes a compact lexical search index into KV, so query-time retrieval can merge Vectorize hits with deterministic keyword matches, rerank the combined candidates, and pass 1-2 preferred source links into the agent prompt.
 
 Create the metadata indexes once on Cloudflare before relying on Vectorize filters:
 
@@ -78,13 +80,26 @@ Status only:
 ADMIN_TOKEN=... npm run sync:content-rag -- --status --url=https://www.abdulkerimsesli.de
 ```
 
-GitHub Preview Deployments in [`.github/workflows/main.yml`](../../.github/workflows/main.yml) trigger this sync automatically after a successful Cloudflare deploy when these repository secrets exist:
+Query-time retrieval inspection for evals/debugging:
+
+```bash
+curl -H "Authorization: Bearer $ADMIN_TOKEN" \
+  "https://www.abdulkerimsesli.de/api/admin/content-rag?query=Wer%20ist%20Abdulkerim%20Sesli"
+```
+
+Curated retrieval evaluation set:
+
+```bash
+ADMIN_TOKEN=... npm run eval:content-rag -- --url=https://www.abdulkerimsesli.de
+```
+
+GitHub Preview Deployments in [`.github/workflows/main.yml`](../../.github/workflows/main.yml) trigger this sync automatically after a successful Cloudflare deploy and then run the evaluation set when these repository secrets exist:
 
 - `CLOUDFLARE_API_TOKEN`
 - `CLOUDFLARE_ACCOUNT_ID`
 - `ADMIN_TOKEN` (must match the `ADMIN_TOKEN` configured in Cloudflare Pages)
 
-Pushes to `main`/`master` also run a production sync job. It first polls `GET /api/admin/content-rag` until the live Pages runtime reports the pushed `CF_PAGES_COMMIT_SHA`, then executes the sync. Optional GitHub variable:
+Pushes to `main`/`master` also run a production sync job. It first polls `GET /api/admin/content-rag` until the live Pages runtime reports the pushed `CF_PAGES_COMMIT_SHA`, then executes the sync and evaluation set. Optional GitHub variable:
 
 - `PRODUCTION_SITE_URL` (default: `https://www.abdulkerimsesli.de`)
 
@@ -106,7 +121,9 @@ Der Robot-Agent liest seine Cloudflare-Konfiguration aus `wrangler.jsonc`:
 - `ROBOT_MEMORY_TOP_K`
 - `ROBOT_MEMORY_SCORE_THRESHOLD`
 - `ROBOT_CONTENT_RAG_TOP_K` (default: `4`)
+- `ROBOT_CONTENT_RAG_HYBRID_TOP_K` (default: `6`)
 - `ROBOT_CONTENT_RAG_SCORE_THRESHOLD` (default: `0.25`)
+- `ROBOT_CONTENT_RAG_LEXICAL_SCORE_THRESHOLD` (default: `0.18`)
 - `ROBOT_MEMORY_RETENTION_DAYS` (default: `180`)
 - `ROBOT_TOOL_TRUSTED_IDS` (CSV User-IDs mit erweiterten Tool-Rechten)
 - `ROBOT_TOOL_ADMIN_IDS` (CSV User-IDs mit Admin-Rechten)

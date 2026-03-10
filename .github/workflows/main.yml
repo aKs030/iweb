@@ -95,6 +95,12 @@ jobs:
         run: npm run sync:content-rag -- --url="${{ steps.deploy.outputs.deployment-url }}" --retries=8 --delay-ms=10000
         env:
           ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
+      - if: steps.rag_sync.outcome == 'success' && steps.secrets.outputs.has_admin_token == 'true'
+        id: rag_eval
+        name: Evaluate Content RAG
+        run: npm run eval:content-rag -- --url="${{ steps.deploy.outputs.deployment-url }}" --retries=6 --delay-ms=5000
+        env:
+          ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
       - if: always()
         uses: actions/github-script@v8
         env:
@@ -102,6 +108,7 @@ jobs:
           HAS_ADMIN_TOKEN: ${{ steps.secrets.outputs.has_admin_token }}
           URL: ${{ steps.deploy.outputs.deployment-url }}
           RAG_SYNC_OUTCOME: ${{ steps.rag_sync.outcome }}
+          RAG_EVAL_OUTCOME: ${{ steps.rag_eval.outcome }}
         with:
           script: |
             const m = '<!-- preview -->';
@@ -109,12 +116,20 @@ jobs:
             const hasAdminToken = process.env.HAS_ADMIN_TOKEN === 'true';
             const url = process.env.URL;
             const ragSyncOutcome = process.env.RAG_SYNC_OUTCOME;
+            const ragEvalOutcome = process.env.RAG_EVAL_OUTCOME;
             let ragLine = '';
 
             if (hasCloudflare && hasAdminToken) {
               ragLine = ragSyncOutcome === 'success'
                 ? '\n\nRAG sync: ✅ completed'
                 : '\n\nRAG sync: ❌ failed';
+              if (ragSyncOutcome === 'success') {
+                ragLine += ragEvalOutcome === 'success'
+                  ? '\nRAG eval: ✅ passed'
+                  : ragEvalOutcome === 'failure'
+                    ? '\nRAG eval: ❌ failed'
+                    : '';
+              }
             } else if (hasCloudflare) {
               ragLine = '\n\nRAG sync: ⚠️ skipped (missing ADMIN_TOKEN secret)';
             }
@@ -159,6 +174,14 @@ jobs:
             --wait-for-commit="${{ github.sha }}" \
             --retries=20 \
             --delay-ms=15000
+      - if: steps.secrets.outputs.has_admin_token == 'true'
+        name: Evaluate Production Content RAG
+        env:
+          ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
+          PRODUCTION_SITE_URL: ${{ vars.PRODUCTION_SITE_URL }}
+        run: |
+          SITE_URL="${PRODUCTION_SITE_URL:-https://www.abdulkerimsesli.de}"
+          npm run eval:content-rag -- --url="$SITE_URL" --retries=8 --delay-ms=15000
       - if: steps.secrets.outputs.has_admin_token != 'true'
         name: Skip Production Content RAG Sync
         run: echo "Skipping production RAG sync because ADMIN_TOKEN is missing."

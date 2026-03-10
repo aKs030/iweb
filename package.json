@@ -61,6 +61,7 @@
     "sync:importmap": "node scripts/sync-import-map.mjs",
     "sync:ai": "node scripts/sync-ai-index-apps.mjs",
     "sync:content-rag": "node scripts/sync-content-rag.mjs",
+    "eval:content-rag": "node scripts/evaluate-content-rag.mjs",
     "setup:content-rag-index": "node scripts/setup-content-rag-index.mjs",
     "sync:styles": "run-s sync:styles:*",
     "sync:styles:tokens": "node scripts/generate-tokens-css.mjs",
