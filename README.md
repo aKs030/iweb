@@ -64,10 +64,17 @@ GitHub Workflows:
 - [`.github/workflows/main.yml`](.github/workflows/main.yml) - Lint, Security & Preview Deployments
 
 Preview-Deployments synchronisieren den Jules-Content-RAG nach dem Cloudflare-Deploy automatisch, wenn die GitHub-Secrets `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` und `ADMIN_TOKEN` gesetzt sind.
+Danach laeuft auf Preview und Production auch ein kleines Retrieval-Evaluations-Set gegen `/api/admin/content-rag?query=...`, damit Quellenlinks und Source-Typen nicht still regressieren.
 
 Pushes auf `main`/`master` triggern zusaetzlich einen Production-RAG-Sync. Der Workflow wartet dabei auf der Live-Domain, bis das ausgerollte Cloudflare-Pages-Commit der aktuellen GitHub-SHA entspricht. Optional kann die Ziel-Domain ueber die GitHub-Variable `PRODUCTION_SITE_URL` ueberschrieben werden.
 
 Falls du intent-basiertes Vectorize-Filtering fuer den Jules-Content-RAG aktivierst, richte die Metadata-Indexes reproduzierbar mit `npm run setup:content-rag-index -- --url=...` ein. Das Skript legt `sourceType` und `category` an und startet danach einen einmaligen Full-Resync, damit bestehende Vektoren neu indexiert werden.
+
+Fuer manuelle Retrieval-Checks:
+
+```bash
+ADMIN_TOKEN=... npm run eval:content-rag -- --url=https://www.abdulkerimsesli.de
+```
 
 Dependency-Automation ist bewusst getrennt: Renovate verwaltet npm-Paketupdates, Dependabot nur GitHub Actions. So entstehen keine doppelten Update-PRs.
 
