@@ -1,30 +1,30 @@
-import { TOOL_DEFINITIONS } from "./_ai-tools.js";
-import { buildSystemPrompt } from "./_ai-prompts.js";
-import { analyzeImage } from "./_ai-vision.js";
-import { getSiteContentRagContext } from "./_content-rag.js";
+import { TOOL_DEFINITIONS } from './_ai-tools.js';
+import { buildSystemPrompt } from './_ai-prompts.js';
+import { analyzeImage } from './_ai-vision.js';
+import { getSiteContentRagContext } from './_content-rag.js';
 /**
  * Cloudflare Pages Function – POST /api/ai-agent
  * Agentic AI: SSE streaming, tool-calling, image analysis, memory, RAG.
  * @version 5.0.0
  */
 
-import { getCorsHeaders, handleOptions } from "./_cors.js";
+import { getCorsHeaders, handleOptions } from './_cors.js';
 
-const DEFAULT_CHAT_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
-const DEFAULT_EMBEDDING_MODEL = "@cf/baai/bge-base-en-v1.5";
-const DEFAULT_IMAGE_MODEL = "@cf/llava-hf/llava-1.5-7b-hf";
+const DEFAULT_CHAT_MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast';
+const DEFAULT_EMBEDDING_MODEL = '@cf/baai/bge-base-en-v1.5';
+const DEFAULT_IMAGE_MODEL = '@cf/llava-hf/llava-1.5-7b-hf';
 const DEFAULT_MAX_MEMORY_RESULTS = 5;
 const DEFAULT_MEMORY_SCORE_THRESHOLD = 0.65;
 const DEFAULT_MEMORY_RETENTION_DAYS = 180;
 const DEFAULT_MAX_HISTORY_TURNS = 10;
 const DEFAULT_MAX_TOKENS = 2048;
-const FALLBACK_MEMORY_PREFIX = "robot-memory:";
+const FALLBACK_MEMORY_PREFIX = 'robot-memory:';
 const FALLBACK_MEMORY_LIMIT = 60;
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
-const DEFAULT_ENABLED_INTEGRATIONS = ["links", "social", "email", "calendar"];
+const DEFAULT_ENABLED_INTEGRATIONS = ['links', 'social', 'email', 'calendar'];
 
 function parseInteger(value, fallback, { min = 1, max = 8192 } = {}) {
-  const parsed = Number.parseInt(String(value ?? ""), 10);
+  const parsed = Number.parseInt(String(value ?? ''), 10);
   if (!Number.isFinite(parsed)) return fallback;
   return Math.min(max, Math.max(min, parsed));
 }
@@ -34,7 +34,7 @@ function parseDecimal(
   fallback,
   { min = 0, max = 1, precision = 2 } = {},
 ) {
-  const parsed = Number.parseFloat(String(value ?? ""));
+  const parsed = Number.parseFloat(String(value ?? ''));
   if (!Number.isFinite(parsed)) return fallback;
   const clamped = Math.min(max, Math.max(min, parsed));
   const factor = 10 ** precision;
@@ -42,8 +42,8 @@ function parseDecimal(
 }
 
 function parseCsvList(value) {
-  return String(value || "")
-    .split(",")
+  return String(value || '')
+    .split(',')
     .map((item) => item.trim())
     .filter(Boolean);
 }
@@ -52,10 +52,10 @@ function parseIntegrationSet(
   value,
   fallbackList = DEFAULT_ENABLED_INTEGRATIONS,
 ) {
-  const raw = String(value || "").trim();
+  const raw = String(value || '').trim();
   if (!raw) return new Set(fallbackList);
-  if (raw.toLowerCase() === "all") return new Set(DEFAULT_ENABLED_INTEGRATIONS);
-  if (["none", "off", "false", "0"].includes(raw.toLowerCase())) {
+  if (raw.toLowerCase() === 'all') return new Set(DEFAULT_ENABLED_INTEGRATIONS);
+  if (['none', 'off', 'false', '0'].includes(raw.toLowerCase())) {
     return new Set();
   }
   return new Set(parseCsvList(raw).map((item) => item.toLowerCase()));
@@ -105,9 +105,9 @@ function getAgentConfig(env) {
 }
 
 function normalizeUserId(raw) {
-  const value = String(raw || "").trim();
-  if (!value || value === "anonymous") return "";
-  if (!/^[A-Za-z0-9_-]{3,120}$/.test(value)) return "";
+  const value = String(raw || '').trim();
+  if (!value || value === 'anonymous') return '';
+  if (!/^[A-Za-z0-9_-]{3,120}$/.test(value)) return '';
   return value;
 }
 
@@ -121,15 +121,15 @@ function parseUserIdSet(value) {
 
 function createUserId() {
   if (
-    typeof crypto !== "undefined" &&
-    typeof crypto.randomUUID === "function"
+    typeof crypto !== 'undefined' &&
+    typeof crypto.randomUUID === 'function'
   ) {
-    return `u_${crypto.randomUUID().replace(/-/g, "").slice(0, 24)}`;
+    return `u_${crypto.randomUUID().replace(/-/g, '').slice(0, 24)}`;
   }
   const array = new Uint32Array(2);
   if (
-    typeof crypto !== "undefined" &&
-    typeof crypto.getRandomValues === "function"
+    typeof crypto !== 'undefined' &&
+    typeof crypto.getRandomValues === 'function'
   ) {
     crypto.getRandomValues(array);
     return `u_${Date.now().toString(36)}_${array[0].toString(36)}${array[1].toString(36)}`;
@@ -139,8 +139,8 @@ function createUserId() {
 }
 
 function extractNameFromPrompt(promptText) {
-  const text = String(promptText || "");
-  if (!text.trim()) return "";
+  const text = String(promptText || '');
+  if (!text.trim()) return '';
 
   const patterns = [
     /(?:\bich\s+hei(?:ss|ß)e\b|\bmein\s+name\s+ist\b|\bnenn\s+mich\b|\bdu\s+kannst\s+mich\b)\s+([^\n.,;:!?]{2,60})/i,
@@ -153,86 +153,86 @@ function extractNameFromPrompt(promptText) {
     const candidatePrefix = normalizeExtractedValue(match[1], 40).toLowerCase();
     if (/^(aus|in|von)\b/.test(candidatePrefix)) continue;
     const name = normalizeNameCandidate(match[1]);
-    if (name && name.toLowerCase() !== "jules") return name;
+    if (name && name.toLowerCase() !== 'jules') return name;
   }
 
-  return "";
+  return '';
 }
 
 function normalizeExtractedValue(value, maxLength = 120) {
-  return String(value || "")
-    .replace(/\s+/g, " ")
+  return String(value || '')
+    .replace(/\s+/g, ' ')
     .trim()
-    .replace(/^["'`]+|["'`]+$/g, "")
-    .replace(/[.,;:!?]+$/g, "")
+    .replace(/^["'`]+|["'`]+$/g, '')
+    .replace(/[.,;:!?]+$/g, '')
     .slice(0, maxLength);
 }
 
 function stripChainedMemoryClause(value) {
-  return String(value || "")
-    .replace(/\s+\b(?:und|aber)\s+(?:ich|mein(?:e|er|es)?|wir)\b[\s\S]*$/i, "")
+  return String(value || '')
+    .replace(/\s+\b(?:und|aber)\s+(?:ich|mein(?:e|er|es)?|wir)\b[\s\S]*$/i, '')
     .trim();
 }
 
 const NAME_CONTEXT_STOPWORDS = new Set([
-  "aus",
-  "von",
-  "und",
-  "aber",
-  "im",
-  "in",
-  "mit",
-  "bei",
-  "als",
-  "ein",
-  "eine",
-  "einer",
-  "einem",
-  "eines",
-  "der",
-  "die",
-  "das",
-  "den",
-  "dem",
-  "des",
-  "bin",
-  "heisse",
-  "heiße",
-  "nenne",
-  "nennen",
-  "arbeite",
-  "komme",
-  "wohne",
-  "mag",
-  "liebe",
-  "interessiere",
-  "interessiert",
-  "habe",
-  "hab",
-  "will",
-  "moechte",
-  "möchte",
+  'aus',
+  'von',
+  'und',
+  'aber',
+  'im',
+  'in',
+  'mit',
+  'bei',
+  'als',
+  'ein',
+  'eine',
+  'einer',
+  'einem',
+  'eines',
+  'der',
+  'die',
+  'das',
+  'den',
+  'dem',
+  'des',
+  'bin',
+  'heisse',
+  'heiße',
+  'nenne',
+  'nennen',
+  'arbeite',
+  'komme',
+  'wohne',
+  'mag',
+  'liebe',
+  'interessiere',
+  'interessiert',
+  'habe',
+  'hab',
+  'will',
+  'moechte',
+  'möchte',
 ]);
 
 const NON_NAME_SINGLE_WORDS = new Set([
-  "muede",
-  "müde",
-  "hungrig",
-  "bereit",
-  "hier",
-  "da",
-  "neu",
-  "krank",
-  "ok",
-  "okay",
-  "gut",
-  "schlecht",
-  "traurig",
-  "verwirrt",
-  "gespannt",
-  "froh",
-  "cool",
-  "fertig",
+  'muede',
+  'müde',
+  'hungrig',
+  'bereit',
+  'hier',
+  'da',
+  'neu',
+  'krank',
+  'ok',
+  'okay',
+  'gut',
+  'schlecht',
+  'traurig',
+  'verwirrt',
+  'gespannt',
+  'froh',
+  'cool',
+  'fertig',
 ]);
 
 function isLikelyNameToken(token) {
@@ -241,14 +241,14 @@ function isLikelyNameToken(token) {
 
 function normalizeNameCandidate(candidate) {
   const cleaned = normalizeExtractedValue(candidate, 60);
-  if (!cleaned) return "";
+  if (!cleaned) return '';
 
   const tokens = cleaned.split(/\s+/).filter(Boolean);
-  if (!tokens.length) return "";
+  if (!tokens.length) return '';
 
   const selected = [];
   for (const rawToken of tokens) {
-    const token = rawToken.replace(/^['’`]+|['’`]+$/g, "");
+    const token = rawToken.replace(/^['’`]+|['’`]+$/g, '');
     const lower = token.toLowerCase();
 
     if (!token) continue;
@@ -260,17 +260,17 @@ function normalizeNameCandidate(candidate) {
     if (selected.length >= 3) break;
   }
 
-  if (!selected.length) return "";
+  if (!selected.length) return '';
   if (
     selected.length === 1 &&
     NON_NAME_SINGLE_WORDS.has(selected[0].toLowerCase())
   ) {
-    return "";
+    return '';
   }
 
-  const name = selected.join(" ").trim();
+  const name = selected.join(' ').trim();
   if (!/^[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ'’ -]{1,39}$/.test(name)) {
-    return "";
+    return '';
   }
   return name;
 }
@@ -283,9 +283,9 @@ function getFallbackMemoryKV(env) {
 }
 
 function sanitizeNameKey(name) {
-  return `username:${String(name || "")
+  return `username:${String(name || '')
     .toLowerCase()
-    .replace(/[^a-z0-9à-öø-ÿ]/g, "")}`;
+    .replace(/[^a-z0-9à-öø-ÿ]/g, '')}`;
 }
 
 async function lookupUserIdByName(env, name) {
@@ -298,7 +298,7 @@ async function lookupUserIdByName(env, name) {
     const result = await kv.get(key);
     return result;
   } catch (err) {
-    console.error("[lookupUserIdByName] Error:", err);
+    console.error('[lookupUserIdByName] Error:', err);
     return null;
   }
 }
@@ -308,7 +308,7 @@ async function linkUserByName(env, name, userId) {
   if (!kv?.put || !name || !userId) {
     return false;
   }
-  if (name.toLowerCase() === "jules") {
+  if (name.toLowerCase() === 'jules') {
     return false;
   }
   try {
@@ -316,18 +316,18 @@ async function linkUserByName(env, name, userId) {
     await kv.put(key, userId);
     return true;
   } catch (err) {
-    console.error("[linkUserByName] Error:", err);
+    console.error('[linkUserByName] Error:', err);
     return false;
   }
 }
 
 async function resolveUserIdentity(
   request,
-  requestedUserId = "",
-  prompt = "",
+  requestedUserId = '',
+  prompt = '',
   env = null,
 ) {
-  const headerUserId = normalizeUserId(request.headers.get("X-Jules-User-Id"));
+  const headerUserId = normalizeUserId(request.headers.get('X-Jules-User-Id'));
   const bodyUserId = normalizeUserId(requestedUserId);
 
   let nameMatchUserId = null;
@@ -360,22 +360,22 @@ async function resolveUserIdentity(
 
 function appendExposeHeader(headers, name) {
   if (!name) return;
-  const current = headers.get("Access-Control-Expose-Headers") || "";
+  const current = headers.get('Access-Control-Expose-Headers') || '';
   const values = current
-    .split(",")
+    .split(',')
     .map((item) => item.trim())
     .filter(Boolean);
   if (!values.includes(name)) {
     values.push(name);
-    headers.set("Access-Control-Expose-Headers", values.join(", "));
+    headers.set('Access-Control-Expose-Headers', values.join(', '));
   }
 }
 
 function withUserIdHeader(headers, userId) {
   const out = new Headers(headers);
   if (userId) {
-    out.set("X-Jules-User-Id", userId);
-    appendExposeHeader(out, "X-Jules-User-Id");
+    out.set('X-Jules-User-Id', userId);
+    appendExposeHeader(out, 'X-Jules-User-Id');
   }
   return out;
 }
@@ -387,7 +387,7 @@ const TOOL_ROLE_LEVELS = {
   trusted: 2,
   admin: 3,
 };
-const DEFAULT_TOOL_ROLE = "user";
+const DEFAULT_TOOL_ROLE = 'user';
 
 const TOOL_DEFINITION_BY_NAME = new Map(
   TOOL_DEFINITIONS.map((tool) => [tool.name, tool]),
@@ -395,7 +395,7 @@ const TOOL_DEFINITION_BY_NAME = new Map(
 
 function toOpenAiTool(toolDefinition) {
   return {
-    type: "function",
+    type: 'function',
     function: {
       name: toolDefinition.name,
       description: toolDefinition.description,
@@ -416,8 +416,8 @@ function getToolRoleLevel(role) {
 
 function resolveUserToolRole(config, userId) {
   const id = normalizeUserId(userId);
-  if (id && config.toolAdminIds.has(id)) return "admin";
-  if (id && config.toolTrustedIds.has(id)) return "trusted";
+  if (id && config.toolAdminIds.has(id)) return 'admin';
+  if (id && config.toolTrustedIds.has(id)) return 'trusted';
   return DEFAULT_TOOL_ROLE;
 }
 
@@ -427,13 +427,13 @@ function isToolAllowedForRole(toolDefinition, role) {
 }
 
 function isIntegrationEnabled(toolDefinition, config) {
-  const integration = String(toolDefinition?.integration || "").toLowerCase();
+  const integration = String(toolDefinition?.integration || '').toLowerCase();
   if (!integration) return true;
   return config.enabledIntegrations.has(integration);
 }
 
 function isExplicitUserMemoryRequest(promptText) {
-  const text = String(promptText || "")
+  const text = String(promptText || '')
     .toLowerCase()
     .trim();
   if (!text) return false;
@@ -451,13 +451,13 @@ function isExplicitUserMemoryRequest(promptText) {
 }
 
 function isToolAllowedForPrompt(toolDefinition, promptText) {
-  if (toolDefinition?.name === "recallMemory") {
+  if (toolDefinition?.name === 'recallMemory') {
     return isExplicitUserMemoryRequest(promptText);
   }
   return true;
 }
 
-function getAllowedToolDefinitions(config, userRole, promptText = "") {
+function getAllowedToolDefinitions(config, userRole, promptText = '') {
   return TOOL_DEFINITIONS.filter(
     (tool) =>
       isToolAllowedForRole(tool, userRole) &&
@@ -469,40 +469,40 @@ function getAllowedToolDefinitions(config, userRole, promptText = "") {
 // ─── Vectorize Memory ───────────────────────────────────────────────────────────
 
 function getFallbackMemoryKey(userId) {
-  return `${FALLBACK_MEMORY_PREFIX}${String(userId || "anonymous")}`;
+  return `${FALLBACK_MEMORY_PREFIX}${String(userId || 'anonymous')}`;
 }
 
 function normalizeMemoryText(value) {
-  return String(value || "")
-    .replace(/\s+/g, " ")
+  return String(value || '')
+    .replace(/\s+/g, ' ')
     .trim();
 }
 
 const MEMORY_KEY_METADATA = {
-  name: { category: "identity", priority: 100 },
-  preference: { category: "preference", priority: 90 },
-  occupation: { category: "profile", priority: 88 },
-  company: { category: "profile", priority: 86 },
-  location: { category: "profile", priority: 84 },
-  language: { category: "profile", priority: 82 },
-  interest: { category: "interest", priority: 80 },
-  skill: { category: "ability", priority: 78 },
-  goal: { category: "goal", priority: 76 },
-  project: { category: "project", priority: 74 },
-  birthday: { category: "identity", priority: 72 },
-  dislike: { category: "preference", priority: 70 },
-  availability: { category: "availability", priority: 68 },
-  timezone: { category: "availability", priority: 66 },
-  note: { category: "note", priority: 40 },
+  name: { category: 'identity', priority: 100 },
+  preference: { category: 'preference', priority: 90 },
+  occupation: { category: 'profile', priority: 88 },
+  company: { category: 'profile', priority: 86 },
+  location: { category: 'profile', priority: 84 },
+  language: { category: 'profile', priority: 82 },
+  interest: { category: 'interest', priority: 80 },
+  skill: { category: 'ability', priority: 78 },
+  goal: { category: 'goal', priority: 76 },
+  project: { category: 'project', priority: 74 },
+  birthday: { category: 'identity', priority: 72 },
+  dislike: { category: 'preference', priority: 70 },
+  availability: { category: 'availability', priority: 68 },
+  timezone: { category: 'availability', priority: 66 },
+  note: { category: 'note', priority: 40 },
 };
-const DEFAULT_MEMORY_CATEGORY = "note";
+const DEFAULT_MEMORY_CATEGORY = 'note';
 const DEFAULT_MEMORY_PRIORITY = 20;
 
 function normalizeMemoryKey(rawKey) {
-  return String(rawKey || "note")
+  return String(rawKey || 'note')
     .toLowerCase()
     .trim()
-    .replace(/[^a-z0-9_-]/g, "")
+    .replace(/[^a-z0-9_-]/g, '')
     .slice(0, 30);
 }
 
@@ -520,7 +520,7 @@ function isMemoryExpired(timestamp, config, now = Date.now()) {
 }
 
 function resolveMemoryMetadata(key, category, priority) {
-  const normalizedKey = normalizeMemoryKey(key) || "note";
+  const normalizedKey = normalizeMemoryKey(key) || 'note';
   const fallback = MEMORY_KEY_METADATA[normalizedKey] || {
     category: DEFAULT_MEMORY_CATEGORY,
     priority: DEFAULT_MEMORY_PRIORITY,
@@ -530,7 +530,7 @@ function resolveMemoryMetadata(key, category, priority) {
     normalizeMemoryText(category || fallback.category).toLowerCase() ||
     fallback.category;
 
-  const numericPriority = Number.parseInt(String(priority ?? ""), 10);
+  const numericPriority = Number.parseInt(String(priority ?? ''), 10);
   const normalizedPriority = Number.isFinite(numericPriority)
     ? Math.min(100, Math.max(0, numericPriority))
     : fallback.priority;
@@ -543,7 +543,7 @@ function resolveMemoryMetadata(key, category, priority) {
 }
 
 function normalizeMemoryEntry(entry, config, now = Date.now()) {
-  const cleanedValue = normalizeMemoryText(entry?.value || "");
+  const cleanedValue = normalizeMemoryText(entry?.value || '');
   const ts = Number(entry?.timestamp);
   const timestamp = Number.isFinite(ts) && ts > 0 ? ts : now;
   const metadata = resolveMemoryMetadata(
@@ -598,7 +598,7 @@ async function loadFallbackMemories(
 
   try {
     const raw = await kv.get(getFallbackMemoryKey(userId));
-    const parsed = JSON.parse(raw || "[]");
+    const parsed = JSON.parse(raw || '[]');
     if (!Array.isArray(parsed)) return [];
 
     const now = Date.now();
@@ -606,7 +606,7 @@ async function loadFallbackMemories(
 
     if (persistPruned && kv?.put) {
       const compactedJson = JSON.stringify(compacted);
-      if ((raw || "[]") !== compactedJson) {
+      if ((raw || '[]') !== compactedJson) {
         await kv.put(getFallbackMemoryKey(userId), compactedJson);
       }
     }
@@ -709,7 +709,7 @@ async function storeMemory(env, userId, key, value, config) {
   const metadata = resolveMemoryMetadata(key);
   const cleanedValue = normalizeMemoryText(value);
 
-  if (metadata.key === "name" && cleanedValue.toLowerCase() === "jules") {
+  if (metadata.key === 'name' && cleanedValue.toLowerCase() === 'jules') {
     return {
       success: false,
       error: "Cannot use assistant's name as user name",
@@ -717,7 +717,7 @@ async function storeMemory(env, userId, key, value, config) {
   }
 
   if (!cleanedValue) {
-    return { success: false, error: "Empty memory value" };
+    return { success: false, error: 'Empty memory value' };
   }
 
   const now = Date.now();
@@ -728,13 +728,13 @@ async function storeMemory(env, userId, key, value, config) {
     cleanedValue,
     config,
   );
-  if (metadata.key === "name") {
+  if (metadata.key === 'name') {
     await linkUserByName(env, cleanedValue, userId);
   }
 
   if (!env.AI || !env.JULES_MEMORY) {
     return kvStored
-      ? { success: true, id: `kv_${Date.now()}`, storage: "kv" }
+      ? { success: true, id: `kv_${Date.now()}`, storage: 'kv' }
       : { success: false };
   }
 
@@ -743,8 +743,8 @@ async function storeMemory(env, userId, key, value, config) {
     const { data } = await env.AI.run(config.embeddingModel, { text: [text] });
     if (!data?.[0]) {
       return kvStored
-        ? { success: true, id: `kv_${Date.now()}`, storage: "kv" }
-        : { success: false, error: "Embedding failed" };
+        ? { success: true, id: `kv_${Date.now()}`, storage: 'kv' }
+        : { success: false, error: 'Embedding failed' };
     }
 
     const id = `${userId}_${metadata.key}_${now}`;
@@ -767,17 +767,17 @@ async function storeMemory(env, userId, key, value, config) {
     return {
       success: true,
       id,
-      storage: kvStored ? "vectorize+kv" : "vectorize",
+      storage: kvStored ? 'vectorize+kv' : 'vectorize',
     };
   } catch (error) {
     if (error?.remote) {
       return kvStored
-        ? { success: true, id: `kv_${Date.now()}`, storage: "kv" }
-        : { success: false, error: "Vectorize not available locally" };
+        ? { success: true, id: `kv_${Date.now()}`, storage: 'kv' }
+        : { success: false, error: 'Vectorize not available locally' };
     }
-    console.error("storeMemory error:", error?.message || error);
+    console.error('storeMemory error:', error?.message || error);
     return kvStored
-      ? { success: true, id: `kv_${Date.now()}`, storage: "kv" }
+      ? { success: true, id: `kv_${Date.now()}`, storage: 'kv' }
       : { success: false, error: error.message };
   }
 }
@@ -787,7 +787,7 @@ async function recallMemories(env, userId, query, config, options = {}) {
     ? Math.max(1, Math.floor(options.topK))
     : config.maxMemoryResults;
   const scoreThreshold =
-    typeof options.scoreThreshold === "number"
+    typeof options.scoreThreshold === 'number'
       ? options.scoreThreshold
       : config.memoryScoreThreshold;
 
@@ -816,7 +816,7 @@ async function recallMemories(env, userId, query, config, options = {}) {
     const results = await env.JULES_MEMORY.query(data[0], {
       topK,
       filter: { userId },
-      returnMetadata: "all",
+      returnMetadata: 'all',
     });
 
     const now = Date.now();
@@ -825,8 +825,8 @@ async function recallMemories(env, userId, query, config, options = {}) {
       .map((m) => {
         const normalized = normalizeMemoryEntry(
           {
-            key: m.metadata?.key || "note",
-            value: m.metadata?.value || "",
+            key: m.metadata?.key || 'note',
+            value: m.metadata?.value || '',
             category: m.metadata?.category,
             priority: m.metadata?.priority,
             timestamp: m.metadata?.timestamp,
@@ -853,7 +853,7 @@ async function recallMemories(env, userId, query, config, options = {}) {
     return mergeMemoryEntries(vectorMemories, kvMemories);
   } catch (error) {
     if (!error?.remote)
-      console.warn("recallMemories error:", error?.message || error);
+      console.warn('recallMemories error:', error?.message || error);
     return kvMemories;
   }
 }
@@ -863,45 +863,45 @@ async function recallMemories(env, userId, query, config, options = {}) {
 // ─── Server-Side Tool Execution ─────────────────────────────────────────────────
 
 async function executeServerTool(env, toolName, args, userId, config) {
-  if (toolName === "rememberUser") {
+  if (toolName === 'rememberUser') {
     const result = await storeMemory(
       env,
       userId,
-      args.key || "note",
-      args.value || "",
+      args.key || 'note',
+      args.value || '',
       config,
     );
     return result.success
       ? `✅ Gemerkt: ${args.key} = "${args.value}"`
-      : `Konnte nicht gespeichert werden (${result.error || "Fehler"}).`;
+      : `Konnte nicht gespeichert werden (${result.error || 'Fehler'}).`;
   }
 
-  if (toolName === "recallMemory") {
-    const queryText = normalizeMemoryText(args.query || "");
+  if (toolName === 'recallMemory') {
+    const queryText = normalizeMemoryText(args.query || '');
     const wantsAllMemories =
       !queryText ||
       /^(?:all(?:\s+memories)?|alles?|user\s*info)$/i.test(queryText);
 
     const memories = wantsAllMemories
-      ? await resolveMemoryContext(env, userId, "user info", config)
+      ? await resolveMemoryContext(env, userId, 'user info', config)
       : await recallMemories(env, userId, queryText, config);
 
-    if (!memories.length) return "Keine Erinnerungen gefunden.";
+    if (!memories.length) return 'Keine Erinnerungen gefunden.';
     return (
-      "Bekannte Infos:\n" +
+      'Bekannte Infos:\n' +
       memories
         .map(
           (m) =>
             `- **${m.key}** (${m.category}, Priorität ${m.priority}): ${m.value}`,
         )
-        .join("\n")
+        .join('\n')
     );
   }
 
-  if (toolName === "getSiteAnalytics") {
-    const metric = String(args.metric || "").toLowerCase();
-    if (metric.includes("perf")) {
-      return "Performance Score: 100/100 (Core Web Vitals optimiert, Zero-Build Architektur, Cloudflare Edge Caching).";
+  if (toolName === 'getSiteAnalytics') {
+    const metric = String(args.metric || '').toLowerCase();
+    if (metric.includes('perf')) {
+      return 'Performance Score: 100/100 (Core Web Vitals optimiert, Zero-Build Architektur, Cloudflare Edge Caching).';
     }
     return `Website Status: Online. Portfolio-Aufrufe steigen kontinuierlich an. Cloudflare Pages Functions sind aktiv.`;
   }
@@ -910,43 +910,43 @@ async function executeServerTool(env, toolName, args, userId, config) {
 }
 
 const SERVER_TOOL_NAMES = new Set([
-  "rememberUser",
-  "recallMemory",
-  "getSiteAnalytics",
+  'rememberUser',
+  'recallMemory',
+  'getSiteAnalytics',
 ]);
 
 function buildToolConfirmMessage(toolName, args, toolDefinition) {
   if (toolDefinition?.confirmMessage) return toolDefinition.confirmMessage;
 
   switch (toolName) {
-    case "openExternalLink":
-      return `Soll dieser externe Link geöffnet werden?\n${String(args?.url || "").trim()}`;
-    case "composeEmail":
-      return `Soll ein E-Mail-Entwurf an ${String(args?.to || "").trim() || "den Empfänger"} geöffnet werden?`;
-    case "createCalendarReminder":
-      return `Soll ein Kalender-Eintrag für "${String(args?.title || "Erinnerung")}" erstellt werden?`;
-    case "clearChatHistory":
-      return "Soll der lokale Chatverlauf wirklich gelöscht werden?";
+    case 'openExternalLink':
+      return `Soll dieser externe Link geöffnet werden?\n${String(args?.url || '').trim()}`;
+    case 'composeEmail':
+      return `Soll ein E-Mail-Entwurf an ${String(args?.to || '').trim() || 'den Empfänger'} geöffnet werden?`;
+    case 'createCalendarReminder':
+      return `Soll ein Kalender-Eintrag für "${String(args?.title || 'Erinnerung')}" erstellt werden?`;
+    case 'clearChatHistory':
+      return 'Soll der lokale Chatverlauf wirklich gelöscht werden?';
     default:
-      return "Soll diese Aktion wirklich ausgeführt werden?";
+      return 'Soll diese Aktion wirklich ausgeführt werden?';
   }
 }
 
 function buildClientToolMeta(toolDefinition, args, userRole) {
   const requiresConfirm = !!toolDefinition?.requiresConfirm;
   const meta = {
-    category: String(toolDefinition?.category || "general"),
+    category: String(toolDefinition?.category || 'general'),
     requiredRole: normalizeToolRole(toolDefinition?.minRole),
     currentRole: normalizeToolRole(userRole),
     integration: toolDefinition?.integration
       ? String(toolDefinition.integration)
-      : "",
+      : '',
     requiresConfirm,
   };
 
   if (requiresConfirm) {
     meta.confirmTitle = String(
-      toolDefinition?.confirmTitle || "Aktion bestätigen",
+      toolDefinition?.confirmTitle || 'Aktion bestätigen',
     );
     meta.confirmMessage = buildToolConfirmMessage(
       toolDefinition?.name,
@@ -962,7 +962,7 @@ function validateToolPermission(toolDefinition, userRole, config) {
   if (!toolDefinition) {
     return {
       allowed: false,
-      reason: "Tool ist nicht bekannt.",
+      reason: 'Tool ist nicht bekannt.',
     };
   }
 
@@ -985,22 +985,22 @@ function validateToolPermission(toolDefinition, userRole, config) {
 
 function parseToolArguments(rawArguments, toolName) {
   if (!rawArguments) return {};
-  if (typeof rawArguments === "object" && !Array.isArray(rawArguments)) {
+  if (typeof rawArguments === 'object' && !Array.isArray(rawArguments)) {
     return rawArguments;
   }
-  if (typeof rawArguments !== "string") return {};
+  if (typeof rawArguments !== 'string') return {};
 
   const trimmed = rawArguments.trim();
   if (!trimmed) return {};
 
   try {
     const parsed = JSON.parse(trimmed);
-    return parsed && typeof parsed === "object" && !Array.isArray(parsed)
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
       ? parsed
       : {};
   } catch (error) {
     console.warn(
-      `Failed to parse tool arguments for "${toolName || "unknown"}":`,
+      `Failed to parse tool arguments for "${toolName || 'unknown'}":`,
       error?.message || error,
     );
     return {};
@@ -1012,7 +1012,7 @@ async function classifyToolCalls(env, toolCalls, userId, config, userRole) {
   const serverToolResults = [];
 
   for (const tc of toolCalls) {
-    const toolName = String(tc?.name || "").trim();
+    const toolName = String(tc?.name || '').trim();
     if (!toolName) continue;
 
     const toolDefinition = TOOL_DEFINITION_BY_NAME.get(toolName);
@@ -1054,7 +1054,7 @@ async function getAutoRAGContext(query, env) {
   if (!env.AI) return null;
 
   try {
-    const ragId = env.RAG_ID || "wispy-pond-1055";
+    const ragId = env.RAG_ID || 'wispy-pond-1055';
     const searchData = await env.AI.autorag(ragId).aiSearch({
       query,
       max_num_results: 4,
@@ -1066,16 +1066,16 @@ async function getAutoRAGContext(query, env) {
     const matches = searchData.data
       .slice(0, 4)
       .map((item) => {
-        const url = item.filename || item.url || "";
-        const title = item.title || "Seite";
+        const url = item.filename || item.url || '';
+        const title = item.title || 'Seite';
         const content = Array.isArray(item.content)
-          ? item.content.map((c) => c.text || "").join(" ")
-          : item.text || item.description || "";
-        const safeUrl = url.startsWith("/") ? url : `/${url}`;
+          ? item.content.map((c) => c.text || '').join(' ')
+          : item.text || item.description || '';
+        const safeUrl = url.startsWith('/') ? url : `/${url}`;
         return {
           title,
           url: safeUrl,
-          content: content.replace(/\s+/g, " ").trim().slice(0, 500),
+          content: content.replace(/\s+/g, ' ').trim().slice(0, 500),
         };
       })
       .filter((item) => item.title && item.url && item.content);
@@ -1088,12 +1088,12 @@ async function getAutoRAGContext(query, env) {
           (item) =>
             `Titel: ${item.title}\nURL: ${item.url}\nInhalt: ${item.content}`,
         )
-        .join("\n\n---\n\n"),
+        .join('\n\n---\n\n'),
       sources: [],
       matches,
     };
   } catch (error) {
-    console.warn("RAG Context Error:", error?.message);
+    console.warn('RAG Context Error:', error?.message);
     return null;
   }
 }
@@ -1104,11 +1104,11 @@ async function getRAGContext(query, env) {
     getAutoRAGContext(query, env),
   ]);
 
-  if (contentRagResult.status === "fulfilled" && contentRagResult.value) {
+  if (contentRagResult.status === 'fulfilled' && contentRagResult.value) {
     return contentRagResult.value;
   }
 
-  if (autoRagResult.status === "fulfilled" && autoRagResult.value) {
+  if (autoRagResult.status === 'fulfilled' && autoRagResult.value) {
     return autoRagResult.value;
   }
 
@@ -1134,19 +1134,19 @@ const TOOL_LEAK_INLINE_PATTERN =
 const TOOL_LEAK_LINE_PATTERN = /(?:^|\n)\s*tools?\s*:[^\n]*(?=\n|$)/gi;
 
 function sanitizeAssistantText(rawText) {
-  const input = String(rawText || "");
-  if (!input) return "";
+  const input = String(rawText || '');
+  if (!input) return '';
 
   return input
-    .replace(TOOL_LEAK_INLINE_PATTERN, "")
-    .replace(TOOL_LEAK_LINE_PATTERN, "")
-    .replace(/[ \t]+\n/g, "\n")
-    .replace(/\n{3,}/g, "\n\n")
+    .replace(TOOL_LEAK_INLINE_PATTERN, '')
+    .replace(TOOL_LEAK_LINE_PATTERN, '')
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
     .trim();
 }
 
 function extractPromptMemoryFacts(prompt) {
-  const text = String(prompt || "");
+  const text = String(prompt || '');
   if (!text.trim()) return [];
 
   const extracted = [];
@@ -1155,7 +1155,7 @@ function extractPromptMemoryFacts(prompt) {
       stripChainedMemoryClause(rawValue),
       max,
     );
-    if (key === "occupation") {
+    if (key === 'occupation') {
       const occupationWithCompany = cleaned.match(/^(.+?)\s+bei\s+(.+)$/i);
       if (occupationWithCompany?.[1] && occupationWithCompany?.[2]) {
         const parsedOccupation = normalizeExtractedValue(
@@ -1168,7 +1168,7 @@ function extractPromptMemoryFacts(prompt) {
         );
         if (parsedOccupation) cleaned = parsedOccupation;
         if (parsedCompany.length >= 2) {
-          extracted.push({ key: "company", value: parsedCompany });
+          extracted.push({ key: 'company', value: parsedCompany });
         }
       }
     }
@@ -1184,103 +1184,103 @@ function extractPromptMemoryFacts(prompt) {
 
   const extractedName = extractNameFromPrompt(text);
   if (extractedName) {
-    extracted.push({ key: "name", value: extractedName });
+    extracted.push({ key: 'name', value: extractedName });
   }
 
   addFromRegex(
-    "interest",
+    'interest',
     /(?:^|[\n,;.!?]\s*)(?:ich\s+)?(?:mag(?!\s+nicht)|liebe|interessiere mich(?: sehr)? (?:fuer|für)|arbeite(?:\s+gern)?\s+mit)\s+([^\n,;!?]{3,120})/gi,
     { min: 3, max: 120 },
   );
   addFromRegex(
-    "preference",
+    'preference',
     /(?:^|[\n,;.!?]\s*)(?:(?:ich\s+)?(?:bevorzuge|nutze am liebsten)|bitte immer)\s+([^\n,;!?]{3,120})/gi,
     { min: 3, max: 120 },
   );
 
   addFromRegex(
-    "location",
+    'location',
     /(?:^|[\n,;.!?]\s*)(?:(?:ich\s+)?(?:wohne|lebe)\s+(?:in|bei)|(?:ich\s+)?komme\s+aus|mein\s+wohnort\s+ist)\s+([^\n,;!?]{2,120})/gi,
     { min: 2, max: 120 },
   );
   addFromRegex(
-    "occupation",
+    'occupation',
     /(?:^|[\n,;.!?]\s*)(?:(?:ich\s+)?(?:arbeite|bin)\s+als|mein\s+beruf\s+ist)\s+([^\n,;!?]{2,120})/gi,
     { min: 2, max: 120 },
   );
   addFromRegex(
-    "company",
+    'company',
     /(?:^|[\n,;.!?]\s*)(?:(?:ich\s+)?arbeite\s+bei|meine?\s+firma\s+ist)\s+([^\n,;!?]{2,120})/gi,
     { min: 2, max: 120 },
   );
   addFromRegex(
-    "company",
+    'company',
     /(?:^|[\n,;.!?]\s*)(?:ich\s+)?arbeite\s+als\s+[^\n,;!?]{1,80}\s+bei\s+([^\n,;!?]{2,120})/gi,
     { min: 2, max: 120 },
   );
   addFromRegex(
-    "language",
+    'language',
     /(?:^|[\n,;.!?]\s*)(?:(?:ich\s+)?(?:spreche|rede)|meine?\s+sprache\s+ist)\s+([^\n,;!?]{2,120})/gi,
     { min: 2, max: 120 },
   );
   addFromRegex(
-    "goal",
+    'goal',
     /(?:^|[\n,;.!?]\s*)(?:mein\s+ziel\s+ist|(?:ich\s+)?möchte|(?:ich\s+)?will)\s+([^\n,;!?]{4,140})/gi,
     { min: 4, max: 140 },
   );
   addFromRegex(
-    "project",
+    'project',
     /(?:^|[\n,;.!?]\s*)(?:(?:ich\s+)?arbeite\s+an|mein\s+projekt\s+ist)\s+([^\n,;!?]{3,120})/gi,
     { min: 3, max: 120 },
   );
   addFromRegex(
-    "skill",
+    'skill',
     /(?:^|[\n,;.!?]\s*)(?:(?:ich\s+)?kann|(?:ich\s+)?bin\s+gut\s+in|meine?\s+skills?\s+sind)\s+([^\n,;!?]{2,120})/gi,
     { min: 2, max: 120 },
   );
   addFromRegex(
-    "birthday",
+    'birthday',
     /(?:^|[\n,;.!?]\s*)(?:(?:ich\s+)?(?:habe\s+)?geburtstag\s+am|mein\s+geburtstag\s+ist\s+am|(?:ich\s+)?bin\s+am)\s+([^\n,;!?]{2,80})/gi,
     { min: 2, max: 80 },
   );
   addFromRegex(
-    "timezone",
+    'timezone',
     /(?:^|[\n,;.!?]\s*)(?:meine?\s+zeitzone\s+ist|(?:ich\s+)?bin\s+in\s+der\s+zeitzone)\s+([^\n,;!?]{2,80})/gi,
     { min: 2, max: 80 },
   );
   addFromRegex(
-    "availability",
+    'availability',
     /(?:^|[\n,;.!?]\s*)(?:(?:ich\s+)?bin\s+(?:verfügbar|verfuegbar)|(?:ich\s+)?habe\s+zeit)\s+([^\n,;!?]{2,120})/gi,
     { min: 2, max: 120 },
   );
   addFromRegex(
-    "dislike",
+    'dislike',
     /(?:^|[\n,;.!?]\s*)(?:(?:ich\s+)?mag\s+nicht|(?:ich\s+)?hasse|(?:ich\s+)?vermeide)\s+([^\n,;!?]{2,120})/gi,
     { min: 2, max: 120 },
   );
 
   const structuredPatterns = [
     {
-      key: "location",
+      key: 'location',
       pattern:
         /(?:^|[\n,;.!?]\s*)(?:ort|wohnort|location)\s*[:=-]\s*([^\n,;!?]{2,120})/gi,
     },
     {
-      key: "occupation",
+      key: 'occupation',
       pattern:
         /(?:^|[\n,;.!?]\s*)(?:beruf|job|rolle|role)\s*[:=-]\s*([^\n,;!?]{2,120})/gi,
     },
     {
-      key: "language",
+      key: 'language',
       pattern:
         /(?:^|[\n,;.!?]\s*)(?:sprache|language)\s*[:=-]\s*([^\n,;!?]{2,120})/gi,
     },
     {
-      key: "goal",
+      key: 'goal',
       pattern: /(?:^|[\n,;.!?]\s*)(?:ziel|goal)\s*[:=-]\s*([^\n,;!?]{2,140})/gi,
     },
     {
-      key: "timezone",
+      key: 'timezone',
       pattern:
         /(?:^|[\n,;.!?]\s*)(?:zeitzone|timezone|tz)\s*[:=-]\s*([^\n,;!?]{2,80})/gi,
     },
@@ -1295,7 +1295,7 @@ function extractPromptMemoryFacts(prompt) {
   for (const favoriteMatch of favoriteMatches) {
     if (!favoriteMatch?.[1] || !favoriteMatch?.[2]) continue;
     pushFact(
-      "preference",
+      'preference',
       `${normalizeExtractedValue(favoriteMatch[1], 40)}: ${favoriteMatch[2]}`,
       { min: 4, max: 140 },
     );
@@ -1305,7 +1305,7 @@ function extractPromptMemoryFacts(prompt) {
   const seen = new Set();
   for (const item of extracted) {
     if (
-      item.key === "interest" &&
+      item.key === 'interest' &&
       /^(nicht|kein|keine|keinen)\b/i.test(item.value)
     ) {
       continue;
@@ -1358,7 +1358,7 @@ async function resolveMemoryContext(env, userId, _prompt, config) {
   // Always load ALL memories for this user with no score threshold.
   // Users typically have < 20 personal memories, so loading everything
   // is cheap and guarantees the LLM never misses stored context.
-  const all = await recallMemories(env, userId, "user info", config, {
+  const all = await recallMemories(env, userId, 'user info', config, {
     topK: Math.max(20, config.maxMemoryResults),
     scoreThreshold: 0,
   });
@@ -1368,19 +1368,19 @@ async function resolveMemoryContext(env, userId, _prompt, config) {
   // Fallback: try common category queries (helps when KV is empty
   // but Vectorize has entries under specific terms).
   const recallQueries = [
-    "name",
-    "location",
-    "occupation",
-    "company",
-    "language",
-    "interests",
-    "skills",
-    "goals",
-    "projects",
-    "preferences",
-    "availability",
-    "timezone",
-    "notes",
+    'name',
+    'location',
+    'occupation',
+    'company',
+    'language',
+    'interests',
+    'skills',
+    'goals',
+    'projects',
+    'preferences',
+    'availability',
+    'timezone',
+    'notes',
   ];
   for (const query of recallQueries) {
     const fallback = await recallMemories(env, userId, query, config, {
@@ -1436,7 +1436,7 @@ function mergeMemoryEntries(recalled = [], stored = []) {
 }
 
 function inferClientToolCallsFromPrompt(prompt) {
-  const rawText = String(prompt || "");
+  const rawText = String(prompt || '');
   const text = rawText.toLowerCase();
   if (!text.trim()) return [];
 
@@ -1451,7 +1451,7 @@ function inferClientToolCallsFromPrompt(prompt) {
       rawText,
     )
   ) {
-    addTool("recallMemory", { query: "all memories" });
+    addTool('recallMemory', { query: 'all memories' });
   }
 
   if (
@@ -1459,11 +1459,11 @@ function inferClientToolCallsFromPrompt(prompt) {
       text,
     )
   ) {
-    addTool("clearChatHistory");
+    addTool('clearChatHistory');
   }
 
   if (/(kopier|copy).*(link|url)|(link|url).*(kopier|copy)/i.test(text)) {
-    addTool("copyCurrentUrl");
+    addTool('copyCurrentUrl');
   }
 
   if (
@@ -1471,7 +1471,7 @@ function inferClientToolCallsFromPrompt(prompt) {
       text,
     )
   ) {
-    addTool("scrollTop");
+    addTool('scrollTop');
   }
 
   if (
@@ -1479,13 +1479,13 @@ function inferClientToolCallsFromPrompt(prompt) {
       text,
     )
   ) {
-    addTool("toggleMenu", { state: "open" });
+    addTool('toggleMenu', { state: 'open' });
   } else if (
     /(schließ|schliess|schließe|schliesse|zu machen|zumachen).*(menü|menu)|(menü|menu).*(schließ|schliess|schließe|schliesse|zu machen|zumachen)/i.test(
       text,
     )
   ) {
-    addTool("toggleMenu", { state: "close" });
+    addTool('toggleMenu', { state: 'close' });
   }
 
   if (
@@ -1493,13 +1493,13 @@ function inferClientToolCallsFromPrompt(prompt) {
       text,
     )
   ) {
-    addTool("openSearch");
+    addTool('openSearch');
   } else if (
     /(schließ|schliess|schließe|schliesse).*(suche|search)|(suche|search).*(schließ|schliess|schließe|schliesse|zu)/i.test(
       text,
     )
   ) {
-    addTool("closeSearch");
+    addTool('closeSearch');
   }
 
   const searchMatch = text.match(
@@ -1508,46 +1508,46 @@ function inferClientToolCallsFromPrompt(prompt) {
   if (searchMatch?.[1]) {
     const query = searchMatch[1]
       .trim()
-      .replace(/[.,;:!?]+$/g, "")
+      .replace(/[.,;:!?]+$/g, '')
       .slice(0, 80);
     if (
       query &&
       !/^(oeffnen|öffnen|schließen|schliessen|schliessen|zu|auf)$/.test(query)
     ) {
-      addTool("searchBlog", { query });
+      addTool('searchBlog', { query });
     }
   }
 
   if (/\b(dark mode|dunkel|nachtmodus)\b/i.test(text)) {
-    addTool("setTheme", { theme: "dark" });
+    addTool('setTheme', { theme: 'dark' });
   } else if (/\b(light mode|hell(?:es)? thema|hell)\b/i.test(text)) {
-    addTool("setTheme", { theme: "light" });
+    addTool('setTheme', { theme: 'light' });
   } else if (/\b(theme|thema).*(wechsel|toggle)|toggle.*theme\b/i.test(text)) {
-    addTool("setTheme", { theme: "toggle" });
+    addTool('setTheme', { theme: 'toggle' });
   }
 
   if (/(geh|navigier|zeige|öffn|oeffn).*(projekt|projekte)\b/i.test(text)) {
-    addTool("navigate", { page: "projekte" });
+    addTool('navigate', { page: 'projekte' });
   } else if (
     /(geh|navigier|zeige|öffn|oeffn).*(about|über mich|ueber mich)\b/i.test(
       text,
     )
   ) {
-    addTool("navigate", { page: "about" });
+    addTool('navigate', { page: 'about' });
   } else if (
     /(geh|navigier|zeige|öffn|oeffn).*(galerie|gallery|fotos)\b/i.test(text)
   ) {
-    addTool("navigate", { page: "gallery" });
+    addTool('navigate', { page: 'gallery' });
   } else if (/(geh|navigier|zeige|öffn|oeffn).*(blog)\b/i.test(text)) {
-    addTool("navigate", { page: "blog" });
+    addTool('navigate', { page: 'blog' });
   } else if (/(geh|navigier|zeige|öffn|oeffn).*(videos)\b/i.test(text)) {
-    addTool("navigate", { page: "videos" });
+    addTool('navigate', { page: 'videos' });
   } else if (
     /(geh|navigier|zeige|öffn|oeffn).*(kontakt|contact|footer)\b/i.test(text)
   ) {
-    addTool("navigate", { page: "kontakt" });
+    addTool('navigate', { page: 'kontakt' });
   } else if (/(geh|navigier|zeige|öffn|oeffn).*(start|home)\b/i.test(text)) {
-    addTool("navigate", { page: "home" });
+    addTool('navigate', { page: 'home' });
   }
 
   const externalUrlMatch = rawText.match(/https?:\/\/[^\s)\]}]+/i);
@@ -1555,22 +1555,22 @@ function inferClientToolCallsFromPrompt(prompt) {
     externalUrlMatch?.[0] &&
     /(öffn|oeffn|open|besuch|gehe zu|link)/i.test(text)
   ) {
-    addTool("openExternalLink", { url: externalUrlMatch[0], newTab: true });
+    addTool('openExternalLink', { url: externalUrlMatch[0], newTab: true });
   }
 
   const socialOpenIntent =
     /(social|profil|account|seite|kanal|öffn|oeffn|zeige)/i.test(text);
   if (socialOpenIntent) {
     if (/\bgithub\b/i.test(text))
-      addTool("openSocialProfile", { platform: "github" });
+      addTool('openSocialProfile', { platform: 'github' });
     else if (/\blinkedin\b/i.test(text))
-      addTool("openSocialProfile", { platform: "linkedin" });
+      addTool('openSocialProfile', { platform: 'linkedin' });
     else if (/\binstagram\b/i.test(text))
-      addTool("openSocialProfile", { platform: "instagram" });
+      addTool('openSocialProfile', { platform: 'instagram' });
     else if (/\byoutube\b/i.test(text))
-      addTool("openSocialProfile", { platform: "youtube" });
+      addTool('openSocialProfile', { platform: 'youtube' });
     else if (/\b(?:x|twitter)\b/i.test(text))
-      addTool("openSocialProfile", { platform: "x" });
+      addTool('openSocialProfile', { platform: 'x' });
   }
 
   if (
@@ -1581,9 +1581,9 @@ function inferClientToolCallsFromPrompt(prompt) {
     const subjectMatch = rawText.match(
       /(?:betreff|subject)\s*[:-]\s*([^\n\r]{3,120})/i,
     );
-    addTool("composeEmail", {
-      to: toMatch?.[0] || "krm19030@gmail.com",
-      subject: subjectMatch?.[1]?.trim() || "",
+    addTool('composeEmail', {
+      to: toMatch?.[0] || 'krm19030@gmail.com',
+      subject: subjectMatch?.[1]?.trim() || '',
     });
   }
 
@@ -1597,8 +1597,8 @@ function inferClientToolCallsFromPrompt(prompt) {
     const dateMatch = rawText.match(
       /\b(20\d{2}-\d{2}-\d{2}|\d{1,2}\.\d{1,2}\.\d{2,4})\b/,
     );
-    addTool("createCalendarReminder", {
-      title: titleMatch?.[1]?.trim() || "Erinnerung",
+    addTool('createCalendarReminder', {
+      title: titleMatch?.[1]?.trim() || 'Erinnerung',
       date: dateMatch?.[1] || new Date().toISOString().slice(0, 10),
       details: rawText.slice(0, 240),
     });
@@ -1616,46 +1616,46 @@ export async function onRequestPost(context) {
 
   const sseHeaders = {
     ...corsHeaders,
-    "Content-Type": "text/event-stream",
-    "Cache-Control": "no-cache, no-store, must-revalidate",
-    Connection: "keep-alive",
-    "X-Accel-Buffering": "no",
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache, no-store, must-revalidate',
+    Connection: 'keep-alive',
+    'X-Accel-Buffering': 'no',
   };
 
   try {
     // ── Parse request ──
-    const contentType = request.headers.get("content-type") || "";
+    const contentType = request.headers.get('content-type') || '';
     let body;
-    let imageAnalysis = "";
+    let imageAnalysis = '';
 
-    if (contentType.includes("multipart/form-data")) {
+    if (contentType.includes('multipart/form-data')) {
       const formData = await request.formData();
-      const imageFile = formData.get("image");
+      const imageFile = formData.get('image');
 
       if (imageFile instanceof File) {
         const arrayBuffer = await imageFile.arrayBuffer();
         imageAnalysis = await analyzeImage(
           env,
           [...new Uint8Array(arrayBuffer)],
-          String(formData.get("prompt") || ""),
+          String(formData.get('prompt') || ''),
           config,
         );
       }
 
       body = {
         prompt:
-          String(formData.get("prompt") || "") || "Analysiere dieses Bild.",
-        userId: String(formData.get("userId") || "anonymous"),
+          String(formData.get('prompt') || '') || 'Analysiere dieses Bild.',
+        userId: String(formData.get('userId') || 'anonymous'),
         imageAnalysis,
-        mode: "agent",
+        mode: 'agent',
       };
     } else {
       body = await request.json().catch(() => ({}));
     }
 
     const {
-      prompt = "",
-      userId: requestedUserId = "anonymous",
+      prompt = '',
+      userId: requestedUserId = 'anonymous',
       conversationHistory = [],
       stream = true,
     } = body;
@@ -1683,7 +1683,7 @@ export async function onRequestPost(context) {
 
     if (!prompt && !imageAnalysis) {
       return Response.json(
-        { error: "Empty prompt", text: "Kein Prompt empfangen." },
+        { error: 'Empty prompt', text: 'Kein Prompt empfangen.' },
         { status: 400, headers: jsonHeaders },
       );
     }
@@ -1691,8 +1691,8 @@ export async function onRequestPost(context) {
     if (!env.AI) {
       return Response.json(
         {
-          error: "AI service not configured",
-          text: "KI-Dienst nicht verfügbar.",
+          error: 'AI service not configured',
+          text: 'KI-Dienst nicht verfügbar.',
           toolCalls: [],
           retryable: false,
         },
@@ -1709,9 +1709,9 @@ export async function onRequestPost(context) {
       ]);
 
     const recalledMemories =
-      memResult.status === "fulfilled" ? memResult.value : [];
+      memResult.status === 'fulfilled' ? memResult.value : [];
     const storedPromptMemories =
-      storedPromptMemoriesResult.status === "fulfilled"
+      storedPromptMemoriesResult.status === 'fulfilled'
         ? storedPromptMemoriesResult.value
         : [];
     const mergedMemories = mergeMemoryEntries(
@@ -1727,14 +1727,14 @@ export async function onRequestPost(context) {
               (m) =>
                 `- ${m.key} (${m.category}, Priorität ${m.priority}): ${m.value}`,
             )
-            .join("\n")
-        : "";
+            .join('\n')
+        : '';
 
     const ragContext =
-      ragResult.status === "fulfilled" && ragResult.value
+      ragResult.status === 'fulfilled' && ragResult.value
         ? ragResult.value
         : null;
-    const ragText = ragContext?.prompt || "";
+    const ragText = ragContext?.prompt || '';
 
     // ── Build messages ──
     let systemPrompt = buildSystemPrompt(memoryContext, imageAnalysis, {
@@ -1746,16 +1746,16 @@ export async function onRequestPost(context) {
       systemPrompt += `\n\n**WEBSITE-KONTEXT (RAG):**\n${ragText}`;
     }
 
-    const messages = [{ role: "system", content: systemPrompt }];
+    const messages = [{ role: 'system', content: systemPrompt }];
 
     if (Array.isArray(conversationHistory)) {
       for (const msg of conversationHistory.slice(-config.maxHistoryTurns)) {
-        if (msg.role === "user" || msg.role === "assistant") {
-          messages.push({ role: msg.role, content: String(msg.content || "") });
+        if (msg.role === 'user' || msg.role === 'assistant') {
+          messages.push({ role: msg.role, content: String(msg.content || '') });
         }
       }
     }
-    messages.push({ role: "user", content: prompt });
+    messages.push({ role: 'user', content: prompt });
 
     // ── Non-streaming path ──
     if (!stream) {
@@ -1784,8 +1784,8 @@ export async function onRequestPost(context) {
     context.waitUntil(
       (async () => {
         try {
-          await write("identity", { userId });
-          await write("status", { phase: "thinking" });
+          await write('identity', { userId });
+          await write('status', { phase: 'thinking' });
 
           // Tools stay enabled so memory and explicit UI actions can run.
           const useTools = promptNeedsTools(prompt);
@@ -1802,7 +1802,7 @@ export async function onRequestPost(context) {
           let toolCalls = Array.isArray(aiResult?.tool_calls)
             ? aiResult.tool_calls
             : [];
-          const responseText = sanitizeAssistantText(aiResult?.response || "");
+          const responseText = sanitizeAssistantText(aiResult?.response || '');
 
           if (useTools && toolCalls.length === 0) {
             toolCalls = inferClientToolCallsFromPrompt(prompt);
@@ -1821,12 +1821,12 @@ export async function onRequestPost(context) {
               config,
             );
           } else if (responseText) {
-            await write("status", { phase: "streaming" });
+            await write('status', { phase: 'streaming' });
             const words = responseText.match(/\S+\s*/g) || [responseText];
             for (const word of words) {
-              await write("token", { text: word });
+              await write('token', { text: word });
             }
-            await write("message", {
+            await write('message', {
               text: responseText,
               toolCalls: [],
               model: config.chatModel,
@@ -1834,8 +1834,8 @@ export async function onRequestPost(context) {
               hasImage: !!imageAnalysis,
             });
           } else {
-            await write("message", {
-              text: "Keine Antwort erhalten.",
+            await write('message', {
+              text: 'Keine Antwort erhalten.',
               toolCalls: [],
               model: config.chatModel,
               hasMemory: !!memoryContext,
@@ -1843,13 +1843,13 @@ export async function onRequestPost(context) {
             });
           }
         } catch (error) {
-          console.error("SSE pipeline error:", error?.message || error);
-          await write("error", {
-            text: "KI-Dienst fehlgeschlagen.",
+          console.error('SSE pipeline error:', error?.message || error);
+          await write('error', {
+            text: 'KI-Dienst fehlgeschlagen.',
             retryable: true,
           });
         } finally {
-          await write("done", { ts: Date.now() });
+          await write('done', { ts: Date.now() });
           await writer.close();
         }
       })(),
@@ -1857,11 +1857,11 @@ export async function onRequestPost(context) {
 
     return new Response(readable, { headers: sseResponseHeaders });
   } catch (error) {
-    console.error("AI Agent error:", error?.message || error);
+    console.error('AI Agent error:', error?.message || error);
     return Response.json(
       {
-        error: "AI Agent request failed",
-        text: "KI-Dienst fehlgeschlagen. Bitte erneut versuchen.",
+        error: 'AI Agent request failed',
+        text: 'KI-Dienst fehlgeschlagen. Bitte erneut versuchen.',
         toolCalls: [],
         retryable: true,
       },
@@ -1887,8 +1887,8 @@ function buildMsg(text, clientToolCalls, serverToolResults, ctx, config) {
 
 function hasMeaningfulText(text, minLength = 4) {
   return (
-    String(text || "")
-      .replace(/\s+/g, " ")
+    String(text || '')
+      .replace(/\s+/g, ' ')
       .trim().length >= minLength
   );
 }
@@ -1896,30 +1896,30 @@ function hasMeaningfulText(text, minLength = 4) {
 async function streamToSSE(stream, write) {
   if (!(stream instanceof ReadableStream)) {
     if (stream?.response) {
-      await write("token", { text: stream.response });
+      await write('token', { text: stream.response });
       return stream.response;
     }
-    return "";
+    return '';
   }
   const reader = stream.getReader();
   const decoder = new TextDecoder();
-  let text = "";
-  let lineBuffer = "";
+  let text = '';
+  let lineBuffer = '';
   let eventDataLines = [];
 
   const flushEvent = async () => {
     if (eventDataLines.length === 0) return;
 
-    const payload = eventDataLines.join("\n").trim();
+    const payload = eventDataLines.join('\n').trim();
     eventDataLines = [];
-    if (!payload || payload === "[DONE]") return;
+    if (!payload || payload === '[DONE]') return;
 
-    let delta = "";
+    let delta = '';
     try {
       const parsed = JSON.parse(payload);
-      if (typeof parsed?.response === "string") {
+      if (typeof parsed?.response === 'string') {
         delta = parsed.response;
-      } else if (typeof parsed?.text === "string") {
+      } else if (typeof parsed?.text === 'string') {
         delta = parsed.text;
       }
     } catch {
@@ -1929,36 +1929,36 @@ async function streamToSSE(stream, write) {
 
     if (!delta) return;
     text += delta;
-    await write("token", { text: delta });
+    await write('token', { text: delta });
   };
 
   const consumeChunk = async (chunk, isFinal = false) => {
     if (chunk) lineBuffer += chunk;
 
-    let newlineIndex = lineBuffer.indexOf("\n");
+    let newlineIndex = lineBuffer.indexOf('\n');
     while (newlineIndex !== -1) {
       const rawLine = lineBuffer.slice(0, newlineIndex);
       lineBuffer = lineBuffer.slice(newlineIndex + 1);
-      const line = rawLine.endsWith("\r") ? rawLine.slice(0, -1) : rawLine;
+      const line = rawLine.endsWith('\r') ? rawLine.slice(0, -1) : rawLine;
 
       if (!line) {
         await flushEvent();
-      } else if (line.startsWith("data:")) {
+      } else if (line.startsWith('data:')) {
         eventDataLines.push(line.slice(5).trimStart());
       }
 
-      newlineIndex = lineBuffer.indexOf("\n");
+      newlineIndex = lineBuffer.indexOf('\n');
     }
 
     if (!isFinal) return;
 
-    const tail = lineBuffer.endsWith("\r")
+    const tail = lineBuffer.endsWith('\r')
       ? lineBuffer.slice(0, -1)
       : lineBuffer;
-    if (tail && tail.startsWith("data:")) {
+    if (tail && tail.startsWith('data:')) {
       eventDataLines.push(tail.slice(5).trimStart());
     }
-    lineBuffer = "";
+    lineBuffer = '';
     await flushEvent();
   };
 
@@ -1982,7 +1982,7 @@ async function processToolCalls(
   userId,
   ctx,
   messages = [],
-  existingText = "",
+  existingText = '',
   userRole,
   config,
 ) {
@@ -1996,38 +1996,38 @@ async function processToolCalls(
 
   // Emit SSE events for each tool
   for (const sr of serverToolResults) {
-    await write("tool", {
+    await write('tool', {
       name: sr.name,
-      status: "done",
+      status: 'done',
       result: sr.result,
       isServerTool: true,
     });
   }
   for (const ct of clientToolCalls) {
-    await write("tool", {
+    await write('tool', {
       name: ct.name,
       arguments: ct.arguments,
       meta: ct.meta,
-      status: "client",
+      status: 'client',
       isServerTool: false,
     });
   }
 
   const recallResult = serverToolResults.find(
-    (item) => item.name === "recallMemory",
+    (item) => item.name === 'recallMemory',
   );
   if (recallResult && clientToolCalls.length === 0) {
-    const loadedContext = String(ctx?.memoryContext || "").trim();
+    const loadedContext = String(ctx?.memoryContext || '').trim();
     const text = loadedContext
       ? `Bekannte Infos:\n${loadedContext}`
-      : recallResult.result === "Keine Erinnerungen gefunden."
-        ? "Ich habe aktuell keine gespeicherten Erinnerungen für diese User-ID."
+      : recallResult.result === 'Keine Erinnerungen gefunden.'
+        ? 'Ich habe aktuell keine gespeicherten Erinnerungen für diese User-ID.'
         : recallResult.result;
     for (const word of text.match(/\S+\s*/g) || [text]) {
-      await write("token", { text: word });
+      await write('token', { text: word });
     }
     await write(
-      "message",
+      'message',
       buildMsg(text, clientToolCalls, serverToolResults, ctx, config),
     );
     return;
@@ -2035,18 +2035,18 @@ async function processToolCalls(
 
   // Follow-up AI call with server tool results
   if (serverToolResults.length > 0 && messages.length > 0) {
-    await write("status", { phase: "synthesizing" });
+    await write('status', { phase: 'synthesizing' });
     const summary = serverToolResults
       .map((r) => `[${r.name}]: ${r.result}`)
-      .join("\n");
+      .join('\n');
     const followUpMessages = [
       ...messages,
       {
-        role: "assistant",
-        content: `Tools: ${serverToolResults.map((r) => r.name).join(", ")}`,
+        role: 'assistant',
+        content: `Tools: ${serverToolResults.map((r) => r.name).join(', ')}`,
       },
       {
-        role: "user",
+        role: 'user',
         content: `Ergebnisse:\n${summary}\n\nAntworte dem Nutzer.`,
       },
     ];
@@ -2060,7 +2060,7 @@ async function processToolCalls(
       const text = sanitizeAssistantText(await streamToSSE(result, write));
       if (hasMeaningfulText(text)) {
         await write(
-          "message",
+          'message',
           buildMsg(text, clientToolCalls, serverToolResults, ctx, config),
         );
         return;
@@ -2072,9 +2072,9 @@ async function processToolCalls(
         temperature: 0.7,
         max_tokens: config.maxTokens,
       });
-      const fallbackText = sanitizeAssistantText(fallback?.response || "");
+      const fallbackText = sanitizeAssistantText(fallback?.response || '');
       if (hasMeaningfulText(fallbackText)) {
-        await write("message", {
+        await write('message', {
           ...buildMsg(
             fallbackText,
             clientToolCalls,
@@ -2087,7 +2087,7 @@ async function processToolCalls(
         return;
       }
     } catch (err) {
-      console.warn("Follow-up failed:", err?.message);
+      console.warn('Follow-up failed:', err?.message);
     }
   }
 
@@ -2097,24 +2097,24 @@ async function processToolCalls(
     !hasMeaningfulText(existingText) &&
     messages.length > 0
   ) {
-    await write("status", { phase: "responding" });
+    await write('status', { phase: 'responding' });
     try {
-      const names = clientToolCalls.map((t) => t.name).join(", ");
+      const names = clientToolCalls.map((t) => t.name).join(', ');
       const r = await env.AI.run(config.chatModel, {
         messages: [
           ...messages,
-          { role: "assistant", content: `Aktionen: ${names}` },
-          { role: "user", content: "Bestätige kurz auf Deutsch (1-2 Sätze)." },
+          { role: 'assistant', content: `Aktionen: ${names}` },
+          { role: 'user', content: 'Bestätige kurz auf Deutsch (1-2 Sätze).' },
         ],
         temperature: 0.7,
         max_tokens: 256,
       });
-      const followUpText = sanitizeAssistantText(r?.response || "");
+      const followUpText = sanitizeAssistantText(r?.response || '');
       if (followUpText) {
         for (const w of followUpText.match(/\S+\s*/g) || [followUpText])
-          await write("token", { text: w });
+          await write('token', { text: w });
         await write(
-          "message",
+          'message',
           buildMsg(
             followUpText,
             clientToolCalls,
@@ -2126,21 +2126,21 @@ async function processToolCalls(
         return;
       }
     } catch (err) {
-      console.warn("Follow-up for client tools failed:", err?.message);
+      console.warn('Follow-up for client tools failed:', err?.message);
     }
   }
 
   // Fallback
   await write(
-    "message",
+    'message',
     buildMsg(
       hasMeaningfulText(existingText)
         ? existingText
         : clientToolCalls.length > 0
-          ? "Aktion wird ausgeführt…"
+          ? 'Aktion wird ausgeführt…'
           : serverToolResults.length > 0
-            ? "Ich habe deine Infos geprüft. Frag mich gern noch einmal."
-            : "Keine Antwort erhalten.",
+            ? 'Ich habe deine Infos geprüft. Frag mich gern noch einmal.'
+            : 'Keine Antwort erhalten.',
       clientToolCalls,
       serverToolResults,
       ctx,
@@ -2164,7 +2164,7 @@ async function handleNonStreaming(
   try {
     // Tools stay enabled so memory and explicit UI actions can run.
     const useTools = promptNeedsTools(
-      messages[messages.length - 1]?.content || "",
+      messages[messages.length - 1]?.content || '',
     );
     const aiParams = {
       messages,
@@ -2174,14 +2174,14 @@ async function handleNonStreaming(
     if (useTools && availableTools.length > 0) aiParams.tools = availableTools;
 
     const aiResult = await env.AI.run(config.chatModel, aiParams);
-    if (!aiResult) throw new Error("Empty AI response");
+    if (!aiResult) throw new Error('Empty AI response');
 
     let toolCalls = Array.isArray(aiResult.tool_calls)
       ? aiResult.tool_calls
       : [];
     if (useTools && toolCalls.length === 0) {
       toolCalls = inferClientToolCallsFromPrompt(
-        messages[messages.length - 1]?.content || "",
+        messages[messages.length - 1]?.content || '',
       );
     }
 
@@ -2194,14 +2194,14 @@ async function handleNonStreaming(
     );
 
     const recallResult = serverToolResults.find(
-      (item) => item.name === "recallMemory",
+      (item) => item.name === 'recallMemory',
     );
     if (recallResult && clientToolCalls.length === 0) {
-      const loadedContext = String(ctx?.memoryContext || "").trim();
+      const loadedContext = String(ctx?.memoryContext || '').trim();
       const text = loadedContext
         ? `Bekannte Infos:\n${loadedContext}`
-        : recallResult.result === "Keine Erinnerungen gefunden."
-          ? "Ich habe aktuell keine gespeicherten Erinnerungen für diese User-ID."
+        : recallResult.result === 'Keine Erinnerungen gefunden.'
+          ? 'Ich habe aktuell keine gespeicherten Erinnerungen für diese User-ID.'
           : recallResult.result;
 
       return Response.json(
@@ -2219,28 +2219,28 @@ async function handleNonStreaming(
     }
 
     // Follow-up for server tools
-    let responseText = sanitizeAssistantText(aiResult.response || "");
+    let responseText = sanitizeAssistantText(aiResult.response || '');
     if (serverToolResults.length > 0) {
       const summary = serverToolResults
         .map((r) => `[${r.name}]: ${r.result}`)
-        .join("\n");
+        .join('\n');
       try {
         const followUp = await env.AI.run(config.chatModel, {
           messages: [
             ...messages,
             {
-              role: "assistant",
-              content: `Tools: ${serverToolResults.map((r) => r.name).join(", ")}`,
+              role: 'assistant',
+              content: `Tools: ${serverToolResults.map((r) => r.name).join(', ')}`,
             },
             {
-              role: "user",
+              role: 'user',
               content: `Ergebnisse:\n${summary}\n\nAntworte dem Nutzer.`,
             },
           ],
           temperature: 0.7,
           max_tokens: config.maxTokens,
         });
-        const followUpText = sanitizeAssistantText(followUp?.response || "");
+        const followUpText = sanitizeAssistantText(followUp?.response || '');
         if (followUpText) responseText = followUpText;
       } catch {
         /* use original */
@@ -2250,20 +2250,20 @@ async function handleNonStreaming(
     // Follow-up for client-only tools without text
     if (!responseText && clientToolCalls.length > 0) {
       try {
-        const names = clientToolCalls.map((t) => t.name).join(", ");
+        const names = clientToolCalls.map((t) => t.name).join(', ');
         const r = await env.AI.run(config.chatModel, {
           messages: [
             ...messages,
-            { role: "assistant", content: `Aktionen: ${names}` },
+            { role: 'assistant', content: `Aktionen: ${names}` },
             {
-              role: "user",
-              content: "Bestätige kurz auf Deutsch (1-2 Sätze).",
+              role: 'user',
+              content: 'Bestätige kurz auf Deutsch (1-2 Sätze).',
             },
           ],
           temperature: 0.7,
           max_tokens: 256,
         });
-        const followUpText = sanitizeAssistantText(r?.response || "");
+        const followUpText = sanitizeAssistantText(r?.response || '');
         if (followUpText) responseText = followUpText;
       } catch {
         /* ignore */
@@ -2276,8 +2276,8 @@ async function handleNonStreaming(
         text:
           responseText ||
           (clientToolCalls.length
-            ? "Aktion wird ausgeführt…"
-            : "Keine Antwort."),
+            ? 'Aktion wird ausgeführt…'
+            : 'Keine Antwort.'),
         toolCalls: clientToolCalls,
         model: config.chatModel,
         hasMemory: !!ctx.memoryContext,
@@ -2286,11 +2286,11 @@ async function handleNonStreaming(
       { headers: corsHeaders },
     );
   } catch (error) {
-    console.error("Non-streaming error:", error?.message || error);
+    console.error('Non-streaming error:', error?.message || error);
     return Response.json(
       {
-        error: "AI request failed",
-        text: "Es gab ein technisches Problem mit der Verbindung. Bitte versuche es noch einmal.",
+        error: 'AI request failed',
+        text: 'Es gab ein technisches Problem mit der Verbindung. Bitte versuche es noch einmal.',
         toolCalls: [],
         retryable: true,
       },

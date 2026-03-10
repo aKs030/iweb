@@ -4,52 +4,52 @@
 # Documentation
 documentation:
   - changed-files:
-      - any-glob-to-any-file: ["docs/**/*", "*.md", "README*"]
+      - any-glob-to-any-file: ['docs/**/*', '*.md', 'README*']
 
 # Configuration
 configuration:
   - changed-files:
       - any-glob-to-any-file:
-          ["*.json", "*.yml", "*.yaml", "*.toml", ".github/**/*"]
+          ['*.json', '*.yml', '*.yaml', '*.toml', '.github/**/*']
 
 # Dependencies
 dependencies:
   - changed-files:
-      - any-glob-to-any-file: ["package.json", "package-lock.json"]
+      - any-glob-to-any-file: ['package.json', 'package-lock.json']
 
 # Frontend
 frontend:
   - changed-files:
-      - any-glob-to-any-file: ["content/**/*", "pages/**/*", "*.html", "*.css"]
+      - any-glob-to-any-file: ['content/**/*', 'pages/**/*', '*.html', '*.css']
 
 # Backend/Functions
 backend:
   - changed-files:
-      - any-glob-to-any-file: ["functions/**/*"]
+      - any-glob-to-any-file: ['functions/**/*']
 
 # Scripts
 scripts:
   - changed-files:
-      - any-glob-to-any-file: ["scripts/**/*"]
+      - any-glob-to-any-file: ['scripts/**/*']
 
 # Tests
 tests:
   - changed-files:
-      - any-glob-to-any-file: ["**/*.test.js", "**/*.spec.js", "tests/**/*"]
+      - any-glob-to-any-file: ['**/*.test.js', '**/*.spec.js', 'tests/**/*']
 
 # CI/CD
 ci-cd:
   - changed-files:
-      - any-glob-to-any-file: [".github/workflows/**/*", ".husky/**/*"]
+      - any-glob-to-any-file: ['.github/workflows/**/*', '.husky/**/*']
 
 # AI/Discovery
 ai-discovery:
   - changed-files:
       - any-glob-to-any-file:
-          ["ai-*.json", "llms*.txt", "person.jsonld", ".well-known/**/*"]
+          ['ai-*.json', 'llms*.txt', 'person.jsonld', '.well-known/**/*']
 
 # Performance
 performance:
   - changed-files:
       - any-glob-to-any-file:
-          ["_headers", "_redirects", "sw.js", "manifest.json"]
+          ['_headers', '_redirects', 'sw.js', 'manifest.json']
