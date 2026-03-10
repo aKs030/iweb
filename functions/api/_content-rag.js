@@ -487,9 +487,41 @@ function stripMarkdown(text) {
 }
 
 function stripHtml(text) {
-  return String(text || "")
-    .replace(/<script\b[^>]*>[\s\S]*?<\/script\s*>/gi, " ")
-    .replace(/<style\b[^>]*>[\s\S]*?<\/style\s*>/gi, " ")
+  const withoutBlocks = ["script", "style"].reduce((current, tagName) => {
+    let output = String(current || "");
+    let searchOffset = 0;
+
+    while (searchOffset < output.length) {
+      const lower = output.toLowerCase();
+      const start = lower.indexOf(`<${tagName}`, searchOffset);
+      if (start === -1) break;
+
+      const openEnd = lower.indexOf(">", start);
+      if (openEnd === -1) {
+        output = `${output.slice(0, start)} ${output.slice(start)}`;
+        break;
+      }
+
+      const closeStart = lower.indexOf(`</${tagName}`, openEnd + 1);
+      if (closeStart === -1) {
+        output = `${output.slice(0, start)} ${output.slice(openEnd + 1)}`;
+        break;
+      }
+
+      const closeEnd = lower.indexOf(">", closeStart);
+      if (closeEnd === -1) {
+        output = `${output.slice(0, start)} ${output.slice(closeStart)}`;
+        break;
+      }
+
+      output = `${output.slice(0, start)} ${output.slice(closeEnd + 1)}`;
+      searchOffset = start + 1;
+    }
+
+    return output;
+  }, text);
+
+  return String(withoutBlocks || "")
     .replace(
       /<\/(p|div|section|article|main|header|footer|ul|ol|li|br)>/gi,
       "\n",
