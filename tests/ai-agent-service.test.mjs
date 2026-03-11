@@ -163,6 +163,7 @@ test("AIAgentService tracks recovery confirmation state from agent responses", a
         {
           headers: {
             "content-type": "application/json",
+            "x-jules-user-id": "u_temp",
           },
         },
       ),
@@ -174,6 +175,7 @@ test("AIAgentService tracks recovery confirmation state from agent responses", a
   assert.equal(result.recovery?.candidateUserId, "u_legacy");
   assert.equal(__test__.getProfileState().status, "recovery-pending");
   assert.equal(__test__.getProfileState().name, "Ada");
+  assert.equal(__test__.getUserId(), "");
 });
 
 test("AIAgentService activates and disconnects profiles through the user endpoint", async () => {
