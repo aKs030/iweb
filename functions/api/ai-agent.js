@@ -61,6 +61,14 @@ function parseIntegrationSet(
   return new Set(parseCsvList(raw).map((item) => item.toLowerCase()));
 }
 
+function withTimeout(promise, ms, fallback = null) {
+  let timeoutId;
+  const timer = new Promise((resolve) => {
+    timeoutId = setTimeout(() => resolve(fallback), ms);
+  });
+  return Promise.race([promise, timer]).finally(() => clearTimeout(timeoutId));
+}
+
 function getAgentConfig(env) {
   return {
     chatModel: env.ROBOT_CHAT_MODEL || DEFAULT_CHAT_MODEL,
@@ -1323,8 +1331,8 @@ async function persistPromptMemories(env, userId, prompt, config) {
   const facts = extractPromptMemoryFacts(prompt);
   if (!facts.length) return [];
 
-  const stored = [];
-  for (const fact of facts) {
+  const now = Date.now();
+  const memoryPromises = facts.map(async (fact) => {
     try {
       const result = await storeMemory(
         env,
@@ -1333,25 +1341,30 @@ async function persistPromptMemories(env, userId, prompt, config) {
         fact.value,
         config,
       );
-      if (!result?.success) continue;
+      if (!result?.success) return null;
+
       const normalized = normalizeMemoryEntry(
         {
           key: fact.key,
           value: fact.value,
-          timestamp: Date.now(),
+          timestamp: now,
         },
         config,
       );
-      stored.push({
+      return {
         ...normalized,
         score: 1,
-      });
+      };
     } catch {
-      // Skip single-memory errors; keep persisting remaining facts.
+      return null;
     }
-  }
+  });
 
-  return stored;
+  const results = await Promise.allSettled(memoryPromises);
+
+  return results
+    .filter((r) => r.status === 'fulfilled' && r.value !== null)
+    .map((r) => r.value);
 }
 
 async function resolveMemoryContext(env, userId, _prompt, config) {
@@ -1701,15 +1714,24 @@ export async function onRequestPost(context) {
     }
 
     // ── Parallel: memory + RAG + deterministic memory persistence ──
+    const timeoutMs = 3500;
     const [memResult, ragResult, storedPromptMemoriesResult] =
       await Promise.allSettled([
-        resolveMemoryContext(env, userId, prompt, config),
-        getRAGContext(prompt, env),
-        persistPromptMemories(env, userId, prompt, config),
+        withTimeout(
+          resolveMemoryContext(env, userId, prompt, config),
+          timeoutMs,
+          [],
+        ),
+        withTimeout(getRAGContext(prompt, env), timeoutMs, null),
+        withTimeout(
+          persistPromptMemories(env, userId, prompt, config),
+          timeoutMs,
+          [],
+        ),
       ]);
 
     const recalledMemories =
-      memResult.status === 'fulfilled' ? memResult.value : [];
+      memResult.status === 'fulfilled' ? memResult.value || [] : [];
     const storedPromptMemories =
       storedPromptMemoriesResult.status === 'fulfilled'
         ? storedPromptMemoriesResult.value
