@@ -116,10 +116,11 @@ class SiteMenu extends HTMLElement {
       '/content/components/menu/menu-responsive.css',
       '/content/components/menu/menu-backdrop.css',
     ];
+    const legacyConfig = /** @type {{ CSS_URL?: string }} */ (this.config);
     const configuredUrls = Array.isArray(this.config.CSS_URLS)
       ? this.config.CSS_URLS
-      : this.config.CSS_URL
-        ? [this.config.CSS_URL]
+      : legacyConfig.CSS_URL
+        ? [legacyConfig.CSS_URL]
         : fallbackUrls;
 
     return this.dedupeCssUrls(configuredUrls);

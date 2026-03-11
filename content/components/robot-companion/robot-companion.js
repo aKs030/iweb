@@ -47,6 +47,8 @@ const log = createLogger('RobotCompanion');
  * @typedef {import('../../core/types.js').TimerRegistry} TimerRegistry
  * @typedef {import('../../core/types.js').PageContext} PageContext
  * @typedef {import('../../core/types.js').RobotMood} RobotMood
+ * @typedef {import('./modules/robot-intelligence.js').RobotIntelligence} RobotIntelligence
+ * @typedef {ReturnType<typeof import('../../core/utils.js').createObserver>} ObserverHandle
  */
 
 /**
@@ -94,7 +96,7 @@ export class RobotCompanion {
 
     /** @type {import('../../core/types.js').PageContext|null} */
     this.currentObservedContext = null;
-    /** @type {ReturnType<typeof createObserver>|null} */
+    /** @type {ObserverHandle|null} */
     this._sectionObserver = null;
     /** @type {ResizeObserver|null} */
     this._footerLayoutObserver = null;

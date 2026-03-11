@@ -1,0 +1,36 @@
+[
+  {
+    "id": "blog-web-components",
+    "query": "Wie denkt Abdulkerim über Web Components?",
+    "allowedRetrievalModes": [
+      "metadata-filter:blog",
+      "fallback-unfiltered:blog"
+    ],
+    "expectedSourceTypes": ["blog"],
+    "expectedUrlIncludes": ["/blog/"],
+    "minimumSourceCount": 1
+  },
+  {
+    "id": "project-portfolio-work",
+    "query": "Welche Projekte hat Abdulkerim umgesetzt?",
+    "allowedRetrievalModes": [
+      "metadata-filter:project",
+      "fallback-unfiltered:project"
+    ],
+    "expectedSourceTypes": ["project"],
+    "expectedUrlIncludes": ["/projekte/"],
+    "minimumSourceCount": 1
+  },
+  {
+    "id": "about-profile",
+    "query": "Wer ist Abdulkerim Sesli und was bietet er an?",
+    "allowedRetrievalModes": [
+      "metadata-filter:about",
+      "fallback-unfiltered:about",
+      "unfiltered"
+    ],
+    "expectedSourceTypes": ["about"],
+    "expectedUrlIncludes": ["/about/"],
+    "minimumSourceCount": 1
+  }
+]

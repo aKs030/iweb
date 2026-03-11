@@ -5,6 +5,9 @@ on:
   pull_request:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master' }}
@@ -20,6 +23,8 @@ jobs:
         run: npm run sync:styles
       - name: Run QA checks
         run: npm run qa
+      - name: Run unit tests
+        run: npm run test:unit
       - name: Install Playwright
         run: npx playwright install --with-deps chromium
       - name: Run E2E Browser tests
@@ -64,7 +69,7 @@ jobs:
     timeout-minutes: 15
     permissions:
       deployments: write
-      pull-requests: write
+      issues: write
       contents: read
     steps:
       - uses: actions/checkout@v6
@@ -74,34 +79,117 @@ jobs:
       - name: Run checks
         run: npm run check
       - id: secrets
-        run: echo "has=${{ secrets.CLOUDFLARE_API_TOKEN != '' }}" >> "$GITHUB_OUTPUT"
-      - if: steps.secrets.outputs.has == 'true'
+        run: |
+          echo "has_cloudflare=${{ secrets.CLOUDFLARE_API_TOKEN != '' && secrets.CLOUDFLARE_ACCOUNT_ID != '' }}" >> "$GITHUB_OUTPUT"
+          echo "has_admin_token=${{ secrets.ADMIN_TOKEN != '' }}" >> "$GITHUB_OUTPUT"
+      - if: steps.secrets.outputs.has_cloudflare == 'true'
         id: deploy
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy . --project-name=1web --branch=${{ github.head_ref }} --commit-dirty=true
-      - uses: actions/github-script@v8
+      - if: steps.secrets.outputs.has_cloudflare == 'true' && steps.secrets.outputs.has_admin_token == 'true'
+        id: rag_sync
+        name: Sync Content RAG
+        run: npm run sync:content-rag -- --url="${{ steps.deploy.outputs.deployment-url }}" --retries=8 --delay-ms=10000
         env:
-          HAS: ${{ steps.secrets.outputs.has }}
+          ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
+      - if: steps.rag_sync.outcome == 'success' && steps.secrets.outputs.has_admin_token == 'true'
+        id: rag_eval
+        name: Evaluate Content RAG
+        run: npm run eval:content-rag -- --url="${{ steps.deploy.outputs.deployment-url }}" --retries=6 --delay-ms=5000
+        env:
+          ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
+      - if: always()
+        uses: actions/github-script@v8
+        env:
+          HAS_CLOUDFLARE: ${{ steps.secrets.outputs.has_cloudflare }}
+          HAS_ADMIN_TOKEN: ${{ steps.secrets.outputs.has_admin_token }}
           URL: ${{ steps.deploy.outputs.deployment-url }}
+          RAG_SYNC_OUTCOME: ${{ steps.rag_sync.outcome }}
+          RAG_EVAL_OUTCOME: ${{ steps.rag_eval.outcome }}
         with:
           script: |
             const m = '<!-- preview -->';
-            const has = process.env.HAS === 'true';
+            const hasCloudflare = process.env.HAS_CLOUDFLARE === 'true';
+            const hasAdminToken = process.env.HAS_ADMIN_TOKEN === 'true';
             const url = process.env.URL;
-            const body = has ? `${m}\n## 🚀 Preview\n\n[${url}](${url})` : `${m}\n## ⚠️ Skipped\n\nAdd: CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID`;
-            const { data: c } = await github.rest.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-            });
-            const e = c.find(x => x.user.type === 'Bot' && x.body.includes(m));
-            const fn = e ? github.rest.issues.updateComment : github.rest.issues.createComment;
-            await fn({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ...(e ? { comment_id: e.id } : { issue_number: context.issue.number }),
-              body,
-            });
+            const ragSyncOutcome = process.env.RAG_SYNC_OUTCOME;
+            const ragEvalOutcome = process.env.RAG_EVAL_OUTCOME;
+            let ragLine = '';
+
+            if (hasCloudflare && hasAdminToken) {
+              ragLine = ragSyncOutcome === 'success'
+                ? '\n\nRAG sync: ✅ completed'
+                : '\n\nRAG sync: ❌ failed';
+              if (ragSyncOutcome === 'success') {
+                ragLine += ragEvalOutcome === 'success'
+                  ? '\nRAG eval: ✅ passed'
+                  : ragEvalOutcome === 'failure'
+                    ? '\nRAG eval: ❌ failed'
+                    : '';
+              }
+            } else if (hasCloudflare) {
+              ragLine = '\n\nRAG sync: ⚠️ skipped (missing ADMIN_TOKEN secret)';
+            }
+
+            const body = hasCloudflare
+              ? `${m}\n## 🚀 Preview\n\n[${url}](${url})${ragLine}`
+              : `${m}\n## ⚠️ Skipped\n\nAdd: CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID`;
+            try {
+              const { data: c } = await github.rest.issues.listComments({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+              });
+              const e = c.find(x => x.user.type === 'Bot' && x.body.includes(m));
+              const fn = e ? github.rest.issues.updateComment : github.rest.issues.createComment;
+              await fn({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ...(e ? { comment_id: e.id } : { issue_number: context.issue.number }),
+                body,
+              });
+            } catch (error) {
+              if (error?.status === 403) {
+                console.log(`Preview comment skipped: ${error.message}`);
+                return;
+              }
+              throw error;
+            }
+
+  production_rag_sync:
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+      - id: secrets
+        run: echo "has_admin_token=${{ secrets.ADMIN_TOKEN != '' }}" >> "$GITHUB_OUTPUT"
+      - if: steps.secrets.outputs.has_admin_token == 'true'
+        name: Sync Production Content RAG
+        env:
+          ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
+          PRODUCTION_SITE_URL: ${{ vars.PRODUCTION_SITE_URL }}
+        run: |
+          SITE_URL="${PRODUCTION_SITE_URL:-https://www.abdulkerimsesli.de}"
+          node scripts/sync-content-rag.mjs \
+            --url="$SITE_URL" \
+            --wait-for-commit="${{ github.sha }}" \
+            --retries=20 \
+            --delay-ms=15000
+      - if: steps.secrets.outputs.has_admin_token == 'true'
+        name: Evaluate Production Content RAG
+        env:
+          ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN }}
+          PRODUCTION_SITE_URL: ${{ vars.PRODUCTION_SITE_URL }}
+        run: |
+          SITE_URL="${PRODUCTION_SITE_URL:-https://www.abdulkerimsesli.de}"
+          npm run eval:content-rag -- --url="$SITE_URL" --retries=8 --delay-ms=15000
+      - if: steps.secrets.outputs.has_admin_token != 'true'
+        name: Skip Production Content RAG Sync
+        run: echo "Skipping production RAG sync because ADMIN_TOKEN is missing."
