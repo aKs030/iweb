@@ -209,7 +209,8 @@ export const TOOL_DEFINITIONS = [
   },
   {
     name: 'recallMemory',
-    description: 'Rufe gespeicherte Erinnerungen ab.',
+    description:
+      'Rufe gespeicherte Erinnerungen zum aktuellen Nutzer ab. Nicht für Fragen über Abdulkerim, die Website, Blogposts oder Projekte verwenden.',
     parameters: {
       type: 'object',
       properties: {

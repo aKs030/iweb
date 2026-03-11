@@ -1,6 +1,7 @@
 import { TOOL_DEFINITIONS } from './_ai-tools.js';
 import { buildSystemPrompt } from './_ai-prompts.js';
 import { analyzeImage } from './_ai-vision.js';
+import { getSiteContentRagContext } from './_content-rag.js';
 /**
  * Cloudflare Pages Function – POST /api/ai-agent
  * Agentic AI: SSE streaming, tool-calling, image analysis, memory, RAG.
@@ -431,11 +432,37 @@ function isIntegrationEnabled(toolDefinition, config) {
   return config.enabledIntegrations.has(integration);
 }
 
-function getAllowedToolDefinitions(config, userRole) {
+function isExplicitUserMemoryRequest(promptText) {
+  const text = String(promptText || '')
+    .toLowerCase()
+    .trim();
+  if (!text) return false;
+
+  return [
+    /\bwie\s+hei(?:ss|ß)e\s+ich\b/,
+    /\bwas\s+wei(?:ss|ß)t\s+du\s+über\s+mich\b/,
+    /\bwas\s+wei(?:ss|ß)t\s+du\s+noch\s+über\s+mich\b/,
+    /\berinner(?:e|st)\s+du\s+dich\s+an\s+mich\b/,
+    /\bwei(?:ss|ß)t\s+du\s+noch\b/,
+    /\bmeine?\s+(?:infos?|informationen|vorlieben|interessen|ziele|daten)\b/,
+    /\bwas\s+habe\s+ich\s+dir\s+gesagt\b/,
+    /\bwas\s+hast\s+du\s+dir\s+über\s+mich\s+gemerkt\b/,
+  ].some((pattern) => pattern.test(text));
+}
+
+function isToolAllowedForPrompt(toolDefinition, promptText) {
+  if (toolDefinition?.name === 'recallMemory') {
+    return isExplicitUserMemoryRequest(promptText);
+  }
+  return true;
+}
+
+function getAllowedToolDefinitions(config, userRole, promptText = '') {
   return TOOL_DEFINITIONS.filter(
     (tool) =>
       isToolAllowedForRole(tool, userRole) &&
-      isIntegrationEnabled(tool, config),
+      isIntegrationEnabled(tool, config) &&
+      isToolAllowedForPrompt(tool, promptText),
   );
 }
 
@@ -1023,7 +1050,7 @@ async function classifyToolCalls(env, toolCalls, userId, config, userRole) {
 
 // ─── RAG Context ────────────────────────────────────────────────────────────────
 
-async function getRAGContext(query, env) {
+async function getAutoRAGContext(query, env) {
   if (!env.AI) return null;
 
   try {
@@ -1036,7 +1063,7 @@ async function getRAGContext(query, env) {
 
     if (!searchData?.data?.length) return null;
 
-    return searchData.data
+    const matches = searchData.data
       .slice(0, 4)
       .map((item) => {
         const url = item.filename || item.url || '';
@@ -1045,14 +1072,47 @@ async function getRAGContext(query, env) {
           ? item.content.map((c) => c.text || '').join(' ')
           : item.text || item.description || '';
         const safeUrl = url.startsWith('/') ? url : `/${url}`;
-        return `Titel: ${title}\nURL: ${safeUrl}\nInhalt: ${content.replace(/\s+/g, ' ').trim().slice(0, 500)}`;
+        return {
+          title,
+          url: safeUrl,
+          content: content.replace(/\s+/g, ' ').trim().slice(0, 500),
+        };
       })
-      .filter(Boolean)
-      .join('\n\n---\n\n');
+      .filter((item) => item.title && item.url && item.content);
+
+    if (!matches.length) return null;
+
+    return {
+      prompt: matches
+        .map(
+          (item) =>
+            `Titel: ${item.title}\nURL: ${item.url}\nInhalt: ${item.content}`,
+        )
+        .join('\n\n---\n\n'),
+      sources: [],
+      matches,
+    };
   } catch (error) {
     console.warn('RAG Context Error:', error?.message);
     return null;
   }
+}
+
+async function getRAGContext(query, env) {
+  const [contentRagResult, autoRagResult] = await Promise.allSettled([
+    getSiteContentRagContext(query, env),
+    getAutoRAGContext(query, env),
+  ]);
+
+  if (contentRagResult.status === 'fulfilled' && contentRagResult.value) {
+    return contentRagResult.value;
+  }
+
+  if (autoRagResult.status === 'fulfilled' && autoRagResult.value) {
+    return autoRagResult.value;
+  }
+
+  return null;
 }
 
 // ─── SSE Helper ─────────────────────────────────────────────────────────────────
@@ -1609,7 +1669,11 @@ export async function onRequestPost(context) {
     );
     const userId = identity.userId;
     const userRole = resolveUserToolRole(config, userId);
-    const allowedToolDefinitions = getAllowedToolDefinitions(config, userRole);
+    const allowedToolDefinitions = getAllowedToolDefinitions(
+      config,
+      userRole,
+      prompt,
+    );
     const availableTools = allowedToolDefinitions.map((tool) =>
       toOpenAiTool(tool),
     );
@@ -1666,13 +1730,17 @@ export async function onRequestPost(context) {
             .join('\n')
         : '';
 
-    const ragText =
-      ragResult.status === 'fulfilled' ? ragResult.value || '' : '';
+    const ragContext =
+      ragResult.status === 'fulfilled' && ragResult.value
+        ? ragResult.value
+        : null;
+    const ragText = ragContext?.prompt || '';
 
     // ── Build messages ──
     let systemPrompt = buildSystemPrompt(memoryContext, imageAnalysis, {
       userRole,
       availableTools: availableToolNames,
+      ragSources: ragContext?.sources || [],
     });
     if (ragText) {
       systemPrompt += `\n\n**WEBSITE-KONTEXT (RAG):**\n${ragText}`;
