@@ -147,6 +147,35 @@ test("resolveUserIdentity flags a known profile for confirmation instead of auto
   });
 });
 
+test("resolveUserIdentity still offers recovery for anonymous current ids", async () => {
+  const identity = await __test__.resolveUserIdentity(
+    new Request("https://example.com/api/ai-agent", {
+      headers: {
+        "x-jules-user-id": "u_temp123",
+      },
+    }),
+    "",
+    "Ich heiße Ada",
+    {
+      SITEMAP_CACHE_KV: {
+        async get(key) {
+          if (key === "robot-memory:u_temp123") return "[]";
+          if (key === "username:ada") return "u_legacy";
+          return null;
+        },
+      },
+    },
+    buildConfig(),
+  );
+
+  assert.equal(identity.userId, "u_temp123");
+  assert.deepEqual(identity.recovery, {
+    status: "needs_confirmation",
+    name: "Ada",
+    candidateUserId: "u_legacy",
+  });
+});
+
 test("resolveUserIdentity does not recover ambiguous name mappings", async () => {
   const identity = await __test__.resolveUserIdentity(
     new Request("https://example.com/api/ai-agent"),
@@ -516,12 +545,14 @@ test("onRequestPost asks for confirmation before cross-browser name recovery", a
   const payload = await response.json();
 
   assert.equal(response.status, 200);
-  assert.match(payload.userId, /^u_/);
-  assert.notEqual(payload.userId, "u_legacy");
+  assert.equal(payload.userId, "");
   assert.match(payload.text, /Profil für Ada gefunden/);
   assert.equal(payload.recovery?.status, "needs_confirmation");
   assert.equal(payload.recovery?.candidateUserId, "u_legacy");
   assert.equal(payload.profile?.status, "recovery-pending");
+  assert.equal(payload.profile?.userId, "");
+  assert.equal(response.headers.get("x-jules-user-id"), null);
+  assert.equal(response.headers.get("set-cookie"), null);
   assert.equal(state.chatRuns.length, 0);
 });
 

@@ -475,6 +475,7 @@ async function resolveUserIdentity(
   requestedUserId = "",
   promptText = "",
   env = null,
+  config = getAgentConfig(env || {}),
 ) {
   const headerUserId = normalizeUserId(
     request.headers.get(USER_ID_HEADER_NAME),
@@ -483,34 +484,45 @@ async function resolveUserIdentity(
   const cookieUserId = readUserIdFromCookieHeader(
     request.headers.get("Cookie"),
   );
+  const currentUserId = headerUserId || bodyUserId || cookieUserId || "";
+  const explicitName = extractNameFromPrompt(promptText);
+  const currentStoredName =
+    currentUserId && env
+      ? normalizeNameCandidate(
+          (await getStoredFallbackNameEntry(env, currentUserId, config))
+            ?.value || "",
+        )
+      : "";
 
   // Priority:
   // 1) Explicit request identity from the current browser runtime
   // 2) First-party cookie fallback across reloads/visits
   // 3) Explicit self-identification by a previously stored name
   // 4) Fresh generated ID when no identity signal exists
-  const explicitName = extractNameFromPrompt(promptText);
   const recoveryLookup =
-    !headerUserId && !bodyUserId && !cookieUserId && explicitName
+    explicitName && (!currentUserId || !currentStoredName)
       ? await readUserNameLookup(env, explicitName)
       : { status: "none", userId: "", name: explicitName };
   const needsRecoveryConfirmation = recoveryLookup.status === "resolved";
   const recoveryConflict = recoveryLookup.status === "conflict";
-  const resolvedUserId =
-    headerUserId || bodyUserId || cookieUserId || createUserId();
+  const resolvedUserId = currentUserId || createUserId();
+  const recoveredUserId = normalizeUserId(recoveryLookup.userId);
+  const shouldOfferRecovery =
+    needsRecoveryConfirmation &&
+    recoveredUserId &&
+    recoveredUserId !== resolvedUserId &&
+    (!currentStoredName ||
+      currentStoredName.toLowerCase() !==
+        (recoveryLookup.name || "").toLowerCase());
 
   return {
     userId: resolvedUserId,
     recovery:
-      needsRecoveryConfirmation || recoveryConflict
+      shouldOfferRecovery || recoveryConflict
         ? {
-            status: needsRecoveryConfirmation
-              ? "needs_confirmation"
-              : "conflict",
+            status: shouldOfferRecovery ? "needs_confirmation" : "conflict",
             name: recoveryLookup.name || explicitName || "",
-            candidateUserId: needsRecoveryConfirmation
-              ? recoveryLookup.userId
-              : "",
+            candidateUserId: shouldOfferRecovery ? recoveredUserId : "",
           }
         : null,
   };
@@ -929,6 +941,13 @@ async function getStoredNameEntry(env, userId, config) {
     }
     return null;
   }
+}
+
+async function getStoredFallbackNameEntry(env, userId, config) {
+  const fallbackEntries = await loadFallbackMemories(env, userId, config, {
+    persistPruned: true,
+  });
+  return getLatestMemoryEntry(fallbackEntries, "name");
 }
 
 async function filterProtectedNameEntries(
@@ -2290,6 +2309,7 @@ export async function onRequestPost(context) {
       requestedUserId,
       prompt,
       env,
+      config,
     );
     const userId = identity.userId;
     const recovery = identity.recovery || null;
@@ -2303,20 +2323,18 @@ export async function onRequestPost(context) {
       toOpenAiTool(tool),
     );
     const availableToolNames = allowedToolDefinitions.map((tool) => tool.name);
-    const jsonHeaders = withUserIdHeader(corsHeaders, userId);
-    const sseResponseHeaders = withUserIdHeader(sseHeaders, userId);
-    const userIdCookie = buildUserIdCookie(request, userId);
-    appendSetCookie(jsonHeaders, userIdCookie);
-    appendSetCookie(sseResponseHeaders, userIdCookie);
-
     if (!prompt && !imageAnalysis) {
+      const emptyHeaders = withUserIdHeader(corsHeaders, userId);
+      appendSetCookie(emptyHeaders, buildUserIdCookie(request, userId));
       return Response.json(
         { error: "Empty prompt", text: "Kein Prompt empfangen." },
-        { status: 400, headers: jsonHeaders },
+        { status: 400, headers: emptyHeaders },
       );
     }
 
     if (!env.AI) {
+      const unavailableHeaders = withUserIdHeader(corsHeaders, userId);
+      appendSetCookie(unavailableHeaders, buildUserIdCookie(request, userId));
       return Response.json(
         {
           error: "AI service not configured",
@@ -2324,45 +2342,51 @@ export async function onRequestPost(context) {
           toolCalls: [],
           retryable: false,
         },
-        { status: 500, headers: jsonHeaders },
+        { status: 500, headers: unavailableHeaders },
       );
     }
 
     if (recovery?.status === "needs_confirmation") {
       return Response.json(
         {
-          userId,
+          userId: "",
           ...buildResponsePayload(
             `Ich habe ein bestehendes Profil für ${recovery.name} gefunden. Laden?`,
             [],
             [],
             { memoryContext: "", imageAnalysis },
             config,
-            buildProfileInfo(userId, recovery.name, "recovery-pending"),
+            buildProfileInfo("", recovery.name, "recovery-pending"),
             recovery,
           ),
         },
-        { headers: jsonHeaders },
+        { headers: corsHeaders },
       );
     }
 
     if (recovery?.status === "conflict") {
       return Response.json(
         {
-          userId,
+          userId: "",
           ...buildResponsePayload(
             `Für den Namen ${recovery.name} gibt es mehrere Profile. Bitte bestätige dein Profil.`,
             [],
             [],
             { memoryContext: "", imageAnalysis },
             config,
-            buildProfileInfo(userId, recovery.name, "conflict"),
+            buildProfileInfo("", recovery.name, "conflict"),
             recovery,
           ),
         },
-        { headers: jsonHeaders },
+        { headers: corsHeaders },
       );
     }
+
+    const jsonHeaders = withUserIdHeader(corsHeaders, userId);
+    const sseResponseHeaders = withUserIdHeader(sseHeaders, userId);
+    const userIdCookie = buildUserIdCookie(request, userId);
+    appendSetCookie(jsonHeaders, userIdCookie);
+    appendSetCookie(sseResponseHeaders, userIdCookie);
 
     schedulePromptMemoryPersistence(context, env, userId, prompt, config);
 

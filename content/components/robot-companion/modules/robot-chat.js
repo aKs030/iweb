@@ -30,6 +30,44 @@ const ACTION_PROMPTS = {
     "Loesche den Chatverlauf und bestaetige kurz auf Deutsch.",
 };
 
+const RECOVERY_CONFIRM_PATTERN =
+  /^(?:ja|ja bitte|klar|ok(?:ay)?|bitte|profil\s+laden|lade(?:\s+es)?|verbinde(?:\s+mich)?|nutze(?:\s+das)?\s+profil)$/i;
+const RECOVERY_OTHER_PROFILE_PATTERN =
+  /^(?:anderes?\s+profil|nicht\s+dieses\s+profil|neu(?:es)?\s+profil|anderer\s+nutzer|jemand\s+anders)$/i;
+const RECOVERY_DISCONNECT_PATTERN =
+  /^(?:gerät\s+trennen|trennen|abmelden|vergessen|profil\s+trennen)$/i;
+
+function getRecoveryFollowUpAction(text) {
+  const normalized = String(text || "").trim();
+  if (!normalized) return "";
+  if (RECOVERY_CONFIRM_PATTERN.test(normalized)) return "confirm";
+  if (RECOVERY_OTHER_PROFILE_PATTERN.test(normalized)) return "different";
+  if (RECOVERY_DISCONNECT_PATTERN.test(normalized)) return "disconnect";
+  return "";
+}
+
+function formatRecoveredProfileSummary(memories = []) {
+  if (!Array.isArray(memories) || memories.length === 0) {
+    return "Profil geladen. Dazu sind noch keine Erinnerungen gespeichert.";
+  }
+
+  const visibleEntries = memories.slice(0, 6);
+  const lines = visibleEntries.map((entry) => {
+    const key = String(entry?.key || "memory").trim() || "memory";
+    const value = String(entry?.value || "").trim() || "(leer)";
+    return `- **${key}**: ${value}`;
+  });
+  const remaining = memories.length - visibleEntries.length;
+
+  return [
+    "Ich habe dein Profil geladen. Das weiß ich bereits über dich:",
+    ...lines,
+    remaining > 0 ? `- ... und ${remaining} weitere Erinnerungen.` : "",
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
 export class RobotChat {
   constructor(robot) {
     this.robot = robot;
@@ -51,6 +89,7 @@ export class RobotChat {
       label: "Kein aktives Profil",
       recovery: null,
     };
+    this.pendingRecoveryPrompt = "";
 
     // Session-only in-memory history
     this.history = this.historyStore.load();
@@ -242,6 +281,30 @@ export class RobotChat {
     }
     if (this.isTyping || this.isResponding) return;
 
+    const recoveryAction =
+      !hasPendingImage && this.profileState?.recovery?.status
+        ? getRecoveryFollowUpAction(text)
+        : "";
+    if (recoveryAction) {
+      this.addMessage(text, "user");
+      this.robot.dom.input.value = "";
+      if (recoveryAction === "confirm") {
+        await this.confirmRecoveredProfile(
+          this.profileState.recovery,
+          this.pendingRecoveryPrompt,
+        );
+        return;
+      }
+      if (recoveryAction === "different") {
+        await this.useDifferentProfile();
+        return;
+      }
+      if (recoveryAction === "disconnect") {
+        await this.disconnectCurrentDeviceProfile();
+        return;
+      }
+    }
+
     // Show user message (with image thumbnail if present)
     if (hasPendingImage) {
       this.addImageMessage(text, this.pendingImage);
@@ -369,10 +432,13 @@ export class RobotChat {
 
     const recovery = response?.recovery || this.profileState.recovery || null;
     if (!recovery?.status) {
+      this.pendingRecoveryPrompt = "";
+      this.setProfileState({ recovery: null });
       this.removeProfileCards("recovery");
       return;
     }
 
+    this.pendingRecoveryPrompt = originalPrompt || this.pendingRecoveryPrompt;
     if (recovery.status === "needs_confirmation") {
       this.renderRecoveryCard(recovery, originalPrompt);
       return;
@@ -780,6 +846,7 @@ export class RobotChat {
     this.historyStore.clear();
     this.clearImagePreview();
     this.removeProfileCards();
+    this.pendingRecoveryPrompt = "";
 
     withViewTransition(
       () => {
@@ -830,7 +897,7 @@ export class RobotChat {
     );
   }
 
-  async confirmRecoveredProfile(recovery, originalPrompt = "") {
+  async confirmRecoveredProfile(recovery, _originalPrompt = "") {
     if (!recovery?.candidateUserId || this.isResponding) return;
 
     this.isResponding = true;
@@ -855,24 +922,13 @@ export class RobotChat {
       }
 
       this.removeProfileCards("recovery");
-      this.setProfileState(result.profile || agentService.getProfileState?.());
-
-      const wantsImmediateRecall =
-        /wie\s+hei(?:ss|ß)e\s+ich|was\s+wei(?:ss|ß)t\s+du\s+über\s+mich|erinner/i.test(
-          originalPrompt,
-        );
-
-      if (wantsImmediateRecall && Array.isArray(result.memories)) {
-        this.addMessage(
-          this.formatCloudflareMemoriesMessage(result.memories || []),
-          "bot",
-        );
-        return;
-      }
-
+      this.pendingRecoveryPrompt = "";
+      this.setProfileState({
+        ...(result.profile || agentService.getProfileState?.()),
+        recovery: null,
+      });
       this.addMessage(
-        result?.text ||
-          `Profil ${recovery.name || result.profile?.name || ""} wurde geladen.`,
+        formatRecoveredProfileSummary(result.memories || []),
         "bot",
       );
     } catch (error) {
@@ -892,7 +948,9 @@ export class RobotChat {
     try {
       const agentService = await this.robot.getAgentService();
       const profileState = agentService.startFreshLocalProfile?.();
-      if (profileState) this.setProfileState(profileState);
+      this.pendingRecoveryPrompt = "";
+      if (profileState)
+        this.setProfileState({ ...profileState, recovery: null });
       this.removeProfileCards("recovery");
       this.addMessage(
         "Okay. Dieses Gerät nutzt jetzt ein anderes Profil. Nenne mir einfach deinen Namen oder teile neue Infos mit.",
@@ -920,7 +978,11 @@ export class RobotChat {
       const agentService = await this.robot.getAgentService();
       const result = await agentService.disconnectCurrentDevice?.();
       this.resetConversationView();
-      this.setProfileState(result?.profile || agentService.getProfileState?.());
+      this.pendingRecoveryPrompt = "";
+      this.setProfileState({
+        ...(result?.profile || agentService.getProfileState?.()),
+        recovery: null,
+      });
       this.addMessage(
         "Dieses Gerät ist jetzt frei für ein anderes Profil. Sag mir einfach deinen Namen.",
         "bot",
@@ -949,7 +1011,11 @@ export class RobotChat {
       const agentService = await this.robot.getAgentService();
       const result = await agentService.disconnectCurrentDevice?.();
       this.resetConversationView();
-      this.setProfileState(result?.profile || agentService.getProfileState?.());
+      this.pendingRecoveryPrompt = "";
+      this.setProfileState({
+        ...(result?.profile || agentService.getProfileState?.()),
+        recovery: null,
+      });
       this.addMessage(
         result?.text ||
           "Dieses Gerät ist nicht mehr mit einem Profil verbunden.",
@@ -1274,3 +1340,8 @@ export class RobotChat {
     // Bubble sequencing is currently unused; reactions call show/hide directly.
   }
 }
+
+export const __test__ = {
+  formatRecoveredProfileSummary,
+  getRecoveryFollowUpAction,
+};

@@ -92,6 +92,11 @@ function normalizeRecoveryState(raw) {
   };
 }
 
+function shouldPersistIdentityFromPayload(payload = {}) {
+  const recovery = normalizeRecoveryState(payload?.recovery);
+  return !recovery;
+}
+
 function setProfileState(nextState = {}) {
   runtimeProfileState = createProfileState({
     ...runtimeProfileState,
@@ -516,7 +521,6 @@ async function callAgent(
           signal: controller.signal,
         });
       }
-      syncUserIdFromResponse(response);
     } catch (err) {
       const abortReason = getAbortReason(service, controller);
       if (isAbortLikeError(err)) {
@@ -615,6 +619,9 @@ async function callAgent(
         { idleGuard },
       );
 
+      if (shouldPersistIdentityFromPayload(finalMessage)) {
+        syncUserIdFromResponse(response);
+      }
       const profileState = syncProfileStateFromPayload(finalMessage || {});
       const text = pickBestText(finalMessage?.text, fullText);
       addToHistory("user", payload.prompt);
@@ -633,7 +640,10 @@ async function callAgent(
 
     // ── JSON response ──
     const result = await response.json();
-    if (result.userId) {
+    if (shouldPersistIdentityFromPayload(result)) {
+      syncUserIdFromResponse(response);
+    }
+    if (shouldPersistIdentityFromPayload(result) && result.userId) {
       persistUserId(result.userId);
     }
     const profileState = syncProfileStateFromPayload(result);
