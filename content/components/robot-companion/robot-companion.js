@@ -211,6 +211,10 @@ export class RobotCompanion {
     return this._agentService;
   }
 
+  peekAgentService() {
+    return this._agentService;
+  }
+
   getFooterElement() {
     return getFooterElement(this);
   }
@@ -322,6 +326,7 @@ export class RobotCompanion {
   destroy() {
     // Module Cleanup
     this.chatModule?.destroy();
+    this._agentService?.destroy?.();
     this.animationModule?.destroy();
     this.intelligenceModule?.destroy();
     this.collisionModule?.destroy();
@@ -613,11 +618,14 @@ export class RobotCompanion {
     const _onHistoryCleared = () => {
       this.chatModule.clearHistory();
     };
-    document.addEventListener('robot:history:cleared', _onHistoryCleared);
+    document.addEventListener(
+      ROBOT_EVENTS.CHAT_HISTORY_CLEARED,
+      _onHistoryCleared,
+    );
 
     this._eventListeners.dom.push({
       target: document,
-      event: 'robot:history:cleared',
+      event: ROBOT_EVENTS.CHAT_HISTORY_CLEARED,
       handler: _onHistoryCleared,
     });
   }

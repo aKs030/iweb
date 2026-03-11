@@ -7,6 +7,7 @@
 import { createLogger } from '../../../core/logger.js';
 import { fire } from '../../../core/events.js';
 import { menuOpen, uiStore } from '../../../core/ui-store.js';
+import { ROBOT_EVENTS } from '../constants/events.js';
 import {
   getResolvedTheme,
   setTheme,
@@ -389,7 +390,7 @@ function executeOpenImageUpload() {
 }
 
 function executeClearChatHistory() {
-  fire('robot:history:cleared', {}, document);
+  fire(ROBOT_EVENTS.CHAT_HISTORY_CLEARED, {}, document);
   return { success: true, message: 'Chatverlauf geloescht.' };
 }
 

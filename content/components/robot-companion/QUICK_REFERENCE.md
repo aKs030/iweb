@@ -6,7 +6,7 @@
 import { RobotCompanion } from './robot-companion.js';
 
 const robot = new RobotCompanion();
-await robot.initialize();
+robot.init();
 ```
 
 ## Chat
@@ -31,8 +31,6 @@ const response = await agentService.generateResponse('Hallo!', (chunk) => {
 
 ```js
 ROBOT_ACTIONS.START;
-ROBOT_ACTIONS.SUMMARIZE_PAGE;
-ROBOT_ACTIONS.UPLOAD_IMAGE;
 ROBOT_ACTIONS.TOGGLE_THEME;
 ROBOT_ACTIONS.SEARCH_WEBSITE;
 ROBOT_ACTIONS.SCROLL_FOOTER;
@@ -46,6 +44,8 @@ ROBOT_ACTIONS.SHOW_MEMORIES;
 ROBOT_ACTIONS.CLEAR_CHAT;
 ROBOT_ACTIONS.DELETE_CLOUDFLARE_USER;
 ```
+
+Bildanalyse startet direkt ueber den Upload-Button im Chat.
 
 ## Debug
 

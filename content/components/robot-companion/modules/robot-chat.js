@@ -43,13 +43,39 @@ export class RobotChat {
     this.isResponding = false;
     this.lastGreetedContext = null;
     this.historyStore = new ChatHistoryStore();
+    this._responseRequestId = 0;
 
     // Session-only in-memory history
     this.history = this.historyStore.load();
   }
 
   destroy() {
+    this.cancelActiveResponse('destroyed');
+    this.clearImagePreview();
     this.clearBubbleSequence();
+  }
+
+  createResponseRequestId() {
+    this._responseRequestId += 1;
+    return this._responseRequestId;
+  }
+
+  isActiveResponseRequest(requestId) {
+    return requestId === this._responseRequestId;
+  }
+
+  cancelActiveResponse(reason = 'cancelled') {
+    this.createResponseRequestId();
+    this.isResponding = false;
+    if (this.isTyping) {
+      this.removeTyping();
+    } else {
+      this.robot.stateManager.setState({ isTyping: false });
+    }
+    this.robot.animationModule.stopThinking();
+    this.robot.animationModule.stopSpeaking();
+    this.syncComposerState();
+    void this._cancelAgentRequest(reason);
   }
 
   toggleChat(forceState) {
@@ -162,6 +188,7 @@ export class RobotChat {
     this.robot.dom.input.value = '';
     this.isResponding = true;
     this.syncComposerState();
+    const requestId = this.createResponseRequestId();
 
     this.showTyping();
     this.robot.animationModule.startThinking();
@@ -178,12 +205,16 @@ export class RobotChat {
           }
           return agentService.generateResponse(text, onChunk);
         },
+        { requestId },
       );
+
+      if (response?.aborted || !this.isActiveResponseRequest(requestId)) return;
 
       if (response.toolResults?.length) {
         this.showToolCallResults(response.toolResults);
       }
     } catch (e) {
+      if (!this.isActiveResponseRequest(requestId)) return;
       log.error('generateResponse failed', e);
       this.removeTyping();
       this.robot.animationModule.stopThinking();
@@ -193,12 +224,14 @@ export class RobotChat {
         'bot',
       );
     } finally {
-      this.isResponding = false;
-      this.syncComposerState();
+      if (this.isActiveResponseRequest(requestId)) {
+        this.isResponding = false;
+        this.syncComposerState();
+      }
     }
   }
 
-  async _streamAgentResponse(runRequest) {
+  async _streamAgentResponse(runRequest, { requestId } = {}) {
     const agentService = await this.robot.getAgentService();
     let streamingMessageEl = null;
     let typingRemoved = false;
@@ -206,6 +239,7 @@ export class RobotChat {
     let response;
     try {
       response = await runRequest(agentService, (chunk) => {
+        if (!this.isActiveResponseRequest(requestId)) return;
         if (!typingRemoved) {
           this.removeTyping();
           typingRemoved = true;
@@ -219,7 +253,20 @@ export class RobotChat {
       if (streamingMessageEl) {
         streamingMessageEl.remove();
       }
+      if (!this.isActiveResponseRequest(requestId)) {
+        return { aborted: true, text: '' };
+      }
       throw error;
+    }
+
+    if (!this.isActiveResponseRequest(requestId) || response?.aborted) {
+      if (streamingMessageEl) {
+        streamingMessageEl.remove();
+      }
+      if (!typingRemoved) this.removeTyping();
+      this.robot.animationModule.stopThinking();
+      this.robot.animationModule.stopSpeaking();
+      return { aborted: true, text: '' };
     }
 
     this.robot.animationModule.stopThinking();
@@ -422,25 +469,6 @@ export class RobotChat {
     });
   }
 
-  async handleSummarize() {
-    this.toggleChat(true);
-    this.showTyping();
-    this.robot.animationModule.startThinking();
-
-    try {
-      const content = document.body.innerText?.slice(0, 4800) || '';
-      const prompt = `Fasse den folgenden Text kurz und präzise auf DEUTSCH zusammen (max 3 Sätze):\n\n${content}`;
-      await this._streamAgentResponse((agentService, onChunk) =>
-        agentService.generateResponse(prompt, onChunk),
-      );
-    } catch (error) {
-      log.warn('Summarize failed', error);
-      this.robot.animationModule.stopThinking();
-      this.removeTyping();
-      this.addMessage('Zusammenfassung fehlgeschlagen.', 'bot');
-    }
-  }
-
   showBubble(text) {
     if (this.robot.disableLocalBubbleTexts) return;
     if (this.isOpen) return;
@@ -550,6 +578,10 @@ export class RobotChat {
   }
 
   clearHistory() {
+    if (this.isResponding || this.isTyping) {
+      this.cancelActiveResponse('history-cleared');
+    }
+
     this.history = [];
     this.historyStore.clear();
     this.clearImagePreview();
@@ -611,10 +643,12 @@ export class RobotChat {
     this.isResponding = true;
     this.syncComposerState();
     this.showTyping();
+    const requestId = this.createResponseRequestId();
 
     try {
       const agentService = await this.robot.getAgentService();
       const result = await agentService.listCloudflareMemories?.();
+      if (!this.isActiveResponseRequest(requestId)) return;
       this.removeTyping();
 
       if (result?.success) {
@@ -633,6 +667,7 @@ export class RobotChat {
         'bot',
       );
     } catch (error) {
+      if (!this.isActiveResponseRequest(requestId)) return;
       this.removeTyping();
       log.warn('showStoredCloudflareMemories failed', error);
       this.addMessage(
@@ -640,8 +675,10 @@ export class RobotChat {
         'bot',
       );
     } finally {
-      this.isResponding = false;
-      this.syncComposerState();
+      if (this.isActiveResponseRequest(requestId)) {
+        this.isResponding = false;
+        this.syncComposerState();
+      }
     }
   }
 
@@ -657,10 +694,12 @@ export class RobotChat {
 
     this.isResponding = true;
     this.syncComposerState();
+    const requestId = this.createResponseRequestId();
 
     try {
       const agentService = await this.robot.getAgentService();
       const result = await agentService.deleteUserIdFromCloudflare?.();
+      if (!this.isActiveResponseRequest(requestId)) return;
 
       if (result?.success) {
         this.history = [];
@@ -693,21 +732,35 @@ export class RobotChat {
         'bot',
       );
     } catch (error) {
+      if (!this.isActiveResponseRequest(requestId)) return;
       log.warn('deleteCloudflareUserId failed', error);
       this.addMessage(
         'Cloudflare-User-ID konnte nicht gelöscht werden.',
         'bot',
       );
     } finally {
-      this.isResponding = false;
-      this.syncComposerState();
+      if (this.isActiveResponseRequest(requestId)) {
+        this.isResponding = false;
+        this.syncComposerState();
+      }
     }
   }
 
   async _clearAgentHistory() {
     try {
-      const agentService = await this.robot.getAgentService();
+      const agentService = this.robot.peekAgentService?.();
+      if (!agentService) return;
       agentService.clearHistory?.();
+    } catch {
+      /* ignore */
+    }
+  }
+
+  async _cancelAgentRequest(reason = 'cancelled') {
+    try {
+      const agentService = this.robot.peekAgentService?.();
+      if (!agentService) return;
+      agentService.cancelActiveRequest?.(reason);
     } catch {
       /* ignore */
     }
@@ -715,11 +768,6 @@ export class RobotChat {
 
   async handleAction(actionKey) {
     this.robot.trackInteraction('action');
-
-    if (actionKey === ROBOT_ACTIONS.SUMMARIZE_PAGE) {
-      await this.handleSummarize();
-      return;
-    }
 
     if (actionKey === ROBOT_ACTIONS.SHOW_MEMORIES) {
       await this.showStoredCloudflareMemories();
@@ -733,18 +781,6 @@ export class RobotChat {
 
     if (actionKey === ROBOT_ACTIONS.DELETE_CLOUDFLARE_USER) {
       await this.deleteCloudflareUserId();
-      return;
-    }
-
-    if (actionKey === ROBOT_ACTIONS.UPLOAD_IMAGE) {
-      const fileInput = document.getElementById('robot-image-upload');
-      if (fileInput) {
-        /** @type {HTMLElement} */ (fileInput).click();
-      }
-      await this._routeToAI(
-        actionKey,
-        'Ich moechte ein Bild analysieren. Bitte fordere mich kurz auf, ein Bild hochzuladen.',
-      );
       return;
     }
 
@@ -767,19 +803,26 @@ export class RobotChat {
       () => this.robot.dom.avatar.classList.remove('nod'),
       650,
     );
+    const requestId = this.createResponseRequestId();
 
     try {
-      await this._streamAgentResponse((agentService, onChunk) =>
-        agentService.generateResponse(prompt, onChunk),
+      const response = await this._streamAgentResponse(
+        (agentService, onChunk) =>
+          agentService.generateResponse(prompt, onChunk),
+        { requestId },
       );
+      if (response?.aborted || !this.isActiveResponseRequest(requestId)) return;
     } catch (error) {
+      if (!this.isActiveResponseRequest(requestId)) return;
       log.warn(`Action routing failed (${actionKey})`, error);
       this.robot.animationModule.stopThinking();
       this.removeTyping();
       this.addMessage('Da ist etwas schiefgelaufen.', 'bot');
     } finally {
-      this.isResponding = false;
-      this.syncComposerState();
+      if (this.isActiveResponseRequest(requestId)) {
+        this.isResponding = false;
+        this.syncComposerState();
+      }
     }
   }
 
@@ -804,6 +847,6 @@ export class RobotChat {
   }
 
   clearBubbleSequence() {
-    // No-op: local bubble sequences are disabled in Cloudflare AI-only mode.
+    // Bubble sequencing is currently unused; reactions call show/hide directly.
   }
 }

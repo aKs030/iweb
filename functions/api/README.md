@@ -6,7 +6,6 @@ Server-side logic powered by Cloudflare Pages Functions.
 
 | File                   | Description                                                       |
 | ---------------------- | ----------------------------------------------------------------- |
-| `ai.js`                | Lightweight AI chat with RAG (Workers AI + AutoRAG)               |
 | `ai-agent.js`          | Primary robot endpoint: SSE, tool-calling, image analysis, memory |
 | `ai-agent-user.js`     | List/delete robot memory + user mapping in Cloudflare             |
 | `admin/content-rag.js` | Protected sync/status endpoint for Jules content RAG              |
@@ -54,6 +53,8 @@ ADMIN_TOKEN=... npm run sync:content-rag -- --url=https://www.abdulkerimsesli.de
 ```
 
 The sync is delta-aware: unchanged documents reuse their existing vectors, only changed documents are re-embedded, and removed documents have their stale chunk IDs deleted from Vectorize. Each sync also writes a compact lexical search index into KV, so query-time retrieval can merge Vectorize hits with deterministic keyword matches, rerank the combined candidates, and pass 1-2 preferred source links into the agent prompt.
+
+Runtime retrieval is budgeted with `ROBOT_CONTEXT_TIMEOUT_MS` (default `3500`). Memory recall and RAG retrieval respect that limit on the request path, while prompt-memory persistence runs in `context.waitUntil(...)` so user responses stay fast without dropping long-running background writes.
 
 Create the metadata indexes once on Cloudflare before relying on Vectorize filters:
 
@@ -118,6 +119,7 @@ Der Robot-Agent liest seine Cloudflare-Konfiguration aus `wrangler.jsonc`:
 - `ROBOT_IMAGE_MODEL`
 - `ROBOT_MAX_TOKENS`
 - `ROBOT_MAX_HISTORY_TURNS`
+- `ROBOT_CONTEXT_TIMEOUT_MS` (default: `3500`)
 - `ROBOT_MEMORY_TOP_K`
 - `ROBOT_MEMORY_SCORE_THRESHOLD`
 - `ROBOT_CONTENT_RAG_TOP_K` (default: `4`)

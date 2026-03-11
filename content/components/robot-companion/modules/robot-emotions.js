@@ -10,7 +10,7 @@ export class RobotEmotions {
   }
 
   destroy() {
-    // Placeholder for cleanup
+    // No owned listeners or timers; nothing to tear down here.
   }
 
   /**

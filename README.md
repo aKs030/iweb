@@ -70,6 +70,8 @@ Pushes auf `main`/`master` triggern zusaetzlich einen Production-RAG-Sync. Der W
 
 Falls du intent-basiertes Vectorize-Filtering fuer den Jules-Content-RAG aktivierst, richte die Metadata-Indexes reproduzierbar mit `npm run setup:content-rag-index -- --url=...` ein. Das Skript legt `sourceType` und `category` an und startet danach einen einmaligen Full-Resync, damit bestehende Vektoren neu indexiert werden.
 
+Der Robot-Agent begrenzt Memory-Recall und RAG-Retrieval ueber `ROBOT_CONTEXT_TIMEOUT_MS` standardmaessig auf `3500ms`. Prompt-Memory-Persistenz laeuft getrennt ueber `context.waitUntil(...)`, damit langsame Vectorize-/KV-/Embedding-Aufrufe die Chat-Antwort nicht blockieren.
+
 Fuer manuelle Retrieval-Checks:
 
 ```bash
