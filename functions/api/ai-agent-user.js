@@ -4,6 +4,14 @@
  */
 
 import { getCorsHeaders, handleOptions } from './_cors.js';
+import {
+  USER_ID_HEADER_NAME,
+  appendSetCookie,
+  buildUserIdClearCookie,
+  buildUserIdCookie,
+  normalizeUserId as normalizeSharedUserId,
+  readUserIdFromCookieHeader,
+} from './_user-identity.js';
 
 const FALLBACK_MEMORY_PREFIX = 'robot-memory:';
 const DEFAULT_EMBEDDING_MODEL = '@cf/baai/bge-base-en-v1.5';
@@ -36,10 +44,7 @@ function parseInteger(value, fallback, { min = 1, max = 3650 } = {}) {
 }
 
 function normalizeUserId(raw) {
-  const value = String(raw || '').trim();
-  if (!value || value === 'anonymous') return '';
-  if (!/^[A-Za-z0-9_-]{3,120}$/.test(value)) return '';
-  return value;
+  return normalizeSharedUserId(raw);
 }
 
 function getMemoryKV(env) {
@@ -365,45 +370,37 @@ async function deleteVectorizeMemoriesForUser(env, userId) {
 
 export async function onRequestPost(context) {
   const { request, env } = context;
-  const corsHeaders = getCorsHeaders(request, env);
+  const baseHeaders = new Headers(getCorsHeaders(request, env));
 
   try {
     const body = await request.json().catch(() => ({}));
     const action = normalizeAction(body?.action);
     const headerUserId = normalizeUserId(
-      request.headers.get('X-Jules-User-Id'),
+      request.headers.get(USER_ID_HEADER_NAME),
+    );
+    const cookieUserId = readUserIdFromCookieHeader(
+      request.headers.get('Cookie'),
     );
     const bodyUserId = normalizeUserId(body?.userId);
-
-    if (!headerUserId) {
-      return Response.json(
-        {
-          success: false,
-          text: 'Keine aktive User-ID im Request-Header vorhanden.',
-        },
-        { status: 401, headers: corsHeaders },
-      );
-    }
-
-    if (bodyUserId && bodyUserId !== headerUserId) {
-      return Response.json(
-        {
-          success: false,
-          text: 'User-ID-Mismatch: Zugriff nur auf die angemeldete ID erlaubt.',
-        },
-        { status: 403, headers: corsHeaders },
-      );
-    }
-
-    const userId = headerUserId;
+    const userId = headerUserId || cookieUserId;
 
     if (!userId) {
       return Response.json(
         {
           success: false,
-          text: 'Keine gültige User-ID übergeben.',
+          text: 'Keine aktive User-ID im Request vorhanden.',
         },
-        { status: 400, headers: corsHeaders },
+        { status: 401, headers: baseHeaders },
+      );
+    }
+
+    if (bodyUserId && bodyUserId !== userId) {
+      return Response.json(
+        {
+          success: false,
+          text: 'User-ID-Mismatch: Zugriff nur auf die angemeldete ID erlaubt.',
+        },
+        { status: 403, headers: baseHeaders },
       );
     }
 
@@ -414,8 +411,15 @@ export async function onRequestPost(context) {
           success: false,
           text: 'Cloudflare KV für Memory ist nicht verfügbar.',
         },
-        { status: 503, headers: corsHeaders },
+        { status: 503, headers: baseHeaders },
       );
+    }
+
+    const responseHeaders = new Headers(baseHeaders);
+    if (action === 'delete') {
+      appendSetCookie(responseHeaders, buildUserIdClearCookie(request));
+    } else {
+      appendSetCookie(responseHeaders, buildUserIdCookie(request, userId));
     }
 
     if (action === 'list') {
@@ -446,7 +450,7 @@ export async function onRequestPost(context) {
               ? 'Gespeicherte Erinnerungen erfolgreich geladen.'
               : 'Keine Erinnerungen gespeichert.',
         },
-        { headers: corsHeaders },
+        { headers: responseHeaders },
       );
     }
 
@@ -467,7 +471,7 @@ export async function onRequestPost(context) {
         },
         text: 'User-ID und verknüpfte Erinnerungen wurden aus Cloudflare gelöscht. Neue User-ID wird beim nächsten Chat automatisch verwendet.',
       },
-      { headers: corsHeaders },
+      { headers: responseHeaders },
     );
   } catch (error) {
     console.error('[ai-agent-user] Delete failed:', error?.message || error);
@@ -476,7 +480,7 @@ export async function onRequestPost(context) {
         success: false,
         text: 'Cloudflare-Löschung fehlgeschlagen.',
       },
-      { status: 500, headers: corsHeaders },
+      { status: 500, headers: baseHeaders },
     );
   }
 }

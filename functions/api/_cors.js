@@ -68,7 +68,7 @@ export async function handleOptions({ request, env }) {
     headers: {
       ...corsHeaders,
       'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
+      'Access-Control-Allow-Headers': 'Content-Type, X-Jules-User-Id',
       'Access-Control-Max-Age': '86400',
     },
   });

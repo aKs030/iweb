@@ -2,6 +2,13 @@ import { TOOL_DEFINITIONS } from './_ai-tools.js';
 import { buildSystemPrompt } from './_ai-prompts.js';
 import { analyzeImage } from './_ai-vision.js';
 import { getSiteContentRagContext } from './_content-rag.js';
+import {
+  USER_ID_HEADER_NAME,
+  appendSetCookie,
+  buildUserIdCookie,
+  normalizeUserId as normalizeSharedUserId,
+  readUserIdFromCookieHeader,
+} from './_user-identity.js';
 /**
  * Cloudflare Pages Function – POST /api/ai-agent
  * Agentic AI: SSE streaming, tool-calling, image analysis, memory, RAG.
@@ -150,10 +157,7 @@ function getAgentConfig(env) {
 }
 
 function normalizeUserId(raw) {
-  const value = String(raw || '').trim();
-  if (!value || value === 'anonymous') return '';
-  if (!/^[A-Za-z0-9_-]{3,120}$/.test(value)) return '';
-  return value;
+  return normalizeSharedUserId(raw);
 }
 
 function parseUserIdSet(value) {
@@ -372,8 +376,13 @@ async function resolveUserIdentity(
   prompt = '',
   env = null,
 ) {
-  const headerUserId = normalizeUserId(request.headers.get('X-Jules-User-Id'));
+  const headerUserId = normalizeUserId(
+    request.headers.get(USER_ID_HEADER_NAME),
+  );
   const bodyUserId = normalizeUserId(requestedUserId);
+  const cookieUserId = readUserIdFromCookieHeader(
+    request.headers.get('Cookie'),
+  );
 
   let nameMatchUserId = null;
   let extractedName = null;
@@ -386,11 +395,16 @@ async function resolveUserIdentity(
   }
 
   // Priority:
-  // 1) Name-based Cloudflare mapping (cross-browser recognition)
-  // 2) Explicit body/header userId for current runtime session continuity
-  // 3) Fresh generated ID when no identity signal exists
+  // 1) Explicit request identity from the current browser runtime
+  // 2) Name-based Cloudflare mapping when the user re-introduces themselves
+  // 3) First-party cookie fallback across reloads/visits
+  // 4) Fresh generated ID when no identity signal exists
   const resolvedUserId =
-    nameMatchUserId || bodyUserId || headerUserId || createUserId();
+    headerUserId ||
+    bodyUserId ||
+    nameMatchUserId ||
+    cookieUserId ||
+    createUserId();
 
   // Wenn ein Name gesagt wurde, aber wir ihn noch NICHT im KV hatten (nameMatchUserId === null),
   // verknüpfen wir die gerade ermittelte/neu generierte ID SOFORT mit dem Namen im KV.
@@ -419,8 +433,8 @@ function appendExposeHeader(headers, name) {
 function withUserIdHeader(headers, userId) {
   const out = new Headers(headers);
   if (userId) {
-    out.set('X-Jules-User-Id', userId);
-    appendExposeHeader(out, 'X-Jules-User-Id');
+    out.set(USER_ID_HEADER_NAME, userId);
+    appendExposeHeader(out, USER_ID_HEADER_NAME);
   }
   return out;
 }
@@ -1893,6 +1907,9 @@ export async function onRequestPost(context) {
     const availableToolNames = allowedToolDefinitions.map((tool) => tool.name);
     const jsonHeaders = withUserIdHeader(corsHeaders, userId);
     const sseResponseHeaders = withUserIdHeader(sseHeaders, userId);
+    const userIdCookie = buildUserIdCookie(request, userId);
+    appendSetCookie(jsonHeaders, userIdCookie);
+    appendSetCookie(sseResponseHeaders, userIdCookie);
 
     if (!prompt && !imageAnalysis) {
       return Response.json(
@@ -2509,5 +2526,6 @@ export const __test__ = {
   getRAGContext,
   persistPromptMemories,
   resolveMemoryContext,
+  resolveUserIdentity,
   schedulePromptMemoryPersistence,
 };
