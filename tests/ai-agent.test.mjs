@@ -123,6 +123,25 @@ test('resolveUserIdentity falls back to cookie user id', async () => {
   assert.equal(identity.userId, 'u_cookie123');
 });
 
+test('resolveUserIdentity no longer re-identifies by user name', async () => {
+  const identity = await __test__.resolveUserIdentity(
+    new Request('https://example.com/api/ai-agent'),
+    '',
+    'Ich heiße Ada',
+    {
+      SITEMAP_CACHE_KV: {
+        async get(key) {
+          if (key === 'username:ada') return 'u_legacy';
+          return null;
+        },
+      },
+    },
+  );
+
+  assert.match(identity.userId, /^u_/);
+  assert.notEqual(identity.userId, 'u_legacy');
+});
+
 test('persistPromptMemories batches KV and Vectorize writes', async () => {
   const state = createTestEnv();
 
