@@ -18,10 +18,12 @@ const DEFAULT_MEMORY_SCORE_THRESHOLD = 0.65;
 const DEFAULT_MEMORY_RETENTION_DAYS = 180;
 const DEFAULT_MAX_HISTORY_TURNS = 10;
 const DEFAULT_MAX_TOKENS = 2048;
+const DEFAULT_CONTEXT_TIMEOUT_MS = 3500;
 const FALLBACK_MEMORY_PREFIX = 'robot-memory:';
 const FALLBACK_MEMORY_LIMIT = 60;
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
 const DEFAULT_ENABLED_INTEGRATIONS = ['links', 'social', 'email', 'calendar'];
+const CONTENT_RAG_PREFERRED_WAIT_MS = 900;
 
 function parseInteger(value, fallback, { min = 1, max = 8192 } = {}) {
   const parsed = Number.parseInt(String(value ?? ''), 10);
@@ -61,6 +63,41 @@ function parseIntegrationSet(
   return new Set(parseCsvList(raw).map((item) => item.toLowerCase()));
 }
 
+async function withTimeout(
+  taskFactory,
+  ms,
+  { fallbackValue = null, onTimeout = null, onError = null } = {},
+) {
+  let timeoutId = null;
+  const taskPromise = Promise.resolve()
+    .then(() => taskFactory())
+    .then(
+      (value) => ({ status: 'fulfilled', value }),
+      (error) => ({ status: 'rejected', error }),
+    );
+
+  const timeoutPromise = new Promise((resolve) => {
+    timeoutId = setTimeout(() => {
+      resolve({ status: 'timeout' });
+    }, ms);
+  });
+
+  const outcome = await Promise.race([taskPromise, timeoutPromise]);
+  if (timeoutId) clearTimeout(timeoutId);
+
+  if (outcome.status === 'fulfilled') {
+    return outcome.value;
+  }
+
+  if (outcome.status === 'rejected') {
+    onError?.(outcome.error);
+    return fallbackValue;
+  }
+
+  onTimeout?.();
+  return fallbackValue;
+}
+
 function getAgentConfig(env) {
   return {
     chatModel: env.ROBOT_CHAT_MODEL || DEFAULT_CHAT_MODEL,
@@ -98,6 +135,14 @@ function getAgentConfig(env) {
       min: 128,
       max: 8192,
     }),
+    contextTimeoutMs: parseInteger(
+      env.ROBOT_CONTEXT_TIMEOUT_MS,
+      DEFAULT_CONTEXT_TIMEOUT_MS,
+      {
+        min: 250,
+        max: 10000,
+      },
+    ),
     toolTrustedIds: parseUserIdSet(env.ROBOT_TOOL_TRUSTED_IDS),
     toolAdminIds: parseUserIdSet(env.ROBOT_TOOL_ADMIN_IDS),
     enabledIntegrations: parseIntegrationSet(env.ROBOT_ENABLED_INTEGRATIONS),
@@ -660,6 +705,47 @@ async function saveFallbackMemory(env, userId, key, value, config) {
   }
 }
 
+async function saveFallbackMemoriesBatch(env, userId, entries, config) {
+  const kv = getFallbackMemoryKV(env);
+  if (!kv?.get || !kv?.put) return false;
+  if (!Array.isArray(entries) || entries.length === 0) return false;
+
+  try {
+    const existing = await loadFallbackMemories(env, userId, config, {
+      persistPruned: true,
+    });
+    const now = Date.now();
+    const merged = [...existing];
+
+    for (const rawEntry of entries) {
+      const entry = normalizeMemoryEntry(rawEntry, config, now);
+      if (!entry.value) continue;
+
+      const duplicateIndex = merged.findIndex(
+        (item) =>
+          item.key === entry.key &&
+          item.value.toLowerCase() === entry.value.toLowerCase(),
+      );
+
+      if (duplicateIndex >= 0) {
+        merged[duplicateIndex] = {
+          ...merged[duplicateIndex],
+          ...entry,
+        };
+        continue;
+      }
+
+      merged.push(entry);
+    }
+
+    const compacted = compactMemoryEntries(merged, config, now);
+    await kv.put(getFallbackMemoryKey(userId), JSON.stringify(compacted));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function scoreFallbackMemoryEntry(entry, query) {
   const haystack = `${entry.key} ${entry.value}`.toLowerCase();
   const normalizedQuery = normalizeMemoryText(query).toLowerCase();
@@ -883,8 +969,20 @@ async function executeServerTool(env, toolName, args, userId, config) {
       /^(?:all(?:\s+memories)?|alles?|user\s*info)$/i.test(queryText);
 
     const memories = wantsAllMemories
-      ? await resolveMemoryContext(env, userId, 'user info', config)
-      : await recallMemories(env, userId, queryText, config);
+      ? await withTimeout(
+          () => resolveMemoryContext(env, userId, 'user info', config),
+          config.contextTimeoutMs,
+          {
+            fallbackValue: [],
+          },
+        )
+      : await withTimeout(
+          () => recallMemories(env, userId, queryText, config),
+          config.contextTimeoutMs,
+          {
+            fallbackValue: [],
+          },
+        );
 
     if (!memories.length) return 'Keine Erinnerungen gefunden.';
     return (
@@ -1098,21 +1196,73 @@ async function getAutoRAGContext(query, env) {
   }
 }
 
-async function getRAGContext(query, env) {
-  const [contentRagResult, autoRagResult] = await Promise.allSettled([
-    getSiteContentRagContext(query, env),
-    getAutoRAGContext(query, env),
+function createSettledTask(taskFactory) {
+  let settled = false;
+  const promise = Promise.resolve()
+    .then(() => taskFactory())
+    .then((value) => {
+      settled = true;
+      return value;
+    });
+
+  return {
+    promise,
+    isSettled: () => settled,
+  };
+}
+
+async function getRAGContext(query, env, config) {
+  const timeoutMs = config.contextTimeoutMs;
+  const contentTask = createSettledTask(() =>
+    withTimeout(() => getSiteContentRagContext(query, env), timeoutMs, {
+      fallbackValue: null,
+    }),
+  );
+  const autoTask = createSettledTask(() =>
+    withTimeout(() => getAutoRAGContext(query, env), timeoutMs, {
+      fallbackValue: null,
+    }),
+  );
+
+  const preferredContent = await withTimeout(
+    () => contentTask.promise,
+    Math.min(CONTENT_RAG_PREFERRED_WAIT_MS, timeoutMs),
+    {
+      fallbackValue: null,
+    },
+  );
+  if (preferredContent) {
+    return preferredContent;
+  }
+
+  if (autoTask.isSettled()) {
+    const autoValue = await autoTask.promise;
+    if (autoValue) return autoValue;
+  }
+
+  const firstAvailable = await Promise.race([
+    contentTask.promise.then((value) => ({ source: 'content', value })),
+    autoTask.promise.then((value) => ({ source: 'auto', value })),
   ]);
 
-  if (contentRagResult.status === 'fulfilled' && contentRagResult.value) {
-    return contentRagResult.value;
+  if (firstAvailable.value) {
+    if (firstAvailable.source === 'content') {
+      return firstAvailable.value;
+    }
+
+    if (contentTask.isSettled()) {
+      const contentValue = await contentTask.promise;
+      if (contentValue) return contentValue;
+    }
+
+    return firstAvailable.value;
   }
 
-  if (autoRagResult.status === 'fulfilled' && autoRagResult.value) {
-    return autoRagResult.value;
-  }
-
-  return null;
+  const [contentValue, autoValue] = await Promise.all([
+    contentTask.promise,
+    autoTask.promise,
+  ]);
+  return contentValue || autoValue || null;
 }
 
 // ─── SSE Helper ─────────────────────────────────────────────────────────────────
@@ -1322,36 +1472,78 @@ function extractPromptMemoryFacts(prompt) {
 async function persistPromptMemories(env, userId, prompt, config) {
   const facts = extractPromptMemoryFacts(prompt);
   if (!facts.length) return [];
-
-  const stored = [];
-  for (const fact of facts) {
-    try {
-      const result = await storeMemory(
-        env,
-        userId,
-        fact.key,
-        fact.value,
-        config,
-      );
-      if (!result?.success) continue;
-      const normalized = normalizeMemoryEntry(
+  const now = Date.now();
+  const entries = facts
+    .map((fact) =>
+      normalizeMemoryEntry(
         {
           key: fact.key,
           value: fact.value,
-          timestamp: Date.now(),
+          timestamp: now,
         },
         config,
-      );
-      stored.push({
-        ...normalized,
-        score: 1,
+        now,
+      ),
+    )
+    .filter((entry) => {
+      if (!entry.value) return false;
+      if (entry.key === 'name' && entry.value.toLowerCase() === 'jules') {
+        return false;
+      }
+      return true;
+    });
+  if (!entries.length) return [];
+
+  const kvStored = await saveFallbackMemoriesBatch(
+    env,
+    userId,
+    entries,
+    config,
+  );
+  const nameEntries = entries.filter((entry) => entry.key === 'name');
+  await Promise.allSettled(
+    nameEntries.map((entry) => linkUserByName(env, entry.value, userId)),
+  );
+
+  let vectorStored = false;
+  if (env.AI && env.JULES_MEMORY) {
+    try {
+      const texts = entries.map((entry) => `${entry.key}: ${entry.value}`);
+      const { data } = await env.AI.run(config.embeddingModel, {
+        text: texts,
       });
-    } catch {
-      // Skip single-memory errors; keep persisting remaining facts.
+
+      if (Array.isArray(data) && data.length === entries.length) {
+        await env.JULES_MEMORY.upsert(
+          entries.map((entry, index) => ({
+            id: `${userId}_${entry.key}_${entry.timestamp}_${index}`,
+            values: data[index],
+            metadata: {
+              userId,
+              key: entry.key,
+              value: entry.value,
+              category: entry.category,
+              priority: entry.priority,
+              timestamp: entry.timestamp,
+              expiresAt: entry.expiresAt,
+              text: texts[index],
+            },
+          })),
+        );
+        vectorStored = true;
+      }
+    } catch (error) {
+      if (!error?.remote) {
+        console.warn('persistPromptMemories error:', error?.message || error);
+      }
     }
   }
 
-  return stored;
+  if (!kvStored && !vectorStored) return [];
+  return entries.map((entry) => ({
+    ...entry,
+    score: 1,
+  }));
 }
 
 async function resolveMemoryContext(env, userId, _prompt, config) {
@@ -1607,6 +1799,27 @@ function inferClientToolCallsFromPrompt(prompt) {
   return inferred;
 }
 
+function schedulePromptMemoryPersistence(context, env, userId, prompt, config) {
+  const task = persistPromptMemories(env, userId, prompt, config).catch(
+    (error) => {
+      if (!error?.remote) {
+        console.warn(
+          'schedulePromptMemoryPersistence error:',
+          error?.message || error,
+        );
+      }
+      return [];
+    },
+  );
+
+  if (typeof context?.waitUntil === 'function') {
+    context.waitUntil(task);
+    return;
+  }
+
+  task.catch(() => {});
+}
+
 // ─── Main Handler ───────────────────────────────────────────────────────────────
 
 export async function onRequestPost(context) {
@@ -1700,28 +1913,23 @@ export async function onRequestPost(context) {
       );
     }
 
-    // ── Parallel: memory + RAG + deterministic memory persistence ──
-    const [memResult, ragResult, storedPromptMemoriesResult] =
-      await Promise.allSettled([
-        resolveMemoryContext(env, userId, prompt, config),
-        getRAGContext(prompt, env),
-        persistPromptMemories(env, userId, prompt, config),
-      ]);
+    schedulePromptMemoryPersistence(context, env, userId, prompt, config);
 
-    const recalledMemories =
-      memResult.status === 'fulfilled' ? memResult.value : [];
-    const storedPromptMemories =
-      storedPromptMemoriesResult.status === 'fulfilled'
-        ? storedPromptMemoriesResult.value
-        : [];
-    const mergedMemories = mergeMemoryEntries(
-      recalledMemories,
-      storedPromptMemories,
-    );
+    // ── Parallel: bounded memory + bounded RAG ──
+    const [recalledMemories, ragContext] = await Promise.all([
+      withTimeout(
+        () => resolveMemoryContext(env, userId, prompt, config),
+        config.contextTimeoutMs,
+        {
+          fallbackValue: [],
+        },
+      ),
+      getRAGContext(prompt, env, config),
+    ]);
 
     const memoryContext =
-      mergedMemories.length > 0
-        ? mergedMemories
+      recalledMemories.length > 0
+        ? recalledMemories
             .slice(0, Math.max(config.maxMemoryResults, 8))
             .map(
               (m) =>
@@ -1730,10 +1938,6 @@ export async function onRequestPost(context) {
             .join('\n')
         : '';
 
-    const ragContext =
-      ragResult.status === 'fulfilled' && ragResult.value
-        ? ragResult.value
-        : null;
     const ragText = ragContext?.prompt || '';
 
     // ── Build messages ──
@@ -2300,3 +2504,10 @@ async function handleNonStreaming(
 }
 
 export const onRequestOptions = handleOptions;
+export const __test__ = {
+  withTimeout,
+  getRAGContext,
+  persistPromptMemories,
+  resolveMemoryContext,
+  schedulePromptMemoryPersistence,
+};

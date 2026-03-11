@@ -42,7 +42,7 @@ robot-companion/
 import { RobotCompanion } from './robot-companion.js';
 
 const robot = new RobotCompanion();
-await robot.initialize();
+robot.init();
 ```
 
 ## Actions
@@ -50,8 +50,6 @@ await robot.initialize();
 ```js
 ROBOT_ACTIONS = {
   START: 'start',
-  SUMMARIZE_PAGE: 'summarizePage',
-  UPLOAD_IMAGE: 'uploadImage',
   TOGGLE_THEME: 'toggleTheme',
   SEARCH_WEBSITE: 'searchWebsite',
   SCROLL_FOOTER: 'scrollFooter',
@@ -66,6 +64,8 @@ ROBOT_ACTIONS = {
   DELETE_CLOUDFLARE_USER: 'deleteCloudflareUser',
 };
 ```
+
+Bildanalyse wird direkt ueber den Upload-Button im Composer gestartet, nicht ueber eine separate `ROBOT_ACTIONS`-Konstante.
 
 ## Wichtige Hinweise
 

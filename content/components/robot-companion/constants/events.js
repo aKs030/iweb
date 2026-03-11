@@ -7,12 +7,12 @@
 export const ROBOT_EVENTS = Object.freeze({
   /** Fired by TypeWriter when hero subtitle finishes typing */
   HERO_TYPING_END: 'hero:typingEnd',
+  /** Fired when the local robot chat history should be cleared */
+  CHAT_HISTORY_CLEARED: 'robot:history:cleared',
 });
 
 export const ROBOT_ACTIONS = {
   START: 'start',
-  SUMMARIZE_PAGE: 'summarizePage',
-  UPLOAD_IMAGE: 'uploadImage',
   TOGGLE_THEME: 'toggleTheme',
   SEARCH_WEBSITE: 'searchWebsite',
   SCROLL_FOOTER: 'scrollFooter',
