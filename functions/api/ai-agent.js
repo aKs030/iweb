@@ -206,7 +206,6 @@ function extractNameFromPrompt(promptText) {
   const patterns = [
     /(?:\bich\s+hei(?:ss|ß)e\s+jetzt\b|\bmein\s+name\s+ist\s+jetzt\b|\bmein\s+neuer\s+name\s+ist\b|\bnenn\s+mich\s+ab\s+jetzt\b|\bdu\s+kannst\s+mich\s+ab\s+jetzt\b|\b(?:bitte\s+)?(?:ändere|aendere)\s+meinen\s+namen\s+(?:zu|auf)\b)\s+([^\n.,;:!?]{2,60})/i,
     /(?:\bich\s+hei(?:ss|ß)e\b|\bmein\s+name\s+ist\b|\bnenn\s+mich\b|\bdu\s+kannst\s+mich\b)\s+([^\n.,;:!?]{2,60})/i,
-    /(?:\bich\s+bin\b|\bich\s+bin's\b|\bich\s+bins\b)\s+([^\n.,;:!?]{2,60})/i,
   ];
 
   for (const pattern of patterns) {
@@ -239,6 +238,16 @@ function extractExplicitNameOverwrite(promptText) {
   return "";
 }
 
+function isExplicitSelfNamePrompt(promptText, proposedName = "") {
+  const extractedName = extractNameFromPrompt(promptText);
+  if (!extractedName) return false;
+
+  const normalizedProposedName = normalizeNameCandidate(proposedName);
+  if (!normalizedProposedName) return true;
+
+  return extractedName.toLowerCase() === normalizedProposedName.toLowerCase();
+}
+
 function isExplicitNameOverwritePrompt(promptText, proposedName = "") {
   const explicitName = extractExplicitNameOverwrite(promptText);
   if (!explicitName) return false;
@@ -262,6 +271,19 @@ function stripChainedMemoryClause(value) {
   return String(value || "")
     .replace(/\s+\b(?:und|aber)\s+(?:ich|mein(?:e|er|es)?|wir)\b[\s\S]*$/i, "")
     .trim();
+}
+
+function normalizePromptForMemoryExtraction(promptText) {
+  return String(promptText || "")
+    .replace(
+      /\s+(?:und|außerdem|ausserdem)\s+(?=(?:ich|mein(?:e|er|es)?|wir)\b)/gi,
+      "; ",
+    )
+    .replace(
+      /\s+(?:und|außerdem|ausserdem)\s+(?=(?:wohne|lebe|komme|arbeite|spreche|rede|mag|liebe|interessiere|bevorzuge|nutze|will|möchte|moechte|kann|habe|hasse|vermeide|bin)\b)/gi,
+      "; ",
+    )
+    .replace(/\s*,\s*(?=(?:ich|mein(?:e|er|es)?|wir)\b)/gi, "; ");
 }
 
 const NAME_CONTEXT_STOPWORDS = new Set([
@@ -1207,21 +1229,40 @@ async function executeServerTool(
 ) {
   if (toolName === "rememberUser") {
     const normalizedKey = normalizeMemoryKey(args.key || "note");
+    const normalizedValue = normalizeMemoryText(args.value || "");
+    const allowNameOverwrite =
+      normalizedKey === "name" &&
+      isExplicitNameOverwritePrompt(promptText, normalizedValue);
+
+    if (
+      normalizedKey === "name" &&
+      !allowNameOverwrite &&
+      !isExplicitSelfNamePrompt(promptText, normalizedValue)
+    ) {
+      const existingName = await getStoredNameEntry(env, userId, config);
+      if (
+        existingName?.value &&
+        existingName.value.toLowerCase() ===
+          normalizeNameCandidate(normalizedValue).toLowerCase()
+      ) {
+        return `Name bleibt "${existingName.value}".`;
+      }
+      return "Konnte nicht gespeichert werden (Name nur bei klarer Selbstvorstellung speichern).";
+    }
+
     const result = await storeMemory(
       env,
       userId,
       normalizedKey,
-      args.value || "",
+      normalizedValue,
       config,
       {
-        allowNameOverwrite:
-          normalizedKey === "name" &&
-          isExplicitNameOverwritePrompt(promptText, args.value || ""),
+        allowNameOverwrite,
       },
     );
     if (result.success) {
       return (
-        result.message || `✅ Gemerkt: ${normalizedKey} = "${args.value || ""}"`
+        result.message || `✅ Gemerkt: ${normalizedKey} = "${normalizedValue}"`
       );
     }
     return `Konnte nicht gespeichert werden (${result.error || "Fehler"}).`;
@@ -1569,7 +1610,7 @@ function sanitizeAssistantText(rawText) {
 }
 
 function extractPromptMemoryFacts(prompt) {
-  const text = String(prompt || "");
+  const text = normalizePromptForMemoryExtraction(prompt);
   if (!text.trim()) return [];
 
   const extracted = [];
@@ -2981,7 +3022,11 @@ async function handleNonStreaming(
 
 export const onRequestOptions = handleOptions;
 export const __test__ = {
+  extractNameFromPrompt,
+  extractPromptMemoryFacts,
   getStoredNameEntry,
+  isExplicitNameOverwritePrompt,
+  isExplicitSelfNamePrompt,
   storeMemory,
   withTimeout,
   getRAGContext,

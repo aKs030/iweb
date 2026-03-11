@@ -171,6 +171,50 @@ test("resolveUserIdentity does not recover ambiguous name mappings", async () =>
   });
 });
 
+test("extractNameFromPrompt only accepts explicit self-identification", () => {
+  assert.equal(__test__.extractNameFromPrompt("Ich heiße Ada"), "Ada");
+  assert.equal(
+    __test__.extractNameFromPrompt("Mein Name ist Ada Lovelace"),
+    "Ada Lovelace",
+  );
+  assert.equal(__test__.extractNameFromPrompt("Ich bin Ada"), "");
+  assert.equal(__test__.extractNameFromPrompt("Ich bin Entwickler"), "");
+});
+
+test("extractPromptMemoryFacts keeps chained facts without inventing a name", () => {
+  const facts = __test__.extractPromptMemoryFacts(
+    "Ich bin Entwickler und wohne in Berlin und spreche Deutsch.",
+  );
+
+  assert.ok(!facts.some((entry) => entry.key === "name"));
+  assert.ok(
+    facts.some((entry) => entry.key === "location" && entry.value === "Berlin"),
+  );
+  assert.ok(
+    facts.some(
+      (entry) => entry.key === "language" && entry.value === "Deutsch",
+    ),
+  );
+});
+
+test("extractPromptMemoryFacts captures explicit name plus chained profile facts", () => {
+  const facts = __test__.extractPromptMemoryFacts(
+    "Ich heiße Ada und wohne in Berlin und spreche Deutsch.",
+  );
+
+  assert.ok(
+    facts.some((entry) => entry.key === "name" && entry.value === "Ada"),
+  );
+  assert.ok(
+    facts.some((entry) => entry.key === "location" && entry.value === "Berlin"),
+  );
+  assert.ok(
+    facts.some(
+      (entry) => entry.key === "language" && entry.value === "Deutsch",
+    ),
+  );
+});
+
 test("persistPromptMemories batches KV and Vectorize writes", async () => {
   const state = createTestEnv();
 
