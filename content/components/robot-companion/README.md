@@ -10,8 +10,9 @@ Cloudflare-AI-first Roboter-Begleiter mit Streaming-Chat, Tool-Calling und Memor
 - Confirm-Step fuer sensible Tool-Aktionen (Browser-Bestaetigung)
 - Bildanalyse (Upload im Chat)
 - Session-Chatverlauf nur im RAM (kein localStorage)
-- Persistente, strikt identifier-basierte User-ID über `localStorage` plus First-Party-Cookie für Cloudflare-Memory
-- Header-Buttons für Cloudflare-Memory: Erinnerungen anzeigen und User-ID löschen
+- Persistente User-ID über `localStorage` plus First-Party-Cookie für Cloudflare-Memory
+- Explizite, bestätigungspflichtige Profil-Recovery über den gespeicherten Namen bei Browserwechseln
+- Sichtbarer Profilstatus im Chat-Header sowie Aktionen für Erinnerungen, Profilwechsel, Gerät trennen und Bearbeiten
 - Stateful Robot-UI (Animation, Kollision, Kontextreaktionen)
 - XSS-sichere DOM-Erstellung
 
@@ -40,7 +41,7 @@ robot-companion/
 ## Verwendung
 
 ```js
-import { RobotCompanion } from './robot-companion.js';
+import { RobotCompanion } from "./robot-companion.js";
 
 const robot = new RobotCompanion();
 robot.init();
@@ -50,19 +51,21 @@ robot.init();
 
 ```js
 ROBOT_ACTIONS = {
-  START: 'start',
-  TOGGLE_THEME: 'toggleTheme',
-  SEARCH_WEBSITE: 'searchWebsite',
-  SCROLL_FOOTER: 'scrollFooter',
-  OPEN_MENU: 'openMenu',
-  CLOSE_MENU: 'closeMenu',
-  OPEN_SEARCH: 'openSearch',
-  CLOSE_SEARCH: 'closeSearch',
-  SCROLL_TOP: 'scrollTop',
-  COPY_CURRENT_URL: 'copyCurrentUrl',
-  SHOW_MEMORIES: 'showMemories',
-  CLEAR_CHAT: 'clearChat',
-  DELETE_CLOUDFLARE_USER: 'deleteCloudflareUser',
+  START: "start",
+  TOGGLE_THEME: "toggleTheme",
+  SEARCH_WEBSITE: "searchWebsite",
+  SCROLL_FOOTER: "scrollFooter",
+  OPEN_MENU: "openMenu",
+  CLOSE_MENU: "closeMenu",
+  OPEN_SEARCH: "openSearch",
+  CLOSE_SEARCH: "closeSearch",
+  SCROLL_TOP: "scrollTop",
+  COPY_CURRENT_URL: "copyCurrentUrl",
+  SHOW_MEMORIES: "showMemories",
+  EDIT_PROFILE: "editProfile",
+  SWITCH_PROFILE: "switchProfile",
+  DISCONNECT_PROFILE: "disconnectProfile",
+  CLEAR_CHAT: "clearChat",
 };
 ```
 

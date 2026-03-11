@@ -14,8 +14,8 @@ export class RobotDOMBuilder {
    * @returns {HTMLElement}
    */
   createContainer() {
-    const container = document.createElement('div');
-    container.id = 'robot-companion-container';
+    const container = document.createElement("div");
+    container.id = "robot-companion-container";
 
     const floatWrapper = this.createFloatWrapper();
 
@@ -29,9 +29,9 @@ export class RobotDOMBuilder {
    * @returns {HTMLElement}
    */
   createChatWindow() {
-    const window = document.createElement('div');
-    window.className = 'robot-chat-window';
-    window.id = 'robot-chat-window';
+    const window = document.createElement("div");
+    window.className = "robot-chat-window";
+    window.id = "robot-chat-window";
 
     const header = this.createChatHeader();
     const messages = this.createMessagesContainer();
@@ -47,56 +47,87 @@ export class RobotDOMBuilder {
    * @returns {HTMLElement}
    */
   createChatHeader() {
-    const header = document.createElement('div');
-    header.className = 'chat-header u-inline-center';
+    const header = document.createElement("div");
+    header.className = "chat-header u-inline-center";
 
-    const title = document.createElement('div');
-    title.className = 'chat-title';
+    const titleGroup = document.createElement("div");
+    titleGroup.className = "chat-title-group";
 
-    const statusDot = document.createElement('span');
-    statusDot.className = 'chat-status-dot';
+    const title = document.createElement("div");
+    title.className = "chat-title";
 
-    const titleText = document.createTextNode('Cyber Assistant');
+    const statusDot = document.createElement("span");
+    statusDot.className = "chat-status-dot";
+
+    const titleText = document.createTextNode("Cyber Assistant");
 
     title.append(statusDot, titleText);
 
-    const closeBtn = document.createElement('button');
-    closeBtn.className = 'chat-close-btn';
-    closeBtn.textContent = '×';
-    closeBtn.setAttribute('aria-label', 'Chat schließen');
-    closeBtn.type = 'button';
+    const profileStatus = document.createElement("div");
+    profileStatus.className =
+      "chat-profile-status chat-profile-status--disconnected";
+    profileStatus.id = "robot-chat-profile-status";
+    profileStatus.textContent = "Kein aktives Profil";
 
-    const controls = document.createElement('div');
-    controls.className = 'chat-header-controls';
+    titleGroup.append(title, profileStatus);
+
+    const closeBtn = document.createElement("button");
+    closeBtn.className = "chat-close-btn";
+    closeBtn.textContent = "×";
+    closeBtn.setAttribute("aria-label", "Chat schließen");
+    closeBtn.type = "button";
+
+    const controls = document.createElement("div");
+    controls.className = "chat-header-controls";
 
     const memoriesBtn = this.createHeaderActionButton({
-      id: 'robot-chat-memories',
-      label: 'Welche Erinnerungen?',
-      title: 'Gespeicherte Cloudflare-Erinnerungen anzeigen',
-      ariaLabel: 'Gespeicherte Erinnerungen anzeigen',
+      id: "robot-chat-memories",
+      label: "Infos",
+      title: "Gespeicherte Cloudflare-Erinnerungen anzeigen",
+      ariaLabel: "Gespeicherte Erinnerungen anzeigen",
     });
 
-    const deleteUserBtn = this.createHeaderActionButton({
-      id: 'robot-chat-delete-user',
-      label: 'User-ID löschen',
-      title: 'User-ID und Erinnerungen in Cloudflare löschen',
-      ariaLabel: 'User-ID aus Cloudflare löschen',
+    const editProfileBtn = this.createHeaderActionButton({
+      id: "robot-chat-edit-memory",
+      label: "Bearbeiten",
+      title: "Profil-Erinnerungen bearbeiten",
+      ariaLabel: "Profil-Erinnerungen bearbeiten",
     });
 
-    controls.append(memoriesBtn, deleteUserBtn, closeBtn);
-    header.append(title, controls);
+    const switchProfileBtn = this.createHeaderActionButton({
+      id: "robot-chat-switch-profile",
+      label: "Wechseln",
+      title: "Anderes Profil auf diesem Gerät verwenden",
+      ariaLabel: "Anderes Profil verwenden",
+    });
+
+    const disconnectProfileBtn = this.createHeaderActionButton({
+      id: "robot-chat-disconnect-profile",
+      label: "Trennen",
+      title: "Dieses Gerät vom aktiven Profil trennen",
+      ariaLabel: "Gerät vom Profil trennen",
+    });
+
+    controls.append(
+      memoriesBtn,
+      editProfileBtn,
+      switchProfileBtn,
+      disconnectProfileBtn,
+      closeBtn,
+    );
+    header.append(titleGroup, controls);
 
     return header;
   }
 
   createHeaderActionButton({ id, label, title, ariaLabel }) {
-    const button = document.createElement('button');
-    button.className = 'chat-header-btn';
-    button.type = 'button';
+    const button = document.createElement("button");
+    button.className = "chat-header-btn";
+    button.type = "button";
     button.id = id;
     button.textContent = label;
     button.title = title;
-    button.setAttribute('aria-label', ariaLabel);
+    button.setAttribute("aria-label", ariaLabel);
     return button;
   }
 
@@ -105,11 +136,11 @@ export class RobotDOMBuilder {
    * @returns {HTMLElement}
    */
   createMessagesContainer() {
-    const messages = document.createElement('div');
-    messages.className = 'chat-messages';
-    messages.id = 'robot-messages';
-    messages.setAttribute('role', 'log');
-    messages.setAttribute('aria-live', 'polite');
+    const messages = document.createElement("div");
+    messages.className = "chat-messages";
+    messages.id = "robot-messages";
+    messages.setAttribute("role", "log");
+    messages.setAttribute("aria-live", "polite");
 
     return messages;
   }
@@ -119,42 +150,42 @@ export class RobotDOMBuilder {
    * @returns {HTMLElement}
    */
   createInputArea() {
-    const inputArea = document.createElement('div');
-    inputArea.className = 'chat-input-area';
-    inputArea.id = 'robot-input-area';
+    const inputArea = document.createElement("div");
+    inputArea.className = "chat-input-area";
+    inputArea.id = "robot-input-area";
 
     // Hidden file input for image upload
-    const fileInput = document.createElement('input');
-    fileInput.type = 'file';
-    fileInput.id = 'robot-image-upload';
-    fileInput.accept = 'image/jpeg,image/png,image/webp,image/gif';
-    fileInput.style.display = 'none';
-    fileInput.setAttribute('aria-label', 'Bild hochladen');
+    const fileInput = document.createElement("input");
+    fileInput.type = "file";
+    fileInput.id = "robot-image-upload";
+    fileInput.accept = "image/jpeg,image/png,image/webp,image/gif";
+    fileInput.style.display = "none";
+    fileInput.setAttribute("aria-label", "Bild hochladen");
 
     // Image upload button
-    const uploadBtn = document.createElement('button');
-    uploadBtn.id = 'robot-image-btn';
-    uploadBtn.className = 'chat-image-btn';
-    uploadBtn.textContent = '📷';
-    uploadBtn.setAttribute('aria-label', 'Bild zur Analyse hochladen');
-    uploadBtn.title = 'Bild hochladen';
-    uploadBtn.type = 'button';
+    const uploadBtn = document.createElement("button");
+    uploadBtn.id = "robot-image-btn";
+    uploadBtn.className = "chat-image-btn";
+    uploadBtn.textContent = "📷";
+    uploadBtn.setAttribute("aria-label", "Bild zur Analyse hochladen");
+    uploadBtn.title = "Bild hochladen";
+    uploadBtn.type = "button";
 
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.id = 'robot-chat-input';
-    input.name = 'robot-message';
-    input.placeholder = 'Frag mich etwas...';
-    input.autocomplete = 'off';
-    input.setAttribute('aria-label', 'Chat-Nachricht eingeben');
+    const input = document.createElement("input");
+    input.type = "text";
+    input.id = "robot-chat-input";
+    input.name = "robot-message";
+    input.placeholder = "Frag mich etwas...";
+    input.autocomplete = "off";
+    input.setAttribute("aria-label", "Chat-Nachricht eingeben");
 
-    const sendBtn = document.createElement('button');
-    sendBtn.id = 'robot-chat-send';
-    sendBtn.textContent = '➤';
-    sendBtn.setAttribute('aria-label', 'Nachricht senden');
-    sendBtn.type = 'button';
+    const sendBtn = document.createElement("button");
+    sendBtn.id = "robot-chat-send";
+    sendBtn.textContent = "➤";
+    sendBtn.setAttribute("aria-label", "Nachricht senden");
+    sendBtn.type = "button";
     sendBtn.disabled = true;
-    sendBtn.setAttribute('aria-disabled', 'true');
+    sendBtn.setAttribute("aria-disabled", "true");
 
     inputArea.append(fileInput, uploadBtn, input, sendBtn);
 
@@ -168,24 +199,24 @@ export class RobotDOMBuilder {
    * @returns {HTMLElement}
    */
   createImagePreview(src, fileName) {
-    const preview = document.createElement('div');
-    preview.className = 'chat-image-preview';
-    preview.id = 'robot-image-preview';
+    const preview = document.createElement("div");
+    preview.className = "chat-image-preview";
+    preview.id = "robot-image-preview";
 
-    const img = document.createElement('img');
+    const img = document.createElement("img");
     img.src = src;
-    img.alt = fileName || 'Hochgeladenes Bild';
-    img.className = 'chat-preview-img';
+    img.alt = fileName || "Hochgeladenes Bild";
+    img.className = "chat-preview-img";
 
-    const info = document.createElement('span');
-    info.className = 'chat-preview-name';
-    info.textContent = fileName || 'Bild';
+    const info = document.createElement("span");
+    info.className = "chat-preview-name";
+    info.textContent = fileName || "Bild";
 
-    const removeBtn = document.createElement('button');
-    removeBtn.className = 'chat-preview-remove';
-    removeBtn.textContent = '×';
-    removeBtn.setAttribute('aria-label', 'Bild entfernen');
-    removeBtn.type = 'button';
+    const removeBtn = document.createElement("button");
+    removeBtn.className = "chat-preview-remove";
+    removeBtn.textContent = "×";
+    removeBtn.setAttribute("aria-label", "Bild entfernen");
+    removeBtn.type = "button";
 
     preview.append(img, info, removeBtn);
     return preview;
@@ -198,15 +229,15 @@ export class RobotDOMBuilder {
    * @returns {HTMLElement}
    */
   createToolCallIndicator(toolName, message) {
-    const indicator = document.createElement('div');
-    indicator.className = 'chat-tool-call';
+    const indicator = document.createElement("div");
+    indicator.className = "chat-tool-call";
 
-    const icon = document.createElement('span');
-    icon.className = 'tool-call-icon';
+    const icon = document.createElement("span");
+    icon.className = "tool-call-icon";
     icon.textContent = this._getToolIcon(toolName);
 
-    const text = document.createElement('span');
-    text.className = 'tool-call-text';
+    const text = document.createElement("span");
+    text.className = "tool-call-text";
     text.textContent = message || `${toolName} ausführen...`;
 
     indicator.append(icon, text);
@@ -218,10 +249,10 @@ export class RobotDOMBuilder {
    * @returns {HTMLElement}
    */
   createMemoryIndicator() {
-    const badge = document.createElement('span');
-    badge.className = 'chat-memory-badge';
-    badge.textContent = '🧠';
-    badge.title = 'Jules erinnert sich an dich';
+    const badge = document.createElement("span");
+    badge.className = "chat-memory-badge";
+    badge.textContent = "🧠";
+    badge.title = "Jules erinnert sich an dich";
     return badge;
   }
 
@@ -233,28 +264,28 @@ export class RobotDOMBuilder {
    */
   _getToolIcon(toolName) {
     const icons = {
-      navigate: '🧭',
-      setTheme: '🎨',
-      searchBlog: '🔍',
-      toggleMenu: '📋',
-      scrollToSection: '📜',
-      openSearch: '🔎',
-      closeSearch: '❎',
-      focusSearch: '🎯',
-      scrollTop: '⬆️',
-      copyCurrentUrl: '🔗',
-      openImageUpload: '📷',
-      clearChatHistory: '🧹',
-      rememberUser: '🧠',
-      recallMemory: '💭',
-      recommend: '💡',
-      openExternalLink: '🌐',
-      openSocialProfile: '👤',
-      composeEmail: '✉️',
-      createCalendarReminder: '📅',
-      getSiteAnalytics: '📊',
+      navigate: "🧭",
+      setTheme: "🎨",
+      searchBlog: "🔍",
+      toggleMenu: "📋",
+      scrollToSection: "📜",
+      openSearch: "🔎",
+      closeSearch: "❎",
+      focusSearch: "🎯",
+      scrollTop: "⬆️",
+      copyCurrentUrl: "🔗",
+      openImageUpload: "📷",
+      clearChatHistory: "🧹",
+      rememberUser: "🧠",
+      recallMemory: "💭",
+      recommend: "💡",
+      openExternalLink: "🌐",
+      openSocialProfile: "👤",
+      composeEmail: "✉️",
+      createCalendarReminder: "📅",
+      getSiteAnalytics: "📊",
     };
-    return icons[toolName] || '⚡';
+    return icons[toolName] || "⚡";
   }
 
   /**
@@ -262,8 +293,8 @@ export class RobotDOMBuilder {
    * @returns {HTMLElement}
    */
   createFloatWrapper() {
-    const wrapper = document.createElement('div');
-    wrapper.className = 'robot-float-wrapper';
+    const wrapper = document.createElement("div");
+    wrapper.className = "robot-float-wrapper";
 
     const bubble = this.createBubble();
     const avatar = this.createAvatar();
@@ -278,20 +309,20 @@ export class RobotDOMBuilder {
    * @returns {HTMLElement}
    */
   createBubble() {
-    const bubble = document.createElement('div');
-    bubble.className = 'robot-bubble';
-    bubble.id = 'robot-bubble';
-    bubble.setAttribute('role', 'status');
-    bubble.setAttribute('aria-live', 'polite');
+    const bubble = document.createElement("div");
+    bubble.className = "robot-bubble";
+    bubble.id = "robot-bubble";
+    bubble.setAttribute("role", "status");
+    bubble.setAttribute("aria-live", "polite");
 
-    const text = document.createElement('span');
-    text.id = 'robot-bubble-text';
-    text.textContent = 'Hallo!';
+    const text = document.createElement("span");
+    text.id = "robot-bubble-text";
+    text.textContent = "Hallo!";
 
-    const closeBtn = document.createElement('div');
-    closeBtn.className = 'robot-bubble-close';
-    closeBtn.textContent = '×';
-    closeBtn.setAttribute('aria-label', 'Bubble schließen');
+    const closeBtn = document.createElement("div");
+    closeBtn.className = "robot-bubble-close";
+    closeBtn.textContent = "×";
+    closeBtn.setAttribute("aria-label", "Bubble schließen");
 
     bubble.append(text, closeBtn);
 
@@ -303,9 +334,9 @@ export class RobotDOMBuilder {
    * @returns {HTMLElement}
    */
   createAvatar() {
-    const button = document.createElement('button');
-    button.className = 'robot-avatar';
-    button.setAttribute('aria-label', 'Chat öffnen');
+    const button = document.createElement("button");
+    button.className = "robot-avatar";
+    button.setAttribute("aria-label", "Chat öffnen");
 
     const svg = this.createRobotSVG();
     button.appendChild(svg);
@@ -318,9 +349,9 @@ export class RobotDOMBuilder {
    * @returns {SVGElement}
    */
   createRobotSVG() {
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svg.setAttribute('viewBox', '0 0 100 100');
-    svg.classList.add('robot-svg');
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("viewBox", "0 0 100 100");
+    svg.classList.add("robot-svg");
 
     // Defs
     const defs = this.createSVGDefs();
@@ -374,102 +405,102 @@ export class RobotDOMBuilder {
    * @returns {SVGDefsElement}
    */
   createSVGDefs() {
-    const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+    const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
 
     // Glow filter
     const glowFilter = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'filter',
+      "http://www.w3.org/2000/svg",
+      "filter",
     );
-    glowFilter.setAttribute('id', 'glow');
-    glowFilter.setAttribute('x', '-20%');
-    glowFilter.setAttribute('y', '-20%');
-    glowFilter.setAttribute('width', '140%');
-    glowFilter.setAttribute('height', '140%');
+    glowFilter.setAttribute("id", "glow");
+    glowFilter.setAttribute("x", "-20%");
+    glowFilter.setAttribute("y", "-20%");
+    glowFilter.setAttribute("width", "140%");
+    glowFilter.setAttribute("height", "140%");
 
     const blur = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'feGaussianBlur',
+      "http://www.w3.org/2000/svg",
+      "feGaussianBlur",
     );
-    blur.setAttribute('stdDeviation', '2');
-    blur.setAttribute('result', 'blur');
+    blur.setAttribute("stdDeviation", "2");
+    blur.setAttribute("result", "blur");
 
     const composite = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'feComposite',
+      "http://www.w3.org/2000/svg",
+      "feComposite",
     );
-    composite.setAttribute('in', 'SourceGraphic');
-    composite.setAttribute('in2', 'blur');
-    composite.setAttribute('operator', 'over');
+    composite.setAttribute("in", "SourceGraphic");
+    composite.setAttribute("in2", "blur");
+    composite.setAttribute("operator", "over");
 
     glowFilter.append(blur, composite);
 
     // Lid shadow filter
     const lidShadowFilter = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'filter',
+      "http://www.w3.org/2000/svg",
+      "filter",
     );
-    lidShadowFilter.setAttribute('id', 'lidShadow');
-    lidShadowFilter.setAttribute('x', '-50%');
-    lidShadowFilter.setAttribute('y', '-50%');
-    lidShadowFilter.setAttribute('width', '200%');
-    lidShadowFilter.setAttribute('height', '200%');
+    lidShadowFilter.setAttribute("id", "lidShadow");
+    lidShadowFilter.setAttribute("x", "-50%");
+    lidShadowFilter.setAttribute("y", "-50%");
+    lidShadowFilter.setAttribute("width", "200%");
+    lidShadowFilter.setAttribute("height", "200%");
 
     const dropShadow = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'feDropShadow',
+      "http://www.w3.org/2000/svg",
+      "feDropShadow",
     );
-    dropShadow.setAttribute('dx', '0');
-    dropShadow.setAttribute('dy', '1');
-    dropShadow.setAttribute('stdDeviation', '1.2');
-    dropShadow.setAttribute('flood-color', '#000000');
-    dropShadow.setAttribute('flood-opacity', '0.35');
+    dropShadow.setAttribute("dx", "0");
+    dropShadow.setAttribute("dy", "1");
+    dropShadow.setAttribute("stdDeviation", "1.2");
+    dropShadow.setAttribute("flood-color", "#000000");
+    dropShadow.setAttribute("flood-opacity", "0.35");
 
     lidShadowFilter.appendChild(dropShadow);
 
     // Lid gradient
     const lidGradient = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'linearGradient',
+      "http://www.w3.org/2000/svg",
+      "linearGradient",
     );
-    lidGradient.setAttribute('id', 'lidGradient');
-    lidGradient.setAttribute('x1', '0');
-    lidGradient.setAttribute('x2', '0');
-    lidGradient.setAttribute('y1', '0');
-    lidGradient.setAttribute('y2', '1');
+    lidGradient.setAttribute("id", "lidGradient");
+    lidGradient.setAttribute("x1", "0");
+    lidGradient.setAttribute("x2", "0");
+    lidGradient.setAttribute("y1", "0");
+    lidGradient.setAttribute("y2", "1");
 
     const stop1 = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'stop',
+      "http://www.w3.org/2000/svg",
+      "stop",
     );
-    stop1.setAttribute('offset', '0%');
-    stop1.setAttribute('stop-color', '#0b1220');
-    stop1.setAttribute('stop-opacity', '0.95');
+    stop1.setAttribute("offset", "0%");
+    stop1.setAttribute("stop-color", "#0b1220");
+    stop1.setAttribute("stop-opacity", "0.95");
 
     const stop2 = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'stop',
+      "http://www.w3.org/2000/svg",
+      "stop",
     );
-    stop2.setAttribute('offset', '100%');
-    stop2.setAttribute('stop-color', '#0f172a');
-    stop2.setAttribute('stop-opacity', '1');
+    stop2.setAttribute("offset", "100%");
+    stop2.setAttribute("stop-color", "#0f172a");
+    stop2.setAttribute("stop-opacity", "1");
 
     lidGradient.append(stop1, stop2);
 
     // Flame clip path (to keep flame contained within original bounds while allowing overflow elsewhere)
     const flameClip = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'clipPath',
+      "http://www.w3.org/2000/svg",
+      "clipPath",
     );
-    flameClip.setAttribute('id', 'flame-clip');
+    flameClip.setAttribute("id", "flame-clip");
     const flameRect = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'rect',
+      "http://www.w3.org/2000/svg",
+      "rect",
     );
-    flameRect.setAttribute('x', '0');
-    flameRect.setAttribute('y', '0');
-    flameRect.setAttribute('width', '100');
-    flameRect.setAttribute('height', '100');
+    flameRect.setAttribute("x", "0");
+    flameRect.setAttribute("y", "0");
+    flameRect.setAttribute("width", "100");
+    flameRect.setAttribute("height", "100");
     flameClip.appendChild(flameRect);
 
     defs.append(glowFilter, lidShadowFilter, lidGradient, flameClip);
@@ -482,25 +513,25 @@ export class RobotDOMBuilder {
    * @returns {SVGGElement}
    */
   createAntenna() {
-    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
 
-    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    line.setAttribute('x1', '50');
-    line.setAttribute('y1', '15');
-    line.setAttribute('x2', '50');
-    line.setAttribute('y2', '25');
-    line.setAttribute('stroke', '#40e0d0');
-    line.setAttribute('stroke-width', '2');
+    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    line.setAttribute("x1", "50");
+    line.setAttribute("y1", "15");
+    line.setAttribute("x2", "50");
+    line.setAttribute("y2", "25");
+    line.setAttribute("stroke", "#40e0d0");
+    line.setAttribute("stroke-width", "2");
 
     const circle = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'circle',
+      "http://www.w3.org/2000/svg",
+      "circle",
     );
-    circle.setAttribute('cx', '50');
-    circle.setAttribute('cy', '15');
-    circle.setAttribute('r', '3');
-    circle.classList.add('robot-antenna-light');
-    circle.setAttribute('fill', '#ff4444');
+    circle.setAttribute("cx", "50");
+    circle.setAttribute("cy", "15");
+    circle.setAttribute("r", "3");
+    circle.classList.add("robot-antenna-light");
+    circle.setAttribute("fill", "#ff4444");
 
     g.append(line, circle);
 
@@ -512,22 +543,22 @@ export class RobotDOMBuilder {
    * @returns {SVGGElement}
    */
   createHead() {
-    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
 
-    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    path.setAttribute('d', 'M30,40 a20,20 0 0,1 40,0');
-    path.setAttribute('fill', '#1e293b');
-    path.setAttribute('stroke', '#40e0d0');
-    path.setAttribute('stroke-width', '2');
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", "M30,40 a20,20 0 0,1 40,0");
+    path.setAttribute("fill", "#1e293b");
+    path.setAttribute("stroke", "#40e0d0");
+    path.setAttribute("stroke-width", "2");
 
-    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-    rect.setAttribute('x', '30');
-    rect.setAttribute('y', '40');
-    rect.setAttribute('width', '40');
-    rect.setAttribute('height', '15');
-    rect.setAttribute('fill', '#1e293b');
-    rect.setAttribute('stroke', '#40e0d0');
-    rect.setAttribute('stroke-width', '2');
+    const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+    rect.setAttribute("x", "30");
+    rect.setAttribute("y", "40");
+    rect.setAttribute("width", "40");
+    rect.setAttribute("height", "15");
+    rect.setAttribute("fill", "#1e293b");
+    rect.setAttribute("stroke", "#40e0d0");
+    rect.setAttribute("stroke-width", "2");
 
     g.append(path, rect);
 
@@ -539,56 +570,56 @@ export class RobotDOMBuilder {
    * @returns {SVGGElement}
    */
   createEyes() {
-    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    g.classList.add('robot-eyes');
+    const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    g.classList.add("robot-eyes");
 
     // Left eye
     const leftPupil = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'circle',
+      "http://www.w3.org/2000/svg",
+      "circle",
     );
-    leftPupil.classList.add('robot-pupil');
-    leftPupil.setAttribute('cx', '40');
-    leftPupil.setAttribute('cy', '42');
-    leftPupil.setAttribute('r', '4');
-    leftPupil.setAttribute('fill', '#40e0d0');
-    leftPupil.setAttribute('filter', 'url(#glow)');
+    leftPupil.classList.add("robot-pupil");
+    leftPupil.setAttribute("cx", "40");
+    leftPupil.setAttribute("cy", "42");
+    leftPupil.setAttribute("r", "4");
+    leftPupil.setAttribute("fill", "#40e0d0");
+    leftPupil.setAttribute("filter", "url(#glow)");
 
     const leftLid = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'path',
+      "http://www.w3.org/2000/svg",
+      "path",
     );
-    leftLid.classList.add('robot-lid');
+    leftLid.classList.add("robot-lid");
     leftLid.setAttribute(
-      'd',
-      'M34 36 C36 30 44 30 46 36 L46 44 C44 38 36 38 34 44 Z',
+      "d",
+      "M34 36 C36 30 44 30 46 36 L46 44 C44 38 36 38 34 44 Z",
     );
-    leftLid.setAttribute('fill', 'url(#lidGradient)');
-    leftLid.setAttribute('filter', 'url(#lidShadow)');
+    leftLid.setAttribute("fill", "url(#lidGradient)");
+    leftLid.setAttribute("filter", "url(#lidShadow)");
 
     // Right eye
     const rightPupil = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'circle',
+      "http://www.w3.org/2000/svg",
+      "circle",
     );
-    rightPupil.classList.add('robot-pupil');
-    rightPupil.setAttribute('cx', '60');
-    rightPupil.setAttribute('cy', '42');
-    rightPupil.setAttribute('r', '4');
-    rightPupil.setAttribute('fill', '#40e0d0');
-    rightPupil.setAttribute('filter', 'url(#glow)');
+    rightPupil.classList.add("robot-pupil");
+    rightPupil.setAttribute("cx", "60");
+    rightPupil.setAttribute("cy", "42");
+    rightPupil.setAttribute("r", "4");
+    rightPupil.setAttribute("fill", "#40e0d0");
+    rightPupil.setAttribute("filter", "url(#glow)");
 
     const rightLid = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'path',
+      "http://www.w3.org/2000/svg",
+      "path",
     );
-    rightLid.classList.add('robot-lid');
+    rightLid.classList.add("robot-lid");
     rightLid.setAttribute(
-      'd',
-      'M54 36 C56 30 64 30 66 36 L66 44 C64 38 56 38 54 44 Z',
+      "d",
+      "M54 36 C56 30 64 30 66 36 L66 44 C64 38 56 38 54 44 Z",
     );
-    rightLid.setAttribute('fill', 'url(#lidGradient)');
-    rightLid.setAttribute('filter', 'url(#lidShadow)');
+    rightLid.setAttribute("fill", "url(#lidGradient)");
+    rightLid.setAttribute("filter", "url(#lidShadow)");
 
     g.append(leftPupil, leftLid, rightPupil, rightLid);
 
@@ -600,184 +631,184 @@ export class RobotDOMBuilder {
    * @returns {SVGGElement}
    */
   createMouth() {
-    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    g.classList.add('robot-mouth');
+    const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    g.classList.add("robot-mouth");
 
     // Neutral expression - horizontal line (kleiner: 16 -> 10)
     const neutralMouth = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'rect',
+      "http://www.w3.org/2000/svg",
+      "rect",
     );
-    neutralMouth.classList.add('mouth-neutral');
-    neutralMouth.setAttribute('x', '45');
-    neutralMouth.setAttribute('y', '51');
-    neutralMouth.setAttribute('width', '10');
-    neutralMouth.setAttribute('height', '1.5');
-    neutralMouth.setAttribute('rx', '0.75');
-    neutralMouth.setAttribute('fill', '#40e0d0');
-    neutralMouth.setAttribute('filter', 'url(#glow)');
+    neutralMouth.classList.add("mouth-neutral");
+    neutralMouth.setAttribute("x", "45");
+    neutralMouth.setAttribute("y", "51");
+    neutralMouth.setAttribute("width", "10");
+    neutralMouth.setAttribute("height", "1.5");
+    neutralMouth.setAttribute("rx", "0.75");
+    neutralMouth.setAttribute("fill", "#40e0d0");
+    neutralMouth.setAttribute("filter", "url(#glow)");
 
     // Happy smile - curved segments (LED style) (kleiner: 8 -> 5)
     const happyMouth = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'g',
+      "http://www.w3.org/2000/svg",
+      "g",
     );
-    happyMouth.classList.add('mouth-happy');
-    happyMouth.style.opacity = '0';
+    happyMouth.classList.add("mouth-happy");
+    happyMouth.style.opacity = "0";
 
     // Left segment
     const happyLeft = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'rect',
+      "http://www.w3.org/2000/svg",
+      "rect",
     );
-    happyLeft.setAttribute('x', '43');
-    happyLeft.setAttribute('y', '50.5');
-    happyLeft.setAttribute('width', '5');
-    happyLeft.setAttribute('height', '1.5');
-    happyLeft.setAttribute('rx', '0.75');
-    happyLeft.setAttribute('fill', '#40e0d0');
-    happyLeft.setAttribute('transform', 'rotate(-15 45.5 51.25)');
-    happyLeft.setAttribute('filter', 'url(#glow)');
+    happyLeft.setAttribute("x", "43");
+    happyLeft.setAttribute("y", "50.5");
+    happyLeft.setAttribute("width", "5");
+    happyLeft.setAttribute("height", "1.5");
+    happyLeft.setAttribute("rx", "0.75");
+    happyLeft.setAttribute("fill", "#40e0d0");
+    happyLeft.setAttribute("transform", "rotate(-15 45.5 51.25)");
+    happyLeft.setAttribute("filter", "url(#glow)");
 
     // Center segment
     const happyCenter = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'rect',
+      "http://www.w3.org/2000/svg",
+      "rect",
     );
-    happyCenter.setAttribute('x', '47.5');
-    happyCenter.setAttribute('y', '51.5');
-    happyCenter.setAttribute('width', '5');
-    happyCenter.setAttribute('height', '1.5');
-    happyCenter.setAttribute('rx', '0.75');
-    happyCenter.setAttribute('fill', '#40e0d0');
-    happyCenter.setAttribute('filter', 'url(#glow)');
+    happyCenter.setAttribute("x", "47.5");
+    happyCenter.setAttribute("y", "51.5");
+    happyCenter.setAttribute("width", "5");
+    happyCenter.setAttribute("height", "1.5");
+    happyCenter.setAttribute("rx", "0.75");
+    happyCenter.setAttribute("fill", "#40e0d0");
+    happyCenter.setAttribute("filter", "url(#glow)");
 
     // Right segment
     const happyRight = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'rect',
+      "http://www.w3.org/2000/svg",
+      "rect",
     );
-    happyRight.setAttribute('x', '52');
-    happyRight.setAttribute('y', '50.5');
-    happyRight.setAttribute('width', '5');
-    happyRight.setAttribute('height', '1.5');
-    happyRight.setAttribute('rx', '0.75');
-    happyRight.setAttribute('fill', '#40e0d0');
-    happyRight.setAttribute('transform', 'rotate(15 54.5 51.25)');
-    happyRight.setAttribute('filter', 'url(#glow)');
+    happyRight.setAttribute("x", "52");
+    happyRight.setAttribute("y", "50.5");
+    happyRight.setAttribute("width", "5");
+    happyRight.setAttribute("height", "1.5");
+    happyRight.setAttribute("rx", "0.75");
+    happyRight.setAttribute("fill", "#40e0d0");
+    happyRight.setAttribute("transform", "rotate(15 54.5 51.25)");
+    happyRight.setAttribute("filter", "url(#glow)");
 
     happyMouth.append(happyLeft, happyCenter, happyRight);
 
     // Sad mouth - inverted curve (kleiner: 8 -> 5)
     const sadMouth = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'g',
+      "http://www.w3.org/2000/svg",
+      "g",
     );
-    sadMouth.classList.add('mouth-sad');
-    sadMouth.style.opacity = '0';
+    sadMouth.classList.add("mouth-sad");
+    sadMouth.style.opacity = "0";
 
     // Left segment (down)
     const sadLeft = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'rect',
+      "http://www.w3.org/2000/svg",
+      "rect",
     );
-    sadLeft.setAttribute('x', '43');
-    sadLeft.setAttribute('y', '51.5');
-    sadLeft.setAttribute('width', '5');
-    sadLeft.setAttribute('height', '1.5');
-    sadLeft.setAttribute('rx', '0.75');
-    sadLeft.setAttribute('fill', '#40e0d0');
-    sadLeft.setAttribute('transform', 'rotate(15 45.5 52.25)');
-    sadLeft.setAttribute('filter', 'url(#glow)');
+    sadLeft.setAttribute("x", "43");
+    sadLeft.setAttribute("y", "51.5");
+    sadLeft.setAttribute("width", "5");
+    sadLeft.setAttribute("height", "1.5");
+    sadLeft.setAttribute("rx", "0.75");
+    sadLeft.setAttribute("fill", "#40e0d0");
+    sadLeft.setAttribute("transform", "rotate(15 45.5 52.25)");
+    sadLeft.setAttribute("filter", "url(#glow)");
 
     // Center segment
     const sadCenter = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'rect',
+      "http://www.w3.org/2000/svg",
+      "rect",
     );
-    sadCenter.setAttribute('x', '47.5');
-    sadCenter.setAttribute('y', '50.5');
-    sadCenter.setAttribute('width', '5');
-    sadCenter.setAttribute('height', '1.5');
-    sadCenter.setAttribute('rx', '0.75');
-    sadCenter.setAttribute('fill', '#40e0d0');
-    sadCenter.setAttribute('filter', 'url(#glow)');
+    sadCenter.setAttribute("x", "47.5");
+    sadCenter.setAttribute("y", "50.5");
+    sadCenter.setAttribute("width", "5");
+    sadCenter.setAttribute("height", "1.5");
+    sadCenter.setAttribute("rx", "0.75");
+    sadCenter.setAttribute("fill", "#40e0d0");
+    sadCenter.setAttribute("filter", "url(#glow)");
 
     // Right segment (down)
     const sadRight = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'rect',
+      "http://www.w3.org/2000/svg",
+      "rect",
     );
-    sadRight.setAttribute('x', '52');
-    sadRight.setAttribute('y', '51.5');
-    sadRight.setAttribute('width', '5');
-    sadRight.setAttribute('height', '1.5');
-    sadRight.setAttribute('rx', '0.75');
-    sadRight.setAttribute('fill', '#40e0d0');
-    sadRight.setAttribute('transform', 'rotate(-15 54.5 52.25)');
-    sadRight.setAttribute('filter', 'url(#glow)');
+    sadRight.setAttribute("x", "52");
+    sadRight.setAttribute("y", "51.5");
+    sadRight.setAttribute("width", "5");
+    sadRight.setAttribute("height", "1.5");
+    sadRight.setAttribute("rx", "0.75");
+    sadRight.setAttribute("fill", "#40e0d0");
+    sadRight.setAttribute("transform", "rotate(-15 54.5 52.25)");
+    sadRight.setAttribute("filter", "url(#glow)");
 
     sadMouth.append(sadLeft, sadCenter, sadRight);
 
     // Surprised mouth - O shape with segments (kleiner: 8 -> 5, 6 -> 4)
     const surprisedMouth = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'g',
+      "http://www.w3.org/2000/svg",
+      "g",
     );
-    surprisedMouth.classList.add('mouth-surprised');
-    surprisedMouth.style.opacity = '0';
+    surprisedMouth.classList.add("mouth-surprised");
+    surprisedMouth.style.opacity = "0";
 
     // Top segment
     const surprisedTop = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'rect',
+      "http://www.w3.org/2000/svg",
+      "rect",
     );
-    surprisedTop.setAttribute('x', '47.5');
-    surprisedTop.setAttribute('y', '49');
-    surprisedTop.setAttribute('width', '5');
-    surprisedTop.setAttribute('height', '1.5');
-    surprisedTop.setAttribute('rx', '0.75');
-    surprisedTop.setAttribute('fill', '#40e0d0');
-    surprisedTop.setAttribute('filter', 'url(#glow)');
+    surprisedTop.setAttribute("x", "47.5");
+    surprisedTop.setAttribute("y", "49");
+    surprisedTop.setAttribute("width", "5");
+    surprisedTop.setAttribute("height", "1.5");
+    surprisedTop.setAttribute("rx", "0.75");
+    surprisedTop.setAttribute("fill", "#40e0d0");
+    surprisedTop.setAttribute("filter", "url(#glow)");
 
     // Bottom segment
     const surprisedBottom = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'rect',
+      "http://www.w3.org/2000/svg",
+      "rect",
     );
-    surprisedBottom.setAttribute('x', '47.5');
-    surprisedBottom.setAttribute('y', '53');
-    surprisedBottom.setAttribute('width', '5');
-    surprisedBottom.setAttribute('height', '1.5');
-    surprisedBottom.setAttribute('rx', '0.75');
-    surprisedBottom.setAttribute('fill', '#40e0d0');
-    surprisedBottom.setAttribute('filter', 'url(#glow)');
+    surprisedBottom.setAttribute("x", "47.5");
+    surprisedBottom.setAttribute("y", "53");
+    surprisedBottom.setAttribute("width", "5");
+    surprisedBottom.setAttribute("height", "1.5");
+    surprisedBottom.setAttribute("rx", "0.75");
+    surprisedBottom.setAttribute("fill", "#40e0d0");
+    surprisedBottom.setAttribute("filter", "url(#glow)");
 
     // Left segment
     const surprisedLeft = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'rect',
+      "http://www.w3.org/2000/svg",
+      "rect",
     );
-    surprisedLeft.setAttribute('x', '46');
-    surprisedLeft.setAttribute('y', '50.5');
-    surprisedLeft.setAttribute('width', '1.5');
-    surprisedLeft.setAttribute('height', '4');
-    surprisedLeft.setAttribute('rx', '0.75');
-    surprisedLeft.setAttribute('fill', '#40e0d0');
-    surprisedLeft.setAttribute('filter', 'url(#glow)');
+    surprisedLeft.setAttribute("x", "46");
+    surprisedLeft.setAttribute("y", "50.5");
+    surprisedLeft.setAttribute("width", "1.5");
+    surprisedLeft.setAttribute("height", "4");
+    surprisedLeft.setAttribute("rx", "0.75");
+    surprisedLeft.setAttribute("fill", "#40e0d0");
+    surprisedLeft.setAttribute("filter", "url(#glow)");
 
     // Right segment
     const surprisedRight = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'rect',
+      "http://www.w3.org/2000/svg",
+      "rect",
     );
-    surprisedRight.setAttribute('x', '52.5');
-    surprisedRight.setAttribute('y', '50.5');
-    surprisedRight.setAttribute('width', '1.5');
-    surprisedRight.setAttribute('height', '4');
-    surprisedRight.setAttribute('rx', '0.75');
-    surprisedRight.setAttribute('fill', '#40e0d0');
-    surprisedRight.setAttribute('filter', 'url(#glow)');
+    surprisedRight.setAttribute("x", "52.5");
+    surprisedRight.setAttribute("y", "50.5");
+    surprisedRight.setAttribute("width", "1.5");
+    surprisedRight.setAttribute("height", "4");
+    surprisedRight.setAttribute("rx", "0.75");
+    surprisedRight.setAttribute("fill", "#40e0d0");
+    surprisedRight.setAttribute("filter", "url(#glow)");
 
     surprisedMouth.append(
       surprisedTop,
@@ -796,12 +827,12 @@ export class RobotDOMBuilder {
    * @returns {SVGPathElement}
    */
   createBody() {
-    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    path.classList.add('robot-legs');
-    path.setAttribute('d', 'M30,60 L70,60 L65,90 L35,90 Z');
-    path.setAttribute('fill', '#0f172a');
-    path.setAttribute('stroke', '#40e0d0');
-    path.setAttribute('stroke-width', '2');
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.classList.add("robot-legs");
+    path.setAttribute("d", "M30,60 L70,60 L65,90 L35,90 Z");
+    path.setAttribute("fill", "#0f172a");
+    path.setAttribute("stroke", "#40e0d0");
+    path.setAttribute("stroke-width", "2");
 
     return path;
   }
@@ -811,44 +842,44 @@ export class RobotDOMBuilder {
    * @returns {SVGGElement}
    */
   createArms() {
-    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    g.classList.add('robot-arms');
+    const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    g.classList.add("robot-arms");
 
     // Left Arm Group (includes arm, hand, and magnifying glass)
     const leftArmGroup = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'g',
+      "http://www.w3.org/2000/svg",
+      "g",
     );
-    leftArmGroup.classList.add('robot-arm', 'left');
+    leftArmGroup.classList.add("robot-arm", "left");
 
     const leftArm = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'path',
+      "http://www.w3.org/2000/svg",
+      "path",
     );
     // Adjusted grip to wrap around the handle at approx (22, 82) - Viewer's Left
     // Mirrored from old right arm: M30,62 Q18,72 22,82
-    leftArm.setAttribute('d', 'M30,62 Q18,72 22,82');
-    leftArm.setAttribute('fill', 'none');
-    leftArm.setAttribute('stroke', '#40e0d0');
-    leftArm.setAttribute('stroke-width', '3');
-    leftArm.setAttribute('stroke-linecap', 'round');
+    leftArm.setAttribute("d", "M30,62 Q18,72 22,82");
+    leftArm.setAttribute("fill", "none");
+    leftArm.setAttribute("stroke", "#40e0d0");
+    leftArm.setAttribute("stroke-width", "3");
+    leftArm.setAttribute("stroke-linecap", "round");
 
     // Left Hand (Detailed with fingers) - Viewer's Left (kleiner: r=4 -> 3, stroke-width=1.5 -> 1.2)
     const leftHandGroup = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'g',
+      "http://www.w3.org/2000/svg",
+      "g",
     );
-    leftHandGroup.classList.add('robot-hand', 'left');
+    leftHandGroup.classList.add("robot-hand", "left");
 
     // Palm
     const leftPalm = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'circle',
+      "http://www.w3.org/2000/svg",
+      "circle",
     );
-    leftPalm.setAttribute('cx', '22');
-    leftPalm.setAttribute('cy', '82');
-    leftPalm.setAttribute('r', '3');
-    leftPalm.setAttribute('fill', '#40e0d0');
+    leftPalm.setAttribute("cx", "22");
+    leftPalm.setAttribute("cy", "82");
+    leftPalm.setAttribute("r", "3");
+    leftPalm.setAttribute("fill", "#40e0d0");
 
     // Fingers (5 small lines) - kürzere Finger
     const fingers = [
@@ -861,17 +892,17 @@ export class RobotDOMBuilder {
 
     fingers.forEach((finger, index) => {
       const fingerLine = document.createElementNS(
-        'http://www.w3.org/2000/svg',
-        'line',
+        "http://www.w3.org/2000/svg",
+        "line",
       );
-      fingerLine.classList.add('robot-finger', `finger-${index}`);
-      fingerLine.setAttribute('x1', String(finger.x1));
-      fingerLine.setAttribute('y1', String(finger.y1));
-      fingerLine.setAttribute('x2', String(finger.x2));
-      fingerLine.setAttribute('y2', String(finger.y2));
-      fingerLine.setAttribute('stroke', '#40e0d0');
-      fingerLine.setAttribute('stroke-width', '1.2');
-      fingerLine.setAttribute('stroke-linecap', 'round');
+      fingerLine.classList.add("robot-finger", `finger-${index}`);
+      fingerLine.setAttribute("x1", String(finger.x1));
+      fingerLine.setAttribute("y1", String(finger.y1));
+      fingerLine.setAttribute("x2", String(finger.x2));
+      fingerLine.setAttribute("y2", String(finger.y2));
+      fingerLine.setAttribute("stroke", "#40e0d0");
+      fingerLine.setAttribute("stroke-width", "1.2");
+      fingerLine.setAttribute("stroke-linecap", "round");
       leftHandGroup.appendChild(fingerLine);
     });
 
@@ -884,39 +915,39 @@ export class RobotDOMBuilder {
 
     // Right Arm Group (includes arm and hand)
     const rightArmGroup = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'g',
+      "http://www.w3.org/2000/svg",
+      "g",
     );
-    rightArmGroup.classList.add('robot-arm', 'right');
+    rightArmGroup.classList.add("robot-arm", "right");
 
     const rightArm = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'path',
+      "http://www.w3.org/2000/svg",
+      "path",
     );
     // Normal arm for right side (Viewer's Right)
     // Mirrored from old left arm: M70,62 Q80,70 75,80
-    rightArm.setAttribute('d', 'M70,62 Q80,70 75,80');
-    rightArm.setAttribute('fill', 'none');
-    rightArm.setAttribute('stroke', '#40e0d0');
-    rightArm.setAttribute('stroke-width', '3');
-    rightArm.setAttribute('stroke-linecap', 'round');
+    rightArm.setAttribute("d", "M70,62 Q80,70 75,80");
+    rightArm.setAttribute("fill", "none");
+    rightArm.setAttribute("stroke", "#40e0d0");
+    rightArm.setAttribute("stroke-width", "3");
+    rightArm.setAttribute("stroke-linecap", "round");
 
     // Right Hand (Detailed with fingers) - Viewer's Right (kleiner: r=4 -> 3, stroke-width=1.5 -> 1.2)
     const rightHandGroup = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'g',
+      "http://www.w3.org/2000/svg",
+      "g",
     );
-    rightHandGroup.classList.add('robot-hand', 'right');
+    rightHandGroup.classList.add("robot-hand", "right");
 
     // Palm
     const rightPalm = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'circle',
+      "http://www.w3.org/2000/svg",
+      "circle",
     );
-    rightPalm.setAttribute('cx', '75');
-    rightPalm.setAttribute('cy', '80');
-    rightPalm.setAttribute('r', '3');
-    rightPalm.setAttribute('fill', '#40e0d0');
+    rightPalm.setAttribute("cx", "75");
+    rightPalm.setAttribute("cy", "80");
+    rightPalm.setAttribute("r", "3");
+    rightPalm.setAttribute("fill", "#40e0d0");
 
     // Fingers (5 small lines) - mirrored, kürzere Finger
     const rightFingers = [
@@ -929,17 +960,17 @@ export class RobotDOMBuilder {
 
     rightFingers.forEach((finger, index) => {
       const fingerLine = document.createElementNS(
-        'http://www.w3.org/2000/svg',
-        'line',
+        "http://www.w3.org/2000/svg",
+        "line",
       );
-      fingerLine.classList.add('robot-finger', `finger-${index}`);
-      fingerLine.setAttribute('x1', String(finger.x1));
-      fingerLine.setAttribute('y1', String(finger.y1));
-      fingerLine.setAttribute('x2', String(finger.x2));
-      fingerLine.setAttribute('y2', String(finger.y2));
-      fingerLine.setAttribute('stroke', '#40e0d0');
-      fingerLine.setAttribute('stroke-width', '1.2');
-      fingerLine.setAttribute('stroke-linecap', 'round');
+      fingerLine.classList.add("robot-finger", `finger-${index}`);
+      fingerLine.setAttribute("x1", String(finger.x1));
+      fingerLine.setAttribute("y1", String(finger.y1));
+      fingerLine.setAttribute("x2", String(finger.x2));
+      fingerLine.setAttribute("y2", String(finger.y2));
+      fingerLine.setAttribute("stroke", "#40e0d0");
+      fingerLine.setAttribute("stroke-width", "1.2");
+      fingerLine.setAttribute("stroke-linecap", "round");
       rightHandGroup.appendChild(fingerLine);
     });
 
@@ -957,24 +988,24 @@ export class RobotDOMBuilder {
    * @returns {SVGGElement}
    */
   createFlame() {
-    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    g.classList.add('robot-flame');
-    g.style.opacity = '0';
+    const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    g.classList.add("robot-flame");
+    g.style.opacity = "0";
     // Apply clip-path to restore original clipping behavior for the flame
-    g.setAttribute('clip-path', 'url(#flame-clip)');
+    g.setAttribute("clip-path", "url(#flame-clip)");
 
     const outerFlame = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'path',
+      "http://www.w3.org/2000/svg",
+      "path",
     );
-    outerFlame.setAttribute('d', 'M35,88 Q50,115 65,88 Q50,108 35,88');
+    outerFlame.setAttribute("d", "M35,88 Q50,115 65,88 Q50,108 35,88");
     // fill is handled by CSS (.robot-flame path { fill: var(--flame-outer-color) })
 
     const innerFlame = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'path',
+      "http://www.w3.org/2000/svg",
+      "path",
     );
-    innerFlame.setAttribute('d', 'M42,88 Q50,108 58,88');
+    innerFlame.setAttribute("d", "M42,88 Q50,108 58,88");
     // fill is handled by CSS (.robot-flame path:nth-child(2) { fill: var(--flame-inner-color) })
 
     g.append(outerFlame, innerFlame);
@@ -987,37 +1018,37 @@ export class RobotDOMBuilder {
    * @returns {SVGGElement}
    */
   createParticles() {
-    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    g.classList.add('robot-particles');
-    g.style.opacity = '0';
+    const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    g.classList.add("robot-particles");
+    g.style.opacity = "0";
 
     // Create 3 animated particles
     const particles = [
-      { cx: 20, cy: 50, r: 2, dur: '2s' },
-      { cx: 80, cy: 60, r: 1.5, dur: '2.5s' },
-      { cx: 15, cy: 70, r: 1, dur: '1.8s' },
+      { cx: 20, cy: 50, r: 2, dur: "2s" },
+      { cx: 80, cy: 60, r: 1.5, dur: "2.5s" },
+      { cx: 15, cy: 70, r: 1, dur: "1.8s" },
     ];
 
     particles.forEach((p) => {
       const circle = document.createElementNS(
-        'http://www.w3.org/2000/svg',
-        'circle',
+        "http://www.w3.org/2000/svg",
+        "circle",
       );
-      circle.classList.add('particle');
-      circle.setAttribute('cx', String(p.cx));
-      circle.setAttribute('cy', String(p.cy));
-      circle.setAttribute('r', String(p.r));
-      circle.setAttribute('fill', '#40e0d0');
-      circle.setAttribute('opacity', '0.6');
+      circle.classList.add("particle");
+      circle.setAttribute("cx", String(p.cx));
+      circle.setAttribute("cy", String(p.cy));
+      circle.setAttribute("r", String(p.r));
+      circle.setAttribute("fill", "#40e0d0");
+      circle.setAttribute("opacity", "0.6");
 
       const animate = document.createElementNS(
-        'http://www.w3.org/2000/svg',
-        'animate',
+        "http://www.w3.org/2000/svg",
+        "animate",
       );
-      animate.setAttribute('attributeName', 'cy');
-      animate.setAttribute('values', `${p.cy};${p.cy - 20};${p.cy}`);
-      animate.setAttribute('dur', p.dur);
-      animate.setAttribute('repeatCount', 'indefinite');
+      animate.setAttribute("attributeName", "cy");
+      animate.setAttribute("values", `${p.cy};${p.cy - 20};${p.cy}`);
+      animate.setAttribute("dur", p.dur);
+      animate.setAttribute("repeatCount", "indefinite");
 
       circle.appendChild(animate);
       g.appendChild(circle);
@@ -1031,28 +1062,28 @@ export class RobotDOMBuilder {
    * @returns {SVGGElement}
    */
   createThinking() {
-    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    g.classList.add('robot-thinking');
-    g.style.opacity = '0';
+    const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    g.classList.add("robot-thinking");
+    g.style.opacity = "0";
 
     const circle = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'circle',
+      "http://www.w3.org/2000/svg",
+      "circle",
     );
-    circle.setAttribute('cx', '70');
-    circle.setAttribute('cy', '20');
-    circle.setAttribute('r', '8');
-    circle.setAttribute('fill', 'rgba(64, 224, 208, 0.2)');
-    circle.setAttribute('stroke', '#40e0d0');
-    circle.setAttribute('stroke-width', '1');
+    circle.setAttribute("cx", "70");
+    circle.setAttribute("cy", "20");
+    circle.setAttribute("r", "8");
+    circle.setAttribute("fill", "rgba(64, 224, 208, 0.2)");
+    circle.setAttribute("stroke", "#40e0d0");
+    circle.setAttribute("stroke-width", "1");
 
-    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    text.setAttribute('x', '70');
-    text.setAttribute('y', '25');
-    text.setAttribute('font-size', '12');
-    text.setAttribute('fill', '#40e0d0');
-    text.setAttribute('text-anchor', 'middle');
-    text.textContent = '?';
+    const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    text.setAttribute("x", "70");
+    text.setAttribute("y", "25");
+    text.setAttribute("font-size", "12");
+    text.setAttribute("fill", "#40e0d0");
+    text.setAttribute("text-anchor", "middle");
+    text.textContent = "?";
 
     g.append(circle, text);
 
@@ -1064,9 +1095,9 @@ export class RobotDOMBuilder {
    * @returns {SVGGElement}
    */
   createMagnifyingGlass() {
-    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    g.classList.add('robot-magnifying-glass');
-    g.style.opacity = '0';
+    const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    g.classList.add("robot-magnifying-glass");
+    g.style.opacity = "0";
     // Remove transformBox: fill-box and transformOrigin: center to rely on coordinate system origin (0,0)
     // which we will position at the hand grip.
     // g.style.transformBox = 'fill-box'; // Removed to avoid rotation around bounding box center
@@ -1077,131 +1108,131 @@ export class RobotDOMBuilder {
     // We want to rotate it so it points towards the left/top-left.
     // Handle (0,0) is at grip. Handle extends UP (0, -12).
     // Rotation -45 deg: Handle points Top-Left.
-    g.setAttribute('transform', 'translate(22, 82) rotate(-45) scale(0.9)');
+    g.setAttribute("transform", "translate(22, 82) rotate(-45) scale(0.9)");
 
     // Handle - extending from hand (0,0) UPWARDS/OUTWARDS to the lens center
     // Let's define the handle going straight UP relative to the group's local coords (0,-10).
     // --- Definitions for Photorealism ---
     const localDefs = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'defs',
+      "http://www.w3.org/2000/svg",
+      "defs",
     );
 
     // 1. Handle Gradient (Cylindrical Black/Dark Grey)
-    const handleGradientId = 'handleGradient';
+    const handleGradientId = "handleGradient";
     const handleGradient = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'linearGradient',
+      "http://www.w3.org/2000/svg",
+      "linearGradient",
     );
-    handleGradient.setAttribute('id', handleGradientId);
-    handleGradient.setAttribute('x1', '0%');
-    handleGradient.setAttribute('y1', '0%');
-    handleGradient.setAttribute('x2', '100%');
-    handleGradient.setAttribute('y2', '0%'); // Horizontal gradient across width
+    handleGradient.setAttribute("id", handleGradientId);
+    handleGradient.setAttribute("x1", "0%");
+    handleGradient.setAttribute("y1", "0%");
+    handleGradient.setAttribute("x2", "100%");
+    handleGradient.setAttribute("y2", "0%"); // Horizontal gradient across width
 
     // Left edge (shadow)
     const stopH1 = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'stop',
+      "http://www.w3.org/2000/svg",
+      "stop",
     );
-    stopH1.setAttribute('offset', '0%');
-    stopH1.setAttribute('stop-color', '#1e293b'); // Dark Slate
+    stopH1.setAttribute("offset", "0%");
+    stopH1.setAttribute("stop-color", "#1e293b"); // Dark Slate
     // Center (highlight)
     const stopH2 = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'stop',
+      "http://www.w3.org/2000/svg",
+      "stop",
     );
-    stopH2.setAttribute('offset', '40%');
-    stopH2.setAttribute('stop-color', '#475569'); // Lighter Slate
+    stopH2.setAttribute("offset", "40%");
+    stopH2.setAttribute("stop-color", "#475569"); // Lighter Slate
     // Right edge (shadow)
     const stopH3 = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'stop',
+      "http://www.w3.org/2000/svg",
+      "stop",
     );
-    stopH3.setAttribute('offset', '100%');
-    stopH3.setAttribute('stop-color', '#0f172a'); // Very Dark
+    stopH3.setAttribute("offset", "100%");
+    stopH3.setAttribute("stop-color", "#0f172a"); // Very Dark
 
     handleGradient.append(stopH1, stopH2, stopH3);
 
     // 2. Realistic Chrome Rim Gradient
-    const chromeGradientId = 'chromeGradient';
+    const chromeGradientId = "chromeGradient";
     const chromeGradient = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'linearGradient',
+      "http://www.w3.org/2000/svg",
+      "linearGradient",
     );
-    chromeGradient.setAttribute('id', chromeGradientId);
-    chromeGradient.setAttribute('x1', '0%');
-    chromeGradient.setAttribute('y1', '0%');
-    chromeGradient.setAttribute('x2', '100%');
-    chromeGradient.setAttribute('y2', '100%'); // Diagonal light
+    chromeGradient.setAttribute("id", chromeGradientId);
+    chromeGradient.setAttribute("x1", "0%");
+    chromeGradient.setAttribute("y1", "0%");
+    chromeGradient.setAttribute("x2", "100%");
+    chromeGradient.setAttribute("y2", "100%"); // Diagonal light
 
     // Complex metallic reflection stops
     const stops = [
-      { off: '0%', col: '#e2e8f0' }, // Highlight
-      { off: '25%', col: '#cbd5e1' }, // Mid
-      { off: '50%', col: '#64748b' }, // Shadow
-      { off: '51%', col: '#ffffff' }, // Specular flash
-      { off: '75%', col: '#94a3b8' }, // Mid
-      { off: '100%', col: '#475569' }, // Dark
+      { off: "0%", col: "#e2e8f0" }, // Highlight
+      { off: "25%", col: "#cbd5e1" }, // Mid
+      { off: "50%", col: "#64748b" }, // Shadow
+      { off: "51%", col: "#ffffff" }, // Specular flash
+      { off: "75%", col: "#94a3b8" }, // Mid
+      { off: "100%", col: "#475569" }, // Dark
     ];
     stops.forEach((s) => {
       const stop = document.createElementNS(
-        'http://www.w3.org/2000/svg',
-        'stop',
+        "http://www.w3.org/2000/svg",
+        "stop",
       );
-      stop.setAttribute('offset', s.off);
-      stop.setAttribute('stop-color', s.col);
+      stop.setAttribute("offset", s.off);
+      stop.setAttribute("stop-color", s.col);
       chromeGradient.appendChild(stop);
     });
 
     // 3. Realistic Glass Gradient (Clear with subtle refraction)
-    const realGlassGradientId = 'realGlassGradient';
+    const realGlassGradientId = "realGlassGradient";
     const realGlassGradient = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'radialGradient',
+      "http://www.w3.org/2000/svg",
+      "radialGradient",
     );
-    realGlassGradient.setAttribute('id', realGlassGradientId);
-    realGlassGradient.setAttribute('cx', '50%');
-    realGlassGradient.setAttribute('cy', '50%');
-    realGlassGradient.setAttribute('r', '50%');
+    realGlassGradient.setAttribute("id", realGlassGradientId);
+    realGlassGradient.setAttribute("cx", "50%");
+    realGlassGradient.setAttribute("cy", "50%");
+    realGlassGradient.setAttribute("r", "50%");
 
     // Center - Ultra clear
     const stopRG1 = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'stop',
+      "http://www.w3.org/2000/svg",
+      "stop",
     );
-    stopRG1.setAttribute('offset', '70%');
-    stopRG1.setAttribute('stop-color', 'rgba(255, 255, 255, 0.01)');
+    stopRG1.setAttribute("offset", "70%");
+    stopRG1.setAttribute("stop-color", "rgba(255, 255, 255, 0.01)");
 
     // Edge - Subtle dark/green tint (common in real glass)
     const stopRG2 = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'stop',
+      "http://www.w3.org/2000/svg",
+      "stop",
     );
-    stopRG2.setAttribute('offset', '100%');
-    stopRG2.setAttribute('stop-color', 'rgba(200, 230, 230, 0.15)');
+    stopRG2.setAttribute("offset", "100%");
+    stopRG2.setAttribute("stop-color", "rgba(200, 230, 230, 0.15)");
 
     realGlassGradient.append(stopRG1, stopRG2);
 
     // 4. Drop Shadow Filter
     const shadowFilter = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'filter',
+      "http://www.w3.org/2000/svg",
+      "filter",
     );
-    shadowFilter.setAttribute('id', 'magShadow');
-    shadowFilter.setAttribute('x', '-50%');
-    shadowFilter.setAttribute('y', '-50%');
-    shadowFilter.setAttribute('width', '200%');
-    shadowFilter.setAttribute('height', '200%');
+    shadowFilter.setAttribute("id", "magShadow");
+    shadowFilter.setAttribute("x", "-50%");
+    shadowFilter.setAttribute("y", "-50%");
+    shadowFilter.setAttribute("width", "200%");
+    shadowFilter.setAttribute("height", "200%");
     const feDropShadow = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'feDropShadow',
+      "http://www.w3.org/2000/svg",
+      "feDropShadow",
     );
-    feDropShadow.setAttribute('dx', '1');
-    feDropShadow.setAttribute('dy', '2');
-    feDropShadow.setAttribute('stdDeviation', '2');
-    feDropShadow.setAttribute('flood-color', '#000000');
-    feDropShadow.setAttribute('flood-opacity', '0.3');
+    feDropShadow.setAttribute("dx", "1");
+    feDropShadow.setAttribute("dy", "2");
+    feDropShadow.setAttribute("stdDeviation", "2");
+    feDropShadow.setAttribute("flood-color", "#000000");
+    feDropShadow.setAttribute("flood-opacity", "0.3");
     shadowFilter.appendChild(feDropShadow);
 
     localDefs.append(
@@ -1219,32 +1250,32 @@ export class RobotDOMBuilder {
 
     // 1. Handle (Cylindrical)
     const handleRect = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'rect',
+      "http://www.w3.org/2000/svg",
+      "rect",
     );
-    handleRect.setAttribute('x', '-2');
-    handleRect.setAttribute('y', '-14'); // Length 14 + 2 inside hand
-    handleRect.setAttribute('width', '4');
-    handleRect.setAttribute('height', '16');
-    handleRect.setAttribute('rx', '1');
-    handleRect.setAttribute('fill', `url(#${handleGradientId})`);
+    handleRect.setAttribute("x", "-2");
+    handleRect.setAttribute("y", "-14"); // Length 14 + 2 inside hand
+    handleRect.setAttribute("width", "4");
+    handleRect.setAttribute("height", "16");
+    handleRect.setAttribute("rx", "1");
+    handleRect.setAttribute("fill", `url(#${handleGradientId})`);
     // Add a cap at the bottom
     const handleCap = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'circle',
+      "http://www.w3.org/2000/svg",
+      "circle",
     );
-    handleCap.setAttribute('cx', '0');
-    handleCap.setAttribute('cy', '1');
-    handleCap.setAttribute('r', '2');
-    handleCap.setAttribute('fill', '#0f172a'); // Dark cap
+    handleCap.setAttribute("cx", "0");
+    handleCap.setAttribute("cy", "1");
+    handleCap.setAttribute("r", "2");
+    handleCap.setAttribute("fill", "#0f172a"); // Dark cap
 
     // 2. Connector (Chrome Neck)
     const connector = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'path',
+      "http://www.w3.org/2000/svg",
+      "path",
     );
-    connector.setAttribute('d', 'M-1.5,-14 L1.5,-14 L2.5,-17 L-2.5,-17 Z');
-    connector.setAttribute('fill', `url(#${chromeGradientId})`);
+    connector.setAttribute("d", "M-1.5,-14 L1.5,-14 L2.5,-17 L-2.5,-17 Z");
+    connector.setAttribute("fill", `url(#${chromeGradientId})`);
 
     // 3. Rim (Chrome Ring) - Using stroke
     const cx = 0;
@@ -1252,71 +1283,71 @@ export class RobotDOMBuilder {
     const radius = 12;
 
     const rim = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'circle',
+      "http://www.w3.org/2000/svg",
+      "circle",
     );
-    rim.setAttribute('cx', String(cx));
-    rim.setAttribute('cy', String(cy));
-    rim.setAttribute('r', String(radius));
-    rim.setAttribute('fill', 'none');
-    rim.setAttribute('stroke', `url(#${chromeGradientId})`);
-    rim.setAttribute('stroke-width', '2.5');
-    rim.setAttribute('filter', 'url(#magShadow)'); // Add shadow for depth
+    rim.setAttribute("cx", String(cx));
+    rim.setAttribute("cy", String(cy));
+    rim.setAttribute("r", String(radius));
+    rim.setAttribute("fill", "none");
+    rim.setAttribute("stroke", `url(#${chromeGradientId})`);
+    rim.setAttribute("stroke-width", "2.5");
+    rim.setAttribute("filter", "url(#magShadow)"); // Add shadow for depth
 
     // 4. Lens (Glass)
     const lens = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'circle',
+      "http://www.w3.org/2000/svg",
+      "circle",
     );
-    lens.setAttribute('cx', String(cx));
-    lens.setAttribute('cy', String(cy));
-    lens.setAttribute('r', String(radius - 1.25)); // Just inside rim
-    lens.setAttribute('fill', `url(#${realGlassGradientId})`);
+    lens.setAttribute("cx", String(cx));
+    lens.setAttribute("cy", String(cy));
+    lens.setAttribute("r", String(radius - 1.25)); // Just inside rim
+    lens.setAttribute("fill", `url(#${realGlassGradientId})`);
     // Inner bevel shadow (inset) simulation using stroke
-    lens.setAttribute('stroke', 'rgba(0,0,0,0.1)');
-    lens.setAttribute('stroke-width', '0.5');
+    lens.setAttribute("stroke", "rgba(0,0,0,0.1)");
+    lens.setAttribute("stroke-width", "0.5");
 
     // 5. Realistic Reflections (Photorealism)
     // Soft, wide glare across top half
     const glare = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'path',
+      "http://www.w3.org/2000/svg",
+      "path",
     );
     glare.setAttribute(
-      'd',
+      "d",
       `M${cx - 9},${cy - 5} Q${cx},${cy - 14} ${cx + 9},${cy - 5} Q${cx},${cy - 9} ${cx - 9},${cy - 5}`,
     );
-    glare.setAttribute('fill', 'rgba(255, 255, 255, 0.15)');
-    glare.setAttribute('filter', 'blur(1px)');
+    glare.setAttribute("fill", "rgba(255, 255, 255, 0.15)");
+    glare.setAttribute("filter", "blur(1px)");
 
     // Sharp specular highlight (Point light source)
     const specular = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'ellipse',
+      "http://www.w3.org/2000/svg",
+      "ellipse",
     );
-    specular.setAttribute('cx', String(cx - 5));
-    specular.setAttribute('cy', String(cy - 6));
-    specular.setAttribute('rx', '2.5');
-    specular.setAttribute('ry', '1.5');
-    specular.setAttribute('transform', `rotate(-45, ${cx - 5}, ${cy - 6})`);
-    specular.setAttribute('fill', 'white');
-    specular.setAttribute('opacity', '0.7');
-    specular.setAttribute('filter', 'blur(0.5px)');
+    specular.setAttribute("cx", String(cx - 5));
+    specular.setAttribute("cy", String(cy - 6));
+    specular.setAttribute("rx", "2.5");
+    specular.setAttribute("ry", "1.5");
+    specular.setAttribute("transform", `rotate(-45, ${cx - 5}, ${cy - 6})`);
+    specular.setAttribute("fill", "white");
+    specular.setAttribute("opacity", "0.7");
+    specular.setAttribute("filter", "blur(0.5px)");
 
     // Bottom edge refraction (internal reflection)
     const refraction = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'path',
+      "http://www.w3.org/2000/svg",
+      "path",
     );
     refraction.setAttribute(
-      'd',
+      "d",
       `M${cx - 8},${cy + 4} Q${cx},${cy + 10} ${cx + 8},${cy + 4}`,
     );
-    refraction.setAttribute('fill', 'none');
-    refraction.setAttribute('stroke', 'rgba(255, 255, 255, 0.3)');
-    refraction.setAttribute('stroke-width', '1.5');
-    refraction.setAttribute('stroke-linecap', 'round');
-    refraction.setAttribute('opacity', '0.6');
+    refraction.setAttribute("fill", "none");
+    refraction.setAttribute("stroke", "rgba(255, 255, 255, 0.3)");
+    refraction.setAttribute("stroke-width", "1.5");
+    refraction.setAttribute("stroke-linecap", "round");
+    refraction.setAttribute("opacity", "0.6");
 
     g.append(
       handleRect,
@@ -1338,23 +1369,23 @@ export class RobotDOMBuilder {
    */
   createCoreLight() {
     const circle = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'circle',
+      "http://www.w3.org/2000/svg",
+      "circle",
     );
-    circle.setAttribute('cx', '50');
-    circle.setAttribute('cy', '70');
-    circle.setAttribute('r', '5');
-    circle.setAttribute('fill', '#2563eb');
-    circle.setAttribute('opacity', '0.8');
+    circle.setAttribute("cx", "50");
+    circle.setAttribute("cy", "70");
+    circle.setAttribute("r", "5");
+    circle.setAttribute("fill", "#2563eb");
+    circle.setAttribute("opacity", "0.8");
 
     const animate = document.createElementNS(
-      'http://www.w3.org/2000/svg',
-      'animate',
+      "http://www.w3.org/2000/svg",
+      "animate",
     );
-    animate.setAttribute('attributeName', 'opacity');
-    animate.setAttribute('values', '0.4;1;0.4');
-    animate.setAttribute('dur', '2s');
-    animate.setAttribute('repeatCount', 'indefinite');
+    animate.setAttribute("attributeName", "opacity");
+    animate.setAttribute("values", "0.4;1;0.4");
+    animate.setAttribute("dur", "2s");
+    animate.setAttribute("repeatCount", "indefinite");
 
     circle.appendChild(animate);
 
@@ -1366,31 +1397,31 @@ export class RobotDOMBuilder {
    * @returns {HTMLElement}
    */
   createTypingIndicator() {
-    const div = document.createElement('div');
-    div.className = 'typing-indicator';
-    div.id = 'robot-typing';
+    const div = document.createElement("div");
+    div.className = "typing-indicator";
+    div.id = "robot-typing";
 
     for (let i = 0; i < 3; i++) {
-      const dot = document.createElement('span');
-      dot.className = 'typing-dot';
+      const dot = document.createElement("span");
+      dot.className = "typing-dot";
       div.appendChild(dot);
     }
 
     return div;
   }
 
-  createMessageMeta(timestamp, { sender = '' } = {}) {
-    const time = document.createElement('time');
-    time.className = 'message-meta';
+  createMessageMeta(timestamp, { sender = "" } = {}) {
+    const time = document.createElement("time");
+    time.className = "message-meta";
     const date = new Date(timestamp || Date.now());
     time.dateTime = date.toISOString();
     const value = date.toLocaleTimeString([], {
-      hour: '2-digit',
-      minute: '2-digit',
+      hour: "2-digit",
+      minute: "2-digit",
     });
     time.textContent = value;
     if (sender) {
-      time.setAttribute('aria-label', `${sender} um ${value}`);
+      time.setAttribute("aria-label", `${sender} um ${value}`);
     }
     return time;
   }

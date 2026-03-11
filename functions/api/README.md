@@ -56,7 +56,7 @@ The sync is delta-aware: unchanged documents reuse their existing vectors, only 
 
 Runtime retrieval is budgeted with `ROBOT_CONTEXT_TIMEOUT_MS` (default `3500`). Memory recall and RAG retrieval respect that limit on the request path, while prompt-memory persistence runs in `context.waitUntil(...)` so user responses stay fast without dropping long-running background writes.
 
-Der Robot-Agent arbeitet jetzt strikt identifier-basiert: Memories werden nur über die stabile User-ID aufgelöst, nicht mehr über Namen oder andere weiche Heuristiken. Die zugewiesene User-ID wird zusätzlich als First-Party-Cookie (`jules_user_id`) persistiert; der Client spiegelt dieselbe ID außerdem in `localStorage`, damit Erinnerungen nach Reloads weiter gefunden werden.
+Der Robot-Agent arbeitet primär identifier-basiert: Memories werden über die stabile User-ID aufgelöst, die zusätzlich als First-Party-Cookie (`jules_user_id`) und im Client-`localStorage` persistiert wird. Für Browserwechsel gibt es eine enge Recovery-Ausnahme: Wenn ein Nutzer sich explizit mit einem bekannten Namen vorstellt, meldet der Agent ein gefundenes Profil nur noch als bestätigungspflichtigen Recovery-Fall oder als Konflikt bei mehrdeutigen Namen, statt still auf dieses Profil umzuschalten.
 
 Create the metadata indexes once on Cloudflare before relying on Vectorize filters:
 

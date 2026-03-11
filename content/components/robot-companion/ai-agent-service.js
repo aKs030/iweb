@@ -4,44 +4,182 @@
  * @version 5.0.0
  */
 
-import { createLogger } from '../../core/logger.js';
-import { executeTool } from './modules/tool-executor.js';
+import { createLogger } from "../../core/logger.js";
+import { executeTool } from "./modules/tool-executor.js";
 
-const log = createLogger('AIAgentService');
+const log = createLogger("AIAgentService");
 
-const AGENT_ENDPOINT = '/api/ai-agent';
-const DELETE_USER_ENDPOINT = '/api/ai-agent-user';
+const AGENT_ENDPOINT = "/api/ai-agent";
+const USER_ENDPOINT = "/api/ai-agent-user";
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = [
-  'image/jpeg',
-  'image/png',
-  'image/webp',
-  'image/gif',
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
 ];
-const USER_ID_HEADER = 'x-jules-user-id';
-const USER_ID_STORAGE_KEY = 'jules:user-id';
+const USER_ID_HEADER = "x-jules-user-id";
+const USER_ID_STORAGE_KEY = "jules:user-id";
 const MAX_HISTORY = 20;
 const REQUEST_TIMEOUT_MS = 25000;
 const STREAM_IDLE_TIMEOUT_MS = 12000;
-let runtimeUserId = '';
+let runtimeUserId = "";
 let runtimeConversationHistory = [];
+let runtimeProfileState = createProfileState();
+let runtimeProfileRecovery = null;
 
 // ─── User ID & History ──────────────────────────────────────────────────────────
 
 function normalizeUserId(raw) {
-  const value = String(raw || '').trim();
-  if (!value || value === 'anonymous') return '';
-  if (!/^[A-Za-z0-9_-]{3,120}$/.test(value)) return '';
+  const value = String(raw || "").trim();
+  if (!value || value === "anonymous") return "";
+  if (!/^[A-Za-z0-9_-]{3,120}$/.test(value)) return "";
   return value;
+}
+
+function normalizeProfileStatus(raw) {
+  const value = String(raw || "")
+    .trim()
+    .toLowerCase();
+  return [
+    "identified",
+    "anonymous",
+    "recovery-pending",
+    "conflict",
+    "disconnected",
+  ].includes(value)
+    ? value
+    : "anonymous";
+}
+
+function createProfileState(overrides = {}) {
+  const userId = normalizeUserId(overrides.userId);
+  const name = String(overrides.name || "").trim();
+  const status = normalizeProfileStatus(
+    overrides.status ||
+      (name ? "identified" : userId ? "anonymous" : "disconnected"),
+  );
+  const label =
+    String(overrides.label || "").trim() ||
+    (status === "identified"
+      ? `Profil: ${name}`
+      : status === "recovery-pending"
+        ? `Profil gefunden: ${name}`
+        : status === "conflict"
+          ? `Profil unklar: ${name}`
+          : status === "disconnected"
+            ? "Kein aktives Profil"
+            : "Profil: neu");
+
+  return {
+    userId,
+    name,
+    status,
+    label,
+  };
+}
+
+function normalizeRecoveryState(raw) {
+  const status = String(raw?.status || "")
+    .trim()
+    .toLowerCase();
+  if (!["needs_confirmation", "conflict"].includes(status)) return null;
+
+  return {
+    status,
+    name: String(raw?.name || "").trim(),
+    candidateUserId: normalizeUserId(raw?.candidateUserId),
+  };
+}
+
+function setProfileState(nextState = {}) {
+  runtimeProfileState = createProfileState({
+    ...runtimeProfileState,
+    ...nextState,
+  });
+  return getProfileState();
+}
+
+function setRecoveryState(nextRecovery = null) {
+  runtimeProfileRecovery = normalizeRecoveryState(nextRecovery);
+  return getProfileState();
+}
+
+function resetProfileState({ clearUserId = false } = {}) {
+  if (clearUserId) {
+    runtimeProfileState = createProfileState({
+      userId: "",
+      name: "",
+      status: "disconnected",
+    });
+  } else {
+    runtimeProfileState = createProfileState({
+      userId: getUserId(),
+      name: "",
+      status: getUserId() ? "anonymous" : "disconnected",
+    });
+  }
+  runtimeProfileRecovery = null;
+  return getProfileState();
+}
+
+function getProfileState() {
+  return {
+    ...runtimeProfileState,
+    recovery: runtimeProfileRecovery ? { ...runtimeProfileRecovery } : null,
+  };
+}
+
+function syncProfileStateFromPayload(payload = {}) {
+  const userId = normalizeUserId(payload?.userId) || getUserId();
+  if (userId) {
+    setProfileState({ userId });
+  } else {
+    resetProfileState({ clearUserId: true });
+  }
+
+  if (payload?.profile) {
+    setProfileState(payload.profile);
+  } else if (userId) {
+    setProfileState({
+      userId,
+      status: runtimeProfileState.name ? "identified" : "anonymous",
+    });
+  }
+
+  if (payload?.recovery) {
+    setRecoveryState(payload.recovery);
+    if (runtimeProfileRecovery?.status === "needs_confirmation") {
+      setProfileState({
+        userId,
+        name: runtimeProfileRecovery.name,
+        status: "recovery-pending",
+      });
+    } else if (runtimeProfileRecovery?.status === "conflict") {
+      setProfileState({
+        userId,
+        name: runtimeProfileRecovery.name,
+        status: "conflict",
+      });
+    }
+  } else {
+    setRecoveryState(null);
+  }
+
+  return getProfileState();
 }
 
 function persistUserId(id) {
   const value = normalizeUserId(id);
   if (!value) {
     clearPersistedUserId();
-    return '';
+    return "";
   }
   runtimeUserId = value;
+  setProfileState({
+    userId: value,
+    status: runtimeProfileState.name ? runtimeProfileState.status : "anonymous",
+  });
   const storage = getUserIdStorage();
   if (storage?.setItem) {
     try {
@@ -56,6 +194,14 @@ function persistUserId(id) {
 function getUserId() {
   if (!runtimeUserId) {
     runtimeUserId = loadPersistedUserId();
+    if (runtimeUserId) {
+      setProfileState({
+        userId: runtimeUserId,
+        status: runtimeProfileState.name
+          ? runtimeProfileState.status
+          : "anonymous",
+      });
+    }
   }
   return normalizeUserId(runtimeUserId);
 }
@@ -70,17 +216,18 @@ function getUserIdStorage() {
 
 function loadPersistedUserId() {
   const storage = getUserIdStorage();
-  if (!storage?.getItem) return '';
+  if (!storage?.getItem) return "";
 
   try {
     return normalizeUserId(storage.getItem(USER_ID_STORAGE_KEY));
   } catch {
-    return '';
+    return "";
   }
 }
 
 function clearPersistedUserId() {
-  runtimeUserId = '';
+  runtimeUserId = "";
+  resetProfileState({ clearUserId: true });
   const storage = getUserIdStorage();
   if (!storage?.removeItem) return;
 
@@ -114,8 +261,8 @@ function addToHistory(role, content) {
 
 function isAbortLikeError(error) {
   return (
-    error?.name === 'AbortError' ||
-    error?.name === 'TimeoutError' ||
+    error?.name === "AbortError" ||
+    error?.name === "TimeoutError" ||
     error?.code === 20
   );
 }
@@ -136,7 +283,7 @@ function getAbortReason(service, controller) {
       ? service._activeAbortReason
       : null) ||
     controller?.__julesAbortReason ||
-    'aborted'
+    "aborted"
   );
 }
 
@@ -162,7 +309,7 @@ function createStreamIdleGuard(controller, idleTimeoutMs) {
   const touch = () => {
     if (timeoutId) clearTimeout(timeoutId);
     timeoutId = setTimeout(() => {
-      abortControllerWithReason(controller, 'stream-idle');
+      abortControllerWithReason(controller, "stream-idle");
     }, idleTimeoutMs);
   };
 
@@ -178,34 +325,34 @@ function createStreamIdleGuard(controller, idleTimeoutMs) {
 
 function stableSerialize(value) {
   if (Array.isArray(value)) {
-    return `[${value.map((item) => stableSerialize(item)).join(',')}]`;
+    return `[${value.map((item) => stableSerialize(item)).join(",")}]`;
   }
 
-  if (value && typeof value === 'object') {
+  if (value && typeof value === "object") {
     return `{${Object.keys(value)
       .sort()
       .map((key) => `${JSON.stringify(key)}:${stableSerialize(value[key])}`)
-      .join(',')}}`;
+      .join(",")}}`;
   }
 
   return JSON.stringify(value ?? null);
 }
 
 function createToolCallKey(toolCall) {
-  return `${String(toolCall?.name || '').trim()}:${stableSerialize(toolCall?.arguments || {})}`;
+  return `${String(toolCall?.name || "").trim()}:${stableSerialize(toolCall?.arguments || {})}`;
 }
 
 function getAbortResultText(reason) {
   switch (reason) {
-    case 'request-timeout':
-    case 'stream-idle':
-      return 'Die Antwort dauert zu lange. Bitte versuche es erneut.';
-    case 'history-cleared':
-    case 'destroyed':
-    case 'cancelled':
-      return '';
+    case "request-timeout":
+    case "stream-idle":
+      return "Die Antwort dauert zu lange. Bitte versuche es erneut.";
+    case "history-cleared":
+    case "destroyed":
+    case "cancelled":
+      return "";
     default:
-      return 'Die Anfrage wurde abgebrochen. Bitte versuche es erneut.';
+      return "Die Anfrage wurde abgebrochen. Bitte versuche es erneut.";
   }
 }
 
@@ -214,23 +361,23 @@ function getAbortResultText(reason) {
 function processSSEEventBlock(eventBlock, callbacks, finalMessageRef) {
   if (!eventBlock.trim()) return;
 
-  let eventType = '';
+  let eventType = "";
   const dataLines = [];
 
-  for (const rawLine of eventBlock.split('\n')) {
-    const line = rawLine.endsWith('\r') ? rawLine.slice(0, -1) : rawLine;
-    if (!line || line.startsWith(':')) continue;
-    if (line.startsWith('event:')) {
+  for (const rawLine of eventBlock.split("\n")) {
+    const line = rawLine.endsWith("\r") ? rawLine.slice(0, -1) : rawLine;
+    if (!line || line.startsWith(":")) continue;
+    if (line.startsWith("event:")) {
       eventType = line.slice(6).trim();
       continue;
     }
-    if (line.startsWith('data:')) {
+    if (line.startsWith("data:")) {
       dataLines.push(line.slice(5).trimStart());
     }
   }
 
-  const eventData = dataLines.join('\n').trim();
-  if (!eventType || !eventData || eventData === '[DONE]') return;
+  const eventData = dataLines.join("\n").trim();
+  if (!eventType || !eventData || eventData === "[DONE]") return;
 
   let data;
   try {
@@ -240,25 +387,25 @@ function processSSEEventBlock(eventBlock, callbacks, finalMessageRef) {
   }
 
   switch (eventType) {
-    case 'identity':
+    case "identity":
       if (data.userId) {
         persistUserId(data.userId);
       }
       break;
-    case 'token':
-      callbacks.onToken?.(data.text || '');
+    case "token":
+      callbacks.onToken?.(data.text || "");
       break;
-    case 'tool':
+    case "tool":
       callbacks.onTool?.(data);
       break;
-    case 'status':
-      callbacks.onStatus?.(data.phase || '');
+    case "status":
+      callbacks.onStatus?.(data.phase || "");
       break;
-    case 'message':
+    case "message":
       finalMessageRef.current = data;
       callbacks.onMessage?.(data);
       break;
-    case 'error':
+    case "error":
       callbacks.onError?.(data);
       break;
     default:
@@ -269,7 +416,7 @@ function processSSEEventBlock(eventBlock, callbacks, finalMessageRef) {
 async function parseSSEStream(response, callbacks = {}, options = {}) {
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
-  let buffer = '';
+  let buffer = "";
   const finalMessageRef = { current: null };
   const idleGuard = options.idleGuard || null;
 
@@ -280,8 +427,8 @@ async function parseSSEStream(response, callbacks = {}, options = {}) {
       idleGuard?.touch();
 
       buffer += decoder.decode(value, { stream: true });
-      const events = buffer.split('\n\n');
-      buffer = events.pop() || '';
+      const events = buffer.split("\n\n");
+      buffer = events.pop() || "";
 
       for (const event of events) {
         processSSEEventBlock(event, callbacks, finalMessageRef);
@@ -306,12 +453,14 @@ const mkResult = (text, extra = {}) => ({
   hasMemory: false,
   hasImage: false,
   toolResults: [],
+  profile: getProfileState(),
+  recovery: null,
   ...extra,
 });
 
 const pickBestText = (finalText, streamedText) => {
-  const a = String(finalText || '').trim();
-  const b = String(streamedText || '').trim();
+  const a = String(finalText || "").trim();
+  const b = String(streamedText || "").trim();
   if (!a) return b;
   if (!b) return a;
   return a.length >= b.length ? a : b;
@@ -329,10 +478,10 @@ async function callAgent(
   const clearRequestTimeout = createAbortTimer(
     controller,
     service.requestTimeoutMs,
-    'request-timeout',
+    "request-timeout",
   );
   service._activeController = controller;
-  service._activeAbortReason = '';
+  service._activeAbortReason = "";
 
   try {
     // ── Fetch ──
@@ -340,24 +489,24 @@ async function callAgent(
     try {
       if (payload.image) {
         const fd = new FormData();
-        fd.append('prompt', payload.prompt || '');
-        if (userId) fd.append('userId', userId);
-        fd.append('image', payload.image);
+        fd.append("prompt", payload.prompt || "");
+        if (userId) fd.append("userId", userId);
+        fd.append("image", payload.image);
         response = await service.fetchImpl(AGENT_ENDPOINT, {
-          method: 'POST',
+          method: "POST",
           headers: userIdHeader,
           body: fd,
-          credentials: 'same-origin',
+          credentials: "same-origin",
           signal: controller.signal,
         });
       } else {
         response = await service.fetchImpl(AGENT_ENDPOINT, {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
             ...userIdHeader,
           },
-          credentials: 'same-origin',
+          credentials: "same-origin",
           body: JSON.stringify({
             prompt: payload.prompt,
             ...(userId ? { userId } : {}),
@@ -376,8 +525,8 @@ async function callAgent(
         return mkResult(text, { aborted: true });
       }
 
-      log.error('Fetch failed:', err?.message || err);
-      const text = 'KI-Dienst nicht erreichbar. Bitte erneut versuchen.';
+      log.error("Fetch failed:", err?.message || err);
+      const text = "KI-Dienst nicht erreichbar. Bitte erneut versuchen.";
       if (text) callbacks.onToken?.(text);
       return mkResult(text);
     } finally {
@@ -404,11 +553,11 @@ async function callAgent(
       return mkResult(text);
     }
 
-    const contentType = response.headers.get('content-type') || '';
+    const contentType = response.headers.get("content-type") || "";
 
     // ── SSE Stream ──
-    if (contentType.includes('text/event-stream')) {
-      let fullText = '';
+    if (contentType.includes("text/event-stream")) {
+      let fullText = "";
       const toolResults = [];
       const executedToolKeys = new Set();
       const runClientTool = (toolCall) => {
@@ -419,7 +568,7 @@ async function callAgent(
           const result = executeTool(toolCall);
           toolResults.push({ name: toolCall.name, ...result });
         } catch (error) {
-          log.warn(`Tool error: ${toolCall?.name || 'unknown'}`, error);
+          log.warn(`Tool error: ${toolCall?.name || "unknown"}`, error);
         }
       };
       const idleGuard = createStreamIdleGuard(
@@ -439,7 +588,7 @@ async function callAgent(
             }
           },
           onTool(ev) {
-            if (ev.status === 'client') {
+            if (ev.status === "client") {
               runClientTool({
                 name: ev.name,
                 arguments: ev.arguments,
@@ -452,7 +601,7 @@ async function callAgent(
             callbacks.onStatus?.(phase);
           },
           onError(err) {
-            log.error('SSE error:', err);
+            log.error("SSE error:", err);
             callbacks.onError?.(err);
           },
           onMessage(msg) {
@@ -466,9 +615,10 @@ async function callAgent(
         { idleGuard },
       );
 
+      const profileState = syncProfileStateFromPayload(finalMessage || {});
       const text = pickBestText(finalMessage?.text, fullText);
-      addToHistory('user', payload.prompt);
-      if (text) addToHistory('assistant', text);
+      addToHistory("user", payload.prompt);
+      if (text) addToHistory("assistant", text);
 
       return {
         text,
@@ -476,6 +626,8 @@ async function callAgent(
         hasMemory: finalMessage?.hasMemory || false,
         hasImage: finalMessage?.hasImage || false,
         toolResults,
+        profile: profileState,
+        recovery: profileState.recovery,
       };
     }
 
@@ -484,9 +636,10 @@ async function callAgent(
     if (result.userId) {
       persistUserId(result.userId);
     }
+    const profileState = syncProfileStateFromPayload(result);
 
-    addToHistory('user', payload.prompt);
-    if (result.text) addToHistory('assistant', result.text);
+    addToHistory("user", payload.prompt);
+    if (result.text) addToHistory("assistant", result.text);
 
     const toolResults = [];
     const executedToolKeys = new Set();
@@ -503,17 +656,19 @@ async function callAgent(
       }
     }
 
-    callbacks.onToken?.(result.text || '');
-    return mkResult(result.text || '', {
+    callbacks.onToken?.(result.text || "");
+    return mkResult(result.text || "", {
       toolCalls: result.toolCalls || [],
       hasMemory: result.hasMemory || false,
       hasImage: result.hasImage || false,
       toolResults,
+      profile: profileState,
+      recovery: profileState.recovery,
     });
   } finally {
     if (service._activeController === controller) {
       service._activeController = null;
-      service._activeAbortReason = '';
+      service._activeAbortReason = "";
     }
   }
 }
@@ -527,13 +682,13 @@ export class AIAgentService {
     streamIdleTimeoutMs = STREAM_IDLE_TIMEOUT_MS,
   } = {}) {
     this.fetchImpl =
-      typeof fetchImpl === 'function'
+      typeof fetchImpl === "function"
         ? fetchImpl
         : globalThis.fetch?.bind(globalThis);
     this.requestTimeoutMs = requestTimeoutMs;
     this.streamIdleTimeoutMs = streamIdleTimeoutMs;
     this._activeController = null;
-    this._activeAbortReason = '';
+    this._activeAbortReason = "";
   }
 
   /** Streaming agent response with tool-calling */
@@ -542,7 +697,7 @@ export class AIAgentService {
   }
 
   /** Analyze an image with optional prompt (streamed) */
-  analyzeImage(imageFile, prompt = '', onToken) {
+  analyzeImage(imageFile, prompt = "", onToken) {
     const v = this.validateImage(imageFile);
     if (!v.valid) {
       const err = `⚠️ ${v.error}`;
@@ -551,18 +706,18 @@ export class AIAgentService {
     }
     return callAgent(
       this,
-      { prompt: prompt || 'Analysiere dieses Bild.', image: imageFile },
+      { prompt: prompt || "Analysiere dieses Bild.", image: imageFile },
       { onToken },
     );
   }
 
   /** Clear conversation history */
   clearHistory() {
-    this.cancelActiveRequest('history-cleared');
+    this.cancelActiveRequest("history-cleared");
     runtimeConversationHistory = [];
   }
 
-  cancelActiveRequest(reason = 'cancelled') {
+  cancelActiveRequest(reason = "cancelled") {
     if (!this._activeController) return false;
     this._activeAbortReason = reason;
     abortControllerWithReason(this._activeController, reason);
@@ -570,7 +725,7 @@ export class AIAgentService {
   }
 
   destroy() {
-    this.cancelActiveRequest('destroyed');
+    this.cancelActiveRequest("destroyed");
   }
 
   /** @returns {string} Runtime user ID (Cloudflare returns/rotates it per session) */
@@ -578,73 +733,178 @@ export class AIAgentService {
     return getUserId();
   }
 
-  /**
-   * Delete current user identity and memory bindings from Cloudflare.
-   * Resets local in-memory session identity on success.
-   */
-  async deleteUserIdFromCloudflare() {
-    const userId = getUserId();
-    if (!userId) {
-      return {
-        success: false,
-        text: 'Keine aktive User-ID vorhanden. Sende erst eine Nachricht.',
-      };
-    }
+  getProfileState() {
+    return getProfileState();
+  }
 
-    let response;
+  async _callUserEndpoint(
+    action,
+    payload = {},
+    { allowWithoutUserId = false } = {},
+  ) {
+    const currentUserId = getUserId();
     const controller = new AbortController();
     const clearTimeoutAbort = createAbortTimer(
       controller,
       this.requestTimeoutMs,
-      'request-timeout',
+      "request-timeout",
     );
+
     try {
-      response = await this.fetchImpl(DELETE_USER_ENDPOINT, {
-        method: 'POST',
+      const response = await this.fetchImpl(USER_ENDPOINT, {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          [USER_ID_HEADER]: userId,
+          "Content-Type": "application/json",
+          ...(currentUserId ? { [USER_ID_HEADER]: currentUserId } : {}),
         },
-        credentials: 'same-origin',
-        body: JSON.stringify({ action: 'delete' }),
+        credentials: "same-origin",
+        body: JSON.stringify({
+          action,
+          ...(currentUserId ? { userId: currentUserId } : {}),
+          ...payload,
+        }),
         signal: controller.signal,
       });
+
+      syncUserIdFromResponse(response);
+
+      let data = {};
+      try {
+        data = await response.json();
+      } catch {
+        /* ignore */
+      }
+
+      if (!response.ok || !data?.success) {
+        return {
+          success: false,
+          status: response.status,
+          data,
+          text:
+            data?.text || `Profil-Anfrage fehlgeschlagen (${response.status}).`,
+        };
+      }
+
+      if (data.userId) {
+        persistUserId(data.userId);
+      } else if (!allowWithoutUserId && action === "disconnect") {
+        clearPersistedUserId();
+      }
+      const profileState = syncProfileStateFromPayload(data);
+
+      return {
+        success: true,
+        status: response.status,
+        data,
+        profile: profileState,
+        text: data?.text || "",
+      };
     } catch (error) {
-      log.error('deleteUserIdFromCloudflare failed:', error?.message || error);
       const text = isAbortLikeError(error)
-        ? 'Cloudflare-Löschung dauert zu lange. Bitte erneut versuchen.'
-        : 'Cloudflare-Löschung nicht erreichbar. Bitte erneut versuchen.';
+        ? "Profil-Anfrage dauert zu lange. Bitte erneut versuchen."
+        : "Profil-Anfrage nicht erreichbar. Bitte erneut versuchen.";
       return {
         success: false,
+        status: 0,
+        data: {},
         text,
       };
     } finally {
       clearTimeoutAbort();
     }
+  }
 
-    let data = {};
-    try {
-      data = await response.json();
-    } catch {
-      /* ignore */
-    }
-
-    if (!response.ok || !data?.success) {
+  async activateProfile(targetUserId) {
+    const value = normalizeUserId(targetUserId);
+    if (!value) {
       return {
         success: false,
-        text:
-          data?.text ||
-          `Cloudflare-Löschung fehlgeschlagen (${response.status}).`,
+        text: "Kein gültiges Profil zum Laden gefunden.",
       };
     }
 
+    const result = await this._callUserEndpoint(
+      "activate",
+      { targetUserId: value },
+      { allowWithoutUserId: true },
+    );
+    if (!result.success) return result;
+
     runtimeConversationHistory = [];
-    clearPersistedUserId();
+    setRecoveryState(null);
     return {
       success: true,
-      userId: '',
+      userId: value,
+      memories: Array.isArray(result.data?.memories)
+        ? result.data.memories
+        : [],
+      profile: result.profile,
+      text: result.text || "Profil erfolgreich geladen.",
+    };
+  }
+
+  async disconnectCurrentDevice() {
+    const result = await this._callUserEndpoint(
+      "disconnect",
+      {},
+      { allowWithoutUserId: true },
+    );
+    if (result.success) {
+      runtimeConversationHistory = [];
+      clearPersistedUserId();
+      setRecoveryState(null);
+    }
+
+    return {
+      success: result.success,
+      userId: result.success ? "" : getUserId(),
+      profile: result.success
+        ? getProfileState()
+        : result.profile || getProfileState(),
       text:
-        data?.text || 'User-ID und Erinnerungen in Cloudflare wurden gelöscht.',
+        result.text ||
+        "Dieses Gerät ist nicht mehr mit einem Profil verbunden.",
+    };
+  }
+
+  startFreshLocalProfile() {
+    setRecoveryState(null);
+    setProfileState({
+      userId: getUserId(),
+      name: "",
+      status: getUserId() ? "anonymous" : "disconnected",
+    });
+    return getProfileState();
+  }
+
+  async updateCloudflareMemory({ key, value, previousValue = "" } = {}) {
+    const result = await this._callUserEndpoint("update-memory", {
+      key,
+      value,
+      previousValue,
+    });
+    return {
+      success: result.success,
+      memories: Array.isArray(result.data?.memories)
+        ? result.data.memories
+        : [],
+      profile: result.profile || getProfileState(),
+      text: result.text,
+    };
+  }
+
+  async forgetCloudflareMemory({ key, value = "" } = {}) {
+    const result = await this._callUserEndpoint("forget-memory", {
+      key,
+      value,
+    });
+    return {
+      success: result.success,
+      memories: Array.isArray(result.data?.memories)
+        ? result.data.memories
+        : [],
+      profile: result.profile || getProfileState(),
+      text: result.text,
     };
   }
 
@@ -655,75 +915,39 @@ export class AIAgentService {
       return {
         success: false,
         memories: [],
-        text: 'Keine aktive User-ID vorhanden. Sende erst eine Nachricht.',
+        text: "Keine aktive User-ID vorhanden. Sende erst eine Nachricht.",
       };
     }
 
-    let response;
-    const controller = new AbortController();
-    const clearTimeoutAbort = createAbortTimer(
-      controller,
-      this.requestTimeoutMs,
-      'request-timeout',
-    );
-    try {
-      response = await this.fetchImpl(DELETE_USER_ENDPOINT, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          [USER_ID_HEADER]: userId,
-        },
-        credentials: 'same-origin',
-        body: JSON.stringify({ action: 'list' }),
-        signal: controller.signal,
-      });
-    } catch (error) {
-      log.error('listCloudflareMemories failed:', error?.message || error);
-      const text = isAbortLikeError(error)
-        ? 'Cloudflare-Erinnerungen dauern zu lange. Bitte erneut versuchen.'
-        : 'Cloudflare-Erinnerungen nicht erreichbar. Bitte erneut versuchen.';
+    const result = await this._callUserEndpoint("list");
+    if (!result.success) {
       return {
         success: false,
         memories: [],
-        text,
-      };
-    } finally {
-      clearTimeoutAbort();
-    }
-
-    let data = {};
-    try {
-      data = await response.json();
-    } catch {
-      /* ignore */
-    }
-
-    if (!response.ok || !data?.success) {
-      return {
-        success: false,
-        memories: [],
-        text:
-          data?.text ||
-          `Cloudflare-Erinnerungen konnten nicht geladen werden (${response.status}).`,
+        profile: getProfileState(),
+        text: result.text,
       };
     }
 
     return {
       success: true,
-      memories: Array.isArray(data.memories) ? data.memories : [],
+      memories: Array.isArray(result.data?.memories)
+        ? result.data.memories
+        : [],
+      profile: result.profile || getProfileState(),
       retentionDays:
-        Number.isFinite(Number(data?.retentionDays)) &&
-        Number(data.retentionDays) > 0
-          ? Number(data.retentionDays)
+        Number.isFinite(Number(result.data?.retentionDays)) &&
+        Number(result.data.retentionDays) > 0
+          ? Number(result.data.retentionDays)
           : 0,
-      text: data?.text || '',
+      text: result.text || "",
     };
   }
 
   /** Validate image before upload */
   validateImage(file) {
     if (!file || !(file instanceof File))
-      return { valid: false, error: 'Keine gültige Datei.' };
+      return { valid: false, error: "Keine gültige Datei." };
     if (file.size > MAX_IMAGE_SIZE)
       return {
         valid: false,
@@ -741,8 +965,10 @@ export class AIAgentService {
 export const __test__ = {
   createToolCallKey,
   getAbortResultText,
+  getProfileState,
   getUserId,
   persistUserId,
   clearPersistedUserId,
   parseSSEStream,
+  syncProfileStateFromPayload,
 };
