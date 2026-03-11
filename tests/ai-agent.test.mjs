@@ -108,6 +108,21 @@ test('withTimeout returns fallback when operation exceeds deadline', async () =>
   assert.ok(Date.now() - startedAt < 25);
 });
 
+test('resolveUserIdentity falls back to cookie user id', async () => {
+  const identity = await __test__.resolveUserIdentity(
+    new Request('https://example.com/api/ai-agent', {
+      headers: {
+        Cookie: 'jules_user_id=u_cookie123',
+      },
+    }),
+    '',
+    '',
+    null,
+  );
+
+  assert.equal(identity.userId, 'u_cookie123');
+});
+
 test('persistPromptMemories batches KV and Vectorize writes', async () => {
   const state = createTestEnv();
 

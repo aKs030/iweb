@@ -19,6 +19,7 @@ const ALLOWED_IMAGE_TYPES = [
   'image/gif',
 ];
 const USER_ID_HEADER = 'x-jules-user-id';
+const USER_ID_STORAGE_KEY = 'jules:user-id';
 const MAX_HISTORY = 20;
 const REQUEST_TIMEOUT_MS = 25000;
 const STREAM_IDLE_TIMEOUT_MS = 12000;
@@ -36,13 +37,58 @@ function normalizeUserId(raw) {
 
 function persistUserId(id) {
   const value = normalizeUserId(id);
-  if (!value) return '';
+  if (!value) {
+    clearPersistedUserId();
+    return '';
+  }
   runtimeUserId = value;
+  const storage = getUserIdStorage();
+  if (storage?.setItem) {
+    try {
+      storage.setItem(USER_ID_STORAGE_KEY, value);
+    } catch {
+      /* ignore storage failures */
+    }
+  }
   return value;
 }
 
 function getUserId() {
+  if (!runtimeUserId) {
+    runtimeUserId = loadPersistedUserId();
+  }
   return normalizeUserId(runtimeUserId);
+}
+
+function getUserIdStorage() {
+  try {
+    return globalThis.localStorage || null;
+  } catch {
+    return null;
+  }
+}
+
+function loadPersistedUserId() {
+  const storage = getUserIdStorage();
+  if (!storage?.getItem) return '';
+
+  try {
+    return normalizeUserId(storage.getItem(USER_ID_STORAGE_KEY));
+  } catch {
+    return '';
+  }
+}
+
+function clearPersistedUserId() {
+  runtimeUserId = '';
+  const storage = getUserIdStorage();
+  if (!storage?.removeItem) return;
+
+  try {
+    storage.removeItem(USER_ID_STORAGE_KEY);
+  } catch {
+    /* ignore storage failures */
+  }
 }
 
 function syncUserIdFromResponse(response) {
@@ -301,7 +347,7 @@ async function callAgent(
           method: 'POST',
           headers: userIdHeader,
           body: fd,
-          credentials: 'omit',
+          credentials: 'same-origin',
           signal: controller.signal,
         });
       } else {
@@ -311,7 +357,7 @@ async function callAgent(
             'Content-Type': 'application/json',
             ...userIdHeader,
           },
-          credentials: 'omit',
+          credentials: 'same-origin',
           body: JSON.stringify({
             prompt: payload.prompt,
             ...(userId ? { userId } : {}),
@@ -537,7 +583,7 @@ export class AIAgentService {
    * Resets local in-memory session identity on success.
    */
   async deleteUserIdFromCloudflare() {
-    const userId = normalizeUserId(runtimeUserId);
+    const userId = getUserId();
     if (!userId) {
       return {
         success: false,
@@ -559,7 +605,7 @@ export class AIAgentService {
           'Content-Type': 'application/json',
           [USER_ID_HEADER]: userId,
         },
-        credentials: 'omit',
+        credentials: 'same-origin',
         body: JSON.stringify({ action: 'delete' }),
         signal: controller.signal,
       });
@@ -593,7 +639,7 @@ export class AIAgentService {
     }
 
     runtimeConversationHistory = [];
-    runtimeUserId = '';
+    clearPersistedUserId();
     return {
       success: true,
       userId: '',
@@ -604,7 +650,7 @@ export class AIAgentService {
 
   /** Load stored memories for current user from Cloudflare */
   async listCloudflareMemories() {
-    const userId = normalizeUserId(runtimeUserId);
+    const userId = getUserId();
     if (!userId) {
       return {
         success: false,
@@ -627,7 +673,7 @@ export class AIAgentService {
           'Content-Type': 'application/json',
           [USER_ID_HEADER]: userId,
         },
-        credentials: 'omit',
+        credentials: 'same-origin',
         body: JSON.stringify({ action: 'list' }),
         signal: controller.signal,
       });
@@ -695,5 +741,8 @@ export class AIAgentService {
 export const __test__ = {
   createToolCallKey,
   getAbortResultText,
+  getUserId,
+  persistUserId,
+  clearPersistedUserId,
   parseSSEStream,
 };

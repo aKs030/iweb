@@ -56,6 +56,8 @@ The sync is delta-aware: unchanged documents reuse their existing vectors, only 
 
 Runtime retrieval is budgeted with `ROBOT_CONTEXT_TIMEOUT_MS` (default `3500`). Memory recall and RAG retrieval respect that limit on the request path, while prompt-memory persistence runs in `context.waitUntil(...)` so user responses stay fast without dropping long-running background writes.
 
+Der Robot-Agent persistiert die zugewiesene User-ID zusätzlich als First-Party-Cookie (`jules_user_id`). Damit bleiben Cloudflare-Memories auch nach Reloads verfügbar, selbst wenn der Frontend-Runtime-State verloren geht; der Client spiegelt dieselbe ID außerdem in `localStorage`.
+
 Create the metadata indexes once on Cloudflare before relying on Vectorize filters:
 
 ```bash
