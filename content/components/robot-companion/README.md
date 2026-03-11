@@ -10,7 +10,7 @@ Cloudflare-AI-first Roboter-Begleiter mit Streaming-Chat, Tool-Calling und Memor
 - Confirm-Step fuer sensible Tool-Aktionen (Browser-Bestaetigung)
 - Bildanalyse (Upload im Chat)
 - Session-Chatverlauf nur im RAM (kein localStorage)
-- Persistente User-ID über `localStorage` plus First-Party-Cookie für Cloudflare-Memory
+- Persistente, strikt identifier-basierte User-ID über `localStorage` plus First-Party-Cookie für Cloudflare-Memory
 - Header-Buttons für Cloudflare-Memory: Erinnerungen anzeigen und User-ID löschen
 - Stateful Robot-UI (Animation, Kollision, Kontextreaktionen)
 - XSS-sichere DOM-Erstellung

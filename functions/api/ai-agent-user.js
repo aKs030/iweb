@@ -204,6 +204,7 @@ function normalizeAction(raw) {
 }
 
 async function deleteUsernameMappingsForUser(kv, userId) {
+  // Legacy cleanup for older name-based identity mappings.
   if (!kv?.list || !kv?.get || !kv?.delete) {
     return { scanned: 0, deleted: 0 };
   }

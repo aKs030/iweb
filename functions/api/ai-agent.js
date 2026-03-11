@@ -331,51 +331,7 @@ function getFallbackMemoryKV(env) {
   return null;
 }
 
-function sanitizeNameKey(name) {
-  return `username:${String(name || '')
-    .toLowerCase()
-    .replace(/[^a-z0-9à-öø-ÿ]/g, '')}`;
-}
-
-async function lookupUserIdByName(env, name) {
-  const kv = getFallbackMemoryKV(env);
-  if (!kv?.get || !name) {
-    return null;
-  }
-  try {
-    const key = sanitizeNameKey(name);
-    const result = await kv.get(key);
-    return result;
-  } catch (err) {
-    console.error('[lookupUserIdByName] Error:', err);
-    return null;
-  }
-}
-
-async function linkUserByName(env, name, userId) {
-  const kv = getFallbackMemoryKV(env);
-  if (!kv?.put || !name || !userId) {
-    return false;
-  }
-  if (name.toLowerCase() === 'jules') {
-    return false;
-  }
-  try {
-    const key = sanitizeNameKey(name);
-    await kv.put(key, userId);
-    return true;
-  } catch (err) {
-    console.error('[linkUserByName] Error:', err);
-    return false;
-  }
-}
-
-async function resolveUserIdentity(
-  request,
-  requestedUserId = '',
-  prompt = '',
-  env = null,
-) {
+async function resolveUserIdentity(request, requestedUserId = '') {
   const headerUserId = normalizeUserId(
     request.headers.get(USER_ID_HEADER_NAME),
   );
@@ -384,33 +340,12 @@ async function resolveUserIdentity(
     request.headers.get('Cookie'),
   );
 
-  let nameMatchUserId = null;
-  let extractedName = null;
-
-  if (prompt && env) {
-    extractedName = extractNameFromPrompt(prompt);
-    if (extractedName) {
-      nameMatchUserId = await lookupUserIdByName(env, extractedName);
-    }
-  }
-
   // Priority:
   // 1) Explicit request identity from the current browser runtime
-  // 2) Name-based Cloudflare mapping when the user re-introduces themselves
-  // 3) First-party cookie fallback across reloads/visits
+  // 2) First-party cookie fallback across reloads/visits
   // 4) Fresh generated ID when no identity signal exists
   const resolvedUserId =
-    headerUserId ||
-    bodyUserId ||
-    nameMatchUserId ||
-    cookieUserId ||
-    createUserId();
-
-  // Wenn ein Name gesagt wurde, aber wir ihn noch NICHT im KV hatten (nameMatchUserId === null),
-  // verknüpfen wir die gerade ermittelte/neu generierte ID SOFORT mit dem Namen im KV.
-  if (extractedName && !nameMatchUserId && env) {
-    await linkUserByName(env, extractedName, resolvedUserId);
-  }
+    headerUserId || bodyUserId || cookieUserId || createUserId();
 
   return {
     userId: resolvedUserId,
@@ -828,9 +763,6 @@ async function storeMemory(env, userId, key, value, config) {
     cleanedValue,
     config,
   );
-  if (metadata.key === 'name') {
-    await linkUserByName(env, cleanedValue, userId);
-  }
 
   if (!env.AI || !env.JULES_MEMORY) {
     return kvStored
@@ -1514,10 +1446,6 @@ async function persistPromptMemories(env, userId, prompt, config) {
     entries,
     config,
   );
-  const nameEntries = entries.filter((entry) => entry.key === 'name');
-  await Promise.allSettled(
-    nameEntries.map((entry) => linkUserByName(env, entry.value, userId)),
-  );
 
   let vectorStored = false;
   if (env.AI && env.JULES_MEMORY) {
@@ -1888,12 +1816,7 @@ export async function onRequestPost(context) {
     } = body;
     imageAnalysis = body.imageAnalysis || imageAnalysis;
 
-    const identity = await resolveUserIdentity(
-      request,
-      requestedUserId,
-      prompt,
-      env,
-    );
+    const identity = await resolveUserIdentity(request, requestedUserId);
     const userId = identity.userId;
     const userRole = resolveUserToolRole(config, userId);
     const allowedToolDefinitions = getAllowedToolDefinitions(
