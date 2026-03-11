@@ -3,7 +3,7 @@
 ## Start
 
 ```js
-import { RobotCompanion } from './robot-companion.js';
+import { RobotCompanion } from "./robot-companion.js";
 
 const robot = new RobotCompanion();
 robot.init();
@@ -13,7 +13,7 @@ robot.init();
 
 ```js
 robot.toggleChat(true);
-robot.addMessage('Hallo', 'bot');
+robot.addMessage("Hallo", "bot");
 robot.handleAction(ROBOT_ACTIONS.START);
 ```
 
@@ -22,8 +22,8 @@ robot.handleAction(ROBOT_ACTIONS.START);
 ```js
 const agentService = await robot.getAgentService();
 
-const response = await agentService.generateResponse('Hallo!', (chunk) => {
-  console.log('stream:', chunk);
+const response = await agentService.generateResponse("Hallo!", (chunk) => {
+  console.log("stream:", chunk);
 });
 ```
 
@@ -41,8 +41,10 @@ ROBOT_ACTIONS.CLOSE_SEARCH;
 ROBOT_ACTIONS.SCROLL_TOP;
 ROBOT_ACTIONS.COPY_CURRENT_URL;
 ROBOT_ACTIONS.SHOW_MEMORIES;
+ROBOT_ACTIONS.EDIT_PROFILE;
+ROBOT_ACTIONS.SWITCH_PROFILE;
+ROBOT_ACTIONS.DISCONNECT_PROFILE;
 ROBOT_ACTIONS.CLEAR_CHAT;
-ROBOT_ACTIONS.DELETE_CLOUDFLARE_USER;
 ```
 
 Bildanalyse startet direkt ueber den Upload-Button im Chat.

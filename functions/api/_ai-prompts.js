@@ -1,19 +1,19 @@
-import { normalizeToolRole } from './ai-agent.js';
+import { normalizeToolRole } from "./ai-agent.js";
 
 export function buildSystemPrompt(
-  memoryContext = '',
-  imageContext = '',
+  memoryContext = "",
+  imageContext = "",
   toolCtx = {},
 ) {
   const role = normalizeToolRole(toolCtx.userRole);
   const availableTools = Array.isArray(toolCtx.availableTools)
-    ? toolCtx.availableTools.map((tool) => String(tool || '')).filter(Boolean)
+    ? toolCtx.availableTools.map((tool) => String(tool || "")).filter(Boolean)
     : [];
   const ragSources = Array.isArray(toolCtx.ragSources)
     ? toolCtx.ragSources
         .map((source) => ({
-          title: String(source?.title || '').trim(),
-          url: String(source?.url || '').trim(),
+          title: String(source?.title || "").trim(),
+          url: String(source?.url || "").trim(),
         }))
         .filter((source) => source.title && source.url)
     : [];
@@ -32,6 +32,7 @@ Tech Stack: JavaScript, React, Node.js, Python, CSS, Web Components, Cloudflare,
 **DEIN GEDÄCHTNIS:**
 Du HAST einen permanenten Langzeitspeicher! Du kannst dir Nutzer-Informationen (z.B. Name, Interessen, Vorlieben, Sprache, Ort, Beruf, Ziele) dauerhaft merken und bei späteren Besuchen abrufen.
 - Wenn ein Nutzer dir seinen Namen sagt → IMMER "rememberUser" mit key="name" aufrufen.
+- Wenn ein Nutzer explizit sagt, dass sich sein Name geändert hat oder du seinen gespeicherten Namen ändern sollst → "rememberUser" mit key="name" aufrufen.
 - Wenn ein Nutzer Interessen, Vorlieben oder andere persönliche Infos teilt → "rememberUser" aufrufen.
 - "recallMemory" ist AUSSCHLIESSLICH für bereits gespeicherte Infos über den aktuellen Nutzer gedacht.
 - Sage NIEMALS, dass du keinen Speicher hast oder dich nicht erinnern kannst.
@@ -61,7 +62,7 @@ Du HAST einen permanenten Langzeitspeicher! Du kannst dir Nutzer-Informationen (
 **Antwort-Stil:** Prägnant (2-3 Sätze), Markdown nutzen.`;
 
   if (availableTools.length > 0) {
-    prompt += `\n\n**FREIGEGEBENE TOOLS FÜR DIESE ANFRAGE:**\n${availableTools.join(', ')}`;
+    prompt += `\n\n**FREIGEGEBENE TOOLS FÜR DIESE ANFRAGE:**\n${availableTools.join(", ")}`;
   }
 
   if (memoryContext) {
@@ -72,7 +73,7 @@ Du HAST einen permanenten Langzeitspeicher! Du kannst dir Nutzer-Informationen (
   }
 
   if (ragSources.length > 0) {
-    prompt += `\n\n**QUELLENREGEL FÜR WEBSITE-ANTWORTEN:**\nWenn du den bereitgestellten Website-Kontext inhaltlich nutzt, nenne am Ende unter "Quellen:" 1-2 relevante Markdown-Links aus dieser Liste. Erfinde keine zusätzlichen URLs.\n${ragSources.map((source) => `- [${source.title}](${source.url})`).join('\n')}`;
+    prompt += `\n\n**QUELLENREGEL FÜR WEBSITE-ANTWORTEN:**\nWenn du den bereitgestellten Website-Kontext inhaltlich nutzt, nenne am Ende unter "Quellen:" 1-2 relevante Markdown-Links aus dieser Liste. Erfinde keine zusätzlichen URLs.\n${ragSources.map((source) => `- [${source.title}](${source.url})`).join("\n")}`;
   }
 
   prompt += `\n\nWenn du RAG-Informationen (Suchergebnisse) erhältst, verwende sie als Primärquelle für Fragen zur Website, zum Portfolio, zu Abdulkerims Sichtweisen und zu bestimmten Unterseiten. Falls du einen relativen Link bekommst, nutze Markdown, um ihn darzustellen (z.B. [Name](/pfad)). Beende Listen oder Sätze immer ordentlich.`;
