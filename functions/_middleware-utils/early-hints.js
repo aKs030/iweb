@@ -38,6 +38,43 @@ const CRITICAL_RESOURCES = [
   },
 ];
 
+const STANDALONE_SHELL_EXCLUSIONS = new Set([
+  '/content/styles/root.css',
+  '/content/styles/main.css',
+  '/content/styles/animations.css',
+  '/content/main.js',
+  '/content/components/head/head-inline.js',
+  '/content/components/menu/SiteMenu.js',
+]);
+
+function normalizePathname(pathname = '/') {
+  if (!pathname) return '/';
+  return pathname.endsWith('/') && pathname !== '/'
+    ? pathname.slice(0, -1)
+    : pathname;
+}
+
+function isStandaloneShellPath(pathname = '/') {
+  const normalized = normalizePathname(pathname);
+  return (
+    normalized === '/admin' ||
+    normalized === '/pages/admin' ||
+    normalized === '/pages/admin.html' ||
+    normalized === '/ai-info' ||
+    normalized.startsWith('/pages/ai-info')
+  );
+}
+
+function getCriticalResourcesForPath(pathname = '/') {
+  if (!isStandaloneShellPath(pathname)) {
+    return CRITICAL_RESOURCES;
+  }
+
+  return CRITICAL_RESOURCES.filter(
+    ({ href }) => !STANDALONE_SHELL_EXCLUSIONS.has(href),
+  );
+}
+
 /**
  * Format a single resource entry as an HTTP Link header value.
  * @param {{ href: string, rel: string, as?: string, crossorigin?: boolean }} r
@@ -56,6 +93,6 @@ function formatLinkValue(r) {
  *
  * @returns {string[]} Array of formatted Link header values
  */
-export function buildResponseLinkHeaders() {
-  return CRITICAL_RESOURCES.map(formatLinkValue);
+export function buildResponseLinkHeaders(pathname = '/') {
+  return getCriticalResourcesForPath(pathname).map(formatLinkValue);
 }

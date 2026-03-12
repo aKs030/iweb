@@ -67,9 +67,6 @@ const KV_KEYS = {
   GLOBAL_HEAD: `template:${DEPLOY_VERSION}:global-head`,
 };
 
-// Pre-compute Link header values at module load (immutable per deploy)
-const RESPONSE_LINK_HEADERS = buildResponseLinkHeaders();
-
 /**
  * Load template with KV caching + SWR.
  */
@@ -294,7 +291,8 @@ export async function onRequest(context) {
   newHeaders.set('Transfer-Encoding', 'chunked');
 
   // Link headers: preload resources via HTTP headers
-  for (const linkValue of RESPONSE_LINK_HEADERS) {
+  const responseLinkHeaders = buildResponseLinkHeaders(url.pathname);
+  for (const linkValue of responseLinkHeaders) {
     newHeaders.append('Link', linkValue);
   }
 
