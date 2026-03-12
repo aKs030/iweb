@@ -31,6 +31,7 @@
           Aktualisieren
         </button>
       </header>
+      <p id="admin-status-message" class="admin-status-message" hidden></p>
 
       <main id="admin-main" hidden>
         <!-- Key Stats -->
@@ -207,15 +208,72 @@
       const adminMain = document.getElementById('admin-main');
       const authError = document.getElementById('auth-error');
       const refreshButton = document.getElementById('refresh-button');
+      const statusMessage = document.getElementById('admin-status-message');
 
       function setHidden(element, hidden) {
         if (!element) return;
         element.hidden = hidden;
       }
 
+      function setText(element, text) {
+        if (!element) return;
+        element.textContent = text;
+      }
+
+      function escapeHtml(value) {
+        return String(value ?? '').replace(/[&<>"']/g, (char) => {
+          const entities = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;',
+          };
+          return entities[char] || char;
+        });
+      }
+
+      function formatDate(value, options) {
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) return '-';
+        return date.toLocaleString('de-DE', options);
+      }
+
+      async function parseJsonResponse(response) {
+        try {
+          return await response.json();
+        } catch {
+          return null;
+        }
+      }
+
+      function showStatus(message, tone = 'info') {
+        if (!statusMessage) return;
+        setText(statusMessage, message || '');
+        statusMessage.dataset.tone = tone;
+        setHidden(statusMessage, !message);
+      }
+
+      function clearStatus() {
+        showStatus('', 'info');
+      }
+
+      function showAuthError(message) {
+        setText(authError, message || 'Falsches Passwort!');
+        setHidden(authError, !message);
+      }
+
+      function formatWarnings(warnings) {
+        return warnings
+          .map((warning) => warning && warning.message)
+          .filter(Boolean)
+          .join(' ');
+      }
+
       async function fetchData() {
-        const token = localStorage.getItem(STORAGE_KEY);
+        const token = localStorage.getItem(STORAGE_KEY)?.trim();
         if (!token) {
+          clearStatus();
           showAuth();
           return;
         }
@@ -224,55 +282,88 @@
           const response = await fetch(API_URL, {
             headers: { Authorization: `Bearer ${token}` },
           });
+          const payload = await parseJsonResponse(response);
 
           if (response.status === 401) {
-            showAuth(true);
+            localStorage.removeItem(STORAGE_KEY);
+            passwordInput.value = '';
+            showStatus('Sitzung abgelaufen. Bitte erneut einloggen.', 'error');
+            showAuth(true, 'Ungültiges Passwort. Bitte erneut versuchen.');
             return;
           }
 
-          if (!response.ok) throw new Error('Fehler beim Laden');
+          if (!response.ok) {
+            throw new Error(
+              payload?.details || payload?.error || 'Fehler beim Laden',
+            );
+          }
 
-          const data = await response.json();
-          updateUI(data);
+          updateUI(payload || {});
           hideAuth();
+          const warningMessage = formatWarnings(payload?.warnings || []);
+          if (warningMessage) {
+            showStatus(`Teilweise geladen. ${warningMessage}`, 'warning');
+          } else {
+            clearStatus();
+          }
         } catch (err) {
           console.error(err);
-          alert('Daten konnten nicht geladen werden.');
+          const message =
+            err instanceof Error
+              ? err.message
+              : 'Daten konnten nicht geladen werden.';
+          showStatus(message, 'error');
+          if (!authOverlay.classList.contains('hidden')) {
+            showAuthError(message);
+          }
         }
       }
 
       function updateUI(data) {
+        const likes = Array.isArray(data.likes) ? data.likes : [];
+        const comments = Array.isArray(data.comments) ? data.comments : [];
+        const contacts = Array.isArray(data.contacts) ? data.contacts : [];
+        const nameMappings = Array.isArray(data.nameMappings)
+          ? data.nameMappings
+          : [];
+        const aiMemories = Array.isArray(data.aiMemories)
+          ? data.aiMemories
+          : [];
+
         // Stats
-        const totalLikes = data.likes.reduce(
-          (acc, curr) => acc + curr.likes,
-          0,
-        );
+        const totalLikes = likes.reduce((acc, curr) => acc + curr.likes, 0);
         document.getElementById('total-likes').innerText = totalLikes;
 
-        if (data.likes.length > 0) {
-          const top = data.likes[0];
+        if (likes.length > 0) {
+          const top = likes[0];
           document.getElementById('top-project').innerText =
             `${top.project_id} (${top.likes})`;
+        } else {
+          document.getElementById('top-project').innerText = '-';
         }
 
         document.getElementById('feedback-count').innerText =
-          data.comments.length + data.contacts.length;
+          comments.length + contacts.length;
         document.getElementById('last-update').innerText =
-          `Letztes Update: ${new Date(data.timestamp).toLocaleTimeString()}`;
+          `Letztes Update: ${formatDate(data.timestamp, {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+          })}`;
 
         // Likes Table
         const likesBody = document.getElementById('likes-table-body');
         const likesTable = likesBody.closest('table');
         const noLikes = document.getElementById('no-likes');
-        if (data.likes.length > 0) {
+        if (likes.length > 0) {
           setHidden(likesTable, false);
           setHidden(noLikes, true);
-          likesBody.innerHTML = data.likes
+          likesBody.innerHTML = likes
             .map(
               (item) => `
                   <tr>
-                      <td>${item.project_id}</td>
-                      <td>${item.likes}</td>
+                      <td>${escapeHtml(item.project_id)}</td>
+                      <td>${escapeHtml(item.likes)}</td>
                   </tr>
               `,
             )
@@ -285,18 +376,18 @@
         // Contact Messages
         const contactsList = document.getElementById('contacts-list');
         const noContacts = document.getElementById('no-contacts');
-        if (data.contacts && data.contacts.length > 0) {
+        if (contacts.length > 0) {
           setHidden(noContacts, true);
-          contactsList.innerHTML = data.contacts
+          contactsList.innerHTML = contacts
             .map(
               (m) => `
                 <div class="comment-item comment-item--primary">
                     <div class="comment-meta">
-                        <span class="comment-author">${m.name} (${m.email})</span>
-                        <span class="comment-date">${new Date(m.created_at).toLocaleString()}</span>
+                        <span class="comment-author">${escapeHtml(m.name)} (${escapeHtml(m.email)})</span>
+                        <span class="comment-date">${formatDate(m.created_at)}</span>
                     </div>
-                    <div class="admin-accent-title">${m.subject}</div>
-                    <p class="comment-content">${m.message}</p>
+                    <div class="admin-accent-title">${escapeHtml(m.subject || '(Ohne Betreff)')}</div>
+                    <p class="comment-content">${escapeHtml(m.message)}</p>
                 </div>
             `,
             )
@@ -309,15 +400,15 @@
         // AI Names
         const namesGrid = document.getElementById('names-grid');
         const noNames = document.getElementById('no-names');
-        if (data.nameMappings && data.nameMappings.length > 0) {
+        if (nameMappings.length > 0) {
           setHidden(noNames, true);
-          namesGrid.innerHTML = data.nameMappings
+          namesGrid.innerHTML = nameMappings
             .map(
               (n) => `
                 <div class="stat-card stat-card--compact">
                     <div class="stat-label">Name</div>
-                    <div class="admin-name-card__title">${n.name}</div>
-                    <div class="admin-name-card__meta">ID: ${n.userId}</div>
+                    <div class="admin-name-card__title">${escapeHtml(n.name)}</div>
+                    <div class="admin-name-card__meta">ID: ${escapeHtml(n.userId)}</div>
                 </div>
             `,
             )
@@ -330,22 +421,22 @@
         // AI Memories
         const memoriesContainer = document.getElementById('memories-container');
         const noMemories = document.getElementById('no-memories');
-        if (data.aiMemories && data.aiMemories.length > 0) {
+        if (aiMemories.length > 0) {
           setHidden(noMemories, true);
-          memoriesContainer.innerHTML = data.aiMemories
+          memoriesContainer.innerHTML = aiMemories
             .map(
               (user) => `
                 <div class="admin-memory-group">
-                    <div class="admin-memory-group__label">User: ${user.userId}</div>
+                    <div class="admin-memory-group__label">User: ${escapeHtml(user.userId)}</div>
                     ${user.memories
                       .map(
                         (m) => `
                         <div class="comment-item comment-item--memory">
                             <div class="comment-meta">
-                                <span class="comment-author comment-author--memory">Fact: ${m.key}</span>
-                                <span class="comment-date">${new Date(m.timestamp).toLocaleString()}</span>
+                                <span class="comment-author comment-author--memory">Fact: ${escapeHtml(m.key)}</span>
+                                <span class="comment-date">${formatDate(m.timestamp)}</span>
                             </div>
-                            <p class="comment-content comment-content--memory">${m.value}</p>
+                            <p class="comment-content comment-content--memory">${escapeHtml(m.value)}</p>
                         </div>
                     `,
                       )
@@ -362,18 +453,18 @@
         // Comments List
         const commentsList = document.getElementById('comments-list');
         const noComments = document.getElementById('no-comments');
-        if (data.comments && data.comments.length > 0) {
+        if (comments.length > 0) {
           setHidden(noComments, true);
-          commentsList.innerHTML = data.comments
+          commentsList.innerHTML = comments
             .map(
               (c) => `
                   <div class="comment-item">
                       <div class="comment-meta">
-                          <span class="comment-author">${c.author_name}</span>
-                          <span class="comment-date">${new Date(c.created_at).toLocaleString()}</span>
+                          <span class="comment-author">${escapeHtml(c.author_name)}</span>
+                          <span class="comment-date">${formatDate(c.created_at)}</span>
                       </div>
-                      <p class="comment-content">${c.content}</p>
-                      <span class="comment-post">Post: ${c.post_id}</span>
+                      <p class="comment-content">${escapeHtml(c.content)}</p>
+                      <span class="comment-post">Post: ${escapeHtml(c.post_id)}</span>
                   </div>
               `,
             )
@@ -386,8 +477,8 @@
         setHidden(adminMain, false);
       }
 
-      function showAuth(showError = false) {
-        setHidden(authError, !showError);
+      function showAuth(showError = false, message = 'Falsches Passwort!') {
+        showAuthError(showError ? message : '');
         authOverlay.classList.remove('hidden');
         setHidden(adminMain, true);
       }
