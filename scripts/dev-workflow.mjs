@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = path.resolve(__dirname, '..');
+const LOCAL_D1_NAME = 'portfolio-likes';
 
 const NODE_BIN = process.execPath;
 const NPX_BIN = process.platform === 'win32' ? 'npx.cmd' : 'npx';
@@ -133,6 +134,17 @@ async function main() {
     'utilities:generate',
     NODE_BIN,
     [path.join(ROOT_DIR, 'scripts/generate-utilities.mjs')],
+    false,
+  );
+  if (code !== 0) process.exit(code);
+
+  console.log(
+    `[dev] preflight: applying local D1 migrations (${LOCAL_D1_NAME})`,
+  );
+  code = await run(
+    'd1:migrate',
+    NPX_BIN,
+    ['wrangler', 'd1', 'migrations', 'apply', LOCAL_D1_NAME],
     false,
   );
   if (code !== 0) process.exit(code);

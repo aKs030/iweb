@@ -5,6 +5,12 @@
 
 import { getCorsHeaders, handleOptions } from "./_cors.js";
 import {
+  deleteAdminNameMapping,
+  deleteAdminUserIndex,
+  syncAdminUserIndex,
+  upsertAdminNameMapping,
+} from "./admin/_admin-index.js";
+import {
   USER_ID_HEADER_NAME,
   appendSetCookie,
   buildUserIdClearCookie,
@@ -59,7 +65,7 @@ function normalizeUserId(raw) {
   return normalizeSharedUserId(raw);
 }
 
-function getMemoryKV(env) {
+export function getMemoryKV(env) {
   if (env?.JULES_MEMORY_KV?.get && env?.JULES_MEMORY_KV?.delete) {
     return env.JULES_MEMORY_KV;
   }
@@ -129,7 +135,7 @@ function getLatestMemoryEntry(entries, key) {
   return latestEntry;
 }
 
-function buildProfileInfo(userId, memories = []) {
+export function buildProfileInfo(userId, memories = []) {
   const name = normalizeMemoryText(
     getLatestMemoryEntry(memories, "name")?.value,
   );
@@ -202,7 +208,11 @@ function compactMemories(entries, now, retentionMs) {
   return [...unique.values()].sort((a, b) => a.timestamp - b.timestamp);
 }
 
-async function loadFallbackMemories(
+export function compactMemoryEntries(entries = [], env, now = Date.now()) {
+  return compactMemories(entries, now, getMemoryRetentionMs(env));
+}
+
+export async function loadFallbackMemories(
   kv,
   userId,
   env,
@@ -246,8 +256,25 @@ async function saveFallbackMemories(kv, userId, memories, env) {
   }
 }
 
+export async function deleteUserProfile(kv, env, userId) {
+  const memoryKey = getMemoryKey(userId);
+  await kv.delete(memoryKey);
+  const usernameStats = await deleteUsernameMappingsForUser(kv, userId);
+  const vectorizeStats = await deleteVectorizeMemoriesForUser(env, userId);
+  const indexStats = await deleteAdminUserIndex(env, userId);
+
+  return {
+    memoryKey,
+    usernameMappings: usernameStats.deleted,
+    scannedUsernameMappings: usernameStats.scanned,
+    vectorize: vectorizeStats,
+    index: indexStats,
+  };
+}
+
 async function syncUserNameLookup(
   kv,
+  env,
   userId,
   nextName = "",
   previousName = "",
@@ -263,6 +290,10 @@ async function syncUserNameLookup(
       const previousMappedUserId = normalizeUserId(await kv.get(previousKey));
       if (previousMappedUserId === normalizedUserId) {
         await kv.delete(previousKey);
+        await deleteAdminNameMapping(
+          env,
+          previousKey.replace(USERNAME_LOOKUP_PREFIX, ""),
+        );
       }
     }
 
@@ -277,17 +308,27 @@ async function syncUserNameLookup(
       (existingUserId && existingUserId !== normalizedUserId)
     ) {
       await kv.put(nextKey, USERNAME_LOOKUP_CONFLICT);
+      await upsertAdminNameMapping(
+        env,
+        nextKey.replace(USERNAME_LOOKUP_PREFIX, ""),
+        USERNAME_LOOKUP_CONFLICT,
+      );
       return { linked: false, conflict: true };
     }
 
     await kv.put(nextKey, normalizedUserId);
+    await upsertAdminNameMapping(
+      env,
+      nextKey.replace(USERNAME_LOOKUP_PREFIX, ""),
+      normalizedUserId,
+    );
     return { linked: true, conflict: false };
   } catch {
     return { linked: false, conflict: false };
   }
 }
 
-async function upsertVectorizeMemory(env, userId, entry) {
+export async function upsertVectorizeMemory(env, userId, entry) {
   if (!env?.AI?.run || !env?.JULES_MEMORY?.upsert) return false;
 
   const embeddingModel = env.ROBOT_EMBEDDING_MODEL || DEFAULT_EMBEDDING_MODEL;
@@ -367,7 +408,7 @@ function rankMemoryKey(key) {
   return 99;
 }
 
-function orderMemories(memories = []) {
+export function orderMemories(memories = []) {
   return [...memories].sort((a, b) => {
     const priorityDiff = (b.priority || 0) - (a.priority || 0);
     if (priorityDiff !== 0) return priorityDiff;
@@ -393,7 +434,7 @@ function normalizeAction(raw) {
   return "delete";
 }
 
-async function deleteUsernameMappingsForUser(kv, userId) {
+export async function deleteUsernameMappingsForUser(kv, userId) {
   // Remove all name lookup bindings that still point to this profile.
   if (!kv?.list || !kv?.get || !kv?.delete) {
     return { scanned: 0, deleted: 0 };
@@ -443,7 +484,7 @@ async function deleteUsernameMappingsForUser(kv, userId) {
   return { scanned, deleted };
 }
 
-async function deleteVectorizeMemoriesForUser(env, userId) {
+export async function deleteVectorizeMemoriesForUser(env, userId) {
   const index = env?.JULES_MEMORY;
   if (!index) {
     return {
@@ -559,7 +600,7 @@ async function deleteVectorizeMemoriesForUser(env, userId) {
   }
 }
 
-async function updateSingleMemory(kv, env, userId, body) {
+export async function updateSingleMemory(kv, env, userId, body) {
   const key = normalizeMemoryKey(body?.key);
   const value = normalizeMemoryText(body?.value || "");
   const previousValue = normalizeMemoryText(body?.previousValue || "");
@@ -611,7 +652,7 @@ async function updateSingleMemory(kv, env, userId, body) {
   }
 
   if (key === "name") {
-    await syncUserNameLookup(kv, userId, value, previousName);
+    await syncUserNameLookup(kv, env, userId, value, previousName);
   }
 
   if (SINGLETON_MEMORY_KEYS.has(key)) {
@@ -628,6 +669,7 @@ async function updateSingleMemory(kv, env, userId, body) {
   const memories = await loadFallbackMemories(kv, userId, env, {
     persistPruned: true,
   });
+  await syncAdminUserIndex(env, kv, userId, memories);
 
   return {
     success: true,
@@ -638,7 +680,7 @@ async function updateSingleMemory(kv, env, userId, body) {
   };
 }
 
-async function forgetSingleMemory(kv, env, userId, body) {
+export async function forgetSingleMemory(kv, env, userId, body) {
   const key = normalizeMemoryKey(body?.key);
   const value = normalizeMemoryText(body?.value || "");
   if (!key) {
@@ -668,7 +710,7 @@ async function forgetSingleMemory(kv, env, userId, body) {
   }
 
   if (key === "name") {
-    await syncUserNameLookup(kv, userId, "", previousName);
+    await syncUserNameLookup(kv, env, userId, "", previousName);
   }
 
   if (SINGLETON_MEMORY_KEYS.has(key)) {
@@ -680,6 +722,7 @@ async function forgetSingleMemory(kv, env, userId, body) {
   const memories = await loadFallbackMemories(kv, userId, env, {
     persistPruned: true,
   });
+  await syncAdminUserIndex(env, kv, userId, memories);
 
   return {
     success: true,
@@ -864,21 +907,13 @@ export async function onRequestPost(context) {
       );
     }
 
-    const memoryKey = getMemoryKey(userId);
-    await kv.delete(memoryKey);
-    const usernameStats = await deleteUsernameMappingsForUser(kv, userId);
-    const vectorizeStats = await deleteVectorizeMemoriesForUser(env, userId);
+    const deleted = await deleteUserProfile(kv, env, userId);
 
     return Response.json(
       {
         success: true,
         userId,
-        deleted: {
-          memoryKey,
-          usernameMappings: usernameStats.deleted,
-          scannedUsernameMappings: usernameStats.scanned,
-          vectorize: vectorizeStats,
-        },
+        deleted,
         text: "User-ID und verknüpfte Erinnerungen wurden aus Cloudflare gelöscht. Neue User-ID wird beim nächsten Chat automatisch verwendet.",
       },
       { headers: responseHeaders },
