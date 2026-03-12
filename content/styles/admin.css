@@ -123,6 +123,27 @@ body.admin-page {
   font-size: var(--size-r-0-9);
 }
 
+.admin-status-message {
+  margin: calc(var(--space-6) * -1) 0 var(--space-8);
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: rgb(255 255 255 / 4%);
+  color: var(--text-secondary);
+}
+
+.admin-status-message[data-tone='warning'] {
+  border-color: rgb(245 158 11 / 40%);
+  background: rgb(245 158 11 / 12%);
+  color: rgb(253 230 138);
+}
+
+.admin-status-message[data-tone='error'] {
+  border-color: rgb(239 68 68 / 45%);
+  background: rgb(239 68 68 / 12%);
+  color: rgb(254 202 202);
+}
+
 /* Stats Cards */
 .stats-grid {
   display: grid;
