@@ -11,7 +11,7 @@ Cloudflare-AI-first Roboter-Begleiter mit Streaming-Chat, Tool-Calling und Memor
 - Bildanalyse (Upload im Chat)
 - Session-Chatverlauf nur im RAM (kein localStorage)
 - Persistente User-ID über `localStorage` plus First-Party-Cookie für Cloudflare-Memory
-- Explizite, bestätigungspflichtige Profil-Recovery über den gespeicherten Namen bei Browserwechseln
+- Automatische Profil-Recovery über gespeicherte Namen bei Browserwechseln plus Cookie-Fallback für gespeicherte Erinnerungen
 - Sichtbarer Profilstatus im Chat-Header sowie Aktionen für Erinnerungen, Profilwechsel, Gerät trennen und Bearbeiten
 - Stateful Robot-UI (Animation, Kollision, Kontextreaktionen)
 - XSS-sichere DOM-Erstellung
@@ -41,7 +41,7 @@ robot-companion/
 ## Verwendung
 
 ```js
-import { RobotCompanion } from "./robot-companion.js";
+import { RobotCompanion } from './robot-companion.js';
 
 const robot = new RobotCompanion();
 robot.init();
@@ -51,21 +51,21 @@ robot.init();
 
 ```js
 ROBOT_ACTIONS = {
-  START: "start",
-  TOGGLE_THEME: "toggleTheme",
-  SEARCH_WEBSITE: "searchWebsite",
-  SCROLL_FOOTER: "scrollFooter",
-  OPEN_MENU: "openMenu",
-  CLOSE_MENU: "closeMenu",
-  OPEN_SEARCH: "openSearch",
-  CLOSE_SEARCH: "closeSearch",
-  SCROLL_TOP: "scrollTop",
-  COPY_CURRENT_URL: "copyCurrentUrl",
-  SHOW_MEMORIES: "showMemories",
-  EDIT_PROFILE: "editProfile",
-  SWITCH_PROFILE: "switchProfile",
-  DISCONNECT_PROFILE: "disconnectProfile",
-  CLEAR_CHAT: "clearChat",
+  START: 'start',
+  TOGGLE_THEME: 'toggleTheme',
+  SEARCH_WEBSITE: 'searchWebsite',
+  SCROLL_FOOTER: 'scrollFooter',
+  OPEN_MENU: 'openMenu',
+  CLOSE_MENU: 'closeMenu',
+  OPEN_SEARCH: 'openSearch',
+  CLOSE_SEARCH: 'closeSearch',
+  SCROLL_TOP: 'scrollTop',
+  COPY_CURRENT_URL: 'copyCurrentUrl',
+  SHOW_MEMORIES: 'showMemories',
+  EDIT_PROFILE: 'editProfile',
+  SWITCH_PROFILE: 'switchProfile',
+  DISCONNECT_PROFILE: 'disconnectProfile',
+  CLEAR_CHAT: 'clearChat',
 };
 ```
 
