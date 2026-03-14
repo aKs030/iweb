@@ -1,11 +1,37 @@
 /**
  * Client wrapper for `/api/ai-agent` and `/api/ai-agent-user`.
  * Handles streaming chat, client-side tool execution and memory utilities.
- * @version 5.0.0
+ * @version 6.0.0
  */
 
 import { createLogger } from "../../core/logger.js";
 import { executeTool } from "./modules/tool-executor.js";
+import {
+  abortControllerWithReason,
+  createAbortTimer,
+  createStreamIdleGuard,
+  createToolCallKey,
+  getAbortReason,
+  getAbortResultText,
+  isAbortLikeError,
+  parseSSEStream,
+} from "./modules/sse-stream-parser.js";
+import {
+  addToHistory,
+  clearHistory as clearIdentityHistory,
+  clearPersistedUserId,
+  getHistory,
+  getProfileState,
+  getUserId,
+  normalizeUserId,
+  persistUserId,
+  resetProfileState,
+  setProfileState,
+  setRecoveryState,
+  shouldPersistIdentityFromPayload,
+  syncProfileStateFromPayload,
+  syncUserIdFromResponse,
+} from "./modules/user-identity.js";
 
 const log = createLogger("AIAgentService");
 
@@ -19,438 +45,10 @@ const ALLOWED_IMAGE_TYPES = [
   "image/gif",
 ];
 const USER_ID_HEADER = "x-jules-user-id";
-const USER_ID_STORAGE_KEY = "jules:user-id";
-const MAX_HISTORY = 20;
 const REQUEST_TIMEOUT_MS = 25000;
 const STREAM_IDLE_TIMEOUT_MS = 12000;
-let runtimeUserId = "";
-let runtimeConversationHistory = [];
-let runtimeProfileState = createProfileState();
-let runtimeProfileRecovery = null;
 
-// ─── User ID & History ──────────────────────────────────────────────────────────
-
-function normalizeUserId(raw) {
-  const value = String(raw || "").trim();
-  if (!value || value === "anonymous") return "";
-  if (!/^[A-Za-z0-9_-]{3,120}$/.test(value)) return "";
-  return value;
-}
-
-function normalizeProfileStatus(raw) {
-  const value = String(raw || "")
-    .trim()
-    .toLowerCase();
-  return [
-    "identified",
-    "anonymous",
-    "recovery-pending",
-    "conflict",
-    "disconnected",
-  ].includes(value)
-    ? value
-    : "anonymous";
-}
-
-function createProfileState(overrides = {}) {
-  const userId = normalizeUserId(overrides.userId);
-  const name = String(overrides.name || "").trim();
-  const status = normalizeProfileStatus(
-    overrides.status ||
-      (name ? "identified" : userId ? "anonymous" : "disconnected"),
-  );
-  const label =
-    String(overrides.label || "").trim() ||
-    (status === "identified"
-      ? `Profil: ${name}`
-      : status === "recovery-pending"
-        ? `Profil gefunden: ${name}`
-        : status === "conflict"
-          ? `Profil unklar: ${name}`
-          : status === "disconnected"
-            ? "Kein aktives Profil"
-            : "Profil: neu");
-
-  return {
-    userId,
-    name,
-    status,
-    label,
-  };
-}
-
-function normalizeRecoveryState(raw) {
-  const status = String(raw?.status || "")
-    .trim()
-    .toLowerCase();
-  if (!["needs_confirmation", "conflict"].includes(status)) return null;
-
-  return {
-    status,
-    name: String(raw?.name || "").trim(),
-    candidateUserId: normalizeUserId(raw?.candidateUserId),
-  };
-}
-
-function shouldPersistIdentityFromPayload(payload = {}) {
-  const recovery = normalizeRecoveryState(payload?.recovery);
-  return !recovery;
-}
-
-function setProfileState(nextState = {}) {
-  runtimeProfileState = createProfileState({
-    ...runtimeProfileState,
-    ...nextState,
-  });
-  return getProfileState();
-}
-
-function setRecoveryState(nextRecovery = null) {
-  runtimeProfileRecovery = normalizeRecoveryState(nextRecovery);
-  return getProfileState();
-}
-
-function resetProfileState({ clearUserId = false } = {}) {
-  if (clearUserId) {
-    runtimeProfileState = createProfileState({
-      userId: "",
-      name: "",
-      status: "disconnected",
-    });
-  } else {
-    runtimeProfileState = createProfileState({
-      userId: getUserId(),
-      name: "",
-      status: getUserId() ? "anonymous" : "disconnected",
-    });
-  }
-  runtimeProfileRecovery = null;
-  return getProfileState();
-}
-
-function getProfileState() {
-  return {
-    ...runtimeProfileState,
-    recovery: runtimeProfileRecovery ? { ...runtimeProfileRecovery } : null,
-  };
-}
-
-function syncProfileStateFromPayload(payload = {}) {
-  const userId = normalizeUserId(payload?.userId) || getUserId();
-  if (userId) {
-    setProfileState({ userId });
-  } else {
-    resetProfileState({ clearUserId: true });
-  }
-
-  if (payload?.profile) {
-    setProfileState(payload.profile);
-  } else if (userId) {
-    setProfileState({
-      userId,
-      status: runtimeProfileState.name ? "identified" : "anonymous",
-    });
-  }
-
-  if (payload?.recovery) {
-    setRecoveryState(payload.recovery);
-    if (runtimeProfileRecovery?.status === "needs_confirmation") {
-      setProfileState({
-        userId,
-        name: runtimeProfileRecovery.name,
-        status: "recovery-pending",
-      });
-    } else if (runtimeProfileRecovery?.status === "conflict") {
-      setProfileState({
-        userId,
-        name: runtimeProfileRecovery.name,
-        status: "conflict",
-      });
-    }
-  } else {
-    setRecoveryState(null);
-  }
-
-  return getProfileState();
-}
-
-function persistUserId(id) {
-  const value = normalizeUserId(id);
-  if (!value) {
-    clearPersistedUserId();
-    return "";
-  }
-  runtimeUserId = value;
-  setProfileState({
-    userId: value,
-    status: runtimeProfileState.name ? runtimeProfileState.status : "anonymous",
-  });
-  const storage = getUserIdStorage();
-  if (storage?.setItem) {
-    try {
-      storage.setItem(USER_ID_STORAGE_KEY, value);
-    } catch {
-      /* ignore storage failures */
-    }
-  }
-  return value;
-}
-
-function getUserId() {
-  if (!runtimeUserId) {
-    runtimeUserId = loadPersistedUserId();
-    if (runtimeUserId) {
-      setProfileState({
-        userId: runtimeUserId,
-        status: runtimeProfileState.name
-          ? runtimeProfileState.status
-          : "anonymous",
-      });
-    }
-  }
-  return normalizeUserId(runtimeUserId);
-}
-
-function getUserIdStorage() {
-  try {
-    return globalThis.localStorage || null;
-  } catch {
-    return null;
-  }
-}
-
-function loadPersistedUserId() {
-  const storage = getUserIdStorage();
-  if (!storage?.getItem) return "";
-
-  try {
-    return normalizeUserId(storage.getItem(USER_ID_STORAGE_KEY));
-  } catch {
-    return "";
-  }
-}
-
-function clearPersistedUserId() {
-  runtimeUserId = "";
-  resetProfileState({ clearUserId: true });
-  const storage = getUserIdStorage();
-  if (!storage?.removeItem) return;
-
-  try {
-    storage.removeItem(USER_ID_STORAGE_KEY);
-  } catch {
-    /* ignore storage failures */
-  }
-}
-
-function syncUserIdFromResponse(response) {
-  const headerValue = normalizeUserId(response?.headers?.get?.(USER_ID_HEADER));
-  if (headerValue) persistUserId(headerValue);
-}
-
-function getHistory() {
-  return runtimeConversationHistory.slice(-MAX_HISTORY);
-}
-
-function saveHistory(history) {
-  runtimeConversationHistory = Array.isArray(history)
-    ? history.slice(-MAX_HISTORY)
-    : [];
-}
-
-function addToHistory(role, content) {
-  const history = getHistory();
-  history.push({ role, content, timestamp: Date.now() });
-  saveHistory(history);
-}
-
-function isAbortLikeError(error) {
-  return (
-    error?.name === "AbortError" ||
-    error?.name === "TimeoutError" ||
-    error?.code === 20
-  );
-}
-
-function abortControllerWithReason(controller, reason) {
-  if (!controller || controller.signal.aborted) return;
-  controller.__julesAbortReason = reason;
-  try {
-    controller.abort(reason);
-  } catch {
-    controller.abort();
-  }
-}
-
-function getAbortReason(service, controller) {
-  return (
-    (service && service._activeController === controller
-      ? service._activeAbortReason
-      : null) ||
-    controller?.__julesAbortReason ||
-    "aborted"
-  );
-}
-
-function createAbortTimer(controller, timeoutMs, reason) {
-  if (!(timeoutMs > 0)) return () => {};
-
-  const timeoutId = setTimeout(() => {
-    abortControllerWithReason(controller, reason);
-  }, timeoutMs);
-
-  return () => clearTimeout(timeoutId);
-}
-
-function createStreamIdleGuard(controller, idleTimeoutMs) {
-  if (!(idleTimeoutMs > 0)) {
-    return {
-      touch() {},
-      stop() {},
-    };
-  }
-
-  let timeoutId = null;
-  const touch = () => {
-    if (timeoutId) clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => {
-      abortControllerWithReason(controller, "stream-idle");
-    }, idleTimeoutMs);
-  };
-
-  const stop = () => {
-    if (!timeoutId) return;
-    clearTimeout(timeoutId);
-    timeoutId = null;
-  };
-
-  touch();
-  return { touch, stop };
-}
-
-function stableSerialize(value) {
-  if (Array.isArray(value)) {
-    return `[${value.map((item) => stableSerialize(item)).join(",")}]`;
-  }
-
-  if (value && typeof value === "object") {
-    return `{${Object.keys(value)
-      .sort()
-      .map((key) => `${JSON.stringify(key)}:${stableSerialize(value[key])}`)
-      .join(",")}}`;
-  }
-
-  return JSON.stringify(value ?? null);
-}
-
-function createToolCallKey(toolCall) {
-  return `${String(toolCall?.name || "").trim()}:${stableSerialize(toolCall?.arguments || {})}`;
-}
-
-function getAbortResultText(reason) {
-  switch (reason) {
-    case "request-timeout":
-    case "stream-idle":
-      return "Die Antwort dauert zu lange. Bitte versuche es erneut.";
-    case "history-cleared":
-    case "destroyed":
-    case "cancelled":
-      return "";
-    default:
-      return "Die Anfrage wurde abgebrochen. Bitte versuche es erneut.";
-  }
-}
-
-// ─── SSE Stream Parser ──────────────────────────────────────────────────────────
-
-function processSSEEventBlock(eventBlock, callbacks, finalMessageRef) {
-  if (!eventBlock.trim()) return;
-
-  let eventType = "";
-  const dataLines = [];
-
-  for (const rawLine of eventBlock.split("\n")) {
-    const line = rawLine.endsWith("\r") ? rawLine.slice(0, -1) : rawLine;
-    if (!line || line.startsWith(":")) continue;
-    if (line.startsWith("event:")) {
-      eventType = line.slice(6).trim();
-      continue;
-    }
-    if (line.startsWith("data:")) {
-      dataLines.push(line.slice(5).trimStart());
-    }
-  }
-
-  const eventData = dataLines.join("\n").trim();
-  if (!eventType || !eventData || eventData === "[DONE]") return;
-
-  let data;
-  try {
-    data = JSON.parse(eventData);
-  } catch {
-    return;
-  }
-
-  switch (eventType) {
-    case "identity":
-      if (data.userId) {
-        persistUserId(data.userId);
-      }
-      break;
-    case "token":
-      callbacks.onToken?.(data.text || "");
-      break;
-    case "tool":
-      callbacks.onTool?.(data);
-      break;
-    case "status":
-      callbacks.onStatus?.(data.phase || "");
-      break;
-    case "message":
-      finalMessageRef.current = data;
-      callbacks.onMessage?.(data);
-      break;
-    case "error":
-      callbacks.onError?.(data);
-      break;
-    default:
-      break;
-  }
-}
-
-async function parseSSEStream(response, callbacks = {}, options = {}) {
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = "";
-  const finalMessageRef = { current: null };
-  const idleGuard = options.idleGuard || null;
-
-  try {
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      idleGuard?.touch();
-
-      buffer += decoder.decode(value, { stream: true });
-      const events = buffer.split("\n\n");
-      buffer = events.pop() || "";
-
-      for (const event of events) {
-        processSSEEventBlock(event, callbacks, finalMessageRef);
-      }
-    }
-
-    buffer += decoder.decode();
-    processSSEEventBlock(buffer, callbacks, finalMessageRef);
-  } finally {
-    idleGuard?.stop?.();
-    reader.releaseLock();
-  }
-
-  return finalMessageRef.current;
-}
-
-// ─── Core API Call ──────────────────────────────────────────────────────────────
+// ─── Helpers ────────────────────────────────────────────────────────────────────
 
 const mkResult = (text, extra = {}) => ({
   text,
@@ -470,6 +68,8 @@ const pickBestText = (finalText, streamedText) => {
   if (!b) return a;
   return a.length >= b.length ? a : b;
 };
+
+// ─── Core API Call ──────────────────────────────────────────────────────────────
 
 async function callAgent(
   service,
@@ -531,7 +131,7 @@ async function callAgent(
 
       log.error("Fetch failed:", err?.message || err);
       const text = "KI-Dienst nicht erreichbar. Bitte erneut versuchen.";
-      if (text) callbacks.onToken?.(text);
+      callbacks.onToken?.(text);
       return mkResult(text);
     } finally {
       clearRequestTimeout();
@@ -561,126 +161,137 @@ async function callAgent(
 
     // ── SSE Stream ──
     if (contentType.includes("text/event-stream")) {
-      let fullText = "";
-      const toolResults = [];
-      const executedToolKeys = new Set();
-      const runClientTool = (toolCall) => {
-        const toolKey = createToolCallKey(toolCall);
-        if (!toolKey || executedToolKeys.has(toolKey)) return;
-        executedToolKeys.add(toolKey);
-        try {
-          const result = executeTool(toolCall);
-          toolResults.push({ name: toolCall.name, ...result });
-        } catch (error) {
-          log.warn(`Tool error: ${toolCall?.name || "unknown"}`, error);
-        }
-      };
-      const idleGuard = createStreamIdleGuard(
-        controller,
-        service.streamIdleTimeoutMs,
-      );
-
-      const finalMessage = await parseSSEStream(
-        response,
-        {
-          onToken(delta) {
-            fullText += delta;
-            try {
-              callbacks.onToken?.(fullText);
-            } catch {
-              /* ignore */
-            }
-          },
-          onTool(ev) {
-            if (ev.status === "client") {
-              runClientTool({
-                name: ev.name,
-                arguments: ev.arguments,
-                meta: ev.meta || {},
-              });
-            }
-            callbacks.onTool?.(ev);
-          },
-          onStatus(phase) {
-            callbacks.onStatus?.(phase);
-          },
-          onError(err) {
-            log.error("SSE error:", err);
-            callbacks.onError?.(err);
-          },
-          onMessage(msg) {
-            if (Array.isArray(msg.toolCalls)) {
-              for (const tc of msg.toolCalls) {
-                runClientTool(tc);
-              }
-            }
-          },
-        },
-        { idleGuard },
-      );
-
-      if (shouldPersistIdentityFromPayload(finalMessage)) {
-        syncUserIdFromResponse(response);
-      }
-      const profileState = syncProfileStateFromPayload(finalMessage || {});
-      const text = pickBestText(finalMessage?.text, fullText);
-      addToHistory("user", payload.prompt);
-      if (text) addToHistory("assistant", text);
-
-      return {
-        text,
-        toolCalls: finalMessage?.toolCalls || [],
-        hasMemory: finalMessage?.hasMemory || false,
-        hasImage: finalMessage?.hasImage || false,
-        toolResults,
-        profile: profileState,
-        recovery: profileState.recovery,
-      };
+      return await handleSSEResponse(service, response, controller, payload, callbacks);
     }
 
     // ── JSON response ──
-    const result = await response.json();
-    if (shouldPersistIdentityFromPayload(result)) {
-      syncUserIdFromResponse(response);
-    }
-    if (shouldPersistIdentityFromPayload(result) && result.userId) {
-      persistUserId(result.userId);
-    }
-    const profileState = syncProfileStateFromPayload(result);
-
-    addToHistory("user", payload.prompt);
-    if (result.text) addToHistory("assistant", result.text);
-
-    const toolResults = [];
-    const executedToolKeys = new Set();
-    if (Array.isArray(result.toolCalls)) {
-      for (const tc of result.toolCalls) {
-        const toolKey = createToolCallKey(tc);
-        if (toolKey && executedToolKeys.has(toolKey)) continue;
-        if (toolKey) executedToolKeys.add(toolKey);
-        try {
-          toolResults.push({ name: tc.name, ...executeTool(tc) });
-        } catch {
-          /* skip */
-        }
-      }
-    }
-
-    callbacks.onToken?.(result.text || "");
-    return mkResult(result.text || "", {
-      toolCalls: result.toolCalls || [],
-      hasMemory: result.hasMemory || false,
-      hasImage: result.hasImage || false,
-      toolResults,
-      profile: profileState,
-      recovery: profileState.recovery,
-    });
+    return await handleJSONResponse(response, payload, callbacks);
   } finally {
     if (service._activeController === controller) {
       service._activeController = null;
       service._activeAbortReason = "";
     }
   }
+}
+
+async function handleSSEResponse(service, response, controller, payload, callbacks) {
+  let fullText = "";
+  const toolResults = [];
+  const executedToolKeys = new Set();
+
+  const runClientTool = (toolCall) => {
+    const toolKey = createToolCallKey(toolCall);
+    if (!toolKey || executedToolKeys.has(toolKey)) return;
+    executedToolKeys.add(toolKey);
+    try {
+      const result = executeTool(toolCall);
+      toolResults.push({ name: toolCall.name, ...result });
+    } catch (error) {
+      log.warn(`Tool error: ${toolCall?.name || "unknown"}`, error);
+    }
+  };
+
+  const idleGuard = createStreamIdleGuard(
+    controller,
+    service.streamIdleTimeoutMs,
+  );
+
+  const finalMessage = await parseSSEStream(
+    response,
+    {
+      onToken(delta) {
+        fullText += delta;
+        try {
+          callbacks.onToken?.(fullText);
+        } catch {
+          /* ignore */
+        }
+      },
+      onTool(ev) {
+        if (ev.status === "client") {
+          runClientTool({
+            name: ev.name,
+            arguments: ev.arguments,
+            meta: ev.meta || {},
+          });
+        }
+        callbacks.onTool?.(ev);
+      },
+      onStatus(phase) {
+        callbacks.onStatus?.(phase);
+      },
+      onError(err) {
+        log.error("SSE error:", err);
+        callbacks.onError?.(err);
+      },
+      onMessage(msg) {
+        if (Array.isArray(msg.toolCalls)) {
+          for (const tc of msg.toolCalls) runClientTool(tc);
+        }
+      },
+    },
+    {
+      idleGuard,
+      onIdentity: (id) => persistUserId(id),
+    },
+  );
+
+  if (shouldPersistIdentityFromPayload(finalMessage)) {
+    syncUserIdFromResponse(response);
+  }
+  const profileState = syncProfileStateFromPayload(finalMessage || {});
+  const text = pickBestText(finalMessage?.text, fullText);
+  addToHistory("user", payload.prompt);
+  if (text) addToHistory("assistant", text);
+
+  return {
+    text,
+    toolCalls: finalMessage?.toolCalls || [],
+    hasMemory: finalMessage?.hasMemory || false,
+    hasImage: finalMessage?.hasImage || false,
+    toolResults,
+    profile: profileState,
+    recovery: profileState.recovery,
+  };
+}
+
+async function handleJSONResponse(response, payload, callbacks) {
+  const result = await response.json();
+  if (shouldPersistIdentityFromPayload(result)) {
+    syncUserIdFromResponse(response);
+  }
+  if (shouldPersistIdentityFromPayload(result) && result.userId) {
+    persistUserId(result.userId);
+  }
+  const profileState = syncProfileStateFromPayload(result);
+
+  addToHistory("user", payload.prompt);
+  if (result.text) addToHistory("assistant", result.text);
+
+  const toolResults = [];
+  const executedToolKeys = new Set();
+  if (Array.isArray(result.toolCalls)) {
+    for (const tc of result.toolCalls) {
+      const toolKey = createToolCallKey(tc);
+      if (toolKey && executedToolKeys.has(toolKey)) continue;
+      if (toolKey) executedToolKeys.add(toolKey);
+      try {
+        toolResults.push({ name: tc.name, ...executeTool(tc) });
+      } catch {
+        /* skip */
+      }
+    }
+  }
+
+  callbacks.onToken?.(result.text || "");
+  return mkResult(result.text || "", {
+    toolCalls: result.toolCalls || [],
+    hasMemory: result.hasMemory || false,
+    hasImage: result.hasImage || false,
+    toolResults,
+    profile: profileState,
+    recovery: profileState.recovery,
+  });
 }
 
 // ─── Public API ─────────────────────────────────────────────────────────────────
@@ -724,7 +335,7 @@ export class AIAgentService {
   /** Clear conversation history */
   clearHistory() {
     this.cancelActiveRequest("history-cleared");
-    runtimeConversationHistory = [];
+    clearIdentityHistory();
   }
 
   cancelActiveRequest(reason = "cancelled") {
@@ -738,7 +349,6 @@ export class AIAgentService {
     this.cancelActiveRequest("destroyed");
   }
 
-  /** @returns {string} Runtime user ID (Cloudflare returns/rotates it per session) */
   getUserId() {
     return getUserId();
   }
@@ -824,35 +434,6 @@ export class AIAgentService {
     }
   }
 
-  async activateProfile(targetUserId) {
-    const value = normalizeUserId(targetUserId);
-    if (!value) {
-      return {
-        success: false,
-        text: "Kein gültiges Profil zum Laden gefunden.",
-      };
-    }
-
-    const result = await this._callUserEndpoint(
-      "activate",
-      { targetUserId: value },
-      { allowWithoutUserId: true },
-    );
-    if (!result.success) return result;
-
-    runtimeConversationHistory = [];
-    setRecoveryState(null);
-    return {
-      success: true,
-      userId: value,
-      memories: Array.isArray(result.data?.memories)
-        ? result.data.memories
-        : [],
-      profile: result.profile,
-      text: result.text || "Profil erfolgreich geladen.",
-    };
-  }
-
   async disconnectCurrentDevice() {
     const result = await this._callUserEndpoint(
       "disconnect",
@@ -860,7 +441,7 @@ export class AIAgentService {
       { allowWithoutUserId: true },
     );
     if (result.success) {
-      runtimeConversationHistory = [];
+      clearIdentityHistory();
       clearPersistedUserId();
       setRecoveryState(null);
     }
@@ -918,7 +499,6 @@ export class AIAgentService {
     };
   }
 
-  /** Load stored memories for current user from Cloudflare */
   async listCloudflareMemories() {
     const userId = getUserId();
     if (!userId) {

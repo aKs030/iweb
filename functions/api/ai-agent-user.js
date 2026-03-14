@@ -747,13 +747,10 @@ export async function onRequestPost(context) {
       request.headers.get("Cookie"),
     );
     const bodyUserId = normalizeUserId(body?.userId);
-    const targetUserId = normalizeUserId(body?.targetUserId);
     const userId =
-      action === "activate"
-        ? targetUserId
-        : action === "disconnect"
-          ? headerUserId || cookieUserId || bodyUserId
-          : headerUserId || cookieUserId;
+      action === "disconnect"
+        ? headerUserId || cookieUserId || bodyUserId
+        : headerUserId || cookieUserId;
 
     const kv = getMemoryKV(env);
     if (!kv) {
@@ -786,38 +783,6 @@ export async function onRequestPost(context) {
       );
     }
 
-    if (action === "activate") {
-      if (!userId) {
-        return Response.json(
-          {
-            success: false,
-            text: "Keine Ziel-User-ID für die Profilaktivierung vorhanden.",
-          },
-          { status: 400, headers: baseHeaders },
-        );
-      }
-
-      appendSetCookie(responseHeaders, buildUserIdCookie(request, userId));
-      const memories = await loadFallbackMemories(kv, userId, env, {
-        persistPruned: true,
-      });
-      const ordered = orderMemories(memories);
-
-      return Response.json(
-        {
-          success: true,
-          userId,
-          count: ordered.length,
-          memories: ordered,
-          profile: buildProfileInfo(userId, ordered),
-          text:
-            ordered.length > 0
-              ? "Profil erfolgreich geladen."
-              : "Profil aktiviert. Es sind noch keine Erinnerungen gespeichert.",
-        },
-        { headers: responseHeaders },
-      );
-    }
 
     if (!userId) {
       return Response.json(

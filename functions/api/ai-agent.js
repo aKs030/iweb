@@ -505,7 +505,7 @@ async function resolveUserIdentity(
       : { status: "none", userId: "", name: explicitName };
   const needsRecoveryConfirmation = recoveryLookup.status === "resolved";
   const recoveryConflict = recoveryLookup.status === "conflict";
-  const resolvedUserId = currentUserId || createUserId();
+  let resolvedUserId = currentUserId || createUserId();
   const recoveredUserId = normalizeUserId(recoveryLookup.userId);
   const shouldOfferRecovery =
     needsRecoveryConfirmation &&
@@ -515,14 +515,22 @@ async function resolveUserIdentity(
       currentStoredName.toLowerCase() !==
         (recoveryLookup.name || "").toLowerCase());
 
+  // Auto-Recovery Feature: Recognize users automatically when they say their name
+  let wasAutoRecovered = false;
+  if (shouldOfferRecovery) {
+    resolvedUserId = recoveredUserId;
+    wasAutoRecovered = true;
+  }
+
   return {
     userId: resolvedUserId,
+    wasAutoRecovered,
     recovery:
-      shouldOfferRecovery || recoveryConflict
+      recoveryConflict
         ? {
-            status: shouldOfferRecovery ? "needs_confirmation" : "conflict",
+            status: "conflict",
             name: recoveryLookup.name || explicitName || "",
-            candidateUserId: shouldOfferRecovery ? recoveredUserId : "",
+            candidateUserId: "",
           }
         : null,
   };
@@ -2312,6 +2320,7 @@ export async function onRequestPost(context) {
       config,
     );
     const userId = identity.userId;
+    const wasAutoRecovered = identity.wasAutoRecovered;
     const recovery = identity.recovery || null;
     const userRole = resolveUserToolRole(config, userId);
     const allowedToolDefinitions = getAllowedToolDefinitions(
@@ -2447,6 +2456,14 @@ export async function onRequestPost(context) {
         }
       }
     }
+
+    if (wasAutoRecovered) {
+      messages.push({
+        role: "system",
+        content: `WICHTIGER HINWEIS: Du hast den Nutzer gerade an seinem Namen wiedererkannt und sein gespeichertes Profil geladen! Die gesendeten Erinnerungen gehören zu ihm. Begrüße ihn herzlich zurück.`,
+      });
+    }
+
     messages.push({ role: "user", content: prompt });
 
     // ── Non-streaming path ──

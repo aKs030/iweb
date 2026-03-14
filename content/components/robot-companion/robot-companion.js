@@ -614,7 +614,6 @@ export class RobotCompanion {
       e.stopPropagation();
       const ctx = this.getPageContext();
       this.chatModule.lastGreetedContext = ctx;
-      this.chatModule.clearBubbleSequence();
       this.chatModule.hideBubble();
     };
     this.dom.bubbleClose.addEventListener("click", _onBubbleClose);
@@ -805,9 +804,7 @@ export class RobotCompanion {
   scrollToBottom() {
     return this.chatModule.scrollToBottom();
   }
-  clearBubbleSequence() {
-    return this.chatModule.clearBubbleSequence();
-  }
+
 
   /**
    * Async initialization - moved out of constructor for testability
