@@ -1,7 +1,7 @@
 import {
   backfillAdminIndexesFromKv,
   loadIndexedUsers,
-} from "./_admin-index.js";
+} from './_admin-index.js';
 import {
   authorizeAdmin,
   getErrorMessage,
@@ -9,7 +9,7 @@ import {
   normalizeSearch,
   paginateArray,
   parsePaginationParams,
-} from "./_admin-utils.js";
+} from './_admin-utils.js';
 
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
 const DEFAULT_PAGE_SIZES = {
@@ -22,13 +22,13 @@ const DEFAULT_PAGE_SIZES = {
   archived: 10,
 };
 
-function buildWarning(section, error, code = "query_failed") {
+function buildWarning(section, error, code = 'query_failed') {
   const detail = getErrorMessage(error);
   const isMissingTable = /no such table|no such column/i.test(detail);
 
   return {
     section,
-    code: isMissingTable ? "missing_table" : code,
+    code: isMissingTable ? 'missing_table' : code,
     message: isMissingTable
       ? `Der Bereich "${section}" ist noch nicht migriert.`
       : `Der Bereich "${section}" konnte nicht geladen werden.`,
@@ -64,18 +64,18 @@ async function queryFirst(db, query, bindings, section, warnings, fallback) {
 }
 
 function buildSqlSearch(columns, search) {
-  if (!search) return { clause: "", bindings: [] };
+  if (!search) return { clause: '', bindings: [] };
 
   const like = `%${search}%`;
   return {
-    clause: ` WHERE ${columns.map((column) => `${column} LIKE ?`).join(" OR ")}`,
+    clause: ` WHERE ${columns.map((column) => `${column} LIKE ?`).join(' OR ')}`,
     bindings: columns.map(() => like),
   };
 }
 
 function buildDynamicWhere(clauses = []) {
   const validClauses = clauses.filter(Boolean);
-  return validClauses.length > 0 ? ` WHERE ${validClauses.join(" AND ")}` : "";
+  return validClauses.length > 0 ? ` WHERE ${validClauses.join(' AND ')}` : '';
 }
 
 async function loadPaginatedD1Section(
@@ -138,17 +138,17 @@ function parseAuditLogRow(row) {
 
   return {
     id: row?.id,
-    action: row?.action || "",
-    targetUserId: row?.target_user_id || "",
-    memoryKey: row?.memory_key || "",
-    status: row?.status || "",
-    summary: row?.summary || "",
-    actor: row?.actor || "admin",
-    sourceIp: row?.source_ip || "",
+    action: row?.action || '',
+    targetUserId: row?.target_user_id || '',
+    memoryKey: row?.memory_key || '',
+    status: row?.status || '',
+    summary: row?.summary || '',
+    actor: row?.actor || 'admin',
+    sourceIp: row?.source_ip || '',
     details: parseJson(row?.details_json),
     before: parseJson(row?.before_json),
     after: parseJson(row?.after_json),
-    createdAt: row?.created_at || "",
+    createdAt: row?.created_at || '',
   };
 }
 
@@ -161,12 +161,12 @@ function parseArchivedProfileRow(row) {
   }
 
   return {
-    userId: row?.user_id || "",
-    displayName: row?.display_name || snapshot?.profile?.name || "",
-    deletedAt: row?.deleted_at || "",
-    restoreUntil: row?.restore_until || "",
-    deletedBy: row?.deleted_by || "admin",
-    deleteReason: row?.delete_reason || "",
+    userId: row?.user_id || '',
+    displayName: row?.display_name || snapshot?.profile?.name || '',
+    deletedAt: row?.deleted_at || '',
+    restoreUntil: row?.restore_until || '',
+    deletedBy: row?.deleted_by || 'admin',
+    deleteReason: row?.delete_reason || '',
     memoryCount: Array.isArray(snapshot?.memories)
       ? snapshot.memories.length
       : 0,
@@ -179,12 +179,12 @@ function buildUserFilter(filters) {
   const clauses = [];
   const bindings = [];
 
-  if (filters.userStatus !== "all") {
+  if (filters.userStatus !== 'all') {
     clauses.push(`p.status = ?`);
     bindings.push(filters.userStatus);
   }
 
-  if (filters.memoryKey !== "all") {
+  if (filters.memoryKey !== 'all') {
     clauses.push(`
       EXISTS (
         SELECT 1
@@ -233,7 +233,7 @@ function buildMappingFilter(filters) {
   const clauses = [];
   const bindings = [];
 
-  if (filters.mappingStatus !== "all") {
+  if (filters.mappingStatus !== 'all') {
     clauses.push(`status = ?`);
     bindings.push(filters.mappingStatus);
   }
@@ -291,12 +291,12 @@ function buildAuditFilter(filters) {
     bindings.push(like, like, like, like, like, like, like, like);
   }
 
-  if (filters.auditAction !== "all") {
+  if (filters.auditAction !== 'all') {
     clauses.push(`action = ?`);
     bindings.push(filters.auditAction);
   }
 
-  if (filters.auditStatus !== "all") {
+  if (filters.auditStatus !== 'all') {
     clauses.push(`status = ?`);
     bindings.push(filters.auditStatus);
   }
@@ -318,27 +318,27 @@ function buildAuditFilter(filters) {
 }
 
 function parseFilters(url) {
-  const rawMemoryKey = String(url.searchParams.get("memoryKey") || "").trim();
+  const rawMemoryKey = String(url.searchParams.get('memoryKey') || '').trim();
   const rawAuditAction = String(
-    url.searchParams.get("auditAction") || "",
+    url.searchParams.get('auditAction') || '',
   ).trim();
   const rawAuditStatus = String(
-    url.searchParams.get("auditStatus") || "",
+    url.searchParams.get('auditStatus') || '',
   ).trim();
 
   return {
-    q: normalizeSearch(url.searchParams.get("q")),
-    userStatus: String(url.searchParams.get("userStatus") || "all")
+    q: normalizeSearch(url.searchParams.get('q')),
+    userStatus: String(url.searchParams.get('userStatus') || 'all')
       .trim()
       .toLowerCase(),
-    mappingStatus: String(url.searchParams.get("mappingStatus") || "all")
+    mappingStatus: String(url.searchParams.get('mappingStatus') || 'all')
       .trim()
       .toLowerCase(),
-    memoryKey: rawMemoryKey ? rawMemoryKey.toLowerCase() : "all",
-    auditAction: rawAuditAction ? rawAuditAction.toLowerCase() : "all",
-    auditStatus: rawAuditStatus ? rawAuditStatus.toLowerCase() : "all",
-    auditActor: normalizeSearch(url.searchParams.get("auditActor")),
-    auditUserId: normalizeSearch(url.searchParams.get("auditUserId")),
+    memoryKey: rawMemoryKey ? rawMemoryKey.toLowerCase() : 'all',
+    auditAction: rawAuditAction ? rawAuditAction.toLowerCase() : 'all',
+    auditStatus: rawAuditStatus ? rawAuditStatus.toLowerCase() : 'all',
+    auditActor: normalizeSearch(url.searchParams.get('auditActor')),
+    auditUserId: normalizeSearch(url.searchParams.get('auditUserId')),
   };
 }
 
@@ -347,16 +347,16 @@ async function loadLikes(db, filters, pagination, warnings) {
     db,
     `SELECT project_id, likes FROM project_likes ORDER BY likes DESC`,
     [],
-    "likes",
+    'likes',
     warnings,
   );
   const filtered = filters.q
     ? likes.filter(
         (entry) =>
-          String(entry?.project_id || "")
+          String(entry?.project_id || '')
             .toLowerCase()
             .includes(filters.q) ||
-          String(entry?.likes || "").includes(filters.q),
+          String(entry?.likes || '').includes(filters.q),
       )
     : likes;
 
@@ -373,11 +373,11 @@ async function loadLikes(db, filters, pagination, warnings) {
 
 async function loadComments(db, filters, pagination, warnings) {
   const search = buildSqlSearch(
-    ["post_id", "author_name", "content"],
+    ['post_id', 'author_name', 'content'],
     filters.q,
   );
   return loadPaginatedD1Section(db, {
-    section: "comments",
+    section: 'comments',
     selectSql: `
       SELECT id, post_id, author_name, content, created_at
       FROM blog_comments${search.clause}
@@ -393,11 +393,11 @@ async function loadComments(db, filters, pagination, warnings) {
 
 async function loadContacts(db, filters, pagination, warnings) {
   const search = buildSqlSearch(
-    ["name", "email", "subject", "message"],
+    ['name', 'email', 'subject', 'message'],
     filters.q,
   );
   return loadPaginatedD1Section(db, {
-    section: "contacts",
+    section: 'contacts',
     selectSql: `
       SELECT id, name, email, subject, message, created_at
       FROM contact_messages${search.clause}
@@ -415,7 +415,7 @@ async function loadAuditLogs(db, filters, pagination, warnings) {
   const filter = buildAuditFilter(filters);
 
   return loadPaginatedD1Section(db, {
-    section: "audit",
+    section: 'audit',
     selectSql: `
       SELECT
         id,
@@ -445,7 +445,7 @@ async function loadAuditLogs(db, filters, pagination, warnings) {
 async function loadNameMappings(db, filters, pagination, warnings) {
   const search = buildMappingFilter(filters);
   return loadPaginatedD1Section(db, {
-    section: "name-mappings",
+    section: 'name-mappings',
     selectSql: `
       SELECT name, user_id, raw_value, status, updated_at
       FROM admin_name_mappings${search.clause}
@@ -463,11 +463,11 @@ async function loadNameMappings(db, filters, pagination, warnings) {
     pageSize: pagination.pageSize,
     warnings,
     transformItem: (row) => ({
-      name: row?.name || "",
-      userId: row?.user_id || "",
-      rawValue: row?.raw_value || "",
-      status: row?.status || "linked",
-      updatedAt: row?.updated_at || "",
+      name: row?.name || '',
+      userId: row?.user_id || '',
+      rawValue: row?.raw_value || '',
+      status: row?.status || 'linked',
+      updatedAt: row?.updated_at || '',
     }),
   });
 }
@@ -475,7 +475,7 @@ async function loadNameMappings(db, filters, pagination, warnings) {
 async function loadUsers(db, filters, pagination, warnings) {
   const filter = buildUserFilter(filters);
   const result = await loadPaginatedD1Section(db, {
-    section: "users",
+    section: 'users',
     selectSql: `
       SELECT user_id, display_name, status, memory_count, latest_memory_at
       FROM admin_user_profiles p${filter.clause}
@@ -490,7 +490,7 @@ async function loadUsers(db, filters, pagination, warnings) {
 
   const userIds = result.items.map((item) => item.user_id).filter(Boolean);
   const indexedUsers = await loadIndexedUsers(db, userIds).catch((error) => {
-    warnings.push(buildWarning("users", error));
+    warnings.push(buildWarning('users', error));
     return [];
   });
   const indexedByUserId = new Map(
@@ -506,8 +506,8 @@ async function loadUsers(db, filters, pagination, warnings) {
 
     return {
       userId: row.user_id,
-      name: row.display_name || "",
-      status: row.status || "anonymous",
+      name: row.display_name || '',
+      status: row.status || 'anonymous',
       memoryCount: Number(row.memory_count) || 0,
       latestMemoryAt: Number(row.latest_memory_at) || null,
       aliases: indexed.aliases || [],
@@ -535,7 +535,7 @@ async function loadFilteredUserSummary(db, filters, warnings) {
       FROM admin_user_profiles p${filter.clause}
     `,
     filter.bindings,
-    "user-summary",
+    'user-summary',
     warnings,
     {
       total_users: 0,
@@ -556,7 +556,7 @@ async function loadFilteredUserSummary(db, filters, warnings) {
 async function loadArchivedProfiles(db, filters, pagination, warnings) {
   const archivedFilter = buildArchivedFilter(filters);
   return loadPaginatedD1Section(db, {
-    section: "archived",
+    section: 'archived',
     selectSql: `
       SELECT
         user_id,
@@ -587,11 +587,11 @@ async function loadMemoryOptions(db, warnings) {
       ORDER BY memory_key ASC
     `,
     [],
-    "memory-options",
+    'memory-options',
     warnings,
   );
 
-  return rows.map((row) => String(row?.memory_key || "")).filter(Boolean);
+  return rows.map((row) => String(row?.memory_key || '')).filter(Boolean);
 }
 
 async function loadHealth(db, warnings, { auditAvailable }) {
@@ -605,7 +605,7 @@ async function loadHealth(db, warnings, { auditAvailable }) {
       GROUP BY status
     `,
     [],
-    "health-mappings",
+    'health-mappings',
     warnings,
   );
   const userRows = await queryAll(
@@ -616,7 +616,7 @@ async function loadHealth(db, warnings, { auditAvailable }) {
       GROUP BY status
     `,
     [],
-    "health-users",
+    'health-users',
     warnings,
   );
   const totals = await queryFirst(
@@ -637,7 +637,7 @@ async function loadHealth(db, warnings, { auditAvailable }) {
       new Date(now).toISOString(),
       archiveWindowEnd,
     ],
-    "health-totals",
+    'health-totals',
     warnings,
     {
       total_memories: 0,
@@ -651,10 +651,10 @@ async function loadHealth(db, warnings, { auditAvailable }) {
   );
 
   const mappingCounts = Object.fromEntries(
-    mappingRows.map((row) => [row.status || "unknown", Number(row.total) || 0]),
+    mappingRows.map((row) => [row.status || 'unknown', Number(row.total) || 0]),
   );
   const userCounts = Object.fromEntries(
-    userRows.map((row) => [row.status || "unknown", Number(row.total) || 0]),
+    userRows.map((row) => [row.status || 'unknown', Number(row.total) || 0]),
   );
 
   return {
@@ -677,7 +677,7 @@ async function loadHealth(db, warnings, { auditAvailable }) {
     auditAvailable,
     warningCount: warnings.length,
     findings: [],
-    status: "ok",
+    status: 'ok',
   };
 }
 
@@ -695,9 +695,9 @@ function buildHealthFindings(health, warnings, storage) {
 
   if (warnings.length > 0) {
     pushFinding(
-      "warnings",
-      "error",
-      "Admin-Warnungen offen",
+      'warnings',
+      'error',
+      'Admin-Warnungen offen',
       `${warnings.length} Bereiche liefern Hinweise oder Teilfehler.`,
       warnings.length,
     );
@@ -705,36 +705,36 @@ function buildHealthFindings(health, warnings, storage) {
 
   if (!storage?.indexReady) {
     pushFinding(
-      "index_not_ready",
-      "error",
-      "Admin-Index nicht bereit",
-      "Die D1-Indexdaten sind noch nicht vollständig synchronisiert.",
+      'index_not_ready',
+      'error',
+      'Admin-Index nicht bereit',
+      'Die D1-Indexdaten sind noch nicht vollständig synchronisiert.',
     );
   }
 
   if (!health.kvAvailable) {
     pushFinding(
-      "kv_missing",
-      "error",
-      "KV nicht verfügbar",
-      "Jules-Memory kann ohne KV nicht zuverlässig gelesen oder gepflegt werden.",
+      'kv_missing',
+      'error',
+      'KV nicht verfügbar',
+      'Jules-Memory kann ohne KV nicht zuverlässig gelesen oder gepflegt werden.',
     );
   }
 
   if (!health.auditAvailable) {
     pushFinding(
-      "audit_missing",
-      "warning",
-      "Audit-Tabelle fehlt",
-      "Admin-Änderungen können aktuell nicht vollständig nachvollzogen werden.",
+      'audit_missing',
+      'warning',
+      'Audit-Tabelle fehlt',
+      'Admin-Änderungen können aktuell nicht vollständig nachvollzogen werden.',
     );
   }
 
   if (health.conflictMappings > 0) {
     pushFinding(
-      "mapping_conflicts",
-      "warning",
-      "Alias-Konflikte vorhanden",
+      'mapping_conflicts',
+      'warning',
+      'Alias-Konflikte vorhanden',
       `${health.conflictMappings} Name-Mappings zeigen auf Konflikte und sollten repariert werden.`,
       health.conflictMappings,
     );
@@ -742,9 +742,9 @@ function buildHealthFindings(health, warnings, storage) {
 
   if (health.orphanMappings > 0) {
     pushFinding(
-      "orphan_mappings",
-      "warning",
-      "Orphan-Mappings vorhanden",
+      'orphan_mappings',
+      'warning',
+      'Orphan-Mappings vorhanden',
       `${health.orphanMappings} bekannte Namen sind keiner User-ID zugeordnet.`,
       health.orphanMappings,
     );
@@ -752,9 +752,9 @@ function buildHealthFindings(health, warnings, storage) {
 
   if (health.usersWithoutName > 0) {
     pushFinding(
-      "users_without_name",
-      "warning",
-      "Profile ohne Namen",
+      'users_without_name',
+      'warning',
+      'Profile ohne Namen',
       `${health.usersWithoutName} Profile haben Memories, aber keinen stabilen Namen.`,
       health.usersWithoutName,
     );
@@ -762,9 +762,9 @@ function buildHealthFindings(health, warnings, storage) {
 
   if (health.emptyProfiles > 0) {
     pushFinding(
-      "empty_profiles",
-      "warning",
-      "Leere Profile im Index",
+      'empty_profiles',
+      'warning',
+      'Leere Profile im Index',
       `${health.emptyProfiles} Profile haben aktuell keine nutzbaren Memory-Einträge.`,
       health.emptyProfiles,
     );
@@ -772,9 +772,9 @@ function buildHealthFindings(health, warnings, storage) {
 
   if (health.expiringSoon > 0) {
     pushFinding(
-      "expiring_memories",
-      "warning",
-      "Memories laufen bald ab",
+      'expiring_memories',
+      'warning',
+      'Memories laufen bald ab',
       `${health.expiringSoon} Memory-Einträge erreichen in den nächsten 7 Tagen ihr Ablaufdatum.`,
       health.expiringSoon,
     );
@@ -782,17 +782,17 @@ function buildHealthFindings(health, warnings, storage) {
 
   if (health.expiredArchives > 0) {
     pushFinding(
-      "expired_archives",
-      "error",
-      "Archive über der Restore-Frist",
+      'expired_archives',
+      'error',
+      'Archive über der Restore-Frist',
       `${health.expiredArchives} archivierte Profile sind überfällig und können bereinigt werden.`,
       health.expiredArchives,
     );
   } else if (health.archivesDueSoon > 0) {
     pushFinding(
-      "archives_due_soon",
-      "warning",
-      "Archive laufen bald ab",
+      'archives_due_soon',
+      'warning',
+      'Archive laufen bald ab',
       `${health.archivesDueSoon} archivierte Profile erreichen in den nächsten 7 Tagen ihre Restore-Frist.`,
       health.archivesDueSoon,
     );
@@ -800,10 +800,10 @@ function buildHealthFindings(health, warnings, storage) {
 
   if (findings.length === 0) {
     pushFinding(
-      "healthy",
-      "success",
-      "Keine offenen Befunde",
-      "Der Admin-Bereich zeigt aktuell keine auffälligen Integritäts- oder Betriebsprobleme.",
+      'healthy',
+      'success',
+      'Keine offenen Befunde',
+      'Der Admin-Bereich zeigt aktuell keine auffälligen Integritäts- oder Betriebsprobleme.',
     );
   }
 
@@ -815,9 +815,9 @@ async function ensureAdminIndexesReady(db, env, warnings) {
   if (!backfill.ok && !backfill.skipped) {
     warnings.push(
       buildWarning(
-        "memory-index",
+        'memory-index',
         backfill.error,
-        backfill.code || "backfill_failed",
+        backfill.code || 'backfill_failed',
       ),
     );
   }
@@ -831,7 +831,7 @@ async function ensureAdminIndexesReady(db, env, warnings) {
         (SELECT COUNT(*) FROM admin_name_mappings) AS mapping_count
     `,
     [],
-    "storage",
+    'storage',
     warnings,
     {
       user_count: 0,
@@ -870,10 +870,10 @@ export async function onRequestGet(context) {
     const warnings = [];
     if (!db?.prepare) {
       warnings.push({
-        section: "database",
-        code: "missing_binding",
-        message: "Die D1-Bindung DB_LIKES ist nicht verfügbar.",
-        detail: "Missing DB_LIKES binding",
+        section: 'database',
+        code: 'missing_binding',
+        message: 'Die D1-Bindung DB_LIKES ist nicht verfügbar.',
+        detail: 'Missing DB_LIKES binding',
       });
 
       return jsonResponse({
@@ -924,15 +924,15 @@ export async function onRequestGet(context) {
           warningCount: 1,
           findings: [
             {
-              code: "missing_database",
-              tone: "error",
-              title: "D1-Bindung fehlt",
+              code: 'missing_database',
+              tone: 'error',
+              title: 'D1-Bindung fehlt',
               detail:
-                "Die Admin-API kann ohne DB_LIKES keine Datenbereiche laden.",
+                'Die Admin-API kann ohne DB_LIKES keine Datenbereiche laden.',
               count: 1,
             },
           ],
-          status: "error",
+          status: 'error',
         },
         auditLogs: [],
         filters: parseFilters(new URL(request.url)),
@@ -941,7 +941,7 @@ export async function onRequestGet(context) {
         },
         summary: {
           totalLikes: 0,
-          topProjectId: "",
+          topProjectId: '',
           topProjectLikes: 0,
           filteredUsers: 0,
           filteredIdentifiedUsers: 0,
@@ -989,31 +989,31 @@ export async function onRequestGet(context) {
 
     const url = new URL(request.url);
     const filters = parseFilters(url);
-    const likesPagination = parsePaginationParams(url, "likes", {
+    const likesPagination = parsePaginationParams(url, 'likes', {
       defaultPageSize: DEFAULT_PAGE_SIZES.likes,
       maxPageSize: 50,
     });
-    const usersPagination = parsePaginationParams(url, "users", {
+    const usersPagination = parsePaginationParams(url, 'users', {
       defaultPageSize: DEFAULT_PAGE_SIZES.users,
       maxPageSize: 100,
     });
-    const mappingsPagination = parsePaginationParams(url, "mappings", {
+    const mappingsPagination = parsePaginationParams(url, 'mappings', {
       defaultPageSize: DEFAULT_PAGE_SIZES.mappings,
       maxPageSize: 100,
     });
-    const commentsPagination = parsePaginationParams(url, "comments", {
+    const commentsPagination = parsePaginationParams(url, 'comments', {
       defaultPageSize: DEFAULT_PAGE_SIZES.comments,
       maxPageSize: 100,
     });
-    const contactsPagination = parsePaginationParams(url, "contacts", {
+    const contactsPagination = parsePaginationParams(url, 'contacts', {
       defaultPageSize: DEFAULT_PAGE_SIZES.contacts,
       maxPageSize: 100,
     });
-    const auditPagination = parsePaginationParams(url, "audit", {
+    const auditPagination = parsePaginationParams(url, 'audit', {
       defaultPageSize: DEFAULT_PAGE_SIZES.audit,
       maxPageSize: 100,
     });
-    const archivedPagination = parsePaginationParams(url, "archived", {
+    const archivedPagination = parsePaginationParams(url, 'archived', {
       defaultPageSize: DEFAULT_PAGE_SIZES.archived,
       maxPageSize: 100,
     });
@@ -1065,11 +1065,11 @@ export async function onRequestGet(context) {
     health.aiConfigured = storage.aiConfigured;
     health.warningCount = warnings.length;
     health.findings = buildHealthFindings(health, warnings, storage);
-    health.status = health.findings.some((entry) => entry.tone === "error")
-      ? "error"
-      : health.findings.some((entry) => entry.tone === "warning")
-        ? "warning"
-        : "ok";
+    health.status = health.findings.some((entry) => entry.tone === 'error')
+      ? 'error'
+      : health.findings.some((entry) => entry.tone === 'warning')
+        ? 'warning'
+        : 'ok';
 
     const filteredMemoryCount = filteredUserSummary.totalMemories;
     const filteredIdentifiedUsers = filteredUserSummary.identifiedUsers;
@@ -1094,7 +1094,7 @@ export async function onRequestGet(context) {
       },
       summary: {
         totalLikes,
-        topProjectId: topProject?.project_id || "",
+        topProjectId: topProject?.project_id || '',
         topProjectLikes: Number(topProject?.likes) || 0,
         filteredUsers: filteredUserSummary.totalUsers,
         filteredIdentifiedUsers,
@@ -1118,10 +1118,10 @@ export async function onRequestGet(context) {
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.error("Admin API Error:", error);
+    console.error('Admin API Error:', error);
     return jsonResponse(
       {
-        error: "Internal Server Error",
+        error: 'Internal Server Error',
         details: getErrorMessage(error),
       },
       500,

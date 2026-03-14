@@ -53,7 +53,7 @@ export function createStreamIdleGuard(controller, idleTimeoutMs) {
   const touch = () => {
     if (timeoutId) clearTimeout(timeoutId);
     timeoutId = setTimeout(() => {
-      abortControllerWithReason(controller, "stream-idle");
+      abortControllerWithReason(controller, 'stream-idle');
     }, idleTimeoutMs);
   };
 
@@ -74,8 +74,8 @@ export function createStreamIdleGuard(controller, idleTimeoutMs) {
  */
 export function isAbortLikeError(error) {
   return (
-    error?.name === "AbortError" ||
-    error?.name === "TimeoutError" ||
+    error?.name === 'AbortError' ||
+    error?.name === 'TimeoutError' ||
     error?.code === 20
   );
 }
@@ -92,7 +92,7 @@ export function getAbortReason(service, controller) {
       ? service._activeAbortReason
       : null) ||
     controller?.__julesAbortReason ||
-    "aborted"
+    'aborted'
   );
 }
 
@@ -103,15 +103,15 @@ export function getAbortReason(service, controller) {
  */
 export function getAbortResultText(reason) {
   switch (reason) {
-    case "request-timeout":
-    case "stream-idle":
-      return "Die Antwort dauert zu lange. Bitte versuche es erneut.";
-    case "history-cleared":
-    case "destroyed":
-    case "cancelled":
-      return "";
+    case 'request-timeout':
+    case 'stream-idle':
+      return 'Die Antwort dauert zu lange. Bitte versuche es erneut.';
+    case 'history-cleared':
+    case 'destroyed':
+    case 'cancelled':
+      return '';
     default:
-      return "Die Anfrage wurde abgebrochen. Bitte versuche es erneut.";
+      return 'Die Anfrage wurde abgebrochen. Bitte versuche es erneut.';
   }
 }
 
@@ -132,23 +132,23 @@ export function processSSEEventBlock(
 ) {
   if (!eventBlock.trim()) return;
 
-  let eventType = "";
+  let eventType = '';
   const dataLines = [];
 
-  for (const rawLine of eventBlock.split("\n")) {
-    const line = rawLine.endsWith("\r") ? rawLine.slice(0, -1) : rawLine;
-    if (!line || line.startsWith(":")) continue;
-    if (line.startsWith("event:")) {
+  for (const rawLine of eventBlock.split('\n')) {
+    const line = rawLine.endsWith('\r') ? rawLine.slice(0, -1) : rawLine;
+    if (!line || line.startsWith(':')) continue;
+    if (line.startsWith('event:')) {
       eventType = line.slice(6).trim();
       continue;
     }
-    if (line.startsWith("data:")) {
+    if (line.startsWith('data:')) {
       dataLines.push(line.slice(5).trimStart());
     }
   }
 
-  const eventData = dataLines.join("\n").trim();
-  if (!eventType || !eventData || eventData === "[DONE]") return;
+  const eventData = dataLines.join('\n').trim();
+  if (!eventType || !eventData || eventData === '[DONE]') return;
 
   let data;
   try {
@@ -158,23 +158,23 @@ export function processSSEEventBlock(
   }
 
   switch (eventType) {
-    case "identity":
+    case 'identity':
       if (data.userId) onIdentity(data.userId);
       break;
-    case "token":
-      callbacks.onToken?.(data.text || "");
+    case 'token':
+      callbacks.onToken?.(data.text || '');
       break;
-    case "tool":
+    case 'tool':
       callbacks.onTool?.(data);
       break;
-    case "status":
-      callbacks.onStatus?.(data.phase || "");
+    case 'status':
+      callbacks.onStatus?.(data.phase || '');
       break;
-    case "message":
+    case 'message':
       finalMessageRef.current = data;
       callbacks.onMessage?.(data);
       break;
-    case "error":
+    case 'error':
       callbacks.onError?.(data);
       break;
     default:
@@ -192,7 +192,7 @@ export function processSSEEventBlock(
 export async function parseSSEStream(response, callbacks = {}, options = {}) {
   const reader = response.body.getReader();
   const decoder = new TextDecoder();
-  let buffer = "";
+  let buffer = '';
   const finalMessageRef = { current: null };
   const idleGuard = options.idleGuard || null;
   const onIdentity = options.onIdentity || (() => {});
@@ -204,8 +204,8 @@ export async function parseSSEStream(response, callbacks = {}, options = {}) {
       idleGuard?.touch();
 
       buffer += decoder.decode(value, { stream: true });
-      const events = buffer.split("\n\n");
-      buffer = events.pop() || "";
+      const events = buffer.split('\n\n');
+      buffer = events.pop() || '';
 
       for (const event of events) {
         processSSEEventBlock(event, callbacks, finalMessageRef, onIdentity);
@@ -231,14 +231,14 @@ export async function parseSSEStream(response, callbacks = {}, options = {}) {
  */
 export function stableSerialize(value) {
   if (Array.isArray(value)) {
-    return `[${value.map((item) => stableSerialize(item)).join(",")}]`;
+    return `[${value.map((item) => stableSerialize(item)).join(',')}]`;
   }
 
-  if (value && typeof value === "object") {
+  if (value && typeof value === 'object') {
     return `{${Object.keys(value)
       .sort()
       .map((key) => `${JSON.stringify(key)}:${stableSerialize(value[key])}`)
-      .join(",")}}`;
+      .join(',')}}`;
   }
 
   return JSON.stringify(value ?? null);
@@ -250,5 +250,5 @@ export function stableSerialize(value) {
  * @returns {string}
  */
 export function createToolCallKey(toolCall) {
-  return `${String(toolCall?.name || "").trim()}:${stableSerialize(toolCall?.arguments || {})}`;
+  return `${String(toolCall?.name || '').trim()}:${stableSerialize(toolCall?.arguments || {})}`;
 }

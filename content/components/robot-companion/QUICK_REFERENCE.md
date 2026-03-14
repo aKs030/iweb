@@ -3,7 +3,7 @@
 ## Start
 
 ```js
-import { RobotCompanion } from "./robot-companion.js";
+import { RobotCompanion } from './robot-companion.js';
 
 const robot = new RobotCompanion();
 robot.init();
@@ -13,7 +13,7 @@ robot.init();
 
 ```js
 robot.toggleChat(true);
-robot.addMessage("Hallo", "bot");
+robot.addMessage('Hallo', 'bot');
 robot.handleAction(ROBOT_ACTIONS.START);
 ```
 
@@ -22,8 +22,8 @@ robot.handleAction(ROBOT_ACTIONS.START);
 ```js
 const agentService = await robot.getAgentService();
 
-const response = await agentService.generateResponse("Hallo!", (chunk) => {
-  console.log("stream:", chunk);
+const response = await agentService.generateResponse('Hallo!', (chunk) => {
+  console.log('stream:', chunk);
 });
 ```
 

@@ -2,11 +2,11 @@ function parseArgs(argv) {
   const args = {};
 
   for (const rawArg of argv) {
-    if (!rawArg.startsWith("--")) continue;
-    const [rawKey, ...rawValue] = rawArg.slice(2).split("=");
-    const key = String(rawKey || "").trim();
+    if (!rawArg.startsWith('--')) continue;
+    const [rawKey, ...rawValue] = rawArg.slice(2).split('=');
+    const key = String(rawKey || '').trim();
     if (!key) continue;
-    args[key] = rawValue.length > 0 ? rawValue.join("=").trim() : "true";
+    args[key] = rawValue.length > 0 ? rawValue.join('=').trim() : 'true';
   }
 
   return args;
@@ -17,24 +17,24 @@ async function main() {
   const siteUrl = String(
     args.url ||
       process.env.PRODUCTION_SITE_URL ||
-      "https://www.abdulkerimsesli.de",
+      'https://www.abdulkerimsesli.de',
   ).trim();
-  const adminToken = String(args.token || process.env.ADMIN_TOKEN || "").trim();
+  const adminToken = String(args.token || process.env.ADMIN_TOKEN || '').trim();
   const limit = Math.max(1, Math.min(500, Number(args.limit) || 100));
 
   if (!adminToken) {
-    throw new Error("ADMIN_TOKEN fehlt fuer admin-maintenance.");
+    throw new Error('ADMIN_TOKEN fehlt fuer admin-maintenance.');
   }
 
-  const endpoint = new URL("/api/admin/users", siteUrl).toString();
+  const endpoint = new URL('/api/admin/users', siteUrl).toString();
   const response = await fetch(endpoint, {
-    method: "POST",
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       Authorization: `Bearer ${adminToken}`,
     },
     body: JSON.stringify({
-      action: "purge-expired-archives",
+      action: 'purge-expired-archives',
       limit,
     }),
   });
@@ -57,7 +57,7 @@ async function main() {
         url: endpoint,
         count,
         userIds,
-        text: payload?.text || "",
+        text: payload?.text || '',
       },
       null,
       2,

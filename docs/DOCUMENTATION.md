@@ -20,6 +20,7 @@ Die Root-Struktur folgt Web-Standards:
 - **Entry Points**: index.html, offline.html, sw.js
 - **AI Discovery**: ai-index.json, llms.txt, bio.md, person.jsonld
 - **Configuration**: package.json, tsconfig.json, eslint.config.mjs
+- **Tooling entry points**: prettier.config.mjs, eslint.config.mjs, .stylelintrc.cjs
 - **Cloudflare**: \_headers, \_redirects, wrangler.jsonc
 - **Documentation**: README.md, LICENSE, CONTRIBUTING.md
 
@@ -42,7 +43,7 @@ Alle Root-Dateien sind notwendig und folgen Tool-Konventionen.
 ### Workflow
 
 ```bash
-npm run styles:generate  # Tokens + Utilities generieren
+npm run sync:styles      # Tokens + Utilities generieren
 npm run check:tokens     # Token-Struktur prüfen
 ```
 
@@ -70,13 +71,14 @@ npm run dev              # Dev-Server starten (localhost:8080)
 npm run qa               # Kompletter QA-Run (fix + lint + check)
 npm run lint             # Nur Linting
 npm run fix              # Auto-fix für ESLint + Stylelint + Prettier
+npm run typecheck        # TypeScript-Compiler für JS/JSDoc-Checks
 npm run check            # Struktur-Checks
 ```
 
 ### Hooks
 
 **Pre-commit**: `lint-staged` auf gestagten Dateien
-**Pre-push**: `npm run qa`
+**Pre-push**: `npm run lint` mit optionalem Override
 
 ## 🚀 Deployment
 
@@ -128,7 +130,7 @@ Erlaubt explizit AI-Bots (GPTBot, Claude-Web, etc.)
 
 - **ESLint**: JavaScript/JSDoc (eslint.config.mjs)
 - **Stylelint**: CSS (.stylelintrc.cjs)
-- **Prettier**: Formatierung (.prettierrc.json)
+- **Prettier**: Formatierung (prettier.config.mjs)
 
 ### Struktur-Checks
 
@@ -137,6 +139,7 @@ npm run check:structure  # Projektstruktur prüfen
 npm run check:tokens     # Token-Struktur prüfen
 npm run check:importmap  # Import-Map validieren
 npm run check:docs       # Dokumentations-Links prüfen
+npm run check:typecheck  # TypeScript-Compiler validieren
 ```
 
 ### Git Hooks
@@ -144,7 +147,7 @@ npm run check:docs       # Dokumentations-Links prüfen
 Konfiguriert via Husky (`.husky/`):
 
 - `pre-commit` - Lint staged files
-- `pre-push` - Full QA run
+- `pre-push` - Lint mit optionalem Override
 
 ## 🎯 Performance
 
@@ -177,23 +180,29 @@ npm run dev -- --port 8787  # Custom Port
 
 ```bash
 npm run qa               # Fix + Lint + Check
-npm run qa:fix           # Nur Auto-fix
-npm run qa:all           # Fix + Check in einem
+npm run fix              # Nur Auto-fix
+npm run typecheck        # JS/JSDoc über TypeScript prüfen
+npm run format           # Nur Prettier schreiben
+npm run format:check     # Nur Prettier prüfen
 ```
 
 ### Maintenance
 
 ```bash
 npm run clean            # Cache löschen
-npm run clean:root       # Root-Verzeichnis aufräumen
 npm run sync             # Import-Map + AI-Index sync
 ```
 
 ### Styles
 
 ```bash
-npm run styles:generate  # Tokens + Utilities generieren
+npm run sync:styles      # Tokens + Utilities generieren
 ```
+
+### Admin Dashboard
+
+- `pages/admin.html` liefert das Markup der Admin-Seite.
+- `pages/admin/admin-app.js` enthält die komplette Client-Logik als externes ES-Modul.
 
 ## 📦 Dependencies
 

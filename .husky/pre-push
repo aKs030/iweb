@@ -24,11 +24,14 @@ if [ $LINT_EXIT -ne 0 ]; then
   echo "❌ Lint checks failed"
   echo "💡 Run: npm run fix"
   echo ""
-  read -p "❓ Push anyway? [y/N] " -n 1 -r
-  echo
-  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-    exit 1
-  fi
+  printf "❓ Push anyway? [y/N] "
+  read -r REPLY
+  case "$REPLY" in
+    [Yy]|[Yy][Ee][Ss]) ;;
+    *)
+      exit 1
+      ;;
+  esac
 fi
 
 echo "✅ Pre-push checks passed!"

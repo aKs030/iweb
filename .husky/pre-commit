@@ -4,7 +4,7 @@
 echo "🔍 Running pre-commit checks..."
 
 # Run lint-staged with auto-fix
-npx lint-staged
+npm exec lint-staged
 
 EXIT_CODE=$?
 

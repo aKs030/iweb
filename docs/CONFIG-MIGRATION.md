@@ -20,17 +20,17 @@ Root-Ordner aufräumen durch Verschieben von Konfigurationsdateien in `config/` 
 
 5. `CHANGELOG.md` → `docs/CHANGELOG.md`
 
-## 🔗 Symlinks für Editor-Kompatibilität
+## 🔗 Root-Shims für Editor-Kompatibilität
 
-~~Erstellt im Root (für VS Code, IntelliJ, etc.):~~
+Editoren und Extensions suchen Config-Dateien im Projekt-Root. Deshalb bleiben dort
+kleine Weiterleitungsdateien bestehen:
 
-~~- `.prettierrc.json` → `config/.prettierrc.json`~~
-~~- `.stylelintrc.cjs` → `config/.stylelintrc.cjs`~~
-~~- `eslint.config.mjs` → `config/eslint.config.mjs`~~
+- `prettier.config.mjs` → lädt `config/.prettierrc.json`
+- `.stylelintrc.cjs` → lädt `config/.stylelintrc.cjs`
+- `eslint.config.mjs` → exportiert `config/eslint.config.mjs`
 
-**UPDATE**: Symlinks entfernt - nicht nötig!
-
-**Grund**: Tools finden Configs via `--config` Flag in package.json Scripts.
+**Grund**: CLI-Skripte nutzen weiterhin `--config`, aber Editor-Integrationen brauchen
+eine im Root auffindbare Konfiguration.
 
 ## ⚙️ Anpassungen
 
@@ -45,7 +45,7 @@ Root-Ordner aufräumen durch Verschieben von Konfigurationsdateien in `config/` 
 **Nachher**:
 
 ```json
-"lint:es": "eslint . --cache --config config/eslint.config.mjs"
+"lint:es": "eslint . --cache"
 ```
 
 Alle Scripts aktualisiert:
@@ -53,17 +53,6 @@ Alle Scripts aktualisiert:
 - `lint:es`, `lint:css`, `lint:format`
 - `fix:es`, `fix:css`, `fix:format`
 - `lint-staged` Konfiguration
-
-### .gitignore
-
-Symlinks hinzugefügt:
-
-```
-# Config symlinks (actual files in config/)
-/.prettierrc.json
-/.stylelintrc.cjs
-/eslint.config.mjs
-```
 
 ### Dokumentation
 
@@ -101,16 +90,16 @@ npm run check:docs      # ✅ OK (39 Markdown-Dateien)
 ├── docs/
 │   ├── DOCUMENTATION.md
 │   └── CHANGELOG.md
-├── .prettierrc.json → config/.prettierrc.json (symlink)
-├── .stylelintrc.cjs → config/.stylelintrc.cjs (symlink)
-└── eslint.config.mjs → config/eslint.config.mjs (symlink)
+├── prettier.config.mjs
+├── .stylelintrc.cjs
+└── eslint.config.mjs
 ```
 
 ## 🎯 Vorteile
 
 1. **Übersichtlicher Root** - 5 Dateien weniger
 2. **Logische Gruppierung** - Alle Configs in einem Ordner
-3. **Editor-Kompatibilität** - Symlinks für Tools
+3. **Editor-Kompatibilität** - Root-Shims für Tools
 4. **CI/CD-sicher** - Alle Tests bestanden
 5. **Git-History** - `git mv` erhält History
 
@@ -119,19 +108,19 @@ npm run check:docs      # ✅ OK (39 Markdown-Dateien)
 ### Für Entwickler
 
 - Configs sind jetzt in `config/`
-- Symlinks im Root für Editor-Integration
+- Root-Shims im Project-Root für Editor-Integration
 - Alle npm Scripts funktionieren wie vorher
 - `.env.example` ist jetzt in `config/`
 
 ### Für CI/CD
 
 - Keine Änderungen nötig
-- Scripts verwenden `--config` Flag
-- Symlinks werden automatisch aufgelöst
+- Scripts nutzen Root-Discovery der Tools
+- Root-Shims werden automatisch aufgelöst
 
 ### Für neue Team-Mitglieder
 
-- Configs in `config/` bearbeiten (nicht Symlinks)
+- Configs in `config/` bearbeiten; Root-Dateien sind nur Weiterleitungen
 - `.env.example` kopieren: `cp config/.env.example .dev.vars`
 
 ## 🔄 Rückgängig machen (falls nötig)
@@ -144,11 +133,11 @@ git mv config/.stylelintrc.cjs .stylelintrc.cjs
 git mv config/.env.example .env.example
 git mv docs/CHANGELOG.md CHANGELOG.md
 
-# Symlinks löschen
-rm .prettierrc.json .stylelintrc.cjs eslint.config.mjs
+# Root-Shims löschen
+rm prettier.config.mjs .stylelintrc.cjs eslint.config.mjs
 
 # package.json Scripts zurücksetzen
-# (--config Flags entfernen)
+# (Root-Discovery wieder rückgängig machen)
 ```
 
 ---
