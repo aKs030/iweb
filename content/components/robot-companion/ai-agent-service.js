@@ -4,8 +4,8 @@
  * @version 6.0.0
  */
 
-import { createLogger } from "../../core/logger.js";
-import { executeTool } from "./modules/tool-executor.js";
+import { createLogger } from '../../core/logger.js';
+import { executeTool } from './modules/tool-executor.js';
 import {
   abortControllerWithReason,
   createAbortTimer,
@@ -15,7 +15,7 @@ import {
   getAbortResultText,
   isAbortLikeError,
   parseSSEStream,
-} from "./modules/sse-stream-parser.js";
+} from './modules/sse-stream-parser.js';
 import {
   addToHistory,
   clearHistory as clearIdentityHistory,
@@ -23,28 +23,26 @@ import {
   getHistory,
   getProfileState,
   getUserId,
-  normalizeUserId,
   persistUserId,
-  resetProfileState,
   setProfileState,
   setRecoveryState,
   shouldPersistIdentityFromPayload,
   syncProfileStateFromPayload,
   syncUserIdFromResponse,
-} from "./modules/user-identity.js";
+} from './modules/user-identity.js';
 
-const log = createLogger("AIAgentService");
+const log = createLogger('AIAgentService');
 
-const AGENT_ENDPOINT = "/api/ai-agent";
-const USER_ENDPOINT = "/api/ai-agent-user";
+const AGENT_ENDPOINT = '/api/ai-agent';
+const USER_ENDPOINT = '/api/ai-agent-user';
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = [
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "image/gif",
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/gif',
 ];
-const USER_ID_HEADER = "x-jules-user-id";
+const USER_ID_HEADER = 'x-jules-user-id';
 const REQUEST_TIMEOUT_MS = 25000;
 const STREAM_IDLE_TIMEOUT_MS = 12000;
 
@@ -62,8 +60,8 @@ const mkResult = (text, extra = {}) => ({
 });
 
 const pickBestText = (finalText, streamedText) => {
-  const a = String(finalText || "").trim();
-  const b = String(streamedText || "").trim();
+  const a = String(finalText || '').trim();
+  const b = String(streamedText || '').trim();
   if (!a) return b;
   if (!b) return a;
   return a.length >= b.length ? a : b;
@@ -83,10 +81,10 @@ async function callAgent(
   const clearRequestTimeout = createAbortTimer(
     controller,
     service.requestTimeoutMs,
-    "request-timeout",
+    'request-timeout',
   );
   service._activeController = controller;
-  service._activeAbortReason = "";
+  service._activeAbortReason = '';
 
   try {
     // ── Fetch ──
@@ -94,24 +92,24 @@ async function callAgent(
     try {
       if (payload.image) {
         const fd = new FormData();
-        fd.append("prompt", payload.prompt || "");
-        if (userId) fd.append("userId", userId);
-        fd.append("image", payload.image);
+        fd.append('prompt', payload.prompt || '');
+        if (userId) fd.append('userId', userId);
+        fd.append('image', payload.image);
         response = await service.fetchImpl(AGENT_ENDPOINT, {
-          method: "POST",
+          method: 'POST',
           headers: userIdHeader,
           body: fd,
-          credentials: "same-origin",
+          credentials: 'same-origin',
           signal: controller.signal,
         });
       } else {
         response = await service.fetchImpl(AGENT_ENDPOINT, {
-          method: "POST",
+          method: 'POST',
           headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
             ...userIdHeader,
           },
-          credentials: "same-origin",
+          credentials: 'same-origin',
           body: JSON.stringify({
             prompt: payload.prompt,
             ...(userId ? { userId } : {}),
@@ -129,8 +127,8 @@ async function callAgent(
         return mkResult(text, { aborted: true });
       }
 
-      log.error("Fetch failed:", err?.message || err);
-      const text = "KI-Dienst nicht erreichbar. Bitte erneut versuchen.";
+      log.error('Fetch failed:', err?.message || err);
+      const text = 'KI-Dienst nicht erreichbar. Bitte erneut versuchen.';
       callbacks.onToken?.(text);
       return mkResult(text);
     } finally {
@@ -157,11 +155,17 @@ async function callAgent(
       return mkResult(text);
     }
 
-    const contentType = response.headers.get("content-type") || "";
+    const contentType = response.headers.get('content-type') || '';
 
     // ── SSE Stream ──
-    if (contentType.includes("text/event-stream")) {
-      return await handleSSEResponse(service, response, controller, payload, callbacks);
+    if (contentType.includes('text/event-stream')) {
+      return await handleSSEResponse(
+        service,
+        response,
+        controller,
+        payload,
+        callbacks,
+      );
     }
 
     // ── JSON response ──
@@ -169,13 +173,19 @@ async function callAgent(
   } finally {
     if (service._activeController === controller) {
       service._activeController = null;
-      service._activeAbortReason = "";
+      service._activeAbortReason = '';
     }
   }
 }
 
-async function handleSSEResponse(service, response, controller, payload, callbacks) {
-  let fullText = "";
+async function handleSSEResponse(
+  service,
+  response,
+  controller,
+  payload,
+  callbacks,
+) {
+  let fullText = '';
   const toolResults = [];
   const executedToolKeys = new Set();
 
@@ -187,7 +197,7 @@ async function handleSSEResponse(service, response, controller, payload, callbac
       const result = executeTool(toolCall);
       toolResults.push({ name: toolCall.name, ...result });
     } catch (error) {
-      log.warn(`Tool error: ${toolCall?.name || "unknown"}`, error);
+      log.warn(`Tool error: ${toolCall?.name || 'unknown'}`, error);
     }
   };
 
@@ -208,7 +218,7 @@ async function handleSSEResponse(service, response, controller, payload, callbac
         }
       },
       onTool(ev) {
-        if (ev.status === "client") {
+        if (ev.status === 'client') {
           runClientTool({
             name: ev.name,
             arguments: ev.arguments,
@@ -221,7 +231,7 @@ async function handleSSEResponse(service, response, controller, payload, callbac
         callbacks.onStatus?.(phase);
       },
       onError(err) {
-        log.error("SSE error:", err);
+        log.error('SSE error:', err);
         callbacks.onError?.(err);
       },
       onMessage(msg) {
@@ -241,8 +251,8 @@ async function handleSSEResponse(service, response, controller, payload, callbac
   }
   const profileState = syncProfileStateFromPayload(finalMessage || {});
   const text = pickBestText(finalMessage?.text, fullText);
-  addToHistory("user", payload.prompt);
-  if (text) addToHistory("assistant", text);
+  addToHistory('user', payload.prompt);
+  if (text) addToHistory('assistant', text);
 
   return {
     text,
@@ -265,8 +275,8 @@ async function handleJSONResponse(response, payload, callbacks) {
   }
   const profileState = syncProfileStateFromPayload(result);
 
-  addToHistory("user", payload.prompt);
-  if (result.text) addToHistory("assistant", result.text);
+  addToHistory('user', payload.prompt);
+  if (result.text) addToHistory('assistant', result.text);
 
   const toolResults = [];
   const executedToolKeys = new Set();
@@ -283,8 +293,8 @@ async function handleJSONResponse(response, payload, callbacks) {
     }
   }
 
-  callbacks.onToken?.(result.text || "");
-  return mkResult(result.text || "", {
+  callbacks.onToken?.(result.text || '');
+  return mkResult(result.text || '', {
     toolCalls: result.toolCalls || [],
     hasMemory: result.hasMemory || false,
     hasImage: result.hasImage || false,
@@ -303,13 +313,13 @@ export class AIAgentService {
     streamIdleTimeoutMs = STREAM_IDLE_TIMEOUT_MS,
   } = {}) {
     this.fetchImpl =
-      typeof fetchImpl === "function"
+      typeof fetchImpl === 'function'
         ? fetchImpl
         : globalThis.fetch?.bind(globalThis);
     this.requestTimeoutMs = requestTimeoutMs;
     this.streamIdleTimeoutMs = streamIdleTimeoutMs;
     this._activeController = null;
-    this._activeAbortReason = "";
+    this._activeAbortReason = '';
   }
 
   /** Streaming agent response with tool-calling */
@@ -318,7 +328,7 @@ export class AIAgentService {
   }
 
   /** Analyze an image with optional prompt (streamed) */
-  analyzeImage(imageFile, prompt = "", onToken) {
+  analyzeImage(imageFile, prompt = '', onToken) {
     const v = this.validateImage(imageFile);
     if (!v.valid) {
       const err = `⚠️ ${v.error}`;
@@ -327,18 +337,18 @@ export class AIAgentService {
     }
     return callAgent(
       this,
-      { prompt: prompt || "Analysiere dieses Bild.", image: imageFile },
+      { prompt: prompt || 'Analysiere dieses Bild.', image: imageFile },
       { onToken },
     );
   }
 
   /** Clear conversation history */
   clearHistory() {
-    this.cancelActiveRequest("history-cleared");
+    this.cancelActiveRequest('history-cleared');
     clearIdentityHistory();
   }
 
-  cancelActiveRequest(reason = "cancelled") {
+  cancelActiveRequest(reason = 'cancelled') {
     if (!this._activeController) return false;
     this._activeAbortReason = reason;
     abortControllerWithReason(this._activeController, reason);
@@ -346,7 +356,7 @@ export class AIAgentService {
   }
 
   destroy() {
-    this.cancelActiveRequest("destroyed");
+    this.cancelActiveRequest('destroyed');
   }
 
   getUserId() {
@@ -367,17 +377,17 @@ export class AIAgentService {
     const clearTimeoutAbort = createAbortTimer(
       controller,
       this.requestTimeoutMs,
-      "request-timeout",
+      'request-timeout',
     );
 
     try {
       const response = await this.fetchImpl(USER_ENDPOINT, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           ...(currentUserId ? { [USER_ID_HEADER]: currentUserId } : {}),
         },
-        credentials: "same-origin",
+        credentials: 'same-origin',
         body: JSON.stringify({
           action,
           ...(currentUserId ? { userId: currentUserId } : {}),
@@ -407,7 +417,7 @@ export class AIAgentService {
 
       if (data.userId) {
         persistUserId(data.userId);
-      } else if (!allowWithoutUserId && action === "disconnect") {
+      } else if (!allowWithoutUserId && action === 'disconnect') {
         clearPersistedUserId();
       }
       const profileState = syncProfileStateFromPayload(data);
@@ -417,12 +427,12 @@ export class AIAgentService {
         status: response.status,
         data,
         profile: profileState,
-        text: data?.text || "",
+        text: data?.text || '',
       };
     } catch (error) {
       const text = isAbortLikeError(error)
-        ? "Profil-Anfrage dauert zu lange. Bitte erneut versuchen."
-        : "Profil-Anfrage nicht erreichbar. Bitte erneut versuchen.";
+        ? 'Profil-Anfrage dauert zu lange. Bitte erneut versuchen.'
+        : 'Profil-Anfrage nicht erreichbar. Bitte erneut versuchen.';
       return {
         success: false,
         status: 0,
@@ -436,7 +446,7 @@ export class AIAgentService {
 
   async disconnectCurrentDevice() {
     const result = await this._callUserEndpoint(
-      "disconnect",
+      'disconnect',
       {},
       { allowWithoutUserId: true },
     );
@@ -448,13 +458,13 @@ export class AIAgentService {
 
     return {
       success: result.success,
-      userId: result.success ? "" : getUserId(),
+      userId: result.success ? '' : getUserId(),
       profile: result.success
         ? getProfileState()
         : result.profile || getProfileState(),
       text:
         result.text ||
-        "Dieses Gerät ist nicht mehr mit einem Profil verbunden.",
+        'Dieses Gerät ist nicht mehr mit einem Profil verbunden.',
     };
   }
 
@@ -462,14 +472,14 @@ export class AIAgentService {
     setRecoveryState(null);
     setProfileState({
       userId: getUserId(),
-      name: "",
-      status: getUserId() ? "anonymous" : "disconnected",
+      name: '',
+      status: getUserId() ? 'anonymous' : 'disconnected',
     });
     return getProfileState();
   }
 
-  async updateCloudflareMemory({ key, value, previousValue = "" } = {}) {
-    const result = await this._callUserEndpoint("update-memory", {
+  async updateCloudflareMemory({ key, value, previousValue = '' } = {}) {
+    const result = await this._callUserEndpoint('update-memory', {
       key,
       value,
       previousValue,
@@ -484,8 +494,8 @@ export class AIAgentService {
     };
   }
 
-  async forgetCloudflareMemory({ key, value = "" } = {}) {
-    const result = await this._callUserEndpoint("forget-memory", {
+  async forgetCloudflareMemory({ key, value = '' } = {}) {
+    const result = await this._callUserEndpoint('forget-memory', {
       key,
       value,
     });
@@ -500,16 +510,11 @@ export class AIAgentService {
   }
 
   async listCloudflareMemories() {
-    const userId = getUserId();
-    if (!userId) {
-      return {
-        success: false,
-        memories: [],
-        text: "Keine aktive User-ID vorhanden. Sende erst eine Nachricht.",
-      };
-    }
-
-    const result = await this._callUserEndpoint("list");
+    const result = await this._callUserEndpoint(
+      'list',
+      {},
+      { allowWithoutUserId: true },
+    );
     if (!result.success) {
       return {
         success: false,
@@ -530,14 +535,14 @@ export class AIAgentService {
         Number(result.data.retentionDays) > 0
           ? Number(result.data.retentionDays)
           : 0,
-      text: result.text || "",
+      text: result.text || '',
     };
   }
 
   /** Validate image before upload */
   validateImage(file) {
     if (!file || !(file instanceof File))
-      return { valid: false, error: "Keine gültige Datei." };
+      return { valid: false, error: 'Keine gültige Datei.' };
     if (file.size > MAX_IMAGE_SIZE)
       return {
         valid: false,
