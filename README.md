@@ -30,15 +30,16 @@ Lokale URL: [http://localhost:8080](http://localhost:8080)
 ```bash
 npm run dev           # Einziger moderner Dev-Workflow (preflight + token watch + app)
 npm run qa            # Empfohlen: kompletter Qualitäts-Run (alles prüfen)
-npm run qa:fix        # Empfohlen: auto-fix für ESLint + Stylelint + Prettier
-npm run qa:all        # Fix + kompletter Check in einem Lauf
-npm run styles:generate # Tokens + Utilities in einem Run erzeugen
+npm run fix           # Auto-fix für ESLint + Stylelint + Prettier
+npm run typecheck     # TypeScript-Compiler für JS/JSDoc-Checks
+npm run format        # Nur Prettier schreiben
+npm run format:check  # Nur Prettier prüfen
+npm run sync:styles   # Tokens + Utilities erzeugen
 npm run clean         # lokale Cache/Artifacts löschen
 npm run prepare       # Husky Hooks installieren/aktualisieren
-npm run docs:check    # Markdown-Links & absolute lokale Pfade prüfen
-npm run ai-index:sync # AI-Index manuell synchronisieren
-npm run cf:redirect:audit # Redirects analysieren
-npm run cf:redirect:prune # Redirects bereinigen
+npm run check:docs    # Markdown-Links & lokale Pfade prüfen
+npm run sync:ai       # AI-Index manuell synchronisieren
+npm run sync          # Import-Map + AI-Index + Content-RAG synchronisieren
 ```
 
 Optionaler Port:
@@ -55,7 +56,7 @@ npm run dev -- --port 8787
 ## Hooks
 
 - `pre-commit`: `lint-staged` auf gestagten Dateien
-- `pre-push`: `npm run qa`
+- `pre-push`: `npm run lint` mit optionalem Override bei Fehlern
 
 ## CI/CD
 
@@ -93,6 +94,17 @@ config/       Konfigurationsdateien (ESLint, Prettier, Stylelint)
 ```
 
 Details: [`docs/DOCUMENTATION.md`](docs/DOCUMENTATION.md)
+
+Root-Entry-Points fuer Editor und CLI:
+
+- `prettier.config.mjs`
+- `eslint.config.mjs`
+- `.stylelintrc.cjs`
+
+Admin-Dashboard:
+
+- `pages/admin.html` enthaelt die Struktur
+- `pages/admin/admin-app.js` enthaelt die Client-Logik
 
 ## Dokumentation
 

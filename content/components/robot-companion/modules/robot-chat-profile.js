@@ -4,10 +4,6 @@
  * @version 1.0.0
  */
 
-import { createLogger } from "../../../core/logger.js";
-
-const log = createLogger("RobotChatProfile");
-
 // ─── Formatting ─────────────────────────────────────────────────────────
 
 /**
@@ -21,47 +17,72 @@ export function formatCloudflareMemoriesMessage(
   retentionDays = 0,
 ) {
   if (!Array.isArray(memories) || memories.length === 0) {
-    return "Aktuell sind keine Erinnerungen gespeichert.";
+    return 'Aktuell sind keine Erinnerungen gespeichert.';
   }
 
   const lines = memories.map((entry) => {
-    const key = String(entry?.key || "memory");
-    const value = String(entry?.value || "").trim() || "(leer)";
-    const category = String(entry?.category || "note").trim() || "note";
-    const priority = Number.parseInt(String(entry?.priority || ""), 10);
+    const key = String(entry?.key || 'memory');
+    const value = String(entry?.value || '').trim() || '(leer)';
+    const category = String(entry?.category || 'note').trim() || 'note';
+    const priority = Number.parseInt(String(entry?.priority || ''), 10);
     const priorityText = Number.isFinite(priority)
       ? `Prioritaet ${priority}`
-      : "Prioritaet n/a";
+      : 'Prioritaet n/a';
     const timestamp = Number(entry?.timestamp || 0);
     const tsText =
       Number.isFinite(timestamp) && timestamp > 0
-        ? new Date(timestamp).toLocaleString("de-DE")
-        : "unbekannt";
+        ? new Date(timestamp).toLocaleString('de-DE')
+        : 'unbekannt';
     return `- **${key}** (${category}, ${priorityText}): ${value} _(Zeit: ${tsText})_`;
   });
 
   const retentionInfo =
     Number.isFinite(Number(retentionDays)) && Number(retentionDays) > 0
       ? `\n\n_Auto-Retention: ${Number(retentionDays)} Tage_`
-      : "";
-  return [`**Gespeicherte Erinnerungen:**`, ...lines].join("\n") + retentionInfo;
+      : '';
+  return (
+    [`**Gespeicherte Erinnerungen:**`, ...lines].join('\n') + retentionInfo
+  );
 }
 
 // ─── Name Detection ─────────────────────────────────────────────────────────────
 
-const PROFILE_NAME_CAPTURE_STATUSES = new Set(["disconnected", "anonymous"]);
+const PROFILE_NAME_CAPTURE_STATUSES = new Set(['disconnected', 'anonymous']);
 const STANDALONE_NAME_PREFIX_PATTERN =
   /^(?:(?:hallo|hi|hey|moin|servus)\b|guten\s+(?:tag|morgen|abend)\b)[\s,!:.-]*/i;
 const STANDALONE_NAME_STOPWORDS = new Set([
-  "ich",   "bin",   "mein",  "meine", "meinen", "name",  "ist",
-  "hilfe", "help",  "problem", "frage", "test",  "start", "ja",
-  "nein",  "okay",  "ok",    "bitte", "danke",  "hallo", "hi",
-  "hey",   "moin",  "servus", "profil", "neu",   "anderes",
+  'ich',
+  'bin',
+  'mein',
+  'meine',
+  'meinen',
+  'name',
+  'ist',
+  'hilfe',
+  'help',
+  'problem',
+  'frage',
+  'test',
+  'start',
+  'ja',
+  'nein',
+  'okay',
+  'ok',
+  'bitte',
+  'danke',
+  'hallo',
+  'hi',
+  'hey',
+  'moin',
+  'servus',
+  'profil',
+  'neu',
+  'anderes',
 ]);
 
 function normalizeChatInput(text) {
-  return String(text || "")
-    .replace(/\s+/g, " ")
+  return String(text || '')
+    .replace(/\s+/g, ' ')
     .trim();
 }
 
@@ -72,12 +93,12 @@ function normalizeChatInput(text) {
  */
 export function extractStandaloneNameCandidate(text) {
   let normalized = normalizeChatInput(text)
-    .replace(/^["'`]+|["'`]+$/g, "")
-    .replace(/[.,;:!?]+$/g, "");
-  if (!normalized) return "";
+    .replace(/^["'`]+|["'`]+$/g, '')
+    .replace(/[.,;:!?]+$/g, '');
+  if (!normalized) return '';
 
-  normalized = normalized.replace(STANDALONE_NAME_PREFIX_PATTERN, "").trim();
-  if (!normalized) return "";
+  normalized = normalized.replace(STANDALONE_NAME_PREFIX_PATTERN, '').trim();
+  if (!normalized) return '';
 
   let isIchBinPrompt = false;
   const ichBinMatch = normalized.match(/^ich\s+bin\s+(.+)$/i);
@@ -87,15 +108,15 @@ export function extractStandaloneNameCandidate(text) {
   }
 
   if (!/^[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ'' -]{1,39}$/.test(normalized)) {
-    return "";
+    return '';
   }
 
   const tokens = normalized.split(/\s+/).filter(Boolean);
-  if (!tokens.length || tokens.length > 3) return "";
+  if (!tokens.length || tokens.length > 3) return '';
 
   const lowerTokens = tokens.map((token) => token.toLowerCase());
   if (lowerTokens.some((token) => STANDALONE_NAME_STOPWORDS.has(token))) {
-    return "";
+    return '';
   }
 
   if (
@@ -103,7 +124,7 @@ export function extractStandaloneNameCandidate(text) {
     tokens.length === 1 &&
     !/^[A-ZÀ-ÖØ-Þ]/.test(tokens[0])
   ) {
-    return "";
+    return '';
   }
 
   return normalized;
@@ -115,12 +136,9 @@ export function extractStandaloneNameCandidate(text) {
  * @param {{ status?: string, recovery?: object }} profileState
  * @returns {string}
  */
-export function normalizePromptForProfileRecovery(
-  prompt,
-  profileState = {},
-) {
+export function normalizePromptForProfileRecovery(prompt, profileState = {}) {
   const normalizedPrompt = normalizeChatInput(prompt);
-  const status = String(profileState?.status || "").trim();
+  const status = String(profileState?.status || '').trim();
 
   if (
     !normalizedPrompt ||
@@ -142,32 +160,32 @@ export function normalizePromptForProfileRecovery(
  * Create a generic profile card element.
  */
 export function createProfileCard({
-  kind = "recovery",
-  title = "",
-  text = "",
+  kind = 'recovery',
+  title = '',
+  text = '',
   actions = [],
 }) {
-  const card = document.createElement("div");
-  card.className = "chat-profile-card";
+  const card = document.createElement('div');
+  card.className = 'chat-profile-card';
   card.dataset.cardKind = kind;
 
-  const titleEl = document.createElement("div");
-  titleEl.className = "chat-profile-card__title";
+  const titleEl = document.createElement('div');
+  titleEl.className = 'chat-profile-card__title';
   titleEl.textContent = title;
 
-  const textEl = document.createElement("div");
-  textEl.className = "chat-profile-card__text";
+  const textEl = document.createElement('div');
+  textEl.className = 'chat-profile-card__text';
   textEl.textContent = text;
 
-  const actionsEl = document.createElement("div");
-  actionsEl.className = "chat-profile-card__actions";
+  const actionsEl = document.createElement('div');
+  actionsEl.className = 'chat-profile-card__actions';
 
   for (const action of actions) {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "chat-profile-card__btn";
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'chat-profile-card__btn';
     button.textContent = action.label;
-    button.addEventListener("click", action.onClick);
+    button.addEventListener('click', action.onClick);
     actionsEl.appendChild(button);
   }
 
@@ -182,70 +200,70 @@ export function createProfileCard({
  * @returns {HTMLElement}
  */
 export function createMemoryEditorCard(memories = [], handlers = {}) {
-  const card = document.createElement("div");
-  card.className = "chat-profile-card chat-profile-card--editor";
-  card.dataset.cardKind = "editor";
+  const card = document.createElement('div');
+  card.className = 'chat-profile-card chat-profile-card--editor';
+  card.dataset.cardKind = 'editor';
 
-  const title = document.createElement("div");
-  title.className = "chat-profile-card__title";
-  title.textContent = "Profil bearbeiten";
+  const title = document.createElement('div');
+  title.className = 'chat-profile-card__title';
+  title.textContent = 'Profil bearbeiten';
 
-  const text = document.createElement("div");
-  text.className = "chat-profile-card__text";
+  const text = document.createElement('div');
+  text.className = 'chat-profile-card__text';
   text.textContent =
     memories.length > 0
-      ? "Kerninfos direkt im Chat korrigieren oder entfernen."
-      : "Noch keine Erinnerungen gespeichert.";
+      ? 'Kerninfos direkt im Chat korrigieren oder entfernen.'
+      : 'Noch keine Erinnerungen gespeichert.';
 
-  const list = document.createElement("div");
-  list.className = "chat-memory-editor";
+  const list = document.createElement('div');
+  list.className = 'chat-memory-editor';
 
   for (const entry of memories) {
-    const row = document.createElement("div");
-    row.className = "chat-memory-editor__row";
+    const row = document.createElement('div');
+    row.className = 'chat-memory-editor__row';
 
-    const body = document.createElement("div");
-    body.className = "chat-memory-editor__body";
+    const body = document.createElement('div');
+    body.className = 'chat-memory-editor__body';
 
-    const key = document.createElement("div");
-    key.className = "chat-memory-editor__key";
-    key.textContent = String(entry?.key || "memory");
+    const key = document.createElement('div');
+    key.className = 'chat-memory-editor__key';
+    key.textContent = String(entry?.key || 'memory');
 
-    const value = document.createElement("div");
-    value.className = "chat-memory-editor__value";
-    value.textContent = String(entry?.value || "").trim() || "(leer)";
+    const value = document.createElement('div');
+    value.className = 'chat-memory-editor__value';
+    value.textContent = String(entry?.value || '').trim() || '(leer)';
 
     body.append(key, value);
 
-    const actions = document.createElement("div");
-    actions.className = "chat-memory-editor__actions";
+    const actions = document.createElement('div');
+    actions.className = 'chat-memory-editor__actions';
 
-    const editBtn = document.createElement("button");
-    editBtn.type = "button";
-    editBtn.className = "chat-memory-editor__btn";
-    editBtn.textContent = "Bearbeiten";
-    editBtn.addEventListener("click", () => handlers.onEdit?.(entry));
+    const editBtn = document.createElement('button');
+    editBtn.type = 'button';
+    editBtn.className = 'chat-memory-editor__btn';
+    editBtn.textContent = 'Bearbeiten';
+    editBtn.addEventListener('click', () => handlers.onEdit?.(entry));
 
-    const deleteBtn = document.createElement("button");
-    deleteBtn.type = "button";
+    const deleteBtn = document.createElement('button');
+    deleteBtn.type = 'button';
     deleteBtn.className =
-      "chat-memory-editor__btn chat-memory-editor__btn--danger";
-    deleteBtn.textContent = "Entfernen";
-    deleteBtn.addEventListener("click", () => handlers.onDelete?.(entry));
+      'chat-memory-editor__btn chat-memory-editor__btn--danger';
+    deleteBtn.textContent = 'Entfernen';
+    deleteBtn.addEventListener('click', () => handlers.onDelete?.(entry));
 
     actions.append(editBtn, deleteBtn);
     row.append(body, actions);
     list.appendChild(row);
   }
 
-  const footer = document.createElement("div");
-  footer.className = "chat-profile-card__actions";
+  const footer = document.createElement('div');
+  footer.className = 'chat-profile-card__actions';
 
-  const closeBtn = document.createElement("button");
-  closeBtn.type = "button";
-  closeBtn.className = "chat-profile-card__btn";
-  closeBtn.textContent = "Schließen";
-  closeBtn.addEventListener("click", () => {
+  const closeBtn = document.createElement('button');
+  closeBtn.type = 'button';
+  closeBtn.className = 'chat-profile-card__btn';
+  closeBtn.textContent = 'Schließen';
+  closeBtn.addEventListener('click', () => {
     card.remove();
     handlers.onClose?.();
   });

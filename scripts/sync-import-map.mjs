@@ -113,13 +113,12 @@ const currentGeneratedConfig = await readFile(
   'utf8',
 ).catch(() => '');
 
-const prettierConfigPath = path.join(cwd, 'config/.prettierrc.json');
-const prettierConfig = JSON.parse(await readFile(prettierConfigPath, 'utf8'));
-
+const defaultFormatOptions =
+  (await prettier.resolveConfig(packageJsonPath)) || Object.freeze({});
 const generatedConfigFormatOptions =
-  (await prettier.resolveConfig(generatedConfigPath)) || prettierConfig;
+  (await prettier.resolveConfig(generatedConfigPath)) || defaultFormatOptions;
 const templateFormatOptions =
-  (await prettier.resolveConfig(templatePath)) || prettierConfig;
+  (await prettier.resolveConfig(templatePath)) || defaultFormatOptions;
 const generatedConfigSource = await prettier.format(rawGeneratedConfigSource, {
   ...generatedConfigFormatOptions,
   filepath: generatedConfigPath,

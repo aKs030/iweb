@@ -30,35 +30,35 @@
    ──────────────────────────────────────────────────────────────────────── */
 
 /* Home (hero / features / default) – standard unten rechts */
-#robot-companion-container[data-page-context="home"],
-#robot-companion-container[data-page-context="hero"] {
+#robot-companion-container[data-page-context='home'],
+#robot-companion-container[data-page-context='hero'] {
   bottom: var(--size-30);
   right: var(--size-30);
 }
 
 /* Projekte – weiter oben rechts, schwebt über den Projektkarten */
-#robot-companion-container[data-page-context="projects"] {
+#robot-companion-container[data-page-context='projects'] {
   bottom: auto;
   top: 12vh;
   right: 5vw;
 }
 
 /* About – mittig links, blickt quasi auf den Textbereich */
-#robot-companion-container[data-page-context="about"] {
+#robot-companion-container[data-page-context='about'] {
   bottom: 40vh;
   right: auto;
   left: 8vw;
 }
 
 /* Galerie – oben mittig-rechts, aus dem Weg der Bilder */
-#robot-companion-container[data-page-context="gallery"] {
+#robot-companion-container[data-page-context='gallery'] {
   bottom: auto;
   top: 15vh;
   right: 35vw;
 }
 
 /* Blog – oben links im Header-Bereich, wie ein Lesebegleiter */
-#robot-companion-container[data-page-context="blog"] {
+#robot-companion-container[data-page-context='blog'] {
   bottom: auto;
   top: 8vh;
   right: auto;
@@ -66,19 +66,19 @@
 }
 
 /* Videos – mittig rechts */
-#robot-companion-container[data-page-context="videos"] {
+#robot-companion-container[data-page-context='videos'] {
   bottom: 30vh;
   right: 6vw;
 }
 
 /* Kontakt – direkt über dem Footer mittig */
-#robot-companion-container[data-page-context="contact"] {
+#robot-companion-container[data-page-context='contact'] {
   bottom: 10vh;
   right: 45vw;
 }
 
 /* Legal-Seiten (Impressum, Datenschutz) – ganz unten links */
-#robot-companion-container[data-page-context="legal"] {
+#robot-companion-container[data-page-context='legal'] {
   bottom: var(--size-30);
   right: auto;
   left: var(--size-30);
@@ -139,7 +139,7 @@
   }
 }
 
-#robot-companion-container[data-hydrated="false"] .robot-avatar {
+#robot-companion-container[data-hydrated='false'] .robot-avatar {
   pointer-events: none;
   opacity: 0.72;
 }
@@ -183,7 +183,7 @@
 
 .robot-avatar::after,
 .robot-avatar::before {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0;
   pointer-events: none;
@@ -716,7 +716,7 @@
 }
 
 .robot-bubble::after {
-  content: "";
+  content: '';
   position: absolute;
   bottom: calc(var(--size-6) * -1);
   right: var(--size-20);
@@ -889,7 +889,7 @@
 
 .robot-chat-window::before,
 .robot-chat-window::after {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0;
   pointer-events: none;
@@ -1098,7 +1098,7 @@
 }
 
 .chat-status-dot::after {
-  content: "";
+  content: '';
   position: absolute;
   inset: calc(var(--size-3) * -1);
   border-radius: 50%;
@@ -1317,7 +1317,7 @@
 }
 
 .message code {
-  font-family: "Fira Code", "Consolas", monospace;
+  font-family: 'Fira Code', 'Consolas', monospace;
   font-size: 0.85em;
   background: color-mix(in srgb, var(--clr-black) 30%, transparent);
   padding: var(--size-2) var(--size-6);
@@ -1934,7 +1934,7 @@
 }
 
 .robot-highlight::after {
-  content: "";
+  content: '';
   position: absolute;
   inset: calc(var(--size-6) * -1);
   border: var(--size-2) solid var(--robot-cyan);

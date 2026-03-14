@@ -161,7 +161,11 @@
  * @property {SVGElement} [magnifyingGlass] - Magnifying glass element
  * @property {HTMLElement} [mouth] - Mouth element
  * @property {HTMLElement} [closeBtn] - Close button element
+ * @property {HTMLElement} [profileStatus] - Profile status element in chat header
  * @property {HTMLButtonElement} [memoriesBtn] - Header action: show Cloudflare memories
+ * @property {HTMLButtonElement|null} [editMemoryBtn] - Header action: edit current profile data
+ * @property {HTMLButtonElement|null} [switchProfileBtn] - Header action: switch active profile
+ * @property {HTMLButtonElement|null} [disconnectProfileBtn] - Header action: disconnect active profile
  * @property {HTMLButtonElement} [deleteUserBtn] - Header action: delete Cloudflare user ID
  * @property {Element} [footer] - Footer element
  */

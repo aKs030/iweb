@@ -1,60 +1,60 @@
-import { normalizeUserId } from "../_user-identity.js";
+import { normalizeUserId } from '../_user-identity.js';
 
-const FALLBACK_MEMORY_PREFIX = "robot-memory:";
-const USERNAME_LOOKUP_PREFIX = "username:";
-const USERNAME_LOOKUP_CONFLICT = "__conflict__";
+const FALLBACK_MEMORY_PREFIX = 'robot-memory:';
+const USERNAME_LOOKUP_PREFIX = 'username:';
+const USERNAME_LOOKUP_CONFLICT = '__conflict__';
 const DEFAULT_MEMORY_RETENTION_DAYS = 180;
 const DEFAULT_SOFT_DELETE_RETENTION_DAYS = 30;
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
 const MAX_KV_SCAN_PAGES = 100;
 const MEMORY_KEY_METADATA = {
-  name: { category: "identity", priority: 100 },
-  preference: { category: "preference", priority: 90 },
-  occupation: { category: "profile", priority: 88 },
-  company: { category: "profile", priority: 86 },
-  location: { category: "profile", priority: 84 },
-  language: { category: "profile", priority: 82 },
-  interest: { category: "interest", priority: 80 },
-  skill: { category: "ability", priority: 78 },
-  goal: { category: "goal", priority: 76 },
-  project: { category: "project", priority: 74 },
-  birthday: { category: "identity", priority: 72 },
-  dislike: { category: "preference", priority: 70 },
-  availability: { category: "availability", priority: 68 },
-  timezone: { category: "availability", priority: 66 },
-  note: { category: "note", priority: 40 },
+  name: { category: 'identity', priority: 100 },
+  preference: { category: 'preference', priority: 90 },
+  occupation: { category: 'profile', priority: 88 },
+  company: { category: 'profile', priority: 86 },
+  location: { category: 'profile', priority: 84 },
+  language: { category: 'profile', priority: 82 },
+  interest: { category: 'interest', priority: 80 },
+  skill: { category: 'ability', priority: 78 },
+  goal: { category: 'goal', priority: 76 },
+  project: { category: 'project', priority: 74 },
+  birthday: { category: 'identity', priority: 72 },
+  dislike: { category: 'preference', priority: 70 },
+  availability: { category: 'availability', priority: 68 },
+  timezone: { category: 'availability', priority: 66 },
+  note: { category: 'note', priority: 40 },
 };
-const DEFAULT_MEMORY_CATEGORY = "note";
+const DEFAULT_MEMORY_CATEGORY = 'note';
 const DEFAULT_MEMORY_PRIORITY = 20;
 
 function getErrorMessage(error) {
   if (error instanceof Error && error.message) return error.message;
-  return String(error || "Unknown error");
+  return String(error || 'Unknown error');
 }
 
 function parseInteger(value, fallback, { min = 1, max = 3650 } = {}) {
-  const parsed = Number.parseInt(String(value ?? ""), 10);
+  const parsed = Number.parseInt(String(value ?? ''), 10);
   if (!Number.isFinite(parsed)) return fallback;
   return Math.min(max, Math.max(min, parsed));
 }
 
 function normalizeMemoryText(value) {
-  return String(value || "")
-    .replace(/\s+/g, " ")
+  return String(value || '')
+    .replace(/\s+/g, ' ')
     .trim();
 }
 
 function normalizeMemoryKey(rawKey) {
-  return String(rawKey || "note")
+  return String(rawKey || 'note')
     .toLowerCase()
     .trim()
-    .replace(/[^a-z0-9_-]/g, "")
+    .replace(/[^a-z0-9_-]/g, '')
     .slice(0, 30);
 }
 
 function normalizeLookupName(rawName) {
   return normalizeMemoryText(rawName)
-    .replace(/[.,;:!?]+$/g, "")
+    .replace(/[.,;:!?]+$/g, '')
     .toLowerCase()
     .slice(0, 80);
 }
@@ -67,7 +67,7 @@ function normalizeTimestamp(value) {
   const numeric = Number(value);
   if (Number.isFinite(numeric) && numeric > 0) return numeric;
 
-  const parsed = Date.parse(String(value || ""));
+  const parsed = Date.parse(String(value || ''));
   return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
 }
 
@@ -87,7 +87,7 @@ function getSoftDeleteRetentionDays(env) {
 }
 
 function resolveMemoryMetadata(key, category, priority) {
-  const normalizedKey = normalizeMemoryKey(key) || "note";
+  const normalizedKey = normalizeMemoryKey(key) || 'note';
   const fallback = MEMORY_KEY_METADATA[normalizedKey] || {
     category: DEFAULT_MEMORY_CATEGORY,
     priority: DEFAULT_MEMORY_PRIORITY,
@@ -95,7 +95,7 @@ function resolveMemoryMetadata(key, category, priority) {
   const normalizedCategory =
     normalizeMemoryText(category || fallback.category).toLowerCase() ||
     fallback.category;
-  const numericPriority = Number.parseInt(String(priority ?? ""), 10);
+  const numericPriority = Number.parseInt(String(priority ?? ''), 10);
   const normalizedPriority = Number.isFinite(numericPriority)
     ? Math.min(100, Math.max(0, numericPriority))
     : fallback.priority;
@@ -113,7 +113,7 @@ function normalizeMemoryEntry(entry, retentionMs) {
     entry?.category,
     entry?.priority,
   );
-  const value = normalizeMemoryText(entry?.value || "");
+  const value = normalizeMemoryText(entry?.value || '');
   const timestamp = normalizeTimestamp(entry?.timestamp);
   const expiresAt =
     normalizeTimestamp(entry?.expiresAt) ||
@@ -139,15 +139,15 @@ function orderMemories(memories = []) {
 
 function buildProfileInfo(userId, memories = []) {
   const nameMemory = memories.find(
-    (memory) => normalizeMemoryKey(memory?.key) === "name",
+    (memory) => normalizeMemoryKey(memory?.key) === 'name',
   );
-  const name = normalizeMemoryText(nameMemory?.value || "");
+  const name = normalizeMemoryText(nameMemory?.value || '');
 
   return {
     userId: normalizeUserId(userId),
     name,
-    status: name ? "identified" : "anonymous",
-    label: name ? `Profil: ${name}` : "Profil: neu",
+    status: name ? 'identified' : 'anonymous',
+    label: name ? `Profil: ${name}` : 'Profil: neu',
   };
 }
 
@@ -206,10 +206,10 @@ export async function loadAdminLinkedAliasesFromKv(kv, userId) {
   const nameKeys = await listAllKvKeys(kv, USERNAME_LOOKUP_PREFIX);
 
   for (const key of nameKeys) {
-    const rawKeyName = String(key?.name || "");
+    const rawKeyName = String(key?.name || '');
     if (!rawKeyName) continue;
 
-    const rawValue = String((await kv.get(rawKeyName)) || "").trim();
+    const rawValue = String((await kv.get(rawKeyName)) || '').trim();
     if (normalizeUserId(rawValue) !== normalizedUserId) continue;
 
     const name = normalizeLookupName(
@@ -221,13 +221,13 @@ export async function loadAdminLinkedAliasesFromKv(kv, userId) {
       name,
       userId: normalizedUserId,
       rawValue,
-      status: "linked",
+      status: 'linked',
     });
   }
 
   return aliases.sort((a, b) =>
-    String(a.name || "").localeCompare(String(b.name || ""), "de", {
-      sensitivity: "base",
+    String(a.name || '').localeCompare(String(b.name || ''), 'de', {
+      sensitivity: 'base',
     }),
   );
 }
@@ -237,17 +237,17 @@ export async function upsertAdminNameMapping(env, name, rawValue) {
   const normalizedName = normalizeLookupName(name);
   if (!db || !normalizedName) return { ok: false, skipped: true };
 
-  const cleanRawValue = String(rawValue || "").trim();
+  const cleanRawValue = String(rawValue || '').trim();
   const mappedUserId =
     cleanRawValue === USERNAME_LOOKUP_CONFLICT
-      ? ""
+      ? ''
       : normalizeUserId(cleanRawValue);
   const status =
     cleanRawValue === USERNAME_LOOKUP_CONFLICT
-      ? "conflict"
+      ? 'conflict'
       : mappedUserId
-        ? "linked"
-        : "orphan";
+        ? 'linked'
+        : 'orphan';
 
   try {
     await runStatement(
@@ -261,7 +261,7 @@ export async function upsertAdminNameMapping(env, name, rawValue) {
           status = excluded.status,
           updated_at = CURRENT_TIMESTAMP
       `,
-      [normalizedName, mappedUserId || "", cleanRawValue, status],
+      [normalizedName, mappedUserId || '', cleanRawValue, status],
     );
 
     return { ok: true, skipped: false };
@@ -270,8 +270,8 @@ export async function upsertAdminNameMapping(env, name, rawValue) {
       ok: false,
       skipped: false,
       code: /no such table/i.test(getErrorMessage(error))
-        ? "missing_table"
-        : "write_failed",
+        ? 'missing_table'
+        : 'write_failed',
       error,
     };
   }
@@ -292,8 +292,8 @@ export async function deleteAdminNameMapping(env, name) {
       ok: false,
       skipped: false,
       code: /no such table/i.test(getErrorMessage(error))
-        ? "missing_table"
-        : "delete_failed",
+        ? 'missing_table'
+        : 'delete_failed',
       error,
     };
   }
@@ -326,8 +326,8 @@ export async function deleteAdminUserIndex(env, userId) {
       ok: false,
       skipped: false,
       code: /no such table/i.test(getErrorMessage(error))
-        ? "missing_table"
-        : "delete_failed",
+        ? 'missing_table'
+        : 'delete_failed',
       error,
     };
   }
@@ -377,7 +377,7 @@ export async function syncAdminUserIndex(env, kv, userId, memories = []) {
         [
           normalizedUserId,
           normalizeMemoryKey(memory?.key),
-          normalizeMemoryText(memory?.value || ""),
+          normalizeMemoryText(memory?.value || ''),
           normalizeMemoryText(memory?.category || DEFAULT_MEMORY_CATEGORY),
           Number(memory?.priority) || DEFAULT_MEMORY_PRIORITY,
           Number(memory?.timestamp) || 0,
@@ -414,7 +414,7 @@ export async function syncAdminUserIndex(env, kv, userId, memories = []) {
       `,
       [
         normalizedUserId,
-        profile.name || "",
+        profile.name || '',
         profile.status,
         orderedMemories.length,
         latestMemoryAt,
@@ -444,8 +444,8 @@ export async function syncAdminUserIndex(env, kv, userId, memories = []) {
       ok: false,
       skipped: false,
       code: /no such table/i.test(getErrorMessage(error))
-        ? "missing_table"
-        : "sync_failed",
+        ? 'missing_table'
+        : 'sync_failed',
       error,
     };
   }
@@ -456,7 +456,7 @@ export async function buildDeletedUserSnapshot(
   kv,
   userId,
   memories = [],
-  { actor = "admin", reason = "" } = {},
+  { actor = 'admin', reason = '' } = {},
 ) {
   const normalizedUserId = normalizeUserId(userId);
   const profile = buildProfileInfo(normalizedUserId, memories);
@@ -474,7 +474,7 @@ export async function buildDeletedUserSnapshot(
     deletedAt,
     restoreUntil,
     deletedBy: actor,
-    deleteReason: String(reason || ""),
+    deleteReason: String(reason || ''),
   };
 }
 
@@ -512,12 +512,12 @@ export async function archiveDeletedUser(env, snapshot) {
       `,
       [
         snapshot.userId,
-        snapshot.profile?.name || "",
+        snapshot.profile?.name || '',
         JSON.stringify(snapshot),
         snapshot.deletedAt || new Date().toISOString(),
         snapshot.restoreUntil || null,
-        snapshot.deletedBy || "admin",
-        snapshot.deleteReason || "",
+        snapshot.deletedBy || 'admin',
+        snapshot.deleteReason || '',
       ],
     );
 
@@ -527,8 +527,8 @@ export async function archiveDeletedUser(env, snapshot) {
       ok: false,
       skipped: false,
       code: /no such table/i.test(getErrorMessage(error))
-        ? "missing_table"
-        : "write_failed",
+        ? 'missing_table'
+        : 'write_failed',
       error,
     };
   }
@@ -557,10 +557,10 @@ export async function loadArchivedDeletedUser(env, userId) {
     const snapshot = JSON.parse(row.snapshot_json);
     return {
       ...snapshot,
-      deletedAt: row.deleted_at || snapshot.deletedAt || "",
-      restoreUntil: row.restore_until || snapshot.restoreUntil || "",
-      deletedBy: row.deleted_by || snapshot.deletedBy || "admin",
-      deleteReason: row.delete_reason || snapshot.deleteReason || "",
+      deletedAt: row.deleted_at || snapshot.deletedAt || '',
+      restoreUntil: row.restore_until || snapshot.restoreUntil || '',
+      deletedBy: row.deleted_by || snapshot.deletedBy || 'admin',
+      deleteReason: row.delete_reason || snapshot.deleteReason || '',
     };
   } catch {
     return null;
@@ -589,8 +589,8 @@ export async function markArchivedUserRestored(env, userId) {
       ok: false,
       skipped: false,
       code: /no such table/i.test(getErrorMessage(error))
-        ? "missing_table"
-        : "update_failed",
+        ? 'missing_table'
+        : 'update_failed',
       error,
     };
   }
@@ -618,8 +618,8 @@ export async function purgeArchivedUser(env, userId) {
       ok: false,
       skipped: false,
       code: /no such table/i.test(getErrorMessage(error))
-        ? "missing_table"
-        : "update_failed",
+        ? 'missing_table'
+        : 'update_failed',
       error,
     };
   }
@@ -651,8 +651,8 @@ export async function loadExpiredArchivedUsers(
     return rows
       .map((row) => ({
         userId: normalizeUserId(row?.user_id),
-        displayName: normalizeMemoryText(row?.display_name || ""),
-        restoreUntil: String(row?.restore_until || ""),
+        displayName: normalizeMemoryText(row?.display_name || ''),
+        restoreUntil: String(row?.restore_until || ''),
       }))
       .filter((row) => row.userId);
   } catch {
@@ -702,11 +702,11 @@ export async function restoreDeletedUserFromArchive(
 ) {
   const snapshot = await loadArchivedDeletedUser(env, userId);
   const normalizedUserId = normalizeUserId(userId);
-  if (!snapshot || !normalizedUserId || typeof putMemory !== "function") {
+  if (!snapshot || !normalizedUserId || typeof putMemory !== 'function') {
     return {
       success: false,
       status: 404,
-      text: "Kein archiviertes Profil fuer diese User-ID gefunden.",
+      text: 'Kein archiviertes Profil fuer diese User-ID gefunden.',
     };
   }
 
@@ -714,7 +714,7 @@ export async function restoreDeletedUserFromArchive(
     const orderedMemories = orderMemories(snapshot.memories || []);
     await putMemory(normalizedUserId, orderedMemories);
 
-    if (typeof putNameMapping === "function") {
+    if (typeof putNameMapping === 'function') {
       for (const alias of snapshot.aliases || []) {
         if (!alias?.name) continue;
         await putNameMapping(alias.name, normalizedUserId);
@@ -722,7 +722,7 @@ export async function restoreDeletedUserFromArchive(
       }
     }
 
-    if (typeof upsertVectorMemory === "function") {
+    if (typeof upsertVectorMemory === 'function') {
       for (const memory of orderedMemories) {
         await upsertVectorMemory(normalizedUserId, memory);
       }
@@ -734,15 +734,15 @@ export async function restoreDeletedUserFromArchive(
     return {
       success: true,
       status: 200,
-      text: "Archiviertes Profil wurde wiederhergestellt.",
+      text: 'Archiviertes Profil wurde wiederhergestellt.',
       userId: normalizedUserId,
       memories: orderedMemories,
       count: orderedMemories.length,
       profile: buildProfileInfo(normalizedUserId, orderedMemories),
       restoredFromArchive: true,
       archive: {
-        deletedAt: snapshot.deletedAt || "",
-        restoreUntil: snapshot.restoreUntil || "",
+        deletedAt: snapshot.deletedAt || '',
+        restoreUntil: snapshot.restoreUntil || '',
       },
     };
   } catch (error) {
@@ -751,7 +751,7 @@ export async function restoreDeletedUserFromArchive(
       status: 500,
       text:
         getErrorMessage(error) ||
-        "Archiviertes Profil konnte nicht wiederhergestellt werden.",
+        'Archiviertes Profil konnte nicht wiederhergestellt werden.',
     };
   }
 }
@@ -795,7 +795,7 @@ export async function backfillAdminIndexesFromKv(env, { force = false } = {}) {
     let memoryCount = 0;
 
     for (const key of memoryKeys) {
-      const rawKeyName = String(key?.name || "");
+      const rawKeyName = String(key?.name || '');
       const rawUserId = rawKeyName.slice(FALLBACK_MEMORY_PREFIX.length);
       const userId = normalizeUserId(rawUserId);
       if (!userId) continue;
@@ -803,7 +803,7 @@ export async function backfillAdminIndexesFromKv(env, { force = false } = {}) {
       const rawValue = await kv.get(rawKeyName);
       let parsed = [];
       try {
-        const value = JSON.parse(rawValue || "[]");
+        const value = JSON.parse(rawValue || '[]');
         parsed = Array.isArray(value)
           ? value
               .map((entry) => normalizeMemoryEntry(entry, retentionMs))
@@ -820,7 +820,7 @@ export async function backfillAdminIndexesFromKv(env, { force = false } = {}) {
 
     const mappingKeys = await listAllKvKeys(kv, USERNAME_LOOKUP_PREFIX);
     for (const key of mappingKeys) {
-      const rawKeyName = String(key?.name || "");
+      const rawKeyName = String(key?.name || '');
       const name = rawKeyName.slice(USERNAME_LOOKUP_PREFIX.length);
       const rawValue = await kv.get(rawKeyName);
       await upsertAdminNameMapping(env, name, rawValue);
@@ -838,8 +838,8 @@ export async function backfillAdminIndexesFromKv(env, { force = false } = {}) {
       ok: false,
       skipped: false,
       code: /no such table/i.test(getErrorMessage(error))
-        ? "missing_table"
-        : "backfill_failed",
+        ? 'missing_table'
+        : 'backfill_failed',
       error,
       users: 0,
       memories: 0,
@@ -851,7 +851,7 @@ export async function backfillAdminIndexesFromKv(env, { force = false } = {}) {
 export async function loadIndexedUsers(db, userIds = []) {
   if (!db || !Array.isArray(userIds) || userIds.length === 0) return [];
 
-  const placeholders = userIds.map(() => "?").join(", ");
+  const placeholders = userIds.map(() => '?').join(', ');
   const rows = await allStatement(
     db,
     `
@@ -881,10 +881,10 @@ export async function loadIndexedUsers(db, userIds = []) {
     if (!userId) continue;
     if (!memoriesByUser.has(userId)) memoriesByUser.set(userId, []);
     memoriesByUser.get(userId).push({
-      key: row?.memory_key || "",
+      key: row?.memory_key || '',
       category: row?.category || DEFAULT_MEMORY_CATEGORY,
       priority: Number(row?.priority) || DEFAULT_MEMORY_PRIORITY,
-      value: row?.memory_value || "",
+      value: row?.memory_value || '',
       timestamp: Number(row?.timestamp) || null,
       expiresAt: Number(row?.expires_at) || null,
     });
@@ -894,7 +894,7 @@ export async function loadIndexedUsers(db, userIds = []) {
     const userId = normalizeUserId(row?.user_id);
     if (!userId) continue;
     if (!aliasesByUser.has(userId)) aliasesByUser.set(userId, []);
-    aliasesByUser.get(userId).push(String(row?.name || ""));
+    aliasesByUser.get(userId).push(String(row?.name || ''));
   }
 
   return userIds.map((userId) => {
@@ -903,7 +903,7 @@ export async function loadIndexedUsers(db, userIds = []) {
       userId,
       aliases: aliasesByUser.get(userId) || [],
       memoryKeys: [...new Set(memories.map((memory) => memory.key))].sort(
-        (a, b) => a.localeCompare(b, "de", { sensitivity: "base" }),
+        (a, b) => a.localeCompare(b, 'de', { sensitivity: 'base' }),
       ),
       memories,
     };

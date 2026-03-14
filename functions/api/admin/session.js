@@ -3,10 +3,10 @@ import {
   buildAdminSessionClearCookie,
   buildAdminSessionCookie,
   jsonResponse,
-} from "./_admin-utils.js";
+} from './_admin-utils.js';
 
 function getPasswordFromBody(body) {
-  return String(body?.password || "").trim();
+  return String(body?.password || '').trim();
 }
 
 export async function onRequestGet(context) {
@@ -19,18 +19,18 @@ export async function onRequestGet(context) {
 
   return jsonResponse({
     authenticated: true,
-    authType: auth.authType || "session",
+    authType: auth.authType || 'session',
   });
 }
 
 export async function onRequestPost(context) {
-  const expectedToken = String(context.env?.ADMIN_TOKEN || "").trim();
+  const expectedToken = String(context.env?.ADMIN_TOKEN || '').trim();
   if (!expectedToken) {
     return jsonResponse(
       {
         success: false,
-        error: "Admin configuration error: ADMIN_TOKEN is missing",
-        code: "admin_token_missing",
+        error: 'Admin configuration error: ADMIN_TOKEN is missing',
+        code: 'admin_token_missing',
       },
       500,
     );
@@ -42,8 +42,8 @@ export async function onRequestPost(context) {
     return jsonResponse(
       {
         success: false,
-        error: "Unauthorized",
-        code: "unauthorized",
+        error: 'Unauthorized',
+        code: 'unauthorized',
       },
       401,
     );
@@ -51,7 +51,7 @@ export async function onRequestPost(context) {
 
   const headers = new Headers();
   headers.append(
-    "Set-Cookie",
+    'Set-Cookie',
     await buildAdminSessionCookie(context.request, context.env),
   );
 
@@ -59,7 +59,7 @@ export async function onRequestPost(context) {
     {
       success: true,
       authenticated: true,
-      text: "Admin-Session gestartet.",
+      text: 'Admin-Session gestartet.',
     },
     200,
     headers,
@@ -68,13 +68,13 @@ export async function onRequestPost(context) {
 
 export async function onRequestDelete(context) {
   const headers = new Headers();
-  headers.append("Set-Cookie", buildAdminSessionClearCookie(context.request));
+  headers.append('Set-Cookie', buildAdminSessionClearCookie(context.request));
 
   return jsonResponse(
     {
       success: true,
       authenticated: false,
-      text: "Admin-Session beendet.",
+      text: 'Admin-Session beendet.',
     },
     200,
     headers,

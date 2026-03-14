@@ -40,23 +40,27 @@
     "dev": "node scripts/dev-workflow.mjs",
     "build": "echo 'Zero-build architecture - no build step needed'",
     "start": "npm run dev",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "run-s test:*",
     "test:unit": "node --test tests/*.test.mjs",
     "test:browser": "node scripts/browser-smoke.mjs",
     "lint": "run-p lint:*",
-    "lint:es": "eslint . --cache --config config/eslint.config.mjs",
-    "lint:css": "stylelint \"**/*.css\" --cache --ignore-path .gitignore --config config/.stylelintrc.cjs",
-    "lint:format": "prettier --check . --config config/.prettierrc.json",
+    "lint:es": "eslint . --cache",
+    "lint:css": "stylelint \"**/*.css\" --cache --ignore-path .gitignore",
+    "lint:format": "prettier --check .",
     "fix": "run-p fix:*",
-    "fix:es": "eslint . --fix --cache --config config/eslint.config.mjs",
-    "fix:css": "stylelint \"**/*.css\" --fix --cache --ignore-path .gitignore --config config/.stylelintrc.cjs",
-    "fix:format": "prettier --write . --config config/.prettierrc.json",
+    "fix:es": "eslint . --fix --cache",
+    "fix:css": "stylelint \"**/*.css\" --fix --cache --ignore-path .gitignore",
+    "fix:format": "prettier --write .",
+    "format": "npm run fix:format",
+    "format:check": "npm run lint:format",
     "check": "run-s check:*",
     "check:structure": "node scripts/structure-check.mjs",
     "check:tokens": "node scripts/css-token-structure-check.mjs",
     "check:importmap": "node scripts/sync-import-map.mjs --check",
     "check:ai": "node scripts/sync-ai-index-apps.mjs --check",
     "check:docs": "node scripts/docs-check.mjs",
+    "check:typecheck": "npm run typecheck",
     "sync": "run-p sync:*",
     "sync:importmap": "node scripts/sync-import-map.mjs",
     "sync:ai": "node scripts/sync-ai-index-apps.mjs",
@@ -93,19 +97,20 @@
     "playwright": "^1.58.2",
     "prettier": "^3.8.1",
     "stylelint": "^17.4.0",
+    "typescript": "5.9.3",
     "wrangler": "^4.71.0"
   },
   "lint-staged": {
     "*.{js,mjs,cjs}": [
-      "eslint --fix --config config/eslint.config.mjs",
-      "prettier --write --config config/.prettierrc.json"
+      "eslint --fix",
+      "prettier --write"
     ],
     "*.css": [
-      "stylelint --fix --config config/.stylelintrc.cjs",
-      "prettier --write --config config/.prettierrc.json"
+      "stylelint --fix",
+      "prettier --write"
     ],
     "*.{md,html,json,jsonc,yml,yaml}": [
-      "prettier --write --config config/.prettierrc.json"
+      "prettier --write"
     ]
   }
 }

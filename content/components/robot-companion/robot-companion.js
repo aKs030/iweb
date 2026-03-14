@@ -4,17 +4,17 @@
  */
 // @ts-check
 
-import { RobotCollision } from "./modules/robot-collision.js";
-import { RobotAnimation } from "./modules/robot-animation.js";
-import { RobotChat } from "./modules/robot-chat.js";
-import { RobotEmotions } from "./modules/robot-emotions.js";
-import { RobotContextReactions } from "./modules/robot-context-reactions.js";
-import { createLogger } from "../../core/logger.js";
-import { TimerManager } from "../../core/utils.js";
-import { menuOpen, searchOpen, uiStore } from "../../core/ui-store.js";
-import { ROBOT_ACTIONS, ROBOT_EVENTS } from "./constants/events.js";
-import { RobotStateManager } from "./state/RobotStateManager.js";
-import { RobotDOMBuilder } from "./dom/RobotDOMBuilder.js";
+import { RobotCollision } from './modules/robot-collision.js';
+import { RobotAnimation } from './modules/robot-animation.js';
+import { RobotChat } from './modules/robot-chat.js';
+import { RobotEmotions } from './modules/robot-emotions.js';
+import { RobotContextReactions } from './modules/robot-context-reactions.js';
+import { createLogger } from '../../core/logger.js';
+import { TimerManager } from '../../core/utils.js';
+import { menuOpen, searchOpen, uiStore } from '../../core/ui-store.js';
+import { ROBOT_ACTIONS, ROBOT_EVENTS } from './constants/events.js';
+import { RobotStateManager } from './state/RobotStateManager.js';
+import { RobotDOMBuilder } from './dom/RobotDOMBuilder.js';
 import {
   checkTypewriterCollision,
   getFooterElement,
@@ -22,7 +22,7 @@ import {
   setupFooterOverlapCheck,
   setupMobileViewportHandler,
   setupChatInputViewportHandlers,
-} from "./runtime/robot-layout.js";
+} from './runtime/robot-layout.js';
 import {
   getPageContext,
   maybeTriggerContextReaction,
@@ -30,13 +30,13 @@ import {
   setupSectionChangeDetection,
   setupSectionObservers,
   updatePageContextAttribute,
-} from "./runtime/robot-page-context.js";
+} from './runtime/robot-page-context.js';
 import {
   hydrateInteractiveFeatures,
   setupProgressiveHydration,
-} from "./runtime/robot-hydration.js";
+} from './runtime/robot-hydration.js';
 
-const log = createLogger("RobotCompanion");
+const log = createLogger('RobotCompanion');
 
 /**
  * @typedef {import('../../core/types.js').TimerID} TimerID
@@ -56,7 +56,7 @@ const log = createLogger("RobotCompanion");
  * Main controller for the AI robot companion
  */
 export class RobotCompanion {
-  containerId = "robot-companion-container";
+  containerId = 'robot-companion-container';
 
   constructor() {
     // Initialize DOM Builder
@@ -68,7 +68,7 @@ export class RobotCompanion {
     this.stateManager = new RobotStateManager();
 
     /** @type {TimerManager} */
-    this.timerManager = new TimerManager("RobotCompanion");
+    this.timerManager = new TimerManager('RobotCompanion');
 
     /** @type {import('./ai-agent-service.js').AIAgentService|null} */
     this._agentService = null;
@@ -92,7 +92,7 @@ export class RobotCompanion {
 
     /** @type {number} Store initial layout height for detecting keyboard */
     this.initialLayoutHeight =
-      typeof globalThis !== "undefined" ? globalThis.innerHeight : 0;
+      typeof globalThis !== 'undefined' ? globalThis.innerHeight : 0;
 
     /** @type {import('../../core/types.js').PageContext|null} */
     this.currentObservedContext = null;
@@ -204,7 +204,7 @@ export class RobotCompanion {
   async getAgentService() {
     if (!this._agentService) {
       const { AIAgentService } = await import(
-        /* webpackIgnore: true */ "./ai-agent-service.js"
+        /* webpackIgnore: true */ './ai-agent-service.js'
       );
       this._agentService = new AIAgentService();
     }
@@ -260,7 +260,7 @@ export class RobotCompanion {
       const menuIsOpen = Boolean(isMenuOpen);
 
       this.dom.container.classList.toggle(
-        "robot-companion--menu-open",
+        'robot-companion--menu-open',
         menuIsOpen,
       );
       if (!menuIsOpen) return;
@@ -372,34 +372,34 @@ export class RobotCompanion {
     if (this._eventListeners) {
       // Scroll Listeners
       this._eventListeners.scroll.forEach(({ target, handler }) => {
-        target.removeEventListener("scroll", handler);
+        target.removeEventListener('scroll', handler);
       });
 
       // Resize Listeners
       this._eventListeners.resize.forEach(({ target, handler }) => {
-        target.removeEventListener("resize", handler);
+        target.removeEventListener('resize', handler);
       });
 
       // Visual Viewport Listeners
       this._eventListeners.visualViewportResize.forEach(
         ({ target, handler }) => {
-          target.removeEventListener("resize", handler);
+          target.removeEventListener('resize', handler);
         },
       );
       this._eventListeners.visualViewportScroll.forEach(
         ({ target, handler }) => {
-          target.removeEventListener("scroll", handler);
+          target.removeEventListener('scroll', handler);
         },
       );
 
       // Input Listeners
       if (this._eventListeners.inputFocus) {
         const { target, handler } = this._eventListeners.inputFocus;
-        target.removeEventListener("focus", handler);
+        target.removeEventListener('focus', handler);
       }
       if (this._eventListeners.inputBlur) {
         const { target, handler } = this._eventListeners.inputBlur;
-        target.removeEventListener("blur", handler);
+        target.removeEventListener('blur', handler);
       }
 
       // Hero Typing End Listener
@@ -456,13 +456,13 @@ export class RobotCompanion {
     const state = this.stateManager.getState();
     const { sessions, interactions } = state.analytics;
 
-    if (hour >= 0 && hour < 6) return "night-owl";
-    if (hour >= 6 && hour < 10) return "sleepy";
+    if (hour >= 0 && hour < 6) return 'night-owl';
+    if (hour >= 6 && hour < 10) return 'sleepy';
     if (hour >= 10 && hour < 17) {
-      return sessions > 10 || interactions > 50 ? "enthusiastic" : "energetic";
+      return sessions > 10 || interactions > 50 ? 'enthusiastic' : 'energetic';
     }
-    if (hour >= 17 && hour < 22) return "relaxed";
-    return "night-owl";
+    if (hour >= 17 && hour < 22) return 'relaxed';
+    return 'night-owl';
   }
 
   trackInteraction() {
@@ -470,16 +470,16 @@ export class RobotCompanion {
 
     const interactions = this.stateManager.getState().analytics.interactions;
 
-    if (interactions === 10 && !this.easterEggFound.has("first-10")) {
+    if (interactions === 10 && !this.easterEggFound.has('first-10')) {
       this.unlockEasterEgg(
-        "first-10",
-        "🎉 Wow, 10 Interaktionen! Du bist hartnäckig! Hier ist ein Geschenk: Ein geheimes Mini-Game wurde freigeschaltet! 🎮",
+        'first-10',
+        '🎉 Wow, 10 Interaktionen! Du bist hartnäckig! Hier ist ein Geschenk: Ein geheimes Mini-Game wurde freigeschaltet! 🎮',
       );
     }
-    if (interactions === 50 && !this.easterEggFound.has("first-50")) {
+    if (interactions === 50 && !this.easterEggFound.has('first-50')) {
       this.unlockEasterEgg(
-        "first-50",
-        "🏆 50 Interaktionen! Du bist ein echter Power-User! Respekt! 💪",
+        'first-50',
+        '🏆 50 Interaktionen! Du bist ein echter Power-User! Respekt! 💪',
       );
     }
   }
@@ -504,27 +504,27 @@ export class RobotCompanion {
     const { sectionsVisited } = this.stateManager.getState().analytics;
 
     const allSections = [
-      "hero",
-      "features",
-      "section3",
-      "projects",
-      "gallery",
-      "footer",
+      'hero',
+      'features',
+      'section3',
+      'projects',
+      'gallery',
+      'footer',
     ];
     const visitedAll = allSections.every((s) => sectionsVisited.includes(s));
-    if (visitedAll && !this.easterEggFound.has("explorer")) {
+    if (visitedAll && !this.easterEggFound.has('explorer')) {
       this.unlockEasterEgg(
-        "explorer",
-        "🗺️ Du hast alle Bereiche erkundet! Echter Explorer! 🧭",
+        'explorer',
+        '🗺️ Du hast alle Bereiche erkundet! Echter Explorer! 🧭',
       );
     }
   }
 
   loadCSS() {
     if (!document.querySelector('link[href*="robot-companion.css"]')) {
-      const link = document.createElement("link");
-      link.rel = "stylesheet";
-      link.href = "/content/components/robot-companion/robot-companion.css";
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = '/content/components/robot-companion/robot-companion.css';
       document.head.appendChild(link);
     }
   }
@@ -536,28 +536,28 @@ export class RobotCompanion {
 
     // Cache DOM references
     this.dom.container = container;
-    this.dom.floatWrapper = container.querySelector(".robot-float-wrapper");
-    this.dom.bubble = document.getElementById("robot-bubble");
-    this.dom.bubbleText = document.getElementById("robot-bubble-text");
-    this.dom.bubbleClose = container.querySelector(".robot-bubble-close");
-    this.dom.avatar = container.querySelector(".robot-avatar");
-    this.dom.svg = container.querySelector(".robot-svg");
-    this.dom.eyes = container.querySelector(".robot-eyes");
-    this.dom.lids = container.querySelectorAll(".robot-lid");
-    this.dom.pupils = container.querySelectorAll(".robot-pupil");
-    this.dom.antenna = container.querySelector(".robot-antenna-light");
-    this.dom.flame = container.querySelector(".robot-flame");
-    this.dom.legs = container.querySelector(".robot-legs");
+    this.dom.floatWrapper = container.querySelector('.robot-float-wrapper');
+    this.dom.bubble = document.getElementById('robot-bubble');
+    this.dom.bubbleText = document.getElementById('robot-bubble-text');
+    this.dom.bubbleClose = container.querySelector('.robot-bubble-close');
+    this.dom.avatar = container.querySelector('.robot-avatar');
+    this.dom.svg = container.querySelector('.robot-svg');
+    this.dom.eyes = container.querySelector('.robot-eyes');
+    this.dom.lids = container.querySelectorAll('.robot-lid');
+    this.dom.pupils = container.querySelectorAll('.robot-pupil');
+    this.dom.antenna = container.querySelector('.robot-antenna-light');
+    this.dom.flame = container.querySelector('.robot-flame');
+    this.dom.legs = container.querySelector('.robot-legs');
     this.dom.arms = {
-      left: container.querySelector(".robot-arm.left"),
-      right: container.querySelector(".robot-arm.right"),
+      left: container.querySelector('.robot-arm.left'),
+      right: container.querySelector('.robot-arm.right'),
     };
-    this.dom.particles = container.querySelector(".robot-particles");
-    this.dom.thinking = container.querySelector(".robot-thinking");
+    this.dom.particles = container.querySelector('.robot-particles');
+    this.dom.thinking = container.querySelector('.robot-thinking');
     this.dom.magnifyingGlass = container.querySelector(
-      ".robot-magnifying-glass",
+      '.robot-magnifying-glass',
     );
-    this.dom.mouth = container.querySelector(".robot-mouth");
+    this.dom.mouth = container.querySelector('.robot-mouth');
 
     const anim = /** @type {any} */ (this.animationModule);
     // flame colours may need adjustment after DOM creation
@@ -572,29 +572,29 @@ export class RobotCompanion {
     document.body.appendChild(chatWindow);
 
     this.dom.window = chatWindow;
-    this.dom.messages = document.getElementById("robot-messages");
-    this.dom.inputArea = document.getElementById("robot-input-area");
+    this.dom.messages = document.getElementById('robot-messages');
+    this.dom.inputArea = document.getElementById('robot-input-area');
     this.dom.input = /** @type {HTMLInputElement} */ (
-      document.getElementById("robot-chat-input")
+      document.getElementById('robot-chat-input')
     );
     this.dom.sendBtn = /** @type {HTMLButtonElement} */ (
-      document.getElementById("robot-chat-send")
+      document.getElementById('robot-chat-send')
     );
-    this.dom.closeBtn = chatWindow.querySelector(".chat-close-btn");
+    this.dom.closeBtn = chatWindow.querySelector('.chat-close-btn');
     this.dom.profileStatus = document.getElementById(
-      "robot-chat-profile-status",
+      'robot-chat-profile-status',
     );
     this.dom.memoriesBtn = /** @type {HTMLButtonElement|null} */ (
-      document.getElementById("robot-chat-memories")
+      document.getElementById('robot-chat-memories')
     );
     this.dom.editMemoryBtn = /** @type {HTMLButtonElement|null} */ (
-      document.getElementById("robot-chat-edit-memory")
+      document.getElementById('robot-chat-edit-memory')
     );
     this.dom.switchProfileBtn = /** @type {HTMLButtonElement|null} */ (
-      document.getElementById("robot-chat-switch-profile")
+      document.getElementById('robot-chat-switch-profile')
     );
     this.dom.disconnectProfileBtn = /** @type {HTMLButtonElement|null} */ (
-      document.getElementById("robot-chat-disconnect-profile")
+      document.getElementById('robot-chat-disconnect-profile')
     );
 
     this.attachChatEvents();
@@ -603,10 +603,10 @@ export class RobotCompanion {
 
   attachEvents() {
     const _onAvatarClick = () => this.handleAvatarClick();
-    this.dom.avatar.addEventListener("click", _onAvatarClick);
+    this.dom.avatar.addEventListener('click', _onAvatarClick);
     this._eventListeners.dom.push({
       target: this.dom.avatar,
-      event: "click",
+      event: 'click',
       handler: _onAvatarClick,
     });
 
@@ -616,10 +616,10 @@ export class RobotCompanion {
       this.chatModule.lastGreetedContext = ctx;
       this.chatModule.hideBubble();
     };
-    this.dom.bubbleClose.addEventListener("click", _onBubbleClose);
+    this.dom.bubbleClose.addEventListener('click', _onBubbleClose);
     this._eventListeners.dom.push({
       target: this.dom.bubbleClose,
-      event: "click",
+      event: 'click',
       handler: _onBubbleClose,
     });
 
@@ -645,19 +645,19 @@ export class RobotCompanion {
       e.stopPropagation();
       this.toggleChat(false);
     };
-    this.dom.closeBtn.addEventListener("click", _onCloseBtnClick);
+    this.dom.closeBtn.addEventListener('click', _onCloseBtnClick);
     this._eventListeners.dom.push({
       target: this.dom.closeBtn,
-      event: "click",
+      event: 'click',
       handler: _onCloseBtnClick,
     });
 
     if (this.dom.sendBtn) {
       const _onSendBtn = () => this.handleUserMessage();
-      this.dom.sendBtn.addEventListener("click", _onSendBtn);
+      this.dom.sendBtn.addEventListener('click', _onSendBtn);
       this._eventListeners.dom.push({
         target: this.dom.sendBtn,
-        event: "click",
+        event: 'click',
         handler: _onSendBtn,
       });
     }
@@ -665,23 +665,23 @@ export class RobotCompanion {
     if (this.dom.input) {
       const _onInputKeydown = (e) => {
         if (e.isComposing) return;
-        if (e.key === "Enter") {
+        if (e.key === 'Enter') {
           e.preventDefault();
           this.handleUserMessage();
         }
       };
-      this.dom.input.addEventListener("keydown", _onInputKeydown);
+      this.dom.input.addEventListener('keydown', _onInputKeydown);
       this._eventListeners.dom.push({
         target: this.dom.input,
-        event: "keydown",
+        event: 'keydown',
         handler: _onInputKeydown,
       });
 
       const _onInput = () => this.chatModule.syncComposerState();
-      this.dom.input.addEventListener("input", _onInput);
+      this.dom.input.addEventListener('input', _onInput);
       this._eventListeners.dom.push({
         target: this.dom.input,
-        event: "input",
+        event: 'input',
         handler: _onInput,
       });
     }
@@ -689,10 +689,10 @@ export class RobotCompanion {
     if (this.dom.memoriesBtn) {
       const _onMemoriesBtnClick = () =>
         this.chatModule.handleAction(ROBOT_ACTIONS.SHOW_MEMORIES);
-      this.dom.memoriesBtn.addEventListener("click", _onMemoriesBtnClick);
+      this.dom.memoriesBtn.addEventListener('click', _onMemoriesBtnClick);
       this._eventListeners.dom.push({
         target: this.dom.memoriesBtn,
-        event: "click",
+        event: 'click',
         handler: _onMemoriesBtnClick,
       });
     }
@@ -700,10 +700,10 @@ export class RobotCompanion {
     if (this.dom.editMemoryBtn) {
       const _onEditMemoryBtnClick = () =>
         this.chatModule.handleAction(ROBOT_ACTIONS.EDIT_PROFILE);
-      this.dom.editMemoryBtn.addEventListener("click", _onEditMemoryBtnClick);
+      this.dom.editMemoryBtn.addEventListener('click', _onEditMemoryBtnClick);
       this._eventListeners.dom.push({
         target: this.dom.editMemoryBtn,
-        event: "click",
+        event: 'click',
         handler: _onEditMemoryBtnClick,
       });
     }
@@ -712,12 +712,12 @@ export class RobotCompanion {
       const _onSwitchProfileBtnClick = () =>
         this.chatModule.handleAction(ROBOT_ACTIONS.SWITCH_PROFILE);
       this.dom.switchProfileBtn.addEventListener(
-        "click",
+        'click',
         _onSwitchProfileBtnClick,
       );
       this._eventListeners.dom.push({
         target: this.dom.switchProfileBtn,
-        event: "click",
+        event: 'click',
         handler: _onSwitchProfileBtnClick,
       });
     }
@@ -726,26 +726,26 @@ export class RobotCompanion {
       const _onDisconnectProfileBtnClick = () =>
         this.chatModule.handleAction(ROBOT_ACTIONS.DISCONNECT_PROFILE);
       this.dom.disconnectProfileBtn.addEventListener(
-        "click",
+        'click',
         _onDisconnectProfileBtnClick,
       );
       this._eventListeners.dom.push({
         target: this.dom.disconnectProfileBtn,
-        event: "click",
+        event: 'click',
         handler: _onDisconnectProfileBtnClick,
       });
     }
 
     // Image upload handling
-    const imageUploadInput = document.getElementById("robot-image-upload");
-    const imageBtn = document.getElementById("robot-image-btn");
+    const imageUploadInput = document.getElementById('robot-image-upload');
+    const imageBtn = document.getElementById('robot-image-btn');
 
     if (imageBtn && imageUploadInput) {
       const _onImageBtnClick = () => imageUploadInput.click();
-      imageBtn.addEventListener("click", _onImageBtnClick);
+      imageBtn.addEventListener('click', _onImageBtnClick);
       this._eventListeners.dom.push({
         target: imageBtn,
-        event: "click",
+        event: 'click',
         handler: _onImageBtnClick,
       });
 
@@ -753,13 +753,13 @@ export class RobotCompanion {
         const file = e.target.files?.[0];
         if (file) {
           this.chatModule.handleImageUpload(file);
-          /** @type {HTMLInputElement} */ (imageUploadInput).value = ""; // Reset for re-upload
+          /** @type {HTMLInputElement} */ (imageUploadInput).value = ''; // Reset for re-upload
         }
       };
-      imageUploadInput.addEventListener("change", _onImageChange);
+      imageUploadInput.addEventListener('change', _onImageChange);
       this._eventListeners.dom.push({
         target: imageUploadInput,
-        event: "change",
+        event: 'change',
         handler: _onImageChange,
       });
     }
@@ -805,7 +805,6 @@ export class RobotCompanion {
     return this.chatModule.scrollToBottom();
   }
 
-
   /**
    * Async initialization - moved out of constructor for testability
    * @returns {Promise<void>}
@@ -815,16 +814,16 @@ export class RobotCompanion {
   }
 }
 
-if (document.readyState === "loading") {
+if (document.readyState === 'loading') {
   document.addEventListener(
-    "DOMContentLoaded",
+    'DOMContentLoaded',
     () => {
       const robot = new RobotCompanion();
       robot
         .initialize()
         .catch((e) =>
           log.error(
-            "RobotCompanion init failed: " +
+            'RobotCompanion init failed: ' +
               (e && e.message ? e.message : String(e)),
           ),
         );
@@ -837,7 +836,7 @@ if (document.readyState === "loading") {
     .initialize()
     .catch((e) =>
       log.error(
-        "RobotCompanion init failed: " +
+        'RobotCompanion init failed: ' +
           (e && e.message ? e.message : String(e)),
       ),
     );

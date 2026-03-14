@@ -10,7 +10,7 @@ Führt lint-staged auf geänderten Dateien aus (ESLint, Stylelint, Prettier).
 
 ```bash
 # Manuell testen
-npx lint-staged
+npm exec lint-staged
 ```
 
 ### commit-msg
@@ -28,9 +28,8 @@ git commit -m "fix(auth): resolve timeout"
 ### pre-push
 
 1. Löscht Caches
-2. Führt Auto-Fixes aus
-3. Führt QA-Checks aus
-4. Fragt bei Fehlern nach
+2. Führt Lint-Checks aus
+3. Fragt bei Fehlern nach
 
 ```bash
 # Manuell testen
@@ -83,7 +82,7 @@ git push --no-verify
 | ------------- | ------------- | -------- | ----------- | ------- |
 | pre-commit    | Commit        | ✅       | ✅          | ~2-5s   |
 | commit-msg    | Commit        | ❌       | ✅          | <1s     |
-| pre-push      | Push          | ✅       | ⚠️ Optional | ~10-30s |
+| pre-push      | Push          | ❌       | ⚠️ Optional | ~10-30s |
 | post-merge    | Merge         | ✅       | ❌          | ~5-60s  |
 | post-checkout | Branch Switch | ✅       | ❌          | ~5-60s  |
 
