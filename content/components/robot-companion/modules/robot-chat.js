@@ -36,6 +36,38 @@ const RECOVERY_OTHER_PROFILE_PATTERN =
   /^(?:anderes?\s+profil|nicht\s+dieses\s+profil|neu(?:es)?\s+profil|anderer\s+nutzer|jemand\s+anders)$/i;
 const RECOVERY_DISCONNECT_PATTERN =
   /^(?:gerät\s+trennen|trennen|abmelden|vergessen|profil\s+trennen)$/i;
+const PROFILE_NAME_CAPTURE_STATUSES = new Set(["disconnected", "anonymous"]);
+const STANDALONE_NAME_PREFIX_PATTERN =
+  /^(?:(?:hallo|hi|hey|moin|servus)\b|guten\s+(?:tag|morgen|abend)\b)[\s,!:.-]*/i;
+const STANDALONE_NAME_STOPWORDS = new Set([
+  "ich",
+  "bin",
+  "mein",
+  "meine",
+  "meinen",
+  "name",
+  "ist",
+  "hilfe",
+  "help",
+  "problem",
+  "frage",
+  "test",
+  "start",
+  "ja",
+  "nein",
+  "okay",
+  "ok",
+  "bitte",
+  "danke",
+  "hallo",
+  "hi",
+  "hey",
+  "moin",
+  "servus",
+  "profil",
+  "neu",
+  "anderes",
+]);
 
 function getRecoveryFollowUpAction(text) {
   const normalized = String(text || "").trim();
@@ -66,6 +98,69 @@ function formatRecoveredProfileSummary(memories = []) {
   ]
     .filter(Boolean)
     .join("\n");
+}
+
+function normalizeChatInput(text) {
+  return String(text || "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function extractStandaloneNameCandidate(text) {
+  let normalized = normalizeChatInput(text)
+    .replace(/^["'`]+|["'`]+$/g, "")
+    .replace(/[.,;:!?]+$/g, "");
+  if (!normalized) return "";
+
+  normalized = normalized.replace(STANDALONE_NAME_PREFIX_PATTERN, "").trim();
+  if (!normalized) return "";
+
+  let isIchBinPrompt = false;
+  const ichBinMatch = normalized.match(/^ich\s+bin\s+(.+)$/i);
+  if (ichBinMatch?.[1]) {
+    normalized = normalizeChatInput(ichBinMatch[1]);
+    isIchBinPrompt = true;
+  }
+
+  if (!/^[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ'’ -]{1,39}$/.test(normalized)) {
+    return "";
+  }
+
+  const tokens = normalized.split(/\s+/).filter(Boolean);
+  if (!tokens.length || tokens.length > 3) return "";
+
+  const lowerTokens = tokens.map((token) => token.toLowerCase());
+  if (lowerTokens.some((token) => STANDALONE_NAME_STOPWORDS.has(token))) {
+    return "";
+  }
+
+  if (
+    isIchBinPrompt &&
+    tokens.length === 1 &&
+    !/^[A-ZÀ-ÖØ-Þ]/.test(tokens[0])
+  ) {
+    return "";
+  }
+
+  return normalized;
+}
+
+function normalizePromptForProfileRecovery(prompt, profileState = {}) {
+  const normalizedPrompt = normalizeChatInput(prompt);
+  const status = String(profileState?.status || "").trim();
+
+  if (
+    !normalizedPrompt ||
+    !PROFILE_NAME_CAPTURE_STATUSES.has(status) ||
+    profileState?.recovery
+  ) {
+    return normalizedPrompt;
+  }
+
+  const detectedName = extractStandaloneNameCandidate(normalizedPrompt);
+  if (!detectedName) return normalizedPrompt;
+
+  return `Mein Name ist ${detectedName}`;
 }
 
 export class RobotChat {
@@ -322,6 +417,9 @@ export class RobotChat {
 
     try {
       this.robot.animationModule.startSpeaking();
+      const normalizedPrompt = hasPendingImage
+        ? text
+        : normalizePromptForProfileRecovery(text, this.profileState);
       const response = await this._streamAgentResponse(
         async (agentService, onChunk) => {
           if (hasPendingImage) {
@@ -329,7 +427,7 @@ export class RobotChat {
             this.clearImagePreview();
             return agentService.analyzeImage(imageFile, text, onChunk);
           }
-          return agentService.generateResponse(text, onChunk);
+          return agentService.generateResponse(normalizedPrompt, onChunk);
         },
         { requestId },
       );
@@ -953,7 +1051,7 @@ export class RobotChat {
         this.setProfileState({ ...profileState, recovery: null });
       this.removeProfileCards("recovery");
       this.addMessage(
-        "Okay. Dieses Gerät nutzt jetzt ein anderes Profil. Nenne mir einfach deinen Namen oder teile neue Infos mit.",
+        "Okay. Dieses Gerät nutzt jetzt ein anderes Profil. Nenne mir deinen Namen, z. B. \"Ich heiße Alex\", oder teile neue Infos mit.",
         "bot",
       );
     } catch (error) {
@@ -984,7 +1082,7 @@ export class RobotChat {
         recovery: null,
       });
       this.addMessage(
-        "Dieses Gerät ist jetzt frei für ein anderes Profil. Sag mir einfach deinen Namen.",
+        "Dieses Gerät ist jetzt frei für ein anderes Profil. Sag mir deinen Namen, z. B. \"Ich heiße Alex\".",
         "bot",
       );
     } catch (error) {
@@ -1342,6 +1440,8 @@ export class RobotChat {
 }
 
 export const __test__ = {
+  extractStandaloneNameCandidate,
   formatRecoveredProfileSummary,
   getRecoveryFollowUpAction,
+  normalizePromptForProfileRecovery,
 };
