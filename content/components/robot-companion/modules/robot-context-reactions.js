@@ -7,8 +7,6 @@
 export class RobotContextReactions {
   constructor(robot) {
     this.robot = robot;
-    this.lastScrollY = 0;
-    this.scrollVelocity = 0;
     this.isMonitoring = false;
     /** @type {Array<{target: EventTarget, event: string, handler: Function}>} */
     this._listeners = [];
@@ -31,12 +29,12 @@ export class RobotContextReactions {
 
   /**
    * Start monitoring user behavior
+   * Note: Scroll monitoring is handled by RobotIntelligence to avoid duplicates.
    */
   startMonitoring() {
     if (this.isMonitoring) return;
     this.isMonitoring = true;
 
-    this.setupScrollMonitoring();
     this.setupFormMonitoring();
     this.setupErrorMonitoring();
   }
@@ -62,53 +60,6 @@ export class RobotContextReactions {
   _addEventListener(target, event, handler, options) {
     target.addEventListener(event, handler, options);
     this._listeners.push({ target, event, handler });
-  }
-
-  /**
-   * Monitor scroll speed and react
-   */
-  setupScrollMonitoring() {
-    let lastTime = Date.now();
-
-    const handleScroll = () => {
-      if (!this.isMonitoring) return;
-
-      const currentY = window.scrollY;
-      const currentTime = Date.now();
-      const deltaY = Math.abs(currentY - this.lastScrollY);
-      const deltaTime = currentTime - lastTime;
-
-      // Calculate velocity (pixels per millisecond)
-      this.scrollVelocity = deltaY / Math.max(1, deltaTime);
-
-      // Fast scroll detected (> 3 pixels per ms)
-      if (this.scrollVelocity > 3 && !this.robot.chatModule?.isOpen) {
-        this.reactToFastScroll();
-      }
-
-      this.lastScrollY = currentY;
-      lastTime = currentTime;
-    };
-
-    this._addEventListener(window, 'scroll', handleScroll, { passive: true });
-  }
-
-  /**
-   * React to fast scrolling
-   */
-  reactToFastScroll() {
-    if (!this.robot.emotionsModule) return;
-
-    this.robot.emotionsModule.showScared();
-
-    const messages = [
-      'Wow, so schnell! 😱',
-      'Langsam! Mir wird schwindelig! 🌀',
-      'Warte auf mich! 💨',
-      'Nicht so hastig! 😵',
-    ];
-
-    this._showRandomMessage(messages, 2000);
   }
 
   /**

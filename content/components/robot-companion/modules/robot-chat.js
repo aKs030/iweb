@@ -5,9 +5,18 @@ import { uiStore } from "../../../core/ui-store.js";
 import { withViewTransition } from "../../../core/view-transitions.js";
 import { ChatHistoryStore } from "./chat-history-store.js";
 import { VIEW_TRANSITION_TYPES } from "../../../core/view-transition-types.js";
+import {
+  createMemoryEditorCard,
+  createProfileCard,
+  extractStandaloneNameCandidate,
+  formatCloudflareMemoriesMessage,
+  normalizePromptForProfileRecovery,
+} from "./robot-chat-profile.js";
 
 const log = createLogger("RobotChat");
 const DEFAULT_INPUT_PLACEHOLDER = "Frag mich etwas...";
+
+/** Action → prompt mapping for AI routing */
 const ACTION_PROMPTS = {
   [ROBOT_ACTIONS.START]:
     "Begruesse mich kurz als Jules und frage in 1-2 Saetzen, wobei du helfen kannst.",
@@ -30,138 +39,14 @@ const ACTION_PROMPTS = {
     "Loesche den Chatverlauf und bestaetige kurz auf Deutsch.",
 };
 
-const RECOVERY_CONFIRM_PATTERN =
-  /^(?:ja|ja bitte|klar|ok(?:ay)?|bitte|profil\s+laden|lade(?:\s+es)?|verbinde(?:\s+mich)?|nutze(?:\s+das)?\s+profil)$/i;
-const RECOVERY_OTHER_PROFILE_PATTERN =
-  /^(?:anderes?\s+profil|nicht\s+dieses\s+profil|neu(?:es)?\s+profil|anderer\s+nutzer|jemand\s+anders)$/i;
-const RECOVERY_DISCONNECT_PATTERN =
-  /^(?:gerät\s+trennen|trennen|abmelden|vergessen|profil\s+trennen)$/i;
-const PROFILE_NAME_CAPTURE_STATUSES = new Set(["disconnected", "anonymous"]);
-const STANDALONE_NAME_PREFIX_PATTERN =
-  /^(?:(?:hallo|hi|hey|moin|servus)\b|guten\s+(?:tag|morgen|abend)\b)[\s,!:.-]*/i;
-const STANDALONE_NAME_STOPWORDS = new Set([
-  "ich",
-  "bin",
-  "mein",
-  "meine",
-  "meinen",
-  "name",
-  "ist",
-  "hilfe",
-  "help",
-  "problem",
-  "frage",
-  "test",
-  "start",
-  "ja",
-  "nein",
-  "okay",
-  "ok",
-  "bitte",
-  "danke",
-  "hallo",
-  "hi",
-  "hey",
-  "moin",
-  "servus",
-  "profil",
-  "neu",
-  "anderes",
-]);
-
-function getRecoveryFollowUpAction(text) {
-  const normalized = String(text || "").trim();
-  if (!normalized) return "";
-  if (RECOVERY_CONFIRM_PATTERN.test(normalized)) return "confirm";
-  if (RECOVERY_OTHER_PROFILE_PATTERN.test(normalized)) return "different";
-  if (RECOVERY_DISCONNECT_PATTERN.test(normalized)) return "disconnect";
-  return "";
-}
-
-function formatRecoveredProfileSummary(memories = []) {
-  if (!Array.isArray(memories) || memories.length === 0) {
-    return "Profil geladen. Dazu sind noch keine Erinnerungen gespeichert.";
-  }
-
-  const visibleEntries = memories.slice(0, 6);
-  const lines = visibleEntries.map((entry) => {
-    const key = String(entry?.key || "memory").trim() || "memory";
-    const value = String(entry?.value || "").trim() || "(leer)";
-    return `- **${key}**: ${value}`;
-  });
-  const remaining = memories.length - visibleEntries.length;
-
-  return [
-    "Ich habe dein Profil geladen. Das weiß ich bereits über dich:",
-    ...lines,
-    remaining > 0 ? `- ... und ${remaining} weitere Erinnerungen.` : "",
-  ]
-    .filter(Boolean)
-    .join("\n");
-}
-
-function normalizeChatInput(text) {
-  return String(text || "")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function extractStandaloneNameCandidate(text) {
-  let normalized = normalizeChatInput(text)
-    .replace(/^["'`]+|["'`]+$/g, "")
-    .replace(/[.,;:!?]+$/g, "");
-  if (!normalized) return "";
-
-  normalized = normalized.replace(STANDALONE_NAME_PREFIX_PATTERN, "").trim();
-  if (!normalized) return "";
-
-  let isIchBinPrompt = false;
-  const ichBinMatch = normalized.match(/^ich\s+bin\s+(.+)$/i);
-  if (ichBinMatch?.[1]) {
-    normalized = normalizeChatInput(ichBinMatch[1]);
-    isIchBinPrompt = true;
-  }
-
-  if (!/^[A-Za-zÀ-ÖØ-öø-ÿ][A-Za-zÀ-ÖØ-öø-ÿ'’ -]{1,39}$/.test(normalized)) {
-    return "";
-  }
-
-  const tokens = normalized.split(/\s+/).filter(Boolean);
-  if (!tokens.length || tokens.length > 3) return "";
-
-  const lowerTokens = tokens.map((token) => token.toLowerCase());
-  if (lowerTokens.some((token) => STANDALONE_NAME_STOPWORDS.has(token))) {
-    return "";
-  }
-
-  if (
-    isIchBinPrompt &&
-    tokens.length === 1 &&
-    !/^[A-ZÀ-ÖØ-Þ]/.test(tokens[0])
-  ) {
-    return "";
-  }
-
-  return normalized;
-}
-
-function normalizePromptForProfileRecovery(prompt, profileState = {}) {
-  const normalizedPrompt = normalizeChatInput(prompt);
-  const status = String(profileState?.status || "").trim();
-
-  if (
-    !normalizedPrompt ||
-    !PROFILE_NAME_CAPTURE_STATUSES.has(status) ||
-    profileState?.recovery
-  ) {
-    return normalizedPrompt;
-  }
-
-  const detectedName = extractStandaloneNameCandidate(normalizedPrompt);
-  if (!detectedName) return normalizedPrompt;
-
-  return `Mein Name ist ${detectedName}`;
-}
+/** Action → handler mapping for direct (non-AI) actions */
+const DIRECT_ACTION_HANDLERS = {
+  [ROBOT_ACTIONS.SHOW_MEMORIES]: "showStoredCloudflareMemories",
+  [ROBOT_ACTIONS.EDIT_PROFILE]: "openMemoryEditor",
+  [ROBOT_ACTIONS.SWITCH_PROFILE]: "switchActiveProfile",
+  [ROBOT_ACTIONS.DISCONNECT_PROFILE]: "disconnectCurrentDeviceProfile",
+  [ROBOT_ACTIONS.CLEAR_CHAT]: "clearHistory",
+};
 
 export class RobotChat {
   constructor(robot) {
@@ -193,12 +78,12 @@ export class RobotChat {
   destroy() {
     this.cancelActiveResponse("destroyed");
     this.clearImagePreview();
-    this.clearBubbleSequence();
   }
 
+  // ─── Response Request ID Management ──────────────────────────────────────────
+
   createResponseRequestId() {
-    this._responseRequestId += 1;
-    return this._responseRequestId;
+    return ++this._responseRequestId;
   }
 
   isActiveResponseRequest(requestId) {
@@ -218,6 +103,8 @@ export class RobotChat {
     this.syncComposerState();
     void this._cancelAgentRequest(reason);
   }
+
+  // ─── Profile State ──────────────────────────────────────────────────────────
 
   setProfileState(nextState = {}) {
     this.profileState = {
@@ -247,19 +134,14 @@ export class RobotChat {
       Boolean(this.profileState?.userId) &&
       !["disconnected", "recovery-pending", "conflict"].includes(status);
 
-    if (this.robot.dom.memoriesBtn) {
-      this.robot.dom.memoriesBtn.disabled = !hasBoundProfile;
-      this.robot.dom.memoriesBtn.setAttribute(
-        "aria-disabled",
-        String(!hasBoundProfile),
-      );
-    }
-    if (this.robot.dom.editMemoryBtn) {
-      this.robot.dom.editMemoryBtn.disabled = !hasBoundProfile;
-      this.robot.dom.editMemoryBtn.setAttribute(
-        "aria-disabled",
-        String(!hasBoundProfile),
-      );
+    const profileBtns = [
+      this.robot.dom.memoriesBtn,
+      this.robot.dom.editMemoryBtn,
+    ];
+    for (const btn of profileBtns) {
+      if (!btn) continue;
+      btn.disabled = !hasBoundProfile;
+      btn.setAttribute("aria-disabled", String(!hasBoundProfile));
     }
   }
 
@@ -274,19 +156,16 @@ export class RobotChat {
     }
   }
 
+  // ─── Chat Toggle ────────────────────────────────────────────────────────────
+
   toggleChat(forceState) {
     const newState =
       forceState ?? !this.robot.stateManager.signals.isChatOpen.value;
 
-    // DOM-Erstellung & Event-Binding AUSSERHALB der View Transition
-    // (VT darf nur DOM-Mutationen wrappen, nicht DOM-Erstellung)
     if (newState) {
       this.robot.ensureChatWindowCreated();
     }
 
-    // Visuelle State-Änderungen in View Transition wrappen.
-    // CSS-Transitions nur deaktivieren wenn VT tatsächlich unterstützt wird,
-    // damit Browser ohne VT die CSS-Fallback-Animation behalten.
     const win = this.robot.dom.window;
     const vtSupported = typeof document.startViewTransition === "function";
     if (vtSupported && win) win.classList.add("vt-animating");
@@ -302,28 +181,19 @@ export class RobotChat {
     });
   }
 
-  /**
-   * Apply the visual chat state (class toggles, state updates, focus management).
-   * Separated so it can be wrapped in a View Transition.
-   * @param {boolean} newState
-   */
   _applyVisualChatState(newState) {
     if (newState) {
       this.robot.dom.window.classList.add("open");
       this.robot.dom.container.classList.add("robot-chat--open");
       this.isOpen = true;
-
-      // Update state manager (single source of truth)
       this.robot.stateManager.setState({ isChatOpen: true });
       uiStore.setState({ robotChatOpen: true });
 
-      this.clearBubbleSequence();
       this.hideBubble();
       this.robot.animationModule.stopIdleEyeMovement();
       this.robot.animationModule.stopBlinkLoop();
       void this.syncProfileStateFromService();
-      const ctx = this.robot.getPageContext();
-      this.lastGreetedContext = ctx;
+      this.lastGreetedContext = this.robot.getPageContext();
 
       if (this.robot.dom.messages.children.length === 0) {
         if (this.history.length > 0) {
@@ -333,22 +203,17 @@ export class RobotChat {
         }
       }
 
-      // Focus Trap
       globalThis?.a11y?.trapFocus(this.robot.dom.window);
       this.syncComposerState();
     } else {
       this.robot.dom.window.classList.remove("open");
       this.robot.dom.container.classList.remove("robot-chat--open");
       this.isOpen = false;
-
-      // Update state manager (single source of truth)
       this.robot.stateManager.setState({ isChatOpen: false });
       uiStore.setState({ robotChatOpen: false });
 
       this.robot.animationModule.startIdleEyeMovement();
       this.robot.animationModule.startBlinkLoop();
-
-      // Release Focus
       globalThis?.a11y?.releaseFocus();
       this.syncComposerState();
     }
@@ -359,12 +224,13 @@ export class RobotChat {
       this.toggleChat(false);
       return;
     }
-
     (async () => {
       await this.robot.animationModule.playPokeAnimation();
       this.toggleChat(true);
     })();
   }
+
+  // ─── User Message Handling ──────────────────────────────────────────────────
 
   async handleUserMessage() {
     const text = this.robot.dom.input.value.trim();
@@ -376,31 +242,8 @@ export class RobotChat {
     }
     if (this.isTyping || this.isResponding) return;
 
-    const recoveryAction =
-      !hasPendingImage && this.profileState?.recovery?.status
-        ? getRecoveryFollowUpAction(text)
-        : "";
-    if (recoveryAction) {
-      this.addMessage(text, "user");
-      this.robot.dom.input.value = "";
-      if (recoveryAction === "confirm") {
-        await this.confirmRecoveredProfile(
-          this.profileState.recovery,
-          this.pendingRecoveryPrompt,
-        );
-        return;
-      }
-      if (recoveryAction === "different") {
-        await this.useDifferentProfile();
-        return;
-      }
-      if (recoveryAction === "disconnect") {
-        await this.disconnectCurrentDeviceProfile();
-        return;
-      }
-    }
 
-    // Show user message (with image thumbnail if present)
+    // Show user message
     if (hasPendingImage) {
       this.addImageMessage(text, this.pendingImage);
     } else {
@@ -456,6 +299,9 @@ export class RobotChat {
     }
   }
 
+
+  // ─── Streaming ──────────────────────────────────────────────────────────────
+
   async _streamAgentResponse(runRequest, { requestId } = {}) {
     const agentService = await this.robot.getAgentService();
     let streamingMessageEl = null;
@@ -475,9 +321,7 @@ export class RobotChat {
         this.updateStreamingMessage(streamingMessageEl, chunk);
       });
     } catch (error) {
-      if (streamingMessageEl) {
-        streamingMessageEl.remove();
-      }
+      streamingMessageEl?.remove();
       if (!this.isActiveResponseRequest(requestId)) {
         return { aborted: true, text: "" };
       }
@@ -485,9 +329,7 @@ export class RobotChat {
     }
 
     if (!this.isActiveResponseRequest(requestId) || response?.aborted) {
-      if (streamingMessageEl) {
-        streamingMessageEl.remove();
-      }
+      streamingMessageEl?.remove();
       if (!typingRemoved) this.removeTyping();
       this.robot.animationModule.stopThinking();
       this.robot.animationModule.stopSpeaking();
@@ -497,8 +339,9 @@ export class RobotChat {
     this.robot.animationModule.stopThinking();
 
     if (response?.hasMemory && streamingMessageEl) {
-      const badge = this.robot.domBuilder.createMemoryIndicator();
-      streamingMessageEl.appendChild(badge);
+      streamingMessageEl.appendChild(
+        this.robot.domBuilder.createMemoryIndicator(),
+      );
     }
 
     if (!streamingMessageEl) {
@@ -512,14 +355,15 @@ export class RobotChat {
       return response;
     }
 
-    // If token streaming was partial, force-sync with final server message text.
-    if (streamingMessageEl && response?.text) {
+    // Force-sync with final server message text
+    if (response?.text) {
       this.updateStreamingMessage(streamingMessageEl, response.text);
     }
-
     this.finalizeStreamingMessage(streamingMessageEl);
     return response;
   }
+
+  // ─── Agent Response Post-Processing ─────────────────────────────────────────
 
   applyAgentResponseMeta(response, { originalPrompt = "" } = {}) {
     if (response?.profile) {
@@ -537,15 +381,28 @@ export class RobotChat {
     }
 
     this.pendingRecoveryPrompt = originalPrompt || this.pendingRecoveryPrompt;
-    if (recovery.status === "needs_confirmation") {
-      this.renderRecoveryCard(recovery, originalPrompt);
-      return;
-    }
-
     if (recovery.status === "conflict") {
-      this.renderRecoveryConflictCard(recovery);
+      this.removeProfileCards("recovery");
+      const card = createProfileCard({
+        kind: "recovery",
+        title: `Mehrere Profile für ${recovery.name || "diesen Namen"}`,
+        text: "Dieser Name ist nicht eindeutig. Nutze dieses Gerät getrennt oder wechsle bewusst auf ein anderes Profil.",
+        actions: [
+          {
+            label: "Anderes Profil",
+            onClick: () => void this.useDifferentProfile(),
+          },
+          {
+            label: "Gerät trennen",
+            onClick: () => void this.disconnectCurrentDeviceProfile(),
+          },
+        ],
+      });
+      this.appendProfileCard(card);
     }
   }
+
+  // ─── Profile Cards ─────────────────────────────────────────────────────────
 
   removeProfileCards(kind = "") {
     const selector = kind
@@ -556,115 +413,25 @@ export class RobotChat {
       ?.forEach((node) => node.remove());
   }
 
-  createProfileCard({
-    kind = "recovery",
-    title = "",
-    text = "",
-    actions = [],
-  }) {
-    const card = document.createElement("div");
-    card.className = "chat-profile-card";
-    card.dataset.cardKind = kind;
-
-    const titleEl = document.createElement("div");
-    titleEl.className = "chat-profile-card__title";
-    titleEl.textContent = title;
-
-    const textEl = document.createElement("div");
-    textEl.className = "chat-profile-card__text";
-    textEl.textContent = text;
-
-    const actionsEl = document.createElement("div");
-    actionsEl.className = "chat-profile-card__actions";
-
-    for (const action of actions) {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "chat-profile-card__btn";
-      button.textContent = action.label;
-      button.addEventListener("click", action.onClick);
-      actionsEl.appendChild(button);
-    }
-
-    card.append(titleEl, textEl, actionsEl);
-    return card;
-  }
-
   appendProfileCard(card) {
     if (!card || !this.robot.dom.messages) return;
     this.robot.dom.messages.appendChild(card);
     this.scrollToBottom();
   }
 
-  renderRecoveryCard(recovery, originalPrompt = "") {
-    this.removeProfileCards("recovery");
-    const card = this.createProfileCard({
-      kind: "recovery",
-      title: `Profil gefunden: ${recovery.name || "Unbekannt"}`,
-      text: "Ich habe ein bestehendes Profil erkannt. Du kannst es jetzt laden oder bewusst mit einem anderen Profil weitermachen.",
-      actions: [
-        {
-          label: "Profil laden",
-          onClick: () => {
-            void this.confirmRecoveredProfile(recovery, originalPrompt);
-          },
-        },
-        {
-          label: "Anderes Profil",
-          onClick: () => {
-            void this.useDifferentProfile();
-          },
-        },
-        {
-          label: "Gerät trennen",
-          onClick: () => {
-            void this.disconnectCurrentDeviceProfile();
-          },
-        },
-      ],
-    });
-    this.appendProfileCard(card);
-  }
+  // ─── Tool Results ───────────────────────────────────────────────────────────
 
-  renderRecoveryConflictCard(recovery) {
-    this.removeProfileCards("recovery");
-    const card = this.createProfileCard({
-      kind: "recovery",
-      title: `Mehrere Profile für ${recovery.name || "diesen Namen"}`,
-      text: "Dieser Name ist nicht eindeutig. Nutze dieses Gerät getrennt oder wechsle bewusst auf ein anderes Profil.",
-      actions: [
-        {
-          label: "Anderes Profil",
-          onClick: () => {
-            void this.useDifferentProfile();
-          },
-        },
-        {
-          label: "Gerät trennen",
-          onClick: () => {
-            void this.disconnectCurrentDeviceProfile();
-          },
-        },
-      ],
-    });
-    this.appendProfileCard(card);
-  }
-
-  /**
-   * Show tool call execution results in chat
-   * @param {Array<{name: string, success: boolean, message: string}>} toolResults
-   */
   showToolCallResults(toolResults) {
     if (!this.robot.dom.messages) return;
-
     withViewTransition(
       () => {
         for (const result of toolResults) {
-          const indicator = this.robot.domBuilder.createToolCallIndicator(
-            result.name,
-            result.message,
+          this.robot.dom.messages.appendChild(
+            this.robot.domBuilder.createToolCallIndicator(
+              result.name,
+              result.message,
+            ),
           );
-          this.robot.dom.messages.appendChild(indicator);
         }
         this.scrollToBottom();
       },
@@ -672,11 +439,8 @@ export class RobotChat {
     );
   }
 
-  /**
-   * Add a user message with image thumbnail
-   * @param {string} text
-   * @param {File} imageFile
-   */
+  // ─── Image Handling ─────────────────────────────────────────────────────────
+
   addImageMessage(text, imageFile) {
     const msg = document.createElement("div");
     msg.className = "message user";
@@ -688,20 +452,15 @@ export class RobotChat {
       msg.appendChild(textEl);
     }
 
-    // Add image thumbnail
     const img = document.createElement("img");
     img.className = "user-image";
     img.alt = imageFile.name || "Hochgeladenes Bild";
     img.src = URL.createObjectURL(imageFile);
-
-    // Clean up object URL after load
     img.onload = () => URL.revokeObjectURL(img.src);
 
     msg.appendChild(img);
     msg.appendChild(
-      this.robot.domBuilder.createMessageMeta(timestamp, {
-        sender: "Du",
-      }),
+      this.robot.domBuilder.createMessageMeta(timestamp, { sender: "Du" }),
     );
     this.robot.dom.messages.appendChild(msg);
     this.scrollToBottom();
@@ -715,36 +474,23 @@ export class RobotChat {
     });
   }
 
-  /**
-   * Handle image upload from file input
-   * @param {File} file
-   */
   handleImageUpload(file) {
     if (!file) return;
-
-    // Remove existing preview
     this.clearImagePreview();
-
     this.pendingImage = file;
 
-    // Show preview
     const src = URL.createObjectURL(file);
     const preview = this.robot.domBuilder.createImagePreview(src, file.name);
 
-    // Insert before input area
     const inputArea =
       this.robot.dom.inputArea || document.getElementById("robot-input-area");
-    if (inputArea && inputArea.parentNode) {
+    if (inputArea?.parentNode) {
       inputArea.parentNode.insertBefore(preview, inputArea);
     }
 
-    // Setup remove handler
     const removeBtn = preview.querySelector(".chat-preview-remove");
-    if (removeBtn) {
-      removeBtn.addEventListener("click", () => this.clearImagePreview());
-    }
+    removeBtn?.addEventListener("click", () => this.clearImagePreview());
 
-    // Update placeholder
     if (this.robot.dom.input) {
       this.robot.dom.input.placeholder =
         "Beschreibe das Bild oder sende es direkt...";
@@ -753,18 +499,13 @@ export class RobotChat {
     this.syncComposerState();
   }
 
-  /**
-   * Clear image preview and pending image
-   */
   clearImagePreview() {
     this.pendingImage = null;
 
     const preview = document.getElementById("robot-image-preview");
     if (preview) {
       const img = preview.querySelector("img");
-      if (img?.src?.startsWith("blob:")) {
-        URL.revokeObjectURL(img.src);
-      }
+      if (img?.src?.startsWith("blob:")) URL.revokeObjectURL(img.src);
       preview.remove();
     }
 
@@ -773,6 +514,8 @@ export class RobotChat {
     }
     this.syncComposerState();
   }
+
+  // ─── Streaming Messages ─────────────────────────────────────────────────────
 
   createStreamingMessage() {
     const msg = document.createElement("div");
@@ -800,20 +543,17 @@ export class RobotChat {
   }
 
   finalizeStreamingMessage(messageEl) {
-    const cursor = messageEl.querySelector(".streaming-cursor");
-    if (cursor) cursor.remove();
+    messageEl.querySelector(".streaming-cursor")?.remove();
     messageEl.classList.remove("streaming");
     this.robot.animationModule.stopSpeaking();
 
     const textSpan = messageEl.querySelector(".streaming-text");
     const text = textSpan?.innerText || textSpan?.textContent || "";
-
     const timestamp =
       Number.parseInt(messageEl.dataset.timestamp || "", 10) || Date.now();
+
     messageEl.appendChild(
-      this.robot.domBuilder.createMessageMeta(timestamp, {
-        sender: "Jules",
-      }),
+      this.robot.domBuilder.createMessageMeta(timestamp, { sender: "Jules" }),
     );
 
     this.history = this.historyStore.append(this.history, {
@@ -823,31 +563,31 @@ export class RobotChat {
     });
   }
 
+  // ─── Bubble ─────────────────────────────────────────────────────────────────
+
   showBubble(text) {
-    if (this.robot.disableLocalBubbleTexts) return;
-    if (this.isOpen) return;
+    if (this.robot.disableLocalBubbleTexts || this.isOpen) return;
     if (!this.robot.dom.bubble || !this.robot.dom.bubbleText) return;
     this.robot.dom.bubbleText.textContent = String(text || "").trim();
     this.robot.dom.bubble.classList.add("visible");
   }
 
   hideBubble() {
-    if (this.robot.dom.bubble)
-      this.robot.dom.bubble.classList.remove("visible");
+    this.robot.dom.bubble?.classList.remove("visible");
   }
+
+  // ─── Typing Indicator ──────────────────────────────────────────────────────
 
   showTyping() {
     if (this.isTyping) return;
     this.isTyping = true;
-
-    // Update state manager
     this.robot.stateManager.setState({ isTyping: true });
 
     withViewTransition(
       () => {
-        // Use DOM Builder for XSS-safe creation
-        const typingDiv = this.robot.domBuilder.createTypingIndicator();
-        this.robot.dom.messages.appendChild(typingDiv);
+        this.robot.dom.messages.appendChild(
+          this.robot.domBuilder.createTypingIndicator(),
+        );
         this.scrollToBottom();
         this.syncComposerState();
       },
@@ -856,20 +596,19 @@ export class RobotChat {
   }
 
   removeTyping() {
-    const typingDiv = document.getElementById("robot-typing");
     this.isTyping = false;
-
-    // Update state manager
     this.robot.stateManager.setState({ isTyping: false });
 
     withViewTransition(
       () => {
-        if (typingDiv) typingDiv.remove();
+        document.getElementById("robot-typing")?.remove();
         this.syncComposerState();
       },
       { types: [VIEW_TRANSITION_TYPES.CHAT_TYPING_HIDE] },
     );
   }
+
+  // ─── Messages ───────────────────────────────────────────────────────────────
 
   renderMessage(
     text,
@@ -882,16 +621,11 @@ export class RobotChat {
       msg.className = `message ${type}`;
 
       if (type === "user") {
-        // User messages are always plain text (XSS-safe)
         msg.textContent = String(text || "");
+      } else if (skipParsing) {
+        msg.innerHTML = String(text || "");
       } else {
-        if (skipParsing) {
-          // Already sanitized HTML (from streaming or other sources)
-          msg.innerHTML = String(text || "");
-        } else {
-          // Parse markdown (MarkdownRenderer sanitizes output)
-          msg.innerHTML = MarkdownRenderer.parse(String(text || ""));
-        }
+        msg.innerHTML = MarkdownRenderer.parse(String(text || ""));
       }
 
       msg.appendChild(
@@ -925,11 +659,17 @@ export class RobotChat {
   }
 
   restoreMessages() {
-    this.history.forEach((item) => {
-      const type = item.role === "user" ? "user" : "bot";
-      this.renderMessage(item.text, type, false, item.timestamp);
-    });
+    for (const item of this.history) {
+      this.renderMessage(
+        item.text,
+        item.role === "user" ? "user" : "bot",
+        false,
+        item.timestamp,
+      );
+    }
   }
+
+  // ─── History Management ─────────────────────────────────────────────────────
 
   clearHistory() {
     if (this.isResponding || this.isTyping) {
@@ -948,12 +688,9 @@ export class RobotChat {
 
     withViewTransition(
       () => {
-        if (this.robot.dom.messages) {
-          while (this.robot.dom.messages.firstChild) {
-            this.robot.dom.messages.removeChild(
-              this.robot.dom.messages.firstChild,
-            );
-          }
+        const messages = this.robot.dom.messages;
+        if (messages) {
+          while (messages.firstChild) messages.removeChild(messages.firstChild);
         }
         this.syncComposerState();
       },
@@ -963,84 +700,8 @@ export class RobotChat {
     void this._clearAgentHistory();
   }
 
-  formatCloudflareMemoriesMessage(memories = [], retentionDays = 0) {
-    if (!Array.isArray(memories) || memories.length === 0) {
-      return "Aktuell sind keine Erinnerungen gespeichert.";
-    }
+  // ─── Profile Operations ─────────────────────────────────────────────────────
 
-    const source = memories;
-
-    const lines = source.map((entry) => {
-      const key = String(entry?.key || "memory");
-      const value = String(entry?.value || "").trim() || "(leer)";
-      const category = String(entry?.category || "note").trim() || "note";
-      const priority = Number.parseInt(String(entry?.priority || ""), 10);
-      const priorityText = Number.isFinite(priority)
-        ? `Prioritaet ${priority}`
-        : "Prioritaet n/a";
-      const timestamp = Number(entry?.timestamp || 0);
-      const tsText =
-        Number.isFinite(timestamp) && timestamp > 0
-          ? new Date(timestamp).toLocaleString("de-DE")
-          : "unbekannt";
-      return `- **${key}** (${category}, ${priorityText}): ${value} _(Zeit: ${tsText})_`;
-    });
-
-    const retentionInfo =
-      Number.isFinite(Number(retentionDays)) && Number(retentionDays) > 0
-        ? `\n\n_Auto-Retention: ${Number(retentionDays)} Tage_`
-        : "";
-    return (
-      [`**Gespeicherte Erinnerungen:**`, ...lines].join("\n") + retentionInfo
-    );
-  }
-
-  async confirmRecoveredProfile(recovery, _originalPrompt = "") {
-    if (!recovery?.candidateUserId || this.isResponding) return;
-
-    this.isResponding = true;
-    this.syncComposerState();
-    this.showTyping();
-    const requestId = this.createResponseRequestId();
-
-    try {
-      const agentService = await this.robot.getAgentService();
-      const result = await agentService.activateProfile?.(
-        recovery.candidateUserId,
-      );
-      if (!this.isActiveResponseRequest(requestId)) return;
-      this.removeTyping();
-
-      if (!result?.success) {
-        this.addMessage(
-          result?.text || "Das Profil konnte nicht geladen werden.",
-          "bot",
-        );
-        return;
-      }
-
-      this.removeProfileCards("recovery");
-      this.pendingRecoveryPrompt = "";
-      this.setProfileState({
-        ...(result.profile || agentService.getProfileState?.()),
-        recovery: null,
-      });
-      this.addMessage(
-        formatRecoveredProfileSummary(result.memories || []),
-        "bot",
-      );
-    } catch (error) {
-      if (!this.isActiveResponseRequest(requestId)) return;
-      this.removeTyping();
-      log.warn("confirmRecoveredProfile failed", error);
-      this.addMessage("Das Profil konnte nicht geladen werden.", "bot");
-    } finally {
-      if (this.isActiveResponseRequest(requestId)) {
-        this.isResponding = false;
-        this.syncComposerState();
-      }
-    }
-  }
 
   async useDifferentProfile() {
     try {
@@ -1051,7 +712,7 @@ export class RobotChat {
         this.setProfileState({ ...profileState, recovery: null });
       this.removeProfileCards("recovery");
       this.addMessage(
-        "Okay. Dieses Gerät nutzt jetzt ein anderes Profil. Nenne mir deinen Namen, z. B. \"Ich heiße Alex\", oder teile neue Infos mit.",
+        'Okay. Dieses Gerät nutzt jetzt ein anderes Profil. Nenne mir deinen Namen, z. B. "Ich heiße Alex", oder teile neue Infos mit.',
         "bot",
       );
     } catch (error) {
@@ -1082,7 +743,7 @@ export class RobotChat {
         recovery: null,
       });
       this.addMessage(
-        "Dieses Gerät ist jetzt frei für ein anderes Profil. Sag mir deinen Namen, z. B. \"Ich heiße Alex\".",
+        'Dieses Gerät ist jetzt frei für ein anderes Profil. Sag mir deinen Namen, z. B. "Ich heiße Alex".',
         "bot",
       );
     } catch (error) {
@@ -1128,79 +789,52 @@ export class RobotChat {
     }
   }
 
-  createMemoryEditorCard(memories = []) {
-    const card = document.createElement("div");
-    card.className = "chat-profile-card chat-profile-card--editor";
-    card.dataset.cardKind = "editor";
+  // ─── Memory Editor ──────────────────────────────────────────────────────────
 
-    const title = document.createElement("div");
-    title.className = "chat-profile-card__title";
-    title.textContent = "Profil bearbeiten";
+  async showStoredCloudflareMemories() {
+    if (this.isResponding) return;
 
-    const text = document.createElement("div");
-    text.className = "chat-profile-card__text";
-    text.textContent =
-      memories.length > 0
-        ? "Kerninfos direkt im Chat korrigieren oder entfernen."
-        : "Noch keine Erinnerungen gespeichert.";
+    this.isResponding = true;
+    this.syncComposerState();
+    this.showTyping();
+    const requestId = this.createResponseRequestId();
 
-    const list = document.createElement("div");
-    list.className = "chat-memory-editor";
+    try {
+      const agentService = await this.robot.getAgentService();
+      const result = await agentService.listCloudflareMemories?.();
+      if (!this.isActiveResponseRequest(requestId)) return;
+      this.removeTyping();
 
-    for (const entry of memories) {
-      const row = document.createElement("div");
-      row.className = "chat-memory-editor__row";
+      if (result?.success) {
+        this.setProfileState(result.profile || this.profileState);
+        this.addMessage(
+          formatCloudflareMemoriesMessage(
+            result.memories || [],
+            result.retentionDays || 0,
+          ),
+          "bot",
+        );
+        return;
+      }
 
-      const body = document.createElement("div");
-      body.className = "chat-memory-editor__body";
-
-      const key = document.createElement("div");
-      key.className = "chat-memory-editor__key";
-      key.textContent = String(entry?.key || "memory");
-
-      const value = document.createElement("div");
-      value.className = "chat-memory-editor__value";
-      value.textContent = String(entry?.value || "").trim() || "(leer)";
-
-      body.append(key, value);
-
-      const actions = document.createElement("div");
-      actions.className = "chat-memory-editor__actions";
-
-      const editBtn = document.createElement("button");
-      editBtn.type = "button";
-      editBtn.className = "chat-memory-editor__btn";
-      editBtn.textContent = "Bearbeiten";
-      editBtn.addEventListener("click", () => {
-        void this.editSingleMemory(entry);
-      });
-
-      const deleteBtn = document.createElement("button");
-      deleteBtn.type = "button";
-      deleteBtn.className =
-        "chat-memory-editor__btn chat-memory-editor__btn--danger";
-      deleteBtn.textContent = "Entfernen";
-      deleteBtn.addEventListener("click", () => {
-        void this.deleteSingleMemory(entry);
-      });
-
-      actions.append(editBtn, deleteBtn);
-      row.append(body, actions);
-      list.appendChild(row);
+      this.addMessage(
+        result?.text || "Cloudflare-Erinnerungen konnten nicht geladen werden.",
+        "bot",
+      );
+    } catch (error) {
+      if (!this.isActiveResponseRequest(requestId)) return;
+      this.removeTyping();
+      log.warn("showStoredCloudflareMemories failed", error);
+      this.addMessage(
+        "Cloudflare-Erinnerungen konnten nicht geladen werden.",
+        "bot",
+      );
+    } finally {
+      if (this.isActiveResponseRequest(requestId)) {
+        this.isResponding = false;
+        this.syncComposerState();
+      }
     }
-
-    const footer = document.createElement("div");
-    footer.className = "chat-profile-card__actions";
-
-    const closeBtn = document.createElement("button");
-    closeBtn.type = "button";
-    closeBtn.className = "chat-profile-card__btn";
-    closeBtn.textContent = "Schließen";
-    closeBtn.addEventListener("click", () => card.remove());
-
-    footer.appendChild(closeBtn);
-    card.append(title, text, list, footer);
-    return card;
   }
 
   async openMemoryEditor() {
@@ -1218,7 +852,16 @@ export class RobotChat {
     }
 
     this.setProfileState(result.profile || this.profileState);
-    this.appendProfileCard(this.createMemoryEditorCard(result.memories || []));
+    this._renderMemoryEditorCard(result.memories || []);
+  }
+
+  _renderMemoryEditorCard(memories) {
+    const card = createMemoryEditorCard(memories, {
+      onEdit: (entry) => void this.editSingleMemory(entry),
+      onDelete: (entry) => void this.deleteSingleMemory(entry),
+      onClose: () => {},
+    });
+    this.appendProfileCard(card);
   }
 
   async editSingleMemory(entry) {
@@ -1249,7 +892,7 @@ export class RobotChat {
 
     this.setProfileState(result.profile || this.profileState);
     this.removeProfileCards("editor");
-    this.appendProfileCard(this.createMemoryEditorCard(result.memories || []));
+    this._renderMemoryEditorCard(result.memories || []);
   }
 
   async deleteSingleMemory(entry) {
@@ -1274,60 +917,14 @@ export class RobotChat {
 
     this.setProfileState(result.profile || this.profileState);
     this.removeProfileCards("editor");
-    this.appendProfileCard(this.createMemoryEditorCard(result.memories || []));
+    this._renderMemoryEditorCard(result.memories || []);
   }
 
-  async showStoredCloudflareMemories() {
-    if (this.isResponding) return;
-
-    this.isResponding = true;
-    this.syncComposerState();
-    this.showTyping();
-    const requestId = this.createResponseRequestId();
-
-    try {
-      const agentService = await this.robot.getAgentService();
-      const result = await agentService.listCloudflareMemories?.();
-      if (!this.isActiveResponseRequest(requestId)) return;
-      this.removeTyping();
-
-      if (result?.success) {
-        this.setProfileState(result.profile || this.profileState);
-        this.addMessage(
-          this.formatCloudflareMemoriesMessage(
-            result.memories || [],
-            result.retentionDays || 0,
-          ),
-          "bot",
-        );
-        return;
-      }
-
-      this.addMessage(
-        result?.text || "Cloudflare-Erinnerungen konnten nicht geladen werden.",
-        "bot",
-      );
-    } catch (error) {
-      if (!this.isActiveResponseRequest(requestId)) return;
-      this.removeTyping();
-      log.warn("showStoredCloudflareMemories failed", error);
-      this.addMessage(
-        "Cloudflare-Erinnerungen konnten nicht geladen werden.",
-        "bot",
-      );
-    } finally {
-      if (this.isActiveResponseRequest(requestId)) {
-        this.isResponding = false;
-        this.syncComposerState();
-      }
-    }
-  }
+  // ─── Agent Helpers ──────────────────────────────────────────────────────────
 
   async _clearAgentHistory() {
     try {
-      const agentService = this.robot.peekAgentService?.();
-      if (!agentService) return;
-      agentService.clearHistory?.();
+      this.robot.peekAgentService?.()?.clearHistory?.();
     } catch {
       /* ignore */
     }
@@ -1335,49 +932,31 @@ export class RobotChat {
 
   async _cancelAgentRequest(reason = "cancelled") {
     try {
-      const agentService = this.robot.peekAgentService?.();
-      if (!agentService) return;
-      agentService.cancelActiveRequest?.(reason);
+      this.robot.peekAgentService?.()?.cancelActiveRequest?.(reason);
     } catch {
       /* ignore */
     }
   }
 
+  // ─── Action Router ──────────────────────────────────────────────────────────
+
   async handleAction(actionKey) {
     this.robot.trackInteraction("action");
 
-    if (actionKey === ROBOT_ACTIONS.SHOW_MEMORIES) {
-      await this.showStoredCloudflareMemories();
+    // Direct actions (no AI round-trip needed)
+    const directHandler = DIRECT_ACTION_HANDLERS[actionKey];
+    if (directHandler) {
+      await this[directHandler]();
       return;
     }
 
-    if (actionKey === ROBOT_ACTIONS.EDIT_PROFILE) {
-      await this.openMemoryEditor();
-      return;
-    }
-
-    if (actionKey === ROBOT_ACTIONS.SWITCH_PROFILE) {
-      await this.switchActiveProfile();
-      return;
-    }
-
-    if (actionKey === ROBOT_ACTIONS.DISCONNECT_PROFILE) {
-      await this.disconnectCurrentDeviceProfile();
-      return;
-    }
-
-    if (actionKey === ROBOT_ACTIONS.CLEAR_CHAT) {
-      this.clearHistory();
-      return;
-    }
-
+    // AI-routed actions
     const prompt =
       ACTION_PROMPTS[actionKey] ||
       `Der Nutzer hat die Aktion "${actionKey}" angefragt. Hilf kurz auf Deutsch und nutze passende Tools nur wenn noetig.`;
     await this._routeToAI(actionKey, prompt);
   }
 
-  /** Route action to AI for dynamic response */
   async _routeToAI(actionKey, prompt) {
     if (this.isResponding) return;
 
@@ -1414,6 +993,8 @@ export class RobotChat {
     }
   }
 
+  // ─── Utilities ──────────────────────────────────────────────────────────────
+
   scrollToBottom() {
     if (this.robot.dom.messages) {
       this.robot.dom.messages.scrollTop = this.robot.dom.messages.scrollHeight;
@@ -1433,15 +1014,9 @@ export class RobotChat {
     sendBtn.setAttribute("aria-disabled", String(!canSend));
     sendBtn.classList.toggle("is-ready", canSend);
   }
-
-  clearBubbleSequence() {
-    // Bubble sequencing is currently unused; reactions call show/hide directly.
-  }
 }
 
 export const __test__ = {
   extractStandaloneNameCandidate,
-  formatRecoveredProfileSummary,
-  getRecoveryFollowUpAction,
   normalizePromptForProfileRecovery,
 };
