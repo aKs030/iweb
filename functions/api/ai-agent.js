@@ -9,6 +9,10 @@ import {
   normalizeUserId as normalizeSharedUserId,
   readUserIdFromCookieHeader,
 } from './_user-identity.js';
+import {
+  findRecoveryCandidates,
+  pickAutoRecoveryCandidate,
+} from './_profile-recovery.js';
 /**
  * Cloudflare Pages Function – POST /api/ai-agent
  * Agentic AI: SSE streaming, tool-calling, image analysis, memory, RAG.
@@ -525,6 +529,16 @@ async function resolveUserIdentity(
       : { status: 'none', userId: '', name: recoveryLookupName };
   const needsRecoveryConfirmation = recoveryLookup.status === 'resolved';
   const recoveryConflict = recoveryLookup.status === 'conflict';
+  const conflictCandidates = recoveryConflict
+    ? await findRecoveryCandidates(
+        env,
+        getFallbackMemoryKV(env),
+        recoveryLookup.name || recoveryLookupName,
+      )
+    : [];
+  const preferredConflictCandidate = recoveryConflict
+    ? pickAutoRecoveryCandidate(conflictCandidates)
+    : null;
   let resolvedUserId = currentUserId || createUserId();
   const recoveredUserId = normalizeUserId(recoveryLookup.userId);
   const shouldOfferRecovery =
@@ -537,7 +551,10 @@ async function resolveUserIdentity(
 
   // Auto-Recovery Feature: Recognize users automatically when they say their name
   let wasAutoRecovered = false;
-  if (shouldOfferRecovery) {
+  if (preferredConflictCandidate?.userId) {
+    resolvedUserId = preferredConflictCandidate.userId;
+    wasAutoRecovered = true;
+  } else if (shouldOfferRecovery) {
     resolvedUserId = recoveredUserId;
     wasAutoRecovered = true;
   }
@@ -545,13 +562,15 @@ async function resolveUserIdentity(
   return {
     userId: resolvedUserId,
     wasAutoRecovered,
-    recovery: recoveryConflict
-      ? {
-          status: 'conflict',
-          name: recoveryLookup.name || explicitName || '',
-          candidateUserId: '',
-        }
-      : null,
+    recovery:
+      recoveryConflict && !preferredConflictCandidate?.userId
+        ? {
+            status: 'conflict',
+            name: recoveryLookup.name || explicitName || '',
+            candidateUserId: '',
+            candidates: conflictCandidates,
+          }
+        : null,
   };
 }
 

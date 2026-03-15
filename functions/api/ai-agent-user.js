@@ -18,6 +18,7 @@ import {
   normalizeUserId as normalizeSharedUserId,
   readUserIdFromCookieHeader,
 } from './_user-identity.js';
+import { findRecoveryCandidates } from './_profile-recovery.js';
 
 const FALLBACK_MEMORY_PREFIX = 'robot-memory:';
 const DEFAULT_EMBEDDING_MODEL = '@cf/baai/bge-base-en-v1.5';
@@ -764,6 +765,65 @@ export async function onRequestPost(context) {
     }
 
     const responseHeaders = new Headers(baseHeaders);
+
+    if (action === 'activate') {
+      const targetUserId = normalizeUserId(
+        body?.targetUserId || body?.candidateUserId,
+      );
+      const recoveryName = normalizeMemoryText(
+        body?.name || body?.recoveryName || '',
+      );
+
+      if (!targetUserId || !recoveryName) {
+        return Response.json(
+          {
+            success: false,
+            text: 'Profil-Aktivierung erfordert Name und Zielprofil.',
+          },
+          { status: 400, headers: baseHeaders },
+        );
+      }
+
+      const candidates = await findRecoveryCandidates(env, kv, recoveryName);
+      if (!candidates.some((candidate) => candidate.userId === targetUserId)) {
+        return Response.json(
+          {
+            success: false,
+            text: 'Das gewaehlte Profil passt nicht zum angefragten Namen.',
+          },
+          { status: 403, headers: baseHeaders },
+        );
+      }
+
+      const memories = await loadFallbackMemories(kv, targetUserId, env, {
+        persistPruned: true,
+      });
+      const retentionDays = parseInteger(
+        env?.ROBOT_MEMORY_RETENTION_DAYS,
+        DEFAULT_MEMORY_RETENTION_DAYS,
+      );
+      const ordered = orderMemories(memories);
+
+      appendSetCookie(
+        responseHeaders,
+        buildUserIdCookie(request, targetUserId),
+      );
+      return Response.json(
+        {
+          success: true,
+          userId: targetUserId,
+          count: ordered.length,
+          retentionDays,
+          memories: ordered,
+          profile: buildProfileInfo(targetUserId, ordered),
+          text:
+            ordered.length > 0
+              ? 'Profil aktiviert und Erinnerungen geladen.'
+              : 'Profil aktiviert. Es sind noch keine Erinnerungen gespeichert.',
+        },
+        { headers: responseHeaders },
+      );
+    }
 
     if (action === 'disconnect') {
       appendSetCookie(responseHeaders, buildUserIdClearCookie(request));

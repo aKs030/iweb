@@ -16,6 +16,22 @@ import {
 const log = createLogger('RobotChat');
 const DEFAULT_INPUT_PLACEHOLDER = 'Frag mich etwas...';
 
+function formatRecoveryCandidateSummary(candidate, index) {
+  const parts = [];
+  const memoryCount = Number(candidate?.memoryCount || 0);
+  const latestMemoryAt = Number(candidate?.latestMemoryAt || 0);
+
+  if (memoryCount > 0) {
+    parts.push(`${memoryCount} Erinnerung${memoryCount === 1 ? '' : 'en'}`);
+  }
+
+  if (latestMemoryAt > 0) {
+    parts.push(`zuletzt ${new Date(latestMemoryAt).toLocaleString('de-DE')}`);
+  }
+
+  return `Profil ${index + 1}: ${parts.join(' | ') || 'ohne Details'}`;
+}
+
 /** Action → prompt mapping for AI routing */
 const ACTION_PROMPTS = {
   [ROBOT_ACTIONS.START]:
@@ -381,11 +397,31 @@ export class RobotChat {
     this.pendingRecoveryPrompt = originalPrompt || this.pendingRecoveryPrompt;
     if (recovery.status === 'conflict') {
       this.removeProfileCards('recovery');
+      const candidates = Array.isArray(recovery?.candidates)
+        ? recovery.candidates.filter((candidate) => candidate?.userId)
+        : [];
+      const candidateText =
+        candidates.length > 0
+          ? `Waehle das passende Profil:\n${candidates
+              .slice(0, 3)
+              .map((candidate, index) =>
+                formatRecoveryCandidateSummary(candidate, index),
+              )
+              .join('\n')}`
+          : 'Dieser Name ist nicht eindeutig. Nutze dieses Gerät getrennt oder wechsle bewusst auf ein anderes Profil.';
       const card = createProfileCard({
         kind: 'recovery',
         title: `Mehrere Profile für ${recovery.name || 'diesen Namen'}`,
-        text: 'Dieser Name ist nicht eindeutig. Nutze dieses Gerät getrennt oder wechsle bewusst auf ein anderes Profil.',
+        text: candidateText,
         actions: [
+          ...candidates.slice(0, 3).map((candidate, index) => ({
+            label: `Profil ${index + 1} laden`,
+            onClick: () =>
+              void this.activateRecoveryCandidate(
+                candidate,
+                recovery.name || candidate?.name || '',
+              ),
+          })),
           {
             label: 'Anderes Profil',
             onClick: () => void this.useDifferentProfile(),
@@ -786,10 +822,71 @@ export class RobotChat {
     }
   }
 
+  async activateRecoveryCandidate(candidate, recoveryName = '') {
+    if (this.isResponding) return;
+
+    this.isResponding = true;
+    this.syncComposerState();
+    this.showTyping();
+
+    try {
+      const agentService = await this.robot.getAgentService();
+      const result = await agentService.activateRecoveredProfile?.({
+        userId: candidate?.userId,
+        name: recoveryName,
+      });
+      this.removeTyping();
+
+      if (!result?.success) {
+        this.addMessage(
+          result?.text || 'Das Profil konnte nicht geladen werden.',
+          'bot',
+        );
+        return;
+      }
+
+      this.pendingRecoveryPrompt = '';
+      this.removeProfileCards('recovery');
+      this.setProfileState({
+        ...(result.profile || this.profileState),
+        recovery: null,
+      });
+
+      const memoryMessage = formatCloudflareMemoriesMessage(
+        result.memories || [],
+        result.retentionDays || 0,
+      );
+      const combinedMessage = result.text
+        ? `${result.text}\n\n${memoryMessage}`
+        : memoryMessage;
+
+      this.addMessage(combinedMessage, 'bot');
+    } catch (error) {
+      this.removeTyping();
+      log.warn('activateRecoveryCandidate failed', error);
+      this.addMessage('Das Profil konnte nicht geladen werden.', 'bot');
+    } finally {
+      this.isResponding = false;
+      this.syncComposerState();
+    }
+  }
+
   // ─── Memory Editor ──────────────────────────────────────────────────────────
 
   async showStoredCloudflareMemories() {
     if (this.isResponding) return;
+
+    if (this.profileState?.recovery?.status === 'conflict') {
+      this.applyAgentResponseMeta({
+        profile: this.profileState,
+        recovery: this.profileState.recovery,
+      });
+      this.addMessage(
+        'Bitte waehle zuerst eines der gefundenen Profile.',
+        'bot',
+      );
+      return;
+    }
 
     this.isResponding = true;
     this.syncComposerState();
@@ -836,6 +933,18 @@ export class RobotChat {
 
   async openMemoryEditor() {
     if (this.isResponding) return;
+
+    if (this.profileState?.recovery?.status === 'conflict') {
+      this.applyAgentResponseMeta({
+        profile: this.profileState,
+        recovery: this.profileState.recovery,
+      });
+      this.addMessage(
+        'Bitte waehle zuerst eines der gefundenen Profile.',
+        'bot',
+      );
+      return;
+    }
 
     this.removeProfileCards('editor');
     const agentService = await this.robot.getAgentService();

@@ -16,12 +16,13 @@ export async function onRequestGet(context) {
   try {
     const db = env.DB_LIKES;
 
-    // Warn if DB binding is not yet available
+    // Fail hard if DB binding is missing so UI can react correctly.
     if (!db) {
       console.warn('DB_LIKES binding is missing. Ensure D1 is configured.');
       return new Response(
-        JSON.stringify({ likes: 0, _warning: 'DB not bound' }),
+        JSON.stringify({ error: 'DB_LIKES binding missing' }),
         {
+          status: 503,
           headers: { 'Content-Type': 'application/json' },
         },
       );
@@ -80,31 +81,57 @@ export async function onRequestPost(context) {
 
   try {
     const db = env.DB_LIKES;
+    const sourceIp = String(
+      request.headers.get('CF-Connecting-IP') ||
+        request.headers.get('X-Forwarded-For') ||
+        '',
+    ).trim();
+    const userAgent = String(request.headers.get('User-Agent') || '').trim();
+    const requestId = String(
+      request.headers.get('CF-Ray') || crypto.randomUUID(),
+    ).trim();
 
     if (!db) {
       console.warn('DB_LIKES binding is missing. Ensure D1 is configured.');
       return new Response(
-        JSON.stringify({ likes: 1, _warning: 'DB not bound, simulated like' }),
+        JSON.stringify({ error: 'DB_LIKES binding missing' }),
         {
+          status: 503,
           headers: { 'Content-Type': 'application/json' },
         },
       );
     }
 
-    // Insert or update likes
+    await db.batch([
+      db
+        .prepare(
+          `
+            INSERT INTO project_like_events (
+              project_id,
+              source_ip,
+              user_agent,
+              request_id
+            ) VALUES (?, ?, ?, ?)
+          `,
+        )
+        .bind(projectId, sourceIp, userAgent, requestId),
+      db
+        .prepare(
+          `
+            INSERT INTO project_likes (project_id, likes)
+            VALUES (?, 1)
+            ON CONFLICT(project_id) DO UPDATE SET likes = likes + 1
+          `,
+        )
+        .bind(projectId),
+    ]);
+
     const result = await db
-      .prepare(
-        `
-        INSERT INTO project_likes (project_id, likes)
-        VALUES (?, 1)
-        ON CONFLICT(project_id) DO UPDATE SET likes = likes + 1
-        RETURNING likes
-      `,
-      )
+      .prepare('SELECT likes FROM project_likes WHERE project_id = ?')
       .bind(projectId)
       .first();
 
-    return new Response(JSON.stringify({ likes: result.likes }), {
+    return new Response(JSON.stringify({ likes: Number(result?.likes) || 0 }), {
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {

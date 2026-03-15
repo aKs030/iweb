@@ -12,8 +12,6 @@ import {
   upsertVectorizeMemory,
 } from '../ai-agent-user.js';
 import {
-  archiveDeletedUser,
-  buildDeletedUserSnapshot,
   deleteAdminNameMapping,
   loadAdminLinkedAliasesFromKv,
   normalizeAdminLookupName,
@@ -306,43 +304,43 @@ async function restoreUserProfile(kv, env, userId) {
   });
 }
 
-async function deleteUserWithArchive(kv, env, userId, auth, reason = '') {
+async function deleteUserDirectly(kv, env, userId, auth, reason = '') {
   const memories = await loadFallbackMemories(kv, userId, env, {
     persistPruned: true,
   });
-  const snapshot = await buildDeletedUserSnapshot(env, kv, userId, memories, {
-    actor: auth.actor,
-    reason,
-  });
-  const archived = await archiveDeletedUser(env, snapshot);
+  const aliases = await loadUserAliases(kv, userId);
+  const profile = buildProfileInfo(userId, memories);
   const deleted = await deleteUserProfile(kv, env, userId);
 
   return {
     success: true,
     userId,
     deleted,
-    archived: {
-      ok: archived.ok,
-      deletedAt: snapshot.deletedAt,
-      restoreUntil: snapshot.restoreUntil,
-    },
+    archived: null,
     memories: [],
     count: 0,
     profile: {
       userId,
-      name: snapshot.profile?.name || '',
+      name: profile.name || '',
       status: 'deleted',
-      label: 'Profil archiviert',
+      label: 'Profil geloescht',
     },
-    text: 'Benutzerprofil wurde weich geloescht und archiviert.',
-    snapshot,
+    text: 'Benutzerprofil wurde endgueltig geloescht.',
+    before: {
+      userId,
+      profile,
+      aliases,
+      memories: orderMemories(memories),
+      deletedBy: auth.actor,
+      deleteReason: String(reason || ''),
+    },
   };
 }
 
 async function bulkDeleteUsers(kv, env, userIds, auth, reason = '') {
   const results = [];
   for (const userId of userIds) {
-    results.push(await deleteUserWithArchive(kv, env, userId, auth, reason));
+    results.push(await deleteUserDirectly(kv, env, userId, auth, reason));
   }
   return results;
 }
@@ -406,7 +404,7 @@ export async function onRequestPost(context) {
         action: 'bulk-delete-users',
         targetUserId: userIds.join(','),
         status: 'success',
-        summary: `${userIds.length} Benutzerprofile archiviert.`,
+        summary: `${userIds.length} Benutzerprofile geloescht.`,
         details: {
           userIds,
         },
@@ -414,7 +412,7 @@ export async function onRequestPost(context) {
           count: userIds.length,
         },
         after: {
-          archived: results.length,
+          deleted: results.length,
         },
       });
 
@@ -422,7 +420,7 @@ export async function onRequestPost(context) {
         success: true,
         results,
         count: results.length,
-        text: `${results.length} Benutzerprofile wurden archiviert.`,
+        text: `${results.length} Benutzerprofile wurden geloescht.`,
         audit,
       });
     }
@@ -840,7 +838,7 @@ export async function onRequestPost(context) {
       );
     }
 
-    const result = await deleteUserWithArchive(
+    const result = await deleteUserDirectly(
       kv,
       context.env,
       userId,
@@ -852,16 +850,15 @@ export async function onRequestPost(context) {
       targetUserId: userId,
       memoryKey: '',
       status: 'success',
-      summary: 'Benutzerprofil archiviert und aus dem Live-Speicher entfernt.',
+      summary: 'Benutzerprofil wurde direkt geloescht.',
       details: result.deleted,
-      before: result.snapshot,
-      after: result.archived,
+      before: result.before,
+      after: {
+        deleted: true,
+      },
     });
 
-    return jsonResponse({
-      ...buildSuccessPayload(userId, result, audit),
-      archived: result.archived,
-    });
+    return jsonResponse(buildSuccessPayload(userId, result, audit));
   } catch (error) {
     console.error('[admin-users] request failed:', error);
     return jsonResponse(

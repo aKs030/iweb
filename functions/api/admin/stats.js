@@ -14,6 +14,7 @@ import {
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
 const DEFAULT_PAGE_SIZES = {
   likes: 8,
+  likeEvents: 12,
   users: 10,
   mappings: 10,
   comments: 10,
@@ -21,6 +22,60 @@ const DEFAULT_PAGE_SIZES = {
   audit: 12,
   archived: 10,
 };
+
+const FOLDER_TO_SECTION = {
+  memories: 'users',
+  mappings: 'mappings',
+  comments: 'comments',
+  contacts: 'contacts',
+  likes: 'likes',
+  'like-events': 'likeEvents',
+  audit: 'audit',
+  archived: 'archived',
+};
+
+function parseRequestedFolder(url) {
+  const raw = String(url.searchParams.get('folder') || '')
+    .trim()
+    .toLowerCase();
+  if (!raw) return '';
+  return Object.prototype.hasOwnProperty.call(FOLDER_TO_SECTION, raw)
+    ? raw
+    : '';
+}
+
+function buildPaginationFromTotal(total, pagination) {
+  const totalItems = Math.max(0, Number(total) || 0);
+  const pageSize = Math.max(1, Number(pagination?.pageSize) || 1);
+  const totalPages = totalItems > 0 ? Math.ceil(totalItems / pageSize) : 1;
+  const safePage = Math.min(
+    Math.max(Number(pagination?.page) || 1, 1),
+    totalPages,
+  );
+
+  return {
+    page: safePage,
+    pageSize,
+    total: totalItems,
+    totalPages,
+    hasPreviousPage: safePage > 1,
+    hasNextPage: safePage < totalPages,
+  };
+}
+
+function buildEmptySectionResult(
+  total,
+  pagination,
+  available = true,
+  extras = {},
+) {
+  return {
+    items: [],
+    pagination: buildPaginationFromTotal(total, pagination),
+    available,
+    ...extras,
+  };
+}
 
 function buildWarning(section, error, code = 'query_failed') {
   const detail = getErrorMessage(error);
@@ -252,6 +307,40 @@ function buildMappingFilter(filters) {
   };
 }
 
+function buildLikesFilter(filters) {
+  const clauses = [];
+  const bindings = [];
+
+  if (filters.q) {
+    const like = `%${filters.q}%`;
+    clauses.push(`(project_id LIKE ? OR CAST(likes AS TEXT) LIKE ?)`);
+    bindings.push(like, like);
+  }
+
+  return {
+    clause: buildDynamicWhere(clauses),
+    bindings,
+  };
+}
+
+function buildLikeEventsFilter(filters) {
+  const clauses = [];
+  const bindings = [];
+
+  if (filters.q) {
+    const like = `%${filters.q}%`;
+    clauses.push(
+      `(project_id LIKE ? OR source_ip LIKE ? OR user_agent LIKE ? OR request_id LIKE ? OR created_at LIKE ?)`,
+    );
+    bindings.push(like, like, like, like, like);
+  }
+
+  return {
+    clause: buildDynamicWhere(clauses),
+    bindings,
+  };
+}
+
 function buildArchivedFilter(filters) {
   const clauses = [`restored_at IS NULL`, `purged_at IS NULL`];
   const bindings = [];
@@ -342,33 +431,191 @@ function parseFilters(url) {
   };
 }
 
-async function loadLikes(db, filters, pagination, warnings) {
-  const likes = await queryAll(
-    db,
-    `SELECT project_id, likes FROM project_likes ORDER BY likes DESC`,
-    [],
-    'likes',
-    warnings,
-  );
-  const filtered = filters.q
-    ? likes.filter(
-        (entry) =>
-          String(entry?.project_id || '')
-            .toLowerCase()
-            .includes(filters.q) ||
-          String(entry?.likes || '').includes(filters.q),
-      )
-    : likes;
+function isCompactMode(url) {
+  const raw = String(url.searchParams.get('compact') || '')
+    .trim()
+    .toLowerCase();
+  return raw === '1' || raw === 'true' || raw === 'yes' || raw === 'on';
+}
 
-  const paginated = paginateArray(filtered, pagination);
+async function loadLikes(db, filters, pagination, warnings) {
+  const filter = buildLikesFilter(filters);
+  const paginated = await loadPaginatedD1Section(db, {
+    section: 'likes',
+    selectSql: `
+      SELECT project_id, likes
+      FROM project_likes${filter.clause}
+      ORDER BY likes DESC, project_id ASC
+    `,
+    countSql: `SELECT COUNT(*) AS total FROM project_likes${filter.clause}`,
+    bindings: filter.bindings,
+    page: pagination.page,
+    pageSize: pagination.pageSize,
+    warnings,
+  });
+  const sumRow = await queryFirst(
+    db,
+    `SELECT COALESCE(SUM(likes), 0) AS total_likes FROM project_likes${filter.clause}`,
+    filter.bindings,
+    'likes-sum',
+    warnings,
+    { total_likes: 0 },
+  );
+  const topProject = await queryFirst(
+    db,
+    `
+      SELECT project_id, likes
+      FROM project_likes${filter.clause}
+      ORDER BY likes DESC, project_id ASC
+      LIMIT 1
+    `,
+    filter.bindings,
+    'likes-top-project',
+    warnings,
+    null,
+  );
+
   return {
     ...paginated,
-    totalLikes: filtered.reduce(
-      (sum, item) => sum + (Number(item?.likes) || 0),
-      0,
-    ),
-    topProject: filtered[0] || null,
+    totalLikes: Number(sumRow?.total_likes) || 0,
+    topProject: topProject
+      ? {
+          project_id: topProject.project_id || '',
+          likes: Number(topProject.likes) || 0,
+        }
+      : null,
   };
+}
+
+async function loadTotalCount(db, query, bindings, section, warnings) {
+  try {
+    const row = await bindStatement(db, query, bindings).first();
+    return {
+      total: Number(row?.total) || 0,
+      available: true,
+    };
+  } catch (error) {
+    console.error(`Admin stats total query failed for ${section}:`, error);
+    warnings.push(buildWarning(section, error));
+    return {
+      total: 0,
+      available: false,
+    };
+  }
+}
+
+async function loadLikesSummary(db, filters, warnings) {
+  const filter = buildLikesFilter(filters);
+  try {
+    const aggregateRow = await bindStatement(
+      db,
+      `SELECT COUNT(*) AS total_rows, COALESCE(SUM(likes), 0) AS total_likes FROM project_likes${filter.clause}`,
+      filter.bindings,
+    ).first();
+    const topProject = await bindStatement(
+      db,
+      `
+        SELECT project_id, likes
+        FROM project_likes${filter.clause}
+        ORDER BY likes DESC, project_id ASC
+        LIMIT 1
+      `,
+      filter.bindings,
+    ).first();
+
+    return {
+      totalRows: Number(aggregateRow?.total_rows) || 0,
+      totalLikes: Number(aggregateRow?.total_likes) || 0,
+      topProject: topProject
+        ? {
+            project_id: topProject.project_id || '',
+            likes: Number(topProject.likes) || 0,
+          }
+        : null,
+      available: true,
+    };
+  } catch (error) {
+    console.error('Admin stats likes summary query failed:', error);
+    warnings.push(buildWarning('likes-summary', error));
+    return {
+      totalRows: 0,
+      totalLikes: 0,
+      topProject: null,
+      available: false,
+    };
+  }
+}
+
+async function loadMappingsTotal(db, filters, warnings) {
+  const filter = buildMappingFilter(filters);
+  return loadTotalCount(
+    db,
+    `SELECT COUNT(*) AS total FROM admin_name_mappings${filter.clause}`,
+    filter.bindings,
+    'mappings-total',
+    warnings,
+  );
+}
+
+async function loadLikeEventsTotal(db, filters, warnings) {
+  const filter = buildLikeEventsFilter(filters);
+  return loadTotalCount(
+    db,
+    `SELECT COUNT(*) AS total FROM project_like_events${filter.clause}`,
+    filter.bindings,
+    'like-events-total',
+    warnings,
+  );
+}
+
+async function loadCommentsTotal(db, filters, warnings) {
+  const search = buildSqlSearch(
+    ['post_id', 'author_name', 'content'],
+    filters.q,
+  );
+  return loadTotalCount(
+    db,
+    `SELECT COUNT(*) AS total FROM blog_comments${search.clause}`,
+    search.bindings,
+    'comments-total',
+    warnings,
+  );
+}
+
+async function loadContactsTotal(db, filters, warnings) {
+  const search = buildSqlSearch(
+    ['name', 'email', 'subject', 'message'],
+    filters.q,
+  );
+  return loadTotalCount(
+    db,
+    `SELECT COUNT(*) AS total FROM contact_messages${search.clause}`,
+    search.bindings,
+    'contacts-total',
+    warnings,
+  );
+}
+
+async function loadAuditTotal(db, filters, warnings) {
+  const filter = buildAuditFilter(filters);
+  return loadTotalCount(
+    db,
+    `SELECT COUNT(*) AS total FROM admin_audit_log${filter.clause}`,
+    filter.bindings,
+    'audit-total',
+    warnings,
+  );
+}
+
+async function loadArchivedTotal(db, filters, warnings) {
+  const filter = buildArchivedFilter(filters);
+  return loadTotalCount(
+    db,
+    `SELECT COUNT(*) AS total FROM admin_deleted_profiles${filter.clause}`,
+    filter.bindings,
+    'archived-total',
+    warnings,
+  );
 }
 
 async function loadComments(db, filters, pagination, warnings) {
@@ -385,6 +632,29 @@ async function loadComments(db, filters, pagination, warnings) {
     `,
     countSql: `SELECT COUNT(*) AS total FROM blog_comments${search.clause}`,
     bindings: search.bindings,
+    page: pagination.page,
+    pageSize: pagination.pageSize,
+    warnings,
+  });
+}
+
+async function loadLikeEvents(db, filters, pagination, warnings) {
+  const filter = buildLikeEventsFilter(filters);
+  return loadPaginatedD1Section(db, {
+    section: 'like-events',
+    selectSql: `
+      SELECT
+        id,
+        project_id,
+        source_ip,
+        user_agent,
+        request_id,
+        created_at
+      FROM project_like_events${filter.clause}
+      ORDER BY created_at DESC, id DESC
+    `,
+    countSql: `SELECT COUNT(*) AS total FROM project_like_events${filter.clause}`,
+    bindings: filter.bindings,
     page: pagination.page,
     pageSize: pagination.pageSize,
     warnings,
@@ -878,6 +1148,7 @@ export async function onRequestGet(context) {
 
       return jsonResponse({
         likes: [],
+        likeEvents: [],
         comments: [],
         contacts: [],
         aiMemories: [],
@@ -948,6 +1219,7 @@ export async function onRequestGet(context) {
           filteredAnonymousUsers: 0,
           filteredMemoryCount: 0,
           totalComments: 0,
+          totalLikeEvents: 0,
           totalContacts: 0,
           totalAuditLogs: 0,
           totalArchivedProfiles: 0,
@@ -956,6 +1228,10 @@ export async function onRequestGet(context) {
           likes: paginateArray([], {
             page: 1,
             pageSize: DEFAULT_PAGE_SIZES.likes,
+          }).pagination,
+          likeEvents: paginateArray([], {
+            page: 1,
+            pageSize: DEFAULT_PAGE_SIZES.likeEvents,
           }).pagination,
           comments: paginateArray([], {
             page: 1,
@@ -988,11 +1264,9 @@ export async function onRequestGet(context) {
     }
 
     const url = new URL(request.url);
+    const compactMode = isCompactMode(url);
+    const requestedFolder = parseRequestedFolder(url);
     const filters = parseFilters(url);
-    const likesPagination = parsePaginationParams(url, 'likes', {
-      defaultPageSize: DEFAULT_PAGE_SIZES.likes,
-      maxPageSize: 50,
-    });
     const usersPagination = parsePaginationParams(url, 'users', {
       defaultPageSize: DEFAULT_PAGE_SIZES.users,
       maxPageSize: 100,
@@ -1001,64 +1275,232 @@ export async function onRequestGet(context) {
       defaultPageSize: DEFAULT_PAGE_SIZES.mappings,
       maxPageSize: 100,
     });
-    const commentsPagination = parsePaginationParams(url, 'comments', {
-      defaultPageSize: DEFAULT_PAGE_SIZES.comments,
-      maxPageSize: 100,
-    });
-    const contactsPagination = parsePaginationParams(url, 'contacts', {
-      defaultPageSize: DEFAULT_PAGE_SIZES.contacts,
-      maxPageSize: 100,
-    });
-    const auditPagination = parsePaginationParams(url, 'audit', {
-      defaultPageSize: DEFAULT_PAGE_SIZES.audit,
-      maxPageSize: 100,
-    });
-    const archivedPagination = parsePaginationParams(url, 'archived', {
-      defaultPageSize: DEFAULT_PAGE_SIZES.archived,
-      maxPageSize: 100,
-    });
+    const likesPagination = compactMode
+      ? paginateArray([], {
+          page: 1,
+          pageSize: DEFAULT_PAGE_SIZES.likes,
+        }).pagination
+      : parsePaginationParams(url, 'likes', {
+          defaultPageSize: DEFAULT_PAGE_SIZES.likes,
+          maxPageSize: 50,
+        });
+    const likeEventsPagination = compactMode
+      ? paginateArray([], {
+          page: 1,
+          pageSize: DEFAULT_PAGE_SIZES.likeEvents,
+        }).pagination
+      : parsePaginationParams(url, 'likeEvents', {
+          defaultPageSize: DEFAULT_PAGE_SIZES.likeEvents,
+          maxPageSize: 100,
+        });
+    const commentsPagination = compactMode
+      ? paginateArray([], {
+          page: 1,
+          pageSize: DEFAULT_PAGE_SIZES.comments,
+        }).pagination
+      : parsePaginationParams(url, 'comments', {
+          defaultPageSize: DEFAULT_PAGE_SIZES.comments,
+          maxPageSize: 100,
+        });
+    const contactsPagination = compactMode
+      ? paginateArray([], {
+          page: 1,
+          pageSize: DEFAULT_PAGE_SIZES.contacts,
+        }).pagination
+      : parsePaginationParams(url, 'contacts', {
+          defaultPageSize: DEFAULT_PAGE_SIZES.contacts,
+          maxPageSize: 100,
+        });
+    const auditPagination = compactMode
+      ? paginateArray([], {
+          page: 1,
+          pageSize: DEFAULT_PAGE_SIZES.audit,
+        }).pagination
+      : parsePaginationParams(url, 'audit', {
+          defaultPageSize: DEFAULT_PAGE_SIZES.audit,
+          maxPageSize: 100,
+        });
+    const archivedPagination = compactMode
+      ? paginateArray([], {
+          page: 1,
+          pageSize: DEFAULT_PAGE_SIZES.archived,
+        }).pagination
+      : parsePaginationParams(url, 'archived', {
+          defaultPageSize: DEFAULT_PAGE_SIZES.archived,
+          maxPageSize: 100,
+        });
 
     const { storage } = await ensureAdminIndexesReady(db, env, warnings);
-    const likesResult = await loadLikes(db, filters, likesPagination, warnings);
-    const commentsResult = await loadComments(
-      db,
-      filters,
-      commentsPagination,
-      warnings,
-    );
-    const contactsResult = await loadContacts(
-      db,
-      filters,
-      contactsPagination,
-      warnings,
-    );
-    const mappingsResult = await loadNameMappings(
-      db,
-      filters,
-      mappingsPagination,
-      warnings,
-    );
-    const usersResult = await loadUsers(db, filters, usersPagination, warnings);
     const filteredUserSummary = await loadFilteredUserSummary(
       db,
       filters,
       warnings,
     );
-    const auditResult = await loadAuditLogs(
-      db,
-      filters,
-      auditPagination,
-      warnings,
-    );
-    const archivedResult = await loadArchivedProfiles(
-      db,
-      filters,
-      archivedPagination,
-      warnings,
-    );
-    const memoryKeys = await loadMemoryOptions(db, warnings);
+
+    const loadMemoriesSection = requestedFolder === 'memories';
+    const loadMappingsSection = requestedFolder === 'mappings';
+    const loadLikesSection = !compactMode && requestedFolder === 'likes';
+    const loadLikeEventsSection =
+      !compactMode && requestedFolder === 'like-events';
+    const loadCommentsSection = !compactMode && requestedFolder === 'comments';
+    const loadContactsSection = !compactMode && requestedFolder === 'contacts';
+    const loadAuditSection = !compactMode && requestedFolder === 'audit';
+    const loadArchivedSection = !compactMode && requestedFolder === 'archived';
+
+    const usersResult = loadMemoriesSection
+      ? await loadUsers(db, filters, usersPagination, warnings)
+      : buildEmptySectionResult(
+          filteredUserSummary.totalUsers,
+          usersPagination,
+        );
+
+    let mappingsResult;
+    if (loadMappingsSection) {
+      mappingsResult = await loadNameMappings(
+        db,
+        filters,
+        mappingsPagination,
+        warnings,
+      );
+    } else {
+      const mappingsTotal = await loadMappingsTotal(db, filters, warnings);
+      mappingsResult = buildEmptySectionResult(
+        mappingsTotal.total,
+        mappingsPagination,
+        mappingsTotal.available,
+      );
+    }
+
+    let resolvedLikesResult;
+    if (compactMode) {
+      resolvedLikesResult = buildEmptySectionResult(0, likesPagination, true, {
+        totalLikes: 0,
+        topProject: null,
+      });
+    } else if (loadLikesSection) {
+      resolvedLikesResult = await loadLikes(
+        db,
+        filters,
+        likesPagination,
+        warnings,
+      );
+    } else {
+      const likesSummary = await loadLikesSummary(db, filters, warnings);
+      resolvedLikesResult = buildEmptySectionResult(
+        likesSummary.totalRows,
+        likesPagination,
+        likesSummary.available,
+        {
+          totalLikes: likesSummary.totalLikes,
+          topProject: likesSummary.topProject,
+        },
+      );
+    }
+
+    let resolvedCommentsResult;
+    if (compactMode) {
+      resolvedCommentsResult = buildEmptySectionResult(0, commentsPagination);
+    } else if (loadCommentsSection) {
+      resolvedCommentsResult = await loadComments(
+        db,
+        filters,
+        commentsPagination,
+        warnings,
+      );
+    } else {
+      const commentsTotal = await loadCommentsTotal(db, filters, warnings);
+      resolvedCommentsResult = buildEmptySectionResult(
+        commentsTotal.total,
+        commentsPagination,
+        commentsTotal.available,
+      );
+    }
+
+    let resolvedLikeEventsResult;
+    if (compactMode) {
+      resolvedLikeEventsResult = buildEmptySectionResult(
+        0,
+        likeEventsPagination,
+      );
+    } else if (loadLikeEventsSection) {
+      resolvedLikeEventsResult = await loadLikeEvents(
+        db,
+        filters,
+        likeEventsPagination,
+        warnings,
+      );
+    } else {
+      const likeEventsTotal = await loadLikeEventsTotal(db, filters, warnings);
+      resolvedLikeEventsResult = buildEmptySectionResult(
+        likeEventsTotal.total,
+        likeEventsPagination,
+        likeEventsTotal.available,
+      );
+    }
+
+    let resolvedContactsResult;
+    if (compactMode) {
+      resolvedContactsResult = buildEmptySectionResult(0, contactsPagination);
+    } else if (loadContactsSection) {
+      resolvedContactsResult = await loadContacts(
+        db,
+        filters,
+        contactsPagination,
+        warnings,
+      );
+    } else {
+      const contactsTotal = await loadContactsTotal(db, filters, warnings);
+      resolvedContactsResult = buildEmptySectionResult(
+        contactsTotal.total,
+        contactsPagination,
+        contactsTotal.available,
+      );
+    }
+
+    let resolvedAuditResult;
+    if (compactMode) {
+      resolvedAuditResult = buildEmptySectionResult(0, auditPagination, false);
+    } else if (loadAuditSection) {
+      resolvedAuditResult = await loadAuditLogs(
+        db,
+        filters,
+        auditPagination,
+        warnings,
+      );
+    } else {
+      const auditTotal = await loadAuditTotal(db, filters, warnings);
+      resolvedAuditResult = buildEmptySectionResult(
+        auditTotal.total,
+        auditPagination,
+        auditTotal.available,
+      );
+    }
+
+    let resolvedArchivedResult;
+    if (compactMode) {
+      resolvedArchivedResult = buildEmptySectionResult(0, archivedPagination);
+    } else if (loadArchivedSection) {
+      resolvedArchivedResult = await loadArchivedProfiles(
+        db,
+        filters,
+        archivedPagination,
+        warnings,
+      );
+    } else {
+      const archivedTotal = await loadArchivedTotal(db, filters, warnings);
+      resolvedArchivedResult = buildEmptySectionResult(
+        archivedTotal.total,
+        archivedPagination,
+        archivedTotal.available,
+      );
+    }
+
+    const memoryKeys =
+      loadMemoriesSection && !compactMode
+        ? await loadMemoryOptions(db, warnings)
+        : [];
     const health = await loadHealth(db, warnings, {
-      auditAvailable: auditResult.available,
+      auditAvailable: resolvedAuditResult.available,
     });
     health.kvAvailable = storage.kvAvailable;
     health.vectorizeConfigured = storage.vectorizeConfigured;
@@ -1074,21 +1516,23 @@ export async function onRequestGet(context) {
     const filteredMemoryCount = filteredUserSummary.totalMemories;
     const filteredIdentifiedUsers = filteredUserSummary.identifiedUsers;
     const filteredAnonymousUsers = filteredUserSummary.anonymousUsers;
-    const totalLikes = likesResult.totalLikes || 0;
-    const topProject = likesResult.topProject || null;
+    const totalLikes = resolvedLikesResult.totalLikes || 0;
+    const topProject = resolvedLikesResult.topProject || null;
 
     return jsonResponse({
-      likes: likesResult.items,
-      comments: commentsResult.items,
-      contacts: contactsResult.items,
+      likes: resolvedLikesResult.items,
+      comments: resolvedCommentsResult.items,
+      likeEvents: resolvedLikeEventsResult.items,
+      contacts: resolvedContactsResult.items,
       aiMemories: usersResult.items,
       nameMappings: mappingsResult.items,
       users: usersResult.items,
-      archivedProfiles: archivedResult.items,
+      archivedProfiles: resolvedArchivedResult.items,
       storage,
       health,
-      auditLogs: auditResult.items,
+      auditLogs: resolvedAuditResult.items,
       filters,
+      folder: requestedFolder || '',
       options: {
         memoryKeys,
       },
@@ -1100,19 +1544,21 @@ export async function onRequestGet(context) {
         filteredIdentifiedUsers,
         filteredAnonymousUsers,
         filteredMemoryCount,
-        totalComments: commentsResult.pagination.total,
-        totalContacts: contactsResult.pagination.total,
-        totalAuditLogs: auditResult.pagination.total,
-        totalArchivedProfiles: archivedResult.pagination.total,
+        totalComments: resolvedCommentsResult.pagination.total,
+        totalLikeEvents: resolvedLikeEventsResult.pagination.total,
+        totalContacts: resolvedContactsResult.pagination.total,
+        totalAuditLogs: resolvedAuditResult.pagination.total,
+        totalArchivedProfiles: resolvedArchivedResult.pagination.total,
       },
       pagination: {
-        likes: likesResult.pagination,
-        comments: commentsResult.pagination,
-        contacts: contactsResult.pagination,
+        likes: resolvedLikesResult.pagination,
+        likeEvents: resolvedLikeEventsResult.pagination,
+        comments: resolvedCommentsResult.pagination,
+        contacts: resolvedContactsResult.pagination,
         users: usersResult.pagination,
         mappings: mappingsResult.pagination,
-        audit: auditResult.pagination,
-        archived: archivedResult.pagination,
+        audit: resolvedAuditResult.pagination,
+        archived: resolvedArchivedResult.pagination,
       },
       warnings,
       timestamp: new Date().toISOString(),
