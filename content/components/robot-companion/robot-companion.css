@@ -2677,6 +2677,7 @@
   color: var(--clr-slate-300, #cbd5e1);
   font-size: var(--size-r-0-82, 0.82rem);
   line-height: 1.5;
+  white-space: pre-line;
 }
 
 .chat-profile-card__actions {

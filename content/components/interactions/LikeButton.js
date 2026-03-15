@@ -32,17 +32,32 @@ export const LikeButton = ({ id, type = 'project', className = '' }) => {
   const handleLike = async () => {
     if (localLike || isAnimating) return;
 
+    const previousLikes = likes;
     setIsAnimating(true);
     setLocalLike(true);
-    setLikes((prev) => prev + 1);
-    localStorage.setItem(storageKey, 'true');
+    setLikes(previousLikes + 1);
 
     try {
-      await fetch(`/api/likes?project_id=${encodeURIComponent(id)}`, {
-        method: 'POST',
-      });
+      const response = await fetch(
+        `/api/likes?project_id=${encodeURIComponent(id)}`,
+        {
+          method: 'POST',
+        },
+      );
+      const payload = await response.json().catch(() => ({}));
+
+      if (!response.ok || typeof payload?.likes !== 'number') {
+        throw new Error(
+          payload?.error || 'Like konnte nicht gespeichert werden.',
+        );
+      }
+
+      setLikes(payload.likes);
+      localStorage.setItem(storageKey, 'true');
     } catch (e) {
       console.error('Error sending like', e);
+      setLocalLike(false);
+      setLikes(previousLikes);
     }
 
     setTimeout(() => setIsAnimating(false), 1000);

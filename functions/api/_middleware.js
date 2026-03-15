@@ -121,6 +121,18 @@ export async function onRequest(context) {
   const { request, env, next } = context;
   const url = new URL(request.url);
 
+  const isLocalhostRequest =
+    url.hostname === 'localhost' ||
+    url.hostname === '127.0.0.1' ||
+    url.hostname === '::1' ||
+    url.hostname === '[::1]';
+  const isAdminSessionRoute = url.pathname === '/api/admin/session';
+
+  // Do not rate limit local development traffic and admin-session bootstrap.
+  if (isLocalhostRequest || isAdminSessionRoute) {
+    return next();
+  }
+
   // Skip rate limiting for OPTIONS requests
   if (request.method === 'OPTIONS') {
     return next();

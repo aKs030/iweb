@@ -509,6 +509,31 @@ export class AIAgentService {
     };
   }
 
+  async activateRecoveredProfile({ userId, name } = {}) {
+    const result = await this._callUserEndpoint(
+      'activate',
+      {
+        targetUserId: userId,
+        name,
+      },
+      { allowWithoutUserId: true },
+    );
+
+    return {
+      success: result.success,
+      memories: Array.isArray(result.data?.memories)
+        ? result.data.memories
+        : [],
+      profile: result.profile || getProfileState(),
+      retentionDays:
+        Number.isFinite(Number(result.data?.retentionDays)) &&
+        Number(result.data.retentionDays) > 0
+          ? Number(result.data.retentionDays)
+          : 0,
+      text: result.text,
+    };
+  }
+
   async listCloudflareMemories() {
     const result = await this._callUserEndpoint(
       'list',

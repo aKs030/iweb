@@ -1,139 +1,122 @@
 /**
- * Admin dashboard client module.
- * Extracted from pages/admin.html to keep markup and behavior separate.
+ * Unified compact admin UI.
+ * Root list shows Cloudflare main folders, click opens content with actions.
  */
 
 const API_URL = '/api/admin/stats';
 const USERS_API_URL = '/api/admin/users';
 const SESSION_API_URL = '/api/admin/session';
-const REFRESH_LABEL = 'Neu laden';
-const DEFAULT_PAGE_SIZES = {
-  likes: 8,
-  comments: 10,
-  contacts: 10,
-  users: 10,
-  mappings: 10,
-  audit: 12,
-  archived: 10,
+
+const USERS_PAGE_SIZE = 100;
+const DEFAULT_MAPPINGS_PAGE_SIZE = 100;
+const DEFAULT_SECTION_PAGE_SIZE = 100;
+const FOLDER_PAGE_QUERY_KEY = {
+  memories: 'usersPage',
+  mappings: 'mappingsPage',
+  'like-events': 'likeEventsPage',
+  comments: 'commentsPage',
+  contacts: 'contactsPage',
+  likes: 'likesPage',
+  audit: 'auditPage',
+  archived: 'archivedPage',
+};
+const FOLDER_PAGINATION_KEY = {
+  memories: 'users',
+  mappings: 'mappings',
+  'like-events': 'likeEvents',
+  comments: 'comments',
+  contacts: 'contacts',
+  likes: 'likes',
+  audit: 'audit',
+  archived: 'archived',
 };
 
 const authOverlay = document.getElementById('auth-overlay');
+const authError = document.getElementById('auth-error');
 const loginButton = document.getElementById('login-button');
 const logoutButton = document.getElementById('logout-button');
 const passwordInput = document.getElementById('admin-password');
 const adminMain = document.getElementById('admin-main');
-const authError = document.getElementById('auth-error');
-const refreshButton = document.getElementById('refresh-button');
-
-const usersGrid = document.getElementById('users-grid');
-const archivedGrid = document.getElementById('archived-grid');
-const memoriesContainer = document.getElementById('memories-container');
-const actionUserIdInput = document.getElementById('action-user-id');
-const actionMemoryKeyInput = document.getElementById('action-memory-key');
-const actionMemoryValueInput = document.getElementById('action-memory-value');
-const actionDeleteReasonInput = document.getElementById('action-delete-reason');
-const actionDeleteConfirmInput = document.getElementById(
-  'action-delete-confirm',
-);
-const actionAliasNameInput = document.getElementById('action-alias-name');
-const actionMergeSourceInput = document.getElementById(
-  'action-merge-source-id',
-);
-const actionSaveMemoryButton = document.getElementById('action-save-memory');
-const actionDeleteMemoryButton = document.getElementById(
-  'action-delete-memory',
-);
-const actionDeleteUserButton = document.getElementById('action-delete-user');
-const actionExportUserButton = document.getElementById('action-export-user');
-const actionAssignAliasButton = document.getElementById('action-assign-alias');
-const actionRemoveAliasButton = document.getElementById('action-remove-alias');
-const actionMergeUsersButton = document.getElementById('action-merge-users');
-const actionBulkDeleteMemoriesButton = document.getElementById(
-  'action-bulk-delete-memories',
-);
-const actionBulkDeleteUsersButton = document.getElementById(
-  'action-bulk-delete-users',
-);
-const actionBulkRestoreUsersButton = document.getElementById(
-  'action-bulk-restore-users',
-);
-const actionBulkPurgeUsersButton = document.getElementById(
-  'action-bulk-purge-users',
-);
-const actionPurgeExpiredArchivesButton = document.getElementById(
-  'action-purge-expired-archives',
-);
-const bulkSelectionSummary = document.getElementById('bulk-selection-summary');
-const actionSelectedUser = document.getElementById('action-selected-user');
-const selectedUserPanel = document.getElementById('selected-user-panel');
-const noSelectedUser = document.getElementById('no-selected-user');
-const optionalPanels = {
-  archived: document.getElementById('panel-archived'),
-  audit: document.getElementById('panel-audit'),
-  comments: document.getElementById('panel-comments'),
-  contacts: document.getElementById('panel-contacts'),
-  likes: document.getElementById('panel-likes'),
-  mappings: document.getElementById('panel-mappings'),
-  memories: document.getElementById('panel-memories'),
-};
-const paginationContainers = {
-  likes: document.getElementById('likes-pagination'),
-  contacts: document.getElementById('contacts-pagination'),
-  comments: document.getElementById('comments-pagination'),
-  users: document.getElementById('users-pagination'),
-  mappings: document.getElementById('names-pagination'),
-  audit: document.getElementById('audit-pagination'),
-  archived: document.getElementById('archived-pagination'),
-};
-
-// New UI elements
-const adminToolbar = document.getElementById('admin-toolbar');
-const adminPanelNav = document.getElementById('admin-panel-nav');
+const adminUnified = document.querySelector('.admin-unified');
 const toastContainer = document.getElementById('admin-toast-container');
-const searchInput = document.getElementById('admin-search-input');
-const searchClear = document.getElementById('admin-search-clear');
-const activeSearchLabel = document.getElementById('active-search-label');
-const filterUserStatus = document.getElementById('filter-user-status');
-const filterMappingStatus = document.getElementById('filter-mapping-status');
-const filterAuditAction = document.getElementById('filter-audit-action');
-const autoRefreshToggle = document.getElementById('auto-refresh-toggle');
-const autoRefreshSpinner = document.getElementById('auto-refresh-spinner');
 
-function createDefaultPagination() {
-  return Object.fromEntries(
-    Object.entries(DEFAULT_PAGE_SIZES).map(([key, pageSize]) => [
-      key,
-      { page: 1, pageSize },
-    ]),
-  );
-}
+const recordsList = document.getElementById('records-list');
+const noRecords = document.getElementById('no-records');
+const recordsPagination = document.getElementById('records-pagination');
+const recordsPageInfo = document.getElementById('records-page-info');
+const recordsPagePrev = document.getElementById('records-page-prev');
+const recordsPageNext = document.getElementById('records-page-next');
+const selectedType = document.getElementById('selected-type');
+const selectedSummary = document.getElementById('selected-summary');
+const selectedDetails = document.getElementById('selected-details');
+const selectedContent = document.getElementById('selected-content');
+const detailsPanel = document.getElementById('details-panel');
 
 const state = {
-  pagination: createDefaultPagination(),
-  selectedUserId: '',
-  selectedUserProfile: null,
-  selectedUserLoading: false,
-  selectedUserError: '',
-  selectedUserIds: new Set(),
-  selectedArchivedUserIds: new Set(),
-  selectedMemoryEntries: new Set(),
-  lastPayload: null,
   isAuthenticated: false,
-  searchQuery: '',
-  filters: {
-    userStatus: 'all',
-    mappingStatus: 'all',
-    auditAction: 'all',
-  },
-  autoRefreshEnabled: false,
-  autoRefreshInterval: null,
+  loading: false,
+  actionsBusy: false,
+  cloudflareFolders: [],
+  folderRecords: {},
+  activeFolderId: '',
+  activeFolderPage: 1,
+  activeFolderPagination: null,
+  memoryRows: [],
+  userRows: [],
+  records: [],
+  latestPayload: {},
+  selectedEntryId: '',
+  selectedEntry: null,
 };
 
-let currentUsers = [];
-let currentArchivedProfiles = [];
-let searchDebounceTimer = null;
-const SEARCH_DEBOUNCE_MS = 400;
-const AUTO_REFRESH_INTERVAL_MS = 30000;
+function isFolderEntry(entry) {
+  return entry?.kind === 'folder';
+}
+
+function isMemoryEntry(entry) {
+  return entry?.kind === 'memory';
+}
+
+function isMemoryProfileEntry(entry) {
+  return entry?.kind === 'memory-profile';
+}
+
+function isUserEntry(entry) {
+  return entry?.kind === 'user';
+}
+
+function isMappingEntry(entry) {
+  return entry?.kind === 'mapping';
+}
+
+function isLikeEntry(entry) {
+  return entry?.kind === 'like';
+}
+
+function isLikeEventEntry(entry) {
+  return entry?.kind === 'like-event';
+}
+
+function isCommentEntry(entry) {
+  return entry?.kind === 'comment';
+}
+
+function isContactEntry(entry) {
+  return entry?.kind === 'contact';
+}
+
+function isAuditEntry(entry) {
+  return entry?.kind === 'audit';
+}
+
+function isArchivedEntry(entry) {
+  return entry?.kind === 'archived';
+}
+
+function isLocalhostRuntime() {
+  const host = String(window?.location?.hostname || '').toLowerCase();
+  return host === 'localhost' || host === '127.0.0.1' || host === '::1';
+}
 
 function setHidden(element, hidden) {
   if (!element) return;
@@ -172,20 +155,17 @@ function formatNumber(value) {
   return Number(value || 0).toLocaleString('de-DE');
 }
 
-function pluralize(count, singular, plural) {
-  return `${formatNumber(count)} ${count === 1 ? singular : plural}`;
+function truncateText(value, maxLength = 140) {
+  const text = String(value || '').trim();
+  if (!text) return '-';
+  if (text.length <= maxLength) return text;
+  return `${text.slice(0, Math.max(0, maxLength - 1))}…`;
 }
 
-function buildPill(label, tone = 'neutral') {
-  const safeTone =
-    tone === 'success' || tone === 'warning' || tone === 'error'
-      ? tone
-      : 'neutral';
-  return `<span class="admin-pill" data-tone="${safeTone}">${escapeHtml(label)}</span>`;
-}
-
-function createMemorySelectionId(key, value) {
-  return `${String(key || '').trim()}::${String(value || '').trim()}`;
+function parseToEpoch(value) {
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  const parsed = Date.parse(String(value || ''));
+  return Number.isNaN(parsed) ? 0 : parsed;
 }
 
 async function parseJsonResponse(response) {
@@ -196,1414 +176,93 @@ async function parseJsonResponse(response) {
   }
 }
 
+function parseRetryAfterSeconds(value) {
+  const seconds = Number.parseInt(String(value || ''), 10);
+  if (Number.isFinite(seconds) && seconds > 0) return seconds;
+  return 0;
+}
+
+function createRateLimitError(response, payload, fallbackMessage) {
+  const retryAfter = parseRetryAfterSeconds(
+    response?.headers?.get('Retry-After'),
+  );
+  const message =
+    payload?.message ||
+    payload?.error ||
+    fallbackMessage ||
+    (retryAfter > 0
+      ? `Zu viele Anfragen. Bitte in ${retryAfter}s erneut versuchen.`
+      : 'Zu viele Anfragen. Bitte kurz warten und erneut versuchen.');
+  const error = new Error(message);
+  error.code = 'rate_limited';
+  error.retryAfter = retryAfter;
+  return error;
+}
+
+let toastCounter = 0;
+
+function showToast(message, tone = 'info', durationMs = 3500) {
+  if (!toastContainer || !message) return;
+
+  const toast = document.createElement('div');
+  toast.className = 'admin-toast';
+  toast.dataset.tone = tone;
+  toast.dataset.toastId = String(++toastCounter);
+  toast.innerHTML = `
+    <div class="admin-toast__body">
+      <p class="admin-toast__message">${escapeHtml(message)}</p>
+    </div>
+    <button class="admin-toast__dismiss" type="button" aria-label="Schließen">✕</button>
+  `;
+
+  const dismiss = () => {
+    if (!toast.isConnected) return;
+    toast.remove();
+  };
+
+  toast
+    .querySelector('.admin-toast__dismiss')
+    ?.addEventListener('click', dismiss);
+  toastContainer.appendChild(toast);
+
+  if (durationMs > 0) {
+    setTimeout(dismiss, durationMs);
+  }
+}
+
 function showStatus(message, tone = 'info') {
   if (!message) return;
   showToast(message, tone);
 }
 
-function clearStatus() {
-  // Toasts auto-dismiss, no-op here
+function showAuth(showError = false, message = 'Falsches Passwort!') {
+  setText(authError, message);
+  setHidden(authError, !showError);
+  authOverlay.classList.remove('hidden');
+  setHidden(adminMain, true);
+  requestAnimationFrame(() => passwordInput?.focus());
 }
 
-// ─── Toast Notification System ───
-let toastIdCounter = 0;
-
-function showToast(message, tone = 'info', durationMs = 5000) {
-  if (!toastContainer || !message) return;
-
-  const toastId = ++toastIdCounter;
-  const iconMap = {
-    success: `<svg class="admin-toast__icon admin-toast__icon--success" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`,
-    error: `<svg class="admin-toast__icon admin-toast__icon--error" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`,
-    warning: `<svg class="admin-toast__icon admin-toast__icon--warning" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
-    info: `<svg class="admin-toast__icon admin-toast__icon--info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>`,
-  };
-
-  const toast = document.createElement('div');
-  toast.className = 'admin-toast';
-  toast.dataset.tone = tone;
-  toast.dataset.toastId = toastId;
-  toast.innerHTML = `
-    ${iconMap[tone] || iconMap.info}
-    <div class="admin-toast__body">
-      <p class="admin-toast__message">${escapeHtml(message)}</p>
-    </div>
-    <button class="admin-toast__dismiss" type="button" aria-label="Schließen">✕</button>
-    <span class="admin-toast__progress"></span>
-  `;
-
-  toast.querySelector('.admin-toast__dismiss').addEventListener('click', () => {
-    dismissToast(toast);
-  });
-
-  toastContainer.appendChild(toast);
-
-  // Limit to 4 visible toasts
-  const toasts = toastContainer.querySelectorAll('.admin-toast');
-  if (toasts.length > 4) {
-    dismissToast(toasts[0]);
-  }
-
-  if (durationMs > 0) {
-    setTimeout(() => dismissToast(toast), durationMs);
-  }
-
-  return toastId;
-}
-
-function dismissToast(toast) {
-  if (!toast || toast.classList.contains('is-dismissing')) return;
-  toast.classList.add('is-dismissing');
-  toast.addEventListener('animationend', () => toast.remove(), {
-    once: true,
-  });
-}
-
-function showAuthError(message) {
-  setText(authError, message || 'Falsches Passwort!');
-  setHidden(authError, !message);
-}
-
-function formatWarnings(warnings) {
-  return warnings
-    .map((warning) => warning && warning.message)
-    .filter(Boolean)
-    .join(' ');
-}
-
-function buildSystemSummary(summary = {}, health = {}) {
-  return [
-    pluralize(summary.filteredUsers || 0, 'Profil', 'Profile'),
-    pluralize(summary.filteredMemoryCount || 0, 'Memory', 'Memories'),
-    pluralize(summary.totalContacts || 0, 'Kontakt', 'Kontakte'),
-    pluralize(summary.totalComments || 0, 'Kommentar', 'Kommentare'),
-    pluralize(summary.totalArchivedProfiles || 0, 'Archiv', 'Archive'),
-    health.auditAvailable ? 'Audit aktiv' : 'Audit fehlt',
-  ].join(' • ');
-}
-
-function syncPaginationFromPayload(pagination = {}) {
-  Object.keys(DEFAULT_PAGE_SIZES).forEach((key) => {
-    if (!pagination[key]) return;
-    state.pagination[key] = {
-      page: Number(pagination[key].page) || 1,
-      pageSize: Number(pagination[key].pageSize) || DEFAULT_PAGE_SIZES[key],
-    };
-  });
-}
-
-function buildQueryString() {
-  const params = new URLSearchParams();
-
-  Object.entries(state.pagination).forEach(([key, value]) => {
-    params.set(`${key}Page`, String(value.page));
-    params.set(`${key}PageSize`, String(value.pageSize));
-  });
-
-  // Add search/filter params
-  if (state.searchQuery) {
-    params.set('q', state.searchQuery);
-  }
-  if (state.filters.userStatus !== 'all') {
-    params.set('userStatus', state.filters.userStatus);
-  }
-  if (state.filters.mappingStatus !== 'all') {
-    params.set('mappingStatus', state.filters.mappingStatus);
-  }
-  if (state.filters.auditAction !== 'all') {
-    params.set('auditAction', state.filters.auditAction);
-  }
-
-  return params.toString();
-}
-
-function syncUrlState() {
-  const params = new URLSearchParams(buildQueryString());
-  if (state.selectedUserId) {
-    params.set('selectedUser', state.selectedUserId);
-  }
-
-  const nextUrl = params.toString()
-    ? `${window.location.pathname}?${params.toString()}`
-    : window.location.pathname;
-  window.history.replaceState(null, '', nextUrl);
-}
-
-function restoreStateFromUrl() {
-  const url = new URL(window.location.href);
-  state.pagination = createDefaultPagination();
-  Object.keys(DEFAULT_PAGE_SIZES).forEach((key) => {
-    const page = Number(url.searchParams.get(`${key}Page`)) || 1;
-    const pageSize =
-      Number(url.searchParams.get(`${key}PageSize`)) || DEFAULT_PAGE_SIZES[key];
-    state.pagination[key] = {
-      page: Math.max(1, page),
-      pageSize: Math.max(1, pageSize),
-    };
-  });
-  state.selectedUserId = String(
-    url.searchParams.get('selectedUser') || '',
-  ).trim();
-
-  // Restore search & filters
-  state.searchQuery = String(url.searchParams.get('q') || '').trim();
-  state.filters.userStatus = String(url.searchParams.get('userStatus') || 'all')
-    .trim()
-    .toLowerCase();
-  state.filters.mappingStatus = String(
-    url.searchParams.get('mappingStatus') || 'all',
-  )
-    .trim()
-    .toLowerCase();
-  state.filters.auditAction = String(
-    url.searchParams.get('auditAction') || 'all',
-  )
-    .trim()
-    .toLowerCase();
-
-  // Sync inputs
-  if (searchInput) searchInput.value = state.searchQuery;
-  if (searchClear) setHidden(searchClear, !state.searchQuery);
-  if (filterUserStatus) filterUserStatus.value = state.filters.userStatus;
-  if (filterMappingStatus)
-    filterMappingStatus.value = state.filters.mappingStatus;
-  if (filterAuditAction) filterAuditAction.value = state.filters.auditAction;
-
-  updateActiveSearchLabel();
-}
-
-function updateActiveSearchLabel() {
-  if (!activeSearchLabel) return;
-  const parts = [];
-  if (state.searchQuery) parts.push(`"${state.searchQuery}"`);
-  if (state.filters.userStatus !== 'all')
-    parts.push(`Status: ${state.filters.userStatus}`);
-  if (state.filters.mappingStatus !== 'all')
-    parts.push(`Mapping: ${state.filters.mappingStatus}`);
-  if (state.filters.auditAction !== 'all')
-    parts.push(`Audit: ${state.filters.auditAction}`);
-
-  if (parts.length > 0) {
-    setText(activeSearchLabel, `Filter aktiv: ${parts.join(' • ')}`);
-    setHidden(activeSearchLabel, false);
-  } else {
-    setHidden(activeSearchLabel, true);
-  }
+function hideAuth() {
+  setHidden(authError, true);
+  authOverlay.classList.add('hidden');
+  setHidden(adminMain, false);
 }
 
 function setBusyState(isBusy) {
-  if (refreshButton) {
-    refreshButton.disabled = isBusy;
-    refreshButton.textContent = isBusy ? 'Lädt…' : REFRESH_LABEL;
-  }
   if (logoutButton) logoutButton.disabled = isBusy;
+  renderRecordsPagination();
 }
 
 function setActionsBusy(isBusy) {
-  [
-    actionSaveMemoryButton,
-    actionDeleteMemoryButton,
-    actionDeleteUserButton,
-    actionExportUserButton,
-    actionAssignAliasButton,
-    actionRemoveAliasButton,
-    actionMergeUsersButton,
-    actionBulkDeleteMemoriesButton,
-    actionBulkDeleteUsersButton,
-    actionBulkRestoreUsersButton,
-    actionBulkPurgeUsersButton,
-    actionPurgeExpiredArchivesButton,
-  ].forEach((button) => {
-    if (!button) return;
+  state.actionsBusy = isBusy;
+
+  const quickActionButtons = recordsList?.querySelectorAll(
+    '.admin-unified__quick',
+  );
+  quickActionButtons?.forEach((button) => {
     button.disabled = isBusy;
   });
-}
-
-function updateSelectionSummary() {
-  const selectedUsers = state.selectedUserIds.size;
-  const selectedArchived = state.selectedArchivedUserIds.size;
-  const selectedMemories = state.selectedMemoryEntries.size;
-  const parts = [];
-
-  if (selectedUsers > 0) {
-    parts.push(pluralize(selectedUsers, 'aktives Profil', 'aktive Profile'));
-  }
-  if (selectedArchived > 0) {
-    parts.push(pluralize(selectedArchived, 'Archivprofil', 'Archivprofile'));
-  }
-  if (selectedMemories > 0) {
-    parts.push(pluralize(selectedMemories, 'Memory', 'Memories'));
-  }
-
-  setText(
-    bulkSelectionSummary,
-    parts.length > 0
-      ? `Ausgewählt: ${parts.join(' • ')}`
-      : 'Keine Auswahl aktiv.',
-  );
-  setMetric(
-    'actions-count-label',
-    parts.length > 0
-      ? `${selectedUsers + selectedArchived + selectedMemories} gewählt`
-      : 'Live',
-  );
-
-  if (actionBulkDeleteUsersButton) {
-    actionBulkDeleteUsersButton.disabled = selectedUsers === 0;
-  }
-  if (actionBulkRestoreUsersButton) {
-    actionBulkRestoreUsersButton.disabled = selectedArchived === 0;
-  }
-  if (actionBulkPurgeUsersButton) {
-    actionBulkPurgeUsersButton.disabled = selectedArchived === 0;
-  }
-  if (actionBulkDeleteMemoriesButton) {
-    actionBulkDeleteMemoriesButton.disabled =
-      selectedMemories === 0 || !state.selectedUserId;
-  }
-  if (actionMergeUsersButton) {
-    actionMergeUsersButton.disabled =
-      !(actionUserIdInput?.value.trim() || state.selectedUserId) ||
-      !String(actionMergeSourceInput?.value || '').trim();
-  }
-  if (actionAssignAliasButton) {
-    actionAssignAliasButton.disabled =
-      !(actionUserIdInput?.value.trim() || state.selectedUserId) ||
-      !String(actionAliasNameInput?.value || '').trim();
-  }
-  if (actionRemoveAliasButton) {
-    actionRemoveAliasButton.disabled = !String(
-      actionAliasNameInput?.value || '',
-    ).trim();
-  }
-}
-
-function getUserLabel(userId) {
-  const selected =
-    state.selectedUserProfile && state.selectedUserProfile.userId === userId
-      ? state.selectedUserProfile
-      : currentUsers.find((item) => item.userId === userId);
-  const name = selected?.profile?.name || selected?.name || '';
-  return name ? `${name} (${userId})` : userId;
-}
-
-function fillActionForm(userId = '', key = '', value = '') {
-  if (actionUserIdInput) actionUserIdInput.value = userId;
-  if (actionMemoryKeyInput) actionMemoryKeyInput.value = key;
-  if (actionMemoryValueInput) actionMemoryValueInput.value = value;
-  if (actionDeleteConfirmInput) actionDeleteConfirmInput.value = '';
-
-  setText(
-    actionSelectedUser,
-    userId ? `Ausgewählt: ${getUserLabel(userId)}` : 'Kein Profil ausgewählt.',
-  );
-  updateSelectionSummary();
-}
-
-function requireAliasName() {
-  const alias = actionAliasNameInput?.value.trim() || '';
-  if (!alias) {
-    showStatus('Bitte einen Alias oder Mapping-Namen eingeben.', 'error');
-    actionAliasNameInput?.focus();
-    return '';
-  }
-  return alias;
-}
-
-function requireMergeSourceUserId() {
-  const sourceUserId = actionMergeSourceInput?.value.trim() || '';
-  if (!sourceUserId) {
-    showStatus('Bitte eine Quell-User-ID für den Merge eingeben.', 'error');
-    actionMergeSourceInput?.focus();
-    return '';
-  }
-  return sourceUserId;
-}
-
-function requireActionUserId() {
-  const userId = actionUserIdInput?.value.trim() || '';
-  if (!userId) {
-    showStatus('Bitte zuerst eine User-ID auswählen oder eingeben.', 'error');
-    actionUserIdInput?.focus();
-    return '';
-  }
-  return userId;
-}
-
-function getActionReason() {
-  return actionDeleteReasonInput?.value.trim() || '';
-}
-
-function getFallbackSelectedUserProfile() {
-  if (!state.selectedUserId) return null;
-  const user =
-    currentUsers.find((item) => item.userId === state.selectedUserId) ||
-    state.lastPayload?.users?.find(
-      (item) => item.userId === state.selectedUserId,
-    );
-  if (!user) return null;
-
-  return {
-    userId: user.userId,
-    memories: Array.isArray(user.memories) ? user.memories : [],
-    count: Number(user.memoryCount) || 0,
-    aliases: Array.isArray(user.aliases) ? user.aliases : [],
-    profile: {
-      userId: user.userId,
-      name: user.name || '',
-      status: user.status || (user.name ? 'identified' : 'anonymous'),
-      label: user.name ? `Profil: ${user.name}` : 'Profil: ohne Namen',
-    },
-  };
-}
-
-function groupMemoriesByCategory(memories = []) {
-  const groups = new Map();
-  memories.forEach((memory) => {
-    const category = memory?.category || 'note';
-    if (!groups.has(category)) groups.set(category, []);
-    groups.get(category).push(memory);
-  });
-
-  return [...groups.entries()]
-    .sort(([a], [b]) => a.localeCompare(b, 'de', { sensitivity: 'base' }))
-    .map(([category, items]) => ({
-      category,
-      items,
-    }));
-}
-
-function renderPagination(section, pagination) {
-  const container = paginationContainers[section];
-  if (!container) return;
-
-  if (!pagination) {
-    container.innerHTML = '';
-    setHidden(container, true);
-    return;
-  }
-
-  container.innerHTML = `
-    <div class="admin-pagination__info">
-      Seite ${formatNumber(pagination.page)} von ${formatNumber(
-        pagination.totalPages,
-      )} • ${pluralize(pagination.total, 'Eintrag', 'Einträge')}
-    </div>
-    <div class="admin-pagination__actions">
-      <button
-        type="button"
-        class="admin-secondary-button admin-secondary-button--compact"
-        data-page-target="${section}"
-        data-page="${Math.max(1, pagination.page - 1)}"
-        ${pagination.hasPreviousPage ? '' : 'disabled'}
-      >
-        Zurück
-      </button>
-      <button
-        type="button"
-        class="admin-secondary-button admin-secondary-button--compact"
-        data-page-target="${section}"
-        data-page="${Math.min(pagination.totalPages, pagination.page + 1)}"
-        ${pagination.hasNextPage ? '' : 'disabled'}
-      >
-        Weiter
-      </button>
-    </div>
-  `;
-  setHidden(container, pagination.total <= 0);
-}
-
-function renderSelectedUserPanel() {
-  const profile = state.selectedUserProfile || getFallbackSelectedUserProfile();
-  setText(
-    document.getElementById('selected-user-state'),
-    state.selectedUserId ? 'Aktiv' : 'Kein Profil',
-  );
-
-  if (!state.selectedUserId) {
-    selectedUserPanel.innerHTML = '';
-    setHidden(noSelectedUser, false);
-    setText(
-      noSelectedUser,
-      'Wähle ein Profil aus, um alle gespeicherten Details Schritt für Schritt anzuzeigen.',
-    );
-    updateSelectionSummary();
-    return;
-  }
-
-  if (!profile && state.selectedUserLoading) {
-    setHidden(noSelectedUser, true);
-    selectedUserPanel.innerHTML = `
-      <div class="admin-detail-loading">
-        Lade vollständiges Profil für ${escapeHtml(state.selectedUserId)} …
-      </div>
-    `;
-    updateSelectionSummary();
-    return;
-  }
-
-  if (!profile) {
-    selectedUserPanel.innerHTML = '';
-    setHidden(noSelectedUser, false);
-    setText(
-      noSelectedUser,
-      state.selectedUserError ||
-        'Für diese User-ID konnten keine gespeicherten Details geladen werden.',
-    );
-    updateSelectionSummary();
-    return;
-  }
-
-  const aliases =
-    profile.aliases ||
-    currentUsers.find((item) => item.userId === profile.userId)?.aliases ||
-    [];
-  const groupedMemories = groupMemoriesByCategory(profile.memories || []);
-  const rawPayload = {
-    userId: profile.userId,
-    profile: profile.profile,
-    count: profile.count,
-    aliases,
-    memories: profile.memories || [],
-    deleted: profile.deleted || null,
-  };
-
-  setHidden(noSelectedUser, true);
-  selectedUserPanel.innerHTML = `
-    <div class="admin-selected-user-shell">
-      <div class="admin-selected-user-shell__header">
-        <div>
-          <div class="admin-memory-group__label">Ausgewähltes Profil</div>
-          <div class="admin-memory-group__title">${escapeHtml(
-            profile.profile?.name || profile.userId,
-          )}</div>
-          <div class="admin-memory-group__meta">
-            ID: ${escapeHtml(profile.userId)} • Status: ${escapeHtml(
-              profile.profile?.status || 'unknown',
-            )}
-          </div>
-        </div>
-        <div class="admin-selected-user-shell__summary">
-          ${pluralize(profile.count || 0, 'Memory', 'Memories')}
-        </div>
-      </div>
-
-      <div class="admin-selection-toolbar">
-        <span class="admin-selection-toolbar__copy">
-          ${pluralize(
-            state.selectedMemoryEntries.size,
-            'Memory für Bulk-Löschung markiert',
-            'Memories für Bulk-Löschung markiert',
-          )}
-        </span>
-        <button
-          type="button"
-          class="admin-secondary-button admin-secondary-button--compact"
-          data-admin-action="clear-memory-selection"
-        >
-          Auswahl leeren
-        </button>
-      </div>
-
-      ${
-        aliases.length > 0
-          ? `<div class="admin-inline-chip-list">${aliases
-              .map(
-                (alias) => `
-                  <div class="admin-inline-chip">
-                    ${buildPill(`Alias: ${alias}`)}
-                    <button
-                      type="button"
-                      class="admin-secondary-button admin-secondary-button--compact"
-                      data-admin-action="remove-alias"
-                      data-alias-name="${escapeHtml(alias)}"
-                      data-user-id="${escapeHtml(profile.userId)}"
-                    >
-                      Entfernen
-                    </button>
-                  </div>
-                `,
-              )
-              .join('')}</div>`
-          : ''
-      }
-
-      <div class="admin-detail-grid">
-        <article class="admin-detail-card">
-          <span class="admin-health-card__label">Profilstatus</span>
-          <strong class="admin-health-card__value">${escapeHtml(
-            profile.profile?.status === 'identified'
-              ? 'Identifiziert'
-              : 'Anonym',
-          )}</strong>
-          <p class="admin-health-card__meta">${escapeHtml(
-            profile.profile?.label || 'Kein Label vorhanden',
-          )}</p>
-        </article>
-
-        <article class="admin-detail-card">
-          <span class="admin-health-card__label">Letzte Schritte</span>
-          <strong class="admin-health-card__value">${escapeHtml(
-            state.selectedUserLoading ? 'Synchronisiert…' : 'Live',
-          )}</strong>
-          <p class="admin-health-card__meta">
-            Vollständige Detailansicht inklusive gruppierter Memories, Bulk-Auswahl und Rohdaten.
-          </p>
-        </article>
-      </div>
-
-      <div class="admin-category-grid">
-        ${groupedMemories
-          .map(
-            (group) => `
-              <section class="admin-category-card">
-                <div class="admin-category-card__header">
-                  <span class="admin-memory-group__label">${escapeHtml(
-                    group.category,
-                  )}</span>
-                  <span class="admin-section__count">${formatNumber(
-                    group.items.length,
-                  )}</span>
-                </div>
-                <div class="admin-category-card__list">
-                  ${group.items
-                    .map((memory) => {
-                      const memoryId = createMemorySelectionId(
-                        memory.key,
-                        memory.value,
-                      );
-                      return `
-                        <article class="comment-item comment-item--memory">
-                          <div class="comment-meta">
-                            <label class="admin-selection-row">
-                              <input
-                                type="checkbox"
-                                class="admin-selection-checkbox"
-                                data-selection-type="memory"
-                                data-memory-key="${escapeHtml(memory.key)}"
-                                data-memory-value="${escapeHtml(memory.value)}"
-                                ${
-                                  state.selectedMemoryEntries.has(memoryId)
-                                    ? 'checked'
-                                    : ''
-                                }
-                              />
-                              <span class="comment-author comment-author--memory">${escapeHtml(
-                                memory.key,
-                              )}</span>
-                            </label>
-                            <span class="comment-date">${formatDate(
-                              memory.timestamp,
-                            )}</span>
-                          </div>
-                          <div class="admin-pill-row">
-                            ${buildPill(
-                              `Prio: ${formatNumber(memory.priority)}`,
-                            )}
-                            ${
-                              memory.expiresAt
-                                ? buildPill(
-                                    `Ablauf: ${formatDate(memory.expiresAt, {
-                                      dateStyle: 'medium',
-                                      timeStyle: 'short',
-                                    })}`,
-                                    'warning',
-                                  )
-                                : ''
-                            }
-                          </div>
-                          <p class="comment-content comment-content--memory">${escapeHtml(
-                            memory.value,
-                          )}</p>
-                        </article>
-                      `;
-                    })
-                    .join('')}
-                </div>
-              </section>
-            `,
-          )
-          .join('')}
-      </div>
-
-      <div class="admin-json-block">
-        <div class="admin-json-block__header">Rohdaten</div>
-        <pre class="admin-json-preview">${escapeHtml(
-          JSON.stringify(rawPayload, null, 2),
-        )}</pre>
-      </div>
-    </div>
-  `;
-  updateSelectionSummary();
-}
-
-function renderHealthFindings(findings = []) {
-  const container = document.getElementById('health-findings');
-  if (!container) return;
-
-  if (!Array.isArray(findings) || findings.length === 0) {
-    container.innerHTML = '';
-    setHidden(container, true);
-    return;
-  }
-
-  container.innerHTML = findings
-    .map(
-      (entry) => `
-        <article class="admin-health-finding" data-tone="${escapeHtml(
-          entry.tone || 'neutral',
-        )}">
-          <div class="admin-health-finding__head">
-            <strong>${escapeHtml(entry.title || 'Hinweis')}</strong>
-            ${buildPill(
-              entry.count
-                ? `${formatNumber(entry.count)} offen`
-                : entry.tone === 'success'
-                  ? 'OK'
-                  : 'Prüfen',
-              entry.tone || 'neutral',
-            )}
-          </div>
-          <p class="admin-health-finding__detail">${escapeHtml(
-            entry.detail || '',
-          )}</p>
-        </article>
-      `,
-    )
-    .join('');
-  setHidden(container, false);
-}
-
-function renderHealth(health = {}, summary = {}) {
-  setText(
-    document.getElementById('health-users-primary'),
-    formatNumber(summary.filteredUsers || 0),
-  );
-  setText(
-    document.getElementById('health-users-secondary'),
-    `${pluralize(health.identifiedUsers || 0, 'identifiziert', 'identifiziert')} • ${pluralize(
-      health.anonymousUsers || 0,
-      'anonym',
-      'anonym',
-    )}`,
-  );
-  setText(
-    document.getElementById('health-mappings-primary'),
-    formatNumber(
-      (health.linkedMappings || 0) +
-        (health.conflictMappings || 0) +
-        (health.orphanMappings || 0),
-    ),
-  );
-  setText(
-    document.getElementById('health-mappings-secondary'),
-    `${pluralize(health.linkedMappings || 0, 'linked', 'linked')} • ${pluralize(
-      health.conflictMappings || 0,
-      'Konflikt',
-      'Konflikte',
-    )} • ${pluralize(health.orphanMappings || 0, 'orphan', 'orphan')}`,
-  );
-  setText(
-    document.getElementById('health-memory-primary'),
-    formatNumber(health.totalMemories || 0),
-  );
-  setText(
-    document.getElementById('health-memory-secondary'),
-    `${pluralize(
-      health.expiringSoon || 0,
-      'bald ablaufend',
-      'bald ablaufend',
-    )} • ${pluralize(health.deletedProfiles || 0, 'archiviert', 'archiviert')}`,
-  );
-  setText(
-    document.getElementById('health-storage-primary'),
-    health.kvAvailable ? 'Online' : 'Fehlt',
-  );
-  setText(
-    document.getElementById('health-storage-secondary'),
-    [
-      health.kvAvailable ? 'KV' : 'KV fehlt',
-      health.vectorizeConfigured ? 'Vectorize' : 'ohne Vectorize',
-      health.aiConfigured ? 'AI' : 'ohne AI',
-      health.auditAvailable ? 'Audit aktiv' : 'Audit fehlt',
-    ].join(' • '),
-  );
-  renderHealthFindings(health.findings || []);
-}
-
-function renderLikes(likes = [], pagination = {}) {
-  const likesBody = document.getElementById('likes-table-body');
-  const likesTable = likesBody.closest('table');
-  const noLikes = document.getElementById('no-likes');
-
-  if (likes.length > 0) {
-    setHidden(likesTable, false);
-    setHidden(noLikes, true);
-    likesBody.innerHTML = likes
-      .map(
-        (item) => `
-          <tr>
-            <td>${escapeHtml(item.project_id)}</td>
-            <td>${escapeHtml(formatNumber(item.likes))}</td>
-          </tr>
-        `,
-      )
-      .join('');
-  } else {
-    likesBody.innerHTML = '';
-    setHidden(likesTable, true);
-    setHidden(noLikes, false);
-  }
-
-  renderPagination('likes', pagination);
-}
-
-function renderContacts(contacts = [], pagination = {}) {
-  const contactsList = document.getElementById('contacts-list');
-  const noContacts = document.getElementById('no-contacts');
-
-  if (contacts.length > 0) {
-    setHidden(noContacts, true);
-    contactsList.innerHTML = contacts
-      .map(
-        (entry) => `
-          <article class="comment-item comment-item--primary">
-            <div class="comment-meta">
-              <span class="comment-author">${escapeHtml(entry.name)} (${escapeHtml(
-                entry.email,
-              )})</span>
-              <span class="comment-date">${formatDate(entry.created_at)}</span>
-            </div>
-            <div class="admin-accent-title">${escapeHtml(
-              entry.subject || '(Ohne Betreff)',
-            )}</div>
-            <p class="comment-content">${escapeHtml(entry.message)}</p>
-          </article>
-        `,
-      )
-      .join('');
-  } else {
-    contactsList.innerHTML = '';
-    setHidden(noContacts, false);
-  }
-
-  renderPagination('contacts', pagination);
-}
-
-function renderComments(comments = [], pagination = {}) {
-  const commentsList = document.getElementById('comments-list');
-  const noComments = document.getElementById('no-comments');
-
-  if (comments.length > 0) {
-    setHidden(noComments, true);
-    commentsList.innerHTML = comments
-      .map(
-        (comment) => `
-          <article class="comment-item">
-            <div class="comment-meta">
-              <span class="comment-author">${escapeHtml(
-                comment.author_name,
-              )}</span>
-              <span class="comment-date">${formatDate(comment.created_at)}</span>
-            </div>
-            <p class="comment-content">${escapeHtml(comment.content)}</p>
-            <span class="comment-post">Post: ${escapeHtml(
-              comment.post_id,
-            )}</span>
-          </article>
-        `,
-      )
-      .join('');
-  } else {
-    commentsList.innerHTML = '';
-    setHidden(noComments, false);
-  }
-
-  renderPagination('comments', pagination);
-}
-
-function renderUsers(users = [], pagination = {}) {
-  const noUsers = document.getElementById('no-users');
-
-  if (users.length > 0) {
-    setHidden(noUsers, true);
-    usersGrid.innerHTML = users
-      .map(
-        (user) => `
-          <article class="admin-user-card ${
-            user.userId === state.selectedUserId ? 'is-selected' : ''
-          } ${state.selectedUserIds.has(user.userId) ? 'is-bulk-selected' : ''}">
-            <div class="admin-user-card__head">
-              <label class="admin-selection-row">
-                <input
-                  type="checkbox"
-                  class="admin-selection-checkbox"
-                  data-selection-type="user"
-                  data-user-id="${escapeHtml(user.userId || '')}"
-                  ${state.selectedUserIds.has(user.userId) ? 'checked' : ''}
-                />
-                <span class="stat-label">User ID</span>
-              </label>
-              ${buildPill(
-                user.name ? 'Identifiziert' : 'Anonym',
-                user.name ? 'success' : 'neutral',
-              )}
-            </div>
-            <div class="admin-user-card__id">${escapeHtml(
-              user.userId || '-',
-            )}</div>
-            <div class="admin-user-card__name">${escapeHtml(
-              user.name || 'Ohne gespeicherten Namen',
-            )}</div>
-            <p class="admin-user-card__meta">
-              ${pluralize(
-                Number(user.memoryCount) || 0,
-                'Memory-Eintrag',
-                'Memory-Einträge',
-              )}${
-                user.latestMemoryAt
-                  ? ` • Letzte Speicherung ${formatDate(user.latestMemoryAt)}`
-                  : ''
-              }
-            </p>
-            ${
-              Array.isArray(user.aliases) && user.aliases.length > 0
-                ? `<div class="admin-pill-row">${user.aliases
-                    .map((alias) => buildPill(`Alias: ${alias}`))
-                    .join('')}</div>`
-                : ''
-            }
-            ${
-              Array.isArray(user.memoryKeys) && user.memoryKeys.length > 0
-                ? `<div class="admin-user-card__keys">Keys: ${escapeHtml(
-                    user.memoryKeys.join(', '),
-                  )}</div>`
-                : `<div class="admin-user-card__keys">Noch keine gespeicherten Keys.</div>`
-            }
-            <div class="admin-card-actions">
-              <button
-                type="button"
-                class="admin-secondary-button"
-                data-admin-action="select-user"
-                data-user-id="${escapeHtml(user.userId || '')}"
-                data-user-name="${escapeHtml(user.name || '')}"
-              >
-                Auswählen
-              </button>
-              <button
-                type="button"
-                class="admin-danger-button admin-danger-button--inline"
-                data-admin-action="delete-user"
-                data-user-id="${escapeHtml(user.userId || '')}"
-                data-user-name="${escapeHtml(user.name || '')}"
-              >
-                Profil archivieren
-              </button>
-            </div>
-          </article>
-        `,
-      )
-      .join('');
-  } else {
-    usersGrid.innerHTML = '';
-    setHidden(noUsers, false);
-  }
-
-  renderPagination('users', pagination);
-}
-
-function renderArchivedProfiles(archivedProfiles = [], pagination = {}) {
-  const noArchived = document.getElementById('no-archived');
-
-  if (archivedProfiles.length > 0) {
-    setHidden(noArchived, true);
-    archivedGrid.innerHTML = archivedProfiles
-      .map(
-        (profile) => `
-          <article class="admin-user-card ${
-            state.selectedArchivedUserIds.has(profile.userId)
-              ? 'is-bulk-selected'
-              : ''
-          }">
-            <div class="admin-user-card__head">
-              <label class="admin-selection-row">
-                <input
-                  type="checkbox"
-                  class="admin-selection-checkbox"
-                  data-selection-type="archived-user"
-                  data-user-id="${escapeHtml(profile.userId || '')}"
-                  ${
-                    state.selectedArchivedUserIds.has(profile.userId)
-                      ? 'checked'
-                      : ''
-                  }
-                />
-                <span class="stat-label">Archiv</span>
-              </label>
-              ${buildPill('Soft Delete', 'warning')}
-            </div>
-            <div class="admin-user-card__id">${escapeHtml(
-              profile.userId || '-',
-            )}</div>
-            <div class="admin-user-card__name">${escapeHtml(
-              profile.displayName || 'Ohne Namen archiviert',
-            )}</div>
-            <p class="admin-user-card__meta">
-              ${pluralize(
-                Number(profile.memoryCount) || 0,
-                'Memory',
-                'Memories',
-              )} • Gelöscht ${formatDate(profile.deletedAt)}
-            </p>
-            <div class="admin-pill-row">
-              ${buildPill(`Wiederherstellen bis ${formatDate(profile.restoreUntil)}`)}
-              ${
-                profile.deleteReason
-                  ? buildPill(`Grund: ${profile.deleteReason}`)
-                  : ''
-              }
-            </div>
-            <div class="admin-card-actions">
-              <button
-                type="button"
-                class="admin-secondary-button"
-                data-admin-action="restore-user"
-                data-user-id="${escapeHtml(profile.userId || '')}"
-              >
-                Wiederherstellen
-              </button>
-              <button
-                type="button"
-                class="admin-danger-button admin-danger-button--inline"
-                data-admin-action="purge-user"
-                data-user-id="${escapeHtml(profile.userId || '')}"
-              >
-                Endgültig löschen
-              </button>
-            </div>
-          </article>
-        `,
-      )
-      .join('');
-  } else {
-    archivedGrid.innerHTML = '';
-    setHidden(noArchived, false);
-  }
-
-  renderPagination('archived', pagination);
-}
-
-function renderNameMappings(nameMappings = [], pagination = {}) {
-  const namesGrid = document.getElementById('names-grid');
-  const noNames = document.getElementById('no-names');
-
-  if (nameMappings.length > 0) {
-    setHidden(noNames, true);
-    namesGrid.innerHTML = nameMappings
-      .map(
-        (mapping) => `
-          <article class="admin-name-card">
-            <div class="admin-user-card__head">
-              <span class="stat-label">Bekannter Name</span>
-              ${buildPill(
-                mapping.status === 'linked'
-                  ? 'Linked'
-                  : mapping.status === 'conflict'
-                    ? 'Konflikt'
-                    : 'Orphan',
-                mapping.status === 'linked'
-                  ? 'success'
-                  : mapping.status === 'conflict'
-                    ? 'warning'
-                    : 'error',
-              )}
-            </div>
-            <div class="admin-name-card__title">${escapeHtml(
-              mapping.name,
-            )}</div>
-            <div class="admin-name-card__meta">
-              ${
-                mapping.userId
-                  ? `ID: ${escapeHtml(mapping.userId)}`
-                  : `Wert: ${escapeHtml(mapping.rawValue || 'leer')}`
-              }
-            </div>
-            <div class="admin-card-actions">
-              ${
-                mapping.userId
-                  ? `<button
-                      type="button"
-                      class="admin-secondary-button admin-secondary-button--compact"
-                      data-admin-action="select-user"
-                      data-user-id="${escapeHtml(mapping.userId || '')}"
-                    >
-                      Profil öffnen
-                    </button>`
-                  : ''
-              }
-              <button
-                type="button"
-                class="admin-secondary-button admin-secondary-button--compact"
-                data-admin-action="use-alias"
-                data-alias-name="${escapeHtml(mapping.name || '')}"
-                data-user-id="${escapeHtml(mapping.userId || '')}"
-              >
-                Alias ins Formular
-              </button>
-              <button
-                type="button"
-                class="admin-secondary-button admin-secondary-button--compact"
-                data-admin-action="remove-alias"
-                data-alias-name="${escapeHtml(mapping.name || '')}"
-                data-user-id="${escapeHtml(mapping.userId || '')}"
-              >
-                Alias löschen
-              </button>
-            </div>
-          </article>
-        `,
-      )
-      .join('');
-  } else {
-    namesGrid.innerHTML = '';
-    setHidden(noNames, false);
-  }
-
-  renderPagination('mappings', pagination);
-}
-
-function renderMemories(users = []) {
-  const noMemories = document.getElementById('no-memories');
-  const usersWithMemories = users.filter(
-    (user) => Array.isArray(user.memories) && user.memories.length > 0,
-  );
-
-  if (usersWithMemories.length > 0) {
-    setHidden(noMemories, true);
-    memoriesContainer.innerHTML = usersWithMemories
-      .map(
-        (user) => `
-          <section class="admin-memory-group">
-            <div class="admin-memory-group__header">
-              <div>
-                <div class="admin-memory-group__label">Profil</div>
-                <div class="admin-memory-group__title">${escapeHtml(
-                  user.name || user.userId,
-                )}</div>
-                <div class="admin-memory-group__meta">ID: ${escapeHtml(
-                  user.userId || '-',
-                )}</div>
-              </div>
-              <div class="admin-memory-group__summary">
-                ${pluralize(
-                  Number(user.memoryCount) || 0,
-                  'Eintrag',
-                  'Einträge',
-                )}
-              </div>
-            </div>
-            ${
-              Array.isArray(user.aliases) && user.aliases.length > 0
-                ? `<div class="admin-pill-row">${user.aliases
-                    .map((alias) => buildPill(`Alias: ${alias}`))
-                    .join('')}</div>`
-                : ''
-            }
-            <div class="admin-memory-list">
-              ${user.memories
-                .map(
-                  (memory) => `
-                    <article class="comment-item comment-item--memory">
-                      <div class="comment-meta">
-                        <span class="comment-author comment-author--memory">${escapeHtml(
-                          memory.key,
-                        )}</span>
-                        <div class="admin-memory-actions">
-                          <span class="comment-date">${formatDate(
-                            memory.timestamp,
-                          )}</span>
-                          <button
-                            type="button"
-                            class="admin-secondary-button admin-secondary-button--compact"
-                            data-admin-action="delete-memory"
-                            data-user-id="${escapeHtml(user.userId || '')}"
-                            data-user-name="${escapeHtml(user.name || '')}"
-                            data-memory-key="${escapeHtml(memory.key || '')}"
-                            data-memory-value="${escapeHtml(memory.value || '')}"
-                          >
-                            Löschen
-                          </button>
-                        </div>
-                      </div>
-                      <div class="admin-pill-row">
-                        ${buildPill(`Kategorie: ${memory.category || 'note'}`)}
-                        ${buildPill(`Prio: ${formatNumber(memory.priority)}`)}
-                        ${
-                          memory.expiresAt
-                            ? buildPill(
-                                `Ablauf: ${formatDate(memory.expiresAt, {
-                                  dateStyle: 'medium',
-                                  timeStyle: 'short',
-                                })}`,
-                                'warning',
-                              )
-                            : ''
-                        }
-                      </div>
-                      <p class="comment-content comment-content--memory">${escapeHtml(
-                        memory.value,
-                      )}</p>
-                    </article>
-                  `,
-                )
-                .join('')}
-            </div>
-          </section>
-        `,
-      )
-      .join('');
-  } else {
-    memoriesContainer.innerHTML = '';
-    setHidden(noMemories, false);
-  }
-}
-
-function updateOptionalPanelVisibility(pagination = {}, summary = {}) {
-  const visibleSections = {
-    archived: (pagination.archived?.total || 0) > 0,
-    audit: (pagination.audit?.total || 0) > 0,
-    comments: (pagination.comments?.total || 0) > 0,
-    contacts: (pagination.contacts?.total || 0) > 0,
-    likes: (pagination.likes?.total || 0) > 0,
-    mappings: (pagination.mappings?.total || 0) > 0,
-    memories: (summary.filteredMemoryCount || 0) > 0,
-  };
-
-  Object.entries(optionalPanels).forEach(([key, panel]) => {
-    setHidden(panel, !visibleSections[key]);
-  });
-}
-
-function renderAuditLogs(auditLogs = [], pagination = {}) {
-  const auditList = document.getElementById('audit-list');
-  const noAudit = document.getElementById('no-audit');
-
-  if (auditLogs.length > 0) {
-    setHidden(noAudit, true);
-    auditList.innerHTML = auditLogs
-      .map(
-        (entry) => `
-          <article class="comment-item comment-item--audit">
-            <div class="comment-meta">
-              <span class="comment-author">${escapeHtml(
-                entry.action || 'unknown',
-              )}</span>
-              <span class="comment-date">${formatDate(entry.createdAt)}</span>
-            </div>
-            <div class="admin-pill-row">
-              ${buildPill(
-                entry.status === 'success' ? 'Success' : entry.status,
-                entry.status === 'success' ? 'success' : 'warning',
-              )}
-              ${
-                entry.targetUserId
-                  ? buildPill(`User: ${entry.targetUserId}`)
-                  : ''
-              }
-              ${entry.memoryKey ? buildPill(`Key: ${entry.memoryKey}`) : ''}
-              ${entry.actor ? buildPill(`Actor: ${entry.actor}`) : ''}
-              ${entry.sourceIp ? buildPill(`IP: ${entry.sourceIp}`) : ''}
-            </div>
-            <p class="comment-content">${escapeHtml(
-              entry.summary || 'Keine Zusammenfassung.',
-            )}</p>
-            ${
-              entry.details
-                ? `<pre class="admin-json-preview admin-json-preview--compact">${escapeHtml(
-                    JSON.stringify(entry.details, null, 2),
-                  )}</pre>`
-                : ''
-            }
-            ${
-              entry.before || entry.after
-                ? `<div class="admin-audit-diff">
-                    ${
-                      entry.before
-                        ? `<div class="admin-json-block">
-                            <div class="admin-json-block__header">Vorher</div>
-                            <pre class="admin-json-preview admin-json-preview--compact">${escapeHtml(
-                              JSON.stringify(entry.before, null, 2),
-                            )}</pre>
-                          </div>`
-                        : ''
-                    }
-                    ${
-                      entry.after
-                        ? `<div class="admin-json-block">
-                            <div class="admin-json-block__header">Nachher</div>
-                            <pre class="admin-json-preview admin-json-preview--compact">${escapeHtml(
-                              JSON.stringify(entry.after, null, 2),
-                            )}</pre>
-                          </div>`
-                        : ''
-                    }
-                  </div>`
-                : ''
-            }
-          </article>
-        `,
-      )
-      .join('');
-  } else {
-    auditList.innerHTML = '';
-    setHidden(noAudit, false);
-  }
-
-  renderPagination('audit', pagination);
-}
-
-function updateUI(data) {
-  const likes = Array.isArray(data.likes) ? data.likes : [];
-  const comments = Array.isArray(data.comments) ? data.comments : [];
-  const contacts = Array.isArray(data.contacts) ? data.contacts : [];
-  const users = Array.isArray(data.users) ? data.users : [];
-  const aiMemories = Array.isArray(data.aiMemories) ? data.aiMemories : [];
-  const archivedProfiles = Array.isArray(data.archivedProfiles)
-    ? data.archivedProfiles
-    : [];
-  const nameMappings = Array.isArray(data.nameMappings)
-    ? data.nameMappings
-    : [];
-  const auditLogs = Array.isArray(data.auditLogs) ? data.auditLogs : [];
-  const warnings = Array.isArray(data.warnings) ? data.warnings : [];
-  const pagination = data.pagination || {};
-  const summary = data.summary || {};
-  const health = data.health || {};
-
-  state.lastPayload = data;
-  syncPaginationFromPayload(pagination);
-  currentUsers = users;
-  currentArchivedProfiles = archivedProfiles;
-  syncUrlState();
-
-  const datasetCount =
-    (pagination.likes?.total || 0) +
-    (pagination.contacts?.total || 0) +
-    (pagination.comments?.total || 0) +
-    (summary.filteredUsers || 0) +
-    (pagination.mappings?.total || 0) +
-    (summary.filteredMemoryCount || 0) +
-    (pagination.audit?.total || 0) +
-    (pagination.archived?.total || 0);
-  const topProject = summary.topProjectId
-    ? `${summary.topProjectId} (${formatNumber(summary.topProjectLikes)})`
-    : '-';
-  const systemState = warnings.length > 0 ? 'Mit Hinweisen' : 'Stabil';
-
-  setMetric('total-likes', formatNumber(summary.totalLikes || 0));
-  setMetric(
-    'likes-dataset-meta',
-    pluralize(pagination.likes?.total || 0, 'Projekt', 'Projekte'),
-  );
-  setMetric('top-project', topProject);
-  setMetric(
-    'top-project-meta',
-    summary.topProjectId
-      ? `${pluralize(
-          summary.topProjectLikes || 0,
-          'Like',
-          'Likes',
-        )} auf Platz 1`
-      : 'Noch keine Reaktionen',
-  );
-  setMetric(
-    'feedback-count',
-    formatNumber((summary.totalContacts || 0) + (summary.totalComments || 0)),
-  );
-  setMetric(
-    'feedback-meta',
-    `${pluralize(
-      summary.totalContacts || 0,
-      'Kontaktanfrage',
-      'Kontaktanfragen',
-    )} • ${pluralize(summary.totalComments || 0, 'Kommentar', 'Kommentare')}`,
-  );
-  setMetric('known-users-count', formatNumber(summary.filteredUsers || 0));
-  setMetric(
-    'known-users-meta',
-    `${pluralize(
-      summary.filteredMemoryCount || 0,
-      'Erinnerung',
-      'Erinnerungen',
-    )} • ${pluralize(
-      summary.filteredIdentifiedUsers || 0,
-      'identifiziertes Profil',
-      'identifizierte Profile',
-    )}`,
-  );
-  setMetric('warning-count', formatNumber(warnings.length));
-  setMetric('dataset-count', formatNumber(datasetCount));
-  setMetric('hero-top-project', topProject);
-  setMetric('system-state', systemState);
-  setMetric('hero-system-state', systemState);
-  setMetric(
-    'hero-system-copy',
-    warnings.length > 0
-      ? formatWarnings(warnings)
-      : buildSystemSummary(summary, health),
-  );
-  setMetric(
-    'last-update',
-    formatDate(data.timestamp, {
-      dateStyle: 'medium',
-      timeStyle: 'short',
-    }),
-  );
-
-  setMetric('likes-count-label', formatNumber(pagination.likes?.total || 0));
-  setMetric(
-    'contacts-count-label',
-    formatNumber(pagination.contacts?.total || 0),
-  );
-  setMetric(
-    'comments-count-label',
-    formatNumber(pagination.comments?.total || 0),
-  );
-  setMetric('users-count-label', formatNumber(pagination.users?.total || 0));
-  setMetric(
-    'archived-count-label',
-    formatNumber(pagination.archived?.total || 0),
-  );
-  setMetric('names-count-label', formatNumber(pagination.mappings?.total || 0));
-  setMetric('audit-count-label', formatNumber(pagination.audit?.total || 0));
-  setMetric(
-    'memories-count-label',
-    formatNumber(summary.filteredMemoryCount || 0),
-  );
-
-  updateOptionalPanelVisibility(pagination, summary);
-  renderHealth(health, summary);
-  renderLikes(likes, pagination.likes);
-  renderContacts(contacts, pagination.contacts);
-  renderComments(comments, pagination.comments);
-  renderUsers(users, pagination.users);
-  renderArchivedProfiles(archivedProfiles, pagination.archived);
-  renderNameMappings(nameMappings, pagination.mappings);
-  renderMemories(aiMemories);
-  renderAuditLogs(auditLogs, pagination.audit);
-  renderSelectedUserPanel();
-  fillActionForm(
-    actionUserIdInput?.value.trim() || state.selectedUserId || '',
-    actionMemoryKeyInput?.value.trim() || '',
-    actionMemoryValueInput?.value || '',
-  );
-
-  setHidden(adminMain, false);
-  setHidden(adminToolbar, false);
-  setHidden(adminPanelNav, false);
-  updateSelectionSummary();
-  updatePanelNavBadges(pagination, summary);
-  updateActiveSearchLabel();
 }
 
 async function checkAdminSession() {
@@ -1612,6 +271,14 @@ async function checkAdminSession() {
     credentials: 'same-origin',
   });
   const result = await parseJsonResponse(response);
+  if (response.status === 429) {
+    throw createRateLimitError(
+      response,
+      result,
+      'Zu viele Session-Anfragen. Bitte kurz warten.',
+    );
+  }
+  if (!response.ok) return false;
   return !!result?.authenticated;
 }
 
@@ -1625,11 +292,16 @@ async function createAdminSession(password) {
     body: JSON.stringify({ password }),
   });
   const result = await parseJsonResponse(response);
-
+  if (response.status === 429) {
+    throw createRateLimitError(
+      response,
+      result,
+      'Zu viele Login-Versuche. Bitte kurz warten.',
+    );
+  }
   if (!response.ok || result?.success === false) {
     throw new Error(result?.error || 'Login fehlgeschlagen.');
   }
-
   return result;
 }
 
@@ -1638,6 +310,12 @@ async function deleteAdminSession() {
     method: 'DELETE',
     credentials: 'same-origin',
   });
+}
+
+function createUnauthorizedError(message = 'Sitzung abgelaufen.') {
+  const error = new Error(message);
+  error.code = 'unauthorized';
+  return error;
 }
 
 async function sendAdminUserAction(payload) {
@@ -1651,12 +329,16 @@ async function sendAdminUserAction(payload) {
   });
   const result = await parseJsonResponse(response);
 
+  if (response.status === 429) {
+    throw createRateLimitError(
+      response,
+      result,
+      'Zu viele Admin-Aktionen. Bitte kurz warten.',
+    );
+  }
+
   if (response.status === 401) {
-    state.isAuthenticated = false;
-    passwordInput.value = '';
-    showStatus('Sitzung abgelaufen. Bitte erneut einloggen.', 'error');
-    showAuth(true, 'Ungültige oder abgelaufene Session.');
-    return null;
+    throw createUnauthorizedError('Sitzung abgelaufen. Bitte neu einloggen.');
   }
 
   if (!response.ok || result?.success === false) {
@@ -1668,360 +350,1560 @@ async function sendAdminUserAction(payload) {
   return result || { success: true };
 }
 
-async function loadSelectedUserProfile({ silent = false } = {}) {
-  if (!state.selectedUserId) {
-    state.selectedUserProfile = null;
-    state.selectedUserError = '';
-    renderSelectedUserPanel();
-    return;
-  }
-
-  state.selectedUserLoading = true;
-  state.selectedUserError = '';
-  renderSelectedUserPanel();
-
-  try {
-    const result = await sendAdminUserAction({
-      action: 'list-user',
-      userId: state.selectedUserId,
-    });
-    if (!result || state.selectedUserId !== result.userId) return;
-    state.selectedUserProfile = result;
-    fillActionForm(
-      result.userId,
-      actionMemoryKeyInput?.value.trim() || '',
-      actionMemoryValueInput?.value || '',
-    );
-    if (!silent) {
-      showStatus(result.text || `Profil ${result.userId} geladen.`, 'info');
+function buildStatsUrl({ folderId = '', page = 1 } = {}) {
+  const params = new URLSearchParams();
+  params.set('usersPageSize', String(USERS_PAGE_SIZE));
+  params.set('mappingsPageSize', String(DEFAULT_MAPPINGS_PAGE_SIZE));
+  params.set('likesPageSize', String(DEFAULT_SECTION_PAGE_SIZE));
+  params.set('likeEventsPageSize', String(DEFAULT_SECTION_PAGE_SIZE));
+  params.set('commentsPageSize', String(DEFAULT_SECTION_PAGE_SIZE));
+  params.set('contactsPageSize', String(DEFAULT_SECTION_PAGE_SIZE));
+  params.set('auditPageSize', String(DEFAULT_SECTION_PAGE_SIZE));
+  params.set('archivedPageSize', String(DEFAULT_SECTION_PAGE_SIZE));
+  params.set('compact', '0');
+  if (folderId) {
+    params.set('folder', folderId);
+    const pageKey = FOLDER_PAGE_QUERY_KEY[folderId];
+    if (pageKey) {
+      const pageNumber = Number.isFinite(Number(page)) ? Number(page) : 1;
+      params.set(pageKey, String(Math.max(1, Math.floor(pageNumber))));
     }
-  } catch (error) {
-    state.selectedUserProfile = null;
-    state.selectedUserError =
-      error instanceof Error
-        ? error.message
-        : 'Profil konnte nicht geladen werden.';
-    if (!silent) showStatus(state.selectedUserError, 'error');
-  } finally {
-    state.selectedUserLoading = false;
-    renderSelectedUserPanel();
   }
+
+  return `${API_URL}?${params.toString()}`;
 }
 
-async function fetchData() {
-  setBusyState(true);
-  syncUrlState();
+async function fetchStatsPage({ folderId = '', page = 1 } = {}) {
+  const response = await fetch(buildStatsUrl({ folderId, page }), {
+    method: 'GET',
+    credentials: 'same-origin',
+  });
+  const payload = await parseJsonResponse(response);
 
-  try {
-    const queryString = buildQueryString();
-    const response = await fetch(
-      queryString ? `${API_URL}?${queryString}` : API_URL,
-      {
-        method: 'GET',
-        credentials: 'same-origin',
-      },
+  if (response.status === 429) {
+    throw createRateLimitError(
+      response,
+      payload,
+      'Zu viele Anfragen. Daten werden in Kürze wieder verfügbar.',
     );
-    const payload = await parseJsonResponse(response);
+  }
 
-    if (response.status === 401) {
-      state.isAuthenticated = false;
-      passwordInput.value = '';
-      showStatus('Sitzung abgelaufen. Bitte erneut einloggen.', 'error');
-      showAuth(true, 'Ungültige oder abgelaufene Session.');
+  if (response.status === 401) {
+    throw createUnauthorizedError('Sitzung abgelaufen. Bitte neu einloggen.');
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      payload?.details ||
+        payload?.error ||
+        'Admin-Daten konnten nicht geladen werden.',
+    );
+  }
+
+  return payload || {};
+}
+
+function mergeUsers(users = []) {
+  const byId = new Map();
+
+  users.forEach((user) => {
+    const userId = String(user?.userId || '').trim();
+    if (!userId) return;
+
+    const normalized = {
+      userId,
+      name: String(user?.name || '').trim(),
+      status: String(user?.status || 'anonymous'),
+      memoryCount: Number(user?.memoryCount) || 0,
+      latestMemoryAt: user?.latestMemoryAt || '',
+      memories: Array.isArray(user?.memories) ? user.memories : [],
+    };
+
+    const existing = byId.get(userId);
+    if (!existing) {
+      byId.set(userId, normalized);
       return;
     }
 
-    if (!response.ok) {
-      throw new Error(
-        payload?.details || payload?.error || 'Fehler beim Laden',
-      );
+    const existingMemoryCount = existing.memories.length;
+    const currentMemoryCount = normalized.memories.length;
+    if (currentMemoryCount > existingMemoryCount) {
+      byId.set(userId, normalized);
+      return;
     }
+
+    existing.latestMemoryAt =
+      parseToEpoch(normalized.latestMemoryAt) >
+      parseToEpoch(existing.latestMemoryAt)
+        ? normalized.latestMemoryAt
+        : existing.latestMemoryAt;
+    existing.memoryCount = Math.max(
+      existing.memoryCount,
+      normalized.memoryCount,
+    );
+    if (!existing.name && normalized.name) existing.name = normalized.name;
+  });
+
+  return [...byId.values()].sort(
+    (a, b) => parseToEpoch(b.latestMemoryAt) - parseToEpoch(a.latestMemoryAt),
+  );
+}
+
+function createMemoryRows(users = []) {
+  return users
+    .map((user) => {
+      const userId = String(user?.userId || '').trim();
+      if (!userId) return null;
+      const userName = String(user?.name || '').trim();
+      const status = String(user?.status || 'anonymous');
+      const memories = Array.isArray(user?.memories) ? user.memories : [];
+      const orderedMemories = [...memories].sort(
+        (a, b) => parseToEpoch(b?.timestamp) - parseToEpoch(a?.timestamp),
+      );
+      const latest = orderedMemories[0] || null;
+      const latestTimestamp = latest?.timestamp || user?.latestMemoryAt || '';
+
+      return {
+        id: `memory-profile:${userId}`,
+        kind: 'memory-profile',
+        userId,
+        userIds: [userId],
+        userName: userName || userId,
+        status,
+        hasDuplicateProfiles: false,
+        memoryCount: Number(user?.memoryCount) || orderedMemories.length,
+        latestMemoryAt: latestTimestamp,
+        latestKey: String(latest?.key || '').trim(),
+        latestValue: String(latest?.value || ''),
+        latestCategory: String(latest?.category || 'note'),
+        latestExpiresAt: latest?.expiresAt || '',
+        memories: orderedMemories,
+        tone: status === 'identified' ? 'success' : 'neutral',
+      };
+    })
+    .filter(Boolean)
+    .sort(
+      (a, b) => parseToEpoch(b.latestMemoryAt) - parseToEpoch(a.latestMemoryAt),
+    );
+}
+
+function createUserRows(users = []) {
+  return users
+    .map((user) => {
+      const userId = String(user?.userId || '').trim();
+      if (!userId) return null;
+      const userName = String(user?.name || '').trim();
+      const status = String(user?.status || 'anonymous');
+      const memories = Array.isArray(user?.memories) ? user.memories : [];
+      const aliases = Array.isArray(user?.aliases) ? user.aliases : [];
+      const memoryKeys = Array.isArray(user?.memoryKeys) ? user.memoryKeys : [];
+
+      return {
+        id: `user:${userId}`,
+        kind: 'user',
+        userId,
+        userIds: [userId],
+        userName: userName || userId,
+        status,
+        hasDuplicateProfiles: false,
+        memoryCount: Number(user?.memoryCount) || memories.length,
+        latestMemoryAt: user?.latestMemoryAt || '',
+        aliases,
+        memoryKeys,
+        memories,
+        tone: status === 'identified' ? 'success' : 'neutral',
+      };
+    })
+    .filter(Boolean)
+    .sort(
+      (a, b) => parseToEpoch(b.latestMemoryAt) - parseToEpoch(a.latestMemoryAt),
+    );
+}
+
+function createMappingRows(items = []) {
+  return items
+    .map((item, index) => {
+      const status = String(item?.status || 'linked')
+        .trim()
+        .toLowerCase();
+      const tone =
+        status === 'conflict'
+          ? 'error'
+          : status === 'linked'
+            ? 'success'
+            : status === 'orphan'
+              ? 'warning'
+              : 'neutral';
+      return {
+        id: `mapping:${item?.name || 'unknown'}:${item?.userId || '-'}:${index}`,
+        kind: 'mapping',
+        name: String(item?.name || '').trim(),
+        userId: String(item?.userId || '').trim(),
+        rawValue: String(item?.rawValue || '').trim(),
+        status,
+        updatedAt: item?.updatedAt || '',
+        tone,
+      };
+    })
+    .filter((item) => item.name || item.userId || item.rawValue)
+    .sort((a, b) => {
+      const priority = {
+        conflict: 0,
+        orphan: 1,
+        linked: 2,
+      };
+      const priorityA = Number.isFinite(priority[a.status])
+        ? priority[a.status]
+        : 3;
+      const priorityB = Number.isFinite(priority[b.status])
+        ? priority[b.status]
+        : 3;
+      if (priorityA !== priorityB) return priorityA - priorityB;
+      return parseToEpoch(b.updatedAt) - parseToEpoch(a.updatedAt);
+    });
+}
+
+function resolveLikeCount(item) {
+  return Number(item?.likes ?? item?.likeCount ?? item?.count) || 0;
+}
+
+function createLikeRows(items = []) {
+  return items
+    .map((item, index) => {
+      const projectIdRaw = String(
+        item?.project_id ?? item?.projectId ?? '',
+      ).trim();
+      const projectId = projectIdRaw || '-';
+      return {
+        id: `like:${projectId || 'unknown'}:${index}`,
+        kind: 'like',
+        projectId,
+        likes: resolveLikeCount(item),
+        tone: 'neutral',
+      };
+    })
+    .filter(Boolean)
+    .sort((a, b) => b.likes - a.likes);
+}
+
+function createLikeEventRows(items = []) {
+  return items
+    .map((item, index) => ({
+      id: `like-event:${item?.id || index}`,
+      kind: 'like-event',
+      eventId: Number(item?.id) || 0,
+      projectId:
+        String(item?.project_id ?? item?.projectId ?? '').trim() || '-',
+      sourceIp: String(item?.source_ip ?? item?.sourceIp ?? '').trim(),
+      userAgent: String(item?.user_agent ?? item?.userAgent ?? '').trim(),
+      requestId: String(item?.request_id ?? item?.requestId ?? '').trim(),
+      createdAt: item?.created_at || item?.createdAt || '',
+      tone: 'neutral',
+    }))
+    .sort((a, b) => {
+      const timeDiff = parseToEpoch(b.createdAt) - parseToEpoch(a.createdAt);
+      if (timeDiff !== 0) return timeDiff;
+      return (Number(b.eventId) || 0) - (Number(a.eventId) || 0);
+    });
+}
+
+function createCommentRows(items = []) {
+  return items
+    .map((item, index) => ({
+      id: `comment:${item?.id || index}`,
+      kind: 'comment',
+      postId: String(item?.post_id || '').trim(),
+      authorName: String(item?.author_name || '').trim(),
+      content: String(item?.content || ''),
+      createdAt: item?.created_at || '',
+      tone: 'neutral',
+    }))
+    .sort((a, b) => parseToEpoch(b.createdAt) - parseToEpoch(a.createdAt));
+}
+
+function createContactRows(items = []) {
+  return items
+    .map((item, index) => ({
+      id: `contact:${item?.id || index}`,
+      kind: 'contact',
+      name: String(item?.name || '').trim(),
+      email: String(item?.email || '').trim(),
+      subject: String(item?.subject || '').trim(),
+      message: String(item?.message || ''),
+      createdAt: item?.created_at || '',
+      tone: 'neutral',
+    }))
+    .sort((a, b) => parseToEpoch(b.createdAt) - parseToEpoch(a.createdAt));
+}
+
+function createAuditRows(items = []) {
+  return items
+    .map((item, index) => {
+      const status = String(item?.status || '')
+        .trim()
+        .toLowerCase();
+      const tone =
+        status === 'failed' || status === 'error'
+          ? 'error'
+          : status === 'success' || status === 'ok'
+            ? 'success'
+            : 'neutral';
+      return {
+        id: `audit:${item?.id || index}`,
+        kind: 'audit',
+        action: String(item?.action || '').trim(),
+        targetUserId: String(item?.targetUserId || '').trim(),
+        memoryKey: String(item?.memoryKey || '').trim(),
+        status: status || '-',
+        summary: String(item?.summary || ''),
+        actor: String(item?.actor || 'admin').trim(),
+        sourceIp: String(item?.sourceIp || '').trim(),
+        details: item?.details ?? null,
+        before: item?.before ?? null,
+        after: item?.after ?? null,
+        createdAt: item?.createdAt || '',
+        tone,
+      };
+    })
+    .sort((a, b) => parseToEpoch(b.createdAt) - parseToEpoch(a.createdAt));
+}
+
+function createArchivedRows(items = []) {
+  return items
+    .map((item, index) => ({
+      id: `archived:${item?.userId || 'unknown'}:${index}`,
+      kind: 'archived',
+      userId: String(item?.userId || '').trim(),
+      displayName: String(item?.displayName || '').trim(),
+      deletedAt: item?.deletedAt || '',
+      restoreUntil: item?.restoreUntil || '',
+      deletedBy: String(item?.deletedBy || 'admin').trim(),
+      deleteReason: String(item?.deleteReason || '').trim(),
+      memoryCount: Number(item?.memoryCount) || 0,
+      aliasCount: Number(item?.aliasCount) || 0,
+      snapshot: item?.snapshot ?? null,
+      tone: 'warning',
+    }))
+    .sort((a, b) => parseToEpoch(b.deletedAt) - parseToEpoch(a.deletedAt));
+}
+
+function createFolderRow({
+  folderId,
+  title,
+  source,
+  total,
+  loaded,
+  detail,
+  tone = 'neutral',
+  preview = null,
+}) {
+  return {
+    id: `folder:${folderId}`,
+    kind: 'folder',
+    folderId,
+    title,
+    source,
+    total: Number(total) || 0,
+    loaded: Number(loaded) || 0,
+    detail: String(detail || '').trim(),
+    tone,
+    preview,
+  };
+}
+
+function createCloudflareFolders(payload = {}, folderRecords = {}) {
+  const summary = payload.summary || {};
+  const storage = payload.storage || {};
+  const health = payload.health || {};
+  const pagination = payload.pagination || {};
+  const memoryRows = Array.isArray(folderRecords.memories)
+    ? folderRecords.memories
+    : [];
+  const userRows = Array.isArray(folderRecords.users)
+    ? folderRecords.users
+    : [];
+  const mappingRows = Array.isArray(folderRecords.mappings)
+    ? folderRecords.mappings
+    : [];
+  const commentRows = Array.isArray(folderRecords.comments)
+    ? folderRecords.comments
+    : [];
+  const contactRows = Array.isArray(folderRecords.contacts)
+    ? folderRecords.contacts
+    : [];
+  const likeRows = Array.isArray(folderRecords.likes)
+    ? folderRecords.likes
+    : [];
+  const likeEventRows = Array.isArray(folderRecords['like-events'])
+    ? folderRecords['like-events']
+    : [];
+  const auditRows = Array.isArray(folderRecords.audit)
+    ? folderRecords.audit
+    : [];
+  const archivedRows = Array.isArray(folderRecords.archived)
+    ? folderRecords.archived
+    : [];
+  const totalMemories = Number(
+    summary.filteredMemoryCount ?? storage.memoryCount ?? 0,
+  );
+  const totalMappings = Number(
+    pagination?.mappings?.total ??
+      storage.nameMappingCount ??
+      mappingRows.length,
+  );
+  const totalComments = Number(
+    summary.totalComments ?? pagination?.comments?.total ?? commentRows.length,
+  );
+  const totalContacts = Number(
+    summary.totalContacts ?? pagination?.contacts?.total ?? contactRows.length,
+  );
+  const totalLikesRows = Number(pagination?.likes?.total ?? likeRows.length);
+  const totalLikes = Number(
+    summary.totalLikes ??
+      likeRows.reduce((sum, entry) => sum + (Number(entry?.likes) || 0), 0),
+  );
+  const totalLikeEvents = Number(
+    summary.totalLikeEvents ??
+      pagination?.likeEvents?.total ??
+      likeEventRows.length,
+  );
+  const totalAudit = Number(
+    summary.totalAuditLogs ?? pagination?.audit?.total ?? auditRows.length,
+  );
+  const totalArchived = Number(
+    summary.totalArchivedProfiles ??
+      pagination?.archived?.total ??
+      archivedRows.length,
+  );
+  const conflictCount = Number(
+    health.conflictMappings ??
+      mappingRows.filter((entry) => entry.status === 'conflict').length,
+  );
+  const loadedUniqueUsers = new Set(
+    userRows
+      .flatMap((entry) =>
+        Array.isArray(entry?.userIds) && entry.userIds.length > 0
+          ? entry.userIds
+          : [entry?.userId],
+      )
+      .filter(Boolean),
+  ).size;
+  const totalUsers = Number(summary.filteredUsers ?? loadedUniqueUsers);
+  const totalProfiles = totalUsers;
+
+  const folders = [
+    createFolderRow({
+      folderId: 'memories',
+      title: 'Profile + Erinnerungen',
+      source: 'Cloudflare D1',
+      total: totalMemories || memoryRows.length,
+      loaded: memoryRows.length,
+      detail: `${formatNumber(totalProfiles)} Profile • ${formatNumber(totalUsers)} User`,
+      tone: 'neutral',
+      preview: {
+        totalMemoryRows: totalMemories,
+        profileRows: totalProfiles,
+        sample: memoryRows.slice(0, 40).map((entry) => ({
+          userId: entry.userId,
+          memoryCount: entry.memoryCount,
+          latestKey: entry.latestKey,
+          latestValue: entry.latestValue,
+          latestMemoryAt: entry.latestMemoryAt,
+        })),
+      },
+    }),
+    createFolderRow({
+      folderId: 'mappings',
+      title: 'Name-Mappings',
+      source: 'Cloudflare D1',
+      total: totalMappings,
+      loaded: mappingRows.length,
+      detail: `${formatNumber(conflictCount)} Konflikte`,
+      tone: conflictCount > 0 ? 'error' : 'success',
+      preview: {
+        total: totalMappings,
+        conflicts: conflictCount,
+        loaded: mappingRows.length,
+      },
+    }),
+    createFolderRow({
+      folderId: 'comments',
+      title: 'Kommentare',
+      source: 'Cloudflare D1',
+      total: totalComments,
+      loaded: commentRows.length,
+      detail: `${formatNumber(commentRows.length)} geladen`,
+      tone: 'neutral',
+      preview: {
+        total: totalComments,
+        loaded: commentRows.length,
+      },
+    }),
+    createFolderRow({
+      folderId: 'contacts',
+      title: 'Kontaktanfragen',
+      source: 'Cloudflare D1',
+      total: totalContacts,
+      loaded: contactRows.length,
+      detail: `${formatNumber(contactRows.length)} geladen`,
+      tone: 'neutral',
+      preview: {
+        total: totalContacts,
+        loaded: contactRows.length,
+      },
+    }),
+    createFolderRow({
+      folderId: 'likes',
+      title: 'Projekt-Likes',
+      source: 'Cloudflare D1',
+      total: totalLikesRows,
+      loaded: likeRows.length,
+      detail: `${formatNumber(totalLikes)} Gesamt-Likes`,
+      tone: 'neutral',
+      preview: {
+        totalRows: totalLikesRows,
+        totalLikes,
+        loaded: likeRows.length,
+      },
+    }),
+    createFolderRow({
+      folderId: 'like-events',
+      title: 'Like-Events',
+      source: 'Cloudflare D1',
+      total: totalLikeEvents,
+      loaded: likeEventRows.length,
+      detail: `${formatNumber(likeEventRows.length)} geladen`,
+      tone: 'neutral',
+      preview: {
+        total: totalLikeEvents,
+        loaded: likeEventRows.length,
+      },
+    }),
+    createFolderRow({
+      folderId: 'audit',
+      title: 'Audit-Log',
+      source: 'Cloudflare D1',
+      total: totalAudit,
+      loaded: auditRows.length,
+      detail: `${formatNumber(auditRows.length)} geladen`,
+      tone: auditRows.some((entry) => entry.tone === 'error')
+        ? 'warning'
+        : 'neutral',
+      preview: {
+        total: totalAudit,
+        loaded: auditRows.length,
+      },
+    }),
+    createFolderRow({
+      folderId: 'archived',
+      title: 'Archivierte Profile',
+      source: 'Cloudflare D1',
+      total: totalArchived,
+      loaded: archivedRows.length,
+      detail: `${formatNumber(archivedRows.length)} geladen`,
+      tone: totalArchived > 0 ? 'warning' : 'neutral',
+      preview: {
+        total: totalArchived,
+        loaded: archivedRows.length,
+      },
+    }),
+  ];
+
+  return folders;
+}
+
+function syncVisibleRecords() {
+  if (state.activeFolderId) {
+    state.records = [...(state.folderRecords[state.activeFolderId] || [])];
+    return;
+  }
+  state.records = [...state.cloudflareFolders];
+}
+
+function getFolderPagination(payload, folderId) {
+  if (!folderId) return null;
+  const sectionKey = FOLDER_PAGINATION_KEY[folderId];
+  if (!sectionKey) return null;
+  const pagination = payload?.pagination?.[sectionKey];
+  if (!pagination || typeof pagination !== 'object') return null;
+  return {
+    page: Number(pagination.page) || 1,
+    pageSize: Number(pagination.pageSize) || 0,
+    total: Number(pagination.total) || 0,
+    totalPages: Number(pagination.totalPages) || 1,
+    hasPreviousPage: !!pagination.hasPreviousPage,
+    hasNextPage: !!pagination.hasNextPage,
+  };
+}
+
+function rebuildRecords(payload, users) {
+  state.latestPayload = payload || {};
+  state.memoryRows = createMemoryRows(users);
+  state.userRows = createUserRows(users);
+  state.folderRecords = {
+    memories: state.memoryRows,
+    users: state.userRows,
+    mappings: createMappingRows(payload?.nameMappings || []),
+    comments: createCommentRows(payload?.comments || []),
+    contacts: createContactRows(payload?.contacts || []),
+    likes: createLikeRows(payload?.likes || []),
+    'like-events': createLikeEventRows(payload?.likeEvents || []),
+    audit: createAuditRows(payload?.auditLogs || []),
+    archived: createArchivedRows(payload?.archivedProfiles || []),
+  };
+  state.cloudflareFolders = createCloudflareFolders(
+    payload,
+    state.folderRecords,
+  );
+  if (state.activeFolderId && !getFolderEntry(state.activeFolderId)) {
+    state.activeFolderId = '';
+  }
+  const folderPagination = getFolderPagination(payload, state.activeFolderId);
+  state.activeFolderPagination = folderPagination;
+  state.activeFolderPage = folderPagination?.page || 1;
+  syncVisibleRecords();
+}
+
+function getFolderEntry(folderId) {
+  return (
+    state.cloudflareFolders.find((entry) => entry.folderId === folderId) || null
+  );
+}
+
+async function openFolder(folderId, page = 1) {
+  const folder = getFolderEntry(folderId);
+  if (!folder) return;
+  await fetchData({ silent: true, folderId: folder.folderId, page });
+}
+
+function goToRootFolders() {
+  const currentFolderId = state.activeFolderId;
+  state.activeFolderId = '';
+  state.activeFolderPage = 1;
+  state.activeFolderPagination = null;
+  syncVisibleRecords();
+
+  const activeRoot = currentFolderId ? getFolderEntry(currentFolderId) : null;
+  if (activeRoot) {
+    state.selectedEntryId = activeRoot.id;
+    state.selectedEntry = activeRoot;
+  } else if (state.records.length > 0) {
+    state.selectedEntryId = state.records[0].id;
+    state.selectedEntry = state.records[0];
+  } else {
+    state.selectedEntryId = '';
+    state.selectedEntry = null;
+  }
+
+  renderRecordsList();
+  renderSelectionPanel();
+}
+
+function findRecordById(recordId) {
+  return state.records.find((entry) => entry.id === recordId) || null;
+}
+
+function getEntryTone(entry) {
+  if (entry?.tone) return entry.tone;
+  return 'neutral';
+}
+
+function getEntryType(entry) {
+  if (isFolderEntry(entry)) return '';
+  if (isMemoryEntry(entry)) return 'Memory';
+  if (isMemoryProfileEntry(entry)) return 'Erinnerungen';
+  if (isUserEntry(entry)) return 'Profil';
+  if (isMappingEntry(entry)) return 'Mapping';
+  if (isCommentEntry(entry)) return 'Kommentar';
+  if (isContactEntry(entry)) return 'Kontakt';
+  if (isLikeEntry(entry)) return 'Like';
+  if (isLikeEventEntry(entry)) return 'Like Event';
+  if (isAuditEntry(entry)) return 'Audit';
+  if (isArchivedEntry(entry)) return 'Archiv';
+  return 'Eintrag';
+}
+
+function getEntryBadge(entry) {
+  if (isFolderEntry(entry)) return formatNumber(entry.total || 0);
+  if (isMemoryEntry(entry)) return entry.category || 'note';
+  if (isMemoryProfileEntry(entry) && entry.hasDuplicateProfiles)
+    return `${formatNumber(entry.userIds?.length || 0)} profile`;
+  if (isMemoryProfileEntry(entry))
+    return `${formatNumber(entry.memoryCount || 0)} memories`;
+  if (isUserEntry(entry) && entry.hasDuplicateProfiles)
+    return `${formatNumber(entry.userIds?.length || 0)} profile`;
+  if (isUserEntry(entry)) return entry.status || 'profil';
+  if (isMappingEntry(entry)) return entry.status || 'mapping';
+  if (isCommentEntry(entry)) return entry.postId || '-';
+  if (isContactEntry(entry)) return entry.email || '-';
+  if (isLikeEntry(entry)) return `${formatNumber(entry.likes || 0)} likes`;
+  if (isLikeEventEntry(entry)) return entry.projectId || '-';
+  if (isAuditEntry(entry)) return entry.status || '-';
+  if (isArchivedEntry(entry))
+    return `${formatNumber(entry.memoryCount || 0)} memories`;
+  return 'info';
+}
+
+function getEntryTitle(entry) {
+  if (isFolderEntry(entry)) return entry.title || 'Cloudflare Daten';
+  if (isMemoryEntry(entry)) return entry.userName || entry.userId || '-';
+  if (isMemoryProfileEntry(entry)) return entry.userName || entry.userId || '-';
+  if (isUserEntry(entry)) return entry.userName || entry.userId || '-';
+  if (isMappingEntry(entry)) return entry.name || '-';
+  if (isCommentEntry(entry)) return entry.authorName || 'Unbekannt';
+  if (isContactEntry(entry)) return entry.subject || '(Ohne Betreff)';
+  if (isLikeEntry(entry)) return entry.projectId || '-';
+  if (isLikeEventEntry(entry)) return `Event ${entry.eventId || '-'}`;
+  if (isAuditEntry(entry)) return entry.action || 'audit';
+  if (isArchivedEntry(entry)) return entry.displayName || entry.userId || '-';
+  return '-';
+}
+
+function getEntryLine(entry) {
+  if (isFolderEntry(entry)) return '';
+  if (isMemoryEntry(entry)) {
+    return `${entry.key || '-'}: ${truncateText(entry.value, 110)}`;
+  }
+  if (isMemoryProfileEntry(entry)) {
+    if (entry.hasDuplicateProfiles) {
+      return `${formatNumber(entry.userIds?.length || 0)} Profile zusammengeführt • ${formatNumber(entry.memoryCount || 0)} Memories`;
+    }
+    const latestLine = entry.latestKey
+      ? `${entry.latestKey}: ${truncateText(entry.latestValue, 88)}`
+      : 'Keine Erinnerung';
+    return `${latestLine} • ${formatNumber(entry.memoryCount || 0)} gesamt`;
+  }
+  if (isUserEntry(entry)) {
+    if (entry.hasDuplicateProfiles) {
+      return `${formatNumber(entry.userIds?.length || 0)} Profile • ${formatNumber(entry.memoryCount || 0)} Memories`;
+    }
+    return `${formatNumber(entry.memoryCount || 0)} Memories • ${entry.userId || '-'}`;
+  }
+  if (isMappingEntry(entry)) {
+    return `${entry.userId || '-'} • ${entry.rawValue || '-'}`;
+  }
+  if (isCommentEntry(entry)) {
+    return truncateText(entry.content, 110);
+  }
+  if (isContactEntry(entry)) {
+    return `${entry.name || '-'} • ${truncateText(entry.message, 72)}`;
+  }
+  if (isLikeEntry(entry)) {
+    return `${formatNumber(entry.likes || 0)} Likes`;
+  }
+  if (isLikeEventEntry(entry)) {
+    return `${entry.projectId || '-'} • ${entry.sourceIp || '-'}`;
+  }
+  if (isAuditEntry(entry)) {
+    return `${entry.targetUserId || '-'} • ${truncateText(entry.summary, 84)}`;
+  }
+  if (isArchivedEntry(entry)) {
+    return `${entry.userId || '-'} • ${formatNumber(entry.aliasCount || 0)} Aliase`;
+  }
+  return '-';
+}
+
+function getEntryMeta(entry) {
+  if (isFolderEntry(entry)) return '';
+  if (isMemoryEntry(entry)) {
+    return `${formatDate(entry.timestamp)}${
+      entry.expiresAt ? ` • Ablauf ${formatDate(entry.expiresAt)}` : ''
+    }`;
+  }
+  if (isMemoryProfileEntry(entry)) {
+    return `Letzte Memory: ${formatDate(entry.latestMemoryAt)}${
+      entry.latestExpiresAt
+        ? ` • Ablauf ${formatDate(entry.latestExpiresAt)}`
+        : ''
+    }`;
+  }
+  if (isUserEntry(entry)) {
+    if (entry.hasDuplicateProfiles) {
+      return `Zusammengeführt • Letzte Memory: ${formatDate(entry.latestMemoryAt)}`;
+    }
+    return `Letzte Memory: ${formatDate(entry.latestMemoryAt)}`;
+  }
+  if (isMappingEntry(entry)) return `Update: ${formatDate(entry.updatedAt)}`;
+  if (isCommentEntry(entry) || isContactEntry(entry) || isAuditEntry(entry))
+    return formatDate(entry.createdAt);
+  if (isLikeEntry(entry)) return '';
+  if (isLikeEventEntry(entry)) return formatDate(entry.createdAt);
+  if (isArchivedEntry(entry)) {
+    return `Gelöscht: ${formatDate(entry.deletedAt)} • Restore bis ${formatDate(entry.restoreUntil)}`;
+  }
+  return '-';
+}
+
+function getQuickActionsMarkup(entry) {
+  if (isFolderEntry(entry) && !state.activeFolderId) return '';
+
+  if (isMemoryEntry(entry)) {
+    return `
+      <button
+        type="button"
+        class="admin-unified__quick"
+        data-admin-action="open-memory-user"
+        data-record-id="${escapeHtml(entry.id)}"
+      >
+        User
+      </button>
+      <button
+        type="button"
+        class="admin-unified__quick admin-unified__quick--danger"
+        data-admin-action="delete-memory-inline"
+        data-record-id="${escapeHtml(entry.id)}"
+      >
+        Löschen
+      </button>
+    `;
+  }
+
+  if (isMemoryProfileEntry(entry)) {
+    if (entry.hasDuplicateProfiles) return '';
+    return `
+      <button
+        type="button"
+        class="admin-unified__quick"
+        data-admin-action="open-memory-profile-user"
+        data-record-id="${escapeHtml(entry.id)}"
+      >
+        User
+      </button>
+      <button
+        type="button"
+        class="admin-unified__quick admin-unified__quick--danger"
+        data-admin-action="delete-memory-profile-user"
+        data-record-id="${escapeHtml(entry.id)}"
+      >
+        User löschen
+      </button>
+    `;
+  }
+
+  if (isUserEntry(entry)) {
+    if (entry.hasDuplicateProfiles) return '';
+    return `
+      <button
+        type="button"
+        class="admin-unified__quick"
+        data-admin-action="open-user-inline"
+        data-record-id="${escapeHtml(entry.id)}"
+      >
+        Laden
+      </button>
+      <button
+        type="button"
+        class="admin-unified__quick admin-unified__quick--danger"
+        data-admin-action="delete-user-inline"
+        data-record-id="${escapeHtml(entry.id)}"
+      >
+        Löschen
+      </button>
+    `;
+  }
+
+  if (isMappingEntry(entry)) {
+    return `
+      <button
+        type="button"
+        class="admin-unified__quick"
+        data-admin-action="assign-mapping-inline"
+        data-record-id="${escapeHtml(entry.id)}"
+      >
+        Zuweisen
+      </button>
+      <button
+        type="button"
+        class="admin-unified__quick admin-unified__quick--danger"
+        data-admin-action="delete-mapping-inline"
+        data-record-id="${escapeHtml(entry.id)}"
+      >
+        Löschen
+      </button>
+    `;
+  }
+
+  return '';
+}
+
+function renderRecordsList() {
+  if (!recordsList || !noRecords) return;
+
+  const inRootView = !state.activeFolderId;
+  const activeFolder = state.activeFolderId
+    ? getFolderEntry(state.activeFolderId)
+    : null;
+  const totalCount = inRootView
+    ? state.cloudflareFolders.length
+    : Number(activeFolder?.total || state.records.length);
+  const visibleCount = state.records.length;
+
+  setMetric('records-count', formatNumber(totalCount));
+  setMetric('memory-count', formatNumber(visibleCount));
+
+  const recordsCountElement = document.getElementById('records-count');
+  if (recordsCountElement) {
+    const label = `Gesamt: ${formatNumber(totalCount)}`;
+    recordsCountElement.title = label;
+    recordsCountElement.setAttribute('aria-label', label);
+  }
+  const memoryCountElement = document.getElementById('memory-count');
+  if (memoryCountElement) {
+    const label = `Angezeigt: ${formatNumber(visibleCount)}`;
+    memoryCountElement.title = label;
+    memoryCountElement.setAttribute('aria-label', label);
+  }
+
+  if (state.records.length === 0) {
+    recordsList.innerHTML = '';
+    setText(
+      noRecords,
+      isLocalhostRuntime()
+        ? 'Keine lokalen Daten.'
+        : inRootView
+          ? 'Keine Daten vorhanden.'
+          : 'Keine Einträge.',
+    );
+    setHidden(noRecords, false);
+    renderRecordsPagination();
+    return;
+  }
+
+  const html = [];
+  if (!inRootView) {
+    html.push(`
+      <li class="admin-unified__item">
+        <button
+          type="button"
+          class="admin-unified__select admin-unified__select--back"
+          data-admin-action="go-root"
+        >
+          <strong class="admin-unified__item-title">← Zurück</strong>
+        </button>
+      </li>
+    `);
+  }
+
+  html.push(
+    ...state.records.map((entry) => {
+      const isSelected = entry.id === state.selectedEntryId;
+      const isMemory = isMemoryEntry(entry) || isMemoryProfileEntry(entry);
+      const tone = getEntryTone(entry);
+      const quickActions = getQuickActionsMarkup(entry);
+      const typeLabel = getEntryType(entry);
+      const badge = getEntryBadge(entry);
+      const lineText = getEntryLine(entry);
+      const metaText = getEntryMeta(entry);
+
+      return `
+        <li class="admin-unified__item ${isSelected ? 'is-selected' : ''}">
+          <button
+            type="button"
+            class="admin-unified__select"
+            data-admin-action="select-record"
+            data-record-id="${escapeHtml(entry.id)}"
+          >
+            <div class="admin-unified__item-head">
+              ${
+                typeLabel
+                  ? `<span class="admin-unified__type admin-unified__type--${
+                      isMemory ? 'memory' : 'cloudflare'
+                    }">${escapeHtml(typeLabel)}</span>`
+                  : ''
+              }
+              <span class="admin-lite__pill admin-lite__pill--${escapeHtml(
+                tone,
+              )}">${escapeHtml(badge)}</span>
+            </div>
+            <strong class="admin-unified__item-title">${escapeHtml(
+              getEntryTitle(entry),
+            )}</strong>
+            ${
+              lineText
+                ? `<p class="admin-unified__item-line">${escapeHtml(lineText)}</p>`
+                : ''
+            }
+            ${
+              metaText
+                ? `<p class="admin-unified__item-meta">${escapeHtml(metaText)}</p>`
+                : ''
+            }
+          </button>
+          ${
+            quickActions
+              ? `<div class="admin-unified__item-actions">${quickActions}</div>`
+              : ''
+          }
+        </li>
+      `;
+    }),
+  );
+
+  recordsList.innerHTML = html.join('');
+  setHidden(noRecords, true);
+  renderRecordsPagination();
+}
+
+function renderRecordsPagination() {
+  if (
+    !recordsPagination ||
+    !recordsPageInfo ||
+    !recordsPagePrev ||
+    !recordsPageNext
+  ) {
+    return;
+  }
+
+  if (!state.activeFolderId || !state.activeFolderPagination) {
+    setHidden(recordsPagination, true);
+    return;
+  }
+
+  const pagination = state.activeFolderPagination;
+  const totalPages = Math.max(1, Number(pagination.totalPages) || 1);
+  const currentPage = Math.min(
+    Math.max(1, Number(pagination.page) || 1),
+    totalPages,
+  );
+
+  setText(
+    recordsPageInfo,
+    `Seite ${formatNumber(currentPage)} / ${formatNumber(totalPages)} • ${formatNumber(
+      pagination.total || 0,
+    )} Total`,
+  );
+  recordsPagePrev.disabled = !pagination.hasPreviousPage || state.loading;
+  recordsPageNext.disabled = !pagination.hasNextPage || state.loading;
+  setHidden(recordsPagination, totalPages <= 1);
+}
+
+function buildDetailRow(label, value) {
+  return `
+    <div class="admin-unified__detail-row">
+      <dt>${escapeHtml(label)}</dt>
+      <dd>${escapeHtml(value)}</dd>
+    </div>
+  `;
+}
+
+function formatContentPreview(value) {
+  if (value === null || value === undefined || value === '') return '-';
+  if (typeof value === 'string') {
+    const raw = value;
+    const trimmed = raw.trim();
+    if (!trimmed) return '-';
+    if (
+      (trimmed.startsWith('{') && trimmed.endsWith('}')) ||
+      (trimmed.startsWith('[') && trimmed.endsWith(']'))
+    ) {
+      try {
+        return JSON.stringify(JSON.parse(trimmed), null, 2);
+      } catch {
+        return raw;
+      }
+    }
+    return raw;
+  }
+
+  try {
+    return JSON.stringify(value, null, 2);
+  } catch {
+    return String(value);
+  }
+}
+
+function formatStatusLabel(status) {
+  const normalized = String(status || '')
+    .trim()
+    .toLowerCase();
+  if (normalized === 'identified') return 'identifiziert';
+  if (normalized === 'anonymous') return 'anonym';
+  if (normalized === 'conflict') return 'konflikt';
+  return normalized || '-';
+}
+
+function formatMemoryItemsForPreview(memories = [], limit = 50) {
+  return memories.slice(0, limit).map((memory) => ({
+    key: String(memory?.key || '').trim() || '-',
+    value: String(memory?.value || ''),
+    category: String(memory?.category || 'note'),
+    zeit: formatDate(memory?.timestamp),
+    ablauf: memory?.expiresAt ? formatDate(memory.expiresAt) : null,
+  }));
+}
+
+function buildSelectionData(entry) {
+  if (isFolderEntry(entry)) {
+    return {
+      type: '',
+      summary: '',
+      details: [],
+      content: null,
+    };
+  }
+
+  if (isMemoryEntry(entry)) {
+    return {
+      type: 'Cloudflare Memory',
+      summary: `${entry.userName || entry.userId} • ${entry.key || '-'}`,
+      details: [
+        ['User-ID', entry.userId || '-'],
+        ['Name', entry.userName || '-'],
+        ['Feld', entry.key || '-'],
+        ['Kategorie', entry.category || 'note'],
+        ['Zeit', formatDate(entry.timestamp)],
+        ['Ablauf', entry.expiresAt ? formatDate(entry.expiresAt) : '-'],
+      ],
+      content: entry.value,
+    };
+  }
+
+  if (isMemoryProfileEntry(entry)) {
+    const displayName =
+      entry.userName && entry.userName !== entry.userId
+        ? entry.userName
+        : 'Anonym';
+    return {
+      type: 'Profil Erinnerungen',
+      summary: `${displayName} • ${formatNumber(
+        entry.memoryCount || 0,
+      )} Memories`,
+      details: [
+        ['Profil', displayName],
+        ['User-ID', entry.userId || '-'],
+        ['Status', formatStatusLabel(entry.status)],
+        ['Erinnerungen', formatNumber(entry.memoryCount || 0)],
+        ['Letzte Aktivität', formatDate(entry.latestMemoryAt)],
+        ...(entry.hasDuplicateProfiles
+          ? [['Zusammengeführt', (entry.userIds || []).join(', ') || '-']]
+          : []),
+      ],
+      content: formatMemoryItemsForPreview(entry.memories || []),
+    };
+  }
+
+  if (isUserEntry(entry)) {
+    const displayName =
+      entry.userName && entry.userName !== entry.userId
+        ? entry.userName
+        : 'Anonym';
+    return {
+      type: 'User Profil',
+      summary: `${displayName} • ${formatNumber(
+        entry.memoryCount || 0,
+      )} Memories`,
+      details: [
+        ['Profil', displayName],
+        ['User-ID', entry.userId || '-'],
+        ['Status', formatStatusLabel(entry.status)],
+        ['Memories', formatNumber(entry.memoryCount || 0)],
+        ['Letzte Memory', formatDate(entry.latestMemoryAt)],
+        ...(entry.hasDuplicateProfiles
+          ? [['Zusammengeführt', (entry.userIds || []).join(', ') || '-']]
+          : []),
+      ],
+      content: {
+        aliases: entry.aliases || [],
+        memoryKeys: entry.memoryKeys || [],
+        memories: formatMemoryItemsForPreview(entry.memories || [], 50),
+      },
+    };
+  }
+
+  if (isMappingEntry(entry)) {
+    return {
+      type: 'Name Mapping',
+      summary: `${entry.name || '-'} • ${entry.status || '-'}`,
+      details: [
+        ['Name', entry.name || '-'],
+        ['User-ID (aktuell)', entry.userId || '-'],
+        ['Rohwert', entry.rawValue || '-'],
+        ['Status', entry.status || '-'],
+        ['Update', formatDate(entry.updatedAt)],
+      ],
+      content: {
+        name: entry.name,
+        userId: entry.userId,
+        rawValue: entry.rawValue,
+        status: entry.status,
+        updatedAt: entry.updatedAt,
+      },
+    };
+  }
+
+  if (isCommentEntry(entry)) {
+    return {
+      type: 'Kommentar',
+      summary: `${entry.authorName || 'Unbekannt'} • ${entry.postId || '-'}`,
+      details: [
+        ['Post-ID', entry.postId || '-'],
+        ['Autor', entry.authorName || '-'],
+        ['Zeit', formatDate(entry.createdAt)],
+      ],
+      content: entry.content || '-',
+    };
+  }
+
+  if (isContactEntry(entry)) {
+    return {
+      type: 'Kontaktanfrage',
+      summary: `${entry.subject || '(Ohne Betreff)'} • ${entry.email || '-'}`,
+      details: [
+        ['Name', entry.name || '-'],
+        ['E-Mail', entry.email || '-'],
+        ['Betreff', entry.subject || '(Ohne Betreff)'],
+        ['Zeit', formatDate(entry.createdAt)],
+      ],
+      content: entry.message || '-',
+    };
+  }
+
+  if (isLikeEntry(entry)) {
+    return {
+      type: 'Projekt-Like',
+      summary: `${entry.projectId || '-'} • ${formatNumber(entry.likes || 0)} Likes`,
+      details: [
+        ['Projekt', entry.projectId || '-'],
+        ['Likes', formatNumber(entry.likes || 0)],
+      ],
+      content: {
+        projectId: entry.projectId,
+        likes: entry.likes,
+      },
+    };
+  }
+
+  if (isLikeEventEntry(entry)) {
+    return {
+      type: 'Projekt Like Event',
+      summary: `${entry.projectId || '-'} • ${formatDate(entry.createdAt)}`,
+      details: [
+        ['Event-ID', entry.eventId ? String(entry.eventId) : '-'],
+        ['Projekt-ID', entry.projectId || '-'],
+        ['IP', entry.sourceIp || '-'],
+        ['Request-ID', entry.requestId || '-'],
+        ['Zeit', formatDate(entry.createdAt)],
+      ],
+      content: {
+        userAgent: entry.userAgent || '-',
+      },
+    };
+  }
+
+  if (isAuditEntry(entry)) {
+    return {
+      type: 'Audit-Eintrag',
+      summary: `${entry.action || '-'} • ${entry.status || '-'}`,
+      details: [
+        ['Aktion', entry.action || '-'],
+        ['Status', entry.status || '-'],
+        ['User-ID', entry.targetUserId || '-'],
+        ['Memory Key', entry.memoryKey || '-'],
+        ['Actor', entry.actor || '-'],
+        ['IP', entry.sourceIp || '-'],
+        ['Zeit', formatDate(entry.createdAt)],
+      ],
+      content: {
+        summary: entry.summary || '',
+        details: entry.details,
+        before: entry.before,
+        after: entry.after,
+      },
+    };
+  }
+
+  if (isArchivedEntry(entry)) {
+    return {
+      type: 'Archiviertes Profil',
+      summary: `${entry.displayName || entry.userId || '-'} • ${formatNumber(
+        entry.memoryCount || 0,
+      )} Memories`,
+      details: [
+        ['User-ID', entry.userId || '-'],
+        ['Name', entry.displayName || '-'],
+        ['Gelöscht am', formatDate(entry.deletedAt)],
+        ['Restore bis', formatDate(entry.restoreUntil)],
+        ['Gelöscht von', entry.deletedBy || '-'],
+        ['Grund', entry.deleteReason || '-'],
+        ['Memories', formatNumber(entry.memoryCount || 0)],
+        ['Aliase', formatNumber(entry.aliasCount || 0)],
+      ],
+      content: entry.snapshot || {},
+    };
+  }
+
+  return {
+    type: 'Eintrag',
+    summary: 'Eintrag ausgewählt',
+    details: [['Typ', entry?.kind || 'unknown']],
+    content: entry,
+  };
+}
+
+function renderSelectionPanel() {
+  if (!selectedType || !selectedDetails || !selectedContent) return;
+
+  const entry = state.selectedEntry;
+  const collapseDetails = !entry || isFolderEntry(entry);
+  if (detailsPanel) {
+    setHidden(detailsPanel, collapseDetails);
+  }
+  adminMain?.classList.toggle('is-details-collapsed', collapseDetails);
+  adminUnified?.classList.toggle('is-compact-rail', collapseDetails);
+
+  if (!entry) {
+    setText(selectedType, '');
+    setHidden(selectedType, true);
+    if (selectedSummary) {
+      setText(selectedSummary, '');
+      setHidden(selectedSummary, true);
+    }
+    selectedDetails.innerHTML = '';
+    selectedContent.textContent = '';
+    setHidden(selectedDetails, true);
+    setHidden(selectedContent, true);
+    return;
+  }
+
+  if (isFolderEntry(entry)) {
+    setText(selectedType, '');
+    setHidden(selectedType, true);
+    if (selectedSummary) {
+      setText(selectedSummary, '');
+      setHidden(selectedSummary, true);
+    }
+    selectedDetails.innerHTML = '';
+    selectedContent.textContent = '';
+    setHidden(selectedDetails, true);
+    setHidden(selectedContent, true);
+    return;
+  }
+
+  const selection = buildSelectionData(entry);
+  setText(selectedType, selection.type);
+  setHidden(selectedType, !selection.type);
+  if (selectedSummary) {
+    setText(selectedSummary, selection.summary);
+    setHidden(selectedSummary, !selection.summary);
+  }
+  const details = Array.isArray(selection.details) ? selection.details : [];
+  selectedDetails.innerHTML = details
+    .map(([label, value]) => buildDetailRow(label, value))
+    .join('');
+  setHidden(selectedDetails, details.length === 0);
+
+  const hasContent =
+    selection.content !== null &&
+    selection.content !== undefined &&
+    selection.content !== '';
+
+  selectedContent.textContent = hasContent
+    ? formatContentPreview(selection.content)
+    : '';
+  setHidden(selectedContent, !hasContent);
+}
+
+function selectRecord(recordId) {
+  if (!recordId) return;
+  state.selectedEntryId = recordId;
+  state.selectedEntry = findRecordById(recordId);
+  renderRecordsList();
+  renderSelectionPanel();
+}
+
+function ensureSelectionExists() {
+  if (!state.selectedEntryId) return;
+  if (findRecordById(state.selectedEntryId)) {
+    state.selectedEntry = findRecordById(state.selectedEntryId);
+    return;
+  }
+
+  state.selectedEntryId = '';
+  state.selectedEntry = null;
+}
+
+function updateHeader(payload = {}) {
+  const warnings = Array.isArray(payload.warnings) ? payload.warnings : [];
+  const warningLabel =
+    warnings.length > 0 ? `Hinweise: ${warnings.length}` : '';
+  const systemStateElement = document.getElementById('system-state');
+  setText(systemStateElement, warningLabel);
+  setHidden(systemStateElement, !warningLabel);
+  setMetric(
+    'last-update',
+    formatDate(payload.timestamp, {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+    }),
+  );
+}
+
+function updateUI(payload, users) {
+  rebuildRecords(payload, users);
+  ensureSelectionExists();
+  if (!state.selectedEntry && state.records.length > 0) {
+    state.selectedEntryId = state.records[0].id;
+    state.selectedEntry = state.records[0];
+  }
+  updateHeader(payload);
+  renderRecordsList();
+  renderSelectionPanel();
+}
+
+function getPayloadUsers(payload, folderId) {
+  if (folderId !== 'memories') return [];
+  return Array.isArray(payload?.users) ? payload.users : [];
+}
+
+async function fetchData({ silent = false, folderId, page } = {}) {
+  if (state.loading) return;
+  state.loading = true;
+  setBusyState(true);
+
+  const targetFolderId = String(
+    (folderId ?? state.activeFolderId) || '',
+  ).trim();
+  const targetPageRaw = Number((page ?? state.activeFolderPage) || 1);
+  const targetPage = Number.isFinite(targetPageRaw)
+    ? Math.max(1, Math.floor(targetPageRaw))
+    : 1;
+
+  try {
+    const payload = await fetchStatsPage({
+      folderId: targetFolderId,
+      page: targetPage,
+    });
+    const users = mergeUsers(getPayloadUsers(payload, targetFolderId));
 
     state.isAuthenticated = true;
-    updateUI(payload || {});
+    state.activeFolderId = targetFolderId;
+    state.activeFolderPage = targetPage;
     hideAuth();
+    updateUI(payload, users);
 
-    const warningMessage = formatWarnings(payload?.warnings || []);
-    if (warningMessage) {
-      showStatus(`Teilweise geladen. ${warningMessage}`, 'warning');
-    } else {
-      clearStatus();
-    }
-
-    if (state.selectedUserId) {
-      await loadSelectedUserProfile({ silent: true });
+    if (!silent) {
+      const warnings = Array.isArray(payload?.warnings) ? payload.warnings : [];
+      if (warnings.length > 0) {
+        showStatus(
+          warnings
+            .map((entry) => String(entry?.message || '').trim())
+            .filter(Boolean)
+            .join(' '),
+          'warning',
+        );
+      }
     }
   } catch (error) {
-    console.error(error);
-    const message =
+    if (error?.code === 'unauthorized') {
+      state.isAuthenticated = false;
+      showAuth(true, 'Sitzung abgelaufen.');
+      if (!silent) showStatus(error.message, 'error');
+      return;
+    }
+
+    if (error?.code === 'rate_limited') {
+      if (!silent) showStatus(error.message, 'warning');
+      return;
+    }
+
+    showStatus(
       error instanceof Error
         ? error.message
-        : 'Daten konnten nicht geladen werden.';
-    showStatus(message, 'error');
-    if (!authOverlay.classList.contains('hidden')) {
-      showAuthError(message);
-    }
+        : 'Daten konnten nicht geladen werden.',
+      'error',
+    );
   } finally {
+    state.loading = false;
     setBusyState(false);
   }
 }
 
-async function performAdminAction(requestFactory, successFallback) {
+async function performAction(requestFactory, successMessage) {
   setActionsBusy(true);
-
   try {
     const result = await requestFactory();
-    if (!result) return null;
-
-    if (result.userId && result.userId === state.selectedUserId) {
-      state.selectedUserProfile = result;
-      state.selectedUserError = '';
-    }
-
-    await fetchData();
-    showStatus(result.text || successFallback, 'success');
+    await fetchData({ silent: true });
+    showStatus(result?.text || successMessage, 'success');
     return result;
   } catch (error) {
+    if (error?.code === 'unauthorized') {
+      state.isAuthenticated = false;
+      showAuth(true, 'Sitzung abgelaufen.');
+      showStatus(error.message, 'error');
+      return null;
+    }
+
+    if (error?.code === 'rate_limited') {
+      showStatus(error.message, 'warning');
+      return null;
+    }
+
     showStatus(
-      error instanceof Error ? error.message : 'Admin-Aktion fehlgeschlagen.',
+      error instanceof Error ? error.message : 'Aktion fehlgeschlagen.',
       'error',
     );
     return null;
   } finally {
     setActionsBusy(false);
-    updateSelectionSummary();
   }
 }
 
-function validateMemoryActionInputs() {
-  const userId = requireActionUserId();
-  if (!userId) return null;
-
-  const key = actionMemoryKeyInput?.value.trim() || '';
-  if (!key) {
-    showStatus('Bitte ein Memory-Feld eingeben.', 'error');
-    actionMemoryKeyInput?.focus();
-    return null;
-  }
-
-  const value = actionMemoryValueInput?.value.trim() || '';
-  return { userId, key, value };
-}
-
-async function handleSaveMemoryAction() {
-  const input = validateMemoryActionInputs();
-  if (!input) return;
-  if (!input.value) {
-    showStatus('Bitte einen Memory-Wert eingeben.', 'error');
-    actionMemoryValueInput?.focus();
-    return;
-  }
-
-  await performAdminAction(
-    () =>
-      sendAdminUserAction({
-        action: 'update-memory',
-        userId: input.userId,
-        key: input.key,
-        value: input.value,
-      }),
-    'Memory gespeichert.',
-  );
-}
-
-async function handleAssignAliasAction(overrides = {}) {
-  const userId = overrides.userId || requireActionUserId();
-  if (!userId) return;
-
-  const alias = overrides.alias || requireAliasName();
-  if (!alias) return;
-
-  const result = await performAdminAction(
-    () =>
-      sendAdminUserAction({
-        action: 'assign-alias',
-        userId,
-        alias,
-      }),
-    'Alias zugewiesen.',
-  );
-
-  if (result?.success) {
-    fillActionForm(
-      userId,
-      actionMemoryKeyInput?.value.trim() || '',
-      actionMemoryValueInput?.value || '',
-    );
-    if (!overrides.alias && actionAliasNameInput) {
-      actionAliasNameInput.value = alias;
-    }
-    updateSelectionSummary();
-  }
-}
-
-async function handleRemoveAliasAction(overrides = {}) {
-  const alias = overrides.alias || requireAliasName();
-  if (!alias) return;
-
-  const userId =
-    overrides.userId ||
-    actionUserIdInput?.value.trim() ||
-    state.selectedUserId ||
-    '';
-  if (!window.confirm(`Alias "${alias}" wirklich entfernen?`)) return;
-
-  const result = await performAdminAction(
-    () =>
-      sendAdminUserAction({
-        action: 'remove-alias',
-        userId,
-        alias,
-      }),
-    'Alias entfernt.',
-  );
-
-  if (result?.success && actionAliasNameInput && !overrides.alias) {
-    actionAliasNameInput.value = '';
-    updateSelectionSummary();
-  }
-}
-
-async function handleMergeUsersAction() {
-  const targetUserId = requireActionUserId();
-  if (!targetUserId) return;
-
-  const sourceUserId = requireMergeSourceUserId();
-  if (!sourceUserId) return;
-
-  if (targetUserId === sourceUserId) {
-    showStatus('Quell- und Zielprofil müssen unterschiedlich sein.', 'error');
-    actionMergeSourceInput?.focus();
+async function handleDeleteSelectedMemory() {
+  const entry = state.selectedEntry;
+  if (!entry || !isMemoryEntry(entry)) {
+    showStatus('Bitte zuerst einen Memory-Eintrag auswählen.', 'error');
     return;
   }
 
   if (
-    !window.confirm(
-      `${sourceUserId} wirklich in ${targetUserId} zusammenführen? Das Quellprofil wird danach entfernt.`,
-    )
-  ) {
+    !window.confirm(`Memory "${entry.key}" für ${entry.userId} direkt löschen?`)
+  )
     return;
-  }
 
-  const result = await performAdminAction(
-    () =>
-      sendAdminUserAction({
-        action: 'merge-users',
-        userId: targetUserId,
-        sourceUserId,
-      }),
-    'Profile zusammengeführt.',
-  );
-
-  if (result?.success) {
-    state.selectedUserIds.delete(sourceUserId);
-    state.selectedUserId = targetUserId;
-    state.selectedUserProfile = null;
-    state.selectedUserError = '';
-    state.selectedMemoryEntries.clear();
-    if (actionMergeSourceInput) actionMergeSourceInput.value = '';
-    fillActionForm(targetUserId, '', '');
-    syncUrlState();
-    renderSelectedUserPanel();
-    loadSelectedUserProfile({ silent: true });
-    updateSelectionSummary();
-  }
-}
-
-async function handlePurgeExpiredArchivesAction() {
-  if (
-    !window.confirm(
-      'Alle abgelaufenen Archivprofile jetzt endgültig bereinigen?',
-    )
-  ) {
-    return;
-  }
-
-  const result = await performAdminAction(
-    () =>
-      sendAdminUserAction({
-        action: 'purge-expired-archives',
-      }),
-    'Abgelaufene Archive bereinigt.',
-  );
-
-  if (result?.success) {
-    state.selectedArchivedUserIds.forEach((userId) => {
-      if (
-        currentArchivedProfiles.some((profile) => profile.userId === userId)
-      ) {
-        state.selectedArchivedUserIds.delete(userId);
-      }
-    });
-    updateSelectionSummary();
-  }
-}
-
-async function handleDeleteMemoryAction(overrides = {}) {
-  const userId = overrides.userId || requireActionUserId();
-  if (!userId) return;
-
-  const key = overrides.key || actionMemoryKeyInput?.value.trim() || '';
-  if (!key) {
-    showStatus('Bitte ein Memory-Feld eingeben.', 'error');
-    actionMemoryKeyInput?.focus();
-    return;
-  }
-
-  const value =
-    overrides.value !== undefined
-      ? String(overrides.value)
-      : actionMemoryValueInput?.value.trim() || '';
-  const confirmText = value
-    ? `Memory "${key}" für ${userId} wirklich entfernen?`
-    : `Singleton-Memory "${key}" für ${userId} wirklich entfernen?`;
-  if (!window.confirm(confirmText)) return;
-
-  const result = await performAdminAction(
+  await performAction(
     () =>
       sendAdminUserAction({
         action: 'delete-memory',
-        userId,
-        key,
-        value,
+        userId: entry.userId,
+        key: entry.key,
+        value: entry.value,
       }),
-    'Memory entfernt.',
+    'Memory direkt gelöscht.',
   );
-
-  if (result?.success) {
-    state.selectedMemoryEntries.delete(createMemorySelectionId(key, value));
-    updateSelectionSummary();
-  }
 }
 
-async function handleBulkDeleteMemoriesAction() {
-  const userId = state.selectedUserId || requireActionUserId();
-  if (!userId) return;
+function resolveSelectedUserId(entry) {
+  if (isMemoryEntry(entry)) return String(entry.userId || '').trim();
+  if (isMemoryProfileEntry(entry) || isUserEntry(entry)) {
+    const userIds = Array.isArray(entry.userIds)
+      ? entry.userIds.filter(Boolean)
+      : [];
+    if (userIds.length === 1) return String(userIds[0] || '').trim();
+    if (userIds.length > 1) return '';
+    return String(entry.userId || '').trim();
+  }
+  return '';
+}
 
-  const profile = state.selectedUserProfile || getFallbackSelectedUserProfile();
-  if (!profile) {
-    showStatus('Bitte zuerst ein Profil auswählen.', 'error');
+async function handleDeleteSelectedUser() {
+  const entry = state.selectedEntry;
+  if (
+    !entry ||
+    (!isMemoryEntry(entry) &&
+      !isMemoryProfileEntry(entry) &&
+      !isUserEntry(entry))
+  ) {
+    showStatus(
+      'Bitte zuerst einen User- oder Memory-Eintrag auswählen.',
+      'error',
+    );
     return;
   }
 
-  const entries = (profile.memories || [])
-    .filter((memory) =>
-      state.selectedMemoryEntries.has(
-        createMemorySelectionId(memory.key, memory.value),
-      ),
-    )
-    .map((memory) => ({
-      key: memory.key,
-      value: memory.value,
-    }));
-
-  if (entries.length === 0) {
+  const userId = resolveSelectedUserId(entry);
+  if (!userId) {
     showStatus(
-      'Keine markierten Memories für Bulk-Löschung vorhanden.',
+      'Keine eindeutige User-ID. Konflikt zuerst auflösen oder einzelnes Profil wählen.',
       'error',
     );
     return;
@@ -2029,283 +1911,138 @@ async function handleBulkDeleteMemoriesAction() {
 
   if (
     !window.confirm(
-      `${entries.length} Memories für ${userId} wirklich löschen?`,
+      `User ${userId} direkt löschen? Das erfolgt ohne Archivierung.`,
     )
   ) {
     return;
   }
 
-  const result = await performAdminAction(
-    () =>
-      sendAdminUserAction({
-        action: 'bulk-delete-memories',
-        userId,
-        entries,
-      }),
-    'Ausgewählte Memories entfernt.',
-  );
-
-  if (result?.success) {
-    state.selectedMemoryEntries.clear();
-    updateSelectionSummary();
-  }
-}
-
-async function handleDeleteUserAction(overrides = {}) {
-  const userId = overrides.userId || requireActionUserId();
-  if (!userId) return;
-
-  if ((actionUserIdInput?.value || '').trim() !== userId) {
-    fillActionForm(userId, '', '');
-  }
-
-  const confirmUserId = actionDeleteConfirmInput?.value.trim() || '';
-  if (confirmUserId !== userId) {
-    showStatus(
-      'Zum Löschen muss die exakte User-ID in die Bestätigung eingetragen werden.',
-      'error',
-    );
-    actionDeleteConfirmInput?.focus();
-    return;
-  }
-
-  const userName = overrides.userName || '';
-  const confirmText = userName
-    ? `Profil "${userName}" (${userId}) wirklich archivieren?`
-    : `Profil ${userId} wirklich archivieren?`;
-  if (!window.confirm(confirmText)) return;
-
-  const result = await performAdminAction(
+  await performAction(
     () =>
       sendAdminUserAction({
         action: 'delete-user',
         userId,
-        confirmUserId,
-        reason: getActionReason(),
+        confirmUserId: userId,
+        reason: 'Direkt gelöscht aus kompakter Admin-Liste.',
       }),
-    'Profil archiviert.',
+    'User direkt gelöscht.',
   );
+}
 
-  if (result?.success) {
-    state.selectedUserIds.delete(userId);
-    if (state.selectedUserId === userId) {
-      state.selectedUserId = '';
-      state.selectedUserProfile = null;
-      state.selectedUserError = '';
-      state.selectedMemoryEntries.clear();
-      renderSelectedUserPanel();
-      syncUrlState();
+async function handleOpenSelectedUser() {
+  const entry = state.selectedEntry;
+  if (
+    !entry ||
+    (!isMemoryEntry(entry) &&
+      !isMemoryProfileEntry(entry) &&
+      !isUserEntry(entry))
+  ) {
+    showStatus(
+      'Bitte zuerst einen User- oder Memory-Eintrag auswählen.',
+      'error',
+    );
+    return;
+  }
+
+  const userId = resolveSelectedUserId(entry);
+  if (!userId) {
+    showStatus(
+      'Keine eindeutige User-ID. Konflikt zuerst auflösen oder einzelnes Profil wählen.',
+      'error',
+    );
+    return;
+  }
+
+  setActionsBusy(true);
+  try {
+    const result = await sendAdminUserAction({
+      action: 'list-user',
+      userId,
+    });
+
+    showStatus(
+      `${result.userId}: ${formatNumber(result.count || 0)} gespeicherte Memories.`,
+      'info',
+    );
+  } catch (error) {
+    if (error?.code === 'unauthorized') {
+      state.isAuthenticated = false;
+      showAuth(true, 'Sitzung abgelaufen.');
+      showStatus(error.message, 'error');
+      return;
     }
-    fillActionForm('', '', '');
+    showStatus(
+      error instanceof Error
+        ? error.message
+        : 'Profil konnte nicht geladen werden.',
+      'error',
+    );
+  } finally {
+    setActionsBusy(false);
   }
 }
 
-async function handleBulkDeleteUsersAction() {
-  const userIds = [...state.selectedUserIds];
-  if (userIds.length === 0) {
-    showStatus('Bitte zuerst aktive Profile auswählen.', 'error');
+async function handleAssignSelectedMapping() {
+  const entry = state.selectedEntry;
+  if (!entry || !isMappingEntry(entry)) {
+    showStatus('Bitte zuerst ein Mapping auswählen.', 'error');
     return;
   }
 
-  if (
-    !window.confirm(`${userIds.length} aktive Profile wirklich archivieren?`)
-  ) {
+  const alias = String(entry.name || '').trim();
+  if (!alias) {
+    showStatus('Mapping-Name fehlt.', 'error');
     return;
   }
 
-  const result = await performAdminAction(
+  const targetUserId = String(
+    window.prompt(`User-ID für "${alias}"`, entry.userId || '') || '',
+  ).trim();
+  if (!targetUserId) return;
+
+  await performAction(
     () =>
       sendAdminUserAction({
-        action: 'bulk-delete-users',
-        userIds,
-        reason: getActionReason(),
+        action: 'assign-alias',
+        userId: targetUserId,
+        alias,
       }),
-    'Ausgewählte Profile archiviert.',
+    `Mapping "${alias}" zu ${targetUserId} zugewiesen.`,
   );
-
-  if (result?.success) {
-    const selectedWasDeleted = userIds.includes(state.selectedUserId);
-    state.selectedUserIds.clear();
-    if (selectedWasDeleted) {
-      state.selectedUserId = '';
-      state.selectedUserProfile = null;
-      state.selectedUserError = '';
-      state.selectedMemoryEntries.clear();
-      syncUrlState();
-      fillActionForm('', '', '');
-      renderSelectedUserPanel();
-    }
-    updateSelectionSummary();
-  }
 }
 
-async function handleRestoreUserAction(userId) {
-  if (!userId) return;
-  if (!window.confirm(`Archiviertes Profil ${userId} wiederherstellen?`)) {
+async function handleDeleteSelectedMapping() {
+  const entry = state.selectedEntry;
+  if (!entry || !isMappingEntry(entry)) {
+    showStatus('Bitte zuerst ein Mapping auswählen.', 'error');
     return;
   }
 
-  const result = await performAdminAction(
+  const alias = String(entry.name || '').trim();
+  if (!alias) {
+    showStatus('Mapping-Name fehlt.', 'error');
+    return;
+  }
+
+  if (!window.confirm(`Mapping "${alias}" direkt löschen?`)) return;
+
+  await performAction(
     () =>
       sendAdminUserAction({
-        action: 'restore-user',
-        userId,
+        action: 'remove-alias',
+        alias,
+        userId: entry.userId || '',
       }),
-    'Archiviertes Profil wiederhergestellt.',
+    `Mapping "${alias}" gelöscht.`,
   );
-
-  if (result?.success) {
-    state.selectedArchivedUserIds.delete(userId);
-    updateSelectionSummary();
-  }
-}
-
-async function handleBulkRestoreUsersAction() {
-  const userIds = [...state.selectedArchivedUserIds];
-  if (userIds.length === 0) {
-    showStatus('Bitte zuerst archivierte Profile auswählen.', 'error');
-    return;
-  }
-
-  if (
-    !window.confirm(
-      `${userIds.length} archivierte Profile wirklich wiederherstellen?`,
-    )
-  ) {
-    return;
-  }
-
-  const result = await performAdminAction(
-    () =>
-      sendAdminUserAction({
-        action: 'bulk-restore-users',
-        userIds,
-      }),
-    'Archivierte Profile wiederhergestellt.',
-  );
-
-  if (result?.success) {
-    state.selectedArchivedUserIds.clear();
-    updateSelectionSummary();
-  }
-}
-
-async function handlePurgeUserAction(userId) {
-  if (!userId) return;
-  if (
-    !window.confirm(
-      `Archiviertes Profil ${userId} endgültig löschen? Dieser Schritt ist irreversibel.`,
-    )
-  ) {
-    return;
-  }
-
-  const result = await performAdminAction(
-    () =>
-      sendAdminUserAction({
-        action: 'purge-user',
-        userId,
-      }),
-    'Archiviertes Profil endgültig entfernt.',
-  );
-
-  if (result?.success) {
-    state.selectedArchivedUserIds.delete(userId);
-    updateSelectionSummary();
-  }
-}
-
-async function handleBulkPurgeUsersAction() {
-  const userIds = [...state.selectedArchivedUserIds];
-  if (userIds.length === 0) {
-    showStatus('Bitte zuerst archivierte Profile auswählen.', 'error');
-    return;
-  }
-
-  if (
-    !window.confirm(
-      `${userIds.length} archivierte Profile endgültig löschen? Dieser Schritt ist irreversibel.`,
-    )
-  ) {
-    return;
-  }
-
-  const result = await performAdminAction(
-    () =>
-      sendAdminUserAction({
-        action: 'bulk-purge-users',
-        userIds,
-      }),
-    'Archivierte Profile endgültig entfernt.',
-  );
-
-  if (result?.success) {
-    state.selectedArchivedUserIds.clear();
-    updateSelectionSummary();
-  }
-}
-
-function selectUser(userId, userName = '') {
-  if (!userId) return;
-  if (state.selectedUserId !== userId) {
-    state.selectedMemoryEntries.clear();
-  }
-  state.selectedUserId = userId;
-  state.selectedUserProfile = null;
-  state.selectedUserError = '';
-  fillActionForm(userId, '', '');
-  renderSelectedUserPanel();
-  syncUrlState();
-  loadSelectedUserProfile();
-  showStatus(`Profil ${userName || userId} ausgewählt.`, 'info');
-}
-
-function exportSelectedUserProfile() {
-  const profile = state.selectedUserProfile || getFallbackSelectedUserProfile();
-  if (!profile) {
-    showStatus('Bitte zuerst ein Profil auswählen.', 'error');
-    return;
-  }
-
-  const blob = new Blob([JSON.stringify(profile, null, 2)], {
-    type: 'application/json',
-  });
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement('a');
-  anchor.href = url;
-  anchor.download = `admin-user-${profile.userId}.json`;
-  document.body.appendChild(anchor);
-  anchor.click();
-  anchor.remove();
-  URL.revokeObjectURL(url);
-  showStatus(`Profil ${profile.userId} exportiert.`, 'success');
-}
-
-function showAuth(showError = false, message = 'Falsches Passwort!') {
-  showAuthError(showError ? message : '');
-  authOverlay.classList.remove('hidden');
-  setHidden(adminMain, true);
-  setHidden(adminToolbar, true);
-  setHidden(adminPanelNav, true);
-  requestAnimationFrame(() => {
-    passwordInput.focus();
-  });
-}
-
-function hideAuth() {
-  setHidden(authError, true);
-  authOverlay.classList.add('hidden');
-  setHidden(adminMain, false);
-  setHidden(adminToolbar, false);
-  setHidden(adminPanelNav, false);
 }
 
 async function handleLogin() {
-  setHidden(authError, true);
-  const password = passwordInput.value.trim();
+  const password = passwordInput?.value.trim() || '';
   if (!password) {
-    showAuthError('Bitte Passwort eingeben.');
-    passwordInput.focus();
+    setText(authError, 'Bitte Passwort eingeben.');
+    setHidden(authError, false);
+    passwordInput?.focus();
     return;
   }
 
@@ -2313,13 +2050,26 @@ async function handleLogin() {
   try {
     await createAdminSession(password);
     state.isAuthenticated = true;
-    passwordInput.value = '';
+    if (passwordInput) passwordInput.value = '';
     hideAuth();
     await fetchData();
   } catch (error) {
-    showAuthError(
+    if (error?.code === 'rate_limited') {
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Zu viele Login-Versuche. Bitte kurz warten.';
+      setText(authError, message);
+      setHidden(authError, false);
+      showStatus(message, 'warning');
+      return;
+    }
+
+    setText(
+      authError,
       error instanceof Error ? error.message : 'Login fehlgeschlagen.',
     );
+    setHidden(authError, false);
   } finally {
     loginButton.disabled = false;
   }
@@ -2328,395 +2078,177 @@ async function handleLogin() {
 async function handleLogout() {
   await deleteAdminSession();
   state.isAuthenticated = false;
-  state.selectedUserIds.clear();
-  state.selectedArchivedUserIds.clear();
-  state.selectedMemoryEntries.clear();
-  state.selectedUserProfile = null;
+  state.selectedEntryId = '';
+  state.selectedEntry = null;
+  state.activeFolderId = '';
+  state.activeFolderPage = 1;
+  state.activeFolderPagination = null;
+  state.records = [];
+  state.memoryRows = [];
+  state.userRows = [];
+  state.cloudflareFolders = [];
+  state.folderRecords = {};
+  state.latestPayload = {};
 
-  // Disable auto-refresh
-  if (state.autoRefreshEnabled) {
-    state.autoRefreshEnabled = false;
-    clearInterval(state.autoRefreshInterval);
-    state.autoRefreshInterval = null;
-    autoRefreshToggle?.classList.remove('is-active');
-    setHidden(autoRefreshSpinner, true);
-  }
-
-  clearStatus();
-  updateSelectionSummary();
+  renderRecordsList();
+  renderSelectionPanel();
   showAuth();
 }
 
-loginButton.addEventListener('click', handleLogin);
-logoutButton?.addEventListener('click', handleLogout);
+function selectRecordByButton(button) {
+  const recordId = String(button?.dataset?.recordId || '').trim();
+  if (!recordId) return null;
+  selectRecord(recordId);
+  return state.selectedEntry;
+}
 
-passwordInput.addEventListener('keypress', (event) => {
-  if (event.key === 'Enter') handleLogin();
-});
-actionSaveMemoryButton?.addEventListener('click', handleSaveMemoryAction);
-actionDeleteMemoryButton?.addEventListener('click', () =>
-  handleDeleteMemoryAction(),
-);
-actionDeleteUserButton?.addEventListener('click', () =>
-  handleDeleteUserAction(),
-);
-actionExportUserButton?.addEventListener('click', exportSelectedUserProfile);
-actionAssignAliasButton?.addEventListener('click', () =>
-  handleAssignAliasAction(),
-);
-actionRemoveAliasButton?.addEventListener('click', () =>
-  handleRemoveAliasAction(),
-);
-actionMergeUsersButton?.addEventListener('click', handleMergeUsersAction);
-actionBulkDeleteMemoriesButton?.addEventListener(
-  'click',
-  handleBulkDeleteMemoriesAction,
-);
-actionBulkDeleteUsersButton?.addEventListener(
-  'click',
-  handleBulkDeleteUsersAction,
-);
-actionBulkRestoreUsersButton?.addEventListener(
-  'click',
-  handleBulkRestoreUsersAction,
-);
-actionBulkPurgeUsersButton?.addEventListener(
-  'click',
-  handleBulkPurgeUsersAction,
-);
-actionPurgeExpiredArchivesButton?.addEventListener(
-  'click',
-  handlePurgeExpiredArchivesAction,
-);
-refreshButton.addEventListener('click', fetchData);
-
-[actionUserIdInput, actionAliasNameInput, actionMergeSourceInput].forEach(
-  (input) => {
-    input?.addEventListener('input', updateSelectionSummary);
-  },
-);
-
-adminMain?.addEventListener('click', (event) => {
-  const pageButton = event.target.closest('[data-page-target]');
-  if (pageButton) {
-    const section = pageButton.dataset.pageTarget || '';
-    const page = Number(pageButton.dataset.page) || 1;
-    if (!state.pagination[section]) return;
-    state.pagination[section].page = page;
-    syncUrlState();
-    fetchData();
-    return;
-  }
-
+function handleMainClick(event) {
   const button = event.target.closest('[data-admin-action]');
   if (!button) return;
 
-  const action = button.dataset.adminAction || '';
-  const userId = button.dataset.userId || '';
-  const userName = button.dataset.userName || '';
+  const action = String(button.dataset.adminAction || '').trim();
 
-  if (action === 'select-user') {
-    selectUser(userId, userName);
+  if (state.actionsBusy && action !== 'select-record' && action !== 'go-root') {
     return;
   }
 
-  if (action === 'delete-user') {
-    selectUser(userId, userName);
-    handleDeleteUserAction({ userId, userName });
+  if (action === 'select-record') {
+    const recordId = String(button.dataset.recordId || '').trim();
+    selectRecord(recordId);
+    const selected = state.selectedEntry;
+    if (!state.activeFolderId && isFolderEntry(selected)) {
+      void openFolder(selected.folderId, 1);
+    }
     return;
   }
 
-  if (action === 'restore-user') {
-    handleRestoreUserAction(userId);
+  if (action === 'go-root') {
+    goToRootFolders();
     return;
   }
 
-  if (action === 'purge-user') {
-    handlePurgeUserAction(userId);
+  if (action === 'open-memory-user') {
+    const entry = selectRecordByButton(button);
+    if (isMemoryEntry(entry)) {
+      handleOpenSelectedUser();
+    }
     return;
   }
 
-  if (action === 'delete-memory') {
-    selectUser(userId, userName);
-    handleDeleteMemoryAction({
-      userId,
-      key: button.dataset.memoryKey || '',
-      value: button.dataset.memoryValue || '',
+  if (action === 'delete-memory-inline') {
+    const entry = selectRecordByButton(button);
+    if (isMemoryEntry(entry)) {
+      handleDeleteSelectedMemory();
+    }
+    return;
+  }
+
+  if (action === 'open-memory-profile-user') {
+    const entry = selectRecordByButton(button);
+    if (isMemoryProfileEntry(entry)) {
+      handleOpenSelectedUser();
+    }
+    return;
+  }
+
+  if (action === 'delete-memory-profile-user') {
+    const entry = selectRecordByButton(button);
+    if (isMemoryProfileEntry(entry)) {
+      handleDeleteSelectedUser();
+    }
+    return;
+  }
+
+  if (action === 'open-user-inline') {
+    const entry = selectRecordByButton(button);
+    if (isUserEntry(entry)) {
+      handleOpenSelectedUser();
+    }
+    return;
+  }
+
+  if (action === 'delete-user-inline') {
+    const entry = selectRecordByButton(button);
+    if (isUserEntry(entry)) {
+      handleDeleteSelectedUser();
+    }
+    return;
+  }
+
+  if (action === 'records-page-prev' || action === 'records-page-next') {
+    if (!state.activeFolderId || !state.activeFolderPagination) return;
+    const currentPage = Number(state.activeFolderPagination.page) || 1;
+    const targetPage =
+      action === 'records-page-prev' ? currentPage - 1 : currentPage + 1;
+    if (targetPage < 1) return;
+    void fetchData({
+      silent: true,
+      folderId: state.activeFolderId,
+      page: targetPage,
     });
     return;
   }
 
-  if (action === 'use-alias') {
-    const aliasName = button.dataset.aliasName || '';
-    if (actionAliasNameInput) actionAliasNameInput.value = aliasName;
-    if (userId && actionUserIdInput && !actionUserIdInput.value.trim()) {
-      actionUserIdInput.value = userId;
+  if (action === 'assign-mapping-inline') {
+    const entry = selectRecordByButton(button);
+    if (isMappingEntry(entry)) {
+      handleAssignSelectedMapping();
     }
-    updateSelectionSummary();
-    showStatus(`Alias ${aliasName || '-'} ins Formular übernommen.`, 'info');
     return;
   }
 
-  if (action === 'remove-alias') {
-    const aliasName = button.dataset.aliasName || '';
-    if (aliasName && actionAliasNameInput) {
-      actionAliasNameInput.value = aliasName;
+  if (action === 'delete-mapping-inline') {
+    const entry = selectRecordByButton(button);
+    if (isMappingEntry(entry)) {
+      handleDeleteSelectedMapping();
     }
-    handleRemoveAliasAction({
-      alias: aliasName,
-      userId,
-    });
-    return;
   }
-
-  if (action === 'clear-memory-selection') {
-    state.selectedMemoryEntries.clear();
-    renderSelectedUserPanel();
-    updateSelectionSummary();
-  }
-});
-
-adminMain?.addEventListener('change', (event) => {
-  const input = event.target.closest('[data-selection-type]');
-  if (!input) return;
-
-  const selectionType = input.dataset.selectionType || '';
-  const userId = String(input.dataset.userId || '').trim();
-  if (selectionType === 'user' && userId) {
-    if (input.checked) {
-      state.selectedUserIds.add(userId);
-    } else {
-      state.selectedUserIds.delete(userId);
-    }
-    updateSelectionSummary();
-    return;
-  }
-
-  if (selectionType === 'archived-user' && userId) {
-    if (input.checked) {
-      state.selectedArchivedUserIds.add(userId);
-    } else {
-      state.selectedArchivedUserIds.delete(userId);
-    }
-    updateSelectionSummary();
-    return;
-  }
-
-  if (selectionType === 'memory') {
-    const memoryId = createMemorySelectionId(
-      input.dataset.memoryKey || '',
-      input.dataset.memoryValue || '',
-    );
-    if (input.checked) {
-      state.selectedMemoryEntries.add(memoryId);
-    } else {
-      state.selectedMemoryEntries.delete(memoryId);
-    }
-    updateSelectionSummary();
-  }
-});
-
-window.addEventListener('popstate', async () => {
-  restoreStateFromUrl();
-  if (state.isAuthenticated) {
-    await fetchData();
-  }
-});
-
-// ─── Panel Navigation Badge Updates ───
-function updatePanelNavBadges(pagination = {}, summary = {}) {
-  const badgeCounts = {
-    users: pagination.users?.total || 0,
-    archived: pagination.archived?.total || 0,
-    audit: pagination.audit?.total || 0,
-    contacts: pagination.contacts?.total || 0,
-    comments: pagination.comments?.total || 0,
-    likes: pagination.likes?.total || 0,
-    mappings: pagination.mappings?.total || 0,
-    memories: summary.filteredMemoryCount || 0,
-  };
-
-  Object.entries(badgeCounts).forEach(([key, count]) => {
-    const badge = document.querySelector(`[data-nav-badge="${key}"]`);
-    if (badge) setText(badge, formatNumber(count));
-  });
 }
 
-// ─── Panel Navigation Click Handler ───
-if (adminPanelNav) {
-  adminPanelNav.addEventListener('click', (event) => {
-    const link = event.target.closest('[data-nav-target]');
-    if (!link) return;
+function registerEventListeners() {
+  loginButton?.addEventListener('click', handleLogin);
+  logoutButton?.addEventListener('click', handleLogout);
 
-    const targetId = link.dataset.navTarget || '';
-    const target = document.getElementById(targetId);
-    if (!target) return;
+  adminMain?.addEventListener('click', handleMainClick);
 
-    // Update active state
-    adminPanelNav.querySelectorAll('.admin-panel-nav__link').forEach((el) => {
-      el.classList.remove('is-active');
-    });
-    link.classList.add('is-active');
-
-    // Scroll to target
-    target.scrollIntoView({
-      behavior: 'smooth',
-      block: 'start',
-    });
-  });
-}
-
-// ─── Search Handler ───
-function handleSearchInput() {
-  const value = (searchInput?.value || '').trim();
-  state.searchQuery = value;
-  setHidden(searchClear, !value);
-
-  // Reset pagination to page 1 on search
-  Object.keys(state.pagination).forEach((key) => {
-    state.pagination[key].page = 1;
+  passwordInput?.addEventListener('keypress', (event) => {
+    if (event.key === 'Enter') handleLogin();
   });
 
-  updateActiveSearchLabel();
-  syncUrlState();
-  fetchData();
-}
-
-if (searchInput) {
-  searchInput.addEventListener('input', () => {
-    clearTimeout(searchDebounceTimer);
-    searchDebounceTimer = setTimeout(handleSearchInput, SEARCH_DEBOUNCE_MS);
-  });
-
-  searchInput.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') {
-      searchInput.value = '';
-      searchInput.blur();
-      handleSearchInput();
-    }
-    if (event.key === 'Enter') {
-      clearTimeout(searchDebounceTimer);
-      handleSearchInput();
+  document.addEventListener('keydown', (event) => {
+    const tag = (event.target?.tagName || '').toLowerCase();
+    const isInput = tag === 'input' || tag === 'textarea' || tag === 'select';
+    if (event.key === 'r' && !isInput && !event.metaKey && !event.ctrlKey) {
+      event.preventDefault();
+      if (state.isAuthenticated) fetchData({ silent: true });
     }
   });
 }
-
-if (searchClear) {
-  searchClear.addEventListener('click', () => {
-    if (searchInput) searchInput.value = '';
-    handleSearchInput();
-    searchInput?.focus();
-  });
-}
-
-// ─── Filter Handlers ───
-function handleFilterChange() {
-  state.filters.userStatus = filterUserStatus?.value || 'all';
-  state.filters.mappingStatus = filterMappingStatus?.value || 'all';
-  state.filters.auditAction = filterAuditAction?.value || 'all';
-
-  // Reset pagination on filter
-  Object.keys(state.pagination).forEach((key) => {
-    state.pagination[key].page = 1;
-  });
-
-  updateActiveSearchLabel();
-  syncUrlState();
-  fetchData();
-}
-
-[filterUserStatus, filterMappingStatus, filterAuditAction].forEach((select) => {
-  select?.addEventListener('change', handleFilterChange);
-});
-
-// ─── Auto Refresh ───
-function toggleAutoRefresh() {
-  state.autoRefreshEnabled = !state.autoRefreshEnabled;
-  autoRefreshToggle?.classList.toggle('is-active', state.autoRefreshEnabled);
-  setHidden(autoRefreshSpinner, !state.autoRefreshEnabled);
-
-  if (state.autoRefreshEnabled) {
-    state.autoRefreshInterval = setInterval(() => {
-      if (state.isAuthenticated && !refreshButton?.disabled) {
-        fetchData();
-      }
-    }, AUTO_REFRESH_INTERVAL_MS);
-    showToast('Auto-Refresh aktiviert (30s Intervall)', 'success', 2500);
-  } else {
-    clearInterval(state.autoRefreshInterval);
-    state.autoRefreshInterval = null;
-    showToast('Auto-Refresh deaktiviert', 'info', 2000);
-  }
-}
-
-autoRefreshToggle?.addEventListener('click', toggleAutoRefresh);
-
-// ─── Keyboard Shortcuts ───
-document.addEventListener('keydown', (event) => {
-  // Don't fire shortcuts when typing in inputs
-  const tag = (event.target?.tagName || '').toLowerCase();
-  const isInput = tag === 'input' || tag === 'textarea' || tag === 'select';
-
-  if (event.key === '/' && !isInput) {
-    event.preventDefault();
-    searchInput?.focus();
-    return;
-  }
-
-  if (event.key === 'r' && !isInput && !event.metaKey && !event.ctrlKey) {
-    event.preventDefault();
-    if (state.isAuthenticated) fetchData();
-    return;
-  }
-
-  if (event.key === 'Escape' && isInput) {
-    event.target.blur();
-    return;
-  }
-});
-
-// ─── Intersection Observer for Panel Nav Active State ───
-const panelSections = document.querySelectorAll(
-  '.admin-panel[id], .admin-summary-strip',
-);
-const navObserver = new IntersectionObserver(
-  (entries) => {
-    entries.forEach((entry) => {
-      if (entry.isIntersecting && adminPanelNav) {
-        const targetId = entry.target.id;
-        if (!targetId) return;
-        adminPanelNav
-          .querySelectorAll('.admin-panel-nav__link')
-          .forEach((link) => {
-            link.classList.toggle(
-              'is-active',
-              link.dataset.navTarget === targetId,
-            );
-          });
-      }
-    });
-  },
-  {
-    threshold: 0.2,
-    rootMargin: '-80px 0px -60% 0px',
-  },
-);
-
-panelSections.forEach((section) => navObserver.observe(section));
 
 async function initializeAdmin() {
-  restoreStateFromUrl();
-  fillActionForm(state.selectedUserId, '', '');
-  updateSelectionSummary();
+  renderRecordsList();
+  renderSelectionPanel();
 
-  const authenticated = await checkAdminSession().catch(() => false);
-  if (authenticated) {
-    state.isAuthenticated = true;
-    await fetchData();
+  let authenticated = false;
+  try {
+    authenticated = await checkAdminSession();
+  } catch (error) {
+    if (error?.code === 'rate_limited') {
+      showAuth(true, error.message);
+      showStatus(error.message, 'warning');
+      return;
+    }
+  }
+
+  if (!authenticated) {
+    showAuth();
     return;
   }
 
-  showAuth();
+  state.isAuthenticated = true;
+  hideAuth();
+  await fetchData({ silent: true });
 }
 
+registerEventListeners();
 initializeAdmin();

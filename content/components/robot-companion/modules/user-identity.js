@@ -64,10 +64,37 @@ export function normalizeRecoveryState(raw) {
     .toLowerCase();
   if (!['needs_confirmation', 'conflict'].includes(status)) return null;
 
+  const candidates = Array.isArray(raw?.candidates)
+    ? raw.candidates
+        .map((candidate) => {
+          const userId = normalizeUserId(candidate?.userId);
+          if (!userId) return null;
+
+          return {
+            userId,
+            name: String(candidate?.name || '').trim(),
+            status: String(candidate?.status || 'anonymous')
+              .trim()
+              .toLowerCase(),
+            memoryCount: Math.max(
+              0,
+              Number.parseInt(String(candidate?.memoryCount), 10) || 0,
+            ),
+            latestMemoryAt: Math.max(
+              0,
+              Number.parseInt(String(candidate?.latestMemoryAt), 10) || 0,
+            ),
+          };
+        })
+        .filter(Boolean)
+        .slice(0, 5)
+    : [];
+
   return {
     status,
     name: String(raw?.name || '').trim(),
     candidateUserId: normalizeUserId(raw?.candidateUserId),
+    candidates,
   };
 }
 
