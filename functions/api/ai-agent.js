@@ -262,12 +262,20 @@ function extractExplicitNameOverwrite(promptText) {
 
 function isExplicitSelfNamePrompt(promptText, proposedName = '') {
   const extractedName = extractNameFromPrompt(promptText);
-  if (!extractedName) return false;
+  const recoveryName = extractRecoveryLookupNameFromPrompt(promptText);
+  if (!extractedName && !recoveryName) return false;
 
   const normalizedProposedName = normalizeNameCandidate(proposedName);
   if (!normalizedProposedName) return true;
 
-  return extractedName.toLowerCase() === normalizedProposedName.toLowerCase();
+  const matchesExtracted =
+    extractedName &&
+    extractedName.toLowerCase() === normalizedProposedName.toLowerCase();
+  const matchesRecovery =
+    recoveryName &&
+    recoveryName.toLowerCase() === normalizedProposedName.toLowerCase();
+
+  return matchesExtracted || matchesRecovery;
 }
 
 function isExplicitNameOverwritePrompt(promptText, proposedName = '') {
