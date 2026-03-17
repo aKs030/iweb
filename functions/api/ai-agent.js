@@ -262,12 +262,20 @@ function extractExplicitNameOverwrite(promptText) {
 
 function isExplicitSelfNamePrompt(promptText, proposedName = '') {
   const extractedName = extractNameFromPrompt(promptText);
-  if (!extractedName) return false;
+  const recoveryName = extractRecoveryLookupNameFromPrompt(promptText);
+  if (!extractedName && !recoveryName) return false;
 
   const normalizedProposedName = normalizeNameCandidate(proposedName);
   if (!normalizedProposedName) return true;
 
-  return extractedName.toLowerCase() === normalizedProposedName.toLowerCase();
+  const matchesExtracted =
+    extractedName &&
+    extractedName.toLowerCase() === normalizedProposedName.toLowerCase();
+  const matchesRecovery =
+    recoveryName &&
+    recoveryName.toLowerCase() === normalizedProposedName.toLowerCase();
+
+  return matchesExtracted || matchesRecovery;
 }
 
 function isExplicitNameOverwritePrompt(promptText, proposedName = '') {
@@ -424,18 +432,21 @@ function getFallbackMemoryKV(env) {
 
 async function readUserNameLookup(env, name) {
   const kv = getFallbackMemoryKV(env);
+  console.log('readUserNameLookup kv:', !!kv, !!kv?.get);
   if (!kv?.get) {
     return { status: 'none', userId: '', name: normalizeNameCandidate(name) };
   }
 
   const normalizedName = normalizeNameCandidate(name);
   const lookupKey = getUserNameLookupKey(normalizedName);
+  console.log('readUserNameLookup lookupKey:', lookupKey);
   if (!lookupKey) {
     return { status: 'none', userId: '', name: '' };
   }
 
   try {
     const rawValue = String((await kv.get(lookupKey)) || '').trim();
+    console.log('readUserNameLookup rawValue:', rawValue);
     if (!rawValue) {
       return { status: 'none', userId: '', name: normalizedName };
     }
@@ -510,6 +521,13 @@ async function resolveUserIdentity(
   const explicitName = extractNameFromPrompt(promptText);
   const recoveryLookupName =
     explicitName || extractRecoveryLookupNameFromPrompt(promptText);
+
+  console.log('resolveUserIdentity state:', {
+    currentUserId,
+    explicitName,
+    recoveryLookupName
+  });
+
   const currentStoredName =
     currentUserId && env
       ? normalizeNameCandidate(
@@ -517,6 +535,8 @@ async function resolveUserIdentity(
             ?.value || '',
         )
       : '';
+
+  console.log('resolveUserIdentity currentStoredName:', currentStoredName);
 
   // Priority:
   // 1) Explicit request identity from the current browser runtime
@@ -527,6 +547,8 @@ async function resolveUserIdentity(
     recoveryLookupName && (!currentUserId || !currentStoredName)
       ? await readUserNameLookup(env, recoveryLookupName)
       : { status: 'none', userId: '', name: recoveryLookupName };
+  console.log('resolveUserIdentity recoveryLookup:', recoveryLookup);
+
   const needsRecoveryConfirmation = recoveryLookup.status === 'resolved';
   const recoveryConflict = recoveryLookup.status === 'conflict';
   const conflictCandidates = recoveryConflict
