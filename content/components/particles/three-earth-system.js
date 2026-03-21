@@ -919,26 +919,55 @@ class ThreeEarthSystem {
       return;
     }
 
+    this._visibleWebGLSections = new Set();
+
     this.viewportObserver = createObserver(
       (/** @type {any[]} */ entries) => {
-        this.isVisible = entries[0].isIntersecting;
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            this._visibleWebGLSections.add(entry.target.id);
+          } else {
+            this._visibleWebGLSections.delete(entry.target.id);
+          }
+        });
+
+        this.isVisible = this._visibleWebGLSections.size > 0;
+
         if (this.isVisible) {
+          if (this._canvasPauseTimeout) {
+            clearTimeout(this._canvasPauseTimeout);
+            this._canvasPauseTimeout = null;
+          }
           if (!this.animationFrameId && this.animate && this.active) {
-            log.debug('Resuming render loop');
+            log.debug('Resuming render loop (WebGL area in view)');
             this.animate();
           }
         } else {
-          if (this.animationFrameId) {
-            log.debug('Pausing render loop');
-            cancelAnimationFrame(this.animationFrameId);
-            this.animationFrameId = 0;
-          }
+          // Add grace period to allow card fade-out animations to finish
+          if (this._canvasPauseTimeout) clearTimeout(this._canvasPauseTimeout);
+          this._canvasPauseTimeout = setTimeout(() => {
+            if (!this.isVisible && this.animationFrameId) {
+              log.debug('Pausing render loop (WebGL area out of view)');
+              cancelAnimationFrame(this.animationFrameId);
+              this.animationFrameId = 0;
+              // Clear canvas so frozen UI artifacts don't persist during scrolling
+              if (this.renderer && this.scene && this.camera) {
+                this.renderer.render(this.scene, this.camera);
+              }
+            }
+          }, 800);
         }
       },
-      { threshold: 0, rootMargin: '50px' },
+      { threshold: 0, rootMargin: '100px' },
     );
 
-    this.viewportObserver.observe(container);
+    // Observe all sections that render 3D content (Hero + Features)
+    const targets = document.querySelectorAll('#hero, #features');
+    if (targets.length) {
+      targets.forEach((el) => this.viewportObserver.observe(el));
+    } else {
+      this.viewportObserver.observe(container);
+    }
   }
 
   // --- Showcase ---

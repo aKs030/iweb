@@ -281,6 +281,19 @@ export async function onRequest(context) {
   rewriter.on('a.skip-link', new HeaderInjector(url)); // prepends to the page (after skip-link)
   rewriter.on('body', new FooterInjector()); // appends to bottom of body
 
+  // 9. Edge-Side i18n
+  const acceptLanguage = String(
+    context.request.headers.get('Accept-Language') || '',
+  ).toLowerCase();
+  if (acceptLanguage.startsWith('en')) {
+    rewriter.on('html', {
+      element(e) {
+        e.setAttribute('lang', 'en');
+        // Additional edge-side translations could be injected here if /en/ routes were fully present
+      },
+    });
+  }
+
   // -----------------------------------------------------------------------
   // Stream + build response headers
   // -----------------------------------------------------------------------

@@ -30,6 +30,8 @@ const DEFAULT_MEMORY_RETENTION_DAYS = 180;
 const DEFAULT_MAX_HISTORY_TURNS = 10;
 const DEFAULT_MAX_TOKENS = 2048;
 const DEFAULT_CONTEXT_TIMEOUT_MS = 3500;
+const DEFAULT_STREAM_TOKEN_DELAY_MS = 20;
+const MIN_STREAM_TOKEN_DELAY_MS = 4;
 const FALLBACK_MEMORY_PREFIX = 'robot-memory:';
 const FALLBACK_MEMORY_LIMIT = 60;
 const DAY_IN_MS = 24 * 60 * 60 * 1000;
@@ -64,6 +66,16 @@ function parseDecimal(
   const clamped = Math.min(max, Math.max(min, parsed));
   const factor = 10 ** precision;
   return Math.round(clamped * factor) / factor;
+}
+
+function parseBoolean(value, fallback = false) {
+  const normalized = String(value ?? '')
+    .trim()
+    .toLowerCase();
+  if (!normalized) return fallback;
+  if (['1', 'true', 'yes', 'on'].includes(normalized)) return true;
+  if (['0', 'false', 'no', 'off'].includes(normalized)) return false;
+  return fallback;
 }
 
 function parseCsvList(value) {
@@ -166,10 +178,50 @@ function getAgentConfig(env) {
         max: 10000,
       },
     ),
+    streamTokenDelayMs: parseInteger(
+      env.ROBOT_STREAM_TOKEN_DELAY_MS,
+      DEFAULT_STREAM_TOKEN_DELAY_MS,
+      {
+        min: 0,
+        max: 250,
+      },
+    ),
+    streamTokenAdaptive: parseBoolean(env.ROBOT_STREAM_TOKEN_ADAPTIVE, true),
     toolTrustedIds: parseUserIdSet(env.ROBOT_TOOL_TRUSTED_IDS),
     toolAdminIds: parseUserIdSet(env.ROBOT_TOOL_ADMIN_IDS),
     enabledIntegrations: parseIntegrationSet(env.ROBOT_ENABLED_INTEGRATIONS),
   };
+}
+
+function resolveStreamTokenDelayMs(config, tokenCount = 1) {
+  const baseDelay = Math.max(
+    0,
+    Number(config?.streamTokenDelayMs ?? DEFAULT_STREAM_TOKEN_DELAY_MS) || 0,
+  );
+  if (baseDelay <= 0) return 0;
+  if (config?.streamTokenAdaptive === false) return baseDelay;
+
+  const count = Math.max(1, Number(tokenCount) || 1);
+  if (count <= 32) return baseDelay;
+  if (count <= 120) {
+    return Math.max(MIN_STREAM_TOKEN_DELAY_MS, Math.round(baseDelay * 0.55));
+  }
+  return Math.max(0, Math.round(baseDelay * 0.25));
+}
+
+async function waitMs(ms) {
+  const delay = Math.max(0, Number(ms) || 0);
+  if (delay <= 0) return;
+  await new Promise((resolve) => setTimeout(resolve, delay));
+}
+
+async function streamTextAsWordTokens(write, text, config) {
+  const words = String(text || '').match(/\S+\s*/g) || [String(text || '')];
+  const delayMs = resolveStreamTokenDelayMs(config, words.length);
+  for (const word of words) {
+    await write('token', { text: word });
+    await waitMs(delayMs);
+  }
 }
 
 function normalizeUserId(raw) {
@@ -525,7 +577,7 @@ async function resolveUserIdentity(
   console.log('resolveUserIdentity state:', {
     currentUserId,
     explicitName,
-    recoveryLookupName
+    recoveryLookupName,
   });
 
   const currentStoredName =
@@ -2595,10 +2647,7 @@ export async function onRequestPost(context) {
             );
           } else if (responseText) {
             await write('status', { phase: 'streaming' });
-            const words = responseText.match(/\S+\s*/g) || [responseText];
-            for (const word of words) {
-              await write('token', { text: word });
-            }
+            await streamTextAsWordTokens(write, responseText, config);
             await write('message', {
               ...buildResponsePayload(
                 responseText,
@@ -2814,9 +2863,7 @@ async function processToolCalls(
       : recallResult.result === 'Keine Erinnerungen gefunden.'
         ? 'Ich habe aktuell keine gespeicherten Erinnerungen für diese User-ID.'
         : recallResult.result;
-    for (const word of text.match(/\S+\s*/g) || [text]) {
-      await write('token', { text: word });
-    }
+    await streamTextAsWordTokens(write, text, config);
     await write(
       'message',
       buildMsg(
@@ -2920,8 +2967,7 @@ async function processToolCalls(
       });
       const followUpText = sanitizeAssistantText(r?.response || '');
       if (followUpText) {
-        for (const w of followUpText.match(/\S+\s*/g) || [followUpText])
-          await write('token', { text: w });
+        await streamTextAsWordTokens(write, followUpText, config);
         await write(
           'message',
           buildMsg(

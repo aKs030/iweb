@@ -43,6 +43,19 @@
           ></span>
           <span id="last-update" class="admin-unified__timestamp">Lädt...</span>
           <button
+            id="purge-all-button"
+            class="admin-secondary-button admin-icon-button"
+            type="button"
+            aria-label="Alle Nutzer & Erinnerungen löschen"
+            title="Datenbank leeren"
+            style="
+              color: var(--admin-danger);
+              border-color: var(--admin-danger);
+            "
+          >
+            <span aria-hidden="true">🗑️</span>
+          </button>
+          <button
             id="logout-button"
             class="admin-secondary-button admin-icon-button"
             type="button"
