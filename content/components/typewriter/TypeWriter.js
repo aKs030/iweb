@@ -411,7 +411,21 @@ export async function initHeroSubtitle(options = {}) {
       quotes = null;
     }
 
-    if (!quotes?.length) return false;
+    if (!quotes || !quotes.length) return false;
+    try {
+      // B) Personalisierung der UI & Typewriter-Titel
+      const { getProfileState } =
+        await import('../robot-companion/modules/user-identity.js');
+      const profile = getProfileState();
+      if (profile && profile.name && profile.name.toLowerCase() !== 'jules') {
+        quotes.unshift({
+          text: `Willkommen zurück, ${profile.name}! Lass uns weiter an der Zukunft bauen.`,
+          author: 'Jules (AI)',
+        });
+      }
+    } catch (err) {
+      log.warn('TypeWriter: Could not load profile state', err);
+    }
 
     let cfg = {};
     if (options.heroDataModule?.typewriterConfig) {

@@ -30,11 +30,14 @@ const FOLDER_PAGINATION_KEY = {
   audit: 'audit',
   archived: 'archived',
 };
+const PURGE_JOB_POLL_INTERVAL_MS = 1500;
+const PURGE_JOB_POLL_TIMEOUT_MS = 10 * 60 * 1000;
 
 const authOverlay = document.getElementById('auth-overlay');
 const authError = document.getElementById('auth-error');
 const loginButton = document.getElementById('login-button');
 const logoutButton = document.getElementById('logout-button');
+const purgeAllButton = document.getElementById('purge-all-button');
 const passwordInput = document.getElementById('admin-password');
 const adminMain = document.getElementById('admin-main');
 const adminUnified = document.querySelector('.admin-unified');
@@ -182,6 +185,10 @@ function parseRetryAfterSeconds(value) {
   return 0;
 }
 
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, Math.max(0, ms)));
+}
+
 function createRateLimitError(response, payload, fallbackMessage) {
   const retryAfter = parseRetryAfterSeconds(
     response?.headers?.get('Retry-After'),
@@ -251,6 +258,7 @@ function hideAuth() {
 
 function setBusyState(isBusy) {
   if (logoutButton) logoutButton.disabled = isBusy;
+  if (purgeAllButton) purgeAllButton.disabled = isBusy;
   renderRecordsPagination();
 }
 
@@ -2205,9 +2213,90 @@ function handleMainClick(event) {
   }
 }
 
+async function handlePurgeAll() {
+  const code = prompt(
+    'Achtung: Du löschst ALLE Profile und Erinnerungen! Bitte tippe "LÖSCHEN" zum Bestätigen.',
+  );
+  if (code !== 'LÖSCHEN') return;
+
+  setBusyState(true);
+  try {
+    const confirmation = await sendAdminUserAction({
+      action: 'request-purge-everything-confirmation',
+    });
+    const start = await sendAdminUserAction({
+      action: 'purge-everything',
+      confirmToken: confirmation.confirmToken,
+    });
+
+    const jobId = String(start?.jobId || '').trim();
+    if (!jobId) {
+      throw new Error(
+        start?.text || 'Purge-Job konnte nicht gestartet werden.',
+      );
+    }
+
+    showToast(start.text || 'Purge-Job gestartet.', 'info');
+
+    const job = await waitForPurgeEverythingJob(jobId);
+    showToast(
+      job?.text || 'Purge abgeschlossen.',
+      job?.status === 'completed' ? 'success' : 'error',
+      4500,
+    );
+    state.activeFolderId = 'memories';
+    await fetchData();
+  } catch (err) {
+    showToast(err.message, 'error');
+  } finally {
+    setBusyState(false);
+  }
+}
+
+async function waitForPurgeEverythingJob(jobId) {
+  const startedAt = Date.now();
+  let lastPhase = '';
+
+  while (Date.now() - startedAt < PURGE_JOB_POLL_TIMEOUT_MS) {
+    const status = await sendAdminUserAction({
+      action: 'purge-everything-status',
+      jobId,
+    });
+    const job = status?.job || null;
+    if (!job) {
+      throw new Error('Purge-Status konnte nicht geladen werden.');
+    }
+
+    const phase = String(job.phase || '').trim();
+    if (phase && phase !== lastPhase) {
+      lastPhase = phase;
+      showToast(`Purge läuft: ${phase}`, 'info', 1500);
+    }
+
+    if (job.status === 'completed') {
+      return job;
+    }
+    if (job.status === 'failed') {
+      throw new Error(job.error || job.text || 'Purge fehlgeschlagen.');
+    }
+
+    const waitMs =
+      Math.max(
+        500,
+        Number(status?.pollAfterMs || PURGE_JOB_POLL_INTERVAL_MS) || 0,
+      ) || PURGE_JOB_POLL_INTERVAL_MS;
+    await sleep(waitMs);
+  }
+
+  throw new Error(
+    'Purge-Job dauert unerwartet lange. Bitte Seite neu laden und Status prüfen.',
+  );
+}
+
 function registerEventListeners() {
   loginButton?.addEventListener('click', handleLogin);
   logoutButton?.addEventListener('click', handleLogout);
+  purgeAllButton?.addEventListener('click', handlePurgeAll);
 
   adminMain?.addEventListener('click', handleMainClick);
 

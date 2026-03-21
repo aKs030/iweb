@@ -121,6 +121,7 @@ export class CardManager {
       };
 
       const mesh = this._createMeshFromData(data, index, baseW, baseH);
+      mesh.userData.entranceDelay = index * 100; // Stagger entrance by 100ms
       this.cardGroup.add(mesh);
       this.cards.push(mesh);
     });
@@ -648,8 +649,18 @@ export class CardManager {
         : this.isVisible
           ? 1
           : 0;
+
+    // Speed up the animation so it feels super fluid and snappy (0.12 instead of 0.02)
     card.userData.entranceProgress +=
-      (targetEntrance - card.userData.entranceProgress) * 0.02;
+      (targetEntrance - card.userData.entranceProgress) * 0.15;
+
+    // Lock to zero if it's super close, preventing zombie artifacts during transitions
+    if (targetEntrance === 0 && card.userData.entranceProgress < 0.005) {
+      card.userData.entranceProgress = 0;
+      card.material.opacity = 0;
+      return;
+    }
+
     const baseOpacity = card.userData.targetOpacity || 1;
     card.material.opacity =
       baseOpacity * (0.05 + 0.95 * card.userData.entranceProgress);

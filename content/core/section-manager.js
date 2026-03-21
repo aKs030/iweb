@@ -79,41 +79,53 @@ export class SectionManager {
 
       const htmlEl = document.documentElement;
       const wasSnapPage = htmlEl.classList.contains('snap-page');
-      const previousVtName = section.style.viewTransitionName;
-      section.style.viewTransitionName = SECTION_SWAP_VT_NAME;
+      // Sequence DOM updates to prevent overlapping view-transition-names
+      const renderJob = (this._renderQueue || Promise.resolve()).then(
+        async () => {
+          const previousVtName = section.style.viewTransitionName;
+          section.style.viewTransitionName = SECTION_SWAP_VT_NAME;
 
-      try {
-        await withViewTransition(
-          () => {
-            section.replaceChildren(); // Safely clears existing DOM
-            if (wasSnapPage) htmlEl.classList.remove('snap-page');
+          try {
+            await withViewTransition(
+              () => {
+                section.replaceChildren(); // Safely clears existing DOM
+                if (wasSnapPage) htmlEl.classList.remove('snap-page');
 
-            section.insertAdjacentHTML('beforeend', html);
+                section.insertAdjacentHTML('beforeend', html);
 
-            const template = section.querySelector('template');
-            if (template) section.appendChild(template.content.cloneNode(true));
-          },
-          {
-            types: buildSectionSwapTypes(section.id),
-            rootClasses: [VIEW_TRANSITION_ROOT_CLASSES.SECTION_SWAP],
-            timeoutMs: VIEW_TRANSITION_TIMINGS_MS.SECTION_SWAP_TIMEOUT,
-          },
-        );
-      } finally {
-        if (previousVtName) {
-          section.style.viewTransitionName = previousVtName;
-        } else {
-          section.style.removeProperty('view-transition-name');
-        }
-      }
+                const template = section.querySelector('template');
+                if (template)
+                  section.appendChild(template.content.cloneNode(true));
+              },
+              {
+                types: buildSectionSwapTypes(section.id),
+                rootClasses: [VIEW_TRANSITION_ROOT_CLASSES.SECTION_SWAP],
+                timeoutMs: VIEW_TRANSITION_TIMINGS_MS.SECTION_SWAP_TIMEOUT,
+              },
+            );
+          } finally {
+            if (previousVtName) {
+              section.style.viewTransitionName = previousVtName;
+            } else {
+              section.style.removeProperty('view-transition-name');
+            }
+          }
 
-      if (wasSnapPage) {
-        clearTimeout(this._snapRestorer);
-        this._snapRestorer = setTimeout(
-          () => htmlEl.classList.add('snap-page'),
-          150,
-        );
-      }
+          if (wasSnapPage) {
+            clearTimeout(this._snapRestorer);
+            this._snapRestorer = setTimeout(
+              () => htmlEl.classList.add('snap-page'),
+              150,
+            );
+          }
+        },
+      );
+
+      this._renderQueue = renderJob.catch((err) => {
+        log.warn(`Render queue error for ${section.id}:`, err);
+      });
+
+      await renderJob;
 
       markLoaded();
     } catch (error) {
@@ -144,7 +156,7 @@ export class SectionManager {
                 }
               });
             },
-            { rootMargin: '100px' },
+            { rootMargin: '200px' },
           );
           this._observer.observe(section);
         }

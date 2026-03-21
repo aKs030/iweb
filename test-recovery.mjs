@@ -30,7 +30,7 @@ async function runTest() {
     'new-random-user-id-456',
     'Ich bin Thomas',
     mockEnv,
-    { memoryRetentionDays: 30 }
+    { memoryRetentionDays: 30 },
   );
 
   console.log('Identity Result:', result);

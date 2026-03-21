@@ -30,6 +30,27 @@ import {
 
 const FALLBACK_MEMORY_PREFIX = 'robot-memory:';
 const USERNAME_LOOKUP_PREFIX = 'username:';
+const PURGE_CONFIRM_PREFIX = 'admin:purge-confirm:';
+const PURGE_JOB_PREFIX = 'admin:purge-job:';
+const PURGE_COOLDOWN_KEY = 'admin:purge-cooldown:next';
+const MAX_KV_PURGE_SCAN_PAGES = 500;
+const KV_PURGE_BATCH_SIZE = 100;
+const PURGE_CONFIRM_TTL_MS = 2 * 60 * 1000;
+const PURGE_JOB_TTL_SECONDS = 60 * 60 * 24;
+const PURGE_COOLDOWN_MS = 5 * 60 * 1000;
+const PURGE_STATUS_POLL_AFTER_MS = 1500;
+const PURGE_PREFIXES = [FALLBACK_MEMORY_PREFIX, USERNAME_LOOKUP_PREFIX];
+const ADMIN_PROFILE_TABLES = [
+  'admin_memory_entries',
+  'admin_name_mappings',
+  'admin_user_profiles',
+  'admin_deleted_profiles',
+];
+const VECTORIZE_FAST_DELETE_METHODS = [
+  'deleteByMetadata',
+  'deleteByFilter',
+  'deleteByMetadataFilter',
+];
 
 function normalizeAction(raw) {
   const value = String(raw || 'list-user')
@@ -116,6 +137,22 @@ function normalizeAction(raw) {
   ) {
     return 'purge-expired-archives';
   }
+  if (value === 'purge-everything') {
+    return 'purge-everything';
+  }
+  if (
+    value === 'request-purge-everything-confirmation' ||
+    value === 'request-purge-confirmation'
+  ) {
+    return 'request-purge-everything-confirmation';
+  }
+  if (
+    value === 'purge-everything-status' ||
+    value === 'purge-status' ||
+    value === 'purge-everything-job-status'
+  ) {
+    return 'purge-everything-status';
+  }
 
   return 'list-user';
 }
@@ -151,6 +188,341 @@ function createMemoryKey(userId) {
 function createUsernameLookupKey(name) {
   const normalizedAlias = normalizeAdminLookupName(name);
   return normalizedAlias ? `${USERNAME_LOOKUP_PREFIX}${normalizedAlias}` : '';
+}
+
+function nowIso() {
+  return new Date().toISOString();
+}
+
+function normalizePurgeJobId(rawJobId) {
+  return String(rawJobId || '')
+    .trim()
+    .replace(/[^a-z0-9_-]/gi, '')
+    .slice(0, 80);
+}
+
+function createPurgeJobId() {
+  if (
+    typeof crypto !== 'undefined' &&
+    typeof crypto.randomUUID === 'function'
+  ) {
+    return `purge_${crypto.randomUUID().replace(/-/g, '').slice(0, 24)}`;
+  }
+  return `purge_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function createPurgeToken() {
+  if (
+    typeof crypto !== 'undefined' &&
+    typeof crypto.randomUUID === 'function'
+  ) {
+    return `pc_${crypto.randomUUID().replace(/-/g, '')}`;
+  }
+  return `pc_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 14)}`;
+}
+
+function createPurgeConfirmKey(token) {
+  return `${PURGE_CONFIRM_PREFIX}${token}`;
+}
+
+function createPurgeJobKey(jobId) {
+  return `${PURGE_JOB_PREFIX}${jobId}`;
+}
+
+function createInitialPurgeJob(jobId, auth) {
+  return {
+    jobId,
+    status: 'queued',
+    phase: 'queued',
+    actor: auth?.actor || 'admin',
+    sourceIp: auth?.sourceIp || '',
+    text: 'Purge-Job wurde gestartet und wartet auf Ausführung.',
+    progress: {
+      prefixesTotal: PURGE_PREFIXES.length,
+      prefixesDone: 0,
+      scannedKvKeys: 0,
+      deletedKvKeys: 0,
+      vectorizeUsersTotal: 0,
+      vectorizeUsersProcessed: 0,
+    },
+    result: null,
+    error: '',
+    createdAt: nowIso(),
+    updatedAt: nowIso(),
+    startedAt: '',
+    finishedAt: '',
+  };
+}
+
+async function readJsonFromKv(kv, key, fallback = null) {
+  const raw = await kv.get(key);
+  if (!raw) return fallback;
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return fallback;
+  }
+}
+
+async function writeJsonToKv(kv, key, payload, ttlSeconds = null) {
+  const value = JSON.stringify(payload);
+  if (ttlSeconds && Number(ttlSeconds) > 0) {
+    await kv.put(key, value, {
+      expirationTtl: Math.max(1, Math.floor(Number(ttlSeconds))),
+    });
+    return;
+  }
+  await kv.put(key, value);
+}
+
+async function readPurgeJob(kv, jobId) {
+  const normalizedJobId = normalizePurgeJobId(jobId);
+  if (!normalizedJobId) return null;
+  return readJsonFromKv(kv, createPurgeJobKey(normalizedJobId), null);
+}
+
+async function writePurgeJob(kv, job) {
+  if (!job?.jobId) return;
+  job.updatedAt = nowIso();
+  await writeJsonToKv(
+    kv,
+    createPurgeJobKey(job.jobId),
+    job,
+    PURGE_JOB_TTL_SECONDS,
+  );
+}
+
+async function updatePurgeJob(kv, jobId, updater) {
+  const current = await readPurgeJob(kv, jobId);
+  if (!current) return null;
+  const next =
+    typeof updater === 'function'
+      ? updater(current) || current
+      : { ...current, ...updater };
+  await writePurgeJob(kv, next);
+  return next;
+}
+
+async function createPurgeConfirmationToken(kv, auth) {
+  const token = createPurgeToken();
+  const expiresAtMs = Date.now() + PURGE_CONFIRM_TTL_MS;
+  const payload = {
+    actor: auth?.actor || 'admin',
+    sourceIp: auth?.sourceIp || '',
+    createdAt: nowIso(),
+    expiresAtMs,
+  };
+  await writeJsonToKv(
+    kv,
+    createPurgeConfirmKey(token),
+    payload,
+    Math.ceil(PURGE_CONFIRM_TTL_MS / 1000),
+  );
+  return {
+    token,
+    expiresAt: new Date(expiresAtMs).toISOString(),
+  };
+}
+
+async function consumePurgeConfirmationToken(kv, token, auth) {
+  const normalizedToken = String(token || '').trim();
+  if (!normalizedToken) {
+    return {
+      ok: false,
+      status: 400,
+      text: 'Bestaetigungstoken fehlt.',
+    };
+  }
+
+  const key = createPurgeConfirmKey(normalizedToken);
+  const payload = await readJsonFromKv(kv, key, null);
+  if (!payload) {
+    return {
+      ok: false,
+      status: 400,
+      text: 'Bestaetigungstoken ungueltig oder bereits verwendet.',
+    };
+  }
+
+  await kv.delete(key);
+
+  if (payload.actor && payload.actor !== auth?.actor) {
+    return {
+      ok: false,
+      status: 403,
+      text: 'Bestaetigungstoken gehoert zu einer anderen Session.',
+    };
+  }
+
+  const expiresAtMs = Number(payload.expiresAtMs) || 0;
+  if (!Number.isFinite(expiresAtMs) || Date.now() > expiresAtMs) {
+    return {
+      ok: false,
+      status: 400,
+      text: 'Bestaetigungstoken ist abgelaufen.',
+    };
+  }
+
+  return {
+    ok: true,
+  };
+}
+
+async function enforcePurgeCooldown(kv) {
+  const now = Date.now();
+  const nextAllowedRaw = await kv.get(PURGE_COOLDOWN_KEY);
+  const nextAllowedAt = Number.parseInt(String(nextAllowedRaw || ''), 10);
+
+  if (Number.isFinite(nextAllowedAt) && nextAllowedAt > now) {
+    return {
+      ok: false,
+      retryAfterMs: nextAllowedAt - now,
+    };
+  }
+
+  const next = now + PURGE_COOLDOWN_MS;
+  await kv.put(PURGE_COOLDOWN_KEY, String(next), {
+    expirationTtl: Math.ceil(PURGE_COOLDOWN_MS / 1000) + 60,
+  });
+
+  return {
+    ok: true,
+    nextAllowedAt: next,
+  };
+}
+
+async function listKvKeysByPrefix(kv, prefix) {
+  const keyNames = [];
+  let cursor = undefined;
+  let pages = 0;
+
+  do {
+    const page = await kv.list({
+      prefix,
+      cursor,
+      limit: 1000,
+    });
+    const keys = Array.isArray(page?.keys) ? page.keys : [];
+    for (const key of keys) {
+      const keyName = String(key?.name || '').trim();
+      if (keyName) keyNames.push(keyName);
+    }
+
+    const listComplete = page?.list_complete === true || !page?.cursor;
+    cursor = listComplete ? undefined : page.cursor;
+    pages += 1;
+  } while (cursor && pages < MAX_KV_PURGE_SCAN_PAGES);
+
+  return keyNames;
+}
+
+async function clearAdminProfileTables(env) {
+  const db = env?.DB_LIKES?.prepare ? env.DB_LIKES : null;
+  if (!db) {
+    return {
+      available: false,
+      cleared: {},
+    };
+  }
+
+  const cleared = {};
+  for (const table of ADMIN_PROFILE_TABLES) {
+    try {
+      const result = await db.prepare(`DELETE FROM ${table}`).run();
+      const changes = Number(result?.meta?.changes ?? result?.changes ?? 0);
+      cleared[table] = Number.isFinite(changes) ? changes : 0;
+    } catch (error) {
+      if (/no such table/i.test(getErrorMessage(error))) {
+        cleared[table] = null;
+        continue;
+      }
+      throw error;
+    }
+  }
+
+  return {
+    available: true,
+    cleared,
+  };
+}
+
+function hasFastVectorizeDeleteMethod(env) {
+  const index = env?.JULES_MEMORY;
+  if (!index) return false;
+  return VECTORIZE_FAST_DELETE_METHODS.some(
+    (method) => typeof index[method] === 'function',
+  );
+}
+
+async function purgeVectorizeForUsers(
+  env,
+  rawUserIds = [],
+  { onProgress = null } = {},
+) {
+  const userIds = [
+    ...new Set(
+      rawUserIds.map((userId) => normalizeUserId(userId)).filter(Boolean),
+    ),
+  ];
+
+  const configured = !!env?.JULES_MEMORY;
+  const fastDeleteAvailable = hasFastVectorizeDeleteMethod(env);
+  if (userIds.length === 0) {
+    return {
+      users: 0,
+      configured,
+      fastDeleteAvailable,
+      attempted: 0,
+      skipped: true,
+      reason: 'no-users',
+    };
+  }
+
+  if (!configured || !fastDeleteAvailable) {
+    return {
+      users: userIds.length,
+      configured,
+      fastDeleteAvailable,
+      attempted: 0,
+      skipped: true,
+      reason: configured ? 'no-fast-delete-method' : 'not-configured',
+    };
+  }
+
+  const modeCounts = {};
+  let attempted = 0;
+  let processed = 0;
+
+  for (const userId of userIds) {
+    const result = await deleteVectorizeMemoriesForUser(env, userId);
+    processed += 1;
+    if (result?.attempted) attempted += 1;
+    const mode = String(result?.mode || 'unknown');
+    modeCounts[mode] = (modeCounts[mode] || 0) + 1;
+    const progressResult = onProgress?.({
+      userId,
+      processed,
+      total: userIds.length,
+      mode,
+      attempted: !!result?.attempted,
+    });
+    if (
+      progressResult &&
+      typeof progressResult === 'object' &&
+      typeof progressResult.then === 'function'
+    ) {
+      await progressResult;
+    }
+  }
+
+  return {
+    users: userIds.length,
+    configured,
+    fastDeleteAvailable,
+    attempted,
+    skipped: false,
+    modes: modeCounts,
+  };
 }
 
 async function loadUserAliases(kv, userId) {
@@ -361,6 +733,199 @@ async function bulkPurgeUsers(env, userIds) {
   return results;
 }
 
+async function runPurgeEverythingJob(kv, env, jobId, auth) {
+  const existingJob = await readPurgeJob(kv, jobId);
+  if (!existingJob) return;
+
+  await updatePurgeJob(kv, jobId, (job) => ({
+    ...job,
+    status: 'running',
+    phase: 'scanning',
+    startedAt: job.startedAt || nowIso(),
+    text: 'Scanne KV nach Nutzer- und Alias-Eintraegen…',
+  }));
+
+  try {
+    const kvKeysByPrefix = {};
+    const uniqueKvKeys = new Set();
+    const memoryUserIds = [];
+    let prefixesDone = 0;
+
+    for (const prefix of PURGE_PREFIXES) {
+      const keys = await listKvKeysByPrefix(kv, prefix);
+      kvKeysByPrefix[prefix] = keys.length;
+      prefixesDone += 1;
+
+      for (const key of keys) {
+        uniqueKvKeys.add(key);
+        if (prefix === FALLBACK_MEMORY_PREFIX) {
+          const maybeUserId = normalizeUserId(
+            key.slice(FALLBACK_MEMORY_PREFIX.length),
+          );
+          if (maybeUserId) memoryUserIds.push(maybeUserId);
+        }
+      }
+
+      await updatePurgeJob(kv, jobId, (job) => ({
+        ...job,
+        phase: 'scanning',
+        text: 'Scanne KV nach Nutzer- und Alias-Eintraegen…',
+        progress: {
+          ...job.progress,
+          prefixesDone,
+          scannedKvKeys: uniqueKvKeys.size,
+        },
+      }));
+    }
+
+    const vectorizeUserIds = [
+      ...new Set(
+        memoryUserIds.map((item) => normalizeUserId(item)).filter(Boolean),
+      ),
+    ];
+
+    await updatePurgeJob(kv, jobId, (job) => ({
+      ...job,
+      phase: 'vectorize',
+      text: 'Bereinige Vectorize-Index…',
+      progress: {
+        ...job.progress,
+        vectorizeUsersTotal: vectorizeUserIds.length,
+        vectorizeUsersProcessed: 0,
+      },
+    }));
+
+    const vectorizeCleanup = await purgeVectorizeForUsers(
+      env,
+      vectorizeUserIds,
+      {
+        onProgress: ({ processed, total }) => {
+          return updatePurgeJob(kv, jobId, (job) => ({
+            ...job,
+            phase: 'vectorize',
+            text: 'Bereinige Vectorize-Index…',
+            progress: {
+              ...job.progress,
+              vectorizeUsersTotal: total,
+              vectorizeUsersProcessed: processed,
+            },
+          }));
+        },
+      },
+    );
+
+    const kvKeys = [...uniqueKvKeys];
+    let deletedKvKeys = 0;
+
+    await updatePurgeJob(kv, jobId, (job) => ({
+      ...job,
+      phase: 'deleting',
+      text: 'Loesche KV-Eintraege…',
+      progress: {
+        ...job.progress,
+        scannedKvKeys: kvKeys.length,
+        deletedKvKeys: 0,
+      },
+    }));
+
+    for (let index = 0; index < kvKeys.length; index += KV_PURGE_BATCH_SIZE) {
+      const batch = kvKeys.slice(index, index + KV_PURGE_BATCH_SIZE);
+      await Promise.all(batch.map((keyName) => kv.delete(keyName)));
+      deletedKvKeys += batch.length;
+
+      await updatePurgeJob(kv, jobId, (job) => ({
+        ...job,
+        phase: 'deleting',
+        text: `Loesche KV-Eintraege… (${deletedKvKeys}/${kvKeys.length})`,
+        progress: {
+          ...job.progress,
+          deletedKvKeys,
+        },
+      }));
+    }
+
+    await updatePurgeJob(kv, jobId, (job) => ({
+      ...job,
+      phase: 'cleaning-indexes',
+      text: 'Bereinige Admin-Indizes…',
+      progress: {
+        ...job.progress,
+        deletedKvKeys,
+      },
+    }));
+
+    const d1Cleanup = await clearAdminProfileTables(env);
+
+    const audit = await auditAction(env, auth, {
+      action: 'purge-everything',
+      targetUserId: 'ALL',
+      status: 'success',
+      summary: `${deletedKvKeys} KV-Eintraege und Admin-Profile bereinigt.`,
+      details: {
+        deletedKvKeys,
+        kvKeysByPrefix,
+        vectorizeCleanup,
+        d1Cleanup,
+        jobId,
+      },
+    });
+
+    await updatePurgeJob(kv, jobId, (job) => ({
+      ...job,
+      status: 'completed',
+      phase: 'completed',
+      finishedAt: nowIso(),
+      text: `Purge abgeschlossen: ${deletedKvKeys} KV-Eintraege geloescht.`,
+      error: '',
+      result: {
+        deletedKvKeys,
+        kvKeysByPrefix,
+        vectorizeCleanup,
+        d1Cleanup,
+        audit,
+      },
+      progress: {
+        ...job.progress,
+        prefixesDone: PURGE_PREFIXES.length,
+        scannedKvKeys: kvKeys.length,
+        deletedKvKeys,
+        vectorizeUsersTotal: vectorizeCleanup.users || 0,
+        vectorizeUsersProcessed: vectorizeCleanup.users || 0,
+      },
+    }));
+  } catch (error) {
+    const errorText = getErrorMessage(error) || 'purge_everything_failed';
+    console.error('[admin-users] purge job failed:', errorText);
+
+    try {
+      await auditAction(env, auth, {
+        action: 'purge-everything',
+        targetUserId: 'ALL',
+        status: 'error',
+        summary: 'Purge-Job fehlgeschlagen.',
+        details: {
+          jobId,
+          error: errorText,
+        },
+      });
+    } catch (auditError) {
+      console.warn(
+        '[admin-users] purge error audit failed:',
+        getErrorMessage(auditError),
+      );
+    }
+
+    await updatePurgeJob(kv, jobId, (job) => ({
+      ...job,
+      status: 'failed',
+      phase: 'failed',
+      finishedAt: nowIso(),
+      text: 'Purge-Job fehlgeschlagen.',
+      error: errorText,
+    }));
+  }
+}
+
 export async function onRequestPost(context) {
   const auth = await authorizeAdmin(context.request, context.env);
   if (!auth.ok) return auth.response;
@@ -379,6 +944,105 @@ export async function onRequestPost(context) {
         },
         503,
       );
+    }
+
+    if (action === 'request-purge-everything-confirmation') {
+      const confirmation = await createPurgeConfirmationToken(kv, auth);
+      return jsonResponse({
+        success: true,
+        confirmToken: confirmation.token,
+        expiresAt: confirmation.expiresAt,
+        text: 'Bestaetigungstoken erstellt. Bitte purge-everything sofort ausfuehren.',
+      });
+    }
+
+    if (action === 'purge-everything-status') {
+      const jobId = normalizePurgeJobId(body?.jobId);
+      if (!jobId) {
+        return jsonResponse(
+          {
+            success: false,
+            text: 'Job-ID fehlt.',
+          },
+          400,
+        );
+      }
+
+      const job = await readPurgeJob(kv, jobId);
+      if (!job) {
+        return jsonResponse(
+          {
+            success: false,
+            text: 'Purge-Job nicht gefunden oder bereits abgelaufen.',
+          },
+          404,
+        );
+      }
+
+      return jsonResponse({
+        success: true,
+        job,
+        pollAfterMs: PURGE_STATUS_POLL_AFTER_MS,
+      });
+    }
+
+    if (action === 'purge-everything') {
+      const confirmationResult = await consumePurgeConfirmationToken(
+        kv,
+        body?.confirmToken,
+        auth,
+      );
+      if (!confirmationResult.ok) {
+        return jsonResponse(
+          {
+            success: false,
+            text: confirmationResult.text,
+          },
+          confirmationResult.status || 400,
+        );
+      }
+
+      const cooldown = await enforcePurgeCooldown(kv);
+      if (!cooldown.ok) {
+        const retryAfterSec = Math.max(
+          1,
+          Math.ceil((cooldown.retryAfterMs || PURGE_COOLDOWN_MS) / 1000),
+        );
+        const headers = new Headers();
+        headers.set('Retry-After', String(retryAfterSec));
+        return jsonResponse(
+          {
+            success: false,
+            text: `Purge ist aktuell gesperrt. Bitte in ${retryAfterSec}s erneut versuchen.`,
+          },
+          429,
+          headers,
+        );
+      }
+
+      const jobId = createPurgeJobId();
+      const job = createInitialPurgeJob(jobId, auth);
+      await writePurgeJob(kv, job);
+
+      const backgroundTask = runPurgeEverythingJob(
+        kv,
+        context.env,
+        jobId,
+        auth,
+      );
+      if (typeof context.waitUntil === 'function') {
+        context.waitUntil(backgroundTask);
+      } else {
+        await backgroundTask;
+      }
+
+      return jsonResponse({
+        success: true,
+        jobId,
+        status: 'queued',
+        pollAfterMs: PURGE_STATUS_POLL_AFTER_MS,
+        text: 'Purge-Job wurde gestartet.',
+      });
     }
 
     if (action === 'bulk-delete-users') {
