@@ -10,7 +10,8 @@ import { SectionManager } from '#core/section-manager.js';
 import { AppLoadManager, loadSignals } from '#core/load-manager.js';
 import { signal, effect, computed } from '#core/signals.js';
 import { ThreeEarthManager } from '#core/three-earth-manager.js';
-import { onDOMReady, TimerManager } from '#core/utils.js';
+import { onDOMReady } from '#core/dom-utils.js';
+import { TimerManager } from '#core/timer-manager.js';
 import { initViewTransitions } from '#core/view-transitions.js';
 import { i18n } from '#core/i18n.js';
 import { GlobalEventHandlers } from '#core/events.js';
@@ -21,6 +22,8 @@ import {
   initServiceWorkerLifecycle,
 } from '#core/sw-registration.js';
 import { initThemeState } from '#core/theme-state.js';
+import { initOverlayManager } from '#core/overlay-manager.js';
+import { initEnhancements } from '#components/enhancements/enhancements.js';
 
 const log = createLogger('main');
 const appTimers = new TimerManager('Main');
@@ -93,12 +96,16 @@ const _initApp = () => {
   }
 
   initThemeState();
+  initOverlayManager();
 
   // Initialize View Transitions API (progressive enhancement)
   initViewTransitions();
 
   // Initialize Resource Hints & Speculative Prerendering
   resourceHints.init();
+
+  // Initialize Enhancements (Section Dots, Reveal, Skill Radar, Voice, Easter Eggs)
+  initEnhancements();
 };
 
 onDOMReady(_initApp);
@@ -146,12 +153,8 @@ document.addEventListener(
       { once: true },
     );
 
-    updateLoader(0.2, i18n.t('loader.modules_core'));
     updateLoader(0.3, i18n.t('loader.hero_init'));
     initHeroFeatureBundle(sectionManager);
-
-    updateLoader(0.4, i18n.t('loader.system_3d'));
-    updateLoader(0.5, i18n.t('loader.optimize_images'));
 
     modulesReady.value = true;
     perfMarks.modulesReady = performance.now();

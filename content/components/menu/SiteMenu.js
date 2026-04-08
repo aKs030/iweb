@@ -12,17 +12,27 @@ import { MenuSearch } from './modules/MenuSearch.js';
 import { MenuAccessibility } from './modules/MenuAccessibility.js';
 import { MenuPerformance } from './modules/MenuPerformance.js';
 import { MenuConfig } from './modules/MenuConfig.js';
-import { upsertHeadLink } from '../../core/utils.js';
-import { createLogger } from '../../core/logger.js';
+import {
+  OVERLAY_MODES,
+  initOverlayManager,
+  registerOverlayController,
+} from '#core/overlay-manager.js';
+import { upsertHeadLink } from '#core/dom-utils.js';
+import { createLogger } from '#core/logger.js';
+
+/**
+ * @typedef {typeof import('./modules/MenuConfig.js').MenuConfig} MenuComponentConfig
+ */
 
 const logger = createLogger('SiteMenu');
 const SHADOW_DOM_ATTR = 'data-shadow-dom';
 const shadowCssCache = new Map();
 const shadowSheetCache = new Map();
 
-class SiteMenu extends HTMLElement {
+export class SiteMenu extends HTMLElement {
   constructor() {
     super();
+    /** @type {MenuComponentConfig} */
     this.config = { ...MenuConfig };
     this.state = new MenuState();
     this.renderer = /** @type {any} */ (
@@ -40,12 +50,14 @@ class SiteMenu extends HTMLElement {
     this.usesShadowDOM = false;
     this.shadowStyleElement = null;
     this.initialized = false;
+    this._overlayControllerCleanupFns = [];
   }
 
   async connectedCallback() {
     this.performance.startMeasure('menu-init');
 
     try {
+      initOverlayManager();
       this.usesShadowDOM = this.isShadowDOMEnabled();
       if (this.usesShadowDOM && !this.shadowRoot) {
         this.attachShadow({ mode: 'open' });
@@ -78,6 +90,7 @@ class SiteMenu extends HTMLElement {
       accessibility.init();
       this.search.init();
       this.events.init();
+      this.registerOverlayControllers();
 
       this.initialized = true;
 
@@ -91,6 +104,8 @@ class SiteMenu extends HTMLElement {
   }
 
   disconnectedCallback() {
+    this._overlayControllerCleanupFns.forEach((cleanup) => cleanup());
+    this._overlayControllerCleanupFns = [];
     this.events?.destroy();
     this.search?.destroy();
     const accessibility = /** @type {any} */ (this.accessibility);
@@ -98,6 +113,63 @@ class SiteMenu extends HTMLElement {
     this.performance?.destroy();
     this.state.reset();
     this.initialized = false;
+  }
+
+  open() {
+    this.events?.setMenuOpenWithTransition(true);
+  }
+
+  close(options = {}) {
+    this.events?.closeMenu(options);
+  }
+
+  getOverlayRoot() {
+    const header = this.closest('header.site-header');
+    return header instanceof HTMLElement ? header : this;
+  }
+
+  registerOverlayControllers() {
+    this._overlayControllerCleanupFns.forEach((cleanup) => cleanup());
+    this._overlayControllerCleanupFns = [];
+
+    /** @type {import('../../core/types.js').OverlayController} */
+    const menuOverlayController = {
+      close: ({ restoreFocus = true } = {}) => {
+        this.events?.closeMenu({ restoreFocus });
+      },
+      getInteractiveRoots: () => [this.getOverlayRoot()],
+      getFocusTrapRoots: () => this.events?.getFocusTrapRoots() || [],
+      getPrimaryFocusTarget: () => {
+        const target = this.events?.getPrimaryFocusTarget();
+        return target instanceof HTMLElement ? target : null;
+      },
+      getRestoreFocusTarget: () => {
+        const target = this.events?.getRestoreFocusTarget();
+        return target instanceof HTMLElement ? target : null;
+      },
+    };
+
+    /** @type {import('../../core/types.js').OverlayController} */
+    const searchOverlayController = {
+      close: ({ restoreFocus = true } = {}) => {
+        this.search?.closeSearchMode({ restoreFocus });
+      },
+      getInteractiveRoots: () => [this.getOverlayRoot()],
+      getFocusTrapRoots: () => this.search?.getFocusTrapRoots() || [],
+      getPrimaryFocusTarget: () => {
+        const target = this.search?.getPrimaryFocusTarget();
+        return target instanceof HTMLElement ? target : null;
+      },
+      getRestoreFocusTarget: () => {
+        const target = this.search?.getRestoreFocusTarget();
+        return target instanceof HTMLElement ? target : null;
+      },
+    };
+
+    this._overlayControllerCleanupFns.push(
+      registerOverlayController(OVERLAY_MODES.MENU, menuOverlayController),
+      registerOverlayController(OVERLAY_MODES.SEARCH, searchOverlayController),
+    );
   }
 
   isShadowDOMEnabled() {
@@ -112,16 +184,15 @@ class SiteMenu extends HTMLElement {
 
   getCssUrls() {
     const fallbackUrls = [
-      '/content/components/menu/menu.css',
-      '/content/components/menu/menu-responsive.css',
+      '/content/components/menu/menu-base.css',
+      '/content/components/menu/menu-search.css',
+      '/content/components/menu/menu-states.css',
+      '/content/components/menu/menu-mobile.css',
       '/content/components/menu/menu-backdrop.css',
     ];
-    const legacyConfig = /** @type {{ CSS_URL?: string }} */ (this.config);
     const configuredUrls = Array.isArray(this.config.CSS_URLS)
       ? this.config.CSS_URLS
-      : legacyConfig.CSS_URL
-        ? [legacyConfig.CSS_URL]
-        : fallbackUrls;
+      : fallbackUrls;
 
     return this.dedupeCssUrls(configuredUrls);
   }
@@ -307,4 +378,16 @@ class SiteMenu extends HTMLElement {
   }
 }
 
-customElements.define('site-menu', SiteMenu);
+if (!customElements.get('site-menu')) {
+  customElements.define('site-menu', SiteMenu);
+}
+
+export function openMenu() {
+  const el = /** @type {any} */ (document.querySelector('site-menu'));
+  el?.open?.();
+}
+
+export function closeMenu(options = {}) {
+  const el = /** @type {any} */ (document.querySelector('site-menu'));
+  el?.close?.(options);
+}

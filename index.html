@@ -3,15 +3,15 @@
   <head>
     <!-- INJECT:GLOBAL-HEAD mode="base" -->
     <title>
-      Abdulkerim Sesli | Full-Stack Web Developer, Three.js & AI Integration
+      Abdulkerim Sesli | Portfolio für Code, 3D, AI & digitale Experimente
     </title>
     <meta
       name="description"
-      content="Offizielles Portfolio von Abdulkerim Sesli (Abdul Sesli): moderne Webentwicklung mit JavaScript ES2023+, Three.js, AI-Integration, Performance-Optimierung und Edge-Deployment."
+      content="Persönliches Portfolio von Abdulkerim Sesli mit Web-Projekten, 3D-Interfaces, Fotografie, Videos und Build Notes."
     />
     <meta
       name="keywords"
-      content="Abdulkerim Sesli, Abdul Sesli, Full-Stack Web Developer, JavaScript ES2023+, Three.js, AI Integration, Web Components, Cloudflare"
+      content="Abdulkerim Sesli, Abdul Sesli, Portfolio, Three.js, JavaScript, AI, WebGL, Fotografie, Videos, Build Notes"
     />
     <meta name="author" content="Abdulkerim Sesli" />
     <meta name="robots" content="index, follow, max-image-preview:large" />
@@ -22,6 +22,13 @@
     <link rel="me" href="https://linkedin.com/in/abdulkerim-s" />
     <link rel="alternate" type="application/ld+json" href="/person.jsonld" />
 
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+
     <!-- View Transitions API -->
     <meta name="view-transition" content="same-origin" />
 
@@ -30,11 +37,11 @@
     <meta property="og:url" content="https://www.abdulkerimsesli.de/" />
     <meta
       property="og:title"
-      content="Abdulkerim Sesli | Full-Stack Web Developer, Three.js & AI Integration"
+      content="Abdulkerim Sesli | Portfolio für Code, 3D, AI & digitale Experimente"
     />
     <meta
       property="og:description"
-      content="Offizielles Portfolio von Abdulkerim Sesli. Moderne Webentwicklung, Three.js-Experiences, AI-Integration und Performance-Engineering."
+      content="Persönliches Portfolio mit Projekten, 3D-Interfaces, Fotografie, Videos und Build Notes."
     />
     <meta
       property="og:image"
@@ -51,11 +58,11 @@
     <meta name="twitter:url" content="https://www.abdulkerimsesli.de/" />
     <meta
       name="twitter:title"
-      content="Abdulkerim Sesli | Full-Stack Web Developer, Three.js & AI Integration"
+      content="Abdulkerim Sesli | Portfolio für Code, 3D, AI & digitale Experimente"
     />
     <meta
       name="twitter:description"
-      content="Offizielles Portfolio von Abdulkerim Sesli. Moderne Webentwicklung, Three.js-Experiences, AI-Integration und Performance-Engineering."
+      content="Persönliches Portfolio mit Projekten, 3D-Interfaces, Fotografie, Videos und Build Notes."
     />
     <meta
       name="twitter:image"
@@ -67,7 +74,7 @@
 
     <!-- PWA & Icons -->
   </head>
-  <body>
+  <body class="home-page home-page--editorial">
     <!-- Skip to main content for keyboard/screen reader users -->
     <a href="#main-content" class="skip-link sr-only"
       >Zum Hauptinhalt springen</a
@@ -118,7 +125,7 @@
       <section
         id="hero"
         class="section hero u-center"
-        aria-label="Abdulkerim Sesli — Full-Stack Web Developer Portfolio"
+        aria-label="Abdulkerim Sesli — Portfolio Hero"
         data-section-src="/pages/home/hero"
         data-eager="true"
       >
@@ -129,20 +136,43 @@
       <section
         id="features"
         class="section features full-screen-section"
-        aria-label="Features und Leistungen"
+        aria-label="Selected Work und Portfolio-Einstiege"
         data-eager="true"
         data-state="loaded"
       >
-        <div class="section-skeleton" aria-hidden="true"></div>
+        <div class="features-content">
+          <div class="features-copy">
+            <p class="features-kicker" data-i18n="home.features_kicker">
+              Direkte Wege
+            </p>
+            <h2 class="features-title" data-i18n="home.features_title">
+              Fuenf Bereiche. Ein Einstieg.
+            </h2>
+            <p class="features-summary" data-i18n="home.features_summary">
+              Profil, Projekte, Fotos, Videos und Journal oeffnen direkt aus der
+              Szene den passenden Bereich.
+            </p>
+          </div>
 
-        <div class="features-content"></div>
+          <div class="features-note">
+            <span class="features-hint" data-i18n="home.features_hint">
+              Direkt oeffnen
+            </span>
+            <a
+              href="/projekte/"
+              class="features-link"
+              data-i18n="home.features_link"
+              >Alle Bereiche</a
+            >
+          </div>
+        </div>
       </section>
 
       <!-- section3 -->
       <section
         id="section3"
         class="section section3"
-        aria-label="Weitere Inhalte"
+        aria-label="Portfolio-Notizen und weitere Wege"
         data-section-src="/pages/home/section3"
         data-eager="true"
       ></section>

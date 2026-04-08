@@ -1,6 +1,6 @@
 /**
  * React-specific Utilities
- * Separated from core/utils.js to avoid pulling React into non-React modules.
+ * Keeps React-specific helpers out of the general browser runtime modules.
  * @version 1.0.0
  */
 

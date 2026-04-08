@@ -2,15 +2,16 @@
  * API function to handle blog comments using Cloudflare D1
  */
 
+import { errorJsonResponse, jsonResponse } from './_response.js';
+
 export async function onRequestGet(context) {
   const { request, env } = context;
   const url = new URL(request.url);
   const postId = url.searchParams.get('post_id');
 
   if (!postId) {
-    return new Response(JSON.stringify({ error: 'Missing post_id' }), {
+    return errorJsonResponse('Missing post_id', {
       status: 400,
-      headers: { 'Content-Type': 'application/json' },
     });
   }
 
@@ -18,12 +19,7 @@ export async function onRequestGet(context) {
     const db = env.DB_LIKES; // Sharing the same DB binding for simplicity, or use a separate if configured
 
     if (!db) {
-      return new Response(
-        JSON.stringify({ comments: [], _warning: 'DB not bound' }),
-        {
-          headers: { 'Content-Type': 'application/json' },
-        },
-      );
+      return jsonResponse({ comments: [], _warning: 'DB not bound' });
     }
 
     const { results } = await db
@@ -33,14 +29,11 @@ export async function onRequestGet(context) {
       .bind(postId)
       .all();
 
-    return new Response(JSON.stringify({ comments: results }), {
-      headers: { 'Content-Type': 'application/json' },
-    });
+    return jsonResponse({ comments: results });
   } catch (error) {
     console.error('Error fetching comments:', error);
-    return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
+    return errorJsonResponse('Internal Server Error', {
       status: 500,
-      headers: { 'Content-Type': 'application/json' },
     });
   }
 }
@@ -53,18 +46,14 @@ export async function onRequestPost(context) {
     const { post_id, author_name, content } = body;
 
     if (!post_id || !author_name || !content) {
-      return new Response(
-        JSON.stringify({ error: 'Missing required fields' }),
-        {
-          status: 400,
-          headers: { 'Content-Type': 'application/json' },
-        },
-      );
+      return errorJsonResponse('Missing required fields', {
+        status: 400,
+      });
     }
 
     // Basic spam protection: simple length check
     if (content.length > 1000 || author_name.length > 50) {
-      return new Response(JSON.stringify({ error: 'Content too long' }), {
+      return errorJsonResponse('Content too long', {
         status: 400,
       });
     }
@@ -72,7 +61,7 @@ export async function onRequestPost(context) {
     const db = env.DB_LIKES;
 
     if (!db) {
-      return new Response(JSON.stringify({ error: 'Database not available' }), {
+      return errorJsonResponse('Database not available', {
         status: 500,
       });
     }
@@ -84,8 +73,8 @@ export async function onRequestPost(context) {
       .bind(post_id, author_name, content)
       .first();
 
-    return new Response(
-      JSON.stringify({
+    return jsonResponse(
+      {
         success: true,
         comment: {
           id: result.id,
@@ -94,17 +83,13 @@ export async function onRequestPost(context) {
           content,
           created_at: result.created_at,
         },
-      }),
-      {
-        status: 201,
-        headers: { 'Content-Type': 'application/json' },
       },
+      { status: 201 },
     );
   } catch (error) {
     console.error('Error adding comment:', error);
-    return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
+    return errorJsonResponse('Internal Server Error', {
       status: 500,
-      headers: { 'Content-Type': 'application/json' },
     });
   }
 }

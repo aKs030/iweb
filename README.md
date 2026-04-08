@@ -23,23 +23,23 @@ npm ci
 npm run dev
 ```
 
-Lokale URL: [http://localhost:8080](http://localhost:8080)
+Lokale URL: [http://localhost:8787](http://localhost:8787)
 
 ## Verfügbare Scripts
 
 ```bash
-npm run dev           # Einziger moderner Dev-Workflow (preflight + token watch + app)
+npm run dev           # Lokalen Cloudflare-Pages-Server starten
 npm run qa            # Empfohlen: kompletter Qualitäts-Run (alles prüfen)
 npm run fix           # Auto-fix für ESLint + Stylelint + Prettier
-npm run typecheck     # TypeScript-Compiler für JS/JSDoc-Checks
 npm run format        # Nur Prettier schreiben
-npm run format:check  # Nur Prettier prüfen
-npm run sync:styles   # Tokens + Utilities erzeugen
+npm run sync:import-map # Import-Map-Artefakte aus package.json synchronisieren
+npm run lint:apps-config # Projekt-Apps-Konfiguration prüfen
+npm run clean:artifacts # Caches, output, coverage und lokale Artefakte löschen
 npm run clean         # lokale Cache/Artifacts löschen
+npm run clean:full    # zusätzlich .wrangler / lokale D1-Daten löschen
 npm run prepare       # Husky Hooks installieren/aktualisieren
-npm run check:docs    # Markdown-Links & lokale Pfade prüfen
-npm run sync:ai       # AI-Index manuell synchronisieren
-npm run sync          # Import-Map + AI-Index + Content-RAG synchronisieren
+npm run content-rag:update # Jules Content-RAG aktualisieren
+npm run content-rag:status # Jules Content-RAG Status prüfen
 ```
 
 Optionaler Port:
@@ -47,6 +47,17 @@ Optionaler Port:
 ```bash
 npm run dev -- --port 8787
 ```
+
+### Linting-Policy (modern)
+
+- `npm run lint:es`
+  - ESLint prüft nur JS/MJS/CJS-Dateien.
+  - CSS-Dateien werden absichtlich ignoriert (`*.css` wird in ESLint `ignorePatterns` ausgeschlossen).
+  - Mit `--no-warn-ignored` in `package.json` unterdrückt es irrelevante Warnungen.
+- `npm run lint:css`
+  - Stylelint prüft alle CSS-Dateien (`**/*.css`).
+- `npm run lint` (oder `npm run qa`)
+  - Vollständiger Qualitäts-Run: ESLint + Stylelint + Prettier + Import-Map + Apps-Config-Check.
 
 `npm run dev` zeigt beim Start automatisch:
 
@@ -64,27 +75,26 @@ GitHub Workflows:
 
 - [`.github/workflows/main.yml`](.github/workflows/main.yml) - Lint, Security & Preview Deployments
 
-Preview-Deployments synchronisieren den Jules-Content-RAG nach dem Cloudflare-Deploy automatisch, wenn die GitHub-Secrets `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID` und `ADMIN_TOKEN` gesetzt sind.
-Danach laeuft auf Preview und Production auch ein kleines Retrieval-Evaluations-Set gegen `/api/admin/content-rag?query=...`, damit Quellenlinks und Source-Typen nicht still regressieren.
+Preview-Deployments bleiben auf das Deployment reduziert. Content-RAG-Updates laufen bewusst nur noch manuell fuer die Live-Domain.
 
-Pushes auf `main`/`master` triggern zusaetzlich einen Production-RAG-Sync. Der Workflow wartet dabei auf der Live-Domain, bis das ausgerollte Cloudflare-Pages-Commit der aktuellen GitHub-SHA entspricht. Optional kann die Ziel-Domain ueber die GitHub-Variable `PRODUCTION_SITE_URL` ueberschrieben werden.
-
-Falls du intent-basiertes Vectorize-Filtering fuer den Jules-Content-RAG aktivierst, richte die Metadata-Indexes reproduzierbar mit `npm run setup:content-rag-index -- --url=...` ein. Das Skript legt `sourceType` und `category` an und startet danach einen einmaligen Full-Resync, damit bestehende Vektoren neu indexiert werden.
+Falls du intent-basiertes Vectorize-Filtering fuer den Jules-Content-RAG aktivierst, richte die Metadata-Indexes reproduzierbar mit `npm run setup:content-rag-index -- --url=...` ein. Das Skript legt `sourceType` und `category` an und startet danach ein einmaliges Full-Update, damit bestehende Vektoren neu indexiert werden.
 
 Der Robot-Agent begrenzt Memory-Recall und RAG-Retrieval ueber `ROBOT_CONTEXT_TIMEOUT_MS` standardmaessig auf `3500ms`. Prompt-Memory-Persistenz laeuft getrennt ueber `context.waitUntil(...)`, damit langsame Vectorize-/KV-/Embedding-Aufrufe die Chat-Antwort nicht blockieren.
 
-Fuer manuelle Retrieval-Checks:
+Fuer manuelle Live-Updates:
 
 ```bash
-ADMIN_TOKEN=... npm run eval:content-rag -- --url=https://www.abdulkerimsesli.de
+ADMIN_TOKEN=... npm run content-rag:update -- --url=https://www.abdulkerimsesli.de
 ```
+
+Lokal laden die Admin-/RAG-Skripte `ADMIN_TOKEN` und weitere Variablen automatisch aus `.dev.vars`, `.env.local` oder `.env`, falls sie nicht bereits in der Shell gesetzt sind. Die Import-Map wird über `npm run sync:import-map` aus `package.json` synchronisiert und per `npm run lint` auf Drift geprüft. Media-Referenzen und AI-Index bleiben bewusst manuell gepflegt.
 
 Dependency-Automation ist bewusst getrennt: Renovate verwaltet npm-Paketupdates, Dependabot nur GitHub Actions. So entstehen keine doppelten Update-PRs.
 
 ## Projektstruktur
 
 ```text
-content/      Frontend-Code (Komponenten, Core, Styles, Assets)
+content/      Frontend-Code (Komponenten, Core, Styles, Media)
 pages/        Seiten-spezifische Entry-Points
 functions/    Cloudflare Pages Functions + API-Endpunkte
 docs/         Technische Dokumentation
@@ -109,7 +119,7 @@ Admin-Dashboard:
 ## Dokumentation
 
 - [`docs/DOCUMENTATION.md`](docs/DOCUMENTATION.md) - Vollständige Projekt-Dokumentation
-- [`content/styles/README.md`](content/styles/README.md) - CSS/Token/Utility-Workflow
+- [`content/styles/README.md`](content/styles/README.md) - CSS-Foundation und Utility-Workflow
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) - Beitrag/Workflow
 - [`SECURITY.md`](SECURITY.md) - Security Policy
 

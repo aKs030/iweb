@@ -34,8 +34,9 @@ export class MenuPerformance {
       isMobile: /iPhone|iPad|iPod|Android/i.test(navigator.userAgent),
       isTouch: 'ontouchstart' in window || navigator.maxTouchPoints > 0,
       hasHover: window.matchMedia('(hover: hover)').matches,
-      connection: navigator.connection?.effectiveType || 'unknown',
-      memory: navigator.deviceMemory || 'unknown',
+      connection:
+        /** @type {any} */ (navigator).connection?.effectiveType || 'unknown',
+      memory: /** @type {any} */ (navigator).deviceMemory || 'unknown',
       cores: navigator.hardwareConcurrency || 'unknown',
     };
   }

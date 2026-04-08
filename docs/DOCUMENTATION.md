@@ -5,7 +5,7 @@ Portfolio Website mit Cloudflare Pages, Vanilla JavaScript und Three.js.
 ## 📁 Projektstruktur
 
 ```text
-content/      Frontend-Code (Komponenten, Core, Styles, Assets)
+content/      Frontend-Code (Komponenten, Core, Styles, Media)
 pages/        Seiten-spezifische Entry-Points
 functions/    Cloudflare Pages Functions + API-Endpunkte
 docs/         Diese Dokumentation
@@ -28,28 +28,16 @@ Alle Root-Dateien sind notwendig und folgen Tool-Konventionen.
 
 ## 🎨 CSS & Styles
 
-### Token-System
+### CSS Foundation
 
 **Source of Truth**:
 
-- `content/styles/tokens/tokens.json` - Light Mode
-- `content/styles/tokens/tokens-dark.json` - Dark Mode
-
-**Generated**:
-
-- `content/styles/tokens.css` - CSS Custom Properties
-- `content/styles/utilities.generated.css` - Utility Classes
-
-### Workflow
-
-```bash
-npm run sync:styles      # Tokens + Utilities generieren
-npm run check:tokens     # Token-Struktur prüfen
-```
+- `content/styles/foundation.css` - Globale Variablen, Themes, Layout-Basis
+- `content/styles/utilities.css` - Kleine Utility-Klassen
 
 ### Regeln
 
-1. **Tokens verwenden**: Keine Hard-coded Colors/Spacing
+1. **CSS-Variablen verwenden**: Keine Hard-coded Colors/Spacing
 2. **Utilities nutzen**: Für häufige Patterns
 3. **Komponenten-Styles**: In separaten .css Dateien
 4. **Responsive**: Mobile-first mit Breakpoints
@@ -62,17 +50,16 @@ Details: `content/styles/README.md`
 
 ```bash
 npm ci                   # Dependencies installieren
-npm run dev              # Dev-Server starten (localhost:8080)
+npm run dev              # Dev-Server starten (localhost:8787)
 ```
 
 ### Quality Assurance
 
 ```bash
-npm run qa               # Kompletter QA-Run (fix + lint + check)
+npm run qa               # Kompletter QA-Run (fix + lint)
 npm run lint             # Nur Linting
 npm run fix              # Auto-fix für ESLint + Stylelint + Prettier
-npm run typecheck        # TypeScript-Compiler für JS/JSDoc-Checks
-npm run check            # Struktur-Checks
+npm run lint:apps-config # Pflichtfelder in pages/projekte/apps-config.json prüfen
 ```
 
 ### Hooks
@@ -132,16 +119,6 @@ Erlaubt explizit AI-Bots (GPTBot, Claude-Web, etc.)
 - **Stylelint**: CSS (.stylelintrc.cjs)
 - **Prettier**: Formatierung (prettier.config.mjs)
 
-### Struktur-Checks
-
-```bash
-npm run check:structure  # Projektstruktur prüfen
-npm run check:tokens     # Token-Struktur prüfen
-npm run check:importmap  # Import-Map validieren
-npm run check:docs       # Dokumentations-Links prüfen
-npm run check:typecheck  # TypeScript-Compiler validieren
-```
-
 ### Git Hooks
 
 Konfiguriert via Husky (`.husky/`):
@@ -179,24 +156,18 @@ npm run dev -- --port 8787  # Custom Port
 ### Quality
 
 ```bash
-npm run qa               # Fix + Lint + Check
+npm run qa               # Fix + Lint
 npm run fix              # Nur Auto-fix
-npm run typecheck        # JS/JSDoc über TypeScript prüfen
 npm run format           # Nur Prettier schreiben
-npm run format:check     # Nur Prettier prüfen
 ```
 
 ### Maintenance
 
 ```bash
 npm run clean            # Cache löschen
-npm run sync             # Import-Map + AI-Index sync
-```
-
-### Styles
-
-```bash
-npm run sync:styles      # Tokens + Utilities generieren
+npm run clean:full       # Cache + .wrangler löschen
+npm run content-rag:update # Jules Content-RAG aktualisieren
+npm run content-rag:status # Jules Content-RAG Status prüfen
 ```
 
 ### Admin Dashboard
@@ -219,7 +190,6 @@ npm run sync:styles      # Tokens + Utilities generieren
 - `eslint` - JavaScript Linting
 - `stylelint` - CSS Linting
 - `prettier` - Code Formatting
-- `playwright` - Browser Testing
 - `husky` - Git Hooks
 
 ## 🏗️ Architektur
@@ -229,14 +199,14 @@ npm run sync:styles      # Tokens + Utilities generieren
 ```text
 content/core/         Framework-Utilities, Event-System
 content/components/   Wiederverwendbare UI-Komponenten
-content/styles/       Globale Styles, Tokens, Utilities
+content/styles/       Globale Styles, Foundation, Utilities
 pages/*/              Seiten-Entry und Page-Komponenten
 ```
 
 ### Regeln
 
 - `content/core` kennt keine Seiten-Details
-- `content/components` bleibt generisch und token-basiert
+- `content/components` bleibt generisch und variablen-basiert
 - `pages/*` darf komponieren, aber keine Core-Regeln brechen
 
 ### Cloudflare Functions

@@ -1,6 +1,6 @@
 import { ENV } from '../config/env.config.js';
-import { iconUrl } from '../config/constants.js';
-import { normalizeSchemaText as normalizeText } from './schema-shared.js';
+import { FAVICON_512_URL } from '../config/constants.js';
+import { normalizeSchemaText as normalizeText } from './text-utils.js';
 
 export const DEFAULT_IMAGE_DIMENSIONS = Object.freeze({
   width: 1200,
@@ -24,7 +24,7 @@ const KNOWN_IMAGE_DIMENSIONS = Object.freeze({
   'og-typescript-800.png': { width: 800, height: 420 },
 });
 
-export const PERSON_FALLBACK_ICON = iconUrl('favicon-512.webp');
+export const PERSON_FALLBACK_ICON = FAVICON_512_URL;
 
 export function toAbsoluteUrl(url, base = ENV.BASE_URL) {
   if (!url) return '';
@@ -123,12 +123,16 @@ export function buildImageObject({
     acquireLicensePage: `${ENV.BASE_URL}/#image-license`,
   };
 
-  if (encodingFormat) imageNode.encodingFormat = encodingFormat;
+  if (encodingFormat)
+    /** @type {any} */ (imageNode).encodingFormat = encodingFormat;
 
   const finalDimensions = dimensions || inferImageDimensions(absoluteUrl);
-  if (finalDimensions?.width) imageNode.width = finalDimensions.width;
-  if (finalDimensions?.height) imageNode.height = finalDimensions.height;
-  if (representativeOfPage) imageNode.representativeOfPage = true;
+  if (finalDimensions?.width)
+    /** @type {any} */ (imageNode).width = finalDimensions.width;
+  if (finalDimensions?.height)
+    /** @type {any} */ (imageNode).height = finalDimensions.height;
+  if (representativeOfPage)
+    /** @type {any} */ (imageNode).representativeOfPage = true;
 
   return imageNode;
 }

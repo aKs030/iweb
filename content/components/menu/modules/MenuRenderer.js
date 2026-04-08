@@ -3,20 +3,22 @@
  */
 
 import { MenuTemplate } from './MenuTemplate.js';
-import { i18n } from '../../../core/i18n.js';
-import {
-  clearMenuOverlayState,
-  setMenuOverlayState,
-} from './MenuOverlayState.js';
+import { i18n } from '#core/i18n.js';
 
 /**
  * @typedef {import('./MenuState.js').MenuState} MenuState
+ */
+/**
+ * @typedef {typeof import('./MenuConfig.js').MenuConfig} MenuComponentConfig
+ */
+/**
+ * @typedef {Partial<MenuComponentConfig>} MenuComponentConfigInput
  */
 
 export class MenuRenderer {
   /**
    * @param {MenuState} state
-   * @param {Object} config
+   * @param {MenuComponentConfigInput} [config]
    */
   constructor(state, config = {}) {
     this.state = state;
@@ -40,8 +42,8 @@ export class MenuRenderer {
     this.setupStateSubscriptions();
 
     // Initial Language Sync
-    const currentLang = i18n.getCurrentLanguage
-      ? i18n.getCurrentLanguage()
+    const currentLang = /** @type {any} */ (i18n).getCurrentLanguage
+      ? /** @type {any} */ (i18n).getCurrentLanguage()
       : 'de';
     this.updateLanguage(currentLang);
   }
@@ -68,7 +70,7 @@ export class MenuRenderer {
         // If SVG symbol is missing, show fallback emoji/text
         if (!target && fallback) {
           if (svg) svg.style.display = 'none';
-          fallback.style.display = 'inline-block';
+          /** @type {any} */ (fallback).style.display = 'inline-block';
         }
       });
     }, delay);
@@ -86,7 +88,6 @@ export class MenuRenderer {
 
         if (menu) menu.classList.toggle('open', isOpen);
         if (toggle) toggle.classList.toggle('active', isOpen);
-        setMenuOverlayState(isOpen ? 'menu' : null);
 
         // Accessibility update
         if (toggle) toggle.setAttribute('aria-expanded', String(isOpen));
@@ -231,7 +232,6 @@ export class MenuRenderer {
       this._i18nUnsub();
       this._i18nUnsub = null;
     }
-    clearMenuOverlayState();
     this.container = null;
   }
 }

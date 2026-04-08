@@ -1,3 +1,39 @@
+import {
+  resolveTypewriterApproachTargetX,
+  startRandomEntryAnimation,
+  updateEntryVariant,
+} from './animations/entry-animations.js';
+import {
+  doBlink,
+  resetIdleAnimations,
+  startBlinkLoop,
+  startIdleEyeMovement,
+  stopBlinkLoop,
+  stopIdleEyeMovement,
+  triggerRandomIdleAnimation,
+  updateEyesTransform,
+} from './animations/idle-behaviors.js';
+import {
+  cancelSearchAnimationFrame,
+  scheduleSearchAnimationFrame,
+  setMagnifyingGlassVisible,
+  startSearchAnimation,
+  stopSearchAnimation,
+  updateSearchAnimation,
+} from './animations/search-flight.js';
+import {
+  destroyFeedbackAnimations,
+  ensureFlameColors,
+  playPokeAnimation,
+  spawnFlameParticle,
+  spawnParticleBurst,
+  startSpeaking,
+  startSpeakingLoop,
+  startThinking,
+  stopSpeaking,
+  stopThinking,
+} from './animations/avatar-feedback.js';
+
 export class RobotAnimation {
   constructor(robot) {
     this.robot = robot;
@@ -25,6 +61,11 @@ export class RobotAnimation {
       knockbackDuration: 600,
       knockbackStartX: 0,
       knockbackStartY: 0,
+      knockbackEndX: 0,
+      naturalPauseUntil: 0,
+      naturalNextPauseAt: 0,
+      naturalMinX: 0,
+      variantKey: '',
     };
 
     // Performance & Caching Config
@@ -42,7 +83,20 @@ export class RobotAnimation {
       dashUntil: 0,
     };
 
+    this.entryConfig = {
+      homeIntroFallbackMs: 2200,
+      homeIntroDurationMs: 900,
+      homeIntroPauseMs: 1600,
+      homeTypewriterSafeGap: 32,
+      mobileBreakpoint: 768,
+    };
+    this._typewriterIntroQueued = false;
+    /** @type {ReturnType<typeof setTimeout> | null} */
+    this._typewriterIntroFallbackTimer = null;
+
     this._prevDashActive = false;
+    /** @type {number | null} */
+    this._lastBounceT = null;
 
     // Idle eye animation
     this.eyeIdleOffset = { x: 0, y: 0 };
@@ -90,6 +144,7 @@ export class RobotAnimation {
     this.speakingActive = false;
     /** @type {ReturnType<typeof setTimeout> | null} */
     this._speakingTimer = null;
+    this._flameInitDone = false;
 
     // NOTE: flame DOM may not exist at constructor time; we moved the
     // suspicious colour-fixing logic into a dedicated helper that can be
@@ -109,14 +164,7 @@ export class RobotAnimation {
    * opacity. Call after DOM references are cached.
    */
   ensureFlameColors() {
-    if (this._flameInitDone) return;
-    this._flameInitDone = true;
-    if (this.robot.dom && this.robot.dom.flame) {
-      // Fill colours are now set by CSS (.robot-flame path rules).
-      // Only reset opacity/scale so nothing leaks from a previous session.
-      this.robot.dom.flame.style.opacity = '0';
-      this.robot.dom.flame.style.transform = 'scale(1)';
-    }
+    ensureFlameColors(this);
   }
 
   /**
@@ -156,89 +204,23 @@ export class RobotAnimation {
   }
 
   startSpeaking() {
-    if (this.speakingActive) return;
-    this.speakingActive = true;
-    this.startSpeakingLoop();
+    startSpeaking(this);
   }
 
   stopSpeaking() {
-    if (!this.speakingActive) return;
-    this.speakingActive = false;
-    if (this._speakingTimer) {
-      this.robot._clearTimeout(this._speakingTimer);
-      this._speakingTimer = null;
-    }
-    // Reset antenna color
-    if (this.robot.dom.antenna) {
-      const antenna = this.robot.dom.antenna;
-      if (antenna) {
-        antenna.style.fill = '';
-        antenna.style.filter = '';
-      }
-    }
+    stopSpeaking(this);
   }
 
   startSpeakingLoop() {
-    if (!this.speakingActive) return;
-
-    // Simulate "talking" by flashing antenna randomly
-    const duration = 100 + Math.random() * 150;
-    const isLit = Math.random() > 0.3;
-
-    if (this.robot.dom.antenna) {
-      const antenna = this.robot.dom.antenna;
-      if (antenna) {
-        if (isLit) {
-          antenna.style.fill = '#40e0d0'; // Cyan
-          antenna.style.filter = 'drop-shadow(0 0 8px #40e0d0)';
-        } else {
-          antenna.style.fill = '';
-          antenna.style.filter = '';
-        }
-      }
-    }
-
-    // Check again before scheduling to prevent race condition
-    if (!this.speakingActive) return;
-
-    this._speakingTimer = this.robot._setTimeout(
-      () => this.startSpeakingLoop(),
-      duration + 50,
-    );
+    startSpeakingLoop(this);
   }
 
   startThinking() {
-    if (this.thinkingActive) return;
-    this.thinkingActive = true;
-
-    if (this.robot.dom.antenna) {
-      const antenna = this.robot.dom.antenna;
-      if (antenna) {
-        antenna.classList.add('is-thinking');
-      }
-    }
-
-    if (this.robot.dom.eyes) {
-      this.stopIdleEyeMovement();
-      this.robot.dom.eyes.classList.add('is-thinking');
-    }
+    startThinking(this);
   }
 
   stopThinking() {
-    if (!this.thinkingActive) return;
-    this.thinkingActive = false;
-
-    if (this.robot.dom.antenna) {
-      const antenna = this.robot.dom.antenna;
-      if (antenna) {
-        antenna.classList.remove('is-thinking');
-      }
-    }
-
-    if (this.robot.dom.eyes) {
-      this.robot.dom.eyes.classList.remove('is-thinking');
-      this.startIdleEyeMovement();
-    }
+    stopThinking(this);
   }
 
   triggerKnockback() {
@@ -261,227 +243,164 @@ export class RobotAnimation {
     this.robot._requestAnimationFrame(this.updateStartAnimation);
   }
 
+  _isHomeContext() {
+    const pageContext = this.robot.dom?.container?.dataset?.pageContext || '';
+    return pageContext === 'home';
+  }
+
+  _isCompactViewport() {
+    return (
+      (typeof globalThis !== 'undefined' ? globalThis.innerWidth : 0) <=
+      this.entryConfig.mobileBreakpoint
+    );
+  }
+
+  _clearQueuedTypewriterIntro() {
+    this._typewriterIntroQueued = false;
+    if (this._typewriterIntroFallbackTimer) {
+      this.robot._clearTimeout(this._typewriterIntroFallbackTimer);
+      this._typewriterIntroFallbackTimer = null;
+    }
+  }
+
+  _startHomeIntroSequence() {
+    if (!this.robot.dom.container || !this._isHomeContext()) {
+      this._clearQueuedTypewriterIntro();
+      return;
+    }
+
+    this._clearQueuedTypewriterIntro();
+
+    const reducedMotion =
+      typeof globalThis !== 'undefined' &&
+      globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    const compact = this._isCompactViewport();
+
+    this.patrol.active = false;
+    this.patrol.isPaused = false;
+    this.motion.dashUntil = 0;
+
+    if (reducedMotion) {
+      this.startAnimation.active = false;
+      this.startAnimation.phase = 'idle';
+      this.patrol.x = 0;
+      this.patrol.y = 0;
+      this.robot.dom.container.style.opacity = '1';
+      this.robot.dom.container.style.transform = 'translate3d(0px, 0px, 0)';
+      if (this.robot.dom.floatWrapper) {
+        this.robot.dom.floatWrapper.style.transform = 'rotate(0deg)';
+        this.robot.dom.floatWrapper.style.opacity = '';
+      }
+      this.setAvatarState({ moving: false, dashing: false });
+      this.pausePatrol(900);
+      this.startPatrol();
+      return;
+    }
+
+    const startOffsetX = compact ? -6 : -16;
+    const startOffsetY = compact ? 12 : 24;
+    const startTilt = compact ? -4 : -7;
+
+    this.startAnimation.active = true;
+    this.startAnimation.phase = 'settleIn';
+    this.startAnimation.startTime = performance.now();
+    this.startAnimation.duration = compact
+      ? 720
+      : this.entryConfig.homeIntroDurationMs;
+    this.startAnimation.startX = startOffsetX;
+    this.startAnimation.knockbackStartY = startOffsetY;
+    this.patrol.x = startOffsetX;
+    this.patrol.y = startOffsetY;
+    this.patrol.bouncePhase = 0;
+
+    this.robot.dom.container.style.opacity = '0';
+    this.robot.dom.container.style.transform = `translate3d(${-startOffsetX}px, ${startOffsetY}px, 0)`;
+    if (this.robot.dom.floatWrapper) {
+      this.robot.dom.floatWrapper.style.transform = `rotate(${startTilt}deg) scale(0.94)`;
+      this.robot.dom.floatWrapper.style.opacity = '0.2';
+    }
+    if (this.robot.dom.svg) {
+      this.robot.dom.svg.style.transform = `rotate(${startTilt * 0.7}deg)`;
+    }
+    if (this.robot.dom.flame) {
+      this.robot.dom.flame.style.opacity = '0.18';
+      this.robot.dom.flame.style.transform = 'scale(0.92)';
+    }
+
+    this.robot._requestAnimationFrame(this.updateStartAnimation);
+  }
+
+  _maintainHomeTypewriterClearance(twRect, maxLeft) {
+    if (!this._isHomeContext() || !twRect || !this.robot.dom?.container) {
+      return false;
+    }
+
+    const sourceEl =
+      this.robot.dom.svg || this.robot.dom.avatar || this.robot.dom.container;
+    if (!sourceEl) return false;
+
+    const safeGap = this.entryConfig.homeTypewriterSafeGap;
+    const robotRect = sourceEl.getBoundingClientRect();
+    const intrudesOnSafeZone = !(
+      twRect.right + safeGap < robotRect.left ||
+      twRect.left - safeGap > robotRect.right ||
+      twRect.bottom + 10 < robotRect.top ||
+      twRect.top - safeGap > robotRect.bottom
+    );
+
+    if (!intrudesOnSafeZone) return false;
+
+    this.patrol.direction = -1;
+    this.motion.dashUntil = 0;
+    this.patrol.x = Math.max(0, Math.min(maxLeft, this.patrol.x - 18));
+    this.patrol.y = Math.min(this.patrol.y, 0);
+    this.setAvatarState({ moving: false, dashing: false });
+
+    if (!this.patrol.isPaused) {
+      this.pausePatrol(1400 + Math.random() * 900);
+      this.spawnParticleBurst(3, { direction: -1, strength: 0.75 });
+    }
+
+    return true;
+  }
+
+  handleHeroTypingEnd() {
+    const typeWriter = this.robot.getTypewriterElement();
+    if (typeWriter) {
+      this.cacheConfig.typeWriterRect = typeWriter.getBoundingClientRect();
+      this.cacheConfig.lastTypeWriterCheck = performance.now();
+    }
+
+    if (!this._typewriterIntroQueued) return;
+    if (!this._isHomeContext()) {
+      this._clearQueuedTypewriterIntro();
+      return;
+    }
+
+    this._startHomeIntroSequence();
+  }
+
   /**
    * Entry animation dispatcher – randomly picks one of several
    * entry animations each time the page loads for variety.
    */
   startTypeWriterKnockbackAnimation() {
-    // Guard: don't restart if an entry animation is already running
-    if (this.startAnimation.active) return;
+    if (!this.robot.dom.container || this.startAnimation.active) return;
 
-    const typeWriter = document.querySelector('.typewriter-title');
-    if (!typeWriter || !this.robot.dom.container) {
-      if (this.robot.dom.container) {
-        this.robot.dom.container.style.opacity = '1';
-      }
-      this.startPatrol();
+    if (this._isHomeContext()) {
+      this._clearQueuedTypewriterIntro();
+      this._typewriterIntroQueued = true;
+      const fallbackDelay = this._isCompactViewport()
+        ? 1100
+        : this.entryConfig.homeIntroFallbackMs;
+      this._typewriterIntroFallbackTimer = this.robot._setTimeout(() => {
+        if (!this._typewriterIntroQueued) return;
+        this._startHomeIntroSequence();
+      }, fallbackDelay);
       return;
     }
 
-    const variants = [
-      () => this._entryKnockback(typeWriter),
-      () => this._entryDropIn(),
-      () => this._entryZoomSpin(),
-      () => this._entrySlideIn(),
-      () => this._entryGlitchIn(),
-      () => this._entryBounceAcross(),
-      () => this._entryPortalOpen(),
-      () => this._entryRocketLaunch(),
-    ];
-    const pick = variants[Math.floor(Math.random() * variants.length)];
-    pick();
-  }
-
-  // ── Entry Animation Variants ──────────────────────────────────
-
-  /** @param {string[]} arr */
-  _randomPick(arr) {
-    return arr[Math.floor(Math.random() * arr.length)];
-  }
-
-  /** Original: Robot appears at default position and naturally patrols to text */
-  _entryKnockback(typeWriter) {
-    const twRect = typeWriter.getBoundingClientRect();
-    const robotWidth = 80;
-    const windowWidth =
-      typeof globalThis !== 'undefined' ? globalThis.innerWidth : 0;
-    const initialLeft = windowWidth - 30 - robotWidth;
-
-    const gap = 12;
-    const spaceRight = windowWidth - twRect.right - 30;
-    let targetLeft =
-      spaceRight >= robotWidth + gap
-        ? twRect.right + gap
-        : twRect.left - robotWidth - gap;
-    targetLeft = Math.max(8, Math.min(initialLeft - 20, targetLeft));
-
-    const targetX = Math.max(20, Math.round(initialLeft - targetLeft));
-
-    this.startAnimation.active = true;
-    this.patrol.x = Math.max(0, targetX - 200);
-    this.patrol.y = 0;
-    this.patrol.bouncePhase = 0;
-
-    this.robot.dom.container.style.transform = `translate3d(${-this.patrol.x}px, 0px, 0)`;
-    if (this.robot.dom.floatWrapper) {
-      this.robot.dom.floatWrapper.style.transform = 'rotate(0deg)';
-    }
-    this.robot.dom.container.style.opacity = '1';
-    this._startNaturalApproach(targetX);
-  }
-
-  /** Robot drops from above the viewport with a bounce landing */
-  _entryDropIn() {
-    const startY = -(globalThis.innerHeight || 800);
-    this.patrol.x = 0;
-    this.patrol.y = startY;
-    this.patrol.direction = -1;
-    this.patrol.bouncePhase = 0;
-
-    this.startAnimation.active = true;
-    this.startAnimation.phase = 'entryDropIn';
-    this.startAnimation.startTime = performance.now();
-    this.startAnimation.knockbackStartY = startY;
-    this.startAnimation.duration = 900;
-
-    this.robot.dom.container.style.transform = `translate3d(0px, ${startY}px, 0)`;
-    if (this.robot.dom.floatWrapper) {
-      this.robot.dom.floatWrapper.style.transform = 'rotate(0deg)';
-    }
-    // Show robot now that start position is off-screen
-    this.robot.dom.container.style.opacity = '1';
-    this.robot._requestAnimationFrame(this.updateStartAnimation);
-  }
-
-  /** Robot zooms in from tiny with a spin */
-  _entryZoomSpin() {
-    this.patrol.x = 0;
-    this.patrol.y = 0;
-
-    this.startAnimation.active = true;
-    this.startAnimation.phase = 'entryZoomSpin';
-    this.startAnimation.startTime = performance.now();
-    this.startAnimation.duration = 1000;
-
-    if (this.robot.dom.floatWrapper) {
-      this.robot.dom.floatWrapper.style.transform = 'scale(0.05) rotate(0deg)';
-      this.robot.dom.floatWrapper.style.opacity = '0';
-    }
-    this.robot.dom.container.style.transform = 'translate3d(0px, 0px, 0)';
-    // Show container (floatWrapper handles fade-in via its own opacity)
-    this.robot.dom.container.style.opacity = '1';
-    this.robot._requestAnimationFrame(this.updateStartAnimation);
-  }
-
-  /** Robot slides in from the right edge */
-  _entrySlideIn() {
-    this.patrol.x = -300;
-    this.patrol.y = 0;
-    this.patrol.direction = 1;
-    this.patrol.bouncePhase = 0;
-
-    this.startAnimation.active = true;
-    this.startAnimation.phase = 'entrySlideIn';
-    this.startAnimation.startTime = performance.now();
-    this.startAnimation.startX = -300;
-    this.startAnimation.duration = 1200;
-
-    this.robot.dom.container.style.transform = 'translate3d(300px, 0px, 0)';
-    if (this.robot.dom.floatWrapper) {
-      this.robot.dom.floatWrapper.style.transform = 'rotate(-15deg)';
-    }
-    // Show robot now that it's positioned off-screen right
-    this.robot.dom.container.style.opacity = '1';
-    this.robot._requestAnimationFrame(this.updateStartAnimation);
-  }
-
-  /** Robot appears with glitch/teleport effect */
-  _entryGlitchIn() {
-    this.patrol.x = 0;
-    this.patrol.y = 0;
-
-    this.startAnimation.active = true;
-    this.startAnimation.phase = 'entryGlitchIn';
-    this.startAnimation.startTime = performance.now();
-    this.startAnimation.duration = 1400;
-
-    this.robot.dom.container.style.transform = 'translate3d(0px, 0px, 0)';
-    if (this.robot.dom.floatWrapper) {
-      this.robot.dom.floatWrapper.style.opacity = '0';
-    }
-    // Show container (floatWrapper handles visibility via its own opacity)
-    this.robot.dom.container.style.opacity = '1';
-    this.robot._requestAnimationFrame(this.updateStartAnimation);
-  }
-
-  /** Robot bounces across the bottom of the screen like a ball */
-  _entryBounceAcross() {
-    const windowWidth = globalThis.innerWidth || 800;
-    this.patrol.x = -(windowWidth * 0.3); // start off-screen left
-    this.patrol.y = 0;
-    this.patrol.direction = 1;
-    this.patrol.bouncePhase = 0;
-
-    this.startAnimation.active = true;
-    this.startAnimation.phase = 'entryBounceAcross';
-    this.startAnimation.startTime = performance.now();
-    this.startAnimation.startX = this.patrol.x;
-    this.startAnimation.duration = 2000;
-    this.startAnimation.bounceCount = 0;
-
-    this.robot.dom.container.style.transform = `translate3d(${-this.patrol.x}px, 0px, 0)`;
-    if (this.robot.dom.floatWrapper) {
-      this.robot.dom.floatWrapper.style.transform = 'rotate(0deg)';
-    }
-    this.robot.dom.container.style.opacity = '1';
-    this.robot._requestAnimationFrame(this.updateStartAnimation);
-  }
-
-  /** Robot materialises through a spinning portal */
-  _entryPortalOpen() {
-    this.patrol.x = 0;
-    this.patrol.y = 0;
-
-    this.startAnimation.active = true;
-    this.startAnimation.phase = 'entryPortalOpen';
-    this.startAnimation.startTime = performance.now();
-    this.startAnimation.duration = 1600;
-
-    if (this.robot.dom.floatWrapper) {
-      this.robot.dom.floatWrapper.style.transform = 'scale(0) rotate(0deg)';
-      this.robot.dom.floatWrapper.style.opacity = '0';
-    }
-    // Add portal glow CSS class to avatar
-    if (this.robot.dom.avatar) {
-      this.robot.dom.avatar.classList.add('portal-glow');
-    }
-    this.robot.dom.container.style.transform = 'translate3d(0px, 0px, 0)';
-    this.robot.dom.container.style.opacity = '1';
-    this.robot._requestAnimationFrame(this.updateStartAnimation);
-  }
-
-  /** Robot launches from below like a rocket */
-  _entryRocketLaunch() {
-    const startY = 300; // below viewport
-    this.patrol.x = 0;
-    this.patrol.y = startY;
-    this.patrol.bouncePhase = 0;
-
-    this.startAnimation.active = true;
-    this.startAnimation.phase = 'entryRocketLaunch';
-    this.startAnimation.startTime = performance.now();
-    this.startAnimation.knockbackStartY = startY;
-    this.startAnimation.duration = 1200;
-
-    if (this.robot.dom.avatar) {
-      this.robot.dom.avatar.classList.add('rocket-trail');
-    }
-    this.robot.dom.container.style.transform = `translate3d(0px, ${startY}px, 0)`;
-    if (this.robot.dom.floatWrapper) {
-      this.robot.dom.floatWrapper.style.transform = 'rotate(0deg)';
-    }
-    this.robot.dom.container.style.opacity = '1';
-    this.robot._requestAnimationFrame(this.updateStartAnimation);
+    startRandomEntryAnimation(this);
   }
 
   /** Clean up any entry animation state and transition to patrol */
@@ -547,20 +466,7 @@ export class RobotAnimation {
       return;
     }
 
-    const twRect = typeWriter.getBoundingClientRect();
-    const robotWidth = 80;
-    const windowWidth = globalThis.innerWidth || 0;
-    const initialLeft = windowWidth - 30 - robotWidth;
-    const gap = 12;
-    const spaceRight = windowWidth - twRect.right - 30;
-    let targetLeft =
-      spaceRight >= robotWidth + gap
-        ? twRect.right + gap
-        : twRect.left - robotWidth - gap;
-    targetLeft = Math.max(8, Math.min(initialLeft - 20, targetLeft));
-
-    const targetX = Math.max(20, Math.round(initialLeft - targetLeft));
-    this._startNaturalApproach(targetX);
+    this._startNaturalApproach(resolveTypewriterApproachTargetX(typeWriter));
   }
 
   /**
@@ -594,6 +500,71 @@ export class RobotAnimation {
     }
 
     const now = performance.now();
+
+    if (this.startAnimation.phase === 'settleIn') {
+      const elapsed = now - this.startAnimation.startTime;
+      const duration =
+        this.startAnimation.duration || this.entryConfig.homeIntroDurationMs;
+      const t = Math.min(1, elapsed / duration);
+      const eased = 1 - Math.pow(1 - t, 3);
+      const startX = this.startAnimation.startX || 0;
+      const startY = this.startAnimation.knockbackStartY || 0;
+      const compact = this._isCompactViewport();
+      const startTilt = compact ? -4 : -7;
+
+      this.patrol.x = startX * (1 - eased);
+      this.patrol.y = startY * (1 - eased);
+
+      this.robot.dom.container.style.opacity = `${0.12 + eased * 0.88}`;
+      this.robot.dom.container.style.transform = `translate3d(${-this.patrol.x}px, ${this.patrol.y}px, 0)`;
+
+      if (this.robot.dom.floatWrapper) {
+        const scale = 0.94 + eased * 0.06;
+        this.robot.dom.floatWrapper.style.transform = `rotate(${startTilt * (1 - eased)}deg) scale(${scale})`;
+        this.robot.dom.floatWrapper.style.opacity = `${0.2 + eased * 0.8}`;
+      }
+
+      if (this.robot.dom.svg) {
+        this.robot.dom.svg.style.transform = `rotate(${startTilt * 0.7 * (1 - eased)}deg)`;
+      }
+
+      if (this.robot.dom.flame) {
+        const flameOpacity = 0.18 + eased * 0.28;
+        this.robot.dom.flame.style.opacity = `${flameOpacity}`;
+        this.robot.dom.flame.style.transform = `scale(${0.92 + eased * 0.12})`;
+      }
+
+      const moving = t < 0.7;
+      this.setAvatarState({ moving, dashing: false });
+      if (this.robot.dom.legs) {
+        this.robot.dom.legs.classList.toggle('wiggle', moving);
+      }
+
+      if (t >= 1) {
+        this.startAnimation.active = false;
+        this.startAnimation.phase = 'idle';
+        this.patrol.x = 0;
+        this.patrol.y = 0;
+        this.robot.dom.container.style.opacity = '1';
+        this.robot.dom.container.style.transform = 'translate3d(0px, 0px, 0)';
+        if (this.robot.dom.floatWrapper) {
+          this.robot.dom.floatWrapper.style.transform = 'rotate(0deg) scale(1)';
+          this.robot.dom.floatWrapper.style.opacity = '';
+        }
+        if (this.robot.dom.svg) {
+          this.robot.dom.svg.style.transform = 'rotate(0deg)';
+        }
+        this.setAvatarState({ moving: false, dashing: false });
+        this.pausePatrol(
+          this.entryConfig.homeIntroPauseMs + Math.random() * 600,
+        );
+        this.startPatrol();
+        return;
+      }
+
+      this.robot._requestAnimationFrame(this.updateStartAnimation);
+      return;
+    }
 
     if (this.startAnimation.phase === 'naturalApproach') {
       // ── Pause handling ──
@@ -781,7 +752,7 @@ export class RobotAnimation {
       // Flash effect on impact start
       if (t < 0.1 && this.robot.dom.svg) {
         this.robot.dom.svg.style.filter =
-          'brightness(2) drop-shadow(0 0 8px #fff)';
+          'brightness(2) drop-shadow(0 0 8px var(--robot-svg-flash-glow))';
       } else if (t >= 0.1 && t < 0.15 && this.robot.dom.svg) {
         this.robot.dom.svg.style.filter = '';
       }
@@ -851,356 +822,7 @@ export class RobotAnimation {
    * @param {number} now - Current timestamp from performance.now()
    */
   _updateEntryPhases(now) {
-    if (this.startAnimation.phase === 'entryDropIn') {
-      const elapsed = now - this.startAnimation.startTime;
-      const t = Math.min(1, elapsed / this.startAnimation.duration);
-
-      // Gravity-like fall then bounce
-      let eased;
-      if (t < 0.6) {
-        const ft = t / 0.6;
-        eased = ft * ft; // Accelerating fall
-      } else {
-        const bt = (t - 0.6) / 0.4;
-        eased = 1 - Math.abs(Math.sin(bt * Math.PI * 2)) * (1 - bt) * 0.25;
-      }
-
-      const startY = this.startAnimation.knockbackStartY;
-      this.patrol.y = startY * (1 - eased);
-
-      // Tilt during fall, stabilize on landing
-      const tilt = t < 0.6 ? -12 * (t / 0.6) : -12 + 12 * ((t - 0.6) / 0.4);
-      if (this.robot.dom.svg) {
-        this.robot.dom.svg.style.transform = `rotate(${tilt}deg)`;
-      }
-
-      if (this.robot.dom.flame) {
-        this.robot.dom.flame.style.opacity = `${t < 0.6 ? 0.3 + t : 1 - (t - 0.6) / 0.4}`;
-      }
-
-      this.setAvatarState({ moving: true, dashing: t < 0.6 });
-      this.robot.dom.container.style.transform = `translate3d(0px, ${this.patrol.y}px, 0)`;
-
-      if (t >= 1) {
-        this.spawnParticleBurst(10, { strength: 1.5, spread: 180 });
-        const msg = this._randomPick([
-          'Gelandet! 🛬',
-          'Touchdown! 🪂',
-          'Hallo von oben! 🌤️',
-          'Anflug beendet! ✈️',
-        ]);
-        this._transitionToTextKnockback(msg);
-        return;
-      }
-
-      this.robot._requestAnimationFrame(this.updateStartAnimation);
-      return;
-    }
-
-    if (this.startAnimation.phase === 'entryZoomSpin') {
-      const elapsed = now - this.startAnimation.startTime;
-      const t = Math.min(1, elapsed / this.startAnimation.duration);
-
-      // Ease-out cubic with overshoot
-      const eased = 1 - Math.pow(1 - t, 3);
-      const scale = 0.05 + 0.95 * eased;
-      const rotation = (1 - eased) * 720; // 2 full spins
-      const opacity = Math.min(1, eased * 2);
-
-      if (this.robot.dom.floatWrapper) {
-        this.robot.dom.floatWrapper.style.transform = `scale(${scale}) rotate(${rotation}deg)`;
-        this.robot.dom.floatWrapper.style.opacity = `${opacity}`;
-      }
-
-      if (t >= 1) {
-        this.spawnParticleBurst(8, { strength: 1.2, spread: 360 });
-        const msg = this._randomPick([
-          'Tada! ✨',
-          'Und da bin ich! 🌀',
-          'Einmal Drehung bitte! 🎪',
-          'Materialisation abgeschlossen! 🔮',
-        ]);
-        this._transitionToTextKnockback(msg);
-        return;
-      }
-
-      this.robot._requestAnimationFrame(this.updateStartAnimation);
-      return;
-    }
-
-    if (this.startAnimation.phase === 'entrySlideIn') {
-      const elapsed = now - this.startAnimation.startTime;
-      const t = Math.min(1, elapsed / this.startAnimation.duration);
-
-      // Elastic ease-out
-      const eased =
-        t === 1 ? 1 : 1 - Math.pow(2, -10 * t) * Math.cos(t * Math.PI * 3);
-
-      this.patrol.x = this.startAnimation.startX * (1 - eased);
-      this.patrol.bouncePhase += 0.08;
-      this.patrol.y = Math.sin(this.patrol.bouncePhase) * 4;
-
-      const tilt = -15 * (1 - eased);
-      if (this.robot.dom.floatWrapper) {
-        this.robot.dom.floatWrapper.style.transform = `rotate(${tilt}deg)`;
-      }
-
-      this.setAvatarState({ moving: true, dashing: t < 0.5 });
-      if (this.robot.dom.flame) {
-        this.robot.dom.flame.style.opacity = `${1 - eased}`;
-      }
-
-      this.robot.dom.container.style.transform = `translate3d(${-this.patrol.x}px, ${this.patrol.y}px, 0)`;
-
-      if (t >= 1) {
-        this.spawnParticleBurst(6, { strength: 1, direction: 1 });
-        const msg = this._randomPick([
-          'Da bin ich! 👋',
-          'Psst… Hey! 🤫',
-          'Alles klar hier? 😊',
-          'Bin eingetroffen! 🚀',
-        ]);
-        this._transitionToTextKnockback(msg);
-        return;
-      }
-
-      this.robot._requestAnimationFrame(this.updateStartAnimation);
-      return;
-    }
-
-    if (this.startAnimation.phase === 'entryGlitchIn') {
-      const elapsed = now - this.startAnimation.startTime;
-      const t = Math.min(1, elapsed / this.startAnimation.duration);
-
-      // Glitch: rapid random visibility flickers + position jitter
-      const flickerRate = t < 0.6 ? 0.45 : 0.85;
-      const isVisible = Math.random() < flickerRate;
-
-      if (this.robot.dom.floatWrapper) {
-        this.robot.dom.floatWrapper.style.opacity = isVisible ? '1' : '0';
-
-        if (t < 0.6 && isVisible) {
-          const jX = (Math.random() - 0.5) * 50;
-          const jY = (Math.random() - 0.5) * 50;
-          this.robot.dom.floatWrapper.style.transform = `translate(${jX}px, ${jY}px)`;
-        } else if (t >= 0.6) {
-          const settle = (t - 0.6) / 0.4;
-          const jScale = (1 - settle) * 12;
-          const jX = (Math.random() - 0.5) * jScale;
-          const jY = (Math.random() - 0.5) * jScale;
-          this.robot.dom.floatWrapper.style.transform = `translate(${jX}px, ${jY}px)`;
-        }
-      }
-
-      // Random glitch particles
-      if (Math.random() < 0.12) {
-        this.spawnParticleBurst(2, { strength: 0.8, spread: 360 });
-      }
-
-      if (t >= 1) {
-        this.spawnParticleBurst(12, { strength: 1.5, spread: 360 });
-        const msg = this._randomPick([
-          '*bzzt* Online! ⚡',
-          'System bereit! 🔌',
-          'Verbindung hergestellt! 📡',
-          'Initialisierung… fertig! 🤖',
-        ]);
-        this._transitionToTextKnockback(msg);
-        return;
-      }
-
-      this.robot._requestAnimationFrame(this.updateStartAnimation);
-      return;
-    }
-
-    // ── entryBounceAcross: ball-like bouncing across the screen ──
-    if (this.startAnimation.phase === 'entryBounceAcross') {
-      const elapsed = now - this.startAnimation.startTime;
-      const t = Math.min(1, elapsed / this.startAnimation.duration);
-
-      // Horizontal: ease from off-screen-left to 0
-      const easeX = 1 - Math.pow(1 - t, 2); // ease-out quad
-      const totalDist = Math.abs(this.startAnimation.startX);
-      this.patrol.x = this.startAnimation.startX + totalDist * easeX;
-
-      // Vertical: 4 diminishing bounces
-      const bounceFreq = 4;
-      const bounceHeight = 120 * (1 - t); // diminish over time
-      const bounceVal = Math.abs(Math.sin(t * Math.PI * bounceFreq));
-      this.patrol.y = -bounceVal * bounceHeight;
-
-      // Squash/stretch on "floor contact" (when y is near 0)
-      const nearFloor = bounceVal < 0.15;
-      if (this.robot.dom.floatWrapper) {
-        if (nearFloor && t < 0.9) {
-          this.robot.dom.floatWrapper.style.transform =
-            'scaleX(1.15) scaleY(0.85)';
-          // Spawn small burst on bounce contact
-          if (!this._lastBounceT || Math.abs(t - this._lastBounceT) > 0.08) {
-            this.spawnParticleBurst(3, { strength: 0.6, spread: 120 });
-            this._lastBounceT = t;
-          }
-        } else {
-          const rot = Math.sin(t * Math.PI * bounceFreq * 2) * 15 * (1 - t);
-          this.robot.dom.floatWrapper.style.transform = `scaleX(1) scaleY(1) rotate(${rot}deg)`;
-        }
-      }
-
-      this.setAvatarState({ moving: true, dashing: t < 0.3 });
-      if (this.robot.dom.flame) {
-        this.robot.dom.flame.style.opacity = `${0.4 + bounceVal * 0.5}`;
-      }
-
-      this.robot.dom.container.style.transform = `translate3d(${-this.patrol.x}px, ${this.patrol.y}px, 0)`;
-
-      if (t >= 1) {
-        this._lastBounceT = null;
-        this.spawnParticleBurst(8, { strength: 1.2, spread: 180 });
-        const msg = this._randomPick([
-          'Boing! Boing! 🏀',
-          'Was für ein Eingang! 🤸',
-          'Hoppla, gute Landung! 🎯',
-          'Boing! Hier bin ich! 🤖',
-        ]);
-        this._transitionToTextKnockback(msg);
-        return;
-      }
-
-      this.robot._requestAnimationFrame(this.updateStartAnimation);
-      return;
-    }
-
-    // ── entryPortalOpen: materialise through a spinning portal ──
-    if (this.startAnimation.phase === 'entryPortalOpen') {
-      const elapsed = now - this.startAnimation.startTime;
-      const t = Math.min(1, elapsed / this.startAnimation.duration);
-
-      // Phase 1 (0-0.5): Portal ring spins, robot invisible
-      // Phase 2 (0.5-1.0): Robot scales in, portal fades
-      if (t < 0.5) {
-        // Portal phase: random sparks
-        if (Math.random() < 0.15) {
-          this.spawnParticleBurst(2, { strength: 1, spread: 360 });
-        }
-        if (this.robot.dom.floatWrapper) {
-          const pulse = 0.02 + Math.sin(t * Math.PI * 6) * 0.03;
-          this.robot.dom.floatWrapper.style.transform = `scale(${pulse})`;
-          this.robot.dom.floatWrapper.style.opacity = '0';
-        }
-      } else {
-        const pt = (t - 0.5) / 0.5; // 0-1 for scale-in phase
-        // Elastic ease-out for dramatic pop
-        const elasticEase =
-          pt === 1 ? 1 : 1 - Math.pow(2, -10 * pt) * Math.cos(pt * Math.PI * 3);
-        const scale = Math.max(0, elasticEase);
-        const rotation = (1 - pt) * 360;
-
-        if (this.robot.dom.floatWrapper) {
-          this.robot.dom.floatWrapper.style.transform = `scale(${scale}) rotate(${rotation}deg)`;
-          this.robot.dom.floatWrapper.style.opacity = `${Math.min(1, pt * 2.5)}`;
-        }
-
-        // Remove portal glow progressively
-        if (pt > 0.6 && this.robot.dom.avatar) {
-          this.robot.dom.avatar.classList.remove('portal-glow');
-        }
-      }
-
-      if (t >= 1) {
-        if (this.robot.dom.avatar) {
-          this.robot.dom.avatar.classList.remove('portal-glow');
-        }
-        this.spawnParticleBurst(15, { strength: 1.8, spread: 360 });
-        const msg = this._randomPick([
-          'Portal-Transfer komplett! 🌀',
-          'Dimensionssprung! ✨',
-          'Teleportation erfolgreich! 🔮',
-          'Aus einer anderen Welt! 🌌',
-        ]);
-        this._transitionToTextKnockback(msg);
-        return;
-      }
-
-      this.robot._requestAnimationFrame(this.updateStartAnimation);
-      return;
-    }
-
-    // ── entryRocketLaunch: shoot up from below ──
-    if (this.startAnimation.phase === 'entryRocketLaunch') {
-      const elapsed = now - this.startAnimation.startTime;
-      const t = Math.min(1, elapsed / this.startAnimation.duration);
-
-      const startY = this.startAnimation.knockbackStartY;
-
-      if (t < 0.6) {
-        // Phase 1: Rocket up (decelerate)
-        const ft = t / 0.6;
-        const eased = 1 - Math.pow(1 - ft, 3); // ease-out cubic
-        this.patrol.y = startY * (1 - eased);
-
-        // Slight wobble
-        const wobble = Math.sin(ft * Math.PI * 8) * (3 * (1 - ft));
-        if (this.robot.dom.floatWrapper) {
-          this.robot.dom.floatWrapper.style.transform = `rotate(${wobble}deg)`;
-        }
-
-        // Flame on full blast
-        if (this.robot.dom.flame) {
-          this.robot.dom.flame.style.opacity = '1';
-          this.robot.dom.flame.style.transform = `scale(${1.2 + (1 - ft) * 0.5})`;
-        }
-
-        // Trail particles
-        if (Math.random() < 0.3) {
-          this.spawnParticleBurst(2, {
-            strength: 0.8,
-            direction: 0,
-            spread: 30,
-          });
-        }
-
-        this.setAvatarState({ moving: true, dashing: true });
-      } else {
-        // Phase 2: Overshoot and settle (spring)
-        const st = (t - 0.6) / 0.4;
-        const overshoot = -40 * Math.sin(st * Math.PI) * (1 - st);
-        this.patrol.y = overshoot;
-
-        if (this.robot.dom.floatWrapper) {
-          const settleRot = Math.sin(st * Math.PI * 2) * 8 * (1 - st);
-          this.robot.dom.floatWrapper.style.transform = `rotate(${settleRot}deg)`;
-        }
-
-        // Fade out flame
-        if (this.robot.dom.flame) {
-          this.robot.dom.flame.style.opacity = `${0.8 * (1 - st)}`;
-          this.robot.dom.flame.style.transform = 'scale(1)';
-        }
-
-        this.setAvatarState({ moving: true, dashing: false });
-      }
-
-      this.robot.dom.container.style.transform = `translate3d(0px, ${this.patrol.y}px, 0)`;
-
-      if (t >= 1) {
-        // Remove rocket trail class
-        if (this.robot.dom.avatar) {
-          this.robot.dom.avatar.classList.remove('rocket-trail');
-        }
-        this.spawnParticleBurst(10, { strength: 1.5, spread: 360 });
-        const msg = this._randomPick([
-          'Houston, wir sind da! 🚀',
-          '3… 2… 1… Hallo! 🛸',
-          'Raketenstart geglückt! 🌟',
-          'Abheben und landen! 💫',
-        ]);
-        this._transitionToTextKnockback(msg);
-        return;
-      }
-
-      this.robot._requestAnimationFrame(this.updateStartAnimation);
-      return;
-    }
+    updateEntryVariant(this, now);
   }
 
   startPatrol() {
@@ -1279,6 +901,22 @@ export class RobotAnimation {
     }
 
     if (typeWriter && twRect) {
+      const avoidedTypewriter = this._maintainHomeTypewriterClearance(
+        twRect,
+        maxLeft,
+      );
+      if (avoidedTypewriter) {
+        if (this.robot.dom.svg) {
+          this.robot.dom.svg.style.transform = 'rotate(0deg)';
+        }
+        if (this.robot.dom.floatWrapper) {
+          this.robot.dom.floatWrapper.style.transform = 'rotate(0deg)';
+        }
+        this.robot.dom.container.style.transform = `translate3d(-${this.patrol.x}px, ${this.patrol.y}px, 0)`;
+        this.robot._requestAnimationFrame(this.updatePatrol);
+        return;
+      }
+
       this.robot.collisionModule.checkForTypewriterCollision(twRect);
     }
 
@@ -1401,107 +1039,11 @@ export class RobotAnimation {
   }
 
   triggerRandomIdleAnimation() {
-    if (!this.robot.dom.avatar) return;
-
-    const r = Math.random();
-    if (r < 0.1) {
-      // Wave (original)
-      this.robot.dom.avatar.classList.add('waving');
-    } else if (r < 0.2) {
-      // Check watch (original)
-      this.robot.dom.avatar.classList.add('check-watch');
-      if (this.robot.dom.eyes) {
-        this.robot.dom.eyes.style.transform = 'translate(-2px, 4px)';
-      }
-    } else if (r < 0.28) {
-      // Head tilt (curious)
-      this.robot.dom.avatar.classList.add('head-tilt');
-    } else if (r < 0.36) {
-      // Yawn
-      this.robot.dom.avatar.classList.add('yawning');
-      if (this.robot.dom.mouth) {
-        this.robot.dom.mouth.classList.add('surprised');
-        this.robot._setTimeout(() => {
-          this.robot.dom.mouth?.classList.remove('surprised');
-        }, 2000);
-      }
-    } else if (r < 0.44) {
-      // Air drumming
-      this.robot.dom.avatar.classList.add('air-drumming');
-    } else if (r < 0.52) {
-      // Stretch
-      this.robot.dom.avatar.classList.add('stretching');
-    } else if (r < 0.6) {
-      // Doze off then jolt awake
-      this.robot.dom.avatar.classList.add('dozing');
-      // Spawn Zzz particle during doze
-      this.robot._setTimeout(() => {
-        if (this.robot.dom.container) {
-          const rect = this.robot.dom.container.getBoundingClientRect();
-          const zzz = document.createElement('div');
-          zzz.textContent = '💤';
-          zzz.style.cssText = `position:fixed;left:${rect.left + rect.width / 2}px;top:${rect.top - 10}px;font-size:16px;pointer-events:none;z-index:9999;animation:particleHeart 1.5s ease-out forwards;`;
-          document.body.appendChild(zzz);
-          this.robot._setTimeout(() => zzz.remove(), 1500);
-        }
-      }, 800);
-    } else if (r < 0.72) {
-      // Look around (curious scanning)
-      this.robot.dom.avatar.classList.add('looking-around');
-      if (this.robot.dom.eyes) {
-        // Eyes follow the head turns
-        this.robot.dom.eyes.style.transition = 'transform 0.3s ease';
-        this.robot._setTimeout(() => {
-          if (this.robot.dom.eyes)
-            this.robot.dom.eyes.style.transform = 'translate(-3px, 0)';
-        }, 400);
-        this.robot._setTimeout(() => {
-          if (this.robot.dom.eyes)
-            this.robot.dom.eyes.style.transform = 'translate(3px, 0)';
-        }, 1500);
-        this.robot._setTimeout(() => {
-          if (this.robot.dom.eyes) {
-            this.robot.dom.eyes.style.transform = '';
-            this.robot.dom.eyes.style.transition = '';
-          }
-        }, 2800);
-      }
-    } else if (r < 0.84) {
-      // Wiggle dance (happy)
-      this.robot.dom.avatar.classList.add('wiggle-dance');
-      if (this.robot.dom.mouth) {
-        this.robot.dom.mouth.classList.add('happy');
-        this.robot._setTimeout(() => {
-          this.robot.dom.mouth?.classList.remove('happy');
-        }, 1500);
-      }
-    } else {
-      // Random eye look (original fallback)
-      if (this.robot.dom.eyes) {
-        this.robot.dom.eyes.style.transform = `translate(${
-          Math.random() * 4 - 2
-        }px, ${Math.random() * 2 - 1}px)`;
-      }
-    }
+    triggerRandomIdleAnimation(this);
   }
 
   resetIdleAnimations() {
-    if (this.robot.dom.avatar) {
-      this.robot.dom.avatar.classList.remove(
-        'waving',
-        'check-watch',
-        'head-tilt',
-        'yawning',
-        'air-drumming',
-        'stretching',
-        'dozing',
-        'looking-around',
-        'wiggle-dance',
-      );
-    }
-    if (this.robot.dom.mouth) {
-      this.robot.dom.mouth.classList.remove('surprised', 'happy');
-    }
+    resetIdleAnimations(this);
   }
 
   /**
@@ -1512,58 +1054,7 @@ export class RobotAnimation {
     count = 6,
     { direction = 0, strength = 1, spread = null } = {},
   ) {
-    if (!this.robot.dom.container) return;
-    const rect = this.robot.dom.avatar.getBoundingClientRect();
-    const baseX = rect.left + rect.width / 2;
-    const baseY = rect.top + rect.height * 0.75;
-    const cRect = this.robot.dom.container.getBoundingClientRect();
-
-    for (let i = 0; i < count; i++) {
-      const el = document.createElement('div');
-      el.className = 'robot-burst-particle';
-      const size =
-        4 + Math.round(3 + Math.random() * 4) * Math.min(1.2, strength);
-      el.style.width = `${size}px`;
-      el.style.height = `${size}px`;
-      if (strength > 1.5 && Math.random() < 0.35) {
-        el.style.filter = 'blur(0.9px)';
-        el.style.opacity = '0.9';
-      }
-      this.robot.dom.container.appendChild(el);
-
-      let angle;
-      if (spread !== null) {
-        const spreadRad = (spread * Math.PI) / 180;
-        const baseAngle = -Math.PI / 2;
-        angle = baseAngle + (Math.random() - 0.5) * spreadRad;
-      } else {
-        const angleSpread = Math.PI / 3;
-        const baseAngle =
-          direction === 0
-            ? -Math.PI / 2
-            : direction > 0
-              ? -Math.PI / 4
-              : (-3 * Math.PI) / 4;
-        angle = baseAngle + (Math.random() - 0.5) * angleSpread;
-      }
-
-      const distance = 40 + Math.random() * 30;
-      const dx = Math.cos(angle) * distance * strength;
-      const dy = Math.sin(angle) * distance * strength - 10 * strength;
-
-      el.style.left = baseX - cRect.left - size / 2 + 'px';
-      el.style.top = baseY - cRect.top - size / 2 + 'px';
-
-      this.robot._requestAnimationFrame(() => {
-        el.style.transform = `translate(${dx}px, ${dy}px) scale(${
-          0.5 + Math.random() * 0.6
-        })`;
-        el.style.opacity = '0';
-        if (Math.random() < 0.15) el.style.filter = 'blur(1px)';
-      });
-
-      this.robot._setTimeout(() => el.remove(), 900 + Math.random() * 600);
-    }
+    spawnParticleBurst(this, count, { direction, strength, spread });
   }
 
   setAvatarState({ moving = false, dashing = false } = {}) {
@@ -1573,649 +1064,67 @@ export class RobotAnimation {
   }
 
   spawnFlameParticle() {
-    if (!this.robot.dom.container || !this.robot.dom.avatar) return;
-    const el = document.createElement('div');
-    el.style.cssText = `
-        position: absolute;
-        width: 4px; height: 4px;
-        background: #ff9900;
-        border-radius: 50%;
-        pointer-events: none;
-        opacity: 0.7;
-        mix-blend-mode: screen;
-        transition: transform 0.6s ease-out, opacity 0.6s ease-out;
-        will-change: transform, opacity;
-    `;
-
-    const rect = this.robot.dom.avatar.getBoundingClientRect();
-    const cRect = this.robot.dom.container.getBoundingClientRect();
-    // Center bottom of avatar
-    const startX = rect.left + rect.width / 2 - cRect.left;
-    const startY = rect.top + rect.height - 15 - cRect.top;
-
-    el.style.left = startX - 2 + 'px';
-    el.style.top = startY + 'px';
-
-    this.robot.dom.container.appendChild(el);
-
-    this.robot._requestAnimationFrame(() => {
-      const dx = (Math.random() - 0.5) * 10;
-      const dy = 15 + Math.random() * 15;
-      el.style.transform = `translate(${dx}px, ${dy}px) scale(0)`;
-      el.style.opacity = '0';
-    });
-
-    this.robot._setTimeout(() => el.remove(), 600);
+    spawnFlameParticle(this);
   }
 
   async playPokeAnimation() {
-    if (!this.robot.dom.avatar) {
-      return;
-    }
-
-    const effects = ['jump', 'shake', 'flash'];
-    const effect = effects[Math.floor(Math.random() * effects.length)];
-
-    if (effect === 'jump') {
-      this.robot.dom.avatar.style.transition =
-        'transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-      this.robot.dom.avatar.style.transform = 'translateY(-20px) scale(1.1)';
-
-      await new Promise((resolve) => {
-        this.robot._setTimeout(() => {
-          this.robot.dom.avatar.style.transform = '';
-          this.robot._setTimeout(resolve, 200);
-        }, 200);
-      });
-    } else if (effect === 'shake') {
-      this.robot.dom.avatar.animate(
-        [
-          { transform: 'translateX(0)' },
-          { transform: 'translateX(-5px) rotate(-5deg)' },
-          { transform: 'translateX(5px) rotate(5deg)' },
-          { transform: 'translateX(-5px) rotate(-5deg)' },
-          { transform: 'translateX(0)' },
-        ],
-        { duration: 300 },
-      );
-      await this._wait(350);
-    } else {
-      if (this.robot.dom.svg) {
-        this.robot.dom.svg.style.filter =
-          'brightness(2) drop-shadow(0 0 10px #fff)';
-      }
-      await new Promise((resolve) => {
-        this.robot._setTimeout(() => {
-          if (this.robot.dom.svg) this.robot.dom.svg.style.filter = '';
-          this.robot._setTimeout(resolve, 100);
-        }, 150);
-      });
-    }
+    await playPokeAnimation(this);
   }
 
   startIdleEyeMovement() {
-    this.stopIdleEyeMovement();
-    const cfg = this.eyeIdleConfig;
-    const scheduleNext = () => {
-      const delay =
-        cfg.intervalMin + Math.random() * (cfg.intervalMax - cfg.intervalMin);
-      this._eyeIdleTimer = this.robot._setTimeout(() => {
-        const targetX = (Math.random() * 2 - 1) * cfg.amplitudeX;
-        const targetY = (Math.random() * 2 - 1) * cfg.amplitudeY;
-        this.eyeIdleOffset.x = targetX;
-        this.eyeIdleOffset.y = targetY;
-        this.updateEyesTransform();
-        const t = this.robot._setTimeout(() => {
-          this.eyeIdleOffset.x = 0;
-          this.eyeIdleOffset.y = 0;
-          this.updateEyesTransform();
-          scheduleNext();
-        }, cfg.moveDuration);
-        // @ts-ignore - setTimeout return type compatibility
-        this._eyeIdleTimer = t || this._eyeIdleTimer;
-      }, delay);
-    };
-    scheduleNext();
+    startIdleEyeMovement(this);
   }
 
   stopIdleEyeMovement() {
-    if (this._eyeIdleTimer) {
-      this.robot._clearTimeout(this._eyeIdleTimer);
-      this._eyeIdleTimer = null;
-    }
-    this.eyeIdleOffset.x = 0;
-    this.eyeIdleOffset.y = 0;
-    this.updateEyesTransform();
+    stopIdleEyeMovement(this);
   }
 
   updateEyesTransform() {
-    if (!this.robot.dom || !this.robot.dom.eyes) return;
-    const eyeOffset =
-      typeof this.patrol !== 'undefined' && this.patrol.direction > 0 ? -3 : 3;
-    const eyeIntensity =
-      (this.startAnimation && this.startAnimation.active) ||
-      this.patrol.isPaused
-        ? 1.4
-        : this.motion && this.motion.dashUntil > performance.now()
-          ? 1.2
-          : 1;
-    const baseX = eyeOffset * eyeIntensity;
-    const totalX = baseX + (this.eyeIdleOffset.x || 0);
-    const totalY = this.eyeIdleOffset.y || 0;
-    this.robot.dom.eyes.style.transform = `translate(${totalX}px, ${totalY}px)`;
-    this.robot.dom.eyes.style.transition = 'transform 0.6s ease';
+    updateEyesTransform(this);
   }
 
   startBlinkLoop() {
-    this.stopBlinkLoop();
-    const schedule = () => {
-      const delay =
-        this.blinkConfig.intervalMin +
-        Math.random() *
-          (this.blinkConfig.intervalMax - this.blinkConfig.intervalMin);
-      this._blinkTimer = this.robot._setTimeout(() => {
-        this.doBlink();
-        schedule(); // Schedule next blink after current one completes
-      }, delay);
-    };
-    schedule();
+    startBlinkLoop(this);
   }
 
   stopBlinkLoop() {
-    if (this._blinkTimer) {
-      this.robot._clearTimeout(this._blinkTimer);
-      this._blinkTimer = null;
-    }
+    stopBlinkLoop(this);
   }
 
   doBlink() {
-    if (!this.robot.dom || !this.robot.dom.eyes) return;
-    const lids = this.robot.dom.lids;
-    if (!lids.length) return;
-    lids.forEach((l) => l.classList.add('is-blink'));
-    this.robot._setTimeout(
-      () => {
-        lids.forEach((l) => l.classList.remove('is-blink'));
-      },
-      (this.blinkConfig.duration || 120) + 20,
-    );
-  }
-
-  /**
-   * Show excitement animation (jumping with particles)
-   */
-  async playExcitementAnimation() {
-    if (!this.robot.dom.avatar) return;
-
-    // Jump animation
-    this.robot.dom.avatar.style.transition =
-      'transform 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55)';
-    this.robot.dom.avatar.style.transform =
-      'translateY(-30px) scale(1.15) rotate(5deg)';
-
-    // Spawn particles
-    this.spawnParticleBurst(12, { strength: 1.5, spread: 360 });
-
-    // Flash antenna
-    if (this.robot.dom.antenna) {
-      const antenna = this.robot.dom.antenna;
-      if (antenna) {
-        antenna.style.fill = '#ffff00';
-        antenna.style.filter = 'drop-shadow(0 0 8px #ffff00)';
-      }
-    }
-
-    await this._wait(300);
-
-    this.robot.dom.avatar.style.transform = 'translateY(0) scale(1) rotate(0)';
-
-    await this._wait(200);
-
-    // Reset antenna
-    if (this.robot.dom.antenna) {
-      const antenna = this.robot.dom.antenna;
-      if (antenna) {
-        antenna.style.fill = '';
-        antenna.style.filter = '';
-      }
-    }
-  }
-
-  /**
-   * Show surprise animation (eyes wide, jump back)
-   */
-  async playSurpriseAnimation() {
-    if (!this.robot.dom.avatar) return;
-
-    // Jump back
-    this.robot.dom.avatar.style.transition = 'transform 0.2s ease-out';
-    this.robot.dom.avatar.style.transform = 'translateX(-15px) scale(1.1)';
-
-    // Wide eyes
-    if (this.robot.dom.eyes) {
-      const pupils = this.robot.dom.pupils;
-      pupils.forEach((p) => {
-        p.style.transform = 'scale(1.5)';
-        p.style.transition = 'transform 0.2s';
-      });
-    }
-
-    await this._wait(400);
-
-    this.robot.dom.avatar.style.transform = '';
-
-    // Reset eyes
-    if (this.robot.dom.eyes) {
-      const pupils = this.robot.dom.pupils;
-      pupils.forEach((p) => {
-        p.style.transform = '';
-      });
-    }
-  }
-
-  /**
-   * Point to a specific element on the page
-   * @param {HTMLElement} element - Element to point at
-   */
-  async pointAtElement(element) {
-    if (!this.robot.dom.avatar || !element) return;
-
-    const robotRect = this.robot.dom.avatar.getBoundingClientRect();
-    const targetRect = element.getBoundingClientRect();
-
-    // Calculate direction
-    const isAbove = targetRect.top < robotRect.top;
-    const isLeft = targetRect.left < robotRect.left;
-
-    // Rotate towards target
-    const angle = isAbove ? (isLeft ? -25 : -15) : isLeft ? 15 : 25;
-
-    this.robot.dom.avatar.style.transition = 'transform 0.4s ease-out';
-    this.robot.dom.avatar.style.transform = `rotate(${angle}deg) scale(1.05)`;
-
-    // Move eyes towards target
-    if (this.robot.dom.eyes) {
-      const eyeX = isLeft ? -3 : 3;
-      const eyeY = isAbove ? -2 : 2;
-      this.robot.dom.eyes.style.transform = `translate(${eyeX}px, ${eyeY}px)`;
-    }
-
-    // Add pointing arm animation
-    this.robot.dom.avatar.classList.add('pointing');
-
-    await this._wait(2000);
-
-    // Reset
-    this.robot.dom.avatar.style.transform = '';
-    this.robot.dom.avatar.classList.remove('pointing');
-
-    if (this.robot.dom.eyes) {
-      this.robot.dom.eyes.style.transform = '';
-    }
-  }
-
-  /**
-   * Dance animation (celebration)
-   */
-  async playDanceAnimation() {
-    if (!this.robot.dom.avatar) return;
-
-    const moves = [
-      { transform: 'rotate(-10deg) translateY(-5px)', duration: 200 },
-      { transform: 'rotate(10deg) translateY(-10px)', duration: 200 },
-      { transform: 'rotate(-10deg) translateY(-5px)', duration: 200 },
-      { transform: 'rotate(10deg) translateY(-10px)', duration: 200 },
-      { transform: 'rotate(0deg) translateY(0)', duration: 200 },
-    ];
-
-    for (const move of moves) {
-      this.robot.dom.avatar.style.transition = `transform ${move.duration}ms ease-in-out`;
-      this.robot.dom.avatar.style.transform = move.transform;
-
-      // Spawn particles during dance
-      if (Math.random() > 0.5) {
-        this.spawnParticleBurst(3, { strength: 0.8, spread: 180 });
-      }
-
-      await this._wait(move.duration);
-    }
-  }
-
-  /**
-   * Sad animation (head down)
-   */
-  async playSadAnimation() {
-    if (!this.robot.dom.avatar) return;
-
-    this.robot.dom.avatar.style.transition = 'transform 0.5s ease-out';
-    this.robot.dom.avatar.style.transform = 'translateY(5px) rotate(0deg)';
-
-    // Eyes look down
-    if (this.robot.dom.eyes) {
-      this.robot.dom.eyes.style.transform = 'translate(0, 3px)';
-    }
-
-    await this._wait(2000);
-
-    this.robot.dom.avatar.style.transform = '';
-    if (this.robot.dom.eyes) {
-      this.robot.dom.eyes.style.transform = '';
-    }
-  }
-
-  /**
-   * Confused animation (head tilt with question mark)
-   */
-  async playConfusedAnimation() {
-    if (!this.robot.dom.avatar) return;
-
-    // Show thinking bubble
-    if (this.robot.dom.thinking) {
-      this.robot.dom.thinking.style.opacity = '1';
-    }
-
-    // Tilt head
-    this.robot.dom.avatar.style.transition = 'transform 0.3s ease-in-out';
-    this.robot.dom.avatar.style.transform = 'rotate(-15deg)';
-
-    await this._wait(500);
-
-    this.robot.dom.avatar.style.transform = 'rotate(15deg)';
-
-    await this._wait(500);
-
-    this.robot.dom.avatar.style.transform = '';
-
-    // Hide thinking bubble
-    if (this.robot.dom.thinking) {
-      this.robot.dom.thinking.style.opacity = '0';
-    }
+    doBlink(this);
   }
 
   startSearchAnimation() {
-    if (!this.robot.dom.container) {
-      return;
-    }
-
-    const targetEl = document.querySelector(
-      '.site-header.search-mode .menu-search__bar, .menu-search[aria-hidden="false"] .menu-search__bar',
-    );
-
-    if (!targetEl || targetEl.getClientRects().length === 0) {
-      this.stopSearchAnimation();
-      return;
-    }
-
-    const targetRect = targetEl.getBoundingClientRect();
-    const windowWidth =
-      typeof globalThis !== 'undefined' ? globalThis.innerWidth : 0;
-    const windowHeight =
-      typeof globalThis !== 'undefined' ? globalThis.innerHeight : 0;
-
-    // Robot base position (fixed css)
-    const baseRight = 30;
-    const baseBottom = 30;
-    const robotSize = 80;
-
-    // Keep robot away from the active search input area.
-    const targetLeft = Math.min(
-      targetRect.right - robotSize * 0.55,
-      windowWidth - robotSize - 12,
-    );
-    const clampedTargetLeft = Math.max(12, targetLeft);
-
-    const targetTop = Math.max(
-      10,
-      Math.max(
-        12,
-        Math.min(targetRect.bottom + 12, windowHeight - robotSize - 12),
-      ),
-    );
-
-    // Convert to Patrol Coordinates (X from Right, Y from Bottom)
-    // patrol.x (positive = left displacement from original right pos)
-    // patrol.y (positive = up displacement from original bottom pos)
-    // Since we use translate3d(-x, y, 0) and the element is bottom-aligned:
-    // positive y moves DOWN. To move UP, we need negative y.
-
-    // Target Right CSS Position
-    const targetRightCSS = windowWidth - (clampedTargetLeft + robotSize);
-    const targetBottomCSS = windowHeight - (targetTop + robotSize);
-
-    const targetX = targetRightCSS - baseRight;
-    const targetY = -(targetBottomCSS - baseBottom);
-
-    this.cancelSearchAnimationFrame();
-    this.searchAnimation.active = true;
-    this.searchAnimation.phase = 'approach';
-    this.searchAnimation.startTime = performance.now();
-    this.searchAnimation.startX = this.patrol.x;
-    this.searchAnimation.startY = this.patrol.y;
-    this.searchAnimation.targetX = targetX;
-    this.searchAnimation.targetY = targetY;
-    this.searchAnimation.hoverPhase = 0;
-
-    // Ensure robot is above search overlay
-    this.robot.dom.container.style.zIndex = '10001';
-
-    this.setMagnifyingGlassVisible(true);
-
-    // Show excitement
-    this.robot.showBubble('Ah! Ich helfe suchen! 🔍');
-    this.robot._setTimeout(() => this.robot.hideBubble(), 2000);
-
-    this.scheduleSearchAnimationFrame();
+    startSearchAnimation(this);
   }
 
   stopSearchAnimation() {
-    this.cancelSearchAnimationFrame();
-    this.setMagnifyingGlassVisible(false);
-
-    const isNearOrigin =
-      Math.abs(this.patrol.x) < 0.5 && Math.abs(this.patrol.y) < 0.5;
-
-    if (!this.searchAnimation.active && isNearOrigin) {
-      this.searchAnimation.active = false;
-      this.searchAnimation.phase = 'idle';
-      this.searchAnimation.hoverPhase = 0;
-      if (this.robot.dom.container) {
-        this.robot.dom.container.style.zIndex = '';
-      }
-      if (this.robot.dom.flame) {
-        this.robot.dom.flame.style.opacity = '0';
-      }
-      if (this.robot.dom.svg) {
-        this.robot.dom.svg.style.transform = 'rotate(0deg)';
-      }
-      if (!this.patrol.active && !this.startAnimation.active) {
-        this.startPatrol();
-      }
-      return;
-    }
-
-    this.searchAnimation.active = true;
-    this.searchAnimation.phase = 'returning';
-    this.searchAnimation.startTime = performance.now();
-    this.searchAnimation.startX = this.patrol.x;
-    this.searchAnimation.startY = this.patrol.y;
-    this.searchAnimation.targetX = 0; // Return to origin x=0
-    this.searchAnimation.targetY = 0; // Return to origin y=0
-    this.searchAnimation.hoverPhase = 0;
-
-    // Ensure loop continues if it was stuck
-    this.scheduleSearchAnimationFrame();
-
-    // Keep loop running until returned
+    stopSearchAnimation(this);
   }
 
   scheduleSearchAnimationFrame() {
-    const schedule = () => {
-      this.searchAnimationFrame = this.robot._requestAnimationFrame(() => {
-        this.updateSearchAnimation();
-        if (this.searchAnimation.active) {
-          schedule();
-        } else {
-          this.searchAnimationFrame = null;
-        }
-      });
-    };
-    if (this.searchAnimationFrame === null) {
-      schedule();
-    }
+    scheduleSearchAnimationFrame(this);
   }
 
   cancelSearchAnimationFrame() {
-    if (this.searchAnimationFrame !== null) {
-      this.robot._cancelAnimationFrame(this.searchAnimationFrame);
-      this.searchAnimationFrame = null;
-    }
+    cancelSearchAnimationFrame(this);
   }
 
   setMagnifyingGlassVisible(isVisible) {
-    if (!this.robot.dom.magnifyingGlass) return;
-    this.robot.dom.magnifyingGlass.style.opacity = isVisible ? '1' : '0';
-    if (!isVisible) {
-      this.robot.dom.magnifyingGlass.setAttribute(
-        'transform',
-        this.defaultMagnifyingGlassTransform,
-      );
-    }
+    setMagnifyingGlassVisible(this, isVisible);
   }
 
   updateSearchAnimation() {
-    if (!this.searchAnimation.active) return;
-
-    const now = performance.now();
-    // Slower duration for more realistic flying
-    const duration = 2000;
-
-    if (
-      this.searchAnimation.phase === 'approach' ||
-      this.searchAnimation.phase === 'returning'
-    ) {
-      const elapsed = now - this.searchAnimation.startTime;
-      const t = Math.min(1, elapsed / duration);
-
-      // Use Ease In Out Cubic for realistic start/stop
-      const ease = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-
-      this.patrol.x =
-        this.searchAnimation.startX +
-        (this.searchAnimation.targetX - this.searchAnimation.startX) * ease;
-      this.patrol.y =
-        this.searchAnimation.startY +
-        (this.searchAnimation.targetY - this.searchAnimation.startY) * ease;
-
-      // Add bounce effect (hovering while flying)
-      this.searchAnimation.hoverPhase += 0.05;
-      const bounce = Math.sin(this.searchAnimation.hoverPhase) * 10;
-      this.patrol.y += bounce;
-
-      // Rotate towards target
-      if (this.robot.dom.svg) {
-        const isReturning = this.searchAnimation.phase === 'returning';
-        // Gentle tilt
-        const tilt = isReturning
-          ? 0
-          : 10 + Math.sin(this.searchAnimation.hoverPhase) * 2;
-        this.robot.dom.svg.style.transform = `rotate(${tilt}deg)`;
-      }
-
-      // Activate flame animation during flight
-      if (this.robot.dom.flame) {
-        const flameScale =
-          1 + Math.sin(this.searchAnimation.hoverPhase * 5) * 0.2;
-        this.robot.dom.flame.style.opacity = '1';
-        this.robot.dom.flame.style.transform = `scale(${flameScale})`;
-
-        // Randomly spawn particles for effect
-        if (Math.random() < 0.15) {
-          this.spawnFlameParticle();
-        }
-      }
-
-      this.updateRobotTransform();
-
-      if (t >= 1) {
-        if (this.searchAnimation.phase === 'returning') {
-          this.searchAnimation.active = false;
-          this.searchAnimation.phase = 'idle';
-          this.robot.dom.container.style.zIndex = ''; // Reset Z-Index
-          // Reset flame
-          if (this.robot.dom.flame) {
-            this.robot.dom.flame.style.opacity = '0';
-          }
-          if (this.robot.dom.svg) {
-            this.robot.dom.svg.style.transform = 'rotate(0deg)';
-          }
-          this.setMagnifyingGlassVisible(false);
-          this.startPatrol();
-        } else {
-          this.searchAnimation.phase = 'hover';
-          this.scheduleSearchAnimationFrame();
-        }
-      } else {
-        this.scheduleSearchAnimationFrame();
-      }
-    } else if (this.searchAnimation.phase === 'hover') {
-      // Hovering state with "Scanning" motion
-      this.searchAnimation.hoverPhase += 0.04;
-
-      // Bobbing up and down
-      const hoverY =
-        this.searchAnimation.targetY +
-        Math.sin(this.searchAnimation.hoverPhase) * 12;
-
-      this.patrol.x = this.searchAnimation.targetX;
-      this.patrol.y = hoverY;
-
-      // Gentle flame flicker during hover
-      if (this.robot.dom.flame) {
-        const flameScale =
-          0.8 + Math.sin(this.searchAnimation.hoverPhase * 3) * 0.15;
-        this.robot.dom.flame.style.opacity = '0.8';
-        this.robot.dom.flame.style.transform = `scale(${flameScale})`;
-      }
-
-      // Eyes following the scan
-      if (this.robot.dom.eyes) {
-        // Look Left (-3) and oscillate slightly
-        const eyeX = -3 + Math.sin(this.searchAnimation.hoverPhase * 2) * 1.5;
-        // Look Up (-2) towards search bar and oscillate
-        const eyeY = -2 + Math.cos(this.searchAnimation.hoverPhase * 2) * 1;
-        this.robot.dom.eyes.style.transform = `translate(${eyeX}px, ${eyeY}px)`;
-      }
-
-      this.updateRobotTransform();
-      this.scheduleSearchAnimationFrame();
-    }
-  }
-
-  updateRobotTransform() {
-    if (!this.robot.dom.container) return;
-    this.robot.dom.container.style.transform = `translate3d(${-this.patrol.x}px, ${this.patrol.y}px, 0)`;
-    if (this.robot.dom.floatWrapper) {
-      this.robot.dom.floatWrapper.style.transform = 'rotate(0deg)';
-    }
-    // Update eyes to look interesting
-    // Only update if NOT in hover phase (which handles its own eye movement)
-    if (this.robot.dom.eyes && this.searchAnimation.phase !== 'hover') {
-      // Look slightly up-left towards search (assuming search is top-left)
-      this.robot.dom.eyes.style.transform = 'translate(-3px, -1px)';
-    }
+    updateSearchAnimation(this);
   }
 
   destroy() {
     this.patrol.active = false;
     this.startAnimation.active = false;
     this.searchAnimation.active = false;
-    this.speakingActive = false;
-    this.thinkingActive = false;
-
-    if (this._speakingTimer) {
-      this.robot._clearTimeout(this._speakingTimer);
-      this._speakingTimer = null;
-    }
+    this._clearQueuedTypewriterIntro();
+    destroyFeedbackAnimations(this);
 
     this.stopIdleEyeMovement();
     this.stopBlinkLoop();

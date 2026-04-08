@@ -94,6 +94,7 @@ export function getAdaptiveResourceHintBudget(options = {}) {
   const memory = Number(deviceMemory || 0);
   const cores = Number(hardwareConcurrency || 0);
 
+  /** @type {any} */
   const budget = {
     ...base,
     seedRoutes: [...base.seedRoutes],

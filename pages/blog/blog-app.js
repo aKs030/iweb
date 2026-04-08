@@ -8,8 +8,9 @@ import { createRoot } from 'react-dom/client';
 import htm from 'htm';
 import { createLogger } from '#core/logger.js';
 import { createUseTranslation } from '#core/react-utils.js';
-import { sanitizeHTML } from '#core/utils.js';
+import { sanitizeHTML } from '#core/sanitization-utils.js';
 import { AppLoadManager } from '#core/load-manager.js';
+// @ts-ignore
 import { marked } from 'https://cdn.jsdelivr.net/npm/marked@11.1.1/lib/marked.esm.js';
 import { Clock, ArrowRight } from '#components/icons/icons.js';
 import { createErrorBoundary } from '#components/ErrorBoundary.js';
@@ -310,14 +311,15 @@ const waitForRoot = (timeout = 3000) =>
       for (const m of mutations) {
         for (const node of m.addedNodes) {
           if (node.nodeType === 1) {
-            const found = node.querySelector && node.querySelector('#root');
+            const element = /** @type {Element} */ (node);
+            const found = element.querySelector?.('#root');
             if (found) {
               observer.disconnect();
               return resolve(found);
             }
-            if (node.id === 'root') {
+            if (element.id === 'root') {
               observer.disconnect();
-              return resolve(node);
+              return resolve(element);
             }
           }
         }

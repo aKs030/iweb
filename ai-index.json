@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "version": "1.1.0",
-  "lastUpdated": "2026-03-07",
+  "lastUpdated": "2026-03-25",
   "site": {
     "name": "Abdulkerim Sesli Portfolio",
     "url": "https://www.abdulkerimsesli.de",

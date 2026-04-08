@@ -6,23 +6,30 @@
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "types": ["node"],
     "allowJs": true,
-    "checkJs": false,
+    "checkJs": true,
     "noEmit": true,
     "strict": false,
     "skipLibCheck": true,
+    "useDefineForClassFields": true,
     "baseUrl": ".",
+    "ignoreDeprecations": "6.0",
     "paths": {
+      "#core/*": ["content/core/*"],
+      "#components/*": ["content/components/*"],
+      "#footer/*": ["content/components/footer/*"],
+      "#menu/*": ["content/components/menu/*"],
+      "#config/*": ["content/config/*"],
+      "#pages/*": ["pages/*"],
       "/content/*": ["content/*"],
       "/pages/*": ["pages/*"]
     }
   },
-  "include": [
-    "content/**/*.js",
-    "pages/**/*.js",
-    "sw.js",
-    "functions/**/*.js",
-    "scripts/**/*.mjs",
+  "include": ["content/**/*.js", "pages/**/*.js", "sw.js"],
+  "exclude": [
+    "node_modules",
+    "reports",
+    "functions",
+    "scripts",
     "worker-configuration.d.ts"
-  ],
-  "exclude": ["node_modules", "build", "dist", "reports"]
+  ]
 }

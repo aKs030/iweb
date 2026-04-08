@@ -1,0 +1,452 @@
+/**
+ * Enhancements CSS
+ * Section Dots · Micro-Interactions · Blog · Skill Radar · Voice UI · Easter Eggs
+ * @version 2.0.0
+ */
+
+/* ============================================
+   SECTION DOT NAVIGATION
+   ============================================ */
+.section-dots {
+  position: fixed;
+  right: 1rem;
+  top: 50%;
+  translate: 0 -50%;
+  z-index: var(--z-fixed, 9999);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.4rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--bg-dark, #0a0a0f) 60%, transparent);
+  backdrop-filter: blur(12px);
+  border: 1px solid
+    color-mix(in srgb, var(--text-primary, #fff) 8%, transparent);
+  pointer-events: auto;
+  transition:
+    opacity 0.24s ease,
+    translate 0.24s ease,
+    visibility 0.24s ease;
+}
+
+html.robot-chat-open .section-dots,
+body.robot-chat-open .section-dots,
+html:has(#robot-chat-window.open) .section-dots,
+body:has(#robot-chat-window.open) .section-dots,
+body:has(#robot-companion-container.robot-chat--open) .section-dots,
+body[data-active-overlay='robot-chat'] .section-dots {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  translate: 12px -50%;
+}
+
+.section-dots__dot {
+  --_size: 10px;
+  width: var(--_size);
+  height: var(--_size);
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--text-primary, #fff) 25%, transparent);
+  cursor: pointer;
+  transition:
+    transform 0.25s ease,
+    background 0.25s ease,
+    box-shadow 0.25s ease;
+  position: relative;
+}
+
+.section-dots__dot:hover {
+  transform: scale(1.4);
+  background: color-mix(in srgb, var(--text-primary, #fff) 50%, transparent);
+}
+
+.section-dots__dot.is-active {
+  transform: scale(1.5);
+  background: var(--clr-blue-500, #60a5fa);
+  box-shadow: 0 0 8px
+    color-mix(in srgb, var(--clr-blue-500, #60a5fa) 50%, transparent);
+}
+
+/* Tooltip on hover */
+.section-dots__dot::after {
+  content: attr(title);
+  position: absolute;
+  right: calc(100% + 12px);
+  top: 50%;
+  translate: 0 -50%;
+  white-space: nowrap;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--text-primary, #e2e8f0);
+  background: color-mix(in srgb, var(--bg-dark, #0a0a0f) 85%, transparent);
+  backdrop-filter: blur(8px);
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+  border: 1px solid
+    color-mix(in srgb, var(--text-primary, #fff) 10%, transparent);
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 0.2s ease,
+    translate 0.2s ease;
+  translate: 6px -50%;
+}
+
+.section-dots__dot:hover::after {
+  opacity: 1;
+  translate: 0 -50%;
+}
+
+/* ============================================
+   MICRO-INTERACTIONS
+   ============================================ */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(20px);
+  transition:
+    opacity 0.5s ease,
+    transform 0.5s ease;
+}
+
+[data-reveal].revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ============================================
+   BLOG ENHANCEMENTS
+   ============================================ */
+.reading-time {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: var(--text-secondary, #94a3b8);
+  opacity: 0.85;
+}
+
+.reading-time svg {
+  width: 14px;
+  height: 14px;
+  opacity: 0.7;
+}
+
+.toc {
+  --_bg: color-mix(in srgb, var(--bg-secondary, #1e293b) 60%, transparent);
+  position: relative;
+  padding: 1rem 1.25rem;
+  margin-block: 1.5rem;
+  border-radius: 12px;
+  background: var(--_bg);
+  border-inline-start: 3px solid var(--accent-gradient-mid, #8b5cf6);
+  backdrop-filter: blur(8px);
+}
+
+.toc__title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary, #94a3b8);
+  margin-block-end: 0.6rem;
+}
+
+.toc__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.toc__list li {
+  padding-block: 0.25rem;
+}
+
+.toc__list a {
+  color: var(--text-primary, #e2e8f0);
+  text-decoration: none;
+  font-size: 0.88rem;
+  opacity: 0.8;
+  transition:
+    opacity 0.2s,
+    padding-inline-start 0.2s;
+}
+
+.toc__list a:hover,
+.toc__list a.toc--active {
+  opacity: 1;
+  color: var(--accent-gradient-mid, #8b5cf6);
+}
+
+.toc__list a:hover {
+  padding-inline-start: 6px;
+}
+
+.toc__list .toc--h3 {
+  padding-inline-start: 1rem;
+}
+.toc__list .toc--h4 {
+  padding-inline-start: 2rem;
+}
+
+/* ============================================
+   SKILL RADAR CHART
+   ============================================ */
+.skill-radar {
+  --_card-bg: color-mix(in srgb, var(--bg-secondary, #0f172a) 80%, transparent);
+  position: relative;
+  display: grid;
+  place-items: center;
+  padding: 2rem;
+  border-radius: 16px;
+  background: var(--_card-bg);
+  backdrop-filter: blur(12px);
+  border: 1px solid
+    color-mix(in srgb, var(--text-primary, #fff) 6%, transparent);
+  overflow: hidden;
+}
+
+/* Inside About page bento card */
+.skill-radar-mount .skill-radar {
+  background: none;
+  backdrop-filter: none;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+}
+
+.skill-radar-mount {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid
+    color-mix(in srgb, var(--text-primary, #fff) 8%, transparent);
+}
+
+.skill-radar__charts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  justify-content: center;
+}
+
+.skill-radar canvas {
+  max-width: 100%;
+  height: auto;
+}
+
+.skill-radar__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: var(--text-secondary, #94a3b8);
+}
+
+.skill-radar__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+/* ============================================
+   SEARCH FILTERS
+   ============================================ */
+.search-filter-bar {
+  display: flex;
+  gap: 6px;
+  padding: 4px 8px;
+  flex-wrap: wrap;
+}
+
+.search-filter-chip {
+  font-size: 0.72rem;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+  background: none;
+  color: var(--text-secondary, #94a3b8);
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    color 0.2s,
+    border-color 0.2s;
+}
+
+.search-filter-chip:hover {
+  background: color-mix(in srgb, var(--text-primary, #fff) 8%, transparent);
+}
+
+.search-filter-chip.is-active {
+  background: var(--accent-gradient-mid, #8b5cf6);
+  color: #fff;
+  border-color: transparent;
+}
+
+/* ============================================
+   VOICE UI
+   ============================================ */
+.voice-btn {
+  --_size: 40px;
+  display: grid;
+  place-items: center;
+  width: var(--_size);
+  height: var(--_size);
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: linear-gradient(
+    135deg,
+    var(--accent-gradient-start, #6366f1),
+    var(--accent-gradient-end, #a855f7)
+  );
+  color: #fff;
+  cursor: pointer;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+}
+
+.voice-btn:hover {
+  transform: scale(1.08);
+  box-shadow: 0 0 16px
+    color-mix(in srgb, var(--accent-gradient-mid, #8b5cf6) 40%, transparent);
+}
+
+.voice-btn:active {
+  transform: scale(0.94);
+}
+
+.voice-btn[data-listening] {
+  animation: voice-pulse 1.2s ease-in-out infinite;
+}
+
+.voice-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+@keyframes voice-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0
+      color-mix(in srgb, var(--accent-gradient-mid, #8b5cf6) 40%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 10px
+      color-mix(in srgb, var(--accent-gradient-mid, #8b5cf6) 0%, transparent);
+  }
+}
+
+.tts-btn {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--text-primary, #fff) 8%, transparent);
+  color: var(--text-secondary, #94a3b8);
+  cursor: pointer;
+  transition:
+    color 0.2s,
+    background 0.2s;
+}
+
+.tts-btn:hover {
+  color: var(--accent-gradient-mid, #8b5cf6);
+  background: color-mix(in srgb, var(--text-primary, #fff) 14%, transparent);
+}
+
+.tts-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* ============================================
+   EASTER EGGS
+   ============================================ */
+.matrix-rain {
+  position: fixed;
+  inset: 0;
+  z-index: calc(var(--z-fixed, 9999) + 100);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.matrix-rain.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (width <= 768px) {
+  .section-dots {
+    right: 0.5rem;
+    gap: 0.5rem;
+    padding: 0.4rem 0.3rem;
+    background: color-mix(in srgb, var(--bg-dark, #0a0a0f) 40%, transparent);
+    border: none;
+  }
+
+  .section-dots__dot {
+    --_size: 8px;
+  }
+  .section-dots__dot.is-active {
+    transform: scale(1.3);
+  }
+  .section-dots__dot::after {
+    display: none;
+  }
+
+  .skill-radar {
+    padding: 1rem;
+  }
+  .toc {
+    margin-inline: -0.5rem;
+    padding: 0.75rem 1rem;
+  }
+  .voice-btn {
+    --_size: 36px;
+  }
+}
+
+@media (width <= 480px) {
+  .section-dots {
+    right: 0.35rem;
+    gap: 0.4rem;
+    padding: 0.3rem 0.25rem;
+  }
+
+  .section-dots__dot {
+    --_size: 7px;
+  }
+}
+
+/* ============================================
+   REDUCED MOTION
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  .section-dots__dot,
+  .section-dots__dot::after {
+    transition: none;
+  }
+
+  [data-reveal] {
+    transition: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .voice-btn[data-listening] {
+    animation: none;
+  }
+  .matrix-rain {
+    transition: none;
+  }
+}

@@ -60,13 +60,12 @@ Alle Scripts aktualisiert:
 - `docs/DOCUMENTATION.md` - Projektstruktur aktualisiert
 - `docs/DOCUMENTATION.md` - CHANGELOG.md Pfad aktualisiert
 
-## ✅ Validierung
+## ✅ Status
 
 ```bash
 npm run qa              # ✅ Passed
 npm run lint            # ✅ Passed
 npm run fix             # ✅ Passed
-npm run check:docs      # ✅ OK (39 Markdown-Dateien)
 ```
 
 ## 📊 Ergebnis

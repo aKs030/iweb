@@ -2,6 +2,7 @@ export class MenuSearchRenderer {
   constructor(options = {}) {
     this.translate = options.translate;
     this.getCategoryLabel = options.getCategoryLabel;
+    this.getFacetLabel = options.getFacetLabel;
     this.formatSearchResultUrl = options.formatSearchResultUrl;
     this.getFallbackSuggestions = options.getFallbackSuggestions;
     this.hasMarkedHighlight = options.hasMarkedHighlight;
@@ -15,7 +16,26 @@ export class MenuSearchRenderer {
     return this.translate(key, fallback);
   }
 
-  renderEmptyState(query = '') {
+  renderSuggestionChips(
+    suggestions = [],
+    className = 'menu-search__empty-suggestions',
+  ) {
+    const suggestionsWrap = document.createElement('div');
+    suggestionsWrap.className = className;
+
+    (Array.isArray(suggestions) ? suggestions : []).forEach((suggestion) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'menu-search__empty-suggestion';
+      btn.setAttribute('data-search-suggestion-url', suggestion.url);
+      btn.textContent = suggestion.title;
+      suggestionsWrap.appendChild(btn);
+    });
+
+    return suggestionsWrap;
+  }
+
+  renderEmptyState(query = '', providedSuggestions = []) {
     const wrap = document.createElement('div');
     wrap.className = 'menu-search__empty';
 
@@ -37,23 +57,19 @@ export class MenuSearchRenderer {
     );
     wrap.appendChild(description);
 
-    const suggestionsWrap = document.createElement('div');
-    suggestionsWrap.className = 'menu-search__empty-suggestions';
-
     const suggestions =
-      typeof this.getFallbackSuggestions === 'function'
-        ? this.getFallbackSuggestions()
-        : [];
-    suggestions.forEach((suggestion) => {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'menu-search__empty-suggestion';
-      btn.setAttribute('data-search-suggestion-url', suggestion.url);
-      btn.textContent = suggestion.title;
-      suggestionsWrap.appendChild(btn);
-    });
-
-    wrap.appendChild(suggestionsWrap);
+      Array.isArray(providedSuggestions) && providedSuggestions.length > 0
+        ? providedSuggestions
+        : typeof this.getFallbackSuggestions === 'function'
+          ? this.getFallbackSuggestions()
+          : [];
+    const suggestionChips = this.renderSuggestionChips(
+      suggestions,
+      'menu-search__empty-suggestions',
+    );
+    if (suggestionChips.children.length > 0) {
+      wrap.appendChild(suggestionChips);
+    }
     return wrap;
   }
 
@@ -65,7 +81,10 @@ export class MenuSearchRenderer {
       loading = false,
       message = '',
       items = [],
+      facet = 'all',
+      facets = [],
       aiChatMessage = '',
+      aiChatSuggestions = [],
       query = '',
       selectedIndex = -1,
       optionIdBuilder = (index) => `menu-search-results-option-${index}`,
@@ -106,7 +125,52 @@ export class MenuSearchRenderer {
       aiText.innerHTML = aiChatMessage;
       aiChat.appendChild(aiText);
 
+      const suggestionChips = this.renderSuggestionChips(
+        aiChatSuggestions,
+        'menu-search__ai-suggestions',
+      );
+      if (suggestionChips.children.length > 0) {
+        aiChat.appendChild(suggestionChips);
+      }
+
       results.appendChild(aiChat);
+    }
+
+    if (query) {
+      const facetBar = document.createElement('div');
+      facetBar.className = 'menu-search__facets';
+
+      (Array.isArray(facets) ? facets : []).forEach((entry) => {
+        const facetKey = String(entry?.key || '').trim() || 'all';
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'menu-search__facet';
+        button.dataset.searchFacet = facetKey;
+        button.dataset.active = String(facetKey === facet);
+        if (facetKey === facet) {
+          button.classList.add('is-active');
+        }
+
+        const label = document.createElement('span');
+        label.className = 'menu-search__facet-label';
+        label.textContent =
+          typeof this.getFacetLabel === 'function'
+            ? this.getFacetLabel(facetKey)
+            : facetKey;
+
+        const count = document.createElement('span');
+        count.className = 'menu-search__facet-count';
+        count.textContent = String(
+          Math.max(0, Number.parseInt(String(entry?.count || 0), 10) || 0),
+        );
+
+        button.append(label, count);
+        facetBar.appendChild(button);
+      });
+
+      if (facetBar.children.length > 0) {
+        results.appendChild(facetBar);
+      }
     }
 
     if (message) {
@@ -122,7 +186,7 @@ export class MenuSearchRenderer {
 
     if (items.length === 0) {
       if (!aiChatMessage) {
-        results.appendChild(this.renderEmptyState(query));
+        results.appendChild(this.renderEmptyState(query, aiChatSuggestions));
       }
       return;
     }
@@ -132,7 +196,13 @@ export class MenuSearchRenderer {
 
     const countText = document.createElement('span');
     countText.className = 'menu-search__count-value';
-    countText.textContent = `${items.length} ${items.length === 1 ? 'Ergebnis' : 'Ergebnisse'}`;
+    const activeFacetLabel =
+      typeof this.getFacetLabel === 'function'
+        ? this.getFacetLabel(facet)
+        : facet;
+    countText.textContent = `${items.length} ${items.length === 1 ? 'Ergebnis' : 'Ergebnisse'}${
+      activeFacetLabel && facet !== 'all' ? ` in ${activeFacetLabel}` : ''
+    }`;
     summary.appendChild(countText);
 
     const hintText = document.createElement('span');

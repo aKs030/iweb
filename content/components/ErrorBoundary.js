@@ -37,8 +37,8 @@ export function createErrorBoundary(ReactInstance) {
 
     render() {
       if (this.state.hasError) {
-        if (this.props.fallback) {
-          return this.props.fallback;
+        if (/** @type {any} */ (this).props.fallback) {
+          return /** @type {any} */ (this).props.fallback;
         }
 
         return ReactInstance.createElement(
@@ -67,7 +67,7 @@ export function createErrorBoundary(ReactInstance) {
         );
       }
 
-      return this.props.children;
+      return /** @type {any} */ (this).props.children;
     }
   }
 

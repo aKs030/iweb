@@ -5,7 +5,7 @@
  */
 
 import { createLogger } from './logger.js';
-import { sanitizeHTML } from './utils.js';
+import { sanitizeHTML } from './sanitization-utils.js';
 
 const log = createLogger('LanguageManager');
 

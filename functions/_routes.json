@@ -2,8 +2,6 @@
   "version": 1,
   "include": ["/*"],
   "exclude": [
-    "/favicon.ico",
-    "/favicon.svg",
     "/robots.txt",
     "/manifest.json",
     "/sw.js",
@@ -14,23 +12,18 @@
     "/bio.md",
     "/_redirects",
     "/content/*",
-    "/pages/**/*.css",
-    "/pages/**/*.js",
+    "/pages/*",
 
     "/*.woff",
     "/*.woff2",
     "/*.ttf",
     "/*.eot",
-    "/*.ico",
-    "/*.svg",
     "/*.png",
     "/*.jpg",
     "/*.webp",
     "/*.gif",
     "/*.avif",
 
-    "/pages/blog/posts/index.json",
-    "/pages/projekte/apps-config.json",
     "/.well-known/*",
 
     "/*.map"

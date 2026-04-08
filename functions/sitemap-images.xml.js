@@ -19,6 +19,14 @@ import {
   loadProjectApps,
   loadYouTubeVideos,
 } from './api/_sitemap-data.js';
+import {
+  FAVICON_512_URL,
+  OG_DESIGN_IMAGE_URL,
+  OG_HOME_IMAGE_URL,
+  OG_PHOTOGRAPHY_IMAGE_URL,
+  OG_PROJECTS_IMAGE_URL,
+  OG_VIDEOS_IMAGE_URL,
+} from '../content/config/media-urls.js';
 
 const LICENSE_URL = 'https://www.abdulkerimsesli.de/#image-license';
 const CACHE_CONTROL = 'public, max-age=3600, stale-while-revalidate=86400';
@@ -27,54 +35,54 @@ const SNAPSHOT_NAME = 'sitemap-images.xml';
 const STATIC_PAGE_IMAGES = [
   {
     page: '/',
-    image: 'https://img.abdulkerimsesli.de/blog/og-home-800.png',
+    image: OG_HOME_IMAGE_URL,
     title: 'Abdulkerim Sesli Startseite',
     caption:
       'Zentrale Hauptseite mit Portfolio, Blog, Bildern, Videos und Projekten',
   },
   {
     page: '/about/',
-    image: 'https://img.abdulkerimsesli.de/icons/favicon-512.webp?v=20260221',
+    image: FAVICON_512_URL,
     title: 'Abdulkerim Sesli',
     caption:
       'Profilseite mit Hintergrund, Themenfeldern und redaktionellen Inhalten',
   },
   {
     page: '/contact/',
-    image: 'https://img.abdulkerimsesli.de/blog/og-home-800.png',
+    image: OG_HOME_IMAGE_URL,
     title: 'Kontakt',
     caption: 'Kontaktseite mit E-Mail, Formular und Kommunikationswegen',
   },
   {
     page: '/abdul-sesli/',
-    image: 'https://img.abdulkerimsesli.de/blog/og-home-800.png',
+    image: OG_HOME_IMAGE_URL,
     title: 'Abdul Sesli',
     caption: 'Alias-Seite: Abdul Sesli ist die Kurzform von Abdulkerim Sesli',
   },
   {
     page: '/blog/',
-    image: 'https://img.abdulkerimsesli.de/blog/og-design-800.png',
+    image: OG_DESIGN_IMAGE_URL,
     title: 'Tech Blog',
     caption:
       'Blog mit Artikeln zu Webentwicklung, SEO, Performance, React und TypeScript',
   },
   {
     page: '/gallery/',
-    image: 'https://img.abdulkerimsesli.de/blog/og-photography-800.png',
+    image: OG_PHOTOGRAPHY_IMAGE_URL,
     title: 'Fotografie Portfolio',
     caption:
       'Bildgalerie mit Portraits, Street-Fotografie und visuellen Serien',
   },
   {
     page: '/videos/',
-    image: 'https://img.abdulkerimsesli.de/blog/og-videos-800.png',
+    image: OG_VIDEOS_IMAGE_URL,
     title: 'Videos',
     caption:
       'Videoseite mit YouTube-Inhalten, Clips, Making-of und Story-Formaten',
   },
   {
     page: '/projekte/',
-    image: 'https://img.abdulkerimsesli.de/blog/og-projekte-800.png',
+    image: OG_PROJECTS_IMAGE_URL,
     title: 'Code Projekte',
     caption:
       'Interaktive Webprojekte mit JavaScript, React, UI und Frontend-Experimenten',
@@ -146,9 +154,11 @@ function addProjectPreviewImages(urlMap, apps) {
   for (const app of apps) {
     const name = normalizeText(app?.name);
     if (!name) continue;
+    const previewImage = buildProjectPreviewImageUrl(app);
+    if (!previewImage) continue;
 
     addImage(urlMap, buildProjectAppPath(name), {
-      loc: buildProjectPreviewImageUrl(name),
+      loc: previewImage,
       title: app.title,
       caption: app.description,
       license: LICENSE_URL,

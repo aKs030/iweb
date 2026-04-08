@@ -15,7 +15,8 @@
 
 // Cache TTL for HTML responses (edge-side, not browser-side)
 const EDGE_HTML_TTL_S = 300; // 5 minutes
-const EDGE_CACHE_KEY_VERSION = '20260307-1';
+const EDGE_CACHE_KEY_VERSION = '20260407-1';
+const CACHE_KEY_QUERY_ALLOWLIST = new Set(['menuShadow']);
 
 /**
  * Pages that should NOT be cached (dynamic per-request content).
@@ -34,16 +35,58 @@ function isCacheablePath(pathname) {
 }
 
 /**
- * Build a deterministic cache key from the request URL.
- * Strips query params to avoid cache fragmentation.
+ * Normalize the coarse language variant that affects edge-rendered HTML.
+ * Only English currently changes markup (`<html lang="en">`).
  *
- * @param {URL} url
+ * @param {string | null} acceptLanguage
+ * @returns {string}
+ */
+function normalizeLanguageVariant(acceptLanguage) {
+  return String(acceptLanguage || '')
+    .trim()
+    .toLowerCase()
+    .startsWith('en')
+    ? 'en'
+    : 'default';
+}
+
+/**
+ * Copy query params that influence the generated HTML into the cache key.
+ *
+ * @param {URL} sourceUrl
+ * @param {URL} cacheUrl
+ */
+function copyCacheRelevantQueryParams(sourceUrl, cacheUrl) {
+  for (const paramName of CACHE_KEY_QUERY_ALLOWLIST) {
+    const values = sourceUrl.searchParams
+      .getAll(paramName)
+      .filter((value) => value !== '')
+      .sort();
+
+    for (const value of values) {
+      cacheUrl.searchParams.append(paramName, value);
+    }
+  }
+}
+
+/**
+ * Build a deterministic cache key from the request URL.
+ * Keeps only HTML-relevant variants to avoid cache fragmentation while still
+ * separating different edge-rendered outputs.
+ *
+ * @param {Request} request
  * @returns {Request} Cache key as Request object
  */
-export function buildCacheKey(url) {
-  const cacheUrl = new URL(url.href);
-  cacheUrl.search = '';
+export function buildCacheKey(request) {
+  const requestUrl = new URL(request.url);
+  const cacheUrl = new URL(requestUrl.origin + requestUrl.pathname);
+
+  copyCacheRelevantQueryParams(requestUrl, cacheUrl);
   cacheUrl.searchParams.set('__cv', EDGE_CACHE_KEY_VERSION);
+  cacheUrl.searchParams.set(
+    '__hl',
+    normalizeLanguageVariant(request.headers.get('Accept-Language')),
+  );
 
   return new Request(cacheUrl.href, { method: 'GET' });
 }
@@ -51,15 +94,18 @@ export function buildCacheKey(url) {
 /**
  * Try to serve from Cloudflare Cache API.
  *
- * @param {URL} url
+ * @param {Request} request
  * @returns {Promise<Response|null>} Cached response or null
  */
-export async function matchEdgeCache(url) {
+export async function matchEdgeCache(request) {
+  if (request.method !== 'GET') return null;
+
+  const url = new URL(request.url);
   if (!isCacheablePath(url.pathname)) return null;
 
   try {
     const cache = caches.default;
-    const key = buildCacheKey(url);
+    const key = buildCacheKey(request);
     const cached = await cache.match(key);
 
     if (cached) {
@@ -90,17 +136,20 @@ export async function matchEdgeCache(url) {
  * The response is stored WITHOUT a CSP nonce — it gets injected
  * per-request in the cache-hit path if needed.
  *
- * @param {URL} url
+ * @param {Request} request
  * @param {Response} response - The transformed response to cache
- * @param {ExecutionContext} ctx - For waitUntil
+ * @param {any} ctx - For waitUntil
  */
-export function storeInEdgeCache(url, response, ctx) {
+export function storeInEdgeCache(request, response, ctx) {
+  if (request.method !== 'GET') return;
+
+  const url = new URL(request.url);
   if (!isCacheablePath(url.pathname)) return;
   if (response.status !== 200 || !response.body) return;
 
   try {
     const cache = caches.default;
-    const key = buildCacheKey(url);
+    const key = buildCacheKey(request);
 
     // Clone and add cache-control for edge TTL
     const headers = new Headers(response.headers);

@@ -3,24 +3,24 @@ import {
   normalizeText,
   sanitizeDiscoveryText,
 } from './_text-utils.js';
-import { loadJsonAsset, toISODate } from './_xml-utils.js';
+import { loadJsonFile, toISODate } from './_xml-utils.js';
 import { buildProjectDetailPath } from '../../content/core/project-paths.js';
 import {
   fetchPlaylistItemsPage,
   fetchUploadsPlaylistId,
   getBestYouTubeThumbnail,
 } from './_youtube-utils.js';
+import {
+  buildProjectPreviewUrl,
+  buildR2Url,
+} from '../../content/config/media-urls.js';
+import { isImageMediaPath } from '../_shared/media-assets.js';
 
 export const BLOG_INDEX_PATH = '/pages/blog/posts/index.json';
 export const PROJECT_APPS_PATH = '/pages/projekte/apps-config.json';
-export const R2_DOMAIN = 'https://img.abdulkerimsesli.de';
-export const R2_APP_PREVIEWS_BASE_URL = `${R2_DOMAIN}/app`;
-export const APP_PREVIEWS_VERSION = '20260221';
 export const MAX_SITEMAP_YOUTUBE_RESULTS = 200;
 
 const GALLERY_PREFIX = 'Gallery/';
-const GALLERY_IMAGE_EXT_PATTERN = /\.(jpg|jpeg|png|webp|gif|svg)$/i;
-
 // Keep a small static fallback so image discovery still works without bucket access.
 const FALLBACK_GALLERY_KEYS = [
   'Gallery/Mond.webp',
@@ -28,10 +28,6 @@ const FALLBACK_GALLERY_KEYS = [
   'Gallery/Wald-Schienen.webp',
   'Gallery/abdulkerim-sesli-01.webp',
 ];
-
-function encodePathSegment(value) {
-  return encodeURIComponent(String(value || '')).replace(/%2F/g, '/');
-}
 
 function formatAppTitle(name, title) {
   return sanitizeDiscoveryText(title, formatSlug(name));
@@ -45,8 +41,8 @@ export function buildProjectAppPath(name) {
   return buildProjectDetailPath(name);
 }
 
-export function buildProjectPreviewImageUrl(name) {
-  return `${R2_APP_PREVIEWS_BASE_URL}/${encodeURIComponent(name)}.svg?v=${APP_PREVIEWS_VERSION}`;
+export function buildProjectPreviewImageUrl(project) {
+  return normalizeText(project?.previewUrl) || buildProjectPreviewUrl(project);
 }
 
 export function buildBlogPath(id) {
@@ -68,7 +64,7 @@ export function buildYouTubeEmbedUrl(videoId) {
  * @returns {Promise<Array<{name: string, title: string, description: string, lastmod: string|null}>>}
  */
 export async function loadProjectApps(context) {
-  const payload = await loadJsonAsset(context, PROJECT_APPS_PATH);
+  const payload = await loadJsonFile(context, PROJECT_APPS_PATH);
   const rawApps = Array.isArray(payload?.apps) ? payload.apps : [];
   const payloadLastmod = toISODate(payload?.lastUpdated);
   const appsByName = new Map();
@@ -85,6 +81,8 @@ export async function loadProjectApps(context) {
       title: formatAppTitle(name, app?.title),
       description: formatAppDescription(name, app?.description),
       lastmod: toISODate(app?.lastUpdated) || payloadLastmod || null,
+      previewUrl: normalizeText(app?.previewUrl),
+      previewAlt: normalizeText(app?.previewAlt),
     });
   }
 
@@ -109,7 +107,7 @@ function formatBlogDescription(post, fallbackTitle) {
  * @returns {Promise<Array<{id: string, title: string, description: string, image: string, lastmod: string|null, keywords: string[]}>>}
  */
 export async function loadBlogPosts(context) {
-  const payload = await loadJsonAsset(context, BLOG_INDEX_PATH);
+  const payload = await loadJsonFile(context, BLOG_INDEX_PATH);
   const rawPosts = Array.isArray(payload) ? payload : [];
   const postsById = new Map();
 
@@ -144,14 +142,14 @@ export async function loadBlogPosts(context) {
 
 function toGalleryImageRecord(objectLike) {
   const key = normalizeText(objectLike?.key);
-  if (!key || !GALLERY_IMAGE_EXT_PATTERN.test(key)) return null;
+  if (!key || !isImageMediaPath(key)) return null;
 
   const filename = key.split('/').pop() || key;
   const title = sanitizeDiscoveryText(formatSlug(filename), 'Gallery Image');
 
   return {
     key,
-    loc: `${R2_DOMAIN}/${encodePathSegment(key)}`,
+    loc: buildR2Url(key),
     title,
     caption: `${title} - Fotoinhalt aus der Bildgalerie von Abdulkerim Sesli`,
     lastmod: toISODate(objectLike?.uploaded) || null,

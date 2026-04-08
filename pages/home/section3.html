@@ -1,87 +1,76 @@
-<!-- Home Farewell Section Fragment - Optimized Version
-  - Enhanced accessibility with proper ARIA attributes
-  - Improved semantic structure
-  - Optimized SVG with better attributes
--->
 <!-- partial: true; parent: index.html -->
 <div class="section3__container">
-  <article class="section3__content">
-    <div class="section3__text parallax-element" data-parallax-speed="0.1">
-      <h1 id="section3-heading" data-i18n="farewell.heading">
-        Auf Wiedersehen!
-      </h1>
+  <p class="section3__eyebrow" data-i18n="home.closing_eyebrow">
+    Portfolio Notes
+  </p>
 
-      <p data-i18n-html="farewell.p1">
-        Vielen herzlichen Dank, dass Sie sich die Zeit genommen haben, meine
-        Website zu besuchen! Ich bin <strong>Abdulkerim Sesli</strong>, ein
-        passionierter Webentwickler aus Berlin, der es liebt, digitale Visionen
-        in die Realität umzusetzen.
+  <div class="section3__grid">
+    <div class="section3__lead">
+      <h2 id="section3-heading" data-i18n="home.closing_title">
+        Kein Pitch. Eher ein offenes Archiv.
+      </h2>
+      <p data-i18n="home.closing_p1">
+        Diese Seite ist mein öffentliches Arbeitsfeld zwischen Engineering,
+        Bildsprache und AI. Manche Dinge sind fertig, andere bewusst im Fluss.
       </p>
-
-      <p data-i18n="farewell.p2">
-        Als Digital Creator kombiniere ich moderne Technologien mit kreativem
-        Design, um Websites zu schaffen, die nicht nur effizient funktionieren,
-        sondern auch die Besucher begeistern und inspirieren. Meine Mission ist
-        es, das Internet zugänglicher und ästhetischer zu gestalten.
+      <p data-i18n="home.closing_p2">
+        Wenn dich etwas genauer interessiert, findest du mehr in den Projekten,
+        im Journal oder direkt über die einzelnen Kanäle.
       </p>
-
-      <p data-i18n="farewell.p3">
-        Ich hoffe, meine Projekte und Ideen haben Sie fasziniert. Jede Zeile
-        Code, die ich schreibe, trägt ein Stück meiner Leidenschaft in sich –
-        von der ersten Idee bis zur finalen Veröffentlichung.
-      </p>
-
-      <p data-i18n="farewell.p4">
-        Haben Sie Fragen, Interesse an einer Zusammenarbeit oder möchten Sie
-        einfach nur plaudern? Zögern Sie nicht, mich über meine Kanäle zu
-        kontaktieren. Es war mir eine echte Freude, Sie hier zu haben!
-      </p>
-
-      <p class="section3__farewell">
-        <strong data-i18n="farewell.strong"
-          >Herzlichen Dank für Ihr Interesse – ich freue mich auf Ihren nächsten
-          Besuch!</strong
-        >
-      </p>
-
-      <nav
-        class="section3__cta"
-        aria-label="Navigationsoptionen"
-        data-i18n-attrs="aria-label:farewell.nav_aria"
-      >
-        <a
-          href="#hero"
-          class="btn btn-primary"
-          aria-label="Zur Hero-Sektion"
-          data-i18n="farewell.btn_top"
-          data-i18n-attrs="aria-label:farewell.aria_top"
-          >Nach oben</a
-        >
-        <a
-          href="/about/"
-          class="btn btn-secondary"
-          aria-label="Zu About gehen"
-          data-i18n-attrs="aria-label:farewell.aria_about"
-        >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            aria-hidden="true"
-            role="img"
-          >
-            <title>About-Symbol</title>
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-            <circle cx="12" cy="7" r="4" />
-          </svg>
-          <span data-i18n="farewell.btn_about">Über mich</span>
-        </a>
-      </nav>
     </div>
-  </article>
+
+    <div class="section3__details">
+      <section class="section3__column" aria-labelledby="focus-heading">
+        <span
+          id="focus-heading"
+          class="section3__label"
+          data-i18n="home.closing_focus_label"
+          >Jetzt im Fokus</span
+        >
+        <ul class="section3__list">
+          <li data-i18n="home.closing_focus_1">Three.js Interfaces</li>
+          <li data-i18n="home.closing_focus_2">AI-Suche und Chat</li>
+          <li data-i18n="home.closing_focus_3">Performance-first Frontends</li>
+        </ul>
+      </section>
+
+      <section class="section3__column" aria-labelledby="inside-heading">
+        <span
+          id="inside-heading"
+          class="section3__label"
+          data-i18n="home.closing_inside_label"
+          >Im Portfolio</span
+        >
+        <ul class="section3__list">
+          <li data-i18n="home.closing_inside_1">
+            Selected Work und Experimente
+          </li>
+          <li data-i18n="home.closing_inside_2">Fotografie und Motion</li>
+          <li data-i18n="home.closing_inside_3">Build Notes und Journal</li>
+        </ul>
+      </section>
+    </div>
+  </div>
+
+  <nav
+    class="section3__cta"
+    aria-label="Weitere Wege durch das Portfolio"
+    data-i18n-attrs="aria-label:home.closing_nav_aria"
+  >
+    <a
+      href="/projekte/"
+      class="btn btn-primary"
+      data-i18n="home.closing_cta_projects"
+      >Alle Projekte</a
+    >
+    <a href="/blog/" class="btn btn-secondary" data-i18n="home.closing_cta_blog"
+      >Journal</a
+    >
+    <a
+      href="/contact/"
+      class="btn btn-secondary"
+      data-i18n="home.closing_cta_contact"
+      >Kontakt</a
+    >
+  </nav>
 </div>

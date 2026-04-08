@@ -1,32 +1,34 @@
-# Styles Token Workflow
+# Styles Foundation Workflow
 
 ## Source of truth
 
-- `content/styles/tokens/tokens.json`
-- `content/styles/tokens/tokens-dark.json`
+- `content/styles/foundation.css`
+- `content/styles/utilities.css`
 
-## Token file responsibilities
+## File responsibilities
 
-- `tokens.css` (generated): canonical design tokens + theme selector overrides.
-- `variables.css` (handwritten): legacy aliases + responsive remapping only.
-- `root.css` (handwritten): runtime-computed tokens + global runtime rules only.
+- `foundation.css`: globale CSS-Variablen, Theme-Overrides, Safe-Area/Layout-Grundlagen und Runtime-Defaults.
+- `utilities.css`: kleine handgepflegte Utility-Sammlung fuer wiederkehrende Layout-Helfer.
+- `main.css`: globale Komponenten-, Utility- und Basis-Styles fuer die App-Shell.
+- `admin.css`: standalone Admin-Shell in der `overrides`-Layer.
+- `overlays.css`: globale Overlay-Regeln in der `components`-Layer.
 
-## Generate token CSS
+## Workflow
 
-- `npm run styles:generate` -> updates `content/styles/tokens.css` (includes base + light + dark blocks)
-- `npm run dev` -> single modern dev workflow (preflight + token watcher + app)
+- `npm run dev` -> starts the local Cloudflare Pages development server
+- `npm run qa` -> validates formatting and linting
+- Global CSS now uses native cascade layers (`foundation`, `base`, `utilities`, `components`, `animations`) instead of generation or selector-order coupling.
 
 ## Theme switching
 
 - Theme attribute is set on `<html>` via `data-theme` (`dark` or `light`).
-- `tokens.css` contains base + light + dark overrides (`:root[data-theme='light']`, `:root[data-theme='dark']`).
+- `foundation.css` contains base + light + dark overrides (`:root[data-theme='light']`, `:root[data-theme='dark']`).
 - Menu toggle only updates `data-theme`; no stylesheet enable/disable needed.
 
 ## Utilities
 
-- Utility source is generated via `npm run styles:generate`.
-- Generated file: `content/styles/utilities.generated.css`.
-- Prefer token-bound utilities (`.mt-*`, `.gap-*`, `.p-*`) over inline spacing.
+- Keep utilities intentionally small and only for repeated layout patterns.
+- Prefer semantic component classes first; add utility classes only when reuse is obvious.
 
 ## Quality gates
 
@@ -35,10 +37,9 @@
 ## Team rule
 
 - Avoid hardcoded colors, spacing, radii, shadows and z-index values in components.
-- Use `var(--...)` so token updates from JSON apply project-wide.
+- Use `var(--...)` from `foundation.css` for consistent theming and spacing.
 
 ## Breakpoints
 
-- Breakpoint tokens are defined in `tokens.json` (`--bp-*`) for shared reference (docs/JS/tooling).
 - Keep numeric `@media` queries in CSS for now; native CSS variables are not supported inside media queries.
-- If you want tokenized media queries, introduce a dedicated CSS transform step (for example `postcss-custom-media`) and transpile `@media (--bp-*)`.
+- If shared breakpoint semantics become complex, prefer documenting them in CSS comments or JS constants instead of adding a generation layer again.

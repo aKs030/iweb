@@ -4,6 +4,21 @@ import { X_Icon } from '#components/icons/icons.js';
 
 const h = React.createElement;
 
+function formatGalleryDate(value) {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  try {
+    return new Intl.DateTimeFormat('de-DE', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    }).format(date);
+  } catch {
+    return date.toISOString().slice(0, 10);
+  }
+}
+
 export const ThreeGalleryScene = ({ items }) => {
   const containerRef = useRef(null);
   const systemRef = useRef(null);
@@ -228,12 +243,16 @@ export const ThreeGalleryScene = ({ items }) => {
                     src: selectedItem.url,
                     controls: true,
                     autoPlay: true,
+                    poster: selectedItem.blurPlaceholder || undefined,
                     className: 'gallery-lightbox__media-item',
                   })
                 : h('img', {
                     src: selectedItem.url,
                     alt: selectedItem.title,
                     className: 'gallery-lightbox__media-item is-image',
+                    style: {
+                      backgroundColor: selectedItem.dominantColor || '#111827',
+                    },
                   }),
             ),
 
@@ -251,7 +270,35 @@ export const ThreeGalleryScene = ({ items }) => {
               h(
                 'p',
                 { className: 'gallery-lightbox__description' },
-                selectedItem.description,
+                selectedItem.caption || selectedItem.description,
+              ),
+              h(
+                'div',
+                { className: 'gallery-lightbox__meta' },
+                h(
+                  'span',
+                  { className: 'gallery-lightbox__meta-pill' },
+                  selectedItem.type === 'video' ? 'Video' : 'Foto',
+                ),
+                selectedItem.orientation &&
+                  h(
+                    'span',
+                    { className: 'gallery-lightbox__meta-pill' },
+                    selectedItem.orientation,
+                  ),
+                formatGalleryDate(selectedItem.uploaded) &&
+                  h(
+                    'span',
+                    { className: 'gallery-lightbox__meta-pill' },
+                    formatGalleryDate(selectedItem.uploaded),
+                  ),
+                Number.isFinite(selectedItem.width) &&
+                  Number.isFinite(selectedItem.height) &&
+                  h(
+                    'span',
+                    { className: 'gallery-lightbox__meta-pill' },
+                    `${selectedItem.width}×${selectedItem.height}`,
+                  ),
               ),
               h(
                 'div',

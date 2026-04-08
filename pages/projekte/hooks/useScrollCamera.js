@@ -57,7 +57,7 @@ export const useScrollCamera = (projects) => {
       window.removeEventListener('scroll', handleScroll);
       if (rafId) cancelAnimationFrame(rafId);
     };
-  }, [projects]); // Removed unused camera parameter
+  }, [projects]);
 
   return normalizedScroll;
 };

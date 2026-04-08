@@ -14,7 +14,7 @@ import {
   computed,
   effect,
   signal,
-  subscribe,
+  subscribe as signalSubscribe,
   untracked,
 } from './signals.js';
 
@@ -38,7 +38,7 @@ export const loadSignals = Object.freeze({
 
 const toPendingList = () => Object.freeze(Array.from(pending));
 
-export function getLoadSnapshot() {
+function getLoadSnapshot() {
   const pendingList = loadSignals.pending.value;
 
   return Object.freeze({
@@ -52,17 +52,15 @@ export function getLoadSnapshot() {
 }
 
 export function subscribeLoadState(listener, options = {}) {
-  return subscribe(getLoadSnapshot, listener, options);
+  return signalSubscribe(getLoadSnapshot, listener, options);
 }
 
 export function whenAppReady(options = {}) {
   const { timeout = 0, abortSignal = null } = options;
+  const snapshot = getLoadSnapshot();
 
-  const isReady = (snapshot) =>
-    snapshot.done === true && snapshot.blocked !== true;
-  const initialSnapshot = getLoadSnapshot();
-  if (isReady(initialSnapshot)) {
-    return Promise.resolve(initialSnapshot);
+  if (!snapshot.blocked && snapshot.done) {
+    return Promise.resolve(snapshot);
   }
 
   if (abortSignal?.aborted) {
@@ -88,11 +86,12 @@ export function whenAppReady(options = {}) {
       abortSignal?.removeEventListener?.('abort', handleAbort);
     };
 
-    const resolveReady = (snapshot) => {
+    const resolveReady = () => {
       if (settled) return;
       settled = true;
+      const readySnapshot = getLoadSnapshot();
       cleanup();
-      resolve(snapshot);
+      resolve(readySnapshot);
     };
 
     const rejectWait = (error) => {
@@ -106,13 +105,11 @@ export function whenAppReady(options = {}) {
       rejectWait(new DOMException('App readiness wait aborted', 'AbortError'));
     };
 
-    const handleSnapshot = (snapshot) => {
-      if (isReady(snapshot)) {
-        resolveReady(snapshot);
+    unsubscribe = subscribeLoadState((state) => {
+      if (!state.blocked && state.done) {
+        resolveReady();
       }
-    };
-
-    unsubscribe = subscribeLoadState(handleSnapshot);
+    });
 
     if (timeout > 0) {
       timeoutId = setTimeout(() => {
@@ -123,7 +120,6 @@ export function whenAppReady(options = {}) {
     }
 
     abortSignal?.addEventListener?.('abort', handleAbort, { once: true });
-    handleSnapshot(getLoadSnapshot());
   });
 }
 

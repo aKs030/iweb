@@ -10,8 +10,9 @@ import { AppLoadManager } from '#core/load-manager.js';
 import { i18n } from '#core/i18n.js';
 import { ensureDeepLinkedVideo, loadFromApi } from './videos-data.js';
 import {
-  activateThumb,
   bindThumb,
+  extractVideoViewModel,
+  renderFeaturedVideo,
   renderVideoCard,
   setVideoStatus,
   showErrorMessage,
@@ -47,6 +48,7 @@ const loadLatestVideos = async () => {
     setVideoStatus(i18n.t('videos.loading'));
 
     const grid = document.querySelector('.video-grid');
+    const featuredRoot = document.getElementById('video-featured');
     if (!grid) {
       upsertVideosSchema([]);
       AppLoadManager.updateLoader(1, i18n.t('videos.error'));
@@ -75,6 +77,28 @@ const loadLatestVideos = async () => {
       items,
       detailsMap,
     }));
+
+    const featuredVideo = targetVideoId
+      ? extractVideoViewModel(
+          items.find(
+            (entry) => entry?.snippet?.resourceId?.videoId === targetVideoId,
+          ),
+          detailsMap,
+        )
+      : null;
+    const relatedVideos = featuredVideo
+      ? items
+          .map((entry) => extractVideoViewModel(entry, detailsMap))
+          .filter(
+            (entry) => entry && entry.id !== featuredVideo.id && entry.thumb,
+          )
+          .slice(0, 3)
+      : [];
+    renderFeaturedVideo(featuredRoot, featuredVideo, relatedVideos);
+
+    if (featuredVideo) {
+      document.title = `${featuredVideo.title} — Videos | Abdulkerim Sesli`;
+    }
 
     if (!items.length) {
       if (isLocalDevRuntime()) {
@@ -108,23 +132,6 @@ const loadLatestVideos = async () => {
         const schemaNode = renderVideoCard(fragment, it, detailsMap, i + idx);
         if (schemaNode) {
           videoSchemaNodes.push(schemaNode);
-        }
-
-        // Auto-play deep-linked video
-        if (
-          targetVideoId &&
-          it.snippet?.resourceId?.videoId === targetVideoId
-        ) {
-          setTimeout(() => {
-            const btn = grid.querySelector(
-              `button[data-video-id="${targetVideoId}"]`,
-            );
-            if (btn) {
-              activateThumb(btn);
-              btn.scrollIntoView({ behavior: 'smooth', block: 'center' });
-              document.title = `${it.snippet.title} — Videos`;
-            }
-          }, 800);
         }
       });
       grid.appendChild(fragment);

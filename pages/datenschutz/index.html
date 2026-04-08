@@ -5,33 +5,28 @@
     <title>Datenschutzerklärung | Abdulkerim Sesli</title>
     <meta
       name="description"
-      content="Datenschutzerklärung gemäß DSGVO. Informationen zur Verarbeitung personenbezogener Daten auf abdulkerimsesli.de."
+      content="Datenschutzerklärung für abdulkerimsesli.de mit Informationen zu Hosting, Kontaktformular, KI-Chat, Cookies und optionaler Reichweitenmessung."
     />
-    <meta name="dateCreated" content="2025-11-08T12:00:00Z" />
+    <meta name="dateCreated" content="2026-04-04T12:00:00Z" />
     <meta name="robots" content="noindex, follow" />
-
-    <!-- Canonical tag -->
     <link rel="canonical" href="https://www.abdulkerimsesli.de/datenschutz/" />
-
-    <!-- OG/Twitter tags are injected server-side by middleware SEO handler -->
-
     <link rel="stylesheet" href="/content/components/footer/legal-pages.css" />
   </head>
   <body>
-    <!-- Skip to main content for keyboard/screen reader users -->
     <a href="#main-content" class="skip-link sr-only"
       >Zum Hauptinhalt springen</a
     >
     <main id="main-content" class="legal-content">
       <h1>Datenschutzerklärung</h1>
-      <p class="last-updated">Stand: 8. November 2025</p>
+      <p class="last-updated">Stand: 4. April 2026</p>
 
       <div class="highlight">
         <p>
-          <strong>Ihre Privatsphäre ist uns wichtig.</strong>
-          Diese Datenschutzerklärung informiert Sie über die Art, den Umfang und
-          den Zweck der Verarbeitung personenbezogener Daten auf unserer
-          Website.
+          Diese Datenschutzerklärung informiert darüber, welche
+          personenbezogenen Daten beim Besuch von
+          <a href="https://www.abdulkerimsesli.de">abdulkerimsesli.de</a>
+          verarbeitet werden, zu welchen Zwecken dies geschieht und welche
+          Rechte betroffene Personen haben.
         </p>
       </div>
 
@@ -41,7 +36,12 @@
           <strong>Abdulkerim Sesli</strong>
           <br />
           E-Mail:
-          <a href="/contact/">Zum Kontaktformular</a>
+          <a href="mailto:kontakt@abdulkerimsesli.de"
+            >kontakt@abdulkerimsesli.de</a
+          >
+          <br />
+          Kontaktformular:
+          <a href="/contact/">/contact/</a>
           <br />
           Website:
           <a href="https://www.abdulkerimsesli.de"
@@ -50,88 +50,178 @@
         </p>
       </div>
 
-      <h2>2. Allgemeine Informationen zur Datenverarbeitung</h2>
-
-      <h3>2.1 Umfang der Verarbeitung</h3>
+      <h2>2. Hosting und technische Bereitstellung</h2>
       <p>
-        Wir verarbeiten personenbezogene Daten unserer Nutzer grundsätzlich nur,
-        soweit dies zur Bereitstellung einer funktionsfähigen Website sowie
-        unserer Inhalte und Leistungen erforderlich ist. Die Verarbeitung
-        personenbezogener Daten erfolgt nur nach Einwilligung des Nutzers.
+        Die Website wird technisch über Cloudflare Pages und Cloudflare Workers
+        bereitgestellt. Dabei können bei jedem Aufruf technisch erforderliche
+        Verbindungsdaten verarbeitet werden, insbesondere IP-Adresse,
+        aufgerufene URL, Zeitpunkt, Referrer, User-Agent und Statusdaten.
+      </p>
+      <p>
+        Die Verarbeitung erfolgt zur Auslieferung der Website, zur
+        Stabilitätsüberwachung, zur Missbrauchsabwehr und zur IT-Sicherheit.
+        Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO.
       </p>
 
-      <h3>2.2 Rechtsgrundlagen</h3>
-      <p>Die Verarbeitung personenbezogener Daten erfolgt auf Grundlage:</p>
+      <h2>3. Kontaktformular</h2>
+      <p>
+        Wenn du das Kontaktformular nutzt, werden Name, E-Mail-Adresse, Betreff,
+        Nachricht sowie technische Schutzinformationen zur Missbrauchsvermeidung
+        verarbeitet. Die Übermittlung dient der Bearbeitung deiner freiwilligen
+        Nachricht, etwa bei Feedback, Rückfragen oder persönlichem Austausch.
+      </p>
+      <p>
+        Die Nachricht wird über den E-Mail-Dienst Resend an die hinterlegte
+        Kontaktadresse zugestellt. Zusätzlich werden Kontaktanfragen in der
+        Cloudflare-D1-Datenbank für die Bearbeitung und Administration
+        gespeichert. Zur Begrenzung missbräuchlicher Anfragen wird die
+        anfragende IP-Adresse für das Rate-Limiting berücksichtigt.
+      </p>
+      <p>
+        Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO für die Bearbeitung
+        deiner Nachricht, Missbrauchsabwehr und sichere technische
+        Bereitstellung. Soweit deine Anfrage ausnahmsweise auf die Anbahnung
+        eines Vertrags gerichtet ist, gilt ergänzend Art. 6 Abs. 1 lit. b DSGVO.
+      </p>
+
+      <h2>4. KI-Chat und Nutzerprofile</h2>
+      <p>
+        Auf der Website steht ein KI-gestützter Chat-Assistent zur Verfügung.
+        Bei Nutzung des Chats können Eingaben, hochgeladene Bilder,
+        Systemhinweise, Verlaufsdaten sowie eine technische Nutzerkennung
+        verarbeitet werden.
+      </p>
+      <p>
+        Für die Chat-Identität werden keine persistenten Kennungen in Cookies
+        oder im Local/Session Storage gesetzt. Optional kannst du einen
+        Profilnamen angeben; dieser kann als URL-Parameter
+        (<code>?name=...</code>) für einen wiederverwendbaren Link genutzt
+        werden. Serverseitig verarbeitet die Website Chatdaten über Cloudflare
+        AI sowie speichert Profil- und Memory-Daten in Cloudflare KV und
+        Vectorize.
+      </p>
+      <p>
+        Die Verarbeitung erfolgt zur Bereitstellung der Chat-Funktion, zur
+        Wiedererkennung freiwillig genutzter Profile, zur Beantwortung von
+        Anfragen und zur Verbesserung der Kontinuität bei Folgedialogen.
+        Rechtsgrundlage ist Art. 6 Abs. 1 lit. b DSGVO, soweit der Chat zur
+        Anbahnung oder Durchführung konkreter Anfragen genutzt wird, im Übrigen
+        Art. 6 Abs. 1 lit. f DSGVO.
+      </p>
+
+      <h2>5. Projekt-Likes und Interaktionsschutz</h2>
+      <p>
+        Für Projekt-Likes wird lokal im Browser gespeichert, ob ein Like für ein
+        bestimmtes Projekt bereits gesetzt wurde. Beim Absenden eines Likes
+        verarbeitet die Website zudem serverseitig Projekt-ID, technische
+        Anfragedaten, IP-Adresse, User-Agent und eine Request-ID, um Missbrauch
+        zu erkennen und Like-Zählungen konsistent zu halten.
+      </p>
+      <p>Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO.</p>
+
+      <h2>6. Cookies, Local Storage und ähnliche Technologien</h2>
+      <p>
+        Die Website verwendet notwendige Speichertechnologien für
+        Grundfunktionen und optionale Technologien für Reichweitenmessung
+        beziehungsweise Komfortfunktionen. Detaillierte Informationen findest du
+        auf der separaten Seite <a href="/cookies/">Cookie-Informationen</a>.
+      </p>
+      <div class="highlight">
+        <p>
+          Rechtsgrundlagen sind Art. 6 Abs. 1 DSGVO sowie § 25 TDDDG. Für nicht
+          notwendige Technologien wird eine Einwilligung eingeholt, bevor
+          entsprechende Speicher- oder Auslesevorgänge freigeschaltet werden.
+        </p>
+      </div>
+
+      <h2>7. Reichweitenmessung und Tag-Management</h2>
+      <p>
+        Die Website nutzt eine Einbindung für Google Tag Manager, Google
+        Analytics 4 und gegebenenfalls Google-Ads-/Conversion-Messung. Die
+        technische Grundinitialisierung setzt Standardwerte zunächst auf
+        „denied“. Eine Verarbeitung mit optionalen Speicherzugriffen und
+        Messfunktionen erfolgt erst nach entsprechender Einwilligung über die
+        Cookie-Einstellungen.
+      </p>
+      <p>Rechtsgrundlage ist Art. 6 Abs. 1 lit. a DSGVO.</p>
+
+      <h2>8. Externe Inhalte und eingebettete Medien</h2>
+      <p>
+        Videos werden über YouTube im erweiterten Datenschutzmodus
+        (<code>youtube-nocookie.com</code>) eingebunden. Beim Öffnen oder
+        Abspielen solcher Inhalte kann es dennoch zu einer Verarbeitung
+        personenbezogener Daten durch Google kommen, insbesondere von
+        Verbindungs-, Nutzungs- und Gerätedaten.
+      </p>
+      <p>
+        Soweit für die Einbindung optionaler Inhalte Speicher- oder
+        Auslesevorgänge auf Endgeräten erforderlich sind, erfolgt dies auf Basis
+        deiner Einwilligung nach Art. 6 Abs. 1 lit. a DSGVO in Verbindung mit §
+        25 TDDDG.
+      </p>
+
+      <h2>9. Empfänger und Kategorien von Empfängern</h2>
+      <p>
+        Je nach genutzter Funktion können Daten an folgende Empfänger gehen:
+      </p>
       <ul>
         <li>
-          <strong>Art. 6 Abs. 1 lit. a DSGVO</strong>
-          – Einwilligung des Nutzers
+          Cloudflare für Hosting, Edge-Auslieferung, KI- und Datenservices
         </li>
+        <li>Resend für die Zustellung von Kontaktanfragen per E-Mail</li>
+        <li>Google für Tag-Management, Reichweitenmessung und Video-Inhalte</li>
+      </ul>
+
+      <h2>10. Drittlandbezug</h2>
+      <p>
+        Es ist möglich, dass einzelne Empfänger personenbezogene Daten auch
+        außerhalb der Europäischen Union oder des Europäischen Wirtschaftsraums
+        verarbeiten, insbesondere in den USA. In diesen Fällen erfolgt die
+        Verarbeitung nach Angaben der jeweiligen Anbieter auf Grundlage
+        geeigneter Garantien oder anerkannter Transfermechanismen.
+      </p>
+
+      <h2>11. Speicherdauer</h2>
+      <p>
+        Personenbezogene Daten werden nur so lange gespeichert, wie dies für die
+        genannten Zwecke erforderlich ist oder gesetzliche
+        Aufbewahrungspflichten bestehen. Lokale Speicher im Browser bleiben
+        grundsätzlich bis zur Löschung durch dich, bis zum Ablauf ihrer
+        Gültigkeit oder bis zur technischen Bereinigung bestehen.
+      </p>
+
+      <h2>12. Deine Rechte</h2>
+      <p>Du hast nach der DSGVO insbesondere folgende Rechte:</p>
+      <ul>
+        <li>Auskunft über verarbeitete personenbezogene Daten</li>
+        <li>Berichtigung unrichtiger Daten</li>
+        <li>Löschung oder Einschränkung der Verarbeitung</li>
         <li>
-          <strong>Art. 6 Abs. 1 lit. f DSGVO</strong>
-          – Berechtigtes Interesse zur Bereitstellung der Website
+          Widerspruch gegen Verarbeitungen auf Basis von Art. 6 Abs. 1 lit. f
+          DSGVO
+        </li>
+        <li>Datenübertragbarkeit, soweit anwendbar</li>
+        <li>Widerruf erteilter Einwilligungen mit Wirkung für die Zukunft</li>
+        <li>
+          Beschwerde bei einer Datenschutzaufsichtsbehörde, insbesondere am Ort
+          deines gewöhnlichen Aufenthalts, Arbeitsplatzes oder des vermuteten
+          Verstoßes
         </li>
       </ul>
 
-      <h2>3. Bereitstellung der Website und Erstellung von Logfiles</h2>
+      <h2>13. Widerruf von Cookie-Einwilligungen</h2>
       <p>
-        Bei jedem Aufruf unserer Website erfasst unser System automatisiert
-        Daten und Informationen vom Computersystem des aufrufenden Rechners
-        (z.B. IP-Adresse, Datum, Uhrzeit). Die Rechtsgrundlage für die
-        vorübergehende Speicherung ist Art. 6 Abs. 1 lit. f DSGVO.
+        Bereits erteilte Einwilligungen kannst du jederzeit über den
+        <strong>Cookies</strong>-Eintrag im Footer ändern oder widerrufen.
+        Alternativ kannst du gespeicherte Browser-Daten in den Einstellungen
+        deines Browsers löschen.
       </p>
 
-      <h2>4. Cookies und Tracking</h2>
-
-      <h3>4.1 Unser Cookie-Einsatz</h3>
-      <p>Wir verwenden auf unserer Website folgende Cookies:</p>
-
-      <div class="highlight">
-        <h4>Essenzielle Cookies (ohne Einwilligung)</h4>
-        <ul>
-          <li>
-            <strong>cookie_consent</strong>
-            – Speichert Ihre Cookie-Einwilligung (365 Tage)
-          </li>
-        </ul>
-      </div>
-
-      <div class="highlight">
-        <h4>Analyse-Cookies (nur mit Einwilligung)</h4>
-        <ul>
-          <li>
-            <strong>_ga</strong>
-            – Google Analytics, unterscheidet Nutzer (2 Jahre)
-          </li>
-          <li>
-            <strong>_gid</strong>
-            – Google Analytics, unterscheidet Nutzer (24 Stunden)
-          </li>
-        </ul>
-      </div>
-
-      <h3>4.2 Google Analytics</h3>
-      <p>
-        Diese Website nutzt Google Analytics. Die Analyse der Website-Nutzung
-        dient der Optimierung unseres Online-Angebots. Rechtsgrundlage: Art. 6
-        Abs. 1 lit. a DSGVO (Einwilligung).
-      </p>
-
-      <h2>5. Ihre Rechte</h2>
-      <p>
-        Sie haben das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung
-        der Verarbeitung, Widerspruch und Datenübertragbarkeit.
-      </p>
-
-      <div class="highlight">
-        <h4>Cookie-Einwilligung widerrufen</h4>
-        <p>
-          Sie können Ihre Cookie-Einwilligung jederzeit widerrufen, indem Sie
-          auf den
-          <strong>"Cookies"</strong>
-          -Link im Footer dieser Website klicken.
-        </p>
-      </div>
+      <h2>14. Weitere Rechtstexte</h2>
+      <ul>
+        <li><a href="/cookies/">Cookie-Informationen</a></li>
+        <li><a href="/impressum/">Impressum</a></li>
+      </ul>
 
       <a href="/" class="back-link">← Zurück zur Startseite</a>
     </main>

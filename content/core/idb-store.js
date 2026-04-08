@@ -24,7 +24,7 @@ const DB_VERSION = 1;
 let _db = null;
 
 /** Store names */
-export const STORES = Object.freeze({
+const STORES = Object.freeze({
   CHAT_HISTORY: 'chat-history',
   ANALYTICS_QUEUE: 'analytics-queue',
   KV_CACHE: 'kv-cache',
@@ -40,7 +40,7 @@ export const STORES = Object.freeze({
  *
  * @returns {Promise<IDBDatabase>}
  */
-export function openDB() {
+function openDB() {
   if (_db) return Promise.resolve(_db);
 
   return new Promise((resolve, reject) => {
@@ -148,7 +148,7 @@ export function getAll(storeName) {
  * @param {IDBValidKey} key
  * @returns {Promise<undefined>}
  */
-export function del(storeName, key) {
+function del(storeName, key) {
   return tx(storeName, 'readwrite', (store) => store.delete(key));
 }
 
@@ -185,7 +185,7 @@ export function queueAnalyticsEvent(eventData) {
  *
  * @returns {Promise<Array<{ id: number, event: string, timestamp: number, params?: any }>>}
  */
-export async function getQueuedAnalyticsEvents() {
+async function getQueuedAnalyticsEvents() {
   const all = await getAll(STORES.ANALYTICS_QUEUE);
   return all.filter((e) => !e.sent);
 }

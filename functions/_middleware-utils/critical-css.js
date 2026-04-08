@@ -6,25 +6,29 @@
  * to async loading via media-swap pattern.
  *
  * Strategy:
- * - tokens.css + root.css → inlined as <style> (design tokens + layout reset)
- * - main.css + animations.css → async loaded via media="print" swap trick
+ * - foundation.css + menu base/state/mobile CSS → inlined as <style>
+ *   (global variables, theme defaults, layout baseline, navigation shell)
+ * - main.css + animations.css + menu search/backdrop → async loaded via
+ *   media="print" swap trick
  *
  * CSS content is cached in KV with SWR semantics for ~1ms reads.
  *
  * @version 1.0.0
  */
 
-const CSS_CACHE_VERSION = '20260306-2';
+const CSS_CACHE_VERSION = '20260324-1';
 const CSS_TTL_MS = 3600 * 1000; // 1 hour
 
 /**
- * CSS files to inline (order matters — tokens first).
+ * CSS files to inline (order matters — foundation first).
  * These block first paint and must be in the initial HTML stream.
  */
 const INLINE_CSS_PATHS = [
-  '/content/styles/tokens.css',
-  '/content/styles/root.css',
-  '/content/components/menu/menu.css',
+  '/content/styles/foundation.css',
+  '/content/components/menu/menu-base.css',
+  '/content/components/menu/menu-search.css',
+  '/content/components/menu/menu-states.css',
+  '/content/components/menu/menu-mobile.css',
 ];
 
 /**
@@ -34,6 +38,7 @@ const INLINE_CSS_PATHS = [
 const ASYNC_CSS_PATHS = [
   '/content/styles/main.css',
   '/content/styles/animations.css',
+  '/content/components/menu/menu-backdrop.css',
   '/content/components/footer/footer.css',
 ];
 
@@ -53,7 +58,7 @@ function cssKvKey(cssPath) {
  * Load a CSS file with KV caching + SWR.
  *
  * @param {Object} context - Cloudflare Pages context
- * @param {string} cssPath - Path like "/content/styles/tokens.css"
+ * @param {string} cssPath - Path like "/content/styles/foundation.css"
  * @returns {Promise<string>} CSS content
  */
 async function loadCssCached(context, cssPath) {
@@ -138,7 +143,7 @@ export async function preloadCriticalCss(context) {
   const entries = await Promise.all(
     INLINE_CSS_PATHS.map(async (path) => {
       const css = await loadCssCached(context, path);
-      return [path, css];
+      return /** @type {[string, string]} */ ([path, css]);
     }),
   );
   return new Map(entries);
@@ -147,8 +152,9 @@ export async function preloadCriticalCss(context) {
 /**
  * HTMLRewriter handler that transforms CSS <link> elements:
  *
- * 1. Inline CSS links (tokens.css, root.css) → replaced with <style> containing
- *    the CSS content directly. Eliminates 2 render-blocking HTTP requests.
+ * 1. Inline CSS links (foundation.css, menu shell files)
+ *    → replaced with <style> containing the CSS content directly.
+ *    Eliminates render-blocking HTTP requests.
  *
  * 2. Async CSS links (main.css, animations.css) → converted to non-blocking
  *    media="print" swap pattern with <noscript> fallback.
@@ -170,7 +176,7 @@ export class CriticalCssInliner {
     const href = el.getAttribute('href');
     if (!href || !ALL_MANAGED_CSS.has(href)) return;
 
-    // --- Inline CSS (tokens + root) ---
+    // --- Inline CSS (foundation + menu shell) ---
     const cssContent = this.inlineCssMap.get(href);
     if (cssContent) {
       // Replace <link> with <style> containing the CSS content
@@ -180,7 +186,7 @@ export class CriticalCssInliner {
       return;
     }
 
-    // --- Async CSS (main + animations) ---
+    // --- Async CSS (main + animations + deferred menu files) ---
     if (ASYNC_CSS_PATHS.includes(href)) {
       // media="print" swap pattern:
       // 1. Browser loads with media="print" (non-blocking)

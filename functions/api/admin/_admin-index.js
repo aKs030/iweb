@@ -1,4 +1,5 @@
 import { normalizeUserId } from '../_user-identity.js';
+import { getErrorMessage } from './_admin-utils.js';
 
 const FALLBACK_MEMORY_PREFIX = 'robot-memory:';
 const USERNAME_LOOKUP_PREFIX = 'username:';
@@ -26,11 +27,6 @@ const MEMORY_KEY_METADATA = {
 };
 const DEFAULT_MEMORY_CATEGORY = 'note';
 const DEFAULT_MEMORY_PRIORITY = 20;
-
-function getErrorMessage(error) {
-  if (error instanceof Error && error.message) return error.message;
-  return String(error || 'Unknown error');
-}
 
 function parseInteger(value, fallback, { min = 1, max = 3650 } = {}) {
   const parsed = Number.parseInt(String(value ?? ''), 10);
@@ -694,12 +690,23 @@ export async function purgeExpiredArchivedUsers(
   };
 }
 
+/**
+ * @param {any} env
+ * @param {any} kv
+ * @param {string} userId
+ * @param {{
+ *   putMemory?: (userId: string, memories: any[]) => Promise<void>,
+ *   putNameMapping?: (name: string, userId: string) => Promise<void>,
+ *   upsertVectorMemory?: (userId: string, memory: any) => Promise<void>,
+ * }} [operations]
+ */
 export async function restoreDeletedUserFromArchive(
   env,
   kv,
   userId,
-  { putMemory, putNameMapping, upsertVectorMemory } = {},
+  operations = {},
 ) {
+  const { putMemory, putNameMapping, upsertVectorMemory } = operations;
   const snapshot = await loadArchivedDeletedUser(env, userId);
   const normalizedUserId = normalizeUserId(userId);
   if (!snapshot || !normalizedUserId || typeof putMemory !== 'function') {

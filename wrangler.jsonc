@@ -1,6 +1,7 @@
 // wrangler.jsonc — migriert von wrangler.toml
 // Hinweise:
-// - Top-Level beschreibt das Default-/Local-Setup fuer `wrangler pages dev`
+// - Top-Level beschreibt das gemeinsame Setup fuer `wrangler pages dev`
+//   und Preview-Deployments
 // - `env.production` ist ein separater Production-Override
 // - Nicht vererbbare Felder wie `vars`, KV/R2/D1/AI/Vectorize muessen in
 //   `env.production` erneut angegeben werden, sobald dort Overrides existieren
@@ -8,11 +9,11 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "1web",
-  "compatibility_date": "2025-03-07",
+  "compatibility_date": "2025-03-07", // bewusst gepinnt; nur nach Runtime-Review + Tests anheben
   "compatibility_flags": ["nodejs_compat"],
   "pages_build_output_dir": ".",
 
-  // Default-/Local-Variablen fuer `wrangler pages dev`
+  // Gemeinsame Variablen fuer Local-Dev + Preview-Deployments.
   // Production erbt diese Werte nicht automatisch.
   "vars": {
     "MAX_SEARCH_RESULTS": "10",
@@ -31,16 +32,12 @@
     "ROBOT_CONTEXT_TIMEOUT_MS": "3500",
     "ROBOT_MEMORY_TOP_K": "5",
     "ROBOT_MEMORY_SCORE_THRESHOLD": "0.65",
-    "ROBOT_CONTENT_RAG_TOP_K": "4",
-    "ROBOT_CONTENT_RAG_HYBRID_TOP_K": "6",
-    "ROBOT_CONTENT_RAG_SCORE_THRESHOLD": "0.25",
-    "ROBOT_CONTENT_RAG_LEXICAL_SCORE_THRESHOLD": "0.18",
     "CONTACT_EMAIL": "krm19030@gmail.com",
     "YOUTUBE_CHANNEL_ID": "UCTGRherjM4iuIn86xxubuPg",
     "ALLOWED_ORIGINS": "https://abdulkerimsesli.de,https://www.abdulkerimsesli.de",
   },
 
-  // Default-/Local-Bindings fuer `wrangler pages dev`
+  // Gemeinsame Bindings fuer Local-Dev + Preview-Deployments
   "kv_namespaces": [
     {
       "binding": "RATE_LIMIT_KV",
@@ -62,6 +59,7 @@
     {
       "binding": "GALLERY_BUCKET",
       "bucket_name": "img",
+      "remote": true,
     },
   ],
 
@@ -97,6 +95,7 @@
   ],
 
   // Production-Override.
+  // Preview-Deployments verwenden weiterhin die Top-Level-Werte oben.
   // Wichtiger Cloudflare-Pages-Fallstrick:
   // Sobald hier ein nicht vererbbares Feld ueberschrieben wird
   // (z. B. `kv_namespaces`), muessen die anderen nicht vererbbaren Felder
@@ -122,10 +121,6 @@
         "ROBOT_CONTEXT_TIMEOUT_MS": "3500",
         "ROBOT_MEMORY_TOP_K": "5",
         "ROBOT_MEMORY_SCORE_THRESHOLD": "0.65",
-        "ROBOT_CONTENT_RAG_TOP_K": "4",
-        "ROBOT_CONTENT_RAG_HYBRID_TOP_K": "6",
-        "ROBOT_CONTENT_RAG_SCORE_THRESHOLD": "0.25",
-        "ROBOT_CONTENT_RAG_LEXICAL_SCORE_THRESHOLD": "0.18",
         "CONTACT_EMAIL": "krm19030@gmail.com",
         "YOUTUBE_CHANNEL_ID": "UCTGRherjM4iuIn86xxubuPg",
         "ALLOWED_ORIGINS": "https://abdulkerimsesli.de,https://www.abdulkerimsesli.de",
@@ -148,6 +143,7 @@
         {
           "binding": "GALLERY_BUCKET",
           "bucket_name": "img",
+          "remote": true,
         },
       ],
       "d1_databases": [

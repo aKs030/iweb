@@ -11,7 +11,7 @@ const LIGHT = 'light';
 const DARK = 'dark';
 const SYSTEM = 'system';
 const MEDIA_QUERY = '(prefers-color-scheme: light)';
-export const THEME_PREFERENCE_STORAGE_KEY = 'iweb-theme-preference';
+const THEME_PREFERENCE_STORAGE_KEY = 'iweb-theme-preference';
 
 const normalizeTheme = (value) => (value === LIGHT ? LIGHT : DARK);
 const normalizePreference = (value) => {
@@ -63,8 +63,8 @@ const persistPreference = (preference) => {
   }
 };
 
-export const systemTheme = signal(readSystemTheme());
-export const themePreference = signal(readStoredPreference());
+const systemTheme = signal(readSystemTheme());
+const themePreference = signal(readStoredPreference());
 export const resolvedTheme = computed(() =>
   themePreference.value === SYSTEM
     ? systemTheme.value
@@ -110,7 +110,7 @@ export function initThemeState() {
   }
 }
 
-export function setThemePreference(preference = SYSTEM) {
+function setThemePreference(preference = SYSTEM) {
   const nextPreference = normalizePreference(preference);
   themePreference.value = nextPreference;
   persistPreference(nextPreference);
@@ -125,32 +125,6 @@ export function toggleTheme() {
   return setTheme(resolvedTheme.value === DARK ? LIGHT : DARK);
 }
 
-export function useSystemTheme() {
-  return setThemePreference(SYSTEM);
-}
-
 export function getResolvedTheme() {
   return readForcedDocumentTheme() || resolvedTheme.value;
-}
-
-export function destroyThemeState() {
-  if (_cleanupThemeSync) {
-    _cleanupThemeSync();
-    _cleanupThemeSync = null;
-  }
-
-  if (_mediaQueryList) {
-    if (
-      _handleSystemChange &&
-      typeof _mediaQueryList.removeEventListener === 'function'
-    ) {
-      _mediaQueryList.removeEventListener('change', _handleSystemChange);
-    }
-
-    _mediaQueryList = null;
-  }
-
-  _handleSystemChange = null;
-
-  _initialized = false;
 }

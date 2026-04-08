@@ -1,8 +1,18 @@
-import { i18n } from '../../../core/i18n.js';
+import { i18n } from '#core/i18n.js';
 
 let menuTemplateInstanceCounter = 0;
 
+/**
+ * @typedef {typeof import('./MenuConfig.js').MenuConfig} MenuComponentConfig
+ */
+/**
+ * @typedef {Partial<MenuComponentConfig>} MenuComponentConfigInput
+ */
+
 export class MenuTemplate {
+  /**
+   * @param {MenuComponentConfigInput} [config]
+   */
   constructor(config = {}) {
     this.config = config;
     this.ids = this.createDomIds();

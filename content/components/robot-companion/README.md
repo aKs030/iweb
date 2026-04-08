@@ -6,13 +6,8 @@ Cloudflare-AI-first Roboter-Begleiter mit Streaming-Chat, Tool-Calling und Memor
 
 - KI-Chat via `POST /api/ai-agent` (SSE Streaming)
 - Tool-Calling fuer Navigation, Theme, Suche, Menu, Scroll und Utility-Aktionen
-- Integrations-Tools: externe Links, Social-Profile, Mail-Entwurf, Kalender-Erinnerung
-- Confirm-Step fuer sensible Tool-Aktionen (Browser-Bestaetigung)
 - Bildanalyse (Upload im Chat)
-- Session-Chatverlauf nur im RAM (kein localStorage)
-- Persistente User-ID über `localStorage` plus First-Party-Cookie für Cloudflare-Memory
-- Automatische Profil-Recovery über gespeicherte Namen bei Browserwechseln plus Cookie-Fallback für gespeicherte Erinnerungen
-- Sichtbarer Profilstatus im Chat-Header sowie Aktionen für Erinnerungen, Profilwechsel, Gerät trennen und Bearbeiten
+- Persistenter Chatverlauf (lokal) inkl. Export
 - Stateful Robot-UI (Animation, Kollision, Kontextreaktionen)
 - XSS-sichere DOM-Erstellung
 
@@ -44,7 +39,7 @@ robot-companion/
 import { RobotCompanion } from './robot-companion.js';
 
 const robot = new RobotCompanion();
-robot.init();
+await robot.initialize();
 ```
 
 ## Actions
@@ -52,6 +47,8 @@ robot.init();
 ```js
 ROBOT_ACTIONS = {
   START: 'start',
+  SUMMARIZE_PAGE: 'summarizePage',
+  UPLOAD_IMAGE: 'uploadImage',
   TOGGLE_THEME: 'toggleTheme',
   SEARCH_WEBSITE: 'searchWebsite',
   SCROLL_FOOTER: 'scrollFooter',
@@ -61,15 +58,10 @@ ROBOT_ACTIONS = {
   CLOSE_SEARCH: 'closeSearch',
   SCROLL_TOP: 'scrollTop',
   COPY_CURRENT_URL: 'copyCurrentUrl',
-  SHOW_MEMORIES: 'showMemories',
-  EDIT_PROFILE: 'editProfile',
-  SWITCH_PROFILE: 'switchProfile',
-  DISCONNECT_PROFILE: 'disconnectProfile',
   CLEAR_CHAT: 'clearChat',
+  EXPORT_CHAT: 'exportChat',
 };
 ```
-
-Bildanalyse wird direkt ueber den Upload-Button im Composer gestartet, nicht ueber eine separate `ROBOT_ACTIONS`-Konstante.
 
 ## Wichtige Hinweise
 
@@ -77,12 +69,15 @@ Bildanalyse wird direkt ueber den Upload-Button im Composer gestartet, nicht ueb
 - Lokale statische Textquellen fuer Chatflows wurden entfernt.
 - Lokale Bubble-Texte sind im Runtime-Flow deaktiviert (`disableLocalBubbleTexts`).
 - Tool-Ergebnisse zeigen kurze technische Statusmeldungen im Chat.
+- **Cloud‑Only / Memory**: the robot stores conversations and memories exclusively in Cloudflare KV and vector index. No client storage is used once a name is chosen; the user ID is never written to cookies or local/session storage. Conversation history is also disabled in cloud-only mode. When the browser refuses storage (e.g. Indigo), the page will **automatically append the stable ID to the address bar** and notify the user in chat, so the same link can be reused across windows.
+- **Name‑based login**: users supply `?name=xyz` or click the `Name` button. The service now parses the query string immediately on each request so the identity works even if the first API call happens before the UI has finished initializing. The identity is persisted via URL and remembered across browsers & incognito tabs.
+- **Share link**: the header includes a "Link" button that copies a sharable URL including the current name, allowing others to continue the same memory session.
 
 ## Entwicklung
 
 ```bash
 npx eslint content/components/robot-companion --max-warnings=0
-npm run qa
+npm run lint:types
 ```
 
 ## Verwandte Dateien

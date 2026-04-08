@@ -6,9 +6,8 @@
   content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
 />
 
-<!-- GLOBAL-HEAD:BASE-ONLY:BEGIN -->
 <!-- Import Map for no-build ES modules: vendors + internal aliases -->
-<!-- Must be as early as possible in the head -->
+<!-- Must be as early as possible in the head for both base and standalone pages -->
 <!-- Three.js version: sync with THREE_VERSION in content/config/constants.js -->
 <!-- BEGIN GENERATED IMPORT MAP -->
 <script type="importmap">
@@ -17,13 +16,14 @@
       "react": "https://esm.sh/react@19.2.4",
       "react-dom": "https://esm.sh/react-dom@19.2.4",
       "react-dom/client": "https://esm.sh/react-dom@19.2.4/client",
-      "lucide-react": "https://esm.sh/lucide-react@0.577.0",
+      "lucide-react": "https://esm.sh/lucide-react@1.7.0",
       "three": "https://cdn.jsdelivr.net/npm/three@0.183.2/build/three.module.min.js",
       "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.183.2/examples/jsm/",
       "htm": "https://esm.sh/htm@3.1.1",
-      "idb-keyval": "https://esm.sh/idb-keyval@6.2.1",
       "#core/": "/content/core/",
       "#components/": "/content/components/",
+      "#footer/": "/content/components/footer/",
+      "#menu/": "/content/components/menu/",
       "#config/": "/content/config/",
       "#pages/": "/pages/"
     },
@@ -35,7 +35,6 @@
   }
 </script>
 <!-- END GENERATED IMPORT MAP -->
-<!-- GLOBAL-HEAD:BASE-ONLY:END -->
 
 <!-- Browser chrome / installed web app shell -->
 <!-- GLOBAL-HEAD:BASE-ONLY:BEGIN -->
@@ -100,16 +99,42 @@
   } catch (e) {}
 </script>
 
-<!-- Generated design tokens (single file with :root + [data-theme] blocks) -->
+<script id="consent-bootstrap">
+  try {
+    var root = document.documentElement;
+    var consentMatch = document.cookie.match(
+      /(?:^|;\s*)cookie_consent=([^;]+)/,
+    );
+    var consentValue = consentMatch ? decodeURIComponent(consentMatch[1]) : '';
+    var consentResolved =
+      consentValue === 'accepted' || consentValue === 'rejected';
+
+    if (consentResolved) {
+      root.setAttribute('data-cookie-consent', consentValue);
+      root.setAttribute('data-cookie-consent-resolved', 'true');
+    } else {
+      root.removeAttribute('data-cookie-consent');
+      root.removeAttribute('data-cookie-consent-resolved');
+    }
+  } catch (e) {}
+</script>
+
+<style id="consent-bootstrap-style">
+  html[data-cookie-consent-resolved='true'] site-footer #cookie-banner,
+  html[data-cookie-consent-resolved='true'] .site-footer #cookie-banner {
+    display: none !important;
+  }
+</style>
+
+<!-- Core style foundation -->
 <link
   rel="stylesheet"
-  href="/content/styles/tokens.css"
-  id="tokens-css"
+  href="/content/styles/foundation.css"
+  id="foundation-css"
   fetchpriority="high"
 />
 
 <!-- Critical CSS - Loaded immediately to prevent FOUC -->
-<link rel="stylesheet" href="/content/styles/root.css" fetchpriority="high" />
 <link rel="stylesheet" href="/content/styles/main.css" fetchpriority="high" />
 <link
   rel="stylesheet"
@@ -117,36 +142,60 @@
   media="print"
   onload="this.media = 'all'"
 />
-<link rel="stylesheet" href="/content/components/menu/menu.css" />
+<link rel="stylesheet" href="/content/styles/overlays.css" />
+<link rel="stylesheet" href="/content/components/menu/menu-base.css" />
+<link rel="stylesheet" href="/content/components/menu/menu-search.css" />
+<link rel="stylesheet" href="/content/components/menu/menu-states.css" />
+<link rel="stylesheet" href="/content/components/menu/menu-mobile.css" />
+<link
+  rel="stylesheet"
+  href="/content/components/menu/menu-backdrop.css"
+  media="print"
+  onload="this.media = 'all'"
+/>
 <link
   rel="stylesheet"
   href="/content/components/footer/footer.css"
   media="print"
   onload="this.media = 'all'"
 />
+<link
+  rel="stylesheet"
+  href="/content/components/enhancements/enhancements.css"
+  media="print"
+  onload="this.media = 'all'"
+/>
 <noscript>
   <link rel="stylesheet" href="/content/styles/animations.css" />
+  <link rel="stylesheet" href="/content/styles/overlays.css" />
+  <link rel="stylesheet" href="/content/components/menu/menu-backdrop.css" />
   <link rel="stylesheet" href="/content/components/footer/footer.css" />
+  <link
+    rel="stylesheet"
+    href="/content/components/enhancements/enhancements.css"
+  />
 </noscript>
 
 <!-- Hero Critical CSS (inline for fastest FCP on homepage) -->
 <style id="hero-critical-inline">
   .hero {
     display: flex;
-    align-items: center;
-    justify-content: center;
+    align-items: flex-end;
+    justify-content: flex-start;
     min-height: var(--viewport-height, 100dvh);
-    padding: 0 0.5rem;
+    padding: clamp(5rem, 10vw, 7rem) clamp(1.25rem, 4vw, 3rem)
+      clamp(4rem, 8vw, 6rem);
     box-sizing: border-box;
   }
   .hero__title {
-    font: 800 clamp(3rem, 6vw, 4.5rem)/1.03 var(--font-inter);
+    font:
+      700 clamp(3rem, 8vw, 7rem) / 0.93 'Space Grotesk',
+      var(--font-inter);
     margin: 0;
-    padding: 8px 12px;
-    max-width: 30ch;
+    max-width: 11ch;
     color: var(--color-text-main, #fff);
-    text-align: center;
-    white-space: normal;
+    text-align: left;
+    letter-spacing: -0.05em;
   }
 </style>
 <!-- GLOBAL-HEAD:BASE-ONLY:END -->
@@ -156,12 +205,6 @@
   rel="icon"
   href="https://img.abdulkerimsesli.de/icons/favicon.ico?v=20260221"
   sizes="48x48"
-/>
-<link
-  rel="icon"
-  href="https://img.abdulkerimsesli.de/icons/favicon.svg?v=20260221"
-  sizes="any"
-  type="image/svg+xml"
 />
 <link
   rel="icon"
@@ -181,7 +224,7 @@
 />
 
 <!-- PWA -->
-<link rel="manifest" href="/manifest.json" />
+<link rel="manifest" href="/manifest.json?v={{DEPLOY_VERSION}}" />
 
 <!-- GLOBAL-HEAD:BASE-ONLY:BEGIN -->
 <link
@@ -261,10 +304,10 @@
   href="/content/components/head/head-inline.js"
   fetchpriority="high"
 />
-<link rel="modulepreload" href="/content/components/menu/SiteMenu.js" />
+<link rel="modulepreload" href="/content/components/menu/index.js" />
 
 <!-- Core Scripts -->
-<script type="module" src="/content/components/menu/SiteMenu.js"></script>
+<script type="module" src="/content/components/menu/index.js"></script>
 <script type="module" src="/content/components/head/head-inline.js"></script>
 <script type="module" src="/content/main.js"></script>
 <!-- GLOBAL-HEAD:BASE-ONLY:END -->

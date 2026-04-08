@@ -1,0 +1,1262 @@
+/* ── NEW IDLE ANIMATIONS ──────────────────────────────────── */
+
+/* Head tilt (curious) */
+.robot-avatar.head-tilt {
+  animation: headTilt 2s ease-in-out;
+}
+
+@keyframes headTilt {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  20% {
+    transform: rotate(12deg) translateY(calc(var(--size-2) * -1));
+  }
+  60% {
+    transform: rotate(12deg) translateY(calc(var(--size-1) * -1));
+  }
+  80% {
+    transform: rotate(3deg);
+  }
+}
+
+/* Yawn (before sleep) */
+.robot-avatar.yawning {
+  animation: robotYawn 2.5s ease-in-out;
+}
+
+@keyframes robotYawn {
+  0%,
+  100% {
+    transform: scale(1) translateY(0);
+  }
+  15% {
+    transform: scale(1.03) translateY(calc(var(--size-2) * -1));
+  }
+  30% {
+    transform: scale(1.06) translateY(calc(var(--size-3) * -1));
+  }
+  50% {
+    transform: scale(1.06) translateY(calc(var(--size-2) * -1));
+  }
+  70% {
+    transform: scale(1.02) translateY(0);
+  }
+}
+
+.robot-avatar.yawning .robot-eyes {
+  animation: yawnEyes 2.5s ease-in-out;
+}
+
+@keyframes yawnEyes {
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+  20% {
+    transform: scaleY(0.3);
+  }
+  50% {
+    transform: scaleY(0.15);
+  }
+  80% {
+    transform: scaleY(0.7);
+  }
+}
+
+/* Air drumming (playful idle) */
+.robot-avatar.air-drumming .robot-arm.left {
+  animation: drumLeft 0.4s ease-in-out infinite;
+}
+
+.robot-avatar.air-drumming .robot-arm.right {
+  animation: drumRight 0.4s ease-in-out infinite 0.2s;
+}
+
+@keyframes drumLeft {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(25deg) translateY(var(--size-3));
+  }
+}
+
+@keyframes drumRight {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-25deg) translateY(var(--size-3));
+  }
+}
+
+.robot-avatar.air-drumming {
+  animation: drumBob 0.4s ease-in-out infinite;
+}
+
+@keyframes drumBob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(var(--size-1));
+  }
+}
+
+/* Stretch animation */
+.robot-avatar.stretching {
+  animation: robotStretch 2s ease-in-out;
+}
+
+@keyframes robotStretch {
+  0%,
+  100% {
+    transform: scaleY(1) scaleX(1) translateY(0);
+  }
+  20% {
+    transform: scaleY(1.08) scaleX(0.95) translateY(calc(var(--size-5) * -1));
+  }
+  40% {
+    transform: scaleY(1.12) scaleX(0.93) translateY(calc(var(--size-8) * -1));
+  }
+  60% {
+    transform: scaleY(1.08) scaleX(0.95) translateY(calc(var(--size-5) * -1));
+  }
+  80% {
+    transform: scaleY(0.97) scaleX(1.04) translateY(var(--size-1));
+  }
+}
+
+.robot-avatar.stretching .robot-arm.left {
+  animation: stretchArmLeft 2s ease-in-out;
+}
+
+.robot-avatar.stretching .robot-arm.right {
+  animation: stretchArmRight 2s ease-in-out;
+}
+
+@keyframes stretchArmLeft {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  25%,
+  55% {
+    transform: rotate(40deg) translateY(calc(var(--size-8) * -1));
+  }
+}
+
+@keyframes stretchArmRight {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  25%,
+  55% {
+    transform: rotate(-40deg) translateY(calc(var(--size-8) * -1));
+  }
+}
+
+/* Doze off and jolt awake */
+.robot-avatar.dozing {
+  animation: robotDoze 3s ease-in-out;
+}
+
+@keyframes robotDoze {
+  0% {
+    transform: translateY(0) rotate(0);
+  }
+  20% {
+    transform: translateY(var(--size-1)) rotate(-3deg);
+  }
+  40% {
+    transform: translateY(var(--size-3)) rotate(-6deg);
+  }
+  55% {
+    transform: translateY(var(--size-4)) rotate(-8deg);
+  }
+  /* Jolt awake! */
+  60% {
+    transform: translateY(calc(var(--size-10) * -1)) rotate(5deg);
+  }
+  70% {
+    transform: translateY(calc(var(--size-3) * -1)) rotate(-2deg);
+  }
+  85% {
+    transform: translateY(var(--size-1)) rotate(1deg);
+  }
+  100% {
+    transform: translateY(0) rotate(0);
+  }
+}
+
+.robot-avatar.dozing .robot-eyes {
+  animation: dozeEyes 3s ease-in-out;
+}
+
+@keyframes dozeEyes {
+  0% {
+    transform: scaleY(1);
+  }
+  20% {
+    transform: scaleY(0.5);
+  }
+  40% {
+    transform: scaleY(0.15);
+  }
+  55% {
+    transform: scaleY(0.05);
+  }
+  /* jolt: eyes wide */
+  60% {
+    transform: scaleY(1.4);
+  }
+  75% {
+    transform: scaleY(1.15);
+  }
+  100% {
+    transform: scaleY(1);
+  }
+}
+
+/* Look around (curious scanning) */
+.robot-avatar.looking-around {
+  animation: lookAround 3s ease-in-out;
+}
+
+@keyframes lookAround {
+  0%,
+  100% {
+    transform: rotate(0) translateX(0);
+  }
+  15% {
+    transform: rotate(-8deg) translateX(calc(var(--size-3) * -1));
+  }
+  35% {
+    transform: rotate(-5deg) translateX(calc(var(--size-2) * -1));
+  }
+  55% {
+    transform: rotate(10deg) translateX(var(--size-3));
+  }
+  75% {
+    transform: rotate(6deg) translateX(var(--size-2));
+  }
+}
+
+/* Wiggle-dance (happy wiggle) */
+.robot-avatar.wiggle-dance {
+  animation: wiggleDance 1.5s ease-in-out;
+}
+
+@keyframes wiggleDance {
+  0%,
+  100% {
+    transform: rotate(0) translateY(0);
+  }
+  12% {
+    transform: rotate(-6deg) translateY(calc(var(--size-2) * -1));
+  }
+  25% {
+    transform: rotate(6deg) translateY(0);
+  }
+  37% {
+    transform: rotate(-8deg) translateY(calc(var(--size-3) * -1));
+  }
+  50% {
+    transform: rotate(8deg) translateY(0);
+  }
+  62% {
+    transform: rotate(-5deg) translateY(calc(var(--size-2) * -1));
+  }
+  75% {
+    transform: rotate(4deg) translateY(0);
+  }
+  87% {
+    transform: rotate(-2deg) translateY(calc(var(--size-1) * -1));
+  }
+}
+
+/* ── ENTRY ANIMATION HELPERS ──────────────────────────────── */
+
+/* Portal glow ring (for portal-open entry) */
+.robot-avatar.portal-glow::after {
+  opacity: 1 !important;
+  background: conic-gradient(
+    from 0deg,
+    color-mix(in srgb, var(--robot-cyan) 60%, transparent),
+    color-mix(in srgb, var(--clr-blue-500) 40%, transparent),
+    color-mix(in srgb, var(--robot-cyan) 60%, transparent)
+  ) !important;
+  filter: blur(var(--size-8)) !important;
+  animation: portalSpin 0.6s linear infinite !important;
+  border-radius: 50%;
+  transform: scale(1.8) !important;
+}
+
+@keyframes portalSpin {
+  from {
+    rotate: 0deg;
+  }
+  to {
+    rotate: 360deg;
+  }
+}
+
+/* Rocket trail (for rocket-launch entry) */
+.robot-avatar.rocket-trail::after {
+  opacity: 0.7 !important;
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--robot-cyan) 50%, transparent),
+    color-mix(in srgb, var(--clr-white) 30%, transparent) 40%,
+    transparent 80%
+  ) !important;
+  filter: blur(var(--size-4)) !important;
+  transform: translateY(var(--size-15)) scaleX(0.5) scaleY(2) !important;
+  animation: rocketTrailPulse 0.15s ease-in-out infinite alternate !important;
+}
+
+@keyframes rocketTrailPulse {
+  0% {
+    opacity: 0.5;
+    transform: translateY(var(--size-15)) scaleX(0.45) scaleY(1.8);
+  }
+  100% {
+    opacity: 0.8;
+    transform: translateY(var(--size-18)) scaleX(0.55) scaleY(2.2);
+  }
+}
+
+/* Bounce squash/stretch (for bounce-across entry) */
+@keyframes bounceSquash {
+  0%,
+  100% {
+    transform: scaleX(1) scaleY(1);
+  }
+  50% {
+    transform: scaleX(1.15) scaleY(0.85);
+  }
+}
+
+/* Highlight pulse for elements being pointed at */
+.robot-highlight {
+  animation: highlight-pulse 2s ease-in-out;
+  position: relative;
+  z-index: var(--z-robot-local); /* Ensure visibility */
+}
+
+.robot-highlight::after {
+  content: '';
+  position: absolute;
+  inset: calc(var(--size-6) * -1);
+  border: var(--size-2) solid var(--robot-cyan);
+  border-radius: var(--size-8);
+  pointer-events: none;
+  animation: highlight-glow 2s ease-in-out;
+}
+
+@keyframes highlight-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+}
+
+@keyframes highlight-glow {
+  0% {
+    opacity: 0;
+    box-shadow: 0 0 0 transparent;
+  }
+  50% {
+    opacity: 1;
+    box-shadow: 0 0 var(--size-25)
+      color-mix(in srgb, var(--robot-cyan) 70%, transparent);
+  }
+  100% {
+    opacity: 0;
+    box-shadow: 0 0 0 transparent;
+  }
+}
+
+@keyframes blink {
+  0%,
+  48%,
+  52%,
+  100% {
+    transform: scaleY(1);
+  }
+
+  50% {
+    transform: scaleY(0.1);
+  }
+}
+
+@keyframes pulseRed {
+  0%,
+  100% {
+    opacity: 0.6;
+    fill: var(--robot-red);
+  }
+
+  50% {
+    opacity: 1;
+    fill: var(--robot-red-strong);
+    box-shadow: 0 0 var(--size-10) red;
+  }
+}
+
+@keyframes messageFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(var(--size-15));
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes typingBounce {
+  0%,
+  80%,
+  100% {
+    transform: scale(0);
+  }
+
+  40% {
+    transform: scale(1);
+  }
+}
+
+@media (width <= 480px) {
+  #robot-companion-container {
+    bottom: max(var(--size-6), var(--safe-bottom));
+    right: max(var(--size-6), var(--safe-right));
+    width: var(--size-64);
+    height: var(--size-64);
+  }
+
+  /* On mobile, disable per-page vertical offsets – always bottom-right */
+  #robot-companion-container[data-page-context] {
+    bottom: max(var(--size-6), var(--safe-bottom));
+    top: auto;
+    right: max(var(--size-6), var(--safe-right));
+    left: auto;
+    align-items: flex-end;
+    transition: none;
+  }
+
+  .robot-avatar {
+    width: var(--size-64);
+    height: var(--size-64);
+  }
+
+  .robot-chat-window {
+    width: min(96vw, 430px);
+    max-width: 430px;
+    height: min(calc(var(--viewport-height) * 0.78), 620px);
+    min-height: calc(var(--viewport-height) * 0.56);
+    max-height: calc(var(--viewport-height) - 16px);
+    top: auto;
+    left: auto;
+    right: 2vw;
+    bottom: max(var(--size-8), var(--safe-bottom));
+    transform: translateY(10px) scale(0.97);
+    transform-origin: bottom right;
+    border-radius: var(--size-20);
+  }
+}
+
+/* Mobile: Chat-Inhalte kompakter bei schmalen Viewports */
+@media (width <= 480px) {
+  .chat-messages {
+    padding: var(--size-15);
+  }
+
+  .chat-input-area {
+    padding: var(--size-12);
+    padding-bottom: calc(var(--size-12) + var(--safe-bottom));
+    gap: var(--size-8);
+  }
+
+  .chat-header {
+    padding: var(--size-14) var(--size-16);
+    align-items: flex-start;
+  }
+
+  .chat-title {
+    font-size: var(--size-r-0-95);
+    gap: var(--size-8);
+  }
+
+  .chat-header-controls {
+    gap: var(--size-5);
+    max-width: 58%;
+  }
+
+  .chat-header-btn {
+    padding: var(--size-5) var(--size-8);
+    font-size: var(--size-r-0-68, 0.68rem);
+    min-height: var(--size-30);
+  }
+
+  .message {
+    max-width: 92%;
+    padding: var(--size-10) var(--size-14);
+    font-size: var(--size-r-0-9);
+  }
+
+  /* When keyboard is open via JS, remove safe-area-inset because keyboard already pushes layout up */
+  .robot-chat-window.keyboard-open .chat-input-area {
+    padding-bottom: var(--size-12) !important;
+  }
+}
+
+/* Mobile Optimization: Prevent iOS Zoom on Input Focus */
+/* Mobile: input font-size für iOS Zoom-Prevention */
+@media (width <= 480px) {
+  #robot-chat-input {
+    font-size: 16px !important; /* Force exact 16px so iOS Safari never zooms */
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .robot-chat-window,
+  .message,
+  .chat-status-dot::after,
+  #robot-chat-send {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .chat-messages {
+    scroll-behavior: auto;
+  }
+}
+
+.robot-thinking.is-visible {
+  opacity: 1;
+}
+
+.robot-magnifying-glass {
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+/* Glass Lens Effect */
+.robot-lens {
+  mix-blend-mode: hard-light;
+  filter: drop-shadow(
+    0 0 var(--size-5) color-mix(in srgb, var(--robot-cyan) 30%, transparent)
+  );
+}
+
+.robot-antenna-light.is-thinking {
+  animation: thinkingAntenna 0.5s infinite alternate;
+}
+
+@keyframes thinkingAntenna {
+  from {
+    fill: var(--robot-red);
+    filter: drop-shadow(0 0 var(--size-2) var(--robot-red));
+  }
+
+  to {
+    fill: var(--robot-yellow);
+    filter: drop-shadow(0 0 var(--size-8) var(--robot-yellow));
+  }
+}
+
+/* Hand and Finger Animations */
+.robot-hand {
+  transition: transform 0.3s ease;
+}
+
+.robot-finger {
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease,
+    fill 0.2s ease;
+  transform-origin: center;
+}
+
+/* Grip animation - fingers close */
+.robot-hand.gripping .robot-finger {
+  animation: fingerGrip 0.3s ease-out forwards;
+}
+
+@keyframes fingerGrip {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(-15deg);
+  }
+}
+
+/* Thumbs up gesture */
+.robot-hand.thumbs-up .finger-0 {
+  animation: thumbsUp 0.5s ease-out forwards;
+}
+
+.robot-hand.thumbs-up .finger-1,
+.robot-hand.thumbs-up .finger-2,
+.robot-hand.thumbs-up .finger-3,
+.robot-hand.thumbs-up .finger-4 {
+  opacity: 0.3;
+  transform: scale(0.8);
+}
+
+@keyframes thumbsUp {
+  0% {
+    transform: rotate(0deg) translateY(0);
+  }
+  100% {
+    transform: rotate(-90deg) translateY(calc(var(--size-3) * -1));
+  }
+}
+
+/* Wave animation for fingers */
+.robot-hand.waving .robot-finger {
+  animation: fingerWave 0.6s ease-in-out infinite;
+}
+
+.robot-hand.waving .finger-0 {
+  animation-delay: 0s;
+}
+.robot-hand.waving .finger-1 {
+  animation-delay: 0.1s;
+}
+.robot-hand.waving .finger-2 {
+  animation-delay: 0.2s;
+}
+.robot-hand.waving .finger-3 {
+  animation-delay: 0.3s;
+}
+.robot-hand.waving .finger-4 {
+  animation-delay: 0.4s;
+}
+
+@keyframes fingerWave {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(15deg);
+  }
+}
+
+/* Mouth Expressions - LED Display Style */
+.robot-mouth rect,
+.robot-mouth g {
+  transition: opacity 0.3s ease;
+}
+
+.robot-mouth.happy .mouth-neutral {
+  opacity: 0;
+}
+
+.robot-mouth.happy .mouth-happy {
+  opacity: 1 !important;
+}
+
+.robot-mouth.sad .mouth-neutral {
+  opacity: 0;
+}
+
+.robot-mouth.sad .mouth-sad {
+  opacity: 1 !important;
+}
+
+.robot-mouth.surprised .mouth-neutral {
+  opacity: 0;
+}
+
+.robot-mouth.surprised .mouth-surprised {
+  opacity: 1 !important;
+}
+
+/* Talking animation - LED flicker effect */
+.robot-mouth.talking .mouth-neutral,
+.robot-mouth.talking .mouth-happy rect {
+  animation: mouthTalkLED 0.15s ease-in-out infinite;
+}
+
+@keyframes mouthTalkLED {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* Particle Effects */
+.robot-particle-star {
+  position: absolute;
+  font-size: var(--size-16);
+  pointer-events: none;
+  animation: particleStar 1s ease-out forwards;
+  z-index: var(--z-robot);
+}
+
+@keyframes particleStar {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) scale(0) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(var(--tx, var(--size-0)), var(--ty, var(--size-0)))
+      scale(1.2) rotate(180deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--tx, var(--size-0)), var(--ty, var(--size-0)))
+      scale(0.5) rotate(360deg);
+  }
+}
+
+.robot-particle-heart {
+  position: absolute;
+  font-size: var(--size-20);
+  pointer-events: none;
+  animation: particleHeart 1.5s ease-out forwards;
+  z-index: var(--z-robot);
+}
+
+@keyframes particleHeart {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(0.5);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(calc(var(--size-30) * -1)) scale(1.2);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(calc(var(--size-60) * -1)) scale(0.8);
+  }
+}
+
+.robot-particle-question {
+  position: absolute;
+  font-size: var(--size-18);
+  pointer-events: none;
+  animation: particleQuestion 1s ease-out forwards;
+  z-index: var(--z-robot);
+}
+
+@keyframes particleQuestion {
+  0% {
+    opacity: 0;
+    transform: translateY(0) rotate(-10deg);
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(calc(var(--size-40) * -1)) rotate(10deg);
+  }
+}
+
+.robot-particle-sweat {
+  position: absolute;
+  font-size: var(--size-14);
+  pointer-events: none;
+  animation: particleSweat 0.8s ease-in forwards;
+  z-index: var(--z-robot);
+}
+
+@keyframes particleSweat {
+  0% {
+    opacity: 1;
+    transform: translateY(0) translateX(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(var(--size-30)) translateX(var(--size-5));
+  }
+}
+
+/* Head Shake Animation (No) */
+.robot-avatar.shake-no {
+  animation: headShakeNo 0.5s ease-in-out;
+}
+
+@keyframes headShakeNo {
+  0%,
+  100% {
+    transform: translateX(0) rotate(0);
+  }
+  25% {
+    transform: translateX(calc(var(--size-5) * -1)) rotate(-5deg);
+  }
+  75% {
+    transform: translateX(var(--size-5)) rotate(5deg);
+  }
+}
+
+/* Head Nod Animation (Yes) - uses existing robotNod animation */
+.robot-avatar.nod-yes {
+  animation: robotNod 0.6s cubic-bezier(0.2, 0.9, 0.2, 1) both;
+}
+
+/* Dance Animation */
+.robot-avatar.dancing {
+  animation: robotDance 0.8s ease-in-out infinite;
+}
+
+@keyframes robotDance {
+  0%,
+  100% {
+    transform: translateX(0) rotate(0) scale(1);
+  }
+  25% {
+    transform: translateX(calc(var(--size-3) * -1)) rotate(-5deg) scale(1.05);
+  }
+  50% {
+    transform: translateX(0) rotate(0) scale(1);
+  }
+  75% {
+    transform: translateX(var(--size-3)) rotate(5deg) scale(1.05);
+  }
+}
+
+/* Salute Animation */
+.robot-avatar.saluting .robot-arm.right {
+  animation: armSalute 0.8s ease-in-out;
+}
+
+@keyframes armSalute {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-90deg) translateY(calc(var(--size-10) * -1));
+  }
+}
+
+/* Sleep Animation */
+.robot-avatar.sleeping {
+  animation: robotSleep 2s ease-in-out infinite;
+}
+
+@keyframes robotSleep {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-2deg);
+  }
+  50% {
+    transform: translateY(var(--size-3)) rotate(2deg);
+  }
+}
+
+.robot-avatar.sleeping .robot-eyes {
+  animation: eyesSleep 2s ease-in-out infinite;
+}
+
+@keyframes eyesSleep {
+  0%,
+  100% {
+    transform: scaleY(0.2);
+  }
+  50% {
+    transform: scaleY(0.1);
+  }
+}
+
+/* Scared Animation (fast scroll) */
+.robot-avatar.scared {
+  animation: robotScared 0.3s ease-in-out;
+}
+
+@keyframes robotScared {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.9) translateY(calc(var(--size-5) * -1));
+  }
+}
+
+.robot-avatar.scared .robot-eyes {
+  animation: eyesScared 0.3s ease-in-out;
+}
+
+@keyframes eyesScared {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.3);
+  }
+}
+
+/* Applause Animation */
+.robot-avatar.applauding .robot-arm {
+  animation: armApplause 0.4s ease-in-out infinite;
+}
+
+.robot-avatar.applauding .robot-arm.left {
+  animation-delay: 0.2s;
+}
+
+@keyframes armApplause {
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-20deg);
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────────────────
+   AGENT UI - Image Upload, Tool Calls, Memory
+   ────────────────────────────────────────────────────────────────────────────── */
+
+/* Image upload button */
+.chat-image-btn {
+  background: none;
+  border: var(--size-1) solid
+    color-mix(in srgb, var(--robot-cyan) 30%, transparent);
+  width: var(--size-36, 36px);
+  height: var(--size-36, 36px);
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--size-r-1, 1rem);
+  transition:
+    background-color 0.25s ease,
+    border-color 0.25s ease,
+    color 0.25s ease,
+    transform 0.25s ease,
+    box-shadow 0.25s ease;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.chat-image-btn:hover {
+  background: color-mix(in srgb, var(--robot-cyan) 15%, transparent);
+  border-color: var(--robot-cyan);
+  transform: scale(1.1);
+}
+
+.chat-image-btn:active {
+  transform: scale(0.95);
+}
+
+/* Image preview */
+.chat-image-preview {
+  display: flex;
+  align-items: center;
+  gap: var(--size-8);
+  padding: var(--size-8) var(--size-12);
+  margin: 0 var(--size-22);
+  background: color-mix(in srgb, var(--robot-cyan) 8%, transparent);
+  border: var(--size-1) solid
+    color-mix(in srgb, var(--robot-cyan) 20%, transparent);
+  border-radius: var(--size-8);
+  animation: slideUp 0.2s ease-out;
+}
+
+.chat-preview-img {
+  width: var(--size-40);
+  height: var(--size-40);
+  border-radius: var(--size-6);
+  object-fit: cover;
+}
+
+.chat-preview-name {
+  flex: 1;
+  font-size: var(--size-r-0-8, 0.8rem);
+  color: var(--robot-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chat-preview-remove {
+  background: none;
+  border: none;
+  color: var(--robot-text-muted);
+  cursor: pointer;
+  font-size: var(--size-r-1-2, 1.2rem);
+  padding: var(--size-4);
+  line-height: 1;
+  border-radius: 50%;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.chat-preview-remove:hover {
+  background: color-mix(in srgb, var(--clr-red-500, #ef4444) 20%, transparent);
+  color: var(--clr-red-400, #f87171);
+}
+
+/* Tool call cards */
+.chat-tool-call {
+  --tool-card-accent: var(--robot-cyan);
+
+  display: grid;
+  gap: var(--size-10);
+  margin: var(--size-10) 0;
+  padding: var(--size-14);
+  border-radius: var(--size-16);
+  background:
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--tool-card-accent) 12%, transparent),
+      var(--robot-tool-card-surface-top)
+    ),
+    var(--robot-tool-card-surface-bottom);
+  border: var(--size-1) solid
+    color-mix(in srgb, var(--tool-card-accent) 24%, transparent);
+  box-shadow:
+    0 var(--size-10) var(--size-30)
+      color-mix(in srgb, var(--clr-black) 35%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--clr-white) 8%, transparent);
+  animation: toolCallPulse 0.5s ease-out;
+}
+
+.chat-tool-call[data-accent='navigation'] {
+  --tool-card-accent: var(--clr-blue-500);
+}
+
+.chat-tool-call[data-accent='search'] {
+  --tool-card-accent: var(--robot-cyan);
+}
+
+.chat-tool-call[data-accent='appearance'] {
+  --tool-card-accent: var(--robot-sky);
+}
+
+.chat-tool-call[data-accent='external'] {
+  --tool-card-accent: var(--clr-blue-400);
+}
+
+.chat-tool-call[data-accent='utility'] {
+  --tool-card-accent: var(--robot-green);
+}
+
+.chat-tool-call[data-accent='error'],
+.chat-tool-call[data-status='error'] {
+  --tool-card-accent: var(--clr-red-500, #ff6b6b);
+}
+
+.chat-tool-call__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--size-12);
+}
+
+.chat-tool-call__identity {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--size-12);
+  min-width: 0;
+}
+
+.chat-tool-call__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--size-32);
+  height: var(--size-32);
+  border-radius: var(--size-12);
+  background: color-mix(in srgb, var(--tool-card-accent) 16%, transparent);
+  box-shadow: inset 0 0 0 var(--size-1)
+    color-mix(in srgb, var(--tool-card-accent) 28%, transparent);
+  font-size: var(--size-r-1, 1rem);
+  flex-shrink: 0;
+}
+
+.chat-tool-call__titles {
+  display: grid;
+  gap: var(--size-4);
+  min-width: 0;
+}
+
+.chat-tool-call__title {
+  color: var(--robot-tool-card-text);
+  font-size: var(--size-r-0-92, 0.92rem);
+  font-weight: 700;
+  letter-spacing: var(--size-0-2);
+}
+
+.chat-tool-call__summary {
+  color: var(--robot-tool-card-text-muted);
+  font-size: var(--size-r-0-8, 0.8rem);
+  line-height: 1.5;
+}
+
+.chat-tool-call__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--size-4) var(--size-10);
+  border-radius: var(--size-999, 999px);
+  background: color-mix(in srgb, var(--tool-card-accent) 16%, transparent);
+  border: var(--size-1) solid
+    color-mix(in srgb, var(--tool-card-accent) 26%, transparent);
+  color: var(--tool-card-accent);
+  font-size: var(--size-r-0-68, 0.68rem);
+  font-weight: 700;
+  letter-spacing: var(--size-0-3);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.chat-tool-call__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--size-8);
+}
+
+.chat-tool-call__meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--size-6);
+  min-width: 0;
+  padding: var(--size-6) var(--size-10);
+  border-radius: var(--size-999, 999px);
+  background: color-mix(in srgb, var(--clr-white) 4%, transparent);
+  border: var(--size-1) solid
+    color-mix(in srgb, var(--clr-white) 8%, transparent);
+}
+
+.chat-tool-call__meta-label {
+  color: var(--robot-tool-card-meta-label);
+  font-size: var(--size-r-0-68, 0.68rem);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--size-0-3);
+}
+
+.chat-tool-call__meta-value {
+  color: var(--robot-tool-card-text);
+  font-size: var(--size-r-0-72, 0.72rem);
+  white-space: nowrap;
+}
+
+.chat-tool-call__actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.chat-tool-call__btn {
+  border: 0;
+  border-radius: var(--size-999, 999px);
+  padding: var(--size-8) var(--size-14);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--tool-card-accent) 90%, var(--clr-white)),
+    var(--tool-card-accent)
+  );
+  color: var(--clr-black);
+  font-size: var(--size-r-0-74, 0.74rem);
+  font-weight: 700;
+  letter-spacing: var(--size-0-2);
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
+  box-shadow: 0 var(--size-8) var(--size-20)
+    color-mix(in srgb, var(--tool-card-accent) 28%, transparent);
+}
+
+.chat-tool-call__btn:hover {
+  transform: translateY(calc(var(--size-2) * -1));
+  filter: brightness(1.04);
+}
+
+.chat-tool-call__btn:active {
+  transform: translateY(0);
+}
+
+/* Memory badge */
+.chat-memory-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: var(--size-r-0-7, 0.7rem);
+  margin-left: var(--size-4);
+  opacity: 0.7;
+  cursor: help;
+}
+
+/* User image in chat */
+.message .user-image {
+  max-width: 200px;
+  max-height: 150px;
+  border-radius: var(--size-8);
+  margin-top: var(--size-4);
+  object-fit: cover;
+  border: var(--size-1) solid
+    color-mix(in srgb, var(--robot-cyan) 20%, transparent);
+}
+
+/* Tool result in message */
+.message .tool-result {
+  display: flex;
+  align-items: center;
+  gap: var(--size-6);
+  margin-top: var(--size-4);
+  padding: var(--size-4) var(--size-8);
+  background: color-mix(in srgb, var(--robot-cyan) 5%, transparent);
+  border-radius: var(--size-6);
+  font-size: var(--size-r-0-8, 0.8rem);
+}
+
+.tool-result .tool-status {
+  font-size: var(--size-r-0-9, 0.9rem);
+}
+
+/* Slide up animation */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(var(--size-10));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Tool call pulse animation */
+@keyframes toolCallPulse {
+  from {
+    opacity: 0;
+    transform: translateX(calc(var(--size-10) * -1));
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}

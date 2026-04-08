@@ -24,21 +24,22 @@ import {
   injectViewTransitionRuntimeStyles,
   removeViewTransitionRuntimeStyles,
 } from './view-transitions-runtime-style.js';
-import { applyViewTransitionTimingVars } from './view-transition-timings.js';
-import { DEFAULT_NAVIGATION_TRANSITION_TYPES } from './view-transition-types.js';
+import { applyViewTransitionTimingVars } from './view-transition-constants.js';
+import { DEFAULT_NAVIGATION_TRANSITION_TYPES } from './view-transition-constants.js';
 
 /**
  * @typedef {Object} ViewTransitionInitOptions
- * @property {boolean=} captureInternalLinks - Intercept same-origin page links
- * @property {boolean=} enableCrossDocument - Enable @view-transition navigation:auto
- * @property {boolean=} injectNavigationStyles - Inject minimal default page transition styles
- * @property {string[]=} navigationTypes - Types used for navigateWithViewTransition()
+ * @property {boolean} [captureInternalLinks] - Intercept same-origin page links
+ * @property {boolean} [enableCrossDocument] - Enable @view-transition navigation:auto
+ * @property {boolean} [injectNavigationStyles] - Inject minimal default page transition styles
+ * @property {string[]} [navigationTypes] - Types used for navigateWithViewTransition()
  */
 
 const INIT_CONFIG = {
   captureInternalLinks: true,
   enableCrossDocument: true,
   injectNavigationStyles: true,
+  /** @type {string[]} */
   navigationTypes: [...DEFAULT_NAVIGATION_TRANSITION_TYPES],
 };
 
@@ -56,12 +57,18 @@ const applyInitConfig = (options = {}) => {
   if (typeof options.enableCrossDocument === 'boolean') {
     INIT_CONFIG.enableCrossDocument = options.enableCrossDocument;
   }
-  if (typeof options.injectNavigationStyles === 'boolean') {
-    INIT_CONFIG.injectNavigationStyles = options.injectNavigationStyles;
+  if (
+    typeof (/** @type {any} */ (options).injectNavigationStyles) === 'boolean'
+  ) {
+    INIT_CONFIG.injectNavigationStyles = /** @type {any} */ (
+      options
+    ).injectNavigationStyles;
   }
 
-  const navigationTypes = normalizeTypes(options.navigationTypes);
-  if (navigationTypes.length) {
+  const navigationTypes = normalizeTypes(
+    /** @type {any} */ (options).navigationTypes,
+  );
+  if (navigationTypes && navigationTypes.length) {
     INIT_CONFIG.navigationTypes = navigationTypes;
   }
 };
@@ -71,7 +78,7 @@ const applyInitConfig = (options = {}) => {
  *
  * @param {ViewTransitionInitOptions} [options]
  */
-export function configureViewTransitions(options = {}) {
+function configureViewTransitions(options = {}) {
   applyInitConfig(options);
   applyViewTransitionTimingVars();
   injectViewTransitionRuntimeStyles({
@@ -115,7 +122,7 @@ export function initViewTransitions(options = {}) {
 /**
  * Optional teardown (useful in tests or isolated embeds).
  */
-export function destroyViewTransitions() {
+function destroyViewTransitions() {
   if (isInitialized && clickHandler) {
     document.removeEventListener('click', clickHandler);
   }
@@ -127,4 +134,9 @@ export function destroyViewTransitions() {
   removeViewTransitionRuntimeStyles();
 }
 
-export { isSupported, withElementViewTransitionName, withViewTransition };
+export {
+  destroyViewTransitions,
+  isSupported,
+  withElementViewTransitionName,
+  withViewTransition,
+};

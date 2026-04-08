@@ -21,6 +21,36 @@ const log = createLogger('gallery-app');
 const useTranslation = createUseTranslation();
 const h = React.createElement;
 
+function normalizeGalleryItem(item) {
+  if (!item || typeof item !== 'object') return null;
+
+  const type = String(item.type || 'image').trim() || 'image';
+  const title = String(item.title || '').trim() || 'Untitled';
+  const description = String(item.description || '').trim();
+  const caption = String(item.caption || '').trim() || description || title;
+
+  return {
+    ...item,
+    type,
+    title,
+    description,
+    caption,
+    orientation: String(
+      item.orientation || (type === 'video' ? 'landscape' : 'unknown'),
+    ),
+    dominantColor: String(item.dominantColor || '#111827'),
+    blurPlaceholder: String(item.blurPlaceholder || ''),
+    width:
+      Number.isFinite(item.width) && Number(item.width) > 0
+        ? Number(item.width)
+        : null,
+    height:
+      Number.isFinite(item.height) && Number(item.height) > 0
+        ? Number(item.height)
+        : null,
+  };
+}
+
 const GalleryApp = () => {
   const { t } = useTranslation();
   const [isReady, setIsReady] = useState(false);
@@ -71,7 +101,9 @@ const GalleryApp = () => {
         // Use dynamic items if available, otherwise fallback to static config
         const finalItems =
           dynamicItems.length > 0 ? dynamicItems : STATIC_GALLERY_ITEMS;
-        setItems(finalItems);
+        setItems(
+          finalItems.map((item) => normalizeGalleryItem(item)).filter(Boolean),
+        );
 
         AppLoadManager.updateLoader(
           0.5,
@@ -97,7 +129,11 @@ const GalleryApp = () => {
         if (controller.signal.aborted || isCancelled) return;
         log.error('Gallery init failed', err);
         // Fallback to static items even on critical failure if possible
-        setItems(STATIC_GALLERY_ITEMS);
+        setItems(
+          STATIC_GALLERY_ITEMS.map((item) => normalizeGalleryItem(item)).filter(
+            Boolean,
+          ),
+        );
         setIsReady(true); // Still try to render something
         AppLoadManager.updateLoader(1, 'Gallery loaded (fallback)');
         AppLoadManager.hideLoader(500);
@@ -126,7 +162,7 @@ const GalleryApp = () => {
     if (!script) {
       script = document.createElement('script');
       script.id = scriptId;
-      script.type = 'application/ld+json';
+      /** @type {any} */ (script).type = 'application/ld+json';
       document.head.appendChild(script);
     }
 
@@ -146,7 +182,7 @@ const GalleryApp = () => {
         contentUrl: item.url,
         url: item.url,
         name: item.title,
-        description: item.description || item.title,
+        description: item.caption || item.description || item.title,
         author: {
           '@type': 'Person',
           name: 'Abdulkerim Sesli',

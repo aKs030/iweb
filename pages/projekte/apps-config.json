@@ -21,7 +21,11 @@
         "solution": "Ein moderner, responsive Taschenrechner mit wissenschaftlichen Funktionen (sin, cos, tan, log), Klammern-Support und einer intuitiven Tastatur-Navigation.",
         "techStack": ["Vanilla JS", "CSS Grid", "eval()-freie Berechnung"],
         "results": "Vollständig funktionaler Rechner mit Keyboard-Support, Fehlerbehandlung und History-Funktion."
-      }
+      },
+      "previewUrl": "https://img.abdulkerimsesli.de/app/calculator.svg?v=20260221",
+      "previewAlt": "Vorschaubild Projekt Calculator",
+      "appPath": "/api/project-apps/calculator/index.html",
+      "githubPath": "https://github.com/aKs030/Webgame/tree/main/apps/calculator"
     },
     {
       "name": "color-changer",
@@ -39,11 +43,16 @@
         "Sesli"
       ],
       "category": "ui",
-      "version": "1.0.0"
+      "version": "1.0.0",
+      "previewUrl": "https://img.abdulkerimsesli.de/app/color-changer.svg?v=20260221",
+      "previewAlt": "Vorschaubild Projekt Color Changer",
+      "appPath": "/api/project-apps/color-changer/index.html",
+      "githubPath": "https://github.com/aKs030/Webgame/tree/main/apps/color-changer"
     },
     {
       "name": "ip-info",
       "title": "ip-info",
+      "previewMedia": null,
       "description": "Zeigt deine öffentliche IP-Adresse und Standortinformationen an. Optimiert für Cloudflare Workers/Pages.",
       "tags": [
         "utility",
@@ -57,7 +66,9 @@
         "Sesli"
       ],
       "category": "utility",
-      "version": "1.0.0"
+      "version": "1.0.0",
+      "appPath": "/api/project-apps/ip-info/index.html",
+      "githubPath": "https://github.com/aKs030/Webgame/tree/main/apps/ip-info"
     },
     {
       "name": "memory-game",
@@ -80,7 +91,11 @@
         "solution": "Ein dynamisches Memory-Spiel mit mehreren Schwierigkeitsgraden, Timer, Punktesystem und verschiedenen Kartensets.",
         "techStack": ["Vanilla JS", "CSS Animations", "Fisher-Yates Shuffle"],
         "results": "Drei Schwierigkeitsgrade, Highscore-System mit localStorage, und flüssige Karten-Flip-Animationen."
-      }
+      },
+      "previewUrl": "https://img.abdulkerimsesli.de/app/memory-game.svg?v=20260221",
+      "previewAlt": "Vorschaubild Projekt Memory Game",
+      "appPath": "/api/project-apps/memory-game/index.html",
+      "githubPath": "https://github.com/aKs030/Webgame/tree/main/apps/memory-game"
     },
     {
       "name": "paint-app",
@@ -96,7 +111,11 @@
         "Sesli"
       ],
       "category": "ui",
-      "version": "1.0.0"
+      "version": "1.0.0",
+      "previewUrl": "https://img.abdulkerimsesli.de/app/paint-app.svg?v=20260221",
+      "previewAlt": "Vorschaubild Projekt Paint App",
+      "appPath": "/api/project-apps/paint-app/index.html",
+      "githubPath": "https://github.com/aKs030/Webgame/tree/main/apps/paint-app"
     },
     {
       "name": "password-generator",
@@ -119,7 +138,11 @@
         "solution": "Ein kryptographisch sicherer Generator mit anpassbarer Länge, Zeichensatz-Auswahl und Copy-to-Clipboard Funktion.",
         "techStack": ["Web Crypto API", "Vanilla JS", "CSS Custom Properties"],
         "results": "Generiert Passwörter mit konfigurierbarer Entropie. Prüft Passwortstärke in Echtzeit und zeigt geschätzte Crack-Zeit an."
-      }
+      },
+      "previewUrl": "https://img.abdulkerimsesli.de/app/password-generator.svg?v=20260221",
+      "previewAlt": "Vorschaubild Projekt Password Generator",
+      "appPath": "/api/project-apps/password-generator/index.html",
+      "githubPath": "https://github.com/aKs030/Webgame/tree/main/apps/password-generator"
     },
     {
       "name": "pong-game",
@@ -137,7 +160,11 @@
         "Sesli"
       ],
       "category": "game",
-      "version": "1.0.0"
+      "version": "1.0.0",
+      "previewUrl": "https://img.abdulkerimsesli.de/app/pong-game.svg?v=20260221",
+      "previewAlt": "Vorschaubild Projekt Pong Game",
+      "appPath": "/api/project-apps/pong-game/index.html",
+      "githubPath": "https://github.com/aKs030/Webgame/tree/main/apps/pong-game"
     },
     {
       "name": "quiz-app",
@@ -154,7 +181,11 @@
         "Sesli"
       ],
       "category": "game",
-      "version": "1.0.0"
+      "version": "1.0.0",
+      "previewUrl": "https://img.abdulkerimsesli.de/app/quiz-app.svg?v=20260221",
+      "previewAlt": "Vorschaubild Projekt Quiz App",
+      "appPath": "/api/project-apps/quiz-app/index.html",
+      "githubPath": "https://github.com/aKs030/Webgame/tree/main/apps/quiz-app"
     },
     {
       "name": "schere-stein-papier",
@@ -170,11 +201,16 @@
         "Sesli"
       ],
       "category": "game",
-      "version": "1.0.0"
+      "version": "1.0.0",
+      "previewUrl": "https://img.abdulkerimsesli.de/app/schere-stein-papier.svg?v=20260221",
+      "previewAlt": "Vorschaubild Projekt Schere Stein Papier",
+      "appPath": "/api/project-apps/schere-stein-papier/index.html",
+      "githubPath": "https://github.com/aKs030/Webgame/tree/main/apps/schere-stein-papier"
     },
     {
       "name": "schluesselweite",
       "title": "schluesselweite",
+      "previewMedia": null,
       "description": "ISO/DIN Schlüsselweite und Gewinde Tabelle",
       "tags": [
         "mechanic",
@@ -188,7 +224,9 @@
         "steigung"
       ],
       "category": "utility",
-      "version": "1.0.0"
+      "version": "1.0.0",
+      "appPath": "/api/project-apps/schluesselweite/index.html",
+      "githubPath": "https://github.com/aKs030/Webgame/tree/main/apps/schluesselweite"
     },
     {
       "name": "snake-game",
@@ -205,7 +243,11 @@
         "Sesli"
       ],
       "category": "game",
-      "version": "1.0.0"
+      "version": "1.0.0",
+      "previewUrl": "https://img.abdulkerimsesli.de/app/snake-game.svg?v=20260221",
+      "previewAlt": "Vorschaubild Projekt Snake Game",
+      "appPath": "/api/project-apps/snake-game/index.html",
+      "githubPath": "https://github.com/aKs030/Webgame/tree/main/apps/snake-game"
     },
     {
       "name": "tic-tac-toe",
@@ -220,7 +262,11 @@
         "Sesli"
       ],
       "category": "game",
-      "version": "1.0.0"
+      "version": "1.0.0",
+      "previewUrl": "https://img.abdulkerimsesli.de/app/tic-tac-toe.svg?v=20260221",
+      "previewAlt": "Vorschaubild Projekt Tic Tac Toe",
+      "appPath": "/api/project-apps/tic-tac-toe/index.html",
+      "githubPath": "https://github.com/aKs030/Webgame/tree/main/apps/tic-tac-toe"
     },
     {
       "name": "timer-app",
@@ -247,7 +293,11 @@
           "Notifications API"
         ],
         "results": "Drei Timer-Modi, akustische Benachrichtigungen, Session-Tracking und eine clean, ablenkungsfreie Oberfläche."
-      }
+      },
+      "previewUrl": "https://img.abdulkerimsesli.de/app/timer-app.svg?v=20260221",
+      "previewAlt": "Vorschaubild Projekt Timer App",
+      "appPath": "/api/project-apps/timer-app/index.html",
+      "githubPath": "https://github.com/aKs030/Webgame/tree/main/apps/timer-app"
     },
     {
       "name": "todo-liste",
@@ -264,7 +314,11 @@
         "Sesli"
       ],
       "category": "productivity",
-      "version": "1.0.0"
+      "version": "1.0.0",
+      "previewUrl": "https://img.abdulkerimsesli.de/app/todo-liste.svg?v=20260221",
+      "previewAlt": "Vorschaubild Projekt Todo Liste",
+      "appPath": "/api/project-apps/todo-liste/index.html",
+      "githubPath": "https://github.com/aKs030/Webgame/tree/main/apps/todo-liste"
     },
     {
       "name": "typing-speed-test",
@@ -280,7 +334,11 @@
         "Sesli"
       ],
       "category": "productivity",
-      "version": "1.0.0"
+      "version": "1.0.0",
+      "previewUrl": "https://img.abdulkerimsesli.de/app/typing-speed-test.svg?v=20260221",
+      "previewAlt": "Vorschaubild Projekt Typing Speed Test",
+      "appPath": "/api/project-apps/typing-speed-test/index.html",
+      "githubPath": "https://github.com/aKs030/Webgame/tree/main/apps/typing-speed-test"
     },
     {
       "name": "weather-app",
@@ -303,7 +361,11 @@
         "solution": "Eine moderne Wetter-App mit Standorterkennung, 5-Tage-Vorhersage, animierten Wettericonsund Gradientenhintergründen je nach Wetterlage.",
         "techStack": ["OpenWeatherMap API", "Geolocation API", "CSS Gradients"],
         "results": "Standortbasierte Wetteranzeige mit Temperatur, Luftfeuchtigkeit, Wind und 5-Tage-Forecast. Automatische Hintergrundanpassung."
-      }
+      },
+      "previewUrl": "https://img.abdulkerimsesli.de/app/weather-app.svg?v=20260221",
+      "previewAlt": "Vorschaubild Projekt Weather App",
+      "appPath": "/api/project-apps/weather-app/index.html",
+      "githubPath": "https://github.com/aKs030/Webgame/tree/main/apps/weather-app"
     },
     {
       "name": "zahlen-raten",
@@ -320,9 +382,13 @@
         "Sesli"
       ],
       "category": "puzzle",
-      "version": "1.0.0"
+      "version": "1.0.0",
+      "previewUrl": "https://img.abdulkerimsesli.de/app/zahlen-raten.svg?v=20260221",
+      "previewAlt": "Vorschaubild Projekt Zahlen Raten",
+      "appPath": "/api/project-apps/zahlen-raten/index.html",
+      "githubPath": "https://github.com/aKs030/Webgame/tree/main/apps/zahlen-raten"
     }
   ],
-  "lastUpdated": "2026-02-23T20:51:43.472Z",
-  "source": "github-api-sync"
+  "lastUpdated": "2026-03-24T21:56:32.338Z",
+  "source": "canonical-apps-config"
 }

@@ -15,14 +15,15 @@ const LOG_LEVELS = {
 let _cachedDefaultLevel = null;
 function getDefaultLogLevel() {
   if (_cachedDefaultLevel !== null) return _cachedDefaultLevel;
-  if (typeof window === 'undefined') {
+  const runtimeLocation = globalThis.location;
+  if (!runtimeLocation) {
     _cachedDefaultLevel = LOG_LEVELS.warn;
     return _cachedDefaultLevel;
   }
   try {
-    const hostname = window.location?.hostname || '';
+    const hostname = runtimeLocation.hostname || '';
     const isProd = Boolean(hostname) && !isLocalDevHost(hostname);
-    const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(runtimeLocation.search || '');
     if (params.get('debug') === 'true') {
       _cachedDefaultLevel = LOG_LEVELS.debug;
       return _cachedDefaultLevel;

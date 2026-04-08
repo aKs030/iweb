@@ -1,31 +1,46 @@
-import { i18n } from '../../../core/i18n.js';
-import { createLogger } from '../../../core/logger.js';
-import {
-  batch,
-  signal,
-  subscribe as signalSubscribe,
-} from '../../../core/signals.js';
+import { i18n } from '#core/i18n.js';
+import { createLogger } from '#core/logger.js';
+import { batch, signal, subscribe as signalSubscribe } from '#core/signals.js';
 import { MenuSearchApi } from './search-api.js';
 
 const log = createLogger('MenuSearchStore');
 
+/**
+ * @typedef {typeof import('./MenuConfig.js').MenuConfig} MenuComponentConfig
+ */
+/**
+ * @typedef {Partial<MenuComponentConfig>} MenuComponentConfigInput
+ */
+
 export class MenuSearchStore {
+  /**
+   * @param {MenuComponentConfigInput} [config]
+   * @param {MenuSearchApi} [searchApi]
+   */
   constructor(config = {}, searchApi = new MenuSearchApi(config)) {
     this.config = config;
     this.searchApi = searchApi;
 
     this.querySignal = signal('');
+    this.facetSignal = signal('all');
+    this.facetsSignal = signal(
+      Object.freeze(this.searchApi.normalizeFacetCounts([])),
+    );
     this.loadingSignal = signal(false);
     this.messageSignal = signal('');
     this.itemsSignal = signal(Object.freeze([]));
     this.aiChatMessageSignal = signal('');
+    this.aiChatSuggestionsSignal = signal(Object.freeze([]));
 
     this.signals = Object.freeze({
       query: this.querySignal,
+      facet: this.facetSignal,
+      facets: this.facetsSignal,
       loading: this.loadingSignal,
       message: this.messageSignal,
       items: this.itemsSignal,
       aiChatMessage: this.aiChatMessageSignal,
+      aiChatSuggestions: this.aiChatSuggestionsSignal,
     });
 
     this.abortController = null;
@@ -37,10 +52,13 @@ export class MenuSearchStore {
   getState() {
     return Object.freeze({
       query: this.querySignal.value,
+      facet: this.facetSignal.value,
+      facets: this.facetsSignal.value,
       loading: this.loadingSignal.value,
       message: this.messageSignal.value,
       items: this.itemsSignal.value,
       aiChatMessage: this.aiChatMessageSignal.value,
+      aiChatSuggestions: this.aiChatSuggestionsSignal.value,
     });
   }
 
@@ -58,7 +76,11 @@ export class MenuSearchStore {
       this.loadingSignal.value = false;
       this.messageSignal.value = '';
       this.itemsSignal.value = Object.freeze([]);
+      this.facetsSignal.value = Object.freeze(
+        this.searchApi.normalizeFacetCounts([]),
+      );
       this.aiChatMessageSignal.value = '';
+      this.aiChatSuggestionsSignal.value = Object.freeze([]);
     });
   }
 
@@ -82,27 +104,56 @@ export class MenuSearchStore {
     await this.executeSearch(query);
   }
 
+  async setFacet(rawFacet) {
+    const facet = this.searchApi.normalizeSearchFacet(rawFacet);
+    if (this.facetSignal.value === facet) return;
+
+    this.facetSignal.value = facet;
+    const query = String(this.querySignal.peek() || '').trim();
+    const minQueryLength = this.config.SEARCH_MIN_QUERY_LENGTH ?? 2;
+
+    if (!query || query.length < minQueryLength) {
+      this.clear({ query });
+      return;
+    }
+
+    await this.executeSearch(query);
+  }
+
   async executeSearch(query) {
     this.abortSearchRequest();
 
     const topK = this.config.SEARCH_TOP_K ?? 12;
+    const facet = this.facetSignal.peek();
     const requestTimeoutMs = this.config.SEARCH_REQUEST_TIMEOUT ?? 6000;
-    const cacheKey = this.buildSearchCacheKey(query, topK);
+    const cacheKey = this.buildSearchCacheKey(query, topK, facet);
     const cachedPayload = this.getCachedSearchResults(cacheKey);
 
     if (cachedPayload) {
       this.applySearchPayload(query, {
         items: cachedPayload.items,
+        facet,
+        facets: cachedPayload.facets,
         aiChatMessage: cachedPayload.aiChatMessage,
+        aiChatSuggestions: cachedPayload.aiChatSuggestions,
       });
       return;
     }
 
     if (navigator.onLine === false) {
-      const offlineItems = this.searchApi.buildOfflineSearchResults(query);
+      const offlineItems = this.searchApi.filterResultsByFacet(
+        this.searchApi.buildOfflineSearchResults(query),
+        facet,
+      );
       this.applySearchPayload(query, {
         items: offlineItems,
+        facet,
+        facets: this.searchApi.buildOfflineFacetCounts(query),
         aiChatMessage: '',
+        aiChatSuggestions: this.searchApi.pickSearchSuggestions(
+          query,
+          offlineItems,
+        ),
         cacheKey,
         statusMessage: i18n.tOrFallback(
           'menu.search_offline',
@@ -132,29 +183,30 @@ export class MenuSearchStore {
       );
       this.itemsSignal.value = Object.freeze([]);
       this.aiChatMessageSignal.value = '';
+      this.aiChatSuggestionsSignal.value = Object.freeze([]);
     });
 
     try {
-      const { items, aiChatMessage } = await this.searchApi.fetchSearchResults(
-        query,
-        {
-          topK,
-          signal: signalRef,
-        },
-      );
-      const aiAgentMessage = await this.searchApi.fetchSearchAiAgentMessage(
-        query,
-        items,
-        {
-          timeoutMs: Math.min(
-            Number(this.config.SEARCH_AI_REQUEST_TIMEOUT ?? 4500),
-            requestTimeoutMs,
-          ),
-        },
-      );
+      const responsePayload = await this.searchApi.fetchSearchResults(query, {
+        topK,
+        facet,
+        signal: signalRef,
+      });
+      const aiChatSuggestions = this.searchApi.pickSearchSuggestions(query, [
+        ...(Array.isArray(responsePayload.aiChatSuggestions)
+          ? responsePayload.aiChatSuggestions
+          : []),
+        ...responsePayload.items.map((item) => ({
+          title: item?.title,
+          url: item?.url,
+        })),
+      ]);
       this.applySearchPayload(query, {
-        items,
-        aiChatMessage: aiAgentMessage || aiChatMessage,
+        items: responsePayload.items,
+        facet: responsePayload.facet,
+        facets: responsePayload.facets,
+        aiChatMessage: responsePayload.aiChatMessage,
+        aiChatSuggestions,
         cacheKey,
       });
     } catch (error) {
@@ -171,7 +223,11 @@ export class MenuSearchStore {
       batch(() => {
         this.loadingSignal.value = false;
         this.itemsSignal.value = Object.freeze([]);
+        this.facetsSignal.value = Object.freeze(
+          this.searchApi.normalizeFacetCounts([]),
+        );
         this.aiChatMessageSignal.value = '';
+        this.aiChatSuggestionsSignal.value = Object.freeze([]);
         this.messageSignal.value = didTimeoutAbort
           ? i18n.tOrFallback('menu.search_timeout', 'Suche dauert zu lange')
           : i18n.tOrFallback(
@@ -193,29 +249,42 @@ export class MenuSearchStore {
     if (this.querySignal.peek() !== query) return;
 
     const items = Array.isArray(payload.items) ? payload.items : [];
+    const facet = this.searchApi.normalizeSearchFacet(
+      payload.facet || this.facetSignal.peek(),
+    );
+    const facets = this.searchApi.normalizeFacetCounts(payload.facets);
     const aiChatMessage = String(payload.aiChatMessage || '');
-    let statusMessage = String(payload.statusMessage || '');
+    const aiChatSuggestions = this.searchApi.pickSearchSuggestions(
+      query,
+      payload.aiChatSuggestions,
+    );
+    const statusMessage = String(payload.statusMessage || '');
     const cacheKey = String(payload.cacheKey || '').trim();
-    const visibleItems = this.searchApi.filterHighlightedResults(items);
-
-    if (!statusMessage && items.length > 0 && visibleItems.length === 0) {
-      statusMessage = i18n.tOrFallback(
-        'menu.search_no_highlight_matches',
-        'Keine markierten Texttreffer gefunden',
-      );
-    }
 
     if (cacheKey) {
-      this.setCachedSearchResults(cacheKey, visibleItems, aiChatMessage);
+      this.setCachedSearchResults(
+        cacheKey,
+        items,
+        facets,
+        aiChatMessage,
+        aiChatSuggestions,
+      );
     }
 
     batch(() => {
+      this.facetSignal.value = facet;
+      this.facetsSignal.value = Object.freeze(
+        facets.map((entry) => ({ ...entry })),
+      );
       this.loadingSignal.value = false;
       this.messageSignal.value = statusMessage;
       this.itemsSignal.value = Object.freeze(
-        visibleItems.map((item) => ({ ...item })),
+        items.map((item) => ({ ...item })),
       );
       this.aiChatMessageSignal.value = aiChatMessage;
+      this.aiChatSuggestionsSignal.value = Object.freeze(
+        aiChatSuggestions.map((entry) => ({ ...entry })),
+      );
     });
   }
 
@@ -227,8 +296,10 @@ export class MenuSearchStore {
     return this.searchApi.getFallbackSuggestions();
   }
 
-  buildSearchCacheKey(query, topK) {
-    return `${topK}:${String(query || '')
+  buildSearchCacheKey(query, topK, facet = 'all') {
+    return `${topK}:${this.searchApi.normalizeSearchFacet(facet)}:${String(
+      query || '',
+    )
       .trim()
       .toLowerCase()}`;
   }
@@ -251,11 +322,23 @@ export class MenuSearchStore {
       items: Array.isArray(entry.items)
         ? entry.items.map((item) => ({ ...item }))
         : [],
+      facets: Array.isArray(entry.facets)
+        ? entry.facets.map((entryItem) => ({ ...entryItem }))
+        : this.searchApi.normalizeFacetCounts([]),
       aiChatMessage: String(entry.aiChatMessage || ''),
+      aiChatSuggestions: this.searchApi.normalizeSuggestions(
+        entry.aiChatSuggestions,
+      ),
     };
   }
 
-  setCachedSearchResults(cacheKey, items, aiChatMessage = '') {
+  setCachedSearchResults(
+    cacheKey,
+    items,
+    facets,
+    aiChatMessage = '',
+    aiChatSuggestions = [],
+  ) {
     if (!cacheKey || !Array.isArray(items)) return;
     if (this.searchCacheMaxEntries <= 0) return;
 
@@ -273,7 +356,11 @@ export class MenuSearchStore {
     this.searchCache.set(cacheKey, {
       expiresAt: Date.now() + this.searchCacheTtlMs,
       items: items.map((item) => ({ ...item })),
+      facets: Array.isArray(facets)
+        ? facets.map((entry) => ({ ...entry }))
+        : this.searchApi.normalizeFacetCounts([]),
       aiChatMessage: String(aiChatMessage || ''),
+      aiChatSuggestions: this.searchApi.normalizeSuggestions(aiChatSuggestions),
     });
   }
 

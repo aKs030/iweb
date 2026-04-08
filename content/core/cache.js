@@ -88,7 +88,7 @@ class IndexedDBCache {
       };
 
       request.onupgradeneeded = (event) => {
-        const db = event.target.result;
+        const db = /** @type {any} */ (event.target).result;
         if (!db.objectStoreNames.contains('cache')) {
           db.createObjectStore('cache', { keyPath: 'key' });
         }

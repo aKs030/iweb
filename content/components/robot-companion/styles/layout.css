@@ -1,0 +1,242 @@
+/* Container für den Roboter - fixiert unten rechts */
+#robot-companion-container {
+  container-type: inline-size;
+  container-name: robotcontainer;
+  position: fixed;
+  bottom: var(--size-30);
+  right: var(--size-30);
+  z-index: var(--z-overlay);
+  font-family: var(--font-inter);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  pointer-events: none;
+  will-change: transform;
+  width: var(--size-80);
+  height: var(--size-80);
+  /* Hidden until entry animation sets start position */
+  opacity: 0;
+
+  /* Smooth position transitions for scroll-based context changes */
+  transition:
+    bottom 0.6s var(--ease-standard),
+    top 0.6s var(--ease-standard);
+}
+
+/* ── Robot Positionen pro Seite ─────────────────────────────────────────────
+   Der Roboter wird per CSS-Transitions (transition-property: bottom, top)
+   auf verschiedenen Seitenabschnitten repositioniert. Asymmetrische
+   Positionen geben dem Roboter eine lebendige, kontextbezogene Präsenz.
+   ──────────────────────────────────────────────────────────────────────── */
+
+/* Home (hero / features / default) – standard unten rechts */
+#robot-companion-container[data-page-context='home'],
+#robot-companion-container[data-page-context='hero'] {
+  bottom: clamp(14rem, 29vh, 17rem);
+  right: clamp(0.75rem, 2vw, 1.5rem);
+}
+
+/* Projekte – weiter oben rechts, schwebt über den Projektkarten */
+#robot-companion-container[data-page-context='projects'] {
+  bottom: auto;
+  top: 12vh;
+  right: 5vw;
+}
+
+/* About – mittig links, blickt quasi auf den Textbereich */
+#robot-companion-container[data-page-context='about'] {
+  bottom: 40vh;
+  right: auto;
+  left: 8vw;
+}
+
+/* Galerie – oben mittig-rechts, aus dem Weg der Bilder */
+#robot-companion-container[data-page-context='gallery'] {
+  bottom: auto;
+  top: 15vh;
+  right: 35vw;
+}
+
+/* Blog – oben links im Header-Bereich, wie ein Lesebegleiter */
+#robot-companion-container[data-page-context='blog'] {
+  bottom: auto;
+  top: 8vh;
+  right: auto;
+  left: 5vw;
+}
+
+/* Videos – mittig rechts */
+#robot-companion-container[data-page-context='videos'] {
+  bottom: 30vh;
+  right: 6vw;
+}
+
+/* Kontakt – direkt über dem Footer mittig */
+#robot-companion-container[data-page-context='contact'] {
+  bottom: 10vh;
+  right: 45vw;
+}
+
+/* Legal-Seiten (Impressum, Datenschutz) – ganz unten links */
+#robot-companion-container[data-page-context='legal'] {
+  bottom: var(--size-30);
+  right: auto;
+  left: var(--size-30);
+}
+
+/* While the chat window is open, lock position to bottom-right so it
+   stays anchored to the input. */
+#robot-companion-container.robot-chat--open {
+  bottom: var(--size-30) !important;
+  top: auto !important;
+  right: var(--size-30) !important;
+  left: auto !important;
+  align-items: flex-end !important;
+  transition: none !important;
+}
+
+/* View-transition pseudo-elements for the robot morph animation */
+::view-transition-old(robot-companion),
+::view-transition-new(robot-companion) {
+  animation-duration: 0.8s; /* Länger für einen smoothen "Morph" */
+  animation-timing-function: cubic-bezier(
+    0.34,
+    1.56,
+    0.64,
+    1
+  ); /* Bouncy / Spring effect */
+}
+
+::view-transition-old(robot-companion) {
+  animation-name: robotMorphOut;
+}
+
+::view-transition-new(robot-companion) {
+  animation-name: robotMorphIn;
+}
+
+@keyframes robotMorphOut {
+  from {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+
+  to {
+    opacity: 0;
+    transform: scale(0.6) rotate(-15deg);
+  }
+}
+
+@keyframes robotMorphIn {
+  from {
+    opacity: 0;
+    transform: scale(0.6) rotate(15deg);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+#robot-companion-container[data-hydrated='false'] .robot-avatar {
+  pointer-events: none;
+  opacity: 0.72;
+}
+
+#robot-companion-container.robot-companion--menu-open {
+  opacity: 0.7;
+}
+
+#robot-companion-container.robot-companion--menu-open .robot-avatar {
+  pointer-events: none;
+}
+
+/* Wrapper für synchrones Schweben von Avatar und Bubble */
+.robot-float-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  will-change: transform;
+}
+
+/* Der Roboter selbst */
+.robot-avatar {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  width: var(--size-80);
+  height: var(--size-80);
+  cursor: pointer;
+  pointer-events: auto;
+  filter: drop-shadow(
+    0 0 var(--size-15) color-mix(in srgb, var(--robot-cyan) 40%, transparent)
+  );
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+  isolation: isolate;
+  will-change: transform;
+  animation: cyberGlitch 12s infinite;
+  overflow: visible;
+}
+
+.robot-avatar::after,
+.robot-avatar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  will-change: transform, opacity;
+}
+
+.robot-avatar::after {
+  background: radial-gradient(
+    circle at 50% 90%,
+    color-mix(in srgb, var(--robot-cyan) 35%, transparent),
+    transparent 55%
+  );
+  filter: blur(var(--size-6));
+  mix-blend-mode: screen;
+  transform: translateY(var(--size-10)) scale(1.05, 1.3);
+  animation: trailFlow 1.4s ease-in-out infinite;
+}
+
+.robot-avatar::before {
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--clr-white) 90%, transparent) 0%,
+    color-mix(in srgb, var(--robot-cyan) 45%, transparent) 30%,
+    transparent 60%
+  );
+  filter: blur(var(--size-3));
+  mix-blend-mode: screen;
+  transform: translateY(var(--size-16)) scale(0.6, 1.3);
+  animation: sparkBurst 0.9s ease-in-out infinite;
+}
+
+.robot-avatar.is-moving {
+  animation-duration: 2.5s;
+}
+
+.robot-avatar.is-moving::after {
+  opacity: 0.35;
+}
+
+.robot-avatar.is-moving::before {
+  opacity: 0.25;
+}
+
+.robot-avatar.is-dashing {
+  transform: scale(1.05) translateY(calc(var(--size-2) * -1));
+  animation: dashGlow 0.6s ease-in-out infinite;
+  filter: drop-shadow(
+    0 0 var(--size-28) color-mix(in srgb, var(--robot-cyan) 80%, transparent)
+  );
+}
+
+.robot-avatar.nod {
+  animation: robotNod 600ms cubic-bezier(0.2, 0.9, 0.2, 1) both;
+}

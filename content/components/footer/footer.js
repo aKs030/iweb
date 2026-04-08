@@ -6,99 +6,68 @@
  * @version 3.1.0
  */
 
-import { createLogger } from '../../core/logger.js';
-import { a11y } from '../../core/accessibility-manager.js';
-import { i18n } from '../../core/i18n.js';
-import { TimerManager } from '../../core/utils.js';
-import { CookieManager } from '../../core/cookie-manager.js';
-import { AnalyticsManager } from '../../core/analytics-manager.js';
+import { createLogger } from '#core/logger.js';
+import { a11y } from '#core/accessibility-manager.js';
+import { i18n } from '#core/i18n.js';
+import { CookieManager } from '#core/cookie-manager.js';
+import { AnalyticsManager } from './footer-analytics.js';
 import {
   resetFooterState,
   setFooterExpanded,
   setFooterLoaded,
-} from '../../core/footer-state.js';
+} from './state.js';
+import { TimerManager } from '#core/timer-manager.js';
+import { FOOTER_HTML } from './footer-template.generated.js';
 
 const log = createLogger('SiteFooter');
+const CONSENT_COOKIE = 'cookie_consent';
+const ANALYTICS_CONSENT_COOKIE = 'cookie_analytics_consent';
+const ADS_CONSENT_COOKIE = 'cookie_ads_consent';
 
-/** @typedef {import('../../core/types.js').FooterElements} FooterElements */
-
-const CONFIG = Object.freeze({
-  // primary path used by <site-footer> instances; always serves HTML
-  FOOTER_PATH: '/content/components/footer/footer.html',
-
-  LOAD_RETRY_ATTEMPTS: 2,
-
-  LOAD_RETRY_DELAY_MS: 500,
-});
+/** @typedef {import('./footer.types.js').FooterElements} FooterElements */
 
 /**
-
  * SiteFooter Custom Element
 
  */
 
 export class SiteFooter extends HTMLElement {
-  // Private fields
-
   #analytics = new AnalyticsManager();
-
   #timers = new TimerManager('SiteFooter');
-
   #listeners = new Map();
 
   #state = {
     expanded: false,
-
     initialized: false,
-
     touchStartY: 0,
-
     touchStartTime: 0,
+    touchStartedOnInteractive: false,
   };
 
   /** @type {FooterElements} */
-
   #elements = {
     footer: null,
-
     footerMin: null,
-
+    footerMinMain: null,
     footerMax: null,
-
     cookieBanner: null,
-
     cookieSettings: null,
-
     footerContent: null,
-
     acceptBtn: null,
-
     rejectBtn: null,
-
     closeBtn: null,
-
     analyticsToggle: null,
-
     adsToggle: null,
-
     rejectAll: null,
-
     acceptSelected: null,
-
     acceptAll: null,
   };
 
-  constructor() {
-    super();
-  }
-
   async connectedCallback() {
-    const src = this.getAttribute('src') || CONFIG.FOOTER_PATH;
-
     try {
       const hasShell = this.dataset.shell === 'true';
       if (!this.innerHTML.trim() || hasShell) {
-        const html = await this.#fetchFooterHTML(src);
+        const html = FOOTER_HTML;
 
         if (!this.isConnected) return;
 
@@ -127,45 +96,8 @@ export class SiteFooter extends HTMLElement {
   }
 
   /**
-   * Fetch footer HTML with retry logic
-   *
-   * @param {string} src - URL or path to footer HTML (extension optional)
-   * @returns {Promise<string>}
-   */
-
-  async #fetchFooterHTML(src) {
-    // Simplified: always fetch HTML file (src may omit .html extension)
-    const url = src.endsWith('.html') ? src : `${src}.html`;
-
-    for (let attempt = 0; attempt <= CONFIG.LOAD_RETRY_ATTEMPTS; attempt++) {
-      try {
-        const response = await fetch(url, { redirect: 'follow' });
-
-        if (response.ok) return await response.text();
-
-        log.warn(
-          `Footer fetch ${url} returned ${response.status} (attempt ${attempt + 1})`,
-        );
-      } catch (err) {
-        log.warn(`Footer fetch ${url} failed (attempt ${attempt + 1})`, err);
-      }
-
-      if (attempt < CONFIG.LOAD_RETRY_ATTEMPTS) {
-        await new Promise((r) =>
-          setTimeout(r, CONFIG.LOAD_RETRY_DELAY_MS * (attempt + 1)),
-        );
-      }
-    }
-
-    throw new Error('Footer load failed — all attempts exhausted');
-  }
-
-  /**
-
    * Complete cleanup of all event listeners and resources
-
    */
-
   #cleanup() {
     const unsubscribe = this.#listeners.get('i18n:unsubscribe');
 
@@ -211,7 +143,6 @@ export class SiteFooter extends HTMLElement {
   }
 
   /**
-
    * Add event listener with automatic tracking for cleanup
 
    * @param {string} key - Unique identifier (e.g., 'acceptBtn:click')
@@ -223,9 +154,7 @@ export class SiteFooter extends HTMLElement {
    * @param {EventListener} handler
 
    * @param {AddEventListenerOptions} [options]
-
    */
-
   #addListener(key, element, event, handler, options) {
     if (this.#listeners.has(key)) {
       log.warn(`Listener ${key} already registered`);
@@ -252,33 +181,21 @@ export class SiteFooter extends HTMLElement {
 
   #cacheElements() {
     this.#elements = {
-      // the `<footer>` element inside the custom element; no ID required
+      // the `<footer>` element inside the custom element;
       footer: this.querySelector('footer.site-footer'),
-
       footerMin: this.querySelector('.footer-min'),
-
+      footerMinMain: this.querySelector('.footer-min-main'),
       footerMax: this.querySelector('.footer-max'),
-
       cookieBanner: this.querySelector('#cookie-banner'),
-
       cookieSettings: this.querySelector('#cookie-settings'),
-
       footerContent: this.querySelector('#footer-content'),
-
       acceptBtn: this.querySelector('#accept-cookies'),
-
       rejectBtn: this.querySelector('#reject-cookies'),
-
       closeBtn: this.querySelector('#close-settings'),
-
       analyticsToggle: this.querySelector('#analytics-toggle'),
-
       adsToggle: this.querySelector('#ads-toggle'),
-
       rejectAll: this.querySelector('#reject-all'),
-
       acceptSelected: this.querySelector('#accept-selected'),
-
       acceptAll: this.querySelector('#accept-all'),
     };
 
@@ -286,11 +203,15 @@ export class SiteFooter extends HTMLElement {
   }
 
   #setupDate() {
-    const year = new Date().getFullYear();
-
-    this.querySelectorAll('.year').forEach(
-      (el) => (el.textContent = String(year)),
-    );
+    // Update dynamic texts safely
+    try {
+      const currentYear = new Date().getFullYear().toString();
+      this.querySelectorAll('.year').forEach(
+        (el) => (el.textContent = currentYear),
+      );
+    } catch {
+      // Ignored intentionally
+    }
   }
 
   #setupCookieBanner() {
@@ -298,9 +219,8 @@ export class SiteFooter extends HTMLElement {
 
     if (!cookieBanner || !acceptBtn || !rejectBtn) return;
 
-    const consent = CookieManager.get('cookie_consent');
-
-    const shouldShow = consent !== 'accepted' && consent !== 'rejected';
+    const { resolved, analytics, ads } = this.#getConsentPreferences();
+    const shouldShow = !resolved;
 
     cookieBanner.classList.toggle('hidden', !shouldShow);
 
@@ -310,12 +230,14 @@ export class SiteFooter extends HTMLElement {
 
     // Load analytics if already accepted
 
-    if (consent === 'accepted') {
-      this.#analytics.updateConsent(true);
+    if (resolved) {
+      this.#analytics.updateConsent({ analytics, ads });
 
-      this.#analytics.load();
-    } else if (consent === 'rejected') {
-      this.#analytics.updateConsent(false);
+      if (analytics) {
+        this.#analytics.load();
+      } else {
+        CookieManager.deleteAnalytics();
+      }
     }
 
     // Bind cookie banner buttons
@@ -334,11 +256,8 @@ export class SiteFooter extends HTMLElement {
   }
 
   /**
-
    * @param {boolean} showBanner
-
    */
-
   #updateFooterHeight(showBanner) {
     try {
       const root = document.documentElement;
@@ -367,27 +286,41 @@ export class SiteFooter extends HTMLElement {
 
     if (!cookieBanner) return;
 
-    const isAccepted = type === 'accepted';
+    const analyticsEnabled = type === 'accepted';
+    const adsEnabled = false;
     cookieBanner.classList.add('hidden');
     this.#updateFooterHeight(false);
 
-    CookieManager.set('cookie_consent', type);
-    this.#analytics.updateConsent(isAccepted);
+    this.#persistConsentPreferences({
+      analytics: analyticsEnabled,
+      ads: adsEnabled,
+    });
+    this.#analytics.updateConsent({
+      analytics: analyticsEnabled,
+      ads: adsEnabled,
+    });
 
-    if (isAccepted) {
+    if (analyticsEnabled) {
       this.#analytics.load();
+    } else {
+      CookieManager.deleteAnalytics();
     }
 
     a11y?.announce(i18n.t(`footer.messages.${type}`), { priority: 'polite' });
   }
 
   #setupGlobalEventListeners() {
+    const isInteractiveTarget = (target) =>
+      target instanceof Element &&
+      Boolean(target.closest('a, button, input, label, .cookie-inline'));
+
     /** @type {EventListener} */
 
     const handleOutsideClick = (e) => {
       if (!this.#state.expanded) return;
 
-      const target = /** @type {Element} */ (e.target);
+      if (!(e.target instanceof Element)) return;
+      const target = e.target;
       if (target.closest('[data-footer-trigger]')) {
         return;
       }
@@ -420,11 +353,22 @@ export class SiteFooter extends HTMLElement {
       const touchEvent = /** @type {TouchEvent} */ (e);
       this.#state.touchStartY = touchEvent.touches[0].clientY;
       this.#state.touchStartTime = Date.now();
+      this.#state.touchStartedOnInteractive = isInteractiveTarget(
+        touchEvent.target,
+      );
     };
 
     /** @type {EventListener} */
     const handleTouchEnd = (e) => {
       const touchEvent = /** @type {TouchEvent} */ (e);
+      if (
+        this.#state.touchStartedOnInteractive ||
+        isInteractiveTarget(touchEvent.target)
+      ) {
+        this.#state.touchStartedOnInteractive = false;
+        return;
+      }
+
       const touchEndY = touchEvent.changedTouches[0].clientY;
       const touchDuration = Date.now() - this.#state.touchStartTime;
       const touchDistance = Math.abs(touchEndY - this.#state.touchStartY);
@@ -436,6 +380,8 @@ export class SiteFooter extends HTMLElement {
         touchEvent.preventDefault();
         this.#toggleFooter(true);
       }
+
+      this.#state.touchStartedOnInteractive = false;
     };
 
     this.#addListener('document:click', document, 'click', handleOutsideClick, {
@@ -466,11 +412,8 @@ export class SiteFooter extends HTMLElement {
   }
 
   /**
-
    * @param {boolean} [forceState]
-
    */
-
   #toggleFooter(forceState) {
     const { footer, footerMin, footerMax } = this.#elements;
 
@@ -483,6 +426,10 @@ export class SiteFooter extends HTMLElement {
 
     this.#state.expanded = newState;
 
+    if (!newState) {
+      this.#restoreExpandedContent();
+    }
+
     const footerTriggers = document.querySelectorAll('[data-footer-trigger]');
 
     footer.classList.toggle('expanded', newState);
@@ -492,7 +439,6 @@ export class SiteFooter extends HTMLElement {
     footerMax?.classList.toggle('hidden', !newState);
 
     const ariaState = String(newState);
-    footerMin?.setAttribute('aria-expanded', ariaState);
     footerTriggers.forEach((t) => t.setAttribute('aria-expanded', ariaState));
 
     const actionKey = newState ? 'expanded' : 'minimized';
@@ -538,15 +484,14 @@ export class SiteFooter extends HTMLElement {
 
     if (!cookieSettings) return;
 
-    const consent = CookieManager.get('cookie_consent');
+    const { analytics, ads } = this.#getConsentPreferences();
 
     if (analyticsToggle) {
-      /** @type {HTMLInputElement} */ (analyticsToggle).checked =
-        consent === 'accepted';
+      /** @type {HTMLInputElement} */ (analyticsToggle).checked = analytics;
     }
 
     if (adsToggle) {
-      /** @type {HTMLInputElement} */ (adsToggle).checked = false;
+      /** @type {HTMLInputElement} */ (adsToggle).checked = ads;
     }
 
     if (!this.#state.expanded) this.#toggleFooter(true);
@@ -567,20 +512,15 @@ export class SiteFooter extends HTMLElement {
   }
 
   #closeSettings() {
-    const { cookieSettings, footerContent } = this.#elements;
-
-    cookieSettings?.classList.add('hidden');
-
-    footerContent?.classList.remove('hidden');
-
-    a11y?.announce(i18n.t('footer.messages.closed'), { priority: 'polite' });
+    this.#restoreExpandedContent({ announce: true });
   }
 
   #bindEvents() {
     const { closeBtn, footerMin } = this.#elements;
 
     const createTriggerHandler = (selector, action) => (e) => {
-      const target = /** @type {Element} */ (e.target);
+      if (!(e.target instanceof Element)) return;
+      const target = e.target;
 
       if (target.closest(selector)) {
         e.preventDefault();
@@ -613,33 +553,68 @@ export class SiteFooter extends HTMLElement {
 
     if (footerMin) {
       const isInteractive = (/** @type {Element} */ target) =>
-        target.closest('a, button, input, .cookie-inline');
+        target.closest('a, button, input, label, .cookie-inline');
 
       this.#addListener('footerMin:click', footerMin, 'click', (e) => {
-        if (isInteractive(/** @type {Element} */ (e.target))) return;
+        if (!(e.target instanceof Element)) return;
+        if (isInteractive(e.target)) return;
 
         this.#toggleFooter();
-      });
-
-      this.#addListener('footerMin:keydown', footerMin, 'keydown', (e) => {
-        const keyEvent = /** @type {KeyboardEvent} */ (e);
-
-        if (
-          (keyEvent.key === 'Enter' || keyEvent.key === ' ') &&
-          !isInteractive(/** @type {Element} */ (keyEvent.target))
-        ) {
-          keyEvent.preventDefault();
-          this.#toggleFooter();
-        }
       });
     }
 
     this.#bindSettingsButtons();
   }
 
-  #saveSettings(consentType, analyticsEnabled, messageKey) {
-    CookieManager.set('cookie_consent', consentType);
-    this.#analytics.updateConsent(analyticsEnabled);
+  #restoreExpandedContent({ announce = false } = {}) {
+    const { cookieSettings, footerContent } = this.#elements;
+
+    cookieSettings?.classList.add('hidden');
+    footerContent?.classList.remove('hidden');
+
+    if (announce) {
+      a11y?.announce(i18n.t('footer.messages.closed'), { priority: 'polite' });
+    }
+  }
+
+  #getConsentPreferences() {
+    const consent = CookieManager.get(CONSENT_COOKIE);
+    const resolved = consent === 'accepted' || consent === 'rejected';
+    const legacyAccepted = consent === 'accepted';
+    const analyticsConsent = CookieManager.get(ANALYTICS_CONSENT_COOKIE);
+    const adsConsent = CookieManager.get(ADS_CONSENT_COOKIE);
+
+    return {
+      resolved,
+      analytics:
+        analyticsConsent === null
+          ? legacyAccepted
+          : analyticsConsent === 'accepted',
+      ads: adsConsent === null ? legacyAccepted : adsConsent === 'accepted',
+    };
+  }
+
+  #persistConsentPreferences({ analytics, ads }) {
+    CookieManager.set(
+      CONSENT_COOKIE,
+      analytics || ads ? 'accepted' : 'rejected',
+    );
+    CookieManager.set(
+      ANALYTICS_CONSENT_COOKIE,
+      analytics ? 'accepted' : 'rejected',
+    );
+    CookieManager.set(ADS_CONSENT_COOKIE, ads ? 'accepted' : 'rejected');
+  }
+
+  #saveSettings({ analyticsEnabled, adsEnabled, messageKey }) {
+    this.#persistConsentPreferences({
+      analytics: analyticsEnabled,
+      ads: adsEnabled,
+    });
+    this.#analytics.updateConsent({
+      analytics: analyticsEnabled,
+      ads: adsEnabled,
+    });
 
     if (analyticsEnabled) {
       this.#analytics.load();
@@ -648,6 +623,7 @@ export class SiteFooter extends HTMLElement {
     }
 
     this.#elements.cookieBanner?.classList.add('hidden');
+    this.#updateFooterHeight(false);
     a11y?.announce(i18n.t(messageKey), { priority: 'polite' });
     this.#closeSettings();
   }
@@ -658,26 +634,38 @@ export class SiteFooter extends HTMLElement {
 
     if (rejectAll) {
       this.#addListener('rejectAll:click', rejectAll, 'click', () => {
-        this.#saveSettings('rejected', false, 'footer.messages.necessary_only');
+        this.#saveSettings({
+          analyticsEnabled: false,
+          adsEnabled: false,
+          messageKey: 'footer.messages.necessary_only',
+        });
       });
     }
 
     if (acceptSelected) {
       this.#addListener('acceptSelected:click', acceptSelected, 'click', () => {
-        const toggle = /** @type {HTMLInputElement|null} */ (analyticsToggle);
-        const analyticsEnabled = toggle?.checked ?? false;
-
-        this.#saveSettings(
-          analyticsEnabled ? 'accepted' : 'rejected',
-          analyticsEnabled,
-          'footer.messages.saved',
+        const analyticsInput = /** @type {HTMLInputElement|null} */ (
+          analyticsToggle
         );
+        const adsInput = /** @type {HTMLInputElement|null} */ (
+          this.#elements.adsToggle
+        );
+
+        this.#saveSettings({
+          analyticsEnabled: analyticsInput?.checked ?? false,
+          adsEnabled: adsInput?.checked ?? false,
+          messageKey: 'footer.messages.saved',
+        });
       });
     }
 
     if (acceptAll) {
       this.#addListener('acceptAll:click', acceptAll, 'click', () => {
-        this.#saveSettings('accepted', true, 'footer.messages.all_accepted');
+        this.#saveSettings({
+          analyticsEnabled: true,
+          adsEnabled: true,
+          messageKey: 'footer.messages.all_accepted',
+        });
       });
     }
   }

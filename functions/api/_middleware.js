@@ -5,6 +5,15 @@
  * @version 2.0.0
  */
 
+import { getCorsHeaders } from './_cors.js';
+import { createWindowRateLimiter } from './_rate-limit.js';
+import { getRequestClientIp } from './_request-utils.js';
+import { errorJsonResponse } from './_response.js';
+import {
+  CACHE_CONTROL_NO_STORE,
+  mergeHeaders,
+} from '../_shared/http-headers.js';
+
 // Rate limiting configuration
 const RATE_LIMIT = {
   WINDOW_S: 60, // 1 minute (seconds, for KV TTL)
@@ -12,107 +21,10 @@ const RATE_LIMIT = {
   MAX_REQUESTS_STRICT: 30, // 30 requests per minute for AI endpoints
 };
 
-// ── In-memory fallback (dev / KV unavailable) ──────────────────────
-const _mem = new Map();
-let _lastCleanup = Date.now();
-
-function checkInMemory(identifier, maxRequests) {
-  const now = Date.now();
-  const windowMs = RATE_LIMIT.WINDOW_S * 1000;
-
-  // Periodic cleanup
-  if (now - _lastCleanup > 300_000) {
-    _lastCleanup = now;
-    if (_mem.size > 10_000) {
-      _mem.clear();
-    } else {
-      for (const [k, d] of _mem) {
-        if (now - d.resetTime > windowMs) _mem.delete(k);
-      }
-    }
-  }
-
-  const data = _mem.get(identifier);
-  if (!data || now - data.resetTime > windowMs) {
-    _mem.set(identifier, { count: 1, resetTime: now });
-    return { allowed: true, remaining: maxRequests - 1 };
-  }
-  if (data.count >= maxRequests) {
-    return {
-      allowed: false,
-      remaining: 0,
-      retryAfter: Math.ceil((windowMs - (now - data.resetTime)) / 1000),
-    };
-  }
-  data.count++;
-  return { allowed: true, remaining: maxRequests - data.count };
-}
-
-// ── KV-backed rate limiter (distributed) ───────────────────────────
-async function checkKV(kv, identifier, maxRequests) {
-  const key = `rl:${identifier}`;
-  try {
-    const raw = await kv.get(key);
-    const count = raw ? Number.parseInt(raw, 10) || 0 : 0;
-
-    if (count >= maxRequests) {
-      return {
-        allowed: false,
-        remaining: 0,
-        retryAfter: RATE_LIMIT.WINDOW_S,
-      };
-    }
-
-    // Increment – TTL auto-expires the key after the window
-    await kv.put(key, String(count + 1), {
-      expirationTtl: RATE_LIMIT.WINDOW_S,
-    });
-
-    return { allowed: true, remaining: maxRequests - count - 1 };
-  } catch {
-    // KV failure → degrade to in-memory
-    return checkInMemory(identifier, maxRequests);
-  }
-}
-
-/**
- * Get client identifier (IP address)
- */
-function getClientIdentifier(request) {
-  // Use CF-Connecting-IP exclusively as it is verified by Cloudflare.
-  // Ignore X-Forwarded-For to prevent IP spoofing vulnerabilities.
-  const cfIP = request.headers.get('CF-Connecting-IP');
-  if (cfIP) return cfIP;
-
-  return 'unknown';
-}
-
-/**
- * Build CORS headers for the rate-limit 429 response so the browser can
- * actually read the error body instead of getting a CORS TypeError.
- */
-function build429CorsHeaders(request) {
-  const origin = request.headers.get('Origin');
-  if (!origin) return {};
-
-  const allowed = [
-    'https://abdulkerimsesli.de',
-    'https://www.abdulkerimsesli.de',
-  ];
-
-  const isPreview = /^https:\/\/(?:[a-z0-9-]+\.)*1web\.pages\.dev$/.test(
-    origin,
-  );
-  const isLocal = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
-
-  if (allowed.includes(origin) || isPreview || isLocal) {
-    return {
-      'Access-Control-Allow-Origin': origin,
-      'Access-Control-Allow-Credentials': 'true',
-    };
-  }
-  return {};
-}
+const rateLimiter = createWindowRateLimiter({
+  keyNamespace: 'rl:v2',
+  maxEntries: 10_000,
+});
 
 /**
  * Middleware for rate limiting
@@ -120,7 +32,6 @@ function build429CorsHeaders(request) {
 export async function onRequest(context) {
   const { request, env, next } = context;
   const url = new URL(request.url);
-
   const isLocalhostRequest =
     url.hostname === 'localhost' ||
     url.hostname === '127.0.0.1' ||
@@ -128,7 +39,7 @@ export async function onRequest(context) {
     url.hostname === '[::1]';
   const isAdminSessionRoute = url.pathname === '/api/admin/session';
 
-  // Do not rate limit local development traffic and admin-session bootstrap.
+  // Keep local dev and admin-session bootstrap free from middleware throttling.
   if (isLocalhostRequest || isAdminSessionRoute) {
     return next();
   }
@@ -138,7 +49,9 @@ export async function onRequest(context) {
     return next();
   }
 
-  const clientId = getClientIdentifier(request);
+  const clientId = getRequestClientIp(request, {
+    allowForwarded: false,
+  });
 
   const isAIEndpoint = url.pathname.includes('/ai');
   const maxRequests = isAIEndpoint
@@ -146,9 +59,11 @@ export async function onRequest(context) {
     : RATE_LIMIT.MAX_REQUESTS;
 
   // Use KV when available (production), else fall back to in-memory
-  const result = env?.RATE_LIMIT_KV
-    ? await checkKV(env.RATE_LIMIT_KV, clientId, maxRequests)
-    : checkInMemory(clientId, maxRequests);
+  const result = await rateLimiter.check(clientId, {
+    kv: env?.RATE_LIMIT_KV,
+    limit: maxRequests,
+    windowSeconds: RATE_LIMIT.WINDOW_S,
+  });
 
   const headers = {
     'X-RateLimit-Limit': maxRequests.toString(),
@@ -156,20 +71,18 @@ export async function onRequest(context) {
   };
 
   if (!result.allowed) {
-    return new Response(
-      JSON.stringify({
+    return errorJsonResponse(
+      {
         error: 'Rate limit exceeded',
         message: `Too many requests. Please try again in ${result.retryAfter} seconds.`,
         retryAfter: result.retryAfter,
-      }),
+      },
       {
         status: 429,
-        headers: {
-          'Content-Type': 'application/json',
+        headers: mergeHeaders(getCorsHeaders(request, env), headers, {
           'Retry-After': result.retryAfter.toString(),
-          ...headers,
-          ...build429CorsHeaders(request),
-        },
+          'Cache-Control': CACHE_CONTROL_NO_STORE,
+        }),
       },
     );
   }

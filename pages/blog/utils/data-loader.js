@@ -46,7 +46,10 @@ export const loadPostsData = async () => {
           loaded++;
           AppLoadManager.updateLoader(
             0.4 + (loaded / total) * 0.4,
-            i18n.t('loader.loading_article', { current: loaded, total }),
+            i18n.t(
+              'loader.loading_article',
+              /** @type {any} */ ({ current: loaded, total }),
+            ),
             { silent: true },
           );
 

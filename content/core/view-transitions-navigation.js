@@ -1,4 +1,4 @@
-import { handleSamePageScroll } from './utils.js';
+import { handleSamePageScroll } from './async-utils.js';
 import {
   debugViewTransition,
   normalizeClassTokens,
@@ -9,7 +9,7 @@ import {
 import {
   DEFAULT_SCROLL_TRANSITION_TYPES,
   VIEW_TRANSITION_TYPES,
-} from './view-transition-types.js';
+} from './view-transition-constants.js';
 
 const TOKEN_TRUE_VALUES = new Set(['1', 'true', 'yes', 'on']);
 
@@ -178,7 +178,11 @@ const shouldHandleInternalNavigation = (
  * @param {{ navigationTypes: string[] }} [defaults]
  * @returns {boolean}
  */
-export function navigateWithViewTransition(href, options = {}, defaults = {}) {
+export function navigateWithViewTransition(
+  href,
+  options = {},
+  defaults = { navigationTypes: [] },
+) {
   const url = toURL(href);
   if (!url) return false;
 

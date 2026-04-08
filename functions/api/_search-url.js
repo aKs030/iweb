@@ -5,10 +5,10 @@
 
 import {
   buildProjectDetailPath,
-  extractProjectSlugFromPath,
-  isProjectIndexPath,
-  normalizeProjectSlug,
+  extractProjectSlug,
 } from '../../content/core/project-paths.js';
+import { humanizeSlug } from '../../content/core/text-utils.js';
+import { canonicalizeUrlPath } from '../../content/core/path-utils.js';
 
 const TOP_LEVEL_TITLE_MAP = {
   projekte: 'Projekte Übersicht',
@@ -29,54 +29,17 @@ const URL_DESCRIPTION_FALLBACKS = {
   '/gallery': 'Fotogalerie mit optimierten Bildformaten und Serien.',
   '/videos': 'Video-Portfolio mit Tutorials und Demonstrationen.',
   '/datenschutz': 'Datenschutzinformationen gemaess DSGVO.',
+  '/cookies': 'Informationen zu Cookies, Browser-Speichern und Consent.',
   '/impressum': 'Rechtliche Anbieterkennzeichnung und Kontaktdaten.',
 };
-
-function humanizeSlug(value) {
-  return String(value || '')
-    .replace(/[_+]/g, '-')
-    .split('-')
-    .filter(Boolean)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ')
-    .trim();
-}
 
 export function extractAppSlugFromUrl(url) {
   try {
     const parsed = new URL(String(url || ''), 'https://example.com');
-    const pathSlug = extractProjectSlugFromPath(parsed.pathname);
-    if (pathSlug) return pathSlug;
-    if (!isProjectIndexPath(parsed.pathname)) return '';
-    return normalizeProjectSlug(parsed.searchParams.get('app'));
+    return extractProjectSlug(parsed.pathname, parsed.search);
   } catch {
     return '';
   }
-}
-
-export function canonicalizeUrlPath(path) {
-  if (!path) return '/';
-
-  let normalized = String(path).trim();
-  if (!normalized.startsWith('/')) {
-    normalized = '/' + normalized;
-  }
-
-  if (normalized.endsWith('/index.html')) {
-    normalized = normalized.substring(0, normalized.length - 11);
-  } else if (normalized.endsWith('.html')) {
-    normalized = normalized.substring(0, normalized.length - 5);
-  }
-
-  if (normalized === '') {
-    return '/';
-  }
-
-  if (normalized !== '/' && normalized.endsWith('/')) {
-    normalized = normalized.slice(0, -1);
-  }
-
-  return normalized;
 }
 
 /**

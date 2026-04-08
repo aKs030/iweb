@@ -6,7 +6,6 @@ import {
   authorizeAdmin,
   getErrorMessage,
   jsonResponse,
-  normalizeSearch,
   paginateArray,
   parsePaginationParams,
 } from './_admin-utils.js';
@@ -77,6 +76,60 @@ function buildEmptySectionResult(
   };
 }
 
+function buildStaticPagination(pageSize) {
+  return paginateArray([], {
+    page: 1,
+    pageSize,
+  }).pagination;
+}
+
+function resolvePagination(url, section, options = {}) {
+  const {
+    compactMode = false,
+    defaultPageSize,
+    maxPageSize,
+    compactPageSize = defaultPageSize,
+  } = options;
+
+  return compactMode
+    ? buildStaticPagination(compactPageSize)
+    : parsePaginationParams(url, section, {
+        defaultPageSize,
+        maxPageSize,
+      });
+}
+
+async function resolveOptionalSection({
+  compactMode = false,
+  loadRequested = false,
+  pagination,
+  loadSection,
+  loadSummary,
+  compactAvailable = true,
+  compactExtras = {},
+}) {
+  if (compactMode) {
+    return buildEmptySectionResult(
+      0,
+      pagination,
+      compactAvailable,
+      compactExtras,
+    );
+  }
+
+  if (loadRequested) {
+    return loadSection();
+  }
+
+  const summary = await loadSummary();
+  return buildEmptySectionResult(
+    summary.total,
+    pagination,
+    summary.available,
+    summary.extras || {},
+  );
+}
+
 function buildWarning(section, error, code = 'query_failed') {
   const detail = getErrorMessage(error);
   const isMissingTable = /no such table|no such column/i.test(detail);
@@ -116,21 +169,6 @@ async function queryFirst(db, query, bindings, section, warnings, fallback) {
     warnings.push(buildWarning(section, error));
     return fallback;
   }
-}
-
-function buildSqlSearch(columns, search) {
-  if (!search) return { clause: '', bindings: [] };
-
-  const like = `%${search}%`;
-  return {
-    clause: ` WHERE ${columns.map((column) => `${column} LIKE ?`).join(' OR ')}`,
-    bindings: columns.map(() => like),
-  };
-}
-
-function buildDynamicWhere(clauses = []) {
-  const validClauses = clauses.filter(Boolean);
-  return validClauses.length > 0 ? ` WHERE ${validClauses.join(' AND ')}` : '';
 }
 
 async function loadPaginatedD1Section(
@@ -230,207 +268,6 @@ function parseArchivedProfileRow(row) {
   };
 }
 
-function buildUserFilter(filters) {
-  const clauses = [];
-  const bindings = [];
-
-  if (filters.userStatus !== 'all') {
-    clauses.push(`p.status = ?`);
-    bindings.push(filters.userStatus);
-  }
-
-  if (filters.memoryKey !== 'all') {
-    clauses.push(`
-      EXISTS (
-        SELECT 1
-        FROM admin_memory_entries me_key
-        WHERE me_key.user_id = p.user_id
-          AND me_key.memory_key = ?
-      )
-    `);
-    bindings.push(filters.memoryKey);
-  }
-
-  if (filters.q) {
-    const like = `%${filters.q}%`;
-    clauses.push(`
-      (
-        p.user_id LIKE ?
-        OR p.display_name LIKE ?
-        OR EXISTS (
-          SELECT 1
-          FROM admin_name_mappings nm
-          WHERE nm.user_id = p.user_id
-            AND (nm.name LIKE ? OR nm.raw_value LIKE ?)
-        )
-        OR EXISTS (
-          SELECT 1
-          FROM admin_memory_entries me
-          WHERE me.user_id = p.user_id
-            AND (
-              me.memory_key LIKE ?
-              OR me.memory_value LIKE ?
-              OR me.category LIKE ?
-            )
-        )
-      )
-    `);
-    bindings.push(like, like, like, like, like, like, like);
-  }
-
-  return {
-    clause: buildDynamicWhere(clauses),
-    bindings,
-  };
-}
-
-function buildMappingFilter(filters) {
-  const clauses = [];
-  const bindings = [];
-
-  if (filters.mappingStatus !== 'all') {
-    clauses.push(`status = ?`);
-    bindings.push(filters.mappingStatus);
-  }
-
-  if (filters.q) {
-    const like = `%${filters.q}%`;
-    clauses.push(
-      `(name LIKE ? OR user_id LIKE ? OR raw_value LIKE ? OR status LIKE ?)`,
-    );
-    bindings.push(like, like, like, like);
-  }
-
-  return {
-    clause: buildDynamicWhere(clauses),
-    bindings,
-  };
-}
-
-function buildLikesFilter(filters) {
-  const clauses = [];
-  const bindings = [];
-
-  if (filters.q) {
-    const like = `%${filters.q}%`;
-    clauses.push(`(project_id LIKE ? OR CAST(likes AS TEXT) LIKE ?)`);
-    bindings.push(like, like);
-  }
-
-  return {
-    clause: buildDynamicWhere(clauses),
-    bindings,
-  };
-}
-
-function buildLikeEventsFilter(filters) {
-  const clauses = [];
-  const bindings = [];
-
-  if (filters.q) {
-    const like = `%${filters.q}%`;
-    clauses.push(
-      `(project_id LIKE ? OR source_ip LIKE ? OR user_agent LIKE ? OR request_id LIKE ? OR created_at LIKE ?)`,
-    );
-    bindings.push(like, like, like, like, like);
-  }
-
-  return {
-    clause: buildDynamicWhere(clauses),
-    bindings,
-  };
-}
-
-function buildArchivedFilter(filters) {
-  const clauses = [`restored_at IS NULL`, `purged_at IS NULL`];
-  const bindings = [];
-
-  if (filters.q) {
-    const like = `%${filters.q}%`;
-    clauses.push(
-      `(user_id LIKE ? OR display_name LIKE ? OR delete_reason LIKE ? OR snapshot_json LIKE ?)`,
-    );
-    bindings.push(like, like, like, like);
-  }
-
-  return {
-    clause: buildDynamicWhere(clauses),
-    bindings,
-  };
-}
-
-function buildAuditFilter(filters) {
-  const clauses = [];
-  const bindings = [];
-
-  if (filters.q) {
-    const like = `%${filters.q}%`;
-    clauses.push(
-      `(
-        action LIKE ?
-        OR target_user_id LIKE ?
-        OR memory_key LIKE ?
-        OR status LIKE ?
-        OR summary LIKE ?
-        OR details_json LIKE ?
-        OR actor LIKE ?
-        OR source_ip LIKE ?
-      )`,
-    );
-    bindings.push(like, like, like, like, like, like, like, like);
-  }
-
-  if (filters.auditAction !== 'all') {
-    clauses.push(`action = ?`);
-    bindings.push(filters.auditAction);
-  }
-
-  if (filters.auditStatus !== 'all') {
-    clauses.push(`status = ?`);
-    bindings.push(filters.auditStatus);
-  }
-
-  if (filters.auditActor) {
-    clauses.push(`actor LIKE ?`);
-    bindings.push(`%${filters.auditActor}%`);
-  }
-
-  if (filters.auditUserId) {
-    clauses.push(`target_user_id LIKE ?`);
-    bindings.push(`%${filters.auditUserId}%`);
-  }
-
-  return {
-    clause: buildDynamicWhere(clauses),
-    bindings,
-  };
-}
-
-function parseFilters(url) {
-  const rawMemoryKey = String(url.searchParams.get('memoryKey') || '').trim();
-  const rawAuditAction = String(
-    url.searchParams.get('auditAction') || '',
-  ).trim();
-  const rawAuditStatus = String(
-    url.searchParams.get('auditStatus') || '',
-  ).trim();
-
-  return {
-    q: normalizeSearch(url.searchParams.get('q')),
-    userStatus: String(url.searchParams.get('userStatus') || 'all')
-      .trim()
-      .toLowerCase(),
-    mappingStatus: String(url.searchParams.get('mappingStatus') || 'all')
-      .trim()
-      .toLowerCase(),
-    memoryKey: rawMemoryKey ? rawMemoryKey.toLowerCase() : 'all',
-    auditAction: rawAuditAction ? rawAuditAction.toLowerCase() : 'all',
-    auditStatus: rawAuditStatus ? rawAuditStatus.toLowerCase() : 'all',
-    auditActor: normalizeSearch(url.searchParams.get('auditActor')),
-    auditUserId: normalizeSearch(url.searchParams.get('auditUserId')),
-  };
-}
-
 function isCompactMode(url) {
   const raw = String(url.searchParams.get('compact') || '')
     .trim()
@@ -438,42 +275,42 @@ function isCompactMode(url) {
   return raw === '1' || raw === 'true' || raw === 'yes' || raw === 'on';
 }
 
-async function loadLikes(db, filters, pagination, warnings) {
-  const filter = buildLikesFilter(filters);
-  const paginated = await loadPaginatedD1Section(db, {
-    section: 'likes',
-    selectSql: `
-      SELECT project_id, likes
-      FROM project_likes${filter.clause}
-      ORDER BY likes DESC, project_id ASC
-    `,
-    countSql: `SELECT COUNT(*) AS total FROM project_likes${filter.clause}`,
-    bindings: filter.bindings,
-    page: pagination.page,
-    pageSize: pagination.pageSize,
-    warnings,
-  });
-  const sumRow = await queryFirst(
-    db,
-    `SELECT COALESCE(SUM(likes), 0) AS total_likes FROM project_likes${filter.clause}`,
-    filter.bindings,
-    'likes-sum',
-    warnings,
-    { total_likes: 0 },
-  );
-  const topProject = await queryFirst(
-    db,
-    `
-      SELECT project_id, likes
-      FROM project_likes${filter.clause}
-      ORDER BY likes DESC, project_id ASC
-      LIMIT 1
-    `,
-    filter.bindings,
-    'likes-top-project',
-    warnings,
-    null,
-  );
+async function loadLikes(db, pagination, warnings) {
+  const [paginated, sumRow, topProject] = await Promise.all([
+    loadPaginatedD1Section(db, {
+      section: 'likes',
+      selectSql: `
+        SELECT project_id, likes
+        FROM project_likes
+        ORDER BY likes DESC, project_id ASC
+      `,
+      countSql: `SELECT COUNT(*) AS total FROM project_likes`,
+      page: pagination.page,
+      pageSize: pagination.pageSize,
+      warnings,
+    }),
+    queryFirst(
+      db,
+      `SELECT COALESCE(SUM(likes), 0) AS total_likes FROM project_likes`,
+      [],
+      'likes-sum',
+      warnings,
+      { total_likes: 0 },
+    ),
+    queryFirst(
+      db,
+      `
+        SELECT project_id, likes
+        FROM project_likes
+        ORDER BY likes DESC, project_id ASC
+        LIMIT 1
+      `,
+      [],
+      'likes-top-project',
+      warnings,
+      null,
+    ),
+  ]);
 
   return {
     ...paginated,
@@ -504,24 +341,25 @@ async function loadTotalCount(db, query, bindings, section, warnings) {
   }
 }
 
-async function loadLikesSummary(db, filters, warnings) {
-  const filter = buildLikesFilter(filters);
+async function loadLikesSummary(db, warnings) {
   try {
-    const aggregateRow = await bindStatement(
-      db,
-      `SELECT COUNT(*) AS total_rows, COALESCE(SUM(likes), 0) AS total_likes FROM project_likes${filter.clause}`,
-      filter.bindings,
-    ).first();
-    const topProject = await bindStatement(
-      db,
-      `
-        SELECT project_id, likes
-        FROM project_likes${filter.clause}
-        ORDER BY likes DESC, project_id ASC
-        LIMIT 1
-      `,
-      filter.bindings,
-    ).first();
+    const [aggregateRow, topProject] = await Promise.all([
+      bindStatement(
+        db,
+        `SELECT COUNT(*) AS total_rows, COALESCE(SUM(likes), 0) AS total_likes FROM project_likes`,
+        [],
+      ).first(),
+      bindStatement(
+        db,
+        `
+          SELECT project_id, likes
+          FROM project_likes
+          ORDER BY likes DESC, project_id ASC
+          LIMIT 1
+        `,
+        [],
+      ).first(),
+    ]);
 
     return {
       totalRows: Number(aggregateRow?.total_rows) || 0,
@@ -546,100 +384,82 @@ async function loadLikesSummary(db, filters, warnings) {
   }
 }
 
-async function loadMappingsTotal(db, filters, warnings) {
-  const filter = buildMappingFilter(filters);
+async function loadMappingsTotal(db, warnings) {
   return loadTotalCount(
     db,
-    `SELECT COUNT(*) AS total FROM admin_name_mappings${filter.clause}`,
-    filter.bindings,
+    `SELECT COUNT(*) AS total FROM admin_name_mappings`,
+    [],
     'mappings-total',
     warnings,
   );
 }
 
-async function loadLikeEventsTotal(db, filters, warnings) {
-  const filter = buildLikeEventsFilter(filters);
+async function loadLikeEventsTotal(db, warnings) {
   return loadTotalCount(
     db,
-    `SELECT COUNT(*) AS total FROM project_like_events${filter.clause}`,
-    filter.bindings,
+    `SELECT COUNT(*) AS total FROM project_like_events`,
+    [],
     'like-events-total',
     warnings,
   );
 }
 
-async function loadCommentsTotal(db, filters, warnings) {
-  const search = buildSqlSearch(
-    ['post_id', 'author_name', 'content'],
-    filters.q,
-  );
+async function loadCommentsTotal(db, warnings) {
   return loadTotalCount(
     db,
-    `SELECT COUNT(*) AS total FROM blog_comments${search.clause}`,
-    search.bindings,
+    `SELECT COUNT(*) AS total FROM blog_comments`,
+    [],
     'comments-total',
     warnings,
   );
 }
 
-async function loadContactsTotal(db, filters, warnings) {
-  const search = buildSqlSearch(
-    ['name', 'email', 'subject', 'message'],
-    filters.q,
-  );
+async function loadContactsTotal(db, warnings) {
   return loadTotalCount(
     db,
-    `SELECT COUNT(*) AS total FROM contact_messages${search.clause}`,
-    search.bindings,
+    `SELECT COUNT(*) AS total FROM contact_messages`,
+    [],
     'contacts-total',
     warnings,
   );
 }
 
-async function loadAuditTotal(db, filters, warnings) {
-  const filter = buildAuditFilter(filters);
+async function loadAuditTotal(db, warnings) {
   return loadTotalCount(
     db,
-    `SELECT COUNT(*) AS total FROM admin_audit_log${filter.clause}`,
-    filter.bindings,
+    `SELECT COUNT(*) AS total FROM admin_audit_log`,
+    [],
     'audit-total',
     warnings,
   );
 }
 
-async function loadArchivedTotal(db, filters, warnings) {
-  const filter = buildArchivedFilter(filters);
+async function loadArchivedTotal(db, warnings) {
   return loadTotalCount(
     db,
-    `SELECT COUNT(*) AS total FROM admin_deleted_profiles${filter.clause}`,
-    filter.bindings,
+    `SELECT COUNT(*) AS total FROM admin_deleted_profiles WHERE restored_at IS NULL AND purged_at IS NULL`,
+    [],
     'archived-total',
     warnings,
   );
 }
 
-async function loadComments(db, filters, pagination, warnings) {
-  const search = buildSqlSearch(
-    ['post_id', 'author_name', 'content'],
-    filters.q,
-  );
+async function loadComments(db, pagination, warnings) {
   return loadPaginatedD1Section(db, {
     section: 'comments',
     selectSql: `
       SELECT id, post_id, author_name, content, created_at
-      FROM blog_comments${search.clause}
+      FROM blog_comments
       ORDER BY created_at DESC
     `,
-    countSql: `SELECT COUNT(*) AS total FROM blog_comments${search.clause}`,
-    bindings: search.bindings,
+    countSql: `SELECT COUNT(*) AS total FROM blog_comments`,
     page: pagination.page,
     pageSize: pagination.pageSize,
     warnings,
   });
 }
 
-async function loadLikeEvents(db, filters, pagination, warnings) {
-  const filter = buildLikeEventsFilter(filters);
+async function loadLikeEvents(db, pagination, warnings) {
   return loadPaginatedD1Section(db, {
     section: 'like-events',
     selectSql: `
@@ -650,40 +470,32 @@ async function loadLikeEvents(db, filters, pagination, warnings) {
         user_agent,
         request_id,
         created_at
-      FROM project_like_events${filter.clause}
+      FROM project_like_events
       ORDER BY created_at DESC, id DESC
     `,
-    countSql: `SELECT COUNT(*) AS total FROM project_like_events${filter.clause}`,
-    bindings: filter.bindings,
+    countSql: `SELECT COUNT(*) AS total FROM project_like_events`,
     page: pagination.page,
     pageSize: pagination.pageSize,
     warnings,
   });
 }
 
-async function loadContacts(db, filters, pagination, warnings) {
-  const search = buildSqlSearch(
-    ['name', 'email', 'subject', 'message'],
-    filters.q,
-  );
+async function loadContacts(db, pagination, warnings) {
   return loadPaginatedD1Section(db, {
     section: 'contacts',
     selectSql: `
       SELECT id, name, email, subject, message, created_at
-      FROM contact_messages${search.clause}
+      FROM contact_messages
       ORDER BY created_at DESC
     `,
-    countSql: `SELECT COUNT(*) AS total FROM contact_messages${search.clause}`,
-    bindings: search.bindings,
+    countSql: `SELECT COUNT(*) AS total FROM contact_messages`,
     page: pagination.page,
     pageSize: pagination.pageSize,
     warnings,
   });
 }
 
-async function loadAuditLogs(db, filters, pagination, warnings) {
-  const filter = buildAuditFilter(filters);
-
+async function loadAuditLogs(db, pagination, warnings) {
   return loadPaginatedD1Section(db, {
     section: 'audit',
     selectSql: `
@@ -700,11 +512,10 @@ async function loadAuditLogs(db, filters, pagination, warnings) {
         before_json,
         after_json,
         created_at
-      FROM admin_audit_log${filter.clause}
+      FROM admin_audit_log
       ORDER BY created_at DESC
     `,
-    countSql: `SELECT COUNT(*) AS total FROM admin_audit_log${filter.clause}`,
-    bindings: filter.bindings,
+    countSql: `SELECT COUNT(*) AS total FROM admin_audit_log`,
     page: pagination.page,
     pageSize: pagination.pageSize,
     warnings,
@@ -712,13 +523,12 @@ async function loadAuditLogs(db, filters, pagination, warnings) {
   });
 }
 
-async function loadNameMappings(db, filters, pagination, warnings) {
-  const search = buildMappingFilter(filters);
+async function loadNameMappings(db, pagination, warnings) {
   return loadPaginatedD1Section(db, {
     section: 'name-mappings',
     selectSql: `
       SELECT name, user_id, raw_value, status, updated_at
-      FROM admin_name_mappings${search.clause}
+      FROM admin_name_mappings
       ORDER BY
         CASE status
           WHEN 'linked' THEN 0
@@ -727,8 +537,7 @@ async function loadNameMappings(db, filters, pagination, warnings) {
         END ASC,
         name ASC
     `,
-    countSql: `SELECT COUNT(*) AS total FROM admin_name_mappings${search.clause}`,
-    bindings: search.bindings,
+    countSql: `SELECT COUNT(*) AS total FROM admin_name_mappings`,
     page: pagination.page,
     pageSize: pagination.pageSize,
     warnings,
@@ -742,17 +551,15 @@ async function loadNameMappings(db, filters, pagination, warnings) {
   });
 }
 
-async function loadUsers(db, filters, pagination, warnings) {
-  const filter = buildUserFilter(filters);
+async function loadUsers(db, pagination, warnings) {
   const result = await loadPaginatedD1Section(db, {
     section: 'users',
     selectSql: `
       SELECT user_id, display_name, status, memory_count, latest_memory_at
-      FROM admin_user_profiles p${filter.clause}
+      FROM admin_user_profiles p
       ORDER BY latest_memory_at DESC, memory_count DESC, display_name ASC, user_id ASC
     `,
-    countSql: `SELECT COUNT(*) AS total FROM admin_user_profiles p${filter.clause}`,
-    bindings: filter.bindings,
+    countSql: `SELECT COUNT(*) AS total FROM admin_user_profiles p`,
     page: pagination.page,
     pageSize: pagination.pageSize,
     warnings,
@@ -764,7 +571,9 @@ async function loadUsers(db, filters, pagination, warnings) {
     return [];
   });
   const indexedByUserId = new Map(
-    indexedUsers.map((user) => [user.userId, user]),
+    indexedUsers
+      .filter((user) => user?.userId)
+      .map((user) => /** @type {[string, any]} */ ([user.userId, user])),
   );
 
   const users = result.items.map((row) => {
@@ -792,8 +601,7 @@ async function loadUsers(db, filters, pagination, warnings) {
   };
 }
 
-async function loadFilteredUserSummary(db, filters, warnings) {
-  const filter = buildUserFilter(filters);
+async function loadUserSummary(db, warnings) {
   const row = await queryFirst(
     db,
     `
@@ -802,9 +610,9 @@ async function loadFilteredUserSummary(db, filters, warnings) {
         SUM(CASE WHEN p.status = 'identified' THEN 1 ELSE 0 END) AS identified_users,
         SUM(CASE WHEN p.status = 'anonymous' THEN 1 ELSE 0 END) AS anonymous_users,
         COALESCE(SUM(p.memory_count), 0) AS total_memories
-      FROM admin_user_profiles p${filter.clause}
+      FROM admin_user_profiles p
     `,
-    filter.bindings,
+    [],
     'user-summary',
     warnings,
     {
@@ -823,8 +631,7 @@ async function loadFilteredUserSummary(db, filters, warnings) {
   };
 }
 
-async function loadArchivedProfiles(db, filters, pagination, warnings) {
-  const archivedFilter = buildArchivedFilter(filters);
+async function loadArchivedProfiles(db, pagination, warnings) {
   return loadPaginatedD1Section(db, {
     section: 'archived',
     selectSql: `
@@ -836,11 +643,11 @@ async function loadArchivedProfiles(db, filters, pagination, warnings) {
         restore_until,
         deleted_by,
         delete_reason
-      FROM admin_deleted_profiles${archivedFilter.clause}
+      FROM admin_deleted_profiles
+      WHERE restored_at IS NULL AND purged_at IS NULL
       ORDER BY deleted_at DESC
     `,
-    countSql: `SELECT COUNT(*) AS total FROM admin_deleted_profiles${archivedFilter.clause}`,
-    bindings: archivedFilter.bindings,
+    countSql: `SELECT COUNT(*) AS total FROM admin_deleted_profiles WHERE restored_at IS NULL AND purged_at IS NULL`,
     page: pagination.page,
     pageSize: pagination.pageSize,
     warnings,
@@ -848,77 +655,59 @@ async function loadArchivedProfiles(db, filters, pagination, warnings) {
   });
 }
 
-async function loadMemoryOptions(db, warnings) {
-  const rows = await queryAll(
-    db,
-    `
-      SELECT DISTINCT memory_key
-      FROM admin_memory_entries
-      ORDER BY memory_key ASC
-    `,
-    [],
-    'memory-options',
-    warnings,
-  );
-
-  return rows.map((row) => String(row?.memory_key || '')).filter(Boolean);
-}
-
 async function loadHealth(db, warnings, { auditAvailable }) {
   const now = Date.now();
+  const nowIso = new Date(now).toISOString();
   const archiveWindowEnd = new Date(now + 7 * DAY_IN_MS).toISOString();
-  const mappingRows = await queryAll(
-    db,
-    `
-      SELECT status, COUNT(*) AS total
-      FROM admin_name_mappings
-      GROUP BY status
-    `,
-    [],
-    'health-mappings',
-    warnings,
-  );
-  const userRows = await queryAll(
-    db,
-    `
-      SELECT status, COUNT(*) AS total
-      FROM admin_user_profiles
-      GROUP BY status
-    `,
-    [],
-    'health-users',
-    warnings,
-  );
-  const totals = await queryFirst(
-    db,
-    `
-      SELECT
-        (SELECT COUNT(*) FROM admin_memory_entries) AS total_memories,
-        (SELECT COUNT(*) FROM admin_user_profiles WHERE display_name = '') AS users_without_name,
-        (SELECT COUNT(*) FROM admin_user_profiles WHERE memory_count = 0) AS empty_profiles,
-        (SELECT COUNT(*) FROM admin_memory_entries WHERE expires_at IS NOT NULL AND expires_at <= ?) AS expiring_soon,
-        (SELECT COUNT(*) FROM admin_deleted_profiles WHERE restored_at IS NULL AND purged_at IS NULL) AS deleted_profiles,
-        (SELECT COUNT(*) FROM admin_deleted_profiles WHERE restored_at IS NULL AND purged_at IS NULL AND restore_until IS NOT NULL AND restore_until <= ?) AS expired_archives,
-        (SELECT COUNT(*) FROM admin_deleted_profiles WHERE restored_at IS NULL AND purged_at IS NULL AND restore_until IS NOT NULL AND restore_until > ? AND restore_until <= ?) AS archives_due_soon
-    `,
-    [
-      now + 7 * DAY_IN_MS,
-      new Date(now).toISOString(),
-      new Date(now).toISOString(),
-      archiveWindowEnd,
-    ],
-    'health-totals',
-    warnings,
-    {
-      total_memories: 0,
-      users_without_name: 0,
-      empty_profiles: 0,
-      expiring_soon: 0,
-      deleted_profiles: 0,
-      expired_archives: 0,
-      archives_due_soon: 0,
-    },
-  );
+  const [mappingRows, userRows, totals] = await Promise.all([
+    queryAll(
+      db,
+      `
+        SELECT status, COUNT(*) AS total
+        FROM admin_name_mappings
+        GROUP BY status
+      `,
+      [],
+      'health-mappings',
+      warnings,
+    ),
+    queryAll(
+      db,
+      `
+        SELECT status, COUNT(*) AS total
+        FROM admin_user_profiles
+        GROUP BY status
+      `,
+      [],
+      'health-users',
+      warnings,
+    ),
+    queryFirst(
+      db,
+      `
+        SELECT
+          (SELECT COUNT(*) FROM admin_memory_entries) AS total_memories,
+          (SELECT COUNT(*) FROM admin_user_profiles WHERE display_name = '') AS users_without_name,
+          (SELECT COUNT(*) FROM admin_user_profiles WHERE memory_count = 0) AS empty_profiles,
+          (SELECT COUNT(*) FROM admin_memory_entries WHERE expires_at IS NOT NULL AND expires_at <= ?) AS expiring_soon,
+          (SELECT COUNT(*) FROM admin_deleted_profiles WHERE restored_at IS NULL AND purged_at IS NULL) AS deleted_profiles,
+          (SELECT COUNT(*) FROM admin_deleted_profiles WHERE restored_at IS NULL AND purged_at IS NULL AND restore_until IS NOT NULL AND restore_until <= ?) AS expired_archives,
+          (SELECT COUNT(*) FROM admin_deleted_profiles WHERE restored_at IS NULL AND purged_at IS NULL AND restore_until IS NOT NULL AND restore_until > ? AND restore_until <= ?) AS archives_due_soon
+      `,
+      [now + 7 * DAY_IN_MS, nowIso, nowIso, archiveWindowEnd],
+      'health-totals',
+      warnings,
+      {
+        total_memories: 0,
+        users_without_name: 0,
+        empty_profiles: 0,
+        expiring_soon: 0,
+        deleted_profiles: 0,
+        expired_archives: 0,
+        archives_due_soon: 0,
+      },
+    ),
+  ]);
 
   const mappingCounts = Object.fromEntries(
     mappingRows.map((row) => [row.status || 'unknown', Number(row.total) || 0]),
@@ -978,7 +767,7 @@ function buildHealthFindings(health, warnings, storage) {
       'index_not_ready',
       'error',
       'Admin-Index nicht bereit',
-      'Die D1-Indexdaten sind noch nicht vollständig synchronisiert.',
+      'Die D1-Indexdaten sind noch nicht vollständig aktualisiert.',
     );
   }
 
@@ -1206,10 +995,6 @@ export async function onRequestGet(context) {
           status: 'error',
         },
         auditLogs: [],
-        filters: parseFilters(new URL(request.url)),
-        options: {
-          memoryKeys: [],
-        },
         summary: {
           totalLikes: 0,
           topProjectId: '',
@@ -1266,77 +1051,46 @@ export async function onRequestGet(context) {
     const url = new URL(request.url);
     const compactMode = isCompactMode(url);
     const requestedFolder = parseRequestedFolder(url);
-    const filters = parseFilters(url);
-    const usersPagination = parsePaginationParams(url, 'users', {
+    const usersPagination = resolvePagination(url, 'users', {
       defaultPageSize: DEFAULT_PAGE_SIZES.users,
       maxPageSize: 100,
     });
-    const mappingsPagination = parsePaginationParams(url, 'mappings', {
+    const mappingsPagination = resolvePagination(url, 'mappings', {
       defaultPageSize: DEFAULT_PAGE_SIZES.mappings,
       maxPageSize: 100,
     });
-    const likesPagination = compactMode
-      ? paginateArray([], {
-          page: 1,
-          pageSize: DEFAULT_PAGE_SIZES.likes,
-        }).pagination
-      : parsePaginationParams(url, 'likes', {
-          defaultPageSize: DEFAULT_PAGE_SIZES.likes,
-          maxPageSize: 50,
-        });
-    const likeEventsPagination = compactMode
-      ? paginateArray([], {
-          page: 1,
-          pageSize: DEFAULT_PAGE_SIZES.likeEvents,
-        }).pagination
-      : parsePaginationParams(url, 'likeEvents', {
-          defaultPageSize: DEFAULT_PAGE_SIZES.likeEvents,
-          maxPageSize: 100,
-        });
-    const commentsPagination = compactMode
-      ? paginateArray([], {
-          page: 1,
-          pageSize: DEFAULT_PAGE_SIZES.comments,
-        }).pagination
-      : parsePaginationParams(url, 'comments', {
-          defaultPageSize: DEFAULT_PAGE_SIZES.comments,
-          maxPageSize: 100,
-        });
-    const contactsPagination = compactMode
-      ? paginateArray([], {
-          page: 1,
-          pageSize: DEFAULT_PAGE_SIZES.contacts,
-        }).pagination
-      : parsePaginationParams(url, 'contacts', {
-          defaultPageSize: DEFAULT_PAGE_SIZES.contacts,
-          maxPageSize: 100,
-        });
-    const auditPagination = compactMode
-      ? paginateArray([], {
-          page: 1,
-          pageSize: DEFAULT_PAGE_SIZES.audit,
-        }).pagination
-      : parsePaginationParams(url, 'audit', {
-          defaultPageSize: DEFAULT_PAGE_SIZES.audit,
-          maxPageSize: 100,
-        });
-    const archivedPagination = compactMode
-      ? paginateArray([], {
-          page: 1,
-          pageSize: DEFAULT_PAGE_SIZES.archived,
-        }).pagination
-      : parsePaginationParams(url, 'archived', {
-          defaultPageSize: DEFAULT_PAGE_SIZES.archived,
-          maxPageSize: 100,
-        });
+    const likesPagination = resolvePagination(url, 'likes', {
+      compactMode,
+      defaultPageSize: DEFAULT_PAGE_SIZES.likes,
+      maxPageSize: 50,
+    });
+    const likeEventsPagination = resolvePagination(url, 'likeEvents', {
+      compactMode,
+      defaultPageSize: DEFAULT_PAGE_SIZES.likeEvents,
+      maxPageSize: 100,
+    });
+    const commentsPagination = resolvePagination(url, 'comments', {
+      compactMode,
+      defaultPageSize: DEFAULT_PAGE_SIZES.comments,
+      maxPageSize: 100,
+    });
+    const contactsPagination = resolvePagination(url, 'contacts', {
+      compactMode,
+      defaultPageSize: DEFAULT_PAGE_SIZES.contacts,
+      maxPageSize: 100,
+    });
+    const auditPagination = resolvePagination(url, 'audit', {
+      compactMode,
+      defaultPageSize: DEFAULT_PAGE_SIZES.audit,
+      maxPageSize: 100,
+    });
+    const archivedPagination = resolvePagination(url, 'archived', {
+      compactMode,
+      defaultPageSize: DEFAULT_PAGE_SIZES.archived,
+      maxPageSize: 100,
+    });
 
     const { storage } = await ensureAdminIndexesReady(db, env, warnings);
-    const filteredUserSummary = await loadFilteredUserSummary(
-      db,
-      filters,
-      warnings,
-    );
-
     const loadMemoriesSection = requestedFolder === 'memories';
     const loadMappingsSection = requestedFolder === 'mappings';
     const loadLikesSection = !compactMode && requestedFolder === 'likes';
@@ -1347,161 +1101,105 @@ export async function onRequestGet(context) {
     const loadAuditSection = !compactMode && requestedFolder === 'audit';
     const loadArchivedSection = !compactMode && requestedFolder === 'archived';
 
-    const usersResult = loadMemoriesSection
-      ? await loadUsers(db, filters, usersPagination, warnings)
-      : buildEmptySectionResult(
-          filteredUserSummary.totalUsers,
-          usersPagination,
-        );
-
-    let mappingsResult;
-    if (loadMappingsSection) {
-      mappingsResult = await loadNameMappings(
-        db,
-        filters,
-        mappingsPagination,
-        warnings,
-      );
-    } else {
-      const mappingsTotal = await loadMappingsTotal(db, filters, warnings);
-      mappingsResult = buildEmptySectionResult(
-        mappingsTotal.total,
-        mappingsPagination,
-        mappingsTotal.available,
-      );
-    }
-
-    let resolvedLikesResult;
-    if (compactMode) {
-      resolvedLikesResult = buildEmptySectionResult(0, likesPagination, true, {
+    const userSummaryPromise = loadUserSummary(db, warnings);
+    const usersResultPromise = userSummaryPromise.then((userSummary) =>
+      loadMemoriesSection
+        ? loadUsers(db, usersPagination, warnings)
+        : buildEmptySectionResult(userSummary.totalUsers, usersPagination),
+    );
+    const mappingsResultPromise = resolveOptionalSection({
+      loadRequested: loadMappingsSection,
+      pagination: mappingsPagination,
+      loadSection: () => loadNameMappings(db, mappingsPagination, warnings),
+      loadSummary: () => loadMappingsTotal(db, warnings),
+    });
+    const resolvedLikesResultPromise = resolveOptionalSection({
+      compactMode,
+      loadRequested: loadLikesSection,
+      pagination: likesPagination,
+      loadSection: () => loadLikes(db, likesPagination, warnings),
+      loadSummary: async () => {
+        const summary = await loadLikesSummary(db, warnings);
+        return {
+          total: summary.totalRows,
+          available: summary.available,
+          extras: {
+            totalLikes: summary.totalLikes,
+            topProject: summary.topProject,
+          },
+        };
+      },
+      compactExtras: {
         totalLikes: 0,
         topProject: null,
-      });
-    } else if (loadLikesSection) {
-      resolvedLikesResult = await loadLikes(
-        db,
-        filters,
-        likesPagination,
-        warnings,
-      );
-    } else {
-      const likesSummary = await loadLikesSummary(db, filters, warnings);
-      resolvedLikesResult = buildEmptySectionResult(
-        likesSummary.totalRows,
-        likesPagination,
-        likesSummary.available,
-        {
-          totalLikes: likesSummary.totalLikes,
-          topProject: likesSummary.topProject,
-        },
-      );
-    }
-
-    let resolvedCommentsResult;
-    if (compactMode) {
-      resolvedCommentsResult = buildEmptySectionResult(0, commentsPagination);
-    } else if (loadCommentsSection) {
-      resolvedCommentsResult = await loadComments(
-        db,
-        filters,
-        commentsPagination,
-        warnings,
-      );
-    } else {
-      const commentsTotal = await loadCommentsTotal(db, filters, warnings);
-      resolvedCommentsResult = buildEmptySectionResult(
-        commentsTotal.total,
-        commentsPagination,
-        commentsTotal.available,
-      );
-    }
-
-    let resolvedLikeEventsResult;
-    if (compactMode) {
-      resolvedLikeEventsResult = buildEmptySectionResult(
-        0,
-        likeEventsPagination,
-      );
-    } else if (loadLikeEventsSection) {
-      resolvedLikeEventsResult = await loadLikeEvents(
-        db,
-        filters,
-        likeEventsPagination,
-        warnings,
-      );
-    } else {
-      const likeEventsTotal = await loadLikeEventsTotal(db, filters, warnings);
-      resolvedLikeEventsResult = buildEmptySectionResult(
-        likeEventsTotal.total,
-        likeEventsPagination,
-        likeEventsTotal.available,
-      );
-    }
-
-    let resolvedContactsResult;
-    if (compactMode) {
-      resolvedContactsResult = buildEmptySectionResult(0, contactsPagination);
-    } else if (loadContactsSection) {
-      resolvedContactsResult = await loadContacts(
-        db,
-        filters,
-        contactsPagination,
-        warnings,
-      );
-    } else {
-      const contactsTotal = await loadContactsTotal(db, filters, warnings);
-      resolvedContactsResult = buildEmptySectionResult(
-        contactsTotal.total,
-        contactsPagination,
-        contactsTotal.available,
-      );
-    }
-
-    let resolvedAuditResult;
-    if (compactMode) {
-      resolvedAuditResult = buildEmptySectionResult(0, auditPagination, false);
-    } else if (loadAuditSection) {
-      resolvedAuditResult = await loadAuditLogs(
-        db,
-        filters,
-        auditPagination,
-        warnings,
-      );
-    } else {
-      const auditTotal = await loadAuditTotal(db, filters, warnings);
-      resolvedAuditResult = buildEmptySectionResult(
-        auditTotal.total,
-        auditPagination,
-        auditTotal.available,
-      );
-    }
-
-    let resolvedArchivedResult;
-    if (compactMode) {
-      resolvedArchivedResult = buildEmptySectionResult(0, archivedPagination);
-    } else if (loadArchivedSection) {
-      resolvedArchivedResult = await loadArchivedProfiles(
-        db,
-        filters,
-        archivedPagination,
-        warnings,
-      );
-    } else {
-      const archivedTotal = await loadArchivedTotal(db, filters, warnings);
-      resolvedArchivedResult = buildEmptySectionResult(
-        archivedTotal.total,
-        archivedPagination,
-        archivedTotal.available,
-      );
-    }
-
-    const memoryKeys =
-      loadMemoriesSection && !compactMode
-        ? await loadMemoryOptions(db, warnings)
-        : [];
-    const health = await loadHealth(db, warnings, {
-      auditAvailable: resolvedAuditResult.available,
+      },
     });
+    const resolvedCommentsResultPromise = resolveOptionalSection({
+      compactMode,
+      loadRequested: loadCommentsSection,
+      pagination: commentsPagination,
+      loadSection: () => loadComments(db, commentsPagination, warnings),
+      loadSummary: () => loadCommentsTotal(db, warnings),
+    });
+    const resolvedLikeEventsResultPromise = resolveOptionalSection({
+      compactMode,
+      loadRequested: loadLikeEventsSection,
+      pagination: likeEventsPagination,
+      loadSection: () => loadLikeEvents(db, likeEventsPagination, warnings),
+      loadSummary: () => loadLikeEventsTotal(db, warnings),
+    });
+    const resolvedContactsResultPromise = resolveOptionalSection({
+      compactMode,
+      loadRequested: loadContactsSection,
+      pagination: contactsPagination,
+      loadSection: () => loadContacts(db, contactsPagination, warnings),
+      loadSummary: () => loadContactsTotal(db, warnings),
+    });
+    const resolvedAuditResultPromise = resolveOptionalSection({
+      compactMode,
+      loadRequested: loadAuditSection,
+      pagination: auditPagination,
+      loadSection: () => loadAuditLogs(db, auditPagination, warnings),
+      loadSummary: () => loadAuditTotal(db, warnings),
+      compactAvailable: false,
+    });
+    const resolvedArchivedResultPromise = resolveOptionalSection({
+      compactMode,
+      loadRequested: loadArchivedSection,
+      pagination: archivedPagination,
+      loadSection: () => loadArchivedProfiles(db, archivedPagination, warnings),
+      loadSummary: () => loadArchivedTotal(db, warnings),
+    });
+    const healthPromise = resolvedAuditResultPromise.then(
+      (resolvedAuditResult) =>
+        loadHealth(db, warnings, {
+          auditAvailable: resolvedAuditResult.available,
+        }),
+    );
+
+    const [
+      userSummary,
+      usersResult,
+      mappingsResult,
+      resolvedLikesResult,
+      resolvedCommentsResult,
+      resolvedLikeEventsResult,
+      resolvedContactsResult,
+      resolvedAuditResult,
+      resolvedArchivedResult,
+      health,
+    ] = await Promise.all([
+      userSummaryPromise,
+      usersResultPromise,
+      mappingsResultPromise,
+      resolvedLikesResultPromise,
+      resolvedCommentsResultPromise,
+      resolvedLikeEventsResultPromise,
+      resolvedContactsResultPromise,
+      resolvedAuditResultPromise,
+      resolvedArchivedResultPromise,
+      healthPromise,
+    ]);
     health.kvAvailable = storage.kvAvailable;
     health.vectorizeConfigured = storage.vectorizeConfigured;
     health.aiConfigured = storage.aiConfigured;
@@ -1513,9 +1211,9 @@ export async function onRequestGet(context) {
         ? 'warning'
         : 'ok';
 
-    const filteredMemoryCount = filteredUserSummary.totalMemories;
-    const filteredIdentifiedUsers = filteredUserSummary.identifiedUsers;
-    const filteredAnonymousUsers = filteredUserSummary.anonymousUsers;
+    const filteredMemoryCount = userSummary.totalMemories;
+    const filteredIdentifiedUsers = userSummary.identifiedUsers;
+    const filteredAnonymousUsers = userSummary.anonymousUsers;
     const totalLikes = resolvedLikesResult.totalLikes || 0;
     const topProject = resolvedLikesResult.topProject || null;
 
@@ -1531,16 +1229,12 @@ export async function onRequestGet(context) {
       storage,
       health,
       auditLogs: resolvedAuditResult.items,
-      filters,
       folder: requestedFolder || '',
-      options: {
-        memoryKeys,
-      },
       summary: {
         totalLikes,
         topProjectId: topProject?.project_id || '',
         topProjectLikes: Number(topProject?.likes) || 0,
-        filteredUsers: filteredUserSummary.totalUsers,
+        filteredUsers: userSummary.totalUsers,
         filteredIdentifiedUsers,
         filteredAnonymousUsers,
         filteredMemoryCount,

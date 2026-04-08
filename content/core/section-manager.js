@@ -4,15 +4,15 @@
  */
 
 import { createLogger } from './logger.js';
+import { createObserver } from './dom-utils.js';
 import { fetchText } from './fetch.js';
-import { createObserver } from './utils.js';
 import { i18n } from './i18n.js';
 import { withViewTransition } from './view-transitions.js';
 import {
   VIEW_TRANSITION_ROOT_CLASSES,
   VIEW_TRANSITION_TYPES,
-} from './view-transition-types.js';
-import { VIEW_TRANSITION_TIMINGS_MS } from './view-transition-timings.js';
+  VIEW_TRANSITION_TIMINGS_MS,
+} from './view-transition-constants.js';
 
 const log = createLogger('SectionManager');
 const SECTION_SWAP_VT_NAME = 'section-swap-target';
@@ -144,10 +144,11 @@ export class SectionManager {
     document
       .querySelectorAll('section[data-section-src]')
       .forEach((section) => {
-        if (section.dataset.eager !== undefined) {
+        const el = /** @type {HTMLElement} */ (section);
+        if (el.dataset.eager !== undefined) {
           this.loadSection(section);
         } else {
-          this._observer ??= createObserver(
+          /** @type {any} */ (this)._observer ??= createObserver(
             (entries, obs) => {
               entries.forEach((entry) => {
                 if (entry.isIntersecting) {
@@ -158,7 +159,7 @@ export class SectionManager {
             },
             { rootMargin: '200px' },
           );
-          this._observer.observe(section);
+          /** @type {any} */ (this)._observer.observe(section);
         }
       });
 

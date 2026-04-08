@@ -1,4 +1,4 @@
-import { createLogger } from '../../../core/logger.js';
+import { createLogger } from '#core/logger.js';
 
 const log = createLogger('CardManager');
 
@@ -47,6 +47,27 @@ export class CardManager {
     this._boundPointerUp = null;
   }
 
+  _getCardTextureScale() {
+    const dpr = Math.min(globalThis.window?.devicePixelRatio || 1, 2);
+    const vw = globalThis.window?.innerWidth || 1440;
+    const vh = globalThis.window?.innerHeight || 900;
+    let scale = dpr * 1.35;
+
+    if (vw <= 560) scale *= 0.78;
+    else if (vw <= 960) scale *= 0.92;
+
+    if (vh < 760) scale *= 0.92;
+
+    return Math.max(2, Math.min(3, Math.round(scale)));
+  }
+
+  _getCardTextureAnisotropy() {
+    const maxAnisotropy =
+      this.renderer?.capabilities?.getMaxAnisotropy?.() ?? 0;
+
+    return Math.min(maxAnisotropy, 4);
+  }
+
   // Convert a vertical pixel offset to world-space Y delta at z ~= 0 using the current camera
   _pixelsToWorldY(pixels) {
     if (!this.renderer || !this.camera) return 0;
@@ -80,14 +101,607 @@ export class CardManager {
     return this._pv2.y - this._pv1.y;
   }
 
+  _pixelsToWorldX(pixels) {
+    if (!this.renderer || !this.camera) return 0;
+
+    const canvasRect = this.renderer.domElement.getBoundingClientRect();
+    const width = canvasRect.width || (globalThis.window?.innerWidth ?? 800);
+
+    if (!width) return 0;
+
+    const ndcDelta = (pixels / width) * 2;
+
+    if (!this._ph1) this._ph1 = new this.THREE.Vector3();
+    if (!this._ph2) this._ph2 = new this.THREE.Vector3();
+
+    this._ph1.set(0, 0, 0.5);
+    this._ph2.set(ndcDelta, 0, 0.5);
+
+    this._ph1.unproject(this.camera);
+    this._ph2.unproject(this.camera);
+
+    return this._ph2.x - this._ph1.x;
+  }
+
+  _setCardHoverMeta(card, hoverLift) {
+    card.userData.originalY = card.position.y;
+    card.userData.hoverY = card.position.y + hoverLift;
+    card.userData.originalZ = card.position.z;
+  }
+
+  _getCardScreenCenter(card) {
+    if (!this.renderer || !this.camera || !card) return null;
+
+    const canvasRect = this.renderer.domElement.getBoundingClientRect();
+    const width = canvasRect.width;
+    const height = canvasRect.height;
+
+    if (!width || !height) return null;
+
+    if (!this._screenVec) this._screenVec = new this.THREE.Vector3();
+
+    card.updateMatrixWorld();
+    card.getWorldPosition(this._screenVec);
+    this._screenVec.project(this.camera);
+
+    return {
+      x: (this._screenVec.x * 0.5 + 0.5) * width + canvasRect.left,
+      y: (-this._screenVec.y * 0.5 + 0.5) * height + canvasRect.top,
+    };
+  }
+
+  _nudgeCardOnScreen(card, deltaXPx = 0, deltaYPx = 0) {
+    const moveAxis = (axis, pixels, toWorld, screenKey) => {
+      if (!pixels) return;
+
+      const magnitude = Math.abs(toWorld.call(this, Math.abs(pixels)));
+
+      if (!magnitude) return;
+
+      const targetDirection = Math.sign(pixels);
+      const original = card.position[axis];
+      const baseCenter = this._getCardScreenCenter(card);
+
+      if (!baseCenter) return;
+
+      /** @type {{ sign: number; screenShift: number } | null} */
+      let bestCandidate = null;
+
+      [1, -1].forEach((sign) => {
+        card.position[axis] = original + sign * magnitude;
+
+        const shiftedCenter = this._getCardScreenCenter(card);
+        const screenShift = shiftedCenter
+          ? shiftedCenter[screenKey] - baseCenter[screenKey]
+          : 0;
+
+        if (
+          Math.sign(screenShift) === targetDirection &&
+          Math.abs(screenShift) > 0.5
+        ) {
+          bestCandidate = {
+            sign,
+            screenShift,
+          };
+        }
+      });
+
+      card.position[axis] = original;
+
+      if (!bestCandidate) return;
+
+      const factor = Math.min(
+        2.8,
+        Math.max(0.7, Math.abs(pixels / bestCandidate.screenShift)),
+      );
+
+      card.position[axis] = original + bestCandidate.sign * magnitude * factor;
+    };
+
+    moveAxis('x', deltaXPx, this._pixelsToWorldX, 'x');
+    moveAxis('y', deltaYPx, this._pixelsToWorldY, 'y');
+  }
+
+  _expandRect(rect, paddingX, paddingY = paddingX) {
+    return {
+      left: rect.left - paddingX,
+      right: rect.right + paddingX,
+      top: rect.top - paddingY,
+      bottom: rect.bottom + paddingY,
+    };
+  }
+
+  _isStackedLayout(layoutMode) {
+    return layoutMode === 'phone' || layoutMode.startsWith('tablet');
+  }
+
+  _getLayoutMode(vw, vh) {
+    const isShortViewport = vh < 720;
+
+    if (vw <= 560 || (vw <= 720 && isShortViewport)) return 'phone';
+
+    if (vw <= 960) {
+      return vh > vw * 1.02 ? 'tablet-portrait' : 'tablet-landscape';
+    }
+
+    if (vw <= 1360 || vh < 820) return 'desktop-compact';
+
+    return 'desktop-wide';
+  }
+
+  _getUiSafeZones({ layoutMode }) {
+    if (typeof document === 'undefined') return [];
+
+    const stackedLayout = this._isStackedLayout(layoutMode);
+    const phoneLayout = layoutMode === 'phone';
+    const zones = [];
+
+    zones.push({
+      kind: 'top-band',
+      rect: {
+        left: 0,
+        right: window.innerWidth,
+        top: 0,
+        bottom: phoneLayout ? 114 : stackedLayout ? 104 : 88,
+      },
+      biasX: 0,
+      biasY: 1,
+      padding: phoneLayout ? 10 : stackedLayout ? 10 : 12,
+    });
+
+    const copy = document.querySelector('.features-copy');
+
+    if (copy) {
+      const rect = copy.getBoundingClientRect();
+
+      if (rect.width > 0 && rect.height > 0) {
+        zones.push({
+          kind: 'copy',
+          rect: this._expandRect(
+            rect,
+            phoneLayout ? 10 : stackedLayout ? 12 : 14,
+            phoneLayout ? 10 : stackedLayout ? 12 : 14,
+          ),
+          biasX: 1,
+          biasY: stackedLayout ? 1 : 0.35,
+          padding: 10,
+        });
+      }
+    }
+
+    const note = document.querySelector('.features-note');
+
+    if (note) {
+      const rect = note.getBoundingClientRect();
+
+      if (rect.width > 0 && rect.height > 0) {
+        zones.push({
+          kind: 'note',
+          rect: this._expandRect(
+            rect,
+            phoneLayout ? 10 : stackedLayout ? 12 : 14,
+            phoneLayout ? 10 : stackedLayout ? 12 : 12,
+          ),
+          biasX: stackedLayout ? 1 : -1,
+          biasY: -1,
+          padding: 10,
+        });
+      }
+    }
+
+    return zones;
+  }
+
+  _resolveUiSafeZones({ layoutMode }) {
+    const safeZones = this._getUiSafeZones({ layoutMode });
+
+    if (safeZones.length === 0) return;
+
+    for (let iteration = 0; iteration < 4; iteration++) {
+      this.alignCardsToCameraImmediate();
+      this.scene.updateMatrixWorld?.(true);
+
+      const rects = this.getCardScreenRects();
+      let adjusted = false;
+
+      this.cards.forEach((card, index) => {
+        const rect = rects[index];
+
+        if (!rect) return;
+
+        safeZones.forEach((zone) => {
+          if (zone.kind === 'top-band') {
+            if (rect.top < zone.rect.bottom) {
+              this._nudgeCardOnScreen(
+                card,
+                0,
+                zone.rect.bottom - rect.top + zone.padding,
+              );
+              adjusted = true;
+            }
+
+            return;
+          }
+
+          const overlapX =
+            Math.min(rect.right, zone.rect.right) -
+            Math.max(rect.left, zone.rect.left);
+          const overlapY =
+            Math.min(rect.bottom, zone.rect.bottom) -
+            Math.max(rect.top, zone.rect.top);
+
+          if (overlapX <= 0 || overlapY <= 0) return;
+
+          const moveX =
+            zone.biasX === 0
+              ? 0
+              : (overlapX + zone.padding) * Math.sign(zone.biasX);
+          const moveY =
+            zone.biasY === 0
+              ? 0
+              : (overlapY + zone.padding) * Math.sign(zone.biasY);
+
+          this._nudgeCardOnScreen(card, moveX, moveY);
+          adjusted = true;
+        });
+      });
+
+      if (!adjusted) break;
+    }
+  }
+
+  _resolveViewportBounds({ layoutMode }) {
+    if (!this.renderer || !this.camera || this.cards.length === 0) return;
+
+    const stackedLayout = this._isStackedLayout(layoutMode);
+    const phoneLayout = layoutMode === 'phone';
+    const copy = !stackedLayout
+      ? document.querySelector('.features-copy')
+      : null;
+    const copyRect = copy?.getBoundingClientRect?.();
+    const note = !stackedLayout
+      ? document.querySelector('.features-note')
+      : null;
+    const noteRectRaw = note?.getBoundingClientRect?.();
+    const noteRect =
+      !stackedLayout && noteRectRaw?.width
+        ? this._expandRect(noteRectRaw, 10, 8)
+        : null;
+    const leftBound = Math.max(
+      phoneLayout ? 10 : stackedLayout ? 14 : 26,
+      !stackedLayout && copyRect?.width ? copyRect.right + 24 : 0,
+    );
+    const rightBound =
+      window.innerWidth - (phoneLayout ? 10 : stackedLayout ? 14 : 46);
+    const topBound = phoneLayout ? 104 : stackedLayout ? 96 : 92;
+    const bottomBound =
+      window.innerHeight - (phoneLayout ? 82 : stackedLayout ? 88 : 118);
+
+    for (let iteration = 0; iteration < 6; iteration++) {
+      this.alignCardsToCameraImmediate();
+      this.scene.updateMatrixWorld?.(true);
+
+      const rects = this.getCardScreenRects();
+      let moved = false;
+
+      this.cards.forEach((card, index) => {
+        const rect = rects[index];
+
+        if (!rect) return;
+
+        let shiftX = 0;
+        let shiftY = 0;
+
+        if (rect.left < leftBound) shiftX += leftBound - rect.left;
+        if (rect.right > rightBound) shiftX -= rect.right - rightBound;
+        if (rect.top < topBound) shiftY += topBound - rect.top;
+        if (rect.bottom > bottomBound) shiftY -= rect.bottom - bottomBound;
+
+        if (noteRect) {
+          const overlapX =
+            Math.min(rect.right, noteRect.right) -
+            Math.max(rect.left, noteRect.left);
+          const overlapY =
+            Math.min(rect.bottom, noteRect.bottom) -
+            Math.max(rect.top, noteRect.top);
+
+          if (overlapX > 0 && overlapY > 0) {
+            shiftX -= overlapX + 36;
+          }
+        }
+
+        if (!shiftX && !shiftY) return;
+
+        this._nudgeCardOnScreen(card, shiftX, shiftY);
+        moved = true;
+      });
+
+      if (!moved) break;
+    }
+  }
+
+  _getDesktopStageOffsetX() {
+    if (typeof document === 'undefined') return 0;
+
+    const viewportWidth = globalThis.window?.innerWidth || 0;
+    if (!viewportWidth) return 0;
+
+    const copyRect = document
+      .querySelector('.features-copy')
+      ?.getBoundingClientRect?.();
+    const noteRect = document
+      .querySelector('.features-note')
+      ?.getBoundingClientRect?.();
+
+    const leftEdge = copyRect?.right
+      ? Math.min(viewportWidth - 180, copyRect.right + 42)
+      : viewportWidth * 0.28;
+    const rightEdge = noteRect?.left
+      ? Math.max(leftEdge + 220, noteRect.left - 56)
+      : viewportWidth - 72;
+    const stageCenterPx = (leftEdge + rightEdge) * 0.5;
+    const viewportCenterPx = viewportWidth * 0.5;
+
+    return this._pixelsToWorldX(stageCenterPx - viewportCenterPx);
+  }
+
+  _applyLayoutPositions({
+    positions,
+    scale,
+    spreadX = 1,
+    spreadY = 1,
+    offsetX = 0,
+    offsetY = 0,
+    hoverLift = 0.2,
+  }) {
+    this.cards.forEach((card, idx) => {
+      const position = positions[idx] || positions[positions.length - 1];
+      const cardScale = scale * (position.scale ?? 1);
+      const x = position.x * spreadX + offsetX;
+      const y = position.y * spreadY + offsetY;
+      const z = position.z ?? 0;
+
+      card.scale.setScalar(cardScale);
+      card.position.set(x, y, z);
+      card.userData.layoutAnchor = { x, y, z, scale: cardScale, hoverLift };
+
+      this._setCardHoverMeta(card, hoverLift);
+    });
+  }
+
+  _applyResponsiveLayout(vw, vh, layoutMode) {
+    const safeAreaTop =
+      parseFloat(
+        getComputedStyle(document.documentElement).getPropertyValue(
+          '--safe-top',
+        ),
+      ) || 0;
+
+    if (layoutMode === 'phone') {
+      this._applyLayoutPositions({
+        scale: Math.min(0.92, Math.max(0.74, Math.min(vw / 420, vh / 860))),
+        spreadX: Math.min(1.02, Math.max(0.92, vw / 420)),
+        spreadY: Math.min(1.04, Math.max(0.92, vh / 860)),
+        offsetY: -this._pixelsToWorldY(88 + safeAreaTop),
+        hoverLift: 0.16,
+        positions: [
+          { x: -1.28, y: 1.18, z: 0.18, scale: 0.84 },
+          { x: 1.24, y: 1.34, z: 0.28, scale: 0.9 },
+          { x: -1.08, y: -1.24, z: 0.08, scale: 0.82 },
+          { x: 1.12, y: -1.02, z: 0.16, scale: 0.84 },
+          { x: 0, y: -3.58, z: 0.12, scale: 0.9 },
+        ],
+      });
+      return;
+    }
+
+    if (layoutMode === 'tablet-portrait') {
+      this._applyLayoutPositions({
+        scale: Math.min(1, Math.max(0.82, Math.min(vw / 780, vh / 980))),
+        spreadX: Math.min(1.08, Math.max(0.98, vw / 820)),
+        spreadY: Math.min(1.06, Math.max(0.94, vh / 980)),
+        offsetY: -this._pixelsToWorldY(72 + safeAreaTop),
+        hoverLift: 0.18,
+        positions: [
+          { x: -1.74, y: 1.62, z: 0.12, scale: 0.88 },
+          { x: 1.68, y: 1.82, z: 0.24, scale: 0.95 },
+          { x: -1.38, y: -0.96, z: 0.08, scale: 0.86 },
+          { x: 1.42, y: -0.78, z: 0.14, scale: 0.88 },
+          { x: 0.04, y: -3.42, z: 0.1, scale: 0.94 },
+        ],
+      });
+      return;
+    }
+
+    if (layoutMode === 'tablet-landscape') {
+      this._applyLayoutPositions({
+        scale: Math.min(0.98, Math.max(0.82, Math.min(vw / 1040, vh / 760))),
+        spreadX: Math.min(1.02, Math.max(0.95, vw / 960)),
+        spreadY: Math.min(1.05, Math.max(0.94, vh / 760)),
+        offsetY: -this._pixelsToWorldY(68 + safeAreaTop),
+        hoverLift: 0.18,
+        positions: [
+          { x: -2.18, y: 1.3, z: 0.06, scale: 0.84 },
+          { x: -0.06, y: 1.54, z: 0.16, scale: 0.95 },
+          { x: 2.18, y: 1.02, z: 0.08, scale: 0.84 },
+          { x: -1.32, y: -1.28, z: 0.02, scale: 0.86 },
+          { x: 1.38, y: -1.56, z: 0.08, scale: 0.88 },
+        ],
+      });
+      return;
+    }
+
+    if (layoutMode === 'desktop-compact') {
+      const offsetX = this._getDesktopStageOffsetX();
+
+      this._applyLayoutPositions({
+        scale: Math.min(0.92, Math.max(0.8, Math.min(vw / 1320, vh / 860))),
+        spreadX: 1,
+        spreadY: 1,
+        offsetX,
+        hoverLift: 0.2,
+        positions: [
+          { x: -2.58, y: 1.72, z: 0.04, scale: 0.84 },
+          { x: 0, y: 1.92, z: 0.16, scale: 0.9 },
+          { x: 2.58, y: 1.72, z: 0.08, scale: 0.84 },
+          { x: -1.34, y: -1.02, z: 0.02, scale: 0.86 },
+          { x: 1.34, y: -1.12, z: 0.1, scale: 0.88 },
+        ],
+      });
+      return;
+    }
+
+    const offsetX = this._getDesktopStageOffsetX();
+
+    this._applyLayoutPositions({
+      scale: Math.min(0.96, Math.max(0.84, Math.min(vw / 1520, vh / 940))),
+      spreadX: 1,
+      spreadY: 1,
+      offsetX,
+      hoverLift: 0.22,
+      positions: [
+        { x: -2.84, y: 1.84, z: 0.05, scale: 0.86 },
+        { x: 0, y: 2.02, z: 0.18, scale: 0.92 },
+        { x: 2.84, y: 1.84, z: 0.08, scale: 0.86 },
+        { x: -1.48, y: -1.1, z: 0.03, scale: 0.88 },
+        { x: 1.48, y: -1.24, z: 0.12, scale: 0.9 },
+      ],
+    });
+  }
+
+  _compactCardCluster({ layoutMode }) {
+    if (!this.renderer || !this.camera || this.cards.length === 0) return;
+
+    const stackedLayout = this._isStackedLayout(layoutMode);
+    const phoneLayout = layoutMode === 'phone';
+    const pullFactor = phoneLayout ? 0.3 : stackedLayout ? 0.22 : 0;
+    const scalePull = phoneLayout ? 0.36 : stackedLayout ? 0.28 : 0;
+    const maxWorldPullX = this._pixelsToWorldX(
+      phoneLayout ? 34 : stackedLayout ? 26 : 14,
+    );
+    const maxWorldPullY = Math.abs(
+      this._pixelsToWorldY(phoneLayout ? 28 : stackedLayout ? 22 : 12),
+    );
+
+    this.cards.forEach((card) => {
+      const anchor = card.userData.layoutAnchor;
+
+      if (!anchor) return;
+
+      const deltaX = anchor.x - card.position.x;
+      const deltaY = anchor.y - card.position.y;
+      const moveX =
+        Math.sign(deltaX) *
+        Math.min(Math.abs(deltaX) * pullFactor, maxWorldPullX);
+      const moveY =
+        Math.sign(deltaY) *
+        Math.min(Math.abs(deltaY) * pullFactor, maxWorldPullY);
+
+      card.position.x += moveX;
+      card.position.y += moveY;
+      card.position.z += (anchor.z - card.position.z) * 0.24;
+      card.scale.setScalar(
+        card.scale.x + (anchor.scale - card.scale.x) * scalePull,
+      );
+
+      this._setCardHoverMeta(card, anchor.hoverLift ?? 0.2);
+    });
+  }
+
+  _resolveCardOverlaps({ layoutMode }) {
+    if (!this.renderer || !this.camera || this.cards.length < 2) return;
+
+    const stackedLayout = this._isStackedLayout(layoutMode);
+    const phoneLayout = layoutMode === 'phone';
+    const minGapPx = phoneLayout ? 20 : stackedLayout ? 18 : 60;
+    const horizontalWeight = phoneLayout ? 0.34 : stackedLayout ? 0.42 : 0.62;
+    const verticalWeight = phoneLayout ? 0.52 : stackedLayout ? 0.34 : 0.44;
+    const scaleStep = phoneLayout ? 0.018 : stackedLayout ? 0.014 : 0.01;
+    const minScale = phoneLayout ? 0.68 : stackedLayout ? 0.76 : 0.78;
+
+    for (let iteration = 0; iteration < 14; iteration++) {
+      this.alignCardsToCameraImmediate();
+      this.scene.updateMatrixWorld?.(true);
+
+      const rects = this.getCardScreenRects();
+      let overlapCount = 0;
+
+      for (let i = 0; i < rects.length; i++) {
+        for (let j = i + 1; j < rects.length; j++) {
+          const rectA = rects[i];
+          const rectB = rects[j];
+          const overlapX =
+            Math.min(rectA.right, rectB.right) -
+            Math.max(rectA.left, rectB.left);
+          const overlapY =
+            Math.min(rectA.bottom, rectB.bottom) -
+            Math.max(rectA.top, rectB.top);
+          const pushX = Math.max(0, overlapX + minGapPx);
+          const pushY = Math.max(0, overlapY + minGapPx);
+
+          if (pushX === 0 || pushY === 0) continue;
+
+          overlapCount++;
+
+          const cardA = this.cards[i];
+          const cardB = this.cards[j];
+          const centerAX = (rectA.left + rectA.right) * 0.5;
+          const centerBX = (rectB.left + rectB.right) * 0.5;
+          const centerAY = (rectA.top + rectA.bottom) * 0.5;
+          const centerBY = (rectB.top + rectB.bottom) * 0.5;
+          const dirX = centerAX <= centerBX ? -1 : 1;
+          const dirY = centerAY <= centerBY ? 1 : -1;
+          const worldPushX = this._pixelsToWorldX(
+            pushX * 0.5 * horizontalWeight,
+          );
+          const worldPushY = this._pixelsToWorldY(pushY * 0.5 * verticalWeight);
+
+          if (worldPushX > 0) {
+            cardA.position.x += dirX * worldPushX;
+            cardB.position.x -= dirX * worldPushX;
+          }
+
+          if (worldPushY > 0) {
+            cardA.position.y += dirY * worldPushY;
+            cardB.position.y -= dirY * worldPushY;
+          }
+        }
+      }
+
+      if (overlapCount === 0) break;
+
+      if (iteration > 0 && iteration % 3 === 2) {
+        let scaledDown = false;
+
+        this.cards.forEach((card) => {
+          const nextScale = Math.max(minScale, card.scale.x - scaleStep);
+
+          if (nextScale < card.scale.x) {
+            card.scale.setScalar(nextScale);
+            scaledDown = true;
+          }
+        });
+
+        if (!scaledDown) break;
+      }
+    }
+
+    this.cards.forEach((card) => {
+      this._setCardHoverMeta(
+        card,
+        card.userData.layoutAnchor?.hoverLift ?? (stackedLayout ? 0.18 : 0.24),
+      );
+    });
+  }
+
   initFromData(dataArray) {
     if (this.cards.length > 0) return;
     if (!Array.isArray(dataArray) || dataArray.length === 0) return;
 
     const cardCount = dataArray.length;
     // Base dimensions for the card plane
-    const baseW = 2.2;
-    const baseH = 2.8;
+    const baseW = 2.54;
+    const baseH = 3.42;
 
     this._baseW = baseW;
     this._baseH = baseH;
@@ -115,6 +729,9 @@ export class CardManager {
         subtitle: d.subtitle || '',
         text: d.text || '',
         link: d.link || '#',
+        cta: d.cta || '',
+        meta: d.meta || '',
+        routeLabel: d.routeLabel || '',
         iconChar: d.iconChar || '',
         color: positions[index].color,
         position: positions[index],
@@ -135,87 +752,20 @@ export class CardManager {
       if (this._resizeRAF) cancelAnimationFrame(this._resizeRAF);
       this._resizeRAF = requestAnimationFrame(() => {
         const vw = window.innerWidth;
-        const isMobile = vw < 768;
+        const vh = window.innerHeight;
+        const layoutMode = this._getLayoutMode(vw, vh);
 
-        this.cards.forEach((card, idx) => {
-          if (isMobile) {
-            // === Mobile Layout (Elegant Centered Grid) ===
-            // Calculate a significantly larger safe scale
-            const adaptiveBase = vw / 320;
-            const scale = Math.min(1.15, Math.max(0.8, adaptiveBase));
+        this._applyResponsiveLayout(vw, vh, layoutMode);
 
-            // Grid logic: 2 columns, perfectly center the 5th odd card
-            const isLast = idx === 4;
-            const col = isLast ? 0.5 : idx % 2; // 0=left, 1=right, 0.5=center
-            const row = Math.floor(idx / 2); // 0, 1, 2
+        this.alignCardsToCameraImmediate();
+        this._resolveUiSafeZones({ layoutMode });
+        this._resolveCardOverlaps({ layoutMode });
+        this._resolveViewportBounds({ layoutMode });
+        this._compactCardCluster({ layoutMode });
+        this._resolveCardOverlaps({ layoutMode });
+        this._resolveUiSafeZones({ layoutMode });
+        this._resolveViewportBounds({ layoutMode });
 
-            // Spacing adjusted for much larger cards
-            const colSpacing = 2.6 * scale;
-            const x = (col - 0.5) * colSpacing;
-
-            const rowSpacing = 3.2 * scale;
-            // Shift the starting Y position down (from 1.2 to 0.8) so it doesn't hit the top nav
-            const y = (0.8 - row) * rowSpacing;
-
-            // Header offset to ensure we safely clear the mobile nav
-            const headerPixels = 80;
-            const safeAreaTop =
-              parseFloat(
-                getComputedStyle(document.documentElement).getPropertyValue(
-                  '--safe-top',
-                ),
-              ) || 0;
-            const totalHeaderOffset = headerPixels + safeAreaTop;
-            const headerWorldOffset = this._pixelsToWorldY
-              ? this._pixelsToWorldY(totalHeaderOffset)
-              : (totalHeaderOffset / window.innerHeight) * 10;
-
-            card.scale.setScalar(scale);
-            card.position.x = x;
-            card.position.y = y - headerWorldOffset;
-            card.position.z = 0; // Strictly flat to guarantee no z-overlap illusions
-
-            // Metadata for hover
-            card.userData.originalY = card.position.y;
-            card.userData.hoverY = card.position.y + 0.15;
-            card.userData.originalZ = 0;
-          } else {
-            // === Desktop Layout (Grid: 3 oben, 2 unten) ===
-            // Größere Kartengröße für besseren visuellen Impact
-            const baseScale = 1.15;
-            const adaptiveScale = Math.min(1, vw / 1400);
-            const finalScale = baseScale * Math.max(0.75, adaptiveScale);
-
-            // Grid-Abstände mit optimiertem Spacing
-            const cardSpacingX = 3.0; // Horizontaler Abstand zwischen Karten
-            const cardSpacingY = 3.2; // Vertikaler Abstand zwischen Zeilen
-
-            // Layout: 3 Karten oben, 2 unten (versetzt zentriert)
-            let x, y;
-
-            if (idx < 3) {
-              // Obere Reihe: 3 Karten
-              const colIndex = idx; // 0, 1, 2
-              x = (colIndex - 1) * cardSpacingX; // -2.6, 0, +2.6
-              y = cardSpacingY / 2; // Oben
-            } else {
-              // Untere Reihe: 2 Karten (versetzt zentriert)
-              const colIndex = idx - 3; // 0, 1
-              x = (colIndex - 0.5) * cardSpacingX; // -1.3, +1.3
-              y = -cardSpacingY / 2; // Unten
-            }
-
-            card.scale.setScalar(finalScale);
-            card.position.x = x;
-            card.position.y = y;
-            card.position.z = 0; // Keine Tiefenvariation
-
-            // Reset metadata
-            card.userData.originalY = y;
-            card.userData.hoverY = y + 0.3; // Sanfte Hebung beim Hover
-            card.userData.originalZ = 0;
-          }
-        });
         this._resizeRAF = null;
       });
     };
@@ -265,18 +815,18 @@ export class CardManager {
   }
 
   createCardTexture(data) {
-    const DPR = globalThis.window?.devicePixelRatio || 1;
-    // MAX QUALITY: Always use at least DPR * 2, minimum 4 for sharpness
-    // We intentionally ignore memory constraints to force maximum quality as requested.
-    const S = Math.max(Math.ceil(DPR * 2), 4);
+    const S = this._getCardTextureScale();
 
-    const W = 512 * S;
-    const H = 700 * S;
+    const W = 700 * S;
+    const H = 944 * S;
 
     const keyObj = {
       title: (data.title || '').slice(0, 256),
       subtitle: (data.subtitle || '').slice(0, 128),
       text: (data.text || '').slice(0, 512),
+      cta: (data.cta || '').slice(0, 128),
+      meta: (data.meta || '').slice(0, 128),
+      routeLabel: (data.routeLabel || '').slice(0, 64),
       iconChar: data.iconChar || '',
       color: data.color || '#ffffff',
       scale: S, // Include scale in key
@@ -302,104 +852,386 @@ export class CardManager {
         canvas.height = H;
       }
       // Transparency required for rounded corners
-      ctx = canvas.getContext('2d');
+      ctx =
+        /** @type {CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D} */ (
+          canvas.getContext('2d')
+        );
     } catch (e) {
       log.warn('CardManager: canvas creation failed', e);
     }
 
     if (!ctx) {
       log.warn('CardManager: 2D canvas context unavailable');
+      if (!canvas) {
+        canvas =
+          typeof OffscreenCanvas !== 'undefined'
+            ? new OffscreenCanvas(1, 1)
+            : document.createElement('canvas');
+        if (typeof OffscreenCanvas === 'undefined') {
+          canvas.width = 1;
+          canvas.height = 1;
+        }
+      }
       const texture = new this.THREE.CanvasTexture(canvas);
       texture.needsUpdate = true;
       return texture;
     }
 
-    // 1. Background (Glass)
-    const gradient = ctx.createLinearGradient(0, 0, W, H);
-    gradient.addColorStop(0, 'rgba(20, 30, 60, 0.92)'); // Slightly more opaque for readability
-    gradient.addColorStop(1, 'rgba(10, 15, 30, 0.96)');
-    ctx.fillStyle = gradient;
+    const titleFontFamily =
+      '"Space Grotesk", "SF Pro Display", Arial, sans-serif';
+    const bodyFontFamily = '"Manrope", "Inter", Arial, sans-serif';
+    const accent = this.hexToRgb(data.color);
+    const accentStrong = `rgba(${accent.r}, ${accent.g}, ${accent.b}, 0.92)`;
+    const accentMedium = `rgba(${accent.r}, ${accent.g}, ${accent.b}, 0.42)`;
+    const accentSoft = `rgba(${accent.r}, ${accent.g}, ${accent.b}, 0.16)`;
+    const accentGlow = `rgba(${accent.r}, ${accent.g}, ${accent.b}, 0.26)`;
+    const textStrong = 'rgba(248, 250, 255, 0.98)';
+    const textMuted = 'rgba(236, 243, 252, 0.9)';
+    const textFaint = 'rgba(223, 232, 246, 0.74)';
+    const subtitleText = (data.subtitle || '').trim();
+    const metaText = (data.meta || '').trim();
+    const routeText = (data.routeLabel || '').trim();
+    const titleText = (data.title || '').trim();
+    const ctaText = (data.cta || '').trim() || 'Oeffnen';
+    const serial = String((data.id ?? 0) + 1).padStart(2, '0');
+    const routeDisplay = routeText || 'Bereich';
+    const contentInsetX = 72 * S;
+    const contentWidth = W - contentInsetX * 2;
+    const cardRadius = 52 * S;
+    const shellInset = 12 * S;
+    const topPanelX = 28 * S;
+    const topPanelY = 28 * S;
+    const topPanelW = W - 56 * S;
+    const topPanelH = 320 * S;
+    const footerPanelX = 28 * S;
+    const footerPanelY = 730 * S;
+    const footerPanelW = W - 56 * S;
+    const footerPanelH = 162 * S;
 
-    const R = 40 * S;
-    this.roundRect(ctx, 0, 0, W, H, R);
+    const backdropGradient = ctx.createLinearGradient(0, 0, W, H);
+    backdropGradient.addColorStop(0, 'rgba(6, 10, 22, 0.995)');
+    backdropGradient.addColorStop(0.52, 'rgba(7, 12, 26, 0.998)');
+    backdropGradient.addColorStop(1, 'rgba(2, 5, 14, 1)');
+
+    this.roundRect(ctx, 0, 0, W, H, cardRadius);
+    ctx.fillStyle = backdropGradient;
     ctx.fill();
 
-    // 2. Star Border
-    this.drawStarBorder(ctx, 0, 0, W, H, R, S);
+    ctx.save();
+    this.roundRect(ctx, 0, 0, W, H, cardRadius);
+    ctx.clip();
 
-    // 3. Icon Circle
-    const iconY = 150 * S;
-    const iconCenterX = 256 * S;
-    const iconRadius = 60 * S;
+    const ambientTop = ctx.createRadialGradient(
+      W * 0.82,
+      H * 0.12,
+      0,
+      W * 0.82,
+      H * 0.12,
+      W * 0.74,
+    );
+    ambientTop.addColorStop(
+      0,
+      `rgba(${accent.r}, ${accent.g}, ${accent.b}, 0.44)`,
+    );
+    ambientTop.addColorStop(
+      0.4,
+      `rgba(${accent.r}, ${accent.g}, ${accent.b}, 0.16)`,
+    );
+    ambientTop.addColorStop(
+      1,
+      `rgba(${accent.r}, ${accent.g}, ${accent.b}, 0)`,
+    );
+    ctx.fillStyle = ambientTop;
+    ctx.fillRect(0, 0, W, H);
 
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
-    ctx.beginPath();
-    ctx.arc(iconCenterX, iconY, iconRadius, 0, Math.PI * 2);
+    const ambientBottom = ctx.createRadialGradient(
+      W * 0.12,
+      H * 0.94,
+      0,
+      W * 0.12,
+      H * 0.94,
+      W * 0.56,
+    );
+    ambientBottom.addColorStop(0, accentGlow);
+    ambientBottom.addColorStop(
+      0.5,
+      `rgba(${accent.r}, ${accent.g}, ${accent.b}, 0.08)`,
+    );
+    ambientBottom.addColorStop(
+      1,
+      `rgba(${accent.r}, ${accent.g}, ${accent.b}, 0)`,
+    );
+    ctx.fillStyle = ambientBottom;
+    ctx.fillRect(0, 0, W, H);
+
+    const topPanelGradient = ctx.createLinearGradient(
+      topPanelX,
+      topPanelY,
+      topPanelX + topPanelW,
+      topPanelY + topPanelH,
+    );
+    topPanelGradient.addColorStop(
+      0,
+      `rgba(${accent.r}, ${accent.g}, ${accent.b}, 0.34)`,
+    );
+    topPanelGradient.addColorStop(
+      0.3,
+      `rgba(${accent.r}, ${accent.g}, ${accent.b}, 0.16)`,
+    );
+    topPanelGradient.addColorStop(0.62, 'rgba(18, 28, 52, 0.42)');
+    topPanelGradient.addColorStop(1, 'rgba(8, 12, 24, 0.72)');
+    this.roundRect(ctx, topPanelX, topPanelY, topPanelW, topPanelH, 40 * S);
+    ctx.fillStyle = topPanelGradient;
     ctx.fill();
-    ctx.strokeStyle = data.color;
+
+    ctx.save();
+    this.roundRect(ctx, topPanelX, topPanelY, topPanelW, topPanelH, 40 * S);
+    ctx.clip();
+
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.055)';
     ctx.lineWidth = 2 * S;
+    for (
+      let offset = -topPanelH;
+      offset < topPanelW + topPanelH;
+      offset += 34 * S
+    ) {
+      ctx.beginPath();
+      ctx.moveTo(topPanelX + offset, topPanelY);
+      ctx.lineTo(topPanelX + offset + topPanelH, topPanelY + topPanelH);
+      ctx.stroke();
+    }
+
+    const sweepGradient = ctx.createLinearGradient(
+      topPanelX,
+      topPanelY,
+      topPanelX + topPanelW * 0.64,
+      topPanelY + topPanelH,
+    );
+    sweepGradient.addColorStop(0, 'rgba(255, 255, 255, 0.12)');
+    sweepGradient.addColorStop(0.28, 'rgba(255, 255, 255, 0.04)');
+    sweepGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    ctx.fillStyle = sweepGradient;
+    ctx.fillRect(topPanelX, topPanelY, topPanelW, topPanelH);
+
+    ctx.restore();
+    ctx.restore();
+
+    this.drawStarBorder(ctx, 0, 0, W, H, cardRadius, S);
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
+    ctx.lineWidth = 2 * S;
+    this.roundRect(
+      ctx,
+      shellInset,
+      shellInset,
+      W - shellInset * 2,
+      H - shellInset * 2,
+      42 * S,
+    );
     ctx.stroke();
 
-    // 4. Icon Text
-    ctx.fillStyle = '#ffffff';
-    ctx.font = `${
-      60 * S
-    }px "Apple Color Emoji", "Segoe UI Emoji", Arial, sans-serif`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(data.iconChar, iconCenterX, iconY + 5 * S);
+    ctx.strokeStyle = accentMedium;
+    ctx.lineWidth = 2 * S;
+    this.roundRect(ctx, topPanelX, topPanelY, topPanelW, topPanelH, 40 * S);
+    ctx.stroke();
 
-    // 5. Subtitle - Optimized Size
-    ctx.fillStyle = data.color;
-    const subtitleText = (data.subtitle || '').trim();
-    // Bumped base size from 24 to 26 for better legibility
+    ctx.font = `700 ${132 * S}px ${titleFontFamily}`;
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillStyle = `rgba(${accent.r}, ${accent.g}, ${accent.b}, 0.15)`;
+    ctx.fillText(serial, W - 56 * S, 244 * S);
+
     const subtitleSize = this.fitTextToWidth(
       ctx,
       subtitleText,
-      420 * S,
-      'bold',
-      26 * S,
+      250 * S,
+      '700',
+      22 * S,
       14 * S,
-      'Arial, sans-serif',
+      bodyFontFamily,
     );
-    ctx.font = `bold ${subtitleSize}px Arial, sans-serif`;
-    ctx.fillText(subtitleText, iconCenterX, 280 * S);
+    ctx.font = `700 ${subtitleSize}px ${bodyFontFamily}`;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    const subtitleWidth = Math.max(
+      160 * S,
+      ctx.measureText(subtitleText).width + 56 * S,
+    );
+    this.drawPill(
+      ctx,
+      contentInsetX,
+      54 * S,
+      subtitleWidth,
+      48 * S,
+      24 * S,
+      'rgba(3, 8, 18, 0.32)',
+      'rgba(255, 255, 255, 0.14)',
+      2 * S,
+    );
+    ctx.fillStyle = textStrong;
+    ctx.fillText(subtitleText, contentInsetX + 28 * S, 78 * S);
 
-    // 6. Title - Optimized Size & Weight
+    ctx.font = `600 ${18 * S}px ${bodyFontFamily}`;
+    ctx.textAlign = 'center';
+    const routeChipWidth = Math.max(
+      124 * S,
+      ctx.measureText(routeDisplay).width + 46 * S,
+    );
+    this.drawPill(
+      ctx,
+      W - routeChipWidth - 56 * S,
+      56 * S,
+      routeChipWidth,
+      44 * S,
+      22 * S,
+      accentSoft,
+      accentMedium,
+      2 * S,
+    );
+    ctx.fillStyle = accentStrong;
+    ctx.textBaseline = 'middle';
+    ctx.fillText(routeDisplay, W - routeChipWidth / 2 - 56 * S, 78 * S);
+
+    const iconBoxX = contentInsetX;
+    const iconBoxY = topPanelY + topPanelH - 104 * S;
+    const iconBoxSize = 78 * S;
+    this.drawPill(
+      ctx,
+      iconBoxX,
+      iconBoxY,
+      iconBoxSize,
+      iconBoxSize,
+      24 * S,
+      'rgba(3, 9, 20, 0.34)',
+      'rgba(255, 255, 255, 0.16)',
+      2 * S,
+    );
     ctx.fillStyle = '#ffffff';
-    const titleText = (data.title || '').trim();
-    // Bumped base size from 48 to 52
+    ctx.font = `${50 * S}px "Apple Color Emoji", "Segoe UI Emoji", Arial, sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(
+      data.iconChar,
+      iconBoxX + iconBoxSize / 2,
+      iconBoxY + iconBoxSize / 2 + 2 * S,
+    );
+
+    ctx.textAlign = 'left';
+    ctx.fillStyle = textFaint;
+    ctx.font = `700 ${14 * S}px ${bodyFontFamily}`;
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillText(
+      metaText || 'Direkter Einstieg',
+      iconBoxX + 96 * S,
+      iconBoxY + 26 * S,
+    );
+    ctx.fillStyle = textStrong;
+    ctx.font = `700 ${28 * S}px ${titleFontFamily}`;
+    ctx.fillText(routeDisplay, iconBoxX + 96 * S, iconBoxY + 64 * S);
+
     const titleSize = this.fitTextToWidth(
       ctx,
       titleText,
-      420 * S,
-      '800', // Extra Bold
+      contentWidth,
+      '700',
+      88 * S,
+      46 * S,
+      titleFontFamily,
+    );
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+    ctx.font = `700 ${titleSize}px ${titleFontFamily}`;
+    ctx.fillStyle = textStrong;
+    ctx.fillText(titleText, contentInsetX, 470 * S);
+
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillStyle = textMuted;
+    ctx.font = `600 ${18 * S}px ${bodyFontFamily}`;
+    ctx.fillText('Direkter Einstieg', contentInsetX, 520 * S);
+
+    const footerGradient = ctx.createLinearGradient(
+      footerPanelX,
+      footerPanelY,
+      footerPanelX + footerPanelW,
+      footerPanelY + footerPanelH,
+    );
+    footerGradient.addColorStop(0, 'rgba(8, 13, 24, 0.96)');
+    footerGradient.addColorStop(1, 'rgba(5, 9, 18, 0.98)');
+    this.drawPill(
+      ctx,
+      footerPanelX,
+      footerPanelY,
+      footerPanelW,
+      footerPanelH,
+      34 * S,
+      footerGradient,
+      'rgba(255, 255, 255, 0.1)',
+      2 * S,
+    );
+
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillStyle = textFaint;
+    ctx.font = `700 ${18 * S}px ${bodyFontFamily}`;
+    ctx.fillText(routeDisplay, contentInsetX, footerPanelY + 36 * S);
+
+    const ctaHeadlineSize = this.fitTextToWidth(
+      ctx,
+      ctaText,
+      contentWidth - 112 * S,
+      '700',
       52 * S,
       24 * S,
-      'Arial, sans-serif',
+      titleFontFamily,
     );
-    ctx.font = `800 ${titleSize}px Arial, sans-serif`;
-    ctx.fillText(titleText, iconCenterX, 350 * S);
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+    ctx.font = `700 ${ctaHeadlineSize}px ${titleFontFamily}`;
+    ctx.fillStyle = textStrong;
+    ctx.fillText(ctaText, contentInsetX, footerPanelY + 96 * S);
 
-    // 7. Text (Wrapped) - Increased contrast and size
-    ctx.fillStyle = '#dddddd'; // Lighter grey for better contrast
-    // Increased base text size from 30 to 32
-    const baseTextSize = data.text && data.text.length > 160 ? 24 * S : 32 * S;
-    ctx.font = `${baseTextSize}px Arial, sans-serif`;
-    this.wrapText(
-      ctx,
-      data.text,
-      iconCenterX,
-      460 * S,
-      400 * S,
-      Math.round(44 * S),
+    ctx.fillStyle = textMuted;
+    ctx.font = `600 ${16 * S}px ${bodyFontFamily}`;
+    ctx.fillText('Tippen oder klicken', contentInsetX, footerPanelY + 132 * S);
+
+    const arrowCenterX = W - 110 * S;
+    const arrowCenterY = footerPanelY + footerPanelH / 2;
+    const arrowGradient = ctx.createLinearGradient(
+      arrowCenterX - 46 * S,
+      arrowCenterY - 46 * S,
+      arrowCenterX + 46 * S,
+      arrowCenterY + 46 * S,
     );
+    arrowGradient.addColorStop(
+      0,
+      `rgba(${accent.r}, ${accent.g}, ${accent.b}, 0.82)`,
+    );
+    arrowGradient.addColorStop(
+      1,
+      `rgba(${accent.r}, ${accent.g}, ${accent.b}, 0.42)`,
+    );
+    ctx.beginPath();
+    ctx.arc(arrowCenterX, arrowCenterY, 44 * S, 0, Math.PI * 2);
+    ctx.fillStyle = arrowGradient;
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.16)';
+    ctx.lineWidth = 2 * S;
+    ctx.stroke();
+
+    ctx.fillStyle = '#08111f';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = `700 ${38 * S}px ${titleFontFamily}`;
+    ctx.fillText('\u2197', arrowCenterX, arrowCenterY + 2 * S);
 
     const texture = new this.THREE.CanvasTexture(canvas);
     texture.generateMipmaps = true;
     texture.minFilter = this.THREE.LinearMipmapLinearFilter;
     texture.magFilter = this.THREE.LinearFilter;
-    texture.anisotropy = this.renderer?.capabilities?.getMaxAnisotropy?.() ?? 0;
+    texture.anisotropy = this._getCardTextureAnisotropy();
+    if ('colorSpace' in texture && this.THREE.SRGBColorSpace) {
+      texture.colorSpace = this.THREE.SRGBColorSpace;
+    }
     texture.needsUpdate = true;
 
     this._textureCache.set(key, { texture, count: 1 });
@@ -421,7 +1253,10 @@ export class CardManager {
       canvas.width = size;
       canvas.height = size;
     }
-    const ctx = canvas.getContext('2d');
+    const ctx =
+      /** @type {CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D} */ (
+        canvas.getContext('2d')
+      );
     if (!ctx) {
       const tex = new this.THREE.CanvasTexture(canvas);
       tex.needsUpdate = true;
@@ -462,46 +1297,95 @@ export class CardManager {
   }
 
   drawStarBorder(ctx, x, y, w, h, r, scale) {
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
-    ctx.lineWidth = 1.5;
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.14)';
+    ctx.lineWidth = 1.08 * scale;
     this.roundRect(ctx, x, y, w, h, r);
     ctx.stroke();
 
-    const numStars = Math.min(200, Math.max(20, Math.floor(60 * scale)));
+    const tick = 22 * scale;
+    const inset = 18 * scale;
+    const corners = [
+      { x: x + inset, y: y + inset, sx: 1, sy: 1 },
+      { x: x + w - inset, y: y + inset, sx: -1, sy: 1 },
+      { x: x + inset, y: y + h - inset, sx: 1, sy: -1 },
+      { x: x + w - inset, y: y + h - inset, sx: -1, sy: -1 },
+    ];
+
     ctx.save();
-    for (let i = 0; i < numStars; i++) {
-      const side = Math.floor(Math.random() * 4);
-      let px, py;
-      if (side === 0) {
-        px = x + Math.random() * w;
-        py = y;
-      } else if (side === 1) {
-        px = x + w;
-        py = y + Math.random() * h;
-      } else if (side === 2) {
-        px = x + Math.random() * w;
-        py = y + h;
-      } else {
-        px = x;
-        py = y + Math.random() * h;
-      }
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.18)';
+    ctx.lineWidth = 1.8 * scale;
 
-      const size = Math.random() * 1.5 + 0.5;
-
-      ctx.fillStyle = Math.random() > 0.7 ? ctx.strokeStyle : '#ffffff';
-      ctx.globalAlpha = Math.random() * 0.8 + 0.2;
+    corners.forEach((corner) => {
       ctx.beginPath();
-      ctx.arc(px, py, size, 0, Math.PI * 2);
+      ctx.moveTo(corner.x, corner.y);
+      ctx.lineTo(corner.x + tick * corner.sx, corner.y);
+      ctx.moveTo(corner.x, corner.y);
+      ctx.lineTo(corner.x, corner.y + tick * corner.sy);
+      ctx.stroke();
+    });
+
+    const nodeRadius = 1.5 * scale;
+    const nodes = [
+      [x + w * 0.18, y + 1.5 * scale],
+      [x + w * 0.82, y + 1.5 * scale],
+      [x + 1.5 * scale, y + h * 0.26],
+      [x + w - 1.5 * scale, y + h * 0.74],
+      [x + w * 0.3, y + h - 1.5 * scale],
+      [x + w * 0.7, y + h - 1.5 * scale],
+    ];
+
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.58)';
+    nodes.forEach(([px, py]) => {
+      ctx.beginPath();
+      ctx.arc(px, py, nodeRadius, 0, Math.PI * 2);
       ctx.fill();
-    }
+    });
     ctx.restore();
   }
 
-  wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+  drawPill(ctx, x, y, w, h, r, fillStyle, strokeStyle = null, lineWidth = 1) {
+    ctx.save();
+    this.roundRect(ctx, x, y, w, h, r);
+    ctx.fillStyle = fillStyle;
+    ctx.fill();
+
+    if (strokeStyle) {
+      ctx.strokeStyle = strokeStyle;
+      ctx.lineWidth = lineWidth;
+      ctx.stroke();
+    }
+
+    ctx.restore();
+  }
+
+  hexToRgb(hex) {
+    const raw = String(hex || '')
+      .trim()
+      .replace('#', '');
+    const normalized =
+      raw.length === 3
+        ? raw
+            .split('')
+            .map((chunk) => chunk + chunk)
+            .join('')
+        : raw;
+    const parsed = Number.parseInt(normalized.slice(0, 6), 16);
+
+    if (Number.isNaN(parsed)) {
+      return { r: 255, g: 255, b: 255 };
+    }
+
+    return {
+      r: (parsed >> 16) & 255,
+      g: (parsed >> 8) & 255,
+      b: parsed & 255,
+    };
+  }
+
+  wrapText(ctx, text, x, y, maxWidth, lineHeight, maxLines = 5) {
     const words = (text || '').split(' ');
     let line = '';
     let lineCount = 0;
-    const maxLines = 5; // Allow slightly more text
 
     for (let n = 0; n < words.length; n++) {
       const testLine = line + words[n] + ' ';
@@ -541,9 +1425,6 @@ export class CardManager {
       );
       return minSize;
     }
-
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
 
     // Binary search for optimal font size: O(log n) instead of O(n).
     // Reduces ctx.measureText() calls from ~40 (linear) to ~5 (binary).
@@ -663,7 +1544,7 @@ export class CardManager {
 
     const baseOpacity = card.userData.targetOpacity || 1;
     card.material.opacity =
-      baseOpacity * (0.05 + 0.95 * card.userData.entranceProgress);
+      baseOpacity * (0.08 + 0.92 * card.userData.entranceProgress);
   }
 
   _applyOrientation(card) {
@@ -677,8 +1558,8 @@ export class CardManager {
       const glow = card.userData.glow;
       glow.material.opacity =
         Math.max(
-          0.06,
-          0.6 * (0.5 + 0.5 * Math.sin(time * 0.002 + card.userData.id)),
+          0.05,
+          0.56 * (0.5 + 0.5 * Math.sin(time * 0.002 + card.userData.id)),
         ) * card.userData.entranceProgress;
     }
   }
@@ -878,14 +1759,16 @@ export class CardManager {
       transparent: true,
       side: this.THREE.DoubleSide,
       opacity: 0,
+      alphaTest: 0.03,
       depthWrite: false,
     });
 
     const mesh = new this.THREE.Mesh(this._sharedGeometry, material);
     mesh.position.set(data.position.x, data.position.y - 0.8, data.position.z);
+    mesh.renderOrder = 12;
 
     const viewportScale = Math.min(1, (globalThis.innerWidth || 1200) / 1200);
-    const scale = 0.95 * Math.max(0.85, viewportScale);
+    const scale = 1.06 * Math.max(0.94, viewportScale);
     mesh.scale.setScalar(scale);
 
     mesh.userData = {
@@ -912,8 +1795,9 @@ export class CardManager {
     });
 
     const glow = new this.THREE.Sprite(glowMat);
-    glow.scale.set(baseW * 0.95, baseH * 0.45, 1);
-    glow.position.set(0, -0.12, -0.01);
+    glow.scale.set(baseW * 1.22, baseH * 0.82, 1);
+    glow.position.set(0, 0.02, -0.01);
+    glow.renderOrder = 11;
     mesh.add(glow);
     mesh.userData.glow = glow;
 

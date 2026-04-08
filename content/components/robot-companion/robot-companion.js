@@ -2,54 +2,40 @@
  * KI Roboter Begleiter
  *  * @version 2.0.1
  */
-// @ts-check
+// @ts-nocheck
+
+/**
+ * @typedef {import('/content/core/types.js').DOMCache} DOMCache
+ */
+
+// augment global window with our custom fields
+/**
+ * @typedef {Window & typeof globalThis & {
+ *   ROBOT_USER_NAME?: string;
+ *   ROBOT_NO_COOKIES?: boolean | '1';
+ * }} RobotWindow
+ */
 
 import { RobotCollision } from './modules/robot-collision.js';
 import { RobotAnimation } from './modules/robot-animation.js';
 import { RobotChat } from './modules/robot-chat.js';
+import { RobotIntelligence } from './modules/robot-intelligence.js';
 import { RobotEmotions } from './modules/robot-emotions.js';
 import { RobotContextReactions } from './modules/robot-context-reactions.js';
 import { createLogger } from '../../core/logger.js';
-import { TimerManager } from '../../core/utils.js';
-import { menuOpen, searchOpen, uiStore } from '../../core/ui-store.js';
-import { ROBOT_ACTIONS, ROBOT_EVENTS } from './constants/events.js';
+import { createObserver } from '../../core/dom-utils.js';
+import { TimerManager } from '../../core/timer-manager.js';
+import { uiStore } from '../../core/ui-store.js';
+import {
+  OVERLAY_MODES,
+  initOverlayManager,
+  registerOverlayController,
+} from '../../core/overlay-manager.js';
+import { ROBOT_EVENTS } from './constants/events.js';
 import { RobotStateManager } from './state/RobotStateManager.js';
 import { RobotDOMBuilder } from './dom/RobotDOMBuilder.js';
-import {
-  checkTypewriterCollision,
-  getFooterElement,
-  getTypewriterElement,
-  setupFooterOverlapCheck,
-  setupMobileViewportHandler,
-  setupChatInputViewportHandlers,
-} from './runtime/robot-layout.js';
-import {
-  getPageContext,
-  maybeTriggerContextReaction,
-  setupPageContextMorphing,
-  setupSectionChangeDetection,
-  setupSectionObservers,
-  updatePageContextAttribute,
-} from './runtime/robot-page-context.js';
-import {
-  hydrateInteractiveFeatures,
-  setupProgressiveHydration,
-} from './runtime/robot-hydration.js';
 
 const log = createLogger('RobotCompanion');
-
-/**
- * @typedef {import('../../core/types.js').TimerID} TimerID
- * @typedef {import('../../core/types.js').RobotState} RobotState
- * @typedef {import('../../core/types.js').RobotAnalytics} RobotAnalytics
- * @typedef {import('../../core/types.js').DOMCache} DOMCache
- * @typedef {import('../../core/types.js').EventListenerRegistry} EventListenerRegistry
- * @typedef {import('../../core/types.js').TimerRegistry} TimerRegistry
- * @typedef {import('../../core/types.js').PageContext} PageContext
- * @typedef {import('../../core/types.js').RobotMood} RobotMood
- * @typedef {import('./modules/robot-intelligence.js').RobotIntelligence} RobotIntelligence
- * @typedef {ReturnType<typeof import('../../core/utils.js').createObserver>} ObserverHandle
- */
 
 /**
  * Robot Companion Class
@@ -70,7 +56,7 @@ export class RobotCompanion {
     /** @type {TimerManager} */
     this.timerManager = new TimerManager('RobotCompanion');
 
-    /** @type {import('./ai-agent-service.js').AIAgentService|null} */
+    /** @type {any} */
     this._agentService = null;
     /** @type {RobotAnimation} */
     this.animationModule = new RobotAnimation(this);
@@ -94,15 +80,15 @@ export class RobotCompanion {
     this.initialLayoutHeight =
       typeof globalThis !== 'undefined' ? globalThis.innerHeight : 0;
 
-    /** @type {import('../../core/types.js').PageContext|null} */
+    /** @type {import('/content/core/types.js').PageContext|null} */
     this.currentObservedContext = null;
-    /** @type {ObserverHandle|null} */
+    /** @type {ReturnType<typeof createObserver>|null} */
     this._sectionObserver = null;
     /** @type {ResizeObserver|null} */
     this._footerLayoutObserver = null;
     /** @type {Element|null} */
     this._observedFooterEl = null;
-    /** @type {import('../../core/types.js').PageContext|null} */
+    /** @type {import('/content/core/types.js').PageContext|null} */
     this._lastKnownContext = null;
     /** @type {Element|null} */
     this._typeWriterEl = null;
@@ -115,9 +101,9 @@ export class RobotCompanion {
     /** @type {(() => void)|null} */
     this._uiUnsubscribe = null;
     /** @type {(() => void)|null} */
-    this._footerStateUnsubscribe = null;
+    this._overlayControllerCleanup = null;
 
-    /** @type {import('../../core/types.js').EventListenerRegistry} */
+    /** @type {import('/content/core/types.js').EventListenerRegistry} */
     this._eventListeners = {
       scroll: [],
       resize: [],
@@ -129,18 +115,32 @@ export class RobotCompanion {
       dom: [],
     };
 
-    /** @type {import('../../core/types.js').TimerID | null} */
+    /** @type {import('/content/core/types.js').TimerID | null} */
     this._scrollTimeout = null;
 
-    // Initialize session analytics and calculate mood
-    this.stateManager.initializeSessionState();
+    // Load analytics from storage and calculate mood
+    if (typeof this.stateManager.loadFromStorage === 'function') {
+      this.stateManager.loadFromStorage();
+    }
     const mood = this.calculateMood();
     this.stateManager.setState({ mood });
 
-    /** @type {Set<string>} Session-only easter egg tracking */
-    this.easterEggFound = new Set();
+    // ensure we have a name-based identity before any chat interaction
+    // this will prompt or read from URL if necessary
+    this.ensureName().catch(() => {});
 
-    /** @type {import('../../core/types.js').DOMCache} */
+    // Legacy properties for backward compatibility (deprecated)
+    /** @type {import('/content/core/types.js').RobotAnalytics} */
+    this.analytics = this.stateManager.getState().analytics;
+    /** @type {import('/content/core/types.js').RobotMood} */
+    this.mood = mood;
+
+    /** @type {Set<string>} */
+    this.easterEggFound = new Set(
+      JSON.parse(localStorage.getItem('robot-easter-eggs') || '[]'),
+    );
+
+    /** @type {import('/content/core/types.js').DOMCache} */
     this.dom = {};
   }
 
@@ -199,7 +199,7 @@ export class RobotCompanion {
 
   /**
    * Lazy load the AI Agent Service (tool-calling, memory, streaming)
-   * @returns {Promise<import('./ai-agent-service.js').AIAgentService>}
+   * @returns {Promise<any>}
    */
   async getAgentService() {
     if (!this._agentService) {
@@ -211,96 +211,605 @@ export class RobotCompanion {
     return this._agentService;
   }
 
-  peekAgentService() {
-    return this._agentService;
+  /**
+   * Ensure a user name is present, falling back to URL parameter and
+   * prompting if necessary.  If a new name is chosen we'll also update
+   * the query string so the link can be shared between browsers.
+   */
+  async setUserName(name) {
+    if (typeof window === 'undefined') return '';
+    const norm = String(name || '')
+      .trim()
+      .replace(/[^A-Za-z0-9_-]/g, '')
+      .slice(0, 120);
+    if (!norm) return '';
+
+    window.ROBOT_USER_NAME = norm;
+    window.ROBOT_NO_COOKIES = true;
+
+    try {
+      const svc = await this.getAgentService();
+      svc.setUserName(norm);
+      await svc.remember('name', norm).catch(() => {});
+    } catch {
+      /* ignore */
+    }
+
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.set('name', norm);
+      window.history.replaceState(null, '', url);
+    } catch {
+      /* ignore */
+    }
+
+    return norm;
+  }
+
+  async ensureName() {
+    if (typeof window === 'undefined') return '';
+    const existing = window.ROBOT_USER_NAME;
+    if (existing) return existing;
+
+    // check URL param ?name=
+    try {
+      const url = new URL(window.location.href);
+      const param = url.searchParams.get('name') || '';
+      const norm = param
+        .trim()
+        .replace(/[^A-Za-z0-9_-]/g, '')
+        .slice(0, 120);
+      if (norm) {
+        return this.setUserName(norm);
+      }
+    } catch {
+      /* ignore */
+    }
+
+    // Name wird jetzt als Inline-Eingabe im Chat gesetzt
+    return '';
   }
 
   getFooterElement() {
-    return getFooterElement(this);
+    if (this.dom.footer && document.contains(this.dom.footer)) {
+      return this.dom.footer;
+    }
+
+    // Prefer the fixed footer inside <site-footer>, then fallback targets.
+    this.dom.footer =
+      document.querySelector('site-footer .site-footer') ||
+      document.querySelector('footer.site-footer') ||
+      document.querySelector('site-footer');
+    return this.dom.footer || null;
   }
 
   getTypewriterElement() {
-    return getTypewriterElement(this);
+    if (this._typeWriterEl && document.contains(this._typeWriterEl)) {
+      return this._typeWriterEl;
+    }
+
+    this._typeWriterEl = document.querySelector('.typewriter-title');
+    return this._typeWriterEl || null;
   }
 
   checkTypewriterCollision() {
-    return checkTypewriterCollision(this);
+    const typeWriter = this.getTypewriterElement();
+    if (!typeWriter || !this.dom?.container) return;
+
+    const twRect = typeWriter.getBoundingClientRect();
+    const robotWidth = 80;
+    const initialLeft =
+      (typeof globalThis !== 'undefined' ? globalThis.innerWidth : 0) -
+      30 -
+      robotWidth;
+    let maxLeft = initialLeft - 20; // Use 'let' as maxLeft might be modified
+
+    // If typewriter is present, adjust maxLeft based on its position
+    if (typeWriter && twRect) {
+      const limit = initialLeft - twRect.right - 50;
+      if (limit < maxLeft) maxLeft = limit;
+    }
+
+    this.collisionModule.checkForTypewriterCollision(twRect, maxLeft);
   }
 
   maybeTriggerContextReaction(currentContext = null) {
-    return maybeTriggerContextReaction(this, currentContext);
+    if (this.chatModule.isOpen) return;
+
+    const nextContext = currentContext || this.getPageContext();
+    if (!nextContext) return;
+
+    if (!this._lastKnownContext) {
+      this._lastKnownContext = nextContext;
+      return;
+    }
+
+    if (
+      nextContext === this._lastKnownContext ||
+      nextContext === this.chatModule.lastGreetedContext
+    ) {
+      return;
+    }
+
+    this._lastKnownContext = nextContext;
+    this.contextReactionsModule?.reactToSection(nextContext);
+
+    this._setTimeout(() => {
+      if (this.getPageContext() === nextContext && !this.chatModule.isOpen) {
+        this.chatModule.lastGreetedContext = nextContext;
+      }
+    }, 2000);
   }
 
   setupFooterOverlapCheck() {
-    return setupFooterOverlapCheck(this);
+    let ticking = false;
+    const footerEvents = [
+      'footer:loaded',
+      'footer:expanded',
+      'footer:collapsed',
+    ];
+
+    const ensureObservedFooter = () => {
+      if (!this._footerLayoutObserver) return;
+      const footer = this.getFooterElement();
+      if (!footer || this._observedFooterEl === footer) return;
+
+      if (this._observedFooterEl) {
+        try {
+          this._footerLayoutObserver.unobserve(this._observedFooterEl);
+        } catch {
+          /* ignore */
+        }
+      }
+
+      this._footerLayoutObserver.observe(footer);
+      this._observedFooterEl = footer;
+    };
+
+    const checkOverlap = () => {
+      // Skip if search animation is active
+      if (
+        this.animationModule.searchAnimation &&
+        this.animationModule.searchAnimation.active
+      ) {
+        // Ensure bottom is reset so transform works from base position
+        if (this.dom.container.style.bottom) {
+          this.dom.container.style.bottom = '';
+        }
+        ticking = false;
+        return;
+      }
+
+      // If keyboard adjustment is active, skip overlap check to prevent overriding style.bottom
+      if (this.isKeyboardAdjustmentActive) {
+        ticking = false;
+        return;
+      }
+
+      if (!this.dom.container) {
+        ticking = false;
+        return;
+      }
+
+      // When positioned via 'top' (e.g. gallery), skip footer overlap entirely
+      const pageCtx = this.dom.container.dataset.pageContext;
+      if (pageCtx === 'gallery') {
+        ticking = false;
+        return;
+      }
+
+      const footerGap = 8;
+      this.dom.container.style.removeProperty('bottom');
+      const computedBottom = parseFloat(
+        getComputedStyle(this.dom.container).bottom,
+      );
+      const baseBottom = Number.isFinite(computedBottom) ? computedBottom : 30;
+
+      const footer = this.getFooterElement();
+      if (!footer) {
+        this.dom.container.style.bottom = `${Math.round(baseBottom)}px`;
+        ticking = false;
+        return;
+      }
+
+      const viewportHeight =
+        globalThis.innerHeight || document.documentElement.clientHeight || 0;
+      const fRect = footer.getBoundingClientRect();
+      const anchoredBottom = Math.max(
+        baseBottom,
+        viewportHeight - fRect.top + footerGap,
+      );
+
+      this.dom.container.style.bottom = `${Math.round(anchoredBottom)}px`;
+
+      if (!this.chatModule.isOpen) {
+        this.collisionModule.scanForCollisions();
+      }
+      ticking = false;
+      ensureObservedFooter();
+    };
+
+    const requestTick = () => {
+      if (!ticking) {
+        this._requestAnimationFrame(checkOverlap);
+        ticking = true;
+      }
+    };
+
+    if (typeof globalThis !== 'undefined') {
+      globalThis.addEventListener('scroll', requestTick, { passive: true });
+      globalThis.addEventListener('resize', requestTick, { passive: true });
+      footerEvents.forEach((eventName) =>
+        document.addEventListener(eventName, requestTick),
+      );
+      // Registriere Listener für Cleanup
+      this._eventListeners.scroll.push({
+        target: globalThis,
+        handler: requestTick,
+      });
+      this._eventListeners.resize.push({
+        target: globalThis,
+        handler: requestTick,
+      });
+      footerEvents.forEach((eventName) => {
+        this._eventListeners.dom.push({
+          target: document,
+          event: eventName,
+          handler: requestTick,
+        });
+      });
+    }
+
+    if (typeof ResizeObserver !== 'undefined') {
+      if (this._footerLayoutObserver) {
+        this._footerLayoutObserver.disconnect();
+      }
+      this._footerLayoutObserver = new ResizeObserver(() => requestTick());
+      this._footerLayoutObserver.observe(document.documentElement);
+      if (this.dom.container) {
+        this._footerLayoutObserver.observe(this.dom.container);
+      }
+      ensureObservedFooter();
+    }
+
+    requestTick();
   }
 
   setupMobileViewportHandler() {
-    return setupMobileViewportHandler(this);
+    if (typeof globalThis === 'undefined' || !globalThis.visualViewport) return;
+
+    this._handleViewportResize = () => {
+      // Skip if search animation is active
+      if (
+        this.animationModule.searchAnimation &&
+        this.animationModule.searchAnimation.active
+      ) {
+        return;
+      }
+
+      if (!this.dom.window || !this.dom.container) return;
+
+      // If chat is closed, ensure we clean up state and do nothing else
+      if (!this.chatModule.isOpen) {
+        if (this.isKeyboardAdjustmentActive) {
+          this.isKeyboardAdjustmentActive = false;
+          this.dom.container.style.bottom = '';
+          this.dom.window.style.bottom = '';
+          this.dom.window.style.maxHeight = '';
+        }
+        return;
+      }
+
+      // Use initialLayoutHeight if available to detect shrink-resize behaviors
+      const referenceHeight =
+        this.initialLayoutHeight ||
+        (typeof globalThis !== 'undefined' ? globalThis.innerHeight : 0);
+      const visualHeight =
+        typeof globalThis !== 'undefined' && globalThis.visualViewport
+          ? globalThis.visualViewport.height
+          : referenceHeight;
+      const heightDiff = referenceHeight - visualHeight;
+      const isInputFocused = document.activeElement === this.dom.input;
+
+      // Threshold: > 150px difference usually implies keyboard.
+      // Also trigger if input is focused and difference is measurable (>50px).
+      const isKeyboardOverlay =
+        heightDiff > 150 || (isInputFocused && heightDiff > 50);
+
+      if (isKeyboardOverlay) {
+        // Keyboard is open (overlay mode or partial resize).
+        // Keep the chat window above the keyboard area.
+        this.isKeyboardAdjustmentActive = true;
+
+        const safeMargin = 10;
+        const maxWindowHeight = visualHeight - safeMargin * 2;
+        this.dom.window.style.maxHeight = `${maxWindowHeight}px`;
+        this.dom.window.style.bottom = `${Math.max(8, heightDiff + safeMargin)}px`;
+      } else {
+        // Keyboard is closed
+        this.isKeyboardAdjustmentActive = false;
+
+        // Reset styles to allow CSS / footer overlap logic to take over
+        this.dom.container.style.bottom = '';
+        this.dom.window.style.bottom = '';
+        this.dom.window.style.maxHeight = '';
+      }
+    };
+
+    if (typeof globalThis !== 'undefined' && globalThis.visualViewport) {
+      globalThis.visualViewport.addEventListener(
+        'resize',
+        this._handleViewportResize,
+      );
+      globalThis.visualViewport.addEventListener(
+        'scroll',
+        this._handleViewportResize,
+      );
+      // Registriere Listener für Cleanup
+      this._eventListeners.visualViewportResize.push({
+        target: globalThis.visualViewport,
+        handler: this._handleViewportResize,
+      });
+      this._eventListeners.visualViewportScroll.push({
+        target: globalThis.visualViewport,
+        handler: this._handleViewportResize,
+      });
+    }
+
+    this.setupChatInputViewportHandlers();
   }
 
   setupChatInputViewportHandlers() {
-    return setupChatInputViewportHandlers(this);
+    if (this.dom.input && this._handleViewportResize) {
+      const handleResize = this._handleViewportResize;
+      const blurHandler = () => this._setTimeout(handleResize, 200);
+      this.dom.input.addEventListener('focus', handleResize);
+      this.dom.input.addEventListener('blur', blurHandler);
+      // Registriere Listener für Cleanup
+      this._eventListeners.inputFocus = {
+        target: this.dom.input,
+        handler: handleResize,
+      };
+      this._eventListeners.inputBlur = {
+        target: this.dom.input,
+        handler: blurHandler,
+      };
+    }
   }
 
   init() {
     if (this.dom.container) return;
 
+    initOverlayManager();
     this.loadCSS();
     this.createDOM();
+    this.registerOverlayController();
     this.setupSharedUIStateSync();
     this.setupProgressiveHydration();
+  }
+
+  registerOverlayController() {
+    if (this._overlayControllerCleanup) return;
+
+    /** @type {import('/content/core/types.js').OverlayController} */
+    const robotOverlayController = {
+      close: ({ restoreFocus = true } = {}) => {
+        if (!this.chatModule.isOpen) return;
+        this.chatModule.toggleChat(false, { restoreFocus });
+      },
+      getInteractiveRoots: () => {
+        return [this.dom.window, this.dom.container].filter(
+          (element) => element instanceof HTMLElement && element.isConnected,
+        );
+      },
+      getFocusTrapRoots: () => {
+        return [this.dom.window].filter(
+          (element) => element instanceof HTMLElement && element.isConnected,
+        );
+      },
+      getPrimaryFocusTarget: () => {
+        const target =
+          this.dom.input || this.dom.closeBtn || this.dom.window || null;
+        return target instanceof HTMLElement && target.isConnected
+          ? target
+          : null;
+      },
+      getRestoreFocusTarget: () => {
+        const avatar = this.dom.avatar;
+        return avatar instanceof HTMLElement && avatar.isConnected
+          ? avatar
+          : null;
+      },
+    };
+
+    this._overlayControllerCleanup = registerOverlayController(
+      OVERLAY_MODES.ROBOT_CHAT,
+      robotOverlayController,
+    );
   }
 
   setupSharedUIStateSync() {
     if (this._uiUnsubscribe) return;
 
-    const syncFromMenuState = (isMenuOpen) => {
+    const syncFromUIState = (state) => {
       if (!this.dom.container) return;
-      const menuIsOpen = Boolean(isMenuOpen);
+      const menuOpen = Boolean(state?.menuOpen);
+      const activeOverlay = String(state?.activeOverlay || OVERLAY_MODES.NONE);
 
       this.dom.container.classList.toggle(
         'robot-companion--menu-open',
-        menuIsOpen,
+        menuOpen,
       );
-      if (!menuIsOpen) return;
+      if (menuOpen) {
+        this.chatModule.hideBubble();
+      }
 
-      this.chatModule.hideBubble();
-      if (this.chatModule.isOpen) {
-        this.toggleChat(false);
+      if (
+        this.chatModule.isOpen &&
+        (menuOpen || activeOverlay !== OVERLAY_MODES.ROBOT_CHAT)
+      ) {
+        this.chatModule.toggleChat(false, { restoreFocus: false });
       }
     };
 
-    const syncFromSearchState = (isSearchOpen) => {
-      if (!this.dom.container) return;
-
-      if (isSearchOpen) {
-        this.animationModule.startSearchAnimation();
-        return;
-      }
-
-      this.animationModule.stopSearchAnimation();
-    };
-
-    const stopMenuSync = menuOpen.subscribe(syncFromMenuState);
-    const stopSearchSync = searchOpen.subscribe(syncFromSearchState);
-
-    this._uiUnsubscribe = () => {
-      stopMenuSync();
-      stopSearchSync();
-    };
+    this._uiUnsubscribe = uiStore.subscribe(syncFromUIState);
   }
 
   setupProgressiveHydration() {
-    return setupProgressiveHydration(this);
+    if (!this.dom.container || this.isHydrated) return;
+
+    this.dom.container.dataset.hydrated = 'false';
+
+    const hydrateNow = () => {
+      if (this.isHydrated) return;
+      if (this._hydrationObserver) {
+        this._hydrationObserver.disconnect();
+        this._hydrationObserver = null;
+      }
+      if (this._hydrationFallbackTimer) {
+        this._clearTimeout(this._hydrationFallbackTimer);
+        this._hydrationFallbackTimer = null;
+      }
+      this.hydrateInteractiveFeatures();
+    };
+
+    if (
+      typeof globalThis !== 'undefined' &&
+      'IntersectionObserver' in globalThis
+    ) {
+      this._hydrationObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              hydrateNow();
+            }
+          });
+        },
+        {
+          rootMargin: '180px 0px',
+          threshold: [0.01, 0.2],
+        },
+      );
+      this._hydrationObserver.observe(this.dom.container);
+      this._hydrationFallbackTimer = /** @type {TimerID} */ (
+        this._setTimeout(hydrateNow, 7000)
+      );
+      return;
+    }
+
+    hydrateNow();
   }
 
   hydrateInteractiveFeatures() {
-    return hydrateInteractiveFeatures(this);
+    if (this.isHydrated || !this.dom.container) return;
+    this.isHydrated = true;
+    this.dom.container.dataset.hydrated = 'true';
+
+    if (!this.intelligenceModule) {
+      this.intelligenceModule = new RobotIntelligence(this);
+    }
+
+    this.attachEvents();
+    this.setupFooterOverlapCheck();
+    this.setupMobileViewportHandler();
+
+    this._setTimeout(() => {
+      const ctx = this.getPageContext();
+      if (!this.chatModule.isOpen && !this.chatModule.lastGreetedContext) {
+        this.chatModule.lastGreetedContext = ctx;
+      }
+    }, 5000);
+
+    this.setupSectionChangeDetection();
+    this.setupPageContextMorphing();
+
+    // Start context-aware reactions monitoring
+    this._setTimeout(() => {
+      this.contextReactionsModule.startMonitoring();
+      this.contextReactionsModule.setupIdleReaction(60000);
+    }, 3000);
+
+    this._setTimeout(() => {
+      this.animationModule.startTypeWriterKnockbackAnimation();
+    }, 50);
+
+    this._onHeroTypingEnd = () => {
+      try {
+        this.checkTypewriterCollision();
+      } catch (err) {
+        log.warn('RobotCompanion: hero typing end handler failed', err);
+      }
+    };
+    document.addEventListener(
+      ROBOT_EVENTS.HERO_TYPING_END,
+      this._onHeroTypingEnd,
+    );
+    this._eventListeners.heroTypingEnd = {
+      target: document,
+      handler: this._onHeroTypingEnd,
+    };
+
+    uiStore.setState({ robotHydrated: true });
   }
 
   setupSectionChangeDetection() {
-    return setupSectionChangeDetection(this);
+    this.setupSectionObservers();
+    this._lastKnownContext = this.getPageContext();
+
+    let rafPending = false;
+    this._scrollListener = () => {
+      if (rafPending) return;
+      rafPending = true;
+
+      this._requestAnimationFrame(() => {
+        rafPending = false;
+        if (this._scrollTimeout) {
+          this._clearTimeout(this._scrollTimeout);
+        }
+        this._scrollTimeout = /** @type {TimerID} */ (
+          this._setTimeout(() => {
+            this.maybeTriggerContextReaction();
+            try {
+              this.checkTypewriterCollision();
+            } catch (err) {
+              log.warn(
+                'RobotCompanion: scroll handler collision check failed',
+                err,
+              );
+            }
+          }, 220)
+        );
+      });
+    };
+
+    if (typeof globalThis !== 'undefined') {
+      globalThis.addEventListener('scroll', this._scrollListener, {
+        passive: true,
+      });
+      // Registriere Listener für Cleanup
+      this._eventListeners.scroll.push({
+        target: globalThis,
+        handler: this._scrollListener,
+      });
+    }
+
+    const _onNavContextCheck = () => this.maybeTriggerContextReaction();
+    window.addEventListener('hashchange', _onNavContextCheck, {
+      passive: true,
+    });
+    window.addEventListener('popstate', _onNavContextCheck, { passive: true });
+    this._eventListeners.dom.push({
+      target: window,
+      event: 'hashchange',
+      handler: _onNavContextCheck,
+    });
+    this._eventListeners.dom.push({
+      target: window,
+      event: 'popstate',
+      handler: _onNavContextCheck,
+    });
+
+    this.maybeTriggerContextReaction(this._lastKnownContext);
   }
 
   /**
@@ -310,7 +819,19 @@ export class RobotCompanion {
    * browser to smoothly morph the robot from old → new position.
    */
   setupPageContextMorphing() {
-    return setupPageContextMorphing(this);
+    // Set initial context immediately
+    this._updatePageContextAttribute();
+
+    // Re-evaluate after every SPA page swap dispatched by view-transitions.js
+    /** @type {() => void} */
+    const onPageChanged = () => this._updatePageContextAttribute();
+
+    window.addEventListener('page:changed', onPageChanged, { passive: true });
+    this._eventListeners.dom.push({
+      target: window,
+      event: 'page:changed',
+      handler: onPageChanged,
+    });
   }
 
   /**
@@ -320,13 +841,66 @@ export class RobotCompanion {
    * @private
    */
   _updatePageContextAttribute() {
-    return updatePageContextAttribute(this);
+    const ctx = this.getPageContext();
+    const container = this.dom?.container;
+    if (!container) return;
+
+    // Map the granular section contexts to the broader page-level ones
+    // used in the CSS morph rules.
+    /** @type {Record<string, string>} */
+    const contextMap = {
+      hero: 'home',
+      features: 'home',
+      home: 'home',
+      projects: 'projects',
+      about: 'about',
+      gallery: 'gallery',
+      blog: 'blog',
+      videos: 'videos',
+      contact: 'contact',
+      legal: 'legal',
+      footer: 'home', // keep default position when at footer
+      default: 'home',
+    };
+
+    const mapped = contextMap[ctx] || 'home';
+    const prev = container.dataset.pageContext;
+
+    if (prev !== mapped) {
+      container.dataset.pageContext = mapped;
+
+      // Clear typewriter ref – it may not exist on the new page
+      this._typeWriterEl = null;
+
+      // Reset patrol to prevent leftover offsets from the old page
+      if (this.animationModule) {
+        this.animationModule.patrol.x = 0;
+        this.animationModule.patrol.y = 0;
+        this.animationModule.patrol.isPaused = false;
+        container.style.transform = 'translate3d(0px, 0px, 0)';
+
+        // When returning to home via SPA navigation, re-trigger entry animation.
+        // Skip initial load (prev === undefined) — the hydration callback handles that.
+        if (mapped === 'home' && prev !== undefined) {
+          this._setTimeout(() => {
+            this.animationModule.startTypeWriterKnockbackAnimation();
+          }, 300);
+        }
+      }
+
+      // Invalidate collision caches
+      if (this.collisionModule) {
+        this.collisionModule._lastCollisionCheck = 0;
+        this.collisionModule._lastObstacleUpdate = 0;
+      }
+
+      log.debug('Robot morph context →', mapped);
+    }
   }
 
   destroy() {
     // Module Cleanup
     this.chatModule?.destroy();
-    this._agentService?.destroy?.();
     this.animationModule?.destroy();
     this.intelligenceModule?.destroy();
     this.collisionModule?.destroy();
@@ -337,9 +911,9 @@ export class RobotCompanion {
       this._uiUnsubscribe();
       this._uiUnsubscribe = null;
     }
-    if (this._footerStateUnsubscribe) {
-      this._footerStateUnsubscribe();
-      this._footerStateUnsubscribe = null;
+    if (this._overlayControllerCleanup) {
+      this._overlayControllerCleanup();
+      this._overlayControllerCleanup = null;
     }
 
     if (this._hydrationObserver) {
@@ -449,7 +1023,7 @@ export class RobotCompanion {
 
   /**
    * Calculate current mood based on time and analytics
-   * @returns {import('../../core/types.js').RobotMood}
+   * @returns {import('/content/core/types.js').RobotMood}
    */
   calculateMood() {
     const hour = new Date().getHours();
@@ -468,7 +1042,10 @@ export class RobotCompanion {
   trackInteraction() {
     this.stateManager.trackInteraction();
 
-    const interactions = this.stateManager.getState().analytics.interactions;
+    // Update legacy property for backward compatibility
+    this.analytics = this.stateManager.getState().analytics;
+
+    const interactions = this.analytics.interactions;
 
     if (interactions === 10 && !this.easterEggFound.has('first-10')) {
       this.unlockEasterEgg(
@@ -491,17 +1068,23 @@ export class RobotCompanion {
    */
   unlockEasterEgg(id, message) {
     this.easterEggFound.add(id);
+    localStorage.setItem(
+      'robot-easter-eggs',
+      JSON.stringify([...this.easterEggFound]),
+    );
     this.chatModule.showBubble(message);
     this._setTimeout(() => this.chatModule.hideBubble(), 10000);
   }
 
   /**
    * Track section visit for analytics
-   * @param {import('../../core/types.js').PageContext} context - Page context
+   * @param {import('/content/core/types.js').PageContext} context - Page context
    */
   trackSectionVisit(context) {
     this.stateManager.trackSectionVisit(context);
-    const { sectionsVisited } = this.stateManager.getState().analytics;
+
+    // Update legacy property for backward compatibility
+    this.analytics = this.stateManager.getState().analytics;
 
     const allSections = [
       'hero',
@@ -511,7 +1094,9 @@ export class RobotCompanion {
       'gallery',
       'footer',
     ];
-    const visitedAll = allSections.every((s) => sectionsVisited.includes(s));
+    const visitedAll = allSections.every((s) =>
+      this.analytics.sectionsVisited.includes(s),
+    );
     if (visitedAll && !this.easterEggFound.has('explorer')) {
       this.unlockEasterEgg(
         'explorer',
@@ -580,21 +1165,12 @@ export class RobotCompanion {
     this.dom.sendBtn = /** @type {HTMLButtonElement} */ (
       document.getElementById('robot-chat-send')
     );
+    this.dom.stopBtn = /** @type {HTMLButtonElement|null} */ (
+      document.getElementById('robot-chat-stop')
+    );
     this.dom.closeBtn = chatWindow.querySelector('.chat-close-btn');
-    this.dom.profileStatus = document.getElementById(
-      'robot-chat-profile-status',
-    );
-    this.dom.memoriesBtn = /** @type {HTMLButtonElement|null} */ (
-      document.getElementById('robot-chat-memories')
-    );
-    this.dom.editMemoryBtn = /** @type {HTMLButtonElement|null} */ (
-      document.getElementById('robot-chat-edit-memory')
-    );
-    this.dom.switchProfileBtn = /** @type {HTMLButtonElement|null} */ (
-      document.getElementById('robot-chat-switch-profile')
-    );
-    this.dom.disconnectProfileBtn = /** @type {HTMLButtonElement|null} */ (
-      document.getElementById('robot-chat-disconnect-profile')
+    this.dom.memoryBtn = /** @type {HTMLButtonElement|null} */ (
+      document.getElementById('robot-chat-settings')
     );
 
     this.attachChatEvents();
@@ -614,6 +1190,7 @@ export class RobotCompanion {
       e.stopPropagation();
       const ctx = this.getPageContext();
       this.chatModule.lastGreetedContext = ctx;
+      this.chatModule.clearBubbleSequence();
       this.chatModule.hideBubble();
     };
     this.dom.bubbleClose.addEventListener('click', _onBubbleClose);
@@ -623,18 +1200,26 @@ export class RobotCompanion {
       handler: _onBubbleClose,
     });
 
-    const _onHistoryCleared = () => {
-      this.chatModule.clearHistory();
+    // Search Events
+    const _onSearchOpened = () => {
+      this.animationModule.startSearchAnimation();
     };
-    document.addEventListener(
-      ROBOT_EVENTS.CHAT_HISTORY_CLEARED,
-      _onHistoryCleared,
-    );
+    const _onSearchClosed = () => {
+      this.animationModule.stopSearchAnimation();
+    };
+
+    window.addEventListener('search:opened', _onSearchOpened);
+    window.addEventListener('search:closed', _onSearchClosed);
 
     this._eventListeners.dom.push({
-      target: document,
-      event: ROBOT_EVENTS.CHAT_HISTORY_CLEARED,
-      handler: _onHistoryCleared,
+      target: window,
+      event: 'search:opened',
+      handler: _onSearchOpened,
+    });
+    this._eventListeners.dom.push({
+      target: window,
+      event: 'search:closed',
+      handler: _onSearchClosed,
     });
   }
 
@@ -662,6 +1247,16 @@ export class RobotCompanion {
       });
     }
 
+    if (this.dom.stopBtn) {
+      const _onStopBtn = () => this.chatModule.stopActiveResponse();
+      this.dom.stopBtn.addEventListener('click', _onStopBtn);
+      this._eventListeners.dom.push({
+        target: this.dom.stopBtn,
+        event: 'click',
+        handler: _onStopBtn,
+      });
+    }
+
     if (this.dom.input) {
       const _onInputKeydown = (e) => {
         if (e.isComposing) return;
@@ -686,53 +1281,15 @@ export class RobotCompanion {
       });
     }
 
-    if (this.dom.memoriesBtn) {
-      const _onMemoriesBtnClick = () =>
-        this.chatModule.handleAction(ROBOT_ACTIONS.SHOW_MEMORIES);
-      this.dom.memoriesBtn.addEventListener('click', _onMemoriesBtnClick);
+    if (this.dom.memoryBtn) {
+      const _onMemoryBtnClick = () => {
+        void this.chatModule.showMemoryManager();
+      };
+      this.dom.memoryBtn.addEventListener('click', _onMemoryBtnClick);
       this._eventListeners.dom.push({
-        target: this.dom.memoriesBtn,
+        target: this.dom.memoryBtn,
         event: 'click',
-        handler: _onMemoriesBtnClick,
-      });
-    }
-
-    if (this.dom.editMemoryBtn) {
-      const _onEditMemoryBtnClick = () =>
-        this.chatModule.handleAction(ROBOT_ACTIONS.EDIT_PROFILE);
-      this.dom.editMemoryBtn.addEventListener('click', _onEditMemoryBtnClick);
-      this._eventListeners.dom.push({
-        target: this.dom.editMemoryBtn,
-        event: 'click',
-        handler: _onEditMemoryBtnClick,
-      });
-    }
-
-    if (this.dom.switchProfileBtn) {
-      const _onSwitchProfileBtnClick = () =>
-        this.chatModule.handleAction(ROBOT_ACTIONS.SWITCH_PROFILE);
-      this.dom.switchProfileBtn.addEventListener(
-        'click',
-        _onSwitchProfileBtnClick,
-      );
-      this._eventListeners.dom.push({
-        target: this.dom.switchProfileBtn,
-        event: 'click',
-        handler: _onSwitchProfileBtnClick,
-      });
-    }
-
-    if (this.dom.disconnectProfileBtn) {
-      const _onDisconnectProfileBtnClick = () =>
-        this.chatModule.handleAction(ROBOT_ACTIONS.DISCONNECT_PROFILE);
-      this.dom.disconnectProfileBtn.addEventListener(
-        'click',
-        _onDisconnectProfileBtnClick,
-      );
-      this._eventListeners.dom.push({
-        target: this.dom.disconnectProfileBtn,
-        event: 'click',
-        handler: _onDisconnectProfileBtnClick,
+        handler: _onMemoryBtnClick,
       });
     }
 
@@ -769,14 +1326,106 @@ export class RobotCompanion {
 
   /**
    * Get current page context based on URL and visible sections
-   * @returns {import('../../core/types.js').PageContext}
+   * @returns {import('/content/core/types.js').PageContext}
    */
   getPageContext() {
-    return getPageContext(this);
+    try {
+      if (this.currentObservedContext) return this.currentObservedContext;
+
+      const path = (window.location && window.location.pathname) || '';
+      const file = path.split('/').pop() || '';
+      const lower = path.toLowerCase();
+      const midY = (window.innerHeight || 0) / 2;
+
+      /**
+       * @param {string} selector
+       * @returns {boolean}
+       */
+      const sectionCheck = (selector) => {
+        try {
+          const el = document.querySelector(selector);
+          if (!el) return false;
+          const r = el.getBoundingClientRect();
+          return r.top <= midY && r.bottom >= midY;
+        } catch {
+          return false;
+        }
+      };
+
+      /** @type {import('/content/core/types.js').PageContext} */
+      let context = 'default';
+
+      if (sectionCheck('#hero')) context = 'hero';
+      else if (sectionCheck('#features')) context = 'features';
+      else if (sectionCheck('#section3')) context = 'about';
+      else if (sectionCheck('site-footer') || sectionCheck('footer'))
+        context = 'footer';
+      else if (lower.includes('projekte')) context = 'projects';
+      else if (lower.includes('gallery') || lower.includes('fotos'))
+        context = 'gallery';
+      else if (lower.includes('videos')) context = 'videos';
+      else if (lower.includes('blog')) context = 'blog';
+      else if (lower.includes('contact') || lower.includes('kontakt'))
+        context = 'contact';
+      else if (lower.includes('datenschutz') || lower.includes('impressum'))
+        context = 'legal';
+      else if (lower.includes('about') || lower.includes('abdul-sesli')) {
+        if (file !== 'index.html') context = 'about';
+      } else if (lower === '/' || file === 'index.html' || file === '')
+        context = 'home';
+      else {
+        const h1 = document.querySelector('h1');
+        if (h1) {
+          const h1Text = (h1.textContent || '').toLowerCase();
+          if (h1Text.includes('projekt')) context = 'projects';
+          else if (h1Text.includes('foto') || h1Text.includes('galerie'))
+            context = 'gallery';
+          else if (h1Text.includes('video')) context = 'videos';
+        }
+      }
+
+      this.trackSectionVisit(context);
+      return context;
+    } catch {
+      return 'default';
+    }
   }
 
   setupSectionObservers() {
-    return setupSectionObservers(this);
+    if (this._sectionObserver) return;
+    /** @type {Array<{selector: string, ctx: import('/content/core/types.js').PageContext}>} */
+    const sectionMap = [
+      { selector: '#hero', ctx: 'hero' },
+      { selector: '#features', ctx: 'features' },
+      { selector: '#section3', ctx: 'about' },
+      { selector: 'site-footer', ctx: 'footer' },
+      { selector: 'footer', ctx: 'footer' },
+    ];
+
+    this._sectionObserver = createObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && entry.intersectionRatio > 0.35) {
+            const match = sectionMap.find((s) =>
+              entry.target.matches(s.selector),
+            );
+            if (match) {
+              if (this.currentObservedContext === match.ctx) return;
+              this.currentObservedContext = match.ctx;
+              // Update state manager
+              this.stateManager.setState({ currentContext: match.ctx });
+              this.maybeTriggerContextReaction(match.ctx);
+            }
+          }
+        });
+      },
+      { threshold: [0.35, 0.5, 0.75] },
+    );
+
+    sectionMap.forEach((s) => {
+      const el = document.querySelector(s.selector);
+      if (el && this._sectionObserver) this._sectionObserver.observe(el);
+    });
   }
 
   // ─── Chat Module Proxy Methods (used by collision/animation/intelligence modules) ───
@@ -803,6 +1452,9 @@ export class RobotCompanion {
   }
   scrollToBottom() {
     return this.chatModule.scrollToBottom();
+  }
+  clearBubbleSequence() {
+    return this.chatModule.clearBubbleSequence();
   }
 
   /**

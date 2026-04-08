@@ -3,20 +3,20 @@
  * @version 1.1.0
  */
 
-import { createLogger } from '../../core/logger.js';
-import { upsertMeta } from '../../core/utils.js';
-import { applyCanonicalLinks } from '../../core/canonical-manager.js';
-import { extractMainHeadingTerms } from '../../core/content-extractors.js';
+import { createLogger } from '#core/logger.js';
+import { upsertMeta } from '#core/dom-utils.js';
+import { applyCanonicalLinks } from '#core/canonical-manager.js';
+import { extractMainHeadingTerms } from '#core/content-extractors.js';
 import {
   buildSeoAbstractText,
   buildSeoKeywordList,
   getSeoPageTopics,
-} from '../../core/schema-page-types.js';
+} from '#core/schema-page-types.js';
 import {
   generateSchemaGraph,
   injectSchema,
   scheduleSchemaInjection,
-} from '../../core/schema.js';
+} from '#core/schema.js';
 import { loadBrandData } from '../../config/brand-data-loader.js';
 import { ROUTES } from '../../config/routes-config.js';
 import { BASE_URL } from '../../config/constants.js';
@@ -204,8 +204,8 @@ async function loadHead() {
     const pageData = getPageData();
     applyCanonicalLinks();
     const pageUrl =
-      document.head.querySelector('link[rel="canonical"]')?.href ||
-      globalThis.location.href.split('#')[0];
+      /** @type {any} */ (document.head.querySelector('link[rel="canonical"]'))
+        ?.href || globalThis.location.href.split('#')[0];
 
     updateBasicMeta(pageData, pageUrl);
     pushToDataLayer(pageData, pageUrl);
@@ -215,7 +215,7 @@ async function loadHead() {
         doc: document,
         forceProdCanonical: false,
       });
-      injectSchema(graph, 'head-manager-ldjson');
+      injectSchema(graph, { scriptId: 'head-manager-ldjson' });
     });
 
     headState.setManagerLoaded();

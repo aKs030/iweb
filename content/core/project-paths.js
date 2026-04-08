@@ -46,18 +46,27 @@ export function isProjectDetailPath(pathname) {
   return Boolean(extractProjectSlugFromPath(pathname));
 }
 
-export function extractProjectSlugFromLocation(
-  locationLike = globalThis.location,
-) {
-  const pathname = locationLike?.pathname || '/';
-  const pathSlug = extractProjectSlugFromPath(pathname);
-  if (pathSlug) return pathSlug;
-  if (!isProjectIndexPath(pathname)) return '';
-
+export function extractLegacyProjectSlug(search = '') {
   try {
-    const params = new URLSearchParams(locationLike?.search || '');
+    const params = new URLSearchParams(search);
     return normalizeProjectSlug(params.get('app'));
   } catch {
     return '';
   }
+}
+
+export function extractProjectSlug(pathname, search = '') {
+  const pathSlug = extractProjectSlugFromPath(pathname);
+  if (pathSlug) return pathSlug;
+  if (!isProjectIndexPath(pathname)) return '';
+  return extractLegacyProjectSlug(search);
+}
+
+export function extractProjectSlugFromLocation(
+  locationLike = globalThis.location,
+) {
+  return extractProjectSlug(
+    locationLike?.pathname || '/',
+    locationLike?.search || '',
+  );
 }

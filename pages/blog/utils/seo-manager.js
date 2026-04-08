@@ -3,7 +3,7 @@
  * @version 3.0.0 - Modern & Optimized
  */
 
-import { iconUrl } from '#config/constants.js';
+import { FAVICON_512_URL } from '#config/constants.js';
 import {
   BLOG_BASE_URL,
   BLOG_HOME_URL,
@@ -17,7 +17,7 @@ import {
 } from './blog-utils.js';
 
 // Constants
-const PUBLISHER_LOGO = iconUrl('favicon-512.webp');
+const PUBLISHER_LOGO = FAVICON_512_URL;
 const BLOG_DEFAULT_KEYWORDS = [
   'Blog',
   'Abdulkerim Sesli',
@@ -60,11 +60,11 @@ const setCanonical = (href) => {
 
   if (!el) {
     el = document.createElement('link');
-    el.rel = 'canonical';
+    /** @type {any} */ (el).rel = 'canonical';
     document.head.appendChild(el);
   }
 
-  el.href = href;
+  /** @type {any} */ (el).href = href;
 };
 
 const removeMeta = (selector) => {
@@ -179,7 +179,7 @@ const setStructuredData = (data) => {
 
   if (!script) {
     script = document.createElement('script');
-    script.type = 'application/ld+json';
+    /** @type {any} */ (script).type = 'application/ld+json';
     script.id = 'blog-post-ldjson';
     document.head.appendChild(script);
   }

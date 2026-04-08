@@ -77,116 +77,122 @@
   </svg>
 
   <!-- Minimized State -->
-  <div
-    class="footer-min"
-    role="button"
-    tabindex="0"
-    aria-expanded="false"
-    aria-controls="footer-content"
-    aria-label="Footer erweitern"
-  >
-    <span class="footer-copyright">
-      © <span class="year">2026</span>
-      <a href="/" class="brand-link" aria-label="Zur Startseite">
-        <span class="full-name">Abdulkerim Sesli</span>
-        <span class="short-name">aKs</span>
-      </a>
-    </span>
-
-    <!-- Cookie Banner Inline -->
-    <div
-      id="cookie-banner"
-      class="cookie-inline hidden"
-      role="dialog"
-      aria-label="Cookie-Einstellungen"
-    >
-      <span class="cookie-emoji" aria-hidden="true">🍪</span>
-      <span class="cookie-text">
-        <span class="full" data-i18n="footer.cookie_banner.text"
-          >Wir nutzen Analytics</span
-        >
-        <span class="short" data-i18n="footer.cookie_banner.text_short"
-          >Analytics?</span
-        >
+  <div class="footer-min">
+    <div class="footer-min-main">
+      <span class="footer-copyright">
+        © <span class="year">2026</span>
+        <a href="/" class="brand-link" aria-label="Zur Startseite">
+          <span class="full-name">Abdulkerim Sesli</span>
+          <span class="short-name">aKs</span>
+        </a>
       </span>
-      <button
-        id="accept-cookies"
-        class="btn-accept"
-        type="button"
-        aria-label="Cookies akzeptieren"
-      >
-        <span class="full" data-i18n="footer.cookie_banner.accept"
-          >Akzeptieren</span
-        >
-        <span class="short" data-i18n="footer.cookie_banner.accept_short"
-          >✓</span
-        >
-      </button>
-      <button
-        id="reject-cookies"
-        class="btn-reject"
-        type="button"
-        aria-label="Cookies ablehnen"
-      >
-        <span class="full" data-i18n="footer.cookie_banner.decline"
-          >Ablehnen</span
-        >
-        <span class="short" data-i18n="footer.cookie_banner.decline_short"
-          >✗</span
-        >
-      </button>
-    </div>
 
-    <nav class="footer-nav" aria-label="Footer Navigation">
-      <button
-        id="cookie-btn"
-        class="nav-btn"
-        type="button"
-        data-cookie-trigger
-        aria-label="Cookie-Einstellungen öffnen"
+      <!-- Cookie Banner Inline -->
+      <div
+        id="cookie-banner"
+        class="cookie-inline hidden"
+        role="dialog"
+        aria-label="Cookie-Einstellungen"
       >
-        <svg
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          aria-hidden="true"
+        <span class="cookie-emoji" aria-hidden="true">🍪</span>
+        <span class="cookie-text">
+          <span class="full" data-i18n="footer.cookie_banner.text"
+            >Wir nutzen Analytics</span
+          >
+          <span class="short" data-i18n="footer.cookie_banner.text_short"
+            >Analytics?</span
+          >
+        </span>
+        <button
+          id="accept-cookies"
+          class="btn-accept"
+          type="button"
+          aria-label="Cookies akzeptieren"
         >
-          <use href="#footer-icon-cookie"></use>
-        </svg>
-        <span data-i18n="footer.legal.cookies">Cookies</span>
-      </button>
-      <a href="/impressum/" class="nav-btn" aria-label="Impressum">
-        <svg
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          aria-hidden="true"
+          <span class="full" data-i18n="footer.cookie_banner.accept"
+            >Akzeptieren</span
+          >
+          <span class="short" data-i18n="footer.cookie_banner.accept_short"
+            >✓</span
+          >
+        </button>
+        <button
+          id="reject-cookies"
+          class="btn-reject"
+          type="button"
+          aria-label="Cookies ablehnen"
         >
-          <use href="#footer-icon-doc-check"></use>
-        </svg>
-        <span data-i18n="footer.legal.impressum">Legal</span>
-      </a>
-      <a href="/datenschutz/" class="nav-btn" aria-label="Datenschutz">
-        <svg
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          aria-hidden="true"
+          <span class="full" data-i18n="footer.cookie_banner.decline"
+            >Ablehnen</span
+          >
+          <span class="short" data-i18n="footer.cookie_banner.decline_short"
+            >✗</span
+          >
+        </button>
+      </div>
+
+      <nav class="footer-nav" aria-label="Footer Navigation">
+        <button
+          id="cookie-btn"
+          class="nav-btn"
+          type="button"
+          data-cookie-trigger
+          aria-label="Cookie-Einstellungen öffnen"
         >
-          <use href="#footer-icon-shield"></use>
-        </svg>
-        <span data-i18n="footer.legal.privacy">Privacy</span>
-      </a>
-    </nav>
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            aria-hidden="true"
+          >
+            <use href="#footer-icon-cookie"></use>
+          </svg>
+          <span data-i18n="footer.legal.cookies">Cookies</span>
+        </button>
+        <a href="/impressum/" class="nav-btn" aria-label="Impressum">
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            aria-hidden="true"
+          >
+            <use href="#footer-icon-doc-check"></use>
+          </svg>
+          <span data-i18n="footer.legal.impressum">Legal</span>
+        </a>
+        <a href="/datenschutz/" class="nav-btn" aria-label="Datenschutz">
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            aria-hidden="true"
+          >
+            <use href="#footer-icon-shield"></use>
+          </svg>
+          <span data-i18n="footer.legal.privacy">Privacy</span>
+        </a>
+      </nav>
+    </div>
+    <button
+      class="footer-expand-toggle"
+      type="button"
+      data-footer-trigger
+      aria-expanded="false"
+      aria-controls="footer-content"
+      aria-label="Footer erweitern"
+    >
+      <span aria-hidden="true">+</span>
+      <span class="visually-hidden">Footer erweitern</span>
+    </button>
   </div>
 
   <!-- Maximized State -->
@@ -306,13 +312,13 @@
     <div id="footer-content" class="footer-content">
       <div class="footer-cards">
         <article class="footer-card">
-          <h2 data-i18n="footer.about.title">About</h2>
+          <h2 data-i18n="footer.about.title">Profil</h2>
           <address class="footer-contact">
             <p class="name">Abdulkerim Sesli</p>
             <p class="role">Developer • Photographer</p>
           </address>
           <p class="bio" data-i18n="footer.about.text">
-            Kreative Web-Lösungen mit modernen Technologien.
+            Portfolio für Code, 3D, AI und visuelle Experimente.
           </p>
           <div class="footer-card-actions">
             <a href="/contact/" class="footer-cta">Kontakt</a>
@@ -362,7 +368,7 @@
               >
                 <use href="#footer-icon-book"></use>
               </svg>
-              <span data-i18n="footer.work.blog">Blog</span>
+              <span data-i18n="footer.work.blog">Journal</span>
             </a>
             <a href="https://github.com/aKs030" target="_blank" rel="noopener">
               <svg
@@ -436,7 +442,7 @@
               >
                 <use href="#footer-icon-user"></use>
               </svg>
-              <span data-i18n="footer.quick_links.about">About</span>
+              <span data-i18n="footer.quick_links.about">Profil</span>
             </a>
           </nav>
         </article>

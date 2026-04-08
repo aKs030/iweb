@@ -174,7 +174,7 @@ export function untracked(fn) {
  */
 export function subscribe(selector, listener, options = {}) {
   if (typeof selector !== 'function' || typeof listener !== 'function') {
-    return () => { };
+    return () => {};
   }
 
   const { emitImmediately = true } = options;

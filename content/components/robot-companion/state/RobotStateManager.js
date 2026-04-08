@@ -4,12 +4,12 @@
  * @version 1.0.0
  */
 
-import { createLogger } from '../../../core/logger.js';
+import { createLogger } from '#core/logger.js';
 import {
   computed,
   signal,
   subscribe as signalSubscribe,
-} from '../../../core/signals.js';
+} from '#core/signals.js';
 
 const log = createLogger('RobotStateManager');
 
@@ -18,15 +18,19 @@ const log = createLogger('RobotStateManager');
  * @property {boolean} isInitialized
  * @property {boolean} isChatOpen
  * @property {boolean} isTyping
+ * @property {boolean} isResponding
  * @property {boolean} isPatrolling
  * @property {boolean} isAnimating
  * @property {string} mood
  * @property {string} currentContext
+ * @property {string|null} lastGreetedContext
  * @property {Object} analytics
  * @property {Object} position
  */
 
 export class RobotStateManager {
+  static STORAGE_KEY = 'robot-companion-state';
+
   constructor() {
     const initialState = Object.freeze(this._getInitialState());
     this._stateSignal = signal(initialState);
@@ -35,8 +39,12 @@ export class RobotStateManager {
       state: computed(() => this._stateSignal.value),
       isChatOpen: computed(() => this._stateSignal.value.isChatOpen),
       isTyping: computed(() => this._stateSignal.value.isTyping),
+      isResponding: computed(() => this._stateSignal.value.isResponding),
       mood: computed(() => this._stateSignal.value.mood),
       currentContext: computed(() => this._stateSignal.value.currentContext),
+      lastGreetedContext: computed(
+        () => this._stateSignal.value.lastGreetedContext,
+      ),
       analytics: computed(() => this._stateSignal.value.analytics),
     });
   }
@@ -51,10 +59,12 @@ export class RobotStateManager {
       isInitialized: false,
       isChatOpen: false,
       isTyping: false,
+      isResponding: false,
       isPatrolling: false,
       isAnimating: false,
       mood: 'normal',
       currentContext: 'default',
+      lastGreetedContext: null,
       analytics: {
         sessions: 0,
         interactions: 0,
@@ -78,6 +88,14 @@ export class RobotStateManager {
   }
 
   /**
+   * Read current state without cloning for hot paths and lightweight getters.
+   * @returns {Readonly<RobotState>}
+   */
+  peekState() {
+    return this._stateSignal.peek();
+  }
+
+  /**
    * Update state
    * @param {Partial<RobotState>} updates - State updates
    */
@@ -92,8 +110,51 @@ export class RobotStateManager {
 
     this._stateSignal.value = nextState;
 
+    this.saveToStorage();
     log.debug('State updated:', updates);
     return this.getState();
+  }
+
+  /**
+   * Get and apply state from localStorage if available.
+   */
+  loadFromStorage() {
+    if (typeof localStorage === 'undefined') {
+      return;
+    }
+
+    try {
+      const raw = localStorage.getItem(RobotStateManager.STORAGE_KEY);
+      if (!raw) {
+        return;
+      }
+
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === 'object') {
+        this.setState(parsed);
+      }
+    } catch (error) {
+      log.warn('Unable to parse stored robot state:', error);
+    }
+  }
+
+  /**
+   * Persist current robot state to localStorage.
+   */
+  saveToStorage() {
+    if (typeof localStorage === 'undefined') {
+      return;
+    }
+
+    try {
+      const state = this._stateSignal.peek();
+      localStorage.setItem(
+        RobotStateManager.STORAGE_KEY,
+        JSON.stringify(state),
+      );
+    } catch (error) {
+      log.warn('Unable to save robot state:', error);
+    }
   }
 
   /**

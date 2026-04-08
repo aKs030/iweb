@@ -6,9 +6,9 @@
  */
 
 import { createLogger } from './logger.js';
-import { cancelIdleTask, scheduleIdleTask } from './idle.js';
+import { cancelIdleTask, scheduleIdleTask } from './async-utils.js';
+import { upsertHeadLink } from './dom-utils.js';
 import { getAdaptiveResourceHintBudget } from './resource-hints-matrix.js';
-import { upsertHeadLink } from './utils.js';
 
 const log = createLogger('ResourceHints');
 const SPECULATION_RULES_SELECTOR =
@@ -41,8 +41,8 @@ class ResourceHintsManager {
    * Register a link-based resource hint and keep internal state in sync.
    * @param {{
    *   key: string,
-   *   linkOptions: Record<string, unknown>,
-   *   hintMeta: Record<string, unknown>,
+   *   linkOptions: any,
+   *   hintMeta: any,
    *   successMessage: string,
    *   failureMessage: string
    * }} config
@@ -115,11 +115,9 @@ class ResourceHintsManager {
   }
 
   getNetworkConnection() {
+    const nav = /** @type {any} */ (globalThis.navigator);
     return (
-      globalThis.navigator?.connection ||
-      globalThis.navigator?.mozConnection ||
-      globalThis.navigator?.webkitConnection ||
-      null
+      nav?.connection || nav?.mozConnection || nav?.webkitConnection || null
     );
   }
 
@@ -281,7 +279,9 @@ class ResourceHintsManager {
    *   maxPrefetch: number,
    *   prerenderEnabled: boolean,
    *   prerenderEagerness: 'moderate'|'conservative',
-   *   prefetchEagerness: 'conservative'
+   *   prefetchEagerness: 'conservative',
+   *   seedRoutes: string[],
+   *   intentWarmupDelayMs: number
    * }}
    */
   getSpeculationProfile() {
@@ -295,13 +295,12 @@ class ResourceHintsManager {
     }
 
     this._cachedProfilePathname = currentPathname;
+    const nav = /** @type {any} */ (globalThis.navigator);
     this._cachedProfile = getAdaptiveResourceHintBudget({
       pathname: currentPathname,
       connection: this.getNetworkConnection(),
-      deviceMemory: Number(globalThis.navigator?.deviceMemory || 0),
-      hardwareConcurrency: Number(
-        globalThis.navigator?.hardwareConcurrency || 0,
-      ),
+      deviceMemory: Number(nav?.deviceMemory || 0),
+      hardwareConcurrency: Number(nav?.hardwareConcurrency || 0),
     });
 
     return this._cachedProfile;
@@ -467,7 +466,8 @@ class ResourceHintsManager {
       const [navigationEntry] = performance.getEntriesByType('navigation');
       if (!navigationEntry) return;
 
-      const activationStart = Number(navigationEntry.activationStart || 0);
+      const navEntry = /** @type {any} */ (navigationEntry);
+      const activationStart = Number(navEntry.activationStart || 0);
       if (activationStart <= 0) return;
 
       performance.mark('speculation-prerender-activated');
@@ -476,7 +476,7 @@ class ResourceHintsManager {
         activated: true,
         activationStart: Math.round(activationStart),
         path: this.normalizePath(globalThis.location?.pathname || '/'),
-        type: navigationEntry.type || 'navigate',
+        type: navEntry.type || 'navigate',
       };
 
       log.info('Prerender activation detected', detail);

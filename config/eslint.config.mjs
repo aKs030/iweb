@@ -32,7 +32,6 @@ export default [
   {
     ignores: [
       'node_modules/**',
-      'build/**',
       '.git/**',
       '.vscode/**',
       '.wrangler/**',
@@ -41,6 +40,7 @@ export default [
       '*.min.js',
       'package-lock.json',
       'content/components/ErrorBoundary.js',
+      '**/*.css',
     ],
   },
 ];

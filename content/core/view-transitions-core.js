@@ -1,5 +1,7 @@
-import { BACKDROP_SENSITIVE_TRANSITION_TYPES } from './view-transition-types.js';
-import { VIEW_TRANSITION_TIMINGS_MS } from './view-transition-timings.js';
+import {
+  BACKDROP_SENSITIVE_TRANSITION_TYPES,
+  VIEW_TRANSITION_TIMINGS_MS,
+} from './view-transition-constants.js';
 
 const MAX_TOKEN_COUNT = 8;
 const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)';
@@ -65,7 +67,7 @@ const isTruthyValue = (value) => {
  *
  * @returns {boolean}
  */
-export const isViewTransitionDebugEnabled = () => {
+const isViewTransitionDebugEnabled = () => {
   const runtimeFlag =
     typeof globalThis !== 'undefined' ? globalThis[DEBUG_FLAG] : undefined;
   if (isTruthyValue(runtimeFlag)) return true;
@@ -147,7 +149,7 @@ const skipTransitionSafely = (transition) => {
  * @param {number} [maxCount]
  * @returns {string[]}
  */
-export const normalizeTokens = (value, maxCount = MAX_TOKEN_COUNT) => {
+const normalizeTokens = (value, maxCount = MAX_TOKEN_COUNT) => {
   if (!Array.isArray(value)) return [];
   const unique = new Set();
 
@@ -336,7 +338,11 @@ const shouldSkipForLiveBackdrop = (types, options) => {
   if (!types.length) return false;
   if (options.force) return false;
   if (options.preserveLiveBackdropOnMobile === false) return false;
-  if (!types.some((type) => BACKDROP_SENSITIVE_TYPES.has(type))) {
+  if (
+    !types.some((type) =>
+      BACKDROP_SENSITIVE_TYPES.has(/** @type {any} */ (type)),
+    )
+  ) {
     return false;
   }
 

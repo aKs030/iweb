@@ -17,7 +17,7 @@
  * ```js
  * import { loadCompressedModel } from '#core/model-loader.js';
  *
- * const gltf = await loadCompressedModel('/content/assets/robot.glb');
+ * const gltf = await loadCompressedModel('/content/media/robot.glb');
  * scene.add(gltf.scene);
  * ```
  *
@@ -64,7 +64,7 @@ let _meshoptReady = false;
  * @param {import('three').LoadingManager} [loadingManager] - Optional THREE.LoadingManager
  * @returns {Promise<import('three/addons/loaders/GLTFLoader.js').GLTFLoader>} Configured GLTFLoader instance
  */
-export async function getConfiguredGLTFLoader(loadingManager) {
+async function getConfiguredGLTFLoader(loadingManager) {
   if (_gltfLoader) return _gltfLoader;
 
   log.info('Initializing GLTFLoader with Draco & Meshopt support…');
@@ -124,17 +124,17 @@ export async function getConfiguredGLTFLoader(loadingManager) {
  *
  * @example
  * ```js
- * const gltf = await loadCompressedModel('/content/assets/robot.glb');
+ * const gltf = await loadCompressedModel('/content/media/robot.glb');
  * scene.add(gltf.scene);
  *
  * // With options
- * const gltf = await loadCompressedModel('/content/assets/robot.glb', {
+ * const gltf = await loadCompressedModel('/content/media/robot.glb', {
  *   timeout: 20000,
  *   onProgress: (xhr) => console.log(`${(xhr.loaded / xhr.total * 100)}%`),
  * });
  * ```
  */
-export async function loadCompressedModel(url, options = {}) {
+async function loadCompressedModel(url, options = {}) {
   const { loadingManager, timeout = 15000, onProgress } = options;
 
   const loader = await getConfiguredGLTFLoader(loadingManager);

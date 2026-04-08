@@ -1,151 +1,234 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import process from 'node:process';
+import { fileURLToPath } from 'node:url';
+
 import prettier from 'prettier';
 
-const cwd = process.cwd();
-const checkOnly = process.argv.includes('--check');
-const packageJsonPath = path.join(cwd, 'package.json');
-const templatePath = path.join(cwd, 'content/templates/global-head.html');
-const generatedConfigPath = path.join(
-  cwd,
+import { isFlagEnabled } from './script-utils.mjs';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const ROOT_DIR = path.resolve(__dirname, '..');
+const PACKAGE_JSON_PATH = path.join(ROOT_DIR, 'package.json');
+const IMPORT_MAP_JS_PATH = path.join(
+  ROOT_DIR,
   'content/config/import-map.generated.js',
 );
+const GLOBAL_HEAD_PATH = path.join(
+  ROOT_DIR,
+  'content/templates/global-head.html',
+);
 
-const templateStartMarker = '<!-- BEGIN GENERATED IMPORT MAP -->';
-const templateEndMarker = '<!-- END GENERATED IMPORT MAP -->';
+const GLOBAL_HEAD_IMPORT_MAP_PATTERN =
+  /<!-- BEGIN GENERATED IMPORT MAP -->[\s\S]*?<!-- END GENERATED IMPORT MAP -->/;
 
-const packageJson = JSON.parse(await readFile(packageJsonPath, 'utf8'));
+const DEPENDENCY_KEYS = Object.freeze([
+  'react',
+  'react-dom',
+  'lucide-react',
+  'three',
+  'htm',
+]);
 
-const getPinnedVersion = (name, fallback = '') => {
-  const raw =
-    packageJson.dependencies?.[name] || packageJson.devDependencies?.[name];
-  const match = String(raw || fallback).match(/\d+\.\d+\.\d+(?:[-+][\w.-]+)?/);
-  if (!match) {
-    throw new Error(`Missing version for ${name}`);
-  }
-  return match[0];
-};
-
-const versions = Object.freeze({
-  react: getPinnedVersion('react'),
-  'react-dom': getPinnedVersion('react-dom'),
-  'lucide-react': getPinnedVersion('lucide-react'),
-  three: getPinnedVersion('three'),
-  htm: getPinnedVersion('htm'),
-  'idb-keyval': '6.2.1',
-});
-
-const importMap = Object.freeze({
-  imports: Object.freeze({
-    react: `https://esm.sh/react@${versions.react}`,
-    'react-dom': `https://esm.sh/react-dom@${versions['react-dom']}`,
-    'react-dom/client': `https://esm.sh/react-dom@${versions['react-dom']}/client`,
-    'lucide-react': `https://esm.sh/lucide-react@${versions['lucide-react']}`,
-    three: `https://cdn.jsdelivr.net/npm/three@${versions.three}/build/three.module.min.js`,
-    'three/addons/': `https://cdn.jsdelivr.net/npm/three@${versions.three}/examples/jsm/`,
-    htm: `https://esm.sh/htm@${versions.htm}`,
-    'idb-keyval': `https://esm.sh/idb-keyval@${versions['idb-keyval']}`,
-    '#core/': '/content/core/',
-    '#components/': '/content/components/',
-    '#config/': '/content/config/',
-    '#pages/': '/pages/',
-  }),
-  scopes: Object.freeze({
-    'https://esm.sh/': Object.freeze({
-      react: `https://esm.sh/react@${versions.react}`,
-    }),
-  }),
-});
-
-const rawGeneratedConfigSource = `export const IMPORT_MAP_VERSIONS = Object.freeze(${JSON.stringify(
-  versions,
-  null,
-  2,
-)});
-
-export const IMPORT_MAP = Object.freeze({
-  imports: Object.freeze(${JSON.stringify(importMap.imports, null, 2)}),
-  scopes: Object.freeze({
-    'https://esm.sh/': Object.freeze(${JSON.stringify(
-      importMap.scopes['https://esm.sh/'],
-      null,
-      2,
-    )}),
-  }),
-});
-
-export const SEARCH_PRELOAD_IMPORT_KEYS = Object.freeze([
+const SEARCH_PRELOAD_IMPORT_KEYS = Object.freeze([
   'htm',
   'react-dom',
   'react-dom/client',
 ]);
 
-export const SEARCH_PRELOAD_URLS = Object.freeze(
+function normalizeVersion(range) {
+  return String(range || '')
+    .trim()
+    .replace(/^[~^]/, '');
+}
+
+async function readPackageJson() {
+  const raw = await readFile(PACKAGE_JSON_PATH, 'utf8');
+  return JSON.parse(raw);
+}
+
+function resolveVersions(pkg) {
+  const dependencies = pkg?.dependencies || {};
+  const versions = {};
+
+  for (const key of DEPENDENCY_KEYS) {
+    const version = normalizeVersion(dependencies[key]);
+    if (!version) {
+      throw new Error(
+        `Missing dependency version for "${key}" in package.json`,
+      );
+    }
+    versions[key] = version;
+  }
+
+  return versions;
+}
+
+function buildImportMap(versions) {
+  return {
+    imports: {
+      react: `https://esm.sh/react@${versions.react}`,
+      'react-dom': `https://esm.sh/react-dom@${versions['react-dom']}`,
+      'react-dom/client': `https://esm.sh/react-dom@${versions['react-dom']}/client`,
+      'lucide-react': `https://esm.sh/lucide-react@${versions['lucide-react']}`,
+      three: `https://cdn.jsdelivr.net/npm/three@${versions.three}/build/three.module.min.js`,
+      'three/addons/': `https://cdn.jsdelivr.net/npm/three@${versions.three}/examples/jsm/`,
+      htm: `https://esm.sh/htm@${versions.htm}`,
+      '#core/': '/content/core/',
+      '#components/': '/content/components/',
+      '#footer/': '/content/components/footer/',
+      '#menu/': '/content/components/menu/',
+      '#config/': '/content/config/',
+      '#pages/': '/pages/',
+    },
+    scopes: {
+      'https://esm.sh/': {
+        react: `https://esm.sh/react@${versions.react}`,
+      },
+    },
+  };
+}
+
+function indent(text, spaces = 2) {
+  const prefix = ' '.repeat(spaces);
+  return String(text)
+    .split('\n')
+    .map((line) => `${prefix}${line}`)
+    .join('\n');
+}
+
+function buildGeneratedModule(versions, importMap) {
+  const versionLiteral = JSON.stringify(versions, null, 2);
+  const importMapLiteral = JSON.stringify(importMap, null, 2);
+  const preloadKeysLiteral = JSON.stringify(
+    SEARCH_PRELOAD_IMPORT_KEYS,
+    null,
+    2,
+  );
+
+  return `// Generated by scripts/sync-import-map.mjs. Do not edit manually.
+
+const freezeDeep = (value) => {
+  if (!value || typeof value !== 'object' || Object.isFrozen(value)) {
+    return value;
+  }
+
+  Object.freeze(value);
+  for (const nested of Object.values(value)) {
+    freezeDeep(nested);
+  }
+
+  return value;
+};
+
+export const IMPORT_MAP_VERSIONS = freezeDeep(${versionLiteral});
+
+export const IMPORT_MAP = freezeDeep(${importMapLiteral});
+
+export const SEARCH_PRELOAD_IMPORT_KEYS = freezeDeep(${preloadKeysLiteral});
+
+export const SEARCH_PRELOAD_URLS = freezeDeep(
   SEARCH_PRELOAD_IMPORT_KEYS.map((key) => IMPORT_MAP.imports[key]).filter(
     Boolean,
   ),
 );
 `;
-
-const generatedTemplateBlock = `${templateStartMarker}
-<script type="importmap">
-${JSON.stringify(importMap, null, 2)}
-</script>
-${templateEndMarker}`;
-
-const currentTemplate = await readFile(templatePath, 'utf8');
-
-if (
-  !currentTemplate.includes(templateStartMarker) ||
-  !currentTemplate.includes(templateEndMarker)
-) {
-  throw new Error('Import map markers missing in global-head.html');
 }
 
-const nextTemplate = currentTemplate.replace(
-  new RegExp(`${templateStartMarker}[\\s\\S]*?${templateEndMarker}`, 'm'),
-  generatedTemplateBlock,
-);
+function buildGeneratedImportMapBlock(importMap) {
+  const json = indent(JSON.stringify(importMap, null, 2), 2);
+  return `<!-- BEGIN GENERATED IMPORT MAP -->
+<script type="importmap">
+${json}
+</script>
+<!-- END GENERATED IMPORT MAP -->`;
+}
 
-const currentGeneratedConfig = await readFile(
-  generatedConfigPath,
-  'utf8',
-).catch(() => '');
+async function formatWithRepoPrettier(source, filePath) {
+  const config = (await prettier.resolveConfig(filePath)) || {};
+  return prettier.format(source, {
+    ...config,
+    filepath: filePath,
+  });
+}
 
-const defaultFormatOptions =
-  (await prettier.resolveConfig(packageJsonPath)) || Object.freeze({});
-const generatedConfigFormatOptions =
-  (await prettier.resolveConfig(generatedConfigPath)) || defaultFormatOptions;
-const templateFormatOptions =
-  (await prettier.resolveConfig(templatePath)) || defaultFormatOptions;
-const generatedConfigSource = await prettier.format(rawGeneratedConfigSource, {
-  ...generatedConfigFormatOptions,
-  filepath: generatedConfigPath,
-});
-const formattedTemplate = await prettier.format(nextTemplate, {
-  ...templateFormatOptions,
-  filepath: templatePath,
-});
-
-const hasTemplateDiff = formattedTemplate !== currentTemplate;
-const hasGeneratedDiff = generatedConfigSource !== currentGeneratedConfig;
-
-if (checkOnly) {
-  if (hasTemplateDiff || hasGeneratedDiff) {
-    process.stderr.write(
-      'Import map artifacts are out of sync. Run `npm run importmap:sync`.\n',
-    );
-    process.exit(1);
+async function updateFile(filePath, nextContent, { check }) {
+  const currentContent = await readFile(filePath, 'utf8');
+  if (currentContent === nextContent) {
+    return false;
   }
 
-  process.exit(0);
+  if (check) {
+    throw new Error(
+      `Import map drift detected in ${path.relative(ROOT_DIR, filePath)}`,
+    );
+  }
+
+  await writeFile(filePath, nextContent, 'utf8');
+  return true;
 }
 
-if (hasTemplateDiff) {
-  await writeFile(templatePath, formattedTemplate, 'utf8');
+async function main() {
+  const argv = process.argv.slice(2);
+  const check = isFlagEnabled('--check', argv);
+  const write = isFlagEnabled('--write', argv) || !check;
+
+  if (!check && !write) {
+    throw new Error('Use --check or --write');
+  }
+
+  const pkg = await readPackageJson();
+  const versions = resolveVersions(pkg);
+  const importMap = buildImportMap(versions);
+
+  const generatedModule = await formatWithRepoPrettier(
+    buildGeneratedModule(versions, importMap),
+    IMPORT_MAP_JS_PATH,
+  );
+  const globalHead = await readFile(GLOBAL_HEAD_PATH, 'utf8');
+
+  if (!GLOBAL_HEAD_IMPORT_MAP_PATTERN.test(globalHead)) {
+    throw new Error(
+      'Could not find generated import map markers in global-head.html',
+    );
+  }
+
+  const nextGlobalHead = globalHead.replace(
+    GLOBAL_HEAD_IMPORT_MAP_PATTERN,
+    buildGeneratedImportMapBlock(importMap),
+  );
+
+  const updatedFiles = [];
+
+  if (
+    await updateFile(IMPORT_MAP_JS_PATH, generatedModule, {
+      check,
+    })
+  ) {
+    updatedFiles.push(path.relative(ROOT_DIR, IMPORT_MAP_JS_PATH));
+  }
+
+  if (
+    await updateFile(GLOBAL_HEAD_PATH, nextGlobalHead, {
+      check,
+    })
+  ) {
+    updatedFiles.push(path.relative(ROOT_DIR, GLOBAL_HEAD_PATH));
+  }
+
+  if (check) {
+    console.log(
+      updatedFiles.length === 0
+        ? 'Import map artifacts are in sync.'
+        : 'Import map artifacts drifted.',
+    );
+    return;
+  }
+
+  console.log(
+    updatedFiles.length === 0
+      ? 'Import map artifacts already up to date.'
+      : `Updated ${updatedFiles.join(', ')}`,
+  );
 }
 
-if (hasGeneratedDiff) {
-  await writeFile(generatedConfigPath, generatedConfigSource, 'utf8');
-}
+await main();
